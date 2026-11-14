@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>장대장 갈아타기 계산기</title>
+<meta name="description" content="지금 집을 팔면 양도세를 내고 대출을 갚은 뒤 손에 남는 돈, 새 대출로 갈아탈 수 있는 최대 집값, 취득세까지 한 번에 계산합니다. 2026년 11월 규제 반영.">
+<meta property="og:title" content="장대장 갈아타기 계산기 — 지금 집 팔면 어디까지 갈 수 있을까?">
+<meta property="og:description" content="양도세·매도 후 순자금·새 대출·취득세까지 한 번에. 1주택자 갈아타기 무료 계산기.">
+<meta property="og:type" content="website">
+<script>window.JDJ_CONFIG = { tool:'switch', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../assets/track.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#F5EFDC; --cream2:#EDE4C9; --olive:#3B3F22; --olive2:#545A30;
+  --gold:#B8942A; --gold2:#D9B85A; --ink:#23241A; --muted:#6B6A58;
+  --red:#A23B2A; --green:#4E6B2E; --card:#FFFBF0; --line:#DCCFA8;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:'Noto Sans KR',system-ui,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+.top{background:var(--olive);color:#F5EFDC;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-weight:900;letter-spacing:-.02em;font-size:17px;white-space:nowrap}
+.brand span{color:var(--gold2)}
+.badge{border:1px solid var(--gold2);color:var(--gold2);font-size:11px;font-weight:700;letter-spacing:.12em;padding:4px 9px;border-radius:3px;white-space:nowrap}
+@media(max-width:420px){.top{padding:12px 14px}.brand{font-size:15px}.badge{font-size:10px;padding:3px 7px;letter-spacing:.06em}}
+.wrap{max-width:1080px;margin:0 auto;padding:28px 18px 60px}
+.hero{margin-bottom:26px}
+.tag{display:inline-block;background:var(--ink);color:var(--gold2);font-size:11px;font-weight:700;letter-spacing:.14em;padding:4px 9px;border-radius:2px}
+h1{font-size:clamp(28px,5vw,44px);font-weight:900;letter-spacing:-.04em;line-height:1.15;margin:12px 0 10px}
+h1 em{font-style:normal;color:var(--gold)}
+.lead{color:var(--muted);font-size:15px;margin:0;max-width:660px}
+.grid{display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:22px;align-items:start}
+.grid>*,.row2>*{min-width:0}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:22px}
+.panel+.panel{margin-top:16px}
+.panel h2{font-size:15px;font-weight:900;margin:0 0 16px;display:flex;align-items:center;gap:8px}
+.panel h2:before{content:"";width:4px;height:16px;background:var(--gold);border-radius:2px}
+.panel h2 .step{background:var(--olive);color:var(--gold2);font-size:11px;padding:2px 7px;border-radius:3px;letter-spacing:.06em}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+.field .hint{font-size:12px;color:var(--muted);margin-top:4px;min-height:1em}
+.inp{display:flex;align-items:center;background:#fff;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.inp:focus-within{border-color:var(--gold);box-shadow:0 0 0 3px rgba(184,148,42,.18)}
+.inp input{flex:1;border:0;outline:0;padding:11px 12px;font:inherit;font-size:16px;font-weight:700;background:transparent;min-width:0;color:var(--ink)}
+.inp input::placeholder{color:#B9B39A;font-weight:500}
+.inp .unit{padding:0 12px;color:var(--muted);font-size:13px;white-space:nowrap}
+select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:15px;background:#fff;color:var(--ink)}
+select:focus{outline:0;border-color:var(--gold)}
+.seg{display:grid;gap:6px}
+.seg.c2{grid-template-columns:1fr 1fr}.seg.c3{grid-template-columns:1fr 1fr 1fr}
+.seg button{border:1px solid var(--line);background:#fff;padding:9px 6px;border-radius:7px;font:inherit;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;line-height:1.3;min-width:0}
+.seg button small{display:block;font-weight:500;font-size:11px;margin-top:2px}
+.seg button.on{background:var(--olive);border-color:var(--olive);color:var(--cream)}
+.seg button.on small{color:var(--gold2)}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.result{background:var(--olive);color:var(--cream);border-radius:10px;padding:26px 24px;position:relative;overflow:hidden}
+.result:after{content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;border-radius:50%;border:30px solid rgba(217,184,90,.12)}
+.result .lbl{font-size:13px;color:var(--gold2);font-weight:700;letter-spacing:.04em}
+.result .big{font-size:clamp(36px,7vw,56px);font-weight:900;letter-spacing:-.04em;line-height:1.1;margin:6px 0 4px}
+.result .sub{font-size:14px;color:#D9D3BC}
+.result .sub b{color:#fff}
+.binding{display:inline-block;margin-top:14px;background:var(--gold);color:var(--ink);font-weight:900;font-size:12px;padding:5px 10px;border-radius:3px}
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+@media(max-width:560px){.flow{grid-template-columns:1fr 1fr}}
+.stat{background:var(--cream2);border-radius:8px;padding:14px}
+.stat .k{font-size:12px;color:var(--muted);font-weight:700}
+.stat .v{font-size:19px;font-weight:900;letter-spacing:-.03em;margin-top:2px}
+.stat .d{font-size:11px;color:var(--muted)}
+.stat.neg .v{color:var(--red)}
+.stat.key{background:var(--gold);}
+.stat.key .k,.stat.key .d{color:#3d3416}
+.section{margin-top:22px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td{padding:9px 6px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+td:last-child{text-align:right;font-weight:700;white-space:nowrap}
+td small{color:var(--muted);font-weight:400;margin-left:4px}
+tr.minus td{color:var(--green)}
+tr.sub td{background:rgba(237,228,201,.5)}
+tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font-size:15px;padding-top:12px}
+.verdict{border-radius:8px;padding:12px 14px;font-size:14px;margin-bottom:14px;font-weight:700}
+.verdict.free{background:rgba(78,107,46,.12);color:var(--green)}
+.verdict.part{background:rgba(184,148,42,.15);color:#7a5f14}
+.verdict.tax{background:rgba(162,59,42,.1);color:var(--red)}
+.tips{display:grid;gap:10px}
+.tip{border-left:4px solid var(--gold);background:var(--card);padding:12px 14px;border-radius:0 8px 8px 0;font-size:14px}
+.tip.warn{border-color:var(--red)}
+.tip b{font-weight:900}
+.check-res{margin-top:12px;padding:14px;border-radius:8px;font-size:14px;display:none}
+.check-res.show{display:block}
+.check-res.y{background:rgba(78,107,46,.1);border:1px solid rgba(78,107,46,.35)}
+.check-res.n{background:rgba(162,59,42,.08);border:1px solid rgba(162,59,42,.3)}
+.cta{margin-top:22px;background:var(--gold);border-radius:10px;padding:20px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.cta p{margin:0;font-weight:900;font-size:17px;letter-spacing:-.02em;color:var(--ink)}
+.cta p small{display:block;font-weight:500;font-size:13px;color:#3d3416}
+.btn{display:inline-block;background:var(--ink);color:var(--cream);text-decoration:none;font-weight:700;font-size:14px;padding:11px 16px;border-radius:7px;border:0;cursor:pointer;font-family:inherit}
+.btn.primary{background:#A23B2A;color:#fff;font-size:15px;padding:12px 20px;box-shadow:0 3px 0 rgba(0,0,0,.18)}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.rules{font-size:12px;color:var(--muted);margin-top:26px;border-top:1px solid var(--line);padding-top:16px}
+.rules h3{font-size:13px;color:var(--ink);margin:0 0 8px}
+.rules ul{margin:0;padding-left:18px}
+.rules li{margin-bottom:3px}
+.foot{background:var(--gold);color:var(--ink);text-align:center;font-weight:900;padding:12px;font-size:13px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--cream);padding:10px 16px;border-radius:7px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.muted{color:var(--muted)}
+.premium{margin-top:22px;border:1.5px dashed var(--gold);border-radius:10px;padding:18px 20px;background:var(--card);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.premium .pt{font-size:11px;font-weight:900;letter-spacing:.14em;color:var(--gold)}
+.premium p{margin:4px 0 0;font-weight:900;font-size:16px;letter-spacing:-.02em}
+.premium p small{display:block;font-weight:500;font-size:13px;color:var(--muted);margin-top:3px;letter-spacing:0}
+.btn.done{background:var(--green);cursor:default}
+.xlink{display:block;margin-top:14px;text-align:center;font-size:13px;color:var(--olive);font-weight:700}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand">★ 장대장 <span>갈아타기 계산기</span></div>
+  <div class="badge">2026.11 규제 반영</div>
+</div>
+
+<div class="wrap">
+  <div class="hero">
+    <span class="tag">FREE TOOL · 1주택자 갈아타기</span>
+    <h1>지금 집 팔면,<br><em>어디까지</em> 갈 수 있을까?</h1>
+    <p class="lead">양도세를 내고 대출을 갚은 뒤 손에 남는 돈, 그 돈과 새 대출로 살 수 있는 집값, 취득세까지 한 번에 계산합니다.</p>
+  </div>
+
+  <div class="grid">
+    <!-- 입력 -->
+    <div>
+      <div class="panel">
+        <h2><span class="step">STEP 1</span> 지금 집 (팔 집)</h2>
+        <div class="field">
+          <label for="sale">예상 매도가</label>
+          <div class="inp"><input id="sale" inputmode="numeric" value="130,000"><span class="unit">만원</span></div>
+          <div class="hint" data-for="sale"></div>
+        </div>
+        <div class="field">
+          <label for="acq">산 가격 (취득가)</label>
+          <div class="inp"><input id="acq" inputmode="numeric" value="70,000"><span class="unit">만원</span></div>
+          <div class="hint" data-for="acq"></div>
+        </div>
+        <div class="field">
+          <label for="exp">필요경비 (살 때 취득세·중개보수·확장공사 등)</label>
+          <div class="inp"><input id="exp" inputmode="numeric" placeholder="모르면 비워두세요"><span class="unit">만원</span></div>
+          <div class="hint" id="expHint"></div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="hold">보유 기간</label>
+            <div class="inp"><input id="hold" inputmode="decimal" value="8"><span class="unit">년</span></div>
+          </div>
+          <div class="field">
+            <label for="live">실거주 기간</label>
+            <div class="inp"><input id="live" inputmode="decimal" value="8"><span class="unit">년</span></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>살 때 조정대상지역이었나요?</label>
+          <div class="seg c2" id="adj">
+            <button data-v="y" class="on">예<small>2년 거주해야 비과세</small></button>
+            <button data-v="n">아니오<small>2년 보유면 비과세</small></button>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label for="oldLoan">남은 주택담보대출 잔액</label>
+          <div class="inp"><input id="oldLoan" inputmode="numeric" value="20,000"><span class="unit">만원</span></div>
+          <div class="hint" data-for="oldLoan"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2><span class="step">STEP 2</span> 갈아탈 집</h2>
+        <div class="field">
+          <label for="region">갈아탈 지역</label>
+          <select id="region">
+            <option value="seoul">서울 (25개구 전역 규제지역)</option>
+            <option value="ggreg">경기 규제지역 15곳 (과천·분당·동탄 등)</option>
+            <option value="capfree">그 외 경기·인천 (비규제 수도권)</option>
+            <option value="local">지방 (비규제지역)</option>
+          </select>
+          <div class="hint" id="regionHint"></div>
+        </div>
+        <div class="field">
+          <label for="extra">추가로 보탤 현금 (예금·주식 등)</label>
+          <div class="inp"><input id="extra" inputmode="numeric" value="5,000"><span class="unit">만원</span></div>
+          <div class="hint" data-for="extra"></div>
+        </div>
+        <div class="field">
+          <label for="income">연소득 (세전, 부부합산 가능)</label>
+          <div class="inp"><input id="income" inputmode="numeric" value="9,000"><span class="unit">만원</span></div>
+          <div class="hint" data-for="income"></div>
+        </div>
+        <div class="field">
+          <label for="debt">그 외 대출 연간 원리금 (신용대출 등)</label>
+          <div class="inp"><input id="debt" inputmode="numeric" value="0"><span class="unit">만원/년</span></div>
+        </div>
+        <div class="field">
+          <label>금리 유형</label>
+          <div class="seg c3" id="rtype">
+            <button data-v="var">변동형<small>가산 100%</small></button>
+            <button data-v="mix">혼합형<small>가산 80%</small></button>
+            <button data-v="cyc" class="on">주기형<small>가산 40%</small></button>
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="rate">예상 대출금리</label>
+            <div class="inp"><input id="rate" inputmode="decimal" value="4.0"><span class="unit">%</span></div>
+          </div>
+          <div class="field">
+            <label for="term">대출 기간</label>
+            <select id="term"></select>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label>새 집 전용면적</label>
+          <div class="seg c2" id="area">
+            <button data-v="small" class="on">85㎡ 이하</button>
+            <button data-v="large">85㎡ 초과</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 결과 -->
+    <div>
+      <div class="result">
+        <div class="lbl">갈아탈 수 있는 최대 집값</div>
+        <div class="big" id="maxP">-</div>
+        <div class="sub" id="maxSub"></div>
+        <div class="binding" id="binding"></div>
+      </div>
+
+      <div class="flow">
+        <div class="stat"><div class="k">매도가</div><div class="v" id="fSale">-</div><div class="d">지금 집</div></div>
+        <div class="stat neg"><div class="k">빠져나가는 돈</div><div class="v" id="fOut">-</div><div class="d">대출상환+양도세+중개</div></div>
+        <div class="stat key"><div class="k">손에 남는 돈</div><div class="v" id="fNet">-</div><div class="d" id="fNetD"></div></div>
+        <div class="stat"><div class="k">새 대출 가능액</div><div class="v" id="fLoan">-</div><div class="d" id="fLoanD"></div></div>
+      </div>
+
+      <div class="panel section">
+        <h2>① 지금 집 양도세</h2>
+        <div class="verdict" id="verdict"></div>
+        <table><tbody id="cgtTbl"></tbody></table>
+      </div>
+
+      <div class="panel section">
+        <h2>② 매도 정산 — 손에 남는 돈</h2>
+        <table><tbody id="saleTbl"></tbody></table>
+      </div>
+
+      <div class="panel section">
+        <h2>③ 점 찍어둔 집으로 갈아탈 수 있을까?</h2>
+        <div class="field" style="margin-bottom:0">
+          <label for="target">갈아탈 집 매매가</label>
+          <div class="inp"><input id="target" data-track="target_check" inputmode="numeric" placeholder="예: 160,000"><span class="unit">만원</span></div>
+          <div class="hint" data-for="target"></div>
+        </div>
+        <div class="check-res" id="targetRes"></div>
+      </div>
+
+      <div class="panel section">
+        <h2>④ 새 집 살 때 드는 비용</h2>
+        <table><tbody id="buyTbl"></tbody></table>
+        <p class="muted" style="font-size:12px;margin:10px 0 0">③에 매매가를 넣으면 그 집 기준, 아니면 최대 집값 기준입니다. 법무사·등기비, 이사비는 별도입니다.</p>
+      </div>
+
+      <div class="section"><div class="tips" id="tips"></div></div>
+
+      <div class="premium">
+        <div><div class="pt">PREMIUM · 준비 중</div><p>장대장 갈아타기 시나리오 리포트<small>먼저 팔기 vs 먼저 사기 순서별 세금·자금 비교, 일시적 2주택 일정표, 후보 단지를 PDF로 정리해 드립니다</small></p></div>
+        <button class="btn" id="premBtn">관심 있어요</button>
+      </div>
+
+      <div class="cta">
+        <p>갈아타기 순서·타이밍이 고민된다면<small>1차 진단은 무료 · 심층 컨설팅은 유료로 별도 안내 · 계산 결과는 신청서에 자동 입력됩니다</small></p>
+        <div class="btns">
+          <a class="btn primary" id="consultBtn" data-track="consult_click" href="#" target="_blank" rel="noopener">상담 신청</a>
+          <a class="btn" data-track="youtube_click" href="https://www.youtube.com/results?search_query=%EC%9E%A5%EB%8C%80%EC%9E%A5TV" target="_blank" rel="noopener">장대장TV 보기</a>
+          <button class="btn ghost" id="copyBtn" data-track="copy_result">결과 복사</button>
+        </div>
+      </div>
+      <a class="xlink" data-track="cross_link_timing" href="https://claude.ai/artifact/MPDhYTNGfXkiiFg6sDxvdM" target="_blank" rel="noopener">지금이 갈아탈 타이밍인지 궁금하다면 → 장대장 갈아타기 타이밍 (실거래가 분석)</a>
+      <a class="xlink" data-track="cross_link_buy" href="../buy/">무주택자라면 → 장대장 내 집 마련 계산기</a>
+    </div>
+  </div>
+
+  <div class="rules">
+    <h3>계산 기준 (2026년 11월)</h3>
+    <ul>
+      <li>양도세: 1세대 1주택(일시적 2주택 포함) 기준. 2년 이상 보유(취득 당시 조정대상지역이면 2년 거주 포함) 시 양도가 12억까지 비과세, 12억 초과분은 양도차익 × (양도가−12억)/양도가만 과세</li>
+      <li>장기보유특별공제: 보유 3년·거주 2년 이상이면 보유 연 4% + 거주 연 4% (최대 80%), 거주 2년 미만이면 보유 연 2% (최대 30%). 정부가 발표한 장특공 개편안은 아직 시행 전이라 현행 기준으로 계산</li>
+      <li>필요경비를 비워두면 산 가격 기준 1주택 취득세(6억 이하 1%, 6~9억 1~3% 구간, 9억 초과 3%)+지방교육세+중개보수 상한으로 추정. 수리·확장비 등 실제 영수증이 있는 비용은 직접 입력하면 더 정확</li>
+      <li>세율: 기본세율 6~45%, 보유 1년 미만 70%·2년 미만 60%. 기본공제 250만원, 지방소득세 10% 포함. 다주택 중과는 반영하지 않음</li>
+      <li>새 집 대출: 기존 주택 처분 조건 1주택 기준. 규제지역 LTV 40%, 비규제 70%. 수도권·규제지역 주담대 한도 15억 이하 6억 / 25억 이하 4억 / 25억 초과 2억. DSR 40%, 스트레스 금리 수도권·규제지역 3.0% × 금리유형 비율</li>
+      <li>새 집 취득세: 일시적 2주택 일반세율 1~3% + 지방교육세, 85㎡ 초과 농특세. 중개보수는 법정 상한요율 + 부가세</li>
+      <li>기존 주담대는 매도 대금으로 상환하고, 매도 대금이 새 집 잔금에 쓰인다고 가정했습니다. 이 계산은 추정치이며 실제 세액·한도는 세무사·은행 확인이 필요합니다.</li>
+      <li>이용 통계: 서비스 개선을 위해 방문 횟수·유입 경로·사용한 기능을 익명으로 집계합니다(Google 애널리틱스). 이름·연락처는 수집하지 않으며, 입력한 금액은 저장하지 않고 구간(예: 12~15억)으로만 집계합니다.</li>
+    </ul>
+  </div>
+</div>
+<div class="foot">★ 장대장부동산그룹 · 팔 때 세금부터, 살 때 대출까지 한 번에</div>
+<div class="toast" id="toast">복사되었습니다</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const REG = {
+  seoul:  {name:'서울', regulated:true,  capital:true},
+  ggreg:  {name:'경기 규제지역', regulated:true,  capital:true},
+  capfree:{name:'비규제 수도권', regulated:false, capital:true},
+  local:  {name:'지방 비규제', regulated:false, capital:false}
+};
+const TYPE_RATIO = {var:1, mix:.8, cyc:.4};
+const TYPE_NAME = {var:'변동형', mix:'혼합형', cyc:'주기형'};
+let adj='y', rtype='cyc', area='small';
+let last={};
+JDJ_CONFIG.info = () => (last && last.t) ? {region:last.c.region, cgt:last.t.status, sale_band:JDJ.band(last.t.sale), max_band:JDJ.band(last.P), limit_by:last.ld.by} : {};
+
+const num = s => { const v = parseFloat(String(s).replace(/[^0-9.]/g,'')); return isNaN(v)?0:v; };
+function fmt(man){
+  man = Math.round(man);
+  if (man===0) return '0';
+  const neg = man<0; man=Math.abs(man);
+  const eok = Math.floor(man/10000), rest = man%10000;
+  let s = !eok ? rest.toLocaleString()+'만' : eok+'억'+(rest?' '+rest.toLocaleString()+'만':'');
+  return (neg?'−':'')+s;
+}
+function fmtShort(man){
+  const neg = man<0; man=Math.abs(man);
+  let s = man>=10000 ? (Math.round(man/1000)/10).toString().replace(/\.0$/,'')+'억' : Math.round(man).toLocaleString()+'만';
+  return (neg?'−':'')+s;
+}
+
+/* ---------- 양도세 ---------- */
+const BRACKETS = [[1400,6,0],[5000,15,126],[8800,24,576],[15000,35,1544],[30000,38,1994],[50000,40,2594],[100000,42,3594],[Infinity,45,6594]];
+function basicTax(base){
+  if (base<=0) return {tax:0, rate:0};
+  for (const [lim,r,ded] of BRACKETS){ if (base<=lim) return {tax:base*r/100-ded, rate:r}; }
+}
+function cgt(){
+  const sale=num($('sale').value), acq=num($('acq').value);
+  const expIn=$('exp').value.trim();
+  const est = acqExpEstimate(acq);
+  const exp = expIn ? num(expIn) : Math.round(est.total);
+  const hold=num($('hold').value), live=num($('live').value);
+  const gain = sale - acq - exp;
+  const r = {sale, acq, exp, est, expAuto:!expIn, hold, live, gain, status:'', taxableGain:0, ltRate:0, lt:0, income:0, base:0, rate:0, tax:0, local:0, total:0, table:''};
+  if (gain<=0){ r.status='loss'; return r; }
+  const eligible = hold>=2 && (adj==='n' || live>=2);
+  r.eligible = eligible;
+  if (eligible && sale<=120000){ r.status='free'; return r; }
+  r.status = eligible ? 'part' : 'tax';
+  r.taxableGain = eligible ? gain*(sale-120000)/sale : gain;
+  const H=Math.floor(hold), L=Math.floor(live);
+  if (eligible && H>=3 && L>=2){
+    r.ltRate = Math.min(H,10)*4 + Math.min(L,10)*4; r.table='표2 (1주택 보유·거주)';
+  } else if (H>=3){
+    r.ltRate = Math.min(H*2,30); r.table='표1 (일반)';
+  }
+  r.lt = r.taxableGain*r.ltRate/100;
+  r.income = r.taxableGain - r.lt;
+  r.base = Math.max(0, r.income - 250);
+  if (hold<1){ r.rate=70; r.tax=r.base*.7; r.rateLabel='단기 70%'; }
+  else if (hold<2){ r.rate=60; r.tax=r.base*.6; r.rateLabel='단기 60%'; }
+  else { const b=basicTax(r.base); r.rate=b.rate; r.tax=b.tax; r.rateLabel='기본세율 '+b.rate+'%'; }
+  r.tax=Math.max(0,r.tax); r.local=r.tax*.1; r.total=r.tax+r.local;
+  return r;
+}
+function acqExpEstimate(P){
+  if (!P) return {rate:0,tax:0,broker:0,total:0};
+  let rate; if (P<=60000) rate=1; else if (P<=90000) rate=Math.round(((P/10000)*2/3-3)*100)/100; else rate=3;
+  const tax=P*rate/100*1.1, broker=brokerFee(P).fee;
+  return {rate, tax, broker, total:tax+broker};
+}
+function brokerFee(P){
+  let br, cap=Infinity;
+  if (P<5000){br=.6;cap=25;} else if (P<20000){br=.5;cap=80;} else if (P<90000) br=.4;
+  else if (P<120000) br=.5; else if (P<150000) br=.6; else br=.7;
+  return {rate:br, fee:Math.min(P*br/100,cap)*1.1};
+}
+
+/* ---------- 매수 ---------- */
+function ctx(net){
+  const region=$('region').value, R=REG[region];
+  const ltv = R.regulated ? .40 : .70;
+  const stressBase = (R.regulated||R.capital) ? 3.0 : 0.75;
+  return {region,R,ltv,stressBase,
+    stress: Math.round(stressBase*TYPE_RATIO[rtype]*100)/100,
+    income:num($('income').value), debt:num($('debt').value),
+    rate:num($('rate').value), term:parseInt($('term').value,10)||30, cash:net};
+}
+function capByPrice(P,c){
+  if (!(c.R.regulated||c.R.capital)) return Infinity;
+  if (P<=150000) return 60000; if (P<=250000) return 40000; return 20000;
+}
+function dsrMax(c, stress){
+  const room = c.income*0.40 - c.debt; if (room<=0) return 0;
+  const i=(c.rate+(stress===undefined?c.stress:stress))/1200, n=c.term*12;
+  return room/12*((1-Math.pow(1+i,-n))/i);
+}
+function monthly(L,rate,term){ const i=rate/1200,n=term*12; return L>0 ? L*i/(1-Math.pow(1+i,-n)) : 0; }
+function buyCost(P){
+  let rate; if (P<=60000) rate=1; else if (P<=90000) rate=Math.round(((P/10000)*2/3-3)*100)/100; else rate=3;
+  const acqT=P*rate/100, edu=acqT*.1, farm= area==='large'?P*.002:0, b=brokerFee(P);
+  return {rate, acqT, edu, farm, broker:b.fee, brRate:b.rate, total:acqT+edu+farm+b.fee};
+}
+function loanAt(P,c,dsr){
+  const a=P*c.ltv, b=capByPrice(P,c), d=dsr, L=Math.max(0,Math.min(a,b,d));
+  let by='LTV'; if (L===b && b<a && b<=d) by='CAP'; if (L===d && d<a && d<b) by='DSR';
+  return {L,a,b,d,by};
+}
+function maxPrice(c,dsr){
+  let best=0;
+  for (let P=1000; P<=800000; P+=100){
+    const {L}=loanAt(P,c,dsr);
+    if (c.cash + L >= P + buyCost(P).total) best=P;
+  }
+  return best;
+}
+
+function setTermOptions(){
+  const R=REG[$('region').value], max=(R.regulated||R.capital)?30:40, cur=parseInt($('term').value,10)||30;
+  $('term').innerHTML=[10,15,20,25,30,35,40].filter(t=>t<=max).map(t=>`<option value="${t}">${t}년</option>`).join('');
+  $('term').value=Math.min(cur,max);
+}
+
+function render(){
+  document.querySelectorAll('.hint[data-for]').forEach(h=>{ const v=num($(h.dataset.for).value); h.textContent = v ? '= '+fmt(v)+'원' : ''; });
+
+  const t=cgt();
+  $('expHint').textContent = t.expAuto
+    ? `비워두면 산 가격 기준 취득세 ${t.est.rate}%+교육세(${fmt(t.est.tax)}) + 중개보수(${fmt(t.est.broker)}) = ${fmt(t.exp)}원으로 추정합니다`
+    : '= '+fmt(t.exp)+'원';
+  const v=$('verdict');
+  if (t.status==='loss'){ v.className='verdict free'; v.textContent='양도차익이 없어 양도세가 없습니다.'; }
+  else if (t.status==='free'){ v.className='verdict free'; v.textContent='✓ 1세대 1주택 비과세 — 양도세 0원'; }
+  else if (t.status==='part'){ v.className='verdict part'; v.textContent='비과세 요건 충족 · 12억 초과분만 과세 (고가주택)'; }
+  else { v.className='verdict tax'; v.textContent = t.hold<2 ? '✗ 보유 2년 미만 — 비과세 불가' : '✗ 거주 2년 미만 (조정대상지역 취득) — 비과세 불가'; }
+
+  let h=`<tr><td>양도가액</td><td>${fmt(t.sale)}원</td></tr>
+    <tr><td>취득가액</td><td>−${fmt(t.acq)}원</td></tr>
+    <tr><td>필요경비 <small>${t.expAuto?'추정: 취득세 '+t.est.rate+'%+교육세+중개보수':''}</small></td><td>−${fmt(t.exp)}원</td></tr>
+    <tr class="sub"><td>양도차익</td><td>${fmt(Math.max(0,t.gain))}원</td></tr>`;
+  if (t.status==='part'||t.status==='tax'){
+    if (t.status==='part') h+=`<tr><td>과세 대상 차익 <small>12억 초과분 ${((t.sale-120000)/t.sale*100).toFixed(1)}%</small></td><td>${fmt(t.taxableGain)}원</td></tr>`;
+    h+=`<tr class="minus"><td>장기보유특별공제 <small>${t.ltRate}% ${t.table||''}</small></td><td>−${fmt(t.lt)}원</td></tr>
+      <tr class="minus"><td>기본공제</td><td>−250만원</td></tr>
+      <tr class="sub"><td>과세표준</td><td>${fmt(t.base)}원</td></tr>
+      <tr><td>양도소득세 <small>${t.rateLabel}</small></td><td>${fmt(t.tax)}원</td></tr>
+      <tr><td>지방소득세 <small>10%</small></td><td>${fmt(t.local)}원</td></tr>`;
+  }
+  h+=`<tr class="total"><td>양도세 합계</td><td>${fmt(t.total)}원</td></tr>`;
+  $('cgtTbl').innerHTML=h;
+
+  const oldLoan=num($('oldLoan').value), sb=brokerFee(t.sale), extra=num($('extra').value);
+  const net = t.sale - oldLoan - t.total - sb.fee;
+  const cash = net + extra;
+  $('saleTbl').innerHTML=`<tr><td>매도가</td><td>${fmt(t.sale)}원</td></tr>
+    <tr><td>기존 대출 상환</td><td>−${fmt(oldLoan)}원</td></tr>
+    <tr><td>양도세 (지방세 포함)</td><td>−${fmt(t.total)}원</td></tr>
+    <tr><td>매도 중개보수 <small>상한 ${sb.rate}% + VAT</small></td><td>−${fmt(sb.fee)}원</td></tr>
+    <tr class="sub"><td>매도 후 손에 남는 돈</td><td>${fmt(net)}원</td></tr>
+    <tr><td>추가로 보탤 현금</td><td>+${fmt(extra)}원</td></tr>
+    <tr class="total"><td>새 집에 쓸 수 있는 자기자본</td><td>${fmt(cash)}원</td></tr>`;
+
+  const c=ctx(Math.max(0,cash)), dsr=dsrMax(c), P=maxPrice(c,dsr), ld=loanAt(P,c,dsr), bc=buyCost(P);
+  $('regionHint').textContent = c.R.regulated ? '규제지역: LTV 40%·가격구간별 한도·스트레스 3.0%'
+    : c.R.capital ? '비규제 수도권: LTV 70%·6억 한도·스트레스 3.0%' : '지방 비규제: LTV 70%·스트레스 0.75%(2026년 말까지)';
+  $('maxP').textContent = P ? fmt(P)+'원' : '계산 불가';
+  $('maxSub').innerHTML = P ? `자기자본 <b>${fmt(cash)}</b> + 새 대출 <b>${fmt(ld.L)}</b> − 취득비용 <b>${fmt(bc.total)}</b>` : '매도 후 자금이 부족합니다';
+  const diff = P - t.sale;
+  $('binding').textContent = P ? (diff>=0 ? `지금 집보다 ${fmt(diff)}원 더 비싼 집까지 가능` : `지금 집보다 ${fmt(-diff)}원 낮춰야 가능`) : '';
+  const byTxt={LTV:`LTV ${Math.round(c.ltv*100)}%가 한도 결정`, CAP:'가격구간 한도가 결정', DSR:'소득(DSR)이 한도 결정'};
+  $('fSale').textContent=fmtShort(t.sale);
+  $('fOut').textContent=fmtShort(oldLoan+t.total+sb.fee);
+  $('fNet').textContent=fmtShort(net);
+  $('fNetD').textContent= extra ? `+ 추가 현금 ${fmtShort(extra)}` : '매도 후';
+  $('fLoan').textContent=fmtShort(ld.L);
+  $('fLoanD').textContent=byTxt[ld.by];
+
+  const T=num($('target').value), box=$('targetRes');
+  let costBase=P;
+  if (T){
+    costBase=T;
+    const l=loanAt(T,c,dsr), cst=buyCost(T), need=T-l.L+cst.total, gap=cash-need, m=monthly(l.L,c.rate,c.term);
+    box.className='check-res show '+(gap>=0?'y':'n');
+    box.innerHTML=`<b>${fmt(T)}원</b> 집 → 새 대출 <b>${fmt(l.L)}</b> (월 ${Math.round(m).toLocaleString()}만원), 필요 자기자본 <b>${fmt(need)}</b> (취득비용 ${fmt(cst.total)} 포함)<br>`+
+      (gap>=0?`<span style="color:var(--green);font-weight:900">✓ 갈아탈 수 있습니다.</span> 여유 ${fmt(gap)}원`:`<span style="color:var(--red);font-weight:900">✗ ${fmt(-gap)}원 부족합니다.</span>`);
+  } else box.className='check-res';
+
+  if (costBase){
+    const d=buyCost(costBase);
+    $('buyTbl').innerHTML=`<tr><td>새 집 매매가</td><td>${fmt(costBase)}원</td></tr>
+      <tr><td>취득세 <small>${d.rate}% (일시적 2주택 일반세율)</small></td><td>${fmt(d.acqT)}원</td></tr>
+      <tr><td>지방교육세 <small>취득세의 10%</small></td><td>${fmt(d.edu)}원</td></tr>`+
+      (d.farm?`<tr><td>농어촌특별세 <small>85㎡ 초과</small></td><td>${fmt(d.farm)}원</td></tr>`:'')+
+      `<tr><td>중개보수 <small>상한 ${d.brRate}% + VAT</small></td><td>${fmt(d.broker)}원</td></tr>
+      <tr class="total"><td>취득비용 합계</td><td>${fmt(d.total)}원</td></tr>`;
+  } else $('buyTbl').innerHTML='<tr><td>계산할 금액이 없습니다</td><td></td></tr>';
+
+  const tips=[];
+  if (t.status==='tax' && t.hold>=2 && adj==='y' && t.live<2){
+    tips.push(['warn',`<b>거주 ${(2-t.live).toFixed(1).replace(/\.0$/,'')}년만 더 채우면 비과세</b>가 됩니다. 지금 팔면 양도세 ${fmt(t.total)}원을 냅니다. 매도 시점을 늦출 수 있는지 먼저 검토하세요.`]);
+  }
+  if (t.status==='tax' && t.hold<2){
+    tips.push(['warn',`<b>보유 2년 전 매도는 60~70% 단기 세율</b>이 적용됩니다. 2년을 채운 뒤 파는 것과 비교해 보세요.`]);
+  }
+  if (t.status==='part' && t.sale<=130000){
+    tips.push(['',`매도가가 12억을 살짝 넘습니다. <b>12억 이하로 팔면 양도세가 0원</b>이 되니, 매도가를 낮췄을 때 손에 남는 돈과 비교해 보세요.`]);
+  }
+  if (t.status==='part' && t.table && t.table.startsWith('표1')){
+    tips.push(['warn',`거주 2년 미만이라 장기보유특별공제가 <b>최대 30%(표1)</b>만 적용됩니다. 2년 이상 거주하면 보유·거주 합산 최대 80%까지 늘어납니다.`]);
+  }
+  if ((c.R.regulated||c.R.capital) && P>=130000 && P<=150000){
+    tips.push(['warn',`<b>15억 절벽 주의.</b> 새 집이 15억을 넘으면 대출 한도가 6억 → 4억으로 줄어듭니다.`]);
+  }
+  if (ld.by==='DSR' && rtype!=='cyc'){
+    const P2=maxPrice(c, dsrMax(c, Math.round(c.stressBase*.4*100)/100));
+    if (P2>P) tips.push(['',`<b>주기형 금리로 바꾸면 ${fmt(P2-P)}원 더 비싼 집</b>까지 볼 수 있습니다.`]);
+  }
+  const bothAdj = adj==='y' && c.R.regulated;
+  tips.push(['',`<b>새 집을 먼저 산다면 (일시적 2주택)</b> 종전 주택을 ${bothAdj?'<b>2년</b>':'<b>3년</b>'} 안에 팔아야 비과세가 유지됩니다${bothAdj?' (두 집 모두 조정대상지역, 2026.8.4 이후 취득분)':''}. 새 집은 지금 집을 산 날부터 1년 이상 지난 뒤 취득해야 합니다.`]);
+  if (c.R.regulated) tips.push(['',`규제지역 처분조건부 주담대는 <b>기존 주택을 일정 기간 안에 팔고 새 집에 전입</b>해야 합니다. 대출 실행 전 은행에 처분 기한을 꼭 확인하세요.`]);
+  $('tips').innerHTML=tips.map(x=>`<div class="tip ${x[0]}">${x[1]}</div>`).join('');
+
+  last={t,net,cash,P,ld,c};
+  updateConsult();
+}
+
+const FORM='https://docs.google.com/forms/d/e/1FAIpQLScCG7wzIlY3FE6EHU5QWo92uW5NQe7aiP-GJ9jvh41Rx2E8Zw/viewform';
+function updateConsult(){
+  const {t,net,cash,P,ld,c}=last;
+  const q=new URLSearchParams({usp:'pp_url'});
+  q.set('entry.146176170', fmt(c.income)+'원');
+  q.set('entry.1872979900', `자기자본 ${fmt(cash)}원 (현재 집 매도가 ${fmt(t.sale)}, 양도세 ${fmt(t.total)}, 매도 후 ${fmt(net)})`);
+  q.set('entry.397234060', $('region').options[$('region').selectedIndex].text);
+  q.set('entry.1054811896', '1주택 갈아타기');
+  q.set('entry.658364183', `[갈아타기] ${fmt(P)}원 (새 대출 ${fmt(ld.L)}, ${TYPE_NAME[rtype]} ${c.rate}%·${c.term}년) | ${JDJ.label()}`);
+  $('consultBtn').href=FORM+'?'+q.toString().replace(/\+/g,'%20');
+}
+
+function toast(msg, ms){ $('toast').textContent=msg; $('toast').classList.add('show'); setTimeout(()=>$('toast').classList.remove('show'), ms||1800); }
+function seg(id,cb){ $(id).addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; [...$(id).children].forEach(x=>x.classList.toggle('on',x===b)); cb(b.dataset.v); render(); }); }
+seg('adj',v=>adj=v); seg('rtype',v=>rtype=v); seg('area',v=>area=v);
+['sale','acq','exp','oldLoan','extra','income','debt','target'].forEach(id=>{
+  $(id).addEventListener('input',e=>{ const el=e.target, raw=el.value.replace(/[^0-9]/g,''); el.value = raw ? parseInt(raw,10).toLocaleString() : ''; render(); });
+});
+['hold','live','rate'].forEach(id=>$(id).addEventListener('input',render));
+$('term').addEventListener('change',render);
+$('region').addEventListener('change',()=>{setTermOptions();render();});
+$('copyBtn').addEventListener('click',async()=>{
+  const {t,net,cash,P,ld,c}=last;
+  const txt=`[장대장 갈아타기 계산기]\n현재 집 매도가 ${fmt(t.sale)}원 → 양도세 ${fmt(t.total)}원\n매도 후 손에 남는 돈 ${fmt(net)}원 · 자기자본 ${fmt(cash)}원\n→ ${c.R.name}에서 최대 ${fmt(P)}원까지 갈아타기 가능 (새 대출 ${fmt(ld.L)}원)\n※ 2026년 11월 기준 추정치\n${location.origin+location.pathname}`;
+  try{ await navigator.clipboard.writeText(txt); toast('결과가 복사되었습니다'); }catch(_){ toast('복사가 지원되지 않는 환경입니다'); }
+});
+
+// 유료 기능 관심도 (출시 전 수요 확인)
+(function(){
+  const b=$('premBtn'), key='jdj_prem_switch';
+  let on=false; try{ on=!!localStorage.getItem(key); }catch(_){}
+  const mark=()=>{ b.textContent='✓ 관심 표시 완료'; b.classList.add('done'); };
+  if(on) mark();
+  b.addEventListener('click',()=>{
+    if(b.classList.contains('done')) return;
+    JDJ.track('premium_interest',{region:$('region').value, max_band:JDJ.band(last.P||0)});
+    try{ localStorage.setItem(key,'1'); }catch(_){}
+    mark();
+    toast('감사합니다! 출시되면 장대장TV에서 가장 먼저 알려드릴게요', 2400);
+  });
+})();
+
+setTermOptions(); render();
+</script>
+</body>
+</html>

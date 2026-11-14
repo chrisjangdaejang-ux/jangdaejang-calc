@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>장대장 내 집 마련 계산기</title>
+<meta name="description" content="연봉과 보유 현금만 넣으면 LTV·스트레스 DSR·가격구간별 대출 한도를 따져 최대 매수 가능 금액을 계산합니다. 2026년 11월 규제 반영.">
+<meta property="og:title" content="장대장 내 집 마련 계산기 — 나는 얼마짜리 집까지 살 수 있을까?">
+<meta property="og:description" content="LTV·스트레스 DSR·가격구간별 대출 한도와 취득세까지 한 번에 계산. 회원가입 없이 무료.">
+<meta property="og:type" content="website">
+<script>window.JDJ_CONFIG = { tool:'buy', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../assets/track.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#F5EFDC; --cream2:#EDE4C9; --olive:#3B3F22; --olive2:#545A30;
+  --gold:#B8942A; --gold2:#D9B85A; --ink:#23241A; --muted:#6B6A58;
+  --red:#A23B2A; --green:#4E6B2E; --card:#FFFBF0; --line:#DCCFA8;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:'Noto Sans KR',system-ui,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+.top{background:var(--olive);color:#F5EFDC;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-weight:900;letter-spacing:-.02em;font-size:17px;white-space:nowrap}
+.brand span{color:var(--gold2)}
+@media(max-width:420px){.top{padding:12px 14px}.brand{font-size:15px}.badge{font-size:10px;padding:3px 7px;letter-spacing:.06em}}
+.badge{border:1px solid var(--gold2);color:var(--gold2);font-size:11px;font-weight:700;letter-spacing:.12em;padding:4px 9px;border-radius:3px;white-space:nowrap}
+.wrap{max-width:1080px;margin:0 auto;padding:28px 18px 60px}
+.hero{margin-bottom:26px}
+.tag{display:inline-block;background:var(--ink);color:var(--gold2);font-size:11px;font-weight:700;letter-spacing:.14em;padding:4px 9px;border-radius:2px}
+h1{font-size:clamp(28px,5vw,44px);font-weight:900;letter-spacing:-.04em;line-height:1.15;margin:12px 0 10px}
+h1 em{font-style:normal;color:var(--gold)}
+.lead{color:var(--muted);font-size:15px;margin:0;max-width:640px}
+.grid{display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:22px;align-items:start}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:22px}
+.panel h2{font-size:15px;font-weight:900;margin:0 0 16px;display:flex;align-items:center;gap:8px}
+.panel h2:before{content:"";width:4px;height:16px;background:var(--gold);border-radius:2px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+.field .hint{font-size:12px;color:var(--muted);margin-top:4px;min-height:1em}
+.inp{display:flex;align-items:center;background:#fff;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.inp:focus-within{border-color:var(--gold);box-shadow:0 0 0 3px rgba(184,148,42,.18)}
+.inp input{flex:1;border:0;outline:0;padding:11px 12px;font:inherit;font-size:16px;font-weight:700;background:transparent;min-width:0;color:var(--ink)}
+.inp .unit{padding:0 12px;color:var(--muted);font-size:13px;white-space:nowrap}
+select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:15px;background:#fff;color:var(--ink)}
+select:focus{outline:0;border-color:var(--gold)}
+.seg{display:grid;gap:6px}
+.seg.c2{grid-template-columns:1fr 1fr}.seg.c3{grid-template-columns:1fr 1fr 1fr}
+.seg button{border:1px solid var(--line);background:#fff;padding:9px 6px;border-radius:7px;font:inherit;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;line-height:1.3;min-width:0}
+.seg button small{display:block;font-weight:500;font-size:11px;margin-top:2px}
+.seg button.on{background:var(--olive);border-color:var(--olive);color:var(--cream)}
+.seg button.on small{color:var(--gold2)}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.grid>*,.row2>*{min-width:0}
+.check{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);cursor:pointer}
+.check input{accent-color:var(--olive);width:16px;height:16px}
+.result{background:var(--olive);color:var(--cream);border-radius:10px;padding:26px 24px;position:relative;overflow:hidden}
+.result:after{content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;border-radius:50%;border:30px solid rgba(217,184,90,.12)}
+.result .lbl{font-size:13px;color:var(--gold2);font-weight:700;letter-spacing:.04em}
+.result .big{font-size:clamp(38px,7vw,58px);font-weight:900;letter-spacing:-.04em;line-height:1.1;margin:6px 0 4px}
+.result .sub{font-size:14px;color:#D9D3BC}
+.result .sub b{color:#fff}
+.binding{display:inline-block;margin-top:14px;background:var(--gold);color:var(--ink);font-weight:900;font-size:12px;padding:5px 10px;border-radius:3px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+@media(max-width:560px){.stats{grid-template-columns:1fr 1fr}}
+.stat{background:var(--cream2);border-radius:8px;padding:14px}
+.stat .k{font-size:12px;color:var(--muted);font-weight:700}
+.stat .v{font-size:20px;font-weight:900;letter-spacing:-.03em;margin-top:2px}
+.stat .d{font-size:11px;color:var(--muted)}
+.section{margin-top:22px}
+.bars .b{margin-bottom:12px}
+.bars .bh{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:5px}
+.bars .bh span:last-child{font-weight:900}
+.track{height:12px;background:var(--cream2);border-radius:6px;overflow:hidden}
+.fill{height:100%;background:var(--olive2);border-radius:6px;transition:width .35s}
+.b.min .fill{background:var(--gold)}
+.b.min .bh span:first-child:after{content:" ← 최종 한도";color:var(--gold);font-size:11px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:12px;color:var(--muted);font-weight:700;padding:8px 6px;border-bottom:2px solid var(--line)}
+td{padding:9px 6px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+td.num,th.num{text-align:right}
+.ok{color:var(--green);font-weight:900}.no{color:var(--red);font-weight:900}
+table.costtbl td:last-child{text-align:right;font-weight:700}
+table.costtbl tr.minus td{color:var(--green)}
+table.costtbl tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font-size:15px;padding-top:12px}
+table.costtbl td small{color:var(--muted);font-weight:400;margin-left:4px}
+tr.cliff td{background:rgba(162,59,42,.06)}
+.tips{display:grid;gap:10px}
+.tip{border-left:4px solid var(--gold);background:var(--card);padding:12px 14px;border-radius:0 8px 8px 0;font-size:14px}
+.tip.warn{border-color:var(--red)}
+.tip b{font-weight:900}
+.check-res{margin-top:12px;padding:14px;border-radius:8px;font-size:14px;display:none}
+.check-res.show{display:block}
+.check-res.y{background:rgba(78,107,46,.1);border:1px solid rgba(78,107,46,.35)}
+.check-res.n{background:rgba(162,59,42,.08);border:1px solid rgba(162,59,42,.3)}
+.cta{margin-top:22px;background:var(--gold);border-radius:10px;padding:20px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.cta p{margin:0;font-weight:900;font-size:17px;letter-spacing:-.02em;color:var(--ink)}
+.cta p small{display:block;font-weight:500;font-size:13px;color:#3d3416}
+.btn{display:inline-block;background:var(--ink);color:var(--cream);text-decoration:none;font-weight:700;font-size:14px;padding:11px 16px;border-radius:7px;border:0;cursor:pointer;font-family:inherit}
+.btn.primary{background:#A23B2A;color:#fff;font-size:15px;padding:12px 20px;box-shadow:0 3px 0 rgba(0,0,0,.18)}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.rules{font-size:12px;color:var(--muted);margin-top:26px;border-top:1px solid var(--line);padding-top:16px}
+.rules h3{font-size:13px;color:var(--ink);margin:0 0 8px}
+.rules ul{margin:0;padding-left:18px}
+.rules li{margin-bottom:3px}
+.foot{background:var(--gold);color:var(--ink);text-align:center;font-weight:900;padding:12px;font-size:13px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--cream);padding:10px 16px;border-radius:7px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.muted{color:var(--muted)}
+.premium{margin-top:22px;border:1.5px dashed var(--gold);border-radius:10px;padding:18px 20px;background:var(--card);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.premium .pt{font-size:11px;font-weight:900;letter-spacing:.14em;color:var(--gold)}
+.premium p{margin:4px 0 0;font-weight:900;font-size:16px;letter-spacing:-.02em}
+.premium p small{display:block;font-weight:500;font-size:13px;color:var(--muted);margin-top:3px;letter-spacing:0}
+.btn.done{background:var(--green);cursor:default}
+.xlink{display:block;margin-top:18px;text-align:center;font-size:14px;color:var(--olive);font-weight:900;background:var(--card);border:1px dashed var(--gold);border-radius:8px;padding:12px;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand">★ 장대장 <span>내 집 마련 계산기</span></div>
+  <div class="badge">2026.11 규제 반영</div>
+</div>
+
+<div class="wrap">
+  <div class="hero">
+    <span class="tag">FREE TOOL · 무료 계산기</span>
+    <h1>나는 <em>얼마짜리 집</em>까지<br>살 수 있을까?</h1>
+    <p class="lead">연봉과 보유 현금만 넣으면 LTV·스트레스 DSR·가격구간별 대출 한도를 모두 따져서 최대 매수 가능 금액을 계산해 드립니다.</p>
+  </div>
+
+  <div class="grid">
+    <!-- 입력 -->
+    <div class="panel" id="form">
+      <h2>내 조건 입력</h2>
+
+      <div class="field">
+        <label for="income">연소득 (세전, 부부합산 가능)</label>
+        <div class="inp"><input id="income" inputmode="numeric" value="7,000"><span class="unit">만원</span></div>
+        <div class="hint" data-for="income"></div>
+      </div>
+
+      <div class="field">
+        <label for="cash">보유 현금 (자기자본)</label>
+        <div class="inp"><input id="cash" inputmode="numeric" value="40,000"><span class="unit">만원</span></div>
+        <div class="hint" data-for="cash"></div>
+      </div>
+
+      <div class="field">
+        <label for="debt">기존 대출 연간 원리금 상환액</label>
+        <div class="inp"><input id="debt" inputmode="numeric" value="0"><span class="unit">만원/년</span></div>
+        <div class="hint">신용대출·자동차 할부 등 1년간 갚는 원금+이자 합계 (없으면 0)</div>
+      </div>
+
+      <div class="field">
+        <label for="region">매수 지역</label>
+        <select id="region">
+          <option value="seoul">서울 (25개구 전역 규제지역)</option>
+          <option value="ggreg">경기 규제지역 15곳 (과천·분당·동탄 등)</option>
+          <option value="capfree">그 외 경기·인천 (비규제 수도권)</option>
+          <option value="local">지방 (비규제지역)</option>
+        </select>
+        <div class="hint" id="regionHint"></div>
+      </div>
+
+      <div class="field">
+        <label>주택 보유 상황</label>
+        <div class="seg c2" id="own">
+          <button data-v="none" class="on">무주택<small>일반</small></button>
+          <button data-v="first">무주택<small>생애최초 구입</small></button>
+          <button data-v="one">1주택<small>기존 집 처분 조건</small></button>
+          <button data-v="multi">다주택<small>2주택 이상</small></button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>금리 유형</label>
+        <div class="seg c3" id="rtype">
+          <button data-v="var">변동형<small>가산 100%</small></button>
+          <button data-v="mix">혼합형<small>가산 80%</small></button>
+          <button data-v="cyc" class="on">주기형<small>가산 40%</small></button>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label for="rate">예상 대출금리</label>
+          <div class="inp"><input id="rate" inputmode="decimal" value="4.0"><span class="unit">%</span></div>
+        </div>
+        <div class="field">
+          <label for="term">대출 기간</label>
+          <select id="term"></select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>전용면적</label>
+        <div class="seg c2" id="area">
+          <button data-v="small" class="on">85㎡ 이하<small>국민평형 이하</small></button>
+          <button data-v="large">85㎡ 초과<small>농어촌특별세 추가</small></button>
+        </div>
+      </div>
+
+      <label class="check"><input type="checkbox" id="costs" checked> 취득세·중개보수 포함해서 계산</label>
+    </div>
+
+    <!-- 결과 -->
+    <div>
+      <div class="result">
+        <div class="lbl">최대 매수 가능 금액</div>
+        <div class="big" id="maxP">-</div>
+        <div class="sub" id="maxSub"></div>
+        <div class="binding" id="binding"></div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="k">대출 가능액</div><div class="v" id="sLoan">-</div><div class="d" id="sLoanD"></div></div>
+        <div class="stat"><div class="k">월 상환액</div><div class="v" id="sPay">-</div><div class="d" id="sPayD"></div></div>
+        <div class="stat"><div class="k">부대비용</div><div class="v" id="sCost">-</div><div class="d">세금+중개보수 (아래 상세)</div></div>
+      </div>
+
+      <div class="panel section">
+        <h2>대출 한도, 무엇이 막고 있나</h2>
+        <div class="bars" id="bars"></div>
+        <p class="muted" style="font-size:12px;margin:4px 0 0" id="dsrNote"></p>
+      </div>
+
+      <div class="panel section">
+        <h2>부대비용 상세</h2>
+        <div class="seg c2" id="costBase" style="margin-bottom:14px">
+          <button data-v="max" class="on">최대 매수 가능 금액 기준</button>
+          <button data-v="target">점 찍어둔 집 기준</button>
+        </div>
+        <table class="costtbl"><tbody id="costTbl"></tbody></table>
+        <p class="muted" style="font-size:12px;margin:10px 0 0" id="costNote"></p>
+      </div>
+
+      <div class="panel section">
+        <h2>점 찍어둔 집, 살 수 있을까?</h2>
+        <div class="field" style="margin-bottom:0">
+          <label for="target">매매가</label>
+          <div class="inp"><input id="target" data-track="target_check" inputmode="numeric" placeholder="예: 120,000"><span class="unit">만원</span></div>
+          <div class="hint" data-for="target"></div>
+        </div>
+        <div class="check-res" id="targetRes"></div>
+      </div>
+
+      <div class="panel section">
+        <h2>가격대별 필요 현금</h2>
+        <table>
+          <thead><tr><th>매매가</th><th class="num">대출</th><th class="num">필요 현금</th><th class="num">가능?</th></tr></thead>
+          <tbody id="tbl"></tbody>
+        </table>
+      </div>
+
+      <div class="section">
+        <div class="tips" id="tips"></div>
+      </div>
+
+      <div class="premium">
+        <div><div class="pt">PREMIUM · 준비 중</div><p>장대장 맞춤 매수 리포트<small>내 조건으로 살 수 있는 지역·단지 후보, 자금 계획표, 대출 시나리오 비교를 PDF로 정리해 드립니다</small></p></div>
+        <button class="btn" id="premBtn">관심 있어요</button>
+      </div>
+
+      <a class="xlink" data-track="cross_link_switch" href="../switch/">이미 집이 있다면 → 장대장 갈아타기 계산기 (양도세 포함)</a>
+
+      <div class="cta">
+        <p>내 상황에 맞는 매수 전략이 궁금하다면<small>1차 진단은 무료 · 심층 컨설팅은 유료로 별도 안내 · 계산 결과는 신청서에 자동 입력됩니다</small></p>
+        <div class="btns">
+          <a class="btn primary" id="consultBtn" data-track="consult_click" href="#" target="_blank" rel="noopener">상담 신청</a>
+          <a class="btn" data-track="youtube_click" href="https://www.youtube.com/results?search_query=%EC%9E%A5%EB%8C%80%EC%9E%A5TV" target="_blank" rel="noopener">장대장TV 보기</a>
+          <button class="btn ghost" id="copyBtn" data-track="copy_result">결과 복사</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rules">
+    <h3>계산 기준 (2026년 11월)</h3>
+    <ul>
+      <li>LTV: 규제지역 무주택·처분조건부 1주택 40%, 생애최초 70%, 다주택 0% / 비규제지역 70% (지방 생애최초 80%, 다주택 60%)</li>
+      <li>수도권·규제지역 주택구입 주담대 한도: 시가 15억 이하 6억, 15억 초과~25억 4억, 25억 초과 2억</li>
+      <li>DSR 40%(은행권). 스트레스 금리: 수도권·규제지역 3.0% × 금리유형 비율(변동 100%·혼합 80%·주기 40%), 지방 비규제 1.5% × 50% (2026.12.31까지)</li>
+      <li>수도권·규제지역 주담대 만기 최대 30년, 원리금균등상환 기준</li>
+      <li>취득세: 1주택·일시적 2주택 1~3%(지방교육세 취득세의 10%), 보유 2주택 이상이 추가 취득 시 조정대상지역 12%·그 외 8%(지방교육세 0.4%). 85㎡ 초과는 농어촌특별세 추가. 생애최초(12억 이하) 200만원 한도 감면</li><li>중개보수: 매매 법정 상한요율 + 부가세 10%로 계산 (실제는 협의 가능)</li>
+      <li>이 계산은 추정치입니다. 실제 한도는 신용·소득 인정 방식·감정가·방공제·은행별 심사에 따라 달라지므로 계약 전 반드시 은행에서 확인하세요. 1억 초과 신용대출 보유자는 대출일로부터 1년간 규제지역 주택 구입이 제한됩니다.</li>
+      <li>이용 통계: 서비스 개선을 위해 방문 횟수·유입 경로·사용한 기능을 익명으로 집계합니다(Google 애널리틱스). 이름·연락처는 수집하지 않으며, 입력한 금액은 저장하지 않고 구간(예: 6~9억)으로만 집계합니다.</li>
+    </ul>
+  </div>
+</div>
+<div class="foot">★ 장대장부동산그룹 · 숫자로 판단하고, 전략으로 삽니다</div>
+<div class="toast" id="toast">복사되었습니다</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const REG = {
+  seoul:  {name:'서울', regulated:true,  capital:true},
+  ggreg:  {name:'경기 규제지역', regulated:true,  capital:true},
+  capfree:{name:'비규제 수도권', regulated:false, capital:true},
+  local:  {name:'지방 비규제', regulated:false, capital:false}
+};
+const LTV = {
+  reg:     {none:.40, first:.70, one:.40, multi:0},
+  capfree: {none:.70, first:.70, one:.70, multi:0},
+  local:   {none:.70, first:.80, one:.70, multi:.60}
+};
+const TYPE_RATIO = {var:1, mix:.8, cyc:.4};
+const TYPE_NAME = {var:'변동형', mix:'혼합형', cyc:'주기형'};
+const OWN_NAME = {none:'무주택', first:'생애최초', one:'1주택(처분조건)', multi:'다주택'};
+let own='none', rtype='cyc', area='small', costBase='max';
+let lastP=0, lastBy='';
+JDJ_CONFIG.info = () => ({region:$('region').value, own, rate_type:rtype, max_band:JDJ.band(lastP), limit_by:lastBy});
+
+const num = s => { const v = parseFloat(String(s).replace(/[^0-9.]/g,'')); return isNaN(v)?0:v; };
+function fmt(man){ // 만원 -> "X억 Y만"
+  man = Math.round(man);
+  if (man<=0) return '0원';
+  const eok = Math.floor(man/10000), rest = man%10000;
+  if (!eok) return rest.toLocaleString()+'만';
+  return eok+'억' + (rest ? ' '+rest.toLocaleString()+'만' : '');
+}
+function fmtShort(man){ // 억 단위 소수 1자리
+  if (man>=10000){ const v = man/10000; return (Math.round(v*10)/10).toString().replace(/\.0$/,'')+'억'; }
+  return Math.round(man).toLocaleString()+'만';
+}
+
+function ctx(){
+  const region = $('region').value, R = REG[region];
+  const ltvKey = R.regulated ? 'reg' : (R.capital ? 'capfree' : 'local');
+  const stressBase = (R.regulated||R.capital) ? 3.0 : 0.75;
+  return {
+    region, R,
+    income:num($('income').value), cash:num($('cash').value), debt:num($('debt').value),
+    rate:num($('rate').value), term:parseInt($('term').value,10)||30,
+    ltv: LTV[ltvKey][own], stressBase,
+    stress: Math.round(stressBase*TYPE_RATIO[rtype]*100)/100,
+    costsOn:$('costs').checked
+  };
+}
+
+function capByPrice(P,c){ // 만원
+  if (!(c.R.regulated||c.R.capital)) return Infinity;
+  if (P<=150000) return 60000;
+  if (P<=250000) return 40000;
+  return 20000;
+}
+function dsrMax(c, stress){
+  const room = c.income*0.40 - c.debt;
+  if (room<=0) return 0;
+  const i = (c.rate + (stress===undefined?c.stress:stress))/1200, n = c.term*12;
+  const f = i===0 ? n : (1-Math.pow(1+i,-n))/i;
+  return room/12*f;
+}
+function monthly(L, rate, term){
+  const i=rate/1200, n=term*12;
+  if (L<=0) return 0;
+  return i===0 ? L/n : L*i/(1-Math.pow(1+i,-n));
+}
+function costDetail(P,c){
+  let rate, heavy=false;
+  if (own==='multi'){ rate = c.R.regulated ? 12 : 8; heavy=true; }
+  else if (P<=60000) rate=1;
+  else if (P<=90000) rate=Math.round(((P/10000)*2/3-3)*100)/100;
+  else rate=3;
+  const acq = P*rate/100;
+  const edu = heavy ? P*0.4/100 : acq*0.1;
+  let farm = 0;
+  if (area==='large') farm = heavy ? P*(rate===12?1.0:0.6)/100 : P*0.2/100;
+  let relief = 0;
+  if (own==='first' && P<=120000) relief = Math.min(acq, 200);
+  let br, cap=Infinity;
+  if (P<5000){br=.6;cap=25;} else if (P<20000){br=.5;cap=80;} else if (P<90000) br=.4;
+  else if (P<120000) br=.5; else if (P<150000) br=.6; else br=.7;
+  const brokerBase = Math.min(P*br/100, cap);
+  const broker = brokerBase*1.1;
+  const total = acq - relief + edu + farm + broker;
+  return {rate, acq, edu, farm, relief, br, broker, brokerBase, total, heavy};
+}
+function costs(P,c){
+  if (!c.costsOn) return 0;
+  return costDetail(P,c).total;
+}
+function loanAt(P,c,dsr){
+  const a = P*c.ltv, b = capByPrice(P,c), d = dsr;
+  const L = Math.max(0, Math.min(a,b,d));
+  let by = 'LTV'; if (L===b && b<a && b<=d) by='CAP'; if (L===d && d<a && d<b) by='DSR';
+  if (c.ltv===0) by='BAN';
+  return {L, a, b, d, by};
+}
+function maxPrice(c, dsr){
+  let best=0;
+  for (let P=1000; P<=800000; P+=100){
+    const {L} = loanAt(P,c,dsr);
+    if (c.cash + L >= P + costs(P,c)) best=P;
+  }
+  return best;
+}
+
+function setTermOptions(){
+  const R = REG[$('region').value];
+  const max = (R.regulated||R.capital) ? 30 : 40;
+  const cur = parseInt($('term').value,10)||30;
+  $('term').innerHTML = [10,15,20,25,30,35,40].filter(t=>t<=max).map(t=>`<option value="${t}">${t}년</option>`).join('');
+  $('term').value = Math.min(cur,max);
+}
+
+function render(){
+  const c = ctx();
+  const dsr = dsrMax(c);
+  const P = maxPrice(c, dsr);
+  const ld = loanAt(P,c,dsr);
+  const cost = costs(P,c);
+  lastP = P; lastBy = ld.by;
+
+  document.querySelectorAll('.hint[data-for]').forEach(h=>{
+    const v = num($(h.dataset.for).value); h.textContent = v ? '= '+fmt(v)+'원' : '';
+  });
+  $('regionHint').textContent = c.R.regulated ? '규제지역: LTV 40%·가격구간별 한도·스트레스 3.0%'
+     : c.R.capital ? '비규제지만 수도권이라 6억 한도·스트레스 3.0% 적용'
+     : '지방 비규제: 가격 한도 없음·스트레스 0.75%(2026년 말까지)';
+
+  $('maxP').textContent = P ? fmt(P)+'원' : '대출 매수 어려움';
+  $('maxSub').innerHTML = P ? `현금 <b>${fmt(c.cash)}</b> + 대출 <b>${fmt(ld.L)}</b>${c.costsOn?` − 부대비용 <b>${fmt(cost)}</b>`:''}` : '조건을 조정해 보세요';
+  const byTxt = {LTV:`LTV ${Math.round(c.ltv*100)}%가 한도를 결정`, CAP:'가격구간별 대출 한도가 결정', DSR:'소득(DSR)이 한도를 결정', BAN:'주택구입 목적 주담대 불가'};
+  $('binding').textContent = byTxt[ld.by];
+
+  $('sLoan').textContent = fmtShort(ld.L);
+  $('sLoanD').textContent = P ? `매매가의 ${Math.round(ld.L/P*100)}%` : '';
+  const m = monthly(ld.L, c.rate, c.term);
+  $('sPay').textContent = m ? Math.round(m).toLocaleString()+'만' : '0';
+  $('sPayD').textContent = `${c.rate}% · ${c.term}년 원리금균등`;
+  $('sCost').textContent = c.costsOn ? fmtShort(cost) : '미포함';
+
+  const items = [
+    {k:`LTV ${Math.round(c.ltv*100)}% 한도`, v:ld.a},
+    {k:'가격구간 한도', v:ld.b},
+    {k:'DSR 40% 한도', v:ld.d}
+  ];
+  const finite = items.filter(x=>isFinite(x.v));
+  const mx = Math.max(...finite.map(x=>x.v), 1);
+  const minV = Math.min(...items.map(x=>x.v));
+  $('bars').innerHTML = items.map(x=>{
+    const inf = !isFinite(x.v);
+    return `<div class="b ${x.v===minV?'min':''}"><div class="bh"><span>${x.k}</span><span>${inf?'제한 없음':fmt(x.v)}</span></div>
+      <div class="track"><div class="fill" style="width:${inf?100:Math.max(2,x.v/mx*100)}%;${inf?'opacity:.25':''}"></div></div></div>`;
+  }).join('');
+  $('dsrNote').textContent = `DSR 심사금리 = 대출금리 ${c.rate}% + 스트레스 ${c.stress}%(${TYPE_NAME[rtype]}) = ${(c.rate+c.stress).toFixed(2)}%. 실제 내는 이자가 아니라 한도 계산에만 쓰입니다.`;
+
+  const bands = [50000,70000,90000,100000,120000,140000,150000,160000,200000,250000,260000,300000];
+  $('tbl').innerHTML = bands.map(b=>{
+    const l = loanAt(b,c,dsr).L, need = b - l + costs(b,c), ok = c.cash >= need;
+    const cliff = (b===160000||b===260000) && (c.R.regulated||c.R.capital);
+    return `<tr class="${cliff?'cliff':''}"><td>${fmtShort(b)}</td><td class="num">${fmtShort(l)}</td><td class="num">${fmtShort(need)}</td><td class="num ${ok?'ok':'no'}">${ok?'가능':'−'+fmtShort(need-c.cash)}</td></tr>`;
+  }).join('');
+
+  renderTarget(c,dsr);
+  renderTips(c,dsr,P,ld);
+  updateConsult(c);
+  renderCost(c,P);
+}
+
+const FORM='https://docs.google.com/forms/d/e/1FAIpQLScCG7wzIlY3FE6EHU5QWo92uW5NQe7aiP-GJ9jvh41Rx2E8Zw/viewform';
+function updateConsult(c){
+  const regionTxt = $('region').options[$('region').selectedIndex].text;
+  const q = new URLSearchParams({usp:'pp_url'});
+  q.set('entry.146176170', fmt(c.income)+'원');
+  q.set('entry.1872979900', fmt(c.cash)+'원');
+  q.set('entry.397234060', regionTxt);
+  q.set('entry.1054811896', OWN_NAME[own]);
+  q.set('entry.658364183', $('maxP').textContent+' (대출 '+$('sLoan').textContent+', '+TYPE_NAME[rtype]+' '+c.rate+'%·'+c.term+'년) | '+JDJ.label());
+  $('consultBtn').href = FORM+'?'+q.toString().replace(/\+/g,'%20');
+}
+function renderCost(c,P){
+  const T = num($('target').value);
+  let base = (costBase==='target' && T) ? T : P;
+  const label = (costBase==='target' && T) ? '점 찍어둔 집' : '최대 매수 가능 금액';
+  if (!base){ $('costTbl').innerHTML='<tr><td>계산할 금액이 없습니다</td><td></td></tr>'; $('costNote').textContent=''; return; }
+  const d = costDetail(base,c);
+  const rows = [
+    [`매매가 <small>${label}</small>`, fmt(base)+'원'],
+    [`취득세 <small>${d.rate}%${d.heavy?' 중과':''}</small>`, fmt(d.acq)+'원'],
+  ];
+  let html = rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
+  if (d.relief>0) html += `<tr class="minus"><td>생애최초 취득세 감면 <small>200만원 한도</small></td><td>−${fmt(d.relief)}원</td></tr>`;
+  html += `<tr><td>지방교육세 <small>${d.heavy?'0.4%':'취득세의 10%'}</small></td><td>${fmt(d.edu)}원</td></tr>`;
+  if (d.farm>0) html += `<tr><td>농어촌특별세 <small>85㎡ 초과</small></td><td>${fmt(d.farm)}원</td></tr>`;
+  html += `<tr><td>중개보수 <small>상한 ${d.br}% + VAT</small></td><td>${fmt(d.broker)}원</td></tr>`;
+  html += `<tr class="total"><td>부대비용 합계 <small>매매가의 ${(d.total/base*100).toFixed(2)}%</small></td><td>${fmt(d.total)}원</td></tr>`;
+  $('costTbl').innerHTML = html;
+  let note = '취득세는 잔금일로부터 60일 이내 신고·납부합니다. 법무사·등기 비용, 국민주택채권 할인, 이사비는 별도입니다.';
+  if (costBase==='target' && !T) note = '아래 "점 찍어둔 집"에 매매가를 입력하면 그 집 기준으로 계산됩니다. ' + note;
+  if (own==='first' && base>120000) note = '12억 초과 주택은 생애최초 취득세 감면 대상이 아닙니다. ' + note;
+  if (own==='one') note = '기존 주택을 기한 내 처분하는 일시적 2주택은 일반세율(1~3%)로 계산했습니다. 기한 내 처분하지 못하면 중과세가 추징될 수 있습니다. ' + note;
+  if (!c.costsOn) note = '※ 현재 "취득세·중개보수 포함" 체크가 꺼져 있어 최대 매수 가능 금액에는 반영되지 않았습니다. ' + note;
+  $('costNote').textContent = note;
+}
+function renderTarget(c,dsr){
+  const T = num($('target').value), box = $('targetRes');
+  if (!T){ box.className='check-res'; return; }
+  const l = loanAt(T,c,dsr), cost = costs(T,c), need = T - l.L + cost, gap = c.cash - need;
+  box.className = 'check-res show '+(gap>=0?'y':'n');
+  box.innerHTML = `<b>${fmt(T)}원</b> 집 → 대출 <b>${fmt(l.L)}</b>, 필요 현금 <b>${fmt(need)}</b>${c.costsOn?` (부대비용 ${fmt(cost)} 포함)`:''}<br>`+
+    (gap>=0 ? `<span class="ok">✓ 살 수 있습니다.</span> 현금 여유 ${fmt(gap)}` : `<span class="no">✗ 현금 ${fmt(-gap)} 부족합니다.</span>`);
+}
+
+function renderTips(c,dsr,P,ld){
+  const tips=[];
+  if (c.ltv===0){
+    tips.push(['warn',`<b>다주택자는 ${c.R.capital?'수도권':''}${c.R.regulated?'규제지역':''}에서 주택구입 목적 주담대를 받을 수 없습니다.</b> 표의 금액은 현금만으로 살 수 있는 범위입니다.`]);
+  }
+  if (ld.by==='DSR' && rtype!=='cyc'){
+    const P2 = maxPrice(c, dsrMax(c, Math.round(c.stressBase*.4*100)/100));
+    if (P2>P) tips.push(['',`<b>주기형으로 바꾸면 최대 ${fmt(P2-P)} 더 비싼 집</b>까지 볼 수 있습니다. 스트레스 가산이 ${c.stress}% → ${(c.stressBase*.4).toFixed(2)}%로 줄어들기 때문입니다.`]);
+  }
+  if (ld.by==='DSR' && c.debt>0){
+    const c2 = Object.assign({},c,{debt:0}); const P3 = maxPrice(c2, dsrMax(c2));
+    if (P3>P) tips.push(['',`<b>기존 대출을 정리하면 매수 가능 금액이 ${fmt(P3-P)} 늘어납니다.</b> 신용대출 상환이 한도를 늘리는 가장 빠른 방법입니다.`]);
+  }
+  if ((c.R.regulated||c.R.capital) && c.ltv>0 && P>=130000 && P<=150000){
+    tips.push(['warn',`<b>15억 절벽 주의.</b> 15억을 1원만 넘어도 대출 한도가 6억 → 4억으로 줄어듭니다. 15억 이하 매물 위주로 보세요.`]);
+  }
+  if ((c.R.regulated||c.R.capital) && P>150000 && P<=250000 && c.ltv>0){
+    tips.push(['',`15억 초과 구간이라 대출이 4억으로 묶여 있습니다. 이 구간은 사실상 <b>현금 싸움</b>입니다.`]);
+  }
+  if (own==='none' && c.R.regulated){
+    const c2=Object.assign({},c,{ltv:LTV.reg.first}); const P4=maxPrice(c2,dsrMax(c2));
+    if (P4>P) tips.push(['',`생애최초 구입 요건(본인·배우자 모두 주택 소유 이력 없음)에 해당하면 LTV 70%가 적용돼 <b>${fmt(P4)}원</b>까지 가능합니다.`]);
+  }
+  if (!c.R.capital && !c.R.regulated){
+    tips.push(['warn',`지방 주담대의 완화된 스트레스 금리는 <b>2026년 12월 31일까지</b>입니다. 내년 실행이라면 한도가 줄어들 수 있으니 다시 확인하세요.`]);
+  }
+  if (c.R.regulated) tips.push(['',`규제지역 주담대는 <b>6개월 내 전입 의무</b>가 있습니다. 갭투자 목적으로는 대출을 받을 수 없습니다.`]);
+  $('tips').innerHTML = tips.map(t=>`<div class="tip ${t[0]}">${t[1]}</div>`).join('');
+}
+
+function seg(id, cb){
+  $(id).addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    [...$(id).children].forEach(x=>x.classList.toggle('on',x===b)); cb(b.dataset.v); render();
+  });
+}
+seg('own', v=>own=v); seg('rtype', v=>rtype=v); seg('area', v=>area=v); seg('costBase', v=>costBase=v);
+['income','cash','debt','target'].forEach(id=>{
+  $(id).addEventListener('input',e=>{
+    const el=e.target, raw=el.value.replace(/[^0-9]/g,'');
+    el.value = raw ? parseInt(raw,10).toLocaleString() : '';
+    render();
+  });
+});
+$('rate').addEventListener('input',render);
+$('term').addEventListener('change',render);
+$('costs').addEventListener('change',render);
+$('region').addEventListener('change',()=>{setTermOptions();render();});
+
+function toast(msg, ms){ $('toast').textContent=msg; $('toast').classList.add('show'); setTimeout(()=>$('toast').classList.remove('show'), ms||1800); }
+$('copyBtn').addEventListener('click',async()=>{
+  const c=ctx();
+  const txt = `[장대장 내 집 마련 계산기]\n지역: ${c.R.name} / ${OWN_NAME[own]} / ${TYPE_NAME[rtype]}\n연소득 ${fmt(c.income)} · 현금 ${fmt(c.cash)}\n→ 최대 매수 가능: ${$('maxP').textContent}\n→ 대출 가능액: ${$('sLoan').textContent} (${$('binding').textContent})\n※ 2026년 11월 규제 기준 추정치\n${location.origin+location.pathname}`;
+  try{ await navigator.clipboard.writeText(txt); toast('결과가 복사되었습니다'); }
+  catch(_){ toast('복사가 지원되지 않는 환경입니다'); }
+});
+
+// 유료 기능 관심도 (출시 전 수요 확인)
+(function(){
+  const b=$('premBtn'), key='jdj_prem_buy';
+  let on=false; try{ on=!!localStorage.getItem(key); }catch(_){}
+  const mark=()=>{ b.textContent='✓ 관심 표시 완료'; b.classList.add('done'); };
+  if(on) mark();
+  b.addEventListener('click',()=>{
+    if(b.classList.contains('done')) return;
+    JDJ.track('premium_interest',{region:$('region').value, max_band:JDJ.band(lastP)});
+    try{ localStorage.setItem(key,'1'); }catch(_){}
+    mark();
+    toast('감사합니다! 출시되면 장대장TV에서 가장 먼저 알려드릴게요', 2400);
+  });
+})();
+
+setTermOptions(); render();
+</script>
+</body>
+</html>
