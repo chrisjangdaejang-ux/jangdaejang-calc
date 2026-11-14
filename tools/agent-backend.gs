@@ -21,7 +21,7 @@ function book() { return SHEET_ID ? SpreadsheetApp.openById(SHEET_ID) : Spreadsh
 
 const SH_A = '중개사', SH_L = '로그';
 const H = ['id','등록번호','사무소명','대표자','전화','카카오','소개','시도','사무소구코드','사무소구','사무소동',
-           '추가구','단지','관리코드','신청일','승인','만료일','메모','수정일','상품','사업자번호','계산서메일'];
+           '추가구','단지','관리코드','신청일','승인','만료일','메모','수정일','상품','사업자번호','계산서메일','노출지역'];
 const PLAN = { basic: '기본', premium: '프리미엄' };   // 기본 월 29,000원 · 프리미엄 월 49,000원 (연간 결제, 부가세 별도)
 const COL = Object.fromEntries(H.map((h, i) => [h, i]));
 
@@ -92,7 +92,7 @@ function doGet(e) {
   return out({ ok: false, err: 'unknown' });
 }
 
-/* 예전 시트에 새 열 제목(상품·사업자번호·계산서메일)이 없으면 채움 */
+/* 예전 시트에 새 열 제목(상품·사업자번호·계산서메일·노출지역)이 없으면 채움 */
 function ensureHeader() {
   const sh = book().getSheetByName(SH_A);
   const cur = sh.getRange(1, 1, 1, H.length).getValues()[0];
@@ -132,6 +132,12 @@ function listPublic() {
   };
   cache.put('list', JSON.stringify(res), 300);
   return res;
+}
+
+/* 구 코드 → 이름 (신청 화면이 보내 준 이름 사용, 없으면 코드 그대로) */
+function regionNames(codes, names) {
+  names = names || {};
+  return codes.map(c => str(names[c], 20) || c).join(', ');
 }
 
 function validRegions(og, extras) {
@@ -174,13 +180,15 @@ function apply(b) {
   row[COL['관리코드']] = code; row[COL['신청일']] = new Date(); row[COL['승인']] = false; row[COL['만료일']] = '';
   row[COL['메모']] = full.length ? '대기(자리 마감): ' + full.join(',') : ''; row[COL['수정일']] = new Date();
   row[COL['상품']] = plan; row[COL['사업자번호']] = str(b.biz, 20); row[COL['계산서메일']] = str(b.mail, 80);
+  const rname = regionNames(regions, b.names);
+  row[COL['노출지역']] = rname;
   const sh = book().getSheetByName(SH_A);
   sh.appendRow(row);
   sh.getRange(sh.getLastRow(), COL['승인'] + 1).insertCheckboxes();   // 승인 칸을 체크박스로
   if (NOTIFY) {
     try {
       MailApp.sendEmail(Session.getEffectiveUser().getEmail(), `[장대장 제휴] 새 신청: ${office}`,
-        `${office} (${ceo}) ${phone}\n상품 ${plan}\n등록번호 ${reg}\n사업자번호 ${str(b.biz, 20)} / 계산서 ${str(b.mail, 80)}\n지역 ${regions.join(', ')}\n시트에서 확인 후 승인 체크와 만료일을 입력하세요.\n${book().getUrl()}`);
+        `${office} (${ceo}) ${phone}\n상품 ${plan}\n등록번호 ${reg}\n사업자번호 ${str(b.biz, 20)} / 계산서 ${str(b.mail, 80)}\n지역 ${rname} (사무소 ${str(b.ogName, 30)} ${str(b.dong, 30)})\n시트에서 확인 후 승인 체크와 만료일을 입력하세요.\n${book().getUrl()}`);
     } catch (e) {}
   }
   return { ok: true, id: id, code: code, waitlist: full };
@@ -235,6 +243,7 @@ function update(b) {
   if (b.phone) set('전화', str(b.phone, 20));
   set('카카오', str(b.kakao, 200));
   set('소개', str(b.intro, 120));
+  if (b.names) set('노출지역', regionNames(regions, b.names));
   if (b.biz != null) set('사업자번호', str(b.biz, 20));
   if (b.mail != null) set('계산서메일', str(b.mail, 80));
   set('수정일', new Date());
