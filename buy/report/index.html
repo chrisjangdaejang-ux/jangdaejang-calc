@@ -186,6 +186,13 @@ const $ = id => document.getElementById(id);
 const DATA = '/jangdaejang-timing/data/';
 const FORM = 'https://docs.google.com/forms/d/e/1FAIpQLScCG7wzIlY3FE6EHU5QWo92uW5NQe7aiP-GJ9jvh41Rx2E8Zw/viewform';
 const NOTES = (window.JDJ_REGION_NOTES||{notes:{},sources:[],asOf:''});
+/* 행정구역 개편으로 코드가 바뀐 곳(예: 전남광주통합특별시 12xxx)은 '시도|시군구 이름'으로 기존 메모를 찾는다 */
+function noteKey(code){
+  if (NOTES.notes[code]) return code;
+  const s = (typeof IX!=='undefined' && IX && IX.sgg) ? IX.sgg[code] : null;
+  return (s && NOTES.byName && NOTES.byName[s.sido+'|'+s.name]) || code;
+}
+function noteOf(code){ return NOTES.notes[noteKey(code)]; }
 
 /* 규제지역 (2026.7.1 기준): 서울 전역 + 경기 15곳 */
 const REG_GG = ['41290','41210','41135','41131','41133','41117','41111','41115','41173','41465','41430','41450','41597','41463','41310'];
@@ -345,7 +352,7 @@ function pickCandidates(units, maxBy, ctxBy, dsrBy){
       else sMom = Math.max(0.2, 1 - (ch-0.06)*5);
     }
     const sVal = Math.max(0, Math.min(1, 0.5 + rel));
-    const sNote = NOTES.notes[code] ? 1 : 0.4;
+    const sNote = noteOf(code) ? 1 : 0.4;
     const score = 0.28*sBudget + 0.30*sLiq + 0.16*sMom + 0.14*sVal + 0.12*sNote;
     out.push({code,dong,apt,band,area,n,series,P,g,c,nd,fit,ch,rel,score,large,mon:monthly(nd.loan.L,c.rate,c.term)});
   }
@@ -392,7 +399,7 @@ function reasons(x){
   }
   if (x.c.capital && x.P>140000 && x.P<=150000) r.push(['c', '15억 바로 아래 — 15억을 넘으면 대출 한도가 6억 → 4억으로 줄어듭니다']);
   if (x.nd.loan.by==='DSR') r.push(['c', '소득(DSR)이 대출 한도를 결정 — 금리 유형에 따라 한도가 달라집니다']);
-  const note = NOTES.notes[x.code];
+  const note = noteOf(x.code);
   if (note && note.t && note.t[0]) r.push(['r', note.t[0]]);
   return r;
 }
@@ -534,13 +541,14 @@ async function render(){
 
   /* 5. 지역 포인트 */
   const codes = [...new Set(picked.map(x=>x.code))];
-  const withNotes = codes.filter(c=>NOTES.notes[c]);
+  const withNotes = codes.filter(c=>noteOf(c));
+  const noteKeys = withNotes.map(noteKey);
   h += `<div class="sec">
     <h2><span class="no">05</span> 추천 지역 교통·개발 포인트</h2>
     <p class="sub">${NOTES.asOf} 기준 공공기관 발표 내용이며, 괄호 안이 발표 기관입니다. 개통·준공 일정은 바뀔 수 있습니다.</p>`;
   if (withNotes.length){
     h += withNotes.map(code=>{
-      const n=NOTES.notes[code], s=IX.sgg[code], ch=s?change6(s.s):null;
+      const n=noteOf(code), s=IX.sgg[code], ch=s?change6(s.s):null;
       return `<div class="region"><h4>${esc(sggName(code))}<small>${isReg(code)?'규제지역 · 토지거래허가구역':'비규제지역'}${ch!==null?` · 지역 평당가 6개월 ${(ch*100>=0?'+':'')+(ch*100).toFixed(1)}%`:''}</small></h4>
         <ul>${(n.t||[]).map(t=>`<li><b>교통</b> ${esc(t)}</li>`).join('')}${(n.d||[]).map(t=>`<li><b>개발</b> ${esc(t)}</li>`).join('')}</ul></div>`;
     }).join('');
@@ -568,7 +576,7 @@ async function render(){
   </div>`;
 
   /* 7. 출처 — 추천 지역과 관련된 공공기관 자료만 */
-  const usedSrc = NOTES.sources.filter(s=>(s[3]||[]).some(c=>withNotes.includes(c)));
+  const usedSrc = NOTES.sources.filter(s=>(s[3]||[]).some(c=>noteKeys.includes(c)));
   h += `<div class="sec">
     <h2><span class="no">07</span> 데이터 출처와 유의사항</h2>
     <p class="src">실거래가: 국토교통부 아파트 매매 실거래가(공공데이터포털), 해제·직거래 제외, ${dataTo}까지 집계. 대출 규제: 2026년 11월 기준 LTV·DSR·스트레스 금리·가격구간별 한도.${usedSrc.length?' 추천 지역 교통·개발 정보(공공기관 원문):':''}</p>
