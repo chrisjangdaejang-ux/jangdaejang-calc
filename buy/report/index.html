@@ -170,6 +170,9 @@ tr.hl td{background:rgba(184,148,42,.12);font-weight:700}
 .agchip:hover{background:var(--olive);color:var(--cream)}
 .agchip .b{font-size:10.5px;background:var(--green);color:#fff;padding:1px 6px;border-radius:999px}
 .agchip .tel{font-weight:500;font-size:12px;opacity:.8}
+.agmore{display:contents}
+.agmore[hidden]{display:none}
+.agopen{font:inherit;font-size:13px;font-weight:900;background:var(--gold);color:var(--ink);border:0;padding:7px 13px;border-radius:999px;cursor:pointer}
 .agwant{font-size:14px;color:var(--ink);font-weight:700}
 .agwant a{color:var(--red);font-weight:900;text-decoration:underline}
 .agcta{margin-top:20px;background:var(--olive);color:var(--cream);border-radius:12px;padding:18px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:space-between;border:2px solid var(--gold)}
@@ -660,13 +663,17 @@ async function fillAgents(picked){
   if (!A || !A.ready || !picked.length) return;
   /* 공인중개사 모집 배너 — 항상 크게 */
   if (box) box.innerHTML = `<div class="agcta noprint"><div><b>공인중개사님, <em>이 단지들 옆에</em> 사무소를 노출하세요</b>
-    <span>고객이 살 수 있는 단지가 추천될 때 그 단지 카드에 바로 연결됩니다 · 시범 기간 무료 · 구당 3곳 한정</span></div>
+    <span>고객이 살 수 있는 단지가 추천될 때 그 단지 카드에 바로 연결됩니다 · 시범 기간 무료 · 사무소 구 + 원하는 구 2곳</span></div>
     <a href="../../agent/" target="_blank" rel="noopener" data-track="agent_join_click">제휴 신청하기 →</a></div>`;
   const res = await A.list();
   const list = (res && res.agents) || [];
   AG = {}; list.forEach(a=>AG[a.id]=a);
-  const slot = res.slot || 3;
-  /* 추천 단지 1~10위 카드마다: 그 단지 매물 보유 > 같은 동 사무소 > 같은 구 사무소 > 추가 지역, 같은 순위는 무작위 */
+  const SHOW = 6;   // 처음 보이는 수 — 나머지는 [전체 보기]로 펼침, 노출 기록은 실제로 보인 중개사만
+  const chip = (a, g, k, r) => {
+    const badge = r===0 ? '매물 보유' : (r===1 ? '같은 동' : '');
+    return `<button class="agchip agbtn" data-a="${a.id}" data-g="${g}" data-k="${esc(k)}">${badge?`<span class="b">${badge}</span>`:''}${esc(a.n)}<span class="tel">${esc(a.ph)}</span></button>`;
+  };
+  /* 추천 단지 1~10위 카드마다: 그 구를 선택한 제휴 중개사 전부. 순서는 매물 보유 > 같은 동 > 같은 구 사무소 > 추가 지역, 같은 순위는 매번 무작위 */
   document.querySelectorAll('.agt').forEach(el=>{
     const k = el.dataset.k, g = el.dataset.g, dong = k.split('|')[1];
     const cand = list.filter(a=>a.r.includes(g));
@@ -675,12 +682,14 @@ async function fillAgents(picked){
       return;
     }
     const rank = a => a.dj.includes(k) ? 0 : (a.og===g && a.dong===dong ? 1 : (a.og===g ? 2 : 3));
-    const top = shuffle(cand).sort((x,y)=>rank(x)-rank(y)).slice(0, slot);
-    el.innerHTML = `<span class="agt-l">이 단지 문의 중개사<em>제휴</em></span>` + top.map(a=>{
-      const r = rank(a), badge = r===0 ? '매물 보유' : (r===1 ? '같은 동' : '');
-      return `<button class="agchip agbtn" data-a="${a.id}" data-g="${g}" data-k="${esc(k)}">${badge?`<span class="b">${badge}</span>`:''}${esc(a.n)}<span class="tel">${esc(a.ph)}</span></button>`;
-    }).join('');
-    top.forEach(a=>A.log('imp', a.id, g, k));
+    const all = shuffle(cand).sort((x,y)=>rank(x)-rank(y));
+    const first = all.slice(0, SHOW), rest = all.slice(SHOW);
+    el.innerHTML = `<span class="agt-l">이 단지 문의 중개사 ${all.length}곳<em>제휴</em></span>` +
+      first.map(a=>chip(a,g,k,rank(a))).join('') +
+      (rest.length ? `<span class="agmore" hidden>${rest.map(a=>chip(a,g,k,rank(a))).join('')}</span><button class="agopen noprint">+ ${rest.length}곳 더 보기</button>` : '');
+    first.forEach(a=>A.log('imp', a.id, g, k));
+    const open = el.querySelector('.agopen');
+    if (open) open.onclick = ()=>{ el.querySelector('.agmore').hidden=false; open.remove(); rest.forEach(a=>A.log('imp', a.id, g, k)); JDJ.track('agent_more',{sgg:g, n:rest.length}); };
   });
 }
 function openAgent(id, g, k){
