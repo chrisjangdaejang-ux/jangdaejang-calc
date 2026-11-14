@@ -75,27 +75,27 @@ window.JDJ_REGION_NOTES = {
     '28245': {t:['인천1호선·공항철도(계양역)'], d:['3기 신도시 인천계양 2026년 12월 첫 입주 예정(LH·국토부)']},
     '28200': {t:['수인분당선·인천1·2호선, 구월 생활권'], d:['인천시청 인근 구월 생활권']}
   },
-  /* [제목, 발표 기관·시점, 링크] — 모두 공공기관 원문 */
+  /* [제목, 발표 기관·시점, 링크, 관련 시군구 코드] — 모두 공공기관 원문. 리포트에는 추천 지역과 관련된 출처만 표시 */
   sources: [
-    ['GTX 삼성역 안전 확보 방안, 안전 최우선으로 검증 거쳐 연내 결정', '국토교통부 보도자료, 2026.11.3', 'https://www.molit.go.kr/USR/NEWS/m_71/lst.jsp'],
-    ['GTX C노선 15일 착공(공사기간 60개월)', '국토교통부(정책브리핑), 2026.9.14', 'https://www.korea.kr/news/policyNewsView.do?newsId=148971823'],
-    ['GTX-B 2025.8 착공·2031 개통', '국토교통부 2026년 업무계획', 'https://www.molit.go.kr/2026plan/sub5_public.html'],
-    ['GTX-A 창릉역 2030년 개통 예정', '국토교통부 보도자료(정책브리핑), 2024.12', 'https://www.korea.kr/docViewer/result/2024.12/27/3da94f6a4edfbc71814cfee14e3016fd/3da94f6a4edfbc71814cfee14e3016fd.view.xhtml'],
-    ['광명 신안산선 터널 붕괴사고 조사결과 브리핑(개통 2028년 말 정도 예상)', '국토교통부(정책브리핑), 2026.4', 'https://www.korea.kr/briefing/policyBriefingView.do?newsId=156752603'],
-    ['투기과열지구 및 조정대상지역 추가 지정(동탄구·기흥구·구리시)', '국토교통부 보도자료, 2026.6.30', 'https://www.molit.go.kr/USR/NEWS/m_71/dtl.jsp?id=95092167'],
-    ['1기 신도시 2026년 구역지정 물량 한도 약 7만 호로 확대', '국토교통부 보도자료, 2025.9', 'https://www.molit.go.kr/USR/NEWS/m_71/dtl.jsp?lcmspage=1&id=95091256'],
-    ['대광위, 강동하남남양주선 기본계획 승인(2031년 개통 목표)', '국토교통부 보도자료', 'https://www.molit.go.kr/USR/NEWS/m_71/lst.jsp/dtl.jsp?lcmspage=43&id=95090516'],
-    ['강동하남남양주선 2~6공구 계약의뢰(2027년 상반기 착공 예정)', '경기도 보도자료', 'https://gnews.gg.go.kr/briefing/brief_gongbo_view.do?BS_CODE=s017&number=66866'],
-    ['월곶~판교·인덕원~동탄 복선전철 사업기간 2015~2030년', '국가철도공단 주요사업현황', 'https://www.kr.or.kr/sub/info.do?m=05010302'],
-    ['신분당선 광교~호매실 사업기간 2021~2029년', '국가철도공단 광역철도 사업계획', 'https://www.kr.or.kr/sub/info.do?m=05010401'],
-    ['다시, 강북 전성시대 2.0(동북선 2027년 개통 목표)', '서울시 보도자료, 2026.2', 'https://www.seoul.go.kr/news/news_report.do?nttNo=452456&srchCtgry=465'],
-    ['서울시, 서부선 사업 추진에 총력(민자 재공고·재정 전환 병행)', '서울시 보도자료, 2026.4', 'https://www.seoul.go.kr/news/news_report.do?nttNo=455351&srchCtgry=467'],
-    ['위례신사선 재정사업 전환 확정', '서울시, 2026.2', 'https://news.seoul.go.kr/traffic/archives/516245'],
-    ['위례선 트램 2월부터 본선 시운전(연말 개통 목표)', '서울시, 2026.1 — 이후 2026.10.28 브리핑의 연기 발표는 공식 원문 미게시, 보도로 확인', 'https://news.seoul.go.kr/citybuild/archives/530849'],
-    ['9호선 4단계 2028년 완공 목표', '서울시', 'https://mediahub.seoul.go.kr/archives/2006605'],
-    ['용산서울코어 기공식, 2028년 기반시설 완공', '국토교통부 스마트시티 종합포털, 2025.11', 'https://smartcity.go.kr/?p=49319'],
-    ['분당 노후계획도시 특별정비구역 지정 제안 6만 6,037호 접수', '성남시, 2026.7', 'http://snvision.seongnam.go.kr/sub_read.html?uid=23061'],
-    ['인덕원 주변 도시개발사업(인텐스퀘어) 추진 현황', '안양시', 'https://www.anyang.go.kr/main/contents.do?key=5450'],
-    ['3기 신도시 인천계양 A2블록 본청약(2026년 12월 입주 예정)', 'LH 보도자료', 'https://lh.or.kr/gallery.es?mid=a10502000000&bid=0003&list_no=11592&act=view']
+    ['GTX 삼성역 안전 확보 방안, 안전 최우선으로 검증 거쳐 연내 결정', '국토교통부 보도자료, 2026.11.3', 'https://www.molit.go.kr/USR/NEWS/m_71/lst.jsp', ['11680']],
+    ['GTX C노선 15일 착공(공사기간 60개월)', '국토교통부(정책브리핑), 2026.9.14', 'https://www.korea.kr/news/policyNewsView.do?newsId=148971823', ['11230', '11320', '11650', '41290', '41115', '41117', '41111', '41173', '41410', '41150', '41630']],
+    ['GTX-B 2025.8 착공·2031 개통', '국토교통부 2026년 업무계획', 'https://www.molit.go.kr/2026plan/sub5_public.html', ['11140', '11170', '11230', '11260', '11530', '11560', '41360', '41192', '28185', '28237']],
+    ['GTX-A 창릉역 2030년 개통 예정', '국토교통부 보도자료(정책브리핑), 2024.12', 'https://www.korea.kr/docViewer/result/2024.12/27/3da94f6a4edfbc71814cfee14e3016fd/3da94f6a4edfbc71814cfee14e3016fd.view.xhtml', ['41281']],
+    ['광명 신안산선 터널 붕괴사고 조사결과 브리핑(개통 2028년 말 정도 예상)', '국토교통부(정책브리핑), 2026.4', 'https://www.korea.kr/briefing/policyBriefingView.do?newsId=156752603', ['11545', '11560', '41210', '41271', '41273', '41390']],
+    ['투기과열지구 및 조정대상지역 추가 지정(동탄구·기흥구·구리시)', '국토교통부 보도자료, 2026.6.30', 'https://www.molit.go.kr/USR/NEWS/m_71/dtl.jsp?id=95092167', ['41463', '41597', '41310']],
+    ['1기 신도시 2026년 구역지정 물량 한도 약 7만 호로 확대', '국토교통부 보도자료, 2025.9', 'https://www.molit.go.kr/USR/NEWS/m_71/dtl.jsp?lcmspage=1&id=95091256', ['41285', '41287', '41192', '41173', '41410']],
+    ['대광위, 강동하남남양주선 기본계획 승인(2031년 개통 목표)', '국토교통부 보도자료', 'https://www.molit.go.kr/USR/NEWS/m_71/lst.jsp/dtl.jsp?lcmspage=43&id=95090516', ['11740', '41450', '41360']],
+    ['강동하남남양주선 2~6공구 계약의뢰(2027년 상반기 착공 예정)', '경기도 보도자료', 'https://gnews.gg.go.kr/briefing/brief_gongbo_view.do?BS_CODE=s017&number=66866', ['11740', '41450', '41360']],
+    ['월곶~판교·인덕원~동탄 복선전철 사업기간 2015~2030년', '국가철도공단 주요사업현황', 'https://www.kr.or.kr/sub/info.do?m=05010302', ['41210', '41173', '41430', '41597', '41390']],
+    ['신분당선 광교~호매실 사업기간 2021~2029년', '국가철도공단 광역철도 사업계획', 'https://www.kr.or.kr/sub/info.do?m=05010401', ['41113']],
+    ['다시, 강북 전성시대 2.0(동북선 2027년 개통 목표)', '서울시 보도자료, 2026.2', 'https://www.seoul.go.kr/news/news_report.do?nttNo=452456&srchCtgry=465', ['11200', '11290', '11305', '11350']],
+    ['서울시, 서부선 사업 추진에 총력(민자 재공고·재정 전환 병행)', '서울시 보도자료, 2026.4', 'https://www.seoul.go.kr/news/news_report.do?nttNo=455351&srchCtgry=467', ['11380', '11410', '11620']],
+    ['위례신사선 재정사업 전환 확정', '서울시, 2026.2', 'https://news.seoul.go.kr/traffic/archives/516245', ['11680', '11710']],
+    ['위례선 트램 2월부터 본선 시운전(연말 개통 목표)', '서울시, 2026.1 — 이후 2026.10.28 브리핑의 연기 발표는 공식 원문 미게시, 보도로 확인', 'https://news.seoul.go.kr/citybuild/archives/530849', ['11710', '41131']],
+    ['9호선 4단계 2028년 완공 목표', '서울시', 'https://mediahub.seoul.go.kr/archives/2006605', ['11740']],
+    ['용산서울코어 기공식, 2028년 기반시설 완공', '국토교통부 스마트시티 종합포털, 2025.11', 'https://smartcity.go.kr/?p=49319', ['11170']],
+    ['분당 노후계획도시 특별정비구역 지정 제안 6만 6,037호 접수', '성남시, 2026.7', 'http://snvision.seongnam.go.kr/sub_read.html?uid=23061', ['41135']],
+    ['인덕원 주변 도시개발사업(인텐스퀘어) 추진 현황', '안양시', 'https://www.anyang.go.kr/main/contents.do?key=5450', ['41173']],
+    ['3기 신도시 인천계양 A2블록 본청약(2026년 12월 입주 예정)', 'LH 보도자료', 'https://lh.or.kr/gallery.es?mid=a10502000000&bid=0003&list_no=11592&act=view', ['28245']]
   ]
 };
