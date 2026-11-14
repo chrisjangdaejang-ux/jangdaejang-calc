@@ -89,6 +89,7 @@ function statusOf(a) {
 function doGet(e) {
   const act = (e.parameter || {}).action;
   if (act === 'list') return out(listPublic());
+  if (act === 'unsub') return unsubscribe(e.parameter);
   return out({ ok: false, err: 'unknown' });
 }
 
@@ -107,6 +108,7 @@ function doPost(e) {
   lock.waitLock(15000);
   try {
     ensureHeader();
+    if (b.action === 'alert_sub') return out(alertSub(b));
     if (b.action === 'apply') return out(apply(b));
     if (b.action === 'login') return out(login(b));
     if (b.action === 'update') return out(update(b));
@@ -300,4 +302,172 @@ function statsFor(id) {
     }
   }
   return res;
+}
+
+
+/* =====================================================================
+   갈아타기 갭 알림 (이메일)
+   - 고객이 갈아타기 계산기에서 '지금 집'과 '갈아탈 집'(단지·평형)을 고르고 조건을 정하면 '알림' 시트에 저장
+   - checkAlerts()가 매일 실거래 데이터로 두 단지 가격 차이(갭)를 다시 계산해 조건을 만족하면 메일 발송
+   - 최초 1회: 편집기에서 setupAlerts 실행 → 매일 오전 10시 자동 점검 트리거 생성
+   ===================================================================== */
+const SH_AL = '알림';
+const AL_H = ['id','이메일','지금집','지금집키','지금집시도','지금집면적','갈아탈집','갈아탈집키','갈아탈집시도','갈아탈집면적',
+              '조건','조건값','기준갭','최근갭','등록일','최근점검','최근알림','상태','토큰'];
+const AC = Object.fromEntries(AL_H.map((h, i) => [h, i]));
+const DATA_URL = 'https://chrisjangdaejang-ux.github.io/jangdaejang-timing/data/';
+const SITE_URL = 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/switch/';
+const MAX_ALERTS_PER_EMAIL = 5;
+
+function alertSheet() {
+  const ss = book();
+  let sh = ss.getSheetByName(SH_AL);
+  if (!sh) {
+    sh = ss.insertSheet(SH_AL);
+    sh.getRange(1, 1, 1, AL_H.length).setValues([AL_H]).setFontWeight('bold').setBackground('#3B3F22').setFontColor('#F5EFDC');
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+/* 최초 1회 실행: '알림' 시트 + 매일 점검 트리거 */
+function setupAlerts() {
+  alertSheet();
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'checkAlerts').forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('checkAlerts').timeBased().everyDays(1).atHour(10).inTimezone('Asia/Seoul').create();
+}
+
+function eok(man) {
+  man = Math.round(man);
+  const sign = man < 0 ? '-' : '';
+  man = Math.abs(man);
+  const e = Math.floor(man / 10000), r = man % 10000;
+  return sign + (e ? e + '억' + (r ? ' ' + r.toLocaleString() + '만' : '') : r.toLocaleString() + '만') + '원';
+}
+
+function alertSub(b) {
+  const email = str(b.email, 80).toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('이메일 주소를 확인해 주세요.');
+  if (!b.agree) throw new Error('개인정보 수집·이용 동의가 필요합니다.');
+  const m = b.mine || {}, t = b.target || {};
+  const okUnit = u => u && /^\d{5}\|[^|]+\|[^|]+\|[^|]+$/.test(str(u.key, 160)) && str(u.sido, 20) && Number(u.area) > 0;
+  if (!okUnit(m) || !okUnit(t)) throw new Error('지금 집과 갈아탈 집을 모두 골라 주세요.');
+  if (m.key === t.key) throw new Error('두 집이 같습니다.');
+  const cond = b.cond === 'below' ? 'below' : 'change';
+  const val = Number(b.val);
+  if (!(val > 0)) throw new Error('알림 조건 값을 입력해 주세요.');
+  const sh = alertSheet();
+  const rows = sh.getDataRange().getValues().slice(1);
+  if (rows.filter(r => String(r[AC['이메일']]) === email && r[AC['상태']] === '활성').length >= MAX_ALERTS_PER_EMAIL)
+    throw new Error(`한 이메일로 알림은 ${MAX_ALERTS_PER_EMAIL}개까지 받을 수 있습니다.`);
+  const id = 'L' + Utilities.getUuid().replace(/-/g, '').slice(0, 9).toUpperCase();
+  const token = Utilities.getUuid().replace(/-/g, '').slice(0, 16);
+  const base = Number(b.baseGap) || 0;
+  const row = [];
+  row[AC['id']] = id; row[AC['이메일']] = email;
+  row[AC['지금집']] = str(m.name, 80); row[AC['지금집키']] = str(m.key, 160); row[AC['지금집시도']] = str(m.sido, 20); row[AC['지금집면적']] = Number(m.area);
+  row[AC['갈아탈집']] = str(t.name, 80); row[AC['갈아탈집키']] = str(t.key, 160); row[AC['갈아탈집시도']] = str(t.sido, 20); row[AC['갈아탈집면적']] = Number(t.area);
+  row[AC['조건']] = cond; row[AC['조건값']] = val; row[AC['기준갭']] = base; row[AC['최근갭']] = base;
+  row[AC['등록일']] = new Date(); row[AC['최근점검']] = ''; row[AC['최근알림']] = ''; row[AC['상태']] = '활성'; row[AC['토큰']] = token;
+  sh.appendRow(row);
+  const condTxt = cond === 'below' ? `갭이 ${eok(val)} 이하로 좁혀지면` : `갭이 지금보다 ${val}% 이상 줄거나 늘면`;
+  try {
+    MailApp.sendEmail({
+      to: email, name: '장대장 갈아타기 알림',
+      subject: '[장대장] 갈아타기 갭 알림이 등록되었습니다',
+      htmlBody: mailHtml('갭 알림 등록 완료',
+        `<p><b>${str(m.name, 80)}</b> → <b>${str(t.name, 80)}</b></p>
+         <p>지금 갭 <b>${eok(base)}</b> · 조건: ${condTxt} 메일을 보내 드립니다.</p>
+         <p style="color:#6B6A58;font-size:13px">국토교통부 실거래가(최근 3개월 중앙값)로 매일 오전 다시 계산합니다.</p>`, id, token)
+    });
+  } catch (x) {}
+  return { ok: true, id: id };
+}
+
+function unsubscribe(p) {
+  const sh = alertSheet();
+  const vals = sh.getDataRange().getValues();
+  let done = false;
+  for (let i = 1; i < vals.length; i++) {
+    if (String(vals[i][AC['id']]) === String(p.id) && String(vals[i][AC['토큰']]) === String(p.t)) {
+      sh.getRange(i + 1, AC['상태'] + 1).setValue('해지'); done = true;
+    }
+  }
+  return HtmlService.createHtmlOutput(`<div style="font-family:sans-serif;padding:40px;text-align:center">
+    <h2>${done ? '알림이 해지되었습니다' : '알림을 찾지 못했습니다'}</h2>
+    <p><a href="${SITE_URL}">장대장 갈아타기 계산기로 가기</a></p></div>`);
+}
+
+function mailHtml(title, body, id, token) {
+  const unsub = ScriptApp.getService().getUrl() + `?action=unsub&id=${id}&t=${token}`;
+  return `<div style="font-family:'Noto Sans KR',sans-serif;max-width:560px;margin:auto;background:#F5EFDC;border-radius:12px;overflow:hidden">
+    <div style="background:#3B3F22;color:#F5EFDC;padding:14px 18px;font-weight:900">★ 장대장 <span style="color:#D9B85A">갈아타기 알림</span></div>
+    <div style="padding:20px 22px;color:#23241A"><h2 style="margin:0 0 10px">${title}</h2>${body}
+      <p style="margin-top:18px"><a href="${SITE_URL}" style="background:#B8942A;color:#23241A;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:900">갈아타기 계산기에서 다시 계산하기</a></p>
+      <p style="font-size:11px;color:#6B6A58;margin-top:20px">추정 시세는 같은 단지·평형대 최근 3개월 실거래 중앙값이며 호가와 다를 수 있습니다. 매수·매도 권유가 아닙니다.<br>
+      <a href="${unsub}" style="color:#6B6A58">알림 해지</a></p></div></div>`;
+}
+
+/* 매일 실행: 실거래 데이터로 갭 재계산 → 조건 만족 시 메일 */
+function checkAlerts() {
+  const sh = alertSheet();
+  const vals = sh.getDataRange().getValues();
+  if (vals.length < 2) return;
+  const ix = JSON.parse(UrlFetchApp.fetch(DATA_URL + 'index.json').getContentText());
+  const sidoId = {}; ix.sido.forEach(x => sidoId[x.name] = x.id);
+  const cache = {};
+  const unitMap = sido => {
+    if (cache[sido]) return cache[sido];
+    const id = sidoId[sido]; const map = {};
+    if (id) {
+      const j = JSON.parse(UrlFetchApp.fetch(DATA_URL + id + '.json').getContentText());
+      j.units.forEach(u => { map[[u[0], u[1], u[2], u[3]].join('|')] = u; });
+    }
+    return cache[sido] = map;
+  };
+  const priceOf = (sido, key, area) => {
+    const u = unitMap(sido)[key]; if (!u) return null;
+    const s = u[6]; let ppy = 0;
+    for (let i = s.length - 1; i >= Math.max(0, s.length - 3); i--) if (s[i] > 0) { ppy = s[i]; break; }
+    return ppy ? Math.round(ppy * (Number(area) || u[4]) / 3.3058) : null;
+  };
+  const now = new Date();
+  let sent = 0;
+  for (let i = 1; i < vals.length; i++) {
+    const r = vals[i];
+    if (r[AC['상태']] !== '활성') continue;
+    const pm = priceOf(r[AC['지금집시도']], r[AC['지금집키']], r[AC['지금집면적']]);
+    const pt = priceOf(r[AC['갈아탈집시도']], r[AC['갈아탈집키']], r[AC['갈아탈집면적']]);
+    sh.getRange(i + 1, AC['최근점검'] + 1).setValue(now);
+    if (pm == null || pt == null) continue;
+    const gap = pt - pm, base = Number(r[AC['기준갭']]) || gap, prev = Number(r[AC['최근갭']]);
+    const val = Number(r[AC['조건값']]);
+    let hit = false, why = '';
+    if (r[AC['조건']] === 'below') {
+      hit = gap <= val && !(prev <= val);          // 조건선을 새로 넘을 때 한 번
+      why = `갭이 설정하신 ${eok(val)} 이하로 좁혀졌습니다.`;
+    } else {
+      const pct = base ? (gap - base) / Math.abs(base) * 100 : 0;
+      hit = Math.abs(pct) >= val;
+      why = `갭이 기준(${eok(base)}) 대비 ${pct > 0 ? '+' : ''}${pct.toFixed(1)}% ${pct < 0 ? '좁혀졌습니다' : '벌어졌습니다'}.`;
+    }
+    sh.getRange(i + 1, AC['최근갭'] + 1).setValue(gap);
+    if (!hit || sent >= 80) continue;
+    try {
+      MailApp.sendEmail({
+        to: r[AC['이메일']], name: '장대장 갈아타기 알림',
+        subject: `[장대장] ${r[AC['지금집']]} → ${r[AC['갈아탈집']]} 갭 ${eok(gap)}`,
+        htmlBody: mailHtml(why,
+          `<table style="width:100%;border-collapse:collapse;font-size:15px">
+            <tr><td style="padding:6px 0">지금 집 · ${r[AC['지금집']]}</td><td style="text-align:right"><b>${eok(pm)}</b></td></tr>
+            <tr><td style="padding:6px 0">갈아탈 집 · ${r[AC['갈아탈집']]}</td><td style="text-align:right"><b>${eok(pt)}</b></td></tr>
+            <tr><td style="padding:8px 0;border-top:1px solid #DCCFA8"><b>가격 차이(갭)</b></td><td style="text-align:right;border-top:1px solid #DCCFA8;color:#A23B2A"><b>${eok(gap)}</b></td></tr>
+            <tr><td style="color:#6B6A58;font-size:13px">등록할 때 갭</td><td style="text-align:right;color:#6B6A58;font-size:13px">${eok(base)}</td></tr>
+          </table>`, r[AC['id']], r[AC['토큰']])
+      });
+      sent++;
+      sh.getRange(i + 1, AC['최근알림'] + 1).setValue(now);
+      if (r[AC['조건']] === 'change') sh.getRange(i + 1, AC['기준갭'] + 1).setValue(gap);   // 다음 알림은 지금 갭 기준
+    } catch (x) {}
+  }
 }

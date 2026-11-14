@@ -131,6 +131,30 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .toReport b em{font-style:normal;color:#D9B85A}
 .toReport span{font-size:13px;color:#DDD7BF}
 .toReport a{background:#B8942A;color:#23241A;font-weight:900;font-size:16px;padding:12px 20px;border-radius:9px;text-decoration:none;white-space:nowrap}
+.gap .pick{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.gap .pick{grid-template-columns:1fr}}
+.gap .pk{border:1.5px solid #DCCFA8;border-radius:10px;padding:12px;background:#fff}
+.gap .pk h3{margin:0 0 8px;font-size:15px}
+.gap .pk select,.gap .pk input,.gap .af input{width:100%;padding:9px 10px;border:1px solid #DCCFA8;border-radius:7px;font:inherit;font-size:14px;margin-bottom:6px;background:#fff}
+.gap .res{max-height:180px;overflow:auto;border:1px solid #EFE6CC;border-radius:7px}
+.gap .res:empty{display:none}
+.gap .res div{padding:7px 10px;border-bottom:1px solid #F3EDD9;cursor:pointer;font-size:13.5px}
+.gap .res div:hover{background:#F5EFDC}
+.gap .bands{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.gap .bands button{font:inherit;font-size:12.5px;font-weight:700;border:1.5px solid #3B3F22;background:#fff;color:#3B3F22;border-radius:999px;padding:5px 10px;cursor:pointer}
+.gap .bands button.on{background:#3B3F22;color:#F5EFDC}
+.gap .sel{font-weight:900;font-size:15px;margin-top:6px}
+.gap .sel small{display:block;font-weight:500;color:#6B6A58;font-size:12px}
+.gap .gapres{margin-top:14px;background:#F5EFDC;border-radius:10px;padding:14px 16px}
+.gap .gapres:empty{display:none}
+.gap .big{font-size:26px;font-weight:900;color:#A23B2A}
+.gap .af{margin-top:12px;border-top:1px dashed #DCCFA8;padding-top:12px}
+.gap .af label.r{display:flex;align-items:center;gap:6px;font-size:14px;margin:6px 0}
+.gap .af label.r input[type=number]{width:90px;margin:0;flex:none}
+.gap .af input[type=radio],.gap .af input[type=checkbox]{width:auto;margin:0;flex:none}
+.gap .af label.r{flex-wrap:wrap}
+.gap .af .btnA{background:#A23B2A;color:#fff;border:0;font:inherit;font-weight:900;font-size:15px;padding:11px 18px;border-radius:8px;cursor:pointer}
+.gap .mini{font-size:12px;color:#6B6A58}
 </style>
 </head>
 <body>
@@ -290,6 +314,17 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
           <div class="hint" data-for="target"></div>
         </div>
         <div class="check-res" id="targetRes"></div>
+      </div>
+
+
+      <div class="panel section gap" id="gapBox">
+        <h2>⑤ 갭 알림 — 지금 집 ↔ 갈아탈 집</h2>
+        <p class="muted" style="font-size:13px;margin:0 0 12px">두 단지를 고르면 최근 3년 가격 차이(갭) 흐름을 보여 드리고, 갭이 좁혀지거나 벌어지면 이메일로 알려 드립니다.</p>
+        <div class="pick">
+          <div class="pk" id="pkMine"><h3>지금 집</h3></div>
+          <div class="pk" id="pkTarget"><h3>갈아탈 집</h3></div>
+        </div>
+        <div class="gapres" id="gapRes"></div>
       </div>
 
       <div class="panel section">
@@ -619,6 +654,101 @@ $('sSgg').addEventListener('change', async ()=>{
   A.log('imp', ranked[0].id, g, ''); ranked.slice(1).forEach(a=>A.log('imp', a.id, g, ''));
   box.querySelectorAll('[data-act]').forEach(el=>el.addEventListener('click',()=>{ A.log(el.dataset.act, el.dataset.a, g, ''); A.flush(); JDJ.track('agent_'+el.dataset.act,{agent:el.dataset.a, sgg:g, from:'switch'}); }));
 });
+
+/* ---------- ⑤ 갭 알림: 지금 집 ↔ 갈아탈 집 ---------- */
+const GAP={mine:null,target:null};
+const GPY=3.3058, UNIT_CACHE={};
+async function gapIndex(){ if(!AG_IX){ try{ AG_IX = await (await fetch(AG_DATA+'index.json',{cache:'no-cache'})).json(); }catch(e){} } return AG_IX; }
+async function gapUnits(sidoName){
+  const ix=await gapIndex(); const sd=ix.sido.find(x=>x.name===sidoName); if(!sd) return [];
+  if(UNIT_CACHE[sd.id]) return UNIT_CACHE[sd.id];
+  const j=await (await fetch(AG_DATA+sd.id+'.json',{cache:'no-cache'})).json();
+  return UNIT_CACHE[sd.id]=j.units;
+}
+function lastNZ(a){ for(let i=a.length-1;i>=Math.max(0,a.length-3);i--) if(a[i]>0) return a[i]; return 0; }
+function unitPrice(u){ const p=lastNZ(u[6]); return p? Math.round(p*u[4]/GPY):0; }
+function makePicker(el, which){
+  el.insertAdjacentHTML('beforeend',`<select class="psido"><option value="">시·도</option></select><select class="psgg"><option value="">구·시·군</option></select>
+    <input class="pq" placeholder="단지명 검색 (먼저 구를 고르세요)"><div class="res"></div><div class="bands"></div><div class="sel"></div>`);
+  const $s=c=>el.querySelector(c);
+  const fill=async()=>{ const ix=await gapIndex(); if(!ix) return; if($s('.psido').options.length>1) return;
+    $s('.psido').innerHTML='<option value="">시·도</option>'+ix.sido.map(x=>`<option>${escH(x.name)}</option>`).join(''); };
+  ['focus','mousedown','touchstart'].forEach(ev=>$s('.psido').addEventListener(ev,fill,{once:true}));
+  $s('.psido').addEventListener('change',()=>{ const sd=$s('.psido').value; const ix=AG_IX;
+    const list=Object.keys(ix.sgg).filter(k=>ix.sgg[k].sido===sd).sort((a,b)=>ix.sgg[a].name.localeCompare(ix.sgg[b].name,'ko'));
+    $s('.psgg').innerHTML='<option value="">구·시·군</option>'+list.map(k=>`<option value="${k}">${escH(ix.sgg[k].name)}</option>`).join('');
+    $s('.pq').value=''; $s('.res').innerHTML=''; $s('.bands').innerHTML=''; });
+  const search=async()=>{ const sd=$s('.psido').value, g=$s('.psgg').value; const t=$s('.pq').value.replace(/\s/g,'');
+    if(!sd||!g){ $s('.res').innerHTML=''; return; }
+    const units=await gapUnits(sd); const seen=new Map();
+    units.filter(u=>u[0]===g && (u[2]+u[1]).replace(/\s/g,'').includes(t)).forEach(u=>{ const k=u[1]+'|'+u[2]; seen.set(k,(seen.get(k)||0)+u[5]); });
+    const items=[...seen.entries()].sort((a,b)=>b[1]-a[1]).slice(0,40);
+    $s('.res').innerHTML=items.map(([k])=>`<div data-k="${escH(k)}"><b>${escH(k.split('|')[1])}</b> <span class="mini">${escH(k.split('|')[0])}</span></div>`).join('')||'<div class="mini">찾는 단지가 없습니다 (최근 3년 거래가 충분한 단지만 나옵니다)</div>';
+    $s('.res').querySelectorAll('[data-k]').forEach(d=>d.onclick=()=>{
+      const [dong,apt]=d.dataset.k.split('|');
+      const bands=units.filter(u=>u[0]===g&&u[1]===dong&&u[2]===apt);
+      $s('.res').innerHTML=''; $s('.pq').value=apt;
+      $s('.bands').innerHTML=bands.map((u,i)=>`<button data-i="${i}">${escH(u[3])} · 전용 ${u[4]}㎡</button>`).join('');
+      $s('.bands').querySelectorAll('button').forEach(b=>b.onclick=()=>{
+        $s('.bands').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+        const u=bands[+b.dataset.i];
+        GAP[which]={u, sido:sd, key:[u[0],u[1],u[2],u[3]].join('|'), name:`${u[2]} ${u[3]}`, area:u[4], price:unitPrice(u)};
+        $s('.sel').innerHTML=`${escH(u[2])} ${escH(u[3])} <small>${escH(AG_IX.sgg[g].name)} ${escH(dong)} · 추정 시세 ${fmt(GAP[which].price)}원 (최근 3개월 실거래 중앙값)</small>`+
+          (which==='mine'?`<button class="btn ghost" style="margin-top:6px;font-size:12.5px;padding:6px 10px" id="useSale">이 시세를 예상 매도가에 넣기</button>`:'');
+        const us=$('useSale'); if(us) us.onclick=()=>{ $('sale').value=GAP.mine.price.toLocaleString(); render(); JDJ.track('gap_use_sale'); toast('예상 매도가에 넣었습니다'); };
+        if(which==='target'){ $('target').value=GAP.target.price.toLocaleString(); render(); }
+        drawGap();
+      });
+      if(bands.length===1) $s('.bands button').click();
+    });
+  };
+  let tm=null; $s('.pq').addEventListener('input',()=>{ clearTimeout(tm); tm=setTimeout(search,200); });
+  $s('.psgg').addEventListener('change',search);
+}
+function drawGap(){
+  const box=$('gapRes'); const m=GAP.mine, t=GAP.target;
+  if(!m||!t){ box.innerHTML=''; return; }
+  const months=AG_IX.months||[];
+  const pts=[]; for(let i=0;i<months.length;i++){ const a=m.u[6][i], b=t.u[6][i]; if(a>0&&b>0) pts.push([i, Math.round(b*t.area/GPY - a*m.area/GPY)]); }
+  const gap=t.price-m.price;
+  let svg='';
+  if(pts.length>2){
+    const W=560,H=120,xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]); const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+    const X=x=>10+(x-x0)/(x1-x0||1)*(W-20), Y=y=>H-14-(y-y0)/(y1-y0||1)*(H-28);
+    svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;margin-top:8px"><polyline fill="none" stroke="#A23B2A" stroke-width="2.5" points="${pts.map(p=>X(p[0])+','+Y(p[1])).join(' ')}"/>
+      <text x="10" y="12" font-size="11" fill="#6B6A58">최대 ${fmt(y1)}</text><text x="10" y="${H-2}" font-size="11" fill="#6B6A58">최소 ${fmt(y0)}</text>
+      <text x="${W-10}" y="${H-2}" font-size="11" fill="#6B6A58" text-anchor="end">${months[x1].slice(0,4)}.${months[x1].slice(4)}</text>
+      <text x="${W/2}" y="${H-2}" font-size="11" fill="#6B6A58" text-anchor="middle">${months[x0].slice(0,4)}.${months[x0].slice(4)} 부터</text></svg>`;
+  }
+  const ys=pts.map(p=>p[1]); const lo=ys.length?Math.min(...ys):gap, hi=ys.length?Math.max(...ys):gap;
+  const pos=hi>lo? Math.round((gap-lo)/(hi-lo)*100):50;
+  const defBelow=Math.max(1000, Math.round(gap*0.9/1000)*1000);
+  box.innerHTML=`<div>지금 갭 <span class="big">${fmt(gap)}원</span></div>
+    <div class="mini">갈아탈 집 ${fmt(t.price)}원 − 지금 집 ${fmt(m.price)}원 · 그래프 기간 갭 범위 ${fmt(lo)} ~ ${fmt(hi)} (지금은 범위의 ${pos}% 위치${pos<=30?' — 갭이 좁은 편, 갈아타기 유리한 구간':pos>=70?' — 갭이 넓은 편':''})</div>
+    ${svg}
+    <div class="af">
+      <b>갭 알림 받기 (이메일)</b>
+      <label class="r"><input type="radio" name="gcond" value="below" checked> 갭이 <input type="number" id="gBelow" value="${(defBelow/10000).toFixed(1)}" step="0.1" min="0.1"> 억 이하로 좁혀지면</label>
+      <label class="r"><input type="radio" name="gcond" value="change"> 갭이 지금보다 <input type="number" id="gPct" value="10" step="1" min="1"> % 이상 줄거나 늘면</label>
+      <input type="email" id="gMail" placeholder="알림 받을 이메일">
+      <label class="r" style="font-size:12.5px;flex-wrap:nowrap;align-items:flex-start"><input type="checkbox" id="gAgree" style="margin-top:3px"> 갭 알림 발송을 위한 이메일 수집·이용에 동의합니다 (알림 해지 시까지 보관, 메일 하단에서 언제든 해지)</label>
+      <button class="btnA" id="gSub">알림 신청</button> <span id="gMsg" class="mini"></span>
+    </div>`;
+  $('gSub').onclick=async()=>{
+    const A=window.JDJ_AGENTS, msg=$('gMsg'); msg.style.color='#A23B2A';
+    if(!$('gAgree').checked){ msg.textContent='동의에 체크해 주세요.'; return; }
+    const cond=document.querySelector('input[name=gcond]:checked').value;
+    const val= cond==='below' ? Math.round(parseFloat($('gBelow').value)*10000) : parseFloat($('gPct').value);
+    const pack=x=>({key:x.key, sido:x.sido, name:x.name, area:x.area});
+    $('gSub').disabled=true; msg.style.color='#6B6A58'; msg.textContent='등록 중…';
+    try{
+      await A.post({action:'alert_sub', email:$('gMail').value, agree:true, mine:pack(m), target:pack(t), cond, val, baseGap:gap});
+      msg.style.color='#4E6B2E'; msg.textContent='등록되었습니다. 확인 메일을 보내 드렸어요.';
+      JDJ.track('gap_alert_sub',{cond});
+    }catch(e){ msg.style.color='#A23B2A'; msg.textContent=e.message; $('gSub').disabled=false; }
+  };
+}
+makePicker($('pkMine'),'mine'); makePicker($('pkTarget'),'target');
 
 function toast(msg, ms){ $('toast').textContent=msg; $('toast').classList.add('show'); setTimeout(()=>$('toast').classList.remove('show'), ms||1800); }
 function seg(id,cb){ $(id).addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; [...$(id).children].forEach(x=>x.classList.toggle('on',x===b)); cb(b.dataset.v); render(); }); }
