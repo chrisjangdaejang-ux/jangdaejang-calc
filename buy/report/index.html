@@ -537,7 +537,7 @@ async function render(){
   const withNotes = codes.filter(c=>NOTES.notes[c]);
   h += `<div class="sec">
     <h2><span class="no">05</span> 추천 지역 교통·개발 포인트</h2>
-    <p class="sub">${NOTES.asOf} 기준 사업 주체 발표·보도 내용입니다. 개통·준공 일정은 바뀔 수 있습니다.</p>`;
+    <p class="sub">${NOTES.asOf} 기준 공공기관 발표 내용이며, 괄호 안이 발표 기관입니다. 개통·준공 일정은 바뀔 수 있습니다.</p>`;
   if (withNotes.length){
     h += withNotes.map(code=>{
       const n=NOTES.notes[code], s=IX.sgg[code], ch=s?change6(s.s):null;
@@ -556,7 +556,7 @@ async function render(){
     <p class="sub">계약 전에 순서대로 확인하세요.</p>
     <ul class="check">
       <li><b>은행 사전 상담</b> — 이 리포트의 대출 가능액은 추정치입니다. 감정가·신용·소득 인정 방식에 따라 달라지므로 2곳 이상 은행에서 한도와 금리를 확인하세요.</li>
-      ${anyReg?`<li><b>토지거래허가</b> — 서울 전역과 경기 규제지역은 토지거래허가구역입니다. 실거주 목적으로 허가를 받은 뒤 계약해야 하며, 허가에 보통 15일 안팎이 걸립니다.</li>
+      ${anyReg?`<li><b>토지거래허가</b> — 서울 전역과 경기 규제지역은 토지거래허가구역입니다. 실거주 목적으로 관할 지자체 허가를 받은 뒤 계약해야 하므로 허가 기간을 일정에 넣어 두세요.</li>
       <li><b>전입 의무</b> — 규제지역 주담대는 6개월 안에 전입해야 합니다. 세입자가 있는 집은 대출 실행이 어렵습니다.</li>`:''}
       ${S.own==='one'?`<li><b>기존 주택 처분 기한</b> — 처분조건부 대출은 정해진 기한 안에 기존 주택을 팔아야 합니다. 기한을 넘기면 대출 회수와 세금 추징이 생길 수 있습니다.</li>`:''}
       <li><b>등기부등본·건축물대장</b> — 근저당·가압류·위반건축물 여부를 계약 전에 확인하세요.</li>
@@ -569,7 +569,7 @@ async function render(){
   /* 7. 출처 */
   h += `<div class="sec">
     <h2><span class="no">07</span> 데이터 출처와 유의사항</h2>
-    <p class="src">실거래가: 국토교통부 아파트 매매 실거래가(공공데이터포털), 해제·직거래 제외, ${dataTo}까지 집계. 대출 규제: 2026년 11월 기준 LTV·DSR·스트레스 금리·가격구간별 한도. 교통·개발 정보:</p>
+    <p class="src">실거래가: 국토교통부 아파트 매매 실거래가(공공데이터포털), 해제·직거래 제외, ${dataTo}까지 집계. 대출 규제: 2026년 11월 기준 LTV·DSR·스트레스 금리·가격구간별 한도. 교통·개발 정보(공공기관 원문):</p>
     <ul class="src" style="padding-left:16px;margin:6px 0 10px">${NOTES.sources.map(s=>`<li>${esc(s[0])} — ${esc(s[1])} <a href="${s[2]}" target="_blank" rel="noopener">링크</a></li>`).join('')}</ul>
     <p class="src">이 리포트는 공개 데이터로 만든 참고 자료이며 특정 단지의 매수를 권유하는 것이 아닙니다. 실제 대출 한도와 세금은 금융기관·세무 전문가에게 확인하세요.</p>
   </div>`;
