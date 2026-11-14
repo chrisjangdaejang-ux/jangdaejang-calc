@@ -10,6 +10,7 @@
 <meta property="og:type" content="website">
 <script>window.JDJ_CONFIG = { tool:'switch', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js"></script>
+<script src="../assets/agents.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -113,6 +114,23 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .premium p small{display:block;font-weight:500;font-size:13px;color:var(--muted);margin-top:3px;letter-spacing:0}
 .btn.done{background:var(--green);cursor:default}
 .xlink{display:block;margin-top:14px;text-align:center;font-size:13px;color:var(--olive);font-weight:700}
+.sellbox .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sellbox select{width:100%;padding:10px;border:1px solid var(--line,#DCCFA8);border-radius:7px;font:inherit;font-size:15px;font-weight:700;background:#fff}
+.aglist{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px;margin-top:12px}
+.agc{border:1.5px solid #DCCFA8;border-radius:10px;padding:11px 13px;background:#fff}
+.agc b{font-size:15px}
+.agc small{display:block;color:#6B6A58;font-size:12px}
+.agc .acts{display:flex;gap:6px;margin-top:8px}
+.agc .acts a{flex:1;text-align:center;text-decoration:none;font-weight:900;font-size:13px;padding:8px;border-radius:7px;background:#3B3F22;color:#F5EFDC}
+.agc .acts a.kk{background:#B8942A;color:#23241A}
+.agc .tag{font-size:10px;font-weight:700;border:1px solid #B8942A;color:#B8942A;padding:1px 5px;border-radius:3px;margin-left:5px}
+.agnone{margin-top:12px;font-size:14px;font-weight:700}
+.agnone a{color:#A23B2A}
+.toReport{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;background:#3B3F22;color:#F5EFDC;border:2px solid #B8942A;border-radius:12px;padding:18px 20px;margin:16px 0}
+.toReport b{font-size:18px;display:block}
+.toReport b em{font-style:normal;color:#D9B85A}
+.toReport span{font-size:13px;color:#DDD7BF}
+.toReport a{background:#B8942A;color:#23241A;font-weight:900;font-size:16px;padding:12px 20px;border-radius:9px;text-decoration:none;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -253,6 +271,17 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
         <table><tbody id="saleTbl"></tbody></table>
       </div>
 
+
+      <div class="panel section sellbox">
+        <h2>지금 집 내놓기 — 우리 동네 제휴 중개사</h2>
+        <p class="muted" style="font-size:13px;margin:0 0 10px">지금 집이 있는 구를 고르면, 그 지역 제휴 공인중개사에게 바로 매도 상담을 받을 수 있습니다.</p>
+        <div class="row2">
+          <select id="sSido"><option value="">시·도 선택</option></select>
+          <select id="sSgg"><option value="">구·시·군 선택</option></select>
+        </div>
+        <div id="sellAgents"></div>
+      </div>
+
       <div class="panel section">
         <h2>③ 점 찍어둔 집으로 갈아탈 수 있을까?</h2>
         <div class="field" style="margin-bottom:0">
@@ -271,9 +300,9 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 
       <div class="section"><div class="tips" id="tips"></div></div>
 
-      <div class="premium">
-        <div><div class="pt">PREMIUM · 준비 중</div><p>장대장 갈아타기 시나리오 리포트<small>먼저 팔기 vs 먼저 사기 순서별 세금·자금 비교, 일시적 2주택 일정표, 후보 단지를 PDF로 정리해 드립니다</small></p></div>
-        <button class="btn" id="premBtn">관심 있어요</button>
+      <div class="toReport">
+        <div><b>그 돈으로 <em>갈아탈 단지</em>를 골라 드립니다</b><span>손에 남는 돈 기준 실거래 추천 단지 1~10위 · 단지마다 제휴 중개사 연결 · PDF 저장 (무료 베타)</span></div>
+        <a id="premBtn" href="../buy/report/" target="_blank" rel="noopener">갈아탈 단지 추천받기 →</a>
       </div>
 
       <div class="cta">
@@ -541,7 +570,55 @@ function updateConsult(){
   q.set('entry.1054811896', '1주택 갈아타기');
   q.set('entry.658364183', `[갈아타기] ${fmt(P)}원 (새 대출 ${fmt(ld.L)}, ${TYPE_NAME[rtype]} ${c.rate}%·${c.term}년) | ${JDJ.label()}`);
   $('consultBtn').href=FORM+'?'+q.toString().replace(/\+/g,'%20');
+  if (typeof updateSwitchReport==='function') updateSwitchReport();
 }
+
+/* ---------- 갈아탈 단지 리포트로 연결 (손에 남는 돈 = 보유 현금, 1주택 처분조건) ---------- */
+function updateSwitchReport(){
+  if (!last || !last.c) return;
+  const {cash,c}=last;
+  const q=new URLSearchParams({i:c.income, c:Math.max(0,Math.round(cash)), d:c.debt||0, o:'one', t:rtype, rt:c.rate, tm:c.term, r:$('region').value, src:'switch'});
+  $('premBtn').href='../buy/report/?'+q.toString();
+}
+$('premBtn').addEventListener('click',()=>JDJ.track('switch_to_report',{region:$('region').value, max_band:JDJ.band(last?last.P:0)}));
+
+/* ---------- 지금 집 내놓기: 우리 동네 제휴 중개사 ---------- */
+const AG_DATA='/jangdaejang-timing/data/';
+let AG_IX=null;
+const escH=x=>String(x==null?'':x).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+async function sellInit(){
+  if (AG_IX) return;
+  try{ AG_IX = await (await fetch(AG_DATA+'index.json',{cache:'no-cache'})).json(); }catch(e){ return; }
+  $('sSido').innerHTML='<option value="">시·도 선택</option>'+AG_IX.sido.map(x=>`<option value="${escH(x.name)}">${escH(x.name)}</option>`).join('');
+}
+['focus','mousedown','touchstart'].forEach(ev=>$('sSido').addEventListener(ev, sellInit, {once:true}));
+$('sSido').addEventListener('change',()=>{
+  const sd=$('sSido').value;
+  const list=Object.keys(AG_IX.sgg).filter(k=>AG_IX.sgg[k].sido===sd).sort((a,b)=>AG_IX.sgg[a].name.localeCompare(AG_IX.sgg[b].name,'ko'));
+  $('sSgg').innerHTML='<option value="">구·시·군 선택</option>'+list.map(k=>`<option value="${k}">${escH(AG_IX.sgg[k].name)}</option>`).join('');
+  $('sellAgents').innerHTML='';
+});
+$('sSgg').addEventListener('change', async ()=>{
+  const g=$('sSgg').value, box=$('sellAgents'); if(!g){ box.innerHTML=''; return; }
+  const A=window.JDJ_AGENTS, gname=AG_IX.sgg[g].name;
+  JDJ.track('sell_agent_search',{sgg:g});
+  const res = A && A.ready ? await A.list() : {agents:[]};
+  const all=((res&&res.agents)||[]).filter(a=>a.r.includes(g));
+  const ranked=all.map(a=>[Math.random(),a]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]).sort((x,y)=>(x.og===g?0:1)-(y.og===g?0:1));
+  const consult=$('consultBtn').href.replace(/entry\.1054811896=[^&]*/,'entry.1054811896='+encodeURIComponent('1주택 갈아타기 · 매도 상담 ('+gname+')'));
+  if(!ranked.length){
+    box.innerHTML=`<div class="agnone">${escH(gname)} 제휴 중개사를 모집하고 있어요. 지금은 <a href="${consult}" target="_blank" rel="noopener" data-track="sell_consult">장대장 매도 상담</a>으로 도와드릴게요.<br><small style="font-weight:500;color:#6B6A58">공인중개사이신가요? <a href="../agent/" target="_blank" rel="noopener" data-track="agent_join_click">이 지역 제휴 신청</a></small></div>`;
+    return;
+  }
+  box.innerHTML=`<div class="aglist">`+ranked.map(a=>{
+    const tel=String(a.ph||'').replace(/[^\d]/g,''), kk=/^https:\/\//.test(a.kk||'')?a.kk:'';
+    return `<div class="agc"><b>${escH(a.n)}</b><span class="tag">제휴·광고</span><small>${escH(a.ogn)} ${escH(a.dong)} · 대표 ${escH(a.ceo)} · ${escH(a.ph)}</small>${a.intro?`<small style="color:#23241A">${escH(a.intro)}</small>`:''}
+      <div class="acts">${tel?`<a href="tel:${tel}" data-a="${a.id}" data-act="call">전화 상담</a>`:''}${kk?`<a class="kk" href="${escH(kk)}" target="_blank" rel="noopener" data-a="${a.id}" data-act="kakao">카톡 문의</a>`:''}</div></div>`;
+  }).join('')+`</div><p class="muted" style="font-size:11.5px;margin:8px 0 0">제휴(광고) 중개사무소입니다. 장대장은 중개 행위에 관여하지 않으며, 거래 조건은 해당 중개사무소에 직접 확인하세요.</p>`;
+  A.log('rec', ranked.map(a=>a.id).sort().join(','), g, '');
+  A.log('imp', ranked[0].id, g, ''); ranked.slice(1).forEach(a=>A.log('imp', a.id, g, ''));
+  box.querySelectorAll('[data-act]').forEach(el=>el.addEventListener('click',()=>{ A.log(el.dataset.act, el.dataset.a, g, ''); A.flush(); JDJ.track('agent_'+el.dataset.act,{agent:el.dataset.a, sgg:g, from:'switch'}); }));
+});
 
 function toast(msg, ms){ $('toast').textContent=msg; $('toast').classList.add('show'); setTimeout(()=>$('toast').classList.remove('show'), ms||1800); }
 function seg(id,cb){ $(id).addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; [...$(id).children].forEach(x=>x.classList.toggle('on',x===b)); cb(b.dataset.v); render(); }); }
@@ -557,21 +634,6 @@ $('copyBtn').addEventListener('click',async()=>{
   const txt=`[장대장 갈아타기 계산기]\n현재 집 매도가 ${fmt(t.sale)}원 → 양도세 ${fmt(t.total)}원\n매도 후 손에 남는 돈 ${fmt(net)}원 · 자기자본 ${fmt(cash)}원\n→ ${c.R.name}에서 최대 ${fmt(P)}원까지 갈아타기 가능 (새 대출 ${fmt(ld.L)}원)\n※ 2026년 11월 기준 추정치\n${location.origin+location.pathname}`;
   try{ await navigator.clipboard.writeText(txt); toast('결과가 복사되었습니다'); }catch(_){ toast('복사가 지원되지 않는 환경입니다'); }
 });
-
-// 유료 기능 관심도 (출시 전 수요 확인)
-(function(){
-  const b=$('premBtn'), key='jdj_prem_switch';
-  let on=false; try{ on=!!localStorage.getItem(key); }catch(_){}
-  const mark=()=>{ b.textContent='✓ 관심 표시 완료'; b.classList.add('done'); };
-  if(on) mark();
-  b.addEventListener('click',()=>{
-    if(b.classList.contains('done')) return;
-    JDJ.track('premium_interest',{region:$('region').value, max_band:JDJ.band(last.P||0)});
-    try{ localStorage.setItem(key,'1'); }catch(_){}
-    mark();
-    toast('감사합니다! 출시되면 장대장TV에서 가장 먼저 알려드릴게요', 2400);
-  });
-})();
 
 setTermOptions(); render();
 </script>
