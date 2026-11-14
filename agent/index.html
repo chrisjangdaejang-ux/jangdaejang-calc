@@ -299,10 +299,13 @@ function makeEditor(el, o){
     el.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{ st.danji.splice(+b.dataset.rm,1); draw(); });
     const q = $(el.id+'_q'), r = $(el.id+'_r');
     if (!q) return;
+    const aptMatch=(hay,q,gu)=>{ const n=x=>String(x||'').replace(/\s|아파트/g,'').toLowerCase(); hay=n(hay); q=n(q); if(!q||hay.includes(q)) return true;
+      const st=n(gu).replace(/(구|시|군)$/,''); const q2=st?q.split(st).join(''):q; if(q2&&hay.includes(q2)) return true;
+      if(q2.length<3) return false; let i=0; for(const ch of hay){ if(ch===q2[i]) i++; if(i===q2.length) return true; } return false; };
     q.oninput = async ()=>{
       const t = q.value.trim().replace(/\s/g,''); if (!t || !st.sido || !st.og){ r.innerHTML=''; return; }
       const units = await loadUnits(st.sido.id); const rg = regions();
-      const hits = units.filter(u=>rg.includes(u.code) && (u.apt+u.dong).replace(/\s/g,'').includes(t)).slice(0,30);
+      const hits = units.filter(u=>rg.includes(u.code) && aptMatch(u.apt+u.dong, t, sggName(u.code))).slice(0,30);
       r.innerHTML = hits.map(u=>`<div class="res" data-k="${esc(u.k)}" data-n="${esc(u.apt)}"><span><b>${esc(u.apt)}</b> <small>${esc(sggName(u.code))} ${esc(u.dong)}</small></span><small>3년 거래 ${u.n}건</small></div>`).join('')
         || `<div class="res"><small>선택한 3개 구에서 찾지 못했습니다.</small></div>`;
       r.querySelectorAll('.res[data-k]').forEach(x=>x.onclick=()=>{

@@ -678,10 +678,14 @@ function makePicker(el, which){
     const list=Object.keys(ix.sgg).filter(k=>ix.sgg[k].sido===sd).sort((a,b)=>ix.sgg[a].name.localeCompare(ix.sgg[b].name,'ko'));
     $s('.psgg').innerHTML='<option value="">구·시·군</option>'+list.map(k=>`<option value="${k}">${escH(ix.sgg[k].name)}</option>`).join('');
     $s('.pq').value=''; $s('.res').innerHTML=''; $s('.bands').innerHTML=''; });
+  /* 단지명 느슨한 검색: 띄어쓰기·'아파트' 무시, 구 이름(예: 송파)이 붙어 있어도 찾고, 글자 순서만 맞으면 일부 생략해도 찾음 (송파하비오 → 파크하비오) */
+  const aptMatch=(hay,q,gu)=>{ const n=x=>String(x||'').replace(/\s|아파트/g,'').toLowerCase(); hay=n(hay); q=n(q); if(!q||hay.includes(q)) return true;
+    const st=n(gu).replace(/(구|시|군)$/,''); const q2=st?q.split(st).join(''):q; if(q2&&hay.includes(q2)) return true;
+    if(q2.length<3) return false; let i=0; for(const ch of hay){ if(ch===q2[i]) i++; if(i===q2.length) return true; } return false; };
   const search=async()=>{ const sd=$s('.psido').value, g=$s('.psgg').value; const t=$s('.pq').value.replace(/\s/g,'');
     if(!sd||!g){ $s('.res').innerHTML=''; return; }
     const units=await gapUnits(sd); const seen=new Map();
-    units.filter(u=>u[0]===g && (u[2]+u[1]).replace(/\s/g,'').includes(t)).forEach(u=>{ const k=u[1]+'|'+u[2]; seen.set(k,(seen.get(k)||0)+u[5]); });
+    units.filter(u=>u[0]===g && aptMatch(u[2]+u[1], t, ix.sgg[g]&&ix.sgg[g].name)).forEach(u=>{ const k=u[1]+'|'+u[2]; seen.set(k,(seen.get(k)||0)+u[5]); });
     const items=[...seen.entries()].sort((a,b)=>b[1]-a[1]).slice(0,40);
     $s('.res').innerHTML=items.map(([k])=>`<div data-k="${escH(k)}"><b>${escH(k.split('|')[1])}</b> <span class="mini">${escH(k.split('|')[0])}</span></div>`).join('')||'<div class="mini">찾는 단지가 없습니다 (최근 3년 거래가 충분한 단지만 나옵니다)</div>';
     $s('.res').querySelectorAll('[data-k]').forEach(d=>d.onclick=()=>{
