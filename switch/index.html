@@ -731,20 +731,21 @@ function drawGap(){
       <label class="r"><input type="radio" name="gcond" value="below" checked> 갭이 <input type="number" id="gBelow" value="${(defBelow/10000).toFixed(1)}" step="0.1" min="0.1"> 억 이하로 좁혀지면</label>
       <label class="r"><input type="radio" name="gcond" value="change"> 갭이 지금보다 <input type="number" id="gPct" value="10" step="1" min="1"> % 이상 줄거나 늘면</label>
       <input type="email" id="gMail" placeholder="알림 받을 이메일">
-      <label class="r" style="font-size:12.5px;flex-wrap:nowrap;align-items:flex-start"><input type="checkbox" id="gAgree" style="margin-top:3px"> 갭 알림 발송을 위한 이메일 수집·이용에 동의합니다 (알림 해지 시까지 보관, 메일 하단에서 언제든 해지)</label>
+      <label class="r" style="font-size:12.5px;flex-wrap:nowrap;align-items:flex-start"><input type="checkbox" id="gAgree" style="margin-top:3px"> <span><b>[필수]</b> 갭 알림 발송을 위한 이메일 수집·이용에 동의합니다 (수집 항목: 이메일·관심 단지 / 보관: 알림 해지 시까지 / 메일 하단에서 언제든 해지)</span></label>
+      <label class="r" style="font-size:12.5px;flex-wrap:nowrap;align-items:flex-start"><input type="checkbox" id="gMkt" style="margin-top:3px"> <span><b>[선택]</b> 장대장부동산그룹의 부동산 시장 정보·급매·세미나·상담 안내 등 <b>광고성 정보</b>를 이메일로 받는 데 동의합니다. 동의하지 않아도 갭 알림은 받을 수 있으며, 언제든 철회할 수 있습니다.</span></label>
       <button class="btnA" id="gSub">알림 신청</button> <span id="gMsg" class="mini"></span>
     </div>`;
   $('gSub').onclick=async()=>{
     const A=window.JDJ_AGENTS, msg=$('gMsg'); msg.style.color='#A23B2A';
-    if(!$('gAgree').checked){ msg.textContent='동의에 체크해 주세요.'; return; }
+    if(!$('gAgree').checked){ msg.textContent='[필수] 동의에 체크해 주세요.'; return; }
     const cond=document.querySelector('input[name=gcond]:checked').value;
     const val= cond==='below' ? Math.round(parseFloat($('gBelow').value)*10000) : parseFloat($('gPct').value);
     const pack=x=>({key:x.key, sido:x.sido, name:x.name, area:x.area});
     $('gSub').disabled=true; msg.style.color='#6B6A58'; msg.textContent='등록 중…';
     try{
-      await A.post({action:'alert_sub', email:$('gMail').value, agree:true, mine:pack(m), target:pack(t), cond, val, baseGap:gap});
+      await A.post({action:'alert_sub', email:$('gMail').value, agree:true, mine:pack(m), target:pack(t), cond, val, baseGap:gap, marketing:$('gMkt').checked});
       msg.style.color='#4E6B2E'; msg.textContent='등록되었습니다. 확인 메일을 보내 드렸어요.';
-      JDJ.track('gap_alert_sub',{cond});
+      JDJ.track('gap_alert_sub',{cond, marketing:$('gMkt').checked?1:0});
     }catch(e){ msg.style.color='#A23B2A'; msg.textContent=e.message; $('gSub').disabled=false; }
   };
 }

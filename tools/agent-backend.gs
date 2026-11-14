@@ -313,7 +313,7 @@ function statsFor(id) {
    ===================================================================== */
 const SH_AL = '알림';
 const AL_H = ['id','이메일','지금집','지금집키','지금집시도','지금집면적','갈아탈집','갈아탈집키','갈아탈집시도','갈아탈집면적',
-              '조건','조건값','기준갭','최근갭','등록일','최근점검','최근알림','상태','토큰'];
+              '조건','조건값','기준갭','최근갭','등록일','최근점검','최근알림','상태','토큰','마케팅동의','마케팅동의일'];
 const AC = Object.fromEntries(AL_H.map((h, i) => [h, i]));
 const DATA_URL = 'https://chrisjangdaejang-ux.github.io/jangdaejang-timing/data/';
 const SITE_URL = 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/switch/';
@@ -327,6 +327,8 @@ function alertSheet() {
     sh.getRange(1, 1, 1, AL_H.length).setValues([AL_H]).setFontWeight('bold').setBackground('#3B3F22').setFontColor('#F5EFDC');
     sh.setFrozenRows(1);
   }
+  if (sh.getRange(1, AL_H.length).getValue() !== AL_H[AL_H.length - 1])     // 예전 시트면 새 열 제목 채움
+    sh.getRange(1, 1, 1, AL_H.length).setValues([AL_H]).setFontWeight('bold').setBackground('#3B3F22').setFontColor('#F5EFDC');
   return sh;
 }
 
@@ -369,6 +371,7 @@ function alertSub(b) {
   row[AC['갈아탈집']] = str(t.name, 80); row[AC['갈아탈집키']] = str(t.key, 160); row[AC['갈아탈집시도']] = str(t.sido, 20); row[AC['갈아탈집면적']] = Number(t.area);
   row[AC['조건']] = cond; row[AC['조건값']] = val; row[AC['기준갭']] = base; row[AC['최근갭']] = base;
   row[AC['등록일']] = new Date(); row[AC['최근점검']] = ''; row[AC['최근알림']] = ''; row[AC['상태']] = '활성'; row[AC['토큰']] = token;
+  row[AC['마케팅동의']] = b.marketing ? 'Y' : 'N'; row[AC['마케팅동의일']] = b.marketing ? new Date() : '';
   sh.appendRow(row);
   const condTxt = cond === 'below' ? `갭이 ${eok(val)} 이하로 좁혀지면` : `갭이 지금보다 ${val}% 이상 줄거나 늘면`;
   try {
