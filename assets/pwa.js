@@ -19,7 +19,7 @@
   }
   function openExternal() {
     const url = externalUrl();
-    if (isKakao) { location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(url); return true; }
+    if (isKakao && !isAndroid) { location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(url); return true; }
     if (isLine) { location.href = url + '&openExternalBrowser=1'; return true; }
     if (isAndroid) {
       const u = new URL(url);
