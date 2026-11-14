@@ -507,6 +507,9 @@ function renderTarget(c,dsr){
 
 function renderTips(c,dsr,P,ld){
   const tips=[];
+  if (c.ltv>0 && c.income*0.4 - c.debt <= 0){
+    tips.push(['warn',`<b>추가 대출이 0원입니다.</b> 기존 대출 1년 원리금(${fmt(c.debt)}원)이 연소득의 40%를 넘었습니다. 대출 <b>잔액</b>이 아니라 1년 동안 갚는 원금+이자 합계를 넣었는지 확인해 주세요.`]);
+  }
   if (c.ltv===0){
     tips.push(['warn',`<b>다주택자는 ${c.R.capital?'수도권':''}${c.R.regulated?'규제지역':''}에서 주택구입 목적 주담대를 받을 수 없습니다.</b> 표의 금액은 현금만으로 살 수 있는 범위입니다.`]);
   }
