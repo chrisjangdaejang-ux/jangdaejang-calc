@@ -45,8 +45,11 @@ body{margin:0;background:var(--cream);color:var(--ink);font-family:'Noto Sans KR
 .chip.reg{position:relative}
 .chip.reg:after{content:"규제";font-size:9px;margin-left:4px;color:var(--gold)}
 .chip.on.reg:after{color:var(--gold2)}
-.smallbtns{display:flex;gap:6px;margin-top:8px}
-.smallbtns button{font:inherit;font-size:12px;border:0;background:none;color:var(--olive);text-decoration:underline;cursor:pointer;padding:0}
+.smallbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.smallbtns button{font:inherit;font-size:14px;font-weight:900;background:#fff;color:var(--olive);border:2px solid var(--olive);border-radius:8px;padding:8px 14px;cursor:pointer}
+.smallbtns button:hover{background:var(--olive);color:var(--cream)}
+.smallbtns button#sggNone{border-color:var(--red);color:var(--red)}
+.smallbtns button#sggNone:hover{background:var(--red);color:#fff}
 /* report */
 .page{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:18px}
 .cover{background:var(--olive);color:var(--cream);padding:30px 28px;position:relative;overflow:hidden}
