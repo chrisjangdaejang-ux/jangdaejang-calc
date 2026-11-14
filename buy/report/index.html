@@ -108,6 +108,9 @@ tr.hl td{background:rgba(184,148,42,.12);font-weight:700}
 .reasons li:before{content:"✓";position:absolute;left:0;color:var(--green);font-weight:900}
 .reasons li.c:before{content:"!";color:var(--red)}
 .reasons li.r:before{content:"◆";color:var(--gold);font-size:10px;top:3px}
+.reasons li.f:before{content:"★";color:var(--gold)}
+.fvbox{border:1.5px solid var(--gold);background:rgba(184,148,42,.08);border-radius:10px;padding:12px 14px;margin:0 0 14px;font-size:13.5px;line-height:1.6}
+.fvbox b.big{font-size:17px;color:var(--olive)}
 .bar{height:6px;background:var(--cream2);border-radius:3px;overflow:hidden;margin-top:4px;width:120px}
 .bar i{display:block;height:100%;background:var(--gold)}
 .spark{display:block;margin-top:2px}
@@ -322,7 +325,8 @@ function maxPrice(c,dsr){
 const BY_TXT = {LTV:'LTV(집값 대비 비율)', CAP:'가격구간별 대출 한도', DSR:'소득(DSR 40%)', BAN:'주택구입 주담대 불가'};
 
 /* ---------- 데이터 ---------- */
-async function loadIndex(){ const r=await fetch(DATA+'index.json',{cache:'no-cache'}); if(!r.ok) throw new Error('index'); return r.json(); }
+let MODEL=null;
+async function loadIndex(){ try{ const m=await fetch(DATA+'model.json',{cache:'no-cache'}); MODEL=m.ok?await m.json():null; }catch(e){} const r=await fetch(DATA+'index.json',{cache:'no-cache'}); if(!r.ok) throw new Error('index'); return r.json(); }
 async function loadSido(id){ if(SIDO_CACHE[id]) return SIDO_CACHE[id]; const r=await fetch(DATA+id+'.json',{cache:'no-cache'}); if(!r.ok) throw new Error(id); const j=await r.json(); SIDO_CACHE[id]=j.units; return j.units; }
 function sggName(code){ const s=IX.sgg[code]; return s ? s.name : code; }
 function sidoOfCode(code){ const s=IX.sgg[code]; return s ? s.sido : ''; }
@@ -411,8 +415,11 @@ function pickCandidates(units, maxBy, ctxBy, dsrBy){
     }
     const sVal = Math.max(0, Math.min(1, 0.5 + rel));
     const sNote = noteOf(code) ? 1 : 0.4;
-    const score = 0.28*sBudget + 0.30*sLiq + 0.16*sMom + 0.14*sVal + 0.12*sNote;
-    out.push({code,dong,apt,band,area,n,series,P,g,c,nd,fit,ch,rel,score,large,mon:monthly(nd.loan.L,c.rate,c.term)});
+    const fx = u[9] || null, fvS = (fx && fx.fv!=null) ? fx.fv/100 : null;
+    // 미래가치 점수(백테스트 검증)가 있으면 그게 중심, 없으면 기존 기준
+    const score = fvS!==null ? 0.42*fvS + 0.25*sBudget + 0.20*sLiq + 0.13*sNote
+                             : 0.28*sBudget + 0.30*sLiq + 0.16*sMom + 0.14*sVal + 0.12*sNote;
+    out.push({code,dong,apt,band,area,n,series,P,g,c,nd,fit,ch,rel,score,large,fx,mon:monthly(nd.loan.L,c.rate,c.term)});
   }
   out.sort((a,b)=>b.score-a.score);
   const picked=[], perSgg={}, seenApt=new Set();
@@ -439,8 +446,20 @@ function nearMisses(units, ctxBy, dsrBy){
   const res=[]; for(const x of out){ const k=x.code+x.apt; if(seen.has(k)) continue; seen.add(k); res.push(x); if(res.length>=10) break; }
   return res;
 }
+function futureReasons(x){
+  const f=x.fx, r=[]; if(!f) return r;
+  const pct=v=>Math.round(Math.abs(v)*100);
+  if (f.fv!=null) r.push(['f', `미래가치 ${f.fv}점 — ${sggName(x.code)} 단지 중 상위 ${Math.max(1,100-f.fv)}% (과거 데이터로 검증한 점수)`]);
+  if (f.dd!=null && Math.abs(f.dd)>=0.03) r.push([f.dd>0?'f':'c', f.dd>0 ? `2022~23 하락기에 구 평균보다 ${pct(f.dd)}%p 덜 빠짐 — 가격 방어력이 강한 단지` : `2022~23 하락기에 구 평균보다 ${pct(f.dd)}%p 더 빠짐 — 하락기 변동성 큰 편`]);
+  if (f.rc!=null && Math.abs(f.rc)>=0.03) r.push(['f', f.rc>0 ? `2021~22 고점 대비 회복이 구 평균보다 ${pct(f.rc)}%p 빠름` : `2021~22 고점 대비 회복이 구 평균보다 ${pct(f.rc)}%p 느림 — 아직 회복 여지`]);
+  if (f.by){ const age=new Date().getFullYear()-f.by;
+    r.push(['f', `${f.by}년 준공(${age}년차)` + (age<=10?' — 신축':age>=25?' — 재건축 연한(30년)에 가까워지는 단지':'')]); }
+  if (f.lg!=null) r.push(['f', f.lg>=0.98 ? `${x.dong} 대장 단지(동 내 최고 시세)` : `${x.dong} 대장 단지 대비 ${pct(1-f.lg)}% 낮은 시세`]);
+  if (f.jr!=null) r.push(['f', `전세가율 ${Math.round(f.jr*100)}%` + (f.jr>=0.6?' — 실거주 수요가 탄탄한 편':f.jr<0.4?' — 매매가 대비 전세가 낮음(투자 수요 비중 큼)':'')]);
+  return r;
+}
 function reasons(x){
-  const r=[];
+  const r=futureReasons(x);
   const gap = S.cash - x.nd.need;
   r.push(['', `예산 적합: 매수 가능액의 ${Math.round(x.fit*100)}% 수준 · 모든 비용을 내고도 현금 ${fmt(gap)} 남음`]);
   if (x.n>=60) r.push(['', `거래 활발: 최근 1년 실거래 ${x.n}건 — 팔 때도 수요가 꾸준한 단지`]);
@@ -578,6 +597,9 @@ async function render(){
       `</tbody></table><div id="agentSec" class="agsec"></div>`;
     }
   } else {
+    if (MODEL && MODEL.top20_excess!=null && picked.some(x=>x.fx&&x.fx.fv!=null)) h += `<div class="fvbox">★ <b>미래가치 점수는 이렇게 검증했습니다</b><br>
+      ${MODEL.t0.slice(0,4)}년 ${+MODEL.t0.slice(4)}월 시점의 국토부 실거래 자료만으로 전국 ${MODEL.n.toLocaleString()}개 단지·평형에 점수를 매겼더니, 각 구에서 점수 상위 20% 단지가 이후 2년간 같은 구 평균보다 <b class="big">${MODEL.top20_excess>0?'+':''}${MODEL.top20_excess}%</b> ${MODEL.top20_excess>=0?'더':'덜'} 올랐습니다 (하위 20%는 ${MODEL.bottom20_excess>0?'+':''}${MODEL.bottom20_excess}%).
+      <br><small style="color:var(--muted)">반영 지표: 하락기 방어력·고점 회복률·최근 흐름·동 대장 대비 가격·연식·전세가율·거래량. 과거 결과가 미래 수익을 보장하지는 않습니다.</small></div>`;
     h += `<div class="cards">` + picked.map((x,i)=>{
       const rs = reasons(x);
       return `<div class="card ${i<3?'best':''}">
