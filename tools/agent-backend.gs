@@ -454,8 +454,9 @@ function checkAlerts() {
       hit = Math.abs(pct) >= val;
       why = `갭이 기준(${eok(base)}) 대비 ${pct > 0 ? '+' : ''}${pct.toFixed(1)}% ${pct < 0 ? '좁혀졌습니다' : '벌어졌습니다'}.`;
     }
+    if (hit && (sent >= 80 || MailApp.getRemainingDailyQuota() < 5)) continue;   // 한도 초과분은 최근갭을 그대로 둬서 내일 다시 보냄
     sh.getRange(i + 1, AC['최근갭'] + 1).setValue(gap);
-    if (!hit || sent >= 80) continue;
+    if (!hit) continue;
     try {
       MailApp.sendEmail({
         to: r[AC['이메일']], name: '장대장 갈아타기 알림',
