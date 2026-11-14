@@ -10,6 +10,30 @@
   const inApp = /KAKAOTALK|NAVER\(inapp|Instagram|FBAN|FBAV|BAND\/|Line\/|DaumApps|everytimeApp/i.test(ua);
   const isMobile = /Android|iPhone|iPad|iPod/.test(ua) || isIOS;
   const ga = (n, p) => { try { window.gtag && gtag('event', n, p || {}); } catch (e) {} };
+  const isAndroid = /Android/i.test(ua);
+  const isKakao = /KAKAOTALK/i.test(ua), isLine = /Line\//i.test(ua);
+
+  /* 앱 안 브라우저(카톡·밴드·네이버 등)로 열리면 자동으로 크롬/사파리로 옮겨 연다 */
+  function externalUrl() {
+    const u = new URL(location.href); u.searchParams.set('ext', '1'); return u.toString();
+  }
+  function openExternal() {
+    const url = externalUrl();
+    if (isKakao) { location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(url); return true; }
+    if (isLine) { location.href = url + '&openExternalBrowser=1'; return true; }
+    if (isAndroid) {
+      const u = new URL(url);
+      location.href = 'intent://' + u.host + u.pathname + u.search + '#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent(url) + ';end';
+      return true;
+    }
+    return false;                                                  // 아이폰 일반 인앱(카톡 제외)은 자동 전환 불가
+  }
+  const fromExt = new URLSearchParams(location.search).has('ext');
+  if (inApp && !fromExt && !noBar) {
+    let moved = false;
+    try { moved = openExternal(); } catch (e) {}
+    if (moved) ga('inapp_redirect', { kakao: isKakao, android: isAndroid });
+  }
   const KEY = 'jdj_pwa_hide';
   const hidden = () => { try { return +localStorage.getItem(KEY) > Date.now(); } catch (e) { return false; } };
   const hideFor = d => { try { localStorage.setItem(KEY, Date.now() + d * 864e5); } catch (e) {} };
@@ -48,7 +72,8 @@
       deferred.prompt(); ga('pwa_prompt');
       const r = await deferred.userChoice.catch(() => null); deferred = null;
       if (r && r.outcome === 'accepted') { ga('pwa_install'); close(30); }
-    } else how();
+    } else if (inApp && openExternal()) { ga('inapp_redirect_click'); }
+    else how();
   }
   function close(days) { if (bar) bar.remove(); bar = null; hideFor(days); }
   function show(force) {
@@ -67,6 +92,6 @@
   window.JDJ_PWA = { show: () => show(true), install };
   // 계산기를 조금 써 본 뒤(12초 또는 화면을 내린 뒤) 한 번만 안내
   if (noBar) return;
-  let t = setTimeout(() => show(false), 12000);
+  let t = setTimeout(() => show(false), fromExt ? 2500 : 12000);
   window.addEventListener('scroll', function f() { if (scrollY > 600) { clearTimeout(t); window.removeEventListener('scroll', f); setTimeout(() => show(false), 1500); } }, { passive: true });
 })();
