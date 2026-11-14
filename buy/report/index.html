@@ -471,13 +471,19 @@ function futureReasons(x){
   if (f.rc!=null && Math.abs(f.rc)>=0.03) r.push(['f', f.rc>0 ? `2021~22 고점 대비 회복이 구 평균보다 ${pct(f.rc)}%p 빠름` : `2021~22 고점 대비 회복이 구 평균보다 ${pct(f.rc)}%p 느림 — 아직 회복 여지`]);
   if (f.by || f.hh){ const age=f.by ? new Date().getFullYear()-f.by : null;
     const parts=[]; if(f.by) parts.push(`${f.by}년 준공(${age}년차)`); if(f.hh) parts.push(`${f.hh.toLocaleString()}세대`);
-    const tags=[]; if(age!=null && age<=10) tags.push('신축'); if(age!=null && age>=25) tags.push('재건축 연한(30년)에 가까워지는 단지');
+    const tags=[]; if(age!=null && age<=10) tags.push('신축');
+    if(age!=null && age>=30) tags.push('재건축 연한(30년) 도래, 새 아파트 기대감이 가격에 반영되는 단지');
+    else if(age!=null && age>=25) tags.push(`${30-age}년 뒤 재건축 연한(30년) 도래`);
     if(f.hh>=1000) tags.push('대단지'); else if(f.hh && f.hh<300) tags.push('소규모 단지');
     r.push(['f', parts.join(' · ') + (tags.length?' — '+tags.join(' · '):'')]); }
   if (f.lg!=null){
-    const own = f.ln && (f.ln===x.apt);
-    r.push(['f', own || f.lg>=0.995 ? `${x.dong} 대장 단지 (같은 평형 비교 평당가 1위)`
-      : `${x.dong} 대장 단지${f.ln?`(${f.ln})`:''}보다 같은 평형 기준 ${pct(1-f.lg)}% 낮은 시세`]); }
+    const own = f.ln && (f.ln===x.apt), Y=new Date().getFullYear();
+    const la = f.lb ? Y-f.lb : null;
+    const ltag = la==null ? '' : la>=30 ? ' · 재건축 기대감' : la<=10 ? ` · ${f.lb}년 신축` : '';
+    if (own || f.lg>=0.995) r.push(['f', `${x.dong} 대장 단지 — 같은 평형끼리 비교해 동에서 가장 비싸게 거래되는 단지`]);
+    else r.push(['f', `${x.dong} 대장 단지(${f.ln}${ltag})보다 같은 평형 기준 ${pct(1-f.lg)}% 낮은 시세` +
+      (la!=null && la>=30 ? ' — 대장은 재건축 후 새 아파트 가치가 미리 반영된 가격' : '')]);
+  }
   if (f.jr!=null) r.push(['f', `전세가율 ${Math.round(f.jr*100)}%` + (f.jr>=0.6?' — 실거주 수요가 탄탄한 편':f.jr<0.4?' — 매매가 대비 전세가 낮음(투자 수요 비중 큼)':'')]);
   return r;
 }
