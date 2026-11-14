@@ -165,7 +165,19 @@ tr.hl td{background:rgba(184,148,42,.12);font-weight:700}
 .agm .acts .btn{flex:1;text-align:center}
 .agm .x{position:absolute;right:10px;top:8px;border:0;background:none;font-size:22px;cursor:pointer;color:var(--muted)}
 .agm .disc{font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.5}
-@media print{.agm-bg,.agjoin,.agbtn{display:none!important}}
+.agt{border-top:1px dashed var(--line);padding-top:10px}
+.agchip{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:13px;font-weight:700;background:#fff;border:1.5px solid var(--olive);color:var(--olive);padding:6px 12px;border-radius:999px;cursor:pointer}
+.agchip:hover{background:var(--olive);color:var(--cream)}
+.agchip .b{font-size:10.5px;background:var(--green);color:#fff;padding:1px 6px;border-radius:999px}
+.agchip .tel{font-weight:500;font-size:12px;opacity:.8}
+.agwant{font-size:14px;color:var(--ink);font-weight:700}
+.agwant a{color:var(--red);font-weight:900;text-decoration:underline}
+.agcta{margin-top:20px;background:var(--olive);color:var(--cream);border-radius:12px;padding:18px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:space-between;border:2px solid var(--gold)}
+.agcta b{font-size:19px;font-weight:900;letter-spacing:-.03em;display:block}
+.agcta b em{font-style:normal;color:var(--gold2)}
+.agcta span{font-size:13.5px;color:#DDD7BF}
+.agcta a{background:var(--gold);color:var(--ink);font-weight:900;font-size:16px;padding:12px 20px;border-radius:9px;text-decoration:none;white-space:nowrap}
+@media print{.agm-bg,.agjoin,.agbtn,.agchip,.agwant,.agcta{display:none!important}}
 </style>
 </head>
 <body>
@@ -644,36 +656,32 @@ function agCard(a, g, rk){
 }
 async function fillAgents(picked){
   const A = window.JDJ_AGENTS;
+  const box = $('agentSec');
   if (!A || !A.ready || !picked.length) return;
+  /* 공인중개사 모집 배너 — 항상 크게 */
+  if (box) box.innerHTML = `<div class="agcta noprint"><div><b>공인중개사님, <em>이 단지들 옆에</em> 사무소를 노출하세요</b>
+    <span>고객이 살 수 있는 단지가 추천될 때 그 단지 카드에 바로 연결됩니다 · 시범 기간 무료 · 구당 3곳 한정</span></div>
+    <a href="../../agent/" target="_blank" rel="noopener" data-track="agent_join_click">제휴 신청하기 →</a></div>`;
   const res = await A.list();
   const list = (res && res.agents) || [];
   AG = {}; list.forEach(a=>AG[a.id]=a);
-  /* 단지 카드: 그 단지 매물을 등록한 중개사 */
+  const slot = res.slot || 3;
+  /* 추천 단지 1~10위 카드마다: 그 단지 매물 보유 > 같은 동 사무소 > 같은 구 사무소 > 추가 지역, 같은 순위는 무작위 */
   document.querySelectorAll('.agt').forEach(el=>{
-    const k = el.dataset.k, g = el.dataset.g;
-    const hit = shuffle(list.filter(a=>a.dj.includes(k) && a.r.includes(g))).slice(0,2);
-    if (!hit.length) return;
-    el.innerHTML = `<span class="agt-l">이 단지 매물 보유 중개사<em>제휴</em></span>` +
-      hit.map(a=>`<button class="agbtn" data-a="${a.id}" data-g="${g}" data-k="${esc(k)}">${esc(a.n)}</button>`).join('');
-    hit.forEach(a=>A.log('imp', a.id, g, k));
-  });
-  /* 추천 지역별 제휴 중개사: 매물 보유 > 같은 동 사무소 > 같은 구 사무소 > 추가 지역, 같은 순위는 무작위 */
-  const gus = [...new Set(picked.map(x=>x.code))];
-  const pk = new Set(picked.map(x=>x.code+'|'+x.dong+'|'+x.apt));
-  const dongs = new Set(picked.map(x=>x.code+'|'+x.dong));
-  let html = '';
-  for (const g of gus){
+    const k = el.dataset.k, g = el.dataset.g, dong = k.split('|')[1];
     const cand = list.filter(a=>a.r.includes(g));
-    if (!cand.length) continue;
-    const rank = a => a.dj.some(k=>k.startsWith(g+'|') && pk.has(k)) ? 0 : (a.og===g && dongs.has(g+'|'+a.dong) ? 1 : (a.og===g ? 2 : 3));
-    const top = shuffle(cand).sort((x,y)=>rank(x)-rank(y)).slice(0, res.slot||3);
-    html += `<div class="agrow"><h4>${esc(sggName(g))}</h4><div class="aglist">${top.map(a=>agCard(a,g,rank(a))).join('')}</div></div>`;
-    top.forEach(a=>A.log('imp', a.id, g, ''));
-  }
-  const box = $('agentSec'); if (!box) return;
-  box.innerHTML = (html ? `<h3>추천 지역 공인중개사<em>제휴·광고</em></h3>
-    <p class="sub">추천 단지가 있는 지역의 제휴 중개사무소입니다. 매물·가격·거래 조건은 중개사무소에 직접 확인하세요.</p>${html}` : '') +
-    `<p class="agjoin noprint">공인중개사이신가요? 추천 단지 지역에 사무소를 노출해 보세요 → <a href="../../agent/" target="_blank" rel="noopener" data-track="agent_join_click">제휴 안내</a></p>`;
+    if (!cand.length){
+      el.innerHTML = `<span class="agwant noprint">이 단지 지역 제휴 중개사 모집 중 · <a href="../../agent/" target="_blank" rel="noopener" data-track="agent_join_click">공인중개사 제휴 신청</a></span>`;
+      return;
+    }
+    const rank = a => a.dj.includes(k) ? 0 : (a.og===g && a.dong===dong ? 1 : (a.og===g ? 2 : 3));
+    const top = shuffle(cand).sort((x,y)=>rank(x)-rank(y)).slice(0, slot);
+    el.innerHTML = `<span class="agt-l">이 단지 문의 중개사<em>제휴</em></span>` + top.map(a=>{
+      const r = rank(a), badge = r===0 ? '매물 보유' : (r===1 ? '같은 동' : '');
+      return `<button class="agchip agbtn" data-a="${a.id}" data-g="${g}" data-k="${esc(k)}">${badge?`<span class="b">${badge}</span>`:''}${esc(a.n)}<span class="tel">${esc(a.ph)}</span></button>`;
+    }).join('');
+    top.forEach(a=>A.log('imp', a.id, g, k));
+  });
 }
 function openAgent(id, g, k){
   const a = AG[id]; if (!a) return;
