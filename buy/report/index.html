@@ -690,7 +690,12 @@ async function fillAgents(picked){
     const k = el.dataset.k, g = el.dataset.g, dong = k.split('|')[1];
     const cand = list.filter(a=>a.r.includes(g));
     if (!cand.length){
-      el.innerHTML = `<span class="agwant noprint">이 단지 지역 제휴 중개사 모집 중 · <a href="../../agent/" target="_blank" rel="noopener" data-track="agent_join_click">공인중개사 제휴 신청</a></span>`;
+      /* 제휴 중개사가 없는 구: 고객은 장대장 상담으로 연결, 중개사에겐 작은 모집 안내 */
+      const apt = k.split('|')[2];
+      const q = new URLSearchParams({usp:'pp_url'});
+      q.set('entry.397234060', sggName(g)+' '+dong); q.set('entry.658364183', `[단지 문의] ${apt} (${sggName(g)} ${dong}) | ${JDJ.label()}`);
+      el.innerHTML = `<a class="agopen noprint" href="${FORM}?${q.toString().replace(/\+/g,'%20')}" target="_blank" rel="noopener" data-track="danji_consult" style="text-decoration:none">이 단지 상담 받기 <i>→</i></a>
+        <span class="agwant noprint" style="margin-left:10px;font-size:12.5px;font-weight:500;color:var(--muted)">공인중개사이신가요? <a href="../../agent/" target="_blank" rel="noopener" data-track="agent_join_click">이 지역 제휴 신청</a></span>`;
       return;
     }
     const rank = a => a.dj.includes(k) ? 0 : (a.og===g && a.dong===dong ? 1 : (a.og===g ? 2 : 3));
