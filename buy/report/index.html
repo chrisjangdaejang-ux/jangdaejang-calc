@@ -689,6 +689,7 @@ async function fillAgents(picked){
     const own = all.filter(a=>rank(a)===0).length;
     el.innerHTML = `<button class="agopen noprint">공인중개사 연결하기 · ${all.length}곳${own?` <span class="b">매물 보유 ${own}곳</span>`:''} <i>▾</i></button>
       <div class="aglist2" hidden><span class="agt-l">이 단지 문의 가능한 제휴 중개사<em>제휴·광고</em></span>${all.map(a=>chip(a,g,k,rank(a))).join('')}</div>`;
+    A.log('rec', all.map(a=>a.id).sort().join(','), g, k);   // 카드에 추천 표시(펼치기 전)
     const btn = el.querySelector('.agopen'), box = el.querySelector('.aglist2');
     let logged = false;
     btn.onclick = ()=>{

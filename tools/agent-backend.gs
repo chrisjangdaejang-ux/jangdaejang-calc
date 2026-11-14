@@ -228,12 +228,20 @@ function update(b) {
   return meOut(list2.find(a => a.id === me.id), list2);
 }
 
-/* 노출·열람·전화·카톡 기록 */
+/* 기록: rec = 추천 단지 카드에 표시(펼치기 전, 한 줄에 여러 중개사 id), imp = [공인중개사 연결하기]로 목록 펼침,
+   view = 정보 창 열람, call = 전화 버튼, kakao = 카톡 버튼 */
+const TYPES = ['rec', 'imp', 'view', 'call', 'kakao'];
+const ID_RE = /^A[0-9A-F]{7}$/;
 function logEvents(b) {
   const ev = (b.events || []).slice(0, 40);
   const vid = str(b.vid, 40), now = new Date();
-  const rows = ev.filter(x => ['imp', 'view', 'call', 'kakao'].indexOf(x.t) >= 0 && /^A[0-9A-F]{7}$/.test(x.a) && /^\d{5}$/.test(x.g))
-    .map(x => [now, x.t, x.a, x.g, str(x.k, 120), vid]);
+  const rows = [];
+  ev.forEach(x => {
+    if (TYPES.indexOf(x.t) < 0 || !/^\d{5}$/.test(x.g)) return;
+    const ids = String(x.a || '').split(',').filter(id => ID_RE.test(id)).slice(0, 80);
+    if (!ids.length || (x.t !== 'rec' && ids.length > 1)) return;
+    rows.push([now, x.t, ids.join(','), x.g, str(x.k, 120), vid]);
+  });
   if (rows.length) {
     const sh = book().getSheetByName(SH_L);
     sh.getRange(sh.getLastRow() + 1, 1, rows.length, 6).setValues(rows);
@@ -242,25 +250,30 @@ function logEvents(b) {
 }
 
 /* 이번 달·지난 달 성과 */
+function zero() { return { rec: 0, imp: 0, view: 0, call: 0, kakao: 0 }; }
 function statsFor(id) {
   const sh = book().getSheetByName(SH_L);
   const n = sh.getLastRow();
   const res = {};
-  if (n < 2) return res;
-  const vals = sh.getRange(2, 1, n - 1, 5).getValues();
   const now = new Date();
   const keep = [Utilities.formatDate(now, 'Asia/Seoul', 'yyyy-MM'),
                 Utilities.formatDate(new Date(now.getFullYear(), now.getMonth() - 1, 15), 'Asia/Seoul', 'yyyy-MM')];
-  keep.forEach(m => res[m] = { tot: { imp: 0, view: 0, call: 0, kakao: 0 }, gu: {}, dj: {} });
+  keep.forEach(m => res[m] = { tot: zero(), gu: {}, dj: {} });
+  if (n < 2) return res;
+  const vals = sh.getRange(2, 1, n - 1, 5).getValues();
   for (const r of vals) {
-    if (String(r[2]) !== id || !(r[0] instanceof Date)) continue;
+    if (!(r[0] instanceof Date)) continue;
+    if (String(r[2]).split(',').indexOf(id) < 0) continue;
     const m = Utilities.formatDate(r[0], 'Asia/Seoul', 'yyyy-MM');
     if (!res[m]) continue;
     const t = String(r[1]), g = String(r[3]), k = String(r[4] || '');
     res[m].tot[t] = (res[m].tot[t] || 0) + 1;
-    const G = res[m].gu[g] = res[m].gu[g] || { imp: 0, view: 0, call: 0, kakao: 0 };
+    const G = res[m].gu[g] = res[m].gu[g] || zero();
     G[t] = (G[t] || 0) + 1;
-    if (k && t === 'imp') res[m].dj[k] = (res[m].dj[k] || 0) + 1;
+    if (k && (t === 'rec' || t === 'imp')) {
+      const D = res[m].dj[k] = res[m].dj[k] || { rec: 0, imp: 0 };
+      D[t]++;
+    }
   }
   return res;
 }

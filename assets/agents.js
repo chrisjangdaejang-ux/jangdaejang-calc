@@ -19,11 +19,11 @@
         .then(r=>r.json()).then(j=>{ if(!j.ok) throw new Error(j.err||'처리하지 못했습니다.'); return j; });
     },
     _q: [], _t: null, _seen: new Set(),
-    /* t: imp|view|call|kakao, a: 중개사 id, g: 구 코드, k: 단지 키(선택) — 같은 화면에서 같은 노출은 한 번만 */
+    /* t: rec(추천 카드 표시, a에 여러 id 가능)|imp(목록 펼침)|view|call|kakao, a: 중개사 id, g: 구 코드, k: 단지 키(선택) — 같은 화면에서 같은 노출은 한 번만 */
     log(t, a, g, k){
       if (!API) return;
       const key = [t,a,g,k||''].join('|');
-      if (t==='imp' && A._seen.has(key)) return;
+      if ((t==='imp'||t==='rec') && A._seen.has(key)) return;
       A._seen.add(key);
       A._q.push({t, a, g, k:k||''});
       clearTimeout(A._t);

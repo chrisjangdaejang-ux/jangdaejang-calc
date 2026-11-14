@@ -84,11 +84,15 @@ table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}
 th,td{border-bottom:1px solid #EFE6CC;padding:7px 6px;text-align:left}
 th{color:var(--muted);font-size:12px}
 td.num,th.num{text-align:right}
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:6px}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:6px}
 .kpi{background:var(--cream);border-radius:9px;padding:10px 12px}
 .kpi .k{font-size:12px;color:var(--muted);font-weight:700}
 .kpi .v{font-size:22px;font-weight:900}
-@media(max-width:560px){.kpis{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.kpis{grid-template-columns:1fr 1fr}}
+.kpi.main{background:var(--olive);color:var(--cream)}
+.kpi.main .k{color:var(--gold2)}
+.kpi small{display:block;font-size:11px;color:var(--muted);font-weight:500}
+.kpi.main small{color:#CFC9AE}
 .notice{background:#FFF3D6;border:1px solid var(--gold2);border-radius:9px;padding:12px 14px;font-size:14px;margin-top:12px}
 .foot{font-size:12px;color:var(--muted);margin-top:22px}
 .foot a{color:var(--olive)}
@@ -106,14 +110,14 @@ td.num,th.num{text-align:right}
   <div class="steps">
     <div class="step"><b><span class="n">1</span>지역 노출</b><p>사무소 구 + 원하는 구 2곳, 총 3개 구의 단지가 추천되면 추천 단지 카드마다 사무소가 연락처와 함께 노출됩니다.</p></div>
     <div class="step"><b><span class="n">2</span>매물 단지 상위 노출</b><p>매물을 가진 단지(최대 10개)를 등록하면, 그 단지 카드에서 ‘매물 보유’ 표시와 함께 맨 앞에 노출됩니다.</p></div>
-    <div class="step"><b><span class="n">3</span>성과 확인</b><p>노출·정보 열람·전화·카톡 클릭 수를 구별·단지별로 [내 관리]에서 확인합니다.</p></div>
+    <div class="step"><b><span class="n">3</span>성과 확인</b><p>추천 노출·목록 펼침·정보 열람·전화·카톡 클릭 수를 구별·단지별로 [내 관리]에서 확인합니다.</p></div>
   </div>
 
   <div class="box">
     <h2>노출 규칙</h2>
     <ul class="rules">
       <li><b>지역</b> — 사무소가 있는 구는 고정, 추가 2개 구는 같은 시·도 안에서 매물 상황에 맞게 [내 관리]에서 언제든 바꿀 수 있습니다.</li>
-      <li><b>노출 위치</b> — 리포트 추천 단지 1~10위 카드마다 [공인중개사 연결하기] 버튼이 붙고, 고객이 누르면 그 단지가 있는 구를 선택한 제휴 중개사가 <b>모두</b> 연락처와 함께 펼쳐집니다. 성과표의 ‘노출’은 고객이 이 목록을 펼쳐 본 횟수입니다.</li>
+      <li><b>노출 위치</b> — 리포트 추천 단지 1~10위 카드마다 [공인중개사 연결하기] 버튼이 붙고, 고객이 누르면 그 단지가 있는 구를 선택한 제휴 중개사가 <b>모두</b> 연락처와 함께 펼쳐집니다. 성과표에서 ‘추천 노출’은 내 지역 단지가 추천돼 카드에 표시된 횟수, ‘목록 펼침’은 고객이 버튼을 눌러 중개사 목록을 본 횟수입니다.</li>
       <li><b>노출 순서</b> — ① 그 단지 매물 보유 ② 추천 단지와 같은 동 사무소 ③ 같은 구 사무소 ④ 추가 지역. 같은 순위끼리는 번갈아 노출해 기회를 고르게 나눕니다.</li>
       <li><b>매물 단지</b> — 최대 10개, 3개 구 안의 단지만 등록됩니다. 30일마다 [매물 보유 재확인]을 눌러야 상위 노출이 유지되고, 확인이 없으면 지역 노출로 자동 전환됩니다.</li>
       <li><b>승인</b> — 신청 후 중개사무소 등록번호를 확인하고 승인합니다. 리포트에는 ‘제휴·광고’로 표시됩니다.</li>
@@ -288,7 +292,7 @@ function drawManage(j){
   const m = j.me, sido = sidoByName(m.sido);
   const months = Object.keys(j.stats||{}).sort().reverse();
   const cur = months[0] && j.stats[months[0]];
-  const T = cur ? cur.tot : {imp:0,view:0,call:0,kakao:0};
+  const T = cur ? cur.tot : {rec:0,imp:0,view:0,call:0,kakao:0};
   const stale = m.danji.filter(d=>!d.fresh).length;
   $('m_area').innerHTML = `
     <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between">
@@ -298,17 +302,18 @@ function drawManage(j){
     ${m.waitMemo?`<div class="notice">${esc(m.waitMemo)}</div>`:''}
     <h3>이번 달 성과 <small>${months[0]||''}</small></h3>
     <div class="kpis">
-      <div class="kpi"><div class="k">리포트 노출</div><div class="v">${T.imp||0}</div></div>
-      <div class="kpi"><div class="k">정보 열람</div><div class="v">${T.view||0}</div></div>
+      <div class="kpi main"><div class="k">추천 노출</div><div class="v">${T.rec||0}</div><small>추천 단지 카드에 표시</small></div>
+      <div class="kpi"><div class="k">목록 펼침</div><div class="v">${T.imp||0}</div><small>[연결하기]를 눌러 봄</small></div>
+      <div class="kpi"><div class="k">정보 열람</div><div class="v">${T.view||0}</div><small>내 사무소 정보 창</small></div>
       <div class="kpi"><div class="k">전화 클릭</div><div class="v">${T.call||0}</div></div>
       <div class="kpi"><div class="k">카톡 클릭</div><div class="v">${T.kakao||0}</div></div>
     </div>
-    ${months.map(mo=>{ const s=j.stats[mo]; const gus=Object.keys(s.gu); const djs=Object.entries(s.dj).sort((a,b)=>b[1]-a[1]);
+    ${months.map(mo=>{ const s=j.stats[mo]; const gus=Object.keys(s.gu); const djs=Object.entries(s.dj).map(([k,v])=>[k, typeof v==='number'?{rec:0,imp:v}:v]).sort((a,b)=>(b[1].rec+b[1].imp)-(a[1].rec+a[1].imp));
       return `<h3>${mo} 상세</h3>
-      <table><thead><tr><th>지역</th><th class="num">노출</th><th class="num">열람</th><th class="num">전화</th><th class="num">카톡</th><th class="num">열람률</th></tr></thead><tbody>
-      ${gus.length?gus.map(g=>{const x=s.gu[g];return `<tr><td>${esc(sggName(g))}</td><td class="num">${x.imp||0}</td><td class="num">${x.view||0}</td><td class="num">${x.call||0}</td><td class="num">${x.kakao||0}</td><td class="num">${pct(x.view||0,x.imp||0)}</td></tr>`}).join(''):'<tr><td colspan="6"><small>아직 기록이 없습니다.</small></td></tr>'}
+      <table><thead><tr><th>지역</th><th class="num">추천 노출</th><th class="num">목록 펼침</th><th class="num">열람</th><th class="num">전화</th><th class="num">카톡</th></tr></thead><tbody>
+      ${gus.length?gus.map(g=>{const x=s.gu[g];return `<tr><td>${esc(sggName(g))}</td><td class="num">${x.rec||0}</td><td class="num">${x.imp||0}</td><td class="num">${x.view||0}</td><td class="num">${x.call||0}</td><td class="num">${x.kakao||0}</td></tr>`}).join(''):'<tr><td colspan="6"><small>아직 기록이 없습니다.</small></td></tr>'}
       </tbody></table>
-      ${djs.length?`<table><thead><tr><th>노출된 추천 단지</th><th class="num">추천 노출</th></tr></thead><tbody>${djs.map(([k,n])=>`<tr><td>${esc(k.split('|')[2])} <small>${esc(sggName(k.split('|')[0]))}</small></td><td class="num">${n}</td></tr>`).join('')}</tbody></table>`:''}`;
+      ${djs.length?`<table><thead><tr><th>내가 노출된 추천 단지</th><th class="num">추천 노출</th><th class="num">목록 펼침</th></tr></thead><tbody>${djs.map(([k,n])=>`<tr><td>${esc(k.split('|')[2])} <small>${esc(sggName(k.split('|')[0]))}</small></td><td class="num">${n.rec}</td><td class="num">${n.imp}</td></tr>`).join('')}</tbody></table>`:''}`;
     }).join('')}
     <div id="m_editor"></div>
     ${m.danji.length?`<div class="notice" style="${stale?'':'background:var(--cream);border-color:var(--line)'}">${stale?`매물 단지 ${stale}곳이 재확인 기간(${RULE.confirmDays}일)을 넘겨 상위 노출이 멈췄습니다.`:'매물 단지 상위 노출 중입니다.'} 매물이 아직 있다면 아래 저장 때 ‘매물 보유 재확인’을 체크하세요.</div>`:''}
