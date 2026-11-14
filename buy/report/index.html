@@ -471,7 +471,18 @@ function nearMisses(units, ctxBy, dsrBy){
 function futureReasons(x){
   const f=x.fx, r=[]; if(!f) return r;
   const pct=v=>Math.round(Math.abs(v)*100);
-  if (f.fv!=null) r.push(['f', `미래가치 ${f.fv}점 — ${sggName(x.code)} 단지 중 상위 ${Math.max(1,100-f.fv)}% (과거 데이터로 검증한 점수)`]);
+  if (f.fv!=null){
+    const sidoNm = (IX.sgg[x.code]||{}).sido || '';
+    r.push(['f', f.gs!=null
+      ? `미래가치 ${f.fv}점 — ${sidoNm} 전체 단지 중 상위 ${Math.max(1,100-f.fv)}%` + (f.fvg!=null?`, ${sggName(x.code)} 안에서는 상위 ${Math.max(1,100-f.fvg)}%`:'') + ' (과거 데이터로 검증한 점수)'
+      : `미래가치 ${f.fv}점 — ${sggName(x.code)} 단지 중 상위 ${Math.max(1,100-f.fv)}% (과거 데이터로 검증한 점수)`]);
+  }
+  if (f.gs!=null || f.sup!=null || f.pg!=null){
+    const bits=[];
+    if (f.sup!=null) bits.push(`향후 2년 입주 물량이 기존 아파트의 ${Math.round(f.sup*1000)/10}%` + (f.sup>=0.08?'(많은 편 — 공급 부담)':f.sup<=0.03?'(적은 편 — 공급 부담 낮음)':''));
+    if (f.pg!=null) bits.push(`최근 1년 인구 ${f.pg>=0?'+':''}${Math.round(f.pg*1000)/10}%`);
+    r.push(['f', `${sggName(x.code)} 지역 전망` + (f.gs!=null?`: 같은 시·도 구·시 중 상위 ${Math.max(1,100-f.gs)}%`:'') + (bits.length?` — ${bits.join(' · ')}`:'')]);
+  }
   if (f.dd!=null && Math.abs(f.dd)>=0.03) r.push([f.dd>0?'f':'c', f.dd>0 ? `최근 3년 하락 구간에서 구 평균보다 ${pct(f.dd)}%p 덜 빠짐 — 집값이 흔들릴 때 잘 버틴 단지` : `최근 3년 하락 구간에서 구 평균보다 ${pct(f.dd)}%p 더 빠짐 — 시장 따라 출렁임이 큰 편`]);
   if (f.rc!=null && Math.abs(f.rc)>=0.03) r.push(['f', f.rc>0 ? `직전 고점 대비 회복이 구 평균보다 ${pct(f.rc)}%p 빠름 — 사람들이 먼저 찾는 단지` : `직전 고점 대비 회복이 구 평균보다 ${pct(f.rc)}%p 느림 — 아직 고점까지 여유`]);
   if (f.by || f.hh){ const age=f.by ? new Date().getFullYear()-f.by : null;
@@ -662,9 +673,10 @@ async function render(){
       ${P.length?`<div class="fvper">${P.slice().reverse().map(p=>`<span><small>${p.t0.slice(0,4)}.${p.t0.slice(4)} → 2년</small><b>${sg(p.top20)}</b></span>`).join('')}</div>`:''}
       ${O&&O.top20!=null?`<div>가장 엄격한 검증 — 과거 시점으로만 학습한 점수로 ${O.t0.slice(0,4)}년 ${+O.t0.slice(4)}월 이후를 맞혔을 때: 상위 20% <b class="big">${sg(O.top20)}</b> · 하위 20% ${sg(O.bottom20)}</div>`:''}
       ${P.length>1?`<div>${P.length}번의 시기 중 <b>${MODEL.hit_periods}번</b> 구 평균보다 높았습니다.</div>`:''}
+      ${MODEL.region&&MODEL.region.oos&&MODEL.region.oos.top20!=null?`<div>지역 전망(입주 물량·인구·시세 흐름)으로 고른 상위 20% 구·시는 같은 시·도 평균보다 <b>${sg(MODEL.region.oos.top20)}</b> (표본 외 검증)</div>`:''}
       <small style="color:var(--muted)">반영 지표: 하락기 방어력·고점 회복률·최근 흐름·동 대장 대비 가격·연식·세대수·역세권·재건축 사업성·전세가율·거래량. 과거 결과가 미래 수익을 보장하지는 않습니다.</small></div>`;
     }
-    if (picked.some(x=>x.fx)) h += `<details class="fvhow"><summary>📊 추천 단지는 어떤 기준으로 골랐나요? <span>(미래가치 지표 9가지 보기)</span></summary>
+    if (picked.some(x=>x.fx)) h += `<details class="fvhow"><summary>📊 추천 단지는 어떤 기준으로 골랐나요? <span>(미래가치 지표 10가지 보기)</span></summary>
       <ol>
         <li><b>하락기 방어력</b> — 최근 3년 중 가격이 빠진 구간에서 같은 구 평균보다 얼마나 덜 빠졌는지. 덜 빠진 단지는 수요가 탄탄해서 다음 하락기에도 버틸 힘이 있습니다.</li>
         <li><b>고점 회복률</b> — 직전 고점 가격을 지금 얼마나 회복했는지(같은 구 평균과 비교). 시장이 이 단지를 다시 찾고 있는지 보여줍니다.</li>
@@ -674,6 +686,7 @@ async function render(){
         <li><b>역세권</b> — 지하철역까지 걸어서 몇 분인지. 출퇴근이 편한 단지는 수요가 꾸준합니다.</li>
         <li><b>재건축 사업성</b> — 준공 25년 이상 단지는 <b>단지의 세대당 평균 대지지분과 용적률</b>로 사업성을 봅니다(평균 대지지분이 크고 용적률이 낮을수록 일반분양을 많이 할 수 있어 조합원 부담이 줄어듦). 같은 대지지분이라도 서울과 지방은 새 아파트 값이 달라 의미가 다르므로, <b>그 지역 신축 시세로 환산한 간이 사업성</b>(재건축 후 용적률 300%, 3.3㎡당 공사비 서울 1,000만·수도권 900만·지방 750만 원 가정)으로 전국 재건축 단지와 비교합니다. 카드에는 <b>이 평형의 대지지분</b>(내 몫)이 단지 평균보다 많은지도 함께 보여 드립니다. 실제 분담금은 기부채납·임대주택·사업비에 따라 달라집니다.</li>
         <li><b>전세가율</b> — 매매가 대비 전세 보증금 비율. 높을수록 실제로 살려는 수요가 많다는 뜻입니다.</li>
+        <li><b>지역 전망</b> — 구·시 단위로 <b>향후 2년 입주 물량</b>(공급 부담), <b>인구·세대 증가</b>, 구 시세 흐름, 전세가율을 봐서 같은 시·도 안에서 어느 지역이 더 오를지 따로 점수를 매기고, 단지 점수와 합쳐 구가 달라도 비교할 수 있게 합니다.</li>
         <li><b>거래량</b> — 최근 2년 실거래 건수. 거래가 많아야 시세가 믿을 만하고, 팔 때도 수월합니다.</li>
       </ol>
       ${MODEL&&MODEL.importance ? `<div class="imp"><b>과거 데이터로 확인한 지표별 영향도</b>${Object.entries(MODEL.importance).sort((a,b)=>b[1]-a[1]).filter(([k,v])=>v>=1).map(([k,v])=>`<div class="ib"><span>${esc((MODEL.label||{})[k]||k)}</span><i style="width:${Math.min(100,v*2)}%"></i><em>${v}%</em></div>`).join('')}</div>` : ''}
