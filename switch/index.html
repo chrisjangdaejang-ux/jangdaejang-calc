@@ -696,7 +696,7 @@ function makePicker(el, which){
   const search=async()=>{ const sd=$s('.psido').value, g=$s('.psgg').value; const t=$s('.pq').value.replace(/\s/g,'');
     if(!sd||!g){ $s('.res').innerHTML=''; return; }
     const units=await gapUnits(sd); const seen=new Map();
-    units.filter(u=>u[0]===g && aptMatch(u[2]+u[1], t, ix.sgg[g]&&ix.sgg[g].name)).forEach(u=>{ const k=u[1]+'|'+u[2]; seen.set(k,(seen.get(k)||0)+u[5]); });
+    units.filter(u=>u[0]===g && aptMatch(u[2]+u[1], t, AG_IX&&AG_IX.sgg[g]&&AG_IX.sgg[g].name)).forEach(u=>{ const k=u[1]+'|'+u[2]; seen.set(k,(seen.get(k)||0)+u[5]); });
     const items=[...seen.entries()].sort((a,b)=>b[1]-a[1]).slice(0,40);
     $s('.res').innerHTML=items.map(([k])=>`<div data-k="${escH(k)}"><b>${escH(k.split('|')[1])}</b> <span class="mini">${escH(k.split('|')[0])}</span></div>`).join('')||'<div class="mini">찾는 단지가 없습니다 (최근 3년 거래가 충분한 단지만 나옵니다)</div>';
     $s('.res').querySelectorAll('[data-k]').forEach(d=>d.onclick=()=>{
