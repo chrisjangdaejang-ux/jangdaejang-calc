@@ -11,7 +11,7 @@
   const isMobile = /Android|iPhone|iPad|iPod/.test(ua) || isIOS;
   const ga = (n, p) => { try { window.gtag && gtag('event', n, p || {}); } catch (e) {} };
   const isAndroid = /Android/i.test(ua);
-  const isKakao = /KAKAOTALK/i.test(ua), isLine = /Line\//i.test(ua);
+  const isKakao = /KAKAOTALK/i.test(ua), isLine = /Line\//i.test(ua), isSamsung = /SamsungBrowser/i.test(ua);
 
   /* 앱 안 브라우저(카톡·밴드·네이버 등)로 열리면 자동으로 크롬/사파리로 옮겨 연다 */
   function externalUrl() {
@@ -53,12 +53,15 @@
     .jdjpwa-how .ok{margin-top:16px;width:100%;background:#3B3F22;color:#F5EFDC;border:0;border-radius:10px;padding:12px;font:inherit;font-weight:900;cursor:pointer}
     .jdjpwa-how .k{display:inline-block;border:1.5px solid #3B3F22;border-radius:5px;padding:0 6px;font-weight:900}`;
 
+  function addCss() { if (!document.getElementById('jdjpwa-css')) { const s = document.createElement('style'); s.id = 'jdjpwa-css'; s.textContent = css; document.head.appendChild(s); } }
   function how() {
+    addCss();
     let steps;
     if (inApp) steps = isIOS
       ? ['오른쪽 아래(또는 위) <span class="k">⋯</span> 버튼을 누르세요', '<b>Safari로 열기</b>를 고르세요', 'Safari에서 아래 <span class="k">공유 ↑</span> → <b>홈 화면에 추가</b>']
       : ['오른쪽 위 <span class="k">⋮</span> 버튼을 누르세요', '<b>다른 브라우저로 열기</b>(Chrome)를 고르세요', 'Chrome에서 <span class="k">⋮</span> → <b>홈 화면에 추가</b>'];
     else if (isIOS) steps = ['화면 아래(또는 위) <span class="k">공유 ↑</span> 버튼을 누르세요', '목록을 내려 <b>홈 화면에 추가</b>를 누르세요', '오른쪽 위 <b>추가</b>를 누르면 끝!'];
+    else if (isSamsung) steps = ['화면 아래 메뉴 <span class="k">≡</span> 버튼을 누르세요', '<b>현재 페이지 추가</b> → <b>홈 화면</b>을 누르세요'];
     else steps = ['오른쪽 위 <span class="k">⋮</span> 버튼을 누르세요', '<b>홈 화면에 추가</b> 또는 <b>앱 설치</b>를 누르세요'];
     const m = document.createElement('div'); m.className = 'jdjpwa-how';
     m.innerHTML = `<div class="bx"><h3>📲 홈 화면에 추가하기</h3>${inApp ? '<p style="margin:0 0 8px">지금은 앱 안의 브라우저라 바로 추가할 수 없어요. 아래처럼 열어 주세요.</p>' : ''}<ol>${steps.map(s => `<li>${s}</li>`).join('')}</ol>
@@ -67,7 +70,30 @@
     document.body.appendChild(m); ga('pwa_howto', { inapp: inApp, ios: isIOS });
   }
 
+  function toChrome() {
+    const u = new URL(externalUrl());
+    location.href = 'intent://' + u.host + u.pathname + u.search + '#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent(u.toString()) + ';end';
+  }
+  /* 삼성 인터넷은 기기·버전에 따라 '웹 앱을 설치할 수 없음'이 뜨는 경우가 있어 크롬 설치를 먼저 권한다 */
+  function samsungSheet() {
+    addCss();
+    const m = document.createElement('div'); m.className = 'jdjpwa-how';
+    m.innerHTML = `<div class="bx"><h3>📲 홈 화면에 추가하기</h3>
+      <p style="margin:0 0 12px">삼성 인터넷에서는 설치가 안 되는 경우가 있어요. <b>크롬으로 열면 한 번에 설치</b>됩니다.</p>
+      <button class="ok" data-a="chrome">크롬으로 열어서 설치하기 (추천)</button>
+      <button class="ok" data-a="here" style="background:#fff;color:#3B3F22;border:1.5px solid #3B3F22;margin-top:8px">삼성 인터넷에서 바로 추가</button>
+      <p style="margin:12px 0 0;font-size:12.5px;color:#6B6A58">삼성 인터넷에서 '설치할 수 없음'이 뜨면: 아래 메뉴 <span class="k">≡</span> → <b>현재 페이지 추가</b> → <b>홈 화면</b></p></div>`;
+    m.onclick = async e => {
+      const a = e.target.getAttribute && e.target.getAttribute('data-a');
+      if (e.target === m) return m.remove();
+      if (a === 'chrome') { ga('pwa_samsung_to_chrome'); toChrome(); m.remove(); }
+      if (a === 'here') { m.remove(); if (deferred) { deferred.prompt(); ga('pwa_prompt', { samsung: true }); const r = await deferred.userChoice.catch(() => null); deferred = null; if (r && r.outcome === 'accepted') { ga('pwa_install'); close(30); } } else how(); }
+    };
+    document.body.appendChild(m); ga('pwa_samsung_sheet');
+  }
+
   async function install() {
+    if (isSamsung && isAndroid) return samsungSheet();
     if (deferred) {
       deferred.prompt(); ga('pwa_prompt');
       const r = await deferred.userChoice.catch(() => null); deferred = null;
@@ -79,7 +105,7 @@
   function show(force) {
     if (bar || (!force && hidden())) return;
     if (!force && !isMobile && !deferred) return;                 // PC는 설치 가능할 때만
-    if (!document.getElementById('jdjpwa-css')) { const s = document.createElement('style'); s.id = 'jdjpwa-css'; s.textContent = css; document.head.appendChild(s); }
+    addCss();
     bar = document.createElement('div'); bar.className = 'jdjpwa';
     bar.innerHTML = `<img src="/jangdaejang-calc/assets/icons/icon-192.png" alt=""><div class="tx"><b>홈 화면에 추가하세요</b><small>앱처럼 아이콘 한 번에 계산기를 열 수 있어요</small></div>
       <button class="go">추가하기</button><button class="x" aria-label="닫기">×</button>`;
