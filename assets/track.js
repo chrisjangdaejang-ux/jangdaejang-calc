@@ -4,7 +4,7 @@
    yt 유튜브 · ig 인스타그램 · blog 블로그 · fb 페이스북 · kakao 카카오톡 · naver 네이버 · cafe 카페 · threads 스레드 · band 밴드 */
 (function(){
   const C = window.JDJ_CONFIG = window.JDJ_CONFIG || {};
-  const CH = {yt:'유튜브',youtube:'유튜브',ig:'인스타그램',instagram:'인스타그램',blog:'블로그',fb:'페이스북',facebook:'페이스북',kakao:'카카오톡',naver:'네이버',cafe:'카페',threads:'스레드',band:'밴드'};
+  const CH = {yt:'유튜브',youtube:'유튜브',ig:'인스타그램',instagram:'인스타그램',blog:'블로그',fb:'페이스북',facebook:'페이스북',kakao:'카카오톡',naver:'네이버',cafe:'카페',threads:'스레드',band:'밴드',claude:'기존 Claude 링크'};
   const ls = {get(k){try{return localStorage.getItem(k)}catch(_){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(_){}}};
   const rid = () => Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
 
