@@ -14,6 +14,10 @@ const MAX_EXTRA = 2;       // 사무소 구 외 추가 구 수
 const MAX_DANJI = 10;      // 매물 보유 단지 최대 수
 const CONFIRM_DAYS = 30;   // 매물 보유 재확인 주기(일)
 const NOTIFY = true;       // 새 신청 시 시트 주인에게 메일 알림
+/* 시트 메뉴에서 Apps Script를 열지 못해 script.google.com에서 따로 만든 경우에만,
+   시트 주소의 /d/ 와 /edit 사이 문자열(시트 ID)을 아래 따옴표 안에 넣으세요. */
+const SHEET_ID = '';
+function book() { return SHEET_ID ? SpreadsheetApp.openById(SHEET_ID) : SpreadsheetApp.getActive(); }
 
 const SH_A = '중개사', SH_L = '로그';
 const H = ['id','등록번호','사무소명','대표자','전화','카카오','소개','시도','사무소구코드','사무소구','사무소동',
@@ -22,7 +26,7 @@ const COL = Object.fromEntries(H.map((h, i) => [h, i]));
 
 /* ---------- 최초 1회 실행 ---------- */
 function setup() {
-  const ss = SpreadsheetApp.getActive();
+  const ss = book();
   let a = ss.getSheetByName(SH_A) || ss.insertSheet(SH_A);
   a.getRange(1, 1, 1, H.length).setValues([H]).setFontWeight('bold').setBackground('#3B3F22').setFontColor('#F5EFDC');
   a.setFrozenRows(1);
@@ -44,7 +48,7 @@ function str(v, n) { return String(v == null ? '' : v).trim().slice(0, n || 200)
 function parseJ(v, d) { try { return v ? JSON.parse(v) : d; } catch (e) { return d; } }
 
 function agents() {
-  const sh = SpreadsheetApp.getActive().getSheetByName(SH_A);
+  const sh = book().getSheetByName(SH_A);
   const vals = sh.getDataRange().getValues();
   const list = [];
   for (let i = 1; i < vals.length; i++) {
@@ -158,13 +162,13 @@ function apply(b) {
   row[COL['사무소동']] = str(b.dong, 30); row[COL['추가구']] = JSON.stringify(extras); row[COL['단지']] = JSON.stringify(danji);
   row[COL['관리코드']] = code; row[COL['신청일']] = new Date(); row[COL['승인']] = false; row[COL['만료일']] = '';
   row[COL['메모']] = full.length ? '대기(자리 마감): ' + full.join(',') : ''; row[COL['수정일']] = new Date();
-  const sh = SpreadsheetApp.getActive().getSheetByName(SH_A);
+  const sh = book().getSheetByName(SH_A);
   sh.appendRow(row);
   sh.getRange(sh.getLastRow(), COL['승인'] + 1).insertCheckboxes();   // 승인 칸을 체크박스로
   if (NOTIFY) {
     try {
       MailApp.sendEmail(Session.getEffectiveUser().getEmail(), `[장대장 제휴] 새 신청: ${office}`,
-        `${office} (${ceo}) ${phone}\n등록번호 ${reg}\n지역 ${regions.join(', ')}\n시트에서 확인 후 승인 체크와 만료일을 입력하세요.\n${SpreadsheetApp.getActive().getUrl()}`);
+        `${office} (${ceo}) ${phone}\n등록번호 ${reg}\n지역 ${regions.join(', ')}\n시트에서 확인 후 승인 체크와 만료일을 입력하세요.\n${book().getUrl()}`);
     } catch (e) {}
   }
   return { ok: true, id: id, code: code, waitlist: full };
@@ -211,7 +215,7 @@ function update(b) {
   }
   let danji = validDanji(b.danji, regions, me.danji);
   if (b.reconfirm) danji = danji.map(d => ({ k: d.k, n: d.n, at: ymd(new Date()) }));
-  const sh = SpreadsheetApp.getActive().getSheetByName(SH_A);
+  const sh = book().getSheetByName(SH_A);
   const set = (h, v) => sh.getRange(me.row, COL[h] + 1).setValue(v);
   set('추가구', JSON.stringify(extras));
   set('단지', JSON.stringify(danji));
@@ -231,7 +235,7 @@ function logEvents(b) {
   const rows = ev.filter(x => ['imp', 'view', 'call', 'kakao'].indexOf(x.t) >= 0 && /^A[0-9A-F]{7}$/.test(x.a) && /^\d{5}$/.test(x.g))
     .map(x => [now, x.t, x.a, x.g, str(x.k, 120), vid]);
   if (rows.length) {
-    const sh = SpreadsheetApp.getActive().getSheetByName(SH_L);
+    const sh = book().getSheetByName(SH_L);
     sh.getRange(sh.getLastRow() + 1, 1, rows.length, 6).setValues(rows);
   }
   return { ok: true, n: rows.length };
@@ -239,7 +243,7 @@ function logEvents(b) {
 
 /* 이번 달·지난 달 성과 */
 function statsFor(id) {
-  const sh = SpreadsheetApp.getActive().getSheetByName(SH_L);
+  const sh = book().getSheetByName(SH_L);
   const n = sh.getLastRow();
   const res = {};
   if (n < 2) return res;
