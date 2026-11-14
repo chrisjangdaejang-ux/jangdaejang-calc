@@ -469,8 +469,11 @@ function futureReasons(x){
   if (f.fv!=null) r.push(['f', `미래가치 ${f.fv}점 — ${sggName(x.code)} 단지 중 상위 ${Math.max(1,100-f.fv)}% (과거 데이터로 검증한 점수)`]);
   if (f.dd!=null && Math.abs(f.dd)>=0.03) r.push([f.dd>0?'f':'c', f.dd>0 ? `2022~23 하락기에 구 평균보다 ${pct(f.dd)}%p 덜 빠짐 — 가격 방어력이 강한 단지` : `2022~23 하락기에 구 평균보다 ${pct(f.dd)}%p 더 빠짐 — 하락기 변동성 큰 편`]);
   if (f.rc!=null && Math.abs(f.rc)>=0.03) r.push(['f', f.rc>0 ? `2021~22 고점 대비 회복이 구 평균보다 ${pct(f.rc)}%p 빠름` : `2021~22 고점 대비 회복이 구 평균보다 ${pct(f.rc)}%p 느림 — 아직 회복 여지`]);
-  if (f.by){ const age=new Date().getFullYear()-f.by;
-    r.push(['f', `${f.by}년 준공(${age}년차)` + (age<=10?' — 신축':age>=25?' — 재건축 연한(30년)에 가까워지는 단지':'')]); }
+  if (f.by || f.hh){ const age=f.by ? new Date().getFullYear()-f.by : null;
+    const parts=[]; if(f.by) parts.push(`${f.by}년 준공(${age}년차)`); if(f.hh) parts.push(`${f.hh.toLocaleString()}세대`);
+    const tags=[]; if(age!=null && age<=10) tags.push('신축'); if(age!=null && age>=25) tags.push('재건축 연한(30년)에 가까워지는 단지');
+    if(f.hh>=1000) tags.push('대단지'); else if(f.hh && f.hh<300) tags.push('소규모 단지');
+    r.push(['f', parts.join(' · ') + (tags.length?' — '+tags.join(' · '):'')]); }
   if (f.lg!=null) r.push(['f', f.lg>=0.98 ? `${x.dong} 대장 단지(동 내 최고 시세)` : `${x.dong} 대장 단지 대비 ${pct(1-f.lg)}% 낮은 시세`]);
   if (f.jr!=null) r.push(['f', `전세가율 ${Math.round(f.jr*100)}%` + (f.jr>=0.6?' — 실거주 수요가 탄탄한 편':f.jr<0.4?' — 매매가 대비 전세가 낮음(투자 수요 비중 큼)':'')]);
   return r;
@@ -616,19 +619,19 @@ async function render(){
   } else {
     if (MODEL && MODEL.top20_excess!=null && picked.some(x=>x.fx&&x.fx.fv!=null)) h += `<div class="fvbox">★ <b>미래가치 점수는 이렇게 검증했습니다</b><br>
       ${MODEL.t0.slice(0,4)}년 ${+MODEL.t0.slice(4)}월 시점의 국토부 실거래 자료만으로 전국 ${MODEL.n.toLocaleString()}개 단지·평형에 점수를 매겼더니, 각 구에서 점수 상위 20% 단지가 이후 2년간 같은 구 평균보다 <b class="big">${MODEL.top20_excess>0?'+':''}${MODEL.top20_excess}%</b> ${MODEL.top20_excess>=0?'더':'덜'} 올랐습니다 (하위 20%는 ${MODEL.bottom20_excess>0?'+':''}${MODEL.bottom20_excess}%).
-      <br><small style="color:var(--muted)">반영 지표: 하락기 방어력·고점 회복률·최근 흐름·동 대장 대비 가격·연식·전세가율·거래량. 과거 결과가 미래 수익을 보장하지는 않습니다.</small></div>`;
+      <br><small style="color:var(--muted)">반영 지표: 하락기 방어력·고점 회복률·최근 흐름·동 대장 대비 가격·연식·세대수·전세가율·거래량. 과거 결과가 미래 수익을 보장하지는 않습니다.</small></div>`;
     if (picked.some(x=>x.fx)) h += `<details class="fvhow"><summary>📊 추천 단지는 어떤 기준으로 골랐나요? <span>(미래가치 지표 7가지 보기)</span></summary>
       <ol>
         <li><b>하락기 방어력</b> — 2022~23년 하락기에 같은 구 평균보다 얼마나 덜 빠졌는지. 덜 빠진 단지는 수요가 탄탄해서 다음 하락기에도 버틸 힘이 있습니다.</li>
         <li><b>고점 회복률</b> — 2021~22년 고점 가격을 지금 얼마나 회복했는지(같은 구 평균과 비교). 시장이 이 단지를 다시 찾고 있는지 보여줍니다.</li>
         <li><b>최근 흐름</b> — 최근 6개월 평당가 변화. 완만한 상승은 긍정적이고, 너무 급한 상승은 추격 매수 위험으로 봅니다.</li>
         <li><b>동 대장 단지 대비 가격</b> — 같은 동에서 가장 비싼 단지와의 가격 차이. 대장 단지인지, 대장과 격차가 얼마나 벌어져 있는지 봅니다.</li>
-        <li><b>연식</b> — 준공 연도. 10년 이내 신축 프리미엄과, 재건축 연한(30년)에 가까워지는 단지의 기대감을 함께 봅니다.</li>
+        <li><b>연식·단지 규모</b> — 준공 연도와 세대수. 10년 이내 신축 프리미엄, 재건축 연한(30년)에 가까워지는 기대감, 1,000세대 이상 대단지의 커뮤니티·환금성 프리미엄을 함께 봅니다.</li>
         <li><b>전세가율</b> — 매매가 대비 전세 보증금 비율. 높을수록 실제로 살려는 수요가 많다는 뜻입니다.</li>
         <li><b>거래량</b> — 최근 2년 실거래 건수. 거래가 많아야 시세가 믿을 만하고, 팔 때도 수월합니다.</li>
       </ol>
       <p>지표마다 얼마나 비중을 둘지는 사람이 정하지 않았습니다. <b>2년 전 시점의 자료만으로 점수를 매겼을 때 실제로 더 오른 단지를 가장 잘 맞힌 비중</b>을 데이터로 찾아 적용했습니다. 여기에 예산 적합도, 공공기관 개발 발표를 더해 최종 순위를 정합니다.</p>
-      <p class="src">자료: 국토교통부 아파트 매매·전월세 실거래가(2017년~), 매달 자동 갱신</p>
+      <p class="src">자료: 국토교통부 아파트 매매·전월세 실거래가(2017년~), 공동주택관리정보시스템(K-apt) 단지 정보, 자동 갱신</p>
     </details>`;
     h += `<div class="cards">` + picked.map((x,i)=>{
       const rs = reasons(x);
