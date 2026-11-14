@@ -259,8 +259,8 @@ tr.cliff td{background:rgba(162,59,42,.06)}
       </div>
 
       <div class="premium">
-        <div><div class="pt">PREMIUM · 준비 중</div><p>장대장 맞춤 매수 리포트<small>내 조건으로 살 수 있는 지역·단지 후보, 자금 계획표, 대출 시나리오 비교를 PDF로 정리해 드립니다</small></p></div>
-        <button class="btn" id="premBtn">관심 있어요</button>
+        <div><div class="pt">PREMIUM · 무료 베타 체험 중</div><p>장대장 맞춤 매수 리포트<small>지금 입력한 조건으로 실제 살 수 있는 단지 TOP 10, 자금 계획표, 대출 시나리오를 실거래가로 정리해 드립니다 · PDF 저장 가능</small></p></div>
+        <a class="btn" id="premBtn" href="report/" target="_blank" rel="noopener">리포트 받아보기 →</a>
       </div>
 
       <a class="xlink" data-track="cross_link_switch" href="../switch/">이미 집이 있다면 → 장대장 갈아타기 계산기 (양도세 포함)</a>
@@ -457,6 +457,7 @@ function render(){
   renderTarget(c,dsr);
   renderTips(c,dsr,P,ld);
   updateConsult(c);
+  updateReport(c);
   renderCost(c,P);
 }
 
@@ -561,20 +562,12 @@ $('copyBtn').addEventListener('click',async()=>{
   catch(_){ toast('복사가 지원되지 않는 환경입니다'); }
 });
 
-// 유료 기능 관심도 (출시 전 수요 확인)
-(function(){
-  const b=$('premBtn'), key='jdj_prem_buy';
-  let on=false; try{ on=!!localStorage.getItem(key); }catch(_){}
-  const mark=()=>{ b.textContent='✓ 관심 표시 완료'; b.classList.add('done'); };
-  if(on) mark();
-  b.addEventListener('click',()=>{
-    if(b.classList.contains('done')) return;
-    JDJ.track('premium_interest',{region:$('region').value, max_band:JDJ.band(lastP)});
-    try{ localStorage.setItem(key,'1'); }catch(_){}
-    mark();
-    toast('감사합니다! 출시되면 장대장TV에서 가장 먼저 알려드릴게요', 2400);
-  });
-})();
+// 맞춤 매수 리포트 (무료 베타) — 클릭 수로 유료화 수요 확인
+function updateReport(c){
+  const q=new URLSearchParams({i:c.income,c:c.cash,d:c.debt,o:own,t:rtype,rt:c.rate,tm:c.term,r:$('region').value});
+  $('premBtn').href='report/?'+q.toString();
+}
+$('premBtn').addEventListener('click',()=>{ JDJ.track('premium_interest',{region:$('region').value, max_band:JDJ.band(lastP)}); });
 
 setTermOptions(); render();
 </script>
