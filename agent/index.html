@@ -94,6 +94,31 @@ td.num,th.num{text-align:right}
 .kpi small{display:block;font-size:11px;color:var(--muted);font-weight:500}
 .kpi.main small{color:#CFC9AE}
 .notice{background:#FFF3D6;border:1px solid var(--gold2);border-radius:9px;padding:12px 14px;font-size:14px;margin-top:12px}
+.price{width:100%;border-collapse:collapse;margin-top:6px}
+.price th,.price td{padding:12px 10px;border-bottom:1px solid #EFE6CC;text-align:left;vertical-align:top}
+.price th{font-size:12px;color:var(--muted)}
+.price td b{font-size:17px}
+.price .big{font-size:22px;font-weight:900;color:var(--olive)}
+.price .big small{font-size:13px;font-weight:700;color:var(--muted)}
+.price .disc{color:var(--red);font-weight:900}
+.price tr.pre td{background:#FFF8E2}
+.tag2{display:inline-block;font-size:11px;font-weight:900;background:var(--gold);color:var(--ink);padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:2px}
+.bank{background:var(--olive);color:var(--cream);border-radius:10px;padding:16px 18px;margin-top:12px;border:2px solid var(--gold)}
+.bank .acct{font-size:22px;font-weight:900;letter-spacing:.02em;color:var(--gold2)}
+.bank small{color:#D8D2B8}
+ol.flow{margin:10px 0 0;padding-left:20px;font-size:14px}
+ol.flow li{margin:5px 0}
+.small{font-size:12.5px;color:var(--muted)}
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+@media(max-width:560px){.plans{grid-template-columns:1fr}}
+.plan{border:2px solid var(--line);border-radius:10px;padding:13px 14px;cursor:pointer;background:#fff;display:block}
+.plan input{margin-right:6px}
+.plan b{font-size:16px}
+.plan .p{font-size:20px;font-weight:900;color:var(--olive);margin-top:4px}
+.plan .p small{font-size:12px;color:var(--muted);font-weight:700}
+.plan p{margin:4px 0 0;font-size:12.5px;color:var(--muted)}
+.plan:has(input:checked){border-color:var(--olive);background:var(--cream)}
+.lock{background:var(--cream);border:1px dashed var(--gold);border-radius:9px;padding:12px 14px;font-size:14px}
 .foot{font-size:12px;color:var(--muted);margin-top:22px}
 .foot a{color:var(--olive)}
 </style>
@@ -109,7 +134,7 @@ td.num,th.num{text-align:right}
 
   <div class="steps">
     <div class="step"><b><span class="n">1</span>지역 노출</b><p>사무소 구 + 원하는 구 2곳, 총 3개 구의 단지가 추천되면 추천 단지 카드마다 사무소가 연락처와 함께 노출됩니다.</p></div>
-    <div class="step"><b><span class="n">2</span>매물 단지 상위 노출</b><p>매물을 가진 단지(최대 10개)를 등록하면, 그 단지 카드에서 ‘매물 보유’ 표시와 함께 맨 앞에 노출됩니다.</p></div>
+    <div class="step"><b><span class="n">2</span>매물 단지 상위 노출 <small style="color:var(--gold)">프리미엄</small></b><p>매물을 가진 단지(최대 10개)를 등록하면, 그 단지 카드에서 ‘매물 보유’ 표시와 함께 맨 앞에 노출됩니다.</p></div>
     <div class="step"><b><span class="n">3</span>성과 확인</b><p>추천 노출·목록 펼침·정보 열람·전화·카톡 클릭 수를 구별·단지별로 [내 관리]에서 확인합니다.</p></div>
   </div>
 
@@ -121,15 +146,46 @@ td.num,th.num{text-align:right}
       <li><b>노출 순서</b> — ① 그 단지 매물 보유 ② 추천 단지와 같은 동 사무소 ③ 같은 구 사무소 ④ 추가 지역. 같은 순위끼리는 번갈아 노출해 기회를 고르게 나눕니다.</li>
       <li><b>매물 단지</b> — 최대 10개, 3개 구 안의 단지만 등록됩니다. 30일마다 [매물 보유 재확인]을 눌러야 상위 노출이 유지되고, 확인이 없으면 지역 노출로 자동 전환됩니다.</li>
       <li><b>승인</b> — 신청 후 중개사무소 등록번호를 확인하고 승인합니다. 리포트에는 ‘제휴·광고’로 표시됩니다.</li>
-      <li><b>이용료</b> — 시범 기간 무료입니다. 정식 요금은 시작 전에 따로 안내드립니다.</li>
     </ul>
     <div id="notReady" class="notice" style="display:none">제휴 신청 접수를 준비하고 있습니다. 곧 열립니다.</div>
+  </div>
+
+
+  <div class="box" id="priceBox">
+    <h2>이용료 <span class="tag2">부가세 별도 · 연간 결제</span></h2>
+    <table class="price">
+      <thead><tr><th>상품</th><th>내용</th><th>월 환산</th><th>연간 결제액</th></tr></thead>
+      <tbody>
+        <tr><td><b>기본</b></td><td>사무소 구 + 원하는 구 2곳<br>추천 단지 카드 노출 · 성과표</td><td class="big">29,000원<small>/월</small></td><td><b>348,000원</b><br><span class="disc">창립 제휴 243,600원</span></td></tr>
+        <tr class="pre"><td><b>프리미엄</b><span class="tag2">추천</span></td><td>기본 전부 +<br>매물 보유 단지 10곳 <b>[매물 보유] 배지·맨 앞 노출</b></td><td class="big">49,000원<small>/월</small></td><td><b>588,000원</b><br><span class="disc">창립 제휴 411,600원</span></td></tr>
+      </tbody>
+    </table>
+    <p class="small">창립 제휴: 선착순 100곳, 첫해 30% 할인 · 결제는 1년 단위 일시불이며 월 금액은 이해를 돕기 위한 환산입니다.</p>
+    <div id="trialNote" class="notice">지금은 <b>시범 기간</b>이라 신청하신 사무소는 <b>무료로 노출</b>됩니다. 유료 전환 일정은 개별로 안내드립니다.</div>
+    <h3>결제 방법</h3>
+    <ol class="flow">
+      <li>아래에서 상품을 고르고 제휴 신청을 합니다.</li>
+      <li>연간 이용료를 아래 계좌로 입금합니다. 입금자명은 <b>사무소명</b>으로 해 주세요.</li>
+      <li>입금이 확인되면 승인되고, 그날부터 1년간 리포트에 노출됩니다.</li>
+      <li>신청서에 적은 이메일로 세금계산서를 발행해 드립니다.</li>
+    </ol>
+    <div class="bank"><small>입금 계좌</small><div class="acct">우리은행 1005-102-638388</div><small>예금주 (주)장대장부동산그룹</small></div>
+    <h3>환불 규정</h3>
+    <ul class="rules">
+      <li>입금 후 노출 시작 전 취소: 전액 환불</li>
+      <li>노출 시작 후 중도 해지: 이용한 달 수를 월 정가(기본 29,000원 · 프리미엄 49,000원)로 계산해 뺀 나머지를 환불 (할인가로 결제한 경우에도 정가 기준)</li>
+      <li>허위 매물 등록·표시광고 규정 위반으로 노출이 중지된 경우 환불되지 않습니다.</li>
+    </ul>
   </div>
 
   <div class="tabs"><button class="tab on" data-p="apply">제휴 신청</button><button class="tab" data-p="manage">내 관리</button></div>
 
   <!-- 신청 -->
   <div class="panel on" id="p_apply">
+    <div class="plans">
+      <label class="plan"><input type="radio" name="plan" value="basic"> <b>기본</b><div class="p">월 29,000원 <small>· 연 348,000원</small></div><p>3개 구 추천 단지 카드 노출 · 성과표</p></label>
+      <label class="plan"><input type="radio" name="plan" value="premium" checked> <b>프리미엄</b><div class="p">월 49,000원 <small>· 연 588,000원</small></div><p>기본 + 매물 보유 단지 10곳 [매물 보유] 맨 앞 노출</p></label>
+    </div>
     <div class="grid">
       <div class="field"><label>중개사무소 등록번호 *</label><input id="a_reg" placeholder="예: 11680-2020-00123"></div>
       <div class="field"><label>사무소명 *</label><input id="a_office" placeholder="예: 장대장공인중개사사무소"></div>
@@ -139,6 +195,10 @@ td.num,th.num{text-align:right}
       <div class="field"><label>사무소 시·도 *</label><select id="a_sido"></select></div>
       <div class="field"><label>사무소 구(시·군) *</label><select id="a_og"></select></div>
       <div class="field"><label>사무소 동</label><input id="a_dong" placeholder="예: 대치동"><small>추천 단지와 같은 동이면 우선 노출됩니다.</small></div>
+    </div>
+    <div class="grid" style="margin-top:12px">
+      <div class="field"><label>사업자등록번호 (세금계산서용)</label><input id="a_biz" inputmode="numeric" placeholder="000-00-00000"></div>
+      <div class="field"><label>세금계산서 받을 이메일</label><input id="a_mail" type="email" placeholder="tax@example.com"></div>
     </div>
     <div class="field" style="margin-top:12px"><label>한 줄 소개 (60자)</label><input id="a_intro" maxlength="60" placeholder="예: 대치동 20년, 학군 이사 전문"></div>
     <div id="a_editor"></div>
@@ -175,6 +235,16 @@ const DATA = '/jangdaejang-timing/data/';
 const A = window.JDJ_AGENTS;
 let IX = null; const UNITS = {};
 const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const TRIAL = true;   // 시범 기간: 입금 없이 노출. 유료 전환 시 false로
+const PRICE = {basic:{name:'기본', year:348000, found:243600}, premium:{name:'프리미엄', year:588000, found:411600}};
+const won = n => n.toLocaleString('ko-KR')+'원';
+function planVal(){ const r=document.querySelector('input[name=plan]:checked'); return r ? r.value : 'premium'; }
+function payNote(plan){
+  const p = PRICE[plan]||PRICE.premium;
+  if (TRIAL) return `<p style="margin:12px 0 0">지금은 시범 기간이라 <b>입금 없이</b> 승인 후 노출됩니다. 유료 전환 때 ${p.name} 상품 기준 연 ${won(p.year)}(창립 제휴 ${won(p.found)}, 부가세 별도)으로 안내드립니다.</p>`;
+  return `<p style="margin:12px 0 4px"><b>${p.name}</b> 연간 이용료를 입금해 주세요. 입금자명은 사무소명으로 해 주세요.</p>
+    <div class="bank"><small>입금 금액 (부가세 포함)</small><div class="acct">${won(Math.round(p.year*1.1))}</div><small>창립 제휴 대상이면 ${won(Math.round(p.found*1.1))} · 우리은행 1005-102-638388 (주)장대장부동산그룹</small></div>`;
+}
 const RULE = {slot:9999, maxExtra:2, maxDanji:10, confirmDays:30};
 
 async function loadIndex(){ const r = await fetch(DATA+'index.json',{cache:'no-cache'}); return r.json(); }
@@ -195,7 +265,7 @@ const nice = m => String(m).replace(/\b\d{5}\b/g, c=>IX&&IX.sgg[c]?IX.sgg[c].nam
 
 /* 지역(추가 2개 구) + 매물 단지 편집기 */
 function makeEditor(el, o){
-  const st = {sido:o.sido, og:o.og, extras:[...(o.extras||[])], danji:(o.danji||[]).map(d=>({...d})), used:o.used||{}, mine:new Set(o.extras||[])};
+  const st = {premium:o.premium!==false, sido:o.sido, og:o.og, extras:[...(o.extras||[])], danji:(o.danji||[]).map(d=>({...d})), used:o.used||{}, mine:new Set(o.extras||[])};
   function regions(){ return [st.og, ...st.extras].filter(Boolean); }
   function draw(){
     const list = st.sido ? sggsOf(st.sido.name) : [];
@@ -209,7 +279,7 @@ function makeEditor(el, o){
     el.innerHTML = `
       <h3>추가 노출 지역 <small>사무소 구 외 최대 ${RULE.maxExtra}개 구 · 같은 시·도 · 언제든 변경 가능</small></h3>
       ${st.og ? `<div class="chips">${chips}</div>` : `<p class="field"><small>먼저 사무소 시·도와 구를 선택하세요.</small></p>`}
-      <h3>매물 보유 단지 <small>최대 ${RULE.maxDanji}개 · 위 3개 구 안의 단지 · ${RULE.confirmDays}일마다 재확인</small></h3>
+      ${st.premium ? `<h3>매물 보유 단지 <small>최대 ${RULE.maxDanji}개 · 위 3개 구 안의 단지 · ${RULE.confirmDays}일마다 재확인</small></h3>
       <div class="search"><input id="${el.id}_q" placeholder="단지명 또는 동 이름으로 검색"></div>
       <div class="results" id="${el.id}_r"></div>
       <p class="field"><small>리포트가 추천할 수 있는 단지(최근 3년 실거래가 충분한 단지)만 검색됩니다.</small></p>
@@ -217,7 +287,7 @@ function makeEditor(el, o){
         const age = d.at ? Math.floor((now-new Date(d.at).getTime())/86400000) : 0;
         const tag = d.at ? (age>RULE.confirmDays ? `<i class="old">재확인 필요</i>` : `<i>확인 ${age}일 전</i>`) : '';
         return `<span>${esc(d.n)} <small>${esc(sggName(d.k.split('|')[0]))}</small>${tag}<button data-rm="${i}" aria-label="삭제">×</button></span>`;
-      }).join('') || '<small style="color:var(--muted)">등록한 단지가 없습니다. 지역 노출만 됩니다.</small>'}</div>`;
+      }).join('') || '<small style="color:var(--muted)">등록한 단지가 없습니다. 지역 노출만 됩니다.</small>'}</div>` : `<h3>매물 보유 단지</h3><div class="lock">매물 보유 단지 [매물 보유] 맨 앞 노출은 <b>프리미엄</b> 상품 전용입니다.</div>`}`;
     el.querySelectorAll('.chip[data-g]').forEach(b=>b.onclick=()=>{
       const g=b.dataset.g;
       if (st.extras.includes(g)) st.extras = st.extras.filter(x=>x!==g);
@@ -227,6 +297,7 @@ function makeEditor(el, o){
     });
     el.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{ st.danji.splice(+b.dataset.rm,1); draw(); });
     const q = $(el.id+'_q'), r = $(el.id+'_r');
+    if (!q) return;
     q.oninput = async ()=>{
       const t = q.value.trim().replace(/\s/g,''); if (!t || !st.sido || !st.og){ r.innerHTML=''; return; }
       const units = await loadUnits(st.sido.id); const rg = regions();
@@ -241,7 +312,7 @@ function makeEditor(el, o){
     };
   }
   draw();
-  return { get:()=>({extras:[...st.extras], danji:st.danji.map(d=>({k:d.k,n:d.n}))}), set(o2){ Object.assign(st,o2); draw(); } };
+  return { get:()=>({extras:[...st.extras], danji:st.premium ? st.danji.map(d=>({k:d.k,n:d.n})) : []}), set(o2){ Object.assign(st,o2); draw(); } };
 }
 
 /* ---------- 신청 ---------- */
@@ -255,7 +326,8 @@ function setupApply(){
     ogSel.innerHTML = `<option value="">선택</option>` + (s ? sggsOf(s.name).map(c=>`<option value="${c}">${esc(sggName(c))}</option>`).join('') : '');
     applyEd.set({sido:s||null, og:'', extras:[], danji:[]});
   };
-  applyEd = makeEditor($('a_editor'), {sido:null, og:'', used:{}});
+  applyEd = makeEditor($('a_editor'), {sido:null, og:'', used:{}, premium:true});
+  document.querySelectorAll('input[name=plan]').forEach(r=>r.onchange=()=>applyEd.set({premium: planVal()==='premium'}));
   sel.onchange = refresh;
   ogSel.onchange = ()=>{ applyEd.set({og:ogSel.value, extras:[], danji:[]}); };
   if (A.ready) A.list().then(j=>{
@@ -270,15 +342,17 @@ function setupApply(){
     const ed = applyEd.get();
     const body = {action:'apply', reg:$('a_reg').value, office:$('a_office').value, ceo:$('a_ceo').value, phone:$('a_phone').value,
       kakao:$('a_kakao').value, intro:$('a_intro').value, sido:s?s.name:'', og:$('a_og').value, ogName:$('a_og').value?sggName($('a_og').value):'',
-      dong:$('a_dong').value, extras:ed.extras, danji:ed.danji, agree:true};
+      dong:$('a_dong').value, extras:ed.extras, danji:ed.danji, agree:true,
+      plan:planVal(), biz:$('a_biz').value, mail:$('a_mail').value};
     if (!body.reg.trim()||!body.office.trim()||!body.ceo.trim()||!body.phone.trim()||!body.og){ msg.className='msg err'; msg.textContent='* 표시 항목을 모두 입력해 주세요.'; return; }
     const btn = $('a_submit'); btn.disabled = true; btn.textContent='접수 중…';
     try{
       const j = await A.post(body);
-      JDJ.track('agent_apply', {sgg:body.og, extras:body.extras.length, danji:body.danji.length});
+      JDJ.track('agent_apply', {plan:body.plan, sgg:body.og, extras:body.extras.length, danji:body.danji.length});
       $('a_done').innerHTML = `<div class="done"><b>신청이 접수되었습니다.</b> 등록번호 확인 후 승인되면 리포트에 노출됩니다.${j.waitlist&&j.waitlist.length?`<br><span style="color:var(--red)">일부 지역(${j.waitlist.map(sggName).join(', ')})은 자리가 마감되어 대기로 접수되었습니다.</span>`:''}
         <p style="margin:10px 0 4px">관리코드 — 지역 변경·매물 재확인·성과 확인에 필요합니다. 꼭 저장해 두세요.</p>
-        <div class="code">${esc(j.code)}</div></div>`;
+        <div class="code">${esc(j.code)}</div>
+        ${payNote(body.plan)}</div>`;
       btn.style.display='none';
     }catch(e){ msg.className='msg err'; msg.textContent=nice(e.message); btn.disabled=false; btn.textContent='제휴 신청하기'; }
   };
@@ -296,7 +370,7 @@ function drawManage(j){
   const stale = m.danji.filter(d=>!d.fresh).length;
   $('m_area').innerHTML = `
     <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between">
-      <div><b style="font-size:18px">${esc(m.office)}</b> <small style="color:var(--muted)">${esc(m.ogName)} ${esc(m.dong)} · ${esc(m.reg)}</small></div>
+      <div><b style="font-size:18px">${esc(m.office)}</b> <span class="tag2">${esc(m.plan||'프리미엄')}</span> <small style="color:var(--muted)">${esc(m.ogName)} ${esc(m.dong)} · ${esc(m.reg)}</small></div>
       <div><span class="status ${m.status==='노출 중'?'live':''}">${esc(m.status)}</span> ${m.expires?`<small>~ ${esc(m.expires)}</small>`:''}</div>
     </div>
     ${m.waitMemo?`<div class="notice">${esc(m.waitMemo)}</div>`:''}
@@ -322,17 +396,21 @@ function drawManage(j){
       <div class="field"><label>전화번호</label><input id="m_phone" value="${esc(m.phone)}"></div>
       <div class="field"><label>카카오톡 오픈채팅 주소</label><input id="m_kakao" value="${esc(m.kakao)}"></div>
     </div>
+    <div class="grid" style="margin-top:10px">
+      <div class="field"><label>사업자등록번호</label><input id="m_biz" value="${esc(m.biz||'')}"></div>
+      <div class="field"><label>세금계산서 이메일</label><input id="m_mail" value="${esc(m.mail||'')}"></div>
+    </div>
     <div class="field" style="margin-top:10px"><label>한 줄 소개</label><input id="m_intro" maxlength="60" value="${esc(m.intro)}"></div>
     <div class="agree" style="margin-top:10px"><label><input type="checkbox" id="m_re"> 등록한 단지 모두 지금도 매물을 보유하고 있습니다 (매물 보유 재확인)</label></div>
     <div style="margin-top:12px;display:flex;gap:8px"><button class="btn primary" id="m_save">저장</button><button class="btn ghost" id="m_out">로그아웃</button></div>
     <div class="msg" id="m_msg2"></div>`;
-  manageEd = makeEditor($('m_editor'), {sido, og:m.og, extras:m.extras, danji:m.danji, used:j.used});
+  manageEd = makeEditor($('m_editor'), {sido, og:m.og, extras:m.extras, danji:m.danji, used:j.used, premium:(m.plan||'프리미엄')==='프리미엄'});
   $('m_save').onclick = async ()=>{
     const msg=$('m_msg2'); msg.className='msg'; msg.textContent='';
     const ed = manageEd.get(), cred = JSON.parse(sessionStorage.getItem('jdj_agent')||'{}');
     const btn=$('m_save'); btn.disabled=true;
     try{
-      const r = await A.post({action:'update', ...cred, extras:ed.extras, danji:ed.danji, phone:$('m_phone').value, kakao:$('m_kakao').value, intro:$('m_intro').value, reconfirm:$('m_re').checked});
+      const r = await A.post({action:'update', ...cred, extras:ed.extras, danji:ed.danji, phone:$('m_phone').value, kakao:$('m_kakao').value, intro:$('m_intro').value, biz:$('m_biz').value, mail:$('m_mail').value, reconfirm:$('m_re').checked});
       JDJ.track('agent_update', {extras:ed.extras.length, danji:ed.danji.length, reconfirm:$('m_re').checked?1:0});
       drawManage(r); const m2=$('m_msg2'); m2.className='msg ok'; m2.textContent='저장되었습니다. 리포트에는 5분 안에 반영됩니다.';
     }catch(e){ msg.className='msg err'; msg.textContent=nice(e.message); btn.disabled=false; }
@@ -361,6 +439,7 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
 if (location.hash==='#manage') document.querySelector('.tab[data-p="manage"]').click();
 
 (async function(){
+  if (!TRIAL) $('trialNote').style.display='none';
   if (!A.ready){ $('notReady').style.display='block'; $('a_submit').disabled=true; $('m_go').disabled=true; }
   try{ IX = await loadIndex(); setupApply(); setupManage(); }
   catch(e){ $('a_msg').className='msg err'; $('a_msg').textContent='데이터를 불러오지 못했습니다. 새로고침해 주세요.'; console.error(e); }

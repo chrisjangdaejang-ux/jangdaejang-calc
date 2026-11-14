@@ -21,7 +21,8 @@ function book() { return SHEET_ID ? SpreadsheetApp.openById(SHEET_ID) : Spreadsh
 
 const SH_A = '중개사', SH_L = '로그';
 const H = ['id','등록번호','사무소명','대표자','전화','카카오','소개','시도','사무소구코드','사무소구','사무소동',
-           '추가구','단지','관리코드','신청일','승인','만료일','메모','수정일'];
+           '추가구','단지','관리코드','신청일','승인','만료일','메모','수정일','상품','사업자번호','계산서메일'];
+const PLAN = { basic: '기본', premium: '프리미엄' };   // 기본 월 29,000원 · 프리미엄 월 49,000원 (연간 결제, 부가세 별도)
 const COL = Object.fromEntries(H.map((h, i) => [h, i]));
 
 /* ---------- 최초 1회 실행 ---------- */
@@ -59,7 +60,8 @@ function agents() {
       ceo: String(r[COL['대표자']]), phone: String(r[COL['전화']]), kakao: String(r[COL['카카오']]), intro: String(r[COL['소개']]),
       sido: String(r[COL['시도']]), og: String(r[COL['사무소구코드']]), ogName: String(r[COL['사무소구']]), dong: String(r[COL['사무소동']]),
       extras: parseJ(r[COL['추가구']], []), danji: parseJ(r[COL['단지']], []), code: String(r[COL['관리코드']]),
-      applied: r[COL['신청일']], approved: r[COL['승인']] === true, expires: r[COL['만료일']], memo: String(r[COL['메모']])
+      applied: r[COL['신청일']], approved: r[COL['승인']] === true, expires: r[COL['만료일']], memo: String(r[COL['메모']]),
+      plan: String(r[COL['상품']] || PLAN.premium), biz: String(r[COL['사업자번호']] || ''), mail: String(r[COL['계산서메일']] || '')
     });
   }
   return list;
@@ -90,6 +92,13 @@ function doGet(e) {
   return out({ ok: false, err: 'unknown' });
 }
 
+/* 예전 시트에 새 열 제목(상품·사업자번호·계산서메일)이 없으면 채움 */
+function ensureHeader() {
+  const sh = book().getSheetByName(SH_A);
+  const cur = sh.getRange(1, 1, 1, H.length).getValues()[0];
+  if (cur[H.length - 1] !== H[H.length - 1]) sh.getRange(1, 1, 1, H.length).setValues([H]).setFontWeight('bold').setBackground('#3B3F22').setFontColor('#F5EFDC');
+}
+
 function doPost(e) {
   let b;
   try { b = JSON.parse(e.postData.contents); } catch (x) { return out({ ok: false, err: '요청 형식 오류' }); }
@@ -97,6 +106,7 @@ function doPost(e) {
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
   try {
+    ensureHeader();
     if (b.action === 'apply') return out(apply(b));
     if (b.action === 'login') return out(login(b));
     if (b.action === 'update') return out(update(b));
@@ -117,7 +127,7 @@ function listPublic() {
     ok: true, slot: SLOT, at: ymd(new Date()),
     agents: agents().filter(isActive).map(a => ({
       id: a.id, n: a.office, ceo: a.ceo, ph: a.phone, kk: a.kakao, intro: a.intro, reg: a.reg,
-      og: a.og, ogn: a.ogName, dong: a.dong, r: regionsOf(a), dj: freshDanji(a).map(d => d.k)
+      og: a.og, ogn: a.ogName, dong: a.dong, r: regionsOf(a), dj: a.plan === PLAN.premium ? freshDanji(a).map(d => d.k) : [], pl: a.plan === PLAN.premium ? 'p' : 'b'
     }))
   };
   cache.put('list', JSON.stringify(res), 300);
@@ -151,7 +161,8 @@ function apply(b) {
   if (list.some(a => a.reg.replace(/\s/g, '') === reg.replace(/\s/g, ''))) throw new Error('이미 신청된 등록번호입니다. [내 관리]에서 로그인해 수정해 주세요.');
   const og = str(b.og, 5), extras = validRegions(og, b.extras);
   const regions = [og].concat(extras);
-  const danji = validDanji(b.danji, regions, []);
+  const plan = b.plan === 'premium' ? PLAN.premium : PLAN.basic;
+  const danji = plan === PLAN.premium ? validDanji(b.danji, regions, []) : [];
   const full = regions.filter(g => slotCount(g, '', list) >= SLOT);
   const id = 'A' + Utilities.getUuid().replace(/-/g, '').slice(0, 7).toUpperCase();
   const code = Utilities.getUuid().replace(/-/g, '').slice(0, 8).toUpperCase();
@@ -162,13 +173,14 @@ function apply(b) {
   row[COL['사무소동']] = str(b.dong, 30); row[COL['추가구']] = JSON.stringify(extras); row[COL['단지']] = JSON.stringify(danji);
   row[COL['관리코드']] = code; row[COL['신청일']] = new Date(); row[COL['승인']] = false; row[COL['만료일']] = '';
   row[COL['메모']] = full.length ? '대기(자리 마감): ' + full.join(',') : ''; row[COL['수정일']] = new Date();
+  row[COL['상품']] = plan; row[COL['사업자번호']] = str(b.biz, 20); row[COL['계산서메일']] = str(b.mail, 80);
   const sh = book().getSheetByName(SH_A);
   sh.appendRow(row);
   sh.getRange(sh.getLastRow(), COL['승인'] + 1).insertCheckboxes();   // 승인 칸을 체크박스로
   if (NOTIFY) {
     try {
       MailApp.sendEmail(Session.getEffectiveUser().getEmail(), `[장대장 제휴] 새 신청: ${office}`,
-        `${office} (${ceo}) ${phone}\n등록번호 ${reg}\n지역 ${regions.join(', ')}\n시트에서 확인 후 승인 체크와 만료일을 입력하세요.\n${book().getUrl()}`);
+        `${office} (${ceo}) ${phone}\n상품 ${plan}\n등록번호 ${reg}\n사업자번호 ${str(b.biz, 20)} / 계산서 ${str(b.mail, 80)}\n지역 ${regions.join(', ')}\n시트에서 확인 후 승인 체크와 만료일을 입력하세요.\n${book().getUrl()}`);
     } catch (e) {}
   }
   return { ok: true, id: id, code: code, waitlist: full };
@@ -195,7 +207,8 @@ function meOut(me, list) {
       id: me.id, reg: me.reg, office: me.office, ceo: me.ceo, phone: me.phone, kakao: me.kakao, intro: me.intro,
       sido: me.sido, og: me.og, ogName: me.ogName, dong: me.dong, extras: me.extras,
       danji: (me.danji || []).map(d => ({ k: d.k, n: d.n, at: d.at, fresh: fresh.indexOf(d.k) >= 0 })),
-      status: statusOf(me), expires: me.expires instanceof Date ? ymd(me.expires) : '', waitMemo: me.memo
+      status: statusOf(me), expires: me.expires instanceof Date ? ymd(me.expires) : '', waitMemo: me.memo,
+      plan: me.plan, biz: me.biz, mail: me.mail
     },
     used: slotsFor(me.og.slice(0, 2), me, list),
     stats: statsFor(me.id)
@@ -213,7 +226,7 @@ function update(b) {
     const full = added.filter(g => slotCount(g, me.id, list) >= SLOT);
     if (full.length) throw new Error('선택한 구 중 자리가 마감된 곳이 있습니다: ' + full.join(', '));
   }
-  let danji = validDanji(b.danji, regions, me.danji);
+  let danji = me.plan === PLAN.premium ? validDanji(b.danji, regions, me.danji) : [];
   if (b.reconfirm) danji = danji.map(d => ({ k: d.k, n: d.n, at: ymd(new Date()) }));
   const sh = book().getSheetByName(SH_A);
   const set = (h, v) => sh.getRange(me.row, COL[h] + 1).setValue(v);
@@ -222,6 +235,8 @@ function update(b) {
   if (b.phone) set('전화', str(b.phone, 20));
   set('카카오', str(b.kakao, 200));
   set('소개', str(b.intro, 120));
+  if (b.biz != null) set('사업자번호', str(b.biz, 20));
+  if (b.mail != null) set('계산서메일', str(b.mail, 80));
   set('수정일', new Date());
   CacheService.getScriptCache().remove('list');
   const list2 = agents();
