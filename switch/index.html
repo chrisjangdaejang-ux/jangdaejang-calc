@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="장대장 계산기">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="/jangdaejang-calc/assets/pwa.js" defer></script>
+<script src="/jangdaejang-calc/assets/region-pick.js" defer></script>
 <title>장대장 갈아타기 계산기</title>
 <meta name="description" content="지금 집을 팔면 양도세를 내고 대출을 갚은 뒤 손에 남는 돈, 새 대출로 갈아탈 수 있는 최대 집값, 취득세까지 한 번에 계산합니다. 2026년 11월 규제 반영.">
 <meta property="og:title" content="장대장 갈아타기 계산기 — 지금 집 팔면 어디까지 갈 수 있을까?">
@@ -622,6 +623,7 @@ function updateSwitchReport(){
   if (!last || !last.c) return;
   const {cash,c}=last;
   const q=new URLSearchParams({i:c.income, c:Math.max(0,Math.round(cash)), d:c.debt||0, o:'one', t:rtype, rt:c.rate, tm:c.term, r:$('region').value, src:'switch'});
+  const RG=window.JDJ_REGION; if(RG){ q.set('sd',RG.sido); if(RG.sgg) q.set('g',RG.sgg); }
   $('premBtn').href='../buy/report/?'+q.toString();
 }
 $('premBtn').addEventListener('click',()=>JDJ.track('switch_to_report',{region:$('region').value, max_band:JDJ.band(last?last.P:0)}));

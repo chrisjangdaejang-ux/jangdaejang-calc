@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="장대장 계산기">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="/jangdaejang-calc/assets/pwa.js" defer></script>
+<script src="/jangdaejang-calc/assets/region-pick.js" defer></script>
 <title>장대장 내 집 마련 계산기</title>
 <meta name="description" content="연봉과 보유 현금만 넣으면 LTV·스트레스 DSR·가격구간별 대출 한도를 따져 최대 매수 가능 금액을 계산합니다. 2026년 11월 규제 반영.">
 <meta property="og:title" content="장대장 내 집 마련 계산기 — 나는 얼마짜리 집까지 살 수 있을까?">
@@ -577,6 +578,7 @@ $('copyBtn').addEventListener('click',async()=>{
 // 맞춤 매수 리포트 (무료 베타) — 클릭 수로 유료화 수요 확인
 function updateReport(c){
   const q=new URLSearchParams({i:c.income,c:c.cash,d:c.debt,o:own,t:rtype,rt:c.rate,tm:c.term,r:$('region').value});
+  const RG=window.JDJ_REGION; if(RG){ q.set('sd',RG.sido); if(RG.sgg) q.set('g',RG.sgg); }
   $('premBtn').href='report/?'+q.toString();
 }
 $('premBtn').addEventListener('click',()=>{ JDJ.track('premium_interest',{region:$('region').value, max_band:JDJ.band(lastP)}); });

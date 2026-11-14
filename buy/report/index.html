@@ -119,6 +119,8 @@ tr.hl td{background:rgba(184,148,42,.12);font-weight:700}
 .reasons li.r:before{content:"◆";color:var(--gold);font-size:10px;top:3px}
 .reasons li.f:before{content:"★";color:var(--gold)}
 .fvbox{border:1.5px solid var(--gold);background:rgba(184,148,42,.08);border-radius:10px;padding:12px 14px;margin:0 0 14px;font-size:13.5px;line-height:1.6}
+.widen{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between;background:#fff;border:1.5px dashed var(--gold);border-radius:10px;padding:12px 14px;margin:12px 0;font-size:14px}
+.widen button{background:var(--olive);color:#F5EFDC;border:0;border-radius:8px;padding:9px 14px;font:inherit;font-weight:900;cursor:pointer}
 .fvhow{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 14px;margin:0 0 14px;font-size:13.5px;line-height:1.65}
 .fvhow summary{cursor:pointer;font-weight:900;color:var(--olive)}
 .fvhow summary span{font-weight:500;color:var(--muted);font-size:12.5px}
@@ -602,7 +604,7 @@ async function render(){
   let near = [];
   if (!picked.length){
     near = nearMisses(units, ctxBy, dsrBy);
-    h += `<div class="empty">지금 조건으로 바로 살 수 있는 단지를 선택한 지역·평형에서 찾지 못했습니다.<br>위의 <b>조건 수정·지역 선택</b>에서 지역을 넓히거나 평형을 추가해 보세요.</div>`;
+    h += `<div class="empty">지금 조건으로 바로 살 수 있는 단지를 선택한 지역·평형에서 찾지 못했습니다.<br>위의 <b>조건 수정·지역 선택</b>에서 지역을 넓히거나 평형을 추가해 보세요.</div>` + (S.sggs.size < sggsOfSido(S.sido).length ? `<div class="widen"><span>다른 구까지 함께 찾아볼까요?</span><button type="button" id="widenBtn">${esc(S.sido.name)} 전체로 넓히기</button></div>` : '');
     if (near.length){
       h += `<h3 style="font-size:15px;margin:18px 0 8px">조금만 더 준비하면 가능한 단지</h3>
       <p class="sub">선택한 지역에서 부족한 금액이 가장 적은 단지입니다. 목표로 잡고 자금 계획을 세워 보세요.</p>
@@ -645,7 +647,8 @@ async function render(){
         <ul class="reasons">${rs.map(r=>`<li class="${r[0]}">${esc(r[1])}</li>`).join('')}</ul>
         <div class="agt" data-g="${x.code}" data-k="${esc(x.code+'|'+x.dong+'|'+x.apt)}"></div>
       </div>`;
-    }).join('') + `</div>
+    }).join('') + `</div>` +
+    ((picked.length<10 && S.sggs.size < sggsOfSido(S.sido).length) ? `<div class="widen"><span>선택한 지역에서 예산에 맞는 단지는 <b>${picked.length}곳</b>입니다. 범위를 넓히면 더 많은 후보를 볼 수 있어요.</span><button type="button" id="widenBtn">${esc(S.sido.name)} 전체로 넓히기</button></div>` : '') + `
     <p class="note">추정 시세는 같은 단지·같은 평형대의 최근 3개월 실거래 중앙값(전용면적 기준 환산)이며 호가와 다를 수 있습니다. 층·향·동에 따라 실제 가격은 달라집니다. 역까지 거리와 학교 배정은 지도에서 꼭 확인하세요.</p>`;
     h += `<div id="agentSec" class="agsec"></div>`;
   }
@@ -706,6 +709,7 @@ async function render(){
   </div>`;
 
   $('report').innerHTML = h;
+  const wb=document.getElementById('widenBtn'); if(wb) wb.onclick=()=>{ S.sggs=new Set(sggsOfSido(S.sido)); renderSggChips(); render(); JDJ.track('report_widen',{region:S.sido.short}); };
   fillAgents(picked.length ? picked : near).catch(e=>console.warn('agents',e));
   JDJ.track('report_render', {region:S.sido.short, sgg_count:S.sggs.size, max_band:JDJ.band(M), picks:picked.length});
 }
@@ -796,8 +800,8 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ const bg=$('agm'
 (async function(){
   try{
     IX = await loadIndex();
-    S.sido = defaultSido();
-    S.sggs = new Set(defaultSggs(S.sido));
+    S.sido = IX.sido.find(s=>s.name===Q.get('sd')) || defaultSido();
+    S.sggs = (Q.get('g') && IX.sgg[Q.get('g')] && IX.sgg[Q.get('g')].sido===S.sido.name) ? new Set([Q.get('g')]) : new Set(defaultSggs(S.sido));
     buildSettings(); wireSettings();
     $('backBtn').href = '../' + (location.search||'');
     await render();
