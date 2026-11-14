@@ -1,7 +1,7 @@
 /* 장대장 공인중개사 제휴 — 공용 클라이언트
    API: 구글 Apps Script 웹 앱 주소 (tools/agent-backend.gs 배포 후 여기에 붙여넣기) */
 (function(){
-  const API = '';   // 예: 'https://script.google.com/macros/s/XXXX/exec'
+  const API = 'https://script.google.com/macros/s/AKfycbyFwqwleAfwHoVSfWHyFVnszvc0fCjsG-WcEVkxRqUz_FmmL4bL-RymfPc3Eh_aNcrRpQ/exec';   // 예: 'https://script.google.com/macros/s/XXXX/exec'
 
   function vid(){ try{ return localStorage.getItem('jdj_vid') || ''; }catch(e){ return ''; } }
   let listP = null;
