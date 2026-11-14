@@ -10,6 +10,7 @@
 <script>window.JDJ_CONFIG = { tool:'report', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../../assets/track.js"></script>
 <script src="../../assets/region-notes.js"></script>
+<script src="../../assets/agents.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -133,6 +134,38 @@ tr.hl td{background:rgba(184,148,42,.12);font-weight:700}
   a{color:inherit;text-decoration:none}
   @page{size:A4;margin:12mm}
 }
+/* 제휴 공인중개사 */
+.agt{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px}
+.agt:empty{display:none}
+.agt-l{font-size:12px;font-weight:700;color:var(--olive)}
+.agt-l em,.agsec h3 em,.agm .tag{font-style:normal;font-size:10px;font-weight:700;border:1px solid var(--gold);color:var(--gold);padding:1px 5px;border-radius:3px;margin-left:5px;vertical-align:1px}
+.agbtn{font:inherit;font-size:13px;font-weight:700;background:#fff;border:1.5px solid var(--olive);color:var(--olive);padding:5px 11px;border-radius:999px;cursor:pointer}
+.agbtn:hover{background:var(--olive);color:var(--cream)}
+.agsec{margin-top:22px;border-top:1px dashed var(--line);padding-top:16px}
+.agsec:empty{display:none}
+.agsec h3{font-size:15px;font-weight:900;margin:0 0 4px}
+.agrow h4{font-size:13px;margin:12px 0 6px;color:var(--muted)}
+.aglist{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.agc{border:1px solid var(--line);border-radius:9px;padding:11px 12px;background:#fff;display:flex;flex-direction:column;gap:4px}
+.agc b{font-size:15px}
+.agc small{color:var(--muted);font-size:12px}
+.agc .hl{font-size:11px;font-weight:700;color:var(--green)}
+.agc p{margin:0;font-size:12.5px;color:var(--ink)}
+.agc .agbtn{align-self:flex-start;margin-top:4px}
+.agjoin{font-size:12px;color:var(--muted);margin-top:10px}
+.agjoin a{color:var(--olive);font-weight:700}
+.agm-bg{position:fixed;inset:0;background:rgba(35,36,26,.55);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+.agm-bg.open{display:flex}
+.agm{background:var(--card);border-radius:12px;max-width:420px;width:100%;padding:20px 20px 16px;position:relative;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.agm h3{margin:0 0 2px;font-size:19px;font-weight:900}
+.agm dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:13.5px;margin:12px 0}
+.agm dt{color:var(--muted);font-weight:700}
+.agm dd{margin:0}
+.agm .acts{display:flex;gap:8px;margin-top:12px}
+.agm .acts .btn{flex:1;text-align:center}
+.agm .x{position:absolute;right:10px;top:8px;border:0;background:none;font-size:22px;cursor:pointer;color:var(--muted)}
+.agm .disc{font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.5}
+@media print{.agm-bg,.agjoin,.agbtn{display:none!important}}
 </style>
 </head>
 <body>
@@ -533,9 +566,11 @@ async function render(){
           <div class="mini"><div class="k">추천 점수</div><div class="v">${Math.round(x.score*100)}</div><div class="bar"><i style="width:${Math.round(x.score*100)}%"></i></div></div>
         </div>
         <ul class="reasons">${rs.map(r=>`<li class="${r[0]}">${esc(r[1])}</li>`).join('')}</ul>
+        <div class="agt" data-g="${x.code}" data-k="${esc(x.code+'|'+x.dong+'|'+x.apt)}"></div>
       </div>`;
     }).join('') + `</div>
     <p class="note">추정 시세는 같은 단지·같은 평형대의 최근 3개월 실거래 중앙값(전용면적 기준 환산)이며 호가와 다를 수 있습니다. 층·향·동에 따라 실제 가격은 달라집니다. 역까지 거리와 학교 배정은 지도에서 꼭 확인하세요.</p>`;
+    h += `<div id="agentSec" class="agsec"></div>`;
   }
   h += `</div>`;
 
@@ -594,8 +629,80 @@ async function render(){
   </div>`;
 
   $('report').innerHTML = h;
+  fillAgents(picked).catch(e=>console.warn('agents',e));
   JDJ.track('report_render', {region:S.sido.short, sgg_count:S.sggs.size, max_band:JDJ.band(M), picks:picked.length});
 }
+
+/* ---------- 제휴 공인중개사 ---------- */
+let AG = {};
+function shuffle(arr){ return arr.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(v=>v[1]); }
+function agCard(a, g, rk){
+  const hl = rk===0 ? '추천 단지 매물 보유' : (rk===1 ? '추천 단지 같은 동 사무소' : (rk===2 ? '이 지역 사무소' : ''));
+  return `<div class="agc"><b>${esc(a.n)}</b><small>${esc(a.ogn)} ${esc(a.dong)} · 대표 ${esc(a.ceo)}</small>
+    ${hl?`<span class="hl">${hl}</span>`:''}${a.intro?`<p>${esc(a.intro)}</p>`:''}
+    <button class="agbtn" data-a="${a.id}" data-g="${g}" data-k="">정보 보기 · 연락하기</button></div>`;
+}
+async function fillAgents(picked){
+  const A = window.JDJ_AGENTS;
+  if (!A || !A.ready || !picked.length) return;
+  const res = await A.list();
+  const list = (res && res.agents) || [];
+  AG = {}; list.forEach(a=>AG[a.id]=a);
+  /* 단지 카드: 그 단지 매물을 등록한 중개사 */
+  document.querySelectorAll('.agt').forEach(el=>{
+    const k = el.dataset.k, g = el.dataset.g;
+    const hit = shuffle(list.filter(a=>a.dj.includes(k) && a.r.includes(g))).slice(0,2);
+    if (!hit.length) return;
+    el.innerHTML = `<span class="agt-l">이 단지 매물 보유 중개사<em>제휴</em></span>` +
+      hit.map(a=>`<button class="agbtn" data-a="${a.id}" data-g="${g}" data-k="${esc(k)}">${esc(a.n)}</button>`).join('');
+    hit.forEach(a=>A.log('imp', a.id, g, k));
+  });
+  /* 추천 지역별 제휴 중개사: 매물 보유 > 같은 동 사무소 > 같은 구 사무소 > 추가 지역, 같은 순위는 무작위 */
+  const gus = [...new Set(picked.map(x=>x.code))];
+  const pk = new Set(picked.map(x=>x.code+'|'+x.dong+'|'+x.apt));
+  const dongs = new Set(picked.map(x=>x.code+'|'+x.dong));
+  let html = '';
+  for (const g of gus){
+    const cand = list.filter(a=>a.r.includes(g));
+    if (!cand.length) continue;
+    const rank = a => a.dj.some(k=>k.startsWith(g+'|') && pk.has(k)) ? 0 : (a.og===g && dongs.has(g+'|'+a.dong) ? 1 : (a.og===g ? 2 : 3));
+    const top = shuffle(cand).sort((x,y)=>rank(x)-rank(y)).slice(0, res.slot||3);
+    html += `<div class="agrow"><h4>${esc(sggName(g))}</h4><div class="aglist">${top.map(a=>agCard(a,g,rank(a))).join('')}</div></div>`;
+    top.forEach(a=>A.log('imp', a.id, g, ''));
+  }
+  const box = $('agentSec'); if (!box) return;
+  box.innerHTML = (html ? `<h3>추천 지역 공인중개사<em>제휴·광고</em></h3>
+    <p class="sub">추천 단지가 있는 지역의 제휴 중개사무소입니다. 매물·가격·거래 조건은 중개사무소에 직접 확인하세요.</p>${html}` : '') +
+    `<p class="agjoin noprint">공인중개사이신가요? 추천 단지 지역에 사무소를 노출해 보세요 → <a href="../../agent/" target="_blank" rel="noopener" data-track="agent_join_click">제휴 안내</a></p>`;
+}
+function openAgent(id, g, k){
+  const a = AG[id]; if (!a) return;
+  const A = window.JDJ_AGENTS;
+  A.log('view', id, g, k); JDJ.track('agent_view', {agent:id, sgg:g});
+  const tel = String(a.ph||'').replace(/[^\d]/g,'');
+  const kk = /^https:\/\//.test(a.kk||'') ? a.kk : '';
+  let bg = $('agm');
+  if (!bg){ bg = document.createElement('div'); bg.id='agm'; bg.className='agm-bg'; document.body.appendChild(bg);
+    bg.addEventListener('click', e=>{ if(e.target===bg || e.target.classList.contains('x')) bg.classList.remove('open'); }); }
+  bg.innerHTML = `<div class="agm" role="dialog" aria-modal="true"><button class="x" aria-label="닫기">×</button>
+    <span class="tag">제휴·광고</span>
+    <h3>${esc(a.n)}</h3>
+    <dl><dt>대표</dt><dd>${esc(a.ceo)} 공인중개사</dd><dt>소재지</dt><dd>${esc(a.ogn)} ${esc(a.dong)}</dd>
+      <dt>등록번호</dt><dd>${esc(a.reg)}</dd><dt>전화</dt><dd>${esc(a.ph)}</dd>
+      ${a.dj.length?`<dt>매물 단지</dt><dd>${a.dj.filter(x=>x.startsWith(g+'|')).map(x=>esc(x.split('|')[2])).join(', ')||'-'}</dd>`:''}</dl>
+    ${a.intro?`<p style="margin:0;font-size:14px">${esc(a.intro)}</p>`:''}
+    <div class="acts">${tel?`<a class="btn primary" href="tel:${tel}" data-act="call">전화하기</a>`:''}${kk?`<a class="btn gold" href="${esc(kk)}" target="_blank" rel="noopener" data-act="kakao">카카오톡 문의</a>`:''}</div>
+    <p class="disc">이 중개사무소는 장대장 리포트 제휴(광고) 사무소입니다. 장대장은 중개 행위에 관여하지 않으며, 매물 정보와 거래 조건은 해당 중개사무소에 직접 확인하세요.</p></div>`;
+  bg.querySelectorAll('[data-act]').forEach(el=>el.addEventListener('click', ()=>{
+    const t = el.dataset.act; A.log(t, id, g, k); A.flush(); JDJ.track('agent_'+t, {agent:id, sgg:g});
+  }));
+  bg.classList.add('open');
+}
+document.addEventListener('click', e=>{
+  const b = e.target.closest('.agbtn'); if (!b) return;
+  openAgent(b.dataset.a, b.dataset.g, b.dataset.k);
+});
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ const bg=$('agm'); if(bg) bg.classList.remove('open'); } });
 
 /* ---------- 시작 ---------- */
 (async function(){
