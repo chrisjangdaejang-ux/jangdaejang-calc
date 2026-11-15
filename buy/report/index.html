@@ -758,7 +758,7 @@ async function renderCompare(){
   </div>`;
 
   if (items.length<2){
-    h += `<div class="sec"><div class="empty">${miss.length?`최근 거래 자료에서 찾지 못한 단지(${miss.map(p=>esc(p.apt)).join(', ')})는 비교함에서 뺐어요. `:''}${items.length?'한 단지를 더 담으면':'단지를 2개 이상 담으면'} 바로 비교표가 나와요. (2개만 비교해도 돼요)</div></div></div>`;
+    h += `<div class="sec"><div class="empty">${miss.length?`최근 거래 자료에서 찾지 못한 단지(${miss.map(p=>esc(p.apt)).join(', ')})는 비교함에서 뺐어요. `:''}${items.length?'한 단지를 더 담으면':'단지를 2개 이상 담으면'} 바로 비교표가 나와요. (최대 3개까지 비교할 수 있어요)</div></div></div>`;
     $('report').innerHTML=h; wireCompare(); $('cmpEdit').onclick=e=>{e.preventDefault(); $('settings').classList.add('open'); window.scrollTo(0,0);}; return;
   }
 
