@@ -502,7 +502,7 @@ function futureReasons(x){
   }
   if (f.rl){
     const R=f.rl, d=v=>v?`${v.slice(0,4)}.${v.slice(4)}`:'', SK={plan:'계획 확정',start:'착공',start_real:'본공사 착수',delay:'개통 지연',open:'개통'};
-    let t = `신규 노선: ${R.line} ${R.st} 인근 — `;
+    let t = `신규 노선: ${R.line} ${R.st}${R.m!=null?`까지 직선 ${R.m.toLocaleString()}m`:' 인근'} — `;
     t += R.opened ? `${d(R.stym)} 개통` : `${d(R.stym)} ${SK[R.stage]||R.stage} 이후 공사 중` + (R.target?`, 개통 목표 ${d(R.target)}`:'') + (R.delays?`(일정 지연 ${R.delays}회)`:'');
     if (R.pre!=null) t += ` · ${d(R.first)} 이후 이 단지는 구 평균보다 ${R.pre>=0?'+':''}${R.pre}%` + (R.opened?'':(R.pre>=5?' (상당 부분 선반영)':R.pre<=0?' (아직 반영 적음)':''));
     const S = RAIL&&RAIL.summary&&RAIL.summary[R.opened?'open':'open'];
