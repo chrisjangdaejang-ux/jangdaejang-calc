@@ -395,9 +395,9 @@ const BY_TXT = {LTV:'LTV(집값 대비 비율)', CAP:'가격구간별 대출 한
 
 /* ---------- 데이터 ---------- */
 let MODEL=null, RAIL=null;
-const RZ_LV={1:'정비구역 지정',2:'추진위원회 승인',3:'조합설립인가',4:'건축심의',5:'사업시행인가',6:'관리처분인가',7:'이주',8:'착공'};
+const RZ_LV={1:'신속통합기획 대상지 선정',2:'신속통합기획 완료',3:'정비구역 지정',4:'추진위원회 승인',5:'조합설립인가',6:'건축심의',7:'사업시행인가',8:'관리처분인가',9:'이주',10:'착공'};
 const rzYm=v=>v?`${v.slice(0,4)}.${v.slice(4)}`:'';
-const rzText=z=>`재건축 진행: ${z.n} — ${RZ_LV[z.lv]||''} 단계(${rzYm(z.ym)}) · 8단계 중 ${z.lv}단계 (서울시 정비사업 추진현황 기준)`;
+const rzText=z=>`재건축 진행: ${z.n} — ${RZ_LV[z.lv]||''} 단계(${rzYm(z.ym)}) · 10단계 중 ${z.lv}단계 (서울시 정비사업 추진현황·서울플랜+ 기준)`;
 const RUSED=()=>!!(MODEL&&MODEL.region&&MODEL.region.used);
 async function loadIndex(){ try{ const m=await fetch(DATA+'model.json',{cache:'no-cache'}); MODEL=m.ok?await m.json():null; }catch(e){} try{ const q=await fetch(DATA+'rail.json',{cache:'no-cache'}); RAIL=q.ok?await q.json():null; }catch(e){} const r=await fetch(DATA+'index.json',{cache:'no-cache'}); if(!r.ok) throw new Error('index'); return r.json(); }
 async function loadSido(id){ if(SIDO_CACHE[id]) return SIDO_CACHE[id]; const r=await fetch(DATA+id+'.json',{cache:'no-cache'}); if(!r.ok) throw new Error(id); const j=await r.json(); SIDO_CACHE[id]=j.units; return j.units; }
@@ -565,7 +565,7 @@ function futureReasons(x){
       : `${f.subs?f.subs.replace(/\s+/g,' '):'지하철역'}까지 도보 ${f.sub<=5?'5분 이내':f.sub+'분 이내'}` + (f.sub<=10?' — 역세권':'')]); }
   if (f.rz && !(f.by && new Date().getFullYear()-f.by>=25 && (f.land || f.vl || f.landavg))) r.unshift(['f', rzText(f.rz)]);
   else if (!f.rz && x.code && x.code.startsWith('11') && f.by && new Date().getFullYear()-f.by>=30)
-    r.push(['f', '재건축 진행: 서울시 공식 정비사업 추진현황에는 아직 없음(정비구역 지정 전) — 구역 지정 이후 단계부터 반영돼요']);
+    r.push(['f', '재건축 진행: 서울시 공식 자료(정비사업 추진현황·신속통합기획)에 아직 추진 이력이 없어요']);
   if (f.by && new Date().getFullYear()-f.by>=25 && (f.land || f.vl || f.landavg)){
     const out=[];
     // ① 단지 사업성: 세대당 평균 대지지분 + 용적률
@@ -776,8 +776,8 @@ async function renderCompare(){
   add('신설 노선', items.map(x=>{ const R=x.fx&&x.fx.rl; if(!R) return '-'; const d=v=>v?`${v.slice(0,4)}.${v.slice(4)}`:''; const SK={plan:'계획 확정',start:'착공',start_real:'본공사',delay:'지연',open:'개통'};
     return `${esc(R.line)} ${esc(R.st)}<small>${R.m!=null?`직선 ${R.m.toLocaleString()}m · `:''}${R.opened?d(R.stym)+' 개통':(SK[R.stage]||R.stage)+(R.target?` · 목표 ${d(R.target)}`:'')}</small>`; }), null);
   if (items.some(x=>x.fx&&(x.fx.rz||(x.code.startsWith('11')&&x.fx.by&&Y-x.fx.by>=25)))){
-    add('재건축 진행', items.map(x=>{ const z=x.fx&&x.fx.rz; if(z) return `${RZ_LV[z.lv]||''}<small>${esc(z.n)} · ${rzYm(z.ym)} · 8단계 중 ${z.lv}단계</small>`;
-      return x.code.startsWith('11')&&x.fx&&x.fx.by&&Y-x.fx.by>=25 ? '구역 지정 전<small>서울시 공식 추진현황 미등재</small>' : '-'; }),
+    add('재건축 진행', items.map(x=>{ const z=x.fx&&x.fx.rz; if(z) return `${RZ_LV[z.lv]||''}<small>${esc(z.n)} · ${rzYm(z.ym)} · 10단계 중 ${z.lv}단계</small>`;
+      return x.code.startsWith('11')&&x.fx&&x.fx.by&&Y-x.fx.by>=25 ? '추진 이력 없음<small>신속통합기획·정비구역 공식 자료에 없음</small>' : '-'; }),
       items.map(x=>x.fx&&x.fx.rz?x.fx.rz.lv:(x.code.startsWith('11')&&x.fx&&x.fx.by&&Y-x.fx.by>=25?0:null)), true);
   }
   if (items.some(x=>x.fx&&x.fx.by&&Y-x.fx.by>=25)){
@@ -977,7 +977,7 @@ async function render(){
         <li><b>동 대장 단지 대비 가격</b> — 같은 동 안에서 <b>같은 평형끼리</b> 평당가를 비교해(소형은 평당가가 원래 높으므로) 가장 비싸게 거래되는 단지를 '대장'으로 보고, 그 단지와의 격차를 봅니다. 최근 2년 비교 거래가 20건 미만인 단지는 대장 후보에서 제외합니다.</li>
         <li><b>연식·단지 규모</b> — 준공 연도와 세대수. 10년 이내 신축 프리미엄, 재건축 연한(30년)에 가까워지는 기대감, 1,000세대 이상 대단지의 커뮤니티·환금성 프리미엄을 함께 봅니다.</li>
         <li><b>역세권</b> — 지하철역까지 걸어서 몇 분인지. 출퇴근이 편한 단지는 수요가 꾸준합니다.</li>
-        <li><b>재건축 진행 단계(서울)</b> — 서울시 「정비사업 추진현황」(주거정비과, 분기 갱신)으로 정비구역 지정 → 추진위 → 조합설립 → 건축심의 → 사업시행인가 → 관리처분인가 → 이주 → 착공 중 어디까지 왔는지 봅니다. 과거 시점마다 그때의 단계로 다시 계산해 가격에 실제로 얼마나 영향을 줬는지 데이터로 비중을 정합니다. 정비구역 지정 전 단지(신속통합기획 검토 등)는 공식 현황에 아직 없습니다.</li>
+        <li><b>재건축 진행 단계(서울)</b> — 서울시 「정비사업 추진현황」(주거정비과, 분기 갱신)과 서울플랜+(신속통합기획 포함)로 신속통합기획 대상지 선정 → 기획 완료 → 정비구역 지정 → 추진위 → 조합설립 → 건축심의 → 사업시행인가 → 관리처분인가 → 이주 → 착공 중 어디까지 왔는지 봅니다. 과거 시점마다 그때의 단계로 다시 계산해 가격에 실제로 얼마나 영향을 줬는지 데이터로 비중을 정합니다.</li>
         <li><b>재건축 사업성</b> — 준공 25년 이상 단지는 <b>단지의 세대당 평균 대지지분과 용적률</b>로 사업성을 봅니다(평균 대지지분이 크고 용적률이 낮을수록 일반분양을 많이 할 수 있어 조합원 부담이 줄어듦). 같은 대지지분이라도 서울과 지방은 새 아파트 값이 달라 의미가 다르므로, <b>그 지역 신축 시세로 환산한 간이 사업성</b>(재건축 후 용적률 300%, 3.3㎡당 공사비 서울 1,000만·수도권 900만·지방 750만 원 가정)으로 전국 재건축 단지와 비교합니다. 카드에는 <b>이 평형의 대지지분</b>(내 몫)이 단지 평균보다 많은지도 함께 보여 드립니다. 실제 분담금은 기부채납·임대주택·사업비에 따라 달라집니다.</li>
         <li><b>전세가율</b> — 매매가 대비 전세 보증금 비율. 높을수록 실제로 살려는 수요가 많다는 뜻입니다.</li>
         <li><b>지역 전망</b> — 구·시 단위로 <b>향후 2년 입주 물량</b>(공급 부담), <b>인구·세대 증가</b>, 구 시세 흐름, 전세가율을 봐서 같은 시·도 안에서 어느 지역이 더 오를지 따로 점수를 매기고, 단지 점수와 합쳐 구가 달라도 비교할 수 있게 합니다.</li>
