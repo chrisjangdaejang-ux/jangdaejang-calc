@@ -37,6 +37,11 @@ body{margin:0;background:var(--cream);color:var(--ink);font-family:'Noto Sans KR
 @media(max-width:420px){.top{padding:12px 14px}.brand{font-size:15px}.badge{font-size:10px;padding:3px 7px;letter-spacing:.06em}}
 .wrap{max-width:960px;margin:0 auto;padding:22px 18px 60px}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.hzbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:14px}
+.hzbar b{font-size:14px;margin-right:4px}
+.hzbar button{font:inherit;font-size:14px;font-weight:900;border:1.5px solid var(--olive);background:#fff;color:var(--olive);border-radius:999px;padding:6px 14px;cursor:pointer}
+.hzbar button.on{background:var(--olive);color:var(--cream)}
+.hznote{width:100%;font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.5}
 .btn{display:inline-block;background:var(--ink);color:var(--cream);text-decoration:none;font-weight:700;font-size:14px;padding:10px 15px;border-radius:7px;border:0;cursor:pointer;font-family:inherit}
 .btn.primary{background:var(--red);color:#fff}
 .btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
@@ -277,6 +282,7 @@ tr.hl td{background:rgba(184,148,42,.12);font-weight:700}
     <button class="btn" id="printBtn">PDF로 저장 / 인쇄</button>
     <a class="btn ghost" href="../" id="backBtn">← 계산기로 돌아가기</a>
   </div>
+  <div class="hzbar noprint" id="hzbar"><b>보유 기간</b><button type="button" data-hz="2">2년</button><button type="button" data-hz="5">5년</button><button type="button" data-hz="10">10년 이상</button><div class="hznote" id="hznote"></div></div>
 
   <div class="settings" id="settings">
     <h3>리포트 조건</h3>
@@ -394,14 +400,26 @@ function maxPrice(c,dsr){
 const BY_TXT = {LTV:'LTV(집값 대비 비율)', CAP:'가격구간별 대출 한도', DSR:'소득(DSR 40%)', BAN:'주택구입 주담대 불가'};
 
 /* ---------- 데이터 ---------- */
-let MODEL=null, RAIL=null;
+let MODEL=null, RAIL=null, MODEL5=null;
+let HZ='2';
+try{ HZ = new URLSearchParams(location.search).get('hz') || localStorage.getItem('jdj_hz') || '2'; }catch(e){}
+if(!['2','5','10'].includes(HZ)) HZ='2';
+const M5OK=()=>!!(MODEL5&&(MODEL5.periods||[]).length>=3&&MODEL5.oos&&MODEL5.oos.top20>0);
 const RZ_LV={1:'신속통합기획 대상지 선정',2:'신속통합기획 완료',3:'정비구역 지정',4:'추진위원회 승인',5:'조합설립인가',6:'건축심의',7:'사업시행인가',8:'관리처분인가',9:'이주',10:'착공'};
 const rzYm=v=>v?`${v.slice(0,4)}.${v.slice(4)}`:'';
 const rzSrc=z=>z.src==='busan'?'부산시 정비사업 추진현황 기준':z.src==='nat'?'국토교통부 전국 도시정비사업 통합 데이터 기준, 연 1회 갱신':'서울시 정비사업 추진현황·서울플랜+ 기준';
 const rzText=z=>`재건축 진행: ${z.n} — ${RZ_LV[z.lv]||''} 단계${z.ym?`(${rzYm(z.ym)})`:''} · 10단계 중 ${z.lv}단계 (${rzSrc(z)})`;
 const RUSED=()=>!!(MODEL&&MODEL.region&&MODEL.region.used);
-async function loadIndex(){ try{ const m=await fetch(DATA+'model.json',{cache:'no-cache'}); MODEL=m.ok?await m.json():null; }catch(e){} try{ const q=await fetch(DATA+'rail.json',{cache:'no-cache'}); RAIL=q.ok?await q.json():null; }catch(e){} const r=await fetch(DATA+'index.json',{cache:'no-cache'}); if(!r.ok) throw new Error('index'); return r.json(); }
-async function loadSido(id){ if(SIDO_CACHE[id]) return SIDO_CACHE[id]; const r=await fetch(DATA+id+'.json',{cache:'no-cache'}); if(!r.ok) throw new Error(id); const j=await r.json(); SIDO_CACHE[id]=j.units; return j.units; }
+async function loadIndex(){ try{ const m=await fetch(DATA+'model.json',{cache:'no-cache'}); MODEL=m.ok?await m.json():null; }catch(e){} try{ const m5=await fetch(DATA+'model5.json',{cache:'no-cache'}); MODEL5=m5.ok?await m5.json():null; }catch(e){} try{ const q=await fetch(DATA+'rail.json',{cache:'no-cache'}); RAIL=q.ok?await q.json():null; }catch(e){} const r=await fetch(DATA+'index.json',{cache:'no-cache'}); if(!r.ok) throw new Error('index'); return r.json(); }
+async function loadSido(id){ if(SIDO_CACHE[id]) return SIDO_CACHE[id]; const r=await fetch(DATA+id+'.json',{cache:'no-cache'}); if(!r.ok) throw new Error(id); const j=await r.json(); SIDO_CACHE[id]=j.units; applyHz(j.units); return j.units; }
+/* 보유 기간에 맞는 미래가치 점수: 5년·10년은 5년 모델이 여러 시기 검증을 통과했을 때만 사용, 아니면 2년 점수 */
+function applyHz(units){ for(const u of units){ const f=u[9]; if(!f) continue; if(f.fv2===undefined) f.fv2=f.fv; f.fv = (HZ!=='2' && M5OK() && f.fv5!=null) ? f.fv5 : f.fv2; } }
+function setHz(h){ HZ=h; try{ localStorage.setItem('jdj_hz',h); }catch(e){} const u=new URL(location.href); u.searchParams.set('hz',h); history.replaceState(null,'',u); Object.values(SIDO_CACHE).forEach(applyHz); hzUi(); render(); }
+function hzUi(){ document.querySelectorAll('#hzbar [data-hz]').forEach(b=>b.classList.toggle('on', b.dataset.hz===HZ)); const n=$('hznote'); if(!n) return;
+  const P5=(MODEL5&&MODEL5.periods||[]).length;
+  n.innerHTML = HZ==='2' ? '앞으로 2년 동안 같은 구 안에서 더 오를 단지를 과거 데이터로 검증한 점수예요.'
+    : HZ==='5' ? (M5OK() ? `5년 보유 기준으로 따로 학습·검증한 점수예요(${P5}개 시기 검증).` : '5년 모델은 2010년부터의 과거 거래 자료를 모아 검증 중이에요(며칠 소요). 그전까지는 2년 점수를 보여 드리고, 재건축 단지는 <b>완료 시 기대 차익·예상 준공</b>을 함께 보여 드려요.')
+    : '10년 이상은 과거 데이터로 검증할 수 있는 범위를 넘어 <b>장기 전망</b>으로 봐 주세요. ' + (M5OK()?'5년 모델 점수에 ':'2년 점수에 ') + '재건축 완료 시 기대 차익·예상 준공, 신설역 개통 계획을 함께 보여 드려요.'; }
 function sggName(code){ const s=IX.sgg[code]; return s ? s.name : code; }
 function sidoOfCode(code){ const s=IX.sgg[code]; return s ? s.sido : ''; }
 function lastNZ(arr){ for(let i=arr.length-1;i>=Math.max(0,arr.length-3);i--) if(arr[i]>0) return arr[i]; return 0; }
@@ -569,6 +587,10 @@ function futureReasons(x){
   if (f.sub!=null){
     r.push(['f', f.sub>=30 ? '지하철역이 걸어가기엔 먼 편(도보 20분 이상) — 버스·자차 위주 생활권'
       : `${f.subs?f.subs.replace(/\s+/g,' '):'지하철역'}까지 도보 ${f.sub<=5?'5분 이내':f.sub+'분 이내'}` + (f.sub<=10?' — 역세권':'')]); }
+  if (f.eg){
+    const g=f.eg.v-f.eg.b-f.eg.p, ln=['f', `재건축 완료 시${f.eg.done?`(예상 준공 ${f.eg.done}년 전후)`:''} 기대 차익 약 ${g>=0?'+':'−'}${fmtS(Math.abs(g))} — 지역 신축 시세로 본 같은 평형 가치 ${fmtS(f.eg.v)}, 예상 분담금 ${f.eg.b>=0?fmtS(f.eg.b):'환급 '+fmtS(-f.eg.b)}, 현재가 ${fmtS(f.eg.p)} (간이 추정: 재건축 후 용적률 300%·같은 평형 1:1·현재 신축 시세 기준)`];
+    if (HZ==='2') r.push(ln); else r.unshift(ln);
+  }
   if (f.rz && !(f.by && new Date().getFullYear()-f.by>=25 && (f.land || f.vl || f.landavg))) r.unshift(['f', rzText(f.rz)]);
   else if (!f.rz && x.code && x.code.startsWith('11') && f.by && new Date().getFullYear()-f.by>=30)
     r.push(['f', '재건축 진행: 서울시 공식 자료(정비사업 추진현황·신속통합기획)에 아직 추진 이력이 없어요']);
@@ -789,6 +811,10 @@ async function renderCompare(){
       return x.code.startsWith('11')&&x.fx&&x.fx.by&&Y-x.fx.by>=25 ? '추진 이력 없음<small>신속통합기획·정비구역 공식 자료에 없음</small>' : '-'; }),
       items.map(x=>x.fx&&x.fx.rz?x.fx.rz.lv:(x.code.startsWith('11')&&x.fx&&x.fx.by&&Y-x.fx.by>=25?0:null)), true);
   }
+  if (items.some(x=>x.fx&&x.fx.eg)){
+    add('재건축 완료 시 기대 차익', items.map(x=>{ const e=x.fx&&x.fx.eg; if(!e) return '-'; const g=e.v-e.b-e.p; return `${g>=0?'+':'−'}${fmtS(Math.abs(g))}<small>${e.done?`예상 준공 ${e.done}년 전후 · `:''}완공 가치 ${fmtS(e.v)} · 분담금 ${e.b>=0?fmtS(e.b):'환급'}</small>`; }),
+      items.map(x=>x.fx&&x.fx.eg?(x.fx.eg.v-x.fx.eg.b-x.fx.eg.p)/x.fx.eg.p:null), true);
+  }
   if (items.some(x=>x.fx&&x.fx.by&&Y-x.fx.by>=25)){
     add('재건축 사업성', items.map(x=>{ const f=x.fx||{}; if(!f.by||Y-f.by<25) return '-<small>해당 없음</small>'; const gr=f.rbp==null?'':(f.rbp>=70?'좋은 편':f.rbp>=30?'보통':'낮은 편');
       return (gr||'-') + `<small>${f.landavg?`세대당 평균 대지지분 ${f.landavg}평`:''}${f.vl?` · 용적률 ${Math.round(f.vl)}%`:''}${f.land?` · 이 평형 ${f.land}평`:''}</small>`; }), items.map(x=>x.fx&&x.fx.rbp!=null&&x.fx.by&&Y-x.fx.by>=25?x.fx.rbp:null), true);
@@ -990,6 +1016,8 @@ async function render(){
         <li><b>신설역(교통 호재)</b> — 국토교통부·지자체 공식 발표 기준으로 노선마다 계획 발표·착공·본공사·지연·개통 날짜를 정리하고, 그때그때 단지 700m 안에 신설역이 있었는지와 어느 단계였는지를 과거 시점마다 다시 계산해 단계별 영향을 데이터로 정합니다. 개통 후 2년이 지난 역은 이미 가격에 반영된 기존 역으로 봅니다.</li>
         <li><b>학군(중학교 전입)</b> — 교육부 학교알리미 공시로, 단지에서 1.5km 안 가까운 중학교 3곳의 <b>전입생 − 전출생</b>을 재학생 수로 나눈 순전입률을 봅니다. 학군을 찾아 이사 오는 수요가 실제로 있는지를 보여 주는 지표입니다(최근 3개 공시연도만 공개).</li>
         <li><b>미분양·일자리(지역)</b> — 국토교통부 시·군·구별 미분양 현황(월별)과 통계청 지역별고용조사 근무지 기준 취업자 수(반기)로 공급 부담과 일자리 증가를 봅니다.</li>
+        <li><b>보유 기간</b> — 2년 점수는 '앞으로 2년 같은 구 대비 초과 상승'을, 5년 점수는 같은 방식으로 '5년 뒤'를 맞히도록 따로 학습합니다(기간마다 중요한 지표가 다름). 10년 이상은 검증 범위를 넘는 장기 전망으로, 재건축 완료 시 기대 차익과 신설역 개통 계획을 함께 봅니다.</li>
+        <li><b>재건축 완료 시 기대 차익</b> — 지역 신축(5년 이내) 시세로 같은 평형의 완공 후 가치를 잡고, 공사비(3.3㎡당 서울 1,000만·수도권 900만·지방 750만 원)에서 일반분양 수익을 뺀 금액을 대지지분 비율로 나눠 분담금을 추정한 뒤 현재가를 뺀 값입니다. 예상 준공은 서울 정비구역들의 실제 단계별 소요 기간(중앙값)에 착공 후 3년을 더해 계산합니다. 기부채납·임대·추가 분담 등에 따라 실제와 다를 수 있습니다.</li>
         <li><b>재건축 진행 단계</b> — 서울시 「정비사업 추진현황」(주거정비과, 분기 갱신)과 서울플랜+(신속통합기획 포함)로 신속통합기획 대상지 선정 → 기획 완료 → 정비구역 지정 → 추진위 → 조합설립 → 건축심의 → 사업시행인가 → 관리처분인가 → 이주 → 착공 중 어디까지 왔는지 봅니다. 과거 시점마다 그때의 단계로 다시 계산해 가격에 실제로 얼마나 영향을 줬는지 데이터로 비중을 정합니다. 서울 밖은 국토교통부 「전국 도시정비사업 통합 데이터」와 부산시 「정비사업 추진현황」으로 현재 단계를 보여 드리며, 단계별 날짜가 없어 점수 계산에는 아직 쓰지 않습니다.</li>
         <li><b>재건축 사업성</b> — 준공 25년 이상 단지는 <b>단지의 세대당 평균 대지지분과 용적률</b>로 사업성을 봅니다(평균 대지지분이 크고 용적률이 낮을수록 일반분양을 많이 할 수 있어 조합원 부담이 줄어듦). 같은 대지지분이라도 서울과 지방은 새 아파트 값이 달라 의미가 다르므로, <b>그 지역 신축 시세로 환산한 간이 사업성</b>(재건축 후 용적률 300%, 3.3㎡당 공사비 서울 1,000만·수도권 900만·지방 750만 원 가정)으로 전국 재건축 단지와 비교합니다. 카드에는 <b>이 평형의 대지지분</b>(내 몫)이 단지 평균보다 많은지도 함께 보여 드립니다. 실제 분담금은 기부채납·임대주택·사업비에 따라 달라집니다.</li>
         <li><b>전세가율</b> — 매매가 대비 전세 보증금 비율. 높을수록 실제로 살려는 수요가 많다는 뜻입니다.</li>
@@ -1175,6 +1203,7 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ const bg=$('agm'
     S.sido = IX.sido.find(s=>s.name===Q.get('sd')) || defaultSido();
     S.sggs = (Q.get('g') && IX.sgg[Q.get('g')] && IX.sgg[Q.get('g')].sido===S.sido.name) ? new Set([Q.get('g')]) : new Set(defaultSggs(S.sido));
     cmpLoad(); buildSettings(); wireSettings();
+    document.querySelectorAll('#hzbar [data-hz]').forEach(b=>b.onclick=()=>{ setHz(b.dataset.hz); JDJ.track('hz',{hz:b.dataset.hz}); }); hzUi();
     $('cmpBtn').onclick=()=>{ MODE==='cmp' ? goRec() : goCompare(); JDJ.track('cmp_toggle',{mode:MODE}); };
     setModeUi();
     $('backBtn').href = '../' + (location.search||'');
