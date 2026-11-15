@@ -632,11 +632,13 @@ function spark(series){
 let MODE = Q.get('mode')==='cmp' ? 'cmp' : 'rec';
 const CMP_MAX = 3;
 let CMP = [];
-function cmpKey(p){ return [p.sd,p.code,p.dong,p.apt,p.band].join('~'); }
+// 단지 이름에 '~'·'!'가 들어갈 수 있어(예: 현대6차(78~81동)) 각 칸을 인코딩해서 잇는다
+function cmpKey(p){ return [p.sd,p.code,p.dong,p.apt,p.band].map(v=>encodeURIComponent(v).replace(/~/g,'%7E').replace(/!/g,'%21')).join('~'); }
+function cmpParse(k){ const a=String(k).split('~'); if(a.length!==5) return null; try{ const [sd,code,dong,apt,band]=a.map(decodeURIComponent); return {sd,code,dong,apt,band}; }catch(e){ return null; } }
 function cmpLoad(){
   const raw = Q.get('cmp');
   let arr = [];
-  if (raw) arr = raw.split('!').map(t=>t.split('~')).filter(a=>a.length===5).map(([sd,code,dong,apt,band])=>({sd,code,dong,apt,band}));
+  if (raw) arr = raw.split('!').map(cmpParse).filter(Boolean);
   else { try{ arr = JSON.parse(localStorage.getItem('jdj_cmp')||'[]'); }catch(e){} }
   CMP = (Array.isArray(arr)?arr:[]).slice(0,CMP_MAX);
 }
@@ -722,7 +724,7 @@ function wireCompare(){
   sel.onchange=()=>{ S.cmpSido=IX.sido.find(s=>s.id===sel.value); S.cmpSgg=''; $('cSgg').innerHTML=`<option value="">구·시 전체</option>`+sggsOfSido(S.cmpSido).map(c=>`<option value="${c}">${esc(sggName(c))}</option>`).join(''); cmpSearch(); };
   $('cSgg').onchange=cmpSearch;
   $('cQ').oninput=()=>{ clearTimeout(cST); cST=setTimeout(cmpSearch,250); };
-  $('cRes').onclick=e=>{ const b=e.target.closest('[data-p]'); if(!b) return; const [sd,code,dong,apt,band]=b.dataset.p.split('~'); if(cmpToggle({sd,code,dong,apt,band})) render(); };
+  $('cRes').onclick=e=>{ const b=e.target.closest('[data-p]'); if(!b) return; const p=cmpParse(b.dataset.p); if(p && cmpToggle(p)) render(); };
   document.querySelectorAll('.cchips [data-rm]').forEach(b=>b.onclick=()=>{ CMP=CMP.filter(p=>cmpKey(p)!==b.dataset.rm); cmpSave(); render(); });
   if (S.cmpQ) cmpSearch();
 }
@@ -735,10 +737,11 @@ function cmpScore(x){
   return null;
 }
 async function renderCompare(){
-  const items=[];
+  const items=[], miss=[];
   for (const p of CMP){
-    try{ const units=await loadSido(p.sd); const u=units.find(u=>u[0]===p.code&&u[1]===p.dong&&u[2]===p.apt&&u[3]===p.band); if(u) items.push(cmpItem(u,p.sd)); }catch(e){ console.warn(e); }
+    try{ const units=await loadSido(p.sd); const u=units.find(u=>u[0]===p.code&&u[1]===p.dong&&u[2]===p.apt&&u[3]===p.band); if(u) items.push(cmpItem(u,p.sd)); else miss.push(p); }catch(e){ console.warn(e); miss.push(p); }
   }
+  if (miss.length){ CMP=CMP.filter(p=>!miss.includes(p)); cmpSave(); }
   const today=new Date(), ymd=`${today.getFullYear()}.${String(today.getMonth()+1).padStart(2,'0')}.${String(today.getDate()).padStart(2,'0')}`;
   const dataTo = IX.dataTo ? IX.dataTo.slice(0,4)+'년 '+parseInt(IX.dataTo.slice(4),10)+'월' : '';
   const who = S.name ? esc(S.name)+'님의' : '나의';
@@ -755,7 +758,7 @@ async function renderCompare(){
   </div>`;
 
   if (items.length<2){
-    h += `<div class="sec"><div class="empty">${items.length?'한 단지를 더 담으면':'단지를 2개 이상 담으면'} 바로 비교표가 나와요.</div></div></div>`;
+    h += `<div class="sec"><div class="empty">${miss.length?`최근 거래 자료에서 찾지 못한 단지(${miss.map(p=>esc(p.apt)).join(', ')})는 비교함에서 뺐어요. `:''}${items.length?'한 단지를 더 담으면':'단지를 2개 이상 담으면'} 바로 비교표가 나와요. (2개만 비교해도 돼요)</div></div></div>`;
     $('report').innerHTML=h; wireCompare(); $('cmpEdit').onclick=e=>{e.preventDefault(); $('settings').classList.add('open'); window.scrollTo(0,0);}; return;
   }
 
@@ -1077,7 +1080,7 @@ async function render(){
   </div>`;
 
   $('report').innerHTML = h;
-  document.querySelectorAll('[data-cp]').forEach(b=>b.onclick=()=>{ const [sd,code,dong,apt,band]=b.dataset.cp.split('~'); if(!cmpToggle({sd,code,dong,apt,band})) return; const on=cmpHas(b.dataset.cp); b.classList.toggle('on',on); b.textContent=on?'✓ 비교함에 담김':'＋ 비교에 담기'; });
+  document.querySelectorAll('[data-cp]').forEach(b=>b.onclick=()=>{ const p=cmpParse(b.dataset.cp); if(!p || !cmpToggle(p)) return; const on=cmpHas(b.dataset.cp); b.classList.toggle('on',on); b.textContent=on?'✓ 비교함에 담김':'＋ 비교에 담기'; });
   const wb=document.getElementById('widenBtn'); if(wb) wb.onclick=()=>{ S.sggs=new Set(sggsOfSido(S.sido)); renderSggChips(); render(); JDJ.track('report_widen',{region:S.sido.short}); };
   fillAgents(picked.length ? picked : near).catch(e=>console.warn('agents',e));
   JDJ.track('report_render', {region:S.sido.short, sgg_count:S.sggs.size, max_band:JDJ.band(M), picks:picked.length});
