@@ -810,6 +810,12 @@ async function renderCompare(){
     ${items.map(x=>{ const rs=reasons(Object.assign({},x,{fit:Math.max(0.01,1-Math.max(0,x.short)/Math.max(S.cash,1))})).filter(r=>!/^예산 적합/.test(r[1])); return `<details class="cdet"><summary>${esc(x.apt)} · ${esc(x.band)} 자세한 분석 보기</summary><ul class="reasons">${rs.map(r=>`<li class="${r[0]}">${esc(r[1])}</li>`).join('')}</ul></details>`; }).join('')}
   </div>`;
 
+  /* 단지별 상담·제휴 공인중개사 연결 (추천 리포트와 같은 방식) */
+  h += `<div class="sec noprint"><h2><span class="no">04</span> 단지별 상담 · 공인중개사 연결</h2>
+    <p class="sub">비교한 단지마다 그 지역 제휴 공인중개사에게 바로 문의하거나, 장대장 상담을 받을 수 있어요.</p>
+    <div class="cards">${items.map(x=>`<div class="card"><div class="head" style="margin-bottom:8px"><div><div class="name">${esc(x.apt)}</div><div class="loc">${esc(sidoOfCode(x.code))} ${esc(sggName(x.code))} ${esc(x.dong)} · ${esc(x.band)}</div></div><div class="price"><b>${fmtS(x.P)}</b><small>추정 시세</small></div></div>
+      <div class="agt" data-g="${x.code}" data-k="${esc(x.code+'|'+x.dong+'|'+x.apt)}"></div></div>`).join('')}</div>
+    <div id="agentSec" class="agsec"></div></div>`;
   const q=new URLSearchParams({usp:'pp_url'});
   q.set('entry.146176170', fmt(S.income)+'원'); q.set('entry.1872979900', fmt(S.cash)+'원');
   q.set('entry.397234060', [...new Set(items.map(x=>sggName(x.code)))].join('·')); q.set('entry.1054811896', OWN_NAME[S.own]);
@@ -820,6 +826,7 @@ async function renderCompare(){
   </div>`;
   $('report').innerHTML=h; wireCompare();
   $('cmpEdit').onclick=e=>{e.preventDefault(); $('settings').classList.add('open'); window.scrollTo(0,0);};
+  fillAgents(items).catch(e=>console.warn('agents',e));
   JDJ.track('cmp_render',{n:items.length});
 }
 
@@ -1060,7 +1067,7 @@ async function fillAgents(picked){
   if (!A || !A.ready || !picked.length) return;
   /* 공인중개사 모집 배너 — 항상 크게 */
   if (box) box.innerHTML = `<div class="agcta noprint"><div><b>공인중개사님, <em>이 단지들 옆에</em> 사무소를 노출하세요</b>
-    <span>고객이 살 수 있는 단지가 추천될 때 그 단지 카드에 바로 연결됩니다 · 시범 기간 무료 · 사무소 구 + 원하는 구 2곳</span></div>
+    <span>고객이 추천받거나 비교하는 단지 카드에 바로 연결됩니다 · 시범 기간 무료 · 사무소 구 + 원하는 구 2곳</span></div>
     <a href="../../agent/" target="_blank" rel="noopener" data-track="agent_join_click">제휴 신청하기 →</a></div>`;
   const res = await A.list();
   const list = (res && res.agents) || [];
