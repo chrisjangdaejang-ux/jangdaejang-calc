@@ -215,6 +215,52 @@ tr.hl td{background:rgba(184,148,42,.12);font-weight:700}
 .agcta b em{font-style:normal;color:var(--gold2)}
 .agcta span{font-size:13.5px;color:#DDD7BF}
 .agcta a{background:var(--gold);color:var(--ink);font-weight:900;font-size:16px;padding:12px 20px;border-radius:9px;text-decoration:none;white-space:nowrap}
+/* ---------- 단지 비교 ---------- */
+.cmpbtn-add{font:inherit;font-size:13px;font-weight:900;background:#fff;color:var(--olive);border:1.5px solid var(--olive);border-radius:999px;padding:5px 12px;cursor:pointer;margin-top:8px}
+.cmpbtn-add.on{background:var(--olive);color:var(--cream)}
+#cmpBar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:50;background:var(--ink);color:var(--cream);border:2px solid var(--gold);border-radius:999px;padding:8px 8px 8px 18px;display:none;align-items:center;gap:12px;box-shadow:0 6px 20px rgba(0,0,0,.25);font-size:14px;font-weight:700;white-space:nowrap}
+#cmpBar.show{display:flex}
+#cmpBar button{font:inherit;font-weight:900;background:var(--gold);color:var(--ink);border:0;border-radius:999px;padding:8px 16px;cursor:pointer}
+.cpick{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:6px}
+.cpick .srow{display:grid;grid-template-columns:150px 150px 1fr;gap:8px}
+@media(max-width:640px){.cpick .srow{grid-template-columns:1fr 1fr}.cpick .srow input{grid-column:1/-1}}
+.cpick select,.cpick input{width:100%;padding:10px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:15px;font-weight:700;background:#fff;color:var(--ink)}
+.cres{margin-top:8px;max-height:340px;overflow:auto}
+.cres .it{padding:10px 4px;border-bottom:1px dashed var(--line)}
+.cres .it b{font-size:15px}
+.cres .it small{color:var(--muted);margin-left:6px}
+.cres .bands{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.cres .bands button{font:inherit;font-size:13px;font-weight:700;border:1px solid var(--olive);background:#fff;color:var(--olive);border-radius:999px;padding:5px 11px;cursor:pointer}
+.cres .bands button:hover,.cres .bands button.on{background:var(--olive);color:var(--cream)}
+.cres .none{color:var(--muted);font-size:13px;padding:8px 2px}
+.cchips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.cchips span{background:var(--olive);color:var(--cream);border-radius:999px;padding:6px 8px 6px 14px;font-size:13.5px;font-weight:700;display:inline-flex;align-items:center;gap:6px}
+.cchips span button{background:transparent;border:0;color:var(--gold2);font-size:17px;line-height:1;cursor:pointer;padding:0 4px}
+.ctbl{overflow-x:auto;margin-top:6px}
+.ctbl table{min-width:560px;table-layout:fixed}
+.ctbl th:first-child,.ctbl td:first-child{width:118px;color:var(--muted);font-weight:700;font-size:13px;vertical-align:top}
+.ctbl thead th{background:var(--olive);color:var(--cream);font-size:15px;vertical-align:top}
+.ctbl thead th small{display:block;color:var(--gold2);font-weight:500;font-size:12px;margin-top:2px}
+.ctbl td{vertical-align:top;font-size:14px}
+.ctbl td small{display:block;color:var(--muted);font-size:12px;line-height:1.4;margin-top:2px}
+.ctbl th:first-child,.ctbl td:first-child{position:sticky;left:0;background:var(--card);z-index:1}
+.ctbl thead th:first-child{background:var(--olive)}
+.ctbl tr.grp td{position:static}
+.ctbl td.win{background:#EEF2DF;font-weight:900}
+.ctbl td.win:before{content:"★ ";color:var(--gold)}
+.ctbl tr.grp td{background:var(--cream2);font-weight:900;color:var(--ink);font-size:13px;padding:6px 10px}
+.verdict{background:var(--olive);color:var(--cream);border-radius:12px;padding:20px 22px;margin-top:16px;border:2px solid var(--gold)}
+.verdict h3{margin:0 0 8px;font-size:20px;font-weight:900;letter-spacing:-.03em}
+.verdict h3 em{font-style:normal;color:var(--gold2)}
+.verdict ul{margin:8px 0 0;padding-left:18px}
+.verdict li{margin:4px 0;font-size:14.5px}
+.verdict .sc{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.verdict .sc span{background:rgba(255,255,255,.1);border-radius:8px;padding:6px 10px;font-size:13px}
+.verdict .sc b{color:var(--gold2)}
+.verdict small{display:block;color:#CFC8AC;margin-top:10px;font-size:12px}
+.cdet{margin-top:10px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.cdet summary{cursor:pointer;font-weight:900}
+@media print{#cmpBar,.cpick,.cmpbtn-add{display:none!important}}
 @media print{.agm-bg,.agjoin,.agbtn,.agchip,.agwant,.agcta{display:none!important}}
 </style>
 </head>
@@ -227,6 +273,7 @@ tr.hl td{background:rgba(184,148,42,.12);font-weight:700}
 <div class="wrap">
   <div class="toolbar noprint">
     <button class="btn gold" id="editBtn">조건 수정·지역 선택</button>
+    <button class="btn ghost" id="cmpBtn">⚖ 단지 비교</button>
     <button class="btn" id="printBtn">PDF로 저장 / 인쇄</button>
     <a class="btn ghost" href="../" id="backBtn">← 계산기로 돌아가기</a>
   </div>
@@ -567,8 +614,212 @@ function spark(series){
   return `<svg class="spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><path d="${d}" fill="none" stroke="${up?'#4E6B2E':'#A23B2A'}" stroke-width="2"/></svg>`;
 }
 
+/* ---------- 단지 비교 (추천 단지 + 직접 찾은 단지) ---------- */
+let MODE = Q.get('mode')==='cmp' ? 'cmp' : 'rec';
+const CMP_MAX = 3;
+let CMP = [];
+function cmpKey(p){ return [p.sd,p.code,p.dong,p.apt,p.band].join('~'); }
+function cmpLoad(){
+  const raw = Q.get('cmp');
+  let arr = [];
+  if (raw) arr = raw.split('!').map(t=>t.split('~')).filter(a=>a.length===5).map(([sd,code,dong,apt,band])=>({sd,code,dong,apt,band}));
+  else { try{ arr = JSON.parse(localStorage.getItem('jdj_cmp')||'[]'); }catch(e){} }
+  CMP = (Array.isArray(arr)?arr:[]).slice(0,CMP_MAX);
+}
+function cmpSave(){
+  try{ localStorage.setItem('jdj_cmp', JSON.stringify(CMP)); }catch(e){}
+  const u = new URL(location.href);
+  if (CMP.length) u.searchParams.set('cmp', CMP.map(cmpKey).join('!')); else u.searchParams.delete('cmp');
+  if (MODE==='cmp') u.searchParams.set('mode','cmp'); else u.searchParams.delete('mode');
+  history.replaceState(null,'',u);
+  cmpBar();
+}
+function cmpHas(k){ return CMP.some(p=>cmpKey(p)===k); }
+function cmpToggle(p){
+  const k=cmpKey(p);
+  if (cmpHas(k)) CMP = CMP.filter(x=>cmpKey(x)!==k);
+  else { if (CMP.length>=CMP_MAX){ alert(`비교는 최대 ${CMP_MAX}개 단지까지 할 수 있어요. 담긴 단지를 하나 빼고 다시 담아 주세요.`); return false; } CMP.push(p); JDJ.track('cmp_add',{n:CMP.length}); }
+  cmpSave(); return true;
+}
+function cmpBar(){
+  let b=$('cmpBar');
+  if (!b){ b=document.createElement('div'); b.id='cmpBar'; b.className='noprint'; document.body.appendChild(b);
+    b.addEventListener('click', e=>{ if(e.target.closest('button')) goCompare(); }); }
+  b.innerHTML = `<span>⚖ 비교함 ${CMP.length}/${CMP_MAX}</span><button type="button">비교하기</button>`;
+  b.classList.toggle('show', MODE==='rec' && CMP.length>0);
+}
+function goCompare(){ MODE='cmp'; cmpSave(); setModeUi(); window.scrollTo(0,0); render(); }
+function goRec(){ MODE='rec'; cmpSave(); setModeUi(); window.scrollTo(0,0); render(); }
+function setModeUi(){
+  $('cmpBtn').textContent = MODE==='cmp' ? '← 추천 리포트 보기' : '⚖ 단지 비교';
+  document.title = MODE==='cmp' ? '장대장 단지 비교' : '장대장 맞춤 매수 리포트';
+  cmpBar();
+}
+function lastAny(arr){ for(let i=arr.length-1;i>=0;i--) if(arr[i]>0) return arr[i]; return 0; }
+function cmpItem(u, sd){
+  const [code, dong, apt, band, area, n, series, cnt] = u;
+  const recent = lastNZ(series), ppy = recent || lastAny(series);
+  const g=groupOf(code), c=ctxFor(g), dsr=dsrMax(c);
+  const P=r100(ppy*area/PY), large=area>85, nd=need(P,c,dsr,large);
+  const s=IX.sgg[code], sp = s ? lastNZ(s.s) : 0;
+  return {sd, code, dong, apt, band, area, n, series, cnt, P, g, c, nd, large, stale: !recent,
+    mon: monthly(nd.loan.L,c.rate,c.term), ch: change6(series), rel: sp ? (sp-ppy)/sp : 0, fx: u[9]||null,
+    fit: 0, short: nd.need - S.cash};
+}
+function cmpSearchHtml(){
+  const sd = S.cmpSido || S.sido;
+  return `<div class="cpick noprint">
+    <b style="font-size:15px">비교할 단지 찾기</b> <small style="color:var(--muted)">— 추천 단지가 아니어도, 마음에 두신 단지를 이름으로 찾아 담을 수 있어요 (최대 ${CMP_MAX}개)</small>
+    <div class="srow" style="margin-top:10px">
+      <select id="cSido">${IX.sido.map(s=>`<option value="${s.id}" ${s.id===sd.id?'selected':''}>${esc(s.name)}</option>`).join('')}</select>
+      <select id="cSgg"><option value="">구·시 전체</option>${sggsOfSido(sd).map(c=>`<option value="${c}" ${c===S.cmpSgg?'selected':''}>${esc(sggName(c))}</option>`).join('')}</select>
+      <input id="cQ" type="search" placeholder="아파트 이름 (예: 파크하비오, 래미안)" autocomplete="off" value="${esc(S.cmpQ||'')}">
+    </div>
+    <div class="cres" id="cRes"></div>
+    ${CMP.length?`<div class="cchips">${CMP.map(p=>`<span>${esc(p.apt)} · ${esc(p.band)}<button type="button" data-rm="${esc(cmpKey(p))}" aria-label="빼기">×</button></span>`).join('')}</div>`:''}
+  </div>`;
+}
+const aptMatchC=(hay,q,gu)=>{ const n=x=>String(x||'').replace(/\s|아파트/g,'').toLowerCase(); hay=n(hay); q=n(q); if(!q) return false; if(hay.includes(q)) return true;
+  const st=n(gu).replace(/(구|시|군)$/,''); const q2=st?q.split(st).join(''):q; if(q2&&hay.includes(q2)) return true;
+  if(q2.length<3) return false; let i=0; for(const ch of hay){ if(ch===q2[i]) i++; if(i===q2.length) return true; } return false; };
+let cST=null;
+async function cmpSearch(){
+  const sd = IX.sido.find(s=>s.id===$('cSido').value); S.cmpSido=sd;
+  const g = $('cSgg').value; S.cmpSgg=g; const q=$('cQ').value.trim(); S.cmpQ=q;
+  const box=$('cRes');
+  if (q.replace(/\s/g,'').length<2){ box.innerHTML = q ? '<div class="none">두 글자 이상 입력해 주세요.</div>' : ''; return; }
+  box.innerHTML='<div class="none">찾는 중…</div>';
+  const units = await loadSido(sd.id);
+  const m = new Map();
+  for (const u of units){
+    if (g && u[0]!==g) continue;
+    if (!aptMatchC(u[2]+u[1], q, sggName(u[0]))) continue;
+    const k=u[0]+'|'+u[1]+'|'+u[2]; if(!m.has(k)) m.set(k,{u:[],n:0}); const e=m.get(k); e.u.push(u); e.n+=u[5];
+  }
+  const items=[...m.values()].sort((a,b)=>b.n-a.n).slice(0,30);
+  box.innerHTML = items.length ? items.map(e=>{ const u0=e.u[0];
+    return `<div class="it"><b>${esc(u0[2])}</b><small>${esc(sggName(u0[0]))} ${esc(u0[1])}${e.u[0][9]&&e.u[0][9].hh?` · ${e.u[0][9].hh.toLocaleString()}세대`:''}</small>
+      <div class="bands">${e.u.sort((a,b)=>a[4]-b[4]).map(u=>{ const p={sd:sd.id,code:u[0],dong:u[1],apt:u[2],band:u[3]}; const k=cmpKey(p);
+        return `<button type="button" class="${cmpHas(k)?'on':''}" data-p="${esc(k)}">${cmpHas(k)?'✓ ':'+ '}${esc(u[3])} · 전용 ${u[4]}㎡</button>`; }).join('')}</div></div>`; }).join('')
+    : '<div class="none">찾는 단지가 없습니다. 이름 일부만 넣어 보시거나 구·시를 바꿔 보세요. (최근 3년 실거래가 있는 단지만 나옵니다)</div>';
+}
+function wireCompare(){
+  const sel=$('cSido'); if(!sel) return;
+  sel.onchange=()=>{ S.cmpSido=IX.sido.find(s=>s.id===sel.value); S.cmpSgg=''; $('cSgg').innerHTML=`<option value="">구·시 전체</option>`+sggsOfSido(S.cmpSido).map(c=>`<option value="${c}">${esc(sggName(c))}</option>`).join(''); cmpSearch(); };
+  $('cSgg').onchange=cmpSearch;
+  $('cQ').oninput=()=>{ clearTimeout(cST); cST=setTimeout(cmpSearch,250); };
+  $('cRes').onclick=e=>{ const b=e.target.closest('[data-p]'); if(!b) return; const [sd,code,dong,apt,band]=b.dataset.p.split('~'); if(cmpToggle({sd,code,dong,apt,band})) render(); };
+  document.querySelectorAll('.cchips [data-rm]').forEach(b=>b.onclick=()=>{ CMP=CMP.filter(p=>cmpKey(p)!==b.dataset.rm); cmpSave(); render(); });
+  if (S.cmpQ) cmpSearch();
+}
+function sMomOf(ch){ if(ch===null) return 0.5; if(ch<0) return Math.max(0.2,0.55+ch*2); if(ch<=0.06) return 0.7+ch*5; return Math.max(0.2,1-(ch-0.06)*5); }
+function cmpScore(x){
+  const f=x.fx||{}, budget = x.short<=0 ? 1 : Math.max(0, 1 - x.short/Math.max(S.cash,1));
+  const liq = Math.min(1, Math.log(Math.max(x.n,1))/Math.log(160));
+  return f.fv!=null ? 0.5*f.fv/100 + 0.25*budget + 0.15*liq + 0.10*sMomOf(x.ch)
+                    : 0.45*budget + 0.30*liq + 0.25*sMomOf(x.ch);
+}
+async function renderCompare(){
+  const items=[];
+  for (const p of CMP){
+    try{ const units=await loadSido(p.sd); const u=units.find(u=>u[0]===p.code&&u[1]===p.dong&&u[2]===p.apt&&u[3]===p.band); if(u) items.push(cmpItem(u,p.sd)); }catch(e){ console.warn(e); }
+  }
+  const today=new Date(), ymd=`${today.getFullYear()}.${String(today.getMonth()+1).padStart(2,'0')}.${String(today.getDate()).padStart(2,'0')}`;
+  const dataTo = IX.dataTo ? IX.dataTo.slice(0,4)+'년 '+parseInt(IX.dataTo.slice(4),10)+'월' : '';
+  const who = S.name ? esc(S.name)+'님의' : '나의';
+  let h = `<div class="page"><div class="cover">
+    <span class="tag">PREMIUM INSIGHT · 단지 비교 리포트</span>
+    <h1>${who} <em>후보 단지</em><br>한눈에 비교</h1>
+    <div class="meta">작성일 ${ymd} · 실거래 데이터 ${dataTo}까지 반영 · 2026년 11월 대출 규제 기준</div>
+    <div class="conds"><span>연소득 ${fmt(S.income)}</span><span>보유 현금 ${fmt(S.cash)}</span><span>${OWN_NAME[S.own]}</span><span>${TYPE_NAME[S.rtype]} ${S.rate}%</span></div>
+  </div>
+  <div class="sec">
+    <h2><span class="no">01</span> 비교할 단지 담기</h2>
+    <p class="sub">추천 리포트의 단지는 카드의 <b>＋ 비교에 담기</b>로, 직접 생각해 두신 단지는 아래에서 이름으로 찾아 담으세요. 대출·필요 현금은 위 조건(연소득·보유 현금)으로 계산합니다. <a href="#" id="cmpEdit" class="noprint" style="color:var(--red);font-weight:900">조건 바꾸기</a></p>
+    ${cmpSearchHtml()}
+  </div>`;
+
+  if (items.length<2){
+    h += `<div class="sec"><div class="empty">${items.length?'한 단지를 더 담으면':'단지를 2개 이상 담으면'} 바로 비교표가 나와요.</div></div></div>`;
+    $('report').innerHTML=h; wireCompare(); $('cmpEdit').onclick=e=>{e.preventDefault(); $('settings').classList.add('open'); window.scrollTo(0,0);}; return;
+  }
+
+  const Y=new Date().getFullYear(), pc=v=>Math.round(v*100);
+  const rows=[]; // [label, cells[], best index or -1, group]
+  const best=(vals,hi=true)=>{ const ok=vals.map((v,i)=>[v,i]).filter(a=>a[0]!=null&&!isNaN(a[0])); if(ok.length<2) return -1; ok.sort((a,b)=>hi?b[0]-a[0]:a[0]-b[0]); return ok[0][0]===ok[1][0]?-1:ok[0][1]; };
+  const add=(label,cells,vals,hi,grp)=>rows.push({label,cells,b: vals?best(vals,hi):-1, grp});
+  add('가격·자금',null,null,null,true);
+  add('추정 시세', items.map(x=>`${fmtS(x.P)}<small>${x.stale?'최근 3개월 거래 없음 — 마지막 거래 기준':'최근 3개월 실거래 중앙값'}</small>${spark(x.series)}`), items.map(x=>x.P), false);
+  add('대출 가능액', items.map(x=>`${fmtS(x.nd.loan.L)}<small>${BY_TXT[x.nd.loan.by]} 기준</small>`), items.map(x=>x.nd.loan.L), true);
+  add('필요 현금', items.map(x=>`${fmtS(x.nd.need)}<small>취득세·중개보수·기타 포함</small>`), items.map(x=>x.nd.need), false);
+  add('내 예산으로', items.map(x=>x.short<=0 ? `<span style="color:var(--green)">가능</span><small>현금 ${fmt(-x.short)} 남음</small>` : `<span style="color:var(--red)">현금 ${fmt(x.short)} 부족</span>`), items.map(x=>-x.short), true);
+  add('월 상환액', items.map(x=>`${Math.round(x.mon).toLocaleString()}만<small>월소득의 ${S.income?Math.round(x.mon/(S.income/12)*100):0}%</small>`), items.map(x=>x.mon), false);
+  add('미래가치',null,null,null,true);
+  add('미래가치 점수', items.map(x=>{ const f=x.fx; return f&&f.fv!=null ? `${f.fv}점<small>${esc(sidoOfCode(x.code))} 상위 ${Math.max(1,100-f.fv)}%${f.fvg!=null?` · ${esc(sggName(x.code))} 안 상위 ${Math.max(1,100-f.fvg)}%`:''}</small>` : '-<small>데이터 부족</small>'; }), items.map(x=>x.fx&&x.fx.fv!=null?x.fx.fv:null), true);
+  add('지역 전망', items.map(x=>{ const f=x.fx||{}; return f.gs!=null ? `${esc(sggName(x.code))} 상위 ${Math.max(1,100-f.gs)}%<small>${f.sup!=null?`2년 입주 물량 ${Math.round(f.sup*1000)/10}%`:''}${f.pg!=null?` · 인구 ${f.pg>=0?'+':''}${Math.round(f.pg*1000)/10}%`:''}</small>` : '-'; }), items.map(x=>x.fx&&x.fx.gs!=null?x.fx.gs:null), true);
+  add('하락기 방어력', items.map(x=>{ const d=x.fx&&x.fx.dd; return d!=null ? `구 평균보다 ${pc(Math.abs(d))}%p ${d>=0?'덜':'더'} 빠짐` : '-'; }), items.map(x=>x.fx?x.fx.dd:null), true);
+  add('고점 회복', items.map(x=>{ const d=x.fx&&x.fx.rc; return d!=null ? `구 평균보다 ${pc(Math.abs(d))}%p ${d>=0?'빠름':'느림'}` : '-'; }), items.map(x=>x.fx?x.fx.rc:null), true);
+  add('최근 6개월', items.map(x=>x.ch==null?'-':`${x.ch>=0?'+':''}${(x.ch*100).toFixed(1)}%<small>${x.ch>=0.08?'급등 — 추격 주의':x.ch>=0?'완만한 상승':'조정 구간'}</small>`), items.map(x=>x.ch==null?null:sMomOf(x.ch)), true);
+  add('동 대장 대비', items.map(x=>{ const f=x.fx||{}; if(f.lg==null) return '-'; return (f.ln===x.apt||f.lg>=0.995) ? '동 대장 단지' : `대장(${esc(f.ln||'')})보다 ${pc(1-f.lg)}% 낮음`; }), null);
+  add('입지·단지',null,null,null,true);
+  add('준공·세대수', items.map(x=>{ const f=x.fx||{}; const age=f.by?Y-f.by:null; return (f.by?`${f.by}년(${age}년차)`:'-') + (f.hh?`<small>${f.hh.toLocaleString()}세대${f.hh>=1000?' · 대단지':''}</small>`:''); }), items.map(x=>x.fx&&x.fx.hh?x.fx.hh:null), true);
+  add('지하철', items.map(x=>{ const f=x.fx||{}; return f.sub==null?'-':(f.sub>=30?'도보 20분 이상':`도보 ${f.sub<=5?'5분 이내':f.sub+'분 이내'}`)+(f.subs?`<small>${esc(f.subs.replace(/\s+/g,' '))}</small>`:''); }), items.map(x=>x.fx&&x.fx.sub!=null?x.fx.sub:null), false);
+  add('신설 노선', items.map(x=>{ const R=x.fx&&x.fx.rl; if(!R) return '-'; const d=v=>v?`${v.slice(0,4)}.${v.slice(4)}`:''; const SK={plan:'계획 확정',start:'착공',start_real:'본공사',delay:'지연',open:'개통'};
+    return `${esc(R.line)} ${esc(R.st)}<small>${R.m!=null?`직선 ${R.m.toLocaleString()}m · `:''}${R.opened?d(R.stym)+' 개통':(SK[R.stage]||R.stage)+(R.target?` · 목표 ${d(R.target)}`:'')}</small>`; }), null);
+  if (items.some(x=>x.fx&&x.fx.by&&Y-x.fx.by>=25)){
+    add('재건축 사업성', items.map(x=>{ const f=x.fx||{}; if(!f.by||Y-f.by<25) return '-<small>해당 없음</small>'; const gr=f.rbp==null?'':(f.rbp>=70?'좋은 편':f.rbp>=30?'보통':'낮은 편');
+      return (gr||'-') + `<small>${f.landavg?`세대당 평균 대지지분 ${f.landavg}평`:''}${f.vl?` · 용적률 ${Math.round(f.vl)}%`:''}${f.land?` · 이 평형 ${f.land}평`:''}</small>`; }), items.map(x=>x.fx&&x.fx.rbp!=null&&x.fx.by&&Y-x.fx.by>=25?x.fx.rbp:null), true);
+  }
+  add('전세가율', items.map(x=>{ const j=x.fx&&x.fx.jr; return j==null?'-':`${pc(j)}%<small>${j>=0.6?'실거주 수요 탄탄':j<0.4?'투자 수요 비중 큼':''}</small>`; }), items.map(x=>x.fx&&x.fx.jr!=null?x.fx.jr:null), true);
+  add('거래량', items.map(x=>`최근 1년 ${x.n}건<small>${x.n>=60?'거래 활발':x.n>=24?'거래 꾸준':'거래 적음 — 매도 기간 여유'}</small>`), items.map(x=>x.n), true);
+
+  h += `<div class="sec pb"><h2><span class="no">02</span> 항목별 비교표</h2>
+    <p class="sub">★ 표시는 그 항목에서 가장 유리한 단지입니다. 모바일에서는 표를 옆으로 밀어 보세요.${new Set(items.map(x=>sidoOfCode(x.code))).size>1?' <b>시·도가 다른 단지가 섞여 있어요.</b> 미래가치 점수는 각 시·도 안에서의 순위라, 서로 다른 시·도끼리는 참고용으로 보세요.':''}</p>
+    <div class="ctbl"><table><thead><tr><th></th>${items.map(x=>`<th>${esc(x.apt)}<small>${esc(sggName(x.code))} ${esc(x.dong)} · ${esc(x.band)}</small></th>`).join('')}</tr></thead><tbody>`+
+    rows.map(r=> r.grp ? `<tr class="grp"><td colspan="${items.length+1}">${r.label}</td></tr>`
+      : `<tr><td>${r.label}</td>${r.cells.map((c,i)=>`<td class="${i===r.b?'win':''}">${c}</td>`).join('')}</tr>`).join('')+
+    `</tbody></table></div></div>`;
+
+  /* 종합 결론 */
+  const sc=items.map(cmpScore), order=sc.map((v,i)=>[v,i]).sort((a,b)=>b[0]-a[0]), wi=order[0][1], W=items[wi];
+  const wins=rows.filter(r=>!r.grp && r.b===wi).map(r=>r.label);
+  const why=[];
+  const fW=W.fx||{};
+  const others=items.filter((_,i)=>i!==wi);
+  if (fW.fv!=null && others.every(o=>!(o.fx&&o.fx.fv!=null) || o.fx.fv<fW.fv)) why.push(`미래가치 점수가 가장 높아요 (${fW.fv}점 — 과거 데이터로 검증한 점수)`);
+  if (W.short<=0 && others.some(o=>o.short>0)) why.push('지금 예산으로 바로 살 수 있어요 — 다른 후보는 현금이 부족해요');
+  else if (W.short<=0) why.push(`예산 안에서 가능하고, 모든 비용을 내고도 현금 ${fmt(-W.short)}이 남아요`);
+  for (const lb of ['하락기 방어력','고점 회복','지역 전망','지하철','재건축 사업성','전세가율','거래량']) if (wins.includes(lb) && why.length<3) why.push(`${lb}에서 가장 앞서요`);
+  if (why.length<3 && W.ch!=null && W.ch>=0 && W.ch<0.08) why.push('최근 6개월 완만한 상승 흐름이에요');
+  const caut=[];
+  if (W.short>0) caut.push(`다만 지금 조건으로는 현금 ${fmt(W.short)}이 부족해요 — 자금 계획을 먼저 세우셔야 해요`);
+  if (W.ch!=null && W.ch>=0.08) caut.push('최근 상승 속도가 빨라 추격 매수는 주의가 필요해요');
+  if (W.n<24) caut.push('거래량이 적어 시세 확인과 매도 기간에 여유를 두세요');
+  const gap = order.length>1 ? Math.round((order[0][0]-order[1][0])*100) : 99;
+  h += `<div class="sec"><h2><span class="no">03</span> 종합 결론</h2>
+    <div class="verdict"><h3>종합하면 <em>${esc(W.apt)}</em>${gap<3?'가 근소하게':'가'} 유리해요</h3>
+    <ul>${why.slice(0,3).map(t=>`<li>${esc(t)}</li>`).join('')}${caut.map(t=>`<li style="color:#F2C9A8">${esc(t)}</li>`).join('')}</ul>
+    <div class="sc">${order.map(([v,i])=>`<span>${esc(items[i].apt)} <b>${Math.round(v*100)}점</b></span>`).join('')}</div>
+    <small>종합 점수 = 미래가치 50% · 예산 적합 25% · 거래량 15% · 최근 흐름 10% (미래가치 점수가 없는 단지는 예산·거래량·흐름으로만 계산). ${gap<3?'점수 차이가 작아 층·향·동, 학군, 실거주 동선 같은 개인 조건이 결정을 좌우할 수 있어요. ':''}과거 데이터 기반 참고 자료이며 매수를 권유하는 것은 아닙니다.</small></div>
+    ${items.map(x=>{ const rs=reasons(Object.assign({},x,{fit:Math.max(0.01,1-Math.max(0,x.short)/Math.max(S.cash,1))})).filter(r=>!/^예산 적합/.test(r[1])); return `<details class="cdet"><summary>${esc(x.apt)} · ${esc(x.band)} 자세한 분석 보기</summary><ul class="reasons">${rs.map(r=>`<li class="${r[0]}">${esc(r[1])}</li>`).join('')}</ul></details>`; }).join('')}
+  </div>`;
+
+  const q=new URLSearchParams({usp:'pp_url'});
+  q.set('entry.146176170', fmt(S.income)+'원'); q.set('entry.1872979900', fmt(S.cash)+'원');
+  q.set('entry.397234060', [...new Set(items.map(x=>sggName(x.code)))].join('·')); q.set('entry.1054811896', OWN_NAME[S.own]);
+  q.set('entry.658364183', `[단지 비교] ${items.map(x=>x.apt+' '+x.band).join(' vs ')} → 유리: ${W.apt} | ${JDJ.label()}`);
+  h += `<div class="cta noprint"><p>마지막 결정, 전문가와 함께 점검해 보세요<small>비교한 단지가 상담 신청서에 자동 입력됩니다 · 1차 진단은 무료</small></p>
+    <a class="btn primary" data-track="cmp_consult" href="${FORM}?${q.toString().replace(/\+/g,'%20')}" target="_blank" rel="noopener">상담 신청</a></div>
+    <div class="sec"><p class="src">실거래가: 국토교통부 아파트 매매·전월세 실거래가, 단지 정보: 공동주택관리정보시스템(K-apt)·건축물대장. 추정 시세는 같은 단지·평형의 최근 3개월 실거래 중앙값이며 호가와 다를 수 있습니다. 대출 한도와 세금은 금융기관·세무 전문가에게 확인하세요.</p></div>
+  </div>`;
+  $('report').innerHTML=h; wireCompare();
+  $('cmpEdit').onclick=e=>{e.preventDefault(); $('settings').classList.add('open'); window.scrollTo(0,0);};
+  JDJ.track('cmp_render',{n:items.length});
+}
+
 /* ---------- 렌더 ---------- */
 async function render(){
+  if (MODE==='cmp') return renderCompare();
   const units = await loadSido(S.sido.id);
   const groups = [...new Set([...S.sggs].map(groupOf))];
   const ctxBy={}, dsrBy={}, maxBy={};
@@ -717,6 +968,7 @@ async function render(){
           <div class="mini"><div class="k">추천 점수</div><div class="v">${Math.round(x.score*100)}</div><div class="bar"><i style="width:${Math.round(x.score*100)}%"></i></div></div>
         </div>
         <ul class="reasons">${rs.map(r=>`<li class="${r[0]}">${esc(r[1])}</li>`).join('')}</ul>
+        ${(()=>{ const k=cmpKey({sd:S.sido.id,code:x.code,dong:x.dong,apt:x.apt,band:x.band}); return `<button type="button" class="cmpbtn-add noprint ${cmpHas(k)?'on':''}" data-cp="${esc(k)}">${cmpHas(k)?'✓ 비교함에 담김':'＋ 비교에 담기'}</button>`; })()}
         <div class="agt" data-g="${x.code}" data-k="${esc(x.code+'|'+x.dong+'|'+x.apt)}"></div>
       </div>`;
     }).join('') + `</div>` +
@@ -781,6 +1033,7 @@ async function render(){
   </div>`;
 
   $('report').innerHTML = h;
+  document.querySelectorAll('[data-cp]').forEach(b=>b.onclick=()=>{ const [sd,code,dong,apt,band]=b.dataset.cp.split('~'); if(!cmpToggle({sd,code,dong,apt,band})) return; const on=cmpHas(b.dataset.cp); b.classList.toggle('on',on); b.textContent=on?'✓ 비교함에 담김':'＋ 비교에 담기'; });
   const wb=document.getElementById('widenBtn'); if(wb) wb.onclick=()=>{ S.sggs=new Set(sggsOfSido(S.sido)); renderSggChips(); render(); JDJ.track('report_widen',{region:S.sido.short}); };
   fillAgents(picked.length ? picked : near).catch(e=>console.warn('agents',e));
   JDJ.track('report_render', {region:S.sido.short, sgg_count:S.sggs.size, max_band:JDJ.band(M), picks:picked.length});
@@ -874,7 +1127,9 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ const bg=$('agm'
     IX = await loadIndex();
     S.sido = IX.sido.find(s=>s.name===Q.get('sd')) || defaultSido();
     S.sggs = (Q.get('g') && IX.sgg[Q.get('g')] && IX.sgg[Q.get('g')].sido===S.sido.name) ? new Set([Q.get('g')]) : new Set(defaultSggs(S.sido));
-    buildSettings(); wireSettings();
+    cmpLoad(); buildSettings(); wireSettings();
+    $('cmpBtn').onclick=()=>{ MODE==='cmp' ? goRec() : goCompare(); JDJ.track('cmp_toggle',{mode:MODE}); };
+    setModeUi();
     $('backBtn').href = '../' + (location.search||'');
     await render();
     JDJ.track('report_view');

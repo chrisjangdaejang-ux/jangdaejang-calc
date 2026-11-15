@@ -273,6 +273,7 @@ tr.cliff td{background:rgba(162,59,42,.06)}
         <a class="btn" id="premBtn" href="report/" target="_blank" rel="noopener">리포트 받아보기 →</a>
       </div>
 
+      <a class="xlink" id="cmpLink" data-track="buy_to_compare" href="report/?mode=cmp" target="_blank" rel="noopener">⚖ 마음에 둔 단지가 있다면 → 후보 단지 2~3곳 비교하기 (내 조건으로 대출·필요 현금까지)</a>
       <a class="xlink" data-track="cross_link_switch" href="../switch/">이미 집이 있다면 → 장대장 갈아타기 계산기 (양도세 포함)</a>
 
       <div class="cta">
@@ -580,6 +581,7 @@ function updateReport(c){
   const q=new URLSearchParams({i:c.income,c:c.cash,d:c.debt,o:own,t:rtype,rt:c.rate,tm:c.term,r:$('region').value});
   const RG=window.JDJ_REGION; if(RG){ q.set('sd',RG.sido); if(RG.sgg) q.set('g',RG.sgg); }
   $('premBtn').href='report/?'+q.toString();
+  const q2=new URLSearchParams(q); q2.set('mode','cmp'); $('cmpLink').href='report/?'+q2.toString();
 }
 $('premBtn').addEventListener('click',()=>{ JDJ.track('premium_interest',{region:$('region').value, max_band:JDJ.band(lastP)}); });
 
