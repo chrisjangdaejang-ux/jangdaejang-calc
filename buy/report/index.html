@@ -347,8 +347,8 @@ function maxPrice(c,dsr){
 const BY_TXT = {LTV:'LTV(집값 대비 비율)', CAP:'가격구간별 대출 한도', DSR:'소득(DSR 40%)', BAN:'주택구입 주담대 불가'};
 
 /* ---------- 데이터 ---------- */
-let MODEL=null;
-async function loadIndex(){ try{ const m=await fetch(DATA+'model.json',{cache:'no-cache'}); MODEL=m.ok?await m.json():null; }catch(e){} const r=await fetch(DATA+'index.json',{cache:'no-cache'}); if(!r.ok) throw new Error('index'); return r.json(); }
+let MODEL=null, RAIL=null;
+async function loadIndex(){ try{ const m=await fetch(DATA+'model.json',{cache:'no-cache'}); MODEL=m.ok?await m.json():null; }catch(e){} try{ const q=await fetch(DATA+'rail.json',{cache:'no-cache'}); RAIL=q.ok?await q.json():null; }catch(e){} const r=await fetch(DATA+'index.json',{cache:'no-cache'}); if(!r.ok) throw new Error('index'); return r.json(); }
 async function loadSido(id){ if(SIDO_CACHE[id]) return SIDO_CACHE[id]; const r=await fetch(DATA+id+'.json',{cache:'no-cache'}); if(!r.ok) throw new Error(id); const j=await r.json(); SIDO_CACHE[id]=j.units; return j.units; }
 function sggName(code){ const s=IX.sgg[code]; return s ? s.name : code; }
 function sidoOfCode(code){ const s=IX.sgg[code]; return s ? s.sido : ''; }
@@ -499,6 +499,15 @@ function futureReasons(x){
     if (own || f.lg>=0.995) r.push(['f', `${x.dong} 대장 단지 — 같은 평형끼리 비교해 동에서 가장 비싸게 거래되는 단지`]);
     else r.push(['f', `${x.dong} 대장 단지(${f.ln}${ltag})보다 같은 평형 기준 ${pct(1-f.lg)}% 낮은 시세` +
       (la!=null && la>=30 ? ' — 대장은 재건축 후 새 아파트 가치가 미리 반영된 가격' : '')]);
+  }
+  if (f.rl){
+    const R=f.rl, d=v=>v?`${v.slice(0,4)}.${v.slice(4)}`:'', SK={plan:'계획 확정',start:'착공',start_real:'본공사 착수',delay:'개통 지연',open:'개통'};
+    let t = `신규 노선: ${R.line} ${R.st} 인근 — `;
+    t += R.opened ? `${d(R.stym)} 개통` : `${d(R.stym)} ${SK[R.stage]||R.stage} 이후 공사 중` + (R.target?`, 개통 목표 ${d(R.target)}`:'') + (R.delays?`(일정 지연 ${R.delays}회)`:'');
+    if (R.pre!=null) t += ` · ${d(R.first)} 이후 이 단지는 구 평균보다 ${R.pre>=0?'+':''}${R.pre}%` + (R.opened?'':(R.pre>=5?' (상당 부분 선반영)':R.pre<=0?' (아직 반영 적음)':''));
+    const S = RAIL&&RAIL.summary&&RAIL.summary[R.opened?'open':'open'];
+    if (!R.opened && S && S.n>=15 && S.after18!=null) t += ` — 과거 수도권 ${S.n}개 역 사례: 개통 후 1년 반 동안 구 평균 대비 ${S.after18>=0?'+':''}${S.after18}%`;
+    r.push(['f', t]);
   }
   if (f.sub!=null){
     r.push(['f', f.sub>=30 ? '지하철역이 걸어가기엔 먼 편(도보 20분 이상) — 버스·자차 위주 생활권'
