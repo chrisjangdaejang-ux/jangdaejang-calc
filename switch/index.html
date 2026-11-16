@@ -629,7 +629,7 @@ function updateSwitchReport(){
 $('premBtn').addEventListener('click',()=>JDJ.track('switch_to_report',{region:$('region').value, max_band:JDJ.band(last?last.P:0)}));
 
 /* ---------- 지금 집 내놓기: 우리 동네 제휴 중개사 ---------- */
-const AG_DATA='/jangdaejang-timing/data/';
+const AG_DATA='/jangdaejang-data/data/';
 let AG_IX=null;
 const escH=x=>String(x==null?'':x).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
 async function sellInit(){

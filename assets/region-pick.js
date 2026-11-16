@@ -48,7 +48,7 @@
   sd.addEventListener('change', () => { fillSgg(); apply(true); });
   sg.addEventListener('change', () => apply(true));
 
-  fetch('/jangdaejang-timing/data/index.json', { cache: 'no-cache' }).then(r => r.json()).then(ix => {
+  fetch('/jangdaejang-data/data/index.json', { cache: 'no-cache' }).then(r => r.json()).then(ix => {
     IX = ix;
     // 서울·경기·인천 먼저, 나머지는 가나다순
     const first = ['서울', '경기', '인천'];
