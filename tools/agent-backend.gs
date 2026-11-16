@@ -1,5 +1,5 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (1단계)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v9: 소속공인중개사 가입)
  *
  * 설치: 구글 시트 새로 만들기 → 확장 프로그램 → Apps Script → 이 코드 전체 붙여넣기 → 저장
  *       → 위쪽 함수 선택에서 setup 실행(권한 허용) → 배포 → 새 배포 → 유형: 웹 앱
@@ -21,8 +21,11 @@ function book() { return SHEET_ID ? SpreadsheetApp.openById(SHEET_ID) : Spreadsh
 
 const SH_A = '중개사', SH_L = '로그';
 const H = ['id','등록번호','사무소명','대표자','전화','카카오','소개','시도','사무소구코드','사무소구','사무소동',
-           '추가구','단지','관리코드','신청일','승인','만료일','메모','수정일','상품','사업자번호','계산서메일','노출지역'];
-const PLAN = { basic: '기본', premium: '프리미엄' };   // 기본 월 29,000원 · 프리미엄 월 49,000원 (연간 결제, 부가세 별도)
+           '추가구','단지','관리코드','신청일','승인','만료일','메모','수정일','상품','사업자번호','계산서메일','노출지역',
+           '유형','중개사명','자격증번호'];
+/* 대표(개업공인중개사): 기본 월 29,000원 · 프리미엄 월 49,000원 / 소속공인중개사: 상담 월 19,000원 (연간 결제, 부가세 별도) */
+const PLAN = { basic: '기본', premium: '프리미엄', member: '소속 상담' };
+const TYPE = { owner: '대표', member: '소속' };
 const COL = Object.fromEntries(H.map((h, i) => [h, i]));
 
 /* ---------- 최초 1회 실행 ---------- */
@@ -61,7 +64,8 @@ function agents() {
       sido: String(r[COL['시도']]), og: String(r[COL['사무소구코드']]), ogName: String(r[COL['사무소구']]), dong: String(r[COL['사무소동']]),
       extras: parseJ(r[COL['추가구']], []), danji: parseJ(r[COL['단지']], []), code: String(r[COL['관리코드']]),
       applied: r[COL['신청일']], approved: r[COL['승인']] === true, expires: r[COL['만료일']], memo: String(r[COL['메모']]),
-      plan: String(r[COL['상품']] || PLAN.premium), biz: String(r[COL['사업자번호']] || ''), mail: String(r[COL['계산서메일']] || '')
+      plan: String(r[COL['상품']] || PLAN.premium), biz: String(r[COL['사업자번호']] || ''), mail: String(r[COL['계산서메일']] || ''),
+      type: String(r[COL['유형']] || TYPE.owner), name: String(r[COL['중개사명']] || ''), lic: String(r[COL['자격증번호']] || '')
     });
   }
   return list;
@@ -129,7 +133,8 @@ function listPublic() {
     ok: true, slot: SLOT, at: ymd(new Date()),
     agents: agents().filter(isActive).map(a => ({
       id: a.id, n: a.office, ceo: a.ceo, ph: a.phone, kk: a.kakao, intro: a.intro, reg: a.reg,
-      og: a.og, ogn: a.ogName, dong: a.dong, r: regionsOf(a), dj: a.plan === PLAN.premium ? freshDanji(a).map(d => d.k) : [], pl: a.plan === PLAN.premium ? 'p' : 'b'
+      og: a.og, ogn: a.ogName, dong: a.dong, r: regionsOf(a), dj: a.plan === PLAN.premium ? freshDanji(a).map(d => d.k) : [], pl: a.plan === PLAN.premium ? 'p' : 'b',
+      t: a.type === TYPE.member ? 'm' : 'o', nm: a.type === TYPE.member ? a.name : a.ceo
     }))
   };
   cache.put('list', JSON.stringify(res), 300);
@@ -162,14 +167,19 @@ function validDanji(list, regions, prev) {
 }
 
 function apply(b) {
+  ensureHeader();
+  const type = b.type === 'member' ? TYPE.member : TYPE.owner;
   const reg = str(b.reg, 40), office = str(b.office, 40), ceo = str(b.ceo, 20), phone = str(b.phone, 20);
+  const name = str(b.name, 20), lic = str(b.lic, 30);
   if (!reg || !office || !ceo || !phone) throw new Error('등록번호·사무소명·대표자·전화번호는 꼭 입력해 주세요.');
+  if (type === TYPE.member && (!name || !lic)) throw new Error('소속공인중개사는 본인 이름과 공인중개사 자격증 번호를 꼭 입력해 주세요.');
   if (!b.agree) throw new Error('유의사항 동의가 필요합니다.');
-  const list = agents();
-  if (list.some(a => a.reg.replace(/\s/g, '') === reg.replace(/\s/g, ''))) throw new Error('이미 신청된 등록번호입니다. [내 관리]에서 로그인해 수정해 주세요.');
+  const list = agents(), R = x => x.replace(/\s/g, '');
+  if (type === TYPE.owner && list.some(a => a.type !== TYPE.member && R(a.reg) === R(reg))) throw new Error('이미 신청된 등록번호입니다. [내 관리]에서 로그인해 수정해 주세요.');
+  if (type === TYPE.member && list.some(a => a.type === TYPE.member && R(a.reg) === R(reg) && R(a.name) === R(name))) throw new Error('이 사무소에서 같은 이름으로 이미 신청되었습니다. [내 관리]에서 로그인해 수정해 주세요.');
   const og = str(b.og, 5), extras = validRegions(og, b.extras);
   const regions = [og].concat(extras);
-  const plan = b.plan === 'premium' ? PLAN.premium : PLAN.basic;
+  const plan = type === TYPE.member ? PLAN.member : (b.plan === 'premium' ? PLAN.premium : PLAN.basic);
   const danji = plan === PLAN.premium ? validDanji(b.danji, regions, []) : [];
   const full = regions.filter(g => slotCount(g, '', list) >= SLOT);
   const id = 'A' + Utilities.getUuid().replace(/-/g, '').slice(0, 7).toUpperCase();
@@ -184,13 +194,16 @@ function apply(b) {
   row[COL['상품']] = plan; row[COL['사업자번호']] = str(b.biz, 20); row[COL['계산서메일']] = str(b.mail, 80);
   const rname = regionNames(regions, b.names);
   row[COL['노출지역']] = rname;
+  row[COL['유형']] = type; row[COL['중개사명']] = type === TYPE.member ? name : ''; row[COL['자격증번호']] = lic;
   const sh = book().getSheetByName(SH_A);
   sh.appendRow(row);
   sh.getRange(sh.getLastRow(), COL['승인'] + 1).insertCheckboxes();   // 승인 칸을 체크박스로
   if (NOTIFY) {
     try {
       MailApp.sendEmail(Session.getEffectiveUser().getEmail(), `[장대장 제휴] 새 신청: ${office}`,
-        `${office} (${ceo}) ${phone}\n상품 ${plan}\n등록번호 ${reg}\n사업자번호 ${str(b.biz, 20)} / 계산서 ${str(b.mail, 80)}\n지역 ${rname} (사무소 ${str(b.ogName, 30)} ${str(b.dong, 30)})\n시트에서 확인 후 승인 체크와 만료일을 입력하세요.\n${book().getUrl()}`);
+        `[${type}] ${type === TYPE.member ? name + ' (소속) · ' : ''}${office} (대표 ${ceo}) ${phone}\n상품 ${plan}\n등록번호 ${reg}${lic ? ' · 자격증번호 ' + lic : ''}\n`
+        + `확인: 사무소 등록·영업 상태는 국가공간정보포털(부동산중개업 조회), ${type === TYPE.member ? '소속 여부·자격은 같은 조회 화면의 소속공인중개사 목록과 큐넷 자격증 진위확인으로 ' : ''}확인하세요.\n`
+        + `사업자번호 ${str(b.biz, 20)} / 계산서 ${str(b.mail, 80)}\n지역 ${rname} (사무소 ${str(b.ogName, 30)} ${str(b.dong, 30)})\n시트에서 확인 후 승인 체크와 만료일을 입력하세요.\n${book().getUrl()}`);
     } catch (e) {}
   }
   return { ok: true, id: id, code: code, waitlist: full };
@@ -198,7 +211,7 @@ function apply(b) {
 
 function findMe(b, list) {
   const reg = str(b.reg, 40).replace(/\s/g, ''), code = str(b.code, 20).toUpperCase();
-  const me = list.find(a => a.reg.replace(/\s/g, '') === reg && a.code.toUpperCase() === code);
+  const me = list.find(a => a.reg.replace(/\s/g, '') === reg && a.code.toUpperCase() === code);   // 소속은 같은 등록번호가 여럿 → 관리코드로 구분
   if (!me) throw new Error('등록번호 또는 관리코드가 맞지 않습니다.');
   return me;
 }
@@ -214,7 +227,7 @@ function meOut(me, list) {
   return {
     ok: true, slot: SLOT, maxExtra: MAX_EXTRA, maxDanji: MAX_DANJI, confirmDays: CONFIRM_DAYS,
     me: {
-      id: me.id, reg: me.reg, office: me.office, ceo: me.ceo, phone: me.phone, kakao: me.kakao, intro: me.intro,
+      id: me.id, reg: me.reg, office: me.office, ceo: me.ceo, type: me.type, name: me.name, phone: me.phone, kakao: me.kakao, intro: me.intro,
       sido: me.sido, og: me.og, ogName: me.ogName, dong: me.dong, extras: me.extras,
       danji: (me.danji || []).map(d => ({ k: d.k, n: d.n, at: d.at, fresh: fresh.indexOf(d.k) >= 0 })),
       status: statusOf(me), expires: me.expires instanceof Date ? ymd(me.expires) : '', waitMemo: me.memo,

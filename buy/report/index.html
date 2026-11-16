@@ -1152,7 +1152,7 @@ let AG = {};
 function shuffle(arr){ return arr.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(v=>v[1]); }
 function agCard(a, g, rk){
   const hl = rk===0 ? '추천 단지 매물 보유' : (rk===1 ? '추천 단지 같은 동 사무소' : (rk===2 ? '이 지역 사무소' : ''));
-  return `<div class="agc"><b>${esc(a.n)}</b><small>${esc(a.ogn)} ${esc(a.dong)} · 대표 ${esc(a.ceo)}</small>
+  return `<div class="agc"><b>${a.t==='m'?esc(a.nm)+' 공인중개사':esc(a.n)}</b><small>${a.t==='m'?esc(a.n)+' 소속 · ':''}${esc(a.ogn)} ${esc(a.dong)}${a.t==='m'?' · 상담 전용':' · 대표 '+esc(a.ceo)}</small>
     ${hl?`<span class="hl">${hl}</span>`:''}${a.intro?`<p>${esc(a.intro)}</p>`:''}
     <button class="agbtn" data-a="${a.id}" data-g="${g}" data-k="">정보 보기 · 연락하기</button></div>`;
 }
@@ -1169,7 +1169,7 @@ async function fillAgents(picked){
   AG = {}; list.forEach(a=>AG[a.id]=a);
   const chip = (a, g, k, r) => {
     const badge = r===0 ? '매물 보유' : (r===1 ? '같은 동' : '');
-    return `<button class="agchip agbtn" data-a="${a.id}" data-g="${g}" data-k="${esc(k)}">${badge?`<span class="b">${badge}</span>`:''}${esc(a.n)}<span class="tel">${esc(a.ph)}</span></button>`;
+    return `<button class="agchip agbtn" data-a="${a.id}" data-g="${g}" data-k="${esc(k)}">${badge?`<span class="b">${badge}</span>`:''}${a.t==='m'?esc(a.nm)+' 공인중개사':esc(a.n)}<span class="tel">${esc(a.ph)}</span></button>`;
   };
   /* 추천 단지 1~10위 카드마다 [공인중개사 연결하기] 버튼 → 누르면 그 구를 선택한 제휴 중개사 전부 펼침.
      순서는 매물 보유 > 같은 동 > 같은 구 사무소 > 추가 지역, 같은 순위는 매번 무작위. 노출 기록은 펼쳤을 때 */
@@ -1211,8 +1211,8 @@ function openAgent(id, g, k){
     bg.addEventListener('click', e=>{ if(e.target===bg || e.target.classList.contains('x')) bg.classList.remove('open'); }); }
   bg.innerHTML = `<div class="agm" role="dialog" aria-modal="true"><button class="x" aria-label="닫기">×</button>
     <span class="tag">제휴·광고</span>
-    <h3>${esc(a.n)}</h3>
-    <dl><dt>대표</dt><dd>${esc(a.ceo)} 공인중개사</dd><dt>소재지</dt><dd>${esc(a.ogn)} ${esc(a.dong)}</dd>
+    <h3>${a.t==='m'?esc(a.nm)+' 공인중개사':esc(a.n)}</h3>
+    <dl>${a.t==='m'?`<dt>소속</dt><dd>${esc(a.n)} (대표 ${esc(a.ceo)})</dd><dt>구분</dt><dd>소속 공인중개사 · 상담 전용 (계약은 소속 사무소를 통해 진행)</dd>`:`<dt>대표</dt><dd>${esc(a.ceo)} 공인중개사</dd>`}<dt>소재지</dt><dd>${esc(a.ogn)} ${esc(a.dong)}</dd>
       <dt>등록번호</dt><dd>${esc(a.reg)}</dd><dt>전화</dt><dd>${esc(a.ph)}</dd>
       ${a.dj.length?`<dt>매물 단지</dt><dd>${a.dj.filter(x=>x.startsWith(g+'|')).map(x=>esc(x.split('|')[2])).join(', ')||'-'}</dd>`:''}</dl>
     ${a.intro?`<p style="margin:0;font-size:14px">${esc(a.intro)}</p>`:''}
