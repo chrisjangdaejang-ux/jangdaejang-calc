@@ -405,7 +405,7 @@ function maxPrice(c,dsr){
 const BY_TXT = {LTV:'LTV(집값 대비 비율)', CAP:'가격구간별 대출 한도', DSR:'소득(DSR 40%)', BAN:'주택구입 주담대 불가'};
 
 /* ---------- 데이터 ---------- */
-let MODEL=null, RAIL=null, MH=null;
+let MODEL=null, RAIL=null, MH=null, SUPPLY=null;
 let HZ=2;
 try{ HZ = parseInt(new URLSearchParams(location.search).get('hz') || localStorage.getItem('jdj_hz') || '2',10); }catch(e){}
 if(!(HZ>=1&&HZ<=10)) HZ=2;
@@ -423,7 +423,7 @@ const rzYm=v=>v?`${v.slice(0,4)}.${v.slice(4)}`:'';
 const rzSrc=z=>z.src==='busan'?'부산시 정비사업 추진현황 기준':z.src==='nat'?'국토교통부 전국 도시정비사업 통합 데이터 기준, 연 1회 갱신':'서울시 정비사업 추진현황·서울플랜+ 기준';
 const rzText=z=>`재건축 진행: ${z.n} — ${RZ_LV[z.lv]||''} 단계${z.ym?`(${rzYm(z.ym)})`:''} · 10단계 중 ${z.lv}단계 (${rzSrc(z)})`;
 const RUSED=()=>!!(MODEL&&MODEL.region&&MODEL.region.used);
-async function loadIndex(){ try{ const m=await fetch(DATA+'model.json',{cache:'no-cache'}); MODEL=m.ok?await m.json():null; }catch(e){} try{ const mh=await fetch(DATA+'model_h.json',{cache:'no-cache'}); MH=mh.ok?await mh.json():null; }catch(e){} try{ const q=await fetch(DATA+'rail.json',{cache:'no-cache'}); RAIL=q.ok?await q.json():null; }catch(e){} const r=await fetch(DATA+'index.json',{cache:'no-cache'}); if(!r.ok) throw new Error('index'); return r.json(); }
+async function loadIndex(){ try{ const m=await fetch(DATA+'model.json',{cache:'no-cache'}); MODEL=m.ok?await m.json():null; }catch(e){} try{ const mh=await fetch(DATA+'model_h.json',{cache:'no-cache'}); MH=mh.ok?await mh.json():null; }catch(e){} try{ const q=await fetch(DATA+'rail.json',{cache:'no-cache'}); RAIL=q.ok?await q.json():null; }catch(e){} try{ const q=await fetch(DATA+'supply.json',{cache:'no-cache'}); SUPPLY=q.ok?await q.json():null; }catch(e){} const r=await fetch(DATA+'index.json',{cache:'no-cache'}); if(!r.ok) throw new Error('index'); return r.json(); }
 async function loadSido(id){ if(SIDO_CACHE[id]) return SIDO_CACHE[id]; const r=await fetch(DATA+id+'.json',{cache:'no-cache'}); if(!r.ok) throw new Error(id); const j=await r.json(); SIDO_CACHE[id]=j.units; applyHz(j.units); return j.units; }
 /* 보유 기간에 맞는 미래가치 점수: 5년·10년은 5년 모델이 여러 시기 검증을 통과했을 때만 사용, 아니면 2년 점수 */
 function applyHz(units){ const mix=hzMix(HZ); for(const u of units){ const f=u[9]; if(!f) continue; if(f.fv2===undefined) f.fv2=f.fv; if(f.fv2==null){ f.fv=null; continue; }
@@ -573,6 +573,23 @@ function futureReasons(x){
       ? `미래가치 ${f.fv}점 — ${sidoNm} 전체 단지 중 상위 ${Math.max(1,100-f.fv)}%` + (f.fvg!=null?`, ${sggName(x.code)} 안에서는 상위 ${Math.max(1,100-f.fvg)}%`:'') + ' (과거 데이터로 검증한 점수)'
       : `미래가치 ${f.fv}점 — ${sggName(x.code)} 단지 중 상위 ${Math.max(1,100-f.fv)}% (과거 데이터로 검증한 점수)`]);
   }
+  /* 선택한 보유 기간 기준 '왜 이 점수인지': 그 기간 모델에서 점수를 가장 많이 올린·내린 항목 */
+  if (f.why){ const mix=hzMix(HZ), h=String(mix.slice().sort((a,b)=>b[1]-a[1])[0][0]), w=f.why[h]||f.why['2'], m=MOD(+h)||MODEL;
+    if (w&&w.length){ const lb=k=>((m&&m.label&&m.label[k])||(MODEL&&MODEL.label&&MODEL.label[k])||k);
+      const up=w.filter(t=>t.endsWith('+')).map(t=>lb(t.slice(0,-1))), dn=w.filter(t=>t.endsWith('-')).map(t=>lb(t.slice(0,-1)));
+      r.push(['f', `${h}년 예측에서 점수를 움직인 요인 — ` + (up.length?`올린 요인: ${up.join(' · ')}`:'') + (up.length&&dn.length?' / ':'') + (dn.length?`내린 요인: ${dn.join(' · ')}`:'')]); } }
+  /* 주변 공공택지·신도시 공급: 선택한 보유 기간 안에 입주가 시작되는지 */
+  if (f.sp){ const Y=new Date().getFullYear(), end=Y+Math.min(HZ,10), SG=['','발표 단계','분양·착공 단계','입주 진행 중'];
+    for (const [nm,units,km,stg,mv] of f.sp){
+      const my = mv ? +String(mv).slice(0,4) : null;
+      let t = `주변 공급: 반경 ${km}km ${nm} · 약 ${(units/10000).toFixed(units>=10000?1:2).replace(/\.?0+$/,'')}만 가구 — ${SG[stg]||'계획'}`;
+      if (stg===3) t += ` — ${String(mv).slice(0,4)}년부터 입주 중, 단기적으로 매물·전세 공급이 늘어나는 구간`;
+      else if (my && my<=Y) t += ` — 곧 첫 입주(${String(mv).slice(0,4)}년${String(mv).length>4?' '+(+String(mv).slice(5,7))+'월':''}), 입주 물량이 한꺼번에 풀리는 구간`;
+      else if (my) t += my<=end ? ` — 첫 입주 목표 ${my}년: 선택한 보유 기간(${hzLbl(HZ)}) 안에 대규모 입주가 시작될 수 있어요` : ` — 첫 입주 목표 ${my}년(보유 기간 이후)`;
+      else t += ' — 첫 입주 시기 미정(인천계양은 발표부터 첫 입주까지 약 8년)';
+      const key = stg===3?'move':stg===2?'sale':'ann', S = SUPPLY&&SUPPLY.summary&&SUPPLY.summary[key];
+      if (S && S.n18>=10 && S.after18!=null) t += ` · 과거 ${S.n18}개 사례: ${S.label} 후 1년 반 동안 인근 단지는 비교 지역보다 평균 ${S.after18>=0?'+':''}${S.after18}%p`;
+      r.push([stg>=2 && (!my || my<=end) ? 'c':'f', t]); } }
   if (f.gs!=null || f.sup!=null || f.pg!=null || f.un!=null || f.jb!=null){
     const bits=[];
     if (f.sup!=null) bits.push(`향후 2년 입주 물량이 기존 아파트의 ${Math.round(f.sup*1000)/10}%` + (f.sup>=0.08?'(많은 편 — 공급 부담)':f.sup<=0.03?'(적은 편 — 공급 부담 낮음)':''));
@@ -1042,6 +1059,7 @@ async function render(){
         <li><b>신설역(교통 호재)</b> — 국토교통부·지자체 공식 발표 기준으로 노선마다 계획 발표·착공·본공사·지연·개통 날짜를 정리하고, 그때그때 단지 700m 안에 신설역이 있었는지와 어느 단계였는지를 과거 시점마다 다시 계산해 단계별 영향을 데이터로 정합니다. 개통 후 2년이 지난 역은 이미 가격에 반영된 기존 역으로 봅니다.</li>
         <li><b>학군(중학교 전입)</b> — 교육부 학교알리미 공시로, 단지에서 1.5km 안 가까운 중학교 3곳의 <b>전입생 − 전출생</b>을 재학생 수로 나눈 순전입률을 봅니다. 학군을 찾아 이사 오는 수요가 실제로 있는지를 보여 주는 지표입니다(최근 3개 공시연도만 공개).</li>
         <li><b>미분양·일자리(지역)</b> — 국토교통부 시·군·구별 미분양 현황(월별)과 통계청 지역별고용조사 근무지 기준 취업자 수(반기)로 공급 부담과 일자리 증가를 봅니다.</li>
+        <li><b>주변 공공택지·신도시 공급</b> — 국토교통부가 발표한 신도시·공공주택지구(3기 신도시, 신규 택지 등)의 위치·가구 수·단계(발표 → 지구 지정 → 첫 분양 → 첫 입주)를 반경 5km 안, 가까울수록 크게 반영합니다. 과거 시점에는 그때까지 발표된 것만 써서 학습하고, 단계별로 인근 단지가 비교 지역보다 얼마나 움직였는지 사건 분석으로 따로 확인합니다.</li>
         <li><b>예상 보유 기간</b> — 1·2·3·5·7년 점수는 각각 '그 기간 뒤 같은 구 대비 초과 상승'을 맞히도록 따로 학습합니다(기간마다 중요한 지표가 다름). 과거 여러 시기 검증을 통과한 기간만 쓰고, 4·6년처럼 사이 기간은 양옆 예측을 기간 비율대로 섞습니다. 검증이 안 된 기간은 가장 가까운 검증된 예측을 쓰고 화면에 그렇게 표시합니다. 10년 이상은 검증 범위를 넘는 장기 전망으로, 재건축 완료 시 기대 차익과 신설역 개통 계획을 함께 봅니다.</li>
         <li><b>재건축 완료 시 기대 차익</b> — 지역 신축(5년 이내) 시세로 같은 평형의 완공 후 가치를 잡고, 공사비(3.3㎡당 서울 1,000만·수도권 900만·지방 750만 원)에서 일반분양 수익을 뺀 금액을 대지지분 비율로 나눠 분담금을 추정한 뒤 현재가를 뺀 값입니다. 예상 준공은 서울 정비구역들의 실제 단계별 소요 기간(중앙값)에 착공 후 3년을 더해 계산합니다. 기부채납·임대·추가 분담 등에 따라 실제와 다를 수 있습니다.</li>
         <li><b>재건축 진행 단계</b> — 서울시 「정비사업 추진현황」(주거정비과, 분기 갱신)과 서울플랜+(신속통합기획 포함)로 신속통합기획 대상지 선정 → 기획 완료 → 정비구역 지정 → 추진위 → 조합설립 → 건축심의 → 사업시행인가 → 관리처분인가 → 이주 → 착공 중 어디까지 왔는지 봅니다. 과거 시점마다 그때의 단계로 다시 계산해 가격에 실제로 얼마나 영향을 줬는지 데이터로 비중을 정합니다. 서울 밖은 국토교통부 「전국 도시정비사업 통합 데이터」와 부산시 「정비사업 추진현황」으로 현재 단계를 보여 드리며, 단계별 날짜가 없어 점수 계산에는 아직 쓰지 않습니다.</li>
