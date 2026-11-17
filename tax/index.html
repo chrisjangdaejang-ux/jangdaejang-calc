@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="장대장 계산기">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="/jangdaejang-calc/assets/pwa.js" defer></script>
+<title>장대장 부동산 세금 계산기 — 양도세 매도 타이밍·매도 순서·취득세</title>
+<meta name="description" content="언제 팔면 양도세가 줄어드는지 날짜별로 보여 드립니다. 1세대1주택 비과세·12억 고가주택·일시적 2주택·장기보유특별공제·다주택 중과(2026년 11월 시행 기준)와 다주택 매도 순서 비교, 취득세까지 브라우저 안에서 계산합니다.">
+<meta property="og:title" content="장대장 부동산 세금 계산기 — 언제, 어떤 순서로 팔면 세금이 줄어들까?">
+<meta property="og:description" content="양도세 매도 타이밍 그래프 · 다주택 매도 순서 비교 · 취득세. 회원가입 없이 무료, 입력값은 이 기기 밖으로 보내지 않습니다.">
+<meta property="og:type" content="website">
+<script>window.JDJ_CONFIG = { tool:'tax', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../assets/track.js"></script>
+<script src="../assets/stat.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css">
+<style>
+.wrap{max-width:560px;margin:0 auto;padding:0 0 40px}
+.hero{padding:28px 24px 8px;display:flex;flex-direction:column;gap:10px}
+.hero h1{margin:0;font-size:28px}
+.hero p{margin:0;font-size:15.5px;color:var(--sub)}
+[hidden]{display:none!important}
+.rows{margin:18px 20px 0;display:flex;flex-direction:column;gap:10px}
+.row{display:flex;align-items:center;gap:14px;padding:16px;border-radius:16px;border:1px solid var(--line);background:#fff;text-decoration:none;color:var(--text);font:inherit;text-align:left;cursor:pointer;width:100%;min-height:72px}
+.row:hover{border-color:var(--blue)}
+.row b{display:block;font-size:16px}
+.row small{display:block;font-size:13px;color:var(--sub2);line-height:1.5}
+.row .go{margin-left:auto;color:#B0B8C1;font-size:20px}
+.row .num{flex:none;width:36px;height:36px;border-radius:10px;background:var(--blue-l);color:var(--blue);font-weight:900;display:flex;align-items:center;justify-content:center}
+.row.soon{cursor:default;background:var(--gray2)}
+.row.soon .num{background:var(--line2);color:var(--sub3)}
+.soonb{display:inline-block;margin-left:6px;font-size:11px;font-weight:700;color:var(--sub2);background:var(--line2);border-radius:4px;padding:1px 6px;vertical-align:2px}
+.newb{display:inline-block;margin-left:6px;font-size:11px;font-weight:700;color:var(--blue);background:var(--blue-l);border-radius:4px;padding:1px 6px;vertical-align:2px}
+.trust{margin:18px 20px 0;font-size:13px;color:var(--sub2);line-height:1.6}
+/* 한 화면 한 질문 */
+.q{margin:18px 20px 0;padding:22px 20px;border-radius:20px;background:var(--gray);display:flex;flex-direction:column;gap:14px}
+.q .meta{display:flex;justify-content:space-between;font-size:13px;color:var(--sub2)}
+.q .meta b{color:var(--blue)}
+.q .ql{font-size:22px;font-weight:700;letter-spacing:-.4px;line-height:1.4;margin:0}
+.q .sl{font-size:14px;font-weight:700;color:var(--sub);margin-bottom:-6px}
+.box{display:flex;align-items:center;gap:8px;background:#fff;border-radius:14px;padding:10px 16px;border:2px solid transparent}
+.box:focus-within{border-color:var(--blue)}
+.box input,.box select{border:0;outline:none;font:inherit;font-size:22px;font-weight:700;flex:1;min-width:0;color:var(--text);background:transparent;min-height:40px;box-shadow:none;padding:0}
+.box input[type=date]{font-size:19px}
+.box span{font-size:18px;font-weight:700;color:var(--sub);white-space:nowrap}
+.conv{font-size:13px;color:var(--blue);font-weight:700;min-height:1em;margin-top:-6px}
+.quick{display:flex;gap:6px;flex-wrap:wrap}
+.quick button{font:inherit;font-size:13px;font-weight:700;min-height:44px;padding:0 14px;border-radius:999px;background:#fff;color:var(--sub);border:1px solid transparent;cursor:pointer}
+.quick button.on{border-color:var(--blue);color:var(--blue);background:var(--blue-l)}
+.opts{display:grid;gap:8px}
+.opt{display:block;width:100%;text-align:left;font:inherit;font-size:16px;font-weight:700;padding:14px 16px;border:2px solid #fff;background:#fff;border-radius:14px;cursor:pointer;color:var(--text);min-height:60px}
+.opt small{display:block;font-size:13px;font-weight:500;color:var(--sub2)}
+.opt.on{border-color:var(--blue);background:var(--blue-l)}
+.opt.on small{color:var(--blue)}
+.help{font-size:13px;color:var(--sub2);line-height:1.6}
+.err{font-size:13px;color:var(--neg);font-weight:700}
+.err:empty{display:none}
+.nav{display:flex;gap:8px}
+.nav .btn{min-height:56px;border-radius:16px;font-size:17px}
+.nav .prev{flex:0 0 96px;background:#fff}
+.nav .next{flex:1}
+.selrow{display:grid;grid-template-columns:1fr 1.4fr;gap:8px}
+.selrow select{width:100%;min-height:52px;font:inherit;font-size:16px;font-weight:700;border:2px solid #fff;border-radius:14px;padding:0 10px;background:#fff}
+.tog{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;background:#fff;border-radius:14px;padding:12px 14px;min-height:52px;cursor:pointer}
+.tog input{width:20px;height:20px}
+/* 결과 */
+.sec{margin:18px 20px 0}
+.result{padding:22px 20px;display:flex;flex-direction:column;gap:8px}
+.result .lbl{font-size:14px}
+.result .big{font-size:36px;font-weight:900;letter-spacing:-1px;line-height:1.15}
+.result .sub{font-size:14px}
+.pill{display:inline-flex;align-items:center;font-size:13px;font-weight:700;border-radius:999px;padding:4px 12px;align-self:flex-start}
+.pill.ok{background:var(--pos-l);color:var(--pos)}
+.pill.mid{background:var(--blue-l);color:var(--blue)}
+.pill.no{background:var(--neg-l);color:var(--neg)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.stat{padding:12px 14px}
+.stat .k{font-size:12.5px}
+.stat .v{font-size:17px;font-weight:900;letter-spacing:-.3px}
+details.how{margin-top:12px;border:1px solid var(--line);border-radius:14px;padding:0 14px;background:#fff}
+details.how summary{cursor:pointer;font-weight:700;font-size:15px;min-height:52px;display:flex;align-items:center;color:var(--text)}
+details.how ul{margin:0 0 12px;padding-left:18px;font-size:14px;display:grid;gap:6px;color:var(--sub)}
+table.calc{width:100%;border-collapse:collapse;font-size:14px;margin:0 0 12px}
+table.calc td{padding:8px 2px;font-variant-numeric:tabular-nums}
+table.calc td:last-child{text-align:right;font-weight:700;white-space:nowrap}
+table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:15px}
+.law{font-size:12px;color:var(--sub3);margin:0 0 12px;line-height:1.6}
+.panel{margin:18px 20px 0}
+.panel h2{margin-bottom:6px}
+.panel .desc{font-size:14px;color:var(--sub);margin:0 0 12px}
+.chart{width:100%;height:auto;display:block;touch-action:pan-y}
+.slidebox{margin-top:6px}
+.slidebox input{width:100%;height:44px}
+.pick{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;background:var(--gray);border-radius:14px;padding:12px 14px}
+.pick .d{font-size:14px;color:var(--sub);font-weight:700}
+.pick .t{font-size:22px;font-weight:900;letter-spacing:-.5px}
+.pick .c{font-size:13px;font-weight:700}
+.pick .c.down{color:var(--pos)}.pick .c.up{color:var(--neg)}
+.best{margin-top:10px;background:var(--blue-l);color:var(--text);border-radius:14px;padding:12px 14px;font-size:15px;line-height:1.55}
+.best b{color:var(--blue)}
+.ev{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:0}
+.ev li{display:grid;grid-template-columns:96px 1fr;gap:10px;padding:10px 0;border-top:1px solid var(--line2);font-size:14px}
+.ev li b{font-variant-numeric:tabular-nums}
+.ev li small{display:block;color:var(--sub2);font-size:12.5px}
+.ev li .g{color:var(--pos);font-weight:700}.ev li .w{color:var(--neg);font-weight:700}
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--sub2);margin-bottom:8px}
+.chip{font:inherit;font-size:13px;font-weight:700;padding:0 12px;cursor:pointer}
+.soonc{margin:18px 20px 0;padding:16px 18px;border-radius:16px;border:1px dashed var(--line);background:var(--gray2);font-size:14px;color:var(--sub2)}
+.soonc b{color:var(--text)}
+.notice{margin:18px 20px 0;font-size:12.5px;color:var(--sub2);line-height:1.6;background:var(--gray2);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+/* 매도 순서 */
+.house{background:var(--gray);border-radius:20px;padding:18px 16px;margin:14px 20px 0;display:flex;flex-direction:column;gap:10px}
+.house h3{margin:0;font-size:18px;display:flex;justify-content:space-between;align-items:center}
+.house h3 button{font:inherit;font-size:13px;color:var(--sub2);background:none;border:0;text-decoration:underline;min-height:44px;cursor:pointer}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.f2>*{min-width:0}
+.fl label{display:block;font-size:12.5px;font-weight:700;color:var(--sub);margin-bottom:4px}
+.fl .box{padding:6px 12px;border-radius:12px}
+.fl .box input,.fl .box select{font-size:16px;min-height:36px}
+.fl .box input[type=date]{font-size:15px}
+.fl .box span{font-size:14px}
+.fl select.s{width:100%;min-height:52px;font:inherit;font-size:15px;font-weight:700;border:0;border-radius:12px;padding:0 8px;background:#fff}
+.addh{margin:12px 20px 0;width:calc(100% - 40px)}
+.orders{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.ord{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:#fff}
+.ord.first{border:2px solid var(--blue)}
+.ord .h{display:flex;justify-content:space-between;gap:8px;font-weight:700;font-size:15px}
+.ord .h span:last-child{font-variant-numeric:tabular-nums;white-space:nowrap}
+.ord .bar{height:8px;background:var(--gray);border-radius:4px;margin:8px 0 4px;overflow:hidden}
+.ord .bar i{display:block;height:100%;background:#AEB8C4;border-radius:4px}
+.ord.first .bar i{background:var(--blue)}
+.ord details summary{cursor:pointer;font-size:13px;color:var(--sub2);min-height:36px;display:flex;align-items:center}
+.ord table{width:100%;border-collapse:collapse;font-size:13px}
+.ord td{padding:6px 2px;vertical-align:top}
+.ord td:last-child{text-align:right;white-space:nowrap;font-weight:700}
+.reason{margin:0;padding-left:18px;display:grid;gap:6px;font-size:15px;line-height:1.55}
+.badge2{display:inline-block;font-size:11px;font-weight:700;border-radius:4px;padding:1px 6px;margin-left:4px;vertical-align:1px}
+.badge2.ok{background:var(--pos-l);color:var(--pos)}.badge2.no{background:var(--neg-l);color:var(--neg)}.badge2.mid{background:var(--blue-l);color:var(--blue)}
+.backbar{margin:14px 20px 0}
+.backbar button{font:inherit;font-size:14px;color:var(--sub2);background:none;border:0;min-height:44px;cursor:pointer;padding:0}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../"><span class="star" aria-hidden="true">★</span> 장대장 <span class="acc">세금</span></a>
+  <div class="badge">PREMIUM INSIGHT</div>
+</header>
+<main class="wrap">
+
+<!-- 처음 화면 -->
+<section id="vHome">
+  <div class="hero">
+    <div class="eyebrow">부동산 세금 계산기 · 2026년 11월 시행 세법 기준</div>
+    <h1>언제, 어떤 순서로 팔면<br><em>세금이 줄어드는지</em> 보여 드려요</h1>
+    <p>비과세 요건이 채워지는 날, 장기보유특별공제가 오르는 날을 날짜로 계산해 드립니다. 결정은 직접 하시고, 유리한 시점과 순서를 비교해 보세요.</p>
+  </div>
+  <div class="rows">
+    <button type="button" class="row" data-go="cgt"><span class="num">1</span><div><b>양도세 · 매도 타이밍<span class="newb">차별점</span></b><small>한 채의 양도세와, 앞으로 5년 동안 달마다 달라지는 예상 세금</small></div><span class="go" aria-hidden="true">›</span></button>
+    <button type="button" class="row" data-go="order"><span class="num">2</span><div><b>다주택 매도 순서 비교</b><small>최대 3채, 가능한 순서 전부의 총 세금 비교</small></div><span class="go" aria-hidden="true">›</span></button>
+    <button type="button" class="row" data-go="acq"><span class="num">3</span><div><b>취득세</b><small>주택 수·조정대상지역·가격 구간별 세율</small></div><span class="go" aria-hidden="true">›</span></button>
+    <div class="row soon" aria-disabled="true"><span class="num">4</span><div><b>보유 vs 매도 지역 전망<span class="soonb">곧 추가</span></b><small>계속 보유할 때 예상 시세와 매도 후 세금을 나란히</small></div></div>
+  </div>
+  <p class="trust">입력하신 숫자는 이 기기 안에서만 계산하고 서버로 보내지 않습니다. 참고용 계산이며, 최종 신고는 국세청 홈택스나 세무 전문가와 꼭 확인해 주세요.</p>
+</section>
+
+<!-- 1. 양도세 한 질문씩 -->
+<section id="vCgt" hidden>
+  <div class="backbar"><button type="button" data-go="home">‹ 처음으로</button></div>
+  <form class="q" id="wiz" novalidate>
+    <div class="meta"><b id="wStep">질문 1 / 7</b><span>양도세 · 매도 타이밍</span></div>
+    <div class="progress" role="progressbar" aria-label="질문 진행"><i id="wBar" style="width:14%"></i></div>
+
+    <div class="wq" data-q="houses">
+      <p class="ql">지금 집을 몇 채 갖고 계세요?</p>
+      <div class="opts" id="oHouses">
+        <button type="button" class="opt" data-v="1">1채<small>세대 전체 기준, 팔려는 집 1채만</small></button>
+        <button type="button" class="opt" data-v="t">2채 — 이사하려고 새 집을 샀어요<small>일시적 2주택: 기존 집을 기한 안에 팔면 비과세 가능</small></button>
+        <button type="button" class="opt" data-v="2">2채<small>팔려는 집 포함</small></button>
+        <button type="button" class="opt" data-v="3">3채 이상<small>팔려는 집 포함</small></button>
+      </div>
+      <div class="help">부부·함께 사는 가족을 합친 세대 기준이에요. 여러 채의 순서를 정하시려면 처음 화면의 '다주택 매도 순서 비교'가 더 정확합니다.</div>
+    </div>
+
+    <div class="wq" data-q="region" hidden>
+      <p class="ql">팔려는 집은 어디에 있나요?</p>
+      <div class="selrow"><select id="rSido" aria-label="시·도"></select><select id="rGu" aria-label="시·군·구"></select></div>
+      <div class="help">조정대상지역 여부는 사신 날과 파시는 날 기준으로 국토교통부 공고 이력에서 자동으로 판정합니다.</div>
+    </div>
+
+    <div class="wq" data-q="acq" hidden>
+      <p class="ql">언제, 얼마에 사셨어요?</p>
+      <div class="sl">취득일 (잔금일 또는 등기 접수일 중 빠른 날)</div>
+      <div class="box"><input type="date" id="acqDate" aria-label="취득일" min="1990-01-01"></div>
+      <div class="sl">취득가</div>
+      <div class="box"><input id="acqPrice" inputmode="numeric" autocomplete="off" placeholder="80,000" aria-label="취득가(만 원)"><span>만 원</span></div>
+      <div class="conv" id="acqPriceC"></div>
+    </div>
+
+    <div class="wq" data-q="acqAdj" hidden>
+      <p class="ql">사실 때 그 동네가 조정대상지역이었나요?</p>
+      <div class="opts" id="oAcqAdj">
+        <button type="button" class="opt" data-v="y">네, 조정대상지역이었어요<small>2년 거주해야 비과세</small></button>
+        <button type="button" class="opt" data-v="n">아니요<small>2년 보유만으로 비과세 가능</small></button>
+      </div>
+      <div class="help" id="acqAdjHelp">이 지역은 해당 기간에 일부 동만 지정됐거나 시·군마다 달라 자동 판정이 어렵습니다. 모르시면 '네'를 고르시면 보수적으로 계산됩니다.</div>
+    </div>
+
+    <div class="wq" data-q="sale" hidden>
+      <p class="ql">얼마에, 언제 파실 예정이세요?</p>
+      <div class="sl">예상 매도가 (지금 시세)</div>
+      <div class="box"><input id="salePrice" inputmode="numeric" autocomplete="off" placeholder="110,000" aria-label="예상 매도가(만 원)"><span>만 원</span></div>
+      <div class="conv" id="salePriceC"></div>
+      <div class="sl">매도 예정일 (잔금일)</div>
+      <div class="box"><input type="date" id="saleDate" aria-label="매도 예정일" min="2023-01-12"></div>
+      <div class="help">다음 화면에서 앞으로 5년 동안 달마다 팔았을 때의 세금도 함께 보여 드려요.</div>
+    </div>
+
+    <div class="wq" data-q="exp" hidden>
+      <p class="ql">취득세·중개보수·수리비 같은 필요경비는요?</p>
+      <div class="box"><input id="expenses" inputmode="numeric" autocomplete="off" placeholder="0" aria-label="필요경비(만 원)"><span>만 원</span></div>
+      <div class="quick" id="qExp"><button type="button" data-v="0">모름 · 0원</button><button type="button" data-v="est">취득세·중개보수 추정</button></div>
+      <div class="help">영수증이 있는 취득세, 법무사·중개보수, 확장·샷시 같은 자본적 지출이 해당해요. 도배·장판 같은 수선비는 빠집니다.</div>
+    </div>
+
+    <div class="wq" data-q="resid" hidden>
+      <p class="ql">그 집에 실제로 몇 개월 사셨어요?</p>
+      <div class="box"><input id="residM" inputmode="numeric" autocomplete="off" placeholder="0" aria-label="거주 개월 수"><span>개월</span></div>
+      <div class="quick" id="qResid"><button type="button" data-v="0">안 살았어요</button><button type="button" data-v="24">2년</button><button type="button" data-v="60">5년</button><button type="button" data-v="120">10년</button></div>
+      <label class="tog"><input type="checkbox" id="living"> 지금도 이 집에 살고 있어요 (앞으로 거주 기간이 늘어나요)</label>
+    </div>
+
+    <div class="wq" data-q="newHouse" hidden>
+      <p class="ql">새 집은 언제, 어디에 사셨어요?</p>
+      <div class="sl">새 집 취득일</div>
+      <div class="box"><input type="date" id="newAcq" aria-label="새 집 취득일"></div>
+      <div class="sl">새 집 위치</div>
+      <div class="selrow"><select id="nSido" aria-label="새 집 시·도"></select><select id="nGu" aria-label="새 집 시·군·구"></select></div>
+      <div class="help">기존 집 취득 후 1년이 지나 새 집을 샀고, 새 집 취득일부터 3년(조정대상지역끼리 2026.8.4 이후 취득이면 2년) 안에 기존 집을 팔아야 비과세가 됩니다.</div>
+    </div>
+
+    <div class="err" id="wErr" role="alert"></div>
+    <div class="nav"><button type="button" class="btn prev" id="wPrev">이전</button><button type="submit" class="btn primary next" id="wNext">다음</button></div>
+  </form>
+
+  <div id="cgtOut" hidden>
+    <div class="sec result" id="cgtRes"></div>
+    <div class="panel" id="tlPanel">
+      <h2>언제 팔면 세금이 줄어들까요?</h2>
+      <p class="desc">오늘부터 5년 동안 매달 같은 날 판다고 가정한 예상 세금(지방소득세 포함)입니다. 막대를 밀어 날짜를 골라 보세요.</p>
+      <div class="chips" id="gChips">시세 변화 가정 <button type="button" class="chip on" data-g="0">그대로</button><button type="button" class="chip" data-g="3">연 3% 상승</button><button type="button" class="chip" data-g="-3">연 3% 하락</button></div>
+      <svg class="chart" id="tlChart" viewBox="0 0 340 190" role="img" aria-label="월별 예상 양도세 그래프"></svg>
+      <div class="slidebox"><input type="range" id="tlSlider" min="0" max="60" value="0" aria-label="매도 시점 고르기 (오늘부터 개월)"></div>
+      <div class="pick" aria-live="polite"><div><div class="d" id="pkD"></div><div class="t" id="pkT"></div></div><div class="c" id="pkC"></div></div>
+      <div class="best" id="tlBest"></div>
+      <ul class="ev" id="tlEv" aria-label="세금이 바뀌는 날"></ul>
+      <p class="law" style="margin-top:12px">2027년 이후 양도분은 국회에서 심의 중인 2026년 세제개편안(다주택 중과 한시 완화, 2028년 장기보유특별공제 거주 중심 개편 등)이 통과되면 달라질 수 있어, 현재 시행 중인 법으로 계산했습니다.</p>
+    </div>
+    <div class="soonc"><b>보유 vs 매도 지역 전망 — 곧 추가</b><br>계속 보유할 때 이 지역의 예상 시세 흐름과, 지금 팔 때의 세후 금액을 나란히 비교해 드릴 예정입니다.</div>
+    <div class="btns sec"><button type="button" class="btn ghost" id="cgtEdit">입력 고치기</button><button type="button" class="btn ghost" data-go="order">매도 순서 비교</button><button type="button" class="btn ghost" data-go="acq">취득세</button></div>
+  </div>
+</section>
+
+<!-- 2. 다주택 매도 순서 -->
+<section id="vOrder" hidden>
+  <div class="backbar"><button type="button" data-go="home">‹ 처음으로</button></div>
+  <div class="hero" style="padding-top:6px"><div class="eyebrow">다주택 매도 순서 비교</div><h1 style="font-size:24px">어떤 집부터 팔아야<br>세금이 가장 적을까요?</h1><p>세대가 가진 집을 모두(최대 3채) 넣어 주시면 가능한 순서를 전부 계산해 비교해 드립니다. 마지막에 남는 집은 1세대1주택 비과세 요건을 따져 반영합니다.</p></div>
+  <div id="hList"></div>
+  <button type="button" class="btn ghost addh" id="hAdd">집 한 채 더 넣기</button>
+  <div class="q">
+    <div class="fl"><label for="oStart">첫 번째 매도 예정일</label><div class="box"><input type="date" id="oStart"></div></div>
+    <div class="fl"><label>집과 집 사이 매도 간격</label><div class="quick" id="oInt"><button type="button" data-v="1">1개월</button><button type="button" data-v="6">6개월</button><button type="button" data-v="12" class="on">1년</button><button type="button" data-v="24">2년</button></div></div>
+    <div class="help">같은 해에 두 채 이상 팔면 양도소득을 합산해 세금이 늘 수 있어요(기본공제 250만 원도 1년에 한 번).</div>
+    <div class="err" id="oErr" role="alert"></div>
+    <button type="button" class="btn primary big" id="oRun">순서별 세금 비교하기</button>
+  </div>
+  <div id="oOut" hidden>
+    <div class="panel"><h2>비교 결과</h2><ol class="reason" id="oReason"></ol><div class="orders" id="oList"></div>
+      <p class="law" style="margin-top:12px">각 집의 매도가는 지금 시세 그대로라고 가정했습니다. 일시적 2주택은 두 채가 남았을 때 먼저 산 집을 파는 경우만 따졌고, 다주택 중과 제외 주택(장기임대 등록, 지방 공시가격 3억 이하 등)과 주택 수 제외 규정은 반영하지 않았습니다.</p></div>
+  </div>
+</section>
+
+<!-- 3. 취득세 -->
+<section id="vAcq" hidden>
+  <div class="backbar"><button type="button" data-go="home">‹ 처음으로</button></div>
+  <div class="hero" style="padding-top:6px"><div class="eyebrow">취득세 간단 계산</div><h1 style="font-size:24px">이 집을 사면 취득세는 얼마일까요?</h1></div>
+  <div class="q">
+    <div class="fl"><label for="aPrice">매수 가격</label><div class="box"><input id="aPrice" inputmode="numeric" autocomplete="off" placeholder="90,000"><span>만 원</span></div><div class="conv" id="aPriceC"></div></div>
+    <div class="fl"><label>이 집을 사고 나면 세대의 주택 수</label><div class="quick" id="aN"><button type="button" data-v="1" class="on">1채</button><button type="button" data-v="2">2채</button><button type="button" data-v="3">3채</button><button type="button" data-v="4">4채 이상</button></div></div>
+    <div class="fl"><label>사려는 집 위치</label><div class="selrow"><select id="aSido" aria-label="시·도"></select><select id="aGu" aria-label="시·군·구"></select></div><div class="help" id="aAdjTxt"></div></div>
+    <label class="tog" id="aTempW" hidden><input type="checkbox" id="aTemp"> 이사용이에요 (기존 집을 3년 안에 팔 예정, 일시적 2주택)</label>
+    <label class="tog"><input type="checkbox" id="aOver"> 전용면적 85㎡ 초과예요 (농어촌특별세 부과)</label>
+    <div class="err" id="aErr" role="alert"></div>
+    <button type="button" class="btn primary big" id="aRun">취득세 계산하기</button>
+  </div>
+  <div class="sec result" id="aRes" hidden></div>
+  <p class="notice" style="margin-top:12px">생애최초 주택 감면, 공시가격 1억 원 이하 주택 중과 제외, 증여·분양권·오피스텔 취득은 반영하지 않았습니다. 일시적 2주택으로 1~3% 세율을 받고 3년 안에 종전 집을 팔지 못하면 중과세율과의 차액과 가산세가 추징됩니다.</p>
+</section>
+
+<p class="notice">참고용 계산이며 최종 신고는 국세청 홈택스·세무 전문가와 확인해 주세요. 세율·공제·비과세 요건은 2026년 11월 17일 현재 시행 중인 소득세법·시행령, 지방세법과 국토교통부 조정대상지역 공고(서울 25개 구 전역, 경기 15곳)를 기준으로 했습니다. 입력값은 서버로 보내지 않습니다.</p>
+</main>
+<footer class="foot notice" style="margin:24px 0 0;border-radius:0;border-left:0;border-right:0">근거: 소득세법 제55조·제89조·제95조·제103조·제104조, 같은 법 시행령 제154조·제155조·제159조의4·제167조의10·제167조의11, 지방세법 제11조·제13조의2·제103조의3·제151조, 국토교통부공고 제2023-2호·제2025-1223호·제2026-882호<br>★ 장대장부동산그룹 · <a href="../">계산기 처음으로</a></footer>
+
+<script src="adjusted-areas.js"></script>
+<script src="tax-engine.js"></script>
+<script src="tax-ui.js"></script>
+</body>
+</html>
