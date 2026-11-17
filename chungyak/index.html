@@ -18,6 +18,7 @@
 <meta property="og:description" content="청약 가점 계산 + 1순위·특별공급 간이 체크 + 과거 당첨 가점 비교 + 분양 공고">
 <script>window.JDJ_CONFIG = { tool:'chungyak', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js"></script>
+<script src="../assets/stat.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -437,7 +438,8 @@ function showResult(scroll) {
   $('bars').innerHTML = bar('무주택기간', 32, r.h) + bar('부양가족 수', 35, r.d) + bar('청약통장 가입기간', 17, r.c);
   $('wiz').hidden = true; $('result').hidden = false;
   renderElig(); renderHist();
-  if (scroll) { $('result').scrollIntoView({ behavior: 'smooth', block: 'start' }); if (window.JDJ) JDJ.track('chungyak_score', { score: r.sum }); }
+  if (scroll) { $('result').scrollIntoView({ behavior: 'smooth', block: 'start' }); if (window.JDJ) JDJ.track('chungyak_score', { score_band: window.jdjStat ? jdjStat.score(r.sum) : '' });
+    if (window.jdjStat) { jdjStat('feature_use', { feature: 'chungyak' }); jdjStat('chungyak_result', { score_band: jdjStat.score(r.sum), home_own: A.own ? '유주택' : '무주택' }); } }
   try { localStorage.setItem('jdj_cy', JSON.stringify(A)); } catch (e) {}
 }
 $('next').onclick = next;
@@ -544,6 +546,7 @@ async function init() {
   q.set('entry.658364183', `[청약] 상담 문의 | ${window.JDJ ? JDJ.label() : ''}`);
   $('ctaBtn').href = `${FORM}?${q.toString().replace(/\+/g, '%20')}`;
   $('eSido').innerHTML = SIDO.map(s => `<option>${s}</option>`).join('');
+  $('eSido').addEventListener('change', () => { if (window.jdjStat) jdjStat('interest_profile', { from: 'chungyak', sido: jdjStat.sido($('eSido').value), home_own: A.own == null ? '' : (A.own ? '유주택' : '무주택') }); });
   $('refDate').value = A.ref;
   try { const s = JSON.parse(localStorage.getItem('jdj_cy') || 'null'); if (s && typeof s === 'object') { Object.assign(A, s, { ref: today() }); $('refDate').value = A.ref; } } catch (e) {}
   renderQ();

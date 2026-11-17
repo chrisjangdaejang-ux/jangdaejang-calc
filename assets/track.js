@@ -30,6 +30,11 @@
   if (src) ls.set('jdj_src', src); else src = ls.get('jdj_src') || '';
   const channel = CH[src] || src || '직접 방문';
 
+  // 주소 정리: 같은 사이트 주소는 utm_*·mode 만 남기고, 다른 사이트(유입 경로)는 도메인까지만
+  function J0(u){ if (!u) return ''; try{ const x = new URL(u); if (x.origin !== location.origin) return x.origin + '/';
+    const q = new URLSearchParams(); for (const [k,v] of x.searchParams) if (/^utm_|^mode$/.test(k)) q.set(k, v);
+    const qs = q.toString(); return x.origin + x.pathname + (qs ? '?'+qs : ''); }catch(_){ return ''; } }
+  window.JDJ_CLEAN_URL = J0;
   // Google Analytics 4
   if (C.GA4_ID){
     const s = document.createElement('script'); s.async = true;
@@ -38,7 +43,10 @@
     window.dataLayer = window.dataLayer || [];
     window.gtag = function(){ dataLayer.push(arguments); };
     gtag('js', new Date());
-    gtag('config', C.GA4_ID);
+    // 주소의 계산 입력값(연소득 i·현금 c·이름 n 등)이 GA로 가지 않도록 utm·mode만 남긴 주소로 보냄
+    const loc = J0(location.href), ref = J0(document.referrer);
+    gtag('set', {page_location: loc, page_referrer: ref});
+    gtag('config', C.GA4_ID, {page_location: loc, page_referrer: ref});
     gtag('set', 'user_properties', {visit_count: visits, first_channel: channel});
   }
   // Microsoft Clarity

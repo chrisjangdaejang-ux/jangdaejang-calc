@@ -20,6 +20,7 @@
 <meta property="og:type" content="website">
 <script>window.JDJ_CONFIG = { tool:'buy', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js"></script>
+<script src="../assets/stat.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -623,6 +624,15 @@ function updateReport(c){
   $('premBtn').href='report/?'+q.toString();
   const q2=new URLSearchParams(q); q2.set('mode','cmp'); $('cmpLink').href='report/?'+q2.toString();
 }
+/* 익명 이용 통계(구간 값만 · tools/stats-guide.md): 결과를 본 뒤 입력이 멈추면 보냄 */
+function statBuy(){ if(!window.jdjStat) return; const RG=window.JDJ_REGION||{};
+  jdjStat('feature_use',{feature:'buy'});
+  jdjStat('interest_profile',{from:'buy', sido:jdjStat.sido(RG.sido), sgg:RG.sgg&&RG.label?RG.label.slice(String(RG.sido).length+1):'',
+    region_group:jdjStat.regionGroup($('region').value), budget_band:jdjStat.band(lastP), home_own:jdjStat.own(own)}); }
+['input','change','click'].forEach(t=>document.addEventListener(t,e=>{
+  if(!window.jdjStat || document.body.classList.contains('wiz') || !e.target.closest || !e.target.closest('#form,.grid')) return;
+  if(t==='click' && !e.target.closest('.seg button')) return;
+  jdjStat.later('buy', statBuy, 3000); }));
 $('premBtn').addEventListener('click',()=>{ JDJ.track('premium_interest',{region:$('region').value, max_band:JDJ.band(lastP)}); });
 
 setTermOptions();
@@ -668,7 +678,7 @@ render();
     document.body.classList.remove('wiz');
     fields.forEach(f=>f.classList.remove('cur'));
     try{ sessionStorage.setItem('jdj_buy_done','1'); }catch(e){}
-    render(); JDJ.track('buy_wizard_done',{max_band:JDJ.band(lastP)});
+    render(); JDJ.track('buy_wizard_done',{max_band:JDJ.band(lastP)}); if(window.jdjStat) jdjStat.later('buy', statBuy, 1500);
     const r=document.querySelector('.result'); if(r) r.scrollIntoView({block:'start'});
   }
   document.querySelectorAll('.quick').forEach(q=>q.addEventListener('click',e=>{

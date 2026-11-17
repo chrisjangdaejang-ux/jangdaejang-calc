@@ -18,6 +18,7 @@
 <meta property="og:description" content="국토부 실거래가 기준 예산 맞춤 단지 추천 + 자금 계획표 + 대출 시나리오">
 <script>window.JDJ_CONFIG = { tool:'report', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../../assets/track.js"></script>
+<script src="../../assets/stat.js"></script>
 <script src="../../assets/region-notes.js"></script>
 <script src="../../assets/agents.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1036,6 +1037,8 @@ async function renderCompare(){
   $('cmpEdit').onclick=e=>{e.preventDefault(); $('settings').classList.add('open'); window.scrollTo(0,0);};
   fillAgents(items).catch(e=>console.warn('agents',e));
   JDJ.track('cmp_render',{n:items.length});
+  if (window.jdjStat){ jdjStat('feature_use',{feature:'compare'}); jdjStat('compare_use',{n:items.length});
+    items.forEach(x=>jdjStat('interest_profile',{from:'compare', sido:jdjStat.sido((IX.sgg[x.code]||{}).sido), sgg:sggName(x.code), budget_band:jdjStat.band(x.P), hold_band:jdjStat.hold(HZ), home_own:jdjStat.own(S.own)})); }
 }
 
 /* ---------- 렌더 ---------- */
@@ -1277,7 +1280,13 @@ async function render(){
   const wb=document.getElementById('widenBtn'); if(wb) wb.onclick=()=>{ S.sggs=new Set(sggsOfSido(S.sido)); renderSggChips(); render(); JDJ.track('report_widen',{region:S.sido.short}); };
   fillAgents(picked.length ? picked : near).catch(e=>console.warn('agents',e));
   JDJ.track('report_render', {region:S.sido.short, sgg_count:S.sggs.size, max_band:JDJ.band(M), picks:picked.length});
+  statReport(M);
 }
+/* 익명 이용 통계(구간 값만 · tools/stats-guide.md): 관심 시군구 × 예산대 × 보유 기간 × 주택 보유. 단지명·정확한 금액은 보내지 않음 */
+function statReport(M){ if(!window.jdjStat) return;
+  jdjStat('feature_use',{feature:'report'});
+  const base={from:'report', sido:jdjStat.sido(S.sido.short), budget_band:jdjStat.band(M), hold_band:jdjStat.hold(HZ), home_own:jdjStat.own(S.own)};
+  const gs=[...S.sggs]; if (gs.length && gs.length<=5) gs.forEach(g=>jdjStat('interest_profile', Object.assign({sgg:sggName(g)}, base))); else jdjStat('interest_profile', base); }
 
 /* ---------- 제휴 공인중개사 ---------- */
 let AG = {};
@@ -1424,7 +1433,7 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ const bg=$('agm'
     setModeUi();
     $('backBtn').href = '../' + (location.search||'');
     $('shareBtn').onclick = async ()=>{ const b=$('shareBtn'), url=location.href;
-      try{ if (navigator.share) { await navigator.share({title:document.title, url}); return; } await navigator.clipboard.writeText(url); b.textContent='주소 복사됨'; }
+      try{ if (navigator.share) { await navigator.share({title:document.title, url}); if(window.jdjStat) jdjStat('report_share',{method:'share'}); return; } await navigator.clipboard.writeText(url); b.textContent='주소 복사됨'; if(window.jdjStat) jdjStat('report_share',{method:'copy'}); }
       catch(e){ if(e && e.name==='AbortError') return; b.textContent='복사 안 됨'; }
       setTimeout(()=>{ b.textContent='공유'; }, 2000); };
     await render();

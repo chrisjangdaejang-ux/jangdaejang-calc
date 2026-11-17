@@ -18,6 +18,7 @@
 <meta property="og:description" content="빌라 실거래 + 정비구역 단계 + 대지지분 평당가 + 입주권 위험 체크">
 <script>window.JDJ_CONFIG = { tool:'villa', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js"></script>
+<script src="../assets/stat.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -230,6 +231,7 @@ function renderDong(){
   const zi = new Map();
   CUR.b.filter(b=>b.d===d).forEach(b=>(b.z||[]).forEach(z=>{ if(!zi.has(z[0]) || z[1]<zi.get(z[0])) zi.set(z[0], z[1]); }));
   const zl = [...zi.keys()].map(i=>CUR.z[i]).sort((a,b)=>b.lv-a.lv);
+  if (zl.length && window.jdjStat) jdjStat('feature_use',{feature:'redev'});
   $('dongBox').innerHTML = `<div class="dong"><h3>${esc(CUR.meta.n)} ${esc(d)}</h3>
     <div style="font-size:14px">대지지분 평당가 최근 12개월 중앙값 <b>${m?fmt(m.m)+'만원':'자료 부족'}</b>${m?` <span style="color:var(--muted);font-size:12.5px">(${fmt(m.c)}건 기준)</span>`:''}</div>
     ${zl.length?`<div class="zl">${zl.map(z=>`<div class="zrow"><b>${esc(z.n)}</b> <small>${esc(z.t)} · 10단계 중 ${z.lv}단계(${esc(z.st)})${z.b?' · 가장 이른 공식 단계 '+ym(z.b):''}${z.src==='n'?' · 구역 이름으로 같은 동 추정':''}</small>${lvbar(z.lv)}</div>`).join('')}</div>`
@@ -274,6 +276,9 @@ function fillSgg(si, pick){
   const c = pick && s.g.some(g=>g.c===pick) ? pick : (s.g.slice().sort((a,b)=>b.z-a.z)[0]||{}).c;
   $('sgg').value = c; return c;
 }
+/* 익명 이용 통계(구간 값만 · tools/stats-guide.md): 시·도·시군구만, 건물·주소·지번은 보내지 않음 */
+function statVilla(){ if(!window.jdjStat || !CUR || !IDX) return; const s=IDX.sido[+$('sido').value]||{};
+  jdjStat('interest_profile',{from:'villa', sido:jdjStat.sido(s.n), sgg:CUR.meta.n}); }
 async function init(){
   const q = new URLSearchParams({usp:'pp_url'});
   q.set('entry.658364183', `[재개발·빌라] 상담 문의 | ${window.JDJ?JDJ.label():''}`);
@@ -288,13 +293,14 @@ async function init(){
   $('sido').value = si;
   const c = fillSgg(si, g);
   await loadSgg(c, u.get('d'));
-  $('sido').onchange = ()=>{ const c=fillSgg(+$('sido').value); loadSgg(c); };
-  $('sgg').onchange = ()=>loadSgg($('sgg').value);
+  if (window.jdjStat){ jdjStat('feature_use',{feature:'villa'}); if (g) statVilla(); }
+  $('sido').onchange = ()=>{ const c=fillSgg(+$('sido').value); loadSgg(c).then(statVilla); };
+  $('sgg').onchange = ()=>loadSgg($('sgg').value).then(statVilla);
   $('dong').onchange = ()=>{ SHOWN=PAGE; render(); };
   let t; $('q').oninput = ()=>{ clearTimeout(t); t=setTimeout(()=>{ SHOWN=PAGE; render(); }, 200); };
   document.querySelectorAll('#seg button').forEach(b=>b.onclick=()=>{
     document.querySelectorAll('#seg button').forEach(x=>x.classList.toggle('on', x===b));
-    FILTER=b.dataset.f; SHOWN=PAGE; render(); if (window.JDJ) JDJ.track('villa_filter',{f:FILTER});
+    FILTER=b.dataset.f; SHOWN=PAGE; render(); if (window.JDJ) JDJ.track('villa_filter',{f:FILTER}); if (window.jdjStat && FILTER!=='all') jdjStat('feature_use',{feature:'redev'});
   });
 }
 init();
