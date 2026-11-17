@@ -280,7 +280,8 @@ tr.hl td{background:rgba(184,148,42,.12);font-weight:700}
 .hzbar{background:var(--gray);border:0;border-radius:16px;padding:14px 16px}
 .hzbar b{font-size:14px}
 .hzbar .hzv{background:transparent;color:var(--blue);padding:0;font-size:15px}
-.hzbar input[type=range]{height:32px}
+.hzbar input[type=range]{width:100%;height:44px;margin:6px 0 0}
+.hzticks{width:calc(100% - 24px);margin:0 12px}
 .hzticks{color:var(--sub3)}
 .hzrec{color:var(--sub);font-weight:500}
 .hzrec b{color:var(--text)}
@@ -315,7 +316,7 @@ tr.total td{border-top:1px solid var(--text)}
 .cta{background:var(--gray);border-radius:0}
 .wm{background:var(--gray);color:var(--sub2)}
 /* 추천 순위 */
-.rkbox{border:1px solid var(--line);border-radius:20px;padding:6px 0;margin:0 0 16px}
+.rkbox{border:1px solid var(--line);border-radius:20px;padding:6px 0;margin:0 0 4px}
 .rkbox h3{font-size:15px;margin:10px 16px 4px}
 .rkbox p{margin:0 16px 6px;font-size:12.5px;color:var(--sub2)}
 .rkrow{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:8px 16px;background:none;border:0;border-top:1px solid var(--line2);font:inherit;color:inherit;text-align:left;cursor:pointer}
@@ -327,6 +328,29 @@ tr.total td{border-top:1px solid var(--text)}
 .rkrow .nm small{display:block;font-size:12.5px;color:var(--sub2)}
 .rkrow .sc{font-size:15px;font-weight:900}
 .rkrow .sc small{font-size:11px;color:var(--sub2);font-weight:500;margin-left:2px}
+.rkrow.on{background:var(--blue-l)}
+#rkTop{margin-top:16px}
+#rkTop[hidden]{display:none}
+.rkmap{position:relative;height:320px;border-radius:20px;overflow:hidden;background:#EEF1EC;margin:0 0 12px;z-index:0}
+.rkmap[hidden]{display:none}
+.rkmapnote{position:absolute;right:12px;top:12px;z-index:500;background:#fff;border-radius:8px;padding:6px 10px;font-size:11px;color:var(--sub);pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.rkmapmiss{position:absolute;left:12px;bottom:26px;z-index:500;background:rgba(255,255,255,.94);border-radius:8px;padding:5px 9px;font-size:11px;color:var(--sub2);pointer-events:none}
+.leaflet-container{font-family:inherit}
+.mpinw{background:none;border:0;width:0!important;height:0!important}
+.mpin{position:absolute;left:0;top:0;transform:translate(-50%,-100%);white-space:nowrap;font:inherit;font-size:12px;font-weight:700;line-height:1;color:#fff;background:var(--sub3);border:2px solid #fff;border-radius:10px;padding:7px 10px;box-shadow:0 4px 12px rgba(0,0,0,.18);cursor:pointer}
+.mpin:before{content:"";position:absolute;inset:-9px -6px}
+.mpin:after{content:"";position:absolute;left:50%;bottom:-6px;margin-left:-5px;border:5px solid transparent;border-top-color:var(--sub3);border-bottom:0}
+.mpin.r1:after{border-top-color:var(--blue)}
+.mpinw.on .mpin:after{border-top-color:var(--brand)}
+.mpin.r1{background:var(--blue)}
+.mpinw.on .mpin{background:var(--brand);font-size:13px;font-weight:900;padding:8px 12px}
+.mpin .mm{display:none}
+.mpinw.mcmp:not(.on) .mpin{padding:0;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11.5px}
+.mpinw.mcmp:not(.on) .mpin .mf{display:none}
+.mpinw.mcmp:not(.on) .mpin .mm{display:inline}
+.mpinw.mcmp:not(.on) .mpin:before{inset:-9px}
+.rkmap .leaflet-touch .leaflet-bar a,.rkmap.leaflet-touch .leaflet-bar a{width:44px;height:44px;line-height:44px}
+.rkmap.leaflet-touch .leaflet-bar,.rkmap .leaflet-bar{border:0;box-shadow:0 2px 8px rgba(0,0,0,.12);border-radius:10px;overflow:hidden}
 /* 단지 카드 */
 .card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:14px;scroll-margin-top:72px}
 .card.flash{box-shadow:0 0 0 3px rgba(47,107,255,.35)}
@@ -389,6 +413,7 @@ tr.total td{border-top:1px solid var(--text)}
 <div class="wrap">
   <div id="hero" class="noprint" aria-live="polite"></div>
   <div class="hzbar noprint" id="hzbar"><b>예상 보유 기간</b><span class="hzv" id="hzv">2년</span><input type="range" id="hzr" min="1" max="10" step="1" value="2" aria-label="예상 보유 기간(년)"><div class="hzticks"><span style="left:0">1년</span><span style="left:22.2%">3년</span><span style="left:44.4%">5년</span><span style="left:66.7%">7년</span><span style="left:100%">10년 이상</span></div><div class="hzrec" id="hzrec"></div><div class="hznote" id="hznote"></div></div>
+  <div id="rkTop" class="noprint"></div>
   <div class="toolbar noprint">
     <button class="btn gold" id="editBtn">조건 수정·지역 선택</button>
     <button class="btn" id="cmpBtn">단지 비교</button>
@@ -539,7 +564,8 @@ function applyHz(units){ const mix=hzMix(HZ); for(const u of units){ const f=u[9
   let s=0; for(const [h,w] of mix){ const v=h===2?f.fv2:(f.fh&&f.fh[h]!=null?f.fh[h]:f.fv2); s+=w*v; } f.fv=Math.round(s); } }
 function setHz(h){ HZ=h; try{ localStorage.setItem('jdj_hz',String(h)); }catch(e){} const u=new URL(location.href); u.searchParams.set('hz',h); history.replaceState(null,'',u); Object.values(SIDO_CACHE).forEach(applyHz); hzUi(); render(); }
 const hzLbl=y=>y>=10?'10년 이상':y+'년';
-function hzUi(){ const r=$('hzr'); if(r) r.value=HZ; const v=$('hzv'); if(v) v.textContent=hzLbl(HZ);
+const rangeP=r=>r&&r.style.setProperty('--p', ((r.value-r.min)/((r.max-r.min)||1)*100)+'%');
+function hzUi(){ const r=$('hzr'); if(r){ r.value=HZ; rangeP(r); } const v=$('hzv'); if(v) v.textContent=hzLbl(HZ);
   const n=$('hznote'), rc=$('hzrec'); if(!n) return;
   const mix=hzMix(HZ), main=mix.slice().sort((a,b)=>b[1]-a[1])[0][0], m=MOD(main);
   /* 성적표 한 줄: 쓰는 모델의 검증 시기 수와 상위 20% 추천 단지의 연평균 초과 상승 */
@@ -647,7 +673,7 @@ function pickCandidates(units, maxBy, ctxBy, dsrBy){
     // 미래가치 점수(백테스트 검증)가 있으면 그게 중심, 없으면 기존 기준
     const score = fvS!==null ? 0.42*fvS + 0.25*sBudget + 0.20*sLiq + 0.13*sNote
                              : 0.28*sBudget + 0.30*sLiq + 0.16*sMom + 0.14*sVal + 0.12*sNote;
-    out.push({code,dong,apt,band,area,n,series,P,g,c,nd,fit,ch,rel,score,large,fx,mon:monthly(nd.loan.L,c.rate,c.term)});
+    out.push({code,dong,apt,band,area,n,series,P,g,c,nd,fit,ch,rel,score,large,fx,jb:u[8],mon:monthly(nd.loan.L,c.rate,c.term)});
   }
   out.sort((a,b)=>b.score-a.score);
   const picked=[], perSgg={}, seenApt=new Set();
@@ -1043,7 +1069,7 @@ async function renderCompare(){
 
 /* ---------- 렌더 ---------- */
 async function render(){
-  { const hz=$('hero'); if(hz) hz.hidden = MODE==='cmp'; }
+  { const hz=$('hero'); if(hz) hz.hidden = MODE==='cmp'; const t=$('rkTop'); if(t && MODE==='cmp'){ t.hidden=true; } }
   if (MODE==='cmp') return renderCompare();
   const units = await loadSido(S.sido.id);
   const groups = [...new Set([...S.sggs].map(groupOf))];
@@ -1146,7 +1172,7 @@ async function render(){
   h += `<div class="sec pb">
     <h2><span class="no">04</span> 예산 맞춤 추천 단지</h2>
     <p class="sub">국토교통부 실거래가로 최근 3개월 중앙값 시세를 추정해, 지금 조건으로 실제 살 수 있는 단지만 골랐습니다. 예산 적합도·거래량·시세 흐름·지역 내 가격 위치·교통 호재를 함께 점수화했습니다.</p>`;
-  let near = [];
+  let near = [], rkTop = '';
   if (!picked.length){
     near = nearMisses(units, ctxBy, dsrBy);
     h += `<div class="empty">지금 조건으로 바로 살 수 있는 단지를 선택한 지역·평형에서 찾지 못했습니다.<br>위의 <b>조건 수정·지역 선택</b>에서 지역을 넓히거나 평형을 추가해 보세요.</div>` + (S.sggs.size < sggsOfSido(S.sido).length ? `<div class="widen"><span>다른 구까지 함께 찾아볼까요?</span><button type="button" id="widenBtn">${esc(S.sido.name)} 전체로 넓히기</button></div>` : '');
@@ -1184,8 +1210,9 @@ async function render(){
       <p class="src">자료: 국토교통부 실거래가·정비사업·공공택지 발표, 서울시·부산시 정비사업 현황, 교육부 학교알리미, 통계청 KOSIS, 공동주택관리정보시스템(K-apt) — 자동 갱신</p>
     </details>`;
     const ringOf = x => (x.fx && x.fx.fv!=null) ? {v:x.fx.fv, k:'미래가치'} : {v:Math.round(x.score*100), k:'추천 점수'};
-    h += `<div class="rkbox noprint"><h3>추천 순위 한눈에</h3><p>예산 안의 단지만 보여 드려요. 누르면 단지 카드로 이동해요.</p>` + picked.map((x,i)=>{ const rg=ringOf(x);
-      return `<button type="button" class="rkrow ${i===0?'r1':''}" data-go="pk${i}"><span class="rkp">${i+1}위</span><span class="nm"><b>${esc(x.apt)}</b><small>${esc(sggName(x.code))} ${esc(x.dong)} · ${x.band} · ${fmtS(x.P)}</small></span><span class="sc">${rg.v}<small>${rg.k}</small></span></button>`; }).join('') + `</div>`;
+    rkTop = `<div class="rkmap" id="rkMap" hidden><div class="rkmapnote">예산 안의 단지만 표시</div></div>
+    <div class="rkbox"><h3>추천 순위 한눈에</h3><p>예산 안의 단지만 보여 드려요. 누르면 단지 카드로 이동해요.</p>` + picked.map((x,i)=>{ const rg=ringOf(x);
+      return `<button type="button" class="rkrow ${i===0?'r1':''}" data-go="pk${i}" data-i="${i}"><span class="rkp">${i+1}위</span><span class="nm"><b>${esc(x.apt)}</b><small>${esc(sggName(x.code))} ${esc(x.dong)} · ${x.band} · ${fmtS(x.P)}</small></span><span class="sc">${rg.v}<small>${rg.k}</small></span></button>`; }).join('') + `</div>`;
     h += `<div class="cards">` + picked.map((x,i)=>{
       const rs = reasons(x), rg = ringOf(x), hasFv = !!(x.fx && x.fx.fv!=null);
       const k = cmpKey({sd:S.sido.id,code:x.code,dong:x.dong,apt:x.apt,band:x.band});
@@ -1274,9 +1301,11 @@ async function render(){
   </div>`;
 
   $('report').innerHTML = h;
+  { const t=$('rkTop'); if(t){ t.innerHTML = rkTop; t.hidden = !rkTop; } }
+  if (picked.length) drawMap(picked).catch(e=>console.warn('map',e));
   document.querySelectorAll('[data-cp]').forEach(b=>b.onclick=()=>{ const p=cmpParse(b.dataset.cp); if(!p || !cmpToggle(p)) return; const on=cmpHas(b.dataset.cp); b.classList.toggle('on',on); b.textContent=on?'비교함에 담김':'비교에 담기'; });
   document.querySelectorAll('[data-more]').forEach(b=>b.onclick=()=>{ const m=$(b.dataset.more); if(!m) return; m.hidden=!m.hidden; b.setAttribute('aria-expanded', String(!m.hidden)); b.textContent=m.hidden?'자세한 리포트':'간단히 보기'; if(!m.hidden) JDJ.track('report_card_more'); });
-  document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ const c=$(b.dataset.go); if(!c) return; c.scrollIntoView({behavior:'smooth',block:'start'}); c.classList.add('flash'); setTimeout(()=>c.classList.remove('flash'),1600); });
+  document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>goCard(+b.dataset.i||0, b.dataset.go));
   const wb=document.getElementById('widenBtn'); if(wb) wb.onclick=()=>{ S.sggs=new Set(sggsOfSido(S.sido)); renderSggChips(); render(); JDJ.track('report_widen',{region:S.sido.short}); };
   fillAgents(picked.length ? picked : near).catch(e=>console.warn('agents',e));
   JDJ.track('report_render', {region:S.sido.short, sgg_count:S.sggs.size, max_band:JDJ.band(M), picks:picked.length});
@@ -1287,6 +1316,52 @@ function statReport(M){ if(!window.jdjStat) return;
   jdjStat('feature_use',{feature:'report'});
   const base={from:'report', sido:jdjStat.sido(S.sido.short), budget_band:jdjStat.band(M), hold_band:jdjStat.hold(HZ), home_own:jdjStat.own(S.own)};
   const gs=[...S.sggs]; if (gs.length && gs.length<=5) gs.forEach(g=>jdjStat('interest_profile', Object.assign({sgg:sggName(g)}, base))); else jdjStat('interest_profile', base); }
+
+/* ---------- 추천 단지 지도 (Leaflet + OpenStreetMap, 키 없음) ---------- */
+const XY_CACHE = {}; let MAP = null, PINS = [];
+function goCard(i, id){ const c=$(id||('pk'+i)); if(!c) return; markPin(i); c.scrollIntoView({behavior:'smooth',block:'start'}); c.classList.add('flash'); setTimeout(()=>c.classList.remove('flash'),1600); }
+function markPin(i){ PINS.forEach((m,j)=>{ const e=m.getElement&&m.getElement(); if(e) e.classList.toggle('on', j===i); m.setZIndexOffset(j===i?2000:(PINS.length-j)*10); });
+  document.querySelectorAll('.rkrow').forEach(r=>r.classList.toggle('on', +r.dataset.i===i)); }
+async function loadXY(id){ if(XY_CACHE[id]!==undefined) return XY_CACHE[id];
+  try{ const r=await fetch(DATA+id+'_xy.json',{cache:'no-cache'}); XY_CACHE[id] = r.ok ? ((await r.json()).xy||{}) : {}; }catch(e){ XY_CACHE[id]={}; } return XY_CACHE[id]; }
+let LF_P = null;
+function loadLeaflet(){ if(window.L) return Promise.resolve(); if(LF_P) return LF_P;
+  LF_P = new Promise((ok,no)=>{ const base='/jangdaejang-calc/assets/leaflet/';
+    if(!document.querySelector('link[data-lf]')){ const l=document.createElement('link'); l.rel='stylesheet'; l.href=base+'leaflet.css'; l.dataset.lf='1'; document.head.appendChild(l); }
+    const s=document.createElement('script'); s.src=base+'leaflet.js'; s.onload=()=>ok(); s.onerror=()=>{ LF_P=null; no(new Error('leaflet')); }; document.head.appendChild(s); });
+  return LF_P; }
+/* 핀이 겹치면 순위가 낮은 쪽을 숫자만 있는 작은 핀으로 (확대하면 다시 펼쳐짐) */
+function declutter(){ if(!MAP) return; const placed=[];
+  PINS.forEach(m=>{ const e=m.getElement&&m.getElement(); if(!e||!m.getLatLng) return;
+    const pt=MAP.latLngToContainerPoint(m.getLatLng()), w=74, h=34, r={l:pt.x-w/2,r:pt.x+w/2,t:pt.y-h-6,b:pt.y};
+    const hit=placed.some(q=>r.l<q.r&&r.r>q.l&&r.t<q.b&&r.b>q.t);
+    e.classList.toggle('mcmp', hit); if(!hit) placed.push(r); }); }
+async function drawMap(picked){
+  const box=$('rkMap'); if(!box) return;
+  if (MAP){ MAP.remove(); MAP=null; } PINS=[];
+  const xy = await loadXY(S.sido.id);
+  const pts = picked.map((x,i)=>({x,i,p:xy[`${x.code}|${x.dong}|${x.jb}`]})).filter(o=>o.p);
+  if (!pts.length || $('rkMap')!==box) return;          /* 좌표 없는 단지는 목록에만 */
+  await loadLeaflet(); if (!box.isConnected) return;
+  box.hidden = false;
+  MAP = L.map(box, {scrollWheelZoom:false, zoomControl:true, attributionControl:true, tap:false});
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19,
+    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> 기여자'}).addTo(MAP);
+  MAP.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>');
+  const ringOf = x => (x.fx && x.fx.fv!=null) ? x.fx.fv : Math.round(x.score*100);
+  for (const {x,i,p} of pts){
+    const ic = L.divIcon({className:'mpinw', iconSize:null, html:`<button type="button" class="mpin ${i===0?'r1':''}" aria-label="추천 ${i+1}위 ${esc(x.apt)}, 점수 ${ringOf(x)}점 — 단지 카드로 이동"><span class="mf">${i+1}위 · ${ringOf(x)}</span><span class="mm">${i+1}</span></button>`});
+    const m = L.marker([p[1],p[0]], {icon:ic, keyboard:false, title:x.apt, zIndexOffset:(picked.length-i)*10}).addTo(MAP);
+    m.on('click', ()=>{ goCard(i); JDJ.track('report_map_pin',{rank:i+1}); });
+    PINS[i] = m;
+  }
+  PINS = PINS.map(m=>m||{getElement:()=>null,setZIndexOffset:()=>{}});
+  const b = L.latLngBounds(pts.map(o=>[o.p[1],o.p[0]]));
+  MAP.on('zoomend', declutter);
+  if (pts.length===1) MAP.setView(b.getCenter(), 15); else MAP.fitBounds(b, {padding:[46,46], maxZoom:16});
+  declutter();
+  if (pts.length < picked.length) box.insertAdjacentHTML('beforeend', `<div class="rkmapmiss">위치 정보가 없는 ${picked.length-pts.length}곳은 아래 목록에만 있어요</div>`);
+}
 
 /* ---------- 제휴 공인중개사 ---------- */
 let AG = {};
@@ -1428,7 +1503,7 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ const bg=$('agm'
     S.sido = IX.sido.find(s=>s.name===Q.get('sd')) || defaultSido();
     S.sggs = (Q.get('g') && IX.sgg[Q.get('g')] && IX.sgg[Q.get('g')].sido===S.sido.name) ? new Set([Q.get('g')]) : new Set(defaultSggs(S.sido));
     cmpLoad(); buildSettings(); wireSettings();
-    { const r=$('hzr'); if(r){ r.oninput=()=>{ const v=$('hzv'); if(v) v.textContent=hzLbl(+r.value); }; r.onchange=()=>{ setHz(+r.value); JDJ.track('hz',{hz:r.value}); }; } } hzUi();
+    { const r=$('hzr'); if(r){ r.oninput=()=>{ rangeP(r); const v=$('hzv'); if(v) v.textContent=hzLbl(+r.value); }; r.onchange=()=>{ setHz(+r.value); JDJ.track('hz',{hz:r.value}); }; } } hzUi();
     $('cmpBtn').onclick=()=>{ MODE==='cmp' ? goRec() : goCompare(); JDJ.track('cmp_toggle',{mode:MODE}); };
     setModeUi();
     $('backBtn').href = '../' + (location.search||'');

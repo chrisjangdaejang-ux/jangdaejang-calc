@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
-<meta name="theme-color" content="#3B3F22">
+<meta name="theme-color" content="#FFFFFF">
 <link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
 <link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -122,12 +122,74 @@ td{padding:7px 4px;border-bottom:1px solid var(--line);font-variant-numeric:tabu
 .foot a{color:inherit}
 [hidden]{display:none!important}
 </style>
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css">
+<style>
+.wrap{max-width:760px;padding:28px 20px 60px}
+h1{font-size:clamp(27px,7vw,36px);margin:8px 0 10px}
+h2.sec{font-size:20px;letter-spacing:-.4px;margin:36px 0 12px}
+h2.sec small{color:var(--sub2);font-size:13px}
+.lead{color:var(--sub);font-size:15px}
+.box{background:#fff;border:1px solid var(--line);border-radius:20px;padding:20px}
+#wiz{background:var(--gray);border:0}
+.prog{height:4px;background:var(--line);border-radius:2px}
+.prog i{background:var(--blue)}
+.qn{color:var(--sub2);letter-spacing:0;font-size:13px;font-weight:500}
+.q{font-size:22px;letter-spacing:-.4px;font-weight:700}
+.hint{color:var(--sub2)}
+.opt{border:1px solid var(--line);border-radius:14px;min-height:56px;color:var(--text)}
+.opt small{color:var(--sub2)}
+.opt:hover{border-color:var(--blue);background:#fff}
+.opt.on{border-color:var(--blue);background:var(--blue-l);color:var(--blue)}
+input[type=date],input[type=number],select{border:1px solid var(--line);border-radius:12px;min-height:48px;color:var(--text)}
+input[type=date]:focus,input[type=number]:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,107,255,.15)}
+.btn{background:var(--blue);color:#fff;min-height:48px;border-radius:14px;font-weight:700;display:inline-flex}
+.btn.olive{background:var(--blue);color:#fff}
+.btn.ghost{background:var(--gray);color:var(--text);border:0}
+#wiz .btn.ghost{background:#fff}
+.nav .btn{min-height:56px;border-radius:16px;font-size:17px}
+#redo{min-height:44px}
+.err{color:var(--neg)}
+.step{border-bottom:1px solid var(--line2)}
+.step small{color:var(--sub2)}
+.stp button{width:44px;height:44px;border:1px solid var(--line);color:var(--blue);background:#fff}
+.total .big{color:var(--blue)}
+.total .big small{color:var(--sub2)}
+.bar .t{background:var(--gray)}
+.bar .t i{background:var(--blue)}
+.bar .why{color:var(--sub2)}
+.grid2 label{color:var(--sub);font-size:13px}
+.chk{border-top:1px solid var(--line2)}
+.chk .law{color:var(--sub3)}
+.pill.ok{background:var(--pos-l);color:var(--pos);border-color:transparent}
+.pill.chk2{background:var(--creamc);color:var(--amber);border-color:var(--creamb)}
+.pill.no{background:var(--neg-l);color:var(--neg);border-color:transparent}
+.mine .sc{background:var(--blue);color:#fff;border-radius:10px}
+.seg button{min-height:40px;border-radius:999px;font-size:13px;padding:0 14px}
+.card{border:1px solid var(--line);border-radius:16px}
+.card .loc{color:var(--sub2)}
+.card .fl span{background:var(--gray);color:var(--sub)}
+.st.on{background:var(--blue);color:#fff}
+.st.pre{background:var(--creamc);color:var(--brand)}
+.st.wait{background:var(--gray);color:var(--sub2)}
+th{color:var(--sub2);border-bottom:1px solid var(--line)}
+td{border-bottom:1px solid var(--line2)}
+.up{color:var(--pos)}.dn{color:var(--neg)}
+.empty,.loading{border:1px solid var(--line);border-radius:16px;background:var(--gray2);color:var(--sub2)}
+.morebtn{border:1px solid var(--line);border-radius:14px;min-height:48px;color:var(--blue);font-weight:700}
+.caution{color:var(--text);background:var(--neg-l);border-left:4px solid var(--neg);border-radius:0 12px 12px 0;padding:10px 12px}
+.how{border:1px solid var(--line);border-radius:16px;padding:4px 16px}
+.how summary{color:var(--text);font-weight:700;min-height:44px;display:flex;align-items:center}
+.src{color:var(--sub3)}
+.cta{background:var(--gray);border-radius:20px;padding:20px}
+.cta p small{color:var(--sub)}
+.cta .btn{background:var(--blue);color:#fff}
+</style>
 </head>
 <body>
-<div class="top">
-  <a class="brand" href="../">★ 장대장 <span>청약</span></a>
-  <div class="badge">BETA · 참고용</div>
-</div>
+<header class="top">
+  <a class="brand" href="/jangdaejang-calc/"><span class="star" aria-hidden="true">★</span> 장대장 <span class="acc">계산기</span></a>
+  <div class="badge plain">청약 가점 · 참고용</div>
+</header>
 
 <div class="wrap">
   <span class="tag">청약 가점 · 자격 체크</span>
@@ -501,9 +563,9 @@ async function renderHist() {
   const bins = Array(17).fill(0); mins.forEach(v => bins[Math.min(16, Math.floor(v / 5))]++);
   const mx = Math.max(...bins), W = 340, H = 120, bw = W / 17;
   const svg = `<svg class="hist" viewBox="0 0 ${W} ${H + 18}" role="img" aria-label="최저 당첨 가점 분포">${bins.map((c, i) => { const h = c ? Math.max(2, c / mx * H) : 0; const on = i * 5 + 4 < my || (my >= i * 5 && my < i * 5 + 5);
-      return `<rect x="${i * bw + 1}" y="${H - h}" width="${bw - 2}" height="${h}" rx="2" fill="${on ? '#B8942A' : '#DCCFA8'}"><title>${i * 5}~${i * 5 + 4}점: ${c}개</title></rect>`; }).join('')}
-    <line x1="${my / 85 * W}" x2="${my / 85 * W}" y1="0" y2="${H}" stroke="#A23B2A" stroke-width="2"/><text x="${Math.min(W - 30, Math.max(2, my / 85 * W + 3))}" y="12" font-size="11" font-weight="700" fill="#A23B2A">내 ${my}점</text>
-    ${[0, 20, 40, 60, 80].map(v => `<text x="${v / 85 * W}" y="${H + 14}" font-size="10" fill="#6B6A58">${v}</text>`).join('')}</svg>`;
+      return `<rect x="${i * bw + 1}" y="${H - h}" width="${bw - 2}" height="${h}" rx="2" fill="${on ? '#2F6BFF' : '#D1D6DB'}"><title>${i * 5}~${i * 5 + 4}점: ${c}개</title></rect>`; }).join('')}
+    <line x1="${my / 85 * W}" x2="${my / 85 * W}" y1="0" y2="${H}" stroke="#C2410C" stroke-width="2"/><text x="${Math.min(W - 30, Math.max(2, my / 85 * W + 3))}" y="12" font-size="11" font-weight="700" fill="#C2410C">내 ${my}점</text>
+    ${[0, 20, 40, 60, 80].map(v => `<text x="${v / 85 * W}" y="${H + 14}" font-size="10" fill="#6B7684">${v}</text>`).join('')}</svg>`;
   const sorted = rows.slice().sort((a, b) => b[2].localeCompare(a[2]) || a[6] - b[6]);
   const show = sorted.slice(0, 40);
   $('hOut').innerHTML = `<div class="sum">${esc(sd.n)} ${HP === 12 ? '최근 1년' : '최근 3년'} 주택형 <b>${fmt(rows.length)}</b>개 중 최저 당첨 가점이 내 점수(${my}점) 이하였던 곳은 <b>${fmt(hit.length)}</b>개(${pct}%)입니다.<br><span style="font-size:13px;color:var(--muted)">최저 당첨 가점 중앙값 ${med}점 · 과거 결과일 뿐 앞으로의 당첨을 보장하지 않습니다.</span></div>
