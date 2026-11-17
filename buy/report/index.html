@@ -410,7 +410,9 @@ let HZ=2;
 try{ HZ = parseInt(new URLSearchParams(location.search).get('hz') || localStorage.getItem('jdj_hz') || '2',10); }catch(e){}
 if(!(HZ>=1&&HZ<=10)) HZ=2;
 /* 보유 기간별 모델: 2년은 기본 모델(항상 사용), 1·3·5·7년은 여러 시기 검증(3개 시기 이상 + 표본 외 상위20% 플러스)을 통과했을 때만 사용 */
-const HOK=h=>{ if(h===2) return !!MODEL; const m=MH&&MH[h]; return !!(m&&(m.periods||[]).length>=3&&m.oos&&m.oos.top20>0); };
+/* 표본 외 검증(그 시기보다 과거만으로 학습 → 이후를 맞힘)을 2회 이상 했고 평균이 플러스인 기간만 사용 */
+const VOK=m=>!!(m&&(m.oos_all||[]).length>=2&&m.oos_avg>0);
+const HOK=h=>{ if(h===2) return !!MODEL; return VOK(MH&&MH[h]); };
 const HLIST=()=>[1,2,3,5,7].filter(HOK);
 /* 선택한 연수 → 쓸 모델과 섞는 비율. 사이 기간은 양옆 검증 모델을 거리 비율로 섞고, 범위 밖은 가장 가까운 모델 */
 function hzMix(y){ const L=HLIST(); if(!L.length) return [[2,1]]; const yy=Math.min(y,9);
@@ -434,8 +436,10 @@ function hzUi(){ const r=$('hzr'); if(r) r.value=HZ; const v=$('hzv'); if(v) v.t
   const n=$('hznote'), rc=$('hzrec'); if(!n) return;
   const mix=hzMix(HZ), main=mix.slice().sort((a,b)=>b[1]-a[1])[0][0], m=MOD(main);
   /* 성적표 한 줄: 쓰는 모델의 검증 시기 수와 상위 20% 추천 단지의 연평균 초과 상승 */
-  if(rc){ const P=(m&&m.periods||[]).length, ex=m&&m.top20_excess;
-    rc.innerHTML = (m&&ex!=null) ? `📊 ${main}년 예측 성적 · 과거 ${P}개 시기 검증 · 점수 상위 20% 단지가 같은 구 평균보다 <b>연 ${(((Math.pow(1+ex/100,1/main))-1)*100).toFixed(1)}%p</b> 더 올랐어요` : ''; }
+  if(rc){ const mm=main===2?((MH&&MH['2'])||MODEL):m, O=(mm&&mm.oos_all)||[];
+    const yr=v=>(((Math.pow(1+v/100,1/main))-1)*100).toFixed(1);
+    rc.innerHTML = VOK(mm) ? `📊 ${main}년 예측 성적 · 과거만으로 학습해 이후를 맞힌 <b>표본 외 검증 ${O.length}회 중 ${mm.oos_hit}회 적중</b> · 점수 상위 20% 단지가 같은 구 평균보다 평균 <b>연 ${yr(mm.oos_avg)}%p</b> 더 올랐어요`
+      : `📊 ${main}년 예측은 지금 <b>검증을 강화하는 중</b>이에요. 2010년부터의 거래 자료로 여러 시장 국면(상승·하락)에서 표본 외 검증을 통과하면 성적을 공개해요.`; }
   const used=mix.map(x=>x[0]+'년'), sel=hzLbl(HZ);
   let t;
   if (HZ>=10) t=`10년 이상은 과거 데이터로 검증할 수 있는 범위를 넘어 <b>장기 전망</b>으로 봐 주세요. 검증된 가장 긴 ${used.join('·')} 예측에 재건축 완료 시 기대 차익·예상 준공, 신설역 개통 계획을 함께 보여 드려요.`;
@@ -1037,14 +1041,14 @@ async function render(){
       `</tbody></table><div id="agentSec" class="agsec"></div>`;
     }
   } else {
-    if (MODEL && MODEL.top20_excess!=null && picked.some(x=>x.fx&&x.fx.fv!=null)){
-      const sg=v=>(v>0?'+':'')+v+'%', P=MODEL.periods||[], O=MODEL.oos;
-      h += `<div class="fvbox">★ <b>미래가치 점수는 이렇게 검증했습니다</b><br>
-      과거 여러 시점에서 <b>그때까지의 국토부 실거래 자료만으로</b> 점수를 매기고, 이후 2년 실제 시세와 비교했습니다. 각 구에서 점수 상위 20% 단지는 같은 구 평균보다 다음만큼 더 올랐습니다.
-      ${P.length?`<div class="fvper">${P.slice().reverse().map(p=>`<span><small>${p.t0.slice(0,4)}.${p.t0.slice(4)} → 2년</small><b>${sg(p.top20)}</b></span>`).join('')}</div>`:''}
-      ${O&&O.top20!=null?`<div>가장 엄격한 검증 — 과거 시점으로만 학습한 점수로 ${O.t0.slice(0,4)}년 ${+O.t0.slice(4)}월 이후를 맞혔을 때: 상위 20% <b class="big">${sg(O.top20)}</b> · 하위 20% ${sg(O.bottom20)}</div>`:''}
-      ${P.length>1?`<div>${P.length}번의 시기 중 <b>${MODEL.hit_periods}번</b> 구 평균보다 높았습니다.</div>`:''}
-      ${MODEL.region&&MODEL.region.oos&&MODEL.region.oos.top20!=null?`<div>지역 전망(입주 물량·인구·시세 흐름)으로 고른 상위 20% 구·시는 같은 시·도 평균보다 <b>${sg(MODEL.region.oos.top20)}</b> (표본 외 검증)</div>`:''}
+    if (MODEL && picked.some(x=>x.fx&&x.fx.fv!=null)){
+      const sg=v=>(v>0?'+':'')+v+'%', O=MODEL.oos_all||[], ym=t=>`${t.slice(0,4)}.${t.slice(4)}`;
+      h += `<div class="fvbox">★ <b>미래가치 점수는 이렇게 검증합니다</b><br>
+      각 시점마다 <b>그보다 과거의 자료만으로</b> 점수를 다시 만들고, 이후 2년 실제 시세와 비교합니다(표본 외 검증). 미래 정보가 섞이지 않는 가장 엄격한 방식입니다.
+      ${O.length?`<div class="fvper">${O.map(o=>`<span><small>${ym(o.t0)} → 2년 · 상위 20%</small><b>${sg(o.top20)}</b></span>`).join('')}</div>`:''}
+      ${VOK(MODEL)?`<div>표본 외 검증 ${O.length}회 중 <b>${MODEL.oos_hit}회</b> 상위 20% 단지가 같은 구 평균보다 더 올랐습니다.</div>`
+        :`<div>지금은 과거 자료를 2010년까지 채우며 <b>검증을 강화하는 중</b>입니다. 상승장과 하락장 모두에서 검증을 통과해야 성적을 공개하며, 그 전까지 점수는 참고용으로 봐 주세요.</div>`}
+      ${MODEL.region&&MODEL.region.oos&&MODEL.region.oos.top20!=null&&MODEL.region.used?`<div>지역 전망으로 고른 상위 20% 구·시는 같은 시·도 평균보다 <b>${sg(MODEL.region.oos.top20)}</b> (표본 외 검증)</div>`:''}
       <small style="color:var(--muted)">과거 결과가 미래 수익을 보장하지는 않습니다.</small></div>`;
     }
     if (picked.some(x=>x.fx)) h += `<details class="fvhow"><summary>📊 추천 단지는 어떤 기준으로 골랐나요? <span>(평가 원칙 보기)</span></summary>
