@@ -1,5 +1,5 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v9: 소속공인중개사 가입)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v10: 소속공인중개사 가입 · 상담 리뷰)
  *
  * 설치: 구글 시트 새로 만들기 → 확장 프로그램 → Apps Script → 이 코드 전체 붙여넣기 → 저장
  *       → 위쪽 함수 선택에서 setup 실행(권한 허용) → 배포 → 새 배포 → 유형: 웹 앱
@@ -93,6 +93,7 @@ function statusOf(a) {
 function doGet(e) {
   const act = (e.parameter || {}).action;
   if (act === 'list') return out(listPublic());
+  if (act === 'reviews') return out(reviewsPublic(e.parameter.a));
   if (act === 'unsub') return unsubscribe(e.parameter);
   return out({ ok: false, err: 'unknown' });
 }
@@ -114,6 +115,9 @@ function doPost(e) {
     ensureHeader();
     if (b.action === 'alert_sub') return out(alertSub(b));
     if (b.action === 'apply') return out(apply(b));
+    if (b.action === 'review') return out(addReview(b));
+    if (b.action === 'flag') return out(flagReview(b));
+    if (b.action === 'reply') return out(replyReview(b));
     if (b.action === 'login') return out(login(b));
     if (b.action === 'update') return out(update(b));
     return out({ ok: false, err: 'unknown' });
@@ -129,12 +133,14 @@ function listPublic() {
   const cache = CacheService.getScriptCache();
   const hit = cache.get('list');
   if (hit) return JSON.parse(hit);
+  const RS = reviewStats();
   const res = {
     ok: true, slot: SLOT, at: ymd(new Date()),
     agents: agents().filter(isActive).map(a => ({
       id: a.id, n: a.office, ceo: a.ceo, ph: a.phone, kk: a.kakao, intro: a.intro, reg: a.reg,
       og: a.og, ogn: a.ogName, dong: a.dong, r: regionsOf(a), dj: a.plan === PLAN.premium ? freshDanji(a).map(d => d.k) : [], pl: a.plan === PLAN.premium ? 'p' : 'b',
-      t: a.type === TYPE.member ? 'm' : 'o', nm: a.type === TYPE.member ? a.name : a.ceo
+      t: a.type === TYPE.member ? 'm' : 'o', nm: a.type === TYPE.member ? a.name : a.ceo,
+      rv: RS[a.id] || null
     }))
   };
   cache.put('list', JSON.stringify(res), 300);
@@ -230,6 +236,8 @@ function meOut(me, list) {
       id: me.id, reg: me.reg, office: me.office, ceo: me.ceo, type: me.type, name: me.name, phone: me.phone, kakao: me.kakao, intro: me.intro,
       sido: me.sido, og: me.og, ogName: me.ogName, dong: me.dong, extras: me.extras,
       danji: (me.danji || []).map(d => ({ k: d.k, n: d.n, at: d.at, fresh: fresh.indexOf(d.k) >= 0 })),
+      reviews: reviews().filter(r => r.a === me.id).reverse().slice(0, 50).map(r => ({ id: r.id, at: ymd(r.at), s: r.s, tags: r.tags, text: r.text, show: r.show, reply: r.reply })),
+      rv: reviewStats()[me.id] || null,
       status: statusOf(me), expires: me.expires instanceof Date ? ymd(me.expires) : '', waitMemo: me.memo,
       plan: me.plan, biz: me.biz, mail: me.mail
     },
@@ -487,4 +495,94 @@ function checkAlerts() {
       if (r[AC['조건']] === 'change') sh.getRange(i + 1, AC['기준갭'] + 1).setValue(gap);   // 다음 알림은 지금 갭 기준
     } catch (x) {}
   }
+}
+
+
+/* ================= 상담 리뷰 =================
+   · 우리 사이트에서 그 중개사에게 [전화하기]·[카카오톡 문의]를 누른 기록(로그 시트, 같은 방문자 id)이 있고
+     12시간이 지난 방문자만 리뷰를 남길 수 있다 — 상담하지 않은 사람의 리뷰·자작 리뷰를 막는 장치
+   · 중개사 1명당 방문자 1명은 리뷰 1개(수정은 새로 쓰면 덮어씀)
+   · 별점과 상관없이 모든 리뷰를 공개. 욕설·개인정보·허위 비방은 신고를 받아 시트 '공개' 칸을 FALSE로 바꿔 숨김
+   · 순서 점수: 리뷰 수를 반영한 보정 별점(리뷰가 적으면 전체 평균 쪽으로 당김) + 답글 응답률 가산 */
+const SH_R = '리뷰';
+const RH = ['시각', 'id', '중개사id', '방문자', '별점', '태그', '내용', '공개', '신고', '답글', '답글시각'];
+const RTAGS = ['친절해요', '설명이 자세해요', '연락이 빨라요', '전문적이에요', '부담 없이 상담해요'];
+const RC = Object.fromEntries(RH.map((h, i) => [h, i]));
+function reviewSheet() {
+  const ss = book();
+  let sh = ss.getSheetByName(SH_R);
+  if (!sh) {
+    sh = ss.insertSheet(SH_R);
+    sh.getRange(1, 1, 1, RH.length).setValues([RH]).setFontWeight('bold').setBackground('#3B3F22').setFontColor('#F5EFDC');
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+function reviews() {
+  const v = reviewSheet().getDataRange().getValues(), out = [];
+  for (let i = 1; i < v.length; i++) {
+    const r = v[i]; if (!r[RC['id']]) continue;
+    out.push({ row: i + 1, at: r[RC['시각']], id: String(r[RC['id']]), a: String(r[RC['중개사id']]), vid: String(r[RC['방문자']]),
+      s: Number(r[RC['별점']]) || 0, tags: parseJ(r[RC['태그']], []), text: String(r[RC['내용']] || ''),
+      show: r[RC['공개']] !== false, flags: Number(r[RC['신고']]) || 0, reply: String(r[RC['답글']] || '') });
+  }
+  return out;
+}
+function reviewStats() {
+  const cache = CacheService.getScriptCache(), hit = cache.get('rstats');
+  if (hit) return JSON.parse(hit);
+  const all = reviews().filter(r => r.show), by = {};
+  const M = all.length ? all.reduce((t, r) => t + r.s, 0) / all.length : 4.3, C = 5;   // 전체 평균, 보정 강도
+  all.forEach(r => { (by[r.a] = by[r.a] || []).push(r); });
+  const res = {};
+  Object.keys(by).forEach(a => {
+    const L = by[a], n = L.length, sum = L.reduce((t, r) => t + r.s, 0), rep = L.filter(r => r.reply).length;
+    const rr = n ? rep / n : 0;
+    res[a] = { n: n, avg: Math.round(sum / n * 10) / 10, sc: Math.round(((C * M + sum) / (C + n) + (n >= 3 && rr >= .8 ? .1 : 0)) * 100) / 100,
+      rr: Math.round(rr * 100), good: n >= 3 && rr >= .8 };
+  });
+  cache.put('rstats', JSON.stringify(res), 300);
+  return res;
+}
+function reviewsPublic(a) {
+  a = str(a, 10); if (!ID_RE.test(a)) return { ok: false, err: 'bad id' };
+  const L = reviews().filter(r => r.a === a && r.show).reverse().slice(0, 20)
+    .map(r => ({ id: r.id, at: ymd(r.at), s: r.s, tags: r.tags, text: r.text, reply: r.reply }));
+  return { ok: true, reviews: L, rv: reviewStats()[a] || null, tags: RTAGS };
+}
+function contacted(a, vid) {
+  const sh = book().getSheetByName(SH_L), last = sh.getLastRow();
+  if (last < 2) return false;
+  const from = Math.max(2, last - 30000), v = sh.getRange(from, 1, last - from + 1, 6).getValues();
+  const limit = new Date(Date.now() - 12 * 3600 * 1000);
+  return v.some(r => (r[1] === 'call' || r[1] === 'kakao') && String(r[2]) === a && String(r[5]) === vid && r[0] instanceof Date && r[0] <= limit);
+}
+function addReview(b) {
+  const a = str(b.a, 10), vid = str(b.vid, 40), s = Math.round(Number(b.s));
+  if (!ID_RE.test(a) || vid.length < 8) throw new Error('잘못된 요청입니다.');
+  if (!(s >= 1 && s <= 5)) throw new Error('별점을 골라 주세요.');
+  const tags = (b.tags || []).filter(t => RTAGS.indexOf(t) >= 0).slice(0, 5);
+  const text = str(b.text, 300).replace(/\d{2,3}-?\d{3,4}-?\d{4}/g, '***');   // 전화번호 같은 개인정보는 가림
+  if (!contacted(a, vid)) throw new Error('이 공인중개사에게 장대장 리포트에서 전화·카카오톡으로 문의한 뒤 12시간이 지나야 리뷰를 남길 수 있어요.');
+  const sh = reviewSheet(), prev = reviews().find(r => r.a === a && r.vid === vid);
+  const row = [new Date(), prev ? prev.id : 'R' + Utilities.getUuid().replace(/-/g, '').slice(0, 7).toUpperCase(), a, vid, s, JSON.stringify(tags), text, true, prev ? prev.flags : 0, prev ? prev.reply : '', ''];
+  if (prev) sh.getRange(prev.row, 1, 1, RH.length).setValues([row]); else sh.appendRow(row);
+  CacheService.getScriptCache().removeAll(['rstats', 'list']);
+  if (NOTIFY && s <= 2) { try { MailApp.sendEmail(Session.getEffectiveUser().getEmail(), '[장대장 제휴] 낮은 별점 리뷰 확인', `중개사 ${a} · 별점 ${s}\n${text}\n${book().getUrl()}`); } catch (e) {} }
+  return { ok: true, id: row[1] };
+}
+function flagReview(b) {
+  const id = str(b.id, 10), why = str(b.why, 100);
+  const r = reviews().find(x => x.id === id); if (!r) throw new Error('리뷰를 찾지 못했습니다.');
+  reviewSheet().getRange(r.row, RC['신고'] + 1).setValue(r.flags + 1);
+  if (NOTIFY) { try { MailApp.sendEmail(Session.getEffectiveUser().getEmail(), '[장대장 제휴] 리뷰 신고', `리뷰 ${id} (중개사 ${r.a})\n사유: ${why}\n내용: ${r.text}\n숨기려면 리뷰 시트의 '공개' 칸을 FALSE로 바꾸세요.\n${book().getUrl()}`); } catch (e) {} }
+  return { ok: true };
+}
+function replyReview(b) {
+  const list = agents(), me = findMe(b, list), id = str(b.id, 10), text = str(b.text, 300);
+  const r = reviews().find(x => x.id === id && x.a === me.id); if (!r) throw new Error('리뷰를 찾지 못했습니다.');
+  const sh = reviewSheet();
+  sh.getRange(r.row, RC['답글'] + 1, 1, 2).setValues([[text, new Date()]]);
+  CacheService.getScriptCache().removeAll(['rstats', 'list']);
+  return login(b);
 }

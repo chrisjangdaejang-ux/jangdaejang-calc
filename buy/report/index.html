@@ -205,6 +205,16 @@ tr.hl td{background:rgba(184,148,42,.12);font-weight:700}
 .agm dd{margin:0}
 .agm .acts{display:flex;gap:8px;margin-top:12px}
 .agm .acts .btn{flex:1;text-align:center}
+.rvs{font-size:12px;font-weight:800;color:#B07A00;margin-left:6px}.rvs small{color:var(--muted);font-weight:600}
+.rvgood{font-size:10.5px;font-weight:800;color:#fff;background:var(--olive);border-radius:4px;padding:1px 5px;margin-left:5px}
+.rvlist{max-height:230px;overflow:auto;border-top:1px solid var(--line);margin-top:10px;padding-top:8px}
+.rvi{border-bottom:1px dashed #E5DCC2;padding:7px 0;font-size:13px}.rvi .st{color:#C9A227;letter-spacing:1px}.rvi .tg{display:inline-block;font-size:11px;background:var(--cream);border-radius:4px;padding:0 5px;margin:2px 3px 0 0}
+.rvi .rp{background:#F7F3E6;border-radius:6px;padding:5px 8px;margin-top:4px;font-size:12.5px}.rvi .fl{float:right;font-size:11px;color:var(--muted);background:none;border:0;cursor:pointer}
+.rvbox{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);width:min(440px,94vw);background:var(--card);border:2px solid var(--gold);border-radius:12px;padding:14px 16px;z-index:60;box-shadow:0 8px 30px rgba(0,0,0,.2)}
+.rvbox .stars button{font-size:26px;border:0;background:none;cursor:pointer;color:#D8CFB5;padding:0 2px}.rvbox .stars button.on{color:#C9A227}
+.rvbox .tags label{display:inline-block;font-size:12.5px;border:1px solid var(--line);border-radius:999px;padding:3px 9px;margin:3px 4px 0 0;cursor:pointer}
+.rvbox .tags input{display:none}.rvbox .tags label:has(input:checked){background:var(--olive);color:var(--cream);border-color:var(--olive)}
+.rvbox textarea{width:100%;box-sizing:border-box;margin-top:8px;border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit;font-size:13.5px;min-height:60px}
 .agm .x{position:absolute;right:10px;top:8px;border:0;background:none;font-size:22px;cursor:pointer;color:var(--muted)}
 .agm .disc{font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.5}
 .agt{border-top:1px dashed var(--line);padding-top:10px}
@@ -1153,10 +1163,12 @@ async function render(){
 
 /* ---------- 제휴 공인중개사 ---------- */
 let AG = {};
+const rvTxt=a=>a.rv&&a.rv.n?`<span class="rvs">★ ${a.rv.avg} <small>(${a.rv.n})</small></span>${a.rv.good?'<span class="rvgood">응답 우수</span>':''}`:'';
+const rvSc=a=>a.rv?a.rv.sc:4.3;   /* 리뷰 없는 중개사는 전체 평균 수준으로 */
 function shuffle(arr){ return arr.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(v=>v[1]); }
 function agCard(a, g, rk){
   const hl = rk===0 ? '추천 단지 매물 보유' : (rk===1 ? '추천 단지 같은 동 사무소' : (rk===2 ? '이 지역 사무소' : ''));
-  return `<div class="agc"><b>${a.t==='m'?esc(a.nm)+' 공인중개사':esc(a.n)}</b><small>${a.t==='m'?esc(a.n)+' 소속 · ':''}${esc(a.ogn)} ${esc(a.dong)}${a.t==='m'?' · 상담 전용':' · 대표 '+esc(a.ceo)}</small>
+  return `<div class="agc"><b>${a.t==='m'?esc(a.nm)+' 공인중개사':esc(a.n)}${rvTxt(a)}</b><small>${a.t==='m'?esc(a.n)+' 소속 · ':''}${esc(a.ogn)} ${esc(a.dong)}${a.t==='m'?' · 상담 전용':' · 대표 '+esc(a.ceo)}</small>
     ${hl?`<span class="hl">${hl}</span>`:''}${a.intro?`<p>${esc(a.intro)}</p>`:''}
     <button class="agbtn" data-a="${a.id}" data-g="${g}" data-k="">정보 보기 · 연락하기</button></div>`;
 }
@@ -1173,7 +1185,7 @@ async function fillAgents(picked){
   AG = {}; list.forEach(a=>AG[a.id]=a);
   const chip = (a, g, k, r) => {
     const badge = r===0 ? '매물 보유' : (r===1 ? '같은 동' : '');
-    return `<button class="agchip agbtn" data-a="${a.id}" data-g="${g}" data-k="${esc(k)}">${badge?`<span class="b">${badge}</span>`:''}${a.t==='m'?esc(a.nm)+' 공인중개사':esc(a.n)}<span class="tel">${esc(a.ph)}</span></button>`;
+    return `<button class="agchip agbtn" data-a="${a.id}" data-g="${g}" data-k="${esc(k)}">${badge?`<span class="b">${badge}</span>`:''}${a.t==='m'?esc(a.nm)+' 공인중개사':esc(a.n)}${rvTxt(a)}<span class="tel">${esc(a.ph)}</span></button>`;
   };
   /* 추천 단지 1~10위 카드마다 [공인중개사 연결하기] 버튼 → 누르면 그 구를 선택한 제휴 중개사 전부 펼침.
      순서는 매물 보유 > 같은 동 > 같은 구 사무소 > 추가 지역, 같은 순위는 매번 무작위. 노출 기록은 펼쳤을 때 */
@@ -1190,7 +1202,8 @@ async function fillAgents(picked){
       return;
     }
     const rank = a => a.dj.includes(k) ? 0 : (a.og===g && a.dong===dong ? 1 : (a.og===g ? 2 : 3));
-    const all = shuffle(cand).sort((x,y)=>rank(x)-rank(y));
+    /* 같은 순위(매물 보유·같은 동·같은 구) 안에서는 리뷰 보정 별점 순, 같으면 무작위 */
+    const all = shuffle(cand).sort((x,y)=>rank(x)-rank(y) || rvSc(y)-rvSc(x));
     const own = all.filter(a=>rank(a)===0).length;
     el.innerHTML = `<button class="agopen noprint">공인중개사 연결하기 · ${all.length}곳${own?` <span class="b">매물 보유 ${own}곳</span>`:''} <i>▾</i></button>
       <div class="aglist2" hidden><span class="agt-l">이 단지 문의 가능한 제휴 중개사<em>제휴·광고</em></span>${all.map(a=>chip(a,g,k,rank(a))).join('')}</div>`;
@@ -1215,7 +1228,7 @@ function openAgent(id, g, k){
     bg.addEventListener('click', e=>{ if(e.target===bg || e.target.classList.contains('x')) bg.classList.remove('open'); }); }
   bg.innerHTML = `<div class="agm" role="dialog" aria-modal="true"><button class="x" aria-label="닫기">×</button>
     <span class="tag">제휴·광고</span>
-    <h3>${a.t==='m'?esc(a.nm)+' 공인중개사':esc(a.n)}</h3>
+    <h3>${a.t==='m'?esc(a.nm)+' 공인중개사':esc(a.n)}${rvTxt(a)}</h3>
     <dl>${a.t==='m'?`<dt>소속</dt><dd>${esc(a.n)} (대표 ${esc(a.ceo)})</dd><dt>구분</dt><dd>소속 공인중개사 · 상담 전용 (계약은 소속 사무소를 통해 진행)</dd>`:`<dt>대표</dt><dd>${esc(a.ceo)} 공인중개사</dd>`}<dt>소재지</dt><dd>${esc(a.ogn)} ${esc(a.dong)}</dd>
       <dt>등록번호</dt><dd>${esc(a.reg)}</dd><dt>전화</dt><dd>${esc(a.ph)}</dd>
       ${a.dj.length?`<dt>매물 단지</dt><dd>${a.dj.filter(x=>x.startsWith(g+'|')).map(x=>esc(x.split('|')[2])).join(', ')||'-'}</dd>`:''}</dl>
@@ -1224,9 +1237,57 @@ function openAgent(id, g, k){
     <p class="disc">이 중개사무소는 장대장 리포트 제휴(광고) 사무소입니다. 장대장은 중개 행위에 관여하지 않으며, 매물 정보와 거래 조건은 해당 중개사무소에 직접 확인하세요.</p></div>`;
   bg.querySelectorAll('[data-act]').forEach(el=>el.addEventListener('click', ()=>{
     const t = el.dataset.act; A.log(t, id, g, k); A.flush(); JDJ.track('agent_'+t, {agent:id, sgg:g});
+    rvTicket(id, a.t==='m'?a.nm+' 공인중개사':a.n);
   }));
   bg.classList.add('open');
+  /* 상담 리뷰 (실제로 이 사이트에서 전화·카톡 문의한 사람만 작성 가능) */
+  const m = bg.querySelector('.agm'), wrap = document.createElement('div'); wrap.className='rvlist'; m.appendChild(wrap);
+  const tk = rvTickets()[id];
+  if (tk && Date.now()-tk.at>12*3600e3) wrap.insertAdjacentHTML('beforebegin', `<button class="btn" style="width:100%;margin-top:8px" id="rvWrite">이 공인중개사 상담 리뷰 쓰기</button>`);
+  const wb = bg.querySelector('#rvWrite'); if (wb) wb.onclick=()=>{ bg.classList.remove('open'); rvForm(id, tk.name); };
+  if (A.api) fetch(A.api+'?action=reviews&a='+encodeURIComponent(id)).then(r=>r.json()).then(j=>{
+    const L=(j&&j.reviews)||[];
+    wrap.innerHTML = L.length ? `<b style="font-size:13px">상담 리뷰 ${L.length}개</b> <small style="color:var(--muted)">실제 문의한 분만 작성할 수 있어요</small>` + L.map(r=>`<div class="rvi"><button class="fl" data-fl="${esc(r.id)}">신고</button><span class="st">${'★'.repeat(r.s)}${'☆'.repeat(5-r.s)}</span> <small style="color:var(--muted)">${esc(r.at)}</small><br>${(r.tags||[]).map(t=>`<span class="tg">${esc(t)}</span>`).join('')}${r.text?`<div>${esc(r.text)}</div>`:''}${r.reply?`<div class="rp"><b>중개사 답글</b> ${esc(r.reply)}</div>`:''}</div>`).join('')
+      : '<small style="color:var(--muted)">아직 상담 리뷰가 없어요. 이 사이트에서 문의하신 분은 12시간 뒤부터 리뷰를 남길 수 있어요.</small>';
+    wrap.querySelectorAll('[data-fl]').forEach(b=>b.onclick=()=>{ const why=prompt('신고 사유를 적어 주세요 (욕설·개인정보·허위 사실 등)'); if(!why) return;
+      A.post({action:'flag', id:b.dataset.fl, why}).then(()=>{ b.textContent='신고됨'; b.disabled=true; }).catch(e=>alert(e.message)); });
+  }).catch(()=>{});
 }
+/* ---------- 상담 리뷰 ---------- */
+function rvTickets(){ try{ return JSON.parse(localStorage.getItem('jdj_rvq')||'{}'); }catch(e){ return {}; } }
+function rvSave(o){ try{ localStorage.setItem('jdj_rvq', JSON.stringify(o)); }catch(e){} }
+function rvTicket(id, name){ const o=rvTickets(); if(!o[id]) o[id]={at:Date.now(), name}; rvSave(o); }
+const RV_TAGS=['친절해요','설명이 자세해요','연락이 빨라요','전문적이에요','부담 없이 상담해요'];
+function rvForm(id, name){
+  let box=$('rvbox'); if(box) box.remove();
+  box=document.createElement('div'); box.id='rvbox'; box.className='rvbox noprint';
+  box.innerHTML=`<button class="x" style="position:absolute;right:8px;top:4px;border:0;background:none;font-size:20px;cursor:pointer;color:var(--muted)" aria-label="닫기">×</button>
+    <b>${esc(name)} 상담은 어떠셨어요?</b><div style="font-size:12px;color:var(--muted)">별점은 그대로 공개되고, 다른 분들이 좋은 공인중개사를 고르는 데 쓰여요.</div>
+    <div class="stars">${[1,2,3,4,5].map(n=>`<button data-s="${n}" aria-label="${n}점">★</button>`).join('')}</div>
+    <div class="tags">${RV_TAGS.map(t=>`<label><input type="checkbox" value="${t}">${t}</label>`).join('')}</div>
+    <textarea maxlength="300" placeholder="상담 후기 (선택, 300자) — 전화번호 등 개인정보는 자동으로 가려져요"></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px"><button class="btn primary" style="flex:1" id="rvSend">리뷰 남기기</button><button class="btn" id="rvLater">나중에</button><button class="btn" id="rvNo">상담 안 했어요</button></div>
+    <div class="msg" id="rvMsg" style="font-size:12.5px;margin-top:6px"></div>`;
+  document.body.appendChild(box);
+  let S=0; box.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{ S=+b.dataset.s; box.querySelectorAll('[data-s]').forEach(x=>x.classList.toggle('on', +x.dataset.s<=S)); });
+  const close=()=>box.remove();
+  box.querySelector('.x').onclick=close;
+  box.querySelector('#rvLater').onclick=()=>{ const o=rvTickets(); if(o[id]) o[id].snooze=Date.now(); rvSave(o); close(); };
+  box.querySelector('#rvNo').onclick=()=>{ const o=rvTickets(); if(o[id]) o[id].done=1; rvSave(o); close(); };
+  box.querySelector('#rvSend').onclick=()=>{
+    const msg=box.querySelector('#rvMsg'); if(!S){ msg.textContent='별점을 골라 주세요.'; return; }
+    const tags=[...box.querySelectorAll('.tags input:checked')].map(x=>x.value), text=box.querySelector('textarea').value;
+    let vid=''; try{ vid=localStorage.getItem('jdj_vid')||''; }catch(e){}
+    window.JDJ_AGENTS.post({action:'review', a:id, vid, s:S, tags, text}).then(()=>{
+      const o=rvTickets(); if(o[id]) o[id].done=1; rvSave(o); JDJ.track('agent_review',{agent:id, s:S});
+      box.innerHTML='<b>감사합니다!</b> 리뷰가 등록됐어요. 다른 분들이 좋은 공인중개사를 고르는 데 큰 도움이 돼요.'; setTimeout(close, 2500);
+    }).catch(e=>{ msg.textContent=e.message; });
+  };
+}
+/* 리포트를 다시 열었을 때: 문의 후 12시간 지난 중개사 리뷰 요청(나중에 → 3일 뒤 다시, 한 번에 하나) */
+setTimeout(()=>{ const o=rvTickets(), now=Date.now();
+  const id=Object.keys(o).find(k=>!o[k].done && now-o[k].at>12*3600e3 && now-o[k].at<60*86400e3 && (!o[k].snooze || now-o[k].snooze>3*86400e3));
+  if(id && window.JDJ_AGENTS && window.JDJ_AGENTS.ready) rvForm(id, o[id].name); }, 4000);
 document.addEventListener('click', e=>{
   const b = e.target.closest('.agbtn'); if (!b) return;
   openAgent(b.dataset.a, b.dataset.g, b.dataset.k);

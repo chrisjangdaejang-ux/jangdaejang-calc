@@ -443,7 +443,20 @@ function drawManage(j){
     <div class="field" style="margin-top:10px"><label>한 줄 소개</label><input id="m_intro" maxlength="60" value="${esc(m.intro)}"></div>
     <div class="agree" style="margin-top:10px"><label><input type="checkbox" id="m_re"> 등록한 단지 모두 지금도 매물을 보유하고 있습니다 (매물 보유 재확인)</label></div>
     <div style="margin-top:12px;display:flex;gap:8px"><button class="btn primary" id="m_save">저장</button><button class="btn ghost" id="m_out">로그아웃</button></div>
-    <div class="msg" id="m_msg2"></div>`;
+    <div class="msg" id="m_msg2"></div>
+    <h3 style="margin-top:22px">상담 리뷰 ${m.rv?`<small>★ ${m.rv.avg} · ${m.rv.n}개 · 답글 ${m.rv.rr}%${m.rv.good?' · <b>응답 우수</b>':''}</small>`:''}</h3>
+    <p class="small">우리 사이트에서 전화·카톡으로 문의한 고객만 리뷰를 쓸 수 있어요. 리뷰 3개 이상에 답글 80% 이상이면 <b>'응답 우수'</b> 배지가 붙고, 같은 조건의 중개사보다 앞에 노출돼요. 정성 어린 답글이 다음 고객의 선택으로 이어집니다.</p>
+    ${(m.reviews||[]).length?(m.reviews||[]).map(r=>`<div class="box" style="padding:10px 12px;margin:8px 0">
+      <b style="color:#C9A227">${'★'.repeat(r.s)}${'☆'.repeat(5-r.s)}</b> <small>${esc(r.at)}${r.show?'':' · 숨김 처리됨'}</small>
+      <div>${(r.tags||[]).map(t=>`<span class="tag2">${esc(t)}</span>`).join(' ')}</div>${r.text?`<p style="margin:6px 0">${esc(r.text)}</p>`:''}
+      <textarea data-rp="${esc(r.id)}" maxlength="300" style="width:100%;box-sizing:border-box;min-height:52px;border:1px solid var(--line);border-radius:8px;padding:6px;font:inherit" placeholder="고객에게 답글 (공개, 300자)">${esc(r.reply||'')}</textarea>
+      <button class="btn" data-rps="${esc(r.id)}" style="margin-top:4px">${r.reply?'답글 수정':'답글 달기'}</button></div>`).join('')
+      :'<p class="small">아직 리뷰가 없어요.</p>'}`;
+  document.querySelectorAll('[data-rps]').forEach(b=>b.onclick=async ()=>{
+    const id=b.dataset.rps, text=document.querySelector(`[data-rp="${id}"]`).value.trim(), cred=JSON.parse(sessionStorage.getItem('jdj_agent')||'{}');
+    if(!text) return; b.disabled=true;
+    try{ const r=await A.post({action:'reply', ...cred, id, text}); JDJ.track('agent_reply'); drawManage(r); }catch(e){ alert(nice(e.message)); b.disabled=false; }
+  });
   manageEd = makeEditor($('m_editor'), {sido, og:m.og, extras:m.extras, danji:m.danji, used:j.used, premium:(m.plan||'프리미엄')==='프리미엄'});
   $('m_save').onclick = async ()=>{
     const msg=$('m_msg2'); msg.className='msg'; msg.textContent='';
