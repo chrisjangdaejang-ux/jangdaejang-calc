@@ -150,6 +150,10 @@ body.wiz .wiznav{display:flex;gap:8px;margin-top:4px}
 .wizerr{font-size:13px;color:var(--neg);font-weight:700}
 .wizerr:empty{display:none}
 .wizskip{text-align:center;font-size:14px}
+.cmpgo{display:flex;align-items:center;gap:12px;margin-top:16px;padding:14px 16px;min-height:56px;border:1px solid var(--line,#E5E8EB);border-radius:14px;background:#fff;color:inherit;text-decoration:none}
+.cmpgo b{display:block;font-size:15px;color:var(--blue,#2F6BFF)}
+.cmpgo small{display:block;font-size:13px;color:#6B7684;margin-top:2px;line-height:1.5}
+.cmpgo .go{margin-left:auto;color:#B0B8C1;font-size:22px}
 .wizskip button{font:inherit;background:none;border:0;color:var(--sub2);text-decoration:underline;min-height:44px;cursor:pointer}
 .go-report{display:flex;margin-top:14px}
 .premium .btn{background:var(--blue);color:#fff;min-height:52px}
@@ -170,6 +174,7 @@ body.wiz .wiznav{display:flex;gap:8px;margin-top:4px}
     <span class="tag">내 집 마련 계산기 · 무료</span>
     <h1>나는 <em>얼마짜리 집</em>까지<br>살 수 있을까?</h1>
     <p class="lead">연봉과 보유 현금만 넣으면 LTV·스트레스 DSR·가격구간별 대출 한도를 모두 따져서 최대 매수 가능 금액을 계산해 드립니다.</p>
+    <a class="cmpgo" href="report/?mode=cmp" data-track="buy_to_compare"><span><b>마음에 둔 단지가 있으세요?</b><small>후보 단지 2~3곳을 미래가치·대출·필요 현금까지 바로 비교해요</small></span><span class="go" aria-hidden="true">›</span></a>
   </div>
 
   <div class="grid">
