@@ -1,9 +1,9 @@
 /* 장대장 계산기 서비스 워커: 항상 최신(네트워크 우선), 끊기면 저장해 둔 화면으로 */
-const V = 'jdj-v36';
+const V = 'jdj-v37';
 const SHELL = ['/jangdaejang-calc/', '/jangdaejang-calc/buy/', '/jangdaejang-calc/switch/', '/jangdaejang-calc/buy/report/', '/jangdaejang-calc/villa/', '/jangdaejang-calc/chungyak/', '/jangdaejang-calc/tax/',
   '/jangdaejang-calc/tax/tax-engine.js', '/jangdaejang-calc/tax/adjusted-areas.js', '/jangdaejang-calc/tax/tax-ui.js',
   '/jangdaejang-calc/assets/agents.js', '/jangdaejang-calc/assets/region-notes.js', '/jangdaejang-calc/assets/track.js', '/jangdaejang-calc/assets/stat.js',
-  '/jangdaejang-calc/assets/pwa.js', '/jangdaejang-calc/assets/aplus.css', '/jangdaejang-calc/assets/icons/icon-192.png'];
+  '/jangdaejang-calc/assets/pwa.js', '/jangdaejang-calc/assets/aplus.css?v=37', '/jangdaejang-calc/assets/icons/icon-192.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(V).then(c => Promise.all(SHELL.map(u => c.add(u).catch(() => {})))).then(() => self.skipWaiting()));
 });
@@ -17,7 +17,7 @@ self.addEventListener('fetch', e => {
   e.respondWith((async () => {
     const c = await caches.open(V);
     try {
-      const res = await fetch(r);
+      const res = await fetch(r, { cache: 'no-cache' });   // 휴대폰 브라우저에 남은 옛 파일 대신 항상 새로 확인
       if (res.ok) c.put(r, res.clone());
       return res;
     } catch (err) {
