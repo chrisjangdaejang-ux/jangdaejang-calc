@@ -11,7 +11,7 @@
   wrap.className = 'row2';
   wrap.innerHTML = '<select id="rSido" aria-label="시·도"><option>불러오는 중…</option></select><select id="rSgg" aria-label="시·군·구"><option value="">전체</option></select>';
   const note = document.createElement('div');
-  note.className = 'hint'; note.id = 'rPickNote'; note.style.cssText = 'color:#A23B2A';
+  note.className = 'hint'; note.id = 'rPickNote'; note.style.cssText = 'color:#C2410C';
   sel.style.display = 'none';
   sel.parentNode.insertBefore(wrap, sel);
   sel.parentNode.insertBefore(note, sel.nextSibling);

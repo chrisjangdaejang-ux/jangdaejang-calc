@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
-<meta name="theme-color" content="#3B3F22">
+<meta name="theme-color" content="#FFFFFF">
 <link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
 <link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -22,13 +22,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
-:root{--cream:#F5EFDC;--cream2:#EDE4C9;--olive:#3B3F22;--olive2:#545A30;--gold:#B8942A;--gold2:#D9B85A;--ink:#23241A;--muted:#6B6A58;--red:#A23B2A;--green:#4E6B2E;--card:#FFFBF0;--line:#DCCFA8}
-*{box-sizing:border-box}
-body{margin:0;background:var(--cream);color:var(--ink);font-family:'Noto Sans KR',system-ui,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
-.top{background:var(--olive);color:var(--cream);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.brand{font-weight:900;font-size:17px;letter-spacing:-.02em;color:var(--cream);text-decoration:none}
-.brand span{color:var(--gold2)}
-.badge{border:1px solid var(--gold2);color:var(--gold2);font-size:11px;font-weight:700;letter-spacing:.12em;padding:4px 9px;border-radius:3px}
 .wrap{max-width:880px;margin:0 auto;padding:24px 18px 70px}
 .hero{background:var(--olive);color:var(--cream);border-radius:12px;padding:28px 26px;position:relative;overflow:hidden}
 .hero:after{content:"";position:absolute;right:-70px;top:-70px;width:230px;height:230px;border-radius:50%;border:34px solid rgba(217,184,90,.13)}
@@ -131,9 +124,28 @@ ol.flow li{margin:5px 0}
 .foot{font-size:12px;color:var(--muted);margin-top:22px}
 .foot a{color:var(--olive)}
 </style>
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css">
+<style>
+.hero{background:var(--gray);color:var(--text);border-radius:20px}
+.hero:after{display:none}
+.hero .tag{background:transparent;color:var(--blue);padding:0;letter-spacing:0;font-size:14px}
+.hero h1 em{color:var(--blue)}
+.hero p{color:var(--sub)}
+.step .n{background:var(--blue);color:#fff}
+.kpi.main{background:var(--blue-l);color:var(--text)}
+.kpi.main .k{color:var(--blue)}
+.tag2{background:var(--blue-l);color:var(--blue)}
+.chip.office{background:var(--gray);border-color:var(--line);color:var(--sub)}
+.done,.lock{background:var(--gray2);border:1px solid var(--line);border-radius:16px}
+.notice{background:var(--creamc);border-color:var(--creamb)}
+.bank{border:0;border-radius:16px}
+.bank .acct{color:#fff}
+.plan:has(input:checked){background:var(--blue-l)}
+p.foot{background:none;border-top:1px solid var(--line);padding:16px 0 0}
+</style>
 </head>
 <body>
-<div class="top"><a class="brand" href="../">★ 장대장<span> 제휴센터</span></a><span class="badge">PARTNER</span></div>
+<header class="top"><a class="brand" href="/jangdaejang-calc/"><span class="star" aria-hidden="true">★</span> 장대장 <span class="acc">계산기</span></a><span class="badge plain">중개사 제휴센터</span></header>
 <div class="wrap">
   <div class="hero">
     <span class="tag">공인중개사 제휴 · 1단계 시범</span>

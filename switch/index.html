@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
-<meta name="theme-color" content="#3B3F22">
+<meta name="theme-color" content="#FFFFFF">
 <link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
 <link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -24,18 +24,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
-:root{
-  --cream:#F5EFDC; --cream2:#EDE4C9; --olive:#3B3F22; --olive2:#545A30;
-  --gold:#B8942A; --gold2:#D9B85A; --ink:#23241A; --muted:#6B6A58;
-  --red:#A23B2A; --green:#4E6B2E; --card:#FFFBF0; --line:#DCCFA8;
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--cream);color:var(--ink);font-family:'Noto Sans KR',system-ui,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
-.top{background:var(--olive);color:#F5EFDC;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.brand{font-weight:900;letter-spacing:-.02em;font-size:17px;white-space:nowrap}
-.brand span{color:var(--gold2)}
-.badge{border:1px solid var(--gold2);color:var(--gold2);font-size:11px;font-weight:700;letter-spacing:.12em;padding:4px 9px;border-radius:3px;white-space:nowrap}
-@media(max-width:420px){.top{padding:12px 14px}.brand{font-size:15px}.badge{font-size:10px;padding:3px 7px;letter-spacing:.06em}}
 .wrap{max-width:1080px;margin:0 auto;padding:28px 18px 60px}
 .hero{margin-bottom:26px}
 .tag{display:inline-block;background:var(--ink);color:var(--gold2);font-size:11px;font-weight:700;letter-spacing:.14em;padding:4px 9px;border-radius:2px}
@@ -166,12 +154,20 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .gap .af .btnA{background:#A23B2A;color:#fff;border:0;font:inherit;font-weight:900;font-size:15px;padding:11px 18px;border-radius:8px;cursor:pointer}
 .gap .mini{font-size:12px;color:#6B6A58}
 </style>
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css">
+<style>
+.tag{background:transparent}
+.result .big{color:var(--text)}
+.panel h2 .step{background:var(--blue-l);color:var(--blue)}
+.premium .btn{background:var(--blue);color:#fff}
+.xlink{color:var(--text)}
+</style>
 </head>
 <body>
-<div class="top">
-  <div class="brand">★ 장대장 <span>갈아타기 계산기</span></div>
-  <div class="badge">2026.11 규제 반영</div>
-</div>
+<header class="top">
+  <a class="brand" href="/jangdaejang-calc/"><span class="star" aria-hidden="true">★</span> 장대장 <span class="acc">계산기</span></a>
+  <div class="badge plain">갈아타기 · 2026.11 규제 반영</div>
+</header>
 
 <div class="wrap">
   <div class="hero">

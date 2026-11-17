@@ -1,0 +1,124 @@
+/* 장대장 계산기 공통 디자인 (A+ 파랑 강조)
+   - 바탕 흰색, 본문 짙은 회색, 강조는 파랑(누르거나 지금 중요한 것), 금색은 로고 별·배지·점수 링 같은 작은 장식에만.
+   - 각 페이지의 예전 색 이름(--cream, --olive …)은 아래에서 새 색으로 이어 주므로 페이지 안의 규칙은 그대로 동작한다. */
+:root{
+  --bg:#FFFFFF; --text:#191F28; --sub:#4E5968; --sub2:#6B7684; --sub3:#8B95A1;
+  --gray:#F2F4F6; --gray2:#F9FAFB; --line:#E5E8EB; --line2:#F0F1F3;
+  --blue:#2F6BFF; --blue-d:#1F56E0; --blue-l:#E8F0FF;
+  --brand:#B8942A; --creamc:#FBF8EF; --creamb:#EFE6CC;
+  --neg:#C2410C; --neg-l:#FDECE4; --pos:#0E7A4F; --pos-l:#E6F5EE;
+  /* 예전 이름 → 새 색 */
+  --cream:#FFFFFF; --cream2:#F2F4F6; --olive:#2F6BFF; --olive2:#2F6BFF;
+  --gold:#B8942A; --gold2:#E8F0FF; --ink:#191F28; --muted:#6B7684;
+  --red:#C2410C; --green:#0E7A4F; --amber:#9A5B00; --card:#FFFFFF;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#fff;color:var(--text);font-family:'Noto Sans KR',system-ui,-apple-system,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;word-break:keep-all}
+a{color:var(--blue)}
+:focus-visible{outline:3px solid rgba(47,107,255,.45);outline-offset:2px}
+
+/* 헤더 */
+.top{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.96);backdrop-filter:saturate(1.4) blur(8px);color:var(--text);border-bottom:1px solid var(--line2);padding:12px 20px;min-height:56px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-weight:900;font-size:19px;letter-spacing:-.5px;white-space:nowrap;color:var(--text);text-decoration:none;display:inline-flex;align-items:center;gap:5px;min-height:44px}
+.brand .star{color:var(--brand)}
+.brand .acc,.brand span:not(.star){color:var(--blue)}
+.badge{font-size:10.5px;font-weight:700;letter-spacing:1.2px;border:1px solid var(--brand);color:var(--brand);background:transparent;padding:3px 7px;border-radius:4px;white-space:nowrap}
+.badge.plain{border-color:var(--line);color:var(--sub2);letter-spacing:0;font-size:12px;padding:4px 9px;border-radius:999px}
+.topbtn{font:inherit;font-size:14px;font-weight:700;color:var(--sub);background:var(--gray);border:0;border-radius:10px;min-height:44px;padding:0 14px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+@media(max-width:420px){.top{padding:10px 16px}.brand{font-size:17px}}
+
+/* 바닥글 */
+.foot{background:#fff;color:var(--sub3);border-top:1px solid var(--line2);text-align:left;font-weight:500;padding:20px 24px 28px;font-size:12px;line-height:1.6}
+.foot a{color:var(--sub2)}
+
+/* 제목 */
+.eyebrow{font-size:14px;font-weight:700;color:var(--blue)}
+h1{font-weight:900;letter-spacing:-.8px;line-height:1.35;color:var(--text)}
+h1 em{font-style:normal;color:var(--blue)}
+.tag{display:inline-block;background:transparent;color:var(--blue);font-size:14px;font-weight:700;letter-spacing:0;padding:0;border-radius:0}
+.lead{color:var(--sub)}
+
+/* 버튼 */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:48px;background:var(--gray);color:var(--text);text-decoration:none;font-weight:700;font-size:15px;padding:0 18px;border-radius:14px;border:0;cursor:pointer;font-family:inherit;box-shadow:none}
+.btn:hover{filter:brightness(.97)}
+.btn.primary,.btn.blue{background:var(--blue);color:#fff;box-shadow:none}
+.btn.gold{background:var(--blue-l);color:var(--blue)}
+.btn.ghost{background:#fff;color:var(--text);border:1px solid var(--line)}
+.btn.done{background:var(--pos);color:#fff}
+.btn.big{min-height:56px;border-radius:16px;font-size:17px;width:100%}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+
+/* 카드·패널 */
+.panel{background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px 20px}
+.panel h2{font-size:18px;font-weight:900;letter-spacing:-.4px;margin:0 0 16px;display:block}
+.panel h2:before{display:none}
+
+/* 입력 */
+.field label{color:var(--text);font-size:14px;font-weight:700}
+.field .hint,.hint{color:var(--sub2)}
+.inp{background:#fff;border:1px solid var(--line);border-radius:14px;min-height:52px}
+.inp:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,107,255,.15)}
+.inp input{font-size:17px;padding:13px 14px;color:var(--text)}
+.inp .unit{color:var(--sub);font-weight:700;font-size:14px}
+select,.field input,.field select{min-height:48px;border:1px solid var(--line);border-radius:12px;background-color:#fff;color:var(--text)}
+select:focus,.field input:focus,.field select:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,107,255,.15)}
+.seg button{min-height:48px;border:1px solid var(--line);background:#fff;color:var(--sub);border-radius:12px}
+.seg button small{color:var(--sub3)}
+.seg button.on{background:var(--blue-l);border-color:var(--blue);color:var(--blue)}
+.seg button.on small{color:var(--blue)}
+.check{color:var(--sub);min-height:44px}
+.check input,input[type=checkbox],input[type=radio]{accent-color:var(--blue)}
+input[type=range]{accent-color:var(--blue)}
+.chip{min-height:40px;border:1px solid var(--line);background:#fff;color:var(--sub);border-radius:999px}
+.chip.on{background:var(--blue-l);border-color:var(--blue);color:var(--blue)}
+
+/* 숫자 상자 */
+.stat{background:var(--gray);border-radius:14px}
+.stat .k{color:var(--sub2);font-weight:500}
+.stat .d{color:var(--sub2)}
+.stat.key{background:var(--blue-l);color:var(--text)}
+.stat.key .k,.stat.key .d{color:var(--blue)}
+
+/* 결과 강조 카드 (크림) */
+.result{background:var(--creamc);color:var(--text);border:1px solid var(--creamb);border-radius:20px}
+.result:after{display:none}
+.result .lbl{color:var(--sub2);font-weight:500;letter-spacing:0}
+.result .sub{color:var(--sub)}
+.result .sub b{color:var(--text)}
+.binding{background:var(--blue-l);color:var(--blue);border-radius:999px;padding:5px 12px;font-weight:700}
+
+/* 안내 상자 */
+.tip{border-left:0;background:var(--gray2);border:1px solid var(--line);border-radius:14px;padding:13px 15px}
+.tip.warn{background:var(--neg-l);border-color:#F8D3C2}
+.cta{background:var(--gray);border-radius:20px;color:var(--text)}
+.cta p{color:var(--text)}
+.cta p small{color:var(--sub)}
+.premium{border:1px solid var(--creamb);background:var(--creamc);border-radius:20px}
+.premium .pt{color:var(--brand)}
+.premium p small{color:var(--sub)}
+.xlink{background:var(--gray2);border:1px solid var(--line);color:var(--text);border-radius:14px;font-weight:700;min-height:48px;display:flex;align-items:center;justify-content:center}
+.rules{color:var(--sub2);border-top:1px solid var(--line)}
+.rules h3{color:var(--text)}
+.toast{background:var(--text);color:#fff;border-radius:12px}
+table th{color:var(--sub2);border-bottom:1px solid var(--line)}
+table td{border-bottom:1px solid var(--line2)}
+.track{background:var(--gray)}
+.fill{background:var(--blue)}
+.muted{color:var(--sub2)}
+
+/* 점수 링 (금색 장식) */
+.ring{flex:none;width:64px;height:64px;border-radius:50%;border:5px solid var(--brand);display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff}
+.ring b{font-size:22px;font-weight:900;line-height:1;color:var(--text)}
+.ring small{font-size:10px;color:var(--sub2);margin-top:2px}
+.ring.sm{width:52px;height:52px;border-width:4px}
+.ring.sm b{font-size:18px}
+.ring.dim{border-color:var(--line)}
+
+/* 진행바 */
+.progress{height:4px;border-radius:2px;background:var(--line)}
+.progress i{display:block;height:4px;border-radius:2px;background:var(--blue);transition:width .25s}
+
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media print{.top{position:static;backdrop-filter:none}}
+.inp input,.field .inp input{border:0;box-shadow:none;min-height:0;background:transparent}

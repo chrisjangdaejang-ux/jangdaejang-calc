@@ -2,7 +2,7 @@
 const V = 'jdj-v27';
 const SHELL = ['/jangdaejang-calc/', '/jangdaejang-calc/buy/', '/jangdaejang-calc/switch/', '/jangdaejang-calc/buy/report/', '/jangdaejang-calc/villa/', '/jangdaejang-calc/chungyak/',
   '/jangdaejang-calc/assets/agents.js', '/jangdaejang-calc/assets/region-notes.js', '/jangdaejang-calc/assets/track.js',
-  '/jangdaejang-calc/assets/pwa.js', '/jangdaejang-calc/assets/icons/icon-192.png'];
+  '/jangdaejang-calc/assets/pwa.js', '/jangdaejang-calc/assets/aplus.css', '/jangdaejang-calc/assets/icons/icon-192.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(V).then(c => Promise.all(SHELL.map(u => c.add(u).catch(() => {})))).then(() => self.skipWaiting()));
 });

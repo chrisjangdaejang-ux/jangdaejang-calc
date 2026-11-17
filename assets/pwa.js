@@ -41,17 +41,17 @@
 
   if (standalone) { ga('pwa_open'); return; }
 
-  const css = `.jdjpwa{position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;background:#3B3F22;color:#F5EFDC;border-radius:14px;
+  const css = `.jdjpwa{position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;background:#191F28;color:#FFFFFF;border-radius:16px;
     box-shadow:0 8px 28px rgba(0,0,0,.28);padding:12px 12px 12px 14px;display:flex;align-items:center;gap:10px;font:14px/1.45 'Noto Sans KR',sans-serif;max-width:560px;margin:0 auto}
     .jdjpwa img{width:42px;height:42px;border-radius:10px;flex:none}
     .jdjpwa .tx{flex:1;min-width:0}.jdjpwa .tx b{display:block;font-weight:900;font-size:14.5px}.jdjpwa .tx small{opacity:.8;font-size:12.5px}
-    .jdjpwa .go{flex:none;background:#B8942A;color:#2A2D17;border:0;border-radius:9px;padding:9px 13px;font:inherit;font-weight:900;cursor:pointer}
-    .jdjpwa .x{flex:none;background:none;border:0;color:#F5EFDC;opacity:.7;font-size:20px;cursor:pointer;padding:0 2px}
+    .jdjpwa .go{flex:none;background:#2F6BFF;color:#FFFFFF;min-height:44px;border:0;border-radius:9px;padding:9px 13px;font:inherit;font-weight:900;cursor:pointer}
+    .jdjpwa .x{flex:none;background:none;border:0;color:#FFFFFF;min-width:44px;min-height:44px;opacity:.7;font-size:20px;cursor:pointer;padding:0 2px}
     .jdjpwa-how{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center}
-    .jdjpwa-how .bx{background:#F5EFDC;color:#2A2D17;border-radius:16px 16px 0 0;padding:20px 20px 28px;max-width:560px;width:100%;font:15px/1.6 'Noto Sans KR',sans-serif}
+    .jdjpwa-how .bx{background:#FFFFFF;color:#191F28;border-radius:16px 16px 0 0;padding:20px 20px 28px;max-width:560px;width:100%;font:15px/1.6 'Noto Sans KR',sans-serif}
     .jdjpwa-how h3{margin:0 0 10px;font-size:18px;font-weight:900}.jdjpwa-how ol{margin:0;padding-left:20px;display:grid;gap:6px}
-    .jdjpwa-how .ok{margin-top:16px;width:100%;background:#3B3F22;color:#F5EFDC;border:0;border-radius:10px;padding:12px;font:inherit;font-weight:900;cursor:pointer}
-    .jdjpwa-how .k{display:inline-block;border:1.5px solid #3B3F22;border-radius:5px;padding:0 6px;font-weight:900}`;
+    .jdjpwa-how .ok{margin-top:16px;width:100%;background:#2F6BFF;color:#FFFFFF;border:0;border-radius:14px;padding:12px;min-height:52px;font:inherit;font-weight:900;cursor:pointer}
+    .jdjpwa-how .k{display:inline-block;border:1.5px solid #191F28;border-radius:5px;padding:0 6px;font-weight:900}`;
 
   function addCss() { if (!document.getElementById('jdjpwa-css')) { const s = document.createElement('style'); s.id = 'jdjpwa-css'; s.textContent = css; document.head.appendChild(s); } }
   function how() {
@@ -64,8 +64,8 @@
     else if (isSamsung) steps = ['화면 아래 메뉴 <span class="k">≡</span> 버튼을 누르세요', '<b>현재 페이지 추가</b> → <b>홈 화면</b>을 누르세요'];
     else steps = ['오른쪽 위 <span class="k">⋮</span> 버튼을 누르세요', '<b>홈 화면에 추가</b> 또는 <b>앱 설치</b>를 누르세요'];
     const m = document.createElement('div'); m.className = 'jdjpwa-how';
-    m.innerHTML = `<div class="bx"><h3>📲 홈 화면에 추가하기</h3>${inApp ? '<p style="margin:0 0 8px">지금은 앱 안의 브라우저라 바로 추가할 수 없어요. 아래처럼 열어 주세요.</p>' : ''}<ol>${steps.map(s => `<li>${s}</li>`).join('')}</ol>
-      <p style="margin:12px 0 0;font-size:13px;color:#6B6A58">설치는 무료이고, 앱처럼 아이콘을 눌러 바로 계산기를 열 수 있어요.</p><button class="ok">알겠어요</button></div>`;
+    m.innerHTML = `<div class="bx"><h3>홈 화면에 추가하기</h3>${inApp ? '<p style="margin:0 0 8px">지금은 앱 안의 브라우저라 바로 추가할 수 없어요. 아래처럼 열어 주세요.</p>' : ''}<ol>${steps.map(s => `<li>${s}</li>`).join('')}</ol>
+      <p style="margin:12px 0 0;font-size:13px;color:#6B7684">설치는 무료이고, 앱처럼 아이콘을 눌러 바로 계산기를 열 수 있어요.</p><button class="ok">알겠어요</button></div>`;
     m.onclick = e => { if (e.target === m || e.target.classList.contains('ok')) m.remove(); };
     document.body.appendChild(m); ga('pwa_howto', { inapp: inApp, ios: isIOS });
   }
@@ -78,11 +78,11 @@
   function samsungSheet() {
     addCss();
     const m = document.createElement('div'); m.className = 'jdjpwa-how';
-    m.innerHTML = `<div class="bx"><h3>📲 홈 화면에 추가하기</h3>
+    m.innerHTML = `<div class="bx"><h3>홈 화면에 추가하기</h3>
       <p style="margin:0 0 12px">삼성 인터넷에서는 설치가 안 되는 경우가 있어요. <b>크롬으로 열면 한 번에 설치</b>됩니다.</p>
       <button class="ok" data-a="chrome">크롬으로 열어서 설치하기 (추천)</button>
-      <button class="ok" data-a="here" style="background:#fff;color:#3B3F22;border:1.5px solid #3B3F22;margin-top:8px">삼성 인터넷에서 바로 추가</button>
-      <p style="margin:12px 0 0;font-size:12.5px;color:#6B6A58">삼성 인터넷에서 '설치할 수 없음'이 뜨면: 아래 메뉴 <span class="k">≡</span> → <b>현재 페이지 추가</b> → <b>홈 화면</b></p></div>`;
+      <button class="ok" data-a="here" style="background:#fff;color:#2F6BFF;border:1px solid #E5E8EB;margin-top:8px">삼성 인터넷에서 바로 추가</button>
+      <p style="margin:12px 0 0;font-size:12.5px;color:#6B7684">삼성 인터넷에서 '설치할 수 없음'이 뜨면: 아래 메뉴 <span class="k">≡</span> → <b>현재 페이지 추가</b> → <b>홈 화면</b></p></div>`;
     m.onclick = async e => {
       const a = e.target.getAttribute && e.target.getAttribute('data-a');
       if (e.target === m) return m.remove();
