@@ -1,5 +1,5 @@
 /* 장대장 계산기 서비스 워커: 항상 최신(네트워크 우선), 끊기면 저장해 둔 화면으로 */
-const V = 'jdj-v35';
+const V = 'jdj-v36';
 const SHELL = ['/jangdaejang-calc/', '/jangdaejang-calc/buy/', '/jangdaejang-calc/switch/', '/jangdaejang-calc/buy/report/', '/jangdaejang-calc/villa/', '/jangdaejang-calc/chungyak/', '/jangdaejang-calc/tax/',
   '/jangdaejang-calc/tax/tax-engine.js', '/jangdaejang-calc/tax/adjusted-areas.js', '/jangdaejang-calc/tax/tax-ui.js',
   '/jangdaejang-calc/assets/agents.js', '/jangdaejang-calc/assets/region-notes.js', '/jangdaejang-calc/assets/track.js', '/jangdaejang-calc/assets/stat.js',

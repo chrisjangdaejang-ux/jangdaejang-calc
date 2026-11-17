@@ -1019,7 +1019,7 @@ async function renderCompare(){
     vh = `<div class="verdict"><h3>시·도가 달라 <em>점수로 승부를 가르지 않았어요</em></h3>
       <ul><li>미래가치 점수는 같은 시·도 안에서의 순위예요. ${items.map(x=>`${esc(x.apt)}는 ${loc(x)} 안 상위 ${x.fx&&x.fx.fv!=null?Math.max(1,100-x.fx.fv)+'%':'-'}`).join(', ')}입니다.</li>
       <li>서울과 지방처럼 시장이 다르면 같은 점수라도 의미가 달라요. 각 단지가 자기 지역 안에서 얼마나 경쟁력 있는지로 보시고, 예산·실거주 계획·지역 선호를 함께 판단하세요.</li>
-      ${items.filter(x=>x.short>0).map(x=>`<li style="color:#F2C9A8">${esc(x.apt)}: 지금 조건으로 현금 ${fmt(x.short)} 부족</li>`).join('')}</ul>
+      ${items.filter(x=>x.short>0).map(x=>`<li style="color:#C2410C">${esc(x.apt)}: 지금 조건으로 현금 ${fmt(x.short)} 부족</li>`).join('')}</ul>
       <small>시·도를 넘나드는 비교 점수는 데이터 검증을 거쳐 추가할 예정이에요. 과거 데이터 기반 참고 자료이며 매수를 권유하는 것은 아닙니다.</small></div>`;
   } else if (scored.length<2){
     vh = `<div class="verdict"><h3>미래가치 점수를 비교할 수 있는 단지가 부족해요</h3><ul><li>거래 이력이 짧거나 단지 정보가 부족한 단지는 점수를 내지 않아요. 위 비교표의 항목별 ★ 표시를 참고해 주세요.</li></ul></div>`;
@@ -1037,7 +1037,7 @@ async function renderCompare(){
     if (W.ch!=null && W.ch>=0.08) caut.push('최근 상승 속도가 빨라 추격 매수는 주의가 필요해요');
     if (W.n<24) caut.push('거래량이 적어 시세 확인과 매도 기간에 여유를 두세요');
     vh = `<div class="verdict"><h3>미래가치 기준으로 <em>${esc(W.apt)}</em>${gap<3?'가 근소하게':'가'} 유리해요</h3>
-      <ul>${why.map(t=>`<li>${esc(t)}</li>`).join('')}${caut.map(t=>`<li style="color:#F2C9A8">${esc(t)}</li>`).join('')}</ul>
+      <ul>${why.map(t=>`<li>${esc(t)}</li>`).join('')}${caut.map(t=>`<li style="color:#C2410C">${esc(t)}</li>`).join('')}</ul>
       <div class="sc">${scored.map(([v,i])=>`<span>${esc(items[i].apt)} <b>${Math.round(v*100)}점</b>${items[i].short>0?' · 예산 초과':''}</span>`).join('')}</div>
       <small>미래가치 점수는 하락기 방어력·고점 회복·최근 흐름·동 대장 대비 가격·연식·세대수·역세권·재건축 사업성·재건축 진행 단계(서울)·신설역 단계·학군(중학교 전입)·전세가율·거래량${RUSED()?'·지역 전망(입주 물량·인구·미분양·일자리)':''}을 모두 합친 값이에요.${RUSED()?'':' 지역 전망은 여러 시기 검증을 통과하면 반영해요.'} 각 항목 비중은 사람이 정하지 않고, 과거 데이터로 실제 더 오른 단지를 가장 잘 맞힌 비중을 썼어요. 예산은 점수에 섞지 않고 살 수 있는지만 따로 판정해요.${multiSido?' 시·도가 다른 단지는 각 시·도 안 순위라 참고로만 보세요.':''}${gap<3?' 점수 차이가 작아 층·향·동, 학군, 실거주 동선 같은 개인 조건이 결정을 좌우할 수 있어요.':''} 과거 데이터 기반 참고 자료이며 매수를 권유하는 것은 아닙니다.</small></div>`;
   }

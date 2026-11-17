@@ -106,7 +106,10 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .premium{border:1px solid var(--creamb);background:var(--creamc);border-radius:20px}
 .premium .pt{color:var(--brand)}
 .premium p small{color:var(--sub)}
-.xlink{background:var(--gray2);border:1px solid var(--line);color:var(--text);border-radius:14px;font-weight:700;min-height:48px;display:flex;align-items:center;justify-content:center}
+.xlink{background:var(--blue-l,#E8F0FF);border:2px solid var(--blue,#2F6BFF);color:var(--text);border-radius:14px;font-weight:700;min-height:56px;display:flex;align-items:center;justify-content:flex-start;gap:12px;text-align:left;padding:14px 16px}
+.xlink b{display:block;color:var(--blue,#2F6BFF);font-size:15px}
+.xlink small{display:block;font-size:13px;font-weight:500;color:var(--sub,#4E5968);margin-top:2px;line-height:1.5}
+.xlink .go{margin-left:auto;color:var(--blue,#2F6BFF);font-size:22px;font-weight:700}
 .rules{color:var(--sub2);border-top:1px solid var(--line)}
 .rules h3{color:var(--text)}
 .toast{background:var(--text);color:#fff;border-radius:12px}
