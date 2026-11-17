@@ -1,6 +1,6 @@
 /* 장대장 계산기 서비스 워커: 항상 최신(네트워크 우선), 끊기면 저장해 둔 화면으로 */
-const V = 'jdj-v24';
-const SHELL = ['/jangdaejang-calc/', '/jangdaejang-calc/buy/', '/jangdaejang-calc/switch/', '/jangdaejang-calc/buy/report/',
+const V = 'jdj-v25';
+const SHELL = ['/jangdaejang-calc/', '/jangdaejang-calc/buy/', '/jangdaejang-calc/switch/', '/jangdaejang-calc/buy/report/', '/jangdaejang-calc/villa/',
   '/jangdaejang-calc/assets/agents.js', '/jangdaejang-calc/assets/region-notes.js', '/jangdaejang-calc/assets/track.js',
   '/jangdaejang-calc/assets/pwa.js', '/jangdaejang-calc/assets/icons/icon-192.png'];
 self.addEventListener('install', e => {
