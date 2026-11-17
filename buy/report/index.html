@@ -96,7 +96,8 @@ tr.hl td{background:rgba(184,148,42,.12);font-weight:700}
 .warn{background:rgba(162,59,42,.07);border-left:4px solid var(--red);padding:10px 12px;border-radius:0 6px 6px 0;font-size:13px;margin-top:12px}
 .ok{background:rgba(78,107,46,.08);border-left:4px solid var(--green);padding:10px 12px;border-radius:0 6px 6px 0;font-size:13px;margin-top:12px}
 /* cards */
-.cards{display:grid;gap:12px}
+.cards{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
+.cards>.card{min-width:0;overflow-wrap:anywhere;word-break:keep-all}
 .card{border:1px solid var(--line);border-radius:10px;padding:16px 18px;background:var(--card);break-inside:avoid;page-break-inside:avoid}
 .card .head{display:flex;align-items:flex-start;gap:12px}
 .rank{flex:none;width:34px;height:34px;border-radius:50%;background:var(--olive);color:var(--gold2);font-weight:900;display:flex;align-items:center;justify-content:center;font-size:15px}
