@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<meta name="theme-color" content="#3B3F22">
+<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="장대장 계산기">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="/jangdaejang-calc/assets/pwa.js" defer></script>
+<title>장대장 청약 가점 계산기 — 가점·1순위·특별공급·과거 당첨 가점 비교</title>
+<meta name="description" content="한 질문씩 답하면 청약 가점(84점 만점)을 계산 근거와 함께 보여 드립니다. 1순위·특별공급 해당 가능성, 지역별 과거 당첨 가점과 내 점수 비교, 진행 중인 분양 공고까지 한 번에 확인하세요.">
+<meta property="og:title" content="장대장 청약 가점 계산기">
+<meta property="og:description" content="청약 가점 계산 + 1순위·특별공급 간이 체크 + 과거 당첨 가점 비교 + 분양 공고">
+<script>window.JDJ_CONFIG = { tool:'chungyak', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../assets/track.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#F5EFDC; --cream2:#EDE4C9; --olive:#3B3F22; --olive2:#545A30;
+  --gold:#B8942A; --gold2:#D9B85A; --ink:#23241A; --muted:#6B6A58;
+  --red:#A23B2A; --green:#4E6B2E; --amber:#9A6A10; --card:#FFFBF0; --line:#DCCFA8;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:'Noto Sans KR',system-ui,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+.top{background:var(--olive);color:#F5EFDC;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-weight:900;letter-spacing:-.02em;font-size:17px;white-space:nowrap;color:inherit;text-decoration:none}
+.brand span{color:var(--gold2)}
+.badge{border:1px solid var(--gold2);color:var(--gold2);font-size:11px;font-weight:700;letter-spacing:.12em;padding:4px 9px;border-radius:3px;white-space:nowrap}
+@media(max-width:420px){.top{padding:12px 14px}.brand{font-size:15px}.badge{font-size:10px;padding:3px 7px;letter-spacing:.06em}}
+.wrap{max-width:820px;margin:0 auto;padding:22px 16px 60px}
+h1{font-size:clamp(25px,6vw,36px);font-weight:900;letter-spacing:-.04em;line-height:1.22;margin:4px 0 8px}
+h1 em{font-style:normal;color:var(--gold)}
+h2.sec{font-size:21px;font-weight:900;letter-spacing:-.03em;margin:30px 0 4px}
+h2.sec small{display:block;font-size:13px;font-weight:500;color:var(--muted);letter-spacing:0;margin-top:2px}
+.lead{color:var(--muted);margin:0 0 16px;font-size:14.5px}
+.tag{display:inline-block;background:var(--ink);color:var(--gold2);font-size:11px;font-weight:700;letter-spacing:.14em;padding:4px 9px;border-radius:2px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.prog{height:6px;background:var(--cream2);border-radius:3px;overflow:hidden;margin-bottom:14px}
+.prog i{display:block;height:100%;background:var(--gold);transition:width .25s}
+.qn{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.06em}
+.q{font-size:20px;font-weight:900;letter-spacing:-.03em;line-height:1.35;margin:4px 0 6px;word-break:keep-all}
+.hint{font-size:13px;color:var(--muted);margin:0 0 12px;word-break:keep-all}
+.opts{display:grid;gap:8px}
+.opt{display:block;width:100%;text-align:left;font:inherit;font-size:16px;font-weight:700;padding:14px 16px;border:1.5px solid var(--line);background:#fff;border-radius:10px;cursor:pointer;color:var(--ink)}
+.opt small{display:block;font-size:12.5px;font-weight:500;color:var(--muted)}
+.opt:hover,.opt.on{border-color:var(--olive);background:#FAF6E8}
+input[type=date],input[type=number],select{width:100%;padding:12px;border:1.5px solid var(--line);border-radius:10px;font:inherit;font-size:16px;font-weight:700;background:#fff;color:var(--ink)}
+.nav{display:flex;gap:8px;margin-top:14px}
+.btn{display:inline-block;background:var(--red);color:#fff;text-decoration:none;font-weight:900;font-size:15px;padding:12px 18px;border-radius:10px;border:0;cursor:pointer;font-family:inherit;text-align:center}
+.btn.ghost{background:#fff;color:var(--olive);border:1.5px solid var(--olive)}
+.btn.olive{background:var(--olive);color:var(--cream)}
+.nav .btn{flex:1}
+.err{color:var(--red);font-size:13px;font-weight:700;margin-top:8px;min-height:1em}
+.step{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px dashed var(--line)}
+.step:last-child{border-bottom:0}
+.step b{font-size:15px}
+.step small{display:block;color:var(--muted);font-size:12px;font-weight:500;line-height:1.4}
+.stp{display:flex;align-items:center;gap:6px;flex:none}
+.stp button{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--olive);background:#fff;color:var(--olive);font-size:18px;font-weight:900;cursor:pointer;font-family:inherit}
+.stp span{min-width:22px;text-align:center;font-size:18px;font-weight:900}
+.total{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap}
+.total .big{font-size:56px;font-weight:900;letter-spacing:-.05em;line-height:1;color:var(--olive)}
+.total .big small{font-size:20px;color:var(--muted)}
+.bars{display:grid;gap:10px;margin-top:14px}
+.bar .h{display:flex;justify-content:space-between;font-size:14px;font-weight:700}
+.bar .t{height:10px;background:var(--cream2);border-radius:5px;overflow:hidden;margin:4px 0}
+.bar .t i{display:block;height:100%;background:var(--gold)}
+.bar .why{font-size:12.5px;color:var(--muted);line-height:1.5}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:520px){.grid2{grid-template-columns:1fr}}
+.grid2 label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px}
+.grid2 select,.grid2 input{padding:10px;font-size:15px}
+.chk{border-top:1px solid var(--line);padding:12px 0}
+.chk:first-child{border-top:0}
+.chk .hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.chk .hd b{font-size:16px}
+.pill{display:inline-block;font-size:12px;font-weight:900;border-radius:999px;padding:3px 10px}
+.pill.ok{background:rgba(78,107,46,.12);color:var(--green);border:1px solid rgba(78,107,46,.4)}
+.pill.chk2{background:rgba(184,148,42,.15);color:var(--amber);border:1px solid rgba(184,148,42,.5)}
+.pill.no{background:rgba(162,59,42,.1);color:var(--red);border:1px solid rgba(162,59,42,.35)}
+.chk ul{margin:6px 0 0;padding-left:18px;font-size:13.5px;display:grid;gap:3px}
+.chk .law{font-size:11.5px;color:var(--muted);margin-top:4px}
+.mine{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0}
+.mine .sc{background:var(--olive);color:var(--cream);font-weight:900;border-radius:8px;padding:6px 12px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{font:inherit;font-size:13px;font-weight:700;border:1px solid var(--line);background:#fff;color:var(--muted);padding:7px 12px;border-radius:999px;cursor:pointer}
+.seg button.on{background:var(--olive);border-color:var(--olive);color:var(--cream)}
+.sum{font-size:15px;margin:12px 0 6px;line-height:1.6}
+.sum b{font-size:18px}
+.hist{width:100%;height:auto;display:block;margin:6px 0 2px}
+.cards{display:grid;gap:10px}
+.card{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fff}
+.card .name{font-size:16.5px;font-weight:900;letter-spacing:-.02em;line-height:1.3;word-break:keep-all}
+.card .loc{font-size:12.5px;color:var(--muted)}
+.card .fl{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.card .fl span{font-size:11px;font-weight:700;background:var(--cream2);color:var(--olive);border-radius:4px;padding:2px 6px}
+.st{font-size:11.5px;font-weight:900;border-radius:4px;padding:2px 7px;margin-right:6px;vertical-align:2px}
+.st.on{background:var(--red);color:#fff}.st.pre{background:var(--gold);color:var(--ink)}.st.wait{background:var(--cream2);color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+th{text-align:left;font-size:11.5px;color:var(--muted);font-weight:700;padding:6px 4px;border-bottom:2px solid var(--line)}
+td{padding:7px 4px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;vertical-align:top}
+.num{text-align:right;white-space:nowrap}
+.up{color:var(--green);font-weight:900}.dn{color:var(--red);font-weight:900}
+.empty,.loading{padding:24px 16px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px;background:#fff;font-size:14px}
+.morebtn{display:block;width:100%;margin-top:12px;padding:12px;font:inherit;font-weight:900;font-size:14.5px;background:#fff;color:var(--olive);border:1.5px dashed var(--gold);border-radius:10px;cursor:pointer}
+.caution{font-size:12.5px;color:var(--ink);background:rgba(162,59,42,.06);border-left:4px solid var(--red);padding:8px 10px;border-radius:0 6px 6px 0;margin-top:12px;line-height:1.5}
+.how{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:12px 0;font-size:13.5px}
+.how summary{cursor:pointer;font-weight:900;color:var(--olive)}
+.how ul{margin:8px 0 4px;padding-left:18px;display:grid;gap:4px}
+.src{font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.6;word-break:break-all}
+.cta{background:var(--gold);border-radius:12px;padding:18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:22px}
+.cta p{margin:0;font-weight:900;font-size:16px}
+.cta p small{display:block;font-weight:500;font-size:12.5px;color:#3d3416}
+.foot{background:var(--gold);color:var(--ink);text-align:center;font-weight:900;padding:12px;font-size:13px}
+.foot a{color:inherit}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="top">
+  <a class="brand" href="../">★ 장대장 <span>청약</span></a>
+  <div class="badge">BETA · 참고용</div>
+</div>
+
+<div class="wrap">
+  <span class="tag">청약 가점 · 자격 체크</span>
+  <h1>내 청약 가점,<br><em>몇 점</em>일까요?</h1>
+  <p class="lead">한 번에 한 질문씩 답하시면 「주택공급에 관한 규칙」 별표 1 기준으로 가점(84점 만점)을 계산 근거와 함께 보여 드립니다. 입력한 내용은 이 기기 밖으로 보내지 않습니다.</p>
+
+  <!-- 1. 가점 계산 -->
+  <div class="box" id="wiz">
+    <div class="prog"><i id="progBar" style="width:0"></i></div>
+    <div id="qBox"></div>
+    <div class="err" id="err"></div>
+    <div class="nav"><button class="btn ghost" id="back" type="button">이전</button><button class="btn olive" id="next" type="button">다음</button></div>
+  </div>
+
+  <div id="result" hidden>
+    <div class="box" style="margin-top:14px">
+      <div class="qn">내 청약 가점 (기준일 <span id="refShow"></span>)</div>
+      <div class="total"><div class="big"><span id="tot">0</span><small> / 84점</small></div><button class="btn ghost" id="redo" type="button" style="padding:8px 12px;font-size:13px">다시 입력</button></div>
+      <div class="bars" id="bars"></div>
+      <div class="caution">참고용 계산입니다. 무주택 인정 예외(소형·저가주택 등), 부양가족 인정 여부는 청약 신청 전 청약홈 가점 계산기와 입주자모집공고문으로 꼭 확인하세요. 가점을 잘못 입력해 당첨되면 부적격 처리될 수 있습니다.</div>
+      <label style="display:block;font-size:12px;font-weight:700;color:var(--muted);margin-top:12px">기준일(입주자모집공고일) 바꾸기</label>
+      <input type="date" id="refDate">
+    </div>
+
+    <!-- 2. 자격 간이 체크 -->
+    <h2 class="sec">1순위·특별공급 간이 체크<small>몇 가지만 더 고르시면 해당 가능성을 ‘가능성 있음 / 확인 필요 / 어려움’으로 안내해 드립니다</small></h2>
+    <div class="box">
+      <div class="grid2">
+        <div><label for="eSido">청약하려는 지역</label><select id="eSido"></select></div>
+        <div><label for="eReg">규제 지역 여부</label><select id="eReg"><option value="n">일반 지역</option><option value="y">투기과열지구·청약과열지역</option><option value="u" selected>잘 모르겠어요</option></select></div>
+        <div><label for="eKind">주택 종류</label><select id="eKind"><option value="p">민영주택(대부분의 아파트)</option><option value="g">국민주택(LH·SH 등 공공분양)</option></select></div>
+        <div><label for="eSize">희망 전용면적(민영 예치금 기준)</label><select id="eSize"><option value="0">85㎡ 이하</option><option value="1">102㎡ 이하</option><option value="2">135㎡ 이하</option><option value="3">모든 면적</option></select></div>
+        <div><label for="eDep">청약통장 납입 인정금액(만원)</label><input type="number" id="eDep" inputmode="numeric" min="0" placeholder="예: 300"></div>
+        <div><label for="eCnt">납입 인정 횟수(국민주택용)</label><input type="number" id="eCnt" inputmode="numeric" min="0" placeholder="예: 24"></div>
+        <div><label for="eHead">세대주인가요?</label><select id="eHead"><option value="y">예</option><option value="n">아니요</option><option value="u" selected>잘 모르겠어요</option></select></div>
+        <div><label for="eWin">최근 5년 안에 세대원 누구라도 당첨된 적</label><select id="eWin"><option value="n">없어요</option><option value="y">있어요</option><option value="u" selected>잘 모르겠어요</option></select></div>
+        <div><label for="eHouse">세대가 가진 주택 수</label><select id="eHouse"><option value="0">0채</option><option value="1">1채</option><option value="2">2채 이상</option></select></div>
+        <div><label for="eEver">세대원 모두 과거에 집을 가진 적이 없나요?</label><select id="eEver"><option value="y">예, 한 번도 없어요</option><option value="n">아니요, 있어요</option><option value="u" selected>잘 모르겠어요</option></select></div>
+        <div><label for="eKids">미성년 자녀 수(태아 포함)</label><select id="eKids"><option>0</option><option>1</option><option>2</option><option>3</option><option value="4">4명 이상</option></select></div>
+        <div><label for="eBaby">2세 미만 자녀(태아 포함)</label><select id="eBaby"><option value="n">없어요</option><option value="y">있어요</option></select></div>
+        <div><label for="eTax">근로·사업 소득세 납부 5년 이상</label><select id="eTax"><option value="y">예</option><option value="n">아니요</option><option value="u" selected>잘 모르겠어요</option></select></div>
+        <div><label for="eOld">만 65세 이상 부모(배우자 부모 포함)를 같은 등본에서 3년 이상 부양</label><select id="eOld"><option value="n">아니요</option><option value="y">예</option></select></div>
+      </div>
+      <div id="elig" style="margin-top:12px"></div>
+    </div>
+
+    <!-- 3. 과거 당첨 가점 비교 -->
+    <h2 class="sec">내 점수로 어디가 가능했을까요?<small>청약홈 공식 결과(주택형별 당첨 가점 최저·평균)와 내 점수를 비교합니다</small></h2>
+    <div class="box" id="hist">
+      <div class="loading">과거 당첨 가점 자료를 불러오는 중입니다…</div>
+    </div>
+  </div>
+
+  <!-- 4. 분양 공고 -->
+  <h2 class="sec">진행 중·예정 분양<small>청약홈 APT 분양 공고 기준 · 접수가 끝나지 않은 공고</small></h2>
+  <div class="box">
+    <div class="grid2" style="margin-bottom:10px"><div><label for="nSido">지역</label><select id="nSido"><option value="">전체</option></select></div></div>
+    <div id="notices"><div class="loading">분양 공고를 불러오는 중입니다…</div></div>
+  </div>
+
+  <details class="how">
+    <summary>계산 기준과 한계</summary>
+    <ul>
+      <li><b>무주택기간(32점)</b> — 만 30세가 된 날부터 계속 무주택인 기간을 셉니다. 30세 전에 혼인신고를 했다면 혼인신고일부터 셉니다. 1년 미만 2점, 1년마다 2점씩 올라 15년 이상 32점입니다. 세대원 중 주택 소유자가 있으면 0점으로 계산했습니다.</li>
+      <li><b>부양가족(35점)</b> — 본인을 뺀 인원으로 0명 5점, 1명마다 5점씩 올라 6명 이상 35점입니다. 배우자는 등본이 달라도 포함되고, 직계존속은 본인이 세대주이면서 최근 3년 이상 같은 등본에 있어야 하며 주택이 있으면 제외됩니다. 자녀는 미혼만, 30세 이상 자녀는 최근 1년 이상 같은 등본에 있어야 합니다.</li>
+      <li><b>청약통장 가입기간(17점)</b> — 6개월 미만 1점, 6개월~1년 미만 2점, 1년마다 1점씩 올라 15년 이상 17점입니다. 배우자 통장 가입기간의 50%에 해당하는 기간을 최대 3점까지 더할 수 있고(배우자 1년 미만 1점·1~2년 2점·2년 이상 3점), 합계는 17점을 넘지 않습니다.</li>
+      <li><b>무주택 예외</b> — 소형·저가주택, 60세 이상 직계존속의 주택 등 무주택으로 보는 예외는 이 화면에 반영하지 않았습니다. 해당되면 공고문으로 확인하세요.</li>
+      <li><b>자격 간이 체크</b> — 소득·자산 기준, 시·도지사의 1순위 가입기간 연장(수도권 최대 24개월) 공고, 지역 거주기간 요건은 단지마다 달라 ‘확인 필요’로 안내합니다.</li>
+    </ul>
+  </details>
+
+  <div class="cta">
+    <p>청약 전략, 함께 세워 보세요<small>내 가점·특별공급 자격으로 노릴 만한 단지와 자금 계획까지 1차 상담은 무료입니다</small></p>
+    <a class="btn" id="ctaBtn" data-track="chungyak_consult" target="_blank" rel="noopener">상담 신청</a>
+  </div>
+
+  <p class="src">근거: 「주택공급에 관한 규칙」(국토교통부령, 2026. 6. 15. 시행) 제27조(국민주택 1순위)·제28조(민영주택 1순위)·제40조(다자녀)·제41조(신혼부부)·제43조(생애최초)·제46조(노부모 부양)·신생아 특별공급 조항, 별표 1(가점제 적용기준, 2024. 12. 18. 개정) — 국가법령정보센터(law.go.kr). 민영주택 예치기준금액(별표 2)은 입주자모집공고문(2025년, 같은 규칙 인용) 기준입니다.<br>
+  자료: 한국부동산원 청약홈 분양정보·청약접수 경쟁률 및 당첨 가점(공공데이터포털). 은행 전산 사정 등으로 접수 건수가 나중에 일부 바뀔 수 있습니다.<br>
+  이 화면은 공식 규칙과 공개 자료로 만든 참고용 정보이며, 청약 자격과 가점은 청약홈과 입주자모집공고문이 최종 기준입니다.</p>
+</div>
+<div class="foot">★ 장대장부동산그룹 · <a href="../">계산기 홈</a></div>
+
+<script>
+/* ===== 청약 가점 계산 (주택공급에 관한 규칙 별표 1, 2024.12.18 개정 — law.go.kr) ===== */
+const CY = (() => {
+  const d8 = s => { if (!s) return null; const d = new Date(s + 'T00:00:00'); return isNaN(d) ? null : d; };
+  const months = (a, b) => (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth()) - (b.getDate() < a.getDate() ? 1 : 0);
+  const addYears = (d, n) => { const x = new Date(d); x.setFullYear(x.getFullYear() + n); return x; };
+  const ymTxt = m => { const y = Math.floor(m / 12), r = m % 12; return (y ? y + '년' : '') + (r ? (y ? ' ' : '') + r + '개월' : (y ? '' : '0개월')); };
+  const fmtD = d => `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+  // 무주택기간: 1년 미만 2점, 1년마다 +2, 15년 이상 32점 (별표 1)
+  function homeless(a, ref) {
+    if (a.own) return { pts: 0, why: '세대원 중 주택을 가진 사람이 있어 무주택기간 점수는 0점으로 계산했습니다.' };
+    const birth = d8(a.birth); if (!birth) return { pts: 0, why: '생년월일이 없습니다.' };
+    const at30 = addYears(birth, 30);
+    let start = at30, basis = `만 30세가 된 ${fmtD(at30)}`;
+    const mar = a.married ? d8(a.marDate) : null;
+    if (mar && mar < at30) { start = mar; basis = `30세 전 혼인신고일 ${fmtD(mar)}`; }
+    const sold = a.soldDate ? d8(a.soldDate) : null;
+    if (sold && sold > start) { start = sold; basis = `마지막으로 집을 처분한 ${fmtD(sold)}`; }
+    if (start > ref) return { pts: 0, why: `무주택기간은 ${basis}부터 셉니다. 기준일에 아직 시작 전이라 0점입니다(만 30세 미만 미혼이면 0점).` };
+    const m = months(start, ref), y = Math.floor(m / 12);
+    const pts = Math.min(32, 2 + 2 * y);
+    const band = y >= 15 ? '15년 이상' : (y === 0 ? '1년 미만' : `${y}년 이상 ${y + 1}년 미만`);
+    return { pts, months: m, why: `${basis}부터 ${ymTxt(m)} → ‘${band}’ 구간 ${pts}점` };
+  }
+  // 부양가족: 0명 5점, 1명마다 +5, 6명 이상 35점
+  function dependents(n) {
+    n = Math.max(0, n | 0);
+    const pts = Math.min(35, 5 + 5 * n);
+    return { pts, why: `본인 제외 ${n}명 → ${n >= 6 ? '6명 이상' : n + '명'} ${pts}점` };
+  }
+  // 청약통장: 6개월 미만 1점, 6개월~1년 미만 2점, 이후 1년마다 +1, 15년 이상 17점
+  function accScore(m) { return m < 6 ? 1 : m < 12 ? 2 : Math.min(17, 2 + Math.floor(m / 12)); }
+  // 배우자 통장: 가입기간의 50%에 해당하는 기간으로 최대 3점 (1년 미만 1점, 1~2년 2점, 2년 이상 3점), 본인과 합쳐 17점 한도
+  function spouseScore(m) { return m == null ? 0 : m < 12 ? 1 : m < 24 ? 2 : 3; }
+  function account(a, ref) {
+    const j = d8(a.accDate);
+    if (!j || a.noAcc) return { pts: 0, why: '청약통장이 없으면 가점제 청약을 할 수 없습니다(0점으로 표시).' };
+    const m = Math.max(0, months(j, ref)), own = accScore(m);
+    let why = `본인 가입 ${fmtD(j)}부터 ${ymTxt(m)} → ${own}점`;
+    let sp = 0;
+    const sj = a.married && a.spAcc ? d8(a.spAcc) : null;
+    if (sj) { const sm = Math.max(0, months(sj, ref)); sp = spouseScore(sm); why += ` · 배우자 가입 ${ymTxt(sm)} → ${sp}점 합산`; }
+    const pts = Math.min(17, own + sp);
+    if (own + sp > 17) why += ' (17점 한도 적용)';
+    return { pts, months: m, why };
+  }
+  function total(a, refStr) {
+    const ref = d8(refStr) || new Date(new Date().toDateString());
+    const h = homeless(a, ref), d = dependents(a.deps), c = account(a, ref);
+    return { h, d, c, sum: h.pts + d.pts + c.pts };
+  }
+  return { homeless, dependents, account, accScore, spouseScore, total, months, d8 };
+})();
+
+/* ===== 1순위·특별공급 간이 체크 (주택공급에 관한 규칙, 2026.6.15 시행 — law.go.kr) ===== */
+const SIDO = ['서울특별시','부산광역시','대구광역시','인천광역시','전남광주통합특별시','대전광역시','울산광역시','세종특별자치시','경기도','강원특별자치도','충청북도','충청남도','전북특별자치도','경상북도','경상남도','제주특별자치도'];
+const CAPITAL = ['서울특별시','인천광역시','경기도'];
+// 민영주택 예치기준금액(만원) [85㎡ 이하, 102㎡ 이하, 135㎡ 이하, 모든 면적] — 규칙 별표 2(입주자모집공고문 인용 기준)
+const DEPOSIT = { sb: [300, 600, 1000, 1500], metro: [250, 400, 700, 1000], etc: [200, 300, 400, 500] };
+const depGroup = s => (s === '서울특별시' || s === '부산광역시') ? 'sb' : /광역시|특별시|통합특별시/.test(s) && s !== '세종특별자치시' ? 'metro' : 'etc';
+
+function eligibility(a, e, ref) {
+  const out = [];
+  const acc = a.noAcc || !a.accDate ? 0 : Math.max(0, CY.months(CY.d8(a.accDate), ref));
+  const cap = CAPITAL.includes(e.sido);
+  const regs = e.reg === 'u' ? ['n', 'y'] : [e.reg];
+  const noHouse = !a.own && e.house === '0';
+  const homelessTxt = noHouse ? null : '무주택세대구성원 요건을 확인하세요(세대 주택 수 ' + (e.house === '2' ? '2채 이상' : e.house + '채') + ')';
+  const grade = (bad, unk) => bad.length ? 'no' : unk.length ? 'chk2' : 'ok';
+
+  // 민영주택 1순위 (제28조 제1항 제1호)
+  function priv(reg) {
+    const bad = [], unk = [], ok = [];
+    const need = reg === 'y' ? 24 : cap ? 12 : 6;
+    if (a.noAcc || !a.accDate) bad.push('청약통장이 없습니다');
+    else if (acc < need) bad.push(`가입 ${acc}개월 — ${need}개월 이상 필요`);
+    else ok.push(`가입 ${acc}개월(필요 ${need}개월)`);
+    if (reg !== 'y' && cap) unk.push('시·도지사가 가입기간을 최대 24개월까지 늘려 공고할 수 있어요');
+    const dep = DEPOSIT[depGroup(e.sido)][e.size];
+    if (e.dep === '') unk.push(`예치기준금액 ${dep.toLocaleString()}만원 이상 납입 여부를 확인하세요`);
+    else if (+e.dep < dep) bad.push(`납입 인정금액 ${(+e.dep).toLocaleString()}만원 — 예치기준 ${dep.toLocaleString()}만원 이상 필요`);
+    else ok.push(`납입 인정금액이 예치기준 ${dep.toLocaleString()}만원 이상`);
+    if (reg === 'y') {
+      if (e.head === 'n') bad.push('세대주만 1순위가 될 수 있어요'); else if (e.head === 'u') unk.push('세대주인지 확인하세요');
+      if (e.win === 'y') bad.push('과거 5년 이내 세대원 당첨 이력이 있으면 1순위가 안 돼요'); else if (e.win === 'u') unk.push('과거 5년 이내 세대원 당첨 이력을 확인하세요');
+      if (e.house === '2') bad.push('2주택 이상 세대는 1순위가 안 돼요');
+    } else if (e.house === '2') unk.push('공공주택지구(개발제한구역 해제 50% 이상) 공급이면 2주택 이상 세대는 1순위가 안 돼요');
+    return { bad, unk, ok };
+  }
+  // 국민주택 1순위 (제27조 제1항 제1호)
+  function pub(reg) {
+    const bad = [], unk = [], ok = [];
+    const need = reg === 'y' ? 24 : cap ? 12 : 6;
+    if (a.noAcc || !a.accDate) bad.push('청약통장이 없습니다');
+    else if (acc < need) bad.push(`가입 ${acc}개월 — ${need}개월 이상 필요`);
+    else ok.push(`가입 ${acc}개월(필요 ${need}개월)`);
+    if (e.cnt === '') unk.push(`월납입금 ${need}회 이상 납입 여부를 확인하세요`);
+    else if (+e.cnt < need) bad.push(`납입 ${e.cnt}회 — ${need}회 이상 필요`);
+    else ok.push(`납입 ${e.cnt}회(필요 ${need}회)`);
+    if (reg === 'y') {
+      if (e.head === 'n') bad.push('세대주만 1순위가 될 수 있어요'); else if (e.head === 'u') unk.push('세대주인지 확인하세요');
+      if (!noHouse) bad.push('무주택세대구성원이어야 해요');
+      if (e.win === 'y') bad.push('과거 5년 이내 무주택세대구성원 당첨 이력이 있으면 안 돼요'); else if (e.win === 'u') unk.push('과거 5년 이내 당첨 이력을 확인하세요');
+    } else if (!noHouse) unk.push('국민주택은 무주택세대구성원 공급이 원칙이에요 — 공고문을 확인하세요');
+    return { bad, unk, ok };
+  }
+  const first = e.kind === 'p' ? priv : pub;
+  const rk = regs.map(r => ({ r, ...first(r) }));
+  rk.forEach(x => out.push({
+    k: '1순위', t: `${e.kind === 'p' ? '민영' : '국민'}주택 1순위 · ${x.r === 'y' ? '투기과열지구·청약과열지역' : (cap ? '수도권' : '수도권 밖') + ' 일반 지역'}`,
+    g: grade(x.bad, x.unk), items: [...x.bad, ...x.unk, ...x.ok],
+    law: e.kind === 'p' ? '규칙 제28조 제1항 제1호, 별표 2' : '규칙 제27조 제1항 제1호'
+  }));
+  const first1 = rk.every(x => !x.bad.length);       // 모든 경우에 1순위 결격이 없음
+
+  // 신혼부부 (제41조)
+  { const bad = [], unk = [];
+    const mar = a.married ? CY.d8(a.marDate) : null;
+    if (!mar) bad.push('혼인 중인 경우에 해당해요(예비 신혼부부·한부모 가족 등은 공고문 확인)');
+    else { const m = CY.months(mar, ref); if (m >= 84) bad.push(`혼인기간 ${Math.floor(m / 12)}년 — 7년 이내여야 해요`); }
+    if (!noHouse) bad.push('무주택세대구성원이어야 해요');
+    unk.push('소득 기준(민영 85㎡ 이하: 전년도 도시근로자 월평균소득 140%, 맞벌이 160% 이하)과 자산 기준을 공고문에서 확인하세요');
+    out.push({ k: '특별공급', t: '신혼부부 특별공급', g: grade(bad, unk), items: [...bad, ...unk], law: '규칙 제41조' }); }
+  // 생애최초 (제43조, 민영은 제3항)
+  { const bad = [], unk = [];
+    if (!noHouse || e.ever === 'n') bad.push('세대원 모두 과거에 주택을 가진 적이 없어야 해요'); else if (e.ever === 'u') unk.push('세대원 모두 과거 주택 소유 이력이 없는지 확인하세요');
+    if (!first1) unk.push('1순위에 해당해야 해요(위 1순위 결과 확인)');
+    if (e.tax === 'n') bad.push('근로자·자영업자로 소득세를 5년 이상 납부해야 해요'); else if (e.tax === 'u') unk.push('소득세 5년 이상 납부 여부를 확인하세요');
+    if (e.kind === 'p' && !a.married && +e.kids === 0) unk.push('민영주택은 혼인 중이거나 자녀가 있는 경우가 기본이에요. 1인 가구 등 다른 기준은 공고문을 확인하세요');
+    if (e.kind === 'g') unk.push('국민주택은 저축액이 선납금 포함 600만원 이상이어야 해요');
+    unk.push('소득 기준(민영: 전년도 도시근로자 월평균소득 160% 이하 등)을 공고문에서 확인하세요');
+    out.push({ k: '특별공급', t: '생애최초 특별공급', g: grade(bad, unk), items: [...bad, ...unk], law: '규칙 제43조' }); }
+  // 다자녀 (제40조)
+  { const bad = [], unk = [];
+    if (+e.kids < 2) bad.push('미성년 자녀가 2명 이상이어야 해요');
+    if (!noHouse) bad.push('무주택세대구성원이어야 해요');
+    unk.push('청약통장·소득·자산 요건과 배점 기준은 공고문에서 확인하세요');
+    out.push({ k: '특별공급', t: '다자녀가구 특별공급', g: grade(bad, unk), items: [...bad, ...unk], law: '규칙 제40조' }); }
+  // 노부모 부양 (제46조)
+  { const bad = [], unk = [];
+    if (e.old !== 'y') bad.push('만 65세 이상 직계존속(배우자 직계존속 포함)을 3년 이상 계속 부양해야 해요');
+    if (e.head === 'n') bad.push('세대주여야 해요'); else if (e.head === 'u') unk.push('세대주인지 확인하세요');
+    if (!noHouse) bad.push('무주택세대구성원이어야 해요(피부양자의 배우자도 무주택)');
+    if (!first1) unk.push('1순위에 해당해야 해요(위 1순위 결과 확인)');
+    out.push({ k: '특별공급', t: '노부모 부양 특별공급', g: grade(bad, unk), items: [...bad, ...unk], law: '규칙 제46조' }); }
+  // 신생아
+  { const bad = [], unk = [];
+    if (e.baby !== 'y') bad.push('기준일 현재 2세 미만(태아·입양 포함) 자녀가 있어야 해요');
+    if (!noHouse) bad.push('무주택세대구성원이어야 해요');
+    if (!first1) unk.push('1순위에 해당해야 해요(위 1순위 결과 확인)');
+    unk.push('소득 기준(국민주택 130%, 민영주택 160% 이하 등)과 자산 기준을 공고문에서 확인하세요');
+    out.push({ k: '특별공급', t: '신생아 특별공급', g: grade(bad, unk), items: [...bad, ...unk], law: '규칙 신생아 특별공급 조항' }); }
+  return out;
+}
+
+/* ===== 화면 ===== */
+const $ = id => document.getElementById(id);
+const DATA = '/jangdaejang-data/data/chungyak/';
+const FORM = 'https://docs.google.com/forms/d/e/1FAIpQLScCG7wzIlY3FE6EHU5QWo92uW5NQe7aiP-GJ9jvh41Rx2E8Zw/viewform';
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmt = n => Number(n).toLocaleString('ko-KR');
+const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+const d8txt = s => s && s.length === 8 ? `${s.slice(0, 4)}.${s.slice(4, 6)}.${s.slice(6, 8)}` : '';
+const ymTxt = s => s ? `${s.slice(0, 4)}.${s.slice(4, 6)}` : '';
+const won = m => { if (m == null) return '-'; const e = Math.floor(m / 10000), r = m % 10000; return e ? `${e}억${r ? ' ' + fmt(r) + '만' : ''}원` : `${fmt(r)}만원`; };
+
+const A = { own: null, birth: '', married: null, marDate: '', soldDate: '', sold: null, deps: 0, dep: { sp: 0, par: 0, kid: 0, kid30: 0, gk: 0 }, accDate: '', noAcc: false, spAcc: '', spNone: false, ref: today() };
+let QI = 0, LAST = null;
+
+const Q = [
+  { id: 'own', q: '지금 세대원 모두 집이 없나요?', h: '주민등록등본에 함께 있는 세대원(배우자는 등본이 달라도 포함) 기준입니다. 분양권·입주권도 주택으로 볼 수 있어요.',
+    opts: [['n', '네, 모두 집이 없어요', '무주택 세대'], ['y', '아니요, 집이 있어요', '무주택기간 점수는 0점이 됩니다']],
+    get: () => A.own === null ? null : (A.own ? 'y' : 'n'), set: v => { A.own = v === 'y'; } },
+  { id: 'birth', q: '생년월일을 알려 주세요', h: '무주택기간은 만 30세가 된 날부터 셉니다.', date: 'birth' },
+  { id: 'mar', q: '혼인신고를 하셨나요?', h: '30세 전에 혼인신고를 했다면 그날부터 무주택기간을 셉니다.',
+    opts: [['n', '아니요, 미혼이에요'], ['y', '네, 혼인신고를 했어요']], get: () => A.married === null ? null : (A.married ? 'y' : 'n'), set: v => { A.married = v === 'y'; if (A.married) A.dep.sp = 1; else A.dep.sp = 0; },
+    extra: () => A.married ? `<label class="qn" style="display:block;margin-top:12px">혼인신고일</label><input type="date" id="marDate" value="${A.marDate}">` : '' },
+  { id: 'sold', q: '무주택기간을 세기 시작한 뒤(만 30세 또는 혼인신고 이후) 집을 가졌다가 처분한 적이 있나요?', h: '있다면 마지막으로 무주택이 된 날(처분일)부터 다시 셉니다.', skip: () => A.own,
+    opts: [['n', '아니요, 없어요'], ['y', '네, 있어요']], get: () => A.sold === null ? null : (A.sold ? 'y' : 'n'), set: v => { A.sold = v === 'y'; if (!A.sold) A.soldDate = ''; },
+    extra: () => A.sold ? `<label class="qn" style="display:block;margin-top:12px">마지막으로 처분한 날(등기일)</label><input type="date" id="soldDate" value="${A.soldDate}">` : '' },
+  { id: 'deps', q: '부양가족은 몇 명인가요?', h: '본인은 빼고 셉니다. 항목별로 눌러 맞춰 주세요.', deps: true },
+  { id: 'acc', q: '청약통장(주택청약종합저축) 가입일은 언제인가요?', h: '통장 종류를 바꿨다면 최초 가입일을 넣으세요. 은행 앱의 청약통장 상세에서 확인할 수 있어요.', date: 'accDate', none: ['noAcc', '청약통장이 없어요'] },
+  { id: 'spacc', q: '배우자의 청약통장 가입일은 언제인가요?', h: '배우자 가입기간의 50%를 최대 3점까지 더할 수 있어요.', skip: () => !A.married, date: 'spAcc', none: ['spNone', '배우자는 청약통장이 없어요'] }
+];
+const DEPS = [['sp', '배우자', '등본이 달라도 포함'], ['par', '부모·조부모(배우자 쪽 포함)', '본인이 세대주이고 최근 3년 이상 같은 등본 · 주택 없음'], ['kid', '미혼 자녀(30세 미만)', '같은 등본'], ['kid30', '30세 이상 미혼 자녀', '최근 1년 이상 같은 등본'], ['gk', '미혼 손자녀', '부모가 모두 사망하고 같은 등본']];
+const visible = () => Q.filter(q => !(q.skip && q.skip()));
+
+function renderQ() {
+  const qs = visible(); QI = Math.min(QI, qs.length - 1);
+  const q = qs[QI];
+  $('progBar').style.width = `${(QI / qs.length) * 100}%`;
+  $('err').textContent = '';
+  let h = `<div class="qn">질문 ${QI + 1} / ${qs.length}</div><div class="q">${q.q}</div><p class="hint">${q.h}</p>`;
+  if (q.opts) h += `<div class="opts">${q.opts.map(o => `<button type="button" class="opt${q.get() === o[0] ? ' on' : ''}" data-v="${o[0]}">${o[1]}${o[2] ? `<small>${o[2]}</small>` : ''}</button>`).join('')}</div>${q.extra ? `<div id="qx">${q.extra()}</div>` : ''}`;
+  if (q.date) h += `<input type="date" id="qd" value="${A[q.date] || ''}" max="${today()}"${q.none && A[q.none[0]] ? ' disabled' : ''}>` + (q.none ? `<label style="display:flex;gap:8px;align-items:center;margin-top:10px;font-weight:700;font-size:14px"><input type="checkbox" id="qnone"${A[q.none[0]] ? ' checked' : ''} style="width:20px;height:20px"> ${q.none[1]}</label>` : '');
+  if (q.deps) h += DEPS.map(([k, t, s]) => `<div class="step"><div><b>${t}</b><small>${s}</small></div><div class="stp"><button type="button" data-k="${k}" data-d="-1" aria-label="${t} 빼기">−</button><span id="dv_${k}">${A.dep[k]}</span><button type="button" data-k="${k}" data-d="1" aria-label="${t} 더하기">+</button></div></div>`).join('') + `<div style="margin-top:10px;font-weight:900">합계 <span id="depSum">${depSum()}</span>명</div>`;
+  $('qBox').innerHTML = h;
+  $('back').style.visibility = QI ? 'visible' : 'hidden';
+  $('next').textContent = QI === qs.length - 1 ? '가점 계산하기' : '다음';
+  $('qBox').querySelectorAll('.opt').forEach(b => b.onclick = () => { q.set(b.dataset.v); renderQ(); if (!q.extra || !q.extra()) next(); });
+  $('qBox').querySelectorAll('.stp button').forEach(b => b.onclick = () => { const k = b.dataset.k; A.dep[k] = Math.max(0, Math.min(k === 'sp' ? 1 : 9, A.dep[k] + (+b.dataset.d))); $('dv_' + k).textContent = A.dep[k]; $('depSum').textContent = depSum(); });
+  const qn = $('qnone'); if (qn) qn.onchange = () => { A[q.none[0]] = qn.checked; $('qd').disabled = qn.checked; };
+}
+const depSum = () => Object.values(A.dep).reduce((a, b) => a + b, 0);
+function readQ() {
+  const q = visible()[QI];
+  if (q.opts) { if (q.get() === null) return '하나를 골라 주세요.';
+    if (q.id === 'mar' && A.married) { A.marDate = ($('marDate') || {}).value || ''; if (!A.marDate) return '혼인신고일을 넣어 주세요.'; }
+    if (q.id === 'sold' && A.sold) { A.soldDate = ($('soldDate') || {}).value || ''; if (!A.soldDate) return '처분일을 넣어 주세요.'; } }
+  if (q.date) { const none = q.none && A[q.none[0]]; A[q.date] = none ? '' : $('qd').value; if (!none && !A[q.date]) return '날짜를 넣어 주세요.'; }
+  if (q.deps) A.deps = depSum();
+  return '';
+}
+function next() {
+  const e = readQ(); if (e) { $('err').textContent = e; return; }
+  const qs = visible();
+  if (QI < qs.length - 1) { QI++; renderQ(); return; }
+  $('progBar').style.width = '100%';
+  showResult(true);
+}
+function showResult(scroll) {
+  A.ref = $('refDate').value || A.ref || today();
+  const r = CY.total(A, A.ref); LAST = r;
+  $('tot').textContent = r.sum; $('refShow').textContent = A.ref.replace(/-/g, '.');
+  const bar = (t, max, x) => `<div class="bar"><div class="h"><span>${t}</span><span>${x.pts} / ${max}점</span></div><div class="t"><i style="width:${x.pts / max * 100}%"></i></div><div class="why">${esc(x.why)}</div></div>`;
+  $('bars').innerHTML = bar('무주택기간', 32, r.h) + bar('부양가족 수', 35, r.d) + bar('청약통장 가입기간', 17, r.c);
+  $('wiz').hidden = true; $('result').hidden = false;
+  renderElig(); renderHist();
+  if (scroll) { $('result').scrollIntoView({ behavior: 'smooth', block: 'start' }); if (window.JDJ) JDJ.track('chungyak_score', { score: r.sum }); }
+  try { localStorage.setItem('jdj_cy', JSON.stringify(A)); } catch (e) {}
+}
+$('next').onclick = next;
+$('back').onclick = () => { readQ(); QI = Math.max(0, QI - 1); renderQ(); };
+$('redo').onclick = () => { $('wiz').hidden = false; $('result').hidden = true; QI = 0; renderQ(); $('wiz').scrollIntoView({ behavior: 'smooth' }); };
+$('refDate').onchange = () => { A.ref = $('refDate').value || today(); showResult(false); };
+
+/* 자격 체크 */
+const EIDS = ['eSido', 'eReg', 'eKind', 'eSize', 'eDep', 'eCnt', 'eHead', 'eWin', 'eHouse', 'eEver', 'eKids', 'eBaby', 'eTax', 'eOld'];
+function renderElig() {
+  const g = id => $(id).value;
+  const e = { sido: g('eSido'), reg: g('eReg'), kind: g('eKind'), size: +g('eSize'), dep: g('eDep').trim(), cnt: g('eCnt').trim(), head: g('eHead'), win: g('eWin'), house: g('eHouse'), ever: g('eEver'), kids: g('eKids'), baby: g('eBaby'), tax: g('eTax'), old: g('eOld') };
+  if (A.own && e.house === '0') { $('eHouse').value = '1'; e.house = '1'; }
+  const L = { ok: '가능성 있음', chk2: '확인 필요', no: '어려움' };
+  const rows = eligibility(A, e, CY.d8(A.ref));
+  $('elig').innerHTML = rows.map(r => `<div class="chk"><div class="hd"><span class="pill ${r.g}">${L[r.g]}</span><b>${esc(r.t)}</b></div><ul>${r.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul><div class="law">근거: 주택공급에 관한 규칙(2026.6.15 시행) ${esc(r.law.replace(/^규칙 /, ''))}</div></div>`).join('')
+    + `<div class="caution">‘가능성 있음’도 확정이 아닙니다. 지역 거주기간, 소득·자산, 재당첨 제한, 단지별 공급 비율은 입주자모집공고문이 기준입니다.</div>`;
+  if (!$('hSido').dataset.touched) { $('hSido').value = e.sido; renderHist(); }
+}
+EIDS.forEach(id => { $(id).addEventListener(id === 'eDep' || id === 'eCnt' ? 'input' : 'change', renderElig); });
+
+/* 과거 당첨 가점 비교 */
+let IDX = null, SC = {}, HB = 'all', HR = 'h', HP = 36;
+const BANDS = [['all', '전체 면적'], ['0', '60㎡ 이하'], ['1', '60~85㎡'], ['2', '85㎡ 초과']];
+function histUI() {
+  if (!IDX || !IDX.scores || !IDX.scores.n) {
+    const st = IDX && IDX.status && IDX.status.scores;
+    $('hist').innerHTML = `<div class="empty">공식 당첨 가점 자료(청약홈 청약접수 경쟁률·당첨 가점)를 준비하고 있습니다.${st === 'notRegistered' ? '' : ''}<br>자료가 들어오면 지역·면적별 과거 당첨 가점과 내 점수를 바로 비교해 드릴게요.</div><select id="hSido" hidden></select>`;
+    return false;
+  }
+  $('hist').innerHTML = `<div class="grid2"><div><label for="hSido">지역(시·도)</label><select id="hSido">${IDX.scores.sido.map(s => `<option value="${esc(s.n)}">${esc(s.n)} (${fmt(s.c)})</option>`).join('')}</select></div>
+    <div><label for="hPer">기간</label><select id="hPer"><option value="12">최근 1년</option><option value="36" selected>최근 3년</option></select></div></div>
+    <div class="seg" id="hBand" style="margin-top:10px">${BANDS.map(b => `<button type="button" data-b="${b[0]}"${b[0] === HB ? ' class="on"' : ''}>${b[1]}</button>`).join('')}</div>
+    <div class="seg" id="hRes" style="margin-top:6px"><button type="button" data-r="h" class="on">해당지역 결과</button><button type="button" data-r="all">기타지역 포함</button></div>
+    <div id="hOut"></div>`;
+  $('hSido').onchange = () => { $('hSido').dataset.touched = 1; renderHist(); };
+  $('hPer').onchange = () => { HP = +$('hPer').value; renderHist(); };
+  $('hBand').querySelectorAll('button').forEach(b => b.onclick = () => { HB = b.dataset.b; $('hBand').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); renderHist(); });
+  $('hRes').querySelectorAll('button').forEach(b => b.onclick = () => { HR = b.dataset.r; $('hRes').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); renderHist(); });
+  return true;
+}
+async function renderHist() {
+  if (!LAST || !IDX || !IDX.scores || !IDX.scores.n || !$('hOut')) return;
+  const sd = IDX.scores.sido.find(s => s.n === $('hSido').value) || IDX.scores.sido[0];
+  if (sd && $('hSido').value !== sd.n) $('hSido').value = sd.n;
+  if (!SC[sd.f]) {
+    $('hOut').innerHTML = '<div class="loading">불러오는 중입니다…</div>';
+    try { const r = await fetch(DATA + 'scores/' + sd.f + '.json'); if (!r.ok) throw 0; SC[sd.f] = (await r.json()).rows; }
+    catch (e) { $('hOut').innerHTML = '<div class="empty">자료를 불러오지 못했습니다. 잠시 뒤 다시 시도해 주세요.</div>'; return; }
+  }
+  const my = LAST.sum, now = new Date();
+  const fromYm = (() => { const d = new Date(now.getFullYear(), now.getMonth() - HP, 1); return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}`; })();
+  // 행: [시군구, 단지, 공고년월, 전용(㎡), 면적대, 거주구분, 최저, 평균, 최고, 1순위 경쟁률, 주택관리번호]
+  const rows = SC[sd.f].filter(x => x[2] >= fromYm && (HB === 'all' || String(x[4]) === HB) && (HR === 'all' || x[5] === 'h'));
+  if (!rows.length) { $('hOut').innerHTML = '<div class="empty">이 조건의 공식 당첨 가점 자료가 없습니다. 기간이나 면적을 바꿔 보세요.</div>'; return; }
+  const hit = rows.filter(x => x[6] <= my), pct = Math.round(hit.length / rows.length * 100);
+  const mins = rows.map(x => x[6]).sort((a, b) => a - b), med = mins[Math.floor(mins.length / 2)];
+  // 분포(최저 당첨 가점, 5점 간격)
+  const bins = Array(17).fill(0); mins.forEach(v => bins[Math.min(16, Math.floor(v / 5))]++);
+  const mx = Math.max(...bins), W = 340, H = 120, bw = W / 17;
+  const svg = `<svg class="hist" viewBox="0 0 ${W} ${H + 18}" role="img" aria-label="최저 당첨 가점 분포">${bins.map((c, i) => { const h = c ? Math.max(2, c / mx * H) : 0; const on = i * 5 + 4 < my || (my >= i * 5 && my < i * 5 + 5);
+      return `<rect x="${i * bw + 1}" y="${H - h}" width="${bw - 2}" height="${h}" rx="2" fill="${on ? '#B8942A' : '#DCCFA8'}"><title>${i * 5}~${i * 5 + 4}점: ${c}개</title></rect>`; }).join('')}
+    <line x1="${my / 85 * W}" x2="${my / 85 * W}" y1="0" y2="${H}" stroke="#A23B2A" stroke-width="2"/><text x="${Math.min(W - 30, Math.max(2, my / 85 * W + 3))}" y="12" font-size="11" font-weight="700" fill="#A23B2A">내 ${my}점</text>
+    ${[0, 20, 40, 60, 80].map(v => `<text x="${v / 85 * W}" y="${H + 14}" font-size="10" fill="#6B6A58">${v}</text>`).join('')}</svg>`;
+  const sorted = rows.slice().sort((a, b) => b[2].localeCompare(a[2]) || a[6] - b[6]);
+  const show = sorted.slice(0, 40);
+  $('hOut').innerHTML = `<div class="sum">${esc(sd.n)} ${HP === 12 ? '최근 1년' : '최근 3년'} 주택형 <b>${fmt(rows.length)}</b>개 중 최저 당첨 가점이 내 점수(${my}점) 이하였던 곳은 <b>${fmt(hit.length)}</b>개(${pct}%)입니다.<br><span style="font-size:13px;color:var(--muted)">최저 당첨 가점 중앙값 ${med}점 · 과거 결과일 뿐 앞으로의 당첨을 보장하지 않습니다.</span></div>
+    ${svg}<div style="font-size:11.5px;color:var(--muted)">막대: 주택형별 최저 당첨 가점 분포(5점 간격) · 진한 막대는 내 점수 이하 구간</div>
+    <table><tr><th>단지 · 주택형</th><th class="num">최저/평균</th><th class="num">1순위 경쟁률</th><th class="num">내 점수와</th></tr>
+    ${show.map(x => { const d = my - x[6]; return `<tr><td><b>${esc(x[1])}</b><br><span style="color:var(--muted)">${esc(x[0])} · ${ymTxt(x[2])} 공고 · ${x[3] ? x[3] + '㎡' : '-'}${x[5] === 'h' ? '' : x[5] === 'g' ? ' · 기타경기' : ' · 기타지역'}</span></td><td class="num">${x[6]} / ${x[7] == null ? '-' : x[7]}</td><td class="num">${x[9] ? esc(x[9]) + ':1' : '-'}</td><td class="num ${d >= 0 ? 'up' : 'dn'}">${d >= 0 ? '+' + d : d}점</td></tr>`; }).join('')}</table>
+    ${sorted.length > show.length ? `<div style="font-size:12px;color:var(--muted);margin-top:6px">최근 공고 순으로 ${show.length}개만 보여 드립니다(전체 ${fmt(sorted.length)}개).</div>` : ''}
+    <div style="font-size:11.5px;color:var(--muted);margin-top:8px">자료 기간 ${ymTxt(IDX.scores.from)}~${ymTxt(IDX.scores.to)} 공고 · 갱신 ${esc(IDX.updated)} · 가점이 없는 주택형(미달·추첨 등)은 뺐습니다.</div>`;
+}
+
+/* 분양 공고 */
+let NOT = [];
+function stOf(n, t) {
+  const b = n.sp[0] || n.rc[0], e = n.rc[1] || n.sp[1];
+  if (b && t < b) return ['pre', '접수 예정'];
+  if (e && t <= e) return ['on', '접수 중'];
+  return ['wait', '발표 대기'];
+}
+function renderNotices() {
+  const t = today().replace(/-/g, ''), sd = $('nSido').value;
+  const rows = NOT.filter(n => (!sd || n.sd === sd) && Math.max(+(n.rc[1] || 0), +(n.sp[1] || 0), +(n.pw || 0)) >= +t);
+  if (!rows.length) { $('notices').innerHTML = `<div class="empty">${NOT.length ? '이 지역에는 지금 진행 중·예정인 공고가 없습니다.' : '분양 공고 자료를 준비하고 있습니다. 잠시 뒤 다시 와 주세요.'}</div>`; return; }
+  $('notices').innerHTML = `<div class="cards">${rows.slice(0, 60).map(n => { const [c, l] = stOf(n, t);
+    const ty = (n.ty || []).filter(x => x[1]).map(x => `${Math.floor(x[1])}㎡ ${x[2] + x[3]}세대${x[4] ? ' · 최고 ' + won(x[4]) : ''}`);
+    return `<div class="card"><div class="name"><span class="st ${c}">${l}</span>${esc(n.n)}</div>
+      <div class="loc">${esc(n.ad || (n.sd + ' ' + n.g))}${n.k ? ' · ' + esc(n.k) : ''}${n.hh ? ' · 총 ' + fmt(n.hh) + '세대' : ''}</div>
+      <table style="margin-top:8px"><tr><td>모집공고</td><td class="num">${d8txt(n.pb) || '-'}</td></tr>
+      ${n.sp[0] ? `<tr><td>특별공급 접수</td><td class="num">${d8txt(n.sp[0])}${n.sp[1] && n.sp[1] !== n.sp[0] ? '~' + d8txt(n.sp[1]).slice(5) : ''}</td></tr>` : ''}
+      ${n.r1[0] ? `<tr><td>1순위 해당지역</td><td class="num">${d8txt(n.r1[0])}</td></tr>` : ''}
+      <tr><td>청약 접수</td><td class="num">${d8txt(n.rc[0]) || '-'}${n.rc[1] && n.rc[1] !== n.rc[0] ? '~' + d8txt(n.rc[1]).slice(5) : ''}</td></tr>
+      <tr><td>당첨자 발표</td><td class="num">${d8txt(n.pw) || '-'}</td></tr>${n.mv ? `<tr><td>입주 예정</td><td class="num">${ymTxt(n.mv)}</td></tr>` : ''}</table>
+      ${ty.length ? `<div style="font-size:12.5px;margin-top:6px;color:var(--muted)">주택형(일반+특별 세대): ${esc(ty.slice(0, 6).join(' / '))}${ty.length > 6 ? ' 외' : ''}</div>` : ''}
+      ${n.f && n.f.length ? `<div class="fl">${n.f.map(f => `<span>${esc(f)}</span>`).join('')}</div>` : ''}
+      ${n.u ? `<div style="margin-top:10px"><a class="btn ghost" style="padding:8px 12px;font-size:13px" href="${esc(n.u)}" target="_blank" rel="noopener" data-track="chungyak_notice">청약홈 공고 보기</a></div>` : ''}</div>`; }).join('')}</div>
+    ${rows.length > 60 ? `<div style="font-size:12px;color:var(--muted);margin-top:6px">가까운 일정 순으로 60건만 보여 드립니다.</div>` : ''}`;
+}
+
+async function init() {
+  const q = new URLSearchParams({ usp: 'pp_url' });
+  q.set('entry.658364183', `[청약] 상담 문의 | ${window.JDJ ? JDJ.label() : ''}`);
+  $('ctaBtn').href = `${FORM}?${q.toString().replace(/\+/g, '%20')}`;
+  $('eSido').innerHTML = SIDO.map(s => `<option>${s}</option>`).join('');
+  $('refDate').value = A.ref;
+  try { const s = JSON.parse(localStorage.getItem('jdj_cy') || 'null'); if (s && typeof s === 'object') { Object.assign(A, s, { ref: today() }); $('refDate').value = A.ref; } } catch (e) {}
+  renderQ();
+  try { const r = await fetch(DATA + 'index.json'); if (r.ok) IDX = await r.json(); } catch (e) {}
+  histUI();
+  if (LAST) renderHist();
+  try { const r = await fetch(DATA + 'notices.json'); if (r.ok) NOT = (await r.json()).rows || []; } catch (e) {}
+  const sds = [...new Set(NOT.map(n => n.sd).filter(Boolean))].sort((a, b) => SIDO.indexOf(a) - SIDO.indexOf(b));
+  $('nSido').innerHTML = '<option value="">전체</option>' + sds.map(s => `<option>${esc(s)}</option>`).join('');
+  $('nSido').onchange = renderNotices;
+  renderNotices();
+}
+window.JDJ_CY = { CY, eligibility, A };
+init();
+</script>
+</body>
+</html>
