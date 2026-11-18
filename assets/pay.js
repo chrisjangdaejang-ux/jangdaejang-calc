@@ -2,14 +2,14 @@
    ─────────────────────────────────────────────────────────────
    ★ 심사 후 실제 결제로 바꿀 때 고칠 곳은 이 파일 맨 위 두 줄뿐입니다.
      - TEST_MODE  : true 이면 화면 위에 '테스트 결제 · 실제 청구 없음' 배지를 보여 줍니다. 실제 결제 시작 때 false.
-     - CLIENT_KEY : 토스페이먼츠 결제위젯 클라이언트 키(공개되어도 되는 값). 실제 키는 live_gck_ 로 시작합니다.
+     - CLIENT_KEY : 토스페이먼츠 클라이언트 키(공개되어도 되는 값). API 개별 연동 키(test_ck_/live_ck_)면 결제창, 결제위젯 키(gck)면 위젯으로 동작합니다.
        (시크릿 키는 절대 여기에 넣지 마세요. 시크릿 키는 Apps Script 스크립트 속성 TOSS_SECRET_KEY 에만 넣습니다.)
    서버 주소는 assets/agents.js 의 Apps Script 웹 앱 주소(API)를 그대로 씁니다.
    가격은 화면 표시용이고, 실제 결제 금액은 서버(tools/agent-backend.gs 의 PRICE)가 정하고 대조합니다.
    ───────────────────────────────────────────────────────────── */
 (function () {
   const TEST_MODE = true;
-  const CLIENT_KEY = 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm';
+  const CLIENT_KEY = 'test_ck_c19yZcdqn4Yd7M7K7kjT1xjJfvDXxM9SP5';   // API 개별 연동 키(결제창). 결제위젯 키(gck)로 바꾸면 위젯 방식으로 자동 전환
 
   const ROOT = '/jangdaejang-calc/premium/';
   const P = window.JDJ_PAY = {

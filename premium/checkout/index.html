@@ -16,7 +16,7 @@
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=39">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/pay.css?v=1">
 <script src="/jangdaejang-calc/assets/agents.js"></script>
-<script src="/jangdaejang-calc/assets/pay.js?v=1"></script>
+<script src="/jangdaejang-calc/assets/pay.js?v=2"></script>
 </head>
 <body>
 <header class="top">
@@ -44,6 +44,7 @@
   </section>
 
   <div class="wgt"><div id="payment-method"></div><div id="agreement"></div></div>
+  <p class="msg info" id="pmNote" hidden><b>결제 수단: 신용·체크카드</b> (간편결제 포함) — [결제하기]를 누르면 토스페이먼츠 결제창이 열립니다.</p>
   <div class="msg info" id="sdkMsg"><span class="spin"></span>결제 수단을 불러오는 중입니다…</div>
 
   <label class="agree" for="refundOk">
@@ -85,7 +86,8 @@
     if (!/@/.test(v) && /^01[016789]\d{7,8}$/.test(d)) return { phone: d };
     if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return { email: v.toLowerCase() };
     return null; };
-  let widgets = null, ready = false, termsOk = true, busy = false;
+  const WINDOW_MODE = /^(test|live)_ck_/.test(P.CLIENT_KEY);
+  let widgets = null, payWin = null, ready = false, termsOk = true, busy = false;
   function sync(){
     $('payBtn').disabled = busy || !ready || !termsOk || !$('refundOk').checked || !parseContact($('contact').value);
     $('payBtn').textContent = busy ? '결제창을 여는 중…' : `${P.won(pr.amount)} 결제하기`;
@@ -98,13 +100,18 @@
     try {
       await loadSdk();
       const toss = window.TossPayments(P.CLIENT_KEY);
-      widgets = toss.widgets({ customerKey: window.TossPayments.ANONYMOUS || 'ANONYMOUS' });
-      await widgets.setAmount({ currency: 'KRW', value: pr.amount });
-      const [, agreement] = await Promise.all([
-        widgets.renderPaymentMethods({ selector: '#payment-method', variantKey: 'DEFAULT' }),
-        widgets.renderAgreement({ selector: '#agreement', variantKey: 'AGREEMENT' })
-      ]);
-      if (agreement && agreement.on) agreement.on('agreementStatusChange', s => { termsOk = !!(s && s.agreedRequiredTerms); sync(); });
+      if (WINDOW_MODE) {   // API 개별 연동 키(test_ck_/live_ck_): 토스 표준 결제창(카드)
+        payWin = toss.payment({ customerKey: window.TossPayments.ANONYMOUS || 'ANONYMOUS' });
+        $('pmNote').hidden = false;
+      } else {             // 결제위젯 연동 키(test_gck_/live_gck_)
+        widgets = toss.widgets({ customerKey: window.TossPayments.ANONYMOUS || 'ANONYMOUS' });
+        await widgets.setAmount({ currency: 'KRW', value: pr.amount });
+        const [, agreement] = await Promise.all([
+          widgets.renderPaymentMethods({ selector: '#payment-method', variantKey: 'DEFAULT' }),
+          widgets.renderAgreement({ selector: '#agreement', variantKey: 'AGREEMENT' })
+        ]);
+        if (agreement && agreement.on) agreement.on('agreementStatusChange', s => { termsOk = !!(s && s.agreedRequiredTerms); sync(); });
+      }
       ready = true; $('sdkMsg').className = 'msg'; $('sdkMsg').textContent = ''; sync();
     } catch (e) {
       $('sdkMsg').className = 'msg err';
@@ -118,11 +125,12 @@
     busy = true; sync(); err('');
     try {
       const o = await P.post('createOrder', { product: plan, keys, contact: $('contact').value.trim(), agree: $('refundOk').checked });
-      if (o.amount !== pr.amount) await widgets.setAmount({ currency: 'KRW', value: o.amount });   // 금액은 서버 기준
+      if (!WINDOW_MODE && o.amount !== pr.amount) await widgets.setAmount({ currency: 'KRW', value: o.amount });   // 금액은 서버 기준
       const base = location.origin + P.ROOT;
       const req = { orderId: o.orderId, orderName: o.orderName, successUrl: base + 'success/', failUrl: base + 'fail/' };
       if (ct.email) req.customerEmail = ct.email; else req.customerMobilePhone = ct.phone;
-      await widgets.requestPayment(req);
+      if (WINDOW_MODE) await payWin.requestPayment(Object.assign({ method: 'CARD', amount: { currency: 'KRW', value: o.amount }, card: { flowMode: 'DEFAULT' } }, req));
+      else await widgets.requestPayment(req);
     } catch (x) {
       busy = false; sync();
       if (x && x.code === 'USER_CANCEL') err('결제를 취소했습니다. 다시 결제하려면 [결제하기]를 눌러 주세요.');
