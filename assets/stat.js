@@ -45,9 +45,9 @@
   const regionGroup = v => RG[v] || '';
 
   /* ---------- 허용 목록 ---------- */
-  const EV = {feature_use:3, interest_profile:15, chungyak_result:3, report_share:5, compare_use:3}; // 이벤트별 페이지당 상한
-  const FEATURES = ['buy','report','switch','redev','villa','chungyak','tax','compare','consult','premium','mine'];
-  const PAGES = ['home','buy','report','switch','villa','chungyak','tax','agent','calc','mine'];
+  const EV = {feature_use:3, interest_profile:15, chungyak_result:3, report_share:5, compare_use:3, ad_view:6, ad_click:10}; // 이벤트별 페이지당 상한
+  const FEATURES = ['buy','report','switch','redev','villa','chungyak','tax','compare','consult','premium','mine','bunyang','ad_apply'];
+  const PAGES = ['home','buy','report','switch','villa','chungyak','tax','agent','calc','mine','bunyang','bunyang_apply'];
   const P = {
     feature:     v => FEATURES.includes(v),
     page:        v => PAGES.includes(v),
@@ -60,7 +60,9 @@
     home_own:    v => Object.values(OWN).includes(v),
     score_band:  v => /^(80~84점|[0-7]0~[0-7]9점|0~9점)$/.test(v),
     method:      v => ['share','copy'].includes(v),
-    n:           v => Number.isInteger(v) && v >= 0 && v <= 10
+    n:           v => Number.isInteger(v) && v >= 0 && v <= 10,
+    slot:        v => ['bunyang','buy','switch','villa','chungyak','tax'].includes(v),              // 분양 광고 노출 위치
+    ad_kind:     v => ['아파트','오피스텔','도시형생활주택','민간임대','무순위·잔여세대','기타'].includes(v)
   };
   function clean(params){
     const out = {};

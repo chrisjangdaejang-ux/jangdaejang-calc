@@ -1,0 +1,176 @@
+/* 분양 광고 서버 로직(tools/agent-backend.gs v12) 자동 검증 — 실행: node tools/ad-test.js
+   구글 시트를 흉내 낸 가짜 객체 위에서 신청 검증 → 시트 저장 → 승인·기간 → 공개 목록(adList) 필드를 확인합니다.
+   (실제 구글 서버에는 접속하지 않습니다.) */
+const fs = require('fs'), vm = require('vm'), path = require('path'), crypto = require('crypto');
+
+/* ---------- 가짜 구글 서비스 ---------- */
+function makeSheet() {
+  const rows = [];
+  const sh = {
+    rows,
+    getDataRange() { return { getValues: () => rows.map(r => r.slice()) }; },
+    getLastRow() { return rows.length; },
+    appendRow(r) { rows.push(r.slice()); },
+    setFrozenRows() {},
+    getRange(r, c, nr, nc) {
+      const rg = {
+        setValues(v) { v.forEach((line, i) => line.forEach((x, j) => { (rows[r - 1 + i] = rows[r - 1 + i] || [])[c - 1 + j] = x; })); return rg; },
+        setValue(x) { (rows[r - 1] = rows[r - 1] || [])[c - 1] = x; return rg; },
+        getValue() { return (rows[r - 1] || [])[c - 1]; },
+        getValues() { return [(rows[r - 1] || []).slice(c - 1, c - 1 + (nc || 1))]; },
+        setFontWeight() { return rg; }, setBackground() { return rg; }, setFontColor() { return rg; },
+        setNumberFormat() { return rg; }, insertCheckboxes() { return rg; }
+      };
+      return rg;
+    }
+  };
+  return sh;
+}
+const sheets = {};
+const book = {
+  getSheetByName: n => sheets[n] || null,
+  insertSheet: n => (sheets[n] = makeSheet()),
+  getUrl: () => 'https://docs.google.com/spreadsheets/d/TEST',
+  getSheets: () => Object.values(sheets), deleteSheet() {}
+};
+sheets['중개사'] = makeSheet(); sheets['로그'] = makeSheet();
+const props = { TOSS_SECRET_KEY: 'test_sk_FAKE_FOR_UNIT_TEST' };
+const cacheMap = new Map();
+const mails = [];
+let tossMode = 'ok', tossCalls = [];
+const ctx = {
+  console,
+  SpreadsheetApp: { getActive: () => book, openById: () => book },
+  PropertiesService: { getScriptProperties: () => ({ getProperty: k => props[k] || null, setProperty: (k, v) => { props[k] = v; } }) },
+  CacheService: { getScriptCache: () => ({ get: k => cacheMap.has(k) ? cacheMap.get(k) : null, put: (k, v) => cacheMap.set(k, v), remove: k => cacheMap.delete(k), removeAll: ks => ks.forEach(k => cacheMap.delete(k)) }) },
+  LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },
+  MailApp: { sendEmail: (...a) => mails.push(a) },
+  Session: { getEffectiveUser: () => ({ getEmail: () => 'owner@example.com' }) },
+  ContentService: { createTextOutput: s => ({ s, setMimeType() { return this; } }), MimeType: { JSON: 'json' } },
+  Utilities: {
+    getUuid: () => crypto.randomUUID(),
+    formatDate: (d, tz, f) => {
+      const p = Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false })
+        .formatToParts(d).map(x => [x.type, x.value]));
+      return f.replace('yyyy', p.year).replace('yy', p.year.slice(2)).replace('MM', p.month).replace('dd', p.day).replace('HH', p.hour === '24' ? '00' : p.hour).replace('hh', p.hour).replace('mm', p.minute);
+    },
+    computeDigest: (alg, s) => Array.from(crypto.createHash('sha256').update(s, 'utf8').digest()).map(b => b > 127 ? b - 256 : b),
+    base64Encode: s => Buffer.from(s).toString('base64'),
+    DigestAlgorithm: { SHA_256: 'sha256' }, Charset: { UTF_8: 'utf8' }
+  },
+  UrlFetchApp: {
+    fetch(url, opt) {
+      tossCalls.push({ url, opt });
+      const body = opt.payload ? JSON.parse(opt.payload) : null;
+      const send = (code, j) => ({ getResponseCode: () => code, getContentText: () => JSON.stringify(j) });
+      if (tossMode === 'reject') return send(400, { code: 'REJECT_CARD_COMPANY', message: '카드사에서 거절했습니다.' });
+      if (tossMode === 'already' && body) return send(400, { code: 'ALREADY_PROCESSED_PAYMENT', message: '이미 처리된 결제 입니다.' });
+      if (tossMode === 'already' && !body) return send(200, { status: 'DONE', orderId: ctx.__lastOrder, totalAmount: ctx.__lastAmount, method: '카드', approvedAt: new Date().toISOString() });
+      if (tossMode === 'wrongAmount') return send(200, { status: 'DONE', orderId: body.orderId, totalAmount: 100, method: '카드', approvedAt: new Date().toISOString() });
+      return send(200, { status: 'DONE', orderId: body.orderId, totalAmount: body.amount, method: '카드', approvedAt: new Date().toISOString() });
+    }
+  }
+};
+vm.createContext(ctx);
+const src = fs.readFileSync(path.join(__dirname, 'agent-backend.gs'), 'utf8');
+vm.runInContext(src + '\n;globalThis.__T = { ADC, bizOk, adText, adUrl, SH_AD };', ctx);
+const T = ctx.__T;
+const post = b => JSON.parse(ctx.doPost({ postData: { contents: JSON.stringify(b) } }).s);
+const get = p => JSON.parse(ctx.doGet({ parameter: p }).s);
+
+let pass = 0, fail = 0;
+function check(name, cond, extra) { if (cond) pass++; else { fail++; console.log('  실패:', name, extra !== undefined ? JSON.stringify(extra) : ''); } }
+const ymd = d => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+const day = n => ymd(new Date(Date.now() + n * 86400000));
+/* 검증식을 만족하는 사업자등록번호 만들기 */
+function mkBiz(p9) { const w = [1, 3, 7, 1, 3, 7, 1, 3, 5]; let s = 0; for (let i = 0; i < 9; i++) s += +p9[i] * w[i]; s += Math.floor(+p9[8] * 5 / 10); return p9 + ((10 - s % 10) % 10); }
+const BIZ = mkBiz('123456789'), BIZ2 = mkBiz('220812345');
+const base = () => ({ action: 'adApply', company: '(주)테스트개발', biz: BIZ, manager: '홍길동', phone: '010-1234-5678', danji: '테스트 더샵 1단지',
+  sido: '서울특별시', sgg: '강동구', kind: '아파트', hh: '420', pmin: '65000', pmax: '98000', approved: true, pdate: day(-3),
+  url: 'https://www.applyhome.co.kr/test', img: 'https://example.com/a.jpg', pos: ['bunyang', 'villa'], start: day(0), end: day(30),
+  agree: { label: true, score: true, stop: true } });
+const sheet = () => sheets[T.SH_AD];
+const rows = () => sheet().rows.slice(1);
+const C = T.ADC;
+
+// 1. 도우미
+check('사업자번호 검증식 통과', T.bizOk(BIZ) === BIZ.slice(0, 3) + '-' + BIZ.slice(3, 5) + '-' + BIZ.slice(5));
+check('사업자번호 검증식 실패(끝자리 다름)', T.bizOk(BIZ.slice(0, 9) + ((+BIZ[9] + 1) % 10)) === '');
+check('사업자번호 자릿수', T.bizOk('12345') === '');
+let thrown = false; try { T.adText('=HYPERLINK("x")', 60, '회사명', true); } catch (e) { thrown = true; }
+check('수식 주입(=) 거절', thrown);
+thrown = false; try { T.adUrl('http://example.com', '주소', true); } catch (e) { thrown = true; }
+check('http 주소 거절', thrown);
+thrown = false; try { T.adUrl('javascript:alert(1)', '주소', true); } catch (e) { thrown = true; }
+check('javascript: 주소 거절', thrown);
+check('꺾쇠 제거', T.adText('<b>단지</b>', 60, '단지명', true).indexOf('<') < 0);
+
+// 2. 신청 검증 (하나씩 틀리게)
+const bad = [
+  ['회사명 없음', { company: '' }], ['회사명 수식', { company: '+cmd' }], ['회사명 61자', { company: '가'.repeat(61) }],
+  ['사업자번호 틀림', { biz: BIZ.slice(0, 9) + ((+BIZ[9] + 1) % 10) }], ['연락처 틀림', { phone: '12' }],
+  ['단지명 @ 시작', { danji: '@SUM(A1)' }], ['시도 아님', { sido: '광주광역시' }], ['시군구 영문', { sgg: 'Gangdong' }],
+  ['유형 아님', { kind: '상가' }], ['세대수 0', { hh: '0' }], ['세대수 글자', { hh: '많음' }], ['분양가 최저>최고', { pmin: '99000', pmax: '50000' }],
+  ['승인인데 공고일 없음', { pdate: '' }], ['공고일 형식', { pdate: '2026/11/01' }], ['없는 날짜', { pdate: '2026-02-30' }],
+  ['공고 URL http', { url: 'http://x.com' }], ['공고 URL 없음', { url: '' }], ['이미지 URL data:', { img: 'data:image/png;base64,AAA' }],
+  ['노출 위치 없음', { pos: [] }], ['노출 위치 엉뚱', { pos: ['admin'] }], ['시작일 과거', { start: day(-2) }], ['종료<시작', { end: day(-1), start: day(0) }],
+  ['기간 1년 초과', { start: day(1), end: day(400) }], ['동의 하나 빠짐', { agree: { label: true, score: true, stop: false } }], ['동의 없음', { agree: null }],
+  ['숨은 칸 입력(봇)', { hp: 'x' }]
+];
+for (const [name, patch] of bad) { const r = post(Object.assign(base(), patch)); check('거절: ' + name, !r.ok && typeof r.err === 'string', r); }
+check('잘못된 신청은 시트에 저장 안 됨', !sheet() || rows().length === 0);
+
+// 3. 정상 신청
+let r = post(base());
+check('정상 신청 성공', r.ok && /^AD[0-9A-F]{8}$/.test(r.id), r);
+const id1 = r.id;
+check('분양광고 탭 자동 생성 + 제목줄', !!sheet() && sheet().rows[0][0] === 'id' && sheet().rows[0].length === Object.keys(C).length);
+let row = rows()[0];
+check('승인 대기(승인 false)·기간 빈칸', row[C['승인']] === false && row[C['시작일']] === '' && row[C['종료일']] === '');
+check('사업자번호·연락처 정리 저장', row[C['사업자등록번호']] === T.bizOk(BIZ) && row[C['연락처']] === '010-1234-5678');
+check('노출 위치 한글로 저장', row[C['노출위치']] === '분양,재개발·빌라');
+check('시트 주인에게 메일 1통', mails.length === 1);
+r = post(base());
+check('같은 단지 승인 대기 중 중복 신청 거절', !r.ok, r);
+r = post(Object.assign(base(), { biz: BIZ2, danji: '승인전 단지', approved: false, pdate: '', pos: ['buy', 'buy', 'tax'], img: '', pmin: '', pmax: '' }));
+check('모집공고 승인 전 신청도 접수(운영자 검토), 위치 중복 제거', r.ok && rows()[1][C['노출위치']] === '내집마련,세금' && rows()[1][C['모집공고승인']] === '승인 전', r);
+const id2 = r.id;
+r = post(Object.assign(base(), { biz: BIZ2, danji: '수식 \u0000단지 ', phone: '02-3444-5008' }));
+check('제어문자 제거·02 번호 정리', r.ok && rows()[2][C['단지명']] === '수식 단지' && rows()[2][C['연락처']] === '02-3444-5008', r);
+const id3 = r.id;
+
+// 4. 공개 목록: 승인 전에는 비어 있음
+let L = get({ action: 'adList' });
+check('승인 전 공개 목록 비어 있음', L.ok && L.ads.length === 0, L);
+// 승인 + 기간 입력 (운영자가 시트에서 하는 일 흉내)
+cacheMap.clear();
+const setRow = (id, h, v) => { const x = sheet().rows.find(rr => rr[0] === id); x[C[h]] = v; };
+setRow(id1, '승인', true); setRow(id1, '시작일', new Date(Date.now() - 86400000)); setRow(id1, '종료일', new Date(Date.now() + 10 * 86400000));
+setRow(id2, '승인', true); setRow(id2, '시작일', day(3)); setRow(id2, '종료일', day(20));          // 아직 시작 전
+setRow(id3, '승인', true); setRow(id3, '시작일', day(-20)); setRow(id3, '종료일', day(-1));        // 기간 끝남
+L = get({ action: 'adList' });
+check('승인·기간 내 광고만 공개', L.ok && L.ads.length === 1 && L.ads[0].id === id1, L);
+const ad = L.ads[0] || {};
+check('공개 필드', ad.co === '(주)테스트개발' && ad.n === '테스트 더샵 1단지' && ad.sd === '서울특별시' && ad.k === '아파트' && ad.hh === 420
+  && ad.pmin === 65000 && ad.pmax === 98000 && ad.ap === true && ad.u === 'https://www.applyhome.co.kr/test' && ad.pos.join() === 'bunyang,villa', ad);
+const pub = JSON.stringify(L);
+check('공개 목록에 연락처·사업자번호·담당자 없음', !pub.includes('010-1234-5678') && !pub.includes('1234-5678') && !pub.includes(BIZ.slice(5)) && !pub.includes('홍길동') && !pub.includes('02-3444'));
+check('공개 목록 5분 캐시', cacheMap.has('adlist'));
+setRow(id1, '승인', false);
+check('캐시 중에는 그대로(5분 안에 반영)', get({ action: 'adList' }).ads.length === 1);
+cacheMap.delete('adlist');
+check('승인 해제 → 목록에서 빠짐', get({ action: 'adList' }).ads.length === 0);
+setRow(id1, '승인', true); setRow(id1, '공고문URL', 'javascript:alert(1)'); cacheMap.delete('adlist');
+check('시트에서 주소가 바뀌어도 https 아니면 공개 안 함', get({ action: 'adList' }).ads.length === 0);
+
+// 5. 하루 신청 상한
+cacheMap.set('adday:' + ymd(new Date()), '30');
+r = post(Object.assign(base(), { biz: mkBiz('333333333'), danji: '상한 테스트' }));
+check('하루 신청 상한', !r.ok && /내일/.test(r.err), r);
+
+// 6. 기존 기능 영향 없음
+check('알 수 없는 action', post({ action: 'nope' }).err === 'unknown');
+check('중개사 목록(list) 동작', get({ action: 'list' }).ok === true);
+
+console.log(`분양 광고 서버 로직 검증: ${pass}개 통과, ${fail}개 실패`);
+process.exit(fail ? 1 : 0);

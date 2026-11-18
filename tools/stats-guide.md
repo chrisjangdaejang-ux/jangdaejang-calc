@@ -19,6 +19,8 @@
 | `chungyak_result` | 청약 가점 계산 결과를 봤을 때 | `score_band` 가점 10점 구간 · `home_own` 무주택/유주택 |
 | `report_share` | 리포트 공유 버튼 | `method`: share(휴대폰 공유) / copy(주소 복사) |
 | `compare_use` | 단지 비교 화면을 봤을 때 | `n` 비교한 단지 수 |
+| `ad_view` | '분양 광고' 칸에 광고가 보였을 때 | `slot` 노출 위치(bunyang·villa …) · `n` 보인 광고 수 |
+| `ad_click` | 분양 광고의 '공고·홈페이지 보기'를 눌렀을 때 | `slot` 노출 위치 · `ad_kind` 주택 유형 · `sido` 시·도 (광고 id·단지명은 보내지 않음) |
 
 모든 이벤트에 `page`(보낸 페이지)가 붙습니다.
 

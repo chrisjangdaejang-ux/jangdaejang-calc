@@ -1,5 +1,14 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v11: 프리미엄 리포트 결제 · 토스페이먼츠)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v12: 분양 광고 신청·승인·노출)
+ *
+ * v12 변경 요약
+ *  - 분양 광고(시행사·분양대행사) 신청·노출 기능 추가. 기존 제휴·알림·리뷰·결제(v11) 기능은 그대로입니다.
+ *  - 새 요청(action): adApply(POST, 광고 신청) · adList(GET, 승인 + 시작일≤오늘≤종료일 인 광고만 공개 필드로)
+ *  - '분양광고' 시트(탭)는 첫 신청 때 자동으로 만들어집니다. 운영자가 [승인] 체크 + [시작일]·[종료일] 입력 → 5분 안에 노출.
+ *  - 연락처·사업자등록번호·담당자는 시트에만 저장하고 공개 목록(adList)에는 절대 넣지 않습니다.
+ *  - 입력 검증: 길이 제한, https 주소만, 사업자등록번호 검증, 셀 수식 주입 차단(=,+,-,@ 로 시작하는 글 거절), 꺾쇠(<>) 제거.
+ *  - 광고는 어떤 점수·추천 순위에도 반영하지 않습니다(화면에는 항상 '광고' 표시).
+ *  - 검증: node tools/ad-test.js (광고) · node tools/pay-test.js (결제, 49개)
  *
  * v11 변경 요약
  *  - 프리미엄 리포트 유료 결제(토스페이먼츠 결제위젯) 서버 기능 추가. 기존 제휴·알림·리뷰 기능은 그대로입니다.
@@ -108,6 +117,7 @@ function statusOf(a) {
 function doGet(e) {
   const act = (e.parameter || {}).action;
   if (act === 'list') return out(listPublic());
+  if (act === 'adList') return out(adList());
   if (act === 'reviews') return out(reviewsPublic(e.parameter.a));
   if (act === 'unsub') return unsubscribe(e.parameter);
   return out({ ok: false, err: 'unknown' });
@@ -125,6 +135,7 @@ function doPost(e) {
   try { b = JSON.parse(e.postData.contents); } catch (x) { return out({ ok: false, err: '요청 형식 오류' }); }
   if (b.action === 'log') return out(logEvents(b));
   if (PAY_ACTIONS[b.action]) return out(payDispatch(b));
+  if (b.action === 'adApply') return out(adDispatch(b));
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
   try {
@@ -885,4 +896,187 @@ function findOrder(b) {
   const t = newToken();
   setO(o.row, '열람토큰', hashOf(t));
   return { ok: true, orderId: id, token: t };
+}
+
+
+/* =====================================================================
+   분양 광고 (시행사·분양대행사) — v12
+   흐름: 사이트 bunyang/apply/ 에서 adApply → '분양광고' 시트에 [승인 대기]로 저장 + 시트 주인에게 메일
+         → 운영자가 입주자모집공고·사업자 확인 후 [승인] 체크, [시작일]·[종료일] 입력
+         → 사이트(assets/ads.js)가 adList 로 승인·기간 내 광고만 받아 '광고' 표시와 함께 노출
+   · 공개 목록에는 회사명·단지·지역·유형·세대수·분양가 범위·공고 정보·URL·이미지·노출 위치·기간만 (연락처·사업자번호·담당자 제외)
+   ===================================================================== */
+const SH_AD = '분양광고';
+const ADH = ['id','신청일','회사명','사업자등록번호','담당자','연락처','단지명','시도','시군구','유형','세대수',
+             '분양가최저(만원)','분양가최고(만원)','모집공고승인','모집공고일','공고문URL','노출위치','희망시작일','희망종료일',
+             '대표이미지URL','동의','승인','시작일','종료일','메모'];
+const ADC = Object.fromEntries(ADH.map((h, i) => [h, i]));
+const AD_SIDO = ['서울특별시','부산광역시','대구광역시','인천광역시','전남광주통합특별시','대전광역시','울산광역시','세종특별자치시','경기도',
+                 '강원특별자치도','충청북도','충청남도','전북특별자치도','경상북도','경상남도','제주특별자치도'];
+const AD_KIND = ['아파트','오피스텔','도시형생활주택','민간임대','무순위·잔여세대','기타'];
+const AD_POS = { bunyang: '분양', buy: '내집마련', switch: '갈아타기', villa: '재개발·빌라', chungyak: '청약', tax: '세금' };
+const AD_MAX_DAYS = 366;      // 한 번에 신청할 수 있는 최대 노출 기간(일)
+const AD_DAILY = 30;          // 하루 전체 신청 상한(스팸 방지)
+
+function adDispatch(b) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    if (b.action === 'adApply') return adApply(b);
+    return { ok: false, err: 'unknown' };
+  } catch (x) {
+    return { ok: false, err: String(x.message || x) };
+  } finally {
+    lock.releaseLock();
+  }
+}
+function adSheet() {
+  const ss = book();
+  let sh = ss.getSheetByName(SH_AD);
+  if (!sh) {
+    sh = ss.insertSheet(SH_AD);
+    sh.getRange(1, 1, 1, ADH.length).setValues([ADH]).setFontWeight('bold').setBackground('#3B3F22').setFontColor('#F5EFDC');
+    sh.setFrozenRows(1);
+    sh.getRange(2, ADC['시작일'] + 1, 999, 2).setNumberFormat('yyyy-mm-dd');
+  }
+  return sh;
+}
+/* 글자 정리: 제어문자·꺾쇠 제거, 길이 제한, 셀 수식으로 읽힐 수 있는 시작 문자(= + - @) 거절 */
+function adText(v, max, label, need) {
+  let x = String(v == null ? '' : v).replace(/[\u0000-\u001F\u007F<>]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!x) { if (need) throw new Error(label + '을(를) 입력해 주세요.'); return ''; }
+  if (x.length > max) throw new Error(`${label}은(는) ${max}자 이내로 입력해 주세요.`);
+  if (/^[=+\-@\t\r]/.test(x)) throw new Error(`${label}은(는) = + - @ 기호로 시작할 수 없습니다.`);
+  return x;
+}
+function adUrl(v, label, need) {
+  const x = String(v == null ? '' : v).trim();
+  if (!x) { if (need) throw new Error(label + '을(를) 입력해 주세요.'); return ''; }
+  if (x.length > 300 || !/^https:\/\/[A-Za-z0-9.-]+\.[A-Za-z]{2,}(:\d{2,5})?(\/[^\s"'<>\\`]*)?$/.test(x)) throw new Error(label + '은(는) https:// 로 시작하는 올바른 주소만 입력할 수 있습니다.');
+  return x;
+}
+function adDate(v, label, need) {
+  const x = String(v == null ? '' : v).trim();
+  if (!x) { if (need) throw new Error(label + '을(를) 입력해 주세요.'); return ''; }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(x)) throw new Error(label + ' 형식이 올바르지 않습니다(예: 2026-12-01).');
+  const d = new Date(x + 'T00:00:00');
+  if (isNaN(d.getTime()) || ymd(d) !== x) throw new Error(label + '이(가) 올바른 날짜가 아닙니다.');
+  return x;
+}
+function adInt(v, label, lo, hi, need) {
+  const s = String(v == null ? '' : v).replace(/,/g, '').trim();
+  if (!s) { if (need) throw new Error(label + '을(를) 입력해 주세요.'); return ''; }
+  if (!/^\d{1,9}$/.test(s) || +s < lo || +s > hi) throw new Error(`${label}은(는) ${lo.toLocaleString()}~${hi.toLocaleString()} 사이 숫자로 입력해 주세요.`);
+  return +s;
+}
+/* 사업자등록번호 10자리 검증(국세청 검증식) */
+function bizOk(v) {
+  const d = String(v || '').replace(/[^0-9]/g, '');
+  if (d.length !== 10) return '';
+  const w = [1, 3, 7, 1, 3, 7, 1, 3, 5];
+  let s = 0;
+  for (let i = 0; i < 9; i++) s += +d[i] * w[i];
+  s += Math.floor(+d[8] * 5 / 10);
+  return (10 - s % 10) % 10 === +d[9] ? `${d.slice(0, 3)}-${d.slice(3, 5)}-${d.slice(5)}` : '';
+}
+function adPhone(v) {
+  const d = String(v || '').replace(/[^0-9]/g, '');
+  if (!/^(01[016789]\d{7,8}|0[2-6]\d{7,9}|1[5-9]\d{6})$/.test(d)) throw new Error('담당자 연락처(휴대폰 또는 회사 전화번호)를 확인해 주세요.');
+  if (d.length === 8) return `${d.slice(0, 4)}-${d.slice(4)}`;
+  if (d.startsWith('02')) return `02-${d.slice(2, -4)}-${d.slice(-4)}`;
+  return `${d.slice(0, 3)}-${d.slice(3, -4)}-${d.slice(-4)}`;
+}
+function adApply(b) {
+  const cache = CacheService.getScriptCache(), dk = 'adday:' + ymd(new Date());
+  const n = Number(cache.get(dk) || 0);
+  if (n >= AD_DAILY) throw new Error('오늘 신청이 많아 내일 다시 신청해 주세요.');
+  if (String(b.hp || '')) throw new Error('신청을 처리하지 못했습니다.');            // 자동 입력 방지용 숨은 칸
+  const company = adText(b.company, 60, '회사명', true);
+  const biz = bizOk(b.biz);
+  if (!biz) throw new Error('사업자등록번호 10자리를 확인해 주세요.');
+  const manager = adText(b.manager, 30, '담당자 이름', true);
+  const phone = adPhone(b.phone);
+  const danji = adText(b.danji, 60, '단지명', true);
+  const sido = String(b.sido || '');
+  if (AD_SIDO.indexOf(sido) < 0) throw new Error('시·도를 선택해 주세요.');
+  const sgg = adText(b.sgg, 30, '시·군·구', true);
+  if (!/^[가-힣0-9 ]{1,30}$/.test(sgg)) throw new Error('시·군·구는 한글로 입력해 주세요(예: 강동구).');
+  const kind = String(b.kind || '');
+  if (AD_KIND.indexOf(kind) < 0) throw new Error('주택 유형을 선택해 주세요.');
+  const hh = adInt(b.hh, '세대수', 1, 100000, true);
+  const pmin = adInt(b.pmin, '분양가 최저(만원)', 100, 10000000, false), pmax = adInt(b.pmax, '분양가 최고(만원)', 100, 10000000, false);
+  if (pmin !== '' && pmax !== '' && pmin > pmax) throw new Error('분양가 최저가 최고보다 클 수 없습니다.');
+  const approved = b.approved === true || b.approved === 'y';
+  const pdate = adDate(b.pdate, '입주자모집공고일', approved);
+  const url = adUrl(b.url, '공고문·홈페이지 주소', true);
+  const img = adUrl(b.img, '대표 이미지 주소', false);
+  const pos = (Array.isArray(b.pos) ? b.pos : []).map(String).filter((p, i, a) => AD_POS[p] && a.indexOf(p) === i);
+  if (!pos.length) throw new Error('희망 노출 위치를 하나 이상 골라 주세요.');
+  const start = adDate(b.start, '희망 시작일', true), end = adDate(b.end, '희망 종료일', true);
+  const t0 = ymd(new Date());
+  if (start < t0) throw new Error('희망 시작일은 오늘 이후로 골라 주세요.');
+  if (end < start) throw new Error('희망 종료일은 시작일 이후로 골라 주세요.');
+  if ((new Date(end + 'T00:00:00') - new Date(start + 'T00:00:00')) / 86400000 > AD_MAX_DAYS) throw new Error('노출 기간은 한 번에 1년까지 신청할 수 있습니다.');
+  const ag = b.agree || {};
+  if (!(ag.label === true && ag.score === true && ag.stop === true)) throw new Error('필수 동의 3가지에 모두 동의해 주세요.');
+  const sh = adSheet();
+  const dup = sh.getDataRange().getValues().slice(1).some(r => String(r[ADC['사업자등록번호']]) === biz && String(r[ADC['단지명']]) === danji && r[ADC['승인']] !== true);
+  if (dup) throw new Error('같은 단지로 승인 대기 중인 신청이 있습니다. 확인 후 연락드릴게요.');
+  const id = 'AD' + Utilities.getUuid().replace(/-/g, '').slice(0, 8).toUpperCase();
+  const row = [];
+  row[ADC['id']] = id; row[ADC['신청일']] = new Date(); row[ADC['회사명']] = company; row[ADC['사업자등록번호']] = biz;
+  row[ADC['담당자']] = manager; row[ADC['연락처']] = phone; row[ADC['단지명']] = danji; row[ADC['시도']] = sido; row[ADC['시군구']] = sgg;
+  row[ADC['유형']] = kind; row[ADC['세대수']] = hh; row[ADC['분양가최저(만원)']] = pmin; row[ADC['분양가최고(만원)']] = pmax;
+  row[ADC['모집공고승인']] = approved ? '승인' : '승인 전'; row[ADC['모집공고일']] = pdate; row[ADC['공고문URL']] = url;
+  row[ADC['노출위치']] = pos.map(p => AD_POS[p]).join(','); row[ADC['희망시작일']] = start; row[ADC['희망종료일']] = end;
+  row[ADC['대표이미지URL']] = img; row[ADC['동의']] = '광고 표시·점수 무관·허위과장 시 중단 동의 ' + t0;
+  row[ADC['승인']] = false; row[ADC['시작일']] = ''; row[ADC['종료일']] = ''; row[ADC['메모']] = '';
+  sh.appendRow(ADH.map((h, i) => row[i] === undefined ? '' : row[i]));
+  sh.getRange(sh.getLastRow(), ADC['승인'] + 1).insertCheckboxes();
+  cache.put(dk, String(n + 1), 86400);
+  if (NOTIFY) {
+    try {
+      MailApp.sendEmail(Session.getEffectiveUser().getEmail(), `[장대장 분양광고] 새 신청: ${danji}`,
+        `${company} (${biz}) · 담당 ${manager} ${phone}\n단지 ${danji} · ${sido} ${sgg} · ${kind} · ${hh}세대\n`
+        + `모집공고 ${approved ? '승인 ' + pdate : '승인 전'} · ${url}\n노출 ${row[ADC['노출위치']]} · ${start}~${end}\n`
+        + `확인: 사업자 상태(국세청 홈택스)·입주자모집공고(청약홈) 내용과 광고 내용이 일치하는지 확인 후 [승인] 체크, [시작일]·[종료일]을 입력하세요.\n${book().getUrl()}`);
+    } catch (e) {}
+  }
+  return { ok: true, id: id };
+}
+function adDay(v) {
+  if (Object.prototype.toString.call(v) === '[object Date]') return isNaN(v.getTime()) ? '' : ymd(v);
+  const s = String(v || '').trim();
+  return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : '';
+}
+/* 공개 목록: 승인 + 시작일≤오늘≤종료일, 공개 필드만 (연락처·사업자등록번호·담당자 제외) */
+function adList() {
+  const cache = CacheService.getScriptCache();
+  const hit = cache.get('adlist');
+  if (hit) return JSON.parse(hit);
+  const sh = book().getSheetByName(SH_AD);
+  const t0 = ymd(new Date()), ads = [];
+  const back = Object.fromEntries(Object.entries(AD_POS).map(([k, v]) => [v, k]));
+  if (sh) {
+    const v = sh.getDataRange().getValues();
+    for (let i = 1; i < v.length; i++) {
+      const r = v[i];
+      if (!r[ADC['id']] || r[ADC['승인']] !== true) continue;
+      const s0 = adDay(r[ADC['시작일']]), e0 = adDay(r[ADC['종료일']]);
+      if (!s0 || !e0 || s0 > t0 || e0 < t0) continue;
+      const safeUrl = u => /^https:\/\/[^\s"'<>\\`]+$/.test(String(u || '')) ? String(u) : '';
+      const u = safeUrl(r[ADC['공고문URL']]);
+      if (!u) continue;
+      ads.push({
+        id: String(r[ADC['id']]), co: String(r[ADC['회사명']]), n: String(r[ADC['단지명']]), sd: String(r[ADC['시도']]), sg: String(r[ADC['시군구']]),
+        k: String(r[ADC['유형']]), hh: Number(r[ADC['세대수']]) || null,
+        pmin: Number(r[ADC['분양가최저(만원)']]) || null, pmax: Number(r[ADC['분양가최고(만원)']]) || null,
+        ap: String(r[ADC['모집공고승인']]) === '승인', pd: adDay(r[ADC['모집공고일']]), u: u, img: safeUrl(r[ADC['대표이미지URL']]),
+        pos: String(r[ADC['노출위치']]).split(',').map(x => back[x.trim()]).filter(Boolean), s: s0, e: e0
+      });
+    }
+  }
+  const res = { ok: true, at: t0, ads: ads };
+  cache.put('adlist', JSON.stringify(res), 300);
+  return res;
 }
