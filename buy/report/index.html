@@ -747,7 +747,7 @@ function futureReasons(x){
     r.push(['f', `${sggName(x.code)} 지역 전망` + (f.gs!=null?`: 같은 시·도 구·시 중 상위 ${Math.max(1,100-f.gs)}%`+(RUSED()?'':' (검증 중 — 점수에는 아직 미반영)'):'') + (bits.length?` — ${bits.join(' · ')}`:'')]);
   }
   if (f.dd!=null && Math.abs(f.dd)>=0.03) r.push([f.dd>0?'f':'c', f.dd>0 ? `최근 3년 하락 구간에서 구 평균보다 ${pct(f.dd)}%p 덜 빠짐 — 집값이 흔들릴 때 잘 버틴 단지` : `최근 3년 하락 구간에서 구 평균보다 ${pct(f.dd)}%p 더 빠짐 — 시장 따라 출렁임이 큰 편`]);
-  if (f.rc!=null && Math.abs(f.rc)>=0.03) r.push(['f', f.rc>0 ? `직전 고점 대비 회복이 구 평균보다 ${pct(f.rc)}%p 빠름 — 사람들이 먼저 찾는 단지` : `직전 고점 대비 회복이 구 평균보다 ${pct(f.rc)}%p 느림 — 아직 고점까지 여유`]);
+  if (f.rc!=null && Math.abs(f.rc)>=0.03 && Math.abs(f.rc)<0.5) r.push(['f', f.rc>0 ? `직전 고점 대비 회복이 구 평균보다 ${pct(f.rc)}%p 빠름 — 사람들이 먼저 찾는 단지` : `직전 고점 대비 회복이 구 평균보다 ${pct(f.rc)}%p 느림 — 아직 고점까지 여유`]);
   if (f.by || f.hh){ const age=f.by ? new Date().getFullYear()-f.by : null;
     const parts=[]; if(f.by) parts.push(`${f.by}년 준공(${age}년차)`); if(f.hh) parts.push(`${f.hh.toLocaleString()}세대`);
     const tags=[]; if(age!=null && age<=10) tags.push('신축');
@@ -989,7 +989,7 @@ async function renderCompare(){
   add('미래가치 점수', items.map(x=>{ const f=x.fx; return f&&f.fv!=null ? `${f.fv}점<small>${esc(sidoOfCode(x.code))} 상위 ${Math.max(1,100-f.fv)}%${f.fvg!=null?` · ${esc(sggName(x.code))} 안 상위 ${Math.max(1,100-f.fvg)}%`:''}</small>` : '-<small>데이터 부족</small>'; }), items.map(x=>x.fx&&x.fx.fv!=null?x.fx.fv:null), true);
   add(RUSED()?'지역 전망':'지역 전망<small>검증 중·참고</small>', items.map(x=>{ const f=x.fx||{}; return f.gs!=null ? `${esc(sggName(x.code))} 상위 ${Math.max(1,100-f.gs)}%<small>${f.sup!=null?`2년 입주 물량 ${Math.round(f.sup*1000)/10}%`:''}${f.pg!=null?` · 인구 ${f.pg>=0?'+':''}${Math.round(f.pg*1000)/10}%`:''}${f.un!=null?` · 미분양 ${(f.un*100).toFixed(1)}%`:''}${f.jb!=null?` · 일자리 ${f.jb>=0?'+':''}${(f.jb*100).toFixed(1)}%`:''}</small>` : '-'; }), (RUSED()?items.map(x=>x.fx&&x.fx.gs!=null?x.fx.gs:null):null), true);
   add('하락기 방어력', items.map(x=>{ const d=x.fx&&x.fx.dd; return d!=null ? `구 평균보다 ${pc(Math.abs(d))}%p ${d>=0?'덜':'더'} 빠짐` : '-'; }), items.map(x=>x.fx?x.fx.dd:null), true);
-  add('고점 회복', items.map(x=>{ const d=x.fx&&x.fx.rc; return d!=null ? `구 평균보다 ${pc(Math.abs(d))}%p ${d>=0?'빠름':'느림'}` : '-'; }), items.map(x=>x.fx?x.fx.rc:null), true);
+  add('고점 회복', items.map(x=>{ const d=x.fx&&x.fx.rc; return (d!=null&&Math.abs(d)<0.5) ? `구 평균보다 ${pc(Math.abs(d))}%p ${d>=0?'빠름':'느림'}` : '-'; }), items.map(x=>x.fx?x.fx.rc:null), true);
   add('최근 6개월', items.map(x=>x.ch==null?'-':`${x.ch>=0?'+':''}${(x.ch*100).toFixed(1)}%<small>${x.ch>=0.08?'급등 — 추격 주의':x.ch>=0?'완만한 상승':'조정 구간'}</small>`), items.map(x=>x.ch==null?null:sMomOf(x.ch)), true);
   add('동 대장 대비', items.map(x=>{ const f=x.fx||{}; if(f.lg==null) return '-'; return (f.ln===x.apt||f.lg>=0.995) ? '동 대장 단지' : `대장(${esc(f.ln||'')})보다 ${pc(1-f.lg)}% 낮음`; }), null);
   add('입지·단지',null,null,null,true);
