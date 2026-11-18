@@ -233,7 +233,7 @@
       '<div class="f2"><div class="fl"><label>지금 시세</label><div class="box"><input class="price money" inputmode="numeric" placeholder="80,000"><span>만</span></div></div>' +
       '<div class="fl"><label>필요경비</label><div class="box"><input class="exp money" inputmode="numeric" placeholder="0"><span>만</span></div></div></div>' +
       '<div class="f2"><div class="fl"><label>거주한 기간</label><div class="box"><input class="resid" inputmode="numeric" placeholder="0"><span>개월</span></div></div>' +
-      '<div class="fl"><label>&nbsp;</label><label class="tog" style="min-height:48px;padding:8px 10px;font-size:13.5px"><input type="checkbox" class="living"> 지금 거주 중</label></div></div>' +
+      '<div class="fl"><label>&nbsp;</label><label class="tog" style="min-height:48px;padding:8px 10px;font-size:14.5px"><input type="checkbox" class="living"> 지금 거주 중</label></div></div>' +
       '<div class="fl askw" hidden><label>사실 때 조정대상지역이었나요? (자동 판정이 어려운 지역·기간)</label><select class="s ask"><option value="y">네 (모르면 이쪽이 보수적)</option><option value="n">아니요</option></select></div>';
     $('hList').appendChild(el);
     const rp = regionPicker(el.querySelector('.sido'), el.querySelector('.gu'), def ? def.rg : { sido: '서울', gu: '강남구' });

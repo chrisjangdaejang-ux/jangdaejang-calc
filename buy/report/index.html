@@ -14,7 +14,7 @@
 <script src="/jangdaejang-calc/assets/pwa.js" defer></script>
 <script src="/jangdaejang-calc/assets/biz.js" defer></script>
 <title>장대장 맞춤 매수 리포트</title>
-<meta name="description" content="내 소득·현금·대출 조건으로 실제 살 수 있는 아파트 단지를 실거래가로 골라 추천 이유와 자금 계획까지 정리해 드립니다.">
+<meta name="description" content="내 예산으로 살 수 있는 집 중 미래가치가 가장 좋은 집을 실거래가로 골라 추천 이유와 자금 계획까지 정리해 드립니다.">
 <meta property="og:title" content="장대장 맞춤 매수 리포트 — 내 조건으로 살 수 있는 단지는?">
 <meta property="og:description" content="국토부 실거래가 기준 예산 맞춤 단지 추천 + 자금 계획표 + 대출 시나리오">
 <script>window.JDJ_CONFIG = { tool:'report', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
@@ -29,38 +29,40 @@
 .wrap{max-width:960px;margin:0 auto;padding:22px 18px 60px}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
 .hzbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:14px}
-.hzbar b{font-size:14px;margin-right:4px}
-.hzbar .hzv{font-size:15px;font-weight:900;color:var(--cream);background:var(--olive);border-radius:999px;padding:4px 14px;margin-left:auto}
+.hzbar b{font-size:15px;margin-right:4px}
+.hzbar .hzv{font-size:16px;font-weight:900;color:var(--cream);background:var(--olive);border-radius:999px;padding:4px 14px;margin-left:auto}
 .hzbar input[type=range]{width:100%;accent-color:var(--olive);margin:8px 0 0;height:28px}
-.hzticks{width:calc(100% - 16px);margin:0 8px;position:relative;height:16px;font-size:11.5px;color:var(--muted)}
+.hzticks{width:calc(100% - 16px);margin:0 8px;position:relative;height:16px;font-size:13.5px;color:var(--muted)}
 .hzticks span{position:absolute;transform:translateX(-50%);white-space:nowrap}
 .hzticks span:last-child{transform:translateX(-100%)}
 .hzticks span:first-child{transform:none}
-.hzrec{width:100%;font-size:12.5px;font-weight:700;color:var(--olive);margin-top:6px;line-height:1.5}
-.hznote{width:100%;font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.5}
-.btn{display:inline-block;background:var(--ink);color:var(--cream);text-decoration:none;font-weight:700;font-size:14px;padding:10px 15px;border-radius:7px;border:0;cursor:pointer;font-family:inherit}
+.hzrec{width:100%;font-size:13.5px;font-weight:700;color:var(--olive);margin-top:6px;line-height:1.5}
+.hznote{width:100%;font-size:13.5px;color:var(--muted);margin-top:4px;line-height:1.5}
+.btn{display:inline-block;background:var(--ink);color:var(--cream);text-decoration:none;font-weight:700;font-size:15px;padding:10px 15px;border-radius:7px;border:0;cursor:pointer;font-family:inherit}
 .btn.primary{background:var(--red);color:#fff}
 .btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
 .btn.gold{background:var(--gold);color:var(--ink)}
 /* settings */
 .settings{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:18px;display:none}
 .settings.open{display:block}
-.settings h3{margin:0 0 12px;font-size:15px;font-weight:900}
+.settings h3{margin:0 0 12px;font-size:16px;font-weight:900}
 .sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
-.field label{display:block;font-size:12px;font-weight:700;margin-bottom:5px;color:var(--muted)}
-.field input,.field select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:15px;font-weight:700;background:#fff;color:var(--ink)}
+.field label{display:block;font-size:13.5px;font-weight:700;margin-bottom:5px;color:var(--muted)}
+.field input,.field select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:16px;font-weight:700;background:#fff;color:var(--ink)}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.chip{border:1px solid var(--line);background:#fff;padding:6px 10px;border-radius:999px;font:inherit;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer}
+.chip{border:1px solid var(--line);background:#fff;padding:6px 10px;border-radius:999px;font:inherit;font-size:14px;font-weight:700;color:var(--muted);cursor:pointer}
 .chip.on{background:var(--olive);border-color:var(--olive);color:var(--cream)}
 .chip.reg{position:relative}
 .chip.reg:after{content:"규제";font-size:9px;margin-left:4px;color:var(--gold)}
 .chip.on.reg:after{color:var(--gold2)}
-.nrank{display:inline-block;width:26px;height:26px;line-height:26px;text-align:center;border-radius:50%;background:var(--olive);color:var(--cream);font-weight:900;font-size:13px}
+.nrank{display:inline-block;width:26px;height:26px;line-height:26px;text-align:center;border-radius:50%;background:var(--olive);color:var(--cream);font-weight:900;font-size:14px}
 table.near tr.agtr td{border-top:0;padding-top:0;padding-bottom:12px}
 table.near tr.agtr .agt{margin-top:0}
 table.near tr.agtr:has(.agt:empty){display:none}
+.rkbasis{font-size:14px;color:var(--sub);background:var(--gray2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0 12px}
+.smallbtns[hidden]{display:none}
 .smallbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.smallbtns button{font:inherit;font-size:14px;font-weight:900;background:#fff;color:var(--olive);border:2px solid var(--olive);border-radius:8px;padding:8px 14px;cursor:pointer}
+.smallbtns button{font:inherit;font-size:15px;font-weight:900;background:#fff;color:var(--olive);border:2px solid var(--olive);border-radius:8px;padding:8px 14px;cursor:pointer}
 .smallbtns button:hover{background:var(--olive);color:var(--cream)}
 .smallbtns button#sggNone{border-color:var(--red);color:var(--red)}
 .smallbtns button#sggNone:hover{background:var(--red);color:#fff}
@@ -68,93 +70,93 @@ table.near tr.agtr:has(.agt:empty){display:none}
 .page{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:18px}
 .cover{background:var(--olive);color:var(--cream);padding:30px 28px;position:relative;overflow:hidden}
 .cover:after{content:"";position:absolute;right:-70px;top:-70px;width:240px;height:240px;border-radius:50%;border:34px solid rgba(217,184,90,.13)}
-.cover .tag{display:inline-block;background:var(--ink);color:var(--gold2);font-size:11px;font-weight:700;letter-spacing:.14em;padding:4px 9px;border-radius:2px}
+.cover .tag{display:inline-block;background:var(--ink);color:var(--gold2);font-size:13.5px;font-weight:700;letter-spacing:.14em;padding:4px 9px;border-radius:2px}
 .cover h1{font-size:clamp(26px,5vw,38px);font-weight:900;letter-spacing:-.04em;line-height:1.2;margin:12px 0 6px}
 .cover h1 em{font-style:normal;color:var(--gold2)}
-.cover .meta{font-size:13px;color:#D9D3BC}
+.cover .meta{font-size:14px;color:#D9D3BC}
 .cover .conds{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
-.cover .conds span{background:rgba(255,255,255,.08);border:1px solid rgba(217,184,90,.35);padding:4px 9px;border-radius:4px;font-size:12px}
+.cover .conds span{background:rgba(255,255,255,.08);border:1px solid rgba(217,184,90,.35);padding:4px 9px;border-radius:4px;font-size:13.5px}
 .sec{padding:24px 26px;border-top:1px solid var(--line)}
 .sec h2{font-size:18px;font-weight:900;margin:0 0 4px;letter-spacing:-.03em;display:flex;align-items:center;gap:8px}
-.sec h2 .no{background:var(--gold);color:var(--ink);font-size:12px;padding:2px 8px;border-radius:3px}
-.sec .sub{color:var(--muted);font-size:13px;margin:0 0 14px}
+.sec h2 .no{background:var(--gold);color:var(--ink);font-size:13.5px;padding:2px 8px;border-radius:3px}
+.sec .sub{color:var(--muted);font-size:14px;margin:0 0 14px}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 @media(max-width:640px){.stats{grid-template-columns:1fr 1fr}}
 .stat{background:var(--cream2);border-radius:8px;padding:14px}
-.stat .k{font-size:12px;color:var(--muted);font-weight:700}
+.stat .k{font-size:13.5px;color:var(--muted);font-weight:700}
 .stat .v{font-size:21px;font-weight:900;letter-spacing:-.03em;margin-top:2px}
-.stat .d{font-size:11px;color:var(--muted)}
+.stat .d{font-size:13.5px;color:var(--muted)}
 .stat.key{background:var(--olive);color:var(--cream)}
 .stat.key .k,.stat.key .d{color:var(--gold2)}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th{text-align:left;font-size:12px;color:var(--muted);font-weight:700;padding:8px 6px;border-bottom:2px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:13.5px;color:var(--muted);font-weight:700;padding:8px 6px;border-bottom:2px solid var(--line)}
 td{padding:9px 6px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
 .num{text-align:right}
-tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font-size:15px}
+tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font-size:16px}
 tr.hl td{background:rgba(184,148,42,.12);font-weight:700}
 .twocol{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 @media(max-width:700px){.twocol{grid-template-columns:1fr}}
-.note{font-size:12px;color:var(--muted);margin:10px 0 0}
-.warn{background:rgba(162,59,42,.07);border-left:4px solid var(--red);padding:10px 12px;border-radius:0 6px 6px 0;font-size:13px;margin-top:12px}
-.ok{background:rgba(78,107,46,.08);border-left:4px solid var(--green);padding:10px 12px;border-radius:0 6px 6px 0;font-size:13px;margin-top:12px}
+.note{font-size:13.5px;color:var(--muted);margin:10px 0 0}
+.warn{background:rgba(162,59,42,.07);border-left:4px solid var(--red);padding:10px 12px;border-radius:0 6px 6px 0;font-size:14px;margin-top:12px}
+.ok{background:rgba(78,107,46,.08);border-left:4px solid var(--green);padding:10px 12px;border-radius:0 6px 6px 0;font-size:14px;margin-top:12px}
 /* cards */
 .cards{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
 .cards>.card{min-width:0;overflow-wrap:anywhere;word-break:keep-all}
 .card{border:1px solid var(--line);border-radius:10px;padding:16px 18px;background:var(--card);break-inside:avoid;page-break-inside:avoid}
 .card .head{display:flex;align-items:flex-start;gap:12px}
-.rank{flex:none;width:34px;height:34px;border-radius:50%;background:var(--olive);color:var(--gold2);font-weight:900;display:flex;align-items:center;justify-content:center;font-size:15px}
+.rank{flex:none;width:34px;height:34px;border-radius:50%;background:var(--olive);color:var(--gold2);font-weight:900;display:flex;align-items:center;justify-content:center;font-size:16px}
 .card.best .rank{background:var(--gold);color:var(--ink)}
 .card .name{font-size:17px;font-weight:900;letter-spacing:-.02em;line-height:1.3}
-.card .loc{font-size:12px;color:var(--muted)}
+.card .loc{font-size:13.5px;color:var(--muted)}
 .card .price{margin-left:auto;text-align:right;flex:none}
 .card .price b{display:block;font-size:19px;font-weight:900;letter-spacing:-.03em}
-.card .price small{font-size:11px;color:var(--muted)}
+.card .price small{font-size:13.5px;color:var(--muted)}
 .card .row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0 10px}
 @media(max-width:600px){.card .row{grid-template-columns:1fr 1fr}}
 .mini{background:#fff;border:1px solid var(--line);border-radius:6px;padding:7px 9px}
-.mini .k{font-size:11px;color:var(--muted);font-weight:700}
-.mini .v{font-size:14px;font-weight:900}
+.mini .k{font-size:13.5px;color:var(--muted);font-weight:700}
+.mini .v{font-size:15px;font-weight:900}
 .reasons{margin:0;padding-left:0;list-style:none;display:grid;gap:4px}
-.reasons li{font-size:13px;padding-left:18px;position:relative}
+.reasons li{font-size:14px;padding-left:18px;position:relative}
 .reasons li:before{content:"✓";position:absolute;left:0;color:var(--green);font-weight:900}
 .reasons li.c:before{content:"!";color:var(--red)}
 .reasons li.r:before{content:"◆";color:var(--gold);font-size:10px;top:3px}
 .reasons li.f:before{content:"★";color:var(--gold)}
-.fvbox{border:1.5px solid var(--gold);background:rgba(184,148,42,.08);border-radius:10px;padding:12px 14px;margin:0 0 14px;font-size:13.5px;line-height:1.6}
-.widen{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between;background:#fff;border:1.5px dashed var(--gold);border-radius:10px;padding:12px 14px;margin:12px 0;font-size:14px}
+.fvbox{border:1.5px solid var(--gold);background:rgba(184,148,42,.08);border-radius:10px;padding:12px 14px;margin:0 0 14px;font-size:14.5px;line-height:1.6}
+.widen{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between;background:#fff;border:1.5px dashed var(--gold);border-radius:10px;padding:12px 14px;margin:12px 0;font-size:15px}
 .widen button{background:var(--olive);color:#F5EFDC;border:0;border-radius:8px;padding:9px 14px;font:inherit;font-weight:900;cursor:pointer}
-.fvhow{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 14px;margin:0 0 14px;font-size:13.5px;line-height:1.65}
+.fvhow{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 14px;margin:0 0 14px;font-size:14.5px;line-height:1.65}
 .fvhow summary{cursor:pointer;font-weight:900;color:var(--olive)}
-.fvhow summary span{font-weight:500;color:var(--muted);font-size:12.5px}
+.fvhow summary span{font-weight:500;color:var(--muted);font-size:13.5px}
 .fvhow ol{margin:10px 0 6px;padding-left:20px;display:grid;gap:5px}
 .fvhow p{margin:6px 0 0}
-.imp{margin:10px 0 4px}.imp .ib{display:grid;grid-template-columns:130px 1fr 44px;gap:8px;align-items:center;font-size:12.5px;margin:4px 0}
+.imp{margin:10px 0 4px}.imp .ib{display:grid;grid-template-columns:130px 1fr 44px;gap:8px;align-items:center;font-size:13.5px;margin:4px 0}
 .imp .ib i{height:8px;background:var(--gold);border-radius:4px;display:block}.imp .ib em{font-style:normal;color:var(--muted);text-align:right}
-.fvhow .src{font-size:12px;color:var(--muted)}
+.fvhow .src{font-size:13.5px;color:var(--muted)}
 .fvper{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
 .fvper span{background:#fff;border:1px solid var(--line);border-radius:8px;padding:5px 9px;text-align:center;line-height:1.3}
-.fvper small{display:block;color:var(--muted);font-size:11px}.fvper b{color:var(--olive);font-size:15px}
+.fvper small{display:block;color:var(--muted);font-size:13.5px}.fvper b{color:var(--olive);font-size:16px}
 .fvbox b.big{font-size:17px;color:var(--olive)}
 .bar{height:6px;background:var(--cream2);border-radius:3px;overflow:hidden;margin-top:4px;width:120px}
 .bar i{display:block;height:100%;background:var(--gold)}
 .spark{display:block;margin-top:2px}
 .region{border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:10px;break-inside:avoid;page-break-inside:avoid}
-.region h4{margin:0 0 6px;font-size:15px;font-weight:900}
-.region h4 small{font-weight:500;color:var(--muted);font-size:12px;margin-left:6px}
-.region ul{margin:0;padding-left:18px;font-size:13px}
+.region h4{margin:0 0 6px;font-size:16px;font-weight:900}
+.region h4 small{font-weight:500;color:var(--muted);font-size:13.5px;margin-left:6px}
+.region ul{margin:0;padding-left:18px;font-size:14px}
 .region li{margin-bottom:2px}
 .check{list-style:none;padding:0;margin:0;display:grid;gap:8px}
-.check li{padding:10px 12px 10px 38px;background:var(--card);border:1px solid var(--line);border-radius:8px;font-size:13px;position:relative}
+.check li{padding:10px 12px 10px 38px;background:var(--card);border:1px solid var(--line);border-radius:8px;font-size:14px;position:relative}
 .check li:before{content:"☐";position:absolute;left:12px;top:8px;font-size:18px;color:var(--olive)}
 .check b{font-weight:900}
-.src{font-size:11px;color:var(--muted)}
+.src{font-size:13.5px;color:var(--muted)}
 .src a{color:var(--muted)}
 .cta{background:var(--gold);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
 .cta p{margin:0;font-weight:900;font-size:17px}
-.cta p small{display:block;font-weight:500;font-size:13px;color:#3d3416}
+.cta p small{display:block;font-weight:500;font-size:14px;color:#3d3416}
 .loading{padding:60px 20px;text-align:center;color:var(--muted)}
 .empty{padding:20px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:10px}
-.wm{position:fixed;right:14px;bottom:14px;background:var(--ink);color:var(--gold2);font-size:11px;font-weight:700;padding:5px 9px;border-radius:4px;letter-spacing:.08em;opacity:.85}
+.wm{position:fixed;right:14px;bottom:14px;background:var(--ink);color:var(--gold2);font-size:13.5px;font-weight:700;padding:5px 9px;border-radius:4px;letter-spacing:.08em;opacity:.85}
 @media print{
   body{background:#fff}
   .noprint,.toolbar,.settings,.wm{display:none!important}
@@ -170,124 +172,124 @@ tr.hl td{background:rgba(184,148,42,.12);font-weight:700}
 /* 제휴 공인중개사 */
 .agt{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px}
 .agt:empty{display:none}
-.agt-l{font-size:12px;font-weight:700;color:var(--olive)}
+.agt-l{font-size:13.5px;font-weight:700;color:var(--olive)}
 .agt-l em,.agsec h3 em,.agm .tag{font-style:normal;font-size:10px;font-weight:700;border:1px solid var(--gold);color:var(--gold);padding:1px 5px;border-radius:3px;margin-left:5px;vertical-align:1px}
-.agbtn{font:inherit;font-size:13px;font-weight:700;background:#fff;border:1.5px solid var(--olive);color:var(--olive);padding:5px 11px;border-radius:999px;cursor:pointer}
+.agbtn{font:inherit;font-size:14px;font-weight:700;background:#fff;border:1.5px solid var(--olive);color:var(--olive);padding:5px 11px;border-radius:999px;cursor:pointer}
 .agbtn:hover{background:var(--olive);color:var(--cream)}
 .agsec{margin-top:22px;border-top:1px dashed var(--line);padding-top:16px}
 .agsec:empty{display:none}
-.agsec h3{font-size:15px;font-weight:900;margin:0 0 4px}
-.agrow h4{font-size:13px;margin:12px 0 6px;color:var(--muted)}
+.agsec h3{font-size:16px;font-weight:900;margin:0 0 4px}
+.agrow h4{font-size:14px;margin:12px 0 6px;color:var(--muted)}
 .aglist{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
 .agc{border:1px solid var(--line);border-radius:9px;padding:11px 12px;background:#fff;display:flex;flex-direction:column;gap:4px}
-.agc b{font-size:15px}
-.agc small{color:var(--muted);font-size:12px}
-.agc .hl{font-size:11px;font-weight:700;color:var(--green)}
-.agc p{margin:0;font-size:12.5px;color:var(--ink)}
+.agc b{font-size:16px}
+.agc small{color:var(--muted);font-size:13.5px}
+.agc .hl{font-size:13.5px;font-weight:700;color:var(--green)}
+.agc p{margin:0;font-size:13.5px;color:var(--ink)}
 .agc .agbtn{align-self:flex-start;margin-top:4px}
 .agpair{display:inline-flex;align-items:center;gap:4px;flex-wrap:nowrap;max-width:100%}
 .agcacts{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:4px}
 .agcacts .agbtn{margin-top:0}
 .agm .acts .btn{min-height:48px}
-.agm .acts .btn.kchat{font-size:15px;border-radius:14px}
-.agjoin{font-size:12px;color:var(--muted);margin-top:10px}
+.agm .acts .btn.kchat{font-size:16px;border-radius:14px}
+.agjoin{font-size:13.5px;color:var(--muted);margin-top:10px}
 .agjoin a{color:var(--olive);font-weight:700}
 .agm-bg{position:fixed;inset:0;background:rgba(35,36,26,.55);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
 .agm-bg.open{display:flex}
 .agm{background:var(--card);border-radius:12px;max-width:420px;width:100%;padding:20px 20px 16px;position:relative;box-shadow:0 10px 40px rgba(0,0,0,.25)}
 .agm h3{margin:0 0 2px;font-size:19px;font-weight:900}
-.agm dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:13.5px;margin:12px 0}
+.agm dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14.5px;margin:12px 0}
 .agm dt{color:var(--muted);font-weight:700}
 .agm dd{margin:0}
 .agm .acts{display:flex;gap:8px;margin-top:12px}
 .agm .acts .btn{flex:1;text-align:center}
-.rvs{font-size:12px;font-weight:800;color:#B07A00;margin-left:6px}.rvs small{color:var(--muted);font-weight:600}
+.rvs{font-size:13.5px;font-weight:800;color:#B07A00;margin-left:6px}.rvs small{color:var(--muted);font-weight:600}
 .rvgood{font-size:10.5px;font-weight:800;color:#fff;background:var(--olive);border-radius:4px;padding:1px 5px;margin-left:5px}
 .rvlist{max-height:230px;overflow:auto;border-top:1px solid var(--line);margin-top:10px;padding-top:8px}
-.rvi{border-bottom:1px dashed #E5DCC2;padding:7px 0;font-size:13px}.rvi .st{color:#C9A227;letter-spacing:1px}.rvi .tg{display:inline-block;font-size:11px;background:var(--cream);border-radius:4px;padding:0 5px;margin:2px 3px 0 0}
-.rvi .rp{background:#F7F3E6;border-radius:6px;padding:5px 8px;margin-top:4px;font-size:12.5px}.rvi .fl{float:right;font-size:11px;color:var(--muted);background:none;border:0;cursor:pointer}
+.rvi{border-bottom:1px dashed #E5DCC2;padding:7px 0;font-size:14px}.rvi .st{color:#C9A227;letter-spacing:1px}.rvi .tg{display:inline-block;font-size:13.5px;background:var(--cream);border-radius:4px;padding:0 5px;margin:2px 3px 0 0}
+.rvi .rp{background:#F7F3E6;border-radius:6px;padding:5px 8px;margin-top:4px;font-size:13.5px}.rvi .fl{float:right;font-size:13.5px;color:var(--muted);background:none;border:0;cursor:pointer}
 .rvbox{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);width:min(440px,94vw);background:var(--card);border:2px solid var(--gold);border-radius:12px;padding:14px 16px;z-index:60;box-shadow:0 8px 30px rgba(0,0,0,.2)}
 .rvbox .stars button{font-size:26px;border:0;background:none;cursor:pointer;color:#D8CFB5;padding:0 2px}.rvbox .stars button.on{color:#C9A227}
-.rvbox .tags label{display:inline-block;font-size:12.5px;border:1px solid var(--line);border-radius:999px;padding:3px 9px;margin:3px 4px 0 0;cursor:pointer}
+.rvbox .tags label{display:inline-block;font-size:13.5px;border:1px solid var(--line);border-radius:999px;padding:3px 9px;margin:3px 4px 0 0;cursor:pointer}
 .rvbox .tags input{display:none}.rvbox .tags label:has(input:checked){background:var(--olive);color:var(--cream);border-color:var(--olive)}
-.rvbox textarea{width:100%;box-sizing:border-box;margin-top:8px;border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit;font-size:13.5px;min-height:60px}
+.rvbox textarea{width:100%;box-sizing:border-box;margin-top:8px;border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit;font-size:14.5px;min-height:60px}
 .agm .x{position:absolute;right:10px;top:8px;border:0;background:none;font-size:22px;cursor:pointer;color:var(--muted)}
-.agm .disc{font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.5}
+.agm .disc{font-size:13.5px;color:var(--muted);margin-top:12px;line-height:1.5}
 .agt{border-top:1px dashed var(--line);padding-top:10px}
-.agchip{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:13px;font-weight:700;background:#fff;border:1.5px solid var(--olive);color:var(--olive);padding:6px 12px;border-radius:999px;cursor:pointer}
+.agchip{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:14px;font-weight:700;background:#fff;border:1.5px solid var(--olive);color:var(--olive);padding:6px 12px;border-radius:999px;cursor:pointer}
 .agchip:hover{background:var(--olive);color:var(--cream)}
 .agchip .b{font-size:10.5px;background:var(--green);color:#fff;padding:1px 6px;border-radius:999px}
-.agchip .tel{font-weight:500;font-size:12px;opacity:.8}
-.agopen{font:inherit;font-size:15px;font-weight:900;background:var(--olive);color:var(--cream);border:2px solid var(--gold);padding:9px 18px;border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.agchip .tel{font-weight:500;font-size:13.5px;opacity:.8}
+.agopen{font:inherit;font-size:16px;font-weight:900;background:var(--olive);color:var(--cream);border:2px solid var(--gold);padding:9px 18px;border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
 .agopen:hover{background:var(--ink)}
-.agopen .b{font-size:11px;background:var(--green);color:#fff;padding:2px 7px;border-radius:999px}
+.agopen .b{font-size:13.5px;background:var(--green);color:#fff;padding:2px 7px;border-radius:999px}
 .agopen i{font-style:normal;color:var(--gold2)}
 .aglist2{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px}
 .aglist2[hidden]{display:none}
-.agwant{font-size:14px;color:var(--ink);font-weight:700}
+.agwant{font-size:15px;color:var(--ink);font-weight:700}
 .agwant a{color:var(--red);font-weight:900;text-decoration:underline}
 .agcta{margin-top:20px;background:var(--olive);color:var(--cream);border-radius:12px;padding:18px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:space-between;border:2px solid var(--gold)}
 .agcta b{font-size:19px;font-weight:900;letter-spacing:-.03em;display:block}
 .agcta b em{font-style:normal;color:var(--gold2)}
-.agcta span{font-size:13.5px;color:#DDD7BF}
-.agcta a{background:var(--gold);color:var(--ink);font-weight:900;font-size:16px;padding:12px 20px;border-radius:9px;text-decoration:none;white-space:nowrap}
+.agcta span{font-size:14.5px;color:#DDD7BF}
+.agcta a{background:var(--gold);color:var(--ink);font-weight:900;font-size:17px;padding:12px 20px;border-radius:9px;text-decoration:none;white-space:nowrap}
 /* ---------- 단지 비교 ---------- */
-.cmpbtn-add{font:inherit;font-size:13px;font-weight:900;background:#fff;color:var(--olive);border:1.5px solid var(--olive);border-radius:999px;padding:5px 12px;cursor:pointer;margin-top:8px}
+.cmpbtn-add{font:inherit;font-size:14px;font-weight:900;background:#fff;color:var(--olive);border:1.5px solid var(--olive);border-radius:999px;padding:5px 12px;cursor:pointer;margin-top:8px}
 .cmpbtn-add.on{background:var(--olive);color:var(--cream)}
-#cmpBar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:50;background:var(--ink);color:var(--cream);border:2px solid var(--gold);border-radius:999px;padding:8px 8px 8px 18px;display:none;align-items:center;gap:12px;box-shadow:0 6px 20px rgba(0,0,0,.25);font-size:14px;font-weight:700;white-space:nowrap}
+#cmpBar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:50;background:var(--ink);color:var(--cream);border:2px solid var(--gold);border-radius:999px;padding:8px 8px 8px 18px;display:none;align-items:center;gap:12px;box-shadow:0 6px 20px rgba(0,0,0,.25);font-size:15px;font-weight:700;white-space:nowrap}
 #cmpBar.show{display:flex}
 #cmpBar button{font:inherit;font-weight:900;background:var(--gold);color:var(--ink);border:0;border-radius:999px;padding:8px 16px;cursor:pointer}
 .cpick{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:6px}
 .cpick .srow{display:grid;grid-template-columns:150px 150px 1fr;gap:8px}
 @media(max-width:640px){.cpick .srow{grid-template-columns:1fr 1fr}.cpick .srow input{grid-column:1/-1}}
-.cpick select,.cpick input{width:100%;padding:10px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:15px;font-weight:700;background:#fff;color:var(--ink)}
+.cpick select,.cpick input{width:100%;padding:10px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:16px;font-weight:700;background:#fff;color:var(--ink)}
 .cres{margin-top:8px;max-height:340px;overflow:auto}
 .cres .it{padding:10px 4px;border-bottom:1px dashed var(--line)}
-.cres .it b{font-size:15px}
+.cres .it b{font-size:16px}
 .cres .it small{color:var(--muted);margin-left:6px}
 .cres .bands{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.cres .bands button{font:inherit;font-size:13px;font-weight:700;border:1px solid var(--olive);background:#fff;color:var(--olive);border-radius:999px;padding:5px 11px;cursor:pointer}
+.cres .bands button{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--olive);background:#fff;color:var(--olive);border-radius:999px;padding:5px 11px;cursor:pointer}
 .cres .bands button:hover,.cres .bands button.on{background:var(--olive);color:var(--cream)}
-.cres .none{color:var(--muted);font-size:13px;padding:8px 2px}
+.cres .none{color:var(--muted);font-size:14px;padding:8px 2px}
 .cchips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.cchips span{background:var(--olive);color:var(--cream);border-radius:999px;padding:6px 8px 6px 14px;font-size:13.5px;font-weight:700;display:inline-flex;align-items:center;gap:6px}
+.cchips span{background:var(--olive);color:var(--cream);border-radius:999px;padding:6px 8px 6px 14px;font-size:14.5px;font-weight:700;display:inline-flex;align-items:center;gap:6px}
 .cchips span button{background:transparent;border:0;color:var(--gold2);font-size:17px;line-height:1;cursor:pointer;padding:0 4px}
 .ctbl{overflow-x:auto;margin-top:6px}
 .ctbl table{min-width:560px;table-layout:fixed}
-.ctbl th:first-child,.ctbl td:first-child{width:118px;color:var(--muted);font-weight:700;font-size:13px;vertical-align:top}
-.ctbl thead th{background:var(--olive);color:var(--cream);font-size:15px;vertical-align:top}
-.ctbl thead th small{display:block;color:var(--gold2);font-weight:500;font-size:12px;margin-top:2px}
-.ctbl td{vertical-align:top;font-size:14px}
-.ctbl td small{display:block;color:var(--muted);font-size:12px;line-height:1.4;margin-top:2px}
+.ctbl th:first-child,.ctbl td:first-child{width:118px;color:var(--muted);font-weight:700;font-size:14px;vertical-align:top}
+.ctbl thead th{background:var(--olive);color:var(--cream);font-size:16px;vertical-align:top}
+.ctbl thead th small{display:block;color:var(--gold2);font-weight:500;font-size:13.5px;margin-top:2px}
+.ctbl td{vertical-align:top;font-size:15px}
+.ctbl td small{display:block;color:var(--muted);font-size:13.5px;line-height:1.4;margin-top:2px}
 .ctbl th:first-child,.ctbl td:first-child{position:sticky;left:0;background:var(--card);z-index:1}
 .ctbl thead th:first-child{background:var(--olive)}
 .ctbl tr.grp td{position:static}
 .ctbl td.win{background:#EEF2DF;font-weight:900}
 .ctbl td.win:before{content:"★ ";color:var(--gold)}
-.ctbl tr.grp td{background:var(--cream2);font-weight:900;color:var(--ink);font-size:13px;padding:6px 10px}
+.ctbl tr.grp td{background:var(--cream2);font-weight:900;color:var(--ink);font-size:14px;padding:6px 10px}
 .verdict{background:var(--olive);color:var(--cream);border-radius:12px;padding:20px 22px;margin-top:16px;border:2px solid var(--gold)}
 .verdict h3{margin:0 0 8px;font-size:20px;font-weight:900;letter-spacing:-.03em}
 .verdict h3 em{font-style:normal;color:var(--gold2)}
 .verdict ul{margin:8px 0 0;padding-left:18px}
-.verdict li{margin:4px 0;font-size:14.5px}
+.verdict li{margin:4px 0;font-size:15.5px}
 .verdict .sc{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.verdict .sc span{background:rgba(255,255,255,.1);border-radius:8px;padding:6px 10px;font-size:13px}
+.verdict .sc span{background:rgba(255,255,255,.1);border-radius:8px;padding:6px 10px;font-size:14px}
 .verdict .sc b{color:var(--gold2)}
-.verdict small{display:block;color:#CFC8AC;margin-top:10px;font-size:12px}
+.verdict small{display:block;color:#CFC8AC;margin-top:10px;font-size:13.5px}
 .cdet{margin-top:10px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
 .cdet summary{cursor:pointer;font-weight:900}
 @media print{#cmpBar,.cpick,.cmpbtn-add{display:none!important}}
 @media print{.agm-bg,.agjoin,.agbtn,.agchip,.agwant,.agcta{display:none!important}}
 </style>
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=38">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=39">
 <style>
 .wrap{max-width:960px;padding:8px 18px 60px}
 #hero{padding:18px 6px 14px}
 #hero .hh{font-size:clamp(25px,5vw,34px);font-weight:900;line-height:1.4;letter-spacing:-.6px;margin:6px 0 0}
-#hero .hs{font-size:14px;color:var(--sub);margin-top:6px}
+#hero .hs{font-size:15px;color:var(--sub);margin-top:6px}
 .hzbar{background:var(--gray);border:0;border-radius:16px;padding:14px 16px}
-.hzbar b{font-size:14px}
-.hzbar .hzv{background:transparent;color:var(--blue);padding:0;font-size:15px}
+.hzbar b{font-size:15px}
+.hzbar .hzv{background:transparent;color:var(--blue);padding:0;font-size:16px}
 .hzbar input[type=range]{width:100%;height:44px;margin:6px 0 0}
 .hzticks{width:calc(100% - 24px);margin:0 12px}
 .hzticks{color:var(--sub3)}
@@ -295,7 +297,7 @@ tr.hl td{background:rgba(184,148,42,.12);font-weight:700}
 .hzrec b{color:var(--text)}
 .hznote{color:var(--sub2)}
 .toolbar{gap:6px}
-.toolbar .btn{min-height:44px;font-size:14px;padding:0 14px;border-radius:12px}
+.toolbar .btn{min-height:44px;font-size:15px;padding:0 14px;border-radius:12px}
 .settings{background:var(--gray2);border:1px solid var(--line);border-radius:20px}
 .page{border:1px solid var(--line);border-radius:20px}
 .cover{background:#fff;color:var(--text);padding:22px 22px 18px}
@@ -325,24 +327,24 @@ tr.total td{border-top:1px solid var(--text)}
 .wm{background:var(--gray);color:var(--sub2)}
 /* 추천 순위 */
 .rkbox{border:1px solid var(--line);border-radius:20px;padding:6px 0;margin:0 0 4px}
-.rkbox h3{font-size:15px;margin:10px 16px 4px}
-.rkbox p{margin:0 16px 6px;font-size:12.5px;color:var(--sub2)}
+.rkbox h3{font-size:16px;margin:10px 16px 4px}
+.rkbox p{margin:0 16px 6px;font-size:13.5px;color:var(--sub2)}
 .rkrow{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:8px 16px;background:none;border:0;border-top:1px solid var(--line2);font:inherit;color:inherit;text-align:left;cursor:pointer}
 .rkrow:first-of-type{border-top:0}
-.rkp{flex:none;display:inline-block;min-width:44px;text-align:center;padding:5px 8px;border-radius:10px;background:var(--sub3);color:#fff;font-size:12px;font-weight:700}
+.rkp{flex:none;display:inline-block;min-width:44px;text-align:center;padding:5px 8px;border-radius:10px;background:var(--sub3);color:#fff;font-size:13.5px;font-weight:700}
 .rkrow.r1 .rkp{background:var(--blue)}
 .rkrow .nm{flex:1;min-width:0}
-.rkrow .nm b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rkrow .nm small{display:block;font-size:12.5px;color:var(--sub2)}
-.rkrow .sc{font-size:15px;font-weight:900}
-.rkrow .sc small{font-size:11px;color:var(--sub2);font-weight:500;margin-left:2px}
+.rkrow .nm b{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rkrow .nm small{display:block;font-size:13.5px;color:var(--sub2)}
+.rkrow .sc{font-size:16px;font-weight:900}
+.rkrow .sc small{font-size:13.5px;color:var(--sub2);font-weight:500;margin-left:2px}
 .rkrow.on{background:var(--blue-l)}
 #rkTop{margin-top:16px}
 #rkTop[hidden]{display:none}
 .rkmap{position:relative;height:320px;border-radius:20px;overflow:hidden;background:#EEF1EC;margin:0 0 12px;z-index:0}
 .rkmap[hidden]{display:none}
-.rkmapnote{position:absolute;right:12px;top:12px;z-index:500;background:#fff;border-radius:8px;padding:6px 10px;font-size:11px;color:var(--sub);pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-.rkmapmiss{position:absolute;left:12px;bottom:26px;z-index:500;background:rgba(255,255,255,.94);border-radius:8px;padding:5px 9px;font-size:11px;color:var(--sub2);pointer-events:none}
+.rkmapnote{position:absolute;right:12px;top:12px;z-index:500;background:#fff;border-radius:8px;padding:6px 10px;font-size:13.5px;color:var(--sub);pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.rkmapmiss{position:absolute;left:12px;bottom:26px;z-index:500;background:rgba(255,255,255,.94);border-radius:8px;padding:5px 9px;font-size:13.5px;color:var(--sub2);pointer-events:none}
 .leaflet-container{font-family:inherit}
 .mpinw{background:none;border:0;width:0!important;height:0!important}
 .mpin{position:absolute;left:0;top:0;transform:translate(-50%,-100%);white-space:nowrap;font:inherit;font-size:12px;font-weight:700;line-height:1;color:#fff;background:var(--sub3);border:2px solid #fff;border-radius:10px;padding:7px 10px;box-shadow:0 4px 12px rgba(0,0,0,.18);cursor:pointer}
@@ -363,22 +365,22 @@ tr.total td{border-top:1px solid var(--text)}
 .card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:14px;scroll-margin-top:72px}
 .card.flash{box-shadow:0 0 0 3px rgba(47,107,255,.35)}
 .chead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.chead .crk{font-size:12.5px;color:var(--sub2)}
+.chead .crk{font-size:13.5px;color:var(--sub2)}
 .chead .crk b{color:var(--blue)}
 .card .name{font-size:20px;font-weight:900;margin-top:3px}
-.card .loc{font-size:13px;color:var(--sub)}
+.card .loc{font-size:14px;color:var(--sub)}
 .card .row{margin:0}
 .mini{background:var(--gray);border:0;border-radius:12px;padding:9px 11px}
 .mini .k{color:var(--sub2);font-weight:500}
 .bar{background:var(--line)}
 .bar i{background:var(--blue)}
 .reasons{gap:8px}
-.reasons li{font-size:14px;line-height:1.5;padding-left:28px}
-.reasons li:before,.reasons li.f:before,.reasons li.r:before{content:"+";position:absolute;left:0;top:1px;width:20px;height:20px;border-radius:50%;background:var(--blue-l);color:var(--blue);font-weight:900;font-size:13px;display:flex;align-items:center;justify-content:center}
+.reasons li{font-size:15px;line-height:1.5;padding-left:28px}
+.reasons li:before,.reasons li.f:before,.reasons li.r:before{content:"+";position:absolute;left:0;top:1px;width:20px;height:20px;border-radius:50%;background:var(--blue-l);color:var(--blue);font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center}
 .reasons li.c:before{content:"\2212";background:var(--neg-l);color:var(--neg)}
-.vnote{background:var(--creamc);border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.6;color:var(--sub)}
+.vnote{background:var(--creamc);border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.6;color:var(--sub)}
 .cacts{display:flex;gap:8px}
-.cacts .btn{flex:1;min-height:52px;border-radius:14px;font-size:15px;margin:0}
+.cacts .btn{flex:1;min-height:52px;border-radius:14px;font-size:16px;margin:0}
 .cmpbtn-add{font:inherit;font-weight:700;background:var(--gray);color:var(--text);border:0}
 .cmpbtn-add.on{background:var(--blue-l);color:var(--blue)}
 .cmore[hidden]{display:none}
@@ -410,7 +412,7 @@ tr.total td{border-top:1px solid var(--text)}
 .rvbox{border:1px solid var(--line);border-radius:20px}
 .rvbox .stars button{min-width:44px;min-height:44px}
 .rvbox .tags label:has(input:checked){color:#fff}
-.premlink{display:inline-flex;align-items:center;min-height:44px;font-size:13px;font-weight:700;color:var(--sub2);text-decoration:none}
+.premlink{display:inline-flex;align-items:center;min-height:44px;font-size:14px;font-weight:700;color:var(--sub2);text-decoration:none}
 .premlink a{color:var(--sub2);text-decoration:none;display:inline-flex;align-items:center;min-height:44px}
 .premlink:hover,.premlink a:hover{color:var(--blue)}
 p.premlink{display:block;margin:10px 0 0}
@@ -507,6 +509,9 @@ const S = {
   sido: null, sggs: new Set(), areas: new Set(['59㎡대','74㎡대','84㎡대'])
 };
 let IX=null; const SIDO_CACHE={};
+/* 지역 상관없음: 자료가 있는 전 시·도를 한 번에 본다 */
+const ANY = {id:'all', name:'지역 상관없음', short:'상관없음', any:true};
+let ALL_UNITS=null, ALL_P=null;
 
 /* ---------- 계산 엔진 (계산기와 동일 기준) ---------- */
 function groupOf(code){ return isReg(code) ? 'reg' : (isCap(code) ? 'capfree' : 'local'); }
@@ -570,6 +575,19 @@ const rzSrc=z=>z.src==='busan'?'부산시 정비사업 추진현황 기준':z.sr
 const rzText=z=>`재건축 진행: ${z.n} — ${RZ_LV[z.lv]||''} 단계${z.ym?`(${rzYm(z.ym)})`:''} · 10단계 중 ${z.lv}단계 (${rzSrc(z)})`;
 const RUSED=()=>!!(MODEL&&MODEL.region&&MODEL.region.used);
 async function loadIndex(){ try{ const m=await fetch(DATA+'model.json',{cache:'no-cache'}); MODEL=m.ok?await m.json():null; }catch(e){} try{ const mh=await fetch(DATA+'model_h.json',{cache:'no-cache'}); MH=mh.ok?await mh.json():null; }catch(e){} try{ const q=await fetch(DATA+'rail.json',{cache:'no-cache'}); RAIL=q.ok?await q.json():null; }catch(e){} try{ const q=await fetch(DATA+'supply.json',{cache:'no-cache'}); SUPPLY=q.ok?await q.json():null; }catch(e){} const r=await fetch(DATA+'index.json',{cache:'no-cache'}); if(!r.ok) throw new Error('index'); return r.json(); }
+/* 지역 상관없음: 시·도 파일을 하나씩 순서대로 불러온다(한꺼번에 받지 않아 휴대폰 데이터·메모리 부담을 나눔). 받은 파일은 다시 받지 않음 */
+function loadAll(onStep){
+  if (ALL_UNITS) return Promise.resolve(ALL_UNITS);
+  if (ALL_P) return ALL_P;
+  ALL_P = (async()=>{ const out=[]; let i=0;
+    for (const sd of IX.sido){ if(onStep) onStep(i, IX.sido.length, sd.name);
+      try{ const u=await loadSido(sd.id); for(const x of u) out.push(x); }catch(e){ console.warn('sido',sd.id,e); }
+      i++; }
+    ALL_UNITS=out; return out; })();
+  ALL_P.catch(()=>{ ALL_P=null; });
+  return ALL_P;
+}
+function sdIdOf(code){ const nm=sidoOfCode(code), s=IX.sido.find(x=>x.name===nm); return s ? s.id : (S.sido&&S.sido.id); }
 async function loadSido(id){ if(SIDO_CACHE[id]) return SIDO_CACHE[id]; const r=await fetch(DATA+id+'.json',{cache:'no-cache'}); if(!r.ok) throw new Error(id); const j=await r.json(); SIDO_CACHE[id]=j.units; applyHz(j.units); return j.units; }
 /* 보유 기간에 맞는 미래가치 점수: 5년·10년은 5년 모델이 여러 시기 검증을 통과했을 때만 사용, 아니면 2년 점수 */
 function applyHz(units){ const mix=hzMix(HZ); for(const u of units){ const f=u[9]; if(!f) continue; if(f.fv2===undefined) f.fv2=f.fv; if(f.fv2==null){ f.fv=null; continue; }
@@ -583,14 +601,14 @@ function hzUi(){ const r=$('hzr'); if(r){ r.value=HZ; rangeP(r); } const v=$('hz
   /* 성적표 한 줄: 쓰는 모델의 검증 시기 수와 상위 20% 추천 단지의 연평균 초과 상승 */
   if(rc){ const mm=main===2?((MH&&MH['2'])||MODEL):m, O=(mm&&mm.oos_all)||[];
     const yr=v=>(((Math.pow(1+v/100,1/main))-1)*100).toFixed(1);
-    rc.innerHTML = VOK(mm) ? `${main}년 예측 성적 · 과거만으로 학습해 이후를 맞힌 <b>표본 외 검증 ${O.length}회 중 ${mm.oos_hit}회 적중</b> · 점수 상위 20% 단지가 같은 구 평균보다 평균 <b>연 ${yr(mm.oos_avg)}%p</b> 더 올랐어요`
+    rc.innerHTML = VOK(mm) ? `${main}년 예측 성적 · 당시 알려진 정보로 예측하고 이후 실제 시세로 채점한 <b>표본 외 검증 ${O.length}회 중 ${mm.oos_hit}회 적중</b> · 점수 상위 20% 단지가 같은 구 평균보다 평균 <b>연 ${yr(mm.oos_avg)}%p</b> 더 올랐어요`
       : `${main}년 예측은 지금 <b>검증을 강화하는 중</b>이에요. 2010년부터의 거래 자료로 여러 시장 국면(상승·하락)에서 표본 외 검증을 통과하면 성적을 공개해요.`; }
   const used=mix.map(x=>x[0]+'년'), sel=hzLbl(HZ);
   let t;
   if (HZ>=10) t=`10년 이상은 과거 데이터로 검증할 수 있는 범위를 넘어 <b>장기 전망</b>으로 봐 주세요. 검증된 가장 긴 ${used.join('·')} 예측에 재건축 완료 시 기대 차익·예상 준공, 신설역 개통 계획을 함께 보여 드려요.`;
   else if (mix.length>1) t=`${sel} 기준 점수는 따로 검증한 ${used.join('·')} 예측을 기간 비율대로 섞어 계산했어요.`;
-  else if (main===HZ) t=`${sel} 동안 같은 구 안에서 더 오를 단지를 과거 데이터로 따로 학습·검증한 점수예요.`;
-  else t=`${sel} 예측은 아직 과거 자료로 충분히 검증되지 않아, 가장 가까운 검증된 <b>${main}년 예측</b>을 보여 드려요. 2010년부터의 거래 자료가 모이면 자동으로 바뀌어요.`;
+  else if (main===HZ) t=`${sel} 동안 같은 구 안에서 더 오를 단지를 따로 학습하고, 당시 알려진 정보로 예측한 뒤 실제 ${sel} 시세로 채점해 검증한 점수예요.`;
+  else t=`${sel} 예측은 아직 충분한 시점에서 실제 시세로 채점해 보지 못해, 가장 가까운 검증된 <b>${main}년 예측</b>을 보여 드려요. 2010년부터의 거래 자료가 모이면 자동으로 바뀌어요.`;
   /* 기간이 바뀌면 점수가 왜 바뀌는지: 2년 대비 영향이 가장 커지는 지표 */
   if (main!==2 && m&&m.shift) t+=` ${main}년 기준에서는 <b>${m.shift}</b>의 영향이 2년 기준보다 커져요.`;
   n.innerHTML=t; }
@@ -607,9 +625,10 @@ function defaultSido(){
   if (S.region==='ggreg' || S.region==='capfree') return find('경기');
   return find('부산') || IX.sido[0];
 }
-function sggsOfSido(sido){ return Object.entries(IX.sgg).filter(([k,v])=>v.sido===sido.name).map(([k])=>k).sort((a,b)=>sggName(a).localeCompare(sggName(b),'ko')); }
+function sggsOfSido(sido){ if (sido && sido.any) return Object.keys(IX.sgg).filter(k=>IX.sido.some(s=>s.name===IX.sgg[k].sido)); return Object.entries(IX.sgg).filter(([k,v])=>v.sido===sido.name).map(([k])=>k).sort((a,b)=>sggName(a).localeCompare(sggName(b),'ko')); }
 function defaultSggs(sido){
   const all = sggsOfSido(sido);
+  if (sido.any) return all;
   if (S.region==='ggreg') return all.filter(isReg);
   if (S.region==='capfree') return all.filter(c=>!isReg(c));
   return all;
@@ -617,12 +636,14 @@ function defaultSggs(sido){
 function buildSettings(){
   $('s_name').value=S.name; $('s_income').value=S.income.toLocaleString(); $('s_cash').value=S.cash.toLocaleString(); $('s_debt').value=S.debt.toLocaleString();
   $('s_own').value=S.own; $('s_rtype').value=S.rtype; $('s_rate').value=S.rate; $('s_term').value=String(S.term); $('s_etc').value=S.etc.toLocaleString();
-  $('s_sido').innerHTML = IX.sido.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  $('s_sido').innerHTML = `<option value="all">지역 상관없음 (전국)</option>` + IX.sido.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
   $('s_sido').value = S.sido.id;
   renderSggChips();
   $('s_area').innerHTML = BANDS.map(b=>`<button class="chip ${S.areas.has(b)?'on':''}" data-v="${b}">${b}</button>`).join('');
 }
 function renderSggChips(){
+  const sb=document.querySelector('.smallbtns'); if(sb) sb.hidden=!!S.sido.any;
+  if (S.sido.any){ $('s_sgg').innerHTML = `<p class="note" style="margin:0">전국 모든 시·군·구에서 예산 안의 단지를 찾아요. 특정 지역만 보려면 위에서 시·도를 골라 주세요.</p>`; return; }
   const list = sggsOfSido(S.sido);
   $('s_sgg').innerHTML = list.map(c=>`<button class="chip ${isReg(c)?'reg':''} ${S.sggs.has(c)?'on':''}" data-v="${c}">${esc(sggName(c))}</button>`).join('');
 }
@@ -638,7 +659,7 @@ function wireSettings(){
   }));
   ['s_own','s_rtype','s_term'].forEach(id=>$(id).addEventListener('change',()=>{ readSettings(); rerender(); }));
   $('s_sido').addEventListener('change', async e=>{
-    S.sido = IX.sido.find(s=>s.id===e.target.value); S.sggs = new Set(sggsOfSido(S.sido)); renderSggChips(); render();
+    S.sido = e.target.value==='all' ? ANY : IX.sido.find(s=>s.id===e.target.value); S.sggs = new Set(sggsOfSido(S.sido)); renderSggChips(); render();
   });
   $('s_sgg').addEventListener('click',e=>{ const b=e.target.closest('.chip'); if(!b) return; const v=b.dataset.v; S.sggs.has(v)?S.sggs.delete(v):S.sggs.add(v); b.classList.toggle('on'); rerender(); });
   $('s_area').addEventListener('click',e=>{ const b=e.target.closest('.chip'); if(!b) return; const v=b.dataset.v; S.areas.has(v)?S.areas.delete(v):S.areas.add(v); b.classList.toggle('on'); rerender(); });
@@ -685,14 +706,19 @@ function pickCandidates(units, maxBy, ctxBy, dsrBy){
     // 미래가치 점수(백테스트 검증)가 있으면 그게 중심, 없으면 기존 기준
     const score = fvS!==null ? 0.42*fvS + 0.25*sBudget + 0.20*sLiq + 0.13*sNote
                              : 0.28*sBudget + 0.30*sLiq + 0.16*sMom + 0.14*sVal + 0.12*sNote;
-    out.push({code,dong,apt,band,area,n,series,P,g,c,nd,fit,ch,rel,score,large,fx,jb:u[8],mon:monthly(nd.loan.L,c.rate,c.term)});
+    /* 화면에 보이는 점수(미래가치, 없으면 추천 점수)와 순위가 항상 같도록 그 점수로 줄 세운다 */
+    const hasFv = fvS!==null, disp = hasFv ? fx.fv : Math.round(score*100);
+    out.push({code,dong,apt,band,area,n,series,P,g,c,nd,fit,ch,rel,score,hasFv,disp,large,fx,jb:u[8],mon:monthly(nd.loan.L,c.rate,c.term)});
   }
-  out.sort((a,b)=>b.score-a.score);
-  const picked=[], perSgg={}, seenApt=new Set();
+  /* 순위: 미래가치 점수가 있는 단지 먼저 점수 높은 순 → 같은 점수면 예산 적합도·거래량을 함께 본 추천 점수 순 → 미래가치 점수가 없는 단지는 그 뒤에 추천 점수 순 */
+  out.sort((a,b)=>(b.hasFv-a.hasFv) || (b.disp-a.disp) || (b.score-a.score));
+  const picked=[], perSgg={}, perSd={}, seenApt=new Set();
   for(const x of out){
     const key=x.code+'|'+x.apt; if(seenApt.has(key)) continue;
     if((perSgg[x.code]||0) >= 3) continue;
-    picked.push(x); seenApt.add(key); perSgg[x.code]=(perSgg[x.code]||0)+1;
+    const sdn = S.sido.any ? sidoOfCode(x.code) : '';
+    if(S.sido.any && (perSd[sdn]||0) >= 3) continue;   /* 지역 상관없음: 한 시·도에 몰리지 않게 시·도당 3곳까지 */
+    picked.push(x); seenApt.add(key); perSgg[x.code]=(perSgg[x.code]||0)+1; if(sdn) perSd[sdn]=(perSd[sdn]||0)+1;
     if(picked.length>=10) break;
   }
   return {picked, total: out.length};
@@ -718,8 +744,8 @@ function futureReasons(x){
   if (f.fv!=null){
     const sidoNm = (IX.sgg[x.code]||{}).sido || '';
     r.push(['f', f.gs!=null
-      ? `미래가치 ${f.fv}점 — ${sidoNm} 전체 단지 중 상위 ${Math.max(1,100-f.fv)}%` + (f.fvg!=null?`, ${sggName(x.code)} 안에서는 상위 ${Math.max(1,100-f.fvg)}%`:'') + ' (과거 데이터로 검증한 점수)'
-      : `미래가치 ${f.fv}점 — ${sggName(x.code)} 단지 중 상위 ${Math.max(1,100-f.fv)}% (과거 데이터로 검증한 점수)`]);
+      ? `미래가치 ${f.fv}점 — ${sidoNm} 전체 단지 중 상위 ${Math.max(1,100-f.fv)}%` + (f.fvg!=null?`, ${sggName(x.code)} 안에서는 상위 ${Math.max(1,100-f.fvg)}%`:'') + ' (실제 이후 시세로 채점해 검증한 점수)'
+      : `미래가치 ${f.fv}점 — ${sggName(x.code)} 단지 중 상위 ${Math.max(1,100-f.fv)}% (실제 이후 시세로 채점해 검증한 점수)`]);
   }
   /* 선택한 보유 기간 기준 '왜 이 점수인지': 그 기간 모델에서 점수를 가장 많이 올린·내린 항목 */
   if (f.why){ const mix=hzMix(HZ), h=String(mix.slice().sort((a,b)=>b[1]-a[1])[0][0]), w=f.why[h]||f.why['2'], m=MOD(+h)||MODEL;
@@ -896,9 +922,9 @@ function cmpItem(u, sd){
     fit: 0, short: nd.need - S.cash};
 }
 function cmpSearchHtml(){
-  const sd = S.cmpSido || S.sido;
+  const sd = S.cmpSido || (S.sido.any ? IX.sido[0] : S.sido);
   return `<div class="cpick noprint">
-    <b style="font-size:15px">비교할 단지 찾기</b> <small style="color:var(--muted)">— 추천 단지가 아니어도, 마음에 두신 단지를 이름으로 찾아 담을 수 있어요 (최대 ${CMP_MAX}개)</small>
+    <b style="font-size:16px">비교할 단지 찾기</b> <small style="color:var(--muted)">— 추천 단지가 아니어도, 마음에 두신 단지를 이름으로 찾아 담을 수 있어요 (최대 ${CMP_MAX}개)</small>
     <div class="srow" style="margin-top:10px">
       <select id="cSido">${IX.sido.map(s=>`<option value="${s.id}" ${s.id===sd.id?'selected':''}>${esc(s.name)}</option>`).join('')}</select>
       <select id="cSgg"><option value="">구·시 전체</option>${sggsOfSido(sd).map(c=>`<option value="${c}" ${c===S.cmpSgg?'selected':''}>${esc(sggName(c))}</option>`).join('')}</select>
@@ -1083,26 +1109,31 @@ async function renderCompare(){
 async function render(){
   { const hz=$('hero'); if(hz) hz.hidden = MODE==='cmp'; const t=$('rkTop'); if(t && MODE==='cmp'){ t.hidden=true; } }
   if (MODE==='cmp') return renderCompare();
-  const units = await loadSido(S.sido.id);
+  let units;
+  if (S.sido.any){
+    if (!ALL_UNITS) $('report').innerHTML = `<div class="loading" id="allLoad">전국 실거래 자료를 시·도별로 순서대로 불러오는 중입니다…</div>`;
+    units = await loadAll((i,n,nm)=>{ const el=$('allLoad'); if(el) el.innerHTML = `전국 실거래 자료를 시·도별로 순서대로 불러오는 중입니다 · <b>${i+1} / ${n}</b> ${esc(nm)}<div class="progress" style="margin-top:10px"><i style="width:${Math.round((i+1)/n*100)}%"></i></div><small style="display:block;margin-top:6px">처음 한 번만 받고, 조건을 바꿀 때는 다시 받지 않아요.</small>`; });
+  } else units = await loadSido(S.sido.id);
   const groups = [...new Set([...S.sggs].map(groupOf))];
   const ctxBy={}, dsrBy={}, maxBy={};
   for (const g of ['reg','capfree','local']){ const c=ctxFor(g); ctxBy[g]=c; dsrBy[g]=dsrMax(c); maxBy[g]=maxPrice(c,dsrBy[g]); }
-  const main = groups.length ? groups.sort((a,b)=>[...S.sggs].filter(c=>groupOf(c)===b).length-[...S.sggs].filter(c=>groupOf(c)===a).length)[0] : 'reg';
+  const {picked,total} = pickCandidates(units, maxBy, ctxBy, dsrBy);
+  /* 지역 상관없음은 1위 단지가 있는 곳의 대출 기준으로 요약 */
+  const main = (S.sido.any && picked.length) ? picked[0].g : groups.length ? groups.sort((a,b)=>[...S.sggs].filter(c=>groupOf(c)===b).length-[...S.sggs].filter(c=>groupOf(c)===a).length)[0] : 'reg';
   const c=ctxBy[main], dsr=dsrBy[main], M=maxBy[main], ld=loanAt(M,c,dsr), cd=costDetail(M,c,false);
   const mon = monthly(ld.L,c.rate,c.term);
-  const {picked,total} = pickCandidates(units, maxBy, ctxBy, dsrBy);
   const today = new Date(); const ymd = `${today.getFullYear()}.${String(today.getMonth()+1).padStart(2,'0')}.${String(today.getDate()).padStart(2,'0')}`;
   const dataTo = IX.dataTo ? IX.dataTo.slice(0,4)+'년 '+parseInt(IX.dataTo.slice(4),10)+'월' : '';
   const who = S.name ? esc(S.name)+'님의' : '나의';
   const selNames = [...S.sggs].map(sggName);
-  const selTxt = selNames.length===0 ? '선택 없음' : (selNames.length===sggsOfSido(S.sido).length ? S.sido.name+' 전체' : selNames.slice(0,6).join('·')+(selNames.length>6?` 외 ${selNames.length-6}곳`:''));
+  const selTxt = S.sido.any ? '지역 상관없음(전국)' : selNames.length===0 ? '선택 없음' : (selNames.length===sggsOfSido(S.sido).length ? S.sido.name+' 전체' : selNames.slice(0,6).join('·')+(selNames.length>6?` 외 ${selNames.length-6}곳`:''));
 
   $('hero').innerHTML = `<div class="eyebrow">내 리포트${S.name?' · '+esc(S.name)+'님':''}</div>
     <div class="hh" role="heading" aria-level="1">${M?`최대 ${fmt(M)}원까지<br>살 수 있어요`:'지금 조건으로는<br>대출을 받아 사기 어려워요'}</div>
     <div class="hs">${M?`대출 ${fmt(ld.L)}원 · 월 상환 약 ${Math.round(mon).toLocaleString()}만 원 · ${GROUP_NAME[main]} 기준`:'조건 수정에서 지역이나 현금을 바꿔 보세요'}</div>`;
   /* 선택한 보유 기간 예측의 검증 상태 한 줄 (카드 안내용) */
   const vMain = hzMix(HZ).slice().sort((a,b)=>b[1]-a[1])[0][0], vMod = vMain===2?((MH&&MH['2'])||MODEL):MOD(vMain);
-  const vTxt = VOK(vMod) ? `과거 자료만으로 미리 검증한 ${vMain}년 예측 점수예요. 표본 외 검증 ${(vMod.oos_all||[]).length}회 중 ${vMod.oos_hit}회 실제 흐름과 맞았어요.`
+  const vTxt = VOK(vMod) ? `교통·공급·재건축 일정 등 당시 알려진 정보로 예측하고, 이후 실제 ${vMain}년 시세로 채점해 검증한 점수예요. 과거 ${(vMod.oos_all||[]).length}번 검증 중 ${vMod.oos_hit}번 실제 흐름과 맞았어요.`
                          : `${vMain}년 예측은 지금 검증을 강화하는 중이라, 점수는 참고용으로 봐 주세요.`;
 
   let h = `<div class="page">
@@ -1183,13 +1214,14 @@ async function render(){
   /* 4. 추천 단지 */
   h += `<div class="sec pb">
     <h2><span class="no">04</span> 예산 맞춤 추천 단지</h2>
-    <p class="sub">국토교통부 실거래가로 최근 3개월 중앙값 시세를 추정해, 지금 조건으로 실제 살 수 있는 단지만 골랐습니다. 예산 적합도·거래량·시세 흐름·지역 내 가격 위치·교통 호재를 함께 점수화했습니다.</p>`;
+    <p class="sub">국토교통부 실거래가로 최근 3개월 중앙값 시세를 추정해, 지금 조건으로 실제 살 수 있는 단지 중 미래가치가 가장 좋은 단지를 골랐습니다.${S.sido.any?' 지역 상관없음: 자료가 있는 전 시·도에서 찾고, 한 지역에 몰리지 않게 시·도당 3곳까지 보여 드려요. 미래가치 점수는 각 시·도 안에서의 상위 비율이에요.':''}</p>
+    <p class="rkbasis">순위 기준: 카드에 보이는 미래가치 점수가 높은 순이에요. 점수가 같으면 예산 적합도·거래량을 함께 본 추천 점수 순이고, 미래가치 점수가 아직 없는 단지는 그 뒤에 추천 점수 순으로 놓았어요.</p>`;
   let near = [], rkTop = '';
   if (!picked.length){
     near = nearMisses(units, ctxBy, dsrBy);
     h += `<div class="empty">지금 조건으로 바로 살 수 있는 단지를 선택한 지역·평형에서 찾지 못했습니다.<br>위의 <b>조건 수정·지역 선택</b>에서 지역을 넓히거나 평형을 추가해 보세요.</div>` + (S.sggs.size < sggsOfSido(S.sido).length ? `<div class="widen"><span>다른 구까지 함께 찾아볼까요?</span><button type="button" id="widenBtn">${esc(S.sido.name)} 전체로 넓히기</button></div>` : '');
     if (near.length){
-      h += `<h3 style="font-size:15px;margin:18px 0 8px">조금만 더 준비하면 가능한 단지</h3>
+      h += `<h3 style="font-size:16px;margin:18px 0 8px">조금만 더 준비하면 가능한 단지</h3>
       <p class="sub">선택한 지역에서 부족한 금액이 가장 적은 단지입니다. 목표로 잡고 자금 계획을 세워 보세요.</p>
       <table class="near"><thead><tr><th style="width:44px">순위</th><th>단지</th><th>평형</th><th class="num">추정 시세</th><th class="num">대출</th><th class="num">부족한 현금</th></tr></thead><tbody>`+
       near.map((x,i)=>`<tr><td><span class="nrank">${i+1}</span></td><td><b>${esc(x.apt)}</b><br><small>${esc(sggName(x.code))} ${esc(x.dong)}</small></td><td>${x.band}</td><td class="num">${fmtS(x.P)}</td><td class="num">${fmtS(x.nd.loan.L)}</td><td class="num" style="color:var(--red);font-weight:900">${fmt(x.nd.need-S.cash)}</td></tr>
@@ -1200,7 +1232,7 @@ async function render(){
     if (MODEL && picked.some(x=>x.fx&&x.fx.fv!=null)){
       const sg=v=>(v>0?'+':'')+v+'%', O=MODEL.oos_all||[], ym=t=>`${t.slice(0,4)}.${t.slice(4)}`;
       h += `<div class="fvbox">★ <b>미래가치 점수는 이렇게 검증합니다</b><br>
-      각 시점마다 <b>그보다 과거의 자료만으로</b> 점수를 다시 만들고, 이후 2년 실제 시세와 비교합니다(표본 외 검증). 미래 정보가 섞이지 않는 가장 엄격한 방식입니다.
+      과거 여러 시점마다 <b>그때까지 발표된 교통 계획·재건축 진행·공급 일정·미분양 등 당시 알 수 있던 정보</b>로 점수를 다시 만들고, 이후 2년 실제 시세로 채점합니다. 예측 시점에는 알 수 없던 실제 미래 시세는 채점에만 쓰고 예측에는 쓰지 않는 방식(표본 외 검증)이라 결과를 부풀릴 수 없어요. 대신 발표된 교통·공급·정비사업 계획 같은 앞으로의 변화 정보는 예측에 반영해요.
       ${O.length?`<div class="fvper">${O.map(o=>`<span><small>${ym(o.t0)} → 2년 · 상위 20%</small><b>${sg(o.top20)}</b></span>`).join('')}</div>`:''}
       ${VOK(MODEL)?`<div>표본 외 검증 ${O.length}회 중 <b>${MODEL.oos_hit}회</b> 상위 20% 단지가 같은 구 평균보다 더 올랐습니다.</div>`
         :`<div>지금은 과거 자료를 2010년까지 채우며 <b>검증을 강화하는 중</b>입니다. 상승장과 하락장 모두에서 검증을 통과해야 성적을 공개하며, 그 전까지 점수는 참고용으로 봐 주세요.</div>`}
@@ -1218,16 +1250,16 @@ async function render(){
         <li><b>지역 전망</b> — 통계청·국토교통부 자료로 인구·세대, 일자리, 공급 부담을 봐서 어느 지역이 더 유리한지 함께 판단합니다.</li>
         <li><b>예상 보유 기간</b> — 1년·2년·3년·5년·7년 예측을 각각 따로 학습해, 선택하신 기간에 맞는 점수를 보여 드립니다. 기간이 길수록 중요한 요인이 달라지기 때문입니다. 과거 검증을 통과한 기간만 사용하고, 10년 이상은 검증 범위를 넘는 장기 전망으로 따로 안내합니다.</li>
       </ol>
-      <p>항목마다 얼마나 무게를 둘지는 사람이 정하지 않았습니다. <b>과거 각 시점의 자료만으로 점수를 매겼을 때, 이후 실제로 더 오른 단지를 가장 잘 맞힌 방식</b>을 데이터로 찾아 적용하고, 그 결과를 위의 검증 성적으로 공개합니다. 세부 산정 방식은 장대장부동산그룹의 고유 분석 모델로 공개하지 않습니다.</p>
+      <p>항목마다 얼마나 무게를 둘지는 사람이 정하지 않았습니다. <b>과거 각 시점에 알려져 있던 정보(발표된 교통·공급·정비사업 계획 포함)로 점수를 매겼을 때, 이후 실제로 더 오른 단지를 가장 잘 맞힌 방식</b>을 데이터로 찾아 적용하고, 그 결과를 위의 검증 성적으로 공개합니다. 세부 산정 방식은 장대장부동산그룹의 고유 분석 모델로 공개하지 않습니다.</p>
       <p class="src">자료: 국토교통부 실거래가·정비사업·공공택지 발표, 서울시·부산시 정비사업 현황, 교육부 학교알리미, 통계청 KOSIS, 공동주택관리정보시스템(K-apt) — 자동 갱신</p>
     </details>`;
     const ringOf = x => (x.fx && x.fx.fv!=null) ? {v:x.fx.fv, k:'미래가치'} : {v:Math.round(x.score*100), k:'추천 점수'};
     rkTop = `<div class="rkmap" id="rkMap" hidden><div class="rkmapnote">예산 안의 단지만 표시</div></div>
-    <div class="rkbox"><h3>추천 순위 한눈에</h3><p>예산 안의 단지만 보여 드려요. 누르면 단지 카드로 이동해요.</p>` + picked.map((x,i)=>{ const rg=ringOf(x);
-      return `<button type="button" class="rkrow ${i===0?'r1':''}" data-go="pk${i}" data-i="${i}"><span class="rkp">${i+1}위</span><span class="nm"><b>${esc(x.apt)}</b><small>${esc(sggName(x.code))} ${esc(x.dong)} · ${x.band} · ${fmtS(x.P)}</small></span><span class="sc">${rg.v}<small>${rg.k}</small></span></button>`; }).join('') + `</div>`;
+    <div class="rkbox"><h3>추천 순위 한눈에</h3><p>예산 안의 단지를 점수 높은 순으로 보여 드려요. 누르면 단지 카드로 이동해요.</p>` + picked.map((x,i)=>{ const rg=ringOf(x);
+      return `<button type="button" class="rkrow ${i===0?'r1':''}" data-go="pk${i}" data-i="${i}"><span class="rkp">${i+1}위</span><span class="nm"><b>${esc(x.apt)}</b><small>${S.sido.any?esc(sidoOfCode(x.code))+' ':''}${esc(sggName(x.code))} ${esc(x.dong)} · ${x.band} · ${fmtS(x.P)}</small></span><span class="sc">${rg.v}<small>${rg.k}</small></span></button>`; }).join('') + `</div>`;
     h += `<div class="cards">` + picked.map((x,i)=>{
       const rs = reasons(x), rg = ringOf(x), hasFv = !!(x.fx && x.fx.fv!=null);
-      const k = cmpKey({sd:S.sido.id,code:x.code,dong:x.dong,apt:x.apt,band:x.band});
+      const k = cmpKey({sd:sdIdOf(x.code),code:x.code,dong:x.dong,apt:x.apt,band:x.band});
       const li = r=>`<li class="${r[0]}">${esc(r[1])}</li>`;
       return `<div class="card ${i<3?'best':''}" id="pk${i}">
         <div class="chead">
@@ -1353,7 +1385,7 @@ function declutter(){ if(!MAP) return; const placed=[];
 async function drawMap(picked){
   const box=$('rkMap'); if(!box) return;
   if (MAP){ MAP.remove(); MAP=null; } PINS=[];
-  const xy = await loadXY(S.sido.id);
+  const xy = {}; for (const id of [...new Set(picked.map(x=>sdIdOf(x.code)))]) Object.assign(xy, await loadXY(id));
   const pts = picked.map((x,i)=>({x,i,p:xy[`${x.code}|${x.dong}|${x.jb}`]})).filter(o=>o.p);
   if (!pts.length || $('rkMap')!==box) return;          /* 좌표 없는 단지는 목록에만 */
   await loadLeaflet(); if (!box.isConnected) return;
@@ -1417,7 +1449,7 @@ async function fillAgents(picked){
       const q = new URLSearchParams({usp:'pp_url'});
       q.set('entry.397234060', sggName(g)+' '+dong); q.set('entry.658364183', `[단지 문의] ${apt} (${sggName(g)} ${dong}) | ${JDJ.label()}`);
       el.innerHTML = `<a class="agopen noprint" href="${FORM}?${q.toString().replace(/\+/g,'%20')}" target="_blank" rel="noopener" data-track="danji_consult" style="text-decoration:none">이 단지 상담 받기 <i>→</i></a>
-        <span class="agwant noprint" style="margin-left:10px;font-size:12.5px;font-weight:500;color:var(--muted)">공인중개사이신가요? <a href="../../agent/" target="_blank" rel="noopener" data-track="agent_join_click">이 지역 제휴 신청</a></span>`;
+        <span class="agwant noprint" style="margin-left:10px;font-size:13.5px;font-weight:500;color:var(--muted)">공인중개사이신가요? <a href="../../agent/" target="_blank" rel="noopener" data-track="agent_join_click">이 지역 제휴 신청</a></span>`;
       return;
     }
     const rank = a => a.dj.includes(k) ? 0 : (a.og===g && a.dong===dong ? 1 : (a.og===g ? 2 : 3));
@@ -1450,7 +1482,7 @@ function openAgent(id, g, k){
     <dl>${a.t==='m'?`<dt>소속</dt><dd>${esc(a.n)} (대표 ${esc(a.ceo)})</dd><dt>구분</dt><dd>소속 공인중개사 · 상담 전용 (계약은 소속 사무소를 통해 진행)</dd>`:`<dt>대표</dt><dd>${esc(a.ceo)} 공인중개사</dd>`}<dt>소재지</dt><dd>${esc(a.ogn)} ${esc(a.dong)}</dd>
       <dt>등록번호</dt><dd>${esc(a.reg)}</dd><dt>전화</dt><dd>${esc(a.ph)}</dd>
       ${a.dj.length?`<dt>매물 단지</dt><dd>${a.dj.filter(x=>x.startsWith(g+'|')).map(x=>esc(x.split('|')[2])).join(', ')||'-'}</dd>`:''}</dl>
-    ${a.intro?`<p style="margin:0;font-size:14px">${esc(a.intro)}</p>`:''}
+    ${a.intro?`<p style="margin:0;font-size:15px">${esc(a.intro)}</p>`:''}
     <div class="acts">${tel?`<a class="btn primary" href="tel:${tel}" data-act="call">전화하기</a>`:''}${agChat(a,g,k,'btn')}</div>
     <p class="disc">이 중개사무소는 장대장 리포트 제휴(광고) 사무소입니다. 장대장은 중개 행위에 관여하지 않으며, 매물 정보와 거래 조건은 해당 중개사무소에 직접 확인하세요.</p></div>`;
   bg.querySelectorAll('[data-act]').forEach(el=>el.addEventListener('click', ()=>{
@@ -1465,7 +1497,7 @@ function openAgent(id, g, k){
   const wb = bg.querySelector('#rvWrite'); if (wb) wb.onclick=()=>{ bg.classList.remove('open'); rvForm(id, tk.name); };
   if (A.api) fetch(A.api+'?action=reviews&a='+encodeURIComponent(id)).then(r=>r.json()).then(j=>{
     const L=(j&&j.reviews)||[];
-    wrap.innerHTML = L.length ? `<b style="font-size:13px">상담 리뷰 ${L.length}개</b> <small style="color:var(--muted)">실제 문의한 분만 작성할 수 있어요</small>` + L.map(r=>`<div class="rvi"><button class="fl" data-fl="${esc(r.id)}">신고</button><span class="st">${'★'.repeat(r.s)}${'☆'.repeat(5-r.s)}</span> <small style="color:var(--muted)">${esc(r.at)}</small><br>${(r.tags||[]).map(t=>`<span class="tg">${esc(t)}</span>`).join('')}${r.text?`<div>${esc(r.text)}</div>`:''}${r.reply?`<div class="rp"><b>중개사 답글</b> ${esc(r.reply)}</div>`:''}</div>`).join('')
+    wrap.innerHTML = L.length ? `<b style="font-size:14px">상담 리뷰 ${L.length}개</b> <small style="color:var(--muted)">실제 문의한 분만 작성할 수 있어요</small>` + L.map(r=>`<div class="rvi"><button class="fl" data-fl="${esc(r.id)}">신고</button><span class="st">${'★'.repeat(r.s)}${'☆'.repeat(5-r.s)}</span> <small style="color:var(--muted)">${esc(r.at)}</small><br>${(r.tags||[]).map(t=>`<span class="tg">${esc(t)}</span>`).join('')}${r.text?`<div>${esc(r.text)}</div>`:''}${r.reply?`<div class="rp"><b>중개사 답글</b> ${esc(r.reply)}</div>`:''}</div>`).join('')
       : '<small style="color:var(--muted)">아직 상담 리뷰가 없어요. 이 사이트에서 문의하신 분은 12시간 뒤부터 리뷰를 남길 수 있어요.</small>';
     wrap.querySelectorAll('[data-fl]').forEach(b=>b.onclick=()=>{ const why=prompt('신고 사유를 적어 주세요 (욕설·개인정보·허위 사실 등)'); if(!why) return;
       A.post({action:'flag', id:b.dataset.fl, why}).then(()=>{ b.textContent='신고됨'; b.disabled=true; }).catch(e=>alert(e.message)); });
@@ -1480,12 +1512,12 @@ function rvForm(id, name){
   let box=$('rvbox'); if(box) box.remove();
   box=document.createElement('div'); box.id='rvbox'; box.className='rvbox noprint';
   box.innerHTML=`<button class="x" style="position:absolute;right:8px;top:4px;border:0;background:none;font-size:20px;cursor:pointer;color:var(--muted)" aria-label="닫기">×</button>
-    <b>${esc(name)} 상담은 어떠셨어요?</b><div style="font-size:12px;color:var(--muted)">별점은 그대로 공개되고, 다른 분들이 좋은 공인중개사를 고르는 데 쓰여요.</div>
+    <b>${esc(name)} 상담은 어떠셨어요?</b><div style="font-size:13.5px;color:var(--muted)">별점은 그대로 공개되고, 다른 분들이 좋은 공인중개사를 고르는 데 쓰여요.</div>
     <div class="stars">${[1,2,3,4,5].map(n=>`<button data-s="${n}" aria-label="${n}점">★</button>`).join('')}</div>
     <div class="tags">${RV_TAGS.map(t=>`<label><input type="checkbox" value="${t}">${t}</label>`).join('')}</div>
     <textarea maxlength="300" placeholder="상담 후기 (선택, 300자) — 전화번호 등 개인정보는 자동으로 가려져요"></textarea>
     <div style="display:flex;gap:8px;margin-top:8px"><button class="btn primary" style="flex:1" id="rvSend">리뷰 남기기</button><button class="btn" id="rvLater">나중에</button><button class="btn" id="rvNo">상담 안 했어요</button></div>
-    <div class="msg" id="rvMsg" style="font-size:12.5px;margin-top:6px"></div>`;
+    <div class="msg" id="rvMsg" style="font-size:13.5px;margin-top:6px"></div>`;
   document.body.appendChild(box);
   let S=0; box.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{ S=+b.dataset.s; box.querySelectorAll('[data-s]').forEach(x=>x.classList.toggle('on', +x.dataset.s<=S)); });
   const close=()=>box.remove();
@@ -1521,7 +1553,7 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ const bg=$('agm'
 (async function(){
   try{
     IX = await loadIndex();
-    S.sido = IX.sido.find(s=>s.name===Q.get('sd')) || defaultSido();
+    S.sido = (Q.get('sd')==='all' || Q.get('sd')===ANY.name) ? ANY : (IX.sido.find(s=>s.name===Q.get('sd')) || defaultSido());
     S.sggs = (Q.get('g') && IX.sgg[Q.get('g')] && IX.sgg[Q.get('g')].sido===S.sido.name) ? new Set([Q.get('g')]) : new Set(defaultSggs(S.sido));
     cmpLoad(); buildSettings(); wireSettings();
     { const r=$('hzr'); if(r){ r.oninput=()=>{ rangeP(r); const v=$('hzv'); if(v) v.textContent=hzLbl(+r.value); }; r.onchange=()=>{ setHz(+r.value); JDJ.track('hz',{hz:r.value}); }; } } hzUi();

@@ -29,136 +29,136 @@
 <style>
 .wrap{max-width:1080px;margin:0 auto;padding:28px 18px 60px}
 .hero{margin-bottom:26px}
-.tag{display:inline-block;background:var(--ink);color:var(--gold2);font-size:11px;font-weight:700;letter-spacing:.14em;padding:4px 9px;border-radius:2px}
+.tag{display:inline-block;background:var(--ink);color:var(--gold2);font-size:13.5px;font-weight:700;letter-spacing:.14em;padding:4px 9px;border-radius:2px}
 h1{font-size:clamp(28px,5vw,44px);font-weight:900;letter-spacing:-.04em;line-height:1.15;margin:12px 0 10px}
 h1 em{font-style:normal;color:var(--gold)}
-.lead{color:var(--muted);font-size:15px;margin:0;max-width:660px}
+.lead{color:var(--muted);font-size:16px;margin:0;max-width:660px}
 .grid{display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:22px;align-items:start}
 .grid>*,.row2>*{min-width:0}
 @media(max-width:860px){.grid{grid-template-columns:1fr}}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:22px}
 .panel+.panel{margin-top:16px}
-.panel h2{font-size:15px;font-weight:900;margin:0 0 16px;display:flex;align-items:center;gap:8px}
+.panel h2{font-size:16px;font-weight:900;margin:0 0 16px;display:flex;align-items:center;gap:8px}
 .panel h2:before{content:"";width:4px;height:16px;background:var(--gold);border-radius:2px}
-.panel h2 .step{background:var(--olive);color:var(--gold2);font-size:11px;padding:2px 7px;border-radius:3px;letter-spacing:.06em}
+.panel h2 .step{background:var(--olive);color:var(--gold2);font-size:13.5px;padding:2px 7px;border-radius:3px;letter-spacing:.06em}
 .field{margin-bottom:16px}
-.field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
-.field .hint{font-size:12px;color:var(--muted);margin-top:4px;min-height:1em}
+.field label{display:block;font-size:14px;font-weight:700;margin-bottom:6px}
+.field .hint{font-size:13.5px;color:var(--muted);margin-top:4px;min-height:1em}
 .inp{display:flex;align-items:center;background:#fff;border:1px solid var(--line);border-radius:7px;overflow:hidden}
 .inp:focus-within{border-color:var(--gold);box-shadow:0 0 0 3px rgba(184,148,42,.18)}
-.inp input{flex:1;border:0;outline:0;padding:11px 12px;font:inherit;font-size:16px;font-weight:700;background:transparent;min-width:0;color:var(--ink)}
+.inp input{flex:1;border:0;outline:0;padding:11px 12px;font:inherit;font-size:17px;font-weight:700;background:transparent;min-width:0;color:var(--ink)}
 .inp input::placeholder{color:#B9B39A;font-weight:500}
-.inp .unit{padding:0 12px;color:var(--muted);font-size:13px;white-space:nowrap}
-select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:15px;background:#fff;color:var(--ink)}
+.inp .unit{padding:0 12px;color:var(--muted);font-size:14px;white-space:nowrap}
+select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:16px;background:#fff;color:var(--ink)}
 select:focus{outline:0;border-color:var(--gold)}
 .seg{display:grid;gap:6px}
 .seg.c2{grid-template-columns:1fr 1fr}.seg.c3{grid-template-columns:1fr 1fr 1fr}
-.seg button{border:1px solid var(--line);background:#fff;padding:9px 6px;border-radius:7px;font:inherit;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;line-height:1.3;min-width:0}
-.seg button small{display:block;font-weight:500;font-size:11px;margin-top:2px}
+.seg button{border:1px solid var(--line);background:#fff;padding:9px 6px;border-radius:7px;font:inherit;font-size:14px;font-weight:700;color:var(--muted);cursor:pointer;line-height:1.3;min-width:0}
+.seg button small{display:block;font-weight:500;font-size:13.5px;margin-top:2px}
 .seg button.on{background:var(--olive);border-color:var(--olive);color:var(--cream)}
 .seg button.on small{color:var(--gold2)}
 .row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
 .result{background:var(--olive);color:var(--cream);border-radius:10px;padding:26px 24px;position:relative;overflow:hidden}
 .result:after{content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;border-radius:50%;border:30px solid rgba(217,184,90,.12)}
-.result .lbl{font-size:13px;color:var(--gold2);font-weight:700;letter-spacing:.04em}
+.result .lbl{font-size:14px;color:var(--gold2);font-weight:700;letter-spacing:.04em}
 .result .big{font-size:clamp(36px,7vw,56px);font-weight:900;letter-spacing:-.04em;line-height:1.1;margin:6px 0 4px}
-.result .sub{font-size:14px;color:#D9D3BC}
+.result .sub{font-size:15px;color:#D9D3BC}
 .result .sub b{color:#fff}
-.binding{display:inline-block;margin-top:14px;background:var(--gold);color:var(--ink);font-weight:900;font-size:12px;padding:5px 10px;border-radius:3px}
+.binding{display:inline-block;margin-top:14px;background:var(--gold);color:var(--ink);font-weight:900;font-size:13.5px;padding:5px 10px;border-radius:3px}
 .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
 @media(max-width:560px){.flow{grid-template-columns:1fr 1fr}}
 .stat{background:var(--cream2);border-radius:8px;padding:14px}
-.stat .k{font-size:12px;color:var(--muted);font-weight:700}
+.stat .k{font-size:13.5px;color:var(--muted);font-weight:700}
 .stat .v{font-size:19px;font-weight:900;letter-spacing:-.03em;margin-top:2px}
-.stat .d{font-size:11px;color:var(--muted)}
+.stat .d{font-size:13.5px;color:var(--muted)}
 .stat.neg .v{color:var(--red)}
 .stat.key{background:var(--gold);}
 .stat.key .k,.stat.key .d{color:#3d3416}
 .section{margin-top:22px}
-table{width:100%;border-collapse:collapse;font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:14px}
 td{padding:9px 6px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
 td:last-child{text-align:right;font-weight:700;white-space:nowrap}
 td small{color:var(--muted);font-weight:400;margin-left:4px}
 tr.minus td{color:var(--green)}
 tr.sub td{background:rgba(237,228,201,.5)}
-tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font-size:15px;padding-top:12px}
-.verdict{border-radius:8px;padding:12px 14px;font-size:14px;margin-bottom:14px;font-weight:700}
+tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font-size:16px;padding-top:12px}
+.verdict{border-radius:8px;padding:12px 14px;font-size:15px;margin-bottom:14px;font-weight:700}
 .verdict.free{background:rgba(78,107,46,.12);color:var(--green)}
 .verdict.part{background:rgba(184,148,42,.15);color:#7a5f14}
 .verdict.tax{background:rgba(162,59,42,.1);color:var(--red)}
 .tips{display:grid;gap:10px}
-.tip{border-left:4px solid var(--gold);background:var(--card);padding:12px 14px;border-radius:0 8px 8px 0;font-size:14px}
+.tip{border-left:4px solid var(--gold);background:var(--card);padding:12px 14px;border-radius:0 8px 8px 0;font-size:15px}
 .tip.warn{border-color:var(--red)}
 .tip b{font-weight:900}
-.check-res{margin-top:12px;padding:14px;border-radius:8px;font-size:14px;display:none}
+.check-res{margin-top:12px;padding:14px;border-radius:8px;font-size:15px;display:none}
 .check-res.show{display:block}
 .check-res.y{background:rgba(78,107,46,.1);border:1px solid rgba(78,107,46,.35)}
 .check-res.n{background:rgba(162,59,42,.08);border:1px solid rgba(162,59,42,.3)}
 .cta{margin-top:22px;background:var(--gold);border-radius:10px;padding:20px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .cta p{margin:0;font-weight:900;font-size:17px;letter-spacing:-.02em;color:var(--ink)}
-.cta p small{display:block;font-weight:500;font-size:13px;color:#3d3416}
-.btn{display:inline-block;background:var(--ink);color:var(--cream);text-decoration:none;font-weight:700;font-size:14px;padding:11px 16px;border-radius:7px;border:0;cursor:pointer;font-family:inherit}
-.btn.primary{background:#A23B2A;color:#fff;font-size:15px;padding:12px 20px;box-shadow:0 3px 0 rgba(0,0,0,.18)}
+.cta p small{display:block;font-weight:500;font-size:14px;color:#3d3416}
+.btn{display:inline-block;background:var(--ink);color:var(--cream);text-decoration:none;font-weight:700;font-size:15px;padding:11px 16px;border-radius:7px;border:0;cursor:pointer;font-family:inherit}
+.btn.primary{background:#A23B2A;color:#fff;font-size:16px;padding:12px 20px;box-shadow:0 3px 0 rgba(0,0,0,.18)}
 .btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
 .btns{display:flex;gap:8px;flex-wrap:wrap}
-.rules{font-size:12px;color:var(--muted);margin-top:26px;border-top:1px solid var(--line);padding-top:16px}
-.rules h3{font-size:13px;color:var(--ink);margin:0 0 8px}
+.rules{font-size:13.5px;color:var(--muted);margin-top:26px;border-top:1px solid var(--line);padding-top:16px}
+.rules h3{font-size:14px;color:var(--ink);margin:0 0 8px}
 .rules ul{margin:0;padding-left:18px}
 .rules li{margin-bottom:3px}
-.foot{background:var(--gold);color:var(--ink);text-align:center;font-weight:900;padding:12px;font-size:13px}
-.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--cream);padding:10px 16px;border-radius:7px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;max-width:90vw;text-align:center}
+.foot{background:var(--gold);color:var(--ink);text-align:center;font-weight:900;padding:12px;font-size:14px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--cream);padding:10px 16px;border-radius:7px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%)}
 .muted{color:var(--muted)}
 .premium{margin-top:22px;border:1.5px dashed var(--gold);border-radius:10px;padding:18px 20px;background:var(--card);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
-.premium .pt{font-size:11px;font-weight:900;letter-spacing:.14em;color:var(--gold)}
-.premium p{margin:4px 0 0;font-weight:900;font-size:16px;letter-spacing:-.02em}
-.premium p small{display:block;font-weight:500;font-size:13px;color:var(--muted);margin-top:3px;letter-spacing:0}
+.premium .pt{font-size:13.5px;font-weight:900;letter-spacing:.14em;color:var(--gold)}
+.premium p{margin:4px 0 0;font-weight:900;font-size:17px;letter-spacing:-.02em}
+.premium p small{display:block;font-weight:500;font-size:14px;color:var(--muted);margin-top:3px;letter-spacing:0}
 .btn.done{background:var(--green);cursor:default}
-.xlink{display:block;margin-top:14px;text-align:center;font-size:13px;color:var(--olive);font-weight:700}
+.xlink{display:block;margin-top:14px;text-align:center;font-size:14px;color:var(--olive);font-weight:700}
 .sellbox .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.sellbox select{width:100%;padding:10px;border:1px solid var(--line,#DCCFA8);border-radius:7px;font:inherit;font-size:15px;font-weight:700;background:#fff}
+.sellbox select{width:100%;padding:10px;border:1px solid var(--line,#DCCFA8);border-radius:7px;font:inherit;font-size:16px;font-weight:700;background:#fff}
 .aglist{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px;margin-top:12px}
 .agc{border:1.5px solid #DCCFA8;border-radius:10px;padding:11px 13px;background:#fff}
-.agc b{font-size:15px}
-.agc small{display:block;color:#6B6A58;font-size:12px}
+.agc b{font-size:16px}
+.agc small{display:block;color:#4E5968;font-size:13.5px}
 .agc .acts{display:flex;gap:6px;margin-top:8px}
-.agc .acts a{flex:1;text-align:center;text-decoration:none;font-weight:900;font-size:13px;padding:8px;border-radius:7px;background:#3B3F22;color:#F5EFDC}
+.agc .acts a{flex:1;text-align:center;text-decoration:none;font-weight:900;font-size:14px;padding:8px;border-radius:7px;background:#3B3F22;color:#F5EFDC}
 .agc .acts a{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
-.agc .acts a.kchat{font-size:13px;font-weight:900;border-radius:7px;padding:8px}
+.agc .acts a.kchat{font-size:14px;font-weight:900;border-radius:7px;padding:8px}
 .agc .tag{font-size:10px;font-weight:700;border:1px solid #B8942A;color:#B8942A;padding:1px 5px;border-radius:3px;margin-left:5px}
-.agnone{margin-top:12px;font-size:14px;font-weight:700}
+.agnone{margin-top:12px;font-size:15px;font-weight:700}
 .agnone a{color:#A23B2A}
 .toReport{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;background:#3B3F22;color:#F5EFDC;border:2px solid #B8942A;border-radius:12px;padding:18px 20px;margin:16px 0}
 .toReport b{font-size:18px;display:block}
 .toReport b em{font-style:normal;color:#D9B85A}
-.toReport span{font-size:13px;color:#DDD7BF}
-.toReport a{background:#B8942A;color:#23241A;font-weight:900;font-size:16px;padding:12px 20px;border-radius:9px;text-decoration:none;white-space:nowrap}
+.toReport span{font-size:14px;color:#DDD7BF}
+.toReport a{background:#B8942A;color:#23241A;font-weight:900;font-size:17px;padding:12px 20px;border-radius:9px;text-decoration:none;white-space:nowrap}
 .gap .pick{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:640px){.gap .pick{grid-template-columns:1fr}}
 .gap .pk{border:1.5px solid #DCCFA8;border-radius:10px;padding:12px;background:#fff}
-.gap .pk h3{margin:0 0 8px;font-size:15px}
-.gap .pk select,.gap .pk input,.gap .af input{width:100%;padding:9px 10px;border:1px solid #DCCFA8;border-radius:7px;font:inherit;font-size:14px;margin-bottom:6px;background:#fff}
+.gap .pk h3{margin:0 0 8px;font-size:16px}
+.gap .pk select,.gap .pk input,.gap .af input{width:100%;padding:9px 10px;border:1px solid #DCCFA8;border-radius:7px;font:inherit;font-size:15px;margin-bottom:6px;background:#fff}
 .gap .res{max-height:180px;overflow:auto;border:1px solid #EFE6CC;border-radius:7px}
 .gap .res:empty{display:none}
-.gap .res div{padding:7px 10px;border-bottom:1px solid #F3EDD9;cursor:pointer;font-size:13.5px}
+.gap .res div{padding:7px 10px;border-bottom:1px solid #F3EDD9;cursor:pointer;font-size:14.5px}
 .gap .res div:hover{background:#F5EFDC}
 .gap .bands{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
-.gap .bands button{font:inherit;font-size:12.5px;font-weight:700;border:1.5px solid #3B3F22;background:#fff;color:#3B3F22;border-radius:999px;padding:5px 10px;cursor:pointer}
+.gap .bands button{font:inherit;font-size:13.5px;font-weight:700;border:1.5px solid #3B3F22;background:#fff;color:#3B3F22;border-radius:999px;padding:5px 10px;cursor:pointer}
 .gap .bands button.on{background:#3B3F22;color:#F5EFDC}
-.gap .sel{font-weight:900;font-size:15px;margin-top:6px}
-.gap .sel small{display:block;font-weight:500;color:#6B6A58;font-size:12px}
+.gap .sel{font-weight:900;font-size:16px;margin-top:6px}
+.gap .sel small{display:block;font-weight:500;color:#4E5968;font-size:13.5px}
 .gap .gapres{margin-top:14px;background:#F5EFDC;border-radius:10px;padding:14px 16px}
 .gap .gapres:empty{display:none}
 .gap .big{font-size:26px;font-weight:900;color:#A23B2A}
 .gap .af{margin-top:12px;border-top:1px dashed #DCCFA8;padding-top:12px}
-.gap .af label.r{display:flex;align-items:center;gap:6px;font-size:14px;margin:6px 0}
+.gap .af label.r{display:flex;align-items:center;gap:6px;font-size:15px;margin:6px 0}
 .gap .af label.r input[type=number]{width:90px;margin:0;flex:none}
 .gap .af input[type=radio],.gap .af input[type=checkbox]{width:auto;margin:0;flex:none}
 .gap .af label.r{flex-wrap:wrap}
-.gap .af .btnA{background:#A23B2A;color:#fff;border:0;font:inherit;font-weight:900;font-size:15px;padding:11px 18px;border-radius:8px;cursor:pointer}
-.gap .mini{font-size:12px;color:#6B6A58}
+.gap .af .btnA{background:#A23B2A;color:#fff;border:0;font:inherit;font-weight:900;font-size:16px;padding:11px 18px;border-radius:8px;cursor:pointer}
+.gap .mini{font-size:13.5px;color:#4E5968}
 </style>
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=38">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=39">
 <style>
 .tag{background:transparent}
 .result .big{color:var(--text)}
@@ -308,7 +308,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 
       <div class="panel section sellbox">
         <h2>지금 집 내놓기 — 우리 동네 제휴 중개사</h2>
-        <p class="muted" style="font-size:13px;margin:0 0 10px">지금 집이 있는 구를 고르면, 그 지역 제휴 공인중개사에게 바로 매도 상담을 받을 수 있습니다.</p>
+        <p class="muted" style="font-size:14px;margin:0 0 10px">지금 집이 있는 구를 고르면, 그 지역 제휴 공인중개사에게 바로 매도 상담을 받을 수 있습니다.</p>
         <div class="row2">
           <select id="sSido"><option value="">시·도 선택</option></select>
           <select id="sSgg"><option value="">구·시·군 선택</option></select>
@@ -329,7 +329,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 
       <div class="panel section gap" id="gapBox">
         <h2>⑤ 갭 알림 — 지금 집 ↔ 갈아탈 집</h2>
-        <p class="muted" style="font-size:13px;margin:0 0 12px">두 단지를 고르면 최근 3년 가격 차이(갭) 흐름을 보여 드리고, 갭이 좁혀지거나 벌어지면 이메일로 알려 드립니다.</p>
+        <p class="muted" style="font-size:14px;margin:0 0 12px">두 단지를 고르면 최근 3년 가격 차이(갭) 흐름을 보여 드리고, 갭이 좁혀지거나 벌어지면 이메일로 알려 드립니다.</p>
         <div class="pick">
           <div class="pk" id="pkMine"><h3>지금 집</h3></div>
           <div class="pk" id="pkTarget"><h3>갈아탈 집</h3></div>
@@ -340,7 +340,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
       <div class="panel section">
         <h2>④ 새 집 살 때 드는 비용</h2>
         <table><tbody id="buyTbl"></tbody></table>
-        <p class="muted" style="font-size:12px;margin:10px 0 0">③에 매매가를 넣으면 그 집 기준, 아니면 최대 집값 기준입니다. 법무사·등기비, 이사비는 별도입니다.</p>
+        <p class="muted" style="font-size:13.5px;margin:10px 0 0">③에 매매가를 넣으면 그 집 기준, 아니면 최대 집값 기준입니다. 법무사·등기비, 이사비는 별도입니다.</p>
       </div>
 
       <div class="section"><div class="tips" id="tips"></div></div>
@@ -662,14 +662,14 @@ $('sSgg').addEventListener('change', async ()=>{
   const ranked=all.map(a=>[Math.random(),a]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]).sort((x,y)=>(x.og===g?0:1)-(y.og===g?0:1));
   const consult=$('consultBtn').href.replace(/entry\.1054811896=[^&]*/,'entry.1054811896='+encodeURIComponent('1주택 갈아타기 · 매도 상담 ('+gname+')'));
   if(!ranked.length){
-    box.innerHTML=`<div class="agnone">${escH(gname)} 제휴 중개사를 모집하고 있어요. 지금은 <a href="${consult}" target="_blank" rel="noopener" data-track="sell_consult">장대장 매도 상담</a>으로 도와드릴게요.<br><small style="font-weight:500;color:#6B6A58">공인중개사이신가요? <a href="../agent/" target="_blank" rel="noopener" data-track="agent_join_click">이 지역 제휴 신청</a></small></div>`;
+    box.innerHTML=`<div class="agnone">${escH(gname)} 제휴 중개사를 모집하고 있어요. 지금은 <a href="${consult}" target="_blank" rel="noopener" data-track="sell_consult">장대장 매도 상담</a>으로 도와드릴게요.<br><small style="font-weight:500;color:#4E5968">공인중개사이신가요? <a href="../agent/" target="_blank" rel="noopener" data-track="agent_join_click">이 지역 제휴 신청</a></small></div>`;
     return;
   }
   box.innerHTML=`<div class="aglist">`+ranked.map(a=>{
     const tel=String(a.ph||'').replace(/[^\d]/g,'');
     return `<div class="agc"><b>${escH(a.n)}</b><span class="tag">제휴·광고</span><small>${escH(a.ogn)} ${escH(a.dong)} · 대표 ${escH(a.ceo)} · ${escH(a.ph)}</small>${a.intro?`<small style="color:#23241A">${escH(a.intro)}</small>`:''}
       <div class="acts">${tel?`<a href="tel:${tel}" data-a="${a.id}" data-act="call">전화 상담</a>`:''}${window.KChat?KChat.btn(a.kk,{a:a.id,g,name:a.n}):''}</div></div>`;
-  }).join('')+`</div><p class="muted" style="font-size:11.5px;margin:8px 0 0">제휴(광고) 중개사무소입니다. 장대장은 중개 행위에 관여하지 않으며, 거래 조건은 해당 중개사무소에 직접 확인하세요.</p>`;
+  }).join('')+`</div><p class="muted" style="font-size:13.5px;margin:8px 0 0">제휴(광고) 중개사무소입니다. 장대장은 중개 행위에 관여하지 않으며, 거래 조건은 해당 중개사무소에 직접 확인하세요.</p>`;
   A.log('rec', ranked.map(a=>a.id).sort().join(','), g, '');
   A.log('imp', ranked[0].id, g, ''); ranked.slice(1).forEach(a=>A.log('imp', a.id, g, ''));
   box.querySelectorAll('[data-act]').forEach(el=>el.addEventListener('click',()=>{ A.log(el.dataset.act, el.dataset.a, g, ''); A.flush(); JDJ.track('agent_'+el.dataset.act,{agent:el.dataset.a, sgg:g, from:'switch'}); }));
@@ -720,7 +720,7 @@ function makePicker(el, which){
         const u=bands[+b.dataset.i];
         GAP[which]={u, sido:sd, key:[u[0],u[1],u[2],u[3]].join('|'), name:`${u[2]} ${u[3]}`, area:u[4], price:unitPrice(u)};
         $s('.sel').innerHTML=`${escH(u[2])} ${escH(u[3])} <small>${escH(AG_IX.sgg[g].name)} ${escH(dong)} · 추정 시세 ${fmt(GAP[which].price)}원 (최근 3개월 실거래 중앙값)</small>`+
-          (which==='mine'?`<button class="btn ghost" style="margin-top:6px;font-size:12.5px;padding:6px 10px" id="useSale">이 시세를 예상 매도가에 넣기</button>`:'');
+          (which==='mine'?`<button class="btn ghost" style="margin-top:6px;font-size:13.5px;padding:6px 10px" id="useSale">이 시세를 예상 매도가에 넣기</button>`:'');
         const us=$('useSale'); if(us) us.onclick=()=>{ $('sale').value=GAP.mine.price.toLocaleString(); render(); JDJ.track('gap_use_sale'); toast('예상 매도가에 넣었습니다'); };
         if(which==='target'){ $('target').value=GAP.target.price.toLocaleString(); render(); }
         drawGap();
@@ -757,8 +757,8 @@ function drawGap(){
       <label class="r"><input type="radio" name="gcond" value="below" checked> 갭이 <input type="number" id="gBelow" value="${(defBelow/10000).toFixed(1)}" step="0.1" min="0.1"> 억 이하로 좁혀지면</label>
       <label class="r"><input type="radio" name="gcond" value="change"> 갭이 지금보다 <input type="number" id="gPct" value="10" step="1" min="1"> % 이상 줄거나 늘면</label>
       <input type="email" id="gMail" placeholder="알림 받을 이메일">
-      <label class="r" style="font-size:12.5px;flex-wrap:nowrap;align-items:flex-start"><input type="checkbox" id="gAgree" style="margin-top:3px"> <span><b>[필수]</b> 갭 알림 발송을 위한 이메일 수집·이용에 동의합니다 (수집 항목: 이메일·관심 단지 / 보관: 알림 해지 시까지 / 메일 하단에서 언제든 해지)</span></label>
-      <label class="r" style="font-size:12.5px;flex-wrap:nowrap;align-items:flex-start"><input type="checkbox" id="gMkt" style="margin-top:3px"> <span><b>[선택]</b> 관심 지역 시장 동향·급매 소식·세미나 안내 등 <b>광고성 정보</b>를 이메일로 받아볼게요. 동의하지 않아도 갭 알림은 그대로 받을 수 있고, 언제든 해지할 수 있어요.</span></label>
+      <label class="r" style="font-size:13.5px;flex-wrap:nowrap;align-items:flex-start"><input type="checkbox" id="gAgree" style="margin-top:3px"> <span><b>[필수]</b> 갭 알림 발송을 위한 이메일 수집·이용에 동의합니다 (수집 항목: 이메일·관심 단지 / 보관: 알림 해지 시까지 / 메일 하단에서 언제든 해지)</span></label>
+      <label class="r" style="font-size:13.5px;flex-wrap:nowrap;align-items:flex-start"><input type="checkbox" id="gMkt" style="margin-top:3px"> <span><b>[선택]</b> 관심 지역 시장 동향·급매 소식·세미나 안내 등 <b>광고성 정보</b>를 이메일로 받아볼게요. 동의하지 않아도 갭 알림은 그대로 받을 수 있고, 언제든 해지할 수 있어요.</span></label>
       <button class="btnA" id="gSub">알림 신청</button> <span id="gMsg" class="mini"></span>
     </div>`;
   $('gSub').onclick=async()=>{

@@ -18,8 +18,10 @@
   const sd = wrap.querySelector('#rSido'), sg = wrap.querySelector('#rSgg');
   let IX = null;
 
+  const ANY = '__any';   /* 지역 상관없음: 대출 기준은 비규제 수도권으로 보여 주고, 리포트는 전 시·도에서 찾는다 */
   const shortOf = n => IX.sido.find(s => s.name === n)?.short || '';
   function category(sidoName, sgg) {
+    if (sidoName === ANY) return 'capfree';
     const sh = shortOf(sidoName);
     if (sh === '서울') return 'seoul';
     if (sh === '경기') return REG_GG.includes(sgg) ? 'ggreg' : 'capfree';
@@ -27,17 +29,20 @@
     return 'local';
   }
   function apply(fire) {
-    const sidoName = sd.value, sgg = sg.value;
-    const cat = category(sidoName, sgg);
+    const any = sd.value === ANY, sidoName = any ? '지역 상관없음' : sd.value, sgg = any ? '' : sg.value;
+    const cat = category(sd.value, sgg);
     const label = sidoName + (sgg ? ' ' + IX.sgg[sgg].name : '');
-    window.JDJ_REGION = { sido: sidoName, sgg, label, cat };
+    window.JDJ_REGION = { sido: sidoName, sgg, label, cat, any };
+    sg.disabled = any; sg.hidden = any; wrap.classList.toggle('any', any);
     sel.value = cat;
     const opt = sel.options[sel.selectedIndex];
-    if (opt) opt.textContent = `${label} (${CAT_TXT[cat]})`;
-    note.textContent = (shortOf(sidoName) === '경기' && !sgg)
+    if (opt) opt.textContent = any ? '지역 상관없음 (전국)' : `${label} (${CAT_TXT[cat]})`;
+    note.textContent = any ? '지역 상관없음: 대출 한도는 지역마다 달라 여기서는 비규제 수도권 기준으로 보여 드려요. 리포트에서는 전국에서 예산 안의 단지를 찾아 단지 위치별 기준으로 다시 계산해요.'
+      : (shortOf(sidoName) === '경기' && !sgg)
       ? '과천·성남(분당)·화성(동탄) 등 규제지역은 대출 기준이 달라요. 시·군·구까지 골라 주세요. (지금은 비규제 기준으로 계산)' : '';
+    note.style.color = any ? 'var(--sub2)' : '#C2410C';
     if (fire) sel.dispatchEvent(new Event('change', { bubbles: true }));
-    try { localStorage.setItem('jdj_region', JSON.stringify({ sido: sidoName, sgg })); } catch (e) {}
+    try { localStorage.setItem('jdj_region', JSON.stringify({ sido: any ? ANY : sidoName, sgg })); } catch (e) {}
   }
   function fillSgg(keep) {
     const list = Object.entries(IX.sgg).filter(([, v]) => v.sido === sd.value)
@@ -56,11 +61,12 @@
       const ia = first.indexOf(a.short), ib = first.indexOf(b.short);
       return (ia < 0 ? 9 : ia) - (ib < 0 ? 9 : ib) || a.name.localeCompare(b.name, 'ko');
     });
-    sd.innerHTML = sidos.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+    sd.innerHTML = sidos.map(s => `<option value="${s.name}">${s.name}</option>`).join('') + `<option value="${ANY}">지역 상관없음 (전국)</option>`;
     let saved = null; try { saved = JSON.parse(localStorage.getItem('jdj_region') || 'null'); } catch (e) {}
     const q = new URLSearchParams(location.search);
     const want = q.get('sd') ? { sido: q.get('sd'), sgg: q.get('g') || '' } : saved;
-    if (want && sidos.some(s => s.name === want.sido)) sd.value = want.sido;
+    if (want && (want.sido === ANY || want.sido === 'all' || want.sido === '지역 상관없음')) sd.value = ANY;
+    else if (want && sidos.some(s => s.name === want.sido)) sd.value = want.sido;
     else {   // 예전 링크(r=ggreg 등)는 그 구분에 맞는 시·도로
       const r = q.get('r') || sel.value;
       sd.value = (sidos.find(s => s.short === (r === 'seoul' ? '서울' : r === 'local' ? '부산' : '경기')) || sidos[0]).name;
