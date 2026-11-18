@@ -21,6 +21,7 @@
 <script src="../../assets/track.js"></script>
 <script src="../../assets/stat.js"></script>
 <script src="../../assets/region-notes.js"></script>
+<script src="../../assets/rec-core.js?v=1"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/kchat.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -482,10 +483,9 @@ function noteKey(code){
 function noteOf(code){ return NOTES.notes[noteKey(code)]; }
 
 /* 규제지역 (2026.7.1 기준): 서울 전역 + 경기 15곳 */
-const REG_GG = ['41290','41210','41135','41131','41133','41117','41111','41115','41173','41465','41430','41450','41597','41463','41310'];
-const isReg = c => c.startsWith('11') || REG_GG.includes(c);
-const isCap = c => c.startsWith('11') || c.startsWith('41') || c.startsWith('28');
-const LTV = { reg:{none:.40,first:.70,one:.40,multi:0}, capfree:{none:.70,first:.70,one:.70,multi:0}, local:{none:.70,first:.80,one:.70,multi:.60} };
+/* 규제지역 판정·LTV·점수·순위는 갈아타기 계산기와 같은 공통 모듈(assets/rec-core.js) */
+const REC = window.JDJ_REC;
+const REG_GG = REC.REG_GG, isReg = REC.isReg, isCap = REC.isCap, LTV = REC.LTV;
 const TYPE_RATIO = {var:1, mix:.8, cyc:.4};
 const TYPE_NAME = {var:'변동형', mix:'혼합형', cyc:'주기형'};
 const OWN_NAME = {none:'무주택', first:'생애최초', one:'1주택(처분조건)', multi:'다주택'};
@@ -686,41 +686,15 @@ function pickCandidates(units, maxBy, ctxBy, dsrBy){
     const large = area>85;
     const nd = need(P,c,dsrBy[g],large);
     if (nd.need > S.cash) continue;
-    const fit = P / M;
-    if (fit < 0.55) continue;
-    const ch = change6(series);
-    const sp = sggPpy[code];
-    const rel = sp ? (sp-ppy)/sp : 0;           // +면 지역 평균보다 저렴
-    const sBudget = Math.max(0, 1 - Math.abs(0.93 - fit)*2.2);
-    const sLiq = Math.min(1, Math.log(n)/Math.log(160));
-    // 완만한 상승(0~6%)이 가장 좋고, 급등(8%↑)은 추격 위험으로 감점, 하락은 중립 이하
-    let sMom = 0.5;
-    if (ch!==null){
-      if (ch < 0) sMom = Math.max(0.2, 0.55 + ch*2);
-      else if (ch <= 0.06) sMom = 0.7 + ch*5;
-      else sMom = Math.max(0.2, 1 - (ch-0.06)*5);
-    }
-    const sVal = Math.max(0, Math.min(1, 0.5 + rel));
-    const sNote = noteOf(code) ? 1 : 0.4;
-    const fx = u[9] || null, fvS = (fx && fx.fv!=null) ? fx.fv/100 : null;
-    // 미래가치 점수(백테스트 검증)가 있으면 그게 중심, 없으면 기존 기준
-    const score = fvS!==null ? 0.42*fvS + 0.25*sBudget + 0.20*sLiq + 0.13*sNote
-                             : 0.28*sBudget + 0.30*sLiq + 0.16*sMom + 0.14*sVal + 0.12*sNote;
-    /* 화면에 보이는 점수(미래가치, 없으면 추천 점수)와 순위가 항상 같도록 그 점수로 줄 세운다 */
-    const hasFv = fvS!==null, disp = hasFv ? fx.fv : Math.round(score*100);
+    const sc = REC.scoreUnit(u, P, M, sggPpy[code], !!noteOf(code));
+    if (sc.fit < REC.MIN_FIT) continue;
+    const {fit, ch, rel, fx, hasFv, score, disp} = sc;
     out.push({code,dong,apt,band,area,n,series,P,g,c,nd,fit,ch,rel,score,hasFv,disp,large,fx,jb:u[8],mon:monthly(nd.loan.L,c.rate,c.term)});
   }
   /* 순위: 미래가치 점수가 있는 단지 먼저 점수 높은 순 → 같은 점수면 예산 적합도·거래량을 함께 본 추천 점수 순 → 미래가치 점수가 없는 단지는 그 뒤에 추천 점수 순 */
-  out.sort((a,b)=>(b.hasFv-a.hasFv) || (b.disp-a.disp) || (b.score-a.score));
-  const picked=[], perSgg={}, perSd={}, seenApt=new Set();
-  for(const x of out){
-    const key=x.code+'|'+x.apt; if(seenApt.has(key)) continue;
-    if((perSgg[x.code]||0) >= 3) continue;
-    const sdn = S.sido.any ? sidoOfCode(x.code) : '';
-    if(S.sido.any && (perSd[sdn]||0) >= 3) continue;   /* 지역 상관없음: 한 시·도에 몰리지 않게 시·도당 3곳까지 */
-    picked.push(x); seenApt.add(key); perSgg[x.code]=(perSgg[x.code]||0)+1; if(sdn) perSd[sdn]=(perSd[sdn]||0)+1;
-    if(picked.length>=10) break;
-  }
+  out.sort(REC.rankCmp);
+  /* 지역 상관없음: 한 시·도에 몰리지 않게 시·도당 3곳까지 */
+  const picked = REC.diversify(out, {max:10, perSgg:3, perSido: S.sido.any ? 3 : 0, sidoOf: sidoOfCode});
   return {picked, total: out.length};
 }
 function nearMisses(units, ctxBy, dsrBy){

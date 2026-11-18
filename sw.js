@@ -1,7 +1,7 @@
 /* 장대장 계산기 서비스 워커: 항상 최신(네트워크 우선), 끊기면 저장해 둔 화면으로 */
-const V = 'jdj-v45';
+const V = 'jdj-v46';
 const SHELL = ['/jangdaejang-calc/', '/jangdaejang-calc/buy/', '/jangdaejang-calc/switch/', '/jangdaejang-calc/buy/report/', '/jangdaejang-calc/villa/', '/jangdaejang-calc/chungyak/', '/jangdaejang-calc/tax/', '/jangdaejang-calc/premium/', '/jangdaejang-calc/terms/', '/jangdaejang-calc/refund/', '/jangdaejang-calc/privacy/',
-  '/jangdaejang-calc/tax/tax-engine.js', '/jangdaejang-calc/tax/adjusted-areas.js', '/jangdaejang-calc/tax/tax-ui.js', '/jangdaejang-calc/chungyak/cy-engine.js?v=1',
+  '/jangdaejang-calc/tax/tax-engine.js', '/jangdaejang-calc/tax/adjusted-areas.js', '/jangdaejang-calc/tax/tax-ui.js', '/jangdaejang-calc/switch/switch-core.js?v=1', '/jangdaejang-calc/assets/rec-core.js?v=1', '/jangdaejang-calc/chungyak/cy-engine.js?v=1',
   '/jangdaejang-calc/assets/agents.js', '/jangdaejang-calc/assets/kchat.js?v=1', '/jangdaejang-calc/assets/vendor/qrcode-generator.js?v=1.4.4', '/jangdaejang-calc/assets/region-notes.js', '/jangdaejang-calc/assets/track.js', '/jangdaejang-calc/assets/stat.js',
   '/jangdaejang-calc/assets/pwa.js', '/jangdaejang-calc/assets/pay.js?v=1', '/jangdaejang-calc/assets/pay.css?v=1', '/jangdaejang-calc/assets/biz.js', '/jangdaejang-calc/assets/aplus.css?v=39', '/jangdaejang-calc/assets/icons/icon-192.png'];
 self.addEventListener('install', e => {
