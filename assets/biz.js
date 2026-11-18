@@ -13,8 +13,8 @@
     bizNo: '114-87-22721',
     mailOrderNo: '',
     addr: '서울특별시 강남구 삼성로146길 10, 5층(청담동, 다인빌딩)',
-    tel: '',
-    email: '',
+    tel: '02-3444-5008',
+    email: 'chris938@naver.com',
     ftcUrl: 'https://www.ftc.go.kr/bizCommPop.do?wrkr_no=1148722721'
   };
   window.JDJ_BIZ = BIZ;
