@@ -15,6 +15,7 @@
     addr: '서울특별시 강남구 삼성로146길 10, 5층(청담동, 다인빌딩)',
     tel: '02-3444-5008',
     email: 'chris938@naver.com',
+    kakao: 'https://pf.kakao.com/_UxnzuV',   // 카카오톡 채널(장대장부동산그룹) — 상담센터
     ftcUrl: 'https://www.ftc.go.kr/bizCommPop.do?wrkr_no=1148722721'
   };
   window.JDJ_BIZ = BIZ;
@@ -25,7 +26,8 @@
 
   function html() {
     const contact = [BIZ.tel ? `<a href="tel:${esc(BIZ.tel.replace(/[^0-9+]/g, ''))}">${esc(BIZ.tel)}</a>` : '',
-                     BIZ.email ? `<a href="mailto:${esc(BIZ.email)}">${esc(BIZ.email)}</a>` : ''].filter(Boolean).join(' · ');
+                     BIZ.email ? `<a href="mailto:${esc(BIZ.email)}">${esc(BIZ.email)}</a>` : '',
+                     BIZ.kakao ? `<a href="${esc(BIZ.kakao)}" target="_blank" rel="noopener noreferrer" data-kchat="1" data-name="장대장 상담센터">카카오톡 상담</a>` : ''].filter(Boolean).join(' · ');
     return `<div class="bizinfo" id="bizinfo">
   <nav class="bizlinks" aria-label="약관과 정책">
     <a href="${ROOT}terms/">이용약관</a><a href="${ROOT}privacy/"><b>개인정보처리방침</b></a><a href="${ROOT}refund/">환불 정책</a><a href="${ROOT}premium/">프리미엄 리포트</a>
