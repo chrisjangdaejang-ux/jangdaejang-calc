@@ -209,10 +209,8 @@ function lottery(flags, band, sido) {
 }
 
 /* ===== 예정·진행 공고의 예상 당첨 가점(커트라인) 범위 =====
-   과거 청약홈 당첨 가점 행 [시군구, 단지, 공고년월, 전용, 면적대(0:60㎡ 이하·1:60~85㎡·2:85㎡ 초과), 거주구분, 최저, 평균, 최고, 1순위 경쟁률, 주택관리번호] 중
-   같은 시·도, 같은 면적대, 해당지역(h) 결과만 쓴다. 같은 시·군·구·같은 시 → 시·도 전체 순으로 가까운 곳, 최근 공고일수록 더 무겁게 본다.
-   분양가는 과거 결과 자료에 없어 비교에 쓰지 않는다. (가중치·최소 표본 수는 화면에 노출하지 않는 내부 값) */
-const P_ = { win: [24, 36], minRows: 5, minCx: 3, locRows: 8, locCx: 4, wGu: 3, wCity: 2, wSido: 1, half: 18, qLo: 0.25, qHi: 0.75 };
+   범위(lo~hi)·평균·근거 요약은 데이터 갱신 때 미리 계산되어 notices.json 각 민영 공고의 cut 에 들어온다.
+   cut: [{band, lo, hi, avg, scope, nCx, nRows, from, to}] 또는 [{band, insufficient: true, nCx, nRows, none?}] — 화면은 읽어서 보여 주기만 한다. */
 /* 공고 시·도: 청약홈 공고의 시·도 칸이 주소와 다르게 들어온 경우(예: 충청남도 주소인데 충청북도) 주소 앞부분을 우선한다 */
 function noticeSido(n) {
   const ad = String(n.ad || '').trim();
@@ -220,37 +218,14 @@ function noticeSido(n) {
   return sidoNorm(n.sd);
 }
 const bandOf = ar => ar <= 60 ? 0 : ar <= 85 ? 1 : 2;
-const ymIdx = ym => +String(ym).slice(0, 4) * 12 + (+String(ym).slice(4, 6) - 1);
-const cityOf = g => { const m = String(g || '').match(/^(\S+시)\s/); return m ? m[1] : ''; };
-function wq(list, q) {                       // 가중 분위수 [{v,w}]
-  const s = list.slice().sort((a, b) => a.v - b.v), tot = s.reduce((t, x) => t + x.w, 0);
-  let acc = 0;
-  for (const x of s) { acc += x.w; if (acc >= q * tot - 1e-9) return x.v; }
-  return s.length ? s[s.length - 1].v : null;
-}
-function predict(notice, band, rows) {
-  const at = ymIdx(String(notice.pb || '').slice(0, 6) || '209901'), city = cityOf(notice.g);
-  const base = (rows || []).filter(x => x[5] === 'h' && +x[4] === band && x[10] !== notice.no && x[6] != null && ymIdx(x[2]) <= at);
-  const enough = (l, loc) => l.length >= (loc ? P_.locRows : P_.minRows) && new Set(l.map(x => x[10])).size >= (loc ? P_.locCx : P_.minCx);
-  const isGu = x => !!x[0] && x[0] === notice.g, isCity = x => !!city && cityOf(x[0]) === city;
-  /* 가까운 곳부터: 같은 시·군·구 → 같은 시 → 같은 시·도. 각 단계에서 최근 기간부터 넓혀 표본이 충분한 첫 묶음을 쓴다 */
-  const pools = [['같은 시·군·구', isGu, 1], ['같은 시', x => isGu(x) || isCity(x), 1], ['같은 시·도', () => true, 0]];
-  let use = [], months = 0, scope = '';
-  outer: for (const [nm, f, loc] of pools) for (const win of P_.win) {
-    const l = base.filter(x => f(x) && at - ymIdx(x[2]) <= win);
-    if (enough(l, loc)) { use = l; months = win; scope = nm; break outer; }
-  }
-  if (!use.length) { const l = base.filter(x => at - ymIdx(x[2]) <= P_.win[P_.win.length - 1]); use = l; months = P_.win[P_.win.length - 1]; }
-  const cx = new Set(use.map(x => x[10]));
-  const res = { band, nRows: use.length, nCx: cx.size, months, scope };
-  if (!enough(use)) return Object.assign(res, { ok: false });
-  const tier = x => isGu(x) ? P_.wGu : isCity(x) ? P_.wCity : P_.wSido;
-  const L = use.map(x => ({ x, w: tier(x) * Math.pow(0.5, (at - ymIdx(x[2])) / P_.half) }));
-  const lo = Math.round(wq(L.map(o => ({ v: o.x[6], w: o.w })), P_.qLo));
-  const hi = Math.round(wq(L.map(o => ({ v: o.x[6], w: o.w })), P_.qHi));
-  const av = Math.round(wq(L.filter(o => o.x[7] != null).map(o => ({ v: o.x[7], w: o.w })), 0.5));
-  const yms = use.map(x => x[2]).sort();
-  return Object.assign(res, { ok: true, lo, hi: Math.max(lo, hi), avg: Math.max(av, lo), from: yms[0], to: yms[yms.length - 1] });
+/* 미리 계산된 면적대 결과 → 화면용 {ok, lo, hi, avg, scope, nCx, nRows, from, to}. 새 필드가 아직 없으면 null(준비 중) */
+function cutOf(notice, band) {
+  if (!notice || !Array.isArray(notice.cut)) return null;
+  const c = notice.cut.find(x => x && +x.band === band);
+  if (!c) return null;
+  if (c.insufficient) return { ok: false, nRows: +c.nRows || 0, nCx: +c.nCx || 0, none: !!c.none };
+  if (c.lo == null || c.hi == null) return null;
+  return { ok: true, lo: +c.lo, hi: Math.max(+c.lo, +c.hi), avg: c.avg == null ? +c.lo : +c.avg, scope: c.scope || '', nRows: +c.nRows || 0, nCx: +c.nCx || 0, from: c.from || '', to: c.to || '' };
 }
 /* 내 가점과 예상 범위 비교: hi 가능성 높음 / mid 경합 / lo 낮음 */
 function diag(my, p) {
@@ -271,7 +246,7 @@ function yearsTo(a, refStr, target, maxY) {
   return null;
 }
 
-const API = { CY, SIDO, CAPITAL, SIDO_OLD, SIDO_ALIAS, sidoNorm, sidoLbl, DEPOSIT, depGroup, eligibility, bestSpecial, lottery, predict, diag, yearsTo, bandOf, noticeSido, cityOf, INCOME_TXT };
+const API = { CY, SIDO, CAPITAL, SIDO_OLD, SIDO_ALIAS, sidoNorm, sidoLbl, DEPOSIT, depGroup, eligibility, bestSpecial, lottery, cutOf, diag, yearsTo, bandOf, noticeSido, INCOME_TXT };
 if (typeof module !== 'undefined' && module.exports) module.exports = API;
 else root.JDJ_CYE = API;
 })(typeof self !== 'undefined' ? self : this);

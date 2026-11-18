@@ -1,6 +1,6 @@
 /* 청약 엔진 자동 검증 — 실행: node tools/chungyak-test.js
    기대값은 「주택공급에 관한 규칙」(2026. 6. 15. 시행) 별표 1(가점 산정)·제28조(가점제·추첨제 비율)를 보고 손으로 계산한 값이다.
-   예상 당첨 가점 범위는 가중치가 같은 합성 자료로 분위수를 손계산해 대조한다(실제 가중치·임계값은 화면에 노출하지 않음). */
+   예상 당첨 가점 범위는 데이터 갱신 때 미리 계산되어 notices.json 의 cut 으로 들어오며, 여기서는 그 값을 읽어 진단하는 부분만 확인한다. */
 const E = require('../chungyak/cy-engine.js');
 const { CY } = E;
 const rows = [];
@@ -58,28 +58,16 @@ check('수도권 공공주택지구 60㎡ 이하', E.lottery(['공공주택지�
 check('지방 비규제는 75% 무주택 우선 안내 없음', E.lottery([], 1, '경상북도').note.length, 0, '제28조 제8항: 규제지역·수도권·광역시');
 check('광역시는 75% 무주택 우선 안내', E.lottery([], 1, '부산광역시').note.length, 1, '제28조 제8항');
 
-/* ---------- 4. 예상 당첨 가점 범위 (합성 자료, 가중치 동일) ---------- */
-const N = { no: 'X1', sd: '경기도', g: '용인시 기흥구', ad: '경기도 용인시', pb: '20261110' };
-const row = (gu, ym, band, res, mn, av, no) => [gu, '단지' + no, ym, 59, band, res, mn, av, mn + 5, '10.00', no];
-let S = [40, 45, 50, 55, 60].map((v, i) => row('용인시 기흥구', '202609', 0, 'h', v, 50 + 2 * i, 'A' + i)).concat(
-  [row('용인시 기흥구', '202609', 0, 'h', 99, 99, 'A1').map((x, i) => i === 5 ? 'e' : x)],   // 기타지역 결과는 제외
-  [row('용인시 기흥구', '202609', 1, 'h', 10, 10, 'B1')],                                     // 다른 면적대 제외
-  [row('용인시 기흥구', '202609', 0, 'h', 1, 1, 'X1')]);                                       // 같은 공고 결과 제외
-let p = E.predict(N, 0, S);
-check('합성 5개 단지: 범위 하단(25%) 45점', p.lo, 45, '가중 누적 1.25/5 → 둘째 값');
-check('합성 5개 단지: 범위 위쪽(75%) 55점', p.hi, 55, '가중 누적 3.75/5 → 넷째 값');
-check('합성 5개 단지: 평균 당첨 가점 중앙 54점', p.avg, 54, '50,52,54,56,58의 가운데');
-check('같은 구 자료가 가까운 곳 단독 사용 기준에 못 미치면 같은 시·도 단계 사용', p.scope, '같은 시·도', '가까운 곳은 더 많은 표본이 있어야 단독 사용');
-check('비교 단지 수 5', p.nCx, 5, '');
-check('자료 4개 단지 → 자료 부족', E.predict(N, 0, S.slice(0, 4)).ok, false, '표본 부족이면 숫자를 내지 않음');
-check('3년보다 오래된 자료만 → 자료 부족', E.predict(N, 0, [40, 45, 50, 55, 60].map((v, i) => row('용인시 기흥구', '202301', 0, 'h', v, v, 'O' + i))).ok, false, '기간 밖');
-const S2 = [];
-for (let i = 0; i < 8; i++) S2.push(row('용인시 기흥구', '202608', 0, 'h', 60 + (i % 4), 65, 'G' + (i % 4)));
-for (let i = 0; i < 10; i++) S2.push(row('파주시', '202608', 0, 'h', 20, 30, 'P' + i));
-p = E.predict(N, 0, S2);
-check('같은 시·군·구 자료가 충분하면 그 자료만 사용', p.scope, '같은 시·군·구', '8개 주택형·4개 단지');
-check('  └ 범위가 먼 지역 자료에 끌려가지 않음(하단 60점)', p.lo, 60, '60,60,61,61,62,62,63,63 의 25% → 60');
-
+/* ---------- 4. 미리 계산된 예상 범위(cut) 읽기 ---------- */
+const NC = { no: 'X1', cut: [{ band: 0, lo: 45, hi: 55, avg: 54, scope: '같은 시·도', nCx: 5, nRows: 5, from: '202609', to: '202609' }, { band: 1, insufficient: true, nCx: 2, nRows: 3 }, { band: 2, insufficient: true, nCx: 0, nRows: 0, none: true }] };
+p = E.cutOf(NC, 0);
+check('cut 읽기: 범위 45~55, 평균 54', [p.ok, p.lo, p.hi, p.avg], [true, 45, 55, 54], '');
+check('cut 읽기: 근거 요약(비교 범위·단지 수·기간)', [p.scope, p.nCx, p.nRows, p.from, p.to], ['같은 시·도', 5, 5, '202609', '202609'], '');
+check('cut 읽기: 자료 부족', E.cutOf(NC, 1), { ok: false, nRows: 3, nCx: 2, none: false }, '');
+check('cut 읽기: 시·도 자료 없음', E.cutOf(NC, 2).none, true, '');
+check('새 필드가 없는 예전 데이터 → null(준비 중)', E.cutOf({ no: 'Y' }, 0), null, '배포 전 데이터');
+check('해당 면적대 cut 없음 → null', E.cutOf({ cut: [] }, 1), null, '');
+check('공개 엔진에 추정 함수·내부 값 없음', [typeof E.predict, typeof E.P_], ['undefined', 'undefined'], '비공개 엔진으로 이전');
 check('진단: 56점 ≥ 위쪽 55 → 가능성 높음', E.diag(56, { ok: true, lo: 45, hi: 55 }).g, 'hi', '');
 check('진단: 50점 → 경합, 5점 차이', E.diag(50, { ok: true, lo: 45, hi: 55 }), { g: 'mid', need: 5 }, '');
 check('진단: 40점 → 낮음, 하단까지 5점 부족', E.diag(40, { ok: true, lo: 45, hi: 55 }).need, 5, '');

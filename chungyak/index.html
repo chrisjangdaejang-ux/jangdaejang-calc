@@ -293,10 +293,10 @@ td{border-bottom:1px solid var(--line2)}
 </div>
 <div class="foot">★ 장대장부동산그룹 · <a href="../">계산기 홈</a></div>
 
-<script src="cy-engine.js?v=1"></script>
+<script src="cy-engine.js?v=2"></script>
 <script>
 /* 계산 엔진은 cy-engine.js (node 테스트: tools/chungyak-test.js) */
-const { CY, SIDO, CAPITAL, sidoNorm, sidoLbl, eligibility, bestSpecial, lottery, predict, diag, yearsTo, bandOf, noticeSido } = window.JDJ_CYE;
+const { CY, SIDO, CAPITAL, sidoNorm, sidoLbl, eligibility, bestSpecial, lottery, cutOf, diag, yearsTo, bandOf, noticeSido } = window.JDJ_CYE;
 
 /* ===== 화면 ===== */
 const $ = id => document.getElementById(id);
@@ -472,24 +472,20 @@ function stOf(n, t) {
   if (e && t <= e) return ['on', '접수 중'];
   return ['wait', '발표 대기'];
 }
-/* 공고별 면적대 묶음: 일반공급 세대 수, 추첨제 비율, 예상 범위 */
-async function buildPred() {
+/* 공고별 면적대 묶음: 일반공급 세대 수, 추첨제 비율, 예상 범위(데이터 갱신 때 미리 계산된 notices.json 의 cut 을 읽음) */
+function buildPred() {
   const t = today().replace(/-/g, ''), live = NOT.filter(n => isLive(n, t));
-  const need = [...new Set(live.filter(n => n.k === '민영').map(noticeSido))];
-  const rowsBy = {};
-  let failed = false;
-  await Promise.all(need.map(sd => sidoRows(sd).then(r => { rowsBy[sd] = r; }).catch(() => { failed = true; })));
   live.forEach(n => {
     const sd = noticeSido(n), bands = {};
     (n.ty || []).filter(x => x[1]).forEach(x => { const b = bandOf(x[1]); (bands[b] = bands[b] || { band: b, gen: 0, types: 0 }); bands[b].gen += +x[2] || 0; bands[b].types++; });
     PRED[n.no] = Object.values(bands).sort((a, b) => a.band - b.band).map(o => {
       if (n.k !== '민영') return o;
       o.lot = lottery(n.f, o.band, sd);
-      if (!o.lot.noGajum) o.p = rowsBy[sd] ? predict(n, o.band, rowsBy[sd]) : rowsBy[sd] === null ? { ok: false, nRows: 0, nCx: 0, none: true } : { ok: false, nRows: 0, nCx: 0, err: true };
+      if (!o.lot.noGajum) o.p = cutOf(n, o.band) || { ok: false, pending: true };
       return o;
     });
   });
-  PRED_ST = failed ? 'part' : 'ok';
+  PRED_ST = 'ok';
 }
 const ym2 = s => s ? `${s.slice(0, 4)}.${s.slice(4, 6)}` : '';
 function yTxt(y) {
@@ -506,9 +502,9 @@ function diagTxt(p) {
 }
 function basisTxt(p) {
   if (p.ok) return `근거: ${p.scope} 과거 ${fmt(p.nCx)}개 단지 ${fmt(p.nRows)}개 주택형(${ym2(p.from)}~${ym2(p.to)} 공고, 해당지역 1순위 결과)`;
-  if (p.err) return '자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.';
+  if (p.pending) return '';
   if (p.none) return '자료 부족: 이 시·도는 공식 당첨 가점 자료가 아직 없어요(자료 준비 중).';
-  return `자료 부족: 비교할 만한 과거 결과가 적어요(최근 3년 같은 시·도·같은 면적대 ${fmt(p.nCx)}개 단지 ${fmt(p.nRows)}개 주택형). 숫자로 예측하지 않았어요.`;
+  return `자료 부족: 비교할 만한 최근 과거 결과가 적어요(같은 시·도·같은 면적대 ${fmt(p.nCx)}개 단지 ${fmt(p.nRows)}개 주택형). 숫자로 예측하지 않았어요.`;
 }
 function bandBlock(o) {
   let h = `<div class="pr"><div class="prh"><b>${BAND_TXT[o.band]}</b><span style="font-size:13.5px;color:#4E5968">일반공급 ${fmt(o.gen)}세대 · ${o.types}개 주택형</span>`;
@@ -517,9 +513,11 @@ function bandBlock(o) {
   h += `</div>`;
   if (o.lot && o.lot.noGajum) h += `<div class="prv">추첨제 100% — 가점 커트라인이 없어요</div>`;
   else if (o.p && o.p.ok) h += `<div class="prv">예상 최저 당첨 가점 <b>${o.p.lo === o.p.hi ? o.p.lo : o.p.lo + '~' + o.p.hi}점</b> · 평균 당첨 가점 약 ${o.p.avg}점</div>`;
+  else if (o.p && o.p.pending) h += `<div class="prv">예상 커트라인 준비 중</div>`;
   else if (o.p) h += `<div class="prv">예상 당첨 가점: <b>자료 부족</b></div>`;
   if (o.lot) h += `<div class="prs">${esc(o.lot.area)} · ${esc(o.lot.txt)}${o.lot.note.length ? ' · ' + esc(o.lot.note.join(' · ')) : ''}</div>`;
-  if (o.p) h += `<div class="prs">${esc(basisTxt(o.p))}</div>`;
+  const bt = o.p ? basisTxt(o.p) : '';
+  if (bt) h += `<div class="prs">${esc(bt)}</div>`;
   const dt = o.p ? diagTxt(o.p) : '';
   if (dt) h += `<div class="prs" style="color:var(--text)">${esc(dt)}</div>`;
   return h + `</div>`;
@@ -558,9 +556,10 @@ function renderGen() {
   const inMine = all.filter(n => noticeSido(n) === mine);
   const scope = GEN_SCOPE === 'mine' && inMine.length ? 'mine' : 'all';
   const list = scope === 'mine' ? inMine : all;
-  const items = [], cnt = { hi: 0, mid: 0, lo: 0, na: 0, lot: 0 };
+  const items = [], cnt = { hi: 0, mid: 0, lo: 0, na: 0, lot: 0, pend: 0 };
   list.forEach(n => (PRED[n.no] || []).forEach(o => {
     if (o.lot && o.lot.noGajum) { cnt.lot++; return; }
+    if (o.p && o.p.pending) { cnt.pend++; return; }
     if (!o.p || !o.p.ok) { cnt.na++; return; }
     const d = diag(my, o.p); cnt[d.g]++; items.push({ n, o, d });
   }));
@@ -572,12 +571,12 @@ function renderGen() {
   else {
     if (scope === 'all' && GEN_SCOPE === 'mine') h += `<div class="prs" style="margin-bottom:6px">${esc(sidoLbl(mine))}에는 지금 진행 중·예정인 민영주택 공고가 없어 전국 공고로 보여 드려요.</div>`;
     h += `<div class="sum">내 가점 <b>${my}점</b> · ${scope === 'mine' ? esc(sidoLbl(mine)) : '전국'} 민영주택 공고 ${fmt(list.length)}곳의 면적대별 진단<br>
-      <span class="pill ok">가능성 높음 ${cnt.hi}</span> <span class="pill chk2">경합 ${cnt.mid}</span> <span class="pill no">낮음 ${cnt.lo}</span>${cnt.na ? ` <span class="pill" style="background:#F2F4F6;color:#4E5968">자료 부족 ${cnt.na}</span>` : ''}${cnt.lot ? ` <span class="pill" style="background:#F2F4F6;color:#4E5968">추첨만 ${cnt.lot}</span>` : ''}</div>`;
+      <span class="pill ok">가능성 높음 ${cnt.hi}</span> <span class="pill chk2">경합 ${cnt.mid}</span> <span class="pill no">낮음 ${cnt.lo}</span>${cnt.na ? ` <span class="pill" style="background:#F2F4F6;color:#4E5968">자료 부족 ${cnt.na}</span>` : ''}${cnt.lot ? ` <span class="pill" style="background:#F2F4F6;color:#4E5968">추첨만 ${cnt.lot}</span>` : ''}${cnt.pend ? ` <span class="pill" style="background:#F2F4F6;color:#4E5968">예상 커트라인 준비 중 ${cnt.pend}</span>` : ''}</div>`;
     h += `<div class="glist">${items.slice(0, 12).map(({ n, o, d }) => `<div class="gi"><div class="nm">${esc(n.n)} <span class="pill ${DG[d.g][0]}">${DG[d.g][1]}</span></div>
       <div class="prs">${esc(sidoLbl(noticeSido(n)))} ${esc(n.g)} · ${BAND_TXT[o.band]} · 예상 최저 당첨 가점 ${o.p.lo === o.p.hi ? o.p.lo : o.p.lo + '~' + o.p.hi}점 · ${esc(o.lot.txt)}</div>
       <div class="prs" style="color:var(--text)">${esc(diagTxt(o.p))}</div></div>`).join('')}</div>`;
     if (items.length > 12) h += `<div class="prs">가능성이 높은 순으로 12개만 보여 드려요(전체 ${items.length}개). 나머지는 아래 공고 카드에서 확인하세요.</div>`;
-    if (!items.length) h += `<div class="empty">이 범위의 공고는 비교할 과거 자료가 부족하거나 추첨으로만 뽑아 가점 진단을 하지 않았어요.</div>`;
+    if (!items.length) h += `<div class="empty">${cnt.pend && !cnt.na && !cnt.lot ? '예상 커트라인을 준비하고 있어요. 데이터가 갱신되면 내 가점과 바로 비교해 드릴게요.' : '이 범위의 공고는 비교할 과거 자료가 부족하거나 추첨으로만 뽑아 가점 진단을 하지 않았어요.'}</div>`;
   }
   if (pubN) h += `<div class="pubnote">국민주택(공공분양) 공고 ${pubN}곳은 일반공급을 가점이 아니라 납입 인정 금액·횟수 등(순차제)으로 뽑아 진단에서 뺐어요.</div>`;
   h += `<div class="caution">일반공급 가점제는 1순위 자격이 있어야 하고(위 1순위 결과 확인), 가점제로 뽑지 않는 나머지 물량은 추첨으로 뽑아 가점과 관계없이 기회가 있어요.${A.own ? ' 집이 있으면 무주택기간 점수가 0점이고, 지역·면적에 따라 가점제·추첨제 신청이 제한될 수 있어 공고문을 꼭 확인하세요.' : ''} ‘가능성 높음’도 당첨을 보장하지 않습니다.</div>`;
@@ -604,7 +603,7 @@ async function init() {
   $('nSido').innerHTML = `<option value="">전국 전체 (${live.length}건)</option>` + SIDO.map(s => { const c = cnt(s); return `<option value="${esc(s)}">${esc(sidoLbl(s))} · ${c ? c + '건' : '현재 공고 없음'}</option>`; }).join('');
   $('nSido').onchange = renderNotices;
   renderNotices();
-  try { await buildPred(); } catch (e) { PRED_ST = 'part'; }
+  try { buildPred(); } catch (e) { PRED_ST = 'ok'; }
   renderNotices(); renderGen();
 }
 window.JDJ_CY = { CY, eligibility, A, PRED: () => PRED };
