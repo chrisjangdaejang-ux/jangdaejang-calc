@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="장대장 계산기">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="/jangdaejang-calc/assets/pwa.js" defer></script>
+<script src="/jangdaejang-calc/assets/biz.js" defer></script>
 <title>장대장 맞춤 매수 리포트</title>
 <meta name="description" content="내 소득·현금·대출 조건으로 실제 살 수 있는 아파트 단지를 실거래가로 골라 추천 이유와 자금 계획까지 정리해 드립니다.">
 <meta property="og:title" content="장대장 맞춤 매수 리포트 — 내 조건으로 살 수 있는 단지는?">
@@ -272,7 +273,7 @@ tr.hl td{background:rgba(184,148,42,.12);font-weight:700}
 @media print{#cmpBar,.cpick,.cmpbtn-add{display:none!important}}
 @media print{.agm-bg,.agjoin,.agbtn,.agchip,.agwant,.agcta{display:none!important}}
 </style>
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=37">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=38">
 <style>
 .wrap{max-width:960px;padding:8px 18px 60px}
 #hero{padding:18px 6px 14px}
@@ -403,6 +404,10 @@ tr.total td{border-top:1px solid var(--text)}
 .rvbox{border:1px solid var(--line);border-radius:20px}
 .rvbox .stars button{min-width:44px;min-height:44px}
 .rvbox .tags label:has(input:checked){color:#fff}
+.premlink{display:inline-flex;align-items:center;min-height:44px;font-size:13px;font-weight:700;color:var(--sub2);text-decoration:none}
+.premlink a{color:var(--sub2);text-decoration:none;display:inline-flex;align-items:center;min-height:44px}
+.premlink:hover,.premlink a:hover{color:var(--blue)}
+p.premlink{display:block;margin:10px 0 0}
 </style>
 </head>
 <body>
@@ -1235,6 +1240,7 @@ async function render(){
           </div>
           <div class="loc">최근 시세 흐름 ${spark(x.series)}</div>
           ${rs.length>3?`<ul class="reasons">${rs.slice(3).map(li).join('')}</ul>`:''}
+          <a class="premlink noprint" href="/jangdaejang-calc/premium/" data-track="report_to_premium">1~10년 시나리오·세금 시뮬레이션까지 보려면 · 프리미엄 리포트 안내 ›</a>
         </div>
         <div class="vnote">${hasFv ? esc(vTxt) : '미래가치 점수가 아직 없는 단지라 예산 적합도·거래량·시세 흐름으로 매긴 추천 점수를 보여 드려요.'}</div>
         <div class="cacts noprint"><button type="button" class="btn primary" data-more="pm${i}" aria-expanded="false" aria-controls="pm${i}">자세한 리포트</button><button type="button" class="btn cmpbtn-add ${cmpHas(k)?'on':''}" data-cp="${esc(k)}">${cmpHas(k)?'비교함에 담김':'비교에 담기'}</button></div>
@@ -1299,6 +1305,7 @@ async function render(){
   q.set('entry.658364183', `[맞춤 리포트] 최대 ${fmt(M)}원 · 추천 1순위 ${picked[0]?picked[0].apt:'-'} | ${JDJ.label()}`);
   h += `<div class="cta noprint"><p>이 리포트를 바탕으로 1:1 전략을 받아보세요<small>1차 진단은 무료 · 심층 컨설팅은 유료로 별도 안내 · 리포트 내용이 신청서에 자동 입력됩니다</small></p>
     <a class="btn primary" data-track="report_consult" href="${FORM}?${q.toString().replace(/\+/g,'%20')}" target="_blank" rel="noopener">상담 신청</a></div>
+  <p class="premlink noprint" style="text-align:center"><a href="/jangdaejang-calc/premium/" data-track="report_to_premium">프리미엄 리포트 안내 (단지 심층 분석 · 비교 패키지) ›</a></p>
   </div>`;
 
   $('report').innerHTML = h;

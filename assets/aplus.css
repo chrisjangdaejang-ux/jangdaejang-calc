@@ -134,3 +134,34 @@ table td{border-bottom:1px solid var(--line2)}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @media print{.top{position:static;backdrop-filter:none}}
 .inp input,.field .inp input{border:0;box-shadow:none;min-height:0;background:transparent}
+
+/* 사업자 정보 바닥글 (assets/biz.js) */
+.bizinfo{margin-top:14px;padding-top:14px;border-top:1px solid var(--line2);font-size:12px;line-height:1.7;color:var(--sub3)}
+.bizlinks{display:flex;flex-wrap:wrap;gap:2px 0;margin-bottom:6px}
+.bizlinks a{color:var(--sub2);text-decoration:none;font-weight:700;padding:6px 12px 6px 0;min-height:32px;display:inline-flex;align-items:center}
+.bizlinks a b{color:var(--sub);font-weight:900}
+.bizlinks a:hover{text-decoration:underline}
+.bizrows{margin:0;display:flex;flex-wrap:wrap;gap:0 12px}
+.bizrows span{white-space:normal}
+.bizrows em{font-style:normal;color:var(--sub2);font-weight:700;margin-right:2px}
+.bizrows a{color:var(--sub2)}
+@media print{.bizinfo{display:none}}
+
+/* 약관·정책 문서 (terms·refund·privacy·premium) */
+.doc{max-width:760px;margin:0 auto;padding:28px 20px 48px}
+.doc h1{font-size:clamp(26px,5vw,34px);margin:8px 0 6px}
+.doc .eff{font-size:14px;color:var(--sub2);margin:0 0 20px}
+.doc h2{font-size:18px;font-weight:900;letter-spacing:-.3px;margin:30px 0 10px;color:var(--text)}
+.doc h3{font-size:15.5px;font-weight:700;margin:18px 0 6px}
+.doc p,.doc li{font-size:15px;color:var(--sub);line-height:1.75}
+.doc ol,.doc ul{padding-left:22px;margin:6px 0}
+.doc li{margin-bottom:4px}
+.doc table{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0}
+.doc th,.doc td{border:1px solid var(--line);padding:10px;text-align:left;vertical-align:top;color:var(--sub)}
+.doc th{background:var(--gray2);color:var(--text);font-weight:700}
+.doc .tblwrap{overflow-x:auto}
+.doc .box{background:var(--gray2);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:14px 0}
+.doc .box.key{background:var(--blue-l);border-color:#C9D8FF}
+.doc .box p{margin:0}
+.doc .toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.doc .toc a{font-size:13px;font-weight:700;color:var(--sub);background:var(--gray);border-radius:999px;padding:0 12px;min-height:36px;display:inline-flex;align-items:center;text-decoration:none}
