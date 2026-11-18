@@ -13,10 +13,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="/jangdaejang-calc/assets/pwa.js" defer></script>
 <script src="/jangdaejang-calc/assets/biz.js" defer></script>
-<title>장대장 부동산 세금 계산기 — 양도세 매도 타이밍·매도 순서·취득세</title>
-<meta name="description" content="언제 팔면 양도세가 줄어드는지 날짜별로 보여 드립니다. 1세대1주택 비과세·12억 고가주택·일시적 2주택·장기보유특별공제·다주택 중과(2026년 11월 시행 기준)와 다주택 매도 순서 비교, 취득세까지 브라우저 안에서 계산합니다.">
+<title>장대장 부동산 세금 계산기 — 양도세 매도 타이밍·매도 순서·취득세·재산세·종부세·증여세</title>
+<meta name="description" content="언제 팔면 양도세가 줄어드는지 날짜별로 보여 드립니다. 1세대1주택 비과세·12억 고가주택·일시적 2주택·장기보유특별공제·다주택 중과(2026년 11월 시행 기준)와 다주택 매도 순서 비교(최대 5채), 취득세·재산세·종합부동산세·증여세까지 브라우저 안에서 계산합니다.">
 <meta property="og:title" content="장대장 부동산 세금 계산기 — 언제, 어떤 순서로 팔면 세금이 줄어들까?">
-<meta property="og:description" content="양도세 매도 타이밍 그래프 · 다주택 매도 순서 비교 · 취득세. 회원가입 없이 무료, 입력값은 이 기기 밖으로 보내지 않습니다.">
+<meta property="og:description" content="양도세 매도 타이밍 그래프 · 다주택 매도 순서 비교 · 취득세 · 재산세 · 종부세 · 증여세. 회원가입 없이 무료, 입력값은 이 기기 밖으로 보내지 않습니다.">
 <meta property="og:type" content="website">
 <script>window.JDJ_CONFIG = { tool:'tax', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js"></script>
@@ -147,6 +147,14 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
 .badge2{display:inline-block;font-size:11px;font-weight:700;border-radius:4px;padding:1px 6px;margin-left:4px;vertical-align:1px}
 .badge2.ok{background:var(--pos-l);color:var(--pos)}.badge2.no{background:var(--neg-l);color:var(--neg)}.badge2.mid{background:var(--blue-l);color:var(--blue)}
 .backbar{margin:14px 20px 0}
+.why{margin:10px 20px 0;font-size:14px;font-weight:700;color:var(--blue);background:var(--blue-l);border-radius:12px;padding:10px 14px;line-height:1.55}
+.plist{display:flex;flex-direction:column;gap:8px}
+.plist .box b{font-size:14px;color:var(--sub);white-space:nowrap}
+.plist .box button{font:inherit;font-size:13px;color:var(--sub2);background:none;border:0;text-decoration:underline;min-height:40px;cursor:pointer;padding:0}
+.sum{font-size:15px;font-weight:700}
+.sum b{color:var(--blue)}
+.pay2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+
 .backbar button{font:inherit;font-size:14px;color:var(--sub2);background:none;border:0;min-height:44px;cursor:pointer;padding:0}
 </style>
 </head>
@@ -166,9 +174,12 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
   </div>
   <div class="rows">
     <button type="button" class="row" data-go="cgt"><span class="num">1</span><div><b>양도세 · 매도 타이밍<span class="newb">차별점</span></b><small>한 채의 양도세와, 앞으로 5년 동안 달마다 달라지는 예상 세금</small></div><span class="go" aria-hidden="true">›</span></button>
-    <button type="button" class="row" data-go="order"><span class="num">2</span><div><b>다주택 매도 순서 비교</b><small>최대 3채, 가능한 순서 전부의 총 세금 비교</small></div><span class="go" aria-hidden="true">›</span></button>
+    <button type="button" class="row" data-go="order"><span class="num">2</span><div><b>다주택 매도 순서 비교</b><small>최대 5채, 가능한 순서(최대 120가지) 전부의 총 세금 비교</small></div><span class="go" aria-hidden="true">›</span></button>
     <button type="button" class="row" data-go="acq"><span class="num">3</span><div><b>취득세</b><small>주택 수·조정대상지역·가격 구간별 세율</small></div><span class="go" aria-hidden="true">›</span></button>
-    <div class="row soon" aria-disabled="true"><span class="num">4</span><div><b>보유 vs 매도 지역 전망<span class="soonb">곧 추가</span></b><small>계속 보유할 때 예상 시세와 매도 후 세금을 나란히</small></div></div>
+    <button type="button" class="row" data-go="prop"><span class="num">4</span><div><b>재산세<span class="newb">새로</span></b><small>공시가격으로 올해 재산세, 7월·9월에 나눠 낼 금액</small></div><span class="go" aria-hidden="true">›</span></button>
+    <button type="button" class="row" data-go="cpt"><span class="num">5</span><div><b>종합부동산세<span class="newb">새로</span></b><small>공시가격 합계·1세대1주택·나이·보유기간으로 12월 종부세</small></div><span class="go" aria-hidden="true">›</span></button>
+    <button type="button" class="row" data-go="gift"><span class="num">6</span><div><b>증여세<span class="newb">새로</span></b><small>부동산 증여 시 증여세와 증여 취득세, 부담부증여까지 함께</small></div><span class="go" aria-hidden="true">›</span></button>
+    <div class="row soon" aria-disabled="true"><span class="num">7</span><div><b>보유 vs 매도 지역 전망<span class="soonb">곧 추가</span></b><small>계속 보유할 때 예상 시세와 매도 후 세금을 나란히</small></div></div>
   </div>
   <p class="trust">입력하신 숫자는 이 기기 안에서만 계산하고 서버로 보내지 않습니다. 참고용 계산이며, 최종 신고는 국세청 홈택스나 세무 전문가와 꼭 확인해 주세요.</p>
 </section>
@@ -273,7 +284,8 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
 <!-- 2. 다주택 매도 순서 -->
 <section id="vOrder" hidden>
   <div class="backbar"><button type="button" data-go="home">‹ 처음으로</button></div>
-  <div class="hero" style="padding-top:6px"><div class="eyebrow">다주택 매도 순서 비교</div><h1 style="font-size:24px">어떤 집부터 팔아야<br>세금이 가장 적을까요?</h1><p>세대가 가진 집을 모두(최대 3채) 넣어 주시면 가능한 순서를 전부 계산해 비교해 드립니다. 마지막에 남는 집은 1세대1주택 비과세 요건을 따져 반영합니다.</p></div>
+  <div class="hero" style="padding-top:6px"><div class="eyebrow">다주택 매도 순서 비교</div><h1 style="font-size:24px">어떤 집부터 팔아야<br>세금이 가장 적을까요?</h1><p>세대가 가진 집을 모두(최대 5채) 넣어 주시면 가능한 순서를 전부(5채면 120가지) 계산해 비교해 드립니다. 마지막에 남는 집은 1세대1주택 비과세 요건을 따져 반영합니다.</p></div>
+  <p class="why">순서가 중요한 이유: 몇 채를 가진 상태에서 파느냐에 따라 중과(+20·30%p) 여부가 달라지고, 마지막에 남는 한 채만 비과세를 받을 수 있기 때문입니다.</p>
   <div id="hList"></div>
   <button type="button" class="btn ghost addh" id="hAdd">집 한 채 더 넣기</button>
   <div class="q">
@@ -284,7 +296,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
     <button type="button" class="btn primary big" id="oRun">순서별 세금 비교하기</button>
   </div>
   <div id="oOut" hidden>
-    <div class="panel"><h2>비교 결과</h2><ol class="reason" id="oReason"></ol><div class="orders" id="oList"></div>
+    <div class="panel"><h2>비교 결과</h2><ol class="reason" id="oReason"></ol><div class="orders" id="oList"></div><details class="how" id="oAllW" hidden><summary id="oAllS">나머지 순서 전체 보기</summary><div class="orders" id="oAll" style="margin:0 0 12px"></div></details>
       <p class="law" style="margin-top:12px">각 집의 매도가는 지금 시세 그대로라고 가정했습니다. 일시적 2주택은 두 채가 남았을 때 먼저 산 집을 파는 경우만 따졌고, 다주택 중과 제외 주택(장기임대 등록, 지방 공시가격 3억 이하 등)과 주택 수 제외 규정은 반영하지 않았습니다.</p></div>
   </div>
 </section>
@@ -306,9 +318,163 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
   <p class="notice" style="margin-top:12px">생애최초 주택 감면, 공시가격 1억 원 이하 주택 중과 제외, 증여·분양권·오피스텔 취득은 반영하지 않았습니다. 일시적 2주택으로 1~3% 세율을 받고 3년 안에 종전 집을 팔지 못하면 중과세율과의 차액과 가산세가 추징됩니다.</p>
 </section>
 
-<p class="notice">참고용 계산이며 최종 신고는 국세청 홈택스·세무 전문가와 확인해 주세요. 세율·공제·비과세 요건은 2026년 11월 17일 현재 시행 중인 소득세법·시행령, 지방세법과 국토교통부 조정대상지역 공고(서울 25개 구 전역, 경기 15곳)를 기준으로 했습니다. 입력값은 서버로 보내지 않습니다.</p>
+<!-- 4. 재산세 -->
+<section id="vProp" hidden>
+  <div class="backbar"><button type="button" data-go="home">‹ 처음으로</button></div>
+  <form class="q wiz2" id="pWiz" novalidate>
+    <div class="meta"><b class="wstep">질문 1 / 3</b><span>재산세 · 2026년분</span></div>
+    <div class="progress" role="progressbar" aria-label="질문 진행"><i class="wbar" style="width:33%"></i></div>
+    <div class="wq" data-q="price">
+      <p class="ql">이 집의 올해 공시가격은 얼마인가요?</p>
+      <div class="box"><input id="pPrice" class="money" inputmode="numeric" autocomplete="off" placeholder="60,000" aria-label="공시가격(만 원)"><span>만 원</span></div>
+      <div class="conv" id="pPriceC"></div>
+      <div class="help">공동주택은 국토교통부 부동산공시가격알리미에서 6월 1일 기준 공시가격을 확인하실 수 있어요. 시세가 아니라 공시가격을 넣어 주세요. 재산세는 6월 1일에 갖고 계신 분이 냅니다.</div>
+    </div>
+    <div class="wq" data-q="one" hidden>
+      <p class="ql">세대 전체가 가진 집이 이 한 채뿐인가요?</p>
+      <div class="opts" data-key="one">
+        <button type="button" class="opt" data-v="y">네, 1세대1주택이에요<small>공정시장가액비율 43~45%, 공시 9억 이하면 특례세율</small></button>
+        <button type="button" class="opt" data-v="n">아니요, 다른 집도 있어요<small>공정시장가액비율 60%, 표준세율</small></button>
+      </div>
+      <div class="help">부부·함께 사는 가족을 합친 세대 기준이에요.</div>
+    </div>
+    <div class="wq" data-q="prev" hidden>
+      <p class="ql">작년 공시가격과 재산세를 아시나요? (선택)</p>
+      <div class="sl">작년 공시가격</div>
+      <div class="box"><input id="pPrev" class="money" inputmode="numeric" autocomplete="off" placeholder="모르면 비워 두세요" aria-label="작년 공시가격(만 원)"><span>만 원</span></div>
+      <div class="sl">작년 재산세 (도시지역분·지방교육세 뺀 본세)</div>
+      <div class="box"><input id="pPrevTax" class="money" inputmode="numeric" autocomplete="off" placeholder="모르면 비워 두세요" aria-label="작년 재산세(만 원)"><span>만 원</span></div>
+      <div class="help">공시가격이 크게 올랐을 때 과세표준상한제(작년 대비 약 5%)와 세부담상한이 적용돼 세금이 줄 수 있어요. 비워 두시면 상한 없이 계산합니다.</div>
+    </div>
+    <div class="err werr" role="alert"></div>
+    <div class="nav"><button type="button" class="btn prev wprev">이전</button><button type="submit" class="btn primary next wnext">다음</button></div>
+  </form>
+  <div id="pOut" hidden>
+    <div class="sec result" id="pRes"></div>
+    <div class="btns sec"><button type="button" class="btn ghost redo" data-wiz="pWiz">입력 고치기</button><button type="button" class="btn ghost" data-go="cpt">종합부동산세</button></div>
+  </div>
+</section>
+
+<!-- 5. 종합부동산세 -->
+<section id="vCpt" hidden>
+  <div class="backbar"><button type="button" data-go="home">‹ 처음으로</button></div>
+  <form class="q wiz2" id="cWiz" novalidate>
+    <div class="meta"><b class="wstep">질문 1 / 4</b><span>종합부동산세 · 2026년분</span></div>
+    <div class="progress" role="progressbar" aria-label="질문 진행"><i class="wbar" style="width:25%"></i></div>
+    <div class="wq" data-q="owner">
+      <p class="ql">집은 누구 명의인가요?</p>
+      <div class="opts" data-key="owner">
+        <button type="button" class="opt" data-v="p">개인<small>1세대1주택 12억, 그 밖 9억 공제</small></button>
+        <button type="button" class="opt" data-v="c">법인<small>공제 없음, 2.7%·5% 단일세율</small></button>
+      </div>
+      <div class="help">종부세는 사람(법인)별로 계산해요. 부부 공동명의는 각자 지분만큼 따로 계산되니, 한 분 몫의 공시가격을 넣어 주세요.</div>
+    </div>
+    <div class="wq" data-q="list" hidden>
+      <p class="ql">가진 주택의 올해 공시가격을 넣어 주세요</p>
+      <div class="plist" id="cList"></div>
+      <button type="button" class="btn ghost" id="cAdd">한 채 더 넣기</button>
+      <div class="sum" id="cSum"></div>
+      <div class="help">6월 1일 기준으로 이 분(법인) 명의인 주택을 모두 넣어 주세요. 3채 이상이면 높은 세율표가 적용됩니다.</div>
+    </div>
+    <div class="wq" data-q="one" hidden>
+      <p class="ql">세대원 모두 합쳐 이 한 채만 갖고 계신가요?</p>
+      <div class="opts" data-key="cOne">
+        <button type="button" class="opt" data-v="y">네, 1세대1주택이에요<small>12억 공제, 나이·보유기간 세액공제</small></button>
+        <button type="button" class="opt" data-v="n">아니요, 세대원이 다른 집을 갖고 있어요<small>9억 공제, 세액공제 없음</small></button>
+      </div>
+    </div>
+    <div class="wq" data-q="age" hidden>
+      <p class="ql">나이와 이 집을 가진 기간을 알려 주세요</p>
+      <div class="f2"><div class="fl"><label for="cAge">만 나이 (6월 1일 기준)</label><div class="box"><input id="cAge" inputmode="numeric" autocomplete="off" placeholder="55"><span>세</span></div></div>
+        <div class="fl"><label for="cYears">보유 기간</label><div class="box"><input id="cYears" inputmode="numeric" autocomplete="off" placeholder="7"><span>년</span></div></div></div>
+      <div class="help">만 60세 이상 20~40%, 5년 이상 보유 20~50% 세액공제를 받고, 두 공제를 합쳐 최대 80%까지예요.</div>
+    </div>
+    <div class="wq" data-q="prev" hidden>
+      <p class="ql">작년에 낸 재산세와 종부세 합계를 아시나요? (선택)</p>
+      <div class="box"><input id="cPrev" class="money" inputmode="numeric" autocomplete="off" placeholder="모르면 비워 두세요" aria-label="작년 재산세+종부세(만 원)"><span>만 원</span></div>
+      <div class="help">올해 재산세+종부세가 작년의 150%를 넘으면 넘는 만큼 빼 줍니다(세부담상한). 재산세는 도시지역분·지방교육세를 뺀 본세, 종부세는 농어촌특별세를 뺀 금액이에요. 비워 두시면 상한 없이 계산합니다.</div>
+    </div>
+    <div class="err werr" role="alert"></div>
+    <div class="nav"><button type="button" class="btn prev wprev">이전</button><button type="submit" class="btn primary next wnext">다음</button></div>
+  </form>
+  <div id="cOut" hidden>
+    <div class="sec result" id="cRes"></div>
+    <div class="btns sec"><button type="button" class="btn ghost redo" data-wiz="cWiz">입력 고치기</button><button type="button" class="btn ghost" data-go="prop">재산세</button></div>
+  </div>
+</section>
+
+<!-- 6. 증여세 -->
+<section id="vGift" hidden>
+  <div class="backbar"><button type="button" data-go="home">‹ 처음으로</button></div>
+  <form class="q wiz2" id="gWiz" novalidate>
+    <div class="meta"><b class="wstep">질문 1 / 6</b><span>증여세 · 부동산 증여</span></div>
+    <div class="progress" role="progressbar" aria-label="질문 진행"><i class="wbar" style="width:17%"></i></div>
+    <div class="wq" data-q="rel">
+      <p class="ql">누가 누구에게 주나요?</p>
+      <div class="opts" data-key="rel">
+        <button type="button" class="opt" data-v="spouse">배우자에게<small>10년 합산 6억 원 공제</small></button>
+        <button type="button" class="opt" data-v="child">부모·조부모가 성년 자녀(손자녀)에게<small>10년 합산 5천만 원 공제</small></button>
+        <button type="button" class="opt" data-v="minor">부모·조부모가 미성년 자녀(손자녀)에게<small>10년 합산 2천만 원 공제</small></button>
+        <button type="button" class="opt" data-v="parent">자녀가 부모에게<small>10년 합산 5천만 원 공제</small></button>
+        <button type="button" class="opt" data-v="relative">그 밖의 친족에게<small>6촌 이내 혈족·4촌 이내 인척, 1천만 원 공제</small></button>
+        <button type="button" class="opt" data-v="other">친족이 아닌 분에게<small>공제 없음</small></button>
+      </div>
+    </div>
+    <div class="wq" data-q="value" hidden>
+      <p class="ql">증여하는 집의 가치는 얼마인가요?</p>
+      <div class="sl">증여재산가액 (시가 · 비슷한 아파트 최근 거래가)</div>
+      <div class="box"><input id="gValue" class="money" inputmode="numeric" autocomplete="off" placeholder="80,000" aria-label="증여재산가액(만 원)"><span>만 원</span></div>
+      <div class="conv" id="gValueC"></div>
+      <div class="sl">공시가격 (취득세 중과 판단용)</div>
+      <div class="box"><input id="gStd" class="money" inputmode="numeric" autocomplete="off" placeholder="55,000" aria-label="공시가격(만 원)"><span>만 원</span></div>
+      <label class="tog"><input type="checkbox" id="gOver"> 전용면적 85㎡ 초과예요</label>
+      <div class="help">아파트는 증여일 전후 비슷한 단지의 거래가(매매사례가액)가 시가로 인정돼요. 시가가 없을 때만 공시가격으로 평가합니다.</div>
+    </div>
+    <div class="wq" data-q="debt" hidden>
+      <p class="ql">전세보증금이나 대출도 함께 넘기시나요?</p>
+      <div class="box"><input id="gDebt" class="money" inputmode="numeric" autocomplete="off" placeholder="0" aria-label="받는 분이 넘겨받는 채무(만 원)"><span>만 원</span></div>
+      <div class="quick" id="gDebtQ"><button type="button" data-v="0">없어요</button></div>
+      <div id="gDonorW" hidden>
+        <div class="sl" style="margin-top:8px">주는 분이 이 집을 산 가격 (부담부증여 양도세 계산용, 선택)</div>
+        <div class="box"><input id="gDonorAcq" class="money" inputmode="numeric" autocomplete="off" placeholder="40,000" aria-label="증여자 취득가(만 원)"><span>만 원</span></div>
+      </div>
+      <div class="help">받는 분이 갚기로 한 채무만큼은 증여세 대신 주는 분이 양도세를 냅니다(부담부증여).</div>
+    </div>
+    <div class="wq" data-q="prior" hidden>
+      <p class="ql">최근 10년 안에 같은 분께 받은 증여가 있나요?</p>
+      <div class="sl">그때 받은 금액 합계 (증여 신고가액)</div>
+      <div class="box"><input id="gPrior" class="money" inputmode="numeric" autocomplete="off" placeholder="0" aria-label="10년 안 증여 합계(만 원)"><span>만 원</span></div>
+      <div class="sl">그때 낸 증여세</div>
+      <div class="box"><input id="gPriorTax" class="money" inputmode="numeric" autocomplete="off" placeholder="0" aria-label="그때 낸 증여세(만 원)"><span>만 원</span></div>
+      <div class="help">10년 안에 같은 분(부모님이면 아버지·어머니를 한 사람으로 봄)에게 받은 증여는 합쳐서 계산하고, 그때 낸 세금은 빼 드려요. 공제 한도도 10년 동안 한 번이에요.</div>
+    </div>
+    <div class="wq" data-q="extra" hidden>
+      <p class="ql">해당하는 것을 골라 주세요</p>
+      <label class="tog" id="gSkipW"><input type="checkbox" id="gSkip"> 조부모가 손자녀에게 줘요 (세대생략 30% 할증)</label>
+      <label class="tog" id="gMarW"><input type="checkbox" id="gMar"> 혼인신고 전후 2년 또는 자녀 출생 후 2년 안이에요 (1억 원 추가 공제)</label>
+      <label class="tog"><input type="checkbox" id="gFiled" checked> 증여일이 속한 달 말일부터 3개월 안에 신고해요 (3% 공제)</label>
+    </div>
+    <div class="wq" data-q="acq" hidden>
+      <p class="ql">취득세를 위해 몇 가지만 더 여쭐게요</p>
+      <div class="sl">증여하는 집 위치</div>
+      <div class="selrow"><select id="gSido" aria-label="시·도"></select><select id="gGu" aria-label="시·군·구"></select></div>
+      <div class="help" id="gAdjTxt"></div>
+      <label class="tog" id="gOneW"><input type="checkbox" id="gOne"> 주는 분 세대가 이 집 한 채만 갖고 있어요 (1세대1주택)</label>
+      <div id="gRecvW" hidden><div class="sl">받은 뒤 받는 분 세대의 주택 수 (채무 부분 유상취득 세율용)</div>
+        <div class="quick" id="gRecv"><button type="button" data-v="1" class="on">1채</button><button type="button" data-v="2">2채</button><button type="button" data-v="3">3채</button><button type="button" data-v="4">4채 이상</button></div></div>
+    </div>
+    <div class="err werr" role="alert"></div>
+    <div class="nav"><button type="button" class="btn prev wprev">이전</button><button type="submit" class="btn primary next wnext">다음</button></div>
+  </form>
+  <div id="gOut" hidden>
+    <div class="sec result" id="gRes"></div>
+    <div class="btns sec"><button type="button" class="btn ghost redo" data-wiz="gWiz">입력 고치기</button><button type="button" class="btn ghost" data-go="cgt">양도세 계산기</button></div>
+  </div>
+</section>
+
+<p class="notice">참고용 계산이며 최종 신고·납부 금액은 국세청 홈택스(양도세·종부세·증여세), 위택스(취득세·재산세)나 세무 전문가와 확인해 주세요. 세율·공제·비과세 요건은 2026년 11월 18일 현재 시행 중인 소득세법·시행령, 지방세법·시행령, 종합부동산세법·시행령, 상속세 및 증여세법과 국토교통부 조정대상지역 공고(서울 25개 구 전역, 경기 15곳)를 기준으로 했습니다. 입력값은 서버로 보내지 않습니다.</p>
 </main>
-<footer class="foot notice" style="margin:24px 0 0;border-radius:0;border-left:0;border-right:0">근거: 소득세법 제55조·제89조·제95조·제103조·제104조, 같은 법 시행령 제154조·제155조·제159조의4·제167조의10·제167조의11, 지방세법 제11조·제13조의2·제103조의3·제151조, 국토교통부공고 제2023-2호·제2025-1223호·제2026-882호<br>★ 장대장부동산그룹 · <a href="../">계산기 처음으로</a></footer>
+<footer class="foot notice" style="margin:24px 0 0;border-radius:0;border-left:0;border-right:0">근거: 소득세법 제55조·제89조·제95조·제103조·제104조, 같은 법 시행령 제154조·제155조·제159조의4·제167조의10·제167조의11, 지방세법 제11조·제13조의2·제103조의3·제110조·제111조·제111조의2·제112조·제115조·제122조·제151조, 종합부동산세법 제8조·제9조·제10조, 상속세 및 증여세법 제47조·제53조·제53조의2·제56조·제57조·제69조, 국토교통부공고 제2023-2호·제2025-1223호·제2026-882호<br>★ 장대장부동산그룹 · <a href="../">계산기 처음으로</a></footer>
 
 <script src="adjusted-areas.js"></script>
 <script src="tax-engine.js"></script>
