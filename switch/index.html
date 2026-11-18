@@ -23,6 +23,7 @@
 <script src="../assets/track.js"></script>
 <script src="../assets/stat.js"></script>
 <script src="../assets/agents.js"></script>
+<script src="../assets/kchat.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -122,7 +123,8 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .agc small{display:block;color:#6B6A58;font-size:12px}
 .agc .acts{display:flex;gap:6px;margin-top:8px}
 .agc .acts a{flex:1;text-align:center;text-decoration:none;font-weight:900;font-size:13px;padding:8px;border-radius:7px;background:#3B3F22;color:#F5EFDC}
-.agc .acts a.kk{background:#B8942A;color:#23241A}
+.agc .acts a{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+.agc .acts a.kchat{font-size:13px;font-weight:900;border-radius:7px;padding:8px}
 .agc .tag{font-size:10px;font-weight:700;border:1px solid #B8942A;color:#B8942A;padding:1px 5px;border-radius:3px;margin-left:5px}
 .agnone{margin-top:12px;font-size:14px;font-weight:700}
 .agnone a{color:#A23B2A}
@@ -664,14 +666,16 @@ $('sSgg').addEventListener('change', async ()=>{
     return;
   }
   box.innerHTML=`<div class="aglist">`+ranked.map(a=>{
-    const tel=String(a.ph||'').replace(/[^\d]/g,''), kk=/^https:\/\//.test(a.kk||'')?a.kk:'';
+    const tel=String(a.ph||'').replace(/[^\d]/g,'');
     return `<div class="agc"><b>${escH(a.n)}</b><span class="tag">제휴·광고</span><small>${escH(a.ogn)} ${escH(a.dong)} · 대표 ${escH(a.ceo)} · ${escH(a.ph)}</small>${a.intro?`<small style="color:#23241A">${escH(a.intro)}</small>`:''}
-      <div class="acts">${tel?`<a href="tel:${tel}" data-a="${a.id}" data-act="call">전화 상담</a>`:''}${kk?`<a class="kk" href="${escH(kk)}" target="_blank" rel="noopener" data-a="${a.id}" data-act="kakao">카톡 문의</a>`:''}</div></div>`;
+      <div class="acts">${tel?`<a href="tel:${tel}" data-a="${a.id}" data-act="call">전화 상담</a>`:''}${window.KChat?KChat.btn(a.kk,{a:a.id,g,name:a.n}):''}</div></div>`;
   }).join('')+`</div><p class="muted" style="font-size:11.5px;margin:8px 0 0">제휴(광고) 중개사무소입니다. 장대장은 중개 행위에 관여하지 않으며, 거래 조건은 해당 중개사무소에 직접 확인하세요.</p>`;
   A.log('rec', ranked.map(a=>a.id).sort().join(','), g, '');
   A.log('imp', ranked[0].id, g, ''); ranked.slice(1).forEach(a=>A.log('imp', a.id, g, ''));
   box.querySelectorAll('[data-act]').forEach(el=>el.addEventListener('click',()=>{ A.log(el.dataset.act, el.dataset.a, g, ''); A.flush(); JDJ.track('agent_'+el.dataset.act,{agent:el.dataset.a, sgg:g, from:'switch'}); }));
 });
+
+document.addEventListener('jdj:kchat', e=>{ const d=e.detail||{}; JDJ.track('agent_kakao',{agent:d.a, sgg:d.g, from:'switch', via:d.mobile?'link':'qr'}); });
 
 /* ---------- ⑤ 갭 알림: 지금 집 ↔ 갈아탈 집 ---------- */
 const GAP={mine:null,target:null};
