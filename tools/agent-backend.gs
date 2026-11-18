@@ -1,5 +1,15 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v10: 소속공인중개사 가입 · 상담 리뷰)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v11: 프리미엄 리포트 결제 · 토스페이먼츠)
+ *
+ * v11 변경 요약
+ *  - 프리미엄 리포트 유료 결제(토스페이먼츠 결제위젯) 서버 기능 추가. 기존 제휴·알림·리뷰 기능은 그대로입니다.
+ *  - 새 요청(action): createOrder(주문 만들기) · confirmPayment(결제 승인) · openReport(리포트 열람/상태 확인)
+ *                    · refundRequest(환불 요청 접수, 자동 환불 없음) · findOrder(주문번호+연락처로 다시 보기)
+ *  - '주문' 시트(탭)는 첫 주문 때 자동으로 만들어집니다. 금액은 아래 PRICE 표(서버 기준)와 대조하고,
+ *    토스 시크릿 키는 코드가 아니라 스크립트 속성 TOSS_SECRET_KEY 에서 읽습니다.
+ *  - 연락처는 가린 형태(010-****-1234)와 확인용 해시만, 열람 토큰은 해시만 시트에 저장합니다.
+ *  - 운영 안내: tools/payment-setup.md
+ *  - 카카오톡 채팅 링크 서버 검증 kakaoUrl(): 제휴 신청·정보 수정 저장 때 open.kakao.com / pf.kakao.com 주소만 저장(tools/chat-backend-patch.md)
  *
  * 설치: 구글 시트 새로 만들기 → 확장 프로그램 → Apps Script → 이 코드 전체 붙여넣기 → 저장
  *       → 위쪽 함수 선택에서 setup 실행(권한 허용) → 배포 → 새 배포 → 유형: 웹 앱
@@ -49,6 +59,11 @@ function out(o) { return ContentService.createTextOutput(JSON.stringify(o)).setM
 function today() { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }
 function ymd(d) { return Utilities.formatDate(d, 'Asia/Seoul', 'yyyy-MM-dd'); }
 function str(v, n) { return String(v == null ? '' : v).trim().slice(0, n || 200); }
+/* 카카오톡 채팅 링크: 오픈채팅(open.kakao.com) 또는 채널(pf.kakao.com)만, 아니면 빈 값 */
+function kakaoUrl(v) {
+  const s = str(v, 200).trim();
+  return /^https:\/\/(open|pf)\.kakao\.com\/[^\s"'<>\\`]+$/.test(s) ? s : '';
+}
 function parseJ(v, d) { try { return v ? JSON.parse(v) : d; } catch (e) { return d; } }
 
 function agents() {
@@ -109,6 +124,7 @@ function doPost(e) {
   let b;
   try { b = JSON.parse(e.postData.contents); } catch (x) { return out({ ok: false, err: '요청 형식 오류' }); }
   if (b.action === 'log') return out(logEvents(b));
+  if (PAY_ACTIONS[b.action]) return out(payDispatch(b));
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
   try {
@@ -192,7 +208,7 @@ function apply(b) {
   const code = Utilities.getUuid().replace(/-/g, '').slice(0, 8).toUpperCase();
   const row = [];
   row[COL['id']] = id; row[COL['등록번호']] = reg; row[COL['사무소명']] = office; row[COL['대표자']] = ceo;
-  row[COL['전화']] = phone; row[COL['카카오']] = str(b.kakao, 200); row[COL['소개']] = str(b.intro, 120);
+  row[COL['전화']] = phone; row[COL['카카오']] = kakaoUrl(b.kakao); row[COL['소개']] = str(b.intro, 120);
   row[COL['시도']] = str(b.sido, 20); row[COL['사무소구코드']] = og; row[COL['사무소구']] = str(b.ogName, 30);
   row[COL['사무소동']] = str(b.dong, 30); row[COL['추가구']] = JSON.stringify(extras); row[COL['단지']] = JSON.stringify(danji);
   row[COL['관리코드']] = code; row[COL['신청일']] = new Date(); row[COL['승인']] = false; row[COL['만료일']] = '';
@@ -264,7 +280,7 @@ function update(b) {
   set('추가구', JSON.stringify(extras));
   set('단지', JSON.stringify(danji));
   if (b.phone) set('전화', str(b.phone, 20));
-  set('카카오', str(b.kakao, 200));
+  set('카카오', kakaoUrl(b.kakao));
   set('소개', str(b.intro, 120));
   if (b.names) set('노출지역', regionNames(regions, b.names));
   if (b.biz != null) set('사업자번호', str(b.biz, 20));
@@ -585,4 +601,288 @@ function replyReview(b) {
   sh.getRange(r.row, RC['답글'] + 1, 1, 2).setValues([[text, new Date()]]);
   CacheService.getScriptCache().removeAll(['rstats', 'list']);
   return login(b);
+}
+
+
+/* =====================================================================
+   프리미엄 리포트 결제 (토스페이먼츠 결제위젯) — v11
+   흐름: 사이트 checkout 에서 createOrder(서버가 주문번호·금액 결정) → 토스 결제창 → success 페이지가
+         confirmPayment(금액을 서버 가격표·주문과 대조 → 토스 승인 API) → 열람 토큰 발급
+         → view 페이지가 openReport 로 확인(처음 열 때 '최초열람시각' 기록 = 환불 기준)
+   · 시크릿 키: 스크립트 속성 TOSS_SECRET_KEY (코드에 쓰지 않음)
+   · 연락처: 가린 값 + 확인용 해시만 저장 / 열람 토큰: 해시만 저장(다시 보기 때 새 토큰 발급)
+   · 환불: 자동으로 하지 않음. 요청을 시트에 기록하고 시트 주인에게 메일 → 운영자가 토스 상점관리자에서 취소
+   ===================================================================== */
+const SH_O = '주문';
+const OH = ['주문번호','생성시각','상품','단지키','단지명','금액','상태','연락처','연락처확인값','결제키','결제수단','승인시각',
+            '열람토큰','최초열람시각','최근열람시각','열람횟수','환불상태','환불요청시각','환불사유','메모'];
+const OC = Object.fromEntries(OH.map((h, i) => [h, i]));
+/* 서버 기준 가격표 — 사이트에 보이는 가격과 반드시 같게. 결제 금액은 항상 이 표와 대조합니다. */
+const PRICE = {
+  single: { name: '단지 리포트', amount: 9900, min: 1, max: 1 },
+  pack:   { name: '비교 패키지', amount: 29000, min: 2, max: 3 }
+};
+const REFUND_DAYS = 7;       // 열람 전 전액 환불 가능 기간(결제일부터)
+const VIEW_DAYS = 365;       // 열람 기간
+const TOSS_API = 'https://api.tosspayments.com/v1/payments/';
+const PAY_ACTIONS = { createOrder: 1, confirmPayment: 1, openReport: 1, refundRequest: 1, findOrder: 1 };
+const ST = { wait: '결제대기', paid: '결제완료', fail: '승인실패', bad: '금액불일치', vbank: '입금대기' };
+
+function payDispatch(b) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    if (b.action === 'createOrder') return createOrder(b);
+    if (b.action === 'confirmPayment') return confirmPayment(b);
+    if (b.action === 'openReport') return openReport(b);
+    if (b.action === 'refundRequest') return refundRequest(b);
+    if (b.action === 'findOrder') return findOrder(b);
+    return { ok: false, err: 'unknown' };
+  } catch (x) {
+    return { ok: false, err: String(x.message || x) };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function orderSheet() {
+  const ss = book();
+  let sh = ss.getSheetByName(SH_O);
+  if (!sh) {
+    sh = ss.insertSheet(SH_O);
+    sh.getRange(1, 1, 1, OH.length).setValues([OH]).setFontWeight('bold').setBackground('#3B3F22').setFontColor('#F5EFDC');
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+function orderRows() {
+  const v = orderSheet().getDataRange().getValues(), list = [];
+  for (let i = 1; i < v.length; i++) if (v[i][OC['주문번호']]) list.push({ row: i + 1, r: v[i] });
+  return list;
+}
+function findRow(id) {
+  id = str(id, 40);
+  if (!/^JDJ\d{6}-[0-9A-F]{10}$/.test(id)) return null;
+  return orderRows().find(x => String(x.r[OC['주문번호']]) === id) || null;
+}
+function setO(row, h, v) { orderSheet().getRange(row, OC[h] + 1).setValue(v); }
+
+/* 해시·비교 */
+function hex(bytes) { return bytes.map(b => ('0' + (b & 255).toString(16)).slice(-2)).join(''); }
+function salt() {
+  const P = PropertiesService.getScriptProperties();
+  let s = P.getProperty('ORDER_SALT');
+  if (!s) { s = Utilities.getUuid() + Utilities.getUuid(); P.setProperty('ORDER_SALT', s); }
+  return s;
+}
+function hashOf(s) { return 'h' + hex(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, salt() + '|' + s, Utilities.Charset.UTF_8)); }   // 앞의 h: 시트가 숫자로 바꾸지 않도록
+/* 길이가 같으면 끝까지 다 비교(상수시간 흉내) */
+function safeEq(a, b) {
+  a = String(a == null ? '' : a); b = String(b == null ? '' : b);
+  let d = a.length ^ b.length;
+  const n = Math.max(a.length, b.length);
+  for (let i = 0; i < n; i++) d |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
+  return d === 0;
+}
+function newToken() { return (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, ''); }
+function newOrderId() {
+  return 'JDJ' + Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyMMdd') + '-' + Utilities.getUuid().replace(/-/g, '').slice(0, 10).toUpperCase();
+}
+
+/* 연락처: 휴대폰 또는 이메일 1개 */
+function parseContact(c) {
+  c = str(c, 100);
+  const d = c.replace(/[^0-9]/g, '');
+  if (/^01[016789]\d{7,8}$/.test(d) && !/@/.test(c)) return { kind: 'phone', norm: d, mask: d.slice(0, 3) + '-****-' + d.slice(-4), last4: d.slice(-4) };
+  const e = c.toLowerCase();
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) {
+    const [u, dom] = e.split('@');
+    return { kind: 'email', norm: e, mask: u.slice(0, Math.min(2, u.length)) + '***@' + dom, last4: '' };
+  }
+  return null;
+}
+
+/* 단지 키: 사이트 단지 비교와 같은 형식 (시도id~구코드~동~단지~평형, 각 칸 URL 인코딩) */
+function parseKey(k) {
+  k = str(k, 300);
+  const a = k.split('~');
+  if (a.length !== 5) return null;
+  let p;
+  try { p = a.map(decodeURIComponent); } catch (e) { return null; }
+  if (!/^s\d{2}$/.test(p[0]) || !/^\d{5}$/.test(p[1]) || !p[2] || !p[3] || p[3].length > 80 || !p[4] || p[4].length > 20) return null;
+  return { k: k, name: p[3] + ' ' + p[4] };
+}
+
+/* ---------- 1) 주문 만들기: 서버가 주문번호와 금액을 정함 ---------- */
+function createOrder(b) {
+  const P = PRICE[b.product];
+  if (!P) throw new Error('상품을 다시 선택해 주세요.');
+  const seen = {};
+  const keys = (Array.isArray(b.keys) ? b.keys : []).slice(0, 5).map(parseKey).filter(x => x && !seen[x.k] && (seen[x.k] = true));
+  if (keys.length < P.min || keys.length > P.max)
+    throw new Error(P.min === P.max ? `${P.name}는 단지 ${P.min}곳을 골라 주세요.` : `${P.name}는 단지 ${P.min}~${P.max}곳을 골라 주세요.`);
+  const ct = parseContact(b.contact);
+  if (!ct) throw new Error('휴대폰 번호 또는 이메일을 정확히 입력해 주세요.');
+  if (!b.agree) throw new Error('청약철회 제한 안내에 동의해 주세요.');
+  const cache = CacheService.getScriptCache(), ck = 'co:' + Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyyMMddHHmm');
+  const n = Number(cache.get(ck) || 0);
+  if (n >= 30) throw new Error('잠시 후 다시 시도해 주세요.');
+  cache.put(ck, String(n + 1), 120);
+  const id = newOrderId();
+  const names = keys.map(x => x.name).join(', ');
+  const row = [];
+  row[OC['주문번호']] = id; row[OC['생성시각']] = new Date(); row[OC['상품']] = P.name;
+  row[OC['단지키']] = JSON.stringify(keys.map(x => x.k)); row[OC['단지명']] = names.slice(0, 300);
+  row[OC['금액']] = P.amount; row[OC['상태']] = ST.wait;
+  row[OC['연락처']] = ct.mask; row[OC['연락처확인값']] = hashOf(ct.norm);
+  ['결제키','결제수단','승인시각','열람토큰','최초열람시각','최근열람시각','환불상태','환불요청시각','환불사유','메모'].forEach(h => row[OC[h]] = '');
+  row[OC['열람횟수']] = 0;
+  orderSheet().appendRow(row);
+  return { ok: true, orderId: id, amount: P.amount, orderName: ('장대장 ' + P.name + ' · ' + names).slice(0, 100) };
+}
+
+function productKeyOf(name) { return Object.keys(PRICE).find(k => PRICE[k].name === String(name)) || ''; }
+
+/* 토스 API 호출 (테스트에서는 UrlFetchApp 을 바꿔 끼워 검증) */
+function tossCall(path, payload, idem) {
+  const secret = PropertiesService.getScriptProperties().getProperty('TOSS_SECRET_KEY');
+  if (!secret) throw new Error('결제 서버 설정이 아직 끝나지 않았습니다. 운영자에게 문의해 주세요.');
+  const opt = { method: payload ? 'post' : 'get', muteHttpExceptions: true,
+    headers: { Authorization: 'Basic ' + Utilities.base64Encode(secret + ':') } };
+  if (payload) { opt.contentType = 'application/json'; opt.payload = JSON.stringify(payload); }
+  if (idem) opt.headers['Idempotency-Key'] = idem;
+  const res = UrlFetchApp.fetch(TOSS_API + path, opt);
+  let j = {}; try { j = JSON.parse(res.getContentText()); } catch (e) {}
+  return { code: res.getResponseCode(), j: j };
+}
+
+/* ---------- 2) 결제 승인 ---------- */
+function confirmPayment(b) {
+  const paymentKey = str(b.paymentKey, 200), amount = Number(b.amount);
+  if (!paymentKey || !/^[A-Za-z0-9_\-=.]+$/.test(paymentKey)) throw new Error('결제 정보가 올바르지 않습니다.');
+  const o = findRow(b.orderId);
+  if (!o) throw new Error('주문을 찾지 못했습니다.');
+  const r = o.r, P = PRICE[productKeyOf(r[OC['상품']])];
+  const status = String(r[OC['상태']]);
+  /* 이미 승인된 주문: 같은 결제키면 새 열람 토큰을 다시 발급(성공 화면 새로고침 대비) */
+  if (status === ST.paid) {
+    if (!safeEq(r[OC['결제키']], paymentKey)) throw new Error('이미 처리된 주문입니다.');
+    return paidOut(o);
+  }
+  if (status !== ST.wait && status !== ST.fail) throw new Error('처리할 수 없는 주문 상태입니다: ' + status);
+  /* 위변조 방지: 요청 금액 = 주문 금액 = 서버 가격표 */
+  if (!P || !(amount === Number(r[OC['금액']]) && amount === P.amount)) {
+    setO(o.row, '상태', ST.bad); setO(o.row, '메모', `요청 금액 ${amount} / 주문 금액 ${r[OC['금액']]}`);
+    throw new Error('결제 금액이 주문 금액과 달라 승인하지 않았습니다. 결제는 진행되지 않았습니다.');
+  }
+  let res = tossCall('confirm', { paymentKey: paymentKey, orderId: o.r[OC['주문번호']], amount: amount }, 'confirm-' + o.r[OC['주문번호']]);
+  if (res.code !== 200 && res.j && res.j.code === 'ALREADY_PROCESSED_PAYMENT') res = tossCall(encodeURIComponent(paymentKey));   // 이전 승인 응답을 못 받은 경우 조회로 확인
+  const j = res.j || {};
+  if (res.code !== 200) {
+    setO(o.row, '상태', ST.fail); setO(o.row, '메모', str(j.code + ' ' + j.message, 200));
+    return { ok: false, code: str(j.code, 60), err: str(j.message, 200) || '결제 승인에 실패했습니다.' };
+  }
+  if (String(j.orderId) !== String(r[OC['주문번호']]) || Number(j.totalAmount) !== P.amount) {
+    setO(o.row, '상태', ST.bad); setO(o.row, '메모', '승인 응답 금액/주문번호 불일치 — 토스 상점관리자에서 확인·취소 필요');
+    throw new Error('결제 확인 중 문제가 생겼습니다. 운영자가 확인 후 연락드리거나 취소해 드립니다.');
+  }
+  setO(o.row, '결제키', paymentKey);
+  setO(o.row, '결제수단', str(j.method, 30));
+  if (j.status === 'WAITING_FOR_DEPOSIT') {
+    setO(o.row, '상태', ST.vbank);
+    return { ok: false, code: 'WAITING_FOR_DEPOSIT', err: '가상계좌 입금 확인 후 리포트를 열 수 있습니다.' };
+  }
+  if (j.status !== 'DONE') {
+    setO(o.row, '상태', ST.fail); setO(o.row, '메모', '승인 상태 ' + str(j.status, 30));
+    return { ok: false, code: str(j.status, 40), err: '결제가 완료되지 않았습니다.' };
+  }
+  setO(o.row, '상태', ST.paid);
+  setO(o.row, '승인시각', j.approvedAt ? new Date(j.approvedAt) : new Date());
+  setO(o.row, '메모', '');
+  return paidOut(findRow(o.r[OC['주문번호']]));
+}
+function paidOut(o) {
+  const t = newToken();
+  setO(o.row, '열람토큰', hashOf(t));
+  const r = o.r;
+  return { ok: true, orderId: String(r[OC['주문번호']]), token: t, product: String(r[OC['상품']]), amount: Number(r[OC['금액']]),
+    names: String(r[OC['단지명']]), paidAt: r[OC['승인시각']] instanceof Date ? ymd(r[OC['승인시각']]) : ymd(new Date()) };
+}
+
+/* 주문번호 + 토큰 검증 (실패 이유는 구분하지 않음) */
+function authOrder(b) {
+  const o = findRow(b.o);
+  const t = str(b.t, 100);
+  const ok = !!o && t.length >= 32 && safeEq(String(o.r[OC['열람토큰']]), hashOf(t));
+  if (!ok) throw new Error('주문 정보를 확인할 수 없습니다. 링크를 다시 확인하시거나 [구매한 리포트 다시 보기]를 이용해 주세요.');
+  if (String(o.r[OC['상태']]) !== ST.paid) throw new Error('결제가 완료된 주문이 아닙니다.');
+  return o;
+}
+function orderState(o, now) {
+  const r = o.r, paid = r[OC['승인시각']] instanceof Date ? r[OC['승인시각']] : new Date(r[OC['승인시각']]);
+  const first = r[OC['최초열람시각']] instanceof Date ? r[OC['최초열람시각']] : null;
+  const refund = String(r[OC['환불상태']] || '');
+  const until = new Date(paid.getTime() + REFUND_DAYS * 86400000), exp = new Date(paid.getTime() + VIEW_DAYS * 86400000);
+  return {
+    orderId: String(r[OC['주문번호']]), product: String(r[OC['상품']]), amount: Number(r[OC['금액']]), names: String(r[OC['단지명']]),
+    paidAt: ymd(paid), viewed: !!first, firstViewAt: first ? Utilities.formatDate(first, 'Asia/Seoul', 'yyyy-MM-dd HH:mm') : '',
+    refund: refund, refundUntil: ymd(until), refundable: !first && !refund && now <= until,
+    expires: ymd(exp), expired: now > exp
+  };
+}
+
+/* ---------- 3) 리포트 열람 / 상태 확인 ----------
+   open:false → 상태만(열람 기록 안 함) / open:true → 최초 열람 시각 기록 후 단지 키 반환 */
+function openReport(b) {
+  const o = authOrder(b), now = new Date(), s = orderState(o, now);
+  if (!b.open) return { ok: true, order: s };
+  if (s.refund) throw new Error('환불 요청이 접수된 주문이라 열람할 수 없습니다. 요청을 취소하시려면 고객문의로 연락해 주세요.');
+  if (s.expired) throw new Error('열람 기간(결제일부터 1년)이 지났습니다.');
+  if (!s.viewed) setO(o.row, '최초열람시각', now);
+  setO(o.row, '최근열람시각', now);
+  setO(o.row, '열람횟수', (Number(o.r[OC['열람횟수']]) || 0) + 1);
+  const s2 = orderState(findRow(s.orderId), now);
+  return { ok: true, order: s2, keys: parseJ(o.r[OC['단지키']], []) };
+}
+
+/* ---------- 4) 환불 요청 (기록 + 운영자 메일, 자동 환불 없음) ---------- */
+function refundRequest(b) {
+  const o = authOrder(b), now = new Date(), s = orderState(o, now);
+  if (s.refund) return { ok: true, order: s, already: true };
+  const reason = str(b.reason, 300);
+  const label = s.refundable ? '요청(열람 전·7일 이내 — 전액 환불 대상)' : '요청(검토 필요 — 열람 후 또는 7일 경과)';
+  setO(o.row, '환불상태', label);
+  setO(o.row, '환불요청시각', now);
+  setO(o.row, '환불사유', reason);
+  try {
+    MailApp.sendEmail(Session.getEffectiveUser().getEmail(), `[장대장 결제] 환불 요청 ${s.orderId}`,
+      `주문번호 ${s.orderId}\n상품 ${s.product} · ${s.amount.toLocaleString()}원 · 결제일 ${s.paidAt}\n단지 ${s.names}\n`
+      + `열람 여부: ${s.viewed ? '열람함(' + s.firstViewAt + ')' : '열람 전'}\n구분: ${label}\n사유: ${reason || '(없음)'}\n\n`
+      + `처리 방법: 토스페이먼츠 상점관리자 → 결제 내역에서 주문번호로 찾아 결제 취소 → '주문' 시트의 환불상태를 '환불완료'로 바꿔 주세요.\n`
+      + `(영업일 3일 이내 처리 약속)\n${book().getUrl()}`);
+  } catch (e) {}
+  return { ok: true, order: orderState(findRow(s.orderId), now) };
+}
+
+/* ---------- 5) 다시 보기: 주문번호 + 휴대폰 뒤 4자리(또는 이메일) → 새 열람 토큰 ---------- */
+function findOrder(b) {
+  const id = str(b.o, 40).toUpperCase(), c = str(b.c, 100);
+  const cache = CacheService.getScriptCache(), ck = 'fo:' + id;
+  const tries = Number(cache.get(ck) || 0);
+  if (tries >= 5) throw new Error('확인 시도가 많아 1시간 뒤에 다시 시도해 주세요.');
+  const o = findRow(id);
+  let ok = false;
+  if (o && String(o.r[OC['상태']]) === ST.paid) {
+    const mask = String(o.r[OC['연락처']]), d = c.replace(/[^0-9]/g, '');
+    if (/^\d{4}$/.test(d) && !/@/.test(c)) ok = /^\d{3}-\*{4}-\d{4}$/.test(mask) && safeEq(mask.slice(-4), d);
+    else { const ct = parseContact(c); ok = !!ct && safeEq(String(o.r[OC['연락처확인값']]), hashOf(ct.norm)); }
+  }
+  if (!ok) {
+    cache.put(ck, String(tries + 1), 3600);
+    throw new Error('주문번호 또는 연락처가 맞지 않습니다.');
+  }
+  cache.remove(ck);
+  const t = newToken();
+  setO(o.row, '열람토큰', hashOf(t));
+  return { ok: true, orderId: id, token: t };
 }

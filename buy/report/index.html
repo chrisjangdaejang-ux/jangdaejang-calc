@@ -1246,7 +1246,7 @@ async function render(){
           </div>
           <div class="loc">최근 시세 흐름 ${spark(x.series)}</div>
           ${rs.length>3?`<ul class="reasons">${rs.slice(3).map(li).join('')}</ul>`:''}
-          <a class="premlink noprint" href="/jangdaejang-calc/premium/" data-track="report_to_premium">1~10년 시나리오·세금 시뮬레이션까지 보려면 · 프리미엄 리포트 안내 ›</a>
+          <a class="premlink noprint" href="/jangdaejang-calc/premium/?p=single&k=${encodeURIComponent(k)}" data-track="report_to_premium">이 단지 프리미엄 리포트 (9,900원) · 시나리오·세금 시뮬레이션 순차 제공 ›</a>
         </div>
         <div class="vnote">${hasFv ? esc(vTxt) : '미래가치 점수가 아직 없는 단지라 예산 적합도·거래량·시세 흐름으로 매긴 추천 점수를 보여 드려요.'}</div>
         <div class="cacts noprint"><button type="button" class="btn primary" data-more="pm${i}" aria-expanded="false" aria-controls="pm${i}">자세한 리포트</button><button type="button" class="btn cmpbtn-add ${cmpHas(k)?'on':''}" data-cp="${esc(k)}">${cmpHas(k)?'비교함에 담김':'비교에 담기'}</button></div>

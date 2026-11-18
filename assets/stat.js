@@ -45,7 +45,7 @@
 
   /* ---------- 허용 목록 ---------- */
   const EV = {feature_use:3, interest_profile:15, chungyak_result:3, report_share:5, compare_use:3}; // 이벤트별 페이지당 상한
-  const FEATURES = ['buy','report','switch','redev','villa','chungyak','tax','compare','consult'];
+  const FEATURES = ['buy','report','switch','redev','villa','chungyak','tax','compare','consult','premium'];
   const PAGES = ['home','buy','report','switch','villa','chungyak','tax','agent','calc'];
   const P = {
     feature:     v => FEATURES.includes(v),

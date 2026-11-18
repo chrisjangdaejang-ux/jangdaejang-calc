@@ -11,12 +11,16 @@
 <script src="/jangdaejang-calc/assets/biz.js" defer></script>
 <title>프리미엄 리포트 안내 · 가격 | 장대장 계산기</title>
 <meta name="description" content="장대장 프리미엄 리포트: 단지 리포트 9,900원, 비교 패키지 29,000원. 공공기관 공식 자료 기반 단지 심층 분석, 결제 즉시 웹 화면과 PDF로 제공합니다.">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <script>window.JDJ_CONFIG = { tool:'premium', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js"></script>
 <script src="../assets/stat.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=38">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/pay.css?v=1">
+<script src="/jangdaejang-calc/assets/agents.js"></script>
+<script src="/jangdaejang-calc/assets/pay.js?v=1"></script>
 <style>
 .doc{max-width:880px}
 .doc .lead{font-size:16px;color:var(--sub);margin:0 0 6px}
@@ -64,8 +68,7 @@
         <li>매도 타이밍·세금(양도세·보유세) 시뮬레이션</li>
       </ul>
       <div class="meta"><b>제공 방식</b> 결제 즉시 웹 화면 + PDF 다운로드<br><b>열람 기간</b> 결제일부터 1년(PDF는 내려받아 계속 보관 가능)</div>
-      <button type="button" class="btn big" disabled aria-disabled="true">결제 준비 중 · 곧 오픈</button>
-      <p class="soon">지금은 결제를 받지 않습니다. 무료 리포트를 먼저 이용해 주세요.</p>
+      <button type="button" class="btn big pick" data-plan="single">단지 리포트 선택</button>
     </article>
     <article class="plan best">
       <div class="pt">후보 단지 3곳</div>
@@ -78,9 +81,37 @@
         <li>3곳 종합 비교표와 판단 포인트 정리</li>
       </ul>
       <div class="meta"><b>제공 방식</b> 결제 즉시 웹 화면 + PDF 다운로드<br><b>열람 기간</b> 결제일부터 1년(PDF는 내려받아 계속 보관 가능)</div>
-      <button type="button" class="btn big" disabled aria-disabled="true">결제 준비 중 · 곧 오픈</button>
-      <p class="soon">지금은 결제를 받지 않습니다. 무료 리포트를 먼저 이용해 주세요.</p>
+      <button type="button" class="btn big pick" data-plan="pack">비교 패키지 선택</button>
     </article>
+  </section>
+
+  <section class="card2 key" id="pick" hidden aria-labelledby="pickH">
+    <h2 id="pickH">분석할 단지 고르기</h2>
+    <p style="margin:0 0 6px;font-size:14.5px" id="pickNote"></p>
+    <ul class="dlist" id="picked"></ul>
+    <div id="fromCmp"></div>
+    <div class="pfield" style="margin-top:14px">
+      <label for="qSido">단지 이름으로 찾기</label>
+      <div class="srch">
+        <select id="qSido" aria-label="시·도"><option value="">시·도 불러오는 중…</option></select>
+        <input id="qName" type="search" placeholder="아파트 이름 (예: 헬리오시티, 래미안)" autocomplete="off" aria-label="아파트 이름">
+      </div>
+      <div class="sres" id="qRes" aria-live="polite"></div>
+    </div>
+    <button type="button" class="paybtn" id="goPay" disabled>결제하기</button>
+    <p class="links">회원가입 없이 결제합니다. 다음 화면에서 연락처(휴대폰 또는 이메일) 1개를 입력하면, 그 연락처로 리포트를 다시 열 수 있습니다.</p>
+  </section>
+
+  <section class="card2" id="again" aria-labelledby="againH">
+    <h2 id="againH">구매한 리포트 다시 보기</h2>
+    <div id="myOrders"></div>
+    <form id="findForm" autocomplete="off">
+      <div class="pfield"><label for="fO">주문번호</label><input id="fO" placeholder="예: JDJ261118-1A2B3C4D5E" autocapitalize="characters" required></div>
+      <div class="pfield"><label for="fC">휴대폰 번호 뒤 4자리 또는 이메일</label><input id="fC" placeholder="결제 때 입력한 연락처" required>
+        <div class="hint">주문번호는 결제 완료 화면과 토스페이먼츠 결제 알림에 있습니다.</div></div>
+      <button type="submit" class="btn2 blue" style="width:100%">리포트 찾기</button>
+      <div class="msg" id="fMsg" role="alert"></div>
+    </form>
   </section>
 
   <div class="box free">
@@ -106,8 +137,83 @@
       <li>환불 문의는 영업일 기준 3일 이내에 처리합니다.</li>
     </ul>
   </div>
-  <p style="font-size:14px">자세한 내용은 <a href="/jangdaejang-calc/refund/">환불 정책</a>, <a href="/jangdaejang-calc/terms/">이용약관</a>, <a href="/jangdaejang-calc/privacy/">개인정보처리방침</a>을 확인해 주세요. 결제 서비스가 열리면 결제는 전자지급결제대행사(토스페이먼츠)를 통해 안전하게 처리됩니다.</p>
+  <p style="font-size:14px">자세한 내용은 <a href="/jangdaejang-calc/refund/">환불 정책</a>, <a href="/jangdaejang-calc/terms/">이용약관</a>, <a href="/jangdaejang-calc/privacy/">개인정보처리방침</a>을 확인해 주세요. 결제는 전자지급결제대행사(토스페이먼츠)를 통해 안전하게 처리되며, 회사는 카드번호 등 결제 수단 정보를 저장하지 않습니다.</p>
 </main>
 <footer class="foot">★ 장대장부동산그룹 · <a href="/jangdaejang-calc/">계산기 홈</a></footer>
+<script>
+(function(){
+  const P = JDJ_PAY, $ = id => document.getElementById(id), esc = P.esc;
+  const Q = new URLSearchParams(location.search);
+  let plan = P.PRODUCTS[Q.get('p')] ? Q.get('p') : '';
+  let keys = P.keysFromUrl(Q);
+  if (!plan && keys.length) plan = keys.length > 1 ? 'pack' : 'single';
+  const label = k => { const p = P.keyParse(k); return p ? `<b>${esc(p.apt)}</b><small>${esc(p.dong)} · ${esc(p.band)}</small>` : ''; };
+
+  function draw(){
+    document.querySelectorAll('.plan').forEach(a => a.classList.toggle('on', !!plan && a.querySelector('[data-plan="'+plan+'"]') != null));
+    const box = $('pick'); box.hidden = !plan; if (!plan) return;
+    const pr = P.PRODUCTS[plan];
+    if (keys.length > pr.max) keys = keys.slice(0, pr.max);
+    $('pickNote').innerHTML = `<b>${esc(pr.name)}</b> ${P.won(pr.amount)} · 단지 ${pr.min === pr.max ? pr.min + '곳' : pr.min + '~' + pr.max + '곳'}을 골라 주세요. (지금 ${keys.length}곳)`;
+    $('picked').innerHTML = keys.length ? keys.map((k,i) => `<li><span>${label(k)}</span><button type="button" data-rm="${i}" aria-label="빼기">빼기</button></li>`).join('')
+      : '<li><span style="color:var(--sub2)">아직 고른 단지가 없습니다. 아래에서 찾아 담아 주세요.</span></li>';
+    let cmp = []; try { cmp = JSON.parse(localStorage.getItem('jdj_cmp') || '[]'); } catch(e){}
+    cmp = (Array.isArray(cmp) ? cmp : []).map(P.keyOf).filter(k => P.keyParse(k) && !keys.includes(k));
+    $('fromCmp').innerHTML = cmp.length ? `<p class="links" style="margin:10px 0 4px">리포트 비교함에 담아 둔 단지</p><div class="sres"><div class="bands" style="display:flex;flex-wrap:wrap;gap:6px">${cmp.map(k => { const p = P.keyParse(k); return `<button type="button" class="btn2" style="min-height:38px;font-size:13px" data-add="${esc(k)}">+ ${esc(p.apt)} · ${esc(p.band)}</button>`; }).join('')}</div></div>` : '';
+    $('goPay').disabled = !(keys.length >= pr.min && keys.length <= pr.max);
+    $('goPay').textContent = $('goPay').disabled ? '단지를 골라 주세요' : `${P.won(pr.amount)} 결제하기`;
+    const u = new URL(location.href); u.searchParams.set('p', plan); if (keys.length) u.searchParams.set('k', keys.join('!')); else u.searchParams.delete('k'); history.replaceState(null, '', u);
+  }
+  function add(k){
+    const pr = P.PRODUCTS[plan]; if (keys.includes(k)) { keys = keys.filter(x => x !== k); draw(); search(); return; }
+    if (keys.length >= pr.max) { if (pr.max === 1) keys = [k]; else { alert(`${pr.name}는 최대 ${pr.max}곳까지 고를 수 있습니다.`); return; } }
+    else keys.push(k);
+    draw(); search();
+  }
+  document.querySelectorAll('[data-plan]').forEach(b => b.onclick = () => { plan = b.dataset.plan; draw(); P.stat(); $('pick').scrollIntoView({behavior:'smooth', block:'start'}); if (!IXP) loadIx(); });
+  $('pick').addEventListener('click', e => {
+    const rm = e.target.closest('[data-rm]'); if (rm) { keys.splice(+rm.dataset.rm, 1); draw(); search(); return; }
+    const ad = e.target.closest('[data-add]'); if (ad) add(ad.dataset.add);
+    const pb = e.target.closest('[data-p]'); if (pb) add(pb.dataset.p);
+  });
+  $('goPay').onclick = () => { if ($('goPay').disabled) return; location.href = P.ROOT + 'checkout/?p=' + plan + '&k=' + keys.map(encodeURIComponent).join('!'); };
+
+  /* 단지 찾기: 무료 리포트와 같은 공개 실거래 자료 */
+  let IX = null, IXP = null, st = null;
+  const norm = x => String(x || '').replace(/\s|아파트/g, '').toLowerCase();
+  function loadIx(){ IXP = P.index().then(ix => { IX = ix;
+      $('qSido').innerHTML = ix.sido.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+      const k0 = keys[0] && P.keyParse(keys[0]); if (k0) $('qSido').value = k0.sd; })
+    .catch(() => { $('qSido').innerHTML = '<option value="">자료를 불러오지 못했습니다</option>'; }); return IXP; }
+  async function search(){
+    const q = norm($('qName').value), box = $('qRes');
+    if (!plan) return;
+    if (q.length < 2) { box.innerHTML = $('qName').value ? '<div class="none">두 글자 이상 입력해 주세요.</div>' : ''; return; }
+    if (!IX) await loadIx(); const sd = $('qSido').value; if (!sd) return;
+    box.innerHTML = '<div class="none"><span class="spin"></span>찾는 중…</div>';
+    let units; try { units = await P.sido(sd); } catch(e) { box.innerHTML = '<div class="none">자료를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</div>'; return; }
+    const m = new Map();
+    for (const u of units) { if (!norm(u[2] + u[1]).includes(q)) continue; const k = u[0] + '|' + u[1] + '|' + u[2]; if (!m.has(k)) m.set(k, {u:[], n:0}); const e = m.get(k); e.u.push(u); e.n += u[5]; }
+    const items = [...m.values()].sort((a,b) => b.n - a.n).slice(0, 20);
+    box.innerHTML = items.length ? items.map(e => { const u0 = e.u[0], g = IX.sgg[u0[0]];
+      return `<div class="it"><b>${esc(u0[2])}</b><small>${esc(g ? g.name : '')} ${esc(u0[1])}</small><div class="bands">${e.u.sort((a,b)=>a[4]-b[4]).map(u => { const k = P.keyOf({sd, code:u[0], dong:u[1], apt:u[2], band:u[3]});
+        return `<button type="button" class="${keys.includes(k)?'on':''}" data-p="${esc(k)}">${keys.includes(k)?'선택됨 · ':''}${esc(u[3])} · 전용 ${u[4]}㎡</button>`; }).join('')}</div></div>`; }).join('')
+      : '<div class="none">찾는 단지가 없습니다. 이름 일부만 넣어 보시거나 시·도를 바꿔 보세요. (최근 3년 실거래가 있는 단지만 나옵니다)</div>';
+  }
+  $('qName').oninput = () => { clearTimeout(st); st = setTimeout(search, 250); };
+  $('qSido').onchange = search;
+
+  /* 다시 보기 */
+  const mine = P.orders();
+  $('myOrders').innerHTML = mine.length ? `<p class="links" style="margin:0 0 4px">이 기기에서 구매한 리포트</p><ul class="dlist">${mine.map(o => `<li><span><b>${esc(o.names || o.product || '프리미엄 리포트')}</b><small>${esc(o.o)}${o.paidAt ? ' · ' + esc(o.paidAt) : ''}</small></span><a class="btn2" style="min-height:38px" href="${esc(P.viewUrl(o.o, o.t))}">열기</a></li>`).join('')}</ul><p class="links" style="margin:12px 0 4px">다른 기기에서 구매하셨다면</p>` : '';
+  $('findForm').onsubmit = async e => {
+    e.preventDefault(); const m = $('fMsg'); m.className = 'msg info'; m.innerHTML = '<span class="spin"></span>확인 중…';
+    try { const j = await P.post('findOrder', { o: $('fO').value.trim().toUpperCase(), c: $('fC').value.trim() });
+      P.saveOrder({ o: j.orderId, t: j.token }); location.href = P.viewUrl(j.orderId, j.token); }
+    catch(x) { m.className = 'msg err'; m.textContent = x.message; }
+  };
+  if (plan) { draw(); loadIx(); }
+})();
+</script>
 </body>
 </html>

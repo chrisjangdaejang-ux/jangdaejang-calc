@@ -1,9 +1,9 @@
 /* 장대장 계산기 서비스 워커: 항상 최신(네트워크 우선), 끊기면 저장해 둔 화면으로 */
-const V = 'jdj-v39';
+const V = 'jdj-v40';
 const SHELL = ['/jangdaejang-calc/', '/jangdaejang-calc/buy/', '/jangdaejang-calc/switch/', '/jangdaejang-calc/buy/report/', '/jangdaejang-calc/villa/', '/jangdaejang-calc/chungyak/', '/jangdaejang-calc/tax/', '/jangdaejang-calc/premium/', '/jangdaejang-calc/terms/', '/jangdaejang-calc/refund/', '/jangdaejang-calc/privacy/',
   '/jangdaejang-calc/tax/tax-engine.js', '/jangdaejang-calc/tax/adjusted-areas.js', '/jangdaejang-calc/tax/tax-ui.js',
   '/jangdaejang-calc/assets/agents.js', '/jangdaejang-calc/assets/kchat.js?v=1', '/jangdaejang-calc/assets/vendor/qrcode-generator.js?v=1.4.4', '/jangdaejang-calc/assets/region-notes.js', '/jangdaejang-calc/assets/track.js', '/jangdaejang-calc/assets/stat.js',
-  '/jangdaejang-calc/assets/pwa.js', '/jangdaejang-calc/assets/biz.js', '/jangdaejang-calc/assets/aplus.css?v=38', '/jangdaejang-calc/assets/icons/icon-192.png'];
+  '/jangdaejang-calc/assets/pwa.js', '/jangdaejang-calc/assets/pay.js?v=1', '/jangdaejang-calc/assets/pay.css?v=1', '/jangdaejang-calc/assets/biz.js', '/jangdaejang-calc/assets/aplus.css?v=38', '/jangdaejang-calc/assets/icons/icon-192.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(V).then(c => Promise.all(SHELL.map(u => c.add(u).catch(() => {})))).then(() => self.skipWaiting()));
 });
@@ -14,6 +14,7 @@ self.addEventListener('fetch', e => {
   const r = e.request, u = new URL(r.url);
   if (r.method !== 'GET' || u.origin !== location.origin) return;           // 구글 시트·GA 등 외부는 그대로
   if (!u.pathname.startsWith('/jangdaejang-calc/') && !u.pathname.startsWith('/jangdaejang-data/')) return;
+  if (u.pathname.startsWith('/jangdaejang-calc/premium/') && u.search) return;   // 결제·열람 주소(결제키·열람 토큰)는 기기 캐시에 남기지 않음
   e.respondWith((async () => {
     const c = await caches.open(V);
     try {
