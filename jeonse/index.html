@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="장대장 계산기">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="/jangdaejang-calc/assets/pwa.js" defer></script>
+<script src="/jangdaejang-calc/assets/biz.js" defer></script>
+<title>장대장 전월세 시세 & 전망 — 전세·월세 실거래 시세, 전세가율, 우리 동네 전세 흐름</title>
+<meta name="description" content="국토교통부 전월세 실거래로 아파트·빌라·오피스텔·단독 전세·월세 시세와 추이, 최근 계약(신규·갱신), 전세가율과 깡통전세 체크리스트, 전세 vs 월세 계산, 우리 동네 입주 예정·재건축 이주까지 확인하세요.">
+<meta property="og:title" content="장대장 전월세 시세 & 전망 — 우리 동네 전셋값 지금 얼마일까?">
+<meta property="og:description" content="전세·월세 실거래 시세와 추이, 전세가율, 전세 vs 월세 계산기, 우리 동네 전세 흐름을 한 화면에.">
+<meta property="og:type" content="website">
+<script>window.JDJ_CONFIG = { tool:'jeonse', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../assets/track.js"></script>
+<script src="../assets/stat.js"></script>
+<script src="../assets/agents.js"></script>
+<script src="../assets/kchat.js?v=1"></script>
+<script src="../assets/mine-core.js?v=5"></script>
+<script src="../assets/price-sheet.js?v=4"></script>
+<script src="../assets/rent-core.js?v=1"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=39">
+<style>
+.wrap{max-width:860px;margin:0 auto;padding:22px 16px 60px}
+h1{font-size:clamp(26px,6vw,38px);margin:6px 0 8px}
+.lead{margin:0 0 18px;font-size:16px;color:#4E5968}
+.panel{margin:14px 0}
+.panel h2 small{display:block;font-size:13.5px;font-weight:500;color:#4E5968;margin-top:4px;letter-spacing:0}
+.ktabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;background:#F2F4F6;border-radius:14px;padding:5px;margin:0 0 12px}
+.ktabs button{font:inherit;font-size:15px;font-weight:700;border:0;background:transparent;color:#4E5968;min-height:46px;padding:0 6px;border-radius:10px;cursor:pointer;word-break:keep-all;line-height:1.25}
+.ktabs button.on{background:#fff;color:#2F6BFF;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.ktabs button small{display:block;font-size:11.5px;font-weight:500;color:#8B95A1}
+@media(max-width:400px){.ktabs button{font-size:14px;padding:0 2px}}
+.pick{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pick .full{grid-column:1/-1}
+.pick label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
+.pick select,.pick input{width:100%;font:inherit;font-size:16px;padding:0 12px;min-height:48px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--text);min-width:0}
+.pick input:focus{outline:0;border-color:#2F6BFF;box-shadow:0 0 0 3px rgba(47,107,255,.15)}
+@media(max-width:520px){.pick{grid-template-columns:1fr}}
+.or{font-size:13.5px;color:#4E5968;margin:12px 0 6px;font-weight:700}
+.sres{display:grid;gap:6px;margin-top:8px}
+.sres button{font:inherit;text-align:left;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-height:48px;cursor:pointer;color:var(--text)}
+.sres button b{font-size:16px}
+.sres button small{display:block;font-size:13.5px;color:#4E5968}
+.sres .none{font-size:14px;color:#4E5968;padding:6px 2px}
+.bands{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 4px}
+.bands button{font:inherit;font-size:15px;font-weight:700;min-height:44px;padding:0 14px;border:1px solid var(--line);background:#fff;color:#3E4754;border-radius:999px;cursor:pointer}
+.bands button.on{background:#E8F0FF;border-color:#2F6BFF;color:#2F6BFF}
+.dhead h2{font-size:22px;margin:0;font-weight:900;letter-spacing:-.5px;line-height:1.3;overflow-wrap:anywhere}
+.dhead .loc{font-size:14px;color:#4E5968;margin-top:2px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0 6px}
+@media(max-width:640px){.stats{grid-template-columns:1fr 1fr}}
+.st{background:#F2F4F6;border-radius:14px;padding:10px 12px;min-width:0}
+.st.key{background:#E7F6EF}
+.st .k{font-size:13.5px;color:#4E5968;font-weight:700}
+.st.key .k{color:#0E7A4F}
+.st .v{font-size:19px;font-weight:900;letter-spacing:-.4px;line-height:1.3;word-break:keep-all}
+.st .d{font-size:13.5px;color:#4E5968;line-height:1.4}
+.up{color:#C2410C}.dn{color:#1F56E0}
+.basis{font-size:13.5px;color:#4E5968;line-height:1.6;margin:6px 0 0}
+.basis b{color:#3E4754}
+.seg2{display:inline-flex;gap:4px;background:#F2F4F6;border-radius:12px;padding:4px}
+.seg2 button{font:inherit;font-size:14px;font-weight:700;border:0;background:transparent;color:#4E5968;min-height:40px;min-width:56px;padding:0 12px;border-radius:9px;cursor:pointer}
+.seg2 button.on{background:#fff;color:#2F6BFF;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.chead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.chead h3{margin:0;font-size:17px;font-weight:900}
+.chart{width:100%;min-height:150px}
+.chart svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;color:#4E5968;margin-top:4px}
+.legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px;background:#14A06B}
+.legend i.w{background:#B8942A}.legend i.g{background:#2F6BFF}
+.gauge{position:relative;height:12px;border-radius:6px;background:linear-gradient(90deg,#E7F6EF 0,#E7F6EF 90%,#FDECEC 90%,#FDECEC 100%);margin:28px 0 22px}
+.gauge i{position:absolute;top:-6px;width:4px;height:24px;border-radius:2px;background:#191F28;transform:translateX(-2px)}
+.gauge em{position:absolute;top:-22px;font-size:12.5px;font-style:normal;font-weight:700;color:#C81E1E;transform:translateX(-85%);white-space:nowrap}
+.gauge em::after{content:'';position:absolute;left:85%;top:18px;width:2px;height:22px;background:#C81E1E}
+.gauge span{position:absolute;top:16px;font-size:12.5px;color:#4E5968;transform:translateX(-50%)}
+.rbig{font-size:26px;font-weight:900;letter-spacing:-.5px}
+.rbig.hi{color:#C81E1E}
+.rmsg{border-radius:12px;padding:10px 12px;font-size:15px;line-height:1.6;margin:8px 0 0}
+.rmsg.hi{background:#FDECEC;color:#7F1D1D}.rmsg.ok{background:#F2F4F6;color:#191F28}
+.calc{border:1px solid #C9D8FF;background:#F5F8FF;border-radius:16px;padding:14px}
+.calc .row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:700px){.calc .row{grid-template-columns:1fr 1fr}}
+@media(max-width:360px){.calc .row{grid-template-columns:1fr}}
+.calc label{display:block;font-size:14px;font-weight:700;margin-bottom:4px}
+.calc input{width:100%;font:inherit;font-size:16px;min-height:48px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--text);min-width:0}
+.calc .hint{font-size:13.5px;color:#4E5968;margin-top:3px;min-height:18px}
+.calc .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.calc .acts button{font:inherit;font-size:14px;font-weight:700;min-height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:#fff;color:#3E4754;cursor:pointer}
+.cres{margin-top:12px;background:#fff;border-radius:12px;padding:12px 14px;font-size:15px;line-height:1.7}
+.cres b.big{font-size:19px}
+.tbl{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:8px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{text-align:left;font-size:13.5px;color:#4E5968;font-weight:700;padding:8px 6px;border-bottom:2px solid var(--line);white-space:nowrap}
+td{padding:9px 6px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+td.num,th.num{text-align:right;white-space:nowrap}
+td small{color:#4E5968;font-size:13.5px}
+tr.on td{background:#F5F8FF;font-weight:700}
+.ctag{display:inline-block;font-size:12px;font-weight:800;line-height:18px;padding:0 6px;border-radius:5px;white-space:nowrap}
+.ctag.n{background:#E8F0FF;color:#1F56E0}.ctag.r{background:#FFF3D6;color:#8A5A00}
+.morebtn{font:inherit;font-size:14px;font-weight:700;width:100%;min-height:44px;margin-top:8px;border:1px solid var(--line);border-radius:12px;background:#fff;color:#3E4754;cursor:pointer}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:560px){.facts{grid-template-columns:1fr}}
+.fbox{border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0}
+.fbox .k{font-size:13.5px;color:#4E5968;font-weight:700}
+.fbox .v{font-size:19px;font-weight:900;margin:2px 0;word-break:keep-all}
+.fbox ul{margin:6px 0 0;padding-left:18px;font-size:14.5px;line-height:1.6}
+.fbox li small{color:#4E5968}
+.outlook{margin-top:12px;border:1px dashed #B8942A;border-radius:12px;padding:10px 12px;font-size:15px;color:#5B4A12;background:#FFFBEF}
+.chk{margin:0;padding-left:0;list-style:none;display:grid;gap:8px}
+.chk li{position:relative;padding:10px 12px 10px 38px;border:1px solid var(--line);border-radius:12px;font-size:15px;line-height:1.6;background:#fff}
+.chk li::before{content:'✓';position:absolute;left:12px;top:9px;width:18px;height:18px;border-radius:5px;background:#E7F6EF;color:#0E7A4F;font-weight:900;font-size:13px;text-align:center;line-height:18px}
+.chk li.key{border-color:#B8942A;background:#FFFBEF}
+.chk li small{display:block;color:#4E5968;font-size:13.5px}
+.srcl{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:14px}
+.srcl a{color:#2F6BFF;font-weight:700;text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
+.links{display:grid;gap:8px;grid-template-columns:repeat(2,1fr)}
+@media(max-width:640px){.links{grid-template-columns:1fr}}
+.links a,.links button{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;min-height:64px;padding:10px 14px;border:1px solid var(--line);border-radius:14px;text-decoration:none;color:var(--text);background:#fff;font:inherit;text-align:left;cursor:pointer}
+.links b{font-size:16px}
+.links small{font-size:13.5px;color:#4E5968}
+.links .main{background:#E8F0FF;border-color:#2F6BFF}
+.aglist{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px;margin-top:10px}
+.agc{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:#fff;min-width:0}
+.agc b{font-size:16px}
+.agc .tag2{font-size:12px;font-weight:700;border:1px solid #B8942A;color:#8A6D17;padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:2px}
+.agc small{display:block;color:#4E5968;font-size:13.5px}
+.agc .hl{display:inline-block;font-size:13.5px;font-weight:700;color:#2F6BFF;margin-top:4px}
+.agc .acts{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.agc .acts a{flex:1;min-height:44px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;font-weight:700;font-size:14px;border-radius:12px}
+.agc .acts a.tel{background:#2F6BFF;color:#fff}
+.note{font-size:13.5px;color:#4E5968;line-height:1.6}
+.loading,.empty{padding:26px 16px;text-align:center;color:#4E5968;border:1px dashed var(--line);border-radius:14px;background:#fff;font-size:15px}
+.disc{font-size:13.5px;color:#4E5968;line-height:1.7;margin-top:22px;border-top:1px solid var(--line2);padding-top:14px}
+details.msum{margin-top:12px}
+details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44px;display:flex;align-items:center}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/jangdaejang-calc/"><span class="star" aria-hidden="true">★</span> 장대장 <span class="acc">계산기</span></a>
+  <div class="badge plain">전월세 시세</div>
+</header>
+
+<main class="wrap">
+  <span class="tag">전월세 시세 &amp; 전망</span>
+  <h1>우리 동네 전셋값,<br><em>지금 얼마</em>일까요?</h1>
+  <p class="lead">국토교통부 전월세 실거래로 전세·월세 시세와 추이, 최근 계약(신규·갱신), 전세가율을 보여 드려요. 전세와 월세 중 어느 쪽이 매달 덜 드는지 계산하고, 우리 동네 입주 예정·재건축 이주 같은 전세 흐름도 함께 확인하세요.</p>
+
+  <section class="panel" id="findSec" aria-labelledby="findT">
+    <h2 id="findT">집 찾기<small id="findHelp">시·도 → 시·군·구 → 단지 순서로 고르거나, 단지 이름으로 찾아 주세요.</small></h2>
+    <div class="ktabs" role="tablist" aria-label="주택 종류" id="ktabs"></div>
+    <div id="kOff" class="empty" hidden></div>
+    <div id="kOn">
+      <div class="pick">
+        <div><label for="sido">시·도</label><select id="sido"><option>불러오는 중…</option></select></div>
+        <div><label for="sgg">시·군·구</label><select id="sgg" disabled><option value="">시·군·구 선택</option></select></div>
+        <div id="dongW" hidden><label for="dong">동</label><select id="dong" disabled><option value="">동 선택</option></select></div>
+        <div class="full" id="danjiW"><label for="danji" id="danjiL">단지</label><select id="danji" disabled><option value="">단지 선택</option></select></div>
+      </div>
+      <div id="qW">
+        <p class="or" id="qL">또는 단지 이름으로 찾기 <span style="font-weight:500">(선택한 시·도 안에서 찾아요)</span></p>
+        <div class="pick"><div class="full"><label for="q" style="position:absolute;left:-9999px">이름</label><input id="q" type="search" placeholder="예: 헬리오시티, 강선마을" autocomplete="off" enterkeyhint="search"></div></div>
+        <div class="sres" id="sres" aria-live="polite"></div>
+      </div>
+      <div id="loadMsg" class="note" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section id="res" hidden aria-live="polite"></section>
+  <section id="area" hidden></section>
+
+  <p class="disc" id="src">자료: 국토교통부 아파트·연립다세대·오피스텔·단독다가구 전월세 실거래가(공공데이터포털). 월별 시세는 그 달까지 3개월 계약의 중앙값이에요(전세 = 월세 없는 순수 전세, 월세 = 월세가 있는 계약의 보증금·월세 각각의 중앙값). 실제 보증금은 동·층·향·수리 상태·계약 시점에 따라 달라요. 동·호수 같은 개인정보는 원자료에도 없고 보여 드리지 않아요.</p>
+</main>
+<footer class="foot">과거 실거래 기반 정보예요. 특정 계약을 권하지 않아요. 자세한 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 장대장부동산그룹 · <a href="../">계산기 홈</a></footer>
+
+<script>
+(function(){
+'use strict';
+const M = window.JDJ_MINE, R = window.JDJ_RENT, P = window.JDJ_PRICE, $ = id => document.getElementById(id);
+const DATA = '/jangdaejang-data/data/';
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = s => { const v = parseFloat(String(s || '').replace(/[^\d.]/g, '')); return isFinite(v) ? v : 0; };
+const ym = v => M.ymLabel(v), won = v => M.won(v);
+const updown = v => v == null ? '' : v > 0.0005 ? 'up' : v < -0.0005 ? 'dn' : '';
+const C = {};
+const getJ = (u) => C[u] || (C[u] = fetch(DATA + u, {cache:'no-cache'}).then(r => { if (!r.ok) throw new Error(u); return r.json(); }).catch(e => { delete C[u]; throw e; }));
+let IX = null, RX = null, CUR = null;
+const S = { kind: 'a', sd: '', code: '', dong: '', key: '', band: '', span: 36 };
+const GA = {};                          // 아파트 시·도 묶음
+const sggName = c => (IX.sgg[c] || {}).name || c;
+const sidoName = c => (IX.sgg[c] || {}).sido || '';
+const kOn = id => !!(RX && RX.kinds && RX.kinds[id] && RX.kinds[id].n > 0);
+const SRC_LINKS = {
+  hug: ['HUG 전세보증금반환보증 상품개요', 'https://www.khug.or.kr/hug/web/ig/dr/igdr000001.jsp'],
+  chk: ['정책브리핑 · 전세사기 피하는 전세계약 체크리스트', 'https://www.korea.kr/news/policyNewsView.do?newsId=148905628'],
+  portal: ['HUG 안심전세포털', 'https://www.khug.or.kr/jeonse/index_jeonse.jsp'],
+  reg: ['HUG · 등기부등본 확인 안내', 'https://www.khug.or.kr/jeonse/web/s03/s030105.jsp'],
+  law: ['찾기쉬운 생활법령 · 보증금의 보호', 'https://easylaw.go.kr/CSP/CnpClsMainBtr.laf?popMenu=ov&csmSeq=629&ccfNo=2&cciNo=3&cnpClsNo=1&menuType=onhunqna'],
+  pub: ['부동산 공시가격 알리미', 'https://www.realtyprice.kr/'],
+  rt: ['국토교통부 실거래가 공개시스템', 'https://rt.molit.go.kr/']
+};
+const srcA = k => `<a href="${SRC_LINKS[k][1]}" target="_blank" rel="noopener">${esc(SRC_LINKS[k][0])} ↗</a>`;
+
+/* ---------- 종류 탭 ---------- */
+function drawTabs(){
+  $('ktabs').innerHTML = R.KINDS.map(k => `<button type="button" role="tab" data-kind="${k.id}" class="${S.kind === k.id ? 'on' : ''}" aria-selected="${S.kind === k.id}">${esc(k.label)}${kOn(k.id) ? '' : '<small>준비 중</small>'}</button>`).join('');
+}
+function setKind(id, keep, keepKey){
+  S.kind = id; drawTabs();
+  const on = kOn(id), k = R.kindOf(id);
+  $('kOff').hidden = on; $('kOn').hidden = !on;
+  $('res').hidden = true; $('res').innerHTML = ''; CUR = null;
+  if (!on){ $('kOff').innerHTML = `${esc(k.full || k.label)} 전월세 자료는 준비 중이에요. 국토교통부 공개 자료 연결이 끝나면 자동으로 보여 드려요.`; $('findHelp').textContent = ''; return Promise.resolve(); }
+  const apt = id === 'a', d = id === 'd';
+  $('dongW').hidden = apt; $('danjiW').hidden = d; $('qW').hidden = d;
+  $('danjiL').textContent = apt ? '단지' : '건물';
+  $('qL').innerHTML = apt ? '또는 단지 이름으로 찾기 <span style="font-weight:500">(선택한 시·도 안에서 찾아요)</span>' : '또는 건물 이름으로 찾기 <span style="font-weight:500">(선택한 시·군·구 안에서 찾아요)</span>';
+  $('q').placeholder = apt ? '예: 헬리오시티, 강선마을' : '예: 건물 이름 일부';
+  $('findHelp').textContent = apt ? '시·도 → 시·군·구 → 단지 순서로 고르거나, 단지 이름으로 찾아 주세요.'
+    : d ? '시·도 → 시·군·구 → 동 순서로 골라 주세요. 단독·다가구는 원자료에 건물 정보가 없어 동·면적대 시세만 보여 드려요.'
+    : '시·도 → 시·군·구 → 동 → 건물 순서로 고르거나, 시·군·구를 고른 뒤 건물 이름으로 찾아 주세요.';
+  $('sres').innerHTML = ''; $('q').value = '';
+  return S.sd ? pickSido(S.sd, keep ? S.code : '', keepKey) : Promise.resolve();
+}
+
+/* ---------- 고르기 ---------- */
+function fillSido(){
+  const first = ['서울', '경기', '인천'];
+  const list = [...IX.sido].sort((a, b) => { const ia = first.indexOf(a.short), ib = first.indexOf(b.short); return (ia < 0 ? 9 : ia) - (ib < 0 ? 9 : ib) || a.name.localeCompare(b.name, 'ko'); });
+  $('sido').innerHTML = list.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+}
+function sggList(){
+  const nm = (IX.sido.find(s => s.id === S.sd) || {}).name;
+  return Object.keys(IX.sgg).filter(k => IX.sgg[k].sido === nm && (S.kind === 'a' || ((RX.sgg[k] || {}).k || {})[S.kind])).sort((a, b) => sggName(a).localeCompare(sggName(b), 'ko'));
+}
+async function pickSido(id, keepSgg, keepKey){
+  S.sd = id; $('sido').value = id;
+  const list = sggList();
+  $('sgg').innerHTML = '<option value="">시·군·구 선택</option>' + list.map(k => `<option value="${k}">${esc(sggName(k))}</option>`).join('');
+  $('sgg').disabled = false;
+  ['danji', 'dong'].forEach(x => { $(x).disabled = true; });
+  $('danji').innerHTML = `<option value="">${S.kind === 'a' ? '단지' : '건물'} 선택</option>`; $('dong').innerHTML = '<option value="">동 선택</option>';
+  if (keepSgg && list.includes(keepSgg)) $('sgg').value = keepSgg;
+  if (S.kind === 'a'){
+    $('loadMsg').textContent = '단지 목록을 불러오는 중이에요…';
+    try { await aptList(id); $('loadMsg').textContent = ''; } catch (e) { $('loadMsg').textContent = '단지 목록을 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.'; return; }
+    if (S.sd !== id) return;
+    fillDanji(keepKey);
+    if ($('q').value.trim()) runSearch();
+  } else if ($('sgg').value) await pickSgg(keepKey);
+  else S.code = '';
+}
+async function aptList(id){
+  if (GA[id]) return GA[id];
+  const j = await getJ('rent/' + id + '.json');
+  return (GA[id] = M.groupDanji((j.units || []).map(M.listRow)));
+}
+/** 빌라·오피스텔·단독: 구 파일 */
+const kindFile = (k, g) => 'rent/' + R.kindOf(k).sub + g + '.json';
+async function kindUnits(k, g){ const j = await getJ(kindFile(k, g)); return j; }
+function fillDanji(keep){
+  const g = GA[S.sd], code = $('sgg').value, sel = $('danji');
+  if (!g || !code){ sel.innerHTML = '<option value="">단지 선택</option>'; sel.disabled = true; return; }
+  const list = [...g.values()].filter(d => d.code === code).sort((a, b) => a.apt.localeCompare(b.apt, 'ko') || a.dong.localeCompare(b.dong, 'ko'));
+  sel.innerHTML = `<option value="">단지 선택 (${list.length}곳)</option>` + list.map(d => `<option value="${esc(d.key)}">${esc(d.apt)} · ${esc(d.dong)}</option>`).join('');
+  sel.disabled = !list.length;
+  if (keep && g.has(keep)) sel.value = keep;
+}
+async function pickSgg(keepKey){
+  const g = $('sgg').value; S.code = g;
+  if (S.kind === 'a'){ fillDanji(); return; }
+  $('dong').disabled = true; $('danji').disabled = true;
+  if (!g) return;
+  $('loadMsg').textContent = '자료를 불러오는 중이에요…';
+  let j; try { j = await kindUnits(S.kind, g); $('loadMsg').textContent = ''; } catch (e) { $('loadMsg').textContent = '이 시·군·구 자료가 아직 없어요.'; return; }
+  if (S.code !== g) return;
+  const units = j.units || [];
+  const dongs = [...new Set(units.map(u => u[0]))].sort((a, b) => a.localeCompare(b, 'ko'));
+  $('dong').innerHTML = '<option value="">동 선택</option>' + dongs.map(d => `<option>${esc(d)}</option>`).join('');
+  $('dong').disabled = !dongs.length;
+  if (S.kind !== 'd') C['grp' + S.kind + g] = R.groupBld(units);
+  const kd = keepKey ? String(keepKey).split('|')[0] : '';
+  if (kd && dongs.includes(kd)){ $('dong').value = kd; pickDong(keepKey); }
+  if ($('q').value.trim()) runSearch();
+}
+function pickDong(keepKey){
+  const g = S.code, dg = $('dong').value; S.dong = dg;
+  if (S.kind === 'd'){ if (dg) showD(g, dg); return; }
+  const grp = C['grp' + S.kind + g]; if (!grp) return;
+  const list = [...grp.values()].filter(d => d.dong === dg).sort((a, b) => b.n - a.n);
+  $('danji').innerHTML = `<option value="">건물 선택 (${list.length}곳)</option>` + list.map(d => `<option value="${esc(d.key)}">${esc(R.bldName(d))} · ${esc(d.jibun)}</option>`).join('');
+  $('danji').disabled = !list.length;
+  if (keepKey && grp.has(keepKey)){ $('danji').value = keepKey; showUnit(keepKey); }
+}
+let qt = null;
+function runSearch(){
+  const q = $('q').value.trim(), box = $('sres');
+  if (!q){ box.innerHTML = ''; return; }
+  if (S.kind === 'a'){
+    const g = GA[S.sd]; if (!g){ box.innerHTML = '<div class="none">자료를 불러오는 중이에요…</div>'; return; }
+    const hits = M.searchDanji(g, q, 12);
+    box.innerHTML = hits.length ? hits.map(d => `<button type="button" data-k="${esc(d.key)}"><b>${esc(d.apt)}</b><small>${esc(sggName(d.code))} ${esc(d.dong)} · 평형 ${d.bands.length}개 · 최근 3년 전월세 계약 ${d.n.toLocaleString()}건</small></button>`).join('')
+      : `<div class="none">'${esc(q)}' 이름의 단지를 ${esc((IX.sido.find(s => s.id === S.sd) || {}).name || '')}에서 찾지 못했어요. 다른 시·도를 고르거나 이름 일부만 넣어 보세요. (최근 3년 동안 전월세 계약이 있었던 단지만 찾을 수 있어요)</div>`;
+    return;
+  }
+  const grp = C['grp' + S.kind + S.code];
+  if (!grp){ box.innerHTML = '<div class="none">먼저 시·군·구를 골라 주세요.</div>'; return; }
+  const hits = R.searchBld(grp, q, 12);
+  box.innerHTML = hits.length ? hits.map(d => `<button type="button" data-k="${esc(d.key)}"><b>${esc(R.bldName(d))}</b><small>${esc(sggName(S.code))} ${esc(d.dong)} ${esc(d.jibun)} · 최근 3년 계약 ${d.n.toLocaleString()}건</small></button>`).join('')
+    : `<div class="none">'${esc(q)}' 이름의 건물을 ${esc(sggName(S.code))}에서 찾지 못했어요. 동을 고른 뒤 목록에서 골라 보세요.</div>`;
+}
+
+/* ---------- 결과: 아파트·빌라·오피스텔 ---------- */
+async function showUnit(key, band, opt){
+  const kind = S.kind; let units, meta, grpD;
+  if (kind === 'a'){
+    const d0 = (GA[S.sd] || new Map()).get(key); if (!d0) return;
+    S.code = d0.code;
+    if ($('sgg').value !== d0.code){ $('sgg').value = d0.code; fillDanji(key); }
+    if ($('danji').value !== key) $('danji').value = key;
+    $('res').hidden = false; if (!CUR || CUR.key !== key) $('res').innerHTML = '<div class="loading">시세를 불러오는 중이에요…</div>';
+    try { meta = await kindUnits('a', d0.code); } catch (e) { $('res').innerHTML = '<div class="empty">전월세 자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.</div>'; return; }
+    const parts = key.split('|');   // 구|동|지번|단지
+    units = meta.units.filter(u => u[0] === parts[1] && String(u[3]) === parts[2] && u[1] === parts[3]);
+    grpD = { dong: d0.dong, jibun: d0.jibun, name: d0.apt };
+  } else {
+    const grp = C['grp' + kind + S.code]; const d0 = grp && grp.get(key); if (!d0) return;
+    meta = await kindUnits(kind, S.code); units = d0.bands; grpD = { dong: d0.dong, jibun: d0.jibun, name: R.bldName(d0) };
+    if ($('dong').value !== d0.dong){ $('dong').value = d0.dong; pickDong(); }
+    if ($('danji').value !== key) $('danji').value = key;
+  }
+  if (!units.length){ $('res').hidden = false; $('res').innerHTML = '<div class="empty">이 단지의 전월세 자료를 찾지 못했어요.</div>'; return; }
+  units = units.slice().sort((a, b) => a[4] - b[4]);
+  if (!band || !units.some(u => u[2] === band)){ const b84 = units.find(u => u[2] === '84㎡대'); band = (b84 || units.slice().sort((a, b) => (b[5] + b[6]) - (a[5] + a[6]))[0])[2]; }
+  S.key = key; S.band = band;
+  const url = new URL(location.href); url.search = ''; url.searchParams.set('k', kind); url.searchParams.set('sd', S.sd); url.searchParams.set('g', S.code); url.searchParams.set('d', key); url.searchParams.set('b', band); history.replaceState(null, '', url);
+  CUR = { kind, key, units, meta, d: grpD, code: S.code, h: null };
+  render();
+  if (opt && opt.scroll) $('res').scrollIntoView({behavior:'smooth', block:'start'});
+  if (window.jdjStat){ jdjStat('feature_use', {feature:'jeonse'}); jdjStat('interest_profile', {from:'jeonse', sido:jdjStat.sido(sidoName(S.code)), sgg:sggName(S.code)}); }
+  getJ('rent/' + R.kindOf(kind).sub + 'h/' + S.code + '.json').then(h => { if (CUR && CUR.key === key){ CUR.h = h; drawCharts(); $('res').querySelector('[data-span="0"]') && ($('res').querySelector('[data-span="0"]').hidden = false); } }).catch(() => {});
+}
+function render(){
+  const c = CUR, u = c.units.find(x => x[2] === S.band), sm = R.summary(u, c.meta), kind = c.kind, k = R.kindOf(kind);
+  const g = RX.sgg[c.code] || {};
+  const chT = x => x ? `<span class="${updown(x.pct)}">${M.pctTxt(x.pct)}</span>` : '-';
+  const chB = x => x ? `${ym(x.fromAt)} ${won(x.from)} → ${ym(x.toAt)} ${won(x.to)}` : '비교할 달의 계약이 없어요';
+  const meta = [sm.by ? `${sm.by}년 준공` : '', sm.type].filter(Boolean).join(' · ');
+  const dl = R.deals(u);
+  $('res').innerHTML = `
+  <div class="panel">
+    <div class="dhead"><h2>${esc(c.d.name)}</h2><div class="loc">${esc(k.full || k.label)} · ${esc(sidoName(c.code))} ${esc(sggName(c.code))} ${esc(c.d.dong)} ${esc(c.d.jibun)}${meta ? ' · ' + esc(meta) : ''}</div></div>
+    <div class="bands" role="group" aria-label="평형 선택">${c.units.map(x => `<button type="button" data-b="${esc(x[2])}" class="${x[2] === S.band ? 'on' : ''}" aria-pressed="${x[2] === S.band}">${esc(x[2])}</button>`).join('')}</div>
+    <div class="stats">
+      <div class="st key"><div class="k">최근 전세 시세</div><div class="v">${sm.j ? won(sm.j.v) : '계약 없음'}</div><div class="d">${sm.j ? ym(sm.j.at) + ' 기준' + (sm.j.stale ? ' · 이후 계약 없음' : '') : '최근 3개월 순수 전세 계약 없음'}</div></div>
+      <div class="st"><div class="k">최근 월세 시세</div><div class="v">${sm.wr ? `${won(sm.wd ? sm.wd.v : 0)} / 월 ${sm.wr.v.toLocaleString()}만` : '계약 없음'}</div><div class="d">${sm.wr ? '보증금 / 월세 · ' + ym(sm.wr.at) + ' 기준' : '최근 3개월 월세 계약 없음'}</div></div>
+      <div class="st"><div class="k">전세 1년 변동</div><div class="v">${chT(sm.ch1)}</div><div class="d">전세 보증금 기준</div></div>
+      <div class="st"><div class="k">전세 3년 변동</div><div class="v">${chT(sm.ch3)}</div><div class="d">최근 3년 계약 전세 ${sm.nj.toLocaleString()} · 월세 ${sm.nw.toLocaleString()}건</div></div>
+    </div>
+    <p class="basis"><b>계산 근거</b> · 최근 전세 시세 = 그 달까지 3개월 순수 전세 계약 보증금의 중앙값(이 평형, 전용 ${u[4]}㎡ 안팎) · 최근 월세 시세 = 같은 기간 월세 계약의 보증금 중앙값과 월세 중앙값(각각 따로 구해 실제 한 계약과 다를 수 있어요) · 1년 변동: ${chB(sm.ch1)} · 3년 변동: ${chB(sm.ch3)}.</p>
+  </div>
+
+  <div class="panel">
+    <div class="chead"><h3>전세·월세 추이</h3><div class="seg2" role="group" aria-label="기간">${[[12, '1년'], [36, '3년'], [0, '전체']].map(([n, l]) => `<button type="button" data-span="${n}" class="${S.span === n ? 'on' : ''}" aria-pressed="${S.span === n}"${n === 0 && !c.h ? ' hidden' : ''}>${l}</button>`).join('')}</div></div>
+    <div class="chart" id="cJ"></div>
+    <div class="legend"><span><i></i>전세 보증금</span><span>${esc(S.band)} · 3개월 중앙값</span></div>
+    <div class="chart" id="cW" style="min-height:120px;margin-top:12px"></div>
+    <div class="legend"><span><i class="w"></i>월세(만원)</span><span>월세 계약 3개월 중앙값 · 최근 3년까지</span></div>
+    <p class="basis">각 달 값 = 그 달까지 3개월 계약의 중앙값. 계약이 없던 기간은 점선으로 이어 표시해요.${c.meta.rm ? ` 전월세 자료는 ${M.ymKo(c.meta.rm)}부터 있어요.` : ''}</p>
+  </div>
+
+  ${riskPanel(c, u, sm)}
+  ${calcPanel(sm)}
+
+  <div class="panel">
+    <h2>최근 계약 (${esc(S.band)})<small>국토교통부 전월세 신고 그대로예요(최근 3년, 최신순). 신규·갱신 구분은 원자료에 적힌 경우만 표시해요. ${srcA('rt')}</small></h2>
+    <div id="deals">${dealsHtml(dl)}</div>
+  </div>
+
+  <div id="areaBox"></div>
+  ${checkPanel(kind)}
+
+  <div class="panel">
+    <h2>이어서 알아보기</h2>
+    <div class="links">
+      <a class="main" href="../buy/?src=jeonse" data-track="jeonse_to_buy"><b>집을 사면 얼마가 필요할까? →</b><small>내 예산·대출로 살 수 있는 집과 필요한 돈</small></a>
+      ${kind === 'a' && P ? P.btn({sd:S.sd, sgg:c.code, dong:c.d.dong, apt:c.d.name, band:S.band, jibun:c.d.jibun}, 'jeonse', {label:'이 단지 매매 시세 흐름 보기'}) : ''}
+    </div>
+  </div>
+  <div id="agentSec"></div>`;
+  $('res').hidden = false;
+  drawCharts(); wire(u, sm); areaPanel(c.code, $('areaBox')); fillAgents(c);
+}
+function dealsHtml(list){
+  if (!list.length) return '<p class="note">최근 3년 계약이 없어요.</p>';
+  const show = 10;
+  const row = (t, i) => `<tr${i >= show ? ' class="more" hidden' : ''}><td>${esc(t.date)}${t.term ? `<br><small>${esc(t.term)}</small>` : ''}</td><td class="num">${t.area}㎡${t.floor != null ? `<br><small>${t.floor}층</small>` : ''}</td>
+    <td>${t.ct ? `<span class="ctag ${t.ct === '신규' ? 'n' : 'r'}">${t.ct}</span>` : ''}</td>
+    <td class="num"><b>${t.jeonse ? '전세 ' + won(t.dep) : won(t.dep) + ' / ' + t.rent.toLocaleString() + '만'}</b>${t.pre != null && t.ct === '갱신' ? `<br><small>종전 ${t.preRent ? won(t.pre) + ' / ' + t.preRent.toLocaleString() + '만' : won(t.pre)}</small>` : ''}</td></tr>`;
+  return `<div class="tbl"><table><thead><tr><th>계약일</th><th class="num">전용·층</th><th>구분</th><th class="num">보증금 / 월세</th></tr></thead><tbody>${list.map(row).join('')}</tbody></table></div>`
+    + (list.length > show ? `<button type="button" class="morebtn" data-more>더보기 (${list.length - show}건 더)</button>` : '');
+}
+function riskPanel(c, u, sm){
+  const k = c.kind, jr = sm.jr, rk = jr ? R.risk(jr.r) : null;
+  const pos = v => Math.max(0, Math.min(100, v));
+  const gauge = rk ? `<div class="gauge" role="img" aria-label="전세가율 ${rk.pct}%"><em style="left:90%">보증 가입 기준 90%</em><i style="left:${pos(rk.pct)}%"></i><span style="left:0;transform:none">0%</span><span style="left:50%">50%</span><span style="left:100%;transform:translateX(-100%)">100%</span></div>` : '';
+  let basis = '';
+  if (jr && k === 'a') basis = `${ym(jr.at)} 이 평형 전세 시세 ${won(jr.j)} ÷ 매매 시세 ${won(jr.s)} (각각 3개월 실거래 평당가 중앙값 × 전용면적, 내 집 시세 화면과 같은 값)`;
+  else if (jr) basis = `최근 1년 이 건물·평형 전세 ㎡당 보증금 중앙값(${jr.nj}건) ÷ ${jr.b === 'b' ? `최근 3년 같은 건물 매매 ㎡당 가격 중앙값(${jr.ns}건)` : `최근 1년 같은 동 빌라 매매 ㎡당 가격 중앙값(${jr.ns}건, 건물마다 차이가 커서 참고만)`}`;
+  const msg = rk ? (rk.over
+      ? `<div class="rmsg hi"><b>전세가율 ${rk.pct}%</b> — HUG 전세보증금반환보증은 <b>보증금과 선순위채권(근저당 등)을 더한 금액이 주택가격의 90% 이내</b>여야 가입할 수 있어요. 이 수준이면 보증 가입이 어려울 수 있어요. 매매가 대비 전셋값이 높을수록 보증금 회수 위험이 커져요.</div>`
+      : `<div class="rmsg ok"><b>전세가율 ${rk.pct}%</b> — 매매가 대비 전셋값이 높을수록 보증금 회수 위험이 커져요. 근저당 같은 선순위채권이 있으면 그 금액까지 더해서 봐야 해요(HUG 보증 가입 기준: 보증금 + 선순위채권 ≤ 주택가격의 90%).</div>`)
+    : `<p class="note" style="font-size:15px">${k === 'd' ? '단독·다가구는 원자료에 건물 정보가 없어 전세가율을 계산하지 않아요.' : k === 'a' ? '최근 3개월 안에 매매·전세 시세가 함께 있는 달이 없어 전세가율을 계산하지 못했어요.' : '같은 건물 매매 거래가 적어(최근 3년 3건 미만) 전세가율을 계산하지 않았어요.'} 아래 공시가격으로 보증 가입 기준을 확인해 보세요.</p>`;
+  const hugPrice = k === 'a' ? '아파트는 KB시세 등 시세정보가 먼저, 없으면 공시가격의 140%' : k === 'o' ? '오피스텔은 KB 하위평균가가 먼저, 없으면 국세청 기준시가(공시가격)의 140%' : k === 'v' ? '연립·다세대는 공동주택가격(공시가격)의 140%가 첫 순위' : '단독·다가구는 개별단독주택가격(공시가격)의 140%가 첫 순위';
+  const calc = k !== 'a' ? `<div class="calc" style="margin-top:12px"><b style="font-size:16px">공시가격으로 보증 가입 기준 확인</b>
+      <p class="note" style="margin:2px 0 10px">HUG 보증의 주택가격 = ${esc(hugPrice)}. 보증금 + 선순위채권이 주택가격의 90% 이내여야 해요. 공시가격은 ${srcA('pub')}에서 확인할 수 있어요.</p>
+      <div class="row"><div><label for="pubV">${k === 'o' ? '기준시가·공시가격' : '공시가격'} (만원)</label><input id="pubV" inputmode="numeric" placeholder="예: 20,000"><div class="hint" id="pubH"></div></div>
+      <div><label for="senV">선순위채권 (만원, 선택)</label><input id="senV" inputmode="numeric" placeholder="근저당 등, 없으면 비워 두세요"><div class="hint" id="senH"></div></div></div>
+      <div class="cres" id="hugRes" hidden></div></div>` : '';
+  return `<div class="panel"><h2>전세 위험 신호<small>전세가율 = 전셋값 ÷ 매맷값 · 기준: ${srcA('hug')}</small></h2>
+    ${rk ? `<div class="rbig ${rk.over ? 'hi' : ''}">${rk.pct}%</div>${gauge}` : ''}${msg}
+    ${basis ? `<p class="basis"><b>계산 근거</b> · ${basis}. 실제 보증 심사의 주택가격은 HUG 가 정해요(${esc(hugPrice)}).</p>` : ''}
+    ${k === 'a' && (u[11] || {}).jrs ? `<details class="msum" id="jrBox"><summary>전세가율 추이 보기</summary><div class="chart" id="cJr" style="min-height:120px"></div><p class="basis">매매·전세 시세가 모두 있는 달만 계산해요.</p></details>` : ''}
+    ${calc}</div>`;
+}
+function calcPanel(sm){
+  return `<div class="panel"><h2>전세 vs 월세, 매달 얼마 차이?<small>이 집 시세를 채우거나 직접 넣어 보세요. 금액은 만원 단위예요.</small></h2>
+  <div class="calc"><div class="row">
+    <div><label for="cJe">전세 보증금</label><input id="cJe" inputmode="numeric" placeholder="예: 50,000"><div class="hint" id="cJeH"></div></div>
+    <div><label for="cWd">월세 보증금</label><input id="cWd" inputmode="numeric" placeholder="예: 10,000"><div class="hint" id="cWdH"></div></div>
+    <div><label for="cWr">월세 (월)</label><input id="cWr" inputmode="numeric" placeholder="예: 150"><div class="hint">만원</div></div>
+    <div><label for="cRt">전세대출 금리 (연 %)</label><input id="cRt" inputmode="decimal" placeholder="예: 4.0"><div class="hint">내가 받을 금리를 넣어 주세요</div></div>
+  </div>
+  <div class="acts"><button type="button" id="cFill"${sm.j && sm.wr ? '' : ' disabled'}>이 집 최근 시세로 채우기</button><button type="button" id="cClear">지우기</button></div>
+  <div class="cres" id="cRes"><span class="note" style="font-size:15px">전세·월세 금액을 넣으면 매달 드는 돈을 비교해 드려요.</span></div>
+  ${sm.cv ? `<p class="basis">이 단지·평형 최근 1년 전월세 전환율 <b>${(sm.cv.r * 100).toFixed(1)}%</b> — 월세 계약 ${sm.cv.n}건마다 (월세×12) ÷ (순수 전세 보증금 중앙값 ${won(sm.cv.j)} − 그 계약 보증금)을 구한 중앙값이에요.</p>` : ''}
+  <p class="basis">계산 방법: 전세는 월세 보증금보다 더 내야 하는 돈(전세 − 월세 보증금)을 전세대출로 빌린다고 보고 매달 이자(그 돈 × 금리 ÷ 12)와 월세를 비교해요. 내 돈으로 내면 그 돈을 예금에 둘 때 받을 이자로 바꿔 넣어 보세요. 중개수수료·관리비·보증료는 빼고 계산해요.</p></div></div>`;
+}
+function checkPanel(kind){
+  const top = kind === 'd' ? `<li class="key"><b>선순위 보증금·확정일자 부여 현황 확인</b> — 다가구주택은 한 건물에 세입자가 여럿이라, 나보다 먼저 들어온 세입자들의 보증금(선순위 보증금)이 얼마인지가 가장 중요해요. 확정일자 부여 현황은 주민센터·등기소에서 발급받을 수 있어요(계약 전에는 집주인 동의 필요).<small>정책브리핑 전세계약 체크리스트</small></li>`
+    : kind === 'o' ? `<li class="key"><b>전입신고·확정일자를 받을 수 있는지 확인</b> — 오피스텔은 <b>주거용</b>으로 쓰는 경우에만 HUG 전세보증 대상이에요. 이사(인도)와 전입신고를 마쳐야 다음 날부터 대항력이 생기고, 확정일자까지 받아야 우선변제권이 생겨요. 이 화면의 원자료에는 주거용·업무용 구분이 없어요.<small>HUG 상품개요 · 찾기쉬운 생활법령</small></li>` : '';
+  return `<div class="panel"><h2>깡통전세 피하는 체크리스트<small>정부·HUG 공식 안내를 줄여 옮겼어요. 자세한 내용은 아래 원문을 확인해 주세요.</small></h2>
+  <ul class="chk">${top}
+    <li><b>주변 매매가·전세가 확인</b> — 국토교통부 실거래가 공개시스템 등으로 전셋값이 매맷값에 너무 가깝지 않은지 봐요.</li>
+    <li><b>등기부등본 을구의 근저당·전세권 확인</b> — 선순위채권이 있으면 보증금과 더해서 집값과 비교해요. 잔금 직전에 한 번 더 확인해요.</li>
+    <li><b>집주인 세금 체납 확인</b> — 집주인 동의를 받아 납세증명서를 확인해요.</li>
+    ${kind === 'd' ? '' : '<li><b>선순위 보증금·확정일자 부여 현황, 전입세대 열람</b> — 먼저 들어온 세입자가 있는지 확인해요.</li>'}
+    <li><b>계약 후 바로 전입신고·임대차 신고(확정일자)</b> — 전입신고를 하지 않으면 보증금이 보호되지 않아요. 임대차 신고를 하면 확정일자가 함께 부여돼요.</li>
+    <li><b>전세보증금 반환보증 가입</b> — 집주인이 보증금을 돌려주지 못하면 보증기관이 대신 돌려줘요. 보증금 + 선순위채권이 주택가격의 90% 이내여야 가입할 수 있어요.</li>
+  </ul>
+  <div class="srcl">${srcA('chk')}${srcA('portal')}${srcA('reg')}${srcA('hug')}${kind === 'o' ? srcA('law') : ''}</div></div>`;
+}
+
+/* ---------- 우리 동네 전세 흐름(구 사실 정보) ---------- */
+function areaPanel(code, box){
+  const g = RX.sgg[code] || {}, gs = R.guSeries(g), nm = sggName(code);
+  const ch1 = gs ? R.change(gs.s, gs.months, 12) : null, last = gs ? R.latest(gs.s, gs.months) : null;
+  const sup = g.sup, mig = g.mig;
+  const srcM = String((RX.src || {}).mig || '').match(/(\d{2})년\s*(\d{1,2})월/);
+  const supRows = sup ? sup.rows.map(r => `<li>${esc(r[0])} <small>· ${r[1].toLocaleString()}세대 · ${esc(R.ymKo(r[2]))} 입주 예정</small></li>`) : [];
+  const migRows = mig ? mig.rows.map(r => `<li>${esc(r[0])} <small>${[r[1], r[2] ? `기존 ${r[2].toLocaleString()}가구` : '', r[4] ? `${R.ymKo(r[4])} 이주 시작` : r[3] ? `${R.ymKo(r[3])} 관리처분인가` : '관리처분 단계'].filter(Boolean).map(esc).join(' · ')}</small></li>`) : [];
+  const more = (rows, n) => rows.length > n ? rows.slice(0, n).join('') + `</ul><details class="msum"><summary>${rows.length - n}곳 더 보기</summary><ul>${rows.slice(n).join('')}</ul></details><ul>` : rows.join('');
+  box.innerHTML = `<div class="panel"><h2>우리 동네 전세 흐름 · ${esc(nm)}<small>공개된 사실 정보만 모았어요</small></h2>
+    ${gs ? `<div class="chead"><h3>${esc(nm)} 아파트 전세 추이 (3.3㎡당 보증금)</h3></div><div class="chart" id="cG" style="min-height:140px"></div>
+    <p class="basis">${last ? `${ym(last.at)} ${last.v.toLocaleString()}만원/3.3㎡` : ''}${ch1 ? ` · 1년 전보다 <span class="${updown(ch1.pct)}">${M.pctTxt(ch1.pct)}</span>` : ''} · 구 안 모든 아파트 순수 전세 계약의 3개월 중앙값(전용면적 3.3㎡당)</p>` : ''}
+    <div class="facts" style="margin-top:10px">
+      <div class="fbox"><div class="k">${esc(nm)} 아파트 전세가율 중앙값</div><div class="v">${g.jr ? (g.jr[0] * 100).toFixed(1) + '%' : '-'}</div><p class="basis">${g.jr ? `전세가율을 계산할 수 있는 단지·평형 ${g.jr[1].toLocaleString()}개의 가운데 값` : '계산할 단지가 부족해요'}</p></div>
+      <div class="fbox"><div class="k">앞으로 2년 입주 예정</div><div class="v">${sup ? sup.n.toLocaleString() + '세대' : '없음'}</div>
+        ${sup ? `<ul>${more(supRows, 5)}</ul>` : ''}
+        <p class="basis">${sup ? '입주가 한꺼번에 몰리면 새 전세 물건이 늘어 주변 전셋값이 눌리는 경우가 많아요. ' : ''}청약홈 분양 공고의 공급 세대(조합원 몫 제외) 기준${sup ? '' : '으로 앞으로 2년 안에 입주 예정인 단지가 없어요'}.</p></div>
+      ${mig ? `<div class="fbox" style="grid-column:1/-1"><div class="k">정비사업 이주 (관리처분인가 후 착공 전)</div><div class="v">${mig.rows.length}곳${mig.n ? ` · 기존 ${mig.n.toLocaleString()}가구` : ''}</div>
+        <ul>${more(migRows, 5)}</ul>
+        <p class="basis">이주가 시작되면 살던 가구가 주변에서 집을 구해 전세 수요가 늘 수 있어요. 출처: ${srcM ? `서울시 정비사업 추진현황(20${srcM[1]}년 ${srcM[2]}월 기준)` : '정비사업 추진현황'}, 서울 밖은 국토교통부 도시정비사업 현황(현재 단계만).</p></div>` : ''}
+    </div>
+    <div class="outlook">전세 전망은 과거 자료로 시험 중이에요 — 시험을 통과하면 이 자리에 보여 드려요.</div></div>`;
+  if (gs){ const el = $('cG'); el.innerHTML = lineChart([{ a: gs.s, c: '#2F6BFF', w: 2.4 }], gs.months, el.clientWidth || 600, v => Math.round(v).toLocaleString(), 170); }
+}
+
+/* ---------- 단독·다가구: 동 × 면적대 ---------- */
+async function showD(g, dong){
+  let j; try { j = await kindUnits('d', g); } catch (e) { return; }
+  const rows = j.units.filter(u => u[0] === dong).sort((a, b) => a[7] - b[7]);
+  if (!rows.length) return;
+  if (!S.band || !rows.some(r => r[1] === S.band)) S.band = rows.slice().sort((a, b) => (b[2] + b[3]) - (a[2] + a[3]))[0][1];
+  const url = new URL(location.href); url.search = ''; url.searchParams.set('k', 'd'); url.searchParams.set('sd', S.sd); url.searchParams.set('g', g); url.searchParams.set('d', dong); url.searchParams.set('b', S.band); history.replaceState(null, '', url);
+  CUR = { kind: 'd', key: dong, rows, meta: j, code: g, units: [] };
+  const months = R.monthsFrom(j.rm, j.to), m0 = R.monthsFrom(j.m0, j.to);
+  const one = r => { const J = R.arr(r[4], months.length), WD = R.arr(r[5], m0.length), WR = R.arr(r[6], m0.length);
+    return { J, WD, WR, j: R.latest(J, months), wd: R.latest(WD, m0), wr: R.latest(WR, m0), ch1: R.change(J, months, 12) }; };
+  const cur = rows.find(r => r[1] === S.band), x = one(cur);
+  const sm = { j: x.j, wd: x.wd, wr: x.wr, cv: null, jr: null };
+  $('res').innerHTML = `<div class="panel">
+    <div class="dhead"><h2>${esc(dong)} 단독·다가구</h2><div class="loc">${esc(sidoName(g))} ${esc(sggName(g))} ${esc(dong)} · 동·계약면적대 단위 시세(건물 정보 없음)</div></div>
+    <div class="tbl"><table><thead><tr><th>계약면적</th><th class="num">최근 전세</th><th class="num">최근 월세</th><th class="num">3년 계약</th></tr></thead><tbody>${rows.map(r => { const y = one(r);
+      return `<tr class="${r[1] === S.band ? 'on' : ''}"><td><button type="button" data-b="${esc(r[1])}" style="font:inherit;font-weight:700;border:0;background:none;color:#2F6BFF;cursor:pointer;min-height:44px;padding:0">${esc(r[1])}</button></td><td class="num">${y.j ? won(y.j.v) + `<br><small>${ym(y.j.at)}</small>` : '-'}</td><td class="num">${y.wr ? `${won(y.wd ? y.wd.v : 0)} / ${y.wr.v.toLocaleString()}만<br><small>${ym(y.wr.at)}</small>` : '-'}</td><td class="num">전세 ${r[2]}<br><small>월세 ${r[3]}</small></td></tr>`; }).join('')}</tbody></table></div>
+    <p class="basis">각 값 = 그 달까지 3개월 계약의 중앙값(월세는 보증금·월세 각각). 단독·다가구는 원자료에 지번·건물 정보가 없어(개인정보 보호) 같은 동 같은 계약면적대끼리 묶었어요. 같은 묶음 안에서도 집마다 차이가 커요.</p>
+    <div class="chead" style="margin-top:14px"><h3>${esc(S.band)} 전세 추이</h3><div class="seg2" role="group" aria-label="기간">${[[12, '1년'], [36, '3년'], [0, '전체']].map(([n, l]) => `<button type="button" data-span="${n}" class="${S.span === n ? 'on' : ''}" aria-pressed="${S.span === n}">${l}</button>`).join('')}</div></div>
+    <div class="chart" id="cJ"></div>
+    <div class="legend"><span><i></i>전세 보증금 (3개월 중앙값)</span>${x.ch1 ? `<span>1년 변동 <b class="${updown(x.ch1.pct)}">${M.pctTxt(x.ch1.pct)}</b></span>` : ''}</div>
+  </div>
+  ${riskPanel(CUR, cur, sm)}
+  ${calcPanel(sm)}
+  <div id="areaBox"></div>
+  ${checkPanel('d')}
+  <div class="panel"><h2>이어서 알아보기</h2><div class="links"><a class="main" href="../buy/?src=jeonse" data-track="jeonse_to_buy"><b>집을 사면 얼마가 필요할까? →</b><small>내 예산·대출로 살 수 있는 집과 필요한 돈</small></a></div></div>
+  <div id="agentSec"></div>`;
+  $('res').hidden = false;
+  CUR.dser = { months, J: x.J };
+  drawCharts(); wire(null, sm); areaPanel(g, $('areaBox')); fillAgents(CUR);
+  if (window.jdjStat){ jdjStat('feature_use', {feature:'jeonse'}); }
+}
+
+/* ---------- 차트 ---------- */
+function lineChart(lines, months, W, fmtY, H){
+  W = Math.max(260, Math.round(W)); H = H || 200; const L = 58, Rr = 12, T = 12, B = 24, fs = 13.5;
+  const vals = [].concat(...lines.map(l => l.a)).filter(v => v > 0);
+  if (vals.length < 1) return '<p class="note">차트로 보여 드릴 계약이 없어요.</p>';
+  let lo = Math.min(...vals), hi = Math.max(...vals); const pad = (hi - lo) * 0.12 || hi * 0.06; lo = Math.max(0, lo - pad); hi += pad;
+  const n = months.length, x = i => L + (n === 1 ? 0 : i * (W - L - Rr) / (n - 1)), y = v => T + (hi - v) / (hi - lo) * (H - T - B);
+  const grid = [lo, (lo + hi) / 2, hi].map(v => `<line x1="${L}" x2="${W - Rr}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#E5E8EB"/><text x="${L - 5}" y="${(y(v) + 4).toFixed(1)}" font-size="${fs}" fill="#4E5968" text-anchor="end">${fmtY(v)}</text>`).join('');
+  const dots = (a, c) => a.map((v, i) => v > 0 && (n <= 60 || !(a[i - 1] > 0) || !(a[i + 1] > 0)) ? `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2" fill="${c}"/>` : '').join('');
+  const last = (a, c) => { for (let i = a.length - 1; i >= 0; i--) if (a[i] > 0) return `<circle cx="${x(i).toFixed(1)}" cy="${y(a[i]).toFixed(1)}" r="4" fill="${c}"><title>${ym(months[i])} ${fmtY(a[i])}</title></circle>`; return ''; };
+  const idx = n <= 4 ? [0, n - 1] : [0, Math.round((n - 1) / 3), Math.round((n - 1) * 2 / 3), n - 1];
+  const xl = idx.map((i, k) => `<text x="${x(i).toFixed(1)}" y="${H - 5}" font-size="${fs}" fill="#4E5968" text-anchor="${k === 0 ? 'start' : k === idx.length - 1 ? 'end' : 'middle'}">${n > 36 ? String(months[i]).slice(0, 4) + '년' : ym(months[i])}</text>`).join('');
+  return `${M.isSparse(lines[0].a) ? P.SPARSE.replace('단지라', '곳이라') : ''}<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="추이 그래프">${grid}${lines.map(l => P.linePaths(l.a, x, y, l.c, l.w) + dots(l.a, l.c) + last(l.a, l.c)).join('')}${xl}</svg>`;
+}
+const eok = v => v >= 10000 ? (Math.round(v / 1000) / 10).toString().replace(/\.0$/, '') + '억' : Math.round(v).toLocaleString() + '만';
+function cut(months, arrs, span){ const st = span && span < months.length ? months.length - span : 0; return { months: months.slice(st), a: arrs.map(a => a.slice(st)) }; }
+function drawCharts(){
+  const c = CUR; if (!c) return;
+  const elJ = $('cJ'); if (!elJ) return;
+  if (c.kind === 'd'){ const w = cut(c.dser.months, [c.dser.J], S.span); elJ.innerHTML = lineChart([{ a: w.a[0], c: '#14A06B', w: 2.4 }], w.months, elJ.clientWidth || 600, eok, 210); return; }
+  const u = c.units.find(x => x[2] === S.band); if (!u) return;
+  const t = R.series(u, c.meta);
+  let months = t.months, J = t.j, JR = t.jr;
+  if (S.span === 0 && c.h){ const f = R.seriesFull(R.histRow(c.h, u), c.h); if (f){ months = f.months; J = f.j; JR = f.jr; } }
+  const w = cut(months, [J, JR], S.span === 0 ? 0 : S.span);
+  elJ.innerHTML = lineChart([{ a: w.a[0], c: '#14A06B', w: 2.4 }], w.months, elJ.clientWidth || 600, eok, 210);
+  const ww = cut(t.months, [t.wr], S.span === 12 ? 12 : 0);
+  if ($('cW')) $('cW').innerHTML = lineChart([{ a: ww.a[0], c: '#B8942A', w: 2.2 }], ww.months, $('cW').clientWidth || 600, v => Math.round(v).toLocaleString() + '만', 150);
+  const jb = $('jrBox'); if (jb && jb.open){ const k = w.a[1].findIndex(v => v > 0); $('cJr').innerHTML = lineChart([{ a: w.a[1].slice(Math.max(0, k)).map(v => v * 100), c: '#0E7A4F', w: 2.2 }], w.months.slice(Math.max(0, k)), $('cJr').clientWidth || 600, v => Math.round(v) + '%', 150); }
+}
+
+/* ---------- 결과 화면 동작 ---------- */
+function wire(u, sm){
+  const res = $('res');
+  res.querySelectorAll('[data-b]').forEach(b => b.onclick = () => { S.band = b.dataset.b; if (CUR.kind === 'd') showD(CUR.code, CUR.key); else showUnit(CUR.key, S.band); });
+  res.querySelectorAll('[data-span]').forEach(b => b.onclick = () => { S.span = +b.dataset.span; res.querySelectorAll('[data-span]').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); }); drawCharts(); });
+  const jb = $('jrBox'); if (jb) jb.addEventListener('toggle', () => { if (jb.open) drawCharts(); });
+  const more = res.querySelector('[data-more]'); if (more) more.onclick = () => { const rest = [...res.querySelectorAll('#deals tr.more')]; rest.slice(0, 20).forEach(r => { r.hidden = false; r.classList.remove('more'); }); const left = rest.length - 20; if (left > 0) more.textContent = `더보기 (${left}건 더)`; else more.remove(); };
+  const fmtIn = (el, hint) => el.addEventListener('input', () => { const v = Math.round(num(el.value)); el.value = v ? v.toLocaleString() : ''; if (hint) $(hint).textContent = v ? won(v) : ''; });
+  ['cJe', 'cWd'].forEach(id => fmtIn($(id), id + 'H')); fmtIn($('cWr'));
+  ['cJe', 'cWd', 'cWr', 'cRt'].forEach(id => $(id).addEventListener('input', runCalc));
+  $('cFill').onclick = () => { if (!sm.j || !sm.wr) return; $('cJe').value = sm.j.v.toLocaleString(); $('cWd').value = sm.wd ? sm.wd.v.toLocaleString() : '0'; $('cWr').value = sm.wr.v.toLocaleString();
+    $('cJeH').textContent = won(sm.j.v); $('cWdH').textContent = sm.wd ? won(sm.wd.v) : ''; runCalc(); };
+  $('cClear').onclick = () => { ['cJe', 'cWd', 'cWr', 'cRt'].forEach(id => $(id).value = ''); ['cJeH', 'cWdH'].forEach(id => $(id).textContent = ''); runCalc(); };
+  if ($('pubV')){ fmtIn($('pubV'), 'pubH'); fmtIn($('senV'), 'senH'); ['pubV', 'senV'].forEach(id => $(id).addEventListener('input', runHug)); }
+}
+function runCalc(){
+  const r = R.compare({ jeon: num($('cJe').value), wDep: num($('cWd').value), wRent: num($('cWr').value), rate: $('cRt').value.trim() === '' ? null : num($('cRt').value) }), box = $('cRes');
+  if (!r){ box.innerHTML = '<span class="note" style="font-size:15px">전세 보증금이 월세 보증금보다 크고, 월세가 있어야 비교할 수 있어요.</span>'; return; }
+  const be = `손익분기 금리(전환율) <b>${r.be.toFixed(2)}%</b> — 전세대출 금리가 이보다 낮으면 전세가, 높으면 월세가 매달 덜 들어요.`;
+  if (r.rate == null){ box.innerHTML = `${be}<br><span class="note">전세대출 금리를 넣으면 매달 차이를 금액으로 보여 드려요.</span>`; return; }
+  const d = Math.round(Math.abs(r.diff));
+  box.innerHTML = (r.cheaper === 'same' ? '<b class="big">매달 드는 돈이 거의 같아요</b>' : `<b class="big">${r.cheaper === 'j' ? '전세' : '월세'}가 매달 약 ${d.toLocaleString()}만원 덜 들어요</b>`)
+    + `<br>전세: 더 내는 보증금 ${won(r.gap)} × 연 ${r.rate}% ÷ 12 = 월 ${Math.round(r.jCost).toLocaleString()}만원 · 월세: 월 ${r.wRent.toLocaleString()}만원<br>${be}`;
+}
+function runHug(){
+  const r = R.hugCap(num($('pubV').value), num($('senV').value)), box = $('hugRes');
+  if (!r){ box.hidden = true; return; }
+  box.hidden = false;
+  box.innerHTML = `HUG 주택가격 = 공시가격 × 140% = <b>${won(r.price)}</b><br>보증 가입 가능한 보증금 = 주택가격 × 90% − 선순위채권 = <b class="big">${r.cap > 0 ? won(r.cap) + ' 이하' : '가입 어려움'}</b>${r.seniorOver ? '<br><b style="color:#C81E1E">선순위채권이 주택가격의 60%를 넘어 가입이 어려워요(HUG 기준).</b>' : ''}<br><span class="note">실제 심사는 HUG 가 정한 순서의 주택가격(시세·감정평가 등)과 서류로 해요.</span>`;
+}
+
+/* ---------- 제휴 중개사 ---------- */
+async function fillAgents(c){
+  const A = window.JDJ_AGENTS, box = $('agentSec'); if (!A || !A.ready || !box) return;
+  const g = c.code, dong = c.d ? c.d.dong : c.key, k = c.kind === 'a' ? g + '|' + c.d.dong + '|' + c.d.name : '';
+  const res = await A.list(); if (CUR !== c) return;
+  const cand = ((res && res.agents) || []).filter(a => Array.isArray(a.r) && a.r.includes(g));
+  if (!cand.length){ box.innerHTML = ''; return; }
+  const rank = a => (k && (a.dj || []).includes(k)) ? 0 : (a.og === g && a.dong === dong ? 1 : (a.og === g ? 2 : 3));
+  const all = cand.map(a => [Math.random(), a]).sort((x, y) => x[0] - y[0]).map(x => x[1]).sort((x, y) => rank(x) - rank(y));
+  const nm = a => a.t === 'm' ? a.nm + ' 공인중개사' : a.n;
+  box.innerHTML = `<div class="panel"><h2>전월세 문의 가능한 제휴 중개사<small>매물·계약 조건은 지역 중개사무소에 직접 문의해 보세요</small></h2><div class="aglist">` + all.map(a => {
+    const tel = String(a.ph || '').replace(/[^\d]/g, ''), r = rank(a), hl = r === 0 ? '이 단지 매물 보유' : r === 1 ? '같은 동 사무소' : r === 2 ? '이 지역 사무소' : '';
+    return `<div class="agc"><b>${esc(nm(a))}</b><span class="tag2">제휴·광고</span><small>${a.t === 'm' ? esc(a.n) + ' 소속 · ' : ''}${esc(a.ogn)} ${esc(a.dong)}${a.t === 'm' ? '' : ' · 대표 ' + esc(a.ceo)} · ${esc(a.ph)}</small>${hl ? `<span class="hl">${hl}</span>` : ''}${a.intro ? `<small style="color:#191F28;margin-top:4px">${esc(a.intro)}</small>` : ''}
+      <div class="acts">${tel ? `<a class="tel" href="tel:${tel}" data-a="${esc(a.id)}" data-act="call">전화 상담</a>` : ''}${window.KChat ? KChat.btn(a.kk, {a:a.id, g, k, name:nm(a)}) : ''}</div></div>`;
+  }).join('') + `</div><p class="note" style="margin:8px 0 0">제휴(광고) 중개사무소입니다. 장대장은 중개 행위에 관여하지 않으며, 거래 조건은 해당 중개사무소에 직접 확인하세요.</p></div>`;
+  A.log('rec', all.map(a => a.id).sort().join(','), g, k);
+  all.forEach(a => A.log('imp', a.id, g, k));
+  box.querySelectorAll('[data-act]').forEach(el => el.addEventListener('click', () => { A.log(el.dataset.act, el.dataset.a, g, k); A.flush(); }));
+}
+
+/* ---------- 시작 ---------- */
+async function init(){
+  try { [IX, RX] = await Promise.all([getJ('index.json'), getJ('rent/index.json')]); }
+  catch (e) { $('loadMsg').textContent = '전월세 자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.'; drawTabs(); return; }
+  $('src').insertAdjacentHTML('afterbegin', `전월세 자료 ~${M.ymLabel(RX.to)} · ${esc(String(RX.v || '').split('/')[0])} 갱신 · `);
+  fillSido();
+  const q = new URLSearchParams(location.search), qk = q.get('k'), qsd = q.get('sd'), qg = q.get('g') || '', qd = q.get('d') || '';
+  S.kind = (qk && R.KINDS.some(k => k.id === qk)) ? qk : 'a';
+  S.band = q.get('b') || '';
+  const sd = (qsd && IX.sido.some(s => s.id === qsd)) ? qsd : (IX.sido.find(s => s.short === '서울') || IX.sido[0]).id;
+  S.sd = sd; S.code = /^\d{5}$/.test(qg) ? qg : '';
+  if (S.kind === 'a' && qd) S.code = qd.split('|')[0];
+  await setKind(S.kind, true, qd);
+  if (S.kind === 'a' && qd && GA[sd] && GA[sd].has(qd)) showUnit(qd, S.band);
+  $('ktabs').addEventListener('click', e => { const b = e.target.closest('[data-kind]'); if (b && b.dataset.kind !== S.kind){ S.band = ''; setKind(b.dataset.kind, true); } });
+  $('sido').onchange = () => { $('sres').innerHTML = ''; S.code = ''; pickSido($('sido').value); };
+  $('sgg').onchange = () => { $('sres').innerHTML = ''; pickSgg(); };
+  $('dong').onchange = () => pickDong();
+  $('danji').onchange = () => { if ($('danji').value){ S.band = ''; showUnit($('danji').value, '', {scroll:true}); } };
+  $('q').addEventListener('input', () => { clearTimeout(qt); qt = setTimeout(runSearch, 200); });
+  $('q').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); runSearch(); } });
+  $('sres').addEventListener('click', e => { const b = e.target.closest('button[data-k]'); if (!b) return; $('sres').innerHTML = ''; $('q').value = ''; S.band = ''; showUnit(b.dataset.k, '', {scroll:true}); });
+  let rz = null, lw = innerWidth;
+  addEventListener('resize', () => { if (Math.abs(innerWidth - lw) < 8) return; lw = innerWidth; clearTimeout(rz); rz = setTimeout(() => { drawCharts(); if (CUR && $('cG')) areaPanel(CUR.code, $('areaBox')); }, 200); });
+}
+init();
+})();
+</script>
+</body>
+</html>

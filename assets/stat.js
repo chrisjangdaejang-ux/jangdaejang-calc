@@ -46,9 +46,9 @@
 
   /* ---------- 허용 목록 ---------- */
   const EV = {feature_use:6, interest_profile:15, chungyak_result:3, report_share:5, compare_use:3, ad_view:6, ad_click:10}; // 이벤트별 페이지당 상한
-  const FEATURES = ['buy','report','switch','redev','villa','chungyak','tax','compare','consult','premium','mine','bunyang','ad_apply','price_sheet','agent_chat'];
+  const FEATURES = ['buy','report','switch','redev','villa','chungyak','tax','compare','consult','premium','mine','bunyang','ad_apply','price_sheet','agent_chat','jeonse'];
   const SPOTS = ['report_top','report_rank','report_near','report_compare','report_leader','switch_top','switch_compare','switch_pick','bunyang_deal','premium','mine'];
-  const PAGES = ['home','buy','report','switch','villa','chungyak','tax','agent','calc','mine','bunyang','bunyang_apply'];
+  const PAGES = ['home','buy','report','switch','villa','chungyak','tax','agent','calc','mine','bunyang','bunyang_apply','jeonse'];
   const P = {
     feature:     v => FEATURES.includes(v),
     page:        v => PAGES.includes(v),
