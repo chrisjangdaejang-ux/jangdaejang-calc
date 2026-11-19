@@ -104,8 +104,17 @@ td{padding:7px 4px;border-bottom:1px solid var(--line);font-variant-numeric:tabu
 .cta p small{display:block;font-weight:500;font-size:13.5px;color:#3d3416}
 .foot{background:var(--gold);color:var(--ink);text-align:center;font-weight:900;padding:12px;font-size:14px}
 .foot a{color:inherit}
+.caution.once{margin:0 0 12px;font-size:15px;line-height:1.6}
 </style>
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=39">
+<style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
+:root{--gold:#2F6BFF}
+.premium .pt{color:var(--blue)}
+.mpinw.on .mpin{background:var(--blue)}.mpinw.on .mpin:after{border-top-color:var(--blue)}
+.st.pre{background:var(--blue-l);color:var(--blue)}
+.why li::marker{color:var(--blue)}
+.btn{border-radius:14px}
+</style>
 <style>
 .tag{background:transparent}
 .zbox .g1{background:var(--blue);color:#fff}
@@ -177,10 +186,10 @@ const ymd = s => s ? `${s.slice(0,4)}.${s.slice(4,6)}${s.slice(6,8)&&s.slice(6,8
 const ym = s => s ? `${s.slice(0,4)}년 ${+s.slice(4,6)}월` : '';
 const py = a => a ? (a/3.3058).toFixed(1) : null;
 const RK = {
-  r: ['r', '현금청산 위험 — 권리산정기준일 확인 필요'],
-  s: ['s', '기준일 추정 연도와 같은 해 신축 — 확인 필요'],
-  o: ['o', '건축 연도상 기준일 이전 신축으로 보임(확인 필요)'],
-  u: ['u', '기준일 자료 없음 — 권리산정기준일 확인 필요']
+  r: ['r', '입주권: 현금청산 위험'],
+  s: ['s', '입주권: 확인 필요 ⓘ'],
+  o: ['o', '입주권: 받을 가능성 높음'],
+  u: ['u', '입주권: 확인 필요 ⓘ']
 };
 const ORDER = 'rsuo';
 let IDX = null, CUR = null, FILTER = 'z', SHOWN = PAGE;
@@ -190,13 +199,15 @@ function zoneLine(z, gr, rk, by){
   const where = gr===1 ? '<span class="g g1">구역 대표 지번</span>' : '<span class="g g2">같은 동 구역</span>';
   const est = z.src==='n' ? ' · 구역 이름으로 같은 동 추정' : '';
   const base = z.b ? `기준일 추정 ${ym(z.b)}(가장 이른 공식 단계)` : '단계 날짜 자료 없음';
-  const tail = gr===1 ? '구역 경계는 고시도면으로 확인하세요' : '구역 포함 여부는 확인 필요';
   return `<div class="zrow">${where}<b>${esc(z.n)}</b> <small>${esc(z.t)} · 10단계 중 ${z.lv}단계(${esc(z.st)})${est}</small>${lvbar(z.lv)}
-    <small>${base} · ${tail}</small>${rk?`<span class="rk ${RK[rk][0]}" style="font-size:13.5px;padding:3px 8px">${by?by+'년 건축 · ':''}${RK[rk][1]}</span>`:''}</div>`;
+    <small>${base}${gr===1?'':' · 구역 포함 여부 ⓘ'}</small>${rk?`<span class="rk ${RK[rk][0]}" style="font-size:13.5px;padding:3px 8px">${by?by+'년 건축 · ':''}${RK[rk][1]}</span>`:''}</div>`;
 }
 function worst(zs){ return zs.reduce((a,z)=> ORDER.indexOf(z[2]) < ORDER.indexOf(a) ? z[2] : a, 'o'); }
 
+/* 대지권 이상값 방어(엔진 villa.land_ok 와 같은 기준): 대지권이 전용의 4배를 넘으면 신고 오류로 보고 평당가·동 비교를 보여 주지 않음 */
+function landOk(l, a){ return !(l && a && l > a*4); }
 function card(b, i){
+  if (!landOk(b.l, b.a)) { b = Object.assign({}, b, {l:null, pp:null, dm:null, lbad:1}); }
   const zs = (b.z||[]).slice().sort((a,c)=> a[1]-c[1] || ORDER.indexOf(a[2])-ORDER.indexOf(c[2]));
   const sgg = CUR.meta;
   const dm = b.dm==null ? '<span style="color:var(--muted)">비교 자료 부족</span>' : `<span class="${b.dm>0?'up':'dn'}">${b.dm>0?'+':''}${b.dm}%</span>`;
@@ -222,11 +233,10 @@ function card(b, i){
     <div class="row">
       <div class="mini"><div class="k">대지지분 평당가</div><div class="v">${b.pp?fmt(b.pp)+'<small>만원</small>':'-'}</div></div>
       <div class="mini"><div class="k">동 중앙값 대비</div><div class="v">${dm}</div></div>
-      <div class="mini"><div class="k">대지권</div><div class="v">${b.l?b.l+'<small>㎡ · '+py(b.l)+'평</small>':'-'}</div></div>
+      <div class="mini"><div class="k">대지권</div><div class="v">${b.l?b.l+'<small>㎡ · '+py(b.l)+'평</small>':(b.lbad?'<small>자료 확인 중</small>':'-')}</div></div>
       <div class="mini"><div class="k">전용면적</div><div class="v">${b.a}<small>㎡ · ${py(b.a)}평</small></div></div>
     </div>
     ${zh}
-    <div class="caution">권리산정기준일·조합원 자격·구역 경계는 구청·조합에 꼭 확인하세요.</div>
     <details class="tr"><summary>최근 거래 ${b.tr.length}건 보기</summary><table><tr><th>계약일</th><th class="num">거래가</th><th class="num">전용</th><th class="num">대지권</th><th class="num">층</th></tr>${tr}</table></details>
     <div class="acts"><a class="btn" href="${href}" target="_blank" rel="noopener" data-track="villa_consult">이 빌라 상담 신청</a></div>
   </div>`;
@@ -260,7 +270,7 @@ function render(){
   $('sum').innerHTML = `${esc(CUR.meta.n)} 빌라 <b>${fmt(tot)}</b>개 건물 중 정비구역 연결 <b>${fmt(zc)}</b>개 · 지금 조건 <b>${fmt(rows.length)}</b>개 <span style="font-size:13.5px">(${ym(IDX.from)}~${ym(IDX.to)} 거래, 최근 거래순)</span>`;
   if (!rows.length){ $('list').innerHTML = `<div class="empty">조건에 맞는 건물이 없습니다.${FILTER!=='all'?' <b>전체 건물</b>로 바꿔 보세요.':''}</div>`; return; }
   const sorted = rows.slice().sort((a,b)=> b.dt.localeCompare(a.dt));
-  $('list').innerHTML = `<div class="cards">${sorted.slice(0,SHOWN).map(card).join('')}</div>${sorted.length>SHOWN?`<button class="morebtn" id="moreBtn">더 보기 (${fmt(sorted.length-SHOWN)}개 남음)</button>`:''}`;
+  $('list').innerHTML = `<div class="caution once"><b>모든 건물 공통</b> · 입주권은 권리산정기준일(이날 이전에 지은 건물이어야 새 아파트 입주권을 받을 수 있는 기준 날짜)과 건축 연도로 가늠한 결과예요. 권리산정기준일·조합원 자격·구역 경계(이 건물이 구역 안인지)는 구청·조합에 꼭 확인하세요. 카드의 ⓘ 표시가 그 확인이 필요한 항목이에요.</div><div class="cards">${sorted.slice(0,SHOWN).map(card).join('')}</div>${sorted.length>SHOWN?`<button class="morebtn" id="moreBtn">더 보기 (${fmt(sorted.length-SHOWN)}개 남음)</button>`:''}`;
   const mb = $('moreBtn'); if (mb) mb.onclick = ()=>{ SHOWN += PAGE; render(); };
   document.querySelectorAll('[data-more]').forEach(b=>b.onclick=()=>{ const r=b.previousElementSibling; r.hidden=!r.hidden; b.textContent = r.hidden?b.textContent.replace('접기 ▴','더 보기 ▾'):b.textContent.replace('더 보기 ▾','접기 ▴'); });
   saveUrl();
@@ -320,5 +330,7 @@ async function init(){
 }
 init();
 </script>
+<script src="../assets/plain-words.js?v=4"></script>
+<script>document.addEventListener("DOMContentLoaded",()=>{ if(window.JDJ_PLAIN) JDJ_PLAIN.autoGloss(document.querySelector(".wrap")); });</script>
 </body>
 </html>

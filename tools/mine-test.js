@@ -260,6 +260,18 @@ if (DIR && fs.existsSync(path.join(DIR, 'index.json'))) {
   check('드문 거래: 값 없음 → false', M.isSparse([0, 0, 0]), false, '');
 }
 
+// 이상값 방어(엔진 far_ok·land_ok 와 같은 기준): 용적률 1% → 근거·사업성 순위에서 빠짐
+{
+  const f1 = M.cleanFx({ vl: 0.8, rbp: 99, land: 12, landavg: 14, lrk: 60, area: 59 });
+  check('이상값: 용적률 0.8% → 지움', f1.vl, null, '50~1000% 밖');
+  check('이상값: 용적률로 만든 사업성 순위도 지움', f1.rbp, null, '상위 1% 문구 방지');
+  check('이상값: 정상 대지지분은 그대로', f1.land, 12, '');
+  const f2 = M.cleanFx({ vl: 180, rbp: 70, land: 103, landavg: 12, area: 41 });
+  check('정상 용적률 유지', f2.vl, 180, '');
+  check('이상값: 전용 41㎡에 대지지분 103평 → 지움', f2.land, null, '전용의 5배 초과');
+  check('빈 값 그대로', M.cleanFx(null), null, '');
+}
+
 let bad = 0;
 for (const r of rows) { if (!r.ok) bad++; console.log((r.ok ? 'OK  ' : 'FAIL') + ' ' + r.name + (r.ok ? '' : `\n     got ${JSON.stringify(r.got)}\n    want ${JSON.stringify(r.want)}  (${r.basis})`)); }
 console.log(`\n${rows.length - bad}/${rows.length} 통과`);

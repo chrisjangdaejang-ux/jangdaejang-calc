@@ -34,12 +34,20 @@
 <script src="../assets/share.js?v=1"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/kchat.js?v=1"></script>
-<script src="../assets/plain-words.js?v=3"></script>
-<script src="../assets/mine-core.js?v=5"></script>
+<script src="../assets/plain-words.js?v=4"></script>
+<script src="../assets/mine-core.js?v=6"></script>
 <script src="../assets/price-sheet.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=39">
+<style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
+:root{--gold:#2F6BFF}
+.premium .pt{color:var(--blue)}
+.mpinw.on .mpin{background:var(--blue)}.mpinw.on .mpin:after{border-top-color:var(--blue)}
+.st.pre{background:var(--blue-l);color:var(--blue)}
+.why li::marker{color:var(--blue)}
+.btn{border-radius:14px}
+</style>
 <style>
 .wrap{max-width:860px;margin:0 auto;padding:22px 16px 60px}
 h1{font-size:clamp(26px,6vw,38px);margin:6px 0 8px}
@@ -102,7 +110,7 @@ td small{color:#4E5968;font-size:13.5px}
 .hib{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 6px}
 @media(max-width:400px){.hib{grid-template-columns:1fr}}
 .hib>div{border:1px solid var(--line);border-radius:14px;padding:10px 12px;min-width:0}
-.hib .k{font-size:13.5px;color:#4E5968;font-weight:700}.hib .v{font-size:18px;font-weight:900;word-break:keep-all}.hib .d{font-size:13px;color:#4E5968;line-height:1.5;overflow-wrap:anywhere}
+.hib .k{font-size:13.5px;color:#4E5968;font-weight:700}.hib .v{font-size:18px;font-weight:900;word-break:keep-all}.hib .d{font-size:13.5px;color:#4E5968;line-height:1.5;overflow-wrap:anywhere}
 .jps-new{display:inline-block;font-size:11.5px;font-weight:800;line-height:17px;padding:0 5px;border-radius:5px;background:#FDECEC;color:#C81E1E;vertical-align:1px;white-space:nowrap}
 .pos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:560px){.pos{grid-template-columns:1fr}}
@@ -148,7 +156,7 @@ td small{color:#4E5968;font-size:13.5px}
 .aglist{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px;margin-top:10px}
 .agc{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:#fff}
 .agc b{font-size:16px}
-.agc .tag2{font-size:12px;font-weight:700;border:1px solid #B8942A;color:#8A6D17;padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:2px}
+.agc .tag2{font-size:13.5px;font-weight:700;border:1px solid #B8942A;color:#8A6D17;padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:2px}
 .agc small{display:block;color:#4E5968;font-size:13.5px}
 .agc .hl{display:inline-block;font-size:13.5px;font-weight:700;color:#2F6BFF;margin-top:4px}
 .agc .acts{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
@@ -246,7 +254,7 @@ async function loadSido(id){
 async function scoreMap(id){
   if (SMAP[id]) return SMAP[id];
   const us = await P.scoreUnits(id), m = new Map();
-  for (const u of us) if (u[9]) m.set(M.unitKey(u), u[9]);
+  for (const u of us) if (u[9]) m.set(M.unitKey(u), M.cleanFx(u[9]));
   return (SMAP[id] = m);
 }
 const sggName = c => (IX.sgg[c] || {}).name || c;

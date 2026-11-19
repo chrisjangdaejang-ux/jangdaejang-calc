@@ -126,8 +126,19 @@ tr.cliff td{background:rgba(162,59,42,.06)}
 .premium p small{display:block;font-weight:500;font-size:14px;color:var(--muted);margin-top:3px;letter-spacing:0}
 .btn.done{background:var(--green);cursor:default}
 .xlink{display:block;margin-top:18px;text-align:center;font-size:15px;color:var(--olive);font-weight:900;background:var(--card);border:1px dashed var(--gold);border-radius:8px;padding:12px;text-decoration:none}
+#income::placeholder,#cash::placeholder{color:#B0B8C1;font-weight:500}
+#wNext:disabled{opacity:.45;cursor:not-allowed}
+.wizhint{font-size:14px;color:#4E5968;margin:6px 0 0;min-height:0}
 </style>
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=39">
+<style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
+:root{--gold:#2F6BFF}
+.premium .pt{color:var(--blue)}
+.mpinw.on .mpin{background:var(--blue)}.mpinw.on .mpin:after{border-top-color:var(--blue)}
+.st.pre{background:var(--blue-l);color:var(--blue)}
+.why li::marker{color:var(--blue)}
+.btn{border-radius:14px}
+</style>
 <style>
 .wrap{max-width:1080px;padding:24px 18px 60px}
 .hero{margin-bottom:22px}
@@ -194,7 +205,7 @@ body.wiz .wiznav{display:flex;gap:8px;margin-top:4px}
 <body>
 <header class="top">
   <a class="brand" href="/jangdaejang-calc/"><span class="star" aria-hidden="true">★</span> 장대장 <span class="acc">계산기</span></a>
-  <div class="badge plain">2026.11 규제 반영</div>
+  <div class="badge plain">내 집 마련</div>
 </header>
 
 <div class="wrap">
@@ -214,7 +225,7 @@ body.wiz .wiznav{display:flex;gap:8px;margin-top:4px}
 
       <div class="field" data-step="1">
         <label for="income"><span class="qq">연소득이 얼마예요?</span><span class="ql">연소득 (세전, 부부합산 가능)</span></label>
-        <div class="inp"><input id="income" inputmode="numeric" value="7,000" placeholder="7,000" autocomplete="off"><span class="unit">만원</span></div>
+        <div class="inp"><input id="income" inputmode="numeric" value="7,000" placeholder="예: 7,000" autocomplete="off"><span class="unit">만원</span></div>
         <div class="quick" data-for="income" aria-label="자주 쓰는 금액"><button type="button" data-v="5000">5,000</button><button type="button" data-v="7000">7,000</button><button type="button" data-v="10000">1억</button><button type="button" data-v="15000">1억 5천</button></div>
         <div class="hint" data-for="income"></div>
         <div class="hint qq">세금 떼기 전 금액이에요. 부부 합산이면 합친 금액을 넣어 주세요.</div>
@@ -222,7 +233,7 @@ body.wiz .wiznav{display:flex;gap:8px;margin-top:4px}
 
       <div class="field" data-step="2">
         <label for="cash"><span class="qq">집 사는 데 쓸 수 있는 현금은요?</span><span class="ql">보유 현금 (자기자본)</span></label>
-        <div class="inp"><input id="cash" inputmode="numeric" value="40,000" placeholder="40,000" autocomplete="off"><span class="unit">만원</span></div>
+        <div class="inp"><input id="cash" inputmode="numeric" value="40,000" placeholder="예: 40,000" autocomplete="off"><span class="unit">만원</span></div>
         <div class="quick" data-for="cash" aria-label="자주 쓰는 금액"><button type="button" data-v="10000">1억</button><button type="button" data-v="20000">2억</button><button type="button" data-v="30000">3억</button><button type="button" data-v="50000">5억</button></div>
         <div class="hint" data-for="cash"></div>
         <div class="hint qq">예금·청약 해지금·전세 보증금처럼 잔금 때 쓸 수 있는 돈을 모두 더해 주세요.</div>
@@ -284,7 +295,7 @@ body.wiz .wiznav{display:flex;gap:8px;margin-top:4px}
       </div>
 
       <label class="check"><input type="checkbox" id="costs" checked> 취득세·중개보수·기타 비용(1,000만) 포함해서 계산</label>
-      <div class="wizerr" id="wErr" role="alert"></div>
+      <div class="wizerr" id="wErr" role="alert"></div><div class="wizhint" id="wHint" aria-live="polite"></div>
       <div class="wiznav"><button type="button" class="btn" id="wPrev">이전</button><button type="button" class="btn primary" id="wNext">다음</button></div>
       <div class="wizskip"><button type="button" id="wSkip">질문 없이 한 화면에서 모두 입력하기</button></div>
     </div>
@@ -305,7 +316,7 @@ body.wiz .wiznav{display:flex;gap:8px;margin-top:4px}
       </div>
 
       <div class="premium" id="premBox">
-        <div><div class="pt">PREMIUM · 무료 베타 체험 중</div><p>장대장 맞춤 매수 리포트<small>내 예산으로 살 수 있는 집 중 미래가치가 가장 좋은 집을 추천해 드립니다. 추천 단지 TOP 10과 자금 계획표, 대출 시나리오를 실거래가로 정리 · PDF 저장 가능</small></p></div>
+        <div><div class="pt">무료 맞춤 리포트</div><p>장대장 맞춤 매수 리포트<small>내 예산으로 살 수 있는 집 중 미래가치가 가장 좋은 집을 추천해 드립니다. 추천 단지 TOP 10과 자금 계획표, 대출 시나리오를 실거래가로 정리 · PDF 저장 가능</small></p></div>
         <a class="btn" id="premBtn" href="report/" target="_blank" rel="noopener">추천 단지 리포트 보기</a>
       </div>
       <p class="premlink"><a href="../premium/" data-track="buy_to_premium">단지 심층 분석(유료) · 프리미엄 리포트 안내 ›</a></p>
@@ -404,6 +415,7 @@ let lastP=0, lastBy='';
 JDJ_CONFIG.info = () => ({region:$('region').value, own, rate_type:rtype, max_band:JDJ.band(lastP), limit_by:lastBy});
 
 const num = s => { const v = parseFloat(String(s).replace(/[^0-9.]/g,'')); return isNaN(v)?0:v; };
+const fmtW = m => { const t = fmt(m); return /원$/.test(t) ? t : t + '원'; };   /* '0원원' 방지 */
 function fmt(man){ // 만원 -> "X억 Y만"
   man = Math.round(man);
   if (man<=0) return '0원';
@@ -448,13 +460,13 @@ function render(){
   lastP = P; lastBy = ld.by;
 
   document.querySelectorAll('.hint[data-for]').forEach(h=>{
-    const v = num($(h.dataset.for).value); h.textContent = v ? '= '+fmt(v)+'원' : '';
+    const v = num($(h.dataset.for).value); h.textContent = v ? '= '+fmtW(v) : '';
   });
   $('regionHint').textContent = c.R.regulated ? '규제지역: LTV 40%·가격구간별 한도·스트레스 3.0%'
      : c.R.capital ? '비규제지만 수도권이라 6억 한도·스트레스 3.0% 적용'
      : '지방 비규제: 가격 한도 없음·스트레스 0.75%(2026년 말까지)';
 
-  $('maxP').textContent = P ? fmt(P)+'원' : '대출 매수 어려움';
+  $('maxP').textContent = P ? fmtW(P) : '대출 매수 어려움';
   $('maxSub').innerHTML = P ? `현금 <b>${fmt(c.cash)}</b> + 대출 <b>${fmt(ld.L)}</b>${c.costsOn?` − 부대비용 <b>${fmt(cost)}</b>`:''}` : '조건을 조정해 보세요';
   const byTxt = {LTV:`LTV ${Math.round(c.ltv*100)}%가 한도를 결정`, CAP:'가격구간별 대출 한도가 결정', DSR:'소득(DSR)이 한도를 결정', BAN:'주택구입 목적 주담대 불가'};
   $('binding').textContent = byTxt[ld.by];
@@ -511,8 +523,8 @@ const FORM='https://docs.google.com/forms/d/e/1FAIpQLScCG7wzIlY3FE6EHU5QWo92uW5N
 function updateConsult(c){
   const regionTxt = $('region').options[$('region').selectedIndex].text;
   const q = new URLSearchParams({usp:'pp_url'});
-  q.set('entry.146176170', fmt(c.income)+'원');
-  q.set('entry.1872979900', fmt(c.cash)+'원');
+  q.set('entry.146176170', fmtW(c.income));
+  q.set('entry.1872979900', fmtW(c.cash));
   q.set('entry.397234060', regionTxt);
   q.set('entry.1054811896', OWN_NAME[own]);
   q.set('entry.658364183', $('maxP').textContent+' (대출 '+$('sLoan').textContent+', '+TYPE_NAME[rtype]+' '+c.rate+'%·'+c.term+'년) | '+JDJ.label());
@@ -525,8 +537,8 @@ function renderCost(c,P){
   if (!base){ $('costTbl').innerHTML='<tr><td>계산할 금액이 없습니다</td><td></td></tr>'; $('costNote').textContent=''; return; }
   const d = costDetail(base,c);
   const rows = [
-    [`매매가 <small>${label}</small>`, fmt(base)+'원'],
-    [`취득세 <small>${d.rate}%${d.heavy?' 중과':''}</small>`, fmt(d.acq)+'원'],
+    [`매매가 <small>${label}</small>`, fmtW(base)],
+    [`취득세 <small>${d.rate}%${d.heavy?' 중과':''}</small>`, fmtW(d.acq)],
   ];
   let html = rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
   if (d.relief>0) html += `<tr class="minus"><td>생애최초 취득세 감면 <small>200만원 한도</small></td><td>−${fmt(d.relief)}원</td></tr>`;
@@ -612,7 +624,7 @@ $('copyBtn').addEventListener('click',async()=>{
   catch(_){ toast('복사가 지원되지 않는 환경입니다'); }
 });
 
-// 맞춤 매수 리포트 (무료 베타) — 클릭 수로 유료화 수요 확인
+// 맞춤 매수 리포트(무료) — 클릭 수로 관심 확인
 function updateReport(c){
   /* 연소득·현금·대출은 주소에 싣지 않고 이 기기에만 저장(공유 링크로 새지 않게) */
   if (window.JDJ_SHARE) JDJ_SHARE.saveFin({i:c.income,c:c.cash,d:c.debt});
@@ -671,7 +683,7 @@ render();
     $('wBar').setAttribute('aria-valuenow',step); $('wBar').firstElementChild.style.width=(step/N*100)+'%';
     $('wPrev').style.visibility = step>1 ? 'visible' : 'hidden';
     $('wNext').textContent = step<N ? '다음' : '결과 보기';
-    $('wErr').textContent=''; markQuick();
+    $('wErr').textContent=''; markQuick(); syncNext();
     const f=fields.find(x=>+x.dataset.step===step), el=f && f.querySelector('input,select,button');
     if (el && step<=2 && document.activeElement!==el) el.focus({preventScroll:true});
   }
@@ -684,9 +696,12 @@ render();
   }
   document.querySelectorAll('.quick').forEach(q=>q.addEventListener('click',e=>{
     const b=e.target.closest('button'); if(!b) return;
-    $(q.dataset.for).value=parseInt(b.dataset.v,10).toLocaleString(); render(); markQuick(); $('wErr').textContent='';
+    $(q.dataset.for).value=parseInt(b.dataset.v,10).toLocaleString(); render(); markQuick(); syncNext(); $('wErr').textContent='';
   }));
-  ['income','cash'].forEach(id=>$(id).addEventListener('input',markQuick));
+  ['income','cash'].forEach(id=>$(id).addEventListener('input',()=>{ markQuick(); syncNext(); }));
+  /* 빈칸이면 '다음'을 잠그고 무엇을 하면 되는지 안내 */
+  function syncNext(){ const blank = (step===1 && !num($('income').value)) || (step===2 && $('cash').value.trim()==='');
+    $('wNext').disabled = blank; $('wHint').textContent = blank ? (step===1 ? '연소득을 넣거나 위 금액 버튼을 누르면 다음으로 넘어갈 수 있어요.' : '쓸 수 있는 현금을 넣어 주세요. 없으시면 0을 넣어 주세요.') : ''; }
   $('wNext').addEventListener('click',()=>{
     if (step===1 && !num($('income').value)) { $('wErr').textContent='연소득을 넣어 주세요. 잘 모르시면 금액 버튼을 눌러 주세요.'; $('income').focus(); return; }
     if (step===2 && $('cash').value.trim()==='') { $('wErr').textContent='쓸 수 있는 현금을 넣어 주세요. 없으시면 0을 넣어 주세요.'; $('cash').focus(); return; }

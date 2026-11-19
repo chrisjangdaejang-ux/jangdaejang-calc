@@ -65,6 +65,7 @@ h2.sec small{display:block;font-size:14px;font-weight:500;color:var(--sub2);lett
 .st{display:inline-block;font-size:13.5px;font-weight:700;border-radius:6px;padding:1px 8px;margin-right:6px;vertical-align:1px;white-space:nowrap}
 .st.on{background:var(--blue);color:#fff}
 .st.pre{background:var(--blue-l);color:var(--blue)}
+.st.wait{background:#FFF4E0;color:#8A5A00}
 .st.mv{background:var(--pos-l);color:var(--pos)}
 .st.plan{background:var(--gray);color:var(--sub)}
 .kd{display:inline-block;font-size:13.5px;font-weight:700;color:var(--sub2);background:var(--gray);border-radius:6px;padding:1px 7px;margin-right:6px;vertical-align:1px}
@@ -107,7 +108,7 @@ td.k{color:var(--sub2);width:34%;font-size:14.5px}
 .du ul{list-style:none;margin:0;padding:0}
 .du li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--line2)}
 .du li span{min-width:0;font-size:14.5px;word-break:keep-all}
-.du li small{display:block;font-size:13px;color:var(--sub2)}
+.du li small{display:block;font-size:13.5px;color:var(--sub2)}
 .cmp .why{font-size:13.5px;color:var(--sub2);margin-top:6px;line-height:1.6}
 .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
 .btns a{flex:1 1 200px}
@@ -127,7 +128,7 @@ body.lock{overflow:hidden}
 <body>
 <header class="top">
   <a class="brand" href="/jangdaejang-calc/"><span class="star" aria-hidden="true">★</span> 장대장 <span class="acc">계산기</span></a>
-  <div class="badge plain">분양 · 청약홈 공고 기준</div>
+  <div class="badge plain">분양</div>
 </header>
 
 <main class="wrap">
@@ -143,7 +144,7 @@ body.lock{overflow:hidden}
       <div><label for="fSgg">시·군·구</label><select id="fSgg"><option value="">전체</option></select></div>
     </div>
     <div><label>상태</label><div class="chips" id="fSt" role="group" aria-label="상태">
-      <button type="button" data-v="" class="on">전체</button><button type="button" data-v="pre">분양예정</button><button type="button" data-v="on">청약중</button><button type="button" data-v="mv">입주예정</button></div></div>
+      <button type="button" data-v="" class="on">전체</button><button type="button" data-v="pre">분양예정</button><button type="button" data-v="on">청약중</button><button type="button" data-v="wait">발표 대기</button><button type="button" data-v="mv">입주예정</button></div></div>
     <div><label>유형</label><div class="chips" id="fKind" role="group" aria-label="유형">
       <button type="button" data-v="" class="on">전체</button><button type="button" data-v="아파트">아파트</button><button type="button" data-v="오피스텔">오피스텔</button><button type="button" data-v="도시형생활주택">도시형생활주택</button><button type="button" data-v="민간임대">민간임대</button><button type="button" data-v="무순위·잔여세대">무순위·잔여세대</button><button type="button" data-v="정비사업">정비사업(분양예정)</button></div></div>
     <div class="two">
@@ -182,7 +183,8 @@ body.lock{overflow:hidden}
 
 <script src="../assets/agents.js"></script>
 <script src="../assets/ads.js"></script>
-<script src="../assets/mine-core.js?v=5"></script>
+<script src="../assets/mine-core.js?v=6"></script>
+<script src="../assets/sale-status.js?v=1"></script>
 <script src="../assets/price-sheet.js?v=4"></script>
 <script>
 const $ = id => document.getElementById(id);
@@ -204,7 +206,7 @@ const sidoNorm = s => SIDO_OLD[s] || s;
 const sidoLbl = s => s + (SIDO_ALIAS[s] ? ` (${SIDO_ALIAS[s]})` : '');
 const sidoShort = s => String(s || '').replace(/(특별자치시|특별자치도|통합특별시|특별시|광역시)$/, '').replace(/^경상/, '경').replace(/^충청/, '충').replace(/^전라/, '전');
 
-const ST = { pre: ['pre', '분양예정'], on: ['on', '청약중'], mv: ['mv', '입주예정'], plan: ['plan', '분양예정 · 시기 미정'] };
+const ST = { pre: ['pre', '분양예정'], on: ['on', '청약중'], wait: ['wait', '발표 대기'], mv: ['mv', '입주예정'], plan: ['plan', '분양예정 · 시기 미정'] };
 const BAND = ['전용 60㎡ 이하', '전용 60~85㎡', '전용 85㎡ 초과'];
 let IDX = null, ROWS = [], SHOWN = 30, VIEW = 'list', MAP = null, LAYER = null, LF = null;
 const F = { sido: '', sgg: '', st: '', kind: '', price: '', sort: 'date' };
@@ -244,7 +246,8 @@ function render() {
   CUR = filtered();
   const hasData = IDX && (ROWS.length > 0);
   const n = c => CUR.filter(x => x.st === c).length;
-  $('sum').innerHTML = hasData ? `<b>${fmt(CUR.length)}</b>곳 · 분양예정 ${fmt(n('pre') + n('plan'))} · 청약중 ${fmt(n('on'))} · 입주예정 ${fmt(n('mv'))}` : '데이터 준비 중';
+  const apt = CUR.filter(x => x.k === '아파트' && (x.st === 'pre' || x.st === 'on' || x.st === 'wait')).length;
+  $('sum').innerHTML = hasData ? `<b>${fmt(CUR.length)}</b>곳 · 분양예정 ${fmt(n('pre') + n('plan'))} · 청약중 ${fmt(n('on'))} · 발표 대기 ${fmt(n('wait'))} · 입주예정 ${fmt(n('mv'))}<small style="display:block;font-size:13.5px;color:var(--sub2);margin-top:2px">아파트 청약 공고 ${fmt(apt)}곳(분양예정·청약중·발표 대기)은 청약 가점 화면과 같은 기준이에요. 무순위·민간임대 등은 분양 화면에만 있어요.</small>` : '데이터 준비 중';
   if (!hasData) {
     $('list').innerHTML = `<div class="empty">분양 자료를 준비하고 있어요. 청약홈 공고는 하루 네 번 자동으로 갱신돼요. 잠시 뒤 다시 와 주세요.</div>`;
     if (VIEW === 'map') drawMap();
@@ -348,7 +351,7 @@ function loadLeaflet() {
     const s = document.createElement('script'); s.src = base + 'leaflet.js'; s.onload = () => ok(); s.onerror = () => { LF = null; no(new Error('leaflet')); }; document.head.appendChild(s); });
   return LF;
 }
-const COLOR = { on: '#2F6BFF', pre: '#7FA3FF', mv: '#0E7A4F', plan: '#8B95A1' };
+const COLOR = { on: '#2F6BFF', pre: '#7FA3FF', mv: '#0E7A4F', plan: '#8B95A1', wait: '#E5A100' };
 async function drawMap() {
   try { await loadLeaflet(); } catch (e) { $('mapNote').textContent = '지도를 불러오지 못했어요. 목록으로 확인해 주세요.'; return; }
   if (!MAP) {
@@ -370,7 +373,7 @@ async function drawMap() {
     m.bindPopup(div);
   });
   if (pts.length) MAP.fitBounds(L.latLngBounds(pts.map(x => [x.xy[1], x.xy[0]])).pad(0.15), { maxZoom: 14 });
-  $('mapNote').textContent = CUR.length ? `좌표가 확인된 ${fmt(pts.length)}곳만 지도에 표시했어요(전체 ${fmt(CUR.length)}곳). 점 색: 파랑 청약중 · 연파랑 분양예정 · 초록 입주예정 · 회색 정비사업(시기 미정)` : '표시할 단지가 없어요.';
+  $('mapNote').textContent = CUR.length ? `좌표가 확인된 ${fmt(pts.length)}곳만 지도에 표시했어요(전체 ${fmt(CUR.length)}곳). 점 색: 파랑 청약중 · 노랑 발표 대기 · 연파랑 분양예정 · 초록 입주예정 · 회색 정비사업(시기 미정)` : '표시할 단지가 없어요.';
 }
 function setView(v) {
   VIEW = v;
@@ -411,6 +414,10 @@ async function init() {
   IDX = i;
   ROWS = [...((n && n.rows) || []), ...((p && p.rows) || [])].filter(x => x && x.n && ST[x.st]);
   ROWS.forEach(x => { x.sp = x.sp || []; x.rc = x.rc || []; });
+  /* 상태는 청약 가점 화면과 같은 공용 함수로 오늘 날짜 기준 다시 계산(자료 갱신 사이에 바뀐 상태 반영) */
+  const T0 = JDJ_SALE.ymd(new Date());
+  ROWS.forEach(x => { if (x.st === 'plan') return; const s = JDJ_SALE.status(x, T0); if (s && s !== 'done') x.st = s; });
+  ROWS = ROWS.filter(x => ST[x.st]);
   if (IDX && IDX.updated) $('upd').textContent = `갱신 ${IDX.updated}.`;
   if (ex && ex.status === 'ok' && ((ex.unsold || []).length || (ex.permits || []).length)) $('extraBox').hidden = false;   // 활용신청 승인 후 활성화
   fillSido(); fillSgg(); render();

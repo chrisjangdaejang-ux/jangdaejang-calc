@@ -335,5 +335,71 @@
     (root.document.head || root.document.documentElement).appendChild(s);
   }
 
-  root.JDJ_PLAIN = { STAGE, gloss, J, won, eokR, rank, more, regionInfo, regionRank, regionText, regionLine, evid, evHtml, ddText, rcText, momText, schText, stageName, rzText, jrStats, jrText, VOK, hzLabel, checkText, easy, ymKo, spanKo, delayText, unitsKo, supplyLines, renewalLine };
+  /* ---------- 화면 전체 첫 등장 풀이 (갈아타기·세금·빌라·청약·리포트 공용) ----------
+     화면 글자에서 용어가 처음 나오는 곳 바로 뒤에만 작은 괄호 풀이를 붙인다. 이미 바로 뒤에 '('가 있으면 붙이지 않음.
+     화면이 다시 그려지면(내용 변경) 풀이를 지우고 다시 첫 등장에 붙인다. */
+  const GL_PAGE = {
+    '%p': '퍼센트포인트: 두 비율의 차이',
+    '전세가율': '집값 대비 전셋값 비율',
+    '장기보유특별공제': '오래 보유·거주한 집을 팔 때 양도차익에서 빼 주는 금액',
+    '표2': '1세대 1주택자가 2년 이상 거주했을 때 쓰는 공제율 표, 보유·거주 기간별 최대 80%',
+    '필요경비': '취득세·중개보수·수리비처럼 양도차익에서 빼 주는 비용',
+    '처분조건부': '기존 집을 정해진 기한 안에 판다는 조건',
+    '권리산정기준일': '이날 이전부터 있던 건물이어야 새 아파트 입주권을 받을 수 있는 기준 날짜',
+    '대지지분': '건물이 깔고 있는 땅 중 내 몫',
+    '대지권': '등기된 땅 지분',
+    '현금청산': '입주권 대신 감정가로 돈을 받고 나가는 것',
+    '가점제': '무주택 기간·부양가족·통장 가입기간 점수 순으로 뽑는 방식',
+    '추첨제': '점수와 상관없이 추첨으로 뽑는 방식',
+    '해당지역': '공고한 시·군에 일정 기간 이상 산 사람',
+    'LTV': '집값 대비 대출 비율',
+    'DSR': '연소득 대비 1년 원리금 상환액 비율'
+  };
+  function glossDom(el, terms) {
+    if (!el || !root.document) return;
+    const doc = root.document, T = terms || GL_PAGE;
+    el.querySelectorAll('.jp-gl').forEach(x => x.remove());
+    el.normalize();
+    const left = new Set(Object.keys(T));
+    const walker = doc.createTreeWalker(el, 4, { acceptNode: n => {
+      const p = n.parentElement; if (!p || !n.nodeValue.trim()) return 2;
+      if (p.closest('script,style,textarea,select,option,button,[data-nogloss],.jp-gl,summary') || p.closest('[hidden]')) return 2;
+      return 1; } });
+    const hits = [];
+    let n;
+    while ((n = walker.nextNode()) && left.size) {
+      const v = n.nodeValue;
+      for (const t of [...left]) {
+        let i = -1;
+        if (t === '%p') { const m = /\d%p/.exec(v); if (m) i = m.index + 1; }
+        else i = v.indexOf(t);
+        if (i < 0) continue;
+        left.delete(t);
+        const end = i + t.length;
+        if (v.charAt(end) === '(' || v.slice(end).trimStart().startsWith('(')) continue;   // 이미 풀이가 있음
+        hits.push([n, end, t]);
+      }
+    }
+    hits.sort((a, b) => b[1] - a[1]);   // 같은 노드 안에서는 뒤에서부터 잘라야 위치가 안 밀림
+    for (const [node, end, t] of hits) {
+      if (!node.parentNode) continue;
+      const after = node.splitText(Math.min(end, node.nodeValue.length));
+      const sp = doc.createElement('span'); sp.className = 'jp-gl'; sp.textContent = `(${T[t]})`;
+      node.parentNode.insertBefore(sp, after);
+    }
+  }
+  /* 화면이 바뀔 때마다 다시 붙임(잠깐 기다렸다 한 번) */
+  function autoGloss(el, terms) {
+    if (!el || !root.MutationObserver) return;
+    if (root.document && !root.document.getElementById('jp-gl-css')) {
+      const s = root.document.createElement('style'); s.id = 'jp-gl-css';
+      s.textContent = '.jp-gl{font-size:.85em;color:#4E5968;font-weight:500;margin-left:1px}';
+      (root.document.head || root.document.documentElement).appendChild(s);
+    }
+    let t = null; const mo = new MutationObserver(() => { clearTimeout(t); t = setTimeout(run, 120); });
+    function run() { mo.disconnect(); try { glossDom(el, terms); } finally { mo.observe(el, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['hidden'] }); } }
+    run();
+  }
+
+  root.JDJ_PLAIN = { STAGE, GL_PAGE, glossDom, autoGloss, gloss, J, won, eokR, rank, more, regionInfo, regionRank, regionText, regionLine, evid, evHtml, ddText, rcText, momText, schText, stageName, rzText, jrStats, jrText, VOK, hzLabel, checkText, easy, ymKo, spanKo, delayText, unitsKo, supplyLines, renewalLine };
 })(typeof window !== 'undefined' ? window : globalThis);

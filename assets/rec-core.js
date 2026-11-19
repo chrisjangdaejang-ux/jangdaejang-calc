@@ -23,7 +23,7 @@
   function unitPrice(u) { const p = lastNZ(u[6]); return p ? r100(p * u[4] / PY) : 0; }
   const MIN_FIT = 0.55;   // 매수 가능액 대비 너무 낮은 단지는 추천에서 뺀다
 
-  /** 추천 점수 p: { fit, n, ch, rel, note(bool), fv(null|0~100) } */
+  /** 내부 정렬용 보조 점수(화면에 표시하지 않음) p: { fit, n, ch, rel, note(bool), fv(null|0~100) } */
   function scoreOf(p) {
     const sBudget = Math.max(0, 1 - Math.abs(0.93 - p.fit) * 2.2);
     const sLiq = Math.min(1, Math.log(p.n) / Math.log(160));
@@ -42,7 +42,7 @@
       : 0.28 * sBudget + 0.30 * sLiq + 0.16 * sMom + 0.14 * sVal + 0.12 * sNote;
   }
   /* 순위: 미래가치 점수가 있는 단지 먼저 점수 높은 순 → 같은 점수면 추천 점수 순 → 미래가치 점수가 없는 단지는 그 뒤 */
-  const rankCmp = (a, b) => (b.hasFv - a.hasFv) || (b.disp - a.disp) || (b.score - a.score);
+  const rankCmp = (a, b) => (b.hasFv - a.hasFv) || ((b.sortv != null ? b.sortv : b.disp) - (a.sortv != null ? a.sortv : a.disp)) || (b.score - a.score);
   /** 한 단지·한 구·한 시·도에 몰리지 않게 고른다. opt: { max, perSgg, perSido(지역 상관없음일 때), sidoOf(code) } */
   function diversify(sorted, opt) {
     const max = opt.max || 10, perSgg = opt.perSgg || 3, perSido = opt.perSido || 0;
@@ -63,7 +63,8 @@
     const rel = sggPpy ? (sggPpy - ppy) / sggPpy : 0;
     const fx = u[9] || null, hasFv = !!(fx && fx.fv != null);
     const score = scoreOf({ fit, n: u[5], ch, rel, note, fv: hasFv ? fx.fv : null });
-    return { fit, ch, rel, fx, hasFv, score, disp: hasFv ? fx.fv : Math.round(score * 100) };
+    const disp = hasFv ? fx.fv : Math.min(99, Math.round(score * 100));
+    return { fit, ch, rel, fx, hasFv, score, disp, sortv: hasFv && fx.fvSort != null ? fx.fvSort : disp };
   }
 
   const API = { PY, REG_GG, isReg, isCap, groupOf, LTV, r100, lastNZ, firstNZ, recentCnt, change6, change3y, unitPrice, MIN_FIT, scoreOf, scoreUnit, rankCmp, diversify };

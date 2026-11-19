@@ -243,7 +243,7 @@
     const Y = x.year || new Date().getFullYear();
     const EV = kind => (PL && x.ev && x.sid) ? PL.evid(x.ev, x.sid, f.eb, kind, x.sidoShort || '', G) : null;
     const add = (t, ev, c) => r.push({ t, ev: ev || null, c: c || '' });
-    const rank = v => PL ? PL.rank(v) : `상위 ${Math.max(1, 100 - v)}%`;
+    const rank = v => PL ? PL.rank(v) : (v >= 50 ? `100곳 중 상위 ${Math.max(1, 100 - v)}등쯤` : `100곳 중 하위 ${Math.max(1, v)}등쯤`);
     if (f.fv != null) add(f.gs != null
       ? `미래가치 ${f.fv}점 — ${x.sido} 단지 ${rank(f.fv)}` + (f.fvg != null ? ` · ${x.sgg} 안에서는 ${rank(f.fvg)}` : '') + '이에요(실제 이후 시세로 채점해 검증한 점수)'
       : `미래가치 ${f.fv}점 — ${x.sgg} 단지 ${rank(f.fv)}이에요(실제 이후 시세로 채점해 검증한 점수)`);
@@ -366,11 +366,25 @@
     const s = (e ? e.toLocaleString('ko-KR') + '억' : '') + (r ? (e ? ' ' : '') + r.toLocaleString('ko-KR') + '만' : '') + '원';
     return (neg ? '-' : '') + (man ? s : '0원');
   }
+  /** 점수 자료(fx)의 이상값 방어: 용적률이 50~1000% 밖이거나 대지지분이 전용의 5배를 넘으면 그 값과 그 값으로 만든 순위를 지워
+      화면 근거 문장에서 빠지게 한다(엔진 build_site.far_ok·land_ok 와 같은 기준). 고친 f 를 그대로 돌려줌 */
+  function cleanFx(f) {
+    if (!f || typeof f !== 'object' || f._c) return f;
+    if (f.vl != null && !(f.vl >= 50 && f.vl <= 1000)) { f.vl = null; f.rbp = null; if (f.eg) f.eg = null; }
+    const lim = f.area ? f.area / PY * 5 : Infinity;
+    if (f.land != null && !(f.land > 0 && f.land <= lim)) { f.land = null; if (f.eg) f.eg = null; }
+    if (f.landavg != null && !(f.landavg > 0 && f.landavg <= lim)) { f.landavg = null; f.lrk = null; }
+    /* 화면 점수 상한 99: 상위 0.5% 안 단지가 모두 100점으로 겹쳐 보이지 않게. 정렬은 원래 값(fvSort)으로 */
+    if (f.fv != null) { f.fv0 = f.fv; f.fvSort = f.fv; f.fv = Math.min(99, f.fv); }
+    if (f.fvg != null) f.fvg = Math.min(99, f.fvg);
+    try { Object.defineProperty(f, '_c', { value: 1, enumerable: false }); } catch (e) {}
+    return f;
+  }
   const pctTxt = (v, d) => v == null ? '-' : (v > 0 ? '+' : '') + (v * 100).toFixed(d == null ? 1 : d) + '%';
 
   const API = { PY, r100, STORE_KEY, MAX_HOMES, FEW, counts, lastIdx, median, toPrice, ymLabel, danjiKey, agentKey, premiumKey, groupDanji, searchDanji,
     normName, splitNum, matchName, listRow, unitKey, hasScore, scoreOf, monthDeals, trades, lastDeal, isFew,
-    bandSummary, changeBack, dongPosition, sggPosition, trend, volume, volumeCounts, cleanHome, homeId, parseStore, dumpStore, addHome, removeHome, findUnit, vsBuy, heldMonths, reasons, reasonItems, won, pctTxt,
+    bandSummary, changeBack, dongPosition, sggPosition, trend, volume, volumeCounts, cleanHome, homeId, parseStore, dumpStore, addHome, removeHome, findUnit, vsBuy, heldMonths, reasons, reasonItems, won, pctTxt, cleanFx,
     ymAdd, ymDiff, ymKo, decodeSeries, histRow, histSeries, histWindow, histSpans, highs, isNewHigh, lineParts, isSparse };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_MINE = API;

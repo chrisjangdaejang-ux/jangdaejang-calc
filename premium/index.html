@@ -41,13 +41,13 @@
 @media(max-width:700px){.plans{grid-template-columns:1fr}}
 .plan{border:1px solid var(--line);border-radius:20px;padding:22px 20px;display:flex;flex-direction:column;gap:12px;background:#fff}
 .plan.best{border:2px solid var(--blue)}
-.plan .pt{font-size:13px;font-weight:700;color:var(--blue)}
+.plan .pt{font-size:13.5px;font-weight:700;color:var(--blue)}
 .plan h2{margin:0;font-size:21px}
 .plan .price{font-size:32px;font-weight:900;letter-spacing:-1px;color:var(--text);line-height:1.2}
 .plan .price small{font-size:14px;font-weight:700;color:var(--sub2);letter-spacing:0;margin-left:4px}
 .plan ul{margin:0;padding-left:20px}
 .plan li{font-size:14.5px}
-.plan .meta{font-size:13px;color:var(--sub2);border-top:1px solid var(--line2);padding-top:10px;line-height:1.7}
+.plan .meta{font-size:13.5px;color:var(--sub2);border-top:1px solid var(--line2);padding-top:10px;line-height:1.7}
 .plan .meta b{color:var(--sub)}
 .plan .btn[disabled]{background:var(--gray);color:var(--sub3);cursor:not-allowed;width:100%}
 .plan .soon{font-size:12.5px;color:var(--sub2);text-align:center;margin-top:-4px}
@@ -62,7 +62,7 @@
 <body>
 <header class="top">
   <a class="brand" href="/jangdaejang-calc/"><span class="star" aria-hidden="true">★</span> 장대장 <span class="acc">계산기</span></a>
-  <div class="badge">PREMIUM INSIGHT</div>
+  <div class="badge plain">프리미엄 리포트</div>
 </header>
 <main class="doc">
   <div class="eyebrow">프리미엄 리포트 · 상품 안내</div>
@@ -133,7 +133,7 @@
   </div>
 
   <h2>장대장 리포트의 원칙</h2>
-  <div class="principle"><p>추천 점수는 공공 데이터로만 계산하며, 제휴 중개사의 광고비나 매물 보유 여부는 점수에 반영되지 않습니다.</p></div>
+  <div class="principle"><p>미래가치 점수와 순위는 공공 데이터로만 계산하며, 제휴 중개사의 광고비나 매물 보유 여부는 점수에 반영되지 않습니다.</p></div>
   <ul>
     <li><b>공공기관 공식 자료 기반</b> — 국토교통부 실거래가(공공데이터포털), 금융당국 대출 규제, 지자체·국가철도공단 등 공공기관 발표 자료를 사용합니다.</li>
     <li><b>상품 성격</b> — 국토교통부 실거래가 등 공공 데이터로 만든 <b>아파트 단지 정보 분석 리포트(PDF·웹 열람)</b>입니다. 주식·채권·펀드·가상자산 등 금융투자상품을 다루지 않으며, 투자자문·유사투자자문·투자정보 방송 서비스가 아닙니다.</li>
@@ -173,7 +173,7 @@
       : '<li><span style="color:var(--sub2)">아직 고른 단지가 없습니다. 아래에서 찾아 담아 주세요.</span></li>';
     let cmp = []; try { cmp = JSON.parse(localStorage.getItem('jdj_cmp') || '[]'); } catch(e){}
     cmp = (Array.isArray(cmp) ? cmp : []).map(P.keyOf).filter(k => P.keyParse(k) && !keys.includes(k));
-    $('fromCmp').innerHTML = cmp.length ? `<p class="links" style="margin:10px 0 4px">리포트 비교함에 담아 둔 단지</p><div class="sres"><div class="bands" style="display:flex;flex-wrap:wrap;gap:6px">${cmp.map(k => { const p = P.keyParse(k); return `<button type="button" class="btn2" style="min-height:38px;font-size:13px" data-add="${esc(k)}">+ ${esc(p.apt)} · ${esc(p.band)}</button>`; }).join('')}</div></div>` : '';
+    $('fromCmp').innerHTML = cmp.length ? `<p class="links" style="margin:10px 0 4px">리포트 비교함에 담아 둔 단지</p><div class="sres"><div class="bands" style="display:flex;flex-wrap:wrap;gap:6px">${cmp.map(k => { const p = P.keyParse(k); return `<button type="button" class="btn2" style="min-height:38px;font-size:13.5px" data-add="${esc(k)}">+ ${esc(p.apt)} · ${esc(p.band)}</button>`; }).join('')}</div></div>` : '';
     $('goPay').disabled = !(keys.length >= pr.min && keys.length <= pr.max);
     $('goPay').textContent = $('goPay').disabled ? '단지를 골라 주세요' : `${P.won(pr.amount)} 결제하기`;
     const u = new URL(location.href); u.searchParams.set('p', plan); if (keys.length) u.searchParams.set('k', keys.join('!')); else u.searchParams.delete('k'); history.replaceState(null, '', u);

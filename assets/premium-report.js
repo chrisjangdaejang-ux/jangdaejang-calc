@@ -207,7 +207,7 @@
         const units = await P.sido(p.sd), u = units.find(u => u[0] === p.code && u[1] === p.dong && u[2] === p.apt && u[3] === p.band);
         if (!u) { miss.push(p); continue; }
         const [code, dong, apt, band, area, n, series] = u, recent = lastNZ(series), ppy = recent || lastAny(series), sp = IX.sgg[code] ? lastNZ(IX.sgg[code].s) : 0;
-        items.push({ jst: PL.jrStats(units), sd: p.sd, jb: u[8], code, dong, apt, band, area, n, series, P: Math.round(ppy * area / PY / 100) * 100, stale: !recent, ch: change6(series), rel: sp ? (sp - ppy) / sp : null, f: u[9] || null });
+        items.push({ jst: PL.jrStats(units), sd: p.sd, jb: u[8], code, dong, apt, band, area, n, series, P: Math.round(ppy * area / PY / 100) * 100, stale: !recent, ch: change6(series), rel: sp ? (sp - ppy) / sp : null, f: (window.JDJ_MINE ? window.JDJ_MINE.cleanFx(u[9]) : u[9]) || null });
       } catch (e) { miss.push(p); }
     }
     const dataTo = IX.dataTo ? IX.dataTo.slice(0, 4) + '년 ' + parseInt(IX.dataTo.slice(4), 10) + '월' : '';

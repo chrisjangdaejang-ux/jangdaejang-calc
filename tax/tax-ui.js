@@ -290,7 +290,7 @@
       '<div class="bar"><i style="width:' + Math.max(1, res.total / maxT * 100).toFixed(1) + '%"></i></div>' +
       '<details><summary>집별 세금 보기</summary><table>' + res.sales.map(s => {
         const b = s.r.exempt === 'full' ? '<span class="badge2 ok">비과세</span>' : s.r.exempt === 'partial' ? '<span class="badge2 mid">12억 초과분 과세</span>' : s.r.heavy ? '<span class="badge2 no">중과 +' + s.r.heavy * 100 + '%p</span>' : '';
-        return '<tr><td>' + dKo(s.date) + ' ' + s.name + b + '<br><small style="color:var(--sub2)">' + s.remain + '채 보유 중 매도 · 차익 ' + krw(s.r.gain) + ' · 장특공 ' + pct(s.r.ltdRate) + '</small></td><td>' + krw(s.tax + Math.floor(s.tax * 0.1)) + '</td></tr>';
+        return '<tr><td>' + dKo(s.date) + ' ' + s.name + b + '<br><small style="color:var(--sub2)">' + s.remain + '채 보유 중 매도 · 차익 ' + krw(s.r.gain) + ' · 장기보유특별공제 ' + pct(s.r.ltdRate) + '</small></td><td>' + krw(s.tax + Math.floor(s.tax * 0.1)) + '</td></tr>';
       }).join('') + (res.compared ? '<tr><td colspan="2"><small style="color:var(--sub2)">같은 해 합산 비교과세로 연도 합계가 집별 합보다 큽니다.</small></td></tr>' : '') + '</table></details></div>';
     const TOP = 3, n = C.results.length;
     $('oList').innerHTML = '<div class="help">가능한 순서 ' + n + '가지 중 세금이 적은 ' + Math.min(TOP, n) + '가지</div>' + C.results.slice(0, TOP).map(card).join('');
