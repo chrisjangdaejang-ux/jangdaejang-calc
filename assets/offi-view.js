@@ -15,6 +15,7 @@
   const updown = v => v == null ? '' : v > 0.0005 ? 'up' : v < -0.0005 ? 'dn' : '';
   const sggName = c => ((IX && IX.sgg[c]) || {}).name || c;
   const sidoName = c => ((IX && IX.sgg[c]) || {}).sido || '';
+  const sdShort = c => { const s = IX && IX.sido.find(x => x.name === sidoName(c)); return (s && s.short) || sidoName(c); };
   const sdOf = c => { const s = IX && IX.sido.find(x => x.name === sidoName(c)); return s ? s.id : ''; };
   const ready = () => OX && OX.status && (OX.status.trade === 'ok' || OX.status.rent === 'ok');
 
@@ -264,7 +265,7 @@
       <div class="dhead"><div><h2>${esc(O.nameOf(u))}</h2><div class="loc">${esc(sidoName(S.g))} ${esc(sggName(S.g))} ${esc(u.d)} ${esc(u.j)}${u.by ? ` · ${u.by}년 준공(${age}년차)` : ''} · 대표 전용 ${u.a}㎡</div></div></div>
       <div class="stats">
         <div class="st key"><div class="k">${last ? '최근 시세' : '마지막 시세'} (전용 ${u.a}㎡)</div><div class="v">${last ? won(last.v) : any ? won(any.v) : '거래 없음'}</div><div class="d">${last ? ymL(last.at) + ' 기준' : any ? ymL(any.at) + ' · 최근 3개월 거래 없음' : '최근 매매가 없어요'}</div></div>
-        <div class="st"><div class="k">임대수익률(표면)</div><div class="v">${y ? O.pct(y.r) : '확인 불가'}</div><div class="d">${y ? (u.rk && u.rk.g ? `같은 구 ${O.rankText(u.rk.g)}` : ymL(y.at) + ' 기준') : '매매·월세 계약이 적어요'}</div></div>
+        <div class="st"><div class="k">임대수익률(표면)</div><div class="v">${y ? O.pct(y.r) : '확인 불가'}</div><div class="d">${y ? (u.rk && u.rk.g ? `${esc(sggName(S.g))} 오피스텔 ${u.rk.g[2]}곳 중 ${O.rankText(u.rk.g)}` : ymL(y.at) + ' 기준') : '매매·월세 계약이 적어요'}</div></div>
         <div class="st"><div class="k">1년 변동</div><div class="v">${chTxt(c1)}</div><div class="d">매매 시세 기준</div></div>
         <div class="st"><div class="k">3년 변동</div><div class="v">${chTxt(c3)}</div><div class="d">매매 시세 기준</div></div>
       </div>
@@ -299,7 +300,7 @@
     ${regionPanels(S.g, u)}
 
     <div class="panel"><h2>종합 점수 (수익률 + 가격)<small>과거 자료로 검증을 통과한 보유 기간만 점수를 보여 드려요</small></h2>
-      ${sc && sc.length ? `<div class="of-score">${sc.map(h => `<div><small>${h}년 보유</small><b>${u.sc[h]}점</b><small>${esc(O.scoreRank(u.sc[h]))}</small></div>`).join('')}</div>
+      ${sc && sc.length ? `<div class="of-score">${sc.map(h => `<div><small>${h}년 보유</small><b>${u.sc[h]}점</b><small>${esc(sdShort(S.g))} 오피스텔 중 ${esc(O.scoreRank(u.sc[h]))}</small></div>`).join('')}</div>
         <ul class="why">${O.reasons(u, s, OX).map(t => `<li>${esc(t)}</li>`).join('')}${(u.why || []).map(w => `<li>${esc(w[0])}: 점수를 ${w[1] > 0 ? '올렸어요' : '내렸어요'}</li>`).join('')}</ul>
         <p class="basis">점수 = 과거 각 시점에 그때 알 수 있던 자료만으로 매긴 점수가, 그 뒤 '가격 변화 + 월세 수입'(같은 시·군·구 평균 대비)을 맞혔는지 채점해 통과한 방식으로 매긴 같은 시·도 오피스텔 안 순위예요(100점 만점, 50점이 가운데 · '상위 10%' = 같은 시·도 오피스텔 10곳 중 1등 쪽). 시장 전체가 내리면 점수가 높은 건물도 내릴 수 있어요.</p>`
       : `<p class="note" style="font-size:15px">아직 점수를 매기지 않아요. 검증을 통과하지 못했거나 과거 자료가 짧으면 점수 없이 위의 사실 지표만 보여 드려요.</p>`}

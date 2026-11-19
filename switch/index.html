@@ -39,7 +39,7 @@
 <script src="../tax/adjusted-areas.js"></script>
 <script src="../tax/tax-engine.js"></script>
 <script src="../assets/rec-core.js?v=2"></script>
-<script src="../assets/mine-core.js?v=9"></script>
+<script src="../assets/mine-core.js?v=10"></script>
 <script src="../assets/price-sheet.js?v=8"></script>
 <script src="switch-core.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -413,7 +413,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
         <h2>③ 예산 안에서 미래가치 점수가 높은 단지</h2>
         <p class="muted" style="font-size:15px;margin:0 0 12px" id="recLead"></p>
         <div id="recList"><div class="recload">실거래 자료를 불러오는 중이에요…</div></div>
-        <p class="recnote">미래가치 점수는 국토교통부 실거래가·인구·입주 물량 등 공공 자료로 같은 지역 단지끼리 비교한 상대 순위예요. 과거 시점에 당시 정보만으로 점수를 매긴 뒤 이후 실제 시세로 채점하는 방식(표본 외 검증)으로 점검해요. 같은 지역 평균 대비 순위라, 시장 전체가 내리면 점수가 높은 단지도 내릴 수 있어요.</p>
+        <p class="recnote">미래가치 점수는 국토교통부 실거래가·인구·입주 물량 등 공공 자료로 같은 시·도 아파트끼리 비교한 순위예요. 과거 시점에 당시 정보만으로 점수를 매긴 뒤 이후 실제 시세로 채점하는 방식(표본 외 검증)으로 점검해요. 같은 지역 평균 대비 순위라, 시장 전체가 내리면 점수가 높은 단지도 내릴 수 있어요.</p>
       </div>
 
       <div class="panel section" id="vsBox">
@@ -712,8 +712,9 @@ function statSwitch(){ if(!window.jdjStat || !last || !last.c) return; const RG=
   if(t==='click' && !e.target.closest('.seg button')) return;
   jdjStat.later('switch', statSwitch, 3000); }));
 var SW_FIN, REC_LAST_O=null;
-/* 순위 표기: 전 화면 공통 '100곳 중 상위 N등쯤' */
-const RANK = v => v >= 50 ? `100곳 중 상위 ${Math.max(1, 100 - v)}등쯤` : `100곳 중 하위 ${Math.max(1, v)}등쯤`;
+/* 순위 표기: 전 화면 공통 — 비교 대상을 붙여 '서울 아파트 4,094곳 중 상위 5%' (assets/plain-words.js rank·rankBase, 곳 수는 index.json 값만) */
+const RANK = (v, base) => window.JDJ_PLAIN ? JDJ_PLAIN.rank(v, base) : (v >= 50 ? `상위 ${Math.max(1, 100 - v)}%` : `하위 ${Math.max(1, v)}%`);
+const RBASE = (code, kind) => window.JDJ_PLAIN && AG_IX ? JDJ_PLAIN.rankBase(AG_IX, code, kind) : null;
 /* 공유: 내 금액은 담지 않고 갈아타기 계산기 주소만 */
 if (window.JDJ_SHARE) JDJ_SHARE.bind($('shareSw'), ()=>({title:'장대장 갈아타기 계산기', text:'지금 집 팔면 어디까지 갈아탈 수 있을까? 양도세·손에 남는 돈·새 대출까지 나도 계산해 보기', url:new URL('./', location.href).href}));
 document.addEventListener('click',e=>{ const a=e.target.closest&&e.target.closest('a[data-fin]'); if(a&&window.JDJ_SHARE&&REC_LAST_O) JDJ_SHARE.saveFin(REC_LAST_O); },true);
@@ -950,8 +951,8 @@ async function unitsFor(RG, onStep){
 }
 function recReasons(x){
   const f=x.fx||{}, r=[], sgg=(AG_IX.sgg[x.code]||{}), Y=new Date().getFullYear();
-  if(x.hasFv) r.push(['', f.gs!=null ? `미래가치 ${f.fv}점 — ${escH(sgg.sido)} 아파트 ${RANK(f.fv)}`+(f.fvg!=null?`, ${escH(sgg.name)} 안에서는 ${RANK(f.fvg)}`:'')
-    : `미래가치 ${f.fv}점 — ${escH(sgg.name)} 아파트 ${RANK(f.fv)}`]);
+  if(x.hasFv) r.push(['', f.gs!=null ? `이 단지는 미래가치 ${f.fv}점으로 ${escH(RANK(f.fv, RBASE(x.code,'fv')))}예요`+(f.fvg!=null?` · ${escH(sgg.name)} 안에서는 ${escH(RANK(f.fvg, {name:'아파트', n:(RBASE(x.code,'fvg')||{}).n}))}예요`:'')
+    : `이 단지는 미래가치 ${f.fv}점으로 ${escH(RANK(f.fv, {name:`${sgg.name} 아파트`}))}예요`]);
   const w=f.why&&f.why['2'], lb=k=>(MODEL_L&&MODEL_L.label&&MODEL_L.label[k])||'';
   if(w&&w.length&&MODEL_L){ const U=a=>[...new Set(a.filter(Boolean))], up=U(w.filter(t=>t.endsWith('+')).map(t=>lb(t.slice(0,-1)))), dn=U(w.filter(t=>t.endsWith('-')).map(t=>lb(t.slice(0,-1)))).filter(v=>!up.includes(v));
     if(up.length||dn.length) r.push(['', `2년 예측에서 점수를 움직인 자료 — `+(up.length?`올린 요인: ${up.join(' · ')}`:'')+(up.length&&dn.length?' / ':'')+(dn.length?`내린 요인: ${dn.join(' · ')}`:'')]); }
@@ -964,8 +965,8 @@ function recReasons(x){
   if(f.sub!=null) bits.push(f.sub>=30?'지하철역 도보 20분 이상':`${escH(f.subs?String(f.subs).replace(/\s+/g,' '):'지하철역')}까지 도보 ${f.sub<=5?'5분 이내':f.sub+'분 이내'}`);
   if(f.jr!=null) bits.push(`전세가율 ${Math.round(f.jr*100)}%`);
   if(bits.length) r.push(['', '단지: '+bits.join(' · ')]);
-  if(x.n<24) r.push(['c', '거래가 적은 편이라 시세 확인과 매도 기간에 여유를 두세요']);
-  if(x.c.capital && x.P>140000 && x.P<=150000) r.push(['c', '15억 바로 아래 — 15억을 넘으면 대출 한도가 6억 → 4억으로 줄어요']);
+  if(x.n<24) r.push(['c', '이 단지는 거래가 적은 편이라 시세 확인과 매도 기간에 여유를 두세요']);
+  if(x.c.capital && x.P>140000 && x.P<=150000) r.push(['c', '이 단지는 15억 바로 아래예요 — 15억을 넘으면 대출 한도가 6억 → 4억으로 줄어요']);
   return r;
 }
 async function runRec(){
@@ -1023,8 +1024,9 @@ function renderVs(){
   const sum=[];
   sum.push(`같은 날 시세로 보면 갈아탈 때 순자산은 <b>한 번에 나가는 비용 ${fmt(cm.oneOff)}원</b>만큼 줄고, 보유하는 집값은 <b>${fmt(Math.abs(P2-L.sale))}원 ${P2>=L.sale?'커져요':'작아져요'}</b>.`);
   if(P2>L.sale) sum.push(`두 집 값이 같은 비율로 움직인다고 가정하면, <b>${(cm.oneOff/(P2-L.sale)*100).toFixed(1)}% 이상 오를 때</b> 이 비용이 메워지고, 내릴 때는 손실 폭도 더 커져요.`);
-  if(hf!=null && nf!=null) sum.push(`미래가치 점수는 지금 집 <b>${hf}점</b>, 비교 단지 <b>${nf}점</b>이에요 (같은 지역 단지끼리 비교한 상대 순위).`);
-  else if(nf!=null) sum.push(`비교 단지의 미래가치 점수는 <b>${nf}점</b>이에요. STEP 1에서 지금 집 단지를 고르면 두 점수를 나란히 보여 드려요.`);
+  const fvR=(code,v)=>escH(RANK(v, RBASE(code,'fv')));
+  if(hf!=null && nf!=null) sum.push(`지금 집은 미래가치 <b>${hf}점</b>으로 ${fvR(HOME.u[0],hf)}, 비교 단지는 <b>${nf}점</b>으로 ${fvR(x.code,nf)}예요.`);
+  else if(nf!=null) sum.push(`비교 단지는 미래가치 <b>${nf}점</b>으로 ${fvR(x.code,nf)}예요. STEP 1에서 지금 집 단지를 고르면 두 점수를 나란히 보여 드려요.`);
   sum.push(`매달 대출 상환은 <b>${Math.round(cm.newMonthly).toLocaleString()}만원</b>${dm!=null?`으로 지금보다 ${Math.abs(Math.round(dm)).toLocaleString()}만원 ${dm>=0?'늘어요':'줄어요'}`:'이에요'}.`);
   if(cm.cashLeft<0) sum.push(`<span style="color:var(--red);font-weight:700">이 집은 예산보다 ${fmt(-cm.cashLeft)}원 부족해요.</span>`);
   const S=L.S, cd=nd2.cost;
@@ -1063,7 +1065,7 @@ $('copyBtn').addEventListener('click',async()=>{
 $('saleDate').value=TODAY;
 setTermOptions(); autoAdj(); render();
 </script>
-<script src="../assets/plain-words.js?v=4"></script>
+<script src="../assets/plain-words.js?v=5"></script>
 <script>document.addEventListener("DOMContentLoaded",()=>{ if(window.JDJ_PLAIN) JDJ_PLAIN.autoGloss(document.querySelector(".wrap")); });</script>
 </body>
 </html>

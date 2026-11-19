@@ -151,8 +151,9 @@
   /** 점수 이유(사실 문장) — 공개 자료의 사실값만으로 만든다 */
   function reasons(u, s, ix) {
     const out = [], y = u.y;
-    if (y && u.rk && u.rk.g) out.push(`임대수익률 ${pct(y.r)} — 같은 시·군·구 오피스텔 ${u.rk.g[2]}곳 중 ${rankText(u.rk.g)}예요.`);
-    if (y && u.rk && u.rk.d) out.push(`같은 동 ${u.rk.d[2]}곳 중에서는 ${rankText(u.rk.d)}예요.`);
+    const ye = t => t + (/쯤$/.test(t) ? '이에요' : '예요');
+    if (y && u.rk && u.rk.g) out.push(`이 건물 임대수익률은 ${pct(y.r)}로, 같은 시·군·구 오피스텔 ${u.rk.g[2]}곳 중 ${ye(rankText(u.rk.g))}.`);
+    if (y && u.rk && u.rk.d) out.push(`이 건물은 같은 동 오피스텔 ${u.rk.d[2]}곳 중에서는 ${ye(rankText(u.rk.d))}.`);
     (u.rl || []).forEach(r => out.push(`${r[0]} ${r[1]}: 지금 '${r[2]}' 단계(${M().ymKo(r[3])})${r[4] === 'dong' ? ' — 역세권 동 기준' : ''}.`));
     const d = s && s.dem && s.dem.job;
     if (d && d.c1 != null) out.push(`이 지역 일자리는 1년 전보다 ${d.c1 >= 0 ? '+' : ''}${(d.c1 * 100).toFixed(1)}% (통계청 지역별고용조사).`);

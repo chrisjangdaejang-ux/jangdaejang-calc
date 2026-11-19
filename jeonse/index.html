@@ -23,7 +23,7 @@
 <script src="../assets/stat.js"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/kchat.js?v=1"></script>
-<script src="../assets/mine-core.js?v=9"></script>
+<script src="../assets/mine-core.js?v=10"></script>
 <script src="../assets/price-sheet.js?v=8"></script>
 <script src="../assets/rent-core.js?v=1"></script>
 <script src="../assets/policy-view.js?v=1"></script>
@@ -426,8 +426,8 @@ function riskPanel(c, u, sm){
   if (jr && k === 'a') basis = `${ym(jr.at)} 이 평형 전세 시세 ${won(jr.j)} ÷ 매매 시세 ${won(jr.s)} (각각 3개월 실거래 평당가 중앙값 × 전용면적, 내 집 시세 화면과 같은 값)`;
   else if (jr) basis = `최근 1년 이 건물·평형 전세 ㎡당 보증금 중앙값(${jr.nj}건) ÷ ${jr.b === 'b' ? `최근 3년 같은 건물 매매 ㎡당 가격 중앙값(${jr.ns}건)` : `최근 1년 같은 동 빌라 매매 ㎡당 가격 중앙값(${jr.ns}건, 건물마다 차이가 커서 참고만)`}`;
   const msg = rk ? (rk.over
-      ? `<div class="rmsg hi"><b>전세가율 ${rk.pct}%</b> — HUG 전세보증금반환보증은 <b>보증금과 선순위채권(근저당 등)을 더한 금액이 주택가격의 90% 이내</b>여야 가입할 수 있어요. 이 수준이면 보증 가입이 어려울 수 있어요. 매매가 대비 전셋값이 높을수록 보증금 회수 위험이 커져요.</div>`
-      : `<div class="rmsg ok"><b>전세가율 ${rk.pct}%</b> — 매매가 대비 전셋값이 높을수록 보증금 회수 위험이 커져요. 근저당 같은 선순위채권이 있으면 그 금액까지 더해서 봐야 해요(HUG 보증 가입 기준: 보증금 + 선순위채권 ≤ 주택가격의 90%).</div>`)
+      ? `<div class="rmsg hi"><b>이 집 전세가율은 ${rk.pct}%예요.</b> HUG 전세보증금반환보증은 <b>보증금과 선순위채권(근저당 등)을 더한 금액이 주택가격의 90% 이내</b>여야 가입할 수 있어요. 이 수준이면 보증 가입이 어려울 수 있어요. 매매가 대비 전셋값이 높을수록 보증금 회수 위험이 커져요.</div>`
+      : `<div class="rmsg ok"><b>이 집 전세가율은 ${rk.pct}%예요.</b> 매매가 대비 전셋값이 높을수록 보증금 회수 위험이 커져요. 근저당 같은 선순위채권이 있으면 그 금액까지 더해서 봐야 해요(HUG 보증 가입 기준: 보증금 + 선순위채권 ≤ 주택가격의 90%).</div>`)
     : `<p class="note" style="font-size:15px">${k === 'd' ? '단독·다가구는 원자료에 건물 정보가 없어 전세가율을 계산하지 않아요.' : k === 'a' ? '최근 3개월 안에 매매·전세 시세가 함께 있는 달이 없어 전세가율을 계산하지 못했어요.' : '같은 건물 매매 거래가 적어(최근 3년 3건 미만) 전세가율을 계산하지 않았어요.'} 아래 공시가격으로 보증 가입 기준을 확인해 보세요.</p>`;
   const hugPrice = k === 'a' ? '아파트는 KB시세 등 시세정보가 먼저, 없으면 공시가격의 140%' : k === 'o' ? '오피스텔은 KB 하위평균가가 먼저, 없으면 국세청 기준시가(공시가격)의 140%' : k === 'v' ? '연립·다세대는 공동주택가격(공시가격)의 140%가 첫 순위' : '단독·다가구는 개별단독주택가격(공시가격)의 140%가 첫 순위';
   const calc = k !== 'a' ? `<div class="calc" style="margin-top:12px"><b style="font-size:16px">공시가격으로 보증 가입 기준 확인</b>

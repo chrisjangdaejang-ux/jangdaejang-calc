@@ -526,9 +526,9 @@ function yTxt(y) {
 function diagTxt(p) {
   if (!LAST || !p || !p.ok) return '';
   const my = LAST.sum, d = diag(my, p);
-  if (d.g === 'hi') return `내 가점 ${my}점 — 비교한 과거 단지의 최저 당첨 가점 범위 위쪽(${p.hi}점) 이상이에요.`;
-  if (d.g === 'mid') return `내 가점 ${my}점 — 범위 안이에요. 위쪽(${p.hi}점)까지 ${d.need}점 차이. ${yTxt(yearsTo(A, A.ref, p.hi))}`;
-  return `내 가점 ${my}점 — 범위 아래예요. 하단(${p.lo}점)까지 ${d.need}점 부족. ${yTxt(yearsTo(A, A.ref, p.lo))}`;
+  if (d.g === 'hi') return `내 가점 ${my}점은 비교한 과거 단지의 최저 당첨 가점 범위 위쪽(${p.hi}점) 이상이에요.`;
+  if (d.g === 'mid') return `내 가점 ${my}점은 이 범위(${p.lo}~${p.hi}점) 안이에요. 범위 위쪽(${p.hi}점)까지 ${d.need}점 남았어요. ${yTxt(yearsTo(A, A.ref, p.hi))}`;
+  return `내 가점 ${my}점은 이 범위(${p.lo}~${p.hi}점)보다 아래예요. 범위 하단(${p.lo}점)까지 ${d.need}점 모자라요. ${yTxt(yearsTo(A, A.ref, p.lo))}`;
 }
 function basisTxt(p) {
   if (p.ok) return `근거: ${p.scope} 과거 ${fmt(p.nCx)}개 단지 ${fmt(p.nRows)}개 주택형(${ym2(p.from)}~${ym2(p.to)} 공고, 해당지역 1순위 결과)`;
@@ -644,7 +644,7 @@ async function init() {
 window.JDJ_CY = { CY, eligibility, A, PRED: () => PRED };
 init();
 </script>
-<script src="../assets/plain-words.js?v=4"></script>
+<script src="../assets/plain-words.js?v=5"></script>
 <script>document.addEventListener("DOMContentLoaded",()=>{ if(window.JDJ_PLAIN) JDJ_PLAIN.autoGloss(document.querySelector(".wrap")); });</script>
 </body>
 </html>

@@ -34,11 +34,11 @@
 <script src="../assets/share.js?v=1"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/kchat.js?v=1"></script>
-<script src="../assets/plain-words.js?v=4"></script>
-<script src="../assets/mine-core.js?v=9"></script>
+<script src="../assets/plain-words.js?v=5"></script>
+<script src="../assets/mine-core.js?v=10"></script>
 <script src="../assets/price-sheet.js?v=8"></script>
-<script src="../assets/offi-core.js?v=1"></script>
-<script src="../assets/offi-view.js?v=1"></script>
+<script src="../assets/offi-core.js?v=2"></script>
+<script src="../assets/offi-view.js?v=2"></script>
 <script src="../assets/policy-view.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -369,7 +369,7 @@ function render(d, map, units){
   const mrows = []; for (let i = IX.months.length - 1; i >= Math.max(0, IX.months.length - 12); i--) {
     const p = u[6][i]; mrows.push(`<tr><td>${ym(IX.months[i])}</td><td class="num">${c[i]}건</td><td class="num">${p ? p.toLocaleString() + '만' : '-'}</td><td class="num">${p ? M.won(M.toPrice(p, u[4])) : '-'}</td></tr>`); }
   const sdo = IX.sido.find(x => x.name === sidoName(d.code)) || {};
-  const rs = M.reasonItems(f, {apt:d.apt, dong:d.dong, sgg:sggName(d.code), sido:sidoName(d.code), sidoShort:sdo.short || '', label:LABEL, PL, G:PL ? PL.gloss() : null, sid:sdo.id, ev:EVD, sp:SUP});
+  const rs = M.reasonItems(f, {apt:d.apt, dong:d.dong, sgg:sggName(d.code), sido:sidoName(d.code), sidoShort:sdo.short || '', nfv:sdo.nfv, nfvg:(IX.sgg[d.code] || {}).nfvg, label:LABEL, PL, G:PL ? PL.gloss() : null, sid:sdo.id, ev:EVD, sp:SUP});
   const rli = o => `<li class="${o.c}">${esc(o.t)}${o.ev && PL ? PL.evHtml(o.ev, false, esc) : ''}</li>`;
   const pk = M.premiumKey({sd:S.sd, code:d.code, dong:d.dong, apt:d.apt, band:S.band});
   const posBar = p => { if (!p) return ''; const lo = Math.min(p.me, p.ref) * 0.85, hi = Math.max(p.me, p.ref) * 1.15, x = v => ((v - lo) / (hi - lo) * 100).toFixed(1);
@@ -428,12 +428,12 @@ function render(d, map, units){
     <h2>같은 동·구와 비교<small>최근 평당가 기준 · 같은 달끼리 비교해요</small></h2>
     <div class="pos">
       <div class="pbox"><div class="k">${esc(d.dong)} 안에서</div>
-        ${dp ? `<div class="v">동 중앙값보다 <span class="${updown(dp.diff)}">${M.pctTxt(dp.diff)}</span></div>
+        ${dp ? `<div class="v">이 집은 동 중앙값보다 <span class="${updown(dp.diff)}">${M.pctTxt(dp.diff)}</span></div>
         ${posBar({me:dp.me, ref:dp.med})}
-        <p class="basis">${dp.n}개 ${dp.sameBand ? esc(S.band) + ' 평형' : '단지·평형'}(${dp.danji}개 단지) 중 ${dp.rank}번째로 높은 평당가 · 이 집 ${dp.me.toLocaleString()}만 / 동 중앙값 ${dp.med.toLocaleString()}만 (각 단지·평형 최근 3개월 중앙 평당가의 중앙값)</p>`
+        <p class="basis">이 집 평당가는 ${esc(d.dong)} ${dp.n}개 ${dp.sameBand ? esc(S.band) + ' 평형' : '단지·평형'}(${dp.danji}개 단지) 중 ${dp.rank}번째로 높아요 · 이 집 ${dp.me.toLocaleString()}만 / 동 중앙값 ${dp.med.toLocaleString()}만 (각 단지·평형 최근 3개월 중앙 평당가의 중앙값)</p>`
         : '<p class="basis">같은 동에 비교할 단지·평형 자료가 부족해요.</p>'}</div>
       <div class="pbox"><div class="k">${esc(sggName(d.code))} 전체 아파트 대비</div>
-        ${gp ? `<div class="v">구 중앙값보다 <span class="${updown(gp.diff)}">${M.pctTxt(gp.diff)}</span></div>
+        ${gp ? `<div class="v">이 집은 구 중앙값보다 <span class="${updown(gp.diff)}">${M.pctTxt(gp.diff)}</span></div>
         ${posBar({me:gp.me, ref:gp.sggPpy})}
         <p class="basis">${ym(gp.at)} 기준 이 집 ${gp.me.toLocaleString()}만 / ${esc(sggName(d.code))} 전체 ${gp.sggPpy.toLocaleString()}만 (구 안 모든 아파트 3개월 실거래 평당가 중앙값)</p>`
         : '<p class="basis">같은 달 구 자료가 없어 비교하지 못했어요.</p>'}</div>

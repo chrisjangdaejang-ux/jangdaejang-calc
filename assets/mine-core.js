@@ -260,10 +260,13 @@
     const Y = x.year || new Date().getFullYear();
     const EV = kind => (PL && x.ev && x.sid) ? PL.evid(x.ev, x.sid, f.eb, kind, x.sidoShort || '', G) : null;
     const add = (t, ev, c) => r.push({ t, ev: ev || null, c: c || '' });
-    const rank = v => PL ? PL.rank(v) : (v >= 50 ? `100곳 중 상위 ${Math.max(1, 100 - v)}등쯤` : `100곳 중 하위 ${Math.max(1, v)}등쯤`);
+    /* 순위에는 비교 대상(이름·곳 수)을 붙인다: '서울 아파트 4,094곳 중 상위 5%' — 곳 수(x.nfv·x.nfvg)는 index.json 값만 */
+    const pctT = v => v >= 50 ? `상위 ${Math.max(1, 100 - v)}%` : `하위 ${Math.max(1, v)}%`;
+    const rank = (v, base) => PL ? PL.rank(v, base) : `${base.name}${base.n ? ' ' + Number(base.n).toLocaleString() + '곳' : ''} 중 ${pctT(v)}`;
+    const sdN = x.sidoShort || x.sido;
     if (f.fv != null) add(f.gs != null
-      ? `미래가치 ${f.fv}점 — ${x.sido} 단지 ${rank(f.fv)}` + (f.fvg != null ? ` · ${x.sgg} 안에서는 ${rank(f.fvg)}` : '') + '이에요(실제 이후 시세로 채점해 검증한 점수)'
-      : `미래가치 ${f.fv}점 — ${x.sgg} 단지 ${rank(f.fv)}이에요(실제 이후 시세로 채점해 검증한 점수)`);
+      ? `이 단지는 미래가치 ${f.fv}점으로 ${rank(f.fv, { name: `${sdN} 아파트`, n: x.nfv })}예요` + (f.fvg != null ? ` · ${x.sgg} 안에서는 ${rank(f.fvg, { name: '아파트', n: x.nfvg })}예요` : '') + '(실제 이후 시세로 채점해 검증한 점수).'
+      : `이 단지는 미래가치 ${f.fv}점으로 ${rank(f.fv, { name: `${x.sgg} 아파트` })}예요(실제 이후 시세로 채점해 검증한 점수).`);
     const w = f.why && (f.why['2'] || null);
     if (w && w.length) {
       const lb = k => (x.label && x.label[k]) || k, U = a => [...new Set(a)];
@@ -272,7 +275,7 @@
     }
     if (f.rz && PL) add(PL.rzText(f.rz, G, v => `${String(v).slice(0, 4)}년 ${parseInt(String(v).slice(4, 6), 10)}월`), EV('stg'));
     if (f.dd != null && Math.abs(f.dd) >= 0.03) add(PL ? PL.ddText(f.dd, G) + (f.dd > 0 ? ' — 집값이 흔들릴 때 잘 버틴 편이에요' : ' — 시장에 따라 오르내림이 큰 편이에요')
-      : `최근 3년 하락기에 구 평균보다 ${pct(f.dd)}%p ${f.dd > 0 ? '덜' : '더'} 내렸어요`, EV('dd'), f.dd > 0 ? '' : 'c');
+      : `이 단지는 최근 3년 하락기에 구 평균보다 ${pct(f.dd)}%p ${f.dd > 0 ? '덜' : '더'} 내렸어요`, EV('dd'), f.dd > 0 ? '' : 'c');
     /* 고점 회복(rc)은 공개 값이 비율(예: 0.966)로 보여 '구 평균 대비 %p' 문구와 맞지 않아 이 화면에서는 싣지 않는다 */
     if (f.by || f.hh) {
       const age = f.by ? Y - f.by : null, parts = [], tags = [];

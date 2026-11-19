@@ -233,9 +233,9 @@ function card(b, i){
     const first = zs.slice(0,2).map(z=>zoneLine(CUR.z[z[0]], z[1], z[2], b.y)).join('');
     const rest = zs.slice(2).map(z=>zoneLine(CUR.z[z[0]], z[1], z[2], b.y)).join('');
     zh = `<div class="zbox"><div style="font-size:13.5px;font-weight:700;color:var(--muted)">입주권 위험 체크 · ${head}</div>
-      ${allOut?'<div style="font-size:14px;margin:4px 0">구역 경계 밖이라 재개발 입주권 대상이 아니에요(경계는 참고자료 — 구청 고시도면으로 최종 확인).</div>':`<span class="rk ${RK[w][0]}">${RK[w][1]}</span>`}${first}
+      ${allOut?'<div style="font-size:14px;margin:4px 0">이 건물은 구역 경계 밖이라 재개발 입주권 대상이 아니에요(경계는 참고자료 — 구청 고시도면으로 최종 확인).</div>':`<span class="rk ${RK[w][0]}">${RK[w][1]}</span>`}${first}
       ${rest?`<div hidden data-rest>${rest}</div><button class="more" data-more>같은 동 구역 ${zs.length-2}곳 더 보기 ▾</button>`:''}</div>`;
-  } else zh = `<div class="nozone">자료상 같은 동에 진행 중인 재개발 계열 정비구역이 확인되지 않았습니다. (소규모 정비·가로주택·모아타운 등은 아직 반영 전)</div>`;
+  } else zh = `<div class="nozone">자료상 ${esc(b.d)}에 진행 중인 재개발 계열 정비구역이 확인되지 않았습니다. (소규모 정비·가로주택·모아타운 등은 아직 반영 전)</div>`;
   const q = new URLSearchParams({usp:'pp_url'});
   q.set('entry.397234060', `${sgg.n} ${b.d}`);
   const zt = zs.length ? ` · ${['구역 안','대표 지번','같은 동','구역 밖'][zs[0][1]]} ${CUR.z[zs[0][0]].n}` : '';
@@ -247,7 +247,7 @@ function card(b, i){
       <div class="price"><b>${won(b.p)}</b><small>최근 거래 ${ymd(b.dt)}</small></div></div>
     <div class="row">
       <div class="mini"><div class="k">대지지분 평당가</div><div class="v">${b.pp?fmt(b.pp)+'<small>만원</small>':'-'}</div></div>
-      <div class="mini"><div class="k">동 중앙값 대비</div><div class="v">${dm}</div></div>
+      <div class="mini"><div class="k">${esc(b.d)} 빌라 중앙값 대비</div><div class="v">${dm}</div></div>
       <div class="mini"><div class="k">대지권</div><div class="v">${b.l?b.l+'<small>㎡ · '+py(b.l)+'평</small>':(b.lbad?'<small>자료 확인 중</small>':'-')}</div></div>
       <div class="mini"><div class="k">전용면적</div><div class="v">${b.a}<small>㎡ · ${py(b.a)}평</small></div></div>
     </div>
@@ -273,7 +273,7 @@ function renderDong(){
   const zl = [...zi.keys()].map(i=>CUR.z[i]).sort((a,b)=>b.lv-a.lv);
   if (zl.length && window.jdjStat) jdjStat('feature_use',{feature:'redev'});
   $('dongBox').innerHTML = `<div class="dong"><h3>${esc(CUR.meta.n)} ${esc(d)}</h3>
-    <div style="font-size:15px">대지지분 평당가 최근 12개월 중앙값 <b>${m?fmt(m.m)+'만원':'자료 부족'}</b>${m?` <span style="color:var(--muted);font-size:13.5px">(${fmt(m.c)}건 기준)</span>`:''}</div>
+    <div style="font-size:15px">${esc(d)} 빌라 대지지분 평당가는 최근 12개월 중앙값 <b>${m?fmt(m.m)+'만원':'자료 부족'}</b>${m?` <span style="color:var(--muted);font-size:13.5px">(${fmt(m.c)}건 기준)</span>`:''}</div>
     ${zl.length?`<div class="zl">${zl.map(z=>`<div class="zrow"><b>${esc(z.n)}</b> <small>${esc(z.t)} · 10단계 중 ${z.lv}단계(${esc(z.st)})${z.b?' · 가장 이른 공식 단계 '+ym(z.b):''}${z.src==='n'?' · 구역 이름으로 같은 동 추정':''}</small>${lvbar(z.lv)}${xnote(z)}${inout(z)}</div>`).join('')}</div>`
       :'<div style="font-size:14px;color:var(--muted);margin-top:6px">자료상 이 동에 연결된 재개발 계열 정비구역이 없습니다.</div>'}</div>`;
 }
@@ -348,7 +348,7 @@ async function init(){
 }
 init();
 </script>
-<script src="../assets/plain-words.js?v=4"></script>
+<script src="../assets/plain-words.js?v=5"></script>
 <script>document.addEventListener("DOMContentLoaded",()=>{ if(window.JDJ_PLAIN) JDJ_PLAIN.autoGloss(document.querySelector(".wrap")); });</script>
 </body>
 </html>

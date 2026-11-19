@@ -70,15 +70,18 @@
   }
 
   /* 미래가치 점수가 움직인 이유 — 무료 리포트 상세와 같은 '쉬운 말' 규칙(assets/plain-words.js) */
-  function scopeOf(x, ctx) {
-    const f = x.f || {}, g = ctx.IX.sgg[x.code] || {}, ri = PL.regionInfo(ctx.IX, x.code);
-    return (f.gs != null || f.fvg != null) ? `${ri.short} 아파트` : `${g.name || ''} 아파트`;
+  /* 순위 비교 기준: 같은 시·도 아파트(옛 자료는 같은 구) — 곳 수는 index.json 값만 */
+  function fvBase(x, ctx) {
+    const f = x.f || {}, g = ctx.IX.sgg[x.code] || {};
+    return (f.gs != null || f.fvg != null) ? PL.rankBase(ctx.IX, x.code, 'fv') : { name: `${g.name || ''} 아파트` };
   }
+  const fvRank = (x, ctx, v) => PL.rank(v == null ? (x.f || {}).fv : v, fvBase(x, ctx));
+  const fvgRank = (x, ctx) => PL.rank(x.f.fvg, { name: '아파트', n: PL.rankBase(ctx.IX, x.code, 'fvg').n });
   function reasonsOf(x, ctx) {
     const f = x.f || {}, r = [], IX = ctx.IX, G = ctx.G, sgg = (IX.sgg[x.code] || {}).name || '', ri = PL.regionInfo(IX, x.code);
     /* 근거 등급(data/evidence.json): 프리미엄은 시기별 값까지 */
     const EV = kind => PL.evid(ctx.EV, x.sd, f.eb, kind, ri.short, G);
-    if (f.fv != null) r.push(['f', `이 단지 점수: ${scopeOf(x, ctx)} ${PL.rank(f.fv)}` + (f.fvg != null ? ` · ${sgg} 안에서는 ${PL.rank(f.fvg)}` : '')]);
+    if (f.fv != null) r.push(['f', `이 단지는 미래가치 점수가 ${fvRank(x, ctx)}예요` + (f.fvg != null ? ` · ${sgg} 안에서는 ${fvgRank(x, ctx)}예요` : '') + '.']);
     const M = ctx.MODEL, w = f.why && f.why['2'];
     if (w && w.length) {
       const lb = k => (M && M.label && M.label[k]) || k, U = a => [...new Set(a)];
@@ -147,12 +150,12 @@
       </div>
       <h3>최근 3년 시세 흐름</h3>${chart(x.series, IX.months)}
       <h3>미래가치 점수와 그 이유</h3>
-      ${f.fv != null ? PL.easy(esc(`앞으로 2년 동안 ${g.name || ''} 다른 아파트보다 더 오를 가능성을 매긴 순위에서, ${scopeOf(x, ctx)} ${PL.rank(f.fv)}이에요.`)) : ''}
+      ${f.fv != null ? PL.easy(esc(`이 단지는 앞으로 2년 동안 다른 아파트보다 더 오를 가능성을 매긴 순위에서 ${fvRank(x, ctx)}예요.`)) : ''}
       <ul class="pr-reasons">${rs.map(li).join('') || '<li>이 단지는 아직 미래가치 점수를 낼 자료가 부족합니다.</li>'}</ul>
       <h3>보유 기간별 미래가치</h3>
       ${okH.length ? PL.easy(esc(`과거 시험을 통과한 ${okH.join('·')} 점수를 중심으로 보세요.` + (refH.length ? ` ${refH.join('·')} 점수는 참고만 하세요.` : ''))) : ''}
       <div class="tblwrap"><table class="pr-tbl"><thead><tr><th>보유 기간</th><th>점수</th><th>과거 시험</th></tr></thead><tbody>
-        ${hz.map(z => `<tr${z.ok ? '' : ' class="jp-ref"'}><td>${z.h}년</td><td><b>${z.v != null ? z.v + '점' : '-'}</b>${z.v != null ? `<br><small>${PL.rank(z.v)}</small>` : ''}</td><td>${esc(z.rec)}</td></tr>`).join('')}
+        ${hz.map(z => `<tr${z.ok ? '' : ' class="jp-ref"'}><td>${z.h}년</td><td><b>${z.v != null ? z.v + '점' : '-'}</b>${z.v != null ? `<br><small>${esc(fvRank(x, ctx, z.v))}</small>` : ''}</td><td>${esc(z.rec)}</td></tr>`).join('')}
       </tbody></table></div>
       <details class="jp-check"><summary>이 점수 방식을 믿을 수 있나요?</summary><p>${esc(PL.checkText(mm2, 2, G))}</p></details>
       <h3>대출·필요 현금 <small>(아래 내 조건 기준)</small></h3>
@@ -170,12 +173,12 @@
   function compareHtml(items, ctx) {
     if (items.length < 2) return '';
     const Y = new Date().getFullYear(), rows = [
-      ['추정 시세', x => fmtS(x.P)], ['미래가치(2년)', x => x.f && x.f.fv != null ? `${x.f.fv}점 (${PL.rank(x.f.fv)})` : '-'],
+      ['추정 시세', x => fmtS(x.P)], ['미래가치(2년)', x => x.f && x.f.fv != null ? `${x.f.fv}점 (${fvRank(x, ctx)})` : '-'],
       ['필요 현금', x => fmtS(money(x).need)], ['월 상환', x => Math.round(money(x).mon).toLocaleString() + '만'],
       ['최근 6개월', x => x.ch == null ? '-' : (x.ch >= 0 ? '+' : '') + (x.ch * 100).toFixed(1) + '%'],
       ['준공·세대', x => (x.f && x.f.by ? `${x.f.by}년(${Y - x.f.by}년차)` : '-') + (x.f && x.f.hh ? ` · ${x.f.hh.toLocaleString()}세대` : '')],
       ['지하철', x => !x.f || x.f.sub == null ? '-' : x.f.sub >= 30 ? '도보 20분 이상' : `도보 ${x.f.sub <= 5 ? '5분 이내' : x.f.sub + '분 이내'}`],
-      ['하락기 방어', x => x.f && x.f.dd != null ? PL.ddText(x.f.dd, ctx.G).replace('최근 3년 하락기에 ', '') : '-']
+      ['하락기 방어', x => x.f && x.f.dd != null ? PL.ddText(x.f.dd, ctx.G, '').replace('최근 3년 하락기에 ', '') : '-']
     ];
     const sc = items.filter(x => x.f && x.f.fv != null).sort((a, b) => b.f.fv - a.f.fv), ch = items.slice().sort((a, b) => money(a).need - money(b).need)[0];
     const ez = sc.length >= 2 && sc[0].f.fv !== sc[1].f.fv ? (sc[0] === ch ? `${PL.J(sc[0].apt, '은', '는')} 2년 점수가 가장 높고, 필요한 현금도 가장 적어요.` : `2년 점수는 ${PL.J(sc[0].apt, '이', '가')} 가장 높고, 필요한 현금은 ${PL.J(ch.apt, '이', '가')} 가장 적어요.`) : '';
