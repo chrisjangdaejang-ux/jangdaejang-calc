@@ -37,6 +37,8 @@
 <script src="../assets/plain-words.js?v=4"></script>
 <script src="../assets/mine-core.js?v=8"></script>
 <script src="../assets/price-sheet.js?v=6"></script>
+<script src="../assets/offi-core.js?v=1"></script>
+<script src="../assets/offi-view.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=40">
@@ -179,6 +181,9 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
 .jps-dir{font-size:12.5px;color:#8A6D17;font-weight:700}
 .jps-note{font-size:13.5px;color:#4E5968;line-height:1.6;margin:6px 0 0}
 [hidden]{display:none!important}
+.mtabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#F2F4F6;border-radius:14px;padding:5px;margin:0 0 14px;max-width:420px}
+.mtabs button{font:inherit;font-size:16px;font-weight:700;border:0;background:transparent;color:#4E5968;min-height:46px;border-radius:10px;cursor:pointer}
+.mtabs button.on{background:#fff;color:#2F6BFF;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .sharebox{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:14px 0}
 .sharebox .note{font-size:13.5px;color:#4E5968}
 .sharebox .btn{border:1px solid var(--line)}
@@ -194,6 +199,9 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
   <span class="tag">내 집 시세</span>
   <h1>우리 집, <em>지금 얼마</em>일까요?<br>앞으로는 어떨까요?</h1>
   <p class="lead">국토교통부 아파트 실거래가로 평형별 최근 시세, 1·3년 가격 추이, 거래량, 같은 동·구 대비 위치와 미래가치 점수를 보여 드려요. 내 집으로 저장하면 다음에 들어왔을 때 바로 확인할 수 있어요.</p>
+
+  <div class="mtabs" role="tablist" aria-label="주택 종류" id="mtabs"><button type="button" role="tab" data-t="a" class="on" aria-selected="true">아파트</button><button type="button" role="tab" data-t="o" aria-selected="false">오피스텔</button></div>
+  <section id="offiSec" hidden></section>
 
   <section class="sec" id="homesSec" hidden aria-labelledby="homesT">
     <h2 id="homesT" style="font-size:19px;font-weight:900;margin:0 0 10px">내 집 <small id="homesN" style="font-size:14px;color:#4E5968;font-weight:700"></small></h2>

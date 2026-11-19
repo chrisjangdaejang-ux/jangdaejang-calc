@@ -301,6 +301,8 @@ function pickDong(keepKey){
   const list = [...grp.values()].filter(d => d.dong === dg).sort((a, b) => b.n - a.n);
   $('danji').innerHTML = `<option value="">건물 선택 (${list.length}곳)</option>` + list.map(d => `<option value="${esc(d.key)}">${esc(R.bldName(d))} · ${esc(d.jibun)}</option>`).join('');
   $('danji').disabled = !list.length;
+  /* 다른 화면(내 집 시세 오피스텔 탭)에서 넘어온 키는 건물 이름 표기가 다를 수 있어 동·지번이 같은 건물로 대신 */
+  if (keepKey && !grp.has(keepKey)){ const p = String(keepKey).split('|'), alt = p[1] ? [...grp.keys()].find(k => k.startsWith(p[0] + '|' + p[1] + '|')) : null; if (alt) keepKey = alt; }
   if (keepKey && grp.has(keepKey)){ $('danji').value = keepKey; showUnit(keepKey); }
 }
 let qt = null;
@@ -395,6 +397,7 @@ function render(){
     <h2>이어서 알아보기</h2>
     <div class="links">
       <a class="main" href="../buy/?src=jeonse" data-track="jeonse_to_buy"><b>집을 사면 얼마가 필요할까? →</b><small>내 예산·대출로 살 수 있는 집과 필요한 돈</small></a>
+      ${kind === 'o' ? `<a href="../mine/?t=o&amp;og=${encodeURIComponent(c.code)}&amp;ob=${encodeURIComponent(c.d.dong + '|' + (c.d.jibun || '#' + c.d.name))}" data-track="jeonse_to_offi"><b>이 오피스텔 매매 시세·임대수익률 →</b><small>실제 월세 계약으로 계산한 수익률, 임대수요·공급</small></a>` : ''}
       ${kind === 'a' && P ? P.btn({sd:S.sd, sgg:c.code, dong:c.d.dong, apt:c.d.name, band:S.band, jibun:c.d.jibun}, 'jeonse', {label:'이 단지 매매 시세 흐름 보기'}) : ''}
     </div>
   </div>
