@@ -26,6 +26,7 @@
 <script src="../assets/mine-core.js?v=9"></script>
 <script src="../assets/price-sheet.js?v=8"></script>
 <script src="../assets/rent-core.js?v=1"></script>
+<script src="../assets/policy-view.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=40">
@@ -391,6 +392,7 @@ function render(){
   </div>
 
   <div id="areaBox"></div>
+  <div id="polSec" hidden></div>
   ${checkPanel(kind)}
 
   <div class="panel">
@@ -404,6 +406,8 @@ function render(){
   <div id="agentSec"></div>`;
   $('res').hidden = false;
   drawCharts(); wire(u, sm); areaPanel(c.code, $('areaBox')); fillAgents(c);
+  if (window.JDJPolicy) JDJPolicy.mount($('polSec'), {mode:'jeonse', codes:[{sgg:c.code, dong:c.d.dong}], name:() => sggName(c.code) + ' ' + c.d.dong, sggName:() => sggName(c.code),
+    head:'<h2>전월세에 영향을 주는 정책<small>' + esc(sggName(c.code) + ' ' + c.d.dong) + ' 전세·월세 계약과 전세대출에 관련된 정책이에요</small></h2>'}).catch(e => console.warn('policy', e));
 }
 function dealsHtml(list){
   if (!list.length) return '<p class="note">최근 3년 계약이 없어요.</p>';
@@ -516,12 +520,15 @@ async function showD(g, dong){
   ${riskPanel(CUR, cur, sm)}
   ${calcPanel(sm)}
   <div id="areaBox"></div>
+  <div id="polSec" hidden></div>
   ${checkPanel('d')}
   <div class="panel"><h2>이어서 알아보기</h2><div class="links"><a class="main" href="../buy/?src=jeonse" data-track="jeonse_to_buy"><b>집을 사면 얼마가 필요할까? →</b><small>내 예산·대출로 살 수 있는 집과 필요한 돈</small></a></div></div>
   <div id="agentSec"></div>`;
   $('res').hidden = false;
   CUR.dser = { months, J: x.J };
   drawCharts(); wire(null, sm); areaPanel(g, $('areaBox')); fillAgents(CUR);
+  if (window.JDJPolicy) JDJPolicy.mount($('polSec'), {mode:'jeonse', codes:[{sgg:g, dong:dong}], name:() => sggName(g) + ' ' + dong, sggName:() => sggName(g),
+    head:'<h2>전월세에 영향을 주는 정책<small>' + esc(sggName(g) + ' ' + dong) + ' 전세·월세 계약과 전세대출에 관련된 정책이에요</small></h2>'}).catch(e => console.warn('policy', e));
   if (window.jdjStat){ jdjStat('feature_use', {feature:'jeonse'}); }
 }
 

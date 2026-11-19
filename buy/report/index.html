@@ -40,6 +40,7 @@
 <script src="../../assets/loan-core.js?v=1"></script>
 <script src="../../assets/kchat.js?v=1"></script>
 <script src="../../assets/plain-words.js?v=4"></script>
+<script src="../../assets/policy-view.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -1305,10 +1306,14 @@ async function render(){
   }
   h += `</div>`;
 
-  /* 6. 체크리스트 */
+  /* 6. 이 지역에 영향을 주는 정책 (공식 원문 확인분, 자료는 아래에서 비동기로 채움) */
+  const polCodes = (codes.length ? codes : [...S.sggs]).slice(0, 12);
+  h += `<div id="polSec" hidden></div>`;
+
+  /* 7. 체크리스트 */
   const anyReg = picked.some(x=>isReg(x.code)) || main==='reg';
   h += `<div class="sec pb">
-    <h2><span class="no">06</span> 매수 전 체크리스트</h2>
+    <h2><span class="no">07</span> 매수 전 체크리스트</h2>
     <p class="sub">계약 전에 순서대로 확인하세요.</p>
     <ul class="check">
       <li><b>은행 사전 상담</b> — 이 리포트의 대출 가능액은 추정치입니다. 감정가·신용·소득 인정 방식에 따라 달라지므로 2곳 이상 은행에서 한도와 금리를 확인하세요.</li>
@@ -1323,10 +1328,10 @@ async function render(){
     </ul>
   </div>`;
 
-  /* 7. 출처 — 추천 지역과 관련된 공공기관 자료만 */
+  /* 8. 출처 — 추천 지역과 관련된 공공기관 자료만 */
   const usedSrc = NOTES.sources.filter(s=>(s[3]||[]).some(c=>noteKeys.includes(c)));
   h += `<div class="sec">
-    <h2><span class="no">07</span> 데이터 출처와 유의사항</h2>
+    <h2><span class="no">08</span> 데이터 출처와 유의사항</h2>
     <p class="src">실거래가: 국토교통부 아파트 매매 실거래가(공공데이터포털), 해제·직거래 제외, ${dataTo}까지 집계. 대출 규제: 2026년 11월 기준 LTV·DSR·스트레스 금리·가격구간별 한도.${usedSrc.length?' 추천 지역 교통·개발 정보(공공기관 원문):':''}</p>
     ${usedSrc.length?`<ul class="src" style="padding-left:16px;margin:6px 0 10px">${usedSrc.map(s=>`<li>${esc(s[0])} — ${esc(s[1])} <a href="${s[2]}" target="_blank" rel="noopener">링크</a></li>`).join('')}</ul>`:''}
     <p class="src">실제 대출 한도와 세금은 금융기관·세무 전문가에게 확인하세요.</p>
@@ -1345,6 +1350,8 @@ async function render(){
   $('report').innerHTML = h;
   { const t=$('rkTop'); if(t){ t.innerHTML = rkTop; t.hidden = !rkTop; } }
   if (picked.length) drawMap(picked).catch(e=>console.warn('map',e));
+  if (window.JDJPolicy && polCodes.length) JDJPolicy.mount($('polSec'), {mode:'buy', codes:polCodes.map(c=>({sgg:c})), name:c=>sggName(c.sgg), cls:'sec', hideEmpty:true,
+    head:`<h2><span class="no">06</span> 이 지역에 영향을 주는 정책</h2><p class="sub">추천 지역(${polCodes.length}곳)에 적용 중이거나 국회에서 논의 중인 부동산 정책이에요. 단계와 대상은 공식 원문 그대로예요.</p>`}).catch(e=>console.warn('policy',e));
   document.querySelectorAll('[data-cp]').forEach(b=>b.onclick=()=>{ const p=cmpParse(b.dataset.cp); if(!p || !cmpToggle(p)) return; const on=cmpHas(b.dataset.cp); b.classList.toggle('on',on); b.textContent=on?'비교함에 담김':'비교에 담기'; });
   document.querySelectorAll('[data-more]').forEach(b=>b.onclick=()=>{ const m=$(b.dataset.more); if(!m) return; m.hidden=!m.hidden; b.setAttribute('aria-expanded', String(!m.hidden)); b.textContent=m.hidden?'자세한 리포트':'간단히 보기'; if(!m.hidden) JDJ.track('report_card_more'); });
   document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>goCard(+b.dataset.i||0, b.dataset.go));

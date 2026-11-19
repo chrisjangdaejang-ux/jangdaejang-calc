@@ -39,6 +39,7 @@
 <script src="../assets/price-sheet.js?v=8"></script>
 <script src="../assets/offi-core.js?v=1"></script>
 <script src="../assets/offi-view.js?v=1"></script>
+<script src="../assets/policy-view.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=40">
@@ -456,6 +457,8 @@ function render(d, map, units){
       : `<p class="note" style="font-size:15px">이 단지·평형은 아직 미래가치 점수가 없어요. 검증에 쓸 거래 자료가 충분히 쌓이면 자동으로 보여 드려요.</p>${rs.length ? `<ul class="why">${rs.map(rli).join('')}</ul>` : ''}`}
   </div>
 
+  <div id="polSec" hidden></div>
+
   <div class="panel">
     <h2>이 집으로 이어서 계산하기</h2>
     <div class="links">
@@ -475,6 +478,8 @@ function render(d, map, units){
   P.wireMore($('trades'));
   wireResult(d, u, sm);
   fillAgents(d);
+  if (window.JDJPolicy) JDJPolicy.mount($('polSec'), {mode:'mine', codes:[{sgg:d.code, dong:d.dong}], name:() => sggName(d.code) + ' ' + d.dong, sggName:() => sggName(d.code), price: sm.price || (last ? last.price : 0),
+    head:'<h2>이 지역에 영향을 주는 정책<small>이 단지가 있는 ' + esc(sggName(d.code) + ' ' + d.dong) + '에 적용 중이거나 국회에서 논의 중인 정책이에요</small></h2>'}).catch(e => console.warn('policy', e));
 }
 
 /* ---------- 차트 (SVG 직접 그리기) ---------- */
