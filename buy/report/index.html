@@ -746,7 +746,7 @@ function futureReasons(x){
       r.push([stg>=2 && (!my || my<=end) ? 'c':'f', t]); } }
   if (f.gs!=null || f.sup!=null || f.pg!=null || f.un!=null || f.jb!=null){
     const rg=PL.regionText(f, IX, x.code, GLS);
-    r.push(['f', [rg.fact||`${sggName(x.code)} 지역 흐름:`, ...rg.why, rg.mean, (f.gs!=null&&!RUSED())?'(지역 흐름은 아직 점수에 넣지 않았어요 · 참고만)':''].filter(Boolean).join(' ')]);
+    r.push(['f', [rg.fact||`${sggName(x.code)} 지역 흐름:`, rg.mean, rg.why.length?'참고 지표: '+rg.why.join(' '):'', (f.gs!=null&&!RUSED())?'(지역 흐름은 아직 점수에 넣지 않았어요 · 참고만)':''].filter(Boolean).join(' ')]);
   }
   if (f.dd!=null && Math.abs(f.dd)>=0.03) r.push([f.dd>0?'f':'c', PL.ddText(f.dd,GLS) + (f.dd>0 ? ' — 집값이 흔들릴 때 잘 버틴 편이에요' : ' — 시장에 따라 오르내림이 큰 편이에요')]);
   if (f.rc!=null && Math.abs(f.rc)>=0.03 && Math.abs(f.rc)<0.5) r.push(['f', PL.rcText(f.rc,GLS)]);

@@ -87,7 +87,7 @@
     if (f.eg) { const g = f.eg.v - f.eg.b - f.eg.p; r.push(['f', `재건축이 끝나면${f.eg.done ? `(예상 준공 ${f.eg.done}년 전후)` : ''} 기대 차익은 약 ${g >= 0 ? '+' : '−'}${PL.eokR(Math.abs(g))}이에요 — 지역 새 아파트 시세로 본 같은 평형 가치 ${PL.eokR(f.eg.v)}, 예상 분담금 ${f.eg.b >= 0 ? PL.eokR(f.eg.b) : '환급 ' + PL.eokR(-f.eg.b)}, 지금 시세 ${PL.eokR(f.eg.p)} (간이 추정)`]); }
     if (f.landavg || f.vl) r.push(['f', '재건축 사업성(단지): ' + [f.landavg ? `세대당 평균 대지지분 ${f.landavg}평` : '', f.vl ? `용적률 ${Math.round(f.vl)}%` : ''].filter(Boolean).join(' · ') + (f.land ? ` · 이 평형 대지지분 약 ${f.land}평` : '')]);
     const rg = PL.regionText(f, IX, x.code, G);
-    if (rg.fact || rg.why.length) r.push(['f', [rg.fact || `${sgg} 지역 흐름:`, ...rg.why, rg.mean].filter(Boolean).join(' ')]);
+    if (rg.fact || rg.why.length) r.push(['f', [rg.fact || `${sgg} 지역 흐름:`, rg.mean, rg.why.length ? '참고 지표: ' + rg.why.join(' ') : ''].filter(Boolean).join(' ')]);
     if (f.sp) for (const [nm, units, , stg, mv] of f.sp.slice(0, 2)) {
       const SG = ['', '발표 단계', '분양·착공 단계', '입주 진행 중'];
       r.push([stg >= 2 ? 'c' : 'f', `주변 공급: 가까운 공공택지 ${nm} · 약 ${(units / 10000).toFixed(units >= 10000 ? 1 : 2).replace(/\.?0+$/, '')}만 가구 — ${SG[stg] || '계획'}${mv ? ` · 첫 입주 목표 ${String(mv).slice(0, 4)}년` : ''}`]);
