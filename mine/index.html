@@ -23,8 +23,8 @@
 <script src="../assets/stat.js"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/kchat.js?v=1"></script>
-<script src="../assets/mine-core.js?v=3"></script>
-<script src="../assets/price-sheet.js?v=3"></script>
+<script src="../assets/mine-core.js?v=4"></script>
+<script src="../assets/price-sheet.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=39">
@@ -380,7 +380,7 @@ function render(d, map, units){
     : `<div class="chead"><h3>가격 추이 (평당가)</h3><div class="seg2" role="group" aria-label="기간">${[12, 36].map(n => `<button type="button" data-span="${n}" class="${S.span === n ? 'on' : ''}" aria-pressed="${S.span === n}">${n / 12}년</button>`).join('')}</div></div>
     <div class="chart" id="cPrice"></div>
     <div class="legend"><span><i></i>${esc(d.apt)} ${esc(S.band)}</span><span><i class="g"></i>${esc(sggName(d.code))} 아파트 전체</span></div>
-    <p class="basis">단위: 만원/3.3㎡ · 각 달 값 = 그 달까지 3개월 실거래 평당가 중앙값. 3개월 동안 거래가 없는 달은 선을 끊어 표시해요.</p>`}
+    <p class="basis">단위: 만원/3.3㎡ · 각 달 값 = 그 달까지 3개월 실거래 평당가 중앙값. 거래가 없던 기간은 점선으로 이어 표시해요.</p>`}
     <div class="chead" style="margin-top:18px"><h3>거래량 추이 (월별 건수)</h3></div>
     <div class="chart" id="cVol" style="min-height:150px"></div>
     <p class="basis">이 평형 최근 12개월 <b>${vol.last12}건</b>${vol.prev12 != null ? ` · 그 전 12개월 ${vol.prev12}건${vol.pct != null ? ` (<span class="${updown(vol.pct)}">${M.pctTxt(vol.pct, 0)}</span>)` : ''}` : ''}${sv ? ` · ${esc(sggName(d.code))} 전체 최근 12개월 ${sv.last12.toLocaleString()}건${sv.prev12 != null ? ` · 그 전 12개월 ${sv.prev12.toLocaleString()}건${sv.pct != null ? ` (${M.pctTxt(sv.pct, 0)})` : ''}` : ''}` : ''}</p>
@@ -443,11 +443,11 @@ function drawCharts(u, sgg){
   const HT = CUR && CUR.ht;
   if (HT){
     const w = M.histWindow(HT, S.hspan), W = $('cPrice').clientWidth || 600;
-    $('cPrice').innerHTML = P.histChart(w, W, {h: 240, fs: 13.5});
+    $('cPrice').innerHTML = P.histChart(w, W, {h: 240, fs: 13.5, sparse: M.isSparse(HT.s)});
     if ($('cJr')) $('cJr').innerHTML = P.histChart(w, $('cJr').clientWidth || W, {jr: true, h: 160, fs: 13.5});
   }
   const t = M.trend(u, sgg, IX.months, HT ? (S.hspan && S.hspan < 36 ? S.hspan : 36) : S.span);
-  if (!HT) $('cPrice').innerHTML = lineChart(t, $('cPrice').clientWidth || 600);
+  if (!HT) $('cPrice').innerHTML = (M.isSparse(u[6]) ? P.SPARSE : '') + lineChart(t, $('cPrice').clientWidth || 600);
   $('cVol').innerHTML = barChart(t, $('cVol').clientWidth || 600);
 }
 function niceStep(range){ const raw = range / 4, p = Math.pow(10, Math.floor(Math.log10(raw || 1))), n = raw / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p; }
@@ -470,7 +470,7 @@ function lineChart(t, W){
   const lastTxt = li >= 0 ? `<text x="${Math.min(x(li), W - R).toFixed(1)}" y="${Math.max(12, y(t.ppy[li]) - 9).toFixed(1)}" font-size="13" font-weight="700" fill="#2F6BFF" text-anchor="end">${t.ppy[li].toLocaleString()}</text>` : '';
   return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="월별 평당가 추이">${grid}
     <path d="${path(t.sgg)}" fill="none" stroke="#8B95A1" stroke-width="2" stroke-dasharray="5 3"/>
-    <path d="${path(t.ppy)}" fill="none" stroke="#2F6BFF" stroke-width="2.5" stroke-linejoin="round"/>${dots}${lastTxt}
+    ${P.linePaths(t.ppy, x, y, '#2F6BFF', 2.5)}${dots}${lastTxt}
     ${xLabels(t.months, W, L, R).replace(/__Y__/g, H - 6)}</svg>`;
 }
 function barChart(t, W){

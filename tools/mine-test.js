@@ -235,6 +235,24 @@ if (DIR && fs.existsSync(path.join(DIR, 'index.json'))) {
   }
 }
 
+// 차트 공백 연결: 거래 없는 달은 앞뒤 실제 값을 점선으로 잇기만 하고 값은 만들지 않음
+{
+  const a = [0, 100, 110, 0, 0, 130, 0, 140, 150, 0];
+  const lp = M.lineParts(a);
+  check('공백 연결: 실선 조각 = 값 있는 달끼리 붙은 묶음', lp.solid, [[1, 2], [5], [7, 8]], '1~2, 5, 7~8');
+  check('공백 연결: 점선 = 앞뒤 실제 값 사이(2→5, 5→7)', lp.gaps, [[2, 5], [5, 7]], '맨 앞 0·맨 뒤 0은 잇지 않음');
+  check('공백 연결: 원래 배열 그대로(값 지어내지 않음)', a, [0, 100, 110, 0, 0, 130, 0, 140, 150, 0], '');
+  check('공백 연결: 빈 달 없으면 점선 없음', M.lineParts([1, 2, 3]), { solid: [[0, 1, 2]], gaps: [] }, '');
+  check('공백 연결: 값 없음', M.lineParts([0, 0]), { solid: [], gaps: [] }, '');
+  check('공백 연결: null 입력', M.lineParts(null), { solid: [], gaps: [] }, '');
+  const sp = months.map((_, i) => i % 4 === 0 ? 100 : 0);           // 36개월 중 9달
+  check('드문 거래: 36개월 중 9달 → 드묾', M.isSparse(sp), true, '9×3 < 36');
+  const sp2 = months.map((_, i) => i % 3 === 0 ? 100 : 0);          // 12달
+  check('드문 거래: 36개월 중 12달 → 드물지 않음(딱 1/3)', M.isSparse(sp2), false, '12×3 = 36');
+  check('드문 거래: 마지막 36개월만 봄', M.isSparse(Array(60).fill(100).concat(sp)), true, '앞 24개월은 무시');
+  check('드문 거래: 값 없음 → false', M.isSparse([0, 0, 0]), false, '');
+}
+
 let bad = 0;
 for (const r of rows) { if (!r.ok) bad++; console.log((r.ok ? 'OK  ' : 'FAIL') + ' ' + r.name + (r.ok ? '' : `\n     got ${JSON.stringify(r.got)}\n    want ${JSON.stringify(r.want)}  (${r.basis})`)); }
 console.log(`\n${rows.length - bad}/${rows.length} 통과`);

@@ -75,6 +75,16 @@
   }
 
   /* ---------- 작은 차트 ---------- */
+  /** 값 선 그리기: 실제 값이 있는 달끼리는 실선, 거래 없는 구간은 앞뒤 실제 값을 옅은 점선으로 잇기만(사이 달 값·툴팁 없음).
+      a = 값 배열(0 = 거래 없음), x·y = 좌표 함수, c = 색, w = 굵기 */
+  function linePaths(a, x, y, c, w) {
+    const p = M().lineParts(a), pt = i => x(i).toFixed(1) + ' ' + y(a[i]).toFixed(1);
+    const sd = p.solid.map(g => g.map((i, k) => (k ? 'L' : 'M') + pt(i)).join('')).join('');
+    const gd = p.gaps.map(g => 'M' + pt(g[0]) + 'L' + pt(g[1])).join('');
+    return (gd ? `<path d="${gd}" fill="none" stroke="${c}" stroke-opacity=".45" stroke-width="${Math.max(1.4, w - 0.8)}" stroke-dasharray="3 4" stroke-linecap="round" class="gap"/>` : '')
+      + (sd ? `<path d="${sd}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linejoin="round"/>` : '');
+  }
+  const SPARSE = '<p class="jps-note jps-sp">거래가 드문 단지라 추이는 참고로 봐 주세요</p>';
   function miniChart(u, sgg, months, W) {
     const m = M(), n = months.length, me = u[6] || [], gs = (sgg && sgg.s) || [];
     W = Math.max(260, Math.round(W || 480)); const H = 170, L = 48, R = 10, T = 12, B = 22;
@@ -86,12 +96,13 @@
     const ticks = [lo, (lo + hi) / 2, hi].map(v => `<line x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#E5E8EB"/><text x="${L - 5}" y="${(y(v) + 4).toFixed(1)}" font-size="12" fill="#4E5968" text-anchor="end">${Math.round(v).toLocaleString()}</text>`).join('');
     const dots = me.map((v, i) => v > 0 ? `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2.4" fill="#2F6BFF"><title>${m.ymLabel(months[i])} ${v.toLocaleString()}만/3.3㎡</title></circle>` : '').join('');
     const xl = [0, Math.floor((n - 1) / 2), n - 1].map((i, k) => `<text x="${x(i).toFixed(1)}" y="${H - 5}" font-size="12" fill="#4E5968" text-anchor="${k === 0 ? 'start' : k === 2 ? 'end' : 'middle'}">${m.ymLabel(months[i])}</text>`).join('');
-    return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="월별 평당가 추이">${ticks}<path d="${path(gs)}" fill="none" stroke="#8B95A1" stroke-width="1.8" stroke-dasharray="5 3"/><path d="${path(me)}" fill="none" stroke="#2F6BFF" stroke-width="2.4"/>${dots}${xl}</svg>`;
+    return `${m.isSparse(me) ? SPARSE : ''}<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="월별 평당가 추이">${ticks}<path d="${path(gs)}" fill="none" stroke="#8B95A1" stroke-width="1.8" stroke-dasharray="5 3"/>${linePaths(me, x, y, '#2F6BFF', 2.4)}${dots}${xl}</svg>`;
   }
 
   /* ---------- 전체 기간 차트: 매매·전세 두 선(금액) 또는 전세가율 ---------- */
   const eok = v => v >= 10000 ? (Math.round(v / 1000) / 10).toString().replace(/\.0$/, '') + '억' : Math.round(v).toLocaleString() + '만';
-  /** t = histSeries(또는 histWindow) 결과, W = 폭(px), opts.jr = 전세가율 선만, opts.fs = 글자 크기 */
+  /** t = histSeries(또는 histWindow) 결과, W = 폭(px), opts.jr = 전세가율 선만, opts.fs = 글자 크기,
+      opts.sparse = 거래가 드문 단지 안내 한 줄(기간 단추와 무관하게 전체 자료로 판단해 넘겨 줌) */
   function histChart(t, W, opts) {
     opts = opts || {}; const m = M(), fs = opts.fs || 12.5;
     if (opts.jr && t) { const k = t.jr.findIndex(v => v > 0); if (k > 0) t = Object.assign({}, t, { months: t.months.slice(k), jr: t.jr.slice(k), s: t.s.slice(k), j: t.j.slice(k) }); }   // 전세가율은 전세 자료가 있는 달부터
@@ -103,19 +114,19 @@
     const n = t.months.length, x = i => L + (n === 1 ? 0 : i * (W - L - R) / (n - 1)), y = v => T + (hi - v) / (hi - lo) * (H - T - B);
     const fmtY = v => opts.jr ? Math.round(v) + '%' : eok(v);
     const grid = [lo, (lo + hi) / 2, hi].map(v => `<line x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#E5E8EB"/><text x="${L - 5}" y="${(y(v) + 4).toFixed(1)}" font-size="${fs}" fill="#4E5968" text-anchor="end">${fmtY(v)}</text>`).join('');
-    const path = a => { let d = '', on = false; a.forEach((v, i) => { if (v > 0) { d += (on ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1); on = true; } else on = false; }); return d; };
-    const lone = (a, c) => a.map((v, i) => v > 0 && !(a[i - 1] > 0) && !(a[i + 1] > 0) ? `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2.2" fill="${c}"/>` : '').join('');
+    /* 실제 값이 있는 달의 작은 점: 기간이 짧으면(5년 이하) 모든 달, 길면 거래 공백 앞뒤·외딴 달만 */
+    const dots = (a, c) => a.map((v, i) => v > 0 && (n <= 60 || !(a[i - 1] > 0) || !(a[i + 1] > 0)) ? `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="${n <= 60 ? 2 : 2.2}" fill="${c}"/>` : '').join('');
     const last = (a, c) => { for (let i = a.length - 1; i >= 0; i--) if (a[i] > 0) return `<circle cx="${x(i).toFixed(1)}" cy="${y(a[i]).toFixed(1)}" r="4" fill="${c}"><title>${m.ymLabel(t.months[i])} ${opts.jr ? Math.round(a[i]) + '%' : m.won(a[i])}</title></circle>`; return ''; };
     const idx = n <= 4 ? [0, n - 1] : [0, Math.round((n - 1) / 3), Math.round((n - 1) * 2 / 3), n - 1];
     const xl = idx.map((i, k) => `<text x="${x(i).toFixed(1)}" y="${H - 5}" font-size="${fs}" fill="#4E5968" text-anchor="${k === 0 ? 'start' : k === idx.length - 1 ? 'end' : 'middle'}">${n > 36 ? String(t.months[i]).slice(0, 4) + '년' : m.ymLabel(t.months[i])}</text>`).join('');
-    return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${opts.jr ? '전세가율 추이' : '매매·전세 시세 추이'}">${grid}${lines.map(l => `<path d="${path(l.a)}" fill="none" stroke="${l.c}" stroke-width="${l.w}" stroke-linejoin="round"/>${lone(l.a, l.c)}${last(l.a, l.c)}`).join('')}${xl}</svg>`;
+    return `${opts.sparse ? SPARSE : ''}<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${opts.jr ? '전세가율 추이' : '매매·전세 시세 추이'}">${grid}${lines.map(l => `${linePaths(l.a, x, y, l.c, l.w)}${dots(l.a, l.c)}${last(l.a, l.c)}`).join('')}${xl}</svg>`;
   }
   /** 기간 단추 HTML (data-hspan) */
   const spanBtns = (t, cur, cls) => `<div class="${cls || 'jps-seg'}" role="group" aria-label="기간">${M().histSpans(t).map(b => `<button type="button" data-hspan="${b.span}" class="${b.span === cur ? 'on' : ''}" aria-pressed="${b.span === cur}">${b.label}</button>`).join('')}</div>`;
   /** 차트 아래 자료 기간 문구: 수집 시작 달(cover)을 실제 값으로 */
   function histNote(hist, t) {
     const m = M(), a = hist && (hist.cover || hist.hm), b = hist && (hist.rcover || hist.rm);
-    return `${a ? `매매 ${m.ymKo(a)}부터` : ''}${b ? ` · 전세 ${m.ymKo(b)}부터` : ''} 국토교통부 실거래 자료${t && t.from && a && t.from > a ? ` · 이 평형 첫 매매 시세 ${m.ymKo(t.from)}` : ''}. 각 달 값 = 그 달까지 3개월 실거래 평당가 중앙값 × 전용면적 ÷ 3.3058(전세는 월세 없는 순수 전세만). 거래가 없는 달은 선을 끊어 표시해요.`;
+    return `${a ? `매매 ${m.ymKo(a)}부터` : ''}${b ? ` · 전세 ${m.ymKo(b)}부터` : ''} 국토교통부 실거래 자료${t && t.from && a && t.from > a ? ` · 이 평형 첫 매매 시세 ${m.ymKo(t.from)}` : ''}. 각 달 값 = 그 달까지 3개월 실거래 평당가 중앙값 × 전용면적 ÷ 3.3058(전세는 월세 없는 순수 전세만). 거래가 없던 기간은 점선으로 이어 표시해요.`;
   }
   /** 최고가 요약 상자 HTML (역대·최근 1년). h = M().highs 결과 */
   function highsHtml(h, cls) {
@@ -162,6 +173,7 @@
 .jps-lg i.j{background:#14A06B}
 .jps-morebtn{font:inherit;font-size:14px;font-weight:700;width:100%;min-height:44px;margin-top:8px;border:1px solid #E5E8EB;border-radius:12px;background:#fff;color:#3E4754;cursor:pointer}
 .jps-note{font-size:13px;color:#4E5968;line-height:1.6;margin:6px 0 0}
+.jps-sp{margin:0 0 6px;padding:6px 10px;border-radius:8px;background:#FFF7E6;color:#8A5A00;font-weight:700}
 .jps-go{display:flex;align-items:center;justify-content:center;min-height:50px;margin-top:16px;border-radius:14px;background:#2F6BFF;color:#fff!important;font-weight:700;font-size:16px;text-decoration:none}
 .jps-load{padding:30px 0;text-align:center;color:#4E5968}
 .jps-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 14px;border:1.5px solid #2F6BFF;border-radius:12px;background:#fff;color:#2F6BFF!important;font:inherit;font-size:14.5px;font-weight:700;line-height:1.2;cursor:pointer;white-space:nowrap;text-decoration:none;vertical-align:middle;box-sizing:border-box;max-width:100%}
@@ -233,7 +245,7 @@
         let span = 36;
         const draw = () => {
           const w = M().histWindow(t, span), W = Math.min(520, (sec.clientWidth || 480));
-          sec.innerHTML = `<div class="jps-ch"><h4>가격 추이 (매매·전세)</h4>${spanBtns(t, span)}</div>${histChart(w, W)}
+          sec.innerHTML = `<div class="jps-ch"><h4>가격 추이 (매매·전세)</h4>${spanBtns(t, span)}</div>${histChart(w, W, { sparse: M().isSparse(t.s) })}
             <div class="jps-lg"><span><i></i>매매 시세</span>${t.j.some(v => v > 0) ? '<span><i class="j"></i>전세 시세</span>' : ''}<span>${esc(u[3])} · 전용 ${u[4]}㎡ 환산</span></div>
             <p class="jps-note">${esc(histNote(g.hist, t))}</p>`;
           sec.querySelectorAll('[data-hspan]').forEach(b => b.onclick = () => { span = +b.dataset.hspan; draw(); });
@@ -284,13 +296,13 @@
     <div class="jps-hsec"><h4>가격 추이 (평당가, 최근 3년)</h4>
     ${miniChart(u, sgg, months, 480)}
     <div class="jps-lg"><span><i></i>이 단지 ${esc(u[3])}</span><span><i class="g"></i>${esc((sgg && sgg.name) || '')} 아파트 전체</span></div>
-    <p class="jps-note">단위: 만원/3.3㎡ · 각 달 값 = 그 달까지 3개월 실거래 평당가 중앙값</p></div>
+    <p class="jps-note">단위: 만원/3.3㎡ · 각 달 값 = 그 달까지 3개월 실거래 평당가 중앙값. 거래가 없던 기간은 점선으로 이어 표시해요.</p></div>
     <h4>${isPrice ? '최근 실거래' : '월별 실거래 요약'}</h4>
     ${tradesHtml(u, months, { show: 10 })}
     <a class="jps-go" href="${esc(link)}">내 집 시세에서 자세히 보기 →</a>`;
   }
 
-  const API = { open, close, btn, loadSgg, loadHist, histOf, scoreUnits, findUnit, tradesHtml, wireMore, miniChart, histChart, histNote, highsHtml, spanBtns, baseName };
+  const API = { open, close, btn, loadSgg, loadHist, histOf, scoreUnits, findUnit, tradesHtml, wireMore, miniChart, histChart, histNote, linePaths, SPARSE, highsHtml, spanBtns, baseName };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_PRICE = API;
 })(typeof self !== 'undefined' ? self : this);

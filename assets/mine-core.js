@@ -299,6 +299,24 @@
     const jr = months.map(ym => { const a = sm.get(ym), b = jm.get(ym); return a > 0 && b > 0 ? b / a : 0; });
     return { months, s, j, jr, from: sm.size ? [...sm.keys()].sort()[0] : '', rfrom: jm.size ? [...jm.keys()].sort()[0] : '' };
   }
+  /** 차트 선 나누기 — 값 있는 달(>0)끼리 붙은 실선 조각(solid: 인덱스 배열들)과,
+      그 사이 거래 없는 구간을 앞뒤 실제 값끼리 잇는 점선 조각(gaps: [앞 인덱스, 뒤 인덱스]).
+      사이 달의 값은 만들지 않는다(시각적 연결만). 맨 앞·맨 뒤의 빈 달은 잇지 않음 */
+  function lineParts(a) {
+    const solid = [], gaps = []; let cur = null, prev = -1;
+    (a || []).forEach((v, i) => {
+      if (!(v > 0)) { cur = null; return; }
+      if (prev >= 0 && i - prev > 1) gaps.push([prev, i]);
+      if (!cur) { cur = []; solid.push(cur); }
+      cur.push(i); prev = i;
+    });
+    return { solid, gaps };
+  }
+  /** 거래가 아주 드문가: 마지막 n(기본 36)개월 중 값 있는 달이 1/3 미만 (값이 하나도 없으면 false) */
+  function isSparse(a, n) {
+    const w = (a || []).slice(-(n || 36)), k = w.filter(v => v > 0).length;
+    return k > 0 && k * 3 < w.length;
+  }
   /** 마지막 span 개월만 (span 없으면 전체) */
   function histWindow(t, span) {
     if (!t || !span || span >= t.months.length) return t;
@@ -337,7 +355,7 @@
   const API = { PY, r100, STORE_KEY, MAX_HOMES, FEW, counts, lastIdx, median, toPrice, ymLabel, danjiKey, agentKey, premiumKey, groupDanji, searchDanji,
     normName, splitNum, matchName, listRow, unitKey, hasScore, scoreOf, monthDeals, trades, lastDeal, isFew,
     bandSummary, changeBack, dongPosition, sggPosition, trend, volume, volumeCounts, cleanHome, homeId, parseStore, dumpStore, addHome, removeHome, findUnit, vsBuy, heldMonths, reasons, won, pctTxt,
-    ymAdd, ymDiff, ymKo, decodeSeries, histRow, histSeries, histWindow, histSpans, highs, isNewHigh };
+    ymAdd, ymDiff, ymKo, decodeSeries, histRow, histSeries, histWindow, histSpans, highs, isNewHigh, lineParts, isSparse };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_MINE = API;
 })(typeof self !== 'undefined' ? self : this);
