@@ -374,6 +374,18 @@
     const w = (a || []).slice(-(n || 36)), k = w.filter(v => v > 0).length;
     return k > 0 && k * 3 < w.length;
   }
+  /** 구 전체 비교선: 구 월별 평당가 s(sMonths 와 같은 칸, index.json sgg[].s·months) → months 칸에 맞춘
+      같은 면적 환산 금액(평당가 × area ÷ 3.3058, 100만 원 반올림). 구 자료가 없는 달은 0 */
+  function sggLine(s, sMonths, months, area) {
+    const mp = new Map(); (sMonths || []).forEach((ym, i) => { if (s && s[i] > 0) mp.set(String(ym), s[i]); });
+    return (months || []).map(ym => toPrice(mp.get(String(ym)) || 0, area));
+  }
+  /** 단지 대 구 전체: (단지 − 구) ÷ 구 → {pct, txt}. 둘 중 하나라도 없으면 null. 반올림 0% = 비슷해요 */
+  function vsSgg(me, g) {
+    if (!(me > 0 && g > 0)) return null;
+    const d = (me - g) / g, p = Math.round(Math.abs(d) * 100);
+    return { pct: d, txt: p === 0 ? '이 단지가 비슷해요' : `이 단지가 ${p}% ${d > 0 ? '높아요' : '낮아요'}` };
+  }
   /** 마지막 span 개월만 (span 없으면 전체) */
   function histWindow(t, span) {
     if (!t || !span || span >= t.months.length) return t;
@@ -426,7 +438,7 @@
   const API = { PY, r100, STORE_KEY, MAX_HOMES, FEW, counts, lastIdx, median, toPrice, ymLabel, xTicks, danjiKey, agentKey, premiumKey, groupDanji, searchDanji,
     normName, splitNum, matchName, listRow, unitKey, hasScore, scoreOf, monthDeals, trades, lastDeal, isFew,
     bandSummary, changeBack, dongPosition, sggPosition, trend, volume, volumeCounts, cleanHome, homeId, parseStore, dumpStore, addHome, removeHome, findUnit, vsBuy, heldMonths, reasons, reasonItems, won, pctTxt, cleanFx,
-    ymAdd, ymDiff, ymKo, decodeSeries, histRow, histSeries, histWindow, histSpans, highs, isNewHigh, lineParts, isSparse, valAt, gapOf, monthPoint };
+    ymAdd, ymDiff, ymKo, decodeSeries, histRow, histSeries, histWindow, histSpans, sggLine, vsSgg, highs, isNewHigh, lineParts, isSparse, valAt, gapOf, monthPoint };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_MINE = API;
 })(typeof self !== 'undefined' ? self : this);

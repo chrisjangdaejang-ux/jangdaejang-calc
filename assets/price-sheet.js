@@ -135,10 +135,14 @@
     const xLab = sp.xLab || ((ym, short) => n > 36 ? (short ? "'" + String(ym).slice(2, 4) + '년' : String(ym).slice(0, 4) + '년') : short ? "'" + String(ym).slice(2, 4) + '.' + String(ym).slice(4, 6) : m.ymLabel(ym));
     const xl = m.xTicks(n, W - L - R, fs, x, months, (ym, short) => xLab(ym, short)).map(t => `<text x="${t.x.toFixed(1)}" y="${H - 5}" font-size="${fs}" fill="#4E5968" text-anchor="${t.a}">${t.t}</text>`).join('');
     const over = live ? `<g class="jhv-o" style="display:none" pointer-events="none"><line x1="0" x2="0" y1="${T - 4}" y2="${s0 + SH}" stroke="#191F28" stroke-opacity=".45" stroke-width="1.2"/>${pts.map(p => `<circle r="4.6" stroke="${p.c}" stroke-width="2.2" fill="${p.c}"/>`).join('')}</g>` : '';
-    const svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(sp.aria || '추이 그래프')}">${grid}${sp.lines.map(l => `${linePaths(l.a, x, y, l.c, l.w)}${dots(l.a, l.c, y)}${last(l.a, l.c)}`).join('')}${subSvg}${xl}${over}</svg>`;
+    /* dash = 비교선(구 전체 등): 회색 점선 한 줄, 점·끝점 없음 */
+    const dashP = l => { let d = '', on = false; l.a.forEach((v, i) => { if (v > 0) { d += (on ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1); on = true; } else on = false; });
+      return d ? `<path d="${d}" fill="none" stroke="${l.c}" stroke-width="${l.w || 1.8}" stroke-dasharray="5 3" class="cmp"/>` : ''; };
+    const svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(sp.aria || '추이 그래프')}">${grid}${sp.lines.map(l => l.dash ? dashP(l) : `${linePaths(l.a, x, y, l.c, l.w)}${dots(l.a, l.c, y)}${last(l.a, l.c)}`).join('')}${subSvg}${xl}${over}</svg>`;
     return { html: svg, model: { W, H, L, R, n, x, pts, top: T, months } };
   }
-  /** 말풍선 내용 만들기(공용). o = {months, rows:[{k, a, c, fmt, ex}], gap:[매매 a, 전세 a] (선택), cnt: Map(연월 → 건수, 선택), cntK: '매매'}
+  /** 말풍선 내용 만들기(공용). o = {months, rows:[{k, sk(요약 줄용 짧은 이름), a, c, fmt, ex}], gap:[매매 a, 전세 a] (선택), cnt: Map(연월 → 건수, 선택), cntK: '매매',
+      vs: {a: 이 단지, b: 구 전체} (선택 — 두 값이 모두 그 달 실제 값일 때만 '이 단지가 ○% 높아요/낮아요')}
       각 줄: 실제 값 → 금액, 거래 없는 점선 구간 → '약 …' + '거래 없음(앞뒤 거래로 이은 값)', 자료 밖 → '거래 없음' */
   function tipFn(o) {
     const m = M(), fm = o.fmt || m.won;
@@ -150,7 +154,7 @@
         if (!p) { const k = r.a.findIndex(x => x > 0); v = k > i ? `자료 없음(${m.ymLabel(o.months[k])}부터)` : '최근 거래 없음'; }
         else if (p.real) v = f(p.v) + (r.ex ? r.ex(i) : '');
         else { v = '약 ' + f(r.fmt ? p.v : m.r100(p.v)); fill = true; }
-        out.rows.push({ k: r.k, c: r.c, v, fill, none: !p });
+        out.rows.push({ k: r.k, sk: r.sk, c: r.c, v, fill, none: !p });
         say.push(`${r.k} ${fill ? v + '(거래 없음, 앞뒤 거래로 이은 값)' : v}`);
       });
       if (o.gap) {
@@ -160,7 +164,11 @@
           say.push(`갭 ${out.gap.v}, 매매가의 ${out.gap.pct}%`, `전세가율 ${out.gap.jr}%`);
         }
       }
-      const fl = out.rows.filter(r => r.fill).map(r => r.k);
+      if (o.vs) {
+        const p = m.valAt(o.vs.a, i), q = m.valAt(o.vs.b, i), c = p && q && p.real && q.real ? m.vsSgg(p.v, q.v) : null;
+        if (c) { out.vs = { pct: Math.round(c.pct * 100), txt: c.txt }; say.push(c.txt); }
+      }
+      const fl = out.rows.filter(r => r.fill).map(r => r.sk || r.k);
       if (fl.length) out.extra.push(`${fl.join('·')} 거래 없음 — 앞뒤 거래로 이은 값이에요`);
       if (o.cnt && o.cnt.has(ym)) { const c = o.cnt.get(ym), t = c ? `이 달 ${o.cntK || '매매'} 신고 ${c}건` : `이 달 ${o.cntK || '매매'} 신고 없음 · 값은 앞 3개월 거래 기준`; out.extra.push(t); say.push(t); }
       out.say = say.join(', ');
@@ -168,10 +176,11 @@
     };
   }
   /** 전체 기간 매매·전세(histSeries 결과)용 말풍선. cnt = Map(연월 → 매매 건수) 선택 */
-  function histTip(t, cnt) {
-    const rows = [{ k: '매매', a: t.s, c: '#2F6BFF' }];
-    if (t.j.some(v => v > 0)) rows.push({ k: '전세', a: t.j, c: '#14A06B' });
-    return tipFn({ months: t.months, rows, gap: rows.length > 1 ? [t.s, t.j] : null, cnt });
+  function histTip(t, cnt, gu) {
+    const rows = [{ k: '매매', a: t.s, c: '#2F6BFF' }], two = t.j.some(v => v > 0);
+    if (two) rows.push({ k: '전세', a: t.j, c: '#14A06B' });
+    if (gu) rows.push({ k: `${gu.name} 전체(같은 면적 환산)`, sk: `${gu.name} 전체`, a: gu.a, c: GRAY });
+    return tipFn({ months: t.months, rows, gap: two ? [t.s, t.j] : null, cnt, vs: gu ? { a: t.s, b: gu.a } : null });
   }
   /** 최근 3년 월별 매매 건수(u[7]) → Map(연월 → 건수) */
   function cntMap(u, months) {
@@ -179,11 +188,13 @@
     (months || []).forEach((ym, i) => { if (i < c.length) mp.set(ym, c[i]); });
     return mp;
   }
+  const GRAY = '#8B95A1';
   const tipHtml = o => `<b class="h">${esc(o.head)}</b>${o.gap ? `<div class="g">갭 <b>${esc(o.gap.v)}</b> <span>(매매가의 ${o.gap.pct}%)</span></div>` : ''}`
     + o.rows.map(r => `<div class="r${r.fill || r.none ? ' f' : ''}"><i style="background:${r.c}"></i>${esc(r.k)} <b>${esc(r.v)}</b></div>`).join('')
+    + (o.vs ? `<div class="r v">→ ${esc(o.vs.txt)}</div>` : '')
     + (o.gap ? `<div class="r s">전세가율 <b>${o.gap.jr}%</b></div>` : '')
     + o.extra.map(e => `<div class="x">${esc(e)}</div>`).join('');
-  const sumHtml = (o, idle) => `<b>${esc(o.head)}</b>${idle ? ' 최근' : ''} · ${o.rows.map(r => `${esc(r.k)} ${esc(r.v)}`).join(' · ')}${o.gap ? ` · 갭 ${esc(o.gap.v)}(${o.gap.pct}%) · 전세가율 ${o.gap.jr}%` : ''}`
+  const sumHtml = (o, idle) => `<b>${esc(o.head)}</b>${idle ? ' 최근' : ''} · ${o.rows.map(r => `${esc(r.sk || r.k)} ${esc(r.v)}`).join(' · ')}${o.gap ? ` · 갭 ${esc(o.gap.v)}(${o.gap.pct}%) · 전세가율 ${o.gap.jr}%` : ''}${o.vs ? ` · ${esc(o.vs.txt)}` : ''}`
     + (idle ? '<span class="hint"> — 차트를 움직이거나 눌러 보세요</span>' : '');
   /** el 에 차트를 그리고 안내선 연결. 반환: plot 결과 */
   function mount(el, sp) {
@@ -251,7 +262,8 @@
   /* ---------- 전체 기간 차트: 매매·전세 두 선(금액) 또는 전세가율 ---------- */
   /** t = histSeries(또는 histWindow) 결과 → plot 설명서. opts.jr = 전세가율 선만, opts.fs = 글자 크기, opts.h = 높이,
       opts.sub = 아래에 전세가율 보조 그래프, opts.tip = 안내선 연결(mountHist), opts.cnt = Map(연월 → 매매 건수),
-      opts.sparse = 거래가 드문 단지 안내 한 줄(기간 단추와 무관하게 전체 자료로 판단해 넘겨 줌) */
+      opts.sparse = 거래가 드문 단지 안내 한 줄(기간 단추와 무관하게 전체 자료로 판단해 넘겨 줌),
+      opts.gu = {name, s, months, area} 구 전체 비교선(index.json sgg[].s·months 를 이 평형 전용면적으로 환산, 회색 점선 — t 의 달에 맞춰 자르므로 기간 단추와 함께 움직임) */
   function histSpec(t, opts) {
     opts = opts || {};
     if (opts.jr && t) { const k = t.jr.findIndex(v => v > 0); if (k > 0) t = Object.assign({}, t, { months: t.months.slice(k), jr: t.jr.slice(k), s: t.s.slice(k), j: t.j.slice(k) }); }   // 전세가율은 전세 자료가 있는 달부터
@@ -261,9 +273,34 @@
       fmtY: opts.jr ? (v => Math.round(v) + '%') : eok, aria: opts.jr ? '전세가율 추이' : '매매·전세 시세 추이',
       empty: opts.jr ? '전세가율을 계산할 달(매매·전세 거래가 모두 있는 달)이 적어요.' : '차트로 보여 드릴 거래가 없어요.',
       pre: opts.sparse ? SPARSE : '' };
+    let gu = null;
+    if (opts.gu && !opts.jr) { const a = M().sggLine(opts.gu.s, opts.gu.months, t.months, opts.gu.area); if (a.some(v => v > 0)) { gu = { name: opts.gu.name || '구', a }; sp.lines.unshift({ a, c: GRAY, w: 1.8, dash: true }); } }
     if (opts.sub && !opts.jr && jr.some(v => v > 0)) sp.sub = { a: jr, c: '#0E7A4F', label: '전세가율' };
-    if (opts.tip) sp.tip = opts.jr ? tipFn({ months: t.months, rows: [{ k: '전세가율', a: jr, c: '#0E7A4F', fmt: v => Math.round(v) + '%' }] }) : histTip(t, opts.cnt);
+    if (opts.tip) sp.tip = opts.jr ? tipFn({ months: t.months, rows: [{ k: '전세가율', a: jr, c: '#0E7A4F', fmt: v => Math.round(v) + '%' }] }) : histTip(t, opts.cnt, gu);
     return sp;
+  }
+  /** 구 전체 비교선 설명 한 줄. gu = histSpec opts.gu, shown = 보이는 첫 달(그보다 구 자료가 늦게 시작하면 시작 달 안내) */
+  function guNote(gu, shown) {
+    if (!gu || !gu.s || !gu.months || !gu.months.length) return '';
+    const m = M(), k = gu.s.findIndex(v => v > 0), from = k >= 0 ? gu.months[k] : '';
+    return `회색 점선 = ${gu.name} 안 모든 아파트의 3개월 실거래 평당가 중앙값 × 이 평형 전용 ${gu.area}㎡ ÷ 3.3058(같은 면적이면 ${gu.name} 아파트 시세가 얼마인지).${from && (!shown || shown < from) ? ` ${gu.name} 전체 자료는 ${m.ymKo(from)}부터 있어요.` : ''}`;
+  }
+  /* ---------- 예비 차트: 최근 3년 평당가(전체 기간 자료가 없을 때) — 같은 안내선·말풍선 ----------
+     t = JDJ_MINE.trend 결과 {months, ppy, sgg, cnt}, opts = {name(구 이름), h, fs, sparse} */
+  const ppyFmt = v => Math.round(v).toLocaleString() + '만';
+  function ppySpec(t, opts) {
+    opts = opts || {};
+    const nm = opts.name || '구', has = (t.sgg || []).some(v => v > 0), cnt = new Map();
+    t.months.forEach((ym, i) => { if (t.cnt && i < t.cnt.length) cnt.set(ym, t.cnt[i] || 0); });
+    const rows = [{ k: '이 단지 평당가', sk: '이 단지', a: t.ppy, c: '#2F6BFF', fmt: ppyFmt }];
+    if (has) rows.push({ k: `${nm} 전체 평당가`, sk: `${nm} 전체`, a: t.sgg, c: GRAY, fmt: ppyFmt });
+    return { months: t.months, fs: opts.fs || 12.5, h: opts.h || 190, L: opts.L || 54, min: 1, pad: 0.12,
+      lines: (has ? [{ a: t.sgg, c: GRAY, w: 2, dash: true }] : []).concat([{ a: t.ppy, c: '#2F6BFF', w: 2.5 }]),
+      fmtY: v => Math.round(v).toLocaleString(), aria: '월별 평당가 추이(만원/3.3㎡)', empty: '이 기간에 거래가 없어요.', pre: opts.sparse ? SPARSE : '',
+      tip: tipFn({ months: t.months, rows, cnt, vs: has ? { a: t.ppy, b: t.sgg } : null }) };
+  }
+  /** el 에 예비 평당가 차트 + 안내선 */
+  function mountPpy(el, t, opts) { return mount(el, ppySpec(t, opts));
   }
   /** SVG 문자열만(예전 방식, 안내선 없음) */
   function histChart(t, W, opts) {
@@ -336,11 +373,12 @@
 .jhv-sum{font-size:13.5px;line-height:1.5;color:#3E4754;margin:0 0 4px;min-height:20px;font-variant-numeric:tabular-nums;word-break:keep-all}
 .jhv-sum b{color:#191F28}.jhv-sum .hint{color:#6B7684}
 .jhv-tip{position:absolute;top:2px;left:0;z-index:2;pointer-events:none;background:rgba(25,31,40,.94);color:#fff;border-radius:10px;padding:8px 10px;font-size:14px;line-height:1.45;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.18);font-variant-numeric:tabular-nums}
+.jhv-tip{max-width:100%;box-sizing:border-box}.jhv-tip .r,.jhv-tip .x{white-space:normal;word-break:keep-all}
 .jhv-tip .h{display:block;font-size:14px;margin-bottom:2px}
 .jhv-tip .g{font-size:14.5px}.jhv-tip .g b{color:#FFD66B}.jhv-tip .g span{color:#D1D6DB}
 .jhv-tip .r i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:1px}
 .jhv-tip .r.f{color:#C9CED4}.jhv-tip .r.f b{font-weight:600}
-.jhv-tip .r.s{color:#D1D6DB}.jhv-tip .x{color:#C9CED4;font-size:13.5px}
+.jhv-tip .r.s{color:#D1D6DB}.jhv-tip .r.v{color:#FFD66B;font-weight:700}.jhv-tip .x{color:#C9CED4;font-size:13.5px}
 .jhv-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media print{.jps-btn{display:none!important}}
 @media(max-width:400px){.jps-hi{grid-template-columns:1fr}}
@@ -399,6 +437,8 @@
       const u = findUnit(g.units, q);
       if (!u) { box.innerHTML = '<p class="jps-note" style="font-size:15px">최근 3년 동안 이 단지·평형의 거래 기록을 찾지 못했어요.</p>'; return; }
       box.innerHTML = body(u, ix, q, g);
+      const sgg = ix.sgg && ix.sgg[u[0]], pc = box.querySelector('.jps-pc');
+      if (pc) mountPpy(pc, M().trend(u, sgg, ix.months, 36), { name: sgg && sgg.name, sparse: M().isSparse(u[6]) });
       mine.querySelector('#jpsT').textContent = u[2];
       wireMore(box);
       /* 전체 기간 시세(price/h)가 있으면 차트를 매매·전세 두 선 + 기간 단추로 바꾼다. 없으면 최근 3년 차트 그대로 */
@@ -406,13 +446,13 @@
         const t = histOf(g, h, u), sec = box.querySelector('.jps-hsec');
         if (ov !== mine || !t || !sec) return;
         let span = 36;
-        const cnt = cntMap(u, ix.months);
+        const cnt = cntMap(u, ix.months), gu = sgg && sgg.s ? { name: sgg.name, s: sgg.s, months: ix.months, area: u[4] } : null;
         const draw = () => {
           const w = M().histWindow(t, span), W = Math.min(520, (sec.clientWidth || 480));
           sec.innerHTML = `<div class="jps-ch"><h4>가격 추이 (매매·전세)</h4>${spanBtns(t, span)}</div><div class="jps-hc" style="max-width:${W}px"></div>
-            <div class="jps-lg"><span><i></i>매매 시세</span>${t.j.some(v => v > 0) ? '<span><i class="j"></i>전세 시세</span>' : ''}<span>${esc(u[3])} · 전용 ${u[4]}㎡ 환산</span>${w.jr.some(v => v > 0) ? '<span>아래 띠 = 전세가율(점선 = 평균)</span>' : ''}</div>
-            <p class="jps-note">${esc(histNote(g.hist, t))}</p>`;
-          mountHist(sec.querySelector('.jps-hc'), w, { sparse: M().isSparse(t.s), sub: true, cnt });
+            <div class="jps-lg"><span><i></i>매매 시세</span>${t.j.some(v => v > 0) ? '<span><i class="j"></i>전세 시세</span>' : ''}${gu ? `<span><i class="g"></i>${esc(gu.name)} 아파트 같은 면적 환산</span>` : ''}<span>${esc(u[3])} · 전용 ${u[4]}㎡ 환산</span>${w.jr.some(v => v > 0) ? '<span>아래 띠 = 전세가율(점선 = 평균)</span>' : ''}</div>
+            ${gu ? `<p class="jps-note">${esc(guNote(gu, w.months[0]))}</p>` : ''}<p class="jps-note">${esc(histNote(g.hist, t))}</p>`;
+          mountHist(sec.querySelector('.jps-hc'), w, { sparse: M().isSparse(t.s), sub: true, cnt, gu });
           sec.querySelectorAll('[data-hspan]').forEach(b => b.onclick = () => { span = +b.dataset.hspan; draw(); });
         };
         draw();
@@ -459,7 +499,7 @@
     ${highsHtml(m.highs(u, g && g.hist, sm.price || (last ? last.price : 0)))}
     ${!m.hasScore(u) ? `<p class="jps-note">최근 3년 거래 ${u[5]}건 기준이에요. 거래가 적어 한두 건 가격에 따라 시세가 크게 달라질 수 있어요.</p>` : ''}
     <div class="jps-hsec"><h4>가격 추이 (평당가, 최근 3년)</h4>
-    ${miniChart(u, sgg, months, 480)}
+    <div class="jps-pc"></div>
     <div class="jps-lg"><span><i></i>이 단지 ${esc(u[3])}</span><span><i class="g"></i>${esc((sgg && sgg.name) || '')} 아파트 전체</span></div>
     <p class="jps-note">단위: 만원/3.3㎡ · 각 달 값 = 그 달까지 3개월 실거래 평당가 중앙값. 거래가 없던 기간은 점선으로 이어 표시해요.</p></div>
     <h4>${isPrice ? '최근 실거래' : '월별 실거래 요약'}</h4>
@@ -467,7 +507,7 @@
     <a class="jps-go" href="${esc(link)}">내 집 시세에서 자세히 보기 →</a>`;
   }
 
-  const API = { open, close, btn, loadSgg, loadHist, histOf, scoreUnits, findUnit, tradesHtml, wireMore, miniChart, histChart, histNote, linePaths, SPARSE, highsHtml, spanBtns, baseName, plot, mount, tipFn, histTip, histSpec, mountHist, cntMap, eok };
+  const API = { open, close, btn, loadSgg, loadHist, histOf, scoreUnits, findUnit, tradesHtml, wireMore, miniChart, histChart, histNote, linePaths, SPARSE, highsHtml, spanBtns, baseName, plot, mount, tipFn, histTip, histSpec, mountHist, cntMap, eok, guNote, ppySpec, mountPpy };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_PRICE = API;
 })(typeof self !== 'undefined' ? self : this);
