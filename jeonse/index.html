@@ -459,7 +459,8 @@ function checkPanel(kind){
     <li><b>계약 후 바로 전입신고·임대차 신고(확정일자)</b> — 전입신고를 하지 않으면 보증금이 보호되지 않아요. 임대차 신고를 하면 확정일자가 함께 부여돼요.</li>
     <li><b>전세보증금 반환보증 가입</b> — 집주인이 보증금을 돌려주지 못하면 보증기관이 대신 돌려줘요. 보증금 + 선순위채권이 주택가격의 90% 이내여야 가입할 수 있어요.</li>
   </ul>
-  <div class="srcl">${srcA('chk')}${srcA('portal')}${srcA('reg')}${srcA('hug')}${kind === 'o' ? srcA('law') : ''}</div></div>`;
+  <div class="srcl">${srcA('chk')}${srcA('portal')}${srcA('reg')}${srcA('hug')}${kind === 'o' ? srcA('law') : ''}</div>
+  <a class="morebtn" style="display:flex;align-items:center;justify-content:center;text-decoration:none;color:#2F6BFF" href="checklist/?k=${kind}" data-track="jeonse_to_checklist">전체 체크리스트 보기 →</a></div>`;
 }
 
 /* ---------- 우리 동네 전세 흐름(구 사실 정보) ---------- */
