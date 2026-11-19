@@ -102,5 +102,35 @@ has(eh, '근거 보통', '무료: 등급'); not(eh, 'jp-per', '무료: 시기별
 has(ehf, '2022년 10월부터 2년: 304건, 5.6%p 덜', '프리미엄: 시기별');
 not(ehf + eh, '300', '등급 기준 숫자 노출 없음'); not(ehf + eh, '75%', '등급 기준 비율 노출 없음');
 
+/* 일정 지연 문구(엔진 schedule.py 와 같은 규칙) */
+eq(P.delayText({ orig: '202412', cur: '202709', orig_s: '2024', cur_s: '2027-09', delay: 33, state: 'postponed' }, '개통'), '당초 2024년 개통 목표 → 현재 2027년 9월 예정(약 2년 9개월 늦어짐)', '연기 발표');
+eq(P.delayText({ orig: '202512', cur: '202512', orig_s: '2025', cur_s: '2025', delay: 10, state: 'overdue' }), '당초 2025년 목표 → 아직 공식 기록이 없어요(목표보다 약 10개월 지남)', '목표 경과 자동 지연');
+eq(P.delayText({ orig: '202106', cur: '202106', orig_s: '2021-06', cur_s: '2021-06', actual: '202307', delay: 25, state: 'done_late' }, '개통'), '당초 2021년 6월 개통 목표 → 실제 2023년 7월(약 2년 늦어짐)', '실제 지연');
+eq(P.delayText({ orig: null, cur: '202711', cur_s: '2027-11', state: 'planned' }), '2027년 11월 예정(당초 목표 미확인)', '당초 모름');
+eq(P.delayText({ state: 'cancel' }, '개통'), '개통 공식 취소', '취소');
+eq(P.unitsKo(38000), '3만 8천', '가구 수'); eq(P.unitsKo(9000), '9천', '가구 수 천'); eq(P.unitsKo(74736), '약 7만 5천', '가구 수 반올림');
+
+/* 생활권 대규모 공급 문구 */
+const SPD = { zones: { changneung: { n: '고양창릉(3기 신도시)', u: 38000, st: 2, h: [['201905', 'ann'], ['202003', 'desig'], ['202112', 'sale']], plan: '202712',
+    dl: { orig: '202710', cur: '202712', orig_s: '2027-10', cur_s: '2027-12', actual: null, delay: 2, state: 'postponed' }, src: ['https://example.org/a'] },
+  daegok: { n: '고양대곡역세권 공공주택지구', u: 9000, st: 1, h: [['202411', 'ann']], plan: '2031', src: ['https://example.org/b'] } },
+  ring: { life: { sale: { n: 12, ex: -1.4, sig: false } }, near: { ann: { n: 20, ex: 0.6, sig: false } } } };
+const sl = P.supplyLines({ sl: [['daegok', 'n', 0], ['changneung', 'l', 0]] }, SPD, null);
+eq(sl.length, 2, '공급 두 줄');
+eq(sl[1][1], '같은 생활권 대규모 공급: 고양창릉(3기 신도시) 3만 8천 가구 — 2019년 발표 → 2020년 지구 지정 → 2021년 첫 분양·사전청약 → 첫 입주: 당초 2027년 10월 목표 → 현재 2027년 12월 예정(약 2개월 늦어짐). 과거 비슷한 단계(분양·착공)의 대규모 공급 같은 생활권에 있던 단지는 이후 2년 같은 구 평균보다 평균 1.4%p 덜 올랐어요(사례 12건, 차이가 뚜렷하지는 않아요). 점수에는 아직 넣지 않았어요(과거 영향이 뚜렷하지 않아서) · 참고 정보.', '생활권 문구(강선마을 예)');
+has(sl[0][1], '가까운 공공택지 공급: 고양대곡역세권 공공주택지구 9천 가구 — 2024년 발표 → 첫 입주 목표 2031년.', '가까운 소규모 지구');
+not(sl.map(x => x[1]).join(' '), 'km', '거리 숫자 없음');
+has(P.supplyLines({ sl: [['changneung', 'n', 1]] }, SPD, null)[0][1], '점수에 반영돼요', '점수 반영 표시');
+eq(P.supplyLines({ sl: [['nope', 'n', 0]] }, SPD, null).length, 0, '모르는 지구 무시');
+
+/* 1기 신도시 정비 선도지구 */
+const RN = { renewal: { labels: { select: '선도지구 선정', zone: '특별정비구역 지정', impl: '사업시행계획 인가' },
+  zones: { is_hugok: { town: '일산', n: '후곡마을 3·4·10·15단지', hh: 2564, st: 'select', h: [['202411', 'select']], next: 'zone', far: 300, v: { select: 'official' }, done: '2030',
+    dl: { orig: '202512', cur: '202512', orig_s: '2025', cur_s: '2025', delay: 10, state: 'overdue' } } },
+  stats: { ilsan: { town: '일산', n_sel: 6, n_oth: 300, sel: 3.1, oth: 1.2, from: '202411', to: '202610' } } } };
+const rn = P.renewalLine({ nr: 'is_hugok', vl: 190 }, RN, null, null);
+eq(rn.text, '일산 노후계획도시 정비 — 이 단지는 후곡마을 3·4·10·15단지 선도지구에 포함돼요(2024년 11월 선정, 공식 확인됨) · 현재 단계: 선도지구 선정 · 다음 단계 특별정비구역 지정: 당초 2025년 목표 → 아직 공식 기록이 없어요(목표보다 약 10개월 지남) · 정부 목표 입주 2030년 · 일산 기준용적률 300%(보도로 확인), 이 단지 지금 용적률 약 190%. 선정(2024년 11월) 이후 2026년 10월까지 일산 선도지구 단지는 평균 +3.1%, 같은 도시 선정 안 된 노후 단지는 +1.2% 움직였어요(단지·평형 6곳 vs 300곳, 사실 통계 · 점수에는 넣지 않았어요).', '선도지구 문구');
+eq(P.renewalLine({}, RN, null, null), null, '선도지구 아님');
+
 console.log(`쉬운 말 문구 검증: ${ok}개 통과, ${bad}개 실패`);
 process.exit(bad ? 1 : 0);

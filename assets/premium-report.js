@@ -90,7 +90,9 @@
     if (f.landavg || f.vl) r.push(['f', '재건축 사업성(단지): ' + [f.landavg ? `세대당 평균 대지지분 ${f.landavg}평` : '', f.vl ? `용적률 ${Math.round(f.vl)}%` : ''].filter(Boolean).join(' · ') + (f.land ? ` · 이 평형 대지지분 약 ${f.land}평` : '')]);
     const rg = PL.regionText(f, IX, x.code, G);
     if (rg.fact || rg.why.length || rg.ref.length) r.push(['f', PL.regionLine(rg, `${sgg} 지역 흐름:`)]);
-    if (f.sp) for (const [nm, units, , stg, mv] of f.sp.slice(0, 2)) {
+    if (f.sl && ctx.SP && ctx.SP.zones) for (const ln of PL.supplyLines(f, ctx.SP, G)) r.push(ln);
+    { const rn = PL.renewalLine(f, ctx.SP, G, ctx.EV); if (rn) { r.push(['f', rn.text]); if (rn.ref) r.push(['', rn.ref]); } }
+    if (f.sp && !(f.sl && ctx.SP && ctx.SP.zones)) for (const [nm, units, , stg, mv] of f.sp.slice(0, 2)) {
       const SG = ['', '발표 단계', '분양·착공 단계', '입주 진행 중'];
       r.push([stg >= 2 ? 'c' : 'f', `주변 공급: 가까운 공공택지 ${nm} · 약 ${(units / 10000).toFixed(units >= 10000 ? 1 : 2).replace(/\.?0+$/, '')}만 가구 — ${SG[stg] || '계획'}${mv ? ` · 첫 입주 목표 ${String(mv).slice(0, 4)}년` : ''}`]);
     }
@@ -98,7 +100,7 @@
     if (f.rc != null && Math.abs(f.rc) >= 0.03 && Math.abs(f.rc) < 0.5) r.push(['f', PL.rcText(f.rc, G), EV('rc')]);
     if (f.lg != null) r.push(['f', (f.ln === x.apt || f.lg >= 0.995) ? `${x.dong} 대장 단지예요 — 같은 평형끼리 비교해 동에서 가장 비싸게 거래돼요` : `${x.dong} 대장 단지(${f.ln})보다 같은 평형 기준 시세가 ${pct(1 - f.lg)}% 낮아요`, EV('lg')]);
     if (f.rl) { const R = f.rl, SK = { plan: '계획 확정', start: '착공', start_real: '본공사 착수', delay: '개통 지연', open: '개통' };
-      r.push(['f', `신규 노선: ${R.line} ${R.st}${R.m != null ? `까지 직선 ${R.m.toLocaleString()}m` : ' 인근'} — ` + (R.opened ? `${ym(R.stym)} 개통` : `${ym(R.stym)} ${SK[R.stage] || R.stage}` + (R.target ? `, 개통 목표 ${ym(R.target)}` : '') + (R.delays ? `(일정 지연 ${R.delays}회)` : '')) + (R.pre != null ? ` · ${ym(R.first)} 이후 이 단지는 구 평균보다 ${Math.abs(R.pre)}% ${R.pre >= 0 ? '더' : '덜'} 올랐어요` : ''), EV('rail')]); }
+      r.push(['f', `신규 노선: ${R.line} ${R.st}${R.m != null ? `까지 직선 ${R.m.toLocaleString()}m` : ' 인근'} — ` + (R.x ? '노선 계획 공식 취소·제외' : R.opened ? `${ym(R.stym)} 개통` : `${ym(R.stym)} ${SK[R.stage] || R.stage}` + (R.dl ? `, ${PL.delayText(R.dl, '개통')}` : (R.target ? `, 개통 목표 ${ym(R.target)}` : '') + (R.delays ? `(일정 지연 ${R.delays}회)` : ''))) + (R.pre != null ? ` · ${ym(R.first)} 이후 이 단지는 구 평균보다 ${Math.abs(R.pre)}% ${R.pre >= 0 ? '더' : '덜'} 올랐어요` : ''), EV('rail')]); }
     if (f.sub != null) r.push(['f', f.sub >= 30 ? '지하철역이 걸어가기엔 먼 편이에요(도보 20분 이상)' : `${f.subs ? f.subs.replace(/\s+/g, ' ') : '지하철역'}까지 도보 ${f.sub <= 5 ? '5분 이내' : f.sub + '분 이내'}` + (f.sub <= 10 ? ' — 역세권' : '')]);
     if (f.sch != null) r.push(['f', '학군: ' + PL.schText(f.sch, f.schn, G), EV('sch')]);
     if (f.jr != null) r.push([f.jr < 0.4 ? 'c' : 'f', PL.jrText(f, x.P, x.jst, ri.short, G, f.by), EV('jr')]);
@@ -196,8 +198,8 @@
   async function render(box, keys, order) {
     box.innerHTML = '<div class="msg info"><span class="spin"></span>리포트를 만드는 중입니다…</div>';
     const j = async u => { try { const r = await fetch(DATA + u); return r.ok ? r.json() : null; } catch (e) { return null; } };
-    const [IX, MODEL, MH, EV] = await Promise.all([P.index(), j('model.json'), j('model_h.json'), j('evidence.json')]);
-    const ctx = { IX, MODEL, MH, EV };
+    const [IX, MODEL, MH, EV, SP] = await Promise.all([P.index(), j('model.json'), j('model_h.json'), j('evidence.json'), j('supply.json')]);
+    const ctx = { IX, MODEL, MH, EV, SP };
     const items = [], miss = [];
     for (const k of keys) {
       const p = P.keyParse(k); if (!p) continue;

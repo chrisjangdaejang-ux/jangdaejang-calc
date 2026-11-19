@@ -23,7 +23,8 @@
 <script src="../assets/stat.js"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/kchat.js?v=1"></script>
-<script src="../assets/mine-core.js?v=4"></script>
+<script src="../assets/plain-words.js?v=3"></script>
+<script src="../assets/mine-core.js?v=5"></script>
 <script src="../assets/price-sheet.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -102,6 +103,7 @@ td small{color:#4E5968;font-size:13.5px}
 .bar em{position:absolute;top:-2px;width:2px;height:12px;background:#8B95A1}
 .why{margin:10px 0 0;padding-left:18px;display:grid;gap:6px;font-size:15px}
 .why li::marker{color:#B8942A}
+.why li.c{color:#8A5A00}
 .links{display:grid;gap:8px;grid-template-columns:repeat(3,1fr)}
 @media(max-width:640px){.links{grid-template-columns:1fr}}
 .links a{display:flex;flex-direction:column;justify-content:center;gap:2px;min-height:64px;padding:10px 14px;border:1px solid var(--line);border-radius:14px;text-decoration:none;color:var(--text);background:#fff}
@@ -203,7 +205,8 @@ const M = window.JDJ_MINE, $ = id => document.getElementById(id);
 const DATA = '/jangdaejang-data/data/';
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num = s => { const v = parseInt(String(s || '').replace(/[^\d]/g, ''), 10); return isFinite(v) ? v : 0; };
-let IX = null, LABEL = null;
+let IX = null, LABEL = null, EVD = null, SUP = null;
+const PL = window.JDJ_PLAIN;
 const P = window.JDJ_PRICE;
 const LIST = {}, GROUPS = {}, SMAP = {};
 let CUR = null;                     // 지금 보여 주는 {d(전체 자료 평형), map(점수)}
@@ -333,7 +336,9 @@ function render(d, map, units){
   const c = M.counts(u[7]);
   const mrows = []; for (let i = IX.months.length - 1; i >= Math.max(0, IX.months.length - 12); i--) {
     const p = u[6][i]; mrows.push(`<tr><td>${ym(IX.months[i])}</td><td class="num">${c[i]}건</td><td class="num">${p ? p.toLocaleString() + '만' : '-'}</td><td class="num">${p ? M.won(M.toPrice(p, u[4])) : '-'}</td></tr>`); }
-  const rs = M.reasons(f, {apt:d.apt, dong:d.dong, sgg:sggName(d.code), sido:sidoName(d.code), label:LABEL});
+  const sdo = IX.sido.find(x => x.name === sidoName(d.code)) || {};
+  const rs = M.reasonItems(f, {apt:d.apt, dong:d.dong, sgg:sggName(d.code), sido:sidoName(d.code), sidoShort:sdo.short || '', label:LABEL, PL, G:PL ? PL.gloss() : null, sid:sdo.id, ev:EVD, sp:SUP});
+  const rli = o => `<li class="${o.c}">${esc(o.t)}${o.ev && PL ? PL.evHtml(o.ev, false, esc) : ''}</li>`;
   const pk = M.premiumKey({sd:S.sd, code:d.code, dong:d.dong, apt:d.apt, band:S.band});
   const posBar = p => { if (!p) return ''; const lo = Math.min(p.me, p.ref) * 0.85, hi = Math.max(p.me, p.ref) * 1.15, x = v => ((v - lo) / (hi - lo) * 100).toFixed(1);
     return `<div class="bar" aria-hidden="true"><em style="left:${x(p.ref)}%"></em><i style="left:${x(p.me)}%"></i></div>`; };
@@ -413,10 +418,10 @@ function render(d, map, units){
 
   <div class="panel">
     <h2>미래가치 점수와 근거<small>공개 자료에 있는 점수를 그대로 보여 드려요 (2년 보유 기준, 같은 시·도 단지 비교)</small></h2>
-    ${f.fv != null ? `<ul class="why">${rs.map(t => `<li>${esc(t)}</li>`).join('')}</ul>
+    ${f.fv != null ? `<ul class="why">${rs.map(rli).join('')}</ul>
       <p class="basis">미래가치 점수는 당시 알려진 정보로 예측하고 이후 실제 시세로 채점해 검증한 점수예요. 같은 지역 평균 대비 순위라, 시장 전체가 내리면 점수가 높은 단지도 내릴 수 있어요.</p>`
       : !has ? `<p class="note" style="font-size:15px">거래가 적어 미래가치 점수는 아직 매기지 않아요(최근 3년 ${u[5]}건). 시세·추이·거래량과 실거래 목록은 위에서 확인할 수 있어요.</p>`
-      : `<p class="note" style="font-size:15px">이 단지·평형은 아직 미래가치 점수가 없어요. 검증에 쓸 거래 자료가 충분히 쌓이면 자동으로 보여 드려요.</p>${rs.length ? `<ul class="why">${rs.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}`}
+      : `<p class="note" style="font-size:15px">이 단지·평형은 아직 미래가치 점수가 없어요. 검증에 쓸 거래 자료가 충분히 쌓이면 자동으로 보여 드려요.</p>${rs.length ? `<ul class="why">${rs.map(rli).join('')}</ul>` : ''}`}
   </div>
 
   <div class="panel">
@@ -583,7 +588,9 @@ function wireHome(el, h, u){
 async function init(){
   try { const r = await fetch(DATA + 'index.json', {cache:'no-cache'}); if (!r.ok) throw 0; IX = await r.json(); }
   catch (e) { $('loadMsg').textContent = '시세 자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.'; return; }
-  try { const m = await fetch(DATA + 'model.json', {cache:'no-cache'}); if (m.ok) LABEL = (await m.json()).label || null; } catch (e) {}
+  const j = u => fetch(DATA + u, {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null);
+  const [mj, ej, sj] = await Promise.all([j('model.json'), j('evidence.json'), j('supply.json')]);
+  LABEL = (mj && mj.label) || null; EVD = ej; SUP = sj;
   $('src').insertAdjacentHTML('afterbegin', `자료 기간 ${M.ymLabel(IX.months[0])}~${M.ymLabel(IX.dataTo)} · ${esc(IX.updated)} 갱신 · `);
   fillSido();
   renderHomes();

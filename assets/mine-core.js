@@ -233,38 +233,54 @@
   /** 보유 기간(개월): 매수 연월 → 기준 연월(YYYYMM) */
   function heldMonths(bd, ym) { if (!okYm(bd) || !/^\d{6}$/.test(String(ym || ''))) return null; const a = +bd.slice(0, 4) * 12 + +bd.slice(5, 7), b = +String(ym).slice(0, 4) * 12 + +String(ym).slice(4, 6); return b - a >= 0 ? b - a : null; }
 
-  /* ---------- 미래가치 근거 요약 (리포트와 같은 문구 체계, 2년 기준) ---------- */
-  function reasons(f, x) {
+  /* ---------- 미래가치 근거 요약 — 리포트와 같은 '쉬운 말'(assets/plain-words.js 재사용), 2년 기준 ----------
+     x = {apt, dong, sgg, sido, sidoShort, label, year, sid(시·도 파일 id), ev(evidence.json), sp(supply.json), PL(없으면 전역 JDJ_PLAIN)}
+     reasonItems → [{t: 문장, ev: 근거 등급(PL.evid 결과) 또는 null, c: 'c'(주의)|''}] · reasons → 문장만 */
+  function reasonItems(f, x) {
     const r = []; if (!f) return r;
+    const PL = x.PL || root.JDJ_PLAIN, G = x.G || null;
     const pct = v => Math.round(Math.abs(v) * 100);
     const Y = x.year || new Date().getFullYear();
-    if (f.fv != null) r.push(f.gs != null
-      ? `미래가치 ${f.fv}점 — ${x.sido} 전체 단지 중 상위 ${Math.max(1, 100 - f.fv)}%` + (f.fvg != null ? `, ${x.sgg} 안에서는 상위 ${Math.max(1, 100 - f.fvg)}%` : '') + ' (실제 이후 시세로 채점해 검증한 점수)'
-      : `미래가치 ${f.fv}점 — ${x.sgg} 단지 중 상위 ${Math.max(1, 100 - f.fv)}% (실제 이후 시세로 채점해 검증한 점수)`);
+    const EV = kind => (PL && x.ev && x.sid) ? PL.evid(x.ev, x.sid, f.eb, kind, x.sidoShort || '', G) : null;
+    const add = (t, ev, c) => r.push({ t, ev: ev || null, c: c || '' });
+    const rank = v => PL ? PL.rank(v) : `상위 ${Math.max(1, 100 - v)}%`;
+    if (f.fv != null) add(f.gs != null
+      ? `미래가치 ${f.fv}점 — ${x.sido} 단지 ${rank(f.fv)}` + (f.fvg != null ? ` · ${x.sgg} 안에서는 ${rank(f.fvg)}` : '') + '이에요(실제 이후 시세로 채점해 검증한 점수)'
+      : `미래가치 ${f.fv}점 — ${x.sgg} 단지 ${rank(f.fv)}이에요(실제 이후 시세로 채점해 검증한 점수)`);
     const w = f.why && (f.why['2'] || null);
     if (w && w.length) {
       const lb = k => (x.label && x.label[k]) || k, U = a => [...new Set(a)];
       const up = U(w.filter(t => t.endsWith('+')).map(t => lb(t.slice(0, -1)))), dn = U(w.filter(t => t.endsWith('-')).map(t => lb(t.slice(0, -1)))).filter(v => !up.includes(v));
-      if (up.length || dn.length) r.push('2년 예측에서 점수를 움직인 요인 — ' + (up.length ? `올린 요인: ${up.join(' · ')}` : '') + (up.length && dn.length ? ' / ' : '') + (dn.length ? `내린 요인: ${dn.join(' · ')}` : ''));
+      if (up.length || dn.length) add('2년 점수를 움직인 요인 — ' + (up.length ? `올린 요인: ${up.join(' · ')}` : '') + (up.length && dn.length ? ' / ' : '') + (dn.length ? `내린 요인: ${dn.join(' · ')}` : ''));
     }
-    if (f.dd != null && Math.abs(f.dd) >= 0.03) r.push(f.dd > 0 ? `최근 3년 하락 구간에서 구 평균보다 ${pct(f.dd)}%p 덜 빠짐 — 집값이 흔들릴 때 잘 버틴 단지` : `최근 3년 하락 구간에서 구 평균보다 ${pct(f.dd)}%p 더 빠짐 — 시장 따라 출렁임이 큰 편`);
+    if (f.rz && PL) add(PL.rzText(f.rz, G, v => `${String(v).slice(0, 4)}년 ${parseInt(String(v).slice(4, 6), 10)}월`), EV('stg'));
+    if (f.dd != null && Math.abs(f.dd) >= 0.03) add(PL ? PL.ddText(f.dd, G) + (f.dd > 0 ? ' — 집값이 흔들릴 때 잘 버틴 편이에요' : ' — 시장에 따라 오르내림이 큰 편이에요')
+      : `최근 3년 하락기에 구 평균보다 ${pct(f.dd)}%p ${f.dd > 0 ? '덜' : '더'} 내렸어요`, EV('dd'), f.dd > 0 ? '' : 'c');
     /* 고점 회복(rc)은 공개 값이 비율(예: 0.966)로 보여 '구 평균 대비 %p' 문구와 맞지 않아 이 화면에서는 싣지 않는다 */
     if (f.by || f.hh) {
       const age = f.by ? Y - f.by : null, parts = [], tags = [];
       if (f.by) parts.push(`${f.by}년 준공(${age}년차)`); if (f.hh) parts.push(`${f.hh.toLocaleString()}세대`);
-      if (age != null && age <= 10) tags.push('신축');
-      if (age != null && age >= 30) tags.push('재건축 연한(30년) 도래'); else if (age != null && age >= 25) tags.push(`${30 - age}년 뒤 재건축 연한(30년) 도래`);
-      if (f.hh >= 1000) tags.push('대단지'); else if (f.hh && f.hh < 300) tags.push('소규모 단지');
-      r.push(parts.join(' · ') + (tags.length ? ' — ' + tags.join(' · ') : ''));
+      if (age != null && age <= 10) tags.push('신축이에요');
+      if (age != null && age >= 30) tags.push('지은 지 30년이 넘어 재건축을 추진할 수 있는 나이가 됐어요');
+      else if (age != null && age >= 25) tags.push(`${30 - age}년 뒤 재건축을 추진할 수 있는 나이(30년)가 돼요`);
+      if (f.hh >= 1000) tags.push('대단지예요'); else if (f.hh && f.hh < 300) tags.push('소규모 단지예요');
+      add(parts.join(' · ') + (tags.length ? ' — ' + tags.join(' · ') : ''));
     }
     if (f.lg != null) {
-      if ((f.ln && f.ln === x.apt) || f.lg >= 0.995) r.push(`${x.dong} 대장 단지 — 같은 평형끼리 비교해 동에서 가장 비싸게 거래되는 단지`);
-      else r.push(`${x.dong} 대장 단지(${f.ln || '-'})보다 같은 평형 기준 ${pct(1 - f.lg)}% 낮은 시세`);
+      if ((f.ln && f.ln === x.apt) || f.lg >= 0.995) add(`${x.dong} 대장 단지예요 — 같은 평형끼리 비교해 동에서 가장 비싸게 거래돼요`, EV('lg'));
+      else add(`${x.dong} 대장 단지(${f.ln || '-'})보다 같은 평형 기준 시세가 ${pct(1 - f.lg)}% 낮아요`, EV('lg'));
     }
-    if (f.sch != null) { const p = Math.round(f.sch * 1000) / 10; r.push(`학군: 가까운 중학교${f.schn ? `(${f.schn.join('·')})` : ''} 순전입률 ${p >= 0 ? '+' : ''}${p}%` + (p >= 3 ? ' — 전입이 전출보다 뚜렷이 많은 곳' : p <= -3 ? ' — 전출이 더 많은 편' : ' — 전입·전출 비슷')); }
-    if (f.sub != null) r.push(f.sub >= 30 ? '지하철역이 걸어가기엔 먼 편(도보 20분 이상) — 버스·자차 위주 생활권' : `${f.subs ? f.subs.replace(/\s+/g, ' ') : '지하철역'}까지 도보 ${f.sub <= 5 ? '5분 이내' : f.sub + '분 이내'}` + (f.sub <= 10 ? ' — 역세권' : ''));
+    if (PL && x.sp) {
+      for (const [c, t] of PL.supplyLines(f, x.sp, G)) add(t, null, c);
+      const rn = PL.renewalLine(f, x.sp, G, x.ev); if (rn) { add(rn.text); if (rn.ref) add(rn.ref); }
+    }
+    if (f.rl && PL) { const R = f.rl, ymk = v => `${String(v).slice(0, 4)}년 ${parseInt(String(v).slice(4, 6), 10)}월`, SK = { plan: '계획 확정', start: '착공', start_real: '본공사 착수', delay: '개통 지연', open: '개통' };
+      add(`신규 노선: ${R.line} ${R.st} 인근 — ` + (R.x ? '노선 계획 공식 취소·제외' : R.opened ? `${ymk(R.stym)} 개통했어요` : `${ymk(R.stym)} ${SK[R.stage] || R.stage}` + (R.dl ? `, ${PL.delayText(R.dl, '개통')}` : (R.target ? `, 개통 목표 ${ymk(R.target)}` : ''))), EV('rail')); }
+    if (f.sch != null) add('학군: ' + (PL ? PL.schText(f.sch, f.schn, G) : ''), EV('sch'));
+    if (f.sub != null) add(f.sub >= 30 ? '지하철역이 걸어가기엔 먼 편이에요(도보 20분 이상) — 버스·자차 위주 생활권' : `${f.subs ? f.subs.replace(/\s+/g, ' ') : '지하철역'}까지 걸어서 ${f.sub <= 5 ? '5분 이내' : f.sub + '분 이내'}예요` + (f.sub <= 10 ? ' — 역세권' : ''));
     return r;
   }
+  function reasons(f, x) { return reasonItems(f, x).map(o => o.t); }
 
   /* ---------- 전체 기간 시세 (price/h/{구}.json) · 신고가 · 최고가 ----------
      price/{구}.json 의 hist = {hm, rm, to, cover, rcover, v, file}, 행 칸 12 = {f, hi:[금액, 연월일, 전용㎡], hi1}
@@ -354,7 +370,7 @@
 
   const API = { PY, r100, STORE_KEY, MAX_HOMES, FEW, counts, lastIdx, median, toPrice, ymLabel, danjiKey, agentKey, premiumKey, groupDanji, searchDanji,
     normName, splitNum, matchName, listRow, unitKey, hasScore, scoreOf, monthDeals, trades, lastDeal, isFew,
-    bandSummary, changeBack, dongPosition, sggPosition, trend, volume, volumeCounts, cleanHome, homeId, parseStore, dumpStore, addHome, removeHome, findUnit, vsBuy, heldMonths, reasons, won, pctTxt,
+    bandSummary, changeBack, dongPosition, sggPosition, trend, volume, volumeCounts, cleanHome, homeId, parseStore, dumpStore, addHome, removeHome, findUnit, vsBuy, heldMonths, reasons, reasonItems, won, pctTxt,
     ymAdd, ymDiff, ymKo, decodeSeries, histRow, histSeries, histWindow, histSpans, highs, isNewHigh, lineParts, isSparse };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_MINE = API;

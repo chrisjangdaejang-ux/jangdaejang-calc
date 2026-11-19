@@ -22,11 +22,11 @@
 <script src="../../assets/stat.js"></script>
 <script src="../../assets/region-notes.js"></script>
 <script src="../../assets/rec-core.js?v=1"></script>
-<script src="../../assets/mine-core.js?v=4"></script>
+<script src="../../assets/mine-core.js?v=5"></script>
 <script src="../../assets/price-sheet.js?v=4"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/kchat.js?v=1"></script>
-<script src="../../assets/plain-words.js?v=2"></script>
+<script src="../../assets/plain-words.js?v=3"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -735,8 +735,12 @@ function futureReasons(x){
     if (w&&w.length){ const lb=k=>((m&&m.label&&m.label[k])||(MODEL&&MODEL.label&&MODEL.label[k])||k);
       const U=a=>[...new Set(a)], up=U(w.filter(t=>t.endsWith('+')).map(t=>lb(t.slice(0,-1)))), dn=U(w.filter(t=>t.endsWith('-')).map(t=>lb(t.slice(0,-1)))).filter(x=>!up.includes(x));
       r.push(['f', `${h}년 점수를 움직인 요인 — ` + (up.length?`올린 요인: ${up.join(' · ')}`:'') + (up.length&&dn.length?' / ':'') + (dn.length?`내린 요인: ${dn.join(' · ')}`:'')]); } }
-  /* 주변 공공택지·신도시 공급: 선택한 보유 기간 안에 입주가 시작되는지 */
-  if (f.sp){ const Y=new Date().getFullYear(), end=Y+Math.min(HZ,10), SG=['','발표 단계','분양·착공 단계','입주 진행 중'];
+  /* 가까운·같은 생활권 대규모 공급(단계 이력·첫 입주 목표·지연·과거 통계·점수 반영 여부) — 새 자료(f.sl)가 있으면 이것으로 */
+  if (f.sl && SUPPLY && SUPPLY.zones) for (const ln of PL.supplyLines(f, SUPPLY, GLS)) r.push(ln);
+  /* 1기 신도시 노후계획도시 정비 선도지구 */
+  { const rn = PL.renewalLine(f, SUPPLY, GLS, EVD); if (rn) { r.push(['f', rn.text]); if (rn.ref) r.push(['', rn.ref]); } }
+  /* 주변 공공택지·신도시 공급(예전 자료): 선택한 보유 기간 안에 입주가 시작되는지 */
+  if (f.sp && !(f.sl && SUPPLY && SUPPLY.zones)){ const Y=new Date().getFullYear(), end=Y+Math.min(HZ,10), SG=['','발표 단계','분양·착공 단계','입주 진행 중'];
     for (const [nm,units,km,stg,mv] of f.sp){
       const my = mv ? +String(mv).slice(0,4) : null;
       let t = `주변 공급: 가까운 공공택지 ${nm} · 약 ${(units/10000).toFixed(units>=10000?1:2).replace(/\.?0+$/,'')}만 가구 — ${SG[stg]||'계획'}`;
@@ -771,7 +775,7 @@ function futureReasons(x){
   if (f.rl){
     const R=f.rl, d=v=>v?`${v.slice(0,4)}.${v.slice(4)}`:'', SK={plan:'계획 확정',start:'착공',start_real:'본공사 착수',delay:'개통 지연',open:'개통'};
     let t = `신규 노선: ${R.line} ${R.st}${R.m!=null?`까지 직선 ${R.m.toLocaleString()}m`:' 인근'} — `;
-    t += R.opened ? `${d(R.stym)} 개통` : `${d(R.stym)} ${SK[R.stage]||R.stage} 이후 공사 중` + (R.target?`, 개통 목표 ${d(R.target)}`:'') + (R.delays?`(일정 지연 ${R.delays}회)`:'');
+    t += R.x ? '노선 계획 공식 취소·제외' : R.opened ? `${d(R.stym)} 개통` : `${d(R.stym)} ${SK[R.stage]||R.stage} 이후 공사 중` + (R.dl ? `, ${PL.delayText(R.dl,'개통')}` : (R.target?`, 개통 목표 ${d(R.target)}`:'') + (R.delays?`(일정 지연 ${R.delays}회)`:''));
     if (R.pre!=null) t += ` · ${d(R.first)} 이후 이 단지는 구 평균보다 ${Math.abs(R.pre)}% ${R.pre>=0?'더':'덜'} 올랐어요`;
     const S = RAIL&&RAIL.summary&&RAIL.summary[R.opened?'open':'open'];
     if (!R.opened && S && S.n>=15 && S.after18!=null) t += ` — 과거 수도권 ${S.n}개 역 사례: 개통 후 1년 반 동안 구 평균 대비 ${S.after18>=0?'+':''}${S.after18}%`;

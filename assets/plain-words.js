@@ -247,6 +247,77 @@
       + (m.oos_avg != null ? `평균으로는 ${more(m.oos_avg, G)} 올랐어요. ` : '')
       + '같은 구 평균과 비교한 순위라, 시장 전체가 내리면 점수가 높은 단지도 내릴 수 있어요.';
   }
+
+  /* ---------- 일정: 당초 목표 → 실제/현재 예정(지연) — 엔진 scripts/schedule.py delay_text 와 같은 규칙 ----------
+     d = {orig, cur, orig_s, cur_s, actual, delay(개월), state: done|done_late|overdue|postponed|on_track|unknown|cancel|planned|overdue_later} */
+  const ymKo = v => { v = String(v == null ? '' : v).replace('-', ''); return v.length === 4 ? `${v}년` : `${v.slice(0, 4)}년 ${parseInt(v.slice(4, 6), 10)}월`; };
+  const spanKo = m => m < 12 ? `${m}개월` : `${Math.floor(m / 12)}년` + (m % 12 >= 3 ? ` ${m % 12}개월` : '');
+  function delayText(d, what) {
+    if (!d) return '';
+    const w = what ? what + ' ' : '';
+    if (d.state === 'cancel') return `${w}공식 취소`;
+    if (d.orig == null) {
+      if (d.state === 'done') return `${ymKo(d.actual)} ${w}완료`.replace(/ $/, '');
+      return `${w}${ymKo(d.cur_s || d.cur)} 예정(당초 목표 미확인)` + (d.state === 'overdue_later' ? ` — 예정보다 약 ${spanKo(d.delay)} 지났어요` : '');
+    }
+    const o = ymKo(d.orig_s || d.orig);
+    if (d.state === 'done' || d.state === 'done_late') return `당초 ${o} ${w}목표 → 실제 ${ymKo(d.actual)}` + (d.delay ? `(약 ${spanKo(d.delay)} 늦어짐)` : '(목표대로)');
+    if (d.state === 'overdue') return `당초 ${o} ${w}목표 → 아직 공식 기록이 없어요(목표보다 약 ${spanKo(d.delay)} 지남)`;
+    if (d.state === 'unknown') return `당초 ${o} ${w}목표 → 진행 여부는 공식 확인 전이에요`;
+    return `당초 ${o} ${w}목표 → 현재 ${ymKo(d.cur_s || d.cur)} 예정` + (d.delay ? `(약 ${spanKo(d.delay)} 늦어짐)` : '');
+  }
+
+  /* ---------- 가까운·같은 생활권 대규모 공급(공개 supply.json zones·ring, 단지 f.sl) ---------- */
+  function unitsKo(u) {
+    const m = Math.floor(u / 10000), r = u % 10000, c = Math.round(r / 1000);
+    const ap = u % 1000 ? '약 ' : '';
+    if (!m) return `${ap}${Math.round(u / 1000)}천`;
+    if (c === 10) return `${ap}${m + 1}만`;
+    return `${ap}${m}만` + (c ? ` ${c}천` : '');
+  }
+  const SP_STAGE = { ann: '발표', desig: '지구 지정', sale: '첫 분양·사전청약', start: '착공', move: '첫 입주' };
+  function supplyLines(f, SP, G) {
+    const out = [];
+    if (!f || !f.sl || !SP || !SP.zones) return out;
+    for (const [id, ring, sc] of f.sl) {
+      const z = SP.zones[id]; if (!z) continue;
+      const big = z.u >= 10000, head = ring === 'n' ? (big ? '가까운 대규모 공급' : '가까운 공공택지 공급') : '같은 생활권 대규모 공급';
+      const seen = new Set(), hist = [];
+      for (const [ym, s] of z.h || []) { const k = (SP_STAGE[s] || s); if (s === 'move' || seen.has(k)) continue; seen.add(k); hist.push(`${String(ym).slice(0, 4)}년 ${k}`); }
+      let mv;
+      if (z.x) mv = `${ymKo(String(z.x[0]).replace('-', ''))} 공식 취소`;
+      else if (z.mv) mv = `${ymKo(z.mv)} 첫 입주`;
+      else if (z.dl) mv = '첫 입주: ' + delayText(z.dl);
+      else if (z.plan) mv = `첫 입주 목표 ${ymKo(z.plan)}`;
+      else mv = '첫 입주 시기 미정';
+      let t = `${head}: ${z.n} ${unitsKo(z.u)} 가구 — ${hist.concat([mv]).join(' → ')}.`;
+      const key = z.st === 3 ? 'move' : z.st === 2 ? 'sale' : 'ann', R = SP.ring && SP.ring[ring === 'n' ? 'near' : 'life'] && SP.ring[ring === 'n' ? 'near' : 'life'][key];
+      if (R && R.n >= 3 && R.ex != null)
+        t += ` 과거 비슷한 단계(${key === 'move' ? '첫 입주' : key === 'sale' ? '분양·착공' : '발표·지구 지정'})의 대규모 공급 ${ring === 'n' ? '가까이' : '같은 생활권'}에 있던 단지는 이후 2년 같은 구 평균보다 ${Math.abs(R.ex) < 0.05 ? '거의 같게' : '평균 ' + more(R.ex, G)} 올랐어요(사례 ${R.n}건${R.sig ? '' : ', 차이가 뚜렷하지는 않아요'}).`;
+      t += sc ? ' 점수에 반영돼요.' : (ring === 'n' ? ' 점수에는 넣지 않았어요(점수는 더 가까운 지구만 반영) · 참고 정보.' : ' 점수에는 아직 넣지 않았어요(과거 영향이 뚜렷하지 않아서) · 참고 정보.');
+      out.push([ring === 'n' && z.st >= 2 && !z.x ? 'c' : 'f', t]);
+    }
+    return out;
+  }
+
+  /* ---------- 1기 신도시 노후계획도시 정비 선도지구(공개 supply.json renewal, 단지 f.nr) ---------- */
+  function renewalLine(f, SP, G, ev) {
+    const RN = SP && SP.renewal, z = f && f.nr && RN && RN.zones && RN.zones[f.nr];
+    if (!z) return null;
+    const L = RN.labels || {}, sel = (z.h || []).find(h => h[1] === 'select'), cur = (z.h || []).filter(h => h[1] === z.st).slice(-1)[0];
+    const ok = s => (z.v && z.v[s] === 'official') ? '공식 확인됨' : '보도로 확인';
+    let t = `${z.town} 노후계획도시 정비 — 이 단지는 ${z.n} 선도지구에 포함돼요(${sel ? ymKo(sel[0]) : ''} 선정, ${ok('select')})`;
+    t += ` · 현재 단계: ${L[z.st] || z.st}${cur && z.st !== 'select' ? `(${ymKo(cur[0])}, ${ok(z.st)})` : ''}`;
+    if (z.next && z.dl) t += ` · 다음 단계 ${L[z.next] || z.next}: ${delayText(z.dl)}`;
+    if (z.done) t += ` · 정부 목표 입주 ${ymKo(z.done)}`;
+    if (z.far) t += ` · ${z.town} 기준용적률 ${z.far}%(보도로 확인)` + (f.vl ? `, 이 단지 지금 용적률 약 ${Math.round(f.vl)}%` : '');
+    t += '.';
+    const S = RN.stats && Object.values(RN.stats).find(s => s.town === z.town);
+    if (S) t += ` 선정(${ymKo(S.from)}) 이후 ${ymKo(S.to)}까지 ${z.town} 선도지구 단지는 평균 ${S.sel >= 0 ? '+' : ''}${S.sel}%, 같은 도시 선정 안 된 노후 단지는 ${S.oth >= 0 ? '+' : ''}${S.oth}% 움직였어요(단지·평형 ${S.n_sel}곳 vs ${S.n_oth}곳, 사실 통계 · 점수에는 넣지 않았어요).`;
+    let ref = null;
+    if (ev) { const e = evid(ev, 's00', { stg: z.st === 'select' ? '1' : '3' }, 'stg', '서울', G); if (e && e.n >= 30) ref = `비슷한 단계 참고(서울 ${e.cond}): ${e.text}`; }   /* 사례가 적으면 싣지 않음 */
+    return { text: t, ref };
+  }
   const easy = t => `<p class="jp-easy"><b>쉽게 말하면:</b> ${t}</p>`;
 
   /* 공용 스타일(한 번만) */
@@ -264,5 +335,5 @@
     (root.document.head || root.document.documentElement).appendChild(s);
   }
 
-  root.JDJ_PLAIN = { STAGE, gloss, J, won, eokR, rank, more, regionInfo, regionRank, regionText, regionLine, evid, evHtml, ddText, rcText, momText, schText, stageName, rzText, jrStats, jrText, VOK, hzLabel, checkText, easy };
+  root.JDJ_PLAIN = { STAGE, gloss, J, won, eokR, rank, more, regionInfo, regionRank, regionText, regionLine, evid, evHtml, ddText, rcText, momText, schText, stageName, rzText, jrStats, jrText, VOK, hzLabel, checkText, easy, ymKo, spanKo, delayText, unitsKo, supplyLines, renewalLine };
 })(typeof window !== 'undefined' ? window : globalThis);
