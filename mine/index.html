@@ -145,7 +145,7 @@ td small{color:#4E5968;font-size:13.5px}
 <body>
 <header class="top">
   <a class="brand" href="/jangdaejang-calc/"><span class="star" aria-hidden="true">★</span> 장대장 <span class="acc">계산기</span></a>
-  <div class="badge plain">내 집 시세 · 참고용</div>
+  <div class="badge plain">내 집 시세</div>
 </header>
 
 <main class="wrap">
@@ -174,10 +174,9 @@ td small{color:#4E5968;font-size:13.5px}
 
   <section id="res" hidden aria-live="polite"></section>
 
-  <p class="disc" id="src">자료: 국토교통부 아파트 매매 실거래가(공공데이터포털). 해제(취소) 신고된 거래와 직거래는 원자료 기준으로 집계에서 빼요. 월별 평당가는 그 달까지 3개월 실거래 평당가의 중앙값이에요.<br>
-  이 화면은 공개 자료를 단순 집계한 참고용 정보이며 매수·매도를 권유하지 않아요. 투자 권유가 아니에요. 실제 거래가는 동·층·향·수리 상태에 따라 달라요. 미래가치 점수는 과거 자료로 검증한 참고 지표로, 앞으로의 가격을 보장하지 않아요.</p>
+  <p class="disc" id="src">자료: 국토교통부 아파트 매매 실거래가(공공데이터포털). 해제(취소) 신고된 거래와 직거래는 원자료 기준으로 집계에서 빼요. 월별 평당가는 그 달까지 3개월 실거래 평당가의 중앙값이에요. 실제 거래가는 동·층·향·수리 상태에 따라 달라요.</p>
 </main>
-<footer class="foot">★ 장대장부동산그룹 · <a href="../">계산기 홈</a></footer>
+<footer class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 장대장부동산그룹 · <a href="../">계산기 홈</a></footer>
 
 <script>
 (function(){
@@ -356,7 +355,7 @@ function render(d){
   <div class="panel">
     <h2>미래가치 점수와 근거<small>공개 자료에 있는 점수를 그대로 보여 드려요 (2년 보유 기준, 같은 시·도 단지 비교)</small></h2>
     ${f.fv != null ? `<ul class="why">${rs.map(t => `<li>${esc(t)}</li>`).join('')}</ul>
-      <p class="basis">미래가치 점수는 당시 알려진 정보로 예측하고 이후 실제 시세로 채점해 검증한 참고 지표예요. 앞으로의 가격을 보장하지 않으며, 매수·매도 권유가 아니에요.</p>`
+      <p class="basis">미래가치 점수는 당시 알려진 정보로 예측하고 이후 실제 시세로 채점해 검증한 점수예요. 같은 지역 평균 대비 순위라, 시장 전체가 내리면 점수가 높은 단지도 내릴 수 있어요.</p>`
       : `<p class="note" style="font-size:15px">이 단지·평형은 아직 미래가치 점수가 없어요. 검증에 쓸 거래 자료가 충분히 쌓이면 자동으로 보여 드려요.</p>${rs.length ? `<ul class="why">${rs.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}`}
   </div>
 

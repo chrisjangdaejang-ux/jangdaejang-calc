@@ -14,7 +14,7 @@
 <script src="/jangdaejang-calc/assets/pwa.js" defer></script>
 <script src="/jangdaejang-calc/assets/biz.js" defer></script>
 <title>장대장 재개발·빌라 체크 — 빌라 실거래·정비구역·입주권 위험</title>
-<meta name="description" content="연립·다세대(빌라) 실거래가로 대지지분 평당가와 동 중앙값을 비교하고, 같은 동 재개발 정비구역의 진행 단계와 입주권(현금청산) 위험을 참고용으로 확인하세요.">
+<meta name="description" content="연립·다세대(빌라) 실거래가로 대지지분 평당가와 동 중앙값을 비교하고, 같은 동 재개발 정비구역의 진행 단계와 입주권(현금청산) 위험을 확인하세요.">
 <meta property="og:title" content="장대장 재개발·빌라 체크">
 <meta property="og:description" content="빌라 실거래 + 정비구역 단계 + 대지지분 평당가 + 입주권 위험 체크">
 <script>window.JDJ_CONFIG = { tool:'villa', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
@@ -107,7 +107,7 @@ td{padding:7px 4px;border-bottom:1px solid var(--line);font-variant-numeric:tabu
 <body>
 <header class="top">
   <a class="brand" href="/jangdaejang-calc/"><span class="star" aria-hidden="true">★</span> 장대장 <span class="acc">계산기</span></a>
-  <div class="badge plain">재개발·빌라 · 참고용</div>
+  <div class="badge plain">재개발·빌라</div>
 </header>
 
 <div class="wrap">
@@ -148,10 +148,9 @@ td{padding:7px 4px;border-bottom:1px solid var(--line);font-variant-numeric:tabu
     <a class="btn" id="ctaBtn" data-track="villa_consult" target="_blank" rel="noopener">상담 신청</a>
   </div>
 
-  <p class="src" id="src">자료: 국토교통부 연립·다세대 매매 실거래가(공공데이터포털, 해제 거래 제외) · 서울시 정비사업 추진현황 및 서울플랜+(서울 열린데이터광장) · 국토교통부 전국 도시정비사업 통합 데이터(서울 밖, 현재 단계만).<br>
-  이 화면은 공개 자료로 만든 참고용 정보이며 특정 건물의 매수를 권유하지 않습니다. 권리산정기준일·조합원 자격·구역 경계는 구청·조합에 꼭 확인하세요.</p>
+  <p class="src" id="src">자료: 국토교통부 연립·다세대 매매 실거래가(공공데이터포털, 해제 거래 제외) · 서울시 정비사업 추진현황 및 서울플랜+(서울 열린데이터광장) · 국토교통부 전국 도시정비사업 통합 데이터(서울 밖, 현재 단계만).</p>
 </div>
-<div class="foot">★ 장대장부동산그룹 · <a href="../">계산기 홈</a></div>
+<div class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 장대장부동산그룹 · <a href="../">계산기 홈</a></div>
 <script src="../assets/agents.js"></script>
 <script src="../assets/ads.js"></script>
 
@@ -216,7 +215,7 @@ function card(b, i){
       <div class="mini"><div class="k">전용면적</div><div class="v">${b.a}<small>㎡ · ${py(b.a)}평</small></div></div>
     </div>
     ${zh}
-    <div class="caution">참고용 정보 — 권리산정기준일·조합원 자격은 구청·조합에 꼭 확인하세요.</div>
+    <div class="caution">권리산정기준일·조합원 자격·구역 경계는 구청·조합에 꼭 확인하세요.</div>
     <details class="tr"><summary>최근 거래 ${b.tr.length}건 보기</summary><table><tr><th>계약일</th><th class="num">거래가</th><th class="num">전용</th><th class="num">대지권</th><th class="num">층</th></tr>${tr}</table></details>
     <div class="acts"><a class="btn" href="${href}" target="_blank" rel="noopener" data-track="villa_consult">이 빌라 상담 신청</a></div>
   </div>`;

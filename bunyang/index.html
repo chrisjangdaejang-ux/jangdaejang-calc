@@ -153,7 +153,7 @@ body.lock{overflow:hidden}
   </div>
 
   <p class="src">자료: 한국부동산원 청약홈 분양정보 조회 서비스(공공데이터포털) — 아파트·오피스텔/도시형생활주택/민간임대·무순위/잔여세대 공고, 주택형별 공급세대·분양 최고금액. 정비사업 단계: 서울시 정비사업 추진현황(서울 열린데이터광장), 국토교통부 전국 도시정비사업 통합 데이터. 실거래 비교: 국토교통부 아파트 매매 실거래가(해제 거래 제외). 지도: OpenStreetMap.<br>
-  이 화면은 공식 공개 자료를 그대로 모은 참고용 정보이며 특정 단지의 청약·매수를 권유하지 않아요. 청약 자격·일정·분양가는 입주자모집공고문과 청약홈이 최종 기준이에요. <span id="upd"></span><br>
+  청약 자격·일정·분양가는 입주자모집공고문과 청약홈이 최종 기준이에요. <span id="upd"></span><br>
   분양 단지를 알리고 싶으신가요? <a href="apply/" data-track="bunyang_ad_apply">분양 광고 문의 ›</a></p>
 </main>
 
@@ -161,7 +161,7 @@ body.lock{overflow:hidden}
   <div class="sheet" id="sheet"></div>
 </div>
 
-<footer class="foot">★ 장대장부동산그룹 · <a href="../">계산기 홈</a> · <a href="apply/">분양 광고 문의</a></footer>
+<footer class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 장대장부동산그룹 · <a href="../">계산기 홈</a> · <a href="apply/">분양 광고 문의</a></footer>
 
 <script src="../assets/agents.js"></script>
 <script src="../assets/ads.js"></script>
@@ -251,7 +251,7 @@ function cmpHtml(x) {
       <div class="vs"><div><small>분양가 (3.3㎡당)</small><strong>${fmt(my)}만원</strong></div><div><small>${esc(sc)} 실거래 중앙값 (3.3㎡당)</small><strong>${fmt(nb)}만원</strong></div></div>
       <div class="why">분양가는 같은 동네 같은 면적대 실거래 중앙값보다 <b>${Math.abs(d)}% ${d >= 0 ? '높은' : '낮은'}</b> 수준이에요.${nw ? ` 준공 10년 이내 단지(${nn}곳)만 보면 실거래 중앙값 ${fmt(nw)}만원이에요.` : ''}<br>
       근거: ${esc(sc)} 아파트 중 ${BAND[b]} ${nu}개 단지·면적대, ${per} 거래 ${fmt(nt)}건의 최근 3개월 이동 중앙 평당가를 다시 중앙값으로 묶었어요. 분양가는 이 면적대 주택형별 분양 최고금액 ÷ 전용면적(3.3㎡당)의 중앙값이에요.</div></div>`; }).join('')}
-    <p class="why" style="margin:6px 0 0">분양가에는 발코니 확장·옵션 비용이 빠져 있고, 실거래 단지는 연식·입지·브랜드가 달라요. 단순 비교용 참고 수치이며 가치 판단이나 청약 권유가 아니에요.</p></div>`;
+    <p class="why" style="margin:6px 0 0">분양가에는 발코니 확장·옵션 비용이 빠져 있고, 실거래 단지는 연식·입지·브랜드가 달라요.</p></div>`;
 }
 function related(x) {
   const same = ROWS.filter(y => y !== x && y.gn && y.gn === x.gn && sidoNorm(y.sd) === sidoNorm(x.sd) && (y.st === 'pre' || y.st === 'on' || y.st === 'mv' || y.st === 'plan'));

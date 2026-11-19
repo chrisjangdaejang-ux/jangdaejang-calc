@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
+<script src="/jangdaejang-calc/assets/pwa.js" defer data-nobar></script>
+<script src="/jangdaejang-calc/assets/biz.js" defer></script>
+<title>서비스 소개 · 장대장 데이터랩은 이렇게 분석해요 | 장대장 계산기</title>
+<meta name="description" content="집값에 영향을 준 수십 가지 요인을 지역별·시기별 공공 통계로 분석하고, 공식 발표된 공급·교통·정비사업 계획을 반영해 앞으로 2년 같은 지역에서 더 오를 가능성이 높은 단지를 가려냅니다.">
+<script>window.JDJ_CONFIG = { tool:'about', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../assets/track.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=39">
+<style>
+.ab{max-width:760px;margin:0 auto;padding:28px 20px 40px}
+.ab h1{font-size:clamp(27px,6vw,36px);margin:8px 0 14px}
+.ab .def{font-size:17px;line-height:1.75;color:var(--sub);margin:0}
+.ab .def b{color:var(--text)}
+.ab h2{font-size:21px;font-weight:900;letter-spacing:-.4px;margin:44px 0 6px;color:var(--text)}
+.ab h2 .n{display:inline-block;min-width:28px;font-size:15px;color:var(--blue);font-weight:900;vertical-align:2px}
+.ab .lead2{font-size:16px;color:var(--sub2);margin:0 0 16px;line-height:1.7}
+.grid{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:620px){.grid{grid-template-columns:1fr 1fr}}
+.fc{display:flex;gap:14px;align-items:flex-start;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fff}
+.fc .ic{flex:none;width:42px;height:42px;border-radius:12px;background:var(--blue-l);color:var(--blue);display:flex;align-items:center;justify-content:center}
+.fc .ic svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.fc b{display:block;font-size:16.5px;letter-spacing:-.2px}
+.fc span{display:block;font-size:14.5px;color:var(--sub2);margin-top:3px;line-height:1.6}
+.fc.off{background:var(--gray2)}
+.fc.off .ic{background:var(--gray);color:var(--sub3)}
+.src{margin:14px 0 0;padding:16px 18px;border-radius:16px;background:var(--gray2);border:1px solid var(--line)}
+.src b{display:block;font-size:15px;margin-bottom:6px}
+.src ul{margin:0;padding-left:18px}
+.src li{font-size:14.5px;color:var(--sub2);line-height:1.65;margin-bottom:2px}
+.steps{display:flex;flex-direction:column;gap:8px;margin:0 0 14px;padding:0;list-style:none;counter-reset:s}
+.steps li{position:relative;padding:12px 14px 12px 50px;border-radius:14px;background:var(--gray2);font-size:15.5px;color:var(--sub);line-height:1.6;counter-increment:s}
+.steps li:before{content:counter(s);position:absolute;left:14px;top:12px;width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-size:13.5px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.score{padding:20px 18px;border-radius:18px;border:1.5px solid #B9CCFF;background:#F7F9FF}
+.score .hd{font-size:13.5px;font-weight:700;color:var(--blue)}
+.score .big{font-size:21px;font-weight:900;letter-spacing:-.5px;line-height:1.45;margin:6px 0 12px;color:var(--text)}
+.score .big em{font-style:normal;color:var(--blue)}
+.per{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.per div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.per small{display:block;font-size:13.5px;color:var(--sub2)}
+.per b{font-size:18px;font-weight:900}
+.per b.up{color:var(--blue)}.per b.dn{color:var(--neg)}
+.score .rg{font-size:15px;color:var(--sub);margin:12px 0 0}
+.score .nt{font-size:13.5px;color:var(--sub2);margin:12px 0 0;line-height:1.6}
+.pr{padding:18px;border-radius:16px;border:1px solid var(--line);background:#fff}
+.pr p{margin:0;font-size:16px;color:var(--sub);line-height:1.75}
+.pr p+p{margin-top:8px}
+.cta{display:flex;flex-wrap:wrap;gap:8px;margin-top:36px}
+.cta .btn{flex:1 1 200px}
+.fine{margin:28px 0 0;font-size:13.5px;color:var(--sub2)}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/jangdaejang-calc/"><span class="star" aria-hidden="true">★</span> 장대장 <span class="acc">계산기</span></a>
+  <div class="badge">DATA LAB</div>
+</header>
+<main class="ab">
+  <div class="eyebrow">서비스 소개</div>
+  <h1>장대장 데이터랩은<br>이렇게 분석해요</h1>
+  <p class="def">집값에 영향을 준 <b>수십 가지 요인</b>을 지역별·시기별 공공 통계로 분석하고, 정부·지자체가 공식 발표한 앞으로의 <b>공급·교통·정비사업 계획</b>을 반영해, 앞으로 2년 같은 지역에서 <b>더 오를 가능성이 높은 단지</b>를 가려냅니다.</p>
+
+  <h2><span class="n">01</span>무엇을 보나요</h2>
+  <p class="lead2">단지마다 아래 항목을 같은 시점 기준으로 계산하고, 같은 구 안의 다른 단지와 비교해요.</p>
+  <div class="grid" id="feat">
+    <div class="fc"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></span><div><b>가격 흐름</b><span>하락기 방어력 · 직전 고점 회복 · 최근 6개월 흐름 · 가격 변동성</span></div></div>
+    <div class="fc"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 21V8l8-5 8 5v13"/><path d="M9 21v-6h6v6"/></svg></span><div><b>단지 조건</b><span>연식(신축·재건축 기대) · 세대수 · 동네 대장 단지 대비 가격 · 같은 구 대비 가격</span></div></div>
+    <div class="fc"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="14" rx="3"/><path d="M6 11h12M9 21l1.5-4M15 21l-1.5-4"/></svg></span><div><b>교통</b><span>기존 역세권 · 신설역 단계(계획 확정·공사·개통·지연)</span></div></div>
+    <div class="fc"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 20h20"/><path d="M5 20V10h5v10M14 20V4h5v16"/><path d="M10 13h4"/></svg></span><div><b>재건축·재개발</b><span>정비사업 진행 단계 · 대지지분과 용적률로 본 사업성</span></div></div>
+    <div class="fc"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2 9 2 12 0v-5"/></svg></span><div><b>학군</b><span>가까운 중학교의 순전입률 — 학군을 찾아 실제로 이사 오는 수요</span></div></div>
+    <div class="fc" id="fSup"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l7-5 7 5"/><path d="M4 14h4M16 14h4M4 18h4M16 18h4"/></svg></span><div><b>수요·공급</b><span>전세가율 · 거래량 · 주변 공공택지·신도시 단계 · 입주 물량 · 미분양</span></div></div>
+    <div class="fc" id="fRegion"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M12 21s-7-6.2-7-11a7 7 0 0114 0c0 4.8-7 11-7 11z"/></svg></span><div><b>지역 전망</b><span>인구·세대 증감 · 일자리 · 공급 부담으로 본 구·시 단위 전망</span></div></div>
+  </div>
+  <div class="src">
+    <b>데이터 출처 (자동 갱신)</b>
+    <ul>
+      <li>국토교통부 아파트·연립다세대 매매, 전월세 실거래가 (공공데이터포털)</li>
+      <li>국토교통부 공동주택관리정보시스템(K-apt) — 세대수·사용승인일</li>
+      <li>통계청 KOSIS — 시군구별 주민등록 인구·세대, 지역별고용조사 일자리</li>
+      <li>국토교통부 시·군·구별 미분양 현황 (KOSIS)</li>
+      <li>한국부동산원 청약홈 분양정보 — 지역별 입주 예정 물량</li>
+      <li>서울시 정비사업 추진현황 (서울 열린데이터광장), 국토교통부 전국 도시정비사업 통합 데이터, 부산시 정비사업 추진현황</li>
+      <li>교육부 학교알리미 — 중학교 전·출입 학생 수</li>
+      <li>국토교통부·지자체 공식 발표 — 신설 철도 노선 단계, 공공택지·신도시 공급 일정</li>
+    </ul>
+  </div>
+
+  <h2><span class="n">02</span>어떻게 검증하나요</h2>
+  <p class="lead2">과거 각 시점으로 돌아가 <b>그때까지의 자료만으로</b> 점수를 매기고, 2년 뒤 실제 시세로 채점합니다(표본 외 검증). 채점에 쓰는 미래 시세는 점수를 만들 때 쓰지 않아요.</p>
+  <ol class="steps">
+    <li>과거 시점(예: 2022년 10월)에 알려져 있던 실거래·통계·발표 계획만으로 모든 단지의 점수를 매겨요.</li>
+    <li>점수 상위 20% 단지가 이후 2년 동안 같은 구 평균보다 더 올랐는지 실제 시세로 확인해요.</li>
+    <li>여러 시점에서 반복해, 상승장과 하락장 모두에서 맞았는지 공개해요.</li>
+  </ol>
+  <div class="score" id="score" aria-live="polite">
+    <div class="hd">현재 공개 성적 · 2년 보유 기준</div>
+    <div class="big" id="scBig">검증 성적을 불러오는 중이에요</div>
+    <div class="per" id="scPer"></div>
+    <p class="rg" id="scRg" hidden></p>
+    <p class="nt">점수는 같은 구 평균 대비 상대 순위예요. 시장 전체가 내리면 점수가 높은 단지도 내릴 수 있어요. 성적은 새 자료가 들어오면 자동으로 다시 채점돼요.</p>
+  </div>
+
+  <h2><span class="n">03</span>항목 비중은 사람이 정하지 않아요</h2>
+  <div class="pr">
+    <p>어떤 항목을 얼마나 중요하게 볼지는 데이터가 정해요. 과거 각 시점의 자료로 점수를 매겼을 때 <b>이후 실제로 더 오른 단지를 가장 잘 맞힌 방식</b>을 찾아 적용하고, 그 결과를 위 성적으로 공개합니다.</p>
+    <p>같은 호재라도 지역과 시기에 따라 가격에 반영되는 정도가 달라서, 모델은 새 자료가 쌓일 때마다 다시 학습해요. 세부 산정 방식은 장대장부동산그룹의 고유 분석 모델로 공개하지 않습니다.</p>
+  </div>
+
+  <h2><span class="n">04</span>광고와 무관해요</h2>
+  <div class="pr">
+    <p>점수와 순위는 공공 데이터로만 계산합니다. 제휴 공인중개사·분양 광고비나 매물 보유 여부는 점수와 순위에 반영되지 않으며, 광고는 화면에 ‘제휴·광고’로 따로 표시해요.</p>
+  </div>
+
+  <div class="cta">
+    <a class="btn blue big" href="/jangdaejang-calc/buy/" data-track="about_to_buy">내 예산으로 추천 단지 보기</a>
+    <a class="btn ghost big" href="/jangdaejang-calc/mine/" data-track="about_to_mine">내 집 미래가치 확인</a>
+  </div>
+
+  <p class="fine">과거 데이터 기반 분석 정보이며, 투자 판단의 책임은 이용자에게 있습니다.</p>
+</main>
+<footer class="foot">★ 장대장부동산그룹 · <a href="/jangdaejang-calc/">계산기 홈</a></footer>
+<script>
+(async function(){
+  const $ = id => document.getElementById(id);
+  const ym = t => `${t.slice(0,4)}.${t.slice(4)}`;
+  const sg = v => (v > 0 ? '+' : '') + (Math.round(v * 10) / 10).toFixed(1) + '%p';
+  let M = null;
+  try { const r = await fetch('/jangdaejang-data/data/model.json', { cache: 'no-cache' }); M = r.ok ? await r.json() : null; } catch (e) {}
+  const O = (M && M.oos_all) || [];
+  if (!M || O.length < 2 || !(M.oos_avg > 0)) {
+    $('scBig').textContent = '지금은 과거 자료를 2010년까지 채우며 검증을 강화하는 중이에요. 상승장과 하락장 모두에서 검증을 통과하면 성적을 공개해요.';
+  } else {
+    const ys = O.map(o => +o.t0.slice(0, 4)), y0 = Math.min(...ys), y1 = Math.max(...ys), n = O.length, hit = M.oos_hit;
+    $('scBig').innerHTML = `${y0}~${y1}년 ${n}번 시험, <em>${hit === n ? `${n}번 모두` : `${hit}번`}</em> 상위 20% 단지가 같은 구 평균보다 더 올랐어요 <span style="white-space:nowrap">(평균 <em>${sg(M.oos_avg)}</em>)</span>`;
+    $('scPer').innerHTML = O.map(o => `<div><small>${ym(o.t0)} → 2년 뒤</small><b class="${o.top20 >= 0 ? 'up' : 'dn'}">${sg(o.top20)}</b></div>`).join('');
+    const R = M.region;
+    if (R && R.used && R.oos && R.oos.top20 != null) { $('scRg').hidden = false; $('scRg').innerHTML = `지역 전망으로 고른 상위 20% 구·시는 같은 시·도 평균보다 <b>${sg(R.oos.top20)}</b> 더 올랐어요(표본 외 검증).`; }
+  }
+  /* 지역 전망은 검증을 통과했을 때만 점수에 들어가므로, 아직이면 카드에 그렇게 표시 */
+  if (!(M && M.region && M.region.used)) {
+    const c = $('fRegion'); c.classList.add('off');
+    $('fSup').querySelector('span:not(.ic)').textContent = '전세가율 · 거래량 · 주변 공공택지·신도시 단계';
+    c.querySelector('span:not(.ic)').textContent = '인구·일자리·공급 부담 — 여러 시기 검증을 통과하면 점수에 반영해요';
+  }
+})();
+</script>
+</body>
+</html>

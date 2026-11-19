@@ -30,7 +30,7 @@
                      BIZ.kakao ? `<a href="${esc(BIZ.kakao)}" target="_blank" rel="noopener noreferrer" data-kchat="1" data-name="장대장 상담센터">카카오톡 상담</a>` : ''].filter(Boolean).join(' · ');
     return `<div class="bizinfo" id="bizinfo">
   <nav class="bizlinks" aria-label="약관과 정책">
-    <a href="${ROOT}terms/">이용약관</a><a href="${ROOT}privacy/"><b>개인정보처리방침</b></a><a href="${ROOT}refund/">환불 정책</a><a href="${ROOT}premium/">프리미엄 리포트</a>
+    <a href="${ROOT}terms/">이용약관</a><a href="${ROOT}privacy/"><b>개인정보처리방침</b></a><a href="${ROOT}refund/">환불 정책</a><a href="${ROOT}premium/">프리미엄 리포트</a><a href="${ROOT}about/">서비스 소개</a>
   </nav>
   <p class="bizrows">
     ${item('상호', esc(BIZ.name))}${item('대표', esc(BIZ.ceo))}${item('사업자등록번호', esc(BIZ.bizNo) + ` <a href="${esc(BIZ.ftcUrl)}" target="_blank" rel="noopener">사업자 정보 확인</a>`)}${item('통신판매업 신고번호', esc(BIZ.mailOrderNo))}${item('주소', esc(BIZ.addr))}${item('고객문의', contact)}
