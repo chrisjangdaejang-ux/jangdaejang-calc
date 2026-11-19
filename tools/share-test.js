@@ -18,7 +18,7 @@ check('개인값 없음', ['i', 'c', 'd', 'n', 'e', 'bp', 'bd'].filter(k => u.se
 check('공개 값은 남김', u.searchParams.get('sd'), '서울특별시');
 check('유입 집계 utm', [u.searchParams.get('utm_source'), u.searchParams.get('utm_medium'), u.searchParams.get('utm_campaign')], ['share', 'user_share', 'report']);
 check('세금 해시', new URL(SH.link('tax', { hash: 'cgt' })).hash, '#cgt');
-check('8개 화면 이름', Object.keys(SH.TOOLS).sort(), ['checklist', 'chungyak', 'jeonse', 'mine', 'report', 'switch', 'tax', 'villa']);
+check('9개 화면 이름', Object.keys(SH.TOOLS).sort(), ['ask', 'checklist', 'chungyak', 'jeonse', 'mine', 'report', 'switch', 'tax', 'villa']);
 Object.entries(SH.TOOLS).forEach(([k, t]) => check(k + ' 중간 카드 문구', /쉬워지는 집예보$/.test(t.easy) && !!t.try && !!t.label, true));
 
 /* 요약 문장 거르기 */
@@ -31,7 +31,7 @@ check('이전 기능: 개인값 감지', [SH.hasPersonal('?i=7000&o=none'), SH.h
 check('이전 기능: 개인값 지우기', SH.stripPersonal('?i=1&c=2&sd=all'), '?sd=all');
 
 /* 화면 연결 */
-const pages = { chungyak: 'chungyak', report: 'buy/report', mine: 'mine', switch: 'switch', jeonse: 'jeonse', checklist: 'jeonse/checklist', tax: 'tax', villa: 'villa' };
+const pages = { chungyak: 'chungyak', report: 'buy/report', mine: 'mine', switch: 'switch', jeonse: 'jeonse', checklist: 'jeonse/checklist', tax: 'tax', villa: 'villa', ask: 'ask' };
 Object.entries(pages).forEach(([tool, p]) => {
   const html = fs.readFileSync(path.join(root, p, 'index.html'), 'utf8');
   check(p + ' 공용 모듈', /assets\/share\.js\?v=\d+/.test(html), true);

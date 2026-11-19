@@ -1,0 +1,7 @@
+{
+  "about": "'많이 찾는 단지' 칩 — GA4 ask_use 이벤트의 danji(구코드|동|단지명) 조회 수 집계를 운영자가 옮겨 적는 파일. 집계가 비어 있거나 min 미만이면 화면은 '예시' 질문을 보여 줌. 안내: tools/stats-guide.md",
+  "period": "",
+  "updated": "",
+  "min": 20,
+  "items": []
+}

@@ -30,12 +30,15 @@
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebSite", "name": "집예보", "alternateName": ["장대장 계산기"], "url": "https://chrisjangdaejang-ux.github.io/jangdaejang-calc/", "inLanguage": "ko-KR", "description": "공공 실거래·통계로 과거를 검증한 미래가치 점수로 앞으로의 집값 흐름을 살펴보는 부동산 데이터 서비스", "publisher": {"@type": "Organization", "name": "(주)장대장부동산그룹"}}</script>
 <script>window.JDJ_CONFIG = { tool:'home', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="assets/track.js"></script>
-<script src="assets/stat.js?v=2"></script>
+<script src="assets/stat.js?v=3"></script>
 <script src="assets/agents.js"></script>
 <script src="assets/config.js?v=1"></script>
 <script src="assets/auth.js?v=1"></script>
 <script src="assets/sale-status.js?v=1" defer></script>
 <script src="assets/area-watch.js?v=1" defer></script>
+<script src="assets/mine-core.js?v=11" defer></script>
+<script src="assets/ask-core.js?v=1" defer></script>
+<script src="assets/ask.js?v=1" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=41">
@@ -104,6 +107,7 @@
 .agband small{display:block;font-size:14px;color:var(--sub2);margin-top:2px;line-height:1.5}
 .agband .go{margin-left:auto;flex:none;font-size:14.5px;font-weight:700;color:var(--blue);white-space:nowrap}
 .cs{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 12px;padding:16px 18px;border:1.5px solid #2F6BFF;border-radius:16px;background:#F4F7FF}.cs b{display:block;font-size:17px;font-weight:800}.cs small{display:block;font-size:14px;color:#4E5968;margin-top:2px}.csbtn{display:flex;gap:8px;flex-wrap:wrap}.cstel{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border-radius:12px;border:1.5px solid #2F6BFF;color:#2F6BFF;font-weight:800;font-size:14px;text-decoration:none;background:#fff}
+.askwrap.jask{margin:18px 20px 0}
 .minelink{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0 0;padding:16px 18px;border:2.5px solid #2F6BFF;border-radius:16px;background:#fff;color:inherit;text-decoration:none}.minelink b{display:block;font-size:18px;font-weight:800}.minelink small{display:block;font-size:14px;color:#4E5968;margin-top:3px}.minelink .new{display:inline-block;margin-left:6px;font-size:11px;font-weight:700;color:var(--blue);background:var(--blue-l);border-radius:4px;padding:1px 6px;vertical-align:3px}.minelink .go{font-size:24px;color:#2F6BFF;font-weight:800}
 </style>
 </head>
@@ -119,6 +123,8 @@
     <p>하락기 방어력·전세가율·역세권·신설역 단계·재건축 사업성·학군·입주 물량·미분양·인구·일자리까지, 단지와 지역 항목이 지역과 시기별로 집값에 어떤 영향을 줬는지 분석해 앞으로의 흐름을 미리 보여 드려요. 날씨 예보처럼 확정된 결과가 아니라 가능성이니, 결정의 참고 자료로 써 주세요. 회원가입 없이 바로 쓸 수 있어요.</p>
     <a class="dscale" href="about/" data-track="home_to_about"><span id="dsTxt">공공 실거래·통계 기반 · 하루 4번 갱신</span><b>분석 방법 보기 ›</b></a>
   </div>
+
+  <section class="askwrap" id="askBox" aria-label="단지 이름으로 물어보기"></section>
 
   <p class="mlabel">필요한 서비스를 골라 주세요 · <b>7가지 서비스</b></p>
   <nav class="menu" aria-label="서비스 메뉴">
@@ -157,6 +163,7 @@
 })();
 </script>
 <footer class="foot notice">국토교통부 실거래가 등 공공기관 공식 자료 기준 · 2026년 11월 대출 규제 반영<br>★ 장대장부동산그룹 · <a href="agent/" data-track="agent_join_click">공인중개사 제휴</a> · <a href="#" onclick="window.JDJ_PWA&&JDJ_PWA.install();return false">홈 화면에 추가</a></footer>
+<script>/* 단지 이름으로 물어보기(assets/ask.js): 1곳 → 내 집 시세, 2~3곳 → 단지 비교 */ addEventListener('DOMContentLoaded', () => { if (window.JDJ_ASK) JDJ_ASK.mount(document.getElementById('askBox'), {from:'home'}); });</script>
 <script>/* 관심 지역 새 공고 배지(관심 지역을 정한 사람만 공고 자료를 받음). 상태는 분양 화면과 같은 공용 함수(sale-status.js)로 */ addEventListener('DOMContentLoaded', () => { if (window.JDJ_AREA) JDJ_AREA.badge(document.querySelector('a[data-track="home_to_bunyang"]')); });</script>
 </body>
 </html>

@@ -67,11 +67,15 @@
     const n = String(s || '').toLowerCase().replace(/[\s\-_.,·・'"’()\[\]]+/g, '').replace(/e(?=편한)/g, '이');
     return dropMaker ? n.replace(/대림/g, '') : n;
   }
-  /** 'N차'·'N단지' 를 따로 떼어 낸다: {rest, nums} */
+  /** 'N차'·'N단지' 를 따로 떼어 낸다: {rest, nums, bare}
+      bare = 이름 끝에 붙은 1~2자리 숫자(예: '목동신시가지7' → '7') — 'N차'·'N단지' 어느 쪽 검색어와도 맞춘다 */
   function splitNum(n) {
-    const nums = []; const rest = n.replace(/(\d+)(차|단지)/g, (m, a, b) => { nums.push(+a + b); return ''; });
-    return { rest, nums };
+    const nums = []; let rest = n.replace(/(\d+)(차|단지)/g, (m, a, b) => { nums.push(+a + b); return ''; });
+    let bare = '';
+    rest = rest.replace(/([^\d])(\d{1,2})$/, (m, a, b) => { bare = String(+b); return a; });
+    return { rest, nums, bare };
   }
+  const numOk = (x, ns) => ns.nums.includes(x) || (!!ns.bare && (x === ns.bare + '차' || x === ns.bare + '단지'));
   /** 검색어 q 가 단지 이름 name 에 맞는지. 0 = 앞부분부터 맞음, 1 = 맞음, -1 = 안 맞음
       · 이름은 '대림' 표기가 있는 그대로와 뺀 것 둘 다로 비교(검색어의 '대림'은 그대로 둠 → '청담대림'은 대림 단지만)
       · 띄어쓰기로 나눈 낱말마다: 'N차/N단지'를 뺀 글자가 이름('N차' 뺀 것)에 들어 있고, 'N차'는 이름의 'N차'와 같아야 함
@@ -92,7 +96,8 @@
     for (let i = 0; i < toks.length; i++) {
       const ts = splitNum(toks[i]);
       if (ts.rest && ns.rest.indexOf(ts.rest) < 0) return -1;
-      for (const x of ts.nums) if (!ns.nums.includes(x) && !(x === '1차' && !hasCha)) return -1;
+      for (const x of ts.nums) if (!numOk(x, ns) && !(x === '1차' && !hasCha && !ns.bare)) return -1;
+      if (ts.bare && !numOk(ts.bare + '단지', ns) && !numOk(ts.bare + '차', ns)) return -1;
       if (i === 0 && ts.rest && ns.rest.indexOf(ts.rest) === 0) first = true;
     }
     return first ? 0 : 1;
