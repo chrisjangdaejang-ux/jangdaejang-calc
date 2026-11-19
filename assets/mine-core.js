@@ -62,7 +62,9 @@
       · 띄어쓰기로 나눈 낱말마다: 'N차/N단지'를 뺀 글자가 이름('N차' 뺀 것)에 들어 있고, 'N차'는 이름의 'N차'와 같아야 함
       · 이름에 '차' 번호가 없으면 '1차'로 본다 (예: 청담대림이-편한세상 = 청담 e편한세상 1차) */
   function matchName(name, q) {
-    const a = matchOne(normName(name), q), b = matchOne(normName(name, true), q);
+    // 'e편한세상'은 2~4차도 모두 대림(DL) 단지라, 검색어에 '편'이 함께 있으면 검색어의 '대림'도 빼고 비교 ('청담대림이편한세상 4차' → 4차)
+    const qd = /편/.test(normName(q)) ? String(q || '').replace(/대림/g, '') : q;
+    const a = matchOne(normName(name), q), b = matchOne(normName(name, true), qd);
     return a < 0 ? b : b < 0 ? a : Math.min(a, b);
   }
   function matchOne(nn, q) {
@@ -328,6 +330,30 @@
     });
     return { solid, gaps };
   }
+  /** 차트 안내선용: a[i] 값. 실제 값이면 {v, real:true}, 거래 없는 달이 앞뒤 실제 값 사이(점선 구간)면
+      그 두 값을 이은 선 위의 값 {v, real:false, from, to}(표시용 — 실제 거래가 아님), 맨 앞·맨 뒤 빈 달은 null */
+  function valAt(a, i) {
+    if (!a || !(i >= 0 && i < a.length)) return null;
+    if (a[i] > 0) return { v: a[i], real: true };
+    let p = i - 1, q = i + 1;
+    while (p >= 0 && !(a[p] > 0)) p--;
+    while (q < a.length && !(a[q] > 0)) q++;
+    if (p < 0 || q >= a.length) return null;
+    return { v: a[p] + (a[q] - a[p]) * (i - p) / (q - p), real: false, from: p, to: q };
+  }
+  /** 갭(매매 − 전세)·갭 비율(갭 ÷ 매매)·전세가율(전세 ÷ 매매). 둘 중 하나라도 없으면 null. 금액 단위 그대로 */
+  function gapOf(s, j) {
+    if (!(s > 0 && j > 0)) return null;
+    const gap = s - j;
+    return { gap, pct: gap / s, jr: j / s };
+  }
+  /** 한 달 안내선 값: t = histSeries(또는 같은 모양 {months, s, j}) → {ym, s, j, gap}
+      s·j = valAt 결과, gap = 매매·전세가 모두 그 달 실제 값일 때만 gapOf (이은 값으로는 계산하지 않음) */
+  function monthPoint(t, i) {
+    if (!t || !t.months || !(i >= 0 && i < t.months.length)) return null;
+    const s = valAt(t.s, i), j = valAt(t.j, i);
+    return { ym: t.months[i], s, j, gap: s && j && s.real && j.real ? gapOf(s.v, j.v) : null };
+  }
   /** 거래가 아주 드문가: 마지막 n(기본 36)개월 중 값 있는 달이 1/3 미만 (값이 하나도 없으면 false) */
   function isSparse(a, n) {
     const w = (a || []).slice(-(n || 36)), k = w.filter(v => v > 0).length;
@@ -385,7 +411,7 @@
   const API = { PY, r100, STORE_KEY, MAX_HOMES, FEW, counts, lastIdx, median, toPrice, ymLabel, danjiKey, agentKey, premiumKey, groupDanji, searchDanji,
     normName, splitNum, matchName, listRow, unitKey, hasScore, scoreOf, monthDeals, trades, lastDeal, isFew,
     bandSummary, changeBack, dongPosition, sggPosition, trend, volume, volumeCounts, cleanHome, homeId, parseStore, dumpStore, addHome, removeHome, findUnit, vsBuy, heldMonths, reasons, reasonItems, won, pctTxt, cleanFx,
-    ymAdd, ymDiff, ymKo, decodeSeries, histRow, histSeries, histWindow, histSpans, highs, isNewHigh, lineParts, isSparse };
+    ymAdd, ymDiff, ymKo, decodeSeries, histRow, histSeries, histWindow, histSpans, highs, isNewHigh, lineParts, isSparse, valAt, gapOf, monthPoint };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_MINE = API;
 })(typeof self !== 'undefined' ? self : this);
