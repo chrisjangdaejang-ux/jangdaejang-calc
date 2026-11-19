@@ -109,8 +109,9 @@
       const P = REC.unitPrice(u), large = area > 85;
       const nd = need(P, b.c, b.dsr, Object.assign({}, opt.o, { large }));
       if (nd.need > opt.o.cash) continue;
-      const sc = REC.scoreUnit(u, P, b.max, opt.sggPpy ? opt.sggPpy(code) : 0, opt.note ? !!opt.note(code) : false);
-      if (sc.fit < REC.MIN_FIT) continue;
+      const gp = opt.sggPpy ? opt.sggPpy(code) : 0;
+      const sc = REC.scoreUnit(u, P, b.max, gp, opt.note ? !!opt.note(code) : false);
+      if (REC.tooCheap ? REC.tooCheap(sc.fit, P, gp ? REC.r100(gp * area / REC.PY) : 0) : sc.fit < REC.MIN_FIT) continue;
       out.push(Object.assign({ u, code, dong, apt, band, area, n, series, P, g, c: b.c, nd, large, left: opt.o.cash - nd.need,
         mon: monthly(nd.loan.L, b.c.rate, b.c.term), ch3: REC.change3y(series) }, sc));
     }

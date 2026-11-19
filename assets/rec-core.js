@@ -22,6 +22,9 @@
   /** 단지·평형 추정 시세(만원): 최근 3개월 실거래 평당가 중앙값(월별 값이 3개월 중앙값) × 전용면적 */
   function unitPrice(u) { const p = lastNZ(u[6]); return p ? r100(p * u[4] / PY) : 0; }
   const MIN_FIT = 0.55;   // 매수 가능액 대비 너무 낮은 단지는 추천에서 뺀다
+  /** '너무 싼 단지' 제외를 지역 시세 기준으로 완화: 예산 대비 낮아도 그 시·군·구 같은 면적 시세(구 평당가 × 전용) 이상이면 남긴다.
+      예산이 큰 사람이 시세가 낮은 지방을 고르면 결과가 0곳이 되던 문제(갈아타기) 해결용. refP 없으면 기존 기준 그대로 */
+  function tooCheap(fit, P, refP) { return fit < MIN_FIT && !(refP > 0 && P >= refP); }
 
   /** 내부 정렬용 보조 점수(화면에 표시하지 않음) p: { fit, n, ch, rel, note(bool), fv(null|0~100) } */
   function scoreOf(p) {
@@ -67,7 +70,7 @@
     return { fit, ch, rel, fx, hasFv, score, disp, sortv: hasFv && fx.fvSort != null ? fx.fvSort : disp };
   }
 
-  const API = { PY, REG_GG, isReg, isCap, groupOf, LTV, r100, lastNZ, firstNZ, recentCnt, change6, change3y, unitPrice, MIN_FIT, scoreOf, scoreUnit, rankCmp, diversify };
+  const API = { PY, REG_GG, isReg, isCap, groupOf, LTV, r100, lastNZ, firstNZ, recentCnt, change6, change3y, unitPrice, MIN_FIT, tooCheap, scoreOf, scoreUnit, rankCmp, diversify };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_REC = API;
 })(typeof self !== 'undefined' ? self : this);

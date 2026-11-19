@@ -194,6 +194,10 @@ const RK = {
 };
 const ORDER = 'rsuo';
 let IDX = null, CUR = null, FILTER = 'z', SHOWN = PAGE;
+/* 정비구역 연결 건물이 3개 미만이면 첫 화면이 비지 않게 '전체 건물'로 자동 전환(사용자가 필터를 직접 고르면 그 선택을 따름) */
+let USER_PICK = false, AUTO_ALL = 0;
+const AUTO_MIN = 3;
+function syncSeg(){ document.querySelectorAll('#seg button').forEach(x=>x.classList.toggle('on', x.dataset.f===FILTER)); }
 
 function lvbar(lv){ return `<div class="lvbar" title="10단계 중 ${lv}단계">${Array.from({length:10},(_,i)=>`<i class="${i<lv?'on':''}"></i>`).join('')}</div>`; }
 function zoneLine(z, gr, rk, by){
@@ -276,12 +280,14 @@ function renderDong(){
 function render(){
   renderDong();
   if (!CUR){ return; }
-  const rows = filtered();
+  let rows = filtered();
+  if (!USER_PICK && FILTER==='z' && !$('q').value.trim() && rows.length < AUTO_MIN){ AUTO_ALL = rows.length; FILTER = 'all'; syncSeg(); rows = filtered(); }
   const tot = CUR.b.length, zc = CUR.b.filter(b=>linked(b).length).length;
   $('sum').innerHTML = `${esc(CUR.meta.n)} 빌라 <b>${fmt(tot)}</b>개 건물 중 정비구역 연결 <b>${fmt(zc)}</b>개 · 지금 조건 <b>${fmt(rows.length)}</b>개 <span style="font-size:13.5px">(${ym(IDX.from)}~${ym(IDX.to)} 거래, 최근 거래순)</span>`;
-  if (!rows.length){ $('list').innerHTML = `<div class="empty">조건에 맞는 건물이 없습니다.${FILTER!=='all'?' <b>전체 건물</b>로 바꿔 보세요.':''}</div>`; return; }
+  const autoNote = (!USER_PICK && FILTER==='all' && AUTO_ALL!==null) ? `<div class="caution once"><b>전체 건물을 보여 드려요</b> · ${$('dong').value?esc($('dong').value):esc(CUR.meta.n)}에는 정비구역(재개발·재건축 구역)과 연결된 빌라가 ${AUTO_ALL?fmt(AUTO_ALL)+'개뿐이라':'없어서'} 전체 건물로 바꿨어요. 정비구역 연결 건물만 보려면 위 <b>정비구역 연결 건물</b>을 눌러 주세요.</div>` : '';
+  if (!rows.length){ $('list').innerHTML = autoNote + `<div class="empty">조건에 맞는 건물이 없습니다.${FILTER!=='all'?' <b>전체 건물</b>로 바꿔 보세요.':''}</div>`; return; }
   const sorted = rows.slice().sort((a,b)=> b.dt.localeCompare(a.dt));
-  $('list').innerHTML = `<div class="caution once"><b>모든 건물 공통</b> · 입주권은 권리산정기준일(이날 이전에 지은 건물이어야 새 아파트 입주권을 받을 수 있는 기준 날짜)과 건축 연도로 가늠한 결과예요. 권리산정기준일·조합원 자격·구역 경계(이 건물이 구역 안인지)는 구청·조합에 꼭 확인하세요. 카드의 ⓘ 표시가 그 확인이 필요한 항목이에요.</div><div class="cards">${sorted.slice(0,SHOWN).map(card).join('')}</div>${sorted.length>SHOWN?`<button class="morebtn" id="moreBtn">더 보기 (${fmt(sorted.length-SHOWN)}개 남음)</button>`:''}`;
+  $('list').innerHTML = autoNote + `<div class="caution once"><b>모든 건물 공통</b> · 입주권은 권리산정기준일(이날 이전에 지은 건물이어야 새 아파트 입주권을 받을 수 있는 기준 날짜)과 건축 연도로 가늠한 결과예요. 권리산정기준일·조합원 자격·구역 경계(이 건물이 구역 안인지)는 구청·조합에 꼭 확인하세요. 카드의 ⓘ 표시가 그 확인이 필요한 항목이에요.</div><div class="cards">${sorted.slice(0,SHOWN).map(card).join('')}</div>${sorted.length>SHOWN?`<button class="morebtn" id="moreBtn">더 보기 (${fmt(sorted.length-SHOWN)}개 남음)</button>`:''}`;
   const mb = $('moreBtn'); if (mb) mb.onclick = ()=>{ SHOWN += PAGE; render(); };
   document.querySelectorAll('[data-more]').forEach(b=>b.onclick=()=>{ const r=b.previousElementSibling; r.hidden=!r.hidden; b.textContent = r.hidden?b.textContent.replace('접기 ▴','더 보기 ▾'):b.textContent.replace('더 보기 ▾','접기 ▴'); });
   saveUrl();
@@ -303,6 +309,7 @@ async function loadSgg(code, dong){
   const ds = [...new Set(CUR.b.map(b=>b.d))].sort((a,b)=>a.localeCompare(b,'ko'));
   $('dong').innerHTML = '<option value="">전체 동</option>' + ds.map(d=>`<option>${esc(d)}</option>`).join('');
   if (dong && ds.includes(dong)) $('dong').value = dong;
+  if (!USER_PICK){ FILTER = 'z'; AUTO_ALL = null; syncSeg(); }
   SHOWN = PAGE; render();
   if (window.JDJ) JDJ.track('villa_sgg', {region: meta.n});
 }
@@ -332,11 +339,11 @@ async function init(){
   if (window.jdjStat){ jdjStat('feature_use',{feature:'villa'}); if (g) statVilla(); }
   $('sido').onchange = ()=>{ const c=fillSgg(+$('sido').value); loadSgg(c).then(statVilla); };
   $('sgg').onchange = ()=>loadSgg($('sgg').value).then(statVilla);
-  $('dong').onchange = ()=>{ SHOWN=PAGE; render(); };
+  $('dong').onchange = ()=>{ if (!USER_PICK){ FILTER='z'; AUTO_ALL=null; syncSeg(); } SHOWN=PAGE; render(); };
   let t; $('q').oninput = ()=>{ clearTimeout(t); t=setTimeout(()=>{ SHOWN=PAGE; render(); }, 200); };
   document.querySelectorAll('#seg button').forEach(b=>b.onclick=()=>{
     document.querySelectorAll('#seg button').forEach(x=>x.classList.toggle('on', x===b));
-    FILTER=b.dataset.f; SHOWN=PAGE; render(); if (window.JDJ) JDJ.track('villa_filter',{f:FILTER}); if (window.jdjStat && FILTER!=='all') jdjStat('feature_use',{feature:'redev'});
+    USER_PICK = true; FILTER=b.dataset.f; SHOWN=PAGE; render(); if (window.JDJ) JDJ.track('villa_filter',{f:FILTER}); if (window.jdjStat && FILTER!=='all') jdjStat('feature_use',{feature:'redev'});
   });
 }
 init();

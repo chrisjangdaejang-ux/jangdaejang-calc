@@ -541,12 +541,12 @@ function renderCost(c,P){
     [`취득세 <small>${d.rate}%${d.heavy?' 중과':''}</small>`, fmtW(d.acq)],
   ];
   let html = rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
-  if (d.relief>0) html += `<tr class="minus"><td>생애최초 취득세 감면 <small>200만원 한도</small></td><td>−${fmt(d.relief)}원</td></tr>`;
-  html += `<tr><td>지방교육세 <small>${d.heavy?'0.4%':'취득세의 10%'}</small></td><td>${fmt(d.edu)}원</td></tr>`;
-  if (d.farm>0) html += `<tr><td>농어촌특별세 <small>85㎡ 초과</small></td><td>${fmt(d.farm)}원</td></tr>`;
-  html += `<tr><td>중개보수 <small>상한 ${d.br}% + VAT</small></td><td>${fmt(d.broker)}원</td></tr>`;
-  html += `<tr><td>기타 비용 <small>이사·등기·수리 가정</small></td><td>${fmt(c.etc)}원</td></tr>`;
-  html += `<tr class="total"><td>부대비용 합계 <small>매매가의 ${((d.total+c.etc)/base*100).toFixed(2)}%</small></td><td>${fmt(d.total+c.etc)}원</td></tr>`;
+  if (d.relief>0) html += `<tr class="minus"><td>생애최초 취득세 감면 <small>200만원 한도</small></td><td>−${fmtW(d.relief)}</td></tr>`;
+  html += `<tr><td>지방교육세 <small>${d.heavy?'0.4%':'취득세의 10%'}</small></td><td>${fmtW(d.edu)}</td></tr>`;
+  if (d.farm>0) html += `<tr><td>농어촌특별세 <small>85㎡ 초과</small></td><td>${fmtW(d.farm)}</td></tr>`;
+  html += `<tr><td>중개보수 <small>상한 ${d.br}% + VAT</small></td><td>${fmtW(d.broker)}</td></tr>`;
+  html += `<tr><td>기타 비용 <small>이사·등기·수리 가정</small></td><td>${fmtW(c.etc)}</td></tr>`;
+  html += `<tr class="total"><td>부대비용 합계 <small>매매가의 ${((d.total+c.etc)/base*100).toFixed(2)}%</small></td><td>${fmtW(d.total+c.etc)}</td></tr>`;
   $('costTbl').innerHTML = html;
   let note = '취득세는 잔금일로부터 60일 이내 신고·납부합니다. 기타 비용 1,000만 원(이사·등기·수리)은 맞춤 리포트와 같은 가정이고, 리포트의 조건 수정에서 바꿀 수 있어요.';
   if (costBase==='target' && !T) note = '아래 "점 찍어둔 집"에 매매가를 입력하면 그 집 기준으로 계산됩니다. ' + note;
@@ -560,14 +560,14 @@ function renderTarget(c,dsr){
   if (!T){ box.className='check-res'; return; }
   const l = loanAt(T,c,dsr), cost = costs(T,c), need = T - l.L + cost, gap = c.cash - need;
   box.className = 'check-res show '+(gap>=0?'y':'n');
-  box.innerHTML = `<b>${fmt(T)}원</b> 집 → 대출 <b>${fmt(l.L)}</b>, 필요 현금 <b>${fmt(need)}</b>${c.costsOn?` (부대비용 ${fmt(cost)} 포함)`:''}<br>`+
+  box.innerHTML = `<b>${fmtW(T)}</b> 집 → 대출 <b>${fmt(l.L)}</b>, 필요 현금 <b>${fmt(need)}</b>${c.costsOn?` (부대비용 ${fmt(cost)} 포함)`:''}<br>`+
     (gap>=0 ? `<span class="ok">✓ 살 수 있습니다.</span> 현금 여유 ${fmt(gap)}` : `<span class="no">✗ 현금 ${fmt(-gap)} 부족합니다.</span>`);
 }
 
 function renderTips(c,dsr,P,ld){
   const tips=[];
   if (c.ltv>0 && c.income*0.4 - c.debt <= 0){
-    tips.push(['warn',`<b>추가 대출이 0원입니다.</b> 기존 대출 1년 원리금(${fmt(c.debt)}원)이 연소득의 40%를 넘었습니다. 대출 <b>잔액</b>이 아니라 1년 동안 갚는 원금+이자 합계를 넣었는지 확인해 주세요.`]);
+    tips.push(['warn',`<b>추가 대출이 0원입니다.</b> 기존 대출 1년 원리금(${fmtW(c.debt)})이 연소득의 40%를 넘었습니다. 대출 <b>잔액</b>이 아니라 1년 동안 갚는 원금+이자 합계를 넣었는지 확인해 주세요.`]);
   }
   if (c.ltv===0){
     tips.push(['warn',`<b>다주택자는 ${c.R.capital?'수도권':''}${c.R.regulated?'규제지역':''}에서 주택구입 목적 주담대를 받을 수 없습니다.</b> 표의 금액은 현금만으로 살 수 있는 범위입니다.`]);
@@ -588,7 +588,7 @@ function renderTips(c,dsr,P,ld){
   }
   if (own==='none' && c.R.regulated){
     const c2=Object.assign({},c,{ltv:LTV.reg.first}); const P4=maxPrice(c2,dsrMax(c2));
-    if (P4>P) tips.push(['',`생애최초 구입 요건(본인·배우자 모두 주택 소유 이력 없음)에 해당하면 LTV 70%가 적용돼 <b>${fmt(P4)}원</b>까지 가능합니다.`]);
+    if (P4>P) tips.push(['',`생애최초 구입 요건(본인·배우자 모두 주택 소유 이력 없음)에 해당하면 LTV 70%가 적용돼 <b>${fmtW(P4)}</b>까지 가능합니다.`]);
   }
   if (!c.R.capital && !c.R.regulated){
     tips.push(['warn',`지방 주담대의 완화된 스트레스 금리는 <b>2026년 12월 31일까지</b>입니다. 내년 실행이라면 한도가 줄어들 수 있으니 다시 확인하세요.`]);

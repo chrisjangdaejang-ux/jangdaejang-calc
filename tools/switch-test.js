@@ -100,6 +100,12 @@ check('같은 구 최대 3곳', rec.picked.filter(x => x.code === '11680').lengt
 check('미래가치 없는 단지는 뒤로', rec.picked.findIndex(x => x.apt === 'F단지'), -1, '강남구 3곳이 이미 차서 빠짐');
 check('다른 구 단지 포함', rec.picked[rec.picked.length - 1].apt, 'G단지', '');
 
+// '너무 싼 단지' 제외 완화: 예산 대비 낮아도 그 지역 같은 면적 시세 이상이면 남긴다
+check('예산 대비 낮고 지역 시세보다도 낮으면 제외', REC.tooCheap(0.3, 30000, 40000), true, '');
+check('예산 대비 낮아도 지역 시세 이상이면 남김', REC.tooCheap(0.3, 45000, 40000), false, '예산이 큰 사람의 지방 갈아타기');
+check('지역 시세 모르면 기존 기준', REC.tooCheap(0.3, 45000, 0), true, '');
+check('예산 적합하면 남김', REC.tooCheap(0.9, 10000, 40000), false, '');
+
 let pass = 0;
 rows.forEach(r => { if (r.ok) pass++; console.log((r.ok ? 'PASS ' : 'FAIL ') + r.name.padEnd(44) + ' ' + String(r.got).slice(0, 14).padEnd(14) + ' ' + (r.ok ? '' : '기대 ' + r.want + ' ') + (r.basis || '')); });
 console.log('\n' + pass + '/' + rows.length + ' 통과');
