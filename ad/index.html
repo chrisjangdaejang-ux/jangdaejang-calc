@@ -345,7 +345,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
         <tr><th>업종 연장권</th><td>전세사기 예방 체크리스트 스폰서를 1년 계약하시면 다음 해 같은 업종 구좌를 먼저 연장할 수 있어요.</td></tr>
         <tr><th>소재 전달</th><td>노출 시작 3영업일 전까지 소재와 https 랜딩 주소 전달</td></tr>
         <tr><th>소재 교체</th><td>기간 중 월 1회 무료 (분양 광고는 공고 정정 시 즉시 반영)</td></tr>
-        <tr><th>취소·중도 해지</th><td>노출 시작 전 취소: 위약금 없음 · 노출 시작 뒤 중도 해지: 이미 쓴 기간을 실제로 쓴 기간에 맞는 단가(할인율)로 다시 계산해 정산하고, 남은 금액을 돌려드려요. <span id="cancelEx"></span> · 허위·과장으로 중단된 경우 환불 없음</td></tr>
+        <tr><th>취소·환불</th><td><b>결제 후에는 취소·중도 해지·환불이 되지 않아요.</b> 계약 전에 기간과 금액을 충분히 확인해 주세요. · 노출 시작 전이라면 시작일은 한 번 바꿀 수 있어요(협의). · 소재 검수를 통과하지 못하면 결제한 금액은 전액 돌려드려요. · 장대장 쪽 오류로 광고가 보이지 않은 기간은 그만큼 노출 기간을 늘려 드려요. · 허위·과장으로 노출이 중단된 경우 환불 없음</td></tr>
         <tr><th>결제 방법</th><td>3개월 이상은 한 번에 결제하거나, 세금계산서 기준으로 매달 나눠 낼 수 있어요.</td></tr>
         <tr><th>리포트</th><td>지역 제휴 중개사: 관리 화면 성과표(노출·열람·전화·카톡 클릭) 상시 확인 · 그 밖의 상품: 기간 종료 뒤 노출·클릭 요약 전달(개인 식별 정보 없음). 랜딩 주소에 UTM을 붙이면 광고주 분석 도구에서 직접 확인할 수 있어요.</td></tr>
         <tr><th>정산·계산서</th><td>계약 시 선결제 또는 집행 월 말일자 세금계산서 발행 후 입금 (협의)</td></tr>
@@ -477,17 +477,6 @@ function passPrice(amount) { const list = amount * 3; return { list, total: rnd(
 function firstWeekPrice(oneWeek) { return rnd(oneWeek * (100 - (PRICES.guide.firstWeekOff || 0)) / 100); }
 /* 1주 광고 뒤 1개월 이상 연장: 연장 금액 − 첫 주 결제액 */
 function extendPrice(month, pid, paidFirstWeek) { const q = periodPrice(month, pid); return q && q.months >= 1 ? Math.max(0, q.total - paidFirstWeek) : null; }
-/* 중도 해지: 쓴 기간을 실제 사용 기간 단가로 다시 계산 → 남은 금액 환불 (usedMonths: 1주 = 0.25) */
-function settle(month, paid, usedMonths) {
-  let used;
-  if (!(usedMonths > 0)) used = 0;
-  else if (usedMonths <= 0.25) used = periodPrice(month, 'w1').total;
-  else if (usedMonths <= 0.5) used = periodPrice(month, 'w2').total;
-  else if (usedMonths <= 1) used = month;
-  else used = rnd(month * usedMonths * (100 - rateOf(usedMonths)) / 100);
-  used = Math.min(used, paid);
-  return { used, refund: paid - used, rate: rateOf(usedMonths) };
-}
 /* PRICE-CORE:END */
 
 const ASK = '문의 시 안내';
@@ -584,9 +573,6 @@ function fillPrices() {
     `<li>첫 주: 1주 ${man(w1)} → 첫 광고 ${PRICES.guide.firstWeekOff}% 할인으로 <b>${man(fw)}</b></li>` +
     `<li>1년 연장: 1년 ${man(yr.total)}(${yr.rate}% 할인, 월 ${man(yr.perMonth)} 꼴) − 첫 주에 낸 ${man(fw)} = <b>${man(extendPrice(t2.month, 'y1', fw))}</b></li></ol>` +
     `<small>모든 금액 VAT 별도 · 3개월 이상은 한 번에 또는 세금계산서 기준 매달 나눠 낼 수 있어요.</small>`;
-  /* 중도 해지 예시 — 결과 하단 카드 전국 1년 계약 4개월 사용 */
-  const yq = periodPrice(ex.month, 'y1'), s = settle(ex.month, yq.total, 4);
-  $('cancelEx').textContent = `예) 결과 하단 카드 ${ex.label} 1년 ${man(yq.total)} 계약 뒤 4개월 쓰고 해지 → 4개월 × 월 ${man(ex.month)}에 3개월 할인율 ${s.rate}%를 적용한 ${man(s.used)}만 정산하고 ${man(s.refund)} 환불`;
 }
 fillPrices();
 window.JDJ_AD_PRICES = PRICES;   // 확인용
