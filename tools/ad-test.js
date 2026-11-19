@@ -220,7 +220,7 @@ check('하루 문의 상한', !r.ok && /카카오톡/.test(r.err), r);
   const nat = P.PRICES.native.tiers.map(t => t.month).join(), top = P.PRICES.agent_top.tiers.map(t => t.month).join();
   check('결과 하단 카드 50·30·15만, 우선 노출 9·15만, 체크리스트 80만', nat === '500000,300000,150000' && top === '90000,150000' && P.PRICES.jeonse.tiers[0].month === 800000);
   check('패키지 150만(4주)·20만·110만', P.PRICES.pkg_bunyang.weeks[4] === 1500000 && P.PRICES.pkg_local.tiers[0].month === 200000 && P.PRICES.pkg_jeonse.tiers[0].month === 1100000);
-  check('중개사는 공개 요금 문구(19,000~49,000원)', /19,000~49,000원/.test(P.PRICES.agent.text) && /19,000원/.test(fs.readFileSync(path.join(__dirname, '..', 'agent', 'index.html'), 'utf8')) && /49,000원/.test(fs.readFileSync(path.join(__dirname, '..', 'agent', 'index.html'), 'utf8')));
+  check('중개사는 공개 요금 문구(기본 29,000·프리미엄 49,000원)', /29,000원/.test(P.PRICES.agent.text) && /49,000원/.test(P.PRICES.agent.text) && /29,000원/.test(fs.readFileSync(path.join(__dirname, '..', 'agent', 'index.html'), 'utf8')) && /19,000원/.test(fs.readFileSync(path.join(__dirname, '..', 'agent', 'index.html'), 'utf8')) && /49,000원/.test(fs.readFileSync(path.join(__dirname, '..', 'agent', 'index.html'), 'utf8')));
   const want = { w1: 150000, w2: 275000, m1: 500000, m3: 1350000, m6: 2550000, y1: 4500000 };
   for (const id in want) check(`50만 원 ${id} = ${want[id]}`, pp(500000, id).total === want[id], pp(500000, id));
   check('1년 할인액 150만·월 37.5만 꼴', pp(500000, 'y1').off === 1500000 && pp(500000, 'y1').perMonth === 375000 && pp(500000, 'y1').rate === 25);
