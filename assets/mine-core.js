@@ -4,7 +4,8 @@
    시세 확인용(거래가 1건이라도 있으면 모두): /jangdaejang-data/data/price/
      price/sNN.json   단지 목록(검색용) r = [시군구코드, 동, 단지, 평형대, 전용㎡, 거래수, 지번, 점수 자료 1/0] → listRow(r) 로 u 모양으로
      price/{구코드}.json units: u 와 같은 앞 9칸 + [9] 점수 자료 1/0, [10] 거래 있는 달의 그 달 중앙 평당가(오래된 달부터),
-                     [11] 개별 거래 [계약 연월일(YYYYMMDD), 전용㎡, 층, 금액(만원), 유형 0 중개·1 직거래·2 미기재] 최신순
+                     [11] 개별 거래 [계약 연월일(YYYYMMDD), 전용㎡, 층, 금액(만원), 유형 0 중개·1 직거래·2 미기재, 신고가 1/0] 최신순,
+                     [12] 전체 기간 요약 {f 첫 거래 달, hi 역대 최고가, hi1 최근 1년 최고가} — 파일 hist 와 price/h/{구}.json 은 아래 '전체 기간 시세'
        · 거래수·평당가는 직거래 제외(점수용과 같은 기준), 개별 거래 목록에는 직거래도 유형 표시와 함께 있음
      · 월별 평당가: 그 달까지 3개월 실거래 평당가(만원/3.3㎡)의 중앙값 — 해제(취소) 신고 거래·직거래는 원자료 단계에서 제외
      · 월별 거래수 문자열: 한 글자 = 한 달 거래 건수 (글자 코드 − 48)
@@ -122,7 +123,7 @@
     return t.map(x => {
       const s = String(x[0]);
       return { ymd: x[0], date: `${s.slice(0, 4)}.${s.slice(4, 6)}` + (s.slice(6, 8) !== '00' ? '.' + s.slice(6, 8) : ''), area: x[1], floor: x[2], amt: x[3],
-        type: TYPE[x[4]] || '', ppy: x[1] > 0 ? Math.round(x[3] / x[1] * PY) : 0 };
+        type: TYPE[x[4]] || '', ppy: x[1] > 0 ? Math.round(x[3] / x[1] * PY) : 0, hi: x[5] === 1 };
     });
   }
   /** 마지막 거래(그 달 중앙 평당가 기준) — 최근 3개월에 거래가 없을 때 '마지막 실거래' 로 보여 주는 값 */
@@ -265,6 +266,64 @@
     return r;
   }
 
+  /* ---------- 전체 기간 시세 (price/h/{구}.json) · 신고가 · 최고가 ----------
+     price/{구}.json 의 hist = {hm, rm, to, cover, rcover, v, file}, 행 칸 12 = {f, hi:[금액, 연월일, 전용㎡], hi1}
+     price/h/{구}.json units 행 = [동, 표시명, 평형구간, 지번, s, j] — s/j = [시작 칸, 값0, 값1, …](기준 달 hm/rm, 0 = 3개월 거래 없음) */
+  /** 'YYYYMM' + n개월 */
+  function ymAdd(ym, n) { const s = String(ym), t = +s.slice(0, 4) * 12 + (+s.slice(4, 6) - 1) + n; return String(Math.floor(t / 12)) + String(t % 12 + 1).padStart(2, '0'); }
+  function ymDiff(a, b) { const f = v => +String(v).slice(0, 4) * 12 + +String(v).slice(4, 6); return f(b) - f(a); }
+  /** '2006년 1월' */
+  const ymKo = ym => ym ? `${String(ym).slice(0, 4)}년 ${parseInt(String(ym).slice(4, 6), 10)}월` : '';
+  /** [시작 칸, 값…] → Map(연월 → 평당가) (0 은 빼고) */
+  function decodeSeries(a, base) {
+    const m = new Map(); if (!Array.isArray(a) || a.length < 2 || !base) return m;
+    for (let k = 1; k < a.length; k++) if (a[k] > 0) m.set(ymAdd(base, a[0] + k - 1), a[k]);
+    return m;
+  }
+  /** h 파일에서 u 의 행 찾기: 같은 생성본(v)이면 같은 순서 i, 아니면 앞 4칸(동·표시명·평형·지번)으로 */
+  function histRow(h, u, i, v) {
+    if (!h || !Array.isArray(h.units) || !u) return null;
+    const ok = r => r && r[0] === u[1] && r[1] === u[2] && r[2] === u[3] && String(r[3]) === String(u[8]);
+    if (i != null && i >= 0 && (v == null || v === h.v) && ok(h.units[i])) return h.units[i];
+    return h.units.find(ok) || null;
+  }
+  /** 전체 기간 월별 시세(금액, 만원) — {months, s:[매매], j:[전세], jr:[전세가율 0~1 또는 0], from, rfrom}
+      area = 전용㎡(행 칸 4). 값 없는 달은 0 */
+  function histSeries(h, row, area) {
+    if (!h || !row) return null;
+    const sm = decodeSeries(row[4], h.hm), jm = decodeSeries(row[5], h.rm);
+    if (!sm.size && !jm.size) return null;
+    const keys = [...sm.keys(), ...jm.keys()].sort(), first = keys[0], to = h.to || keys[keys.length - 1];
+    const months = []; for (let ym = first; ym <= to; ym = ymAdd(ym, 1)) months.push(ym);
+    const s = months.map(ym => toPrice(sm.get(ym) || 0, area)), j = months.map(ym => toPrice(jm.get(ym) || 0, area));
+    const jr = months.map(ym => { const a = sm.get(ym), b = jm.get(ym); return a > 0 && b > 0 ? b / a : 0; });
+    return { months, s, j, jr, from: sm.size ? [...sm.keys()].sort()[0] : '', rfrom: jm.size ? [...jm.keys()].sort()[0] : '' };
+  }
+  /** 마지막 span 개월만 (span 없으면 전체) */
+  function histWindow(t, span) {
+    if (!t || !span || span >= t.months.length) return t;
+    const st = t.months.length - span, cut = a => a.slice(st);
+    return Object.assign({}, t, { months: cut(t.months), s: cut(t.s), j: cut(t.j), jr: cut(t.jr) });
+  }
+  /** 기간 단추: 자료 길이보다 짧은 1·3·5년 + 전체 */
+  function histSpans(t) {
+    const n = t ? t.months.length : 0;
+    return [12, 36, 60].filter(m => m < n).map(m => ({ span: m, label: m / 12 + '년' })).concat([{ span: 0, label: '전체' }]);
+  }
+  /** 역대·최근 1년 최고가 요약. hist = price/{구}.json hist, price = 지금 시세(만원, 없으면 0)
+      → null 또는 {hi:{amt, ymd, at, area, vs}, hi1:{…}, label, note} */
+  function highs(u, hist, price) {
+    const x = u && u[12]; if (!x || !Array.isArray(x.hi)) return null;
+    const one = a => a && a[0] > 0 ? { amt: a[0], ymd: a[1], at: String(a[1]).slice(0, 6), area: a[2], vs: price > 0 ? (price - a[0]) / a[0] : null } : null;
+    const start = (hist && (hist.cover || hist.hm)) || '';
+    const allTime = !!(x.f && start && x.f > start);                       // 수집 시작보다 늦게 첫 거래 → 그 단지 역대
+    return { hi: one(x.hi), hi1: one(x.hi1), f: x.f || '', start,
+      label: allTime || !start ? '역대 최고가' : `${ymKo(start)} 이후 최고가`,
+      note: allTime ? `첫 거래(${ymKo(x.f)}) 이후 수집 자료 기준` : '' };
+  }
+  /** 개별 거래 6번째 칸: 신고가 1 */
+  const isNewHigh = t => !!(t && t[5] === 1);
+
   /* ---------- 표시 ---------- */
   /** 만원 → '12억 3,400만원' */
   function won(man) {
@@ -277,7 +336,8 @@
 
   const API = { PY, r100, STORE_KEY, MAX_HOMES, FEW, counts, lastIdx, median, toPrice, ymLabel, danjiKey, agentKey, premiumKey, groupDanji, searchDanji,
     normName, splitNum, matchName, listRow, unitKey, hasScore, scoreOf, monthDeals, trades, lastDeal, isFew,
-    bandSummary, changeBack, dongPosition, sggPosition, trend, volume, volumeCounts, cleanHome, homeId, parseStore, dumpStore, addHome, removeHome, findUnit, vsBuy, heldMonths, reasons, won, pctTxt };
+    bandSummary, changeBack, dongPosition, sggPosition, trend, volume, volumeCounts, cleanHome, homeId, parseStore, dumpStore, addHome, removeHome, findUnit, vsBuy, heldMonths, reasons, won, pctTxt,
+    ymAdd, ymDiff, ymKo, decodeSeries, histRow, histSeries, histWindow, histSpans, highs, isNewHigh };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_MINE = API;
 })(typeof self !== 'undefined' ? self : this);

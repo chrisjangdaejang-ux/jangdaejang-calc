@@ -76,6 +76,8 @@
   }
   function reasonsOf(x, ctx) {
     const f = x.f || {}, r = [], IX = ctx.IX, G = ctx.G, sgg = (IX.sgg[x.code] || {}).name || '', ri = PL.regionInfo(IX, x.code);
+    /* 근거 등급(data/evidence.json): 프리미엄은 시기별 값까지 */
+    const EV = kind => PL.evid(ctx.EV, x.sd, f.eb, kind, ri.short, G);
     if (f.fv != null) r.push(['f', `이 단지 점수: ${scopeOf(x, ctx)} ${PL.rank(f.fv)}` + (f.fvg != null ? ` · ${sgg} 안에서는 ${PL.rank(f.fvg)}` : '')]);
     const M = ctx.MODEL, w = f.why && f.why['2'];
     if (w && w.length) {
@@ -83,26 +85,26 @@
       const up = U(w.filter(t => t.endsWith('+')).map(t => lb(t.slice(0, -1)))), dn = U(w.filter(t => t.endsWith('-')).map(t => lb(t.slice(0, -1)))).filter(t => !up.includes(t));
       r.push(['f', '2년 점수를 움직인 요인 — ' + (up.length ? `올린 요인: ${up.join(' · ')}` : '') + (up.length && dn.length ? ' / ' : '') + (dn.length ? `내린 요인: ${dn.join(' · ')}` : '')]);
     }
-    if (f.rz) r.push(['f', PL.rzText(f.rz, G, ym)]);
+    if (f.rz) r.push(['f', PL.rzText(f.rz, G, ym), EV('stg')]);
     if (f.eg) { const g = f.eg.v - f.eg.b - f.eg.p; r.push(['f', `재건축이 끝나면${f.eg.done ? `(예상 준공 ${f.eg.done}년 전후)` : ''} 기대 차익은 약 ${g >= 0 ? '+' : '−'}${PL.eokR(Math.abs(g))}이에요 — 지역 새 아파트 시세로 본 같은 평형 가치 ${PL.eokR(f.eg.v)}, 예상 분담금 ${f.eg.b >= 0 ? PL.eokR(f.eg.b) : '환급 ' + PL.eokR(-f.eg.b)}, 지금 시세 ${PL.eokR(f.eg.p)} (간이 추정)`]); }
     if (f.landavg || f.vl) r.push(['f', '재건축 사업성(단지): ' + [f.landavg ? `세대당 평균 대지지분 ${f.landavg}평` : '', f.vl ? `용적률 ${Math.round(f.vl)}%` : ''].filter(Boolean).join(' · ') + (f.land ? ` · 이 평형 대지지분 약 ${f.land}평` : '')]);
     const rg = PL.regionText(f, IX, x.code, G);
-    if (rg.fact || rg.why.length) r.push(['f', [rg.fact || `${sgg} 지역 흐름:`, rg.mean, rg.why.length ? '참고 지표: ' + rg.why.join(' ') : ''].filter(Boolean).join(' ')]);
+    if (rg.fact || rg.why.length || rg.ref.length) r.push(['f', PL.regionLine(rg, `${sgg} 지역 흐름:`)]);
     if (f.sp) for (const [nm, units, , stg, mv] of f.sp.slice(0, 2)) {
       const SG = ['', '발표 단계', '분양·착공 단계', '입주 진행 중'];
       r.push([stg >= 2 ? 'c' : 'f', `주변 공급: 가까운 공공택지 ${nm} · 약 ${(units / 10000).toFixed(units >= 10000 ? 1 : 2).replace(/\.?0+$/, '')}만 가구 — ${SG[stg] || '계획'}${mv ? ` · 첫 입주 목표 ${String(mv).slice(0, 4)}년` : ''}`]);
     }
-    if (f.dd != null && Math.abs(f.dd) >= 0.03) r.push([f.dd > 0 ? 'f' : 'c', PL.ddText(f.dd, G) + (f.dd > 0 ? ' — 집값이 흔들릴 때 잘 버틴 편이에요' : ' — 시장에 따라 오르내림이 큰 편이에요')]);
-    if (f.rc != null && Math.abs(f.rc) >= 0.03 && Math.abs(f.rc) < 0.5) r.push(['f', PL.rcText(f.rc, G)]);
-    if (f.lg != null) r.push(['f', (f.ln === x.apt || f.lg >= 0.995) ? `${x.dong} 대장 단지예요 — 같은 평형끼리 비교해 동에서 가장 비싸게 거래돼요` : `${x.dong} 대장 단지(${f.ln})보다 같은 평형 기준 시세가 ${pct(1 - f.lg)}% 낮아요`]);
+    if (f.dd != null && Math.abs(f.dd) >= 0.03) r.push([f.dd > 0 ? 'f' : 'c', PL.ddText(f.dd, G) + (f.dd > 0 ? ' — 집값이 흔들릴 때 잘 버틴 편이에요' : ' — 시장에 따라 오르내림이 큰 편이에요'), EV('dd')]);
+    if (f.rc != null && Math.abs(f.rc) >= 0.03 && Math.abs(f.rc) < 0.5) r.push(['f', PL.rcText(f.rc, G), EV('rc')]);
+    if (f.lg != null) r.push(['f', (f.ln === x.apt || f.lg >= 0.995) ? `${x.dong} 대장 단지예요 — 같은 평형끼리 비교해 동에서 가장 비싸게 거래돼요` : `${x.dong} 대장 단지(${f.ln})보다 같은 평형 기준 시세가 ${pct(1 - f.lg)}% 낮아요`, EV('lg')]);
     if (f.rl) { const R = f.rl, SK = { plan: '계획 확정', start: '착공', start_real: '본공사 착수', delay: '개통 지연', open: '개통' };
-      r.push(['f', `신규 노선: ${R.line} ${R.st}${R.m != null ? `까지 직선 ${R.m.toLocaleString()}m` : ' 인근'} — ` + (R.opened ? `${ym(R.stym)} 개통` : `${ym(R.stym)} ${SK[R.stage] || R.stage}` + (R.target ? `, 개통 목표 ${ym(R.target)}` : '') + (R.delays ? `(일정 지연 ${R.delays}회)` : '')) + (R.pre != null ? ` · ${ym(R.first)} 이후 이 단지는 구 평균보다 ${Math.abs(R.pre)}% ${R.pre >= 0 ? '더' : '덜'} 올랐어요` : '')]); }
+      r.push(['f', `신규 노선: ${R.line} ${R.st}${R.m != null ? `까지 직선 ${R.m.toLocaleString()}m` : ' 인근'} — ` + (R.opened ? `${ym(R.stym)} 개통` : `${ym(R.stym)} ${SK[R.stage] || R.stage}` + (R.target ? `, 개통 목표 ${ym(R.target)}` : '') + (R.delays ? `(일정 지연 ${R.delays}회)` : '')) + (R.pre != null ? ` · ${ym(R.first)} 이후 이 단지는 구 평균보다 ${Math.abs(R.pre)}% ${R.pre >= 0 ? '더' : '덜'} 올랐어요` : ''), EV('rail')]); }
     if (f.sub != null) r.push(['f', f.sub >= 30 ? '지하철역이 걸어가기엔 먼 편이에요(도보 20분 이상)' : `${f.subs ? f.subs.replace(/\s+/g, ' ') : '지하철역'}까지 도보 ${f.sub <= 5 ? '5분 이내' : f.sub + '분 이내'}` + (f.sub <= 10 ? ' — 역세권' : '')]);
-    if (f.sch != null) r.push(['f', '학군: ' + PL.schText(f.sch, f.schn, G)]);
-    if (f.jr != null) r.push([f.jr < 0.4 ? 'c' : 'f', PL.jrText(f, x.P, x.jst, ri.short, G, f.by)]);
+    if (f.sch != null) r.push(['f', '학군: ' + PL.schText(f.sch, f.schn, G), EV('sch')]);
+    if (f.jr != null) r.push([f.jr < 0.4 ? 'c' : 'f', PL.jrText(f, x.P, x.jst, ri.short, G, f.by), EV('jr')]);
     if (x.n >= 60) r.push(['', `거래 활발: 최근 실거래 ${x.n}건 — 거래가 꾸준한 단지예요`]);
     else if (x.n < 24) r.push(['c', `거래량 적음: 최근 실거래 ${x.n}건 — 거래가 적어 시세가 크게 흔들려 보일 수 있어요`]);
-    if (x.ch != null) r.push([x.ch >= 0.08 ? 'c' : '', '최근 6개월: ' + PL.momText(x.ch, G)]);
+    if (x.ch != null) r.push([x.ch >= 0.08 ? 'c' : '', '최근 6개월: ' + PL.momText(x.ch, G), EV('mom')]);
     return r;
   }
 
@@ -125,7 +127,7 @@
   function unitHtml(x, ctx, i, total) {
     const f = x.f || {}, IX = ctx.IX, g = IX.sgg[x.code] || {}, Y = new Date().getFullYear(), m = money(x);
     const rs = reasonsOf(x, ctx), hz = horizons(x, ctx), G = ctx.G;
-    const li = r => `<li class="${r[0]}">${esc(r[1])}</li>`;
+    const li = r => `<li class="${r[0]}">${esc(r[1])}${r[2] ? PL.evHtml(r[2], true, esc) : ''}</li>`;
     const okH = hz.filter(z => z.ok && z.v != null).map(z => z.h + '년'), refH = hz.filter(z => !z.ok && z.v != null).map(z => z.h + '년');
     const mm2 = (ctx.MH && ctx.MH['2']) || ctx.MODEL;
     return `<section class="pr-unit" id="u${i}">
@@ -194,8 +196,8 @@
   async function render(box, keys, order) {
     box.innerHTML = '<div class="msg info"><span class="spin"></span>리포트를 만드는 중입니다…</div>';
     const j = async u => { try { const r = await fetch(DATA + u); return r.ok ? r.json() : null; } catch (e) { return null; } };
-    const [IX, MODEL, MH] = await Promise.all([P.index(), j('model.json'), j('model_h.json')]);
-    const ctx = { IX, MODEL, MH };
+    const [IX, MODEL, MH, EV] = await Promise.all([P.index(), j('model.json'), j('model_h.json'), j('evidence.json')]);
+    const ctx = { IX, MODEL, MH, EV };
     const items = [], miss = [];
     for (const k of keys) {
       const p = P.keyParse(k); if (!p) continue;

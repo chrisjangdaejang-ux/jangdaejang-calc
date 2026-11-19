@@ -119,6 +119,42 @@ const bq = JSON.parse(bh.match(/data-jps="([^"]*)"/)[1].replace(/&quot;/g, '"').
 check('시세 흐름 보기 단추: 시트가 받는 키 그대로', [bq, /data-jps-at="report_top"/.test(bh), /시세 흐름 보기/.test(bh)], [{ sd: 's00', sgg: '11680', dong: '청담동', apt: '청담4차이-"편한"세상', band: '135㎡대', jibun: '28-20' }, true, true], '따옴표 이름도 안전하게');
 check('공개 화면 문구에 내부 기준값 없음', /12건/.test(fs.readFileSync(path.join(__dirname, '../mine/index.html'), 'utf8')), false, '점수용 최소 거래 수는 노출하지 않음');
 
+// 전체 기간 시세(price/h) · 신고가 · 최고가
+check('연월 더하기', [M.ymAdd('201410', 3), M.ymAdd('201412', 1), M.ymAdd('202601', -1)], ['201501', '201501', '202512'], '');
+check('연월 한국식', M.ymKo('200601'), '2006년 1월', '');
+const HF = { hm: '201410', rm: '202201', to: '201503', v: 'V1', units: [['청담동', '청담4차이-편한세상', '84㎡대', '28-20', [2, 5000, 0, 5200, 5300], [0, 2000]], ['청담동', 'X', '84㎡대', '1', null, null]] };
+const ds = M.decodeSeries(HF.units[0][4], HF.hm);
+check('월별 시세 해독: 시작 칸 2 → 2014.12부터, 0 빼고', [...ds.entries()], [['201412', 5000], ['201502', 5200], ['201503', 5300]], '[시작 칸, 값…] 기준 달 hm');
+const hu4 = ['11680', '청담동', '청담4차이-편한세상', '84㎡대', 84.6, 8, null, null, '28-20', 0, [], [], { f: '201412', hi: [350000, 20211015, 84.6], hi1: [330000, 20260107, 84.6] }];
+check('h 행 찾기(순서 맞음)', M.histRow(HF, hu4, 0, 'V1') === HF.units[0], true, '');
+check('h 행 찾기(생성본 달라도 앞 4칸으로)', M.histRow(HF, hu4, 1, 'V0') === HF.units[0], true, '동·표시명·평형·지번');
+const hs = M.histSeries(HF, HF.units[0], 84.6);
+check('전체 기간: 첫 달 = 매매·전세 중 이른 달, 끝 = to', [hs.months[0], hs.months[hs.months.length - 1], hs.months.length], ['201412', '201503', 4], '');
+check('전체 기간: 매매 금액 환산(평당가 × 전용 ÷ 3.3058)', hs.s, [M.toPrice(5000, 84.6), 0, M.toPrice(5200, 84.6), M.toPrice(5300, 84.6)], '거래 없는 달 0');
+check('전체 기간: 전세(기준 달 rm) 이 구간엔 없음', hs.j.every(v => v === 0), true, 'rm 2022.01 이후');
+check('직거래만(null) 행 → 없음', M.histSeries(HF, HF.units[1], 84), null, '');
+const HF2 = { hm: '202401', rm: '202401', to: '202403', units: [['d', 'a', 'b', 'j', [0, 4000, 4000, 4000], [1, 2000, 2400]]] };
+const hs2 = M.histSeries(HF2, HF2.units[0], 33.058);
+check('전세가율 = 전세 ÷ 매매(두 값 있는 달만)', hs2.jr, [0, 0.5, 0.6], '1월은 전세 없음');
+check('기간 자르기', M.histWindow(hs, 2).months, ['201502', '201503'], '');
+check('기간 단추: 자료보다 짧은 것 + 전체', M.histSpans({ months: new Array(50) }).map(b => b.label), ['1년', '3년', '전체'], '50개월 → 5년 단추 없음');
+let hh = M.highs(hu4, { hm: '201410', cover: '201410' }, 315000);
+check('최고가: 첫 거래가 수집 시작보다 늦으면 역대 최고가', [hh.label, hh.hi.amt, hh.hi.at, hh.hi1.amt], ['역대 최고가', 350000, '202110', 330000], 'f 201412 > cover 201410');
+check('최고가 대비 지금 시세 %', hh.hi.vs, (315000 - 350000) / 350000, '(지금 − 최고) ÷ 최고');
+hh = M.highs(Object.assign(hu4.slice(), { 12: { f: '201410', hi: [350000, 20211015, 84.6] } }), { hm: '201410', cover: '201410' }, 0);
+check('최고가: 첫 거래 = 수집 시작이면 "YYYY년 M월 이후 최고가"', [hh.label, hh.hi1, hh.hi.vs], ['2014년 10월 이후 최고가', null, null], '그 전 자료가 없을 수 있음');
+check('칸 12 없으면 최고가 없음(배포 전 자료)', M.highs(lowU, null, 1), null, '');
+const nt = M.trades([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, [[20260115, 84.6, 10, 360000, 0, 1], [20260110, 84.6, 3, 340000, 0, 0], [20260101, 84.6, 3, 330000, 0]]]);
+check('신고가 표시(6번째 칸 1)', nt.map(t => t.hi), [true, false, false], '없는 칸(예전 자료)은 아님');
+const nth = PS.tradesHtml([0, 0, 0, 0, 84.6, 3, [], '', 0, 0, [], [[20260115, 84.6, 10, 360000, 0, 1], [20260110, 84.6, 3, 340000, 0, 0]]], months);
+check('시트: 신고가 배지(빨간 작은 배지) 1개 + 설명', [(nth.match(/<span class="jps-new"[^>]*>신고가<\/span> <b>/g) || []).length, /신고가<\/span> = 그 전날까지/.test(nth)], [1, true], '');
+check('시트: 신고가 없으면 배지·설명 없음', /jps-new/.test(PS.tradesHtml(lowU, months)), false, '');
+const hh2 = PS.highsHtml(M.highs(hu4, { hm: '201410', cover: '201410' }, 315000));
+check('시트: 최고가 상자(금액·연월·지금 시세 대비)', [/35억원/.test(hh2), /2021\.10/.test(hh2), /10\.0% 낮아요/.test(hh2), /최근 1년 최고가/.test(hh2)], [true, true, true, true], '');
+const hc = PS.histChart(hs, 400);
+check('시트: 전체 기간 차트 두 선(매매만 있으면 전세 선 비어 있음)', (hc.match(/<path /g) || []).length, 2, '');
+check('시트: 자료 기간 문구는 실제 수집 시작 달', PS.histNote({ hm: '200601', cover: '200601', rcover: '201101' }).startsWith('매매 2006년 1월부터 · 전세 2011년 1월부터'), true, '"2006년 1월부터"');
+
 // 프리미엄 리포트 단지 키 = assets/pay.js JDJ_PAY.keyOf
 const ctx = { window: {}, localStorage: { getItem: () => null, setItem() {} }, document: { readyState: 'loading', addEventListener() {} }, console };
 vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../assets/pay.js'), 'utf8'), ctx);
@@ -180,6 +216,20 @@ if (DIR && fs.existsSync(path.join(DIR, 'index.json'))) {
     check('[실자료] 월별 건수 합 = 거래 수', M.counts(c4[7]).reduce((a, x) => a + x, 0), c4[5], '');
     check('[실자료] 그 달 중앙 평당가 수 = 거래 있는 달 수', c4[10].length, M.counts(c4[7]).filter(x => x > 0).length, '');
     check('[실자료] 개별 거래(직거래 제외) 수 = 거래 수', c4[11].filter(t => t[4] !== 1).length, c4[5], '');
+
+    const GJ = JSON.parse(fs.readFileSync(path.join(PDIR, '11680.json'), 'utf8'));
+    if (GJ.hist && fs.existsSync(path.join(DIR, GJ.hist.file))) {
+      const HJ = JSON.parse(fs.readFileSync(path.join(DIR, GJ.hist.file), 'utf8'));
+      const ei = G.findIndex(u => u[2] === '은마' && u[3] === '84㎡대'), em = G[ei];
+      const ht = M.histSeries(HJ, M.histRow(HJ, em, ei, GJ.hist.v), em[4]);
+      check('[실자료] 은마 84㎡대 전체 기간: 끝 달 = hist.to', ht.months[ht.months.length - 1], GJ.hist.to, '');
+      check('[실자료] 은마 84㎡대 전체 기간 마지막 매매 평당가 = 최근 3년 자료 마지막 값', M.toPrice(em[6][em[6].length - 1], em[4]), ht.s[ht.s.length - 1], '같은 3개월 중앙값');
+      check('[실자료] 은마 84㎡대 전체 기간이 최근 3년보다 김', ht.months.length > 36, true, ht.months[0]);
+      const hx = M.highs(em, GJ.hist, 0);
+      check('[실자료] 역대 최고가 ≥ 최근 3년 개별 거래(직거래 제외) 최고가', hx.hi.amt >= Math.max(...em[11].filter(t => t[4] !== 1).map(t => t[3])), true, M.won(hx.hi.amt));
+      const nh = G.flatMap(u => u[11]).filter(t => t[5] === 1);
+      check('[실자료] 강남구 신고가 거래 있음 · 직거래는 신고가 아님', [nh.length > 0, nh.every(t => t[4] !== 1)], [true, true], nh.length + '건');
+    }
     const hu = G.find(u => u[9] === 1), su = S.find(x => M.unitKey(x) === M.unitKey(hu));
     check('[실자료] 점수 자료 있는 행의 시세 = 점수용 자료와 같음', [hu[5], hu[6], hu[7]], su && [su[5], su[6], su[7]], '같은 계산');
   }

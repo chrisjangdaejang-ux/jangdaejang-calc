@@ -23,8 +23,8 @@
 <script src="../assets/stat.js"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/kchat.js?v=1"></script>
-<script src="../assets/mine-core.js?v=2"></script>
-<script src="../assets/price-sheet.js?v=2"></script>
+<script src="../assets/mine-core.js?v=3"></script>
+<script src="../assets/price-sheet.js?v=3"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=39">
@@ -86,6 +86,12 @@ td small{color:#4E5968;font-size:13.5px}
 .legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px;background:#2F6BFF}
 .legend i.g{background:repeating-linear-gradient(90deg,#8B95A1 0 5px,transparent 5px 8px)}
 .legend i.b{height:10px;width:10px;background:#9DB8FF}
+.legend i.j{background:#14A06B}
+.hib{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 6px}
+@media(max-width:400px){.hib{grid-template-columns:1fr}}
+.hib>div{border:1px solid var(--line);border-radius:14px;padding:10px 12px;min-width:0}
+.hib .k{font-size:13.5px;color:#4E5968;font-weight:700}.hib .v{font-size:18px;font-weight:900;word-break:keep-all}.hib .d{font-size:13px;color:#4E5968;line-height:1.5;overflow-wrap:anywhere}
+.jps-new{display:inline-block;font-size:11.5px;font-weight:800;line-height:17px;padding:0 5px;border-radius:5px;background:#FDECEC;color:#C81E1E;vertical-align:1px;white-space:nowrap}
 .pos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:560px){.pos{grid-template-columns:1fr}}
 .pbox{border:1px solid var(--line);border-radius:14px;padding:12px 14px}
@@ -201,7 +207,7 @@ let IX = null, LABEL = null;
 const P = window.JDJ_PRICE;
 const LIST = {}, GROUPS = {}, SMAP = {};
 let CUR = null;                     // 지금 보여 주는 {d(전체 자료 평형), map(점수)}
-const S = { sd: '', code: '', dkey: '', band: '', span: 36 };
+const S = { sd: '', code: '', dkey: '', band: '', span: 36, hspan: 36 };
 
 /* ---------- 저장 ---------- */
 function loadHomes(){ try { return M.parseStore(localStorage.getItem(M.STORE_KEY)); } catch (e) { return []; } }
@@ -286,17 +292,17 @@ async function showDanji(key, band, opt){
   const u = new URL(location.href); u.searchParams.set('sd', S.sd); u.searchParams.set('d', key); u.searchParams.set('b', band); history.replaceState(null, '', u);
   const sd = S.sd;
   if (!CUR || CUR.d.key !== key){ $('res').hidden = false; $('res').innerHTML = '<div class="loading">시세를 불러오는 중이에요…</div>'; }
-  let su, map = null;
+  let su, map = null, sg = null, hf = null;
   try {
-    su = (await P.loadSgg(d0.code, sd)).units;
-    if (d0.bands.some(M.hasScore)) map = await scoreMap(sd).catch(() => null);
+    sg = await P.loadSgg(d0.code, sd); su = sg.units;
+    [map, hf] = await Promise.all([d0.bands.some(M.hasScore) ? scoreMap(sd).catch(() => null) : null, P.loadHist(sg)]);
   } catch (e) { if (S.dkey === key) $('res').innerHTML = '<div class="empty">시세 자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.</div>'; return; }
   if (S.dkey !== key || S.sd !== sd || S.band !== band) return;
   const byKey = new Map(su.map(x => [M.unitKey(x), x]));
   const d = Object.assign({}, d0, { bands: d0.bands.map(b => byKey.get(M.unitKey(b))).filter(Boolean) });
   if (!d.bands.length){ $('res').innerHTML = '<div class="empty">이 단지의 시세 자료를 찾지 못했어요.</div>'; return; }
   if (!d.bands.some(x => x[3] === S.band)) S.band = d.bands[0][3];
-  CUR = { d, map, units: su };
+  CUR = { d, map, units: su, g: sg, hf };
   render(d, map, su);
   if (opt && opt.scroll) $('res').scrollIntoView({behavior:'smooth', block:'start'});
   stat(d);
@@ -309,6 +315,9 @@ function stat(d){
 function render(d, map, units){
   const u = d.bands.find(x => x[3] === S.band), f = M.scoreOf(u, map) || {}, has = M.hasScore(u), few = M.isFew(u), last = M.lastDeal(u, IX.months);
   const sm = M.bandSummary(u, IX.months), sgg = IX.sgg[d.code];
+  /* 전체 기간 시세(price/h)·최고가(행 칸 12)가 있을 때만 — 없으면 예전 화면 그대로 */
+  const G0 = CUR && CUR.d.key === d.key ? CUR : {}, HT = P.histOf(G0.g, G0.hf, u), hist = G0.g && G0.g.hist;
+  const HI = M.highs(u, hist, sm.price || (last ? last.price : 0));
   const dp = M.dongPosition(units, u), gp = M.sggPosition(sgg, u, IX.months), vol = M.volume(u);
   const sv = sgg && sgg.c ? M.volumeCounts(sgg.c) : null;
   const homes = loadHomes(), id = M.homeId({code:d.code, dong:d.dong, jibun:d.jibun, apt:d.apt, band:S.band}), mine = homes.find(h => M.homeId(h) === id);
@@ -342,8 +351,9 @@ function render(d, map, units){
       <div class="st"><div class="k">1년 변동</div><div class="v">${chTxt(sm.ch1)}</div><div class="d">평당가 기준</div></div>
       <div class="st"><div class="k">3년 변동</div><div class="v">${chTxt(sm.ch3)}</div><div class="d">평당가 기준</div></div>
     </div>
+    ${HI ? P.highsHtml(HI, 'hib') : ''}
     ${!has ? `<p class="basis lowc">최근 3년 거래 <b>${u[5]}건</b> 기준이에요. 거래가 적어 한두 건 가격에 따라 시세가 크게 달라질 수 있으니 아래 실거래 목록을 함께 봐 주세요.</p>` : ''}
-    <p class="basis"><b>계산 근거</b> · ${(few || !sm.price) && last ? `${few ? '최근 거래' : '마지막 실거래'} = ${ym(last.at)} 실거래 평당가 ${last.own ? '' : '(3개월) '}중앙값 ${last.ppy.toLocaleString()}만원 × 전용 ${u[4]}㎡ ÷ 3.3058 · ` : ''}${sm.ppy ? `최근 시세 = 최근 3개월 실거래 평당가 중앙값 ${sm.ppy.toLocaleString()}만원 × ` : '환산 금액 = 평당가 × '}전용 ${u[4]}㎡ ÷ 3.3058 (100만 원 단위 반올림, 이 평형 거래 전용면적의 중앙값 기준) · 1년 변동: ${chBasis(sm.ch1)} · 3년 변동: ${chBasis(sm.ch3)}. 5년 추이는 공개 자료 기간(최근 3년)을 넘어 아직 보여 드리지 못해요.</p>
+    <p class="basis"><b>계산 근거</b> · ${(few || !sm.price) && last ? `${few ? '최근 거래' : '마지막 실거래'} = ${ym(last.at)} 실거래 평당가 ${last.own ? '' : '(3개월) '}중앙값 ${last.ppy.toLocaleString()}만원 × 전용 ${u[4]}㎡ ÷ 3.3058 · ` : ''}${sm.ppy ? `최근 시세 = 최근 3개월 실거래 평당가 중앙값 ${sm.ppy.toLocaleString()}만원 × ` : '환산 금액 = 평당가 × '}전용 ${u[4]}㎡ ÷ 3.3058 (100만 원 단위 반올림, 이 평형 거래 전용면적의 중앙값 기준) · 1년 변동: ${chBasis(sm.ch1)} · 3년 변동: ${chBasis(sm.ch3)}.${HT ? '' : ' 5년 추이는 공개 자료 기간(최근 3년)을 넘어 아직 보여 드리지 못해요.'}${HI && HI.hi ? ` · 최고가 = 수집한 실거래 중 직거래를 뺀 가장 높은 거래(이 평형 안 모든 전용면적).` : ''}</p>
 
     <div class="save" id="saveBox">
       <b style="font-size:16px">${mine ? '내 집으로 저장되어 있어요' : '이 집이 내 집인가요?'}</b>
@@ -362,10 +372,15 @@ function render(d, map, units){
   </div>
 
   <div class="panel">
-    <div class="chead"><h3>가격 추이 (평당가)</h3><div class="seg2" role="group" aria-label="기간">${[12, 36].map(n => `<button type="button" data-span="${n}" class="${S.span === n ? 'on' : ''}" aria-pressed="${S.span === n}">${n / 12}년</button>`).join('')}</div></div>
+    ${HT ? `<div class="chead"><h3>가격 추이 (매매·전세)</h3>${P.spanBtns(HT, S.hspan, 'seg2')}</div>
+    <div class="chart" id="cPrice"></div>
+    <div class="legend"><span><i></i>매매 시세</span>${HT.j.some(v => v > 0) ? '<span><i class="j"></i>전세 시세</span>' : ''}<span>${esc(S.band)} · 전용 ${u[4]}㎡ 환산</span></div>
+    <p class="basis">${esc(P.histNote(hist, HT))}</p>
+    ${HT.jr.some(v => v > 0) ? `<details class="msum" id="jrBox"><summary>전세가율 추이 보기 (전셋값 ÷ 매맷값)</summary><div class="chart" id="cJr" style="min-height:120px"></div><p class="basis">매매·전세 시세가 모두 있는 달만 계산해요. 같은 기간 버튼을 따라가요.</p></details>` : ''}`
+    : `<div class="chead"><h3>가격 추이 (평당가)</h3><div class="seg2" role="group" aria-label="기간">${[12, 36].map(n => `<button type="button" data-span="${n}" class="${S.span === n ? 'on' : ''}" aria-pressed="${S.span === n}">${n / 12}년</button>`).join('')}</div></div>
     <div class="chart" id="cPrice"></div>
     <div class="legend"><span><i></i>${esc(d.apt)} ${esc(S.band)}</span><span><i class="g"></i>${esc(sggName(d.code))} 아파트 전체</span></div>
-    <p class="basis">단위: 만원/3.3㎡ · 각 달 값 = 그 달까지 3개월 실거래 평당가 중앙값. 3개월 동안 거래가 없는 달은 선을 끊어 표시해요.</p>
+    <p class="basis">단위: 만원/3.3㎡ · 각 달 값 = 그 달까지 3개월 실거래 평당가 중앙값. 3개월 동안 거래가 없는 달은 선을 끊어 표시해요.</p>`}
     <div class="chead" style="margin-top:18px"><h3>거래량 추이 (월별 건수)</h3></div>
     <div class="chart" id="cVol" style="min-height:150px"></div>
     <p class="basis">이 평형 최근 12개월 <b>${vol.last12}건</b>${vol.prev12 != null ? ` · 그 전 12개월 ${vol.prev12}건${vol.pct != null ? ` (<span class="${updown(vol.pct)}">${M.pctTxt(vol.pct, 0)}</span>)` : ''}` : ''}${sv ? ` · ${esc(sggName(d.code))} 전체 최근 12개월 ${sv.last12.toLocaleString()}건${sv.prev12 != null ? ` · 그 전 12개월 ${sv.prev12.toLocaleString()}건${sv.pct != null ? ` (${M.pctTxt(sv.pct, 0)})` : ''}` : ''}` : ''}</p>
@@ -416,6 +431,7 @@ function render(d, map, units){
   <div id="agentSec"></div>`;
 
   $('res').hidden = false;
+  CUR.ht = HT;
   drawCharts(u, sgg);
   P.wireMore($('trades'));
   wireResult(d, u, sm);
@@ -424,8 +440,14 @@ function render(d, map, units){
 
 /* ---------- 차트 (SVG 직접 그리기) ---------- */
 function drawCharts(u, sgg){
-  const t = M.trend(u, sgg, IX.months, S.span);
-  $('cPrice').innerHTML = lineChart(t, $('cPrice').clientWidth || 600);
+  const HT = CUR && CUR.ht;
+  if (HT){
+    const w = M.histWindow(HT, S.hspan), W = $('cPrice').clientWidth || 600;
+    $('cPrice').innerHTML = P.histChart(w, W, {h: 240, fs: 13.5});
+    if ($('cJr')) $('cJr').innerHTML = P.histChart(w, $('cJr').clientWidth || W, {jr: true, h: 160, fs: 13.5});
+  }
+  const t = M.trend(u, sgg, IX.months, HT ? (S.hspan && S.hspan < 36 ? S.hspan : 36) : S.span);
+  if (!HT) $('cPrice').innerHTML = lineChart(t, $('cPrice').clientWidth || 600);
   $('cVol').innerHTML = barChart(t, $('cVol').clientWidth || 600);
 }
 function niceStep(range){ const raw = range / 4, p = Math.pow(10, Math.floor(Math.log10(raw || 1))), n = raw / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p; }
@@ -466,6 +488,8 @@ function barChart(t, W){
 function wireResult(d, u, sm){
   $('res').querySelectorAll('[data-b]').forEach(b => b.onclick = () => showDanji(d.key, b.dataset.b));
   $('res').querySelectorAll('[data-span]').forEach(b => b.onclick = () => { S.span = +b.dataset.span; $('res').querySelectorAll('[data-span]').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); }); drawCharts(u, IX.sgg[d.code]); });
+  $('res').querySelectorAll('[data-hspan]').forEach(b => b.onclick = () => { S.hspan = +b.dataset.hspan; $('res').querySelectorAll('[data-hspan]').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); }); drawCharts(u, IX.sgg[d.code]); });
+  const jb = $('jrBox'); if (jb) jb.addEventListener('toggle', () => { if (jb.open) drawCharts(u, IX.sgg[d.code]); });
   const bp = $('bp');
   bp.addEventListener('input', () => { const v = num(bp.value); bp.value = v ? v.toLocaleString() : ''; $('bpHint').textContent = v ? M.won(v) : '만원 단위로 넣어 주세요'; });
   $('saveBtn').onclick = () => {

@@ -22,11 +22,11 @@
 <script src="../../assets/stat.js"></script>
 <script src="../../assets/region-notes.js"></script>
 <script src="../../assets/rec-core.js?v=1"></script>
-<script src="../../assets/mine-core.js?v=2"></script>
-<script src="../../assets/price-sheet.js?v=2"></script>
+<script src="../../assets/mine-core.js?v=3"></script>
+<script src="../../assets/price-sheet.js?v=3"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/kchat.js?v=1"></script>
-<script src="../../assets/plain-words.js?v=1"></script>
+<script src="../../assets/plain-words.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -562,7 +562,10 @@ function maxPrice(c,dsr){
 const BY_TXT = {LTV:'LTV(집값 대비 비율)', CAP:'가격구간별 대출 한도', DSR:'소득(DSR 40%)', BAN:'주택구입 주담대 불가'};
 
 /* ---------- 데이터 ---------- */
-let MODEL=null, RAIL=null, MH=null, SUPPLY=null;
+let MODEL=null, RAIL=null, MH=null, SUPPLY=null, EVD=null;
+/* 근거 등급(data/evidence.json): 과거 같은 조건 단지의 2년 뒤 성적 — 무료 리포트는 등급 + 한 줄 요약만 */
+const EVK=(x,kind)=>PL.evid(EVD, sdIdOf(x.code), (x.fx||{}).eb, kind, PL.regionInfo(IX,x.code).short, GLS);
+const liR=r=>`<li class="${r[0]}">${esc(r[1])}${r[2]?PL.evHtml(r[2],false,esc):''}</li>`;
 let HZ=2;
 try{ HZ = parseInt(new URLSearchParams(location.search).get('hz') || localStorage.getItem('jdj_hz') || '2',10); }catch(e){}
 if(!(HZ>=1&&HZ<=10)) HZ=2;
@@ -582,7 +585,7 @@ const rzYm=v=>v?`${v.slice(0,4)}.${v.slice(4)}`:'';
 const rzSrc=z=>z.src==='busan'?'부산시 정비사업 추진현황 기준':z.src==='nat'?'국토교통부 전국 도시정비사업 통합 데이터 기준, 연 1회 갱신':'서울시 정비사업 추진현황·서울플랜+ 기준';
 const rzText=z=>`${PL.rzText(z,GLS,rzYm)} (${rzSrc(z)})`;
 const RUSED=()=>!!(MODEL&&MODEL.region&&MODEL.region.used);
-async function loadIndex(){ try{ const m=await fetch(DATA+'model.json',{cache:'no-cache'}); MODEL=m.ok?await m.json():null; }catch(e){} try{ const mh=await fetch(DATA+'model_h.json',{cache:'no-cache'}); MH=mh.ok?await mh.json():null; }catch(e){} try{ const q=await fetch(DATA+'rail.json',{cache:'no-cache'}); RAIL=q.ok?await q.json():null; }catch(e){} try{ const q=await fetch(DATA+'supply.json',{cache:'no-cache'}); SUPPLY=q.ok?await q.json():null; }catch(e){} const r=await fetch(DATA+'index.json',{cache:'no-cache'}); if(!r.ok) throw new Error('index'); return r.json(); }
+async function loadIndex(){ try{ const m=await fetch(DATA+'model.json',{cache:'no-cache'}); MODEL=m.ok?await m.json():null; }catch(e){} try{ const mh=await fetch(DATA+'model_h.json',{cache:'no-cache'}); MH=mh.ok?await mh.json():null; }catch(e){} try{ const q=await fetch(DATA+'rail.json',{cache:'no-cache'}); RAIL=q.ok?await q.json():null; }catch(e){} try{ const q=await fetch(DATA+'supply.json',{cache:'no-cache'}); SUPPLY=q.ok?await q.json():null; }catch(e){} try{ const q=await fetch(DATA+'evidence.json',{cache:'no-cache'}); EVD=q.ok?await q.json():null; }catch(e){} const r=await fetch(DATA+'index.json',{cache:'no-cache'}); if(!r.ok) throw new Error('index'); return r.json(); }
 /* 지역 상관없음: 시·도 파일을 하나씩 순서대로 불러온다(한꺼번에 받지 않아 휴대폰 데이터·메모리 부담을 나눔). 받은 파일은 다시 받지 않음 */
 function loadAll(onStep){
   if (ALL_UNITS) return Promise.resolve(ALL_UNITS);
@@ -746,10 +749,10 @@ function futureReasons(x){
       r.push([stg>=2 && (!my || my<=end) ? 'c':'f', t]); } }
   if (f.gs!=null || f.sup!=null || f.pg!=null || f.un!=null || f.jb!=null){
     const rg=PL.regionText(f, IX, x.code, GLS);
-    r.push(['f', [rg.fact||`${sggName(x.code)} 지역 흐름:`, rg.mean, rg.why.length?'참고 지표: '+rg.why.join(' '):'', (f.gs!=null&&!RUSED())?'(지역 흐름은 아직 점수에 넣지 않았어요 · 참고만)':''].filter(Boolean).join(' ')]);
+    r.push(['f', [PL.regionLine(rg, `${sggName(x.code)} 지역 흐름:`), (f.gs!=null&&!RUSED())?'(지역 흐름은 아직 점수에 넣지 않았어요 · 참고만)':''].filter(Boolean).join(' ')]);
   }
-  if (f.dd!=null && Math.abs(f.dd)>=0.03) r.push([f.dd>0?'f':'c', PL.ddText(f.dd,GLS) + (f.dd>0 ? ' — 집값이 흔들릴 때 잘 버틴 편이에요' : ' — 시장에 따라 오르내림이 큰 편이에요')]);
-  if (f.rc!=null && Math.abs(f.rc)>=0.03 && Math.abs(f.rc)<0.5) r.push(['f', PL.rcText(f.rc,GLS)]);
+  if (f.dd!=null && Math.abs(f.dd)>=0.03) r.push([f.dd>0?'f':'c', PL.ddText(f.dd,GLS) + (f.dd>0 ? ' — 집값이 흔들릴 때 잘 버틴 편이에요' : ' — 시장에 따라 오르내림이 큰 편이에요'), EVK(x,'dd')]);
+  if (f.rc!=null && Math.abs(f.rc)>=0.03 && Math.abs(f.rc)<0.5) r.push(['f', PL.rcText(f.rc,GLS), EVK(x,'rc')]);
   if (f.by || f.hh){ const age=f.by ? new Date().getFullYear()-f.by : null;
     const parts=[]; if(f.by) parts.push(`${f.by}년 준공(${age}년차)`); if(f.hh) parts.push(`${f.hh.toLocaleString()}세대`);
     const tags=[]; if(age!=null && age<=10) tags.push('신축');
@@ -761,9 +764,9 @@ function futureReasons(x){
     const own = f.ln && (f.ln===x.apt), Y=new Date().getFullYear();
     const la = f.lb ? Y-f.lb : null;
     const ltag = la==null ? '' : la>=30 ? ' · 재건축 기대감' : la<=10 ? ` · ${f.lb}년 신축` : '';
-    if (own || f.lg>=0.995) r.push(['f', `${x.dong} 대장 단지 — 같은 평형끼리 비교해 동에서 가장 비싸게 거래되는 단지`]);
+    if (own || f.lg>=0.995) r.push(['f', `${x.dong} 대장 단지 — 같은 평형끼리 비교해 동에서 가장 비싸게 거래되는 단지`, EVK(x,'lg')]);
     else r.push(['f', `${x.dong} 대장 단지(${f.ln}${ltag})보다 같은 평형 기준 ${pct(1-f.lg)}% 낮은 시세` +
-      (la!=null && la>=30 ? ' — 대장은 재건축 후 새 아파트 가치가 미리 반영된 가격' : '')]);
+      (la!=null && la>=30 ? ' — 대장은 재건축 후 새 아파트 가치가 미리 반영된 가격' : ''), EVK(x,'lg')]);
   }
   if (f.rl){
     const R=f.rl, d=v=>v?`${v.slice(0,4)}.${v.slice(4)}`:'', SK={plan:'계획 확정',start:'착공',start_real:'본공사 착수',delay:'개통 지연',open:'개통'};
@@ -772,11 +775,11 @@ function futureReasons(x){
     if (R.pre!=null) t += ` · ${d(R.first)} 이후 이 단지는 구 평균보다 ${Math.abs(R.pre)}% ${R.pre>=0?'더':'덜'} 올랐어요`;
     const S = RAIL&&RAIL.summary&&RAIL.summary[R.opened?'open':'open'];
     if (!R.opened && S && S.n>=15 && S.after18!=null) t += ` — 과거 수도권 ${S.n}개 역 사례: 개통 후 1년 반 동안 구 평균 대비 ${S.after18>=0?'+':''}${S.after18}%`;
-    r.push(['f', t]);
+    r.push(['f', t, EVK(x,'rail')]);
   }
   if (f.sch!=null){
     const p=Math.round(f.sch*1000)/10;
-    r.push(['f', '학군: '+PL.schText(f.sch, f.schn, GLS)]); }
+    r.push(['f', '학군: '+PL.schText(f.sch, f.schn, GLS), EVK(x,'sch')]); }
   if (f.sub!=null){
     r.push(['f', f.sub>=30 ? '지하철역이 걸어가기엔 먼 편(도보 20분 이상) — 버스·자차 위주 생활권'
       : `${f.subs?f.subs.replace(/\s+/g,' '):'지하철역'}까지 도보 ${f.sub<=5?'5분 이내':f.sub+'분 이내'}` + (f.sub<=10?' — 역세권':'')]); }
@@ -784,7 +787,7 @@ function futureReasons(x){
     const g=f.eg.v-f.eg.b-f.eg.p, ln=['f', `재건축 완료 시${f.eg.done?`(예상 준공 ${f.eg.done}년 전후)`:''} 기대 차익 약 ${g>=0?'+':'−'}${fmtS(Math.abs(g))} — 지역 신축 시세로 본 같은 평형 가치 ${fmtS(f.eg.v)}, 예상 분담금 ${f.eg.b>=0?fmtS(f.eg.b):'환급 '+fmtS(-f.eg.b)}, 현재가 ${fmtS(f.eg.p)} (간이 추정 — 기부채납·임대주택·사업비에 따라 달라질 수 있어요)`];
     if (HZ<=2) r.push(ln); else r.unshift(ln);
   }
-  if (f.rz && !(f.by && new Date().getFullYear()-f.by>=25 && (f.land || f.vl || f.landavg))) r.unshift(['f', rzText(f.rz)]);
+  if (f.rz && !(f.by && new Date().getFullYear()-f.by>=25 && (f.land || f.vl || f.landavg))) r.unshift(['f', rzText(f.rz), EVK(x,'stg')]);
   else if (!f.rz && x.code && x.code.startsWith('11') && f.by && new Date().getFullYear()-f.by>=30)
     r.push(['f', '재건축 진행: 서울시 공식 자료(정비사업 추진현황·신속통합기획)에 아직 추진 이력이 없어요']);
   if (f.by && new Date().getFullYear()-f.by>=25 && (f.land || f.vl || f.landavg)){
@@ -806,10 +809,10 @@ function futureReasons(x){
       out.push(['f', `이 평형 대지지분 약 ${f.land}평` + (d==null ? '' : d>=5 ? ` — 단지 평균보다 ${d}% 많아 권리가액이 크고, 분담금 부담이 작거나 큰 평형 배정에 유리`
         : d<=-5 ? ` — 단지 평균보다 ${-d}% 적어 같은 평형으로 가려면 분담금이 더 들 수 있음` : ' — 단지 평균 수준')]);
     }
-    if (f.rz) out.unshift(['f', rzText(f.rz)]);
+    if (f.rz) out.unshift(['f', rzText(f.rz), EVK(x,'stg')]);
     r.unshift(...out);   // 재건축 단지는 맨 위에
   }
-  if (f.jr!=null) r.push([f.jr<0.4?'c':'f', PL.jrText(f, x.P, PL.jrStats(SIDO_CACHE[sdIdOf(x.code)]), PL.regionInfo(IX,x.code).short, GLS, f.by)]);
+  if (f.jr!=null) r.push([f.jr<0.4?'c':'f', PL.jrText(f, x.P, PL.jrStats(SIDO_CACHE[sdIdOf(x.code)]), PL.regionInfo(IX,x.code).short, GLS, f.by), EVK(x,'jr')]);
   return r;
 }
 function reasons(x){
@@ -820,10 +823,10 @@ function reasons(x){
   else if (x.n>=24) r.push(['', `거래 꾸준: 최근 1년 실거래 ${x.n}건`]);
   else r.push(['c', `거래량 적음: 최근 1년 ${x.n}건 — 시세 확인과 매도 기간에 여유를 두세요`]);
   if (x.ch!==null){
-    r.push([x.ch>=0.08?'c':'', '최근 6개월: '+PL.momText(x.ch,GLS)]);
+    r.push([x.ch>=0.08?'c':'', '최근 6개월: '+PL.momText(x.ch,GLS), EVK(x,'mom')]);
   }
   if (Math.abs(x.rel)>=0.05){
-    r.push(['', x.rel>0 ? `${sggName(x.code)} 평균 평당가보다 ${Math.round(x.rel*100)}% 낮음 — 지역 내 가격 부담이 적은 편` : `${sggName(x.code)} 평균 평당가보다 ${Math.round(-x.rel*100)}% 높음 — 지역 내 선호 단지`]);
+    r.push(['', x.rel>0 ? `${sggName(x.code)} 평균 평당가보다 ${Math.round(x.rel*100)}% 낮음 — 지역 내 가격 부담이 적은 편` : `${sggName(x.code)} 평균 평당가보다 ${Math.round(-x.rel*100)}% 높음 — 지역 내 선호 단지`, EVK(x,'rel')]);
   }
   if (x.c.capital && x.P>140000 && x.P<=150000) r.push(['c', '15억 바로 아래 — 15억을 넘으면 대출 한도가 6억 → 4억으로 줄어듭니다']);
   if (x.nd.loan.by==='DSR') r.push(['c', '소득(DSR)이 대출 한도를 결정 — 금리 유형에 따라 한도가 달라집니다']);
@@ -1062,7 +1065,7 @@ async function renderCompare(){
   }
   const W = (scored.length && !multiSido) ? items[scored[0][1]] : null;
   h += `<div class="sec"><h2><span class="no">03</span> 종합 결론</h2>${vh}
-    ${items.map(x=>{ const rs=reasons(Object.assign({},x,{fit:Math.max(0.01,1-Math.max(0,x.short)/Math.max(S.cash,1))})).filter(r=>!/^예산 적합/.test(r[1])); return `<details class="cdet"><summary>${esc(x.apt)} · ${esc(x.band)} 자세한 분석 보기</summary><ul class="reasons">${rs.map(r=>`<li class="${r[0]}">${esc(r[1])}</li>`).join('')}</ul></details>`; }).join('')}
+    ${items.map(x=>{ const rs=reasons(Object.assign({},x,{fit:Math.max(0.01,1-Math.max(0,x.short)/Math.max(S.cash,1))})).filter(r=>!/^예산 적합/.test(r[1])); return `<details class="cdet"><summary>${esc(x.apt)} · ${esc(x.band)} 자세한 분석 보기</summary><ul class="reasons">${rs.map(liR).join('')}</ul></details>`; }).join('')}
   </div>`;
 
   /* 단지별 상담·제휴 공인중개사 연결 (추천 리포트와 같은 방식) */
@@ -1243,7 +1246,7 @@ async function render(){
     h += `<div class="cards">` + picked.map((x,i)=>{
       const rs = reasons(x), rg = ringOf(x), hasFv = !!(x.fx && x.fx.fv!=null);
       const k = cmpKey({sd:sdIdOf(x.code),code:x.code,dong:x.dong,apt:x.apt,band:x.band});
-      const li = r=>`<li class="${r[0]}">${esc(r[1])}</li>`;
+      const li = liR;
       return `<div class="card ${i<3?'best':''}" id="pk${i}">
         <div class="chead">
           <div><div class="crk"><b>추천 ${i+1}위</b> · ${esc(sidoOfCode(x.code))} ${esc(sggName(x.code))} ${esc(x.dong)}</div>
