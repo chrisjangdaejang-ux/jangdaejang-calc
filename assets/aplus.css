@@ -166,3 +166,9 @@ table td{border-bottom:1px solid var(--line2)}
 .doc .box p{margin:0}
 .doc .toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
 .doc .toc a{font-size:14px;font-weight:700;color:var(--sub);background:var(--gray);border-radius:999px;padding:0 12px;min-height:36px;display:inline-flex;align-items:center;text-decoration:none}
+
+/* PC(넓은 화면): 휴대폰과 같은 체감 크기로 — 화면 전체를 12.5% 키우고 보조 글자색을 한 단계 진하게(작은 회색 글씨가 흐려 보이던 문제) */
+@media (min-width:1024px){
+  html{zoom:1.125}
+  :root{--sub:#333D4B;--sub2:#3E4754;--sub3:#4E5968;--muted:#3E4754}
+}
