@@ -339,7 +339,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
       <tbody>
         <tr><th>최소 집행</th><td>최소 집행 금액 <span data-guide="minSpend">문의 시 안내</span> · 최소 기간 <span data-guide="minWeeks">1주</span> (모든 금액 VAT 별도)</td></tr>
         <tr><th>첫 광고 할인</th><td>처음 광고하시는 광고주는 첫 주 금액을 <span data-guide="firstWeekOff">50%</span> 할인해 드려요 (광고주당 1번).</td></tr>
-        <tr><th>연장 차감</th><td>1주 광고 뒤 1개월 이상으로 연장하시면, 연장 금액에서 첫 주에 내신 금액을 빼 드려요.</td></tr>
+        <tr><th>연장 차감</th><td>결과 하단 카드·시·군·구 우선 노출·체크리스트 스폰서 같은 월 단위 상품은 1주 광고 뒤 1개월 이상으로 연장하시면, 연장 금액에서 첫 주에 내신 금액을 빼 드려요. 분양 단지 광고는 연장 차감 대신 3회 이용권 할인이 적용돼요.</td></tr>
         <tr><th>타겟팅 할증</th><td id="gsur">특정 서비스 목적·주택 종류만 고르면 <span data-sur="service">문의 시 안내</span> · 단지 주변만 고르면 <span data-sur="near">문의 시 안내</span> · 시·도·시·군·구 지역 한정은 지역별 상품을 따로 둬서 할증 <span data-sur="region">문의 시 안내</span></td></tr>
         <tr><th>3회 이용권</th><td>여러 단지를 분양하는 시행사·분양대행사는 분양 단지 광고를 3번 묶어 사면 <span data-guide="pass3">10%</span> 할인돼요.</td></tr>
         <tr><th>업종 연장권</th><td>전세사기 예방 체크리스트 스폰서를 1년 계약하시면 다음 해 같은 업종 구좌를 먼저 연장할 수 있어요.</td></tr>
@@ -534,7 +534,7 @@ function setPeriod(pid) {
   document.querySelectorAll('#pbar button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.p === pid)));
   $('pth').textContent = PL(pid);
   const p = PERIODS.find(x => x.id === pid), R = PRICES.period;
-  $('phint').textContent = p.weeks ? `${p.label}는 월 단가의 ${p.weeks === 1 ? R.w1 : R.w2}%예요. 처음 광고하시면 첫 주 ${PRICES.guide.firstWeekOff}% 할인, 1개월 이상 연장하면 첫 주 결제액을 빼 드려요.`
+  $('phint').textContent = p.weeks ? `${p.label}는 월 단가의 ${p.weeks === 1 ? R.w1 : R.w2}%예요. 처음 광고하시면 첫 주 ${PRICES.guide.firstWeekOff}% 할인, 월 단위 상품은 1개월 이상 연장하면 첫 주 결제액을 빼 드려요(분양 광고 제외).`
     : rateOf(p.months) ? `${p.label}은 월 단가 합계에서 ${rateOf(p.months)}% 할인돼요. 3개월 이상은 한 번에 또는 매달 나눠 낼 수 있어요.`
     : `1개월은 기본 단가예요. 3개월 ${R.m3}% · 6개월 ${R.m6}% · 1년 ${R.y1}% 할인돼요.`;
   document.querySelectorAll('[data-pp]').forEach(el => { const h = cellHtml(el.dataset.pp, pid); el.innerHTML = `<div class="pcw">${h || ASK}</div>`; });
