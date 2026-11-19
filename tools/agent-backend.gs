@@ -1099,7 +1099,7 @@ const SH_AQ = '광고문의';
 const AQH = ['id','접수일','유형','회사명','담당자','연락처','관심상품','지역','희망기간','문의내용','동의','처리상태','처리일','메모'];
 const AQC = Object.fromEntries(AQH.map((h, i) => [h, i]));
 const AQ_PROD = { bunyang: '분양 단지 광고', agent: '지역 제휴 중개사', native: '결과 하단 카드', jeonse: '전세사기 예방 체크리스트 스폰서', package: '패키지', etc: '기타·제휴' };
-const AQ_PERIOD = ['', '2주', '1개월', '3개월', '6개월', '1년', '미정·협의'];
+const AQ_PERIOD = ['', '1주', '2주', '1개월', '3개월', '6개월', '1년', '미정·협의'];
 const AQ_DAILY = 40;          // 하루 전체 문의 상한(스팸 방지)
 
 function aqSheet() {

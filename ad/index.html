@@ -640,8 +640,6 @@ $('form').addEventListener('submit', async e => {
   }
   const body = { action: 'adInquiry', type: 'inquiry', company: $('company').value.trim(), manager: $('manager').value.trim(), contact: $('contact').value.trim(),
     products: prods(), region: $('region').value.trim(), period: $('period').value, memo: $('memo').value.trim(), agree: { privacy: true }, hp: $('hpf').value };
-  /* 서버(v13)는 희망 기간 '1주'를 아직 모름 → 기간 칸은 비우고 문의 내용 앞에 적어 보냄 */
-  if (body.period === '1주') { body.period = ''; body.memo = ('희망 기간: 1주\n' + body.memo).slice(0, 1000); }
   if (!window.JDJ_AGENTS || !JDJ_AGENTS.ready) { fallback(body, '문의 서버에 연결하지 못했어요.'); return; }
   $('send').disabled = true; m.textContent = '보내는 중이에요…';
   try {
