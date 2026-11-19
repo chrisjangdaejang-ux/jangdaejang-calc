@@ -30,8 +30,8 @@
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/mine.png">
 <script>window.JDJ_CONFIG = { tool:'mine', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js"></script>
-<script src="../assets/stat.js"></script>
-<script src="../assets/share.js?v=1"></script>
+<script src="../assets/stat.js?v=2"></script>
+<script src="../assets/share.js?v=2"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/config.js?v=1"></script>
 <script src="../assets/auth.js?v=1"></script>
@@ -265,6 +265,7 @@ const S = { sd: '', code: '', dkey: '', band: '', span: 36, hspan: 36 };
 /* ---------- 저장 ---------- */
 function loadHomes(){ try { return M.parseStore(localStorage.getItem(M.STORE_KEY)); } catch (e) { return []; } }
 function saveHomes(list){ try { localStorage.setItem(M.STORE_KEY, M.dumpStore(list)); } catch (e) { return false; } if (AU && AU.user()) AU.pushHomes(); return true; }
+if (window.JDJ_SHARE) JDJ_SHARE.setup({tool:'mine'});
 /* 카카오 로그인 (assets/auth.js) — 키가 없으면 AU.on() = false 라 아래 로그인 기능은 하나도 보이지 않음 */
 const AU = window.JDJ_AUTH || null;
 const saveWhere = () => AU && AU.user() ? '카카오 계정에 저장돼서 다른 기기에서 로그인해도 보여요.' : AU && AU.on() ? '이 기기에만 저장돼요. 카카오로 로그인하면 다른 기기에서도 볼 수 있어요.' : '이 기기에만 저장되고 서버로 보내지 않아요.';
@@ -551,12 +552,19 @@ function render(d, map, units){
     </div>
   </div>
 
-  <div class="sharebox"><button type="button" class="btn ghost" id="shareMine">이 단지 시세 공유하기</button>${AU && AU.on() ? '<button type="button" class="btn ghost fav" id="favBtn" aria-pressed="false">☆ 관심 단지로 저장</button>' : ''}<span class="note">카카오톡 등으로 보내요. 매수가 등 내 정보는 담기지 않아요.</span></div>
+  ${AU && AU.on() ? '<div class="sharebox"><button type="button" class="btn ghost fav" id="favBtn" aria-pressed="false">☆ 관심 단지로 저장</button></div>' : ''}
 
   <div id="agentSec"></div>`;
 
   $('res').hidden = false;
   CUR.ht = HT;
+  /* 공유(assets/share.js): 단지 공개 정보(이름·변동률·점수·거래 건수)만. 매수가·매수 시기(bp·bd)는 주소·문구·이미지에 넣지 않음 */
+  if (window.JDJ_SHARE) JDJ_SHARE.update({allowNum: true,
+    head: `${d.apt} ${S.band} 시세 흐름을 한눈에 봤어요`,
+    lines: [sm.ch1 ? `이 단지 ${S.band} 최근 1년 평당가 ${M.pctTxt(sm.ch1.pct)}` : sm.recent3 ? `최근 3개월 실거래 ${sm.recent3}건` : '최근 3년 실거래 목록과 월별 추이',
+      f.fv != null ? `미래가치 점수 ${f.fv}점(100점 만점, 같은 시·도 단지와 비교)` : '같은 동·같은 구 아파트와 시세 비교',
+      '국토교통부 실거래 신고 기준 시세·추이'],
+    params: Object.fromEntries(new URLSearchParams(location.search))}, {root: $('res')});
   drawCharts(u, sgg);
   P.wireMore($('trades'));
   wireResult(d, u, sm);
@@ -605,8 +613,6 @@ function wireResult(d, u, sm){
   const jb = $('jrBox'); if (jb) jb.addEventListener('toggle', () => { if (jb.open) drawCharts(u, IX.sgg[d.code]); });
   const bp = $('bp');
   bp.addEventListener('input', () => { const v = num(bp.value); bp.value = v ? v.toLocaleString() : ''; $('bpHint').textContent = v ? M.won(v) : '만원 단위로 넣어 주세요'; });
-  if (window.JDJ_SHARE) JDJ_SHARE.bind($('shareMine'), () => { const u2 = new URL(location.href); ['bp','bd'].forEach(k => u2.searchParams.delete(k));
-    return {title:`${d.apt} ${S.band} 시세 · 집예보`, text:`${d.apt} ${S.band} 실거래 시세·추이·미래가치 점수`, url:u2.href}; });
   $('saveBtn').onclick = () => {
     const h = {sd:S.sd, code:d.code, dong:d.dong, jibun:d.jibun, apt:d.apt, band:S.band, bp:num(bp.value) || null, bd:$('bd').value || '', t:new Date().toISOString().slice(0, 10)};
     const r = M.addHome(loadHomes(), h), msg = $('saveMsg');

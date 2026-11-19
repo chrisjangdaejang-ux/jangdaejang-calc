@@ -31,8 +31,8 @@
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/switch.png">
 <script>window.JDJ_CONFIG = { tool:'switch', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js"></script>
-<script src="../assets/stat.js"></script>
-<script src="../assets/share.js?v=1"></script>
+<script src="../assets/stat.js?v=2"></script>
+<script src="../assets/share.js?v=2"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/config.js?v=1"></script>
 <script src="../assets/auth.js?v=1"></script>
@@ -475,7 +475,6 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
           <a class="btn primary" id="consultBtn" data-track="consult_click" href="#" target="_blank" rel="noopener">상담 신청</a>
           <a class="btn" data-track="youtube_click" href="https://www.youtube.com/results?search_query=%EC%9E%A5%EB%8C%80%EC%9E%A5TV" target="_blank" rel="noopener">장대장TV 보기</a>
           <button class="btn ghost" id="copyBtn" data-track="copy_result">결과 복사</button>
-          <button class="btn ghost" id="shareSw" type="button">계산기 공유</button>
         </div>
       </div>
       <a class="xlink" data-track="cross_link_timing" href="https://claude.ai/artifact/MPDhYTNGfXkiiFg6sDxvdM" target="_blank" rel="noopener"><span><b>지금이 갈아탈 타이밍인지 궁금하다면</b><small>장대장 갈아타기 타이밍 · 실거래가 분석</small></span><span class="go" aria-hidden="true">›</span></a>
@@ -718,7 +717,17 @@ var SW_FIN, REC_LAST_O=null;
 const RANK = (v, base) => window.JDJ_PLAIN ? JDJ_PLAIN.rank(v, base) : (v >= 50 ? `상위 ${Math.max(1, 100 - v)}%` : `하위 ${Math.max(1, v)}%`);
 const RBASE = (code, kind) => window.JDJ_PLAIN && AG_IX ? JDJ_PLAIN.rankBase(AG_IX, code, kind) : null;
 /* 공유: 내 금액은 담지 않고 갈아타기 계산기 주소만 */
-if (window.JDJ_SHARE) JDJ_SHARE.bind($('shareSw'), ()=>({title:'집예보 갈아타기 계산기', text:'지금 집 팔면 어디까지 갈아탈 수 있을까? 양도세·손에 남는 돈·새 대출까지 나도 계산해 보기', url:new URL('./', location.href).href}));
+/* 공유(assets/share.js): 매도가·대출·손에 남는 돈 같은 금액은 빼고 '몇 곳을 찾았는지'만. 받는 분은 갈아타기 계산기 첫 화면으로 */
+if (window.JDJ_SHARE) JDJ_SHARE.setup({tool:'switch'});
+function shareSw(){
+  if (!window.JDJ_SHARE) return;
+  const n = REC_LAST && REC_LAST.picked && REC_LAST.picked.length ? REC_LAST.total : 0;
+  JDJ_SHARE.update({
+    head: n ? `지금 집 팔고 갈아탈 수 있는 단지 ${n.toLocaleString()}곳을 찾았어요` : '지금 집 팔고 어디까지 갈아탈 수 있는지 계산했어요',
+    lines: ['양도세·손에 남는 돈·새 대출을 한 번에 계산', n ? '예산 안에서 미래가치 점수가 높은 단지 순서로' : '예산 안에서 미래가치 점수가 높은 단지 찾기', '지금 집 유지와 갈아타기를 나란히 비교']
+  }, {root: $('recBox').parentNode, after: $('vsBox'), bottomAfter: document.querySelector('.cta .btns')});
+}
+{ const _r = runRec; runRec = async function(){ const v = await _r.apply(this, arguments); shareSw(); return v; }; }
 document.addEventListener('click',e=>{ const a=e.target.closest&&e.target.closest('a[data-fin]'); if(a&&window.JDJ_SHARE&&REC_LAST_O) JDJ_SHARE.saveFin(REC_LAST_O); },true);
 ['pointerdown','click','keydown'].forEach(t=>$('premBtn').addEventListener(t,()=>{ if(SW_FIN&&window.JDJ_SHARE) JDJ_SHARE.saveFin(SW_FIN); }));
 $('premBtn').addEventListener('click',()=>JDJ.track('switch_to_report',{region:$('region').value, max_band:JDJ.band(last?last.P:0)}));

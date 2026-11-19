@@ -30,7 +30,8 @@
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/villa.png">
 <script>window.JDJ_CONFIG = { tool:'villa', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js"></script>
-<script src="../assets/stat.js"></script>
+<script src="../assets/stat.js?v=2"></script>
+<script src="../assets/share.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -291,6 +292,18 @@ function render(){
   const mb = $('moreBtn'); if (mb) mb.onclick = ()=>{ SHOWN += PAGE; render(); };
   document.querySelectorAll('[data-more]').forEach(b=>b.onclick=()=>{ const r=b.previousElementSibling; r.hidden=!r.hidden; b.textContent = r.hidden?b.textContent.replace('접기 ▴','더 보기 ▾'):b.textContent.replace('더 보기 ▾','접기 ▴'); });
   saveUrl();
+  shareVilla(tot, zc);
+}
+/* 공유(assets/share.js): 지역과 건물 수만. 받는 분은 같은 구·동 화면으로 */
+if (window.JDJ_SHARE) JDJ_SHARE.setup({tool:'villa'});
+function shareVilla(tot, zc){
+  if (!window.JDJ_SHARE || !CUR) return;
+  const area = CUR.meta.n + ($('dong').value ? ' ' + $('dong').value : '');
+  JDJ_SHARE.update({
+    head: zc ? `${area} 빌라 ${fmt(tot)}개 중 정비구역과 연결된 ${fmt(zc)}개를 찾았어요` : `${area} 빌라 ${fmt(tot)}개의 재개발 가능성을 살펴봤어요`,
+    lines: ['대지지분 평당가를 같은 동 중앙값과 비교', '정비구역 진행 단계와 입주권(현금청산) 위험까지', '국토교통부 실거래·서울시 정비사업 공식 자료 기준'],
+    params: JDJ_SHARE.pick(['g','d'])
+  }, {root: $('list')});
 }
 function saveUrl(){
   const u = new URL(location.href);

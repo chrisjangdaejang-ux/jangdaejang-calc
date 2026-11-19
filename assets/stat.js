@@ -45,10 +45,11 @@
   const regionGroup = v => RG[v] || '';
 
   /* ---------- 허용 목록 ---------- */
-  const EV = {feature_use:6, interest_profile:15, chungyak_result:3, report_share:5, compare_use:3, ad_view:6, ad_click:10}; // 이벤트별 페이지당 상한
+  const EV = {feature_use:6, interest_profile:15, chungyak_result:3, report_share:5, compare_use:3, ad_view:6, ad_click:10, share_click:10, share_visit:1}; // 이벤트별 페이지당 상한
   const FEATURES = ['buy','report','switch','redev','villa','chungyak','tax','compare','consult','premium','mine','bunyang','ad_apply','price_sheet','agent_chat','jeonse','ad_inquiry','jeonse_checklist'];
   const SPOTS = ['report_top','report_rank','report_near','report_compare','report_leader','switch_top','switch_compare','switch_pick','bunyang_deal','premium','mine'];
   const PAGES = ['home','buy','report','switch','villa','chungyak','tax','agent','calc','mine','bunyang','bunyang_apply','jeonse','ad'];
+  const SHARE_TOOLS = ['chungyak','report','mine','switch','jeonse','checklist','tax','villa'];
   const P = {
     feature:     v => FEATURES.includes(v),
     page:        v => PAGES.includes(v),
@@ -60,7 +61,9 @@
     hold_band:   v => ['2년 이하','3~5년','6~9년','10년 이상'].includes(v),
     home_own:    v => Object.values(OWN).includes(v),
     score_band:  v => /^(80~84점|[0-7]0~[0-7]9점|0~9점)$/.test(v),
-    method:      v => ['share','copy'].includes(v),
+    method:      v => ['share','copy','image'].includes(v),
+    tool:        v => SHARE_TOOLS.includes(v),                                                      // 공유한 결과 화면(assets/share.js)
+    place:       v => ['top','mid','bottom'].includes(v),                                           // 공유 단추 위치: 상단 아이콘·중간 카드·아래 단추
     n:           v => Number.isInteger(v) && v >= 0 && v <= 10,
     spot:        v => SPOTS.includes(v),                                                            // 시세 흐름 보기 단추 위치
     slot:        v => ['bunyang','buy','switch','villa','chungyak','tax'].includes(v),              // 분양 광고 노출 위치
@@ -95,6 +98,10 @@
   jdjStat.later = (id, fn, ms) => { clearTimeout(timers[id]); timers[id] = setTimeout(()=>{ try{ fn(); }catch(_){} }, ms||2500); };
   Object.assign(jdjStat, {band, hold, score, own, sido, regionGroup});
   window.jdjStat = jdjStat;
+
+  /* 공유 링크로 들어온 방문(assets/share.js 가 붙이는 utm_source=share&utm_campaign=화면) — 화면 이름만, 개인정보 없음 */
+  try{ const q = new URLSearchParams(location.search);
+    if (q.get('utm_source') === 'share') jdjStat('share_visit', {tool: q.get('utm_campaign') || ''}); }catch(_){}
 
   /* 상담 신청 버튼(data-track 에 consult 가 들어간 링크)은 모든 페이지에서 공통으로 집계 */
   document.addEventListener('click', e=>{

@@ -20,7 +20,8 @@
 <meta property="og:type" content="website">
 <script>window.JDJ_CONFIG = { tool:'jeonse', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js"></script>
-<script src="../assets/stat.js"></script>
+<script src="../assets/stat.js?v=2"></script>
+<script src="../assets/share.js?v=2"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/config.js?v=1"></script>
 <script src="../assets/auth.js?v=1"></script>
@@ -356,6 +357,7 @@ async function showUnit(key, band, opt){
   if (window.jdjStat){ jdjStat('feature_use', {feature:'jeonse'}); jdjStat('interest_profile', {from:'jeonse', sido:jdjStat.sido(sidoName(S.code)), sgg:sggName(S.code)}); }
   getJ('rent/' + R.kindOf(kind).sub + 'h/' + S.code + '.json').then(h => { if (CUR && CUR.key === key){ CUR.h = h; drawCharts(); $('res').querySelector('[data-span="0"]') && ($('res').querySelector('[data-span="0"]').hidden = false); } }).catch(() => {});
 }
+if (window.JDJ_SHARE) JDJ_SHARE.setup({tool:'jeonse'});
 function render(){
   const c = CUR, u = c.units.find(x => x[2] === S.band), sm = R.summary(u, c.meta), kind = c.kind, k = R.kindOf(kind);
   const g = RX.sgg[c.code] || {};
@@ -407,6 +409,14 @@ function render(){
   </div>
   <div id="agentSec"></div>`;
   $('res').hidden = false;
+  /* 공유(assets/share.js): 이 집의 공개 실거래 흐름·전세가율만. 내가 넣은 보증금·공시가격·선순위채권은 담지 않음 */
+  if (window.JDJ_SHARE){ const jr = sm.jr ? R.risk(sm.jr.r) : null;
+    JDJ_SHARE.update({allowNum: true,
+      head: `${c.d.name} ${S.band} 전월세 흐름과 위험 신호를 확인했어요`,
+      lines: [sm.ch1 ? `이 집 ${S.band} 전세 보증금 최근 1년 ${M.pctTxt(sm.ch1.pct)}` : '최근 3년 전월세 계약 그대로',
+        jr ? `이 집 전세가율 ${jr.pct}% (HUG 보증 가입 기준 90%와 비교)` : '전세가율·보증 가입 기준 체크',
+        '계약 전 꼭 볼 전세사기 예방 체크리스트까지'],
+      params: JDJ_SHARE.pick(['k','sd','g','d','b'])}, {root: $('res')}); }
   drawCharts(); wire(u, sm); areaPanel(c.code, $('areaBox')); fillAgents(c);
   if (window.JDJPolicy) JDJPolicy.mount($('polSec'), {mode:'jeonse', codes:[{sgg:c.code, dong:c.d.dong}], name:() => sggName(c.code) + ' ' + c.d.dong, sggName:() => sggName(c.code),
     head:'<h2>전월세에 영향을 주는 정책<small>' + esc(sggName(c.code) + ' ' + c.d.dong) + ' 전세·월세 계약과 전세대출에 관련된 정책이에요</small></h2>'}).catch(e => console.warn('policy', e));

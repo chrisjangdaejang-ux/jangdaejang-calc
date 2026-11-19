@@ -24,7 +24,7 @@ check('보장 표현 없음', /100%|완벽|보장|무조건|절대 안전|안전
 check('면책 문구 한 번만', body.split('체크리스트는 공공기관 안내를 정리한 것이며').length - 1, 1);
 check('HUG 기준 재사용(90%·140%)', [R.HUG.ratio, R.HUG.pub, /R\.hugCap\(/.test(html), /H\.ratio/.test(html)], [0.9, 1.4, true, true]);
 check('확인 안 된 기준 안 씀(80%·126%·70%)', /80%|126%|70%/.test(body), false);
-check('공유·인쇄 단추 위아래', [(html.match(/data-share>/g) || []).length, (html.match(/data-print>/g) || []).length], [2, 2]);
+check('공유·인쇄 단추 위아래', [(html.match(/data-jshare="(top|bottom)">/g) || []).length, (html.match(/data-print>/g) || []).length], [2, 2]);
 check('인쇄용 CSS', /@media print\{/.test(html), true);
 check('개인정보 저장 안 함(체크 상태·종류만)', /localStorage\.setItem\(KEY, JSON\.stringify\(st\)\)/.test(html) && !/hP'\)\.value[^;]*setItem/.test(html), true);
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
