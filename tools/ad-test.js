@@ -73,7 +73,7 @@ const ctx = {
 };
 vm.createContext(ctx);
 const src = fs.readFileSync(path.join(__dirname, 'agent-backend.gs'), 'utf8');
-vm.runInContext(src + '\n;globalThis.__T = { ADC, bizOk, adText, adUrl, SH_AD };', ctx);
+vm.runInContext(src + '\n;globalThis.__T = { ADC, bizOk, adText, adUrl, SH_AD, AQC, SH_AQ };', ctx);
 const T = ctx.__T;
 const post = b => JSON.parse(ctx.doPost({ postData: { contents: JSON.stringify(b) } }).s);
 const get = p => JSON.parse(ctx.doGet({ parameter: p }).s);
@@ -171,6 +171,38 @@ check('하루 신청 상한', !r.ok && /내일/.test(r.err), r);
 // 6. 기존 기능 영향 없음
 check('알 수 없는 action', post({ action: 'nope' }).err === 'unknown');
 check('중개사 목록(list) 동작', get({ action: 'list' }).ok === true);
+
+// 7. 광고 문의(ad/ 페이지, v13 adInquiry)
+cacheMap.clear();
+const mailsBefore = mails.length;
+const aq = () => ({ action: 'adInquiry', type: 'inquiry', company: '(주)테스트이사', manager: '김담당', contact: '010-9876-5432',
+  products: ['native', 'jeonse'], region: '서울 강동구', period: '3개월', memo: '이사 업체입니다.\n견적 부탁드려요.', agree: { privacy: true } });
+const aqBad = [
+  ['회사명 없음', { company: '' }], ['회사명 수식', { company: '=1+1' }], ['담당자 없음', { manager: ' ' }],
+  ['연락처 없음', { contact: '' }], ['연락처 엉뚱', { contact: '12345' }], ['이메일 형식', { contact: 'a@b' }], ['영문 섞인 번호', { contact: '010-1234-567a' }],
+  ['관심 상품 없음', { products: [] }], ['관심 상품 엉뚱', { products: ['admin'] }], ['기간 엉뚱', { period: '10년' }],
+  ['문의 내용 1001자', { memo: '가'.repeat(1001) }], ['문의 내용 수식', { memo: '@SUM(A1)' }], ['지역 수식', { region: '+cmd' }],
+  ['동의 없음', { agree: null }], ['동의 false', { agree: { privacy: false } }], ['유형 엉뚱', { type: 'spam' }], ['숨은 칸(봇)', { hp: 'x' }]
+];
+for (const [name, patch] of aqBad) { const r2 = post(Object.assign(aq(), patch)); check('문의 거절: ' + name, !r2.ok && typeof r2.err === 'string', r2); }
+check('잘못된 문의는 시트 안 만듦', !sheets[T.SH_AQ]);
+r = post(aq());
+check('문의 접수 성공', r.ok && /^AQ[0-9A-F]{8}$/.test(r.id), r);
+const AQ = T.AQC, aqRows = () => sheets[T.SH_AQ].rows.slice(1);
+check('광고문의 탭 자동 생성 + 제목줄', sheets[T.SH_AQ] && sheets[T.SH_AQ].rows[0][0] === 'id' && sheets[T.SH_AQ].rows[0].length === Object.keys(AQ).length);
+let q = aqRows()[0];
+check('문의 저장: 상품 한글·연락처 정리·접수 상태', q[AQ['관심상품']] === '결과 하단 카드,전세사기 예방 체크리스트 스폰서' && q[AQ['연락처']] === '010-9876-5432' && q[AQ['처리상태']] === '접수' && /동의/.test(q[AQ['동의']]));
+check('문의 내용 줄바꿈 유지', q[AQ['문의내용']] === '이사 업체입니다.\n견적 부탁드려요.');
+check('알림 메일 1통 + 연락처 없음', mails.length === mailsBefore + 1 && !JSON.stringify(mails[mails.length - 1]).includes('9876'));
+r = post(Object.assign(aq(), { contact: 'Ad@Example.COM', products: ['bunyang', 'bunyang', 'etc'], period: '', memo: '', region: '' }));
+check('이메일 연락처·상품 중복 제거·선택 칸 비움', r.ok && aqRows()[1][AQ['연락처']] === 'ad@example.com' && aqRows()[1][AQ['관심상품']] === '분양 단지 광고,기타·제휴', r);
+r = post(Object.assign(aq(), { contact: '070 1234 5678' }));
+check('070 번호 정리', r.ok && aqRows()[2][AQ['연락처']] === '070-1234-5678', r);
+check('분양 광고 시트에는 문의가 섞이지 않음', rows().every(x => !String(x[0]).startsWith('AQ')));
+check('공개 광고 목록에 문의 정보 없음', !JSON.stringify(get({ action: 'adList' })).includes('테스트이사'));
+cacheMap.set('aqday:' + ymd(new Date()), '40');
+r = post(aq());
+check('하루 문의 상한', !r.ok && /카카오톡/.test(r.err), r);
 
 console.log(`분양 광고 서버 로직 검증: ${pass}개 통과, ${fail}개 실패`);
 process.exit(fail ? 1 : 0);

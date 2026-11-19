@@ -1,5 +1,12 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v12: 분양 광고 신청·승인·노출)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v13: 광고 문의 접수 추가)
+ *
+ * v13 변경 요약
+ *  - 광고 상품 안내 페이지(ad/)의 문의 접수 추가. 기존 기능은 그대로입니다.
+ *  - 새 요청(action): adInquiry(POST, type:'inquiry') → '광고문의' 시트(첫 문의 때 자동 생성)에 저장 + 시트 주인에게 메일
+ *  - 연락처는 시트에만 저장하고, 알림 메일·로그·통계에는 넣지 않습니다(메일에는 '시트에서 확인'만).
+ *  - 입력 검증: 길이 제한, 전화번호 또는 이메일 형식, 관심 상품 허용 목록, 개인정보 동의 필수, 셀 수식 주입 차단, 하루 상한.
+ *  - 보관: 문의 처리 완료 후 1년(개인정보처리방침과 같음) — '처리상태'·'처리일' 열로 관리
  *
  * v12 변경 요약
  *  - 분양 광고(시행사·분양대행사) 신청·노출 기능 추가. 기존 제휴·알림·리뷰·결제(v11) 기능은 그대로입니다.
@@ -135,7 +142,7 @@ function doPost(e) {
   try { b = JSON.parse(e.postData.contents); } catch (x) { return out({ ok: false, err: '요청 형식 오류' }); }
   if (b.action === 'log') return out(logEvents(b));
   if (PAY_ACTIONS[b.action]) return out(payDispatch(b));
-  if (b.action === 'adApply') return out(adDispatch(b));
+  if (b.action === 'adApply' || b.action === 'adInquiry') return out(adDispatch(b));
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
   try {
@@ -923,6 +930,7 @@ function adDispatch(b) {
   lock.waitLock(15000);
   try {
     if (b.action === 'adApply') return adApply(b);
+    if (b.action === 'adInquiry') return adInquiry(b);
     return { ok: false, err: 'unknown' };
   } catch (x) {
     return { ok: false, err: String(x.message || x) };
@@ -1079,4 +1087,77 @@ function adList() {
   const res = { ok: true, at: t0, ads: ads };
   cache.put('adlist', JSON.stringify(res), 300);
   return res;
+}
+
+
+/* =====================================================================
+   광고 문의 (ad/ 광고 상품 안내 페이지) — v13
+   흐름: 사이트 ad/ 문의 폼 → adInquiry → '광고문의' 시트에 [접수]로 저장 + 시트 주인에게 메일(연락처 제외)
+         → 운영자가 연락 후 [처리상태]·[처리일] 입력. 처리일로부터 1년 지나면 행 삭제(개인정보처리방침 보관 기간)
+   ===================================================================== */
+const SH_AQ = '광고문의';
+const AQH = ['id','접수일','유형','회사명','담당자','연락처','관심상품','지역','희망기간','문의내용','동의','처리상태','처리일','메모'];
+const AQC = Object.fromEntries(AQH.map((h, i) => [h, i]));
+const AQ_PROD = { bunyang: '분양 단지 광고', agent: '지역 제휴 중개사', native: '결과 하단 카드', jeonse: '전세사기 예방 체크리스트 스폰서', package: '패키지', etc: '기타·제휴' };
+const AQ_PERIOD = ['', '2주', '1개월', '3개월', '6개월', '1년', '미정·협의'];
+const AQ_DAILY = 40;          // 하루 전체 문의 상한(스팸 방지)
+
+function aqSheet() {
+  const ss = book();
+  let sh = ss.getSheetByName(SH_AQ);
+  if (!sh) {
+    sh = ss.insertSheet(SH_AQ);
+    sh.getRange(1, 1, 1, AQH.length).setValues([AQH]).setFontWeight('bold').setBackground('#3B3F22').setFontColor('#F5EFDC');
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+/* 연락처: 전화번호(휴대폰·지역번호·070·대표번호) 또는 이메일 */
+function aqContact(v) {
+  const x = String(v == null ? '' : v).trim();
+  if (!x) throw new Error('연락처(전화번호 또는 이메일)를 입력해 주세요.');
+  if (x.length > 80) throw new Error('연락처를 확인해 주세요.');
+  if (/^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(x)) return x.toLowerCase();
+  if (/[A-Za-z@]/.test(x)) throw new Error('전화번호 또는 이메일 형식을 확인해 주세요.');
+  const d = x.replace(/[^0-9]/g, '');
+  if (/^070\d{8}$/.test(d)) return `070-${d.slice(3, 7)}-${d.slice(7)}`;
+  try { return adPhone(d); } catch (e) { throw new Error('전화번호 또는 이메일 형식을 확인해 주세요.'); }
+}
+function adInquiry(b) {
+  const cache = CacheService.getScriptCache(), dk = 'aqday:' + ymd(new Date());
+  const n = Number(cache.get(dk) || 0);
+  if (n >= AQ_DAILY) throw new Error('오늘 문의가 많아 카카오톡 채널이나 전화로 문의해 주세요.');
+  if (String(b.hp || '')) throw new Error('문의를 처리하지 못했습니다.');               // 자동 입력 방지용 숨은 칸
+  const type = String(b.type || 'inquiry');
+  if (type !== 'inquiry') throw new Error('문의 유형이 올바르지 않습니다.');
+  const company = adText(b.company, 60, '회사명', true);
+  const manager = adText(b.manager, 30, '담당자 이름', true);
+  const contact = aqContact(b.contact);
+  const products = (Array.isArray(b.products) ? b.products : []).map(String).filter((p, i, a) => AQ_PROD[p] && a.indexOf(p) === i);
+  if (!products.length) throw new Error('관심 상품을 하나 이상 골라 주세요.');
+  const region = adText(b.region, 60, '지역', false);
+  const period = String(b.period || '');
+  if (AQ_PERIOD.indexOf(period) < 0) throw new Error('희망 기간을 다시 골라 주세요.');
+  const memo = String(b.memo == null ? '' : b.memo).replace(/[\u0000-\u0009\u000B-\u001F\u007F<>]/g, ' ').trim();
+  if (memo.length > 1000) throw new Error('문의 내용은 1,000자 이내로 입력해 주세요.');
+  if (/^[=+\-@\t\r]/.test(memo)) throw new Error('문의 내용은 = + - @ 기호로 시작할 수 없습니다.');
+  if (!(b.agree && b.agree.privacy === true)) throw new Error('개인정보 수집·이용에 동의해 주세요.');
+  const t0 = ymd(new Date());
+  const id = 'AQ' + Utilities.getUuid().replace(/-/g, '').slice(0, 8).toUpperCase();
+  const row = [];
+  row[AQC['id']] = id; row[AQC['접수일']] = new Date(); row[AQC['유형']] = '광고 문의'; row[AQC['회사명']] = company; row[AQC['담당자']] = manager;
+  row[AQC['연락처']] = contact; row[AQC['관심상품']] = products.map(p => AQ_PROD[p]).join(','); row[AQC['지역']] = region; row[AQC['희망기간']] = period;
+  row[AQC['문의내용']] = memo; row[AQC['동의']] = '개인정보 수집·이용 동의(문의 처리 후 1년 보관) ' + t0;
+  row[AQC['처리상태']] = '접수'; row[AQC['처리일']] = ''; row[AQC['메모']] = '';
+  const sh = aqSheet();
+  sh.appendRow(AQH.map((h, i) => row[i] === undefined ? '' : row[i]));
+  cache.put(dk, String(n + 1), 86400);
+  if (NOTIFY) {
+    try {
+      MailApp.sendEmail(Session.getEffectiveUser().getEmail(), `[장대장 광고 문의] ${company}`,
+        `접수 번호 ${id}\n회사 ${company} · 담당 ${manager}\n관심 상품 ${row[AQC['관심상품']]}\n지역 ${region || '-'} · 희망 기간 ${period || '-'}\n`
+        + `연락처는 '광고문의' 시트에서 확인하세요(메일에는 넣지 않아요).\n연락 후 [처리상태]·[처리일]을 적어 주세요. 처리일로부터 1년이 지나면 행을 삭제합니다.\n${book().getUrl()}`);
+    } catch (e) {}
+  }
+  return { ok: true, id: id };
 }

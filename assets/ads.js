@@ -4,7 +4,7 @@
    - 클릭·노출은 jdjStat 구간 이벤트(ad_view·ad_click: 위치·유형·시도)만 보냅니다(광고 id·단지명·주소는 보내지 않음).
    - data-empty="invite": 광고가 없을 때 '분양 광고 문의' 안내 한 줄을 보여 줌(없으면 칸 자체를 숨김). */
 (function(){
-  const APPLY = '/jangdaejang-calc/bunyang/apply/';
+  const APPLY = '/jangdaejang-calc/bunyang/apply/', ALL = '/jangdaejang-calc/ad/';
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const safe = u => /^https:\/\/[^\s"'<>\\`]+$/.test(String(u || '')) ? String(u) : '';
   const won = m => { m = +m; if (!m) return ''; const e = Math.floor(m / 10000), r = m % 10000; return e ? `${e}억${r ? ' ' + r.toLocaleString('ko-KR') + '만' : ''}원` : `${r.toLocaleString('ko-KR')}만원`; };
@@ -34,7 +34,7 @@
 .jad-f{font-size:13.5px;color:#4E5968;margin-top:10px;line-height:1.6}
 .jad-f a{color:#4E5968;font-weight:700}
 .jad.inv{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:12px 16px}
-.jad.inv span{font-size:14px;color:#4E5968}.jad.inv a{font-size:14.5px;font-weight:700;color:#2F6BFF;text-decoration:none;min-height:44px;display:inline-flex;align-items:center}`;
+.jad.inv span{font-size:14px;color:#4E5968;flex:1 1 100%}.jad.inv a{font-size:14.5px;font-weight:700;color:#2F6BFF;text-decoration:none;min-height:44px;display:inline-flex;align-items:center}`;
     document.head.appendChild(s);
   }
   function card(a){
@@ -57,14 +57,14 @@
     /* 같은 시·도 광고 먼저(광고끼리의 순서일 뿐, 분석 결과·추천과는 무관), 나머지는 시작일 순 */
     const list = all.sort((a, b) => ((b.sd === sido) - (a.sd === sido)) || String(a.s).localeCompare(String(b.s))).slice(0, max);
     if (!list.length){
-      if (el.dataset.empty === 'invite'){ el.className = 'jad inv'; el.innerHTML = `<span>이 자리에 분양 단지를 알릴 수 있어요 · 승인된 광고만 ‘광고’로 표시돼요</span><a href="${APPLY}" data-track="ad_invite">분양 광고 문의 ›</a>`; el.hidden = false; }
+      if (el.dataset.empty === 'invite'){ el.className = 'jad inv'; el.innerHTML = `<span>이 자리에 분양 단지를 알릴 수 있어요 · 승인된 광고만 ‘광고’로 표시돼요</span><a href="${APPLY}" data-track="ad_invite">분양 광고 문의 ›</a><a href="${ALL}" data-track="ad_invite_all">전체 광고 상품 보기 ›</a>`; el.hidden = false; }
       else el.hidden = true;
       return;
     }
     el.className = 'jad'; el.hidden = false;
     el.setAttribute('aria-label', '분양 광고');
     el.innerHTML = `<div class="jad-h"><b>분양 광고</b><small>광고주가 비용을 내고 싣는 광고예요</small></div><div class="jad-l">${list.map(card).join('')}</div>
-      <div class="jad-f">광고는 장대장 분석 점수·추천 순위와 무관해요. 청약 자격·분양 조건은 입주자모집공고문으로 꼭 확인하세요. · <a href="${APPLY}">분양 광고 문의</a></div>`;
+      <div class="jad-f">광고는 장대장 분석 점수·추천 순위와 무관해요. 청약 자격·분양 조건은 입주자모집공고문으로 꼭 확인하세요. · <a href="${APPLY}">분양 광고 문의</a> · <a href="${ALL}">전체 광고 상품 보기</a></div>`;
     if (window.jdjStat) jdjStat('ad_view', {slot, n: Math.min(10, list.length)});
     el.addEventListener('click', e => {
       const t = e.target.closest && e.target.closest('a[data-ad]'); if (!t) return;
