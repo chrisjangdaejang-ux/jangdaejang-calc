@@ -3,7 +3,7 @@
    - 미래가치 점수는 자료 파일에 이미 계산되어 들어 있는 값을 그대로 씁니다(점수 계산식·가중치는 이 파일에 없습니다).
    - 대출·필요 현금은 공개된 대출 규제(LTV·DSR·가격구간 한도)와 취득세·중개보수 법정 기준으로 계산합니다(무료 리포트와 같은 기준). */
 (function () {
-  const P = window.JDJ_PAY, esc = P.esc, DATA = P.DATA, PY = 3.3058;
+  const P = window.JDJ_PAY, PL = window.JDJ_PLAIN, esc = P.esc, DATA = P.DATA, PY = 3.3058;
   /* ---------- 대출 규제 기준 (2026.7.1 규제지역: 서울 전역 + 경기 15곳) — 무료 리포트와 동일 ---------- */
   const REG_GG = ['41290','41210','41135','41131','41133','41117','41111','41115','41173','41465','41430','41450','41597','41463','41310'];
   const isReg = c => c.startsWith('11') || REG_GG.includes(c);
@@ -69,54 +69,51 @@
       <p class="links" style="margin-top:2px">평당가(만원/3.3㎡), 국토교통부 실거래가 월별 중앙값 · 거래 없는 달은 건너뜀</p>`;
   }
 
-  /* 미래가치 점수가 움직인 이유 — 무료 리포트 상세와 같은 문구 규칙 */
+  /* 미래가치 점수가 움직인 이유 — 무료 리포트 상세와 같은 '쉬운 말' 규칙(assets/plain-words.js) */
+  function scopeOf(x, ctx) {
+    const f = x.f || {}, g = ctx.IX.sgg[x.code] || {}, ri = PL.regionInfo(ctx.IX, x.code);
+    return (f.gs != null || f.fvg != null) ? `${ri.short} 아파트` : `${g.name || ''} 아파트`;
+  }
   function reasonsOf(x, ctx) {
-    const f = x.f || {}, r = [], IX = ctx.IX, sgg = (IX.sgg[x.code] || {}).name || '', sido = (IX.sgg[x.code] || {}).sido || '';
-    if (f.fv != null) r.push(['f', f.gs != null || f.fvg != null
-      ? `미래가치 ${f.fv}점 — ${sido} 전체 단지 중 상위 ${Math.max(1, 100 - f.fv)}%` + (f.fvg != null ? `, ${sgg} 안에서는 상위 ${Math.max(1, 100 - f.fvg)}%` : '') + ' (과거 데이터로 검증한 2년 점수)'
-      : `미래가치 ${f.fv}점 — ${sgg} 단지 중 상위 ${Math.max(1, 100 - f.fv)}%`]);
+    const f = x.f || {}, r = [], IX = ctx.IX, G = ctx.G, sgg = (IX.sgg[x.code] || {}).name || '', ri = PL.regionInfo(IX, x.code);
+    if (f.fv != null) r.push(['f', `이 단지 점수: ${scopeOf(x, ctx)} ${PL.rank(f.fv)}` + (f.fvg != null ? ` · ${sgg} 안에서는 ${PL.rank(f.fvg)}` : '')]);
     const M = ctx.MODEL, w = f.why && f.why['2'];
     if (w && w.length) {
       const lb = k => (M && M.label && M.label[k]) || k, U = a => [...new Set(a)];
       const up = U(w.filter(t => t.endsWith('+')).map(t => lb(t.slice(0, -1)))), dn = U(w.filter(t => t.endsWith('-')).map(t => lb(t.slice(0, -1)))).filter(t => !up.includes(t));
-      r.push(['f', '2년 예측에서 점수를 움직인 요인 — ' + (up.length ? `올린 요인: ${up.join(' · ')}` : '') + (up.length && dn.length ? ' / ' : '') + (dn.length ? `내린 요인: ${dn.join(' · ')}` : '')]);
+      r.push(['f', '2년 점수를 움직인 요인 — ' + (up.length ? `올린 요인: ${up.join(' · ')}` : '') + (up.length && dn.length ? ' / ' : '') + (dn.length ? `내린 요인: ${dn.join(' · ')}` : '')]);
     }
-    if (f.rz) r.push(['f', `재건축 진행: ${f.rz.n} — ${RZ_LV[f.rz.lv] || ''} 단계${f.rz.ym ? `(${ym(f.rz.ym)})` : ''} · 10단계 중 ${f.rz.lv}단계`]);
-    if (f.eg) { const g = f.eg.v - f.eg.b - f.eg.p; r.push(['f', `재건축 완료 시${f.eg.done ? `(예상 준공 ${f.eg.done}년 전후)` : ''} 기대 차익 약 ${g >= 0 ? '+' : '−'}${fmtS(Math.abs(g))} — 지역 신축 시세로 본 같은 평형 가치 ${fmtS(f.eg.v)}, 예상 분담금 ${f.eg.b >= 0 ? fmtS(f.eg.b) : '환급 ' + fmtS(-f.eg.b)}, 현재가 ${fmtS(f.eg.p)} (간이 추정)`]); }
+    if (f.rz) r.push(['f', PL.rzText(f.rz, G, ym)]);
+    if (f.eg) { const g = f.eg.v - f.eg.b - f.eg.p; r.push(['f', `재건축이 끝나면${f.eg.done ? `(예상 준공 ${f.eg.done}년 전후)` : ''} 기대 차익은 약 ${g >= 0 ? '+' : '−'}${PL.eokR(Math.abs(g))}이에요 — 지역 새 아파트 시세로 본 같은 평형 가치 ${PL.eokR(f.eg.v)}, 예상 분담금 ${f.eg.b >= 0 ? PL.eokR(f.eg.b) : '환급 ' + PL.eokR(-f.eg.b)}, 지금 시세 ${PL.eokR(f.eg.p)} (간이 추정)`]); }
     if (f.landavg || f.vl) r.push(['f', '재건축 사업성(단지): ' + [f.landavg ? `세대당 평균 대지지분 ${f.landavg}평` : '', f.vl ? `용적률 ${Math.round(f.vl)}%` : ''].filter(Boolean).join(' · ') + (f.land ? ` · 이 평형 대지지분 약 ${f.land}평` : '')]);
-    const bits = [];
-    if (f.sup != null) bits.push(`향후 2년 입주 물량이 기존 아파트의 ${Math.round(f.sup * 1000) / 10}%` + (f.sup >= 0.08 ? '(많은 편 — 공급 부담)' : f.sup <= 0.03 ? '(적은 편)' : ''));
-    if (f.pg != null) bits.push(`최근 1년 인구 ${f.pg >= 0 ? '+' : ''}${Math.round(f.pg * 1000) / 10}%`);
-    if (f.un != null) bits.push(`미분양 ${f.un >= 0.01 ? '많은 편' : f.un <= 0.002 ? '거의 없음' : '보통'}(재고 대비 ${(f.un * 100).toFixed(1)}%)`);
-    if (f.jb != null) bits.push(`지역 일자리 1년 ${f.jb >= 0 ? '+' : ''}${(f.jb * 100).toFixed(1)}%`);
-    if (f.gs != null || bits.length) r.push(['f', `${sgg} 지역 전망` + (f.gs != null ? `: 같은 시·도 구·시 중 상위 ${Math.max(1, 100 - f.gs)}%` : '') + (bits.length ? ` — ${bits.join(' · ')}` : '')]);
-    if (f.sp) for (const [nm, units, km, stg, mv] of f.sp.slice(0, 2)) {
+    const rg = PL.regionText(f, IX, x.code, G);
+    if (rg.fact || rg.why.length) r.push(['f', [rg.fact || `${sgg} 지역 흐름:`, ...rg.why, rg.mean].filter(Boolean).join(' ')]);
+    if (f.sp) for (const [nm, units, , stg, mv] of f.sp.slice(0, 2)) {
       const SG = ['', '발표 단계', '분양·착공 단계', '입주 진행 중'];
-      r.push([stg >= 2 ? 'c' : 'f', `주변 공급: 반경 ${km}km ${nm} · 약 ${(units / 10000).toFixed(units >= 10000 ? 1 : 2).replace(/\.?0+$/, '')}만 가구 — ${SG[stg] || '계획'}${mv ? ` · 첫 입주 목표 ${String(mv).slice(0, 4)}년` : ''}`]);
+      r.push([stg >= 2 ? 'c' : 'f', `주변 공급: 가까운 공공택지 ${nm} · 약 ${(units / 10000).toFixed(units >= 10000 ? 1 : 2).replace(/\.?0+$/, '')}만 가구 — ${SG[stg] || '계획'}${mv ? ` · 첫 입주 목표 ${String(mv).slice(0, 4)}년` : ''}`]);
     }
-    if (f.dd != null && Math.abs(f.dd) >= 0.03) r.push([f.dd > 0 ? 'f' : 'c', f.dd > 0 ? `최근 3년 하락 구간에서 구 평균보다 ${pct(f.dd)}%p 덜 빠짐 — 집값이 흔들릴 때 잘 버틴 단지` : `최근 3년 하락 구간에서 구 평균보다 ${pct(f.dd)}%p 더 빠짐 — 시장 따라 출렁임이 큰 편`]);
-    if (f.rc != null && Math.abs(f.rc) >= 0.03) r.push(['f', f.rc > 0 ? `직전 고점 대비 회복이 구 평균보다 ${pct(f.rc)}%p 빠름 — 사람들이 먼저 찾는 단지` : `직전 고점 대비 회복이 구 평균보다 ${pct(f.rc)}%p 느림 — 아직 고점까지 여유`]);
-    if (f.lg != null) r.push(['f', (f.ln === x.apt || f.lg >= 0.995) ? `${x.dong} 대장 단지 — 같은 평형끼리 비교해 동에서 가장 비싸게 거래되는 단지` : `${x.dong} 대장 단지(${f.ln})보다 같은 평형 기준 ${pct(1 - f.lg)}% 낮은 시세`]);
+    if (f.dd != null && Math.abs(f.dd) >= 0.03) r.push([f.dd > 0 ? 'f' : 'c', PL.ddText(f.dd, G) + (f.dd > 0 ? ' — 집값이 흔들릴 때 잘 버틴 편이에요' : ' — 시장에 따라 오르내림이 큰 편이에요')]);
+    if (f.rc != null && Math.abs(f.rc) >= 0.03 && Math.abs(f.rc) < 0.5) r.push(['f', PL.rcText(f.rc, G)]);
+    if (f.lg != null) r.push(['f', (f.ln === x.apt || f.lg >= 0.995) ? `${x.dong} 대장 단지예요 — 같은 평형끼리 비교해 동에서 가장 비싸게 거래돼요` : `${x.dong} 대장 단지(${f.ln})보다 같은 평형 기준 시세가 ${pct(1 - f.lg)}% 낮아요`]);
     if (f.rl) { const R = f.rl, SK = { plan: '계획 확정', start: '착공', start_real: '본공사 착수', delay: '개통 지연', open: '개통' };
-      r.push(['f', `신규 노선: ${R.line} ${R.st}${R.m != null ? `까지 직선 ${R.m.toLocaleString()}m` : ' 인근'} — ` + (R.opened ? `${ym(R.stym)} 개통` : `${ym(R.stym)} ${SK[R.stage] || R.stage}` + (R.target ? `, 개통 목표 ${ym(R.target)}` : '') + (R.delays ? `(일정 지연 ${R.delays}회)` : '')) + (R.pre != null ? ` · ${ym(R.first)} 이후 이 단지는 구 평균보다 ${R.pre >= 0 ? '+' : ''}${R.pre}%` : '')]); }
-    if (f.sub != null) r.push(['f', f.sub >= 30 ? '지하철역이 걸어가기엔 먼 편(도보 20분 이상)' : `${f.subs ? f.subs.replace(/\s+/g, ' ') : '지하철역'}까지 도보 ${f.sub <= 5 ? '5분 이내' : f.sub + '분 이내'}` + (f.sub <= 10 ? ' — 역세권' : '')]);
-    if (f.sch != null) { const p = Math.round(f.sch * 1000) / 10; r.push(['f', `학군: 가까운 중학교${f.schn ? `(${f.schn.join('·')})` : ''} 순전입률 ${p >= 0 ? '+' : ''}${p}%`]); }
-    if (f.jr != null) r.push(['f', `전세가율 ${Math.round(f.jr * 100)}%` + (f.jr >= 0.6 ? ' — 실거주 수요가 탄탄한 편' : f.jr < 0.4 ? ' — 매매가 대비 전세가 낮음(투자 수요 비중 큼)' : '')]);
-    if (x.n >= 60) r.push(['', `거래 활발: 최근 실거래 ${x.n}건 — 팔 때도 수요가 꾸준한 단지`]);
-    else if (x.n < 24) r.push(['c', `거래량 적음: 최근 실거래 ${x.n}건 — 시세 확인과 매도 기간에 여유를 두세요`]);
-    if (x.ch != null) r.push([x.ch >= 0.08 ? 'c' : '', `최근 6개월 평당가 ${x.ch >= 0 ? '+' : ''}${(x.ch * 100).toFixed(1)}%` + (x.ch >= 0.08 ? ' — 상승 속도가 빨라 추격 매수 주의' : x.ch >= 0 ? ' — 완만한 상승 흐름' : ' — 조정 구간, 가격 협상 여지')]);
+      r.push(['f', `신규 노선: ${R.line} ${R.st}${R.m != null ? `까지 직선 ${R.m.toLocaleString()}m` : ' 인근'} — ` + (R.opened ? `${ym(R.stym)} 개통` : `${ym(R.stym)} ${SK[R.stage] || R.stage}` + (R.target ? `, 개통 목표 ${ym(R.target)}` : '') + (R.delays ? `(일정 지연 ${R.delays}회)` : '')) + (R.pre != null ? ` · ${ym(R.first)} 이후 이 단지는 구 평균보다 ${Math.abs(R.pre)}% ${R.pre >= 0 ? '더' : '덜'} 올랐어요` : '')]); }
+    if (f.sub != null) r.push(['f', f.sub >= 30 ? '지하철역이 걸어가기엔 먼 편이에요(도보 20분 이상)' : `${f.subs ? f.subs.replace(/\s+/g, ' ') : '지하철역'}까지 도보 ${f.sub <= 5 ? '5분 이내' : f.sub + '분 이내'}` + (f.sub <= 10 ? ' — 역세권' : '')]);
+    if (f.sch != null) r.push(['f', '학군: ' + PL.schText(f.sch, f.schn, G)]);
+    if (f.jr != null) r.push([f.jr < 0.4 ? 'c' : 'f', PL.jrText(f, x.P, x.jst, ri.short, G, f.by)]);
+    if (x.n >= 60) r.push(['', `거래 활발: 최근 실거래 ${x.n}건 — 거래가 꾸준한 단지예요`]);
+    else if (x.n < 24) r.push(['c', `거래량 적음: 최근 실거래 ${x.n}건 — 거래가 적어 시세가 크게 흔들려 보일 수 있어요`]);
+    if (x.ch != null) r.push([x.ch >= 0.08 ? 'c' : '', '최근 6개월: ' + PL.momText(x.ch, G)]);
     return r;
   }
 
-  /* 보유 기간별: 여러 시기 표본 외 검증을 통과한 기간만 점수를 보여 줌 (무료 리포트와 같은 기준) */
+  /* 보유 기간별: 과거 시험(표본 외 검증) 결과를 그대로 적고, 통과 기준에 못 미친 기간은 '참고만' */
   function horizons(x, ctx) {
-    const f = x.f || {}, VOK = m => !!(m && (m.oos_all || []).length >= 2 && m.oos_avg > 0);
+    const f = x.f || {};
     return [1, 2, 3, 5, 7].map(h => {
-      const m = h === 2 ? ctx.MODEL : (ctx.MH && ctx.MH[h]), ok = h === 2 ? !!ctx.MODEL : VOK(m);
-      const v = !ok ? null : h === 2 ? f.fv : (f.fh && f.fh[h] != null ? f.fh[h] : null);
-      const mm = h === 2 ? ((ctx.MH && ctx.MH['2']) || ctx.MODEL) : m, O = (mm && mm.oos_all) || [];
-      const rec = VOK(mm) ? `표본 외 검증 ${O.length}회 중 ${mm.oos_hit}회 적중` : (mm && mm.top20_excess != null ? `과거 검증: 점수 상위 20%가 구 평균보다 ${mm.top20_excess >= 0 ? '+' : ''}${mm.top20_excess}%p` : '');
-      return { h, v, ok, rec };
+      const mm = h === 2 ? ((ctx.MH && ctx.MH['2']) || ctx.MODEL) : (ctx.MH && ctx.MH[h]);
+      const v = h === 2 ? f.fv : (f.fh && f.fh[h] != null ? f.fh[h] : null);
+      const ok = PL.VOK(mm);
+      return { h, v, ok, rec: mm ? PL.hzLabel(mm) : '아직 검증 전 · 참고만' };
     });
   }
 
@@ -127,8 +124,10 @@
 
   function unitHtml(x, ctx, i, total) {
     const f = x.f || {}, IX = ctx.IX, g = IX.sgg[x.code] || {}, Y = new Date().getFullYear(), m = money(x);
-    const rs = reasonsOf(x, ctx), hz = horizons(x, ctx);
+    const rs = reasonsOf(x, ctx), hz = horizons(x, ctx), G = ctx.G;
     const li = r => `<li class="${r[0]}">${esc(r[1])}</li>`;
+    const okH = hz.filter(z => z.ok && z.v != null).map(z => z.h + '년'), refH = hz.filter(z => !z.ok && z.v != null).map(z => z.h + '년');
+    const mm2 = (ctx.MH && ctx.MH['2']) || ctx.MODEL;
     return `<section class="pr-unit" id="u${i}">
       <div class="pr-head"><div>
         <div class="pr-crk">${total > 1 ? `단지 ${i + 1} · ` : ''}${esc(g.sido || '')} ${esc(g.name || '')} ${esc(x.dong)}</div>
@@ -144,13 +143,16 @@
       </div>
       <h3>최근 3년 시세 흐름</h3>${chart(x.series, IX.months)}
       <h3>미래가치 점수와 그 이유</h3>
+      ${f.fv != null ? PL.easy(esc(`앞으로 2년 동안 ${g.name || ''} 다른 아파트보다 더 오를 가능성을 매긴 순위에서, ${scopeOf(x, ctx)} ${PL.rank(f.fv)}이에요.`)) : ''}
       <ul class="pr-reasons">${rs.map(li).join('') || '<li>이 단지는 아직 미래가치 점수를 낼 자료가 부족합니다.</li>'}</ul>
       <h3>보유 기간별 미래가치</h3>
-      <div class="tblwrap"><table class="pr-tbl"><thead><tr><th>보유 기간</th><th>점수</th><th>검증 상태</th></tr></thead><tbody>
-        ${hz.map(z => `<tr><td>${z.h}년</td><td><b>${z.v != null ? z.v + '점' : '-'}</b></td><td>${z.ok ? esc(z.rec || '검증 통과') : '검증 강화 중 — 여러 시기 표본 외 검증을 통과하면 공개'}</td></tr>`).join('')}
+      ${okH.length ? PL.easy(esc(`과거 시험을 통과한 ${okH.join('·')} 점수를 중심으로 보세요.` + (refH.length ? ` ${refH.join('·')} 점수는 참고만 하세요.` : ''))) : ''}
+      <div class="tblwrap"><table class="pr-tbl"><thead><tr><th>보유 기간</th><th>점수</th><th>과거 시험</th></tr></thead><tbody>
+        ${hz.map(z => `<tr${z.ok ? '' : ' class="jp-ref"'}><td>${z.h}년</td><td><b>${z.v != null ? z.v + '점' : '-'}</b>${z.v != null ? `<br><small>${PL.rank(z.v)}</small>` : ''}</td><td>${esc(z.rec)}</td></tr>`).join('')}
       </tbody></table></div>
-      <p class="links">같은 구 안에서 해당 기간 동안 더 오를 단지를 과거 데이터로 학습·검증한 점수입니다. 검증을 통과하지 않은 기간은 점수를 보여 드리지 않습니다.</p>
+      <details class="jp-check"><summary>이 점수 방식을 믿을 수 있나요?</summary><p>${esc(PL.checkText(mm2, 2, G))}</p></details>
       <h3>대출·필요 현금 <small>(아래 내 조건 기준)</small></h3>
+      ${PL.easy(esc(`지금 조건이면 대출 ${PL.won(m.l.L)}을 받고도 현금 ${PL.won(m.need)}이 필요해요. ` + (m.left >= 0 ? `보유 현금으로 낼 수 있고 ${PL.won(m.left)}이 남아요.` : `보유 현금보다 ${PL.won(-m.left)} 부족해요.`)))}
       <div class="pr-stats">
         <div><span>대출 가능액</span><b>${fmtS(m.l.L)}</b><small>${BY_TXT[m.l.by]} 기준</small></div>
         <div><span>취득세 등</span><b>${fmtS(m.cd.tax)}</b><small>취득세율 ${m.cd.rate}% · 지방교육세 포함</small></div>
@@ -164,14 +166,16 @@
   function compareHtml(items, ctx) {
     if (items.length < 2) return '';
     const Y = new Date().getFullYear(), rows = [
-      ['추정 시세', x => fmtS(x.P)], ['미래가치(2년)', x => x.f && x.f.fv != null ? x.f.fv + '점' : '-'],
+      ['추정 시세', x => fmtS(x.P)], ['미래가치(2년)', x => x.f && x.f.fv != null ? `${x.f.fv}점 (${PL.rank(x.f.fv)})` : '-'],
       ['필요 현금', x => fmtS(money(x).need)], ['월 상환', x => Math.round(money(x).mon).toLocaleString() + '만'],
       ['최근 6개월', x => x.ch == null ? '-' : (x.ch >= 0 ? '+' : '') + (x.ch * 100).toFixed(1) + '%'],
       ['준공·세대', x => (x.f && x.f.by ? `${x.f.by}년(${Y - x.f.by}년차)` : '-') + (x.f && x.f.hh ? ` · ${x.f.hh.toLocaleString()}세대` : '')],
       ['지하철', x => !x.f || x.f.sub == null ? '-' : x.f.sub >= 30 ? '도보 20분 이상' : `도보 ${x.f.sub <= 5 ? '5분 이내' : x.f.sub + '분 이내'}`],
-      ['하락기 방어', x => x.f && x.f.dd != null ? `구 평균보다 ${pct(x.f.dd)}%p ${x.f.dd >= 0 ? '덜' : '더'} 빠짐` : '-']
+      ['하락기 방어', x => x.f && x.f.dd != null ? PL.ddText(x.f.dd, ctx.G).replace('최근 3년 하락기에 ', '') : '-']
     ];
-    return `<section class="pr-unit"><h2 style="margin-top:0">한눈에 비교</h2><div class="tblwrap"><table class="pr-tbl"><thead><tr><th></th>${items.map(x => `<th>${esc(x.apt)}<br><small>${esc(x.band)}</small></th>`).join('')}</tr></thead>
+    const sc = items.filter(x => x.f && x.f.fv != null).sort((a, b) => b.f.fv - a.f.fv), ch = items.slice().sort((a, b) => money(a).need - money(b).need)[0];
+    const ez = sc.length >= 2 && sc[0].f.fv !== sc[1].f.fv ? (sc[0] === ch ? `${PL.J(sc[0].apt, '은', '는')} 2년 점수가 가장 높고, 필요한 현금도 가장 적어요.` : `2년 점수는 ${PL.J(sc[0].apt, '이', '가')} 가장 높고, 필요한 현금은 ${PL.J(ch.apt, '이', '가')} 가장 적어요.`) : '';
+    return `<section class="pr-unit"><h2 style="margin-top:0">한눈에 비교</h2>${ez ? PL.easy(esc(ez)) : ''}<div class="tblwrap"><table class="pr-tbl"><thead><tr><th></th>${items.map(x => `<th>${esc(x.apt)}<br><small>${esc(x.band)}</small></th>`).join('')}</tr></thead>
       <tbody>${rows.map(([k, fn]) => `<tr><td>${k}</td>${items.map(x => `<td>${esc(fn(x))}</td>`).join('')}</tr>`).join('')}</tbody></table></div></section>`;
   }
 
@@ -199,11 +203,12 @@
         const units = await P.sido(p.sd), u = units.find(u => u[0] === p.code && u[1] === p.dong && u[2] === p.apt && u[3] === p.band);
         if (!u) { miss.push(p); continue; }
         const [code, dong, apt, band, area, n, series] = u, recent = lastNZ(series), ppy = recent || lastAny(series), sp = IX.sgg[code] ? lastNZ(IX.sgg[code].s) : 0;
-        items.push({ sd: p.sd, jb: u[8], code, dong, apt, band, area, n, series, P: Math.round(ppy * area / PY / 100) * 100, stale: !recent, ch: change6(series), rel: sp ? (sp - ppy) / sp : null, f: u[9] || null });
+        items.push({ jst: PL.jrStats(units), sd: p.sd, jb: u[8], code, dong, apt, band, area, n, series, P: Math.round(ppy * area / PY / 100) * 100, stale: !recent, ch: change6(series), rel: sp ? (sp - ppy) / sp : null, f: u[9] || null });
       } catch (e) { miss.push(p); }
     }
     const dataTo = IX.dataTo ? IX.dataTo.slice(0, 4) + '년 ' + parseInt(IX.dataTo.slice(4), 10) + '월' : '';
     const draw = () => {
+      ctx.G = PL.gloss();
       box.innerHTML = `<div class="pr-cover">
           <span class="tag">PREMIUM INSIGHT · ${esc(order.product)}</span>
           <h1>${items.length > 1 ? '후보 단지 심층 비교' : esc((items[0] || {}).apt || '단지') + ' 심층 리포트'}</h1>
