@@ -132,9 +132,8 @@
         + linePaths(sub.a, x, y2, sub.c, 1.8);
       pts.push({ a: sub.a, c: sub.c, y: y2 });
     }
-    const idx = n <= 4 ? [0, n - 1] : [0, Math.round((n - 1) / 3), Math.round((n - 1) * 2 / 3), n - 1];
-    const xLab = sp.xLab || (ym => n > 36 ? String(ym).slice(0, 4) + '년' : m.ymLabel(ym));
-    const xl = idx.map((i, k) => `<text x="${x(i).toFixed(1)}" y="${H - 5}" font-size="${fs}" fill="#4E5968" text-anchor="${k === 0 ? 'start' : k === idx.length - 1 ? 'end' : 'middle'}">${xLab(months[i])}</text>`).join('');
+    const xLab = sp.xLab || ((ym, short) => n > 36 ? (short ? "'" + String(ym).slice(2, 4) + '년' : String(ym).slice(0, 4) + '년') : short ? "'" + String(ym).slice(2, 4) + '.' + String(ym).slice(4, 6) : m.ymLabel(ym));
+    const xl = m.xTicks(n, W - L - R, fs, x, months, (ym, short) => xLab(ym, short)).map(t => `<text x="${t.x.toFixed(1)}" y="${H - 5}" font-size="${fs}" fill="#4E5968" text-anchor="${t.a}">${t.t}</text>`).join('');
     const over = live ? `<g class="jhv-o" style="display:none" pointer-events="none"><line x1="0" x2="0" y1="${T - 4}" y2="${s0 + SH}" stroke="#191F28" stroke-opacity=".45" stroke-width="1.2"/>${pts.map(p => `<circle r="4.6" stroke="${p.c}" stroke-width="2.2" fill="${p.c}"/>`).join('')}</g>` : '';
     const svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(sp.aria || '추이 그래프')}">${grid}${sp.lines.map(l => `${linePaths(l.a, x, y, l.c, l.w)}${dots(l.a, l.c, y)}${last(l.a, l.c)}`).join('')}${subSvg}${xl}${over}</svg>`;
     return { html: svg, model: { W, H, L, R, n, x, pts, top: T, months } };

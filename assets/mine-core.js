@@ -29,6 +29,21 @@
   /** 평당가(만원/3.3㎡) × 전용㎡ → 금액(만원, 100만 원 단위) */
   const toPrice = (ppy, area) => (ppy > 0 && area > 0) ? r100(ppy * area / PY) : 0;
   const ymLabel = ym => ym ? `${String(ym).slice(0, 4)}.${String(ym).slice(4, 6)}` : '';
+  /** x축 날짜 라벨 고르기: 글자가 겹치지 않을 만큼만(처음·끝은 항상), 좁은 화면이면 '23.11 짧은 형식.
+      n = 점 개수, plotW = 그림 폭(px), fs = 글씨 크기, pos(i) = i번째 점의 x. 반환 [{i, x, t, a}] (a = text-anchor) */
+  function xTicks(n, plotW, fs, pos, months, fmt) {
+    if (!n) return [];
+    const short = plotW < 420, lab = i => fmt ? fmt(months[i], short) : (short ? "'" + String(months[i]).slice(2, 4) + '.' + String(months[i]).slice(4, 6) : ymLabel(months[i]));
+    const w = Math.max(...[0, n - 1].map(i => String(lab(i)).length)) * fs * 0.72 + 16;   // 라벨 한 개 폭 + 여유
+    if (n === 1) return [{ i: 0, x: pos(0), t: lab(0), a: 'start' }];
+    const slots = Math.max(1, Math.min(n - 1, Math.floor(plotW / w)));
+    const raw = Math.ceil((n - 1) / slots), step = [1, 2, 3, 6, 12, 24, 36, 60, 120].find(v => v >= raw) || raw;   // 달 수를 보기 좋은 간격으로
+    const idx = []; for (let i = 0; i < n - 1; i += step) idx.push(i);
+    while (idx.length > 1 && pos(n - 1) - pos(idx[idx.length - 1]) < w) idx.pop();   // 끝 라벨과 가까운 앞 라벨 빼기
+    idx.push(n - 1);
+    const out = idx.map((i, k) => ({ i, x: pos(i), t: lab(i), a: k === 0 ? 'start' : k === idx.length - 1 ? 'end' : 'middle' }));
+    return out.filter((t, k) => k === 0 || k === out.length - 1 ? true : t.t !== out[k - 1].t && t.t !== out[out.length - 1].t);   // 같은 글자(같은 해) 반복 빼기
+  }
   const danjiKey = u => [u[0], u[1], u[8], u[2]].join('|');                 // 시군구|동|지번|단지
   const agentKey = u => [u[0], u[1], u[2]].join('|');                       // 제휴 중개사 매물 단지 키(리포트와 같음)
   /** 프리미엄 리포트 단지 키 — assets/pay.js 의 JDJ_PAY.keyOf 와 같은 형식 (시도id~구코드~동~단지~평형) */
@@ -408,7 +423,7 @@
   }
   const pctTxt = (v, d) => v == null ? '-' : (v > 0 ? '+' : '') + (v * 100).toFixed(d == null ? 1 : d) + '%';
 
-  const API = { PY, r100, STORE_KEY, MAX_HOMES, FEW, counts, lastIdx, median, toPrice, ymLabel, danjiKey, agentKey, premiumKey, groupDanji, searchDanji,
+  const API = { PY, r100, STORE_KEY, MAX_HOMES, FEW, counts, lastIdx, median, toPrice, ymLabel, xTicks, danjiKey, agentKey, premiumKey, groupDanji, searchDanji,
     normName, splitNum, matchName, listRow, unitKey, hasScore, scoreOf, monthDeals, trades, lastDeal, isFew,
     bandSummary, changeBack, dongPosition, sggPosition, trend, volume, volumeCounts, cleanHome, homeId, parseStore, dumpStore, addHome, removeHome, findUnit, vsBuy, heldMonths, reasons, reasonItems, won, pctTxt, cleanFx,
     ymAdd, ymDiff, ymKo, decodeSeries, histRow, histSeries, histWindow, histSpans, highs, isNewHigh, lineParts, isSparse, valAt, gapOf, monthPoint };
