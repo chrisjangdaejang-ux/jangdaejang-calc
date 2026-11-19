@@ -58,7 +58,7 @@ check('종류 탭 4개(아파트·빌라·오피스텔·단독·다가구)', R.K
 check('공식 출처 링크(HUG·정책브리핑)', ['khug.or.kr/hug/web/ig/dr/igdr000001.jsp', 'korea.kr/news/policyNewsView.do?newsId=148905628'].every(s => html.includes(s)), true);
 check('확인 안 된 기준 안 씀(80%·126% 등)', /80%|126%|70%/.test(html.replace(/<style[\s\S]*?<\/style>/, '')), false);
 check('권유 표현 없음', /추천합니다|사세요|계약하세요|하셔야/.test(html), false);
-check('홈: 7가지 서비스 + 전월세 카드', [home.includes('<b>7가지 서비스</b>'), home.includes('href="jeonse/"'), home.includes('전월세 시세 &amp; 전망')], [true, true, true]);
+check('홈: 7가지 서비스 + 전월세 카드', [home.includes('<b>7가지 서비스</b>'), home.includes('href="jeonse/"'), home.includes('전월세 전망 &amp; 전세사기 예방 체크')], [true, true, true]);
 const sw = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
 check('서비스 워커에 새 페이지 등록', sw.includes("'/jangdaejang-calc/jeonse/'") && sw.includes('rent-core.js'), true);
 const stat = fs.readFileSync(path.join(__dirname, '..', 'assets', 'stat.js'), 'utf8');
