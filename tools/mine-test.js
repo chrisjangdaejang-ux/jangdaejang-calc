@@ -77,6 +77,45 @@ check('같은 단지 평형 묶기', g.get('11710|가락동|100|테스트아파�
 check('단지 이름 검색(공백 무시)', M.searchDanji(g, '헬리 오').map(d => d.apt), ['헬리오시티'], '');
 check('단지 이름 검색(앞부분 일치 우선)', M.searchDanji(g, '아파트').map(d => d.apt), ['테스트아파트'], '');
 
+// 시세 확인용 자료(price/): 청담 e편한세상 사례 — 검색 별칭·묶기·저거래 표시
+const CD = ['청담대림이-편한세상', '청담2차이-편한세상(201동,202동,203동)', '청담2차이-편한세상(204동)', '청담2차이-편한세상(205동)', '청담3차이-편한세상(301동)', '청담4차이-편한세상', '청담자이'];
+const hitsOf = q => CD.filter(n => M.matchName(n, q) >= 0);
+check('별칭: e편한세상 = 이-편한세상 = 이편한세상', M.normName('청담 e-편한세상'), M.normName('청담이편한세상'), '하이픈·공백 제거, e→이');
+check('별칭: 원래 이름은 그대로(정규화는 검색에만)', CD[0], '청담대림이-편한세상', '');
+check("검색 '청담 e편한세상' → 1~4차 모두(청담자이 제외)", hitsOf('청담 e편한세상'), CD.slice(0, 6), "'대림' 표기 무시, 낱말별 포함");
+check("검색 '청담이편한세상 4차' → 4차만", hitsOf('청담이편한세상 4차'), ['청담4차이-편한세상'], "'4차'는 이름의 차수와 맞춤");
+check("검색 '청담4차' → 4차만", hitsOf('청담4차'), ['청담4차이-편한세상'], '');
+check("검색 '청담 e편한세상 2차' → 2차 세 곳", hitsOf('청담 e편한세상 2차'), CD.slice(1, 4), '괄호 동 표기만 다른 2차 이름들');
+check("검색 '청담 e편한세상 1차' → 차수 없는 1차 이름", hitsOf('청담 e편한세상 1차'), ['청담대림이-편한세상'], "이름에 '차'가 없으면 1차로 봄");
+check("검색 '청담대림' → 대림 이름만", hitsOf('청담대림'), ['청담대림이-편한세상'], "검색어의 '대림'은 그대로 비교");
+check("검색 '청담 e편한세상 5차' → 없음", hitsOf('청담 e편한세상 5차'), [], '');
+const PL = [['11680', '청담동', '청담4차이-편한세상', '84㎡대', 84.6, 8, '28-20', 0], ['11680', '청담동', '청담4차이-편한세상', '135㎡대', 136.4, 3, '28-20', 0],
+  ['11680', '청담동', '청담대림이-편한세상', '84㎡대', 81.8, 23, '30-33', 1], ['11680', '청담동', '청담2차이-편한세상(204동)', '99㎡대', 98, 3, '15', 0]].map(M.listRow);
+const pg = M.groupDanji(PL);
+check('시세 목록 행 → 단지 묶기(지번 기준)', [...pg.values()].map(d => d.apt + ':' + d.bands.map(b => b[3]).join(',')), ['청담4차이-편한세상:84㎡대,135㎡대', '청담대림이-편한세상:84㎡대', '청담2차이-편한세상(204동):99㎡대'], '');
+check("시세 목록 검색 '청담 e편한세상' 거래 많은 순", M.searchDanji(pg, '청담 e편한세상').map(d => d.apt), ['청담대림이-편한세상', '청담4차이-편한세상', '청담2차이-편한세상(204동)'], '1차 23건 > 4차 11건 > 2차 3건');
+check('점수 자료 표시: 1 → 있음, 0 → 없음, fx 객체 → 있음', [M.hasScore(PL[2]), M.hasScore(PL[0]), M.hasScore(u1)], [true, false, true], '');
+const smap = new Map([[M.unitKey(PL[2]), { fv: 61 }]]);
+check('점수 묶음: 시세 행(1) → 점수용 Map 에서', M.scoreOf(PL[2], smap), { fv: 61 }, 'unitKey = 구|동|지번|단지|평형');
+check('점수 묶음: 점수 자료 없는 행 → 없음', M.scoreOf(PL[0], smap), null, '');
+const cz = months.map(() => 0); cz[20] = 1; cz[33] = 2;
+const lowU = ['11680', '청담동', '청담4차이-편한세상', '135㎡대', 136.4, 3, months.map((_, i) => i >= 20 && i <= 22 ? 7658 : i >= 33 ? 8361 : 0), cstr(cz), '28-20', 0, [7658, 8361],
+  [[Number(months[33] + '15'), 136.4, 9, 345000, 0], [Number(months[33] + '02'), 136.4, 4, 343000, 1], [Number(months[20] + '07'), 136.4, 12, 316000, 0]]];
+check('저거래 판정: 3건 → 범위 표시(3건 미만만 목록 요약)', [M.isFew(lowU), M.isFew(Object.assign(lowU.slice(), { 5: 2 }))], [false, true], 'FEW = 3');
+check('거래 있는 달(최신순, 그 달 중앙 평당가)', M.monthDeals(lowU, months).map(x => [x.at, x.n, x.ppy]), [[months[33], 2, 8361], [months[20], 1, 7658]], 'u[10] 은 오래된 달부터');
+check('마지막 거래 환산', M.lastDeal(lowU, months).price, M.toPrice(8361, 136.4), '');
+const tr = M.trades(lowU);
+check('개별 거래 해독', [tr[0].date, tr[0].floor, tr[0].amt, tr[0].type, tr[1].type], [`${months[33].slice(0, 4)}.${months[33].slice(4)}.15`, 9, 345000, '중개', '직거래'], '유형 0 중개·1 직거래');
+check('개별 거래 평당가', tr[0].ppy, Math.round(345000 / 136.4 * 3.3058), '');
+check('개별 거래 없는 자료 → 빈 목록', M.trades(u1), [], '점수용 sNN 대신 쓸 때');
+const PS = require('../assets/price-sheet.js');
+check('시트: 괄호 동 표기 뗀 이름', PS.baseName('청담2차이-편한세상(201동,202동,203동)'), '청담2차이-편한세상', '엔진 base_name 과 같은 규칙');
+check('시트: 단지 찾기(이름·평형·지번)', PS.findUnit([lowU, PL[0]], { sgg: '11680', dong: '청담동', apt: '청담4차이-편한세상', band: '135㎡대' }) === lowU, true, '');
+check('시트: 괄호 동 표기 다른 이름으로도 찾기', PS.findUnit([PL[3]], { sgg: '11680', dong: '청담동', apt: '청담2차이-편한세상', band: '99㎡대' }) === PL[3], true, '');
+const th = PS.tradesHtml(lowU, months, { show: 2 });
+check('시트: 거래 표 최신 2건 + 더보기', [(th.match(/<tr>/g) || []).length, /더보기 \(1건 더\)/.test(th), /직거래/.test(th)], [3, true, true], '머리행 1 + 보이는 2행, 1건 숨김');
+check('공개 화면 문구에 내부 기준값 없음', /12건/.test(fs.readFileSync(path.join(__dirname, '../mine/index.html'), 'utf8')), false, '점수용 최소 거래 수는 노출하지 않음');
+
 // 프리미엄 리포트 단지 키 = assets/pay.js JDJ_PAY.keyOf
 const ctx = { window: {}, localStorage: { getItem: () => null, setItem() {} }, document: { readyState: 'loading', addEventListener() {} }, console };
 vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../assets/pay.js'), 'utf8'), ctx);
@@ -125,6 +164,22 @@ if (DIR && fs.existsSync(path.join(DIR, 'index.json'))) {
   check('[실자료] 구 비교 같은 달 값', sp.sggPpy, IX.sgg[hel[0]].s[li], '');
   const grp = M.groupDanji(S);
   check('[실자료] 단지 묶기 후 평형 수 합 = 단지·평형 수', [...grp.values()].reduce((a, d) => a + d.bands.length, 0), S.length, '');
+  const PDIR = path.join(DIR, 'price');
+  if (fs.existsSync(path.join(PDIR, 's00.json'))) {
+    const L = JSON.parse(fs.readFileSync(path.join(PDIR, 's00.json'), 'utf8')).units.map(M.listRow), pgr = M.groupDanji(L);
+    const hit = M.searchDanji(pgr, '청담 e편한세상', 20).filter(d => d.dong === '청담동').map(d => d.apt).sort();
+    check('[실자료] 시세 목록 검색 청담 e편한세상 → 1~4차', ['청담대림이', '청담2차', '청담3차', '청담4차'].every(k => hit.some(a => a.startsWith(k))), true, hit.join(', '));
+    check('[실자료] 점수용 단지·평형은 시세 목록에 모두 있음', S.every(u => pgr.has(M.danjiKey(u))), true, '');
+    check('[실자료] 시세 목록 점수 표시 수 = 점수용 단지·평형 수', L.filter(u => u[9] === 1).length, S.length, '');
+    const G = JSON.parse(fs.readFileSync(path.join(PDIR, '11680.json'), 'utf8')).units;
+    const c4 = G.find(u => u[2] === '청담4차이-편한세상' && u[3] === '84㎡대');
+    check('[실자료] 청담4차 84㎡대 있음, 점수 자료 없음', !!c4 && c4[9], 0, '');
+    check('[실자료] 월별 건수 합 = 거래 수', M.counts(c4[7]).reduce((a, x) => a + x, 0), c4[5], '');
+    check('[실자료] 그 달 중앙 평당가 수 = 거래 있는 달 수', c4[10].length, M.counts(c4[7]).filter(x => x > 0).length, '');
+    check('[실자료] 개별 거래(직거래 제외) 수 = 거래 수', c4[11].filter(t => t[4] !== 1).length, c4[5], '');
+    const hu = G.find(u => u[9] === 1), su = S.find(x => M.unitKey(x) === M.unitKey(hu));
+    check('[실자료] 점수 자료 있는 행의 시세 = 점수용 자료와 같음', [hu[5], hu[6], hu[7]], su && [su[5], su[6], su[7]], '같은 계산');
+  }
 }
 
 let bad = 0;

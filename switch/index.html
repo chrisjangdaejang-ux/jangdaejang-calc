@@ -28,6 +28,7 @@
 <script src="../tax/adjusted-areas.js"></script>
 <script src="../tax/tax-engine.js"></script>
 <script src="../assets/rec-core.js?v=1"></script>
+<script src="../assets/mine-core.js?v=2"></script>
 <script src="switch-core.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -740,6 +741,30 @@ async function gapUnits(sidoName){
   const ix=await gapIndex(); const sd=ix.sido.find(x=>x.name===sidoName); if(!sd) return [];
   return gapUnitsById(sd.id);
 }
+/* 지금 집·비교 단지 고르기용: 시세 확인용 자료(price/{구}.json, 최근 3년 거래가 1건이라도 있는 모든 단지) — 없으면 점수용 자료에서 그 구만 */
+async function gapSggUnits(sidoName, g){
+  const k='g'+g;
+  if(UNIT_CACHE[k]) return UNIT_CACHE[k];
+  if(!UNIT_CACHE['p'+k]) UNIT_CACHE['p'+k]=fetch(AG_DATA+'price/'+g+'.json',{cache:'no-cache'}).then(r=>{ if(!r.ok) throw new Error(g); return r.json(); }).then(j=>j.units||[])
+    .catch(()=>gapUnits(sidoName).then(us=>us.filter(u=>u[0]===g)))
+    .then(us=>UNIT_CACHE[k]=us).catch(e=>{ delete UNIT_CACHE['p'+k]; throw e; });
+  return UNIT_CACHE['p'+k];
+}
+/** 고른 단지·평형에 점수가 있으면 점수용 자료의 같은 행(점수 묶음 포함)으로, 없으면 점수 칸을 비운 행으로 */
+async function withScore(u, sidoName){
+  if(u[9]===1){ try{ const us=await gapUnits(sidoName); const f=us.find(x=>x[0]===u[0]&&x[1]===u[1]&&x[8]===u[8]&&x[2]===u[2]&&x[3]===u[3]); if(f) return f; }catch(e){} }
+  if(u[9]===1||u[9]===0){ const c=u.slice(0,9); c.push(null); return c; }
+  return u;
+}
+/** 최근 3개월에 거래가 없으면 3년 안 마지막 거래 달 값으로: {price, at(YYYYMM), last(bool)} */
+function priceInfo(u){
+  const p=unitPrice(u); if(p) return {price:p, last:false};
+  const s=u[6]||[], m=(AG_IX&&AG_IX.months)||[];
+  const c=String(u[7]||'');
+  for(let i=s.length-1;i>=0;i--) if(s[i]>0&&(!c||c.charCodeAt(i)>48)) return {price:REC.r100(s[i]*u[4]/GPY), at:m[i]||'', last:true};   // 실제 거래가 있었던 달
+  return {price:0, last:false};
+}
+const piTxt=pi=>pi.last&&pi.at?`${pi.at.slice(0,4)}.${pi.at.slice(4)} 마지막 실거래 기준`:'최근 3개월 실거래 중앙값';
 function lastNZ(a){ for(let i=a.length-1;i>=Math.max(0,a.length-3);i--) if(a[i]>0) return a[i]; return 0; }
 function unitPrice(u){ return REC.unitPrice(u); }
 function makePicker(el, which, onLoc){
@@ -754,26 +779,28 @@ function makePicker(el, which, onLoc){
     $s('.psgg').innerHTML='<option value="">구·시·군</option>'+list.map(k=>`<option value="${k}">${escH(ix.sgg[k].name)}</option>`).join('');
     $s('.pq').value=''; $s('.res').innerHTML=''; $s('.bands').innerHTML=''; if(onLoc) onLoc(sd,''); });
   /* 단지명 느슨한 검색: 띄어쓰기·'아파트' 무시, 구 이름(예: 송파)이 붙어 있어도 찾고, 글자 순서만 맞으면 일부 생략해도 찾음 (송파하비오 → 파크하비오) */
-  const aptMatch=(hay,q,gu)=>{ const n=x=>String(x||'').replace(/\s|아파트/g,'').toLowerCase(); hay=n(hay); q=n(q); if(!q||hay.includes(q)) return true;
+  const aptMatch=(hay,q,gu,raw,apt)=>(window.JDJ_MINE&&apt&&raw&&JDJ_MINE.matchName(apt,raw)>=0)||aptMatch0(hay,q,gu)||aptMatch0(String(hay).replace(/대림/g,''),q,gu);
+  const aptMatch0=(hay,q,gu)=>{ const al=x=>String(x||'').replace(/[-·]/g,'').toLowerCase().replace(/e(?=편한)/g,'이'); hay=al(hay); q=al(q); const n=x=>String(x||'').replace(/\s|아파트/g,'').toLowerCase(); hay=n(hay); q=n(q); if(!q||hay.includes(q)) return true;
     const st=n(gu).replace(/(구|시|군)$/,''); const q2=st?q.split(st).join(''):q; if(q2&&hay.includes(q2)) return true;
     if(q2.length<3) return false; let i=0; for(const ch of hay){ if(ch===q2[i]) i++; if(i===q2.length) return true; } return false; };
   const search=async()=>{ const sd=$s('.psido').value, g=$s('.psgg').value; const t=$s('.pq').value.replace(/\s/g,'');
     if(!sd||!g){ $s('.res').innerHTML=''; return; }
-    const units=await gapUnits(sd); const seen=new Map();
-    units.filter(u=>u[0]===g && aptMatch(u[2]+u[1], t, AG_IX&&AG_IX.sgg[g]&&AG_IX.sgg[g].name)).forEach(u=>{ const k=u[1]+'|'+u[2]; seen.set(k,(seen.get(k)||0)+u[5]); });
+    const units=await gapSggUnits(sd, g); const seen=new Map(), raw=$s('.pq').value;
+    units.filter(u=>u[0]===g && aptMatch(u[2]+u[1], t, AG_IX&&AG_IX.sgg[g]&&AG_IX.sgg[g].name, raw, u[2])).forEach(u=>{ const k=u[1]+'|'+u[8]+'|'+u[2]; seen.set(k,(seen.get(k)||0)+u[5]); });
     const items=[...seen.entries()].sort((a,b)=>b[1]-a[1]).slice(0,40);
-    $s('.res').innerHTML=items.map(([k])=>`<div data-k="${escH(k)}"><b>${escH(k.split('|')[1])}</b> <span class="mini">${escH(k.split('|')[0])}</span></div>`).join('')||'<div class="mini">찾는 단지가 없습니다 (최근 3년 거래가 충분한 단지만 나옵니다)</div>';
+    $s('.res').innerHTML=items.map(([k,n])=>`<div data-k="${escH(k)}"><b>${escH(k.split('|')[2])}</b> <span class="mini">${escH(k.split('|')[0])} · 최근 3년 거래 ${n}건</span></div>`).join('')||'<div class="mini">찾는 단지가 없습니다 (최근 3년 동안 거래가 있었던 단지만 나옵니다)</div>';
     $s('.res').querySelectorAll('[data-k]').forEach(d=>d.onclick=()=>{
-      const [dong,apt]=d.dataset.k.split('|');
-      const bands=units.filter(u=>u[0]===g&&u[1]===dong&&u[2]===apt);
+      const [dong,jb,apt]=d.dataset.k.split('|');
+      const bands=units.filter(u=>u[0]===g&&u[1]===dong&&u[8]===jb&&u[2]===apt).sort((a,b)=>a[4]-b[4]);
       $s('.res').innerHTML=''; $s('.pq').value=apt;
       $s('.bands').innerHTML=bands.map((u,i)=>`<button data-i="${i}">${escH(u[3])} · 전용 ${u[4]}㎡</button>`).join('');
-      $s('.bands').querySelectorAll('button').forEach(b=>b.onclick=()=>{
+      $s('.bands').querySelectorAll('button').forEach(b=>b.onclick=async()=>{
         $s('.bands').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
-        const u=bands[+b.dataset.i];
+        const u=await withScore(bands[+b.dataset.i], sd);
         if(which==='home'){ pickHome(u, sd, g); return; }
-        GAP[which]={u, sido:sd, key:[u[0],u[1],u[2],u[3]].join('|'), name:`${u[2]} ${u[3]}`, area:u[4], price:unitPrice(u)};
-        $s('.sel').innerHTML=`${escH(u[2])} ${escH(u[3])} <small>${escH(AG_IX.sgg[g].name)} ${escH(dong)} · 추정 시세 ${fmt(GAP[which].price)}원 (최근 3개월 실거래 중앙값)</small>`+
+        const pi=priceInfo(u);
+        GAP[which]={u, sido:sd, key:[u[0],u[1],u[2],u[3]].join('|'), name:`${u[2]} ${u[3]}`, area:u[4], price:pi.price};
+        $s('.sel').innerHTML=`${escH(u[2])} ${escH(u[3])} <small>${escH(AG_IX.sgg[g].name)} ${escH(dong)} · 추정 시세 ${fmt(GAP[which].price)}원 (${piTxt(pi)}${!u[9]?` · 최근 3년 거래 ${u[5]}건 기준`:''})</small>`+
           (which==='mine'?`<button class="btn ghost" style="margin-top:6px;font-size:13.5px;padding:6px 10px" id="useSale">이 시세를 예상 매도가에 넣기</button>`:'');
         const us=$('useSale'); if(us) us.onclick=()=>{ $('sale').value=GAP.mine.price.toLocaleString(); render(); JDJ.track('gap_use_sale'); toast('예상 매도가에 넣었습니다'); };
         if(which==='target'){ $('target').value=GAP.target.price.toLocaleString(); render(); }
@@ -843,8 +870,8 @@ function setHomeLoc(sd, g, u){
   if(g){ sellInit().then(()=>{ if($('sSido').value!==sd){ $('sSido').value=sd; $('sSido').dispatchEvent(new Event('change')); } if($('sSgg').value!==g){ $('sSgg').value=g; $('sSgg').dispatchEvent(new Event('change')); } }); }
 }
 function pickHome(u, sd, g){
-  const el=$('pkHome'), price=unitPrice(u);
-  el.querySelector('.sel').innerHTML=`${escH(u[2])} ${escH(u[3])} <small>${escH(AG_IX.sgg[g].name)} ${escH(u[1])} · 추정 시세 ${fmt(price)}원 (최근 3개월 안 마지막 실거래 기준) — 예상 매도가에 넣었어요</small>`;
+  const el=$('pkHome'), pi=priceInfo(u), price=pi.price;
+  el.querySelector('.sel').innerHTML=`${escH(u[2])} ${escH(u[3])} <small>${escH(AG_IX.sgg[g].name)} ${escH(u[1])} · 추정 시세 ${fmt(price)}원 (${pi.last?piTxt(pi):'최근 3개월 안 마지막 실거래 기준'}${!u[9]?` · 최근 3년 거래 ${u[5]}건 기준`:''}) — 예상 매도가에 넣었어요</small>`;
   if(price){ $('sale').value=price.toLocaleString(); }
   GAP.mine={u, sido:sd, key:[u[0],u[1],u[2],u[3]].join('|'), name:`${u[2]} ${u[3]}`, area:u[4], price};
   const ms=$('pkMine').querySelector('.sel'); if(ms) ms.innerHTML=`${escH(u[2])} ${escH(u[3])} <small>STEP 1에서 고른 지금 집 · 추정 시세 ${fmt(price)}원</small>`;

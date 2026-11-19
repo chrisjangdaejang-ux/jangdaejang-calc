@@ -1,6 +1,11 @@
 /* 장대장 '내 집 시세' 공통 로직 — mine/ 화면과 tools/mine-test.js 가 함께 쓴다.
-   자료: /jangdaejang-data/data/sNN.json 의 units (assets/rec-core.js 설명과 같음)
+   자료: /jangdaejang-data/data/sNN.json 의 units (assets/rec-core.js 설명과 같음 — 점수·추천용)
      u = [시군구코드, 동, 단지, 평형대, 전용㎡(중앙값), 자료 기간 거래수, 월별 평당가 36개, 월별 거래수 문자열, 지번, fx]
+   시세 확인용(거래가 1건이라도 있으면 모두): /jangdaejang-data/data/price/
+     price/sNN.json   단지 목록(검색용) r = [시군구코드, 동, 단지, 평형대, 전용㎡, 거래수, 지번, 점수 자료 1/0] → listRow(r) 로 u 모양으로
+     price/{구코드}.json units: u 와 같은 앞 9칸 + [9] 점수 자료 1/0, [10] 거래 있는 달의 그 달 중앙 평당가(오래된 달부터),
+                     [11] 개별 거래 [계약 연월일(YYYYMMDD), 전용㎡, 층, 금액(만원), 유형 0 중개·1 직거래·2 미기재] 최신순
+       · 거래수·평당가는 직거래 제외(점수용과 같은 기준), 개별 거래 목록에는 직거래도 유형 표시와 함께 있음
      · 월별 평당가: 그 달까지 3개월 실거래 평당가(만원/3.3㎡)의 중앙값 — 해제(취소) 신고 거래·직거래는 원자료 단계에서 제외
      · 월별 거래수 문자열: 한 글자 = 한 달 거래 건수 (글자 코드 − 48)
    여기서 하는 계산은 단순 집계(중앙값·최저·최고·합계·변동률)와 단위 환산뿐이며, 화면에는 계산 근거를 함께 보여 준다.
@@ -40,18 +45,89 @@
     for (const d of m.values()) d.bands.sort((a, b) => a[4] - b[4]);
     return m;
   }
-  /** 단지 이름 검색: 공백 무시·포함 검색, 거래 많은 단지 먼저 */
+  /* ---------- 단지 이름 검색용 별칭 (원래 이름은 그대로 두고 검색어·이름을 같은 규칙으로 맞춘다) ---------- */
+  /** 소문자·공백/하이픈/기호 제거, 'e편한세상'·'이편한세상'·'e-편한세상' → '이편한세상'. dropMaker=true 면 시공사 '대림' 표기도 뺀다 */
+  function normName(s, dropMaker) {
+    const n = String(s || '').toLowerCase().replace(/[\s\-_.,·・'"’()\[\]]+/g, '').replace(/e(?=편한)/g, '이');
+    return dropMaker ? n.replace(/대림/g, '') : n;
+  }
+  /** 'N차'·'N단지' 를 따로 떼어 낸다: {rest, nums} */
+  function splitNum(n) {
+    const nums = []; const rest = n.replace(/(\d+)(차|단지)/g, (m, a, b) => { nums.push(+a + b); return ''; });
+    return { rest, nums };
+  }
+  /** 검색어 q 가 단지 이름 name 에 맞는지. 0 = 앞부분부터 맞음, 1 = 맞음, -1 = 안 맞음
+      · 이름은 '대림' 표기가 있는 그대로와 뺀 것 둘 다로 비교(검색어의 '대림'은 그대로 둠 → '청담대림'은 대림 단지만)
+      · 띄어쓰기로 나눈 낱말마다: 'N차/N단지'를 뺀 글자가 이름('N차' 뺀 것)에 들어 있고, 'N차'는 이름의 'N차'와 같아야 함
+      · 이름에 '차' 번호가 없으면 '1차'로 본다 (예: 청담대림이-편한세상 = 청담 e편한세상 1차) */
+  function matchName(name, q) {
+    const a = matchOne(normName(name), q), b = matchOne(normName(name, true), q);
+    return a < 0 ? b : b < 0 ? a : Math.min(a, b);
+  }
+  function matchOne(nn, q) {
+    const tq = normName(q); if (!tq) return -1;
+    if (nn.indexOf(tq) >= 0) return nn.indexOf(tq) === 0 ? 0 : 1;
+    const ns = splitNum(nn), hasCha = ns.nums.some(x => /차$/.test(x));
+    const toks = String(q || '').split(/\s+/).map(t => normName(t)).filter(Boolean);
+    if (!toks.length) return -1;
+    let first = false;
+    for (let i = 0; i < toks.length; i++) {
+      const ts = splitNum(toks[i]);
+      if (ts.rest && ns.rest.indexOf(ts.rest) < 0) return -1;
+      for (const x of ts.nums) if (!ns.nums.includes(x) && !(x === '1차' && !hasCha)) return -1;
+      if (i === 0 && ts.rest && ns.rest.indexOf(ts.rest) === 0) first = true;
+    }
+    return first ? 0 : 1;
+  }
+  /** 단지 이름 검색: 공백·하이픈 무시, e편한세상/이편한세상·대림 표기 차이와 'N차' 띄어쓰기 허용, 거래 많은 단지 먼저 */
   function searchDanji(groups, q, limit) {
-    const norm = s => String(s || '').replace(/\s+/g, '').toLowerCase();
-    const t = norm(q); if (t.length < 1) return [];
+    if (!normName(q)) return [];
     const out = [];
     for (const d of groups.values()) {
-      const n = norm(d.apt), pos = n.indexOf(t);
-      if (pos >= 0) out.push([pos === 0 ? 0 : 1, -d.n, d]);
+      const r = matchName(d.apt, q);
+      if (r >= 0) out.push([r, -d.n, d]);
     }
     out.sort((a, b) => a[0] - b[0] || a[1] - b[1] || a[2].apt.localeCompare(b[2].apt, 'ko'));
     return out.slice(0, limit || 20).map(x => x[2]);
   }
+
+  /* ---------- 시세 확인용 자료 ---------- */
+  const FEW = 3;                                                            // 이보다 적으면 시세 범위 대신 거래 목록 요약만
+  /** price/sNN.json 목록 행 → u 모양(시계열 칸은 비움) */
+  const listRow = r => [r[0], r[1], r[2], r[3], r[4], r[5], null, null, r[6], r[7]];
+  const unitKey = u => [u[0], u[1], u[8], u[2], u[3]].join('|');            // 시군구|동|지번|단지|평형
+  /** 점수 자료가 있는 단지·평형인지(점수용 sNN 의 fx 객체, 또는 시세 자료의 1 표시) */
+  const hasScore = u => !!u && (u[9] === 1 || (u[9] != null && typeof u[9] === 'object'));
+  /** 점수 묶음(fx): 점수용 자료에서 온 행이면 그대로, 시세 자료 행이면 점수용 Map(unitKey → fx)에서 */
+  function scoreOf(u, map) {
+    if (!u) return null;
+    if (u[9] && typeof u[9] === 'object') return u[9];
+    if (u[9] === 1 && map) return map.get(unitKey(u)) || null;
+    return null;
+  }
+  /** 거래 있는 달 목록(최신순): {at, n, ppy(그 달 중앙 평당가, 없으면 3개월 중앙값), price} */
+  function monthDeals(u, months) {
+    const c = counts(u[7]), mm = Array.isArray(u[10]) ? u[10] : null, out = [];
+    let k = 0;
+    for (let i = 0; i < c.length; i++) if (c[i] > 0) {
+      const p = mm ? (mm[k] || 0) : (u[6] ? u[6][i] || 0 : 0); k++;
+      out.push({ at: months[i], n: c[i], ppy: p, price: toPrice(p, u[4]), own: !!mm });
+    }
+    return out.reverse();
+  }
+  /** 개별 거래(최신순): {ymd, date 'YYYY.MM.DD', area, floor, amt, type '중개'·'직거래'·'', ppy} */
+  const TYPE = ['중개', '직거래', ''];
+  function trades(u) {
+    const t = Array.isArray(u && u[11]) ? u[11] : [];
+    return t.map(x => {
+      const s = String(x[0]);
+      return { ymd: x[0], date: `${s.slice(0, 4)}.${s.slice(4, 6)}` + (s.slice(6, 8) !== '00' ? '.' + s.slice(6, 8) : ''), area: x[1], floor: x[2], amt: x[3],
+        type: TYPE[x[4]] || '', ppy: x[1] > 0 ? Math.round(x[3] / x[1] * PY) : 0 };
+    });
+  }
+  /** 마지막 거래(그 달 중앙 평당가 기준) — 최근 3개월에 거래가 없을 때 '마지막 실거래' 로 보여 주는 값 */
+  function lastDeal(u, months) { const m = monthDeals(u, months); return m.length ? m[0] : null; }
+  const isFew = u => (u[5] || 0) < FEW;
 
   /* ---------- 한 평형 요약 ---------- */
   /** months: index.json 의 months(YYYYMM 36개) */
@@ -199,7 +275,8 @@
   }
   const pctTxt = (v, d) => v == null ? '-' : (v > 0 ? '+' : '') + (v * 100).toFixed(d == null ? 1 : d) + '%';
 
-  const API = { PY, r100, STORE_KEY, MAX_HOMES, counts, lastIdx, median, toPrice, ymLabel, danjiKey, agentKey, premiumKey, groupDanji, searchDanji,
+  const API = { PY, r100, STORE_KEY, MAX_HOMES, FEW, counts, lastIdx, median, toPrice, ymLabel, danjiKey, agentKey, premiumKey, groupDanji, searchDanji,
+    normName, splitNum, matchName, listRow, unitKey, hasScore, scoreOf, monthDeals, trades, lastDeal, isFew,
     bandSummary, changeBack, dongPosition, sggPosition, trend, volume, volumeCounts, cleanHome, homeId, parseStore, dumpStore, addHome, removeHome, findUnit, vsBuy, heldMonths, reasons, won, pctTxt };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_MINE = API;

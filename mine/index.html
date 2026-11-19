@@ -23,7 +23,8 @@
 <script src="../assets/stat.js"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/kchat.js?v=1"></script>
-<script src="../assets/mine-core.js?v=1"></script>
+<script src="../assets/mine-core.js?v=2"></script>
+<script src="../assets/price-sheet.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=39">
@@ -139,6 +140,17 @@ td small{color:#4E5968;font-size:13.5px}
 .disc{font-size:13.5px;color:#4E5968;line-height:1.7;margin-top:22px;border-top:1px solid var(--line2);padding-top:14px}
 .btn{font-family:inherit;cursor:pointer;border:0}
 .btn.primary{background:#2F6BFF;color:#fff}
+.lowc{background:#FFF8E6;border-radius:12px;padding:8px 12px;color:#5B4A12}
+.fewl{font-size:13.5px;color:#3E4754;line-height:1.5;font-weight:700}
+details.msum{margin-top:12px}
+details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44px;display:flex;align-items:center}
+.jps-tbl table{font-size:15px}
+.jps-morebtn{font:inherit;font-size:14px;font-weight:700;width:100%;min-height:44px;margin-top:8px;border:1px solid var(--line);border-radius:12px;background:#fff;color:#3E4754;cursor:pointer}
+.jps-tbl th{text-align:left;font-size:13.5px;color:#4E5968;font-weight:700;padding:8px 6px;border-bottom:2px solid var(--line);white-space:nowrap}
+.jps-tbl td{padding:9px 6px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.jps-tbl .n{text-align:right;white-space:nowrap}
+.jps-dir{font-size:12.5px;color:#8A6D17;font-weight:700}
+.jps-note{font-size:13.5px;color:#4E5968;line-height:1.6;margin:6px 0 0}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -167,14 +179,14 @@ td small{color:#4E5968;font-size:13.5px}
       <div class="full"><label for="danji">단지</label><select id="danji" disabled><option value="">단지 선택</option></select></div>
     </div>
     <p class="or">또는 단지 이름으로 찾기 <span style="font-weight:500">(선택한 시·도 안에서 찾아요)</span></p>
-    <div class="pick"><div class="full"><label for="q" class="sr" style="position:absolute;left:-9999px">단지 이름</label><input id="q" type="search" placeholder="예: 헬리오시티, 래미안" autocomplete="off" enterkeyhint="search"></div></div>
+    <div class="pick"><div class="full"><label for="q" class="sr" style="position:absolute;left:-9999px">단지 이름</label><input id="q" type="search" placeholder="예: 헬리오시티, 청담 e편한세상 4차" autocomplete="off" enterkeyhint="search"></div></div>
     <div class="sres" id="sres" aria-live="polite"></div>
     <div id="loadMsg" class="note" aria-live="polite"></div>
   </section>
 
   <section id="res" hidden aria-live="polite"></section>
 
-  <p class="disc" id="src">자료: 국토교통부 아파트 매매 실거래가(공공데이터포털). 해제(취소) 신고된 거래와 직거래는 원자료 기준으로 집계에서 빼요. 월별 평당가는 그 달까지 3개월 실거래 평당가의 중앙값이에요. 실제 거래가는 동·층·향·수리 상태에 따라 달라요.</p>
+  <p class="disc" id="src">자료: 국토교통부 아파트 매매 실거래가(공공데이터포털). 해제(취소) 신고된 거래와 직거래는 원자료 기준으로 집계에서 빼요. 월별 평당가는 그 달까지 3개월 실거래 평당가의 중앙값이에요. 직거래는 거래 목록에만 표시하고 시세 계산에서는 빼요. 실제 거래가는 동·층·향·수리 상태에 따라 달라요.</p>
 </main>
 <footer class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 장대장부동산그룹 · <a href="../">계산기 홈</a></footer>
 
@@ -186,7 +198,9 @@ const DATA = '/jangdaejang-data/data/';
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num = s => { const v = parseInt(String(s || '').replace(/[^\d]/g, ''), 10); return isFinite(v) ? v : 0; };
 let IX = null, LABEL = null;
-const CACHE = {}, GROUPS = {};
+const P = window.JDJ_PRICE;
+const LIST = {}, GROUPS = {}, SMAP = {};
+let CUR = null;                     // 지금 보여 주는 {d(전체 자료 평형), map(점수)}
 const S = { sd: '', code: '', dkey: '', band: '', span: 36 };
 
 /* ---------- 저장 ---------- */
@@ -194,13 +208,23 @@ function loadHomes(){ try { return M.parseStore(localStorage.getItem(M.STORE_KEY
 function saveHomes(list){ try { localStorage.setItem(M.STORE_KEY, M.dumpStore(list)); return true; } catch (e) { return false; } }
 
 /* ---------- 자료 ---------- */
+/** 시·도 단지 목록: 시세 확인용 price/sNN.json(거래 1건 이상 모든 단지), 없으면 점수용 sNN.json */
 async function loadSido(id){
-  if (CACHE[id]) return CACHE[id];
-  if (CACHE['p' + id]) return CACHE['p' + id];
-  const p = fetch(DATA + id + '.json', {cache:'no-cache'}).then(r => { if (!r.ok) throw new Error(id); return r.json(); })
-    .then(j => { CACHE[id] = j.units; GROUPS[id] = M.groupDanji(j.units); return j.units; });
-  CACHE['p' + id] = p; p.catch(() => { delete CACHE['p' + id]; });
+  if (LIST[id]) return LIST[id];
+  if (LIST['p' + id]) return LIST['p' + id];
+  const p = fetch(DATA + 'price/' + id + '.json', {cache:'no-cache'}).then(r => { if (!r.ok) throw new Error(id); return r.json(); })
+    .then(j => (j.units || []).map(M.listRow))
+    .catch(() => P.scoreUnits(id))
+    .then(us => { LIST[id] = us; GROUPS[id] = M.groupDanji(us); return us; });
+  LIST['p' + id] = p; p.catch(() => { delete LIST['p' + id]; });
   return p;
+}
+/** 점수용 자료 → Map(단지·평형 키 → 점수 묶음) */
+async function scoreMap(id){
+  if (SMAP[id]) return SMAP[id];
+  const us = await P.scoreUnits(id), m = new Map();
+  for (const u of us) if (u[9]) m.set(M.unitKey(u), u[9]);
+  return (SMAP[id] = m);
 }
 const sggName = c => (IX.sgg[c] || {}).name || c;
 const sidoName = c => (IX.sgg[c] || {}).sido || '';
@@ -246,21 +270,34 @@ function runSearch(){
   if (!q){ box.innerHTML = ''; return; }
   if (!g){ box.innerHTML = '<div class="none">자료를 불러오는 중이에요…</div>'; return; }
   const hits = M.searchDanji(g, q, 12);
-  box.innerHTML = hits.length ? hits.map(d => `<button type="button" data-k="${esc(d.key)}"><b>${esc(d.apt)}</b><small>${esc(sggName(d.code))} ${esc(d.dong)} · 평형 ${d.bands.length}개 · 자료 기간 거래 ${d.n.toLocaleString()}건</small></button>`).join('')
-    : `<div class="none">'${esc(q)}' 이름의 단지를 ${esc((IX.sido.find(s => s.id === S.sd) || {}).name || '')}에서 찾지 못했어요. 다른 시·도를 고르거나 이름 일부만 넣어 보세요. (최근 3년 거래가 12건 이상인 단지·평형만 있어요)</div>`;
+  box.innerHTML = hits.length ? hits.map(d => `<button type="button" data-k="${esc(d.key)}"><b>${esc(d.apt)}</b><small>${esc(sggName(d.code))} ${esc(d.dong)} · 평형 ${d.bands.length}개 · 최근 3년 거래 ${d.n.toLocaleString()}건</small></button>`).join('')
+    : `<div class="none">'${esc(q)}' 이름의 단지를 ${esc((IX.sido.find(s => s.id === S.sd) || {}).name || '')}에서 찾지 못했어요. 다른 시·도를 고르거나 이름 일부만 넣어 보세요. (최근 3년 동안 거래가 있었던 단지만 찾을 수 있어요)</div>`;
 }
 
 /* ---------- 결과 ---------- */
-function showDanji(key, band, opt){
+async function showDanji(key, band, opt){
   const g = GROUPS[S.sd]; if (!g) return;
-  const d = g.get(key); if (!d) return;
-  S.dkey = key; S.code = d.code;
-  if (!band || !d.bands.some(u => u[3] === band)) { const b84 = d.bands.find(u => u[3] === '84㎡대'); band = (b84 || d.bands.slice().sort((a, b) => b[5] - a[5])[0])[3]; }
+  const d0 = g.get(key); if (!d0) return;
+  S.dkey = key; S.code = d0.code;
+  if (!band || !d0.bands.some(u => u[3] === band)) { const b84 = d0.bands.find(u => u[3] === '84㎡대'); band = (b84 || d0.bands.slice().sort((a, b) => b[5] - a[5])[0])[3]; }
   S.band = band;
-  if ($('sgg').value !== d.code){ $('sgg').value = d.code; fillDanji(key); }
+  if ($('sgg').value !== d0.code){ $('sgg').value = d0.code; fillDanji(key); }
   if ($('danji').value !== key) $('danji').value = key;
   const u = new URL(location.href); u.searchParams.set('sd', S.sd); u.searchParams.set('d', key); u.searchParams.set('b', band); history.replaceState(null, '', u);
-  render(d);
+  const sd = S.sd;
+  if (!CUR || CUR.d.key !== key){ $('res').hidden = false; $('res').innerHTML = '<div class="loading">시세를 불러오는 중이에요…</div>'; }
+  let su, map = null;
+  try {
+    su = (await P.loadSgg(d0.code, sd)).units;
+    if (d0.bands.some(M.hasScore)) map = await scoreMap(sd).catch(() => null);
+  } catch (e) { if (S.dkey === key) $('res').innerHTML = '<div class="empty">시세 자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.</div>'; return; }
+  if (S.dkey !== key || S.sd !== sd || S.band !== band) return;
+  const byKey = new Map(su.map(x => [M.unitKey(x), x]));
+  const d = Object.assign({}, d0, { bands: d0.bands.map(b => byKey.get(M.unitKey(b))).filter(Boolean) });
+  if (!d.bands.length){ $('res').innerHTML = '<div class="empty">이 단지의 시세 자료를 찾지 못했어요.</div>'; return; }
+  if (!d.bands.some(x => x[3] === S.band)) S.band = d.bands[0][3];
+  CUR = { d, map, units: su };
+  render(d, map, su);
   if (opt && opt.scroll) $('res').scrollIntoView({behavior:'smooth', block:'start'});
   stat(d);
 }
@@ -269,8 +306,8 @@ function stat(d){
   jdjStat('feature_use', {feature:'mine'});
   jdjStat('interest_profile', {from:'mine', sido:jdjStat.sido(sidoName(d.code)), sgg:sggName(d.code)});
 }
-function render(d){
-  const units = CACHE[S.sd], u = d.bands.find(x => x[3] === S.band), f = u[9] || {};
+function render(d, map, units){
+  const u = d.bands.find(x => x[3] === S.band), f = M.scoreOf(u, map) || {}, has = M.hasScore(u), few = M.isFew(u), last = M.lastDeal(u, IX.months);
   const sm = M.bandSummary(u, IX.months), sgg = IX.sgg[d.code];
   const dp = M.dongPosition(units, u), gp = M.sggPosition(sgg, u, IX.months), vol = M.volume(u);
   const sv = sgg && sgg.c ? M.volumeCounts(sgg.c) : null;
@@ -280,8 +317,9 @@ function render(d){
   const chTxt = c => c ? `<span class="${updown(c.pct)}">${M.pctTxt(c.pct)}</span>` : '-';
   const chBasis = c => c ? `${ym(c.fromAt)} ${c.from.toLocaleString()}만 → ${ym(c.toAt)} ${c.to.toLocaleString()}만` : '비교할 달의 거래가 없어요';
   const sumRows = d.bands.map(x => { const b = M.bandSummary(x, IX.months); return `<tr class="${x[3] === S.band ? 'on' : ''}"><td>${esc(x[3])}<br><small>전용 ${x[4]}㎡</small></td>
-    <td class="num">${b.price ? M.won(b.price) : '-'}<br><small>${b.ppy ? b.ppy.toLocaleString() + '만/3.3㎡' : '최근 거래 없음'}</small></td>
-    <td class="num">${b.range.months ? (b.range.lo === b.range.hi ? M.won(b.range.lo) : `${M.won(b.range.lo)}<br>~ ${M.won(b.range.hi)}`) : '-'}</td>
+    <td class="num">${b.price ? `${M.won(b.price)}<br><small>${b.ppy.toLocaleString()}만/3.3㎡</small>` : (() => { const l = M.lastDeal(x, IX.months); return l ? `${M.won(l.price)}<br><small>${ym(l.at)} 마지막 거래</small>` : '-'; })()}</td>
+    <td class="num">${M.isFew(x) ? `<span class="fewl">${M.monthDeals(x, IX.months).map(m => `${ym(m.at)} ${m.ppy.toLocaleString()}만`).join('<br>')}</span>`
+      : b.range.months ? (b.range.lo === b.range.hi ? M.won(b.range.lo) : `${M.won(b.range.lo)}<br>~ ${M.won(b.range.hi)}`) : '-'}</td>
     <td class="num">${b.cnt12}건</td></tr>`; }).join('');
   const c = M.counts(u[7]);
   const mrows = []; for (let i = IX.months.length - 1; i >= Math.max(0, IX.months.length - 12); i--) {
@@ -297,12 +335,15 @@ function render(d){
       ${f.fv != null ? `<div class="fvbadge" title="미래가치 점수(2년 기준)"><small>미래가치 점수</small><b>${f.fv}점</b><small>100점 만점</small></div>` : ''}</div>
     <div class="bands" role="group" aria-label="평형 선택">${d.bands.map(x => `<button type="button" data-b="${esc(x[3])}" class="${x[3] === S.band ? 'on' : ''}" aria-pressed="${x[3] === S.band}">${esc(x[3])}</button>`).join('')}</div>
     <div class="stats">
-      <div class="st key"><div class="k">최근 시세 (${esc(S.band)})</div><div class="v">${sm.price ? M.won(sm.price) : '거래 없음'}</div><div class="d">${sm.at ? ym(sm.at) + ' 기준' + (sm.stale ? ' · 이후 거래 없음' : '') : '최근 3개월 거래 없음'}</div></div>
+      ${few && last ? `<div class="st key"><div class="k">최근 거래 (${esc(S.band)})</div><div class="v">${M.won(last.price)}</div><div class="d">${ym(last.at)} 거래 ${last.n}건 · 최근 3년 ${u[5]}건</div></div>`
+        : !sm.price && last ? `<div class="st key"><div class="k">마지막 실거래 (${esc(S.band)})</div><div class="v">${M.won(last.price)}</div><div class="d">${ym(last.at)} · 최근 3개월 거래 없음</div></div>`
+        : `<div class="st key"><div class="k">최근 시세 (${esc(S.band)})</div><div class="v">${sm.price ? M.won(sm.price) : '거래 없음'}</div><div class="d">${sm.at ? ym(sm.at) + ' 기준' + (sm.stale ? ' · 이후 거래 없음' : '') : '최근 3개월 거래 없음'}</div></div>`}
       <div class="st"><div class="k">최근 3개월 거래</div><div class="v">${sm.recent3}건</div><div class="d">${ym(IX.months[IX.months.length - 3])}~${ym(IX.dataTo)}</div></div>
       <div class="st"><div class="k">1년 변동</div><div class="v">${chTxt(sm.ch1)}</div><div class="d">평당가 기준</div></div>
       <div class="st"><div class="k">3년 변동</div><div class="v">${chTxt(sm.ch3)}</div><div class="d">평당가 기준</div></div>
     </div>
-    <p class="basis"><b>계산 근거</b> · 최근 시세 = 최근 3개월 실거래 평당가 중앙값 ${sm.ppy ? sm.ppy.toLocaleString() + '만원' : '-'} × 전용 ${u[4]}㎡ ÷ 3.3058 (100만 원 단위 반올림, 이 평형 거래 전용면적의 중앙값 기준) · 1년 변동: ${chBasis(sm.ch1)} · 3년 변동: ${chBasis(sm.ch3)}. 5년 추이는 공개 자료 기간(최근 3년)을 넘어 아직 보여 드리지 못해요.</p>
+    ${!has ? `<p class="basis lowc">최근 3년 거래 <b>${u[5]}건</b> 기준이에요. 거래가 적어 한두 건 가격에 따라 시세가 크게 달라질 수 있으니 아래 실거래 목록을 함께 봐 주세요.</p>` : ''}
+    <p class="basis"><b>계산 근거</b> · ${(few || !sm.price) && last ? `${few ? '최근 거래' : '마지막 실거래'} = ${ym(last.at)} 실거래 평당가 ${last.own ? '' : '(3개월) '}중앙값 ${last.ppy.toLocaleString()}만원 × 전용 ${u[4]}㎡ ÷ 3.3058 · ` : ''}${sm.ppy ? `최근 시세 = 최근 3개월 실거래 평당가 중앙값 ${sm.ppy.toLocaleString()}만원 × ` : '환산 금액 = 평당가 × '}전용 ${u[4]}㎡ ÷ 3.3058 (100만 원 단위 반올림, 이 평형 거래 전용면적의 중앙값 기준) · 1년 변동: ${chBasis(sm.ch1)} · 3년 변동: ${chBasis(sm.ch3)}. 5년 추이는 공개 자료 기간(최근 3년)을 넘어 아직 보여 드리지 못해요.</p>
 
     <div class="save" id="saveBox">
       <b style="font-size:16px">${mine ? '내 집으로 저장되어 있어요' : '이 집이 내 집인가요?'}</b>
@@ -316,7 +357,7 @@ function render(d){
   </div>
 
   <div class="panel">
-    <h2>평형별 시세 범위<small>최근 1년 범위 = 월별 3개월 중앙 평당가의 최저~최고 × 전용면적 ÷ 3.3058 (평형 안 개별 거래의 최저·최고가 아니에요)</small></h2>
+    <h2>평형별 시세 범위<small>최근 1년 범위 = 월별 3개월 중앙 평당가의 최저~최고 × 전용면적 ÷ 3.3058 (평형 안 개별 거래의 최저·최고가 아니에요). 최근 3년 거래가 ${M.FEW}건이 안 되는 평형은 범위 대신 거래 달·평당가만 보여 드려요.</small></h2>
     <div class="tbl"><table><thead><tr><th>평형</th><th class="num">최근 시세</th><th class="num">최근 1년 범위</th><th class="num">1년 거래</th></tr></thead><tbody>${sumRows}</tbody></table></div>
   </div>
 
@@ -348,14 +389,18 @@ function render(d){
   </div>
 
   <div class="panel">
-    <h2>월별 실거래 요약 (최근 12개월)<small>개별 거래(계약일·층)는 공개 자료 파일에 담겨 있지 않아 월별 건수와 3개월 중앙 평당가로 보여 드려요. 개별 거래는 <a href="https://rt.molit.go.kr/" target="_blank" rel="noopener">국토교통부 실거래가 공개시스템</a>에서 확인할 수 있어요.</small></h2>
+    <h2>최근 실거래 (${esc(S.band)})<small>국토교통부 실거래 신고 그대로예요(최근 3년, 최신순). 같은 평형이라도 동·층·향·수리 상태에 따라 가격이 달라요. <a href="https://rt.molit.go.kr/" target="_blank" rel="noopener">국토교통부 실거래가 공개시스템</a>에서도 확인할 수 있어요.</small></h2>
+    <div id="trades">${P.tradesHtml(u, IX.months, {show:10})}</div>
+    <details class="msum"><summary>월별 요약 보기 (최근 12개월)</summary>
     <div class="tbl"><table><thead><tr><th>월</th><th class="num">거래</th><th class="num">3개월 중앙 평당가</th><th class="num">${esc(S.band)} 환산</th></tr></thead><tbody>${mrows.join('')}</tbody></table></div>
+    </details>
   </div>
 
   <div class="panel">
     <h2>미래가치 점수와 근거<small>공개 자료에 있는 점수를 그대로 보여 드려요 (2년 보유 기준, 같은 시·도 단지 비교)</small></h2>
     ${f.fv != null ? `<ul class="why">${rs.map(t => `<li>${esc(t)}</li>`).join('')}</ul>
       <p class="basis">미래가치 점수는 당시 알려진 정보로 예측하고 이후 실제 시세로 채점해 검증한 점수예요. 같은 지역 평균 대비 순위라, 시장 전체가 내리면 점수가 높은 단지도 내릴 수 있어요.</p>`
+      : !has ? `<p class="note" style="font-size:15px">거래가 적어 미래가치 점수는 아직 매기지 않아요(최근 3년 ${u[5]}건). 시세·추이·거래량과 실거래 목록은 위에서 확인할 수 있어요.</p>`
       : `<p class="note" style="font-size:15px">이 단지·평형은 아직 미래가치 점수가 없어요. 검증에 쓸 거래 자료가 충분히 쌓이면 자동으로 보여 드려요.</p>${rs.length ? `<ul class="why">${rs.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}`}
   </div>
 
@@ -364,7 +409,7 @@ function render(d){
     <div class="links">
       <a class="main" href="../switch/?src=mine"><b>이 집 팔고 갈아타기 계산 →</b><small>양도세·매도 후 남는 돈·새 대출 (갈아타기 화면에서 지금 집 단지를 골라 주세요)</small></a>
       <a href="../tax/"><b>이 집 세금 계산 →</b><small>양도세·취득세·보유세</small></a>
-      <a href="../premium/?p=single&amp;k=${encodeURIComponent(pk)}"><b>이 단지 프리미엄 리포트 →</b><small>단지 심층 분석 · 유료</small></a>
+      ${has ? `<a href="../premium/?p=single&amp;k=${encodeURIComponent(pk)}"><b>이 단지 프리미엄 리포트 →</b><small>단지 심층 분석 · 유료</small></a>` : ''}
     </div>
   </div>
 
@@ -372,6 +417,7 @@ function render(d){
 
   $('res').hidden = false;
   drawCharts(u, sgg);
+  P.wireMore($('trades'));
   wireResult(d, u, sm);
   fillAgents(d);
 }
@@ -462,7 +508,7 @@ async function renderHomes(){
   box.innerHTML = list.map(h => `<div class="hc" data-id="${esc(M.homeId(h))}"><div class="loading" style="padding:14px">${esc(h.apt)} 시세를 불러오는 중이에요…</div></div>`).join('');
   for (const h of list){
     const id = M.homeId(h), el = box.querySelector(`[data-id="${CSS.escape(id)}"]`); if (!el) continue;
-    let units = null; try { units = await loadSido(h.sd); } catch (e) {}
+    let units = null; try { units = (await P.loadSgg(h.code, h.sd)).units; } catch (e) {}
     const u = units ? M.findUnit(units, h) : null;
     el.innerHTML = homeCard(h, u);
     wireHome(el, h, u);
@@ -475,10 +521,11 @@ function homeCard(h, u){
       <div><label>매수가 (만원)<input class="hbp" inputmode="numeric" value="${h.bp ? h.bp.toLocaleString() : ''}" placeholder="예: 95,000"></label><div class="hint hbpH">${h.bp ? M.won(h.bp) : ''}</div></div>
       <div><label>매수 시기<input class="hbd" type="month" min="1980-01" max="${new Date().toISOString().slice(0, 7)}" value="${esc(h.bd)}"></label></div></div>
       <div class="acts"><button type="button" class="btn primary hsave">저장</button></div></div></div>`;
-  if (!u) return head + `</div><p class="miss">최근 자료에서 이 단지·평형을 찾지 못했어요. 최근 3년 거래가 12건 아래로 줄었거나 단지 정보가 바뀌었을 수 있어요.</p>` + acts;
-  const sm = M.bandSummary(u, IX.months), vb = M.vsBuy(sm.price, h.bp), hm = M.heldMonths(h.bd, IX.dataTo);
+  if (!u) return head + `</div><p class="miss">최근 자료에서 이 단지·평형을 찾지 못했어요. 최근 3년 동안 거래가 없었거나 단지 정보가 바뀌었을 수 있어요.</p>` + acts;
+  const sm = M.bandSummary(u, IX.months), last = M.lastDeal(u, IX.months), alt = (!sm.price || M.isFew(u)) && last;
+  const pr = alt ? last.price : sm.price, vb = M.vsBuy(pr, h.bp), hm = M.heldMonths(h.bd, IX.dataTo);
   const sgg = IX.sgg[h.code], gp = M.sggPosition(sgg, u, IX.months);
-  return head + `<div class="p"><b>${sm.price ? M.won(sm.price) : '거래 없음'}</b><small style="display:block;font-size:13.5px;color:#4E5968">${sm.at ? M.ymLabel(sm.at) + ' 최근 시세' : '최근 3개월 거래 없음'}</small></div></div>
+  return head + `<div class="p"><b>${pr ? M.won(pr) : '거래 없음'}</b><small style="display:block;font-size:13.5px;color:#4E5968">${alt ? M.ymLabel(last.at) + (M.isFew(u) ? ` 거래 (3년 ${u[5]}건)` : ' 마지막 실거래') : sm.at ? M.ymLabel(sm.at) + ' 최근 시세' : '최근 3개월 거래 없음'}</small></div></div>
     <div class="grid">
       <div class="st"><div class="k">매수가 대비</div><div class="v">${vb ? `<span class="${updown(vb.pct)}">${vb.diff >= 0 ? '+' : ''}${M.won(vb.diff)}</span>` : '-'}</div><div class="d">${vb ? M.pctTxt(vb.pct) + ` · 매수가 ${M.won(h.bp)}` : h.bp ? `매수가 ${M.won(h.bp)} · 최근 3개월 거래가 없어 비교하지 못했어요` : '매수가를 넣으면 보여 드려요'}${hm != null ? ` · 보유 ${Math.floor(hm / 12) ? Math.floor(hm / 12) + '년 ' : ''}${hm % 12}개월` : ''}</div></div>
       <div class="st"><div class="k">최근 3개월 거래</div><div class="v">${sm.recent3}건</div><div class="d">3개월 중앙 평당가 ${sm.ppy ? sm.ppy.toLocaleString() + '만' : '-'}</div></div>
@@ -496,7 +543,7 @@ function wireHome(el, h, u){
     else if (act === 'del'){
       if (delArm !== id){ delArm = id; b.textContent = '한 번 더 누르면 삭제'; setTimeout(() => { if (delArm === id){ delArm = ''; b.textContent = '삭제'; } }, 4000); return; }
       delArm = ''; saveHomes(M.removeHome(loadHomes(), id)); renderHomes();
-      if (S.dkey && !$('res').hidden){ const g = GROUPS[S.sd], d = g && g.get(S.dkey); if (d) render(d); }
+      if (CUR && S.dkey === CUR.d.key && !$('res').hidden) render(CUR.d, CUR.map, CUR.units);
     }
   });
   const ib = el.querySelector('.hbp');
@@ -530,7 +577,7 @@ async function init(){
   $('q').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); runSearch(); } });
   $('sres').addEventListener('click', e => { const b = e.target.closest('button[data-k]'); if (!b) return; $('sres').innerHTML = ''; $('q').value = ''; showDanji(b.dataset.k, '', {scroll:true}); });
   let rz = null, lw = innerWidth;
-  addEventListener('resize', () => { if (Math.abs(innerWidth - lw) < 8) return; lw = innerWidth; clearTimeout(rz); rz = setTimeout(() => { const g = GROUPS[S.sd], d = g && g.get(S.dkey); if (d && !$('res').hidden){ const u = d.bands.find(x => x[3] === S.band); if (u) drawCharts(u, IX.sgg[d.code]); } }, 200); });
+  addEventListener('resize', () => { if (Math.abs(innerWidth - lw) < 8) return; lw = innerWidth; clearTimeout(rz); rz = setTimeout(() => { const d = CUR && CUR.d.key === S.dkey ? CUR.d : null; if (d && !$('res').hidden){ const u = d.bands.find(x => x[3] === S.band); if (u) drawCharts(u, IX.sgg[d.code]); } }, 200); });
 }
 init();
 })();
