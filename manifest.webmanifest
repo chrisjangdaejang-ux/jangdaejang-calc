@@ -1,7 +1,7 @@
 {
-  "name": "장대장 부동산 계산기",
-  "short_name": "장대장 계산기",
-  "description": "내 집 마련·갈아타기 계산기, 실거래 기반 맞춤 매수 리포트, 갭 알림",
+  "name": "집예보",
+  "short_name": "집예보",
+  "description": "집값에도 예보가 있어요 — 미래가치 점수, 내 집 마련·갈아타기 계산, 내 집 시세, 청약·세금·전월세",
   "id": "/jangdaejang-calc/",
   "start_url": "/jangdaejang-calc/?src=pwa",
   "scope": "/jangdaejang-calc/",

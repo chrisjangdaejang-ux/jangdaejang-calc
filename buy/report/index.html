@@ -9,15 +9,15 @@
 <link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="장대장 계산기">
+<meta name="apple-mobile-web-app-title" content="집예보">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="/jangdaejang-calc/assets/pwa.js" defer></script>
 <script src="/jangdaejang-calc/assets/biz.js" defer></script>
-<title>장대장 맞춤 매수 리포트</title>
+<title>집예보 맞춤 매수 리포트</title>
 <meta name="description" content="내 예산으로 살 수 있는 집 중 미래가치가 가장 좋은 집을 실거래가로 골라 추천 이유와 자금 계획까지 정리해 드립니다.">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="장대장 계산기">
-<meta property="og:title" content="장대장 맞춤 매수 리포트 — 내 조건으로 살 수 있는 단지는?">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="집예보 맞춤 매수 리포트 — 내 조건으로 살 수 있는 단지는?">
 <meta property="og:description" content="국토부 실거래가 기준 예산 맞춤 단지 추천 + 자금 계획표 + 대출 시나리오">
 <meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/buy/report/">
 <meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/report.png">
@@ -25,7 +25,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="장대장 맞춤 매수 리포트 — 내 조건으로 살 수 있는 단지는?">
+<meta name="twitter:title" content="집예보 맞춤 매수 리포트 — 내 조건으로 살 수 있는 단지는?">
 <meta name="twitter:description" content="국토부 실거래가 기준 예산 맞춤 단지 추천 + 자금 계획표 + 대출 시나리오">
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/report.png">
 <script>window.JDJ_CONFIG = { tool:'report', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
@@ -303,7 +303,7 @@ tr.hl td{background:rgba(184,148,42,.12);font-weight:700}
 .vbadge{display:inline-block;font-size:13.5px;font-weight:700;color:#0E7A4F;background:#E6F5EE;border-radius:999px;padding:2px 10px}
 .rkbasis.vall{color:#0E7A4F}
 </style>
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=40">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=41">
 <style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
 :root{--gold:#2F6BFF}
 .premium .pt{color:var(--blue)}
@@ -453,7 +453,7 @@ p.premlink{display:block;margin:10px 0 0}
 </head>
 <body>
 <header class="top noprint">
-  <a class="brand" href="/jangdaejang-calc/"><span class="star" aria-hidden="true">★</span> 장대장 <span class="acc">계산기</span></a>
+  <a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>집예보</a>
   <button type="button" class="topbtn" id="shareBtn" data-track="report_share">공유</button>
 </header>
 
@@ -499,7 +499,7 @@ p.premlink{display:block;margin:10px 0 0}
 
   <div id="report"><div class="loading">실거래 데이터를 불러오는 중입니다…</div></div>
 </div>
-<footer class="foot noprint">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 장대장부동산그룹 · <a href="/jangdaejang-calc/">계산기 홈</a></footer>
+<footer class="foot noprint">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 장대장부동산그룹 · <a href="/jangdaejang-calc/">집예보 홈</a></footer>
 
 
 <script>
@@ -902,7 +902,7 @@ function goCompare(){ MODE='cmp'; cmpSave(); setModeUi(); repAuthUi(); window.sc
 function goRec(){ MODE='rec'; cmpSave(); setModeUi(); repAuthUi(); window.scrollTo(0,0); render(); }
 function setModeUi(){
   $('cmpBtn').textContent = MODE==='cmp' ? '추천 리포트 보기' : '단지 비교';
-  document.title = MODE==='cmp' ? '장대장 단지 비교' : '장대장 맞춤 매수 리포트';
+  document.title = MODE==='cmp' ? '집예보 단지 비교' : '집예보 맞춤 매수 리포트';
   cmpBar();
 }
 function lastAny(arr){ for(let i=arr.length-1;i>=0;i--) if(arr[i]>0) return arr[i]; return 0; }
@@ -1502,7 +1502,7 @@ function openAgent(id, g, k){
       ${a.dj.length?`<dt>매물 단지</dt><dd>${a.dj.filter(x=>x.startsWith(g+'|')).map(x=>esc(x.split('|')[2])).join(', ')||'-'}</dd>`:''}</dl>
     ${a.intro?`<p style="margin:0;font-size:15px">${esc(a.intro)}</p>`:''}
     <div class="acts">${tel?`<a class="btn primary" href="tel:${tel}" data-act="call">전화하기</a>`:''}${agChat(a,g,k,'btn')}</div>
-    <p class="disc">이 중개사무소는 장대장 리포트 제휴(광고) 사무소입니다. 장대장은 중개 행위에 관여하지 않으며, 매물 정보와 거래 조건은 해당 중개사무소에 직접 확인하세요.</p></div>`;
+    <p class="disc">이 중개사무소는 집예보 리포트 제휴(광고) 사무소입니다. 집예보는 중개 행위에 관여하지 않으며, 매물 정보와 거래 조건은 해당 중개사무소에 직접 확인하세요.</p></div>`;
   bg.querySelectorAll('[data-act]').forEach(el=>el.addEventListener('click', ()=>{
     const t = el.dataset.act; A.log(t, id, g, k); A.flush(); JDJ.track('agent_'+t, {agent:id, sgg:g});
     rvTicket(id, a.t==='m'?a.nm+' 공인중개사':a.n);
@@ -1619,7 +1619,7 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ const bg=$('agm'
     $('backBtn').href = '../' + (location.search ? location.search+'&full=1' : '?full=1');
     /* 공유: 내 금액은 빼고 '나도 계산해 보기' 링크만(지역만 실음). 받은 사람은 자기 조건으로 처음부터 계산 */
     if (window.JDJ_SHARE) JDJ_SHARE.bind($('shareBtn'), ()=>{ const b=new URLSearchParams(); if(S.sido) b.set('sd', S.sido.any?'all':S.sido.name); b.set('from','share');
-      return {title:'장대장 내 집 마련 계산기', text:'내 예산으로 살 수 있는 단지와 앞으로 2년 전망, 나도 계산해 보기', url:new URL('../?'+b.toString(), location.href).href, ev:'report_share'}; });
+      return {title:'집예보 내 집 마련 계산기', text:'내 예산으로 살 수 있는 단지와 앞으로 2년 전망, 나도 계산해 보기', url:new URL('../?'+b.toString(), location.href).href, ev:'report_share'}; });
     if (window.JDJ_AUTH && JDJ_AUTH.user()) JDJ_AUTH.syncHomes();
     await render();
     repAuthUi();
