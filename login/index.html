@@ -125,6 +125,13 @@ function repsHtml(d){
     : '<p class="empty">아직 저장한 리포트가 없어요. 맞춤 매수 리포트 화면에서 [내 계정에 리포트 저장]을 눌러 주세요.</p>'}
     <p class="note">리포트에는 지역·보유 기간 같은 조건과 그때 추천 단지 목록만 저장해요. 연소득·보유 현금 같은 금액은 저장하지 않아서, 다른 기기에서 열면 그 기기에 넣은 금액으로 다시 계산해요.</p></div>`;
 }
+function areasHtml(d){
+  const a = d.areas && Array.isArray(d.areas.list) ? d.areas : {list: [], kinds: {}};
+  const sh = s => String(s || '').replace(/(특별자치시|특별자치도|통합특별시|특별시|광역시)$/, '');
+  const kinds = [a.kinds.notice !== false ? '새 분양 공고' : '', a.kinds.mu !== false ? '무순위·잔여세대 일정' : ''].filter(Boolean).join(' · ');
+  return `<div class="box"><h2>관심 지역<small>${a.list.length}곳</small></h2>${a.list.length ? `<p class="empty">${a.list.map(x => esc(sh(x.sd) + ' ' + (x.g ? x.gn : '전체'))).join(' · ')}</p><p class="note">알림 신청: ${esc(kinds || '없음')} · <a href="/jangdaejang-calc/bunyang/#area">분양 화면에서 바꾸기</a></p>`
+    : '<p class="empty">관심 지역을 설정하면 새로운 분양 공고, 무순위 청약 일정을 가장 먼저 받아볼 수 있어요. <a href="/jangdaejang-calc/bunyang/#area">관심 지역 설정</a></p>'}</div>`;
+}
 function alertsHtml(al){
   return `<div class="box"><h2>알림 신청<small>${al.length}개</small></h2>${al.length ? al.map(a => `<div class="row"><span><b>${esc(a.name)} · ${esc(KIND[a.kind] || a.kind)}</b><small>${esc(a.at)} 신청</small></span><button type="button" data-al="${esc(a.id)}">취소</button></div>`).join('')
     : '<p class="empty">아직 신청한 알림이 없어요. 내 집 시세 화면의 [이 단지·지역 소식 알림]에서 신청할 수 있어요.</p>'}
@@ -137,7 +144,7 @@ async function account(){
   if (!st) return intro();
   const d = st.data, u = A.user();
   app.innerHTML = `<div class="who"><span class="av" aria-hidden="true">${esc((u.nick || '카')[0])}</span><div><b>${esc(u.nick)} 님</b><small>카카오로 로그인했어요</small></div></div>
-    ${homesHtml(d)}${favsHtml(d)}${repsHtml(d)}${alertsHtml(st.alerts || [])}
+    ${homesHtml(d)}${favsHtml(d)}${repsHtml(d)}${areasHtml(d)}${alertsHtml(st.alerts || [])}
     <div class="box"><h2>로그아웃</h2><p class="empty">이 기기에서만 로그아웃해요. 이 기기에 저장된 내 집 목록은 그대로 남아요.</p><div class="acts" style="margin-top:10px"><button type="button" class="btn ghost" id="outBtn">로그아웃</button></div></div>
     <div class="box del"><h2>탈퇴</h2><p class="empty">탈퇴하면 집예보가 보관한 카카오 회원번호·닉네임과 계정에 저장한 내 집·관심 단지·리포트·알림 신청을 바로 지워요. 지운 뒤에는 되살릴 수 없어요. 이 기기 브라우저에 저장된 내 집 목록은 남아 있고, 브라우저 설정에서 지울 수 있어요.</p>
       <div class="acts" style="margin-top:10px"><button type="button" class="btn warn" id="delBtn">탈퇴하기</button></div><div class="msg" id="delMsg" role="status"></div></div>`;

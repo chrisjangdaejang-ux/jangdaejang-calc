@@ -1,5 +1,9 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v14: 카카오 로그인 회원 추가)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v15: 관심 지역 저장 추가)
+ *
+ * v15 변경 요약
+ *  - 회원 저장 자료(userSave·userLoad)에 관심 지역(areas) 추가: 시·도/시·군·구 최대 10곳 + 알림 종류(새 분양 공고·무순위/잔여세대).
+ *    관심 지역 저장 = 알림 신청. 카카오톡 발송은 카카오 비즈 인증 뒤 '회원' 시트 저장자료의 areas 로 보냄. 기존 기능은 그대로입니다.
  *
  * v14 변경 요약
  *  - 카카오 로그인 회원 기능 추가. 기존 기능은 그대로입니다. (검증: node tools/auth-test.js)
@@ -1325,6 +1329,16 @@ function cleanReport(x) {
   })).filter(p => p && p.apt);
   return { id: uText(x.id, 20), t: uText(x.t, 16), title: uText(x.title, 60), q: q, picks: picks };
 }
+/* 관심 지역: [{sd 시·도 이름, g 시·군·구 코드(빈 값 = 시·도 전체), gn 이름}] 최대 10곳 + kinds{notice, mu} */
+function cleanAreas(a) {
+  a = a && typeof a === 'object' ? a : {};
+  const seen = {};
+  const list = (Array.isArray(a.list) ? a.list : []).slice(0, 20).map(x => x && ({ sd: uText(x.sd, 20), g: /^\d{5}$/.test(String(x.g || '')) ? String(x.g) : '', gn: uText(x.gn, 30) }))
+    .filter(x => x && /^[가-힣]{2,12}$/.test(x.sd) && (!x.g || x.gn))
+    .filter(x => { const k = x.sd + '|' + x.g; if (seen[k]) return false; seen[k] = 1; return true; }).slice(0, 10);
+  const k = a.kinds && typeof a.kinds === 'object' ? a.kinds : {};
+  return { list: list, kinds: { notice: k.notice !== false, mu: k.mu !== false }, t: /^\d{4}-\d{2}-\d{2}$/.test(String(a.t || '')) ? String(a.t) : '' };
+}
 function cleanUserData(d) {
   d = d && typeof d === 'object' ? d : {};
   const uniq = (arr, key) => { const seen = {}; return arr.filter(x => { const k = key(x); if (seen[k]) return false; seen[k] = 1; return true; }); };
@@ -1333,7 +1347,8 @@ function cleanUserData(d) {
     v: 1,
     homes: uniq((Array.isArray(d.homes) ? d.homes : []).slice(0, 10).map(x => cleanPlace(x, true)).filter(Boolean), pk).slice(0, 5),
     favs: uniq((Array.isArray(d.favs) ? d.favs : []).slice(0, 40).map(x => cleanPlace(x, false)).filter(Boolean), pk).slice(0, 30),
-    reports: uniq((Array.isArray(d.reports) ? d.reports : []).slice(0, 20).map(cleanReport).filter(Boolean), x => x.id || x.t).slice(0, 10)
+    reports: uniq((Array.isArray(d.reports) ? d.reports : []).slice(0, 20).map(cleanReport).filter(Boolean), x => x.id || x.t).slice(0, 10),
+    areas: cleanAreas(d.areas)
   };
   const json = JSON.stringify(out);
   if (json.length > USER_DATA_MAX) throw new Error('저장할 자료가 너무 많아요. 리포트나 관심 단지를 조금 지운 뒤 다시 저장해 주세요.');
@@ -1348,7 +1363,7 @@ function userAlerts(k) {
 function userLoad(b) {
   const u = sessionUser(b.s);
   const d = u.data && typeof u.data === 'object' ? u.data : {};
-  return { ok: true, nick: u.nick, data: { v: 1, homes: d.homes || [], favs: d.favs || [], reports: d.reports || [] }, alerts: userAlerts(u.k) };
+  return { ok: true, nick: u.nick, data: { v: 1, homes: d.homes || [], favs: d.favs || [], reports: d.reports || [], areas: d.areas || { list: [], kinds: { notice: true, mu: true }, t: '' } }, alerts: userAlerts(u.k) };
 }
 function userSave(b) {
   const u = sessionUser(b.s);

@@ -130,6 +130,13 @@ const BIG = post({ action: 'userSave', s: L.s, data: { reports: Array.from({ len
 check('개수 제한: 리포트 10개·관심 단지 30개까지', [BIG.ok, BIG.data.reports.length, BIG.data.favs.length, BIG.data.reports[0].picks.length], [true, 10, 30, 10]);
 post({ action: 'userSave', s: L.s, data });
 
+// 4-1. 관심 지역(v15)
+const AR = post({ action: 'userSave', s: L.s, data: Object.assign({}, data, { areas: { list: [{ sd: '서울특별시', g: '11740', gn: '강동구' }, { sd: '경기도', g: '', gn: '' }, { sd: '서울특별시', g: '11740', gn: '강동구' }, { sd: '<script>', g: '' }, { sd: '경기도', g: '41117', gn: '' }, ...Array.from({ length: 15 }, (_, i) => ({ sd: '부산광역시', g: String(26000 + i), gn: '구' + i }))], kinds: { notice: true, mu: false }, email: 'x@y' } }) });
+const ARL = post({ action: 'userLoad', s: L.s }).data.areas;
+check('관심 지역: 중복·잘못된 값 빼고 10곳까지', [AR.ok, ARL.list.length, ARL.list[0].gn, ARL.list[1].g], [true, 10, '강동구', '']);
+check('관심 지역: 알림 종류 저장, 모르는 칸 버림', [ARL.kinds, 'email' in ARL], [{ notice: true, mu: false }, false]);
+check('관심 지역 없는 예전 자료도 기본값으로', post({ action: 'userSave', s: L.s, data }).data.areas, { list: [], kinds: { notice: true, mu: true }, t: '' });
+
 // 5. 알림 신청
 const A1 = post({ action: 'alertSubscribe', s: L.s, items: [{ kind: 'trade', key: '11710|가락동|913|헬리오시티', name: '헬리오시티' }, { kind: 'area', key: '11710', name: '송파구' }, { kind: 'spam', key: '1', name: 'x' }] });
 check('알림 신청 2개(모르는 종류 버림)', [A1.ok, A1.added, A1.alerts.length], [true, 2, 2]);

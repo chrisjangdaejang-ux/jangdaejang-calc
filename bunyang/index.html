@@ -138,6 +138,8 @@ body.lock{overflow:hidden}
 
   <div data-jdj-ads="bunyang" data-empty="invite" hidden></div>
 
+  <div id="areaBox"></div>
+
   <section class="flt" aria-label="분양 단지 찾기">
     <div class="two">
       <div><label for="fSido">시·도</label><select id="fSido"><option value="">전국 전체</option></select></div>
@@ -187,6 +189,7 @@ body.lock{overflow:hidden}
 <script src="../assets/ads.js"></script>
 <script src="../assets/mine-core.js?v=10"></script>
 <script src="../assets/sale-status.js?v=1"></script>
+<script src="../assets/area-watch.js?v=1"></script>
 <script src="../assets/price-sheet.js?v=9"></script>
 <script>
 const $ = id => document.getElementById(id);
@@ -423,6 +426,9 @@ async function init() {
   if (IDX && IDX.updated) $('upd').textContent = `갱신 ${IDX.updated}.`;
   if (ex && ex.status === 'ok' && ((ex.unsold || []).length || (ex.permits || []).length)) $('extraBox').hidden = false;   // 활용신청 승인 후 활성화
   fillSido(); fillSgg(); render();
+  /* 관심 지역(assets/area-watch.js): 공고 목록 위 상자 — 설정·새 공고 표시·알림 신청 */
+  if (window.JDJ_AREA) { JDJ_AREA.mountPanel($('areaBox'), { rows: ROWS, onOpen: id => { const x = ROWS.find(y => y.id === id); if (x) detail(x); } });
+    if (location.hash === '#area') setTimeout(() => { const a = $('area'); if (a) a.scrollIntoView({ block: 'start' }); }, 50); }
   if (window.jdjStat) jdjStat('feature_use', { feature: 'bunyang' });
 }
 init();
