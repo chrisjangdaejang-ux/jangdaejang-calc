@@ -101,6 +101,30 @@
        입주 물량·인구·미분양·일자리 중 up/down 에 없는 것은 '참고 지표'로 뒤에 둔다.
      - r 이 없으면(배포 전 자료) 예전처럼 why = 참고 지표 문장들, real = false */
   const pct1 = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(Math.round(v * 10) / 10).toFixed(1) + '%';
+  /* 인구 구조 문장(index.json sgg[구].r.pp, 시·도 중앙값 sido[i].r.pp) — 주어(구 이름)와 비교 기준을 항상 붙인다.
+     자료가 없으면 빈 객체 → 화면에 안 나옴. 키: a3049(30~40대 3년 증감) a65(65세 이상 비중) nm(1년 순이동) nm3049(30~40대 1년 순이동) h12(1·2인 세대 비중) */
+  const POP_LABEL = { '30~40대 인구 증감(3년)': 'a3049', '고령화 속도(3년)': 'a65', '인구 순유입(1년)': 'nm', '30~40대 순유입(1년)': 'nm3049',
+    '1·2인 세대 비중': 'h12', '1·2인 세대 비중 변화(3년)': 'h12' };
+  function popLines(R, SR, ri) {
+    const P = (R && R.pp) || {}, M = (SR && SR.pp) || {}, NM = ri.name || '이 지역', S = J(NM, '은', '는'), out = {};
+    const n0 = v => Math.abs(Math.round(v)).toLocaleString('ko-KR');
+    const f1 = v => (Math.round(Math.abs(v) * 10) / 10).toFixed(1);
+    const rk = (d, how) => d.rk && d.of >= 3 ? ` — ${ri.short} ${d.of}개 ${ri.unit} 중 ${d.rk}위(${how}).` : '';
+    const md = (k, unit) => M[k] != null ? ` — ${ri.short} ${ri.unit} 중앙값 ${unit === '%' ? f1(M[k]) + '%' : n0(M[k]) + unit}.` : '';
+    const end = (d, how, k, unit) => rk(d, how) || md(k, unit) || '.';
+    let d;
+    if ((d = P.a3049) && d.v != null)
+      out.a3049 = `${S} 최근 3년 30~40대 인구가 ${Math.abs(d.v) < 0.05 ? '거의 그대로예요' : `${f1(d.v)}% ${d.v > 0 ? '늘었어요' : '줄었어요'}`}` + end(d, '많이 늘어난 순', 'a3049', '%');
+    if ((d = P.a65) && d.v != null)
+      out.a65 = `${S} 65세 이상 비중이 ${f1(d.v)}%` + (d.c != null ? (Math.abs(d.c) < 0.05 ? '로 3년 새 거의 그대로예요' : `로 3년 새 ${f1(d.c)}%p ${d.c > 0 ? '높아졌어요' : '낮아졌어요'}`) : '예요') + end(d, '높은 순', 'a65', '%');
+    if ((d = P.nm) && d.v != null)
+      out.nm = `${S} 최근 1년 ${d.v === 0 ? '전입과 전출이 같았어요' : d.v > 0 ? `전입이 전출보다 ${n0(d.v)}명 많았어요` : `전출이 전입보다 ${n0(d.v)}명 많았어요`}` + end(d, '순유입 많은 순', 'nm', '명');
+    if ((d = P.nm3049) && d.v != null)
+      out.nm3049 = `${S} 최근 1년 30~40대가 ${d.v === 0 ? '들어오고 나간 수가 같았어요' : `${n0(d.v)}명 ${d.v > 0 ? '순유입됐어요' : '순유출됐어요'}`}` + end(d, '순유입 많은 순', 'nm3049', '명');
+    if ((d = P.h12) && d.v != null)
+      out.h12 = `${S} 1·2인 세대가 전체 세대의 ${f1(d.v)}%예요` + (md('h12', '%') || rk(d, '높은 순') || '.');
+    return out;
+  }
   function regionText(f, IX, code, G) {
     const ri = regionInfo(IX, code), out = { fact: '', why: [], mean: '', ref: [], real: false };
     let pos = '';
@@ -121,8 +145,10 @@
     };
     const g = (IX && IX.sgg && IX.sgg[code]) || {}, R = g.r, sd = ((IX && IX.sido) || []).find(s => s.name === ri.sido), SR = (sd && sd.r) || {};
     const up = (R && R.up) || [], dn = (R && R.down) || [];
+    const PP = popLines(R, SR, ri), PK = ['a3049', 'nm', 'nm3049', 'a65', 'h12'];
     if (!R || (!up.length && !dn.length)) {
       for (const k of ['sup', 'pg', 'un', 'jb']) { const t = T[k](); if (t) out.why.push(t); }
+      for (const k of PK) if (PP[k]) out.why.push(PP[k]);
       return out;
     }
     out.real = true;
@@ -151,7 +177,7 @@
           return t;
         }
         case '향후 2년 입주 물량': used.add('sup'); return T.sup();
-        case '인구 증가': used.add('pg'); return T.pg();
+        case '인구 증가': case '인구 증감(3년)': if (used.has('pg')) return ''; used.add('pg'); return T.pg();
         case '세대수 증가': return `${NM} 세대수의 최근 1년 변화가 ${ri.short} 다른 ${unit}와 비교해 ${d ? '점수를 낮췄어요' : '점수를 높였어요'}.`;
         case '미분양 물량(재고 대비)': case '미분양 증감(1년)': if (used.has('un')) return ''; used.add('un'); return T.un();
         case '일자리 증가(1년)': used.add('jb'); return T.jb();
@@ -159,13 +185,14 @@
         case '구 하락기 방어력': return `${NM} 전체가 최근 하락기에 버틴 정도가 ${ri.short} 다른 ${unit}와 비교해 ${d ? '점수를 낮췄어요' : '점수를 높였어요'}.`;
         case '구 고점 회복률': return `${NM} 전체가 예전 최고가를 회복한 정도가 ${ri.short} 다른 ${unit}와 비교해 ${d ? '점수를 낮췄어요' : '점수를 높였어요'}.`;
         case '시·도 대비 가격 수준': return `${NM} 전체 가격 수준이 ${ri.short} 다른 ${unit}와 비교해 ${d ? '점수를 낮췄어요' : '점수를 높였어요'}.`;
-        default: return '';
+        default: { const k = POP_LABEL[nm]; if (!k || used.has(k) || !PP[k]) return ''; used.add(k); return PP[k]; }
       }
     };
     /* 주된 쪽(하위권=내린 항목, 상위권=올린 항목)을 이유로, 반대쪽은 해석 뒤에 짧게 */
     const seen = new Set(), U = [], D = [];
     for (const nm of main) { if (seen.has(nm)) continue; seen.add(nm); const t = line(nm); if (t) (isDn(nm) ? D : U).push(t); }
     for (const k of ['sup', 'pg', 'un', 'jb']) if (!used.has(k)) { const t = T[k](); if (t) out.ref.push(t); }
+    for (const k of PK) if (!used.has(k) && PP[k]) out.ref.push(PP[k]);
     if (pos === '하위권' && momHigh) out.mean = `${J(NM, '이', '가')} 나쁜 동네라는 뜻이 아니라, ${J(NM, '이', '가')} 최근 많이 오른 만큼 앞으로 2년 오름폭은 ${ri.short} 다른 ${ri.unit}보다 작을 수 있다는 뜻이에요.`;
     const S = `${NM} 점수를`;
     if (pos === '하위권') { out.why = D; out.other = U.length ? `반대로 ${S} 받쳐 준 쪽: ` + U.join(' ') : ''; }
@@ -435,5 +462,5 @@
     run();
   }
 
-  root.JDJ_PLAIN = { STAGE, GL_PAGE, glossDom, autoGloss, gloss, J, won, eokR, rank, more, regionInfo, rankBase, regionRank, regionPlace, topPct, regionText, regionLine, evid, evHtml, ddText, rcText, momText, schText, stageName, rzText, jrStats, jrText, VOK, hzLabel, checkText, easy, ymKo, spanKo, delayText, unitsKo, supplyLines, renewalLine };
+  root.JDJ_PLAIN = { popLines, STAGE, GL_PAGE, glossDom, autoGloss, gloss, J, won, eokR, rank, more, regionInfo, rankBase, regionRank, regionPlace, topPct, regionText, regionLine, evid, evHtml, ddText, rcText, momText, schText, stageName, rzText, jrStats, jrText, VOK, hzLabel, checkText, easy, ymKo, spanKo, delayText, unitsKo, supplyLines, renewalLine };
 })(typeof window !== 'undefined' ? window : globalThis);
