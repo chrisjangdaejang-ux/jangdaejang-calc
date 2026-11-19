@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
+<title>[시안] 내 집 팔면 얼마? 중개사 가격 제안 · 집 내놓기 | 집예보</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=41">
+<style>
+.wrap{max-width:860px;margin:0 auto;padding:22px 16px 60px}
+h1{font-size:clamp(26px,6.2vw,38px);margin:6px 0 8px;line-height:1.3}
+.lead{margin:0 0 14px;font-size:16px;color:#4E5968;line-height:1.65}
+.draftbar{background:#FFF4E5;border:1px solid #F5C77E;color:#7A4A00;border-radius:12px;padding:10px 14px;font-size:14px;line-height:1.6;margin:0 0 14px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;background:#F2F4F6;border-radius:14px;padding:5px;margin:0 0 14px}
+@media(max-width:640px){.tabs{grid-template-columns:1fr 1fr}}
+.tabs button{font:inherit;font-size:15px;font-weight:700;border:0;background:transparent;color:#4E5968;min-height:48px;border-radius:10px;cursor:pointer;word-break:keep-all;line-height:1.3;padding:4px}
+.tabs button.on{background:#fff;color:#2F6BFF;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.panel{margin:14px 0}
+.panel h2 small{display:block;font-size:13.5px;font-weight:500;color:#4E5968;margin-top:4px;letter-spacing:0}
+.form{border:1px solid #C9D8FF;background:#F5F8FF;border-radius:16px;padding:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:640px){.grid2,.grid3{grid-template-columns:1fr}}
+.form label.l{display:block;font-size:14px;font-weight:700;margin:0 0 4px}
+.form input[type=text],.form input[type=date],.form select,.form textarea{width:100%;font:inherit;font-size:16px;min-height:48px;padding:0 12px;border:1px solid #E5E8EB;border-radius:12px;background:#fff;color:#191F28;box-sizing:border-box}
+.form textarea{padding:10px 12px;min-height:76px}
+.hint{font-size:13px;color:#4E5968;margin:3px 0 10px;line-height:1.5}
+.from{font-size:12px;font-weight:700;color:#0E7A4F;background:#E6F5EE;border-radius:5px;padding:1px 6px;margin-left:4px}
+.chk{display:grid;grid-template-columns:repeat(2,1fr);gap:4px 12px;margin:4px 0 6px}
+@media(min-width:700px){.chk{grid-template-columns:repeat(4,1fr)}}
+.chk label{display:flex;align-items:center;gap:8px;font-size:15px;min-height:42px;cursor:pointer}
+.chk input{width:20px;height:20px;accent-color:#2F6BFF;flex:none}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font:inherit;font-size:15px;font-weight:700;min-height:44px;padding:0 14px;border-radius:999px;border:1px solid #E5E8EB;background:#fff;color:#3E4754;cursor:pointer}
+.seg button.on{border-color:#2F6BFF;background:#E8F0FF;color:#2F6BFF}
+.note{font-size:13.5px;color:#4E5968;line-height:1.6;margin:8px 0 0}
+.who{background:#fff;border:1px solid #E5E8EB;border-radius:14px;padding:12px 14px;margin:10px 0;font-size:15px;line-height:1.6}
+.who b{color:#2F6BFF}
+.kbtn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:inherit;font-size:16px;font-weight:700;min-height:52px;padding:0 20px;border:0;border-radius:12px;background:#FEE500;color:rgba(0,0,0,.85);cursor:not-allowed;width:100%;max-width:420px}
+.base{background:#191F28;color:#fff;border-radius:16px;padding:16px;margin:10px 0}
+.base .k{font-size:13.5px;color:#B0B8C1;font-weight:700}
+.base .v{font-size:26px;font-weight:900;letter-spacing:-.4px;font-variant-numeric:tabular-nums}
+.base .grid3>div{min-width:0}
+.base p{margin:8px 0 0;font-size:13.5px;color:#D1D6DB;line-height:1.6}
+.stat{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.stat span{font-size:14px;font-weight:700;background:#F2F4F6;border-radius:999px;padding:6px 12px;color:#3E4754}
+.offer{border:1px solid #E5E8EB;border-radius:16px;padding:14px;margin:10px 0;background:#fff}
+.offer .t{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.offer .t b{font-size:16.5px}.offer .t small{display:block;font-size:13.5px;color:#4E5968}
+.offer .pr{text-align:right}.offer .pr b{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums}
+.offer .pr small{font-size:13.5px}
+.offer .why{margin:8px 0 0;font-size:15px;line-height:1.6;background:#F9FAFB;border-radius:10px;padding:8px 10px}
+.offer .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.up{color:#C2410C}.dn{color:#1F56E0}
+.bar{position:relative;height:44px;margin:12px 4px 4px}
+.bar .ln{position:absolute;top:20px;left:0;right:0;height:4px;background:#E5E8EB;border-radius:2px}
+.bar .dot{position:absolute;top:13px;width:18px;height:18px;border-radius:50%;background:#2F6BFF;border:3px solid #fff;box-shadow:0 0 0 1px #2F6BFF;transform:translateX(-9px)}
+.bar .dot.us{background:#191F28;box-shadow:0 0 0 1px #191F28}
+.bar .lb{position:absolute;top:-2px;font-size:12px;font-weight:700;color:#4E5968;transform:translateX(-50%);white-space:nowrap}
+.pick{border:1px solid #C9D8FF;background:#F5F8FF;border-radius:14px;padding:12px 14px;margin-top:10px}
+.pick label{display:flex;gap:8px;align-items:flex-start;font-size:14.5px;line-height:1.55;cursor:pointer}
+.pick input{width:20px;height:20px;margin-top:2px;accent-color:#2F6BFF;flex:none}
+.design{border:2px dashed #C9D8FF;border-radius:14px;padding:12px 14px;background:#FAFBFF;font-size:14px;line-height:1.65;color:#3E4754;margin:12px 0}
+.design b{color:#1F56E0}
+.legal{background:#FFF4E5;border:1px solid #F5C77E;border-radius:12px;padding:10px 14px;font-size:14px;line-height:1.6;color:#7A4A00;margin:10px 0}
+.req{border:1px solid #E5E8EB;border-radius:16px;padding:14px;background:#fff}
+.req dl{display:grid;grid-template-columns:96px 1fr;gap:6px 10px;margin:8px 0 0;font-size:15px}
+.req dt{color:#4E5968;font-weight:700}.req dd{margin:0}
+.tag{display:inline-block;font-size:12.5px;font-weight:800;border-radius:999px;padding:2px 10px;background:#FFF4E5;color:#9A5B00}
+.tag.g{background:#E6F5EE;color:#0E7A4F}
+.agl{display:grid;gap:8px;margin:8px 0}
+.agl label{display:flex;gap:10px;align-items:center;border:1px solid #E5E8EB;border-radius:12px;padding:10px 12px;background:#fff;cursor:pointer;font-size:15px}
+.agl input{width:20px;height:20px;accent-color:#2F6BFF;flex:none}
+.agl small{display:block;font-size:13px;color:#4E5968}
+[hidden]{display:none!important}
+.disc{font-size:13.5px;color:#4E5968;line-height:1.7;margin-top:18px}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>집예보</a>
+  <div class="badge plain">시안</div>
+</header>
+
+<main class="wrap">
+  <div class="draftbar"><b>시안 화면이에요.</b> 대표 확인 전이라 홈·사이트맵 어디에도 연결하지 않았고 실제 요청은 보내지 않아요. 중개사 이름·가격·응답 시간은 모두 <b>예시 값</b>이에요.</div>
+
+  <span class="tag">내 집 시세 → 우리 동네 중개사에게 가격 제안 받기</span>
+  <h1>내 집 팔면 얼마?<br>우리 동네 중개사에게 물어보세요</h1>
+  <p class="lead">층·향·수리 상태를 알려 주시면, 이 지역을 맡은 집예보 제휴 중개사들이 예상 매도 가격을 한 줄 근거와 함께 제안해요. 제안은 집예보 실거래 시세·미래가치 점수와 나란히 비교해서 볼 수 있어요.</p>
+
+  <div class="tabs" role="tablist" aria-label="시안 화면 고르기">
+    <button type="button" class="on" data-t="req" role="tab" aria-selected="true">① 제안 요청</button>
+    <button type="button" data-t="cmp" role="tab" aria-selected="false">② 제안 비교</button>
+    <button type="button" data-t="list" role="tab" aria-selected="false">③ 집 내놓기<br><small>2단계</small></button>
+    <button type="button" data-t="agent" role="tab" aria-selected="false">④ 중개사 화면</button>
+  </div>
+
+  <!-- ① 요청 -->
+  <section data-p="req" class="panel" aria-labelledby="reqT">
+    <h2 id="reqT">이 집 정보를 알려 주세요<small>중개사가 가격을 판단할 때 가장 많이 묻는 것들이에요. 모르는 칸은 비워 두셔도 돼요.</small></h2>
+    <div class="form">
+      <div class="grid2">
+        <div><label class="l">단지 · 평형 <span class="from">내 집 시세에서 가져옴</span></label><input type="text" value="헬리오시티 · 84㎡대 (전용 84.9㎡)" readonly></div>
+        <div><label class="l" for="dongNo">동 (선택)</label><input type="text" id="dongNo" placeholder="예: 512동"></div>
+      </div>
+      <div class="grid3" style="margin-top:10px">
+        <div><label class="l" for="fl">층</label><input type="text" id="fl" value="18" inputmode="numeric"><p class="hint">전체 층수 중 몇 층인지 (예: 18 / 35층)</p></div>
+        <div><label class="l" for="dir">향</label><select id="dir"><option>남향</option><option>남동향</option><option>남서향</option><option>동향</option><option>서향</option><option>북향</option><option>잘 모름</option></select></div>
+        <div><label class="l" for="view">조망 (선택)</label><select id="view"><option>선택 안 함</option><option>공원·숲</option><option>강·호수</option><option>단지 안</option><option>앞 동에 가림</option></select></div>
+      </div>
+      <label class="l" style="margin-top:6px">수리 상태 (해당하는 것 모두)</label>
+      <div class="chk">
+        <label><input type="checkbox" checked>발코니 확장</label><label><input type="checkbox" checked>샷시 교체</label>
+        <label><input type="checkbox" checked>주방 교체</label><label><input type="checkbox">욕실 교체</label>
+        <label><input type="checkbox">바닥 교체</label><label><input type="checkbox" checked>도배</label>
+        <label><input type="checkbox">시스템 에어컨</label><label><input type="checkbox">전체 리모델링</label>
+      </div>
+      <div class="grid2">
+        <div><label class="l" for="ry">수리한 해 (선택)</label><select id="ry"><option>2024년</option><option>2023년</option><option>2022년 이전</option><option>모름</option></select></div>
+        <div><label class="l" for="when">팔고 싶은 시기</label><select id="when"><option>3개월 안</option><option>6개월 안</option><option>1년 안</option><option>시세만 궁금해요</option></select></div>
+      </div>
+      <label class="l" for="memo" style="margin-top:10px">중개사에게 한마디 (선택, 100자)</label>
+      <textarea id="memo" placeholder="예: 세입자 있음(2027년 3월 만기), 주차 2대 가능">세입자 있음(2027년 3월 만기)</textarea>
+      <div class="who">이 요청은 <b>송파구를 맡은 집예보 제휴 중개사 3곳</b>에 전달돼요. 이름과 연락처는 보내지 않아요. 연락처는 나중에 <b>내가 상담할 중개사를 고를 때 그 중개사에게만</b> 전달돼요.</div>
+      <button type="button" class="kbtn" disabled aria-disabled="true"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="#000" d="M12 3.6c-5 0-9 3.1-9 7 0 2.5 1.7 4.7 4.2 6l-1 3.7c-.1.3.3.6.6.4l4.4-2.9h.8c5 0 9-3.1 9-7s-4-7.2-9-7.2z"/></svg>카카오 로그인하고 가격 제안 받기</button>
+      <p class="note">제안은 보통 하루 안에 도착해요(예시). 도착하면 이 화면과 내 계정에서 볼 수 있어요. 카카오톡 알림은 카카오 비즈 인증 뒤 시작해요.</p>
+    </div>
+    <div class="design"><b>설계 메모</b> · 진입점: 내 집 시세 화면 '이 집으로 이어서 계산하기' 줄과 내 집 카드에 '우리 동네 중개사에게 가격 제안 받기'. 로그인 회원만 요청(한 사람이 하루 3건·같은 집 30일에 1번). 이 구를 고른 승인 중개사가 0곳이면 버튼 대신 '이 지역 제휴 중개사를 모으고 있어요'. 리모델링 가산액은 집예보가 계산하지 않음.</div>
+  </section>
+
+  <!-- ② 비교 -->
+  <section data-p="cmp" class="panel" aria-labelledby="cmpT" hidden>
+    <h2 id="cmpT">도착한 가격 제안<small>헬리오시티 84㎡대 · 18층 · 남향 · 확장·샷시·주방·도배</small></h2>
+    <div class="stat"><span>3곳 중 2곳 응답</span><span>평균 응답 4시간 20분</span><span>요청 11월 20일 10:12 · 48시간 뒤 마감</span></div>
+    <div class="base">
+      <div class="grid3">
+        <div><div class="k">집예보 시세 (최근 3개월 중앙값)</div><div class="v">29억 2,200만</div></div>
+        <div><div class="k">최근 3개월 거래</div><div class="v">7건</div></div>
+        <div><div class="k">미래가치 점수</div><div class="v">78점</div></div>
+      </div>
+      <p>집예보 시세는 같은 평형 실거래가의 중앙값이라 층·향·수리 상태는 반영하지 않아요. 이 집만의 차이는 아래 중개사 제안에 들어 있어요.</p>
+    </div>
+    <div class="bar" aria-hidden="true"><div class="ln"></div>
+      <span class="dot us" style="left:42%"></span><span class="lb" style="left:42%">시세</span>
+      <span class="dot" style="left:62%"></span><span class="lb" style="left:62%">A 30.5억</span>
+      <span class="dot" style="left:52%"></span><span class="lb" style="left:52%;top:30px">B 29.8억</span>
+    </div>
+    <div class="offer">
+      <div class="t"><div><b>예시 공인중개사 A</b><small>송파구 가락동 · 이 단지 매물 보유 · 상담 후기 4.8 (12건)</small></div>
+        <div class="pr"><b>30억 5,000만</b><small class="up">시세보다 +4.4%</small></div></div>
+      <p class="why">“고층 남향에 주방·샷시까지 바꾼 집은 최근 같은 동 실거래보다 1억 이상 높게 나갔어요.”</p>
+      <div class="note">2시간 10분 만에 응답 · 제안 범위 30억~31억</div>
+      <div class="acts"><button type="button" class="btn primary" data-pick="A">이 중개사와 상담하기</button></div>
+    </div>
+    <div class="offer">
+      <div class="t"><div><b>예시 공인중개사 B</b><small>송파구 문정동 · 상담 후기 4.6 (5건)</small></div>
+        <div class="pr"><b>29억 8,000만</b><small class="up">시세보다 +2.0%</small></div></div>
+      <p class="why">“세입자 만기가 2027년 3월이라 실입주 매수자는 제외돼요. 그만큼 반영했어요.”</p>
+      <div class="note">6시간 30분 만에 응답</div>
+      <div class="acts"><button type="button" class="btn primary" data-pick="B">이 중개사와 상담하기</button></div>
+    </div>
+    <div class="offer" style="background:#F9FAFB"><div class="t"><div><b>예시 공인중개사 C</b><small>송파구 잠실동</small></div><div class="pr"><small>아직 응답 전 · 마감까지 43시간</small></div></div></div>
+    <div class="pick" id="pickBox" hidden>
+      <b id="pickT">예시 공인중개사 A에게 상담 요청</b>
+      <div class="grid2" style="margin-top:8px"><div class="form" style="padding:0;border:0;background:none"><label class="l" for="ph">연락받을 휴대폰 번호</label><input type="text" id="ph" placeholder="010-0000-0000" inputmode="tel"></div>
+        <div class="form" style="padding:0;border:0;background:none"><label class="l" for="ct">연락 방법</label><select id="ct"><option>전화</option><option>문자 먼저</option><option>카카오톡 채팅</option></select></div></div>
+      <label style="margin-top:10px"><input type="checkbox"><span>휴대폰 번호와 이 집 정보를 <b>이 중개사에게만</b> 전달하는 데 동의해요. 전달 기록은 상담이 끝나거나 6개월이 지나면 지워요.</span></label>
+      <div class="acts" style="margin-top:10px"><button type="button" class="btn primary" disabled>상담 요청 보내기</button></div>
+    </div>
+    <div class="design"><b>설계 메모</b> · 정렬: 도착 순(가격 높은 순으로 정렬하지 않음 — 높게 부르는 경쟁을 막기 위해). 가격 제안은 범위(최소~최대)도 받을 수 있음. 응답 수·평균 응답 시간은 요청마다 실제 값으로 계산. 중개사별 누적 '평균 응답 시간'은 응답 5건 이상일 때만 표시. 시세 대비 %는 우리 3개월 중앙값 기준, 시세가 없으면 % 숨김.</div>
+  </section>
+
+  <!-- ③ 집 내놓기 -->
+  <section data-p="list" class="panel" aria-labelledby="listT" hidden>
+    <h2 id="listT">집 내놓기 (2단계)<small>고른 중개사에게 매매·전월세 의뢰를 전달해요. 집예보는 매물을 광고하지 않아요.</small></h2>
+    <div class="form">
+      <label class="l">거래 종류</label>
+      <div class="seg" data-seg><button type="button" class="on">매매</button><button type="button">전세</button><button type="button">월세</button></div>
+      <label class="l" style="margin-top:12px">집 종류</label>
+      <div class="seg" data-seg><button type="button" class="on">아파트</button><button type="button">빌라</button><button type="button">오피스텔</button><button type="button">원룸</button></div>
+      <div class="grid2" style="margin-top:12px">
+        <div><label class="l" for="addr">주소 (동·호수까지)</label><input type="text" id="addr" value="서울 송파구 가락동 913 헬리오시티 ○○동 ○○호"></div>
+        <div><label class="l" for="hope">희망 가격</label><input type="text" id="hope" value="30억 5,000만" inputmode="numeric"><p class="hint">전세는 보증금, 월세는 보증금/월세로 적어요.</p></div>
+      </div>
+      <div class="grid2">
+        <div><label class="l" for="mv">입주 가능일</label><input type="date" id="mv" value="2027-03-15"></div>
+        <div><label class="l" for="mvn">협의 가능</label><select id="mvn"><option>날짜 협의 가능</option><option>이 날짜만 가능</option></select></div>
+      </div>
+      <label class="l" style="margin-top:6px">의뢰할 중개사 (최대 3곳)</label>
+      <div class="agl">
+        <label><input type="checkbox" checked><span><b>예시 공인중개사 A</b><small>가격 제안 30억 5,000만 · 상담 중</small></span></label>
+        <label><input type="checkbox"><span><b>예시 공인중개사 B</b><small>가격 제안 29억 8,000만</small></span></label>
+        <label><input type="checkbox"><span><b>예시 공인중개사 C</b><small>가격 제안 없음 · 이 지역 제휴 중개사</small></span></label>
+      </div>
+      <div class="who">주소·희망 가격·입주 가능일과 휴대폰 번호는 <b>체크한 중개사에게만</b> 전달돼요. 매물 광고는 의뢰를 받은 중개사가 직접 해요.</div>
+      <button type="button" class="btn primary" disabled style="width:100%;max-width:420px">의뢰 보내기</button>
+    </div>
+    <div class="legal"><b>법 검토 필요(변호사 확인 필요)</b> · 집예보가 매물 정보를 화면에 게시하면 '중개대상물 표시·광고'에 해당할 수 있어(공인중개사법상 개업공인중개사만 가능) 의뢰 전달만 하는 구조로 설계. 의뢰 전달 대가로 중개사에게 비용을 받는 방식이 '중개 보수 외 금품'·'중개 알선'에 걸리는지, 정액 이용료(현 제휴 요금)로만 받을 때 문제가 없는지 확인 필요.</div>
+    <div class="design"><b>설계 메모</b> · 사회적 증거(예: '이번 주 ○명이 집을 내놓았어요')는 실제 집계가 생긴 뒤 실제 숫자로만, 일정 수 미만이면 숨김. 같은 집 의뢰는 30일에 1번, 중개사 최대 3곳(N은 대표 결정). 의뢰 상태: 전달됨 → 중개사 확인 → 상담 중 → 종료(사용자가 닫기).</div>
+  </section>
+
+  <!-- ④ 중개사 -->
+  <section data-p="agent" class="panel" aria-labelledby="agT" hidden>
+    <h2 id="agT">중개사 관리 화면 — 가격 제안 요청<small>제휴 중개사 관리 화면(agent/ · 등록번호+관리코드 로그인)에 새 탭으로 추가하는 시안이에요.</small></h2>
+    <div class="stat"><span>새 요청 2건</span><span>내 평균 응답 3시간 05분 (최근 30일)</span><span>응답률 92%</span></div>
+    <div class="req">
+      <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b style="font-size:17px">헬리오시티 84㎡대 · 18층 · 남향</b><span class="tag">마감까지 46시간</span></div>
+      <dl>
+        <dt>수리 상태</dt><dd>발코니 확장 · 샷시 교체 · 주방 교체 · 도배 (2024년)</dd>
+        <dt>팔 시기</dt><dd>3개월 안</dd>
+        <dt>한마디</dt><dd>세입자 있음(2027년 3월 만기)</dd>
+        <dt>집예보 시세</dt><dd>29억 2,200만 (최근 3개월 중앙값, 거래 7건)</dd>
+        <dt>요청자</dt><dd>이름·연락처는 요청자가 상담할 중개사를 고를 때 공개돼요</dd>
+      </dl>
+      <div class="form" style="margin-top:12px">
+        <div class="grid2"><div><label class="l" for="ap">제안 가격</label><input type="text" id="ap" placeholder="예: 30억 5,000만"></div>
+          <div><label class="l" for="ar">범위 (선택)</label><input type="text" id="ar" placeholder="예: 30억~31억"></div></div>
+        <label class="l" for="aw" style="margin-top:8px">한 줄 근거 (80자)</label>
+        <input type="text" id="aw" placeholder="예: 같은 동 고층 수리 집 최근 거래 기준">
+        <p class="hint">근거는 요청자에게 그대로 보여요. '무조건'·'확실' 같은 보장 표현은 쓸 수 없어요.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn primary" disabled>제안 보내기</button><button type="button" class="btn" disabled>이번엔 넘기기</button></div>
+      </div>
+    </div>
+    <div class="req" style="margin-top:10px;background:#F9FAFB"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b>파크리오 59㎡대 · 9층 · 동향</b><span class="tag g">상담 요청 받음</span></div>
+      <dl><dt>내 제안</dt><dd>18억 9,000만</dd><dt>연락처</dt><dd>010-****-**** (상담 요청 때 공개 · 문자 먼저 원함)</dd></dl></div>
+    <div class="design"><b>설계 메모</b> · 새 요청은 시트 주인 메일과 같은 방식으로 중개사 메일(계산서 메일 칸)로 알림, 카카오 알림톡은 비즈 인증 뒤. 응답 시간 = 제안 시각 − 요청 전달 시각. '넘기기'도 응답으로 셈(응답률). 마감 48시간 지나면 자동 종료.</div>
+  </section>
+
+  <p class="disc">시안의 숫자와 중개사는 모두 예시예요. 실제 화면은 국토교통부 실거래 시세(최근 3개월 중앙값)와 집예보 미래가치 점수, 그 구를 고른 승인 제휴 중개사만 보여 줘요.</p>
+</main>
+<footer class="foot">★ 장대장부동산그룹 · <a href="/jangdaejang-calc/">집예보 홈</a></footer>
+<script>
+(function(){
+  const tabs = document.querySelectorAll('.tabs button'), ps = document.querySelectorAll('[data-p]');
+  const show = t => { tabs.forEach(b => { const on = b.dataset.t === t; b.classList.toggle('on', on); b.setAttribute('aria-selected', String(on)); }); ps.forEach(p => p.hidden = p.dataset.p !== t); };
+  tabs.forEach(b => b.onclick = () => { show(b.dataset.t); history.replaceState(null, '', '#' + b.dataset.t); });
+  if (/^#(req|cmp|list|agent)$/.test(location.hash)) show(location.hash.slice(1));
+  document.querySelectorAll('[data-seg]').forEach(g => g.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; g.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); }));
+  document.querySelectorAll('[data-pick]').forEach(b => b.onclick = () => { const p = document.getElementById('pickBox'); p.hidden = false; document.getElementById('pickT').textContent = '예시 공인중개사 ' + b.dataset.pick + '에게 상담 요청'; p.scrollIntoView({behavior:'smooth', block:'center'}); });
+})();
+</script>
+</body>
+</html>
