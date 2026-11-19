@@ -33,10 +33,12 @@
 <script src="../assets/stat.js"></script>
 <script src="../assets/share.js?v=1"></script>
 <script src="../assets/agents.js"></script>
+<script src="../assets/config.js?v=1"></script>
+<script src="../assets/auth.js?v=1"></script>
 <script src="../assets/kchat.js?v=1"></script>
 <script src="../assets/plain-words.js?v=5"></script>
 <script src="../assets/mine-core.js?v=10"></script>
-<script src="../assets/price-sheet.js?v=8"></script>
+<script src="../assets/price-sheet.js?v=9"></script>
 <script src="../assets/offi-core.js?v=2"></script>
 <script src="../assets/offi-view.js?v=2"></script>
 <script src="../assets/policy-view.js?v=1"></script>
@@ -188,6 +190,17 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
 .sharebox{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:14px 0}
 .sharebox .note{font-size:13.5px;color:#4E5968}
 .sharebox .btn{border:1px solid var(--line)}
+.sharebox .btn.fav.on{background:#FFF8E1;border-color:#E9C46A;color:#7A5B00}
+.favs{display:flex;flex-wrap:wrap;gap:8px}
+.favs a{display:inline-flex;flex-direction:column;justify-content:center;min-height:52px;padding:6px 14px;border:1px solid var(--line);border-radius:14px;text-decoration:none;color:var(--text);background:#fff}
+.favs a b{font-size:15px}.favs a small{font-size:13px;color:#4E5968}
+.favs a:hover{border-color:#2F6BFF}
+.alr{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fff}
+.alr label{display:flex;gap:10px;align-items:flex-start;font-size:15px;padding:8px 0;cursor:pointer}
+.alr label input{width:20px;height:20px;margin:2px 0 0;flex:none;accent-color:#2F6BFF}
+.alr label small{display:block;font-size:13.5px;color:#4E5968}
+.alr .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.alr .msg{font-size:14px;font-weight:700}
 </style>
 </head>
 <body>
@@ -207,7 +220,13 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
   <section class="sec" id="homesSec" hidden aria-labelledby="homesT">
     <h2 id="homesT" style="font-size:19px;font-weight:900;margin:0 0 10px">내 집 <small id="homesN" style="font-size:14px;color:#4E5968;font-weight:700"></small></h2>
     <div class="homes" id="homes"></div>
-    <p class="note" style="margin:8px 0 0">내 집 정보는 이 기기 브라우저에만 저장돼요. 서버로 보내지 않아요. 최대 5개까지 저장할 수 있어요.</p>
+    <p class="note" style="margin:8px 0 0" id="homesNote">내 집 정보는 이 기기 브라우저에만 저장돼요. 서버로 보내지 않아요. 최대 5개까지 저장할 수 있어요.</p>
+  </section>
+
+  <section class="sec" id="favSec" hidden aria-labelledby="favT">
+    <h2 id="favT" style="font-size:19px;font-weight:900;margin:0 0 10px">관심 단지 <small id="favN" style="font-size:14px;color:#4E5968;font-weight:700"></small></h2>
+    <div class="favs" id="favs"></div>
+    <p class="note" style="margin:8px 0 0">카카오 계정에 저장돼서 다른 기기에서 로그인해도 같은 목록이 보여요. <a href="/jangdaejang-calc/login/">내 계정</a>에서 지울 수 있어요.</p>
   </section>
 
   <section class="panel" id="findSec" aria-labelledby="findT">
@@ -245,7 +264,68 @@ const S = { sd: '', code: '', dkey: '', band: '', span: 36, hspan: 36 };
 
 /* ---------- 저장 ---------- */
 function loadHomes(){ try { return M.parseStore(localStorage.getItem(M.STORE_KEY)); } catch (e) { return []; } }
-function saveHomes(list){ try { localStorage.setItem(M.STORE_KEY, M.dumpStore(list)); return true; } catch (e) { return false; } }
+function saveHomes(list){ try { localStorage.setItem(M.STORE_KEY, M.dumpStore(list)); } catch (e) { return false; } if (AU && AU.user()) AU.pushHomes(); return true; }
+/* 카카오 로그인 (assets/auth.js) — 키가 없으면 AU.on() = false 라 아래 로그인 기능은 하나도 보이지 않음 */
+const AU = window.JDJ_AUTH || null;
+const saveWhere = () => AU && AU.user() ? '카카오 계정에 저장돼서 다른 기기에서 로그인해도 보여요.' : AU && AU.on() ? '이 기기에만 저장돼요. 카카오로 로그인하면 다른 기기에서도 볼 수 있어요.' : '이 기기에만 저장되고 서버로 보내지 않아요.';
+function homesNote(){
+  const el = $('homesNote'); if (!el) return;
+  el.innerHTML = AU && AU.user() ? `내 집 목록은 카카오 계정(${esc(AU.user().nick)} 님)에 저장돼서 다른 기기에서 로그인해도 같은 목록이 보여요. 최대 ${M.MAX_HOMES}개까지 저장할 수 있어요.`
+    : AU && AU.on() ? `내 집 정보는 이 기기 브라우저에만 저장돼요. 카카오로 로그인하면 휴대폰·PC 어디서든 같은 목록을 볼 수 있어요. 최대 ${M.MAX_HOMES}개까지 저장할 수 있어요. <button type="button" class="linkbtn" data-jdj-login="homes" style="font:inherit;font-weight:700;color:#2F6BFF;background:none;border:0;padding:0;cursor:pointer;text-decoration:underline">카카오로 로그인</button>`
+    : `내 집 정보는 이 기기 브라우저에만 저장돼요. 서버로 보내지 않아요. 최대 ${M.MAX_HOMES}개까지 저장할 수 있어요.`;
+}
+let FAVS = [];
+const favLink = f => `/jangdaejang-calc/mine/?sd=${encodeURIComponent(f.sd)}&d=${encodeURIComponent([f.code, f.dong, f.jibun, f.apt].join('|'))}&b=${encodeURIComponent(f.band)}`;
+function renderFavs(){
+  const sec = $('favSec'); if (!sec) return;
+  if (!(AU && AU.user()) || !FAVS.length){ sec.hidden = true; return; }
+  sec.hidden = false; $('favN').textContent = `${FAVS.length}곳`;
+  $('favs').innerHTML = FAVS.map(f => `<a href="${esc(favLink(f))}"><b>${esc(f.apt)} · ${esc(f.band)}</b><small>${esc(IX ? sggName(f.code) : '')} ${esc(f.dong)}</small></a>`).join('');
+}
+function favPlace(d){ return {sd:S.sd, code:d.code, dong:d.dong, jibun:d.jibun, apt:d.apt, band:S.band}; }
+function paintFav(d){
+  const b = $('favBtn'); if (!b) return;
+  const on = !!(AU.user() && AU.isFav(FAVS, favPlace(d)));
+  b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on));
+  b.textContent = on ? '★ 관심 단지에 저장됨' : '☆ 관심 단지로 저장';
+}
+function wireFav(d){
+  const b = $('favBtn'); if (!b) return;
+  paintFav(d);
+  b.onclick = () => {
+    if (!AU.user()){ AU.login('fav'); return; }
+    b.disabled = true;
+    AU.toggleFav(favPlace(d)).then(r => { FAVS = r.favs; paintFav(d); renderFavs(); })
+      .catch(e => { b.textContent = e.message || '저장하지 못했어요'; }).then(() => { b.disabled = false; });
+  };
+}
+/* 관심 단지·지역 알림 신청: 신청 내용만 계정에 저장. 카카오톡 발송은 카카오 비즈 인증 뒤 시작 */
+async function fillAlert(d){
+  const box = $('alertSec'); if (!box || !AU || !AU.on()) return;
+  const g = sggName(d.code), dk = [d.code, d.dong, d.jibun, d.apt].join('|');
+  const items = [{kind:'trade', key:dk, name:d.apt, t:'이 단지에 새 실거래가 신고되면', s:`${d.apt} · 국토교통부 실거래 신고 기준`},
+                 {kind:'high', key:dk, name:d.apt, t:'이 단지에 신고가가 나오면', s:'같은 평형·같은 전용면적에서 그 전 최고가보다 비싸게 거래된 경우'},
+                 {kind:'area', key:d.code, name:g, t:`${g} 아파트 시세 흐름 (한 달에 한 번)`, s:`${g} 전체 3개월 실거래 평당가 변화`}];
+  const head = `<div class="panel"><h2>이 단지·지역 소식 알림<small>새 실거래·신고가·지역 시세 흐름을 카카오톡으로 알려 드려요.</small></h2>`;
+  if (!AU.user()){
+    box.innerHTML = head + `<div class="alr">${items.map(x => `<label style="cursor:default"><input type="checkbox" disabled><span>${esc(x.t)}<small>${esc(x.s)}</small></span></label>`).join('')}
+      ${AU.gate('알림은 카카오 계정으로 신청해요. 신청 내용은 내 계정에서 언제든 지울 수 있어요.', '카카오로 로그인하고 알림 신청', 'alert')}</div></div>`;
+    return;
+  }
+  const cur = await AU.alerts(); if (S.dkey !== d.key) return;
+  const has = x => cur.some(a => a.kind === x.kind && a.key === x.key);
+  box.innerHTML = head + `<div class="alr">${items.map((x, i) => `<label><input type="checkbox" data-i="${i}" ${has(x) ? 'checked disabled' : ''}><span>${esc(x.t)}${has(x) ? ' <b style="color:#0E7A4F;font-size:13.5px">신청됨</b>' : ''}<small>${esc(x.s)}</small></span></label>`).join('')}
+    <div class="acts"><button type="button" class="btn primary" id="alrBtn">알림 신청</button><span class="msg" id="alrMsg" role="status"></span></div>
+    <p class="note" style="margin:8px 0 0">카카오톡 알림 발송을 준비하고 있어요. 지금 신청해 두시면 발송을 시작할 때 카카오톡으로 먼저 알려 드리고, 신청하신 내용대로 보내 드려요. 신청 목록은 <a href="/jangdaejang-calc/login/">내 계정</a>에서 보고 지울 수 있어요.</p></div></div>`;
+  $('alrBtn').onclick = () => {
+    const pick = [...box.querySelectorAll('input[data-i]:checked:not(:disabled)')].map(c => items[+c.dataset.i]).map(x => ({kind:x.kind, key:x.key, name:x.name}));
+    const msg = $('alrMsg');
+    if (!pick.length){ msg.style.color = '#C2410C'; msg.textContent = '알림 받을 내용을 하나 이상 골라 주세요.'; return; }
+    $('alrBtn').disabled = true; msg.style.color = '#4E5968'; msg.textContent = '신청하는 중이에요…';
+    AU.subscribe(pick).then(() => { fillAlert(d).then(() => { const m2 = $('alrMsg'); if (m2){ m2.style.color = '#0E7A4F'; m2.textContent = '신청했어요. 발송을 시작하면 카카오톡으로 알려 드릴게요.'; } }); })
+      .catch(e => { msg.style.color = '#C2410C'; msg.textContent = e.message; $('alrBtn').disabled = false; });
+  };
+}
 
 /* ---------- 자료 ---------- */
 /** 시·도 단지 목록: 시세 확인용 price/sNN.json(거래 1건 이상 모든 단지), 없으면 점수용 sNN.json */
@@ -394,7 +474,7 @@ function render(d, map, units){
 
     <div class="save" id="saveBox">
       <b style="font-size:16px">${mine ? '내 집으로 저장되어 있어요' : '이 집이 내 집인가요?'}</b>
-      <p class="note" style="margin:2px 0 10px">매수가와 매수 시기를 넣으면 다음에 들어왔을 때 매수가 대비 변동을 보여 드려요. 넣지 않아도 저장돼요. 이 기기에만 저장되고 서버로 보내지 않아요.</p>
+      <p class="note" style="margin:2px 0 10px">매수가와 매수 시기를 넣으면 다음에 들어왔을 때 매수가 대비 변동을 보여 드려요. 넣지 않아도 저장돼요. ${saveWhere()}</p>
       <div class="row">
         <div><label for="bp">매수가 (선택)</label><input id="bp" inputmode="numeric" placeholder="예: 95,000" value="${mine && mine.bp ? mine.bp.toLocaleString() : ''}" aria-describedby="bpHint"><div class="hint" id="bpHint">${mine && mine.bp ? M.won(mine.bp) : '만원 단위로 넣어 주세요'}</div></div>
         <div><label for="bd">매수 시기 (선택)</label><input id="bd" type="month" min="1980-01" max="${new Date().toISOString().slice(0, 7)}" value="${mine && mine.bd ? mine.bd : ''}"><div class="hint">연·월만 넣어 주세요</div></div>
@@ -444,6 +524,7 @@ function render(d, map, units){
   <div class="panel">
     <h2>최근 실거래 (${esc(S.band)})<small>국토교통부 실거래 신고 그대로예요(최근 3년, 최신순). 같은 평형이라도 동·층·향·수리 상태에 따라 가격이 달라요. <a href="https://rt.molit.go.kr/" target="_blank" rel="noopener">국토교통부 실거래가 공개시스템</a>에서도 확인할 수 있어요.</small></h2>
     <div id="trades">${P.tradesHtml(u, IX.months, {show:10})}</div>
+    ${HT && P.pastYearsHtml ? P.pastYearsHtml(HT, IX.months[0]) : ''}
     <details class="msum"><summary>월별 요약 보기 (최근 12개월)</summary>
     <div class="tbl"><table><thead><tr><th>월</th><th class="num">거래</th><th class="num">3개월 중앙 평당가</th><th class="num">${esc(S.band)} 환산</th></tr></thead><tbody>${mrows.join('')}</tbody></table></div>
     </details>
@@ -457,6 +538,8 @@ function render(d, map, units){
       : `<p class="note" style="font-size:15px">이 단지·평형은 아직 미래가치 점수가 없어요. 검증에 쓸 거래 자료가 충분히 쌓이면 자동으로 보여 드려요.</p>${rs.length ? `<ul class="why">${rs.map(rli).join('')}</ul>` : ''}`}
   </div>
 
+  <div id="alertSec"></div>
+
   <div id="polSec" hidden></div>
 
   <div class="panel">
@@ -468,7 +551,7 @@ function render(d, map, units){
     </div>
   </div>
 
-  <div class="sharebox"><button type="button" class="btn ghost" id="shareMine">이 단지 시세 공유하기</button><span class="note">카카오톡 등으로 보내요. 매수가 등 내 정보는 담기지 않아요.</span></div>
+  <div class="sharebox"><button type="button" class="btn ghost" id="shareMine">이 단지 시세 공유하기</button>${AU && AU.on() ? '<button type="button" class="btn ghost fav" id="favBtn" aria-pressed="false">☆ 관심 단지로 저장</button>' : ''}<span class="note">카카오톡 등으로 보내요. 매수가 등 내 정보는 담기지 않아요.</span></div>
 
   <div id="agentSec"></div>`;
 
@@ -477,6 +560,8 @@ function render(d, map, units){
   drawCharts(u, sgg);
   P.wireMore($('trades'));
   wireResult(d, u, sm);
+  wireFav(d);
+  fillAlert(d);
   fillAgents(d);
   if (window.JDJPolicy) JDJPolicy.mount($('polSec'), {mode:'mine', codes:[{sgg:d.code, dong:d.dong}], name:() => sggName(d.code) + ' ' + d.dong, sggName:() => sggName(d.code), price: sm.price || (last ? last.price : 0),
     head:'<h2>이 지역에 영향을 주는 정책<small>이 단지가 있는 ' + esc(sggName(d.code) + ' ' + d.dong) + '에 적용 중이거나 국회에서 논의 중인 정책이에요</small></h2>'}).catch(e => console.warn('policy', e));
@@ -618,7 +703,10 @@ async function init(){
   LABEL = (mj && mj.label) || null; EVD = ej; SUP = sj;
   $('src').insertAdjacentHTML('afterbegin', `자료 기간 ${M.ymLabel(IX.months[0])}~${M.ymLabel(IX.dataTo)} · ${esc(IX.updated)} 갱신 · `);
   fillSido();
+  homesNote();
+  if (AU && AU.user()){ await AU.syncHomes(); AU.favs().then(f => { FAVS = f; renderFavs(); if (CUR && !$('res').hidden) paintFav(CUR.d); }); }
   renderHomes();
+  if (AU) AU.onChange(() => { homesNote(); if (!AU.user()){ FAVS = []; renderFavs(); } if (CUR && !$('res').hidden) render(CUR.d, CUR.map, CUR.units); });
   const q = new URLSearchParams(location.search), qsd = q.get('sd'), qd = q.get('d') || '';
   const homes = loadHomes();
   let sd = (qsd && IX.sido.some(s => s.id === qsd)) ? qsd : (homes[0] ? homes[0].sd : (IX.sido.find(s => s.short === '서울') || IX.sido[0]).id);

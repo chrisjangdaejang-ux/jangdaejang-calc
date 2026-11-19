@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
+<script src="/jangdaejang-calc/assets/pwa.js" defer data-nobar></script>
+<script src="/jangdaejang-calc/assets/biz.js" defer></script>
+<title>로그인 · 내 계정 | 장대장 계산기</title>
+<meta name="description" content="카카오로 로그인하고 내 집·관심 단지·리포트를 여러 기기에서 이어 보세요.">
+<script>window.JDJ_CONFIG = { tool:'login', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../assets/track.js"></script>
+<script src="../assets/agents.js"></script>
+<script src="../assets/config.js?v=1"></script>
+<script src="../assets/auth.js?v=1"></script>
+<script src="../assets/mine-core.js?v=10"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=40">
+<style>
+.wrap{max-width:640px;margin:0 auto;padding:24px 16px 60px}
+h1{font-size:clamp(24px,6vw,32px);margin:6px 0 10px;line-height:1.3}
+.lead{font-size:16px;color:#4E5968;margin:0 0 16px;line-height:1.6}
+.box{border:1px solid var(--line);border-radius:18px;padding:16px;background:#fff;margin:14px 0}
+.box h2{font-size:18px;font-weight:900;margin:0 0 10px}
+.box h2 small{font-size:13.5px;color:#4E5968;font-weight:700;margin-left:6px}
+.gets{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:10px}
+.gets li{display:flex;gap:10px;align-items:flex-start;font-size:15.5px;line-height:1.5}
+.gets li b{display:block}
+.gets li small{display:block;color:#4E5968;font-size:13.5px}
+.gets .ic{flex:none;width:28px;height:28px;border-radius:9px;background:#E8F0FF;color:#2F6BFF;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px}
+.note{font-size:13.5px;color:#4E5968;line-height:1.6;margin:10px 0 0}
+.free{background:#F2F4F6;border-radius:14px;padding:12px 14px;font-size:14.5px;line-height:1.6;color:#3E4754}
+.st{padding:28px 16px;text-align:center;border:1px dashed var(--line);border-radius:16px;background:#fff;font-size:16px;color:#3E4754}
+.st.err{border-color:#F3C6B5;background:#FFF6F2;color:#9A3412}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line2)}
+.row:last-child{border-bottom:0}
+.row a{color:var(--text);text-decoration:none;min-width:0}
+.row a b{font-size:15.5px}
+.row small{display:block;font-size:13.5px;color:#4E5968}
+.row button{flex:none;font:inherit;font-size:14px;font-weight:700;min-height:40px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:#C2410C;cursor:pointer}
+.empty{font-size:14.5px;color:#4E5968;margin:0}
+.picks{margin:4px 0 0;padding-left:18px;font-size:13.5px;color:#3E4754}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.who{display:flex;align-items:center;gap:12px}
+.who .av{width:44px;height:44px;border-radius:50%;background:#FEE500;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:rgba(0,0,0,.85)}
+.who b{font-size:19px}
+.who small{display:block;color:#4E5968;font-size:13.5px}
+.del{border-color:#F3C6B5}
+.del h2{color:#9A3412}
+.btn.warn{background:#fff;border:1px solid #E58B6B;color:#9A3412}
+.btn.warn.armed{background:#C2410C;border-color:#C2410C;color:#fff}
+.btn.primary{background:#2F6BFF;color:#fff}
+.msg{font-size:14px;font-weight:700;margin-top:8px;min-height:20px}
+</style>
+</head>
+<body>
+<header class="top" data-noacct>
+  <a class="brand" href="/jangdaejang-calc/"><span class="star" aria-hidden="true">★</span> 장대장 <span class="acc">계산기</span></a>
+  <div class="badge plain">내 계정</div>
+</header>
+<main class="wrap" id="app" aria-live="polite"><div class="st">불러오는 중이에요…</div></main>
+<footer class="foot">★ 장대장부동산그룹 · <a href="/jangdaejang-calc/">계산기 홈</a> · <a href="/jangdaejang-calc/privacy/">개인정보처리방침</a></footer>
+<script>
+(function(){
+'use strict';
+const A = window.JDJ_AUTH, $ = id => document.getElementById(id), app = $('app');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const won = v => window.JDJ_MINE ? JDJ_MINE.won(v) : (v || 0).toLocaleString() + '만원';
+const q = new URLSearchParams(location.search);
+const KIND = {trade:'새 실거래', high:'신고가', area:'지역 시세 흐름'};
+const mineLink = h => `/jangdaejang-calc/mine/?sd=${encodeURIComponent(h.sd)}&d=${encodeURIComponent([h.code, h.dong, h.jibun, h.apt].join('|'))}&b=${encodeURIComponent(h.band)}`;
+const clean = () => history.replaceState(null, '', location.pathname);
+
+function off(){
+  app.innerHTML = `<h1>로그인 없이 모두 쓸 수 있어요</h1>
+    <p class="lead">장대장 계산기는 지금 로그인 없이 시세·차트·미래가치 점수·실거래 목록·맞춤 리포트를 모두 보여 드려요. 내 집은 이 기기에 저장돼요.</p>
+    <a class="btn primary" href="/jangdaejang-calc/mine/">내 집 시세 보러 가기</a>`;
+}
+function intro(msg){
+  app.innerHTML = `${msg || ''}<h1>카카오로 3초 로그인</h1>
+    <p class="lead">로그인하면 휴대폰과 PC 어디서든 같은 내 집 목록을 보고, 실거래 전체와 맞춤 리포트 상세까지 볼 수 있어요.</p>
+    <div class="box"><ul class="gets">
+      <li><span class="ic">1</span><span><b>실거래 전체 보기</b><small>최근 3년 거래 전부와 그보다 이전 연도별 시세</small></span></li>
+      <li><span class="ic">2</span><span><b>내 집·관심 단지 여러 기기에 저장</b><small>휴대폰에서 저장한 집을 PC에서도 그대로</small></span></li>
+      <li><span class="ic">3</span><span><b>맞춤 매수 리포트 상세 보기·저장</b><small>대출·필요 현금·월 상환과 추천 이유 전체, 리포트 다시 보기</small></span></li>
+      <li><span class="ic">4</span><span><b>관심 단지·지역 알림 신청</b><small>새 실거래·신고가·지역 시세 흐름을 카카오톡으로 (발송 시작 때 알려 드려요)</small></span></li>
+    </ul>
+    ${A.btn('카카오로 3초 로그인', 'login_page', 'full')}
+    <p class="note">장대장 계산기가 카카오에서 받는 정보는 <b>카카오 회원번호와 닉네임</b>뿐이에요. 이메일·전화번호는 받지 않아요. <a href="/jangdaejang-calc/privacy/#member">개인정보처리방침</a></p></div>
+    <p class="free">로그인하지 않아도 시세·차트·미래가치 점수, 최근 실거래 5건, 이 기기에 내 집 저장, 맞춤 매수 리포트 요약은 지금처럼 그대로 볼 수 있어요.</p>`;
+}
+async function finishLogin(){
+  const code = q.get('code'), state = q.get('state') || '';
+  clean();
+  app.innerHTML = '<div class="st">카카오 로그인을 마무리하는 중이에요…</div>';
+  try {
+    const r = await A.finish(code, state);
+    app.innerHTML = `<div class="st"><b>${esc(r.nick)} 님, ${r.isNew ? '반가워요' : '다시 오셨네요'}.</b><br>보던 화면으로 돌아가요…</div>`;
+    setTimeout(() => location.replace(r.back), 700);
+  } catch (e) {
+    intro(`<div class="st err" style="margin-bottom:14px">${esc(e.message)}</div>`);
+  }
+}
+function homesHtml(d){
+  const list = d.homes || [];
+  return `<div class="box"><h2>내 집<small>${list.length}/5</small></h2>${list.length ? list.map(h => `<div class="row"><a href="${esc(mineLink(h))}"><b>${esc(h.apt)} · ${esc(h.band)}</b><small>${esc(h.dong)}${h.bp ? ' · 매수가 ' + esc(won(h.bp)) : ''}</small></a></div>`).join('')
+    : '<p class="empty">아직 저장한 집이 없어요. <a href="/jangdaejang-calc/mine/">내 집 시세</a>에서 단지를 고르고 [내 집으로 저장]을 눌러 주세요.</p>'}
+    ${list.length ? '<p class="note">내 집을 지우거나 고치려면 <a href="/jangdaejang-calc/mine/">내 집 시세</a> 화면의 내 집 카드에서 [삭제]·[매수가·시기 고치기]를 눌러 주세요.</p>' : ''}</div>`;
+}
+function favsHtml(d){
+  const list = d.favs || [];
+  return `<div class="box"><h2>관심 단지<small>${list.length}곳</small></h2>${list.length ? list.map((f, i) => `<div class="row"><a href="${esc(mineLink(f))}"><b>${esc(f.apt)} · ${esc(f.band)}</b><small>${esc(f.dong)}${f.t ? ' · ' + esc(f.t) + ' 저장' : ''}</small></a><button type="button" data-fav="${i}">지우기</button></div>`).join('')
+    : '<p class="empty">아직 관심 단지가 없어요. 내 집 시세 화면에서 [☆ 관심 단지로 저장]을 누르면 여기 모여요.</p>'}</div>`;
+}
+function repsHtml(d){
+  const list = d.reports || [];
+  return `<div class="box"><h2>저장한 리포트<small>${list.length}/10</small></h2>${list.length ? list.map((r, i) => `<div class="row" style="align-items:flex-start"><a href="/jangdaejang-calc/buy/report/?${esc(r.q)}"><b>${esc(r.title || '맞춤 매수 리포트')}</b><small>${esc(r.t)} 저장 · 누르면 같은 조건으로 다시 열어요</small>
+      ${r.picks && r.picks.length ? `<ol class="picks">${r.picks.slice(0, 5).map(p => `<li>${esc(p.apt)} ${esc(p.band)} · ${esc(won(p.P))}${p.fv != null ? ' · 미래가치 ' + p.fv : ''}</li>`).join('')}</ol>` : ''}</a><button type="button" data-rep="${i}">지우기</button></div>`).join('')
+    : '<p class="empty">아직 저장한 리포트가 없어요. 맞춤 매수 리포트 화면에서 [내 계정에 리포트 저장]을 눌러 주세요.</p>'}
+    <p class="note">리포트에는 지역·보유 기간 같은 조건과 그때 추천 단지 목록만 저장해요. 연소득·보유 현금 같은 금액은 저장하지 않아서, 다른 기기에서 열면 그 기기에 넣은 금액으로 다시 계산해요.</p></div>`;
+}
+function alertsHtml(al){
+  return `<div class="box"><h2>알림 신청<small>${al.length}개</small></h2>${al.length ? al.map(a => `<div class="row"><span><b>${esc(a.name)} · ${esc(KIND[a.kind] || a.kind)}</b><small>${esc(a.at)} 신청</small></span><button type="button" data-al="${esc(a.id)}">취소</button></div>`).join('')
+    : '<p class="empty">아직 신청한 알림이 없어요. 내 집 시세 화면의 [이 단지·지역 소식 알림]에서 신청할 수 있어요.</p>'}
+    <p class="note">카카오톡 알림 발송을 준비하고 있어요. 발송을 시작하면 카카오톡으로 먼저 알려 드리고, 신청하신 내용대로 보내 드려요.</p></div>`;
+}
+async function account(){
+  app.innerHTML = '<div class="st">내 계정을 불러오는 중이에요…</div>';
+  let st;
+  try { st = await A.load(true); } catch (e) { if (!A.user()) return intro(`<div class="st err" style="margin-bottom:14px">${esc(e.message)}</div>`); app.innerHTML = `<div class="st err">${esc(e.message)}</div>`; return; }
+  if (!st) return intro();
+  const d = st.data, u = A.user();
+  app.innerHTML = `<div class="who"><span class="av" aria-hidden="true">${esc((u.nick || '카')[0])}</span><div><b>${esc(u.nick)} 님</b><small>카카오로 로그인했어요</small></div></div>
+    ${homesHtml(d)}${favsHtml(d)}${repsHtml(d)}${alertsHtml(st.alerts || [])}
+    <div class="box"><h2>로그아웃</h2><p class="empty">이 기기에서만 로그아웃해요. 이 기기에 저장된 내 집 목록은 그대로 남아요.</p><div class="acts" style="margin-top:10px"><button type="button" class="btn ghost" id="outBtn">로그아웃</button></div></div>
+    <div class="box del"><h2>탈퇴</h2><p class="empty">탈퇴하면 장대장 계산기가 보관한 카카오 회원번호·닉네임과 계정에 저장한 내 집·관심 단지·리포트·알림 신청을 바로 지워요. 지운 뒤에는 되살릴 수 없어요. 이 기기 브라우저에 저장된 내 집 목록은 남아 있고, 브라우저 설정에서 지울 수 있어요.</p>
+      <div class="acts" style="margin-top:10px"><button type="button" class="btn warn" id="delBtn">탈퇴하기</button></div><div class="msg" id="delMsg" role="status"></div></div>`;
+  app.querySelectorAll('[data-fav]').forEach(b => b.onclick = () => { b.disabled = true; A.removeFav(d.favs[+b.dataset.fav]).then(account).catch(e => { b.textContent = e.message; }); });
+  app.querySelectorAll('[data-rep]').forEach(b => b.onclick = () => { b.disabled = true; A.removeReport(d.reports[+b.dataset.rep].id).then(account).catch(e => { b.textContent = e.message; }); });
+  app.querySelectorAll('[data-al]').forEach(b => b.onclick = () => { b.disabled = true; A.unsubscribe([b.dataset.al]).then(account).catch(e => { b.textContent = e.message; }); });
+  $('outBtn').onclick = () => { $('outBtn').disabled = true; A.logout().then(() => intro('<div class="st" style="margin-bottom:14px">로그아웃했어요.</div>')); };
+  let arm = false;
+  $('delBtn').onclick = () => {
+    const b = $('delBtn'), m = $('delMsg');
+    if (!arm){ arm = true; b.classList.add('armed'); b.textContent = '한 번 더 누르면 탈퇴해요'; setTimeout(() => { if (arm){ arm = false; b.classList.remove('armed'); b.textContent = '탈퇴하기'; } }, 6000); return; }
+    b.disabled = true; m.style.color = '#4E5968'; m.textContent = '지우는 중이에요…';
+    A.withdraw().then(() => { app.innerHTML = '<div class="st"><b>탈퇴했어요.</b><br>장대장 계산기가 보관하던 회원 정보와 계정에 저장한 자료를 모두 지웠어요.<br>로그인 없이 계속 쓸 수 있어요.</div><p style="text-align:center;margin-top:14px"><a class="btn ghost" href="/jangdaejang-calc/">계산기 홈으로</a></p>'; })
+      .catch(e => { m.style.color = '#C2410C'; m.textContent = e.message; b.disabled = false; });
+  };
+}
+
+if (!A || !A.on()) { clean(); off(); return; }
+if (q.get('code')) finishLogin();
+else if (q.get('error')) { clean(); intro(`<div class="st err" style="margin-bottom:14px">${q.get('error') === 'access_denied' ? '로그인을 취소했어요. 로그인하지 않아도 대부분의 기능은 그대로 쓸 수 있어요.' : '카카오 로그인을 마치지 못했어요. 다시 눌러 주세요.'}</div>`); }
+else if (A.user()) account();
+else intro();
+})();
+</script>
+</body>
+</html>

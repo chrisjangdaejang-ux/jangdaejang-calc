@@ -51,8 +51,12 @@
 
   /* ---------- 개별 거래 표 (mine/ 화면도 같이 씀) ---------- */
   /** u 의 개별 거래 표 HTML. 개별 거래가 없는 자료면 월별 요약으로 대신. opts.show: 처음 보일 건수(기본 10) */
+  const FREE_TRADES = 5;                            // 로그인 없이 보여 주는 최근 실거래 건수(카카오 로그인이 켜져 있을 때만 잠금)
+  const auth = () => root.JDJ_AUTH && root.JDJ_AUTH.on() ? root.JDJ_AUTH : null;
+  const locked = () => { const a = auth(); return !!(a && !a.user()); };
   function tradesHtml(u, months, opts) {
-    const m = M(), show = (opts && opts.show) || 10, list = m.trades(u);
+    const m = M(), list = m.trades(u), lock = locked() && list.length > FREE_TRADES;
+    const show = lock ? FREE_TRADES : (opts && opts.show) || 10;
     if (!list.length) {
       const md = m.monthDeals(u, months).slice(0, 12);
       if (!md.length) return '<p class="jps-note">최근 3년 거래가 없어요.</p>';
@@ -60,9 +64,23 @@
         `<tr><td>${m.ymLabel(x.at)}</td><td class="n">${x.n}건</td><td class="n">${x.ppy ? x.ppy.toLocaleString() + '만' : '-'}</td><td class="n">${x.price ? m.won(x.price) : '-'}</td></tr>`).join('')}</tbody></table></div>`;
     }
     const row = (t, i) => `<tr${i >= show ? ' class="jps-more" hidden' : ''}><td>${esc(t.date)}</td><td class="n">${t.area}㎡</td><td class="n">${t.floor != null ? t.floor + '층' : '-'}</td><td class="n">${t.hi ? '<span class="jps-new" title="그 전까지 같은 평형·같은 전용면적 최고가보다 높은 거래">신고가</span> ' : ''}<b>${m.won(t.amt)}</b>${t.type === '직거래' ? '<br><small class="jps-dir">직거래</small>' : ''}</td></tr>`;
-    return `<div class="jps-tbl"><table><thead><tr><th>계약일</th><th class="n">전용</th><th class="n">층</th><th class="n">거래금액</th></tr></thead><tbody>${list.map(row).join('')}</tbody></table></div>`
-      + (list.length > show ? `<button type="button" class="jps-morebtn" data-jps-more>더보기 (${list.length - show}건 더)</button>` : '')
+    return `<div class="jps-tbl"><table><thead><tr><th>계약일</th><th class="n">전용</th><th class="n">층</th><th class="n">거래금액</th></tr></thead><tbody>${(lock ? list.slice(0, show) : list).map(row).join('')}</tbody></table></div>`
+      + (lock ? auth().gate(`최근 거래 ${show}건을 보여 드렸어요. 나머지 <b>${list.length - show}건</b>과 3년보다 이전 시세는 로그인하면 바로 볼 수 있어요.`, '카카오로 3초 로그인하고 전체 보기', 'trades')
+        : list.length > show ? `<button type="button" class="jps-morebtn" data-jps-more>더보기 (${list.length - show}건 더)</button>` : '')
       + `<p class="jps-note">국토교통부 실거래 신고 기준, 해제(취소) 신고 거래는 뺐어요. 직거래는 목록에만 표시하고 시세 계산에서는 빼요.${list.some(t => t.hi) ? ' <span class="jps-new">신고가</span> = 그 전날까지 같은 평형·같은 전용면적에서 가장 높았던 값보다 비싸게 거래된 경우(수집 자료 기준, 직거래 제외).' : ''}</p>`;
+  }
+  /** 3년보다 이전 연도별 매매 시세: t = histOf 결과(월별 시세), before = 이 연월(YYYYMM)보다 앞만. 로그인 잠금이면 빈 문자열 */
+  function pastYearsHtml(t, before) {
+    if (!t || !t.months || locked()) return '';
+    const by = {};
+    t.months.forEach((ym, i) => { if (ym >= before) return; const y = ym.slice(0, 4), v = t.s[i], j = t.j ? t.j[i] : 0; const o = by[y] || (by[y] = { s: [], j: [] }); if (v > 0) o.s.push(v); if (j > 0) o.j.push(j); });
+    const avg = a => a.length ? Math.round(a.reduce((x, y) => x + y, 0) / a.length / 100) * 100 : 0;
+    const ys = Object.keys(by).filter(y => by[y].s.length).sort().reverse();
+    if (!ys.length) return '';
+    const m = M();
+    return `<details class="jps-past"><summary>3년보다 이전 시세 보기 (연도별, ${ys[ys.length - 1]}~${ys[0]}년)</summary><div class="jps-tbl"><table><thead><tr><th>연도</th><th class="n">매매 시세</th><th class="n">전세 시세</th><th class="n">시세 있는 달</th></tr></thead><tbody>`
+      + ys.map(y => `<tr><td>${y}년</td><td class="n"><b>${m.won(avg(by[y].s))}</b></td><td class="n">${by[y].j.length ? m.won(avg(by[y].j)) : '-'}</td><td class="n">${by[y].s.length}개월</td></tr>`).join('')
+      + `</tbody></table></div><p class="jps-note">국토교통부 실거래 월별 시세(그 달까지 3개월 중앙값 × 전용면적)를 연도마다 평균 낸 값이에요. 개별 거래 목록은 최근 3년치만 있어요.</p></details>`;
   }
   /** tradesHtml 의 '더보기' 단추 연결 */
   function wireMore(box) {
@@ -373,6 +391,7 @@
 .jps-seg button.on{background:#fff;color:#2F6BFF;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .jps-ch{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin:16px 0 6px}.jps-ch h4{margin:0}
 .jps-lg i.j{background:#14A06B}
+.jps-past{margin-top:12px}.jps-past summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44px;display:flex;align-items:center}
 .jps-morebtn{font:inherit;font-size:14px;font-weight:700;width:100%;min-height:44px;margin-top:8px;border:1px solid #E5E8EB;border-radius:12px;background:#fff;color:#3E4754;cursor:pointer}
 .jps-note{font-size:13px;color:#4E5968;line-height:1.6;margin:6px 0 0}
 .jps-sp{margin:0 0 6px;padding:6px 10px;border-radius:8px;background:#FFF7E6;color:#8A5A00;font-weight:700}
@@ -459,6 +478,7 @@
       loadHist(g).then(h => {
         const t = histOf(g, h, u), sec = box.querySelector('.jps-hsec');
         if (ov !== mine || !t || !sec) return;
+        const pw = box.querySelector('.jps-pastw'); if (pw) pw.innerHTML = pastYearsHtml(t, ix.months[0]);
         let span = 36;
         const cnt = cntMap(u, ix.months), gu = guOf(h, sgg, ix.months, u[4]);
         const draw = () => {
@@ -518,10 +538,11 @@
     <p class="jps-note">단위: 만원/3.3㎡ · 각 달 값 = 그 달까지 3개월 실거래 평당가 중앙값. 거래가 없던 기간은 점선으로 이어 표시해요.</p></div>
     <h4>${isPrice ? '최근 실거래' : '월별 실거래 요약'}</h4>
     ${tradesHtml(u, months, { show: 10 })}
+    <div class="jps-pastw"></div>
     <a class="jps-go" href="${esc(link)}">내 집 시세에서 자세히 보기 →</a>`;
   }
 
-  const API = { open, close, btn, loadSgg, loadHist, histOf, scoreUnits, findUnit, tradesHtml, wireMore, miniChart, histChart, histNote, linePaths, SPARSE, highsHtml, spanBtns, baseName, plot, mount, tipFn, histTip, histSpec, mountHist, cntMap, eok, guOf, guNote, ppySpec, mountPpy };
+  const API = { open, close, btn, loadSgg, loadHist, histOf, scoreUnits, findUnit, tradesHtml, pastYearsHtml, wireMore, miniChart, histChart, histNote, linePaths, SPARSE, highsHtml, spanBtns, baseName, plot, mount, tipFn, histTip, histSpec, mountHist, cntMap, eok, guOf, guNote, ppySpec, mountPpy };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_PRICE = API;
 })(typeof self !== 'undefined' ? self : this);

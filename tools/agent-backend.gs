@@ -1,5 +1,16 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v13: 광고 문의 접수 추가)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v14: 카카오 로그인 회원 추가)
+ *
+ * v14 변경 요약
+ *  - 카카오 로그인 회원 기능 추가. 기존 기능은 그대로입니다. (검증: node tools/auth-test.js)
+ *  - 새 요청(action, 모두 POST): kakaoLogin(인가 코드 → 로그인) · userLoad(저장 자료 불러오기) · userSave(저장)
+ *                                · alertSubscribe(관심 단지·지역 알림 신청/취소) · userLogout(로그아웃) · userDelete(탈퇴)
+ *  - 카카오에서 받는 정보는 회원번호(id)와 닉네임뿐입니다. 이메일·전화번호는 요청하지도 저장하지도 않습니다.
+ *  - 카카오 토큰은 서버에서 /v2/user/me 확인에만 쓰고 바로 만료(로그아웃) 처리하며, 시트에 저장하지 않습니다.
+ *    로그인 유지는 서버가 만든 무작위 세션 토큰으로 하고, 시트에는 그 해시만 저장합니다(90일 뒤 만료).
+ *  - 스크립트 속성(프로젝트 설정 → 스크립트 속성): KAKAO_REST_KEY(필수, REST API 키) · KAKAO_CLIENT_SECRET(클라이언트 시크릿을 켰으면)
+ *    · KAKAO_ADMIN_KEY(선택: 탈퇴 때 카카오 연결 끊기까지 하려면 어드민 키)
+ *  - '회원'·'세션'·'관심알림' 시트(탭)는 첫 로그인 때 자동으로 만들어집니다. 탈퇴하면 세 시트에서 그 회원 행을 바로 지웁니다.
  *
  * v13 변경 요약
  *  - 광고 상품 안내 페이지(ad/)의 문의 접수 추가. 기존 기능은 그대로입니다.
@@ -143,6 +154,7 @@ function doPost(e) {
   if (b.action === 'log') return out(logEvents(b));
   if (PAY_ACTIONS[b.action]) return out(payDispatch(b));
   if (b.action === 'adApply' || b.action === 'adInquiry') return out(adDispatch(b));
+  if (USER_ACTIONS[b.action]) return out(userDispatch(b));
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
   try {
@@ -1160,4 +1172,244 @@ function adInquiry(b) {
     } catch (e) {}
   }
   return { ok: true, id: id };
+}
+
+
+/* =====================================================================
+   카카오 로그인 회원 (v14) — 집예보 웹(login/ · mine/ · buy/report/)
+   흐름: 화면에서 Kakao.Auth.authorize → login/ 으로 인가 코드(code) 도착 → kakaoLogin
+         → 서버가 REST API 키로 토큰 받기 → /v2/user/me 로 회원번호·닉네임 확인 → 카카오 토큰은 바로 만료(저장 안 함)
+         → 서버가 만든 무작위 세션 토큰을 화면에 주고, 시트에는 그 해시만 저장
+   저장: '회원'(카카오 회원번호·닉네임·저장 자료) · '세션'(세션 해시) · '관심알림'(알림 신청) — 탈퇴 시 세 시트에서 바로 삭제
+   ===================================================================== */
+const USER_ACTIONS = { kakaoLogin: 1, userLoad: 1, userSave: 1, alertSubscribe: 1, userLogout: 1, userDelete: 1 };
+const KAKAO_REDIRECTS = ['https://chrisjangdaejang-ux.github.io/jangdaejang-calc/login/'];
+const SH_U = '회원', SH_S = '세션', SH_UA = '관심알림';
+const UH = ['카카오id', '닉네임', '가입일', '최근로그인', '저장자료', '수정일'];
+const SSH = ['세션해시', '카카오id', '만든날', '만료일'];
+const ALH = ['id', '카카오id', '종류', '대상키', '대상이름', '신청일', '상태'];
+const UC = Object.fromEntries(UH.map((h, i) => [h, i])), SC = Object.fromEntries(SSH.map((h, i) => [h, i])), ALC = Object.fromEntries(ALH.map((h, i) => [h, i]));
+const SESSION_DAYS = 90, MAX_SESSIONS = 10, MAX_USER_ALERTS = 20, USER_DATA_MAX = 40000;
+const ALERT_KIND = { trade: '이 단지 새 실거래', high: '이 단지 신고가', area: '지역 시세 흐름' };
+
+function userDispatch(b) {
+  try {
+    if (b.action === 'kakaoLogin') return kakaoLogin(b);           // 카카오 확인(네트워크)은 잠금 밖, 시트 쓰기만 잠금 안
+    if (b.action === 'userLoad') return userLoad(b);
+    return withLock(() => {
+      if (b.action === 'userSave') return userSave(b);
+      if (b.action === 'alertSubscribe') return alertSubscribe(b);
+      if (b.action === 'userLogout') return userLogout(b);
+      if (b.action === 'userDelete') return userDelete(b);
+      return { ok: false, err: 'unknown' };
+    });
+  } catch (x) {
+    return { ok: false, err: String(x.message || x), code: x.code || '' };
+  }
+}
+function withLock(fn) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try { return fn(); } finally { lock.releaseLock(); }
+}
+function uSheet(name, head) {
+  const ss = book();
+  let sh = ss.getSheetByName(name);
+  if (!sh) {
+    sh = ss.insertSheet(name);
+    sh.getRange(1, 1, 1, head.length).setValues([head]).setFontWeight('bold').setBackground('#3B3F22').setFontColor('#F5EFDC');
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+const uKey = id => 'k' + String(id);                       // 시트가 큰 숫자를 지수 표기로 바꾸지 않게 앞에 k
+const cellSafe = s => /^[=+\-@\t\r]/.test(s) ? "'" + s : s; // 셀 수식 주입 막기
+function uText(v, n) { return String(v == null ? '' : v).replace(/[\u0000-\u001F\u007F<>]/g, ' ').trim().slice(0, n); }
+function authErr(msg) { const e = new Error(msg || '로그인이 끝났어요. 다시 로그인해 주세요.'); e.code = 'auth'; return e; }
+
+/* 카카오 API 호출 */
+function kakaoFetch(url, opt) {
+  const r = UrlFetchApp.fetch(url, Object.assign({ muteHttpExceptions: true }, opt));
+  let j = {}; try { j = JSON.parse(r.getContentText() || '{}'); } catch (e) {}
+  return { code: r.getResponseCode(), j };
+}
+
+function kakaoLogin(b) {
+  const code = String(b.code || '');
+  if (!/^[A-Za-z0-9_\-]{10,200}$/.test(code)) throw new Error('로그인 정보를 확인하지 못했어요. 다시 시도해 주세요.');
+  const redirect = String(b.redirectUri || '');
+  if (KAKAO_REDIRECTS.indexOf(redirect) < 0) throw new Error('로그인 주소가 등록된 주소와 달라요.');
+  const P = PropertiesService.getScriptProperties();
+  const rest = P.getProperty('KAKAO_REST_KEY'), secret = P.getProperty('KAKAO_CLIENT_SECRET');
+  if (!rest) throw new Error('카카오 로그인 서버 설정이 아직 끝나지 않았어요.');
+  const payload = { grant_type: 'authorization_code', client_id: rest, redirect_uri: redirect, code: code };
+  if (secret) payload.client_secret = secret;
+  const t = kakaoFetch('https://kauth.kakao.com/oauth/token', { method: 'post', payload: payload });
+  const at = t.j && t.j.access_token;
+  if (t.code !== 200 || !at) throw new Error('카카오 로그인을 마치지 못했어요. 다시 시도해 주세요.');
+  let me;
+  try {
+    me = kakaoFetch('https://kapi.kakao.com/v2/user/me', { method: 'get', headers: { Authorization: 'Bearer ' + at } });
+  } finally {
+    try { kakaoFetch('https://kapi.kakao.com/v1/user/logout', { method: 'post', headers: { Authorization: 'Bearer ' + at } }); } catch (e) {}   // 받은 토큰은 바로 만료
+  }
+  const id = me && me.code === 200 && me.j && me.j.id;
+  if (!id || !/^\d{1,20}$/.test(String(id))) throw new Error('카카오 회원 정보를 확인하지 못했어요. 다시 시도해 주세요.');
+  const prof = (me.j.kakao_account && me.j.kakao_account.profile) || {};
+  const nick = uText(prof.nickname || (me.j.properties && me.j.properties.nickname) || '', 30) || '카카오 회원';
+  return withLock(() => {
+    const k = uKey(id), sh = uSheet(SH_U, UH), rows = sh.getDataRange().getValues();
+    let row = 0, isNew = false;
+    for (let i = 1; i < rows.length; i++) if (String(rows[i][UC['카카오id']]) === k) { row = i + 1; break; }
+    const now = new Date();
+    if (row) {
+      sh.getRange(row, UC['닉네임'] + 1).setValue(cellSafe(nick));
+      sh.getRange(row, UC['최근로그인'] + 1).setValue(now);
+    } else {
+      isNew = true;
+      const r = []; r[UC['카카오id']] = k; r[UC['닉네임']] = cellSafe(nick); r[UC['가입일']] = now; r[UC['최근로그인']] = now; r[UC['저장자료']] = ''; r[UC['수정일']] = '';
+      sh.appendRow(UH.map((h, i) => r[i] === undefined ? '' : r[i]));
+    }
+    const s = newToken();
+    const ss = uSheet(SH_S, SSH), exp = new Date(now.getTime() + SESSION_DAYS * 86400000);
+    /* 같은 회원 세션이 많으면 오래된 것부터 지움 */
+    const sv = ss.getDataRange().getValues(), mine = [];
+    for (let i = 1; i < sv.length; i++) if (String(sv[i][SC['카카오id']]) === k) mine.push({ row: i + 1, at: new Date(sv[i][SC['만든날']]).getTime() || 0 });
+    mine.sort((a, c) => a.at - c.at).slice(0, Math.max(0, mine.length - MAX_SESSIONS + 1)).map(x => x.row).sort((a, c) => c - a).forEach(r => ss.deleteRow(r));
+    const r = []; r[SC['세션해시']] = hashOf('ses|' + s); r[SC['카카오id']] = k; r[SC['만든날']] = now; r[SC['만료일']] = exp;
+    ss.appendRow(SSH.map((h, i) => r[i] === undefined ? '' : r[i]));
+    return { ok: true, s: s, nick: nick, isNew: isNew, exp: ymd(exp) };
+  });
+}
+
+/* 세션 토큰 → 회원 {k, row, nick, data} (없거나 만료면 auth 오류) */
+function sessionUser(s) {
+  s = String(s || '');
+  if (!/^[0-9a-f]{64}$/.test(s)) throw authErr();
+  const h = hashOf('ses|' + s), ss = book().getSheetByName(SH_S);
+  if (!ss) throw authErr();
+  const sv = ss.getDataRange().getValues();
+  let k = '';
+  for (let i = 1; i < sv.length; i++) if (safeEq(String(sv[i][SC['세션해시']]), h)) {
+    const exp = new Date(sv[i][SC['만료일']]);
+    if (!(exp.getTime() > Date.now())) { ss.deleteRow(i + 1); throw authErr(); }
+    k = String(sv[i][SC['카카오id']]); break;
+  }
+  if (!k) throw authErr();
+  const sh = book().getSheetByName(SH_U), rows = sh ? sh.getDataRange().getValues() : [];
+  for (let i = 1; i < rows.length; i++) if (String(rows[i][UC['카카오id']]) === k)
+    return { k: k, row: i + 1, nick: String(rows[i][UC['닉네임']]).replace(/^'/, ''), data: parseJ(rows[i][UC['저장자료']], {}) };
+  throw authErr();
+}
+
+/* 저장 자료 정리: 허용한 칸만, 길이·개수 제한 (이메일·전화 같은 칸은 들어와도 버림) */
+const UD_CODE = /^\d{5}$/, UD_SD = /^[0-9A-Za-z_-]{1,12}$/;
+function cleanPlace(x, withBuy) {
+  if (!x || typeof x !== 'object') return null;
+  const o = { sd: uText(x.sd, 12), code: uText(x.code, 5), dong: uText(x.dong, 30), jibun: uText(x.jibun, 30), apt: uText(x.apt, 60), band: uText(x.band, 20), t: uText(x.t, 10) };
+  if (!UD_SD.test(o.sd) || !UD_CODE.test(o.code) || !o.apt || !o.band) return null;
+  if (withBuy) {
+    const bp = Math.round(Number(x.bp));
+    o.bp = bp > 0 && bp < 10000000 ? bp : null;
+    o.bd = /^\d{4}-\d{2}$/.test(String(x.bd || '')) ? String(x.bd) : '';
+  }
+  return o;
+}
+function cleanReport(x) {
+  if (!x || typeof x !== 'object') return null;
+  const q = String(x.q == null ? '' : x.q).slice(0, 400);
+  if (q && !/^[A-Za-z0-9_\-.%=&~!*'()+]*$/.test(q)) return null;   // 주소 검색 문자열(인코딩된 값)만
+  if (/(^|&)(i|c|d|n|e)=/.test(q)) return null;                  // 연소득·현금·대출·이름·기타 비용은 저장하지 않음
+  const picks = (Array.isArray(x.picks) ? x.picks : []).slice(0, 10).map(p => p && ({
+    apt: uText(p.apt, 60), area: uText(p.area, 40), band: uText(p.band, 20), P: Math.max(0, Math.round(Number(p.P) || 0)), fv: p.fv == null || p.fv === '' ? null : Math.max(0, Math.min(100, Math.round(Number(p.fv) || 0)))
+  })).filter(p => p && p.apt);
+  return { id: uText(x.id, 20), t: uText(x.t, 16), title: uText(x.title, 60), q: q, picks: picks };
+}
+function cleanUserData(d) {
+  d = d && typeof d === 'object' ? d : {};
+  const uniq = (arr, key) => { const seen = {}; return arr.filter(x => { const k = key(x); if (seen[k]) return false; seen[k] = 1; return true; }); };
+  const pk = x => [x.code, x.dong, x.jibun, x.apt, x.band].join('|');
+  const out = {
+    v: 1,
+    homes: uniq((Array.isArray(d.homes) ? d.homes : []).slice(0, 10).map(x => cleanPlace(x, true)).filter(Boolean), pk).slice(0, 5),
+    favs: uniq((Array.isArray(d.favs) ? d.favs : []).slice(0, 40).map(x => cleanPlace(x, false)).filter(Boolean), pk).slice(0, 30),
+    reports: uniq((Array.isArray(d.reports) ? d.reports : []).slice(0, 20).map(cleanReport).filter(Boolean), x => x.id || x.t).slice(0, 10)
+  };
+  const json = JSON.stringify(out);
+  if (json.length > USER_DATA_MAX) throw new Error('저장할 자료가 너무 많아요. 리포트나 관심 단지를 조금 지운 뒤 다시 저장해 주세요.');
+  return out;
+}
+function userAlerts(k) {
+  const sh = book().getSheetByName(SH_UA); if (!sh) return [];
+  return sh.getDataRange().getValues().slice(1).filter(r => String(r[ALC['카카오id']]) === k && r[ALC['상태']] === '신청')
+    .map(r => ({ id: String(r[ALC['id']]), kind: String(r[ALC['종류']]), key: String(r[ALC['대상키']]), name: String(r[ALC['대상이름']]).replace(/^'/, ''), at: r[ALC['신청일']] instanceof Date ? ymd(r[ALC['신청일']]) : String(r[ALC['신청일']]).slice(0, 10) }));
+}
+
+function userLoad(b) {
+  const u = sessionUser(b.s);
+  const d = u.data && typeof u.data === 'object' ? u.data : {};
+  return { ok: true, nick: u.nick, data: { v: 1, homes: d.homes || [], favs: d.favs || [], reports: d.reports || [] }, alerts: userAlerts(u.k) };
+}
+function userSave(b) {
+  const u = sessionUser(b.s);
+  const data = cleanUserData(b.data);
+  const sh = book().getSheetByName(SH_U);
+  sh.getRange(u.row, UC['저장자료'] + 1).setValue(JSON.stringify(data));
+  sh.getRange(u.row, UC['수정일'] + 1).setValue(new Date());
+  return { ok: true, data: data };
+}
+
+/* 알림 신청: op 'add'(items: [{kind, key, name}]) · 'remove'(ids) — 카카오 알림 발송을 시작하면 '신청' 상태 행으로 보냄 */
+function alertSubscribe(b) {
+  const u = sessionUser(b.s), sh = uSheet(SH_UA, ALH);
+  if (b.op === 'remove') {
+    const ids = (Array.isArray(b.ids) ? b.ids : []).map(String);
+    const v = sh.getDataRange().getValues();
+    for (let i = v.length - 1; i >= 1; i--) if (String(v[i][ALC['카카오id']]) === u.k && ids.indexOf(String(v[i][ALC['id']])) >= 0) sh.deleteRow(i + 1);
+    return { ok: true, alerts: userAlerts(u.k) };
+  }
+  const items = (Array.isArray(b.items) ? b.items : []).slice(0, 5).map(x => {
+    const kind = String(x && x.kind || ''), key = String(x && x.key || '').slice(0, 160), name = uText(x && x.name, 60);
+    if (!ALERT_KIND[kind] || !name) return null;
+    if (kind === 'area' ? !UD_CODE.test(key) : !/^\d{5}\|[^|]{1,30}\|[^|]{0,30}\|[^|]{1,60}$/.test(key)) return null;
+    return { kind, key, name };
+  }).filter(Boolean);
+  if (!items.length) throw new Error('알림 받을 내용을 하나 이상 골라 주세요.');
+  const cur = userAlerts(u.k), has = x => cur.some(a => a.kind === x.kind && a.key === x.key);
+  const add = items.filter(x => !has(x));
+  if (cur.length + add.length > MAX_USER_ALERTS) throw new Error(`알림은 ${MAX_USER_ALERTS}개까지 신청할 수 있어요. 내 계정에서 몇 개를 지운 뒤 다시 신청해 주세요.`);
+  add.forEach(x => {
+    const r = []; r[ALC['id']] = 'U' + Utilities.getUuid().replace(/-/g, '').slice(0, 9).toUpperCase(); r[ALC['카카오id']] = u.k;
+    r[ALC['종류']] = x.kind; r[ALC['대상키']] = cellSafe(x.key); r[ALC['대상이름']] = cellSafe(x.name); r[ALC['신청일']] = new Date(); r[ALC['상태']] = '신청';
+    sh.appendRow(ALH.map((h, i) => r[i] === undefined ? '' : r[i]));
+  });
+  return { ok: true, added: add.length, alerts: userAlerts(u.k) };
+}
+
+function userLogout(b) {
+  const s = String(b.s || ''); if (!/^[0-9a-f]{64}$/.test(s)) return { ok: true };
+  const h = hashOf('ses|' + s), ss = book().getSheetByName(SH_S); if (!ss) return { ok: true };
+  const sv = ss.getDataRange().getValues();
+  for (let i = sv.length - 1; i >= 1; i--) if (safeEq(String(sv[i][SC['세션해시']]), h)) ss.deleteRow(i + 1);
+  return { ok: true };
+}
+
+/* 탈퇴: 회원·세션·알림 행을 바로 삭제. 어드민 키가 있으면 카카오 연결 끊기까지 */
+function userDelete(b) {
+  const u = sessionUser(b.s);
+  const del = (name, col) => {
+    const sh = book().getSheetByName(name); if (!sh) return;
+    const v = sh.getDataRange().getValues();
+    for (let i = v.length - 1; i >= 1; i--) if (String(v[i][col]) === u.k) sh.deleteRow(i + 1);
+  };
+  del(SH_UA, ALC['카카오id']); del(SH_S, SC['카카오id']); del(SH_U, UC['카카오id']);
+  let unlinked = false;
+  const admin = PropertiesService.getScriptProperties().getProperty('KAKAO_ADMIN_KEY');
+  if (admin) {
+    try {
+      const r = kakaoFetch('https://kapi.kakao.com/v1/user/unlink', { method: 'post', headers: { Authorization: 'KakaoAK ' + admin }, payload: { target_id_type: 'user_id', target_id: u.k.slice(1) } });
+      unlinked = r.code === 200;
+    } catch (e) {}
+  }
+  return { ok: true, unlinked: unlinked };
 }
