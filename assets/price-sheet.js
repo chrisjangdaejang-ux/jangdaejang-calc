@@ -5,7 +5,7 @@
      ① 최근 시세·1년/3년 변동 ② 가격 추이 작은 차트(구 전체 아파트 선 함께) ③ 최근 실거래(최신 10건, 더보기) ④ '내 집 시세에서 자세히 보기'
    자료: /jangdaejang-data/data/price/{구코드}.json (거래가 1건이라도 있는 모든 단지·평형, 개별 실거래 포함)
          — 아직 없으면 점수용 sNN.json 으로 대신 보여 준다(개별 거래 없이 월별 요약).
-   계산은 assets/mine-core.js(JDJ_MINE) 함수를 그대로 쓴다. 다른 화면용 공개 함수: open·close·loadSgg·scoreUnits·findUnit·tradesHtml */
+   계산은 assets/mine-core.js(JDJ_MINE) 함수를 그대로 쓴다. 다른 화면용 공개 함수: open·close·btn(단추 HTML)·loadSgg·scoreUnits·findUnit·tradesHtml */
 (function (root) {
   'use strict';
   const DATA = '/jangdaejang-data/data/';
@@ -107,29 +107,55 @@
 .jps-note{font-size:13px;color:#4E5968;line-height:1.6;margin:6px 0 0}
 .jps-go{display:flex;align-items:center;justify-content:center;min-height:50px;margin-top:16px;border-radius:14px;background:#2F6BFF;color:#fff!important;font-weight:700;font-size:16px;text-decoration:none}
 .jps-load{padding:30px 0;text-align:center;color:#4E5968}
+.jps-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 14px;border:1.5px solid #2F6BFF;border-radius:12px;background:#fff;color:#2F6BFF!important;font:inherit;font-size:14.5px;font-weight:700;line-height:1.2;cursor:pointer;white-space:nowrap;text-decoration:none;vertical-align:middle;box-sizing:border-box;max-width:100%}
+.jps-btn:hover{background:#EEF3FF}.jps-btn:focus-visible{outline:3px solid #9DB8FF;outline-offset:2px}.jps-btn svg{flex:none}
+.jps-btn.sm{padding:0 10px;font-size:13.5px}.jps-btn.blk{display:flex;width:100%;margin-top:8px}
+@media print{.jps-btn{display:none!important}}
 @media(max-width:640px){.jps-ov{align-items:flex-end;padding:0}.jps{border-radius:20px 20px 0 0;max-width:none;max-height:90vh}.jps-st{grid-template-columns:1fr 1fr}.jps-st>div:first-child{grid-column:1/-1}}`;
-  let ov = null, lastFocus = null, keyH = null, bodyOv = '';
-  function close() {
+  let ov = null, lastFocus = null, keyH = null, bodyOv = '', pushed = false, backing = false;
+  /* 모바일 뒤로가기 = 시트만 닫기: 열 때 기록 한 칸(history state)을 쌓고, 닫을 때 그 칸을 되돌린다 */
+  function pushState() {
+    if (pushed || backing || !root.history || !history.pushState) return;
+    try { history.pushState({ jps: 1 }, ''); pushed = true; } catch (e) {}
+  }
+  function closeDom() {
     if (!ov) return;
     ov.remove(); ov = null; document.body.style.overflow = bodyOv;
-    if (keyH) document.removeEventListener('keydown', keyH);
-    if (lastFocus && lastFocus.focus) try { lastFocus.focus(); } catch (e) {}
+    if (keyH) { document.removeEventListener('keydown', keyH, true); keyH = null; }
+    const f = lastFocus; lastFocus = null;
+    if (f && f.focus && document.contains(f)) try { f.focus({ preventScroll: true }); } catch (e) {}
   }
+  /** 시트 닫기(닫기 단추·바깥 누르기·Esc). 쌓아 둔 기록 칸도 함께 되돌린다 */
+  function close() {
+    if (!ov) return;
+    closeDom();
+    if (pushed) { pushed = false; backing = true; try { history.back(); } catch (e) { backing = false; } }
+  }
+  if (typeof addEventListener === 'function' && typeof document !== 'undefined') addEventListener('popstate', () => {
+    if (backing) { backing = false; if (ov) pushState(); return; }   // 닫기 단추로 되돌린 칸 — 그사이 새 시트가 열렸으면 칸을 다시 쌓음
+    if (ov) { pushed = false; closeDom(); }                          // 뒤로가기로 닫음
+  });
   function shell(title, sub) {
-    if (!document.getElementById('jps-css')) { const st = document.createElement('style'); st.id = 'jps-css'; st.textContent = CSS; document.head.appendChild(st); }
-    close();
+    injectCss();
+    closeDom();
     lastFocus = document.activeElement; bodyOv = document.body.style.overflow; document.body.style.overflow = 'hidden';
     ov = document.createElement('div'); ov.className = 'jps-ov';
     ov.innerHTML = `<div class="jps" role="dialog" aria-modal="true" aria-labelledby="jpsT"><div class="jps-h"><div><b id="jpsT">${esc(title)}</b><small>${esc(sub)}</small></div><button type="button" class="jps-x" aria-label="닫기">×</button></div><div class="jps-b"><div class="jps-load">시세를 불러오는 중이에요…</div></div></div>`;
-    ov.addEventListener('click', e => { if (e.target === ov) close(); });
+    ov.addEventListener('click', e => {
+      if (e.target === ov) return close();
+      const a = e.target.closest && e.target.closest('a.jps-go');
+      /* '내 집 시세에서 자세히 보기': 시트 기록 칸을 새 화면으로 바꿔 끼워, 그 화면에서 뒤로 가면 바로 원래 화면으로 */
+      if (a && pushed && !(e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button)) { e.preventDefault(); pushed = false; location.replace(a.href); }
+    });
     ov.querySelector('.jps-x').onclick = close;
-    keyH = e => { if (e.key === 'Escape') close(); };
-    document.addEventListener('keydown', keyH);
+    keyH = e => { if (e.key === 'Escape' && ov) { e.stopPropagation(); e.stopImmediatePropagation(); close(); } };
+    document.addEventListener('keydown', keyH, true);
     document.body.appendChild(ov);
-    ov.querySelector('.jps-x').focus();
+    pushState();
+    ov.querySelector('.jps-x').focus({ preventScroll: true });
     return ov.querySelector('.jps-b');
   }
-  /** 시세 시트 열기. q = {sd, sgg, dong, apt, band, jibun?} */
+  /** 시세 시트 열기. q = {sd, sgg, dong, apt, band, jibun?, at?(통계용 위치)} */
   async function open(q) {
     q = q || {};
     const box = shell(q.apt || '단지 시세', [q.dong, q.band].filter(Boolean).join(' · '));
@@ -142,10 +168,33 @@
       box.innerHTML = body(u, ix, q, g.price);
       mine.querySelector('#jpsT').textContent = u[2];
       wireMore(box);
-      if (root.jdjStat) try { root.jdjStat('feature_use', { feature: 'price_sheet' }); } catch (e) {}
+      if (root.jdjStat) try { root.jdjStat('feature_use', { feature: 'price_sheet', spot: q.at || '' }); } catch (e) {}
     } catch (e) {
       if (ov === mine) box.innerHTML = '<p class="jps-note" style="font-size:15px">시세 자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.</p>';
     }
+  }
+  function injectCss() {
+    if (typeof document === 'undefined' || document.getElementById('jps-css')) return;
+    const st = document.createElement('style'); st.id = 'jps-css'; st.textContent = CSS; (document.head || document.documentElement).appendChild(st);
+  }
+  const ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 6-7"/></svg>';
+  /** '시세 흐름 보기' 단추 HTML. q = open() 과 같은 값, at = 통계용 위치 이름, opts.cls = 'sm'·'blk' 등 */
+  function btn(q, at, opts) {
+    opts = opts || {};
+    const d = { sd: q.sd || '', sgg: q.sgg || '', dong: q.dong || '', apt: q.apt || '', band: q.band || '' };
+    if (q.jibun) d.jibun = String(q.jibun);
+    const lbl = opts.label || '시세 흐름 보기';
+    return `<button type="button" class="jps-btn${opts.cls ? ' ' + opts.cls : ''}" data-jps="${esc(JSON.stringify(d))}" data-jps-at="${esc(at || '')}" aria-label="${esc((q.apt || '') + ' ' + (q.band || '') + ' ' + lbl)}">${ICON}<span>${esc(lbl)}</span></button>`;
+  }
+  /* 어느 화면이든 data-jps 단추를 누르면 시트를 연다(카드 자체의 클릭 동작보다 먼저) */
+  if (typeof document !== 'undefined' && document.addEventListener) {
+    injectCss();
+    document.addEventListener('click', e => {
+      const b = e.target && e.target.closest && e.target.closest('[data-jps]'); if (!b) return;
+      e.preventDefault(); e.stopPropagation();
+      let q = null; try { q = JSON.parse(b.getAttribute('data-jps')); } catch (x) {}
+      if (q) open(Object.assign(q, { at: b.getAttribute('data-jps-at') || '' }));
+    }, true);
   }
   function body(u, ix, q, isPrice) {
     const m = M(), months = ix.months, sm = m.bandSummary(u, months), last = m.lastDeal(u, months), few = m.isFew(u);
@@ -167,7 +216,7 @@
     <a class="jps-go" href="${esc(link)}">내 집 시세에서 자세히 보기 →</a>`;
   }
 
-  const API = { open, close, loadSgg, scoreUnits, findUnit, tradesHtml, wireMore, miniChart, baseName };
+  const API = { open, close, btn, loadSgg, scoreUnits, findUnit, tradesHtml, wireMore, miniChart, baseName };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_PRICE = API;
 })(typeof self !== 'undefined' ? self : this);

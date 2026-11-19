@@ -134,6 +134,7 @@
         <div class="pr-crk">${total > 1 ? `단지 ${i + 1} · ` : ''}${esc(g.sido || '')} ${esc(g.name || '')} ${esc(x.dong)}</div>
         <h2>${esc(x.apt)}</h2>
         <div class="pr-loc">${esc(x.band)} (전용 ${x.area}㎡)${f.by ? ` · ${f.by}년 준공(${Y - f.by}년차)` : ''}${f.hh ? ` · ${f.hh.toLocaleString()}세대` : ''}${isReg(x.code) ? ' · 규제지역' : ''}</div>
+        ${window.JDJ_PRICE ? `<div class="noprint" style="margin-top:10px">${window.JDJ_PRICE.btn({ sd: x.sd, sgg: x.code, dong: x.dong, apt: x.apt, band: x.band, jibun: x.jb }, 'premium')}</div>` : ''}
       </div>${f.fv != null ? `<div class="ring" aria-label="미래가치 ${f.fv}점"><b>${f.fv}</b><small>미래가치</small></div>` : ''}</div>
       <div class="pr-stats">
         <div><span>추정 시세</span><b>${fmtS(x.P)}</b><small>${x.stale ? '최근 3개월 거래 없음 · 마지막 거래 기준' : '최근 3개월 실거래 중앙값'}</small></div>
@@ -198,7 +199,7 @@
         const units = await P.sido(p.sd), u = units.find(u => u[0] === p.code && u[1] === p.dong && u[2] === p.apt && u[3] === p.band);
         if (!u) { miss.push(p); continue; }
         const [code, dong, apt, band, area, n, series] = u, recent = lastNZ(series), ppy = recent || lastAny(series), sp = IX.sgg[code] ? lastNZ(IX.sgg[code].s) : 0;
-        items.push({ code, dong, apt, band, area, n, series, P: Math.round(ppy * area / PY / 100) * 100, stale: !recent, ch: change6(series), rel: sp ? (sp - ppy) / sp : null, f: u[9] || null });
+        items.push({ sd: p.sd, jb: u[8], code, dong, apt, band, area, n, series, P: Math.round(ppy * area / PY / 100) * 100, stale: !recent, ch: change6(series), rel: sp ? (sp - ppy) / sp : null, f: u[9] || null });
       } catch (e) { miss.push(p); }
     }
     const dataTo = IX.dataTo ? IX.dataTo.slice(0, 4) + '년 ' + parseInt(IX.dataTo.slice(4), 10) + '월' : '';

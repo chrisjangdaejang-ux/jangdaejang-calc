@@ -91,6 +91,12 @@ td.k{color:var(--sub2);width:34%;font-size:14.5px}
 .cmp .vs div{background:#fff;border-radius:12px;padding:10px 12px;border:1px solid var(--line2)}
 .cmp .vs small{display:block;font-size:13.5px;color:var(--sub2)}
 .cmp .vs strong{font-size:18px}
+.cmp details.du{margin-top:8px}
+.cmp details.du summary{cursor:pointer;font-size:14.5px;font-weight:700;color:var(--blue,#2F6BFF);min-height:44px;display:flex;align-items:center}
+.du ul{list-style:none;margin:0;padding:0}
+.du li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--line2)}
+.du li span{min-width:0;font-size:14.5px;word-break:keep-all}
+.du li small{display:block;font-size:13px;color:var(--sub2)}
 .cmp .why{font-size:13.5px;color:var(--sub2);margin-top:6px;line-height:1.6}
 .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
 .btns a{flex:1 1 200px}
@@ -165,6 +171,8 @@ body.lock{overflow:hidden}
 
 <script src="../assets/agents.js"></script>
 <script src="../assets/ads.js"></script>
+<script src="../assets/mine-core.js?v=2"></script>
+<script src="../assets/price-sheet.js?v=2"></script>
 <script>
 const $ = id => document.getElementById(id);
 const DATA = '/jangdaejang-data/data/bunyang/';
@@ -250,7 +258,8 @@ function cmpHtml(x) {
     return `<div class="row"><b>${BAND[b]}</b>
       <div class="vs"><div><small>분양가 (3.3㎡당)</small><strong>${fmt(my)}만원</strong></div><div><small>${esc(sc)} 실거래 중앙값 (3.3㎡당)</small><strong>${fmt(nb)}만원</strong></div></div>
       <div class="why">분양가는 같은 동네 같은 면적대 실거래 중앙값보다 <b>${Math.abs(d)}% ${d >= 0 ? '높은' : '낮은'}</b> 수준이에요.${nw ? ` 준공 10년 이내 단지(${nn}곳)만 보면 실거래 중앙값 ${fmt(nw)}만원이에요.` : ''}<br>
-      근거: ${esc(sc)} 아파트 중 ${BAND[b]} ${nu}개 단지·면적대, ${per} 거래 ${fmt(nt)}건의 최근 3개월 이동 중앙 평당가를 다시 중앙값으로 묶었어요. 분양가는 이 면적대 주택형별 분양 최고금액 ÷ 전용면적(3.3㎡당)의 중앙값이에요.</div></div>`; }).join('')}
+      근거: ${esc(sc)} 아파트 중 ${BAND[b]} ${nu}개 단지·면적대, ${per} 거래 ${fmt(nt)}건의 최근 3개월 이동 중앙 평당가를 다시 중앙값으로 묶었어요. 분양가는 이 면적대 주택형별 분양 최고금액 ÷ 전용면적(3.3㎡당)의 중앙값이에요.</div>
+      ${x.g && window.JDJ_PRICE ? `<details class="du" data-b="${b}" data-sc="${esc(sc)}"><summary>비교에 쓰인 ${esc(sc)} 단지 ${nu}곳 시세 흐름 보기</summary><div class="dul">불러오는 중이에요…</div></details>` : ''}</div>`; }).join('')}
     <p class="why" style="margin:6px 0 0">분양가에는 발코니 확장·옵션 비용이 빠져 있고, 실거래 단지는 연식·입지·브랜드가 달라요.</p></div>`;
 }
 function related(x) {
@@ -292,6 +301,27 @@ function detail(x, push) {
   $('sheet').scrollTop = 0;
   $('dClose').onclick = closeDlg; $('dClose').focus();
   $('sheet').querySelectorAll('.rel button').forEach(b => b.onclick = () => detail(ROWS.find(y => y.id === b.dataset.id)));
+  $('sheet').querySelectorAll('details.du').forEach(d => d.addEventListener('toggle', () => { if (d.open && !d.dataset.done) { d.dataset.done = 1; dealUnits(x, d); } }));
+}
+/* 실거래 비교에 쓰인 동네 단지 목록 — 엔진(scripts/bunyang.py compare)과 같은 기준:
+   같은 구(동 범위면 같은 동)·같은 면적 구간의 점수용 단지 중 최근 3개월 평당가가 있고 최근 6개월 거래가 있는 단지 */
+const bandOf = a => a <= 60 ? 0 : a <= 85 ? 1 : 2;
+let SDIX = null;
+async function sdIdOf(name) {
+  if (!SDIX) SDIX = fetch('/jangdaejang-data/data/index.json').then(r => r.json()).then(j => j.sido || []).catch(() => { SDIX = null; return []; });
+  const l = await SDIX, d = l.find(v => v.name === name); return d ? d.id : '';
+}
+async function dealUnits(x, d) {
+  const box = d.querySelector('.dul'), b = +d.dataset.b, sc = d.dataset.sc, byDong = x.dg && sc === x.dg;
+  try {
+    const sd = await sdIdOf(x.sd), g = await JDJ_PRICE.loadSgg(x.g, sd);
+    const tr = c => { let n = 0; for (const ch of String(c || '').slice(-6)) n += ch.charCodeAt(0) - 48; return n; };
+    const last = a => { for (const v of (a || []).slice(-3).reverse()) if (v > 0) return v; return 0; };
+    const us = g.units.filter(u => u[0] === x.g && (!byDong || u[1] === x.dg) && u[9] && bandOf(+u[4]) === b && last(u[6]) && tr(u[7]))
+      .sort((p, q) => tr(q[7]) - tr(p[7]) || p[2].localeCompare(q[2], 'ko'));
+    box.innerHTML = us.length ? `<ul>${us.map(u => `<li><span>${esc(u[2])}<small>${esc(u[1])} · ${esc(u[3])} · 최근 6개월 ${tr(u[7])}건</small></span>${JDJ_PRICE.btn({ sd, sgg: u[0], dong: u[1], apt: u[2], band: u[3], jibun: u[8] }, 'bunyang_deal', { cls: 'sm' })}</li>`).join('')}</ul>`
+      : '<p class="why">단지 목록을 찾지 못했어요.</p>';
+  } catch (e) { d.dataset.done = ''; box.innerHTML = '<p class="why">단지 목록을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</p>'; }
 }
 function closeDlg() { $('dlg').hidden = true; document.body.classList.remove('lock'); }
 $('dlg').addEventListener('click', e => { if (e.target === $('dlg')) closeDlg(); });

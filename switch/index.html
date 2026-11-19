@@ -29,6 +29,7 @@
 <script src="../tax/tax-engine.js"></script>
 <script src="../assets/rec-core.js?v=1"></script>
 <script src="../assets/mine-core.js?v=2"></script>
+<script src="../assets/price-sheet.js?v=2"></script>
 <script src="switch-core.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -186,6 +187,8 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .rc li.c{color:#A23B2A}
 .rc .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .rc .acts button,.rc .acts a{font:inherit;font-size:15px;font-weight:700;min-height:44px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--text);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.rc .acts .jps-btn{border:1.5px solid #2F6BFF;color:#2F6BFF}
+.gap .sel .jps-btn,.vs .jps-btn{margin-top:6px}
 .rc .acts button.cmpOn{background:var(--blue);border-color:var(--blue);color:#fff}
 .recnote{font-size:13.5px;color:#4E5968;margin:10px 0 0}
 .recload{font-size:15px;color:#4E5968;padding:10px 0}
@@ -800,7 +803,7 @@ function makePicker(el, which, onLoc){
         if(which==='home'){ pickHome(u, sd, g); return; }
         const pi=priceInfo(u);
         GAP[which]={u, sido:sd, key:[u[0],u[1],u[2],u[3]].join('|'), name:`${u[2]} ${u[3]}`, area:u[4], price:pi.price};
-        $s('.sel').innerHTML=`${escH(u[2])} ${escH(u[3])} <small>${escH(AG_IX.sgg[g].name)} ${escH(dong)} · 추정 시세 ${fmt(GAP[which].price)}원 (${piTxt(pi)}${!u[9]?` · 최근 3년 거래 ${u[5]}건 기준`:''})</small>`+
+        $s('.sel').innerHTML=`${escH(u[2])} ${escH(u[3])} <small>${escH(AG_IX.sgg[g].name)} ${escH(dong)} · 추정 시세 ${fmt(GAP[which].price)}원 (${piTxt(pi)}${!u[9]?` · 최근 3년 거래 ${u[5]}건 기준`:''})</small>`+PBu(u,'switch_pick','sm')+
           (which==='mine'?`<button class="btn ghost" style="margin-top:6px;font-size:13.5px;padding:6px 10px" id="useSale">이 시세를 예상 매도가에 넣기</button>`:'');
         const us=$('useSale'); if(us) us.onclick=()=>{ $('sale').value=GAP.mine.price.toLocaleString(); render(); JDJ.track('gap_use_sale'); toast('예상 매도가에 넣었습니다'); };
         if(which==='target'){ $('target').value=GAP.target.price.toLocaleString(); render(); }
@@ -871,10 +874,10 @@ function setHomeLoc(sd, g, u){
 }
 function pickHome(u, sd, g){
   const el=$('pkHome'), pi=priceInfo(u), price=pi.price;
-  el.querySelector('.sel').innerHTML=`${escH(u[2])} ${escH(u[3])} <small>${escH(AG_IX.sgg[g].name)} ${escH(u[1])} · 추정 시세 ${fmt(price)}원 (${pi.last?piTxt(pi):'최근 3개월 안 마지막 실거래 기준'}${!u[9]?` · 최근 3년 거래 ${u[5]}건 기준`:''}) — 예상 매도가에 넣었어요</small>`;
+  el.querySelector('.sel').innerHTML=`${escH(u[2])} ${escH(u[3])} <small>${escH(AG_IX.sgg[g].name)} ${escH(u[1])} · 추정 시세 ${fmt(price)}원 (${pi.last?piTxt(pi):'최근 3개월 안 마지막 실거래 기준'}${!u[9]?` · 최근 3년 거래 ${u[5]}건 기준`:''}) — 예상 매도가에 넣었어요</small>`+PBu(u,'switch_pick','sm');
   if(price){ $('sale').value=price.toLocaleString(); }
   GAP.mine={u, sido:sd, key:[u[0],u[1],u[2],u[3]].join('|'), name:`${u[2]} ${u[3]}`, area:u[4], price};
-  const ms=$('pkMine').querySelector('.sel'); if(ms) ms.innerHTML=`${escH(u[2])} ${escH(u[3])} <small>STEP 1에서 고른 지금 집 · 추정 시세 ${fmt(price)}원</small>`;
+  const ms=$('pkMine').querySelector('.sel'); if(ms) ms.innerHTML=`${escH(u[2])} ${escH(u[3])} <small>STEP 1에서 고른 지금 집 · 추정 시세 ${fmt(price)}원</small>`+PBu(u,'switch_pick','sm');
   JDJ.track('switch_home_pick',{sgg:g});
   setHomeLoc(sd, g, u); drawGap();
 }
@@ -887,6 +890,10 @@ function loadModel(){ if(!MODEL_P) MODEL_P=fetch(AG_DATA+'model.json',{cache:'no
 let recT=null, recSeq=0, REC_LAST=null, CMP_SEL=null;
 function scheduleRec(){ clearTimeout(recT); recT=setTimeout(runRec, 350); }
 const recKey=x=>[x.code,x.dong,x.apt,x.band].join('|');
+/* 단지 '시세 흐름 보기' 단추 (assets/price-sheet.js 공용 시트). sd = 시·도 자료 id(sNN) — 시세 자료가 없을 때 대신 쓰는 점수용 자료 */
+const sdIdOf=code=>{ const s=AG_IX&&AG_IX.sgg[code], d=s&&AG_IX.sido.find(v=>v.name===s.sido); return d?d.id:''; };
+function PB(code, dong, apt, band, jb, at, cls){ return window.JDJ_PRICE ? JDJ_PRICE.btn({sd:sdIdOf(code), sgg:code, dong, apt, band, jibun:jb||''}, at, {cls:cls||''}) : ''; }
+const PBu=(u, at, cls)=>PB(u[0], u[1], u[2], u[3], u[8], at, cls);
 async function unitsFor(RG, onStep){
   const ix=await gapIndex(); if(!ix) return null;
   if(!RG.any) return gapUnits(RG.sido);
@@ -948,7 +955,7 @@ async function runRec(){
         <div class="fv"><b>${x.disp}</b><small>${x.hasFv?'미래가치':'추천 점수'}</small></div></div>
       <div class="nums"><div><div class="k">추정 시세</div><div class="v">${fmtShort(x.P)}</div></div><div><div class="k">새 대출</div><div class="v">${fmtShort(x.nd.loan.L)}</div></div><div><div class="k">매달 상환</div><div class="v">${Math.round(x.mon).toLocaleString()}만</div></div></div>
       <ul>${recReasons(x).map(([c,t])=>`<li class="${c}">${t}</li>`).join('')}</ul>
-      <div class="acts"><button type="button" data-cmp="${escH(k)}" class="${on?'cmpOn':''}">${on?'④에서 비교 중':'지금 집과 비교하기'}</button><a href="../buy/report/?${q}" target="_blank" rel="noopener" data-track="switch_rec_report">이 지역 단지 리포트</a></div>
+      <div class="acts">${PB(x.code,x.dong,x.apt,x.band,x.u&&x.u[8],'switch_top')}<button type="button" data-cmp="${escH(k)}" class="${on?'cmpOn':''}">${on?'④에서 비교 중':'지금 집과 비교하기'}</button><a href="../buy/report/?${q}" target="_blank" rel="noopener" data-track="switch_rec_report">이 지역 단지 리포트</a></div>
     </div>`; }).join('')+'</div>';
   box.querySelectorAll('[data-cmp]').forEach(b=>b.onclick=()=>{ CMP_SEL=b.dataset.cmp; JDJ.track('switch_rec_compare'); runRec(); setTimeout(()=>$('vsBox').scrollIntoView({behavior:'smooth',block:'start'}),60); });
   renderVs();
@@ -977,7 +984,7 @@ function renderVs(){
   const S=L.S, cd=nd2.cost;
   const row=(k,a,b,cls)=>`<tr class="${cls||''}"><td>${k}</td><td>${a}</td><td>${b}</td></tr>`;
   $('vsRes').innerHTML=`<div class="vssum">${sum.join(' ')}</div>
-    <table class="vs"><thead><tr><th>오늘 기준</th><th>지금 집 유지</th><th>갈아타기<br>${name}</th></tr></thead><tbody>
+    <table class="vs"><thead><tr><th>오늘 기준</th><th>지금 집 유지</th><th>갈아타기<br>${name}${x?`<br>${PB(x.code,x.dong,x.apt,x.band,x.u&&x.u[8],'switch_compare','sm')}`:''}</th></tr></thead><tbody>
     ${row('집값 (시세)', fmt(L.sale)+'원', fmt(P2)+'원')}
     ${row('주택담보대출', fmt(L.oldLoan)+'원', fmt(nd2.loan.L)+'원')}
     ${row('손에 남는 현금', fmt(L.extra)+'원', fmt(cm.cashLeft)+'원')}

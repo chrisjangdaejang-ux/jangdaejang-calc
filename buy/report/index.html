@@ -22,6 +22,8 @@
 <script src="../../assets/stat.js"></script>
 <script src="../../assets/region-notes.js"></script>
 <script src="../../assets/rec-core.js?v=1"></script>
+<script src="../../assets/mine-core.js?v=2"></script>
+<script src="../../assets/price-sheet.js?v=2"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/kchat.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -381,6 +383,7 @@ tr.total td{border-top:1px solid var(--text)}
 .reasons li.c:before{content:"\2212";background:var(--neg-l);color:var(--neg)}
 .vnote{background:var(--creamc);border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.6;color:var(--sub)}
 .cacts{display:flex;gap:8px}
+.cps{margin:8px 0 10px}.ctbl .cps,.near .cps{margin:6px 0 0}.ctbl thead .jps-btn{background:#fff}
 .cacts .btn{flex:1;min-height:52px;border-radius:14px;font-size:16px;margin:0}
 .cmpbtn-add{font:inherit;font-weight:700;background:var(--gray);color:var(--text);border:0}
 .cmpbtn-add.on{background:var(--blue-l);color:var(--blue)}
@@ -498,6 +501,8 @@ function fmt(man){ man=Math.round(man); if(man<=0) return '0원'; const e=Math.f
 function fmtS(man){ if(man>=10000) return (Math.round(man/1000)/10).toString().replace(/\.0$/,'')+'억'; return Math.round(man).toLocaleString()+'만'; }
 function r100(m){ return Math.round(m/100)*100; }
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+/* 단지 '시세 흐름 보기' 단추 (assets/price-sheet.js 공용 시트) */
+function PB(x, at, cls, apt){ return window.JDJ_PRICE ? JDJ_PRICE.btn({sd:x.sd||sdIdOf(x.code), sgg:x.code, dong:x.dong, apt:apt||x.apt, band:x.band, jibun:apt?'':x.jb}, at, {cls:cls||''}) : ''; }
 
 /* ---------- 상태 ---------- */
 const Q = new URLSearchParams(location.search);
@@ -991,7 +996,7 @@ async function renderCompare(){
   add('하락기 방어력', items.map(x=>{ const d=x.fx&&x.fx.dd; return d!=null ? `구 평균보다 ${pc(Math.abs(d))}%p ${d>=0?'덜':'더'} 빠짐` : '-'; }), items.map(x=>x.fx?x.fx.dd:null), true);
   add('고점 회복', items.map(x=>{ const d=x.fx&&x.fx.rc; return (d!=null&&Math.abs(d)<0.5) ? `구 평균보다 ${pc(Math.abs(d))}%p ${d>=0?'빠름':'느림'}` : '-'; }), items.map(x=>x.fx?x.fx.rc:null), true);
   add('최근 6개월', items.map(x=>x.ch==null?'-':`${x.ch>=0?'+':''}${(x.ch*100).toFixed(1)}%<small>${x.ch>=0.08?'급등 — 추격 주의':x.ch>=0?'완만한 상승':'조정 구간'}</small>`), items.map(x=>x.ch==null?null:sMomOf(x.ch)), true);
-  add('동 대장 대비', items.map(x=>{ const f=x.fx||{}; if(f.lg==null) return '-'; return (f.ln===x.apt||f.lg>=0.995) ? '동 대장 단지' : `대장(${esc(f.ln||'')})보다 ${pc(1-f.lg)}% 낮음`; }), null);
+  add('동 대장 대비', items.map(x=>{ const f=x.fx||{}; if(f.lg==null) return '-'; return (f.ln===x.apt||f.lg>=0.995) ? '동 대장 단지' : `대장(${esc(f.ln||'')})보다 ${pc(1-f.lg)}% 낮음${f.ln?`<div class="cps noprint">${PB(x,'report_leader','sm',f.ln)}</div>`:''}`; }), null);
   add('입지·단지',null,null,null,true);
   add('준공·세대수', items.map(x=>{ const f=x.fx||{}; const age=f.by?Y-f.by:null; return (f.by?`${f.by}년(${age}년차)`:'-') + (f.hh?`<small>${f.hh.toLocaleString()}세대${f.hh>=1000?' · 대단지':''}</small>`:''); }), items.map(x=>x.fx&&x.fx.hh?x.fx.hh:null), true);
   add('지하철', items.map(x=>{ const f=x.fx||{}; return f.sub==null?'-':(f.sub>=30?'도보 20분 이상':`도보 ${f.sub<=5?'5분 이내':f.sub+'분 이내'}`)+(f.subs?`<small>${esc(f.subs.replace(/\s+/g,' '))}</small>`:''); }), items.map(x=>x.fx&&x.fx.sub!=null?x.fx.sub:null), false);
@@ -1016,7 +1021,7 @@ async function renderCompare(){
 
   h += `<div class="sec pb"><h2><span class="no">02</span> 항목별 비교표</h2>
     <p class="sub">★ 표시는 그 항목에서 가장 유리한 단지입니다. 모바일에서는 표를 옆으로 밀어 보세요.${new Set(items.map(x=>sidoOfCode(x.code))).size>1?' <b>시·도가 다른 단지가 섞여 있어요.</b> 미래가치 점수는 각 시·도 안에서의 순위라, 서로 다른 시·도끼리는 참고용으로 보세요.':''}</p>
-    <div class="ctbl"><table><thead><tr><th></th>${items.map(x=>`<th>${esc(x.apt)}<small>${esc(sggName(x.code))} ${esc(x.dong)} · ${esc(x.band)}</small></th>`).join('')}</tr></thead><tbody>`+
+    <div class="ctbl"><table><thead><tr><th></th>${items.map(x=>`<th>${esc(x.apt)}<small>${esc(sggName(x.code))} ${esc(x.dong)} · ${esc(x.band)}</small><div class="cps noprint">${PB(x,'report_compare','sm')}</div></th>`).join('')}</tr></thead><tbody>`+
     rows.map(r=> r.grp ? `<tr class="grp"><td colspan="${items.length+1}">${r.label}</td></tr>`
       : `<tr><td>${r.label}</td>${r.cells.map((c,i)=>`<td class="${i===r.b?'win':''}">${c}</td>`).join('')}</tr>`).join('')+
     `</tbody></table></div></div>`;
@@ -1061,6 +1066,7 @@ async function renderCompare(){
   h += `<div class="sec noprint"><h2><span class="no">04</span> 단지별 상담 · 공인중개사 연결</h2>
     <p class="sub">비교한 단지마다 그 지역 제휴 공인중개사에게 바로 문의하거나, 장대장 상담을 받을 수 있어요.</p>
     <div class="cards">${items.map(x=>`<div class="card"><div class="head" style="margin-bottom:8px"><div><div class="name">${esc(x.apt)}</div><div class="loc">${esc(sidoOfCode(x.code))} ${esc(sggName(x.code))} ${esc(x.dong)} · ${esc(x.band)}</div></div><div class="price"><b>${fmtS(x.P)}</b><small>추정 시세</small></div></div>
+      <div class="cps noprint" style="margin-bottom:8px">${PB(x,'report_compare')}</div>
       <div class="agt" data-g="${x.code}" data-k="${esc(x.code+'|'+x.dong+'|'+x.apt)}"></div></div>`).join('')}</div>
     <div id="agentSec" class="agsec"></div></div>`;
   const q=new URLSearchParams({usp:'pp_url'});
@@ -1199,7 +1205,7 @@ async function render(){
       <p class="sub">선택한 지역에서 부족한 금액이 가장 적은 단지입니다. 목표로 잡고 자금 계획을 세워 보세요.</p>
       <table class="near"><thead><tr><th style="width:44px">순위</th><th>단지</th><th>평형</th><th class="num">추정 시세</th><th class="num">대출</th><th class="num">부족한 현금</th></tr></thead><tbody>`+
       near.map((x,i)=>`<tr><td><span class="nrank">${i+1}</span></td><td><b>${esc(x.apt)}</b><br><small>${esc(sggName(x.code))} ${esc(x.dong)}</small></td><td>${x.band}</td><td class="num">${fmtS(x.P)}</td><td class="num">${fmtS(x.nd.loan.L)}</td><td class="num" style="color:var(--red);font-weight:900">${fmt(x.nd.need-S.cash)}</td></tr>
-      <tr class="agtr"><td></td><td colspan="5"><div class="agt" data-g="${x.code}" data-k="${esc(x.code+'|'+x.dong+'|'+x.apt)}"></div></td></tr>`).join('')+
+      <tr class="agtr"><td></td><td colspan="5"><div class="cps noprint">${PB(x,'report_near','sm')}</div><div class="agt" data-g="${x.code}" data-k="${esc(x.code+'|'+x.dong+'|'+x.apt)}"></div></td></tr>`).join('')+
       `</tbody></table><div id="agentSec" class="agsec"></div>`;
     }
   } else {
@@ -1243,6 +1249,7 @@ async function render(){
           <div class="ring" aria-label="${rg.k} ${rg.v}점"><b>${rg.v}</b><small>${rg.k}</small></div>
         </div>
         <ul class="reasons">${rs.slice(0,3).map(li).join('')}</ul>
+        <div class="cps noprint">${PB(x,'report_top')}</div>
         <div class="cmore" id="pm${i}" hidden>
           <div class="row">
             <div class="mini"><div class="k">대출</div><div class="v">${fmtS(x.nd.loan.L)}</div></div>

@@ -14,7 +14,7 @@
 
 | 이벤트 | 언제 | 값(맞춤 측정기준) |
 |---|---|---|
-| `feature_use` | 기능을 실제로 썼을 때 (페이지당 기능별 1회) | `feature`: buy 내 집 마련 · report 리포트 · switch 갈아타기 · redev 재개발(정비구역 확인) · villa 빌라 · chungyak 청약 · tax 세금 · compare 단지 비교 · consult 상담 신청 버튼 · premium 프리미엄 리포트(상품 선택·결제 화면·결제 완료·리포트 열람, 금액·연락처·주문번호는 보내지 않음) / `from`: 상담 신청이 눌린 페이지 |
+| `feature_use` | 기능을 실제로 썼을 때 (페이지당 기능별 1회) | `feature`: buy 내 집 마련 · report 리포트 · switch 갈아타기 · redev 재개발(정비구역 확인) · villa 빌라 · chungyak 청약 · tax 세금 · compare 단지 비교 · consult 상담 신청 버튼 · premium 프리미엄 리포트(상품 선택·결제 화면·결제 완료·리포트 열람, 금액·연락처·주문번호는 보내지 않음) · price_sheet 단지 '시세 흐름 보기' / `from`: 상담 신청이 눌린 페이지 / `spot`: 시세 흐름 보기를 누른 위치(report_top 리포트 추천 카드 · report_rank 순위 목록 · report_near 조금 더 모으면 · report_compare 단지 비교 · report_leader 동 대장 · switch_top 갈아타기 TOP 5 · switch_compare 갈아타기 비교표 · switch_pick 지금 집·갈아탈 집 고르기 · bunyang_deal 분양 실거래 비교 단지 · premium 프리미엄 리포트) — GA4 맞춤 측정기준에 `spot` 등록 필요 |
 | `interest_profile` | 결과를 본 뒤(입력이 멈춘 뒤) | `sido` 시·도 · `sgg` 시군구 · `budget_band` 예산대(1억 단위) · `hold_band` 예상 보유 기간 · `home_own` 주택 보유 · `region_group` 규제 구분 · `from` 어느 기능에서 |
 | `chungyak_result` | 청약 가점 계산 결과를 봤을 때 | `score_band` 가점 10점 구간 · `home_own` 무주택/유주택 |
 | `report_share` | 리포트 공유 버튼 | `method`: share(휴대폰 공유) / copy(주소 복사) |
@@ -44,6 +44,7 @@
    | 기능 | `feature` |
    | 보낸 페이지 | `page` |
    | 유입 기능 | `from` |
+   | 시세 단추 위치 | `spot` |
    | 시도 | `sido` |
    | 시군구 | `sgg` |
    | 예산대 | `budget_band` |

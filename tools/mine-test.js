@@ -114,6 +114,9 @@ check('시트: 단지 찾기(이름·평형·지번)', PS.findUnit([lowU, PL[0]]
 check('시트: 괄호 동 표기 다른 이름으로도 찾기', PS.findUnit([PL[3]], { sgg: '11680', dong: '청담동', apt: '청담2차이-편한세상', band: '99㎡대' }) === PL[3], true, '');
 const th = PS.tradesHtml(lowU, months, { show: 2 });
 check('시트: 거래 표 최신 2건 + 더보기', [(th.match(/<tr>/g) || []).length, /더보기 \(1건 더\)/.test(th), /직거래/.test(th)], [3, true, true], '머리행 1 + 보이는 2행, 1건 숨김');
+const bh = PS.btn({ sd: 's00', sgg: '11680', dong: '청담동', apt: '청담4차이-"편한"세상', band: '135㎡대', jibun: '28-20' }, 'report_top');
+const bq = JSON.parse(bh.match(/data-jps="([^"]*)"/)[1].replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&#39;/g, "'"));
+check('시세 흐름 보기 단추: 시트가 받는 키 그대로', [bq, /data-jps-at="report_top"/.test(bh), /시세 흐름 보기/.test(bh)], [{ sd: 's00', sgg: '11680', dong: '청담동', apt: '청담4차이-"편한"세상', band: '135㎡대', jibun: '28-20' }, true, true], '따옴표 이름도 안전하게');
 check('공개 화면 문구에 내부 기준값 없음', /12건/.test(fs.readFileSync(path.join(__dirname, '../mine/index.html'), 'utf8')), false, '점수용 최소 거래 수는 노출하지 않음');
 
 // 프리미엄 리포트 단지 키 = assets/pay.js JDJ_PAY.keyOf
