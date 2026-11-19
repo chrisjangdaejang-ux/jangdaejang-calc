@@ -22,6 +22,8 @@
 <script>window.JDJ_CONFIG = { tool:'buy', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js"></script>
 <script src="../assets/stat.js"></script>
+<script src="../assets/share.js?v=1"></script>
+<script src="../assets/loan-core.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -271,7 +273,7 @@ body.wiz .wiznav{display:flex;gap:8px;margin-top:4px}
         </div>
       </div>
 
-      <label class="check"><input type="checkbox" id="costs" checked> 취득세·중개보수 포함해서 계산</label>
+      <label class="check"><input type="checkbox" id="costs" checked> 취득세·중개보수·기타 비용(1,000만) 포함해서 계산</label>
       <div class="wizerr" id="wErr" role="alert"></div>
       <div class="wiznav"><button type="button" class="btn" id="wPrev">이전</button><button type="button" class="btn primary" id="wNext">다음</button></div>
       <div class="wizskip"><button type="button" id="wSkip">질문 없이 한 화면에서 모두 입력하기</button></div>
@@ -289,7 +291,7 @@ body.wiz .wiznav{display:flex;gap:8px;margin-top:4px}
       <div class="stats">
         <div class="stat"><div class="k">대출 가능액</div><div class="v" id="sLoan">-</div><div class="d" id="sLoanD"></div></div>
         <div class="stat"><div class="k">월 상환액</div><div class="v" id="sPay">-</div><div class="d" id="sPayD"></div></div>
-        <div class="stat"><div class="k">부대비용</div><div class="v" id="sCost">-</div><div class="d">세금+중개보수 (아래 상세)</div></div>
+        <div class="stat"><div class="k">부대비용</div><div class="v" id="sCost">-</div><div class="d">세금+중개보수+기타 (아래 상세)</div></div>
       </div>
 
       <div class="premium" id="premBox">
@@ -404,77 +406,20 @@ function fmtShort(man){ // 억 단위 소수 1자리
   return Math.round(man).toLocaleString()+'만';
 }
 
+/* 대출·최대 매수액 계산은 리포트와 같은 공용 함수(assets/loan-core.js)를 씀 — 기타 비용(이사·등기·수리) 1,000만 포함 */
+let ETC = JDJ_LOAN.ETC_DEFAULT;
 function ctx(){
   const region = $('region').value, R = REG[region];
-  const ltvKey = R.regulated ? 'reg' : (R.capital ? 'capfree' : 'local');
-  const stressBase = (R.regulated||R.capital) ? 3.0 : 0.75;
-  return {
-    region, R,
-    income:num($('income').value), cash:num($('cash').value), debt:num($('debt').value),
-    rate:num($('rate').value), term:parseInt($('term').value,10)||30,
-    ltv: LTV[ltvKey][own], stressBase,
-    stress: Math.round(stressBase*TYPE_RATIO[rtype]*100)/100,
-    costsOn:$('costs').checked
-  };
+  const g = R.regulated ? 'reg' : (R.capital ? 'capfree' : 'local');
+  const c = JDJ_LOAN.ctx({g, own, rtype, income:num($('income').value), cash:num($('cash').value), debt:num($('debt').value),
+    rate:num($('rate').value), term:parseInt($('term').value,10)||30, etc:ETC, costsOn:$('costs').checked, large: area==='large'});
+  c.region = region; c.R = R; return c;
 }
-
-function capByPrice(P,c){ // 만원
-  if (!(c.R.regulated||c.R.capital)) return Infinity;
-  if (P<=150000) return 60000;
-  if (P<=250000) return 40000;
-  return 20000;
-}
-function dsrMax(c, stress){
-  const room = c.income*0.40 - c.debt;
-  if (room<=0) return 0;
-  const i = (c.rate + (stress===undefined?c.stress:stress))/1200, n = c.term*12;
-  const f = i===0 ? n : (1-Math.pow(1+i,-n))/i;
-  return room/12*f;
-}
-function monthly(L, rate, term){
-  const i=rate/1200, n=term*12;
-  if (L<=0) return 0;
-  return i===0 ? L/n : L*i/(1-Math.pow(1+i,-n));
-}
-function costDetail(P,c){
-  let rate, heavy=false;
-  if (own==='multi'){ rate = c.R.regulated ? 12 : 8; heavy=true; }
-  else if (P<=60000) rate=1;
-  else if (P<=90000) rate=Math.round(((P/10000)*2/3-3)*100)/100;
-  else rate=3;
-  const acq = P*rate/100;
-  const edu = heavy ? P*0.4/100 : acq*0.1;
-  let farm = 0;
-  if (area==='large') farm = heavy ? P*(rate===12?1.0:0.6)/100 : P*0.2/100;
-  let relief = 0;
-  if (own==='first' && P<=120000) relief = Math.min(acq, 200);
-  let br, cap=Infinity;
-  if (P<5000){br=.6;cap=25;} else if (P<20000){br=.5;cap=80;} else if (P<90000) br=.4;
-  else if (P<120000) br=.5; else if (P<150000) br=.6; else br=.7;
-  const brokerBase = Math.min(P*br/100, cap);
-  const broker = brokerBase*1.1;
-  const total = acq - relief + edu + farm + broker;
-  return {rate, acq, edu, farm, relief, br, broker, brokerBase, total, heavy};
-}
-function costs(P,c){
-  if (!c.costsOn) return 0;
-  return costDetail(P,c).total;
-}
-function loanAt(P,c,dsr){
-  const a = P*c.ltv, b = capByPrice(P,c), d = dsr;
-  const L = Math.max(0, Math.min(a,b,d));
-  let by = 'LTV'; if (L===b && b<a && b<=d) by='CAP'; if (L===d && d<a && d<b) by='DSR';
-  if (c.ltv===0) by='BAN';
-  return {L, a, b, d, by};
-}
-function maxPrice(c, dsr){
-  let best=0;
-  for (let P=1000; P<=800000; P+=100){
-    const {L} = loanAt(P,c,dsr);
-    if (c.cash + L >= P + costs(P,c)) best=P;
-  }
-  return best;
-}
+const capByPrice = JDJ_LOAN.capByPrice, monthly = JDJ_LOAN.monthly, loanAt = JDJ_LOAN.loanAt;
+function dsrMax(c, stress){ return JDJ_LOAN.dsrMax(c, stress); }
+function costDetail(P,c){ return JDJ_LOAN.costDetail(P,c); }
+function costs(P,c){ return JDJ_LOAN.extra(P,c); }
+function maxPrice(c, dsr){ return JDJ_LOAN.maxPrice(c, dsr); }
 
 function setTermOptions(){
   const R = REG[$('region').value];
@@ -578,9 +523,10 @@ function renderCost(c,P){
   html += `<tr><td>지방교육세 <small>${d.heavy?'0.4%':'취득세의 10%'}</small></td><td>${fmt(d.edu)}원</td></tr>`;
   if (d.farm>0) html += `<tr><td>농어촌특별세 <small>85㎡ 초과</small></td><td>${fmt(d.farm)}원</td></tr>`;
   html += `<tr><td>중개보수 <small>상한 ${d.br}% + VAT</small></td><td>${fmt(d.broker)}원</td></tr>`;
-  html += `<tr class="total"><td>부대비용 합계 <small>매매가의 ${(d.total/base*100).toFixed(2)}%</small></td><td>${fmt(d.total)}원</td></tr>`;
+  html += `<tr><td>기타 비용 <small>이사·등기·수리 가정</small></td><td>${fmt(c.etc)}원</td></tr>`;
+  html += `<tr class="total"><td>부대비용 합계 <small>매매가의 ${((d.total+c.etc)/base*100).toFixed(2)}%</small></td><td>${fmt(d.total+c.etc)}원</td></tr>`;
   $('costTbl').innerHTML = html;
-  let note = '취득세는 잔금일로부터 60일 이내 신고·납부합니다. 법무사·등기 비용, 국민주택채권 할인, 이사비는 별도입니다.';
+  let note = '취득세는 잔금일로부터 60일 이내 신고·납부합니다. 기타 비용 1,000만 원(이사·등기·수리)은 맞춤 리포트와 같은 가정이고, 리포트의 조건 수정에서 바꿀 수 있어요.';
   if (costBase==='target' && !T) note = '아래 "점 찍어둔 집"에 매매가를 입력하면 그 집 기준으로 계산됩니다. ' + note;
   if (own==='first' && base>120000) note = '12억 초과 주택은 생애최초 취득세 감면 대상이 아닙니다. ' + note;
   if (own==='one') note = '기존 주택을 기한 내 처분하는 일시적 2주택은 일반세율(1~3%)로 계산했습니다. 기한 내 처분하지 못하면 중과세가 추징될 수 있습니다. ' + note;
@@ -658,7 +604,9 @@ $('copyBtn').addEventListener('click',async()=>{
 
 // 맞춤 매수 리포트 (무료 베타) — 클릭 수로 유료화 수요 확인
 function updateReport(c){
-  const q=new URLSearchParams({i:c.income,c:c.cash,d:c.debt,o:own,t:rtype,rt:c.rate,tm:c.term,r:$('region').value});
+  /* 연소득·현금·대출은 주소에 싣지 않고 이 기기에만 저장(공유 링크로 새지 않게) */
+  if (window.JDJ_SHARE) JDJ_SHARE.saveFin({i:c.income,c:c.cash,d:c.debt});
+  const q=new URLSearchParams({o:own,t:rtype,rt:c.rate,tm:c.term,r:$('region').value});
   const RG=window.JDJ_REGION; if(RG){ q.set('sd',RG.any?'all':RG.sido); if(RG.sgg) q.set('g',RG.sgg); }
   $('premBtn').href='report/?'+q.toString();
   const q2=new URLSearchParams(q); q2.set('mode','cmp'); $('cmpLink').href='report/?'+q2.toString();
@@ -685,6 +633,8 @@ function pickSeg(id, v){ const b=$(id).querySelector(`button[data-v="${v}"]`); i
 if (QS.has('i')) fillNum('income', QS.get('i'));
 if (QS.has('c')) fillNum('cash', QS.get('c'));
 if (QS.has('d')) fillNum('debt', QS.get('d'));
+/* 리포트에서 돌아올 때(full=1): 이 기기에 저장해 둔 내 금액으로 채움 */
+if (QS.get('full')==='1' && !QS.has('c') && window.JDJ_SHARE){ const F=JDJ_SHARE.loadFin(); if(F){ if(F.i!=null) fillNum('income',F.i); if(F.c!=null) fillNum('cash',F.c); if(F.d!=null) fillNum('debt',F.d); if(F.e!=null && !isNaN(+F.e)) ETC=+F.e; } }
 if (QS.get('rt') && !isNaN(parseFloat(QS.get('rt')))) $('rate').value = parseFloat(QS.get('rt'));
 if (QS.get('tm')) { const t=parseInt(QS.get('tm'),10); if([...$('term').options].some(o=>+o.value===t)) $('term').value=t; }
 if (QS.get('o')) pickSeg('own', QS.get('o'));

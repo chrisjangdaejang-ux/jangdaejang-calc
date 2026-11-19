@@ -25,6 +25,8 @@
 <script src="../../assets/mine-core.js?v=5"></script>
 <script src="../../assets/price-sheet.js?v=4"></script>
 <script src="../../assets/agents.js"></script>
+<script src="../../assets/share.js?v=1"></script>
+<script src="../../assets/loan-core.js?v=1"></script>
 <script src="../../assets/kchat.js?v=1"></script>
 <script src="../../assets/plain-words.js?v=3"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -508,12 +510,21 @@ function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;',
 function PB(x, at, cls, apt){ return window.JDJ_PRICE ? JDJ_PRICE.btn({sd:x.sd||sdIdOf(x.code), sgg:x.code, dong:x.dong, apt:apt||x.apt, band:x.band, jibun:apt?'':x.jb}, at, {cls:cls||''}) : ''; }
 
 /* ---------- 상태 ---------- */
+/* 개인 금융값(연소득·현금·대출·이름·기타 비용)은 주소가 아니라 이 기기에만 보관(assets/share.js).
+   예전 공유 링크처럼 주소에 개인값이 있으면: 주소에서 지우고, 이 기기에 저장된 내 값이 없으면 입력 화면으로 보냄 */
+const FIN = (window.JDJ_SHARE && JDJ_SHARE.loadFin()) || null;
+if (window.JDJ_SHARE && JDJ_SHARE.hasPersonal(location.search)) {
+  const clean = JDJ_SHARE.stripPersonal(location.search);
+  if (!FIN) { const q=new URLSearchParams(clean); const b=new URLSearchParams(); ['r','sd','g'].forEach(k=>{ if(q.get(k)) b.set(k,q.get(k)); }); b.set('from','share'); location.replace('../?'+b.toString()); }
+  history.replaceState(null,'',location.pathname+clean+location.hash);
+}
 const Q = new URLSearchParams(location.search);
+const FV = (k,d)=> FIN && FIN[k]!=null && FIN[k]!=='' ? FIN[k] : d;
 const S = {
-  name: Q.get('n')||'',
-  income: num(Q.get('i')||7000), cash: num(Q.get('c')||40000), debt: num(Q.get('d')||0),
+  name: String(FV('n','')),
+  income: num(FV('i',7000)), cash: num(FV('c',40000)), debt: num(FV('d',0)),
   own: Q.get('o')||'none', rtype: Q.get('t')||'cyc', rate: num(Q.get('rt')||4.0), term: parseInt(Q.get('tm')||30,10),
-  etc: num(Q.get('e')||1000), region: Q.get('r')||'seoul',
+  etc: num(FV('e',1000)), region: Q.get('r')||'seoul',
   sido: null, sggs: new Set(), areas: new Set(['59㎡대','74㎡대','84㎡대'])
 };
 let IX=null; const SIDO_CACHE={};
@@ -523,42 +534,12 @@ let ALL_UNITS=null, ALL_P=null;
 
 /* ---------- 계산 엔진 (계산기와 동일 기준) ---------- */
 function groupOf(code){ return isReg(code) ? 'reg' : (isCap(code) ? 'capfree' : 'local'); }
-function ctxFor(g){
-  const capital = g!=='local', regulated = g==='reg';
-  const stressBase = capital ? 3.0 : 0.75;
-  const maxTerm = capital ? 30 : 40;
-  return { g, capital, regulated, ltv: LTV[g][S.own], stressBase, stress: Math.round(stressBase*TYPE_RATIO[S.rtype]*100)/100,
-           income:S.income, cash:S.cash, debt:S.debt, rate:S.rate, term:Math.min(S.term,maxTerm) };
-}
-function capByPrice(P,c){ if(!c.capital && !c.regulated) return Infinity; if(P<=150000) return 60000; if(P<=250000) return 40000; return 20000; }
-function dsrMax(c, stress, rate, term){
-  const room=c.income*0.40-c.debt; if(room<=0) return 0;
-  const i=((rate??c.rate)+(stress??c.stress))/1200, n=(term??c.term)*12;
-  return room/12*(i===0?n:(1-Math.pow(1+i,-n))/i);
-}
-function monthly(L,rate,term){ const i=rate/1200,n=term*12; if(L<=0) return 0; return i===0?L/n:L*i/(1-Math.pow(1+i,-n)); }
-function costDetail(P,c,large){
-  let rate, heavy=false;
-  if (S.own==='multi'){ rate = c.regulated ? 12 : 8; heavy=true; }
-  else if (P<=60000) rate=1; else if (P<=90000) rate=Math.round(((P/10000)*2/3-3)*100)/100; else rate=3;
-  const acq=P*rate/100, edu=heavy?P*0.4/100:acq*0.1;
-  let farm=0; if(large) farm = heavy ? P*(rate===12?1.0:0.6)/100 : P*0.2/100;
-  let relief=0; if(S.own==='first' && P<=120000) relief=Math.min(acq,200);
-  let br,cap=Infinity; if(P<5000){br=.6;cap=25;} else if(P<20000){br=.5;cap=80;} else if(P<90000) br=.4; else if(P<120000) br=.5; else if(P<150000) br=.6; else br=.7;
-  const broker=Math.min(P*br/100,cap)*1.1;
-  return {rate, acq, edu, farm, relief, br, broker, heavy, total: acq-relief+edu+farm+broker};
-}
-function loanAt(P,c,dsr){
-  const a=P*c.ltv, b=capByPrice(P,c), d=dsr, L=Math.max(0,Math.min(a,b,d));
-  let by='LTV'; if(L===b && b<a && b<=d) by='CAP'; if(L===d && d<a && d<b) by='DSR'; if(c.ltv===0) by='BAN';
-  return {L,a,b,d,by};
-}
-function need(P,c,dsr,large){ const l=loanAt(P,c,dsr); const cd=costDetail(P,c,large); return {loan:l, cost:cd, need: P - l.L + cd.total + S.etc}; }
-function maxPrice(c,dsr){
-  let best=0;
-  for(let P=1000;P<=800000;P+=100){ if(need(P,c,dsr,false).need <= c.cash) best=P; }
-  return best;
-}
+/* 대출·최대 매수액은 계산기와 같은 공용 함수(assets/loan-core.js) */
+function ctxFor(g){ return JDJ_LOAN.ctx({g, own:S.own, rtype:S.rtype, income:S.income, cash:S.cash, debt:S.debt, rate:S.rate, term:S.term, etc:S.etc}); }
+const capByPrice = JDJ_LOAN.capByPrice, monthly = JDJ_LOAN.monthly, loanAt = JDJ_LOAN.loanAt, dsrMax = JDJ_LOAN.dsrMax;
+function costDetail(P,c,large){ return JDJ_LOAN.costDetail(P,c,!!large); }
+function need(P,c,dsr,large){ return JDJ_LOAN.need(P,c,dsr,!!large); }
+function maxPrice(c,dsr){ return JDJ_LOAN.maxPrice(c,dsr,false); }
 const BY_TXT = {LTV:'LTV(집값 대비 비율)', CAP:'가격구간별 대출 한도', DSR:'소득(DSR 40%)', BAN:'주택구입 주담대 불가'};
 
 /* ---------- 데이터 ---------- */
@@ -661,6 +642,7 @@ function renderSggChips(){
 function readSettings(){
   S.name=$('s_name').value.trim(); S.income=num($('s_income').value); S.cash=num($('s_cash').value); S.debt=num($('s_debt').value);
   S.own=$('s_own').value; S.rtype=$('s_rtype').value; S.rate=num($('s_rate').value)||4; S.term=parseInt($('s_term').value,10); S.etc=num($('s_etc').value);
+  if (window.JDJ_SHARE) JDJ_SHARE.saveFin({i:S.income, c:S.cash, d:S.debt, n:S.name, e:S.etc});
 }
 let rt=null; function rerender(){ clearTimeout(rt); rt=setTimeout(render,250); }
 function wireSettings(){
@@ -1109,8 +1091,8 @@ async function render(){
   const ctxBy={}, dsrBy={}, maxBy={};
   for (const g of ['reg','capfree','local']){ const c=ctxFor(g); ctxBy[g]=c; dsrBy[g]=dsrMax(c); maxBy[g]=maxPrice(c,dsrBy[g]); }
   const {picked,total} = pickCandidates(units, maxBy, ctxBy, dsrBy);
-  /* 지역 상관없음은 1위 단지가 있는 곳의 대출 기준으로 요약 */
-  const main = (S.sido.any && picked.length) ? picked[0].g : groups.length ? groups.sort((a,b)=>[...S.sggs].filter(c=>groupOf(c)===b).length-[...S.sggs].filter(c=>groupOf(c)===a).length)[0] : 'reg';
+  /* 지역 상관없음은 계산기와 같은 기준(비규제 수도권)으로 요약하고, 아래 표에 지역 구분별 금액을 함께 보여 줌 */
+  const main = S.sido.any ? JDJ_LOAN.ANY_GROUP : groups.length ? groups.sort((a,b)=>[...S.sggs].filter(c=>groupOf(c)===b).length-[...S.sggs].filter(c=>groupOf(c)===a).length)[0] : 'reg';
   const c=ctxBy[main], dsr=dsrBy[main], M=maxBy[main], ld=loanAt(M,c,dsr), cd=costDetail(M,c,false);
   const mon = monthly(ld.L,c.rate,c.term);
   const today = new Date(); const ymd = `${today.getFullYear()}.${String(today.getMonth()+1).padStart(2,'0')}.${String(today.getDate()).padStart(2,'0')}`;
@@ -1550,11 +1532,10 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ const bg=$('agm'
     { const r=$('hzr'); if(r){ r.oninput=()=>{ rangeP(r); const v=$('hzv'); if(v) v.textContent=hzLbl(+r.value); }; r.onchange=()=>{ setHz(+r.value); JDJ.track('hz',{hz:r.value}); }; } } hzUi();
     $('cmpBtn').onclick=()=>{ MODE==='cmp' ? goRec() : goCompare(); JDJ.track('cmp_toggle',{mode:MODE}); };
     setModeUi();
-    $('backBtn').href = '../' + (location.search||'');
-    $('shareBtn').onclick = async ()=>{ const b=$('shareBtn'), url=location.href;
-      try{ if (navigator.share) { await navigator.share({title:document.title, url}); if(window.jdjStat) jdjStat('report_share',{method:'share'}); return; } await navigator.clipboard.writeText(url); b.textContent='주소 복사됨'; if(window.jdjStat) jdjStat('report_share',{method:'copy'}); }
-      catch(e){ if(e && e.name==='AbortError') return; b.textContent='복사 안 됨'; }
-      setTimeout(()=>{ b.textContent='공유'; }, 2000); };
+    $('backBtn').href = '../' + (location.search ? location.search+'&full=1' : '?full=1');
+    /* 공유: 내 금액은 빼고 '나도 계산해 보기' 링크만(지역만 실음). 받은 사람은 자기 조건으로 처음부터 계산 */
+    if (window.JDJ_SHARE) JDJ_SHARE.bind($('shareBtn'), ()=>{ const b=new URLSearchParams(); if(S.sido) b.set('sd', S.sido.any?'all':S.sido.name); b.set('from','share');
+      return {title:'장대장 내 집 마련 계산기', text:'내 예산으로 살 수 있는 단지와 앞으로 2년 전망, 나도 계산해 보기', url:new URL('../?'+b.toString(), location.href).href, ev:'report_share'}; });
     await render();
     JDJ.track('report_view');
   }catch(e){

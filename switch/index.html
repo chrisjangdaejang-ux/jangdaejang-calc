@@ -22,6 +22,7 @@
 <script>window.JDJ_CONFIG = { tool:'switch', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js"></script>
 <script src="../assets/stat.js"></script>
+<script src="../assets/share.js?v=1"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/kchat.js?v=1"></script>
 <script src="../assets/region-notes.js"></script>
@@ -675,7 +676,9 @@ function updateConsult(){
 function updateSwitchReport(){
   if (!last || !last.c) return;
   const {cash,c}=last;
-  const q=new URLSearchParams({i:c.income, c:Math.max(0,Math.round(cash)), d:c.debt||0, o:houses>=2?'multi':'one', t:rtype, rt:c.rate, tm:c.term, e:last.etc||0, r:$('region').value, src:'switch'});
+  /* 연소득·손에 남는 돈·대출은 주소에 싣지 않고, 리포트로 넘어갈 때 이 기기에만 저장 */
+  SW_FIN={i:c.income, c:Math.max(0,Math.round(cash)), d:c.debt||0, e:last.etc||0};
+  const q=new URLSearchParams({o:houses>=2?'multi':'one', t:rtype, rt:c.rate, tm:c.term, r:$('region').value, src:'switch'});
   const RG=window.JDJ_REGION; if(RG){ q.set('sd',RG.sido); if(RG.sgg) q.set('g',RG.sgg); }
   $('premBtn').href='../buy/report/?'+q.toString();
 }
@@ -688,6 +691,9 @@ function statSwitch(){ if(!window.jdjStat || !last || !last.c) return; const RG=
   if(!window.jdjStat || !e.target.closest || !e.target.closest('.grid')) return;
   if(t==='click' && !e.target.closest('.seg button')) return;
   jdjStat.later('switch', statSwitch, 3000); }));
+var SW_FIN, REC_LAST_O=null;
+document.addEventListener('click',e=>{ const a=e.target.closest&&e.target.closest('a[data-fin]'); if(a&&window.JDJ_SHARE&&REC_LAST_O) JDJ_SHARE.saveFin(REC_LAST_O); },true);
+['pointerdown','click','keydown'].forEach(t=>$('premBtn').addEventListener(t,()=>{ if(SW_FIN&&window.JDJ_SHARE) JDJ_SHARE.saveFin(SW_FIN); }));
 $('premBtn').addEventListener('click',()=>JDJ.track('switch_to_report',{region:$('region').value, max_band:JDJ.band(last?last.P:0)}));
 
 /* ---------- 지금 집 내놓기: 우리 동네 제휴 중개사 ---------- */
@@ -937,7 +943,7 @@ async function runRec(){
   const res = SW.recommend({units, inArea, bands, B, o, max:5, any:!!RG.any,
     sggPpy: code=>{ const s=AG_IX.sgg[code]; return s?REC.lastNZ(s.s):0; }, note: noteOf,
     exclude: u=>!!(HOME&&HOME.u&&u[0]===HOME.u[0]&&u[2]===HOME.u[2]), sidoOf: code=>(AG_IX.sgg[code]||{}).sido});
-  REC_LAST=res;
+  REC_LAST=res; REC_LAST_O={i:o.income, c:Math.round(o.cash), d:o.debt, e:o.etc};
   if(CMP_SEL && !res.picked.some(x=>recKey(x)===CMP_SEL)) CMP_SEL=null;
   const multiG = new Set(res.picked.map(x=>x.g)).size>1;
   $('recLead').innerHTML = `${escH(RG.label||RG.sido)} · ${area==='small'?'전용 85㎡ 이하':area==='large'?'전용 85㎡ 초과':'모든 평형'} · 새 집에 쓸 수 있는 자기자본 <b>${fmt(o.cash)}원</b> 기준으로, 대출·취득세·중개보수·기타 비용을 모두 내고도 예산 안에 드는 단지 ${res.total.toLocaleString()}곳 가운데 미래가치 점수가 높은 순서예요. 같은 단지·같은 구에 몰리지 않게 골랐어요.`
@@ -949,13 +955,13 @@ async function runRec(){
   const sel = CMP_SEL || recKey(res.picked[0]);
   box.innerHTML='<div class="recs">'+res.picked.map((x,i)=>{
     const k=recKey(x), on=k===sel, sg=AG_IX.sgg[x.code]||{};
-    const q=new URLSearchParams({i:o.income, c:Math.round(o.cash), d:o.debt, o:houses>=2?'multi':'one', t:rtype, rt:o.rate, tm:o.term, e:o.etc, sd:sg.sido||'', g:x.code, src:'switch_rec'});
+    const q=new URLSearchParams({o:houses>=2?'multi':'one', t:rtype, rt:o.rate, tm:o.term, sd:sg.sido||'', g:x.code, src:'switch_rec'});
     return `<div class="rc ${on?'on':''}">
       <div class="hd"><div><div class="rk">TOP ${i+1}</div><h3>${escH(x.apt)} ${escH(x.band)}</h3><div class="loc">${escH(sg.sido)} ${escH(sg.name)} ${escH(x.dong)} · 전용 ${x.area}㎡ · ${GROUP_NAME[x.g]}</div></div>
         <div class="fv"><b>${x.disp}</b><small>${x.hasFv?'미래가치':'추천 점수'}</small></div></div>
       <div class="nums"><div><div class="k">추정 시세</div><div class="v">${fmtShort(x.P)}</div></div><div><div class="k">새 대출</div><div class="v">${fmtShort(x.nd.loan.L)}</div></div><div><div class="k">매달 상환</div><div class="v">${Math.round(x.mon).toLocaleString()}만</div></div></div>
       <ul>${recReasons(x).map(([c,t])=>`<li class="${c}">${t}</li>`).join('')}</ul>
-      <div class="acts">${PB(x.code,x.dong,x.apt,x.band,x.u&&x.u[8],'switch_top')}<button type="button" data-cmp="${escH(k)}" class="${on?'cmpOn':''}">${on?'④에서 비교 중':'지금 집과 비교하기'}</button><a href="../buy/report/?${q}" target="_blank" rel="noopener" data-track="switch_rec_report">이 지역 단지 리포트</a></div>
+      <div class="acts">${PB(x.code,x.dong,x.apt,x.band,x.u&&x.u[8],'switch_top')}<button type="button" data-cmp="${escH(k)}" class="${on?'cmpOn':''}">${on?'④에서 비교 중':'지금 집과 비교하기'}</button><a href="../buy/report/?${q}" target="_blank" rel="noopener" data-track="switch_rec_report" data-fin="1">이 지역 단지 리포트</a></div>
     </div>`; }).join('')+'</div>';
   box.querySelectorAll('[data-cmp]').forEach(b=>b.onclick=()=>{ CMP_SEL=b.dataset.cmp; JDJ.track('switch_rec_compare'); runRec(); setTimeout(()=>$('vsBox').scrollIntoView({behavior:'smooth',block:'start'}),60); });
   renderVs();
