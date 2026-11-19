@@ -35,8 +35,10 @@
 <script src="../assets/agents.js"></script>
 <script src="../assets/kchat.js?v=1"></script>
 <script src="../assets/plain-words.js?v=4"></script>
-<script src="../assets/mine-core.js?v=6"></script>
-<script src="../assets/price-sheet.js?v=4"></script>
+<script src="../assets/mine-core.js?v=7"></script>
+<script src="../assets/price-sheet.js?v=5"></script>
+<script src="../assets/offi-core.js?v=1"></script>
+<script src="../assets/offi-view.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=39">
@@ -179,6 +181,9 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
 .jps-dir{font-size:12.5px;color:#8A6D17;font-weight:700}
 .jps-note{font-size:13.5px;color:#4E5968;line-height:1.6;margin:6px 0 0}
 [hidden]{display:none!important}
+.mtabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#F2F4F6;border-radius:14px;padding:5px;margin:0 0 14px;max-width:420px}
+.mtabs button{font:inherit;font-size:16px;font-weight:700;border:0;background:transparent;color:#4E5968;min-height:46px;border-radius:10px;cursor:pointer}
+.mtabs button.on{background:#fff;color:#2F6BFF;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .sharebox{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:14px 0}
 .sharebox .note{font-size:13.5px;color:#4E5968}
 .sharebox .btn{border:1px solid var(--line)}
@@ -194,6 +199,9 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
   <span class="tag">내 집 시세</span>
   <h1>우리 집, <em>지금 얼마</em>일까요?<br>앞으로는 어떨까요?</h1>
   <p class="lead">국토교통부 아파트 실거래가로 평형별 최근 시세, 1·3년 가격 추이, 거래량, 같은 동·구 대비 위치와 미래가치 점수를 보여 드려요. 내 집으로 저장하면 다음에 들어왔을 때 바로 확인할 수 있어요.</p>
+
+  <div class="mtabs" role="tablist" aria-label="주택 종류" id="mtabs"><button type="button" role="tab" data-t="a" class="on" aria-selected="true">아파트</button><button type="button" role="tab" data-t="o" aria-selected="false">오피스텔</button></div>
+  <section id="offiSec" hidden></section>
 
   <section class="sec" id="homesSec" hidden aria-labelledby="homesT">
     <h2 id="homesT" style="font-size:19px;font-weight:900;margin:0 0 10px">내 집 <small id="homesN" style="font-size:14px;color:#4E5968;font-weight:700"></small></h2>
@@ -401,13 +409,14 @@ function render(d, map, units){
   <div class="panel">
     ${HT ? `<div class="chead"><h3>가격 추이 (매매·전세)</h3>${P.spanBtns(HT, S.hspan, 'seg2')}</div>
     <div class="chart" id="cPrice"></div>
-    <div class="legend"><span><i></i>매매 시세</span>${HT.j.some(v => v > 0) ? '<span><i class="j"></i>전세 시세</span>' : ''}<span>${esc(S.band)} · 전용 ${u[4]}㎡ 환산</span></div>
+    <div class="legend"><span><i></i>매매 시세</span>${HT.j.some(v => v > 0) ? '<span><i class="j"></i>전세 시세</span>' : ''}${sgg && sgg.s ? `<span><i class="g"></i>${esc(sggName(d.code))} 아파트 전체(같은 면적 환산)</span>` : ''}<span>${esc(S.band)} · 전용 ${u[4]}㎡ 환산</span></div>
+    <p class="basis" id="guNote"></p>
     <p class="basis">${esc(P.histNote(hist, HT))}</p>
     ${HT.jr.some(v => v > 0) ? `<p class="basis">아래 띠 = 전세가율(전셋값 ÷ 매맷값, 매매·전세 시세가 모두 있는 달만, 점선 = 그 기간 평균). 차트 위를 움직이거나 누르면 그 달 매매·전세·갭(매매 − 전세)·전세가율을 보여 드려요.</p>` : ''}`
     : `<div class="chead"><h3>가격 추이 (평당가)</h3><div class="seg2" role="group" aria-label="기간">${[12, 36].map(n => `<button type="button" data-span="${n}" class="${S.span === n ? 'on' : ''}" aria-pressed="${S.span === n}">${n / 12}년</button>`).join('')}</div></div>
     <div class="chart" id="cPrice"></div>
     <div class="legend"><span><i></i>${esc(d.apt)} ${esc(S.band)}</span><span><i class="g"></i>${esc(sggName(d.code))} 아파트 전체</span></div>
-    <p class="basis">단위: 만원/3.3㎡ · 각 달 값 = 그 달까지 3개월 실거래 평당가 중앙값. 거래가 없던 기간은 점선으로 이어 표시해요.</p>`}
+    <p class="basis">단위: 만원/3.3㎡ · 각 달 값 = 그 달까지 3개월 실거래 평당가 중앙값. 거래가 없던 기간은 점선으로 이어 표시해요. 차트 위를 움직이거나 누르면 그 달 이 단지·${esc(sggName(d.code))} 전체 평당가와 차이를 보여 드려요.</p>`}
     <div class="chead" style="margin-top:18px"><h3>거래량 추이 (월별 건수)</h3></div>
     <div class="chart" id="cVol" style="min-height:150px"></div>
     <p class="basis">이 평형 최근 12개월 <b>${vol.last12}건</b>${vol.prev12 != null ? ` · 그 전 12개월 ${vol.prev12}건${vol.pct != null ? ` (<span class="${updown(vol.pct)}">${M.pctTxt(vol.pct, 0)}</span>)` : ''}` : ''}${sv ? ` · ${esc(sggName(d.code))} 전체 최근 12개월 ${sv.last12.toLocaleString()}건${sv.prev12 != null ? ` · 그 전 12개월 ${sv.prev12.toLocaleString()}건${sv.pct != null ? ` (${M.pctTxt(sv.pct, 0)})` : ''}` : ''}` : ''}</p>
@@ -471,35 +480,13 @@ function render(d, map, units){
 function drawCharts(u, sgg){
   const HT = CUR && CUR.ht;
   if (HT){
-    const w = M.histWindow(HT, S.hspan);
-    P.mountHist($('cPrice'), w, {h: 240, fs: 13.5, sparse: M.isSparse(HT.s), sub: true, cnt: P.cntMap(u, IX.months)});
+    const w = M.histWindow(HT, S.hspan), gu = sgg && sgg.s ? {name: sgg.name || sggName(u[0]), s: sgg.s, months: IX.months, area: u[4]} : null;
+    P.mountHist($('cPrice'), w, {h: 240, fs: 13.5, sparse: M.isSparse(HT.s), sub: true, cnt: P.cntMap(u, IX.months), gu});
+    const gn = $('guNote'); if (gn){ gn.textContent = P.guNote(gu, w.months[0]); gn.hidden = !gu; }
   }
   const t = M.trend(u, sgg, IX.months, HT ? (S.hspan && S.hspan < 36 ? S.hspan : 36) : S.span);
-  if (!HT) $('cPrice').innerHTML = (M.isSparse(u[6]) ? P.SPARSE : '') + lineChart(t, $('cPrice').clientWidth || 600);
+  if (!HT) P.mountPpy($('cPrice'), t, {name: (sgg && sgg.name) || sggName(u[0]), h: 230, fs: 13.5, L: 56, sparse: M.isSparse(u[6])});
   $('cVol').innerHTML = barChart(t, $('cVol').clientWidth || 600);
-}
-function niceStep(range){ const raw = range / 4, p = Math.pow(10, Math.floor(Math.log10(raw || 1))), n = raw / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p; }
-function xLabels(months, W, L, R){
-  const n = months.length, idx = n <= 12 ? [0, Math.floor((n - 1) / 2), n - 1] : [0, 12, 24, n - 1].filter(i => i < n);
-  const x = i => L + (n === 1 ? 0 : i * (W - L - R) / (n - 1));
-  return idx.map((i, k) => `<text x="${x(i).toFixed(1)}" y="__Y__" font-size="13.5" fill="#4E5968" text-anchor="${k === 0 ? 'start' : k === idx.length - 1 ? 'end' : 'middle'}">${M.ymLabel(months[i])}</text>`).join('');
-}
-function lineChart(t, W){
-  W = Math.max(280, Math.round(W)); const H = 230, L = 56, R = 12, T = 14, B = 26;
-  const vals = t.ppy.concat(t.sgg).filter(v => v > 0);
-  if (!vals.length) return '<div class="empty">이 기간에 거래가 없어요.</div>';
-  let lo = Math.min(...vals), hi = Math.max(...vals); const pad = (hi - lo) * 0.12 || hi * 0.05; lo -= pad; hi += pad;
-  const st = niceStep(hi - lo); lo = Math.floor(lo / st) * st; hi = Math.ceil(hi / st) * st;
-  const n = t.months.length, x = i => L + (n === 1 ? 0 : i * (W - L - R) / (n - 1)), y = v => T + (hi - v) / (hi - lo) * (H - T - B);
-  let grid = ''; for (let v = lo; v <= hi + 1e-6; v += st) grid += `<line x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#E5E8EB"/><text x="${L - 6}" y="${(y(v) + 4).toFixed(1)}" font-size="13.5" fill="#4E5968" text-anchor="end">${Math.round(v).toLocaleString()}</text>`;
-  const path = arr => { let d = '', on = false; arr.forEach((v, i) => { if (v > 0){ d += (on ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1); on = true; } else on = false; }); return d; };
-  const li = M.lastIdx(t.ppy);
-  const dots = t.ppy.map((v, i) => v > 0 ? `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="${i === li ? 4.5 : 2.2}" fill="#2F6BFF"><title>${M.ymLabel(t.months[i])} ${v.toLocaleString()}만/3.3㎡</title></circle>` : '').join('');
-  const lastTxt = li >= 0 ? `<text x="${Math.min(x(li), W - R).toFixed(1)}" y="${Math.max(12, y(t.ppy[li]) - 9).toFixed(1)}" font-size="13" font-weight="700" fill="#2F6BFF" text-anchor="end">${t.ppy[li].toLocaleString()}</text>` : '';
-  return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="월별 평당가 추이">${grid}
-    <path d="${path(t.sgg)}" fill="none" stroke="#8B95A1" stroke-width="2" stroke-dasharray="5 3"/>
-    ${P.linePaths(t.ppy, x, y, '#2F6BFF', 2.5)}${dots}${lastTxt}
-    ${xLabels(t.months, W, L, R).replace(/__Y__/g, H - 6)}</svg>`;
 }
 function barChart(t, W){
   W = Math.max(280, Math.round(W)); const H = 160, L = 56, R = 12, T = 12, B = 26;
