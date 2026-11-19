@@ -204,5 +204,47 @@ cacheMap.set('aqday:' + ymd(new Date()), '40');
 r = post(aq());
 check('하루 문의 상한', !r.ok && /카카오톡/.test(r.err), r);
 
+
+// 8. 광고 안내 페이지(ad/index.html) 단가·기간 계산 — PRICE-CORE 구간만 떼어 검증
+{
+  const html = fs.readFileSync(path.join(__dirname, '..', 'ad', 'index.html'), 'utf8');
+  const m = html.match(/\/\* PRICE-CORE:START[\s\S]*?\/\* PRICE-CORE:END \*\//);
+  check('PRICE-CORE 구간 있음', !!m);
+  const pc = {}; vm.createContext(pc);
+  vm.runInContext(m[0] + '\n;globalThis.__P = { PRICES, PERIODS, rnd, man, rateOf, periodPrice, weekKey, passPrice, firstWeekPrice, extendPrice, settle };', pc);
+  const P = pc.__P, pp = (mo, id) => P.periodPrice(mo, id);
+  check('기간 6개(1주~1년)', P.PERIODS.map(x => x.label).join() === '1주,2주,1개월,3개월,6개월,1년');
+  check('분양 광고 1·2·4주 = 30·50·90만', P.PRICES.bunyang.weeks[1] === 300000 && P.PRICES.bunyang.weeks[2] === 500000 && P.PRICES.bunyang.weeks[4] === 900000);
+  check('3회 이용권 10%: 4주×3 = 243만', P.passPrice(900000).total === 2430000 && P.passPrice(900000).list === 2700000);
+  check('분양 광고 기간 매핑(1주→1, 2주→2, 그 외→4, 패키지는 4주)', P.weekKey(P.PRICES.bunyang, 'w1') === 1 && P.weekKey(P.PRICES.bunyang, 'w2') === 2 && P.weekKey(P.PRICES.bunyang, 'y1') === 4 && P.weekKey(P.PRICES.pkg_bunyang, 'w1') === 4);
+  const nat = P.PRICES.native.tiers.map(t => t.month).join(), top = P.PRICES.agent_top.tiers.map(t => t.month).join();
+  check('결과 하단 카드 50·30·15만, 우선 노출 9·15만, 체크리스트 80만', nat === '500000,300000,150000' && top === '90000,150000' && P.PRICES.jeonse.tiers[0].month === 800000);
+  check('패키지 150만(4주)·20만·110만', P.PRICES.pkg_bunyang.weeks[4] === 1500000 && P.PRICES.pkg_local.tiers[0].month === 200000 && P.PRICES.pkg_jeonse.tiers[0].month === 1100000);
+  check('중개사는 공개 요금 문구(19,000~49,000원)', /19,000~49,000원/.test(P.PRICES.agent.text) && /19,000원/.test(fs.readFileSync(path.join(__dirname, '..', 'agent', 'index.html'), 'utf8')) && /49,000원/.test(fs.readFileSync(path.join(__dirname, '..', 'agent', 'index.html'), 'utf8')));
+  const want = { w1: 150000, w2: 275000, m1: 500000, m3: 1350000, m6: 2550000, y1: 4500000 };
+  for (const id in want) check(`50만 원 ${id} = ${want[id]}`, pp(500000, id).total === want[id], pp(500000, id));
+  check('1년 할인액 150만·월 37.5만 꼴', pp(500000, 'y1').off === 1500000 && pp(500000, 'y1').perMonth === 375000 && pp(500000, 'y1').rate === 25);
+  check('3개월 10%·6개월 15% 할인율', pp(500000, 'm3').rate === 10 && pp(500000, 'm6').rate === 15 && pp(500000, 'm1').rate === 0);
+  check('9만 원: 2주 49,500 → 천 원 반올림 50,000', pp(90000, 'w2').total === 50000);
+  check('9만 원: 1주 27,000 · 1년 81만(월 67,500 꼴)', pp(90000, 'w1').total === 27000 && pp(90000, 'y1').total === 810000 && pp(90000, 'y1').perMonth === 67500);
+  check('모든 기간 금액은 천 원 단위', P.PERIODS.every(x => [90000, 150000, 200000, 300000, 500000, 800000, 1100000, 123456].every(mo => pp(mo, x.id).total % 1000 === 0)));
+  check('긴 기간일수록 월 꼴 금액이 같거나 작음', ['m1', 'm3', 'm6', 'y1'].map(id => pp(800000, id).perMonth).every((v, i, a) => !i || v <= a[i - 1]));
+  check('잘못된 입력', pp(0, 'm1') === null && pp(500000, 'x') === null);
+  check('첫 주 50% 할인: 9만 → 4.5만', P.firstWeekPrice(90000) === 45000);
+  check('연장 차감: 시·도 1년 270만 − 4.5만 = 265.5만', P.extendPrice(300000, 'y1', 45000) === 2655000);
+  check('연장 차감은 1개월 이상만', P.extendPrice(300000, 'w2', 45000) === null && P.extendPrice(300000, 'm1', 45000) === 255000);
+  const s4 = P.settle(500000, 4500000, 4);
+  check('중도 해지: 1년 450만 4개월 사용 → 3개월 할인율 10%, 180만 정산 270만 환불', s4.used === 1800000 && s4.refund === 2700000 && s4.rate === 10, s4);
+  check('중도 해지: 7개월 → 6개월 할인율 15%', P.settle(500000, 4500000, 7).used === 2975000 && P.settle(500000, 4500000, 7).rate === 15);
+  check('중도 해지: 1주·2주·1개월 사용 / 미사용 전액 환불', P.settle(500000, 4500000, 0.25).used === 150000 && P.settle(500000, 4500000, 0.5).used === 275000 && P.settle(500000, 4500000, 1).used === 500000 && P.settle(500000, 4500000, 0).refund === 4500000);
+  check('정산액은 결제액을 넘지 않음', P.settle(500000, 1350000, 6).refund === 0);
+  check('표시: 450만 원·37.5만 원·6.75만 원·5,000원·1억 2,000만 원', P.man(4500000) === '450만 원' && P.man(375000) === '37.5만 원' && P.man(67500) === '6.75만 원' && P.man(5000) === '5,000원' && P.man(120000000) === '1억 2,000만 원', [P.man(4500000), P.man(375000), P.man(67500), P.man(120000000)]);
+  check('할증: 서비스·종류 +10, 단지 주변 +20, 지역 0', P.PRICES.surcharge.service === 10 && P.PRICES.surcharge.kind === 10 && P.PRICES.surcharge.near === 20 && P.PRICES.surcharge.region === 0);
+  check('최소 집행 금액 없음·최소 1주·첫 주 50%', P.PRICES.guide.minSpend === 0 && P.PRICES.guide.minWeeks === 1 && P.PRICES.guide.firstWeekOff === 50);
+  const keys = [...html.matchAll(/data-(?:price|pp|pk)="([a-z_0-9]+)"/g)].map(x => x[1]);
+  check('페이지의 금액 칸이 모두 PRICES 에 있음', keys.length > 10 && keys.every(k => P.PRICES[k]), keys.filter(k => !P.PRICES[k]));
+  check('예전 최소 집행 50만 원 문구 없음', !/최소 집행[^<]{0,20}50만/.test(html) && !/minSpend:\s*500000/.test(html));
+}
+
 console.log(`분양 광고 서버 로직 검증: ${pass}개 통과, ${fail}개 실패`);
 process.exit(fail ? 1 : 0);

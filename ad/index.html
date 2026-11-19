@@ -101,6 +101,28 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
   .ptab td:first-child{display:block}
   .ptab td:first-child::before{display:none}
 }
+/* 기간 선택 + 금액 칸 */
+.pbar{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}
+.pbar button{min-height:44px;padding:0 16px;border:1px solid var(--line);border-radius:999px;background:#fff;font:inherit;font-size:16px;font-weight:700;color:var(--sub);cursor:pointer}
+.pbar button[aria-pressed=true]{background:var(--blue);border-color:var(--blue);color:#fff}
+.pbar button:focus-visible{outline:3px solid rgba(47,107,255,.35);outline-offset:2px}
+.phint{font-size:14px;color:var(--sub2);margin:0 0 14px;line-height:1.65}
+.pcw{min-width:0}
+.pc .ln{display:block;font-size:16px;line-height:1.5;color:var(--text)}
+.pc .ln+.ln{margin-top:8px}
+.pc .tl{font-size:13.5px;font-weight:700;color:var(--sub2);margin-right:4px}
+.pc small,.pnote{display:block;font-size:13.5px;color:var(--sub2);line-height:1.55;font-weight:400}
+.pc small.off{color:var(--pos);font-weight:700}
+.pkp{font-size:14px;color:var(--sub2);line-height:1.6}
+.dtab{width:100%;border-collapse:collapse;font-size:15px;margin-top:4px}
+.dtab th,.dtab td{border-bottom:1px solid var(--line);padding:10px 8px;text-align:left;vertical-align:top;line-height:1.55}
+.dtab thead th{background:var(--gray2);font-size:13.5px;color:var(--sub2);font-weight:700;border-top:1px solid var(--line)}
+.dtab td small{display:block;font-size:13.5px;color:var(--sub2)}
+.ex{margin-top:12px;background:var(--blue-l);border:1px solid #C9D8FF;border-radius:16px;padding:14px 16px;font-size:16px;line-height:1.7}
+.ex b.h{display:block;font-size:16px;margin-bottom:4px}
+.ex ol{margin:4px 0 0;padding-left:20px}
+.ex small{display:block;font-size:13.5px;color:var(--sub2);margin-top:6px}
+h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
 .pk .card{display:flex;flex-direction:column;gap:6px}
 .pk .card .st{align-self:flex-start}
 .gtab{width:100%;border-collapse:collapse;font-size:15px}
@@ -211,8 +233,9 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
       <dl class="spec">
         <dt>지면</dt><dd>분양 화면 · 재개발·빌라 화면의 ‘분양 광고’ 칸 (청약·내 집 마련·갈아타기 화면은 <span class="st soon">준비 중</span>)</dd>
         <dt>대상</dt><dd>시행사 · 분양대행사 (아파트·오피스텔·도시형생활주택·민간임대·무순위·잔여세대)</dd>
-        <dt>과금</dt><dd>기간 정액 (주 단위) · 화면당 최대 3구좌</dd>
+        <dt>과금</dt><dd>기간 정액 (1주·2주·4주) · 화면당 최대 3구좌</dd>
         <dt>단가</dt><dd><span class="price-v" data-price="bunyang">문의 시 안내</span></dd>
+        <dt>화면 확장</dt><dd>청약·내 집 마련·갈아타기 화면에도 노출 <span class="st soon">준비 중</span> · <span class="price-v" data-price="bunyang_more">문의 시 안내</span></dd>
         <dt>타겟팅</dt><dd>시·도 (같은 시·도 광고 우선 노출)</dd>
         <dt>소재</dt><dd>단지명·지역·유형·세대수·분양가 범위(공고와 동일), 공고문 또는 홈페이지 https 주소, 대표 이미지(정사각 600×600px 이상 JPG·PNG 권장)</dd>
       </dl>
@@ -239,7 +262,7 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
       <dl class="spec">
         <dt>지면</dt><dd>내 집 마련 리포트 · 갈아타기 · 내 집 시세 · 전월세 · 청약 결과 하단</dd>
         <dt>업종</dt><dd>주택담보·전세대출 상담, 전세보증보험, 이사, 인테리어, 법무사(등기), 세무 상담 등 — 업종 심사 후 집행</dd>
-        <dt>과금</dt><dd>기간 정액 (월 단위) · 업종별·지역별 구좌 한정</dd>
+        <dt>과금</dt><dd>기간 정액 (1주부터, 3개월 이상 할인) · 업종별·지역별 구좌 한정</dd>
         <dt>단가</dt><dd><span class="price-v" data-price="native">문의 시 안내</span></dd>
         <dt>타겟팅</dt><dd>지역(시·도/시·군·구) · 서비스 목적(매수 준비/갈아타기/전월세/청약) · 주택 종류</dd>
         <dt>소재</dt><dd>제목 20자 · 설명 40자 · 로고(정사각 PNG) · https 랜딩 주소 (UTM 등 캠페인 표식 가능)</dd>
@@ -253,7 +276,7 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
       <dl class="spec">
         <dt>지면</dt><dd>전월세 시세 & 전세사기 예방 체크 — 체크리스트 하단</dd>
         <dt>업종</dt><dd>전세보증보험, 법무사(권리분석·등기), 공인 감정평가 등</dd>
-        <dt>과금</dt><dd>기간 정액 (월 단위) · 업종당 1구좌</dd>
+        <dt>과금</dt><dd>기간 정액 (1주부터, 3개월 이상 할인) · 업종당 1구좌</dd>
         <dt>단가</dt><dd><span class="price-v" data-price="jeonse">문의 시 안내</span></dd>
         <dt>타겟팅</dt><dd>시·도 · 주택 종류(아파트·빌라·오피스텔·단독·다가구)</dd>
         <dt>소재</dt><dd>제목 20자 · 설명 60자 · 로고 · https 랜딩 주소</dd>
@@ -266,7 +289,7 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
     <div class="sh">TARGETING</div>
     <h2 class="t">이용자가 지금 고른 맥락으로 타겟팅해요</h2>
     <div class="tg">
-      <div class="card"><h3>지역</h3><ul><li>시·도</li><li>시·군·구</li><li>단지 주변 <span class="st soon">준비 중</span></li></ul><span class="sur">할증 <span data-sur="region">문의 시 안내</span></span></div>
+      <div class="card"><h3>지역</h3><ul><li>시·도</li><li>시·군·구</li><li>단지 주변 <span class="st soon">준비 중</span></li></ul><span class="sur">시·도·시·군·구 할증 <span data-sur="region">문의 시 안내</span> (지역 상품을 따로 둬요) · 단지 주변 할증 <span data-sur="near">문의 시 안내</span></span></div>
       <div class="card"><h3>서비스 목적</h3><ul><li>매수 준비 · 갈아타기</li><li>전월세 · 청약 · 분양</li><li>재개발·빌라 · 세금</li></ul><span class="sur">할증 <span data-sur="service">문의 시 안내</span></span></div>
       <div class="card"><h3>주택 종류</h3><ul><li>아파트</li><li>빌라(연립·다세대) · 오피스텔</li><li>단독·다가구</li></ul><span class="sur">할증 <span data-sur="kind">문의 시 안내</span></span></div>
     </div>
@@ -276,42 +299,54 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
   <section id="prices">
     <div class="sh">RATE CARD</div>
     <h2 class="t">단가표 한눈에</h2>
-    <p class="sub">모든 금액은 VAT 별도예요. 단가는 지면·기간·지역에 따라 달라 문의 시 최신 기준으로 안내드립니다.</p>
+    <p class="sub">모든 금액은 VAT 별도예요. 기간을 고르면 상품마다 금액·할인액·한 달 꼴 금액이 바로 바뀌어요.</p>
+    <div class="pbar" id="pbar" role="group" aria-label="광고 기간 고르기"></div>
+    <p class="phint" id="phint"></p>
     <table class="ptab">
-      <colgroup><col style="width:22%"><col style="width:13%"><col style="width:27%"><col style="width:20%"><col style="width:18%"></colgroup>
-      <thead><tr><th>상품</th><th>상태</th><th>지면</th><th>과금</th><th>단가</th></tr></thead>
+      <colgroup><col style="width:20%"><col style="width:12%"><col style="width:23%"><col style="width:17%"><col style="width:28%"></colgroup>
+      <thead><tr><th>상품</th><th>상태</th><th>지면</th><th>과금</th><th><span id="pth">1개월</span> 금액</th></tr></thead>
       <tbody>
-        <tr><td><b>분양 단지 광고</b></td><td data-l="상태"><span><span class="st on">바로 가능</span></span></td><td data-l="지면">분양 · 재개발·빌라 화면 ‘분양 광고’ 칸</td><td data-l="과금">주 단위 정액 · 화면당 3구좌</td><td data-l="단가"><span class="price-v" data-price="bunyang">문의 시 안내</span></td></tr>
-        <tr><td><b>분양 광고 노출 화면 확장</b></td><td data-l="상태"><span><span class="st soon">준비 중</span></span></td><td data-l="지면">청약 · 내 집 마련 · 갈아타기 화면</td><td data-l="과금">주 단위 정액</td><td data-l="단가"><span class="price-v" data-price="bunyang_more">문의 시 안내</span></td></tr>
-        <tr><td><b>지역 제휴 중개사</b></td><td data-l="상태"><span><span class="st on">바로 가능</span></span></td><td data-l="지면">리포트 · 갈아타기 · 내 집 시세 · 전월세 · 빌라 결과</td><td data-l="과금">연 단위 정액 · 3개 구</td><td data-l="단가"><span class="price-v" data-price="agent">문의 시 안내</span></td></tr>
-        <tr><td><b>시·군·구 우선 노출</b></td><td data-l="상태"><span><span class="st soon">준비 중</span></span></td><td data-l="지면">위 결과 화면 중개사 목록 맨 앞</td><td data-l="과금">월 단위 정액 · 구별 구좌 한정</td><td data-l="단가"><span class="price-v" data-price="agent_top">문의 시 안내</span></td></tr>
-        <tr><td><b>결과 하단 네이티브 카드</b></td><td data-l="상태"><span><span class="st soon">준비 중</span></span></td><td data-l="지면">리포트 · 갈아타기 · 내 집 시세 · 전월세 · 청약 결과 하단</td><td data-l="과금">월 단위 정액 · 업종·지역별 구좌</td><td data-l="단가"><span class="price-v" data-price="native">문의 시 안내</span></td></tr>
-        <tr><td><b>전세사기 예방 체크리스트 스폰서</b></td><td data-l="상태"><span><span class="st soon">준비 중</span></span></td><td data-l="지면">전월세 체크리스트 하단</td><td data-l="과금">월 단위 정액 · 업종당 1구좌</td><td data-l="단가"><span class="price-v" data-price="jeonse">문의 시 안내</span></td></tr>
+        <tr><td><b>분양 단지 광고</b></td><td data-l="상태"><span><span class="st on">바로 가능</span></span></td><td data-l="지면">분양 · 재개발·빌라 화면 ‘분양 광고’ 칸</td><td data-l="과금">주 단위 정액(1·2·4주) · 화면당 3구좌</td><td data-l="금액" class="pc" data-pp="bunyang">문의 시 안내</td></tr>
+        <tr><td><b>분양 광고 노출 화면 확장</b></td><td data-l="상태"><span><span class="st soon">준비 중</span></span></td><td data-l="지면">청약 · 내 집 마련 · 갈아타기 화면</td><td data-l="과금">분양 단지 광고에 더하는 주 단위 금액</td><td data-l="금액" class="pc" data-pp="bunyang_more">문의 시 안내</td></tr>
+        <tr><td><b>지역 제휴 중개사</b></td><td data-l="상태"><span><span class="st on">바로 가능</span></span></td><td data-l="지면">리포트 · 갈아타기 · 내 집 시세 · 전월세 · 빌라 결과</td><td data-l="과금">1년 단위 정액 · 3개 구</td><td data-l="금액" class="pc" data-pp="agent">문의 시 안내</td></tr>
+        <tr><td><b>시·군·구 우선 노출</b></td><td data-l="상태"><span><span class="st soon">준비 중</span></span></td><td data-l="지면">위 결과 화면 중개사 목록 맨 앞</td><td data-l="과금">구당 정액 · 구별 구좌 한정</td><td data-l="금액" class="pc" data-pp="agent_top">문의 시 안내</td></tr>
+        <tr><td><b>결과 하단 네이티브 카드</b></td><td data-l="상태"><span><span class="st soon">준비 중</span></span></td><td data-l="지면">리포트 · 갈아타기 · 내 집 시세 · 전월세 · 청약 결과 하단</td><td data-l="과금">지역 범위별 정액 · 업종·지역별 구좌</td><td data-l="금액" class="pc" data-pp="native">문의 시 안내</td></tr>
+        <tr><td><b>전세사기 예방 체크리스트 스폰서</b></td><td data-l="상태"><span><span class="st soon">준비 중</span></span></td><td data-l="지면">전월세 체크리스트 하단</td><td data-l="과금">전국 단독 정액 · 업종당 1구좌</td><td data-l="금액" class="pc" data-pp="jeonse">문의 시 안내</td></tr>
       </tbody>
     </table>
-    <p class="note">최소 집행 금액: <span data-guide="minSpend">문의 시 안내</span> · 지역 제휴 중개사 요금은 <a href="../agent/">공인중개사 제휴 페이지</a>에 공개된 기준을 따릅니다.</p>
+    <p class="note">최소 집행 금액은 <b data-guide="minSpend">문의 시 안내</b>, 최소 기간은 <b data-guide="minWeeks">1주</b>예요. 처음 광고하시면 첫 주 <b data-guide="firstWeekOff">50%</b> 할인해 드려요. 지역 제휴 중개사 요금은 <a href="../agent/">공인중개사 제휴 페이지</a>에 공개된 기준과 같아요.</p>
   </section>
 
   <section id="packages" class="pk">
     <div class="sh">PACKAGES</div>
     <h2 class="t">함께 쓰면 좋은 묶음</h2>
     <div class="grid g3">
-      <div class="card"><span class="st mix">일부 바로 가능</span><h3>분양 집중</h3><p>분양 단지 광고(분양·재개발·빌라) + 같은 시·도의 청약 화면 노출 + 결과 하단 카드. 청약을 준비하는 사람에게 공고 기간 동안 여러 번 닿아요.</p><p><b>가격</b> <span class="price-v" data-price="pkg_bunyang">문의 시 안내</span></p></div>
-      <div class="card"><span class="st mix">일부 바로 가능</span><h3>지역 밀착</h3><p>지역 제휴 중개사 + 같은 시·군·구 결과 하단 카드. 이사·인테리어 등 지역 업체와 중개사무소가 한 동네의 매수·전월세 이용자를 함께 만나요.</p><p><b>가격</b> <span class="price-v" data-price="pkg_local">문의 시 안내</span></p></div>
-      <div class="card"><span class="st soon">준비 중</span><h3>전월세 안심</h3><p>전세사기 예방 체크리스트 스폰서 + 전월세 결과 하단 카드. 계약 직전 세입자에게 보증보험·권리분석·등기 서비스를 알려요.</p><p><b>가격</b> <span class="price-v" data-price="pkg_jeonse">문의 시 안내</span></p></div>
+      <div class="card"><span class="st mix">일부 바로 가능</span><h3>분양 집중</h3><p>분양 단지 광고(분양·재개발·빌라) + 같은 시·도의 청약 화면 노출 + 결과 하단 카드. 청약을 준비하는 사람에게 공고 기간 동안 여러 번 닿아요.</p><p><b>가격</b> <span class="price-v" data-price="pkg_bunyang">문의 시 안내</span></p><span class="pkp" data-pk="pkg_bunyang"></span></div>
+      <div class="card"><span class="st mix">일부 바로 가능</span><h3>지역 밀착</h3><p>지역 제휴 중개사 + 같은 시·군·구 결과 하단 카드. 이사·인테리어 등 지역 업체와 중개사무소가 한 동네의 매수·전월세 이용자를 함께 만나요.</p><p><b>가격</b> <span class="price-v" data-price="pkg_local">문의 시 안내</span></p><span class="pkp" data-pk="pkg_local"></span></div>
+      <div class="card"><span class="st soon">준비 중</span><h3>전월세 안심</h3><p>전세사기 예방 체크리스트 스폰서 + 전월세 결과 하단 카드. 계약 직전 세입자에게 보증보험·권리분석·등기 서비스를 알려요.</p><p><b>가격</b> <span class="price-v" data-price="pkg_jeonse">문의 시 안내</span></p><span class="pkp" data-pk="pkg_jeonse"></span></div>
     </div>
   </section>
 
   <section id="guide">
     <div class="sh">GUIDE</div>
     <h2 class="t">집행 전 확인해 주세요</h2>
+    <h3 class="gs" id="disc">기간별 할인</h3>
+    <p class="sub" style="margin-bottom:6px">월 단가 상품(우선 노출·결과 하단 카드·체크리스트 스폰서·지역 밀착·전월세 안심 패키지)에 똑같이 적용돼요. 분양 단지 광고는 1·2·4주 금액과 3회 이용권, 지역 제휴 중개사는 공개 요금을 따라요.</p>
+    <table class="dtab" id="dtab"></table>
+    <div class="ex" id="ex"></div>
+    <h3 class="gs">집행 기준</h3>
     <table class="gtab">
       <tbody>
-        <tr><th>최소 집행</th><td><span data-guide="minSpend">문의 시 안내</span> (VAT 별도) · 분양 단지 광고는 최소 <span data-guide="minWeeks">2주</span></td></tr>
+        <tr><th>최소 집행</th><td>최소 집행 금액 <span data-guide="minSpend">문의 시 안내</span> · 최소 기간 <span data-guide="minWeeks">1주</span> (모든 금액 VAT 별도)</td></tr>
+        <tr><th>첫 광고 할인</th><td>처음 광고하시는 광고주는 첫 주 금액을 <span data-guide="firstWeekOff">50%</span> 할인해 드려요 (광고주당 1번).</td></tr>
+        <tr><th>연장 차감</th><td>1주 광고 뒤 1개월 이상으로 연장하시면, 연장 금액에서 첫 주에 내신 금액을 빼 드려요.</td></tr>
+        <tr><th>타겟팅 할증</th><td id="gsur">특정 서비스 목적·주택 종류만 고르면 <span data-sur="service">문의 시 안내</span> · 단지 주변만 고르면 <span data-sur="near">문의 시 안내</span> · 시·도·시·군·구 지역 한정은 지역별 상품을 따로 둬서 할증 <span data-sur="region">문의 시 안내</span></td></tr>
+        <tr><th>3회 이용권</th><td>여러 단지를 분양하는 시행사·분양대행사는 분양 단지 광고를 3번 묶어 사면 <span data-guide="pass3">10%</span> 할인돼요.</td></tr>
+        <tr><th>업종 연장권</th><td>전세사기 예방 체크리스트 스폰서를 1년 계약하시면 다음 해 같은 업종 구좌를 먼저 연장할 수 있어요.</td></tr>
         <tr><th>소재 전달</th><td>노출 시작 3영업일 전까지 소재와 https 랜딩 주소 전달</td></tr>
         <tr><th>소재 교체</th><td>기간 중 월 1회 무료 (분양 광고는 공고 정정 시 즉시 반영)</td></tr>
-        <tr><th>취소·위약금</th><td>노출 시작 전 취소: 위약금 없음 · 노출 시작 뒤 중단: 이용한 기간을 정가로 일할 계산해 뺀 나머지를 정산 · 허위·과장으로 중단된 경우 환불 없음</td></tr>
-        <tr><th>중간 정산</th><td>3개월 이상 장기 집행은 월 단위로 나눠 정산 가능</td></tr>
+        <tr><th>취소·중도 해지</th><td>노출 시작 전 취소: 위약금 없음 · 노출 시작 뒤 중도 해지: 이미 쓴 기간을 실제로 쓴 기간에 맞는 단가(할인율)로 다시 계산해 정산하고, 남은 금액을 돌려드려요. <span id="cancelEx"></span> · 허위·과장으로 중단된 경우 환불 없음</td></tr>
+        <tr><th>결제 방법</th><td>3개월 이상은 한 번에 결제하거나, 세금계산서 기준으로 매달 나눠 낼 수 있어요.</td></tr>
         <tr><th>리포트</th><td>지역 제휴 중개사: 관리 화면 성과표(노출·열람·전화·카톡 클릭) 상시 확인 · 그 밖의 상품: 기간 종료 뒤 노출·클릭 요약 전달(개인 식별 정보 없음). 랜딩 주소에 UTM을 붙이면 광고주 분석 도구에서 직접 확인할 수 있어요.</td></tr>
         <tr><th>정산·계산서</th><td>계약 시 선결제 또는 집행 월 말일자 세금계산서 발행 후 입금 (협의)</td></tr>
         <tr><th>업종 심사</th><td>모든 광고는 게재 전 심사해요. 아래 업종·내용은 받지 않습니다.
@@ -355,7 +390,7 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
               <label><input type="checkbox" value="etc"> 기타·제휴</label>
             </div></div>
           <div class="f"><label class="l" for="region">지역</label><input id="region" maxlength="60" placeholder="예: 서울 강동구, 경기 전체"></div>
-          <div class="f"><label class="l" for="period">희망 기간</label><select id="period"><option value="">골라 주세요</option><option>2주</option><option>1개월</option><option>3개월</option><option>6개월</option><option>1년</option><option>미정·협의</option></select></div>
+          <div class="f"><label class="l" for="period">희망 기간</label><select id="period"><option value="">골라 주세요</option><option>1주</option><option>2주</option><option>1개월</option><option>3개월</option><option>6개월</option><option>1년</option><option>미정·협의</option></select></div>
           <div class="f full"><label class="l" for="memo">문의 내용</label><textarea id="memo" maxlength="1000" placeholder="업종, 알리고 싶은 내용, 예산 범위 등을 적어 주시면 더 정확히 안내드려요."></textarea></div>
         </div>
         <div class="pv" id="pv">
@@ -387,53 +422,171 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
 
 <script src="../assets/agents.js"></script>
 <script>
-/* ─────────────────────────────────────────────────────────────
-   ★ 단가·할증·집행 기준은 아래 PRICES 한 곳에서만 고치면 페이지 전체(상품 카드·단가표·패키지)에 반영돼요.
-     amount: 원 단위 숫자(VAT 별도) · unit: '1주' '1개월' '1년' 등 · text: 금액 대신 보여 줄 문구
-     amount 와 text 가 모두 비어 있으면 '문의 시 안내'로 보여요. 확정 전 숫자는 넣지 마세요.
+/* PRICE-CORE:START ─────────────────────────────────────────────
+   ★ 단가·할인·할증·집행 기준은 아래 PRICES 한 곳에서만 고치면 페이지 전체(상품 카드·단가표·기간 선택·패키지·집행 가이드)에 반영돼요.
+     모든 금액은 원 단위 숫자, VAT 별도. (tools/ad-test.js 가 이 구간을 떼어 계산을 검증해요)
+     weeks : 주 단위 상품 금액 {주 수: 금액}            — 분양 단지 광고·분양 집중 패키지
+     tiers : 월 단가 상품 [{label, month}]               — 기간 할인표(period)를 따라 1주~1년 금액 계산
+     text  : 금액 대신 그대로 보여 줄 문구(고정 요금)    — 지역 제휴 중개사
+     비어 있으면 '문의 시 안내'로 보여요.
    ───────────────────────────────────────────────────────────── */
 const PRICES = {
-  bunyang:      { amount: null, unit: '1주' },     // 분양 단지 광고(분양·재개발·빌라 화면)
-  bunyang_more: { amount: null, unit: '1주' },     // 분양 광고 노출 화면 확장(청약·내 집 마련·갈아타기) — 준비 중
-  agent:        { amount: null, unit: '1년', text: '제휴 페이지 공개 요금' },  // 지역 제휴 중개사 — 요금은 agent/ 페이지에 이미 공개
-  agent_top:    { amount: null, unit: '1개월' },   // 시·군·구 우선 노출 — 준비 중
-  native:       { amount: null, unit: '1개월' },   // 결과 하단 네이티브 카드 — 준비 중
-  jeonse:       { amount: null, unit: '1개월' },   // 전세사기 예방 체크리스트 스폰서 — 준비 중
-  pkg_bunyang:  { amount: null, unit: '' },        // 패키지: 분양 집중
-  pkg_local:    { amount: null, unit: '' },        // 패키지: 지역 밀착
-  pkg_jeonse:   { amount: null, unit: '' },        // 패키지: 전월세 안심
-  surcharge:    { region: null, service: null, kind: null },   // 타겟팅 할증(%) — 예: region: 20 → '+20%'
-  guide:        { minSpend: null, minWeeks: 2 }   // 최소 집행 금액(원), 분양 광고 최소 주 수
+  bunyang:      { weeks: { 1: 300000, 2: 500000, 4: 900000 }, pass3: 10 },   // 분양 단지 광고 · pass3 = 3회 이용권 할인(%)
+  bunyang_more: { perWeek: 200000 },                                         // 분양 광고 노출 화면 확장(청약·내 집 마련·갈아타기) — 준비 중, 1주당 추가
+  agent:        { text: '월 19,000~49,000원 · 1년 결제', note: '연 228,000~588,000원 · 제휴 페이지 공개 요금 그대로예요' },  // agent/ 페이지와 같게
+  agent_top:    { tiers: [{ label: '구당', month: 90000 }, { label: '상급지(서울·성남·과천 등)', month: 150000 }] },   // 시·군·구 우선 노출 — 준비 중
+  native:       { tiers: [{ label: '전국', month: 500000 }, { label: '시·도', month: 300000 }, { label: '시·군·구', month: 150000 }] },  // 결과 하단 카드 — 준비 중
+  jeonse:       { tiers: [{ label: '전국 단독', month: 800000 }], note: '1년 계약 시 다음 해 업종 우선 연장권' },   // 체크리스트 스폰서(업종당 1구좌) — 준비 중
+  pkg_bunyang:  { weeks: { 4: 1500000 } },                    // 패키지: 분양 집중
+  pkg_local:    { tiers: [{ label: '', month: 200000 }] },     // 패키지: 지역 밀착
+  pkg_jeonse:   { tiers: [{ label: '', month: 1100000 }] },    // 패키지: 전월세 안심
+  period:       { w1: 30, w2: 55, m3: 10, m6: 15, y1: 25 },   // 1주·2주 = 월 단가의 %, 3개월·6개월·1년 = 할인 %
+  roundTo:      1000,                                          // 계산 금액은 천 원 단위 반올림
+  surcharge:    { region: 0, near: 20, service: 10, kind: 10 },  // 타겟팅 할증(%) — region 0 = 없음(지역 상품을 따로 둠)
+  guide:        { minSpend: 0, minWeeks: 1, firstWeekOff: 50 }   // 최소 집행 금액(0 = 없음), 최소 기간(주), 첫 광고 첫 주 할인(%)
 };
+const PERIODS = [
+  { id: 'w1', label: '1주', weeks: 1 }, { id: 'w2', label: '2주', weeks: 2 }, { id: 'm1', label: '1개월', months: 1 },
+  { id: 'm3', label: '3개월', months: 3 }, { id: 'm6', label: '6개월', months: 6 }, { id: 'y1', label: '1년', months: 12 }
+];
+function rnd(n) { const u = PRICES.roundTo || 1; return Math.round(n / u) * u; }
+/* 450만 원 · 37.5만 원 · 6.75만 원 · 5,000원 · 1억 2,000만 원 */
+function man(n) {
+  n = Math.round(+n); if (!(n > 0)) return '0원';
+  if (n >= 1e8) { const e = Math.floor(n / 1e8), r = n % 1e8; return e + '억' + (r ? ' ' + man(r) : ' 원'); }
+  if (n >= 1e4 && n % 100 === 0) { const v = n / 1e4; return (Number.isInteger(v) ? v.toLocaleString('ko-KR') : String(+v.toFixed(2))) + '만 원'; }
+  return n.toLocaleString('ko-KR') + '원';
+}
+/* 할인율(%): 그 기간 이하에서 가장 긴 할인 구간 (예: 4개월 → 3개월 할인율) */
+function rateOf(months) { const R = PRICES.period; return months >= 12 ? R.y1 : months >= 6 ? R.m6 : months >= 3 ? R.m3 : 0; }
+/* 월 단가 상품의 기간 금액 → { total, list(정가), off(할인액), rate, perMonth(월 꼴), pct(1·2주: 월 단가의 %) } */
+function periodPrice(month, pid) {
+  const p = PERIODS.find(x => x.id === pid), R = PRICES.period;
+  if (!p || !(month > 0)) return null;
+  if (p.weeks) { const pct = p.weeks === 1 ? R.w1 : R.w2; return { total: rnd(month * pct / 100), pct, weeks: p.weeks, months: 0, off: 0, rate: 0 }; }
+  const list = month * p.months, rate = rateOf(p.months), total = rnd(list * (100 - rate) / 100);
+  return { total, list, off: list - total, rate, months: p.months, perMonth: Math.round(total / p.months) };
+}
+/* 주 단위 상품: 고른 기간에 맞는 주 수(1주·2주·그 외 4주, 없으면 가장 긴 것) */
+function weekKey(p, pid) {
+  const want = pid === 'w1' ? 1 : pid === 'w2' ? 2 : 4, ks = Object.keys(p.weeks).map(Number).sort((a, b) => a - b);
+  return ks.includes(want) ? want : ks[ks.length - 1];
+}
+function passPrice(amount) { const list = amount * 3; return { list, total: rnd(list * (100 - (PRICES.bunyang.pass3 || 0)) / 100) }; }
+/* 첫 광고 첫 주 할인 금액 */
+function firstWeekPrice(oneWeek) { return rnd(oneWeek * (100 - (PRICES.guide.firstWeekOff || 0)) / 100); }
+/* 1주 광고 뒤 1개월 이상 연장: 연장 금액 − 첫 주 결제액 */
+function extendPrice(month, pid, paidFirstWeek) { const q = periodPrice(month, pid); return q && q.months >= 1 ? Math.max(0, q.total - paidFirstWeek) : null; }
+/* 중도 해지: 쓴 기간을 실제 사용 기간 단가로 다시 계산 → 남은 금액 환불 (usedMonths: 1주 = 0.25) */
+function settle(month, paid, usedMonths) {
+  let used;
+  if (!(usedMonths > 0)) used = 0;
+  else if (usedMonths <= 0.25) used = periodPrice(month, 'w1').total;
+  else if (usedMonths <= 0.5) used = periodPrice(month, 'w2').total;
+  else if (usedMonths <= 1) used = month;
+  else used = rnd(month * usedMonths * (100 - rateOf(usedMonths)) / 100);
+  used = Math.min(used, paid);
+  return { used, refund: paid - used, rate: rateOf(usedMonths) };
+}
+/* PRICE-CORE:END */
+
 const ASK = '문의 시 안내';
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-function won(n) {
-  n = Math.round(+n); if (!(n > 0)) return '';
-  const e = Math.floor(n / 1e8), m = Math.round((n % 1e8) / 1e4);
-  if (n >= 1e4 && n % 1e4 === 0) return (e ? e + '억' : '') + (m ? (e ? ' ' : '') + m.toLocaleString('ko-KR') + '만' : '') + '원';
-  return n.toLocaleString('ko-KR') + '원';
-}
-function priceText(p) {
-  if (!p) return '';
+const PL = id => (PERIODS.find(x => x.id === id) || {}).label || '';
+/* 상품 카드·패키지에 보이는 기본 금액 */
+function baseText(key) {
+  const p = PRICES[key]; if (!p) return '';
   if (p.text) return p.text;
-  const w = won(p.amount); if (!w) return '';
-  return `${w}${p.unit ? ' / ' + p.unit : ''} (VAT 별도)`;
+  if (p.weeks) return Object.keys(p.weeks).map(w => `${w}주 ${man(p.weeks[w])}`).join(' · ');
+  if (p.perWeek) return `1주당 +${man(p.perWeek)}`;
+  if (p.tiers && p.tiers.length) return p.tiers.map(t => `${t.label ? t.label + ' ' : ''}월 ${man(t.month)}`).join(' · ');
+  return '';
+}
+function baseNote(key) {
+  const p = PRICES[key] || {};
+  if (key === 'bunyang' && p.pass3) return `3회 이용권 ${p.pass3}% 할인 (여러 단지를 분양하는 시행사·분양대행사용)`;
+  return key === 'agent' ? '' : (p.note || '');
+}
+/* 단가표 금액 칸(고른 기간 기준) */
+function cellHtml(key, pid) {
+  const p = PRICES[key]; if (!p) return '';
+  if (p.text) return `<span class="ln"><b>${esc(p.text)}</b></span><small>기간과 관계없는 고정 요금이에요${p.note ? ' · ' + esc(p.note) : ''}</small>`;
+  if (p.perWeek) return `<span class="ln"><b>1주당 +${man(p.perWeek)}</b></span><small>분양 단지 광고에 더해요 (기간만큼 주 단위)</small>`;
+  if (p.weeks) {
+    const w = weekKey(p, pid), a = p.weeks[w]; let sub = '';
+    if (w === 2 && p.weeks[1]) sub = `1주 두 번보다 ${man(p.weeks[1] * 2 - a)} 저렴해요`;
+    else if (w === 4 && pid === 'm1') sub = '1개월 = 4주예요';
+    if (p.pass3 && /^(m3|m6|y1)$/.test(pid)) { const q = passPrice(a); sub = `주 단위 상품이라 장기 할인 대신 3회 이용권 ${PRICES.bunyang.pass3}% 할인: ${w}주×3회 ${man(q.list)} → ${man(q.total)}`; }
+    else if (p.pass3 && !sub) sub = `3회 이용권 ${p.pass3}% 할인`;
+    return `<span class="ln"><b>${w}주 ${man(a)}</b></span>${sub ? `<small>${sub}</small>` : ''}`;
+  }
+  if (p.tiers && p.tiers.length) {
+    return p.tiers.map(t => {
+      const q = periodPrice(t.month, pid); if (!q) return '';
+      let sub;
+      if (q.pct) sub = `<small>월 단가 ${man(t.month)}의 ${q.pct}%</small>`;
+      else if (!q.rate) sub = `<small>기본 단가</small>`;
+      else sub = `<small class="off">${man(q.off)} 할인(${q.rate}%)</small><small>정가 ${man(q.list)} · 월 ${man(q.perMonth)} 꼴</small>`;
+      return `<span class="ln">${t.label ? `<span class="tl">${esc(t.label)}</span>` : ''}<b>${man(q.total)}</b>${sub}</span>`;
+    }).join('') + (p.note ? `<small>${esc(p.note)}</small>` : '');
+  }
+  return '';
+}
+function pkgLine(key, pid) {
+  const p = PRICES[key]; if (!p) return '';
+  if (p.weeks) return '4주 공고 기간에 맞춘 묶음이에요';
+  const t = p.tiers && p.tiers[0], q = t && periodPrice(t.month, pid); if (!q) return '';
+  return `${PL(pid)} ${man(q.total)}` + (q.rate ? ` (${man(q.off)} 할인 · 월 ${man(q.perMonth)} 꼴)` : '');
+}
+let curP = 'm1';
+function setPeriod(pid) {
+  curP = pid;
+  document.querySelectorAll('#pbar button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.p === pid)));
+  $('pth').textContent = PL(pid);
+  const p = PERIODS.find(x => x.id === pid), R = PRICES.period;
+  $('phint').textContent = p.weeks ? `${p.label}는 월 단가의 ${p.weeks === 1 ? R.w1 : R.w2}%예요. 처음 광고하시면 첫 주 ${PRICES.guide.firstWeekOff}% 할인, 1개월 이상 연장하면 첫 주 결제액을 빼 드려요.`
+    : rateOf(p.months) ? `${p.label}은 월 단가 합계에서 ${rateOf(p.months)}% 할인돼요. 3개월 이상은 한 번에 또는 매달 나눠 낼 수 있어요.`
+    : `1개월은 기본 단가예요. 3개월 ${R.m3}% · 6개월 ${R.m6}% · 1년 ${R.y1}% 할인돼요.`;
+  document.querySelectorAll('[data-pp]').forEach(el => { const h = cellHtml(el.dataset.pp, pid); el.innerHTML = `<div class="pcw">${h || ASK}</div>`; });
+  document.querySelectorAll('[data-pk]').forEach(el => { el.textContent = pkgLine(el.dataset.pk, pid); });
 }
 function fillPrices() {
   document.querySelectorAll('[data-price]').forEach(el => {
-    const t = priceText(PRICES[el.dataset.price]);
-    el.textContent = t || ASK; el.classList.toggle('ask', !t);
+    const t = baseText(el.dataset.price), n = baseNote(el.dataset.price);
+    el.innerHTML = t ? esc(t) + ' (VAT 별도)' + (n ? `<span class="pnote">${esc(n)}</span>` : '') : ASK;
+    el.classList.toggle('ask', !t);
   });
   document.querySelectorAll('[data-sur]').forEach(el => {
-    const v = +PRICES.surcharge[el.dataset.sur];
-    el.textContent = v > 0 ? `+${v}%` : (v === 0 && PRICES.surcharge[el.dataset.sur] !== null ? '없음' : ASK);
+    const raw = PRICES.surcharge[el.dataset.sur], v = +raw;
+    el.textContent = raw == null ? ASK : v > 0 ? `+${v}%` : '없음';
   });
   document.querySelectorAll('[data-guide]').forEach(el => {
-    const k = el.dataset.guide, v = PRICES.guide[k];
-    if (k === 'minSpend') el.textContent = won(v) || ASK;
-    else if (k === 'minWeeks') el.textContent = (+v > 0 ? +v : 2) + '주';
+    const k = el.dataset.guide, G = PRICES.guide;
+    if (k === 'minSpend') el.textContent = G.minSpend == null ? ASK : +G.minSpend > 0 ? man(G.minSpend) : '없음';
+    else if (k === 'minWeeks') el.textContent = (+G.minWeeks > 0 ? +G.minWeeks : 1) + '주';
+    else if (k === 'firstWeekOff') el.textContent = (+G.firstWeekOff || 0) + '%';
+    else if (k === 'pass3') el.textContent = (+PRICES.bunyang.pass3 || 0) + '%';
   });
+  /* 기간 선택 버튼 */
+  $('pbar').innerHTML = PERIODS.map(p => `<button type="button" data-p="${p.id}" aria-pressed="false">${p.label}</button>`).join('');
+  $('pbar').addEventListener('click', e => { const b = e.target.closest('button[data-p]'); if (b) setPeriod(b.dataset.p); });
+  setPeriod(curP);
+  /* 기간별 할인 표 — 예시는 결과 하단 카드 첫 구간(전국) */
+  const ex = PRICES.native.tiers[0], R = PRICES.period;
+  const how = { w1: `월 단가의 ${R.w1}%`, w2: `월 단가의 ${R.w2}%`, m1: '기본 단가', m3: `${R.m3}% 할인`, m6: `${R.m6}% 할인`, y1: `${R.y1}% 할인` };
+  $('dtab').innerHTML = `<thead><tr><th>기간</th><th>계산</th><th>예: 결과 하단 카드 ${esc(ex.label)}(월 ${man(ex.month)})</th></tr></thead><tbody>` +
+    PERIODS.map(p => { const q = periodPrice(ex.month, p.id);
+      return `<tr><td><b>${p.label}</b></td><td>${how[p.id]}</td><td><b>${man(q.total)}</b>${q.rate ? `<small>월 ${man(q.perMonth)} 꼴 · ${man(q.off)} 할인</small>` : ''}</td></tr>`; }).join('') + '</tbody>';
+  /* 계산 예시 — 결과 하단 카드 둘째 구간(시·도): 첫 주 할인 → 1년 연장 */
+  const t2 = PRICES.native.tiers[1], w1 = periodPrice(t2.month, 'w1').total, fw = firstWeekPrice(w1), yr = periodPrice(t2.month, 'y1');
+  $('ex').innerHTML = `<b class="h">계산 예시: 처음 광고하는 이사 업체가 결과 하단 카드 ${esc(t2.label)}(월 ${man(t2.month)})를 1주 해 보고 1년으로 연장하면</b><ol>` +
+    `<li>첫 주: 1주 ${man(w1)} → 첫 광고 ${PRICES.guide.firstWeekOff}% 할인으로 <b>${man(fw)}</b></li>` +
+    `<li>1년 연장: 1년 ${man(yr.total)}(${yr.rate}% 할인, 월 ${man(yr.perMonth)} 꼴) − 첫 주에 낸 ${man(fw)} = <b>${man(extendPrice(t2.month, 'y1', fw))}</b></li></ol>` +
+    `<small>모든 금액 VAT 별도 · 3개월 이상은 한 번에 또는 세금계산서 기준 매달 나눠 낼 수 있어요.</small>`;
+  /* 중도 해지 예시 — 결과 하단 카드 전국 1년 계약 4개월 사용 */
+  const yq = periodPrice(ex.month, 'y1'), s = settle(ex.month, yq.total, 4);
+  $('cancelEx').textContent = `예) 결과 하단 카드 ${ex.label} 1년 ${man(yq.total)} 계약 뒤 4개월 쓰고 해지 → 4개월 × 월 ${man(ex.month)}에 3개월 할인율 ${s.rate}%를 적용한 ${man(s.used)}만 정산하고 ${man(s.refund)} 환불`;
 }
 fillPrices();
 window.JDJ_AD_PRICES = PRICES;   // 확인용
@@ -487,6 +640,8 @@ $('form').addEventListener('submit', async e => {
   }
   const body = { action: 'adInquiry', type: 'inquiry', company: $('company').value.trim(), manager: $('manager').value.trim(), contact: $('contact').value.trim(),
     products: prods(), region: $('region').value.trim(), period: $('period').value, memo: $('memo').value.trim(), agree: { privacy: true }, hp: $('hpf').value };
+  /* 서버(v13)는 희망 기간 '1주'를 아직 모름 → 기간 칸은 비우고 문의 내용 앞에 적어 보냄 */
+  if (body.period === '1주') { body.period = ''; body.memo = ('희망 기간: 1주\n' + body.memo).slice(0, 1000); }
   if (!window.JDJ_AGENTS || !JDJ_AGENTS.ready) { fallback(body, '문의 서버에 연결하지 못했어요.'); return; }
   $('send').disabled = true; m.textContent = '보내는 중이에요…';
   try {
