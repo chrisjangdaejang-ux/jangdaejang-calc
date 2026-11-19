@@ -172,6 +172,11 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
 .alt .btn{flex:1 1 200px}
 .src{font-size:13.5px;color:var(--sub3);margin-top:26px;line-height:1.7}
 [hidden]{display:none!important}
+.tierbox{margin:18px 0 8px;padding:16px;border:1px solid var(--line);border-radius:14px;background:#F9FAFB}
+.tierbox h3{margin:0 0 6px;font-size:17px}
+.tierbox select{font:inherit;font-size:16px;min-height:44px;border:1px solid var(--line);border-radius:10px;padding:0 10px;margin:6px 0 10px;background:#fff}
+.tierbox .tg{margin:6px 0}.tierbox .tg b{display:inline-block;min-width:64px}
+.tierbox .tg span{color:var(--sub)}
 </style>
 </head>
 <body>
@@ -314,6 +319,12 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
         <tr><td><b>전세사기 예방 체크리스트 스폰서</b></td><td data-l="상태"><span><span class="st soon">준비 중</span></span></td><td data-l="지면">전월세 체크리스트 하단</td><td data-l="과금">전국 단독 정액 · 업종당 1구좌</td><td data-l="금액" class="pc" data-pp="jeonse">문의 시 안내</td></tr>
       </tbody>
     </table>
+    <div class="tierbox" id="tierbox">
+      <h3>시·군·구 우선 노출 등급 — 우리 구는 몇 등급일까요?</h3>
+      <p class="note" id="tierBasis">등급은 실거래 자료로 정해요. 전국 시·군·구 중 <b>최근 1년 거래 금액 규모(거래 건수 × 평균 거래가) 상위 10%</b> 또는 <b>3.3㎡당 평균 시세 상위 10%</b>는 1등급, 거래 금액 규모 상위 10~40%는 2등급, 나머지는 3등급이에요. 분기마다 다시 계산해요.</p>
+      <label for="tierSd">시·도</label> <select id="tierSd"><option value="">시·도 선택</option></select>
+      <div id="tierOut" aria-live="polite"></div>
+    </div>
     <p class="note">최소 집행 금액은 <b data-guide="minSpend">문의 시 안내</b>, 최소 기간은 <b data-guide="minWeeks">1주</b>예요. 처음 광고하시면 첫 주 <b data-guide="firstWeekOff">50%</b> 할인해 드려요. 지역 제휴 중개사 요금은 <a href="../agent/">공인중개사 제휴 페이지</a>에 공개된 기준과 같아요.</p>
   </section>
 
@@ -434,7 +445,7 @@ const PRICES = {
   bunyang:      { weeks: { 1: 300000, 2: 500000, 4: 900000 }, pass3: 10 },   // 분양 단지 광고 · pass3 = 3회 이용권 할인(%)
   bunyang_more: { perWeek: 200000 },                                         // 분양 광고 노출 화면 확장(청약·내 집 마련·갈아타기) — 준비 중, 1주당 추가
   agent:        { text: '기본 월 29,000원 · 프리미엄 월 49,000원 · 1년 결제', note: '연 348,000원 · 588,000원 (소속 공인중개사 상담 전용 월 19,000원) · 제휴 페이지 공개 요금 그대로예요' },  // agent/ 페이지와 같게
-  agent_top:    { tiers: [{ label: '구당', month: 90000 }, { label: '상급지(서울·성남·과천 등)', month: 150000 }] },   // 시·군·구 우선 노출 — 준비 중
+  agent_top:    { tiers: [{ label: '1등급 구', month: 150000 }, { label: '2등급 구', month: 90000 }, { label: '3등급 구', month: 50000 }] },   // 시·군·구 우선 노출 — 준비 중
   native:       { tiers: [{ label: '전국', month: 500000 }, { label: '시·도', month: 300000 }, { label: '시·군·구', month: 150000 }] },  // 결과 하단 카드 — 준비 중
   jeonse:       { tiers: [{ label: '전국 단독', month: 800000 }], note: '1년 계약 시 다음 해 업종 우선 연장권' },   // 체크리스트 스폰서(업종당 1구좌) — 준비 중
   pkg_bunyang:  { weeks: { 4: 1500000 } },                    // 패키지: 분양 집중
@@ -641,6 +652,21 @@ $('form').addEventListener('submit', async e => {
     else { m.className = 'msg err'; m.textContent = msg; }
   } finally { $('send').disabled = false; }
 });
+</script>
+<script>
+(async () => {
+  const box = document.getElementById('tierbox'); if (!box) return;
+  let D; try { const r = await fetch('../assets/ad-tiers.json', { cache: 'no-cache' }); if (!r.ok) throw 0; D = await r.json(); } catch (e) { box.hidden = true; return; }
+  const sel = document.getElementById('tierSd'), out = document.getElementById('tierOut'), P = { 1: '월 15만 원', 2: '월 9만 원', 3: '월 5만 원' };
+  const sds = [...new Set(D.tiers.map(t => t.sd))];
+  sel.innerHTML += sds.map(s => `<option>${s}</option>`).join('');
+  const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  sel.onchange = () => {
+    const sd = sel.value; if (!sd) { out.innerHTML = ''; return; }
+    out.innerHTML = [1, 2, 3].map(t => { const n = D.tiers.filter(x => x.sd === sd && x.t === t).map(x => x.n);
+      return n.length ? `<div class="tg"><b>${t}등급</b> ${P[t]} · <span>${n.map(esc).join(', ')}</span></div>` : ''; }).join('') + `<p class="note">${esc(D.asof)} 기준 · 구당 1개월 기본가(VAT 별도), 기간 할인은 위 표와 같아요.</p>`;
+  };
+})();
 </script>
 </body>
 </html>
