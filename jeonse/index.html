@@ -485,7 +485,7 @@ function areaPanel(code, box){
         <p class="basis">이주가 시작되면 살던 가구가 주변에서 집을 구해 전세 수요가 늘 수 있어요. 출처: ${srcM ? `서울시 정비사업 추진현황(20${srcM[1]}년 ${srcM[2]}월 기준)` : '정비사업 추진현황'}, 서울 밖은 국토교통부 도시정비사업 현황(현재 단계만).</p></div>` : ''}
     </div>
     <div class="outlook">전세 전망은 과거 자료로 시험 중이에요 — 시험을 통과하면 이 자리에 보여 드려요.</div></div>`;
-  if (gs){ const el = $('cG'); el.innerHTML = lineChart([{ a: gs.s, c: '#2F6BFF', w: 2.4 }], gs.months, el.clientWidth || 600, v => Math.round(v).toLocaleString(), 170); }
+  if (gs) chartInto($('cG'), [{ a: gs.s, c: '#2F6BFF', w: 2.4 }], gs.months, v => Math.round(v).toLocaleString(), 170, [{ k: '3.3㎡당 전세', a: gs.s, c: '#2F6BFF', fmt: v => Math.round(v).toLocaleString() + '만' }], { aria: nm + ' 아파트 전세 추이' });
 }
 
 /* ---------- 단독·다가구: 동 × 면적대 ---------- */
@@ -523,34 +523,33 @@ async function showD(g, dong){
 }
 
 /* ---------- 차트 ---------- */
-function lineChart(lines, months, W, fmtY, H){
-  W = Math.max(260, Math.round(W)); H = H || 200; const L = 58, Rr = 12, T = 12, B = 24, fs = 13.5;
-  const vals = [].concat(...lines.map(l => l.a)).filter(v => v > 0);
-  if (vals.length < 1) return '<p class="note">차트로 보여 드릴 계약이 없어요.</p>';
-  let lo = Math.min(...vals), hi = Math.max(...vals); const pad = (hi - lo) * 0.12 || hi * 0.06; lo = Math.max(0, lo - pad); hi += pad;
-  const n = months.length, x = i => L + (n === 1 ? 0 : i * (W - L - Rr) / (n - 1)), y = v => T + (hi - v) / (hi - lo) * (H - T - B);
-  const grid = [lo, (lo + hi) / 2, hi].map(v => `<line x1="${L}" x2="${W - Rr}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#E5E8EB"/><text x="${L - 5}" y="${(y(v) + 4).toFixed(1)}" font-size="${fs}" fill="#4E5968" text-anchor="end">${fmtY(v)}</text>`).join('');
-  const dots = (a, c) => a.map((v, i) => v > 0 && (n <= 60 || !(a[i - 1] > 0) || !(a[i + 1] > 0)) ? `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2" fill="${c}"/>` : '').join('');
-  const last = (a, c) => { for (let i = a.length - 1; i >= 0; i--) if (a[i] > 0) return `<circle cx="${x(i).toFixed(1)}" cy="${y(a[i]).toFixed(1)}" r="4" fill="${c}"><title>${ym(months[i])} ${fmtY(a[i])}</title></circle>`; return ''; };
-  const idx = n <= 4 ? [0, n - 1] : [0, Math.round((n - 1) / 3), Math.round((n - 1) * 2 / 3), n - 1];
-  const xl = idx.map((i, k) => `<text x="${x(i).toFixed(1)}" y="${H - 5}" font-size="${fs}" fill="#4E5968" text-anchor="${k === 0 ? 'start' : k === idx.length - 1 ? 'end' : 'middle'}">${n > 36 ? String(months[i]).slice(0, 4) + '년' : ym(months[i])}</text>`).join('');
-  return `${M.isSparse(lines[0].a) ? P.SPARSE.replace('단지라', '곳이라') : ''}<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="추이 그래프">${grid}${lines.map(l => P.linePaths(l.a, x, y, l.c, l.w) + dots(l.a, l.c) + last(l.a, l.c)).join('')}${xl}</svg>`;
+/* 공용 차트(assets/price-sheet.js JDJ_PRICE.mount) — 세로 안내선·말풍선·키보드 이동까지 같은 방식.
+   rows = 말풍선 줄 [{k, a, c, fmt}], o.sub = 아래 전세가율 띠, o.gap = [매매, 전세] (갭 줄) */
+function chartInto(el, lines, months, fmtY, H, rows, o){
+  if (!el) return; o = o || {};
+  P.mount(el, { months, lines, fmtY, h: H || 200, L: 58, fs: 13.5, pad: 0.12, min: 1, empty: '차트로 보여 드릴 계약이 없어요.',
+    pre: M.isSparse(lines[0].a) ? P.SPARSE.replace('단지라', '곳이라') : '', aria: o.aria || '추이 그래프', sub: o.sub,
+    tip: rows ? P.tipFn({ months, rows, gap: o.gap, fmt: won }) : null });
 }
 const eok = v => v >= 10000 ? (Math.round(v / 1000) / 10).toString().replace(/\.0$/, '') + '억' : Math.round(v).toLocaleString() + '만';
 function cut(months, arrs, span){ const st = span && span < months.length ? months.length - span : 0; return { months: months.slice(st), a: arrs.map(a => a.slice(st)) }; }
 function drawCharts(){
   const c = CUR; if (!c) return;
   const elJ = $('cJ'); if (!elJ) return;
-  if (c.kind === 'd'){ const w = cut(c.dser.months, [c.dser.J], S.span); elJ.innerHTML = lineChart([{ a: w.a[0], c: '#14A06B', w: 2.4 }], w.months, elJ.clientWidth || 600, eok, 210); return; }
+  if (c.kind === 'd'){ const w = cut(c.dser.months, [c.dser.J], S.span); chartInto(elJ, [{ a: w.a[0], c: '#14A06B', w: 2.4 }], w.months, eok, 210, [{ k: '전세', a: w.a[0], c: '#14A06B' }], { aria: '전세 추이' }); return; }
   const u = c.units.find(x => x[2] === S.band); if (!u) return;
   const t = R.series(u, c.meta);
   let months = t.months, J = t.j, JR = t.jr;
   if (S.span === 0 && c.h){ const f = R.seriesFull(R.histRow(c.h, u), c.h); if (f){ months = f.months; J = f.j; JR = f.jr; } }
   const w = cut(months, [J, JR], S.span === 0 ? 0 : S.span);
-  elJ.innerHTML = lineChart([{ a: w.a[0], c: '#14A06B', w: 2.4 }], w.months, elJ.clientWidth || 600, eok, 210);
-  const ww = cut(t.months, [t.wr], S.span === 12 ? 12 : 0);
-  if ($('cW')) $('cW').innerHTML = lineChart([{ a: ww.a[0], c: '#B8942A', w: 2.2 }], ww.months, $('cW').clientWidth || 600, v => Math.round(v).toLocaleString() + '만', 150);
-  const jb = $('jrBox'); if (jb && jb.open){ const k = w.a[1].findIndex(v => v > 0); $('cJr').innerHTML = lineChart([{ a: w.a[1].slice(Math.max(0, k)).map(v => v * 100), c: '#0E7A4F', w: 2.2 }], w.months.slice(Math.max(0, k)), $('cJr').clientWidth || 600, v => Math.round(v) + '%', 150); }
+  const jrp = w.a[1].map(v => v * 100);
+  chartInto(elJ, [{ a: w.a[0], c: '#14A06B', w: 2.4 }], w.months, eok, 210,
+    [{ k: '전세', a: w.a[0], c: '#14A06B' }].concat(jrp.some(v => v > 0) ? [{ k: '전세가율', a: jrp, c: '#0E7A4F', fmt: v => Math.round(v) + '%' }] : []),
+    { aria: '전세 추이', sub: jrp.some(v => v > 0) ? { a: jrp, c: '#0E7A4F', label: '전세가율' } : null });
+  const ww = cut(t.months, [t.wr, t.wd], S.span === 12 ? 12 : 0);
+  if ($('cW')) chartInto($('cW'), [{ a: ww.a[0], c: '#B8942A', w: 2.2 }], ww.months, v => Math.round(v).toLocaleString() + '만', 150,
+    [{ k: '보증금', a: ww.a[1], c: '#D9BF7A' }, { k: '월세', a: ww.a[0], c: '#B8942A', fmt: v => Math.round(v).toLocaleString() + '만' }], { aria: '월세 추이' });
+  const jb = $('jrBox'); if (jb && jb.open){ const k = w.a[1].findIndex(v => v > 0); const ja = w.a[1].slice(Math.max(0, k)).map(v => v * 100); chartInto($('cJr'), [{ a: ja, c: '#0E7A4F', w: 2.2 }], w.months.slice(Math.max(0, k)), v => Math.round(v) + '%', 150, [{ k: '전세가율', a: ja, c: '#0E7A4F', fmt: v => Math.round(v) + '%' }], { aria: '전세가율 추이' }); }
 }
 
 /* ---------- 결과 화면 동작 ---------- */

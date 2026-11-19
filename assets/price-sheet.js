@@ -99,28 +99,180 @@
     return `${m.isSparse(me) ? SPARSE : ''}<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="월별 평당가 추이">${ticks}<path d="${path(gs)}" fill="none" stroke="#8B95A1" stroke-width="1.8" stroke-dasharray="5 3"/>${linePaths(me, x, y, '#2F6BFF', 2.4)}${dots}${xl}</svg>`;
   }
 
-  /* ---------- 전체 기간 차트: 매매·전세 두 선(금액) 또는 전세가율 ---------- */
+  /* ---------- 공용 추이 차트: 그리기 + 안내선(세로선·점·말풍선, 호갱노노처럼) ----------
+     sp = {months, lines:[{a, c, w}], fmtY, h(본 그래프 높이), L(왼쪽 여백), fs(글자), xLab(연월 → 글자),
+           sub:{a, c, label, fmt}(아래 얇은 보조 그래프 — 같은 세로선 공유, 평균 점선), tip(i) → 말풍선 내용, empty, min, aria}
+     plot() 은 SVG 문자열과 좌표(model)를 돌려주고, mount() 가 el 에 넣고 안내선을 연결한다 */
   const eok = v => v >= 10000 ? (Math.round(v / 1000) / 10).toString().replace(/\.0$/, '') + '억' : Math.round(v).toLocaleString() + '만';
-  /** t = histSeries(또는 histWindow) 결과, W = 폭(px), opts.jr = 전세가율 선만, opts.fs = 글자 크기,
-      opts.sparse = 거래가 드문 단지 안내 한 줄(기간 단추와 무관하게 전체 자료로 판단해 넘겨 줌) */
-  function histChart(t, W, opts) {
-    opts = opts || {}; const m = M(), fs = opts.fs || 12.5;
-    if (opts.jr && t) { const k = t.jr.findIndex(v => v > 0); if (k > 0) t = Object.assign({}, t, { months: t.months.slice(k), jr: t.jr.slice(k), s: t.s.slice(k), j: t.j.slice(k) }); }   // 전세가율은 전세 자료가 있는 달부터
-    W = Math.max(260, Math.round(W || 480)); const H = opts.h || 190, L = opts.jr ? 44 : 54, R = 12, T = 12, B = 24;
-    const lines = opts.jr ? [{ a: t.jr.map(v => v * 100), c: '#0E7A4F', w: 2.4 }] : [{ a: t.j, c: '#14A06B', w: 2.2, dash: '' }, { a: t.s, c: '#2F6BFF', w: 2.6 }];
-    const vals = [].concat(...lines.map(l => l.a)).filter(v => v > 0);
-    if (vals.length < 2) return `<p class="jps-note">${opts.jr ? '전세가율을 계산할 달(매매·전세 거래가 모두 있는 달)이 적어요.' : '차트로 보여 드릴 거래가 없어요.'}</p>`;
-    let lo = Math.min(...vals), hi = Math.max(...vals); const pad = (hi - lo) * 0.1 || hi * 0.05; lo = Math.max(0, lo - pad); hi += pad;
-    const n = t.months.length, x = i => L + (n === 1 ? 0 : i * (W - L - R) / (n - 1)), y = v => T + (hi - v) / (hi - lo) * (H - T - B);
-    const fmtY = v => opts.jr ? Math.round(v) + '%' : eok(v);
+  function plot(sp, W) {
+    const m = M(), fs = sp.fs || 12.5, months = sp.months || [], n = months.length;
+    W = Math.max(260, Math.round(W || 480));
+    const L = sp.L || 54, R = 12, T = 12, B = 24, PH = (sp.h || 190) - T - B;
+    const vals = [].concat(...sp.lines.map(l => l.a)).filter(v => v > 0);
+    if (vals.length < (sp.min == null ? 2 : sp.min)) return { html: `<p class="jps-note">${sp.empty || '차트로 보여 드릴 거래가 없어요.'}</p>` };
+    let lo = Math.min(...vals), hi = Math.max(...vals); const pad = (hi - lo) * (sp.pad || 0.1) || hi * 0.05; lo = Math.max(0, lo - pad); hi += pad;
+    const sv = sp.sub && sp.sub.a ? sp.sub.a.filter(v => v > 0) : [], sub = sv.length ? sp.sub : null;
+    const SG = sub ? 14 : 0, SH = sub ? (sp.subH || 44) : 0, H = T + PH + SG + SH + B, s0 = T + PH + SG;
+    const x = i => L + (n === 1 ? 0 : i * (W - L - R) / (n - 1)), y = v => T + (hi - v) / (hi - lo) * PH;
+    const fmtY = sp.fmtY || eok, live = !!sp.tip;
     const grid = [lo, (lo + hi) / 2, hi].map(v => `<line x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#E5E8EB"/><text x="${L - 5}" y="${(y(v) + 4).toFixed(1)}" font-size="${fs}" fill="#4E5968" text-anchor="end">${fmtY(v)}</text>`).join('');
     /* 실제 값이 있는 달의 작은 점: 기간이 짧으면(5년 이하) 모든 달, 길면 거래 공백 앞뒤·외딴 달만 */
-    const dots = (a, c) => a.map((v, i) => v > 0 && (n <= 60 || !(a[i - 1] > 0) || !(a[i + 1] > 0)) ? `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="${n <= 60 ? 2 : 2.2}" fill="${c}"/>` : '').join('');
-    const last = (a, c) => { for (let i = a.length - 1; i >= 0; i--) if (a[i] > 0) return `<circle cx="${x(i).toFixed(1)}" cy="${y(a[i]).toFixed(1)}" r="4" fill="${c}"><title>${m.ymLabel(t.months[i])} ${opts.jr ? Math.round(a[i]) + '%' : m.won(a[i])}</title></circle>`; return ''; };
+    const dots = (a, c, yy) => a.map((v, i) => v > 0 && (n <= 60 || !(a[i - 1] > 0) || !(a[i + 1] > 0)) ? `<circle cx="${x(i).toFixed(1)}" cy="${yy(v).toFixed(1)}" r="${n <= 60 ? 2 : 2.2}" fill="${c}"/>` : '').join('');
+    const last = (a, c) => { for (let i = a.length - 1; i >= 0; i--) if (a[i] > 0) return `<circle cx="${x(i).toFixed(1)}" cy="${y(a[i]).toFixed(1)}" r="4" fill="${c}">${live ? '' : `<title>${m.ymLabel(months[i])} ${fmtY(a[i])}</title>`}</circle>`; return ''; };
+    const pts = sp.lines.map(l => ({ a: l.a, c: l.c, y }));
+    let subSvg = '';
+    if (sub) {
+      let a = Math.min(...sv), b = Math.max(...sv); const p2 = (b - a) * 0.15 || 2; a -= p2; b += p2;
+      const y2 = v => s0 + (b - v) / (b - a) * SH, avg = sv.reduce((q, v) => q + v, 0) / sv.length, f2 = sub.fmt || (v => Math.round(v) + '%');
+      subSvg = `<rect x="${L}" y="${s0}" width="${W - L - R}" height="${SH}" fill="#F7F8FA" rx="4"/>`
+        + `<line x1="${L}" x2="${W - R}" y1="${y2(avg).toFixed(1)}" y2="${y2(avg).toFixed(1)}" stroke="${sub.c}" stroke-opacity=".7" stroke-dasharray="4 3"/>`
+        + `<text x="${W - R - 4}" y="${(s0 + 12).toFixed(1)}" font-size="${fs - 1}" fill="#4E5968" text-anchor="end">평균 ${f2(avg)}</text>`
+        + `<text x="${L - 5}" y="${(s0 + SH / 2 - 2).toFixed(1)}" font-size="${fs - 1}" fill="#4E5968" text-anchor="end">${esc(sub.label || '')}</text>`
+        + `<text x="${L - 5}" y="${(s0 + SH / 2 + fs - 1).toFixed(1)}" font-size="${fs - 1}" fill="#4E5968" text-anchor="end">${f2(sv[sv.length - 1])}</text>`
+        + linePaths(sub.a, x, y2, sub.c, 1.8);
+      pts.push({ a: sub.a, c: sub.c, y: y2 });
+    }
     const idx = n <= 4 ? [0, n - 1] : [0, Math.round((n - 1) / 3), Math.round((n - 1) * 2 / 3), n - 1];
-    const xl = idx.map((i, k) => `<text x="${x(i).toFixed(1)}" y="${H - 5}" font-size="${fs}" fill="#4E5968" text-anchor="${k === 0 ? 'start' : k === idx.length - 1 ? 'end' : 'middle'}">${n > 36 ? String(t.months[i]).slice(0, 4) + '년' : m.ymLabel(t.months[i])}</text>`).join('');
-    return `${opts.sparse ? SPARSE : ''}<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${opts.jr ? '전세가율 추이' : '매매·전세 시세 추이'}">${grid}${lines.map(l => `${linePaths(l.a, x, y, l.c, l.w)}${dots(l.a, l.c)}${last(l.a, l.c)}`).join('')}${xl}</svg>`;
+    const xLab = sp.xLab || (ym => n > 36 ? String(ym).slice(0, 4) + '년' : m.ymLabel(ym));
+    const xl = idx.map((i, k) => `<text x="${x(i).toFixed(1)}" y="${H - 5}" font-size="${fs}" fill="#4E5968" text-anchor="${k === 0 ? 'start' : k === idx.length - 1 ? 'end' : 'middle'}">${xLab(months[i])}</text>`).join('');
+    const over = live ? `<g class="jhv-o" style="display:none" pointer-events="none"><line x1="0" x2="0" y1="${T - 4}" y2="${s0 + SH}" stroke="#191F28" stroke-opacity=".45" stroke-width="1.2"/>${pts.map(p => `<circle r="4.6" stroke="${p.c}" stroke-width="2.2" fill="${p.c}"/>`).join('')}</g>` : '';
+    const svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(sp.aria || '추이 그래프')}">${grid}${sp.lines.map(l => `${linePaths(l.a, x, y, l.c, l.w)}${dots(l.a, l.c, y)}${last(l.a, l.c)}`).join('')}${subSvg}${xl}${over}</svg>`;
+    return { html: svg, model: { W, H, L, R, n, x, pts, top: T, months } };
   }
+  /** 말풍선 내용 만들기(공용). o = {months, rows:[{k, a, c, fmt, ex}], gap:[매매 a, 전세 a] (선택), cnt: Map(연월 → 건수, 선택), cntK: '매매'}
+      각 줄: 실제 값 → 금액, 거래 없는 점선 구간 → '약 …' + '거래 없음(앞뒤 거래로 이은 값)', 자료 밖 → '거래 없음' */
+  function tipFn(o) {
+    const m = M(), fm = o.fmt || m.won;
+    return i => {
+      const ym = o.months[i], out = { head: m.ymLabel(ym), rows: [], extra: [] }, say = [out.head];
+      o.rows.forEach(r => {
+        const p = m.valAt(r.a, i), f = r.fmt || fm;
+        let v, fill = false;
+        if (!p) { const k = r.a.findIndex(x => x > 0); v = k > i ? `자료 없음(${m.ymLabel(o.months[k])}부터)` : '최근 거래 없음'; }
+        else if (p.real) v = f(p.v) + (r.ex ? r.ex(i) : '');
+        else { v = '약 ' + f(r.fmt ? p.v : m.r100(p.v)); fill = true; }
+        out.rows.push({ k: r.k, c: r.c, v, fill, none: !p });
+        say.push(`${r.k} ${fill ? v + '(거래 없음, 앞뒤 거래로 이은 값)' : v}`);
+      });
+      if (o.gap) {
+        const s = m.valAt(o.gap[0], i), j = m.valAt(o.gap[1], i), g = s && j && s.real && j.real ? m.gapOf(s.v, j.v) : null;
+        if (g) {
+          out.gap = { v: fm(g.gap), pct: Math.round(g.pct * 100), jr: Math.round(g.jr * 100) };
+          say.push(`갭 ${out.gap.v}, 매매가의 ${out.gap.pct}%`, `전세가율 ${out.gap.jr}%`);
+        }
+      }
+      const fl = out.rows.filter(r => r.fill).map(r => r.k);
+      if (fl.length) out.extra.push(`${fl.join('·')} 거래 없음 — 앞뒤 거래로 이은 값이에요`);
+      if (o.cnt && o.cnt.has(ym)) { const c = o.cnt.get(ym), t = c ? `이 달 ${o.cntK || '매매'} 신고 ${c}건` : `이 달 ${o.cntK || '매매'} 신고 없음 · 값은 앞 3개월 거래 기준`; out.extra.push(t); say.push(t); }
+      out.say = say.join(', ');
+      return out;
+    };
+  }
+  /** 전체 기간 매매·전세(histSeries 결과)용 말풍선. cnt = Map(연월 → 매매 건수) 선택 */
+  function histTip(t, cnt) {
+    const rows = [{ k: '매매', a: t.s, c: '#2F6BFF' }];
+    if (t.j.some(v => v > 0)) rows.push({ k: '전세', a: t.j, c: '#14A06B' });
+    return tipFn({ months: t.months, rows, gap: rows.length > 1 ? [t.s, t.j] : null, cnt });
+  }
+  /** 최근 3년 월별 매매 건수(u[7]) → Map(연월 → 건수) */
+  function cntMap(u, months) {
+    const c = M().counts(u && u[7]), mp = new Map();
+    (months || []).forEach((ym, i) => { if (i < c.length) mp.set(ym, c[i]); });
+    return mp;
+  }
+  const tipHtml = o => `<b class="h">${esc(o.head)}</b>${o.gap ? `<div class="g">갭 <b>${esc(o.gap.v)}</b> <span>(매매가의 ${o.gap.pct}%)</span></div>` : ''}`
+    + o.rows.map(r => `<div class="r${r.fill || r.none ? ' f' : ''}"><i style="background:${r.c}"></i>${esc(r.k)} <b>${esc(r.v)}</b></div>`).join('')
+    + (o.gap ? `<div class="r s">전세가율 <b>${o.gap.jr}%</b></div>` : '')
+    + o.extra.map(e => `<div class="x">${esc(e)}</div>`).join('');
+  const sumHtml = (o, idle) => `<b>${esc(o.head)}</b>${idle ? ' 최근' : ''} · ${o.rows.map(r => `${esc(r.k)} ${esc(r.v)}`).join(' · ')}${o.gap ? ` · 갭 ${esc(o.gap.v)}(${o.gap.pct}%) · 전세가율 ${o.gap.jr}%` : ''}`
+    + (idle ? '<span class="hint"> — 차트를 움직이거나 눌러 보세요</span>' : '');
+  /** el 에 차트를 그리고 안내선 연결. 반환: plot 결과 */
+  function mount(el, sp) {
+    if (!el) return null;
+    const r = plot(sp, el.clientWidth || 480);
+    if (!r.model || !sp.tip) { el.innerHTML = (sp.pre || '') + r.html; return r; }
+    el.innerHTML = `${sp.pre || ''}<div class="jhv" tabindex="0" role="group" aria-roledescription="차트" aria-label="${esc((sp.aria || '추이 그래프') + ' — 왼쪽·오른쪽 화살표 키로 달을 옮기며 값을 들을 수 있어요')}">`
+      + `<div class="jhv-sum" aria-hidden="true"></div><div class="jhv-in">${r.html}<div class="jhv-tip" hidden></div></div><div class="jhv-sr" aria-live="polite"></div></div>`;
+    wire(el.querySelector('.jhv'), r.model, sp.tip);
+    return r;
+  }
+  function wire(box, md, tip) {
+    const inr = box.querySelector('.jhv-in'), svg = inr.querySelector('svg'), g = svg.querySelector('.jhv-o'), ln = g.querySelector('line'),
+      cs = [...g.querySelectorAll('circle')], tb = inr.querySelector('.jhv-tip'), sum = box.querySelector('.jhv-sum'), sr = box.querySelector('.jhv-sr'), m = M();
+    let lastI = md.n - 1; while (lastI > 0 && !md.pts.some(p => p.a[lastI] > 0)) lastI--;
+    let cur = -1, pin = false, touch = null, raf = 0, want = -1, pt = 'mouse';
+    const idle = () => { sum.innerHTML = sumHtml(tip(lastI), true); };
+    const show = i => {
+      i = Math.max(0, Math.min(md.n - 1, i)); if (i === cur && !tb.hidden) return; cur = i;
+      const x = md.x(i).toFixed(1); g.style.display = ''; ln.setAttribute('x1', x); ln.setAttribute('x2', x);
+      cs.forEach((c, k) => { const p = md.pts[k], v = m.valAt(p.a, i);
+        if (!v) { c.style.display = 'none'; return; }
+        c.style.display = ''; c.setAttribute('cx', x); c.setAttribute('cy', p.y(v.v).toFixed(1)); c.setAttribute('fill', v.real ? p.c : '#fff'); });
+      const o = tip(i); tb.innerHTML = tipHtml(o); tb.hidden = false; sum.innerHTML = sumHtml(o);
+      /* 말풍선: 안내선 오른쪽, 넘치면 왼쪽 — 차트 밖으로 안 나가게 */
+      const rw = inr.clientWidth, sw = svg.getBoundingClientRect().width || rw, px = md.x(i) / md.W * sw, tw = tb.offsetWidth;
+      let left = px + 12; if (left + tw > rw) left = px - 12 - tw; left = Math.max(0, Math.min(rw - tw, left));
+      tb.style.left = left.toFixed(0) + 'px';
+      box._say = o.say;
+    };
+    const hide = () => { cur = -1; pin = false; box.classList.remove('pin'); g.style.display = 'none'; tb.hidden = true; idle(); };
+    const say = () => { if (box._say) sr.textContent = box._say; };
+    const at = cx => { const r = svg.getBoundingClientRect(), vx = (cx - r.left) * md.W / (r.width || 1); return Math.round((vx - md.L) / (md.W - md.L - md.R) * (md.n - 1)); };
+    const later = i => { want = i; if (!raf) raf = requestAnimationFrame(() => { raf = 0; show(want); }); };
+    const setPin = v => { pin = v; box.classList.toggle('pin', v); };
+    inr.addEventListener('pointerdown', e => {
+      pt = e.pointerType || 'mouse'; if (pt === 'mouse') return;
+      touch = { pin, cur }; show(at(e.clientX));
+    });
+    inr.addEventListener('pointermove', e => {
+      if (e.pointerType === 'mouse') { if (!pin) later(at(e.clientX)); return; }
+      if (touch) later(at(e.clientX));
+    });
+    inr.addEventListener('pointerup', e => { if (e.pointerType === 'mouse' || !touch) return; touch = null; setPin(true); say(); });
+    /* 세로로 문지르면 브라우저가 스크롤로 가져가며 pointercancel — 안내선은 이전 상태로 */
+    inr.addEventListener('pointercancel', () => { if (!touch) return; const p = touch; touch = null; if (p.pin && p.cur >= 0) { cur = -1; show(p.cur); setPin(true); } else hide(); });
+    inr.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse' && !pin) hide(); });
+    inr.addEventListener('click', e => { if (pt !== 'mouse' || touch) return;
+      if (pin) { setPin(false); show(at(e.clientX)); } else { show(at(e.clientX)); setPin(true); say(); } });
+    box.addEventListener('keydown', e => {
+      const k = e.key, base = cur < 0 ? lastI : cur;
+      if (k === 'ArrowLeft' || k === 'ArrowRight' || k === 'Home' || k === 'End') {
+        e.preventDefault(); show(k === 'ArrowLeft' ? (cur < 0 ? lastI : base - 1) : k === 'ArrowRight' ? (cur < 0 ? lastI : base + 1) : k === 'Home' ? 0 : md.n - 1); setPin(true); say();
+      } else if (k === 'Escape' && cur >= 0) { e.preventDefault(); hide(); }
+    });
+    box.addEventListener('focusout', e => { if (!box.contains(e.relatedTarget)) hide(); });
+    box._jhvHide = hide; box._md = md;
+    idle();
+  }
+  /* 차트 바깥을 누르면 고정된 안내선 풀기 (차트마다 문서 이벤트를 달지 않도록 한 번만) */
+  if (typeof document !== 'undefined' && document.addEventListener) document.addEventListener('pointerdown', e => {
+    document.querySelectorAll('.jhv.pin').forEach(b => { if (!b.contains(e.target) && b._jhvHide) b._jhvHide(); });
+  }, true);
+
+  /* ---------- 전체 기간 차트: 매매·전세 두 선(금액) 또는 전세가율 ---------- */
+  /** t = histSeries(또는 histWindow) 결과 → plot 설명서. opts.jr = 전세가율 선만, opts.fs = 글자 크기, opts.h = 높이,
+      opts.sub = 아래에 전세가율 보조 그래프, opts.tip = 안내선 연결(mountHist), opts.cnt = Map(연월 → 매매 건수),
+      opts.sparse = 거래가 드문 단지 안내 한 줄(기간 단추와 무관하게 전체 자료로 판단해 넘겨 줌) */
+  function histSpec(t, opts) {
+    opts = opts || {};
+    if (opts.jr && t) { const k = t.jr.findIndex(v => v > 0); if (k > 0) t = Object.assign({}, t, { months: t.months.slice(k), jr: t.jr.slice(k), s: t.s.slice(k), j: t.j.slice(k) }); }   // 전세가율은 전세 자료가 있는 달부터
+    const jr = t.jr.map(v => v * 100);
+    const sp = { months: t.months, fs: opts.fs || 12.5, h: opts.h || 190, L: opts.jr ? 44 : 54, min: 2,
+      lines: opts.jr ? [{ a: jr, c: '#0E7A4F', w: 2.4 }] : [{ a: t.j, c: '#14A06B', w: 2.2 }, { a: t.s, c: '#2F6BFF', w: 2.6 }],
+      fmtY: opts.jr ? (v => Math.round(v) + '%') : eok, aria: opts.jr ? '전세가율 추이' : '매매·전세 시세 추이',
+      empty: opts.jr ? '전세가율을 계산할 달(매매·전세 거래가 모두 있는 달)이 적어요.' : '차트로 보여 드릴 거래가 없어요.',
+      pre: opts.sparse ? SPARSE : '' };
+    if (opts.sub && !opts.jr && jr.some(v => v > 0)) sp.sub = { a: jr, c: '#0E7A4F', label: '전세가율' };
+    if (opts.tip) sp.tip = opts.jr ? tipFn({ months: t.months, rows: [{ k: '전세가율', a: jr, c: '#0E7A4F', fmt: v => Math.round(v) + '%' }] }) : histTip(t, opts.cnt);
+    return sp;
+  }
+  /** SVG 문자열만(예전 방식, 안내선 없음) */
+  function histChart(t, W, opts) {
+    const sp = histSpec(t, Object.assign({}, opts, { tip: false })), r = plot(sp, W);
+    return (r.model ? sp.pre : '') + r.html;
+  }
+  /** el 에 전체 기간 차트 + 안내선(세로선·말풍선·전세가율 보조 그래프) */
+  function mountHist(el, t, opts) { return mount(el, histSpec(t, Object.assign({ tip: true }, opts))); }
   /** 기간 단추 HTML (data-hspan) */
   const spanBtns = (t, cur, cls) => `<div class="${cls || 'jps-seg'}" role="group" aria-label="기간">${M().histSpans(t).map(b => `<button type="button" data-hspan="${b.span}" class="${b.span === cur ? 'on' : ''}" aria-pressed="${b.span === cur}">${b.label}</button>`).join('')}</div>`;
   /** 차트 아래 자료 기간 문구: 수집 시작 달(cover)을 실제 값으로 */
@@ -179,6 +331,18 @@
 .jps-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 14px;border:1.5px solid #2F6BFF;border-radius:12px;background:#fff;color:#2F6BFF!important;font:inherit;font-size:14.5px;font-weight:700;line-height:1.2;cursor:pointer;white-space:nowrap;text-decoration:none;vertical-align:middle;box-sizing:border-box;max-width:100%}
 .jps-btn:hover{background:#EEF3FF}.jps-btn:focus-visible{outline:3px solid #9DB8FF;outline-offset:2px}.jps-btn svg{flex:none}
 .jps-btn.sm{padding:0 10px;font-size:13.5px}.jps-btn.blk{display:flex;width:100%;margin-top:8px}
+.jhv{position:relative;outline:none;border-radius:10px}.jhv:focus-visible{box-shadow:0 0 0 3px #9DB8FF}
+.jhv-in{position:relative;touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;cursor:crosshair}
+.jhv-in svg{display:block}
+.jhv-sum{font-size:13.5px;line-height:1.5;color:#3E4754;margin:0 0 4px;min-height:20px;font-variant-numeric:tabular-nums;word-break:keep-all}
+.jhv-sum b{color:#191F28}.jhv-sum .hint{color:#6B7684}
+.jhv-tip{position:absolute;top:2px;left:0;z-index:2;pointer-events:none;background:rgba(25,31,40,.94);color:#fff;border-radius:10px;padding:8px 10px;font-size:14px;line-height:1.45;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.18);font-variant-numeric:tabular-nums}
+.jhv-tip .h{display:block;font-size:14px;margin-bottom:2px}
+.jhv-tip .g{font-size:14.5px}.jhv-tip .g b{color:#FFD66B}.jhv-tip .g span{color:#D1D6DB}
+.jhv-tip .r i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:1px}
+.jhv-tip .r.f{color:#C9CED4}.jhv-tip .r.f b{font-weight:600}
+.jhv-tip .r.s{color:#D1D6DB}.jhv-tip .x{color:#C9CED4;font-size:13.5px}
+.jhv-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media print{.jps-btn{display:none!important}}
 @media(max-width:400px){.jps-hi{grid-template-columns:1fr}}
 @media(max-width:640px){.jps-ov{align-items:flex-end;padding:0}.jps{border-radius:20px 20px 0 0;max-width:none;max-height:90vh}.jps-st{grid-template-columns:1fr 1fr}.jps-st>div:first-child{grid-column:1/-1}}`;
@@ -218,7 +382,7 @@
       if (a && pushed && !(e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button)) { e.preventDefault(); pushed = false; location.replace(a.href); }
     });
     ov.querySelector('.jps-x').onclick = close;
-    keyH = e => { if (e.key === 'Escape' && ov) { e.stopPropagation(); e.stopImmediatePropagation(); close(); } };
+    keyH = e => { if (e.key === 'Escape' && ov && !(e.target && e.target.closest && e.target.closest('.jhv.pin'))) { e.stopPropagation(); e.stopImmediatePropagation(); close(); } };
     document.addEventListener('keydown', keyH, true);
     document.body.appendChild(ov);
     pushState();
@@ -243,11 +407,13 @@
         const t = histOf(g, h, u), sec = box.querySelector('.jps-hsec');
         if (ov !== mine || !t || !sec) return;
         let span = 36;
+        const cnt = cntMap(u, ix.months);
         const draw = () => {
           const w = M().histWindow(t, span), W = Math.min(520, (sec.clientWidth || 480));
-          sec.innerHTML = `<div class="jps-ch"><h4>가격 추이 (매매·전세)</h4>${spanBtns(t, span)}</div>${histChart(w, W, { sparse: M().isSparse(t.s) })}
-            <div class="jps-lg"><span><i></i>매매 시세</span>${t.j.some(v => v > 0) ? '<span><i class="j"></i>전세 시세</span>' : ''}<span>${esc(u[3])} · 전용 ${u[4]}㎡ 환산</span></div>
+          sec.innerHTML = `<div class="jps-ch"><h4>가격 추이 (매매·전세)</h4>${spanBtns(t, span)}</div><div class="jps-hc" style="max-width:${W}px"></div>
+            <div class="jps-lg"><span><i></i>매매 시세</span>${t.j.some(v => v > 0) ? '<span><i class="j"></i>전세 시세</span>' : ''}<span>${esc(u[3])} · 전용 ${u[4]}㎡ 환산</span>${w.jr.some(v => v > 0) ? '<span>아래 띠 = 전세가율(점선 = 평균)</span>' : ''}</div>
             <p class="jps-note">${esc(histNote(g.hist, t))}</p>`;
+          mountHist(sec.querySelector('.jps-hc'), w, { sparse: M().isSparse(t.s), sub: true, cnt });
           sec.querySelectorAll('[data-hspan]').forEach(b => b.onclick = () => { span = +b.dataset.hspan; draw(); });
         };
         draw();
@@ -302,7 +468,7 @@
     <a class="jps-go" href="${esc(link)}">내 집 시세에서 자세히 보기 →</a>`;
   }
 
-  const API = { open, close, btn, loadSgg, loadHist, histOf, scoreUnits, findUnit, tradesHtml, wireMore, miniChart, histChart, histNote, linePaths, SPARSE, highsHtml, spanBtns, baseName };
+  const API = { open, close, btn, loadSgg, loadHist, histOf, scoreUnits, findUnit, tradesHtml, wireMore, miniChart, histChart, histNote, linePaths, SPARSE, highsHtml, spanBtns, baseName, plot, mount, tipFn, histTip, histSpec, mountHist, cntMap, eok };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_PRICE = API;
 })(typeof self !== 'undefined' ? self : this);
