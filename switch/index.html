@@ -16,9 +16,19 @@
 <script src="/jangdaejang-calc/assets/region-pick.js" defer></script>
 <title>장대장 갈아타기 계산기</title>
 <meta name="description" content="지금 집을 팔면 양도세를 내고 대출을 갚은 뒤 손에 남는 돈, 새 대출로 갈아탈 수 있는 최대 집값, 취득세, 예산 안에서 미래가치 점수가 높은 단지, 지금 집 유지와 갈아타기 비교까지 한 번에 계산합니다. 2026년 11월 규제 반영.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="장대장 계산기">
 <meta property="og:title" content="장대장 갈아타기 계산기 — 지금 집 팔면 어디까지 갈 수 있을까?">
 <meta property="og:description" content="양도세·매도 후 순자금·새 대출·취득세까지 한 번에. 1주택자 갈아타기 무료 계산기.">
-<meta property="og:type" content="website">
+<meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/switch/">
+<meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/switch.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="장대장 갈아타기 계산기 — 지금 집 팔면 어디까지 갈 수 있을까?">
+<meta name="twitter:description" content="양도세·매도 후 순자금·새 대출·취득세까지 한 번에. 1주택자 갈아타기 무료 계산기.">
+<meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/switch.png">
 <script>window.JDJ_CONFIG = { tool:'switch', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js"></script>
 <script src="../assets/stat.js"></script>
@@ -130,17 +140,17 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .agc b{font-size:16px}
 .agc small{display:block;color:#4E5968;font-size:13.5px}
 .agc .acts{display:flex;gap:6px;margin-top:8px}
-.agc .acts a{flex:1;text-align:center;text-decoration:none;font-weight:900;font-size:14px;padding:8px;border-radius:7px;background:#3B3F22;color:#F5EFDC}
+.agc .acts a{flex:1;text-align:center;text-decoration:none;font-weight:900;font-size:14px;padding:8px;border-radius:12px;background:#2F6BFF;color:#fff}
 .agc .acts a{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
 .agc .acts a.kchat{font-size:14px;font-weight:900;border-radius:7px;padding:8px}
-.agc .tag{font-size:10px;font-weight:700;border:1px solid #B8942A;color:#B8942A;padding:1px 5px;border-radius:3px;margin-left:5px}
+.agc .tag{font-size:12px;font-weight:700;border:1px solid #B8942A;color:#B8942A;padding:1px 5px;border-radius:3px;margin-left:5px}
 .agnone{margin-top:12px;font-size:15px;font-weight:700}
 .agnone a{color:#A23B2A}
-.toReport{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;background:#3B3F22;color:#F5EFDC;border:2px solid #B8942A;border-radius:12px;padding:18px 20px;margin:16px 0}
+.toReport{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;background:#E8F0FF;color:#191F28;border:1px solid #C9D8FF;border-radius:16px;padding:18px 20px;margin:16px 0}
 .toReport b{font-size:18px;display:block}
-.toReport b em{font-style:normal;color:#D9B85A}
-.toReport span{font-size:14px;color:#DDD7BF}
-.toReport a{background:#B8942A;color:#23241A;font-weight:900;font-size:17px;padding:12px 20px;border-radius:9px;text-decoration:none;white-space:nowrap}
+.toReport b em{font-style:normal;color:#2F6BFF}
+.toReport span{font-size:14px;color:#3E4754}
+.toReport a{background:#2F6BFF;color:#fff;font-weight:900;font-size:17px;padding:12px 20px;border-radius:14px;text-decoration:none;white-space:nowrap}
 .gap .pick{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:640px){.gap .pick{grid-template-columns:1fr}}
 .gap .pk{border:1.5px solid #DCCFA8;border-radius:10px;padding:12px;background:#fff}
@@ -149,13 +159,13 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .gap .res{max-height:180px;overflow:auto;border:1px solid #EFE6CC;border-radius:7px}
 .gap .res:empty{display:none}
 .gap .res div{padding:7px 10px;border-bottom:1px solid #F3EDD9;cursor:pointer;font-size:14.5px}
-.gap .res div:hover{background:#F5EFDC}
+.gap .res div:hover{background:#F2F4F6}
 .gap .bands{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
-.gap .bands button{font:inherit;font-size:13.5px;font-weight:700;border:1.5px solid #3B3F22;background:#fff;color:#3B3F22;border-radius:999px;padding:5px 10px;cursor:pointer}
-.gap .bands button.on{background:#3B3F22;color:#F5EFDC}
+.gap .bands button{font:inherit;font-size:13.5px;font-weight:700;border:1.5px solid #2F6BFF;background:#fff;color:#2F6BFF;border-radius:999px;padding:5px 10px;cursor:pointer}
+.gap .bands button.on{background:#2F6BFF;color:#fff}
 .gap .sel{font-weight:900;font-size:16px;margin-top:6px}
 .gap .sel small{display:block;font-weight:500;color:#4E5968;font-size:13.5px}
-.gap .gapres{margin-top:14px;background:#F5EFDC;border-radius:10px;padding:14px 16px}
+.gap .gapres{margin-top:14px;background:#F2F4F6;border-radius:10px;padding:14px 16px}
 .gap .gapres:empty{display:none}
 .gap .big{font-size:26px;font-weight:900;color:#A23B2A}
 .gap .af{margin-top:12px;border-top:1px dashed #DCCFA8;padding-top:12px}
@@ -445,7 +455,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
       <div class="section"><div class="tips" id="tips"></div></div>
 
       <div class="toReport">
-        <div><b>그 돈으로 <em>갈아탈 단지</em>를 골라 드립니다</b><span>손에 남는 돈 기준 실거래 추천 단지 1~10위 · 단지마다 제휴 중개사 연결 · PDF 저장 (무료 베타)</span></div>
+        <div><b>그 돈으로 <em>갈아탈 단지</em>를 골라 드립니다</b><span>손에 남는 돈 기준 실거래 추천 단지 1~10위 · 단지마다 제휴 중개사 연결 · PDF 저장</span></div>
         <a id="premBtn" href="../buy/report/" target="_blank" rel="noopener">갈아탈 단지 추천받기 →</a>
       </div>
 
@@ -455,6 +465,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
           <a class="btn primary" id="consultBtn" data-track="consult_click" href="#" target="_blank" rel="noopener">상담 신청</a>
           <a class="btn" data-track="youtube_click" href="https://www.youtube.com/results?search_query=%EC%9E%A5%EB%8C%80%EC%9E%A5TV" target="_blank" rel="noopener">장대장TV 보기</a>
           <button class="btn ghost" id="copyBtn" data-track="copy_result">결과 복사</button>
+          <button class="btn ghost" id="shareSw" type="button">계산기 공유</button>
         </div>
       </div>
       <a class="xlink" data-track="cross_link_timing" href="https://claude.ai/artifact/MPDhYTNGfXkiiFg6sDxvdM" target="_blank" rel="noopener"><span><b>지금이 갈아탈 타이밍인지 궁금하다면</b><small>장대장 갈아타기 타이밍 · 실거래가 분석</small></span><span class="go" aria-hidden="true">›</span></a>
@@ -471,7 +482,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
       <li>필요경비를 비워두면 산 가격 기준 1주택 취득세(현행 세율)+지방교육세+중개보수 상한으로 추정. 수리·확장비 등 실제 영수증이 있는 비용은 직접 입력하면 더 정확</li>
       <li>새 집 대출: 1주택은 기존 주택 처분 조건. 규제지역 LTV 40%, 비규제 70%, 다주택은 수도권·규제지역 주택구입 주담대 불가(지방 60%). 수도권·규제지역 주담대 한도 15억 이하 6억 / 25억 이하 4억 / 25억 초과 2억. DSR 40%, 스트레스 금리 수도권·규제지역 3.0% × 금리유형 비율</li>
       <li>새 집 취득세: 세금 계산기와 같은 엔진(지방세법 기준). 1주택자는 일시적 2주택 일반세율 1~3% + 지방교육세, 85㎡ 초과 농특세. 2주택 이상은 이 집을 판 뒤 새 집을 사는 것으로 보고 취득 후 주택 수로 중과 여부를 판정. 중개보수는 법정 상한요율 + 부가세</li>
-      <li>추천 단지: 내 집 마련 리포트와 같은 자료·점수 기준. 추정 시세는 최근 3개월 안 마지막 실거래 평당가 × 전용면적이며, 실제 호가·매물과 다를 수 있어요.</li>
+      <li>추천 단지: 내 집 마련 리포트와 같은 자료·점수 기준. 추정 시세는 최근 3개월 실거래 평당가 중앙값 × 전용면적(최근 3개월 거래가 없으면 마지막 거래 기준)이며, 실제 호가·매물과 다를 수 있어요.</li>
       <li>기존 주담대는 매도 대금으로 상환하고, 매도 대금이 새 집 잔금에 쓰인다고 가정했습니다. 실제 세액·한도는 세무사·은행 확인이 필요합니다.</li>
       <li>이용 통계: 서비스 개선을 위해 방문 횟수·유입 경로·사용한 기능을 익명으로 집계합니다(Google 애널리틱스). 이름·연락처는 수집하지 않으며, 입력한 금액은 저장하지 않고 구간(예: 12~15억)으로만 집계합니다.</li>
     </ul>
@@ -692,6 +703,8 @@ function statSwitch(){ if(!window.jdjStat || !last || !last.c) return; const RG=
   if(t==='click' && !e.target.closest('.seg button')) return;
   jdjStat.later('switch', statSwitch, 3000); }));
 var SW_FIN, REC_LAST_O=null;
+/* 공유: 내 금액은 담지 않고 갈아타기 계산기 주소만 */
+if (window.JDJ_SHARE) JDJ_SHARE.bind($('shareSw'), ()=>({title:'장대장 갈아타기 계산기', text:'지금 집 팔면 어디까지 갈아탈 수 있을까? 양도세·손에 남는 돈·새 대출까지 나도 계산해 보기', url:new URL('./', location.href).href}));
 document.addEventListener('click',e=>{ const a=e.target.closest&&e.target.closest('a[data-fin]'); if(a&&window.JDJ_SHARE&&REC_LAST_O) JDJ_SHARE.saveFin(REC_LAST_O); },true);
 ['pointerdown','click','keydown'].forEach(t=>$('premBtn').addEventListener(t,()=>{ if(SW_FIN&&window.JDJ_SHARE) JDJ_SHARE.saveFin(SW_FIN); }));
 $('premBtn').addEventListener('click',()=>JDJ.track('switch_to_report',{region:$('region').value, max_band:JDJ.band(last?last.P:0)}));
@@ -773,7 +786,7 @@ function priceInfo(u){
   for(let i=s.length-1;i>=0;i--) if(s[i]>0&&(!c||c.charCodeAt(i)>48)) return {price:REC.r100(s[i]*u[4]/GPY), at:m[i]||'', last:true};   // 실제 거래가 있었던 달
   return {price:0, last:false};
 }
-const piTxt=pi=>pi.last&&pi.at?`${pi.at.slice(0,4)}.${pi.at.slice(4)} 마지막 실거래 기준`:'최근 3개월 실거래 중앙값';
+const piTxt=pi=>pi.last&&pi.at?`${pi.at.slice(0,4)}.${pi.at.slice(4)} 마지막 거래 기준 · 최근 3개월 거래 없음`:'최근 3개월 실거래 중앙값';
 function lastNZ(a){ for(let i=a.length-1;i>=Math.max(0,a.length-3);i--) if(a[i]>0) return a[i]; return 0; }
 function unitPrice(u){ return REC.unitPrice(u); }
 function makePicker(el, which, onLoc){
@@ -868,6 +881,22 @@ function drawGap(){
 makePicker($('pkMine'),'mine'); makePicker($('pkTarget'),'target');
 makePicker($('pkHome'),'home',(sd,g)=>setHomeLoc(sd,g,null));
 $('pkHome').querySelector('.pq').placeholder='단지명 검색 (먼저 시·도와 구·시·군을 고르세요)';
+/* 내 집 시세에서 넘어온 단지(?src=mine&sd=시도id&d=구|동|지번|단지&b=평형)를 STEP 1 지금 집으로 바로 넣음 */
+(async function fromMine(){
+  const q=new URLSearchParams(location.search), sdId=q.get('sd'), dk=q.get('d')||'', band=q.get('b')||'';
+  if(!sdId||!dk) return;
+  const [code,dong,jb,apt]=dk.split('|'); if(!/^\d{5}$/.test(code||'')) return;
+  const ix=await gapIndex(); if(!ix) return;
+  const sdo=ix.sido.find(x=>x.id===sdId); const sdName=sdo?sdo.name:(ix.sgg[code]&&ix.sgg[code].sido); if(!sdName) return;
+  let units=[]; try{ units=await gapSggUnits(sdName, code); }catch(e){ return; }
+  const rows=units.filter(u=>u[0]===code&&u[1]===dong&&u[8]===jb&&u[2]===apt).sort((a,b)=>a[4]-b[4]); if(!rows.length) return;
+  const row=rows.find(u=>u[3]===band)||rows[0];
+  const el=$('pkHome'), ps=el.querySelector('.psido');
+  ps.innerHTML='<option value="">시·도</option>'+ix.sido.map(x=>`<option>${escH(x.name)}</option>`).join(''); ps.value=sdName; ps.dispatchEvent(new Event('change'));
+  el.querySelector('.psgg').value=code; el.querySelector('.pq').value=apt;
+  el.querySelector('.bands').innerHTML=rows.map(u=>`<button class="${u===row?'on':''}" disabled>${escH(u[3])} · 전용 ${u[4]}㎡</button>`).join('');
+  pickHome(await withScore(row, sdName), sdName, code);
+})();
 
 /* ---------- STEP 1 지금 집 위치·단지 ---------- */
 function setHomeLoc(sd, g, u){
@@ -880,7 +909,7 @@ function setHomeLoc(sd, g, u){
 }
 function pickHome(u, sd, g){
   const el=$('pkHome'), pi=priceInfo(u), price=pi.price;
-  el.querySelector('.sel').innerHTML=`${escH(u[2])} ${escH(u[3])} <small>${escH(AG_IX.sgg[g].name)} ${escH(u[1])} · 추정 시세 ${fmt(price)}원 (${pi.last?piTxt(pi):'최근 3개월 안 마지막 실거래 기준'}${!u[9]?` · 최근 3년 거래 ${u[5]}건 기준`:''}) — 예상 매도가에 넣었어요</small>`+PBu(u,'switch_pick','sm');
+  el.querySelector('.sel').innerHTML=`${escH(u[2])} ${escH(u[3])} <small>${escH(AG_IX.sgg[g].name)} ${escH(u[1])} · 추정 시세 ${fmt(price)}원 (${piTxt(pi)}${!u[9]?` · 최근 3년 거래 ${u[5]}건 기준`:''}) — 예상 매도가에 넣었어요</small>`+PBu(u,'switch_pick','sm');
   if(price){ $('sale').value=price.toLocaleString(); }
   GAP.mine={u, sido:sd, key:[u[0],u[1],u[2],u[3]].join('|'), name:`${u[2]} ${u[3]}`, area:u[4], price};
   const ms=$('pkMine').querySelector('.sel'); if(ms) ms.innerHTML=`${escH(u[2])} ${escH(u[3])} <small>STEP 1에서 고른 지금 집 · 추정 시세 ${fmt(price)}원</small>`+PBu(u,'switch_pick','sm');

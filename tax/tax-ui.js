@@ -44,6 +44,11 @@
   }
   document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) { e.preventDefault(); show(b.dataset.go); } });
   window.addEventListener('popstate', () => show((location.hash || '#home').slice(1) in VIEWS ? (location.hash || '#home').slice(1) : 'home', false));
+  /* 질문 이동을 브라우저 기록에 남김: 뒤로 가기 = 이전 질문 */
+  const TW = {};
+  const twPush = (name, q) => { try { history.pushState({ tw: name, q }, '', location.href); } catch (e) {} };
+  const twBack = (name, cur) => { const h = history.state; if (h && h.tw === name && h.q === cur && cur > 0) { history.back(); return true; } return false; };
+  window.addEventListener('popstate', e => { const h = e.state; if (h && h.tw && TW[h.tw]) TW[h.tw](h.q); else Object.values(TW).forEach(f => f(0, true)); });
 
   /* ---------- 1. 양도세 한 질문씩 ---------- */
   const S = { houses: null, acqAdjAns: null };
@@ -110,11 +115,12 @@
   function next() {
     const f = flow(), err = validate(f[cur]);
     if (err) { $('wErr').textContent = err; return; }
-    if (cur < f.length - 1) { cur++; render(); const inp = document.querySelector('#wiz .wq:not([hidden]) input'); if (inp && inp.type !== 'checkbox' && window.innerWidth > 600) inp.focus(); }
+    if (cur < f.length - 1) { cur++; render(); twPush('cgt', cur); const inp = document.querySelector('#wiz .wq:not([hidden]) input'); if (inp && inp.type !== 'checkbox' && window.innerWidth > 600) inp.focus(); }
     else runCgt(true);
   }
   $('wiz').addEventListener('submit', e => { e.preventDefault(); next(); });
-  $('wPrev').addEventListener('click', () => { if (cur) { cur--; render(); } });
+  $('wPrev').addEventListener('click', () => { if (twBack('cgt', cur)) return; if (cur) { cur--; render(); } });
+  TW.cgt = (n, soft) => { if (soft && !$('wiz').hidden) { cur = 0; render(); return; } if (soft) return; $('wiz').hidden = false; $('cgtOut').hidden = true; cur = n; render(); };
   $('cgtEdit').addEventListener('click', () => { $('wiz').hidden = false; $('cgtOut').hidden = true; cur = 0; render(); window.scrollTo(0, 0); });
   render();
 
@@ -345,11 +351,12 @@
     function next() {
       const f = o.flow(st), err = o.validate(f[cur], st);
       if (err) { q('.werr').textContent = err; return; }
-      if (cur < f.length - 1) { cur++; render(); return; }
+      if (cur < f.length - 1) { cur++; render(); twPush(form.id, cur); return; }
       form.hidden = true; out.hidden = false; o.done(st); stat(); window.scrollTo(0, 0);
     }
     form.addEventListener('submit', e => { e.preventDefault(); next(); });
-    q('.wprev').addEventListener('click', () => { if (cur) { cur--; render(); } });
+    q('.wprev').addEventListener('click', () => { if (twBack(form.id, cur)) return; if (cur) { cur--; render(); } });
+    TW[form.id] = (n, soft) => { if (soft) { if (!form.hidden) { cur = 0; render(); } return; } form.hidden = false; out.hidden = true; cur = n; render(); };
     render();
     return { st, render, reset: () => { form.hidden = false; out.hidden = true; cur = 0; render(); window.scrollTo(0, 0); } };
   }

@@ -15,12 +15,23 @@
 <script src="/jangdaejang-calc/assets/biz.js" defer></script>
 <title>장대장 내 집 시세 — 우리 아파트 실거래 시세·추이·미래가치 점수</title>
 <meta name="description" content="국토교통부 아파트 실거래가로 우리 단지 평형별 최근 시세, 1·3년 가격 추이, 거래량, 같은 동·구 대비 위치, 미래가치 점수를 확인하고 내 집으로 저장해 두세요.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="장대장 계산기">
 <meta property="og:title" content="장대장 내 집 시세 — 우리 아파트 지금 얼마일까?">
 <meta property="og:description" content="실거래 시세·추이·거래량·같은 동·구 대비 위치·미래가치 점수를 한 화면에. 내 집 저장은 이 기기에만.">
-<meta property="og:type" content="website">
+<meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/mine/">
+<meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/mine.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="장대장 내 집 시세 — 우리 아파트 지금 얼마일까?">
+<meta name="twitter:description" content="실거래 시세·추이·거래량·같은 동·구 대비 위치·미래가치 점수를 한 화면에. 내 집 저장은 이 기기에만.">
+<meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/mine.png">
 <script>window.JDJ_CONFIG = { tool:'mine', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js"></script>
 <script src="../assets/stat.js"></script>
+<script src="../assets/share.js?v=1"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/kchat.js?v=1"></script>
 <script src="../assets/plain-words.js?v=3"></script>
@@ -160,6 +171,9 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
 .jps-dir{font-size:12.5px;color:#8A6D17;font-weight:700}
 .jps-note{font-size:13.5px;color:#4E5968;line-height:1.6;margin:6px 0 0}
 [hidden]{display:none!important}
+.sharebox{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:14px 0}
+.sharebox .note{font-size:13.5px;color:#4E5968}
+.sharebox .btn{border:1px solid var(--line)}
 </style>
 </head>
 <body>
@@ -427,11 +441,13 @@ function render(d, map, units){
   <div class="panel">
     <h2>이 집으로 이어서 계산하기</h2>
     <div class="links">
-      <a class="main" href="../switch/?src=mine"><b>이 집 팔고 갈아타기 계산 →</b><small>양도세·매도 후 남는 돈·새 대출 (갈아타기 화면에서 지금 집 단지를 골라 주세요)</small></a>
+      <a class="main" href="../switch/?src=mine&amp;sd=${encodeURIComponent(S.sd)}&amp;d=${encodeURIComponent(d.key)}&amp;b=${encodeURIComponent(S.band)}"><b>이 집 팔고 갈아타기 계산 →</b><small>양도세·매도 후 남는 돈·새 대출 (이 단지·평형을 지금 집으로 넣어 드려요)</small></a>
       <a href="../tax/"><b>이 집 세금 계산 →</b><small>양도세·취득세·보유세</small></a>
       ${has ? `<a href="../premium/?p=single&amp;k=${encodeURIComponent(pk)}"><b>이 단지 프리미엄 리포트 →</b><small>단지 심층 분석 · 유료</small></a>` : ''}
     </div>
   </div>
+
+  <div class="sharebox"><button type="button" class="btn ghost" id="shareMine">이 단지 시세 공유하기</button><span class="note">카카오톡 등으로 보내요. 매수가 등 내 정보는 담기지 않아요.</span></div>
 
   <div id="agentSec"></div>`;
 
@@ -497,6 +513,8 @@ function wireResult(d, u, sm){
   const jb = $('jrBox'); if (jb) jb.addEventListener('toggle', () => { if (jb.open) drawCharts(u, IX.sgg[d.code]); });
   const bp = $('bp');
   bp.addEventListener('input', () => { const v = num(bp.value); bp.value = v ? v.toLocaleString() : ''; $('bpHint').textContent = v ? M.won(v) : '만원 단위로 넣어 주세요'; });
+  if (window.JDJ_SHARE) JDJ_SHARE.bind($('shareMine'), () => { const u2 = new URL(location.href); ['bp','bd'].forEach(k => u2.searchParams.delete(k));
+    return {title:`${d.apt} ${S.band} 시세 · 장대장 계산기`, text:`${d.apt} ${S.band} 실거래 시세·추이·미래가치 점수`, url:u2.href}; });
   $('saveBtn').onclick = () => {
     const h = {sd:S.sd, code:d.code, dong:d.dong, jibun:d.jibun, apt:d.apt, band:S.band, bp:num(bp.value) || null, bd:$('bd').value || '', t:new Date().toISOString().slice(0, 10)};
     const r = M.addHome(loadHomes(), h), msg = $('saveMsg');
