@@ -263,7 +263,7 @@
   /** t = histSeries(또는 histWindow) 결과 → plot 설명서. opts.jr = 전세가율 선만, opts.fs = 글자 크기, opts.h = 높이,
       opts.sub = 아래에 전세가율 보조 그래프, opts.tip = 안내선 연결(mountHist), opts.cnt = Map(연월 → 매매 건수),
       opts.sparse = 거래가 드문 단지 안내 한 줄(기간 단추와 무관하게 전체 자료로 판단해 넘겨 줌),
-      opts.gu = {name, s, months, area} 구 전체 비교선(index.json sgg[].s·months 를 이 평형 전용면적으로 환산, 회색 점선 — t 의 달에 맞춰 자르므로 기간 단추와 함께 움직임) */
+      opts.gu = {name, s, months, area} 구 전체 비교선(guOf: price/h sgg 전체 기간, 없으면 index.json sgg[].s·months 를 이 평형 전용면적으로 환산, 회색 점선 — t 의 달에 맞춰 자르므로 기간 단추와 함께 움직임) */
   function histSpec(t, opts) {
     opts = opts || {};
     if (opts.jr && t) { const k = t.jr.findIndex(v => v > 0); if (k > 0) t = Object.assign({}, t, { months: t.months.slice(k), jr: t.jr.slice(k), s: t.s.slice(k), j: t.j.slice(k) }); }   // 전세가율은 전세 자료가 있는 달부터
@@ -278,6 +278,20 @@
     if (opts.sub && !opts.jr && jr.some(v => v > 0)) sp.sub = { a: jr, c: '#0E7A4F', label: '전세가율' };
     if (opts.tip) sp.tip = opts.jr ? tipFn({ months: t.months, rows: [{ k: '전세가율', a: jr, c: '#0E7A4F', fmt: v => Math.round(v) + '%' }] }) : histTip(t, opts.cnt, gu);
     return sp;
+  }
+  /** 구 전체 비교선 자료 {name, s, months, area}: price/h/{구}.json 의 sgg(전체 기간, 기준 달 hm)가 있으면 그것,
+      없으면 index.json sgg[].s·months(최근 3년)로 대신. 값이 하나도 없으면 null */
+  function guOf(h, sgg, ixMonths, area, name) {
+    const m = M(), nm = name || (sgg && sgg.name) || '구';
+    if (h && Array.isArray(h.sgg) && h.sgg.length > 1 && h.hm) {
+      const mp = m.decodeSeries(h.sgg, h.hm);
+      if (mp.size) {
+        const ks = [...mp.keys()].sort(), to = h.to && h.to > ks[ks.length - 1] ? h.to : ks[ks.length - 1], months = [];
+        for (let ym = ks[0]; ym <= to; ym = m.ymAdd(ym, 1)) months.push(ym);
+        return { name: nm, s: months.map(ym => mp.get(ym) || 0), months, area };
+      }
+    }
+    return sgg && sgg.s && sgg.s.some(v => v > 0) && ixMonths ? { name: nm, s: sgg.s, months: ixMonths, area } : null;
   }
   /** 구 전체 비교선 설명 한 줄. gu = histSpec opts.gu, shown = 보이는 첫 달(그보다 구 자료가 늦게 시작하면 시작 달 안내) */
   function guNote(gu, shown) {
@@ -446,7 +460,7 @@
         const t = histOf(g, h, u), sec = box.querySelector('.jps-hsec');
         if (ov !== mine || !t || !sec) return;
         let span = 36;
-        const cnt = cntMap(u, ix.months), gu = sgg && sgg.s ? { name: sgg.name, s: sgg.s, months: ix.months, area: u[4] } : null;
+        const cnt = cntMap(u, ix.months), gu = guOf(h, sgg, ix.months, u[4]);
         const draw = () => {
           const w = M().histWindow(t, span), W = Math.min(520, (sec.clientWidth || 480));
           sec.innerHTML = `<div class="jps-ch"><h4>가격 추이 (매매·전세)</h4>${spanBtns(t, span)}</div><div class="jps-hc" style="max-width:${W}px"></div>
@@ -507,7 +521,7 @@
     <a class="jps-go" href="${esc(link)}">내 집 시세에서 자세히 보기 →</a>`;
   }
 
-  const API = { open, close, btn, loadSgg, loadHist, histOf, scoreUnits, findUnit, tradesHtml, wireMore, miniChart, histChart, histNote, linePaths, SPARSE, highsHtml, spanBtns, baseName, plot, mount, tipFn, histTip, histSpec, mountHist, cntMap, eok, guNote, ppySpec, mountPpy };
+  const API = { open, close, btn, loadSgg, loadHist, histOf, scoreUnits, findUnit, tradesHtml, wireMore, miniChart, histChart, histNote, linePaths, SPARSE, highsHtml, spanBtns, baseName, plot, mount, tipFn, histTip, histSpec, mountHist, cntMap, eok, guOf, guNote, ppySpec, mountPpy };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_PRICE = API;
 })(typeof self !== 'undefined' ? self : this);

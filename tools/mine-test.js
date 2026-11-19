@@ -322,6 +322,16 @@ if (DIR && fs.existsSync(path.join(DIR, 'index.json'))) {
   check('빈 값 그대로', M.cleanFx(null), null, '');
 }
 
+{ // 구 전체 비교선 자료: price/h 의 sgg(전체 기간)가 있으면 그것, 없으면 index.json 최근 3년
+  const ixs = { name: '강남구', s: [0, 9000, 9100] }, ixm = ['202408', '202409', '202410'];
+  const g1 = PS.guOf({ hm: '201410', to: '201503', sgg: [1, 3206, 0, 3313] }, ixs, ixm, 84.9);
+  check('구 비교선: h 파일 sgg 해독(시작 칸 1 = 201411, 0 은 빈 달, to 까지 채움)', g1 && [g1.name, g1.months, g1.s, g1.area], ['강남구', ['201411', '201412', '201501', '201502', '201503'], [3206, 0, 3313, 0, 0], 84.9], '');
+  check('구 비교선: 설명 문구 시작 달 = 실제 첫 달', /2014년 11월부터/.test(PS.guNote(g1, '201410')), true, '');
+  const g2 = PS.guOf({ hm: '201410', units: [] }, ixs, ixm, 84.9, '강남');
+  check('구 비교선: sgg 없으면 index.json 36개월로 대신', g2 && [g2.name, g2.months, g2.s], ['강남', ixm, ixs.s], '');
+  check('구 비교선: 둘 다 없으면 null', [PS.guOf(null, null, ixm, 84.9), PS.guOf(null, { s: [0, 0] }, ixm, 84.9)], [null, null], '');
+}
+
 let bad = 0;
 for (const r of rows) { if (!r.ok) bad++; console.log((r.ok ? 'OK  ' : 'FAIL') + ' ' + r.name + (r.ok ? '' : `\n     got ${JSON.stringify(r.got)}\n    want ${JSON.stringify(r.want)}  (${r.basis})`)); }
 console.log(`\n${rows.length - bad}/${rows.length} 통과`);
