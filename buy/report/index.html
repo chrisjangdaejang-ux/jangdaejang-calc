@@ -41,8 +41,8 @@
 <script src="../../assets/share.js?v=6"></script>
 <script src="../../assets/loan-core.js?v=1"></script>
 <script src="../../assets/kchat.js?v=1"></script>
-<script src="../../assets/plain-words.js?v=10"></script>
-<script src="../../assets/narrative.js?v=4"></script>
+<script src="../../assets/plain-words.js?v=11"></script>
+<script src="../../assets/narrative.js?v=5"></script>
 <script src="../../assets/policy-view.js?v=1"></script>
 <script src="../../assets/devproj-view.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -789,7 +789,7 @@ function futureReasons(x){
       if (S && S.n18>=10 && S.after18!=null) t += ` · 과거 ${S.n18}개 사례: ${S.label} 후 1년 반 동안 인근 단지는 비교 지역보다 평균 ${PL.more(S.after18,GLS)} 올랐어요`;
       r.push([stg>=2 && (!my || my<=end) ? 'c':'f', t]); } }
   if (f.gs!=null || f.sup!=null || f.pg!=null || f.un!=null || f.jb!=null){
-    const rg=PL.regionText(f, IX, x.code, GLS);
+    const rg=PL.regionText(f, IX, x.code, GLS, EVD);
     r.push(['f', [PL.regionLine(rg, `${sggName(x.code)} 지역 흐름:`), (f.gs!=null&&!RUSED())?'(지역 흐름은 아직 점수에 넣지 않았어요 · 참고만)':''].filter(Boolean).join(' ')]);
   }
   if (f.dd!=null && Math.abs(f.dd)>=0.03 && !(x._whyKeys&&x._whyKeys.has('dd'))) r.push([f.dd>0?'f':'c', PL.ddText(f.dd,GLS) + (f.dd>0 ? ' — 집값이 흔들릴 때 잘 버틴 편이에요' : ' — 시장에 따라 오르내림이 큰 편이에요'), EVK(x,'dd')]);

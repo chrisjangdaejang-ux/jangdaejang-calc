@@ -27,8 +27,9 @@
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
 <script src="../assets/share.js?v=6"></script>
-<script src="../assets/plain-words.js?v=10"></script>
-<script src="../assets/rank-core.js?v=1"></script>
+<script src="../assets/plain-words.js?v=11"></script>
+<script src="../assets/narrative.js?v=5"></script>
+<script src="../assets/rank-core.js?v=2"></script>
 <script src="../assets/tabbar.js?v=2" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -107,7 +108,7 @@ h1{font-size:clamp(26px,6vw,36px);margin:6px 0 8px}
 <script>
 (function(){
 'use strict';
-const R = window.JDJ_RANK, PL = window.JDJ_PLAIN;
+const R = window.JDJ_RANK, PL = window.JDJ_PLAIN, NAR = window.JDJ_NAR;
 const DATA = '/jangdaejang-data/data/';
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -116,7 +117,7 @@ const Q = new URLSearchParams(location.search);
 const S = { t: ['price','fv','move'].includes(Q.get('t')) ? Q.get('t') : 'price', sd: Q.get('sd') || 's00',
   k: R.PERIODS.includes(+Q.get('k')) ? +Q.get('k') : 1, dir: Q.get('dir') === 'down' ? 'down' : 'up', all: false };
 const KL = { 1: '1개월', 3: '3개월', 6: '6개월', 12: '1년' };
-let IX = null, MJ = null, GEO = null, RK, RKload = null;
+let IX = null, MJ = null, GEO = null, EV = null, RK, RKload = null;
 const GS = {};                      // 시·도 id → {구: gs} | 'wait' | 'err'
 
 const sdObj = () => IX.sido.find(s => s.id === S.sd) || IX.sido[0];
@@ -206,14 +207,15 @@ function drawFv(){
   const rows = S.all ? f.rows : f.rows.slice(0, SHOW);
   const vb = `<div class="vbox">${esc(sd.short)} ${f.n}개 ${unit}를 <b>앞으로 2년 지역 흐름 점수</b>로 줄 세웠어요. 이 점수는 검증을 통과했어요 — ${ck.y0}~${ck.y1}년 ${ck.n}번 시험에서 점수 상위 20% ${unit}가 같은 시·도 평균보다 <b>${ck.hit === ck.n ? `${ck.n}번 모두` : `${ck.hit}번`}</b> 더 올랐어요${ck.oos != null ? `(가장 최근 표본 외 시험 ${sg(ck.oos)})` : ''}. <a href="/jangdaejang-calc/about/">검증 방법 ›</a></div>`;
   const li = rows.map(x => {
-    const t = PL && PL.regionText ? PL.regionText({ gs: x.gs }, IX, x.code) : null, w0 = t && t.why && t.why[0] ? t.why[0] : '', why = !w0 || /쪽:/.test(w0) ? w0 : (x.pos === '하위권' ? '점수를 낮춘 가장 큰 이유: ' : '점수를 올린 가장 큰 이유: ') + w0;
+    /* 구 이유: 공용 narrative.js guWhy(사실 → 비교 → 과거 사례 → 그래서) — 지도 구 카드·리포트 지역 흐름과 같은 문장 */
+    const gw = NAR && NAR.guWhy ? NAR.guWhy({ IX, code: x.code, gs: x.gs, EV, PL }) : null, why = gw ? gw.line : '';
     const tone = x.pos === '상위권' ? 't5' : x.pos === '하위권' ? 't1' : 't3';
     return `<li><a href="${esc(R.mapUrl(GEO, x.code, 'fv'))}" data-track="rank_to_map"><span class="rk">${x.r}</span>
       <span class="nm"><b>${esc(x.name)}<span>${esc(sd.short)} ${f.n}개 ${unit} 중 ${x.r}위</span><span class="pos ${tone}">${x.pos}</span></b>${why ? `<span class="why">${esc(why)}</span>` : ''}<small>지도에서 보기 ›</small></span></a></li>`;
   }).join('');
   $('pane').innerHTML = vb + `<ol class="list fv">${li}</ol>`
     + (f.rows.length > SHOW ? `<button type="button" class="more" id="more" aria-expanded="${S.all}">${S.all ? '접기' : `${f.rows.length}곳 모두 보기`}</button>` : '')
-    + `<p class="note">지역 흐름 점수는 ${esc(sd.short)} 안 ${unit}끼리 비교한 점수예요(100점 만점). 이유는 그 ${unit} 점수를 가장 많이 올리거나 내린 항목이에요. 하위권은 나쁜 동네라는 뜻이 아니라, 앞으로 2년 오름폭이 ${esc(sd.short)} 다른 ${unit}보다 작을 수 있다는 뜻이에요.</p>`;
+    + `<p class="note">지역 흐름 점수는 ${esc(sd.short)} 안 ${unit}끼리 비교한 점수예요(100점 만점). 이유는 그 ${unit} 점수를 가장 많이 올리거나 내린 항목이고, 과거 사례는 ${esc(sd.short)}에서 같은 구간이었던 ${unit}가 이후 2년 실제로 어땠는지예요. 하위권은 나쁜 동네라는 뜻이 아니라, 앞으로 2년 오름폭이 ${esc(sd.short)} 다른 ${unit}보다 작을 수 있다는 뜻이에요.</p>`;
   const m = $('more'); if (m) m.onclick = () => { S.all = !S.all; drawFv(); };
   share({ head: `${sd.short} ${unit}별 미래가치 순위(앞으로 2년 지역 흐름)`,
     lines: [f.rows.slice(0, 3).map(x => `${x.r}위 ${x.name}`).join(', '), `${sd.short} ${f.n}개 ${unit}를 같은 시·도 기준으로 비교`, `과거 ${ck.n}번 시험으로 검증한 점수`] });
@@ -245,9 +247,9 @@ function share(sum){
 if (window.JDJ_SHARE) JDJ_SHARE.setup({ tool: 'rank', keep: ['t', 'sd', 'k', 'dir'] });
 
 async function init(){
-  const [ix, mj, geo] = await Promise.all([J(DATA + 'index.json'), J(DATA + 'model.json'), J('/jangdaejang-calc/assets/map-geo.json')]);
+  const [ix, mj, geo, ev] = await Promise.all([J(DATA + 'index.json'), J(DATA + 'model.json'), J('/jangdaejang-calc/assets/map-geo.json'), J(DATA + 'evidence.json')]);
   if (!ix || !ix.sgg || !ix.sido) { $('pane').innerHTML = '<div class="empty"><b>자료를 불러오지 못했어요</b>잠시 뒤 다시 열어 주세요.</div>'; return; }
-  IX = ix; MJ = mj; GEO = geo;
+  IX = ix; MJ = mj; GEO = geo; EV = ev;
   if (!IX.sido.some(s => s.id === S.sd)) S.sd = 's00';
   go();
   if (window.jdjStat) jdjStat('feature_use', {feature: 'rank'});

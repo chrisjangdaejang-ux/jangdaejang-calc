@@ -24,8 +24,8 @@
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
 <script src="../assets/config.js?v=3"></script>
-<script src="../assets/plain-words.js?v=10"></script>
-<script src="../assets/narrative.js?v=4"></script>
+<script src="../assets/plain-words.js?v=11"></script>
+<script src="../assets/narrative.js?v=5"></script>
 <script src="../assets/mine-core.js?v=14"></script>
 <script src="../assets/map-core.js?v=1"></script>
 <script src="../assets/map-engine.js?v=1"></script>
@@ -312,9 +312,11 @@ function render(){
       else if (S.mode === 'jr') v = g.r && g.r.jr != null ? `전세 ${Math.round(g.r.jr)}%` : '';
       let cls = 'gp';
       if (S.mode === 'fv' && gsBy[code] != null && PL && PL.regionPlace) { const rp = PL.regionPlace(IX, code, gsBy[code]); if (rp) { v = `${rp.n}곳 중 ${/약 /.test(rp.text) ? '약 ' : ''}${rp.r}위`; cls += rp.pos === '상위권' ? ' t5' : rp.pos === '하위권' ? ' t1' : ' t3'; } }
-      gl.push({ k: 'G' + code, lat: c[1], lng: c[0], cls, name: g.name, v, p: (g.c || []).reduce((a, x) => a + x, 0), tap: () => MAP.setView(c[1], c[0], C.LV.sgg + 1) });
+      const gsv = S.mode === 'fv' ? gsBy[code] : null;
+      gl.push({ k: 'G' + code, lat: c[1], lng: c[0], cls, name: g.name, v, p: (g.c || []).reduce((a, x) => a + x, 0),
+        tap: gsv != null ? () => openGuCard(code, gsv) : () => MAP.setView(c[1], c[0], C.LV.sgg + 1) });
     }
-    msg = wait ? '구별 미래가치 순위 자료를 불러오는 중이에요…' : S.mode === 'price' ? '구 전체 아파트 평당가(전용 3.3㎡당, 최근 3개월 실거래 중앙값)예요.' : S.mode === 'jr' ? '구 전체 아파트 전세가율(집값 대비 전셋값)이에요.' : '구별 미래가치 순위(같은 시·도 안 지역 흐름 점수)예요. 파랑 상위권 · 회색 중위권 · 주황 하위권';
+    msg = wait ? '구별 미래가치 순위 자료를 불러오는 중이에요…' : S.mode === 'price' ? '구 전체 아파트 평당가(전용 3.3㎡당, 최근 3개월 실거래 중앙값)예요.' : S.mode === 'jr' ? '구 전체 아파트 전세가율(집값 대비 전셋값)이에요.' : '구별 미래가치 순위(같은 시·도 안 지역 흐름 점수)예요. 구를 누르면 이유가 보여요. 파랑 상위권 · 회색 중위권 · 주황 하위권';
   } else {
     const ids = viewIds(bb), wait = ensure(ids);
     const items = [];
@@ -418,6 +420,27 @@ function bunCard(x){
     ${x.rc && x.rc[0] ? `<dt>청약 접수</dt><dd>${esc(x.rc[0].replace(/(\d{4})(\d\d)(\d\d)/, '$1.$2.$3'))}${x.rc[1] ? ' ~ ' + esc(x.rc[1].replace(/(\d{4})(\d\d)(\d\d)/, '$1.$2.$3')) : ''}</dd>` : ''}</dl>
     <div class="acts" style="grid-template-columns:1fr"><a href="/jangdaejang-calc/bunyang/" data-track="map_to_bunyang">분양 화면에서 자세히 보기</a></div>`;
   showSheet();
+}
+
+/* ---------- 구 카드(미래가치 보기에서 구 말풍선을 누르면): 실제 등수 + 공용 구 이유 문장(narrative.js guWhy — 순위 화면·리포트와 같은 문장) ---------- */
+let EV = null, EVload = null;
+function openGuCard(code, gs){
+  if (EV === null && !EVload) EVload = J(DATA + 'evidence.json').then(j => { EV = j || false; if (SEL && SEL.gu === code) openGuCard(code, gs); });
+  const g = sggOf(code), rp = PL && PL.regionPlace ? PL.regionPlace(IX, code, gs) : null, c = GEO && GEO.sgg[code];
+  const gw = NAR && NAR.guWhy && EV !== null ? NAR.guWhy({ IX, code, gs, EV: EV || null, PL }) : null;
+  const sd = (IX.sido || []).find(s => s.name === g.sido) || {};
+  SEL = { gu: code };
+  const tone = rp ? (rp.pos === '상위권' ? 't5' : rp.pos === '하위권' ? 't1' : 't3') : 'na';
+  $('sheet').innerHTML = `<div class="grab"></div><div class="hd"><h2>${esc(g.name)}</h2><button type="button" class="x" aria-label="닫기">×</button></div>
+    <p class="meta">앞으로 2년 지역 흐름(같은 시·도 안 비교)</p>
+    <dl class="kv">
+      <dt>순위</dt><dd>${rp ? `<div class="fvrow"><span class="fvb ${tone}">${esc(rp.pos)}</span><span class="head"><b>${esc(rp.text)}</b></span></div>` : '순위 자료가 없어요'}</dd>
+      <dt>이유</dt><dd><span class="head">${gw ? esc(gw.line) : EV === null ? '이유를 불러오고 있어요…' : '이 구는 이유 자료가 없어요'}</span></dd>
+    </dl>
+    <div class="acts">${sd.id ? `<a href="/jangdaejang-calc/rank/?t=fv${sd.id !== 's00' ? '&sd=' + esc(sd.id) : ''}" data-track="map_to_rank">${esc(sd.short || '')} 순위 전체</a>` : ''}<button type="button" id="guZoom"${sd.id ? '' : ' style="grid-column:1/-1"'}>이 구 단지 보기</button></div>`;
+  showSheet();
+  $('guZoom').onclick = () => { closeSheet(); if (c) MAP.setView(c[1], c[0], C.LV.sgg + 1); };
+  if (window.jdjStat && EV !== null) jdjStat('feature_use', {feature:'map_gu_card'});
 }
 
 /* ---------- 하단 카드 ---------- */

@@ -51,11 +51,14 @@
       if (gs == null) continue;
       rows.push({ code, name: g.name, gs });
     }
-    const n = rows.length;
-    if (n < 3) return { n, rows: [] };
+    /* 엔진 곳 수(sido.ngs)가 있으면 엔진이 매긴 실제 등수(gs = round(100·(i+0.5)/n) 를 되돌림 — plain-words regionRank 와 같은 계산,
+       지도·내 집 시세·리포트의 'N위'와 같다). 단지 자료가 없는 구는 목록에 없어도 등수·곳 수는 엔진 기준 그대로 */
+    const sd = ((IX && IX.sido) || []).find(s => s.name === sido), ngs = sd && sd.ngs > 0 ? sd.ngs : 0;
+    const n = ngs || rows.length;
+    if (n < 3 || !rows.length) return { n, rows: [] };
     rows.sort((a, b) => b.gs - a.gs || a.name.localeCompare(b.name, 'ko'));
     rows.forEach((x, i) => {
-      x.r = i && rows[i - 1].gs === x.gs ? rows[i - 1].r : i + 1;
+      x.r = ngs ? Math.min(n, Math.max(1, n - Math.round(x.gs * n / 100 - 0.5))) : i && rows[i - 1].gs === x.gs ? rows[i - 1].r : i + 1;
       x.pos = x.r <= n / 3 ? '상위권' : x.r > n * 2 / 3 ? '하위권' : '중위권';
     });
     return { n, rows };

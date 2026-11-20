@@ -102,6 +102,37 @@ if (dir && fs.existsSync(path.join(dir, 'index.json'))) {
     check('실제 자료: 서울 구별 미래가치 25개 구, 등수 1~25', [f.n, f.rows[0].r, f.rows[f.n - 1].r], [25, 1, 25], 's00.json fx.gs');
     check('실제 자료: 점수 = 단지 자료 gs', f.rows.every(x => x.gs === gm[x.code]), true, '');
   }
+  /* 등수 통일: 순위 화면(future)·지도·내 집 시세·리포트(plain-words regionPlace) 가 모든 시·도에서 같은 'N곳 중 N위' */
+  require('../assets/plain-words.js'); const P = globalThis.JDJ_PLAIN, NR = require('../assets/narrative.js');
+  let nb = 0, nr = 0, ex = '';
+  for (const sd of X.sido) {
+    const sf = path.join(dir, sd.id + '.json'); if (!fs.existsSync(sf)) continue;
+    const ff = R.future(X, sd.name, R.gsFromUnits(JSON.parse(fs.readFileSync(sf, 'utf8')).units));
+    for (const x of ff.rows) { nr++; const rp = P.regionPlace(X, x.code, x.gs); if (!rp || rp.r !== x.r || rp.n !== ff.n || rp.pos !== x.pos || /약 /.test(rp.text) !== !(sd.ngs > 0)) { nb++; ex = ex || `${x.name} ${x.r}/${ff.n} vs ${rp && rp.text}`; } }
+  }
+  check(`실제 자료: 구 ${nr}곳 순위 화면 등수 = 다른 화면 등수(regionPlace)`, nb, 0, ex || 'gs = round(100·(i+0.5)/ngs) 되돌림');
+  /* 구 이유 문장(공용 guWhy): 과거 사례가 있으면 사실 → 비교 → 과거 사례 → 그래서, 없으면 그래서 없이 '가장 큰 이유:' (숫자를 지어내지 않음) */
+  const evf = path.join(dir, 'evidence.json');
+  if (fs.existsSync(evf) && fs.existsSync(s0)) {
+    const EV = JSON.parse(fs.readFileSync(evf, 'utf8')), gm = R.gsFromUnits(JSON.parse(fs.readFileSync(s0, 'utf8')).units);
+    let bad2 = 0, wp = 0, ex2 = '';
+    for (const sd of X.sido) {
+      const sf = path.join(dir, sd.id + '.json'); if (!fs.existsSync(sf)) continue;
+      for (const x of R.future(X, sd.name, R.gsFromUnits(JSON.parse(fs.readFileSync(sf, 'utf8')).units)).rows) {
+        const w = NR.guWhy({ IX: X, code: x.code, gs: x.gs, EV, PL: P }); if (!w) continue;
+        if (w.past) wp++;
+        const okw = w.past ? (!!w.so && w.text.indexOf(w.fact) === 0 && w.text.indexOf(w.past) > w.text.indexOf(w.fact) && w.text.endsWith(w.so) && /사례 [\d,]+건 중 [\d,]+건/.test(w.past))
+          : (!w.so && /^점수를 (올린|낮춘) 가장 큰 이유: /.test(w.line) && !/그래서|과거/.test(w.line));
+        const e = w.ev; if (w.past && !(e && Math.sign(e.ex) === (w.up ? 1 : -1))) bad2++;
+        if (!okw) { bad2++; ex2 = ex2 || x.name + ': ' + w.line; }
+      }
+    }
+    check('실제 자료: 구 이유 문장 순서(사실 → 비교 → 과거 사례 → 그래서), 사례 없으면 그래서 없음', bad2, 0, ex2);
+    check('실제 자료: 과거 사례 문장이 붙은 구가 있음', wp > 0, true, 'evidence.json region');
+    const sdb = Object.keys(X.sgg).find(k => X.sgg[k].name === '도봉구' && X.sgg[k].sido === '서울특별시');
+    const wd = sdb && gm[sdb] != null ? NR.guWhy({ IX: X, code: sdb, gs: gm[sdb], EV, PL: P }) : null;
+    if (wd && wd.k === 'mom' && wd.past) check('실제 자료: 도봉구 문장 = 사실·비교·과거 사례·그래서', /^도봉구 전체 시세가 최근 1년 .+%로 (내렸어요|올랐어요)\. 서울 구 중앙값\(.+\)보다 .+%p (낮아요|높아요)\. 과거 서울에서 1년 상승률이 .+였던 구는 이후 2년 서울 평균보다 평균 .+%p (더|덜) 올랐어요\(사례 \d+건 중 \d+건\)\. 그래서 도봉구 점수를 (높게|낮게) 봤어요\.$/.test(wd.text), true, wd.text);
+  }
   const mj = path.join(dir, 'model.json');
   if (fs.existsSync(mj)) { const M = JSON.parse(fs.readFileSync(mj, 'utf8')); check('실제 자료: 검증 결과 읽기', !!R.check(M) === !!(M.region && M.region.used), true, 'model.json region'); }
 }

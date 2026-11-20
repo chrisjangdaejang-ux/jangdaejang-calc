@@ -86,6 +86,52 @@
     const e = b != null && R && R[kind] && R[kind][String(b)];
     return e && e.n > 0 && e.ex != null ? Object.assign({ b }, e) : null;
   }
+  /* ---------- 구 이유 문장(공용): 순위 화면 구별 미래가치 · 지도 구 카드 · 리포트 지역 흐름 ----------
+     guPast: 구 과거 사례 한 문장(evidence.json region × 구 지금 구간 index.json r.eb). 사례가 없거나, 과거 방향이 이번 이유 방향과 다르거나,
+     사례 절반 이상이 그 방향이 아니면 '' (숫자를 지어내지 않음).
+     → { t: '과거 서울에서 1년 상승률이 하위 20%였던 구는 이후 2년 서울 평균보다 평균 3.9%p 더 올랐어요(사례 24건 중 15건).', e } | null */
+  const GQ = { 0: '하위 20%', 1: '하위 21~40%', 2: '중간 20%', 3: '상위 21~40%', 4: '상위 20%' };
+  const GCOND = { mom: '1년 상승률이', jr: '전세가율이' };
+  function guPast(c, kind, up) {
+    const e = regionEv(c, kind);
+    if (!e || !GQ[e.b] || Math.sign(e.ex) !== (up ? 1 : -1) || Math.abs(e.ex) < 0.2) return null;
+    const k = e.hit == null ? null : Math.round(e.n * (up ? e.hit : 100 - e.hit) / 100);
+    if (k != null && k * 2 <= e.n) return null;
+    const SD = c.sido, UNIT = c.unit || '구';
+    return { e, t: `과거 ${SD}에서 ${GCOND[kind]} ${GQ[e.b]}였던 ${J(UNIT, '은', '는')} 이후 2년 ${SD} 평균보다 평균 ${r1(e.ex)}%p ${up ? '더' : '덜'} 올랐어요` + (k != null ? `(사례 ${n0(e.n)}건 중 ${n0(k)}건).` : '.') };
+  }
+  /* guWhy: 구 점수를 가장 많이 움직인 항목(index.json r.up/down) 한 가지를 사실 → 비교 → 과거 사례 → 그래서 순으로.
+     c = { IX, code, gs, EV(evidence.json, 없으면 과거 사례·그래서 생략), f(단지 fx, 선택: 입주 물량 등 문장용), PL }
+     → null | { rp(실제 등수), pos, name, k(mom·jr·기타), up(점수를 올린 항목인지), fact, cmp, past, so, text(사실~그래서), line(그래서가 없으면 '점수를 올린 가장 큰 이유: ' 앞에 붙임) } */
+  function guWhy(c) {
+    const PL = c.PL || root.JDJ_PLAIN, IX = c.IX;
+    if (!PL || !IX || !IX.sgg || c.gs == null) return null;
+    const rp = PL.regionPlace(IX, c.code, c.gs); if (!rp) return null;
+    const ri = PL.regionInfo(IX, c.code), g = IX.sgg[c.code] || {}, sdo = (IX.sido || []).find(s => s.name === g.sido) || {};
+    const R = g.r || {}, SR = sdo.r || {}, NM = ri.name || '이 지역', SD = ri.short, UNIT = ri.unit === '구' ? '구' : '시·군·구';
+    const rg = PL.regionText(Object.assign({}, c.f || {}, { gs: c.gs }), IX, c.code, null);
+    const items = rg.items || [];
+    const it = (rp.pos === '하위권' ? items.find(x => !x.up) : rp.pos === '상위권' ? items.find(x => x.up) : null) || items[0];
+    if (!it) return null;
+    const up = it.up, cx = { IX, code: c.code, EV: c.EV, sid: sdo.id, sido: SD, unit: UNIT };
+    const sg = v => (v > 0 ? '+' : v < 0 ? '−' : '') + (Math.round(Math.abs(v) * 10) / 10).toFixed(1) + '%';
+    let k = 'etc', fact = it.t, cmp = '', past = null;
+    if (it.nm === '구 시세 최근 1년 흐름' && R.mom != null) {
+      k = 'mom';
+      fact = `${NM} 전체 시세가 최근 1년 ${sg(R.mom)}로 ${Math.abs(R.mom) < 0.05 ? '거의 그대로예요' : R.mom > 0 ? '올랐어요' : '내렸어요'}.`;
+      if (SR.mom != null) { const d = R.mom - SR.mom; cmp = `${SD} ${UNIT} 중앙값(${sg(SR.mom)})${Math.abs(d) < 0.5 ? '과 비슷해요' : `보다 ${r1(d)}%p ${d > 0 ? '높아요' : '낮아요'}`}.`; }
+    } else if (it.nm === '구 전세가율' && R.jr != null) {
+      k = 'jr';
+      fact = `${NM} 전체 전세가율이 ${r1(R.jr)}%예요.`;
+      if (SR.jr != null) { const d = R.jr - SR.jr; cmp = `${SD} ${UNIT} 중앙값(${r1(SR.jr)}%)${Math.abs(d) < 2 ? '과 비슷해요' : `보다 ${r1(d)}%p ${d > 0 ? '높아요' : '낮아요'}`}.`; }
+      const m = /다만 .*$/.exec(it.t); if (m) cmp += ' ' + m[0];
+    }
+    if (k !== 'etc' && c.EV) past = guPast(cx, k, up);
+    const so = past ? (rp.pos === '중위권' ? `그래서 이 점은 ${NM} 점수를 ${up ? '올렸어요' : '낮췄어요'}.` : `그래서 ${NM} 점수를 ${up ? '높게' : '낮게'} 봤어요.`) : '';
+    const text = [fact, cmp, past ? past.t : '', so].filter(Boolean).join(' ');
+    return { rp, pos: rp.pos, name: NM, k, up, fact, cmp, past: past ? past.t : '', ev: past ? past.e : null, so, text,
+      line: so ? text : `점수를 ${up ? '올린' : '낮춘'} 가장 큰 이유: ` + text };
+  }
   const hitTxt = (e, dn) => e.hit == null ? '' : (dn ? `${n0(e.n)}건 중 ${n0(e.n * (100 - e.hit) / 100)}건이 덜 오름` : `${n0(e.n)}건 중 ${n0(e.n * e.hit / 100)}건이 더 오름`);
   /* 시기별 표(프리미엄) */
   const perRows = (e, base) => (e && e.per || []).slice().sort((a, b) => String(a[0]).localeCompare(String(b[0])))
@@ -250,10 +296,8 @@
         + ` — 그래서 앞으로 2년 ${SG} 흐름은 ${rp.text}로 ${dn ? '약한' : '강한'} 편이에요.`;
       const fact = `${SG} 아파트 ${G('평당')} 시세는 최근 1년 ${r1(R.mom)}% ${R.mom >= 0 ? '올랐어요' : '내렸어요'}` + (R.jr != null ? `. ${SG} 전체 ${G('전세가율')}은 ${r1(R.jr)}%예요.` : '.');
       const cmp = SR.mom != null ? `${SD} ${rp.n}개 ${UNIT}의 중간값은 1년 상승률 ${r1(SR.mom)}%` + (SR.jr != null && R.jr != null ? `, 전세가율 ${r1(SR.jr)}%예요. ${J(SG, '은', '는')} 상승률이 ${r1(R.mom - SR.mom)}${G('%p')} ${R.mom > SR.mom ? '높고' : '낮고'}, 전세가율은 ${r1(R.jr - SR.jr)}%p ${R.jr > SR.jr ? '높아요' : '낮아요'}.` : `예요. ${J(SG, '은', '는')} ${r1(R.mom - SR.mom)}${G('%p')} ${R.mom > SR.mom ? '높아요' : '낮아요'}.`) : '';
-      const e = regionEv(c, 'mom');
-      let past = '';
-      if (e && Math.sign(e.ex) === (dn ? -1 : 1) && Math.abs(e.ex) >= 0.2)
-        past = `과거 ${SD}에서 1년 상승률이 ${Q5[e.b]}에 들었던 ${UNIT}는 이후 2년 ${SD} 평균보다 ${ppMore(e.ex, G)} 올랐어요(사례 ${hitTxt(e, dn)}).`;
+      /* 과거 사례 문장은 순위 화면·지도 구 카드와 같은 공용 guPast */
+      const gp = guPast(Object.assign({}, c, { unit: UNIT === '구' ? '구' : '시·군·구' }), 'mom', !dn), e = gp ? gp.e : null, past = gp ? gp.t : '';
       const sameSide = side(f.fvg) !== 0 && side(f.fvg) === side(f.fv);
       const so = sameSide ? `그래서 ${c.apt}의 2년 순위(${SD} ${topPct(f.fv)})는 ${SG} 전체 흐름 때문에 더 ${dn ? '낮아졌어요' : '높아졌어요'}. ${SG} 안에서만 비교해도 ${A} ${topPct(f.fvg)}예요.`
         : `그래서 ${c.apt}의 2년 순위(${SD} ${topPct(f.fv)})는 단지보다 ${SG} 전체 흐름 때문에 ${dn ? '낮아졌어요' : '높아졌어요'}. ${SG} 안에서만 비교하면 ${A} ${topPct(f.fvg)}예요.`;
@@ -1025,7 +1069,7 @@
     const PLx = root.JDJ_PLAIN;
     if (PLx && PLx.tipDom) PLx.tipDom(el, { blockSel: '.nar-head,.nar-gap,.nar-sum,.nar-dim,.nar-p,.nar-tone p,.nar-tnote', onOpen: () => stat('term') });
   }
-  const NAR = { build, html, bind, lint, css, sentences, BANNED, KINDS, CKINDS, cat };
+  const NAR = { build, html, bind, lint, css, sentences, BANNED, KINDS, CKINDS, cat, guWhy, guPast };
   root.JDJ_NAR = NAR;
   if (typeof module !== 'undefined' && module.exports) module.exports = NAR;
 })(typeof window !== 'undefined' ? window : globalThis);

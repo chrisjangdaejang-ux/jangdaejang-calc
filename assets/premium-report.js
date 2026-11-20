@@ -96,7 +96,7 @@
     if (f.rz) r.push(['f', PL.rzText(f.rz, G, ym), EV('stg')]);
     if (f.eg) { const g = f.eg.v - f.eg.b - f.eg.p; r.push(['f', `재건축이 끝나면${f.eg.done ? `(예상 준공 ${f.eg.done}년 전후)` : ''} 기대 차익은 약 ${g >= 0 ? '+' : '−'}${PL.eokR(Math.abs(g))}이에요 — 지역 새 아파트 시세로 본 같은 평형 가치 ${PL.eokR(f.eg.v)}, 예상 분담금 ${f.eg.b >= 0 ? PL.eokR(f.eg.b) : '환급 ' + PL.eokR(-f.eg.b)}, 지금 시세 ${PL.eokR(f.eg.p)} (간이 추정)`]); }
     if (f.landavg || f.vl) r.push(['f', '재건축 사업성(단지): ' + [f.landavg ? `세대당 평균 대지지분 ${f.landavg}평` : '', f.vl ? `용적률 ${Math.round(f.vl)}%` : ''].filter(Boolean).join(' · ') + (f.land ? ` · 이 평형 대지지분 약 ${f.land}평` : '')]);
-    const rg = PL.regionText(f, IX, x.code, G);
+    const rg = PL.regionText(f, IX, x.code, G, ctx.EV);
     if (rg.fact || rg.why.length || rg.ref.length) r.push(['f', PL.regionLine(rg, `${sgg} 지역 흐름:`)]);
     if (f.sl && ctx.SP && ctx.SP.zones) for (const ln of PL.supplyLines(f, ctx.SP, G)) r.push(ln);
     { const rn = PL.renewalLine(f, ctx.SP, G, ctx.EV); if (rn) { r.push(['f', rn.text]); if (rn.ref) r.push(['', rn.ref]); } }

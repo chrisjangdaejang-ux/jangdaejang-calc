@@ -104,9 +104,11 @@
     if (kind === 'rbp') return { name: '전국 재건축 단지', n: IX && IX.stats && IX.stats.nrbp };
     return { name: `${ri.short} 아파트`, n: sd.nfv };
   }
-  /* 지역 흐름 점수(gs, 높을수록 상위) → N위, 상위권/중위권/하위권 */
+  /* 지역 흐름 점수(gs, 높을수록 상위) → N위, 상위권/중위권/하위권
+     엔진은 시·도 안 n곳을 점수 낮은 순 i(0부터)로 세워 gs = round(100·(i+0.5)/n) 로 내보낸다 → i = round(gs·n/100 − 0.5), 등수 = n − i.
+     n 이 엔진 곳 수(sido.ngs)면 실제 등수와 같다(n<100 이면 반올림 오차가 등수를 바꾸지 못함). 순위 화면(rank-core future)도 같은 계산 */
   function regionRank(gs, n) {
-    const r = Math.min(n, Math.max(1, Math.floor((100 - gs) / 100 * n + 0.5)));
+    const r = Math.min(n, Math.max(1, n - Math.round(gs * n / 100 - 0.5)));
     return { r, pos: r <= n / 3 ? '상위권' : (r > n * 2 / 3 ? '하위권' : '중위권') };
   }
   /* 지역 실제 등수 문구: '서울 25개 구 중 4위' (곳 수를 목록에서 센 경우 '약 4위') */
@@ -145,7 +147,8 @@
       out.h12 = `${S} 1·2인 세대가 전체 세대의 ${f1(d.v)}%예요` + (md('h12', '%') || rk(d, '높은 순') || '.');
     return out;
   }
-  function regionText(f, IX, code, G) {
+  /* ev(evidence.json, 선택): 주는 화면은 첫 이유를 공용 구 이유 문장(narrative.js guWhy: 사실 → 비교 → 과거 사례 → 그래서)으로 바꾼다 */
+  function regionText(f, IX, code, G, ev) {
     const ri = regionInfo(IX, code), out = { fact: '', why: [], mean: '', ref: [], real: false };
     let pos = '';
     const NM = ri.name || '이 지역';
@@ -210,7 +213,8 @@
     };
     /* 주된 쪽(하위권=내린 항목, 상위권=올린 항목)을 이유로, 반대쪽은 해석 뒤에 짧게 */
     const seen = new Set(), U = [], D = [];
-    for (const nm of main) { if (seen.has(nm)) continue; seen.add(nm); const t = line(nm); if (t) (isDn(nm) ? D : U).push(t); }
+    out.items = [];
+    for (const nm of main) { if (seen.has(nm)) continue; seen.add(nm); const t = line(nm); if (t) { (isDn(nm) ? D : U).push(t); out.items.push({ nm, up: !isDn(nm), t }); } }
     for (const k of ['sup', 'pg', 'un', 'jb']) if (!used.has(k)) { const t = T[k](); if (t) out.ref.push(t); }
     for (const k of PK) if (!used.has(k) && PP[k]) out.ref.push(PP[k]);
     if (pos === '하위권' && momHigh) out.mean = `${J(NM, '이', '가')} 나쁜 동네라는 뜻이 아니라, ${J(NM, '이', '가')} 최근 많이 오른 만큼 앞으로 2년 오름폭은 ${ri.short} 다른 ${ri.unit}보다 작을 수 있다는 뜻이에요.`;
@@ -218,6 +222,11 @@
     if (pos === '하위권') { out.why = D; out.other = U.length ? `반대로 ${S} 받쳐 준 쪽: ` + U.join(' ') : ''; }
     else if (pos === '상위권') { out.why = U; out.other = D.length ? `다만 ${S} 낮춘 쪽: ` + D.join(' ') : ''; }
     else { out.why = [U.length ? `${S} 올린 쪽: ` + U.join(' ') : '', D.length ? `${S} 낮춘 쪽: ` + D.join(' ') : ''].filter(Boolean); out.other = ''; }
+    const NR = root.JDJ_NAR;
+    if (ev && NR && NR.guWhy && (pos === '상위권' || pos === '하위권') && out.why.length) {
+      const gw = NR.guWhy({ IX, code, gs: f.gs, EV: ev, f, PL: root.JDJ_PLAIN });
+      if (gw && gw.so) out.why[0] = gw.text;
+    }
     return out;
   }
   /* 지역 흐름 한 문단: 실제 이유가 있으면 [사실, 이유들, 해석, 참고 지표], 없으면 [사실, 해석, 참고 지표] */
@@ -533,8 +542,10 @@
       reg: () => { const rp = o.rp; if (!rp) return null;
         /* 지역 점수를 움직인 주된 이유 한 문장(지역 흐름 문단과 같은 사실값) — 순위 쪽과 방향이 같을 때만 */
         let rw = '';
-        if (o.IX && o.code) { const rg = regionText(f, o.IX, o.code, null); if (rg.real && rg.why[0] && (rp.pos === '하위권' || rp.pos === '상위권')) rw = rg.why[0].replace(/[.]$/, ''); }
-        const t = `${J(SG, '은', '는')} 앞으로 2년 지역 흐름 점수가 ${rp.text}예요` + (rw ? `. 주된 이유는 ${rw}` : '') + (f.fvg != null ? `. ${o.apt || '이 단지'} 자체는 ${SG} 안에서 ${topPct(f.fvg)}지만, 미래가치 점수는 지역 흐름까지 더해 ${SD} 전체 단지와 비교해요` : '');
+        const NR = root.JDJ_NAR, gw = o.IX && o.code && o.ev && NR && NR.guWhy && (rp.pos === '하위권' || rp.pos === '상위권') ? NR.guWhy({ IX: o.IX, code: o.code, gs: f.gs, EV: o.ev, f, PL: root.JDJ_PLAIN }) : null;
+        if (gw && gw.so) rw = gw.text.replace(/[.]$/, '');
+        else if (o.IX && o.code) { const rg = regionText(f, o.IX, o.code, null); if (rg.real && rg.why[0] && (rp.pos === '하위권' || rp.pos === '상위권')) rw = '주된 이유는 ' + rg.why[0].replace(/[.]$/, ''); }
+        const t = `${J(SG, '은', '는')} 앞으로 2년 지역 흐름 점수가 ${rp.text}예요` + (rw ? `. ${rw}` : '') + (f.fvg != null ? `. ${o.apt || '이 단지'} 자체는 ${SG} 안에서 ${topPct(f.fvg)}지만, 미래가치 점수는 지역 흐름까지 더해 ${SD} 전체 단지와 비교해요` : '');
         return { t, lv: rp.pos === '하위권' ? 'lo' : rp.pos === '상위권' ? 'hi' : '', r: {} }; }
     };
     const factOf = k => FACT[k] ? FACT[k](k) : /^rl[psod]$/.test(k) ? FACT.rail(k) : /^sp[asmw]$/.test(k) ? FACT.sup(k) : null;
