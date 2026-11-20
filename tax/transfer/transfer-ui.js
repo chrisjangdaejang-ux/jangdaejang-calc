@@ -20,11 +20,16 @@
   const fmt = el => { const raw = el.value.replace(/[^0-9]/g, '').slice(0, 7); el.value = raw ? Number(raw).toLocaleString('ko-KR') : ''; };
   document.querySelectorAll('#xf input.money').forEach(m => m.addEventListener('input', () => { fmt(m); const c = $(m.id + 'C'); if (c) c.textContent = num(m) ? krw(num(m) * MAN) : ''; }));
   $('rm').addEventListener('input', () => { $('rm').value = $('rm').value.replace(/[^0-9]/g, '').slice(0, 3); });
-  const st = { hs: 1, minor: 0, ch: 0 };
-  [['hs', 'hs'], ['minor', 'minor'], ['ch', 'ch']].forEach(([id, k]) => $(id).addEventListener('click', e => {
+  const st = { hs: 1, minor: 0, ch: 0, kids: 1, pa: 0 };
+  [['hs', 'hs'], ['minor', 'minor'], ['ch', 'ch'], ['kids', 'kids'], ['pa', 'pa']].forEach(([id, k]) => $(id).addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return; st[k] = +b.dataset.v;
     $(id).querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+    if (k === 'kids') $('paW').hidden = st.kids !== 0;
   }));
+  $('sp').addEventListener('change', () => { $('sgW').hidden = !$('sp').checked; });
+  $('el').addEventListener('input', () => { $('el').value = $('el').value.replace(/[^0-9]/g, '').slice(0, 2); });
+  $('dy').addEventListener('input', () => { $('dy').value = $('dy').value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1').slice(0, 5); });
+  const ages = () => String($('ma').value || '').split(/[^0-9]+/).filter(Boolean).map(Number).filter(a => a < 19).slice(0, 10);
   // 지역
   $('sd').innerHTML = A.SIDO.map(s => '<option>' + s + '</option>').join('');
   const fillGu = () => { const l = A.guList($('sd').value); $('gu').innerHTML = l.length ? l.map(g => '<option>' + g + '</option>').join('') : '<option value="">전체</option>'; $('gu').disabled = !l.length; };
@@ -77,6 +82,8 @@
     if (num($('lp')) > num($('mk'))) return '싸게 파는 값이 시세보다 커요.';
     if (num($('db')) >= num($('mk'))) return '함께 넘길 채무가 시세보다 같거나 커요.';
     if (num($('std')) > num($('mk')) * 2) return '공시가격이 시세보다 너무 커요. 다시 확인해 주세요.';
+    if (st.kids === 0 && st.pa === 0 && !$('sp').checked) return '상속받을 사람이 없어요. 자녀 수나 배우자·부모님을 골라 주세요.';
+    if (+$('dy').value > 90) return '기대여명이 너무 커요. 다시 확인해 주세요.';
     return '';
   }
 
@@ -91,7 +98,9 @@
       owner: { acqDate: ad, acqPrice: num($('ap')) * MAN, expenses: num($('ex')) * MAN, residMonths: num($('rm')), houses: st.hs, acqAdj: acqAdj === true, saleAdj: adjAt(TODAY) === true },
       child: { minor: !!st.minor, houses: st.ch, prior: num($('pr')) * MAN },
       low: { price: (num($('lp')) || Math.round(num($('mk')) * 0.8)) * MAN }, gift: { debt: num($('db')) * MAN },
-      inh: { other: num($('io')) * MAN, debt: num($('id')) * MAN, spouse: $('sp').checked, cohab: $('co').checked } };
+      inh: { other: num($('io')) * MAN, fin: num($('fi')) * MAN, debt: num($('id')) * MAN, funeral: num($('fu')) * MAN, spouse: $('sp').checked,
+        spouseGets: $('sp').checked && num($('sg')) ? num($('sg')) * MAN : null, children: st.kids, parents: st.kids ? 0 : st.pa,
+        minorAges: ages(), elderly: num($('el')), disabledYears: +$('dy').value || 0, cohab: $('co').checked } };
     const R = X.compareTransfer(p);
     LAST = { p, R };
     const WHAT = {
@@ -123,7 +132,7 @@
     $('asm').innerHTML = R.assumptions.concat([
       '부모님 양도세는 오늘 판다고 보고, 필요경비는 넣은 값(없으면 0원)으로 계산했어요.',
       '증여 취득세 중과(12%)와 상속 취득세는 공시가격으로 판단해요. 공시가격을 비우면 그 칸은 계산하지 않아요.',
-      '상속세는 일괄공제 5억 원을 썼어요(기초공제 2억 + 자녀 1명당 5천만 원 등과 비교해 큰 쪽). 금융재산공제·장례비 등은 넣지 않았어요.'
+      '상속세 공제: ' + (R.paths[3].inh.soleSpouse ? '배우자 단독상속이라 기초공제 2억 + 그 밖의 인적공제' : R.paths[3].inh.lumpUsed ? '일괄공제 5억 원(기초공제 2억 + 그 밖의 인적공제 ' + krw(R.paths[3].inh.pers.sum) + '보다 큼)' : '기초공제 2억 + 그 밖의 인적공제 ' + krw(R.paths[3].inh.pers.sum) + '(일괄공제 5억보다 큼)') + ', 장례비 ' + krw(R.paths[3].inh.funeralDed) + (R.paths[3].inh.finDed ? ', 금융재산공제 ' + krw(R.paths[3].inh.finDed) : '') + '을 반영했어요. 봉안시설 비용·상속인별 증여세액공제 한도는 넣지 않았어요.'
     ]).map(x => '<li>' + esc(x) + '</li>').join('');
     // 상담
     if (BX && !$('cwrap').innerHTML) {

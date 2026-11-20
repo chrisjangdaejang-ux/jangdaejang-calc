@@ -27,17 +27,18 @@
     return room / 12 * (i === 0 ? n : (1 - Math.pow(1 + i, -n)) / i);
   }
   function monthly(L, rate, term) { var i = rate / 1200, n = term * 12; if (L <= 0) return 0; return i === 0 ? L / n : L * i / (1 - Math.pow(1 + i, -n)); }
+  /* 취득세는 세금 계산 화면과 같은 엔진(tax/tax-engine.js buyerAcqTax)으로 계산 — 이 파일에 세율을 따로 두지 않음.
+     무주택 1~3%, 생애최초(12억 이하) 감면 200만 원 한도(지방세특례제한법 제36조의3, 85㎡ 초과는 감면분 농특세 20%),
+     1주택(처분조건) 일시적 2주택 1~3%, 다주택(3주택째) 조정 12%·비조정 8%. 엔진 단위는 원 → 여기서 만원으로 바꿈 */
+  var TAX = root.JDJ_TAX || (typeof require === 'function' ? require('../tax/tax-engine.js') : null);
   function costDetail(P, c, large) {
     if (large == null) large = c.large;
-    var rate, heavy = false;
-    if (c.own === 'multi') { rate = c.regulated ? 12 : 8; heavy = true; }
-    else if (P <= 60000) rate = 1; else if (P <= 90000) rate = Math.round(((P / 10000) * 2 / 3 - 3) * 100) / 100; else rate = 3;
-    var acq = P * rate / 100, edu = heavy ? P * 0.4 / 100 : acq * 0.1;
-    var farm = 0; if (large) farm = heavy ? P * (rate === 12 ? 1.0 : 0.6) / 100 : P * 0.2 / 100;
-    var relief = 0; if (c.own === 'first' && P <= 120000) relief = Math.min(acq, 200);
+    var t = TAX.buyerAcqTax(P * 10000, { own: c.own, regulated: c.regulated, large: !!large });
+    var rate = Math.round(t.rate * 10000) / 100, heavy = t.heavy;
+    var acq = t.acq / 10000, edu = t.edu / 10000, farm = t.farm / 10000, relief = t.relief / 10000;
     var br, cap = Infinity; if (P < 5000) { br = .6; cap = 25; } else if (P < 20000) { br = .5; cap = 80; } else if (P < 90000) br = .4; else if (P < 120000) br = .5; else if (P < 150000) br = .6; else br = .7;
     var brokerBase = Math.min(P * br / 100, cap), broker = brokerBase * 1.1;
-    return { rate: rate, acq: acq, edu: edu, farm: farm, relief: relief, br: br, broker: broker, brokerBase: brokerBase, heavy: heavy, total: acq - relief + edu + farm + broker };
+    return { rate: rate, acq: acq, edu: edu, farm: farm, relief: relief, br: br, broker: broker, brokerBase: brokerBase, heavy: heavy, notes: t.notes, total: acq - relief + edu + farm + broker };
   }
   /* 부대비용(취득세·중개보수) + 기타 비용. 계산기에서 '부대비용 포함'을 끄면 0 */
   function extra(P, c, large) { return c.costsOn ? costDetail(P, c, large).total + c.etc : 0; }

@@ -43,10 +43,10 @@ check('/tax/ 재산세·종부세: 출처 칸', /id="pGs"/.test(th) && /id="cGs"
 check('/tax/ 공시가격 안내: 1월 1일 기준', /공동주택 공시가격\(매년 1월 1일 기준/.test(th) && !/6월 1일 기준 공시가격/.test(th), true);
 check('/tax/transfer/: 출처 칸', /id="stdGs"/.test(rd('tax/transfer/index.html')) && /JDJ_GONGSI\.attach\(\$\('std'\)/.test(rd('tax/transfer/transfer-ui.js')), true);
 const sw = rd('sw.js');
-for (const [f, v] of [['assets/gongsi.js', 1], ['assets/tax-box.js', 2], ['tax/tax-ui.js', 3], ['tax/transfer/transfer-ui.js', 2]])
+for (const [f, v] of [['assets/gongsi.js', 1], ['assets/tax-box.js', 3], ['tax/tax-ui.js', 4], ['tax/transfer/transfer-ui.js', 3]])
   check('sw.js 캐시 목록 ' + f + '?v=' + v, sw.indexOf("'/jangdaejang-calc/" + f + '?v=' + v + "'") > 0, true);
 for (const f of ['mine/index.html', 'buy/report/index.html', 'tax/transfer/index.html'])
-  check(f + ' tax-box ?v=2', /assets\/tax-box\.js\?v=2/.test(rd(f)), true);
+  check(f + ' tax-box ?v=3', /assets\/tax-box\.js\?v=3/.test(rd(f)), true);
 
 const bad = rows.filter(r => !r.ok);
 bad.forEach(r => console.log('실패:', r.name, '| 결과', JSON.stringify(r.got), '| 기대', JSON.stringify(r.want)));

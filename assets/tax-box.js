@@ -28,7 +28,7 @@
     if (window.JDJ_TAX && window.JDJ_ADJ) return Promise.resolve();
     if (loading) return loading;
     const add = src => new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
-    loading = (window.JDJ_ADJ ? Promise.resolve() : add(BASE + 'tax/adjusted-areas.js')).then(() => window.JDJ_TAX ? null : add(BASE + 'tax/tax-engine.js?v=3'))
+    loading = (window.JDJ_ADJ ? Promise.resolve() : add(BASE + 'tax/adjusted-areas.js')).then(() => window.JDJ_TAX ? null : add(BASE + 'tax/tax-engine.js?v=4'))
       .then(() => window.JDJ_GONGSI ? null : add(BASE + 'assets/gongsi.js?v=1').catch(() => null));     // 공시가격 자료는 없어도 세금 칸은 그대로
     return loading;
   }
@@ -142,7 +142,8 @@
   <div class="tsec"><h3>사면 내는 취득세</h3>
     <div class="hint">이 집을 산 뒤 세대 전체 주택 수</div>
     <div class="seg" data-k="n">${[1, 2, 3, 4].map(n => `<button type="button" data-v="${n}" class="${n === 1 ? 'on' : ''}">${n === 4 ? '4채 이상' : n + '채'}</button>`).join('')}</div>
-    <label class="tog" data-temp hidden><input type="checkbox"> 이사용이에요 (기존 집을 3년 안에 팔 예정)</label>
+    <label class="tog" data-temp hidden><input type="checkbox"> 이사용이에요 (기존 집을 기한 안에 팔 예정 — 기존 집도 조정대상지역이면 2년, 아니면 3년)</label>
+    ${own ? '' : '<label class="tog" data-first><input type="checkbox"> 생애 처음 사는 집이에요 (본인·배우자 모두 집을 가진 적 없음 — 12억 원 이하면 취득세 200만 원 한도 감면)</label>'}
     <div class="out" data-o="acq" aria-live="polite"></div>
     <a class="more" data-a="acq" href="#" data-track="taxbox_acq_more">취득세 자세히 ›</a></div>
   <div class="tsec"><h3>해마다 내는 보유세</h3>
@@ -185,10 +186,13 @@
     function upd() {
       // 취득세
       const tw = q('[data-temp]'); tw.hidden = !(st.n === 2 && adjNow);
-      const a = T.acqTax({ price: P, houses: st.n, adj: adjNow, temp: !tw.hidden && tw.querySelector('input').checked, over85 });
+      const fw = q('[data-first]'); if (fw) fw.hidden = st.n !== 1;
+      const first = !!fw && !fw.hidden && fw.querySelector('input').checked;
+      // 단지 화면은 아파트라 생애최초 한도 200만 원(소형주택·인구감소지역 300만 원은 /tax/ 취득세 화면에서 고름)
+      const a = T.acqTax({ price: P, houses: st.n, adj: adjNow, temp: !tw.hidden && tw.querySelector('input').checked, over85, first });
       q('[data-o="acq"]').innerHTML = `<span class="big">${krw(a.total)}</span><span class="pl ${a.heavy ? 'no' : ''}">취득세율 ${pct(a.rate)}</span>
-        <small>취득세 ${krw(a.acq)} + 지방교육세 ${krw(a.edu)}${a.farm ? ' + 농어촌특별세 ' + krw(a.farm) : ''} · ${esc(a.why)}${over85 ? ' · 전용 85㎡ 초과' : ''}<br>지방세법 제11조 제1항 제8호·제13조의2·제151조, 농어촌특별세법 제5조</small>`;
-      q('[data-a="acq"]').href = hash('acq', { pr: o.price, n: st.n, sd: rg.sido, gu: rg.gu, o85: over85 ? 1 : '' });
+        <small>취득세 ${krw(a.acq)}${a.relief ? ' − 생애최초 감면 ' + krw(a.relief) : ''} + 지방교육세 ${krw(a.edu)}${a.farm ? ' + 농어촌특별세 ' + krw(a.farm) : ''} · ${esc(a.why)}${over85 ? ' · 전용 85㎡ 초과' : ''}${a.first ? '<br>3년 안에 팔거나 임대하면 감면세액을 다시 내요.' : a.notes.length ? '<br>' + esc(a.notes[0]) : ''}<br>지방세법 제11조 제1항 제8호·제13조의2·제151조${a.first ? ', 지방세특례제한법 제36조의3' : ''}, 농어촌특별세법 제5조</small>`;
+      q('[data-a="acq"]').href = hash('acq', { pr: o.price, n: st.n, sd: rg.sido, gu: rg.gu, o85: over85 ? 1 : '', fh: first ? 1 : '' });
       // 보유세
       const std = num($i('s').value) * MAN, one = $i('o').value === 'y';
       let hold = '';

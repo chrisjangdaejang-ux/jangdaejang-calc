@@ -311,19 +311,23 @@
   const aUpd = () => { $('aAdjTxt').textContent = '오늘 기준 ' + (aAdj() ? '조정대상지역입니다.' : '조정대상지역이 아닙니다.'); $('aTempW').hidden = !(aN === 2 && aAdj()); };
   aSel.onChange(aUpd); aUpd();
   $('aPrice').addEventListener('input', () => { fmtIn($('aPrice')); $('aPriceC').textContent = num($('aPrice')) ? krw(num($('aPrice')) * MAN) : ''; });
+  $('aFirst').addEventListener('change', () => { $('aFirstW').hidden = !$('aFirst').checked; });
   $('aN').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; aN = +b.dataset.v; $('aN').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); aUpd(); });
   $('aRun').addEventListener('click', () => {
     const p = num($('aPrice')) * MAN;
     if (!p) { $('aErr').textContent = '매수 가격을 넣어 주세요.'; return; }
     $('aErr').textContent = '';
-    const r = T.acqTax({ price: p, houses: aN, adj: aAdj(), temp: $('aTemp').checked && !$('aTempW').hidden, over85: $('aOver').checked });
+    const r = T.acqTax({ price: p, houses: aN, adj: aAdj(), temp: $('aTemp').checked && !$('aTempW').hidden, over85: $('aOver').checked,
+      first: $('aFirst').checked, firstSmall: $('aFirst').checked && $('aSmall').value !== '0' });
     $('aRes').innerHTML = '<div class="lbl">' + krw(p) + ' 주택 취득 시 예상 세금</div><div class="big">' + krw(r.total) + '</div>' +
-      '<span class="pill ' + (r.heavy ? 'no' : 'mid') + '">취득세율 ' + pct(r.rate) + '</span>' +
+      '<span class="pill ' + (r.heavy ? 'no' : 'mid') + '">취득세율 ' + pct(r.rate) + '</span>' + (r.relief ? ' <span class="pill ok">생애최초 감면 −' + krw(r.relief) + '</span>' : '') +
       '<details class="how" open><summary>계산 근거</summary><table class="calc">' +
-      '<tr><td>취득세 ' + pct(r.rate) + '</td><td>' + krw(r.acq) + '</td></tr><tr><td>지방교육세 ' + pct(r.eduRate) + '</td><td>' + krw(r.edu) + '</td></tr>' +
-      '<tr><td>농어촌특별세 ' + pct(r.farmRate) + '</td><td>' + krw(r.farm) + '</td></tr><tr class="tot"><td>합계</td><td>' + krw(r.total) + '</td></tr></table>' +
-      '<ul><li>' + esc(r.why) + '</li><li>주택 수는 이번에 사는 집을 포함한 세대 기준입니다.</li></ul>' +
-      '<p class="law">지방세법 제11조 제1항 제8호(6억~9억: (취득가액×2/3억 − 3)%), 제13조의2(다주택 중과), 제151조(지방교육세), 농어촌특별세법(85㎡ 초과).</p></details>';
+      '<tr><td>취득세 ' + pct(r.rate) + '</td><td>' + krw(r.acq) + '</td></tr>' +
+      (r.relief ? '<tr><td>생애최초 감면 (한도 ' + krw(r.reliefCap) + ')</td><td>−' + krw(r.relief) + '</td></tr>' : '') +
+      '<tr><td>지방교육세 ' + pct(r.eduRate) + '</td><td>' + krw(r.edu) + '</td></tr>' +
+      '<tr><td>농어촌특별세 ' + pct(r.farmRate) + (r.reliefFarm ? ' + 감면세액의 20%' : '') + '</td><td>' + krw(r.farm) + '</td></tr><tr class="tot"><td>합계</td><td>' + krw(r.total) + '</td></tr></table>' +
+      '<ul><li>' + esc(r.why) + '</li><li>주택 수는 이번에 사는 집을 포함한 세대 기준입니다.</li>' + r.notes.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul>' +
+      '<p class="law">지방세법 제11조 제1항 제8호(6억~9억: (취득가액×2/3억 − 3)%), 제13조의2(다주택 중과), 제151조(지방교육세), 농어촌특별세법(85㎡ 초과)' + (r.first ? ', 지방세특례제한법 제36조의3(생애최초 감면)' : '') + '.</p></details>';
     $('aRes').hidden = false;
     stat();
   });
@@ -608,6 +612,7 @@
         money($('aPrice'), P.pr); region($('aSido'), $('aGu'), P.sd, P.gu);
         const b = $('aN').querySelector('[data-v="' + P.n + '"]'); if (b) b.click();
         $('aOver').checked = P.o85 === '1';
+        if (P.fh === '1') { $('aFirst').checked = true; $('aFirstW').hidden = false; }
         if (P.pr) $('aRun').click();
       } else if (v === 'prop') {
         money($('pPrice'), P.std);

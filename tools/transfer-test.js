@@ -81,6 +81,18 @@ const gp = C.paths.find(p => p.key === 'gift');
 check('부담부증여 증여세 (8억 − 채무 3억)', gp.recv.items[0].v, T.giftTax({ value: 8 * E, debt: 3 * E, rel: 'child' }).tax, '제47조 제1항');
 check('  └ 채무 부분 양도차익 3억 − 4억×3/8', gp.debtCgt.gain, 1.5 * E, '시행령 제159조');
 
+// 8. 상속공제 입력(2026-11-21): 자녀 4명·미성년 2명이면 기초+인적이 일괄 5억보다 커져 상속세가 줄어듦 (상증법 제18조·제20조·제21조)
+const many = Object.assign({}, one, { market: 20 * E, std: 12 * E, inh: { children: 4, minorAges: [3, 5], funeral: 0 } });
+C = X.compareTransfer(many);
+const ih = C.paths.find(p => p.key === 'inherit').inh;
+check('상속: 자녀 4·미성년 3·5세 → 공제 7억(일괄 5억보다 큼)', ih.lump, 7 * E, '2억 + 4×5천만 + (16+14)×1천만');
+check('  └ 과세표준 = 20억 − 장례비 500만 − 7억', ih.base, 1295000000, '제14조·시행령 제9조(최소 500만)');
+check('  └ 카드 설명에 기초+인적 표시', /기초 2억 \+ 인적/.test(C.paths.find(p => p.key === 'inherit').recv.items[0].sub), true, '');
+C = X.compareTransfer(Object.assign({}, one, { market: 30 * E, std: 18 * E, inh: { spouse: true, spouseGets: 15 * E, children: 2 } }));
+check('상속: 배우자 실제 15억 → 법정상속분 30억×3/7 한도', C.paths.find(p => p.key === 'inherit').inh.spouseDed, 1285714285, '제19조, 민법 제1009조');
+C = X.compareTransfer(Object.assign({}, base, { low: { price: 14 * E } }));
+check('저가 양도(20억→14억): 10년 안 상속 시 더해지는 증여재산 3억 안내', C.paths.find(p => p.key === 'low').cautions.some(c => /이익 3억 원이 상속재산에 다시 더해/.test(c)), true, '상증법 제13조 제1항');
+
 const pad = (s, n) => { s = String(s); let w = 0; for (const ch of s) w += ch.charCodeAt(0) > 255 ? 2 : 1; return s + ' '.repeat(Math.max(0, n - w)); };
 let fail = 0;
 rows.forEach((x, i) => { if (!x.ok) fail++; console.log(pad(x.ok ? 'PASS' : 'FAIL', 5) + pad(i + 1, 4) + pad(x.name, 52) + pad(typeof x.got === 'number' ? x.got.toLocaleString() : x.got, 14) + (x.ok ? '' : ' 기대 ' + x.want) + '  ' + x.basis); });

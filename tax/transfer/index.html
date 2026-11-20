@@ -114,7 +114,7 @@ ul.cau{margin:8px 0 0;padding-left:18px;font-size:14.5px;line-height:1.6;display
   <div class="backbar"><a href="../">‹ 세금 계산 처음으로</a></div>
   <p class="review" id="reviewBadge"><b>미리보기</b><span>세무사 검수 전 미리보기예요. 조항 번호를 확인해 가며 보시고, 실제 진행 전에는 세무사와 확인해 주세요.</span></p>
   <div class="hero">
-    <div class="eyebrow">넘기는 방법 비교 · 2026년 11월 20일 시행 법령 기준</div>
+    <div class="eyebrow">넘기는 방법 비교 · 2026년 11월 21일 시행 법령 기준</div>
     <h1>이 집, 어떻게 넘기는 게<br>유리할까요?</h1>
     <p>제3자에게 팔기 · 자녀에게 싸게 팔기 · 증여 · 상속까지 보유. 네 가지를 같은 조건으로 놓고 부모님(지금 소유자)과 자녀가 낼 세금, 자녀가 준비할 돈을 법 조항과 함께 나란히 보여 드려요.</p>
   </div>
@@ -162,8 +162,20 @@ ul.cau{margin:8px 0 0;padding-left:18px;font-size:14.5px;line-height:1.6;display
       <div class="fl"><label for="io">이 집 말고 다른 상속재산 (선택)</label><div class="box"><input id="io" class="money" inputmode="numeric" autocomplete="off" placeholder="0"><span>만 원</span></div></div>
       <div class="fl"><label for="id">상속재산에서 뺄 채무 (선택)</label><div class="box"><input id="id" class="money" inputmode="numeric" autocomplete="off" placeholder="0"><span>만 원</span></div></div>
     </div>
-    <label class="tog"><input type="checkbox" id="sp"><span>상속 때 배우자(어머니·아버지)가 계세요<small>배우자 상속공제 — 최소 5억 원만 넣어 계산해요</small></span></label>
-    <label class="tog"><input type="checkbox" id="co"><span>자녀가 부모님과 이 집에서 10년 넘게 함께 살았어요<small>동거주택 상속공제(최대 6억 원) — 그 10년 동안 1세대 1주택이고 상속받는 자녀가 무주택이어야 해요</small></span></label>
+    <div class="f2">
+      <div class="fl"><label for="fi">그중 예금·보험 등 금융재산 (선택)</label><div class="box"><input id="fi" class="money" inputmode="numeric" autocomplete="off" placeholder="0"><span>만 원</span></div><div class="help">금융 채무를 뺀 금액. 위 '다른 상속재산'에 들어 있지 않으면 따로 더해 계산해요 — 금융재산 상속공제(2천만 원까지 전액, 넘으면 20%·최소 2천만·최대 2억)</div></div>
+      <div class="fl"><label for="fu">장례비 (선택)</label><div class="box"><input id="fu" class="money" inputmode="numeric" autocomplete="off" placeholder="500"><span>만 원</span></div><div class="help">비워도 500만 원은 빼 줘요(증빙 있으면 1천만 원까지)</div></div>
+    </div>
+    <div class="fl"><span class="lb">돌아가신 분의 자녀 수 (받는 자녀 포함)</span><div class="seg" id="kids"><button type="button" data-v="0">없음</button><button type="button" data-v="1" class="on">1명</button><button type="button" data-v="2">2명</button><button type="button" data-v="3">3명</button><button type="button" data-v="4">4명 이상</button></div><div class="help">자녀 1명당 5천만 원 공제 — 기초공제 2억과 아래 공제를 합친 금액이 5억보다 크면 그 금액으로 계산해요</div></div>
+    <div class="fl" id="paW" hidden><span class="lb">자녀가 없으면 — 살아 계신 돌아가신 분의 부모님</span><div class="seg" id="pa"><button type="button" data-v="0" class="on">없음</button><button type="button" data-v="1">1분</button><button type="button" data-v="2">2분</button></div></div>
+    <div class="f2">
+      <div class="fl"><label for="ma">미성년 상속인·동거가족 나이 (선택)</label><div class="box"><input id="ma" inputmode="text" autocomplete="off" placeholder="예: 7, 15"><span>세</span></div><div class="help">배우자 빼고, 만 나이. 1인당 1천만 원 × 19세까지 남은 햇수</div></div>
+      <div class="fl"><label for="el">65세 이상 상속인·동거가족 (선택)</label><div class="box"><input id="el" inputmode="numeric" autocomplete="off" placeholder="0"><span>명</span></div><div class="help">배우자 빼고 1인당 5천만 원</div></div>
+    </div>
+    <div class="fl"><label for="dy">장애인 상속인·동거가족의 기대여명 (선택)</label><div class="box"><input id="dy" inputmode="decimal" autocomplete="off" placeholder="0"><span>년</span></div><div class="help">배우자 포함. 통계청 생명표의 성별·나이별 기대여명을 넣어 주세요(여럿이면 합계). 1년마다 1천만 원 공제</div></div>
+    <label class="tog"><input type="checkbox" id="sp"><span>상속 때 배우자(어머니·아버지)가 계세요<small>배우자 상속공제 — 받을 금액을 넣으면 법정상속분·30억 원 한도 안에서, 안 넣으면 5억 원으로 계산해요</small></span></label>
+    <div class="fl" id="sgW" hidden><label for="sg">배우자가 실제로 받을 금액 (선택)</label><div class="box"><input id="sg" class="money" inputmode="numeric" autocomplete="off" placeholder="50,000"><span>만 원</span></div><div class="help">5억 원 넘게 공제받으려면 신고기한 다음 날부터 9개월 안에 나누고 등기까지 마쳐야 해요</div></div>
+    <label class="tog"><input type="checkbox" id="co"><span>자녀가 부모님과 이 집에서 10년 넘게 함께 살았어요<small>동거주택 상속공제(최대 6억 원) — 상속 전 10년 이상 계속 한집에 살았고(자녀가 미성년인 기간 제외), 그 10년 동안 1세대 1주택이며, 상속받는 자녀가 무주택이어야 해요</small></span></label>
   </section>
   <div class="err sec" id="err" role="alert"></div>
   <button type="submit" class="btn primary big run" id="run">네 가지 방법 비교하기</button>
@@ -180,14 +192,14 @@ ul.cau{margin:8px 0 0;padding-left:18px;font-size:14.5px;line-height:1.6;display
 
   <p class="notice">세무사 검수 전 미리보기예요. 신고 전에 홈택스·위택스나 세무사와 확인해 주세요. 입력값은 서버로 보내지 않아요.</p>
 </main>
-<footer class="foot notice" style="margin:24px 0 0;border-radius:0;border-left:0;border-right:0">근거(2026-11-20 확인): 소득세법 제55조·제88조·제89조·제95조·제97조의2·제101조·제104조, 같은 법 시행령 제159조·제163조·제167조, 상속세 및 증여세법 제13조·제19조·제21조·제23조의2·제24조·제25조·제26조·제28조·제35조·제44조·제47조·제53조·제56조·제60조·제69조·제71조, 같은 법 시행령 제26조, 지방세법 제7조·제10조의2·제10조의3·제11조·제13조의2·제15조·제103조의3·제110조·제111조·제151조, 같은 법 시행령 제18조의2·제28조의6, 종합부동산세법 제8조·제9조, 농어촌특별세법 제5조<br>★ 집예보 · <a href="../">세금 계산 처음으로</a></footer>
+<footer class="foot notice" style="margin:24px 0 0;border-radius:0;border-left:0;border-right:0">근거(2026-11-21 확인): 소득세법 제55조·제88조·제89조·제95조·제97조의2·제101조·제104조, 같은 법 시행령 제159조·제163조·제167조, 상속세 및 증여세법 제13조·제14조·제18조·제19조·제20조·제21조·제22조·제23조의2·제24조·제25조·제26조·제28조·제35조·제44조·제47조·제53조·제56조·제60조·제69조·제71조, 같은 법 시행령 제26조, 지방세법 제7조·제10조의2·제10조의3·제11조·제13조의2·제15조·제103조의3·제110조·제111조·제151조, 같은 법 시행령 제18조의2·제28조의6, 종합부동산세법 제8조·제9조, 농어촌특별세법 제5조<br>★ 집예보 · <a href="../">세금 계산 처음으로</a></footer>
 
 <script src="../adjusted-areas.js"></script>
-<script src="../tax-engine.js?v=3"></script>
-<script src="../transfer-engine.js?v=2"></script>
-<script src="../../assets/tax-box.js?v=2"></script>
+<script src="../tax-engine.js?v=4"></script>
+<script src="../transfer-engine.js?v=3"></script>
+<script src="../../assets/tax-box.js?v=3"></script>
 <script src="../../assets/gongsi.js?v=1"></script>
-<script src="transfer-ui.js?v=2"></script>
+<script src="transfer-ui.js?v=3"></script>
 <script src="../tax-trust.js?v=1"></script>
 </body>
 </html>

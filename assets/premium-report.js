@@ -31,13 +31,10 @@
   const capByPrice = (p, c) => (!c.capital && !c.regulated) ? Infinity : p <= 150000 ? 60000 : p <= 250000 ? 40000 : 20000;
   function dsrMax(c) { const room = S.income * 0.40 - S.debt; if (room <= 0) return 0; const i = (c.rate + c.stress) / 1200, n = c.term * 12; return room / 12 * (i === 0 ? n : (1 - Math.pow(1 + i, -n)) / i); }
   const monthly = (L, rate, term) => { const i = rate / 1200, n = term * 12; if (L <= 0) return 0; return i === 0 ? L / n : L * i / (1 - Math.pow(1 + i, -n)); };
+  /* 취득세는 세금 계산 화면·무료 리포트와 같은 엔진(tax/tax-engine.js buyerAcqTax, 원 단위 → 만원) */
   function costDetail(p, c, large) {
-    let rate, heavy = false;
-    if (S.own === 'multi') { rate = c.regulated ? 12 : 8; heavy = true; }
-    else if (p <= 60000) rate = 1; else if (p <= 90000) rate = Math.round(((p / 10000) * 2 / 3 - 3) * 100) / 100; else rate = 3;
-    const acq = p * rate / 100, edu = heavy ? p * 0.4 / 100 : acq * 0.1;
-    let farm = 0; if (large) farm = heavy ? p * (rate === 12 ? 1.0 : 0.6) / 100 : p * 0.2 / 100;
-    let relief = 0; if (S.own === 'first' && p <= 120000) relief = Math.min(acq, 200);
+    const t = window.JDJ_TAX.buyerAcqTax(p * 10000, { own: S.own, regulated: c.regulated, large: !!large });
+    const rate = Math.round(t.rate * 10000) / 100, acq = t.acq / 10000, edu = t.edu / 10000, farm = t.farm / 10000, relief = t.relief / 10000;
     let br, cap = Infinity; if (p < 5000) { br = .6; cap = 25; } else if (p < 20000) { br = .5; cap = 80; } else if (p < 90000) br = .4; else if (p < 120000) br = .5; else if (p < 150000) br = .6; else br = .7;
     const broker = Math.min(p * br / 100, cap) * 1.1;
     return { rate, tax: acq - relief + edu + farm, broker, total: acq - relief + edu + farm + broker };

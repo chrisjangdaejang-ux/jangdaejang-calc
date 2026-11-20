@@ -6,7 +6,8 @@
    앞부분 58건은 '국가법령정보센터 현행 조문(2026-11-20 확인)의 산식으로 만든 공식 산식 사례'.
    뒷부분 CASES_BOOKLET 은 대표가 받은 공식 책자 원문 사례(국세청·행정안전부 「2026 주택과 세금」, 서울시 「2026 알기 쉬운 지방세」)의
    입력·숫자를 옮긴 것(쪽수 표기). 책자 대조로 고친 엔진 항목: 종부세 재산세 공제 분모, 상속 공제 한도(5억 이하), 증여공제 소진(dedUsed),
-   소방분 지역자원시설세 계산식 추가. 결과 보고: preview/tax_booklet_check.md (웹 저장소 밖).
+   소방분 지역자원시설세 계산식 추가. 2026-11-21: 생애최초 감면(F·B-F), 상속 인적·배우자·금융재산·장례비 공제(I·B-I07~09),
+   화면 전수 같은 엔진(U) 추가. 결과 보고: preview/tax_booklet_check.md (웹 저장소 밖).
 
    항목: 양도세(12억 경계·보유/거주 2년·3년 경계·단기세율·표1/표2·중과 재개일·45% 구간·일시적 2주택 기한),
         취득세(6억·9억 경계, 6~9억 산식 반올림, 중과 8%·12%), 재산세(공정시장가액비율 43/44/45%·특례세율 9억 경계),
@@ -135,8 +136,80 @@ check('G07', '증여 취득세: 조정지역 공시 3억 미만 → 3.5%+0.3%', 
 ga = T.giftAcqTax({ value: 5 * E, stdPrice: 3 * E, adj: true });
 check('G08', '  └ 공시 정확히 3억 → 12%+0.4%', ga.total, 62000000, '제13조의2 제2항');
 
+/* ===== 생애최초 주택 취득세 감면 (지방세특례제한법 제36조의3, 2025.12.31 개정·2026.1.1 시행, 2028.12.31까지) — 2026-11-21 추가 =====
+   한도: 그 밖의 주택(아파트 포함) 200만, 아파트 아닌 소형주택(60㎡·수도권 6억/비수도권 3억 이하)·인구감소지역 300만 — 「주택과 세금」 22·53쪽,
+   서울시 「알기 쉬운 지방세」 79쪽 본문·93쪽 표, 금천구청 안내(80쪽 요약표의 거꾸로 적힌 한도는 오기). 산출세액이 한도 이하면 면제, 넘으면 한도 공제. */
+let f = T.acqTax({ price: 5 * E, houses: 1, first: true });
+check('F01', '생애최초 5억 아파트: 취득세 500만 − 200만', f.acq - f.relief, 3000000, '제36조의3 제1항 제2호: 200만 초과분 납부');
+check('F01b', '  └ 합계(지방교육세 감면 전 50만 포함)', f.total, 3500000, '지방교육세는 감면 전 기준(보수적, notes 안내)');
+f = T.acqTax({ price: 2 * E, houses: 1, first: true });
+check('F02', '생애최초 2억: 취득세 200만 이하 → 전액 면제', f.acq - f.relief, 0, '제36조의3 제1항: 한도 이하면 면제');
+f = T.acqTax({ price: 3 * E, houses: 1, first: true, firstSmall: true });
+check('F03', '소형주택(빌라 3억) 한도 300만 → 취득세 0', f.acq - f.relief, 0, '제36조의3 제1항 제1호 300만');
+check('F03b', '  └ 감면액', f.relief, 3000000, '');
+f = T.acqTax({ price: 4 * E, houses: 1, first: true, firstSmall: true });
+check('F04', '소형·인구감소지역 4억: 400만 − 300만', f.acq - f.relief, 1000000, '');
+check('F05', '정확히 12억 → 감면(12억 이하)', T.acqTax({ price: 12 * E, houses: 1, first: true }).relief, 2000000, '"12억원 이하"');
+check('F06', '12억+1만 원 → 감면 없음', T.acqTax({ price: 1200010000, houses: 1, first: true }).relief, 0, '');
+f = T.acqTax({ price: 5 * E, houses: 1, first: true, over85: true });
+check('F07', '85㎡ 초과: 농특세 0.2% + 감면세액 20%', f.farm, 1400000, '농어촌특별세법 제5조 제1항 제1호·제6호(「주택과 세금」 58쪽)');
+check('F08', '세대 다주택이어도 본인·배우자 생애최초면 중과 배제(조정 2주택째 1%)', T.acqTax({ price: 5 * E, houses: 2, adj: true, first: true }).rate, 0.01, '「주택과 세금」 53쪽');
+check('F09', '감면 추징 안내: 3년 안 매각·증여·임대', T.acqTax({ price: 5 * E, first: true }).notes.some(x => /3년 안에 팔거나 증여/.test(x)), true, '제36조의3 제4항(2025.12.31 개정)');
+check('F10', '매수 화면 공용(buyerAcqTax first) = acqTax', T.buyerAcqTax(7 * E, { own: 'first' }).total, T.acqTax({ price: 7 * E, houses: 1, first: true }).total, 'loan-core·premium-report 통일');
+check('F11', '매수 화면 다주택(조정) 12%', T.buyerAcqTax(7 * E, { own: 'multi', regulated: true }).rate, 0.12, '지방세법 제13조의2');
+check('F12', '매수 화면 1주택 처분조건 일반세율', T.buyerAcqTax(7 * E, { own: 'one', regulated: true }).rate, 0.0167, '일시적 2주택');
+check('F13', '취득세 일시적 2주택 기한 안내에 조정→조정 2년', /2년/.test(T.acqTax({ price: 5 * E, houses: 2, adj: true, temp: true }).why), true, '지방세법 시행령 제28조의5(2026.10.1 시행)');
+
+/* ===== 상속공제 (상속세 및 증여세법 제14·18·19·20·21·22조) — 2026-11-21 추가 ===== */
+const XI = require('../tax/transfer-engine.js');
+let ih = XI.inheritTax({ house: 10 * E, children: 3 });
+check('I01', '자녀 3명: 기초 2억 + 1.5억 < 일괄 5억 → 5억', ih.lump, 500000000, '제21조');
+ih = XI.inheritTax({ house: 20 * E, children: 4, minorAges: [3, 5], elderly: 1 });
+check('I02', '자녀 4·미성년 3·5세·65세 이상 1: 2억+2억+3억+0.5억 = 7.5억', ih.lump, 750000000, '제18조·제20조: 미성년 (16+14)×1천만');
+ih = XI.inheritTax({ house: 10 * E, spouse: true, children: 0, parents: 0 });
+check('I03', '배우자 단독상속 → 일괄공제 불가(기초 2억)', ih.lump, 200000000, '제21조 제2항');
+check('I03b', '  └ 배우자 공제 5억 더해 공제 7억', ih.ded, 700000000, '제19조');
+ih = XI.inheritTax({ house: 20 * E, spouse: true, children: 2, spouseGets: 12 * E });
+check('I04', '배우자 실제 12억, 법정상속분 20억×1.5/3.5 = 857,142,857 한도', ih.spouseDed, 857142857, '제19조 제1항 제1호, 민법 제1009조');
+ih = XI.inheritTax({ house: 20 * E, spouse: true, children: 2, spouseGets: 3 * E });
+check('I05', '배우자 실제 3억 → 최소 5억', ih.spouseDed, 500000000, '제19조 제4항');
+ih = XI.inheritTax({ house: 100 * E, spouse: true, children: 1, spouseGets: 60 * E });
+check('I06', '배우자 공제 30억 한도', ih.spouseDed, 3000000000, '제19조 제1항 제2호');
+check('I07', '금융재산 1,500만 → 전액', XI.finDeduction(15000000), 15000000, '제22조');
+check('I08', '금융재산 5천만 → 2천만', XI.finDeduction(50000000), 20000000, '제22조');
+check('I09', '금융재산 3억 → 20% 6천만', XI.finDeduction(300000000), 60000000, '제22조');
+check('I10', '금융재산 20억 → 2억 한도', XI.finDeduction(2000000000), 200000000, '제22조');
+ih = XI.inheritTax({ house: 10 * E, funeral: 0 });
+check('I11', '장례비 0 → 500만 차감', ih.funeralDed, 5000000, '제14조, 시행령 제9조 제2항');
+check('I12', '장례비 2천만 → 1천만 한도', XI.inheritTax({ house: 10 * E, funeral: 2e7 }).funeralDed, 10000000, '시행령 제9조 제2항');
+ih = XI.inheritTax({ house: 15 * E, fin: 3 * E, funeral: 0 });
+check('I13', '주택 15억+예금 3억, 자녀 1: 과세표준 = 18억 − 500만 − 5억 − 6천만', ih.base, 1235000000, '제14·21·22조');
+
+/* ===== 화면 전수 — 세금이 쓰이는 모든 화면이 같은 엔진(tax-engine.js)·같은 버전을 쓰는지 (2026-11-21 추가) =====
+   /tax/, /tax/transfer/, 단지 세금 칸(tax-box), 갈아타기(switch-core), 내 집 마련 계산기·리포트(loan-core), 프리미엄 리포트(premium-report) */
+{
+  const fs = require('fs'), path = require('path'), rd = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
+  const refs = {};
+  ['tax/index.html', 'tax/transfer/index.html', 'switch/index.html', 'buy/index.html', 'buy/report/index.html', 'chungyak/price/index.html', 'premium/view/index.html', 'premium/r/index.html', 'premium/pro/index.html', 'assets/tax-box.js', 'sw.js']
+    .forEach(f => { const m = rd(f).match(/tax-engine\.js\?v=(\d+)/g) || []; refs[f] = m.map(x => x.split('=')[1]).join(','); });
+  const vs = new Set(Object.values(refs));
+  check('U01', '세금 엔진 버전이 모든 화면에서 같음', vs.size === 1 && !vs.has(''), true, JSON.stringify(refs));
+  const lc = rd('assets/loan-core.js'), pr = rd('assets/premium-report.js');
+  check('U02', '내 집 마련(loan-core) 취득세 = 엔진 buyerAcqTax, 자체 세율 없음', /buyerAcqTax/.test(lc) && !/rate = c\.regulated \? 12 : 8/.test(lc), true, '');
+  check('U03', '프리미엄 리포트 취득세 = 엔진 buyerAcqTax, 자체 세율 없음', /JDJ_TAX\.buyerAcqTax/.test(pr) && !/rate = c\.regulated \? 12 : 8/.test(pr), true, '');
+  const before = (f, a, b) => { const s = rd(f); return s.indexOf(a) >= 0 && s.indexOf(a) < s.indexOf(b); };
+  check('U04', '엔진을 loan-core·premium-report보다 먼저 불러옴', before('buy/index.html', 'tax-engine.js', 'loan-core.js') && before('buy/report/index.html', 'tax-engine.js', 'loan-core.js') && before('chungyak/price/index.html', 'tax-engine.js', 'loan-core.js')
+    && ['premium/view/index.html', 'premium/r/index.html', 'premium/pro/index.html'].every(f => before(f, 'tax-engine.js', 'premium-report.js')), true, '');
+  check('U05', '단지 세금 칸·갈아타기도 엔진 acqTax·calcCGT 사용', /T\.acqTax\(/.test(rd('assets/tax-box.js')) && /T\.calcCGT\(/.test(rd('assets/tax-box.js')) && /TAX\.acqTax\(/.test(rd('switch/switch-core.js')) && /TAX\.calcCGT\(/.test(rd('switch/switch-core.js')), true, '');
+  const L = require('../assets/loan-core.js');
+  const eq = ['none', 'first', 'one', 'multi'].every(own => [true, false].every(reg => [35000, 63225, 84000, 120000, 150000].every(P => {
+    const c = L.costDetail(P, { own, regulated: reg }, true), t = T.buyerAcqTax(P * 1e4, { own, regulated: reg, large: true });
+    return Math.abs((c.acq - c.relief + c.edu + c.farm) * 1e4 - (t.total)) < 1; })));
+  check('U06', '내 집 마련 취득세 = /tax/ 취득세(원 단위) 40가지 조건', eq, true, '6.3225억은 예전 자체 식의 부동소수 반올림 오류(1.21%)가 엔진 1.22%로 바로잡힘');
+}
+
 /* ===== 지원 범위·기준일 메타데이터 ===== */
-check('S01', '기준일 표시값', T.AS_OF, '2026-11-20', 'docs/tax_rules_sources.md 확인일');
+check('S01', '기준일 표시값', T.AS_OF, '2026-11-21', 'docs/tax_rules_sources.md 확인일');
 check('S02', '세금 종류마다 적용 조항·지원 범위 목록', ['cgt', 'order', 'acq', 'prop', 'cpt', 'gift', 'xfer'].every(k => T.LAW[k].arts.length && T.SCOPE[k].length), true, '화면 tax-trust.js');
 
 /* ===== 공식 책자 원문 사례 대조 (2026-11-20) =====
@@ -246,7 +319,15 @@ const CASES_BOOKLET = [
   { id: 'B-I03', src: NTS, page: 363, kind: '사례', name: '  └ 납부세액(신고세액공제 3%)', got: () => X.inheritTax({ house: 25 * E, spouse: true }).tax, want: 426800000 },
   { id: 'B-I04', src: NTS, page: 372, kind: '규칙', name: '동거주택 상속공제 6억 한도(주택 10억)', got: () => X.inheritTax({ house: 10 * E, cohab: true }).cohabDed, want: 600000000 },
   { id: 'B-I05', src: NTS, page: 374, kind: '규칙', name: '공제 한도: 과세가액 5억 이하면 사전증여 과세표준 안 뺌', got: () => X.inheritTax({ house: 4 * E, prior: 1 * E, priorDed: 5e7 }).limit, want: 500000000 },
-  { id: 'B-I06', src: NTS, page: 374, kind: '규칙', name: '  └ 과세가액 5억 초과면 뺌(주택 9억 + 사전증여 1억)', got: () => X.inheritTax({ house: 9 * E, prior: 1 * E, priorDed: 5e7 }).limit, want: 950000000 }
+  { id: 'B-I06', src: NTS, page: 374, kind: '규칙', name: '  └ 과세가액 5억 초과면 뺌(주택 9억 + 사전증여 1억)', got: () => X.inheritTax({ house: 9 * E, prior: 1 * E, priorDed: 5e7 }).limit, want: 950000000 },
+  { id: 'B-I07', src: NTS, page: 371, kind: '사례', name: '그 밖의 인적공제: 배우자 장애인(기대여명 47.3), 자녀 1·7세', got: () => X.inheritTax({ house: 20 * E, spouse: true, children: 2, minorAges: [1, 7], disabledYears: 47.3 }).pers.sum, want: 873000000 },
+  { id: 'B-I08', src: NTS, page: 371, kind: '규칙', name: '  └ 기초 2억 + 8.73억 = 10.73억 > 일괄 5억', got: () => X.inheritTax({ house: 20 * E, spouse: true, children: 2, minorAges: [1, 7], disabledYears: 47.3 }).lump, want: 1073000000 },
+  { id: 'B-I09', src: NTS, page: 370, kind: '규칙', name: '배우자 공제 한도 = 상속재산 × 법정상속지분(자녀 1명 → 60%)', got: () => X.inheritTax({ house: 10 * E, spouse: true, children: 1, spouseGets: 8 * E }).spouseDed, want: 600000000 },
+  /* --- 생애최초 감면 --- */
+  { id: 'B-F01', src: NTS, page: 22, kind: '규칙', name: '생애최초 감면 최대 200만(일반 주택 9억 → 2,700만 − 200만)', got: () => { const r = T.acqTax({ price: 9 * E, first: true }); return r.acq - r.relief; }, want: 25000000 },
+  { id: 'B-F02', src: SEOUL, page: 79, kind: '규칙', name: '소형주택 300만 공제(빌라 5억 수도권 → 500만 − 300만)', got: () => { const r = T.acqTax({ price: 5 * E, first: true, firstSmall: true }); return r.acq - r.relief; }, want: 2000000 },
+  { id: 'B-F03', src: SEOUL, page: 93, kind: '세율표', name: '감면표: 생애최초 12억 이하 한도 200만 / 소형 300만', got: () => [T.CONST.FIRST_MAX, T.CONST.FIRST_CAP, T.CONST.FIRST_CAP_SMALL].join('/'), want: '1200000000/2000000/3000000' },
+  { id: 'B-F04', src: NTS, page: 58, kind: '규칙', name: '농특세: 85㎡ 초과 감면세액의 20%(9억 → 200만 × 20%)', got: () => T.acqTax({ price: 9 * E, first: true, over85: true }).reliefFarm, want: 400000 }
 ];
 /* 세율표만으로 계산(엔진 상수 대조) — table 없으면 양도세 기본세율 */
 function won0(table, base, add) { if (!table) return Math.floor(T.basicTax(base, add || 0) + 1e-6); for (const [cap, r, d] of table) if (base <= cap) return Math.floor(base * r - d + 1e-6); return 0; }
@@ -258,10 +339,9 @@ const BOOKLET_SKIPPED = [
   [NTS, 207, '공동소유 고가주택 지분별 양도차익 — 엔진은 한 사람 기준(SCOPE 안내)'],
   [NTS, 226, '상생임대주택 장특공(보유만 10년 → 40%) — 엔진 범위 밖(SCOPE 안내)'],
   [NTS, 351, '무상사용 이익(연 2%·10% 할인) 자체 계산 — 증여세만 대조(B-G12)'],
-  [NTS, 371, '그 밖의 인적공제(자녀·미성년·장애인 8.73억) — 비교 화면은 일괄공제 5억만(SCOPE xfer 안내)'],
   [SEOUL, 37, '취득세 과소신고 가산세 — 엔진 범위 밖'],
   [SEOUL, 125, '상가 상속 취득세 — 주택 아님'],
-  [SEOUL, 79, '생애최초 주택 취득세 감면 — 책자에 숫자 계산 사례 없음, 엔진은 감면 미반영(SCOPE 안내). 80쪽 요약표의 소형/소형 외 한도(200만/300만)가 79쪽 본문·93쪽 표(일반 200만, 소형 300만)와 거꾸로 적혀 있음']
+  [SEOUL, 80, '생애최초 감면 요약표 — 한도(소형 200만/소형 외 300만)·기한(2027.12.31)이 79쪽 본문·93쪽 감면표·법 조문(소형 300만/그 외 200만, 2028.12.31)과 달라 오기로 보고 대조에서 뺌(B-F02·B-F03이 본문·표 기준)']
 ];
 let explainedN = 0;
 CASES_BOOKLET.forEach(x => {
