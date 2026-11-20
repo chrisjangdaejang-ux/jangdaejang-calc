@@ -93,6 +93,20 @@ S = A.summary([it('가', { band: '150㎡ 이상', jeon: { gap: 100000 } }), it('
 check('조사: 받침 있는 평형 이름 뒤 이/가', S[0].startsWith('전세를 끼고 살 때 필요한 돈(갭 = 매매 시세 − 전세 시세)은 가(150㎡ 이상)이 10억원으로'), true);
 check('공유 머리글', A.shareHead([{ apt: '가' }, { apt: '나' }]), '가 vs 나, 통계로 비교했어요');
 
+/* ---------- 비교 화면 표시값(오류 막기) ---------- */
+check("입주년도: '2005년(21년차)' — 음수 연식 없음", [A.ageText(2005, 2026), A.ageText(2026, 2026), A.ageText(2028, 2026), A.ageText(0, 2026), A.ageText(1800, 2026)], ['2005년(21년차)', '2026년(올해 입주)', '2028년 입주 예정', '', '']);
+check("날짜 원문 노출 없음: '20050518' → '2005년 5월'", [A.ymText('20050518'), A.ymText('202610'), A.ymText('20051318'), A.ymText('')], ['2005년 5월', '2026년 10월', '', '']);
+check("'-0.01%' 같은 의미 없는 값 → 비슷", [A.pctDiff(-0.0001), A.pctDiff(0.334), A.pctDiff(null)], [{ p: 0, up: false, same: true }, { p: 33, up: true, same: false }, null]);
+check('이긴 쪽: 같으면 없음, 값 하나뿐이면 없음, 작을수록', [A.winner([28, 28], 1), A.winner([10, null], 1), A.winner([5, 3, 9], -1), A.winner([5, 3, 9], 1)], [-1, -1, 1, 2]);
+const cntsU = [0, 0, 0, 0, 85, 10, [], String.fromCharCode(48 + 2, 48 + 3, 48 + 5)];
+check('거래 회전율 = 최근 12개월 건수 ÷ 세대수', A.turnover([cntsU], 100), { r: 0.1, n: 10, hh: 100 });
+check('회전율: 세대수 없으면 없음', A.turnover([cntsU], null), null);
+const cd = A.chartData('sale', { ht: { months: ['202609', '202610'], s: [0, 300000], j: [0, 0] }, u: [0, 0, 0, 0, 84, 0, [], '', 0, 0, 0, [[20261003, 84, 5, 299000, 0], [20261005, 84, 5, 200000, 1]]], months: ['202610'] });
+check('그래프(매매): 선 = 시세, 점 = 실제 거래(직거래 제외)', [[...cd.line], cd.dots], [[['202610', 300000]], [['202610', 299000, 20261003]]]);
+const cr = A.chartData('rent', { rent: [0, 0, 0, 0, 84, 0, 0, [0, 100000], [0, 20000], [1, 250], [[20261010, 84, 3, 20000, 250, 0], [20261011, 84, 3, 120000, 0, 0]]], rentBase: '202609' });
+check('그래프(월세): 선 = 월세 중앙값, 점 = 월세 계약만', [[...cr.line], cr.dots.map(d => d[1])], [[['202610', 250]], [250]]);
+check('달 목록', A.monthsBetween('202511', '202602'), ['202511', '202512', '202601', '202602']);
+
 /* ---------- 화면 연결 ---------- */
 const rd = p => fs.readFileSync(path.join(root, p), 'utf8');
 const home = rd('index.html'), mine = rd('mine/index.html'), ask = rd('ask/index.html'), askjs = rd('assets/ask.js'), core = rd('assets/ask-core.js');
@@ -100,7 +114,10 @@ check('홈·내 집 시세에 입력창', [/JDJ_ASK\.mount\(/.test(home), /JDJ_A
 check("화면 문구에 'AI' 단어 없음", [home, mine, ask, askjs].some(t => /\bAI\b|인공지능|챗봇/.test(t.replace(/<!--[\s\S]*?-->/g, ''))), false);
 check("'통계로 답해요' 표현", /통계로 답해요/.test(askjs), true);
 check('공유 모듈 재사용(setup·update)', /JDJ_SHARE\.setup\(\{tool:'ask'\}\)/.test(ask) && /JDJ_SHARE\.update\(/.test(ask), true);
-check("없는 자료는 '자료 없음'", /자료 없음/.test(ask) && /case 'park': return NA/.test(ask) && /case 'school': return NA/.test(ask), true);
+check("없는 자료는 '자료 없음'(주차·초등학교 거리)", /자료 없음/.test(ask) && /l: '주차'[^\n]*v: items\.map\(\(\) => NA\)/.test(ask) && /l: '초등학교 거리'[^\n]*v: items\.map\(\(\) => NA\)/.test(ask), true);
+check('학군(학업성취도) 행은 자료가 없어 숨김', /학업성취|학군/.test(ask.slice(ask.indexOf('function rowsOf'), ask.indexOf('function vsTable'))), false);
+check('아실형 화면: 기간 슬라이더 양끝·탭 4개·단지 패널·가운데 항목명', [/id="r0"/.test(ask) && /id="r1"/.test(ask), /\['sale', '매매'\], \['jeonse', '전세'\], \['rent', '월세'\], \['cnt', '건수'\]/.test(ask), /class="dp c\$\{i\}"/.test(ask), /v\(0\) \+ lb \+ v\(1\)/.test(ask), /다른 단지와 비교/.test(ask)], [true, true, true, true, true]);
+check('집예보 강점 행이 맨 위(미래가치·보유 기간별·구 안 위치·우리 동네 흐름)', ['미래가치 점수', '보유 기간별 전망', '구 안 위치', '우리 동네 흐름'].every(l => ask.indexOf(`l: '${l}'`) > 0 && ask.indexOf(`l: '${l}'`) < ask.indexOf("l: '입주년도'")), true);
 check('많이 찾는 단지: 집계 파일 + 예시 표시', /ask-popular\.json/.test(askjs) && /예시/.test(askjs), true);
 const pop = JSON.parse(rd('assets/ask-popular.json'));
 check('집계 파일 형식', [Array.isArray(pop.items), pop.min >= 1], [true, true]);

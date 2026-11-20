@@ -259,7 +259,66 @@
   /** 공유 카드 머리글: 'A vs B, 통계로 비교했어요' */
   const shareHead = items => items.map(x => x.apt).join(' vs ') + ', 통계로 비교했어요';
 
-  const API = { MAX, STOP, ALIAS, clean, bandHint, exact, search, segment, resolve, parse, pickBand, keyOf, parseKey, packList, unpackList, target, avgDeal, jeonseOf, summary, shareHead, pctTop };
+
+  /* ---------- 비교 화면 표시값 (아실류 오류 막기: 음수 연식·의미 없는 -0.01%·날짜 원문 노출 금지) ---------- */
+  /** '202610' → '2026년 10월', '20050518' → '2005년 5월' */
+  function ymText(v) {
+    const t = String(v == null ? '' : v); if (!/^\d{6}(\d{2})?$/.test(t)) return '';
+    const m = +t.slice(4, 6); return m >= 1 && m <= 12 ? `${t.slice(0, 4)}년 ${m}월` : '';
+  }
+  /** 입주(준공) 연도 → '2018년(8년차)', 아직 입주 전이면 '2027년 입주 예정', 이상한 값은 '' */
+  function ageText(by, year) {
+    by = +by; year = +year || new Date().getFullYear();
+    if (!(by >= 1950 && by <= year + 6)) return '';
+    if (by > year) return `${by}년 입주 예정`;
+    return year === by ? `${by}년(올해 입주)` : `${by}년(${year - by}년차)`;
+  }
+  /** 차이 비율 → {p 반올림 %, up} — 0.5% 미만은 null('비슷해요'로 표시, '-0.01%' 같은 값 안 씀) */
+  function pctDiff(d) { if (d == null || !isFinite(d)) return null; const p = Math.round(Math.abs(d) * 100); return p < 1 ? { p: 0, up: false, same: true } : { p, up: d > 0, same: false }; }
+  /** 거래 회전율: 최근 12개월 매매 건수(모든 평형) ÷ 세대수 */
+  function turnover(bands, hh) {
+    if (!(hh > 0) || !bands || !bands.length) return null;
+    const n = bands.reduce((s, u) => s + M().counts(u[7]).slice(-12).reduce((a, b) => a + b, 0), 0);
+    return { r: n / hh, n, hh };
+  }
+  /** 이긴 쪽: dir 1 = 클수록, -1 = 작을수록. 값이 2개 미만이거나 1등이 같으면 -1 */
+  function winner(vals, dir) {
+    const ok = vals.map((v, i) => [v, i]).filter(a => a[0] != null && isFinite(a[0]));
+    if (ok.length < 2 || !dir) return -1;
+    ok.sort((a, b) => (b[0] - a[0]) * dir);
+    return ok[0][0] === ok[1][0] ? -1 : ok[0][1];
+  }
+  /** 'YYYYMM' 사이 모든 달 */
+  function monthsBetween(a, b) { const out = []; if (!a || !b) return out; for (let m = String(a); m <= String(b); m = M().ymAdd(m, 1)) out.push(m); return out; }
+  /** [시작 칸, 값…](기준 달 base) → Map(달 → 값) */
+  function offSeries(a, base) { const m = new Map(); if (!Array.isArray(a) || a.length < 2 || !base) return m; for (let k = 1; k < a.length; k++) if (a[k] > 0) m.set(M().ymAdd(base, a[0] + k - 1), a[k]); return m; }
+  /** 차트 자료: tab = sale(매매)·jeonse(전세)·rent(월세)·cnt(매매 건수)
+      src = {ht: histSeries, u: 시세 행(u[11] 개별 거래, u[7] 월별 건수), months: 36개월, rent: 전월세 행, rentBase: m0}
+      반환 {line: Map(달 → 금액), dots: [[달, 금액, 일]]} — 금액 단위 만원, 선은 3개월 중앙값, 점은 실제 신고 거래 */
+  function chartData(tab, src) {
+    const line = new Map(), dots = [];
+    const ym = d => String(d).slice(0, 6);
+    if (tab === 'sale') {
+      const ht = src.ht;
+      if (ht) ht.months.forEach((m, i) => { if (ht.s[i] > 0) line.set(m, ht.s[i]); });
+      else if (src.u && src.u[6]) src.months.forEach((m, i) => { const v = src.u[6][i]; if (v > 0) line.set(String(m), M().toPrice(v, src.u[4])); });
+      for (const t of ((src.u && src.u[11]) || [])) if (t[4] !== 1 && t[3] > 0) dots.push([ym(t[0]), t[3], t[0]]);
+    } else if (tab === 'jeonse') {
+      const ht = src.ht;
+      if (ht) ht.months.forEach((m, i) => { if (ht.j[i] > 0) line.set(m, ht.j[i]); });
+      else if (src.rent) for (const [m, v] of offSeries(src.rent[7], src.rentBase)) line.set(m, v);
+      for (const c of ((src.rent && src.rent[10]) || [])) if (!(c[4] > 0) && c[3] > 0) dots.push([ym(c[0]), c[3], c[0]]);
+    } else if (tab === 'rent') {
+      if (src.rent) for (const [m, v] of offSeries(src.rent[9], src.rentBase)) line.set(m, v);
+      for (const c of ((src.rent && src.rent[10]) || [])) if (c[4] > 0) dots.push([ym(c[0]), c[4], c[0]]);
+    } else if (tab === 'cnt') {
+      const c = M().counts(src.u && src.u[7]);
+      src.months.forEach((m, i) => { if (i < c.length) line.set(String(m), c[i]); });
+    }
+    return { line, dots };
+  }
+
+  const API = { MAX, ymText, ageText, pctDiff, turnover, winner, monthsBetween, offSeries, chartData, STOP, ALIAS, clean, bandHint, exact, search, segment, resolve, parse, pickBand, keyOf, parseKey, packList, unpackList, target, avgDeal, jeonseOf, summary, shareHead, pctTop };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_ASK_CORE = API;
 })(typeof self !== 'undefined' ? self : this);
