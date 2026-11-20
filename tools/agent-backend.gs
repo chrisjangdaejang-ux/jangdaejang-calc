@@ -1,5 +1,14 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v19: 중개사 업무 도구 — 문의 연결·고객 관심 단지 알림 / v18: 우리 동네 아침 브리핑 구독)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ *
+ * v20 변경 요약 (재배포 필요: 배포 → 배포 관리 → 수정 → 새 버전 → 배포, 그다음 편집기에서 setupAgency 한 번 실행)
+ *  - 분양대행 전속 의뢰 agencyApply(bunyang/agency/): '분양대행의뢰' 시트. 광고 신청(adApply)과 별개. 연락처는 메일에 넣지 않음.
+ *  - 판매 파트너(partner/): partnerApply(관리코드는 한 번만 보여 주고 해시만 저장) · partnerLogin · partnerLogout · partnerHome · partnerJoin · partnerDeal
+ *    파트너 유형은 분양대행사·공인중개사·부동산 전문가/유튜버·세미나 업체(공인중개사로 한정 안 함). [승인] + [계약서일](판매 위탁 계약서) 뒤에만 현장이 보임.
+ *  - '분양현장' 시트: 운영자가 만듦. [승인]+[위탁계약일]+[재위탁승낙](시행사 서면 승낙)+[상태]=모집 중+위탁기간 안일 때만 파트너에게 보임.
+ *    [파트너수수료]·[자료링크]는 '현장배정' [상태]=배정인 파트너에게만. [총수수료조건]·[내부메모]는 어디에도 안 나감.
+ *  - 계약 보고는 고객 이름·연락처를 받지 않음(이니셜·별칭만). '수수료정산' 시트는 매일 오전 6시 settleSheet 가 정산월×파트너로 다시 만듦.
+ *  - 광고·점수와 무관(미래가치 점수·순위에 반영 안 함). 검증: node tools/agency-test.js
  *
  * v19 변경 요약 (재배포 필요: 배포 → 배포 관리 → 수정 → 새 버전 → 배포, 그다음 편집기에서 setupAgentTools 한 번 실행)
  *  - 매수·매도 문의 연결: 이용자가 '중개사 연락 받기'에 따로 동의하면 고른(또는 공개 순번 규칙으로 정해진) 제휴 중개사에게만 전달.
@@ -206,6 +215,7 @@ function doPost(e) {
   if (AGT_ACTIONS[b.action]) return out(agtDispatch(b));
   if (BRIEF_ACTIONS[b.action]) return out(briefDispatch(b));
   if (PRO_ACTIONS[b.action]) return out(proDispatch(b));
+  if (DV_ACTIONS[b.action]) return out(dvDispatch(b));
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
   try {
@@ -2674,4 +2684,308 @@ function setupAgentTools() {
   leadKey();
   ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'agentDaily').forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger('agentDaily').timeBased().everyDays(1).atHour(8).inTimezone('Asia/Seoul').create();
+}
+
+
+/* =====================================================================
+   집예보 분양대행(v20) — 시행사 전속 의뢰 · 분양 현장 · 판매 파트너(대대행) · 계약 보고 · 수수료 정산
+   운영 주체: (주)장대장부동산그룹(사업자 업종 '분양대행'). 신축 최초 분양(사업주체가 파는 것)의 판매 대행이며 중개가 아님.
+   기존 주택·분양권 전매 알선(중개)은 이 흐름에 넣지 않는다 — 화면·계약서에 명시.
+   원칙
+   - 수수료 나눔은 우리 회사가 시행사와 맺은 분양대행 계약 범위 안에서만: 파트너에게 보이는 현장은 [승인] + [위탁계약일] + [재위탁승낙]
+     (시행사가 판매 재위탁을 서면으로 승낙, 민법 제682조) + [상태]=모집 중 + 위탁기간 안인 현장뿐.
+   - 현장 정보·수수료 조건은 공개하지 않는다: 로그인한(승인 + 판매 위탁 계약서 서명일이 있는) 파트너에게만, 수수료 조건은 그 현장에 배정된 파트너에게만.
+   - 판매 파트너는 공인중개사로 한정하지 않음(분양대행사·공인중개사·부동산 전문가/유튜버·세미나 업체). 공인중개사 파트너도 이 현장 판매는
+     분양대행의 재위탁이며 중개보수와 섞지 않는다.
+   - 광고(분양 광고 v16)와 별개이고, 어떤 경우에도 미래가치 점수·순위에 반영하지 않는다.
+   - 개인정보 최소: 계약 보고에 고객 이름·연락처를 받지 않는다(고객 표시는 이니셜·별칭 10자, 이름·전화번호 모양은 거절).
+     파트너 관리코드는 해시만 저장(신청할 때 한 번만 보여 줌), 세션은 해시만(30일).
+   새 요청(POST): agencyApply(시행사 의뢰, 누구나·동의 필수) · partnerApply(판매 파트너 신청, 누구나·동의 필수)
+                 · partnerLogin · partnerLogout · partnerHome · partnerJoin(현장 판매 신청) · partnerDeal(계약 보고)
+   최초 1회: 편집기에서 setupAgency 실행 → 시트 7개 + 매일 오전 6시 수수료 정산표 다시 만들기(settleSheet)
+   검증: node tools/agency-test.js
+   ===================================================================== */
+const DV_ACTIONS = { agencyApply: 1, partnerApply: 1, partnerLogin: 1, partnerLogout: 1, partnerHome: 1, partnerJoin: 1, partnerDeal: 1 };
+const SH_DV = '분양대행의뢰', SH_ST = '분양현장', SH_PT = '판매파트너', SH_PS = '파트너세션', SH_PA = '현장배정', SH_DL = '계약보고', SH_SE = '수수료정산';
+const DVH = ['id', '접수일', '회사명', '사업자번호', '회사구분', '담당자', '연락처', '현장주소', '현장종류', '규모', '공사단계', '인허가구분', '분양시작희망',
+             '희망조건', '문의내용', '동의', '처리상태', '처리일', '메모'];
+const STH = ['id', '승인', '현장명', '종류', '시도', '시군구', '동', '규모', '분양가범위', '인허가구분', '위탁계약일', '위탁기간끝', '재위탁승낙',
+             '파트너업무', '파트너수수료', '자료링크', '상태', '의뢰id', '총수수료조건', '내부메모'];
+const PTH = ['id', '신청일', '유형', '상호', '사업자번호', '중개등록번호', '담당자', '연락처', '이메일', '활동지역', '채널', '소개', '관리코드해시',
+             '승인', '계약서일', '정산방법', '동의', '상태', '메모'];
+const PSH = ['세션해시', '파트너id', '만든날', '만료일'];
+const PAH = ['id', '현장id', '파트너id', '신청일', '상태', '메모'];
+const DLH = ['id', '보고일', '현장id', '파트너id', '계약일', '동호', '계약금액만원', '고객표시', '상태', '회사수수료원', '파트너몫원', '지급일', '메모'];
+const SEH = ['정산월', '파트너id', '상호', '정산방법', '보고건수', '확인건수', '회사수수료원', '파트너몫원', '지급완료원', '미지급원', '만든시각'];
+const DVC = Object.fromEntries(DVH.map((h, i) => [h, i])), STC = Object.fromEntries(STH.map((h, i) => [h, i])), PTC = Object.fromEntries(PTH.map((h, i) => [h, i])),
+      PSC = Object.fromEntries(PSH.map((h, i) => [h, i])), PAC = Object.fromEntries(PAH.map((h, i) => [h, i])), DLC = Object.fromEntries(DLH.map((h, i) => [h, i]));
+const DV_KIND = { villa: '빌라(다세대·연립)', dosi: '도시형생활주택', offi: '오피스텔', shop: '상가', apt: '아파트', mixed: '주상복합', etc: '그 밖' };
+const DV_ROLE = { dev: '시행사', owner: '건축주(법인)', trust: '신탁사', agency: '분양대행사', build: '시공사', etc: '그 밖' };
+const DV_STAGE = { pre: '착공 전', build: '공사 중', done: '준공(사용승인) 뒤', unsold: '분양 중(미분양)' };
+const DV_PERMIT = { hs: '주택법 사업계획승인', bd: '건축물분양법 분양신고', free: '건축허가만', unk: '모름' };
+const PT_TYPE = { agency: '분양대행사', broker: '공인중개사', expert: '부동산 전문가·유튜버', seminar: '세미나·교육 업체', etc: '그 밖' };
+const PT_PAY = { invoice: '세금계산서(사업자)', income: '사업소득 3.3% 원천징수(개인)' };
+const DL_STEP = ['보고', '시행사확인', '정산대기', '지급완료', '취소'];
+const DV_DAILY = 50, PT_DAILY = 50, PT_SESSION_DAYS = 30, PT_JOIN_MAX = 20, DL_DAY_MAX = 30;
+const DV_CONSENT_V = 'dv-2026-11-21', PT_CONSENT_V = 'pt-2026-11-21';
+const PARTNER_SITE = 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/partner/';
+
+function dvDispatch(b) {
+  try {
+    if (b.action === 'agencyApply') return withLock(() => agencyApply(b));
+    if (b.action === 'partnerApply') return withLock(() => partnerApply(b));
+    if (b.action === 'partnerLogin') return withLock(() => partnerLogin(b));
+    return withLock(() => {
+      if (b.action === 'partnerLogout') return partnerLogout(b);
+      const me = partnerSession(b.s);
+      if (b.action === 'partnerHome') return partnerHome(me);
+      if (b.action === 'partnerJoin') return partnerJoin(me, b);
+      if (b.action === 'partnerDeal') return partnerDeal(me, b);
+      return { ok: false, err: 'unknown' };
+    });
+  } catch (x) {
+    return { ok: false, err: String(x.message || x), code: x.code || '' };
+  }
+}
+function dvRows(name, head) {
+  const sh = uSheet(name, head);
+  return { sh, v: sh.getDataRange().getValues() };
+}
+function dvDay(key, max, msg) {
+  const cache = CacheService.getScriptCache(), dk = key + ':' + ymd(new Date()), n = Number(cache.get(dk) || 0);
+  if (n >= max) throw new Error(msg);
+  cache.put(dk, String(n + 1), 86400);
+}
+function dvPick(v, map, label, need) {
+  const x = String(v == null ? '' : v);
+  if (!x) { if (need) throw new Error(label + '을(를) 골라 주세요.'); return ''; }
+  if (!map[x]) throw new Error(label + '을(를) 다시 골라 주세요.');
+  return map[x];
+}
+function dvMemo(v, n, label) {
+  const m = String(v == null ? '' : v).replace(/[\u0000-\u0009\u000B-\u001F\u007F<>]/g, ' ').trim();
+  if (m.length > n) throw new Error(`${label}은(는) ${n.toLocaleString()}자 이내로 입력해 주세요.`);
+  if (/^[=+\-@\t\r]/.test(m)) throw new Error(`${label}은(는) = + - @ 기호로 시작할 수 없습니다.`);
+  return m;
+}
+const newDvId = p => p + Utilities.getUuid().replace(/-/g, '').slice(0, 8).toUpperCase();
+function ownerMail(subject, lines) {
+  if (!NOTIFY) return;
+  try { MailApp.sendEmail(Session.getEffectiveUser().getEmail(), subject, lines.concat(['', book().getUrl()]).join('\n')); } catch (e) {}
+}
+
+/* ---------- ① 시행사 전속 분양대행 의뢰 ---------- */
+function agencyApply(b) {
+  if (String(b.hp || '')) throw new Error('의뢰를 처리하지 못했습니다.');
+  if (!(b.agree === true && b.cv === DV_CONSENT_V)) throw new Error('개인정보 수집·이용에 동의해 주세요.');
+  const company = adText(b.company, 60, '회사명', true);
+  const biz = bizOk(b.biz);
+  if (!biz) throw new Error('사업자등록번호 10자리를 확인해 주세요.');
+  const role = dvPick(b.role, DV_ROLE, '회사 구분', true);
+  const manager = adText(b.manager, 30, '담당자 이름', true);
+  const contact = aqContact(b.contact);
+  const addr = adText(b.addr, 80, '현장 주소', true);
+  const kind = dvPick(b.kind, DV_KIND, '현장 종류', true);
+  const units = adInt(b.units, '세대·호실 수', 1, 99999, false);
+  const stage = dvPick(b.stage, DV_STAGE, '공사 단계', true);
+  const permit = dvPick(b.permit || 'unk', DV_PERMIT, '인허가 구분', true);
+  const start = adText(b.start, 30, '분양 시작 희망 시기', false);
+  const terms = dvMemo(b.terms, 300, '희망 조건');
+  const memo = dvMemo(b.memo, 1000, '문의 내용');
+  dvDay('dvday', DV_DAILY, '오늘 의뢰가 많아 카카오톡 채널이나 전화로 연락해 주세요.');
+  const id = newDvId('DV'), r = [];
+  r[DVC['id']] = id; r[DVC['접수일']] = new Date(); r[DVC['회사명']] = company; r[DVC['사업자번호']] = biz; r[DVC['회사구분']] = role;
+  r[DVC['담당자']] = manager; r[DVC['연락처']] = contact; r[DVC['현장주소']] = addr; r[DVC['현장종류']] = kind; r[DVC['규모']] = units;
+  r[DVC['공사단계']] = stage; r[DVC['인허가구분']] = permit; r[DVC['분양시작희망']] = start; r[DVC['희망조건']] = terms; r[DVC['문의내용']] = memo;
+  r[DVC['동의']] = `${DV_CONSENT_V} 개인정보 수집·이용 동의 ${ymd(new Date())}`; r[DVC['처리상태']] = '접수';
+  uSheet(SH_DV, DVH).appendRow(DVH.map((h, i) => r[i] === undefined ? '' : r[i]));
+  ownerMail(`[집예보 분양대행 의뢰] ${company}`, [`접수 번호 ${id}`, `${role} · ${company}`, `현장 ${kind}${units ? ' ' + units + '세대·호실' : ''} · ${stage} · ${permit}`,
+    `담당자 연락처는 '${SH_DV}' 시트에서 확인하세요(메일에는 넣지 않아요).`, `계약하면 '${SH_ST}' 시트에 현장을 만들고 [의뢰id]에 ${id} 를 적어 주세요.`]);
+  return { ok: true, id: id };
+}
+
+/* ---------- ② 판매 파트너 신청·로그인 ---------- */
+function partnerApply(b) {
+  if (String(b.hp || '')) throw new Error('신청을 처리하지 못했습니다.');
+  if (!(b.agree === true && b.cv === PT_CONSENT_V)) throw new Error('개인정보 수집·이용에 동의해 주세요.');
+  const type = String(b.type || '');
+  const typeT = dvPick(type, PT_TYPE, '파트너 유형', true);
+  const name = adText(b.name, 60, '상호(또는 활동명)', true);
+  const biz = String(b.biz || '').trim() ? bizOk(b.biz) : '';
+  if (String(b.biz || '').trim() && !biz) throw new Error('사업자등록번호 10자리를 확인해 주세요.');
+  if ((type === 'agency' || type === 'seminar') && !biz) throw new Error('분양대행사·세미나 업체는 사업자등록번호가 필요해요.');
+  const reg = adText(b.reg, 30, '중개사무소 등록번호', type === 'broker');
+  const manager = adText(b.manager, 30, '담당자 이름', true);
+  const phone = adPhone(b.phone);
+  const email = String(b.email || '').trim();
+  if (email && !/^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(email)) throw new Error('이메일 형식을 확인해 주세요.');
+  const area = adText(b.area, 60, '활동 지역', true);
+  const channel = adUrl(b.channel, '채널 주소', false);
+  const intro = dvMemo(b.intro, 500, '소개');
+  const pay = dvPick(b.pay || (biz ? 'invoice' : 'income'), PT_PAY, '정산 방법', true);
+  if (pay === PT_PAY.invoice && !biz) throw new Error('세금계산서 정산은 사업자등록번호가 필요해요.');
+  dvDay('ptday', PT_DAILY, '오늘 신청이 많아 내일 다시 시도해 주세요.');
+  const { v } = dvRows(SH_PT, PTH);
+  if (v.slice(1).some(r => String(r[PTC['연락처']]) === phone && String(r[PTC['상태']]) !== '해지')) throw new Error('이 연락처로 이미 신청했어요. 관리코드를 잃어버렸으면 카카오톡 채널로 문의해 주세요.');
+  const id = newDvId('P'), code = newToken().slice(0, 10).toUpperCase(), r = [];
+  r[PTC['id']] = id; r[PTC['신청일']] = new Date(); r[PTC['유형']] = typeT; r[PTC['상호']] = name; r[PTC['사업자번호']] = biz; r[PTC['중개등록번호']] = reg;
+  r[PTC['담당자']] = manager; r[PTC['연락처']] = phone; r[PTC['이메일']] = email.toLowerCase(); r[PTC['활동지역']] = area; r[PTC['채널']] = channel; r[PTC['소개']] = intro;
+  r[PTC['관리코드해시']] = hashOf('ptc|' + id + '|' + code); r[PTC['승인']] = false; r[PTC['계약서일']] = ''; r[PTC['정산방법']] = pay;
+  r[PTC['동의']] = `${PT_CONSENT_V} 개인정보 수집·이용 동의 ${ymd(new Date())}`; r[PTC['상태']] = '심사 중';
+  uSheet(SH_PT, PTH).appendRow(PTH.map((h, i) => r[i] === undefined ? '' : r[i]));
+  ownerMail(`[집예보 판매 파트너 신청] ${name}`, [`파트너 ${id} · ${typeT} · ${area}`, type === 'broker' ? `중개사무소 등록번호 ${reg} — 국가공간정보포털 부동산중개업 조회로 확인하세요.` : '',
+    `확인 뒤 '${SH_PT}' 시트에서 [승인] 체크 + 판매 위탁 계약서 서명 뒤 [계약서일]을 적으면 로그인해서 현장을 볼 수 있어요.`]);
+  return { ok: true, id: id, code: code };
+}
+function partners() {
+  const sh = book().getSheetByName(SH_PT); if (!sh) return [];
+  return sh.getDataRange().getValues().slice(1).map(r => Object.fromEntries(PTH.map((h, i) => [h, r[i]]))).filter(p => p.id);
+}
+const ptActive = p => p['승인'] === true && !!p['계약서일'] && String(p['상태']) !== '해지' && String(p['상태']) !== '중지';
+function ptPublic(p) { return { id: p.id, name: p['상호'], type: p['유형'], area: p['활동지역'], ready: ptActive(p), approved: p['승인'] === true, contract: !!p['계약서일'] }; }
+function partnerLogin(b) {
+  const id = String(b.id || '').trim().toUpperCase(), code = String(b.code || '').trim().toUpperCase();
+  const cache = CacheService.getScriptCache(), fk = 'ptfail:' + id, fails = Number(cache.get(fk) || 0);
+  if (fails >= 5) throw new Error('로그인을 여러 번 틀렸어요. 10분 뒤에 다시 해 주세요.');
+  const p = partners().find(x => String(x.id) === id);
+  if (!p || !safeEq(String(p['관리코드해시']), hashOf('ptc|' + id + '|' + code))) { cache.put(fk, String(fails + 1), 600); throw new Error('파트너 번호 또는 관리코드가 맞지 않아요.'); }
+  if (String(p['상태']) === '해지') throw new Error('해지된 파트너예요.');
+  const s = newToken(), now = new Date(), exp = new Date(now.getTime() + PT_SESSION_DAYS * 86400000);
+  const sh = uSheet(SH_PS, PSH), v = sh.getDataRange().getValues();
+  for (let i = v.length - 1; i >= 1; i--) if (!(new Date(v[i][PSC['만료일']]).getTime() > now.getTime())) sh.deleteRow(i + 1);
+  const mine = sh.getDataRange().getValues().map((r, i) => ({ r, row: i + 1 })).slice(1).filter(x => String(x.r[PSC['파트너id']]) === id);
+  mine.slice(0, Math.max(0, mine.length - 4)).map(x => x.row).sort((a, c) => c - a).forEach(r => sh.deleteRow(r));
+  const r = []; r[PSC['세션해시']] = hashOf('pts|' + s); r[PSC['파트너id']] = id; r[PSC['만든날']] = now; r[PSC['만료일']] = exp;
+  sh.appendRow(PSH.map((h, i) => r[i] === undefined ? '' : r[i]));
+  return { ok: true, s: s, exp: ymd(exp), me: ptPublic(p) };
+}
+function partnerSession(s) {
+  s = String(s || '');
+  const bad = () => authErr('파트너 로그인이 끝났어요. 다시 로그인해 주세요.');
+  if (!/^[0-9a-f]{64}$/.test(s)) throw bad();
+  const sh = book().getSheetByName(SH_PS); if (!sh) throw bad();
+  const h = hashOf('pts|' + s), v = sh.getDataRange().getValues();
+  for (let i = 1; i < v.length; i++) if (safeEq(String(v[i][PSC['세션해시']]), h)) {
+    if (!(new Date(v[i][PSC['만료일']]).getTime() > Date.now())) { sh.deleteRow(i + 1); break; }
+    const p = partners().find(x => String(x.id) === String(v[i][PSC['파트너id']]));
+    if (p && String(p['상태']) !== '해지') return p;
+  }
+  throw bad();
+}
+function partnerLogout(b) {
+  const sh = book().getSheetByName(SH_PS); if (!sh) return { ok: true };
+  const h = hashOf('pts|' + String(b.s || '')), v = sh.getDataRange().getValues();
+  for (let i = v.length - 1; i >= 1; i--) if (safeEq(String(v[i][PSC['세션해시']]), h)) sh.deleteRow(i + 1);
+  return { ok: true };
+}
+
+/* ---------- ③ 판매 가능한 현장 · 배정 · 계약 보고 ---------- */
+function sites() {
+  const sh = book().getSheetByName(SH_ST); if (!sh) return [];
+  return sh.getDataRange().getValues().slice(1).map(r => Object.fromEntries(STH.map((h, i) => [h, r[i]]))).filter(x => x.id);
+}
+const dOf = v => Object.prototype.toString.call(v) === '[object Date]' ? v : (v ? new Date(String(v).slice(0, 10) + 'T00:00:00') : null);
+/* 파트너에게 보여도 되는 현장: 우리 회사가 위탁 계약을 맺었고(위탁계약일), 시행사가 재위탁을 승낙했고, 모집 중이고, 위탁 기간 안 */
+function siteOpen(x, now) {
+  const a = dOf(x['위탁계약일']), z = dOf(x['위탁기간끝']), t = now || new Date();
+  return x['승인'] === true && x['재위탁승낙'] === true && !!a && !isNaN(a.getTime()) && a.getTime() <= t.getTime()
+    && (!z || isNaN(z.getTime()) || z.getTime() + 86400000 > t.getTime()) && String(x['상태'] || '') === '모집 중';
+}
+function assigns() {
+  const sh = book().getSheetByName(SH_PA); if (!sh) return [];
+  return sh.getDataRange().getValues().slice(1).map((r, i) => Object.assign(Object.fromEntries(PAH.map((h, j) => [h, r[j]])), { _row: i + 2 })).filter(x => x.id);
+}
+function siteOut(x, my) {
+  const o = { id: x.id, name: x['현장명'], kind: x['종류'], sido: x['시도'], sgg: x['시군구'], dong: x['동'], scale: x['규모'], price: x['분양가범위'],
+              permit: x['인허가구분'], work: x['파트너업무'], until: x['위탁기간끝'] ? ymd(dOf(x['위탁기간끝'])) : '', my: my ? my['상태'] : '' };
+  if (my && my['상태'] === '배정') {                                   // 수수료 조건·자료는 배정된 파트너에게만
+    o.fee = x['파트너수수료']; o.doc = /^https:\/\//.test(String(x['자료링크'] || '')) ? x['자료링크'] : '';
+  }
+  return o;
+}
+function partnerHome(me) {
+  const ready = ptActive(me), now = new Date();
+  const my = assigns().filter(a => String(a['파트너id']) === me.id && a['상태'] !== '중단');
+  const L = ready ? sites().filter(x => siteOpen(x, now)).map(x => siteOut(x, my.find(a => String(a['현장id']) === x.id))) : [];
+  const dsh = book().getSheetByName(SH_DL);
+  const deals = dsh ? dsh.getDataRange().getValues().slice(1).filter(r => String(r[DLC['파트너id']]) === me.id).map(r => ({
+    id: r[DLC['id']], site: r[DLC['현장id']], date: r[DLC['계약일']] ? ymd(dOf(r[DLC['계약일']])) : '', unit: r[DLC['동호']], step: r[DLC['상태']],
+    share: r[DLC['상태']] === '정산대기' || r[DLC['상태']] === '지급완료' ? r[DLC['파트너몫원']] : '', paid: r[DLC['지급일']] ? ymd(dOf(r[DLC['지급일']])) : '' })).reverse().slice(0, 100) : [];
+  return { ok: true, me: ptPublic(me), sites: L, deals: deals,
+           why: ready ? '' : me['승인'] !== true ? '심사 중이에요. 승인되면 판매 위탁 계약서를 보내 드려요.' : '판매 위탁 계약서 서명이 끝나면 현장이 보여요.' };
+}
+function partnerJoin(me, b) {
+  if (!ptActive(me)) throw new Error('승인과 판매 위탁 계약서 서명이 끝나야 현장 판매를 신청할 수 있어요.');
+  const x = sites().find(s => s.id === String(b.site || ''));
+  if (!x || !siteOpen(x)) throw new Error('지금 판매 파트너를 모집하는 현장이 아니에요.');
+  const L = assigns(), mine = L.filter(a => String(a['파트너id']) === me.id && a['상태'] !== '중단');
+  if (mine.some(a => String(a['현장id']) === x.id)) throw new Error('이미 신청한 현장이에요.');
+  if (mine.length >= PT_JOIN_MAX) throw new Error(`현장은 한 번에 ${PT_JOIN_MAX}곳까지 신청할 수 있어요.`);
+  const id = newDvId('PA'), r = [];
+  r[PAC['id']] = id; r[PAC['현장id']] = x.id; r[PAC['파트너id']] = me.id; r[PAC['신청일']] = new Date(); r[PAC['상태']] = '신청';
+  uSheet(SH_PA, PAH).appendRow(PAH.map((h, i) => r[i] === undefined ? '' : r[i]));
+  ownerMail(`[집예보 분양대행] 현장 판매 신청 ${x['현장명']}`, [`${me['상호']}(${me.id}) → ${x['현장명']}(${x.id})`, `'${SH_PA}' 시트에서 [상태]를 '배정'으로 바꾸면 수수료 조건·자료가 파트너에게 보여요.`]);
+  return { ok: true, id: id };
+}
+/* 고객 표시: 이니셜·별칭만. 이름(한글 2~4자 단독)·전화번호·이메일 모양은 거절 */
+function dlAlias(v) {
+  const x = adText(v, 10, '고객 표시', false);
+  if (!x) return '';
+  if (/\d{3,}/.test(x) || /@/.test(x) || /^[가-힣]{2,4}$/.test(x)) throw new Error('고객 이름·전화번호는 적지 말아 주세요. 이니셜이나 별칭(예: 김○○, A고객)만 적어 주세요.');
+  return x;
+}
+function partnerDeal(me, b) {
+  if (!ptActive(me)) throw new Error('승인과 판매 위탁 계약서 서명이 끝나야 계약을 보고할 수 있어요.');
+  const site = String(b.site || '');
+  const as = assigns().find(a => String(a['파트너id']) === me.id && String(a['현장id']) === site && a['상태'] === '배정');
+  if (!as) throw new Error('배정된 현장만 계약을 보고할 수 있어요.');
+  const date = adDate(b.date, '계약일', true);
+  if (new Date(date + 'T00:00:00').getTime() > Date.now() + 86400000) throw new Error('계약일이 오늘보다 뒤예요.');
+  const unit = adText(b.unit, 30, '동·호수', false);
+  const amt = adInt(b.amt, '계약 금액(만 원)', 1, 9999999, false);
+  const alias = dlAlias(b.alias);
+  const memo = dvMemo(b.memo, 300, '메모');
+  dvDay('dlday:' + me.id, DL_DAY_MAX, '오늘 보고가 많아요. 내일 이어서 보고해 주세요.');
+  const sh = uSheet(SH_DL, DLH), v = sh.getDataRange().getValues();
+  if (unit && v.slice(1).some(r => String(r[DLC['현장id']]) === site && String(r[DLC['동호']]) === unit && r[DLC['상태']] !== '취소'))
+    throw new Error('이 동·호수는 이미 보고됐어요. 다른 파트너와 겹치면 집예보 분양대행팀이 확인해 연락드려요.');
+  const id = newDvId('DL'), r = [];
+  r[DLC['id']] = id; r[DLC['보고일']] = new Date(); r[DLC['현장id']] = site; r[DLC['파트너id']] = me.id; r[DLC['계약일']] = date; r[DLC['동호']] = unit;
+  r[DLC['계약금액만원']] = amt; r[DLC['고객표시']] = alias; r[DLC['상태']] = '보고'; r[DLC['메모']] = memo;
+  sh.appendRow(DLH.map((h, i) => r[i] === undefined ? '' : r[i]));
+  ownerMail(`[집예보 분양대행] 계약 보고 ${site}`, [`${me['상호']}(${me.id}) · 현장 ${site} · 계약일 ${date}${unit ? ' · ' + unit : ''}`,
+    `시행사 계약 확인 뒤 '${SH_DL}' 시트의 [상태]를 '시행사확인' → '정산대기'로, [회사수수료원]·[파트너몫원]을 적어 주세요. 정산표는 매일 아침 '${SH_SE}' 시트에 다시 만들어져요.`]);
+  return { ok: true, id: id };
+}
+
+/* ---------- ④ 수수료 정산표(시트) — 계약보고를 정산월(계약일 기준) × 파트너로 묶음. 매일 다시 만듦 ---------- */
+function settleSheet() {
+  const dsh = book().getSheetByName(SH_DL);
+  const rows = dsh ? dsh.getDataRange().getValues().slice(1) : [];
+  const P = Object.fromEntries(partners().map(p => [p.id, p])), g = {};
+  rows.forEach(r => {
+    if (!r[DLC['id']] || r[DLC['상태']] === '취소') return;
+    const d = dOf(r[DLC['계약일']]); if (!d || isNaN(d.getTime())) return;
+    const k = Utilities.formatDate(d, 'Asia/Seoul', 'yyyy-MM') + '|' + r[DLC['파트너id']];
+    const o = g[k] = g[k] || { n: 0, ok: 0, co: 0, sh: 0, paid: 0 };
+    const co = Number(r[DLC['회사수수료원']]) || 0, sh = Number(r[DLC['파트너몫원']]) || 0, st = r[DLC['상태']];
+    o.n++; if (st !== '보고') o.ok++;
+    o.co += co; o.sh += sh; if (st === '지급완료') o.paid += sh;
+  });
+  const now = new Date();
+  const out = Object.keys(g).sort().map(k => { const [m, pid] = k.split('|'), o = g[k], p = P[pid] || {};
+    return [m, pid, p['상호'] || '', p['정산방법'] || '', o.n, o.ok, o.co, o.sh, o.paid, o.sh - o.paid, now]; });
+  const ss = book(); let sh = ss.getSheetByName(SH_SE);
+  if (sh) ss.deleteSheet(sh);
+  sh = uSheet(SH_SE, SEH);
+  if (out.length) sh.getRange(2, 1, out.length, SEH.length).setValues(out);
+  return out.length;
+}
+function setupAgency() {
+  [[SH_DV, DVH], [SH_ST, STH], [SH_PT, PTH], [SH_PS, PSH], [SH_PA, PAH], [SH_DL, DLH], [SH_SE, SEH]].forEach(x => uSheet(x[0], x[1]));
+  const st = book().getSheetByName(SH_ST), pt = book().getSheetByName(SH_PT);
+  try { st.getRange(2, STC['승인'] + 1, 500, 1).insertCheckboxes(); st.getRange(2, STC['재위탁승낙'] + 1, 500, 1).insertCheckboxes(); pt.getRange(2, PTC['승인'] + 1, 500, 1).insertCheckboxes(); } catch (e) {}
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'settleSheet').forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('settleSheet').timeBased().everyDays(1).atHour(6).inTimezone('Asia/Seoul').create();
+  settleSheet();
 }
