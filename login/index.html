@@ -17,7 +17,7 @@
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/config.js?v=3"></script>
-<script src="../assets/auth.js?v=2"></script>
+<script src="../assets/auth.js?v=3"></script>
 <script src="../assets/mine-core.js?v=14"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -84,7 +84,7 @@ function off(){
     <a class="btn primary" href="/jangdaejang-calc/mine/">내 집 시세 보러 가기</a>`;
 }
 function intro(msg){
-  app.innerHTML = `${msg || ''}<h1>카카오로 3초 로그인</h1>
+  app.innerHTML = `${msg || ''}<h1>카카오 간편 로그인</h1>
     <p class="lead">로그인하면 휴대폰과 PC 어디서든 같은 내 집 목록을 보고, 실거래 전체와 맞춤 리포트 상세까지 볼 수 있어요.</p>
     <div class="box"><ul class="gets">
       <li><span class="ic">1</span><span><b>실거래 전체 보기</b><small>최근 3년 거래 전부와 그보다 이전 연도별 시세</small></span></li>
@@ -92,7 +92,7 @@ function intro(msg){
       <li><span class="ic">3</span><span><b>맞춤 매수 리포트 상세 보기·저장</b><small>대출·필요 현금·월 상환과 추천 이유 전체, 리포트 다시 보기</small></span></li>
       <li><span class="ic">4</span><span><b>관심 단지·지역 알림 신청</b><small>새 실거래·신고가·지역 시세 흐름을 카카오톡으로 (발송 시작 때 알려 드려요)</small></span></li>
     </ul>
-    ${A.btn('카카오로 3초 로그인', 'login_page', 'full')}
+    ${A.btn('카카오 간편 로그인', 'login_page', 'full')}
     <p class="note">집예보가 카카오에서 받는 정보는 <b>카카오 회원번호와 닉네임</b>뿐이에요. 이메일·전화번호는 받지 않아요. <a href="/jangdaejang-calc/privacy/#member">개인정보처리방침</a></p></div>
     <p class="free">로그인하지 않아도 시세·차트·미래가치 점수, 최근 실거래 5건, 이 기기에 내 집 저장, 맞춤 매수 리포트 요약은 지금처럼 그대로 볼 수 있어요.</p>`;
 }

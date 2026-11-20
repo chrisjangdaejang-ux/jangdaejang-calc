@@ -172,7 +172,7 @@
   /** 카카오 로그인 단추 HTML (on() 이 아니면 빈 문자열) */
   function btn(label, from, cls) {
     if (!on()) return '';
-    return `<button type="button" class="jdj-kbtn${cls ? ' ' + cls : ''}" data-jdj-login="${esc(from || '')}">${KICON}<span>${esc(label || '카카오로 3초 로그인')}</span></button>`;
+    return `<button type="button" class="jdj-kbtn${cls ? ' ' + cls : ''}" data-jdj-login="${esc(from || '')}">${KICON}<span>${esc(label || '카카오 간편 로그인')}</span></button>`;
   }
   /** 잠금 안내 상자: 설명 한 줄 + 카카오 단추 */
   function gate(text, label, from) {

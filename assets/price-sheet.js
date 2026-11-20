@@ -67,7 +67,7 @@
     const dt = d => /^20\d\d\./.test(d) ? `<span class="jps-yy">20</span>${esc(d.slice(2))}` : esc(d);
     const row = (t, i) => `<tr${i >= show ? ' class="jps-more" hidden' : ''}><td class="jps-dt">${dt(t.date)}</td><td class="n">${t.area}㎡${t.floor != null ? `<br><small>${t.floor}층</small>` : ''}</td><td class="n"><b>${m.won(t.amt)}</b>${t.hi || t.type === '직거래' ? '<br>' : ''}${t.hi ? '<span class="jps-new" title="그 전까지 같은 평형·같은 전용면적 최고가보다 높은 거래">신고가</span>' : ''}${t.type === '직거래' ? `${t.hi ? ' ' : ''}<small class="jps-dir">직거래</small>` : ''}</td></tr>`;
     return `<div class="jps-tbl"><table><thead><tr><th>계약일</th><th class="n">전용·층</th><th class="n">거래금액</th></tr></thead><tbody>${(lock ? list.slice(0, show) : list).map(row).join('')}</tbody></table></div>`
-      + (lock ? auth().gate(`최근 거래 ${show}건을 보여 드렸어요. 나머지 <b>${list.length - show}건</b>과 3년보다 이전 시세는 로그인하면 바로 볼 수 있어요.`, '카카오로 3초 로그인하고 전체 보기', 'trades')
+      + (lock ? auth().gate(`최근 거래 ${show}건을 보여 드렸어요. 나머지 <b>${list.length - show}건</b>과 3년보다 이전 시세는 로그인하면 바로 볼 수 있어요.`, '카카오 간편 로그인하고 전체 보기', 'trades')
         : list.length > show ? `<button type="button" class="jps-morebtn" data-jps-more>더보기 (${list.length - show}건 더)</button>` : '')
       + `<p class="jps-note">국토교통부 실거래 신고 기준, 해제(취소) 신고 거래는 뺐어요. 직거래는 목록에만 표시하고 시세 계산에서는 빼요.${list.some(t => t.hi) ? ' <span class="jps-new">신고가</span> = 그 전날까지 같은 평형·같은 전용면적에서 가장 높았던 값보다 비싸게 거래된 경우(수집 자료 기준, 직거래 제외).' : ''}</p>`;
   }
