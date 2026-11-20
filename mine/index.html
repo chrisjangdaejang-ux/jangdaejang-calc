@@ -265,8 +265,8 @@ const DATA = '/jangdaejang-data/data/';
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num = s => { const v = parseInt(String(s || '').replace(/[^\d]/g, ''), 10); return isFinite(v) ? v : 0; };
 let IX = null, LABEL = null, EVD = null, SUP = null, MH = null, MREG = false, DEVP = null;
-/* 새 분석 설명(assets/narrative.js) — 대표 확인 전까지 ?nar=1 에서만 */
-const NARON = /[?&]nar=1(&|$)/.test(location.search) && !!window.JDJ_NAR;
+/* 새 분석 설명(assets/narrative.js) — 대표 승인(11/20)으로 기본 적용, ?nar=0 이면 예전 설명 */
+const NARON = !/[?&]nar=0(&|$)/.test(location.search) && !!window.JDJ_NAR;
 const PL = window.JDJ_PLAIN;
 const P = window.JDJ_PRICE;
 const LIST = {}, GROUPS = {}, SMAP = {};

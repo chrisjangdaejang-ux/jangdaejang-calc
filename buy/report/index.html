@@ -584,8 +584,8 @@ let MODEL=null, RAIL=null, MH=null, SUPPLY=null, EVD=null;
 const EVK=(x,kind)=>PL.evid(EVD, sdIdOf(x.code), (x.fx||{}).eb, kind, PL.regionInfo(IX,x.code).short, GLS);
 const liR=r=>`<li class="${r[0]}">${esc(r[1])}${r[2]?PL.evHtml(r[2],false,esc):''}${r[3]||''}</li>`;   /* r[3]: 모듈이 이스케이프해 만든 펼침 문단(주변 개발사업) */
 let DEVP=null;
-/* 새 분석 설명(한 줄 결론 → 핵심 요약 → 줄별 자세히 보기, assets/narrative.js) — 대표 확인 전까지 ?nar=1 에서만 */
-const NARON = /[?&]nar=1(&|$)/.test(location.search) && !!window.JDJ_NAR;
+/* 새 분석 설명(한 줄 결론 → 핵심 요약 → 줄별 자세히 보기, assets/narrative.js) — 대표 승인(11/20)으로 기본 적용, ?nar=0 이면 예전 설명 */
+const NARON = !/[?&]nar=0(&|$)/.test(location.search) && !!window.JDJ_NAR;
 function narFor(x, i){
   if (!NARON || !x.fx || x.fx.fv==null) return '';
   const N = JDJ_NAR.build(x.fx, {apt:x.apt, dong:x.dong, code:x.code, band:x.band, area:x.area, IX, EV:EVD, MH, SP:SUPPLY, PL, year:new Date().getFullYear(), s:x.series,

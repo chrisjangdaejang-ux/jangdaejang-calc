@@ -15,8 +15,8 @@
   const RZ_LV = {1:'신속통합기획 대상지 선정',2:'신속통합기획 완료',3:'정비구역 지정',4:'추진위원회 승인',5:'조합설립인가',6:'건축심의',7:'사업시행인가',8:'관리처분인가',9:'이주',10:'착공'};
 
   const S = load();
-  /* 새 분석 설명(assets/narrative.js) — 대표 확인 전까지 ?nar=1 에서만. 프리미엄은 펼친 곳에 사례 표·기간별 상세·차트를 더한다 */
-  const NARON = /[?&]nar=1(&|$)/.test(location.search) && !!window.JDJ_NAR;
+  /* 새 분석 설명(assets/narrative.js) — 대표 승인(11/20)으로 기본 적용, ?nar=0 이면 예전 설명. 프리미엄은 펼친 곳에 사례 표·기간별 상세·차트를 더한다 */
+  const NARON = !/[?&]nar=0(&|$)/.test(location.search) && !!window.JDJ_NAR;
   function load() {
     let s = {}; try { s = JSON.parse(localStorage.getItem('jdj_prem_cond') || '{}') || {}; } catch (e) {}
     return { income: +s.income || 7000, cash: +s.cash || 40000, own: OWN_NAME[s.own] ? s.own : 'none', rtype: TYPE_RATIO[s.rtype] != null ? s.rtype : 'cyc',
