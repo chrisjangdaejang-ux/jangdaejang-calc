@@ -693,6 +693,7 @@ function regGu(r, sd, R, ind){
     kv = `<span>1년 안 <b>${RC.n0(s[0])}</b></span><span>1~2년 <b>${RC.n0(s[1])}</b></span><span>2~3년 <b>${RC.n0(s[2])}</b></span><span>단지 <b>${s[3]}곳</b></span>`;
   } else if (ind.id === 'uns') {
     h = `${nm} <em>${esc(st.main || '자료 없음')}</em>`; kv = st.sub ? `<span>${esc(st.sub)}</span>` : '';
+    if (g.und && g.und[0] != null) kv += `<span>준공 후 미분양 <b>${RC.n0(g.und[0])}호</b></span>`;   // 다 지었는데 안 팔린 집(region_pulse und, 있을 때만)
     if (st.grp) more = `<p class="rp-gpast">이 값은 같은 시의 구 ${st.grp}곳을 합친 시 전체 미분양이에요.</p>`;
   } else if (ind.id === 'out') {
     h = `${nm} <em>${esc(st.main || '자료 없음')}</em> <small>최근 6개월</small>`; kv = st.sub ? `<span>${esc(st.sub)}</span>` : '';
