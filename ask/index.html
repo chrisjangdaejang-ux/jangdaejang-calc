@@ -82,13 +82,13 @@ h1{font-size:clamp(24px,5.6vw,34px);margin:6px 0 6px}
 .dp.c0 .no{background:#2F6BFF}.dp.c1 .no{background:#F26B1D}.dp.c2 .no{background:#14A06B}
 .dp .rg{font-size:13.5px;color:#4E5968;margin:8px 0 4px}
 .dp select{width:100%;font:inherit;font-size:16px;font-weight:800;min-height:46px;padding:0 10px;border:1px solid rgba(0,0,0,.12);border-radius:12px;background:#fff;color:#191F28}
-.dp .bands{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0}
-.dp .bands button{font:inherit;font-size:13.5px;font-weight:800;min-height:38px;padding:0 10px;border:1px solid rgba(0,0,0,.14);border-radius:10px;background:#fff;color:#3E4754;cursor:pointer}
+.dp .bands{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin:10px 0}
+@media (min-width:600px){.dp .bands{grid-template-columns:repeat(auto-fill,minmax(76px,1fr))}}
+.dp .bands button{font:inherit;font-size:13px;line-height:1.15;font-weight:800;min-height:38px;padding:0 4px;letter-spacing:-.3px;word-break:keep-all;border:1px solid rgba(0,0,0,.14);border-radius:10px;background:#fff;color:#3E4754;cursor:pointer}
 .dp .bands button.on{color:#fff;border-color:transparent}
 .dp.c0 .bands button.on{background:#1F56E0}.dp.c1 .bands button.on{background:#D4570F}.dp.c2 .bands button.on{background:#0E7A4F}
 .dp .re{font:inherit;font-size:13.5px;font-weight:700;min-height:40px;width:100%;border:1px solid rgba(0,0,0,.14);border-radius:10px;background:rgba(255,255,255,.7);color:#3E4754;cursor:pointer}
-.dp .pr{font-size:13px;color:#4E5968;margin-top:6px}
-.dp .pr b{font-size:17px;color:#191F28}
+.dp .pr{margin:10px 0 8px;line-height:1.35}.pr span{display:block}.pr .pl{font-size:13px;color:#4E5968;font-weight:600}.pr b{display:block;font-size:clamp(16px,4.6vw,20px);font-weight:800;color:#191F28;white-space:nowrap;font-variant-numeric:tabular-nums;margin:1px 0 2px}.pr .pa{font-size:13px;color:#6B7684}
 .other{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .other button,.other a{font:inherit;font-size:14.5px;font-weight:800;min-height:46px;display:inline-flex;align-items:center;padding:0 16px;border-radius:12px;border:1.5px solid #191F28;background:#fff;color:#191F28;text-decoration:none;cursor:pointer}
 .other .main{background:#191F28;color:#fff}
@@ -313,8 +313,8 @@ function panels(items){
     <div class="rg">${esc(x.sidoShort)} ${esc(x.sggName)} ${esc(x.dong)}</div>
     <label class="sr" for="dsel${i}" style="position:absolute;left:-9999px">단지 ${i + 1} 단지명</label>
     <select id="dsel${i}" data-i="${i}">${x.danjis.map(d => `<option value="${esc(d.key)}" ${d.key === x.dkey ? 'selected' : ''}>${esc(d.apt)}${x.danjis.some(o => o !== d && o.apt === d.apt) ? ' · ' + esc(d.dong) : ''}</option>`).join('')}</select>
-    <div class="bands" role="group" aria-label="${esc(x.apt)} 면적">${x.bands.map(u => `<button type="button" data-i="${i}" data-b="${esc(u[3])}" class="${u[3] === x.band ? 'on' : ''}" aria-pressed="${u[3] === x.band}">${esc(u[3])}</button>`).join('')}</div>
-    <div class="pr">${x.price ? `최근 시세 <b>${M.won(x.price.v)}</b>` : x.avg ? `실거래 평균 <b>${M.won(x.avg.v)}</b>` : '최근 거래 없음'} · 전용 ${x.area}㎡</div>
+    <div class="bands" role="group" aria-label="${esc(x.apt)} 면적">${x.bands.map(u => `<button type="button" data-i="${i}" data-b="${esc(u[3])}" class="${u[3] === x.band ? 'on' : ''}" aria-pressed="${u[3] === x.band}">${esc(u[3]).split(' ').map(w => `<span style="white-space:nowrap">${w}</span>`).join(' ')}</button>`).join('')}</div>
+    <div class="pr">${x.price ? `<span class="pl">최근 시세</span><b>${M.won(x.price.v)}</b>` : x.avg ? `<span class="pl">실거래 평균</span><b>${M.won(x.avg.v)}</b>` : '<span class="pl">최근 거래 없음</span>'}<span class="pa">전용 ${x.area}㎡</span></div>
     <button type="button" class="re" data-re="${i}" style="margin-top:10px">재선택</button>
   </div>`).join('')}</div>`;
 }
