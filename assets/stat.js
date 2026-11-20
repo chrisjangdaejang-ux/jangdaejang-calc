@@ -45,7 +45,7 @@
   const regionGroup = v => RG[v] || '';
 
   /* ---------- 허용 목록 ---------- */
-  const EV = {feature_use:6, interest_profile:15, chungyak_result:3, report_share:5, compare_use:3, ad_view:6, ad_click:10, share_click:10, share_visit:1, ask_use:8}; // 이벤트별 페이지당 상한
+  const EV = {feature_use:6, interest_profile:15, chungyak_result:3, report_share:5, compare_use:3, ad_view:6, ad_click:10, share_click:10, share_visit:1, ask_use:8, nar_open:12}; // 이벤트별 페이지당 상한
   const FEATURES = ['buy','report','switch','redev','villa','chungyak','tax','compare','consult','premium','mine','bunyang','ad_apply','price_sheet','agent_chat','jeonse','ad_inquiry','jeonse_checklist','ask'];
   const SPOTS = ['report_top','report_rank','report_near','report_compare','report_leader','switch_top','switch_compare','switch_pick','bunyang_deal','premium','mine'];
   const PAGES = ['home','buy','report','switch','villa','chungyak','tax','agent','calc','mine','bunyang','bunyang_apply','jeonse','ad','ask'];
@@ -68,6 +68,7 @@
     danji:       v => /^\d{5}\|[^|]{1,20}\|[^|]{1,60}$/.test(v),                                    // '단지 이름으로 물어보기'로 찾은 공개 단지(구코드|동|단지명)만 — 내 집·주소·금액은 보내지 않음
     spot:        v => SPOTS.includes(v),                                                            // 시세 흐름 보기 단추 위치
     slot:        v => ['bunyang','buy','switch','villa','chungyak','tax'].includes(v),              // 분양 광고 노출 위치
+    line:        v => ['r1','r2','r3','price','watch','fit','all'].includes(v),                     // 분석 설명 '자세히 보기'를 연 줄 종류(assets/narrative.js) — 단지·금액 없음
     ad_kind:     v => ['아파트','오피스텔','도시형생활주택','민간임대','무순위·잔여세대','기타'].includes(v)
   };
   function clean(params){

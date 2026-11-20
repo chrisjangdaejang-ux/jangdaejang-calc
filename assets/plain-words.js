@@ -273,8 +273,8 @@
   }
   /* 학군: 가까운 중학교 순전입률 */
   function schText(sch, names, G) {
-    const p = Math.round(sch * 1000) / 10;
-    return `가까운 중학교${names && names.length ? `(${names.join('·')})` : ''}는 ` + (p > 0 ? '전학 온 학생이 떠난 학생보다 많아요' : p < 0 ? '떠난 학생이 전학 온 학생보다 많아요' : '전학 온 학생과 떠난 학생이 비슷해요')
+    const p = Math.round(sch * 1000) / 10;   /* ±0.5% 안은 '비슷해요'(학생 수백 명 학교에서 몇 명 차이) */
+    return `가까운 중학교${names && names.length ? `(${names.join('·')})` : ''}는 ` + (p >= 0.5 ? '전학 온 학생이 떠난 학생보다 많아요' : p <= -0.5 ? '떠난 학생이 전학 온 학생보다 많아요' : '전학 온 학생과 떠난 학생이 비슷해요')
       + `. ${G ? G('순전입률') : '순전입률'} ${p > 0 ? '+' : ''}${p}%`;
   }
   /* 학군 한 줄(사이트 자료 fx.sc): [학교 이름, 한 해 평균 순전입률 %, 첫 공시연도, 끝 공시연도, 구 안 순위(1=순전입 최다), 구 안 곳 수, 구 코드, 거리 m]
@@ -283,8 +283,9 @@
     if (!Array.isArray(sc) || !sc[0]) return null;
     const [nm, p, y0, y1, r, n, , m] = sc;
     const a = Math.abs(p), sp = Number.isInteger(a) ? String(a) : a.toFixed(1);
-    const move = p >= 0.05 ? `최근 3년 전입이 전출보다 많아요(한 해 평균 순전입 +${sp}%)`
-      : p <= -0.05 ? `최근 3년 전출이 전입보다 많아요(한 해 평균 순전입 −${sp}%)` : '최근 3년 전입과 전출이 비슷해요(순전입 0%)';
+    /* ±0.5% 안은 '비슷해요'(재학생 수백 명 학교에서 몇 명 차이) — 값은 그대로 보여 준다 */
+    const move = p >= 0.5 ? `최근 3년 전입이 전출보다 많아요(한 해 평균 순전입 +${sp}%)`
+      : p <= -0.5 ? `최근 3년 전출이 전입보다 많아요(한 해 평균 순전입 −${sp}%)` : `최근 3년 전입과 전출이 비슷해요(한 해 평균 순전입 ${a < 0.05 ? '0' : (p > 0 ? '+' : '−') + sp}%)`;
     let rank = '';
     if (n >= 3 && r >= 1 && r <= n) {
       const top = Math.ceil(r / n * 100), low = Math.ceil((n - r + 1) / n * 100);
@@ -377,9 +378,11 @@
     return `${ap}${m}만` + (c ? ` ${c}천` : '');
   }
   const SP_STAGE = { ann: '발표', desig: '지구 지정', sale: '첫 분양·사전청약', start: '착공', move: '첫 입주' };
+  /* 같은 조건(링·단계·점수 반영 여부)의 지구가 여러 곳이면 한 줄로 묶어 과거 통계 문장은 한 번만 */
   function supplyLines(f, SP, G) {
     const out = [];
     if (!f || !f.sl || !SP || !SP.zones) return out;
+    const groups = new Map();
     for (const [id, ring, sc] of f.sl) {
       const z = SP.zones[id]; if (!z) continue;
       const big = z.u >= 10000, head = ring === 'n' ? (big ? '가까운 대규모 공급' : '가까운 공공택지 공급') : '같은 생활권 대규모 공급';
@@ -391,14 +394,220 @@
       else if (z.dl) mv = '첫 입주: ' + delayText(z.dl);
       else if (z.plan) mv = `첫 입주 목표 ${ymKo(z.plan)}`;
       else mv = '첫 입주 시기 미정';
-      let t = `${head}: ${z.n} ${unitsKo(z.u)} 가구 — ${hist.concat([mv]).join(' → ')}.`;
-      const key = z.st === 3 ? 'move' : z.st === 2 ? 'sale' : 'ann', R = SP.ring && SP.ring[ring === 'n' ? 'near' : 'life'] && SP.ring[ring === 'n' ? 'near' : 'life'][key];
+      const key = z.st === 3 ? 'move' : z.st === 2 ? 'sale' : 'ann', gk = [head, ring, key, sc ? 1 : 0].join('|');
+      if (!groups.has(gk)) groups.set(gk, { head, ring, key, sc, zs: [], c: false });
+      const g = groups.get(gk);
+      g.zs.push(`${z.n} ${unitsKo(z.u)} 가구 — ${hist.concat([mv]).join(' → ')}`);
+      if (ring === 'n' && z.st >= 2 && !z.x) g.c = true;
+    }
+    for (const g of groups.values()) {
+      const many = g.zs.length > 1;
+      let t = many ? `${g.head} ${g.zs.length}곳: ${g.zs.join('; ')}.` : `${g.head}: ${g.zs[0]}.`;
+      const R = SP.ring && SP.ring[g.ring === 'n' ? 'near' : 'life'] && SP.ring[g.ring === 'n' ? 'near' : 'life'][g.key];
       if (R && R.n >= 3 && R.ex != null)
-        t += ` 과거 비슷한 단계(${key === 'move' ? '첫 입주' : key === 'sale' ? '분양·착공' : '발표·지구 지정'})의 대규모 공급 ${ring === 'n' ? '가까이' : '같은 생활권'}에 있던 단지는 이후 2년 같은 구 평균보다 ${Math.abs(R.ex) < 0.05 ? '거의 같게' : '평균 ' + more(R.ex, G)} 올랐어요(사례 ${R.n}건${R.sig ? '' : ', 차이가 뚜렷하지는 않아요'}).`;
-      t += sc ? ' 점수에 반영돼요.' : (ring === 'n' ? ' 점수에는 넣지 않았어요(점수는 더 가까운 지구만 반영) · 참고 정보.' : ' 점수에는 아직 넣지 않았어요(과거 영향이 뚜렷하지 않아서) · 참고 정보.');
-      out.push([ring === 'n' && z.st >= 2 && !z.x ? 'c' : 'f', t]);
+        t += ` 과거 비슷한 단계(${g.key === 'move' ? '첫 입주' : g.key === 'sale' ? '분양·착공' : '발표·지구 지정'})의 대규모 공급 ${g.ring === 'n' ? '가까이' : '같은 생활권'}에 있던 단지는 이후 2년 같은 구 평균보다 ${Math.abs(R.ex) < 0.05 ? '거의 같게' : '평균 ' + more(R.ex, G)} 올랐어요(사례 ${R.n}건${R.sig ? '' : ', 차이가 뚜렷하지는 않아요'}).`;
+      t += g.sc ? ` ${many ? '모두 ' : ''}점수에 반영돼요.` : (g.ring === 'n' ? ' 점수에는 넣지 않았어요(점수는 더 가까운 지구만 반영) · 참고 정보.' : ' 점수에는 아직 넣지 않았어요(과거 영향이 뚜렷하지 않아서) · 참고 정보.');
+      out.push([g.c ? 'c' : 'f', t]);
     }
     return out;
+  }
+
+  /* ---------- 점수를 움직인 요인(fx.why · fx.wf) → 숫자 근거 문장 ----------
+     엔진 fx.why[보유 년] = ['mom+', 'reg-', …](방향·기여 큰 순, 가중치 없음), fx.wf[지표] = [이 단지 값, 같은 구 중앙값, 같은 시·도 백분위]
+     o = {h:'2', apt, dong, sgg(구 이름), sido(짧은 시·도 이름), sid, ev(evidence.json), G, rp(regionPlace 결과), regionUsed(bool), sp(supply.json)}
+     → {items:[{dir:'up'|'dn', k, name, t, ev}], keys:Set} — 점수가 낮으면 내린 요인 먼저, 방향별 최대 3개.
+     - 사실값을 댈 수 없는 요인은 싣지 않는다(이름만 나열하지 않음).
+     - 과거 통계(evidence.json)는 방향이 같고 차이가 뚜렷할 때만 붙인다. 방향이 다르면 통계도 '경우가 많았어요' 설명도 붙이지 않는다. */
+  const WHY_NAME = { mom: '최근 6개월 가격 흐름', mom2: '최근 가격 변동 폭', rel: '같은 구 안 가격 수준', liq: '거래량', size: '단지 규모', sch: '학군(가까운 중학교 전입)',
+    jr: '전세가율', dd: '하락기 방어', rc: '예전 최고가 회복', lg: '동네 대장 단지 대비 가격', sub: '지하철역까지 거리', new: '신축', old: '재건축 연한', vlo: '재건축 사업성(용적률)',
+    land: '재건축 사업성(대지지분)', stg: '재건축 진행 단계', rlp: '신설역 계획', rls: '신설역 공사', rlo: '신설역 개통', rld: '신설역 개통 지연',
+    spa: '주변 공공택지 발표', sps: '주변 공공택지 분양·착공', spm: '주변 신도시 입주', spw: '생활권 대규모 공급', reg: '지역 흐름' };
+  const WHY_EV = { mom: 'mom', rel: 'rel', sch: 'sch', jr: 'jr', dd: 'dd', rc: 'rc', lg: 'lg', stg: 'stg', rlp: 'rail', rls: 'rail', rlo: 'rail' };
+  function whyItems(f, o) {
+    const out = { items: [], keys: new Set() };
+    if (!f || !f.why) return out;
+    const h = String(o.h || '2'), w = f.why[h] || (h === '2' ? null : f.why['2']);
+    const H = f.why[h] ? h : '2';
+    if (!w || !w.length) return out;
+    const WF = f.wf || {}, G = o.G, SD = o.sido || '', SG = o.sgg || '이 구', A = J(o.apt || '이 단지', '은', '는');
+    const sg = v => (v > 0 ? '+' : v < 0 ? '−' : '') + (Math.round(Math.abs(v) * 1000) / 10).toFixed(1) + '%';
+    const p1 = v => (Math.round(Math.abs(v) * 1000) / 10).toFixed(1);
+    const n0 = v => Number(v).toLocaleString('ko-KR');
+    const qb = k => (f.eb && f.eb[k] != null && /^[0-4]$/.test(String(f.eb[k]))) ? +f.eb[k] : null;
+    /* 같은 시·도 안 위치: 엔진 백분위(wf) → 없으면 5분위(eb) */
+    const pos = (k, what) => {
+      const x = WF[k];
+      if (x && x[2] != null) return `${SD} 단지 중 ${what} ${topPct(x[2])}`;
+      const b = qb(k); return b != null ? `${SD} 단지 중 ${what} ${Q5[b]}` : '';
+    };
+    const lvOf = k => { const x = WF[k]; const p = x && x[2] != null ? x[2] : (qb(k) != null ? qb(k) * 20 + 10 : null); return p == null ? '' : p >= 60 ? 'hi' : p <= 40 ? 'lo' : ''; };
+    const gm = (k, fmt, unit) => { const x = WF[k]; return x && x[1] != null ? `${SG} 단지 중간값 ${fmt(x[1])}${unit || ''}` : ''; };
+    const val = (k, raw) => (WF[k] && WF[k][0] != null) ? WF[k][0] : raw;
+    const wrap = (main, extra) => main + (extra.filter(Boolean).length ? ` — ${extra.filter(Boolean).join(', ')}` : '');
+    const ageNow = f.by ? ageOf(f.by, o.year) : null;
+    /* 지표별 사실 문장 + 수준(hi/lo) + 수준·방향별 쉬운 설명 */
+    const FACT = {
+      mom: () => { const v = val('mom', f.mom); if (v == null) return null;
+        const t = `${A} 최근 6개월 ${G ? G('평당') : '평당'} 시세가 그 전 6개월보다 ` + (Math.abs(v) < 0.005 ? `거의 그대로예요(${sg(v)})` : `${p1(v)}% ${v > 0 ? '올랐어요' : '내렸어요'}`);
+        return { t: wrap(t, [gm('mom', sg), pos('mom', '상승 폭')]), lv: lvOf('mom'),
+          r: { lo_up: '덜 오른 단지는 이후 따라 오르는 경우가 많았어요', hi_dn: '짧은 기간 많이 오른 단지는 이후 쉬어 가는 경우가 많았어요',
+               hi_up: '오르는 흐름이 이어지는 경우가 많았어요', lo_dn: '약한 흐름이 이어지는 경우가 많았어요' } }; },
+      mom2: () => { const v = val('mom2', f.mom != null ? Math.abs(f.mom) : null); if (v == null) return null;
+        return { t: wrap(`${A} 최근 6개월 시세 변동 폭이 ${p1(v)}%예요`, [pos('mom2', '변동 폭')]), lv: lvOf('mom2'),
+          r: { hi_dn: '짧은 기간 크게 움직인 단지는 이후 되돌림이 있는 경우가 많았어요', lo_up: '시세가 안정적인 단지가 이후 더 오른 경우가 많았어요' } }; },
+      rel: () => { const v = WF.rel ? WF.rel[0] : null, b = qb('rel'); let t;
+        if (v != null) t = `${A} ${G ? G('평당') : '평당'} 시세가 ${SG} 전체 거래 ${G ? G('중앙값') : '중앙값'}보다 ` + (Math.abs(v) < 0.03 ? '비슷해요' : `${Math.round(Math.abs(v) * 100)}% ${v > 0 ? '높아요' : '낮아요'}`);
+        else if (b != null) t = `${A} ${SG} 안에서 비싼 편인지 보면 ${SD} 단지 중 ${Q5[b]}에 들어요`;
+        else return null;
+        return { t: v != null ? wrap(t, [pos('rel', '구 대비 가격')]) : t, lv: lvOf('rel'),
+          r: { hi_up: '구 안에서 비싼 단지는 이후에도 더 오르는 경우가 많았어요', lo_dn: '구 안에서 싼 단지는 이후에도 덜 오르는 경우가 많았어요',
+               hi_dn: '구 안에서 이미 비싼 단지는 오름폭이 작은 경우가 많았어요', lo_up: '구 안에서 싼 단지는 격차를 좁히며 오르는 경우가 많았어요' } }; },
+      sch: () => { const v = val('sch', f.sch); if (v == null) return null;
+        const p = v * 100, nm = f.schn && f.schn.length ? `(${f.schn.join('·')})` : '';
+        const t = `가까운 중학교${nm}는 ` + (Math.abs(p) < 0.5 ? '전학 온 학생과 떠난 학생이 비슷해요' : p > 0 ? '전학 온 학생이 떠난 학생보다 많아요' : '떠난 학생이 전학 온 학생보다 많아요')
+          + `. ${G ? G('순전입률') : '순전입률'} ${p > 0 ? '+' : p < 0 ? '−' : ''}${Math.abs(Math.round(p * 10) / 10)}%`;
+        return { t: wrap(t, [gm('sch', x => (x > 0 ? '+' : x < 0 ? '−' : '') + Math.abs(Math.round(x * 1000) / 10) + '%'), pos('sch', '순전입')]), lv: Math.abs(p) < 0.5 ? '' : lvOf('sch'),
+          r: { hi_up: '학생이 모이는 학교 주변은 집 수요가 꾸준한 경우가 많았어요', lo_dn: '학생이 빠지는 학교 주변은 집 수요가 약해지는 경우가 많았어요' } }; },
+      jr: () => { const v = val('jr', f.jr); if (v == null) return null;
+        return { t: wrap(`${A} ${G ? G('전세가율') : '전세가율'}이 ${Math.round(v * 100)}%예요`, [gm('jr', x => Math.round(x * 100), '%'), pos('jr', '전세가율')]), lv: lvOf('jr'),
+          r: { lo_up: '전세가율이 낮은 단지는 이후 더 오른 경우가 많았어요', hi_dn: '전세가율이 높은 단지는 이후 덜 오른 경우가 많았어요',
+               hi_up: '전세가율이 높으면 실거주 수요가 받쳐 주는 경우가 많았어요', lo_dn: '전세가율이 낮으면 실거주 수요가 약한 경우가 많았어요' } }; },
+      dd: () => { const v = val('dd', f.dd); if (v == null) return null;
+        return { t: wrap(ddText(v, G, `${A} `), [pos('dd', '하락기 방어')]), lv: v >= 0.03 ? 'hi' : v <= -0.03 ? 'lo' : lvOf('dd'),
+          r: { lo_up: '하락기에 많이 내린 단지는 이후 회복하며 더 오르는 경우가 많았어요', hi_dn: '하락기에 덜 내린 단지는 이후 회복 폭이 작은 경우가 많았어요',
+               hi_up: '하락기에 잘 버틴 단지는 이후에도 강한 경우가 많았어요', lo_dn: '하락기에 많이 내린 단지는 이후에도 약한 경우가 많았어요' } }; },
+      rc: () => { const ps = pos('rc', '회복 정도'); if (!ps) return null;
+        return { t: `${A} 직전 최고가에서 내린 뒤 회복한 정도가 ${ps.replace(' 회복 정도', '')}예요`, lv: lvOf('rc'),
+          r: { lo_up: '덜 회복한 단지는 이후 따라 오르는 경우가 많았어요', hi_dn: '이미 많이 회복한 단지는 이후 오름폭이 작은 경우가 많았어요',
+               hi_up: '회복이 빠른 단지는 이후에도 강한 경우가 많았어요', lo_dn: '회복이 더딘 단지는 이후에도 약한 경우가 많았어요' } }; },
+      lg: () => { const v = val('lg', f.lg); if (v == null) return null;
+        const t = (v >= 0.995 || (f.ln && f.ln === o.apt)) ? `${A} ${o.dong || '같은 동'} 대장 단지예요(같은 평형끼리 비교해 동에서 가장 비싸게 거래)`
+          : `${A} 같은 평형 기준 시세가 ${o.dong || '같은 동'} 대장 단지${f.ln ? `(${f.ln})` : ''}보다 ${Math.round((1 - v) * 100)}% 낮아요`;
+        return { t, lv: v >= 0.95 ? 'hi' : lvOf('lg'),
+          r: { hi_up: '동네 대장급 단지는 수요가 먼저 몰리는 경우가 많았어요', lo_up: '대장 단지와 차이가 큰 단지는 차이를 좁히며 오르는 경우가 많았어요',
+               hi_dn: '대장급 단지는 이미 비싸 오름폭이 작은 경우가 많았어요', lo_dn: '대장 단지와 차이가 큰 단지는 차이가 이어지는 경우가 많았어요' } }; },
+      liq: () => { const x = WF.liq; if (!x || x[0] == null) return null;
+        return { t: wrap(`${A} 최근 2년 이 평형 실거래가 ${n0(x[0])}건이에요`, [gm('liq', n0, '건')]), lv: lvOf('liq'),
+          r: { hi_up: '거래가 꾸준한 단지는 오름세를 잘 따라가는 경우가 많았어요', lo_dn: '거래가 적은 단지는 오름세를 덜 타는 경우가 많았어요' } }; },
+      size: () => { const v = val('size', f.hh); if (!v) return null;
+        return { t: wrap(`${A} ${n0(v)}세대예요`, [gm('size', n0, '세대')]), lv: WF.size ? lvOf('size') : v >= 1000 ? 'hi' : v < 300 ? 'lo' : '',
+          r: { hi_up: '대단지는 수요가 꾸준한 경우가 많았어요', lo_dn: '소규모 단지는 수요가 얇은 경우가 많았어요' } }; },
+      sub: () => { const v = val('sub', f.sub); if (v == null) return null;
+        const t = v >= 30 ? '지하철역이 걸어가기엔 멀어요(도보 20분 넘게)' : `${f.subs ? f.subs.replace(/\s+/g, ' ') : '지하철역'}까지 도보 ${v <= 5 ? '5분 이내' : v + '분 이내'}예요`;
+        return { t, lv: v <= 10 ? 'hi' : v >= 20 ? 'lo' : '',
+          r: { hi_up: '역이 가까운 단지는 수요가 꾸준한 경우가 많았어요', lo_dn: '역이 먼 단지는 수요가 약한 경우가 많았어요' } }; },
+      new: () => { if (ageNow == null || ageNow > 10) return null;
+        return { t: `${A} ${ageText(f.by, o.year, '준공')} 새 아파트예요`, lv: 'hi', r: { hi_up: '새 아파트는 수요가 몰리는 경우가 많았어요' } }; },
+      old: () => { if (ageNow == null || ageNow < 25) return null;
+        return { t: `${A} ${ageText(f.by, o.year, '준공')}로 재건축을 추진할 수 있는 나이(30년)${ageNow >= 30 ? '가 됐어요' : `까지 ${30 - ageNow}년 남았어요`}`, lv: 'hi',
+          r: { hi_up: '재건축 기대가 가격에 반영되는 경우가 많았어요' } }; },
+      vlo: () => { const v = val('vlo', f.vl); if (!v) return null;
+        return { t: `${A} 용적률이 약 ${Math.round(v)}%예요`, lv: v <= 200 ? 'hi' : v >= 250 ? 'lo' : '',
+          r: { hi_up: '용적률이 낮을수록 재건축 때 더 지을 여지가 커요', lo_dn: '용적률이 높아 재건축 때 더 지을 여지가 작아요' } }; },
+      land: () => { const v = val('land', f.landavg); if (!v) return null;
+        return { t: wrap(`${A} 세대당 평균 대지지분이 ${v}평이에요`, [gm('land', x => x, '평')]), lv: lvOf('land'),
+          r: { hi_up: '대지지분이 클수록 재건축 사업성이 좋아요', lo_dn: '대지지분이 작으면 재건축 사업성이 낮은 편이에요' } }; },
+      stg: () => { const z = f.rz;
+        if (z && z.lv) return { t: `${A} 재건축 ${STAGE[z.lv] || z.lv + '단계'} 단계예요`, lv: 'hi', r: { hi_up: '재건축 단계가 나아갈수록 가격에 반영되는 경우가 많았어요' } };
+        if (ageNow != null && ageNow >= 25) return { t: `${A} 지은 지 25년이 넘었지만 아직 정비구역이 아니에요`, lv: 'lo', r: { lo_dn: '재건축 단계에 들어선 단지보다 기대가 덜 반영되는 경우가 많았어요' } };
+        return null; },
+      rail: k => { const R = f.rl; if (!R || R.x) return null;
+        const st = R.opened ? 'open' : /^start/.test(R.stage || '') ? 'build' : R.stage === 'plan' ? 'plan' : '';
+        if ((k === 'rlo' && st !== 'open') || (k === 'rls' && st !== 'build') || (k === 'rlp' && st !== 'plan') || (k === 'rld' && !(R.dl || R.delays))) return null;
+        const SK = { open: `${ymKo(R.stym)} 개통`, build: '공사 중', plan: '계획 확정, 착공 전' };
+        const t = `${A} ${R.line} ${R.st}${R.m != null ? `까지 직선 ${n0(R.m)}m` : ' 인근'}예요 — ${SK[st] || '진행 중'}`
+          + (R.dl ? `, ${delayText(R.dl, '개통')}` : R.target && st !== 'open' ? `, 개통 목표 ${ymKo(R.target)}` : '')
+          + (R.pre != null && R.first ? `. ${ymKo(R.first)} 발표 이후 ${o.apt || '이 단지'} 시세는 구 평균보다 ${Math.abs(R.pre)}% ${R.pre >= 0 ? '더' : '덜'} 올랐어요` : '');
+        const RR = { rlp: { hi_up: '신설역 계획이 확정되면 기대가 가격에 먼저 반영되는 경우가 많았어요', hi_dn: '계획 단계에서는 기대가 먼저 반영된 뒤 주춤한 경우가 많았어요' },
+          rls: { hi_up: '공사 중인 신설역 주변은 개통 기대가 가격에 반영되는 경우가 많았어요' },
+          rlo: { hi_dn: '개통 뒤에는 기대가 이미 가격에 들어가 오름폭이 작은 경우가 많았어요', hi_up: '개통 뒤 실제로 편해진 만큼 수요가 늘어난 경우가 많았어요' },
+          rld: { hi_dn: '개통이 늦어지면 기대가 줄어드는 경우가 많았어요' } };
+        return { t, lv: 'hi', r: RR[k] || {} }; },
+      sup: k => { let nm = '', u = 0, near = '';
+        if (k === 'spw') { const z = f.sl && f.sl[0] && o.sp && o.sp.zones && o.sp.zones[f.sl[0][0]]; if (z) { nm = z.n; u = z.u; near = '같은 생활권에'; } }
+        else if (f.sp && f.sp[0]) { nm = f.sp[0][0]; u = f.sp[0][1]; near = '주변 5km 안에'; }
+        if (!nm) return null;
+        const SG2 = { spa: '발표된', sps: '분양·착공한', spm: '입주가 시작된', spw: '진행 중인' };
+        return { t: `${A} ${near} ${SG2[k] || ''} 대규모 공급 ${nm}${u ? `(약 ${unitsKo(u)} 가구)` : ''}이 있어요`, lv: 'hi',
+          r: { hi_dn: '주변 대규모 공급은 이후 가격 오름폭을 누르는 경우가 많았어요' } }; },
+      reg: () => { const rp = o.rp; if (!rp) return null;
+        /* 지역 점수를 움직인 주된 이유 한 문장(지역 흐름 문단과 같은 사실값) — 순위 쪽과 방향이 같을 때만 */
+        let rw = '';
+        if (o.IX && o.code) { const rg = regionText(f, o.IX, o.code, null); if (rg.real && rg.why[0] && (rp.pos === '하위권' || rp.pos === '상위권')) rw = rg.why[0].replace(/[.]$/, ''); }
+        const t = `${J(SG, '은', '는')} 앞으로 2년 지역 흐름 점수가 ${rp.text}예요` + (rw ? `. 주된 이유는 ${rw}` : '') + (f.fvg != null ? `. ${o.apt || '이 단지'} 자체는 ${SG} 안에서 ${topPct(f.fvg)}지만, 미래가치 점수는 지역 흐름까지 더해 ${SD} 전체 단지와 비교해요` : '');
+        return { t, lv: rp.pos === '하위권' ? 'lo' : rp.pos === '상위권' ? 'hi' : '', r: {} }; }
+    };
+    const factOf = k => FACT[k] ? FACT[k](k) : /^rl[psod]$/.test(k) ? FACT.rail(k) : /^sp[asmw]$/.test(k) ? FACT.sup(k) : null;
+    let tags = w.slice();
+    /* 예전 자료(지역 흐름 항목 없음): 단지 점수와 지역 흐름을 합친 순위(fv)가 구 안 순위(fvg)보다 크게 낮/높으면 지역 흐름을 맨 앞 요인으로 */
+    if (H === '2' && o.regionUsed && o.rp && !tags.some(t => t.startsWith('reg')) && f.fv != null && f.fvg != null && f.gs != null) {
+      if (f.fv - f.fvg <= -15 && f.gs < 50) tags.unshift('reg-');
+      else if (f.fv - f.fvg >= 15 && f.gs > 50) tags.unshift('reg+');
+    }
+    const items = { up: [], dn: [] }, seen = new Set();
+    for (const tag of tags) {
+      const k = tag.slice(0, -1), dir = tag.endsWith('+') ? 'up' : 'dn';
+      if (seen.has(k) || items[dir].length >= 3) continue;
+      const F = factOf(k); if (!F || !F.t) continue;
+      seen.add(k);
+      let e = null, agree = null;
+      const ek = WHY_EV[k];
+      if (ek && o.ev && o.sid) {
+        const x = evid(o.ev, o.sid, f.eb, ek, SD, G);
+        if (x) { agree = Math.sign(x.ex) === (dir === 'up' ? 1 : -1); if (agree && Math.abs(x.ex) >= 0.5) e = x; }
+      }
+      const why = agree === false ? '' : (F.lv && F.r[`${F.lv}_${dir}`]) || '';
+      const t = `${F.t}.` + (why ? ` ${why}.` : '') + ` → ${H}년 점수를 ${dir === 'up' ? '올렸어요' : '낮췄어요'}.`;
+      items[dir].push({ dir, k, name: WHY_NAME[k] || k, t, ev: e });
+    }
+    const sc = H === '2' ? f.fv : (f.fh && f.fh[H]);
+    out.items = (sc != null && sc < 50) ? items.dn.concat(items.up) : items.up.concat(items.dn);
+    out.h = H;
+    for (const it of out.items) out.keys.add(it.k);
+    return out;
+  }
+  /* 보유 기간별 순위가 크게 엇갈릴 때(2년 vs 다른 기간, 30%p 이상) 이유 한 줄 — 데이터로 확인되는 이유만, 없으면 ''.
+     확인하는 이유: ① 2년 점수에만 구 지역 흐름이 더해짐(엔진: 2년 = 단지 점수 + 구 점수, 다른 기간 = 단지 점수만)
+     ② 2년 점수를 움직인 최근 6개월 흐름이 그 기간 요인에는 없음 ③ 그 기간에 새로 크게 작용한 요인(fx.why[기간]) — 사실값을 댈 수 있는 것만
+     o = whyItems 와 같은 값 + hs(비교할 기간, 기본 [3, 5, 7, 1]) */
+  function hzGapLine(f, o) {
+    if (!f || f.fv == null || !f.fh) return '';
+    const hs = o.hs || [3, 5, 7, 1], SD = o.sido || '', SG = o.sgg || '이 구';
+    const L = hs.find(h => f.fh[h] != null && Math.abs(f.fh[h] - f.fv) >= 30 && (!o.hzOk || o.hzOk[h]));
+    if (L == null) return '';
+    const up = f.fh[L] > f.fv, out = [];
+    /* ① 지역 흐름 */
+    const rp = o.rp;
+    if (o.regionUsed !== false && rp && f.gs != null && f.fvg != null && (up ? (f.gs < 50 && f.fv < f.fvg) : (f.gs > 50 && f.fv > f.fvg)))
+      out.push(`2년 점수에는 ${SG} 지역 흐름(${rp.text})이 더해져 ${up ? '낮아졌고' : '높아졌고'}, ${L}년 점수는 단지 자체 요인으로만 매겨요`);
+    /* ② 최근 6개월 흐름이 2년에만 크게 작용 */
+    const w2 = (f.why && f.why['2']) || [], wL = (f.why && f.why[String(L)]) || [], m = f.mom;
+    if (m != null && Math.abs(m) >= 0.03) {
+      if (up && w2.includes('mom-') && !wL.includes('mom-') && m > 0) out.push(`최근 6개월 시세가 ${Math.round(m * 1000) / 10}% 올라 2년 안에는 쉬어 갈 가능성이 크게 잡혔어요`);
+      if (!up && w2.includes('mom+') && !wL.includes('mom+') && m < 0) out.push(`최근 6개월 시세가 ${Math.round(-m * 1000) / 10}% 내려 2년 안에 따라 오를 가능성이 크게 잡혔어요`);
+    }
+    /* ③ 그 기간에 새로 크게 작용한 요인 */
+    const dir = up ? 'up' : 'dn', sg2 = new Set(w2.filter(t => t.endsWith(up ? '+' : '-')).map(t => t.slice(0, -1)));
+    const it = whyItems(f, Object.assign({}, o, { h: String(L), ev: null })).items.find(x => x.dir === dir && !sg2.has(x.k) && x.k !== 'reg');
+    if (it) out.push(`${L}년으로 보면 '${it.name}'${J(it.name, '이', '가').slice(it.name.length)} 점수를 ${up ? '올리는' : '내리는'} 쪽으로 더 크게 작용해요`);
+    if (!out.length) return '';
+    const A = o.apt || '이 단지';
+    return `${J(A, '은', '는')} 2년 기준 ${SD} ${topPct(f.fv)}, ${L}년 기준 ${topPct(f.fh[L])}로 순위가 크게 달라요. ` + out.join('. ') + '.';
+  }
+  /* 요인 한 줄(목록용): '내린 요인 · 지역 흐름 — …' */
+  const whyLine = it => `${it.dir === 'up' ? '올린 요인' : '내린 요인'} · ${it.name}: ${it.t}`;
+  /* 프리미엄 표: 요인 | 방향 | 이 단지 | 같은 구 중앙값 | 시·도 안 위치 — 엔진 사실값(wf)이 있는 요인만 */
+  function whyTable(f, res, o, esc) {
+    const WF = (f && f.wf) || {}, E = esc || (s => String(s));
+    const fmt = (k, v) => v == null ? '-' : ['mom', 'mom2', 'sch'].includes(k) ? (k === 'mom2' ? '' : v > 0 ? '+' : v < 0 ? '−' : '') + (Math.round(Math.abs(v) * 1000) / 10).toFixed(1) + '%'
+      : k === 'rel' ? (v > 0 ? '+' : v < 0 ? '−' : '') + Math.round(Math.abs(v) * 100) + '%' : ['jr', 'lg'].includes(k) ? Math.round(v * 100) + '%'
+      : k === 'dd' || k === 'rc' ? (v > 0 ? '+' : v < 0 ? '−' : '') + Math.round(Math.abs(v) * 100) + '%p'
+      : k === 'liq' ? Number(v).toLocaleString() + '건' : k === 'size' ? Number(v).toLocaleString() + '세대' : k === 'sub' ? v + '분'
+      : k === 'new' || k === 'old' ? v + '년차' : k === 'vlo' ? Math.round(v) + '%' : k === 'land' ? v + '평' : String(v);
+    const rows = (res.items || []).filter(it => WF[it.k]).map(it => { const x = WF[it.k];
+      return `<tr><td>${E(it.name)}</td><td>${it.dir === 'up' ? '올림' : '내림'}</td><td class="num">${E(fmt(it.k, x[0]))}</td><td class="num">${E(it.k === 'rel' ? '기준' : fmt(it.k, x[1]))}</td><td class="num">${x[2] != null ? E(topPct(x[2])) : '-'}</td></tr>`; });
+    if (!rows.length) return '';
+    return `<table class="jp-why"><thead><tr><th>요인</th><th>점수</th><th>이 단지</th><th>${E(o.sgg || '같은 구')} 중간값</th><th>${E(o.sido || '')} 안 위치</th></tr></thead><tbody>${rows.join('')}</tbody></table>`;
   }
 
   /* ---------- 1기 신도시 노후계획도시 정비 선도지구(공개 supply.json renewal, 단지 f.nr) ---------- */
@@ -432,6 +641,7 @@
       + '.jp-ev{display:block;margin-top:3px;font-size:13px;line-height:1.55;color:#4E5968;word-break:keep-all;overflow-wrap:anywhere}'
       + '.jp-g{display:inline-block;font-size:11.5px;font-weight:800;padding:0 6px;border-radius:6px;margin-right:4px;vertical-align:1px;line-height:18px}'
       + '.jp-g.st{background:#E3F4EA;color:#0E7A4F}.jp-g.md{background:#F2F4F6;color:#4E5968}.jp-g.lo{background:#FFF4E0;color:#8A5A00}'
+      + '.jp-why{width:100%;border-collapse:collapse;margin:6px 0 12px;font-size:13px}.jp-why th,.jp-why td{border-bottom:1px solid #E5E8EB;padding:5px 6px;text-align:left}.jp-why th{color:#6B7684;font-weight:700}.jp-why .num{text-align:right;font-variant-numeric:tabular-nums}'
       + '.jp-per{display:block;margin-top:2px;padding-left:8px;border-left:2px solid #E5E1D3;font-size:12.5px;color:#6B7684}';
     (root.document.head || root.document.documentElement).appendChild(s);
   }
@@ -502,5 +712,5 @@
     run();
   }
 
-  root.JDJ_PLAIN = { ageOf, ageLabel, ageText, scParts, scText, popLines, STAGE, GL_PAGE, glossDom, autoGloss, gloss, J, won, eokR, rank, more, regionInfo, rankBase, regionRank, regionPlace, topPct, regionText, regionLine, evid, evHtml, ddText, rcText, momText, schText, stageName, rzText, jrStats, jrText, VOK, hzLabel, checkText, easy, ymKo, spanKo, delayText, unitsKo, supplyLines, renewalLine };
+  root.JDJ_PLAIN = { ageOf, ageLabel, ageText, scParts, scText, popLines, STAGE, GL_PAGE, glossDom, autoGloss, gloss, J, won, eokR, rank, more, regionInfo, rankBase, regionRank, regionPlace, topPct, regionText, regionLine, evid, evHtml, ddText, rcText, momText, schText, stageName, rzText, jrStats, jrText, VOK, hzLabel, checkText, easy, ymKo, spanKo, delayText, unitsKo, supplyLines, renewalLine, whyItems, whyLine, whyTable, hzGapLine };
 })(typeof window !== 'undefined' ? window : globalThis);

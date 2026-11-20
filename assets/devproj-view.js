@@ -63,6 +63,14 @@
     for (var j = 0; j < want.length; j++) if (c[want[j] + '|' + band]) return c[want[j] + '|' + band];
     return null;
   }
+  /* 엔진 사례 문장의 예전 방어적 꼬리 → 사실 문장(엔진 scripts/devproj.py text_case 새 문구와 같게) */
+  function factCase(t){
+    t = String(t || '');
+    t = t.replace(/\(사례 1건뿐이라 일반적인 영향인지는 통계로 확인하지 못했어요\)\./, '. 사례가 1건뿐이라 점수에는 넣지 않았어요.');
+    t = t.replace(/\(사례 (\d+)건 모두 (더|덜) 오름\)\. 다만 사례가 적거나 일부는 통계로 뚜렷하지 않아 일반적인 영향으로 단정하기는 어려워요\./, function(_, n, w){ return '(사례 ' + n + '건 모두 ' + w + ' 오름). ' + (+n < 10 ? '사례가 ' + n + '건뿐이라 점수에는 넣지 않았어요.' : '사례 사이 차이가 커서 점수에는 넣지 않았어요.'); });
+    t = t.replace('사례마다 방향이 달라 통계로 뚜렷한 영향이라고 보기는 어려워요.', '사례마다 방향이 달라 점수에는 넣지 않았어요.');
+    return t;
+  }
   function gname(o, code){ return (o && o.sggName && o.sggName(code)) || '같은 구'; }
   function diff(x){ return (x.me == null || x.gu == null) ? null : Math.round((x.me - x.gu) * 10) / 10; }
 
@@ -82,19 +90,19 @@
     if (D != null) {
       var mv = x.me >= 0 ? p1(x.me) + '% 올라' : p1(x.me) + '% 내려';
       var s = fym(x.f) + ' ' + stageAt(p, x.f) + ' 뒤 지금까지 이 단지는 ' + mv + ', ' + esc(g) + ' 단지 중간값(' + (x.gu >= 0 ? '+' : '−') + p1(x.gu) + '%)보다 ' + p1(D) + '%p ' + (D >= 0 ? '더' : '덜') + ' 올랐어요';
-      if (D >= 1) s += '(발표 내용이 가격에 일부 반영됐을 수 있어요. 다만 다른 요인도 함께 섞인 숫자예요).';
-      else if (D <= -1) s += '(발표 뒤 ' + esc(g) + ' 단지들보다 더 오르지는 않았어요).';
-      else s += '(' + esc(g) + ' 단지들과 거의 비슷했어요).';
+      if (D >= 1) s += '. 개발 기대가 이미 가격에 일부 들어간 거예요.';
+      else if (D <= -1) s += '. 발표 효과가 아직 가격에 나타나지 않은 거예요.';
+      else s += '. ' + esc(g) + ' 단지들과 비슷하게 움직였어요.';
       S.push(s);
     } else S.push('발표 전후 이 단지 시세 비교는 실거래가 부족하거나 발표가 자료 기간 밖이라 확인 불가예요.');
     if (nx) {
       var sr = srcOf(p, nx.src);
-      S.push('다음 단계: ' + fdY(nx.d) + ' ' + esc(nx.s) + ' 목표' + (sr ? '(' + org(sr[1]) + ' 발표)' : '') + '. 목표 일정은 늦어질 수 있어요.');
+      S.push('다음 단계: ' + fdY(nx.d) + ' ' + esc(nx.s) + ' 목표' + (sr ? '(' + org(sr[1]) + ' 발표)' : '') + '.');
     } else S.push('다음 단계 일정: 공식 자료로 확인 불가예요.');
     if (p.delay) { var dl = typeof p.delay === 'string' ? {note: p.delay} : p.delay, ds = srcOf(p, dl.src);
       if (dl.note) S.push('지연: ' + esc(dl.note) + (ds ? '(' + org(ds[1]) + ')' : '')); }
     var c = caseOf(p, x.band);
-    S.push(c ? esc(c.t) : '과거 비슷한 사업 주변 단지의 통계 사례는 아직 확인 불가예요.');
+    S.push(c ? esc(factCase(c.t)) : '과거 비슷한 사업 주변 단지의 통계 사례는 아직 확인 불가예요.');
     var hist = (p.stages || []).map(function(s){
       var sr = srcOf(p, s.src);
       return '<li>' + fd(s.d) + ' ' + esc(STG[s.s] || s.s) + (s.note ? ' — ' + esc(s.note) : '') + (sr ? ' <a href="' + esc(sr[1]) + '" target="_blank" rel="noopener">원문</a>' : '') + '</li>';
@@ -111,7 +119,7 @@
     var L = forUnit(data, u); if (!L.length) return '';
     var h = L.map(function(x){ return oneHtml(x, u, o, data); }).join('');
     h += '<p class="dv-note">' + (data.inModel ? '주변 개발사업은 과거 사례 검증을 거쳐 미래가치 점수에도 반영돼요.' :
-      '주변 개발사업은 미래가치 점수에 넣지 않았어요(과거 사례로 검증했을 때 예측이 나아지지 않았어요). 참고 정보로만 보세요.') +
+      '주변 개발사업은 미래가치 점수에 넣지 않았어요(과거 사례로 검증했을 때 예측이 나아지지 않았어요).') +
       ' 단계·날짜는 서울시·국토부 등 공식 원문으로 확인한 것만 적었고, 확인 못 한 일정은 넣지 않았어요.' +
       (data.to ? ' 시세 비교는 ' + fym(data.to) + '까지 실거래 기준이에요.' : '') + '</p>';
     return h;
@@ -139,5 +147,5 @@
     });
   }
 
-  window.JDJDev = {load: load, forUnit: forUnit, summaryLine: summaryLine, detailHtml: detailHtml, mount: mount, caseOf: caseOf, eun: eun};
+  window.JDJDev = {load: load, forUnit: forUnit, summaryLine: summaryLine, detailHtml: detailHtml, mount: mount, caseOf: caseOf, eun: eun, factCase: factCase};
 })();

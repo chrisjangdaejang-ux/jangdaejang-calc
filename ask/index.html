@@ -25,10 +25,10 @@
 <meta name="twitter:card" content="summary_large_image">
 <script>window.JDJ_CONFIG = { tool:'ask', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js"></script>
-<script src="../assets/stat.js?v=3"></script>
+<script src="../assets/stat.js?v=4"></script>
 <script src="../assets/share.js?v=3"></script>
-<script src="../assets/plain-words.js?v=8"></script>
-<script src="../assets/mine-core.js?v=13"></script>
+<script src="../assets/plain-words.js?v=9"></script>
+<script src="../assets/mine-core.js?v=14"></script>
 <script src="../assets/price-sheet.js?v=11"></script>
 <script src="../assets/ask-core.js?v=3"></script>
 <script src="../assets/ask.js?v=1"></script>
@@ -121,6 +121,7 @@ h1{font-size:clamp(24px,5.6vw,34px);margin:6px 0 6px}
 .vs .grp{padding:12px 4px 6px;font-size:13.5px;font-weight:900;color:#6B7684;border-bottom:1px solid var(--line)}
 .vs .hz{display:grid;gap:2px}.vs .hz span{word-break:keep-all}.vs .hz .ref{color:#8B95A1}
 .vs .hz b.w0{color:#1F56E0}.vs .hz b.w1{color:#D4570F}.vs .hz b.w2{color:#0E7A4F}
+.vs .v small.hzwhy{margin-top:6px;color:#4E5968;word-break:keep-all;overflow-wrap:anywhere}
 .links{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
 .links a{display:flex;flex-direction:column;justify-content:center;gap:2px;min-height:60px;padding:10px 14px;border:1px solid var(--line);border-radius:14px;text-decoration:none;color:var(--text);background:#fff}
 .links a b{font-size:15.5px}.links a small{font-size:13px;color:#4E5968}
@@ -213,7 +214,7 @@ async function load(k, want){
     by: f.by || null, hh: f.hh || null, sc: f.sc || null, sub: f.sub != null ? f.sub : null, subs: f.subs || '',
     fv: f.fv != null ? f.fv : null, fvBase: PL ? PL.rankBase(IX, k.code, 'fv').name : `${sd.short || ''} 아파트`,
     fvg: f.fvg != null ? f.fvg : null, gs: f.gs != null ? f.gs : null,
-    fh: f.fh || null, hzOk: hz, turn: A.turnover(bands, f.hh),
+    fh: f.fh || null, hzOk: hz, fx: f, turn: A.turnover(bands, f.hh),
     gu: gp ? { diff: gp.diff, name: `${sggName(k.code)} 아파트 중앙값`, at: gp.at, me: gp.me, ref: gp.sggPpy } : null,
     jeon: A.jeonseOf(ht, f.jr), ht, rent, rentBase: rj && rj.m0
   };
@@ -364,7 +365,10 @@ function rowsOf(items){
   const hw = [1, 2, 3].map(h => A.winner(items.map(x => x.fv == null || !x.hzOk[h] ? null : h === 2 ? x.fv : (x.fh && x.fh[h] != null && new Set(items.map(y => y.sd)).size === 1 ? x.fh[h] : null)), 1));
   add({ ours: 1, l: '보유 기간별 전망', h: '1년·2년·3년 뒤를 각각 따로 계산한 순위예요. 상위 23%면 같은 시·도 아파트 100곳 중 23등쯤이라는 뜻이에요. 과거 자료로 맞춰 봤을 때 잘 맞지 않았던 기간은 ‘참고만’으로 흐리게 보여 드려요.',
     v: items.map((x, i) => { if (x.fv == null) return NA; return `<div class="hz">${[1, 2, 3].map((h, hi) => { const v = h === 2 ? x.fv : (x.fh && x.fh[h] != null ? x.fh[h] : null); if (v == null) return `<span class="ref">${h}년: 자료 없음</span>`;
-      const t = `${h}년: ${pct(v)}${x.hzOk[h] ? '' : ' (참고만)'}`; return hw[hi] === i ? `<span><b class="w${i}">${t}</b></span>` : `<span class="${x.hzOk[h] ? '' : 'ref'}">${t}</span>`; }).join('')}</div>`; }) });
+      const t = `${h}년: ${pct(v)}${x.hzOk[h] ? '' : ' (참고만)'}`; return hw[hi] === i ? `<span><b class="w${i}">${t}</b></span>` : `<span class="${x.hzOk[h] ? '' : 'ref'}">${t}</span>`; }).join('')}</div>`
+      /* 기간별 순위가 크게 엇갈리면 데이터로 확인되는 이유 한 줄(없으면 생략) */
+      + (() => { const hg = PL && PL.hzGapLine ? PL.hzGapLine(x.fx, { apt: x.apt, dong: x.dong, sgg: x.sggName, sido: x.sidoShort, rp: x.gs != null ? PL.regionPlace(IX, x.code, x.gs) : null, IX, code: x.code, hs: [3, 1], hzOk: x.hzOk, year: new Date().getFullYear() }) : '';
+        return hg ? `<small class="hzwhy">${esc(hg)}</small>` : ''; })(); }) });
   add({ ours: 1, l: '구 안 위치', h: '같은 구(시) 아파트끼리만 비교한 미래가치 순위예요. 높을수록 그 구 안에서 앞서는 단지예요.',
     v: items.map(x => x.fvg != null ? `<b>${pct(x.fvg)}</b><small>${esc(x.sggName)} 아파트 중</small>` : NA), n: items.map(x => new Set(items.map(y => y.code)).size === 1 ? x.fvg : null), d: 1 });
   add({ ours: 1, l: '우리 동네 흐름', h: '입주 물량·인구·미분양·일자리 같은 지역 자료로 본 구(시) 단위 흐름 순위예요. 같은 구 단지끼리는 값이 같아요.',

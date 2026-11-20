@@ -272,14 +272,14 @@
     if (f.fv != null) add(f.gs != null
       ? `이 단지는 미래가치 ${f.fv}점으로 ${rank(f.fv, { name: `${sdN} 아파트`, n: x.nfv })}예요` + (f.fvg != null ? ` · ${x.sgg} 안에서는 ${rank(f.fvg, { name: '아파트', n: x.nfvg })}예요` : '') + '(실제 이후 시세로 채점해 검증한 점수).'
       : `이 단지는 미래가치 ${f.fv}점으로 ${rank(f.fv, { name: `${x.sgg} 아파트` })}예요(실제 이후 시세로 채점해 검증한 점수).`);
-    const w = f.why && (f.why['2'] || null);
-    if (w && w.length) {
-      const lb = k => (x.label && x.label[k]) || k, U = a => [...new Set(a)];
-      const up = U(w.filter(t => t.endsWith('+')).map(t => lb(t.slice(0, -1)))), dn = U(w.filter(t => t.endsWith('-')).map(t => lb(t.slice(0, -1)))).filter(v => !up.includes(v));
-      if (up.length || dn.length) add('2년 점수를 움직인 요인 — ' + (up.length ? `올린 요인: ${up.join(' · ')}` : '') + (up.length && dn.length ? ' / ' : '') + (dn.length ? `내린 요인: ${dn.join(' · ')}` : ''));
-    }
+    /* 2년 점수를 올린·내린 요인: 이 단지 실제 값·비교 기준·과거 같은 조건 통계(PL.whyItems) */
+    const W = PL && PL.whyItems ? PL.whyItems(f, { h: '2', apt: x.apt, dong: x.dong, sgg: x.sgg, sido: sdN, sid: x.sid, ev: x.ev, G, sp: x.sp, year: Y,
+      rp: x.IX && x.code && PL.regionPlace ? PL.regionPlace(x.IX, x.code, f.gs) : null, regionUsed: x.regionUsed !== false, IX: x.IX, code: x.code }) : { items: [], keys: new Set() };
+    for (const it of W.items) add(PL.whyLine(it), it.ev);
+    { const hg = PL && PL.hzGapLine ? PL.hzGapLine(f, { apt: x.apt, dong: x.dong, sgg: x.sgg, sido: sdN, sp: x.sp, year: Y, rp: x.IX && x.code ? PL.regionPlace(x.IX, x.code, f.gs) : null, regionUsed: x.regionUsed !== false, IX: x.IX, code: x.code }) : '';
+      if (hg) add('보유 기간별 차이: ' + hg); }
     if (f.rz && PL) add(PL.rzText(f.rz, G, v => `${String(v).slice(0, 4)}년 ${parseInt(String(v).slice(4, 6), 10)}월`), EV('stg'));
-    if (f.dd != null && Math.abs(f.dd) >= 0.03) add(PL ? PL.ddText(f.dd, G) + (f.dd > 0 ? ' — 집값이 흔들릴 때 잘 버틴 편이에요' : ' — 시장에 따라 오르내림이 큰 편이에요')
+    if (f.dd != null && Math.abs(f.dd) >= 0.03 && !W.keys.has('dd')) add(PL ? PL.ddText(f.dd, G) + (f.dd > 0 ? ' — 집값이 흔들릴 때 잘 버틴 편이에요' : ' — 시장에 따라 오르내림이 큰 편이에요')
       : `이 단지는 최근 3년 하락기에 구 평균보다 ${pct(f.dd)}%p ${f.dd > 0 ? '덜' : '더'} 내렸어요`, EV('dd'), f.dd > 0 ? '' : 'c');
     /* 고점 회복(rc)은 공개 값이 비율(예: 0.966)로 보여 '구 평균 대비 %p' 문구와 맞지 않아 이 화면에서는 싣지 않는다 */
     if (f.by || f.hh) {
@@ -291,7 +291,7 @@
       if (f.hh >= 1000) tags.push('대단지예요'); else if (f.hh && f.hh < 300) tags.push('소규모 단지예요');
       add(parts.join(' · ') + (tags.length ? ' — ' + tags.join(' · ') : ''));
     }
-    if (f.lg != null) {
+    if (f.lg != null && !W.keys.has('lg')) {
       if ((f.ln && f.ln === x.apt) || f.lg >= 0.995) add(`${x.dong} 대장 단지예요 — 같은 평형끼리 비교해 동에서 가장 비싸게 거래돼요`, EV('lg'));
       else add(`${x.dong} 대장 단지(${f.ln || '-'})보다 같은 평형 기준 시세가 ${pct(1 - f.lg)}% 낮아요`, EV('lg'));
     }
@@ -299,10 +299,11 @@
       for (const [c, t] of PL.supplyLines(f, x.sp, G)) add(t, null, c);
       const rn = PL.renewalLine(f, x.sp, G, x.ev); if (rn) { add(rn.text); if (rn.ref) add(rn.ref); }
     }
-    if (f.rl && PL) { const R = f.rl, ymk = v => `${String(v).slice(0, 4)}년 ${parseInt(String(v).slice(4, 6), 10)}월`, SK = { plan: '계획 확정', start: '착공', start_real: '본공사 착수', delay: '개통 지연', open: '개통' };
+    const rlW = ['rlp', 'rls', 'rlo', 'rld'].some(k => W.keys.has(k));
+    if (f.rl && PL && !rlW) { const R = f.rl, ymk = v => `${String(v).slice(0, 4)}년 ${parseInt(String(v).slice(4, 6), 10)}월`, SK = { plan: '계획 확정', start: '착공', start_real: '본공사 착수', delay: '개통 지연', open: '개통' };
       add(`신규 노선: ${R.line} ${R.st} 인근 — ` + (R.x ? '노선 계획 공식 취소·제외' : R.opened ? `${ymk(R.stym)} 개통했어요` : `${ymk(R.stym)} ${SK[R.stage] || R.stage}` + (R.dl ? `, ${PL.delayText(R.dl, '개통')}` : (R.target ? `, 개통 목표 ${ymk(R.target)}` : ''))), EV('rail')); }
     if (f.sc && PL && PL.scText) add('학군: ' + PL.scText(f.sc, x.gname ? x.gname(f.sc[6]) : x.sgg), EV('sch'));
-    else if (f.sch != null) add('학군: ' + (PL ? PL.schText(f.sch, f.schn, G) : ''), EV('sch'));
+    else if (f.sch != null && !W.keys.has('sch')) add('학군: ' + (PL ? PL.schText(f.sch, f.schn, G) : ''), EV('sch'));
     else if (x.schNA) add('학군: 가까운 중학교(1.5km 안) 자료 없음');
     if (f.sub != null) add(f.sub >= 30 ? '지하철역이 걸어가기엔 먼 편이에요(도보 20분 이상) — 버스·자차 위주 생활권' : `${f.subs ? f.subs.replace(/\s+/g, ' ') : '지하철역'}까지 걸어서 ${f.sub <= 5 ? '5분 이내' : f.sub + '분 이내'}예요` + (f.sub <= 10 ? ' — 역세권' : ''));
     return r;

@@ -30,21 +30,22 @@
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/mine.png">
 <script>window.JDJ_CONFIG = { tool:'mine', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js"></script>
-<script src="../assets/stat.js?v=3"></script>
+<script src="../assets/stat.js?v=4"></script>
 <script src="../assets/share.js?v=3"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/config.js?v=1"></script>
 <script src="../assets/auth.js?v=1"></script>
 <script src="../assets/kchat.js?v=1"></script>
-<script src="../assets/plain-words.js?v=8"></script>
-<script src="../assets/mine-core.js?v=13"></script>
+<script src="../assets/plain-words.js?v=9"></script>
+<script src="../assets/narrative.js?v=1"></script>
+<script src="../assets/mine-core.js?v=14"></script>
 <script src="../assets/ask-core.js?v=3"></script>
 <script src="../assets/ask.js?v=1"></script>
 <script src="../assets/price-sheet.js?v=11"></script>
 <script src="../assets/offi-core.js?v=2"></script>
 <script src="../assets/offi-view.js?v=3"></script>
 <script src="../assets/policy-view.js?v=1"></script>
-<script src="../assets/devproj-view.js?v=1"></script>
+<script src="../assets/devproj-view.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=41">
@@ -260,7 +261,9 @@ const M = window.JDJ_MINE, $ = id => document.getElementById(id);
 const DATA = '/jangdaejang-data/data/';
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num = s => { const v = parseInt(String(s || '').replace(/[^\d]/g, ''), 10); return isFinite(v) ? v : 0; };
-let IX = null, LABEL = null, EVD = null, SUP = null;
+let IX = null, LABEL = null, EVD = null, SUP = null, MH = null, MREG = false, DEVP = null;
+/* 새 분석 설명(assets/narrative.js) — 대표 확인 전까지 ?nar=1 에서만 */
+const NARON = /[?&]nar=1(&|$)/.test(location.search) && !!window.JDJ_NAR;
 const PL = window.JDJ_PLAIN;
 const P = window.JDJ_PRICE;
 const LIST = {}, GROUPS = {}, SMAP = {};
@@ -455,7 +458,7 @@ function render(d, map, units){
   const mrows = []; for (let i = IX.months.length - 1; i >= Math.max(0, IX.months.length - 12); i--) {
     const p = u[6][i]; mrows.push(`<tr><td>${ym(IX.months[i])}</td><td class="num">${c[i]}건</td><td class="num">${p ? p.toLocaleString() + '만' : '-'}</td><td class="num">${p ? M.won(M.toPrice(p, u[4])) : '-'}</td></tr>`); }
   const sdo = IX.sido.find(x => x.name === sidoName(d.code)) || {};
-  const rs = M.reasonItems(f, {apt:d.apt, dong:d.dong, sgg:sggName(d.code), sido:sidoName(d.code), sidoShort:sdo.short || '', nfv:sdo.nfv, nfvg:(IX.sgg[d.code] || {}).nfvg, label:LABEL, gname:sggName, schNA:true, PL, G:PL ? PL.gloss() : null, sid:sdo.id, ev:EVD, sp:SUP});
+  const rs = M.reasonItems(f, {apt:d.apt, dong:d.dong, sgg:sggName(d.code), sido:sidoName(d.code), sidoShort:sdo.short || '', nfv:sdo.nfv, nfvg:(IX.sgg[d.code] || {}).nfvg, label:LABEL, gname:sggName, schNA:true, PL, G:PL ? PL.gloss() : null, sid:sdo.id, ev:EVD, sp:SUP, IX, code:d.code});
   const rli = o => `<li class="${o.c}">${esc(o.t)}${o.ev && PL ? PL.evHtml(o.ev, false, esc) : ''}</li>`;
   const pk = M.premiumKey({sd:S.sd, code:d.code, dong:d.dong, apt:d.apt, band:S.band});
   const posBar = p => { if (!p) return ''; const lo = Math.min(p.me, p.ref) * 0.85, hi = Math.max(p.me, p.ref) * 1.15, x = v => ((v - lo) / (hi - lo) * 100).toFixed(1);
@@ -538,7 +541,8 @@ function render(d, map, units){
 
   <div class="panel">
     <h2>미래가치 점수와 근거<small>공개 자료에 있는 점수를 그대로 보여 드려요 (2년 보유 기준, 같은 시·도 단지 비교)</small></h2>
-    ${f.fv != null ? `<ul class="why">${rs.map(rli).join('')}</ul>
+    ${f.fv != null ? (NARON ? JDJ_NAR.html(JDJ_NAR.build(f, {apt:d.apt, dong:d.dong, code:d.code, band:S.band, area:u[4], IX, EV:EVD, MH, SP:SUP, PL, year:new Date().getFullYear(), s:u[6], regionUsed:MREG, dev: DEVP ? {data:DEVP, u:{code:d.code, dong:d.dong, jibun:d.jibun}, o:{apt:d.apt, sggName}} : null}), {id:'narM'})
+      + `<details class="msum"><summary>자세한 자료 보기</summary><ul class="why">${rs.map(rli).join('')}</ul></details>` : `<ul class="why">${rs.map(rli).join('')}</ul>`) + `
       <p class="basis">미래가치 점수는 당시 알려진 정보로 예측하고 이후 실제 시세로 채점해 검증한 점수예요. 같은 지역 평균 대비 순위라, 시장 전체가 내리면 점수가 높은 단지도 내릴 수 있어요.</p>`
       : !has ? `<p class="note" style="font-size:15px">거래가 적어 미래가치 점수는 아직 매기지 않아요(최근 3년 ${u[5]}건). 시세·추이·거래량과 실거래 목록은 위에서 확인할 수 있어요.</p>`
       : `<p class="note" style="font-size:15px">이 단지·평형은 아직 미래가치 점수가 없어요. 검증에 쓸 거래 자료가 충분히 쌓이면 자동으로 보여 드려요.</p>${rs.length ? `<ul class="why">${rs.map(rli).join('')}</ul>` : ''}`}
@@ -573,6 +577,7 @@ function render(d, map, units){
       '국토교통부 실거래 신고 기준 시세·추이'],
     params: Object.fromEntries(new URLSearchParams(location.search))}, {root: $('res')});
   drawCharts(u, sgg);
+  { const ne = document.getElementById('narM'); if (ne) JDJ_NAR.bind(ne); }
   P.wireMore($('trades'));
   wireResult(d, u, sm);
   wireFav(d);
@@ -580,7 +585,7 @@ function render(d, map, units){
   fillAgents(d);
   if (window.JDJPolicy) JDJPolicy.mount($('polSec'), {mode:'mine', codes:[{sgg:d.code, dong:d.dong}], name:() => sggName(d.code) + ' ' + d.dong, sggName:() => sggName(d.code), price: sm.price || (last ? last.price : 0),
     head:'<h2>이 지역에 영향을 주는 정책<small>이 단지가 있는 ' + esc(sggName(d.code) + ' ' + d.dong) + '에 적용 중이거나 국회에서 논의 중인 정책이에요</small></h2>'}).catch(e => console.warn('policy', e));
-  if (window.JDJDev) JDJDev.mount($('devSec'), {code:d.code, dong:d.dong, jibun:d.jibun, apt:d.apt, sggName,
+  if (window.JDJDev && !(NARON && DEVP)) JDJDev.mount($('devSec'), {code:d.code, dong:d.dong, jibun:d.jibun, apt:d.apt, sggName,
     head:'<h2>주변 개발사업<small>서울시·국토부 등 공식 원문으로 확인한 사업만, 이 단지에서 가까운 순이에요</small></h2>'}).catch(e => console.warn('devproj', e));
 }
 
@@ -700,8 +705,9 @@ async function init(){
   try { const r = await fetch(DATA + 'index.json', {cache:'no-cache'}); if (!r.ok) throw 0; IX = await r.json(); }
   catch (e) { $('loadMsg').textContent = '시세 자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.'; return; }
   const j = u => fetch(DATA + u, {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null);
-  const [mj, ej, sj] = await Promise.all([j('model.json'), j('evidence.json'), j('supply.json')]);
-  LABEL = (mj && mj.label) || null; EVD = ej; SUP = sj;
+  const [mj, ej, sj, mh] = await Promise.all([j('model.json'), j('evidence.json'), j('supply.json'), NARON ? j('model_h.json') : null]);
+  LABEL = (mj && mj.label) || null; EVD = ej; SUP = sj; MH = mh; MREG = !!(mj && mj.region && mj.region.used);
+  if (NARON && window.JDJDev) DEVP = await JDJDev.load(DATA).catch(() => null);
   $('src').insertAdjacentHTML('afterbegin', `자료 기간 ${M.ymLabel(IX.months[0])}~${M.ymLabel(IX.dataTo)} · ${esc(IX.updated)} 갱신 · `);
   fillSido();
   homesNote();

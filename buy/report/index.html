@@ -30,10 +30,10 @@
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/report.png">
 <script>window.JDJ_CONFIG = { tool:'report', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../../assets/track.js"></script>
-<script src="../../assets/stat.js?v=3"></script>
+<script src="../../assets/stat.js?v=4"></script>
 <script src="../../assets/region-notes.js"></script>
 <script src="../../assets/rec-core.js?v=2"></script>
-<script src="../../assets/mine-core.js?v=13"></script>
+<script src="../../assets/mine-core.js?v=14"></script>
 <script src="../../assets/price-sheet.js?v=11"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/config.js?v=1"></script>
@@ -41,9 +41,10 @@
 <script src="../../assets/share.js?v=3"></script>
 <script src="../../assets/loan-core.js?v=1"></script>
 <script src="../../assets/kchat.js?v=1"></script>
-<script src="../../assets/plain-words.js?v=8"></script>
+<script src="../../assets/plain-words.js?v=9"></script>
+<script src="../../assets/narrative.js?v=1"></script>
 <script src="../../assets/policy-view.js?v=1"></script>
-<script src="../../assets/devproj-view.js?v=1"></script>
+<script src="../../assets/devproj-view.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -578,6 +579,14 @@ let MODEL=null, RAIL=null, MH=null, SUPPLY=null, EVD=null;
 const EVK=(x,kind)=>PL.evid(EVD, sdIdOf(x.code), (x.fx||{}).eb, kind, PL.regionInfo(IX,x.code).short, GLS);
 const liR=r=>`<li class="${r[0]}">${esc(r[1])}${r[2]?PL.evHtml(r[2],false,esc):''}${r[3]||''}</li>`;   /* r[3]: 모듈이 이스케이프해 만든 펼침 문단(주변 개발사업) */
 let DEVP=null;
+/* 새 분석 설명(한 줄 결론 → 핵심 요약 → 줄별 자세히 보기, assets/narrative.js) — 대표 확인 전까지 ?nar=1 에서만 */
+const NARON = /[?&]nar=1(&|$)/.test(location.search) && !!window.JDJ_NAR;
+function narFor(x, i){
+  if (!NARON || !x.fx || x.fx.fv==null) return '';
+  const N = JDJ_NAR.build(x.fx, {apt:x.apt, dong:x.dong, code:x.code, band:x.band, area:x.area, IX, EV:EVD, MH, SP:SUPPLY, PL, year:new Date().getFullYear(), s:x.series,
+    regionUsed:!!(MODEL&&MODEL.region&&MODEL.region.used), dev: DEVP ? {data:DEVP, u:{code:x.code, dong:x.dong, jibun:x.jb}, o:{apt:x.apt, sggName}} : null});
+  return JDJ_NAR.html(N, {id:'nar'+i});
+}
 let HZ=2;
 try{ HZ = parseInt(new URLSearchParams(location.search).get('hz') || localStorage.getItem('jdj_hz') || '2',10); }catch(e){}
 if(!(HZ>=1&&HZ<=10)) HZ=2;
@@ -746,15 +755,19 @@ function futureReasons(x){
   if (f.fv!=null){
     r.push(['f', `이 단지는 미래가치 점수가 ${fvRank(x)}예요` + (f.fvg!=null?` · ${sggName(x.code)} 안에서는 ${fvgRank(x)}예요`:'') + '.']);
   }
-  /* 선택한 보유 기간 기준 '왜 이 점수인지': 그 기간 모델에서 점수를 가장 많이 올린·내린 항목 */
-  if (f.why){ const mix=hzMix(HZ), h=String(mix.slice().sort((a,b)=>b[1]-a[1])[0][0]), w=f.why[h]||f.why['2'], m=MOD(+h)||MODEL;
-    if (w&&w.length){ const lb=k=>((m&&m.label&&m.label[k])||(MODEL&&MODEL.label&&MODEL.label[k])||k);
-      const U=a=>[...new Set(a)], up=U(w.filter(t=>t.endsWith('+')).map(t=>lb(t.slice(0,-1)))), dn=U(w.filter(t=>t.endsWith('-')).map(t=>lb(t.slice(0,-1)))).filter(x=>!up.includes(x));
-      r.push(['f', `${h}년 점수를 움직인 요인 — ` + (up.length?`올린 요인: ${up.join(' · ')}`:'') + (up.length&&dn.length?' / ':'') + (dn.length?`내린 요인: ${dn.join(' · ')}`:'')]); } }
+  /* 선택한 보유 기간 기준 '왜 이 점수인지': 그 기간 점수를 가장 많이 올린·내린 요인 — 이 단지 실제 값·비교 기준·과거 같은 조건 통계(assets/plain-words.js whyItems) */
+  { const mix=hzMix(HZ), h=String(mix.slice().sort((a,b)=>b[1]-a[1])[0][0]), ri=PL.regionInfo(IX,x.code);
+    const W=PL.whyItems(f,{h, apt:x.apt, dong:x.dong, sgg:sggName(x.code), sido:ri.short, sid:sdIdOf(x.code), ev:EVD, G:GLS, rp:PL.regionPlace(IX,x.code,f.gs),
+      regionUsed:!!(MODEL&&MODEL.region&&MODEL.region.used), sp:SUPPLY, year:new Date().getFullYear(), IX, code:x.code});
+    x._whyKeys=W.keys;
+    for (const it of W.items) r.push(['f', PL.whyLine(it), it.ev]);
+    const hg=PL.hzGapLine(f,{apt:x.apt, dong:x.dong, sgg:sggName(x.code), sido:ri.short, G:GLS, sp:SUPPLY, year:new Date().getFullYear(), rp:PL.regionPlace(IX,x.code,f.gs),
+      regionUsed:!!(MODEL&&MODEL.region&&MODEL.region.used), IX, code:x.code, hzOk:{1:HOK(1),3:HOK(3),5:HOK(5),7:HOK(7)}});
+    if (hg) r.push(['f', '보유 기간별 차이: '+hg]); }
   /* 가까운·같은 생활권 대규모 공급(단계 이력·첫 입주 목표·지연·과거 통계·점수 반영 여부) — 새 자료(f.sl)가 있으면 이것으로 */
   if (f.sl && SUPPLY && SUPPLY.zones) for (const ln of PL.supplyLines(f, SUPPLY, GLS)) r.push(ln);
   /* 주변 개발사업(assets/devproj-view.js): 요약 한 줄 + 펼침 문단(거리·발표 뒤 같은 구 대비·다음 단계·과거 사례·공식 출처) */
-  if (window.JDJDev && DEVP){ const du={code:x.code,dong:x.dong,jibun:x.jb}, dop={apt:x.apt,sggName}, sl=JDJDev.summaryLine(DEVP,du,dop);
+  if (window.JDJDev && DEVP && !NARON){ const du={code:x.code,dong:x.dong,jibun:x.jb}, dop={apt:x.apt,sggName}, sl=JDJDev.summaryLine(DEVP,du,dop);
     if (sl) r.push(['f', sl, null, `<details class="dvd"><summary>주변 개발사업 자세히 보기</summary><div class="dv-sec">${JDJDev.detailHtml(DEVP,du,dop)}</div></details>`]); }
   /* 1기 신도시 노후계획도시 정비 선도지구 */
   { const rn = PL.renewalLine(f, SUPPLY, GLS, EVD); if (rn) { r.push(['f', rn.text]); if (rn.ref) r.push(['', rn.ref]); } }
@@ -774,7 +787,7 @@ function futureReasons(x){
     const rg=PL.regionText(f, IX, x.code, GLS);
     r.push(['f', [PL.regionLine(rg, `${sggName(x.code)} 지역 흐름:`), (f.gs!=null&&!RUSED())?'(지역 흐름은 아직 점수에 넣지 않았어요 · 참고만)':''].filter(Boolean).join(' ')]);
   }
-  if (f.dd!=null && Math.abs(f.dd)>=0.03) r.push([f.dd>0?'f':'c', PL.ddText(f.dd,GLS) + (f.dd>0 ? ' — 집값이 흔들릴 때 잘 버틴 편이에요' : ' — 시장에 따라 오르내림이 큰 편이에요'), EVK(x,'dd')]);
+  if (f.dd!=null && Math.abs(f.dd)>=0.03 && !(x._whyKeys&&x._whyKeys.has('dd'))) r.push([f.dd>0?'f':'c', PL.ddText(f.dd,GLS) + (f.dd>0 ? ' — 집값이 흔들릴 때 잘 버틴 편이에요' : ' — 시장에 따라 오르내림이 큰 편이에요'), EVK(x,'dd')]);
   if (f.rc!=null && Math.abs(f.rc)>=0.03 && Math.abs(f.rc)<0.5) r.push(['f', PL.rcText(f.rc,GLS), EVK(x,'rc')]);
   if (f.by || f.hh){ const age=f.by ? PL.ageOf(f.by) : null;
     const parts=[]; if(f.by && PL.ageText(f.by)) parts.push(PL.ageText(f.by, null, '준공')); if(f.hh) parts.push(`${f.hh.toLocaleString()}세대`);
@@ -797,10 +810,12 @@ function futureReasons(x){
     t += R.x ? '노선 계획 공식 취소·제외' : R.opened ? `${d(R.stym)} 개통` : `${d(R.stym)} ${SK[R.stage]||R.stage} 이후 공사 중` + (R.dl ? `, ${PL.delayText(R.dl,'개통')}` : (R.target?`, 개통 목표 ${d(R.target)}`:'') + (R.delays?`(일정 지연 ${R.delays}회)`:''));
     if (R.pre!=null) t += ` · ${d(R.first)} 이후 이 단지는 구 평균보다 ${Math.abs(R.pre)}% ${R.pre>=0?'더':'덜'} 올랐어요`;
     const S = RAIL&&RAIL.summary&&RAIL.summary[R.opened?'open':'open'];
-    if (!R.opened && S && S.n>=15 && S.after18!=null) t += ` — 과거 수도권 ${S.n}개 역 사례: 개통 후 1년 반 동안 구 평균 대비 ${S.after18>=0?'+':''}${S.after18}%`;
-    r.push(['f', t, EVK(x,'rail')]);
+    const sx = (!R.opened && S && S.n>=15 && S.after18!=null) ? `과거 수도권 ${S.n}개 역 사례: 개통 후 1년 반 동안 구 평균 대비 ${S.after18>=0?'+':''}${S.after18}%` : '';
+    /* 위 '점수를 움직인 요인'에 신설역이 이미 나왔으면 과거 역 사례만 덧붙인다(같은 문장 반복 없이) */
+    if (['rlp','rls','rlo','rld'].some(k=>x._whyKeys&&x._whyKeys.has(k))) { if (sx) r.push(['', '신설역 참고: '+sx]); }
+    else r.push(['f', t + (sx ? ' — '+sx : ''), EVK(x,'rail')]);
   }
-  if (f.sch!=null){
+  if (f.sch!=null && !(x._whyKeys&&x._whyKeys.has('sch'))){
     const p=Math.round(f.sch*1000)/10;
     r.push(['f', '학군: '+PL.schText(f.sch, f.schn, GLS), EVK(x,'sch')]); }
   if (f.sub!=null){
@@ -845,7 +860,7 @@ function reasons(x){
   if (x.n>=60) r.push(['', `거래 활발: 이 단지는 최근 1년 실거래가 ${x.n}건이라 팔 때도 수요가 꾸준한 편이에요`]);
   else if (x.n>=24) r.push(['', `거래 꾸준: 이 단지는 최근 1년 실거래가 ${x.n}건이에요`]);
   else r.push(['c', `거래량 적음: 이 단지는 최근 1년 실거래가 ${x.n}건이라 시세 확인과 매도 기간에 여유를 두세요`]);
-  if (x.ch!==null){
+  if (x.ch!==null && !(x._whyKeys&&x._whyKeys.has('mom'))){
     r.push([x.ch>=0.08?'c':'', '최근 6개월: '+PL.momText(x.ch,GLS), EVK(x,'mom')]);
   }
   if (Math.abs(x.rel)>=0.05){
@@ -1282,7 +1297,7 @@ async function render(){
             <div class="loc">${x.band} (전용 ${x.area}㎡) · 추정 시세 ${fmtS(x.P)}${isReg(x.code)?' · 규제지역':''}</div></div>
           <div class="ring" aria-label="${rg.k} ${rg.v}점"><b>${rg.v}</b><small>${rg.k}</small></div>
         </div>
-        <ul class="reasons">${rs.slice(0,3).map(li).join('')}</ul>
+        ${narFor(x,i) || `<ul class="reasons">${rs.slice(0,3).map(li).join('')}</ul>`}
         <div class="cps noprint">${PB(x,'report_top')}</div>
         <div class="cmore" id="pm${i}" hidden>
           <div class="row">
@@ -1291,7 +1306,7 @@ async function render(){
             <div class="mini"><div class="k">월 상환</div><div class="v">${Math.round(x.mon).toLocaleString()}만</div></div>
           </div>
           <div class="loc">최근 시세 흐름 ${spark(x.series)}</div>
-          ${rs.length>3?`<ul class="reasons">${rs.slice(3).map(li).join('')}</ul>`:''}
+          ${NARON && x.fx && x.fx.fv!=null ? `<h4 class="narx">자세한 자료</h4><ul class="reasons">${rs.map(li).join('')}</ul>` : rs.length>3?`<ul class="reasons">${rs.slice(3).map(li).join('')}</ul>`:''}
           <a class="premlink noprint" href="/jangdaejang-calc/premium/?p=single&k=${encodeURIComponent(k)}" data-track="report_to_premium">이 단지 프리미엄 리포트 (9,900원) · 시나리오·세금 시뮬레이션 순차 제공 ›</a>
         </div>
         <div class="cgate" id="pg${i}" hidden></div>
@@ -1374,6 +1389,7 @@ async function render(){
   document.querySelectorAll('[data-more]').forEach(b=>b.onclick=()=>{ const m=$(b.dataset.more); if(!m) return;
     if (repLocked()){ const g=$(b.dataset.more.replace('pm','pg')); if(!g) return; g.hidden=!g.hidden; if(!g.innerHTML) g.innerHTML=JDJ_AUTH.gate('대출·필요 현금·월 상환과 추천 이유 전체는 로그인하면 볼 수 있어요. 요약과 점수는 지금처럼 그대로 보여 드려요.', '카카오로 3초 로그인하고 상세 보기', 'report_detail'); b.setAttribute('aria-expanded', String(!g.hidden)); b.textContent=g.hidden?'자세한 리포트':'간단히 보기'; if(!g.hidden) JDJ.track('report_detail_gate'); return; } m.hidden=!m.hidden; b.setAttribute('aria-expanded', String(!m.hidden)); b.textContent=m.hidden?'자세한 리포트':'간단히 보기'; if(!m.hidden) JDJ.track('report_card_more'); });
   document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>goCard(+b.dataset.i||0, b.dataset.go));
+  if (NARON) document.querySelectorAll('#report .nar').forEach(el=>JDJ_NAR.bind(el));
   const wb=document.getElementById('widenBtn'); if(wb) wb.onclick=()=>{ S.sggs=new Set(sggsOfSido(S.sido)); renderSggChips(); render(); JDJ.track('report_widen',{region:S.sido.short}); };
   fillAgents(picked.length ? picked : near).catch(e=>console.warn('agents',e));
   JDJ.track('report_render', {region:S.sido.short, sgg_count:S.sggs.size, max_band:JDJ.band(M), picks:picked.length});
