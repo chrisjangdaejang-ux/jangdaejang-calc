@@ -33,7 +33,7 @@
 <script src="../../assets/stat.js?v=3"></script>
 <script src="../../assets/region-notes.js"></script>
 <script src="../../assets/rec-core.js?v=2"></script>
-<script src="../../assets/mine-core.js?v=11"></script>
+<script src="../../assets/mine-core.js?v=12"></script>
 <script src="../../assets/price-sheet.js?v=11"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/config.js?v=1"></script>
@@ -41,7 +41,7 @@
 <script src="../../assets/share.js?v=3"></script>
 <script src="../../assets/loan-core.js?v=1"></script>
 <script src="../../assets/kchat.js?v=1"></script>
-<script src="../../assets/plain-words.js?v=6"></script>
+<script src="../../assets/plain-words.js?v=7"></script>
 <script src="../../assets/policy-view.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -771,9 +771,9 @@ function futureReasons(x){
   }
   if (f.dd!=null && Math.abs(f.dd)>=0.03) r.push([f.dd>0?'f':'c', PL.ddText(f.dd,GLS) + (f.dd>0 ? ' — 집값이 흔들릴 때 잘 버틴 편이에요' : ' — 시장에 따라 오르내림이 큰 편이에요'), EVK(x,'dd')]);
   if (f.rc!=null && Math.abs(f.rc)>=0.03 && Math.abs(f.rc)<0.5) r.push(['f', PL.rcText(f.rc,GLS), EVK(x,'rc')]);
-  if (f.by || f.hh){ const age=f.by ? new Date().getFullYear()-f.by : null;
-    const parts=[]; if(f.by) parts.push(`${f.by}년 준공(${age}년차)`); if(f.hh) parts.push(`${f.hh.toLocaleString()}세대`);
-    const tags=[]; if(age!=null && age<=10) tags.push('신축');
+  if (f.by || f.hh){ const age=f.by ? PL.ageOf(f.by) : null;
+    const parts=[]; if(f.by && PL.ageText(f.by)) parts.push(PL.ageText(f.by, null, '준공')); if(f.hh) parts.push(`${f.hh.toLocaleString()}세대`);
+    const tags=[]; if(age!=null && age>=0 && age<=10) tags.push('신축');
     if(age!=null && age>=30) tags.push('재건축 연한(30년) 도래, 새 아파트 기대감이 가격에 반영되는 단지');
     else if(age!=null && age>=25) tags.push(`${30-age}년 뒤 재건축 연한(30년) 도래`);
     if(f.hh>=1000) tags.push('대단지'); else if(f.hh && f.hh<300) tags.push('소규모 단지');
@@ -805,10 +805,10 @@ function futureReasons(x){
     const g=f.eg.v-f.eg.b-f.eg.p, ln=['f', `재건축 완료 시${f.eg.done?`(예상 준공 ${f.eg.done}년 전후)`:''} 기대 차익 약 ${g>=0?'+':'−'}${fmtS(Math.abs(g))} — 지역 신축 시세로 본 같은 평형 가치 ${fmtS(f.eg.v)}, 예상 분담금 ${f.eg.b>=0?fmtS(f.eg.b):'환급 '+fmtS(-f.eg.b)}, 현재가 ${fmtS(f.eg.p)} (간이 추정 — 기부채납·임대주택·사업비에 따라 달라질 수 있어요)`];
     if (HZ<=2) r.push(ln); else r.unshift(ln);
   }
-  if (f.rz && !(f.by && new Date().getFullYear()-f.by>=25 && (f.land || f.vl || f.landavg))) r.unshift(['f', rzText(f.rz), EVK(x,'stg')]);
-  else if (!f.rz && x.code && x.code.startsWith('11') && f.by && new Date().getFullYear()-f.by>=30)
+  if (f.rz && !(f.by && PL.ageOf(f.by)>=25 && (f.land || f.vl || f.landavg))) r.unshift(['f', rzText(f.rz), EVK(x,'stg')]);
+  else if (!f.rz && x.code && x.code.startsWith('11') && f.by && PL.ageOf(f.by)>=30)
     r.push(['f', '재건축 진행: 서울시 공식 자료(정비사업 추진현황·신속통합기획)에 아직 추진 이력이 없어요']);
-  if (f.by && new Date().getFullYear()-f.by>=25 && (f.land || f.vl || f.landavg)){
+  if (f.by && PL.ageOf(f.by)>=25 && (f.land || f.vl || f.landavg)){
     const out=[];
     // ① 단지 사업성: 세대당 평균 대지지분 + 용적률
     if (f.landavg || f.vl || f.rbp!=null){
@@ -1022,22 +1022,22 @@ async function renderCompare(){
   add('최근 6개월', items.map(x=>x.ch==null?'-':`${x.ch>=0?'+':''}${(x.ch*100).toFixed(1)}%<small>${x.ch>=0.08?'짧은 기간에 빠르게 올랐어요':x.ch>=0?'조금 올랐어요':'내렸어요'}</small>`), items.map(x=>x.ch==null?null:sMomOf(x.ch)), true);
   add('동 대장 대비', items.map(x=>{ const f=x.fx||{}; if(f.lg==null) return '-'; return (f.ln===x.apt||f.lg>=0.995) ? '동 대장 단지' : `대장(${esc(f.ln||'')})보다 ${pc(1-f.lg)}% 낮음${f.ln?`<div class="cps noprint">${PB(x,'report_leader','sm',f.ln)}</div>`:''}`; }), null);
   add('입지·단지',null,null,null,true);
-  add('준공·세대수', items.map(x=>{ const f=x.fx||{}; const age=f.by?Y-f.by:null; return (f.by?`${f.by}년(${age}년차)`:'-') + (f.hh?`<small>${f.hh.toLocaleString()}세대${f.hh>=1000?' · 대단지':''}</small>`:''); }), items.map(x=>x.fx&&x.fx.hh?x.fx.hh:null), true);
+  add('준공·세대수', items.map(x=>{ const f=x.fx||{}; return (PL.ageText(f.by, Y)||'-') + (f.hh?`<small>${f.hh.toLocaleString()}세대${f.hh>=1000?' · 대단지':''}</small>`:''); }), items.map(x=>x.fx&&x.fx.hh?x.fx.hh:null), true);
   add('지하철', items.map(x=>{ const f=x.fx||{}; return f.sub==null?'-':(f.sub>=30?'도보 20분 이상':`도보 ${f.sub<=5?'5분 이내':f.sub+'분 이내'}`)+(f.subs?`<small>${esc(f.subs.replace(/\s+/g,' '))}</small>`:''); }), items.map(x=>x.fx&&x.fx.sub!=null?x.fx.sub:null), false);
   add('신설 노선', items.map(x=>{ const R=x.fx&&x.fx.rl; if(!R) return '-'; const d=v=>v?`${v.slice(0,4)}.${v.slice(4)}`:''; const SK={plan:'계획 확정',start:'착공',start_real:'본공사',delay:'지연',open:'개통'};
     return `${esc(R.line)} ${esc(R.st)}<small>${R.m!=null?`직선 ${R.m.toLocaleString()}m · `:''}${R.opened?d(R.stym)+' 개통':(SK[R.stage]||R.stage)+(R.target?` · 목표 ${d(R.target)}`:'')}</small>`; }), null);
-  if (items.some(x=>x.fx&&(x.fx.rz||(x.code.startsWith('11')&&x.fx.by&&Y-x.fx.by>=25)))){
+  if (items.some(x=>x.fx&&(x.fx.rz||(x.code.startsWith('11')&&x.fx.by&&PL.ageOf(x.fx.by,Y)>=25)))){
     add('재건축 진행', items.map(x=>{ const z=x.fx&&x.fx.rz; if(z) return `${RZ_LV[z.lv]||''}<small>${esc(z.n)}${z.ym?` · ${rzYm(z.ym)}`:''} · 10단계 중 ${z.lv}단계</small>`;
-      return x.code.startsWith('11')&&x.fx&&x.fx.by&&Y-x.fx.by>=25 ? '추진 이력 없음<small>신속통합기획·정비구역 공식 자료에 없음</small>' : '-'; }),
-      items.map(x=>x.fx&&x.fx.rz?x.fx.rz.lv:(x.code.startsWith('11')&&x.fx&&x.fx.by&&Y-x.fx.by>=25?0:null)), true);
+      return x.code.startsWith('11')&&x.fx&&x.fx.by&&PL.ageOf(x.fx.by,Y)>=25 ? '추진 이력 없음<small>신속통합기획·정비구역 공식 자료에 없음</small>' : '-'; }),
+      items.map(x=>x.fx&&x.fx.rz?x.fx.rz.lv:(x.code.startsWith('11')&&x.fx&&x.fx.by&&PL.ageOf(x.fx.by,Y)>=25?0:null)), true);
   }
   if (items.some(x=>x.fx&&x.fx.eg)){
     add('재건축 완료 시 기대 차익', items.map(x=>{ const e=x.fx&&x.fx.eg; if(!e) return '-'; const g=e.v-e.b-e.p; return `${g>=0?'+':'−'}${fmtS(Math.abs(g))}<small>${e.done?`예상 준공 ${e.done}년 전후 · `:''}완공 가치 ${fmtS(e.v)} · 분담금 ${e.b>=0?fmtS(e.b):'환급'}</small>`; }),
       items.map(x=>x.fx&&x.fx.eg?(x.fx.eg.v-x.fx.eg.b-x.fx.eg.p)/x.fx.eg.p:null), true);
   }
-  if (items.some(x=>x.fx&&x.fx.by&&Y-x.fx.by>=25)){
-    add('재건축 사업성', items.map(x=>{ const f=x.fx||{}; if(!f.by||Y-f.by<25) return '-<small>해당 없음</small>'; const gr=f.rbp==null?'':(f.rbp>=70?'좋은 편':f.rbp>=30?'보통':'낮은 편');
-      return (gr||'-') + `<small>${f.landavg?`세대당 평균 대지지분 ${f.landavg}평`:''}${f.vl?` · 용적률 ${Math.round(f.vl)}%`:''}${f.land?` · 이 평형 ${f.land}평`:''}</small>`; }), items.map(x=>x.fx&&x.fx.rbp!=null&&x.fx.by&&Y-x.fx.by>=25?x.fx.rbp:null), true);
+  if (items.some(x=>x.fx&&x.fx.by&&PL.ageOf(x.fx.by,Y)>=25)){
+    add('재건축 사업성', items.map(x=>{ const f=x.fx||{}; if(!f.by||!(PL.ageOf(f.by,Y)>=25)) return '-<small>해당 없음</small>'; const gr=f.rbp==null?'':(f.rbp>=70?'좋은 편':f.rbp>=30?'보통':'낮은 편');
+      return (gr||'-') + `<small>${f.landavg?`세대당 평균 대지지분 ${f.landavg}평`:''}${f.vl?` · 용적률 ${Math.round(f.vl)}%`:''}${f.land?` · 이 평형 ${f.land}평`:''}</small>`; }), items.map(x=>x.fx&&x.fx.rbp!=null&&x.fx.by&&PL.ageOf(x.fx.by,Y)>=25?x.fx.rbp:null), true);
   }
   add('학군(중학교 전입)', items.map(x=>{ const v=x.fx&&x.fx.sch; if(v==null) return '-'; const p=Math.round(v*1000)/10; return `${p>=0?'+':''}${p}%<small>${x.fx.schn?esc(x.fx.schn.join('·'))+' · ':''}${p>=3?'학군 수요 유입':p<=-3?'전출 우세':'비슷'}</small>`; }), items.map(x=>x.fx&&x.fx.sch!=null?x.fx.sch:null), true);
   add('전세가율', items.map(x=>{ const j=x.fx&&x.fx.jr; return j==null?'-':`${pc(j)}%<small>${j>=0.6?'전셋값이 집값에 가까운 편':j<0.4?(x.fx.rz?'재건축 단지라 전셋값이 낮은 편':'전셋값이 낮은 편'):''}</small>`; }), items.map(x=>x.fx&&x.fx.jr!=null?x.fx.jr:null), true);

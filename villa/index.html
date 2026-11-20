@@ -206,7 +206,7 @@ function zoneLine(z, gr, rk, by){
   const est = z.src==='n' ? ' · 구역 이름으로 같은 동 추정' : '';
   const base = z.b ? `기준일 추정 ${ym(z.b)}(가장 이른 공식 단계)` : '단계 날짜 자료 없음';
   return `<div class="zrow">${where}<b>${esc(z.n)}</b> <small>${esc(z.t)} · 10단계 중 ${z.lv}단계(${esc(z.st)})${est}</small>${lvbar(z.lv)}
-    <small>${base}${gr<=1||gr===3?'':' · 구역 포함 여부 ⓘ'}</small>${(gr===0||gr===3)?BD_NOTE:''}${xnote(z)}${inout(z)}${rk&&gr!==3?`<span class="rk ${RK[rk][0]}" style="font-size:13.5px;padding:3px 8px">${by?by+'년 건축 · ':''}${RK[rk][1]}</span>`:''}</div>`;
+    <small>${base}${gr<=1||gr===3?'':' · 구역 포함 여부 ⓘ'}</small>${(gr===0||gr===3)?BD_NOTE:''}${xnote(z)}${inout(z)}${rk&&gr!==3?`<span class="rk ${RK[rk][0]}" style="font-size:13.5px;padding:3px 8px">${by&&window.JDJ_PLAIN&&JDJ_PLAIN.ageText(by)?JDJ_PLAIN.ageText(by,null,'건축')+' · ':''}${RK[rk][1]}</span>`:''}</div>`;
 }
 function worst(zs){ return zs.filter(z=>z[1]!==3).reduce((a,z)=> ORDER.indexOf(z[2]) < ORDER.indexOf(a) ? z[2] : a, 'o'); }
 /* 원자료 단계·날짜가 서로 맞지 않는 구역(엔진 자동 점검) */
@@ -361,7 +361,7 @@ async function init(){
 }
 init();
 </script>
-<script src="../assets/plain-words.js?v=6"></script>
+<script src="../assets/plain-words.js?v=7"></script>
 <script>document.addEventListener("DOMContentLoaded",()=>{ if(window.JDJ_PLAIN) JDJ_PLAIN.autoGloss(document.querySelector(".wrap")); });</script>
 </body>
 </html>

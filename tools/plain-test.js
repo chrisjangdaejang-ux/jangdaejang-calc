@@ -7,6 +7,29 @@ const has = (a, b, m) => eq(String(a).includes(b), true, m + ' — "' + b + '" i
 const not = (a, b, m) => eq(String(a).includes(b), false, m + ' — no "' + b + '" in "' + a + '"');
 
 eq(P.won(392705), '39억 2,705만원', '금액 한국식');
+/* 연차: 아실 방식 '올해 − 준공 연도'(화면 표기 공용) */
+eq(P.ageOf(2005, 2026), 21, '연차 숫자: 올해 − 준공 연도');
+eq(P.ageOf(2028, 2026), -2, '연차 숫자: 미래 연도는 음수(입주 예정)');
+eq(P.ageOf(1800, 2026), null, '연차 숫자: 이상한 연도는 null');
+eq(P.ageOf(0, 2026), null, '연차 숫자: 0은 null');
+eq(P.ageText(2005, 2026), '2005년(21년차)', '연차 표기 기본');
+eq(P.ageText(2005, 2026, '준공'), '2005년 준공(21년차)', '연차 표기 준공');
+eq(P.ageText(1990, 2026, '건축'), '1990년 건축(36년차)', '연차 표기 건축(빌라)');
+eq(P.ageText(2026, 2026, '준공'), '2026년 준공(올해 입주)', '올해 준공');
+eq(P.ageText(2028, 2026, '준공'), '2028년 입주 예정', '미래 연도는 입주 예정');
+eq(P.ageLabel(2016, 2026), '10년차', '연차 이름표');
+eq(P.ageLabel(2027, 2026), '입주 예정', '연차 이름표 미래');
+eq(P.ageText(null, 2026), '', '연도 없으면 빈 문자열');
+/* 화면 코드에서 연차를 따로 계산하지 않는다(모두 ageOf/ageText 사용) */
+{
+  const fs = require('fs'), path = require('path'), R = path.join(__dirname, '..');
+  const files = ['mine/index.html', 'buy/report/index.html', 'switch/index.html', 'ask/index.html', 'villa/index.html',
+    'assets/premium-report.js', 'assets/offi-view.js', 'assets/mine-core.js', 'assets/ask-core.js'];
+  for (const f of files) {
+    const src = fs.readFileSync(path.join(R, f), 'utf8');
+    eq(/getFullYear\(\)\s*-\s*\w*\.?by\b|\bY\s*-\s*\w*\.?f?\.?by\b|년차\)`/.test(src), false, '연차 직접 계산 없음: ' + f);
+  }
+}
 eq(P.won(390000), '39억원', '금액 억 단위');
 eq(P.won(8500), '8,500만원', '금액 만원');
 eq(P.eokR(392705), '39억', '대략 금액 10억 이상');

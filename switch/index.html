@@ -41,7 +41,7 @@
 <script src="../tax/adjusted-areas.js"></script>
 <script src="../tax/tax-engine.js"></script>
 <script src="../assets/rec-core.js?v=2"></script>
-<script src="../assets/mine-core.js?v=11"></script>
+<script src="../assets/mine-core.js?v=12"></script>
 <script src="../assets/price-sheet.js?v=11"></script>
 <script src="switch-core.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -972,7 +972,7 @@ function recReasons(x){
   if(x.ch!=null) tr.push(`최근 6개월 평당가 ${pct1(x.ch)}`);
   if(x.ch3!=null) tr.push(`자료 기간(약 3년) 평당가 ${pct1(x.ch3)}`);
   r.push([x.ch!=null&&x.ch>=0.08?'c':'', '실거래(국토교통부): '+tr.join(' · ')+(x.ch!=null&&x.ch>=0.08?' — 최근 상승 속도가 빠른 편이에요':'')]);
-  const bits=[]; if(f.by) bits.push(`${f.by}년 준공(${Y-f.by}년차)`); if(f.hh) bits.push(`${f.hh.toLocaleString()}세대`);
+  const bits=[]; if(f.by && JDJ_PLAIN.ageText(f.by, Y)) bits.push(JDJ_PLAIN.ageText(f.by, Y, '준공')); if(f.hh) bits.push(`${f.hh.toLocaleString()}세대`);
   if(f.sub!=null) bits.push(f.sub>=30?'지하철역 도보 20분 이상':`${escH(f.subs?String(f.subs).replace(/\s+/g,' '):'지하철역')}까지 도보 ${f.sub<=5?'5분 이내':f.sub+'분 이내'}`);
   if(f.jr!=null) bits.push(`전세가율 ${Math.round(f.jr*100)}%`);
   if(bits.length) r.push(['', '단지: '+bits.join(' · ')]);
@@ -1076,7 +1076,7 @@ $('copyBtn').addEventListener('click',async()=>{
 $('saleDate').value=TODAY;
 setTermOptions(); autoAdj(); render();
 </script>
-<script src="../assets/plain-words.js?v=6"></script>
+<script src="../assets/plain-words.js?v=7"></script>
 <script>document.addEventListener("DOMContentLoaded",()=>{ if(window.JDJ_PLAIN) JDJ_PLAIN.autoGloss(document.querySelector(".wrap")); });</script>
 </body>
 </html>

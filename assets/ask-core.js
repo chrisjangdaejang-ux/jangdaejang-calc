@@ -8,6 +8,7 @@
 (function (root) {
   'use strict';
   const M = () => root.JDJ_MINE || (typeof require === 'function' ? require('./mine-core.js') : null);
+  const PW = () => root.JDJ_PLAIN || (typeof require === 'function' ? (require('./plain-words.js'), globalThis.JDJ_PLAIN) : null);
   const MAX = 3;
 
   /* ---------- 문장 다듬기 ---------- */
@@ -267,12 +268,7 @@
     const m = +t.slice(4, 6); return m >= 1 && m <= 12 ? `${t.slice(0, 4)}년 ${m}월` : '';
   }
   /** 입주(준공) 연도 → '2018년(8년차)', 아직 입주 전이면 '2027년 입주 예정', 이상한 값은 '' */
-  function ageText(by, year) {
-    by = +by; year = +year || new Date().getFullYear();
-    if (!(by >= 1950 && by <= year + 6)) return '';
-    if (by > year) return `${by}년 입주 예정`;
-    return year === by ? `${by}년(올해 입주)` : `${by}년(${year - by}년차)`;
-  }
+  function ageText(by, year) { const P = PW(); return P ? P.ageText(by, year) : ''; }   // 공용: assets/plain-words.js
   /** 차이 비율 → {p 반올림 %, up} — 0.5% 미만은 null('비슷해요'로 표시, '-0.01%' 같은 값 안 씀) */
   function pctDiff(d) { if (d == null || !isFinite(d)) return null; const p = Math.round(Math.abs(d) * 100); return p < 1 ? { p: 0, up: false, same: true } : { p, up: d > 0, same: false }; }
   /** 거래 회전율: 최근 12개월 매매 건수(모든 평형) ÷ 세대수 */

@@ -253,7 +253,6 @@
     const c1 = O.change(ps.s, ps.months, 12), c3 = O.change(ps.s, ps.months, 36);
     const y = u.y, ex = O.example(u), s = OX.sgg[S.g] || {}, pass = O.passed(OX);
     const chTxt = c => c ? `<span class="${updown(c.pct)}">${M.pctTxt(c.pct)}</span>` : '-';
-    const age = u.by ? new Date().getFullYear() - u.by : null;
     const tr = O.trades(u), rn = O.rents(u);
     const hiBox = (k, h) => h ? `<div><div class="k">${k}</div><div class="v">${won(h[0])}</div><div class="d">${ymL(String(h[1]).slice(0, 6))} · 전용 ${h[2]}㎡</div></div>` : '';
     const sdId = sdOf(S.g);
@@ -262,7 +261,7 @@
     $('ofRes').hidden = false;
     $('ofRes').innerHTML = `
     <div class="panel">
-      <div class="dhead"><div><h2>${esc(O.nameOf(u))}</h2><div class="loc">${esc(sidoName(S.g))} ${esc(sggName(S.g))} ${esc(u.d)} ${esc(u.j)}${u.by ? ` · ${u.by}년 준공(${age}년차)` : ''} · 대표 전용 ${u.a}㎡</div></div></div>
+      <div class="dhead"><div><h2>${esc(O.nameOf(u))}</h2><div class="loc">${esc(sidoName(S.g))} ${esc(sggName(S.g))} ${esc(u.d)} ${esc(u.j)}${window.JDJ_PLAIN && JDJ_PLAIN.ageText(u.by) ? ` · ${JDJ_PLAIN.ageText(u.by, null, '준공')}` : ''} · 대표 전용 ${u.a}㎡</div></div></div>
       <div class="stats">
         <div class="st key"><div class="k">${last ? '최근 시세' : '마지막 시세'} (전용 ${u.a}㎡)</div><div class="v">${last ? won(last.v) : any ? won(any.v) : '거래 없음'}</div><div class="d">${last ? ymL(last.at) + ' 기준' : any ? ymL(any.at) + ' · 최근 3개월 거래 없음' : '최근 매매가 없어요'}</div></div>
         <div class="st"><div class="k">임대수익률(표면)</div><div class="v">${y ? O.pct(y.r) : '확인 불가'}</div><div class="d">${y ? (u.rk && u.rk.g ? `${esc(sggName(S.g))} 오피스텔 ${u.rk.g[2]}곳 중 ${O.rankText(u.rk.g)}` : ymL(y.at) + ' 기준') : '매매·월세 계약이 적어요'}</div></div>

@@ -260,7 +260,7 @@
      reasonItems → [{t: 문장, ev: 근거 등급(PL.evid 결과) 또는 null, c: 'c'(주의)|''}] · reasons → 문장만 */
   function reasonItems(f, x) {
     const r = []; if (!f) return r;
-    const PL = x.PL || root.JDJ_PLAIN, G = x.G || null;
+    const PL = x.PL || root.JDJ_PLAIN || (typeof require === 'function' ? (require('./plain-words.js'), globalThis.JDJ_PLAIN) : null), G = x.G || null;
     const pct = v => Math.round(Math.abs(v) * 100);
     const Y = x.year || new Date().getFullYear();
     const EV = kind => (PL && x.ev && x.sid) ? PL.evid(x.ev, x.sid, f.eb, kind, x.sidoShort || '', G) : null;
@@ -283,9 +283,9 @@
       : `이 단지는 최근 3년 하락기에 구 평균보다 ${pct(f.dd)}%p ${f.dd > 0 ? '덜' : '더'} 내렸어요`, EV('dd'), f.dd > 0 ? '' : 'c');
     /* 고점 회복(rc)은 공개 값이 비율(예: 0.966)로 보여 '구 평균 대비 %p' 문구와 맞지 않아 이 화면에서는 싣지 않는다 */
     if (f.by || f.hh) {
-      const age = f.by ? Y - f.by : null, parts = [], tags = [];
-      if (f.by) parts.push(`${f.by}년 준공(${age}년차)`); if (f.hh) parts.push(`${f.hh.toLocaleString()}세대`);
-      if (age != null && age <= 10) tags.push('신축이에요');
+      const age = f.by ? PL.ageOf(f.by, Y) : null, parts = [], tags = [];
+      if (f.by && PL.ageText(f.by, Y)) parts.push(PL.ageText(f.by, Y, '준공')); if (f.hh) parts.push(`${f.hh.toLocaleString()}세대`);
+      if (age != null && age >= 0 && age <= 10) tags.push('신축이에요');
       if (age != null && age >= 30) tags.push('지은 지 30년이 넘어 재건축을 추진할 수 있는 나이가 됐어요');
       else if (age != null && age >= 25) tags.push(`${30 - age}년 뒤 재건축을 추진할 수 있는 나이(30년)가 돼요`);
       if (f.hh >= 1000) tags.push('대단지예요'); else if (f.hh && f.hh < 300) tags.push('소규모 단지예요');

@@ -22,6 +22,26 @@
     return t => { if (used.has(t) || !(t in GL || t in FIRST)) return t; used.add(t); return FIRST[t] || `${t}(${GL[t]})`; };
   }
 
+  /* 연차(화면 표기 전용) — 아실과 같은 '올해 − 준공 연도'. 모든 화면이 이 함수만 쓴다.
+     엔진 모델 피처(연식)와는 별개이며 계산식에 쓰지 않는다.
+     ageOf: 숫자(음수 = 아직 입주 전), 이상한 연도는 null
+     ageLabel: '8년차' · '올해 입주' · '입주 예정'
+     ageText(by, year, word): '2018년(8년차)' · word='준공' → '2018년 준공(8년차)' · 미래 → '2028년 입주 예정' */
+  function ageOf(by, year) {
+    by = +by; year = +year || new Date().getFullYear();
+    if (!(by >= 1900 && by <= year + 10)) return null;
+    return year - by;
+  }
+  function ageLabel(by, year) {
+    const a = ageOf(by, year);
+    return a == null ? '' : a < 0 ? '입주 예정' : a === 0 ? '올해 입주' : `${a}년차`;
+  }
+  function ageText(by, year, word) {
+    const a = ageOf(by, year); if (a == null) return '';
+    if (a < 0) return `${+by}년 입주 예정`;
+    return `${+by}년${word ? ' ' + word : ''}(${ageLabel(by, year)})`;
+  }
+
   /* 받침에 따라 조사 고르기 */
   function J(w, a, b) {
     const c = String(w).trim().slice(-1).charCodeAt(0);
@@ -274,7 +294,7 @@
   }
   /* 전세가율 문장: 전셋값 수준 이유 + 내 돈·대출로 마련할 몫 + 같은 시·도 비교 */
   function jrText(f, priceMan, st, sidoShort, G, by) {
-    const jr = f.jr, age = by ? new Date().getFullYear() - by : null, q = Math.round(jr * 100);
+    const jr = f.jr, age = ageOf(by), q = Math.round(jr * 100);
     let why = '';
     if (jr < 0.4) why = f.rz ? '재건축 단지는 건물이 낡아 전셋값이 낮은 편이에요.' : (age != null && age >= 30) ? '지은 지 30년이 넘은 단지는 건물이 낡아 전셋값이 낮은 편이에요.' : '집값에 비해 전셋값이 낮은 편이에요.';
     else if (jr >= 0.6) why = '집값에 비해 전셋값이 높은 편이에요.';
@@ -462,5 +482,5 @@
     run();
   }
 
-  root.JDJ_PLAIN = { popLines, STAGE, GL_PAGE, glossDom, autoGloss, gloss, J, won, eokR, rank, more, regionInfo, rankBase, regionRank, regionPlace, topPct, regionText, regionLine, evid, evHtml, ddText, rcText, momText, schText, stageName, rzText, jrStats, jrText, VOK, hzLabel, checkText, easy, ymKo, spanKo, delayText, unitsKo, supplyLines, renewalLine };
+  root.JDJ_PLAIN = { ageOf, ageLabel, ageText, popLines, STAGE, GL_PAGE, glossDom, autoGloss, gloss, J, won, eokR, rank, more, regionInfo, rankBase, regionRank, regionPlace, topPct, regionText, regionLine, evid, evHtml, ddText, rcText, momText, schText, stageName, rzText, jrStats, jrText, VOK, hzLabel, checkText, easy, ymKo, spanKo, delayText, unitsKo, supplyLines, renewalLine };
 })(typeof window !== 'undefined' ? window : globalThis);

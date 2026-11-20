@@ -139,7 +139,7 @@
       <div class="pr-head"><div>
         <div class="pr-crk">${total > 1 ? `단지 ${i + 1} · ` : ''}${esc(g.sido || '')} ${esc(g.name || '')} ${esc(x.dong)}</div>
         <h2>${esc(x.apt)}</h2>
-        <div class="pr-loc">${esc(x.band)} (전용 ${x.area}㎡)${f.by ? ` · ${f.by}년 준공(${Y - f.by}년차)` : ''}${f.hh ? ` · ${f.hh.toLocaleString()}세대` : ''}${isReg(x.code) ? ' · 규제지역' : ''}</div>
+        <div class="pr-loc">${esc(x.band)} (전용 ${x.area}㎡)${PL.ageText(f.by, Y) ? ` · ${PL.ageText(f.by, Y, '준공')}` : ''}${f.hh ? ` · ${f.hh.toLocaleString()}세대` : ''}${isReg(x.code) ? ' · 규제지역' : ''}</div>
         ${window.JDJ_PRICE ? `<div class="noprint" style="margin-top:10px">${window.JDJ_PRICE.btn({ sd: x.sd, sgg: x.code, dong: x.dong, apt: x.apt, band: x.band, jibun: x.jb }, 'premium')}</div>` : ''}
       </div>${f.fv != null ? `<div class="ring" aria-label="미래가치 ${f.fv}점"><b>${f.fv}</b><small>미래가치</small></div>` : ''}</div>
       <div class="pr-stats">
@@ -176,7 +176,7 @@
       ['추정 시세', x => fmtS(x.P)], ['미래가치(2년)', x => x.f && x.f.fv != null ? `${x.f.fv}점 (${fvRank(x, ctx)})` : '-'],
       ['필요 현금', x => fmtS(money(x).need)], ['월 상환', x => Math.round(money(x).mon).toLocaleString() + '만'],
       ['최근 6개월', x => x.ch == null ? '-' : (x.ch >= 0 ? '+' : '') + (x.ch * 100).toFixed(1) + '%'],
-      ['준공·세대', x => (x.f && x.f.by ? `${x.f.by}년(${Y - x.f.by}년차)` : '-') + (x.f && x.f.hh ? ` · ${x.f.hh.toLocaleString()}세대` : '')],
+      ['준공·세대', x => ((x.f && PL.ageText(x.f.by, Y)) || '-') + (x.f && x.f.hh ? ` · ${x.f.hh.toLocaleString()}세대` : '')],
       ['지하철', x => !x.f || x.f.sub == null ? '-' : x.f.sub >= 30 ? '도보 20분 이상' : `도보 ${x.f.sub <= 5 ? '5분 이내' : x.f.sub + '분 이내'}`],
       ['하락기 방어', x => x.f && x.f.dd != null ? PL.ddText(x.f.dd, ctx.G, '').replace('최근 3년 하락기에 ', '') : '-']
     ];

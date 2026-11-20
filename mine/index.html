@@ -36,13 +36,13 @@
 <script src="../assets/config.js?v=1"></script>
 <script src="../assets/auth.js?v=1"></script>
 <script src="../assets/kchat.js?v=1"></script>
-<script src="../assets/plain-words.js?v=6"></script>
-<script src="../assets/mine-core.js?v=11"></script>
-<script src="../assets/ask-core.js?v=2"></script>
+<script src="../assets/plain-words.js?v=7"></script>
+<script src="../assets/mine-core.js?v=12"></script>
+<script src="../assets/ask-core.js?v=3"></script>
 <script src="../assets/ask.js?v=1"></script>
 <script src="../assets/price-sheet.js?v=11"></script>
 <script src="../assets/offi-core.js?v=2"></script>
-<script src="../assets/offi-view.js?v=2"></script>
+<script src="../assets/offi-view.js?v=3"></script>
 <script src="../assets/policy-view.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -442,8 +442,7 @@ function render(d, map, units){
   const dp = M.dongPosition(units, u), gp = M.sggPosition(sgg, u, IX.months), vol = M.volume(u);
   const sv = sgg && sgg.c ? M.volumeCounts(sgg.c) : null;
   const homes = loadHomes(), id = M.homeId({code:d.code, dong:d.dong, jibun:d.jibun, apt:d.apt, band:S.band}), mine = homes.find(h => M.homeId(h) === id);
-  const age = f.by ? (new Date().getFullYear() - f.by) : null;
-  const meta = [f.by ? `${f.by}년 준공(${age}년차)` : '', f.hh ? `${f.hh.toLocaleString()}세대` : ''].filter(Boolean).join(' · ');
+  const meta = [f.by ? PL.ageText(f.by, null, '준공') : '', f.hh ? `${f.hh.toLocaleString()}세대` : ''].filter(Boolean).join(' · ');
   const chTxt = c => c ? `<span class="${updown(c.pct)}">${M.pctTxt(c.pct)}</span>` : '-';
   const chBasis = c => c ? `${ym(c.fromAt)} ${c.from.toLocaleString()}만 → ${ym(c.toAt)} ${c.to.toLocaleString()}만` : '비교할 달의 거래가 없어요';
   const sumRows = d.bands.map(x => { const b = M.bandSummary(x, IX.months); return `<tr class="${x[3] === S.band ? 'on' : ''}"><td>${esc(x[3])}<br><small>전용 ${x[4]}㎡</small></td>
