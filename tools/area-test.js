@@ -30,8 +30,13 @@ check('분양 화면에 관심 지역 상자', [/id="areaBox"/.test(rd('bunyang/
 check('청약 화면 위쪽 표시', [/id="areaStrip"/.test(rd('chungyak/index.html')), /JDJ_AREA\.mountStrip/.test(rd('chungyak/index.html'))], [true, true]);
 check('첫 화면 분양 링크 배지', /JDJ_AREA\.badge\(/.test(rd('index.html')), true);
 const sw = rd('sw.js');
-check('서비스 워커 캐시 목록', sw.includes("'/jangdaejang-calc/assets/area-watch.js?v=1'"), true);
+check('서비스 워커 캐시 목록', sw.includes("'/jangdaejang-calc/assets/area-watch.js?v=2'"), true);
 check('공고 자료는 관심 지역이 있을 때만 받음', /if \(!p\.list\.length\) return Promise\.resolve\(\{ n: 0/.test(rd('assets/area-watch.js')), true);
+
+const today = new Date().toISOString().slice(0, 10), old = new Date(Date.now() - 800 * 86400000).toISOString().slice(0, 10);
+check('광고성 정보 수신 동의: 동의한 날만 저장, 없으면 칸 없음', ['mkt' in A.clean({ list: [] }), A.clean({ list: [], mkt: { at: today, x: 1 } }).mkt, 'mkt' in A.clean({ list: [], mkt: { at: 'y' } })], [false, { at: today }, false]);
+check('광고성 정보 수신 동의: 2년 지나면 다시 여쭤봄', [A.mktOn({ mkt: { at: today } }), A.mktOn({ mkt: { at: old } }), A.mktOn({})], [true, false, false]);
+check('동의 체크는 선택(기본 꺼짐)·야간 미발송 안내', [/id="jaK3"\$\{mktOn\(draft\)/.test(rd('assets/area-watch.js')), /오후 9시~오전 8시에는 보내지 않아요/.test(rd('assets/area-watch.js'))], [true, true]);
 
 let bad = 0;
 for (const r of rows) { if (!r.ok) bad++; console.log((r.ok ? 'PASS ' : 'FAIL ') + r.name + (r.ok ? '' : `  got=${JSON.stringify(r.got)} want=${JSON.stringify(r.want)}`)); }

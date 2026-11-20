@@ -11,6 +11,7 @@ function makeSheet() {
     getDataRange() { return { getValues: () => rows.map(r => r.slice()) }; },
     getLastRow() { return rows.length; },
     appendRow(r) { rows.push(r.slice()); },
+    deleteRow(i) { rows.splice(i - 1, 1); },
     setFrozenRows() {},
     getRange(r, c, nr, nc) {
       const rg = {
@@ -88,7 +89,7 @@ const BIZ = mkBiz('123456789'), BIZ2 = mkBiz('220812345');
 const base = () => ({ action: 'adApply', company: '(주)테스트개발', biz: BIZ, manager: '홍길동', phone: '010-1234-5678', danji: '테스트 더샵 1단지',
   sido: '서울특별시', sgg: '강동구', kind: '아파트', hh: '420', pmin: '65000', pmax: '98000', approved: true, pdate: day(-3),
   url: 'https://www.applyhome.co.kr/test', img: 'https://example.com/a.jpg', pos: ['bunyang', 'villa'], start: day(0), end: day(30),
-  agree: { label: true, score: true, stop: true } });
+  dev: '(주)테스트개발', bld: '테스트건설(주)', agree: { label: true, score: true, stop: true, legal: true } });
 const sheet = () => sheets[T.SH_AD];
 const rows = () => sheet().rows.slice(1);
 const C = T.ADC;
@@ -114,7 +115,12 @@ const bad = [
   ['승인인데 공고일 없음', { pdate: '' }], ['공고일 형식', { pdate: '2026/11/01' }], ['없는 날짜', { pdate: '2026-02-30' }],
   ['공고 URL http', { url: 'http://x.com' }], ['공고 URL 없음', { url: '' }], ['이미지 URL data:', { img: 'data:image/png;base64,AAA' }],
   ['노출 위치 없음', { pos: [] }], ['노출 위치 엉뚱', { pos: ['admin'] }], ['시작일 과거', { start: day(-2) }], ['종료<시작', { end: day(-1), start: day(0) }],
-  ['기간 1년 초과', { start: day(1), end: day(400) }], ['동의 하나 빠짐', { agree: { label: true, score: true, stop: false } }], ['동의 없음', { agree: null }],
+  ['기간 1년 초과', { start: day(1), end: day(400) }], ['동의 하나 빠짐', { agree: { label: true, score: true, stop: false, legal: true } }], ['법정 표기 동의 없음', { agree: { label: true, score: true, stop: true } }],
+  ['사업주체 없음', { dev: '' }], ['아파트 시공사 없음', { bld: '' }], ['상품 엉뚱', { prod: ['vip'] }], ['청약홈 번호 9자리', { no: '202600037' }],
+  ['상담 연결인데 이메일 없음', { prod: ['top', 'lead'], agree: { label: true, score: true, stop: true, legal: true, lead: true } }],
+  ['상담 연결 동의 없음', { prod: ['lead'], leadMail: 'sales@example.com' }],
+  ['오피스텔 분양신고번호 없음', { kind: '오피스텔', vat: '별도', gt: '○○신탁' }], ['오피스텔 VAT 미선택', { kind: '오피스텔', dn: '강동-2026-1', dd: day(-5), gt: '○○신탁' }],
+  ['추가 노출 구 3곳', { gx: ['송파구', '광진구', '하남시'] }], ['동의 없음', { agree: null }],
   ['숨은 칸 입력(봇)', { hp: 'x' }]
 ];
 for (const [name, patch] of bad) { const r = post(Object.assign(base(), patch)); check('거절: ' + name, !r.ok && typeof r.err === 'string', r); }
@@ -162,6 +168,67 @@ cacheMap.delete('adlist');
 check('승인 해제 → 목록에서 빠짐', get({ action: 'adList' }).ads.length === 0);
 setRow(id1, '승인', true); setRow(id1, '공고문URL', 'javascript:alert(1)'); cacheMap.delete('adlist');
 check('시트에서 주소가 바뀌어도 https 아니면 공개 안 함', get({ action: 'adList' }).ads.length === 0);
+
+
+// 4-2. v16 분양 광고 상품·필수 표기·상담 연결·기록
+cacheMap.clear();
+const prodBase = () => Object.assign(base(), { biz: mkBiz('444444444'), danji: '프리미엄 현장', prod: ['top', 'pin', 'lead', 'lead'], no: '2026000373', agc: '(주)분양대행',
+  leadMail: 'Sales@Example.com', gx: ['송파구', '강동구'], founding: true, partner: true, agree: { label: true, score: true, stop: true, legal: true, lead: true } });
+r = post(prodBase());
+check('v16 신청: 상품·필수 표기', r.ok, r);
+const idP = r.id, rowP = sheet().rows.find(x => x[0] === idP);
+check('상품 한글·중복 제거', rowP[C['상품']] === '목록 상단 카드·추천 현장,지도 프리미엄 마커,분양 상담 연결', rowP[C['상품']]);
+check('사업주체·시공사·대행사·청약홈 번호(문자 보관)', rowP[C['사업주체']] === '(주)테스트개발' && rowP[C['시공사']] === '테스트건설(주)' && rowP[C['분양대행사']] === '(주)분양대행' && rowP[C['청약홈공고번호']] === "'2026000373");
+check('추가 노출 구(자기 구 제외)·이메일 소문자·창립·파트너', rowP[C['추가노출구']] === '송파구' && rowP[C['상담받을이메일']] === 'sales@example.com' && rowP[C['창립광고주']] === '신청' && rowP[C['판매파트너모집']] === '희망');
+check('제목줄 v16 열 포함(기존 25열 뒤)', sheet().rows[0].length === Object.keys(C).length && C['상품'] === 25 && C['승인'] === 21);
+r = post(Object.assign(base(), { biz: mkBiz('555555555'), danji: '오피 현장', kind: '오피스텔', bld: '', dn: '강동구-분양-2026-3', dd: day(-5), gt: '○○자산신탁', vat: '별도' }));
+check('오피스텔: 분양신고·신탁·VAT 저장', r.ok && sheet().rows.find(x => x[0] === r.id)[C['분양가VAT']] === '별도', r);
+const idO = r.id;
+r = post(Object.assign(base(), { biz: mkBiz('666666666'), danji: '소규모 상가', kind: '기타', bld: '', dnNa: true, vat: '포함' }));
+check('건축물분양법 대상 아님 선택', r.ok && sheet().rows.find(x => x[0] === r.id)[C['분양신고번호']] === '신고 대상 아님', r);
+const idN = r.id;
+r = post(Object.assign(base(), { biz: mkBiz('777777777'), danji: '승인 전 아파트', approved: false, pdate: '' }));
+const idQ = r.id;
+const live = (id, extra) => { setRow(id, '승인', true); setRow(id, '시작일', day(-1)); setRow(id, '종료일', day(10)); if (extra) for (const k in extra) setRow(id, k, extra[k]); };
+live(idP, { '좌표': '37.5512, 127.1468', '노출반경km': '8' }); live(idO); live(idN); live(idQ);
+cacheMap.delete('adlist');
+L = get({ action: 'adList' });
+const byId = id => L.ads.find(a => a.id === id);
+check('주택은 모집공고 승인 전이면 운영자가 승인해도 노출 안 함', !byId(idQ));
+check('오피스텔·신고 대상 아님 노출', !!byId(idO) && !!byId(idN));
+const P = byId(idP) || {};
+check('공개: 상품·표기·좌표·반경·상담·파트너', P.prod && P.prod.join() === 'top,pin,lead' && P.dev === '(주)테스트개발' && P.bld === '테스트건설(주)' && P.agc === '(주)분양대행' && P.no === '2026000373'
+  && P.xy && Math.abs(P.xy[0] - 127.1468) < 1e-6 && Math.abs(P.xy[1] - 37.5512) < 1e-6 && P.rk === 8 && P.lead === true && P.pr === true && P.gx.join() === '송파구', P);
+check('공개 목록에 상담 이메일·창립 여부 없음', !JSON.stringify(L).includes('sales@example.com') && !JSON.stringify(L).includes('창립'));
+check('예전 광고(상품 칸 비어 있음) = 상단 카드', (byId(idO) || {}).prod.join() === 'top');
+setRow(idP, '좌표', '0,0'); cacheMap.delete('adlist');
+check('좌표가 한국 밖이면 지도 위치 없음', get({ action: 'adList' }).ads.find(a => a.id === idP).xy === null);
+// 상담 신청
+const lead = () => ({ action: 'adLead', ad: idP, name: '김예보', phone: '010-2222-3333', time: '저녁(18~21시)', memo: '84타입 문의', agree: { collect: true, third: true } });
+const mb = mails.length;
+for (const [name, patch] of [['광고 id 엉뚱', { ad: 'AD00000000' }], ['상담 미사용 광고', { ad: idO }], ['이름 숫자', { name: '1234' }], ['유선 번호', { phone: '02-3444-5008' }],
+  ['시간 엉뚱', { time: '새벽' }], ['제3자 제공 동의 없음', { agree: { collect: true } }], ['수집 동의 없음', { agree: { third: true } }], ['봇', { hp: '1' }], ['문의 수식', { memo: '=1+1' }]]) {
+  const x = post(Object.assign(lead(), patch)); check('상담 거절: ' + name, !x.ok && typeof x.err === 'string', x);
+}
+r = post(lead());
+check('상담 신청 성공 + 광고주 회사명 응답', r.ok && /^LD[0-9A-F]{8}$/.test(r.id) && r.co === '(주)테스트개발', r);
+const ld = sheets['분양상담'].rows[1];
+check('분양상담 시트: 동의 기록·메일 전달·파기예정일', /제3자 제공 동의\(받는 자 \(주\)테스트개발/.test(ld[6 + 3]) && ld[10] === '메일 전달' && /^\d{4}-\d{2}-\d{2}$/.test(ld[12]), ld);
+const toAdv = mails.slice(mb).find(m => m[0] === 'sales@example.com'), toOwn = mails.slice(mb).find(m => m[0] === 'owner@example.com');
+check('광고주 메일에 연락처·목적 외 사용 금지·야간 연락 금지', toAdv && /010-2222-3333/.test(toAdv[2]) && /목적 외/.test(toAdv[2]) && /오후 9시/.test(toAdv[2]));
+check('시트 주인 메일에는 연락처 없음', toOwn && !/2222-3333/.test(JSON.stringify(toOwn)));
+post(lead()); post(lead());
+r = post(lead());
+check('같은 번호 하루 3번까지', !r.ok && /이 번호/.test(r.err), r);
+sheets['분양상담'].rows[1][12] = day(-1);
+check('파기예정일 지난 신청 삭제', ctx.cleanLeads() === 1 && sheets['분양상담'].rows.length === 3);
+// 기록·보고서
+if (!sheets['로그'].rows.length) sheets['로그'].rows.push(['시각', '종류', 'id', '구', '단지', '방문자']);
+r = post({ action: 'log', vid: 'v1', events: [{ t: 'adv', a: idP, g: '' }, { t: 'adm', a: idP, g: '11740' }, { t: 'adc', a: idP, g: '' }, { t: 'adc', a: 'A1234567', g: '' }, { t: 'adv', a: idP, g: 'x' }] });
+check('광고 기록: 광고 id 형식만, 잘못된 구 코드 거절', r.ok && r.n === 3, r);
+check('광고 보고서: 노출·마커·클릭·상담', ctx.adReport() >= 1 && (() => { const x = sheets['광고보고서'].rows.find(q => q[0] === idP); return x && x[4] === 1 && x[5] === 1 && x[6] === 1 && x[7] === 2; })(), sheets['광고보고서'] && sheets['광고보고서'].rows);
+
+check('관심 지역 광고성 정보 동의: 동의일 있을 때만 저장', ctx.cleanAreas({ list: [], mkt: { at: '2026-11-20', x: 1 } }).mkt.at === '2026-11-20' && !('mkt' in ctx.cleanAreas({ list: [], mkt: { at: 'yes' } })) && !('mkt' in ctx.cleanAreas({ list: [] })));
 
 // 5. 하루 신청 상한
 cacheMap.set('adday:' + ymd(new Date()), '30');
@@ -211,7 +278,7 @@ check('하루 문의 상한', !r.ok && /카카오톡/.test(r.err), r);
   const m = html.match(/\/\* PRICE-CORE:START[\s\S]*?\/\* PRICE-CORE:END \*\//);
   check('PRICE-CORE 구간 있음', !!m);
   const pc = {}; vm.createContext(pc);
-  vm.runInContext(m[0] + '\n;globalThis.__P = { PRICES, PERIODS, rnd, man, rateOf, periodPrice, weekKey, passPrice, firstWeekPrice, extendPrice };', pc);
+  vm.runInContext(m[0] + '\n;globalThis.__P = { PRICES, PERIODS, rnd, man, rateOf, periodPrice, weekKey, passPrice, firstWeekPrice, extendPrice, launchWeek };', pc);
   const P = pc.__P, pp = (mo, id) => P.periodPrice(mo, id);
   check('기간 6개(1주~1년)', P.PERIODS.map(x => x.label).join() === '1주,2주,1개월,3개월,6개월,1년');
   check('분양 광고 1·2·4주 = 30·50·90만', P.PRICES.bunyang.weeks[1] === 300000 && P.PRICES.bunyang.weeks[2] === 500000 && P.PRICES.bunyang.weeks[4] === 900000);
@@ -239,7 +306,69 @@ check('하루 문의 상한', !r.ok && /카카오톡/.test(r.err), r);
   check('최소 집행 금액 없음·최소 1주·첫 주 50%', P.PRICES.guide.minSpend === 0 && P.PRICES.guide.minWeeks === 1 && P.PRICES.guide.firstWeekOff === 50);
   const keys = [...html.matchAll(/data-(?:price|pp|pk)="([a-z_0-9]+)"/g)].map(x => x[1]);
   check('페이지의 금액 칸이 모두 PRICES 에 있음', keys.length > 10 && keys.every(k => P.PRICES[k]), keys.filter(k => !P.PRICES[k]));
+  const BP = P.PRICES;
+  check('분양 프리미엄 정가·런칭가: 마커 150→49만, 알림 60→19만(카톡 300→150원), 상담 150→49만(건당 5→2만), 리포트 99→29만, 패키지 400→129만',
+    BP.bunyang_pin.tiers[0].month === 1500000 && BP.bunyang_pin.launch === 490000 && BP.bunyang_alert.tiers[0].month === 600000 && BP.bunyang_alert.launch === 190000 && BP.bunyang_alert.per.list === 300 && BP.bunyang_alert.per.launch === 150
+    && BP.bunyang_lead.tiers[0].month === 1500000 && BP.bunyang_lead.launch === 490000 && BP.bunyang_lead.per.list === 50000 && BP.bunyang_lead.per.launch === 20000
+    && BP.bunyang_report.once.list === 990000 && BP.bunyang_report.once.launch === 290000 && BP.pkg_found.tiers[0].month === 4000000 && BP.pkg_found.launch === 1290000);
+  check('런칭가는 정가보다 낮음', ['bunyang_pin', 'bunyang_alert', 'bunyang_lead', 'pkg_found'].every(k => BP[k].launch < BP[k].tiers[0].month) && BP.bunyang_report.once.launch < BP.bunyang_report.once.list);
+  check('창립 광고주 분양 단지 광고 50%: 4주 90만 → 45만', P.launchWeek(900000) === 450000);
+  check('런칭가에도 기간 할인: 마커 49만 × 3개월 10% = 132.3만', pp(490000, 'm3').total === 1323000);
+  check('분양 프리미엄 상품 카드·단가표 칸', ['bunyang_pin', 'bunyang_alert', 'bunyang_lead', 'bunyang_report', 'pkg_found'].every(k => html.includes(`data-price="${k}"`) || html.includes(`data-pk="${k}"`)) && ['bunyang_pin', 'bunyang_alert', 'bunyang_lead', 'bunyang_report'].every(k => html.includes(`data-pp="${k}"`)));
+  check('광고 상품 페이지: 광고성 정보·야간 발송·점수 무관 문구', /제50조/.test(html) && /오후 9시~오전 8시에는 보내지 않아요/.test(html) && /미래가치 점수·추천·순위에 반영되지 않아요/.test(html));
   check('예전 최소 집행 50만 원 문구 없음', !/최소 집행[^<]{0,20}50만/.test(html) && !/minSpend:\s*500000/.test(html));
+}
+
+// 9. 화면 공용(assets/ads.js) — 지면별 고르기·지도 마커·관심 지역·카드 표기
+{
+  const F = require(path.join(__dirname, '..', 'assets', 'ads.js'));
+  const A = (id, o) => Object.assign({ id, co: '(주)광고', n: '현장' + id, sd: '서울특별시', sg: '강동구', k: '아파트', hh: 300, ap: true, pd: '2026-11-01', u: 'https://x.kr/' + id, pos: ['bunyang'], s: '2026-11-0' + id.slice(-1), e: '2026-12-31', prod: ['top'], gx: [] }, o || {});
+  const all = [A('AD00000001'), A('AD00000002', { sg: '송파구' }), A('AD00000003', { sd: '경기도', sg: '하남시', gx: ['송파구'] }), A('AD00000004', { prod: ['pin'] }), A('AD00000005', { pos: ['villa'] }),
+    A('AD00000006', { sg: '송파구', no: '2026000999' }), A('AD00000007', { sd: '부산광역시', sg: '해운대구' })];
+  const ids = l => l.map(a => a.id.slice(-1)).join('');
+  check('목록 상단: 전국이면 3칸, 상단 카드 상품·분양 화면만', ids(F.pick(all, 'bunyang', {})) === '123', ids(F.pick(all, 'bunyang', {})));
+  check('목록 상단: 시·도 고르면 그 시·도만', ids(F.pick(all, 'bunyang', { sido: '서울특별시' })) === '126');
+  check('목록 상단: 시·군·구 고르면 그 구 광고 먼저', ids(F.pick(all, 'bunyang', { sido: '서울특별시', sgg: '송파구' })) === '261', ids(F.pick(all, 'bunyang', { sido: '서울특별시', sgg: '송파구' })));
+  check('추가 노출 구(하남 현장이 송파에 노출)는 같은 시·도 안에서만', ids(F.pick(all, 'bunyang', { sido: '경기도', sgg: '송파구' })) === '3');
+  check('옛 시·도 이름도 같은 지역', ids(F.pick([A('AD00000008', { sd: '전라남도' })], 'bunyang', { sido: '전남광주통합특별시' })) === '8');
+  check('추천 현장: 같은 시·도 2칸, 보고 있는 공고와 같은 현장 제외', ids(F.pick(all, 'bunyang_rec', { sido: '서울특별시', sgg: '송파구', no: '2026000999' })) === '21');
+  check('추천 현장: 시·도 모르면 없음', F.pick(all, 'bunyang_rec', {}).length === 0);
+  check('예전 지면(villa)', ids(F.pick(all, 'villa', {})) === '5');
+  check('광고 없으면 빈 목록', F.pick([], 'bunyang', {}).length === 0 && F.pick(null, 'bunyang', {}).length === 0);
+  check('상품 칸 없는 예전 광고 = 상단 카드', F.pick([Object.assign(A('AD00000009'), { prod: undefined })], 'bunyang', {}).length === 1);
+  // 지도 마커
+  const rowsN = [{ id: 'apt-1', no: '2026000999', xy: [127.10, 37.51], n: '공고 현장', ty: [['084A', 84, 10, 98000], ['059A', 59, 5, 72000]], hh: 512, k: '아파트', dev: '공식사업주체', bld: '공식시공', pb: '20261110', rc: ['20261124', '20261126'] }];
+  const pin = [A('AD0000000A', { prod: ['pin'], xy: [127.14, 37.55], rk: 5 }), A('AD0000000B', { prod: ['pin', 'top'], no: '2026000999' }), A('AD0000000C', { prod: ['pin'] }), A('AD0000000D', { prod: ['top'], xy: [127.14, 37.55] })];
+  const v = (z, lat, lng) => ({ s: 37.3, n: 37.7, w: 126.8, e: 127.4, lat, lng, z });
+  check('지도 마커: 확대 11 미만이면 없음', F.pinPick(pin, rowsN, v(10, 37.55, 127.14)).length === 0);
+  const near = F.pinPick(pin, rowsN, v(12, 37.53, 127.12));
+  check('지도 마커: 반경 안·좌표(직접 또는 공고) 있는 마커 상품만, 최대 2', ids(near.map(p => p.a)) === 'AB' && near[1].xy[0] === 127.10, ids(near.map(p => p.a)));
+  check('지도 마커: 확대 14 미만에서 반경 밖이면 숨김', F.pinPick(pin, rowsN, v(12, 37.40, 126.90)).length === 0);
+  check('지도 마커: 확대 14 이상이면 화면 안 전부(반경 무관)', F.pinPick(pin, rowsN, v(14, 37.40, 126.90)).length === 2);
+  check('지도 마커: 화면 밖 제외', F.pinPick(pin, rowsN, { s: 35, n: 35.5, w: 129, e: 129.5, lat: 35.2, lng: 129.2, z: 15 }).length === 0);
+  check('거리 계산(강동↔송파 약 3.6km)', Math.abs(F.km([127.1468, 37.5512], [127.1059, 37.5145]) - 5.4) < 1.5, F.km([127.1468, 37.5512], [127.1059, 37.5145]));
+  // 관심 지역 알림
+  const al = [A('AD0000000E', { prod: ['alert'] }), A('AD0000000F', { prod: ['alert'], sd: '경기도', sg: '하남시', gx: ['송파구'] }), A('AD00000010', { prod: ['top'] })];
+  check('관심 지역 알림: 시·도 전체·구 이름·추가 노출 구', ids(F.areaPick(al, [{ sd: '서울특별시', g: '', gn: '' }])) === 'E' && ids(F.areaPick(al, [{ sd: '경기도', g: '41450', gn: '송파구' }])) === 'F' && F.areaPick(al, [{ sd: '서울특별시', g: '11710', gn: '송파구' }]).length === 0);
+  check('판매 파트너 모집: 모집 광고만, 중개사 노출 구(추가 노출 구 포함)', ids(F.partnerPick([A('AD00000013', { pr: true }), A('AD00000014', { pr: false }), A('AD00000015', { pr: true, sd: '경기도', sg: '하남시', gx: ['강동구'] })], [{ sd: '서울특별시', gn: '강동구' }])) === '3');
+  // 카드 표기
+  const h = F.cardHtml(pin[1], rowsN[0], { open: true });
+  check('카드: 광고 표시·공고 기준 분양가·세대수·일정·사업주체(공고 값 우선)', /광고<\/span>/.test(h) && /7억 2,000만원 ~ 9억 8,000만원/.test(h) && /512세대/.test(h) && /청약 접수 2026\.11\.24/.test(h) && /사업주체 공식사업주체/.test(h) && /청약홈 공고 기준/.test(h) && /data-ad-open="apt-1"/.test(h), h);
+  const ho = F.cardHtml(A('AD00000011', { k: '오피스텔', dn: '강동-2026-1', dd: '2026-10-01', gt: '○○신탁', vat: '별도', pmin: 30000, pmax: 45000, lead: true, agc: '(주)대행' }), null, {});
+  check('카드: 오피스텔은 분양신고·신탁·부가세, 상담 버튼, 대행사·광고주', /분양신고 강동-2026-1 \(2026\.10\.01\) · ○○신탁/.test(ho) && /부가세 별도/.test(ho) && /data-ad-lead/.test(ho) && /분양대행 \(주\)대행 · 광고주 \(주\)광고/.test(ho), ho);
+  const hx = F.cardHtml(A('AD00000012', { n: '<img src=x onerror=1>', u: 'javascript:alert(1)', img: 'http://x/a.jpg' }), null, {});
+  check('카드: 글자 이스케이프·https 아닌 주소·이미지 버림', !/<img src=x/.test(hx) && !/javascript:/.test(hx) && !/http:\/\/x/.test(hx));
+  check('카드: 과장 문구 없음', !/(최고의|확정 수익|마감 임박|프리미엄 보장|무조건)/.test(h + ho));
+  const src = fs.readFileSync(path.join(__dirname, '..', 'assets', 'ads.js'), 'utf8');
+  check('ads.js: 미래가치 점수·순위에 쓰는 값(fv·score·rank) 안 건드림', !/\.(fv|score|rank)\b/.test(src));
+  const bun = fs.readFileSync(path.join(__dirname, '..', 'bunyang', 'index.html'), 'utf8'), mp = fs.readFileSync(path.join(__dirname, '..', 'map', 'index.html'), 'utf8');
+  check('분양 화면: 목록 상단·추천 현장 칸, ads.js?v=2', /id="adTop" data-jdj-ads="bunyang"/.test(bun) && /data-jdj-ads="bunyang_rec"/.test(bun) && /ads\.js\?v=2/.test(bun));
+  check('지도: 광고 마커는 겹침 정리(walls) 안에서, 카카오 로고 자리 유지', /adPins\(z\)/.test(mp) && /카카오 로고·축척/.test(mp) && /ads\.js\?v=2/.test(mp));
+  const ap = fs.readFileSync(path.join(__dirname, '..', 'bunyang', 'apply', 'index.html'), 'utf8'), pv = fs.readFileSync(path.join(__dirname, '..', 'privacy', 'index.html'), 'utf8');
+  check('신청 폼: 상품 5종·필수 표기(사업주체·시공사·대행사·청약홈 번호·분양신고·신탁·VAT)·상담 이메일·창립·파트너', ['value="top"', 'value="pin"', 'value="alert"', 'value="lead"', 'value="report"', 'id="dev"', 'id="bld"', 'id="agc"', 'id="no"', 'id="dn"', 'id="dd"', 'id="gt"', 'name="vat"', 'id="leadMail"', 'id="founding"', 'id="partner"', 'id="ag4"', 'id="ag5"'].every(x => ap.includes(x)));
+  check('처리방침: 분양 상담 신청·제3자 제공(받는 자·목적·항목·기간)·광고성 정보', /id="lead"/.test(pv) && /id="third"/.test(pv) && /받는 자<\/th><th>목적<\/th><th>항목<\/th><th>보유·이용 기간/.test(pv) && /id="ad-consent"/.test(pv));
+  const sw = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
+  check('sw.js 에 ads.js?v=2', sw.includes("'/jangdaejang-calc/assets/ads.js?v=2'") && !sw.includes("'/jangdaejang-calc/assets/ads.js'"));
 }
 
 console.log(`분양 광고 서버 로직 검증: ${pass}개 통과, ${fail}개 실패`);

@@ -137,8 +137,6 @@ body.lock{overflow:hidden}
   <h1>지금 분양하는 단지,<br><em>공식 공고</em>로 확인하세요</h1>
   <p class="lead">한국부동산원 청약홈 공고로 아파트·오피스텔·도시형생활주택·민간임대·무순위/잔여세대의 일정과 분양가를 보여 드려요. 분양가가 공개된 아파트는 같은 동네 최근 실거래가와 나란히 비교해 드려요.</p>
 
-  <div data-jdj-ads="bunyang" data-empty="invite" hidden></div>
-
   <div id="areaBox"></div>
 
   <section class="flt" aria-label="분양 단지 찾기">
@@ -159,6 +157,7 @@ body.lock{overflow:hidden}
 
   <div class="bar"><div class="sum" id="sum">불러오는 중…</div>
     <div class="vt" role="tablist" aria-label="보기 방식"><button type="button" id="vList" class="on" role="tab" aria-selected="true">목록</button><button type="button" id="vMap" role="tab" aria-selected="false">지도</button></div></div>
+  <div id="adTop" data-jdj-ads="bunyang" hidden></div>
   <div id="list"><div class="loading">분양 공고를 불러오는 중이에요…</div></div>
   <div id="mapBox" hidden><div id="map" aria-label="분양 단지 지도"></div><div class="mapnote" id="mapNote"></div></div>
 
@@ -187,10 +186,10 @@ body.lock{overflow:hidden}
 <script src="../assets/agents.js"></script>
 <script src="../assets/config.js?v=3"></script>
 <script src="../assets/auth.js?v=3"></script>
-<script src="../assets/ads.js"></script>
+<script src="../assets/ads.js?v=2"></script>
 <script src="../assets/mine-core.js?v=15"></script>
 <script src="../assets/sale-status.js?v=1"></script>
-<script src="../assets/area-watch.js?v=1"></script>
+<script src="../assets/area-watch.js?v=2"></script>
 <script src="../assets/price-sheet.js?v=13"></script>
 <script>
 const $ = id => document.getElementById(id);
@@ -248,8 +247,16 @@ function cardHtml(x, i) {
     <div class="ln">${lineOf(x)}</div>${p ? `<div class="ln">분양가 <b>${p[0] === p[1] ? won(p[1]) : won(p[0]) + ' ~ ' + won(p[1])}</b> <span style="font-size:13.5px">(주택형별 최고가)</span></div>` : ''}</button>`;
 }
 let CUR = [];
+/* 목록 상단 광고(assets/ads.js): 고른 시·도·시·군·구 광고만 최대 3칸, 없으면 칸을 숨김. 목록 순서·분석과는 섞지 않음 */
+let AD_KEY = null;
+function renderAd() {
+  if (!window.JDJ_ADS) return;
+  const k = F.sido + '|' + F.sgg; if (k === AD_KEY) return; AD_KEY = k;
+  JDJ_ADS.render($('adTop'), { sido: F.sido, sgg: F.sgg, open: id => detail(ROWS.find(y => y.id === id)) });
+}
 function render() {
   CUR = filtered();
+  renderAd();
   const hasData = IDX && (ROWS.length > 0);
   const n = c => CUR.filter(x => x.st === c).length;
   const apt = CUR.filter(x => x.k === '아파트' && (x.st === 'pre' || x.st === 'on' || x.st === 'wait')).length;
@@ -316,11 +323,12 @@ function detail(x, push) {
     <h3 id="dName">${esc(x.n)}</h3><div class="loc">${esc(loc(x))}</div>${body}
     <div class="btns">${u ? `<a class="btn" href="${esc(u)}" target="_blank" rel="noopener" data-track="bunyang_notice">청약홈 공고 보기</a>` : (x.st !== 'plan' ? `<a class="btn" href="https://www.applyhome.co.kr/" target="_blank" rel="noopener">청약홈에서 찾아보기</a>` : '')}
       <a class="btn blue" href="../chungyak/" data-track="bunyang_detail_to_chungyak">내 청약 진단 받기</a></div>
-    ${related(x)}`;
+    ${related(x)}<div id="adRec" data-jdj-ads="bunyang_rec" hidden></div>`;
   $('dlg').hidden = false; document.body.classList.add('lock');
   $('sheet').scrollTop = 0;
   $('dClose').onclick = closeDlg; $('dClose').focus();
   $('sheet').querySelectorAll('.rel button').forEach(b => b.onclick = () => detail(ROWS.find(y => y.id === b.dataset.id)));
+  if (window.JDJ_ADS) JDJ_ADS.render($('adRec'), { sido: sidoNorm(x.sd), sgg: x.gn || '', no: x.no || '', open: id => detail(ROWS.find(y => y.id === id)) });   // 추천 현장(광고) — 없으면 숨김
   $('sheet').querySelectorAll('details.du').forEach(d => d.addEventListener('toggle', () => { if (d.open && !d.dataset.done) { d.dataset.done = 1; dealUnits(x, d); } }));
 }
 /* 실거래 비교에 쓰인 동네 단지 목록 — 엔진(scripts/bunyang.py compare)과 같은 기준:
@@ -426,6 +434,7 @@ async function init() {
   ROWS = ROWS.filter(x => ST[x.st]);
   if (IDX && IDX.updated) $('upd').textContent = `갱신 ${IDX.updated}.`;
   if (ex && ex.status === 'ok' && ((ex.unsold || []).length || (ex.permits || []).length)) $('extraBox').hidden = false;   // 활용신청 승인 후 활성화
+  if (window.JDJ_ADS) JDJ_ADS.setRows(ROWS);
   fillSido(); fillSgg(); render();
   /* 관심 지역(assets/area-watch.js): 공고 목록 위 상자 — 설정·새 공고 표시·알림 신청 */
   if (window.JDJ_AREA) { JDJ_AREA.mountPanel($('areaBox'), { rows: ROWS, onOpen: id => { const x = ROWS.find(y => y.id === id); if (x) detail(x); } });

@@ -1,5 +1,17 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v15.1: 관심 지역 저장 + 카카오 로그인 재시도·오류 코드 표시)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v16: 분양 광고 상품(지도 마커·상단 카드·추천 현장·관심 지역 알림·상담 연결·수요 리포트))
+ *
+ * v16 변경 요약
+ *  - 분양 광고 신청(adApply)에 상품 선택(top 목록 상단 카드·추천 현장 / pin 지도 프리미엄 마커 / alert 관심 지역 알림 / lead 분양 상담 연결 / report 현장 수요 리포트)
+ *    과 법정·필수 표기 항목(사업주체·시공사·분양대행사·청약홈 공고번호·분양신고번호·분양보증/신탁·분양가 VAT) 추가. '분양광고' 시트 오른쪽에 열이 늘어나며
+ *    예전 시트는 첫 신청 때 제목줄만 자동으로 늘어납니다(기존 행·열 위치 그대로).
+ *  - 공개 목록(adList): 주택(아파트·도시형·민간임대·무순위)은 [모집공고승인]='승인'일 때만, 오피스텔·기타는 분양신고번호(또는 '신고 대상 아님')가 있을 때만 노출.
+ *    새 공개 필드: prod(상품) · dev·bld·agc(사업주체·시공사·대행사) · no(청약홈 공고번호) · dn·dd(분양신고) · gt(보증·신탁) · vat · gx(추가 노출 구) · xy·rk(지도 좌표·반경) · lead · pr(판매 파트너 모집)
+ *  - 새 요청 adLead(POST): 현장 카드의 [분양 상담 신청] → '분양상담' 시트 저장 + 광고주 [상담받을이메일]로 전달(이용자가 제3자 제공에 동의한 이름·연락처·희망 시간·문의만).
+ *    연락처는 시트 주인 알림 메일·로그에 넣지 않습니다. 전달 후 6개월이 지나면 cleanLeads()가 행을 지웁니다(매일 트리거: setupAds 한 번 실행).
+ *  - 기록(log): 광고 노출 adv · 지도 마커 노출 adm · 클릭 adc · 상담 신청 adl 를 광고 id(AD…)로 받습니다(개인 정보 없음). adReport() → '광고보고서' 시트.
+ *  - 관심 지역(areas)에 광고성 정보 수신 동의(mkt: {at 동의일}) 저장 — 동의한 경우에만 칸이 생기고, 없으면 미동의. adDemand(시도, 시군구) → 익명 집계(10명 미만은 숨김).
+ *  - 검증: node tools/ad-test.js
  *
  * v15 변경 요약
  *  - 회원 저장 자료(userSave·userLoad)에 관심 지역(areas) 추가: 시·도/시·군·구 최대 10곳 + 알림 종류(새 분양 공고·무순위/잔여세대).
@@ -157,7 +169,7 @@ function doPost(e) {
   try { b = JSON.parse(e.postData.contents); } catch (x) { return out({ ok: false, err: '요청 형식 오류' }); }
   if (b.action === 'log') return out(logEvents(b));
   if (PAY_ACTIONS[b.action]) return out(payDispatch(b));
-  if (b.action === 'adApply' || b.action === 'adInquiry') return out(adDispatch(b));
+  if (b.action === 'adApply' || b.action === 'adInquiry' || b.action === 'adLead') return out(adDispatch(b));
   if (USER_ACTIONS[b.action]) return out(userDispatch(b));
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
@@ -328,12 +340,17 @@ function update(b) {
 /* 기록: rec = 추천 단지 카드에 표시(펼치기 전, 한 줄에 여러 중개사 id), imp = [공인중개사 연결하기]로 목록 펼침,
    view = 정보 창 열람, call = 전화 버튼, kakao = 카톡 버튼 */
 const TYPES = ['rec', 'imp', 'view', 'call', 'kakao'];
+const AD_LOG = ['adv', 'adm', 'adc'];   // 분양 광고: 목록·추천 노출 · 지도 마커 노출 · 클릭
 const ID_RE = /^A[0-9A-F]{7}$/;
 function logEvents(b) {
   const ev = (b.events || []).slice(0, 40);
   const vid = str(b.vid, 40), now = new Date();
   const rows = [];
   ev.forEach(x => {
+    if (AD_LOG.indexOf(x.t) >= 0) {                         // v16 분양 광고 노출·클릭(광고 id만, 개인 정보 없음)
+      if (!/^AD[0-9A-F]{8}$/.test(String(x.a || '')) || !/^(\d{5})?$/.test(String(x.g || ''))) return;
+      rows.push([now, x.t, String(x.a), String(x.g || ''), str(x.k, 20), vid]); return;
+    }
     if (TYPES.indexOf(x.t) < 0 || !/^\d{5}$/.test(x.g)) return;
     const ids = String(x.a || '').split(',').filter(id => ID_RE.test(id)).slice(0, 80);
     if (!ids.length || (x.t !== 'rec' && ids.length > 1)) return;
@@ -932,12 +949,20 @@ function findOrder(b) {
 const SH_AD = '분양광고';
 const ADH = ['id','신청일','회사명','사업자등록번호','담당자','연락처','단지명','시도','시군구','유형','세대수',
              '분양가최저(만원)','분양가최고(만원)','모집공고승인','모집공고일','공고문URL','노출위치','희망시작일','희망종료일',
-             '대표이미지URL','동의','승인','시작일','종료일','메모'];
+             '대표이미지URL','동의','승인','시작일','종료일','메모',
+             /* v16 — 오른쪽에 덧붙임(기존 열 위치 유지) */
+             '상품','사업주체','시공사','분양대행사','청약홈공고번호','분양신고번호','분양신고일','분양보증신탁','분양가VAT',
+             '추가노출구','상담받을이메일','창립광고주','판매파트너모집','좌표','노출반경km'];
 const ADC = Object.fromEntries(ADH.map((h, i) => [h, i]));
 const AD_SIDO = ['서울특별시','부산광역시','대구광역시','인천광역시','전남광주통합특별시','대전광역시','울산광역시','세종특별자치시','경기도',
                  '강원특별자치도','충청북도','충청남도','전북특별자치도','경상북도','경상남도','제주특별자치도'];
 const AD_KIND = ['아파트','오피스텔','도시형생활주택','민간임대','무순위·잔여세대','기타'];
 const AD_POS = { bunyang: '분양', buy: '내집마련', switch: '갈아타기', villa: '재개발·빌라', chungyak: '청약', tax: '세금' };
+/* v16 분양 광고 상품 — 화면 위치는 assets/ads.js, 가격은 ad/index.html PRICES */
+const AD_PROD = { top: '목록 상단 카드·추천 현장', pin: '지도 프리미엄 마커', alert: '관심 지역 알림', lead: '분양 상담 연결', report: '현장 수요 리포트' };
+const AD_HOUSING = ['아파트', '도시형생활주택', '민간임대', '무순위·잔여세대'];   // 주택법·주택공급에 관한 규칙: 입주자모집공고 승인 뒤에만 노출
+const AD_VAT = ['포함', '별도', '해당 없음'];
+const AD_LEAD_KEEP_DAYS = 183;   // 상담 신청 정보: 광고주 전달 후 6개월 보관 뒤 파기(개인정보처리방침과 같음)
 const AD_MAX_DAYS = 366;      // 한 번에 신청할 수 있는 최대 노출 기간(일)
 const AD_DAILY = 30;          // 하루 전체 신청 상한(스팸 방지)
 
@@ -947,6 +972,7 @@ function adDispatch(b) {
   try {
     if (b.action === 'adApply') return adApply(b);
     if (b.action === 'adInquiry') return adInquiry(b);
+    if (b.action === 'adLead') return adLead(b);
     return { ok: false, err: 'unknown' };
   } catch (x) {
     return { ok: false, err: String(x.message || x) };
@@ -962,9 +988,13 @@ function adSheet() {
     sh.getRange(1, 1, 1, ADH.length).setValues([ADH]).setFontWeight('bold').setBackground('#3B3F22').setFontColor('#F5EFDC');
     sh.setFrozenRows(1);
     sh.getRange(2, ADC['시작일'] + 1, 999, 2).setNumberFormat('yyyy-mm-dd');
+  } else {
+    const head = sh.getRange(1, 1, 1, ADH.length).getValues()[0];        // v15 이전 시트: 오른쪽 새 열 제목만 채움
+    if (String(head[ADH.length - 1] || '') !== ADH[ADH.length - 1]) sh.getRange(1, 1, 1, ADH.length).setValues([ADH]).setFontWeight('bold').setBackground('#3B3F22').setFontColor('#F5EFDC');
   }
   return sh;
 }
+const adMail = v => { const x = String(v == null ? '' : v).trim().toLowerCase(); return /^[a-z0-9._%+-]{1,64}@[a-z0-9.-]+\.[a-z]{2,}$/.test(x) && x.length <= 80 ? x : ''; };
 /* 글자 정리: 제어문자·꺾쇠 제거, 길이 제한, 셀 수식으로 읽힐 수 있는 시작 문자(= + - @) 거절 */
 function adText(v, max, label, need) {
   let x = String(v == null ? '' : v).replace(/[\u0000-\u001F\u007F<>]/g, ' ').replace(/\s+/g, ' ').trim();
@@ -1043,6 +1073,30 @@ function adApply(b) {
   if ((new Date(end + 'T00:00:00') - new Date(start + 'T00:00:00')) / 86400000 > AD_MAX_DAYS) throw new Error('노출 기간은 한 번에 1년까지 신청할 수 있습니다.');
   const ag = b.agree || {};
   if (!(ag.label === true && ag.score === true && ag.stop === true)) throw new Error('필수 동의 3가지에 모두 동의해 주세요.');
+  /* v16: 상품·필수 표기 */
+  const prod = (Array.isArray(b.prod) ? b.prod : ['top']).map(String).filter((p, i, a) => AD_PROD[p] && a.indexOf(p) === i);
+  if (!prod.length) throw new Error('광고 상품을 하나 이상 골라 주세요.');
+  const housing = AD_HOUSING.indexOf(kind) >= 0;
+  const dev = adText(b.dev, 60, '사업주체(시행사)', true);
+  const bld = adText(b.bld, 80, '시공사', housing);
+  const agc = adText(b.agc, 60, '분양대행사', false);
+  const no = String(b.no == null ? '' : b.no).replace(/[^0-9]/g, '');
+  if (no && !/^\d{10}$/.test(no)) throw new Error('청약홈 공고번호는 숫자 10자리예요(예: 2026000373).');
+  let dn = '', dd = '', gt = '', vat = '';
+  if (!housing) {
+    const na = b.dnNa === true;
+    dn = na ? '신고 대상 아님' : adText(b.dn, 40, '분양신고번호', true);
+    dd = na ? '' : adDate(b.dd, '분양신고일', true);
+    gt = adText(b.gt, 60, '분양보증기관 또는 신탁회사', !na);
+    vat = String(b.vat || '');
+    if (AD_VAT.indexOf(vat) < 0) throw new Error('분양가 부가가치세 포함 여부를 골라 주세요.');
+  }
+  const gx = (Array.isArray(b.gx) ? b.gx : []).map(x => adText(x, 30, '추가 노출 구', false)).filter(Boolean).filter((x, i, a) => a.indexOf(x) === i && x !== sgg);
+  if (gx.length > 2 || gx.some(x => !/^[가-힣0-9 ]{1,30}$/.test(x))) throw new Error('추가 노출 시·군·구는 한글로 2곳까지 입력해 주세요.');
+  const leadMail = adMail(b.leadMail);
+  if (prod.indexOf('lead') >= 0 && !leadMail) throw new Error('분양 상담 연결을 고르면 상담 신청을 받을 이메일을 입력해 주세요.');
+  if (ag.legal !== true) throw new Error('연결 페이지의 법정 표기사항 게시에 동의해 주세요.');
+  if (prod.indexOf('lead') >= 0 && ag.lead !== true) throw new Error('상담 신청자 정보 처리 기준에 동의해 주세요.');
   const sh = adSheet();
   const dup = sh.getDataRange().getValues().slice(1).some(r => String(r[ADC['사업자등록번호']]) === biz && String(r[ADC['단지명']]) === danji && r[ADC['승인']] !== true);
   if (dup) throw new Error('같은 단지로 승인 대기 중인 신청이 있습니다. 확인 후 연락드릴게요.');
@@ -1055,6 +1109,11 @@ function adApply(b) {
   row[ADC['노출위치']] = pos.map(p => AD_POS[p]).join(','); row[ADC['희망시작일']] = start; row[ADC['희망종료일']] = end;
   row[ADC['대표이미지URL']] = img; row[ADC['동의']] = '광고 표시·점수 무관·허위과장 시 중단 동의 ' + t0;
   row[ADC['승인']] = false; row[ADC['시작일']] = ''; row[ADC['종료일']] = ''; row[ADC['메모']] = '';
+  row[ADC['상품']] = prod.map(p => AD_PROD[p]).join(','); row[ADC['사업주체']] = dev; row[ADC['시공사']] = bld; row[ADC['분양대행사']] = agc;
+  row[ADC['청약홈공고번호']] = no ? "'" + no : ''; row[ADC['분양신고번호']] = dn; row[ADC['분양신고일']] = dd; row[ADC['분양보증신탁']] = gt; row[ADC['분양가VAT']] = vat;
+  row[ADC['추가노출구']] = gx.join(','); row[ADC['상담받을이메일']] = leadMail; row[ADC['창립광고주']] = b.founding === true ? '신청' : '';
+  row[ADC['판매파트너모집']] = b.partner === true ? '희망' : ''; row[ADC['좌표']] = ''; row[ADC['노출반경km']] = '';
+  row[ADC['동의']] += ' · 법정 표기 게시' + (prod.indexOf('lead') >= 0 ? ' · 상담 정보 목적 외 사용 금지·6개월 파기' : '');
   sh.appendRow(ADH.map((h, i) => row[i] === undefined ? '' : row[i]));
   sh.getRange(sh.getLastRow(), ADC['승인'] + 1).insertCheckboxes();
   cache.put(dk, String(n + 1), 86400);
@@ -1062,7 +1121,8 @@ function adApply(b) {
     try {
       MailApp.sendEmail(Session.getEffectiveUser().getEmail(), `[장대장 분양광고] 새 신청: ${danji}`,
         `${company} (${biz}) · 담당 ${manager} ${phone}\n단지 ${danji} · ${sido} ${sgg} · ${kind} · ${hh}세대\n`
-        + `모집공고 ${approved ? '승인 ' + pdate : '승인 전'} · ${url}\n노출 ${row[ADC['노출위치']]} · ${start}~${end}\n`
+        + `모집공고 ${approved ? '승인 ' + pdate : '승인 전'} · ${url}\n노출 ${row[ADC['노출위치']]} · ${start}~${end}\n상품 ${row[ADC['상품']]}${b.founding === true ? ' · 창립 광고주 신청' : ''}\n`
+        + `지도 마커를 고른 경우 [좌표]에 위도,경도(예: 37.5512,127.1468)를 넣으세요(청약홈 공고번호가 있으면 자동 위치를 씀).\n`
         + `확인: 사업자 상태(국세청 홈택스)·입주자모집공고(청약홈) 내용과 광고 내용이 일치하는지 확인 후 [승인] 체크, [시작일]·[종료일]을 입력하세요.\n${book().getUrl()}`);
     } catch (e) {}
   }
@@ -1091,18 +1151,152 @@ function adList() {
       const safeUrl = u => /^https:\/\/[^\s"'<>\\`]+$/.test(String(u || '')) ? String(u) : '';
       const u = safeUrl(r[ADC['공고문URL']]);
       if (!u) continue;
+      const kind = String(r[ADC['유형']]);
+      if (AD_HOUSING.indexOf(kind) >= 0 && String(r[ADC['모집공고승인']]) !== '승인') continue;          // 주택: 입주자모집공고 승인 전에는 노출 안 함
+      if (AD_HOUSING.indexOf(kind) < 0 && ADC['분양신고번호'] < r.length && !String(r[ADC['분양신고번호']] || '')) continue;   // 오피스텔·기타: 분양신고(또는 대상 아님) 확인 뒤
+      const back2 = Object.fromEntries(Object.entries(AD_PROD).map(([k, v]) => [v, k]));
+      const prod = String(r[ADC['상품']] || '').split(',').map(x => back2[x.trim()]).filter(Boolean);
+      const ll = String(r[ADC['좌표']] || '').split(',').map(Number);
+      const xy = ll.length === 2 && ll[0] > 32 && ll[0] < 39.5 && ll[1] > 124 && ll[1] < 132 ? [ll[1], ll[0]] : null;
+      const s1 = v => String(v == null ? '' : v).replace(/^'/, '');
       ads.push({
         id: String(r[ADC['id']]), co: String(r[ADC['회사명']]), n: String(r[ADC['단지명']]), sd: String(r[ADC['시도']]), sg: String(r[ADC['시군구']]),
         k: String(r[ADC['유형']]), hh: Number(r[ADC['세대수']]) || null,
         pmin: Number(r[ADC['분양가최저(만원)']]) || null, pmax: Number(r[ADC['분양가최고(만원)']]) || null,
         ap: String(r[ADC['모집공고승인']]) === '승인', pd: adDay(r[ADC['모집공고일']]), u: u, img: safeUrl(r[ADC['대표이미지URL']]),
-        pos: String(r[ADC['노출위치']]).split(',').map(x => back[x.trim()]).filter(Boolean), s: s0, e: e0
+        pos: String(r[ADC['노출위치']]).split(',').map(x => back[x.trim()]).filter(Boolean), s: s0, e: e0,
+        prod: prod.length ? prod : ['top'], dev: s1(r[ADC['사업주체']]), bld: s1(r[ADC['시공사']]), agc: s1(r[ADC['분양대행사']]),
+        no: /^\d{10}$/.test(s1(r[ADC['청약홈공고번호']])) ? s1(r[ADC['청약홈공고번호']]) : '', dn: s1(r[ADC['분양신고번호']]), dd: adDay(r[ADC['분양신고일']]),
+        gt: s1(r[ADC['분양보증신탁']]), vat: s1(r[ADC['분양가VAT']]), gx: s1(r[ADC['추가노출구']]).split(',').map(x => x.trim()).filter(Boolean).slice(0, 2),
+        xy: xy, rk: Math.max(1, Math.min(20, Number(r[ADC['노출반경km']]) || 5)),
+        lead: prod.indexOf('lead') >= 0 && !!adMail(r[ADC['상담받을이메일']]), pr: String(r[ADC['판매파트너모집']] || '') === '희망' || r[ADC['판매파트너모집']] === true
       });
     }
   }
   const res = { ok: true, at: t0, ads: ads };
   cache.put('adlist', JSON.stringify(res), 300);
   return res;
+}
+
+
+/* =====================================================================
+   분양 상담 신청 연결 (v16) — 현장 카드 [분양 상담 신청] → '분양상담' 시트 + 광고주 이메일 전달
+   · 이용자가 화면에서 (필수) 수집·이용 + (필수) 제3자 제공(받는 자 = 광고주 회사명) 에 동의한 경우만
+   · 광고주에게는 이름·연락처·희망 연락 시간·문의만. 시트 주인 알림 메일·로그에는 연락처를 넣지 않음
+   · 보관: 전달일로부터 6개월(AD_LEAD_KEEP_DAYS) 뒤 cleanLeads()가 행 삭제
+   ===================================================================== */
+const SH_LD = '분양상담';
+const LDH = ['id','신청일','광고id','단지명','광고주','이름','연락처','희망시간','문의','동의','전달상태','전달일','파기예정일'];
+const LDC = Object.fromEntries(LDH.map((h, i) => [h, i]));
+const LEAD_TIME = ['오전(9~12시)', '오후(12~18시)', '저녁(18~21시)', '상관없음'];
+const LEAD_DAILY = 300, LEAD_PER_PHONE = 3;
+function ldSheet() {
+  const ss = book();
+  let sh = ss.getSheetByName(SH_LD);
+  if (!sh) {
+    sh = ss.insertSheet(SH_LD);
+    sh.getRange(1, 1, 1, LDH.length).setValues([LDH]).setFontWeight('bold').setBackground('#3B3F22').setFontColor('#F5EFDC');
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+/* 광고 행(비공개 칸 포함) 찾기: 승인·기간 내·공개 조건을 만족하는 광고만 */
+function adRowLive(id) {
+  if (!/^AD[0-9A-F]{8}$/.test(String(id || ''))) return null;
+  const live = (adList().ads || []).find(a => a.id === id);
+  if (!live) return null;
+  const sh = book().getSheetByName(SH_AD); if (!sh) return null;
+  const r = sh.getDataRange().getValues().find(x => String(x[ADC['id']]) === id);
+  return r ? { live: live, mail: adMail(r[ADC['상담받을이메일']]) } : null;
+}
+function adLead(b) {
+  if (String(b.hp || '')) throw new Error('신청을 처리하지 못했습니다.');
+  const cache = CacheService.getScriptCache(), dk = 'ldday:' + ymd(new Date());
+  const n = Number(cache.get(dk) || 0);
+  if (n >= LEAD_DAILY) throw new Error('오늘 신청이 많아 내일 다시 신청해 주세요.');
+  const ad = adRowLive(b.ad);
+  if (!ad || !ad.live.lead || !ad.mail) throw new Error('이 현장은 지금 상담 신청을 받지 않아요. 공고문의 분양 문의 전화로 연락해 주세요.');
+  const name = adText(b.name, 20, '이름', true);
+  if (!/^[가-힣A-Za-z ]{2,20}$/.test(name)) throw new Error('이름은 한글 또는 영문으로 입력해 주세요.');
+  const d = String(b.phone || '').replace(/[^0-9]/g, '');
+  if (!/^01[016789]\d{7,8}$/.test(d)) throw new Error('휴대폰 번호를 확인해 주세요.');
+  const phone = `${d.slice(0, 3)}-${d.slice(3, -4)}-${d.slice(-4)}`;
+  const time = String(b.time || '');
+  if (LEAD_TIME.indexOf(time) < 0) throw new Error('연락받기 좋은 시간을 골라 주세요.');
+  const memo = adText(b.memo, 200, '문의 내용', false);
+  const ag = b.agree || {};
+  if (!(ag.collect === true && ag.third === true)) throw new Error('필수 동의 2가지에 모두 동의해 주세요.');
+  const pk = 'ldph:' + ymd(new Date()) + ':' + hashOf('lead|' + d).slice(0, 16), pn = Number(cache.get(pk) || 0);
+  if (pn >= LEAD_PER_PHONE) throw new Error('오늘은 이 번호로 더 신청할 수 없어요. 내일 다시 신청해 주세요.');
+  const now = new Date(), t0 = ymd(now), co = ad.live.co;
+  const id = 'LD' + Utilities.getUuid().replace(/-/g, '').slice(0, 8).toUpperCase();
+  const row = [];
+  row[LDC['id']] = id; row[LDC['신청일']] = now; row[LDC['광고id']] = ad.live.id; row[LDC['단지명']] = ad.live.n; row[LDC['광고주']] = co;
+  row[LDC['이름']] = name; row[LDC['연락처']] = phone; row[LDC['희망시간']] = time; row[LDC['문의']] = memo;
+  row[LDC['동의']] = `수집·이용 동의 + 제3자 제공 동의(받는 자 ${co}, 목적 분양 상담 연락, 보유 6개월) ${t0}`;
+  let sent = '대기';
+  try {
+    MailApp.sendEmail(ad.mail, `[집예보 분양 상담 신청] ${ad.live.n}`,
+      `집예보에서 ${ad.live.n} 분양 상담 신청이 들어왔어요.\n\n이름: ${name}\n연락처: ${phone}\n연락받기 좋은 시간: ${time}\n문의: ${memo || '-'}\n신청 번호: ${id} (${t0})\n\n`
+      + `이 정보는 신청자가 '${co}'에 대한 제3자 제공에 동의해 전달하는 것입니다.\n`
+      + `· 분양 상담 연락 목적 외에 쓰거나 다른 곳에 넘길 수 없습니다(문자·전화 광고 목록 등록 금지).\n· 연락은 오전 8시~오후 9시에만 해 주세요.\n`
+      + `· 상담이 끝나거나 받은 날로부터 6개월이 지나면 파기해 주세요. 신청자가 삭제를 원하면 바로 지워 주세요.\n— 집예보 ((주)장대장부동산그룹)`);
+    sent = '메일 전달';
+  } catch (e) { sent = '전달 실패(수동 전달 필요)'; }
+  row[LDC['전달상태']] = sent; row[LDC['전달일']] = sent === '메일 전달' ? now : '';
+  row[LDC['파기예정일']] = ymd(new Date(now.getTime() + AD_LEAD_KEEP_DAYS * 86400000));
+  ldSheet().appendRow(LDH.map((h, i) => row[i] === undefined ? '' : cellSafe(String(row[i] instanceof Date ? '' : row[i])) || row[i]));
+  cache.put(dk, String(n + 1), 86400); cache.put(pk, String(pn + 1), 86400);
+  if (NOTIFY) { try { MailApp.sendEmail(Session.getEffectiveUser().getEmail(), `[집예보 분양 상담] ${ad.live.n}`, `신청 번호 ${id} · 광고주 ${co} · ${sent}\n연락처는 '분양상담' 시트에서만 확인하세요(메일에는 넣지 않아요).\n${book().getUrl()}`); } catch (e) {} }
+  return { ok: true, id: id, co: co };
+}
+/* 매일: 파기예정일이 지난 상담 신청 행 삭제 */
+function cleanLeads() {
+  const sh = book().getSheetByName(SH_LD); if (!sh) return 0;
+  const v = sh.getDataRange().getValues(), t0 = ymd(new Date());
+  let k = 0;
+  for (let i = v.length - 1; i >= 1; i--) { const due = adDay(v[i][LDC['파기예정일']]); if (due && due < t0) { sh.deleteRow(i + 1); k++; } }
+  return k;
+}
+function setupAds() {
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'cleanLeads').forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('cleanLeads').timeBased().everyDays(1).atHour(4).create();
+}
+/* 광고 성과 보고서: '로그' 시트의 광고 기록(adv 목록 노출 · adm 지도 마커 노출 · adc 클릭) + '분양상담' 신청 수 → '광고보고서' 시트(광고·월별) */
+function adReport() {
+  const res = {}, key = (id, m) => (res[id + '|' + m] = res[id + '|' + m] || { id: id, m: m, adv: 0, adm: 0, adc: 0, adl: 0 });
+  const lg = book().getSheetByName(SH_L);
+  if (lg && lg.getLastRow() > 1) lg.getDataRange().getValues().slice(1).forEach(r => {
+    if (!(r[0] instanceof Date) || ['adv', 'adm', 'adc'].indexOf(String(r[1])) < 0) return;
+    key(String(r[2]), Utilities.formatDate(r[0], 'Asia/Seoul', 'yyyy-MM'))[String(r[1])]++;
+  });
+  const ld = book().getSheetByName(SH_LD);
+  if (ld) ld.getDataRange().getValues().slice(1).forEach(r => { if (r[LDC['신청일']] instanceof Date) key(String(r[LDC['광고id']]), Utilities.formatDate(r[LDC['신청일']], 'Asia/Seoul', 'yyyy-MM')).adl++; });
+  const names = {}; const ad = book().getSheetByName(SH_AD);
+  if (ad) ad.getDataRange().getValues().slice(1).forEach(r => { names[String(r[ADC['id']])] = [r[ADC['회사명']], r[ADC['단지명']]]; });
+  const out = [['광고id', '광고주', '단지명', '월', '목록·추천 노출', '지도 마커 노출', '클릭', '상담 신청', '클릭률(%)']];
+  Object.values(res).sort((a, b) => (a.id + a.m).localeCompare(b.id + b.m)).forEach(x => {
+    const imp = x.adv + x.adm, nm = names[x.id] || ['', ''];
+    out.push([x.id, nm[0], nm[1], x.m, x.adv, x.adm, x.adc, x.adl, imp ? Math.round(x.adc / imp * 1000) / 10 : '']);
+  });
+  let sh = book().getSheetByName('광고보고서'); if (sh) book().deleteSheet(sh);
+  sh = book().insertSheet('광고보고서');
+  sh.getRange(1, 1, out.length, out[0].length).setValues(out);
+  sh.getRange(1, 1, 1, out[0].length).setFontWeight('bold');
+  return out.length - 1;
+}
+/* 현장 수요 리포트용 익명 집계: 관심 지역에 이 시·도/시·군·구를 넣은 회원 수, 그중 광고성 정보 수신 동의 수. 10명 미만은 '10명 미만'으로만 */
+const AD_MIN_CELL = 10;
+function adDemand(sido, sggCode) {
+  const sh = book().getSheetByName(SH_U); let all = 0, mkt = 0;
+  if (sh) sh.getDataRange().getValues().slice(1).forEach(r => {
+    const d = parseJ(r[UC['저장자료']], {}), a = d && d.areas;
+    if (!a || !Array.isArray(a.list)) return;
+    if (!a.list.some(x => x.sd === sido && (!sggCode || !x.g || x.g === sggCode))) return;
+    all++; if (a.mkt && a.mkt.at) mkt++;
+  });
+  const hide = v => v < AD_MIN_CELL ? `${AD_MIN_CELL}명 미만` : v;
+  return { sido: sido, sgg: sggCode || '', watchers: hide(all), adConsent: hide(mkt), at: ymd(new Date()) };
 }
 
 
@@ -1114,7 +1308,7 @@ function adList() {
 const SH_AQ = '광고문의';
 const AQH = ['id','접수일','유형','회사명','담당자','연락처','관심상품','지역','희망기간','문의내용','동의','처리상태','처리일','메모'];
 const AQC = Object.fromEntries(AQH.map((h, i) => [h, i]));
-const AQ_PROD = { bunyang: '분양 단지 광고', agent: '지역 제휴 중개사', native: '결과 하단 카드', jeonse: '전세사기 예방 체크리스트 스폰서', package: '패키지', etc: '기타·제휴' };
+const AQ_PROD = { bunyang: '분양 단지 광고', bunyang_pro: '분양 프리미엄', agent: '지역 제휴 중개사', native: '결과 하단 카드', jeonse: '전세사기 예방 체크리스트 스폰서', package: '패키지', etc: '기타·제휴' };
 const AQ_PERIOD = ['', '1주', '2주', '1개월', '3개월', '6개월', '1년', '미정·협의'];
 const AQ_DAILY = 40;          // 하루 전체 문의 상한(스팸 방지)
 
@@ -1345,7 +1539,10 @@ function cleanAreas(a) {
     .filter(x => x && /^[가-힣]{2,12}$/.test(x.sd) && (!x.g || x.gn))
     .filter(x => { const k = x.sd + '|' + x.g; if (seen[k]) return false; seen[k] = 1; return true; }).slice(0, 10);
   const k = a.kinds && typeof a.kinds === 'object' ? a.kinds : {};
-  return { list: list, kinds: { notice: k.notice !== false, mu: k.mu !== false }, t: /^\d{4}-\d{2}-\d{2}$/.test(String(a.t || '')) ? String(a.t) : '' };
+  const o = { list: list, kinds: { notice: k.notice !== false, mu: k.mu !== false }, t: /^\d{4}-\d{2}-\d{2}$/.test(String(a.t || '')) ? String(a.t) : '' };
+  /* v16 광고성 정보(새 분양 광고 소식) 수신 동의 — 동의한 경우에만 {at: 동의일}. 없으면 미동의 */
+  if (a.mkt && typeof a.mkt === 'object' && /^\d{4}-\d{2}-\d{2}$/.test(String(a.mkt.at || ''))) o.mkt = { at: String(a.mkt.at) };
+  return o;
 }
 function cleanUserData(d) {
   d = d && typeof d === 'object' ? d : {};

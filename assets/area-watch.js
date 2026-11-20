@@ -27,15 +27,21 @@
     const list = (Array.isArray(p.list) ? p.list : []).map(a => a && ({ sd: String(a.sd || '').slice(0, 20), g: /^\d{5}$/.test(String(a.g || '')) ? String(a.g) : '', gn: String(a.gn || '').slice(0, 30) }))
       .filter(a => a && a.sd && (!a.g || a.gn)).filter(a => { const k = a.sd + '|' + a.g; if (seen[k]) return false; seen[k] = 1; return true; }).slice(0, MAX);
     const k = p.kinds && typeof p.kinds === 'object' ? p.kinds : { notice: true, mu: true };
-    return { list, kinds: { notice: k.notice !== false, mu: k.mu !== false }, t: String(p.t || '').slice(0, 10) };
+    const o = { list, kinds: { notice: k.notice !== false, mu: k.mu !== false }, t: String(p.t || '').slice(0, 10) };
+    if (p.mkt && /^\d{4}-\d{2}-\d{2}$/.test(String(p.mkt.at || ''))) o.mkt = { at: String(p.mkt.at) };   // 광고성 정보 수신 동의(동의한 날) — 없으면 미동의
+    return o;
   }
+  /* 광고성 정보 수신 동의: 정보통신망법 제50조 — 동의한 사람에게만, 2년(730일)이 지나면 다시 여쭤봄(그 전까지는 유효) */
+  const MKT_DAYS = 730;
+  const mktOn = p => !!(p && p.mkt && p.mkt.at && (Date.now() - new Date(p.mkt.at + 'T00:00:00').getTime()) / 86400000 < MKT_DAYS);
+  const mktOld = p => !!(p && p.mkt && p.mkt.at && !mktOn(p));
   function get() { try { return clean(JSON.parse(ls.get(KEY) || 'null')); } catch (e) { return clean(null); } }
   function setLocal(p) { ls.set(KEY, JSON.stringify(clean(p))); }
   /** 저장: 이 기기 + (로그인 중이면) 계정. 계정 저장 실패해도 이 기기 저장은 남음 */
   function set(p) {
     const c = clean(Object.assign({}, p, { t: new Date().toISOString().slice(0, 10) }));
     setLocal(c);
-    track('area_save', { n: c.list.length, notice: c.kinds.notice ? 1 : 0, mu: c.kinds.mu ? 1 : 0, login: authed() ? 1 : 0 });
+    track('area_save', { n: c.list.length, notice: c.kinds.notice ? 1 : 0, mu: c.kinds.mu ? 1 : 0, ad: c.mkt ? 1 : 0, login: authed() ? 1 : 0 });
     if (!authed()) return Promise.resolve({ local: true, p: c });
     return auth().update(d => { d.areas = c; }).then(() => ({ local: false, p: c })).catch(() => ({ local: true, p: c, err: true }));
   }
@@ -141,9 +147,21 @@
         <div class="chipz">${p.list.map(a => `<span class="ro">${esc(label(a))}</span>`).join('')}</div>
         ${m.length ? `<div class="lst">${m.slice(0, 6).map(x => `<button type="button" data-id="${esc(x.id)}"><b>${nw.has(x.id) ? '<span class="new">NEW</span>' : ''}${esc(x.n)}</b><small>${lineOf(x)}</small></button>`).join('')}</div>${m.length > 6 ? `<p class="note">관심 지역 공고 ${m.length}건 중 일정이 가까운 6건이에요. 아래 목록에서 지역을 골라 모두 볼 수 있어요.</p>` : ''}`
           : `<p>관심 지역에 지금 분양예정·청약 중인 공고는 없어요. 새 공고가 올라오면 이 화면과 첫 화면에 표시해 드려요.</p>`}
-        <p class="note">알림 신청: <b>${esc(kinds)}</b>. ${saveNote()}</p>
+        <div id="jaAd"></div>
+        <p class="note">알림 신청: <b>${esc(kinds)}</b>${mktOn(p) ? ' · 새 분양 광고 소식(광고성 정보 수신 동의 ' + esc(p.mkt.at) + ')' : ''}. ${saveNote()}</p>
+        ${mktOld(p) ? `<p class="note"><b>광고 소식 수신 동의가 2년이 지나 멈췄어요.</b> 계속 받으시려면 [관심 지역 바꾸기]에서 다시 체크해 주세요.</p>` : ''}
         <div class="row" style="margin-top:10px"><button type="button" class="btn2" data-a="edit">관심 지역 바꾸기</button>${!authed() && auth() ? auth().btn('카카오로 로그인하고 알림 받기', 'area') : ''}${msg ? `<span class="msg">${esc(msg)}</span>` : ''}</div></div>`;
       if (m.length) setTimeout(() => markSeen(m.map(x => x.id)), 1500);   // 이 화면에서 보여 준 공고는 '본 공고'로
+      drawAds();
+    }
+    /* 관심 지역 알림 상품(광고): 광고성 정보 수신에 동의한 경우에만, 관심 지역에 맞는 광고 최대 2개를 '광고'로 */
+    async function drawAds() {
+      const box = el.querySelector('#jaAd'), AD = root.JDJ_ADS;
+      if (!box || !AD || !mktOn(p)) return;
+      const l = (await AD.forAreas(p.list)).slice(0, 2); if (!l.length || !el.contains(box)) return;
+      AD.css();
+      box.innerHTML = `<p class="note" style="margin:10px 0 6px"><b>관심 지역 새 분양 소식</b> · 광고 (광고성 정보 수신에 동의하셔서 보여 드려요)</p><div class="jad-l">${l.map(a => AD.cardHtml(a, AD.rowOf(a, rows()), { open: !!o.onOpen })).join('')}</div>`;
+      l.forEach(a => AD.log('adv', a.id, ''));
     }
     async function drawEdit() {
       const S = await sggIndex();
@@ -155,12 +173,15 @@
           <button type="button" class="btn2 add" data-a="add">추가</button></div>
         <div class="chipz">${draft.list.length ? draft.list.map((a, i) => `<span>${esc(label(a))}<button type="button" data-del="${i}" aria-label="${esc(label(a))} 빼기">×</button></span>`).join('') : '<span class="ro" style="color:#4E5968;border-color:#E5E8EB">아직 고른 지역이 없어요</span>'}</div>
         <div class="kd"><label><input type="checkbox" id="jaK1"${draft.kinds.notice ? ' checked' : ''}>새 분양 공고 알림</label><label><input type="checkbox" id="jaK2"${draft.kinds.mu ? ' checked' : ''}>무순위·잔여세대 일정 알림</label></div>
+        <label class="kd" style="display:flex;align-items:flex-start;gap:8px;font-size:15px;cursor:pointer;margin:0 0 10px"><input type="checkbox" id="jaK3"${mktOn(draft) ? ' checked' : ''} style="margin-top:2px"><span><b>(선택) 광고성 정보 수신 동의</b> — 관심 지역에 새로 나온 분양 현장의 <b>광고</b> 소식(시행사·분양대행사가 비용을 낸 소식)도 받기
+          <small style="display:block;font-size:13.5px;color:#4E5968;line-height:1.55;margin-top:2px">이 화면에 먼저 보여 드리고, 카카오톡 알림은 준비 중이에요(시작하면 오후 9시~오전 8시에는 보내지 않아요). 동의하지 않아도 공고 알림은 그대로 받아요. 언제든 체크를 풀면 바로 멈추고, 2년마다 다시 여쭤봐요.</small></span></label>
         <p class="note" style="margin:0 0 10px">${saveNote()}</p>
         <div class="row"><button type="button" class="btn2 p" data-a="save">저장</button><button type="button" class="btn2" data-a="cancel">닫기</button>${!authed() && auth() ? auth().btn('카카오로 로그인', 'area_edit') : ''}<span class="msg" id="jaMsg" role="status"></span></div></div>`;
       el.querySelector('#jaSd').onchange = e => { draft.sd = e.target.value; drawEdit(); };
     }
     el.addEventListener('click', async e => {
       const b = e.target.closest('button'); if (!b || !el.contains(b)) return;
+      if (b.dataset.adOpen) { if (root.JDJ_ADS) root.JDJ_ADS.log('adc', b.dataset.ad, ''); if (o.onOpen) o.onOpen(b.dataset.adOpen); return; }
       if (b.dataset.id) { if (o.onOpen) o.onOpen(b.dataset.id); return; }
       if (b.dataset.del != null) { draft.list.splice(+b.dataset.del, 1); drawEdit(); return; }
       const a = b.dataset.a; if (!a) return;
@@ -178,6 +199,9 @@
       }
       if (a === 'save') {
         draft.kinds = { notice: el.querySelector('#jaK1').checked, mu: el.querySelector('#jaK2').checked };
+        const k3 = el.querySelector('#jaK3').checked, wasOn = mktOn(p);
+        if (k3) draft.mkt = { at: wasOn ? p.mkt.at : new Date().toISOString().slice(0, 10) }; else delete draft.mkt;
+        if (k3 !== wasOn) track(k3 ? 'area_ad_optin' : 'area_ad_optout');
         b.disabled = true;
         const r = await set(draft);
         p = r.p; editing = false;
@@ -209,7 +233,7 @@
     countNew().then(c => { if (!c.n) return; const s = document.createElement('span'); s.className = 'ja-badge'; s.textContent = `관심 지역 새 공고 ${c.n}건`; (a.querySelector('b') || a).appendChild(s); });
   }
 
-  const API = { get, set, sync, match, unseen, markSeen, countNew, mountPanel, mountStrip, badge, clean, label, EMPTY_TXT, KINDS };
+  const API = { get, set, sync, match, unseen, markSeen, countNew, mountPanel, mountStrip, badge, clean, label, mktOn, EMPTY_TXT, KINDS };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_AREA = API;
 })(typeof window !== 'undefined' ? window : this);

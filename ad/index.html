@@ -66,6 +66,10 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
 .st.on{background:var(--pos-l);color:var(--pos)}
 .st.soon{background:var(--gray);color:var(--sub2)}
 .st.mix{background:var(--blue-l);color:var(--blue)}
+.bpx{scroll-margin-top:90px;margin:26px 0 4px;padding:18px 20px;border-radius:20px;background:#FBF7EA;border:1px solid #E8DDB5}
+.bpx h3{font-size:19px;font-weight:900;margin:0 0 6px}.bpx p{font-size:15.5px;line-height:1.7;margin:0 0 10px;color:var(--sub)}
+.bpx .found{font-size:15px;line-height:1.7;background:#fff;border-radius:14px;padding:12px 14px;border:1px solid #E8DDB5}
+.found-pk{margin-bottom:12px;border:2px solid #E3CF8F!important}
 .prod{background:#fff;border:1px solid var(--line);border-radius:20px;padding:20px;margin-top:12px}
 .prod .ph{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .prod h3{font-size:19px;font-weight:900;margin:0;letter-spacing:-.4px}
@@ -249,6 +253,56 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
       <a class="more" href="../bunyang/apply/" data-track="ad_to_bunyang_apply">분양 광고 신청서 바로 쓰기 ›</a>
     </article>
 
+    <div class="bpx" id="bunyang-premium">
+      <h3>분양 프리미엄 — 시행사·분양대행사 전용</h3>
+      <p>분양 단지 광고(목록 상단 카드·추천 현장)에 더해, 지도·관심 지역 알림·상담 연결·수요 리포트로 실수요자에게 한 번 더 닿아요. 모든 광고는 ‘광고’로 표시되고 집예보 미래가치 점수·추천·순위에 반영되지 않아요. 현장 정보는 청약홈 입주자모집공고(또는 분양신고) 그대로 보여 드려요.</p>
+      <div class="found"><b>창립 광고주 조건</b> — 지금은 트래픽을 키우는 초기라, 먼저 함께하는 시행사·분양대행사에 <b>런칭가</b>(정가의 약 3분의 1)를 드리고, 기간이 끝나면 <b>노출·클릭·상담 신청 보고서</b>를 보내 드려요. 런칭가는 계약 기간 동안 그대로이고, 선착순으로 마감해요.</div>
+    </div>
+
+    <article class="prod" id="p-pin">
+      <div class="ph"><div><span class="num">분양 프리미엄 1</span><h3>지도 프리미엄 분양 마커</h3></div><span class="st on">바로 가능</span></div>
+      <p class="desc">시세 지도에서 현장 위치에 금색 테두리 ‘광고’ 마커로 보여요. 일반 말풍선보다 먼저 자리를 잡고, ‘분양 단지’ 보기를 켜지 않아도 보여요. 누르면 공고 기준 현장 카드와 [분양 상담 신청]이 열려요.</p>
+      <dl class="spec">
+        <dt>지면</dt><dd>시세 지도(확대 11단계 이상)</dd>
+        <dt>노출 규칙</dt><dd>지도 가운데가 현장 반경(기본 5km, 협의 1~20km) 안이거나 14단계 이상 확대했을 때 · 한 화면 최대 2개 · 지도 로고·축척·안내 칸은 가리지 않음</dd>
+        <dt>정원</dt><dd>시·군·구당 2곳</dd>
+        <dt>단가</dt><dd><span class="price-v" data-price="bunyang_pin">문의 시 안내</span></dd>
+      </dl>
+    </article>
+
+    <article class="prod" id="p-alert">
+      <div class="ph"><div><span class="num">분양 프리미엄 2</span><h3>관심 지역 새 분양 알림</h3></div><span class="st on">사이트 알림 바로 가능</span></div>
+      <p class="desc">그 지역을 관심 지역으로 등록하고 <b>광고성 정보 수신에 따로 동의한</b> 이용자에게만, 분양·청약 화면의 관심 지역 상자에 ‘광고’로 보여요. 카카오톡 발송은 카카오 비즈 인증 뒤 열려요.</p>
+      <dl class="spec">
+        <dt>지면</dt><dd>분양 화면 관심 지역 상자 · 카카오톡 알림 <span class="st soon">준비 중</span></dd>
+        <dt>대상</dt><dd>현장 시·군·구(+추가 2곳)를 관심 지역에 넣고 광고 수신에 동의한 이용자</dd>
+        <dt>정원</dt><dd>시·군·구당 2곳(한 번에 최대 2개 표시)</dd>
+        <dt>단가</dt><dd><span class="price-v" data-price="bunyang_alert">문의 시 안내</span></dd>
+      </dl>
+      <p class="note">카카오톡 발송은 정보통신망법 제50조에 맞춰 (광고) 표시·보내는 곳·수신 거부 방법을 넣고, 오후 9시~오전 8시에는 보내지 않아요.</p>
+    </article>
+
+    <article class="prod" id="p-lead">
+      <div class="ph"><div><span class="num">분양 프리미엄 3</span><h3>분양 상담 신청 연결</h3></div><span class="st on">바로 가능</span></div>
+      <p class="desc">광고 카드의 [분양 상담 신청]으로 들어온 신청을 광고주 이메일로 바로 보내 드려요. 이용자가 광고주 회사명을 보고 제3자 제공에 동의한 이름·휴대폰 번호·희망 시간·문의만 전달해요.</p>
+      <dl class="spec">
+        <dt>지면</dt><dd>목록 상단 카드 · 추천 현장 · 지도 마커 · 관심 지역 알림의 현장 카드</dd>
+        <dt>과금</dt><dd>신청 건당 또는 월 정액(건수 제한 없음) 중 선택</dd>
+        <dt>단가</dt><dd><span class="price-v" data-price="bunyang_lead">문의 시 안내</span></dd>
+      </dl>
+      <p class="note">받은 정보는 상담 연락에만, 오전 8시~오후 9시에만 연락, 6개월 안에 파기, 다른 곳에 넘기지 않는 조건이에요.</p>
+    </article>
+
+    <article class="prod" id="p-report">
+      <div class="ph"><div><span class="num">분양 프리미엄 4</span><h3>현장 수요 리포트</h3></div><span class="st on">바로 가능</span></div>
+      <p class="desc">현장 주변 실수요를 공개 자료와 익명 집계로만 정리해 드려요 — 그 지역을 관심 지역으로 등록한 이용자 수(10명 미만은 숨김), 이용자들이 많이 고른 예산 구간, 주변 실거래 시세와 미래가치 흐름, 최근 청약 경쟁률, 외지인 매입 비율, 입주 예정 물량.</p>
+      <dl class="spec">
+        <dt>형태</dt><dd>현장 1곳 · PDF (요청 후 5영업일)</dd>
+        <dt>단가</dt><dd><span class="price-v" data-price="bunyang_report">문의 시 안내</span></dd>
+      </dl>
+      <p class="note">개인을 알아볼 수 있는 정보, 이용자가 계산하려고 넣은 소득·현금 값은 들어가지 않아요. 미래가치 점수 계산 방법·가중치도 공개하지 않아요.</p>
+    </article>
+
     <article class="prod" id="p-agent">
       <div class="ph"><div><span class="num">상품 2</span><h3>지역 제휴 중개사</h3></div><span class="st on">바로 가능</span></div>
       <p class="desc">이용자가 고른 단지 카드와 결과 화면 하단에 그 지역 제휴 중개사가 연락처와 함께 ‘제휴·광고’로 표시돼요. 관리 화면에서 노출·열람·전화·카카오톡 클릭 성과를 바로 확인할 수 있어요.</p>
@@ -314,6 +368,10 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
       <thead><tr><th>상품</th><th>상태</th><th>지면</th><th>과금</th><th><span id="pth">1개월</span> 금액</th></tr></thead>
       <tbody>
         <tr><td><b>분양 단지 광고</b></td><td data-l="상태"><span><span class="st on">바로 가능</span></span></td><td data-l="지면">분양 · 재개발·빌라 화면 ‘분양 광고’ 칸</td><td data-l="과금">주 단위 정액(1·2·4주) · 화면당 3구좌</td><td data-l="금액" class="pc" data-pp="bunyang">문의 시 안내</td></tr>
+        <tr><td><b>지도 프리미엄 분양 마커</b></td><td data-l="상태"><span><span class="st on">바로 가능</span></span></td><td data-l="지면">시세 지도 · 시·군·구당 2곳</td><td data-l="과금">시·군·구 1곳 월 정액</td><td data-l="금액" class="pc" data-pp="bunyang_pin">문의 시 안내</td></tr>
+        <tr><td><b>관심 지역 새 분양 알림</b></td><td data-l="상태"><span><span class="st on">사이트</span> <span class="st soon">카톡 준비 중</span></span></td><td data-l="지면">관심 지역 상자(광고 수신 동의자만)</td><td data-l="과금">시·군·구 월 정액 · 카톡 건당</td><td data-l="금액" class="pc" data-pp="bunyang_alert">문의 시 안내</td></tr>
+        <tr><td><b>분양 상담 신청 연결</b></td><td data-l="상태"><span><span class="st on">바로 가능</span></span></td><td data-l="지면">모든 분양 광고 카드</td><td data-l="과금">신청 건당 또는 월 정액</td><td data-l="금액" class="pc" data-pp="bunyang_lead">문의 시 안내</td></tr>
+        <tr><td><b>현장 수요 리포트</b></td><td data-l="상태"><span><span class="st on">바로 가능</span></span></td><td data-l="지면">PDF 전달</td><td data-l="과금">현장 1곳 1회</td><td data-l="금액" class="pc" data-pp="bunyang_report">문의 시 안내</td></tr>
         <tr><td><b>분양 광고 노출 화면 확장</b></td><td data-l="상태"><span><span class="st soon">준비 중</span></span></td><td data-l="지면">청약 · 내 집 마련 · 갈아타기 화면</td><td data-l="과금">분양 단지 광고에 더하는 주 단위 금액</td><td data-l="금액" class="pc" data-pp="bunyang_more">문의 시 안내</td></tr>
         <tr><td><b>지역 제휴 중개사</b></td><td data-l="상태"><span><span class="st on">바로 가능</span></span></td><td data-l="지면">리포트 · 갈아타기 · 내 집 시세 · 전월세 · 빌라 결과</td><td data-l="과금">1년 단위 정액 · 3개 구</td><td data-l="금액" class="pc" data-pp="agent">문의 시 안내</td></tr>
         <tr><td><b>시·군·구 우선 노출</b></td><td data-l="상태"><span><span class="st soon">준비 중</span></span></td><td data-l="지면">위 결과 화면 중개사 목록 맨 앞</td><td data-l="과금">구당 정액 · 구별 구좌 한정</td><td data-l="금액" class="pc" data-pp="agent_top">문의 시 안내</td></tr>
@@ -333,6 +391,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
   <section id="packages" class="pk">
     <div class="sh">PACKAGES</div>
     <h2 class="t">함께 쓰면 좋은 묶음</h2>
+    <div class="card found-pk"><span class="st on">바로 가능</span><h3>창립 광고주 분양 패키지</h3><p>지도 프리미엄 마커 + 목록 상단 카드·추천 현장 + 분양 상담 연결(월 정액) + 현장 수요 리포트 1회. 시·군·구 1곳 기준이에요.</p><p><b>가격</b> <span class="price-v" data-price="pkg_found">문의 시 안내</span></p><span class="pkp" data-pk="pkg_found"></span></div>
     <div class="grid g3">
       <div class="card"><span class="st mix">일부 바로 가능</span><h3>분양 집중</h3><p>분양 단지 광고(분양·재개발·빌라) + 같은 시·도의 청약 화면 노출 + 결과 하단 카드. 청약을 준비하는 사람에게 공고 기간 동안 여러 번 닿아요.</p><p><b>가격</b> <span class="price-v" data-price="pkg_bunyang">문의 시 안내</span></p><span class="pkp" data-pk="pkg_bunyang"></span></div>
       <div class="card"><span class="st mix">일부 바로 가능</span><h3>지역 밀착</h3><p>지역 제휴 중개사 + 같은 시·군·구 결과 하단 카드. 이사·인테리어 등 지역 업체와 중개사무소가 한 동네의 매수·전월세 이용자를 함께 만나요.</p><p><b>가격</b> <span class="price-v" data-price="pkg_local">문의 시 안내</span></p><span class="pkp" data-pk="pkg_local"></span></div>
@@ -396,6 +455,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
           <div class="f full"><label class="l" id="prodL">관심 상품 <i>*</i> (여러 개 고를 수 있어요)</label>
             <div class="chk" id="prod" role="group" aria-labelledby="prodL">
               <label><input type="checkbox" value="bunyang"> 분양 단지 광고</label>
+              <label><input type="checkbox" value="bunyang_pro"> 분양 프리미엄(지도 마커·알림·상담 연결·수요 리포트)</label>
               <label><input type="checkbox" value="agent"> 지역 제휴 중개사</label>
               <label><input type="checkbox" value="native"> 결과 하단 카드</label>
               <label><input type="checkbox" value="jeonse"> 전세사기 예방 체크리스트 스폰서</label>
@@ -444,7 +504,13 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
      비어 있으면 '문의 시 안내'로 보여요.
    ───────────────────────────────────────────────────────────── */
 const PRICES = {
-  bunyang:      { weeks: { 1: 300000, 2: 500000, 4: 900000 }, pass3: 10 },   // 분양 단지 광고 · pass3 = 3회 이용권 할인(%)
+  bunyang:      { weeks: { 1: 300000, 2: 500000, 4: 900000 }, pass3: 10, launchOff: 50 },   // 분양 단지 광고(목록 상단 카드·추천 현장) · pass3 = 3회 이용권 할인(%) · launchOff = 창립 광고주 할인(%)
+  /* 분양 프리미엄 — tiers[].month = 정가(월), launch = 창립 광고주 런칭가(월). 기간 할인(period)은 둘 다 똑같이 적용 */
+  bunyang_pin:    { tiers: [{ label: '시·군·구 1곳', month: 1500000 }], launch: 490000 },                     // 지도 프리미엄 마커
+  bunyang_alert:  { tiers: [{ label: '시·군·구 1곳 · 사이트 알림', month: 600000 }], launch: 190000, per: { label: '카카오톡 1건(준비 중)', list: 300, launch: 150 } },
+  bunyang_lead:   { tiers: [{ label: '월 정액(건수 제한 없음)', month: 1500000 }], launch: 490000, per: { label: '상담 신청 1건', list: 50000, launch: 20000 } },
+  bunyang_report: { once: { label: '현장 1곳 · 1회', list: 990000, launch: 290000 } },
+  pkg_found:      { tiers: [{ label: '', month: 4000000 }], launch: 1290000 },                                 // 창립 광고주 분양 패키지(마커+상단 카드+상담 월정액+리포트)
   bunyang_more: { perWeek: 200000 },                                         // 분양 광고 노출 화면 확장(청약·내 집 마련·갈아타기) — 준비 중, 1주당 추가
   agent:        { text: '기본 월 29,000원 · 프리미엄 월 49,000원 · 1년 결제', note: '연 348,000원 · 588,000원 (소속 공인중개사 상담 전용 월 19,000원) · 제휴 페이지 공개 요금 그대로예요' },  // agent/ 페이지와 같게
   agent_top:    { tiers: [{ label: '1등급 구', month: 150000 }, { label: '2등급 구', month: 90000 }, { label: '3등급 구', month: 50000 }] },   // 시·군·구 우선 노출 — 준비 중
@@ -485,6 +551,7 @@ function weekKey(p, pid) {
   const want = pid === 'w1' ? 1 : pid === 'w2' ? 2 : 4, ks = Object.keys(p.weeks).map(Number).sort((a, b) => a - b);
   return ks.includes(want) ? want : ks[ks.length - 1];
 }
+function launchWeek(amount) { return rnd(amount * (100 - (PRICES.bunyang.launchOff || 0)) / 100); }
 function passPrice(amount) { const list = amount * 3; return { list, total: rnd(list * (100 - (PRICES.bunyang.pass3 || 0)) / 100) }; }
 /* 첫 광고 첫 주 할인 금액 */
 function firstWeekPrice(oneWeek) { return rnd(oneWeek * (100 - (PRICES.guide.firstWeekOff || 0)) / 100); }
@@ -500,6 +567,8 @@ const PL = id => (PERIODS.find(x => x.id === id) || {}).label || '';
 function baseText(key) {
   const p = PRICES[key]; if (!p) return '';
   if (p.text) return p.text;
+  if (p.once) return `${p.once.label} ${man(p.once.list)}` + (p.once.launch ? ` → 창립 광고주 ${man(p.once.launch)}` : '');
+  if (p.tiers && p.launch) return p.tiers.map(t => `${t.label ? t.label + ' ' : ''}월 ${man(t.month)}`).join(' · ') + ` → 창립 광고주 월 ${man(p.launch)}` + (p.per ? ` · ${p.per.label} ${man(p.per.list)} → ${man(p.per.launch)}` : '');
   if (p.weeks) return Object.keys(p.weeks).map(w => `${w}주 ${man(p.weeks[w])}`).join(' · ');
   if (p.perWeek) return `1주당 +${man(p.perWeek)}`;
   if (p.tiers && p.tiers.length) return p.tiers.map(t => `${t.label ? t.label + ' ' : ''}월 ${man(t.month)}`).join(' · ');
@@ -507,7 +576,8 @@ function baseText(key) {
 }
 function baseNote(key) {
   const p = PRICES[key] || {};
-  if (key === 'bunyang' && p.pass3) return `3회 이용권 ${p.pass3}% 할인 (여러 단지를 분양하는 시행사·분양대행사용)`;
+  if (key === 'bunyang' && p.pass3) return `3회 이용권 ${p.pass3}% 할인 (여러 단지를 분양하는 시행사·분양대행사용)` + (p.launchOff ? ` · 창립 광고주 ${p.launchOff}% 할인(4주 ${man(launchWeek(p.weeks[4]))})` : '');
+  if (p.launch || (p.once && p.once.launch)) return '창립 광고주 런칭가 · 노출·클릭·상담 신청 보고서 포함';
   return key === 'agent' ? '' : (p.note || '');
 }
 /* 단가표 금액 칸(고른 기간 기준) */
@@ -515,12 +585,20 @@ function cellHtml(key, pid) {
   const p = PRICES[key]; if (!p) return '';
   if (p.text) return `<span class="ln"><b>${esc(p.text)}</b></span><small>기간과 관계없는 고정 요금이에요${p.note ? ' · ' + esc(p.note) : ''}</small>`;
   if (p.perWeek) return `<span class="ln"><b>1주당 +${man(p.perWeek)}</b></span><small>분양 단지 광고에 더해요 (기간만큼 주 단위)</small>`;
+  if (p.once) return `<span class="ln"><span class="tl">${esc(p.once.label)}</span><b>${man(p.once.list)}</b>${p.once.launch ? `<small class="off">창립 광고주 ${man(p.once.launch)}</small>` : ''}</span><small>기간과 관계없는 1회 금액이에요</small>`;
+  if (p.tiers && p.launch) {
+    const q = periodPrice(p.tiers[0].month, pid), ql = periodPrice(p.launch, pid); if (!q || !ql) return '';
+    const unit = q.pct ? `월 단가의 ${q.pct}%` : q.rate ? `${q.rate}% 기간 할인 · 월 ${man(ql.perMonth)} 꼴` : '기본 단가';
+    return `<span class="ln">${p.tiers[0].label ? `<span class="tl">${esc(p.tiers[0].label)}</span>` : ''}<small>정가 ${man(q.total)}</small><b>창립 광고주 ${man(ql.total)}</b><small>${unit}</small></span>`
+      + (p.per ? `<span class="ln"><span class="tl">${esc(p.per.label)}</span><small>정가 ${man(p.per.list)}</small><b>창립 광고주 ${man(p.per.launch)}</b></span>` : '');
+  }
   if (p.weeks) {
     const w = weekKey(p, pid), a = p.weeks[w]; let sub = '';
     if (w === 2 && p.weeks[1]) sub = `1주 두 번보다 ${man(p.weeks[1] * 2 - a)} 저렴해요`;
     else if (w === 4 && pid === 'm1') sub = '1개월 = 4주예요';
     if (p.pass3 && /^(m3|m6|y1)$/.test(pid)) { const q = passPrice(a); sub = `주 단위 상품이라 장기 할인 대신 3회 이용권 ${PRICES.bunyang.pass3}% 할인: ${w}주×3회 ${man(q.list)} → ${man(q.total)}`; }
     else if (p.pass3 && !sub) sub = `3회 이용권 ${p.pass3}% 할인`;
+    if (p.launchOff) sub += `${sub ? ' · ' : ''}창립 광고주 ${p.launchOff}% 할인: ${man(launchWeek(a))}`;
     return `<span class="ln"><b>${w}주 ${man(a)}</b></span>${sub ? `<small>${sub}</small>` : ''}`;
   }
   if (p.tiers && p.tiers.length) {
@@ -539,6 +617,7 @@ function pkgLine(key, pid) {
   const p = PRICES[key]; if (!p) return '';
   if (p.weeks) return '4주 공고 기간에 맞춘 묶음이에요';
   const t = p.tiers && p.tiers[0], q = t && periodPrice(t.month, pid); if (!q) return '';
+  if (p.launch) { const ql = periodPrice(p.launch, pid); return `${PL(pid)} 정가 ${man(q.total)} → 창립 광고주 ${man(ql.total)}${ql.rate ? ` (월 ${man(ql.perMonth)} 꼴)` : ''}`; }
   return `${PL(pid)} ${man(q.total)}` + (q.rate ? ` (${man(q.off)} 할인 · 월 ${man(q.perMonth)} 꼴)` : '');
 }
 let curP = 'm1';
@@ -598,7 +677,7 @@ addEventListener('DOMContentLoaded', () => {
 });
 
 /* ---------- 문의 폼 ---------- */
-const PROD_NAME = { bunyang: '분양 단지 광고', agent: '지역 제휴 중개사', native: '결과 하단 카드', jeonse: '전세사기 예방 체크리스트 스폰서', package: '패키지', etc: '기타·제휴' };
+const PROD_NAME = { bunyang: '분양 단지 광고', bunyang_pro: '분양 프리미엄', agent: '지역 제휴 중개사', native: '결과 하단 카드', jeonse: '전세사기 예방 체크리스트 스폰서', package: '패키지', etc: '기타·제휴' };
 const formula = v => /^[=+\-@]/.test(v.trim());
 const emailOk = v => /^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(v);
 const phoneOk = v => /^(01[016789]\d{7,8}|0[2-6]\d{7,9}|070\d{8}|1[5-9]\d{6})$/.test(v.replace(/[^0-9]/g, '')) && !/[A-Za-z@]/.test(v);

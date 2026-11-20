@@ -31,6 +31,8 @@
 <script src="../assets/region-core.js?v=1"></script>
 <script src="../assets/map-engine.js?v=1"></script>
 <script src="../assets/sale-status.js?v=1"></script>
+<script src="../assets/agents.js"></script>
+<script src="../assets/ads.js?v=2"></script>
 <script src="../assets/devproj-view.js?v=2"></script>
 <script src="../assets/tabbar.js?v=2" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -214,6 +216,11 @@ body.reg .cmpbar{display:none}
 .jm-b.ly{transform:translate(-50%,calc(-100% - 6px));background:#5B3BE0;color:#fff;border-radius:8px;padding:3px 7px;font-size:12px;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.2);max-width:150px;overflow:hidden;text-overflow:ellipsis}
 .jm-b.ly::after{content:'';position:absolute;left:50%;bottom:-6px;margin-left:-5px;border:5px solid transparent;border-bottom:0;border-top:6px solid #5B3BE0}
 .jm-b.ly.bun{background:#0E7A4F}.jm-b.ly.bun::after{border-top-color:#0E7A4F}
+/* 지도 프리미엄 분양 마커(광고) — 흰 바탕·금색 테두리·'광고' 표시, 일반 말풍선보다 크게 */
+.jm-b.ly.ad{background:#fff;color:#191F28;border:2px solid #B8942A;border-radius:9px;padding:3px 8px 3px 4px;font-size:12.5px;font-weight:800;max-width:176px;box-shadow:0 3px 10px rgba(0,0,0,.22)}
+.jm-b.ly.ad::after{border-top-color:#B8942A;bottom:-7px}
+.jm-b.ly.ad i{font-style:normal;display:inline-block;background:#B8942A;color:#fff;font-size:11px;font-weight:800;border-radius:5px;padding:0 4px;margin-right:5px;vertical-align:1px}
+.jm-b.ly.ad.sel{outline:3px solid rgba(184,148,42,.35)}
 .jm-b.me{transform:translate(-50%,-50%);width:18px;height:18px;border-radius:50%;background:#2F6BFF;border:3px solid #fff;box-shadow:0 0 0 6px rgba(47,107,255,.25);pointer-events:none}
 .t5{background:#1F4FD1}.t4{background:#3D72F5}.t3{background:#6B7684}.t2{background:#C26A00}.t1{background:#C2410C}.na{background:#B0B8C1}
 .jm-b.dj.solid.t5{border-color:#1F4FD1;background:#1F4FD1}.jm-b.dj.solid.t5::after{border-top-color:#1F4FD1}
@@ -484,8 +491,38 @@ async function loadLayer(k){
   render();
 }
 const SALE_L = { pre: '분양예정', on: '청약중', wait: '발표 대기', mv: '입주예정', plan: '분양예정(시기 미정)' };
+/* ---------- 지도 프리미엄 분양 마커(광고, assets/ads.js) ----------
+   확대 11 이상 · 화면 안 · (확대 14 이상이거나 지도 가운데가 현장 반경 안)일 때 화면당 2개까지. '분양 단지' 칩과 관계없이 보이고,
+   겹침 정리에서 다른 말풍선보다 먼저 자리를 잡지만 지도 로고·축척·안내·범례·카드 자리(walls)에는 놓지 않아요. 점수·순위와는 무관 */
+let ADP = [], ADK = null;
+const ADSEEN = new Set();
+function adRefresh(z, bb){
+  if (!window.JDJ_ADS || S.mode === 'reg') { if (ADP.length) { ADP = []; ADK = ''; } return; }
+  const c = MAP.center();
+  JDJ_ADS.pins({ s: bb.s, n: bb.n, w: bb.w, e: bb.e, lat: c.lat, lng: c.lng, z }).then(l => {
+    const k = l.map(p => p.a.id).join(',');
+    if (k === ADK) return; ADK = k; ADP = l; render();
+  }).catch(() => {});
+}
+function adPins(z){
+  return ADP.map(p => {
+    const q = MAP.project(p.xy[1], p.xy[0]), text = p.a.n, w = Math.min(176, TW(text, 12.5) + 44), h = 28;
+    if (!ADSEEN.has(p.a.id)) { ADSEEN.add(p.a.id); JDJ_ADS.log('adm', p.a.id, ''); }
+    return { k: 'AD' + p.a.id, lat: p.xy[1], lng: p.xy[0], cls: 'ly ad' + (SEL && SEL.lay === p.a.id ? ' sel' : ''), html: `<i>광고</i>${esc(text)}`, z: 970,
+      p: (SEL && SEL.lay === p.a.id ? 1e7 : 0) + 5e6, tap: () => adCard(p), box: { l: q.x - w / 2, t: q.y - 7 - h, r: q.x + w / 2, b: q.y } };
+  });
+}
+function adCard(p){
+  SEL = { lay: p.a.id }; render();
+  JDJ_ADS.log('adc', p.a.id, ''); JDJ_ADS.css();
+  $('sheet').innerHTML = `<div class="grab"></div><div class="hd"><h2>분양 광고</h2><button type="button" class="x" aria-label="닫기">×</button></div>
+    ${JDJ_ADS.cardHtml(p.a, p.r, {})}
+    <p class="note">광고주가 비용을 내고 싣는 광고예요. 집예보 미래가치 점수·순위와 무관하고, 청약 자격·분양 조건은 입주자모집공고문으로 꼭 확인하세요.</p>`;
+  showSheet();
+}
 function layerPins(z, bb){
-  const out = [];
+  const out = adPins(z), adNo = new Set(ADP.map(p => p.a.no).filter(Boolean));
+  adRefresh(z, bb);
   if (z < 10) return out;
   const one = (k, lat, lng, cls, text, zz, p, tap) => { const q = MAP.project(lat, lng), w = Math.min(150, TW(text, 12) + 14), h = 24;
     out.push({ k, lat, lng, cls, html: esc(text), z: zz, p, tap, box: { l: q.x - w / 2, t: q.y - 6 - h, r: q.x + w / 2, b: q.y } }); };
@@ -494,7 +531,7 @@ function layerPins(z, bb){
     one('L' + p.id, p.xy[1], p.xy[0], 'ly', `개발 · ${z >= 13 ? (p.short || p.name) : (p.types || ['사업'])[0]}`, 950, (SEL && SEL.lay === p.id ? 1e7 : 0) + 2e3, () => devCard(p));
   }
   if (S.bun && LAY.bun && LAY.bun.st === 'ok' && z >= 12) for (const x of LAY.bun.list) {
-    if (!C.inBox(bb, x.xy[1], x.xy[0], 0.1)) continue;
+    if (!C.inBox(bb, x.xy[1], x.xy[0], 0.1) || (x.no && adNo.has(x.no))) continue;   // 광고 마커가 있는 현장은 광고 마커 하나만
     one('B' + x.id, x.xy[1], x.xy[0], 'ly bun', `${SALE_L[x.st] || '분양'}${z >= 15 ? ' · ' + x.n : ''}`, 940, (SEL && SEL.lay === x.id ? 1e7 : 0) + 1e3 + (+x.hh || 0) / 1e3, () => bunCard(x));
   }
   return out;
