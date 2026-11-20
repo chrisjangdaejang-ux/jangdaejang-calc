@@ -115,7 +115,9 @@ check("화면 문구에 'AI' 단어 없음", [home, mine, ask, askjs].some(t => 
 check("'통계로 답해요' 표현", /통계로 답해요/.test(askjs), true);
 check('공유 모듈 재사용(setup·update)', /JDJ_SHARE\.setup\(\{tool:'ask'\}\)/.test(ask) && /JDJ_SHARE\.update\(/.test(ask), true);
 check("없는 자료는 '자료 없음'(주차·초등학교 거리)", /자료 없음/.test(ask) && /l: '주차'[^\n]*v: items\.map\(\(\) => NA\)/.test(ask) && /l: '초등학교 거리'[^\n]*v: items\.map\(\(\) => NA\)/.test(ask), true);
-check('학군(학업성취도) 행은 자료가 없어 숨김', /학업성취|학군/.test(ask.slice(ask.indexOf('function rowsOf'), ask.indexOf('function vsTable'))), false);
+{ const rs = ask.slice(ask.indexOf('function rowsOf'), ask.indexOf('function vsTable'));
+  check('학업성취도는 공개 자료가 없어 표에 없음', /학업성취/.test(rs), false);
+  check('학군 행: 가까운 중학교 순전입(fx.sc) + 자료 없으면 자료 없음', [/l: '학군'/.test(rs), /PL\.scParts\(x\.sc/.test(rs), /: NA; }\),\s*n: items\.map\(x => x\.sc/.test(rs)], [true, true, true]); }
 check('아실형 화면: 기간 슬라이더 양끝·탭 4개·단지 패널·가운데 항목명', [/id="r0"/.test(ask) && /id="r1"/.test(ask), /\['sale', '매매'\], \['jeonse', '전세'\], \['rent', '월세'\], \['cnt', '건수'\]/.test(ask), /class="dp c\$\{i\}"/.test(ask), /v\(0\) \+ lb \+ v\(1\)/.test(ask), /다른 단지와 비교/.test(ask)], [true, true, true, true, true]);
 check('집예보 강점 행이 맨 위(미래가치·보유 기간별·구 안 위치·우리 동네 흐름)', ['미래가치 점수', '보유 기간별 전망', '구 안 위치', '우리 동네 흐름'].every(l => ask.indexOf(`l: '${l}'`) > 0 && ask.indexOf(`l: '${l}'`) < ask.indexOf("l: '입주년도'")), true);
 check('많이 찾는 단지: 집계 파일 + 예시 표시', /ask-popular\.json/.test(askjs) && /예시/.test(askjs), true);

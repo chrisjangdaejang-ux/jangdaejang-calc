@@ -36,8 +36,8 @@
 <script src="../assets/config.js?v=1"></script>
 <script src="../assets/auth.js?v=1"></script>
 <script src="../assets/kchat.js?v=1"></script>
-<script src="../assets/plain-words.js?v=7"></script>
-<script src="../assets/mine-core.js?v=12"></script>
+<script src="../assets/plain-words.js?v=8"></script>
+<script src="../assets/mine-core.js?v=13"></script>
 <script src="../assets/ask-core.js?v=3"></script>
 <script src="../assets/ask.js?v=1"></script>
 <script src="../assets/price-sheet.js?v=11"></script>
@@ -454,7 +454,7 @@ function render(d, map, units){
   const mrows = []; for (let i = IX.months.length - 1; i >= Math.max(0, IX.months.length - 12); i--) {
     const p = u[6][i]; mrows.push(`<tr><td>${ym(IX.months[i])}</td><td class="num">${c[i]}건</td><td class="num">${p ? p.toLocaleString() + '만' : '-'}</td><td class="num">${p ? M.won(M.toPrice(p, u[4])) : '-'}</td></tr>`); }
   const sdo = IX.sido.find(x => x.name === sidoName(d.code)) || {};
-  const rs = M.reasonItems(f, {apt:d.apt, dong:d.dong, sgg:sggName(d.code), sido:sidoName(d.code), sidoShort:sdo.short || '', nfv:sdo.nfv, nfvg:(IX.sgg[d.code] || {}).nfvg, label:LABEL, PL, G:PL ? PL.gloss() : null, sid:sdo.id, ev:EVD, sp:SUP});
+  const rs = M.reasonItems(f, {apt:d.apt, dong:d.dong, sgg:sggName(d.code), sido:sidoName(d.code), sidoShort:sdo.short || '', nfv:sdo.nfv, nfvg:(IX.sgg[d.code] || {}).nfvg, label:LABEL, gname:sggName, schNA:true, PL, G:PL ? PL.gloss() : null, sid:sdo.id, ev:EVD, sp:SUP});
   const rli = o => `<li class="${o.c}">${esc(o.t)}${o.ev && PL ? PL.evHtml(o.ev, false, esc) : ''}</li>`;
   const pk = M.premiumKey({sd:S.sd, code:d.code, dong:d.dong, apt:d.apt, band:S.band});
   const posBar = p => { if (!p) return ''; const lo = Math.min(p.me, p.ref) * 0.85, hi = Math.max(p.me, p.ref) * 1.15, x = v => ((v - lo) / (hi - lo) * 100).toFixed(1);

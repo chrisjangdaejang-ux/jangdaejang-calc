@@ -277,6 +277,26 @@
     return `가까운 중학교${names && names.length ? `(${names.join('·')})` : ''}는 ` + (p > 0 ? '전학 온 학생이 떠난 학생보다 많아요' : p < 0 ? '떠난 학생이 전학 온 학생보다 많아요' : '전학 온 학생과 떠난 학생이 비슷해요')
       + `. ${G ? G('순전입률') : '순전입률'} ${p > 0 ? '+' : ''}${p}%`;
   }
+  /* 학군 한 줄(사이트 자료 fx.sc): [학교 이름, 한 해 평균 순전입률 %, 첫 공시연도, 끝 공시연도, 구 안 순위(1=순전입 최다), 구 안 곳 수, 구 코드, 거리 m]
+     scParts → {name, dist, move, rank, base} · scText → 한 문장. 자료가 없으면 null / '' */
+  function scParts(sc, guName) {
+    if (!Array.isArray(sc) || !sc[0]) return null;
+    const [nm, p, y0, y1, r, n, , m] = sc;
+    const a = Math.abs(p), sp = Number.isInteger(a) ? String(a) : a.toFixed(1);
+    const move = p >= 0.05 ? `최근 3년 전입이 전출보다 많아요(한 해 평균 순전입 +${sp}%)`
+      : p <= -0.05 ? `최근 3년 전출이 전입보다 많아요(한 해 평균 순전입 −${sp}%)` : '최근 3년 전입과 전출이 비슷해요(순전입 0%)';
+    let rank = '';
+    if (n >= 3 && r >= 1 && r <= n) {
+      const top = Math.ceil(r / n * 100), low = Math.ceil((n - r + 1) / n * 100);
+      rank = `${guName || '같은 구'} 중학교 ${n}곳 중 순전입 ${top <= 50 ? '상위 ' + Math.max(1, top) : '하위 ' + Math.max(1, low)}%`;
+    }
+    const dist = m > 0 ? (m >= 1000 ? `약 ${(m / 1000).toFixed(1)}km` : `약 ${m}m`) : '';
+    return { name: nm, dist, move, rank, base: y0 && y1 ? (y0 === y1 ? `${y1}년 공시` : `${y0}~${y1}년 공시`) : '' };
+  }
+  function scText(sc, guName) {
+    const s = scParts(sc, guName); if (!s) return '';
+    return `${s.name}${s.dist ? `(${s.dist})` : ''}, ${s.move}` + (s.rank ? ` — ${s.rank}` : '') + (s.base ? ` · 학교알리미 ${s.base}` : '');
+  }
   /* 재건축 단계 */
   const stageName = lv => STAGE[lv] || '';
   const rzText = (z, G, ymf) => `재건축 진행: ${z.n} — ${G ? G(STAGE[z.lv] || '') : (STAGE[z.lv] || '')} 단계${z.ym ? `(${ymf ? ymf(z.ym) : z.ym})` : ''} · 10단계 중 ${z.lv}단계`;
@@ -482,5 +502,5 @@
     run();
   }
 
-  root.JDJ_PLAIN = { ageOf, ageLabel, ageText, popLines, STAGE, GL_PAGE, glossDom, autoGloss, gloss, J, won, eokR, rank, more, regionInfo, rankBase, regionRank, regionPlace, topPct, regionText, regionLine, evid, evHtml, ddText, rcText, momText, schText, stageName, rzText, jrStats, jrText, VOK, hzLabel, checkText, easy, ymKo, spanKo, delayText, unitsKo, supplyLines, renewalLine };
+  root.JDJ_PLAIN = { ageOf, ageLabel, ageText, scParts, scText, popLines, STAGE, GL_PAGE, glossDom, autoGloss, gloss, J, won, eokR, rank, more, regionInfo, rankBase, regionRank, regionPlace, topPct, regionText, regionLine, evid, evHtml, ddText, rcText, momText, schText, stageName, rzText, jrStats, jrText, VOK, hzLabel, checkText, easy, ymKo, spanKo, delayText, unitsKo, supplyLines, renewalLine };
 })(typeof window !== 'undefined' ? window : globalThis);

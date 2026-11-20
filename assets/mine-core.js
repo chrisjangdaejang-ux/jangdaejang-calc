@@ -301,7 +301,9 @@
     }
     if (f.rl && PL) { const R = f.rl, ymk = v => `${String(v).slice(0, 4)}년 ${parseInt(String(v).slice(4, 6), 10)}월`, SK = { plan: '계획 확정', start: '착공', start_real: '본공사 착수', delay: '개통 지연', open: '개통' };
       add(`신규 노선: ${R.line} ${R.st} 인근 — ` + (R.x ? '노선 계획 공식 취소·제외' : R.opened ? `${ymk(R.stym)} 개통했어요` : `${ymk(R.stym)} ${SK[R.stage] || R.stage}` + (R.dl ? `, ${PL.delayText(R.dl, '개통')}` : (R.target ? `, 개통 목표 ${ymk(R.target)}` : ''))), EV('rail')); }
-    if (f.sch != null) add('학군: ' + (PL ? PL.schText(f.sch, f.schn, G) : ''), EV('sch'));
+    if (f.sc && PL && PL.scText) add('학군: ' + PL.scText(f.sc, x.gname ? x.gname(f.sc[6]) : x.sgg), EV('sch'));
+    else if (f.sch != null) add('학군: ' + (PL ? PL.schText(f.sch, f.schn, G) : ''), EV('sch'));
+    else if (x.schNA) add('학군: 가까운 중학교(1.5km 안) 자료 없음');
     if (f.sub != null) add(f.sub >= 30 ? '지하철역이 걸어가기엔 먼 편이에요(도보 20분 이상) — 버스·자차 위주 생활권' : `${f.subs ? f.subs.replace(/\s+/g, ' ') : '지하철역'}까지 걸어서 ${f.sub <= 5 ? '5분 이내' : f.sub + '분 이내'}예요` + (f.sub <= 10 ? ' — 역세권' : ''));
     return r;
   }

@@ -27,8 +27,8 @@
 <script src="../assets/track.js"></script>
 <script src="../assets/stat.js?v=3"></script>
 <script src="../assets/share.js?v=3"></script>
-<script src="../assets/plain-words.js?v=7"></script>
-<script src="../assets/mine-core.js?v=12"></script>
+<script src="../assets/plain-words.js?v=8"></script>
+<script src="../assets/mine-core.js?v=13"></script>
 <script src="../assets/price-sheet.js?v=11"></script>
 <script src="../assets/ask-core.js?v=3"></script>
 <script src="../assets/ask.js?v=1"></script>
@@ -205,7 +205,7 @@ async function load(k, want){
     sidoName: sd.name || '', sidoShort: sd.short || '', sggName: sggName(k.code),
     price: sm.price ? { v: sm.price, at: sm.at, stale: sm.stale } : null,
     avg: A.avgDeal(u, IX.months), ppy: li >= 0 ? { v: u[6][li], at: IX.months[li] } : null,
-    by: f.by || null, hh: f.hh || null, sub: f.sub != null ? f.sub : null, subs: f.subs || '',
+    by: f.by || null, hh: f.hh || null, sc: f.sc || null, sub: f.sub != null ? f.sub : null, subs: f.subs || '',
     fv: f.fv != null ? f.fv : null, fvBase: PL ? PL.rankBase(IX, k.code, 'fv').name : `${sd.short || ''} 아파트`,
     fvg: f.fvg != null ? f.fvg : null, gs: f.gs != null ? f.gs : null,
     fh: f.fh || null, hzOk: hz, turn: A.turnover(bands, f.hh),
@@ -369,6 +369,9 @@ function rowsOf(items){
   add({ l: '거래 회전율', h: '최근 1년 매매 건수(모든 평형, 직거래 제외) ÷ 세대수예요. 높을수록 사고팔기가 활발한 단지예요.', v: items.map(x => x.turn ? `${(x.turn.r * 100).toFixed(1)}%<small>1년 ${x.turn.n}건 ÷ ${x.turn.hh.toLocaleString()}세대</small>` : NA), n: items.map(x => x.turn ? Math.round(x.turn.r * 1000) : null), d: 1 });
   add({ grp: '생활' });
   add({ l: '가까운 역', h: 'K-apt에 단지가 신고한 가까운 지하철역과 도보 시간이에요.', v: items.map(x => x.sub != null ? (x.sub >= 30 ? '도보 20분 넘음' : `도보 ${x.sub <= 5 ? '5분 이내' : x.sub + '분 이내'}`) + (x.subs ? `<small>${esc(x.subs.replace(/\s+/g, ' '))}</small>` : '') : NA), n: items.map(x => x.sub), d: -1 });
+  add({ l: '학군', h: '단지에서 직선거리로 가장 가까운(1.5km 안) 중학교예요. 순전입은 최근 3개 공시연도의 (전학 온 학생 − 떠난 학생) ÷ 재학생을 한 해 평균으로 본 값이에요(교육부 학교알리미). 학군을 찾아 들어오는 수요가 많을수록 높아요. 순위는 학교가 있는 구의 중학교끼리 비교했어요.',
+    v: items.map(x => { const s = PL && PL.scParts(x.sc, x.sc ? sggName(x.sc[6]) : ''); return s ? `<b>${esc(s.name)}</b><small>${esc(s.dist)}</small><small>${esc(s.move)}</small>${s.rank ? `<small>${esc(s.rank)}</small>` : ''}<small>${esc(s.base)}</small>` : NA; }),
+    n: items.map(x => x.sc ? x.sc[1] : null), d: 1 });
   add({ l: '주차', h: '세대당 주차 대수는 아직 공개 자료로 연결하지 않았어요.', v: items.map(() => NA) });
   add({ l: '초등학교 거리', h: '가까운 초등학교까지 거리는 아직 공개 자료로 연결하지 않았어요.', v: items.map(() => NA) });
   return rows;
