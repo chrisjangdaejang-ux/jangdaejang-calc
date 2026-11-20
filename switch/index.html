@@ -41,10 +41,10 @@
 <script src="../tax/adjusted-areas.js"></script>
 <script src="../tax/tax-engine.js"></script>
 <script src="../assets/rec-core.js?v=2"></script>
-<script src="../assets/mine-core.js?v=14"></script>
+<script src="../assets/mine-core.js?v=15"></script>
 <script src="../assets/price-sheet.js?v=13"></script>
 <script src="switch-core.js?v=2"></script>
-<script src="../assets/narrative.js?v=6"></script>
+<script src="../assets/narrative.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -439,7 +439,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
         <h2>③ 예산 안에서 미래가치 점수가 높은 단지</h2>
         <p class="muted" style="font-size:15px;margin:0 0 12px" id="recLead"></p>
         <div id="recList"><div class="recload">실거래 자료를 불러오는 중이에요…</div></div>
-        <p class="recnote">미래가치 점수는 국토교통부 실거래가·인구·입주 물량 등 공공 자료로 같은 시·도 아파트끼리 비교한 순위예요. 과거 시점에 당시 정보만으로 점수를 매긴 뒤 이후 실제 시세로 채점하는 방식(표본 외 검증)으로 점검해요. 같은 지역 평균 대비 순위라, 시장 전체가 내리면 점수가 높은 단지도 내릴 수 있어요.</p>
+        <p class="recnote">미래가치 점수는 국토교통부 실거래가·인구·입주 물량 등 공공 자료로 같은 시·도 아파트끼리 비교한 순위예요. 과거 여러 때에 그때까지의 자료만으로 점수를 매긴 뒤 실제 시세와 맞춰 보는 방식으로 점검해요. 같은 지역 평균 대비 순위라, 시장 전체가 내리면 점수가 높은 단지도 내릴 수 있어요.</p>
       </div>
 
       <div class="panel section" id="vsBox">
@@ -1135,7 +1135,7 @@ setTermOptions(); autoAdj(); render();
   });
 })();
 </script>
-<script src="../assets/plain-words.js?v=12"></script>
+<script src="../assets/plain-words.js?v=13"></script>
 <script>document.addEventListener("DOMContentLoaded",()=>{ if(window.JDJ_PLAIN) JDJ_PLAIN.autoGloss(document.querySelector(".wrap")); });</script>
 </body>
 </html>

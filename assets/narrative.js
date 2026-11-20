@@ -41,9 +41,9 @@
     const m = MH && MH[String(h)]; if (!m) return null;
     const r = m.reg && sido ? m.reg[sido] : null;
     if (!r || r.fb === 'all' || !(r.oos_all || []).length)
-      return { oos_all: m.oos_all, oos_hit: m.oos_hit || 0, oos_avg: m.oos_avg, ok: VOK(m), where: '전국', fb: r && r.fb === 'all' ? 'all' : '', q5: m.q5 };
+      return { oos_all: m.oos_all, oos_hit: m.oos_hit || 0, oos_avg: m.oos_avg, ok: VOK(m), where: '전국', fb: r && r.fb === 'all' ? 'all' : '', q5: m.q5, from: m.data_from };
     const v = r.oos_all.map(o => o.top20).filter(x => x != null);
-    return { oos_all: r.oos_all, oos_hit: r.hit || 0, oos_avg: v.length ? v.reduce((a, b) => a + b, 0) / v.length : null, ok: !!r.ok, where: r.name, fb: r.fb || '', q5: m.q5 };
+    return { oos_all: r.oos_all, oos_hit: r.hit || 0, oos_avg: v.length ? v.reduce((a, b) => a + b, 0) / v.length : null, ok: !!r.ok, where: r.name, fb: r.fb || '', q5: m.q5, from: m.data_from };
   }
   const VR = m => !!(m && m.ok);
   /* 용어 풀이: 한 묶음(요약 전체 / 펼친 문단 하나) 안에서 처음 나올 때만 */
@@ -274,13 +274,13 @@
         }
         if (sL != null) h += ` ${L}년 이상 길게 보면 ${lean(sL)}.`;
       } else if (sL != null) h = `${A} ${L}년 이상 길게 보면 ${SD} 아파트 ${lean(sL)}.`;
-      else { const w = (MV(2) || {}).where; h = `${A} 1~7년 순위 모두 ${w && w !== '전국' ? w + ' 단지로 한 ' : ''}과거 시험을 통과하지 못해 결론을 내지 않았어요.`; }
+      else { const w = (MV(2) || {}).where; h = `${A} 1~7년 전망 모두 ${w && w !== '전국' ? w + ' 단지로 ' : ''}과거에 써 봤을 때 맞은 횟수가 적어 결론을 내지 않았어요.`; }
       out.head = h;
     }
     /* 이 예측, 믿을 수 있나요? — 기간별 과거 시험 성적(이 단지 시·도 단지로 시험, 단지가 적으면 도 지역 묶음·전국) */
     out.trust = [1, 2, 3, 5, 7].filter(h => (h === 2 ? f.fv : fh[h]) != null && MV(h) && (MV(h).oos_all || []).length)
       .map(h => { const m = MV(h), per = (m.oos_all || []).filter(o => o && o.t0).slice().sort((x, y) => String(x.t0).localeCompare(String(y.t0)));
-        return { h, n: m.oos_all.length, hit: m.oos_hit || 0, ok: VR(m), avg: m.oos_avg, where: m.where, fb: m.fb, per: per.map(o => [String(o.t0), o.top20, o.bottom20]) }; });
+        return { h, n: m.oos_all.length, hit: m.oos_hit || 0, ok: VR(m), avg: m.oos_avg, where: m.where, fb: m.fb, from: m.from, per: per.map(o => [String(o.t0), o.top20, o.bottom20]) }; });
     out.sidoShort = SD;
     out.regionOk = !!regionUsed;
     out.headH = (ok2 ? [2] : []).concat(sL != null ? [L] : []);
@@ -426,13 +426,13 @@
         else sum = `보유 기간별 순위는 ${hs.map(lab).join(', ')}예요 — 기간에 따라 평균과 비슷한 구간이 섞여 있어요.`;
         const fact = `${A} ${SD} 아파트 전체와 비교해 ` + hs.map(h => `${h}년 기준 ${topPct(sc(h))}`).join(', ') + '예요.';
         const tested = hs.filter(h => MV(h) && MV(h).oos_all);
-        const cmp = tested.length ? `과거 시험(그때까지의 자료로만 순위를 매긴 뒤 실제 결과와 비교)에서 순위 상위 20% 단지가 같은 구 평균보다 더 오른 경우는 `
-          + tested.map(h => { const m = MV(h); return `${h}년 ${m.oos_all.length}번 중 ${m.oos_hit}번`; }).join(', ') + `이었어요${whereNote(tested.map(h => Object.assign({ h }, MV(h))), SD, '(', ')')}.` : '';
+        const cmp = tested.length ? `이 예측 방법을 과거에 그대로 써 봤더니 `
+          + tested.map(h => { const m = MV(h); return `${h}년 전망은 ${m.oos_all.length}번 중 ${m.oos_hit}번`; }).join(', ') + ` 맞았어요${whereNote(tested.map(h => Object.assign({ h }, MV(h))), SD, '(', ')')}.` : '';
         const pq = [];
         for (const h of hs) {
           if (h === 2) continue;
           const m = MH[String(h)], q = m && m.q5, b = Math.min(4, Math.floor(sc(h) / 20)), x = q && q[b];
-          if (x && x[1] >= 2) pq.push(`과거 시험에서 ${h}년 순위가 ${Q5[b]}였던 단지는 ${h}년 뒤 같은 구 평균보다 ${ppMore(x[0], G)} 올랐어요(시험 ${x[1]}번 중 ${x[2]}번 더 오름, 사례 ${n0(x[3])}건).`);
+          if (x && x[1] >= 2) pq.push(`과거에 그대로 써 봤을 때 ${h}년 순위가 ${Q5[b]}였던 단지는 ${h}년 뒤 같은 구 평균보다 ${ppMore(x[0], G)} 올랐어요(${x[1]}번 중 ${x[2]}번 더 오름, 사례 ${n0(x[3])}건).`);
         }
         const so = '그래서 ' + (bad.includes(2) && good.length ? `${A} 단기 시세 차익보다 ${good[0]}년 이상 실거주·보유 목적에 더 맞아요.`
           : good.includes(2) && bad.length ? `${A} 오래 묵히기보다 2년 안팎 보유 계획에 더 맞아요.`
@@ -768,10 +768,10 @@
     /* 검증 카드: 오피스텔 점수(bt) 중 시험 기록이 있는 기간 */
     const trust = Object.keys(c.bt || {}).filter(h => (c.bt[h].oos_all || []).filter(o => o && o.top20 != null).length).map(h => {
       const m = c.bt[h], per = m.oos_all.filter(o => o && o.t0 && o.top20 != null).sort((x, y) => String(x.t0).localeCompare(String(y.t0)));
-      return { h: +h, n: m.oos_all.filter(o => o && o.top20 != null).length, hit: m.oos_hit || 0, ok: m.status === 'pass', avg: m.oos_avg, per: per.map(o => [String(o.t0), o.top20, o.bottom20]) };
+      return { h: +h, n: m.oos_all.filter(o => o && o.top20 != null).length, hit: m.oos_hit || 0, ok: m.status === 'pass', avg: m.oos_avg, from: m.data_from || m.from, per: per.map(o => [String(o.t0), o.top20, o.bottom20]) };
     });
     return mk(y ? 'offi' : 'offiR', head, L, { names: [nm, SG].concat(((sup && sup.rows) || []).map(r => r[0])).filter(Boolean), trust: u && u.sc ? trust : [], headH: [],
-      tunit: '오피스텔', tbase: '같은 시·군·구 평균', tscope: '전국 오피스텔로 시험한 결과예요.' });
+      tunit: '오피스텔', tbase: '같은 시·군·구 평균', tscope: '전국 오피스텔로 써 본 결과예요.' });
   }
 
   /* ---------- 갈아타기 switch/ ----------
@@ -963,8 +963,8 @@
         + `</tbody></table><small>차이는 ${E(x.evBase || '같은 구 평균 대비')} 2년 뒤 상승률 차이예요.</small></div>`;
     }
     if (x.hz) {
-      h += `<div class="nar-pro"><b>보유 기간별 순위</b><table><thead><tr><th>기간</th><th>${E(c.sido)} 안 순위</th><th>과거 시험</th></tr></thead><tbody>`
-        + x.hz.map(([hh, s, m]) => `<tr><td>${hh}년</td><td class="num">${E(topPct(s))}</td><td>${m && m.oos_all ? `${m.oos_all.length}번 중 ${m.oos_hit}번 통과` : '-'}</td></tr>`).join('') + '</tbody></table></div>';
+      h += `<div class="nar-pro"><b>보유 기간별 순위</b><table><thead><tr><th>기간</th><th>${E(c.sido)} 안 순위</th><th>과거 성적</th></tr></thead><tbody>`
+        + x.hz.map(([hh, s, m]) => `<tr><td>${hh}년</td><td class="num">${E(topPct(s))}</td><td>${m && m.oos_all ? `${m.oos_all.length}번 중 ${m.oos_hit}번 맞음` : '-'}</td></tr>`).join('') + '</tbody></table></div>';
     }
     if (x.chart) h += spark(c, 340, 120);
     return h;
@@ -972,14 +972,14 @@
   /* 검증 카드 끝 문장: 어느 지역 단지로 시험했는지 — 기간마다 다르면 기간별로 */
   const DO_NAMES = '강원·충북·충남·전북·경북·경남·제주';
   function whereOne(t, sd) {
-    if (!t || t.where === '전국') return t && t.fb === 'all' && sd ? `${sd} 단지만으로는 시험할 단지가 적어 전국 단지로` : '전국 단지로';
+    if (!t || t.where === '전국') return t && t.fb === 'all' && sd ? `${sd} 단지만으로는 써 볼 단지가 적어 전국 단지로` : '전국 단지로';
     if (t.fb === 'do') return `${sd ? sd + '처럼 ' : ''}도 지역(${DO_NAMES}) 단지를 묶어`;
     return `${t.where} 단지로`;
   }
   function whereNote(T, sd, pre, post) {
     T = (T || []).filter(Boolean); if (!T.length) return '';
     const ws = T.map(t => whereOne(t, sd)), u = [...new Set(ws)];
-    const s = u.length === 1 ? `${u[0]} 시험한 결과예요` : u.map(w => `${T.filter((t, i) => ws[i] === w).map(t => t.h != null ? t.h + '년' : '').filter(Boolean).join('·')}은 ${w}`).join(', ') + ' 시험한 결과예요';
+    const s = u.length === 1 ? `${u[0]} 써 본 결과예요` : u.map(w => `${T.filter((t, i) => ws[i] === w).map(t => t.h != null ? t.h + '년' : '').filter(Boolean).join('·')}은 ${w}`).join(', ') + ' 써 본 결과예요';
     return pre != null ? `${pre}${s.replace(/결과예요$/, '결과')}${post}` : s + '.';
   }
   function html(N, o) {
@@ -987,24 +987,28 @@
     if (!N || !N.head) return '';
     const id = o.id || 'nar';
     const T = N.trust || [];
-    /* 검증 카드(대표 수정 11/20 15:19): 실제 시험 시점·횟수로 쓴 문장 + 시점별 표. 횟수는 자료 그대로 */
-    const ymT = v => `${String(v).slice(0, 4)}년 ${parseInt(String(v).slice(4, 6), 10)}월`;
-    const sg2 = v => v == null ? "-" : Math.abs(v) < 0.05 ? "0%" : (v > 0 ? '+' : v < 0 ? '−' : '') + r1(v) + '%';
-    const one = t => {
-      if (!t.per.length) return '';
-      const f0 = t.per[0][0], rest = [...new Set(t.per.slice(1).map(p => p[0].slice(0, 4)))];
-      const txt = `${ymT(f0)}까지의 자료만으로 ${t.h}년 점수를 매긴 뒤, 실제 ${t.h}년 뒤(${+f0.slice(0, 4) + t.h}년 ${parseInt(f0.slice(4, 6), 10)}월) 시세와 맞춰 봤어요.`
-        + (rest.length ? ` 같은 방법으로 ${rest.join('·')}년에도 해 봤어요.` : '')
-        + ` 결과: ${t.n}번 중 ${t.hit}번, 점수가 높았던 ${N.tunit || '단지'}들이 실제로 ${N.tbase || '같은 구 평균'}보다 더 많이 올랐어요.`
-        + (t.ok ? ((N.headH || []).includes(t.h) ? ' 그래서 이 점수를 결론에 썼어요.' : ' 그래서 이 점수를 보유 기간별 요약에 썼어요.') : ' 맞은 횟수가 적어서 결론에는 넣지 않고 참고로만 보여 드려요.');
-      return `<div class="nar-tone ${t.ok ? 'ok' : 'ref'}"><b class="nar-th">${t.h}년 점수 · ${t.ok ? ((N.headH || []).includes(t.h) ? '결론에 씀' : '요약에 씀') : '참고'}</b><p>${E(txt)}</p>`
-        + `<table class="nar-ttbl"><thead><tr><th style="width:28%">시점</th><th class="num">상위 20%</th><th class="num">하위 20%</th><th>결과</th></tr></thead><tbody>`
-        + t.per.map(p => `<tr><td>${E(p[0].slice(0, 4) + '.' + parseInt(p[0].slice(4, 6), 10))}</td><td class="num">${E(sg2(p[1]))}</td><td class="num">${E(sg2(p[2]))}</td><td>${p[1] > 0 ? '맞음' : '틀림'}</td></tr>`).join('')
-        + `</tbody></table></div>`;
-    };
-    const trust = T.length ? `<div class="nar-trust"><button type="button" class="nar-tbtn" data-nar-trust aria-expanded="false" aria-controls="${id}-trust">이 점수는 이렇게 검증했어요</button>`
-      + `<div class="nar-trust-body" id="${id}-trust" hidden>` + T.slice().sort((a, b) => (b.ok - a.ok) || (a.h - b.h)).map(one).join('')
-      + `<p class="nar-tnote">상위 20%·하위 20%는 점수 순으로 줄 세웠을 때 위·아래 20% ${N.tunit || '단지'}예요. 표의 숫자는 점수를 매긴 때부터 그 기간 동안 ${N.tbase || '같은 구 평균'}보다 더(+)·덜(−) 오른 정도예요. 점수 상위 20% ${N.tunit || '단지'}가 ${N.tbase || '같은 구 평균'}보다 더 올랐으면 맞음이에요. ${N.tscope ? E(N.tscope) : E(whereNote(T, N.sidoShort))}</p></div></div>` : '';
+    /* 과거 성적 카드(대표 확정 11/20): 첫 줄 = 결론에 쓴 기간을 '과거에 그대로 써 봤더니 N번 중 M번 맞았어요(예: 언제~언제 자료만으로 → 결과)',
+       다음 줄 = 다른 기간 한 줄씩(결론에서 뺀 기간은 '참고로만'), [자세히 보기] = 기간별 회차 결과표만. 횟수·시점은 자료 그대로 */
+    const PLx = root.JDJ_PLAIN;
+    const unit = N.tunit || '단지', base = N.tbase || '같은 구 평균';
+    const mOf = t => ({ oos_all: t.per.map(p => ({ t0: p[0], top20: p[1] })).concat(Array(Math.max(0, t.n - t.per.length)).fill({})), oos_hit: t.hit, oos_avg: t.avg, data_from: t.from });
+    const HH = N.headH || [];
+    const ordT = T.slice().sort((a, b) => (b.ok - a.ok) || ((HH.includes(b.h) ? 1 : 0) - (HH.includes(a.h) ? 1 : 0)) || (HH.indexOf(a.h) - HH.indexOf(b.h)) || (a.h - b.h));
+    const lead = ordT.find(t => t.ok && HH.includes(t.h)) || ordT.find(t => t.ok);
+    let trust = '';
+    if (T.length && PLx && PLx.trackHead) {
+      const tl = t => t.ok ? `${t.h}년 전망: 과거에 그대로 써 봤더니 ${t.n}번 중 ${t.hit}번 맞았어요.` : PLx.trackRef(mOf(t), t.h, { base });
+      const lines = (lead ? `<p class="nar-t1">${E((T.length > 1 ? `${lead.h}년 전망: ` : '') + PLx.trackHead(mOf(lead), lead.h, { unit, base }))}</p>` : '')
+        + (() => { const o = ordT.filter(t => t !== lead && t.ok);
+          return !o.length ? '' : o.length === 1 && !lead ? `<p class="nar-t2">${E(tl(o[0]))}</p>`
+            : `<p class="nar-t2">${E(`${lead ? '다른 기간도 ' : ''}과거에 그대로 써 봤더니 ` + o.map(t => `${t.h}년 전망 ${t.n}번 중 ${t.hit}번`).join(', ') + ' 맞았어요.')}</p>`; })()
+        + ordT.filter(t => t !== lead && !t.ok).map(t => `<p class="nar-t2 ref">${E(tl(t))}</p>`).join('');
+      const rows = ordT.filter(t => PLx.trackRuns(mOf(t), t.h).length).map(t => `<div class="nar-tone${t.ok ? '' : ' ref'}"><b class="nar-th">${t.h}년 전망</b><ul class="nar-trows">`
+        + PLx.trackRuns(mOf(t), t.h).map(r => { const x = PLx.trackRow(r), i = x.lastIndexOf(': '); return `<li><span>${E(x.slice(0, i))}</span><b class="${r.hit ? 'hit' : 'miss'}">${E(x.slice(i + 2))}</b></li>`; }).join('')
+        + '</ul></div>').join('');
+      trust = `<div class="nar-trust">${lines}<button type="button" class="nar-tbtn" data-nar-trust aria-expanded="false" aria-controls="${id}-trust">자세히 보기</button>`
+        + `<div class="nar-trust-body" id="${id}-trust" hidden>${rows}<p class="nar-tnote">${N.tscope ? E(N.tscope) : E(whereNote(T, N.sidoShort))}</p></div></div>`;
+    }
     return `<section class="nar" id="${E(id)}" data-nar="1" data-nogloss${N.cat ? ` data-cat="${E(N.cat)}"` : ''}>`
       + `<p class="nar-head">${E(N.head)}</p>` + trust
       + (N.gap ? `<p class="nar-gap">${E(N.gap)}</p>` : '')
@@ -1012,11 +1016,11 @@
       + `<ol class="nar-list">` + N.lines.map((x, i) => {
         const open = i === 0 && !o.closed, pid = `${id}-d${i}`, ps = x.d.map((p, j) => p ? `<p class="nar-p"><b>${(N.step || STEP)[j]}</b>${E(p)}</p>` : '').join('');
         return `<li class="nar-li" data-k="${E(x.k)}"><div class="nar-sum">${E(x.t)}</div>`
-          + (x.k === 'fit' && N.dim && N.dim.length ? `<div class="nar-dim">참고(과거 시험에서 잘 맞지 않았어요): ${E(N.dim.join(', '))}</div>` : '')
+          + (x.k === 'fit' && N.dim && N.dim.length ? `<div class="nar-dim">참고로만 보여 드리는 기간: ${E(N.dim.join(', '))}</div>` : '')
           + `<button type="button" class="nar-more" data-nar-k="${E(x.k)}" aria-expanded="${open}" aria-controls="${pid}">${open ? '접기' : '자세히 보기'}</button>`
           + `<div class="nar-det" id="${pid}"${open ? '' : ' hidden'}>${ps}${x.devHtml ? `<div class="nar-dev dv-sec"><b class="nar-devh">주변 개발사업(공식 원문 확인)</b>${x.devHtml}</div>` : ''}${o.premium ? proHtml(x, o.c || {}) : ''}</div></li>`;
       }).join('') + `</ol>`
-      + (N.dim && N.dim.length && !N.lines.some(x => x.k === 'fit') ? `<div class="nar-dim">참고(과거 시험에서 잘 맞지 않았어요): ${E(N.dim.join(', '))}</div>` : '')
+      + (N.dim && N.dim.length && !N.lines.some(x => x.k === 'fit') ? `<div class="nar-dim">참고로만 보여 드리는 기간: ${E(N.dim.join(', '))}</div>` : '')
       + `<p class="nar-foot"><a class="nar-terms" href="/jangdaejang-calc/guide/terms/">용어 모아 보기</a> · 밑줄 점선 단어를 누르면 바로 아래에 설명이 나와요.</p></section>`;
   }
   const CSS = `.nar{margin:12px 0 6px;padding:14px 14px 10px;border:1px solid #E6DFC8;border-radius:14px;background:#FFFDF7}
@@ -1038,11 +1042,16 @@
 .nar-dev{margin-top:10px;padding-top:8px;border-top:1px dashed #D9CFAE;font-size:14px;line-height:1.65}.nar-devh{display:block;font-size:12.5px;color:#8A6D12;margin-bottom:2px}.nar-dev .dv-one{padding:6px 0}.nar-dev .dv-p{margin:4px 0;font-size:14px;line-height:1.7}.nar-dev .dv-note{font-size:12.5px;color:#6B6B6B}
 .nar-chart{margin:10px 0 0}.nar-chart svg{width:100%;height:auto;display:block}.nar-chart figcaption{font-size:12px;color:#555;margin-top:2px}
 .nar-chart i{display:inline-block;width:12px;height:3px;vertical-align:middle;margin:0 4px 0 6px}.nar-chart i.me{background:#B8942A}.nar-chart i.gu{background:#B9B2A0}
-.nar-trust{margin:0 0 10px}.nar-tbtn{width:100%;text-align:left;border:1px solid #D9CFAE;background:#fff;border-radius:10px;padding:10px 12px;font-size:14px;font-weight:700;color:#5A4A1A;cursor:pointer;min-height:44px}
-.nar-tbtn:after{content:'펼치기 ▾';float:right;font-weight:600;font-size:12.5px;color:#8A6D12}.nar-tbtn[aria-expanded="true"]:after{content:'접기 ▴'}
-.nar-trust-body{margin-top:6px;padding:10px 12px;background:#F8F4E8;border-radius:10px;font-size:14px;line-height:1.65;color:#333}
-.nar-tone{padding:4px 0 10px;border-bottom:1px solid #E6DFC8;margin-bottom:8px}.nar-tone p{margin:4px 0 6px}.nar-th{color:#5A4A1A}.nar-tone.ref{color:#8C8C8C}.nar-tone.ref .nar-th{color:#9A9A9A}
-.nar-ttbl{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed}.nar-ttbl td,.nar-ttbl th{white-space:nowrap}.nar-ttbl th,.nar-ttbl td{padding:4px 3px;border-top:1px solid #E6DFC8;text-align:left}.nar-ttbl th{font-weight:600;color:#6B6B6B}.nar-ttbl .num{text-align:right;font-variant-numeric:tabular-nums}.nar-tnote{margin:8px 0 0;font-size:12.5px;color:#6B6B6B}
+.nar-trust{margin:0 0 10px;padding:10px 12px;background:#F8F4E8;border-radius:10px;font-size:14px;line-height:1.6;color:#333;word-break:keep-all}
+.nar-t1{margin:0 0 4px;font-weight:600;color:#3A3220}.nar-t2{margin:2px 0 0;font-size:13px;color:#555}.nar-t2.ref{color:#8C8C8C}
+.nar-tbtn{border:0;background:none;color:#8A6D12;font-weight:700;font-size:13.5px;padding:6px 0 0;cursor:pointer;min-height:32px}
+.nar-tbtn:after{content:' ▾'}.nar-tbtn[aria-expanded="true"]:after{content:' ▴'}
+.nar-trust-body{margin-top:6px;padding-top:8px;border-top:1px solid #E6DFC8}
+.nar-tone{margin-bottom:8px}.nar-th{display:block;font-size:13px;color:#5A4A1A}.nar-tone.ref .nar-th,.nar-tone.ref li{color:#9A9A9A}
+.nar-trows{list-style:none;margin:2px 0 0;padding:0;font-size:12.5px;font-variant-numeric:tabular-nums}
+.nar-trows li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:0 8px;padding:3px 0;border-top:1px solid #E6DFC8}
+.nar-trows b{font-weight:700;white-space:nowrap}.nar-trows b.hit{color:#1F5FA8}.nar-trows b.miss{color:#B4473A}.nar-tone.ref .nar-trows b{color:#9A9A9A}
+.nar-tnote{margin:4px 0 0;font-size:12.5px;color:#6B6B6B}
 .nar-dim{margin:4px 0 0 26px;font-size:13px;color:#9A9A9A;line-height:1.55;word-break:keep-all}
 .nar-foot{margin:10px 0 2px;font-size:12.5px;color:#6B6B6B}.nar-terms{color:#8A6D12;font-weight:700}
 @media(min-width:900px){.nar-head{font-size:18.5px}.nar-sum{font-size:15.5px}}`;
@@ -1058,7 +1067,7 @@
     el.addEventListener('click', e => {
       const t = e.target.closest('[data-nar-trust]');
       if (t && el.contains(t)) { const d = el.ownerDocument.getElementById(t.getAttribute('aria-controls')), open = t.getAttribute('aria-expanded') !== 'true';
-        if (d) d.hidden = !open; t.setAttribute('aria-expanded', String(open)); if (open) stat('trust'); return; }
+        if (d) d.hidden = !open; t.setAttribute('aria-expanded', String(open)); t.textContent = open ? '접기' : '자세히 보기'; if (open) stat('trust'); return; }
       const b = e.target.closest('.nar-more');
       if (b && el.contains(b)) { const open = b.getAttribute('aria-expanded') !== 'true'; set(b, open); if (open) stat(b.dataset.narK); return; }
       const a = e.target.closest('[data-nar-all]');
@@ -1067,7 +1076,7 @@
     });
     /* 어려운 용어: 점선 + 누르면 바로 아래 설명 상자(plain-words.js tipDom, 한 번에 하나) */
     const PLx = root.JDJ_PLAIN;
-    if (PLx && PLx.tipDom) PLx.tipDom(el, { blockSel: '.nar-head,.nar-gap,.nar-sum,.nar-dim,.nar-p,.nar-tone p,.nar-tnote', onOpen: () => stat('term') });
+    if (PLx && PLx.tipDom) PLx.tipDom(el, { blockSel: '.nar-head,.nar-gap,.nar-sum,.nar-dim,.nar-p,.nar-t1,.nar-tnote', onOpen: () => stat('term') });
   }
   const NAR = { build, html, bind, lint, css, sentences, BANNED, KINDS, CKINDS, cat, guWhy, guPast };
   root.JDJ_NAR = NAR;

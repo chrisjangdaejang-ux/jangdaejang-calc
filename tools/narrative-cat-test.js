@@ -61,7 +61,8 @@ const ruleProbs = (X, tag) => { const L = N.lint(X); const p = L.map(x => `${tag
   eq(Xu.lines.map(x => x.k), ['yield', 'rate', 'dem', 'osup', 'score'], '오피스텔 요약 줄');
   eq(Xu.trust.map(t => [t.h, t.n, t.hit, t.ok]), [[2, 2, 2, true]], '오피스텔 검증 카드(점수 있을 때)');
   eq(ruleProbs(Xu, '오피스텔 건물'), [], '오피스텔 건물 규칙');
-  has(N.html(Xu, { id: 'o1' }), '같은 시·군·구 평균보다 더 많이 올랐어요', '오피스텔 검증 카드 비교 기준');
+  has(N.html(Xu, { id: 'o1' }), '실제로 점수 상위 20% 오피스텔이 같은 시·군·구 평균보다 더 올랐어요)', '오피스텔 과거 성적 비교 기준');
+has(N.html(Xu, { id: 'o1' }), '전국 오피스텔로 써 본 결과예요.', '오피스텔 과거 성적 범위');
 }
 { /* 갈아타기 */
   const S = SW.sell({ sale: 130000, acq: 70000, exp: null, acqDate: '2017-01-01', saleDate: '2026-12-01', residMonths: 120, houses: 1, acqAdj: true, saleAdj: false, oldLoan: 20000 });

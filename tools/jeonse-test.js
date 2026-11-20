@@ -53,7 +53,7 @@ check('구 전세 추이', R.guSeries({ js: [1, 10, 20], m60: '202601' }), { mon
 /* ---------- 화면 문구 ---------- */
 const html = fs.readFileSync(path.join(__dirname, '..', 'jeonse', 'index.html'), 'utf8');
 const home = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-check('전망 자리 문구는 한 번만', html.split('전세 전망은 과거 자료로 시험 중이에요').length - 1, 1);
+check('전망 자리 문구는 한 번만', html.split('전세 전망은 과거 자료와 맞춰 보는 중이에요').length - 1, 1);
 check('종류 탭 4개(아파트·빌라·오피스텔·단독·다가구)', R.KINDS.map(k => k.label), ['아파트', '빌라', '오피스텔', '단독·다가구']);
 check('공식 출처 링크(HUG·정책브리핑)', ['khug.or.kr/hug/web/ig/dr/igdr000001.jsp', 'korea.kr/news/policyNewsView.do?newsId=148905628'].every(s => html.includes(s)), true);
 check('확인 안 된 기준 안 씀(80%·126% 등)', /80%|126%|70%/.test(html.replace(/<style[\s\S]*?<\/style>/, '')), false);

@@ -95,11 +95,12 @@
 .score .hd{font-size:13.5px;font-weight:700;color:var(--blue)}
 .score .big{font-size:21px;font-weight:900;letter-spacing:-.5px;line-height:1.45;margin:6px 0 12px;color:var(--text)}
 .score .big em{font-style:normal;color:var(--blue)}
-.per{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
-.per div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
-.per small{display:block;font-size:13.5px;color:var(--sub2)}
-.per b{font-size:18px;font-weight:900}
-.per b.up{color:var(--blue)}.per b.dn{color:var(--neg)}
+.score .big .ex{display:block;font-size:15px;font-weight:600;letter-spacing:0;line-height:1.6;color:var(--sub);margin-top:6px;word-break:keep-all}.score .big .ex b{color:var(--blue)}
+.per{display:flex;flex-direction:column;gap:0;font-variant-numeric:tabular-nums;margin-top:6px}
+.per div{display:flex;flex-wrap:wrap;justify-content:space-between;gap:0 10px;padding:6px 2px;border-top:1px solid var(--line);font-size:14px;color:var(--sub)}
+.per div:first-child{border-top:0}
+.per b{font-weight:800;white-space:nowrap}
+.per .ok b{color:var(--blue)}.per .no b{color:var(--neg)}
 .score .rg{font-size:15px;color:var(--sub);margin:12px 0 0}
 .score .nt{font-size:13.5px;color:var(--sub2);margin:12px 0 0;line-height:1.6}
 .hzb{margin:14px 0 0;padding:18px;border-radius:18px;border:1px solid var(--line);background:#fff}
@@ -112,10 +113,6 @@
 .hr .r{min-width:0}
 .hr .r b{display:block;font-size:15.5px;font-weight:700}
 .hr .r small{display:block;font-size:13.5px;color:var(--sub2);margin-top:2px}
-.dots{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
-.dots i{font-style:normal;font-size:13.5px;font-weight:700;border-radius:6px;padding:1px 6px;white-space:nowrap}
-.dots i.ok{background:var(--blue-l);color:var(--blue)}
-.dots i.no{background:var(--neg-l);color:var(--neg)}
 .tag{font-size:13.5px;font-weight:700;border-radius:999px;padding:4px 10px;white-space:nowrap;justify-self:end}
 .tag.main{background:var(--blue);color:#fff}
 .tag.use{background:var(--blue-l);color:var(--blue)}
@@ -342,10 +339,10 @@
   </div>
 
   <h2><span class="n">02</span>어떻게 검증하나요</h2>
-  <p class="lead2">과거 각 시점으로 돌아가 <b>그때까지의 자료만으로</b> 점수를 매기고, 이후 실제 시세로 채점합니다(표본 외 검증). 채점에 쓰는 미래 시세는 점수를 만들 때 쓰지 않아요.</p>
+  <p class="lead2">과거 어느 때로 돌아가 <b>그때까지의 자료만으로</b> 점수를 매긴 뒤, 몇 년 뒤 실제 시세와 맞춰 봐요. 맞춰 볼 때 쓰는 그 뒤 시세는 점수를 만들 때 쓰지 않아요.</p>
   <ol class="steps">
     <li>과거 시점(예: 2022년 10월)에 알려져 있던 실거래·통계·발표 계획만으로 모든 단지의 점수를 매겨요.</li>
-    <li>점수 상위 20% 단지가 이후 같은 구 평균보다 더 올랐는지 실제 시세로 확인해요. 더 올랐으면 그 시험은 ‘통과’예요.</li>
+    <li>점수 상위 20% 단지가 그 뒤 실제로 같은 구 평균보다 더 올랐으면 ‘맞음’, 덜 올랐으면 ‘틀림’이에요.</li>
     <li>여러 시점에서 반복해, 상승장과 하락장 모두에서 맞았는지 잘 안 맞은 기간까지 그대로 공개해요.</li>
   </ol>
   <div class="score" id="score" aria-live="polite">
@@ -353,11 +350,11 @@
     <div class="big" id="scBig">검증 성적을 불러오는 중이에요</div>
     <div class="per" id="scPer"></div>
     <p class="rg" id="scRg" hidden></p>
-    <p class="nt">점수는 같은 지역 평균 대비 상대 순위예요. 시장 전체가 내리면 점수가 높은 단지도 내릴 수 있어요. 성적은 새 자료가 들어오면 자동으로 다시 채점돼요.</p>
+    <p class="nt">점수는 같은 지역 평균 대비 상대 순위예요. 시장 전체가 내리면 점수가 높은 단지도 내릴 수 있어요. 성적은 새 자료가 들어오면 자동으로 다시 맞춰 봐요.</p>
   </div>
   <div class="hzb" id="hzb" hidden>
     <div class="hd">보유 기간별 성적표 · 잘 안 맞은 기간까지 그대로</div>
-    <p class="sub">기본 점수는 성적이 가장 안정적인 <b>2년</b> 기준이에요. 다른 보유 기간은 여러 번의 표본 외 시험에서 평균적으로 맞힌 기간만 리포트의 기간별 예측에 쓰고, 기준에 못 미친 기간은 예측에 쓰지 않고 성적만 참고로 공개해요.</p>
+    <p class="sub">기본 점수는 성적이 가장 안정적인 <b>2년</b> 기준이에요. 다른 보유 기간은 과거에 그대로 써 봐서 잘 맞은 기간만 리포트의 기간별 예측에 쓰고, 맞은 횟수가 적은 기간은 예측에 쓰지 않고 성적만 참고로 공개해요.</p>
     <div id="hzRows"></div>
     <p class="nx" id="hzNext" hidden></p>
   </div>
@@ -380,7 +377,7 @@
       <p>가격 시나리오가 필요하면 프리미엄 단지 리포트의 1~10년 가격 시나리오(보수·기준·낙관)를 참고해 주세요.</p></div></details>
     <details><summary><span>시장 전체가 내리면 어떻게 되나요?</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary><div class="a">
       <p>점수는 상대 순위라서 시장 전체가 내리면 점수가 높은 단지도 함께 내릴 수 있어요. 점수가 말해 주는 건 ‘같은 지역 평균보다 덜 내리고 더 오를 가능성’이에요.</p>
-      <p>위 성적표의 시험 기간에는 상승장과 하락장이 모두 들어 있어, 하락기에도 상위 단지가 같은 구 평균보다 나았는지 그대로 확인할 수 있어요.</p></div></details>
+      <p>위 성적표에서 과거에 써 본 기간에는 상승장과 하락장이 모두 들어 있어, 하락기에도 상위 단지가 같은 구 평균보다 나았는지 그대로 확인할 수 있어요.</p></div></details>
     <details><summary><span>왜 우리 단지 점수가 낮게 나오나요?</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary><div class="a">
       <p>점수는 좋은 집인지가 아니라 <b>앞으로 같은 지역 안에서 더 오를 가능성</b>을 비교해요. 살기 좋은 단지라도 이미 많이 오른 상태이거나, 주변에 입주 물량이 몰려 있거나, 같은 지역에 조건이 더 좋은 단지가 많으면 낮게 나올 수 있어요.</p>
       <p>‘내 집 시세 확인’의 ‘미래가치 점수와 근거’나 추천 단지 카드의 ‘올린 요인 · 내린 요인’에서 어떤 항목이 점수를 움직였는지 확인할 수 있어요.</p></div></details>
@@ -407,12 +404,16 @@
   <p class="fine">과거 데이터 기반 분석 정보이며, 투자 판단의 책임은 이용자에게 있습니다.</p>
 </main>
 <footer class="foot">★ 장대장부동산그룹 · <a href="/jangdaejang-calc/">집예보 홈</a></footer>
+<script src="../assets/plain-words.js?v=13"></script>
 <script>
 (async function(){
   const $ = id => document.getElementById(id);
   const D = '/jangdaejang-data/data/';
   const ym = t => `${t.slice(0,4)}.${t.slice(4,6)}`;
-  const sg = v => (v > 0 ? '+' : '') + (Math.round(v * 10) / 10).toFixed(1) + '%p';
+  const sg = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(Math.round(v * 10) / 10).toFixed(1) + '%p';
+  const PL = window.JDJ_PLAIN, esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  /* 회차별 결과(plain-words.js trackRuns): '2010.01~2021.10 자료 → 2023.10' · '맞음 +1.3%p' */
+  const runs = (m, h) => PL.trackRuns(m, h).map(r => { const x = PL.trackRow(r), i = x.lastIndexOf(': '); return `<div class="${r.hit ? 'ok' : 'no'}"><span>${esc(x.slice(0, i))}</span><b>${esc(x.slice(i + 2))}</b></div>`; }).join('');
   const man = n => n >= 1e4 ? `${(n / 1e4).toFixed(n >= 1e6 ? 0 : 1).replace(/\.0$/, '')}만` : n.toLocaleString('ko-KR');
   const ymAdd = (t, k) => { let y = +t.slice(0, 4), m = +t.slice(4, 6) + k; while (m > 12) { m -= 12; y++; } while (m < 1) { m += 12; y--; } return `${y}${String(m).padStart(2, '0')}`; };
   const get = async f => { try { const r = await fetch(D + f, { cache: 'no-cache' }); return r.ok ? await r.json() : null; } catch (e) { return null; } };
@@ -463,39 +464,41 @@
   /* 2년 기본 성적 */
   const O = (M && M.oos_all) || [];
   if (!M || O.length < 2 || !(M.oos_avg > 0)) {
-    $('scBig').textContent = '과거 자료를 채우며 검증을 강화하는 중이에요. 상승장과 하락장 모두에서 검증을 통과하면 성적을 공개해요.';
+    $('scBig').textContent = '과거 자료를 채우는 중이에요. 상승장과 하락장 모두에서 과거에 그대로 써 봐서 잘 맞으면 성적을 공개해요.';
   } else {
-    const ys = O.map(o => +o.t0.slice(0, 4)), y0 = Math.min(...ys), y1 = Math.max(...ys), n = O.length, hit = M.oos_hit;
-    $('scBig').innerHTML = `${y0}~${y1}년 ${n}번 시험, <em>${hit === n ? `${n}번 모두` : `${hit}번`}</em> 상위 20% 단지가 같은 구 평균보다 더 올랐어요 <span style="white-space:nowrap">(평균 <em>${sg(M.oos_avg)}</em>)</span>`;
-    $('scPer').innerHTML = O.map(o => `<div><small>${ym(o.t0)} → 2년 뒤</small><b class="${o.top20 >= 0 ? 'up' : 'dn'}">${sg(o.top20)}</b></div>`).join('');
+    const M2 = Object.assign({}, M, { data_from: M.data_from || (MH && MH['2'] && MH['2'].data_from) });
+    const th = PL.trackHead(M2, 2), cut = th.indexOf(' (예:');
+    $('scBig').innerHTML = esc(cut > 0 ? th.slice(0, cut) : th).replace(/(\d+번 중 \d+번 맞았어요)/, '<em>$1</em>')
+      + (cut > 0 ? `<span class="ex">${esc(th.slice(cut + 1))}</span>` : '') + `<span class="ex">점수 상위 20% 단지가 같은 구 평균보다 평균 <b>${sg(M.oos_avg)}</b> 더 올랐어요.</span>`;
+    $('scPer').innerHTML = runs(M2, 2);
     const R = M.region;
-    if (R && R.used && R.oos && R.oos.top20 != null) { $('scRg').hidden = false; $('scRg').innerHTML = `지역 전망으로 고른 상위 20% 구·시는 같은 시·도 평균보다 <b>${sg(R.oos.top20)}</b> 더 올랐어요(표본 외 검증).`; }
+    if (R && R.used && R.oos && R.oos.top20 != null) { $('scRg').hidden = false; $('scRg').innerHTML = `지역 전망으로 고른 상위 20% 구·시는 같은 시·도 평균보다 <b>${sg(R.oos.top20)}</b> 더 올랐어요(과거에 그대로 써 본 결과).`; }
   }
 
-  /* 보유 기간별 성적표: 통과·미통과 시험을 모두 표시 */
+  /* 보유 기간별 성적표: 맞은 회차·틀린 회차를 모두 표시 */
   if (MH) {
     const VOK = m => !!(m && (m.oos_all || []).length >= 2 && m.oos_avg > 0 && 2 * (m.oos_hit != null ? m.oos_hit : (m.oos_all || []).filter(o => (o.top20 || 0) > 0).length) >= (m.oos_all || []).length);
     const rows = [1, 2, 3, 5, 7].filter(h => MH[h]).map(h => {
       const m = MH[h], T = m.oos_all || [], n = T.length, hit = T.filter(o => o.top20 > 0).length;
-      const tag = h === 2 ? '<span class="tag main">기본 점수</span>' : VOK(m) ? '<span class="tag use">기간별 예측에 사용</span>' : `<span class="tag ref">${n < 2 ? '시험 더 필요' : '기준 미달'} · 미사용</span>`;
-      const head = n ? `시험 ${n}번 중 <span style="color:${hit === n ? 'var(--blue)' : hit * 2 < n ? 'var(--neg)' : 'var(--text)'}">${hit}번 통과</span>` : '아직 시험할 만큼 과거 자료가 쌓이지 않았어요';
-      const sub = n ? `상위 20% 단지의 같은 구 대비 평균 ${sg(m.oos_avg)}` : '과거 자료가 더 쌓이면 시험을 시작해요';
-      const dots = T.map(o => `<i class="${o.top20 > 0 ? 'ok' : 'no'}">${ym(o.t0)} ${o.top20 > 0 ? '통과' : '미달'} ${sg(o.top20)}</i>`).join('');
-      return `<div class="hr"><span class="y">${h}년</span>${tag}<span class="r"><b>${head}</b><small>${sub}</small>${dots ? `<span class="dots">${dots}</span>` : ''}</span></div>`;
+      const tag = h === 2 ? '<span class="tag main">기본 점수</span>' : VOK(m) ? '<span class="tag use">잘 맞아 예측에 씀</span>' : `<span class="tag ref">${n < 2 ? '써 본 횟수 적음' : '맞은 횟수 적음'} · 참고만</span>`;
+      const head = n ? `과거에 그대로 써 봤더니 ${n}번 중 <span style="color:${hit === n ? 'var(--blue)' : hit * 2 < n ? 'var(--neg)' : 'var(--text)'}">${hit}번${hit * 2 < n ? '만' : ''} 맞았어요</span>` : '아직 써 볼 만큼 과거 자료가 쌓이지 않았어요';
+      const sub = n ? `점수 상위 20% 단지가 같은 구 평균보다 평균 ${sg(m.oos_avg)}` : '과거 자료가 더 쌓이면 써 보기 시작해요';
+      const dots = runs(Object.assign({}, m, { data_from: m.data_from || (M && M.data_from) }), h);
+      return `<div class="hr"><span class="y">${h}년</span>${tag}<span class="r"><b>${head}</b><small>${sub}</small>${dots ? `<span class="per">${dots}</span>` : ''}</span></div>`;
     });
     if (rows.length) {
       $('hzRows').innerHTML = rows.join('');
       $('hzb').hidden = false;
       const to = IX && IX.dataTo;
       if (to) { const nx = ymAdd(to, 1), cal = ymAdd(to, 2); $('hzNext').hidden = false;
-        $('hzNext').innerHTML = `지금 성적은 <b>${ym(to)}</b> 실거래까지 채점한 결과예요. 다음 채점은 <b>${cal.slice(0, 4)}년 ${+cal.slice(4)}월</b> — ${+nx.slice(4)}월 실거래 신고가 모이면 시험 시점을 한 달씩 옮겨 모든 기간을 다시 채점해요.`; }
+        $('hzNext').innerHTML = `지금 성적은 <b>${ym(to)}</b> 실거래까지 맞춰 본 결과예요. 다음 갱신은 <b>${cal.slice(0, 4)}년 ${+cal.slice(4)}월</b> — ${+nx.slice(4)}월 실거래 신고가 모이면 예측 시점을 한 달씩 옮겨 모든 기간을 다시 맞춰 봐요.`; }
     }
   }
 
-  /* 지역 전망은 검증을 통과했을 때만 점수에 들어감 → 아직이면 그룹에 표시 */
+  /* 지역 전망은 과거에 써 봐서 잘 맞았을 때만 점수에 들어감 → 아직이면 그룹에 표시 */
   if (!(M && M.region && M.region.used)) {
-    $('gRegion').querySelector('summary b').insertAdjacentHTML('beforeend', '<span class="off">검증 중 · 점수 미반영</span>');
-    $('rgNote').textContent = '아래 항목은 여러 시기 검증을 통과하면 점수에 반영해요. 지금은 리포트에 참고로만 보여 드려요.';
+    $('gRegion').querySelector('summary b').insertAdjacentHTML('beforeend', '<span class="off">맞춰 보는 중 · 점수 미반영</span>');
+    $('rgNote').textContent = '아래 항목은 과거 여러 때에 그대로 써 봐서 잘 맞으면 점수에 반영해요. 지금은 리포트에 참고로만 보여 드려요.';
   }
 })();
 </script>

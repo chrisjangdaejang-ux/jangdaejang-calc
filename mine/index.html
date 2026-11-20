@@ -36,14 +36,14 @@
 <script src="../assets/config.js?v=3"></script>
 <script src="../assets/auth.js?v=3"></script>
 <script src="../assets/kchat.js?v=1"></script>
-<script src="../assets/plain-words.js?v=12"></script>
-<script src="../assets/narrative.js?v=6"></script>
-<script src="../assets/mine-core.js?v=14"></script>
+<script src="../assets/plain-words.js?v=13"></script>
+<script src="../assets/narrative.js?v=7"></script>
+<script src="../assets/mine-core.js?v=15"></script>
 <script src="../assets/ask-core.js?v=3"></script>
 <script src="../assets/ask.js?v=1"></script>
 <script src="../assets/price-sheet.js?v=13"></script>
-<script src="../assets/offi-core.js?v=2"></script>
-<script src="../assets/offi-view.js?v=4"></script>
+<script src="../assets/offi-core.js?v=3"></script>
+<script src="../assets/offi-view.js?v=5"></script>
 <script src="../assets/policy-view.js?v=1"></script>
 <script src="../assets/devproj-view.js?v=2"></script>
 <script src="../assets/src-box.js?v=1"></script>
@@ -557,9 +557,9 @@ function render(d, map, units){
     <h2>미래가치 점수와 근거<small>공개 자료에 있는 점수를 그대로 보여 드려요 (2년 보유 기준, 같은 시·도 단지 비교)</small></h2>
     ${f.fv != null ? (NARON ? JDJ_NAR.html(JDJ_NAR.build(f, {apt:d.apt, dong:d.dong, code:d.code, band:S.band, area:u[4], IX, EV:EVD, MH, SP:SUP, PL, year:new Date().getFullYear(), s:u[6], regionUsed:MREG, dev: DEVP ? {data:DEVP, u:{code:d.code, dong:d.dong, jibun:d.jibun}, o:{apt:d.apt, sggName}} : null}), {id:'narM'})
       + `<details class="msum"><summary>자세한 자료 보기</summary><ul class="why">${rs.map(rli).join('')}</ul></details>` : `<ul class="why">${rs.map(rli).join('')}</ul>`) + `
-      <p class="basis">미래가치 점수는 당시 알려진 정보로 예측하고 이후 실제 시세로 채점해 검증한 점수예요. 같은 지역 평균 대비 순위라, 시장 전체가 내리면 점수가 높은 단지도 내릴 수 있어요.</p>`
+      <p class="basis">미래가치 점수는 과거 여러 때에 그때까지의 자료만으로 예측한 뒤 실제 시세와 맞춰 본 방법으로 매긴 점수예요. 같은 지역 평균 대비 순위라, 시장 전체가 내리면 점수가 높은 단지도 내릴 수 있어요.</p>`
       : !has ? `<p class="note" style="font-size:15px">거래가 적어 미래가치 점수는 아직 매기지 않아요(최근 3년 ${u[5]}건). 시세·추이·거래량과 실거래 목록은 위에서 확인할 수 있어요.</p>`
-      : `<p class="note" style="font-size:15px">이 단지·평형은 아직 미래가치 점수가 없어요. 검증에 쓸 거래 자료가 충분히 쌓이면 자동으로 보여 드려요.</p>${rs.length ? `<ul class="why">${rs.map(rli).join('')}</ul>` : ''}`}
+      : `<p class="note" style="font-size:15px">이 단지·평형은 아직 미래가치 점수가 없어요. 점수를 매길 거래 자료가 충분히 쌓이면 자동으로 보여 드려요.</p>${rs.length ? `<ul class="why">${rs.map(rli).join('')}</ul>` : ''}`}
   </div>
 
   <div id="alertSec"></div>

@@ -45,8 +45,8 @@ check('상위권·중위권·하위권(3등분)', fu.rows.map(x => x.pos), ['상
 check('3곳 미만이면 순위 없음', R.future(IXf, 'Y', { e: 99 }).rows, [], '');
 check('점수 없는 구는 뺌', R.future(IXf, 'X', { a: 10, b: 90, c: 50 }).n, 3, '');
 check('단지 자료 → 구 점수', R.gsFromUnits([['a', 0, 0, 0, 0, 0, 0, 0, 0, { gs: 30 }], ['a', 0, 0, 0, 0, 0, 0, 0, 0, { gs: 30 }], ['b', 0, 0, 0, 0, 0, 0, 0, 0, null]]), { a: 30 }, '10번째 칸 fx.gs');
-check('검증 미통과 → 순위 숨김', [R.check(null), R.check({ region: { used: false, periods: [{ t0: '202410', top20: 3 }] } })], [null, null], 'model.json region.used');
-check('검증 통과 요약', R.check({ region: { used: true, periods: [{ t0: '202410', top20: 3.6 }, { t0: '201910', top20: -1 }], oos: { top20: 3.97 } } }), { n: 2, hit: 1, y0: 2019, y1: 2024, oos: 3.97 }, '시험 수·통과 수·연도');
+check('엔진이 안 쓰는 점수 → 순위 숨김', [R.check(null), R.check({ region: { used: false, periods: [{ t0: '202410', top20: 3 }] } })], [null, null], 'model.json region.used');
+check('검증 통과 요약', R.check({ region: { used: true, periods: [{ t0: '202410', top20: 3.6 }, { t0: '201910', top20: -1 }], oos: { top20: 3.97 } } }), { n: 2, hit: 1, y0: 2019, y1: 2024, oos: 3.97, t0: null }, '써 본 횟수·맞은 횟수·연도');
 
 /* ---------- 점수 많이 바뀐 단지 ---------- */
 check('rank.json 없거나 준비 전 → null(다음 달부터 공개)', [R.moves(null, 's00'), R.moves({ ready: false }, 's00')], [null, null], '');

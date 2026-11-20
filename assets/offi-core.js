@@ -140,11 +140,16 @@
   }
   /** 검증 결과 문장. bt = index.bt[h] */
   function btText(bt, h) {
-    if (!bt || bt.status === 'nodata') return `${h}년: 오피스텔 실거래 자료가 모이면 검증해요`;
-    if (bt.status === 'short') return `${h}년: 과거 자료 기간이 짧아 아직 검증하지 못했어요${bt.from ? `(매매 자료 ${M().ymKo(bt.from)}부터)` : ''}`;
-    const o = (bt.oos_all || []).filter(x => x.top20 != null);
-    const s = o.length ? `표본 외 ${o.length}번 중 ${bt.oos_hit}번 맞음, 점수 상위 20%가 같은 구 평균보다 평균 ${bt.oos_avg > 0 ? '+' : ''}${bt.oos_avg}%` : '표본 외 결과 없음';
-    return `${h}년: ${bt.status === 'pass' ? '검증 통과' : '검증 미통과(점수 공개 안 함)'} · ${s}`;
+    if (!bt || bt.status === 'nodata') return `${h}년: 오피스텔 실거래 자료가 모이면 과거 자료와 맞춰 봐요`;
+    if (bt.status === 'short') return `${h}년: 과거 자료 기간이 짧아 아직 써 보지 못했어요${bt.from ? `(매매 자료 ${M().ymKo(bt.from)}부터)` : ''}`;
+    const o = (bt.oos_all || []).filter(x => x.top20 != null), n = o.length, hit = bt.oos_hit || 0;
+    if (!n) return `${h}년: 아직 과거에 써 볼 만큼 자료가 쌓이지 않았어요`;
+    if (bt.status !== 'pass') return `${h}년: 과거에 써 봤을 때 ${n}번 중 ${hit}번만 맞아 점수를 보여 드리지 않아요`;
+    /* 예: 가장 최근 맞은 회차 — 매매 자료 시작월(bt.from)~그 시점 자료만으로 h년 뒤를 예측 */
+    const ex = o.filter(x => x.top20 > 0).pop(), f = String(bt.data_from || bt.from || '').replace(/[^0-9]/g, '').slice(0, 6), t0 = ex ? String(ex.t0) : '';
+    const span = ex ? (/^\d{6}$/.test(f) && f < t0 ? `${f.slice(0, 4)}년 ${+f.slice(4)}월~${t0.slice(0, 4)}년` : `~${t0.slice(0, 4)}년`) : '';
+    return `${h}년: 이 예측 방법을 과거에 그대로 써 봤더니 ${n}번 중 ${hit}번 맞았어요.`
+      + (ex ? ` (예: ${span} 자료만으로 ${+t0.slice(0, 4) + +h}년을 예측 → 실제로 점수 상위 20% 오피스텔이 같은 시·군·구 평균보다 더 올랐어요)` : '');
   }
   const passed = ix => Object.keys((ix && ix.bt) || {}).filter(h => ix.bt[h] && ix.bt[h].status === 'pass').sort();
 

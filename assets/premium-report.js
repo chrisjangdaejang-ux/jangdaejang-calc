@@ -118,14 +118,14 @@
     return r;
   }
 
-  /* 보유 기간별: 과거 시험(표본 외 검증) 결과를 그대로 적고, 통과 기준에 못 미친 기간은 '참고만' */
+  /* 보유 기간별: 과거에 그대로 써 본 결과(맞은 횟수)를 그대로 적고, 판정 기준에 못 미친 기간은 '참고만' */
   function horizons(x, ctx) {
     const f = x.f || {};
     return [1, 2, 3, 5, 7].map(h => {
       const mm = h === 2 ? ((ctx.MH && ctx.MH['2']) || ctx.MODEL) : (ctx.MH && ctx.MH[h]);
       const v = h === 2 ? f.fv : (f.fh && f.fh[h] != null ? f.fh[h] : null);
       const ok = PL.VOK(mm);
-      return { h, v, ok, rec: mm ? PL.hzLabel(mm) : '아직 검증 전 · 참고만' };
+      return { h, v, ok, rec: PL.hzLabel(mm) };
     });
   }
 
@@ -162,11 +162,11 @@
       <ul class="pr-reasons">${rs.map(li).join('') || '<li>이 단지는 아직 미래가치 점수를 낼 자료가 부족합니다.</li>'}</ul>
       ${x._why ? PL.whyTable(f, x._why, { sgg: g.name || '', sido: PL.regionInfo(IX, x.code).short }, esc) : ''}
       <h3>보유 기간별 미래가치</h3>
-      ${okH.length ? PL.easy(esc(`과거 시험을 통과한 ${okH.join('·')} 점수를 중심으로 보세요.` + (refH.length ? ` ${refH.join('·')} 점수는 참고만 하세요.` : ''))) : ''}
-      <div class="tblwrap"><table class="pr-tbl"><thead><tr><th>보유 기간</th><th>점수</th><th>과거 시험</th></tr></thead><tbody>
+      ${okH.length ? PL.easy(esc(`과거에 그대로 써 봤을 때 잘 맞은 ${okH.join('·')} 점수를 중심으로 보세요.` + (refH.length ? ` ${refH.join('·')} 점수는 맞은 횟수가 적어 참고로만 보세요.` : ''))) : ''}
+      <div class="tblwrap"><table class="pr-tbl"><thead><tr><th>보유 기간</th><th>점수</th><th>과거 성적</th></tr></thead><tbody>
         ${hz.map(z => `<tr${z.ok ? '' : ' class="jp-ref"'}><td>${z.h}년</td><td><b>${z.v != null ? z.v + '점' : '-'}</b>${z.v != null ? `<br><small>${esc(fvRank(x, ctx, z.v))}</small>` : ''}</td><td>${esc(z.rec)}</td></tr>`).join('')}
       </tbody></table></div>
-      <details class="jp-check"><summary>이 점수 방식을 믿을 수 있나요?</summary><p>${esc(PL.checkText(mm2, 2, G))}</p></details>
+      <details class="jp-check"><summary>이 점수 방식을 믿을 수 있나요?</summary><p>${esc(PL.checkText(mm2, 2, G, { from: ctx.MODEL && ctx.MODEL.data_from }))}</p></details>
       <h3>대출·필요 현금 <small>(아래 내 조건 기준)</small></h3>
       ${PL.easy(esc(`지금 조건이면 대출 ${PL.won(m.l.L)}을 받고도 현금 ${PL.won(m.need)}이 필요해요. ` + (m.left >= 0 ? `보유 현금으로 낼 수 있고 ${PL.won(m.left)}이 남아요.` : `보유 현금보다 ${PL.won(-m.left)} 부족해요.`)))}
       <div class="pr-stats">

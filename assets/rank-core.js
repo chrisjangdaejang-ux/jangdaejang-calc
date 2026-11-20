@@ -66,15 +66,15 @@
     return { n, rows };
   }
 
-  /* 지역 흐름 점수 검증(model.json region): 통과(used)했을 때만 순위를 보여 줌.
-     → null(미통과) 또는 { n(시험 수), hit(상위 20%가 평균보다 더 오른 시험 수), y0, y1(시험 시작 연도), oos(표본 외 시험 상위 20% 초과 %p) } */
+  /* 지역 흐름 점수 성적(model.json region): 엔진이 쓰기로 한(used) 때만 순위를 보여 줌.
+     → null 또는 { n(과거에 써 본 횟수), hit(상위 20%가 평균보다 더 오른 횟수), y0, y1(예측 시점 연도), oos(가장 최근 회차를 그 전 자료만으로 예측했을 때 상위 20% 초과 %p), t0(그 회차 시점) } */
   function check(MJ) {
     const R = MJ && MJ.region;
     if (!R || !R.used) return null;
     const P = (R.periods || []).filter(p => p && p.top20 != null);
     if (!P.length) return null;
     const ys = P.map(p => +String(p.t0).slice(0, 4));
-    return { n: P.length, hit: P.filter(p => p.top20 > 0).length, y0: Math.min(...ys), y1: Math.max(...ys), oos: R.oos && R.oos.top20 != null ? R.oos.top20 : null };
+    return { n: P.length, hit: P.filter(p => p.top20 > 0).length, y0: Math.min(...ys), y1: Math.max(...ys), oos: R.oos && R.oos.top20 != null ? R.oos.top20 : null, t0: R.oos && R.oos.t0 ? String(R.oos.t0) : null };
   }
 
   /* 구 → 지도 화면 주소(그 구 가운데, 동 묶음이 보이는 줌). GEO = assets/map-geo.json, m = 'price'|'fv' */

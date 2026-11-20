@@ -9,7 +9,6 @@
   const GL = {
     '전세가율': '집값 대비 전셋값 비율',
     '%p': '퍼센트포인트: 두 비율의 차이',
-    '표본 외 검증': '과거 자료만으로 점수를 매기고, 그 뒤 실제로 맞았는지 확인하는 시험',
     '순전입률': '전학 온 학생 수에서 떠난 학생 수를 뺀 값을 재학생 수로 나눈 것',
     '중앙값': '여러 값을 크기순으로 줄 세웠을 때 가운데 값'
   };
@@ -339,24 +338,68 @@
     return t;
   }
 
-  /* 검증 결과: 과거 시험 N번 중 M번 통과 (통과 기준 미달이면 '참고만') */
+  /* ---------- 과거 성적 문구(대표 확정 11/20) ----------
+     사용자 화면에는 '시험·통과·표본 외·백테스트'를 쓰지 않는다 → '과거에 그대로 써 봤더니 N번 중 M번 맞았어요'.
+     기간은 '언제부터 언제까지' — 시작월은 엔진이 공개 모델 JSON 에 넣은 data_from(학습 자료 시작월, 없으면 생략).
+     회차마다: 그 시점(t0)까지의 자료로 순위 → h년 뒤(t0 + h년) 실제 결과. '맞음' = 점수 상위 20%가 비교 평균보다 더 오름.
+     판정 기준(VOK: 2번 이상·평균 +·절반 이상 맞음)은 그대로. */
   const VOK = m => !!(m && (m.oos_all || []).length >= 2 && m.oos_avg > 0 && 2 * (m.oos_hit != null ? m.oos_hit : (m.oos_all || []).filter(o => (o.top20 || 0) > 0).length) >= (m.oos_all || []).length);
+  /* '2010-01'·'201001'·201001 → '201001' (이상하면 '') */
+  const ymNorm = v => { const t = String(v == null ? '' : v).replace(/[^0-9]/g, ''); return /^(19|20)\d{2}(0[1-9]|1[0-2])/.test(t) ? t.slice(0, 6) : ''; };
+  const ymPlus = (v, mo) => { const y = +v.slice(0, 4), m = +v.slice(4, 6) - 1 + mo; return `${y + Math.floor(m / 12)}${String((m % 12 + 12) % 12 + 1).padStart(2, '0')}`; };
+  const ymDot = v => `${v.slice(0, 4)}.${v.slice(4, 6)}`;
+  const ymKoM = v => `${v.slice(0, 4)}년 ${+v.slice(4, 6)}월`;
+  const fromOf = (m, from) => ymNorm(from) || ymNorm(m && (m.data_from || m.from));
+  const trackHit = m => { const O = (m && m.oos_all) || []; return m && m.oos_hit != null ? m.oos_hit : O.filter(o => (o.top20 || 0) > 0).length; };
+  /* 회차별: { t0, end, top20, hit, txt: '2010.01~2021.10 자료 → 2023.10' } (시점 순) */
+  function trackRuns(m, h, from) {
+    const f = fromOf(m, from);
+    return ((m && m.oos_all) || []).filter(o => o && ymNorm(o.t0) && o.top20 != null).map(o => {
+      const t0 = ymNorm(o.t0), end = ymPlus(t0, Math.round(h * 12));
+      return { t0, end, top20: o.top20, hit: o.top20 > 0, txt: `${f && f < t0 ? ymDot(f) : ''}~${ymDot(t0)} 자료 → ${ymDot(end)}` };
+    }).sort((a, b) => a.t0.localeCompare(b.t0));
+  }
+  const ppT = v => (v > 0 ? '+' : v < 0 ? '−' : '') + (Math.round(Math.abs(v) * 10) / 10).toFixed(1) + '%p';
+  /* [자세히 보기] 한 줄: '2010.01~2021.10 자료 → 2023.10: 맞음 +1.3%p' */
+  const trackRow = r => `${r.txt}: ${r.hit ? '맞음' : '틀림'} ${ppT(r.top20)}`;
+  /* 첫 줄: '이 예측 방법을 과거에 그대로 써 봤더니 4번 중 4번 맞았어요. (예: 2010년 1월~2021년 자료만으로 2023년을 예측 → 실제로 점수 상위 20% 단지가 같은 구 평균보다 더 올랐어요)'
+     o = { from, what(주어, 기본 '이 예측 방법'), unit('단지'), base('같은 구 평균') } */
+  function trackHead(m, h, o) {
+    o = o || {};
+    const R = trackRuns(m, h, o.from), n = ((m && m.oos_all) || []).length, hit = trackHit(m);
+    const what = o.what || '이 예측 방법', unit = o.unit || '단지', base = o.base || '같은 구 평균';
+    if (!n) return `${J(what, '은', '는')} 아직 과거에 써 볼 만큼 자료가 쌓이지 않았어요.`;
+    let t = `${J(what, '을', '를')} 과거에 그대로 써 봤더니 ${n}번 중 ${hit}번 맞았어요.`;
+    const ex = R.filter(r => r.hit).pop() || R[R.length - 1];
+    if (ex) {
+      const f = fromOf(m, o.from);
+      t += ` (예: ${f && f < ex.t0 ? `${ymKoM(f)}~${ex.t0.slice(0, 4)}년` : `~${ex.t0.slice(0, 4)}년`} 자료만으로 ${ex.end.slice(0, 4)}년을 예측 → 실제로 점수 상위 20% ${J(unit, ex.hit ? '이' : '은', ex.hit ? '가' : '는')} ${base}보다 ${ex.hit ? '더' : '덜'} 올랐어요)`;
+    }
+    return t;
+  }
+  /* 결론에서 뺀 기간: '1년 전망: 과거에 써 봤을 때 8번 중 2번만 맞아 참고로만 보여 드려요.' */
+  function trackRef(m, h, o) {
+    o = o || {};
+    const n = ((m && m.oos_all) || []).length, hit = trackHit(m), lab = o.label || `${h}년 전망`;
+    if (!n) return `${lab}: 아직 과거에 써 볼 만큼 자료가 쌓이지 않아 참고로만 보여 드려요.`;
+    if (n === 1) return `${lab}: 과거에 써 볼 수 있었던 때가 1번뿐이라 참고로만 보여 드려요.`;
+    if (2 * hit >= n) return `${lab}: 과거에 써 봤을 때 ${n}번 중 ${hit}번 맞았지만 평균으로는 ${o.base || '같은 구 평균'}보다 덜 올라 참고로만 보여 드려요.`;
+    return `${lab}: 과거에 써 봤을 때 ${n}번 중 ${hit}번만 맞아 참고로만 보여 드려요.`;
+  }
+  /* 짧은 표기(표 칸·배지): '과거 4번 중 4번 맞음' · '과거 8번 중 2번만 맞음 · 참고만' */
   function hzLabel(m) {
-    const n = ((m && m.oos_all) || []).length, hit = (m && m.oos_hit) || 0;
-    if (VOK(m)) return `과거 시험 ${n}번 중 ${hit}번 통과`;
-    if (n === 0) return '아직 검증 전 · 참고만';
-    if (n === 1) return '과거 시험 1번뿐 · 참고만';
-    return `과거 시험 ${n}번 중 ${hit}번 통과 · 참고만`;
+    const n = ((m && m.oos_all) || []).length, hit = trackHit(m) || 0;
+    if (VOK(m)) return `과거 ${n}번 중 ${hit}번 맞음`;
+    if (n === 0) return '아직 써 본 적 없음 · 참고만';
+    if (n === 1) return '과거 1번만 써 봄 · 참고만';
+    return `과거 ${n}번 중 ${hit}번${2 * hit < n ? '만' : ''} 맞음 · 참고만`;
   }
   /* 접는 상자 '이 점수 방식을 믿을 수 있나요?' 본문 */
-  function checkText(m, h, G) {
+  function checkText(m, h, G, o) {
     const O = (m && m.oos_all) || [];
-    if (!O.length) return `${h}년 점수는 아직 과거 시험을 하지 못해 참고만 해 주세요. 같은 구 평균과 비교한 순위라, 시장 전체가 내리면 점수가 높은 단지도 내릴 수 있어요.`;
-    const n = O.length, hit = m.oos_hit || 0, ys = O.map(o => String(o.t0).slice(0, 4)).join('·');
-    return `${ys}년 ${n}개 시점에서, 그때까지의 자료만으로 점수를 매겨 봤어요. 이런 시험을 ${G ? G('표본 외 검증') : '표본 외 검증'}이라고 해요. `
-      + `점수 상위 20% 단지들이 ${h}년 뒤 같은 구 평균보다 더 올랐는지 확인했더니 ${hit === n ? `${n}번 모두 그랬어요` : `${n}번 중 ${hit}번 그랬어요`}. `
-      + (m.oos_avg != null ? `평균으로는 ${more(m.oos_avg, G)} 올랐어요. ` : '')
-      + '같은 구 평균과 비교한 순위라, 시장 전체가 내리면 점수가 높은 단지도 내릴 수 있어요.';
+    const tail = '같은 구 평균과 비교한 순위라, 시장 전체가 내리면 점수가 높은 단지도 내릴 수 있어요.';
+    if (!O.length) return `${h}년 점수는 아직 과거에 써 볼 만큼 자료가 쌓이지 않아 참고만 해 주세요. ` + tail;
+    return trackHead(m, h, o) + (m.oos_avg != null ? ` 평균으로는 ${more(m.oos_avg, G)} 올랐어요.` : '') + ' ' + tail;
   }
 
   /* ---------- 일정: 당초 목표 → 실제/현재 예정(지연) — 엔진 scripts/schedule.py delay_text 와 같은 규칙 ----------
@@ -733,10 +776,10 @@
     '중간값': '여러 값을 크기순으로 줄 세웠을 때 가운데 값이에요. 아주 비싸거나 싼 몇 곳에 덜 흔들려요.',
     '상위': '같은 지역 단지를 점수 순으로 줄 세웠을 때의 자리예요. 상위 10%면 100곳 중 10등 안쪽이에요.',
     '하위': '같은 지역 단지를 점수 순으로 줄 세웠을 때의 자리예요. 하위 10%면 100곳 중 뒤에서 10등 안쪽이에요.',
-    '과거 시험': '과거 시점으로 돌아가 그때 자료로만 순위를 매긴 뒤, 실제로 몇 년 뒤 결과와 맞았는지 확인한 시험이에요.',
+    '과거에 써 봤더니': '과거 어느 때로 돌아가 그때까지의 자료만으로 순위를 매긴 뒤, 몇 년 뒤 실제 시세와 맞춰 본 결과예요.',
     '갭': '집값과 전셋값의 차이예요. 전세를 끼고 살 때 내 돈이 드는 만큼이에요.'
   };
-  const TIP_RE = [['%p', /\d%p/], ['전세가율', /전세가율/], ['평당', /평당/], ['중간값', /중간값/], ['상위', /상위 \d+(~\d+)?%/], ['하위', /하위 \d+(~\d+)?%/], ['과거 시험', /과거 시험/], ['갭', /갭/]];
+  const TIP_RE = [['%p', /\d%p/], ['전세가율', /전세가율/], ['평당', /평당/], ['중간값', /중간값/], ['상위', /상위 \d+(~\d+)?%/], ['하위', /하위 \d+(~\d+)?%/], ['과거에 써 봤더니', /과거에 (그대로 )?써 봤더니/], ['갭', /갭/]];
   function tipDom(el, o) {
     if (!el || !root.document) return;
     o = o || {}; const doc = root.document, T = Object.assign({}, TIP, o.terms || {});
@@ -782,5 +825,5 @@
     });
   }
 
-  root.JDJ_PLAIN = { TIP, tipDom, ageOf, ageLabel, ageText, scParts, scText, popLines, STAGE, GL_PAGE, glossDom, autoGloss, gloss, J, won, eokR, rank, more, regionInfo, rankBase, regionRank, regionPlace, topPct, regionText, regionLine, evid, evHtml, ddText, rcText, momText, schText, stageName, rzText, jrStats, jrText, VOK, hzLabel, checkText, easy, ymKo, spanKo, delayText, unitsKo, supplyLines, renewalLine, whyItems, whyLine, whyTable, hzGapLine };
+  root.JDJ_PLAIN = { TIP, tipDom, ageOf, ageLabel, ageText, scParts, scText, popLines, STAGE, GL_PAGE, glossDom, autoGloss, gloss, J, won, eokR, rank, more, regionInfo, rankBase, regionRank, regionPlace, topPct, regionText, regionLine, evid, evHtml, ddText, rcText, momText, schText, stageName, rzText, jrStats, jrText, VOK, hzLabel, checkText, trackRuns, trackRow, trackHead, trackRef, ymNorm, easy, ymKo, spanKo, delayText, unitsKo, supplyLines, renewalLine, whyItems, whyLine, whyTable, hzGapLine };
 })(typeof window !== 'undefined' ? window : globalThis);

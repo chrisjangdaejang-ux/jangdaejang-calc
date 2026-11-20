@@ -35,7 +35,7 @@ check('회전(추정) = 1년 계약 ÷ 확인된 층·면적 수', O.turnover(u.
 check('회전: 층·면적이 너무 적으면 추정 안 함', O.turnover({ n: 3, k: 2 }), null);
 check('이름 검색', O.search([u, { d: '논현동', j: '1', n: '다른빌딩' }], '테스트').map(O.keyOf), ['역삼동|600']);
 check('동 목록', O.dongs([u, { d: '논현동' }, u]), ['논현동', '역삼동']);
-const ix = { avail: { job: true }, src: { job: 'KOSIS' }, bt: { '1': { status: 'short', from: '201101' }, '2': { status: 'pass', oos_all: [{ top20: 2.1 }, { top20: -0.5 }], oos_hit: 1, oos_avg: 0.8 }, '3': { status: 'nodata' } } };
+const ix = { avail: { job: true }, src: { job: 'KOSIS' }, bt: { '1': { status: 'short', from: '201101' }, '2': { status: 'pass', from: '201601', oos_all: [{ t0: '202210', top20: 2.1 }, { t0: '202310', top20: -0.5 }], oos_hit: 1, oos_avg: 0.8 }, '3': { status: 'nodata' } } };
 const dr = O.demandRows({ dem: { job: { v: 900.7, at: '202606', c1: 0.01, c3: -0.02, grp: 1 } } }, ix, u, '강남구');
 check('임대수요: 일자리 있음', [dr[0].k, dr[0].ok, dr[0].value], ['job', true, '901천 명']);
 check('임대수요: 없는 자료는 확인 불가', dr.filter(r => !r.ok).map(r => r.k), ['biz', 'hh', 'sub', 'univ']);
@@ -44,8 +44,10 @@ const sr = O.supplyRows({ sup: { o: 320, apt: 87, rows: [['A', 320, '202707', '�
 check('공급: 오피스텔 공고 합계·목록', [sr[0].value, sr[0].list[0].mv], ['320실·세대', '2027년 7월']);
 check('공급: 생활형숙박시설·인허가 확인 불가', sr.filter(r => !r.ok).map(r => r.k), ['stay', 'permit']);
 check('검증 통과 기간만', O.passed(ix), ['2']);
-check('검증 문장: 자료 짧음', O.btText(ix.bt['1'], '1'), '1년: 과거 자료 기간이 짧아 아직 검증하지 못했어요(매매 자료 2011년 1월부터)');
-check('검증 문장: 통과', O.btText(ix.bt['2'], '2'), '2년: 검증 통과 · 표본 외 2번 중 1번 맞음, 점수 상위 20%가 같은 구 평균보다 평균 +0.8%');
+check('검증 문장: 자료 짧음', O.btText(ix.bt['1'], '1'), '1년: 과거 자료 기간이 짧아 아직 써 보지 못했어요(매매 자료 2011년 1월부터)');
+check('과거 성적 문장: 씀', O.btText(ix.bt['2'], '2'), '2년: 이 예측 방법을 과거에 그대로 써 봤더니 2번 중 1번 맞았어요. (예: 2016년 1월~2022년 자료만으로 2024년을 예측 → 실제로 점수 상위 20% 오피스텔이 같은 시·군·구 평균보다 더 올랐어요)');
+check('과거 성적 문장: 안 씀', O.btText({ status: 'fail', oos_all: [{ t0: '202210', top20: -1 }, { t0: '202310', top20: 0.5 }, { t0: '202410', top20: -0.2 }], oos_hit: 1 }, '3'), '3년: 과거에 써 봤을 때 3번 중 1번만 맞아 점수를 보여 드리지 않아요');
+for (const h of ['1', '2', '3']) check(`과거 성적 문장 ${h}년: 시험·통과·표본 외 안 씀`, /시험|통과|표본 외/.test(O.btText(ix.bt[h], h)), false);
 
 /* 오피스텔 취득세 */
 const tx = T.offiAcqTax(20000);

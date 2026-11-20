@@ -270,8 +270,8 @@
     const rank = (v, base) => PL ? PL.rank(v, base) : `${base.name}${base.n ? ' ' + Number(base.n).toLocaleString() + '곳' : ''} 중 ${pctT(v)}`;
     const sdN = x.sidoShort || x.sido;
     if (f.fv != null) add(f.gs != null
-      ? `이 단지는 미래가치 ${f.fv}점으로 ${rank(f.fv, { name: `${sdN} 아파트`, n: x.nfv })}예요` + (f.fvg != null ? ` · ${x.sgg} 안에서는 ${rank(f.fvg, { name: '아파트', n: x.nfvg })}예요` : '') + '(실제 이후 시세로 채점해 검증한 점수).'
-      : `이 단지는 미래가치 ${f.fv}점으로 ${rank(f.fv, { name: `${x.sgg} 아파트` })}예요(실제 이후 시세로 채점해 검증한 점수).`);
+      ? `이 단지는 미래가치 ${f.fv}점으로 ${rank(f.fv, { name: `${sdN} 아파트`, n: x.nfv })}예요` + (f.fvg != null ? ` · ${x.sgg} 안에서는 ${rank(f.fvg, { name: '아파트', n: x.nfvg })}예요` : '') + '(과거에 그대로 써 보고 실제 시세와 맞춰 본 점수).'
+      : `이 단지는 미래가치 ${f.fv}점으로 ${rank(f.fv, { name: `${x.sgg} 아파트` })}예요(과거에 그대로 써 보고 실제 시세와 맞춰 본 점수).`);
     /* 2년 점수를 올린·내린 요인: 이 단지 실제 값·비교 기준·과거 같은 조건 통계(PL.whyItems) */
     const W = PL && PL.whyItems ? PL.whyItems(f, { h: '2', apt: x.apt, dong: x.dong, sgg: x.sgg, sido: sdN, sid: x.sid, ev: x.ev, G, sp: x.sp, year: Y,
       rp: x.IX && x.code && PL.regionPlace ? PL.regionPlace(x.IX, x.code, f.gs) : null, regionUsed: x.regionUsed !== false, IX: x.IX, code: x.code }) : { items: [], keys: new Set() };

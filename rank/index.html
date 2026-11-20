@@ -27,9 +27,9 @@
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
 <script src="../assets/share.js?v=6"></script>
-<script src="../assets/plain-words.js?v=12"></script>
-<script src="../assets/narrative.js?v=6"></script>
-<script src="../assets/rank-core.js?v=4"></script>
+<script src="../assets/plain-words.js?v=13"></script>
+<script src="../assets/narrative.js?v=7"></script>
+<script src="../assets/rank-core.js?v=5"></script>
 <script src="../assets/tabbar.js?v=2" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -207,14 +207,14 @@ const sg = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(Math.round(v * 10)
 function drawFv(){
   if (S.v === 'apt') return drawApt();
   const sd = sdObj(), unit = unitOf(sd), ck = R.check(MJ);
-  if (!ck) { $('pane').innerHTML = `<div class="empty"><b>지역 흐름 점수를 검증하는 중이에요</b>과거 여러 시기 시험을 통과하면 구별 미래가치 순위를 공개해요. 지금은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 검증 상황을 볼 수 있어요.</div>`; share(null); return; }
+  if (!ck) { $('pane').innerHTML = `<div class="empty"><b>지역 흐름 점수를 과거 자료와 맞춰 보는 중이에요</b>과거 여러 때에 그대로 써 봐서 잘 맞으면 구별 미래가치 순위를 공개해요. 지금은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 과거 성적을 볼 수 있어요.</div>`; share(null); return; }
   const gm = GS[S.sd];
   if (!gm || gm === 'wait') { loadGs(S.sd); $('pane').innerHTML = '<p class="note">구별 미래가치 자료를 불러오고 있어요…</p>'; return; }
   if (gm === 'err') { $('pane').innerHTML = '<div class="empty"><b>자료를 불러오지 못했어요</b>잠시 뒤 다시 열어 주세요.</div>'; GS[S.sd] = null; return; }
   const f = R.future(IX, sd.name, gm);
   if (!f.rows.length) { $('pane').innerHTML = `<div class="empty"><b>${esc(sd.short)}은 순위를 매기지 않아요</b>점수가 있는 ${unit}가 ${f.n}곳뿐이라 줄 세워 비교하기 어려워요.</div>`; share(null); return; }
   const rows = S.all ? f.rows : f.rows.slice(0, SHOW);
-  const vb = `<div class="vbox">${esc(sd.short)} ${f.n}개 ${unit}를 <b>앞으로 2년 지역 흐름 점수</b>로 줄 세웠어요. 이 점수는 검증을 통과했어요 — ${ck.y0}~${ck.y1}년 ${ck.n}번 시험에서 점수 상위 20% ${unit}가 같은 시·도 평균보다 <b>${ck.hit === ck.n ? `${ck.n}번 모두` : `${ck.hit}번`}</b> 더 올랐어요${ck.oos != null ? `(가장 최근 표본 외 시험 ${sg(ck.oos)})` : ''}. <a href="/jangdaejang-calc/about/">검증 방법 ›</a></div>`;
+  const vb = `<div class="vbox">${esc(sd.short)} ${f.n}개 ${unit}를 <b>앞으로 2년 지역 흐름 점수</b>로 줄 세웠어요. 이 예측 방법을 과거에 그대로 써 봤더니 <b>${ck.n}번 중 ${ck.hit}번 맞았어요</b>.${ck.oos != null && ck.t0 ? ` (예: ~${ck.t0.slice(0, 4)}년 자료만으로 ${+ck.t0.slice(0, 4) + 2}년을 예측 → 실제로 점수 상위 20% ${unit}${ck.oos > 0 ? '가' : '는'} 같은 시·도 평균보다 ${sg(ck.oos)} ${ck.oos > 0 ? '더' : '덜'} 올랐어요)` : ''} <a href="/jangdaejang-calc/about/">예측 방법 ›</a></div>`;
   const li = rows.map(x => {
     /* 구 이유: 공용 narrative.js guWhy(사실 → 비교 → 과거 사례 → 그래서) — 지도 구 카드·리포트 지역 흐름과 같은 문장 */
     const gw = NAR && NAR.guWhy ? NAR.guWhy({ IX, code: x.code, gs: x.gs, EV, PL }) : null, why = gw ? gw.line : '';
@@ -227,7 +227,7 @@ function drawFv(){
     + `<p class="note">지역 흐름 점수는 ${esc(sd.short)} 안 ${unit}끼리 비교한 점수예요(100점 만점). 이유는 그 ${unit} 점수를 가장 많이 올리거나 내린 항목이고, 과거 사례는 ${esc(sd.short)}에서 같은 구간이었던 ${unit}가 이후 2년 실제로 어땠는지예요. 하위권은 나쁜 동네라는 뜻이 아니라, 앞으로 2년 오름폭이 ${esc(sd.short)} 다른 ${unit}보다 작을 수 있다는 뜻이에요.</p>`;
   const m = $('more'); if (m) m.onclick = () => { S.all = !S.all; drawFv(); };
   share({ head: `${sd.short} ${unit}별 미래가치 순위(앞으로 2년 지역 흐름)`,
-    lines: [f.rows.slice(0, 3).map(x => `${x.r}위 ${x.name}`).join(', '), `${sd.short} ${f.n}개 ${unit}를 같은 시·도 기준으로 비교`, `과거 ${ck.n}번 시험으로 검증한 점수`] });
+    lines: [f.rows.slice(0, 3).map(x => `${x.r}위 ${x.name}`).join(', '), `${sd.short} ${f.n}개 ${unit}를 같은 시·도 기준으로 비교`, `과거에 그대로 써 봤더니 ${ck.n}번 중 ${ck.hit}번 맞은 점수`] });
 }
 
 /* ---------- 단지별 미래가치(첫 화면 'TOP 3'과 같은 파일·같은 등수: home/sNN.json top) ---------- */
@@ -238,10 +238,12 @@ function drawApt(){
   if (h === undefined) { HM[S.sd] = 'wait'; $('pane').innerHTML = '<p class="note">단지 순위 자료를 불러오고 있어요…</p>'; J(DATA + 'home/' + S.sd + '.json').then(j => { HM[S.sd] = j && j.top ? j : null; if (S.t === 'fv' && S.v === 'apt' && S.sd === sd.id) drawApt(); }); return; }
   if (h === 'wait') return;
   const v = R.vcheck(MH, sd.name), o = h ? R.danji(h, S.g) : null;
-  if (!v || !v.ok) { $('pane').innerHTML = '<div class="empty"><b>단지 미래가치 점수를 검증하는 중이에요</b>과거 검증에서 절반 이상 맞으면 단지 순위를 공개해요.</div>'; share(null); return; }
+  if (!v || !v.ok) { $('pane').innerHTML = '<div class="empty"><b>단지 미래가치 점수를 과거 자료와 맞춰 보는 중이에요</b>과거에 그대로 써 봐서 절반 이상 맞으면 단지 순위를 공개해요.</div>'; share(null); return; }
   if (!o || !o.rows.length) { $('pane').innerHTML = `<div class="empty"><b>단지 순위 자료를 준비하고 있어요</b>${h ? `${esc(S.g === 'all' ? sd.short : gn(S.g))}에는 점수를 비교할 단지가 아직 없어요.` : '다음 자료 갱신 때 함께 공개해요. 그동안 구별 순위를 봐 주세요.'}</div>`; share(null); return; }
   const where = S.g === 'all' ? sd.short : gn(S.g), rows = S.all ? o.rows : o.rows.slice(0, SHOW);
-  const vb = `<div class="vbox">${esc(where)} 단지 ${o.n.toLocaleString()}곳을 <b>미래가치 점수(2년 보유 기준)</b>로 줄 세웠어요. 이 점수는 <b>과거 검증 ${v.n}번 중 ${v.hit}번 맞음</b>이에요 — 점수 상위 20% 단지가 같은 구 평균보다 더 오른 경우${v.where === '전국' ? '(전국 성적)' : ''}. <a href="/jangdaejang-calc/about/">검증 방법 ›</a></div>`;
+  /* 과거 성적 첫 줄(plain-words.js trackHead): 시·도 성적이 있으면 그 회차, 없으면 전국 — 시작월은 model_h data_from */
+  const vm = (() => { const m = MH['2'] || {}, r = v.where !== '전국' && m.reg ? m.reg[sd.name] : null; return r ? { oos_all: r.oos_all, oos_hit: r.hit, data_from: m.data_from } : m; })();
+  const vb = `<div class="vbox">${esc(where)} 단지 ${o.n.toLocaleString()}곳을 <b>미래가치 점수(2년 보유 기준)</b>로 줄 세웠어요. ${esc(PL.trackHead(vm, 2)).replace(/(\d+번 중 \d+번 맞았어요)/, '<b>$1</b>')}${v.where === '전국' ? ' 전국 단지로 써 본 결과예요.' : ''} <a href="/jangdaejang-calc/about/">예측 방법 ›</a></div>`;
   const li = rows.map(x => `<li><a href="${esc(R.mineUrl(S.sd, x.key, x.band))}" data-track="rank_apt_to_mine"><span class="rk">${x.r}</span>
     <span class="nm"><b>${esc(x.apt)}</b><small>${esc(gn(x.code))} ${esc(x.dong)} · ${esc(x.band)}${x.tie ? ' · 공동 ' + x.r + '위' : ''}</small></span>
     <span class="vals"><span class="num"><b class="sc">${x.fv}점</b><small>100점 만점</small></span></span></a></li>`).join('');
@@ -250,7 +252,7 @@ function drawApt(){
     + `<p class="note">점수는 같은 ${esc(sd.short)} 단지 중 앞으로 2년 동안 평균보다 더 오를 가능성 순위예요(100점 만점, 가격 예측이 아니에요). <b>기준</b> ${esc(R.danjiRule(o))} 시·도 전체는 상위 50곳, 구·시·군은 상위 10곳까지 보여 드려요.</p>`;
   const m = $('more'); if (m) m.onclick = () => { S.all = !S.all; drawApt(); };
   share({ head: `${where} 2년 뒤 더 오를 단지 순위(미래가치 점수)`,
-    lines: [o.rows.slice(0, 3).map(x => `${x.r}위 ${x.apt}`).join(', '), `${where} 단지 ${o.n.toLocaleString()}곳 비교`, `과거 검증 ${v.n}번 중 ${v.hit}번 맞음`] });
+    lines: [o.rows.slice(0, 3).map(x => `${x.r}위 ${x.apt}`).join(', '), `${where} 단지 ${o.n.toLocaleString()}곳 비교`, `과거에 그대로 써 봤더니 ${v.n}번 중 ${v.hit}번 맞음`] });
 }
 
 /* ---------- 점수 많이 바뀐 단지 (월별 스냅숏 두 달치가 생기면) ---------- */

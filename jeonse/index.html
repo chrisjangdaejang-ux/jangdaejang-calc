@@ -26,12 +26,12 @@
 <script src="../assets/config.js?v=3"></script>
 <script src="../assets/auth.js?v=3"></script>
 <script src="../assets/kchat.js?v=1"></script>
-<script src="../assets/mine-core.js?v=14"></script>
+<script src="../assets/mine-core.js?v=15"></script>
 <script src="../assets/price-sheet.js?v=13"></script>
 <script src="../assets/rent-core.js?v=1"></script>
 <script src="../assets/policy-view.js?v=1"></script>
-<script src="../assets/plain-words.js?v=12"></script>
-<script src="../assets/narrative.js?v=6"></script>
+<script src="../assets/plain-words.js?v=13"></script>
+<script src="../assets/narrative.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
@@ -520,7 +520,7 @@ function areaPanel(code, box){
         <ul>${more(migRows, 5)}</ul>
         <p class="basis">이주가 시작되면 살던 가구가 주변에서 집을 구해 전세 수요가 늘 수 있어요. 출처: ${srcM ? `서울시 정비사업 추진현황(20${srcM[1]}년 ${srcM[2]}월 기준)` : '정비사업 추진현황'}, 서울 밖은 국토교통부 도시정비사업 현황(현재 단계만).</p></div>` : ''}
     </div>
-    <div class="outlook">전세 전망은 과거 자료로 시험 중이에요 — 시험을 통과하면 이 자리에 보여 드려요.</div></div>`;
+    <div class="outlook">전세 전망은 과거 자료와 맞춰 보는 중이에요 — 과거에 그대로 써 봐서 잘 맞으면 이 자리에 보여 드려요.</div></div>`;
   if (gs) chartInto($('cG'), [{ a: gs.s, c: '#2F6BFF', w: 2.4 }], gs.months, v => Math.round(v).toLocaleString(), 170, [{ k: '3.3㎡당 전세', a: gs.s, c: '#2F6BFF', fmt: v => Math.round(v).toLocaleString() + '만' }], { aria: nm + ' 아파트 전세 추이' });
 }
 
