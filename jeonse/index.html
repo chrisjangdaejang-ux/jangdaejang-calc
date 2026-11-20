@@ -20,7 +20,7 @@
 <meta property="og:type" content="website">
 <script>window.JDJ_CONFIG = { tool:'jeonse', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
-<script src="../assets/stat.js?v=6"></script>
+<script src="../assets/stat.js?v=7"></script>
 <script src="../assets/share.js?v=5"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/config.js?v=1"></script>
@@ -30,6 +30,8 @@
 <script src="../assets/price-sheet.js?v=12"></script>
 <script src="../assets/rent-core.js?v=1"></script>
 <script src="../assets/policy-view.js?v=1"></script>
+<script src="../assets/plain-words.js?v=10"></script>
+<script src="../assets/narrative.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
@@ -382,6 +384,7 @@ function render(){
   <div class="panel">
     <div class="dhead"><h2>${esc(c.d.name)}</h2><div class="loc">${esc(k.full || k.label)} · ${esc(sidoName(c.code))} ${esc(sggName(c.code))} ${esc(c.d.dong)} ${esc(c.d.jibun)}${meta ? ' · ' + esc(meta) : ''}</div></div>
     <div class="bands" role="group" aria-label="평형 선택">${c.units.map(x => `<button type="button" data-b="${esc(x[2])}" class="${x[2] === S.band ? 'on' : ''}" aria-pressed="${x[2] === S.band}">${esc(x[2])}</button>`).join('')}</div>
+    <div id="narJ"></div>
     <div class="stats">
       <div class="st key"><div class="k">최근 전세 시세</div><div class="v">${sm.j ? won(sm.j.v) : '계약 없음'}</div><div class="d">${sm.j ? ym(sm.j.at) + ' 기준' + (sm.j.stale ? ' · 이후 계약 없음' : '') : '최근 3개월 순수 전세 계약 없음'}</div></div>
       <div class="st"><div class="k">최근 월세 시세</div><div class="v">${sm.wr ? `<span class="nw">${won(sm.wd ? sm.wd.v : 0)}</span> <span class="nw">/ 월 ${sm.wr.v.toLocaleString()}만</span>` : '계약 없음'}</div><div class="d">${sm.wr ? '보증금 / 월세 · ' + ym(sm.wr.at) + ' 기준' : '최근 3개월 월세 계약 없음'}</div></div>
@@ -430,7 +433,7 @@ function render(){
         jr ? `이 집 전세가율 ${jr.pct}% (HUG 보증 가입 기준 90%와 비교)` : '전세가율·보증 가입 기준 체크',
         '계약 전 꼭 볼 전세사기 예방 체크리스트까지'],
       params: JDJ_SHARE.pick(['k','sd','g','d','b'])}, {root: $('res')}); }
-  drawCharts(); wire(u, sm); svFill(); areaPanel(c.code, $('areaBox')); fillAgents(c);
+  drawCharts(); wire(u, sm); svFill(); areaPanel(c.code, $('areaBox')); fillAgents(c); narJ(c, u);
   if (window.JDJPolicy) JDJPolicy.mount($('polSec'), {mode:'jeonse', codes:[{sgg:c.code, dong:c.d.dong}], name:() => sggName(c.code) + ' ' + c.d.dong, sggName:() => sggName(c.code),
     head:'<h2>전월세에 영향을 주는 정책<small>' + esc(sggName(c.code) + ' ' + c.d.dong) + ' 전세·월세 계약과 전세대출에 관련된 정책이에요</small></h2>'}).catch(e => console.warn('policy', e));
 }
@@ -589,6 +592,30 @@ function drawCharts(){
 }
 
 /* ---------- 결과 화면 동작 ---------- */
+/* 분석 설명(assets/narrative.js cat.jeonse): 한 줄 결론 → 핵심 요약 → 줄별 자세히 보기. 내가 넣은 보증금·공시가격·선순위채권은 화면 안에서만 씀(집계·공유 없음) */
+const NARON = !/[?&]nar=0(&|$)/.test(location.search) && !!window.JDJ_NAR && !!window.JDJ_PLAIN;
+let POL = null;
+function narJ(c, u){
+  const box = $('narJ'); if (!NARON || !box || c.kind === 'd') return;
+  const draw = () => {
+    if (CUR !== c || !box.isConnected) return;
+    const rd = id => { const el = $(id); return el ? Math.round(num(el.value)) : 0; };
+    try {
+      const N = JDJ_NAR.cat.jeonse(JDJ_NAR.cat.jeonseFrom({ IX, RX, R, PL: JDJ_PLAIN, code: c.code, kind: c.kind, name: c.d.name, dong: c.d.dong, band: S.band, u, meta: c.meta,
+        dep: rd('cJe') || null, pub: rd('pubV') || null, senior: rd('senV') || null, pol: POL, PV: window.JDJPolicy }));
+      if (!N.head){ box.innerHTML = ''; return; }
+      const open = [...box.querySelectorAll('.nar-more[aria-expanded="true"]')].map(b => b.dataset.narK), had = !!box.firstChild;
+      box.innerHTML = JDJ_NAR.html(N, { id: 'narJs', closed: had });
+      JDJ_NAR.bind(box.firstElementChild);
+      if (had) open.forEach(k => { const b = box.querySelector(`.nar-more[data-nar-k="${k}"]`), d = b && $(b.getAttribute('aria-controls')); if (d){ d.hidden = false; b.setAttribute('aria-expanded', 'true'); b.textContent = '접기'; } });
+    } catch (e) { console.warn('nar', e); box.innerHTML = ''; }
+  };
+  draw();
+  let t = 0; const later = () => { clearTimeout(t); t = setTimeout(draw, 500); };
+  ['cJe', 'pubV', 'senV'].forEach(id => { const el = $(id); if (el) el.addEventListener('input', later); });
+  ['cFill', 'cClear'].forEach(id => { const el = $(id); if (el) el.addEventListener('click', later); });
+  if (!POL && window.JDJPolicy) JDJPolicy.load().then(d => { if (d){ POL = d; draw(); } });
+}
 function wire(u, sm){
   const res = $('res');
   res.querySelectorAll('[data-b]').forEach(b => b.onclick = () => { S.band = b.dataset.b; if (CUR.kind === 'd') showD(CUR.code, CUR.key); else showUnit(CUR.key, S.band); });

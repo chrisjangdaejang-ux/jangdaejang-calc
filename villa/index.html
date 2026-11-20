@@ -30,8 +30,9 @@
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/villa.png">
 <script>window.JDJ_CONFIG = { tool:'villa', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
-<script src="../assets/stat.js?v=6"></script>
+<script src="../assets/stat.js?v=7"></script>
 <script src="../assets/share.js?v=5"></script>
+<script src="../assets/narrative.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -249,6 +250,7 @@ function card(b, i){
   return `<div class="card">
     <div class="head"><div><div class="name">${esc(b.n||'(이름 없음)')}</div><div class="loc">${esc(sgg.n)} ${esc(b.d)} ${esc(b.j)} · ${esc(b.t)} · ${b.y?b.y+'년 건축':'건축연도 미상'}</div></div>
       <div class="price"><b>${won(b.p)}</b><small>최근 거래 ${ymd(b.dt)}</small></div></div>
+    ${narV(b, i)}
     <div class="row">
       <div class="mini"><div class="k">대지지분 평당가</div><div class="v">${b.pp?fmt(b.pp)+'<small>만원</small>':'-'}</div></div>
       <div class="mini"><div class="k">${esc(b.d)} 빌라 중앙값 대비</div><div class="v">${dm}</div></div>
@@ -261,6 +263,13 @@ function card(b, i){
   </div>`;
 }
 
+/* 분석 설명(assets/narrative.js cat.villa): 정비구역 단계·진행 속도·노후도·대지지분 평당가를 한 줄 결론 → 요약 → 자세히 보기로 */
+const NARON = !/[?&]nar=0(&|$)/.test(location.search) && !!window.JDJ_NAR;
+function narV(b, i){
+  if (!NARON || !window.JDJ_PLAIN) return '';
+  try { const N = JDJ_NAR.cat.villa(JDJ_NAR.cat.villaFrom({ b, CUR, IDX, PL: JDJ_PLAIN }));
+    return N.head ? JDJ_NAR.html(N, { id: 'narV' + i, closed: i > 0 }) : ''; } catch (e) { console.warn('nar', e); return ''; }
+}
 function filtered(){
   if (!CUR) return [];
   const d = $('dong').value, q = $('q').value.trim().replace(/\s/g,'');
@@ -292,6 +301,7 @@ function render(){
   if (!rows.length){ $('list').innerHTML = autoNote + `<div class="empty">조건에 맞는 건물이 없습니다.${FILTER!=='all'?' <b>전체 건물</b>로 바꿔 보세요.':''}</div>`; return; }
   const sorted = rows.slice().sort((a,b)=> b.dt.localeCompare(a.dt));
   $('list').innerHTML = autoNote + `<div class="caution once"><b>모든 건물 공통</b> · 입주권은 권리산정기준일(이날 이전에 지은 건물이어야 새 아파트 입주권을 받을 수 있는 기준 날짜)과 건축 연도로 가늠한 결과예요. 권리산정기준일·조합원 자격·구역 경계(이 건물이 구역 안인지)는 구청·조합에 꼭 확인하세요. 카드의 ⓘ 표시가 그 확인이 필요한 항목이에요.</div><div class="cards">${sorted.slice(0,SHOWN).map(card).join('')}</div>${sorted.length>SHOWN?`<button class="morebtn" id="moreBtn">더 보기 (${fmt(sorted.length-SHOWN)}개 남음)</button>`:''}`;
+  if (NARON) document.querySelectorAll('#list .nar').forEach(el=>JDJ_NAR.bind(el));
   const mb = $('moreBtn'); if (mb) mb.onclick = ()=>{ SHOWN += PAGE; render(); };
   document.querySelectorAll('[data-more]').forEach(b=>b.onclick=()=>{ const r=b.previousElementSibling; r.hidden=!r.hidden; b.textContent = r.hidden?b.textContent.replace('접기 ▴','더 보기 ▾'):b.textContent.replace('더 보기 ▾','접기 ▴'); });
   saveUrl();

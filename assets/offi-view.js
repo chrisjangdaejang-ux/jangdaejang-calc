@@ -235,12 +235,24 @@
           ${mort || base ? `<div class="of-src">출처: ${esc(((OX && OX.src) || {}).rate || '한국은행')}</div>` : ''}</div>
       </div></div>`;
   }
+  /* 분석 설명(assets/narrative.js cat.offi): 건물이 있으면 수익률 결론(같은 구·금리 대비), 없으면 지역 임대수요 결론 */
+  function narO(g, u, id) {
+    const NR = window.JDJ_NAR, PL = window.JDJ_PLAIN;
+    if (!NR || !NR.cat || !PL || /[?&]nar=0(&|$)/.test(location.search)) return '';
+    try {
+      const N = NR.cat.offi(NR.cat.offiFrom({ u: u || null, OX, g, O, sggName: sggName(g), sidoShort: PL.regionInfo(IX, g).short || sdShort(g) }));
+      return N.head ? NR.html(N, { id }) : '';
+    } catch (e) { console.warn('nar', e); return ''; }
+  }
+  function narBind() { const NR = window.JDJ_NAR; if (NR) $('ofRes').querySelectorAll('.nar').forEach(el => NR.bind(el)); }
   function regionOnly(g) {
     const r = $('ofRes'); r.hidden = false;
     const s = OX ? OX.sgg[g] : null;
     r.innerHTML = `<div class="panel"><div class="dhead"><div><h2>${esc(sggName(g))} 오피스텔 지역 정보</h2><div class="loc">${esc(sidoName(g))} ${esc(sggName(g))}</div></div></div>
+      ${narO(g, null, 'narOr')}
       ${s && s.y ? `<p class="basis">이 지역 오피스텔 임대수익률 중앙값 <b>${O.pct(s.y[0])}</b> (수익률을 계산할 수 있는 건물 ${s.y[1]}곳)</p>` : ''}
       <p class="basis">${ready() ? '동과 건물을 고르면 건물별 시세·임대수익률을 보여 드려요.' : '건물별 시세·임대수익률은 실거래 자료 연결 뒤 보여 드려요.'}</p></div>${regionPanels(g, null)}`;
+    narBind();
   }
   function show(key, opt) {
     const j = C['u' + S.g]; if (!j) return;
@@ -262,6 +274,7 @@
     $('ofRes').innerHTML = `
     <div class="panel">
       <div class="dhead"><div><h2>${esc(O.nameOf(u))}</h2><div class="loc">${esc(sidoName(S.g))} ${esc(sggName(S.g))} ${esc(u.d)} ${esc(u.j)}${window.JDJ_PLAIN && JDJ_PLAIN.ageText(u.by) ? ` · ${JDJ_PLAIN.ageText(u.by, null, '준공')}` : ''} · 대표 전용 ${u.a}㎡</div></div></div>
+      ${narO(S.g, u, 'narOu')}
       <div class="stats">
         <div class="st key"><div class="k">${last ? '최근 시세' : '마지막 시세'} (전용 ${u.a}㎡)</div><div class="v">${last ? won(last.v) : any ? won(any.v) : '거래 없음'}</div><div class="d">${last ? ymL(last.at) + ' 기준' : any ? ymL(any.at) + ' · 최근 3개월 거래 없음' : '최근 매매가 없어요'}</div></div>
         <div class="st"><div class="k">임대수익률(표면)</div><div class="v">${y ? O.pct(y.r) : '확인 불가'}</div><div class="d">${y ? (u.rk && u.rk.g ? `${esc(sggName(S.g))} 오피스텔 ${u.rk.g[2]}곳 중 ${O.rankText(u.rk.g)}` : ymL(y.at) + ' 기준') : '매매·월세 계약이 적어요'}</div></div>
@@ -323,7 +336,7 @@
         <a href="../buy/?src=offi"><b>살 수 있는 예산 계산 →</b><small>내 예산·대출로 필요한 돈</small></a>
       </div>
     </div>`;
-    drawCharts();
+    drawCharts(); narBind();
     $('ofRes').querySelectorAll('[data-ofspan]').forEach(b => b.onclick = () => { S.span = +b.dataset.ofspan || 0; $('ofRes').querySelectorAll('[data-ofspan]').forEach(x => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); }); drawCharts(); });
     if (opt && opt.scroll) $('ofRes').scrollIntoView({ behavior: 'smooth', block: 'start' });
     if (window.jdjStat) jdjStat('feature_use', { feature: 'mine_offi' });

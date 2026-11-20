@@ -31,7 +31,7 @@
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/switch.png">
 <script>window.JDJ_CONFIG = { tool:'switch', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
-<script src="../assets/stat.js?v=6"></script>
+<script src="../assets/stat.js?v=7"></script>
 <script src="../assets/share.js?v=5"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/config.js?v=1"></script>
@@ -44,6 +44,7 @@
 <script src="../assets/mine-core.js?v=14"></script>
 <script src="../assets/price-sheet.js?v=12"></script>
 <script src="switch-core.js?v=2"></script>
+<script src="../assets/narrative.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -412,6 +413,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
         <div class="sub" id="maxSub"></div>
         <div class="binding" id="binding"></div>
       </div>
+      <div id="narSw"></div>
 
       <div class="flow">
         <div class="stat"><div class="k">매도가</div><div class="v" id="fSale">-</div><div class="d">지금 집</div></div>
@@ -1049,11 +1051,27 @@ async function runRec(){
   renderVs();
 }
 
+/* 분석 설명(assets/narrative.js cat.sw): 결과 맨 위 한 줄 결론 → 요약(양도세·대출 한도·갈아타는 비용·예산 안 1위 단지) → 자세히 보기. 입력값은 화면 안에서만 씀 */
+const NARON = !/[?&]nar=0(&|$)/.test(location.search) && !!window.JDJ_NAR;
+function narSw(x){
+  const box=$('narSw'); if(!NARON||!box||!last||!last.S) return;
+  try{
+    const open=[...box.querySelectorAll('.nar-more[aria-expanded="true"]')].map(b=>b.dataset.narK), had=!!box.firstChild;
+    const R=last.S.r||{}, nf=x&&x.hasFv?x.fx.fv:null;
+    const N=JDJ_NAR.cat.sw(JDJ_NAR.cat.swFrom({L:last, SW, x, acq:num($('acq').value), total:REC_LAST?REC_LAST.total:0, keepMonthly:num($('oldMon').value)||null,
+      why:(R.reasons||[])[0]||'', pickRank:nf!=null?RANK(nf, RBASE(x.code,'fv')):'', sgg:code=>AG_IX&&AG_IX.sgg[code]}));
+    if(!N.head){ box.innerHTML=''; return; }
+    box.innerHTML=JDJ_NAR.html(N,{id:'narSws', closed:had});
+    JDJ_NAR.bind(box.firstElementChild);
+    if(had) open.forEach(k=>{ const b=box.querySelector(`.nar-more[data-nar-k="${k}"]`), d=b&&$(b.getAttribute('aria-controls')); if(d){ d.hidden=false; b.setAttribute('aria-expanded','true'); b.textContent='접기'; } });
+  }catch(e){ console.warn('nar',e); box.innerHTML=''; }
+}
 /* ---------- ④ 지금 집 유지 vs 갈아타기 ---------- */
 function renderVs(){
   const L=last; if(!L.S) return;
   const picks=(REC_LAST&&REC_LAST.picked)||[];
   const x = picks.find(p=>recKey(p)===CMP_SEL) || picks[0] || null;
+  narSw(x);
   const P2 = x ? x.P : (L.T || L.P);
   if(!P2){ $('vsRes').innerHTML='<div class="recload">갈아탈 집 가격을 정할 수 없어요. 예산을 확인해 주세요.</div>'; return; }
   const c2 = x ? x.c : L.c, nd2 = x ? x.nd : SW.need(P2, L.c, L.dsr, L.oo);

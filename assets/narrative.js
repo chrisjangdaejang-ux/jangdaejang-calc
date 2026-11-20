@@ -412,6 +412,461 @@
     return out;
   }
 
+
+  /* =====================================================================
+     다른 카테고리(전월세·빌라·오피스텔·갈아타기·청약) — 아파트와 같은 원칙
+     한 줄 결론 → 핵심 요약 3~5줄 → 줄별 4단계(사실→비교→과거 흐름→그래서). 확인 안 된 숫자는 문장째 생략.
+     화면이 이미 계산한 공개 자료 값만 받는다(c). 반환 N 은 html()/bind()/lint() 를 그대로 쓴다.
+     ===================================================================== */
+  const STEPS = {
+    jeonse: ['이 집 숫자', '비교', '과거 흐름', '그래서'], villa: ['이 건물 숫자', '비교', '과거 흐름', '그래서'],
+    offi: ['이 건물 숫자', '비교', '과거 흐름', '그래서'], offiR: ['이 지역 숫자', '비교', '과거 흐름', '그래서'],
+    sw: ['내 숫자', '비교', '계산 기준', '그래서'], cy: ['내 숫자', '비교', '과거 당첨 결과', '그래서']
+  };
+  /* 카테고리 줄 종류(집계 stat.js 허용 목록과 같음) */
+  const CKINDS = ['jr', 'jflow', 'hug', 'jw', 'jgu', 'jsup', 'jmig', 'jpol', 'zone', 'land', 'age', 'right', 'deal', 'yield', 'rate', 'dem', 'osup', 'score', 'cgt', 'loan', 'cost', 'top', 'cut', 'pick', 'past', 'time'];
+  function mk(cat, head, lines, ex) {
+    const N = Object.assign({ cat, head: head || '', gap: '', names: [], trust: [], headH: [], dim: [], step: STEPS[cat] }, ex || {});
+    N.lines = (lines || []).filter(x => x && x.t).slice(0, 5).map(x => ({ k: x.k, t: x.t, d: [0, 1, 2, 3].map(i => (x.d || [])[i] || '') }));
+    if (!N.lines.length && !/\d/.test(N.head)) N.head = '';
+    return N;
+  }
+  const P0 = v => Math.round(v * 100) + '%';
+  /* 천 명 단위 → '약 90.1만 명' / '8,500명' */
+  const ppl = k => { const v = Math.round(k * 1000); return v >= 10000 ? `${r1(v / 10000)}만 명` : `${n0(v)}명`; };
+  const chg = (v, more, less) => Math.abs(v) < 0.005 ? '비슷해요' : `${P1(Math.abs(v))} ${v > 0 ? more : less}`;                        // 0.428 → '43%'
+  const P1 = v => r1(v * 100) + '%';                                // 0.428 → '42.8%'
+  const updn = (v, a, b) => v > 0 ? a : b;
+  /* 두 값 비교: 2% 미만은 '비슷' */
+  const vs = (v, base, hi, lo, same) => { const d = v / base - 1; return Math.abs(d) < 0.02 ? same : `${Math.round(Math.abs(d) * 100)}% ${d > 0 ? hi : lo}`; };
+  const medianOf = a => median(a);
+
+  /* ---------- 전월세 jeonse/ ----------
+     c = { name, band, kind(a|v|o|d), sgg, sido, unit('구'|'시·군·구'), sm(JDJ_RENT.summary), g(rent index 의 구), peers([{code, sup, jr}] 같은 시·도),
+           gch1(구 전세 1년 변화 {pct}), gLast({v, at}), dep(내가 넣은 보증금, 선택), pub·senior(선택), hug{ratio, pub}, pol({now:[...]} 선택), area } */
+  function jeonse(c) {
+    const sm = c.sm || {}, nm = c.name, A = J(nm, '은', '는'), SG = c.sgg, SD = c.sido, UNIT = c.unit || '구', apt = c.kind === 'a';
+    const KND = { a: '아파트', v: '빌라', o: '오피스텔', d: '단독·다가구' }[c.kind] || '아파트';
+    if (!SG) return mk('jeonse', '', []);
+    /* 전세가율: 아파트는 매매·전세 시세, 그 밖은 같은 건물(동) 계약이 각각 3건 이상일 때만 */
+    const jr0 = sm.jr && sm.jr.r > 0 ? sm.jr : null, jr = jr0 && (jr0.s > 0 || ((jr0.nj || 0) >= 3 && (jr0.ns || 0) >= 3)) ? jr0 : null;
+    const j = sm.j && sm.j.v > 0 ? sm.j.v : null, g = c.g || {}, HUG = c.hug || null;
+    const s = jr && jr.s > 0 ? jr.s : null;
+    const bandTxt = c.band ? ` ${c.band}` : '';
+    /* HUG 보증 한도: 공시가격을 넣었으면 공시가격 기준, 아파트는 매매 시세(실거래) 기준 */
+    let cap = null, capBase = '';
+    if (HUG && c.pub > 0) { cap = c.pub * HUG.pub * HUG.ratio - (c.senior || 0); capBase = `공시가격 ${won(c.pub)}`; }
+    else if (HUG && apt && s) { cap = s * HUG.ratio - (c.senior || 0); capBase = `매매 시세 ${won(s)}`; }
+    if (cap != null && !(cap > 0)) cap = 0;
+    /* HUG 보증 대상 보증금 상한: 수도권(서울·인천·경기) 7억 원, 그 밖 5억 원 */
+    const capMetro = /^(11|28|41)/.test(String(c.code || '')), capLim = capMetro ? 70000 : 50000, capRaw = cap;
+    const capHit = cap != null && cap > capLim; if (capHit) cap = capLim;
+    const capLimTxt = `${capMetro ? '수도권' : '수도권 밖'} 보증금 상한 ${won(capLim)}`;
+    const dep = c.dep > 0 ? c.dep : null;
+
+    /* ① 한 줄 결론 */
+    let head = '';
+    if (dep && j) {
+      const dv = dep / j - 1, same = Math.abs(dv) < 0.02;
+      head = `이 집 전세 ${J(won(dep), '은', '는')} 같은 평형 최근 전세 중간값(${won(j)})${same ? '과 비슷하' : `보다 ${Math.round(Math.abs(dv) * 100)}% ${dv > 0 ? '높' : '낮'}`}`
+        + (s ? `고, 매매 시세의 ${P0(dep / s)}예요(전세가율).` : '아요.');
+    } else if (j) {
+      const ch = sm.ch1;
+      head = `${nm}${bandTxt} 전세 시세 ${J(won(j), '은', '는')} ` + (ch ? (Math.abs(ch.pct) < 0.01 ? '1년 전과 비슷하' : `1년 전보다 ${P1(Math.abs(ch.pct))} ${ch.pct > 0 ? '올랐' : '내렸'}`) : `${ymKo(sm.j.at)} 기준이`)
+        + (jr ? `고, ${s ? '매매 시세' : jr.b === 'd' ? `같은 동 ${KND} 매매 시세` : '같은 건물 매매 시세'}의 ${P0(jr.r)}예요(전세가율).` : (ch ? '어요.' : '에요.'));
+    }
+    if (cap != null) {
+      const hc = `HUG 보증은 보증금 ${won(cap) || '0원'}까지 돼요${capHit ? `(${capMetro ? '수도권' : '수도권 밖'} 상한)` : ''}`;
+      head += (head ? ' ' : '') + (cap <= 0 ? `${capBase} 기준으로 HUG 보증 가입이 어려워요(한도 0원).`
+        : dep ? `${hc} — 이 보증금은 ${dep > cap ? `한도보다 ${won(dep - cap)} 많아 가입이 어려워 위험해요.` : `한도보다 ${won(cap - dep)} 적어 가입할 수 있어요.`}`
+        : j && j > cap * 1.02 ? `${hc} — 지금 전세 시세(${won(j)})로는 가입이 어려워요.` : `${hc} — 보증금이 그보다 크면 위험해요.`);
+    }
+
+    const L = [];
+    /* ② 전세가율 위치 */
+    if (jr) {
+      const gj = g.jr && g.jr[0] > 0 ? g.jr[0] : null, jrs = (c.jrs || []).filter(v => v > 0);
+      const d1 = jrs.length > 12 ? jrs[jrs.length - 1] - jrs[jrs.length - 13] : null;   // ‰ → %p×10
+      const pk = jrs.length ? Math.max(...jrs) : null;
+      const t = `전세가율 ${P0(jr.r)}` + (apt && gj ? `로 ${SG} 아파트 중간값(${P0(gj)})보다 ${Math.abs(jr.r - gj) < 0.01 ? '비슷해요' : `${r1(Math.abs(jr.r - gj) * 100)}%p ${jr.r > gj ? '높아요' : '낮아요'}`}` : '예요')
+        + (d1 != null && Math.abs(d1) >= 5 ? ` — 1년 새 ${r1(Math.abs(d1) / 10)}%p ${d1 > 0 ? '올랐어요' : '내렸어요'}.` : '.');
+      const fact = s ? `${nm}${bandTxt} 전세가율은 ${ymKo(jr.at || sm.j.at)} 기준 ${P1(jr.r)}예요(전세 ${won(jr.j || j)} ÷ 매매 ${won(s)}).`
+        : `${nm}${bandTxt} 전세가율은 ${P1(jr.r)}예요(최근 1년 전세 계약 ${n0(jr.nj || 0)}건 ÷ ${jr.b === 'd' ? `같은 동 ${KND}` : '같은 건물'} 매매 ${n0(jr.ns || 0)}건, ㎡당 중간값).`;
+      const cmp = gj && apt ? `${SG} 아파트 ${n0(g.jr[1])}개 단지·평형의 전세가율 중간값은 ${P1(gj)}예요.` : '';
+      const past = d1 != null ? `1년 전 전세가율은 ${r1(jrs[jrs.length - 13] / 10)}%였어요` + (pk && pk > jrs[jrs.length - 1] + 5 ? `. 자료가 있는 기간 중 가장 높았던 값은 ${r1(pk / 10)}%예요.` : '.') : '';
+      const so = jr.r >= 1 ? `그래서 전셋값이 집값의 ${P0(jr.r)}로 집값보다 높아, 집을 팔아도 전세금을 다 돌려받기 어려워요(깡통전세 위험).`
+        : `그래서 집값이 지금보다 ${P0(1 - jr.r)} 넘게 내리면 집을 팔아도 이 전셋값을 다 돌려주기 어려워요` + (jr.r >= 0.8 ? ` — 전세가율 ${P0(jr.r)}는 위험 쪽이에요.` : '.');
+      L.push({ k: 'jr', t, d: [fact, cmp, past, so] });
+    }
+    /* ③ 최근 전셋값 흐름 */
+    if (sm.ch1 && j) {
+      const ch = sm.ch1, gc = c.gch1;
+      const t = `전셋값이 최근 1년 ${Math.abs(ch.pct) < 0.01 ? `${pctSg(ch.pct)}로 비슷해요` : `${P1(Math.abs(ch.pct))} ${ch.pct > 0 ? '올랐어요' : '내렸어요'}`}` + (gc ? `(${SG} 아파트 전체 ${pctSg(gc.pct)}).` : '.');
+      const fact = `${nm}${bandTxt} 전세 시세는 ${ymKo(ch.fromAt)} ${won(ch.from)}에서 ${ymKo(ch.toAt)} ${J(won(ch.to), '으로', '로')}${Math.abs(ch.pct) < 0.01 ? ' 비슷해요.' : ` ${P1(Math.abs(ch.pct))} ${ch.pct > 0 ? '올랐어요' : '내렸어요'}.`}`;
+      const cmp = gc && c.gLast ? `같은 기간 ${SG} 아파트 전체 전셋값(3.3㎡당 ${n0(c.gLast.v)}만 원)은 ${pctSg(gc.pct)}예요.` : '';
+      const past = sm.ch3 ? `3년 전(${ymKo(sm.ch3.fromAt)}) 전세 시세는 ${J(won(sm.ch3.from), '으로', '로')}, 지금은 그때보다 ${Math.abs(sm.ch3.pct) < 0.01 ? '비슷해요' : `${P1(Math.abs(sm.ch3.pct))} ${sm.ch3.pct > 0 ? '높아요' : '낮아요'}`}.` : '';
+      const dv = ch.to - ch.from;
+      const so = Math.abs(ch.pct) < 0.01 ? `그래서 같은 집을 1년 전과 비슷한 ${won(ch.to)} 안팎에 구할 수 있어요.` : `그래서 같은 집을 구하려면 1년 전보다 ${won(Math.abs(dv))} ${dv > 0 ? '더 줘야' : '덜 줘도'} 돼요.`;
+      L.push({ k: 'jflow', t, d: [fact, cmp, past, so] });
+    }
+    /* ⑤ 주변 입주 물량 */
+    {
+      const peers = (c.peers || []).filter(p => p.code), n = peers.length, sup = g.sup && g.sup.n > 0 ? g.sup : null;
+      const withS = peers.filter(p => p.sup > 0).sort((a, b) => b.sup - a.sup), rk = sup ? withS.findIndex(p => p.code === c.code) + 1 : 0;
+      if (sup && n >= 3 && rk > 0) {
+        const rows = sup.rows || [], mvs = rows.map(r => r[2]).filter(Boolean).sort();
+        const t = `앞으로 2년 ${SG} 아파트 입주 예정 ${n0(sup.n)}세대 — ${SD} ${n}개 ${UNIT} 중 ${rk}번째로 많아요.`;
+        const fact = `${SG}에 입주 예정인 단지는 ${rows.length}곳이에요: ` + rows.slice(0, 3).map(r => `${r[0]} ${n0(r[1])}세대(${ymKo(r[2])})`).join(', ') + (rows.length > 3 ? ` 외 ${rows.length - 3}곳.` : '.');
+        const md = medianOf(peers.map(p => p.sup || 0).concat(peers.some(p => p.code === c.code) ? [] : [sup.n]));
+        const cmp = `${SD} ${n}개 ${UNIT} 중 입주 예정이 있는 곳은 ${withS.length}곳이고, ${UNIT}별 중간값은 ${n0(md || 0)}세대예요.`;
+        const so = mvs.length ? `그래서 ${ymKo(mvs[0])}${mvs.length > 1 && mvs[mvs.length - 1] !== mvs[0] ? `~${ymKo(mvs[mvs.length - 1])}` : ''} 입주 때 새 전세 물건이 한꺼번에 나와 세입자가 고를 집이 늘어요.` : `그래서 입주 때 새 전세 물건 ${n0(sup.n)}세대가 한꺼번에 나와 세입자가 고를 집이 늘어요.`;
+        L.push({ k: 'jsup', t, d: [fact, cmp, '', so] });
+      } else if (sup) {
+        const rows = (sup.rows || []).filter(r => r[2]);
+        const t = `앞으로 2년 ${SG} 아파트 입주 예정 ${n0(sup.n)}세대예요.`;
+        const fact = rows.length ? `${SG}에 입주 예정인 단지는 ${rows.length}곳이에요: ` + rows.slice(0, 3).map(r => `${r[0]} ${n0(r[1])}세대(${ymKo(r[2])})`).join(', ') + (rows.length > 3 ? ` 외 ${rows.length - 3}곳.` : '.') : '';
+        L.push({ k: 'jsup', t, d: [fact, '', '', `그래서 입주 때 새 전세 물건 ${n0(sup.n)}세대가 한꺼번에 나와 세입자가 고를 집이 늘어요.`] });
+      } else if (!sup && n >= 3) {
+        const t = `앞으로 2년 ${SG} 아파트 입주 예정이 0세대예요(${SD} ${n}개 ${UNIT} 중 ${withS.length}곳은 있어요).`;
+        L.push({ k: 'jsup', t, d: [`청약홈 분양 공고 기준으로 ${SG}에는 앞으로 2년 안에 입주하는 아파트가 0곳이에요.`, `${SD}에서 입주 예정이 있는 ${UNIT}는 ${n}곳 중 ${withS.length}곳이에요.`, '',
+          `그래서 새 아파트 입주로 전세 물건이 한꺼번에 늘어날 일이 앞으로 2년 동안 ${SG}에는 0건이에요.`] });
+      }
+    }
+    /* ⑥ 정비사업 이주(있을 때만) */
+    if (g.mig && (g.mig.rows || []).length) {
+      const m = g.mig, rows = m.rows, mv = rows.filter(r => r[4]).length;
+      const t = `${SG} 정비사업 ${rows.length}곳이 이주 단계예요` + (m.n ? `(기존 ${n0(m.n)}가구)` : '') + ` — 살던 가구가 주변에서 전셋집을 찾아요.`;
+      const fact = rows.slice(0, 3).map(r => `${r[0]}${r[2] ? ` ${n0(r[2])}가구` : ''}(${r[4] ? `${ymKo(r[4])} 이주 시작` : r[3] ? `${ymKo(r[3])} 관리처분인가` : '관리처분 단계'})`).join(', ') + (rows.length > 3 ? ` 외 ${rows.length - 3}곳` : '') + ` — ${rows.length}곳 모두 관리처분인가 뒤 착공 전이에요.`;
+      const cmp = `${rows.length}곳 중 ${mv}곳은 이주를 시작했고 ${rows.length - mv}곳은 이주 전이에요.`;
+      const so = `그래서 이주가 이어지는 동안 ${SG} 전세 수요가 ${m.n ? `최대 ${n0(m.n)}가구만큼` : `${rows.length}곳만큼`} 늘 수 있어요.`;
+      L.push({ k: 'jmig', t, d: [fact, cmp, '', so] });
+    }
+    /* ⑦ 정책 */
+    const pn = c.pol && c.pol.now && c.pol.now.length ? c.pol.now : null;
+    if (pn) {
+      const p0 = pn[0].p, rc = (pn[0].rec || []).find(o => o.jx != null);
+      const t = `전월세에 영향을 주는 정책 ${pn.length}개가 ${SG}에 적용돼요` + (rc ? ` — '${p0.name}'(${ymKo(p0.date.replace(/-/g, '').slice(0, 6))} 발표) 뒤 ${SG} ${rc.label} 전세 보증금이 ${pctSg(rc.jx / 100)} 움직였어요.` : ` — 가장 최근은 '${p0.name}'(${ymKo(p0.date.replace(/-/g, '').slice(0, 6))} 발표)예요.`);
+      const fact = pn.slice(0, 3).map(x => `'${x.p.name}'(${ymKo(x.p.date.replace(/-/g, '').slice(0, 6))}, ${x.badge || '시행 중'})`).join(', ') + `이 ${SG} 전월세 계약·전세대출에 적용돼요.`;
+      const cmp = rc ? `발표 전 3개월(${ymKo(rc.before[0])}~)과 최근 3개월(${ymKo(rc.after[0])}~)을 비교한 값이에요(같은 단지 전세 ${n0(rc.jxn || 0)}쌍).` : '';
+      const so = `그래서 계약·대출 전에 아래 '전월세에 영향을 주는 정책' 칸에서 ${pn.length}개 정책의 대상 조건을 확인하세요.`;
+      L.push({ k: 'jpol', t, d: [fact, cmp, '', so] });
+    }
+    /* ④ HUG 보증 한도 */
+    if (cap != null && cap > 0 && j) {
+      const room = cap - j;
+      const t = `HUG 보증 한도 ${won(cap)} — 지금 전세 시세(${won(j)})${Math.abs(room) < j * 0.02 ? '와 비슷해요.' : `보다 ${won(Math.abs(room))} ${room > 0 ? '여유가 있어요.' : '모자라요.'}`}`;
+      const fact = `HUG 전세보증금반환보증 한도는 ${capBase}의 ${Math.round(HUG.ratio * 100)}%${c.pub > 0 ? `(공시가격 × ${r1(HUG.pub * 100)}% = ${J(won(c.pub * HUG.pub), '이', '가')} 주택가격)` : ''}${c.senior > 0 ? `에서 선순위채권 ${won(c.senior)}을 뺀 ${won(capRaw)}` : `인 ${won(capRaw)}`}${capHit ? `이지만, ${capLimTxt}에 걸려 ${won(cap)}까지예요.` : '예요.'}`;
+      const cmp = `이 평형 최근 전세 중간값은 ${J(won(j), '이에요', '예요')}.`;
+      const so = room > 0 ? `그래서 보증금을 ${won(cap)} 아래로 맞춰야 보증에 가입할 수 있어요${c.senior > 0 ? '' : ' — 근저당이 있으면 그 금액만큼 한도가 줄어요'}.` : `그래서 이 집 시세 수준(${won(j)})의 보증금은 보증 가입이 어려워요.`;
+      L.push({ k: 'hug', t, d: [fact, cmp, '', so] });
+    }
+    /* 같은 구 아파트 평균과 3.3㎡당 전셋값 비교(다른 줄이 모자랄 때 채움) */
+    if (apt && j && c.area > 0 && c.gLast && c.gLast.v > 0) {
+      const per = j / c.area * 3.3058, gv = c.gLast.v, dv = per / gv - 1, same = Math.abs(dv) < 0.02;
+      const t = `3.3㎡당 전셋값 ${n0(per)}만 원 — ${SG} 아파트 평균(${n0(gv)}만 원)${same ? '과 비슷해요.' : `보다 ${Math.round(Math.abs(dv) * 100)}% ${dv > 0 ? '높아요' : '낮아요'}.`}`;
+      const fact = `${nm}${bandTxt} 전세 시세 ${J(won(j), '을', '를')} 전용 ${r1(c.area)}㎡로 나눠 3.3㎡당 값으로 바꾸면 ${n0(per)}만 원이에요.`;
+      const cmp = `${SG} 아파트 전체 전셋값은 ${ymKo(c.gLast.at)} 기준 3.3㎡당 ${n0(gv)}만 원이에요.`;
+      const so = `그래서 같은 넓이를 ${SG} 평균 값으로 빌리면 약 ${won(gv * c.area / 3.3058)}이에요.`;
+      L.push({ k: 'jgu', t, d: [fact, cmp, '', so] });
+    }
+    /* 전세 vs 월세(전환율): 다른 줄이 모자랄 때 채움 */
+    if (j && sm.wr && sm.wr.v > 0 && sm.wd && j > sm.wd.v) {
+      const cv = sm.wr.v * 12 / (j - sm.wd.v), cvT = `${(Math.round(cv * 1000) / 10).toFixed(1)}%`;
+      const t = `월세는 보증금 ${won(sm.wd.v) || '0원'}에 월 ${n0(sm.wr.v)}만 원 — 전세와 견준 전환율은 연 ${cvT}예요.`;
+      const fact = `${nm}${bandTxt} 최근 월세 시세는 ${ymKo(sm.wr.at)} 기준 보증금 ${won(sm.wd.v) || '0원'}, 월 ${n0(sm.wr.v)}만 원이에요.`;
+      const cmp = `전세 ${J(won(j), '과', '와')} 월세 보증금의 차이 ${won(j - sm.wd.v)}에 대해 1년 월세 ${won(sm.wr.v * 12)}을 내는 셈이라 연 ${cvT}예요.`;
+      const so = `그래서 전세대출 금리가 연 ${cvT}보다 낮으면 전세가, 높으면 월세가 매달 덜 들어요.`;
+      L.push({ k: 'jw', t, d: [fact, cmp, '', so] });
+    }
+    return mk('jeonse', head, L, { names: [nm, SG, c.dong, ...(g.sup ? g.sup.rows.map(r => r[0]) : []), ...(g.mig ? g.mig.rows.map(r => r[0]) : []), ...(pn || []).map(x => x.p.name)].filter(Boolean) });
+  }
+
+  /* ---------- 빌라·재개발 villa/ ----------
+     c = { b(건물), zones(구 안 모든 구역), dm(동별 대지지분 평당가 중간값 {m, c}), dongB(같은 동 건물들), sgg, year(올해), ym(자료 끝 YYYYMM), PL } */
+  const REL = ['구역 안', '구역 대표 지번', '같은 동 구역', '같은 동 구역 밖'];
+  function villa(c) {
+    const b = c.b, Z = c.zones || [], nm = b.n && !/^\(?[\d\-]+\)?$/.test(b.n) ? b.n : `${b.d} ${b.j} 건물`, A = J(nm, '은', '는'), SG = c.sgg, D = b.d;
+    const now = c.ym ? +String(c.ym).slice(0, 4) + (+String(c.ym).slice(4, 6) - 1) / 12 : (c.year || new Date().getFullYear());
+    const yrs = ym => now - (+String(ym).slice(0, 4) + (+String(ym).slice(4, 6) - 1) / 12);
+    const zs = (b.z || []).filter(z => z[1] !== 3 && Z[z[0]]).slice().sort((x, y) => x[1] - y[1] || (Z[y[0]].lv - Z[x[0]].lv));
+    const z0 = zs[0] ? Z[zs[0][0]] : null, rel = zs[0] ? zs[0][1] : null, rk = zs[0] ? zs[0][2] : null;
+    const allOut = (b.z || []).length && (b.z || []).every(z => z[1] === 3);
+    const ST = (c.PL && c.PL.STAGE) || {};
+    const dmm = c.dm && c.dm[D];
+    const ppOk = b.pp > 0 && b.l > 0 && !(b.l > b.a * 4);
+    const age = b.y ? Math.max(0, Math.floor(now - b.y)) : null;
+    /* 같은 단계 구역의 첫 공식 단계 뒤 경과 연수(구 안, 3곳 이상일 때만) */
+    const el = z0 && z0.b ? yrs(z0.b) : null;
+    const peer = z0 ? Z.filter(z => z !== z0 && z.lv === z0.lv && z.b && !z.x).map(z => yrs(z.b)) : [];
+    const pm = peer.length >= 3 ? median(peer) : null;
+    const yN = v => v < 1 ? '1년 안' : `${Math.round(v)}년`;
+    const yAfter = v => v < 1 ? '1년이 안 됐어요' : `${Math.round(v)}년째예요`;
+
+    let head = '';
+    if (z0) head = `${A} ${REL[rel]}인 ${z0.n} ${z0.t.replace(/\(.*\)/, '')}(10단계 중 ${z0.lv}단계, ${z0.st})과 연결돼 있고` + (el != null ? `, 첫 공식 단계(${ymKo(z0.b)}) 뒤 ${yAfter(el)}` + (pm != null ? `(${SG} 같은 단계 구역 중간값 ${yN(pm)}).` : '.') : ' 단계 날짜 자료는 없어요.');
+    else if (allOut) head = `${A} 같은 동 정비구역 ${(b.z || []).length}곳의 공식 경계 밖이에요.`;
+    else head = `${A} 같은 동에 연결된 재개발 정비구역이 0곳이에요.`;
+    let land = null;
+    if (ppOk && dmm && dmm.m > 0) { const dv = b.pp / dmm.m - 1; land = [`대지지분 평당가 ${n0(b.pp)}만 원은 ${D} 빌라 중간값` + (Math.abs(dv) < 0.02 ? '과 비슷하' : `보다 ${Math.round(Math.abs(dv) * 100)}% ${dv > 0 ? '비싸' : '싸'}`), Math.abs(dv) < 0.02 ? '비슷해요' : dv > 0 ? '비싸요' : '싸요']; }
+    if (land && age != null) head += ` ${land[0]}고, ${b.y}년에 지은 ${age}년 된 건물이에요.`;
+    else if (land) head += ' ' + land[0].replace(/(비슷하|비싸|싸)$/, land[1]) + '.';
+    else if (age != null) head += ` ${b.y}년에 지은 ${age}년 된 건물이에요.`;
+
+    const L = [];
+    if (z0) {
+      const zl = Z.filter(z => z.lv > 0), hi = zl.filter(z => z.lv > z0.lv).length;
+      const t = `${J(`${z0.n} ${z0.t.replace(/\(.*\)/, '')}`, '은', '는')} 10단계 중 ${z0.lv}단계(${z0.st})예요 — 이 건물은 ${REL[rel]}에 있어요.`;
+      const fact = `${J(z0.n, '은', '는')} ${z0.b ? `${ymKo(z0.b)}에 첫 공식 단계를 밟았고 ` : ''}지금 10단계 중 ${z0.lv}번째인 ${z0.st} 단계예요.`;
+      const cmp = zl.length >= 3 ? `${SG} 정비구역 ${zl.length}곳 중 이보다 단계가 높은 곳은 ${hi}곳이에요.` : '';
+      const past = el != null && el >= 1 && z0.lv >= 2 ? `${J(z0.n, '은', '는')} 첫 공식 단계 뒤 한 단계에 평균 ${r1(el / Math.max(1, z0.lv - 1))}년씩 걸려 ${z0.lv}단계까지 왔어요` + (pm != null ? `(${SG} 같은 ${z0.lv}단계 구역의 첫 단계 뒤 경과 중간값 ${r1(pm)}년).` : '.') : '';
+      const so = z0.lv < 10 ? `그래서 다음은 ${z0.lv + 1}단계인 ${ST[z0.lv + 1] || '다음'} 단계예요 — ${z0.lv >= 8 ? '이주·착공이 가까워요' : z0.lv >= 5 ? '조합이 생겨 사업 주체가 정해졌어요' : '아직 조합 설립 전이라 사업 계획이 바뀔 수 있어요'}.` : `그래서 ${J(z0.n, '은', '는')} 10단계(착공)까지 와서 공사 중이에요.`;
+      L.push({ k: 'zone', t, d: [fact, cmp, past, so] });
+    }
+    if (ppOk && dmm && dmm.m > 0) {
+      const dv = b.pp / dmm.m - 1, same = Math.abs(dv) < 0.02;
+      const all = (c.allB || []).filter(x => x.pp > 0 && x.l > 0 && !(x.l > x.a * 4)).map(x => x.pp), gm = all.length >= 5 ? median(all) : null;
+      const t = `대지지분 평당가 ${n0(b.pp)}만 원 — ${D} 빌라 중간값(${n0(dmm.m)}만 원, ${n0(dmm.c)}건)${same ? '과 비슷해요.' : `보다 ${Math.round(Math.abs(dv) * 100)}% ${dv > 0 ? '비싸요' : '싸요'}.`}`;
+      const fact = `${A} 최근 거래가 ${won(b.p)}, 대지권 ${r1(b.l)}㎡(${r1(b.l / 3.3058)}평)라 대지지분 평당가가 ${n0(b.pp)}만 원이에요.`;
+      const zi = z0 && z0.pin && z0.pout && z0.pin[0] && z0.pout[0] ? z0 : null;
+      const cmp = [`${D} 빌라 최근 12개월 ${n0(dmm.c)}건의 대지지분 평당가 중간값은 ${n0(dmm.m)}만 원이에요.`, gm ? `${SG} 빌라 ${n0(all.length)}곳 중간값은 ${n0(gm)}만 원이에요.` : '',
+        zi ? `${zi.n} 구역 안 거래는 ${n0(zi.pin[0])}만 원(${zi.pin[1]}건), 같은 동 구역 밖은 ${n0(zi.pout[0])}만 원(${zi.pout[1]}건)이에요.` : ''].filter(Boolean).join(' ');
+      const so = same ? `그래서 같은 돈으로 ${D} 중간 수준과 비슷한 대지지분을 사는 셈이에요(차이 ${Math.round(Math.abs(dv) * 100)}%).`
+        : `그래서 같은 돈으로 ${D} 중간 수준보다 대지지분을 ${Math.round(Math.abs(dmm.m / b.pp - 1) * 100)}% ${dv < 0 ? '더 많이' : '덜'} 사는 셈이에요.`;
+      L.push({ k: 'land', t, d: [fact, cmp, '', so] });
+    }
+    if (age != null) {
+      const ages = (c.dongB || []).filter(x => x.y).map(x => Math.floor(now - x.y));
+      const md = ages.length >= 5 ? median(ages) : null, older = ages.filter(a => a > age).length;
+      const t = `${b.y}년에 지어 ${age}년 됐어요` + (md != null ? ` — ${D}에서 거래된 빌라 중간값(${md}년)${Math.abs(age - md) < 1 ? '과 비슷해요.' : `보다 ${Math.round(Math.abs(age - md))}년 ${age > md ? '오래됐어요' : '새것이에요'}.`}` : '.');
+      const fact = `${A} ${b.y}년에 지은 ${b.t || '빌라'}로, 올해 ${age}년째예요.`;
+      const cmp = md != null ? `최근 거래가 있는 ${D} 빌라 ${ages.length}곳의 건축 연수 중간값은 ${md}년이에요.` : '';
+      const so = md != null ? `그래서 ${D} 거래 빌라 ${ages.length}곳 중 이 건물보다 오래된 곳은 ${older}곳(${Math.round(older / ages.length * 100)}%)이에요.` : `그래서 이 건물은 지은 지 ${age}년이 지났어요.`;
+      L.push({ k: 'age', t, d: [fact, cmp, '', so] });
+    }
+    if (z0 && rel <= 1 && z0.b && b.y && (rk === 'o' || rk === 'r')) {
+      const by = +String(z0.b).slice(0, 4);
+      const t = rk === 'o' ? `${b.y}년 건축으로 ${z0.n}의 첫 공식 단계(${ymKo(z0.b)})보다 ${by - b.y}년 먼저 지어 입주권을 받을 가능성이 높아요.`
+        : `${b.y}년 건축으로 ${z0.n}의 첫 공식 단계(${ymKo(z0.b)}) 뒤에 지어 현금청산 위험이 있어요.`;
+      const fact = `${A} ${b.y}년에 지었고, ${z0.n}의 가장 이른 공식 단계는 ${J(ymKo(z0.b), '이에요', '예요')}.`;
+      const cmp = `입주권은 권리산정기준일 전에 지은 건물이어야 받을 수 있어요 — 이 건물은 그 추정일(${ymKo(z0.b)})보다 ${Math.abs(by - b.y)}년 ${rk === 'o' ? '앞서요' : '늦어요'}.`;
+      const so = rk === 'o' ? `그래서 ${z0.n} 사업이 이어지면 이 건물은 새 아파트 입주권 대상일 가능성이 높아요(기준일 추정보다 ${by - b.y}년 앞섬).`
+        : `그래서 ${z0.n} 사업이 진행되면 새 아파트 대신 현금으로 정산받을 수 있어요(기준일 추정보다 ${b.y - by}년 늦음).`;
+      L.push({ k: 'right', t, d: [fact, cmp, '', so] });
+    }
+    /* 최근 거래: 전용 ㎡당 값을 같은 동 거래 빌라와 비교(다른 줄이 모자랄 때 채움) */
+    if (b.p > 0 && b.a > 0 && /^\d{6}/.test(String(b.dt || ''))) {
+      const per = b.p / b.a, at = ymKo(String(b.dt).slice(0, 6));
+      const ps = (c.dongB || []).filter(x => x !== b && x.p > 0 && x.a > 0).map(x => x.p / x.a), md = ps.length >= 5 ? median(ps) : null;
+      const dv = md ? per / md - 1 : 0, same = Math.abs(dv) < 0.02;
+      const t = `최근 거래 ${won(b.p)}(${at}, 전용 ${r1(b.a)}㎡)` + (md ? ` — 전용 ㎡당 ${n0(per)}만 원으로 ${D} 빌라 중간값(${n0(md)}만 원)${same ? '과 비슷해요.' : `보다 ${Math.round(Math.abs(dv) * 100)}% ${dv > 0 ? '비싸요' : '싸요'}.`}` : '예요.');
+      const fact = `${A} ${at}에 전용 ${r1(b.a)}㎡가 ${won(b.p)}에 거래됐어요(전용 ㎡당 ${n0(per)}만 원).`;
+      const cmp = md ? `최근 거래가 있는 ${D} 빌라 ${ps.length}곳의 전용 ㎡당 거래가 중간값은 ${n0(md)}만 원이에요.` : '';
+      const so = md ? `그래서 같은 넓이(전용 ${r1(b.a)}㎡)를 ${D} 중간 수준 값으로 사면 약 ${won(md * b.a)}이에요.` : `그래서 전용 3.3㎡(1평)당 ${n0(per * 3.3058)}만 원에 거래된 셈이에요.`;
+      L.push({ k: 'deal', t, d: [fact, cmp, '', so] });
+    }
+    return mk('villa', head, L, { names: [nm, D, SG, z0 && z0.n, b.n].filter(Boolean) });
+  }
+
+  /* ---------- 오피스텔 mine/?t=o ----------
+     c = { u(건물, 없으면 지역만), s(offi index 의 구), sgg, sido, name, mort{v, at}, base{v, at}, bt(index.bt), pass(통과 기간), rankText, scoreRank } */
+  function offi(c) {
+    const u = c.u, s = c.s || {}, SG = c.sgg, SD = c.sido, d = s.dem || {}, job = d.job, sup = s.sup, mort = c.mort, y = u && u.y && u.y.r > 0 ? u.y : null;
+    const RT = c.rankText || (rk => rk ? `상위 ${rk[0]}%` : '');
+    const L = [];
+    let head = '';
+    const nm = u ? c.name : SG, A = J(nm, '은', '는');
+    if (y) {
+      const g = u.rk && u.rk.g, gm = s.y && s.y[0] > 0 ? s.y : null;
+      head = `${A} 임대수익률 ${P1(y.r)}로 ` + (gm ? `${SG} 오피스텔 중간값(${P1(gm[0])})${Math.abs(y.r - gm[0]) < 0.001 ? '과 비슷하' : `보다 ${r1(Math.abs(y.r - gm[0]) * 100)}%p ${y.r > gm[0] ? '높' : '낮'}`}고` : g ? `${SG} 오피스텔 ${g[2]}곳 중 ${RT(g)}이고` : `${ymKo(y.at)} 기준이고`)
+        + (mort ? `, 주택담보대출 금리(${mort.v}%)보다 ${r1(Math.abs(y.r * 100 - mort.v))}%p ${y.r * 100 >= mort.v ? '높아요' : '낮아요'}.` : '.');
+      if (mort && y.r * 100 < mort.v) head += ' 대출을 끼고 사면 월세로 이자를 다 못 내요.';
+      const t = `수익률 ${P1(y.r)}` + (g ? ` — ${SG} 오피스텔 ${g[2]}곳 중 ${RT(g)}` : '') + (u.rk && u.rk.d ? `, 같은 동 ${u.rk.d[2]}곳 중 ${RT(u.rk.d)}` : '') + '.';
+      const fact = `${A} 최근 1년 월세 계약 ${n0(y.nw || 0)}건과 매매 ${n0(y.ns || 0)}건으로 계산한 표면 수익률이 ${P1(y.r)}예요(${ymKo(y.at)} 기준, 보증금 ${won(y.dep)} · 월세 ${n0(y.mr)}만 원 예시).`;
+      const cmp = gm ? `${SG}에서 수익률을 계산할 수 있는 오피스텔 ${gm[1]}곳의 중간값은 ${P1(gm[0])}예요.` : '';
+      const ys = (u.ys || []).filter(v => v > 0), y1 = ys.length > 12 ? ys[ys.length - 13] / 1000 : null;
+      const past = y1 ? `1년 전 수익률은 ${P1(y1)}였어요 — ${Math.abs(y.r - y1) < 0.001 ? '비슷해요' : `${r1(Math.abs(y.r - y1) * 100)}%p ${y.r > y1 ? '올랐어요' : '내렸어요'}`}.` : '';
+      const ex = y.p && u.a ? Math.round(y.p * u.a / 100) * 100 : null;
+      const so = ex ? `그래서 ${won(ex)}짜리 한 채(전용 ${u.a}㎡)를 보증금 ${won(y.dep)}을 끼고 사면 내 돈 ${won(ex - y.dep)}으로 1년에 월세 ${won(y.mr * 12)}을 받는 셈이에요.` : `그래서 내 돈 1억 원당 1년에 월세 약 ${won(y.r * 10000)}을 받는 셈이에요.`;
+      L.push({ k: 'yield', t, d: [fact, cmp, past, so] });
+      if (mort) {
+        const sp = Math.round((y.r * 100 - mort.v) * 100) / 100;
+        L.push({ k: 'rate', t: `주택담보대출 금리 ${mort.v}% 대비 수익률이 ${r1(Math.abs(sp))}%p ${sp >= 0 ? '높아요' : '낮아요'}.`,
+          d: [`예금은행 주택담보대출 금리는 ${ymKo(mort.at)} 신규 기준 ${mort.v}%예요.`, c.base ? `한국은행 기준금리는 ${c.base.v}%(${ymKo(c.base.at)})예요.` : '', '',
+            sp >= 0 ? `그래서 대출로 산 돈 1억 원당 1년 이자보다 월세가 약 ${won(sp * 100)} 더 들어와요(세금·관리비·공실 전).` : `그래서 대출로 산 돈 1억 원당 1년 이자가 월세보다 약 ${won(-sp * 100)} 더 나가요(세금·관리비·공실 전).`] });
+      }
+    } else if (job) {
+      const c1 = job.c1 || 0;
+      head = `${SG}에서 일하는 사람(오피스텔 임대수요)은 ${ppl(job.v)}으로 1년 전${Math.abs(c1) < 0.005 ? '과 비슷하고' : `보다 ${P1(Math.abs(c1))} ${c1 > 0 ? '늘었고' : '줄었고'}`}` + (job.rk ? `(늘어난 폭 전국 ${job.rk[2]}개 시·군·구 중 ${RT(job.rk)})` : '')
+        + `, 앞으로 2년 새 오피스텔 입주 예정은 ${n0((sup && sup.o) || 0)}실이에요.`;
+    }
+    if (job) {
+      const t = `${SG}에서 일하는 사람 ${ppl(job.v)} — 1년 전${Math.abs(job.c1 || 0) < 0.005 ? '과 비슷해요' : `보다 ${chg(job.c1 || 0, '늘었어요', '줄었어요')}`}` + (job.rk ? `(늘어난 폭 전국 ${RT(job.rk)}).` : '.');
+      const fact = `${SG} 근무지 기준 취업자는 ${ymKo(job.at)} ${ppl(job.v)}이에요${job.grp > 1 ? '(구가 있는 시는 시 전체 값)' : ''}.`;
+      const cmp = job.rk ? `1년 증가 폭을 전국 ${job.rk[2]}개 시·군·구와 비교하면 ${J(RT(job.rk), '이에요', '예요')}.` : '';
+      const hh = d.hh && d.hh.p12 != null ? `1~2인 세대 비중은 ${P1(d.hh.p12)}예요${d.hh.d3 != null ? `(3년 전보다 ${r1(Math.abs(d.hh.d3) * 100)}%p ${d.hh.d3 >= 0 ? '늘었어요' : '줄었어요'})` : ''}.` : '';
+      const past = job.c3 != null ? `3년 전보다 ${Math.abs(job.c3) < 0.005 ? '비슷해요' : `${P1(Math.abs(job.c3))} ${job.c3 > 0 ? '늘었어요' : '줄었어요'}`}. ${hh}`.trim() : hh;
+      const so = Math.abs(job.c1 || 0) < 0.005 ? `그래서 ${SG}에서 오피스텔 세입자가 될 직장인 수는 1년 전과 비슷한 ${ppl(job.v)} 안팎이에요.` : `그래서 ${SG}에서 오피스텔 세입자가 될 직장인이 1년 새 약 ${ppl(Math.abs(job.v * (job.c1 || 0) / (1 + (job.c1 || 0))))} ${(job.c1 || 0) >= 0 ? '늘었어요' : '줄었어요'}.`;
+      L.push({ k: 'dem', t, d: [fact, cmp, past, so] });
+    }
+    {
+      const o = (sup && sup.o) || 0, rows = (sup && sup.rows) || [];
+      const t = `앞으로 2년 ${SG} 오피스텔·도시형생활주택 입주 예정 ${n0(o)}실·세대` + (sup && sup.apt ? `(아파트 ${n0(sup.apt)}세대 별도).` : '.');
+      const fact = o ? `청약홈 공고 기준 ${rows.length}곳이에요: ` + rows.slice(0, 3).map(r => `${r[0]} ${n0(r[1])}실(${ymKo(r[2])})`).join(', ') + (rows.length > 3 ? ` 외 ${rows.length - 3}곳.` : '.') : `청약홈 공고 기준 ${SG}에 앞으로 2년 입주하는 오피스텔은 0곳이에요.`;
+      const cmp = job && o ? `일하는 사람 1,000명당 새 오피스텔 ${r1(o / job.v)}실이에요.` : '';
+      const so = o ? `그래서 ${ymKo(rows.map(r => r[2]).sort()[0])}부터 새 오피스텔 ${n0(o)}실이 세입자를 함께 찾아요.` : `그래서 앞으로 2년 ${SG}에서 새 오피스텔과 세입자를 나눠 가질 일은 0건이에요.`;
+      if (sup || job) L.push({ k: 'osup', t, d: [fact, cmp, '', so] });
+    }
+    if (u && u.sc && (c.pass || []).length) {
+      const h = c.pass[0], sc = u.sc[h];
+      if (sc != null) L.push({ k: 'score', t: `${h}년 보유 종합 점수 ${sc}점 — ${SD} 오피스텔 중 ${(c.scoreRank || (v => v))(sc)}.`,
+        d: [`${A} 수익률과 가격 흐름을 합친 ${h}년 점수가 ${sc}점이에요(100점 만점, 50점이 가운데).`, '', '', `그래서 ${SD} 오피스텔 100곳을 줄 세우면 ${100 - sc}등 안팎이에요.`] });
+    }
+    /* 검증 카드: 오피스텔 점수(bt) 중 시험 기록이 있는 기간 */
+    const trust = Object.keys(c.bt || {}).filter(h => (c.bt[h].oos_all || []).filter(o => o && o.top20 != null).length).map(h => {
+      const m = c.bt[h], per = m.oos_all.filter(o => o && o.t0 && o.top20 != null).sort((x, y) => String(x.t0).localeCompare(String(y.t0)));
+      return { h: +h, n: m.oos_all.filter(o => o && o.top20 != null).length, hit: m.oos_hit || 0, ok: m.status === 'pass', avg: m.oos_avg, per: per.map(o => [String(o.t0), o.top20, o.bottom20]) };
+    });
+    return mk(y ? 'offi' : 'offiR', head, L, { names: [nm, SG].concat(((sup && sup.rows) || []).map(r => r[0])).filter(Boolean), trust: u && u.sc ? trust : [], headH: [],
+      tunit: '오피스텔', tbase: '같은 시·군·구 평균', tscope: '전국 오피스텔로 시험한 결과예요.' });
+  }
+
+  /* ---------- 갈아타기 switch/ ----------
+     c = { sale, acq, cgt, status(loss|free|part|tax), gain, why(비과세·중과 이유 한 줄), holdY, residM, fee, oldLoan, net, extra, cash, P, L, by(LTV|CAP|DSR|BAN), ltv, dsrL, rate, term,
+           pick{apt, band, sido, sgg, fv, rank, P, mon, ch3}, oneOff, P2, newMonthly, keepMonthly, n3 } */
+  function sw(c) {
+    const W = won, L = [];
+    if (!(c.sale > 0)) return mk('sw', '', []);
+    const cg = c.cgt > 0 ? W(c.cgt) : '0원';
+    let head = `지금 집을 ${W(c.sale)}에 팔면 양도세 ${cg}` + (c.status === 'free' ? '(1세대 1주택 비과세)' : '') + `·대출 상환 뒤 ${W(Math.max(0, c.net)) || '0원'}이 남아`;
+    if (c.P > 0) { const df = c.P - c.sale; head += `, 새 대출 ${W(c.L) || '0원'}을 더해 최대 ${W(c.P)} 집까지 갈아탈 수 있어요 — 지금 집보다 ${Math.abs(df) < c.sale * 0.01 ? '비슷한 값이에요.' : `${W(Math.abs(df))} ${df > 0 ? '더 비싼' : '싼'} 집이에요.`}`; }
+    else head += '요. 이 돈으로는 갈아탈 집 값을 계산할 수 없어요(0원).';
+    {
+      const eff = c.gain > 0 ? c.cgt / c.gain : 0;
+      const t = c.status === 'loss' ? `양도차익이 0원 이하라 양도세가 0원이에요.` : c.status === 'free' ? `양도세 0원 — 1세대 1주택 비과세(보유 ${c.holdY}년).`
+        : `양도세 ${cg}(지방세 포함) — 양도차익 ${W(c.gain)}의 ${P1(eff)}예요.`;
+      const fact = `${W(c.acq)}에 사서 ${W(c.sale)}에 팔면 필요경비를 뺀 양도차익이 ${c.gain > 0 ? W(c.gain) : '0원'}이에요.`;
+      const cmp = c.why ? `${c.why}` + (/[.요]$/.test(c.why) ? '' : '.') : '';
+      const so = c.tip || `그래서 매도 중개보수 ${J(W(c.fee), '과', '와')} 대출 상환 ${W(c.oldLoan) || '0원'}까지 빼면 손에 ${W(Math.max(0, c.net)) || '0원'}이 남아요.`;
+      L.push({ k: 'cgt', t, d: [fact, cmp && /\d/.test(cmp) ? cmp : '', '', so] });
+    }
+    if (c.P > 0) {
+      const BY = { LTV: `집값의 ${Math.round(c.ltv * 100)}%(LTV)`, CAP: '가격구간별 대출 한도', DSR: '소득 기준 상환 한도(DSR 40%)', BAN: '다주택 주담대 금지' }[c.by] || c.by;
+      const t = c.by === 'BAN' ? `새 대출 0원 — 다주택은 이 지역에서 주택구입 주담대를 받을 수 없어요.` : `새 대출 ${W(c.L)} — 한도는 ${BY}에 맞춰 정해져요.`;
+      const fact = `최대 집값 ${W(c.P)} 기준으로 LTV 한도는 ${W(c.P * c.ltv) || '0원'}, 소득(DSR) 한도는 ${W(c.dsrL) || '0원'}이에요.`;
+      const cmp = `자기자본 ${W(c.cash)} + 새 대출 ${W(c.L) || '0원'}에서 취득세·중개 ${J(W(c.buyCost), '과', '와')} 기타 ${W(c.etc) || '0원'}을 빼면 집값 ${J(W(c.P), '이에요', '예요')}.`;
+      const so = c.by === 'DSR' ? `그래서 연소득이 1,000만 원 늘면 한도가 약 ${W(c.dsrPer1k)} 늘어요.` : c.by === 'LTV' ? `그래서 자기자본이 1,000만 원 늘면 살 수 있는 집값이 약 ${W(Math.round(1000 / (1 - c.ltv)))} 늘어요.` : `그래서 대출 한도는 이 지역·가격 규칙(${W(c.L) || '0원'})에 묶여 있어요.`;
+      L.push({ k: 'loan', t, d: [fact, cmp, '', so] });
+    }
+    if (c.oneOff > 0 && c.P2 > 0) {
+      const up = c.P2 > c.sale, be = up ? c.oneOff / (c.P2 - c.sale) : null;
+      const t = `한 번에 나가는 비용 ${W(c.oneOff)}` + (be != null ? ` — 두 집이 같이 ${P1(be)} 넘게 올라야 메워져요.` : ` — 더 싼 집으로 옮겨 집값 차이 ${J(W(c.sale - c.P2), '으로', '로')} 채워요.`);
+      const fact = `양도세 ${cg}, 매도 중개보수 ${W(c.fee)}, 새 집 취득세·중개 ${W(c.buyCost2)}, 기타 ${W(c.etc) || '0원'}을 더한 값이에요.`;
+      const cmp = c.n3 != null && c.pickName ? `비교 단지 ${c.pickName}의 약 3년 평당가 변동은 ${pctSg(c.n3)}예요.` : '';
+      const mon = c.keepMonthly != null ? `매달 대출 상환은 ${n0(c.newMonthly)}만 원으로 지금보다 ${n0(Math.abs(c.newMonthly - c.keepMonthly))}만 원 ${c.newMonthly >= c.keepMonthly ? '늘어요' : '줄어요'}.` : `매달 대출 상환은 ${n0(c.newMonthly)}만 원이에요.`;
+      const so = be != null ? `그래서 갈아탄 뒤 집값이 ${P1(be)} 넘게 오르지 않으면 지금 집에 남는 쪽이 순자산이 더 커요. ${mon}` : `그래서 갈아타면 순자산은 비용만큼 줄지만 대출은 ${W(c.L) || '0원'}으로 맞춰져요. ${mon}`;
+      L.push({ k: 'cost', t, d: [fact, cmp, '', so] });
+    }
+    if (c.pick && c.pick.fv != null) {
+      const p = c.pick;
+      const t = `예산 안 미래가치 1위: ${p.apt} ${p.band}(${p.fv}점, ${p.rank}) — 추정 시세 ${W(p.P)}, 매달 상환 ${n0(p.mon)}만 원.`;
+      const fact = `${p.apt} ${p.band}는 ${p.sido} ${p.sgg} ${p.dong} 단지예요(추정 시세 ${W(p.P)}).`;
+      const cmp = `예산 안에 드는 단지 ${n0(p.total)}곳 중 미래가치 점수가 가장 높아요.` + (p.ch3 != null ? ` 약 3년 평당가 변동은 ${pctSg(p.ch3)}예요.` : '');
+      const so = `그래서 대출·취득세를 다 내고도 ${W(p.left) || '0원'}이 남는 단지 중 가장 먼저 볼 곳이에요.`;
+      L.push({ k: 'top', t, d: [fact, cmp, '', so] });
+    }
+    return mk('sw', head, L, { names: c.pick ? [c.pick.apt, c.pick.sgg, c.pick.dong] : [] });
+  }
+
+  /* ---------- 청약 chungyak/ ----------
+     c = { my, h, d, cc(무주택·부양가족·통장 점수), items([{name, sido, sgg, band, lo, hi, g(hi|mid|lo), need}] 가능성 순), cnt{hi, mid, lo}, scope, nNotice,
+           hist{sido, span, n, hit, pct, med}, years(다음 목표까지 몇 년, 목표 점수) } */
+  function cy(c) {
+    if (c.my == null) return mk('cy', '', []);
+    const my = c.my, it = c.items || [], hi = it.filter(x => x.g === 'hi'), mid = it.filter(x => x.g === 'mid');
+    const uniq = a => [...new Set(a.map(x => x.name))];
+    const rng = x => x.lo === x.hi ? `${x.lo}점` : `${x.lo}~${x.hi}점`;
+    const top = hi[0] || mid[0] || it[0];
+    let head;
+    if (top) {
+      head = `내 가점 ${my}점은 ${top.name} ${top.band} 예상 커트라인(${rng(top)})${top.g === 'hi' ? '보다 높아요' : top.g === 'mid' ? '에 들어가요' : `보다 ${top.need}점 낮아요`}`
+        + (hi.length ? ` — 당첨 가능성 높은 단지 ${uniq(hi).length}곳.` : mid.length ? ` — 경합인 단지 ${uniq(mid).length}곳.` : ` — 지금 공고 ${n0(c.nNotice || 0)}곳 중 가능성 높은 단지는 0곳이에요.`);
+    } else if (c.hist && c.hist.n) head = `내 가점 ${my}점이면 ${c.hist.sido} ${c.hist.span} 주택형 ${n0(c.hist.n)}개 중 ${c.hist.pct}%에서 당첨될 점수였어요.`;
+    else head = `내 가점은 84점 만점 중 ${my}점이에요.`;
+    const L = [];
+    {
+      const P = [['무주택기간', c.h, 32], ['부양가족', c.d, 35], ['통장 가입기간', c.cc, 17]].filter(x => x[1] != null);
+      const gap = P.slice().sort((a, b) => (b[2] - b[1]) - (a[2] - a[1]))[0];
+      L.push({ k: 'pick', t: `가점 ${my}점 = 무주택기간 ${c.h}점 + 부양가족 ${c.d}점 + 통장 ${c.cc}점(84점 만점의 ${Math.round(my / 84 * 100)}%).`,
+        d: [`무주택기간 ${c.h}/32점, 부양가족 ${c.d}/35점, 청약통장 가입기간 ${c.cc}/17점이에요.`, `가장 많이 남은 칸은 ${gap[0]}으로 만점까지 ${gap[2] - gap[1]}점이에요.`, '',
+          `그래서 점수를 올릴 여지가 가장 큰 건 ${gap[0]}(${gap[2] - gap[1]}점)이에요.`] });
+    }
+    if (it.length) {
+      const show = (hi.length ? hi : mid.length ? mid : it).slice(0, 3);
+      const t = `지금 공고 중 가능성 높음 ${uniq(hi).length}곳 · 경합 ${uniq(mid).length}곳 — ` + (hi.length || mid.length ? '' : '가장 가까운 곳은 ') + show.map(x => `${x.name} ${x.band}(${rng(x)})`).join(', ') + '.';
+      const fact = show.map(x => `${x.name}(${x.sido} ${x.sgg}) ${x.band}의 예상 최저 당첨 가점은 ${J(rng(x), '이에요', '예요')}`).join('. ') + '.';
+      const cmp = `${c.scope} 민영 공고 ${n0(c.nNotice || 0)}곳의 면적대별로 보면 가능성 높음 ${c.cnt.hi}개, 경합 ${c.cnt.mid}개, 낮음 ${c.cnt.lo}개예요.`;
+      const so = hi.length ? `그래서 ${hi[0].name} ${hi[0].band}처럼 커트라인 위쪽(${hi[0].hi}점) 이상인 곳부터 1순위로 넣어 보세요.` : mid.length ? `그래서 ${mid[0].name} ${mid[0].band}는 커트라인 위쪽(${mid[0].hi}점)까지 ${mid[0].need}점 남은 경합이에요.` : `그래서 지금 공고는 커트라인 아래쪽까지 가장 가까운 곳도 ${top.need}점 모자라요.`;
+      L.push({ k: 'cut', t, d: [fact, cmp, '', so] });
+    }
+    if (c.hist && c.hist.n) {
+      const H = c.hist;
+      L.push({ k: 'past', t: `${H.sido} ${H.span} 주택형 ${n0(H.n)}개 중 ${H.pct}%(${n0(H.hit)}개)는 최저 당첨 가점이 ${my}점 이하였어요.`,
+        d: [`청약홈 공식 결과로 ${H.sido} ${H.span} 공고 주택형 ${n0(H.n)}개의 최저 당첨 가점을 모았어요.`, `최저 당첨 가점 중간값은 ${H.med}점이고, 내 점수는 그보다 ${Math.abs(my - H.med)}점 ${my >= H.med ? '높아요' : '낮아요'}.`,
+          `${n0(H.hit)}개 주택형은 내 점수 이하에서 당첨자가 나왔어요.`, `그래서 ${H.sido}에서는 과거 주택형 10개 중 약 ${Math.round(H.pct / 10)}개가 내 점수로 닿는 수준이었어요.`] });
+    }
+    if (c.years && c.years.y > 0) {
+      const Y = c.years;
+      L.push({ k: 'time', t: `지금 조건이 이어지면 약 ${Y.y}년 뒤 ${Y.target}점(${Y.name} 커트라인 위쪽)에 닿아요.`,
+        d: [`무주택기간·통장 가입기간이 1년씩 늘 때마다 점수를 다시 매겼어요(부양가족 ${c.d}점은 그대로).`, `지금 ${my}점에서 ${Y.target - my}점이 더 필요해요.`, '',
+          `그래서 ${Y.y}년 안에 청약할 계획이면 ${Y.name}급 단지는 추첨제 물량도 함께 노려야 해요(목표 ${Y.target}점).`] });
+    }
+    return mk('cy', head, L, { names: it.map(x => x.name) });
+  }
+
+  /* ---------- 화면 자료 → 빌더 입력(화면과 tools/narrative-cat-test.js 가 같이 씀) ---------- */
+  /* 전월세: o = { IX, RX, R(JDJ_RENT), PL, code, kind, name, dong, band, u, meta, dep, pub, senior, pol(policy.json), PV(JDJPolicy) } */
+  function jeonseFrom(o) {
+    const R = o.R, sm = R.summary(o.u, o.meta), g = (o.RX && o.RX.sgg && o.RX.sgg[o.code]) || {};
+    const ri = o.PL && o.PL.regionInfo ? o.PL.regionInfo(o.IX, o.code) : { short: '', unit: '구', name: '' };
+    const sdn = ((o.IX.sgg || {})[o.code] || {}).sido;
+    const peers = Object.keys(o.RX.sgg || {}).filter(k => ((o.IX.sgg || {})[k] || {}).sido === sdn).map(k => ({ code: k, sup: ((o.RX.sgg[k].sup) || {}).n || 0 }));
+    const gs = R.guSeries(g), gch1 = gs ? R.change(gs.s, gs.months, 12) : null, gLast = gs ? R.latest(gs.s, gs.months) : null;
+    let pol = null;
+    if (o.pol && o.PV) {
+      const f = o.PV.forCodes(o.pol, [{ sgg: o.code, dong: o.dong }], 'jeonse');
+      pol = { now: f.now.map(x => ({ p: x.p, badge: o.PV.badge(x.p)[0], rec: ((o.pol.recent || {})[o.code] || {})[x.p.id] || [] })) };
+    }
+    return { name: o.name, dong: o.dong, band: o.band, kind: o.kind, code: o.code, sgg: ri.name || ((o.IX.sgg || {})[o.code] || {}).name, sido: ri.short, unit: ri.unit,
+      sm, g, peers, gch1, gLast, area: o.u && o.u[4], jrs: ((o.u && o.u[11]) || {}).jrs, dep: o.dep, pub: o.pub, senior: o.senior, hug: R.HUG, pol };
+  }
+  /* 빌라: o = { b, CUR(구 파일 {b, z, dm, meta}), IDX(villa index), PL } */
+  function villaFrom(o) {
+    return { b: o.b, zones: o.CUR.z || [], dm: o.CUR.dm || {}, dongB: (o.CUR.b || []).filter(x => x.d === o.b.d), allB: o.CUR.b || [], sgg: (o.CUR.meta || {}).n || '', ym: o.IDX && o.IDX.to, PL: o.PL };
+  }
+  /* 오피스텔: o = { u(없으면 지역만), OX(offi index), g, O(JDJ_OFFI), sggName, sidoShort } */
+  function offiFrom(o) {
+    const O = o.O, rate = o.OX && o.OX.rate;
+    return { u: o.u || null, s: (o.OX && o.OX.sgg && o.OX.sgg[o.g]) || {}, sgg: o.sggName, sido: o.sidoShort, name: o.u ? O.nameOf(o.u) : '',
+      mort: rate ? O.lastRate(rate.mort) : null, base: rate ? O.lastRate(rate.base) : null, bt: (o.OX && o.OX.bt) || {}, pass: O.passed(o.OX),
+      rankText: O.rankText, scoreRank: O.scoreRank };
+  }
+  /* 갈아타기: o = { L(화면 last), SW(JDJ_SWITCH), x(비교·1위 단지, 선택), total, keepMonthly, why, tip, pickRank, sgg(code→{sido, name}), n3 } */
+  function swFrom(o) {
+    const L = o.L, S = L.S, R = S.r || {}, x = o.x, W = 10000;
+    const status = R.gain <= 0 ? 'loss' : R.exempt === 'full' ? 'free' : R.exempt === 'partial' ? 'part' : 'tax';
+    const ld = L.ld || { L: 0, by: 'LTV' }, c = L.c || {};
+    const P2 = x ? x.P : (L.T || L.P), nd2 = P2 ? (x ? x.nd : o.SW.need(P2, c, L.dsr, L.oo)) : null;
+    const cm = nd2 ? o.SW.compare({ price: L.sale, oldLoan: L.oldLoan, oldMonthly: o.keepMonthly || null, extra: L.extra }, { S, P: P2, nd: nd2, c: x ? x.c : c, etc: L.etc, extra: L.extra }) : null;
+    const dsr2 = c.income ? o.SW.dsrMax(Object.assign({}, c, { income: c.income + 1000 })) - o.SW.dsrMax(c) : 0;
+    const sg = x && o.sgg ? (o.sgg(x.code) || {}) : {};
+    return { sale: L.sale, acq: o.acq, cgt: S.cgt, status, gain: Math.max(0, (R.gain || 0) / W), holdY: R.holdY, fee: S.fee, oldLoan: L.oldLoan, net: S.net, cash: L.cash,
+      P: L.P, L: ld.L, by: ld.by, ltv: c.ltv || 0, dsrL: L.dsr, etc: L.etc, buyCost: L.P ? o.SW.need(L.P, c, L.dsr, L.oo).cost.total : 0, dsrPer1k: Math.round(dsr2),
+      why: o.why, tip: o.tip, oneOff: cm ? cm.oneOff : 0, P2: P2 || 0, buyCost2: nd2 ? nd2.cost.total : 0, newMonthly: cm ? cm.newMonthly : 0, keepMonthly: cm ? cm.keepMonthly : null,
+      n3: x && x.ch3 != null ? x.ch3 : null, pickName: x ? `${x.apt} ${x.band}` : '',
+      pick: x && x.hasFv ? { apt: x.apt, band: x.band, dong: x.dong, sido: sg.sido || '', sgg: sg.name || '', fv: x.disp != null ? x.disp : x.fx.fv, rank: o.pickRank || '', P: x.P, mon: x.mon, ch3: x.ch3, left: x.left, total: o.total || 0 } : null };
+  }
+  const cat = { jeonse, villa, offi, sw, cy, jeonseFrom, villaFrom, offiFrom, swFrom };
+
   /* ---------- 문장 규칙 검사(tools/narrative-test.js) ---------- */
   function sentences(t) { return String(t || '').split(/(?<=[.?!])\s+/).map(s => s.trim()).filter(Boolean); }
   function lint(N) {
@@ -496,7 +951,7 @@
       const f0 = t.per[0][0], rest = [...new Set(t.per.slice(1).map(p => p[0].slice(0, 4)))];
       const txt = `${ymT(f0)}까지의 자료만으로 ${t.h}년 점수를 매긴 뒤, 실제 ${t.h}년 뒤(${+f0.slice(0, 4) + t.h}년 ${parseInt(f0.slice(4, 6), 10)}월) 시세와 맞춰 봤어요.`
         + (rest.length ? ` 같은 방법으로 ${rest.join('·')}년에도 해 봤어요.` : '')
-        + ` 결과: ${t.n}번 중 ${t.hit}번, 점수가 높았던 단지들이 실제로 같은 구 평균보다 더 많이 올랐어요.`
+        + ` 결과: ${t.n}번 중 ${t.hit}번, 점수가 높았던 ${N.tunit || '단지'}들이 실제로 ${N.tbase || '같은 구 평균'}보다 더 많이 올랐어요.`
         + (t.ok ? ((N.headH || []).includes(t.h) ? ' 그래서 이 점수를 결론에 썼어요.' : ' 그래서 이 점수를 보유 기간별 요약에 썼어요.') : ' 맞은 횟수가 적어서 결론에는 넣지 않고 참고로만 보여 드려요.');
       return `<div class="nar-tone ${t.ok ? 'ok' : 'ref'}"><b class="nar-th">${t.h}년 점수 · ${t.ok ? ((N.headH || []).includes(t.h) ? '결론에 씀' : '요약에 씀') : '참고'}</b><p>${E(txt)}</p>`
         + `<table class="nar-ttbl"><thead><tr><th style="width:28%">시점</th><th class="num">상위 20%</th><th class="num">하위 20%</th><th>결과</th></tr></thead><tbody>`
@@ -505,13 +960,13 @@
     };
     const trust = T.length ? `<div class="nar-trust"><button type="button" class="nar-tbtn" data-nar-trust aria-expanded="false" aria-controls="${id}-trust">이 점수는 이렇게 검증했어요</button>`
       + `<div class="nar-trust-body" id="${id}-trust" hidden>` + T.slice().sort((a, b) => (b.ok - a.ok) || (a.h - b.h)).map(one).join('')
-      + `<p class="nar-tnote">상위 20%·하위 20%는 점수 순으로 줄 세웠을 때 위·아래 20% 단지예요. 표의 숫자는 점수를 매긴 때부터 그 기간 동안 같은 구 평균보다 더(+)·덜(−) 오른 정도예요. 점수 상위 20% 단지가 같은 구 평균보다 더 올랐으면 맞음이에요. ${E(whereNote(T, N.sidoShort))}</p></div></div>` : '';
-    return `<section class="nar" id="${E(id)}" data-nar="1">`
+      + `<p class="nar-tnote">상위 20%·하위 20%는 점수 순으로 줄 세웠을 때 위·아래 20% ${N.tunit || '단지'}예요. 표의 숫자는 점수를 매긴 때부터 그 기간 동안 ${N.tbase || '같은 구 평균'}보다 더(+)·덜(−) 오른 정도예요. 점수 상위 20% ${N.tunit || '단지'}가 ${N.tbase || '같은 구 평균'}보다 더 올랐으면 맞음이에요. ${N.tscope ? E(N.tscope) : E(whereNote(T, N.sidoShort))}</p></div></div>` : '';
+    return `<section class="nar" id="${E(id)}" data-nar="1" data-nogloss${N.cat ? ` data-cat="${E(N.cat)}"` : ''}>`
       + `<p class="nar-head">${E(N.head)}</p>` + trust
       + (N.gap ? `<p class="nar-gap">${E(N.gap)}</p>` : '')
       + `<div class="nar-tools"><span>핵심 요약 ${N.lines.length}줄</span><button type="button" class="nar-all" data-nar-all aria-expanded="false">전체 펼치기</button></div>`
       + `<ol class="nar-list">` + N.lines.map((x, i) => {
-        const open = i === 0, pid = `${id}-d${i}`, ps = x.d.map((p, j) => p ? `<p class="nar-p"><b>${STEP[j]}</b>${E(p)}</p>` : '').join('');
+        const open = i === 0 && !o.closed, pid = `${id}-d${i}`, ps = x.d.map((p, j) => p ? `<p class="nar-p"><b>${(N.step || STEP)[j]}</b>${E(p)}</p>` : '').join('');
         return `<li class="nar-li" data-k="${E(x.k)}"><div class="nar-sum">${E(x.t)}</div>`
           + (x.k === 'fit' && N.dim && N.dim.length ? `<div class="nar-dim">참고(과거 시험에서 잘 맞지 않았어요): ${E(N.dim.join(', '))}</div>` : '')
           + `<button type="button" class="nar-more" data-nar-k="${E(x.k)}" aria-expanded="${open}" aria-controls="${pid}">${open ? '접기' : '자세히 보기'}</button>`
@@ -570,7 +1025,7 @@
     const PLx = root.JDJ_PLAIN;
     if (PLx && PLx.tipDom) PLx.tipDom(el, { blockSel: '.nar-head,.nar-gap,.nar-sum,.nar-dim,.nar-p,.nar-tone p,.nar-tnote', onOpen: () => stat('term') });
   }
-  const NAR = { build, html, bind, lint, css, sentences, BANNED, KINDS };
+  const NAR = { build, html, bind, lint, css, sentences, BANNED, KINDS, CKINDS, cat };
   root.JDJ_NAR = NAR;
   if (typeof module !== 'undefined' && module.exports) module.exports = NAR;
 })(typeof window !== 'undefined' ? window : globalThis);

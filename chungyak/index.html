@@ -30,7 +30,7 @@
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/chungyak.png">
 <script>window.JDJ_CONFIG = { tool:'chungyak', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
-<script src="../assets/stat.js?v=6"></script>
+<script src="../assets/stat.js?v=7"></script>
 <script src="../assets/share.js?v=5"></script>
 <script src="../assets/sale-status.js?v=1"></script>
 <script src="../assets/area-watch.js?v=1"></script>
@@ -122,6 +122,8 @@ table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}
 th{text-align:left;font-size:13.5px;color:var(--muted);font-weight:700;padding:6px 4px;border-bottom:2px solid var(--line)}
 td{padding:7px 4px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;vertical-align:top}
 .num{text-align:right;white-space:nowrap}
+th.num{white-space:normal;word-break:keep-all}
+#hOut td:first-child{overflow-wrap:anywhere}
 .up{color:var(--green);font-weight:900}.dn{color:var(--red);font-weight:900}
 .empty,.loading{padding:24px 16px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px;background:#fff;font-size:15px}
 .morebtn{display:block;width:100%;margin-top:12px;padding:12px;font:inherit;font-weight:900;font-size:15.5px;background:#fff;color:var(--olive);border:1.5px dashed var(--gold);border-radius:10px;cursor:pointer}
@@ -259,6 +261,7 @@ td{border-bottom:1px solid var(--line2)}
     <div class="box" style="margin-top:14px">
       <div class="qn">내 청약 가점 (기준일 <span id="refShow"></span>)</div>
       <div class="total"><div class="big"><span id="tot">0</span><small> / 84점</small></div><span class="tbtns"><button class="btn ghost" id="redo" type="button" style="padding:8px 12px;font-size:14px">다시 입력</button></span></div>
+      <div id="narCy"></div>
       <div class="bars" id="bars"></div>
       <div class="caution">무주택 인정 예외(소형·저가주택 등), 부양가족 인정 여부는 청약 신청 전 청약홈 가점 계산기와 입주자모집공고문으로 꼭 확인하세요. 가점을 잘못 입력해 당첨되면 부적격 처리될 수 있습니다.</div>
       <label style="display:block;font-size:13.5px;font-weight:700;color:var(--muted);margin-top:12px">기준일(입주자모집공고일) 바꾸기</label>
@@ -332,6 +335,7 @@ td{border-bottom:1px solid var(--line2)}
 <div class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 장대장부동산그룹 · <a href="../">집예보 홈</a></div>
 
 <script src="cy-engine.js?v=2"></script>
+<script src="../assets/narrative.js?v=4"></script>
 <script>
 /* 계산 엔진은 cy-engine.js (node 테스트: tools/chungyak-test.js) */
 const { CY, SIDO, CAPITAL, sidoNorm, sidoLbl, eligibility, bestSpecial, lottery, cutOf, diag, yearsTo, bandOf, noticeSido } = window.JDJ_CYE;
@@ -417,7 +421,7 @@ function showResult(scroll) {
   const bar = (t, max, x) => `<div class="bar"><div class="h"><span>${t}</span><span>${x.pts} / ${max}점</span></div><div class="t"><i style="width:${x.pts / max * 100}%"></i></div><div class="why">${esc(x.why)}</div></div>`;
   $('bars').innerHTML = bar('무주택기간', 32, r.h) + bar('부양가족 수', 35, r.d) + bar('청약통장 가입기간', 17, r.c);
   $('wiz').hidden = true; $('result').hidden = false;
-  renderElig(); renderHist(); renderGen(); renderNotices();
+  renderElig(); renderHist(); renderGen(); renderNotices(); narCy();
   shareCy();
   if (scroll) { $('result').scrollIntoView({ behavior: 'smooth', block: 'start' }); if (window.JDJ) JDJ.track('chungyak_score', { score_band: window.jdjStat ? jdjStat.score(r.sum) : '' });
     if (window.jdjStat) { jdjStat('feature_use', { feature: 'chungyak' }); jdjStat('chungyak_result', { score_band: jdjStat.score(r.sum), home_own: A.own ? '유주택' : '무주택' }); } }
@@ -509,9 +513,10 @@ async function renderHist() {
   const fromYm = (() => { const d = new Date(now.getFullYear(), now.getMonth() - HP, 1); return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}`; })();
   // 행: [시군구, 단지, 공고년월, 전용(㎡), 면적대, 거주구분, 최저, 평균, 최고, 1순위 경쟁률, 주택관리번호]
   const rows = SC[sd.f].filter(x => x[2] >= fromYm && (HB === 'all' || String(x[4]) === HB) && (HR === 'all' || x[5] === 'h'));
-  if (!rows.length) { $('hOut').innerHTML = '<div class="empty">이 조건의 공식 당첨 가점 자료가 없습니다. 기간이나 면적을 바꿔 보세요.</div>'; return; }
+  if (!rows.length) { $('hOut').innerHTML = '<div class="empty">이 조건의 공식 당첨 가점 자료가 없습니다. 기간이나 면적을 바꿔 보세요.</div>'; NAR_H = null; narCy(); return; }
   const hit = rows.filter(x => x[6] <= my), pct = Math.round(hit.length / rows.length * 100);
   const mins = rows.map(x => x[6]).sort((a, b) => a - b), med = mins[Math.floor(mins.length / 2)];
+  NAR_H = { sido: sidoLbl(sd.n), span: (HP === 12 ? '최근 1년' : '최근 3년') + (HB === 'all' ? '' : ' ' + BAND_TXT[+HB]), n: rows.length, hit: hit.length, pct, med }; narCy();
   // 분포(최저 당첨 가점, 5점 간격)
   const bins = Array(17).fill(0); mins.forEach(v => bins[Math.min(16, Math.floor(v / 5))]++);
   const mx = Math.max(...bins), W = 340, H = 120, bw = W / 17;
@@ -529,6 +534,23 @@ async function renderHist() {
     <div style="font-size:13.5px;color:var(--muted);margin-top:8px">자료 기간 ${ymTxt(IDX.scores.from)}~${ymTxt(IDX.scores.to)} 공고 · 갱신 ${esc(IDX.updated)} · 가점이 없는 주택형(미달·추첨 등)은 뺐습니다.</div>`;
 }
 
+/* 분석 설명(assets/narrative.js cat.cy): 결과 맨 위 한 줄 결론(내 가점 vs 진행 공고 예상 커트라인) → 요약 → 자세히 보기. 가점·답은 화면 안에서만 씀 */
+const NARON = !/[?&]nar=0(&|$)/.test(location.search) && !!window.JDJ_NAR;
+let NAR_G = null, NAR_H = null;
+function narCy() {
+  const box = $('narCy'); if (!NARON || !box || !LAST) return;
+  try {
+    const G = NAR_G || { items: [], cnt: { hi: 0, mid: 0, lo: 0 }, scope: '', nNotice: 0 };
+    const tgt = G.items.find(x => x.g !== 'hi'), yr = tgt ? yearsTo(A, A.ref, tgt.hi) : null;
+    const N = JDJ_NAR.cat.cy({ my: LAST.sum, h: LAST.h.pts, d: LAST.d.pts, cc: LAST.c.pts, items: G.items, cnt: G.cnt, scope: G.scope, nNotice: G.nNotice, hist: NAR_H,
+      years: yr ? { y: yr, target: tgt.hi, name: tgt.name } : null });
+    if (!N.head) { box.innerHTML = ''; return; }
+    const open = [...box.querySelectorAll('.nar-more[aria-expanded="true"]')].map(b => b.dataset.narK), had = !!box.firstChild;
+    box.innerHTML = JDJ_NAR.html(N, { id: 'narCys', closed: had });
+    JDJ_NAR.bind(box.firstElementChild);
+    if (had) open.forEach(k => { const b = box.querySelector(`.nar-more[data-nar-k="${k}"]`), d = b && $(b.getAttribute('aria-controls')); if (d) { d.hidden = false; b.setAttribute('aria-expanded', 'true'); b.textContent = '접기'; } });
+  } catch (e) { console.warn('nar', e); box.innerHTML = ''; }
+}
 /* 분양 공고 + 예상 당첨 가점 */
 let NOT = [], PRED = {}, PRED_ST = 'wait', GEN_SCOPE = 'mine';
 const BAND_TXT = ['60㎡ 이하', '60~85㎡', '85㎡ 초과'];
@@ -629,6 +651,9 @@ function renderGen() {
   }));
   const ord = { hi: 0, mid: 1, lo: 2 };
   items.sort((a, b) => ord[a.d.g] - ord[b.d.g] || a.d.need - b.d.need);
+  NAR_G = { items: items.map(({ n, o, d }) => ({ name: n.n, sido: sidoLbl(noticeSido(n)), sgg: n.g || '', band: BAND_TXT[o.band], lo: o.p.lo, hi: o.p.hi, g: d.g, need: d.need })),
+    cnt: { hi: cnt.hi, mid: cnt.mid, lo: cnt.lo }, scope: scope === 'mine' ? sidoLbl(mine) : '전국', nNotice: list.length };
+  narCy();
   { const nn = g => new Set(items.filter(x => x.d.g === g).map(x => x.n.no)).size;   /* 공유 요약: 단지(공고) 수만 */
     GEN_SUM = { n: list.length, hi: nn('hi'), mid: nn('mid'), scope: scope === 'mine' ? sidoLbl(mine) : '전국' }; }
   const seg = `<div class="seg" id="genSeg" style="margin-bottom:10px"><button type="button" data-s="mine"${scope === 'mine' ? ' class="on"' : ''}>${esc(sidoLbl(mine))}${inMine.length ? '' : ' (현재 공고 없음)'}</button><button type="button" data-s="all"${scope === 'all' ? ' class="on"' : ''}>전국</button></div>`;
