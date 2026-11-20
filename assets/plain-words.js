@@ -712,5 +712,64 @@
     run();
   }
 
-  root.JDJ_PLAIN = { ageOf, ageLabel, ageText, scParts, scText, popLines, STAGE, GL_PAGE, glossDom, autoGloss, gloss, J, won, eokR, rank, more, regionInfo, rankBase, regionRank, regionPlace, topPct, regionText, regionLine, evid, evHtml, ddText, rcText, momText, schText, stageName, rzText, jrStats, jrText, VOK, hzLabel, checkText, easy, ymKo, spanKo, delayText, unitsKo, supplyLines, renewalLine, whyItems, whyLine, whyTable, hzGapLine };
+  /* ---------- 누르면 바로 아래 설명 상자가 열리는 용어 (분석 설명 등) ----------
+     어려운 용어 밑에 점선, 누르면(휴대폰 탭·PC 클릭 같음) 그 문단 바로 아래 작은 설명 상자. 한 번에 하나만 열림.
+     같은 묶음(blockSel 로 고른 문단) 안에서 용어마다 처음 한 번만 표시. onOpen(용어) 로 집계 연결. */
+  const TIP = {
+    '%p': '두 비율의 차이예요. 예를 들어 5% 오른 곳과 3% 오른 곳의 차이는 2%p예요.',
+    '전세가율': '집값 대비 전셋값 비율이에요. 10억 집의 전세가 6억이면 60%예요. 높을수록 실제로 살려는 수요가 받쳐 준다고 봐요.',
+    '평당': '전용면적 3.3㎡(1평)당 가격이에요. 크기가 다른 집을 같은 기준으로 비교할 때 써요.',
+    '중간값': '여러 값을 크기순으로 줄 세웠을 때 가운데 값이에요. 아주 비싸거나 싼 몇 곳에 덜 흔들려요.',
+    '상위': '같은 지역 단지를 점수 순으로 줄 세웠을 때의 자리예요. 상위 10%면 100곳 중 10등 안쪽이에요.',
+    '하위': '같은 지역 단지를 점수 순으로 줄 세웠을 때의 자리예요. 하위 10%면 100곳 중 뒤에서 10등 안쪽이에요.',
+    '과거 시험': '과거 시점으로 돌아가 그때 자료로만 순위를 매긴 뒤, 실제로 몇 년 뒤 결과와 맞았는지 확인한 시험이에요.',
+    '갭': '집값과 전셋값의 차이예요. 전세를 끼고 살 때 내 돈이 드는 만큼이에요.'
+  };
+  const TIP_RE = [['%p', /\d%p/], ['전세가율', /전세가율/], ['평당', /평당/], ['중간값', /중간값/], ['상위', /상위 \d+(~\d+)?%/], ['하위', /하위 \d+(~\d+)?%/], ['과거 시험', /과거 시험/], ['갭', /갭/]];
+  function tipDom(el, o) {
+    if (!el || !root.document) return;
+    o = o || {}; const doc = root.document, T = Object.assign({}, TIP, o.terms || {});
+    if (!doc.getElementById('jp-tip-css')) {
+      const st = doc.createElement('style'); st.id = 'jp-tip-css';
+      st.textContent = '.jp-tip{all:unset;cursor:pointer;border-bottom:1.5px dotted #8A6D12;color:inherit;font:inherit;line-height:inherit}.jp-tip:focus-visible{outline:2px solid #B8942A;outline-offset:1px}.jp-tip[aria-expanded="true"]{background:#F3E7C2}'
+        + '.jp-tipbox{margin:6px 0 4px;padding:8px 10px;background:#FFF8E1;border:1px solid #E6D9A8;border-radius:8px;font-size:13px;line-height:1.6;color:#4A3F1E;font-weight:500;word-break:keep-all}.jp-tipbox b{color:#8A6D12;margin-right:4px}';
+      (doc.head || doc.documentElement).appendChild(st);
+    }
+    const blocks = o.blockSel ? el.querySelectorAll(o.blockSel) : [el];
+    blocks.forEach(b => {
+      if (b.__tip) return; b.__tip = true;
+      const left = new Set(TIP_RE.map(r => r[0]).filter(k => T[k]));
+      const walker = doc.createTreeWalker(b, 4, { acceptNode: n => { const p = n.parentElement; if (!p || p.closest('.jp-tip,.jp-tipbox,button,script,style')) return 2; return 1; } });
+      const nodes = []; let n; while ((n = walker.nextNode())) nodes.push(n);
+      for (const node of nodes) {
+        let cur = node;
+        for (const [k, re] of TIP_RE) {
+          if (!left.has(k) || !cur || !cur.nodeValue) continue;
+          const m = re.exec(cur.nodeValue); if (!m) continue;
+          left.delete(k);
+          let i = m.index, len = m[0].length;
+          if (k === '%p') { i = m.index + 1; len = 2; }
+          const mid = cur.splitText(i), rest = mid.splitText(len);
+          const bt = doc.createElement('button'); bt.type = 'button'; bt.className = 'jp-tip'; bt.dataset.tip = k; bt.setAttribute('aria-expanded', 'false'); bt.textContent = mid.nodeValue;
+          mid.parentNode.replaceChild(bt, mid); cur = rest;
+        }
+      }
+    });
+    if (el.__tipBound) return; el.__tipBound = true;
+    el.addEventListener('click', e => {
+      const bt = e.target.closest('.jp-tip'); if (!bt || !el.contains(bt)) return;
+      e.preventDefault(); e.stopPropagation();
+      const open = bt.getAttribute('aria-expanded') === 'true';
+      el.querySelectorAll('.jp-tipbox').forEach(x => x.remove());
+      el.querySelectorAll('.jp-tip[aria-expanded="true"]').forEach(x => x.setAttribute('aria-expanded', 'false'));
+      if (open) return;
+      const blk = bt.closest(o.blockSel || 'p,li,div') || bt.parentNode;
+      const box = doc.createElement('div'); box.className = 'jp-tipbox'; box.setAttribute('role', 'note');
+      const kb = doc.createElement('b'); kb.textContent = bt.dataset.tip === '%p' ? '%p' : bt.dataset.tip; box.appendChild(kb); box.appendChild(doc.createTextNode(T[bt.dataset.tip] || ''));
+      blk.insertAdjacentElement('afterend', box); bt.setAttribute('aria-expanded', 'true');
+      if (o.onOpen) try { o.onOpen(bt.dataset.tip); } catch (_) { }
+    });
+  }
+
+  root.JDJ_PLAIN = { TIP, tipDom, ageOf, ageLabel, ageText, scParts, scText, popLines, STAGE, GL_PAGE, glossDom, autoGloss, gloss, J, won, eokR, rank, more, regionInfo, rankBase, regionRank, regionPlace, topPct, regionText, regionLine, evid, evHtml, ddText, rcText, momText, schText, stageName, rzText, jrStats, jrText, VOK, hzLabel, checkText, easy, ymKo, spanKo, delayText, unitsKo, supplyLines, renewalLine, whyItems, whyLine, whyTable, hzGapLine };
 })(typeof window !== 'undefined' ? window : globalThis);

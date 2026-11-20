@@ -68,7 +68,7 @@
     danji:       v => /^\d{5}\|[^|]{1,20}\|[^|]{1,60}$/.test(v),                                    // '단지 이름으로 물어보기'로 찾은 공개 단지(구코드|동|단지명)만 — 내 집·주소·금액은 보내지 않음
     spot:        v => SPOTS.includes(v),                                                            // 시세 흐름 보기 단추 위치
     slot:        v => ['bunyang','buy','switch','villa','chungyak','tax'].includes(v),              // 분양 광고 노출 위치
-    line:        v => ['r1','r2','r3','price','watch','fit','all'].includes(v),                     // 분석 설명 '자세히 보기'를 연 줄 종류(assets/narrative.js) — 단지·금액 없음
+    line:        v => ['r1','r2','r3','price','watch','fit','all','trust','term'].includes(v),                     // 분석 설명 '자세히 보기'를 연 줄 종류(assets/narrative.js) — 단지·금액 없음
     ad_kind:     v => ['아파트','오피스텔','도시형생활주택','민간임대','무순위·잔여세대','기타'].includes(v)
   };
   function clean(params){

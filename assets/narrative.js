@@ -36,7 +36,8 @@
   const VOK = m => !!(m && (m.oos_all || []).length >= 2 && m.oos_avg > 0);
   /* 용어 풀이: 한 묶음(요약 전체 / 펼친 문단 하나) 안에서 처음 나올 때만 */
   const GL = { '%p': '%p(두 상승률의 차이)', '전세가율': '전세가율(집값 대비 전셋값 비율)', '평당': '평당(전용 3.3㎡당)' };
-  function glosser() { const used = new Set(); return t => { if (used.has(t)) return t; used.add(t); return GL[t] || t; }; }
+  /* 용어 풀이는 괄호 대신 화면에서 점선+누르면 설명 상자(plain-words.js tipDom) — 문장에는 용어만 */
+  function glosser() { return t => t; }
   /* 두 비율 차이(%p) 문구: 0.2%p 미만은 '비슷하게' */
   const ppMore = (ex, G) => Math.abs(ex) < 0.2 ? '비슷하게' : `평균 ${r1(ex)}${G('%p')} ${ex > 0 ? '더' : '덜'}`;
   /* 점수(0~100, 높을수록 더 오를 쪽) → 말 */
@@ -149,6 +150,8 @@
     }
   }
 
+  const WN = { mom: '최근 6개월 시세 흐름', jr: '전세가율', rel: '구 안 가격 수준', dd: '하락기 움직임', lg: '대장 단지와의 가격 차이', sch: '가까운 중학교 전입',
+    size: '단지 규모', liq: '거래량', sub: '역까지 거리', stg: '재건축 단계' };
   /* 과거 사례가 같은 방향일 때만 붙이는 쉬운 해석(요약 줄용) */
   const MEAN = {
     mom: { up: '쉬어 간 단지가 이후 따라 오른 경우가 많아', dn: '짧게 많이 오른 단지가 이후 쉬어 간 경우가 많아' },
@@ -167,7 +170,7 @@
     const g = (IX.sgg && IX.sgg[c.code]) || {}, sdo = (IX.sido || []).find(s => s.name === g.sido) || {};
     c.sgg = g.name || '같은 구'; c.sido = sdo.short || g.sido || ''; c.sid = sdo.id; c.year = c.year || new Date().getFullYear();
     const A = J(c.apt, '은', '는'), SG = c.sgg, SD = c.sido, MH = c.MH || {};
-    const out = { head: '', gap: '', lines: [] };
+    const out = { head: '', gap: '', lines: [], names: [c.apt, c.dong, c.sgg, f.ln, f.subs].filter(Boolean) };
     if (!f || f.fv == null) return out;
     const Gs = glosser();                         // 요약(맨 위 + 요약 줄)용 풀이
     const fh = f.fh || {};
@@ -177,28 +180,69 @@
     const rp = PL.regionPlace ? PL.regionPlace(IX, c.code, f.gs) : null;
     const regionUsed = c.regionUsed !== false && f.gs != null && rp;
 
-    /* ① 한 줄 결론 */
-    if (sL != null && side(sL) !== side(f.fv)) out.head = `${A} 앞으로 2년은 ${SD} 아파트 ${lean(f.fv, 1)}, ${L}년 이상 보면 ${lean(sL)}.`;
-    else if (sL != null) out.head = `${A} 앞으로 2년도, ${L}년 이상 길게 봐도 ${SD} 아파트 ${lean(f.fv)}.`;
-    else out.head = `${A} 앞으로 2년 ${SD} 아파트 ${lean(f.fv)}.`;
+    /* ① 한 줄 결론(대표 확정 11/20): 시·도 기준 + 구 기준을 함께.
+       '{단지}는 앞으로 2년 {시·도} 아파트 평균보다 …. {이유 구절}, {구} 안에서만 보면 상위/하위 N%예요.'
+       두 기준이 같은 방향이면 '{구} 안에서도 …'. 이유 구절은 구 흐름이 순위를 실제로 움직였을 때(구 안 순위와 차이 10 이상, 같은 방향)만,
+       그 구 점수를 가장 많이 움직인 항목(index.json r.up/down)의 사실값으로. 3년 이상 문장은 이어서 그대로. */
+    const R = g.r || {}, SR = sdo.r || {}, ri = PL.regionInfo ? PL.regionInfo(IX, c.code) : { unit: '구' }, UNIT = ri.unit || '구';
+    const regGap = f.fvg != null ? f.fvg - f.fv : 0;          // 구 안 순위 − 지역 흐름까지 더한 시·도 순위
+    const regDrive = !!(regionUsed && Math.abs(regGap) >= 10 && rp.pos !== '중위권' && (regGap > 0 ? rp.pos === '하위권' : rp.pos === '상위권'));
+    const regClause = () => {
+      if (!regDrive || side(f.fv) === 0) return '';
+      const dn = regGap > 0, names = (dn ? R.down : R.up) || [];
+      for (const nm of names) {
+        if (nm === '구 시세 최근 1년 흐름' && R.mom != null && SR.mom != null) {
+          if (dn && R.mom > SR.mom) return `${SG} 전체가 최근 1년 ${r1(R.mom)}% 올라(${SD} ${UNIT} 중간값 ${r1(SR.mom)}%) 쉬어 갈 차례이기 때문이고`;
+          if (!dn && R.mom < SR.mom) return `${SG} 전체가 최근 1년 ${R.mom < 0 ? r1(R.mom) + '% 내려' : r1(R.mom) + '%로 덜 올라'}(${SD} ${UNIT} 중간값 ${r1(SR.mom)}%) 따라 오를 여지가 있기 때문이고`;
+        }
+        if (nm === '구 전세가율' && R.jr != null && SR.jr != null && Math.abs(R.jr - SR.jr) >= 2) {
+          if (dn && R.jr < SR.jr) return `${SG} 전체 ${Gs('전세가율')}이 ${r1(R.jr)}%로 ${SD} ${UNIT} 중간값(${r1(SR.jr)}%)보다 낮아 실거주 수요가 받쳐 주는 힘이 약하기 때문이고`;
+          if (!dn && R.jr > SR.jr) return `${SG} 전체 ${Gs('전세가율')}이 ${r1(R.jr)}%로 ${SD} ${UNIT} 중간값(${r1(SR.jr)}%)보다 높아 실거주 수요가 받쳐 주기 때문이고`;
+        }
+      }
+      return `${SG} 전체 흐름이 ${rp.text}로 ${dn ? '약하기' : '강하기'} 때문이고`;
+    };
+    /* 결론에는 과거 시험을 통과한 기간만(대표 확정 11/20). model_h 가 없으면 확인할 수 없어 2년은 그대로 둔다 */
+    const ok2 = !c.MH || !MH['2'] || VOK(MH['2']);
+    {
+      let h = '';
+      if (ok2) {
+        h = `${A} 앞으로 2년 ${SD} 아파트 ${lean(f.fv)}.`;
+        if (f.fvg != null && SG) {
+          const same = side(f.fvg) !== 0 && side(f.fvg) === side(f.fv);
+          const rc = regClause();
+          h += ' ' + (rc ? rc + ', ' : '') + `${SG} 안에서${same ? '도' : '만 보면'} ${topPct(f.fvg)}예요.`;
+        }
+        if (sL != null) h += ` ${L}년 이상 길게 보면 ${lean(sL)}.`;
+      } else if (sL != null) h = `${A} ${L}년 이상 길게 보면 ${SD} 아파트 ${lean(sL)}.`;
+      else h = `${A} 1~7년 순위 모두 과거 시험을 통과하지 못해 결론을 내지 않았어요.`;
+      out.head = h;
+    }
+    /* 이 예측, 믿을 수 있나요? — 기간별 과거 시험 성적(전국 단지로 시험) */
+    out.trust = [1, 2, 3, 5, 7].filter(h => (h === 2 ? f.fv : fh[h]) != null && MH[String(h)] && (MH[String(h)].oos_all || []).length)
+      .map(h => { const m = MH[String(h)], per = (m.oos_all || []).filter(o => o && o.t0).slice().sort((x, y) => String(x.t0).localeCompare(String(y.t0)));
+        return { h, n: m.oos_all.length, hit: m.oos_hit || 0, ok: VOK(m), avg: m.oos_avg, per: per.map(o => [String(o.t0), o.top20, o.bottom20]) }; });
+    out.regionOk = !!regionUsed;
+    out.headH = (ok2 ? [2] : []).concat(sL != null ? [L] : []);
+    out.dim = [1, 2, 3, 5, 7].filter(h => (h === 2 ? f.fv : fh[h]) != null && MH[String(h)] && !VOK(MH[String(h)])).map(h => `${h}년 ${topPct(h === 2 ? f.fv : fh[h])}`);
 
     /* ② 이유 줄 */
     const reasons = [];
-    const regGap = f.fvg != null ? f.fvg - f.fv : 0;          // 구 안 순위와 지역 흐름까지 더한 순위 차이
-    const R = g.r || {}, SR = sdo.r || {};
-    if (regionUsed && Math.abs(regGap) >= 10 && rp.pos !== '중위권' && R.mom != null) {
+    if (regDrive && R.mom != null) {
       const dn = regGap > 0, G = glosser();
       const hiMom = SR.mom != null && R.mom > SR.mom;
       const times = SR.mom > 0 && R.mom / SR.mom >= 1.8 ? `의 약 ${Math.round(R.mom / SR.mom)}배` : '';
-      const sum = `${SG} 전체 시세가 최근 1년 ${r1(R.mom)}% ${R.mom >= 0 ? '올라' : '내려'}` + (SR.mom != null ? ` ${SD} 구 중간값(${r1(SR.mom)}%)${times || (hiMom ? '보다 높아요' : '보다 낮아요')}` : '')
+      const sum = `${SG} 전체 시세가 최근 1년 ${r1(R.mom)}% ${R.mom >= 0 ? '올라' : '내려'}` + (SR.mom != null ? ` ${SD} ${UNIT} 중간값(${r1(SR.mom)}%)${times || (hiMom ? '보다 높아요' : '보다 낮아요')}` : '')
         + ` — 그래서 앞으로 2년 ${SG} 흐름은 ${rp.text}로 ${dn ? '약한' : '강한'} 편이에요.`;
       const fact = `${SG} 아파트 ${G('평당')} 시세는 최근 1년 ${r1(R.mom)}% ${R.mom >= 0 ? '올랐어요' : '내렸어요'}` + (R.jr != null ? `. ${SG} 전체 ${G('전세가율')}은 ${r1(R.jr)}%예요.` : '.');
-      const cmp = SR.mom != null ? `${SD} ${rp.n}개 구의 중간값은 1년 상승률 ${r1(SR.mom)}%` + (SR.jr != null && R.jr != null ? `, 전세가율 ${r1(SR.jr)}%예요. ${SG}는 상승률이 ${r1(R.mom - SR.mom)}${G('%p')} ${R.mom > SR.mom ? '높고' : '낮고'}, 전세가율은 ${r1(R.jr - SR.jr)}%p ${R.jr > SR.jr ? '높아요' : '낮아요'}.` : `예요. ${SG}는 ${r1(R.mom - SR.mom)}${G('%p')} ${R.mom > SR.mom ? '높아요' : '낮아요'}.`) : '';
+      const cmp = SR.mom != null ? `${SD} ${rp.n}개 ${UNIT}의 중간값은 1년 상승률 ${r1(SR.mom)}%` + (SR.jr != null && R.jr != null ? `, 전세가율 ${r1(SR.jr)}%예요. ${J(SG, '은', '는')} 상승률이 ${r1(R.mom - SR.mom)}${G('%p')} ${R.mom > SR.mom ? '높고' : '낮고'}, 전세가율은 ${r1(R.jr - SR.jr)}%p ${R.jr > SR.jr ? '높아요' : '낮아요'}.` : `예요. ${J(SG, '은', '는')} ${r1(R.mom - SR.mom)}${G('%p')} ${R.mom > SR.mom ? '높아요' : '낮아요'}.`) : '';
       const e = regionEv(c, 'mom');
       let past = '';
       if (e && Math.sign(e.ex) === (dn ? -1 : 1) && Math.abs(e.ex) >= 0.2)
-        past = `과거 ${SD}에서 1년 상승률이 ${Q5[e.b]}에 들었던 구는 이후 2년 ${SD} 평균보다 ${ppMore(e.ex, G)} 올랐어요(사례 ${hitTxt(e, dn)}).`;
-      const so = `그래서 ${c.apt}의 2년 순위(${SD} ${topPct(f.fv)})는 단지보다 ${SG} 전체 흐름 때문에 ${dn ? '낮아졌어요' : '높아졌어요'}. ${SG} 안에서만 비교하면 ${c.apt}는 ${topPct(f.fvg)}예요.`;
+        past = `과거 ${SD}에서 1년 상승률이 ${Q5[e.b]}에 들었던 ${UNIT}는 이후 2년 ${SD} 평균보다 ${ppMore(e.ex, G)} 올랐어요(사례 ${hitTxt(e, dn)}).`;
+      const sameSide = side(f.fvg) !== 0 && side(f.fvg) === side(f.fv);
+      const so = sameSide ? `그래서 ${c.apt}의 2년 순위(${SD} ${topPct(f.fv)})는 ${SG} 전체 흐름 때문에 더 ${dn ? '낮아졌어요' : '높아졌어요'}. ${SG} 안에서만 비교해도 ${A} ${topPct(f.fvg)}예요.`
+        : `그래서 ${c.apt}의 2년 순위(${SD} ${topPct(f.fv)})는 단지보다 ${SG} 전체 흐름 때문에 ${dn ? '낮아졌어요' : '높아졌어요'}. ${SG} 안에서만 비교하면 ${A} ${topPct(f.fvg)}예요.`;
       reasons.push({ k: 'reg', t: sum, d: [fact, cmp, past, so], ev: e, evBase: `${SD} 평균 대비` });
     }
     /* 단지 자체: 2년 점수 방향 태그 → 사실값이 있는 것만, 이미 쓴 통계는 다시 안 씀 */
@@ -218,7 +262,7 @@
             past = `과거 ${SD}에서 ${F.cond} 단지 ${n0(e.n)}건은 2년 뒤 같은 구 평균보다 ${ppMore(e.ex, G)} 올랐어요(${hitTxt(e, !up)}).`;
           } else e = null;
         }
-        const so = `그래서 이 점은 ${c.apt}의 ${h}년 점수를 ${up ? '올렸어요' : '낮췄어요'}` + (h === 2 && regionUsed && reasons.length ? ` — ${SG} 전체 흐름과는 ${up === (regGap <= 0) ? '같은' : '반대'} 방향이에요.` : '.');
+        const so = `그래서 ${J(WN[k] || '이 점', '은', '는')} ${c.apt}의 ${h}년 점수를 ${up ? '올렸어요' : '낮췄어요'}` + (h === 2 && regionUsed && reasons.length ? ` — ${SG} 전체 흐름과는 ${up === (regGap <= 0) ? '같은' : '반대'} 방향이에요.` : '.');
         const mean = e && MEAN[F.ev] ? MEAN[F.ev][up ? 'up' : 'dn'] + ' ' : '';
         res.push({ k, t: `${F.sum} — ${mean ? mean : '그래서 '}${h}년 점수를 ${up ? '올렸어요' : '낮췄어요'}.`, d: [F.fact, F.cmp, past, so], ev: e, evBase: '같은 구 평균 대비', h });
       }
@@ -242,7 +286,7 @@
       const sum = `${Gs('평당')} ${won(P.now)}으로 ${parts.join(', ')}` + (lg != null ? (lead ? `. ${c.dong} 대장 단지예요.` : `. ${c.dong} 대장 ${f.ln || '단지'}보다 ${Math.round((1 - lg) * 100)}% 낮아요.`) : '.');
       const area = c.area || null;
       const fact = `${c.apt} ${c.band || ''} ${G('평당')} 시세는 ${ymKo(P.at)} 기준 ${won(P.now)}이에요` + (area ? `(전용 ${area}㎡ 한 채 약 ${eok(P.now * area / 3.3058)}).` : '.');
-      const cmp = [P.gu ? `${SG} 아파트 전체 ${G('평당')} 시세는 ${won(P.gu)}` + (P.sd ? `, ${SD} ${P.nsd}개 구 중간값은 ${J(won(P.sd), '이에요', '예요')}.` : '이에요.') : '',
+      const cmp = [P.gu ? `${SG} 아파트 전체 ${G('평당')} 시세는 ${won(P.gu)}` + (P.sd ? `, ${SD} ${P.nsd}개 ${UNIT} 중간값은 ${J(won(P.sd), '이에요', '예요')}.` : '이에요.') : '',
         P.pk && !P.pkIsNow ? `${c.apt}의 최근 3년 최고 시세는 ${ymKo(P.pkAt)} ${J(won(P.pk), '이었어요', '였어요')}.` : '',
         lg != null && !lead ? `${c.dong} 대장 단지 ${f.ln || ''}는 같은 평형 기준 ${c.apt}보다 ${Math.round((1 / lg - 1) * 100)}% 비싸요.` : ''].filter(Boolean).join(' ');
       let past = '', e = null;
@@ -252,7 +296,7 @@
         past = `과거 ${SD}에서 같은 구 안 가격 수준이 ${Q5[relE.b]}였던 단지 ${n0(relE.n)}건은 2년 뒤 같은 구 평균보다 ${ppMore(relE.ex, G)} 올랐어요(${hitTxt(relE, relE.ex < 0)}).`;
       }
       const hi = vsGu != null && vsGu >= 0.1;
-      const so = '그래서 ' + [hi ? `${c.apt}는 ${SG} 안에서 이미 비싼 편이에요` : vsGu != null && vsGu <= -0.1 ? `${c.apt}는 ${SG} 안에서 싼 편이에요` : `${c.apt}는 ${SG} 안에서 중간 가격대예요`,
+      const so = '그래서 ' + [hi ? `${A} ${SG} 안에서 이미 비싼 편이에요(${SG} 전체보다 ${Math.round(vsGu * 100)}% 비쌈)` : vsGu != null && vsGu <= -0.1 ? `${A} ${SG} 안에서 싼 편이에요(${SG} 전체보다 ${Math.round(-vsGu * 100)}% 쌈)` : `${A} ${SG} 안에서 중간 가격대예요(${SG} 전체 시세와 차이 ${vsGu != null ? Math.round(Math.abs(vsGu) * 100) : 0}%)`,
         e ? (e.ex > 0 === hi ? (hi ? '과거엔 이런 비싼 단지가 오히려 더 오른 경우가 많아, 가격 수준 자체가 약점은 아니에요' : '과거엔 이런 싼 단지가 더 오른 경우가 많았어요')
           : (hi ? '과거엔 이런 비싼 단지의 오름폭이 작은 경우가 많아, 가격 부담을 따져 봐야 해요' : '과거엔 이런 싼 단지의 오름폭이 작은 경우가 많았어요')) : '',
         P.pk && !P.pkIsNow && vsPk <= -0.03 ? `최근 3년 최고가보다 ${r1(-vsPk * 100)}% 아래예요` : ''].filter(Boolean).join('. ') + '.';
@@ -286,8 +330,8 @@
       const RL = f.rl;
       if (RL && !RL.x) {
         const st = RL.opened ? `${ymKo(RL.stym)} 개통` : RL.stage === 'plan' ? '계획 확정, 착공 전' : '공사 중';
-        parts.push(`신설역 ${RL.line} ${RL.st}(${st})`);
-        if (!RL.opened) nextTxt.push(`${RL.line} ${RL.st}${RL.target ? `(개통 목표 ${ymKo(RL.target)})` : ''}`);
+        parts.push(`신설역 1곳(${RL.line} ${RL.st}, ${st}${RL.m != null ? `, 직선 ${n0(RL.m)}m` : ''})`);
+        if (!RL.opened) nextTxt.push(`${RL.line} ${RL.st}(${RL.target ? `개통 목표 ${ymKo(RL.target)}` : RL.m != null ? `직선 ${n0(RL.m)}m` : '신설역 1곳'})`);
         facts.push(`${A} ${RL.line} ${RL.st}${RL.m != null ? `까지 직선 ${n0(RL.m)}m` : ' 근처'}예요(${st}${RL.target && !RL.opened ? `, 개통 목표 ${ymKo(RL.target)}` : ''}).`);
         const e = unitEv(c, 'rail');
         if (e && Math.abs(e.ex) >= 0.5 && f.eb && f.eb.rail !== 'none') pasts.push(`과거 ${SD}에서 같은 단계 신설역 700m 안 단지 ${n0(e.n)}건은 2년 뒤 같은 구 평균보다 ${ppMore(e.ex, G)} 올랐어요.`);
@@ -302,7 +346,7 @@
         const L0 = DV.forUnit(dd.data, dd.u)[0]; if (L0 && L0.p && L0.p.short) nextTxt.push(L0.p.short);
       }
       if (parts.length) {
-        const so = !parts.length ? '' : nextTxt.length ? `그래서 ${c.apt}는 ${nextTxt.join(', ')}의 다음 단계 발표가 나올 때 다시 확인해야 해요.`
+        const so = !parts.length ? '' : nextTxt.length ? `그래서 ${A} ${nextTxt.join(', ')}의 다음 단계 발표가 나올 때 다시 확인해야 해요.`
           : `그래서 ${RL.line} ${RL.st} 개통(${ymKo(RL.stym)}) 뒤 ${c.apt} 시세가 ${SG} 전체보다 더 움직였는지 함께 보세요.`;
         lines.push({ k: 'watch', t: `앞으로 볼 변수: ${parts.join(' · ')}.`, d: [facts.join(' '), '', pasts.join(' '), so], devHtml });
       }
@@ -311,7 +355,7 @@
     /* ⑤ 보유 기간별로 맞는 사람 */
     {
       const G = glosser();
-      const hs = [2].concat([3, 5].filter(h => fh[h] != null && VOK(MH[h])));
+      const hs = (ok2 ? [2] : []).concat([3, 5, 7].filter(h => fh[h] != null && VOK(MH[h])));
       if (hs.length >= 2) {
         const sc = h => h === 2 ? f.fv : fh[h];
         const good = hs.filter(h => side(sc(h)) > 0), bad = hs.filter(h => side(sc(h)) < 0);
@@ -319,8 +363,8 @@
         let sum;
         if (bad.includes(2) && good.length) sum = `2년 안에 팔 계획이면 불리한 쪽(${lab(2)})이고, ${good[0]}년 이상 보유할 사람에게 맞아요(${good.map(lab).join(', ')}).`;
         else if (good.includes(2) && bad.length) sum = `2년 안팎 짧게 보유할 사람에게 맞고(${lab(2)}), ${bad[0]}년 이상 길게 보면 불리한 쪽이에요(${bad.map(lab).join(', ')}).`;
-        else if (good.length === hs.length) sum = `짧게(2년) 보유해도, 길게(${hs[hs.length - 1]}년) 보유해도 유리한 쪽이에요(${hs.map(lab).join(', ')}).`;
-        else if (bad.length === hs.length) sum = `짧게(2년) 보유해도, 길게(${hs[hs.length - 1]}년) 보유해도 불리한 쪽이에요(${hs.map(lab).join(', ')}).`;
+        else if (good.length === hs.length) sum = `짧게(${hs[0]}년) 보유해도, 길게(${hs[hs.length - 1]}년) 보유해도 유리한 쪽이에요(${hs.map(lab).join(', ')}).`;
+        else if (bad.length === hs.length) sum = `짧게(${hs[0]}년) 보유해도, 길게(${hs[hs.length - 1]}년) 보유해도 불리한 쪽이에요(${hs.map(lab).join(', ')}).`;
         else sum = `보유 기간별 순위는 ${hs.map(lab).join(', ')}예요 — 기간에 따라 평균과 비슷한 구간이 섞여 있어요.`;
         const fact = `${A} ${SD} 아파트 전체와 비교해 ` + hs.map(h => `${h}년 기준 ${topPct(sc(h))}`).join(', ') + '예요.';
         const tested = hs.filter(h => MH[String(h)] && MH[String(h)].oos_all);
@@ -332,9 +376,9 @@
           const m = MH[String(h)], q = m && m.q5, b = Math.min(4, Math.floor(sc(h) / 20)), x = q && q[b];
           if (x && x[1] >= 2) pq.push(`과거 시험에서 ${h}년 순위가 ${Q5[b]}였던 단지는 ${h}년 뒤 같은 구 평균보다 ${ppMore(x[0], G)} 올랐어요(시험 ${x[1]}번 중 ${x[2]}번 더 오름, 사례 ${n0(x[3])}건).`);
         }
-        const so = '그래서 ' + (bad.includes(2) && good.length ? `${c.apt}는 단기 시세 차익보다 ${good[0]}년 이상 실거주·보유 목적에 더 맞아요.`
-          : good.includes(2) && bad.length ? `${c.apt}는 오래 묵히기보다 2년 안팎 보유 계획에 더 맞아요.`
-          : good.length === hs.length ? `${c.apt}는 보유 기간과 관계없이 유리한 쪽이에요.` : bad.length === hs.length ? `${c.apt}는 보유 기간과 관계없이 평균보다 덜 오를 쪽이에요.` : `${c.apt}는 보유 기간을 정한 뒤 해당 기간 순위를 기준으로 보세요.`);
+        const so = '그래서 ' + (bad.includes(2) && good.length ? `${A} 단기 시세 차익보다 ${good[0]}년 이상 실거주·보유 목적에 더 맞아요.`
+          : good.includes(2) && bad.length ? `${A} 오래 묵히기보다 2년 안팎 보유 계획에 더 맞아요.`
+          : good.length === hs.length ? `${A} 보유 기간과 관계없이 유리한 쪽이에요(${hs.map(lab).join(', ')}).` : bad.length === hs.length ? `${A} 보유 기간과 관계없이 평균보다 덜 오를 쪽이에요(${hs.map(lab).join(', ')}).` : `${A} 보유 기간을 정한 뒤 해당 기간 순위(${hs.map(lab).join(', ')})를 기준으로 보세요.`);
         lines.push({ k: 'fit', t: sum, d: [fact, cmp, pq.join(' '), so], hz: hs.map(h => [h, sc(h), MH[String(h)]]) });
       }
     }
@@ -350,8 +394,7 @@
       if (why.length) out.gap = `2년(${topPct(f.fv)})과 ${L}년(${topPct(sL)}) 순위가 다른 이유: ${why.join('. 또 ')}.`;
     }
     /* 요약 줄 첫 %p 풀이 */
-    let pDone = false;
-    out.lines = lines.filter(x => x.t).slice(0, 6).map(x => { if (!pDone && /\d%p/.test(x.t)) { x.t = x.t.replace(/(\d)%p(?!\()/, '$1%p(두 상승률의 차이)'); pDone = true; } x.d = x.d.map(s => s || ''); return x; });
+    out.lines = lines.filter(x => x.t).slice(0, 6).map(x => { x.d = x.d.map(s => s || ''); return x; });
     return out;
   }
 
@@ -359,11 +402,12 @@
   function sentences(t) { return String(t || '').split(/(?<=[.?!])\s+/).map(s => s.trim()).filter(Boolean); }
   function lint(N) {
     const bad = [], all = [];
+    const NM = (N.names || []).slice().sort((a, b) => b.length - a.length);
     const check = (where, t, needNum) => {
       if (!t) return;
+      for (const nm of NM) t = t.split(nm).join('〇');      /* 단지·동 이름 속 글자(예: 세계수영)는 금지어 검사에서 뺀다 */
       for (const w of BANNED) if (t.includes(w)) bad.push(`${where}: 금지어 '${w}' — ${t}`);
       if (needNum && !/\d/.test(t)) bad.push(`${where}: 숫자 없음 — ${t}`);
-      if (/%p(?!\()/.test(t) && !/%p\(/.test(t) && where.startsWith('d') && /%p/.test(t)) { /* 문단 안 첫 %p 풀이는 아래에서 */ }
       for (const s of sentences(t)) all.push([where, s]);
     };
     check('head', N.head, true); check('gap', N.gap, true);
@@ -371,7 +415,6 @@
       check(`t${i}`, x.t, true);
       x.d.forEach((p, j) => { if (!p) return; check(`d${i}.${j}`, p, true); });
       const blk = x.d.filter(Boolean).join(' ');
-      const m = blk.indexOf('%p'); if (m >= 0 && blk.slice(m, m + 3) !== '%p(') bad.push(`d${i}: 문단 첫 %p 풀이 없음`);
       if (x.d.filter(Boolean).length && !/^그래서 /.test(x.d[3] || '')) bad.push(`d${i}: '그래서' 문장 없음`);
     });
     const seen = new Map();
@@ -417,16 +460,38 @@
     o = o || {};
     if (!N || !N.head) return '';
     const id = o.id || 'nar';
+    const T = N.trust || [];
+    /* 검증 카드(대표 수정 11/20 15:19): 실제 시험 시점·횟수로 쓴 문장 + 시점별 표. 횟수는 자료 그대로 */
+    const ymT = v => `${String(v).slice(0, 4)}년 ${parseInt(String(v).slice(4, 6), 10)}월`;
+    const sg2 = v => v == null ? "-" : Math.abs(v) < 0.05 ? "0%" : (v > 0 ? '+' : v < 0 ? '−' : '') + r1(v) + '%';
+    const one = t => {
+      if (!t.per.length) return '';
+      const f0 = t.per[0][0], rest = [...new Set(t.per.slice(1).map(p => p[0].slice(0, 4)))];
+      const txt = `${ymT(f0)}까지의 자료만으로 ${t.h}년 점수를 매긴 뒤, 실제 ${t.h}년 뒤(${+f0.slice(0, 4) + t.h}년 ${parseInt(f0.slice(4, 6), 10)}월) 시세와 맞춰 봤어요.`
+        + (rest.length ? ` 같은 방법으로 ${rest.join('·')}년에도 해 봤어요.` : '')
+        + ` 결과: ${t.n}번 중 ${t.hit}번, 점수가 높았던 단지들이 실제로 같은 구 평균보다 더 많이 올랐어요.`
+        + (t.ok ? ((N.headH || []).includes(t.h) ? ' 그래서 이 점수를 결론에 썼어요.' : ' 그래서 이 점수를 보유 기간별 요약에 썼어요.') : ' 맞은 횟수가 적어서 결론에는 넣지 않고 참고로만 보여 드려요.');
+      return `<div class="nar-tone ${t.ok ? 'ok' : 'ref'}"><b class="nar-th">${t.h}년 점수 · ${t.ok ? ((N.headH || []).includes(t.h) ? '결론에 씀' : '요약에 씀') : '참고'}</b><p>${E(txt)}</p>`
+        + `<table class="nar-ttbl"><thead><tr><th style="width:28%">시점</th><th class="num">상위 20%</th><th class="num">하위 20%</th><th>결과</th></tr></thead><tbody>`
+        + t.per.map(p => `<tr><td>${E(p[0].slice(0, 4) + '.' + parseInt(p[0].slice(4, 6), 10))}</td><td class="num">${E(sg2(p[1]))}</td><td class="num">${E(sg2(p[2]))}</td><td>${p[1] > 0 ? '맞음' : '틀림'}</td></tr>`).join('')
+        + `</tbody></table></div>`;
+    };
+    const trust = T.length ? `<div class="nar-trust"><button type="button" class="nar-tbtn" data-nar-trust aria-expanded="false" aria-controls="${id}-trust">이 점수는 이렇게 검증했어요</button>`
+      + `<div class="nar-trust-body" id="${id}-trust" hidden>` + T.slice().sort((a, b) => (b.ok - a.ok) || (a.h - b.h)).map(one).join('')
+      + `<p class="nar-tnote">상위 20%·하위 20%는 점수 순으로 줄 세웠을 때 위·아래 20% 단지예요. 표의 숫자는 점수를 매긴 때부터 그 기간 동안 같은 구 평균보다 더(+)·덜(−) 오른 정도예요. 점수 상위 20% 단지가 같은 구 평균보다 더 올랐으면 맞음이에요. 전국 단지로 시험한 결과예요.</p></div></div>` : '';
     return `<section class="nar" id="${E(id)}" data-nar="1">`
-      + `<p class="nar-head">${E(N.head)}</p>`
+      + `<p class="nar-head">${E(N.head)}</p>` + trust
       + (N.gap ? `<p class="nar-gap">${E(N.gap)}</p>` : '')
       + `<div class="nar-tools"><span>핵심 요약 ${N.lines.length}줄</span><button type="button" class="nar-all" data-nar-all aria-expanded="false">전체 펼치기</button></div>`
       + `<ol class="nar-list">` + N.lines.map((x, i) => {
         const open = i === 0, pid = `${id}-d${i}`, ps = x.d.map((p, j) => p ? `<p class="nar-p"><b>${STEP[j]}</b>${E(p)}</p>` : '').join('');
         return `<li class="nar-li" data-k="${E(x.k)}"><div class="nar-sum">${E(x.t)}</div>`
+          + (x.k === 'fit' && N.dim && N.dim.length ? `<div class="nar-dim">참고(과거 시험에서 잘 맞지 않았어요): ${E(N.dim.join(', '))}</div>` : '')
           + `<button type="button" class="nar-more" data-nar-k="${E(x.k)}" aria-expanded="${open}" aria-controls="${pid}">${open ? '접기' : '자세히 보기'}</button>`
           + `<div class="nar-det" id="${pid}"${open ? '' : ' hidden'}>${ps}${x.devHtml ? `<div class="nar-dev dv-sec"><b class="nar-devh">주변 개발사업(공식 원문 확인)</b>${x.devHtml}</div>` : ''}${o.premium ? proHtml(x, o.c || {}) : ''}</div></li>`;
-      }).join('') + `</ol></section>`;
+      }).join('') + `</ol>`
+      + (N.dim && N.dim.length && !N.lines.some(x => x.k === 'fit') ? `<div class="nar-dim">참고(과거 시험에서 잘 맞지 않았어요): ${E(N.dim.join(', '))}</div>` : '')
+      + `<p class="nar-foot"><a class="nar-terms" href="/jangdaejang-calc/guide/terms/">용어 모아 보기</a> · 밑줄 점선 단어를 누르면 바로 아래에 설명이 나와요.</p></section>`;
   }
   const CSS = `.nar{margin:12px 0 6px;padding:14px 14px 10px;border:1px solid #E6DFC8;border-radius:14px;background:#FFFDF7}
 .nar-head{font-size:17px;line-height:1.55;font-weight:800;color:#1F1F1F;margin:0 0 8px;word-break:keep-all}
@@ -447,6 +512,13 @@
 .nar-dev{margin-top:10px;padding-top:8px;border-top:1px dashed #D9CFAE;font-size:14px;line-height:1.65}.nar-devh{display:block;font-size:12.5px;color:#8A6D12;margin-bottom:2px}.nar-dev .dv-one{padding:6px 0}.nar-dev .dv-p{margin:4px 0;font-size:14px;line-height:1.7}.nar-dev .dv-note{font-size:12.5px;color:#6B6B6B}
 .nar-chart{margin:10px 0 0}.nar-chart svg{width:100%;height:auto;display:block}.nar-chart figcaption{font-size:12px;color:#555;margin-top:2px}
 .nar-chart i{display:inline-block;width:12px;height:3px;vertical-align:middle;margin:0 4px 0 6px}.nar-chart i.me{background:#B8942A}.nar-chart i.gu{background:#B9B2A0}
+.nar-trust{margin:0 0 10px}.nar-tbtn{width:100%;text-align:left;border:1px solid #D9CFAE;background:#fff;border-radius:10px;padding:10px 12px;font-size:14px;font-weight:700;color:#5A4A1A;cursor:pointer;min-height:44px}
+.nar-tbtn:after{content:'펼치기 ▾';float:right;font-weight:600;font-size:12.5px;color:#8A6D12}.nar-tbtn[aria-expanded="true"]:after{content:'접기 ▴'}
+.nar-trust-body{margin-top:6px;padding:10px 12px;background:#F8F4E8;border-radius:10px;font-size:14px;line-height:1.65;color:#333}
+.nar-tone{padding:4px 0 10px;border-bottom:1px solid #E6DFC8;margin-bottom:8px}.nar-tone p{margin:4px 0 6px}.nar-th{color:#5A4A1A}.nar-tone.ref{color:#8C8C8C}.nar-tone.ref .nar-th{color:#9A9A9A}
+.nar-ttbl{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed}.nar-ttbl td,.nar-ttbl th{white-space:nowrap}.nar-ttbl th,.nar-ttbl td{padding:4px 3px;border-top:1px solid #E6DFC8;text-align:left}.nar-ttbl th{font-weight:600;color:#6B6B6B}.nar-ttbl .num{text-align:right;font-variant-numeric:tabular-nums}.nar-tnote{margin:8px 0 0;font-size:12.5px;color:#6B6B6B}
+.nar-dim{margin:4px 0 0 26px;font-size:13px;color:#9A9A9A;line-height:1.55;word-break:keep-all}
+.nar-foot{margin:10px 0 2px;font-size:12.5px;color:#6B6B6B}.nar-terms{color:#8A6D12;font-weight:700}
 @media(min-width:900px){.nar-head{font-size:18.5px}.nar-sum{font-size:15.5px}}`;
   function css(doc) {
     doc = doc || root.document; if (!doc || doc.getElementById('nar-css')) return;
@@ -458,12 +530,18 @@
     const stat = k => { try { root.jdjStat && root.jdjStat('nar_open', { line: k }); } catch (_) { } };
     const set = (b, open) => { const d = el.ownerDocument.getElementById(b.getAttribute('aria-controls')); if (!d) return; d.hidden = !open; b.setAttribute('aria-expanded', String(open)); b.textContent = open ? '접기' : '자세히 보기'; };
     el.addEventListener('click', e => {
+      const t = e.target.closest('[data-nar-trust]');
+      if (t && el.contains(t)) { const d = el.ownerDocument.getElementById(t.getAttribute('aria-controls')), open = t.getAttribute('aria-expanded') !== 'true';
+        if (d) d.hidden = !open; t.setAttribute('aria-expanded', String(open)); if (open) stat('trust'); return; }
       const b = e.target.closest('.nar-more');
       if (b && el.contains(b)) { const open = b.getAttribute('aria-expanded') !== 'true'; set(b, open); if (open) stat(b.dataset.narK); return; }
       const a = e.target.closest('[data-nar-all]');
       if (a) { const sec = a.closest('.nar'), open = a.getAttribute('aria-expanded') !== 'true';
         sec.querySelectorAll('.nar-more').forEach(x => set(x, open)); a.setAttribute('aria-expanded', String(open)); a.textContent = open ? '전체 접기' : '전체 펼치기'; if (open) stat('all'); }
     });
+    /* 어려운 용어: 점선 + 누르면 바로 아래 설명 상자(plain-words.js tipDom, 한 번에 하나) */
+    const PLx = root.JDJ_PLAIN;
+    if (PLx && PLx.tipDom) PLx.tipDom(el, { blockSel: '.nar-head,.nar-gap,.nar-sum,.nar-dim,.nar-p,.nar-tone p,.nar-tnote', onOpen: () => stat('term') });
   }
   const NAR = { build, html, bind, lint, css, sentences, BANNED, KINDS };
   root.JDJ_NAR = NAR;
