@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
+<script src="/jangdaejang-calc/assets/pwa.js" defer data-nobar></script>
+<script src="/jangdaejang-calc/assets/biz.js" defer></script>
+<title>중개사 대시보드 | 집예보</title>
+<meta name="description" content="집예보 제휴 중개사 업무 도구: 받은 매수·매도 문의, 고객 관심 단지 변화 알림, 적정 가격 근거표.">
+<script>window.JDJ_CONFIG = { tool:'agent_my', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../assets/track.js?v=2"></script>
+<script src="../../assets/agents.js"></script>
+<script src="../../assets/mine-core.js?v=15"></script>
+<script src="../../assets/agent-tools-core.js?v=1"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<style>
+[hidden]{display:none!important}
+.wrap{max-width:880px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:clamp(22px,5.4vw,30px);margin:4px 0 6px;letter-spacing:-.03em;line-height:1.3}
+.lead{font-size:15.5px;color:#4E5968;margin:0 0 14px;line-height:1.6}
+.box{border:1px solid var(--line);border-radius:18px;padding:16px;background:#fff;margin:12px 0}
+.box h2{font-size:17px;margin:0 0 10px}
+.box h2 small{font-size:13px;color:#4E5968;font-weight:500;margin-left:6px}
+label.f{display:block;font-size:13.5px;font-weight:700;color:#4E5968;margin:10px 0 5px}
+.box input,.box select{width:100%;box-sizing:border-box;font:inherit;font-size:16px;border:1px solid var(--line);border-radius:12px;padding:11px 12px;background:#fff;color:#191F28}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:560px){.two{grid-template-columns:1fr}}
+.msg{font-size:14px;font-weight:700;margin-top:8px;min-height:1em}
+.msg.err{color:#C2410C}.msg.ok{color:#0E7A4F}
+.who{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.who b{font-size:18px}.who small{display:block;color:#4E5968;font-size:13.5px}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin:14px 0 0;padding-bottom:2px}
+.tab{flex:none;font:inherit;font-weight:700;font-size:15px;border:1px solid var(--line);background:#fff;color:#4E5968;border-radius:999px;padding:10px 15px;cursor:pointer;min-height:44px}
+.tab.on{background:#191F28;border-color:#191F28;color:#fff}
+.tab .n{display:inline-block;min-width:20px;font-size:12px;background:#2F6BFF;color:#fff;border-radius:999px;padding:1px 6px;margin-left:4px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(max-width:560px){.kpis{grid-template-columns:1fr 1fr}}
+.kpi{background:#F9FAFB;border-radius:12px;padding:10px 12px}
+.kpi .k{font-size:13px;color:#4E5968;font-weight:700}.kpi .v{font-size:22px;font-weight:900}
+.kpi.main{background:#E8F0FF}.kpi.main .k{color:#2F6BFF}
+.ld{border:1px solid var(--line);border-radius:16px;padding:14px;margin:10px 0;background:#fff}
+.ld.new{border-color:#9DB8FF;box-shadow:0 0 0 2px #E8F0FF}
+.ld .h{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:flex-start}
+.ld .h b{font-size:16.5px}.ld .h small{display:block;font-size:13px;color:#4E5968;margin-top:2px}
+.pill{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:3px 9px;background:#F2F4F6;color:#4E5968;white-space:nowrap}
+.pill.new{background:#2F6BFF;color:#fff}.pill.contacted{background:#E6F5EE;color:#0E7A4F}.pill.meeting{background:#FBF3DF;color:#9A5B00}.pill.done{background:#F2F4F6}.pill.pass{background:#FDECE4;color:#C2410C}
+.ld dl{display:grid;grid-template-columns:96px 1fr;gap:4px 10px;margin:10px 0 0;font-size:14.5px}
+.ld dt{color:#4E5968;font-weight:700}.ld dd{margin:0}
+.ld .ph{font-size:18px;font-weight:900;letter-spacing:.02em}
+.ld .acts,.acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.acts .btn,.ld .btn{min-height:44px;font-size:15px;padding:0 14px}
+.btn.sm{min-height:40px;font-size:14px;padding:0 12px}
+.btn.on{background:#191F28;color:#fff}
+.empty{padding:22px 14px;text-align:center;border:1px dashed var(--line);border-radius:14px;font-size:15px;color:#3E4754;line-height:1.6}
+.res{border:1px solid var(--line);border-radius:12px;margin-top:6px;max-height:220px;overflow:auto}
+.res:empty{display:none}
+.res button{display:flex;justify-content:space-between;width:100%;gap:8px;text-align:left;font:inherit;font-size:15px;border:0;border-bottom:1px solid var(--line2);background:#fff;padding:11px 12px;cursor:pointer;min-height:44px}
+.res button small{color:#4E5968}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:14px;font-weight:700;border:1px solid var(--line);background:#F9FAFB;border-radius:999px;padding:6px 10px}
+.chip button{border:0;background:none;color:#C2410C;font-weight:900;font-size:16px;cursor:pointer;min-width:28px;min-height:28px}
+.chk{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px;font-size:14.5px}
+.chk label{display:flex;gap:6px;align-items:center}
+.chk input{width:18px;height:18px}
+.wc{border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin:8px 0}
+.wc .h{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap}
+.wc b{font-size:16px}.wc small{color:#4E5968;font-size:13px}
+.ev{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line2);font-size:14.5px;line-height:1.5}
+.ev:last-child{border-bottom:0}
+.ev .t{flex:none;font-size:12.5px;font-weight:700;border-radius:8px;padding:3px 8px;background:#F2F4F6;color:#4E5968}
+.ev .t.high{background:#FDECE4;color:#C2410C}.ev .t.drop{background:#E8F0FF;color:#1F56E0}
+.ev small{display:block;color:#4E5968;font-size:12.5px}
+.rule{font-size:13.5px;color:#4E5968;background:#F9FAFB;border-radius:12px;padding:10px 12px;line-height:1.6;margin:8px 0 0}
+.local{font-size:12.5px;font-weight:700;color:#0E7A4F;background:#E6F5EE;border-radius:6px;padding:1px 6px;margin-left:4px}
+</style>
+</head>
+<body>
+<header class="top"><a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>집예보</a><a class="badge plain" href="../" style="text-decoration:none">중개사 제휴센터</a></header>
+<div class="wrap">
+  <h1>중개사 대시보드</h1>
+  <p class="lead" id="lead">받은 매수·매도 문의, 고객 관심 단지 변화, 적정 가격 근거표를 한곳에서 써요.</p>
+
+  <div class="box" id="loginBox" hidden>
+    <h2>로그인 <small>제휴 신청 때 받은 관리코드로</small></h2>
+    <div class="two">
+      <div><label class="f" for="reg">중개사무소 등록번호</label><input id="reg" autocomplete="username" placeholder="예: 11680-2020-00123"></div>
+      <div><label class="f" for="code">관리코드 (8자리)</label><input id="code" autocomplete="current-password" style="text-transform:uppercase"></div>
+    </div>
+    <div class="acts"><button class="btn primary" id="go" type="button">로그인</button><a class="btn ghost" href="../">아직 제휴 전이에요</a></div>
+    <div class="msg err" id="lmsg" role="alert"></div>
+    <p class="rule">로그인은 이 기기에서 30일 동안 유지돼요. 서버에는 로그인 열쇠의 해시만 저장해요.</p>
+  </div>
+
+  <div id="app" hidden>
+    <div class="box"><div class="who"><div><b id="office"></b><small id="sub"></small></div><button class="btn ghost sm" id="out" type="button">로그아웃</button></div></div>
+    <div class="tabs" role="tablist">
+      <button class="tab on" data-t="inbox" type="button">받은 문의<span class="n" id="nNew" hidden></span></button>
+      <button class="tab" data-t="watch" type="button">고객 관심 단지<span class="n" id="nEv" hidden></span></button>
+      <button class="tab" data-t="sheet" type="button">적정 가격 근거표</button>
+      <button class="tab" data-t="set" type="button">설정</button>
+    </div>
+
+    <section id="t_inbox">
+      <div class="box">
+        <div class="kpis" id="kpis"></div>
+        <p class="rule">집예보 이용자가 <b>'중개사 연락 받기'에 따로 동의하고 직접 고른</b> 문의, 또는 공개 순번 규칙(그 구를 고른 제휴 중개사 중 순번 문의를 가장 오래전에 받은 곳부터 2곳)으로 온 문의예요. 연락처는 받은 날부터 90일 동안만 보이고, 이용자가 취소하면 바로 사라져요. 집예보는 중개하지 않고 건별 수수료를 받지 않아요.</p>
+      </div>
+      <div id="leads"></div>
+    </section>
+
+    <section id="t_watch" hidden>
+      <div class="box">
+        <h2>고객 관심 단지 추가 <small>새 실거래 · 신고가 · 큰 하락 거래를 알려 드려요</small></h2>
+        <div class="two">
+          <div><label class="f" for="wName">고객 이름 <span class="local">이 기기에만 저장</span></label><input id="wName" maxlength="30" placeholder="예: 김OO 사장님"></div>
+          <div><label class="f" for="wAlias">별칭 (서버에 저장 · 12자)</label><input id="wAlias" maxlength="12" placeholder="예: 고객 A, 학군 이사"></div>
+        </div>
+        <div class="two">
+          <div><label class="f" for="wSd">시·도</label><select id="wSd"></select></div>
+          <div><label class="f" for="wQ">단지 이름 (최대 10곳)</label><input id="wQ" placeholder="예: 은마" autocomplete="off"></div>
+        </div>
+        <div class="res" id="wRes"></div>
+        <div class="chips" id="wKeys"></div>
+        <div class="chk" id="wKinds"><label><input type="checkbox" value="trade" checked> 새 실거래</label><label><input type="checkbox" value="high" checked> 신고가</label><label><input type="checkbox" value="drop" checked> 큰 하락 거래</label></div>
+        <div class="acts"><button class="btn primary" id="wSave" type="button">저장</button><button class="btn ghost" id="wNew" type="button" hidden>새 고객으로</button></div>
+        <div class="msg" id="wMsg" role="status"></div>
+        <p class="rule">매일 아침 국토교통부 실거래 공개 자료로 확인해요. <b>큰 하락 거래</b> = 직거래를 빼고, 그 평형 최근 3개월 평당 시세보다 10% 이상 낮은 거래. <b>신고가</b> = 같은 평형에서 그 전 최고가보다 비싼 거래. 자료가 갱신되는 날에만 새 거래가 잡혀요. 고객 이름은 서버로 보내지 않아요 — 다른 기기에서는 별칭만 보여요.</p>
+      </div>
+      <div class="box"><h2>최근 변화</h2><div id="events"></div></div>
+      <div class="box"><h2>저장한 고객 <small id="wCnt"></small></h2><div id="watches"></div></div>
+    </section>
+
+    <section id="t_sheet" hidden>
+      <div class="box">
+        <h2>적정 가격 근거표</h2>
+        <p style="margin:0 0 8px;font-size:15px;line-height:1.6">단지·평형을 고르면 최근 실거래(층), 집예보 시세, 최고가 대비, 같은 구 비교, 미래가치 점수와 과거 성적을 한 장으로 만들어요. 아는 호가를 넣으면 '중개사 입력 호가'로 시세와 차이를 보여 줘요. 인쇄·PDF 저장·카카오톡 공유가 돼요.</p>
+        <div class="acts"><a class="btn primary" href="../sheet/" id="toSheet">근거표 만들기</a></div>
+        <p class="rule">로그인한 상태로 만들면 근거표 아래에 사무소 정보가 '집예보 제휴·광고' 표시와 함께 붙어요. 호가는 공개 자료가 없어 집예보가 채우지 않아요.</p>
+      </div>
+    </section>
+
+    <section id="t_set" hidden>
+      <div class="box">
+        <h2>알림 받을 곳</h2>
+        <label class="f" for="pMail">알림 메일</label><input id="pMail" type="email" placeholder="you@example.com">
+        <div class="chk"><label><input type="checkbox" id="pOn" checked> 새 문의·고객 관심 단지 변화를 메일로 받기</label></div>
+        <div class="acts"><button class="btn primary" id="pSave" type="button">저장</button></div>
+        <div class="msg" id="pMsg" role="status"></div>
+        <p class="rule">메일에는 고객 연락처를 넣지 않아요. 카카오톡 알림은 집예보 카카오 비즈 인증 뒤에 켤 수 있어요.</p>
+      </div>
+      <div class="box"><h2>성과표·지역·매물 단지</h2><p style="margin:0;font-size:15px">노출 성과와 노출 지역·매물 보유 단지는 <a href="../">제휴센터</a>의 [내 관리]에서 보고 바꿔요.</p></div>
+    </section>
+  </div>
+</div>
+<script>
+(function(){
+'use strict';
+const $ = id => document.getElementById(id);
+const A = window.JDJ_AGENTS, M = window.JDJ_MINE, G = window.JDJ_AGT;
+const DATA = '/jangdaejang-data/data/';
+const LS = 'jdj_agt';
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const track = (n, p) => { try { JDJ.track(n, p || {}); } catch (e) {} };
+let IX = null, SESS = null, INBOX = null, WL = null, EDIT = null, KEYS = [], GROUPS = {};
+const fmtTel = d => d.length === 11 ? `${d.slice(0,3)}-${d.slice(3,7)}-${d.slice(7)}` : d.length === 10 ? `${d.slice(0,3)}-${d.slice(3,6)}-${d.slice(6)}` : d;
+const STEP = { new:'새 문의', contacted:'연락함', meeting:'상담 중', done:'마무리', pass:'못 맡음' };
+
+const sess = () => { try { const x = JSON.parse(localStorage.getItem(LS) || 'null'); if (!x || !/^[0-9a-f]{64}$/.test(x.s || '')) return null; if (x.exp && x.exp < new Date().toISOString().slice(0,10)) { localStorage.removeItem(LS); return null; } return x; } catch (e) { return null; } };
+function call(action, body){
+  return A.post(Object.assign({ action, s: SESS.s }, body || {})).catch(e => {
+    if (/로그인이 끝났/.test(e.message)) { localStorage.removeItem(LS); showLogin('로그인이 끝났어요. 다시 로그인해 주세요.'); }
+    if (/^unknown$/.test(e.message)) e.message = '서버 업데이트(v19) 전이라 아직 쓸 수 없어요. 곧 열려요.';
+    throw e;
+  });
+}
+const sggName = c => IX && IX.sgg[c] ? IX.sgg[c].name : c;
+const sdOf = c => { if (!IX || !IX.sgg[c]) return ''; const s = IX.sido.find(x => x.name === IX.sgg[c].sido); return s ? s.id : ''; };
+
+function showLogin(msg){ $('app').hidden = true; $('loginBox').hidden = false; $('lmsg').textContent = msg || ''; }
+$('go').onclick = () => {
+  const reg = $('reg').value.trim(), code = $('code').value.trim();
+  if (!reg || !code){ $('lmsg').textContent = '등록번호와 관리코드를 넣어 주세요.'; return; }
+  $('go').disabled = true; $('lmsg').textContent = '';
+  A.post({ action:'agentLogin', reg, code }).then(j => {
+    localStorage.setItem(LS, JSON.stringify({ s: j.s, exp: j.exp, me: { id: j.me.id, office: j.me.office } }));
+    track('agent_my_login', {}); start();
+  }).catch(e => { $('lmsg').textContent = e.message === 'unknown' ? '서버 업데이트(v19) 전이라 아직 로그인할 수 없어요. 곧 열려요.' : e.message; }).finally(() => { $('go').disabled = false; });
+};
+$('out').onclick = () => { const s = SESS; localStorage.removeItem(LS); if (s) A.post({ action:'agentLogout', s: s.s }).catch(() => {}); showLogin(''); };
+document.querySelectorAll('.tab').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b));
+  ['inbox','watch','sheet','set'].forEach(t => $('t_' + t).hidden = t !== b.dataset.t);
+  if (b.dataset.t === 'watch' && !WL) loadWatch();
+  history.replaceState(null, '', '#' + b.dataset.t);
+});
+
+/* ---------- 받은 문의 ---------- */
+function drawInbox(){
+  const L = INBOX.leads || [], c = INBOX.count || {};
+  $('office').textContent = INBOX.me.office + (INBOX.me.type === '소속' ? ` · ${INBOX.me.name} 공인중개사` : '');
+  $('sub').textContent = `${INBOX.me.ogName} ${INBOX.me.dong} · 문의 받는 지역 ${INBOX.me.regions.map(sggName).join(', ')} · ${INBOX.me.status}${INBOX.me.expires ? ' ~' + INBOX.me.expires : ''}`;
+  $('kpis').innerHTML = [['new','새 문의',1],['contacted','연락함'],['meeting','상담 중'],['done','마무리']].map(([k, t, m]) => `<div class="kpi ${m ? 'main' : ''}"><div class="k">${t}</div><div class="v">${c[k] || 0}</div></div>`).join('');
+  $('nNew').hidden = !c.new; $('nNew').textContent = c.new || '';
+  if (!L.length){ $('leads').innerHTML = '<div class="empty">아직 받은 문의가 없어요.<br>이용자가 리포트·내 집 시세·관심 단지 알림에서 [중개사 연락 받기]로 고르면 여기에 와요.</div>'; return; }
+  $('leads').innerHTML = L.map(x => {
+    const tel = (x.phone || '').replace(/[^0-9]/g, ''), closed = x.state !== '진행';
+    const sd = sdOf(x.g), dk = x.k ? x.k.split('|') : [];
+    const sheet = x.k && sd ? `../sheet/?${new URLSearchParams({ sd, g: x.g, d: dk[1], a: dk[2] }).toString()}` : '';
+    return `<div class="ld ${x.step === 'new' && !closed ? 'new' : ''}" data-id="${esc(x.id)}">
+      <div class="h"><div><b>${esc(x.kind)} · ${esc(x.apt || sggName(x.g))}${x.band ? ' ' + esc(x.band) : ''}</b><small>${esc(x.at)} · ${esc(x.src)} · ${x.mode === 'pick' ? '이용자가 직접 고름' : '순번 배정'}${x.others ? ` · 다른 중개사 ${x.others}곳도 받음` : ' · 우리 사무소만 받음'}</small></div><span class="pill ${closed ? 'done' : esc(x.step)}">${closed ? (x.state === '취소' ? '이용자 취소' : '보관 끝') : esc(STEP[x.step] || x.step)}</span></div>
+      ${closed ? `<p class="rule">${x.state === '취소' ? '이용자가 문의를 취소해서 연락처를 지웠어요.' : '보관 기간(90일)이 지나 연락처를 지웠어요.'}</p>` : `<dl>
+        <dt>연락처</dt><dd>${tel ? `<span class="ph">${esc(fmtTel(tel))}</span>` : esc(x.mask || '-')}</dd>
+        <dt>연락 편한 때</dt><dd>${esc(x.when || '-')}</dd>
+        ${x.memo ? `<dt>남긴 말</dt><dd>${esc(x.memo)}</dd>` : ''}
+        <dt>지역</dt><dd>${esc(sggName(x.g))}${dk[1] ? ' ' + esc(dk[1]) : ''}</dd>
+        <dt>보관</dt><dd>${esc(x.until)}까지 보여요</dd></dl>
+      <div class="acts">${tel ? `<a class="btn primary" href="tel:${tel}" data-c="call">전화</a><a class="btn" href="sms:${tel}" data-c="sms">문자</a>` : ''}${sheet ? `<a class="btn ghost" href="${esc(sheet)}">근거표 만들기</a>` : ''}</div>
+      <div class="acts">${['contacted','meeting','done','pass'].map(s => `<button class="btn sm ${x.step === s ? 'on' : 'ghost'}" type="button" data-s="${s}">${s === 'contacted' ? '연락했어요' : s === 'meeting' ? '상담 중' : s === 'done' ? '마무리' : '못 맡아요'}</button>`).join('')}</div>`}
+    </div>`;
+  }).join('');
+  $('leads').querySelectorAll('[data-s]').forEach(b => b.onclick = () => {
+    const card = b.closest('.ld'), id = card.dataset.id; b.disabled = true;
+    call('agentLeadUpdate', { id, step: b.dataset.s }).then(j => { const i = INBOX.leads.findIndex(x => x.id === id); INBOX.leads[i] = j.lead; recount(); drawInbox(); track('agent_lead_step', { step: b.dataset.s }); })
+      .catch(e => { alert(e.message); b.disabled = false; });
+  });
+  $('leads').querySelectorAll('[data-c]').forEach(a => a.addEventListener('click', () => track('agent_lead_' + a.dataset.c, {})));
+}
+function recount(){ const c = {}; INBOX.leads.filter(x => x.state === '진행').forEach(x => c[x.step] = (c[x.step] || 0) + 1); INBOX.count = c; }
+
+/* ---------- 고객 관심 단지 ---------- */
+const CS = () => G.clientStore(localStorage, SESS.me.id);
+async function loadGroups(id){
+  if (GROUPS[id]) return GROUPS[id];
+  const us = await fetch(DATA + 'price/' + id + '.json', {cache:'no-cache'}).then(r => r.json()).then(x => (x.units || []).map(M.listRow))
+    .catch(() => fetch(DATA + id + '.json').then(r => r.json()).then(x => x.units || []));
+  return (GROUPS[id] = M.groupDanji(us));
+}
+function setupWatchForm(){
+  $('wSd').innerHTML = IX.sido.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  const own = sdOf(INBOX.me.og); if (own) $('wSd').value = own;
+  let t = null;
+  $('wQ').oninput = () => { clearTimeout(t); t = setTimeout(async () => {
+    const q = $('wQ').value.trim(); if (!q){ $('wRes').innerHTML = ''; return; }
+    const gs = await loadGroups($('wSd').value); if ($('wQ').value.trim() !== q) return;
+    const hits = M.searchDanji(gs, q, 12);
+    $('wRes').innerHTML = hits.map((d, i) => `<button type="button" data-i="${i}"><span><b>${esc(d.apt)}</b> <small>${esc(sggName(d.code))} ${esc(d.dong)}</small></span><small>모든 평형</small></button>`).join('') || '<div class="rule">찾지 못했어요.</div>';
+    $('wRes').querySelectorAll('button').forEach(b => b.onclick = () => {
+      const d = hits[+b.dataset.i], k = [d.code, d.dong, d.apt, ''].join('|');
+      if (KEYS.some(x => x.k === k)) return;
+      if (KEYS.length >= (WL ? WL.maxKeys : 10)){ $('wMsg').className = 'msg err'; $('wMsg').textContent = '고객 1명당 10곳까지예요.'; return; }
+      KEYS.push({ k, n: d.apt }); $('wQ').value = ''; $('wRes').innerHTML = ''; drawKeys();
+    });
+  }, 200); };
+  $('wSave').onclick = saveWatch;
+  $('wNew').onclick = () => { EDIT = null; KEYS = []; $('wName').value = ''; $('wAlias').value = ''; drawKeys(); $('wNew').hidden = true; $('wSave').textContent = '저장'; };
+}
+function drawKeys(){
+  $('wKeys').innerHTML = KEYS.map((x, i) => `<span class="chip">${esc(x.n)} <small>${esc(sggName(x.k.slice(0,5)))}</small><button type="button" data-rm="${i}" aria-label="빼기">×</button></span>`).join('');
+  $('wKeys').querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { KEYS.splice(+b.dataset.rm, 1); drawKeys(); });
+}
+function saveWatch(){
+  const m = $('wMsg'); m.className = 'msg err';
+  const al = G.aliasOk($('wAlias').value); if (!al.ok){ m.textContent = al.err; return; }
+  if (!KEYS.length){ m.textContent = '관심 단지를 1곳 이상 골라 주세요.'; return; }
+  const kinds = {}; $('wKinds').querySelectorAll('input').forEach(c => kinds[c.value] = c.checked);
+  const cs = CS(), prev = EDIT ? cs.get(EDIT) : null, ref = (prev && prev.ref) || G.newRef();
+  $('wSave').disabled = true; m.className = 'msg'; m.textContent = '저장하는 중이에요…';
+  call('watchSave', { id: EDIT || '', alias: al.v, ref, keys: KEYS, kinds }).then(j => {
+    cs.set(j.saved, { name: $('wName').value.trim(), ref });
+    WL = j; drawWatch(); m.className = 'msg ok'; m.textContent = '저장했어요. 내일 아침부터 변화를 확인해요.';
+    track('agent_watch_save', { n: KEYS.length });
+    EDIT = null; KEYS = []; $('wName').value = ''; $('wAlias').value = ''; drawKeys(); $('wNew').hidden = true; $('wSave').textContent = '저장';
+  }).catch(e => { m.className = 'msg err'; m.textContent = e.message; }).finally(() => { $('wSave').disabled = false; });
+}
+function loadWatch(){
+  $('watches').innerHTML = '<div class="empty">불러오는 중이에요…</div>';
+  call('watchList').then(j => { WL = j; drawWatch(); }).catch(e => { $('watches').innerHTML = `<div class="empty">${esc(e.message)}</div>`; $('events').innerHTML = ''; });
+}
+function drawWatch(){
+  const cs = CS(), all = cs.all();
+  $('wCnt').textContent = `${WL.watches.length}/${WL.max}명`;
+  $('watches').innerHTML = WL.watches.length ? WL.watches.map(w => {
+    const nm = all[w.id] && all[w.id].name;
+    return `<div class="wc"><div class="h"><div><b>${nm ? esc(nm) + ' <span class="local">이 기기</span> · ' : ''}${esc(w.alias)}</b><br><small>${w.keys.map(x => esc(x.n)).join(', ')} · ${['trade','high','drop'].filter(k => w.kinds[k] !== false).map(k => G.KIND[k]).join('·')} 알림${w.checked ? ' · 최근 확인 ' + esc(w.checked) : ' · 내일 아침 첫 확인'}</small></div>
+      <div class="acts" style="margin:0"><button class="btn sm ghost" type="button" data-e="${esc(w.id)}">고치기</button><button class="btn sm ghost" type="button" data-d="${esc(w.id)}">지우기</button></div></div></div>`;
+  }).join('') : '<div class="empty">저장한 고객이 없어요. 위에서 고객별 관심 단지를 저장해 보세요.</div>';
+  $('watches').querySelectorAll('[data-e]').forEach(b => b.onclick = () => {
+    const w = WL.watches.find(x => x.id === b.dataset.e); EDIT = w.id; KEYS = w.keys.slice();
+    $('wName').value = (cs.get(w.id) || {}).name || ''; $('wAlias').value = w.alias;
+    $('wKinds').querySelectorAll('input').forEach(c => c.checked = w.kinds[c.value] !== false);
+    drawKeys(); $('wNew').hidden = false; $('wSave').textContent = '고친 내용 저장'; $('wName').scrollIntoView({ behavior:'smooth', block:'center' });
+  });
+  $('watches').querySelectorAll('[data-d]').forEach(b => b.onclick = () => {
+    if (b.dataset.arm !== '1'){ b.dataset.arm = '1'; b.textContent = '한 번 더 누르면 지워요'; return; }
+    call('watchRemove', { id: b.dataset.d }).then(j => { CS().del(b.dataset.d); WL = j; drawWatch(); });
+  });
+  const ev = WL.events || [], names = {}; WL.watches.forEach(w => names[w.id] = (all[w.id] && all[w.id].name) || w.alias);
+  const since = Date.now() - 7 * 86400000, fresh = ev.filter(e => new Date(e.at.replace(' ', 'T')).getTime() >= since).length;
+  $('nEv').hidden = !fresh; $('nEv').textContent = fresh || '';
+  $('events').innerHTML = ev.length ? ev.slice(0, 40).map(e => `<div class="ev"><span class="t ${esc(e.kind)}">${esc(G.KIND[e.kind] || e.kind)}</span><div><b>${esc(names[e.w] || '삭제한 고객')}</b> · ${esc(G.eventLine(e))}<small>${esc(e.at)} 확인</small></div></div>`).join('')
+    : '<div class="empty" style="border:0;padding:10px">아직 잡힌 변화가 없어요. 저장한 단지에 새 거래가 신고되면 여기에 나와요.</div>';
+}
+
+/* ---------- 설정 ---------- */
+function drawPrefs(){
+  const p = INBOX.prefs || {}; $('pMail').value = p.mail || ''; $('pOn').checked = p.on !== false;
+  $('pSave').onclick = () => {
+    $('pMsg').className = 'msg'; $('pMsg').textContent = '저장하는 중이에요…';
+    call('agentPrefs', { set: true, mail: $('pMail').value.trim(), on: $('pOn').checked }).then(j => { INBOX.prefs = j; $('pMsg').className = 'msg ok'; $('pMsg').textContent = '저장했어요.'; })
+      .catch(e => { $('pMsg').className = 'msg err'; $('pMsg').textContent = e.message; });
+  };
+}
+
+async function start(){
+  SESS = sess(); if (!SESS){ showLogin(''); return; }
+  $('loginBox').hidden = true; $('app').hidden = false;
+  $('leads').innerHTML = '<div class="empty">불러오는 중이에요…</div>';
+  if (!IX) IX = await fetch(DATA + 'index.json', {cache:'no-cache'}).then(r => r.json()).catch(() => null);
+  try { INBOX = await call('agentInbox'); } catch (e) { $('leads').innerHTML = `<div class="empty">${esc(e.message)}</div>`; return; }
+  drawInbox(); drawPrefs();
+  if (IX) setupWatchForm();
+  const t = location.hash.slice(1); const tb = document.querySelector(`.tab[data-t="${t}"]`); if (tb) tb.click();
+}
+if (!A || !A.ready) showLogin('제휴 서버가 아직 연결되지 않았어요.'); else start();
+})();
+</script>
+</body>
+</html>

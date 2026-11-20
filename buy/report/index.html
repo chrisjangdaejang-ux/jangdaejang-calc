@@ -36,6 +36,7 @@
 <script src="../../assets/mine-core.js?v=15"></script>
 <script src="../../assets/price-sheet.js?v=13"></script>
 <script src="../../assets/agents.js"></script>
+<script src="../../assets/lead.js?v=1"></script>
 <script src="../../assets/config.js?v=3"></script>
 <script src="../../assets/auth.js?v=3"></script>
 <script src="../../assets/share.js?v=7"></script>
@@ -1519,7 +1520,7 @@ async function fillAgents(picked){
     const all = shuffle(cand).sort((x,y)=>rank(x)-rank(y) || rvSc(y)-rvSc(x));
     const own = all.filter(a=>rank(a)===0).length;
     el.innerHTML = `<button class="agopen noprint">공인중개사 연결하기 · ${all.length}곳${own?` <span class="b">매물 보유 ${own}곳</span>`:''} <i>▾</i></button>
-      <div class="aglist2" hidden><span class="agt-l">이 단지 문의 가능한 제휴 중개사<em>제휴·광고</em></span>${all.map(a=>chip(a,g,k,rank(a))).join('')}</div>`;
+      <div class="aglist2" hidden><span class="agt-l">이 단지 문의 가능한 제휴 중개사<em>제휴·광고</em></span>${all.map(a=>chip(a,g,k,rank(a))).join('')}<div class="ldslot noprint"></div></div>`;
     A.log('rec', all.map(a=>a.id).sort().join(','), g, k);   // 카드에 추천 표시(펼치기 전)
     const btn = el.querySelector('.agopen'), box = el.querySelector('.aglist2');
     let logged = false;
@@ -1527,6 +1528,7 @@ async function fillAgents(picked){
       const show = box.hidden; box.hidden = !show;
       btn.querySelector('i').textContent = show ? '▴' : '▾';
       if (show && !logged){ logged = true; all.forEach(a=>A.log('imp', a.id, g, k)); JDJ.track('agent_open', {sgg:g, n:all.length, own}); }
+      if (show && window.JDJ_LEAD && !el.dataset.ld){ el.dataset.ld = '1'; JDJ_LEAD.mount(el.querySelector('.ldslot'), {src:'report', kind:'buy', g, gn:sggName(g), k, apt:k.split('|')[2]}); }
     };
   });
 }

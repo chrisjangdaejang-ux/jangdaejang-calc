@@ -33,6 +33,7 @@
 <script src="../assets/stat.js?v=7"></script>
 <script src="../assets/share.js?v=7"></script>
 <script src="../assets/agents.js"></script>
+<script src="../assets/lead.js?v=1"></script>
 <script src="../assets/config.js?v=3"></script>
 <script src="../assets/auth.js?v=3"></script>
 <script src="../assets/kchat.js?v=1"></script>
@@ -348,7 +349,8 @@ async function fillAlert(d){
     const msg = $('alrMsg');
     if (!pick.length){ msg.style.color = '#C2410C'; msg.textContent = '알림 받을 내용을 하나 이상 골라 주세요.'; return; }
     $('alrBtn').disabled = true; msg.style.color = '#4E5968'; msg.textContent = '신청하는 중이에요…';
-    AU.subscribe(pick).then(() => { fillAlert(d).then(() => { const m2 = $('alrMsg'); if (m2){ m2.style.color = '#0E7A4F'; m2.textContent = '신청했어요. 발송을 시작하면 카카오톡으로 알려 드릴게요.'; } }); })
+    AU.subscribe(pick).then(() => { fillAlert(d).then(() => { const m2 = $('alrMsg'); if (m2){ m2.style.color = '#0E7A4F'; m2.textContent = '신청했어요. 발송을 시작하면 카카오톡으로 알려 드릴게요.'; }
+      const sl = box.querySelector('.alr'); if (sl && window.JDJ_LEAD){ const x = document.createElement('div'); sl.appendChild(x); JDJ_LEAD.mount(x, {src:'alert', kind:'buy', g:d.code, gn:sggName(d.code), k:d.code + '|' + d.dong + '|' + d.apt, apt:d.apt, band:S.band || ''}); } }); })
       .catch(e => { msg.style.color = '#C2410C'; msg.textContent = e.message; $('alrBtn').disabled = false; });
   };
 }
@@ -659,7 +661,8 @@ async function fillAgents(d){
     const tel = String(a.ph || '').replace(/[^\d]/g, ''), r = rank(a), hl = r === 0 ? '이 단지 매물 보유' : r === 1 ? '같은 동 사무소' : r === 2 ? '이 지역 사무소' : '';
     return `<div class="agc"><b>${esc(nm(a))}</b><span class="tag2">제휴·광고</span><small>${a.t === 'm' ? esc(a.n) + ' 소속 · ' : ''}${esc(a.ogn)} ${esc(a.dong)}${a.t === 'm' ? '' : ' · 대표 ' + esc(a.ceo)} · ${esc(a.ph)}</small>${hl ? `<span class="hl">${hl}</span>` : ''}${a.intro ? `<small style="color:#191F28;margin-top:4px">${esc(a.intro)}</small>` : ''}
       <div class="acts">${tel ? `<a class="tel" href="tel:${tel}" data-a="${esc(a.id)}" data-act="call">전화 상담</a>` : ''}${window.KChat ? KChat.btn(a.kk, {a:a.id, g, k, name:nm(a)}) : ''}</div></div>`;
-  }).join('') + `</div><p class="note" style="margin:8px 0 0">제휴(광고) 중개사무소입니다. 집예보는 중개 행위에 관여하지 않으며, 거래 조건은 해당 중개사무소에 직접 확인하세요.</p></div>`;
+  }).join('') + `</div><div id="ldMine"></div><p class="note" style="margin:8px 0 0">제휴(광고) 중개사무소입니다. 집예보는 중개 행위에 관여하지 않으며, 거래 조건은 해당 중개사무소에 직접 확인하세요.</p></div>`;
+  if (window.JDJ_LEAD) JDJ_LEAD.mount($('ldMine'), {src:'mine', kind: loadHomes().some(h => h.code === d.code && h.dong === d.dong && h.apt === d.apt) ? 'sell' : 'buy', g, gn:sggName(g), k, apt:d.apt, band:S.band || ''});
   A.log('rec', all.map(a => a.id).sort().join(','), g, k);
   all.forEach(a => A.log('imp', a.id, g, k));
   box.querySelectorAll('[data-act]').forEach(el => el.addEventListener('click', () => { A.log(el.dataset.act, el.dataset.a, g, k); A.flush(); }));

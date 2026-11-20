@@ -1,5 +1,13 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v18: 우리 동네 아침 브리핑 구독)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v19: 중개사 업무 도구 — 문의 연결·고객 관심 단지 알림 / v18: 우리 동네 아침 브리핑 구독)
+ *
+ * v19 변경 요약 (재배포 필요: 배포 → 배포 관리 → 수정 → 새 버전 → 배포, 그다음 편집기에서 setupAgentTools 한 번 실행)
+ *  - 매수·매도 문의 연결: 이용자가 '중개사 연락 받기'에 따로 동의하면 고른(또는 공개 순번 규칙으로 정해진) 제휴 중개사에게만 전달.
+ *    연락처는 암호화(스크립트 속성 LEAD_KEY 자동 생성)·가린 값·해시만 저장, 90일 뒤 또는 이용자 취소 시 바로 삭제.
+ *  - 중개사 대시보드(agent/my/): agentLogin(세션 해시만 저장)·agentInbox·agentLeadUpdate·agentPrefs
+ *  - 고객 관심 단지 알림: watchSave·watchList·watchRemove + 매일 오전 8시 agentDaily(새 실거래·신고가·큰 하락 거래)
+ *  - 발송은 sendNotice(채널 추상화): 메일 + 카카오 알림톡(아침 브리핑의 solapiSend 재사용, 스크립트 속성 SOLAPI_TPL_AGENT 템플릿을 넣으면 켜짐). 검증: node tools/agent-tools-test.js
+ *  - 리포트 공개 목록(list)에 lead 칸이 생기면 화면의 '중개사 연락 받기'가 켜집니다(재배포 전에는 화면에 안 나옴).
  *
  * v18 변경 요약
  *  - 우리 동네 아침 브리핑(유료 구독) 추가. 기존 기능은 그대로입니다. (검증: node tools/brief-test.js)
@@ -174,6 +182,7 @@ function doGet(e) {
   if (act === 'adList') return out(adList());
   if (act === 'reviews') return out(reviewsPublic(e.parameter.a));
   if (act === 'unsub') return unsubscribe(e.parameter);
+  if (act === 'leadCancel') return leadCancel(e.parameter);
   if (act === 'briefConfig') return out({ ok: true, channels: briefChannels(), price: BRIEF_PRICE, trial: BRIEF_TRIAL });
   if (act === 'briefAreas') return out(briefAreas(e.parameter));
   if (act === 'briefInterest') return out(briefInterest(e.parameter));
@@ -194,6 +203,7 @@ function doPost(e) {
   if (PAY_ACTIONS[b.action]) return out(payDispatch(b));
   if (b.action === 'adApply' || b.action === 'adInquiry' || b.action === 'adLead') return out(adDispatch(b));
   if (USER_ACTIONS[b.action]) return out(userDispatch(b));
+  if (AGT_ACTIONS[b.action]) return out(agtDispatch(b));
   if (BRIEF_ACTIONS[b.action]) return out(briefDispatch(b));
   if (PRO_ACTIONS[b.action]) return out(proDispatch(b));
   const lock = LockService.getScriptLock();
@@ -222,7 +232,7 @@ function listPublic() {
   if (hit) return JSON.parse(hit);
   const RS = reviewStats();
   const res = {
-    ok: true, slot: SLOT, at: ymd(new Date()),
+    ok: true, slot: SLOT, at: ymd(new Date()), lead: { v: LEAD_CONSENT_V, pick: LEAD_PICK_MAX, turn: LEAD_TURN_N, keep: LEAD_KEEP_DAYS },
     agents: agents().filter(isActive).map(a => ({
       id: a.id, n: a.office, ceo: a.ceo, ph: a.phone, kk: a.kakao, intro: a.intro, reg: a.reg,
       og: a.og, ogn: a.ogName, dong: a.dong, r: regionsOf(a), dj: a.plan === PLAN.premium ? freshDanji(a).map(d => d.k) : [], pl: a.plan === PLAN.premium ? 'p' : 'b',
@@ -2259,4 +2269,407 @@ function briefCleanup(now) {
     if (endish && addDays(endish, BRIEF_KEEP_DAYS) < t && String(o.r[BC['연락처']])) setB(o.row, '연락처', '');
   });
   del.sort((a, b) => b - a).forEach(r => bSheet().deleteRow(r));
+}
+
+
+/* =====================================================================
+   v19 중개사 업무 도구 — ① 매수·매도 문의 연결 ② (적정 가격 근거표는 화면만, 서버 없음) ③ 고객 관심 단지 변화 알림
+   원칙
+   - 집예보는 중개하지 않고 보수도 받지 않는다: 이용자가 '중개사 연락 받기'에 따로 동의하고 고른(또는 공개 순번 규칙으로 정해진)
+     제휴 중개사에게 문의를 '전달'만 한다. 매물을 게시하지 않고, 건별 수수료·성과 보수를 받지 않는다(정액 제휴 이용료만).
+   - 연락처 원값은 시트에 쓰지 않는다: 서버 비밀키(스크립트 속성 LEAD_KEY, 처음 쓸 때 자동 생성)로 암호화한 값 + 가린 값(010-****-1234)
+     + 중복 확인용 해시만. 받은 중개사가 로그인한 대시보드에서만 풀어서 보여 준다. 90일 뒤(또는 이용자가 취소하면 바로) 지운다.
+   - 중개사 로그인 유지: 등록번호+관리코드 확인 뒤 무작위 세션 토큰 발급, 시트에는 해시만(30일).
+   - 고객 관심 단지: 서버에는 중개사가 붙인 별칭(이름·전화번호 모양은 거절)과 고객 구분값 해시, 단지 키만. 고객 이름은 중개사 기기에만.
+   - 순번 배정 규칙(공개): 그 구를 노출 지역으로 고른 승인·기간 내 제휴 중개사 중 '순번 문의를 가장 오래전에 받은 곳'부터 LEAD_TURN_N곳,
+     같으면 무작위. 상품(기본·프리미엄)·요금·리뷰·미래가치 점수와 무관.
+   새 요청(POST): leadCreate(누구나, 동의 필수) · agentLogin · agentLogout · agentInbox · agentLeadUpdate · agentPrefs
+                 · watchList · watchSave · watchRemove   (GET) leadCancel(이용자 취소 링크)
+   최초 1회: 편집기에서 setupAgentTools 실행 → '중개문의'·'중개사세션'·'고객관심'·'고객알림'·'중개사설정' 시트 + 매일 오전 8시 점검 트리거
+   ===================================================================== */
+const AGT_ACTIONS = { leadCreate: 1, agentLogin: 1, agentLogout: 1, agentInbox: 1, agentLeadUpdate: 1, agentPrefs: 1, watchList: 1, watchSave: 1, watchRemove: 1 };
+const SH_AGQ = '중개문의', SH_AS = '중개사세션', SH_W = '고객관심', SH_WE = '고객알림', SH_AP = '중개사설정';
+const AGQH = ['id', '시각', '출처', '종류', '구코드', '단지키', '단지명', '평형', '방식', '받은중개사', '진행', '연락처암호', '연락처가림', '연락처해시',
+             '연락시간', '메모', '동의문구', '동의시각', '취소토큰해시', '삭제예정일', '상태'];
+const ASH = ['세션해시', '중개사id', '만든날', '만료일'];
+const WH = ['id', '중개사id', '별칭', '고객해시', '단지', '종류', '본거래', '만든날', '수정일', '최근점검'];
+const WEH = ['시각', '중개사id', '관심id', '종류', '단지키', '단지명', '내용', '읽음'];
+const APH = ['중개사id', '알림메일', '메일알림', '수정일'];
+const AGQC = Object.fromEntries(AGQH.map((h, i) => [h, i])), ASC = Object.fromEntries(ASH.map((h, i) => [h, i])), WC = Object.fromEntries(WH.map((h, i) => [h, i])),
+      WEC = Object.fromEntries(WEH.map((h, i) => [h, i])), APC = Object.fromEntries(APH.map((h, i) => [h, i]));
+const LEAD_PICK_MAX = 3, LEAD_TURN_N = 2, LEAD_KEEP_DAYS = 90, LEAD_PHONE_DAY = 3, LEAD_DAY_MAX = 300, LEAD_SAME_DAYS = 7;
+const AGENT_SESSION_DAYS = 30, WATCH_MAX = 50, WATCH_KEYS = 10, WATCH_FP_DAYS = 150, DROP_PCT = 10;
+const LEAD_KIND = { buy: '매수 문의', sell: '매도 문의', both: '매수·매도 문의' };
+const LEAD_SRC = { report: '맞춤 매수 리포트', mine: '내 집 시세', alert: '관심 단지 알림', sell: '집 내놓기', compare: '단지 비교' };
+const LEAD_STEP = { new: '새 문의', contacted: '연락함', meeting: '상담 중', done: '마무리', pass: '못 맡음' };
+const LEAD_CONSENT_V = 'lead-2026-11-21';   // 화면 동의 문구 판(assets/lead.js CONSENT_V 와 같아야 함)
+const PRICE_URL = 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/data/price/';
+const AGENT_SITE = 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/agent/my/';
+
+function agtDispatch(b) {
+  try {
+    if (b.action === 'leadCreate') return withLock(() => leadCreate(b));
+    if (b.action === 'agentLogin') return withLock(() => agentLogin(b));
+    return withLock(() => {
+      const me = agentSession(b.s);
+      if (b.action === 'agentLogout') return agentLogout(b);
+      if (b.action === 'agentInbox') return agentInbox(me);
+      if (b.action === 'agentLeadUpdate') return agentLeadUpdate(me, b);
+      if (b.action === 'agentPrefs') return agentPrefs(me, b);
+      if (b.action === 'watchList') return watchList(me);
+      if (b.action === 'watchSave') return watchSave(me, b);
+      if (b.action === 'watchRemove') return watchRemove(me, b);
+      return { ok: false, err: 'unknown' };
+    });
+  } catch (x) {
+    return { ok: false, err: String(x.message || x), code: x.code || '' };
+  }
+}
+
+/* ---------- 발송 채널 추상화 ----------
+   to = {mail, kakao}, msg = {title, lines[], url, button}. 채널마다 보낼 수 있으면 보내고 결과를 돌려준다.
+   카카오 알림톡은 아침 브리핑과 같은 발송 모듈(solapiSend, 솔라피 키)을 그대로 쓴다. 중개사용 템플릿 id 는 스크립트 속성 SOLAPI_TPL_AGENT
+   (변수 #{제목}·#{내용}·#{링크}) — 없으면 알림톡은 건너뛰고 메일만 보낸다. 받는 번호는 중개사 등록 전화가 휴대폰일 때만. */
+const AGT_CHANNELS = {
+  mail(to, msg) {
+    if (!to.mail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to.mail)) return false;
+    if (MailApp.getRemainingDailyQuota && MailApp.getRemainingDailyQuota() < 5) return false;
+    const li = (msg.lines || []).map(t => `<li style="margin:4px 0">${uText(t, 300)}</li>`).join('');
+    MailApp.sendEmail({ to: to.mail, name: '집예보 중개사 도구', subject: '[집예보] ' + uText(msg.title, 80),
+      htmlBody: `<div style="font-family:'Noto Sans KR',sans-serif;max-width:560px;margin:auto;color:#191F28"><h2 style="font-size:18px">${uText(msg.title, 80)}</h2><ul style="padding-left:18px">${li}</ul>`
+        + `<p><a href="${msg.url || AGENT_SITE}" style="background:#2F6BFF;color:#fff;padding:10px 16px;border-radius:10px;text-decoration:none;font-weight:700">${uText(msg.button || '중개사 대시보드 열기', 30)}</a></p>`
+        + `<p style="font-size:12px;color:#6B7684">고객 연락처는 메일에 넣지 않아요. 대시보드에 로그인해서 확인해 주세요. 알림을 끄려면 대시보드 [설정]에서 [메일 알림]을 끄세요.</p></div>` });
+    return true;
+  },
+  kakao(to, msg) {
+    if (!to.kakao || typeof solapiSend !== 'function') return false;
+    const r = solapiSend(to.kakao, 'SOLAPI_TPL_AGENT', { '#{제목}': uText(msg.title, 60), '#{내용}': (msg.lines || []).map(t => uText(t, 120)).join('\n').slice(0, 600), '#{링크}': msg.url || AGENT_SITE }, msg.url || AGENT_SITE);
+    return !!(r && r.ok);
+  }
+};
+function sendNotice(to, msg) {
+  const res = {};
+  Object.keys(AGT_CHANNELS).forEach(ch => { try { res[ch] = AGT_CHANNELS[ch](to || {}, msg || {}); } catch (e) { res[ch] = false; } });
+  return res;
+}
+
+/* ---------- 연락처 암호화 (HMAC-SHA256 키 흐름 + 위변조 확인) ---------- */
+function leadKey() {
+  const P = PropertiesService.getScriptProperties();
+  let k = P.getProperty('LEAD_KEY');
+  if (!k) { k = newToken() + newToken(); P.setProperty('LEAD_KEY', k); }
+  return k;
+}
+const hmac = (s, key) => Utilities.computeHmacSha256Signature(s, key);
+function sealText(plain) {
+  const key = leadKey(), nonce = newToken().slice(0, 24);
+  const pb = Utilities.newBlob(String(plain)).getBytes(), out = [];
+  for (let i = 0; i < pb.length; i += 32) {
+    const ks = hmac('ks|' + nonce + '|' + (i / 32), key);
+    for (let j = 0; j < 32 && i + j < pb.length; j++) out.push(((pb[i + j] ^ ks[j]) << 24) >> 24);
+  }
+  const ct = Utilities.base64EncodeWebSafe(out);
+  return 'e1.' + nonce + '.' + ct + '.' + hex(hmac('mac|' + nonce + '|' + ct, key)).slice(0, 32);
+}
+function openText(sealed) {
+  const p = String(sealed || '').split('.');
+  if (p.length !== 4 || p[0] !== 'e1') return '';
+  const key = leadKey();
+  if (!safeEq(hex(hmac('mac|' + p[1] + '|' + p[2], key)).slice(0, 32), p[3])) return '';
+  const cb = Utilities.base64DecodeWebSafe(p[2]), out = [];
+  for (let i = 0; i < cb.length; i += 32) {
+    const ks = hmac('ks|' + p[1] + '|' + (i / 32), key);
+    for (let j = 0; j < 32 && i + j < cb.length; j++) out.push(((cb[i + j] ^ ks[j]) << 24) >> 24);
+  }
+  return Utilities.newBlob(out).getDataAsString();
+}
+
+/* ---------- 중개사 로그인 (등록번호 + 관리코드 → 세션) ---------- */
+function agentLogin(b) {
+  const list = agents(), me = findMe(b, list);
+  const s = newToken(), now = new Date(), exp = new Date(now.getTime() + AGENT_SESSION_DAYS * 86400000);
+  const sh = uSheet(SH_AS, ASH), v = sh.getDataRange().getValues();
+  for (let i = v.length - 1; i >= 1; i--) {                       // 만료된 세션 정리 + 같은 중개사 세션은 최근 5개만
+    if (!(new Date(v[i][ASC['만료일']]).getTime() > now.getTime())) sh.deleteRow(i + 1);
+  }
+  const mine = sh.getDataRange().getValues().map((r, i) => ({ r, row: i + 1 })).slice(1).filter(x => String(x.r[ASC['중개사id']]) === me.id);
+  mine.slice(0, Math.max(0, mine.length - 4)).map(x => x.row).sort((a, c) => c - a).forEach(r => sh.deleteRow(r));
+  const r = []; r[ASC['세션해시']] = hashOf('agt|' + s); r[ASC['중개사id']] = me.id; r[ASC['만든날']] = now; r[ASC['만료일']] = exp;
+  sh.appendRow(ASH.map((h, i) => r[i] === undefined ? '' : r[i]));
+  return { ok: true, s: s, exp: ymd(exp), me: agentPublic(me) };
+}
+function agentSession(s) {
+  s = String(s || '');
+  if (!/^[0-9a-f]{64}$/.test(s)) throw authErr('중개사 로그인이 끝났어요. 다시 로그인해 주세요.');
+  const h = hashOf('agt|' + s), sh = book().getSheetByName(SH_AS);
+  if (!sh) throw authErr('중개사 로그인이 끝났어요. 다시 로그인해 주세요.');
+  const v = sh.getDataRange().getValues();
+  for (let i = 1; i < v.length; i++) if (safeEq(String(v[i][ASC['세션해시']]), h)) {
+    if (!(new Date(v[i][ASC['만료일']]).getTime() > Date.now())) { sh.deleteRow(i + 1); break; }
+    const me = agents().find(a => a.id === String(v[i][ASC['중개사id']]));
+    if (me) return me;
+  }
+  throw authErr('중개사 로그인이 끝났어요. 다시 로그인해 주세요.');
+}
+function agentLogout(b) {
+  const h = hashOf('agt|' + String(b.s || '')), sh = book().getSheetByName(SH_AS); if (!sh) return { ok: true };
+  const v = sh.getDataRange().getValues();
+  for (let i = v.length - 1; i >= 1; i--) if (safeEq(String(v[i][ASC['세션해시']]), h)) sh.deleteRow(i + 1);
+  return { ok: true };
+}
+function agentPublic(a) {
+  return { id: a.id, office: a.office, name: a.type === TYPE.member ? a.name : a.ceo, type: a.type, plan: a.plan, og: a.og, ogName: a.ogName, dong: a.dong,
+    regions: regionsOf(a), status: statusOf(a), expires: a.expires instanceof Date ? ymd(a.expires) : '', phone: a.phone };
+}
+function agentPrefRow(id) {
+  const sh = uSheet(SH_AP, APH), v = sh.getDataRange().getValues();
+  for (let i = 1; i < v.length; i++) if (String(v[i][APC['중개사id']]) === id) return { row: i + 1, mail: String(v[i][APC['알림메일']] || ''), on: v[i][APC['메일알림']] !== 'N' };
+  return { row: 0, mail: '', on: true };
+}
+function agentPrefs(me, b) {
+  const p = agentPrefRow(me.id);
+  if (b.set) {
+    const mail = str(b.mail, 80).toLowerCase();
+    if (mail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) throw new Error('알림 받을 메일 주소를 확인해 주세요.');
+    const sh = uSheet(SH_AP, APH), r = []; r[APC['중개사id']] = me.id; r[APC['알림메일']] = cellSafe(mail); r[APC['메일알림']] = b.on === false ? 'N' : 'Y'; r[APC['수정일']] = new Date();
+    const row = APH.map((h, i) => r[i] === undefined ? '' : r[i]);
+    if (p.row) sh.getRange(p.row, 1, 1, APH.length).setValues([row]); else sh.appendRow(row);
+    return { ok: true, mail: mail, on: b.on !== false };
+  }
+  return { ok: true, mail: p.mail || me.mail || '', on: p.on };
+}
+function noticeTo(a) { const p = agentPrefRow(a.id); return p.on ? { mail: p.mail || a.mail || '', kakao: leadPhone(a.phone) } : {}; }
+
+/* ---------- ① 문의 만들기 (이용자) ---------- */
+function leadPhone(v) {
+  const d = String(v == null ? '' : v).replace(/[^0-9]/g, '');
+  return /^01[016789]\d{7,8}$/.test(d) ? d : '';
+}
+const maskPhone = d => d.slice(0, 3) + '-****-' + d.slice(-4);
+const CUT_NAME = /\d{4,}|@|https?:/i;
+/* 순번 배정: 공개 규칙 그대로 (가장 오래전에 순번 문의를 받은 곳부터, 같으면 무작위) */
+function turnPick(cands, lastTurn, n, rnd) {
+  rnd = rnd || Math.random;
+  return cands.map(a => ({ a, t: lastTurn[a.id] || 0, r: rnd() })).sort((x, y) => x.t - y.t || x.r - y.r).slice(0, n).map(x => x.a);
+}
+function leadRows() { const sh = uSheet(SH_AGQ, AGQH); return { sh, v: sh.getDataRange().getValues() }; }
+function leadCreate(b) {
+  if (!b.agree || String(b.cv || '') !== LEAD_CONSENT_V) throw new Error('개인정보 제3자 제공(고른 중개사에게 연락처 전달)에 동의해 주세요.');
+  const phone = leadPhone(b.phone);
+  if (!phone) throw new Error('휴대폰 번호를 정확히 입력해 주세요.');
+  const g = str(b.g, 5); if (!/^\d{5}$/.test(g)) throw new Error('지역을 다시 골라 주세요.');
+  const kind = LEAD_KIND[b.kind] ? b.kind : '';
+  if (!kind) throw new Error('매수 문의인지 매도 문의인지 골라 주세요.');
+  const src = LEAD_SRC[b.src] ? b.src : 'report';
+  const key = str(b.k, 160), apt = uText(b.apt, 60), band = uText(b.band, 20);
+  if (key && (!/^\d{5}\|[^|]{1,30}\|[^|]{1,60}$/.test(key) || key.slice(0, 5) !== g)) throw new Error('단지 정보를 다시 골라 주세요.');
+  const memo = uText(b.memo, 100), when = uText(b.when, 20);
+  const list = agents().filter(isActive), cands = list.filter(a => regionsOf(a).indexOf(g) >= 0);
+  if (!cands.length) throw new Error('이 지역에는 아직 제휴 중개사가 없어요.');
+  const mode = b.mode === 'turn' ? 'turn' : 'pick';
+  const { sh, v } = leadRows(), now = new Date(), day = ymd(now), ph = hashOf('lead|' + phone);
+  const rows = v.slice(1);
+  if (rows.filter(r => r[AGQC['시각']] instanceof Date && ymd(r[AGQC['시각']]) === day).length >= LEAD_DAY_MAX) throw new Error('오늘 문의가 많아 잠시 받을 수 없어요. 내일 다시 시도해 주세요.');
+  if (rows.filter(r => String(r[AGQC['연락처해시']]) === ph && r[AGQC['시각']] instanceof Date && ymd(r[AGQC['시각']]) === day).length >= LEAD_PHONE_DAY) throw new Error(`같은 번호로는 하루 ${LEAD_PHONE_DAY}건까지 문의할 수 있어요.`);
+  if (rows.some(r => String(r[AGQC['연락처해시']]) === ph && String(r[AGQC['구코드']]) === g && String(r[AGQC['단지키']]) === key && String(r[AGQC['상태']]) === '진행'
+      && r[AGQC['시각']] instanceof Date && now - r[AGQC['시각']] < LEAD_SAME_DAYS * 86400000)) throw new Error(`같은 곳 문의는 ${LEAD_SAME_DAYS}일에 한 번만 보낼 수 있어요. 이미 보낸 문의는 중개사가 확인하고 있어요.`);
+  let to;
+  if (mode === 'pick') {
+    const ids = (Array.isArray(b.ids) ? b.ids : []).map(String).filter((x, i, a) => ID_RE.test(x) && a.indexOf(x) === i);
+    if (!ids.length) throw new Error('연락받을 중개사를 1곳 이상 골라 주세요.');
+    if (ids.length > LEAD_PICK_MAX) throw new Error(`중개사는 ${LEAD_PICK_MAX}곳까지 고를 수 있어요.`);
+    to = ids.map(id => cands.find(a => a.id === id)).filter(Boolean);
+    if (to.length !== ids.length) throw new Error('고른 중개사 중 지금 이 지역 문의를 받지 않는 곳이 있어요. 화면을 새로 고쳐 다시 골라 주세요.');
+  } else {
+    const last = {};
+    rows.forEach(r => { if (String(r[AGQC['방식']]) !== 'turn' || !(r[AGQC['시각']] instanceof Date)) return;
+      parseJ(r[AGQC['받은중개사']], []).forEach(id => { last[id] = Math.max(last[id] || 0, r[AGQC['시각']].getTime()); }); });
+    to = turnPick(cands, last, LEAD_TURN_N);
+  }
+  const id = 'Q' + Utilities.getUuid().replace(/-/g, '').slice(0, 9).toUpperCase(), cancel = newToken().slice(0, 32);
+  const prog = {}; to.forEach(a => prog[a.id] = { s: 'new', at: '' });
+  const r = [];
+  r[AGQC['id']] = id; r[AGQC['시각']] = now; r[AGQC['출처']] = src; r[AGQC['종류']] = kind; r[AGQC['구코드']] = g; r[AGQC['단지키']] = cellSafe(key); r[AGQC['단지명']] = cellSafe(apt);
+  r[AGQC['평형']] = cellSafe(band); r[AGQC['방식']] = mode; r[AGQC['받은중개사']] = JSON.stringify(to.map(a => a.id)); r[AGQC['진행']] = JSON.stringify(prog);
+  r[AGQC['연락처암호']] = sealText(phone); r[AGQC['연락처가림']] = maskPhone(phone); r[AGQC['연락처해시']] = ph; r[AGQC['연락시간']] = cellSafe(when); r[AGQC['메모']] = cellSafe(memo);
+  r[AGQC['동의문구']] = LEAD_CONSENT_V; r[AGQC['동의시각']] = now; r[AGQC['취소토큰해시']] = hashOf('lc|' + cancel);
+  r[AGQC['삭제예정일']] = new Date(now.getTime() + LEAD_KEEP_DAYS * 86400000); r[AGQC['상태']] = '진행';
+  sh.appendRow(AGQH.map((h, i) => r[i] === undefined ? '' : r[i]));
+  const gn = uText(b.gn, 20) || (cands.find(a => a.og === g) || {}).ogName || g;
+  const where = (apt ? apt + (band ? ' ' + band : '') + ' · ' : '') + gn;
+  to.forEach(a => { try { sendNotice(noticeTo(a), { title: `새 ${LEAD_KIND[kind]}가 도착했어요`, lines: [where, `${LEAD_SRC[src]}에서 이용자가 ${mode === 'pick' ? '직접 고른' : '순번으로 정해진'} 문의예요.`, '연락처는 대시보드에서만 볼 수 있어요.'] }); } catch (e) {} });
+  return { ok: true, id: id, cancel: cancel, to: to.map(a => ({ id: a.id, n: a.type === TYPE.member ? a.name + ' 공인중개사' : a.office })), keep: LEAD_KEEP_DAYS };
+}
+/* 이용자 취소 링크(완료 화면에서 준 주소): 연락처를 바로 지우고 문의를 닫는다 */
+function leadCancel(p) {
+  const id = String(p.id || ''), t = String(p.t || '');
+  let done = false;
+  if (/^Q[0-9A-F]{9}$/.test(id) && /^[0-9a-f]{32}$/.test(t)) {
+    withLock(() => {
+      const { sh, v } = leadRows();
+      for (let i = 1; i < v.length; i++) if (String(v[i][AGQC['id']]) === id && safeEq(String(v[i][AGQC['취소토큰해시']]), hashOf('lc|' + t))) {
+        ['연락처암호', '연락처가림', '연락시간', '메모'].forEach(h => sh.getRange(i + 1, AGQC[h] + 1).setValue(''));
+        sh.getRange(i + 1, AGQC['상태'] + 1).setValue('취소'); done = true;
+      }
+    });
+  }
+  return HtmlService.createHtmlOutput(`<div style="font-family:sans-serif;padding:40px;text-align:center"><h2>${done ? '문의를 취소하고 연락처를 지웠어요' : '문의를 찾지 못했어요'}</h2>
+    <p>${done ? '중개사 화면에서도 더 이상 연락처가 보이지 않아요.' : '이미 취소했거나 보관 기간이 지나 지워졌을 수 있어요.'}</p><p><a href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/">집예보로 가기</a></p></div>`);
+}
+
+/* ---------- ① 중개사: 받은 문의 · 응답 처리 ---------- */
+function leadOut(r, me) {
+  const prog = parseJ(r[AGQC['진행']], {}), mine = prog[me.id] || { s: 'new' }, open = String(r[AGQC['상태']]) === '진행';
+  const others = Object.keys(prog).filter(id => id !== me.id).length;
+  return { id: String(r[AGQC['id']]), at: r[AGQC['시각']] instanceof Date ? Utilities.formatDate(r[AGQC['시각']], 'Asia/Seoul', 'yyyy-MM-dd HH:mm') : '',
+    src: LEAD_SRC[r[AGQC['출처']]] || '', kind: LEAD_KIND[r[AGQC['종류']]] || '', g: String(r[AGQC['구코드']]), k: String(r[AGQC['단지키']]).replace(/^'/, ''),
+    apt: String(r[AGQC['단지명']]).replace(/^'/, ''), band: String(r[AGQC['평형']]).replace(/^'/, ''), mode: String(r[AGQC['방식']]), others: others,
+    phone: open && mine.s !== 'pass' ? openText(r[AGQC['연락처암호']]) : '', mask: open ? String(r[AGQC['연락처가림']]) : '',
+    when: open ? String(r[AGQC['연락시간']]).replace(/^'/, '') : '', memo: open ? String(r[AGQC['메모']]).replace(/^'/, '') : '',
+    step: mine.s, stepAt: mine.at || '', state: String(r[AGQC['상태']]), until: r[AGQC['삭제예정일']] instanceof Date ? ymd(r[AGQC['삭제예정일']]) : '' };
+}
+function agentInbox(me) {
+  const { v } = leadRows(), out = [];
+  for (let i = v.length - 1; i >= 1 && out.length < 200; i--) if (parseJ(v[i][AGQC['받은중개사']], []).indexOf(me.id) >= 0) out.push(leadOut(v[i], me));
+  const cnt = {}; out.filter(x => x.state === '진행').forEach(x => cnt[x.step] = (cnt[x.step] || 0) + 1);
+  const prefs = agentPrefs(me, {});
+  return { ok: true, me: agentPublic(me), leads: out, count: cnt, steps: LEAD_STEP, prefs: { mail: prefs.mail, on: prefs.on } };
+}
+function agentLeadUpdate(me, b) {
+  const step = String(b.step || '');
+  if (!LEAD_STEP[step] || step === 'new') throw new Error('처리 상태를 다시 골라 주세요.');
+  const { sh, v } = leadRows();
+  for (let i = 1; i < v.length; i++) if (String(v[i][AGQC['id']]) === String(b.id)) {
+    const prog = parseJ(v[i][AGQC['진행']], {});
+    if (!prog[me.id]) break;
+    if (String(v[i][AGQC['상태']]) !== '진행') throw new Error('이용자가 취소했거나 보관 기간이 지난 문의예요.');
+    prog[me.id] = { s: step, at: Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd HH:mm') };
+    sh.getRange(i + 1, AGQC['진행'] + 1).setValue(JSON.stringify(prog));
+    v[i][AGQC['진행']] = JSON.stringify(prog);
+    return { ok: true, lead: leadOut(v[i], me) };
+  }
+  throw new Error('문의를 찾지 못했어요.');
+}
+
+/* ---------- ③ 고객 관심 단지 ---------- */
+const WKEY = /^\d{5}\|[^|]{1,30}\|[^|]{1,60}\|[^|]{0,20}$/;          // 구코드|동|단지|평형(빈 값 = 모든 평형)
+function cleanAlias(v) {
+  const s = uText(v, 12);
+  if (!s) throw new Error('고객 별칭을 적어 주세요(예: 고객 A, 학군 이사).');
+  if (CUT_NAME.test(s)) throw new Error('별칭에는 전화번호·메일 주소를 넣을 수 없어요. 고객 이름은 이 기기에만 저장돼요.');
+  return s;
+}
+function watchRowsOf(id) {
+  const sh = uSheet(SH_W, WH), v = sh.getDataRange().getValues(), out = [];
+  for (let i = 1; i < v.length; i++) if (String(v[i][WC['중개사id']]) === id) out.push({ row: i + 1, r: v[i] });
+  return { sh, out };
+}
+function watchOut(x) {
+  const r = x.r;
+  return { id: String(r[WC['id']]), alias: String(r[WC['별칭']]).replace(/^'/, ''), keys: parseJ(r[WC['단지']], []), kinds: parseJ(r[WC['종류']], {}),
+    at: r[WC['수정일']] instanceof Date ? ymd(r[WC['수정일']]) : '', checked: r[WC['최근점검']] instanceof Date ? Utilities.formatDate(r[WC['최근점검']], 'Asia/Seoul', 'yyyy-MM-dd HH:mm') : '' };
+}
+function watchList(me) {
+  const { out } = watchRowsOf(me.id);
+  const es = uSheet(SH_WE, WEH).getDataRange().getValues().slice(1).filter(r => String(r[WEC['중개사id']]) === me.id).slice(-100).reverse()
+    .map(r => ({ at: r[WEC['시각']] instanceof Date ? Utilities.formatDate(r[WEC['시각']], 'Asia/Seoul', 'yyyy-MM-dd HH:mm') : '', w: String(r[WEC['관심id']]), kind: String(r[WEC['종류']]),
+      k: String(r[WEC['단지키']]).replace(/^'/, ''), n: String(r[WEC['단지명']]).replace(/^'/, ''), d: parseJ(r[WEC['내용']], {}) }));
+  return { ok: true, watches: out.map(watchOut), events: es, max: WATCH_MAX, maxKeys: WATCH_KEYS, dropPct: DROP_PCT };
+}
+function watchSave(me, b) {
+  const alias = cleanAlias(b.alias);
+  const seen = {};
+  const keys = (Array.isArray(b.keys) ? b.keys : []).slice(0, WATCH_KEYS + 5).map(x => ({ k: String(x && x.k || '').slice(0, 140), n: uText(x && x.n, 60) }))
+    .filter(x => WKEY.test(x.k) && x.n && !seen[x.k] && (seen[x.k] = 1));
+  if (!keys.length) throw new Error('관심 단지를 1곳 이상 골라 주세요.');
+  if (keys.length > WATCH_KEYS) throw new Error(`고객 1명당 관심 단지는 ${WATCH_KEYS}곳까지예요.`);
+  const k = b.kinds || {}, kinds = { trade: k.trade !== false, high: k.high !== false, drop: k.drop !== false };
+  const ref = String(b.ref || ''); if (!/^[0-9a-f]{16,32}$/.test(ref)) throw new Error('고객 구분값이 올바르지 않아요. 화면을 새로 고쳐 주세요.');
+  const { sh, out } = watchRowsOf(me.id), now = new Date();
+  const hit = b.id ? out.find(x => String(x.r[WC['id']]) === String(b.id)) : null;
+  if (!hit && out.length >= WATCH_MAX) throw new Error(`고객 관심 단지 목록은 ${WATCH_MAX}명까지 저장할 수 있어요.`);
+  const r = hit ? hit.r.slice() : [];
+  if (!hit) { r[WC['id']] = 'W' + Utilities.getUuid().replace(/-/g, '').slice(0, 9).toUpperCase(); r[WC['중개사id']] = me.id; r[WC['만든날']] = now; r[WC['본거래']] = '{}'; r[WC['최근점검']] = ''; }
+  r[WC['별칭']] = cellSafe(alias); r[WC['고객해시']] = hashOf('cref|' + me.id + '|' + ref); r[WC['단지']] = JSON.stringify(keys); r[WC['종류']] = JSON.stringify(kinds); r[WC['수정일']] = now;
+  /* 새로 넣은 단지는 지금 있는 거래를 '본 거래'로 채워 둔다(첫 점검 때 옛 거래로 알림이 쏟아지지 않게) — 점검 때 채움 표시만 */
+  const fp = parseJ(r[WC['본거래']], {}); Object.keys(fp).forEach(x => { if (!keys.some(y => y.k === x)) delete fp[x]; });
+  keys.forEach(x => { if (!fp[x.k]) fp[x.k] = { seed: 1, f: [] }; });
+  r[WC['본거래']] = JSON.stringify(fp);
+  const row = WH.map((h, i) => r[i] === undefined ? '' : r[i]);
+  if (hit) sh.getRange(hit.row, 1, 1, WH.length).setValues([row]); else sh.appendRow(row);
+  return Object.assign(watchList(me), { saved: String(r[WC['id']]) });
+}
+function watchRemove(me, b) {
+  const { sh, out } = watchRowsOf(me.id);
+  out.filter(x => String(x.r[WC['id']]) === String(b.id)).map(x => x.row).sort((a, c) => c - a).forEach(r => sh.deleteRow(r));
+  return watchList(me);
+}
+
+/* 한 단지 키의 새 거래 찾기 — units = price/{구}.json units, state = {seed, f:[지문]} → {events, state}
+   지문 = 계약일|전용㎡|층|금액. 최근 WATCH_FP_DAYS 일 안 거래만 기억(늦게 신고된 거래도 새 거래로 잡힘).
+   종류: high(신고가 표시 거래) · drop(직거래 제외, 그 평형 최근 3개월 평당 시세보다 DROP_PCT% 이상 낮은 거래) · trade(그 밖의 새 거래) */
+function watchScan(units, key, state, today0, kinds) {
+  const [g, dong, apt, band] = key.split('|');
+  const us = (units || []).filter(u => u[0] === g && u[1] === dong && u[2] === apt && (!band || u[3] === band));
+  const lim = Number(Utilities.formatDate(new Date(today0.getTime() - WATCH_FP_DAYS * 86400000), 'Asia/Seoul', 'yyyyMMdd'));
+  const old = {}; (state && state.f || []).forEach(x => old[x] = 1);
+  const f = [], events = [];
+  us.forEach(u => {
+    const s = u[6] || []; let ref = 0; for (let i = s.length - 1; i >= Math.max(0, s.length - 3); i--) if (s[i] > 0) { ref = s[i]; break; }
+    (u[11] || []).forEach(t => {
+      if (!(Number(t[0]) >= lim)) return;
+      const id = [t[0], t[1], t[2], t[3]].join('|'); f.push(id);
+      if (!state || state.seed || old[id]) return;
+      const ppy = t[1] > 0 ? t[3] / t[1] * 3.3058 : 0, pct = ref > 0 && ppy > 0 ? Math.round((ppy - ref) / ref * 1000) / 10 : null;
+      const kind = t[5] === 1 ? 'high' : (t[4] !== 1 && pct != null && pct <= -DROP_PCT ? 'drop' : 'trade');
+      if (kinds && kinds[kind] === false) return;
+      events.push({ kind, band: u[3], d: t[0], area: t[1], floor: t[2], amt: t[3], type: t[4], pct });
+    });
+  });
+  return { events, state: { f: f.slice(0, 300) } };
+}
+function agentDaily() {
+  const now = new Date();
+  /* 보관 기간 지난 문의 연락처 지우기 */
+  withLock(() => {
+    const { sh, v } = leadRows();
+    for (let i = 1; i < v.length; i++) if (String(v[i][AGQC['상태']]) === '진행' && v[i][AGQC['삭제예정일']] instanceof Date && v[i][AGQC['삭제예정일']] < now) {
+      ['연락처암호', '연락처가림', '연락시간', '메모'].forEach(h => sh.getRange(i + 1, AGQC[h] + 1).setValue(''));
+      sh.getRange(i + 1, AGQC['상태'] + 1).setValue('보관 끝');
+    }
+  });
+  /* 고객 관심 단지 점검 */
+  const sh = uSheet(SH_W, WH), v = sh.getDataRange().getValues(); if (v.length < 2) return;
+  const act = {}; agents().filter(isActive).forEach(a => act[a.id] = a);
+  const gus = {}; v.slice(1).forEach(r => { if (act[String(r[WC['중개사id']])]) parseJ(r[WC['단지']], []).forEach(x => gus[x.k.slice(0, 5)] = 1); });
+  const units = {};
+  Object.keys(gus).forEach(g => { try { units[g] = JSON.parse(UrlFetchApp.fetch(PRICE_URL + g + '.json').getContentText()).units || []; } catch (e) { units[g] = null; } });
+  const es = uSheet(SH_WE, WEH), add = [], perAgent = {};
+  for (let i = 1; i < v.length; i++) {
+    const r = v[i], a = act[String(r[WC['중개사id']])]; if (!a) continue;
+    const keys = parseJ(r[WC['단지']], []), kinds = parseJ(r[WC['종류']], {}), fp = parseJ(r[WC['본거래']], {});
+    keys.forEach(x => {
+      const us = units[x.k.slice(0, 5)]; if (!us) return;                   // 자료를 못 받은 구는 다음 날 다시
+      const res = watchScan(us, x.k, fp[x.k], now, kinds);
+      fp[x.k] = res.state;
+      res.events.slice(0, 20).forEach(e => {
+        add.push([now, a.id, String(r[WC['id']]), e.kind, cellSafe(x.k), cellSafe(x.n), JSON.stringify(e), '']);
+        (perAgent[a.id] = perAgent[a.id] || []).push({ alias: String(r[WC['별칭']]).replace(/^'/, ''), n: x.n, e });
+      });
+    });
+    sh.getRange(i + 1, WC['본거래'] + 1).setValue(JSON.stringify(fp));
+    sh.getRange(i + 1, WC['최근점검'] + 1).setValue(now);
+  }
+  if (add.length) es.getRange(es.getLastRow() + 1, 1, add.length, WEH.length).setValues(add);
+  const KN = { trade: '새 실거래', high: '신고가', drop: '큰 하락 거래' };
+  Object.keys(perAgent).forEach(id => {
+    const L = perAgent[id];
+    try { sendNotice(noticeTo(act[id]), { title: `고객 관심 단지에 새 거래 ${L.length}건`, lines: L.slice(0, 10).map(x => `[${KN[x.e.kind]}] ${x.alias} · ${x.n} ${x.e.band} ${x.e.floor}층 ${eok(x.e.amt)}`).concat(L.length > 10 ? [`그 밖에 ${L.length - 10}건은 대시보드에서 볼 수 있어요.`] : []) }); } catch (e) {}
+  });
+}
+function setupAgentTools() {
+  [[SH_AGQ, AGQH], [SH_AS, ASH], [SH_W, WH], [SH_WE, WEH], [SH_AP, APH]].forEach(x => uSheet(x[0], x[1]));
+  leadKey();
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'agentDaily').forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('agentDaily').timeBased().everyDays(1).atHour(8).inTimezone('Asia/Seoul').create();
 }

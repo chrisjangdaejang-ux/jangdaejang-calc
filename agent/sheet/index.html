@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
+<script src="/jangdaejang-calc/assets/pwa.js" defer data-nobar></script>
+<script src="/jangdaejang-calc/assets/biz.js" defer></script>
+<title>적정 가격 근거표 | 집예보</title>
+<meta name="description" content="단지·평형의 최근 실거래, 시세, 최고가 대비, 같은 구 비교, 미래가치 점수를 한 장으로. 인쇄·PDF·카카오톡 공유.">
+<script>window.JDJ_CONFIG = { tool:'agent_sheet', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../assets/track.js?v=2"></script>
+<script src="../../assets/agents.js"></script>
+<script src="../../assets/mine-core.js?v=15"></script>
+<script src="../../assets/price-sheet.js?v=13"></script>
+<script src="../../assets/rank-core.js?v=5"></script>
+<script src="../../assets/agent-tools-core.js?v=1"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<style>
+[hidden]{display:none!important}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:clamp(22px,5.4vw,30px);margin:4px 0 6px;line-height:1.3;letter-spacing:-.03em}
+.lead{font-size:15.5px;color:#4E5968;margin:0 0 14px;line-height:1.6}
+.ed{border:1px solid var(--line);border-radius:18px;padding:16px;background:#fff;margin:12px 0}
+.ed h2{font-size:17px;margin:0 0 10px}
+.ed label{display:block;font-size:13.5px;font-weight:700;color:#4E5968;margin:10px 0 5px}
+.ed input,.ed select{width:100%;box-sizing:border-box;font:inherit;font-size:16px;border:1px solid var(--line);border-radius:12px;padding:11px 12px;background:#fff;color:#191F28}
+.ed .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:560px){.ed .two{grid-template-columns:1fr}}
+.res{border:1px solid var(--line);border-radius:12px;margin-top:6px;max-height:240px;overflow:auto}
+.res:empty{display:none}
+.res button{display:flex;justify-content:space-between;width:100%;gap:8px;text-align:left;font:inherit;font-size:15px;border:0;border-bottom:1px solid var(--line2);background:#fff;padding:11px 12px;cursor:pointer;min-height:44px}
+.res button small{color:#4E5968}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--line);background:#fff;color:#4E5968;border-radius:999px;padding:9px 13px;cursor:pointer;min-height:40px}
+.chips button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.hint{font-size:13px;color:#4E5968;margin-top:4px;line-height:1.5}
+.err{color:#C2410C;font-weight:700;font-size:14px;margin-top:8px;min-height:1em}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.acts .btn{min-height:46px}
+/* 근거표 한 장 */
+.sh{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px 22px 18px;margin:14px 0;color:#191F28}
+.sh .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;border-bottom:2px solid #191F28;padding-bottom:10px}
+.sh .top .k{font-size:13px;font-weight:700;color:var(--blue)}
+.sh .top h2{margin:2px 0 0;font-size:23px;letter-spacing:-.03em;line-height:1.3}
+.sh .top small{display:block;font-size:13.5px;color:#4E5968;margin-top:3px}
+.sh .logo{font-weight:900;font-size:16px;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.sh .big{display:grid;grid-template-columns:1.2fr 1fr;gap:12px;margin:14px 0 10px}
+@media(max-width:560px){.sh .big{grid-template-columns:1fr}}
+.sh .pv{background:#F2F6FF;border-radius:14px;padding:14px 16px}
+.sh .pv .k{font-size:13.5px;color:#4E5968;font-weight:700}
+.sh .pv .v{font-size:30px;font-weight:900;letter-spacing:-.03em;margin:2px 0}
+.sh .pv small{font-size:13px;color:#4E5968;line-height:1.5;display:block}
+.sh .ask{background:#FBF8EF;border:1px solid #EFE6CC;border-radius:14px;padding:14px 16px}
+.sh .ask .k{font-size:13.5px;font-weight:700;color:#6B5A1F}
+.sh .ask .v{font-size:26px;font-weight:900;margin:2px 0}
+.sh .ask small{display:block;font-size:13px;color:#4E5968;line-height:1.5}
+.sh .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0 12px}
+@media(max-width:560px){.sh .grid{grid-template-columns:1fr 1fr}}
+.sh .st{background:#F9FAFB;border-radius:12px;padding:10px 12px}
+.sh .st .k{font-size:12.5px;color:#4E5968;font-weight:700}
+.sh .st .v{font-size:19px;font-weight:900;margin-top:2px}
+.sh .st small{display:block;font-size:12px;color:#5F6B7A;margin-top:2px;line-height:1.4}
+.up{color:#C2410C}.dn{color:#1F56E0}
+.sh h3{font-size:15.5px;margin:14px 0 6px}
+.sh table{width:100%;border-collapse:collapse;font-size:14px}
+.sh th,.sh td{border-bottom:1px solid var(--line2);padding:7px 6px;text-align:left}
+.sh th{font-size:12.5px;color:#4E5968}
+.sh td.n,.sh th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:560px){.sh .ar{display:none}.sh table{font-size:13px}.sh th,.sh td{padding:6px 4px}}
+.sh .hi{display:inline-block;font-size:11.5px;font-weight:700;background:#FDECE4;color:#C2410C;border-radius:6px;padding:1px 6px;margin-left:4px}
+.sh .dir{display:inline-block;font-size:11.5px;font-weight:700;background:#F2F4F6;color:#4E5968;border-radius:6px;padding:1px 6px;margin-left:4px}
+.sh .fv{display:flex;gap:14px;align-items:center;background:#F9FAFB;border-radius:14px;padding:12px 14px}
+.sh .ring{flex:none;width:58px;height:58px;border-radius:50%;border:4px solid var(--brand);display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:900;box-sizing:border-box}
+.sh .fv p{margin:0;font-size:14px;line-height:1.55}
+.sh .who{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:14px;padding-top:10px;font-size:14px}
+.sh .who b{font-size:15.5px}
+.sh .tag{display:inline-block;font-size:12px;font-weight:700;color:#4E5968;background:#F2F4F6;border-radius:6px;padding:1px 6px;margin-left:6px}
+.sh .src{font-size:12px;color:#5F6B7A;line-height:1.55;margin:10px 0 0}
+.sh .note{font-size:14.5px;background:#F2F6FF;border-radius:12px;padding:10px 12px;margin:10px 0 0}
+.st0{padding:24px 16px;text-align:center;border:1px dashed var(--line);border-radius:16px;font-size:15.5px;color:#3E4754}
+@media print{
+  @page{size:A4;margin:11mm}
+  header.top,.wrap>h1,.wrap>.lead,.ed,.acts,.noprint,footer{display:none!important}
+  body{background:#fff}
+  .wrap{max-width:none;padding:0}
+  .sh{border:0;padding:0;margin:0;font-size:12.5px}
+  .sh .pv,.sh .ask,.sh .st,.sh .fv,.sh .note{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .sh .grid{grid-template-columns:repeat(4,1fr)}
+  .sh .big{grid-template-columns:1.2fr 1fr}
+  .sh table{font-size:12px}.sh th,.sh td{padding:4px 5px}
+}
+</style>
+</head>
+<body>
+<header class="top"><a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>집예보</a><a class="badge plain" href="../my/" style="text-decoration:none">중개사 대시보드</a></header>
+<div class="wrap">
+  <h1>적정 가격 근거표</h1>
+  <p class="lead" id="lead">단지와 평형을 고르면 최근 실거래(층), 시세, 최고가 대비, 같은 구 비교, 미래가치 점수를 한 장으로 정리해요. 매도인·매수인에게 인쇄·PDF·카카오톡으로 보여 주세요.</p>
+
+  <div class="ed noprint" id="ed">
+    <h2>1. 단지 고르기</h2>
+    <div class="two">
+      <div><label for="sd">시·도</label><select id="sd"></select></div>
+      <div><label for="q">단지 이름</label><input id="q" placeholder="예: 은마, 헬리오시티" autocomplete="off"></div>
+    </div>
+    <div class="res" id="res"></div>
+    <div id="bandBox" hidden><label>평형</label><div class="chips" id="bands"></div></div>
+    <h2 style="margin-top:16px">2. 중개사 입력 (선택)</h2>
+    <div class="two">
+      <div><label for="ask">호가 (만원) — 중개사가 아는 값</label><input id="ask" inputmode="numeric" placeholder="예: 215000"><div class="hint" id="askH">공개된 호가 자료는 없어서 집예보가 채우지 않아요. 넣으면 '중개사 입력 호가'로 표시돼요.</div></div>
+      <div><label for="note">한마디 (60자)</label><input id="note" maxlength="60" placeholder="예: 로열동·남향 매물 기준 설명용"><div class="hint">단정·보장 표현(무조건·확실·보장)과 연락처는 넣을 수 없어요.</div></div>
+    </div>
+    <div class="err" id="err" role="alert"></div>
+    <div class="acts"><button class="btn primary" id="make" type="button">근거표 만들기</button></div>
+  </div>
+
+  <div id="out"></div>
+  <div class="acts noprint" id="acts" hidden>
+    <button class="btn primary" id="print" type="button">인쇄 · PDF로 저장</button>
+    <button class="btn" id="share" type="button">카카오톡 등으로 공유</button>
+    <button class="btn ghost" id="copy" type="button">주소 복사</button>
+    <button class="btn ghost" id="edit" type="button">다른 단지로</button>
+  </div>
+  <p class="hint noprint" id="shareH"></p>
+</div>
+<script>
+(function(){
+'use strict';
+const $ = id => document.getElementById(id);
+const DATA = '/jangdaejang-data/data/';
+const M = window.JDJ_MINE, P = window.JDJ_PRICE, G = window.JDJ_AGT, R = window.JDJ_RANK, A = window.JDJ_AGENTS;
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const j = u => fetch(DATA + u, {cache:'no-cache'}).then(r => { if (!r.ok) throw new Error(u); return r.json(); });
+const pc = v => v == null ? '–' : (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(1) + '%';
+const cls = v => v == null ? '' : v > 0 ? 'up' : v < 0 ? 'dn' : '';
+const ymd = s => { s = String(s || ''); return s ? `${s.slice(0,4)}.${s.slice(4,6)}${s.slice(6,8) && s.slice(6,8) !== '00' ? '.' + s.slice(6,8) : ''}` : ''; };
+const ymK = s => s ? `${String(s).slice(0,4)}년 ${+String(s).slice(4,6)}월` : '';
+let IX = null, MH = null, LIST = {}, GROUPS = {}, ST = G.decode(location.search), PICK = null;
+const me = (() => { try { const x = JSON.parse(localStorage.getItem('jdj_agt') || 'null'); return x && x.me ? x.me : null; } catch (e) { return null; } })();
+
+async function loadSido(id){
+  if (GROUPS[id]) return GROUPS[id];
+  const us = await j('price/' + id + '.json').then(x => (x.units || []).map(M.listRow)).catch(() => P.scoreUnits(id));
+  LIST[id] = us; return (GROUPS[id] = M.groupDanji(us));
+}
+function sggName(c){ return (IX.sgg[c] || {}).name || c; }
+
+/* ---------- 편집 ---------- */
+function setupEditor(){
+  $('sd').innerHTML = IX.sido.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  if (ST.sd) $('sd').value = ST.sd;
+  if (ST.ask) $('ask').value = ST.ask;
+  if (ST.note) $('note').value = ST.note;
+  let t = null;
+  $('q').oninput = () => { clearTimeout(t); t = setTimeout(search, 200); };
+  $('sd').onchange = () => { $('res').innerHTML = ''; PICK = null; $('bandBox').hidden = true; if ($('q').value.trim()) search(); };
+  $('ask').oninput = () => { const v = Math.round(+$('ask').value.replace(/[^0-9]/g,'')); $('askH').textContent = v > 0 ? M.won(v) + ' · 중개사 입력 호가로 표시돼요' : '공개된 호가 자료는 없어서 집예보가 채우지 않아요. 넣으면 \'중개사 입력 호가\'로 표시돼요.'; };
+  $('make').onclick = make;
+}
+async function search(){
+  const q = $('q').value.trim(), sd = $('sd').value; if (!q){ $('res').innerHTML = ''; return; }
+  const gs = await loadSido(sd); if ($('q').value.trim() !== q) return;
+  const hits = M.searchDanji(gs, q, 15);
+  $('res').innerHTML = hits.map((d, i) => `<button type="button" data-i="${i}"><span><b>${esc(d.apt)}</b> <small>${esc(sggName(d.code))} ${esc(d.dong)}</small></span><small>거래 ${d.n}건</small></button>`).join('') || '<div class="hint" style="padding:10px 12px">찾지 못했어요. 이름 일부만 넣어 보세요.</div>';
+  $('res').querySelectorAll('button').forEach(b => b.onclick = () => pickDanji(hits[+b.dataset.i]));
+}
+function pickDanji(d){
+  PICK = { sd: $('sd').value, g: d.code, dong: d.dong, jibun: d.jibun, apt: d.apt, band: '' };
+  $('res').innerHTML = ''; $('q').value = d.apt;
+  const bands = d.bands.slice().sort((a, b) => (b[5] || 0) - (a[5] || 0));
+  PICK.band = bands[0][3];
+  $('bands').innerHTML = d.bands.map(u => `<button type="button" data-b="${esc(u[3])}" class="${u[3] === PICK.band ? 'on' : ''}">${esc(u[3])} <small>${u[5] || 0}건</small></button>`).join('');
+  $('bands').onclick = e => { const b = e.target.closest('[data-b]'); if (!b) return; PICK.band = b.dataset.b; $('bands').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); };
+  $('bandBox').hidden = false;
+}
+function make(){
+  const err = $('err'); err.textContent = '';
+  const base = PICK || (ST.apt ? ST : null);
+  if (!base){ err.textContent = '단지를 먼저 골라 주세요.'; return; }
+  const n = G.cleanNote($('note').value); if (!n.ok){ err.textContent = n.err; return; }
+  const ask = Math.round(+$('ask').value.replace(/[^0-9]/g, '')) || 0;
+  ST = Object.assign({}, base, { ask, note: n.v, ag: me ? me.id : (ST.ag || '') });
+  history.replaceState(null, '', '?' + G.encode(ST));
+  JDJ.track && JDJ.track('agent_sheet_make', { sgg: ST.g, ask: ask > 0 ? 1 : 0, ag: me ? 1 : 0 });
+  render();
+}
+
+/* ---------- 근거표 ---------- */
+async function render(){
+  const out = $('out');
+  out.innerHTML = '<div class="st0">자료를 불러오는 중이에요…</div>';
+  let g, u;
+  try { g = await P.loadSgg(ST.g, ST.sd); u = P.findUnit(g.units, { sgg: ST.g, dong: ST.dong, apt: ST.apt, band: ST.band, jibun: ST.jibun }); } catch (e) {}
+  if (!u){ out.innerHTML = '<div class="st0">이 단지·평형의 실거래 자료를 찾지 못했어요. 다른 평형을 골라 보세요.</div>'; $('acts').hidden = true; return; }
+  let fx = null;
+  try { const us = await P.scoreUnits(ST.sd), key = M.unitKey(u); const hit = us.find(x => M.unitKey(x) === key); fx = hit && hit[9] && typeof hit[9] === 'object' ? M.cleanFx(hit[9]) : null; } catch (e) {}
+  if (!MH) MH = await j('model_h.json').catch(() => null);
+  const sido = (IX.sgg[ST.g] || {}).sido || '';
+  const vc = R.vcheck(MH, sido);
+  const s = G.sheet({ u, IX, fx, vc, hist: g.hist, ask: ST.ask });
+  let ag = null;
+  if (ST.ag && A && A.ready){ try { const l = await A.list(); ag = ((l && l.agents) || []).find(a => a.id === ST.ag) || null; } catch (e) {} }
+  out.innerHTML = sheetHtml(s, ag);
+  $('acts').hidden = false;
+  document.title = `${s.apt} ${s.band} 적정 가격 근거표 | 집예보`;
+}
+function sheetHtml(s, ag){
+  const priceNote = s.priceKind === 'last' ? `${ymK(s.priceAt)} 마지막 실거래 기준(최근 3개월 거래가 적어요)` : `최근 3개월 실거래 평당가 중앙값 × 전용 ${s.area}㎡ · ${ymK(s.priceAt)} 기준`;
+  const rg = s.range && s.range.lo ? `최근 1년 시세 범위 ${M.won(s.range.lo)} ~ ${M.won(s.range.hi)}` : '';
+  const askBox = s.ask ? `<div class="ask"><div class="k">중개사 입력 호가</div><div class="v">${M.won(s.ask.amt)}</div>
+      <small>집예보 시세 대비 <b class="${cls(s.ask.vsPrice)}">${pc(s.ask.vsPrice)}</b>${s.hi ? ` · ${esc(s.hi.label)} 대비 <b class="${cls(s.ask.vsHi)}">${pc(s.ask.vsHi)}</b>` : ''}${s.hi1 ? ` · 최근 1년 최고가 대비 <b class="${cls(s.ask.vsHi1)}">${pc(s.ask.vsHi1)}</b>` : ''}</small>
+      <small style="margin-top:4px">이 값은 중개사가 직접 넣은 호가예요. 공개 자료가 아니에요.</small></div>`
+    : `<div class="ask"><div class="k">호가</div><div class="v" style="font-size:18px;color:#5F6B7A">입력하지 않았어요</div><small>공개된 호가 자료가 없어 집예보는 호가를 채우지 않아요. 중개사가 아는 호가를 넣으면 시세·최고가와 차이를 보여 드려요.</small></div>`;
+  const tr = s.trades.length ? `<table><thead><tr><th>계약일</th>${s.hasFloor ? '<th class="n">층</th>' : ''}<th class="n ar">전용㎡</th><th class="n">거래가</th><th class="n">평당가</th></tr></thead><tbody>${s.trades.map(t =>
+      `<tr><td>${esc(t.date)}${t.hi ? '<span class="hi">신고가</span>' : ''}${t.type === '직거래' ? '<span class="dir">직거래</span>' : ''}</td>${s.hasFloor ? `<td class="n">${t.floor || '-'}</td>` : ''}<td class="n ar">${t.area}</td><td class="n"><b>${M.won(t.amt)}</b></td><td class="n">${t.ppy ? t.ppy.toLocaleString('ko-KR') + '만' : '-'}</td></tr>`).join('')}</tbody></table>`
+    : '<p class="hint">개별 거래 목록이 없는 자료예요(월별 요약만 있어요).</p>';
+  const fl = s.floors.length ? `<h3>최근 1년 층별 평당가 <small style="font-weight:500;color:#4E5968;font-size:12.5px">중개 거래만 · 2건 이상인 층만 값 표시</small></h3><div class="grid" style="grid-template-columns:repeat(${s.floors.length},1fr)">${s.floors.map(f => `<div class="st"><div class="k">${esc(f.t)}</div><div class="v">${f.ppy ? f.ppy.toLocaleString('ko-KR') + '만' : '–'}</div><small>${f.n}건${f.ppy ? ` · ${M.won(M.toPrice(f.ppy, s.area))}` : ''}</small></div>`).join('')}</div>` : '';
+  const vcT = s.vc ? (s.vc.ok ? `이 점수 방법을 과거에 그대로 써 봤더니 ${s.vc.n}번 중 ${s.vc.hit}번 맞았어요(${esc(s.vc.where)} 기준).` : `과거에 그대로 써 봤더니 ${s.vc.n}번 중 ${s.vc.hit}번 맞아, 참고로만 보세요(${esc(s.vc.where)} 기준).`) : '';
+  const fv = s.fv != null ? `<div class="fv"><div class="ring">${s.fv}</div><p><b>미래가치 점수(2년) ${s.fv}점</b>${s.fvg != null ? ` · ${esc(s.gu)} 안 점수 ${s.fvg}점` : ''}<br>${vcT}<br><small style="color:#5F6B7A">점수는 광고·제휴·이용료와 상관없이 같은 방법으로 매겨요.</small></p></div>`
+    : `<div class="fv"><p>이 단지·평형은 거래가 적어 미래가치 점수를 매기지 않았어요. ${vcT}</p></div>`;
+  const who = ag ? `<div><b>${esc(ag.t === 'm' ? ag.nm + ' 공인중개사' : ag.n)}</b><span class="tag">집예보 제휴·광고</span><br>${ag.t === 'm' ? esc(ag.n) + ' 소속 · ' : '대표 ' + esc(ag.ceo) + ' · '}${esc(ag.ogn)} ${esc(ag.dong)} · 등록번호 ${esc(ag.reg)} · ${esc(ag.ph)}</div>` : '<div><small style="color:#5F6B7A">작성 중개사 정보 없음</small></div>';
+  return `<article class="sh" id="sheet">
+    <div class="top"><div><div class="k">적정 가격 근거표</div><h2>${esc(s.apt)} · ${esc(s.band)}</h2><small>${esc(s.sido)} ${esc(s.gu)} ${esc(s.dong)} · 전용 ${s.area}㎡ · 자료 ${ymK(s.to)}까지</small></div>
+      <div class="logo"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/></svg>집예보</div></div>
+    <div class="big"><div class="pv"><div class="k">집예보 시세</div><div class="v">${s.price ? M.won(s.price) : '거래 없음'}</div><small>${priceNote}</small>${rg ? `<small>${rg}</small>` : ''}</div>${askBox}</div>
+    <div class="grid">
+      <div class="st"><div class="k">1년 변동</div><div class="v ${cls(s.ch1)}">${pc(s.ch1)}</div><small>평당가 기준</small></div>
+      <div class="st"><div class="k">3년 변동</div><div class="v ${cls(s.ch3)}">${pc(s.ch3)}</div><small>${s.ch3From ? ymK(s.ch3From) + '부터' : '평당가 기준'}</small></div>
+      <div class="st"><div class="k">${s.hi ? esc(s.hi.label) + ' 대비' : '최고가 대비'}</div><div class="v ${cls(s.hi && s.hi.vs)}">${s.hi ? pc(s.hi.vs) : '–'}</div><small>${s.hi ? `${M.won(s.hi.amt)} · ${ymd(s.hi.ymd)}` : '자료 없음'}</small></div>
+      <div class="st"><div class="k">${esc(s.gu)} 평균 대비</div><div class="v ${cls(s.vsGu)}">${pc(s.vsGu)}</div><small>${s.sggPpy ? `구 평당가 ${s.sggPpy.toLocaleString('ko-KR')}만 · 이 단지 ${s.ppy ? s.ppy.toLocaleString('ko-KR') + '만' : '-'}` : '같은 달 구 자료 없음'}</small></div>
+    </div>
+    <div class="grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="st"><div class="k">최근 3개월 거래</div><div class="v">${s.recent3}건</div></div>
+      <div class="st"><div class="k">최근 1년 거래</div><div class="v">${s.cnt12}건</div><small>직거래 제외</small></div>
+      <div class="st"><div class="k">최근 1년 최고가</div><div class="v" style="font-size:16px">${s.hi1 ? M.won(s.hi1.amt) : '–'}</div><small>${s.hi1 ? ymd(s.hi1.ymd) + ' · 시세 대비 ' + pc(s.hi1.vs) : ''}</small></div>
+    </div>
+    <h3>최근 실거래 ${s.trades.length ? `(최신 ${s.trades.length}건)` : ''}</h3>${tr}
+    ${fl}
+    <h3>미래가치</h3>${fv}
+    ${ST.note ? `<div class="note"><b>중개사 한마디</b> · ${esc(ST.note)}</div>` : ''}
+    <div class="who">${who}<div style="text-align:right"><small style="color:#5F6B7A">만든 날 ${(d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`)(new Date())}</small></div></div>
+    <p class="src">자료: 국토교통부 아파트 매매 실거래가 공개 자료(해제·취소 신고 거래 제외, 시세·변동률은 직거래 제외)를 집예보가 정리. 향(방향)은 공개 실거래 자료에 없어 넣지 않았어요. 실제 거래가는 동·층·향·수리 상태에 따라 달라요. 집예보는 중개하지 않아요.</p>
+  </article>`;
+}
+
+/* ---------- 인쇄·공유 ---------- */
+$('print').onclick = () => { JDJ.track && JDJ.track('agent_sheet_print', {}); window.print(); };
+const link = () => location.origin + location.pathname + '?' + G.encode(ST);
+$('copy').onclick = async () => { try { await navigator.clipboard.writeText(link()); $('shareH').textContent = '주소를 복사했어요. 카카오톡 대화방에 붙여 넣으세요.'; } catch (e) { $('shareH').textContent = link(); } };
+$('share').onclick = async () => {
+  JDJ.track && JDJ.track('agent_sheet_share', {});
+  const t = `${ST.apt} ${ST.band} 적정 가격 근거표`;
+  if (navigator.share){ try { await navigator.share({ title: t, text: t + ' (집예보)', url: link() }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
+  $('copy').click();
+};
+$('edit').onclick = () => { $('ed').hidden = false; $('ed').scrollIntoView({behavior:'smooth'}); };
+
+(async function init(){
+  try { IX = await j('index.json'); } catch (e) { $('out').innerHTML = '<div class="st0">자료를 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</div>'; return; }
+  setupEditor();
+  if (ST.sd && ST.g && ST.dong && ST.apt && ST.band){
+    $('q').value = ST.apt;
+    if (!me){ $('ed').hidden = true; $('lead').textContent = '중개사가 공개 실거래 자료로 정리해 보낸 근거표예요.'; }
+    render();
+  }
+})();
+})();
+</script>
+</body>
+</html>
