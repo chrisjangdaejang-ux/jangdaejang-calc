@@ -6,7 +6,7 @@
      VWORLD_KEY: 카카오맵을 쓰지 않을 때 Leaflet 배경지도로 쓸 브이월드 인증키(서비스 URL 로 제한된 공개 키).
      비워 두면 미리 보기용 OpenStreetMap 공식 타일(대량·상업 서비스용이 아니라 정식 오픈 전까지만). */
 window.JDJ_SITE = {
-  KAKAO_JS_KEY: '',
+  KAKAO_JS_KEY: '58a1dc9a4dda1516b4316ea72ca03348',
   MAP_ENGINE: '',
   VWORLD_KEY: ''
 };
