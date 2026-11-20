@@ -434,7 +434,7 @@
 .jhv{position:relative;outline:none;border-radius:10px}.jhv:focus-visible{box-shadow:0 0 0 3px #9DB8FF}
 .jhv-in{position:relative;touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;cursor:crosshair}
 .jhv-in svg{display:block}
-.jhv-sum{font-size:13.5px;line-height:1.5;color:#3E4754;margin:0 0 4px;min-height:20px;font-variant-numeric:tabular-nums;word-break:keep-all}
+.jhv-sum{display:none;font-size:13.5px;line-height:1.5;color:#3E4754;margin:0 0 4px;min-height:20px;font-variant-numeric:tabular-nums;word-break:keep-all}
 .jhv-sum b{color:#191F28}.jhv-sum .hint{color:#6B7684}
 .jhv-tip{position:absolute;top:0;left:0;z-index:2;pointer-events:none;box-sizing:border-box;max-width:calc(100% - 4px);background:rgba(255,255,255,.95);color:#191F28;border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:5px 8px 6px;font-size:12px;line-height:1.35;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.08);font-variant-numeric:tabular-nums;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
 .jhv-tip .h{font-weight:700;margin-bottom:2px;color:#191F28}
