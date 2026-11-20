@@ -43,7 +43,7 @@
 <script src="../assets/rec-core.js?v=2"></script>
 <script src="../assets/mine-core.js?v=15"></script>
 <script src="../assets/price-sheet.js?v=13"></script>
-<script src="switch-core.js?v=3"></script>
+<script src="switch-core.js?v=4"></script>
 <script src="../assets/narrative.js?v=10"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -242,7 +242,20 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .kids{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .kids .inp input{font-size:16px;padding:11px 8px}
 /* 갈아타기 루트 */
-.rmode{margin-bottom:10px}
+.rmode{margin-bottom:12px}
+.burden{background:var(--gray2);border-radius:10px;padding:12px 14px;margin-bottom:12px}
+.burden label{display:flex;justify-content:space-between;align-items:center;font-size:15px;font-weight:700}
+.burden label b{color:var(--blue);font-size:18px;font-weight:900}
+.burden input[type=range]{width:100%;margin:10px 0 2px;accent-color:var(--blue);height:28px}
+.bticks{display:flex;justify-content:space-between;font-size:13px;color:#4E5968}
+.burden .hint{font-size:13.5px;color:#4E5968;margin-top:6px}
+.rs .whyx{margin:10px 0 0;font-size:14.5px;font-weight:700;word-break:keep-all}
+.rs .whyx span{display:inline-block;font-size:12.5px;font-weight:900;background:var(--olive,#3E4A2B);color:#fff;border-radius:4px;padding:1px 6px;margin-right:5px;vertical-align:1px}
+.rs .tm{margin-top:10px;border:1.5px solid var(--line);border-radius:9px;padding:10px 12px;font-size:14.5px;word-break:keep-all}
+.rs .tm b{font-weight:900}
+.rs .tm .v{display:block;font-size:15.5px;font-weight:900;margin-bottom:2px}
+.rs .tm.now .v{color:var(--blue)}.rs .tm.later .v{color:#A23B2A}
+.rs .tm small{display:block;color:#4E5968;font-size:13.5px;margin-top:3px}
 .rdesc{font-size:14px;color:#4E5968;margin:0 0 12px}
 .rt{position:relative;padding-left:22px}
 .rt:before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--line)}
@@ -517,13 +530,20 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 
       <div class="panel section" id="routeBox">
         <h2>갈아타기 루트 — 언제, 어디로</h2>
-        <div class="seg c2 rmode" id="rmode">
-          <button data-v="safe" class="on">보수적 루트<small>대출 70%·비상금 6개월</small></button>
-          <button data-v="bold">적극적 루트<small>대출 한도 끝까지</small></button>
+        <div class="seg c3 rmode" id="rmode">
+          <button data-v="asset" class="on">자산 우선<small>더 오를 곳</small></button>
+          <button data-v="family">가족 우선<small>학교 시기·학군</small></button>
+          <button data-v="safe">안심 우선<small>덜 떨어진 곳</small></button>
+        </div>
+        <div class="burden">
+          <label for="burden">월 상환을 소득의 몇 %까지 <b id="burdenV">30%</b></label>
+          <input type="range" id="burden" min="20" max="40" step="10" value="30" aria-describedby="burdenHint">
+          <div class="bticks"><span>20% 여유</span><span>30% 보통</span><span>40% 규제 한도</span></div>
+          <div class="hint" id="burdenHint"></div>
         </div>
         <p class="rdesc" id="rDesc"></p>
         <div id="routeRes"><div class="recload">실거래 자료를 불러오는 중이에요…</div></div>
-        <p class="recnote" id="routeNote">금액은 오늘 시세를 그대로 이어서 계산했어요. 집값이 몇 % 오를지는 숫자로 넣지 않았고, 단계 사이 흐름은 과거에 그대로 써 봤을 때 절반 이상 맞고 평균보다 더 오른 기간의 점수로만 말해요. 그렇지 않은 기간은 '참고'로 표시해요. 연소득·금리·대출 규제는 지금 그대로로 봤어요.</p>
+        <p class="recnote" id="routeNote">금액은 오늘 시세를 그대로 이어서 계산했어요. 집값이 몇 % 오를지는 숫자로 넣지 않았고, 단계 사이 흐름은 과거에 그대로 써 봤을 때 절반 이상 맞고 평균보다 더 오른 기간의 점수로만 말해요. '왜 이 단지'에는 공개 자료의 실제 숫자만 적었어요. 그렇지 않은 기간은 '참고'로 표시해요. 연소득·금리·대출 규제는 지금 그대로로 봤어요.</p>
       </div>
 
       <div class="panel section">
@@ -621,9 +641,9 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
             <b>분야별 제휴 세무사 <span class="soon">준비 중</span></b>
             <small>제휴 세무사를 모으고 있어요. 지금 신청해 두시면 분야에 맞는 세무사가 정해지는 대로 연락드려요.</small>
             <div class="taxf" id="taxF">
-              <a data-tf="양도세" data-track="tax_consult" href="#" target="_blank" rel="noopener">양도세<small>지금 집 팔 때</small></a>
-              <a data-tf="취득세·일시적 2주택" data-track="tax_consult" href="#" target="_blank" rel="noopener">취득세<small>일시적 2주택</small></a>
-              <a data-tf="보유세(재산세·종부세)" data-track="tax_consult" href="#" target="_blank" rel="noopener">보유세<small>재산세·종부세</small></a>
+              <a data-tf="양도 전문" data-track="tax_consult" href="#" target="_blank" rel="noopener">양도 전문<small>지금 집 팔 때</small></a>
+              <a data-tf="증여 전문" data-track="tax_consult" href="#" target="_blank" rel="noopener">증여 전문<small>공동명의·자녀</small></a>
+              <a data-tf="상속 전문" data-track="tax_consult" href="#" target="_blank" rel="noopener">상속 전문<small>물려받은 집</small></a>
             </div>
           </div>
         </div>
@@ -645,7 +665,8 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
       <li>다주택: 팔 때 조정대상지역이면 2주택 +20%p, 3주택 이상 +30%p 중과(2026.5.10 이후 양도분, 장기보유특별공제 배제). 조정대상지역 여부는 국토교통부 지정·해제 공고 이력으로 판정하고, 일부 지역만 지정됐던 기간은 직접 골라 주세요.</li>
       <li>필요경비를 비워두면 산 가격 기준 1주택 취득세(현행 세율)+지방교육세+중개보수 상한으로 추정. 수리·확장비 등 실제 영수증이 있는 비용은 직접 입력하면 더 정확</li>
       <li>새 집 대출 (2026년 11월 20일 확인): 1주택은 기존 주택 처분 조건. 규제지역 LTV 40%, 비규제 70%, 다주택은 수도권·규제지역 주택구입 주담대 불가(지방 60%). 수도권·규제지역 주담대 한도 15억 이하 6억 / 25억 이하 4억 / 25억 초과 2억, 은행권 DSR 40% — 금융위원회 '부동산 시장 안정을 위한 금융 종합대책'(2026.8.13)에서 그대로 유지. 스트레스 금리는 수도권·규제지역 3.0%, 지방 1.5%의 50%(0.75%) × 금리유형 비율(주기형 수도권 40%·지방 30%) — 은행연합회 '2026년 하반기 스트레스 DSR 운영방안'(금융위원회 행정지도, 2026.7.1~12.31)</li>
-      <li>갈아타기 루트: 자녀 만 나이로 학교 시기를 잡아요(초등학교는 만 6세가 된 다음 해 3월 입학 — 초·중등교육법 제13조). 보수적 루트는 대출을 한도의 70%까지만 쓰고 매달 상환액 6개월치를 남기며, 적극적 루트는 한도를 끝까지 써서 갈 수 있는 가장 비싼 축(그 안 최고가의 90% 이상) 단지 중에서 골라요. 중학교 배정 전 단계는 가까운 중학교가 같은 구 중학교 중 순전입 상위 30% 안인 단지만 봐요(학교알리미 공시). 단계 사이 집값은 오늘 시세 그대로 두고, 대출 원금 상환과 한 해 모을 돈만 더해요.</li>
+      <li>갈아타기 루트: 자녀 만 나이로 학교 시기를 잡아요(초등학교는 만 6세가 된 다음 해 3월 입학 — 초·중등교육법 제13조). 같은 예산에서 목적만 달라요 — 자산 우선은 그 기간 미래가치가 높은 순, 가족 우선은 가까운 중학교가 같은 구 중학교 중 전학 오는 학생이 많은 상위 30% 안인 단지 중에서(학교알리미 공시), 안심 우선은 최근 3년(공개 시세 기간) 앞선 최고점 대비 가장 크게 떨어진 폭이 작은 순으로 골라요. 안심 우선은 최근 1년 거래 12건 이상, 전세가율 80% 미만(자료가 있을 때)인 단지만 봐요. 대출은 '월 상환을 소득의 몇 %까지'(실제 금리 기준)로 고른 금액과 규제 한도(LTV·가격구간·DSR) 중 작은 쪽이에요.</li>
+      <li>지금 옮길까, 2년 뒤 다시 볼까: 두 집의 2년 점수를 다섯 대(20%씩)로 나눠 비교하고, 과거에 같은 점수 대 단지들이 평균보다 더 오른 횟수(model_h 2년 점수 대별 성적)를 근거로 보여 드려요. 2년 성적이 기준에 못 미치면 '참고'로 표시해요. 단계 사이 집값은 오늘 시세 그대로 두고, 대출 원금 상환과 한 해 모을 돈만 더해요.</li>
       <li>미래가치 전망: 단지 점수(2년·1·3·5·7년)를 과거 여러 때에 그때까지 자료만으로 매긴 뒤 실제 시세와 맞춰 봤어요. 상위 20% 단지가 평균보다 더 오른 횟수가 절반 이상이고 평균으로도 더 오른 기간만 '더 오를 가능성'으로 말하고, 나머지는 '참고'로 보여 드려요.</li>
       <li>새 집 취득세: 세금 계산기와 같은 엔진(지방세법 기준). 1주택자는 일시적 2주택 일반세율 1~3% + 지방교육세, 85㎡ 초과 농특세. 2주택 이상은 이 집을 판 뒤 새 집을 사는 것으로 보고 취득 후 주택 수로 중과 여부를 판정. 중개보수는 법정 상한요율 + 부가세</li>
       <li>추천 단지: 내 집 마련 리포트와 같은 자료·점수 기준. 추정 시세는 최근 3개월 실거래 평당가 중앙값 × 전용면적(최근 3개월 거래가 없으면 마지막 거래 기준)이며, 실제 호가·매물과 다를 수 있어요.</li>
@@ -841,7 +862,7 @@ const FORM='https://docs.google.com/forms/d/e/1FAIpQLScCG7wzIlY3FE6EHU5QWo92uW5N
 function routeSummary(){
   const R=ROUTE_LAST&&ROUTE_LAST[RMODE]; if(!R) return '';
   const F=famInputs();
-  return `[${SW.ROUTE_MODE[RMODE].name} 루트${F.kids.length?` · 자녀 만 ${F.kids.join('·')}세`:''}${F.age!=null?` · 본인 만 ${F.age}세`:''}] `+R.map(r=>{
+  return `[${SW.GOALS[RMODE].name} 루트 · 월 상환 소득의 ${BURDEN}%${F.kids.length?` · 자녀 만 ${F.kids.join('·')}세`:''}${F.age!=null?` · 본인 만 ${F.age}세`:''}] `+R.map(r=>{
     const t=r.st.key==='now'?`지금(${r.st.year})`:r.st.title;
     if(r.x) return `${t}: ${r.x.apt} ${r.x.band} ${fmt(r.x.P)} (필요 현금 ${fmt(r.x.need)}, 대출 ${fmt(r.x.nd.loan.L)}, 취득세 등 ${fmt(r.x.nd.cost.tax)}, 미래가치 ${r.x.fv!=null?r.x.fv+'점':'-'})`;
     return `${t}: ${r.stay?'그대로 거주':'갈 단지 없음'}`;
@@ -1162,7 +1183,7 @@ function recReasons(x){
 let MH_L=null, MH_P=null;
 function loadMH(){ if(!MH_P) MH_P=fetch(AG_DATA+'model_h.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(m=>MH_L=m).catch(()=>null); return MH_P; }
 const FLT={hh:0, cap:'', sort:'fv', nsort:'short', show:8, nshow:5};
-let RMODE='safe', SCAN=null, ROUTE_LAST=null, GU_RANK=null, GU_RANK_SRC=null;
+let RMODE='asset', BURDEN=30, SCAN=null, ROUTE_LAST=null, GU_RANK=null, GU_RANK_SRC=null;
 const sidoOfCode=code=>(AG_IX&&AG_IX.sgg[code]||{}).sido||'';
 const shortSido=name=>{ const d=AG_IX&&AG_IX.sido.find(v=>v.name===name); return d?d.short:name; };
 const VAL=sido=>SW.validity(MH_L, sido);
@@ -1178,7 +1199,7 @@ function kidHint(){
   $('kidHint').textContent = S.length ? S.map((k,i)=>`${['첫째','둘째','셋째'][i]}(${k.by}년생): `+(k.elem>Y?`초등 입학 ${k.elem}년 3월`:k.mid>Y?`중학교 입학 ${k.mid}년`:k.high>Y?`고등학교 입학 ${k.high}년`:k.univ>Y?`대학 진학 ${k.univ}년`:'성인')).join(' · ')+' — 올해 생일이 지났다고 보고 계산해요(연도가 1년 다를 수 있어요)' : '';
 }
 function scanOpt(units, inArea, bands, o){
-  return {units, inArea, bands, B:SW.budgets(o), o,
+  return {units, inArea, bands, B:SW.budgets(o), o, guS: code=>(AG_IX.sgg[code]||{}).s,
     sggPpy: code=>{ const s=AG_IX.sgg[code]; return s?REC.lastNZ(s.s):0; }, note: noteOf,
     exclude: u=>!!(HOME&&HOME.u&&u[0]===HOME.u[0]&&u[2]===HOME.u[2])};
 }
@@ -1236,28 +1257,52 @@ $('fSort').addEventListener('change',()=>{ FLT.sort=$('fSort').value; FLT.show=8
 $('nSort').addEventListener('change',()=>{ FLT.nsort=$('nSort').value; drawRecList(); });
 $('recMore').addEventListener('click',()=>{ FLT.show+=8; drawRecList(); });
 $('nearMore').addEventListener('click',()=>{ FLT.nshow+=10; drawRecList(); });
+$('burden').addEventListener('input',()=>{ BURDEN=+$('burden').value; $('burdenV').textContent=BURDEN+'%'; scheduleRec(); });
+$('burden').addEventListener('change',()=>JDJ.track('switch_burden',{v:BURDEN}));
 $('rmode').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; [...$('rmode').children].forEach(x=>x.classList.toggle('on',x===b)); RMODE=b.dataset.v; JDJ.track('switch_route_mode',{v:RMODE}); drawRoute(); });
 
-/* 지금 집 vs 갈 집 흐름 비교 한 줄 (같은 기간 점수, 그 기간 과거 성적이 기준을 넘었을 때만 단정, 아니면 참고) */
-function flowLine(x, h){
-  const hu=HOME&&HOME.u&&HOME.u[9]; if(!x||!x.f) return '';
-  if(!hu) return `<div class="flowc muted">STEP 1에서 지금 집 단지를 고르면 두 집의 앞으로 흐름을 나란히 비교해 드려요.</div>`;
-  const a=SW.scoreAt(hu,h), b=SW.scoreAt(x.f,h); if(a==null||b==null) return '';
-  const v=VAL(sidoOfCode(x.code))[h], d=b-a, sd=shortSido(sidoOfCode(x.code));
-  const verdict = Math.abs(d)<5 ? '두 집이 비슷하게 움직일 쪽이에요' : d>0 ? '갈 집이 더 오를 쪽이에요' : '지금 집이 더 오를 쪽이에요';
-  return `<div class="flowc">${v&&v.ok?'':'참고 · '}앞으로 ${h}년 흐름: 지금 집 ${sd} 아파트 중 ${topPct(a)}, 갈 집 ${topPct(b)} — ${verdict}${v?` <span class="muted" style="font-weight:500">(${hitTxt(v)})</span>`:''}</div>`;
-}
 function outBox(r, years){
   const o=r.out; if(!o) return '';
   const nm=r.x?escH(r.x.apt):'지금 사는 집', sd=shortSido(sidoOfCode((r.x||r.cur).code));
   const head = o.ok ? `<span class="tag2">더 오를 가능성</span>` : `<span class="tag2">참고</span>`;
   return `<div class="out${o.ok?'':' ref'}">${head}다음 단계까지 ${years}년, ${nm}의 ${o.h}년 전망은 ${sd} 아파트 <b>${o.text}</b> (${sd} 아파트 중 ${topPct(o.s)}).<br><span class="muted">${hitTxt(o)}${o.ok?'':' — 맞은 횟수가 적거나 평균보다 덜 올라서 참고로만 보세요'}.${o.ok&&o.s>=55?' 이대로라면 다음 단계 예산은 아래 금액보다 늘어날 수 있어요.':''}</span></div>`;
 }
+const QN=['하위 20%','하위 20~40%','중간(40~60%)','상위 20~40%','상위 20%'];
+/* 왜 이 단지인가 — 루트 목적별 실제 숫자 한 줄 */
+function whyLine(x, h){
+  const sd=shortSido(sidoOfCode(x.code)), g=(AG_IX.sgg[x.code]||{}).name||'', M=AG_IX.months||[];
+  const ym=i=>M[i]?`${M[i].slice(0,4)}.${+M[i].slice(4)}`:'';
+  let t='';
+  if(RMODE==='safe' && x.dd){
+    t = x.dd.d>-0.0005 ? `최근 3년(${ym(0)}~${ym(M.length-1)}) 시세가 앞선 최고점 아래로 떨어진 적이 없어요` : `최근 3년 가장 크게 떨어진 폭 ${(x.dd.d*100).toFixed(1)}% (${ym(x.dd.hi)} → ${ym(x.dd.lo)})`;
+    if(x.guDd) t += ` · 같은 기간 ${escH(g)} 전체 ${(x.guDd.d*100).toFixed(1)}%`;
+    if(x.jr!=null) t += ` · 전세가율 ${Math.round(x.jr*100)}%`;
+  } else if(RMODE==='family' && x.f && x.f.sc && SW.schoolGood(x.f)){
+    const c=x.f.sc; t = `가까운 중학교 ${escH(c[0])}: ${escH(g)} 중학교 ${c[5]}곳 중 전학 오는 학생이 많은 순 ${c[4]}위 (학교알리미 ${c[2]===c[3]?c[3]:c[2]+'~'+c[3]}년 공시)`;
+    const v=VAL(sidoOfCode(x.code))[h], sc=SW.scoreAt(x.f,h);
+    if(sc!=null&&v) t += ` · ${h}년 미래가치 ${sd} 아파트 중 ${topPct(sc)}`;
+  } else {
+    const v=VAL(sidoOfCode(x.code))[h], sc=SW.scoreAt(x.f,h);
+    if(sc!=null&&v) t = `${h}년 미래가치 ${sc}점 (${sd} 아파트 중 ${topPct(sc)}) — ${hitTxt(v)}${v.ok?'':' · 참고'}`;
+  }
+  return t ? `<div class="whyx"><span>왜 이 단지</span>${t}</div>` : '';
+}
+/* 지금 옮길까, 2년 뒤 다시 볼까 (switch-core timing: 2년 점수 대 비교 + model_h q5 실제 회차) */
+function timingBox(curF, x, first){
+  if(!x||!x.f) return '';
+  if(!curF) return first ? `<div class="tm"><span class="v">지금 vs 2년 뒤</span><small>STEP 1에서 지금 집 단지를 고르면, 지금 옮기는 쪽과 2년 뒤 다시 보는 쪽 중 어느 쪽이 유리한지 비교해 드려요.</small></div>` : '';
+  const T=SW.timing(curF, x.f, MH_L, VAL(sidoOfCode(x.code))); if(!T) return '';
+  const V={now:'지금 옮기는 쪽이 유리해요', later:'2년 뒤 다시 보는 쪽이 유리해요', same:'지금 옮기든 2년 뒤든 차이가 작아요'}[T.v];
+  const why = T.v==='same' ? `두 집 모두 2년 점수가 ${QN[T.qa]} 대예요(지금 집 ${T.a}점, 갈 집 ${T.b}점).`
+    : `2년 점수: 지금 집 ${T.a}점(${QN[T.qa]}) · 갈 집 ${T.b}점(${QN[T.qb]}).` + (T.ea&&T.eb ? ` 과거에 그대로 써 봤더니 갈 집과 같은 점수 대 단지는 ${T.eb[1]}번 중 ${T.eb[2]}번, 지금 집과 같은 점수 대는 ${T.ea[1]}번 중 ${T.ea[2]}번 평균보다 더 올랐어요.` : '');
+  return `<div class="tm ${T.ok?T.v:''}"><span class="v">${T.ok?'':'참고 · '}${V}</span>${why}${T.ok?'':'<small>2년 전망이 과거에 맞은 횟수가 적어 참고로만 보세요.</small>'}${T.v==='later'?'<small>지금 집이 2년 동안 더 오를 쪽이라, 그 뒤에 옮기면 예산이 늘어날 수 있어요.</small>':''}</div>`;
+}
 function routeRow(k, v, cls){ return `<tr class="${cls||''}"><td>${k}</td><td>${v}</td></tr>`; }
 function drawRoute(){
   const box=$('routeRes'); const R=ROUTE_LAST&&ROUTE_LAST[RMODE];
-  $('rDesc').textContent=SW.ROUTE_MODE[RMODE].desc+'.';
+  $('rDesc').textContent=SW.GOALS[RMODE].desc+'.';
   if(!R){ return; }
+  if(RMODE==='family' && !famInputs().kids.length){ box.innerHTML='<div class="recload">STEP 3에 자녀 나이를 넣으면 학교 시기에 맞춰 가족 우선 루트를 짜 드려요.</div>'; updateConsult(); return; }
   const F=famInputs(), Y=new Date().getFullYear();
   box.innerHTML='<div class="rt">'+R.map((r,i)=>{
     const st=r.st, nextY=R[i+1]?R[i+1].st.year:st.year+5, yrs=nextY-st.year;
@@ -1272,19 +1317,20 @@ function drawRoute(){
         <table><tbody>${saleRows}
         ${routeRow(`이 단계에 쓸 수 있는 자기자본${i>0&&F.save?` <small>한 해 ${fmt(F.save)}원씩 모은 돈 포함</small>`:''}`, fmtW(r.pool), 'sub')}
         ${routeRow('추정 시세 <small>최근 3개월 실거래 기준</small>', fmtW(x.P))}
-        ${routeRow(`새 대출 <small>${st.key==='after'?'대출 없이 사는 것으로 계산':`${x.nd.loan.full!=null?`한도 ${fmt(x.nd.loan.full)} 중 `:''}${x.c.rate}% · ${x.c.term}년${ageAt!=null&&x.nd.loan.L>0?` · 만 ${ageAt+x.c.term}세에 상환 끝`:''}`}</small>`, fmtW(x.nd.loan.L))}
+        ${routeRow(`새 대출 <small>${st.key==='after'?'대출 없이 사는 것으로 계산':`${x.nd.loan.full!=null?`규제 한도 ${fmt(x.nd.loan.full)} 중 월 상환 소득의 ${BURDEN}%까지 · `:''}${x.c.rate}% · ${x.c.term}년${ageAt!=null&&x.nd.loan.L>0?` · 만 ${ageAt+x.c.term}세에 상환 끝`:''}`}</small>`, fmtW(x.nd.loan.L))}
         ${routeRow('매달 상환', Math.round(x.mon).toLocaleString()+'만원')}
         ${routeRow(`취득세 등 <small>${(cd.rate*100).toFixed(2).replace(/\.?0+$/,'')}% · 지방교육세${cd.farm?'·농특세':''} 포함</small>`, fmtW(cd.tax))}
         ${routeRow('살 때 중개보수 <small>법정 상한 + 부가세</small>', fmtW(cd.broker))}
         ${routeRow('이사·등기 등 기타', fmtW(last.etc))}
         ${routeRow('필요 현금 (자기자본)', fmtW(x.need), 'total')}
-        ${routeRow(`매수 뒤 남는 현금${SW.ROUTE_MODE[RMODE].reserveM&&st.key!=='after'?' <small>비상금 6개월치 포함</small>':''}`, fmtW(r.left))}
+        ${routeRow('매수 뒤 남는 현금', fmtW(r.left))}
         </tbody></table>
+        ${whyLine(x, SW.horizonFor(VAL(sidoOfCode(x.code)), yrs))}
         ${outBox(r, yrs)}
-        ${st.key==='now'?flowLine(x, SW.horizonFor(VAL(sidoOfCode(x.code)), yrs)):''}
+        ${timingBox(st.key==='now'?(HOME&&HOME.u&&HOME.u[9]):(R[i-1]&&(R[i-1].x||R[i-1].cur)||{}).f, x, st.key==='now')}
         <div class="acts">${PB(x.code,x.dong,x.apt,x.band,x.u&&x.u[8],'switch_route','sm')}</div></div>`;
     } else if(r.stay){
-      body=`<div class="stayc"><b>그대로 살아요.</b> ${st.key==='school'&&r.cur&&SW.schoolGood(r.cur.f)?'지금 집 가까운 중학교가 이미 같은 구에서 전입이 많은 편이에요.':'이 단계 예산으로 더 나은 곳(이 루트 기준)을 찾지 못했어요.'} 이때 쓸 수 있는 자기자본은 ${fmt(r.pool)}원이에요(지금 집을 오늘 시세로 판다고 볼 때).${outBox(r, yrs)}</div>`;
+      body=`<div class="stayc"><b>그대로 살아요.</b> ${RMODE==='family'&&st.key==='school'&&r.cur&&SW.schoolGood(r.cur.f)?'지금 집 가까운 중학교가 이미 같은 구에서 전입이 많은 편이에요.':'이 루트 기준으로는 지금 사는 집이 이 단계 예산 안에서 가장 나아요.'} 이때 쓸 수 있는 자기자본은 ${fmt(r.pool)}원이에요(지금 집을 오늘 시세로 판다고 볼 때).${outBox(r, yrs)}</div>`;
     } else {
       body=`<div class="stayc">이 단계 예산(${fmt(r.pool)}원)으로 갈 수 있는 단지를 찾지 못했어요. STEP 2에서 지역·전용면적을 넓혀 보세요.</div>`;
     }
@@ -1303,7 +1349,7 @@ async function runRec(){
   if(seq!==recSeq) return;
   if(!units||!AG_IX){ box.innerHTML='<div class="recload">실거래 자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.</div>'; $('routeRes').innerHTML=''; REC_LAST=null; SCAN=null; renderVs(); return; }
   if(GU_RANK_SRC!==units){ GU_RANK=SW.guRanks(units); GU_RANK_SRC=units; }
-  const o=last.o;
+  const o=Object.assign({}, last.o, {burden: BURDEN/100});
   const bands = area==='small' ? new Set(SMALL_B) : area==='large' ? new Set(LARGE_B) : null;
   const inArea = RG.any ? ()=>true : code=>{ const s=AG_IX.sgg[code]; return !!s && s.sido===RG.sido && (!RG.sgg || code===RG.sgg); };
   const base=scanOpt(units, inArea, bands, o);
@@ -1312,15 +1358,18 @@ async function runRec(){
   SCAN={can:res.can, near:res.near, hhMiss: all.can.length-res.can.length};
   REC_LAST_O={i:o.income, c:Math.round(o.cash), d:o.debt, e:o.etc};
   const multiG = new Set(res.can.map(x=>x.g)).size>1;
-  $('recLead').innerHTML = `${escH(RG.label||RG.sido)} · ${area==='small'?'전용 85㎡ 이하':area==='large'?'전용 85㎡ 초과':'모든 평형'} · 새 집에 쓸 수 있는 자기자본 <b>${fmt(o.cash)}원</b> 기준으로, 대출·취득세·중개보수·기타 비용을 모두 내고도 살 수 있는 단지 <b>${res.can.length.toLocaleString()}곳</b>이에요.`
+  $('recLead').innerHTML = `${escH(RG.label||RG.sido)} · ${area==='small'?'전용 85㎡ 이하':area==='large'?'전용 85㎡ 초과':'모든 평형'} · 새 집에 쓸 수 있는 자기자본 <b>${fmt(o.cash)}원</b> · 월 상환 소득의 ${BURDEN}%까지 기준으로, 대출·취득세·중개보수·기타 비용을 모두 내고도 살 수 있는 단지 <b>${res.can.length.toLocaleString()}곳</b>이에요.`
     + (multiG?' 단지 위치(규제지역·비규제)마다 대출 기준이 달라 단지별로 다시 계산했어요.':'');
   drawRecList();
-  /* 루트: 보수적·적극적 두 갈래 (세대수·대출 구간 필터는 루트에도 그대로) */
+  /* 루트: 자산·가족·안심 세 갈래 (세대수·대출 구간 필터·월 상환 비율은 루트에도 그대로) */
   const F=famInputs(), Y=new Date().getFullYear(), stg=SW.stages(F.kids, Y);
   const V0=VAL(RG.any?'':RG.sido);
-  const pick=(oo, st, cur, h, mode)=>{ const r=SW.scan(Object.assign({}, scanOpt(units, inArea, bands, oo), {cap:FLT.cap, hhMin:FLT.hh||0, near:0})); return SW.pickFor(r.can, st, cur, h, mode); };
+  const kids=F.kids.length>0;
+  const pick=(oo, st, cur, h, goal)=>{ const r=SW.scan(Object.assign({}, scanOpt(units, inArea, bands, oo), {cap:FLT.cap, hhMin:FLT.hh||0, near:0})); return SW.pickFor(r.can, st, cur, h, goal, kids); };
+  const pl=SW.payMax(SW.ctx(GRP[$('region').value], o), o.burden);
+  $('burdenHint').textContent=`연소득 ${fmt(o.income)}원 · 금리 ${o.rate}% · ${o.term}년 기준 매달 최대 ${Math.round(Math.max(0,o.income*o.burden-o.debt)/12).toLocaleString()}만원, 대출은 많아야 ${fmt(pl)}원이에요. 규제 한도(LTV·DSR·가격구간)가 더 작으면 그 금액까지만 빌려요.`;
   ROUTE_LAST={};
-  for(const m of ['safe','bold']) ROUTE_LAST[m]=SW.route({mode:m, year:Y, stages:stg, cash:o.cash, save:F.save, o, V:V0, pick});
+  for(const m of ['asset','family','safe']) ROUTE_LAST[m]=SW.route({goal:m, kids, year:Y, stages:stg, cash:o.cash, save:F.save, o, V:V0, pick});
   drawRoute();
 }
 /* 분석 설명(assets/narrative.js cat.sw): 결과 맨 위 한 줄 결론 → 요약(양도세·대출 한도·갈아타는 비용·예산 안 1위 단지) → 자세히 보기. 입력값은 화면 안에서만 씀 */

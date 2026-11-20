@@ -61,6 +61,12 @@
     const i = (c.rate + (stress === undefined ? c.stress : stress)) / 1200, n = c.term * 12;
     return room / 12 * (i === 0 ? n : (1 - Math.pow(1 + i, -n)) / i);
   }
+  /** 월 상환을 소득의 pct 까지로 할 때 빌릴 수 있는 돈(실제 금리, 다른 대출 원리금 빼고) */
+  function payMax(c, pct) {
+    const room = c.income * pct - c.debt; if (room <= 0) return 0;
+    const i = c.rate / 1200, n = c.term * 12;
+    return room / 12 * (i === 0 ? n : (1 - Math.pow(1 + i, -n)) / i);
+  }
   function monthly(L, rate, term) { const i = rate / 1200, n = term * 12; if (L <= 0) return 0; return i === 0 ? L / n : L * i / (1 - Math.pow(1 + i, -n)); }
   function loanAt(P, c, dsr) {
     const a = P * c.ltv, b = capByPrice(P, c), d = dsr, L = Math.max(0, Math.min(a, b, d));
@@ -79,8 +85,10 @@
   /** 이 가격의 집을 사는 데 필요한 자기자본 = 집값 − 새 대출 + 취득비용 + 이사·등기 등 기타 */
   function need(P, c, dsr, o) {
     const l = loanAt(P, c, dsr), cost = buyCost(P, c, o);
-    /* 보수적 루트: 한도의 일부만 빌림(o.loanUse 0~1). 한도 결정 요인(by)은 그대로 */
-    if (o.loanUse != null && o.loanUse < 1) { l.full = l.L; l.L = Math.max(0, l.L * o.loanUse); }
+    /* 월 상환 부담(o.burden: 소득 대비 0.2·0.3·0.4) — 실제 금리 기준 월 상환이 그 비율을 넘지 않게. 규제 한도(LTV·가격구간·DSR)는 그대로 상한.
+       o.noLoan: 대출 없이(막내 독립 뒤 집 줄이기 단계) */
+    if (o.noLoan) { l.full = l.L; l.L = 0; l.by = 'NONE'; }
+    else if (o.burden) { const pb = payMax(c, o.burden); if (pb < l.L) { l.full = l.L; l.L = Math.max(0, pb); l.by = 'PAY'; } }
     return { loan: l, cost, need: P - l.L + cost.total + (o.etc || 0) };
   }
   function maxPrice(c, dsr, o) {
@@ -153,7 +161,7 @@
   function isAdj(sidoName, guName, date) { if (!ADJ || !sidoName) return 'ask'; const k = adjKey(sidoName, guName); return ADJ.isAdjusted(k.sido, k.gu, date); }
 
   /* =====================================================================
-     갈아타기 루트 (가족 일정·보수적/적극적·지금 갈 수 있는 단지·조금만 더 있으면 되는 단지·미래가치)
+     갈아타기 루트 (가족 일정·자산/가족/안심 우선·지금 갈 수 있는 단지·조금만 더 있으면 되는 단지·미래가치)
      - 금액은 모두 오늘 시세 기준. 집값이 몇 % 오른다는 숫자는 넣지 않는다.
      - 미래가치는 공개 자료 fx(fv: 2년 점수, fh: 1·3·5·7년 점수, fvg: 같은 구 안 백분위)와 model_h.json 기간별 성적만 쓴다.
      ===================================================================== */
@@ -214,16 +222,61 @@
   }
   /** 학군 좋은 편: 가까운 중학교가 같은 구 중학교 3곳 이상 중 순전입 상위 30% 안 (fx.sc = 학교알리미 공시 전·출입) */
   const schoolGood = f => !!(f && Array.isArray(f.sc) && f.sc[5] >= 3 && f.sc[4] >= 1 && f.sc[4] / f.sc[5] <= 0.3);
-  /** 루트 단계별 단지 고르기: 중학교 배정 전은 학군 좋은 편 단지 중에서(지금 집이 이미 그렇다면 그대로),
-      막내 독립 뒤는 지금 집보다 싼 집 중에서, 그 밖에는 그대로. 모두 '그 기간 미래가치 높은 순' 1위.
-      적극적(mode 'bold')은 예산을 끝까지 써서 갈 수 있는 가장 비싼 축(그 안 최고가의 90% 이상) 안에서 고른다 */
-  const BOLD_TOP = 0.9;
-  function pickFor(list, st, cur, h, mode) {
+  /** 공개 시계열(월별 3개월 실거래 평당가 중앙값, 약 3년)에서 가장 크게 떨어진 폭: 앞선 최고점 대비 이후 최저점.
+      값이 있는 달이 24개 미만이면 null. → { d(음수 비율, 0이면 떨어진 적 없음), hi, lo (달 순번) } */
+  const DD_MIN = 24;
+  function maxDrop(series) {
+    let peak = 0, pi = -1, best = 0, bi = -1, bj = -1, cnt = 0;
+    (series || []).forEach((v, i) => {
+      if (!(v > 0)) return; cnt++;
+      if (v > peak) { peak = v; pi = i; }
+      const d = v / peak - 1; if (d < best) { best = d; bi = pi; bj = i; }
+    });
+    return cnt >= DD_MIN ? { d: best, hi: bi, lo: bj } : null;
+  }
+  /** 안심 우선 후보: 최근 1년 거래 12건 이상(시계열이 몇 건에 흔들리지 않게), 낙폭 계산 가능, 전세가율 80% 미만(자료 있을 때) */
+  const SAFE_MIN_TRADES = 12, SAFE_JR = 0.8;
+  const safeOk = x => x.n >= SAFE_MIN_TRADES && x.dd != null && !(x.jr != null && x.jr >= SAFE_JR);
+  /** 점수 대(0~4: 하위 20% … 상위 20%) */
+  const qOf = s => s == null ? null : Math.min(4, Math.max(0, Math.floor(s / 20)));
+  /**
+   * 루트 목적 세 갈래 — 같은 예산·같은 단계에서 무엇을 먼저 보느냐만 다르다.
+   *  asset  자산 우선: 그 기간(기준을 넘은 기간) 미래가치 높은 순
+   *  family 가족 우선: 가까운 중학교가 학군 좋은 편인 단지 안에서 미래가치 높은 순(자녀가 없으면 자산 우선과 같은 기준)
+   *  safe   안심 우선: 최근 3년 가장 크게 떨어진 폭이 작은 순(0.5%p 단위) → 미래가치. 거래 적은 단지·전세가율 80% 이상 제외
+   */
+  const GOALS = {
+    asset: { name: '자산 우선', desc: '같은 예산에서 앞으로 더 오를 가능성(과거에 맞은 기간의 점수)이 높은 단지로 가요' },
+    family: { name: '가족 우선', desc: '자녀 학교 시기에 맞춰, 가까운 중학교로 전학 오는 학생이 많은 단지 안에서 미래가치가 높은 곳으로 가요' },
+    safe: { name: '안심 우선', desc: '최근 3년 시세가 떨어졌을 때 덜 떨어진 단지, 전세가율이 지나치게 높지 않은 단지로 가요' }
+  };
+  function pickFor(list, st, cur, h, goal, kids) {
     let L = list;
-    if (st && st.key === 'school') { if (cur && schoolGood(cur.f)) return cur; L = L.filter(x => schoolGood(x.f)); }
-    if (st && st.key === 'after' && cur) L = L.filter(x => x.P < cur.P);
-    if (mode === 'bold' && !(st && st.key === 'after') && L.length) { const top = Math.max(...L.map(x => x.P)); L = L.filter(x => x.P >= top * BOLD_TOP); }
+    const after = st && st.key === 'after';
+    if (after && cur) L = L.filter(x => x.P < cur.P);
+    if (goal === 'family' && kids && !after) {
+      if (cur && schoolGood(cur.f) && st && st.key !== 'now') return cur;
+      L = L.filter(x => schoolGood(x.f));
+    }
+    if (goal === 'safe') {
+      L = L.filter(safeOk);
+      const r = x => Math.round(x.dd.d * 200);           // 0.5%p 단위
+      return L.slice().sort((a, b) => r(b) - r(a) || ((scoreAt(b.f, h) || 0) - (scoreAt(a.f, h) || 0)) || a.need - b.need)[0] || null;
+    }
     return sortList(L, 'fv', h)[0] || null;
+  }
+  /**
+   * 지금 옮길까, 2년 뒤 다시 볼까 — 지금 집(cur)과 갈 집(x)의 2년 점수 대(qOf)를 비교하고,
+   * 근거는 model_h.json 2년 q5(점수 대별 [평균 초과 %p, 회차 수, 평균보다 더 오른 회차, 단지 수])의 실제 회차 수.
+   * 2년 성적이 기준을 넘지 못했으면 ok=false('참고'). → null 또는 { v:'now'|'later'|'same', ok, a(지금 집 점수), b(갈 집 점수), qa, qb, ea, eb }
+   */
+  function timing(curF, xF, MH, V) {
+    const a = scoreAt(curF, 2), b = scoreAt(xF, 2); if (a == null || b == null) return null;
+    const q5 = MH && MH['2'] && MH['2'].q5, qa = qOf(a), qb = qOf(b);
+    const ea = q5 && q5[qa] ? q5[qa] : null, eb = q5 && q5[qb] ? q5[qb] : null;
+    let v = 'same';
+    if (qa !== qb && ea && eb && eb[0] !== ea[0]) v = eb[0] > ea[0] ? 'now' : 'later';
+    return { v, ok: !!(V && V[2] && V[2].ok), a, b, qa, qb, ea, eb };
   }
   /** 같은 구 안 순위: 단지별(시군구|동|단지) 가장 높은 fvg 로 줄 세움 → { r, n } (같은 점수는 같은 등수) */
   function guRanks(units) {
@@ -241,11 +294,11 @@
 
   /**
    * 예산으로 갈 수 있는 단지 전부 + 1억 이내로 모자란 단지
-   * opt: { units, inArea, bands, B, o(cash 포함; loanUse·reserveM 선택), exclude, hhMin, cap('b15'|'b25'|'over'|''), sggPpy, note, cheap(false면 너무 싼 단지도 남김) }
+   * opt: { units, inArea, bands, B, o(cash 포함; burden·noLoan 선택), exclude, hhMin, cap('b15'|'b25'|'over'|''), sggPpy, note, cheap(false면 너무 싼 단지도 남김), guS(code)=>구 평당가 시계열 }
    * → { can:[...], near:[...] } 항목: { u, code, dong, apt, band, area, n, P, g, c, nd, large, need, left, short, mon, hh, f, hasFv, fv, fvg, cap, ch3, disp, sortv, score }
    */
   function scan(opt) {
-    const can = [], near = [], o = opt.o, resM = o.reserveM || 0, lim = opt.near == null ? NEAR : opt.near;
+    const can = [], near = [], o = opt.o, lim = opt.near == null ? NEAR : opt.near;
     for (const u of opt.units) {
       const [code, dong, apt, band, area, n, series, cnt] = u;
       if (!opt.inArea(code)) continue;
@@ -260,13 +313,14 @@
       const large = area > 85;
       const nd = need(P, b.c, b.dsr, Object.assign({}, o, { large }));
       const mon = monthly(nd.loan.L, b.c.rate, b.c.term);
-      const short = nd.need + resM * mon - o.cash;
+      const short = nd.need - o.cash;
       if (short > lim) continue;
       const gp = opt.sggPpy ? opt.sggPpy(code) : 0;
       const sc = REC.scoreUnit(u, P, Math.max(b.max || 0, P), gp, opt.note ? !!opt.note(code) : false);
       if (short <= 0 && opt.cheap !== false && b.max && REC.tooCheap(REC.scoreUnit(u, P, b.max, gp, false).fit, P, gp ? REC.r100(gp * area / REC.PY) : 0)) continue;
-      const x = Object.assign({ u, code, dong, apt, band, area, n, series, P, g, c: b.c, nd, large, need: nd.need, left: o.cash - nd.need - resM * mon, short: Math.max(0, short), mon,
-        hh, f, fv: f && f.fv != null ? f.fv : null, fvg: f && f.fvg != null ? f.fvg : null, cap, ch3: REC.change3y(series) }, sc);
+      const x = Object.assign({ u, code, dong, apt, band, area, n, series, P, g, c: b.c, nd, large, need: nd.need, left: o.cash - nd.need, short: Math.max(0, short), mon,
+        hh, f, fv: f && f.fv != null ? f.fv : null, fvg: f && f.fvg != null ? f.fvg : null, cap, ch3: REC.change3y(series),
+        dd: maxDrop(series), guDd: opt.guS ? maxDrop(opt.guS(code) || []) : null, jr: f && f.jr != null ? f.jr : null }, sc);
       (short <= 0 ? can : near).push(x);
     }
     return { can, near };
@@ -304,18 +358,14 @@
     if (outY > year && outY > (out[out.length - 1].year)) out.push({ key: 'after', year: outY, title: `${outY}년 · 막내 대학 진학 뒤`, why: '학군이 더는 필요 없는 때예요. 대출 없이 살 수 있는 집으로 줄이면 현금을 마련할 수 있어요' });
     return out;
   }
-  const ROUTE_MODE = {
-    safe: { loanUse: 0.7, reserveM: 6, name: '보수적', desc: '대출은 한도의 70%까지만, 매달 상환액 6개월치를 비상금으로 남겨요' },
-    bold: { loanUse: 1, reserveM: 0, name: '적극적', desc: '대출 한도를 끝까지 쓰고, 갈 수 있는 가장 비싼 축 단지 중 미래가치가 높은 곳으로 가요' }
-  };
   /**
    * 루트 계산 — 금액은 오늘 시세 그대로(집값 변화 0)로 이어 계산하고, 단계 사이 집값 흐름은 outlook(기준을 넘은 기간 점수)으로 말로만.
-   * a: { mode:'safe'|'bold', year, stages, cash(지금 쓸 수 있는 자기자본), save(한 해 모을 돈), o(대출 조건),
-   *      pick(o, st, cur, h, mode) => 후보 or null (보통 scan → pickFor) (o.cash = 그 단계에 쓸 수 있는 자기자본), V(validity) }
+   * a: { goal:'asset'|'family'|'safe', kids(bool), year, stages, cash(지금 쓸 수 있는 자기자본), save(한 해 모을 돈), o(대출 조건, burden 포함),
+   *      pick(o, st, cur, h, goal) => 후보 or null (보통 scan → pickFor) (o.cash = 그 단계에 쓸 수 있는 자기자본), V(validity) }
    * → [{ st, x(고른 단지)|null, stay(그대로 삶), pool(그 단계 자기자본), sale(이전 집 정산)|null, cur(그대로 사는 집), out(전망), left(매수 뒤 현금) }]
    */
   function route(a) {
-    const M = ROUTE_MODE[a.mode] || ROUTE_MODE.safe, res = [];
+    const res = [];
     let cash = a.cash, cashY = a.year, cur = null, curY = a.year;
     a.stages.forEach((st, i) => {
       const nextY = a.stages[i + 1] ? a.stages[i + 1].year : st.year + 5;
@@ -329,8 +379,8 @@
         pool = liquid + S.net;
       }
       const after = st.key === 'after';
-      const o = Object.assign({}, a.o, { cash: Math.max(0, pool), loanUse: after ? 0 : M.loanUse, reserveM: after ? 0 : M.reserveM });
-      const x = a.pick(o, st, cur, horizonFor(a.V, nextY - st.year), a.mode);
+      const o = Object.assign({}, a.o, { cash: Math.max(0, pool), noLoan: after });
+      const x = a.pick(o, st, cur, horizonFor(a.V, nextY - st.year), a.goal);
       if (!x || (cur && x.u === cur.u)) {
         res.push({ st, x: null, stay: !!cur, pool, sale, cur, out: cur && cur.f ? outlook(cur.f, a.V, nextY - st.year) : null });
         cash = liquid; cashY = st.year;
@@ -343,7 +393,7 @@
   }
 
   const API = { isAdj, brokerFee, expEstimate, sell, ctx, capByPrice, dsrMax, monthly, loanAt, buyCost, need, maxPrice, budgets, recommend, compare, adjKey, TYPE_RATIO, TYPE_RATIO_LOCAL,
-    NEAR, HH_STEPS, HORIZONS, capBand, balance, validity, scoreAt, lean, outlook, guRanks, scan, sortList, schedule, stages, ROUTE_MODE, route, horizonFor, schoolGood, pickFor, BOLD_TOP };
+    NEAR, HH_STEPS, HORIZONS, capBand, balance, validity, scoreAt, lean, outlook, guRanks, scan, sortList, schedule, stages, GOALS, route, horizonFor, schoolGood, pickFor, payMax, maxDrop, safeOk, qOf, timing, SAFE_MIN_TRADES, SAFE_JR, DD_MIN };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_SWITCH = API;
 })(typeof self !== 'undefined' ? self : this);

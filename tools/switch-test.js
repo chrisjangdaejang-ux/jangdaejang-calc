@@ -109,10 +109,15 @@ check('예산 적합하면 남김', REC.tooCheap(0.9, 10000, 40000), false, '');
 
 // 11. 갈아타기 루트 (v3): 대출 일부만 쓰기·남은 원금·과거 성적·전망·지금 갈 수 있는/조금 모자란 단지·정렬·가족 일정·루트
 {
-  const ndF = SW.need(100000, cReg, dsr, o1), ndS = SW.need(100000, cReg, dsr, Object.assign({}, o1, { loanUse: 0.7 }));
-  check('보수적: 대출 한도의 70%만', ndS.loan.L, 28000, '10억 LTV 40% = 4억 × 70%');
-  check('  └ 원래 한도 기록', ndS.loan.full, 40000, '');
-  check('  └ 덜 빌린 만큼 필요 현금 증가', ndS.need - ndF.need, 12000, '4억 − 2.8억');
+  const ndF = SW.need(100000, cReg, dsr, o1), ndS = SW.need(100000, cReg, dsr, Object.assign({}, o1, { burden: 0.2 }));
+  const pm = SW.payMax(cReg, 0.2);
+  check('월 상환 20%: 빌릴 수 있는 돈 = 월 150만 × 연금현가(4%·30년)', pm, 150 * (1 - Math.pow(1 + 4 / 1200, -360)) / (4 / 1200), '연소득 9천 × 20% ÷ 12', 1e-6);
+  check('  └ 규제 한도(4억)보다 작으면 그 금액만', ndS.loan.L, pm, '', 1e-6);
+  check('  └ 원래 규제 한도 기록 · 결정 요인 PAY', ndS.loan.full + '/' + ndS.loan.by, '40000/PAY', '');
+  check('  └ 덜 빌린 만큼 필요 현금 증가', ndS.need - ndF.need, 40000 - pm, '', 1e-6);
+  check('월 상환 40%: 규제 한도(LTV 4억)가 그대로 상한', SW.need(100000, cReg, dsr, Object.assign({}, o1, { burden: 0.4 })).loan.L, 40000, '실제 금리 기준 한도 > LTV');
+  check('다른 대출이 있으면 그만큼 빼고', SW.payMax(SW.ctx('reg', Object.assign({}, o1, { debt: 1800 })), 0.2), 0, '1,800 − 1,800 = 0');
+  check('대출 없이 단계(noLoan)', SW.need(100000, cReg, dsr, Object.assign({}, o1, { noLoan: true })).loan.L, 0, '');
   check('남은 원금: 0년 = 원금', SW.balance(40000, 4, 30, 0), 40000, '');
   check('남은 원금: 만기 = 0', SW.balance(40000, 4, 30, 30), 0, '', 1e-6);
   const L = 40000, i = 4 / 1200, m = SW.monthly(L, 4, 30);
@@ -168,9 +173,8 @@ check('예산 적합하면 남김', REC.tooCheap(0.9, 10000, 40000), false, '');
   check('세대수 300 이상: 자료 없는(0) 단지·150세대 제외', [...sc3.can, ...sc3.near].map(x => x.apt).sort().join(''), [...sc.can, ...sc.near].filter(x => x.hh >= 300).map(x => x.apt).sort().join(''), '');
   const scB = SW.scan({ units: us, inArea: () => true, bands: null, B: BS, o: oS, cheap: false, cap: 'b15' });
   check('대출 구간 15억 이하만', [...scB.can, ...scB.near].every(x => x.P <= 150000), true, '');
-  const scR = SW.scan({ units: us, inArea: () => true, bands: null, B: BS, o: Object.assign({}, oS, { reserveM: 6 }), cheap: false });
-  const x0 = scR.can[0] || scR.near[0];
-  check('비상금: 필요 현금 + 월 상환 6개월치로 판단', Math.round(x0.left), Math.round(60000 - x0.need - 6 * x0.mon), '');
+  const x0 = sc.can[0];
+  check('남는 현금 = 자기자본 − 필요 현금', Math.round(x0.left), Math.round(60000 - x0.need), '');
   const so = SW.sortList(sc.can, 'fv').map(x => x.apt).join('');
   check('정렬: 미래가치 높은 순', so, sc.can.slice().sort((a, b) => b.fv - a.fv).map(x => x.apt).join(''), '');
   check('정렬: 필요 현금 적은 순', SW.sortList(sc.can, 'cash').map(x => Math.round(x.need)).join(',') === sc.can.map(x => Math.round(x.need)).sort((a, b) => a - b).join(','), true, '');
@@ -189,26 +193,57 @@ check('예산 적합하면 남김', REC.tooCheap(0.9, 10000, 40000), false, '');
   check('학군: 10곳 중 1위 → 좋은 편', SW.schoolGood({ sc: ['중', 1, 2024, 2026, 1, 10] }), true, '상위 30% 안');
   check('학군: 10곳 중 4위 → 아님', SW.schoolGood({ sc: ['중', 1, 2024, 2026, 4, 10] }), false, '');
   check('학군: 2곳뿐이면 판단 안 함', SW.schoolGood({ sc: ['중', 1, 2024, 2026, 1, 2] }), false, '');
-  check('중학교 배정 전: 학군 좋은 단지(바)만', SW.pickFor(sc.can, { key: 'school' }, null, 2).apt, '바', '');
+  check('가족 우선: 학군 좋은 단지(바)만', SW.pickFor(sc.can, { key: 'now' }, null, 2, 'family', true).apt, '바', '');
   const curGood = sc.can.find(x => x.apt === '바');
-  check('  └ 지금 집이 이미 학군 좋으면 그대로', SW.pickFor(sc.can, { key: 'school' }, curGood, 2), curGood, '');
-  const top = Math.max(...sc.can.map(x => x.P));
-  check('적극적: 가장 비싼 축(90% 이상) 안에서', SW.pickFor(sc.can, { key: 'now' }, null, 2, 'bold').P >= top * SW.BOLD_TOP, true, '');
-  check('보수적: 전체 중 미래가치 1위', SW.pickFor(sc.can, { key: 'now' }, null, 2, 'safe').apt, SW.sortList(sc.can, 'fv')[0].apt, '');
+  check('  └ 중학교 배정 전, 지금 집이 이미 학군 좋으면 그대로', SW.pickFor(sc.can, { key: 'school' }, curGood, 2, 'family', true), curGood, '');
+  check('  └ 자녀가 없으면 자산 우선과 같음', SW.pickFor(sc.can, { key: 'now' }, null, 2, 'family', false).apt, SW.sortList(sc.can, 'fv')[0].apt, '');
+  check('자산 우선: 미래가치 1위', SW.pickFor(sc.can, { key: 'now' }, null, 2, 'asset').apt, SW.sortList(sc.can, 'fv')[0].apt, '');
+  check('자산 우선: 볼 기간 3년이면 3년 점수 1위', SW.pickFor(sc.can, { key: 'now' }, null, 3, 'asset').apt, SW.sortList(sc.can, 'fv', 3)[0].apt, '');
+  check('막내 독립 뒤: 지금 집보다 싼 곳만', SW.pickFor(sc.can, { key: 'after' }, curGood, 2, 'asset') === null || SW.pickFor(sc.can, { key: 'after' }, curGood, 2, 'asset').P < curGood.P, true, '');
+
+  // 안심 우선: 최근 3년 가장 크게 떨어진 폭
+  const ser36 = (a) => a.concat(Array(36 - a.length).fill(a[a.length - 1]));
+  check('낙폭: 100 → 120 → 90 → 130 은 −25%', SW.maxDrop(ser36([100, 120, 90, 130])).d, -0.25, '최고점 120 → 최저 90');
+  check('  └ 최고점·최저점 달 순번', [SW.maxDrop(ser36([100, 120, 90, 130])).hi, SW.maxDrop(ser36([100, 120, 90, 130])).lo].join(','), '1,2', '');
+  check('낙폭: 계속 오르면 0', SW.maxDrop([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]).d, 0, '');
+  check('낙폭: 값 있는 달 24개 미만이면 null', SW.maxDrop(Array(23).fill(100).concat(Array(13).fill(0))), null, '');
+  check('낙폭: 빈 달(0)은 건너뜀', SW.maxDrop(ser36([100, 0, 0, 80])).d, -0.2, '');
+  const sx = (apt, d, n, jr, fv) => ({ apt, dd: d == null ? null : { d }, n, jr, f: { fv }, fv, need: 1, P: 1 });
+  const sl = [sx('A', -0.10, 30, 0.5, 99), sx('B', -0.02, 30, 0.5, 40), sx('C', -0.021, 30, 0.5, 80), sx('D', 0, 5, 0.5, 90), sx('E', 0, 30, 0.85, 90), sx('F', null, 30, 0.5, 90)];
+  check('안심 대상: 거래 12건 미만·전세가율 80% 이상·낙폭 모름 제외', sl.filter(SW.safeOk).map(x => x.apt).join(''), 'ABC', '');
+  check('안심 우선: 덜 떨어진 순(0.5%p 안은 같게) → 미래가치', SW.pickFor(sl, { key: 'now' }, null, 2, 'safe').apt, 'C', 'B −2.0%·C −2.1% 같은 칸 → C 80점');
+
+  // 지금 vs 2년 뒤 (model_h 2년 q5)
+  const MHq = { '2': { q5: [[-0.58, 4, 1, 1], [-0.28, 4, 0, 1], [-0.47, 4, 1, 1], [0.43, 4, 4, 1], [0.92, 4, 4, 1]] } };
+  let T = SW.timing({ fv: 25 }, { fv: 95 }, MHq, V);
+  check('갈 집 점수 대가 과거에 더 올랐으면 지금 옮기기', T.v + '/' + T.qa + '/' + T.qb + '/' + T.eb[2], 'now/1/4/4', '하위 20~40% vs 상위 20%');
+  T = SW.timing({ fv: 95 }, { fv: 25 }, MHq, V);
+  check('지금 집 점수 대가 더 나으면 2년 뒤 다시 보기', T.v, 'later', '');
+  check('같은 점수 대면 차이 작음', SW.timing({ fv: 21 }, { fv: 39 }, MHq, V).v, 'same', '');
+  check('2년 성적이 기준 못 넘으면 참고(ok=false)', SW.timing({ fv: 25 }, { fv: 95 }, MHq, { 2: { ok: false } }).ok, false, '');
+  check('점수 없으면 판단 안 함', SW.timing({ fv: 25 }, {}, MHq, V), null, '');
+  check('점수 대 경계', [SW.qOf(0), SW.qOf(19), SW.qOf(20), SW.qOf(99), SW.qOf(100)].join(','), '0,0,1,4,4', '');
 
   // 루트: 단계 사이 집값은 그대로(차익 0 → 양도세 0), 남은 원금·모은 돈만 늘어남
-  const pick = (oo, s, cur, h, mode) => SW.pickFor(SW.scan({ units: us, inArea: () => true, bands: null, B: SW.budgets(oo), o: oo, cheap: false, near: 0 }).can, s, cur, h, mode);
-  const R = SW.route({ mode: 'safe', year: 2026, stages: [{ key: 'now', year: 2026 }, { key: 'later', year: 2031 }], cash: 60000, save: 1000, o: o1, V, pick });
+  const pick = (oo, s, cur, h, goal) => SW.pickFor(SW.scan({ units: us, inArea: () => true, bands: null, B: SW.budgets(oo), o: oo, cheap: false, near: 0 }).can, s, cur, h, goal);
+  const R = SW.route({ goal: 'asset', year: 2026, stages: [{ key: 'now', year: 2026 }, { key: 'later', year: 2031 }], cash: 60000, save: 1000, o: Object.assign({}, o1, { burden: 0.3 }), V, pick });
   const r0 = R[0], r1 = R[1];
   check('루트 1단계: 자기자본 = 지금 쓸 수 있는 돈', r0.pool, 60000, '');
-  check('  └ 대출은 한도의 70%', Math.round(r0.x.nd.loan.L), Math.round(r0.x.nd.loan.full * 0.7), '');
-  check('  └ 남는 현금 = 자기자본 − 필요 현금', Math.round(r0.left), Math.round(60000 - r0.x.need), '비상금은 남는 현금 안에');
+  check('  └ 대출 ≤ 월 상환 30% 한도', r0.x.nd.loan.L <= SW.payMax(cReg, 0.3) + 1e-6, true, '');
+  check('  └ 남는 현금 = 자기자본 − 필요 현금', Math.round(r0.left), Math.round(60000 - r0.x.need), '');
   if (r1.sale) {
     check('루트 2단계: 시세 그대로면 양도세 0', r1.sale.cgt, 0, '차익 없음');
     check('  └ 남은 대출 = 5년 상환 뒤 원금', Math.round(r1.sale.bal), Math.round(SW.balance(r0.x.nd.loan.L, o1.rate, o1.term, 5)), '');
     const net = r0.x.P - r1.sale.bal - r1.sale.fee;
     check('  └ 2단계 자기자본 = 남은 현금 + 5년 모은 돈 + 판 돈', Math.round(r1.pool), Math.round(r0.left + 5000 + net), '');
   } else check('루트 2단계: 옮기지 않으면 그대로 삶', r1.stay, true, '');
+}
+
+// 12. 상담 칸: 제휴 세무사 분야 = 양도 전문·증여 전문·상속 전문 (세금 화면과 같은 이름)
+{
+  const html = require('fs').readFileSync(require('path').join(__dirname, '..', 'switch', 'index.html'), 'utf8');
+  const tf = [...html.matchAll(/data-tf="([^"]+)"/g)].map(m => m[1]).join(',');
+  check('제휴 세무사 분야 버튼', tf, '양도 전문,증여 전문,상속 전문', '대표 섭외 분야·제안서');
 }
 
 let pass = 0;
