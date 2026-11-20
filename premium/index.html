@@ -34,7 +34,7 @@
 <script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
 <link rel="stylesheet" href="/jangdaejang-calc/assets/pay.css?v=1">
 <script src="/jangdaejang-calc/assets/agents.js"></script>
-<script src="/jangdaejang-calc/assets/pay.js?v=2"></script>
+<script src="/jangdaejang-calc/assets/pay.js?v=3"></script>
 <style>
 .doc{max-width:880px}
 .doc .lead{font-size:16px;color:var(--sub);margin:0 0 6px}
@@ -160,6 +160,7 @@
   const P = JDJ_PAY, $ = id => document.getElementById(id), esc = P.esc;
   const Q = new URLSearchParams(location.search);
   let plan = P.PRODUCTS[Q.get('p')] ? Q.get('p') : '';
+  if (plan === 'cy') { location.replace('/jangdaejang-calc/chungyak/'); return; }   /* 청약 분양가 리포트는 청약 공고 화면에서 고름 */
   let keys = P.keysFromUrl(Q);
   if (!plan && keys.length) plan = keys.length > 1 ? 'pack' : 'single';
   const label = k => { const p = P.keyParse(k); return p ? `<b>${esc(p.apt)}</b><small>${esc(p.dong)} · ${esc(p.band)}</small>` : ''; };

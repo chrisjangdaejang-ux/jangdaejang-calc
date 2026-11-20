@@ -159,6 +159,7 @@ th.num{white-space:normal;word-break:keep-all}
 </style>
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
 <script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
+<link rel="stylesheet" href="/jangdaejang-calc/assets/cy-price.css?v=1">
 <style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
 :root{--gold:#2F6BFF}
 .premium .pt{color:var(--blue)}
@@ -245,6 +246,7 @@ td{border-bottom:1px solid var(--line2)}
     <li><b>단지별</b> · 진행·예정 공고 하나하나를 내 가점과 비교해요</li>
     <li><b>면적별</b> · 60㎡ 이하·60~85㎡·85㎡ 초과마다 가능성 높음·경합·낮음</li>
     <li><b>근거</b> · 예상 커트라인은 같은 지역·같은 면적대 과거 당첨 결과(청약홈)로 만들어요</li>
+    <li><b>분양가</b> · 공고마다 분양가가 주변 신축·준신축 실거래와 비교해 어디쯤인지 보여 드려요</li>
   </ul>
   <p class="lead" style="font-size:14px;margin-top:6px">입력한 내용은 이 기기 밖으로 보내지 않아요.</p>
   <div id="areaStrip"></div>
@@ -302,7 +304,7 @@ td{border-bottom:1px solid var(--line2)}
   </div>
 
   <!-- 4. 분양 공고 -->
-  <h2 class="sec">진행 중·예정 분양 · 예상 당첨 가점<small>청약홈 APT 분양 공고 기준 · 당첨자 발표 전 공고 · 민영주택은 면적대별 예상 당첨 가점 범위와 추첨제 비율을 함께 보여 드립니다</small></h2>
+  <h2 class="sec">진행 중·예정 분양 · 예상 당첨 가점<small>청약홈 APT 분양 공고 기준 · 당첨자 발표 전 공고 · 민영주택은 면적대별 예상 당첨 가점 범위와 추첨제 비율, 모든 공고에 분양가·입지 분석(주변 시세 대비 위치·주변 청약 결과·미래가치·수요·공급)을 함께 보여 드려요</small></h2>
   <div class="box">
     <div class="grid2" style="margin-bottom:10px"><div><label for="nSido">지역</label><select id="nSido"><option value="">전체</option></select></div></div>
     <div id="notices"><div class="loading">분양 공고를 불러오는 중입니다…</div></div>
@@ -319,6 +321,7 @@ td{border-bottom:1px solid var(--line2)}
       <li><b>예상 당첨 가점(커트라인) 범위</b> — 청약홈에 공개된 과거 당첨 가점 중 공고와 같은 시·도, 같은 면적대(60㎡ 이하·60~85㎡·85㎡ 초과), 해당지역 1순위 결과만 골라 비교합니다. 같은 시·군·구 → 같은 시 → 같은 시·도 순으로 가까운 곳의 자료가 충분하면 그 자료를 쓰고, 최근 공고일수록 더 무겁게 반영해 ‘최저 당첨 가점’이 주로 놓였던 범위와 평균 당첨 가점을 보여 드립니다. 비교할 단지·주택형이 충분하지 않으면 숫자 대신 ‘자료 부족’으로 표시합니다. 과거 결과에는 분양가가 없어 분양가는 비교에 넣지 못했습니다.</li>
       <li><b>가능성 높음 / 경합 / 낮음</b> — 내 가점이 예상 범위 위쪽 이상이면 ‘가능성 높음’, 범위 안이면 ‘경합’, 범위 아래면 ‘낮음’입니다. 몇 년 뒤 가능한지는 지금 조건이 그대로일 때 무주택기간·통장 가입기간이 늘어나는 것만 반영했습니다. 단지 인기·분양가·경쟁률에 따라 실제 결과는 크게 달라질 수 있습니다.</li>
       <li><b>가점제·추첨제 비율</b> — 민영주택 1순위 경쟁 시 규칙 제28조 제2항·제4항: 투기과열지구 60㎡ 이하 가점 40%, 60~85㎡ 70%, 85㎡ 초과 80% / 청약과열지역(조정대상지역) 40%·70%·50% / 그 밖의 지역 85㎡ 이하 40% 이하(시장·군수·구청장 공고), 85㎡ 초과 전부 추첨. 나머지는 추첨이며, 규제지역·수도권·광역시에서는 추첨 물량의 75%를 무주택세대구성원에게 먼저 공급합니다(제28조 제8항). 실제 비율은 입주자모집공고문이 기준입니다.</li>
+      <li><b>분양가·입지 분석</b> — 공고마다 같은 면적대(60㎡ 이하·60~85㎡·85㎡ 초과) 주택형 최고 분양가의 3.3㎡당 중앙값을, 단지 반경 1km → 2km → 같은 구 순으로 준공 10년 이내 아파트 최근 12개월 매매가 10건 이상 모이는 가장 좁은 범위와 비교해요. ‘하위·중간·상위 구간에 가까워요’는 주변 거래 가운데 분양가보다 싼 거래의 비율을 셋으로 나눈 것이고, 주변 시세와의 차이는 주변 거래 중간 절반(하위 25%~상위 25%)의 범위로만 보여 드려요. 지금 거래 기준이라 입주 때 가격이 아니고, 분양가에는 발코니 확장·옵션이 빠진 경우가 많아요. 광고주 단지라도 같은 방식으로 계산해요.</li>
       <li><b>국민주택(공공분양)</b> — 일반공급을 청약 가점이 아니라 납입 인정 금액·횟수 등(순차제)으로 뽑아 가점 커트라인을 계산하지 않습니다.</li>
     </ul>
   </details>
@@ -335,6 +338,7 @@ td{border-bottom:1px solid var(--line2)}
 <div class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집예보 · <a href="../">홈</a></div>
 
 <script src="cy-engine.js?v=2"></script>
+<script src="../assets/cy-price.js?v=1"></script>
 <script src="../assets/narrative.js?v=12"></script>
 <script>
 /* 계산 엔진은 cy-engine.js (node 테스트: tools/chungyak-test.js) */
@@ -553,6 +557,7 @@ function narCy() {
 }
 /* 분양 공고 + 예상 당첨 가점 */
 let NOT = [], PRED = {}, PRED_ST = 'wait', GEN_SCOPE = 'mine';
+let CYP = {};   /* 공고별 분양가·입지 분석 요약(엔진 scripts/cy_price.py → chungyak/price.json, 화면 assets/cy-price.js) */
 const BAND_TXT = ['60㎡ 이하', '60~85㎡', '85㎡ 초과'];
 const DG = { hi: ['ok', '가능성 높음'], mid: ['chk2', '경합'], lo: ['no', '낮음'] };
 /* 상태 판정은 분양 화면과 같은 공용 함수(assets/sale-status.js) */
@@ -628,6 +633,7 @@ function renderNotices() {
       ${ty.length ? `<div class="tyl"><div class="tyh">주택형(일반+특별 세대) · 분양가</div><ul>${ty.slice(0, 6).join('')}</ul>${ty.length > 6 ? `<div class="tyh">외 ${ty.length - 6}개 주택형</div>` : ''}</div>` : ''}
       ${n.f && n.f.length ? `<div class="fl">${n.f.map(f => `<span>${esc(f)}</span>`).join('')}</div>` : ''}
       ${pr}
+      ${CYP[n.no] && window.JDJ_CYP ? JDJ_CYP.card(CYP[n.no]) : ''}
       ${n.u ? `<div style="margin-top:10px"><a class="btn ghost" style="padding:8px 12px;font-size:14px" href="${esc(n.u)}" target="_blank" rel="noopener" data-track="chungyak_notice">청약홈 공고 보기</a></div>` : ''}</div>`; }).join('')}</div>
     ${rows.length > 60 ? `<div style="font-size:13.5px;color:#4E5968;margin-top:6px">가까운 일정 순으로 60건만 보여 드립니다.</div>` : ''}
     <div class="prs" style="margin-top:10px">예상 당첨 가점은 청약홈에 공개된 과거 당첨 결과로 만든 범위입니다. 계산 방법은 아래 ‘계산 기준과 한계’를 확인하세요.</div>`;
@@ -702,6 +708,7 @@ async function init() {
   $('nSido').innerHTML = `<option value="">전국 전체 (${live.length}건)</option>` + SIDO.map(s => { const c = cnt(s); return `<option value="${esc(s)}">${esc(sidoLbl(s))} · ${c ? c + '건' : '현재 공고 없음'}</option>`; }).join('');
   $('nSido').onchange = renderNotices;
   renderNotices();
+  if (window.JDJ_CYP) JDJ_CYP.load().then(j => { CYP = (j && j.rows) || {}; renderNotices(); }).catch(() => {});
   try { buildPred(); } catch (e) { PRED_ST = 'ok'; }
   renderNotices(); renderGen();
 }

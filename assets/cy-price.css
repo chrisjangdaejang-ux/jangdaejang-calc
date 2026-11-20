@@ -1,0 +1,46 @@
+/* 청약 공고별 분양가·입지 분석(assets/cy-price.js) — A+ 테마: 흰 바탕·파랑 강조. 분석 칸은 파란 왼쪽 선으로, 광고 칸(회색 '광고' 표시)과 구분 */
+.cyp{margin-top:12px;border:1px solid var(--line,#E5E8EB);border-left:4px solid var(--blue,#2F6BFF);border-radius:0 14px 14px 0;padding:10px 12px;background:#fff}
+.cyp-h{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:15px}
+.cyp-src{font-size:12.5px;font-weight:700;color:var(--blue,#2F6BFF);background:var(--blue-l,#E8F0FF);border-radius:999px;padding:1px 9px;white-space:nowrap}
+.cyp-b{border-top:1px solid var(--line2,#F0F1F3);padding:8px 0 4px;margin-top:6px}
+.cyp-bh{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:15px;font-variant-numeric:tabular-nums}
+.cyp-s{font-size:13.5px;color:var(--sub2,#4E5968);line-height:1.6;margin-top:3px;word-break:keep-all}
+.cyp-k{color:var(--text,#191F28)}
+.cyp-t{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 9px;white-space:nowrap}
+.cyp-t0{background:var(--pos-l,#E6F5EE);color:var(--pos,#0E7A4F)}
+.cyp-t1{background:var(--gray,#F2F4F6);color:var(--sub,#3E4754)}
+.cyp-t2{background:var(--neg-l,#FDECE4);color:var(--neg,#C2410C)}
+.cyp-na{color:var(--sub2,#4E5968);background:var(--gray,#F2F4F6)}
+b.cyp-na,div.cyp-na{background:none;font-weight:700}
+.cyp-l{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:4px;font-size:13.5px;color:var(--sub2,#4E5968);line-height:1.55}
+.cyp-l b{color:var(--text,#191F28);margin-right:4px}
+.cyp-go{display:flex;align-items:center;justify-content:center;min-height:44px;margin-top:10px;border-radius:12px;background:var(--blue-l,#E8F0FF);color:var(--blue,#2F6BFF);font-weight:700;font-size:15px;text-decoration:none}
+.cyp-sec{margin-top:26px}
+.cyp-sec h2{font-size:19px;font-weight:900;letter-spacing:-.4px;margin:0 0 8px}
+.cyp-sec h3{font-size:16px;margin:14px 0 4px}
+.cyp-tb{width:100%;border-collapse:collapse;font-size:14px;margin:6px 0}
+.cyp-tb th{text-align:left;font-size:13px;color:var(--sub2,#4E5968);font-weight:700;padding:6px 4px;border-bottom:1px solid var(--line,#E5E8EB)}
+.cyp-tb td{padding:8px 4px;border-bottom:1px solid var(--line2,#F0F1F3);vertical-align:top;font-variant-numeric:tabular-nums}
+.cyp-tb .num{text-align:right;white-space:nowrap}
+.cyp-tb .num .cyp-s{white-space:normal;text-align:right}
+.cyp-tb td:first-child{min-width:0;overflow-wrap:anywhere}
+.cyp-fund td:first-child{width:46%}
+.cyp-fund td.num{white-space:normal}
+.cyp-tb .cyp-sum td{border-top:2px solid var(--text,#191F28);font-size:15.5px}
+.cyp-g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media(max-width:560px){.cyp-g3{grid-template-columns:1fr}}
+.cyp-st{border:1px solid var(--line,#E5E8EB);border-radius:14px;padding:10px 12px;min-width:0}
+.cyp-st span{display:block;font-size:13px;color:var(--sub2,#4E5968)}
+.cyp-st b{display:block;font-size:20px;letter-spacing:-.4px}
+.cyp-st small{display:block;font-size:12.5px;color:var(--sub2,#4E5968)}
+.cyp-bar{width:100%;max-width:520px;height:auto;display:block;margin:6px 0 2px}
+.cyp-rk{margin:0;padding-left:20px;display:grid;gap:6px;font-size:14.5px;line-height:1.6}
+.cyp-note{margin-top:22px;font-size:13.5px;color:var(--sub,#3E4754);background:var(--gray2,#F9FAFB);border:1px solid var(--line,#E5E8EB);border-radius:14px;padding:10px 12px;line-height:1.6}
+.cyp-warn{font-size:13.5px;background:var(--neg-l,#FDECE4);color:var(--text,#191F28);border-radius:10px;padding:8px 10px;margin:6px 0}
+.cyp-fi{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0 4px}
+@media(max-width:560px){.cyp-fi{grid-template-columns:1fr 1fr}}
+.cyp-fi label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:700;color:var(--sub,#3E4754);min-width:0}
+.cyp-fi select,.cyp-fi input[type=number]{width:100%;min-height:44px;border:1px solid var(--line,#E5E8EB);border-radius:10px;padding:0 10px;font:inherit;font-size:15px;background:#fff;color:var(--text,#191F28)}
+.cyp-fi .cyp-ck{flex-direction:row;align-items:center;gap:8px;min-height:44px;align-self:end}
+.cyp-fi .cyp-ck input{width:20px;height:20px;accent-color:var(--blue,#2F6BFF)}
+@media print{.cyp-fi{display:none}}

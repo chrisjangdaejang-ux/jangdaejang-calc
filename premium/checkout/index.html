@@ -30,7 +30,7 @@
 <script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
 <link rel="stylesheet" href="/jangdaejang-calc/assets/pay.css?v=1">
 <script src="/jangdaejang-calc/assets/agents.js"></script>
-<script src="/jangdaejang-calc/assets/pay.js?v=2"></script>
+<script src="/jangdaejang-calc/assets/pay.js?v=3"></script>
 </head>
 <body>
 <header class="top">
@@ -99,7 +99,10 @@
   $('pName').textContent = '장대장 ' + pr.name;
   $('pDesc').textContent = pr.desc;
   $('pPrice').textContent = P.won(pr.amount);
-  $('pList').innerHTML = keys.map(k => { const p = P.keyParse(k); return `<li><span><b>${esc(p.apt)}</b><small>${esc(p.dong)} · ${esc(p.band)}</small></span></li>`; }).join('');
+  const isCy = k => /^cy\d+$/.test((P.keyParse(k) || {}).band || '');   /* 청약 분양가 리포트: 평형 자리에 'cy'+공고번호 */
+  if (plan === 'cy' ? !keys.every(isCy) : keys.some(isCy)) { location.replace(P.ROOT); return; }
+  if (plan === 'cy') $('editLink').href = '/jangdaejang-calc/chungyak/price/?no=' + P.keyParse(keys[0]).band.slice(2);
+  $('pList').innerHTML = keys.map(k => { const p = P.keyParse(k); return `<li><span><b>${esc(p.apt)}</b><small>${esc(p.dong)} · ${isCy(k) ? '청약 공고 분양가·입지 분석' : esc(p.band)}</small></span></li>`; }).join('');
   try { sessionStorage.setItem('jdj_pay_back', location.pathname + location.search); } catch(e){}
   P.stat();
 

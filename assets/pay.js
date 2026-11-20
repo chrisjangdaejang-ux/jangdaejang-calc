@@ -18,7 +18,8 @@
     DATA: '/jangdaejang-data/data/',
     PRODUCTS: {
       single: { name: '단지 리포트', amount: 9900, min: 1, max: 1, desc: '관심 단지 1곳' },
-      pack: { name: '비교 패키지', amount: 29000, min: 2, max: 3, desc: '후보 단지 2~3곳' }
+      pack: { name: '비교 패키지', amount: 29000, min: 2, max: 3, desc: '후보 단지 2~3곳' },
+      cy: { name: '청약 분양가 리포트', amount: 9900, min: 1, max: 1, desc: '청약 공고 1곳 · 분양가·입지 상세 분석' }   // 키 평형 자리 'cy'+공고번호(assets/cy-price.js)
     },
     api() { return (window.JDJ_AGENTS && window.JDJ_AGENTS.api) || ''; },
     async post(action, body) {

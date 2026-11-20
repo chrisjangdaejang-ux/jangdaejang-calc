@@ -706,7 +706,8 @@ const OC = Object.fromEntries(OH.map((h, i) => [h, i]));
 /* 서버 기준 가격표 — 사이트에 보이는 가격과 반드시 같게. 결제 금액은 항상 이 표와 대조합니다. */
 const PRICE = {
   single: { name: '단지 리포트', amount: 9900, min: 1, max: 1 },
-  pack:   { name: '비교 패키지', amount: 29000, min: 2, max: 3 }
+  pack:   { name: '비교 패키지', amount: 29000, min: 2, max: 3 },
+  cy:     { name: '청약 분양가 리포트', amount: 9900, min: 1, max: 1, cy: true }   // 청약 공고 1곳 — 키의 평형 자리가 'cy'+공고번호
 };
 const REFUND_DAYS = 7;       // 열람 전 전액 환불 가능 기간(결제일부터)
 const VIEW_DAYS = 365;       // 열람 기간
@@ -805,6 +806,7 @@ function createOrder(b) {
   if (!P) throw new Error('상품을 다시 선택해 주세요.');
   const seen = {};
   const keys = (Array.isArray(b.keys) ? b.keys : []).slice(0, 5).map(parseKey).filter(x => x && !seen[x.k] && (seen[x.k] = true));
+  if (keys.some(x => /~cy\d+$/.test(x.k)) !== !!P.cy) throw new Error(P.cy ? '청약 공고를 다시 골라 주세요.' : '단지를 다시 골라 주세요.');
   if (keys.length < P.min || keys.length > P.max)
     throw new Error(P.min === P.max ? `${P.name}는 단지 ${P.min}곳을 골라 주세요.` : `${P.name}는 단지 ${P.min}~${P.max}곳을 골라 주세요.`);
   const ct = parseContact(b.contact);

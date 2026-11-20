@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
+<script src="/jangdaejang-calc/assets/pwa.js" defer></script>
+<script src="/jangdaejang-calc/assets/biz.js" defer></script>
+<title>분양가·입지 분석 — 집예보 청약</title>
+<meta name="description" content="청약 공고마다 분양가가 주변 신축·준신축 실거래와 비교해 어디쯤인지, 주변 청약 경쟁률·당첨 가점, 미래가치, 입주 예정·미분양, 계약금·중도금·잔금 시점별 필요 현금까지 보여 드려요.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="분양가·입지 분석 — 집예보 청약">
+<meta property="og:description" content="이 분양가, 주변 시세와 비교하면 어디쯤일까요? 근거 숫자와 함께 보여 드려요.">
+<meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/chungyak/price/">
+<meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/chungyak.png">
+<meta property="og:locale" content="ko_KR">
+<script>window.JDJ_CONFIG = { tool:'chungyak_price', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../assets/track.js?v=2"></script>
+<script src="../../assets/stat.js?v=7"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/cy-price.css?v=1">
+<script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
+<script src="/jangdaejang-calc/assets/rec-core.js?v=2"></script>
+<script src="/jangdaejang-calc/assets/loan-core.js?v=1"></script>
+<script src="/jangdaejang-calc/assets/cy-price.js?v=1"></script>
+<style>
+.wrap{max-width:760px;margin:0 auto;padding:24px 20px 60px}
+h1{font-size:clamp(25px,6.4vw,34px);margin:6px 0 8px}
+.meta{font-size:15px;color:var(--sub2);line-height:1.6}
+.back{display:inline-flex;align-items:center;min-height:44px;font-size:15px;font-weight:700;text-decoration:none}
+.paid{margin-top:26px;background:var(--gray2);border:1px solid var(--line);border-radius:20px;padding:18px}
+.paid h2{font-size:19px;margin:0 0 6px}
+.paid ul{margin:6px 0 12px;padding-left:20px;font-size:14.5px;line-height:1.7;color:var(--sub)}
+.paid .btn{width:100%;min-height:52px}
+.paid .pr{font-size:13.5px;color:var(--sub2);margin-top:8px}
+.biz{margin-top:14px;font-size:14px;color:var(--sub2);line-height:1.6}
+.empty{padding:24px 16px;text-align:center;color:var(--sub2);border:1px solid var(--line);border-radius:16px;background:var(--gray2)}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>집예보</a>
+  <div class="badge plain">분양가·입지 분석</div>
+</header>
+<main class="wrap">
+  <a class="back" href="/jangdaejang-calc/chungyak/#notices">‹ 청약 공고 목록</a>
+  <div id="box"><div class="empty">분석 자료를 불러오는 중이에요…</div></div>
+</main>
+<footer class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집예보 · <a href="/jangdaejang-calc/">홈</a> · <a href="/jangdaejang-calc/chungyak/">청약</a></footer>
+<script>
+(async function () {
+  const C = window.JDJ_CYP, $ = id => document.getElementById(id), box = $('box');
+  const no = (new URLSearchParams(location.search).get('no') || '').replace(/[^0-9]/g, '').slice(0, 16);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const fail = m => { box.innerHTML = `<div class="empty">${m}<br><a href="/jangdaejang-calc/chungyak/">청약 공고 목록으로</a></div>`; };
+  if (!no || !C) return fail('공고 번호가 없어요.');
+  let D;
+  try { D = await C.loadOne(no); } catch (e) { return fail('이 공고의 분석 자료가 없어요. 당첨자 발표가 끝났거나 아직 분석 전인 공고예요.'); }
+  document.title = `${D.name} 분양가·입지 분석 — 집예보`;
+  const ymd = s => s && s.length >= 8 ? `${s.slice(0, 4)}.${+s.slice(4, 6)}.${+s.slice(6, 8)}` : '';
+  const key = C.keyOf(D), PR = C.PRODUCT, won = n => Number(n).toLocaleString('ko-KR') + '원';
+  box.innerHTML = `<div class="eyebrow">청약 공고 · 분양가·입지 분석</div><h1>${esc(D.name)}</h1>
+    <div class="meta">${esc(D.sd)} ${esc(D.gn)} ${esc(D.dg || '')} · ${D.k ? esc(D.k) + ' · ' : ''}총 ${Number(D.hh || 0).toLocaleString('ko-KR')}세대 · 모집공고 ${ymd(D.pb)}</div>
+    ${C.detail(D, D, { paid: false })}
+    <section class="paid" id="paid"><h2>유료 리포트에서 더 자세히</h2>
+      <ul><li>연식(신축·준신축)·범위(1km·2km·같은 구)별 주변 거래 하위 25%·중앙값·상위 25%</li><li>가까운 비교 단지 10곳의 최근 12개월 3.3㎡당 가격</li>
+      <li>최근 2년 주변 분양 전체의 경쟁률·당첨 가점</li><li>${esc(D.gn)} 미분양 24개월 추이, 30~40대 인구·순이동</li><li>이 지역에 적용되는 규제·대출 정책 목록</li><li>PDF로 저장 · 1년 동안 다시 보기</li></ul>
+      ${key ? `<a class="btn blue" href="/jangdaejang-calc/premium/checkout/?p=cy&k=${encodeURIComponent(key)}" data-track="cy_price_buy">${won(PR.amount)} · ${PR.name} 보기</a>
+      <div class="pr">결제·열람·환불은 다른 프리미엄 리포트와 같아요(열람 전 7일 안 전액 환불).</div>` : '<div class="pr">유료 리포트를 준비하고 있어요.</div>'}
+    </section>
+    <p class="biz">시행사·분양대행사라면 같은 분석으로 고객에게 나눠 줄 <a href="/jangdaejang-calc/pro/developer/#p-brochure">현장 분석 브로슈어</a>를 신청할 수 있어요. 불리한 숫자도 그대로 싣고, 분석 숫자는 광고 여부와 관계없이 같아요.</p>`;
+  C.mountFund($('cypFund'), D);
+  if (window.jdjStat) jdjStat('feature_use', { feature: 'chungyak_price' });
+})();
+</script>
+</body>
+</html>
