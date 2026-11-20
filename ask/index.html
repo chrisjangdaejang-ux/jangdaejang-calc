@@ -68,9 +68,11 @@ h1{font-size:clamp(24px,5.6vw,34px);margin:6px 0 6px}
 .lg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
 #chart{position:relative;min-height:240px}
 #chart svg{display:block;width:100%;height:auto;touch-action:pan-y}
-.tip{position:absolute;pointer-events:none;background:#fff;color:#191F28;min-height:30px;display:flex;flex-wrap:wrap;align-items:center;gap:2px 12px;font-size:13px;line-height:1.35;z-index:3;font-variant-numeric:tabular-nums}
-.tip[hidden]{display:none}.tip b{font-size:12.5px;color:#4E5968;font-weight:700}.tip div{white-space:nowrap}.tip div span{font-weight:700}
-.tip i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px}
+.rd{border:1px solid #E5E8EB;border-radius:12px;padding:9px 12px;margin:0 0 6px;font-variant-numeric:tabular-nums}
+.rd .d{font-size:12.5px;font-weight:700;color:#6B7684;margin-bottom:3px}.rd .d small{font-weight:500;margin-left:6px}
+.rd .r,.rd .g{max-width:340px}.rd .g{font-size:12.5px;color:#6B7684;margin-top:2px;display:flex;justify-content:space-between}
+.rd .r{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;line-height:1.6}.rd .r span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#3E4754}.rd .r b{font-weight:800;color:#191F28;white-space:nowrap}
+.rd i,.tip i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
 .cnote{font-size:13px;color:#4E5968;line-height:1.6;margin:6px 0 0}
 /* 단지 패널 */
 .dps{display:grid;gap:10px;grid-template-columns:repeat(var(--n),minmax(0,1fr))}
@@ -251,19 +253,25 @@ function drawChart(items){
     const pd = TAB === 'cnt' ? pts.map(([i, v]) => `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="${TAB === 'cnt' ? 2.6 : 2.2}" fill="#fff" stroke="${c}" stroke-width="1.6"/>`).join('') : '';
     return `<g>${dots}<path d="${path}" fill="none" stroke="${c}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>${gaps.length ? `<path d="${gaps.join('')}" fill="none" stroke="${c}" stroke-width="1.6" stroke-dasharray="4 4"/>` : ''}${pd}</g>`;
   }).join('');
-  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(items.map(x => x.apt).join(', '))} ${tabName} 비교 그래프"><g>${grid}</g>${layers}<line id="cx" x1="0" x2="0" y1="${T}" y2="${H - B}" stroke="#191F28" stroke-width="1" stroke-dasharray="3 3" visibility="hidden"/>${xt}<rect x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="transparent" id="cHit"/></svg><div class="tip" id="cTip" hidden></div>`;
+  box.innerHTML = `<div class="rd" id="cTip" aria-live="polite"></div><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(items.map(x => x.apt).join(', '))} ${tabName} 비교 그래프"><g>${grid}</g>${layers}<line id="cx" x1="0" x2="0" y1="${T}" y2="${H - B}" stroke="#191F28" stroke-width="1" stroke-dasharray="3 3" visibility="hidden"/>${xt}<rect x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="transparent" id="cHit"/></svg>`;
   const hit = $('cHit'), tip = $('cTip'), cx = $('cx'), svg = box.querySelector('svg');
+  let lastI = n - 1; for (let j = n - 1; j >= 0; j--){ if (ds.some(d => { const v = d.line.get(ms[j]); return v != null && (v > 0 || TAB === 'cnt'); })){ lastI = j; break; } }
+  const paint = (i, latest) => {
+    const m = ms[i];
+    const rows = ds.map((d, k) => { const v = d.line.get(m); return `<div class="r"><span><i style="background:${COL[k]}"></i>${esc(items[k].apt)}</span><b>${v != null && (v > 0 || TAB === 'cnt') ? fmt(v) : '거래 없음'}</b></div>`; }).join('');
+    let gap = '';
+    if (ds.length === 2 && TAB !== 'cnt'){ const a = ds[0].line.get(m), b = ds[1].line.get(m); if (a > 0 && b > 0){ const hiK = a >= b ? 0 : 1, d = Math.abs(a - b), pct = Math.round(d / Math.min(a, b) * 100); gap = `<div class="g"><span>차이</span><span>${pct < 1 ? '비슷해요' : `${esc(window.JDJ_PLAIN ? JDJ_PLAIN.J(items[hiK].apt, "이", "가") : items[hiK].apt + "이(가)")} ${fmt(d)} 높아요(${pct}%)`}</span></div>`; } }
+    tip.innerHTML = `<div class="d">${M.ymLabel(m)}${latest ? '<small>가장 최근 · 그래프를 누르면 그 달 값</small>' : ''}</div>${rows}${gap}`;
+  };
+  paint(lastI, true);
   const show = ev => {
     const r = svg.getBoundingClientRect(), px = (ev.touches ? ev.touches[0].clientX : ev.clientX) - r.left, sx = px * W / r.width;
     const i = Math.max(0, Math.min(n - 1, Math.round((sx - L) / ((W - L - R) / Math.max(1, n - 1)))));
-    const m = ms[i]; cx.setAttribute('x1', x(i)); cx.setAttribute('x2', x(i)); cx.setAttribute('visibility', 'visible');
-    const rows = ds.map((d, k) => { const v = d.line.get(m); return `<div><i style="background:${COL[k]}"></i>${esc(items[k].apt)} <span>${v != null && (v > 0 || TAB === 'cnt') ? fmt(v) : '거래 없음'}</span></div>`; }).join('');
-    tip.innerHTML = `<b>${M.ymLabel(m)}</b>${rows}`; tip.hidden = false;
-    tip.style.left = '0px'; tip.style.right = '0px'; tip.style.top = '-40px';
-    clearTimeout(tip._t);
+    cx.setAttribute('x1', x(i)); cx.setAttribute('x2', x(i)); cx.setAttribute('visibility', 'visible');
+    paint(i, false); clearTimeout(tip._t);
   };
   hit.addEventListener('mousemove', show); hit.addEventListener('touchstart', show, {passive:true}); hit.addEventListener('touchmove', show, {passive:true});
-  const hide = () => { tip.hidden = true; cx.setAttribute('visibility', 'hidden'); };
+  const hide = () => { cx.setAttribute('visibility', 'hidden'); paint(lastI, true); };
   hit.addEventListener('mouseleave', hide); hit.addEventListener('touchend', () => { clearTimeout(tip._t); tip._t = setTimeout(hide, 1500); }, {passive:true});
 }
 function rangeUi(){
@@ -296,7 +304,7 @@ function chartCard(items){
   return `<section class="card" id="chartCard"><h2>실거래 흐름 비교<small>${items.map(x => `${esc(x.apt)} ${esc(x.band)}`).join(' · ')}</small></h2>
     ${rangeUi()}
     <div class="tabs" role="tablist" aria-label="그래프 종류">${TABS.map(t => `<button type="button" role="tab" data-t="${t[0]}" class="${t[0] === TAB ? 'on' : ''}" aria-selected="${t[0] === TAB}">${t[1]}</button>`).join('')}</div>
-    <div class="lg">${items.map((x, k) => `<span><i style="background:${COL[k]}"></i>${esc(x.apt)}</span>`).join('')}${TAB === 'cnt' ? '' : `<button type="button" class="dotbtn${DOTS ? ' on' : ''}" id="dotBtn" aria-pressed="${DOTS}">${DOTS ? '실거래 점 숨기기' : '실거래 점 보기'}</button>`}</div>
+    <div class="lg">${TAB === 'cnt' ? '' : `<button type="button" class="dotbtn${DOTS ? ' on' : ''}" id="dotBtn" aria-pressed="${DOTS}">${DOTS ? '실거래 점 숨기기' : '실거래 점 보기'}</button>`}</div>
     <div id="chart"></div>
     <p class="cnote">${DOTS || TAB === 'cnt' ? note : note.split(', 점 =')[0]}. 그래프 위를 움직이거나 누르면 그 달 ${tabName} 값을 보여 드려요.</p></section>`;
 }
