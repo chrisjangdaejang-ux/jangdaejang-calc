@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
+<script src="/jangdaejang-calc/assets/biz.js" defer></script>
+<title>내 이름으로 고객에게 보내기 | 집예보</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="내 이름으로 고객에게 보내기 | 집예보">
+<meta property="og:description" content="중개사·전문가가 집예보 리포트를 내 이름·로고·의견으로 고객에게 보내는 화면">
+<meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/premium/pro/">
+<meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/premium.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="내 이름으로 고객에게 보내기 | 집예보">
+<meta name="twitter:description" content="중개사·전문가가 집예보 리포트를 내 이름·로고·의견으로 고객에게 보내는 화면">
+<meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/premium.png">
+<script>window.JDJ_CONFIG = { tool:'pro_edit', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../assets/track.js?v=2"></script>
+<script src="../../assets/stat.js?v=7"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
+<link rel="stylesheet" href="/jangdaejang-calc/assets/pay.css?v=1">
+<script src="/jangdaejang-calc/assets/agents.js"></script>
+<script src="/jangdaejang-calc/assets/config.js?v=3"></script>
+<script src="/jangdaejang-calc/assets/auth.js?v=3"></script>
+<script src="/jangdaejang-calc/assets/pay.js?v=2"></script>
+<script src="/jangdaejang-calc/assets/mine-core.js?v=15"></script>
+<script src="/jangdaejang-calc/assets/price-sheet.js?v=13"></script>
+<script src="/jangdaejang-calc/assets/plain-words.js?v=13"></script>
+<script src="/jangdaejang-calc/assets/devproj-view.js?v=2"></script>
+<script src="/jangdaejang-calc/assets/narrative.js?v=12"></script>
+<script src="/jangdaejang-calc/assets/premium-report.js?v=17"></script>
+<script src="/jangdaejang-calc/assets/pro-report.js?v=1"></script>
+<link rel="stylesheet" href="/jangdaejang-calc/assets/pro.css?v=1">
+<script src="/jangdaejang-calc/assets/strength.js?v=1"></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>집예보</a>
+  <div class="badge plain">전문가 리포트</div>
+</header>
+<main class="pay pro-wide" id="main">
+  <div class="eyebrow noprint">전문가 리포트</div>
+  <div id="box"><div class="msg info"><span class="spin"></span>주문을 확인하고 있어요…</div></div>
+</main>
+<footer class="foot">★ 집예보 · <a href="/jangdaejang-calc/">홈</a></footer>
+<script>
+(function(){
+  const P = JDJ_PAY, R = JDJ_PRO, esc = P.esc, box = document.getElementById('box');
+  const Q = new URLSearchParams(location.search), o = Q.get('o') || '', t = Q.get('t') || '';
+  const errBox = m => { box.innerHTML = `<h1>고객용 리포트를 만들 수 없어요</h1><div class="msg err">${esc(m)}</div>
+    <div class="btnrow"><a class="btn2" href="${P.ROOT}#again">구매한 리포트 다시 보기</a></div>`; };
+  if (!o || !t) return errBox('주소에 주문 정보가 없어요. 산 리포트 화면에서 [내 이름으로 고객에게 보내기]를 눌러 들어와 주세요.');
+  const ls = { get(k, d) { try { const v = JSON.parse(localStorage.getItem(k) || 'null'); return v == null ? d : v; } catch (e) { return d; } },
+               set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+  const DK = 'jdj_pro_draft_' + o;
+  /* 이 기기에만: 내 표시 정보(다음에 다시 쓰기) · 이 주문의 의견 초안 · 내가 만든 링크 토큰(링크를 다시 보여 주려고) */
+  const st = { profile: R.cleanProfile(ls.get('jdj_pro_profile', {})), client: '', days: 30, editId: '', items: [], dataTo: '' };
+  const dr = ls.get(DK, {});
+  st.notes = R.cleanNotes(dr.notes || {}).notes;
+  st.order = R.cleanSecs(dr.order || R.SEC_KEYS); R.SEC_KEYS.forEach(k => { if (st.order.indexOf(k) < 0) st.order.push(k); });
+  st.on = new Set(R.cleanSecs(dr.on || R.DEFAULT_SECS));
+  const tokens = () => ls.get('jdj_pro_links', {});
+  const secs = () => st.order.filter(k => st.on.has(k) && (k !== 'cmp' || st.items.length > 1));
+  const saveDraft = () => { ls.set(DK, { notes: st.notes, order: st.order, on: Array.from(st.on) }); ls.set('jdj_pro_profile', st.profile); };
+  const stat = f => { try { if (window.jdjStat) window.jdjStat('feature_use', { feature: f }); } catch (e) {} };
+
+  async function start() {
+    let j = await P.post('openReport', { o, t });
+    if (!j.order.viewed) return errBox('리포트를 먼저 한 번 열어 본 뒤에 고객에게 보낼 수 있어요. [리포트 열기]를 누르면 단순 변심 환불이 제한되니, 안내를 확인한 뒤 열어 주세요.');
+    if (j.order.refund) return errBox('환불 요청이 접수된 주문이라 고객 리포트를 만들 수 없어요.');
+    j = await P.post('openReport', { o, t, open: true });
+    st.keys = j.keys || []; st.orderInfo = j.order;
+    layout(); stat('pro_edit');
+    await draw();
+    loadList();
+  }
+
+  const F = (id, label, o2) => `<div class="pfield" data-f="${id}"><label for="f_${id}">${label}${o2 && o2.req ? '<span class="req" aria-label="꼭 적기">*</span>' : ''}</label>
+    ${o2 && o2.area ? `<textarea id="f_${id}" maxlength="${R.NOTE_MAX}" placeholder="${esc(o2.ph || '')}"></textarea>` : `<input id="f_${id}" ${o2 && o2.type ? `inputmode="${o2.type}"` : ''} maxlength="${(o2 && o2.max) || 40}" placeholder="${esc((o2 && o2.ph) || '')}" autocomplete="off">`}
+    ${o2 && o2.hint ? `<div class="hint">${o2.hint}</div>` : ''}</div>`;
+
+  function layout() {
+    box.innerHTML = `<h1 class="noprint">내 이름으로 고객에게 보내기</h1>
+    <p class="lead noprint">산 리포트에 사무소 이름·로고·연락처와 내 의견을 넣어 고객에게 링크나 PDF로 보내요. 집예보가 계산한 숫자·점수·순위는 그대로 두고, 내 의견은 내 이름으로 따로 표시돼요.</p>
+    <div class="pro-tabs noprint" role="tablist"><button type="button" role="tab" data-tab="ed" aria-selected="true">편집</button><button type="button" role="tab" data-tab="pv" aria-selected="false">미리보기</button></div>
+    <div class="pro-wrap" data-tab="ed" id="wrap">
+    <aside class="pro-ed noprint" id="ed">
+      <div class="msg info" id="editBar" hidden></div>
+      <section class="card2"><h2><span class="n">1</span>누구 이름으로 보낼까요?</h2>
+        <div class="pro-roles" role="radiogroup" aria-label="전문가 종류">${Object.keys(R.ROLE).map(k => `<label><input type="radio" name="role" value="${k}">${R.ROLE[k].t}</label>`).join('')}</div>
+        <details class="pfield" id="agBox"><summary style="cursor:pointer;color:var(--blue);font-weight:700;font-size:14px">집예보 제휴 중개사라면 내 정보 불러오기</summary>
+          <div class="pfield"><label for="agReg">중개사무소 등록번호</label><input id="agReg" autocomplete="off"></div>
+          <div class="pfield"><label for="agCode">관리코드</label><input id="agCode" autocomplete="off"></div>
+          <button type="button" class="btn2" id="agBtn" style="width:100%">내 정보 불러오기</button><div class="msg" id="agMsg" role="alert"></div></details>
+        ${F('office', '사무소 이름', { req: 1, ph: '예: 행복공인중개사사무소' })}
+        ${F('ceo', '대표 공인중개사 이름', { req: 1, max: 20 })}
+        ${F('name', '내 이름', { req: 1, max: 20 })}
+        ${F('title', '직함', { max: 20, ph: '예: 세무사, 대출상담사' })}
+        ${F('reg', '중개사무소 등록번호', { req: 1, max: 30, ph: '예: 11680-2020-00123', hint: '공인중개사법에 따라 중개사무소 명칭·소재지·연락처·등록번호와 개업공인중개사 이름을 함께 보여 줘요. 중개보조원 이름은 넣을 수 없어요.' })}
+        ${F('addr', '사무소 소재지', { req: 1, max: 80, ph: '예: 서울 강남구 대치동 000-0' })}
+        ${F('phone', '연락처(전화)', { req: 1, type: 'tel', max: 20, ph: '예: 02-1234-5678' })}
+        ${F('kakao', '카카오톡 채널·오픈채팅 주소', { max: 200, ph: 'https://pf.kakao.com/… (선택)' })}
+        <div class="pfield"><label>로고 (선택)</label><div class="pro-logo-row"><img id="logoImg" alt="" hidden><input type="file" id="logoFile" accept="image/png,image/jpeg,image/webp"><button type="button" class="btn2" id="logoDel" hidden>로고 빼기</button></div>
+          <div class="hint">올린 이미지는 이 기기에서 작게 줄인 뒤(가로 360px 이하) 저장해요.</div><div class="msg" id="logoMsg" role="alert"></div></div>
+      </section>
+      <section class="card2"><h2><span class="n">2</span>고객과 내 의견</h2>
+        ${F('client', '고객 이름 (선택)', { max: 20, ph: '예: 김○○', hint: '표지에 "○○님께 드리는"으로 나와요. 성만 적거나 줄여 적는 걸 권해요. 고객 연락처는 받지 않아요.' })}
+        ${F('n_summary', '요약 아래 의견', { area: 1, ph: '예: 학군과 역세권을 같이 보시는 고객님께 맞는 단지예요. 아래 오를 이유와 조심할 점을 같이 봐 주세요.' })}
+        ${F('n_closing', '맺음말', { area: 1, ph: '예: 궁금한 점은 편하게 전화 주세요. 실제 매물 상태는 방문해서 같이 확인해 드릴게요.' })}
+        <div class="hint">의견은 "${'○○ 공인중개사 의견'}" 상자로 따로 보여요. 집예보 분석처럼 보이게 쓸 수는 없어요.</div>
+      </section>
+      <section class="card2"><h2><span class="n">3</span>넣을 항목과 순서</h2>
+        <p style="margin:0;font-size:14px;color:var(--sub)">체크한 항목만 고객에게 보여요. 화살표로 순서를 바꾸고, 항목마다 메모를 붙일 수 있어요.</p>
+        <ul class="pro-secs" id="secList"></ul>
+      </section>
+      <section class="card2"><h2><span class="n">4</span>보내기</h2>
+        <div class="pfield"><label>고객이 볼 수 있는 기간</label><div class="pro-days"><label><input type="radio" name="days" value="30" checked>30일</label><label><input type="radio" name="days" value="90">90일</label></div>
+          <div class="hint">기간이 지나면 링크가 저절로 닫혀요. 산 리포트 열람 기간(${esc(st.orderInfo.expires)}까지)을 넘을 수는 없어요.</div></div>
+        <button type="button" class="paybtn" id="saveBtn">고객 링크 만들기</button>
+        <div class="msg" id="saveMsg" role="alert"></div>
+        <div id="result"></div>
+        <div class="btnrow"><button type="button" class="btn2" id="pdfBtn">PDF로 저장 · 인쇄</button></div>
+        <div class="links">PDF는 인쇄 창에서 대상(프린터)을 [PDF로 저장]으로 고르세요. 미리보기 화면 그대로 저장돼요.</div>
+      </section>
+      <section class="card2"><h2>보낸 링크</h2><div id="list"><div class="links">불러오는 중…</div></div></section>
+      <section class="card2 pro-plan"><h2>전문가 요금제<span class="soon">준비 중</span></h2>
+        <ul><li>지금은 산 리포트 1건으로 고객 링크를 여러 개(최대 20개) 만들 수 있어요.</li><li>여러 단지를 자주 보내는 중개사·전문가를 위한 월 정액 요금제를 준비하고 있어요.</li><li>집예보 제휴 중개사는 제휴 요금과 묶어 쓰는 방법도 함께 준비 중이에요.</li></ul></section>
+    </aside>
+    <div class="pro-pv" id="pv"><div class="pro-pvh"><span>고객이 보는 화면 미리보기</span><span>집예보 숫자는 고칠 수 없어요</span></div><div id="pvHead"></div><div id="rep"></div></div>
+    </div>`;
+    const wrap = document.getElementById('wrap');
+    box.querySelectorAll('.pro-tabs button').forEach(b => b.onclick = () => {
+      wrap.dataset.tab = b.dataset.tab; box.querySelectorAll('.pro-tabs button').forEach(x => x.setAttribute('aria-selected', String(x === b))); window.scrollTo(0, wrap.offsetTop - 60);
+    });
+    fillForm();
+    const ed = document.getElementById('ed');
+    ed.addEventListener('input', onInput); ed.addEventListener('change', onInput);
+    document.getElementById('logoFile').onchange = async e => {
+      const m = document.getElementById('logoMsg'); m.className = 'msg'; m.textContent = '';
+      try { st.profile.logo = await R.shrinkLogo(e.target.files[0]); saveDraft(); fillLogo(); refresh(); }
+      catch (x) { m.className = 'msg err'; m.textContent = x.message; }
+      e.target.value = '';
+    };
+    document.getElementById('logoDel').onclick = () => { st.profile.logo = ''; saveDraft(); fillLogo(); refresh(); };
+    document.getElementById('agBtn').onclick = agentLoad;
+    document.getElementById('saveBtn').onclick = save;
+    document.getElementById('pdfBtn').onclick = () => { refresh(); stat('pro_pdf'); window.print(); };
+    secList();
+  }
+  const $ = id => document.getElementById(id);
+  const PF = ['office', 'ceo', 'name', 'title', 'reg', 'addr', 'phone', 'kakao'];
+  function fillForm() {
+    const p = st.profile;
+    box.querySelectorAll('input[name=role]').forEach(r => { r.checked = r.value === p.role; });
+    PF.forEach(k => { $('f_' + k).value = p[k] || ''; });
+    $('f_client').value = st.client || '';
+    $('f_n_summary').value = st.notes.summary || ''; $('f_n_closing').value = st.notes.closing || '';
+    box.querySelectorAll('input[name=days]').forEach(r => { r.checked = +r.value === st.days; });
+    roleFields(); fillLogo();
+  }
+  function fillLogo() { const im = $('logoImg'), d = $('logoDel'); im.hidden = d.hidden = !st.profile.logo; if (st.profile.logo) im.src = st.profile.logo; }
+  function roleFields() {
+    const r = st.profile.role, show = (k, on) => { box.querySelector(`[data-f="${k}"]`).hidden = !on; };
+    show('ceo', r !== 'pro'); show('name', r !== 'agent'); show('title', r === 'pro'); show('addr', true);
+    const lab = (k, t, req) => { box.querySelector(`[data-f="${k}"] label`).innerHTML = esc(t) + (req ? '<span class="req" aria-label="꼭 적기">*</span>' : ''); };
+    lab('office', r === 'pro' ? '소속(사무소·회사) 이름' : '중개사무소 이름', 1);
+    lab('ceo', '대표 공인중개사 이름', 1);
+    lab('name', r === 'member' ? '내 이름(소속공인중개사)' : '내 이름', 1);
+    lab('reg', r === 'pro' ? '자격·등록번호 (선택)' : '중개사무소 등록번호', r !== 'pro');
+    lab('addr', r === 'pro' ? '사무소 주소 (선택)' : '중개사무소 소재지', r !== 'pro');
+    box.querySelector('[data-f="reg"] .hint').hidden = r === 'pro';
+    $('agBox').hidden = r === 'pro';
+  }
+  let tm = 0;
+  function onInput(e) {
+    const el = e.target;
+    if (el.name === 'role') { st.profile.role = el.value; roleFields(); }
+    else if (el.name === 'days') st.days = +el.value;
+    else if (el.id && el.id.indexOf('f_n_') === 0) st.notes[el.id.slice(4)] = el.value;
+    else if (el.dataset && el.dataset.note) st.notes[el.dataset.note] = el.value;
+    else if (el.id === 'f_client') st.client = el.value;
+    else if (el.id && PF.indexOf(el.id.slice(2)) >= 0) st.profile[el.id.slice(2)] = el.value;
+    else return;
+    clearTimeout(tm); tm = setTimeout(() => { saveDraft(); refresh(); }, 160);
+  }
+
+  /* 항목 목록(넣기·빼기·순서·메모) */
+  function secList() {
+    const ul = $('secList'), multi = st.items.length > 1, keys = st.order.filter(k => k !== 'cmp' || multi);
+    ul.innerHTML = keys.map((k, i) => {
+      const s = R.SECS.find(x => x.k === k), on = st.on.has(k);
+      const nk = k === 'cmp' ? ['cmp'] : (st.items.length ? st.items : [{}]).map((x, j) => j + '.' + k);
+      const has = nk.some(n => st.notes[n]);
+      return `<li class="${on ? '' : 'off'}" data-k="${k}"><div class="row"><label><input type="checkbox" ${on ? 'checked' : ''} data-sec="${k}">${esc(s.t)}</label>
+        <button type="button" class="mv" data-mv="-1" ${i === 0 ? 'disabled' : ''} aria-label="${esc(s.t)} 위로">↑</button><button type="button" class="mv" data-mv="1" ${i === keys.length - 1 ? 'disabled' : ''} aria-label="${esc(s.t)} 아래로">↓</button></div>
+        ${s.warn ? `<small>${esc(s.warn)} — 미리보기의 계산 조건을 고객 기준으로 바꿔 주세요.</small>` : ''}
+        <details ${has ? 'open' : ''}><summary>이 항목에 메모 붙이기</summary>${nk.map(n => {
+          const j = +n.split('.')[0], x = st.items[j];
+          return `${multi && k !== 'cmp' && x ? `<div style="font-size:12.5px;font-weight:700;color:var(--sub2);margin-top:6px">${esc(x.apt)}</div>` : ''}<textarea data-note="${n}" maxlength="${R.NOTE_MAX}" placeholder="예: 이 부분은 현장에서 꼭 같이 확인해 드릴게요.">${esc(st.notes[n] || '')}</textarea>`; }).join('')}</details></li>`;
+    }).join('');
+    ul.querySelectorAll('[data-sec]').forEach(c => c.onchange = () => { c.checked ? st.on.add(c.dataset.sec) : st.on.delete(c.dataset.sec); saveDraft(); secList(); refresh(); });
+    ul.querySelectorAll('[data-mv]').forEach(b => b.onclick = () => {
+      const k = b.closest('li').dataset.k, i = st.order.indexOf(k), keys2 = st.order.filter(x => x !== 'cmp' || multi), pos = keys2.indexOf(k), to = keys2[pos + +b.dataset.mv];
+      if (!to) return; const j = st.order.indexOf(to); st.order[i] = to; st.order[j] = k; saveDraft(); secList(); refresh();
+    });
+  }
+
+  /* 미리보기 */
+  let condNow = null;
+  async function draw() {
+    const rep = $('rep');
+    await JDJ_PREMIUM.render(rep, st.keys, st.orderInfo, {
+      cond: condNow || JDJ_PREMIUM.cond(),
+      cover: (ord, items, dataTo) => R.coverHtml(R.cleanProfile(st.profile), { items, client: st.client.replace(/[<>]/g, '').slice(0, 20).trim(), dataTo }),
+      after: (b, items, x) => {
+        const first = !st.items.length;
+        st.items = items; st.dataTo = String(x.dataTo || '').slice(0, 6); st.dataLabel = R.ym6(st.dataTo);
+        if (first && items.length > 1) secList();
+        refresh();
+      }
+    });
+  }
+  function refresh() {
+    const p = R.cleanProfile(st.profile), rep = $('rep'), cov = rep.querySelector('.pr-cover');
+    $('pvHead').innerHTML = R.headHtml(p, { noBtn: false });
+    if (cov && st.items.length) cov.outerHTML = R.coverHtml(p, { items: st.items, client: st.client.replace(/[<>]/g, '').slice(0, 20).trim(), dataTo: st.dataLabel });
+    R.apply(rep, { profile: p, secs: secs(), notes: st.notes, edit: true });
+    rep.querySelectorAll('.pro-src').forEach(e => e.remove());
+    rep.insertAdjacentHTML('beforeend', R.footHtml({ refresh: true }));
+  }
+
+  /* 제휴 중개사 정보 불러오기 */
+  async function agentLoad() {
+    const m = $('agMsg'); m.className = 'msg info'; m.textContent = '불러오는 중…';
+    try {
+      const j = await JDJ_AGENTS.post({ action: 'login', reg: $('agReg').value, code: $('agCode').value });
+      const a = j.me || {};
+      Object.assign(st.profile, { role: a.type === '소속' ? 'member' : 'agent', office: a.office || '', ceo: a.ceo || '', name: a.type === '소속' ? (a.name || '') : '',
+        reg: a.reg || '', phone: a.phone || '', kakao: a.kakao || '', addr: st.profile.addr || [a.sido, a.ogName, a.dong].filter(Boolean).join(' ') });
+      st.profile = R.cleanProfile(st.profile); fillForm(); saveDraft(); refresh();
+      m.className = 'msg ok'; m.textContent = '불러왔어요. 사무소 소재지는 번지까지 맞는지 확인해 주세요.';
+    } catch (x) { m.className = 'msg err'; m.textContent = x.message; }
+  }
+
+  /* 저장(만들기·고치기) */
+  async function save() {
+    const m = $('saveMsg'), b = $('saveBtn'), p = R.cleanProfile(st.profile), s = secs();
+    const er = R.profileError(p) || R.notesError(st.notes) || (s.filter(k => k !== 'cmp').length ? '' : '넣을 항목을 하나 이상 골라 주세요.');
+    if (er) { m.className = 'msg err'; m.textContent = er; return; }
+    b.disabled = true; m.className = 'msg info'; m.innerHTML = '<span class="spin"></span>만드는 중…';
+    try {
+      const j = await P.post('proSave', { o, t, id: st.editId || undefined, profile: p, client: st.client, notes: R.cleanNotes(st.notes).notes, secs: s,
+        cond: s.indexOf('money') >= 0 ? JDJ_PREMIUM.cond() : null, days: st.days, dataTo: st.dataTo });
+      if (j.token) { const tk = tokens(); tk[j.id] = j.token; ls.set('jdj_pro_links', tk); }
+      m.className = 'msg ok'; m.textContent = j.updated ? `고쳤어요. 고객이 링크를 다시 열면 바뀐 내용이 보여요(${j.expires}까지).` : `고객 링크를 만들었어요. ${j.expires}까지 볼 수 있어요.`;
+      result(j.id); loadList(); stat(j.updated ? 'pro_update' : 'pro_create');
+    } catch (x) { m.className = 'msg err'; m.textContent = x.message; }
+    b.disabled = false;
+  }
+  function shareInfo(id) {
+    const tk = tokens()[id]; if (!tk) return null;
+    const p = R.cleanProfile(st.profile), names = st.items.map(x => x.apt).join(' · ');
+    return { url: R.linkOf(id, tk), title: `${p.office} ${R.who(p)}님이 보낸 단지 분석 리포트`, desc: `${names} · 데이터·분석 집예보` };
+  }
+  function result(id) {
+    const s = shareInfo(id), el = $('result');
+    if (!s) { el.innerHTML = '<div class="links">이 링크는 다른 기기에서 만들어 주소를 다시 보여 드릴 수 없어요. 새로 만들어 주세요.</div>'; return; }
+    el.innerHTML = `<div class="pro-link" id="linkTxt">${esc(s.url)}</div>
+      <div class="btnrow" style="margin-top:4px"><button type="button" class="btn2 blue" id="kBtn">카카오톡으로 보내기</button><button type="button" class="btn2" id="cBtn">링크 복사</button></div>
+      <div class="links">링크에는 고객 이름·금액이 들어가지 않아요. 받은 분만 열 수 있도록 링크를 다른 곳에 올리지 말아 주세요.</div>`;
+    $('kBtn').onclick = async () => { const r = await R.share(s); stat('pro_share_' + r); if (r === 'copy') $('saveMsg').textContent = '링크를 복사했어요. 카카오톡 대화창에 붙여 넣어 보내 주세요.'; };
+    $('cBtn').onclick = async () => { const ok = await R.copy(s.url); $('saveMsg').className = ok ? 'msg ok' : 'msg err'; $('saveMsg').textContent = ok ? '링크를 복사했어요.' : '복사하지 못했어요. 위 주소를 길게 눌러 복사해 주세요.'; };
+  }
+  async function loadList() {
+    const el = $('list');
+    try {
+      const j = await P.post('proList', { o, t });
+      st.links = j.links || [];
+      if (!st.links.length) { el.innerHTML = '<div class="links">아직 보낸 링크가 없어요.</div>'; return; }
+      el.innerHTML = `<ul class="pro-list">${st.links.map(x => `<li data-id="${esc(x.id)}"><div><b>${esc(x.client || '이름 없는 고객')}</b>${x.status === '멈춤' ? ' · <span style="color:var(--neg)">멈춤</span>' : ''}
+        <small>${esc(x.created)} 보냄 · ${esc(x.expires)}까지 · 열어 본 횟수 ${x.views}번 · 문의 버튼 ${x.clicks}번</small></div>
+        <div style="display:flex;gap:6px"><button type="button" data-act="edit">고치기</button>${tokens()[x.id] ? '<button type="button" data-act="copy">링크</button>' : ''}<button type="button" data-act="${x.status === '멈춤' ? 'on' : 'off'}">${x.status === '멈춤' ? '다시 열기' : '멈추기'}</button></div></li>`).join('')}</ul>
+        <div class="links">${j.links.length}/${j.max}개 · 멈추면 고객이 링크를 열 수 없어요.</div>`;
+      el.querySelectorAll('[data-act]').forEach(b => b.onclick = () => listAct(b.closest('li').dataset.id, b.dataset.act));
+    } catch (x) { el.innerHTML = `<div class="msg err">${esc(x.message)}</div>`; }
+  }
+  async function listAct(id, act) {
+    const x = (st.links || []).find(l => l.id === id); if (!x) return;
+    if (act === 'copy') { result(id); $('result').scrollIntoView({ block: 'center' }); return; }
+    if (act === 'on' || act === 'off') { try { await P.post('proRevoke', { o, t, id, on: act === 'on' }); loadList(); } catch (e) { alert(e.message); } return; }
+    st.editId = id; st.profile = R.cleanProfile(x.profile); st.client = x.client || ''; st.notes = R.cleanNotes(x.notes).notes;
+    const sc = R.cleanSecs(x.secs); st.on = new Set(sc); st.order = sc.concat(R.SEC_KEYS.filter(k => sc.indexOf(k) < 0));
+    const bar = $('editBar'); bar.hidden = false;
+    bar.innerHTML = `<b>${esc(x.client || '이름 없는 고객')}</b> 링크를 고치는 중이에요. 링크 주소는 그대로예요. <button type="button" class="btn2" id="newBtn" style="min-height:36px;margin-top:6px">새 링크 만들기로 바꾸기</button>`;
+    $('newBtn').onclick = () => { st.editId = ''; bar.hidden = true; $('saveBtn').textContent = '고객 링크 만들기'; };
+    $('saveBtn').textContent = '고친 내용 저장';
+    fillForm(); secList();
+    if (x.cond) { condNow = x.cond; await draw(); } else refresh();
+    $('ed').scrollTo(0, 0); window.scrollTo(0, 0);
+  }
+
+  start().catch(x => errBox(x.message));
+})();
+</script>
+</body>
+</html>

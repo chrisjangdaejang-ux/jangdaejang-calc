@@ -1,5 +1,16 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v16: 분양 광고 상품(지도 마커·상단 카드·추천 현장·관심 지역 알림·상담 연결·수요 리포트))
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v17: 전문가 이름 리포트 — 중개사·전문가가 고객에게 보내는 읽기 전용 링크 · v16 분양 광고 상품)
+ *
+ * v17 변경 요약
+ *  - 전문가 이름 리포트(premium/pro/ 편집 → premium/r/ 고객 보기) 서버 기능 추가. 기존 기능은 그대로입니다. (검증: node tools/pro-test.js)
+ *  - 새 요청(action, 모두 POST): proSave(만들기·고치기) · proList(이 주문으로 만든 링크 목록) · proRevoke(링크 멈추기)
+ *                                · proOpen(고객이 링크 열기, 읽기 전용) · proClick(고객의 문의 버튼 누름 횟수만)
+ *  - 만들 수 있는 사람: 결제 완료 + 이미 열어 본(열람한) + 환불 요청 없는 주문의 주인(주문번호 + 열람 토큰 확인).
+ *  - 고객 링크: 무작위 토큰을 주소의 # 뒤에만 싣고(서버·통계로 가지 않음) 시트에는 토큰 해시만 저장. 만료 30/90일(주문 열람 기간 안).
+ *    주문이 환불 요청되거나 열람 기간이 끝나면 고객 링크도 함께 닫힙니다.
+ *  - 저장: 전문가가 적은 표시 정보(사무소명·이름·등록번호·주소·업무 연락처·로고 작은 이미지)와 의견 글, 고른 섹션 순서.
+ *    고객 연락처는 받지 않습니다. 고객 이름은 선택(20자, 예: '김○○'). 숫자·점수·순위는 저장하지 않고 열 때마다 공개 자료로 다시 계산.
+ *  - '전문가리포트' 시트(탭)는 첫 저장 때 자동으로 만들어집니다.
  *
  * v16 변경 요약
  *  - 분양 광고 신청(adApply)에 상품 선택(top 목록 상단 카드·추천 현장 / pin 지도 프리미엄 마커 / alert 관심 지역 알림 / lead 분양 상담 연결 / report 현장 수요 리포트)
@@ -171,6 +182,7 @@ function doPost(e) {
   if (PAY_ACTIONS[b.action]) return out(payDispatch(b));
   if (b.action === 'adApply' || b.action === 'adInquiry' || b.action === 'adLead') return out(adDispatch(b));
   if (USER_ACTIONS[b.action]) return out(userDispatch(b));
+  if (PRO_ACTIONS[b.action]) return out(proDispatch(b));
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
   try {
@@ -1633,4 +1645,201 @@ function userDelete(b) {
     } catch (e) {}
   }
   return { ok: true, unlinked: unlinked };
+}
+
+
+/* =====================================================================
+   전문가 이름 리포트 — v17
+   흐름: 리포트를 산 중개사·전문가가 premium/pro/ 에서 이름·등록번호·연락처·로고·의견을 적고 섹션을 골라 proSave
+         → 서버가 링크 id + 무작위 토큰을 만들고 토큰 해시만 저장 → 고객 링크 premium/r/#id.토큰 (# 뒤라 서버·통계로 안 감)
+         → 고객이 열면 proOpen: 토큰 해시·만료·주문 상태(환불·열람 기간) 확인 후 표시 정보·의견·단지 키만 돌려줌
+   · 숫자(시세·점수·순위·대출)는 저장하지 않음: 고객 화면이 공개 자료로 다시 계산 → 전문가가 숫자를 바꿀 방법이 없음
+   · 의견 글에는 '집예보 분석/의견'처럼 집예보가 쓴 것처럼 보이는 말을 넣을 수 없음
+   ===================================================================== */
+const SH_P = '전문가리포트';
+const PH = ['id','만든시각','고친시각','주문번호','토큰해시','만료일','상태','자료기준','유형','사무소명','대표','이름','등록번호','주소',
+            '연락처','카카오','로고','고객이름','섹션','의견','조건','열람횟수','최근열람','문의클릭','메모'];
+const PCX = Object.fromEntries(PH.map((h, i) => [h, i]));
+const PRO_ACTIONS = { proSave: 1, proList: 1, proRevoke: 1, proOpen: 1, proClick: 1 };
+const PRO_MAX_LINKS = 20;            // 주문 1건으로 만들 수 있는 고객 링크 수(요금제 정하기 전 임시 상한)
+const PRO_DAYS = [30, 90];           // 고객 링크 열람 기간(일)
+const PRO_ROLE = { agent: '개업공인중개사', member: '소속공인중개사', pro: '전문가' };
+const PRO_SECS = ['cmp', 'sum', 'trend', 'fv', 'hz', 'money'];
+const PRO_NOTE_MAX = 800, PRO_NOTES_TOTAL = 9000, PRO_LOGO_MAX = 45000;
+const PRO_ST = { on: '보냄', off: '멈춤' };
+
+function proDispatch(b) {
+  try {
+    if (b.action === 'proOpen') return proOpen(b);
+    return withLock(() => {
+      if (b.action === 'proSave') return proSave(b);
+      if (b.action === 'proList') return proList(b);
+      if (b.action === 'proRevoke') return proRevoke(b);
+      if (b.action === 'proClick') return proClick(b);
+      return { ok: false, err: 'unknown' };
+    });
+  } catch (x) {
+    return { ok: false, err: String(x.message || x), code: x.code || '' };
+  }
+}
+function proSheet() { return uSheet(SH_P, PH); }
+function proRows() {
+  const sh = book().getSheetByName(SH_P); if (!sh) return [];
+  const v = sh.getDataRange().getValues(), list = [];
+  for (let i = 1; i < v.length; i++) if (v[i][PCX['id']]) list.push({ row: i + 1, r: v[i] });
+  return list;
+}
+const PRO_ID = /^P[0-9A-F]{11}$/;
+function proFind(id) { id = String(id || ''); return PRO_ID.test(id) ? proRows().find(x => String(x.r[PCX['id']]) === id) || null : null; }
+function setP(row, h, v) { proSheet().getRange(row, PCX[h] + 1).setValue(v); }
+
+/* 주문 주인 확인: 결제 완료 + 열어 본 주문 + 환불 요청 없음 + 열람 기간 안 */
+function proOrder(b) {
+  const o = authOrder(b), s = orderState(o, new Date());
+  if (s.refund) throw new Error('환불 요청이 접수된 주문으로는 고객 리포트를 만들 수 없어요.');
+  if (s.expired) throw new Error('열람 기간이 지난 주문이에요.');
+  if (!s.viewed) throw new Error('리포트를 먼저 한 번 열어 본 뒤에 고객에게 보낼 수 있어요.');
+  return { o, s };
+}
+
+/* 표시 정보 검사 — 공인중개사는 중개사무소 명칭·소재지·연락처·등록번호·개업공인중개사 성명이 꼭 필요(공인중개사법 시행령 제17조의2) */
+function proText(v, n) { return cellSafe(uText(v, n)); }
+function proPhone(v) {
+  const s = uText(v, 20), d = s.replace(/[^0-9]/g, '');
+  return /^0\d{8,10}$/.test(d) || /^1[5-9]\d{6}$/.test(d) ? s.replace(/[^0-9-]/g, '') : '';
+}
+const PRO_FAKE = /집\s*예\s*보\s*(의\s*)?(분석|의견|공식|인증|보증|추천)|장대장\s*(분석|인증|보증)/;
+function proProfile(p) {
+  p = p && typeof p === 'object' ? p : {};
+  const role = PRO_ROLE[p.role] ? p.role : '';
+  if (!role) throw new Error('어떤 전문가인지 골라 주세요.');
+  const f = { role, office: proText(p.office, 40), ceo: proText(p.ceo, 20), name: proText(p.name, 20), reg: proText(p.reg, 30).replace(/[^0-9A-Za-z가-힣-]/g, ''),
+    addr: proText(p.addr, 80), phone: proPhone(p.phone), kakao: kakaoUrl(p.kakao), title: proText(p.title, 20), logo: '' };
+  if (!f.office) throw new Error(role === 'pro' ? '소속(사무소·회사) 이름을 적어 주세요.' : '중개사무소 이름을 적어 주세요.');
+  if (!f.phone) throw new Error('연락처(전화번호)를 정확히 적어 주세요.');
+  if (role !== 'pro') {
+    if (!f.reg || f.reg.replace(/[^0-9]/g, '').length < 5) throw new Error('중개사무소 등록번호를 적어 주세요. 공인중개사는 등록번호를 꼭 표시해야 해요.');
+    if (!f.ceo) throw new Error('개업공인중개사(대표) 이름을 적어 주세요.');
+    if (!f.addr) throw new Error('중개사무소 소재지(주소)를 적어 주세요.');
+    if (role === 'member' && !f.name) throw new Error('소속공인중개사 본인 이름을 적어 주세요.');
+    if (role === 'agent') f.name = '';
+  } else if (!f.name) throw new Error('이름을 적어 주세요.');
+  if ([f.office, f.ceo, f.name, f.title].some(x => PRO_FAKE.test(x))) throw new Error('이름·소속에는 집예보가 쓴 것처럼 보이는 말을 넣을 수 없어요.');
+  const logo = String(p.logo || '');
+  if (logo) {
+    if (logo.length > PRO_LOGO_MAX || !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(logo)) throw new Error('로고 이미지가 너무 크거나 형식이 맞지 않아요. 다시 올려 주세요.');
+    f.logo = logo;
+  }
+  return f;
+}
+/* 의견 글: 요약 아래(summary) · 맺음말(closing) · 항목별 메모(단지번호.섹션) */
+function proNotes(n) {
+  n = n && typeof n === 'object' ? n : {};
+  const out = {}; let total = 0;
+  Object.keys(n).slice(0, 40).forEach(k => {
+    if (!(k === 'summary' || k === 'closing' || /^[0-2]\.(sum|trend|fv|hz|money)$/.test(k) || k === 'cmp')) return;
+    const t = String(n[k] == null ? '' : n[k]).replace(/[\u0000-\u0009\u000B-\u001F\u007F<>]/g, ' ').replace(/\n{3,}/g, '\n\n').trim().slice(0, PRO_NOTE_MAX);
+    if (!t) return;
+    if (PRO_FAKE.test(t)) throw new Error('의견에는 집예보가 쓴 것처럼 보이는 말(예: 집예보 분석·집예보 의견)을 넣을 수 없어요. 전문가 의견은 전문가 이름으로 따로 표시돼요.');
+    total += t.length; out[k] = t;
+  });
+  if (total > PRO_NOTES_TOTAL) throw new Error('의견 글이 너무 길어요. 조금 줄여 주세요.');
+  return out;
+}
+function proSecs(a) {
+  const seen = {};
+  const s = (Array.isArray(a) ? a : []).map(String).filter(k => PRO_SECS.indexOf(k) >= 0 && !seen[k] && (seen[k] = 1));
+  if (!s.filter(k => k !== 'cmp').length) throw new Error('보낼 항목을 하나 이상 골라 주세요.');
+  return s;
+}
+/* 대출 계산 조건: '대출·필요 현금'을 넣을 때만, 숫자 4개만(어림값) */
+function proCond(c, secs) {
+  if (secs.indexOf('money') < 0 || !c || typeof c !== 'object') return '';
+  const n = (v, lo, hi) => { v = Number(v); return isFinite(v) && v >= lo && v <= hi ? Math.round(v * 10) / 10 : null; };
+  const o = { income: n(c.income, 0, 1000000), cash: n(c.cash, 0, 10000000), own: ['none', 'first', 'one', 'multi'].indexOf(c.own) >= 0 ? c.own : 'none', rate: n(c.rate, 0.5, 20) };
+  if (o.income == null || o.cash == null || o.rate == null) return '';
+  return JSON.stringify(o);
+}
+
+function proOut(x, withMeta) {
+  const r = x.r, p = {
+    role: Object.keys(PRO_ROLE).find(k => PRO_ROLE[k] === String(r[PCX['유형']])) || 'pro', office: String(r[PCX['사무소명']]), ceo: String(r[PCX['대표']]), name: String(r[PCX['이름']]),
+    reg: String(r[PCX['등록번호']]), addr: String(r[PCX['주소']]), phone: String(r[PCX['연락처']]), kakao: String(r[PCX['카카오']]), logo: String(r[PCX['로고']])
+  };
+  const o = { id: String(r[PCX['id']]), profile: p, client: String(r[PCX['고객이름']]), secs: parseJ(r[PCX['섹션']], []), notes: parseJ(r[PCX['의견']], {}),
+    cond: parseJ(r[PCX['조건']], null), dataTo: String(r[PCX['자료기준']]), created: ymd(r[PCX['만든시각']] instanceof Date ? r[PCX['만든시각']] : new Date(r[PCX['만든시각']])),
+    expires: r[PCX['만료일']] instanceof Date ? ymd(r[PCX['만료일']]) : String(r[PCX['만료일']]).slice(0, 10) };
+  if (withMeta) { o.status = String(r[PCX['상태']]); o.views = Number(r[PCX['열람횟수']]) || 0; o.clicks = Number(r[PCX['문의클릭']]) || 0; }
+  return o;
+}
+
+/* 만들기(id 없음) · 고치기(id 있음 — 같은 주문의 링크만, 링크 주소는 그대로) */
+function proSave(b) {
+  const { o, s } = proOrder(b);
+  const prof = proProfile(b.profile), secs = proSecs(b.secs), notes = proNotes(b.notes);
+  const client = proText(b.client, 20), cond = proCond(b.cond, secs), dataTo = /^\d{6}$/.test(String(b.dataTo || '')) ? String(b.dataTo) : '';
+  const days = PRO_DAYS.indexOf(Number(b.days)) >= 0 ? Number(b.days) : PRO_DAYS[0];
+  const now = new Date(), orderExp = new Date(s.expires + 'T23:59:59+09:00');
+  let exp = new Date(now.getTime() + days * 86400000); if (exp > orderExp) exp = orderExp;
+  const put = (row, h, v) => { row[PCX[h]] = v; };
+  const fill = row => {
+    put(row, '고친시각', now); put(row, '만료일', exp); put(row, '자료기준', dataTo); put(row, '유형', PRO_ROLE[prof.role]);
+    put(row, '사무소명', prof.office); put(row, '대표', prof.ceo); put(row, '이름', prof.name); put(row, '등록번호', prof.reg); put(row, '주소', prof.addr);
+    put(row, '연락처', prof.phone); put(row, '카카오', prof.kakao); put(row, '로고', prof.logo); put(row, '고객이름', client);
+    put(row, '섹션', JSON.stringify(secs)); put(row, '의견', JSON.stringify(notes)); put(row, '조건', cond);
+  };
+  const oid = String(o.r[OC['주문번호']]);
+  if (b.id) {
+    const x = proFind(b.id);
+    if (!x || String(x.r[PCX['주문번호']]) !== oid) throw new Error('고칠 링크를 찾지 못했어요.');
+    const row = x.r.slice(); fill(row);
+    proSheet().getRange(x.row, 1, 1, PH.length).setValues([PH.map((h, i) => row[i] === undefined ? '' : row[i])]);
+    return { ok: true, id: String(x.r[PCX['id']]), expires: ymd(exp), updated: true };
+  }
+  const mine = proRows().filter(x => String(x.r[PCX['주문번호']]) === oid);
+  if (mine.length >= PRO_MAX_LINKS) throw new Error(`리포트 1건으로는 고객 링크를 ${PRO_MAX_LINKS}개까지 만들 수 있어요. 안 쓰는 링크를 고쳐서 다시 써 주세요.`);
+  const id = 'P' + Utilities.getUuid().replace(/-/g, '').slice(0, 11).toUpperCase(), tk = newToken();
+  const row = []; put(row, 'id', id); put(row, '만든시각', now); put(row, '주문번호', oid); put(row, '토큰해시', hashOf('pro|' + tk));
+  put(row, '상태', PRO_ST.on); put(row, '열람횟수', 0); put(row, '문의클릭', 0); fill(row);
+  proSheet().appendRow(PH.map((h, i) => row[i] === undefined ? '' : row[i]));
+  return { ok: true, id, token: tk, expires: ymd(exp) };
+}
+function proList(b) {
+  const { o } = proOrder(b), oid = String(o.r[OC['주문번호']]);
+  return { ok: true, max: PRO_MAX_LINKS, links: proRows().filter(x => String(x.r[PCX['주문번호']]) === oid).map(x => proOut(x, true)).reverse() };
+}
+function proRevoke(b) {
+  const o = authOrder(b), x = proFind(b.id);
+  if (!x || String(x.r[PCX['주문번호']]) !== String(o.r[OC['주문번호']])) throw new Error('링크를 찾지 못했어요.');
+  setP(x.row, '상태', b.on ? PRO_ST.on : PRO_ST.off);
+  return { ok: true, id: String(x.r[PCX['id']]), status: b.on ? PRO_ST.on : PRO_ST.off };
+}
+/* 고객 열기 (실패 이유는 구분하지 않음 — 링크 맞히기 막기) */
+function proAuth(b) {
+  const id = String(b.id || ''), tk = String(b.tk || '');
+  const cache = CacheService.getScriptCache(), ck = 'po:' + id.slice(0, 12), tries = Number(cache.get(ck) || 0);
+  const bad = () => { cache.put(ck, String(tries + 1), 3600); return new Error('링크가 맞지 않거나 열람 기간이 끝났어요. 보내 준 분께 새 링크를 요청해 주세요.'); };
+  if (tries >= 20) throw new Error('확인 시도가 많아 1시간 뒤에 다시 열어 주세요.');
+  const x = proFind(id);
+  if (!x || !/^[0-9a-fA-F]{64}$/.test(tk) || !safeEq(String(x.r[PCX['토큰해시']]), hashOf('pro|' + tk))) throw bad();
+  if (String(x.r[PCX['상태']]) !== PRO_ST.on) throw bad();
+  const exp = x.r[PCX['만료일']] instanceof Date ? x.r[PCX['만료일']] : new Date(x.r[PCX['만료일']]);
+  if (!(exp > new Date())) throw bad();
+  const o = findRow(String(x.r[PCX['주문번호']]));
+  if (!o || String(o.r[OC['상태']]) !== ST.paid) throw bad();
+  const s = orderState(o, new Date());
+  if (s.refund || s.expired) throw bad();
+  return { x, o };
+}
+function proOpen(b) {
+  const { x, o } = proAuth(b);
+  withLock(() => { setP(x.row, '열람횟수', (Number(x.r[PCX['열람횟수']]) || 0) + 1); setP(x.row, '최근열람', new Date()); });
+  const v = proOut(x, false);
+  v.keys = parseJ(o.r[OC['단지키']], []);
+  return { ok: true, report: v };
+}
+function proClick(b) {
+  const { x } = proAuth(b);
+  setP(x.row, '문의클릭', (Number(x.r[PCX['문의클릭']]) || 0) + 1);
+  return { ok: true };
 }

@@ -22,7 +22,7 @@
     return { income: +s.income || 7000, cash: +s.cash || 40000, own: OWN_NAME[s.own] ? s.own : 'none', rtype: TYPE_RATIO[s.rtype] != null ? s.rtype : 'cyc',
       rate: +s.rate || 4.0, term: +s.term || 30, etc: s.etc != null ? +s.etc : 1000, debt: 0 };
   }
-  function save() { try { localStorage.setItem('jdj_prem_cond', JSON.stringify(S)); } catch (e) {} }
+  function save() { if (S._tmp) return; try { localStorage.setItem('jdj_prem_cond', JSON.stringify(S)); } catch (e) {} }
   const groupOf = c => isReg(c) ? 'reg' : (isCap(c) ? 'capfree' : 'local');
   function ctxFor(g) {
     const capital = g !== 'local', regulated = g === 'reg', stressBase = capital ? 3.0 : 0.75, maxTerm = capital ? 30 : 40;
@@ -140,7 +140,7 @@
     const li = r => `<li class="${r[0]}">${esc(r[1])}${r[2] ? PL.evHtml(r[2], true, esc) : ''}</li>`;
     const okH = hz.filter(z => z.ok && z.v != null).map(z => z.h + '년'), refH = hz.filter(z => !z.ok && z.v != null).map(z => z.h + '년');
     const mm2 = (ctx.MH && ctx.MH['2']) || ctx.MODEL;
-    return `<section class="pr-unit" id="u${i}">
+    return `<section class="pr-unit" id="u${i}"><div class="pr-sec" data-sec="sum">
       <div class="pr-head"><div>
         <div class="pr-crk">${total > 1 ? `단지 ${i + 1} · ` : ''}${esc(g.sido || '')} ${esc(g.name || '')} ${esc(x.dong)}</div>
         <h2>${esc(x.apt)}</h2>
@@ -152,22 +152,22 @@
         <div><span>최근 6개월</span><b>${x.ch == null ? '-' : (x.ch >= 0 ? '+' : '') + (x.ch * 100).toFixed(1) + '%'}</b><small>평당가 변화</small></div>
         <div><span>실거래</span><b>${x.n}건</b><small>자료 기간 거래 수</small></div>
         <div><span>구 평균 대비</span><b>${x.rel == null ? '-' : (x.rel >= 0 ? `${Math.round(x.rel * 100)}% 낮음` : `${Math.round(-x.rel * 100)}% 높음`)}</b><small>평당가 기준</small></div>
-      </div>
-      <h3>최근 3년 시세 흐름</h3>${chart(x.series, IX.months)}
-      <h3>미래가치 점수와 그 이유</h3>
+      </div></div>
+      <div class="pr-sec" data-sec="trend"><h3>최근 3년 시세 흐름</h3>${chart(x.series, IX.months)}</div>
+      <div class="pr-sec" data-sec="fv"><h3>미래가치 점수와 그 이유</h3>
       ${NARON && f.fv != null ? window.JDJ_NAR.html(window.JDJ_NAR.build(f, { apt: x.apt, dong: x.dong, code: x.code, band: x.band, area: x.area, IX, EV: ctx.EV, MH: ctx.MH, SP: ctx.SP, PL, year: Y, s: x.series,
         regionUsed: !!(ctx.MODEL && ctx.MODEL.region && ctx.MODEL.region.used), jibun: x.jb, pol: ctx.POL, dev: ctx.DEVP ? { data: ctx.DEVP, u: { code: x.code, dong: x.dong, jibun: x.jb }, o: { apt: x.apt, sggName: c => (IX.sgg[c] || {}).name || '' } } : null }),
         { id: 'narP' + i, premium: true, c: { s: x.series, IX, code: x.code, apt: x.apt, sgg: g.name || '', sido: PL.regionInfo(IX, x.code).short } }) : ''}
       ${f.fv != null ? PL.easy(esc(`이 단지는 앞으로 2년 동안 다른 아파트보다 더 오를 가능성을 매긴 순위에서 ${fvRank(x, ctx)}예요.`)) : ''}
       <ul class="pr-reasons">${rs.map(li).join('') || '<li>이 단지는 아직 미래가치 점수를 낼 자료가 부족합니다.</li>'}</ul>
-      ${x._why ? PL.whyTable(f, x._why, { sgg: g.name || '', sido: PL.regionInfo(IX, x.code).short }, esc) : ''}
-      <h3>보유 기간별 미래가치</h3>
+      ${x._why ? PL.whyTable(f, x._why, { sgg: g.name || '', sido: PL.regionInfo(IX, x.code).short }, esc) : ''}</div>
+      <div class="pr-sec" data-sec="hz"><h3>보유 기간별 미래가치</h3>
       ${okH.length ? PL.easy(esc(`과거에 그대로 써 봤을 때 잘 맞은 ${okH.join('·')} 점수를 중심으로 보세요.` + (refH.length ? ` ${refH.join('·')} 점수는 맞은 횟수가 적어 참고로만 보세요.` : ''))) : ''}
       <div class="tblwrap"><table class="pr-tbl"><thead><tr><th>보유 기간</th><th>점수</th><th>과거 성적</th></tr></thead><tbody>
         ${hz.map(z => `<tr${z.ok ? '' : ' class="jp-ref"'}><td>${z.h}년</td><td><b>${z.v != null ? z.v + '점' : '-'}</b>${z.v != null ? `<br><small>${esc(fvRank(x, ctx, z.v))}</small>` : ''}</td><td>${esc(z.rec)}</td></tr>`).join('')}
       </tbody></table></div>
-      <details class="jp-check"><summary>이 점수 방식을 믿을 수 있나요?</summary><p>${esc(PL.checkText(mm2, 2, G, { from: ctx.MODEL && ctx.MODEL.data_from }))}</p></details>
-      <h3>대출·필요 현금 <small>(아래 내 조건 기준)</small></h3>
+      <details class="jp-check"><summary>이 점수 방식을 믿을 수 있나요?</summary><p>${esc(PL.checkText(mm2, 2, G, { from: ctx.MODEL && ctx.MODEL.data_from }))}</p></details></div>
+      <div class="pr-sec" data-sec="money"><h3>대출·필요 현금 <small>(${S._ro ? '아래 계산 조건 기준' : '아래 내 조건 기준'})</small></h3>
       ${PL.easy(esc(`지금 조건이면 대출 ${PL.won(m.l.L)}을 받고도 현금 ${PL.won(m.need)}이 필요해요. ` + (m.left >= 0 ? `보유 현금으로 낼 수 있고 ${PL.won(m.left)}이 남아요.` : `보유 현금보다 ${PL.won(-m.left)} 부족해요.`)))}
       <div class="pr-stats">
         <div><span>대출 가능액</span><b>${fmtS(m.l.L)}</b><small>${BY_TXT[m.l.by]} 기준</small></div>
@@ -175,7 +175,7 @@
         <div><span>중개보수</span><b>${fmtS(m.cd.broker)}</b><small>법정 상한·부가세 포함</small></div>
         <div class="${m.left >= 0 ? 'pos' : 'neg'}"><span>필요 현금</span><b>${fmtS(m.need)}</b><small>${m.left >= 0 ? `보유 현금으로 가능 · ${fmt(m.left)} 남음` : `보유 현금보다 ${fmt(-m.left)} 부족`}</small></div>
         <div><span>월 상환액</span><b>${Math.round(m.mon).toLocaleString()}만</b><small>${m.c.rate}% · ${m.c.term}년 원리금균등 · 월소득의 ${S.income ? Math.round(m.mon / (S.income / 12) * 100) : 0}%</small></div>
-      </div>
+      </div></div>
     </section>`;
   }
 
@@ -191,11 +191,12 @@
     ];
     const sc = items.filter(x => x.f && x.f.fv != null).sort((a, b) => b.f.fv - a.f.fv), ch = items.slice().sort((a, b) => money(a).need - money(b).need)[0];
     const ez = sc.length >= 2 && sc[0].f.fv !== sc[1].f.fv ? (sc[0] === ch ? `${PL.J(sc[0].apt, '은', '는')} 2년 점수가 가장 높고, 필요한 현금도 가장 적어요.` : `2년 점수는 ${PL.J(sc[0].apt, '이', '가')} 가장 높고, 필요한 현금은 ${PL.J(ch.apt, '이', '가')} 가장 적어요.`) : '';
-    return `<section class="pr-unit"><h2 style="margin-top:0">한눈에 비교</h2>${ez ? PL.easy(esc(ez)) : ''}<div class="tblwrap"><table class="pr-tbl"><thead><tr><th></th>${items.map(x => `<th>${esc(x.apt)}<br><small>${esc(x.band)}</small></th>`).join('')}</tr></thead>
+    return `<section class="pr-unit pr-sec" data-sec="cmp"><h2 style="margin-top:0">한눈에 비교</h2>${ez ? PL.easy(esc(ez)) : ''}<div class="tblwrap"><table class="pr-tbl"><thead><tr><th></th>${items.map(x => `<th>${esc(x.apt)}<br><small>${esc(x.band)}</small></th>`).join('')}</tr></thead>
       <tbody>${rows.map(([k, fn]) => `<tr><td>${k}</td>${items.map(x => `<td>${esc(fn(x))}</td>`).join('')}</tr>`).join('')}</tbody></table></div></section>`;
   }
 
   function condHtml() {
+    if (S._ro) return `<p class="pr-condp">${S._ro === 'money' ? `대출 계산 조건: 연소득 ${fmt(S.income)} · 보유 현금 ${fmt(S.cash)} · ${OWN_NAME[S.own]} · 주기형 ${S.rate}% · ${S.term}년 · 기타 비용 ${fmt(S.etc)}` : ''}</p>`;
     const o = (v, t) => `<option value="${v}" ${S.own === v ? 'selected' : ''}>${t}</option>`;
     return `<section class="pr-cond noprint"><b>내 조건</b> <small>바꾸면 대출·필요 현금이 바로 다시 계산됩니다(이 기기에만 저장).</small>
       <div class="pr-cgrid">
@@ -207,7 +208,13 @@
       <p class="pr-condp">계산 조건: 연소득 ${fmt(S.income)} · 보유 현금 ${fmt(S.cash)} · ${OWN_NAME[S.own]} · 주기형 ${S.rate}% · ${S.term}년 · 기타 비용 ${fmt(S.etc)}</p>`;
   }
 
-  async function render(box, keys, order) {
+  /* opt(전문가 이름 리포트 assets/pro-report.js 가 씀): cond — 이 화면에서만 쓸 계산 조건(이 기기 저장값을 바꾸지 않음),
+     readOnly — 조건 입력 칸 없이 읽기 전용('money' 면 조건 한 줄 표시), cover(order, items, dataTo) — 표지 HTML, after(box, items) — 그린 뒤 */
+  async function render(box, keys, order, opt) {
+    opt = opt || {};
+    if (opt.cond) { const c = opt.cond; Object.assign(S, { income: +c.income || S.income, cash: c.cash != null ? +c.cash : S.cash, own: OWN_NAME[c.own] ? c.own : S.own, rate: +c.rate || S.rate }); }
+    if (opt.readOnly) S._ro = opt.readOnly;
+    if (opt.cond) S._tmp = 1;
     box.innerHTML = '<div class="msg info"><span class="spin"></span>리포트를 만드는 중입니다…</div>';
     const j = async u => { try { const r = await fetch(DATA + u); return r.ok ? r.json() : null; } catch (e) { return null; } };
     const [IX, MODEL, MH, EV, SP, POL] = await Promise.all([P.index(), j('model.json'), j('model_h.json'), j('evidence.json'), j('supply.json'), NARON ? j('policy.json') : null]);
@@ -225,12 +232,12 @@
     const dataTo = IX.dataTo ? IX.dataTo.slice(0, 4) + '년 ' + parseInt(IX.dataTo.slice(4), 10) + '월' : '';
     const draw = () => {
       ctx.G = PL.gloss();
-      box.innerHTML = `<div class="pr-cover">
+      box.innerHTML = (opt.cover ? opt.cover(order, items, dataTo) : `<div class="pr-cover">
           <span class="tag">PREMIUM INSIGHT · ${esc(order.product)}</span>
           <h1>${items.length > 1 ? '후보 단지 심층 비교' : esc((items[0] || {}).apt || '단지') + ' 심층 리포트'}</h1>
           <div class="pr-meta">주문번호 ${esc(order.orderId)} · 결제일 ${esc(order.paidAt)} · 열람 기간 ${esc(order.expires)}까지 · 실거래 자료 ${dataTo}까지 반영</div>
           <p class="pr-str" data-jdj-str="report" hidden style="margin:12px 0 0;font-size:14.5px;line-height:1.6"></p>
-        </div>
+        </div>`) + `
         ${condHtml()}
         ${miss.length ? `<div class="msg err">최근 실거래 자료에서 찾지 못한 단지가 있습니다: ${miss.map(p => esc(p.apt + ' ' + p.band)).join(', ')}. 시스템 문제로 받지 못한 내용은 환불 정책에 따라 전액 환불해 드립니다.</div>` : ''}
         ${compareHtml(items, ctx)}
@@ -241,9 +248,12 @@
       on('cI', 'income', true); on('cC', 'cash', true); on('cO', 'own', false); on('cR', 'rate', true);
       if (NARON) box.querySelectorAll('.nar').forEach(el => { const x = items[+el.id.slice(4)];
         window.JDJ_NAR.bind(el); });
+      if (opt.after) opt.after(box, items, { dataTo: IX.dataTo || '' });
     };
     draw();
     return items.length;
   }
-  window.JDJ_PREMIUM = { render };
+  /* 편집 화면: 지금 계산 조건(대출 칸을 넣을 때 고객 링크에 함께 저장) */
+  const cond = () => ({ income: S.income, cash: S.cash, own: S.own, rate: S.rate });
+  window.JDJ_PREMIUM = { render, cond };
 })();
