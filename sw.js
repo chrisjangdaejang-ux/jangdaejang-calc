@@ -15,8 +15,8 @@ self.addEventListener('fetch', e => {
   if (r.method !== 'GET' || u.origin !== location.origin) return;           // 구글 시트·GA·지도 타일·카카오맵 SDK 등 외부는 그대로(캐시 안 함)
   if (!u.pathname.startsWith('/jangdaejang-calc/') && !u.pathname.startsWith('/jangdaejang-data/')) return;
   if (u.pathname.startsWith('/jangdaejang-calc/premium/') && u.search) return;   // 결제·열람 주소(결제키·열람 토큰)는 기기 캐시에 남기지 않음
-  if (u.pathname.startsWith('/jangdaejang-calc/login/') && u.search) return;
-  if (u.pathname.startsWith('/jangdaejang-calc/brief/paid/') && u.search) return;   // 결제키가 담긴 주소는 기기 캐시에 남기지 않음     // 카카오 인가 코드가 담긴 주소는 기기 캐시에 남기지 않음
+  if (u.pathname.startsWith('/jangdaejang-calc/login/') && u.search) return;     // 카카오 인가 코드가 담긴 주소는 기기 캐시에 남기지 않음
+  if (u.pathname.startsWith('/jangdaejang-calc/brief/paid/') && u.search) return;   // 결제키가 담긴 주소는 기기 캐시에 남기지 않음
   e.respondWith((async () => {
     const c = await caches.open(V);
     try {
