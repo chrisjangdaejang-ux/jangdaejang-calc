@@ -42,7 +42,7 @@
 <script src="../tax/tax-engine.js"></script>
 <script src="../assets/rec-core.js?v=2"></script>
 <script src="../assets/mine-core.js?v=14"></script>
-<script src="../assets/price-sheet.js?v=11"></script>
+<script src="../assets/price-sheet.js?v=12"></script>
 <script src="switch-core.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -69,6 +69,9 @@ h1 em{font-style:normal;color:var(--gold)}
 .inp input{flex:1;border:0;outline:0;padding:11px 12px;font:inherit;font-size:17px;font-weight:700;background:transparent;min-width:0;color:var(--ink)}
 .inp input::placeholder{color:#B9B39A;font-weight:500}
 .inp .unit{padding:0 12px;color:var(--muted);font-size:14px;white-space:nowrap}
+/* 날짜 칸: 두 칸이 나란히 있어 좁은 화면에서 연도가 잘리던 문제 — 글자·여백을 줄임 */
+.inp input[type=date]{font-size:15px;padding:11px 8px;font-variant-numeric:tabular-nums}
+@media(max-width:380px){.inp input[type=date]{font-size:14px;padding:11px 6px;letter-spacing:-.3px}}
 select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:16px;background:#fff;color:var(--ink)}
 select:focus{outline:0;border-color:var(--gold)}
 .seg{display:grid;gap:6px}
@@ -201,6 +204,11 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .rc .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .rc .acts button,.rc .acts a{font:inherit;font-size:15px;font-weight:700;min-height:44px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--text);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
 .rc .acts .jps-btn{border:1.5px solid #2F6BFF;color:#2F6BFF}
+/* 추천 카드 단추 3개: 한 줄에 하나씩 길게 늘어서지 않게 — '지금 집과 비교하기'는 한 줄 전체, 나머지 둘은 반씩 */
+.rc .acts{display:grid;grid-template-columns:1fr 1fr}
+.rc .acts > *{justify-content:center;text-align:center;width:100%;margin:0}
+.rc .acts [data-cmp]{grid-column:1/-1;order:-1}
+@media(max-width:400px){.rc .acts button,.rc .acts a{font-size:14px;padding:0 6px}.rc .acts .jps-btn svg{display:none}}
 .gap .sel .jps-btn,.vs .jps-btn{margin-top:6px}
 .rc .acts button.cmpOn{background:var(--blue);border-color:var(--blue);color:#fff}
 .recnote{font-size:13.5px;color:#4E5968;margin:10px 0 0}
@@ -212,12 +220,26 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .vs td:first-child{text-align:left;font-weight:500;width:40%}
 .vs td small{display:block;font-weight:400;color:#4E5968;font-size:13.5px;margin:0}
 .vs tr.hl td{background:var(--gray2)}
+.vs td:not(:first-child){white-space:nowrap}
+/* 좁은 화면: 항목 이름은 한 줄 전체, 그 아래에 '지금 집 유지 | 갈아타기' 두 값을 반씩(가로 넘침 없이) */
+@media(max-width:520px){
+  .vs,.vs thead,.vs tbody{display:block}
+  .vs tr{display:grid;grid-template-columns:1fr 1fr;column-gap:12px;border-bottom:1px solid var(--line);padding:8px 2px}
+  .vs th,.vs td{border:0;padding:1px 0}
+  .vs thead tr{border-bottom:2px solid var(--line);align-items:end}
+  .vs th:first-child{display:none}
+  .vs td:first-child{grid-column:1/-1;width:auto;font-size:14px;color:#4E5968;padding-bottom:2px}
+  .vs td:first-child small{font-size:12.5px}
+  .vs tr.hl{background:var(--gray2)}.vs tr.hl td{background:none}
+  .vs th .jps-btn{font-size:13px;min-height:36px;padding:0 8px}
+}
 .vssum{background:var(--gray2);border-radius:10px;padding:12px 14px;font-size:15px;margin-bottom:12px}
 .vssum b{font-weight:900}
 .why{margin:10px 0 0;padding-left:18px;font-size:15px}
 .why li{margin:3px 0}
 </style>
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=41">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
 <style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
 :root{--gold:#2F6BFF}
 .premium .pt{color:var(--blue)}
@@ -1013,7 +1035,7 @@ async function runRec(){
         <div class="fv"><b>${x.hasFv?x.disp:'–'}</b><small>${x.hasFv?'미래가치':'점수 준비 중'}</small></div></div>
       <div class="nums"><div><div class="k">추정 시세</div><div class="v">${fmtShort(x.P)}</div></div><div><div class="k">새 대출</div><div class="v">${fmtShort(x.nd.loan.L)}</div></div><div><div class="k">매달 상환</div><div class="v">${Math.round(x.mon).toLocaleString()}만</div></div></div>
       <ul>${recReasons(x).map(([c,t])=>`<li class="${c}">${t}</li>`).join('')}</ul>
-      <div class="acts">${PB(x.code,x.dong,x.apt,x.band,x.u&&x.u[8],'switch_top')}<button type="button" data-cmp="${escH(k)}" class="${on?'cmpOn':''}">${on?'④에서 비교 중':'지금 집과 비교하기'}</button><a href="../buy/report/?${q}" target="_blank" rel="noopener" data-track="switch_rec_report" data-fin="1">이 지역 단지 리포트</a></div>
+      <div class="acts">${PB(x.code,x.dong,x.apt,x.band,x.u&&x.u[8],'switch_top')}<button type="button" data-cmp="${escH(k)}" class="${on?'cmpOn':''}">${on?'④에서 비교 중':'지금 집과 비교하기'}</button><a href="../buy/report/?${q}" target="_blank" rel="noopener" data-track="switch_rec_report" data-fin="1">이 지역 리포트</a></div>
     </div>`; }).join('')+'</div>';
   box.querySelectorAll('[data-cmp]').forEach(b=>b.onclick=()=>{ CMP_SEL=b.dataset.cmp; JDJ.track('switch_rec_compare'); runRec(); setTimeout(()=>$('vsBox').scrollIntoView({behavior:'smooth',block:'start'}),60); });
   renderVs();

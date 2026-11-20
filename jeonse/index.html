@@ -27,12 +27,13 @@
 <script src="../assets/auth.js?v=1"></script>
 <script src="../assets/kchat.js?v=1"></script>
 <script src="../assets/mine-core.js?v=14"></script>
-<script src="../assets/price-sheet.js?v=11"></script>
+<script src="../assets/price-sheet.js?v=12"></script>
 <script src="../assets/rent-core.js?v=1"></script>
 <script src="../assets/policy-view.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=41">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
 <style>
 .wrap{max-width:860px;margin:0 auto;padding:22px 16px 60px}
 h1{font-size:clamp(26px,6vw,38px);margin:6px 0 8px}
@@ -67,7 +68,8 @@ h1{font-size:clamp(26px,6vw,38px);margin:6px 0 8px}
 .st.key{background:#E7F6EF}
 .st .k{font-size:13.5px;color:#4E5968;font-weight:700}
 .st.key .k{color:#0E7A4F}
-.st .v{font-size:19px;font-weight:900;letter-spacing:-.4px;line-height:1.3;word-break:keep-all}
+.st .v{font-size:19px;font-weight:900;letter-spacing:-.4px;line-height:1.3;word-break:keep-all;font-variant-numeric:tabular-nums}
+@media(max-width:400px){.st .v{font-size:17px}}
 .st .d{font-size:13.5px;color:#4E5968;line-height:1.4}
 .up{color:#C2410C}.dn{color:#1F56E0}
 .basis{font-size:13.5px;color:#4E5968;line-height:1.6;margin:6px 0 0}
@@ -106,6 +108,8 @@ h1{font-size:clamp(26px,6vw,38px);margin:6px 0 8px}
 table{width:100%;border-collapse:collapse;font-size:15px}
 th{text-align:left;font-size:13.5px;color:#4E5968;font-weight:700;padding:8px 6px;border-bottom:2px solid var(--line);white-space:nowrap}
 td{padding:9px 6px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+td.dt{white-space:nowrap}td.num small.pre{white-space:normal;display:inline-block;max-width:150px}td.dt small{color:#4E5968;font-size:12.5px}
+@media(max-width:520px){td.dt .yy{display:none}.tbl table{font-size:14.5px}.tbl th,.tbl td{padding-left:4px;padding-right:4px}}
 td.num,th.num{text-align:right;white-space:nowrap}
 td small{color:#4E5968;font-size:13.5px}
 tr.on td{background:#F5F8FF;font-weight:700}
@@ -371,7 +375,7 @@ function render(){
     <div class="bands" role="group" aria-label="평형 선택">${c.units.map(x => `<button type="button" data-b="${esc(x[2])}" class="${x[2] === S.band ? 'on' : ''}" aria-pressed="${x[2] === S.band}">${esc(x[2])}</button>`).join('')}</div>
     <div class="stats">
       <div class="st key"><div class="k">최근 전세 시세</div><div class="v">${sm.j ? won(sm.j.v) : '계약 없음'}</div><div class="d">${sm.j ? ym(sm.j.at) + ' 기준' + (sm.j.stale ? ' · 이후 계약 없음' : '') : '최근 3개월 순수 전세 계약 없음'}</div></div>
-      <div class="st"><div class="k">최근 월세 시세</div><div class="v">${sm.wr ? `${won(sm.wd ? sm.wd.v : 0)} / 월 ${sm.wr.v.toLocaleString()}만` : '계약 없음'}</div><div class="d">${sm.wr ? '보증금 / 월세 · ' + ym(sm.wr.at) + ' 기준' : '최근 3개월 월세 계약 없음'}</div></div>
+      <div class="st"><div class="k">최근 월세 시세</div><div class="v">${sm.wr ? `<span class="nw">${won(sm.wd ? sm.wd.v : 0)}</span> <span class="nw">/ 월 ${sm.wr.v.toLocaleString()}만</span>` : '계약 없음'}</div><div class="d">${sm.wr ? '보증금 / 월세 · ' + ym(sm.wr.at) + ' 기준' : '최근 3개월 월세 계약 없음'}</div></div>
       <div class="st"><div class="k">전세 1년 변동</div><div class="v">${chT(sm.ch1)}</div><div class="d">전세 보증금 기준</div></div>
       <div class="st"><div class="k">전세 3년 변동</div><div class="v">${chT(sm.ch3)}</div><div class="d">최근 3년 계약 전세 ${sm.nj.toLocaleString()} · 월세 ${sm.nw.toLocaleString()}건</div></div>
     </div>
@@ -424,10 +428,11 @@ function render(){
 function dealsHtml(list){
   if (!list.length) return '<p class="note">최근 3년 계약이 없어요.</p>';
   const show = 10;
-  const row = (t, i) => `<tr${i >= show ? ' class="more" hidden' : ''}><td>${esc(t.date)}${t.term ? `<br><small>${esc(t.term)}</small>` : ''}</td><td class="num">${t.area}㎡${t.floor != null ? `<br><small>${t.floor}층</small>` : ''}</td>
-    <td>${t.ct ? `<span class="ctag ${t.ct === '신규' ? 'n' : 'r'}">${t.ct}</span>` : ''}</td>
-    <td class="num"><b>${t.jeonse ? '전세 ' + won(t.dep) : won(t.dep) + ' / ' + t.rent.toLocaleString() + '만'}</b>${t.pre != null && t.ct === '갱신' ? `<br><small>종전 ${t.preRent ? won(t.pre) + ' / ' + t.preRent.toLocaleString() + '만' : won(t.pre)}</small>` : ''}</td></tr>`;
-  return `<div class="tbl"><table><thead><tr><th>계약일</th><th class="num">전용·층</th><th>구분</th><th class="num">보증금 / 월세</th></tr></thead><tbody>${list.map(row).join('')}</tbody></table></div>`
+  /* 계약일 칸 아래 줄에 신규·갱신 표시(따로 칸을 두면 좁은 화면에서 금액이 잘려 가로 스크롤) · 좁은 화면은 '20' 생략(26.10.31) */
+  const dt = d => /^20\d\d\./.test(d) ? `<span class="yy">20</span>${esc(d.slice(2))}` : esc(d);
+  const row = (t, i) => `<tr${i >= show ? ' class="more" hidden' : ''}><td class="dt">${dt(t.date)}${t.ct || t.term ? '<br>' : ''}${t.ct ? `<span class="ctag ${t.ct === '신규' ? 'n' : 'r'}">${t.ct}</span>` : ''}${t.term ? `${t.ct ? ' ' : ''}<small>${esc(t.term)}</small>` : ''}</td><td class="num">${t.area}㎡${t.floor != null ? `<br><small>${t.floor}층</small>` : ''}</td>
+    <td class="num"><b>${won(t.dep)}</b><br><small>${t.jeonse ? '전세' : '월 ' + t.rent.toLocaleString() + '만'}</small>${t.pre != null && t.ct === '갱신' ? `<br><small class="pre">종전 ${t.preRent ? won(t.pre) + ' / 월 ' + t.preRent.toLocaleString() + '만' : won(t.pre)}</small>` : ''}</td></tr>`;
+  return `<div class="tbl"><table><thead><tr><th>계약일·구분</th><th class="num">전용·층</th><th class="num">보증금 / 월세</th></tr></thead><tbody>${list.map(row).join('')}</tbody></table></div>`
     + (list.length > show ? `<button type="button" class="morebtn" data-more>더보기 (${list.length - show}건 더)</button>` : '');
 }
 function riskPanel(c, u, sm){

@@ -41,14 +41,15 @@
 <script src="../assets/mine-core.js?v=14"></script>
 <script src="../assets/ask-core.js?v=3"></script>
 <script src="../assets/ask.js?v=1"></script>
-<script src="../assets/price-sheet.js?v=11"></script>
+<script src="../assets/price-sheet.js?v=12"></script>
 <script src="../assets/offi-core.js?v=2"></script>
 <script src="../assets/offi-view.js?v=3"></script>
 <script src="../assets/policy-view.js?v=1"></script>
 <script src="../assets/devproj-view.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=41">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
 <style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
 :root{--gold:#2F6BFF}
 .premium .pt{color:var(--blue)}
@@ -92,7 +93,8 @@ h1{font-size:clamp(26px,6vw,38px);margin:6px 0 8px}
 .st.key{background:#E8F0FF}
 .st .k{font-size:13.5px;color:#4E5968;font-weight:700}
 .st.key .k{color:#2F6BFF}
-.st .v{font-size:19px;font-weight:900;letter-spacing:-.4px;line-height:1.3;word-break:keep-all}
+.st .v{font-size:19px;font-weight:900;letter-spacing:-.4px;line-height:1.3;word-break:keep-all;font-variant-numeric:tabular-nums}
+@media(max-width:400px){.st .v{font-size:17px}}
 .st .d{font-size:13.5px;color:#4E5968;line-height:1.4}
 .up{color:#C2410C}.dn{color:#1F56E0}
 .basis{font-size:13.5px;color:#4E5968;line-height:1.6;margin:6px 0 0}
@@ -103,6 +105,7 @@ th{text-align:left;font-size:13.5px;color:#4E5968;font-weight:700;padding:8px 6p
 td{padding:9px 6px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
 td.num,th.num{text-align:right;white-space:nowrap}
 tr.on td{background:#F5F8FF;font-weight:700}
+@media(max-width:520px){table.stk tr.on{background:#F5F8FF;border-radius:10px;padding-left:8px;padding-right:8px}}
 td small{color:#4E5968;font-size:13.5px}
 .seg2{display:inline-flex;gap:4px;background:#F2F4F6;border-radius:12px;padding:4px}
 .seg2 button{font:inherit;font-size:14px;font-weight:700;border:0;background:transparent;color:#4E5968;min-height:40px;min-width:56px;padding:0 12px;border-radius:9px;cursor:pointer}
@@ -449,14 +452,14 @@ function render(d, map, units){
   const meta = [f.by ? PL.ageText(f.by, null, '준공') : '', f.hh ? `${f.hh.toLocaleString()}세대` : ''].filter(Boolean).join(' · ');
   const chTxt = c => c ? `<span class="${updown(c.pct)}">${M.pctTxt(c.pct)}</span>` : '-';
   const chBasis = c => c ? `${ym(c.fromAt)} ${c.from.toLocaleString()}만 → ${ym(c.toAt)} ${c.to.toLocaleString()}만` : '비교할 달의 거래가 없어요';
-  const sumRows = d.bands.map(x => { const b = M.bandSummary(x, IX.months); return `<tr class="${x[3] === S.band ? 'on' : ''}"><td>${esc(x[3])}<br><small>전용 ${x[4]}㎡</small></td>
-    <td class="num">${b.price ? `${M.won(b.price)}<br><small>${b.ppy.toLocaleString()}만/3.3㎡</small>` : (() => { const l = M.lastDeal(x, IX.months); return l ? `${M.won(l.price)}<br><small>${ym(l.at)} 마지막 거래</small>` : '-'; })()}</td>
-    <td class="num">${M.isFew(x) ? `<span class="fewl">${M.monthDeals(x, IX.months).map(m => `${ym(m.at)} ${m.ppy.toLocaleString()}만`).join('<br>')}</span>`
-      : b.range.months ? (b.range.lo === b.range.hi ? M.won(b.range.lo) : `${M.won(b.range.lo)}<br>~ ${M.won(b.range.hi)}`) : '-'}</td>
-    <td class="num">${b.cnt12}건</td></tr>`; }).join('');
+  const sumRows = d.bands.map(x => { const b = M.bandSummary(x, IX.months); return `<tr class="${x[3] === S.band ? 'on' : ''}"><td class="sh">${esc(x[3])}<br><small>전용 ${x[4]}㎡</small></td>
+    <td class="num" data-l="최근 시세"><span class="sv">${b.price ? `${M.won(b.price)}<br><small>${b.ppy.toLocaleString()}만/3.3㎡</small>` : (() => { const l = M.lastDeal(x, IX.months); return l ? `${M.won(l.price)}<br><small>${ym(l.at)} 마지막 거래</small>` : '-'; })()}</span></td>
+    <td class="num" data-l="${M.isFew(x) ? '거래 달·평당가' : '최근 1년 범위'}"><span class="sv">${M.isFew(x) ? `<span class="fewl">${M.monthDeals(x, IX.months).map(m => `${ym(m.at)} ${m.ppy.toLocaleString()}만`).join('<br>')}</span>`
+      : b.range.months ? (b.range.lo === b.range.hi ? M.won(b.range.lo) : `${M.won(b.range.lo)}<br>~ ${M.won(b.range.hi)}`) : '-'}</span></td>
+    <td class="num" data-l="1년 거래"><span class="sv">${b.cnt12}건</span></td></tr>`; }).join('');
   const c = M.counts(u[7]);
   const mrows = []; for (let i = IX.months.length - 1; i >= Math.max(0, IX.months.length - 12); i--) {
-    const p = u[6][i]; mrows.push(`<tr><td>${ym(IX.months[i])}</td><td class="num">${c[i]}건</td><td class="num">${p ? p.toLocaleString() + '만' : '-'}</td><td class="num">${p ? M.won(M.toPrice(p, u[4])) : '-'}</td></tr>`); }
+    const p = u[6][i]; mrows.push(`<tr><td style="white-space:nowrap">${ym(IX.months[i])}<br><small>${c[i]}건</small></td><td class="num">${p ? p.toLocaleString() + '만' : '-'}</td><td class="num">${p ? M.won(M.toPrice(p, u[4])).replace(/원$/, '') : '-'}</td></tr>`); }
   const sdo = IX.sido.find(x => x.name === sidoName(d.code)) || {};
   const rs = M.reasonItems(f, {apt:d.apt, dong:d.dong, sgg:sggName(d.code), sido:sidoName(d.code), sidoShort:sdo.short || '', nfv:sdo.nfv, nfvg:(IX.sgg[d.code] || {}).nfvg, label:LABEL, gname:sggName, schNA:true, PL, G:PL ? PL.gloss() : null, sid:sdo.id, ev:EVD, sp:SUP, IX, code:d.code});
   const rli = o => `<li class="${o.c}">${esc(o.t)}${o.ev && PL ? PL.evHtml(o.ev, false, esc) : ''}</li>`;
@@ -494,7 +497,7 @@ function render(d, map, units){
 
   <div class="panel">
     <h2>평형별 시세 범위<small>최근 1년 범위 = 월별 3개월 중앙 평당가의 최저~최고 × 전용면적 ÷ 3.3058 (평형 안 개별 거래의 최저·최고가 아니에요). 최근 3년 거래가 ${M.FEW}건이 안 되는 평형은 범위 대신 거래 달·평당가만 보여 드려요.</small></h2>
-    <div class="tbl"><table><thead><tr><th>평형</th><th class="num">최근 시세</th><th class="num">최근 1년 범위</th><th class="num">1년 거래</th></tr></thead><tbody>${sumRows}</tbody></table></div>
+    <div class="tbl"><table class="stk"><thead><tr><th>평형</th><th class="num">최근 시세</th><th class="num">최근 1년 범위</th><th class="num">1년 거래</th></tr></thead><tbody>${sumRows}</tbody></table></div>
   </div>
 
   <div class="panel">
@@ -535,7 +538,7 @@ function render(d, map, units){
     <div id="trades">${P.tradesHtml(u, IX.months, {show:10})}</div>
     ${HT && P.pastYearsHtml ? P.pastYearsHtml(HT, IX.months[0]) : ''}
     <details class="msum"><summary>월별 요약 보기 (최근 12개월)</summary>
-    <div class="tbl"><table><thead><tr><th>월</th><th class="num">거래</th><th class="num">3개월 중앙 평당가</th><th class="num">${esc(S.band)} 환산</th></tr></thead><tbody>${mrows.join('')}</tbody></table></div>
+    <div class="tbl"><table><thead><tr><th>월·거래</th><th class="num">평당가<br><small>3개월 중앙</small></th><th class="num">${esc(S.band)}<br><small>환산 시세</small></th></tr></thead><tbody>${mrows.join('')}</tbody></table></div>
     </details>
   </div>
 

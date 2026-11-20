@@ -208,7 +208,7 @@ check('REST 키가 없으면 로그인 안 됨(안내 문구)', [N.ok, /설정/.
   h = PS.tradesHtml(u, [], { show: 10 });
   check('잠금: 로그인 뒤엔 10건 + 더보기(전체 23건)', [/jdj-gate/.test(h), /data-jps-more/.test(h), rowsOf(h)], [false, true, 23]);
   const ph = PS.pastYearsHtml(t, '202311');
-  check('3년 이전 시세: 로그인 뒤 연도별(2020·2021), 기준 달 이후는 뺌', [/2020년/.test(ph), /2021년/.test(ph), /2023년/.test(ph), /10억 5,000만원/.test(ph)], [true, true, false, true]);
+  check('3년 이전 시세: 로그인 뒤 연도별(2020·2021), 기준 달 이후는 뺌', [/2020년/.test(ph), /2021년/.test(ph), /2023년/.test(ph), /10억 5,000만/.test(ph)], [true, true, false, true]);
 }
 
 const bad = rows.filter(r => !r.ok);

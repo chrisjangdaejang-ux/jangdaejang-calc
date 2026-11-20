@@ -150,7 +150,7 @@ check('칸 12 없으면 최고가 없음(배포 전 자료)', M.highs(lowU, null
 const nt = M.trades([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, [[20260115, 84.6, 10, 360000, 0, 1], [20260110, 84.6, 3, 340000, 0, 0], [20260101, 84.6, 3, 330000, 0]]]);
 check('신고가 표시(6번째 칸 1)', nt.map(t => t.hi), [true, false, false], '없는 칸(예전 자료)은 아님');
 const nth = PS.tradesHtml([0, 0, 0, 0, 84.6, 3, [], '', 0, 0, [], [[20260115, 84.6, 10, 360000, 0, 1], [20260110, 84.6, 3, 340000, 0, 0]]], months);
-check('시트: 신고가 배지(빨간 작은 배지) 1개 + 설명', [(nth.match(/<span class="jps-new"[^>]*>신고가<\/span> <b>/g) || []).length, /신고가<\/span> = 그 전날까지/.test(nth)], [1, true], '');
+check('시트: 신고가 배지(빨간 작은 배지) 1개 + 설명', [(nth.match(/<\/b><br><span class="jps-new"[^>]*>신고가<\/span>/g) || []).length, /신고가<\/span> = 그 전날까지/.test(nth)], [1, true], '');
 check('시트: 신고가 없으면 배지·설명 없음', /jps-new/.test(PS.tradesHtml(lowU, months)), false, '');
 const hh2 = PS.highsHtml(M.highs(hu4, { hm: '201410', cover: '201410' }, 315000));
 check('시트: 최고가 상자(금액·연월·지금 시세 대비)', [/35억원/.test(hh2), /2021\.10/.test(hh2), /10\.0% 낮아요/.test(hh2), /최근 1년 최고가/.test(hh2)], [true, true, true, true], '');

@@ -90,7 +90,9 @@ details.tr summary{cursor:pointer;font-weight:700;color:var(--olive)}
 table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}
 th{text-align:left;font-size:13.5px;color:var(--muted);font-weight:700;padding:6px 4px;border-bottom:2px solid var(--line)}
 td{padding:7px 4px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
-.num{text-align:right}
+.num{text-align:right}td.num{white-space:nowrap}
+td.dt{white-space:nowrap}td small{color:var(--muted);font-size:12.5px}
+@media(max-width:520px){td.dt .yy{display:none}}
 .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .btn{display:inline-block;background:var(--red);color:#fff;text-decoration:none;font-weight:900;font-size:15px;padding:10px 16px;border-radius:8px;border:0;cursor:pointer;font-family:inherit}
 .btn.ghost{background:#fff;color:var(--olive);border:1.5px solid var(--olive)}
@@ -107,7 +109,8 @@ td{padding:7px 4px;border-bottom:1px solid var(--line);font-variant-numeric:tabu
 .foot a{color:inherit}
 .caution.once{margin:0 0 12px;font-size:15px;line-height:1.6}
 </style>
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=41">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
 <style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
 :root{--gold:#2F6BFF}
 .premium .pt{color:var(--blue)}
@@ -242,7 +245,7 @@ function card(b, i){
   const zt = zs.length ? ` · ${['구역 안','대표 지번','같은 동','구역 밖'][zs[0][1]]} ${CUR.z[zs[0][0]].n}` : '';
   q.set('entry.658364183', `[재개발·빌라] ${b.n||'(이름 없음)'} (${sgg.n} ${b.d} ${b.j}) 최근 ${won(b.p)}${zt} | ${window.JDJ?JDJ.label():''}`);
   const href = `${FORM}?${q.toString().replace(/\+/g,'%20')}`;
-  const tr = (b.tr||[]).map(t=>`<tr><td>${ymd(t[0])}</td><td class="num">${won(t[1])}</td><td class="num">${t[2]}㎡</td><td class="num">${t[3]?t[3]+'㎡':'-'}</td><td class="num">${t[4]===''?'-':esc(t[4])+'층'}</td></tr>`).join('');
+  const tr = (b.tr||[]).map(t=>{ const d=ymd(t[0]); return `<tr><td class="dt">${/^20\d\d\./.test(d)?'<span class="yy">20</span>'+d.slice(2):d}</td><td class="num"><b>${won(t[1])}</b></td><td class="num">${t[2]}㎡<br><small>${t[3]?'대지 '+t[3]+'㎡':'대지 -'}</small></td><td class="num">${t[4]===''?'-':esc(t[4])+'층'}</td></tr>`; }).join('');
   return `<div class="card">
     <div class="head"><div><div class="name">${esc(b.n||'(이름 없음)')}</div><div class="loc">${esc(sgg.n)} ${esc(b.d)} ${esc(b.j)} · ${esc(b.t)} · ${b.y?b.y+'년 건축':'건축연도 미상'}</div></div>
       <div class="price"><b>${won(b.p)}</b><small>최근 거래 ${ymd(b.dt)}</small></div></div>
@@ -253,7 +256,7 @@ function card(b, i){
       <div class="mini"><div class="k">전용면적</div><div class="v">${b.a}<small>㎡ · ${py(b.a)}평</small></div></div>
     </div>
     ${zh}
-    <details class="tr"><summary>최근 거래 ${b.tr.length}건 보기</summary><table><tr><th>계약일</th><th class="num">거래가</th><th class="num">전용</th><th class="num">대지권</th><th class="num">층</th></tr>${tr}</table></details>
+    <details class="tr"><summary>최근 거래 ${b.tr.length}건 보기</summary><table><tr><th>계약일</th><th class="num">거래가</th><th class="num">전용·대지권</th><th class="num">층</th></tr>${tr}</table></details>
     <div class="acts"><a class="btn" href="${href}" target="_blank" rel="noopener" data-track="villa_consult">이 빌라 상담 신청</a></div>
   </div>`;
 }

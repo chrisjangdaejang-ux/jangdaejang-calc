@@ -63,8 +63,10 @@
       return `<div class="jps-tbl"><table><thead><tr><th>월</th><th class="n">거래</th><th class="n">평당가</th><th class="n">환산</th></tr></thead><tbody>${md.map(x =>
         `<tr><td>${m.ymLabel(x.at)}</td><td class="n">${x.n}건</td><td class="n">${x.ppy ? x.ppy.toLocaleString() + '만' : '-'}</td><td class="n">${x.price ? m.won(x.price) : '-'}</td></tr>`).join('')}</tbody></table></div>`;
     }
-    const row = (t, i) => `<tr${i >= show ? ' class="jps-more" hidden' : ''}><td>${esc(t.date)}</td><td class="n">${t.area}㎡</td><td class="n">${t.floor != null ? t.floor + '층' : '-'}</td><td class="n">${t.hi ? '<span class="jps-new" title="그 전까지 같은 평형·같은 전용면적 최고가보다 높은 거래">신고가</span> ' : ''}<b>${m.won(t.amt)}</b>${t.type === '직거래' ? '<br><small class="jps-dir">직거래</small>' : ''}</td></tr>`;
-    return `<div class="jps-tbl"><table><thead><tr><th>계약일</th><th class="n">전용</th><th class="n">층</th><th class="n">거래금액</th></tr></thead><tbody>${(lock ? list.slice(0, show) : list).map(row).join('')}</tbody></table></div>`
+    /* 좁은 화면: 계약일 앞 '20' 을 숨겨(26.10.22) 네 칸이 가로 스크롤 없이 들어가게. 신고가·직거래 표시는 금액 아래 줄 */
+    const dt = d => /^20\d\d\./.test(d) ? `<span class="jps-yy">20</span>${esc(d.slice(2))}` : esc(d);
+    const row = (t, i) => `<tr${i >= show ? ' class="jps-more" hidden' : ''}><td class="jps-dt">${dt(t.date)}</td><td class="n">${t.area}㎡${t.floor != null ? `<br><small>${t.floor}층</small>` : ''}</td><td class="n"><b>${m.won(t.amt)}</b>${t.hi || t.type === '직거래' ? '<br>' : ''}${t.hi ? '<span class="jps-new" title="그 전까지 같은 평형·같은 전용면적 최고가보다 높은 거래">신고가</span>' : ''}${t.type === '직거래' ? `${t.hi ? ' ' : ''}<small class="jps-dir">직거래</small>` : ''}</td></tr>`;
+    return `<div class="jps-tbl"><table><thead><tr><th>계약일</th><th class="n">전용·층</th><th class="n">거래금액</th></tr></thead><tbody>${(lock ? list.slice(0, show) : list).map(row).join('')}</tbody></table></div>`
       + (lock ? auth().gate(`최근 거래 ${show}건을 보여 드렸어요. 나머지 <b>${list.length - show}건</b>과 3년보다 이전 시세는 로그인하면 바로 볼 수 있어요.`, '카카오로 3초 로그인하고 전체 보기', 'trades')
         : list.length > show ? `<button type="button" class="jps-morebtn" data-jps-more>더보기 (${list.length - show}건 더)</button>` : '')
       + `<p class="jps-note">국토교통부 실거래 신고 기준, 해제(취소) 신고 거래는 뺐어요. 직거래는 목록에만 표시하고 시세 계산에서는 빼요.${list.some(t => t.hi) ? ' <span class="jps-new">신고가</span> = 그 전날까지 같은 평형·같은 전용면적에서 가장 높았던 값보다 비싸게 거래된 경우(수집 자료 기준, 직거래 제외).' : ''}</p>`;
@@ -78,9 +80,9 @@
     const ys = Object.keys(by).filter(y => by[y].s.length).sort().reverse();
     if (!ys.length) return '';
     const m = M();
-    return `<details class="jps-past"><summary>3년보다 이전 시세 보기 (연도별, ${ys[ys.length - 1]}~${ys[0]}년)</summary><div class="jps-tbl"><table><thead><tr><th>연도</th><th class="n">매매 시세</th><th class="n">전세 시세</th><th class="n">시세 있는 달</th></tr></thead><tbody>`
-      + ys.map(y => `<tr><td>${y}년</td><td class="n"><b>${m.won(avg(by[y].s))}</b></td><td class="n">${by[y].j.length ? m.won(avg(by[y].j)) : '-'}</td><td class="n">${by[y].s.length}개월</td></tr>`).join('')
-      + `</tbody></table></div><p class="jps-note">국토교통부 실거래 월별 시세(그 달까지 3개월 중앙값 × 전용면적)를 연도마다 평균 낸 값이에요. 개별 거래 목록은 최근 3년치만 있어요.</p></details>`;
+    return `<details class="jps-past"><summary>3년보다 이전 시세 보기 (연도별, ${ys[ys.length - 1]}~${ys[0]}년)</summary><div class="jps-tbl"><table><thead><tr><th>연도</th><th class="n">매매 시세</th><th class="n">전세 시세</th></tr></thead><tbody>`
+      + ys.map(y => `<tr><td class="jps-dt">${y}년<br><small>${by[y].s.length}개월</small></td><td class="n"><b>${tv(m.won(avg(by[y].s)))}</b></td><td class="n">${by[y].j.length ? tv(m.won(avg(by[y].j))) : '-'}</td></tr>`).join('')
+      + `</tbody></table></div><p class="jps-note">국토교통부 실거래 월별 시세(그 달까지 3개월 중앙값 × 전용면적)를 연도마다 평균 낸 값이에요(연도 아래 숫자 = 시세가 있는 달 수). 개별 거래 목록은 최근 3년치만 있어요.</p></details>`;
   }
   /** tradesHtml 의 '더보기' 단추 연결 */
   function wireMore(box) {
@@ -165,7 +167,7 @@
   function tipFn(o) {
     const m = M(), fm = o.fmt || m.won;
     return i => {
-      const ym = o.months[i], out = { head: m.ymLabel(ym), rows: [], extra: [] }, say = [out.head];
+      const ym = o.months[i], out = { head: m.ymLabel(ym), rows: [], extra: [], gapOn: !!o.gap, vsOn: !!o.vs, cntOn: !!o.cnt, cntK: o.cntK || '' }, say = [out.head];
       o.rows.forEach(r => {
         const p = m.valAt(r.a, i), f = r.fmt || fm;
         let v, fill = false;
@@ -207,54 +209,46 @@
     return mp;
   }
   const GRAY = '#8B95A1';
-  /* 말풍선(호갱노노·아실처럼 작은 카드): 날짜 1줄 + [색 점 · 이름 · 값(오른쪽 정렬)] 줄들. 값 없는 달 = '거래 없음' 작게 */
+  /* 값 칸(그래프 위 고정, /ask/ 단지 비교와 같은 방식): 날짜 1줄 + [색 점 · 이름 … 값(오른쪽 정렬, 굵게)] 한 줄씩.
+     평소엔 가장 최근 달, 그래프를 움직이거나 누르면 그 달. 줄 구성은 달마다 바뀌지 않게(높이 고정) 값이 없으면 '-'·'거래 없음' */
   const tv = v => String(v).replace(/억원$/, '억').replace(/만원$/, '만');
-  const tRow = (c, k, v, cls) => `<span class="k${cls ? ' ' + cls : ''}"><i${c ? ` style="background:${c}"` : ' class="o"'}></i>${esc(k)}</span><b class="${cls || ''}">${v}</b>`;
-  const tipHtml = o => {
-    const rs = o.rows.map(r => r.none ? tRow(r.c, r.sk || r.k, `<small>${/^자료 없음/.test(r.v) ? '자료 없음' : '거래 없음'}</small>`, 'f')
-      : tRow(r.c, r.sk || r.k, esc(tv(r.v)), r.fill ? 'f' : ''));
-    if (o.gap) rs.push(tRow('', '갭', esc(tv(o.gap.v))), tRow('', '갭 비율', o.gap.pct + '%'), tRow('', '전세가율', o.gap.jr + '%'));
-    if (o.cnt != null) rs.push(tRow('', '거래', o.cnt ? o.cnt + '건' : '<small>없음</small>', o.cnt ? '' : 'f'));
-    return `<div class="h">${esc(o.head)}</div><div class="t">${rs.join('')}</div>`
-      + (o.vs ? `<div class="v">${esc(o.vs.txt)}</div>` : '')
-      + (o.rows.some(r => r.fill) ? '<div class="x">약 = 거래 없는 달(앞뒤 거래로 이은 값)</div>' : '');
+  const rRow = (c, k, v, cls) => `<div class="r${cls ? ' ' + cls : ''}"><span><i${c ? ` style="background:${c}"` : ' class="o"'}></i>${esc(k)}</span><b>${v}</b></div>`;
+  const NA = '<small>-</small>';
+  const rdHtml = (o, latest, fillOn) => {
+    const rs = o.rows.map(r => r.none ? rRow(r.c, r.sk || r.k, `<small>${/^자료 없음/.test(r.v) ? '자료 없음' : '거래 없음'}</small>`, 'f')
+      : rRow(r.c, r.sk || r.k, esc(tv(r.v)), r.fill ? 'f' : ''));
+    if (o.gapOn) { const g = o.gap; rs.push(rRow('', '갭', g ? esc(tv(g.v)) : NA), rRow('', '갭 비율', g ? g.pct + '%' : NA), rRow('', '전세가율', g ? g.jr + '%' : NA)); }
+    if (o.cntOn || o.cnt != null) rs.push(rRow('', `거래${o.cntK ? '(' + o.cntK + ')' : ''}`, o.cnt == null ? NA : o.cnt ? o.cnt + '건' : '<small>없음</small>', o.cnt ? '' : 'f'));
+    return `<div class="d">${esc(o.head)}${latest ? '<small>가장 최근 · 그래프를 누르면 그 달 값</small>' : ''}</div><div class="t">${rs.join('')}</div>`
+      + (o.vsOn ? `<div class="g"><span>비교</span><span>${o.vs ? esc(o.vs.txt) : '-'}</span></div>` : '')
+      + (fillOn ? `<div class="x"${o.rows.some(r => r.fill) ? '' : ' style="visibility:hidden"'}>약 = 거래 없는 달(앞뒤 거래로 이은 값)</div>` : '');
   };
-  const sumHtml = (o, idle) => `<b>${esc(o.head)}</b>${idle ? ' 최근' : ''} · ${o.rows.map(r => `${esc(r.sk || r.k)} ${esc(r.v)}`).join(' · ')}${o.gap ? ` · 갭 ${esc(o.gap.v)}(${o.gap.pct}%) · 전세가율 ${o.gap.jr}%` : ''}${o.vs ? ` · ${esc(o.vs.txt)}` : ''}`
-    + (idle ? '<span class="hint"> — 차트를 움직이거나 눌러 보세요</span>' : '');
   /** el 에 차트를 그리고 안내선 연결. 반환: plot 결과 */
   function mount(el, sp) {
     if (!el) return null;
     const r = plot(sp, el.clientWidth || 480);
     if (!r.model || !sp.tip) { el.innerHTML = (sp.pre || '') + r.html; return r; }
     el.innerHTML = `${sp.pre || ''}<div class="jhv" tabindex="0" role="group" aria-roledescription="차트" aria-label="${esc((sp.aria || '추이 그래프') + ' — 왼쪽·오른쪽 화살표 키로 달을 옮기며 값을 들을 수 있어요')}">`
-      + `<div class="jhv-sum" aria-hidden="true"></div><div class="jhv-in">${r.html}<div class="jhv-tip" hidden></div></div><div class="jhv-sr" aria-live="polite"></div></div>`;
+      + `<div class="jhv-rd" aria-hidden="true"></div><div class="jhv-in">${r.html}</div><div class="jhv-sr" aria-live="polite"></div></div>`;
     wire(el.querySelector('.jhv'), r.model, sp.tip);
     return r;
   }
   function wire(box, md, tip) {
     const inr = box.querySelector('.jhv-in'), svg = inr.querySelector('svg'), g = svg.querySelector('.jhv-o'), ln = g.querySelector('line'),
-      cs = [...g.querySelectorAll('circle')], tb = inr.querySelector('.jhv-tip'), sum = box.querySelector('.jhv-sum'), sr = box.querySelector('.jhv-sr'), m = M();
+      cs = [...g.querySelectorAll('circle')], rd = box.querySelector('.jhv-rd'), sr = box.querySelector('.jhv-sr'), m = M();
     let lastI = md.n - 1; while (lastI > 0 && !md.pts.some(p => p.a[lastI] > 0)) lastI--;
+    let fillOn = false; for (let i = 0; i < md.n && !fillOn; i++) fillOn = tip(i).rows.some(r => r.fill);   // '약' 안내 줄 자리를 미리 잡아 높이가 달마다 바뀌지 않게
     let cur = -1, pin = false, touch = null, raf = 0, want = -1, pt = 'mouse', fade = 0;
-    const idle = () => { sum.innerHTML = sumHtml(tip(lastI), true); };
+    const idle = () => { const o = tip(lastI); rd.innerHTML = rdHtml(o, true, fillOn); box._say = o.say; };
     const show = i => {
-      i = Math.max(0, Math.min(md.n - 1, i)); if (i === cur && !tb.hidden) return; cur = i;
+      i = Math.max(0, Math.min(md.n - 1, i)); if (i === cur) return; cur = i;
       const x = md.x(i).toFixed(1); g.style.display = ''; ln.setAttribute('x1', x); ln.setAttribute('x2', x);
       cs.forEach((c, k) => { const p = md.pts[k], v = p.raw ? (p.a[i] > 0 ? { v: p.a[i], real: true } : null) : m.valAt(p.a, i);
         if (!v) { c.style.display = 'none'; return; }
         c.style.display = ''; c.setAttribute('cx', x); c.setAttribute('cy', p.y(v.v).toFixed(1)); c.setAttribute('fill', v.real ? p.c : '#fff'); c.setAttribute('stroke', v.real ? '#fff' : p.c); });
-      const o = tip(i); tb.innerHTML = tipHtml(o); tb.hidden = false; sum.innerHTML = sumHtml(o);
-      /* 말풍선: 커서·손가락 반대편 위 모서리(오른쪽 절반이면 왼쪽 위, 왼쪽 절반이면 오른쪽 위) — 선을 덜 가리고 차트 밖으로 안 나가게.
-         zoom(PC aplus.css 1.125)이 걸려도 clientWidth·offsetWidth·md 비율은 같은 좌표계라 그대로 맞음 */
-      const rw = inr.clientWidth, sw = svg.clientWidth || rw, k = sw / md.W, px = md.x(i) * k, tw = tb.offsetWidth,
-        pl = md.L * k + 4, pr = (md.W - md.R) * k - 4;
-      let left = px > (pl + pr) / 2 ? pl : pr - tw;
-      if (left < px && left + tw > px - 6 && left + tw <= pr) left = Math.max(0, px - 8 - tw);   // 좁은 화면에서 안내선과 겹치면 비켜 감
-      left = Math.max(0, Math.min(rw - tw, left));
-      tb.style.left = left.toFixed(0) + 'px'; tb.style.top = Math.max(0, md.top * k - 6).toFixed(0) + 'px';
-      box._say = o.say;
+      const o = tip(i); rd.innerHTML = rdHtml(o, false, fillOn); box._say = o.say;
     };
-    const hide = () => { clearTimeout(fade); fade = 0; cur = -1; pin = false; box.classList.remove('pin'); g.style.display = 'none'; tb.hidden = true; idle(); };
+    const hide = () => { clearTimeout(fade); fade = 0; cur = -1; pin = false; box.classList.remove('pin'); g.style.display = 'none'; idle(); };
     const say = () => { if (box._say) sr.textContent = box._say; };
     const at = cx => { const r = svg.getBoundingClientRect(), vx = (cx - r.left) * md.W / (r.width || 1); return md.ix ? md.ix(vx) : Math.round((vx - md.L) / (md.W - md.L - md.R) * (md.n - 1)); };
     const later = i => { want = i; if (!raf) raf = requestAnimationFrame(() => { raf = 0; show(want); }); };
@@ -267,13 +261,13 @@
       if (e.pointerType === 'mouse') { if (!pin) later(at(e.clientX)); return; }
       if (touch) later(at(e.clientX));
     });
-    /* 모바일: 손가락이 닿아 있는 동안만 — 떼면 1.5초 뒤 사라짐 */
+    /* 모바일: 손가락을 떼면 1.5초 뒤 가장 최근 달로 */
     inr.addEventListener('pointerup', e => { if (e.pointerType === 'mouse' || !touch) return; touch = null; say(); clearTimeout(fade); fade = setTimeout(hide, 1500); });
-    /* 세로로 문지르면 브라우저가 스크롤로 가져가며 pointercancel — 스크롤을 막지 않고 바로 감춤 */
-    inr.addEventListener('pointercancel', () => { if (!touch) return; touch = null; hide(); });
+    /* 세로로 문지르면 브라우저가 스크롤로 가져가며 pointercancel — 스크롤을 막지 않고 1.5초 뒤 되돌림 */
+    inr.addEventListener('pointercancel', () => { if (!touch) return; touch = null; clearTimeout(fade); fade = setTimeout(hide, 1500); });
     inr.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse' && !pin) hide(); });
     inr.addEventListener('click', e => { if (pt !== 'mouse' || touch) return;
-      if (pin) { setPin(false); show(at(e.clientX)); } else { show(at(e.clientX)); setPin(true); say(); } });
+      if (pin) { setPin(false); cur = -1; show(at(e.clientX)); } else { show(at(e.clientX)); setPin(true); say(); } });
     box.addEventListener('keydown', e => {
       const k = e.key, base = cur < 0 ? lastI : cur;
       if (k === 'ArrowLeft' || k === 'ArrowRight' || k === 'Home' || k === 'End') {
@@ -364,8 +358,8 @@
     const xl = m.xTicks(n, W - L - R, fs, x, months).map(t => `<text x="${t.x.toFixed(1)}" y="${H - 6}" font-size="${fs}" fill="#4E5968" text-anchor="${t.a}">${t.t}</text>`).join('');
     const over = `<g class="jhv-o" style="display:none" pointer-events="none"><line x1="0" x2="0" y1="${T - 4}" y2="${H - B}" stroke="#4E5968" stroke-opacity=".7" stroke-width="1" stroke-dasharray="3 3" shape-rendering="crispEdges"/><circle r="4.2" stroke="#fff" stroke-width="2" fill="#2F6BFF"/></g>`;
     const aria = o.aria || '월별 거래 건수';
-    el.innerHTML = `<div class="jhv" tabindex="0" role="group" aria-roledescription="차트" aria-label="${esc(aria + ' — 왼쪽·오른쪽 화살표 키로 달을 옮기며 값을 들을 수 있어요')}"><div class="jhv-sum" aria-hidden="true" hidden></div>`
-      + `<div class="jhv-in"><svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(aria)}">${grid}${bars}${xl}${over}</svg><div class="jhv-tip" hidden></div></div><div class="jhv-sr" aria-live="polite"></div></div>`;
+    el.innerHTML = `<div class="jhv" tabindex="0" role="group" aria-roledescription="차트" aria-label="${esc(aria + ' — 왼쪽·오른쪽 화살표 키로 달을 옮기며 값을 들을 수 있어요')}"><div class="jhv-rd" aria-hidden="true"></div>`
+      + `<div class="jhv-in"><svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(aria)}">${grid}${bars}${xl}${over}</svg></div><div class="jhv-sr" aria-live="polite"></div></div>`;
     const k = o.k || '거래', tip = i => { const v = a[i] || 0, head = m.ymLabel(months[i]);
       return { head, rows: [{ k, c: '#2F6BFF', v: v ? v + u : '거래 없음', none: !v }], extra: [], say: `${head}, ${k} ${v ? v + u : '없음'}` }; };
     const md = { W, H, L, R, n, x, top: T, months, pts: [{ a, c: '#2F6BFF', y, raw: true }], ix: vx => Math.floor((vx - L) / slot) };
@@ -411,6 +405,8 @@
 .jps-tbl th{text-align:left;font-size:13px;color:#4E5968;font-weight:700;padding:7px 5px;border-bottom:2px solid #E5E8EB;white-space:nowrap}
 .jps-tbl td{padding:8px 5px;border-bottom:1px solid #E5E8EB;font-variant-numeric:tabular-nums}
 .jps-tbl .n{text-align:right;white-space:nowrap}
+.jps-dt{white-space:nowrap}.jps-tbl td small{color:#6B7684;font-size:12.5px;font-weight:500}
+@media(max-width:520px){.jps-yy{display:none}.jps-tbl table{font-size:14px}.jps-tbl th,.jps-tbl td{padding-left:4px;padding-right:4px}}
 .jps-dir{font-size:12px;color:#8A6D17;font-weight:700}
 .jps-new{display:inline-block;font-size:11px;font-weight:800;line-height:16px;padding:0 5px;border-radius:5px;background:#FDECEC;color:#C81E1E;vertical-align:1px;white-space:nowrap}
 .jps-hi{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 8px}
@@ -434,16 +430,17 @@
 .jhv{position:relative;outline:none;border-radius:10px}.jhv:focus-visible{box-shadow:0 0 0 3px #9DB8FF}
 .jhv-in{position:relative;touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;cursor:crosshair}
 .jhv-in svg{display:block}
-.jhv-sum{display:none;font-size:13.5px;line-height:1.5;color:#3E4754;margin:0 0 4px;min-height:20px;font-variant-numeric:tabular-nums;word-break:keep-all}
-.jhv-sum b{color:#191F28}.jhv-sum .hint{color:#6B7684}
-.jhv-tip{position:absolute;top:0;left:0;z-index:2;pointer-events:none;box-sizing:border-box;max-width:calc(100% - 4px);background:rgba(255,255,255,.95);color:#191F28;border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:5px 8px 6px;font-size:12px;line-height:1.35;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.08);font-variant-numeric:tabular-nums;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
-.jhv-tip .h{font-weight:700;margin-bottom:2px;color:#191F28}
-.jhv-tip .t{display:grid;grid-template-columns:auto auto;column-gap:10px;row-gap:1px}
-.jhv-tip .k{color:#4E5968}.jhv-tip .k i{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px;vertical-align:1px}.jhv-tip .k i.o{background:transparent}
-.jhv-tip .t b{text-align:right;font-weight:700;color:#191F28}.jhv-tip .t b.f{font-weight:500;color:#6B7684}
-.jhv-tip small{font-size:11px;font-weight:500;color:#8B95A1}
-.jhv-tip .v{margin-top:2px;font-size:11px;font-weight:700;color:#2F6BFF}.jhv-tip .x{margin-top:1px;font-size:10.5px;color:#8B95A1}
-@media(min-width:1024px){.jhv-tip{font-size:11.5px}.jhv-tip small,.jhv-tip .v{font-size:10.5px}.jhv-tip .x{font-size:10px}}
+.jhv-rd{border:1px solid #E5E8EB;border-radius:12px;padding:9px 12px;margin:0 0 6px;font-variant-numeric:tabular-nums;background:#fff}
+.jhv-rd .d{font-size:12.5px;font-weight:700;color:#6B7684;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.jhv-rd .d small{font-weight:500;margin-left:6px}
+.jhv-rd .t{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));column-gap:24px}
+.jhv-rd .r{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;line-height:1.6;min-width:0}
+.jhv-rd .r span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#3E4754}
+.jhv-rd .r b{font-weight:800;color:#191F28;white-space:nowrap}.jhv-rd .r.f b{font-weight:500;color:#6B7684}
+.jhv-rd i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:0}.jhv-rd i.o{background:transparent}
+.jhv-rd small{font-size:12px;font-weight:500;color:#8B95A1}
+.jhv-rd .g{font-size:12.5px;color:#6B7684;margin-top:2px;display:flex;justify-content:space-between;gap:10px}.jhv-rd .g span:last-child{font-weight:700;color:#2F6BFF;text-align:right}
+.jhv-rd .x{font-size:11.5px;color:#8B95A1;margin-top:1px}
+.jhv.pin .jhv-rd{border-color:#9DB8FF}
 .jhv-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media print{.jps-btn{display:none!important}}
 @media(max-width:400px){.jps-hi{grid-template-columns:1fr}}

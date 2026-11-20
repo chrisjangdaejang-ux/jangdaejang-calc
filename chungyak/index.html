@@ -150,8 +150,13 @@ td{padding:7px 4px;border-bottom:1px solid var(--line);font-variant-numeric:tabu
 .pubnote{font-size:13.5px;color:#4E5968;margin-top:8px;background:#F6F8FB;border-radius:10px;padding:8px 10px;line-height:1.5}
 
 .total .tbtns{display:flex;gap:6px;flex-wrap:wrap}
+/* 주택형 목록: 한 줄에 하나씩 '면적 · 세대 … 최고 분양가'(금액이 줄 중간에서 갈리지 않게) */
+.tyl{margin-top:8px;font-size:13.5px;color:#4E5968}.tyl .tyh{font-size:13px;margin:0 0 2px}
+.tyl ul{list-style:none;margin:0;padding:0}.tyl li{display:flex;justify-content:space-between;gap:10px;padding:2px 0;font-variant-numeric:tabular-nums}
+.tyl li b{color:#191F28;font-weight:700;white-space:nowrap}
 </style>
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=41">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
 <style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
 :root{--gold:#2F6BFF}
 .premium .pt{color:var(--blue)}
@@ -584,7 +589,7 @@ function renderNotices() {
   const rows = NOT.filter(n => (!sd || noticeSido(n) === sd) && isLive(n, t));
   if (!rows.length) { $('notices').innerHTML = `<div class="empty">${NOT.length ? `${sd ? esc(sidoLbl(sd)) + '에는 ' : ''}현재 진행 중·예정인 공고가 없습니다(청약홈 기준). 새 공고가 올라오면 자동으로 보여 드려요.` : '분양 공고 자료를 준비하고 있습니다. 잠시 뒤 다시 와 주세요.'}</div>`; return; }
   $('notices').innerHTML = `<div class="cards">${rows.slice(0, 60).map(n => { const [c, l] = stOf(n, t);
-    const ty = (n.ty || []).filter(x => x[1]).map(x => `${Math.floor(x[1])}㎡ ${x[2] + x[3]}세대${x[4] ? ' · 최고 ' + won(x[4]) : ''}`);
+    const ty = (n.ty || []).filter(x => x[1]).map(x => `<li><span>${Math.floor(x[1])}㎡ · ${x[2] + x[3]}세대</span><b>${x[4] ? '최고 ' + won(x[4]) : '-'}</b></li>`);
     const bands = PRED[n.no];
     let pr = '';
     if (n.k === '민영') pr = PRED_ST === 'wait' ? '<div class="prs" style="margin-top:8px">예상 당첨 가점을 계산하는 중입니다…</div>' : (bands || []).map(bandBlock).join('');
@@ -596,7 +601,7 @@ function renderNotices() {
       ${n.r1[0] ? `<tr><td>1순위 해당지역</td><td class="num">${d8txt(n.r1[0])}</td></tr>` : ''}
       <tr><td>청약 접수</td><td class="num">${d8txt(n.rc[0]) || '-'}${n.rc[1] && n.rc[1] !== n.rc[0] ? '~' + d8txt(n.rc[1]).slice(5) : ''}</td></tr>
       <tr><td>당첨자 발표</td><td class="num">${d8txt(n.pw) || '-'}</td></tr>${n.mv ? `<tr><td>입주 예정</td><td class="num">${ymTxt(n.mv)}</td></tr>` : ''}</table>
-      ${ty.length ? `<div style="font-size:13.5px;margin-top:6px;color:#4E5968">주택형(일반+특별 세대): ${esc(ty.slice(0, 6).join(' / '))}${ty.length > 6 ? ' 외' : ''}</div>` : ''}
+      ${ty.length ? `<div class="tyl"><div class="tyh">주택형(일반+특별 세대) · 분양가</div><ul>${ty.slice(0, 6).join('')}</ul>${ty.length > 6 ? `<div class="tyh">외 ${ty.length - 6}개 주택형</div>` : ''}</div>` : ''}
       ${n.f && n.f.length ? `<div class="fl">${n.f.map(f => `<span>${esc(f)}</span>`).join('')}</div>` : ''}
       ${pr}
       ${n.u ? `<div style="margin-top:10px"><a class="btn ghost" style="padding:8px 12px;font-size:14px" href="${esc(n.u)}" target="_blank" rel="noopener" data-track="chungyak_notice">청약홈 공고 보기</a></div>` : ''}</div>`; }).join('')}</div>
