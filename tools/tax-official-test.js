@@ -3,10 +3,10 @@
    기대값은 엔진 코드를 쓰지 않고 따로 계산했다(엔진은 '세율 × 과표 − 누진공제' 방식, 여기 기대값은 조문 문언 그대로
    '누적세액 + 초과분 × 세율' 방식, 분수 정확 계산 → 원 미만 버림). 조문·세율 확인 출처와 확인일: docs/tax_rules_sources.md
 
-   한계(정직하게): 국세청 「부동산과 세금」 책자·누리집(nts.go.kr)의 '계산 사례' 원문은 이 작업 환경에서 접속이 막혀
-   (2026-11-20 확인: nts.go.kr·taxlaw.nts.go.kr 모두 차단) 책자 숫자를 직접 옮기지 못했다. 그래서 이 파일의 사례는
-   '국가법령정보센터 현행 조문(2026-11-20 확인)의 산식으로 만든 공식 산식 사례'다. 책자 사례 원 단위 대조는
-   책자 PDF를 받아 CASES_BOOKLET 에 넣으면 같은 방식으로 돈다(입력·기대값·쪽수만 채우면 됨).
+   앞부분 58건은 '국가법령정보센터 현행 조문(2026-11-20 확인)의 산식으로 만든 공식 산식 사례'.
+   뒷부분 CASES_BOOKLET 은 대표가 받은 공식 책자 원문 사례(국세청·행정안전부 「2026 주택과 세금」, 서울시 「2026 알기 쉬운 지방세」)의
+   입력·숫자를 옮긴 것(쪽수 표기). 책자 대조로 고친 엔진 항목: 종부세 재산세 공제 분모, 상속 공제 한도(5억 이하), 증여공제 소진(dedUsed),
+   소방분 지역자원시설세 계산식 추가. 결과 보고: preview/tax_booklet_check.md (웹 저장소 밖).
 
    항목: 양도세(12억 경계·보유/거주 2년·3년 경계·단기세율·표1/표2·중과 재개일·45% 구간·일시적 2주택 기한),
         취득세(6억·9억 경계, 6~9억 산식 반올림, 중과 8%·12%), 재산세(공정시장가액비율 43/44/45%·특례세율 9억 경계),
@@ -113,9 +113,9 @@ check('K01', '1주택 공시 12억 정확히 → 0', c.total, 0, '제8조 제1�
 c = T.compTax({ prices: [20 * E], one: true, age: 65, years: 10 });
 check('K02', '1주택 20억, 65세·10년 → 공제 70%', c.total, 682560, '과표 4.8억: 150만+1.8억×0.7%=276만, 재산세공제 86.4만, ×30%, 농특 20%');
 c = T.compTax({ prices: [7 * E, 8 * E] });
-check('K03', '2주택 합계 15억 (9억 공제)', c.total, 1267200, '과표 3.6억: 150만+6천만×0.7%=192만, −86.4만, ×1.2');
+check('K03', '2주택 합계 15억 (9억 공제)', c.total, 1487127, '과표 3.6억: 192만 − 재산세 공제 234만×86.4만/297만(합산 과표 9억 표준세율)=680,727, ×1.2 [2026-11-20 책자 114쪽 산식으로 기대값 수정]');
 c = T.compTax({ prices: [10 * E, 10 * E, 15 * E] });
-check('K04', '3주택 합계 35억 → 3주택 세율표(25억 이하 2%)', c.total, 15667200, '과표 15.6억: 960만+3.6억×2%=1,680만, −374.4만, ×1.2');
+check('K04', '3주택 합계 35억 → 3주택 세율표(25억 이하 2%)', c.total, 16395763, '과표 15.6억: 1,680만 − 651만×374.4만/777만=3,136,864, ×1.2 [2026-11-20 기대값 수정]');
 
 /* ===== 증여세 (상증세법 제26조·제53조·제55조·제56조·제57조·제69조) ===== */
 let g = T.giftTax({ value: 1.5 * E, rel: 'child' });
@@ -137,14 +137,141 @@ check('G08', '  └ 공시 정확히 3억 → 12%+0.4%', ga.total, 62000000, '�
 
 /* ===== 지원 범위·기준일 메타데이터 ===== */
 check('S01', '기준일 표시값', T.AS_OF, '2026-11-20', 'docs/tax_rules_sources.md 확인일');
-check('S02', '세금 종류마다 적용 조항·지원 범위 목록', ['cgt', 'order', 'acq', 'prop', 'cpt', 'gift'].every(k => T.LAW[k].arts.length && T.SCOPE[k].length), true, '화면 tax-trust.js');
+check('S02', '세금 종류마다 적용 조항·지원 범위 목록', ['cgt', 'order', 'acq', 'prop', 'cpt', 'gift', 'xfer'].every(k => T.LAW[k].arts.length && T.SCOPE[k].length), true, '화면 tax-trust.js');
 
-/* 국세청 책자 사례 자리 — 책자 PDF 확보 시 { id, page, input, want } 를 넣으면 같은 방식으로 대조 */
-const CASES_BOOKLET = [];
-CASES_BOOKLET.forEach(x => check(x.id, x.name, T[x.fn](x.input)[x.field], x.want, '국세청 책자 ' + x.page + '쪽'));
+/* ===== 공식 책자 원문 사례 대조 (2026-11-20) =====
+   NTS = 국세청·행정안전부 「2026 주택과 세금」(e북, 쪽수는 책에 인쇄된 쪽 — e북 화면 번호는 +2)
+   SEOUL = 서울특별시 「2026 알기 쉬운 지방세」(PDF, 인쇄된 쪽 — PDF 쪽 번호는 +1)
+   책자 문장은 옮기지 않고 입력 조건·숫자만 적었다. kind: '사례'(책자에 계산 과정이 나온 예시) / '세율표'(책자 표의 세율로 만든 값) /
+   '규칙'(책자에 적힌 규칙을 그대로 적용한 경계값). explained: 책자와 엔진이 다른 이유가 확인된 경우(실패로 세지 않고 따로 표시). */
+const X = require('../tax/transfer-engine.js');
+const NTS = 'NTS', SEOUL = 'SEOUL';
+const cgB = o => cg(o);
+const CASES_BOOKLET = [
+  /* --- 취득세 --- */
+  { id: 'B-A01', src: NTS, page: 23, kind: '사례', name: '10억 유상 85㎡ 초과: 취득세', got: () => T.acqTax({ price: 10 * E, houses: 1, over85: true }).acq, want: 30000000 },
+  { id: 'B-A02', src: NTS, page: 23, kind: '사례', name: '  └ 지방교육세 0.3%', got: () => T.acqTax({ price: 10 * E, houses: 1, over85: true }).edu, want: 3000000 },
+  { id: 'B-A03', src: NTS, page: 23, kind: '사례', name: '  └ 농특세 0.2% · 총 납부세액', got: () => T.acqTax({ price: 10 * E, houses: 1, over85: true }).total, want: 35000000 },
+  { id: 'B-A04', src: NTS, page: 23, kind: '세율표', name: '6.5억 세율 1.33%', got: () => T.acqTax({ price: 6.5 * E, houses: 1 }).rate, want: 0.0133 },
+  { id: 'B-A05', src: NTS, page: 23, kind: '세율표', name: '7억 세율 1.67%', got: () => T.acqTax({ price: 7 * E, houses: 1 }).rate, want: 0.0167 },
+  { id: 'B-A06', src: NTS, page: 23, kind: '세율표', name: '7.5억 세율 2.0%', got: () => T.acqTax({ price: 7.5 * E, houses: 1 }).rate, want: 0.02 },
+  { id: 'B-A07', src: NTS, page: 23, kind: '세율표', name: '8억 세율 2.33%', got: () => T.acqTax({ price: 8 * E, houses: 1 }).rate, want: 0.0233 },
+  { id: 'B-A08', src: NTS, page: 23, kind: '세율표', name: '8.5억 세율 2.67%', got: () => T.acqTax({ price: 8.5 * E, houses: 1 }).rate, want: 0.0267 },
+  { id: 'B-A09', src: NTS, page: 23, kind: '세율표', name: '9억 세율 3.0%', got: () => T.acqTax({ price: 9 * E, houses: 1 }).rate, want: 0.03 },
+  { id: 'B-A10', src: NTS, page: 30, kind: '사례', name: '6.5억 매매 → 산출세액', got: () => T.acqTax({ price: 6.5 * E, houses: 1 }).acq, want: 8645000 },
+  { id: 'B-A11', src: NTS, page: 59, kind: '사례', name: '100㎡ 5억 유상(1주택) 총세액', got: () => T.acqTax({ price: 5 * E, houses: 1, over85: true }).total, want: 6500000 },
+  { id: 'B-A12', src: NTS, page: 59, kind: '사례', name: '1주택 세대 조정지역 100㎡ 5억 추가 취득 8% 총세액', got: () => T.acqTax({ price: 5 * E, houses: 2, adj: true, over85: true }).total, want: 45000000 },
+  { id: 'B-A13', src: NTS, page: 59, kind: '세율표', name: '12% 중과 85㎡ 초과 합계 13.4% (5억)', got: () => T.acqTax({ price: 5 * E, houses: 3, adj: true, over85: true }).total, want: 67000000 },
+  { id: 'B-A14', src: NTS, page: 59, kind: '세율표', name: '상속 85㎡ 이하 2.96% (공시 5억)', got: () => X.inheritAcqTax({ std: 5 * E, oneHouse: false, over85: false }).total, want: 14800000 },
+  { id: 'B-A15', src: NTS, page: 59, kind: '세율표', name: '상속 85㎡ 초과 3.16% (공시 5억)', got: () => X.inheritAcqTax({ std: 5 * E, oneHouse: false, over85: true }).total, want: 15800000 },
+  { id: 'B-A16', src: NTS, page: 59, kind: '세율표', name: '증여 85㎡ 이하 3.8% (5억, 비조정)', got: () => T.giftAcqTax({ value: 5 * E, stdPrice: 4 * E, adj: false }).total, want: 19000000 },
+  { id: 'B-A17', src: NTS, page: 59, kind: '세율표', name: '증여 85㎡ 초과 4.0% (5억, 비조정)', got: () => T.giftAcqTax({ value: 5 * E, stdPrice: 4 * E, adj: false, over85: true }).total, want: 20000000 },
+  { id: 'B-A18', src: NTS, page: 30, kind: '규칙', name: '상속으로 무주택 세대 1주택 0.8%', got: () => X.inheritAcqTax({ std: 5 * E, oneHouse: true }).rate, want: 0.008 },
+  { id: 'B-A19', src: NTS, page: 48, kind: '사례', name: '조정 2주택 부모 → 자녀 증여: 공시 5억 주택 12%', got: () => T.giftAcqTax({ value: 5 * E, stdPrice: 5 * E, adj: true, donorOne: false, close: true }).gift.rate, want: 0.12 },
+  { id: 'B-A20', src: NTS, page: 48, kind: '사례', name: '  └ 공시 9천만 주택 3.5%', got: () => T.giftAcqTax({ value: 0.9 * E, stdPrice: 0.9 * E, adj: true, donorOne: false, close: true }).gift.rate, want: 0.035 },
+  { id: 'B-A21', src: NTS, page: 24, kind: '규칙', name: '가족 저가 취득 증여의제(시가 30억·대가 20억)', got: () => X.lowPrice(30 * E, 20 * E).acqDeemedGift, want: true },
+  { id: 'B-A22', src: SEOUL, page: 37, kind: '사례', name: '7억 1주택 유상(2023.3) 취득세', got: () => T.acqTax({ price: 7 * E, houses: 1 }).acq, want: 11666900,
+    explained: '자료 간 표기 차이: 서울시 책자는 세율을 1.6667%로 적어 계산. 법 문언(제11조 제1항 제8호 "소수점 이하 다섯째 자리 반올림, 넷째 자리까지")·행정안전부 2019.8 발표(7억 1.67%)·국세청-행정안전부 공동 책자(23·30쪽)는 1.67% → 엔진 11,690,000원 유지' },
+  { id: 'B-A23', src: SEOUL, page: 124, kind: '사례', name: '다세대 증여 시가인정액 1.3억 → 취득세+교육세', got: () => T.giftAcqTax({ value: 1.3 * E, stdPrice: 0.9 * E, adj: false }).total, want: 4940000 },
+  { id: 'B-A24', src: SEOUL, page: 124, kind: '사례', name: '단독 200㎡ 2.3억 유상 → 취득세+농특세+교육세', got: () => T.acqTax({ price: 2.3 * E, houses: 1, over85: true }).total, want: 2990000 },
+  { id: 'B-A25', src: SEOUL, page: 124, kind: '사례', name: '  └ 농특세(표준세율 2% 기준 취득세의 10%)', got: () => T.acqTax({ price: 2.3 * E, houses: 1, over85: true }).farm, want: 460000 },
+
+  /* --- 재산세 · 지역자원시설세 --- */
+  { id: 'B-P01', src: NTS, page: 77, kind: '사례', name: '공시 10억(60%) → 과세표준', got: () => T.propertyTax({ price: 10 * E, one: false }).base, want: 600000000 },
+  { id: 'B-P02', src: NTS, page: 77, kind: '사례', name: '  └ 재산세 본세', got: () => T.propertyTax({ price: 10 * E, one: false }).tax, want: 1770000 },
+  { id: 'B-P03', src: NTS, page: 77, kind: '사례', name: '  └ 도시지역분 0.14%', got: () => T.propertyTax({ price: 10 * E, one: false }).urban, want: 840000 },
+  { id: 'B-P04', src: NTS, page: 96, kind: '규칙', name: '  └ 지방교육세 = 본세 × 20%', got: () => T.propertyTax({ price: 10 * E, one: false }).edu, want: 354000 },
+  { id: 'B-P05', src: NTS, page: 86, kind: '사례', name: '공시 4.2억(60%) 표준세율', got: () => T.propertyTax({ price: 4.2 * E, one: false }).tax, want: 450000 },
+  { id: 'B-P06', src: NTS, page: 86, kind: '사례', name: '공시 1.4억(60%) 표준세율', got: () => T.propertyTax({ price: 1.4 * E, one: false }).tax, want: 96000 },
+  { id: 'B-P07', src: NTS, page: 86, kind: '사례', name: '과세표준 2.52억 1주택 특례세율(세율표)', got: () => won0(T.CONST.PT_BRK_ONE, 252000000), want: 324000 },
+  { id: 'B-P08', src: NTS, page: 86, kind: '사례', name: '과세표준 8,400만 1주택 특례세율(세율표)', got: () => won0(T.CONST.PT_BRK_ONE, 84000000), want: 54000 },
+  { id: 'B-P09', src: SEOUL, page: 44, kind: '사례', name: '2주택 이상, 공시 3억 → 본세', got: () => T.propertyTax({ price: 3 * E, one: false }).tax, want: 270000 },
+  { id: 'B-P10', src: SEOUL, page: 44, kind: '사례', name: '  └ 도시지역분', got: () => T.propertyTax({ price: 3 * E, one: false }).urban, want: 252000 },
+  { id: 'B-P11', src: SEOUL, page: 45, kind: '사례', name: '  └ 지방교육세', got: () => T.propertyTax({ price: 3 * E, one: false }).edu, want: 54000 },
+  { id: 'B-P12', src: SEOUL, page: 45, kind: '사례', name: '  └ 소방분 지역자원시설세(건물 과표 6,700만)', got: () => T.fireTax(67000000), want: 52700 },
+  { id: 'B-P13', src: SEOUL, page: 45, kind: '사례', name: '  └ 합계(본세+도시+소방+교육)', got: () => { const r = T.propertyTax({ price: 3 * E, one: false }); return r.total + T.fireTax(67000000); }, want: 628700 },
+  { id: 'B-P14', src: SEOUL, page: 45, kind: '사례', name: '1세대1주택 공시 3억(43%) → 본세', got: () => T.propertyTax({ price: 3 * E, one: true }).tax, want: 99000 },
+  { id: 'B-P15', src: SEOUL, page: 45, kind: '사례', name: '  └ 본세+도시지역분', got: () => { const r = T.propertyTax({ price: 3 * E, one: true }); return r.tax + r.urban; }, want: 279600 },
+
+  /* --- 종합부동산세 --- */
+  { id: 'B-K01', src: NTS, page: 101, kind: '사례', name: '1주택 15억 → 과세표준 1.8억', got: () => T.compTax({ prices: [15 * E], one: true, age: 70, years: 15 }).base, want: 180000000 },
+  { id: 'B-K02', src: NTS, page: 101, kind: '사례', name: '  └ 종부세액 0.5%', got: () => T.compTax({ prices: [15 * E], one: true, age: 70, years: 15 }).calc, want: 900000 },
+  { id: 'B-K03', src: NTS, page: 101, kind: '사례', name: '  └ 공제할 재산세(45% 가정)', got: () => T.compTax({ prices: [15 * E], one: true, age: 70, years: 15 }).propDed, want: 324000 },
+  { id: 'B-K04', src: NTS, page: 101, kind: '사례', name: '  └ 세액공제 80%', got: () => T.compTax({ prices: [15 * E], one: true, age: 70, years: 15 }).credit, want: 460800 },
+  { id: 'B-K05', src: NTS, page: 101, kind: '사례', name: '  └ 납부할 종부세', got: () => T.compTax({ prices: [15 * E], one: true, age: 70, years: 15 }).tax, want: 115200 },
+  { id: 'B-K06', src: NTS, page: 101, kind: '사례', name: '  └ 농어촌특별세 20%', got: () => T.compTax({ prices: [15 * E], one: true, age: 70, years: 15 }).farm, want: 23040 },
+  { id: 'B-K07', src: NTS, page: 108, kind: '사례', name: '(감면 뒤) 공시 15억, 개인 → 과세표준 3.6억', got: () => T.compTax({ prices: [15 * E] }).base, want: 360000000 },
+  { id: 'B-K08', src: NTS, page: 114, kind: '사례', name: '6억+10억 개인 → 재산세 부과세액 합', got: () => T.compTax({ prices: [6 * E, 10 * E] }).propSum, want: 2580000 },
+  { id: 'B-K09', src: NTS, page: 114, kind: '사례', name: '  └ 공제할 재산세액', got: () => T.compTax({ prices: [6 * E, 10 * E] }).propDed, want: 810160,
+    explained: '끝수 차이 8원: 정확한 값은 2,580,000 × 1,008,000 ÷ 3,210,000 = 810,168.2원. 책자는 10원 미만을 버린 숫자로 적음(법령상 중간값 10원 절사 근거는 찾지 못해 엔진은 원 미만 버림 유지). 분모를 합산 과세표준 기준으로 고친 뒤의 차이' },
+  { id: 'B-K10', src: NTS, page: 116, kind: '규칙', name: '세부담상한: 직전 총세액 300만 × 150% (2주택 10억+10억)', got: () => { const r = T.compTax({ prices: [10 * E, 10 * E], prevTotal: 3000000 }); return r.propSum + r.tax; }, want: 4500000 },
+
+  /* --- 양도소득세 --- */
+  { id: 'B-C01', src: NTS, page: 189, kind: '사례', name: '다주택·비조정, 보유 7년, 8억−3억−경비 7천만 → 장특공 14%', got: () => cgB({ acqDate: '2019-01-01', acqPrice: 3 * E, saleDate: '2026-01-02', salePrice: 8 * E, expenses: 7e7, houses: 2 }).ltd, want: 60200000 },
+  { id: 'B-C02', src: NTS, page: 189, kind: '사례', name: '  └ 과세표준', got: () => cgB({ acqDate: '2019-01-01', acqPrice: 3 * E, saleDate: '2026-01-02', salePrice: 8 * E, expenses: 7e7, houses: 2 }).base, want: 367300000 },
+  { id: 'B-C03', src: NTS, page: 189, kind: '사례', name: '  └ 산출세액(전자신고세액공제 2만 원 전)', got: () => cgB({ acqDate: '2019-01-01', acqPrice: 3 * E, saleDate: '2026-01-02', salePrice: 8 * E, expenses: 7e7, houses: 2 }).tax, want: 120980000 },
+  { id: 'B-C04', src: NTS, page: 206, kind: '사례', name: '부담부증여(5억, 보증금 3억, 취득 1억) 채무분 취득가액', got: () => T.giftDebtGain(5 * E, 3 * E, 1 * E).acqPrice, want: 60000000 },
+  { id: 'B-C05', src: NTS, page: 206, kind: '사례', name: '  └ 채무분 양도차익', got: () => T.giftDebtGain(5 * E, 3 * E, 1 * E).gain, want: 240000000 },
+  { id: 'B-C06', src: NTS, page: 206, kind: '사례', name: '  └ 증여세 과세가액(5억 − 인수채무 3억)', got: () => T.giftTax({ value: 5 * E, debt: 3 * E, rel: 'child' }).net, want: 200000000 },
+  { id: 'B-C07', src: NTS, page: 207, kind: '사례', name: '1세대1주택 고가주택 15억(취득 5억) 과세 양도차익', got: () => cgB({ acqDate: '2020-01-01', acqPrice: 5 * E, saleDate: '2026-01-02', salePrice: 15 * E }).taxableGain, want: 200000000 },
+  { id: 'B-C08', src: NTS, page: 213, kind: '세율표', name: '표2: 보유 3년·거주 2년 → 20%', got: () => cgB({ acqDate: '2023-01-02', acqPrice: 10 * E, saleDate: '2026-01-02', salePrice: 15 * E, residMonths: 24 }).ltdRate, want: 0.2 },
+  { id: 'B-C09', src: NTS, page: 213, kind: '세율표', name: '표2: 보유·거주 5년 → 40%', got: () => cgB({ acqDate: '2021-01-02', acqPrice: 10 * E, saleDate: '2026-01-02', salePrice: 15 * E, residMonths: 60 }).ltdRate, want: 0.4 },
+  { id: 'B-C10', src: NTS, page: 213, kind: '세율표', name: '표2: 보유·거주 10년 → 80%', got: () => cgB({ acqDate: '2016-01-02', acqPrice: 10 * E, saleDate: '2026-01-02', salePrice: 15 * E, residMonths: 120 }).ltdRate, want: 0.8 },
+  { id: 'B-C11', src: NTS, page: 215, kind: '사례', name: '2주택·조정 1년 미만 보유, 소득금액 3억 → 70%와 중과 중 큰 세액', got: () => cgB({ acqDate: '2026-03-01', acqPrice: 5 * E, saleDate: '2026-12-01', salePrice: 8 * E, houses: 2, saleAdj: true }).tax, want: 208250000 },
+  { id: 'B-C12', src: NTS, page: 215, kind: '사례', name: '  └ 비교 대상: 기본세율+20%p 세액', got: () => won0(null, 297500000, 0.2), want: 152610000 },
+  { id: 'B-C13', src: NTS, page: 229, kind: '사례', name: '다운계약서 → 비과세 배제, 보유 2년 6개월 산출세액', got: () => cgB({ acqDate: '2021-07-20', acqPrice: 5 * E, saleDate: '2024-01-20', salePrice: 8 * E, houses: 2 }).tax, want: 93110000 },
+  { id: 'B-C14', src: NTS, page: 349, kind: '사례', name: '부모 저가 양도(시가 30억·대가 20억) → 시가로 양도 재계산', got: () => X.lowPrice(30 * E, 20 * E).cgtAtMarket, want: true },
+  { id: 'B-C15', src: NTS, page: 349, kind: '사례', name: '  └ 당초(차익 5억) 약식 세액', got: () => won0(null, 5 * E), want: 174060000 },
+  { id: 'B-C16', src: NTS, page: 349, kind: '사례', name: '  └ 재계산(차익 15억) 약식 세액', got: () => won0(null, 15 * E), want: 609060000 },
+
+  /* --- 증여세 --- */
+  { id: 'B-G01', src: NTS, page: 325, kind: '사례', name: '시가 25억, 채무 10억, 부→자 → 과세표준', got: () => T.giftTax({ value: 25 * E, debt: 10 * E, rel: 'child' }).base, want: 1450000000 },
+  { id: 'B-G02', src: NTS, page: 325, kind: '사례', name: '  └ 납부세액', got: () => T.giftTax({ value: 25 * E, debt: 10 * E, rel: 'child' }).tax, want: 407400000 },
+  { id: 'B-G03', src: NTS, page: 326, kind: '사례', name: '혼인 증여 10억, 보증금 6억, 7년 전 1억 → 과세표준', got: () => T.giftTax({ value: 10 * E, debt: 6 * E, rel: 'child', prior: 1 * E, priorTax: 5000000, marriage: true }).base, want: 350000000 },
+  { id: 'B-G04', src: NTS, page: 326, kind: '사례', name: '  └ 납부세액(납부세액공제 500만 + 신고공제 3%)', got: () => T.giftTax({ value: 10 * E, debt: 6 * E, rel: 'child', prior: 1 * E, priorTax: 5000000, marriage: true }).tax, want: 53350000 },
+  { id: 'B-G05', src: NTS, page: 340, kind: '사례', name: '성년 자녀 15억 주택(2020) 납부세액', got: () => T.giftTax({ value: 15 * E, rel: 'child' }).tax, want: 407400000 },
+  { id: 'B-G06', src: NTS, page: 340, kind: '사례', name: '  └ 뒤이어 혼인자금 2억(15억 합산) 납부세액', got: () => T.giftTax({ value: 2 * E, rel: 'child', prior: 15 * E, priorTax: 420000000, marriage: true }).tax, want: 38800000 },
+  { id: 'B-G07', src: NTS, page: 340, kind: '사례', name: '미성년 손자 7.2억(세대생략 30%) 납부세액', got: () => T.giftTax({ value: 7.2 * E, rel: 'minor', skip: true }).tax, want: 189150000 },
+  { id: 'B-G08', src: NTS, page: 337, kind: '사례', name: '아버지 1억 증여 → 과세표준', got: () => T.giftTax({ value: 1 * E, rel: 'child' }).base, want: 50000000 },
+  { id: 'B-G09', src: NTS, page: 337, kind: '사례', name: '  └ 뒤이어 할아버지 5천만(공제 이미 사용) → 과세표준', got: () => T.giftTax({ value: 0.5 * E, rel: 'child', dedUsed: 5e7 }).base, want: 50000000 },
+  { id: 'B-G10', src: NTS, page: 349, kind: '사례', name: '저가 양수(시가 30억·대가 20억) 증여재산가액', got: () => X.lowPrice(30 * E, 20 * E).giftValue, want: 700000000 },
+  { id: 'B-G11', src: NTS, page: 349, kind: '사례', name: '  └ 자녀 증여세', got: () => T.giftTax({ value: X.lowPrice(30 * E, 20 * E).giftValue, rel: 'child' }).tax, want: 130950000 },
+  { id: 'B-G12', src: NTS, page: 351, kind: '사례', name: '시가 15억 주택 무상사용 5년 이익 113,723,601원 → 증여세', got: () => T.giftTax({ value: 113723601, rel: 'child' }).tax, want: 6181190 },
+  { id: 'B-G13', src: NTS, page: 353, kind: '사례', name: '무상 담보 이익 4,600만(1년차) → 과세미달', got: () => T.giftTax({ value: 46000000, rel: 'child' }).tax, want: 0 },
+  { id: 'B-G14', src: NTS, page: 353, kind: '사례', name: '  └ 2년차(1년차 4,600만 합산)', got: () => T.giftTax({ value: 46000000, rel: 'child', prior: 46000000, priorTax: 0 }).tax, want: 4074000 },
+
+  /* --- 상속세 --- */
+  { id: 'B-I01', src: NTS, page: 363, kind: '사례', name: '25억, 일괄 5억 + 배우자 5억 → 과세표준', got: () => X.inheritTax({ house: 25 * E, spouse: true }).base, want: 1500000000 },
+  { id: 'B-I02', src: NTS, page: 363, kind: '사례', name: '  └ 산출세액', got: () => X.inheritTax({ house: 25 * E, spouse: true }).calc, want: 440000000 },
+  { id: 'B-I03', src: NTS, page: 363, kind: '사례', name: '  └ 납부세액(신고세액공제 3%)', got: () => X.inheritTax({ house: 25 * E, spouse: true }).tax, want: 426800000 },
+  { id: 'B-I04', src: NTS, page: 372, kind: '규칙', name: '동거주택 상속공제 6억 한도(주택 10억)', got: () => X.inheritTax({ house: 10 * E, cohab: true }).cohabDed, want: 600000000 },
+  { id: 'B-I05', src: NTS, page: 374, kind: '규칙', name: '공제 한도: 과세가액 5억 이하면 사전증여 과세표준 안 뺌', got: () => X.inheritTax({ house: 4 * E, prior: 1 * E, priorDed: 5e7 }).limit, want: 500000000 },
+  { id: 'B-I06', src: NTS, page: 374, kind: '규칙', name: '  └ 과세가액 5억 초과면 뺌(주택 9억 + 사전증여 1억)', got: () => X.inheritTax({ house: 9 * E, prior: 1 * E, priorDed: 5e7 }).limit, want: 950000000 }
+];
+/* 세율표만으로 계산(엔진 상수 대조) — table 없으면 양도세 기본세율 */
+function won0(table, base, add) { if (!table) return Math.floor(T.basicTax(base, add || 0) + 1e-6); for (const [cap, r, d] of table) if (base <= cap) return Math.floor(base * r - d + 1e-6); return 0; }
+/* 책자에 있으나 엔진이 계산하지 않아 대조에서 뺀 사례(숫자를 옮기지 않음, 쪽만 기록) */
+const BOOKLET_SKIPPED = [
+  [NTS, 28, '주상복합 1억 주택·상가 과세표준 안분 — 엔진은 주택만'],
+  [NTS, 145, '주택임대소득세 계산 사례(간주임대료 156·157쪽, 분리과세 180쪽 등) — 임대소득 엔진 없음'],
+  [NTS, 204, '환산취득가액·환산가산세 — 엔진 범위 밖(SCOPE 안내)'],
+  [NTS, 207, '공동소유 고가주택 지분별 양도차익 — 엔진은 한 사람 기준(SCOPE 안내)'],
+  [NTS, 226, '상생임대주택 장특공(보유만 10년 → 40%) — 엔진 범위 밖(SCOPE 안내)'],
+  [NTS, 351, '무상사용 이익(연 2%·10% 할인) 자체 계산 — 증여세만 대조(B-G12)'],
+  [NTS, 371, '그 밖의 인적공제(자녀·미성년·장애인 8.73억) — 비교 화면은 일괄공제 5억만(SCOPE xfer 안내)'],
+  [SEOUL, 37, '취득세 과소신고 가산세 — 엔진 범위 밖'],
+  [SEOUL, 125, '상가 상속 취득세 — 주택 아님'],
+  [SEOUL, 79, '생애최초 주택 취득세 감면 — 책자에 숫자 계산 사례 없음, 엔진은 감면 미반영(SCOPE 안내). 80쪽 요약표의 소형/소형 외 한도(200만/300만)가 79쪽 본문·93쪽 표(일반 200만, 소형 300만)와 거꾸로 적혀 있음']
+];
+let explainedN = 0;
+CASES_BOOKLET.forEach(x => {
+  const got = x.got(), basis = (x.src === NTS ? '「2026 주택과 세금」 ' : '서울시 「2026 알기 쉬운 지방세」 ') + x.page + '쪽 · ' + x.kind;
+  if (x.explained && got !== x.want) { explainedN++; rows.push({ ok: true, id: x.id, name: x.name + ' [설명된 차이]', got, want: x.want, basis: basis + ' · 책자 ' + x.want.toLocaleString() + ' — ' + x.explained }); }
+  else check(x.id, x.name, got, x.want, basis);
+});
 
 const pad = (s, n) => { s = String(s); let w = 0; for (const ch of s) w += ch.charCodeAt(0) > 255 ? 2 : 1; return s + ' '.repeat(Math.max(0, n - w)); };
 let fail = 0;
 rows.forEach(x => { if (!x.ok) fail++; console.log(pad(x.ok ? 'PASS' : 'FAIL', 5) + pad(x.id, 6) + pad(x.name, 50) + pad(typeof x.got === 'number' ? x.got.toLocaleString() : x.got, 14) + (x.ok ? '' : ' 기대 ' + x.want) + '  ' + x.basis); });
-console.log(`\n공식 산식 사례 ${rows.length}건 중 ${rows.length - fail}건 일치 (국세청 책자 원문 사례 ${CASES_BOOKLET.length}건)`);
+console.log(`\n전체 ${rows.length}건 중 ${rows.length - fail}건 통과 (조문 산식 ${rows.length - CASES_BOOKLET.length}건 + 책자 원문 ${CASES_BOOKLET.length}건, 그중 설명된 차이 ${explainedN}건 · 엔진 범위 밖이라 뺀 책자 사례 ${BOOKLET_SKIPPED.length}곳)`);
 process.exit(fail ? 1 : 0);

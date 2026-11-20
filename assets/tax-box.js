@@ -27,7 +27,7 @@
     if (window.JDJ_TAX && window.JDJ_ADJ) return Promise.resolve();
     if (loading) return loading;
     const add = src => new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
-    loading = (window.JDJ_ADJ ? Promise.resolve() : add(BASE + 'tax/adjusted-areas.js')).then(() => window.JDJ_TAX ? null : add(BASE + 'tax/tax-engine.js?v=2'));
+    loading = (window.JDJ_ADJ ? Promise.resolve() : add(BASE + 'tax/adjusted-areas.js')).then(() => window.JDJ_TAX ? null : add(BASE + 'tax/tax-engine.js?v=3'));
     return loading;
   }
 

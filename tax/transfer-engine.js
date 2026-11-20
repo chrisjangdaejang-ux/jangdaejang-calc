@@ -26,6 +26,7 @@
      - 동거주택 상속공제: 제23조의2 — 10년 이상 계속 동거·1세대1주택·상속인 무주택 등, 주택가액(담보 채무 차감)의 100%, 6억 한도
        (한경머니 2026.9.16)
      - 공제 종합한도: 제24조 — 과세가액에서 가산한 사전증여재산가액(증여재산공제 차감 뒤)을 뺀 금액까지만 공제
+       (사전증여분을 빼는 것은 과세가액이 5억 원을 넘을 때만 — 같은 조 단서)
      - 과세최저한: 제25조 제2항 — 과세표준 50만 원 미만 비과세
      - 세율: 제26조 — 1억 10% / 5억 20%(1천만) / 10억 30%(6천만) / 30억 40%(1.6억) / 초과 50%(4.6억)
      - 증여세액공제: 제28조 — 합산한 사전증여재산의 증여세 산출세액 공제(한도 비율 계산은 단순화: 산출세액 범위 안)
@@ -81,7 +82,9 @@
     const gross = estate + prior;
     const lump = RULE.LUMP, spouseDed = p.spouse ? RULE.SPOUSE_MIN : 0;
     const cohabDed = p.cohab ? Math.min(RULE.COHAB_MAX, Math.max(0, house - Math.max(0, p.houseDebt || 0))) : 0;
-    const limit = Math.max(0, gross - Math.max(0, prior - priorDed));
+    // 제24조 제3호 단서: 사전증여재산 과세표준을 빼는 한도는 상속세 과세가액이 5억 원을 넘을 때만 적용
+    //   (국세청·행정안전부 「2026 주택과 세금」 374쪽. 2026-11-20 책자 대조로 수정 — 그전에는 5억 이하에도 빼서 공제가 줄었음)
+    const limit = Math.max(0, gross - (gross > 5 * EOK ? Math.max(0, prior - priorDed) : 0));
     const dedWant = lump + spouseDed + cohabDed;
     const ded = Math.min(dedWant, limit);
     let base = Math.max(0, gross - ded);
