@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
+<script src="/jangdaejang-calc/assets/pwa.js" defer data-nobar></script>
+<script src="/jangdaejang-calc/assets/biz.js" defer></script>
+<title>시행사·분양대행사 데이터 리포트 — 집예보</title>
+<meta name="description" content="분양가 적정성·입지 분석 리포트와 미분양 해소 패키지. 주변 신축·준신축 실거래, 최근 분양가·청약 경쟁률, 미래가치 점수 분포, 수요·공급·미분양, 정책·대출까지 공개 자료로만 정리해 PDF로 드려요.">
+<link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/pro/developer/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="시행사·분양대행사 데이터 리포트 — 집예보">
+<meta property="og:description" content="예정 분양가가 주변과 비교해 어디쯤인지, 근거 숫자와 출처로 보여 드려요. 미분양 단지는 수요층 분석과 광고 묶음, 진행 보고서까지.">
+<meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/pro/developer/">
+<meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/ad.png">
+<meta property="og:locale" content="ko_KR">
+<script>window.JDJ_CONFIG = { tool:'pro_developer', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../assets/track.js?v=2"></script>
+<script src="../../assets/stat.js?v=7"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
+<style>
+.wrap{max-width:960px;margin:0 auto;padding:28px 20px 60px}
+h1{font-size:clamp(28px,6.5vw,40px);margin:8px 0 12px;line-height:1.3}
+.lead{font-size:17px;line-height:1.75;max-width:740px}
+.hero .btns{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap}
+.hero .btns .btn{min-height:52px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0 0}
+.toc a{font-size:14px;font-weight:700;color:var(--sub);background:var(--gray);border-radius:999px;padding:0 12px;min-height:40px;display:inline-flex;align-items:center;text-decoration:none}
+section{margin-top:44px;scroll-margin-top:72px}
+.sh{font-size:13.5px;font-weight:700;color:var(--blue);letter-spacing:.2px}
+h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-height:1.35;margin:4px 0 8px}
+.sub{font-size:16px;color:var(--sub);margin:0 0 16px;line-height:1.7}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:760px){.g3{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.g2,.g3{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;min-width:0}
+.card h3{font-size:17px;font-weight:900;margin:0 0 6px;letter-spacing:-.3px;line-height:1.4}
+.card p{font-size:15px;color:var(--sub);margin:0;line-height:1.7}
+.card .k{font-size:13.5px;font-weight:700;color:var(--blue);margin-bottom:4px}
+.prod{background:#fff;border:1px solid var(--line);border-radius:20px;padding:20px;margin-top:12px}
+.prod .ph{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.prod h3{font-size:20px;font-weight:900;margin:0;letter-spacing:-.4px}
+.prod .num{font-size:13.5px;font-weight:700;color:var(--sub3);display:block;margin-bottom:2px}
+.prod .desc{font-size:15.5px;color:var(--sub);margin:8px 0 12px;line-height:1.7}
+.st{display:inline-flex;align-items:center;font-size:13.5px;font-weight:700;border-radius:999px;padding:1px 10px;line-height:1.7;white-space:nowrap;background:var(--pos-l);color:var(--pos)}
+.spec{display:grid;grid-template-columns:132px 1fr;margin:0;border-top:1px solid var(--line2)}
+.spec dt,.spec dd{padding:10px 0;border-bottom:1px solid var(--line2);font-size:15px;line-height:1.65;margin:0}
+.spec dt{color:var(--sub2);font-weight:700;padding-right:10px}
+.spec dd{color:var(--text);min-width:0;overflow-wrap:anywhere}
+@media(max-width:480px){.spec{grid-template-columns:1fr}.spec dt{border-bottom:0;padding-bottom:0}.spec dd{padding-top:2px}}
+.spec ul{margin:0;padding-left:18px}.spec li{margin:2px 0}
+.price-v{font-weight:900;font-size:17px}
+.price-v s{font-weight:500;color:var(--sub3);font-size:14px;margin-left:6px}
+.pnote{display:block;font-size:13.5px;color:var(--sub2);line-height:1.6;margin-top:2px}
+.shots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+@media(max-width:760px){.shots{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.shots figure{margin:0;background:#fff;border:1px solid var(--line);border-radius:12px;padding:6px;min-width:0}
+.shots img{width:100%;height:auto;display:block;border-radius:6px;aspect-ratio:794/1123;object-fit:cover;background:var(--gray2)}
+.shots figcaption{font-size:13.5px;color:var(--sub2);text-align:center;margin-top:6px;line-height:1.5}
+.shots a{display:block;text-decoration:none;color:inherit}
+.ex{margin-top:12px;background:var(--gray2);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:14.5px;color:var(--sub);line-height:1.7}
+.more{display:inline-flex;align-items:center;min-height:44px;font-size:15px;font-weight:700;text-decoration:none;margin-top:6px;margin-right:14px}
+.rule{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.rule li{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:15px;line-height:1.65;color:var(--sub)}
+.rule b{color:var(--text)}
+.flow{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;counter-reset:f;padding:0;margin:0;list-style:none}
+@media(max-width:860px){.flow{grid-template-columns:1fr 1fr}}
+@media(max-width:420px){.flow{grid-template-columns:1fr}}
+.flow li{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff;min-width:0}
+.flow li::before{counter-increment:f;content:counter(f,decimal-leading-zero);display:block;font-size:13.5px;font-weight:900;color:var(--blue)}
+.flow b{display:block;font-size:15.5px;margin:2px 0}
+.flow span{font-size:14px;color:var(--sub2);line-height:1.6;display:block}
+.ptab{width:100%;border-collapse:collapse;font-size:15px}
+.ptab th,.ptab td{border-bottom:1px solid var(--line);padding:12px 10px;text-align:left;vertical-align:top;line-height:1.6}
+.ptab thead th{background:var(--gray2);font-size:13.5px;color:var(--sub2);font-weight:700;border-top:1px solid var(--line)}
+@media(max-width:620px){.ptab,.ptab tbody,.ptab tr,.ptab td{display:block;width:100%}.ptab thead{display:none}.ptab tr{border:1px solid var(--line);border-radius:14px;padding:4px 12px;margin-bottom:8px}.ptab td{border-bottom:1px solid var(--line2);padding:8px 0}.ptab td:last-child{border-bottom:0}.ptab td[data-l]::before{content:attr(data-l);display:block;font-size:13px;font-weight:700;color:var(--sub2)}}
+.askbox{background:var(--gray2);border:1px solid var(--line);border-radius:22px;padding:22px 20px}
+.f label.l{display:block;font-size:14.5px;font-weight:700;color:var(--sub);margin-bottom:4px}
+.f label.l i{font-style:normal;color:var(--neg)}
+.f small{display:block;font-size:13.5px;color:var(--sub2);margin-top:4px;line-height:1.55}
+.f input:not([type=checkbox]),.f select,.f textarea{width:100%;min-height:48px;padding:0 12px;border:1px solid var(--line);border-radius:12px;font:inherit;font-size:16px;background:#fff;color:var(--text)}
+.f textarea{padding:10px 12px;min-height:96px;resize:vertical;line-height:1.6}
+.f input:focus,.f select:focus,.f textarea:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,107,255,.15)}
+.f [aria-invalid=true]{border-color:var(--neg)!important}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:560px){.fg{grid-template-columns:1fr}}
+.fg .full{grid-column:1/-1}
+.chk{display:flex;gap:8px;flex-wrap:wrap}
+.chk label{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:999px;font-size:15px;font-weight:700;color:var(--sub);cursor:pointer;background:#fff}
+.chk input{width:18px;height:18px;accent-color:var(--blue)}
+.pv{margin-top:16px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:14.5px;color:var(--sub);line-height:1.7}
+.pv b{color:var(--text)}
+.pv table{width:100%;border-collapse:collapse;margin:8px 0;font-size:14px}
+.pv th,.pv td{border:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}
+.pv th{background:var(--gray2);width:96px;color:var(--text)}
+.agree{display:flex;gap:10px;align-items:flex-start;margin-top:10px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;font-size:15px;line-height:1.55;cursor:pointer;background:#fff;font-weight:700}
+.agree input{width:20px;height:20px;margin-top:2px;flex:none;accent-color:var(--blue)}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+#send{width:100%;margin-top:16px}
+#send[disabled]{opacity:.6}
+.msg{margin-top:12px;font-size:15px;font-weight:700;min-height:1em}
+.msg.err{color:var(--neg)}
+.done{background:var(--pos-l);border-radius:16px;padding:18px;font-size:16px;line-height:1.7}
+.done b{font-size:18px;color:var(--pos)}
+.alt{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.alt .btn{flex:1 1 200px}
+.src{font-size:13.5px;color:var(--sub3);margin-top:26px;line-height:1.7}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>집예보</a>
+  <div class="badge plain">시행사·분양대행사</div>
+</header>
+<main class="wrap">
+  <div class="hero">
+    <span class="tag">시행사·분양대행사 데이터 리포트</span>
+    <h1>예정 분양가, 주변과 비교하면<br><em>어디쯤인지</em> 숫자로 보여 드려요</h1>
+    <p class="lead">사업지 주소와 평형별 예정 분양가만 주시면, 주변 신축·준신축 실거래, 최근 주변 분양가·청약 경쟁률·당첨 가점, 미래가치 점수 분포, 수요·공급·미분양, 정책·대출 조건을 공개 자료로만 모아 PDF 리포트로 드려요. 이미 분양 중인 미분양 단지에는 수요층 분석과 분양 광고 묶음, 진행 보고서를 함께 드려요.</p>
+    <div class="btns">
+      <a class="btn blue" href="#ask" data-track="dev_to_form">리포트 신청하기</a>
+      <a class="btn ghost" href="sample-price.pdf" target="_blank" rel="noopener" data-track="dev_sample_pdf">샘플 리포트 PDF 보기</a>
+    </div>
+    <nav class="toc" aria-label="이 페이지 목차">
+      <a href="#p-price">분양가 리포트</a><a href="#p-unsold">미분양 해소 패키지</a><a href="#rules">원칙</a><a href="#prices">가격</a><a href="#flow">진행 절차</a><a href="#ask">신청</a>
+    </nav>
+  </div>
+
+  <section id="p-price">
+    <div class="sh">PRODUCT 1</div>
+    <h2 class="t">분양가 적정성·입지 분석 리포트</h2>
+    <p class="sub">“이 분양가가 주변 비교로 상위·중간·하위 중 어디에 가까운가”를 근거 숫자와 함께 보여 드려요. ‘적정하다/비싸다’로 단정하지 않고, 표본 수·기준일·출처를 모두 적어요.</p>
+    <article class="prod">
+      <div class="ph"><div><span class="num">건당 · PDF 약 9쪽</span><h3>무엇을 보나요</h3></div><span class="st">바로 가능</span></div>
+      <dl class="spec">
+        <dt>요약 1쪽</dt><dd>평형별 예정 분양가(전용 3.3㎡당)와 주변 거래 중앙값, 백분위(주변 거래 중 예정 분양가보다 싼 거래의 비율), ‘상위·중간·하위 구간에 가까움’ 판정, 핵심 숫자, 먼저 볼 리스크</dd>
+        <dt>주변 실거래</dt><dd>반경 1km·2km·같은 구, 신축(준공 5년 이내)·준신축(6~10년), 면적 구간별 최근 12개월 매매의 하위 25%·중앙값·상위 25%와 가까운 비교 단지</dd>
+        <dt>주변 분양</dt><dd>최근 2년 같은 구·반경 3km 아파트 모집공고의 면적 구간별 분양가, 1순위 경쟁률, 당첨 가점(최저·평균)</dd>
+        <dt>미래가치</dt><dd>주변 단지 미래가치 점수 분포(공개 점수 그대로)와 과거 성적(과거 기준 월에 같은 방식으로 계산한 점수의 이후 2년 성과)</dd>
+        <dt>수요</dt><dd>30~40대 인구 3년 증감·순이동(통계청), 외지인 매입 비율(한국부동산원, 자료가 들어오는 대로), 집예보 관심 지역 등록 익명 집계(10명 미만은 숨김)</dd>
+        <dt>공급·미분양</dt><dd>앞으로 3년 입주 예정 세대(청약홈 공고), 시·군·구 미분양·준공 후 미분양 24개월 추이(국토교통부)</dd>
+        <dt>정책·대출</dt><dd>그 지역에 적용되는 규제지역·토지거래허가·대출 규제, 평형별 잔금 대출 단순 계산(LTV·한도)</dd>
+        <dt>리스크·출처</dt><dd>자료에서 확인되는 사실만 적은 리스크 목록, 분양가 결정 전 내부 자료로 확인할 것, 모든 자료의 출처·기준일·방법·한계</dd>
+        <dt>주실 것</dt><dd>사업지 주소(또는 좌표), 평형별 전용면적·예정 분양가(최고가 기준), 희망 납기 — 그 밖의 자료는 필요 없어요</dd>
+      </dl>
+    </article>
+    <div class="shots" aria-label="샘플 리포트 미리보기">
+      <figure><a href="sample-price.pdf" target="_blank" rel="noopener"><img src="s1.jpg" width="794" height="1123" loading="lazy" alt="샘플 리포트 표지: 예시 사업지 성북구 장위동, 가정 분양가 안내"></a><figcaption>표지</figcaption></figure>
+      <figure><a href="sample-price.pdf" target="_blank" rel="noopener"><img src="s2.jpg" width="794" height="1123" loading="lazy" alt="샘플 리포트 요약: 평형별 예정 분양가와 주변 거래 중앙값, 백분위, 구간 판정"></a><figcaption>요약 1쪽</figcaption></figure>
+      <figure><a href="sample-price.pdf" target="_blank" rel="noopener"><img src="s3.jpg" width="794" height="1123" loading="lazy" alt="샘플 리포트: 평형별 주변 거래 분포 그래프와 예정 분양가 위치"></a><figcaption>주변 실거래 비교</figcaption></figure>
+      <figure><a href="sample-price.pdf" target="_blank" rel="noopener"><img src="s4.jpg" width="794" height="1123" loading="lazy" alt="샘플 리포트: 공급·미분양 추이와 정책·대출 계산"></a><figcaption>공급·정책·대출</figcaption></figure>
+    </div>
+    <p class="ex"><b>샘플 안내</b> — 위치는 서울시 정비사업 추진현황(공개 자료)에 있는 실제 분양 예정 구역(성북구 장위10, 착공 단계)이에요. 아직 분양가가 공고되지 않은 곳이라, 샘플의 ‘예정 분양가’는 최근 주변 분양가 중앙값으로 정한 <b>가정 값</b>이고 실제 사업 주체의 가격이 아니에요. 그 밖의 숫자는 모두 실제 공개 자료예요.</p>
+    <a class="more" href="sample-price.pdf" target="_blank" rel="noopener" data-track="dev_sample_pdf">샘플 리포트 전체(PDF) ›</a>
+  </section>
+
+  <section id="p-unsold">
+    <div class="sh">PRODUCT 2</div>
+    <h2 class="t">미분양 해소 패키지</h2>
+    <p class="sub">공식 자료로 확인되는 미분양(국토교통부 미분양주택현황, 청약홈 무순위·잔여세대 공고, 경기도 단지별 미분양 현황)이 있는 단지를 위해, 누가 살 수 있는 곳인지 숫자로 보고 그 사람에게만 광고가 닿게 묶었어요.</p>
+    <article class="prod">
+      <div class="ph"><div><span class="num">8주 운영 · 분석 + 광고 + 보고</span><h3>이렇게 진행해요</h3></div><span class="st">바로 가능</span></div>
+      <dl class="spec">
+        <dt>① 수요층 분석</dt><dd>미분양 추이·준공 후 미분양, 주변 최근 청약 결과, 30~40대 인구·순이동, 주변 신축·준신축 실거래로 본 현재 분양가(또는 할인가)의 위치</dd>
+        <dt>② 광고 묶음</dt><dd>집예보 분양 광고 상품을 분석 결과에 맞춰 묶어요: 목록 상단 카드·추천 현장, 지도 프리미엄 마커, 관심 지역 알림(광고성 정보 수신에 동의한 이용자만), 분양 상담 연결(제3자 제공에 동의한 신청만). 모든 광고에는 ‘광고’를 표시해요.</dd>
+        <dt>③ 진행 보고서</dt><dd>2주마다 노출·클릭·알림 발송·상담 신청 수(개인 식별 정보 없는 집계)와 미분양 통계·주변 실거래 변화를 같은 표로 보내 드려요. 계약 건수는 사업 주체만 알 수 있어 알려 주시면 함께 적어요.</dd>
+        <dt>대상</dt><dd>아파트·도시형생활주택·민간임대(입주자모집공고 승인 뒤), 오피스텔(분양신고 뒤) — 광고 노출 기준은 분양 광고 상품과 같아요</dd>
+      </dl>
+      <a class="more" href="../../ad/#p-bunyang" data-track="dev_to_ad">분양 광고 상품·단가 보기 ›</a>
+      <a class="more" href="sample-unsold.pdf" target="_blank" rel="noopener" data-track="dev_sample_unsold">미분양 패키지 샘플(PDF) ›</a>
+    </article>
+    <div class="shots" aria-label="미분양 해소 패키지 샘플 미리보기">
+      <figure><a href="sample-unsold.pdf" target="_blank" rel="noopener"><img src="u1.jpg" width="794" height="1123" loading="lazy" alt="미분양 패키지 샘플: 평택시 미분양 추이와 주변 청약 결과, 수요층"></a><figcaption>미분양·수요층</figcaption></figure>
+      <figure><a href="sample-unsold.pdf" target="_blank" rel="noopener"><img src="u2.jpg" width="794" height="1123" loading="lazy" alt="미분양 패키지 샘플: 주변 실거래 가격 위치와 광고 묶음"></a><figcaption>가격 위치·광고 묶음</figcaption></figure>
+      <figure><a href="sample-unsold.pdf" target="_blank" rel="noopener"><img src="u3.jpg" width="794" height="1123" loading="lazy" alt="미분양 패키지 샘플: 2주마다 채우는 진행 보고서 빈 표"></a><figcaption>진행 보고서(빈 표)</figcaption></figure>
+    </div>
+    <p class="ex">샘플은 경기 평택시의 실제 공개 통계로 만들었고, 단지는 예시예요. 진행 보고서 칸은 집행 뒤에만 채워요 — 숫자를 미리 만들지 않아요.</p>
+  </section>
+
+  <section id="rules">
+    <div class="sh">PRINCIPLES</div>
+    <h2 class="t">의뢰를 받아도 바뀌지 않는 것</h2>
+    <ul class="rule">
+      <li><b>미래가치 점수·순위는 의뢰·광고·요금과 무관해요.</b> 리포트에 쓰는 점수는 누구나 보는 공개 점수 그대로이고, 의뢰인이 바꿀 수 없어요.</li>
+      <li><b>공개 자료와 익명 집계만 써요.</b> 국토교통부 실거래·미분양, 청약홈 공고·경쟁률·당첨 가점, 통계청 인구, 정책브리핑 등 출처와 기준일을 모두 적어요. 이용자 개인을 알아볼 수 있는 정보는 쓰지 않아요.</li>
+      <li><b>단정하지 않아요.</b> 판정은 ‘주변 비교로 상위·중간·하위 구간에 가까움’까지예요. 감정평가나 투자 자문이 아니고, 분양가 결정은 의뢰인의 판단이에요.</li>
+      <li><b>숫자를 지어내지 않아요.</b> 자료가 없으면 빈칸으로 두고 ‘수집 중’이라고 적어요. 표본이 적으면 범위를 넓히고 그 사실을 적어요.</li>
+    </ul>
+  </section>
+
+  <section id="prices">
+    <div class="sh">PRICE</div>
+    <h2 class="t">가격 (VAT 별도)</h2>
+    <p class="sub">기업 거래라 견적 확정 뒤 세금계산서를 발행하고 계좌이체로 받아요.</p>
+    <table class="ptab">
+      <thead><tr><th>상품</th><th>포함</th><th>금액</th></tr></thead>
+      <tbody>
+        <tr><td><b>분양가 적정성·입지 분석 리포트</b></td><td data-l="포함">평형 3개까지 · PDF · 30분 설명 통화 1회 · 영업일 3일 안 납품</td><td data-l="금액" data-pp="dev_report"></td></tr>
+        <tr><td><b>평형 추가</b></td><td data-l="포함">4번째 평형부터 1개당</td><td data-l="금액" data-pp="dev_extra"></td></tr>
+        <tr><td><b>분양 직전 다시 보기</b></td><td data-l="포함">같은 사업지, 첫 리포트 뒤 90일 안 · 최신 실거래·공고로 다시 계산</td><td data-l="금액" data-pp="dev_update"></td></tr>
+        <tr><td><b>미분양 해소 패키지 운영비</b></td><td data-l="포함">수요층 분석 PDF · 광고 묶음 설계 · 8주 동안 2주마다 진행 보고서 · 30분 통화 2회</td><td data-l="금액" data-pp="unsold_pack"></td></tr>
+        <tr><td><b>패키지 광고비</b></td><td data-l="포함">분양 광고 상품(목록 상단·지도 마커·관심 지역 알림·상담 연결)</td><td data-l="금액"><a href="../../ad/#prices">광고 단가표</a>를 따라요 · 묶음 할인은 견적에서 정해요</td></tr>
+      </tbody>
+    </table>
+    <p class="src" style="margin-top:10px">런칭가는 <span data-guide="until"></span>까지 신청하신 의뢰에 적용돼요. 결제 뒤 작업을 시작하면 환불되지 않아요(작업 시작 전 취소는 전액 환불). 집예보 쪽 오류로 숫자가 틀리면 고쳐서 다시 드려요.</p>
+  </section>
+
+  <section id="flow">
+    <div class="sh">PROCESS</div>
+    <h2 class="t">신청부터 납품까지</h2>
+    <ol class="flow">
+      <li><b>신청</b><span>아래 폼 또는 카카오톡·전화</span></li>
+      <li><b>견적·확인</b><span>사업지·평형·납기 확인, 공식 자료로 미분양 확인(패키지)</span></li>
+      <li><b>세금계산서</b><span>발행 뒤 계좌이체</span></li>
+      <li><b>분석</b><span>영업일 3일 안 PDF</span></li>
+      <li><b>설명 통화</b><span>30분, 숫자 읽는 법과 한계</span></li>
+      <li><b>보고</b><span>패키지: 2주마다 진행 보고서</span></li>
+    </ol>
+  </section>
+
+  <section id="ask">
+    <div class="sh">CONTACT</div>
+    <h2 class="t">리포트 신청·문의</h2>
+    <p class="sub">남겨 주시면 영업일 기준 2일 안에 담당자가 견적과 함께 연락드려요.</p>
+    <div class="askbox">
+      <form id="form" novalidate autocomplete="on">
+        <div class="fg">
+          <div class="f"><label class="l" for="company">회사명 <i>*</i></label><input id="company" maxlength="60" required autocomplete="organization" placeholder="예: (주)○○개발"></div>
+          <div class="f"><label class="l" for="manager">담당자 이름 <i>*</i></label><input id="manager" maxlength="30" required autocomplete="name"></div>
+          <div class="f full"><label class="l" for="contact">연락처 (전화번호 또는 이메일) <i>*</i></label><input id="contact" maxlength="80" required inputmode="email" placeholder="010-0000-0000 또는 name@company.com"><small>답변·견적 연락에만 써요</small></div>
+          <div class="f full"><label class="l" id="prodL">신청 상품 <i>*</i></label>
+            <div class="chk" id="prod" role="group" aria-labelledby="prodL">
+              <label><input type="checkbox" value="dev_report"> 분양가 적정성·입지 분석 리포트</label>
+              <label><input type="checkbox" value="unsold_pack"> 미분양 해소 패키지</label>
+            </div></div>
+          <div class="f full"><label class="l" for="site">사업지 주소 <i>*</i></label><input id="site" maxlength="60" placeholder="예: 서울 성북구 장위동 ○○ 일원"><small>지번·도로명 주소 또는 단지명. 좌표가 있으면 문의 내용에 적어 주세요.</small></div>
+          <div class="f full"><label class="l" for="types">평형별 전용면적·예정 분양가</label><textarea id="types" maxlength="400" placeholder="예: 59㎡ 8억 9,000만 / 84㎡ 12억 5,000만 / 114㎡ 미정"></textarea><small>미정이면 비워 두셔도 돼요. 미분양 패키지는 현재 분양가(할인가)와 남은 세대를 적어 주세요.</small></div>
+          <div class="f"><label class="l" for="due">희망 납기</label><select id="due"><option value="">골라 주세요</option><option>1주 안</option><option>2주 안</option><option>1개월 안</option><option>미정·협의</option></select></div>
+          <div class="f"><label class="l" for="role">회사 구분</label><select id="role"><option value="">골라 주세요</option><option>시행사</option><option>분양대행사</option><option>시공사</option><option>조합·추진위</option><option>그 밖</option></select></div>
+          <div class="f full"><label class="l" for="memo">문의 내용</label><textarea id="memo" maxlength="500" placeholder="공고 예정 시기, 궁금한 점 등"></textarea></div>
+        </div>
+        <div class="pv">
+          <b>개인정보 수집·이용 안내</b>
+          <table><tbody>
+            <tr><th>항목</th><td>회사명, 담당자 이름, 연락처(전화번호 또는 이메일), 신청 상품·사업지·평형·납기·문의 내용</td></tr>
+            <tr><th>목적</th><td>리포트 신청 상담, 견적·계약 안내 연락</td></tr>
+            <tr><th>보관 기간</th><td>문의 처리 완료 후 1년 (요청하시면 바로 파기). 계약하면 거래 증빙은 「국세기본법」에 따라 5년</td></tr>
+          </tbody></table>
+          문의 정보는 구글 시트(Google LLC, 국외 서버)에 보관돼요. 동의하지 않으실 수 있으며, 이 경우 카카오톡 채널·전화로 문의해 주세요. 자세한 내용은 <a href="../../privacy/">개인정보처리방침</a>을 확인해 주세요. 사업지·분양가 정보는 리포트 작성에만 쓰고 다른 의뢰인·광고에 쓰지 않아요.
+        </div>
+        <label class="agree"><input type="checkbox" id="agree"> (필수) 위 개인정보 수집·이용에 동의합니다.</label>
+        <div class="hp" aria-hidden="true"><label for="hpf">이 칸은 비워 두세요</label><input id="hpf" tabindex="-1" autocomplete="off"></div>
+        <button class="btn blue big" type="submit" id="send">신청 보내기</button>
+        <div class="msg" id="msg" role="status" aria-live="polite"></div>
+      </form>
+      <div id="done" hidden></div>
+      <div class="alt">
+        <a class="btn ghost" id="kakaoAsk" href="https://pf.kakao.com/_UxnzuV" target="_blank" rel="noopener noreferrer" data-track="dev_kakao">카카오톡 채널로 상담</a>
+        <a class="btn ghost" id="telAsk" href="tel:0234445008">전화 02-3444-5008</a>
+      </div>
+    </div>
+  </section>
+
+  <p class="src">리포트는 공개 자료(국토교통부·한국부동산원 청약홈·통계청·정책브리핑 등)와 익명 집계만으로 만들며, 감정평가·투자 자문이 아니에요. 집예보 미래가치 점수·순위는 의뢰·광고와 무관해요.<br>
+  <a href="../../ad/">광고·제휴 안내</a> · <a href="../../bunyang/apply/">분양 광고 신청</a> · <a href="../../about/">서비스 소개</a></p>
+</main>
+<footer class="foot">★ 집예보 · <a href="../../">홈</a> · <a href="../../ad/">광고·제휴</a></footer>
+
+<script src="../../assets/agents.js"></script>
+<script>
+/* DEV-PRICE:START — 가격은 여기 한 곳(원, VAT 별도). list = 정가, launch = 런칭가(until 까지). tools/devpro-test.js 가 이 구간을 읽어요. */
+const DEV_PRICES = {
+  dev_report:  { list: 1500000, launch: 990000 },
+  dev_extra:   { list: 200000,  launch: 150000 },
+  dev_update:  { list: 400000,  launch: 290000 },
+  unsold_pack: { list: 900000,  launch: 490000 },
+  until: '2027-03-31'
+};
+/* 신청 상품 → 서버 관심 상품 키. 서버(agent-backend.gs AQ_PROD)가 아직 모르는 키는 버려지므로 'etc'(기타·제휴)를 같이 보내 접수가 되게 함 */
+const DEV_PROD = { dev_report: '분양가 적정성·입지 분석 리포트', unsold_pack: '미분양 해소 패키지' };
+function won(n) { n = Math.round(+n); if (n >= 1e4 && n % 1e4 === 0) return (n / 1e4).toLocaleString('ko-KR') + '만 원'; return n.toLocaleString('ko-KR') + '원'; }
+function serverProducts(sel) { return [...sel.filter(p => DEV_PROD[p]), 'etc']; }
+function devMemo(b) {
+  return [`[시행사 리포트 신청] ${b.sel.map(p => DEV_PROD[p]).join(', ')}`, `회사 구분: ${b.role || '-'}`, `사업지: ${b.site}`,
+          `평형·분양가: ${b.types || '-'}`, `희망 납기: ${b.due || '-'}`, '', b.memo || ''].join('\n').slice(0, 1000);
+}
+/* DEV-PRICE:END */
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+document.querySelectorAll('[data-pp]').forEach(el => {
+  const p = DEV_PRICES[el.dataset.pp]; if (!p) return;
+  el.innerHTML = `<span class="price-v">${won(p.launch)}<s>${won(p.list)}</s></span><span class="pnote">런칭가 · 정가 ${won(p.list)}</span>`;
+});
+document.querySelectorAll('[data-guide=until]').forEach(el => { const d = DEV_PRICES.until.split('-'); el.textContent = `${d[0]}년 ${+d[1]}월 ${+d[2]}일`; });
+addEventListener('DOMContentLoaded', () => {
+  const B = window.JDJ_BIZ || {};
+  if (B.kakao && /^https:\/\/pf\.kakao\.com\//.test(B.kakao)) $('kakaoAsk').href = B.kakao;
+  if (B.tel) { $('telAsk').href = 'tel:' + B.tel.replace(/[^0-9+]/g, ''); $('telAsk').textContent = '전화 ' + B.tel; }
+});
+
+const formula = v => /^[=+\-@]/.test(String(v).trim());
+const emailOk = v => /^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(v);
+const phoneOk = v => /^(01[016789]\d{7,8}|0[2-6]\d{7,9}|070\d{8}|1[5-9]\d{6})$/.test(v.replace(/[^0-9]/g, '')) && !/[A-Za-z@]/.test(v);
+const sel = () => [...document.querySelectorAll('#prod input:checked')].map(x => x.value);
+function check() {
+  for (const [id, n] of [['company', '회사명'], ['manager', '담당자 이름']]) {
+    const v = $(id).value.trim();
+    if (!v) return [id, `${n}을(를) 입력해 주세요.`];
+    if (formula(v)) return [id, `${n}은(는) = + - @ 기호로 시작할 수 없어요.`];
+  }
+  const c = $('contact').value.trim();
+  if (!c) return ['contact', '연락처(전화번호 또는 이메일)를 입력해 주세요.'];
+  if (!(emailOk(c) || phoneOk(c))) return ['contact', '전화번호 또는 이메일 형식을 확인해 주세요.'];
+  if (!sel().length) return ['prod', '신청 상품을 하나 이상 골라 주세요.'];
+  if (!$('site').value.trim()) return ['site', '사업지 주소를 입력해 주세요.'];
+  for (const [id, n] of [['site', '사업지 주소'], ['types', '평형·분양가'], ['memo', '문의 내용']]) if (formula($(id).value)) return [id, `${n}은(는) = + - @ 기호로 시작할 수 없어요.`];
+  if (!$('agree').checked) return ['agree', '개인정보 수집·이용에 동의해 주셔야 신청을 보낼 수 있어요.'];
+  return null;
+}
+function fallback(b, why) {
+  const B = window.JDJ_BIZ || {};
+  const body = `회사명: ${b.company}\n담당자: ${b.manager}\n연락처: ${b.contact}\n\n${b.memo}`;
+  const mail = B.email ? `mailto:${B.email}?subject=${encodeURIComponent('[집예보 시행사 리포트 신청] ' + b.company)}&body=${encodeURIComponent(body)}` : '';
+  const m = $('msg'); m.className = 'msg err';
+  m.innerHTML = `${esc(why)} ${mail ? '<a href="' + esc(mail) + '">이메일로 보내기</a> 또는 ' : ''}카카오톡 채널로 문의해 주세요. 입력하신 내용은 이메일 본문에 그대로 담겨요.`;
+}
+document.querySelectorAll('#form input, #form textarea, #form select').forEach(el => el.addEventListener('input', () => el.removeAttribute('aria-invalid')));
+$('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const m = $('msg'); m.className = 'msg'; m.textContent = '';
+  document.querySelectorAll('[aria-invalid]').forEach(x => x.removeAttribute('aria-invalid'));
+  const bad = check();
+  if (bad) {
+    m.className = 'msg err'; m.textContent = bad[1];
+    const el = $(bad[0]); if (el) { el.setAttribute('aria-invalid', 'true'); (el.matches('input,select,textarea') ? el : el.querySelector('input')).focus(); }
+    return;
+  }
+  const f = { sel: sel(), site: $('site').value.trim(), types: $('types').value.trim(), due: $('due').value, role: $('role').value, memo: $('memo').value.trim() };
+  const body = { action: 'adInquiry', type: 'inquiry', company: $('company').value.trim(), manager: $('manager').value.trim(), contact: $('contact').value.trim(),
+    products: serverProducts(f.sel), region: f.site.slice(0, 60), period: '미정·협의', memo: devMemo(f), agree: { privacy: true }, hp: $('hpf').value };
+  if (!window.JDJ_AGENTS || !JDJ_AGENTS.ready) { fallback(body, '신청 서버에 연결하지 못했어요.'); return; }
+  $('send').disabled = true; m.textContent = '보내는 중이에요…';
+  try {
+    const r = await JDJ_AGENTS.post(body);
+    $('form').hidden = true; $('done').hidden = false;
+    $('done').innerHTML = `<div class="done"><b>신청이 접수됐어요</b><br>접수 번호 ${esc(r.id)} · ${esc(body.company)}<br>영업일 기준 2일 안에 견적과 함께 남겨 주신 연락처로 안내드릴게요.</div>`;
+    if (window.jdjStat) jdjStat('feature_use', { feature: 'dev_inquiry' });   // 연락처·회사명·사업지는 보내지 않음
+    $('ask').scrollIntoView();
+  } catch (err) {
+    const msg = String(err && err.message || '');
+    if (!msg || msg === 'unknown' || /fetch|network|json|load/i.test(msg)) fallback(body, '지금은 온라인 접수가 잠시 어려워요.');
+    else { m.className = 'msg err'; m.textContent = msg; }
+  } finally { $('send').disabled = false; }
+});
+</script>
+</body>
+</html>
