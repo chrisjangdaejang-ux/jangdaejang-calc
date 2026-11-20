@@ -30,12 +30,12 @@
 <meta name="twitter:description" content="양도세·매도 후 순자금·새 대출·취득세까지 한 번에. 1주택자 갈아타기 무료 계산기.">
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/switch.png">
 <script>window.JDJ_CONFIG = { tool:'switch', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
-<script src="../assets/track.js"></script>
-<script src="../assets/stat.js?v=5"></script>
-<script src="../assets/share.js?v=3"></script>
+<script src="../assets/track.js?v=2"></script>
+<script src="../assets/stat.js?v=6"></script>
+<script src="../assets/share.js?v=4"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/config.js?v=1"></script>
-<script src="../assets/auth.js?v=1"></script>
+<script src="../assets/auth.js?v=2"></script>
 <script src="../assets/kchat.js?v=1"></script>
 <script src="../assets/region-notes.js"></script>
 <script src="../tax/adjusted-areas.js"></script>
@@ -740,7 +740,15 @@ const RANK = (v, base) => window.JDJ_PLAIN ? JDJ_PLAIN.rank(v, base) : (v >= 50 
 const RBASE = (code, kind) => window.JDJ_PLAIN && AG_IX ? JDJ_PLAIN.rankBase(AG_IX, code, kind) : null;
 /* 공유: 내 금액은 담지 않고 갈아타기 계산기 주소만 */
 /* 공유(assets/share.js): 매도가·대출·손에 남는 돈 같은 금액은 빼고 '몇 곳을 찾았는지'만. 받는 분은 갈아타기 계산기 첫 화면으로 */
-if (window.JDJ_SHARE) JDJ_SHARE.setup({tool:'switch'});
+/* 가족과 자세히 공유: 매도가·산 가격·대출·연소득 같은 입력칸과 고른 버튼·지역·지금 집을 주소 # 뒤에만 담아 받는 분 화면에 같은 계산을 띄움 */
+const SW_IDS = ['sale','acq','exp','acqDate','saleDate','live','oldLoan','oldMon','extra','etc','income','debt','rate','term','target'];
+if (window.JDJ_SHARE) JDJ_SHARE.setup({tool:'switch', detail(){
+  if (!last || !last.c) return null;
+  const RG = window.JDJ_REGION || {}, q = {};
+  if (RG.sido) q.sd = RG.any ? 'all' : RG.sido; if (RG.sgg) q.g = RG.sgg;
+  const m = GAP.mine && GAP.mine.u; if (m && m[8] != null){ q.src = 'mine'; q.d = [m[0], m[1], m[8], m[2]].join('|'); q.b = m[3]; }
+  return {path:'switch/', q, f: JDJ_SHARE.formSnap(document, SW_IDS), x:{seg:{adj, sadj, rtype, area, houses:String(houses)}}};
+}});
 function shareSw(){
   if (!window.JDJ_SHARE) return;
   const n = REC_LAST && REC_LAST.picked && REC_LAST.picked.length ? REC_LAST.total : 0;
@@ -927,7 +935,7 @@ makePicker($('pkMine'),'mine'); makePicker($('pkTarget'),'target');
 makePicker($('pkHome'),'home',(sd,g)=>setHomeLoc(sd,g,null));
 $('pkHome').querySelector('.pq').placeholder='단지명 검색 (먼저 시·도와 구·시·군을 고르세요)';
 /* 내 집 시세에서 넘어온 단지(?src=mine&sd=시도id&d=구|동|지번|단지&b=평형)를 STEP 1 지금 집으로 바로 넣음 */
-(async function fromMine(){
+const FROM_MINE = (async function fromMine(){
   const q=new URLSearchParams(location.search), sdId=q.get('sd'), dk=q.get('d')||'', band=q.get('b')||'';
   if(!sdId||!dk) return;
   const [code,dong,jb,apt]=dk.split('|'); if(!/^\d{5}$/.test(code||'')) return;
@@ -1097,6 +1105,17 @@ $('copyBtn').addEventListener('click',async()=>{
 
 $('saleDate').value=TODAY;
 setTermOptions(); autoAdj(); render();
+/* 공유받은 조건으로 보기(이 탭에서만): 지금 집(주소의 d·b)을 넣은 뒤 입력칸 → 버튼 순서로 채움 (assets/share.js) */
+(function(){
+  const SV = window.JDJ_SHARE && JDJ_SHARE.viewing(); if (!SV || !SV.f) return;
+  FROM_MINE.catch(()=>{}).then(() => {
+    JDJ_SHARE.formFill(SV.f);
+    const sg = (SV.x && SV.x.seg) || {};
+    const SET = {adj:v=>adj=v, sadj:v=>sadj=v, rtype:v=>rtype=v, area:v=>area=v, houses:v=>houses=+v};   // 누르지 않고 값만(받는 분 통계에 안 잡히게)
+    Object.keys(SET).forEach(id => { const v = sg[id] == null ? null : String(sg[id]); if (v == null || !$(id) || ![...$(id).children].some(x => x.dataset.v === v)) return; setSeg(id, v); SET[id](v); });
+    render();
+  });
+})();
 </script>
 <script src="../assets/plain-words.js?v=10"></script>
 <script>document.addEventListener("DOMContentLoaded",()=>{ if(window.JDJ_PLAIN) JDJ_PLAIN.autoGloss(document.querySelector(".wrap")); });</script>

@@ -19,12 +19,12 @@
 <meta property="og:description" content="실거래 시세·전세가율·깡통전세 위험 신호·계약 전 체크리스트와 우리 동네 전세 흐름을 한 화면에서 무료로 확인하세요.">
 <meta property="og:type" content="website">
 <script>window.JDJ_CONFIG = { tool:'jeonse', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
-<script src="../assets/track.js"></script>
-<script src="../assets/stat.js?v=5"></script>
-<script src="../assets/share.js?v=3"></script>
+<script src="../assets/track.js?v=2"></script>
+<script src="../assets/stat.js?v=6"></script>
+<script src="../assets/share.js?v=4"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/config.js?v=1"></script>
-<script src="../assets/auth.js?v=1"></script>
+<script src="../assets/auth.js?v=2"></script>
 <script src="../assets/kchat.js?v=1"></script>
 <script src="../assets/mine-core.js?v=14"></script>
 <script src="../assets/price-sheet.js?v=12"></script>
@@ -361,7 +361,16 @@ async function showUnit(key, band, opt){
   if (window.jdjStat){ jdjStat('feature_use', {feature:'jeonse'}); jdjStat('interest_profile', {from:'jeonse', sido:jdjStat.sido(sidoName(S.code)), sgg:sggName(S.code)}); }
   getJ('rent/' + R.kindOf(kind).sub + 'h/' + S.code + '.json').then(h => { if (CUR && CUR.key === key){ CUR.h = h; drawCharts(); $('res').querySelector('[data-span="0"]') && ($('res').querySelector('[data-span="0"]').hidden = false); } }).catch(() => {});
 }
-if (window.JDJ_SHARE) JDJ_SHARE.setup({tool:'jeonse'});
+/* 공유: 요약(이 집 공개 실거래·전세가율만) 또는 가족과 자세히(내가 넣은 보증금·월세·금리·공시가격·선순위채권을 주소 # 뒤에만).
+   넣은 값이 없으면 요약만 */
+const JE_IDS = ['cJe','cWd','cWr','cRt','pubV','senV'];
+if (window.JDJ_SHARE) JDJ_SHARE.setup({tool:'jeonse', keep:['k','sd','g','d','b'], detail(){
+  const f = JDJ_SHARE.formSnap($('res'), JE_IDS); if (!Object.keys(f).length) return null;
+  return {path:'jeonse/', q: JDJ_SHARE.pick(['k','sd','g','d','b']), f};
+}});
+let SV_FILLED = false;
+/* 공유받은 조건으로 보기: 결과가 처음 그려질 때 한 번 내 값 칸을 채움 */
+function svFill(){ const SV = window.JDJ_SHARE && JDJ_SHARE.viewing(); if (SV_FILLED || !SV || !SV.f) return; SV_FILLED = true; JDJ_SHARE.formFill(SV.f, $('res')); }
 function render(){
   const c = CUR, u = c.units.find(x => x[2] === S.band), sm = R.summary(u, c.meta), kind = c.kind, k = R.kindOf(kind);
   const g = RX.sgg[c.code] || {};
@@ -421,7 +430,7 @@ function render(){
         jr ? `이 집 전세가율 ${jr.pct}% (HUG 보증 가입 기준 90%와 비교)` : '전세가율·보증 가입 기준 체크',
         '계약 전 꼭 볼 전세사기 예방 체크리스트까지'],
       params: JDJ_SHARE.pick(['k','sd','g','d','b'])}, {root: $('res')}); }
-  drawCharts(); wire(u, sm); areaPanel(c.code, $('areaBox')); fillAgents(c);
+  drawCharts(); wire(u, sm); svFill(); areaPanel(c.code, $('areaBox')); fillAgents(c);
   if (window.JDJPolicy) JDJPolicy.mount($('polSec'), {mode:'jeonse', codes:[{sgg:c.code, dong:c.d.dong}], name:() => sggName(c.code) + ' ' + c.d.dong, sggName:() => sggName(c.code),
     head:'<h2>전월세에 영향을 주는 정책<small>' + esc(sggName(c.code) + ' ' + c.d.dong) + ' 전세·월세 계약과 전세대출에 관련된 정책이에요</small></h2>'}).catch(e => console.warn('policy', e));
 }
@@ -543,7 +552,7 @@ async function showD(g, dong){
   <div id="agentSec"></div>`;
   $('res').hidden = false;
   CUR.dser = { months, J: x.J };
-  drawCharts(); wire(null, sm); areaPanel(g, $('areaBox')); fillAgents(CUR);
+  drawCharts(); wire(null, sm); svFill(); areaPanel(g, $('areaBox')); fillAgents(CUR);
   if (window.JDJPolicy) JDJPolicy.mount($('polSec'), {mode:'jeonse', codes:[{sgg:g, dong:dong}], name:() => sggName(g) + ' ' + dong, sggName:() => sggName(g),
     head:'<h2>전월세에 영향을 주는 정책<small>' + esc(sggName(g) + ' ' + dong) + ' 전세·월세 계약과 전세대출에 관련된 정책이에요</small></h2>'}).catch(e => console.warn('policy', e));
   if (window.jdjStat){ jdjStat('feature_use', {feature:'jeonse'}); }

@@ -29,9 +29,9 @@
 <meta name="twitter:description" content="양도세 매도 타이밍 그래프 · 다주택 매도 순서 비교 · 취득세 · 재산세 · 종부세 · 증여세. 회원가입 없이 무료, 입력값은 이 기기 밖으로 보내지 않습니다.">
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/tax.png">
 <script>window.JDJ_CONFIG = { tool:'tax', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
-<script src="../assets/track.js"></script>
-<script src="../assets/stat.js?v=5"></script>
-<script src="../assets/share.js?v=3"></script>
+<script src="../assets/track.js?v=2"></script>
+<script src="../assets/stat.js?v=6"></script>
+<script src="../assets/share.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
@@ -510,7 +510,9 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
 /* 공유(assets/share.js): 결과가 보이면 '어떤 세금을 계산했는지'만. 매도가·공시가격·세액 같은 금액은 담지 않음. 받는 분은 같은 계산기(#cgt 등)로 */
 (function(){
   const SH = window.JDJ_SHARE; if (!SH) return;
-  SH.setup({tool:'tax'});
+  /* 가족과 자세히 공유: 지금 보이는 계산기의 입력값(매도가·취득가·공시가격 등)과 고른 답을 주소 # 뒤에만 담아 받는 분 화면에서 그대로 다시 계산 (tax-ui.js JDJ_TAXUI) */
+  SH.setup({tool:'tax', detail(){ if (!cur || !window.JDJ_TAXUI) return null; const x = JDJ_TAXUI.snap(cur); return x ? {path:'tax/', h:cur, x} : null; }});
+  { const SV = SH.viewing(); if (SV && SV.x && window.JDJ_TAXUI) JDJ_TAXUI.restore(SV.x); }
   const $ = id => document.getElementById(id);
   const K = [
     ['cgtOut','cgt','언제 팔면 양도세가 줄어드는지 날짜로 계산했어요',['앞으로 5년, 달마다 달라지는 예상 양도세','비과세·장기보유특별공제가 바뀌는 날까지','법 조항 근거와 함께']],

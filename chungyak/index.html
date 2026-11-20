@@ -29,9 +29,9 @@
 <meta name="twitter:description" content="내 가점으로 당첨 가능성 높은 단지는? 공고별 예상 커트라인과 비교 + 특별공급 유형 진단">
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/chungyak.png">
 <script>window.JDJ_CONFIG = { tool:'chungyak', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
-<script src="../assets/track.js"></script>
-<script src="../assets/stat.js?v=5"></script>
-<script src="../assets/share.js?v=3"></script>
+<script src="../assets/track.js?v=2"></script>
+<script src="../assets/stat.js?v=6"></script>
+<script src="../assets/share.js?v=4"></script>
 <script src="../assets/sale-status.js?v=1"></script>
 <script src="../assets/area-watch.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -425,7 +425,8 @@ function showResult(scroll) {
 }
 $('next').onclick = next;
 /* 공유(assets/share.js): 내 가점·답·생년월일은 담지 않고 '몇 곳을 찾았는지'만. 받는 분은 계산기 첫 화면으로 */
-const SH = window.JDJ_SHARE; if (SH) SH.setup({ tool: 'chungyak' });
+/* 가족과 자세히 공유: 내 답(가점 계산에 쓴 무주택기간·부양가족·통장 등)을 주소 # 뒤에만 담아 받는 분 화면에 같은 결과를 띄움(이 기기 저장값은 그대로) */
+const SH = window.JDJ_SHARE; if (SH) SH.setup({ tool: 'chungyak', detail: () => LAST ? { path: 'chungyak/', ls: { jdj_cy: JSON.stringify(A) }, x: { r: 1 } } : null });
 let GEN_SUM = null;
 function shareCy() {
   if (!SH || !LAST) return;
@@ -460,7 +461,8 @@ function renderElig() {
   $('elig').innerHTML = bestH + rows.map(r => `<div class="chk"><div class="hd"><span class="pill ${r.g}">${L[r.g]}</span><b>${esc(r.t)}</b></div><ul>${r.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul>${r.how ? `<div class="how2"><b>선정 방식</b> · ${esc(r.how)}</div>` : ''}<div class="law">근거: 주택공급에 관한 규칙(2026.6.15 시행) ${esc(r.law.replace(/^규칙 /, ''))}</div></div>`).join('')
     + `<div class="caution">‘가능성 있음’도 확정이 아닙니다. 지역 거주기간, 소득·자산, 재당첨 제한, 단지별 공급 비율은 입주자모집공고문이 기준입니다.</div>`;
   if ($('gen') && GEN_SCOPE === 'mine') renderGen();
-  if (!$('hSido').dataset.touched) { $('hSido').value = e.sido; renderHist(); }
+  const hs = $('hSido');   // 과거 당첨 가점 칸은 자료를 불러온 뒤 생김(돌아오기·공유받은 결과는 그보다 먼저 그려질 수 있음)
+  if (hs && !hs.dataset.touched) { hs.value = e.sido; renderHist(); }
 }
 EIDS.forEach(id => { $(id).addEventListener(id === 'eDep' || id === 'eCnt' ? 'input' : 'change', renderElig); });
 
@@ -662,11 +664,12 @@ async function init() {
   if (HS && (typeof HS.cyq === 'number' || HS.cyr)) { try { const k = JSON.parse(sessionStorage.getItem(SKEY) || 'null'); if (k && k.A) { Object.assign(A, k.A, { ref: A.ref }); QI = HS.cyr ? (k.QI || 0) : HS.cyq; back2res = !!HS.cyr; } } catch (e) {} }
   else { try { history.replaceState({ cyq: 0 }, ''); } catch (e) {} }
   renderQ();
+  if (!back2res && SH && SH.viewing() && (SH.viewing().x || {}).r) { QI = Math.max(0, visible().length - 1); back2res = true; }   // 공유받은 답으로 바로 결과
   if (back2res) showResult(false);
   if (window.JDJ_AREA) JDJ_AREA.mountStrip(document.getElementById('areaStrip'));   // 관심 지역 새 공고 표시(없으면 설정 안내)
   try { const r = await fetch(DATA + 'index.json'); if (r.ok) IDX = await r.json(); } catch (e) {}
   histUI();
-  if (LAST) renderHist();
+  if (LAST) { const hs = $('hSido'); if (hs && !hs.dataset.touched && $('eSido')) hs.value = $('eSido').value; renderHist(); }
   try { const r = await fetch(DATA + 'notices.json'); if (r.ok) NOT = (await r.json()).rows || []; } catch (e) {}
   /* 지역 목록은 공고가 있는 곳만이 아니라 항상 전국 시·도 전체 (공고가 없으면 '현재 공고 없음') */
   const t0 = today().replace(/-/g, ''), live = NOT.filter(n => isLive(n, t0));

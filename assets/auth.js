@@ -118,8 +118,10 @@
   const localHomes = () => { const m = M(); return m ? m.parseStore(ls.get(HOME_KEY)) : []; };
   const placeId = h => [h.code, h.dong, h.jibun, h.apt, h.band].join('|');
   /** 로그인 중이면 내 집 목록 맞추기: 처음 로그인한 기기·저장 못 한 변경이 있으면 합치고, 아니면 계정에 저장된 목록을 따름. 맞춘 목록을 돌려줌 */
+  /* 공유받은 조건으로 보는 중(assets/share.js)이면 내 계정의 내 집 목록과 섞지 않음 */
+  const sharedView = () => !!(root.JDJ_SHARE && root.JDJ_SHARE.viewing && root.JDJ_SHARE.viewing());
   function syncHomes() {
-    if (!user() || !M()) return Promise.resolve(null);
+    if (!user() || !M() || sharedView()) return Promise.resolve(null);
     return load().then(st => {
       const m = M(), local = localHomes(), server = m.parseStore(m.dumpStore(st.data.homes || []));
       const merge = ss.get(FIRST) === '1' || ls.get(DIRTY) === '1';
@@ -134,7 +136,7 @@
   }
   /** 이 기기 내 집 목록이 바뀐 뒤 부르기: 로그인 중이면 계정에도 저장 */
   function pushHomes() {
-    if (!user() || !M()) return Promise.resolve(false);
+    if (!user() || !M() || sharedView()) return Promise.resolve(false);
     ls.set(DIRTY, '1');
     const list = localHomes();
     return update(d => { d.homes = list; }).then(() => { ls.del(DIRTY); return true; }).catch(() => false);

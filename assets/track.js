@@ -2,6 +2,20 @@
    각 페이지에서 window.JDJ_CONFIG = { tool, GA4_ID, CLARITY_ID } 를 먼저 선언합니다.
    채널 구분 링크: 주소 끝에 ?utm_source=yt (또는 #yt)
    yt 유튜브 · ig 인스타그램 · blog 블로그 · fb 페이스북 · kakao 카카오톡 · naver 네이버 · cafe 카페 · threads 스레드 · band 밴드 */
+/* '가족과 자세히 공유' 링크(#jv=…, assets/share.js): GA·Clarity를 켜기 전에 주소에서 # 값을 지우고 화면용으로만 넘김.
+   # 뒤 값은 원래 서버로 가지 않지만, 분석 도구가 주소를 읽기 전에 없애 두어 내 금액이 어디에도 기록되지 않게 함.
+   공개 값(q: 지역·단지 등, 매수가·시기 bp·bd 와 리포트의 i·c·d·n·e 제외)만 ? 뒤로 옮겨 각 화면이 원래 방식대로 복원 */
+(function(){ try{
+  const h = location.hash; if (h.indexOf('#jv=') !== 0) return;
+  let s = h.slice(4).replace(/-/g,'+').replace(/_/g,'/'); while (s.length % 4) s += '=';
+  let p = null; try{ p = h.length <= 6000 ? JSON.parse(decodeURIComponent(escape(atob(s)))) : null; }catch(_){ p = null; }
+  if (!p || typeof p !== 'object' || p.v !== 1) p = null;
+  const q = new URLSearchParams(location.search), PERS = p && p.t === 'report' ? ['i','c','d','n','e','bp','bd'] : ['bp','bd'];   // 리포트의 d 는 대출, 내 집 시세·전월세의 d 는 단지
+  if (p && p.q && typeof p.q === 'object') for (const k of Object.keys(p.q)) if (!PERS.includes(k) && !/^utm_/.test(k)) q.set(k, String(p.q[k]));
+  const qs = q.toString(), hh = p && /^[a-z]{1,12}$/.test(p.h || '') ? '#' + p.h : '';
+  history.replaceState(history.state, '', location.pathname + (qs ? '?' + qs : '') + hh);
+  window.JDJ_SHARED_IN = p;
+}catch(_){} })();
 (function(){
   const C = window.JDJ_CONFIG = window.JDJ_CONFIG || {};
   const CH = {yt:'유튜브',youtube:'유튜브',ig:'인스타그램',instagram:'인스타그램',blog:'블로그',fb:'페이스북',facebook:'페이스북',kakao:'카카오톡',naver:'네이버',cafe:'카페',threads:'스레드',band:'밴드',claude:'기존 Claude 링크'};

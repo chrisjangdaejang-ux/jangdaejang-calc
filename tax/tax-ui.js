@@ -358,7 +358,8 @@
     q('.wprev').addEventListener('click', () => { if (twBack(form.id, cur)) return; if (cur) { cur--; render(); } });
     TW[form.id] = (n, soft) => { if (soft) { if (!form.hidden) { cur = 0; render(); } return; } form.hidden = false; out.hidden = true; cur = n; render(); };
     render();
-    return { st, render, reset: () => { form.hidden = false; out.hidden = true; cur = 0; render(); window.scrollTo(0, 0); } };
+    return { st, render, reset: () => { form.hidden = false; out.hidden = true; cur = 0; render(); window.scrollTo(0, 0); },
+      finish: () => { form.hidden = true; out.hidden = false; o.done(st); } };
   }
   const WZ = {};
   document.addEventListener('click', e => { const b = e.target.closest('.redo[data-wiz]'); if (b && WZ[b.dataset.wiz]) WZ[b.dataset.wiz].reset(); });
@@ -536,6 +537,53 @@
         debtHtml;
     }
   });
+
+  /* ---------- 가족과 자세히 공유(assets/share.js): 지금 보이는 계산기의 입력칸·고른 버튼을 담고, 받는 쪽은 그대로 다시 계산 ---------- */
+  const SECS = { cgt: 'vCgt', order: 'vOrder', acq: 'vAcq', prop: 'vProp', cpt: 'vCpt', gift: 'vGift' };
+  const WZK = { prop: 'pWiz', cpt: 'cWiz', gift: 'gWiz' };
+  const BTN = { cgt: [['oHouses', 'v', v => { S.houses = v; }], ['oAcqAdj', 'v', v => { S.acqAdjAns = v; }], ['gChips', 'g', v => { growth = +v; }]],
+    order: [['oInt', 'v', v => { interval = +v; }]], acq: [['aN', 'v', v => { aN = +v; aUpd(); }]], gift: [['gRecv', 'v', v => { gRecvN = +v; }]] };
+  const fieldsOf = sec => [...sec.querySelectorAll('input, select')].filter(el => !/^(button|submit|hidden|email|search|file)$/.test(el.type));
+  function snap(v) {
+    const sec = $(SECS[v]); if (!sec) return null;
+    const out = { v, f: fieldsOf(sec).map(el => el.type === 'checkbox' || el.type === 'radio' ? (el.checked ? 1 : 0) : el.value), b: {} };
+    (BTN[v] || []).forEach(([id, k]) => { const on = $(id) && $(id).querySelector('.on[data-' + k + ']'); if (on) out.b[id] = on.dataset[k]; });
+    if (WZK[v]) out.st = Object.assign({}, WZ[WZK[v]].st);
+    if (v === 'order') out.n = HL.length;
+    if (v === 'cpt') out.n = $('cList').children.length;
+    return out;
+  }
+  function restore(d) {
+    const v = d && d.v; if (!SECS[v]) return false;
+    show(v, false);
+    if (v === 'order') while (HL.length < Math.min(+d.n || 2, MAXH)) addHouse();
+    if (v === 'cpt') while ($('cList').children.length < Math.min(+d.n || 1, 10)) cRow();
+    const vals = Array.isArray(d.f) ? d.f : [];
+    fieldsOf($(SECS[v])).forEach((el, i) => {   // 시·도 → 시·군·구 순서라 시·도를 바꾼 뒤 구 목록이 생기고 나서 구가 들어감
+      if (i >= vals.length || vals[i] == null) return;
+      if (el.type === 'checkbox' || el.type === 'radio') el.checked = !!vals[i]; else el.value = String(vals[i]);
+      ['input', 'change'].forEach(t => el.dispatchEvent(new Event(t, { bubbles: false })));
+    });
+    (BTN[v] || []).forEach(([id, k, set]) => {
+      const x = d.b && d.b[id], g = $(id); if (x == null || !g) return;
+      const bs = [...g.querySelectorAll('[data-' + k + ']')], b = bs.find(y => y.dataset[k] === String(x)); if (!b) return;
+      bs.forEach(y => y.classList.toggle('on', y === b)); set(String(x));
+    });
+    if (WZK[v] && d.st && typeof d.st === 'object') {
+      const w = WZ[WZK[v]], form = $(WZK[v]);
+      Object.keys(d.st).forEach(k => { if (!/^\w{1,12}$/.test(k)) return; const val = String(d.st[k]); w.st[k] = val;
+        const g = form.querySelector('.opts[data-key="' + k + '"]'); if (g) g.querySelectorAll('.opt').forEach(o => o.classList.toggle('on', o.dataset.v === val)); });
+    }
+    try {
+      if (v === 'cgt') { if (!S.houses) return false; runCgt(false); }
+      else if (v === 'order') runOrder();
+      else if (v === 'acq') $('aRun').click();
+      else WZ[WZK[v]].finish();
+    } catch (e) { return false; }
+    window.scrollTo(0, 0);
+    return true;
+  }
+  window.JDJ_TAXUI = { snap, restore, views: Object.keys(SECS) };
 
   /* 주소의 #으로 바로 열기 */
   const h0 = (location.hash || '').slice(1);

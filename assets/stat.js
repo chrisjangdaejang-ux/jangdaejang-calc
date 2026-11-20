@@ -64,6 +64,7 @@
     method:      v => ['share','copy','image'].includes(v),
     tool:        v => SHARE_TOOLS.includes(v),                                                      // 공유한 결과 화면(assets/share.js)
     place:       v => ['top','mid','bottom'].includes(v),                                           // 공유 단추 위치: 상단 아이콘·중간 카드·아래 단추
+    mode:        v => ['summary','detail'].includes(v),                                             // 공유 방식: 요약(개인 숫자 없음)·가족과 자세히(값 자체는 보내지 않음)
     n:           v => Number.isInteger(v) && v >= 0 && v <= 10,
     danji:       v => /^\d{5}\|[^|]{1,20}\|[^|]{1,60}$/.test(v),                                    // '단지 이름으로 물어보기'로 찾은 공개 단지(구코드|동|단지명)만 — 내 집·주소·금액은 보내지 않음
     spot:        v => SPOTS.includes(v),                                                            // 시세 흐름 보기 단추 위치
@@ -101,9 +102,9 @@
   Object.assign(jdjStat, {band, hold, score, own, sido, regionGroup});
   window.jdjStat = jdjStat;
 
-  /* 공유 링크로 들어온 방문(assets/share.js 가 붙이는 utm_source=share&utm_campaign=화면) — 화면 이름만, 개인정보 없음 */
+  /* 공유 링크로 들어온 방문(assets/share.js 가 붙이는 utm_source=share&utm_campaign=화면) — 화면 이름·공유 방식만, 개인정보 없음 */
   try{ const q = new URLSearchParams(location.search);
-    if (q.get('utm_source') === 'share') jdjStat('share_visit', {tool: q.get('utm_campaign') || ''}); }catch(_){}
+    if (q.get('utm_source') === 'share') jdjStat('share_visit', {tool: q.get('utm_campaign') || '', mode: window.JDJ_SHARED_IN ? 'detail' : 'summary'}); }catch(_){}
 
   /* 상담 신청 버튼(data-track 에 consult 가 들어간 링크)은 모든 페이지에서 공통으로 집계 */
   document.addEventListener('click', e=>{

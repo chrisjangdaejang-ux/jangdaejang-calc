@@ -6,7 +6,12 @@
      (마지막 안전장치로 금액·'N점'이 들어간 문장은 버립니다. allowNum 은 단지 공개 정보만 쓰는 화면에서만.)
    - 공유: 요약 카드 이미지(1080×1080, canvas)를 미리 만들어 두고, Web Share API 파일 공유가 되면 이미지째,
      안 되면 링크를 복사하고 '복사됐어요'를 알려 드립니다(카드 이미지는 따로 저장 가능).
-   - 통계(assets/stat.js): share_click {tool, place, method} · 공유 링크 유입은 주소의 utm_source=share → share_visit {tool}. */
+   - 통계(assets/stat.js): share_click {tool, place, method, mode} · 공유 링크 유입은 주소의 utm_source=share → share_visit {tool, mode}.
+   - 공유 단추를 누르면 두 가지 중 고름(v4): ① 요약 공유(기본·추천) — 위 방식 그대로, 개인 숫자 없음
+     ② 가족과 자세히 공유 — 화면이 setup({detail}) 로 넘겨 준 내 입력값(매수가·연소득·현금·가점 등)을 주소의 # 뒤(#jv=…)에만 담음.
+        # 뒤는 서버·GA로 가지 않음(브라우저가 보내지 않고, track.js 가 GA를 켜기 전에 주소에서 지움). 카드 이미지에는 개인 숫자 없음.
+     받는 쪽: #jv 값을 읽어 이 탭에서만 화면을 채움(sessionStorage). 이 기기의 저장값(localStorage)은 읽지도 덮어쓰지도 않고
+     따로 둔 임시 칸을 씀 — 상단 '공유받은 조건으로 보고 있어요 · 내 조건으로 보기' 바. */
 (function (root) {
   'use strict';
   var KEY = 'jdj_fin';
@@ -204,7 +209,7 @@
   }
 
   /* ---------- 화면에 단추 붙이기 ---------- */
-  var ST = { tool: '', sum: null, blob: null, blobKey: '', url: '', bound: false };
+  var ST = { tool: '', sum: null, blob: null, blobKey: '', url: '', bound: false, detail: null, keep: [] };
   var CSS = '.jshare-top{font:inherit;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;padding:0 12px;border:0;border-radius:10px;background:var(--gray,#F2F4F6);color:var(--sub,#3E4754);font-size:15px;font-weight:700;cursor:pointer}'
     + '.jshare-top svg{width:20px;height:20px;flex:none}.jshare-top[hidden]{display:none!important}.jshare-tg{display:flex;align-items:center;gap:8px}'
     + '.jshare-card{display:flex;align-items:center;gap:14px;margin:16px 0;padding:16px 18px;border-radius:16px;background:#FBF5E3;border:1px solid #EFE2B8;text-align:left}'
@@ -295,37 +300,40 @@
     clearTimeout(toastT); toastT = setTimeout(function () { el.hidden = true; }, 6000);
     return el;
   }
-  function stat(place, method) {
-    if (root.jdjStat) try { root.jdjStat('share_click', { tool: ST.tool, place: place, method: method }); } catch (e) {}
+  function stat(place, method, mode) {
+    if (root.jdjStat) try { root.jdjStat('share_click', { tool: ST.tool, place: place, method: method, mode: mode === 'detail' ? 'detail' : 'summary' }); } catch (e) {}
   }
-  function shareText() {
+  function shareText(mode, url) {
     var t = TOOLS[ST.tool] || {}, s = ST.sum || { head: '' };
+    if (mode === 'detail') return (s.head ? s.head + '\n' : '') + '내가 넣은 조건 그대로 결과 보기\n' + url;
     return (s.head ? s.head + '\n' : '') + (t.easy ? t.easy + ' · ' : '') + (t.try || '나도 해 보기') + '\n' + ST.url;
   }
-  function copyAndTell(place, text) {
+  function copyAndTell(place, text, mode) {
     return copyText(text).then(function (r) {
       if (r === 'copy') {
-        stat(place, 'copy');
-        var el = toast('<span>링크가 복사됐어요. 카카오톡·문자에 붙여 넣어 보내 보세요.</span>' + (ST.blob ? '<a href="#" data-jshare-save>카드 이미지 저장</a>' : ''));
+        stat(place, 'copy', mode);
+        var el = toast('<span>' + (mode === 'detail' ? '자세히 보기 링크가 복사됐어요. 받는 분이 내 금액을 볼 수 있으니 가족·가까운 분께만 보내 주세요.' : '링크가 복사됐어요. 카카오톡·문자에 붙여 넣어 보내 보세요.') + '</span>' + (ST.blob ? '<a href="#" data-jshare-save>카드 이미지 저장</a>' : ''));
         var a = el.querySelector('[data-jshare-save]');
         if (a) a.onclick = function (e) { e.preventDefault(); saveImage(); };
       } else toast('<span>복사가 안 됐어요. 주소창의 링크를 길게 눌러 복사해 주세요.</span>');
       return r;
     });
   }
-  function run(place) {
+  function run(place, mode) {
     if (!ST.sum) return Promise.resolve('none');
-    var nav = root.navigator || {}, text = shareText(), title = '집예보 · ' + ((TOOLS[ST.tool] || {}).label || '');
+    var url = ST.url;
+    if (mode === 'detail') { url = detailLink(); if (!url) mode = 'summary', url = ST.url; } else mode = 'summary';
+    var nav = root.navigator || {}, text = shareText(mode, url), title = '집예보 · ' + ((TOOLS[ST.tool] || {}).label || '');
     var file = null, canFile = false;
     try { if (ST.blob && root.File) file = new root.File([ST.blob], 'jibyebo-' + ST.tool + '.png', { type: 'image/png' }); } catch (e) { file = null; }
     try { canFile = !!(file && nav.share && nav.canShare && nav.canShare({ files: [file] })); } catch (e) { canFile = false; }
     if (canFile) {
-      return nav.share({ files: [file], title: title, text: text }).then(function () { stat(place, 'image'); return 'image'; }, function (e) {
+      return nav.share({ files: [file], title: title, text: text }).then(function () { stat(place, 'image', mode); return 'image'; }, function (e) {
         if (e && e.name === 'AbortError') return 'cancel';
-        return copyAndTell(place, text);
+        return copyAndTell(place, text, mode);
       });
     }
-    return copyAndTell(place, text);
+    return copyAndTell(place, text, mode);
   }
   function saveImage() {
     if (!ST.blob) return;
@@ -336,8 +344,9 @@
   }
   function setup(o) {
     o = o || {}; if (!TOOLS[o.tool] || !root.document) return;
-    ST.tool = o.tool;
+    ST.tool = o.tool; ST.detail = typeof o.detail === 'function' ? o.detail : null; ST.keep = o.keep || [];
     var d = root.document;
+    if (SV) { if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', svBar); else svBar(); }
     if (!d.getElementById('jshareCss')) { var s = d.createElement('style'); s.id = 'jshareCss'; s.textContent = CSS; d.head.appendChild(s); }
     if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', topBtn); else topBtn();
     if (!ST.bound) {
@@ -346,15 +355,194 @@
         var b = e.target.closest && e.target.closest('[data-jshare]'); if (!b) return;
         e.preventDefault();
         var pl = b.getAttribute('data-jshare');
-        run(PLACES.indexOf(pl) >= 0 ? pl : 'bottom');
+        pl = PLACES.indexOf(pl) >= 0 ? pl : 'bottom';
+        if (detailPayload()) chooser(b, pl); else run(pl, 'summary');
       });
     }
+  }
+
+  /* ---------- 가족과 자세히 공유: 주소 # 뒤에만 담는 내 입력값 ---------- */
+  function b64e(str) {
+    var bin = unescape(encodeURIComponent(str)), b = (root.btoa ? root.btoa(bin) : Buffer.from(bin, 'binary').toString('base64'));
+    return b.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function b64d(s) {
+    s = String(s).replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '=';
+    var bin = root.atob ? root.atob(s) : Buffer.from(s, 'base64').toString('binary');
+    return decodeURIComponent(escape(bin));
+  }
+  var MAXLEN = 6000;
+  function encodeDetail(p) { return 'jv=' + b64e(JSON.stringify(p)); }
+  /* '#jv=…' → {v:1, t, q, h, ls, f, x} (모양이 다르면 null) */
+  function qBlocked(t, k) { return /^utm_/.test(k) || k === 'bp' || k === 'bd' || (t === 'report' && FIN_KEYS.indexOf(k) >= 0); }
+  function cleanDetail(p) {
+    if (!p || typeof p !== 'object' || p.v !== 1 || !TOOLS[p.t]) return null;
+    p = JSON.parse(JSON.stringify(p));
+    ['q', 'ls', 'f', 'x'].forEach(function (k) { if (p[k] != null && (typeof p[k] !== 'object' || Array.isArray(p[k]))) delete p[k]; });
+    /* ? 뒤로 옮길 공개 값: 매수가·시기(bp·bd)는 어디서나, i·c·d·n·e 는 금액 뜻으로 쓰는 맞춤 리포트에서만 버림(내 집 시세·전월세의 d 는 단지 열쇠) */
+    if (p.q) Object.keys(p.q).forEach(function (k) { if (qBlocked(p.t, k)) delete p.q[k]; else p.q[k] = String(p.q[k]); });
+    if (p.ls) Object.keys(p.ls).forEach(function (k) { if (PROTECT.indexOf(k) < 0 || typeof p.ls[k] !== 'string') delete p.ls[k]; });
+    if (p.h != null && !/^[a-z]{1,12}$/.test(p.h)) delete p.h;
+    return p;
+  }
+  function decodeDetail(hash) {
+    hash = String(hash || '').replace(/^#/, '');
+    if (hash.indexOf('jv=') !== 0 || hash.length > MAXLEN) return null;
+    try { return cleanDetail(JSON.parse(b64d(hash.slice(3)))); } catch (e) { return null; }
+  }
+  /* 화면이 넘겨 준 내 입력값(없거나 개인 값이 없으면 null → 요약 공유만) */
+  function detailPayload() {
+    if (!ST.detail || !ST.sum) return null;
+    var o; try { o = ST.detail(); } catch (e) { o = null; }
+    if (!o) return null;
+    var p = { v: 1, t: ST.tool }, q = {};
+    Object.keys(o.q || {}).forEach(function (k) { var v = o.q[k]; if (v != null && v !== '' && !qBlocked(ST.tool, k)) q[k] = String(v); });
+    if (Object.keys(q).length) p.q = q;
+    if (o.h) p.h = o.h;
+    if (o.ls) { var ls = {}; Object.keys(o.ls).forEach(function (k) { if (PROTECT.indexOf(k) >= 0 && typeof o.ls[k] === 'string') ls[k] = o.ls[k]; }); if (Object.keys(ls).length) p.ls = ls; }
+    if (o.f && Object.keys(o.f).length) p.f = o.f;
+    if (o.x) p.x = o.x;
+    p.path = o.path || '';
+    return p;
+  }
+  /* 자세히 공유 링크: 화면 주소 + utm(공개)만 ? 뒤에, 내 입력값은 모두 # 뒤에 */
+  function detailLink() {
+    var p = detailPayload(); if (!p) return '';
+    var path = p.path; delete p.path;
+    var t = TOOLS[ST.tool] || {}, u = new URL(path || t.path || '', siteBase());
+    u.searchParams.set('utm_source', 'share'); u.searchParams.set('utm_medium', 'user_share'); u.searchParams.set('utm_campaign', ST.tool);
+    u.hash = encodeDetail(p);
+    return u.href;
+  }
+
+  /* ---------- 받는 쪽: 이 탭에서만 공유받은 조건으로 보기 ---------- */
+  var SV_KEY = 'jdj_sv';
+  /* 공유받은 값으로 잠시 바꿔 보여 줄 저장값(이 기기 사람의 값은 읽지도 덮어쓰지도 않음) */
+  var PROTECT = ['jdj_fin', 'jdj_cy', 'jdj_myhome', 'jdj_region', 'jdj_hz', 'jdj_cmp', 'jdj_jck', 'jdj_prem_cond'];
+  function ssGet() { try { return JSON.parse(root.sessionStorage.getItem(SV_KEY) || 'null'); } catch (e) { return null; } }
+  /* 주소의 #jv 를 읽어 지우고(공유받은 공개 값 q 는 ? 뒤로 옮겨 화면이 원래 방식대로 복원), 이 탭에 기억.
+     보통은 track.js 가 GA를 켜기 전에 주소를 먼저 고쳐 두고(window.JDJ_SHARED_IN) 여기서는 기억만 함 */
+  function capture(pre) {
+    if (!root.location || !root.history) return null;
+    var l = root.location, p = pre ? cleanDetail(pre) : decodeDetail(l.hash);
+    if (p) {
+      if (!pre) {
+        var q = new URLSearchParams(l.search);
+        Object.keys(p.q || {}).forEach(function (k) { q.set(k, p.q[k]); });
+        var qs = q.toString();
+        try { root.history.replaceState(root.history.state, '', l.pathname + (qs ? '?' + qs : '') + (p.h ? '#' + p.h : '')); } catch (e) {}
+      }
+      try { root.sessionStorage.setItem(SV_KEY, JSON.stringify({ path: l.pathname, p: p })); } catch (e) {}
+      return p;
+    }
+    if (/^#jv=/.test(l.hash)) { try { root.history.replaceState(root.history.state, '', l.pathname + l.search); } catch (e) {} return null; }   // 망가진 값도 주소에서 지움
+    var s = ssGet();
+    if (s && s.p && s.path === l.pathname) return cleanDetail(s.p);
+    if (s) try { root.sessionStorage.removeItem(SV_KEY); } catch (e) {}
+    return null;
+  }
+  var SV = null;
+  try { SV = root.document ? capture(root.JDJ_SHARED_IN && typeof root.JDJ_SHARED_IN === 'object' ? root.JDJ_SHARED_IN : null) : null; } catch (e) { SV = null; }
+  /* 공유받아 보는 동안: 위 저장값은 공유받은 값(없으면 빈 값)을 읽고, 쓰기는 이 탭의 임시 칸에만 */
+  if (SV && root.Storage && root.localStorage) {
+    var MEM = {}; PROTECT.forEach(function (k) { MEM[k] = SV.ls && typeof SV.ls[k] === 'string' ? SV.ls[k] : null; });
+    var SP = root.Storage.prototype, g0 = SP.getItem, s0 = SP.setItem, r0 = SP.removeItem;
+    var isLS = function (st) { try { return st === root.localStorage; } catch (e) { return false; } };
+    SP.getItem = function (k) { return isLS(this) && PROTECT.indexOf(String(k)) >= 0 ? MEM[k] : g0.apply(this, arguments); };
+    SP.setItem = function (k, v) { if (isLS(this) && PROTECT.indexOf(String(k)) >= 0) { MEM[k] = String(v); return; } return s0.apply(this, arguments); };
+    SP.removeItem = function (k) { if (isLS(this) && PROTECT.indexOf(String(k)) >= 0) { MEM[k] = null; return; } return r0.apply(this, arguments); };
+  }
+  function viewing() { return SV; }
+  function myUrl() {
+    var l = root.location, q = new URLSearchParams(l.search), out = new URLSearchParams();
+    (ST.keep || []).forEach(function (k) { if (q.get(k)) out.set(k, q.get(k)); });
+    var s = out.toString();
+    return l.pathname + (s ? '?' + s : '') + (SV && SV.h ? '#' + SV.h : '');
+  }
+  function leave() { try { root.sessionStorage.removeItem(SV_KEY); } catch (e) {} root.location.replace(myUrl()); }
+  function svBar() {
+    var d = root.document; if (!SV || d.getElementById('jshareSv')) return;
+    var b = d.createElement('div'); b.id = 'jshareSv'; b.className = 'jshare-sv noprint'; b.setAttribute('role', 'status');
+    b.innerHTML = '<span><b>공유받은 조건으로 보고 있어요</b> · 이 기기에 저장하지 않아요</span><button type="button" data-jshare-leave>내 조건으로 보기</button>';
+    var h = d.querySelector('header.top');
+    if (h && h.parentNode) h.parentNode.insertBefore(b, h.nextSibling); else d.body.insertBefore(b, d.body.firstChild);
+    b.querySelector('[data-jshare-leave]').onclick = leave;
+  }
+  /* 입력칸 값 담기·채우기(화면 공용): id 있는 input·select. 이메일·검색·비밀번호·data-noshare 는 뺌 */
+  function formSnap(rootEl, ids) {
+    var out = {}, r = typeof rootEl === 'string' ? root.document.querySelector(rootEl) : rootEl; if (!r) return out;
+    [].slice.call(r.querySelectorAll('input[id],select[id],textarea[id]')).forEach(function (el) {
+      if (ids && ids.indexOf(el.id) < 0) return;
+      if (/^(email|search|password|hidden|file|button|submit)$/.test(el.type) || el.hasAttribute('data-noshare')) return;
+      if (el.type === 'checkbox' || el.type === 'radio') { if (el.checked) out[el.id] = 1; else if (el.type === 'checkbox') out[el.id] = 0; return; }
+      if (el.value !== '') out[el.id] = el.value;
+    });
+    return out;
+  }
+  /* 값 넣고 그 칸의 input·change 를 보냄(문서 전체로 퍼지지 않게 — 통계·추적이 받는 사람 것으로 세지 않게) */
+  function formFill(f, rootEl) {
+    var d = root.document, r = rootEl ? (typeof rootEl === 'string' ? d.querySelector(rootEl) : rootEl) : d;
+    Object.keys(f || {}).forEach(function (id) {
+      var el = r && r.querySelector('#' + (root.CSS && root.CSS.escape ? root.CSS.escape(id) : id)); if (!el) return;
+      if (el.type === 'checkbox' || el.type === 'radio') el.checked = !!f[id]; else el.value = f[id];
+      ['input', 'change'].forEach(function (t) { try { el.dispatchEvent(new Event(t, { bubbles: false })); } catch (e) {} });
+    });
+  }
+
+  /* ---------- 공유 방법 고르기(휴대폰 바텀시트 / PC 팝오버) ---------- */
+  var CH_CSS = '.jshare-bk{position:fixed;inset:0;z-index:1001;background:rgba(25,31,40,.42)}'
+    + '.jshare-ch{box-sizing:border-box;position:fixed;z-index:1002;background:#fff;color:#191F28;box-shadow:0 12px 40px rgba(0,0,0,.22);padding:20px 18px 18px;text-align:left;font-size:15px;line-height:1.5}'
+    + '.jshare-ch h3{margin:0 0 12px;font-size:18px;font-weight:800}'
+    + '.jshare-ch .x{position:absolute;right:10px;top:10px;min-width:44px;min-height:44px;border:0;background:none;font-size:22px;color:#4E5968;cursor:pointer}'
+    + '.jshare-ch label{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1.5px solid #E5E8EB;border-radius:14px;margin:0 0 10px;cursor:pointer}'
+    + '.jshare-ch label.on{border-color:#B8942A;background:#FBF5E3}'
+    + '.jshare-ch input{margin:3px 0 0;width:20px;height:20px;accent-color:#B8942A;flex:none}'
+    + '.jshare-ch b{display:block;font-size:16px}.jshare-ch b em{font-style:normal;font-size:12.5px;font-weight:800;color:#fff;background:#B8942A;border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:2px}'
+    + '.jshare-ch small{display:block;color:#4E5968;font-size:14px}'
+    + '.jshare-ch .warn{display:inline-block;margin-top:6px;color:#C2410C;font-weight:700;font-size:14px}'
+    + '.jshare-ch .go{width:100%;min-height:52px;border:0;border-radius:12px;background:#191F28;color:#fff;font:inherit;font-size:16px;font-weight:800;cursor:pointer;margin-top:4px}'
+    + '.jshare-ch.sheet{left:0;right:0;bottom:0;border-radius:20px 20px 0 0;padding-bottom:calc(18px + env(safe-area-inset-bottom))}'
+    + '.jshare-ch.pop{width:380px;max-width:calc(100vw - 24px);border-radius:16px}'
+    + '.jshare-sv{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px 12px;padding:10px 14px;background:#FBF5E3;border-bottom:1px solid #EFE2B8;color:#3E4754;font-size:14.5px;text-align:center}'
+    + '.jshare-sv b{color:#191F28}.jshare-sv button{min-height:40px;padding:0 14px;border:0;border-radius:10px;background:#191F28;color:#fff;font:inherit;font-size:14.5px;font-weight:700;cursor:pointer}'
+    + '@media print{.jshare-sv,.jshare-ch,.jshare-bk{display:none!important}}';
+  function chClose() { [].slice.call(root.document.querySelectorAll('.jshare-ch,.jshare-bk')).forEach(function (n) { n.remove(); }); root.document.removeEventListener('keydown', chKey); }
+  function chKey(e) { if (e.key === 'Escape') chClose(); }
+  function chooser(btn, place) {
+    var d = root.document; chClose();
+    if (!d.getElementById('jshareChCss')) { var s = d.createElement('style'); s.id = 'jshareChCss'; s.textContent = CH_CSS; d.head.appendChild(s); }
+    var narrow = (root.innerWidth || 1024) <= 600;
+    var bk = d.createElement('div'); bk.className = 'jshare-bk'; if (!narrow) bk.style.background = 'transparent';
+    var ch = d.createElement('div'); ch.className = 'jshare-ch ' + (narrow ? 'sheet' : 'pop');
+    ch.setAttribute('role', 'dialog'); ch.setAttribute('aria-modal', 'true'); ch.setAttribute('aria-labelledby', 'jshareChT');
+    ch.innerHTML = '<h3 id="jshareChT">어떻게 공유할까요?</h3><button type="button" class="x" aria-label="닫기">×</button>'
+      + '<label class="on"><input type="radio" name="jshareMode" value="summary" checked><span><b>요약 공유<em>추천</em></b><small>개인 숫자 없이 — 결과 요약과 \'나도 해 보기\' 링크만 보내요. 널리 알리기 좋아요.</small></span></label>'
+      + '<label><input type="radio" name="jshareMode" value="detail"><span><b>가족과 자세히 공유</b><small>내 금액 포함 — 받은 분이 링크를 열면 내가 넣은 조건 그대로 같은 결과가 떠요.</small><span class="warn">받는 사람이 내 금액을 볼 수 있어요</span></span></label>'
+      + '<button type="button" class="go">공유하기</button>';
+    d.body.appendChild(bk); d.body.appendChild(ch);
+    if (!narrow) {
+      /* 넓은 화면은 html{zoom:1.125}(aplus.css) — 화면 좌표를 CSS 좌표로 나눠 맞춤 */
+      var Z = parseFloat(root.getComputedStyle(d.documentElement).zoom) || 1, b0 = btn.getBoundingClientRect();
+      var r = { top: b0.top / Z, bottom: b0.bottom / Z, right: b0.right / Z };
+      var W = ch.offsetWidth, H = ch.offsetHeight, vw = root.innerWidth / Z, vh = root.innerHeight / Z;
+      var left = Math.min(Math.max(12, r.right - W), vw - W - 12), top = r.bottom + 8;
+      if (top + H > vh - 12) top = Math.max(12, r.top - H - 8);
+      ch.style.left = left + 'px'; ch.style.top = top + 'px';
+    }
+    var labels = [].slice.call(ch.querySelectorAll('label'));
+    labels.forEach(function (l) { l.querySelector('input').addEventListener('change', function () { labels.forEach(function (x) { x.classList.toggle('on', x.querySelector('input').checked); }); }); });
+    bk.onclick = chClose; ch.querySelector('.x').onclick = chClose;
+    ch.querySelector('.go').onclick = function () { var m = ch.querySelector('input:checked').value; chClose(); run(place, m); try { btn.focus(); } catch (e) {} };
+    d.addEventListener('keydown', chKey);
+    ch.querySelector('input:checked').focus();
   }
 
   var api = {
     saveFin: saveFin, loadFin: loadFin, hasPersonal: hasPersonal, stripPersonal: stripPersonal, share: share, bind: bind, PERSONAL: PERSONAL,
     TOOLS: TOOLS, setup: setup, update: update, clear: clear, link: link, pick: pick, safeSummary: safeSummary, safeLine: safeLine,
-    shareText: shareText, drawCard: drawCard, cardBlob: cardBlob, run: run, saveImage: saveImage, state: function () { return ST; }
+    shareText: shareText, drawCard: drawCard, cardBlob: cardBlob, run: run, saveImage: saveImage, state: function () { return ST; },
+    encodeDetail: encodeDetail, decodeDetail: decodeDetail, cleanDetail: cleanDetail, detailLink: detailLink, detailPayload: detailPayload, capture: capture, viewing: viewing,
+    formSnap: formSnap, formFill: formFill, chooser: chooser, PROTECT: PROTECT, leave: leave
   };
   root.JDJ_SHARE = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

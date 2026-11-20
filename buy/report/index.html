@@ -29,16 +29,16 @@
 <meta name="twitter:description" content="국토부 실거래가 기준 예산 맞춤 단지 추천 + 자금 계획표 + 대출 시나리오">
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/report.png">
 <script>window.JDJ_CONFIG = { tool:'report', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
-<script src="../../assets/track.js"></script>
-<script src="../../assets/stat.js?v=5"></script>
+<script src="../../assets/track.js?v=2"></script>
+<script src="../../assets/stat.js?v=6"></script>
 <script src="../../assets/region-notes.js"></script>
 <script src="../../assets/rec-core.js?v=2"></script>
 <script src="../../assets/mine-core.js?v=14"></script>
 <script src="../../assets/price-sheet.js?v=12"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/config.js?v=1"></script>
-<script src="../../assets/auth.js?v=1"></script>
-<script src="../../assets/share.js?v=3"></script>
+<script src="../../assets/auth.js?v=2"></script>
+<script src="../../assets/share.js?v=4"></script>
 <script src="../../assets/loan-core.js?v=1"></script>
 <script src="../../assets/kchat.js?v=1"></script>
 <script src="../../assets/plain-words.js?v=10"></script>
@@ -1648,12 +1648,22 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ const bg=$('agm'
     IX = await loadIndex();
     S.sido = (Q.get('sd')==='all' || Q.get('sd')===ANY.name) ? ANY : (IX.sido.find(s=>s.name===Q.get('sd')) || defaultSido());
     S.sggs = (Q.get('g') && IX.sgg[Q.get('g')] && IX.sgg[Q.get('g')].sido===S.sido.name) ? new Set([Q.get('g')]) : new Set(defaultSggs(S.sido));
+    /* 가족과 자세히 공유로 받은 경우: 보낸 분이 고른 구·시·군과 평형까지 그대로 (assets/share.js, 이 탭에서만) */
+    { const SV = window.JDJ_SHARE && JDJ_SHARE.viewing(), x = (SV && SV.x) || null;
+      if (x && Array.isArray(x.sg)){ const ok = x.sg.map(String).filter(g => IX.sgg[g] && (S.sido.any || IX.sgg[g].sido===S.sido.name)); if (ok.length) S.sggs = new Set(ok); }
+      if (x && Array.isArray(x.ar) && x.ar.length) S.areas = new Set(x.ar.map(String).slice(0,12)); }
     cmpLoad(); buildSettings(); wireSettings();
     { const r=$('hzr'); if(r){ r.oninput=()=>{ rangeP(r); const v=$('hzv'); if(v) v.textContent=hzLbl(+r.value); }; r.onchange=()=>{ setHz(+r.value); JDJ.track('hz',{hz:r.value}); }; } } hzUi();
     $('cmpBtn').onclick=()=>{ MODE==='cmp' ? goRec() : goCompare(); JDJ.track('cmp_toggle',{mode:MODE}); };
     setModeUi();
     $('backBtn').href = '../' + (location.search ? location.search+'&full=1' : '?full=1');
-    if (window.JDJ_SHARE) JDJ_SHARE.setup({tool:'report'});
+    /* 공유: 요약(개인 숫자 없음) 또는 가족과 자세히(연소득·현금·대출·이름·기타 비용과 고른 조건을 주소 # 뒤에만) */
+    if (window.JDJ_SHARE) JDJ_SHARE.setup({tool:'report', keep:['r','sd','g'], detail(){
+      const f = JDJ_SHARE.loadFin(), pos = v => parseFloat(String(v==null?'':v).replace(/[^0-9.]/g,''))>0;
+      if (!f || !(pos(f.i) || pos(f.c))) return null;   // 예시 조건으로 보고 있으면 자세히 공유할 내 값이 없음 → 요약만
+      const q = Object.fromEntries(new URLSearchParams(location.search)); ['from','full','src'].forEach(k => delete q[k]); q.hz = HZ;
+      return {path:'buy/report/', q, ls:{jdj_fin: JSON.stringify({i:S.income, c:S.cash, d:S.debt, n:S.name, e:S.etc})}, x:{sg:[...S.sggs], ar:[...S.areas]}};
+    }});
     if (window.JDJ_AUTH && JDJ_AUTH.user()) JDJ_AUTH.syncHomes();
     await render();
     repAuthUi();

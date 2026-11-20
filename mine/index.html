@@ -29,12 +29,12 @@
 <meta name="twitter:description" content="실거래 시세·추이·거래량·같은 동·구 대비 위치·미래가치 점수를 한 화면에. 내 집 저장은 이 기기에만.">
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/mine.png">
 <script>window.JDJ_CONFIG = { tool:'mine', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
-<script src="../assets/track.js"></script>
-<script src="../assets/stat.js?v=5"></script>
-<script src="../assets/share.js?v=3"></script>
+<script src="../assets/track.js?v=2"></script>
+<script src="../assets/stat.js?v=6"></script>
+<script src="../assets/share.js?v=4"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/config.js?v=1"></script>
-<script src="../assets/auth.js?v=1"></script>
+<script src="../assets/auth.js?v=2"></script>
 <script src="../assets/kchat.js?v=1"></script>
 <script src="../assets/plain-words.js?v=10"></script>
 <script src="../assets/narrative.js?v=2"></script>
@@ -276,7 +276,17 @@ const S = { sd: '', code: '', dkey: '', band: '', span: 36, hspan: 36 };
 /* ---------- 저장 ---------- */
 function loadHomes(){ try { return M.parseStore(localStorage.getItem(M.STORE_KEY)); } catch (e) { return []; } }
 function saveHomes(list){ try { localStorage.setItem(M.STORE_KEY, M.dumpStore(list)); } catch (e) { return false; } if (AU && AU.user()) AU.pushHomes(); return true; }
-if (window.JDJ_SHARE) JDJ_SHARE.setup({tool:'mine'});
+/* 공유: 요약(단지 공개 정보만) 또는 가족과 자세히(이 단지의 내 매수가·매수 시기를 주소 # 뒤에만 — 받는 분 화면에서 '매수가 대비'까지 같게).
+   매수가·시기를 넣지 않았으면 자세히 공유할 내 값이 없으니 요약만 */
+if (window.JDJ_SHARE) JDJ_SHARE.setup({tool:'mine', keep:['sd','d','b'], detail(){
+  if (!CUR || !S.dkey) return null;
+  const d = CUR.d, h = {sd:S.sd, code:d.code, dong:d.dong, jibun:d.jibun, apt:d.apt, band:S.band}, id = M.homeId(h);
+  const saved = loadHomes().find(x => M.homeId(x) === id) || {};
+  const bp = $('bp') ? num($('bp').value) : 0, bd = $('bd') ? $('bd').value : '';
+  h.bp = bp || saved.bp || null; h.bd = bd || saved.bd || ''; h.t = saved.t || '';
+  if (!h.bp && !h.bd) return null;
+  return {path:'mine/', q:{sd:S.sd, d:S.dkey, b:S.band}, ls:{[M.STORE_KEY]: M.dumpStore([h])}};
+}});
 if (window.JDJ_ASK) JDJ_ASK.mount($('askBox'), {from:'mine'});
 /* 카카오 로그인 (assets/auth.js) — 키가 없으면 AU.on() = false 라 아래 로그인 기능은 하나도 보이지 않음 */
 const AU = window.JDJ_AUTH || null;
