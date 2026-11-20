@@ -1240,7 +1240,7 @@
           + `<div class="nar-det" id="${pid}"${open ? '' : ' hidden'}>${ps}${x.devHtml ? `<div class="nar-dev dv-sec"><b class="nar-devh">주변 개발사업(공식 원문 확인)</b>${x.devHtml}</div>` : ''}${o.premium ? proHtml(x, o.c || {}) : ''}</div></li>`;
       }).join('') + `</ol>`
       + (N.dim && N.dim.length && !N.lines.some(x => x.k === 'fit') ? `<div class="nar-dim">참고로만 보여 드리는 기간: ${E(N.dim.join(', '))}</div>` : '')
-      + `<p class="nar-foot"><a class="nar-terms" href="/jangdaejang-calc/guide/terms/">용어 모아 보기</a> · 밑줄 점선 단어를 누르면 바로 아래에 설명이 나와요.</p></section>`;
+      + `<p class="nar-foot"><a class="nar-terms" href="/jangdaejang-calc/track/" data-track="nar_to_track">성적표</a> · <a class="nar-terms" href="/jangdaejang-calc/guide/terms/">용어 모아 보기</a> · 밑줄 점선 단어를 누르면 바로 아래에 설명이 나와요.</p></section>`;
   }
   const CSS = `.nar{margin:12px 0 6px;padding:14px 14px 10px;border:1px solid #E6DFC8;border-radius:14px;background:#FFFDF7}
 .nar-head{font-size:17px;line-height:1.55;font-weight:800;color:#1F1F1F;margin:0 0 8px;word-break:keep-all}
