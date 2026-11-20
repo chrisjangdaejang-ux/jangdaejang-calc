@@ -96,5 +96,41 @@ delete globalThis.JDJ_AUTH;
 const Wn = N.why3(Object.assign({}, f, { eb: { rel: 4 } }), Object.assign({}, C, { IX: Object.assign({}, IX, { sgg: Object.assign({}, IX.sgg, { '11710': Object.assign({}, IX.sgg['11710'], { r: {} }) }) }) }));
 has(N.w3html(Wn, {}), '조심할 점: 과거 사례에서 같은 방향이 확인된 항목이 없어 적지 않았어요.', '빈 쪽은 이유를 밝힘');
 
+/* ⑥ 확장 과거 사례(역 거리·평형 구성·거래 흐름·주변 입주·연식): 같은 표시 기준, 통념과 반대 결과도 그대로, 거래 흐름은 하나만 */
+const EVX = { sido: { s00: Object.assign({}, EV.sido.s00, {
+  sd: { d300: { n: 1758, ex: -2.1, hit: 40, per: per([-1.5, -2.2, -3.1, 0.4]) } },              // 역 300m 안인데 덜 오름(통념과 반대)
+  tv6: { '4': { n: 2006, ex: 1.2, hit: 58, per: per([0.9, 1.4, 1.1, 2.0]) } },
+  tv12: { '4': { n: 1999, ex: 1.76, hit: 59, per: per([1.5, 2.2, 1.1, 2.0]) } },               // 6·12개월 둘 다 → 더 큰 쪽 하나
+  hh: { h4: { n: 320, ex: 2.47, hit: 52, per: per([3, 2, -1, 4]) } },                          // 52% → 빠짐
+  sv: { v2: { n: 249, ex: -0.4, hit: 49, per: per([-0.5, 0.2, -1, 0.3]) } },                    // 엇갈림 → 지켜볼 것(숫자만)
+  ag: { r29: { n: 1484, ex: -3.75, hit: 40, per: per([-2.2, -4.5, 0.3, -6.4]) } } }) },
+  region: EV.region, all: null };
+const fx = Object.assign({}, f, { rl: null, sl: null, hh: 5678, by: 2008, sub: 5, eb: Object.assign({}, f.eb, { sd: 'd300', tv6: 4, tv12: 4, hh: 'h4', sv: 'v2', ag: 'r29' }),
+  xf: { sd: ['잠실새내', 280], tv: [98, 59, 157, 120], sv: [1200, 2, '202709'] } });
+const WX = N.why3(fx, Object.assign({}, C, { EV: EVX, pol: null, dev: null }));
+const sdI = WX.dn.find(x => x.k === 'sd');
+eq(!!sdI, true, '역 300m 안인데 과거에 덜 올랐으면 조심할 점');
+has(sdI.d[0], '가장 가까운 지하철역(잠실새내역)까지 직선으로 280m예요.', '역: 사실(역 이름·거리)');
+has(sdI.d[1], '과거 역까지 직선 거리가 300m 이내였던 서울 단지 1,758건을 2년 뒤와 비교해 봤더니 1,055건이 자기 구 평균보다 덜 올랐고, 평균 차이는 −2.1%p였어요.', '역: 과거 사례');
+has(sdI.d[1], '흔히 생각하는 것과 반대지만 과거 사례는 이랬어요.', '역: 통념과 반대인 결과도 그대로');
+eq(/^그래서 /.test(sdI.d[2]), true, '역: 그래서');
+eq(WX.up.filter(x => /^tv/.test(x.k)).map(x => x.k), ['tv12'], '거래 흐름은 6·12개월 중 하나(사례가 더 뚜렷한 쪽)');
+has(WX.up.find(x => x.k === 'tv12').d[0], '최근 12개월(25.10~26.9) 실거래가 단지 전체 157건으로, 그 전 12개월(24.10~25.9) 120건보다 늘었어요.', '거래 흐름: 기간·건수 사실');
+eq(WX.up.concat(WX.dn).some(x => x.k === 'hh'), false, '같은 방향 52%는 이유에서 뺌');
+const WX2 = N.why3(Object.assign({}, fx, { eb: Object.assign({}, fx.eb, { tv6: 0 }) }), Object.assign({}, C, { pol: null, dev: null,
+  EV: { sido: { s00: Object.assign({}, EVX.sido.s00, { tv6: { '0': { n: 2000, ex: -1.6, hit: 42, per: per([-1, -2, -1.5, -2]) } } }) }, region: EV.region } }));
+eq(WX2.up.concat(WX2.dn).some(x => /^tv/.test(x.k)), false, '거래 흐름 6개월·12개월이 반대 방향이면 엇갈린 것으로 보고 뺌');
+has(WX.dn.find(x => x.k === 'ag').t, '2008년 준공 · 18년 차', '연식: 사실');
+const svW = WX.watch.find(x => x.k === 'sv');
+has(svW.t, '반경 1.5km 입주 예정 1,200세대 — 첫 입주 2027년 9월', '주변 입주: 지켜볼 것(날짜)');
+has(svW.d[1], '249건 중 122건(49%)', '주변 입주: 엇갈린 사례는 숫자 그대로');
+eq(svW.d[2], '', '주변 입주: 엇갈리면 그래서 없음');
+eq(N.lint3(WX), [], '확장 사례 문장 규칙');
+const xc = N.xCases(EVX, 'sd', 's00', '서울');
+eq(xc[0].ok && !xc[0].up, true, '가이드용 사례 문장: 화면과 같은 표시 기준');
+has(xc[0].text, '역까지 직선 거리가 300m 이내였던 서울 단지 1,758건 중 1,055건이 2년 뒤 자기 구 평균보다 덜 올랐어요(평균 −2.1%p, 시점 4번 중 3번 같은 방향).', '가이드용 사례 문장');
+eq(N.xCases(EVX, 'hh', 's00', '서울')[0].ok, false, '가이드: 기준 미달 구간은 비슷했다고만');
+eq(N.why3(Object.assign({}, fx, { xf: {} }), Object.assign({}, C, { EV: EVX, pol: null, dev: null })).dn.some(x => x.k === 'sd'), false, '사실값(xf)이 없으면 숫자를 지어내지 않고 뺌');
+
 console.log(`오를 이유·조심할 점·지켜볼 것 검증: ${ok}개 통과, ${bad}개 실패`);
 if (bad) process.exitCode = 1;

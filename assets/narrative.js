@@ -247,6 +247,122 @@
     rail: { up: '이 단계 신설역 가까운 단지가 이후 더 오른 경우가 많았어요', dn: '이 단계 신설역 가까운 단지가 이후 덜 오른 경우가 많았어요' }
   };
   const RAILST = { plan: '계획 확정·착공 전', build: '공사 중', open: '개통 2년 이내' };
+  /* 확장 과거 사례(evidence.json xkinds, 엔진 evidence.XCtx): 구간 이름 → 말. 구간 경계는 사실을 나누는 기준(자료 정의)이고 표시 기준(W3MIN)과 별개 */
+  const XB = {
+    sd: { d300: '300m 이내', d500: '300~500m', d700: '500~700m', d1000: '700m~1km', dfar: '1km 초과' },
+    sw: { w5: '5분 이내', w10: '5~10분', w15: '10~15분', w20: '15~20분', wfar: '20분 초과(또는 역 정보 없음)' },
+    hh: { h0: '300세대 미만', h1: '300~499세대', h2: '500~999세대', h3: '1,000~1,999세대', h4: '2,000세대 이상' },
+    pa: { a0: '60㎡ 미만(소형 위주)', a1: '60~75㎡', a2: '75~85㎡', a3: '85~100㎡', a4: '100㎡ 이상(대형 위주)' },
+    pd: { d1: '1가지', d2: '2가지', d3: '3가지', d4: '4가지 이상' },
+    sv: { v0: '없었던', v1: '1,000세대 미만이었던', v2: '1,000~2,999세대였던', v3: '3,000세대 이상이었던' },
+    scr: { top: '상위 3분의 1', mid: '중간 3분의 1', low: '하위 3분의 1' },
+    ag: { n5: '5년 이내', n10: '6~10년', m19: '11~19년', p24: '20~24년', r29: '25~29년(재건축 연한 30년 직전)', r30: '30년 이상(재건축 연한 도달)' }
+  };
+  /* 흔히 하는 생각(이 구간이면 더 오른다/덜 오른다) — 과거 사례가 반대면 그 사실을 한 마디 덧붙인다(원인은 지어내지 않음) */
+  const XNORM = { sd: { d300: 1, d500: 1, dfar: -1 }, sw: { w5: 1, wfar: -1 }, hh: { h4: 1, h0: -1 }, pa: { a4: 1 }, sv: { v3: -1, v2: -1 }, scr: { top: 1, low: -1 }, ag: { n5: 1, r29: 1, r30: 1 } };
+  /* 뺀 항목(엔진 excluded.json 키) → 같은 내용을 본 확장 사례 종류 */
+  const XKIND_OF = { sub: ['sd', 'sw'], size: ['hh'], liq: ['tv12', 'to'], new: ['ag'], old: ['ag'], sch: ['scr'] };
+  const XORD = ['sd', 'sw', 'hh', 'pa', 'pd', 'tv6', 'tv12', 'to', 'sv', 'scr', 'ag'];
+  const ymAdd = (ym, n) => { let y = +String(ym).slice(0, 4), m = +String(ym).slice(4, 6) + n; while (m > 12) { y++; m -= 12; } while (m < 1) { y--; m += 12; } return `${y}${String(m).padStart(2, '0')}`; };
+  const ymSh = v => `${String(v).slice(2, 4)}.${parseInt(String(v).slice(4, 6), 10)}`;
+  /* 확장 사례 조건 문구(화면 이유 칸과 /guide/method/ 가 같은 말을 쓰게): '역까지 직선 거리가 300m 이내였던 서울' */
+  function xCond(k, b, SD) {
+    const lab = (XB[k] || {})[b], w = lab ? (/(m|㎡)$/.test(lab) ? '였던' : J(lab, '이었던', '였던').slice(lab.length)) : '', q = /^[0-4]$/.test(String(b)) ? Q5[+b] : '';   // '1km' '60㎡' 는 받침 없이 읽음
+    switch (k) {
+      case 'sd': return lab && `역까지 직선 거리가 ${lab}${w} ${SD}`;
+      case 'sw': return lab && `역까지 걸어서 ${lab}${w} ${SD}`;
+      case 'hh': return lab && `세대수가 ${lab}${w} ${SD}`;
+      case 'pa': return lab && `세대당 평균 전용면적이 ${lab}${w} ${SD}`;
+      case 'pd': return lab && `최근 5년 거래된 평형 구간이 ${lab}${w} ${SD}`;
+      case 'tv6': return q && `거래량이 그 전 6개월보다 늘어난 정도가 ${SD} 단지 중 ${q}였던`;
+      case 'tv12': return q && `거래량이 그 전 12개월보다 늘어난 정도가 ${SD} 단지 중 ${q}였던`;
+      case 'to': return q && `세대수 대비 1년 거래 비율이 ${SD} 단지 중 ${q}였던`;
+      case 'sv': return lab && `반경 1.5km 안 2년 안 입주가 ${lab} ${SD}`;
+      case 'scr': return lab && `가까운 중학교가 구 안 전입 순위 ${lab}${w} ${SD}`;
+      case 'ag': return lab && `지은 지 ${lab}${w} ${SD}`;
+      default: return '';
+    }
+  }
+  /* 사례 표 한 종류의 구간별 문장(/guide/method/ '뺀 항목'·과거 사례 목록용, 화면 이유 칸과 같은 표시 기준 w3dir)
+     → [{ b, ok, up, text }] — ok 가 false 인 구간은 '비슷해서 이유로 쓰지 않음' */
+  function xCases(EV, k, sid, SD) {
+    const T = EV && EV.sido && EV.sido[sid] && EV.sido[sid][k]; if (!T) return [];
+    const ord = Object.keys(XB[k] || { 0: 1, 1: 1, 2: 1, 3: 1, 4: 1 });
+    return ord.filter(b => T[b] && T[b].n > 0 && T[b].ex != null).map(b => {
+      const e = T[b], r = w3dir(e, W3MIN.n), cond = xCond(k, b, SD);
+      if (!cond) return null;
+      if (r) return { b, ok: true, up: r.up, text: `${cond} 단지 ${n0(e.n)}건 중 ${n0(r.k)}건이 2년 뒤 자기 구 평균보다 ${r.up ? '더' : '덜'} 올랐어요(평균 ${r.up ? '+' : '−'}${r1(e.ex)}%p, 시점 ${r.np}번 중 ${r.same}번 같은 방향).` };
+      return { b, ok: false, up: e.ex > 0, text: `${cond} 단지 ${n0(e.n)}건은 ${n0(Math.round(e.n * e.hit / 100))}건(${e.hit}%)이 자기 구 평균보다 더 올라, 더 오른 단지와 덜 오른 단지가 비슷했어요.` };
+    }).filter(Boolean);
+  }
+  /* 확장 사례 한 종류: 이 단지 사실 + 과거 조건 문구 + 그래서 앞 해석. 사실값이 없으면 null(숫자를 지어내지 않음)
+     c: why3 cx (f, apt, sgg, sido, IX), b: 지금 구간 */
+  function xFact(k, b, cx) {
+    const f = cx.f, X = f.xf || {}, A = J(cx.apt, '은', '는'), SG = cx.sgg, SD = cx.sido, end = (cx.IX && cx.IX.dataTo) || '';
+    const lab = (XB[k] || {})[b];
+    const q = /^[0-4]$/.test(String(b)) ? Q5[+b] : '';
+    switch (k) {
+      case 'sd': {
+        if (!X.sd || !lab) return null;
+        return { t: `${X.sd[0]}역까지 직선 ${n0(X.sd[1])}m`, fact: `${A} 가장 가까운 지하철역(${X.sd[0]}역)까지 직선으로 ${n0(X.sd[1])}m예요.`, cond: xCond(k, b, SD), mean: ['역에서 이 거리인 단지가 이후 더 오른 경우가 많았어요', '역에서 이 거리인 단지가 이후 덜 오른 경우가 많았어요'] };
+      }
+      case 'sw': {
+        if (f.sub == null || !lab) return null;
+        const st = f.subs ? f.subs.replace(/\s+/g, ' ') : '지하철역';
+        const t = f.sub >= 30 ? 'K-apt에 걸어서 갈 지하철역 정보가 없어요' : `K-apt 기준 ${st}까지 걸어서 ${f.sub <= 5 ? '5분 이내' : f.sub > 20 ? '20분 넘게' : f.sub + '분 이내'}예요`;
+        return { t: t.replace(/예요$|어요$/, ''), fact: `${A} ${t}.`, cond: xCond(k, b, SD),
+          mean: ['역까지 이 정도 거리인 단지가 이후 더 오른 경우가 많았어요', '역까지 이 정도 거리인 단지가 이후 덜 오른 경우가 많았어요'] };
+      }
+      case 'hh': {
+        if (!f.hh || !lab) return null;
+        return { t: `${n0(f.hh)}세대 단지`, fact: `${A} ${n0(f.hh)}세대예요(K-apt).`, cond: xCond(k, b, SD),
+          mean: ['이 규모 단지가 이후 더 오른 경우가 많았어요', '이 규모 단지가 이후 덜 오른 경우가 많았어요'] };
+      }
+      case 'pa': {
+        if (X.pa == null || !lab) return null;
+        return { t: `세대당 평균 전용 ${r1(X.pa)}㎡`, fact: `${A} 세대당 평균 전용면적이 ${r1(X.pa)}㎡예요(K-apt 주거전용면적 합계 ÷ 세대수).`, cond: xCond(k, b, SD), mean: ['평형 구성이 이런 단지가 이후 더 오른 경우가 많았어요', '평형 구성이 이런 단지가 이후 덜 오른 경우가 많았어요'] };
+      }
+      case 'pd': {
+        if (!X.pd || !lab) return null;
+        return { t: `최근 5년 거래된 평형 ${X.pd}가지`, fact: `${A} 최근 5년 실거래가 있었던 평형 구간이 ${X.pd}가지예요.`, cond: xCond(k, b, SD), mean: ['평형 구성이 이런 단지가 이후 더 오른 경우가 많았어요', '평형 구성이 이런 단지가 이후 덜 오른 경우가 많았어요'] };
+      }
+      case 'tv6': case 'tv12': {
+        const T = X.tv; if (!T || !q || !end) return null;
+        const w = k === 'tv6' ? 6 : 12, c = k === 'tv6' ? T[0] : T[2], p = k === 'tv6' ? T[1] : T[3];
+        const a1 = ymAdd(end, -w), a2 = ymAdd(end, -1), b1 = ymAdd(end, -2 * w), b2 = ymAdd(end, -w - 1);
+        const ch = c === p ? '과 같아요' : `보다 ${c > p ? '늘었어요' : '줄었어요'}`;
+        return { t: `최근 ${w}개월 거래 ${n0(c)}건(그 전 ${w}개월 ${n0(p)}건)`,
+          fact: `${A} 최근 ${w}개월(${ymSh(a1)}~${ymSh(a2)}) 실거래가 단지 전체 ${n0(c)}건으로, 그 전 ${w}개월(${ymSh(b1)}~${ymSh(b2)}) ${n0(p)}건${ch}.`,
+          cond: xCond(k, b, SD),
+          mean: [`거래가 이렇게 ${+b >= 3 ? '늘던' : +b <= 1 ? '줄던' : '움직이던'} 단지가 이후 더 오른 경우가 많았어요`, `거래가 이렇게 ${+b >= 3 ? '늘던' : +b <= 1 ? '줄던' : '움직이던'} 단지가 이후 덜 오른 경우가 많았어요`] };
+      }
+      case 'to': {
+        const T = X.tv; if (!T || !f.hh || !q) return null;
+        const pc = T[2] / f.hh * 100;
+        return { t: `1년 거래 ${n0(T[2])}건 · 세대수의 ${r1(pc)}%`, fact: `${A} 최근 1년 실거래가 단지 전체 ${n0(T[2])}건으로, ${n0(f.hh)}세대의 ${r1(pc)}%예요.`, cond: xCond(k, b, SD), mean: ['거래 회전이 이 정도인 단지가 이후 더 오른 경우가 많았어요', '거래 회전이 이 정도인 단지가 이후 덜 오른 경우가 많았어요'] };
+      }
+      case 'sv': {
+        const V = X.sv; if (!lab) return null;
+        const til = end ? ymKo(ymAdd(end, 24)) : '2년 뒤';
+        const t = V && V[0] ? `반경 1.5km 안 ${til}까지 입주 예정 ${n0(V[0])}세대(청약홈 공고 ${V[1]}건)` : '반경 1.5km 안 2년 안 입주 예정 공고 없음';
+        const fact = V && V[0] ? `${A} 반경 1.5km 안에 ${til}까지 입주 예정인 청약홈 공고가 ${V[1]}건, ${n0(V[0])}세대예요. 청약홈에는 조합원 몫이 빠져 있어 실제 입주는 더 많을 수 있어요.`
+          : `${A} 반경 1.5km 안에 ${til}까지 입주 예정인 청약홈 공고가 없어요(조합원 몫만 있는 재건축 입주는 빠져 있을 수 있어요).`;
+        return { t, fact, cond: xCond(k, b, SD),
+          mean: ['주변 입주가 이 정도였던 단지가 이후 더 오른 경우가 많았어요', '주변 입주가 이 정도였던 단지가 이후 덜 오른 경우가 많았어요'] };
+      }
+      case 'scr': {
+        const sc = f.sc; if (!Array.isArray(sc) || !sc[0] || !(sc[5] >= 3) || !lab) return null;
+        return { t: `가까운 ${sc[0]} ${SG} ${sc[5]}곳 중 ${sc[4]}위`, fact: `가까운 ${sc[0]}는 ${SG} 중학교 ${sc[5]}곳 중 학생이 많이 모이는 순서로 ${sc[4]}위예요.`, cond: xCond(k, b, SD), mean: ['학생이 이만큼 모이는 학교 근처 단지가 이후 더 오른 경우가 많았어요', '학생이 이만큼 모이는 학교 근처 단지가 이후 덜 오른 경우가 많았어요'] };
+      }
+      case 'ag': {
+        const by = f.by, yr = cx.year || (end ? +String(end).slice(0, 4) : null); if (!by || !yr || !lab) return null;
+        const a = yr - by;
+        return { t: `${by}년 준공 · ${a}년 차`, fact: `${A} ${by}년에 지어져 ${a}년 차예요.`, cond: xCond(k, b, SD),
+          mean: ['이 연식 단지가 이후 더 오른 경우가 많았어요', '이 연식 단지가 이후 덜 오른 경우가 많았어요'] };
+      }
+      default: return null;
+    }
+  }
   /* 사례 표 한 칸 → 방향 판단(사례 다수 + 시기별 다수가 같은 방향일 때만) */
   function w3dir(e, nmin) {
     if (!e || !(e.n >= nmin) || e.ex == null || Math.abs(e.ex) < W3MIN.ex || e.hit == null) return null;
@@ -307,6 +423,22 @@
           `그래서 ${mean ? mean.replace(/많았어요$/, '많았던 만큼') + ', ' : '이 점은 '}${AG} 앞으로 2년 ${SG} 평균보다 ${r.up ? '더 오를 쪽이에요' : '덜 오를 수 있어요'}.`],
         ev: e, evBase: '자기 구 평균 대비' });
     }
+    /* ①-2 확장 사례(역 거리·평형 구성·거래 흐름·주변 입주·중학교 순위·연식): 같은 표시 기준(W3MIN·w3dir), 거래 흐름은 6·12개월 중 하나만 */
+    const xs = [];
+    for (const k of XORD) {
+      if (ub[k] == null) continue;
+      const e = unitEv(cx, k), r = w3dir(e, W3MIN.n); if (!r) continue;
+      const F = xFact(k, ub[k], cx); if (!F) continue;
+      const nm = (XNORM[k] || {})[ub[k]], against = nm != null && nm !== (r.up ? 1 : -1);
+      const mean = F.mean[r.up ? 0 : 1];
+      xs.push({ side: r.up ? 'up' : 'dn', k, grp: /^tv/.test(k) ? 'tv' : k, sc: Math.abs(e.ex) * (r.k / e.n), t: F.t, o: recOne(e, r, who, unitBase),
+        d: [F.fact, `과거 ${F.cond} 단지 ${n0(e.n)}건을 2년 뒤와 비교해 봤더니 ${n0(r.k)}건이 ${unitBase}보다 ${r.up ? '더' : '덜'} 올랐고, 평균 차이는 ${r.up ? '+' : '−'}${r1(e.ex)}%p였어요.` + recPer(r)
+          + (against ? ' 흔히 생각하는 것과 반대지만 과거 사례는 이랬어요.' : ''),
+          `그래서 ${mean.replace(/많았어요$/, '많았던 만큼')}, ${AG} 앞으로 2년 ${SG} 평균보다 ${r.up ? '더 오를 쪽이에요' : '덜 오를 수 있어요'}.`],
+        ev: e, evBase: '자기 구 평균 대비' });
+    }
+    /* 같은 묶음(거래 흐름 6·12개월)이 서로 반대 방향이면 엇갈린 것으로 보고 둘 다 뺀다 */
+    xs.sort((a, b) => b.sc - a.sc).forEach(x => { if (!xs.some(y => y.grp === x.grp && y.side !== x.side) && !cand.some(y => y.grp && y.grp === x.grp)) cand.push(x); });
     /* ② 구 흐름 사례(구 1년 상승률·구 전세가율) */
     const R = g.r || {}, SR = sdo.r || {};
     for (const k of ['mom', 'jr']) {
@@ -323,7 +455,7 @@
     }
     /* 같은 통계가 단지·구에서 반대 방향이면 구 쪽을 뺀다(사례가 많은 단지 쪽만) */
     const conflict = x => x.kind && cand.some(y => y.k === x.kind && y.side !== x.side);
-    const pick = side => cand.filter(x => x.side === side && !conflict(x)).sort((a, b) => b.sc - a.sc).slice(0, 3).map(x => { delete x.sc; delete x.side; return x; });
+    const pick = side => cand.filter(x => x.side === side && !conflict(x)).sort((a, b) => b.sc - a.sc).slice(0, 3).map(x => { delete x.sc; delete x.side; delete x.grp; return x; });
     out.up = pick('up'); out.dn = pick('dn');
 
     /* ③ 지켜볼 것: 날짜·단계가 있는 것 */
@@ -373,6 +505,17 @@
             RR && RR.n >= 3 && RR.ex != null ? `과거 ${where}에 대규모 공급이 발표된 단지 ${RR.n}곳은 이후 2년 ${unitBase}보다 평균 ${r1(RR.ex)}%p ${RR.ex >= 0 ? '더' : '덜'} 올랐어요.`
               + (RR.sig ? '' : ' 다만 사례마다 차이가 커서 오를 이유나 조심할 점으로는 넣지 않았어요.') : '', ''] });
       }
+    }
+    /* 주변 입주 예정(반경 1.5km, 청약홈 공고): 이유·조심할 점에 안 들어갔을 때만 — 과거 사례는 숫자 그대로, 같은 방향이 확인 안 되면 '그래서' 없음 */
+    const SV = (f.xf || {}).sv;
+    if (SV && SV[0] > 0 && SV[2] && !out.up.concat(out.dn).some(x => x.k === 'sv')) {
+      const e = ub.sv ? unitEv(cx, 'sv') : null, r = w3dir(e, W3MIN.n), lab = (XB.sv || {})[ub.sv];
+      const k = e && e.n ? Math.round(e.n * e.hit / 100) : 0;
+      W.push({ k: 'sv', when: SV[2], t: `반경 1.5km 입주 예정 ${n0(SV[0])}세대 — 첫 입주 ${ymKo(SV[2])}`,
+        o: `${A} 반경 1.5km 안에 2년 안 입주 예정인 청약홈 공고가 ${SV[1]}건, ${n0(SV[0])}세대예요.`,
+        d: [`${A} 반경 1.5km 안에 2년 안 입주 예정인 청약홈 공고가 ${SV[1]}건, ${n0(SV[0])}세대이고, 첫 입주는 ${ymKo(SV[2])} 예정이에요. 청약홈에는 조합원 몫이 빠져 있어 실제 입주는 더 많을 수 있어요.`,
+          e && e.n && lab ? `과거 ${SD}에서 반경 1.5km 안 2년 안 입주가 ${lab} 단지 ${n0(e.n)}건 중 ${n0(k)}건(${e.hit}%)이 2년 뒤 ${unitBase}보다 더 올랐어요(평균 ${e.ex >= 0 ? '+' : '−'}${r1(e.ex)}%p).` + (r ? '' : ' 더 오른 단지와 덜 오른 단지가 비슷해서 오를 이유나 조심할 점으로는 넣지 않았어요.') : '',
+          ''], ev: e && e.n ? e : null, evBase: '자기 구 평균 대비' });
     }
     /* 재건축 진행 단계(서울 정비구역) */
     const z = f.rz;
@@ -1326,7 +1469,7 @@
     const PLx = root.JDJ_PLAIN;
     if (PLx && PLx.tipDom) PLx.tipDom(el, { blockSel: '.nar-head,.nar-gap,.nar-sum,.nar-dim,.nar-p,.nar-t1,.nar-tnote,.w3-t,.w3-o', onOpen: () => stat('term') });
   }
-  const NAR = { build, html, bind, lint, css, sentences, BANNED, KINDS, CKINDS, cat, guWhy, guPast, why3, lint3, w3html };
+  const NAR = { build, html, bind, lint, css, sentences, BANNED, KINDS, CKINDS, cat, guWhy, guPast, why3, lint3, w3html, xCases, xCond, XKIND_OF };
   root.JDJ_NAR = NAR;
   if (typeof module !== 'undefined' && module.exports) module.exports = NAR;
 })(typeof window !== 'undefined' ? window : globalThis);
