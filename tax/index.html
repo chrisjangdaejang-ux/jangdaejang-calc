@@ -192,7 +192,8 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
     <button type="button" class="row" data-go="prop"><span class="num">4</span><div><b>재산세<span class="newb">새로</span></b><small>공시가격으로 올해 재산세, 7월·9월에 나눠 낼 금액</small></div><span class="go" aria-hidden="true">›</span></button>
     <button type="button" class="row" data-go="cpt"><span class="num">5</span><div><b>종합부동산세<span class="newb">새로</span></b><small>공시가격 합계·1세대1주택·나이·보유기간으로 12월 종부세</small></div><span class="go" aria-hidden="true">›</span></button>
     <button type="button" class="row" data-go="gift"><span class="num">6</span><div><b>증여세<span class="newb">새로</span></b><small>부동산 증여 시 증여세와 증여 취득세, 부담부증여까지 함께</small></div><span class="go" aria-hidden="true">›</span></button>
-    <div class="row soon" aria-disabled="true"><span class="num">7</span><div><b>보유 vs 매도 지역 전망<span class="soonb">곧 추가</span></b><small>계속 보유할 때 예상 시세와 매도 후 세금을 나란히</small></div></div>
+    <a class="row" href="transfer/" data-track="tax_to_transfer"><span class="num">7</span><div><b>넘기는 방법 비교<span class="newb">새로</span></b><small>제3자 양도 · 자녀에게 싸게 팔기 · 증여 · 상속까지 보유, 부모·자녀 세금과 준비할 돈을 조항과 함께</small></div><span class="go" aria-hidden="true">›</span></a>
+    <div class="row soon" aria-disabled="true"><span class="num">8</span><div><b>보유 vs 매도 지역 전망<span class="soonb">곧 추가</span></b><small>계속 보유할 때 예상 시세와 매도 후 세금을 나란히</small></div></div>
   </div>
   <p class="trust">입력하신 숫자는 이 기기 안에서만 계산하고 서버로 보내지 않습니다.</p>
 </section>
@@ -494,7 +495,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
   </form>
   <div id="gOut" hidden>
     <div class="sec result" id="gRes"></div>
-    <div class="btns sec"><button type="button" class="btn ghost redo" data-wiz="gWiz">입력 고치기</button><button type="button" class="btn ghost" data-go="cgt">양도세 계산기</button></div>
+    <div class="btns sec"><button type="button" class="btn ghost redo" data-wiz="gWiz">입력 고치기</button><button type="button" class="btn ghost" data-go="cgt">양도세 계산기</button><a class="btn ghost" href="transfer/">증여 · 저가 양도 · 상속 비교</a></div>
   </div>
 </section>
 
@@ -505,7 +506,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
 <script src="adjusted-areas.js"></script>
 <script src="tax-engine.js"></script>
 <script src="offi-tax.js?v=1"></script>
-<script src="tax-ui.js"></script>
+<script src="tax-ui.js?v=2"></script>
 <script>
 /* 공유(assets/share.js): 결과가 보이면 '어떤 세금을 계산했는지'만. 매도가·공시가격·세액 같은 금액은 담지 않음. 받는 분은 같은 계산기(#cgt 등)로 */
 (function(){

@@ -585,7 +585,42 @@
   }
   window.JDJ_TAXUI = { snap, restore, views: Object.keys(SECS) };
 
+  /* 단지 화면 '세금' 칸(assets/tax-box.js)에서 넘어온 값: #cgt;sp=..;ap=.. — 주소 # 뒤에만 담겨 서버·통계로 가지 않고, 읽은 뒤 바로 지움 */
+  function prefill() {
+    const raw = (location.hash || '').slice(1);
+    if (raw.indexOf(';') < 0) return false;
+    const parts = raw.split(';'), v = parts[0];
+    if (!(v in VIEWS) || v === 'home') return false;
+    const P = {};
+    parts.slice(1).forEach(x => { const i = x.indexOf('='); if (i > 0) { try { P[x.slice(0, i)] = decodeURIComponent(x.slice(i + 1)); } catch (e) {} } });
+    try { history.replaceState(null, '', location.pathname + '#' + v); } catch (e) {}
+    const money = (el, m) => { if (m && /^\d{1,7}$/.test(m)) { el.value = (+m).toLocaleString('ko-KR'); el.dispatchEvent(new Event('input')); } };
+    const region = (sEl, gEl, sd, gu) => { if (!sd || A.SIDO.indexOf(sd) < 0) return; sEl.value = sd; sEl.dispatchEvent(new Event('change')); if (gu && [...gEl.options].some(o => o.value === gu)) { gEl.value = gu; gEl.dispatchEvent(new Event('change')); } };
+    const date = s => /^\d{4}-\d{2}-\d{2}$/.test(s || '') ? s : '';
+    show(v, false);
+    try {
+      if (v === 'acq') {
+        money($('aPrice'), P.pr); region($('aSido'), $('aGu'), P.sd, P.gu);
+        const b = $('aN').querySelector('[data-v="' + P.n + '"]'); if (b) b.click();
+        $('aOver').checked = P.o85 === '1';
+        if (P.pr) $('aRun').click();
+      } else if (v === 'prop') {
+        money($('pPrice'), P.std);
+        if (P.std && (P.one === 'y' || P.one === 'n')) { WZ.pWiz.st.one = P.one; $('pWiz').querySelectorAll('.opts[data-key="one"] .opt').forEach(o => o.classList.toggle('on', o.dataset.v === P.one)); WZ.pWiz.finish(); }
+      } else if (v === 'cgt') {
+        region($('rSido'), $('rGu'), P.sd, P.gu);
+        if (date(P.ad)) $('acqDate').value = P.ad;
+        money($('acqPrice'), P.ap); money($('salePrice'), P.sp);
+        if (/^\d{1,3}$/.test(P.rm || '')) $('residM').value = P.rm;
+        if (P.hs === '1' || P.hs === '2' || P.hs === '3') { S.houses = P.hs; $('oHouses').querySelectorAll('.opt').forEach(o => o.classList.toggle('on', o.dataset.v === P.hs)); }
+        if (P.ask === 'y' || P.ask === 'n') { S.acqAdjAns = P.ask; $('oAcqAdj').querySelectorAll('.opt').forEach(o => o.classList.toggle('on', o.dataset.v === P.ask)); }
+        const ready = S.houses && date(P.ad) && P.ap && P.sp && (acqAdjAuto() !== 'ask' || S.acqAdjAns);
+        if (ready) runCgt(false); else render();
+      }
+    } catch (e) {}
+    return true;
+  }
   /* 주소의 #으로 바로 열기 */
   const h0 = (location.hash || '').slice(1);
-  if (h0 in VIEWS) show(h0, false);
+  if (!prefill() && h0 in VIEWS) show(h0, false);
 })();

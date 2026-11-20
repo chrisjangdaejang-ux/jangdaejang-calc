@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="집예보">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="/jangdaejang-calc/assets/pwa.js" defer></script>
+<script src="/jangdaejang-calc/assets/biz.js" defer></script>
+<title>이 집 어떻게 넘기는 게 유리할까? — 양도·자녀 저가 양도·증여·상속 세금 비교 | 집예보</title>
+<meta name="description" content="제3자에게 팔기, 자녀에게 싸게 팔기, 증여, 상속까지 보유 — 네 가지 방법의 양도세·증여세·상속세·취득세를 2026년 11월 시행 법령과 조항 번호로 나란히 비교합니다. 브라우저 안에서만 계산합니다.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="이 집, 어떻게 넘기는 게 유리할까? — 양도·저가 양도·증여·상속 세금 비교">
+<meta property="og:description" content="부모님이 낼 세금, 자녀가 낼 세금, 자녀가 준비할 돈을 법 조항과 함께 나란히. 회원가입 없이 무료, 입력값은 이 기기 밖으로 보내지 않습니다.">
+<meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/tax/transfer/">
+<meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/tax.png">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script>window.JDJ_CONFIG = { tool:'tax', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script>window.TAX_REVIEW_DONE = false; /* 세무사 검수가 끝나면 true 로 바꾸면 '세무사 검수 전 미리보기' 표시가 사라져요 */</script>
+<script src="../../assets/track.js?v=2"></script>
+<script src="../../assets/stat.js?v=7"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
+<style>
+.wrap{max-width:560px;margin:0 auto;padding:0 0 40px}
+[hidden]{display:none!important}
+.backbar{margin:14px 20px 0}
+.backbar a{font-size:15px;color:var(--sub2);text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
+.review{margin:10px 20px 0;display:flex;gap:8px;align-items:flex-start;background:#FFF6E5;border:1px solid #F1D9A6;color:#6B4A00;border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.5}
+.review b{flex:none;font-size:13px;background:#9A5B00;color:#fff;border-radius:6px;padding:2px 8px;margin-top:1px}
+.hero{padding:14px 20px 4px;display:flex;flex-direction:column;gap:8px}
+.hero h1{margin:0;font-size:26px;line-height:1.3}
+.hero p{margin:0;font-size:16px;color:var(--sub);line-height:1.6}
+.grp{margin:16px 20px 0;padding:18px 16px;border-radius:20px;background:var(--gray);display:flex;flex-direction:column;gap:12px}
+.grp h2{margin:0;font-size:18px;font-weight:900}
+.grp h2 small{display:block;font-size:13.5px;font-weight:500;color:var(--sub2);margin-top:2px}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.f2>*{min-width:0}
+.fl label,.fl .lb{display:block;font-size:14px;font-weight:700;color:var(--sub);margin-bottom:4px}
+.box{display:flex;align-items:center;gap:6px;background:#fff;border-radius:12px;padding:4px 12px;border:2px solid transparent;min-height:52px}
+.box:focus-within{border-color:var(--blue)}
+.box input,.box select{border:0;outline:none;font:inherit;font-size:17px;font-weight:700;flex:1;min-width:0;color:var(--text);background:transparent;min-height:42px;box-shadow:none;padding:0}
+.box input[type=date]{font-size:16px}
+.box span{font-size:14.5px;font-weight:700;color:var(--sub2);white-space:nowrap}
+.conv{font-size:13.5px;color:var(--blue);font-weight:700;min-height:1em;margin-top:2px}
+.selrow{display:grid;grid-template-columns:1fr 1.4fr;gap:8px}
+.selrow select{width:100%;min-height:52px;font:inherit;font-size:16px;font-weight:700;border:2px solid #fff;border-radius:12px;padding:0 8px;background:#fff}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{font:inherit;font-size:14.5px;font-weight:700;min-height:44px;padding:0 14px;border-radius:999px;background:#fff;color:var(--sub);border:1px solid transparent;cursor:pointer}
+.seg button.on{border-color:var(--blue);color:var(--blue);background:var(--blue-l)}
+.tog{display:flex;align-items:flex-start;gap:10px;font-size:15px;font-weight:700;background:#fff;border-radius:12px;padding:12px 14px;min-height:52px;cursor:pointer;line-height:1.45}
+.tog input{width:20px;height:20px;flex:none;margin-top:1px}
+.tog small{display:block;font-weight:500;color:var(--sub2);font-size:13.5px;margin-top:2px}
+.help{font-size:13.5px;color:var(--sub2);line-height:1.6}
+.help a{color:var(--blue)}
+.err{font-size:14.5px;color:var(--neg);font-weight:700}
+.err:empty{display:none}
+.btn.big.run{margin:16px 20px 0;width:calc(100% - 40px)}
+/* 결과 */
+.sec{margin:18px 20px 0}
+.sec>h2{font-size:20px;margin:0 0 4px}
+.sec>.d{font-size:14.5px;color:var(--sub2);margin:0 0 10px;line-height:1.55}
+.bars{display:flex;flex-direction:column;gap:10px}
+.bar .h{display:flex;justify-content:space-between;gap:10px;font-size:15.5px;font-weight:700}
+.bar .h span:last-child{font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar .t{height:10px;background:var(--gray);border-radius:5px;margin-top:6px;overflow:hidden}
+.bar .t i{display:block;height:100%;background:#AEB8C4;border-radius:5px}
+.bar.best .t i{background:var(--blue)}
+.bar.best .h span:first-child:after{content:'세금 합계 가장 적음';font-size:12.5px;font-weight:700;color:var(--blue);background:var(--blue-l);border-radius:4px;padding:1px 6px;margin-left:6px;vertical-align:1px}
+.card{margin:14px 20px 0;border:1px solid var(--line);border-radius:20px;padding:18px 16px;background:#fff}
+.card.best{border:2px solid var(--blue)}
+.card h3{margin:0;font-size:19px;font-weight:900}
+.card .what{font-size:14.5px;color:var(--sub2);margin:4px 0 12px;line-height:1.55}
+.card .fam{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;background:var(--gray2);border-radius:12px;padding:10px 12px}
+.card .fam b{font-size:24px;font-weight:900;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.card .fam span{font-size:14px;color:var(--sub2);font-weight:700}
+.st3{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.st3 .s{border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.st3 .s.w{grid-column:1/-1}
+.st3 .k{font-size:13.5px;color:var(--sub2);font-weight:700}
+.st3 .v{font-size:17px;font-weight:900;letter-spacing:-.3px;font-variant-numeric:tabular-nums;word-break:keep-all}
+details.how{margin-top:10px;border:1px solid var(--line);border-radius:14px;padding:0 14px;background:#fff}
+details.how summary{cursor:pointer;font-weight:700;font-size:15.5px;min-height:50px;display:flex;align-items:center}
+.items{list-style:none;margin:0 0 12px;padding:0}
+.items li{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:9px 0;border-top:1px solid var(--line2);font-size:15px}
+.items li .v{font-weight:900;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.items li .sub{grid-column:1/-1;font-size:13.5px;color:var(--sub2);line-height:1.5}
+.items li .law{grid-column:1/-1;font-size:13px;color:var(--sub3);line-height:1.5}
+.items li .who{font-size:12.5px;font-weight:700;color:var(--sub2);background:var(--line2);border-radius:4px;padding:1px 6px;margin-right:6px}
+ul.cau{margin:8px 0 0;padding-left:18px;font-size:14.5px;line-height:1.6;display:grid;gap:6px;color:var(--sub)}
+.unsure{margin-top:10px;font-size:14px;line-height:1.55;background:#FFF6E5;border:1px solid #F1D9A6;color:#6B4A00;border-radius:12px;padding:8px 12px}
+.need{margin-top:10px;font-size:14px;line-height:1.55;background:var(--blue-l);border-radius:12px;padding:8px 12px}
+.asm{margin:0;padding-left:18px;font-size:14.5px;line-height:1.6;display:grid;gap:6px;color:var(--sub)}
+.notice{margin:18px 20px 0;font-size:13.5px;color:var(--sub2);line-height:1.6;background:var(--gray2);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.cwrap{margin:18px 20px 0}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>집예보</a>
+  <div class="badge plain">세금 계산</div>
+</header>
+<main class="wrap">
+  <div class="backbar"><a href="../">‹ 세금 계산 처음으로</a></div>
+  <p class="review" id="reviewBadge"><b>미리보기</b><span>세무사 검수 전 미리보기예요. 조항 번호를 확인해 가며 보시고, 실제 진행 전에는 세무사와 확인해 주세요.</span></p>
+  <div class="hero">
+    <div class="eyebrow">넘기는 방법 비교 · 2026년 11월 20일 시행 법령 기준</div>
+    <h1>이 집, 어떻게 넘기는 게<br>유리할까요?</h1>
+    <p>제3자에게 팔기 · 자녀에게 싸게 팔기 · 증여 · 상속까지 보유. 네 가지를 같은 조건으로 놓고 부모님(지금 소유자)과 자녀가 낼 세금, 자녀가 준비할 돈을 법 조항과 함께 나란히 보여 드려요.</p>
+  </div>
+
+  <form id="xf" novalidate>
+  <section class="grp">
+    <h2>1. 이 집</h2>
+    <div class="f2">
+      <div class="fl"><label for="mk">지금 시세</label><div class="box"><input id="mk" class="money" inputmode="numeric" autocomplete="off" placeholder="100,000"><span>만 원</span></div><div class="conv" id="mkC"></div></div>
+      <div class="fl"><label for="std">공시가격 (선택)</label><div class="box"><input id="std" class="money" inputmode="numeric" autocomplete="off" placeholder="70,000"><span>만 원</span></div><div class="conv" id="stdC"></div></div>
+    </div>
+    <div class="help">공시가격은 <a href="https://www.realtyprice.kr/notice/main/mainBody.htm" target="_blank" rel="noopener">부동산공시가격알리미 ↗</a>에서 동·호수로 확인할 수 있어요. 상속 취득세와 증여 취득세 중과(3억 원 기준)를 정하는 데 써요. 비워 두면 그 칸은 계산하지 않아요.</div>
+    <div class="fl"><span class="lb">위치</span><div class="selrow"><select id="sd" aria-label="시·도"></select><select id="gu" aria-label="시·군·구"></select></div><div class="help" id="adjTxt"></div></div>
+    <label class="tog"><input type="checkbox" id="o85"><span>전용면적 85㎡ 초과예요<small>농어촌특별세가 붙어요</small></span></label>
+  </section>
+
+  <section class="grp">
+    <h2>2. 지금 소유자 (부모님)</h2>
+    <div class="f2">
+      <div class="fl"><label for="ad">산 날 (잔금일)</label><div class="box"><input type="date" id="ad" min="1990-01-01"></div></div>
+      <div class="fl"><label for="ap">산 가격</label><div class="box"><input id="ap" class="money" inputmode="numeric" autocomplete="off" placeholder="50,000"><span>만 원</span></div></div>
+    </div>
+    <div class="f2">
+      <div class="fl"><label for="rm">실제로 거주한 기간</label><div class="box"><input id="rm" inputmode="numeric" autocomplete="off" placeholder="0"><span>개월</span></div></div>
+      <div class="fl"><label for="ex">필요경비 (선택)</label><div class="box"><input id="ex" class="money" inputmode="numeric" autocomplete="off" placeholder="0"><span>만 원</span></div></div>
+    </div>
+    <div class="fl"><span class="lb">부모님 세대 주택 수 (이 집 포함)</span><div class="seg" id="hs"><button type="button" data-v="1" class="on">1채</button><button type="button" data-v="2">2채</button><button type="button" data-v="3">3채 이상</button></div></div>
+    <div class="fl" id="askW" hidden><label for="ask">사실 때 조정대상지역이었나요? (이 지역·기간은 자동 판정이 어려워요)</label><div class="box"><select id="ask"><option value="y">네 (모르면 이쪽이 보수적)</option><option value="n">아니요</option></select></div></div>
+  </section>
+
+  <section class="grp">
+    <h2>3. 받는 자녀</h2>
+    <div class="fl"><span class="lb">자녀 나이</span><div class="seg" id="minor"><button type="button" data-v="0" class="on">성년</button><button type="button" data-v="1">미성년</button></div></div>
+    <div class="fl"><span class="lb">받기 전 자녀 세대가 가진 집</span><div class="seg" id="ch"><button type="button" data-v="0" class="on">없음</button><button type="button" data-v="1">1채</button><button type="button" data-v="2">2채</button><button type="button" data-v="3">3채 이상</button></div></div>
+    <div class="fl"><label for="pr">최근 10년 안에 부모님께 받은 증여 (선택)</label><div class="box"><input id="pr" class="money" inputmode="numeric" autocomplete="off" placeholder="0"><span>만 원</span></div><div class="help">10년 안 증여는 합쳐서 계산하고, 공제도 10년에 한 번이에요. 그때 증여재산공제를 받았다고 보고 계산해요.</div></div>
+  </section>
+
+  <section class="grp">
+    <h2>4. 방법별 조건<small>모르면 그대로 두셔도 돼요</small></h2>
+    <div class="fl"><label for="lp">자녀에게 싸게 판다면 얼마에?</label><div class="box"><input id="lp" class="money" inputmode="numeric" autocomplete="off" placeholder="시세를 먼저 넣어 주세요"><span>만 원</span></div><div class="conv" id="lpC"></div>
+      <div class="seg" id="lpQ" style="margin-top:6px"><button type="button" data-r="0.95">시세의 95%</button><button type="button" data-r="0.9">90%</button><button type="button" data-r="0.8">80%</button><button type="button" data-r="free">증여세 안 붙는 가장 낮은 값</button></div></div>
+    <div class="fl"><label for="db">증여할 때 함께 넘길 전세보증금·대출 (선택)</label><div class="box"><input id="db" class="money" inputmode="numeric" autocomplete="off" placeholder="0"><span>만 원</span></div><div class="help">넣으면 '부담부증여'로 계산해요. 넘긴 채무만큼은 증여세 대신 부모님이 양도세를 내요.</div></div>
+    <div class="f2">
+      <div class="fl"><label for="io">이 집 말고 다른 상속재산 (선택)</label><div class="box"><input id="io" class="money" inputmode="numeric" autocomplete="off" placeholder="0"><span>만 원</span></div></div>
+      <div class="fl"><label for="id">상속재산에서 뺄 채무 (선택)</label><div class="box"><input id="id" class="money" inputmode="numeric" autocomplete="off" placeholder="0"><span>만 원</span></div></div>
+    </div>
+    <label class="tog"><input type="checkbox" id="sp"><span>상속 때 배우자(어머니·아버지)가 계세요<small>배우자 상속공제 — 최소 5억 원만 넣어 계산해요</small></span></label>
+    <label class="tog"><input type="checkbox" id="co"><span>자녀가 부모님과 이 집에서 10년 넘게 함께 살았어요<small>동거주택 상속공제(최대 6억 원) — 그 10년 동안 1세대 1주택이고 상속받는 자녀가 무주택이어야 해요</small></span></label>
+  </section>
+  <div class="err sec" id="err" role="alert"></div>
+  <button type="submit" class="btn primary big run" id="run">네 가지 방법 비교하기</button>
+  </form>
+
+  <div id="out" hidden>
+    <section class="sec"><h2>세금 합계 비교</h2><p class="d">부모님 + 자녀가 내는 세금을 모두 더한 값이에요. 자녀가 준비할 돈과 부모님 손에 남는 돈은 아래 방법별 카드에서 보세요.</p><div class="bars" id="bars"></div></section>
+    <div id="cards"></div>
+    <section class="sec"><h2>이렇게 가정했어요</h2><ul class="asm" id="asm"></ul></section>
+    <div class="cwrap" id="cwrap"></div>
+    <div class="btns sec"><button type="button" class="btn ghost" id="edit">조건 고치기</button><a class="btn ghost" href="../#gift">증여세만 자세히</a><a class="btn ghost" href="../#cgt">양도세 · 매도 타이밍</a></div>
+  </div>
+
+  <p class="notice">세무사 검수 전 미리보기예요. 신고 전에 홈택스·위택스나 세무사와 확인해 주세요. 입력값은 서버로 보내지 않아요.</p>
+</main>
+<footer class="foot notice" style="margin:24px 0 0;border-radius:0;border-left:0;border-right:0">근거(2026-11-20 확인): 소득세법 제55조·제88조·제89조·제95조·제97조의2·제101조·제104조, 같은 법 시행령 제159조·제163조·제167조, 상속세 및 증여세법 제13조·제19조·제21조·제23조의2·제24조·제25조·제26조·제28조·제35조·제44조·제47조·제53조·제56조·제60조·제69조·제71조, 같은 법 시행령 제26조, 지방세법 제7조·제10조의2·제10조의3·제11조·제13조의2·제15조·제103조의3·제110조·제111조·제151조, 같은 법 시행령 제18조의2·제28조의6, 종합부동산세법 제8조·제9조, 농어촌특별세법 제5조<br>★ 장대장부동산그룹 · <a href="../">세금 계산 처음으로</a></footer>
+
+<script src="../adjusted-areas.js"></script>
+<script src="../tax-engine.js"></script>
+<script src="../transfer-engine.js?v=1"></script>
+<script src="../../assets/tax-box.js?v=1"></script>
+<script src="transfer-ui.js?v=1"></script>
+</body>
+</html>
