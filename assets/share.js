@@ -328,8 +328,21 @@
     var file = null, canFile = false;
     try { if (ST.blob && root.File) file = new root.File([ST.blob], 'jibyebo-' + ST.tool + '.png', { type: 'image/png' }); } catch (e) { file = null; }
     try { canFile = !!(file && nav.share && nav.canShare && nav.canShare({ files: [file] })); } catch (e) { canFile = false; }
-    if (canFile) {
-      return nav.share({ files: [file], title: title, text: text }).then(function () { stat(place, 'image', mode); return 'image'; }, function (e) {
+    /* 링크가 먼저: 사진 파일을 같이 보내면 카카오톡·갤러리 등 많은 앱이 글과 링크를 버리고 사진만 보냄.
+       → 글+링크로 공유(카카오톡에선 미리보기 카드가 붙음)하고, 카드 이미지는 원하면 따로 보내도록 안내 */
+    var lnk = mode === 'detail' ? url : ST.url, body = text.replace(lnk, '').replace(/\n+$/, '');
+    function imgOffer() {
+      if (!file) return;
+      var el = toast('<span>링크를 보냈어요. 결과 카드 사진도 함께 보내려면</span><a href="#" data-jshare-img>사진으로 보내기</a>');
+      var a = el.querySelector('[data-jshare-img]');
+      if (a) a.onclick = function (e) {
+        e.preventDefault();
+        if (canFile) nav.share({ files: [file], title: title }).then(function () { stat(place, 'image', mode); }, function (er) { if (!(er && er.name === 'AbortError')) saveImage(); });
+        else saveImage();
+      };
+    }
+    if (nav.share) {
+      return nav.share({ title: title, text: body, url: lnk }).then(function () { stat(place, 'link', mode); imgOffer(); return 'share'; }, function (e) {
         if (e && e.name === 'AbortError') return 'cancel';
         return copyAndTell(place, text, mode);
       });
