@@ -1011,6 +1011,7 @@
     }
     return `<section class="nar" id="${E(id)}" data-nar="1" data-nogloss${N.cat ? ` data-cat="${E(N.cat)}"` : ''}>`
       + `<p class="nar-head">${E(N.head)}</p>` + trust
+      + '<p class="nar-str" data-jdj-str="card" hidden style="margin:8px 0 0;font-size:13px;line-height:1.55;color:#6B5A2E"></p>' /* 강점 문구(assets/strength.js 있는 화면만 채움) */
       + (N.gap ? `<p class="nar-gap">${E(N.gap)}</p>` : '')
       + `<div class="nar-tools"><span>핵심 요약 ${N.lines.length}줄</span><button type="button" class="nar-all" data-nar-all aria-expanded="false">전체 펼치기</button></div>`
       + `<ol class="nar-list">` + N.lines.map((x, i) => {

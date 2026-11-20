@@ -10,11 +10,11 @@
 <script src="/jangdaejang-calc/assets/pwa.js" defer data-nobar></script>
 <script src="/jangdaejang-calc/assets/biz.js" defer></script>
 <title>서비스 소개 · 장대장 데이터랩은 이렇게 분석해요 | 집예보</title>
-<meta name="description" content="하락기 방어력·전세가율·역세권·신설역 단계·재건축 사업성·학군·입주 물량·미분양·인구·일자리까지, 장대장 데이터랩이 단지와 지역을 분석하는 항목을 하나하나 공개합니다. 데이터 출처, 갱신 주기, 잘 맞은 기간과 안 맞은 기간의 검증 성적까지 확인하세요.">
+<meta name="description" content="공공 통계 수십 가지를 과거 실거래에 그대로 대입해 보고, 맞지 않은 지표는 빼고 미래가치를 계산해요. 분석 항목, 데이터 출처, 잘 맞은 기간과 안 맞은 기간의 과거 성적까지 그대로 공개해요.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="집예보">
 <meta property="og:title" content="서비스 소개 · 장대장 데이터랩은 이렇게 분석해요 | 집예보">
-<meta property="og:description" content="하락기 방어력·전세가율·역세권·신설역 단계·재건축 사업성·학군·입주 물량·미분양·인구·일자리까지, 장대장 데이터랩이 단지와 지역을 분석하는 항목을 하나하나 공개합니다. 데이터 출처, 갱신 주기, 잘 맞은 기간과 안 맞은 기간의 검증 성적까지 확인하세요.">
+<meta property="og:description" content="공공 통계 수십 가지를 과거 실거래에 그대로 대입해 보고, 맞지 않은 지표는 빼고 미래가치를 계산해요. 분석 항목, 데이터 출처, 잘 맞은 기간과 안 맞은 기간의 과거 성적까지 그대로 공개해요.">
 <meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/about/">
 <meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/about.png">
 <meta property="og:image:width" content="1200">
@@ -22,7 +22,7 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="서비스 소개 · 장대장 데이터랩은 이렇게 분석해요 | 집예보">
-<meta name="twitter:description" content="하락기 방어력·전세가율·역세권·신설역 단계·재건축 사업성·학군·입주 물량·미분양·인구·일자리까지, 장대장 데이터랩이 단지와 지역을 분석하는 항목을 하나하나 공개합니다. 데이터 출처, 갱신 주기, 잘 맞은 기간과 안 맞은 기간의 검증 성적까지 확인하세요.">
+<meta name="twitter:description" content="공공 통계 수십 가지를 과거 실거래에 그대로 대입해 보고, 맞지 않은 지표는 빼고 미래가치를 계산해요. 분석 항목, 데이터 출처, 잘 맞은 기간과 안 맞은 기간의 과거 성적까지 그대로 공개해요.">
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/about.png">
 <script>window.JDJ_CONFIG = { tool:'about', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
@@ -118,6 +118,10 @@
 .tag.use{background:var(--blue-l);color:var(--blue)}
 .tag.ref{background:var(--gray);color:var(--sub2)}
 .hzb .nx{margin:12px 0 0;padding:10px 12px;border-radius:12px;background:var(--gray2);font-size:14px;color:var(--sub);line-height:1.6}
+.diff{margin:22px 0 0;padding:18px;border-radius:18px;background:#FBF5E3;border:1px solid #E8D9A8}
+.diff h2{margin:0 0 10px!important}
+.diff .dt p{margin:0 0 10px;font-size:16px;line-height:1.75;color:var(--text)}
+.diff .dt p:last-child{margin:0}
 .pr{padding:18px;border-radius:16px;border:1px solid var(--line);background:#fff}
 .pr p{margin:0;font-size:16px;color:var(--sub);line-height:1.75}
 .pr p+p{margin-top:8px}
@@ -152,6 +156,11 @@
     <div class="hd"><b id="scaleH">이만큼의 데이터로 분석해요</b><small id="scUpd"></small></div>
     <div class="sg" id="scGrid"></div>
     <p class="ft">모든 숫자는 지금 공개된 분석 데이터에서 바로 읽어 와요. 실거래는 해제·직거래를 뺀 건수예요.</p>
+  </section>
+
+  <section class="diff" aria-labelledby="diffH">
+    <h2 id="diffH">다른 앱과 무엇이 다른가요?</h2>
+    <div class="dt" data-jdj-str="about"><p>집값이 오를 이유는 누구나 그럴듯하게 쓸 수 있어요. 집예보는 이유를 그럴듯하게 쓰는 것보다, 그 이유가 과거에 정말 맞았는지를 먼저 확인해요.</p><p>집예보는 공공 통계를 과거 실거래에 그대로 대입해 보고, 과거에 맞지 않은 지표는 빼고 미래가치를 계산해요.</p></div>
   </section>
 
   <h2><span class="n">01</span>무엇을 보나요 · 분석 항목 사전</h2>
@@ -405,6 +414,7 @@
 </main>
 <footer class="foot">★ 장대장부동산그룹 · <a href="/jangdaejang-calc/">집예보 홈</a></footer>
 <script src="../assets/plain-words.js?v=13"></script>
+<script src="../assets/strength.js?v=1"></script>
 <script>
 (async function(){
   const $ = id => document.getElementById(id);

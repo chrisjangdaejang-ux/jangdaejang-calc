@@ -37,7 +37,8 @@
 <script src="../assets/auth.js?v=3"></script>
 <script src="../assets/kchat.js?v=1"></script>
 <script src="../assets/plain-words.js?v=13"></script>
-<script src="../assets/narrative.js?v=7"></script>
+<script src="../assets/narrative.js?v=8"></script>
+<script src="../assets/strength.js?v=1"></script>
 <script src="../assets/mine-core.js?v=15"></script>
 <script src="../assets/ask-core.js?v=3"></script>
 <script src="../assets/ask.js?v=1"></script>
@@ -590,7 +591,7 @@ function render(d, map, units){
     head: `${d.apt} ${S.band} 시세 흐름을 한눈에 봤어요`,
     lines: [sm.ch1 ? `이 단지 ${S.band} 최근 1년 평당가 ${M.pctTxt(sm.ch1.pct)}` : sm.recent3 ? `최근 3개월 실거래 ${sm.recent3}건` : '최근 3년 실거래 목록과 월별 추이',
       f.fv != null ? `미래가치 점수 ${f.fv}점(100점 만점, 같은 시·도 단지와 비교)` : '같은 동·같은 구 아파트와 시세 비교',
-      '국토교통부 실거래 신고 기준 시세·추이'],
+      (f.fv != null && window.JDJ_STRENGTH && JDJ_STRENGTH.now('share')) || '국토교통부 실거래 신고 기준 시세·추이'],
     params: Object.fromEntries(new URLSearchParams(location.search))}, {root: $('res')});
   drawCharts(u, sgg);
   { const ne = document.getElementById('narM'); if (ne) JDJ_NAR.bind(ne); }

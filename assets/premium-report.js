@@ -229,6 +229,7 @@
           <span class="tag">PREMIUM INSIGHT · ${esc(order.product)}</span>
           <h1>${items.length > 1 ? '후보 단지 심층 비교' : esc((items[0] || {}).apt || '단지') + ' 심층 리포트'}</h1>
           <div class="pr-meta">주문번호 ${esc(order.orderId)} · 결제일 ${esc(order.paidAt)} · 열람 기간 ${esc(order.expires)}까지 · 실거래 자료 ${dataTo}까지 반영</div>
+          <p class="pr-str" data-jdj-str="report" hidden style="margin:12px 0 0;font-size:14.5px;line-height:1.6"></p>
         </div>
         ${condHtml()}
         ${miss.length ? `<div class="msg err">최근 실거래 자료에서 찾지 못한 단지가 있습니다: ${miss.map(p => esc(p.apt + ' ' + p.band)).join(', ')}. 시스템 문제로 받지 못한 내용은 환불 정책에 따라 전액 환불해 드립니다.</div>` : ''}
