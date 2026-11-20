@@ -83,6 +83,8 @@ eq(G2('전세가율'), '전세가율', '두 번째부터는 풀이 없음');
 eq(P.gloss()('평당'), '평당(전용 3.3㎡당)', '평당 첫 1회 병기');
 
 eq(P.hzLabel({ oos_all: [1, 2, 3, 4], oos_hit: 4, oos_avg: 1.09 }), '과거 시험 4번 중 4번 통과', '통과');
+eq(P.hzLabel({ oos_all: [1, 2, 3, 4, 5, 6, 7, 8], oos_hit: 2, oos_avg: 0.25 }), '과거 시험 8번 중 2번 통과 · 참고만', '평균 +여도 절반 미만 적중이면 참고만');
+eq(P.hzLabel({ oos_all: [1, 2, 3, 4], oos_hit: 2, oos_avg: 0.5 }), '과거 시험 4번 중 2번 통과', '절반 적중은 통과');
 eq(P.hzLabel({ oos_all: [1, 2, 3, 4], oos_hit: 1, oos_avg: -0.39 }), '과거 시험 4번 중 1번 통과 · 참고만', '미달 참고만');
 eq(P.hzLabel({ oos_all: [1], oos_hit: 1, oos_avg: 4.9 }), '과거 시험 1번뿐 · 참고만', '1번뿐');
 const ck = P.checkText({ oos_all: [{ t0: '202110' }, { t0: '202210' }, { t0: '202310' }, { t0: '202410' }], oos_hit: 4, oos_avg: 1.09 }, 2, P.gloss());

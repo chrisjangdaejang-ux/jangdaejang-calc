@@ -340,7 +340,7 @@
   }
 
   /* 검증 결과: 과거 시험 N번 중 M번 통과 (통과 기준 미달이면 '참고만') */
-  const VOK = m => !!(m && (m.oos_all || []).length >= 2 && m.oos_avg > 0);
+  const VOK = m => !!(m && (m.oos_all || []).length >= 2 && m.oos_avg > 0 && 2 * (m.oos_hit != null ? m.oos_hit : (m.oos_all || []).filter(o => (o.top20 || 0) > 0).length) >= (m.oos_all || []).length);
   function hzLabel(m) {
     const n = ((m && m.oos_all) || []).length, hit = (m && m.oos_hit) || 0;
     if (VOK(m)) return `과거 시험 ${n}번 중 ${hit}번 통과`;

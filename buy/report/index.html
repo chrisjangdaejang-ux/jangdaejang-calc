@@ -41,8 +41,8 @@
 <script src="../../assets/share.js?v=6"></script>
 <script src="../../assets/loan-core.js?v=1"></script>
 <script src="../../assets/kchat.js?v=1"></script>
-<script src="../../assets/plain-words.js?v=11"></script>
-<script src="../../assets/narrative.js?v=5"></script>
+<script src="../../assets/plain-words.js?v=12"></script>
+<script src="../../assets/narrative.js?v=6"></script>
 <script src="../../assets/policy-view.js?v=1"></script>
 <script src="../../assets/devproj-view.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -597,7 +597,7 @@ try{ HZ = parseInt(new URLSearchParams(location.search).get('hz') || localStorag
 if(!(HZ>=1&&HZ<=10)) HZ=2;
 /* 보유 기간별 모델: 2년은 기본 모델(항상 사용), 1·3·5·7년은 여러 시기 검증(3개 시기 이상 + 표본 외 상위20% 플러스)을 통과했을 때만 사용 */
 /* 표본 외 검증(그 시기보다 과거만으로 학습 → 이후를 맞힘)을 2회 이상 했고 평균이 플러스인 기간만 사용 */
-const VOK=m=>!!(m&&(m.oos_all||[]).length>=2&&m.oos_avg>0);
+const VOK=m=>!!(m&&(m.oos_all||[]).length>=2&&m.oos_avg>0&&2*(m.oos_hit!=null?m.oos_hit:(m.oos_all||[]).filter(o=>(o.top20||0)>0).length)>=(m.oos_all||[]).length);
 const HOK=h=>{ if(h===2) return !!MODEL; return VOK(MH&&MH[h]); };
 const HLIST=()=>[1,2,3,5,7].filter(HOK);
 /* 선택한 연수 → 쓸 모델과 섞는 비율. 사이 기간은 양옆 검증 모델을 거리 비율로 섞고, 범위 밖은 가장 가까운 모델 */

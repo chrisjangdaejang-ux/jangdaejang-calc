@@ -474,7 +474,7 @@
 
   /* 보유 기간별 성적표: 통과·미통과 시험을 모두 표시 */
   if (MH) {
-    const VOK = m => !!(m && (m.oos_all || []).length >= 2 && m.oos_avg > 0);
+    const VOK = m => !!(m && (m.oos_all || []).length >= 2 && m.oos_avg > 0 && 2 * (m.oos_hit != null ? m.oos_hit : (m.oos_all || []).filter(o => (o.top20 || 0) > 0).length) >= (m.oos_all || []).length);
     const rows = [1, 2, 3, 5, 7].filter(h => MH[h]).map(h => {
       const m = MH[h], T = m.oos_all || [], n = T.length, hit = T.filter(o => o.top20 > 0).length;
       const tag = h === 2 ? '<span class="tag main">기본 점수</span>' : VOK(m) ? '<span class="tag use">기간별 예측에 사용</span>' : `<span class="tag ref">${n < 2 ? '시험 더 필요' : '기준 미달'} · 미사용</span>`;
