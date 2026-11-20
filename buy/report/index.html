@@ -43,6 +43,7 @@
 <script src="../../assets/kchat.js?v=1"></script>
 <script src="../../assets/plain-words.js?v=8"></script>
 <script src="../../assets/policy-view.js?v=1"></script>
+<script src="../../assets/devproj-view.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -575,7 +576,8 @@ const BY_TXT = {LTV:'LTV(집값 대비 비율)', CAP:'가격구간별 대출 한
 let MODEL=null, RAIL=null, MH=null, SUPPLY=null, EVD=null;
 /* 근거 등급(data/evidence.json): 과거 같은 조건 단지의 2년 뒤 성적 — 무료 리포트는 등급 + 한 줄 요약만 */
 const EVK=(x,kind)=>PL.evid(EVD, sdIdOf(x.code), (x.fx||{}).eb, kind, PL.regionInfo(IX,x.code).short, GLS);
-const liR=r=>`<li class="${r[0]}">${esc(r[1])}${r[2]?PL.evHtml(r[2],false,esc):''}</li>`;
+const liR=r=>`<li class="${r[0]}">${esc(r[1])}${r[2]?PL.evHtml(r[2],false,esc):''}${r[3]||''}</li>`;   /* r[3]: 모듈이 이스케이프해 만든 펼침 문단(주변 개발사업) */
+let DEVP=null;
 let HZ=2;
 try{ HZ = parseInt(new URLSearchParams(location.search).get('hz') || localStorage.getItem('jdj_hz') || '2',10); }catch(e){}
 if(!(HZ>=1&&HZ<=10)) HZ=2;
@@ -595,7 +597,7 @@ const rzYm=v=>v?`${v.slice(0,4)}.${v.slice(4)}`:'';
 const rzSrc=z=>z.src==='busan'?'부산시 정비사업 추진현황 기준':z.src==='nat'?'국토교통부 전국 도시정비사업 통합 데이터 기준, 연 1회 갱신':'서울시 정비사업 추진현황·서울플랜+ 기준';
 const rzText=z=>`${PL.rzText(z,GLS,rzYm)} (${rzSrc(z)})`;
 const RUSED=()=>!!(MODEL&&MODEL.region&&MODEL.region.used);
-async function loadIndex(){ try{ const m=await fetch(DATA+'model.json',{cache:'no-cache'}); MODEL=m.ok?await m.json():null; }catch(e){} try{ const mh=await fetch(DATA+'model_h.json',{cache:'no-cache'}); MH=mh.ok?await mh.json():null; }catch(e){} try{ const q=await fetch(DATA+'rail.json',{cache:'no-cache'}); RAIL=q.ok?await q.json():null; }catch(e){} try{ const q=await fetch(DATA+'supply.json',{cache:'no-cache'}); SUPPLY=q.ok?await q.json():null; }catch(e){} try{ const q=await fetch(DATA+'evidence.json',{cache:'no-cache'}); EVD=q.ok?await q.json():null; }catch(e){} const r=await fetch(DATA+'index.json',{cache:'no-cache'}); if(!r.ok) throw new Error('index'); return r.json(); }
+async function loadIndex(){ try{ const m=await fetch(DATA+'model.json',{cache:'no-cache'}); MODEL=m.ok?await m.json():null; }catch(e){} try{ const mh=await fetch(DATA+'model_h.json',{cache:'no-cache'}); MH=mh.ok?await mh.json():null; }catch(e){} try{ const q=await fetch(DATA+'rail.json',{cache:'no-cache'}); RAIL=q.ok?await q.json():null; }catch(e){} try{ const q=await fetch(DATA+'supply.json',{cache:'no-cache'}); SUPPLY=q.ok?await q.json():null; }catch(e){} try{ const q=await fetch(DATA+'evidence.json',{cache:'no-cache'}); EVD=q.ok?await q.json():null; }catch(e){} try{ DEVP=window.JDJDev?await JDJDev.load(DATA):null; }catch(e){} const r=await fetch(DATA+'index.json',{cache:'no-cache'}); if(!r.ok) throw new Error('index'); return r.json(); }
 /* 지역 상관없음: 시·도 파일을 하나씩 순서대로 불러온다(한꺼번에 받지 않아 휴대폰 데이터·메모리 부담을 나눔). 받은 파일은 다시 받지 않음 */
 function loadAll(onStep){
   if (ALL_UNITS) return Promise.resolve(ALL_UNITS);
@@ -751,6 +753,9 @@ function futureReasons(x){
       r.push(['f', `${h}년 점수를 움직인 요인 — ` + (up.length?`올린 요인: ${up.join(' · ')}`:'') + (up.length&&dn.length?' / ':'') + (dn.length?`내린 요인: ${dn.join(' · ')}`:'')]); } }
   /* 가까운·같은 생활권 대규모 공급(단계 이력·첫 입주 목표·지연·과거 통계·점수 반영 여부) — 새 자료(f.sl)가 있으면 이것으로 */
   if (f.sl && SUPPLY && SUPPLY.zones) for (const ln of PL.supplyLines(f, SUPPLY, GLS)) r.push(ln);
+  /* 주변 개발사업(assets/devproj-view.js): 요약 한 줄 + 펼침 문단(거리·발표 뒤 같은 구 대비·다음 단계·과거 사례·공식 출처) */
+  if (window.JDJDev && DEVP){ const du={code:x.code,dong:x.dong,jibun:x.jb}, dop={apt:x.apt,sggName}, sl=JDJDev.summaryLine(DEVP,du,dop);
+    if (sl) r.push(['f', sl, null, `<details class="dvd"><summary>주변 개발사업 자세히 보기</summary><div class="dv-sec">${JDJDev.detailHtml(DEVP,du,dop)}</div></details>`]); }
   /* 1기 신도시 노후계획도시 정비 선도지구 */
   { const rn = PL.renewalLine(f, SUPPLY, GLS, EVD); if (rn) { r.push(['f', rn.text]); if (rn.ref) r.push(['', rn.ref]); } }
   /* 주변 공공택지·신도시 공급(예전 자료): 선택한 보유 기간 안에 입주가 시작되는지 */
@@ -912,7 +917,7 @@ function cmpItem(u, sd){
   const P=r100(ppy*area/PY), large=area>85, nd=need(P,c,dsr,large);
   const s=IX.sgg[code], sp = s ? lastNZ(s.s) : 0;
   return {sd, code, dong, apt, band, area, n, series, cnt, P, g, c, nd, large, stale: !recent,
-    mon: monthly(nd.loan.L,c.rate,c.term), ch: change6(series), rel: sp ? (sp-ppy)/sp : 0, fx: u[9]||null,
+    mon: monthly(nd.loan.L,c.rate,c.term), ch: change6(series), rel: sp ? (sp-ppy)/sp : 0, fx: u[9]||null, jb: u[8],
     fit: 0, short: nd.need - S.cash};
 }
 function cmpSearchHtml(){
