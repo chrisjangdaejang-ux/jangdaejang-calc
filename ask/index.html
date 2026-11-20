@@ -85,12 +85,9 @@ h1{font-size:clamp(24px,5.6vw,34px);margin:6px 0 6px}
 .dp.c0 .no{background:#2F6BFF}.dp.c1 .no{background:#F26B1D}.dp.c2 .no{background:#14A06B}
 .dp .rg{font-size:13.5px;color:#4E5968;margin:8px 0 4px}
 .dp select{width:100%;font:inherit;font-size:16px;font-weight:800;min-height:46px;padding:0 10px;border:1px solid rgba(0,0,0,.12);border-radius:12px;background:#fff;color:#191F28}
-.dp .bands{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin:10px 0}
-@media (min-width:600px){.dp .bands{grid-template-columns:repeat(auto-fill,minmax(76px,1fr))}}
-.dp .bands button{font:inherit;font-size:13px;line-height:1.15;font-weight:800;min-height:38px;padding:0 4px;letter-spacing:-.3px;word-break:keep-all;border:1px solid rgba(0,0,0,.14);border-radius:10px;background:#fff;color:#3E4754;cursor:pointer}
-.dp .bands button.on{color:#fff;border-color:transparent}
-.dp.c0 .bands button.on{background:#1F56E0}.dp.c1 .bands button.on{background:#D4570F}.dp.c2 .bands button.on{background:#0E7A4F}
-.dp .re{font:inherit;font-size:13.5px;font-weight:700;min-height:40px;width:100%;border:1px solid rgba(0,0,0,.14);border-radius:10px;background:rgba(255,255,255,.7);color:#3E4754;cursor:pointer}
+.dp .bsel{margin-top:8px;color:#fff;border:0;font-size:15px;-webkit-appearance:none;appearance:none;background-image:linear-gradient(45deg,transparent 50%,#fff 50%),linear-gradient(135deg,#fff 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 12px) 50%;background-size:6px 6px;background-repeat:no-repeat;padding-right:30px}
+.dp.c0 .bsel{background-color:#1F56E0}.dp.c1 .bsel{background-color:#D4570F}.dp.c2 .bsel{background-color:#0E7A4F}
+.dp .re{margin-top:10px;font:inherit;font-size:13.5px;font-weight:700;min-height:40px;width:100%;border:1px solid rgba(0,0,0,.14);border-radius:10px;background:rgba(255,255,255,.7);color:#3E4754;cursor:pointer}
 .dp .pr{margin:10px 0 8px;line-height:1.35}.pr span{display:block}.pr .pl{font-size:13px;color:#4E5968;font-weight:600}.pr b{display:block;font-size:clamp(16px,4.6vw,20px);font-weight:800;color:#191F28;white-space:nowrap;font-variant-numeric:tabular-nums;margin:1px 0 2px}.pr .pa{font-size:13px;color:#6B7684}
 .other{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .other button,.other a{font:inherit;font-size:14.5px;font-weight:800;min-height:46px;display:inline-flex;align-items:center;padding:0 16px;border-radius:12px;border:1.5px solid #191F28;background:#fff;color:#191F28;text-decoration:none;cursor:pointer}
@@ -100,29 +97,43 @@ h1{font-size:clamp(24px,5.6vw,34px);margin:6px 0 6px}
 .sum li{position:relative;padding:10px 12px 10px 32px;border-radius:12px;background:#F7F9FC;font-size:15.5px;line-height:1.6;word-break:keep-all}
 .sum li:before{content:'';position:absolute;left:13px;top:19px;width:8px;height:8px;border-radius:50%;background:#191F28}
 .basis{font-size:13px;color:#4E5968;line-height:1.65;margin:10px 0 0}
-/* 비교 표: 가운데 항목명, 왼쪽 단지1, 오른쪽 단지2 (3곳이면 항목명 아래 세 칸) */
-.vs{border-top:2px solid #191F28}
-.vs .hd,.vs .r{display:grid;align-items:center;border-bottom:1px solid var(--line)}
-.vs.n2 .hd,.vs.n2 .r{grid-template-columns:minmax(0,1fr) minmax(92px,auto) minmax(0,1fr)}
+/* 비교 표 (아실식): 가운데 고정 폭 항목명, 왼쪽 단지1(왼쪽 정렬), 오른쪽 단지2(오른쪽 정렬). 3곳이면 항목명 아래 세 칸 */
+.vs{border-top:2px solid #191F28;font-variant-numeric:tabular-nums}
+.vs .hd,.vs .r{display:grid;align-items:stretch;border-bottom:1px solid var(--line)}
+.vs.n2 .hd,.vs.n2 .r{grid-template-columns:minmax(0,1fr) 96px minmax(0,1fr)}
 .vs.n3 .hd,.vs.n3 .r{grid-template-columns:repeat(3,minmax(0,1fr))}
-.vs.n3 .r .lb{grid-column:1/-1;border-bottom:1px dashed var(--line2)}
-.vs .hd{padding:10px 0;font-size:15px;font-weight:900;text-align:center}
+.vs.n3 .r .lb{grid-column:1/-1;border-bottom:1px dashed var(--line2);min-height:36px}
+.vs .hd{padding:10px 0;font-size:15.5px;font-weight:900;align-items:center}
+.vs .hd span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 8px}
 .vs .hd .h0{color:#1F56E0}.vs .hd .h1{color:#D4570F}.vs .hd .h2{color:#0E7A4F}
-.vs .v{padding:11px 6px;text-align:center;font-size:15px;line-height:1.45;word-break:keep-all;min-width:0}
-.vs .v small{display:block;font-size:12.5px;color:#6B7684;line-height:1.4}
-.vs .v.win{font-weight:900}.vs .v.win.w0{color:#1F56E0}.vs .v.win.w1{color:#D4570F}.vs .v.win.w2{color:#0E7A4F}
-.vs .v.win:after{content:' ▲';font-size:11px}
-.vs .lb{padding:9px 4px;text-align:center;font-size:14px;font-weight:900;color:#191F28;background:#F9FAFB;align-self:stretch;display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap}
-.vs .lb .qm{font:inherit;font-size:12px;font-weight:900;width:22px;height:22px;min-width:22px;border-radius:50%;border:1px solid #B0B8C1;background:#fff;color:#4E5968;cursor:pointer;line-height:1;padding:0;position:relative}
-.vs .lb .qm:before{content:'';position:absolute;inset:-11px}
+.vs.n2 .hd .h0,.vs.n2 .v:nth-child(1){text-align:left}.vs.n2 .hd span:nth-child(2){text-align:center}.vs.n2 .hd .h1,.vs.n2 .v:nth-child(3){text-align:right}
+.vs.n3 .hd span,.vs.n3 .v{text-align:center}
+.vs .v{padding:12px 10px;font-size:15.5px;font-weight:700;color:#191F28;line-height:1.4;word-break:keep-all;min-width:0;display:flex;flex-direction:column;justify-content:center}
+.vs.n2 .v:nth-child(3){align-items:flex-end}.vs.n2 .v:nth-child(1){align-items:flex-start}.vs.n3 .v{align-items:center}
+.vs .v small{display:block;font-size:12.5px;font-weight:500;color:#6B7684;line-height:1.4;margin-top:2px}
+.vs .v b{font-weight:900}
+.vs .v.win.w0{background:#EEF3FF;color:#1F56E0}.vs .v.win.w1{background:#FFF2E8;color:#D4570F}.vs .v.win.w2{background:#E9F7F0;color:#0E7A4F}
+.vs .v.win small{color:inherit;opacity:.85}
+.vs .lb{align-content:center;padding:8px 4px;text-align:center;font-size:14px;font-weight:900;color:#191F28;background:#F9FAFB;display:flex;align-items:center;justify-content:center;gap:3px;flex-wrap:wrap;word-break:keep-all;line-height:1.3}
+.vs .lb .qm{font:inherit;font-size:11.5px;font-weight:900;width:20px;height:20px;min-width:20px;border-radius:50%;border:1px solid #B0B8C1;background:#fff;color:#4E5968;cursor:pointer;line-height:1;padding:0;position:relative}
+.vs .lb .qm:before{content:'';position:absolute;inset:-12px}
 .vs .r.ours .lb{background:#FBF5E3;color:#5B4A12}
-.vs .r.ours .lb:before{content:'집예보';font-size:10.5px;font-weight:900;color:#fff;background:#B8942A;border-radius:4px;padding:1px 5px}
 .vs .help{grid-column:1/-1;font-size:13px;color:#4E5968;line-height:1.6;background:#F9FAFB;padding:8px 12px;text-align:left}
 .vs .na{color:#8B95A1;font-size:14px;font-weight:500}
 .vs .grp{padding:12px 4px 6px;font-size:13.5px;font-weight:900;color:#6B7684;border-bottom:1px solid var(--line)}
-.vs .hz{display:grid;gap:2px}.vs .hz span{word-break:keep-all}.vs .hz .ref{color:#8B95A1}
+.vs .grp.og{display:flex;align-items:center;gap:6px;color:#5B4A12;background:#FBF5E3;padding:11px 10px;font-size:15px}
+.vs .grp.og b{font-size:11px;color:#fff;background:#B8942A;border-radius:4px;padding:2px 6px}
+.vs .big{font-size:26px;line-height:1.1;letter-spacing:-.5px}.vs .big span{font-size:14px;margin-left:1px}
+.vs .bar{display:block;width:100%;max-width:120px;height:6px;border-radius:3px;background:#E5E8EB;margin:6px 0 2px;overflow:hidden}
+.vs .bar i{display:block;height:100%;border-radius:3px}.vs .bar.b0 i{background:#2F6BFF}.vs .bar.b1 i{background:#F26B1D}.vs .bar.b2 i{background:#14A06B}
+.vs.n2 .v:nth-child(3) .bar{display:flex;justify-content:flex-end}
+.vs .hz{display:grid;gap:3px;font-size:14.5px}.vs .hz span{white-space:nowrap}.vs .hz em{font-style:normal;color:#6B7684;font-weight:700;margin-right:3px}
+.vs .hz .ref{color:#8B95A1;font-weight:500}.vs .hz small{display:inline;margin:0 0 0 3px;font-size:11.5px}
 .vs .hz b.w0{color:#1F56E0}.vs .hz b.w1{color:#D4570F}.vs .hz b.w2{color:#0E7A4F}
-.vs .v small.hzwhy{margin-top:6px;color:#4E5968;word-break:keep-all;overflow-wrap:anywhere}
+.vs .why{grid-column:1/-1;background:#FFFCF3;border-top:1px dashed var(--line2);padding:0 12px}
+.vs .why summary{cursor:pointer;font-size:13.5px;font-weight:800;color:#5B4A12;padding:10px 0;min-height:24px}
+.vs .why p{margin:0 0 10px;font-size:13.5px;line-height:1.65;color:#3E4754;word-break:keep-all}
+.vs .why p i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}.vs .why .d0{background:#2F6BFF}.vs .why .d1{background:#F26B1D}.vs .why .d2{background:#14A06B}
 .links{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
 .links a{display:flex;flex-direction:column;justify-content:center;gap:2px;min-height:60px;padding:10px 14px;border:1px solid var(--line);border-radius:14px;text-decoration:none;color:var(--text);background:#fff}
 .links a b{font-size:15.5px}.links a small{font-size:13px;color:#4E5968}
@@ -131,7 +142,7 @@ h1{font-size:clamp(24px,5.6vw,34px);margin:6px 0 6px}
 .disc{font-size:13px;color:#4E5968;line-height:1.7;margin-top:22px;border-top:1px solid var(--line2);padding-top:14px}
 #askSec{scroll-margin-top:70px}
 [hidden]{display:none!important}
-@media(max-width:420px){.card{padding:16px 12px}.vs .v{font-size:14px;padding:10px 3px}.vs .lb{font-size:13px}}
+@media(max-width:420px){.card{padding:16px 12px}.vs .v{font-size:14.5px;padding:11px 6px}.vs.n2 .hd,.vs.n2 .r{grid-template-columns:minmax(0,1fr) 84px minmax(0,1fr)}.vs .lb{font-size:13px}.vs .big{font-size:23px}}
 </style>
 </head>
 <body>
@@ -323,14 +334,15 @@ function panels(items){
     <div class="rg">${esc(x.sidoShort)} ${esc(x.sggName)} ${esc(x.dong)}</div>
     <label class="sr" for="dsel${i}" style="position:absolute;left:-9999px">단지 ${i + 1} 단지명</label>
     <select id="dsel${i}" data-i="${i}">${x.danjis.map(d => `<option value="${esc(d.key)}" ${d.key === x.dkey ? 'selected' : ''}>${esc(d.apt)}${x.danjis.some(o => o !== d && o.apt === d.apt) ? ' · ' + esc(d.dong) : ''}</option>`).join('')}</select>
-    <div class="bands" role="group" aria-label="${esc(x.apt)} 면적">${x.bands.map(u => `<button type="button" data-i="${i}" data-b="${esc(u[3])}" class="${u[3] === x.band ? 'on' : ''}" aria-pressed="${u[3] === x.band}">${esc(u[3]).split(' ').map(w => `<span style="white-space:nowrap">${w}</span>`).join(' ')}</button>`).join('')}</div>
-    <div class="pr">${x.price ? `<span class="pl">최근 시세</span><b>${M.won(x.price.v)}</b>` : x.avg ? `<span class="pl">실거래 평균</span><b>${M.won(x.avg.v)}</b>` : '<span class="pl">최근 거래 없음</span>'}<span class="pa">전용 ${x.area}㎡</span></div>
-    <button type="button" class="re" data-re="${i}" style="margin-top:10px">재선택</button>
+    <label class="sr" for="bsel${i}" style="position:absolute;left:-9999px">${esc(x.apt)} 면적</label>
+    <select class="bsel" id="bsel${i}" data-i="${i}">${x.bands.map(u => `<option value="${esc(u[3])}" ${u[3] === x.band ? 'selected' : ''}>${esc(u[3])}</option>`).join('')}</select>
+    <div class="pr">${x.price ? `<span class="pl">최근 시세</span><b>${M.won(x.price.v)}</b>` : x.avg ? `<span class="pl">실거래 평균</span><b>${M.won(x.avg.v)}</b>` : '<span class="pl">최근 거래 없음</span>'}</div>
+    <button type="button" class="re" data-re="${i}">재선택</button>
   </div>`).join('')}</div>`;
 }
 function wirePanels(){
   document.querySelectorAll('.dp select').forEach(s => s.onchange = () => { const i = +s.dataset.i, x = ITEMS[i]; const k = A.parseKey(x.sd + '|' + s.value); if (k) replaceItem(i, k, x.band); });
-  document.querySelectorAll('.dp .bands button').forEach(b => b.onclick = () => { const i = +b.dataset.i; replaceItem(i, ITEMS[i].k, b.dataset.b); });
+  document.querySelectorAll('.dp .bsel').forEach(s => s.onchange = () => { const i = +s.dataset.i; replaceItem(i, ITEMS[i].k, s.value); });
   document.querySelectorAll('[data-re]').forEach(b => b.onclick = () => { const i = +b.dataset.re; focusAsk(ITEMS.filter((x, j) => j !== i && !x.miss).map(x => x.apt).join(' ') + ' '); });
 }
 async function replaceItem(i, k, band){
@@ -360,16 +372,16 @@ function rowsOf(items){
   const rows = [], add = o => rows.push(o);
   const pct = v => A.pctTop(v);
   /* 집예보 강점(아실에 없는 값) — 맨 위 */
-  add({ grp: '집예보 통계 — 앞으로를 보는 값' });
+  add({ grp: '미래가치 비교 — 앞으로를 보는 값', ours: 1 });
   add({ ours: 1, l: '미래가치 점수', h: `이 단지가 앞으로 2년 동안 ${esc(items.map(x => x.sidoShort).filter((v, i, a) => a.indexOf(v) === i).join('·'))}의 다른 아파트보다 더 오를 가능성을 100점 만점으로 매긴 점수예요. 50점이 중간이고, 높을수록 더 오를 가능성이 커요. 과거에도 이 방식으로 매긴 점수가 실제 2년 뒤 시세와 맞았는지 확인했어요. 서울 단지는 서울끼리, 경기 단지는 경기끼리 비교한 순위라 시·도가 다르면 점수를 직접 견주지 마세요.`,
-    v: items.map(x => x.fv != null ? `<b>${x.fv}점</b><small>${esc(x.fvBase)} 중 ${pct(x.fv)}</small>` : NA), n: items.map(x => new Set(items.map(y => y.sd)).size === 1 ? x.fv : null), d: 1 });
+    v: items.map((x, i) => x.fv != null ? `<b class="big">${x.fv}<span>점</span></b><span class="bar b${i}"><i style="width:${Math.max(3, Math.min(100, x.fv))}%"></i></span><small>${esc(x.fvBase)} 중 ${pct(x.fv)}</small>` : NA), n: items.map(x => new Set(items.map(y => y.sd)).size === 1 ? x.fv : null), d: 1 });
   const hw = [1, 2, 3].map(h => A.winner(items.map(x => x.fv == null || !x.hzOk[h] ? null : h === 2 ? x.fv : (x.fh && x.fh[h] != null && new Set(items.map(y => y.sd)).size === 1 ? x.fh[h] : null)), 1));
   add({ ours: 1, l: '보유 기간별 전망', h: '1년·2년·3년 뒤를 각각 따로 계산한 순위예요. 상위 23%면 같은 시·도 아파트 100곳 중 23등쯤이라는 뜻이에요. 과거 자료로 맞춰 봤을 때 잘 맞지 않았던 기간은 ‘참고만’으로 흐리게 보여 드려요.',
     v: items.map((x, i) => { if (x.fv == null) return NA; return `<div class="hz">${[1, 2, 3].map((h, hi) => { const v = h === 2 ? x.fv : (x.fh && x.fh[h] != null ? x.fh[h] : null); if (v == null) return `<span class="ref">${h}년: 자료 없음</span>`;
-      const t = `${h}년: ${pct(v)}${x.hzOk[h] ? '' : ' (참고만)'}`; return hw[hi] === i ? `<span><b class="w${i}">${t}</b></span>` : `<span class="${x.hzOk[h] ? '' : 'ref'}">${t}</span>`; }).join('')}</div>`
-      /* 기간별 순위가 크게 엇갈리면 데이터로 확인되는 이유 한 줄(없으면 생략) */
-      + (() => { const hg = PL && PL.hzGapLine ? PL.hzGapLine(x.fx, { apt: x.apt, dong: x.dong, sgg: x.sggName, sido: x.sidoShort, rp: x.gs != null ? PL.regionPlace(IX, x.code, x.gs) : null, IX, code: x.code, hs: [3, 1], hzOk: x.hzOk, year: new Date().getFullYear() }) : '';
-        return hg ? `<small class="hzwhy">${esc(hg)}</small>` : ''; })(); }) });
+      const t = `<em>${h}년</em> ${pct(v)}${x.hzOk[h] ? '' : '*'}`; return hw[hi] === i ? `<span><b class="w${i}">${t}</b></span>` : `<span class="${x.hzOk[h] ? '' : 'ref'}">${t}</span>`; }).join('')}${[1, 3].some(h => !x.hzOk[h]) ? '<small>* 표시는 검증이 약해 참고만</small>' : ''}</div>`; }),
+    /* 기간별 순위가 크게 엇갈리면 데이터로 확인되는 이유 한 줄(없으면 생략) — 좁은 칸 대신 표 아래 전체 폭으로 */
+    why: items.map(x => { if (x.fv == null) return ''; const hg = PL && PL.hzGapLine ? PL.hzGapLine(x.fx, { apt: x.apt, dong: x.dong, sgg: x.sggName, sido: x.sidoShort, rp: x.gs != null ? PL.regionPlace(IX, x.code, x.gs) : null, IX, code: x.code, hs: [3, 1], hzOk: x.hzOk, year: new Date().getFullYear() }) : '';
+        return hg || ''; }) });
   add({ ours: 1, l: '구 안 위치', h: '같은 구(시) 아파트끼리만 비교한 미래가치 순위예요. 높을수록 그 구 안에서 앞서는 단지예요.',
     v: items.map(x => x.fvg != null ? `<b>${pct(x.fvg)}</b><small>${esc(x.sggName)} 아파트 중</small>` : NA), n: items.map(x => new Set(items.map(y => y.code)).size === 1 ? x.fvg : null), d: 1 });
   add({ ours: 1, l: '우리 동네 흐름', h: '입주 물량·인구·미분양·일자리 같은 지역 자료로 본 구(시) 단위 흐름 순위예요. 같은 구 단지끼리는 값이 같아요.',
@@ -401,11 +413,12 @@ function vsTable(items){
     : `<div class="hd">${items.map((x, i) => `<span class="h${i}">${esc(x.apt)}</span>`).join('')}</div>`;
   let h = '', k = 0;
   for (const r of rows){
-    if (r.grp){ h += `<div class="grp">${esc(r.grp)}</div>`; continue; }
+    if (r.grp){ h += `<div class="grp ${r.ours ? 'og' : ''}">${r.ours ? '<b>집예보</b>' : ''}${esc(r.grp)}</div>`; continue; }
     const w = r.d ? A.winner(r.n, r.d) : -1, id = 'hp' + (k++);
     const v = i => `<div class="v ${w === i ? 'win w' + i : ''}">${r.v[i]}</div>`;
     const lb = `<div class="lb">${esc(r.l)}<button type="button" class="qm" aria-expanded="false" aria-controls="${id}" aria-label="${esc(r.l)} 도움말">?</button></div>`;
-    h += `<div class="r ${r.ours ? 'ours' : ''}">${n === 2 ? v(0) + lb + v(1) : lb + items.map((x, i) => v(i)).join('')}<div class="help" id="${id}" hidden>${esc(r.h)}</div></div>`;
+    const why = (r.why || []).map((t, i) => t ? `<p><i class="d${i}"></i>${esc(t)}</p>` : '').join('');
+    h += `<div class="r ${r.ours ? 'ours' : ''}">${n === 2 ? v(0) + lb + v(1) : lb + items.map((x, i) => v(i)).join('')}<div class="help" id="${id}" hidden>${esc(r.h)}</div>${why ? `<details class="why"><summary>기간마다 순위가 다른 이유</summary>${why}</details>` : ''}</div>`;
   }
   return `<div class="vs n${n}">${head}${h}</div>`;
 }
@@ -423,11 +436,11 @@ function render(){
   const sum = A.summary(items);
   $('res').innerHTML = `${chartCard(items)}
   <section class="card" aria-label="비교할 단지">${panels(items)}</section>
+  <section class="card"><h2>항목별 비교<small>색이 칠해진 칸이 그 항목에서 앞선 단지예요. 항목 이름 옆 ?를 누르면 설명이 나와요.</small></h2>${vsTable(items)}</section>
   <section class="card" id="sumBox">
     <h2>통계로 본 요약<small>${items.map(x => esc(x.apt)).join(' · ')}</small></h2>
     ${sum.length ? `<ul class="sum">${sum.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : '<p class="basis">요약할 만큼 같은 항목의 자료가 모이지 않았어요. 아래 표를 확인해 주세요.</p>'}
   </section>
-  <section class="card"><h2>항목별 비교<small>▲ 표시는 그 항목에서 앞선 단지예요. 항목 이름 옆 ?를 누르면 설명이 나와요.</small></h2>${vsTable(items)}</section>
   <section class="card"><h2>이어서 보기</h2><div class="links">
       ${items.map(x => `<a href="${esc(mineUrl(x))}"><b>${esc(x.apt)} 시세·전망 자세히 →</b><small>실거래 목록·가격 추이·미래가치 근거</small></a>`).join('')}
       <a class="main" href="/jangdaejang-calc/buy/report/?mode=cmp&amp;cmp=${encodeURIComponent(items.map(rkey).join('!'))}" data-track="ask_to_report_cmp"><b>대출·필요 현금까지 비교하기 →</b><small>내 연소득·보유 현금으로 살 수 있는지 함께 봐요</small></a>
