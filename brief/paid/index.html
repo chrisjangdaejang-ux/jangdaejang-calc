@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
+<meta name="robots" content="noindex">
+<script src="/jangdaejang-calc/assets/biz.js" defer></script>
+<title>결제 확인 — 집예보</title>
+<script>window.JDJ_CONFIG = { tool:'brief', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../assets/track.js?v=2"></script>
+<script src="../../assets/stat.js?v=7"></script>
+<script src="../../assets/config.js?v=3"></script>
+<script src="../../assets/agents.js"></script>
+<script src="../../assets/auth.js?v=3"></script>
+<script src="../../assets/pay.js?v=2"></script>
+<script src="../../assets/brief-core.js?v=1"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/pay.css?v=1">
+<script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
+<style>
+.wrap{max-width:640px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:clamp(24px,6vw,32px);margin:4px 0 8px}
+.lead{margin:0 0 16px;color:var(--sub);line-height:1.6}
+.sb{border:1px solid var(--line);border-radius:16px;padding:16px;margin:0 0 12px}
+.sb h2{font-size:18px;font-weight:900;margin:0 0 6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sb dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0 0 10px;font-size:15px}
+.sb dt{color:var(--sub2)}.sb dd{margin:0;font-weight:700}
+.tg{font-size:12.5px;font-weight:800;border-radius:6px;padding:1px 7px;background:#E8F0FF;color:#1F4FD1}
+.tg.off{background:#F2F4F6;color:#4E5968}
+.row2{display:flex;flex-wrap:wrap;gap:8px}
+.inp,select.inp{font:inherit;font-size:16px;min-height:46px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:#fff;width:100%;box-sizing:border-box;margin:6px 0}
+.note{font-size:13.5px;color:var(--sub2);line-height:1.65;margin:12px 0 0}
+details{margin:8px 0 0}summary{cursor:pointer;font-weight:700;min-height:40px;display:flex;align-items:center}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>집예보</a>
+  <div class="badge plain">아침 브리핑</div>
+</header>
+<main class="wrap" id="main"><p class="note">확인하고 있어요… 이 화면을 닫지 마세요.</p></main>
+<footer class="foot">★ 집예보 · <a href="../">아침 브리핑</a> · <a href="../manage/">내 구독 관리</a> · <a href="../../refund/">환불 정책</a></footer>
+<script>
+(function(){
+'use strict';
+const P = JDJ_PAY, esc = P.esc, main = document.getElementById('main'), Q = new URLSearchParams(location.search);
+const paymentKey = Q.get('paymentKey') || '', orderId = Q.get('orderId') || '', amount = Number(Q.get('amount'));
+if (!paymentKey || !orderId || !(amount > 0)) { main.innerHTML = '<h1>결제 정보가 없어요</h1><p class="lead">구독은 <a href="../manage/">내 구독 관리</a>에서 확인할 수 있어요.</p>'; return; }
+P.post('briefConfirm', { paymentKey, orderId, amount }).then(j => {
+  history.replaceState(null, '', location.pathname + '?done=' + encodeURIComponent(j.orderId));
+  const s = j.sub || {};
+  main.innerHTML = `<span class="tag">아침 브리핑</span><h1>결제가 끝났어요</h1>
+    <section class="sb"><dl><dt>주문번호</dt><dd>${esc(j.orderId)}</dd><dt>상품</dt><dd>${esc(s.product)}</dd><dt>이용 기간</dt><dd>${esc(s.start)} ~ ${esc(s.end)}</dd><dt>받는 곳</dt><dd>${esc(s.contact)}</dd></dl>
+    <div class="row2"><a class="btn primary" href="../manage/">내 구독 관리</a><a class="btn" href="../subscribe/">동네 바꾸기</a></div></section>
+    <div class="msg info">이용 기간 첫날 아침부터 보내 드려요. 첫 브리핑을 받기 전에는 7일 안에 전액 환불, 받기 시작한 뒤에는 남은 날만큼 환불할 수 있어요. 자동으로 다시 결제되지 않아요.</div>`;
+  if (window.JDJ && JDJ.track) JDJ.track('brief_paid', { product: s.pro ? 'pro' : 'basic' });
+}).catch(x => {
+  main.innerHTML = `<h1>결제를 마치지 못했어요</h1><div class="msg err">${esc(x.message)}</div><p class="note">돈이 빠져나갔는데 이 화면이 보이면 주문번호(${esc(orderId)})와 함께 고객문의로 알려 주세요. 승인되지 않은 결제는 자동으로 취소돼요.</p>${x.net ? '<button class="btn" onclick="location.reload()">다시 확인하기</button>' : ''}`;
+});
+})();
+</script>
+</body>
+</html>

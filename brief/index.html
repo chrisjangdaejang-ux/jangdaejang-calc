@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="집예보">
+<script src="/jangdaejang-calc/assets/pwa.js" defer></script>
+<script src="/jangdaejang-calc/assets/biz.js" defer></script>
+<title>집예보 우리 동네 아침 브리핑 — 어제 새로 올라온 실거래·신고가·전세·분양 일정</title>
+<meta name="description" content="내가 고른 동네의 어제 새로 신고된 아파트 실거래, 신고가, 최고가보다 크게 내린 거래, 전세, 분양 일정과 정책 변화를 매일 아침 한 번에 받아 보세요.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="집예보 우리 동네 아침 브리핑">
+<meta property="og:description" content="어제 우리 동네에 새로 올라온 실거래와 신고가, 매일 아침 한 번에.">
+<meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/brief/">
+<meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/default.png">
+<meta property="og:locale" content="ko_KR">
+<script>window.JDJ_CONFIG = { tool:'brief', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../assets/track.js?v=2"></script>
+<script src="../assets/stat.js?v=7"></script>
+<script src="../assets/config.js?v=3"></script>
+<script src="../assets/agents.js"></script>
+<script src="../assets/auth.js?v=3"></script>
+<script src="../assets/brief-core.js?v=1"></script>
+<script src="../assets/tabbar.js?v=2" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
+<style>
+.wrap{max-width:760px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:clamp(25px,6vw,34px);margin:4px 0 6px}
+.lead{margin:0 0 14px;font-size:16px;color:var(--sub);line-height:1.6}
+.meta{font-size:14px;color:var(--sub2);margin:0 0 12px}
+.vt{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--gray);border-radius:14px;padding:4px;margin:0 0 12px}
+.vt button{font:inherit;font-size:15px;font-weight:800;min-height:46px;border:0;border-radius:11px;background:none;color:var(--sub2);cursor:pointer}
+.vt button[aria-pressed="true"]{background:#fff;color:var(--blue);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;margin:0 0 6px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chips a{flex:none;font-size:14.5px;font-weight:700;min-height:40px;display:inline-flex;align-items:center;padding:0 13px;border:1px solid var(--line);border-radius:999px;color:var(--sub);text-decoration:none;background:#fff;white-space:nowrap}
+.chips a[aria-current="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.chips a small{font-weight:500;margin-left:4px;opacity:.8}
+.one{background:#F4F7FF;border:1px solid #D6E2FF;border-radius:16px;padding:16px 18px;margin:0 0 14px}
+.one h2{font-size:15px;font-weight:800;color:var(--blue);margin:0 0 6px}
+.one p{margin:0 0 6px;font-size:16.5px;line-height:1.65;color:var(--text)}
+.one p.c{font-size:15.5px;color:var(--sub)}
+.one p.so{font-size:15.5px;color:var(--text);font-weight:600;border-top:1px dashed #C9D7FB;padding-top:8px;margin-top:8px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 14px}
+.stats div{border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:#fff}
+.stats b{display:block;font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.3}
+.stats small{display:block;font-size:13px;color:var(--sub2);line-height:1.35}
+.stats .hi b{color:#C2410C}
+.sec{margin:20px 0 0}
+.sec h2{font-size:19px;font-weight:900;margin:0 0 4px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.sec h2 small{font-size:13.5px;font-weight:500;color:var(--sub2)}
+.sec .sub{font-size:14px;color:var(--sub2);margin:0 0 8px;line-height:1.55}
+.tl{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.tl li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;padding:11px 2px;border-bottom:1px solid var(--line)}
+.tl .nm b{font-size:16px;font-weight:800;word-break:keep-all}
+.tl .nm small{display:block;font-size:13.5px;color:var(--sub2);margin-top:1px}
+.tl .pr{text-align:right;white-space:nowrap}
+.tl .pr b{display:block;font-size:16.5px;font-weight:900;font-variant-numeric:tabular-nums}
+.tl .pr small{display:block;font-size:13px;color:var(--sub2)}
+.tg{display:inline-block;font-size:12.5px;font-weight:800;border-radius:6px;padding:1px 6px;margin:3px 4px 0 0;white-space:nowrap}
+.tg.hi{background:#FDECE4;color:#C2410C}.tg.dn{background:#E8F0FF;color:#1F4FD1}.tg.x{background:#F2F4F6;color:#4E5968}.tg.mine{background:#FFF6DB;color:#8A6A00}
+.tl li.mine{background:#FFFCF2}
+.empty{padding:16px;border:1px dashed var(--line);border-radius:14px;color:var(--sub);font-size:15px;line-height:1.6;text-align:center}
+.box{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 8px;font-size:15px;line-height:1.6}
+.box b{font-weight:800}
+.box small{color:var(--sub2)}
+.more{display:block;width:100%;margin:10px 0 0;min-height:46px;font:inherit;font-size:15px;font-weight:700;border:1px solid var(--line);background:#fff;color:var(--sub);border-radius:12px;cursor:pointer}
+.pro3{counter-reset:p;list-style:none;margin:0;padding:0}
+.pro3 li{position:relative;padding:12px 14px 12px 46px;border:1px solid #D6E2FF;background:#F8FAFF;border-radius:14px;margin:0 0 8px;font-size:16px;line-height:1.6}
+.pro3 li:before{counter-increment:p;content:counter(p);position:absolute;left:14px;top:12px;width:22px;height:22px;border-radius:50%;background:var(--blue);color:#fff;font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.row2{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 0}
+.cardwrap{margin:8px 0 0;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#F2F4F6}
+.cardwrap .scale{transform-origin:0 0}
+.cta{margin:26px 0 0;padding:18px;border-radius:18px;background:linear-gradient(180deg,#F4F7FF,#fff);border:1px solid #D6E2FF}
+.cta h2{font-size:20px;font-weight:900;margin:0 0 6px}
+.cta p{margin:0 0 10px;font-size:15px;color:var(--sub);line-height:1.6}
+.pick{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}
+.pick select{font:inherit;font-size:16px;font-weight:700;min-height:48px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--text)}
+.pick .full{grid-column:1/-1}
+.note{font-size:13.5px;color:var(--sub2);line-height:1.65;margin:14px 0 0}
+details.how{margin:16px 0 0;border:1px solid var(--line);border-radius:14px;padding:4px 14px}
+details.how summary{cursor:pointer;font-weight:800;min-height:44px;display:flex;align-items:center}
+details.how p{font-size:14.5px;color:var(--sub);line-height:1.65;margin:4px 0 10px}
+.feat{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:8px}
+.feat li{border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:15px;line-height:1.55}
+.feat li b{display:block;font-size:16px}
+.price2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}
+.price2 div{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff}
+.price2 b{display:block;font-size:20px;font-weight:900}
+.price2 small{display:block;font-size:13.5px;color:var(--sub2);line-height:1.5}
+/* ---- 카드 이미지(1080×1080) ---- */
+.bc{width:1080px;height:1080px;box-sizing:border-box;padding:64px 72px 56px;background:#fff;display:flex;flex-direction:column;font-family:'Noto Sans KR',sans-serif;color:#191F28;position:relative;overflow:hidden}
+.bc .bh{display:flex;align-items:center;justify-content:space-between}
+.bc .logo{display:flex;align-items:center;gap:14px;font-size:38px;font-weight:900;letter-spacing:-1px}
+.bc .logo svg{width:52px;height:52px}
+.bc .logo span{color:#2F6BFF}
+.bc .dt{font-size:30px;font-weight:700;color:#4E5968}
+.bc .ar{margin:44px 0 0;font-size:72px;font-weight:900;letter-spacing:-2px;line-height:1.15}
+.bc .ar small{display:block;font-size:30px;font-weight:700;color:#2F6BFF;letter-spacing:-.5px;margin:0 0 8px}
+.bc .st{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:40px 0 0}
+.bc .st div{background:#F4F7FF;border-radius:24px;padding:22px 24px}
+.bc .st b{display:block;font-size:58px;font-weight:900;letter-spacing:-1.5px;line-height:1.15}
+.bc .st small{display:block;font-size:24px;font-weight:700;color:#4E5968;line-height:1.3}
+.bc .st .hi b{color:#C2410C}
+.bc .tp{margin:30px 0 0;border:3px solid #191F28;border-radius:26px;padding:22px 28px}
+.bc .tp em{font-style:normal;display:inline-block;font-size:24px;font-weight:900;background:#FDECE4;color:#C2410C;border-radius:10px;padding:3px 12px;margin:0 0 8px}
+.bc .tp em.dn{background:#E8F0FF;color:#1F4FD1}
+.bc .tp b{display:block;font-size:40px;font-weight:900;letter-spacing:-1px;line-height:1.25}
+.bc .tp span{display:block;font-size:30px;font-weight:700;color:#3E4754;margin-top:4px}
+.bc .ln{margin:28px 0 0;font-size:31px;line-height:1.5;font-weight:600;color:#191F28;flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical}
+.bc .ft{display:flex;justify-content:space-between;align-items:flex-end;border-top:2px solid #E5E8EB;padding-top:20px;font-size:22px;color:#4E5968;line-height:1.45}
+.bc .ft b{color:#191F28}
+html.cardmode{zoom:1!important}body.cardmode{margin:0;background:#fff}
+body.cardmode>header.top,body.cardmode>.foot,body.cardmode>.wrap,body.cardmode .jtab{display:none!important}
+@media(max-width:420px){.stats b{font-size:19px}.stats small{font-size:12.5px}.tl .pr b{font-size:15.5px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>집예보</a>
+  <div class="badge plain">아침 브리핑</div>
+</header>
+<main class="wrap" id="main"><p class="note">브리핑을 불러오고 있어요…</p></main>
+<div id="cardRoot"></div>
+<footer class="foot">국토교통부 실거래 공개 자료·청약홈 공고·집예보 정책 목록으로 만든 브리핑이에요. 만드는 방법은 이 화면 아래 '이 브리핑은 이렇게 만들어요'에서 볼 수 있어요.<br>★ 집예보 · <a href="../">홈</a> · <a href="../refund/">환불 정책</a> · <a href="../terms/">이용약관</a></footer>
+<script>
+(function(){
+'use strict';
+const B = window.JDJ_BRIEF, esc = B.esc, $ = id => document.getElementById(id);
+const Q = new URLSearchParams(location.search);
+const D = B.parseD(Q.get('d'));
+const PRO = Q.get('v') === 'pro', CARD = Q.get('card') === '1';
+const J = u => fetch(u, {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null);
+const T = (n, p) => { try { window.JDJ && JDJ.track && JDJ.track(n, p || {}); } catch(e){} };
+const LOGO = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>';
+let apts = [];
+try { const a = JSON.parse(localStorage.getItem('jdj_brief_apts') || '[]'); if (Array.isArray(a)) apts = a.slice(0, 10).map(String); } catch(e){}
+
+function url(g, dn, pro){ const p = new URLSearchParams(); p.set('d', B.dKey(g, dn)); if (pro) p.set('v', 'pro'); return '?' + p.toString(); }
+
+/* ---------- 카드(1080×1080) ---------- */
+function cardHtml(S, dn, pro){
+  const c = B.card(S, dn, pro);
+  return `<div class="bc" id="bcard" role="img" aria-label="${esc(c.area)} 아침 브리핑 카드">
+    <div class="bh"><div class="logo">${LOGO}집예보 <span>아침 브리핑</span></div><div class="dt">${esc(c.date)}</div></div>
+    <div class="ar"><small>${esc(c.win || '새로 올라온')} 실거래</small>${esc(c.sd ? c.sd + ' ' : '')}${esc(c.area)}</div>
+    <div class="st">${c.stats.map((s, i) => `<div class="${i === 1 ? 'hi' : ''}"><b>${esc(s.v)}</b><small>${esc(s.k)}</small></div>`).join('')}</div>
+    ${c.top ? `<div class="tp">${c.top.tag ? `<em class="${/낮음/.test(c.top.tag) ? 'dn' : ''}">${esc(c.top.tag)}</em>` : ''}<b>${esc(c.top.name)}</b><span>${esc(c.top.price)} · ${esc(c.top.when)}</span></div>` : ''}
+    <div class="ln">${esc(c.line.replace(/^"|"$/g, ''))}</div>
+    <div class="ft"><span>국토교통부 실거래 공개 자료 기준<br>신고가 = 같은 단지·같은 평형 이전 최고가를 넘은 거래</span><span><b>집예보</b></span></div>
+  </div>`;
+}
+function fitCard(box){
+  const inner = box.querySelector('.scale'); if (!inner) return;
+  const w = box.clientWidth, s = w / 1080; inner.style.transform = `scale(${s})`; box.style.height = (1080 * s) + 'px';
+}
+
+/* ---------- 목록 ---------- */
+function tradeLi(t){
+  const tg = B.tags(t), mine = apts.includes(t.a);
+  const extra = t.hi && t.pm ? `이전 최고 ${B.won(t.pm)}(${B.ymI(t.pmd)})` : (t.m2 && t.dr != null && t.dr <= B.DROP ? `최근 2년 최고 ${B.won(t.m2)}(${B.ymI(t.m2d)})` : '');
+  return `<li class="${mine ? 'mine' : ''}"><div class="nm"><b>${esc(t.a)}</b><small>${esc(t.d)} · ${esc(t.b)}(전용 ${t.ar}㎡) · ${t.f != null ? t.f + '층' : '층 정보 없음'}${t.by ? ' · ' + t.by + '년 준공' : ''}</small>
+    ${mine ? '<span class="tg mine">관심 단지</span>' : ''}${tg.map(x => `<span class="tg ${x.c}">${esc(x.t)}</span>`).join('')}${extra ? `<small>${esc(extra)}</small>` : ''}</div>
+    <div class="pr"><b>${esc(B.won(t.p))}</b><small>${B.md(t.dt)} 계약</small></div></li>`;
+}
+function rentLi(r){
+  const bits = [r.ty === '갱신' ? '갱신 계약' : r.ty === '신규' ? '신규 계약' : '', r.up != null ? `이전 ${B.won(r.pre)} → ${B.pct(r.up)}` : '', r.jr ? `최근 6개월 매매 중간값의 ${Math.round(r.jr)}%` : ''].filter(Boolean);
+  return `<li><div class="nm"><b>${esc(r.a)}</b><small>${esc(r.d)} · ${esc(r.b)}(전용 ${r.ar}㎡) · ${r.f != null ? r.f + '층' : ''}</small>${bits.length ? `<small>${esc(bits.join(' · '))}</small>` : ''}</div>
+    <div class="pr"><b>전세 ${esc(B.won(r.dep))}</b><small>${B.md(r.dt)} 계약</small></div></li>`;
+}
+function list(items, fn, n, id){
+  if (!items.length) return '';
+  const first = items.slice(0, n).map(fn).join(''), rest = items.slice(n);
+  return `<ul class="tl" id="${id}">${first}</ul>${rest.length ? `<button type="button" class="more" data-more="${id}" data-n="${rest.length}">${rest.length}건 더 보기</button><template id="${id}-t">${rest.map(fn).join('')}</template>` : ''}`;
+}
+
+function render(S, IX){
+  const dn = D.dn, v = B.scope(S, dn), area = S.name + (dn ? ' ' + dn : '');
+  const w = (S.win || {}).t || {}, wr = (S.win || {}).r || {};
+  document.title = `${area} 아침 브리핑 ${B.dateLabel(S.date)} — 집예보`;
+  const dongs = (S.dongs || []).filter(x => x[1] + x[3] > 0);
+  let h = `<span class="tag">우리 동네 아침 브리핑</span>
+  <h1>${esc(area)}</h1>
+  <p class="meta">${esc(B.dateLabel(S.date))} 아침 · ${esc(B.windowDetail(w))}</p>
+  <div class="vt" role="group" aria-label="보기 종류"><button type="button" data-v="" aria-pressed="${!PRO}">일반</button><button type="button" data-v="pro" aria-pressed="${PRO}">중개사용</button></div>
+  ${dongs.length ? `<nav class="chips" aria-label="동 고르기"><a href="${url(S.g, '', PRO)}" aria-current="${!dn}">${esc(S.name)} 전체</a>${dongs.map(x => `<a href="${url(S.g, x[0], PRO)}" aria-current="${x[0] === dn}">${esc(x[0])}<small>${x[1]}건</small></a>`).join('')}</nav>` : ''}
+  <section class="one" aria-label="오늘의 한 줄"><h2>오늘의 한 줄</h2>
+    ${v.lines.fact ? `<p>${esc(v.lines.fact)}</p>` : ''}${v.lines.cmp ? `<p class="c">${esc(v.lines.cmp)}</p>` : ''}${v.lines.mean ? `<p class="c">${esc(v.lines.mean)}</p>` : ''}${v.lines.so ? `<p class="so">${esc(v.lines.so)}</p>` : ''}
+  </section>
+  <div class="stats"><div><b>${v.n}건</b><small>${esc(B.windowText(w) || '새로 올라온')} 매매</small></div><div class="hi"><b>${v.nhi}건</b><small>그중 신고가</small></div>
+    <div><b>${v.m30 ? esc(B.pct(v.m30.chg)) : '—'}</b><small>같은 단지 최근 30일<br>vs 직전 3개월</small></div></div>`;
+  if (PRO) {
+    h += `<section class="sec" aria-labelledby="h-pro"><h2 id="h-pro">손님께 할 이야기 3줄</h2><p class="sub">공공 자료로 확인된 사실만 골랐어요. 눌러서 복사해 문자·카톡에 붙여 넣으세요.</p>
+      ${v.pro.length ? `<ol class="pro3">${v.pro.map(x => `<li>${esc(x.replace(/^"|"$/g, ''))}</li>`).join('')}</ol><div class="row2"><button type="button" class="btn" id="copyPro">3줄 복사하기</button></div>` : '<div class="empty">오늘은 이 동네에서 이야기할 새 자료가 없어요.</div>'}
+    </section>
+    <section class="sec" aria-labelledby="h-card"><h2 id="h-card">고객 공유용 카드 <small>1080×1080</small></h2><p class="sub">손님에게 보내기 좋은 정사각형 카드예요. [카드 이미지 저장]을 누르면 휴대폰에 그림으로 저장돼요.</p>
+      <div class="cardwrap" id="cardBox"><div class="scale">${cardHtml(S, dn, true)}</div></div>
+      <div class="row2"><button type="button" class="btn primary" id="saveCard">카드 이미지 저장</button><a class="btn" href="${url(S.g, dn, true)}&card=1" target="_blank" rel="noopener">카드만 크게 보기</a></div></section>`;
+  }
+  /* 새 매매 */
+  h += `<section class="sec" aria-labelledby="h-t"><h2 id="h-t">${esc(B.windowText(w) || '새로 올라온')} 매매 <small>${v.n}건${v.more ? ` · 목록은 ${S.trades.length}건만` : ''}</small></h2>
+    <p class="sub">국토교통부 실거래 공개 자료에 새로 보인 거래예요. 계약일은 그보다 앞설 수 있어요(신고 기한 30일).${S.cancels && !dn ? ` 같은 기간 해제(취소) 신고 ${S.cancels}건은 빼고 셌어요.` : ''}</p>
+    ${v.n ? list(B.sortMine(v.trades, apts), tradeLi, 8, 'lt') : `<div class="empty">${w.none ? '오늘은 국토부 자료를 새로 확인하지 못했어요. 내일 다시 알려 드려요.' : w.first ? '오늘부터 새로 올라오는 거래를 모아요.' : '새로 올라온 아파트 매매가 없어요.'}</div>`}</section>`;
+  /* 최고가 대비 하락 */
+  h += `<section class="sec" aria-labelledby="h-d"><h2 id="h-d">최근 2년 최고가보다 많이 내린 거래</h2><p class="sub">같은 단지·같은 평형의 최근 2년 최고가보다 10% 넘게 낮은 새 거래예요(직거래·원룸형 제외).</p>
+    ${v.drops.length ? list(v.drops, tradeLi, 5, 'ld') : '<div class="empty">이번에는 없어요.</div>'}</section>`;
+  /* 전세 */
+  h += `<section class="sec" aria-labelledby="h-r"><h2 id="h-r">${esc(B.windowText(wr) || '새로 올라온')} 전세 <small>${v.jeonse.length}건${v.monthly != null ? ` · 월세 ${v.monthly}건` : ''}</small></h2>
+    <p class="sub">${esc(B.windowDetail(wr))}. 갱신 계약은 이전 보증금과 비교해 보여 드려요.</p>
+    ${v.jeonse.length ? list(v.jeonse, rentLi, 6, 'lr') : '<div class="empty">새로 올라온 전세 거래가 없어요.</div>'}</section>`;
+  /* 가격 흐름 */
+  h += `<section class="sec" aria-labelledby="h-w"><h2 id="h-w">이번 주 가격 흐름</h2>`;
+  if (v.m30) h += `<div class="box"><b>같은 단지·같은 평형끼리 비교: ${esc(B.pct(v.m30.chg))}</b><br>${esc(v.m30.from.slice(5).replace('-', '/'))}~${esc(v.m30.to.slice(5).replace('-', '/'))} 계약 ${v.m30.n}건을 각자 직전 3개월 중간값과 비교한 변화율의 중간값이에요. ${v.m30.up}건은 더 비싸게, ${v.m30.n - v.m30.up}건은 같거나 싸게 거래됐어요.<br><small>최근 계약은 아직 신고가 다 들어오지 않아 건수가 늘 수 있어요.</small></div>`;
+  else h += `<div class="box">같은 단지끼리 비교할 거래가 5건이 안 돼 변화율을 내지 않았어요.</div>`;
+  if (S.rone && S.rone.ws) h += `<div class="box"><b>한국부동산원 주간 아파트 매매가격지수: 지난주보다 ${esc(B.pct(S.rone.ws.chg))}</b>${S.rone.wj ? ` · 전세 ${esc(B.pct(S.rone.wj.chg))}` : ''}<br><small>${esc(S.name)} 기준, 부동산원 공표 ${esc(S.rone.ws.at)}</small></div>`;
+  h += `</section>`;
+  /* 분양·청약 */
+  const nts = v.notices.filter(n => !n.near).concat(v.notices.filter(n => n.near));
+  h += `<section class="sec" aria-labelledby="h-n"><h2 id="h-n">새 분양 공고·청약 일정</h2><p class="sub">청약홈 공고 중 최근 7일 안에 나왔거나 2주 안에 접수하는 것만 골랐어요.</p>
+    ${nts.length ? nts.map(n => { const x = B.noticeText(n); return `<div class="box"><b>${esc(x.name)}</b> <span class="tg ${x.isNew ? 'hi' : 'x'}">${esc(x.kind)}${x.isNew ? ' · 새 공고' : ''}</span>${n.near ? ' <span class="tg x">같은 구 ' + esc(n.d) + '</span>' : ''}<br>${esc([x.when, x.pw, x.hh].filter(Boolean).join(' · '))}${n.u ? ` · <a href="${esc(n.u)}" target="_blank" rel="noopener">청약홈 공고</a>` : ''}</div>`; }).join('') : '<div class="empty">이 동네의 새 공고·2주 안 접수 일정은 없어요. 전체 일정은 <a href="../bunyang/">분양</a>에서 볼 수 있어요.</div>'}</section>`;
+  /* 정책 */
+  h += `<section class="sec" aria-labelledby="h-p"><h2 id="h-p">정책 변화</h2><p class="sub">집예보 정책 목록에서 이 지역에 해당하고 최근 2주 안에 단계가 바뀐 것만 보여 드려요.</p>
+    ${(S.policy || []).length ? S.policy.map(p => `<div class="box"><b>${esc(p.name)}</b> <span class="tg x">${esc(p.stage)} ${esc(p.d.slice(5).replace('-', '/'))}</span><br>${esc(p.plain || '')}${p.src && p.src[1] ? ` · <a href="${esc(p.src[1])}" target="_blank" rel="noopener">공식 발표</a>` : ''}</div>`).join('') : '<div class="empty">최근 2주 동안 이 지역에 해당하는 정책 변화는 없어요.</div>'}</section>`;
+  /* 관심도 */
+  h += `<section class="sec" aria-labelledby="h-i"><h2 id="h-i">집예보에서 많이 본 단지</h2>`;
+  if (v.interest && v.interest.rows.length) h += `<p class="sub">최근 ${v.interest.days}일 동안 집예보 내 집·추천·비교 화면에서 이 단지를 본 서로 다른 방문자 수예요(${v.interest.min}명 이상인 단지만, 개인을 알 수 없는 집계).</p><ul class="tl">${v.interest.rows.map(r => `<li><div class="nm"><b>${esc(r.a)}</b><small>${esc(r.d)}</small></div><div class="pr"><b>${r.n}명</b><small>${r.np != null ? `그 전 주 ${r.np}명` : ''}</small></div></li>`).join('')}</ul>`;
+  else h += `<div class="empty">방문 자료가 더 쌓이면 이 동네에서 많이 본 단지를 보여 드려요.</div>`;
+  h += `</section>`;
+  /* 구독 */
+  h += `<section class="cta"><h2>매일 아침 받아 보기</h2><p>이 브리핑을 고른 동네(최대 ${B.PRICE.brief.areas}곳, 중개사용 ${B.PRICE.brief_pro.areas}곳)로 매일 아침 보내 드려요. 처음 ${B.TRIAL_DAYS}일은 무료예요. 자동 결제는 없어요.</p>
+    <div class="price2"><div><b>월 ${B.PRICE.brief.amount.toLocaleString('ko-KR')}원</b><small>일반 · 동네 3곳</small></div><div><b>월 ${B.PRICE.brief_pro.amount.toLocaleString('ko-KR')}원</b><small>중개사용 · 동네 10곳 · 손님 이야기 3줄·공유 카드</small></div></div>
+    <a class="btn primary" style="width:100%" href="subscribe/?d=${encodeURIComponent(B.dKey(S.g, dn))}${PRO ? '&p=brief_pro' : ''}" data-track="brief_sub_click">${B.TRIAL_DAYS}일 무료로 받아 보기</a></section>`;
+  h += `<details class="how"><summary>이 브리핑은 이렇게 만들어요</summary>
+    <p><b>새로 올라온 거래</b> — 국토교통부 실거래 공개 자료에는 신고한 날짜가 없어요. 그래서 집예보가 동네마다 이미 본 거래 목록을 갖고, 새로 받은 자료에 처음 보이는 거래만 골라요. 매일 확인하면 '어제 새로 올라온', 며칠 만에 확인했으면 그 기간을 그대로 밝혀요.</p>
+    <p><b>신고가</b> — 같은 단지·같은 전용면적(㎡ 반올림)에서 그 계약일 전까지의 최고가(직거래·해제 제외)를 넘은 거래예요. <b>최근 2년 최고가보다 많이 내린 거래</b>는 같은 타입의 최근 2년 거래가 3건 이상이고, 최고가가 튀는 한 건이 아닐 때만 보여 드려요.</p>
+    <p><b>같은 단지 비교</b> — 최근 30일 계약을 같은 단지·같은 평형의 직전 3개월 중간값과 하나씩 비교해, 비싼 단지가 많이 팔려서 생기는 착시를 뺐어요.</p>
+    <p><b>'그래서' 문장</b> — 과거 같은 구에서 비슷한 상황(최근 두 달 신고가 비율이 지금만큼 높거나 낮았던 달)이 6번 이상 있었을 때만, 그 뒤 3개월이 어땠는지 횟수로 알려 드려요. 근거가 없으면 쓰지 않아요.</p>
+    <p>자료: 국토교통부 아파트 매매·전월세 실거래(공공데이터포털), 청약홈 분양 공고, 집예보 정책 목록${S.rone ? ', 한국부동산원 주간 가격지수' : ''}. 데이터 기준일 ${esc(S.ref || '')}.</p></details>`;
+  $('main').innerHTML = h;
+  /* 이벤트 */
+  document.querySelectorAll('.vt button').forEach(b => b.onclick = () => { location.search = url(S.g, dn, b.dataset.v === 'pro'); });
+  document.querySelectorAll('[data-more]').forEach(b => b.onclick = () => { const id = b.dataset.more; $(id).insertAdjacentHTML('beforeend', $(id + '-t').innerHTML); b.remove(); });
+  const cp = $('copyPro'); if (cp) cp.onclick = () => { const t = v.pro.map((x, i) => `${i + 1}. ${x.replace(/^"|"$/g, '')}`).join('\n') + `\n(국토교통부 실거래 공개 자료 · 집예보 아침 브리핑)`;
+    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { cp.textContent = '복사했어요'; T('brief_pro_copy'); }).catch(() => { prompt('아래 글을 길게 눌러 복사해 주세요', t); }); };
+  const cb = $('cardBox'); if (cb) { fitCard(cb); addEventListener('resize', () => fitCard(cb)); }
+  const sv = $('saveCard'); if (sv) sv.onclick = () => saveCard(S, dn, sv);
+  T('brief_view', { sgg: S.g, dong: dn ? 1 : 0, pro: PRO ? 1 : 0 });
+}
+
+/* 카드 저장: 서버가 만든 그림(data/brief/card/)이 있으면 그것을, 없으면 이 화면의 카드를 그림으로 */
+async function saveCard(S, dn, btn){
+  const name = `집예보_아침브리핑_${S.name}${dn ? '_' + dn : ''}_${S.date}.png`;
+  const pre = `${B.DATA}card/${B.dKey(S.g, dn)}.png`;
+  try {
+    const r = await fetch(pre, {cache:'no-cache'});
+    if (r.ok && /image/.test(r.headers.get('content-type') || '')) { const b = await r.blob(); return dl(b, name); }
+  } catch(e){}
+  try {
+    const el = $('bcard'), clone = el.cloneNode(true);
+    const css = [...document.styleSheets].map(s => { try { return [...s.cssRules].map(x => x.cssText).join('\n'); } catch(e){ return ''; } }).join('\n');
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml"><style>${css.replace(/@import[^;]+;/g, '')}</style>${clone.outerHTML}</div></foreignObject></svg>`;
+    const img = new Image(); img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    await img.decode();
+    const cv = document.createElement('canvas'); cv.width = cv.height = 1080; cv.getContext('2d').drawImage(img, 0, 0);
+    cv.toBlob(b => b ? dl(b, name) : fallback(), 'image/png');
+  } catch(e){ fallback(); }
+  function fallback(){ alert('이 브라우저에서는 바로 저장하지 못했어요. [카드만 크게 보기]를 눌러 화면을 캡처해 주세요.'); }
+  function dl(b, n){ const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = n; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); btn.textContent = '저장했어요'; T('brief_card_save'); }
+}
+
+/* ---------- 동네 고르기(주소에 동네가 없을 때) ---------- */
+async function chooser(){
+  const IX = await J(B.DATA + 'index.json');
+  const areas = (IX && IX.areas) || [];
+  const sds = [...new Set(areas.map(a => a.sd))];
+  $('main').innerHTML = `<span class="tag">우리 동네 아침 브리핑</span>
+    <h1>어제 우리 동네에<br>무슨 거래가 있었을까요?</h1>
+    <p class="lead">고른 동네(시·군·구 또는 동)에 국토교통부 실거래 자료로 새로 올라온 거래와 신고가, 최고가보다 크게 내린 거래, 전세, 분양 일정, 정책 변화를 매일 아침 한 번에 정리해 드려요.</p>
+    <ul class="feat"><li><b>새로 올라온 실거래</b>어제 새로 신고가 반영된 매매·전세를 동별로, 신고가와 최고가 대비 하락까지 표시해요.</li>
+      <li><b>오늘의 한 줄</b>사실 → 비교 → 의미 순서로 짧게. 과거 사례 근거가 있을 때만 '그래서'를 붙여요.</li>
+      <li><b>중개사용</b>손님에게 할 이야기 3줄과 바로 보낼 수 있는 1080×1080 공유 카드를 함께 드려요.</li></ul>
+    <div class="pick"><select id="pSd" aria-label="시·도">${sds.map(s => `<option>${esc(s)}</option>`).join('')}</select><select id="pG" aria-label="시·군·구"></select>
+      <select id="pDn" class="full" aria-label="동"><option value="">구 전체</option></select></div>
+    <div class="row2"><button type="button" class="btn primary" id="pGo">오늘 브리핑 보기</button><a class="btn" href="?d=11710-${encodeURIComponent('잠실동')}">예시: 송파구 잠실동</a><a class="btn" href="?d=11320-${encodeURIComponent('창동')}">예시: 도봉구 창동</a></div>
+    <p class="note">${IX ? `오늘(${esc(B.dateLabel(IX.date))}) 브리핑이 준비된 동네 ${IX.n}곳` : '브리핑 목록을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.'}</p>`;
+  const fillG = () => { const sd = $('pSd').value; $('pG').innerHTML = areas.filter(a => a.sd === sd).map(a => `<option value="${a.g}">${esc(a.name)}</option>`).join(''); fillDn(); };
+  const fillDn = async () => { const g = $('pG').value; $('pDn').innerHTML = '<option value="">구 전체</option>'; if (!g) return; const S = await J(B.DATA + g + '.json'); if (S && $('pG').value === g) $('pDn').innerHTML += (S.dongs || []).map(x => `<option>${esc(x[0])}</option>`).join(''); };
+  $('pSd').onchange = fillG; $('pG').onchange = fillDn; fillG();
+  $('pGo').onclick = () => { const g = $('pG').value; if (g) location.search = url(g, $('pDn').value, false); };
+}
+
+(async function(){
+  if (!D) { if (CARD) document.body.classList.remove('cardmode'); return chooser(); }
+  const S = await J(B.DATA + D.g + '.json');
+  if (!S) { $('main').innerHTML = `<h1>브리핑을 찾지 못했어요</h1><p class="lead">이 동네 브리핑이 아직 없어요. 구독하시면 다음 날 아침부터 만들어 드려요.</p><a class="btn primary" href="subscribe/">구독 안내 보기</a> <a class="btn" href="./">다른 동네 고르기</a>`; return; }
+  if (CARD) { document.documentElement.classList.add('cardmode'); document.body.classList.add('cardmode'); $('cardRoot').innerHTML = cardHtml(S, D.dn, PRO); return; }
+  render(S);
+})();
+})();
+</script>
+</body>
+</html>
