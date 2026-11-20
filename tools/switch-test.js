@@ -57,7 +57,8 @@ check('규제지역 20억: 가격구간 한도 4억', l.L, 40000, '15억 초과 
 l = SW.loanAt(100000, SW.ctx('reg', o2), dsr);
 check('다주택 규제지역 주담대 불가', l.by, 'BAN', 'LTV 0%');
 const cLoc = SW.ctx('local', o1);
-check('지방 DSR (스트레스 0.75%×40%)', SW.dsrMax(cLoc), 60621.80, '4.3% 30년', 0.01);
+check('지방 주기형 스트레스 = 0.75% × 30%', cLoc.stress, 0.225, '은행연합회 2026 하반기 운영방안: 지방 1.5%×50%, 주기형 10~30%(상한)');
+check('지방 DSR (스트레스 0.225%)', SW.dsrMax(cLoc), 61164.89, '4.225% 30년: 월 300만 × 연금현가계수', 0.01);
 check('월 상환액 4억 5.2% 30년 (원리금균등)', SW.monthly(40000, 5.2, 30), 219.6444, '', 0.0001);
 
 // 7. 매수 가능 상한: 그 가격은 살 수 있고 100만 더 비싸면 못 산다
@@ -105,6 +106,110 @@ check('예산 대비 낮고 지역 시세보다도 낮으면 제외', REC.tooChe
 check('예산 대비 낮아도 지역 시세 이상이면 남김', REC.tooCheap(0.3, 45000, 40000), false, '예산이 큰 사람의 지방 갈아타기');
 check('지역 시세 모르면 기존 기준', REC.tooCheap(0.3, 45000, 0), true, '');
 check('예산 적합하면 남김', REC.tooCheap(0.9, 10000, 40000), false, '');
+
+// 11. 갈아타기 루트 (v3): 대출 일부만 쓰기·남은 원금·과거 성적·전망·지금 갈 수 있는/조금 모자란 단지·정렬·가족 일정·루트
+{
+  const ndF = SW.need(100000, cReg, dsr, o1), ndS = SW.need(100000, cReg, dsr, Object.assign({}, o1, { loanUse: 0.7 }));
+  check('보수적: 대출 한도의 70%만', ndS.loan.L, 28000, '10억 LTV 40% = 4억 × 70%');
+  check('  └ 원래 한도 기록', ndS.loan.full, 40000, '');
+  check('  └ 덜 빌린 만큼 필요 현금 증가', ndS.need - ndF.need, 12000, '4억 − 2.8억');
+  check('남은 원금: 0년 = 원금', SW.balance(40000, 4, 30, 0), 40000, '');
+  check('남은 원금: 만기 = 0', SW.balance(40000, 4, 30, 30), 0, '', 1e-6);
+  const L = 40000, i = 4 / 1200, m = SW.monthly(L, 4, 30);
+  check('남은 원금: 10년 뒤 (원리금균등 공식)', SW.balance(L, 4, 30, 10), L * Math.pow(1 + i, 120) - m * (Math.pow(1 + i, 120) - 1) / i, 'B = L(1+i)^k − M((1+i)^k−1)/i', 1e-6);
+  check('남은 원금: 금리 0%', SW.balance(36000, 0, 30, 10), 24000, '원금 균등');
+  check('대출 한도 구간', [SW.capBand(150000), SW.capBand(150100), SW.capBand(250000), SW.capBand(250100)].join(','), 'b15,b25,b25,over', '15억 이하 6억 / 25억 이하 4억 / 초과 2억');
+
+  const MH = { '1': { oos_all: [{ top20: -1 }, { top20: 2 }, { top20: -1 }, { top20: -0.5 }], oos_hit: 1, oos_avg: -0.39 },
+    '2': { oos_all: [{ top20: 1 }, { top20: 1 }, { top20: 2 }, { top20: 0.4 }], oos_hit: 4, oos_avg: 1.09 },
+    '3': { oos_all: [{ top20: 1 }, { top20: -1 }, { top20: -2 }, { top20: 3 }], oos_hit: 2, oos_avg: 0.25 },
+    '5': { oos_all: [{ top20: 1 }], oos_hit: 1, oos_avg: 1 },
+    '7': { oos_all: [{ top20: 1 }, { top20: 2 }], oos_avg: 1.5, reg: { '부산광역시': { oos_all: [{}, {}, {}], hit: 1, ok: false, name: '부산' } } } };
+  const V = SW.validity(MH, '서울특별시');
+  check('기준: 평균 − 이면 못 넘음 (1년)', V[1].ok, false, '평균 −0.39');
+  check('기준: 평균 + · 4번 중 4번 (2년)', V[2].ok, true, '');
+  check('기준: 평균 + · 4번 중 2번 = 절반 → 넘음 (3년)', V[3].ok, true, '절반 이상');
+  check('기준: 한 번뿐이면 못 넘음 (5년)', V[5].ok, false, '2번 이상 필요');
+  check('기준: 맞은 수 없으면 top20>0 개수로 (7년)', V[7].hit, 2, '');
+  check('시·도 성적이 있으면 그것 (부산 7년)', SW.validity(MH, '부산광역시')[7].ok + '/' + SW.validity(MH, '부산광역시')[7].where, 'false/부산', '엔진 ok 그대로');
+  const f = { fv: 80, fh: { 1: 90, 3: 60, 5: 40, 7: 20 } };
+  let ol = SW.outlook(f, V, 1);
+  check('전망: 1년 보유 → 기준 넘은 가장 가까운 2년', ol.h + '/' + ol.ok, '2/true', '1년은 기준 못 넘어 쓰지 않음');
+  check('  └ 2년 점수 80 → 더 오를 가능성이 커요', ol.text, '평균보다 더 오를 가능성이 커요', '70 이상');
+  ol = SW.outlook(f, V, 8);
+  check('전망: 8년 보유 → 7년 (기준 넘음)', ol.h + '/' + ol.s, '7/20', '');
+  check('  └ 점수 20 → 덜 오를 가능성', ol.text, '평균보다 덜 오를 가능성이 커요', '');
+  ol = SW.outlook({ fh: { 1: 90 } }, V, 1);
+  check('기준 넘은 기간 점수가 없으면 참고로 (ok=false)', ol.h + '/' + ol.ok, '1/false', '');
+  check('볼 기간: 5년 보유 → 기준 넘은 3·7 중 가까운 3(같으면 긴 쪽 7)', SW.horizonFor(V, 5), 7, '|3−5| = |7−5| → 긴 쪽');
+  check('볼 기간: 4년 보유 → 3년', SW.horizonFor(V, 4), 3, '');
+  check('lean 구간', [SW.lean(70), SW.lean(55), SW.lean(50), SW.lean(31), SW.lean(30)].map(t => t.slice(0, 9)).join('|'), '평균보다 더 오를|평균보다 더 오를|평균과 비슷하게 |평균보다 덜 오를|평균보다 덜 오를', '');
+
+  // 같은 구 안 순위: 단지별 최고 평형 점수, 같은 점수는 같은 등수
+  const g = SW.guRanks([['1', '동', 'A', '59', 59, 1, [], '', '', { fvg: 50 }], ['1', '동', 'A', '84', 84, 1, [], '', '', { fvg: 90 }],
+    ['1', '동', 'B', '84', 84, 1, [], '', '', { fvg: 90 }], ['1', '동', 'C', '84', 84, 1, [], '', '', { fvg: 30 }], ['2', '동', 'D', '84', 84, 1, [], '', '', { fvg: 10 }]]);
+  check('구 안 순위: A(최고 평형 90) 1위 / 3곳', JSON.stringify(g(['1', '동', 'A'])), '{"r":1,"n":3}', '');
+  check('구 안 순위: 같은 점수 B도 1위', g(['1', '동', 'B']).r, 1, '');
+  check('구 안 순위: C 3위', g(['1', '동', 'C']).r, 3, '');
+  check('구 안 순위: 다른 구는 따로', JSON.stringify(g(['2', '동', 'D'])), '{"r":1,"n":1}', '');
+
+  // scan: 갈 수 있는 단지 / 1억 이내 부족 / 세대수 / 대출 구간
+  const UH = (apt, ppy, fv, hh, sc) => ['11680', '동', apt, '84㎡대', 84, 100, ser(ppy), '111', null, { fv, fvg: fv, hh, sc, fh: { 3: 100 - fv, 7: fv } }];
+  const us = [UH('가', 3000, 60, 1200), UH('나', 3300, 90, 0), UH('다', 3600, 95, 500), UH('라', 4500, 99, 2000), UH('마', 9000, 99, 2000), UH('바', 2900, 40, 150, ['중', 1, 2024, 2026, 1, 10, '11680', 300])];
+  const oS = Object.assign({}, o1, { cash: 60000 }), BS = SW.budgets(oS);
+  const sc = SW.scan({ units: us, inArea: () => true, bands: null, B: BS, o: oS, cheap: false });
+  const P = apt => REC.unitPrice(us.find(u => u[2] === apt));
+  const needOf = apt => SW.need(P(apt), cReg, dsr, oS).need;
+  check('갈 수 있는 단지 = 필요 현금 ≤ 자기자본', sc.can.every(x => x.need <= 60000) && sc.can.length === us.filter(u => needOf(u[2]) <= 60000).length, true, '');
+  check('조금만 더: 부족 0 초과 1억 이하만', sc.near.every(x => x.short > 0 && x.short <= 10000), true, '');
+  check('  └ 부족 금액 = 필요 현금 − 자기자본', sc.near.length ? Math.round(sc.near[0].short) : -1, sc.near.length ? Math.round(sc.near[0].need - 60000) : -1, '');
+  check('  └ 너무 비싼 단지(마)는 어디에도 없음', [...sc.can, ...sc.near].some(x => x.apt === '마'), false, '1억 넘게 부족');
+  const sc3 = SW.scan({ units: us, inArea: () => true, bands: null, B: BS, o: oS, cheap: false, hhMin: 300 });
+  check('세대수 300 이상: 자료 없는(0) 단지·150세대 제외', [...sc3.can, ...sc3.near].map(x => x.apt).sort().join(''), [...sc.can, ...sc.near].filter(x => x.hh >= 300).map(x => x.apt).sort().join(''), '');
+  const scB = SW.scan({ units: us, inArea: () => true, bands: null, B: BS, o: oS, cheap: false, cap: 'b15' });
+  check('대출 구간 15억 이하만', [...scB.can, ...scB.near].every(x => x.P <= 150000), true, '');
+  const scR = SW.scan({ units: us, inArea: () => true, bands: null, B: BS, o: Object.assign({}, oS, { reserveM: 6 }), cheap: false });
+  const x0 = scR.can[0] || scR.near[0];
+  check('비상금: 필요 현금 + 월 상환 6개월치로 판단', Math.round(x0.left), Math.round(60000 - x0.need - 6 * x0.mon), '');
+  const so = SW.sortList(sc.can, 'fv').map(x => x.apt).join('');
+  check('정렬: 미래가치 높은 순', so, sc.can.slice().sort((a, b) => b.fv - a.fv).map(x => x.apt).join(''), '');
+  check('정렬: 필요 현금 적은 순', SW.sortList(sc.can, 'cash').map(x => Math.round(x.need)).join(',') === sc.can.map(x => Math.round(x.need)).sort((a, b) => a - b).join(','), true, '');
+  check('정렬: 3년 점수 기준(h=3)이면 순서 반대', SW.sortList(sc.can, 'fv', 3)[0].apt, sc.can.slice().sort((a, b) => a.fv - b.fv)[0].apt, 'fh[3] = 100 − fv');
+  check('정렬: 부족 금액 적은 순', SW.sortList(sc.near, 'short').every((x, k, a) => !k || a[k - 1].short <= x.short), true, '');
+
+  // 가족 일정 (초·중등교육법 제13조: 만 6세가 된 다음 해 3월 입학)
+  const S = SW.schedule([4], 2026)[0];
+  check('만 4세(2022년생) → 초등 2029·중 2035·고 2038·대학 2041', [S.elem, S.mid, S.high, S.univ].join(','), '2029,2035,2038,2041', '');
+  const st = SW.stages([4, 1], 2026);
+  check('단계: 지금 → 첫째 6학년(2034) → 막내 대학(2044)', st.map(x => x.key + x.year).join(','), 'now2026,school2034,after2044', '');
+  check('자녀 없으면 지금 → 5년 뒤', SW.stages([], 2026).map(x => x.year).join(','), '2026,2031', '');
+  check('첫째가 이미 중학생이면 학군 단계 없음', SW.stages([15], 2026).some(x => x.key === 'school'), false, '');
+
+  // 학군 좋은 편 / 단계별 고르기
+  check('학군: 10곳 중 1위 → 좋은 편', SW.schoolGood({ sc: ['중', 1, 2024, 2026, 1, 10] }), true, '상위 30% 안');
+  check('학군: 10곳 중 4위 → 아님', SW.schoolGood({ sc: ['중', 1, 2024, 2026, 4, 10] }), false, '');
+  check('학군: 2곳뿐이면 판단 안 함', SW.schoolGood({ sc: ['중', 1, 2024, 2026, 1, 2] }), false, '');
+  check('중학교 배정 전: 학군 좋은 단지(바)만', SW.pickFor(sc.can, { key: 'school' }, null, 2).apt, '바', '');
+  const curGood = sc.can.find(x => x.apt === '바');
+  check('  └ 지금 집이 이미 학군 좋으면 그대로', SW.pickFor(sc.can, { key: 'school' }, curGood, 2), curGood, '');
+  const top = Math.max(...sc.can.map(x => x.P));
+  check('적극적: 가장 비싼 축(90% 이상) 안에서', SW.pickFor(sc.can, { key: 'now' }, null, 2, 'bold').P >= top * SW.BOLD_TOP, true, '');
+  check('보수적: 전체 중 미래가치 1위', SW.pickFor(sc.can, { key: 'now' }, null, 2, 'safe').apt, SW.sortList(sc.can, 'fv')[0].apt, '');
+
+  // 루트: 단계 사이 집값은 그대로(차익 0 → 양도세 0), 남은 원금·모은 돈만 늘어남
+  const pick = (oo, s, cur, h, mode) => SW.pickFor(SW.scan({ units: us, inArea: () => true, bands: null, B: SW.budgets(oo), o: oo, cheap: false, near: 0 }).can, s, cur, h, mode);
+  const R = SW.route({ mode: 'safe', year: 2026, stages: [{ key: 'now', year: 2026 }, { key: 'later', year: 2031 }], cash: 60000, save: 1000, o: o1, V, pick });
+  const r0 = R[0], r1 = R[1];
+  check('루트 1단계: 자기자본 = 지금 쓸 수 있는 돈', r0.pool, 60000, '');
+  check('  └ 대출은 한도의 70%', Math.round(r0.x.nd.loan.L), Math.round(r0.x.nd.loan.full * 0.7), '');
+  check('  └ 남는 현금 = 자기자본 − 필요 현금', Math.round(r0.left), Math.round(60000 - r0.x.need), '비상금은 남는 현금 안에');
+  if (r1.sale) {
+    check('루트 2단계: 시세 그대로면 양도세 0', r1.sale.cgt, 0, '차익 없음');
+    check('  └ 남은 대출 = 5년 상환 뒤 원금', Math.round(r1.sale.bal), Math.round(SW.balance(r0.x.nd.loan.L, o1.rate, o1.term, 5)), '');
+    const net = r0.x.P - r1.sale.bal - r1.sale.fee;
+    check('  └ 2단계 자기자본 = 남은 현금 + 5년 모은 돈 + 판 돈', Math.round(r1.pool), Math.round(r0.left + 5000 + net), '');
+  } else check('루트 2단계: 옮기지 않으면 그대로 삶', r1.stay, true, '');
+}
 
 let pass = 0;
 rows.forEach(r => { if (r.ok) pass++; console.log((r.ok ? 'PASS ' : 'FAIL ') + r.name.padEnd(44) + ' ' + String(r.got).slice(0, 14).padEnd(14) + ' ' + (r.ok ? '' : '기대 ' + r.want + ' ') + (r.basis || '')); });

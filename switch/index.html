@@ -43,7 +43,7 @@
 <script src="../assets/rec-core.js?v=2"></script>
 <script src="../assets/mine-core.js?v=15"></script>
 <script src="../assets/price-sheet.js?v=13"></script>
-<script src="switch-core.js?v=2"></script>
+<script src="switch-core.js?v=3"></script>
 <script src="../assets/narrative.js?v=8"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -238,6 +238,75 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .vssum b{font-weight:900}
 .why{margin:10px 0 0;padding-left:18px;font-size:15px}
 .why li{margin:3px 0}
+/* 가족 일정 입력 */
+.kids{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.kids .inp input{font-size:16px;padding:11px 8px}
+/* 갈아타기 루트 */
+.rmode{margin-bottom:10px}
+.rdesc{font-size:14px;color:#4E5968;margin:0 0 12px}
+.rt{position:relative;padding-left:22px}
+.rt:before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.rs{position:relative;margin-bottom:14px}
+.rs:last-child{margin-bottom:0}
+.rs:before{content:"";position:absolute;left:-20px;top:5px;width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--blue)}
+.rs.stay:before{border-color:#B9B39A}
+.rs .when{font-size:13.5px;font-weight:900;color:var(--blue);letter-spacing:.02em}
+.rs .whyl{font-size:14px;color:#4E5968;margin:2px 0 8px;word-break:keep-all}
+.rs .card{border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff}
+.rs .card h3{margin:0;font-size:17px;font-weight:900;letter-spacing:-.02em;word-break:keep-all}
+.rs .card .loc{font-size:13.5px;color:#4E5968;margin-bottom:8px}
+.rs table{font-size:14.5px}
+.rs td{padding:7px 4px}
+.rs td small{display:block;margin:0}
+.rs .out{margin-top:10px;border-radius:9px;padding:10px 12px;font-size:14.5px;background:var(--blue-l);word-break:keep-all}
+.rs .out.ref{background:var(--gray2)}
+.rs .out b{font-weight:900}
+.rs .out .tag2{display:inline-block;font-size:12.5px;font-weight:900;padding:1px 6px;border-radius:4px;background:var(--blue);color:#fff;margin-right:5px;vertical-align:1px}
+.rs .out.ref .tag2{background:#8B95A1}
+.rs .flowc{margin-top:8px;font-size:14.5px;font-weight:700;word-break:keep-all}
+.rs .stayc{border:1.5px dashed var(--line);border-radius:12px;padding:12px 14px;font-size:15px;background:#FBFAF6}
+.rs .acts{margin-top:8px}
+/* ③ 필터 */
+.filters{display:grid;gap:10px;margin-bottom:6px}
+.fl{display:grid;grid-template-columns:88px minmax(0,1fr);align-items:center;gap:8px}
+.fl .fk{font-size:14px;font-weight:700;color:#4E5968}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{font:inherit;font-size:14px;font-weight:700;border:1.5px solid var(--line);background:#fff;color:#4E5968;border-radius:999px;padding:6px 12px;cursor:pointer;line-height:1.25;min-height:36px}
+.chips button small{font-weight:500;font-size:12.5px;margin-left:4px}
+.chips button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.fl select{width:auto;max-width:100%;padding:8px 10px;font-size:15px}
+@media(max-width:420px){.fl{grid-template-columns:1fr;gap:4px}}
+.fnote{font-size:13.5px;color:#4E5968;margin:4px 0 12px;min-height:1em}
+.rc .nums.n4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:520px){.rc .nums.n4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.rc .nums .v.need{color:#A23B2A}
+.fvx{background:var(--blue-l);border-radius:9px;padding:9px 12px;font-size:14.5px;margin:0 0 8px;word-break:keep-all}
+.fvx b{font-weight:900}
+.fvx .hit{display:block;font-size:13.5px;color:#3E4754;margin-top:2px}
+.fvx.ref{background:var(--gray2)}
+.more{display:block;width:100%;margin-top:10px;font:inherit;font-size:15px;font-weight:700;min-height:44px;border:1.5px solid var(--line);background:#fff;border-radius:10px;cursor:pointer;color:var(--text)}
+.nearHead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:22px 0 10px;border-top:1px solid var(--line);padding-top:16px}
+.nearHead h3{margin:0;font-size:16px;font-weight:900}
+.nearHead h3 small{font-size:13.5px;color:#A23B2A;font-weight:700;margin-left:4px}
+.nearHead select{width:auto;padding:7px 10px;font-size:14.5px}
+.nr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;margin-bottom:8px}
+.nr b{font-size:15.5px;word-break:keep-all}
+.nr .loc{font-size:13px;color:#4E5968}
+.nr .sh{text-align:right;font-size:13px;color:#4E5968;white-space:nowrap}
+.nr .sh b{display:block;color:#A23B2A;font-size:16px}
+.nr .ln{grid-column:1/-1;font-size:13.5px;color:#3E4754;word-break:keep-all}
+.nr .ln .jps-btn{margin-top:4px}
+/* 상담 */
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:640px){.plans{grid-template-columns:1fr}}
+.pl{border:1.5px solid var(--line);border-radius:12px;padding:14px;background:#fff;display:flex;flex-direction:column;gap:8px}
+.pl b{font-size:16.5px;font-weight:900}
+.pl small{font-size:14px;color:#4E5968;line-height:1.5}
+.pl .btn{text-align:center;margin-top:auto}
+.soon{display:inline-block;font-size:12.5px;font-weight:900;background:#FFF1D6;color:#8A5A00;border-radius:4px;padding:1px 6px;vertical-align:2px}
+.taxf{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:auto}
+.taxf a{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:52px;border:1.5px solid var(--blue);color:var(--blue);border-radius:10px;text-decoration:none;font-weight:900;font-size:15px;padding:6px 4px;line-height:1.25}
+.taxf a small{font-size:12.5px;font-weight:500;color:#4E5968}
 </style>
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
 <script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
@@ -267,7 +336,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
   <div class="hero">
     <span class="tag">FREE TOOL · 1주택자 갈아타기</span>
     <h1>지금 집 팔면,<br><em>어디까지</em> 갈 수 있을까?</h1>
-    <p class="lead">양도세를 내고 대출을 갚은 뒤 손에 남는 돈, 그 돈과 새 대출로 살 수 있는 집값과 취득세, 예산 안에서 미래가치 점수가 높은 단지, 지금 집 유지와 갈아타기 비교까지 한 번에 보여 드려요.</p>
+    <p class="lead">양도세를 내고 대출을 갚은 뒤 손에 남는 돈, 새 대출로 살 수 있는 집값, 지금 갈 수 있는 단지와 조금만 더 있으면 되는 단지, 자녀 입학 시기에 맞춘 갈아타기 루트까지 한 번에 보여 드려요. 단지마다 미래가치와 과거에 맞은 횟수도 함께 보여 드려요.</p>
   </div>
 
   <div class="grid">
@@ -381,7 +450,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
           <div class="seg c3" id="rtype">
             <button data-v="var">변동형<small>가산 100%</small></button>
             <button data-v="mix">혼합형<small>가산 80%</small></button>
-            <button data-v="cyc" class="on">주기형<small>가산 40%</small></button>
+            <button data-v="cyc" class="on">주기형<small>가산 40%·지방 30%</small></button>
           </div>
         </div>
         <div class="row2">
@@ -403,6 +472,30 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
           </div>
         </div>
       </div>
+
+      <div class="panel" id="famPanel">
+        <h2><span class="step">STEP 3</span> 가족 일정 <span class="muted" style="font-weight:500;font-size:14px">(선택)</span></h2>
+        <p class="muted" style="font-size:14px;margin:-6px 0 14px">넣으면 자녀 입학 시기에 맞춰 언제 어디로 옮길지 루트를 짜 드려요.</p>
+        <div class="row2">
+          <div class="field">
+            <label for="myAge">내 나이 (만)</label>
+            <div class="inp"><input id="myAge" inputmode="numeric" placeholder="예: 38"><span class="unit">세</span></div>
+          </div>
+          <div class="field">
+            <label for="save">한 해 모을 수 있는 돈</label>
+            <div class="inp"><input id="save" inputmode="numeric" placeholder="예: 1,500"><span class="unit">만원</span></div>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label>자녀 나이 (만, 최대 3명)</label>
+          <div class="kids">
+            <div class="inp"><input id="kid1" inputmode="numeric" placeholder="첫째"><span class="unit">세</span></div>
+            <div class="inp"><input id="kid2" inputmode="numeric" placeholder="둘째"><span class="unit">세</span></div>
+            <div class="inp"><input id="kid3" inputmode="numeric" placeholder="셋째"><span class="unit">세</span></div>
+          </div>
+          <div class="hint" id="kidHint"></div>
+        </div>
+      </div>
     </div>
 
     <!-- 결과 -->
@@ -422,6 +515,17 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
         <div class="stat"><div class="k">새 대출 가능액</div><div class="v" id="fLoan">-</div><div class="d" id="fLoanD"></div></div>
       </div>
 
+      <div class="panel section" id="routeBox">
+        <h2>갈아타기 루트 — 언제, 어디로</h2>
+        <div class="seg c2 rmode" id="rmode">
+          <button data-v="safe" class="on">보수적 루트<small>대출 70%·비상금 6개월</small></button>
+          <button data-v="bold">적극적 루트<small>대출 한도 끝까지</small></button>
+        </div>
+        <p class="rdesc" id="rDesc"></p>
+        <div id="routeRes"><div class="recload">실거래 자료를 불러오는 중이에요…</div></div>
+        <p class="recnote" id="routeNote">금액은 오늘 시세를 그대로 이어서 계산했어요. 집값이 몇 % 오를지는 숫자로 넣지 않았고, 단계 사이 흐름은 과거에 그대로 써 봤을 때 절반 이상 맞고 평균보다 더 오른 기간의 점수로만 말해요. 그렇지 않은 기간은 '참고'로 표시해요. 연소득·금리·대출 규제는 지금 그대로로 봤어요.</p>
+      </div>
+
       <div class="panel section">
         <h2>① 지금 집 양도세</h2>
         <div class="verdict" id="verdict"></div>
@@ -436,10 +540,21 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
       </div>
 
       <div class="panel section" id="recBox">
-        <h2>③ 예산 안에서 미래가치 점수가 높은 단지</h2>
+        <h2>③ 지금 갈 수 있는 단지</h2>
         <p class="muted" style="font-size:15px;margin:0 0 12px" id="recLead"></p>
+        <div class="filters">
+          <div class="fl"><span class="fk">세대수</span><div class="chips" id="fHh"><button data-v="0" class="on">전체</button><button data-v="100">100세대 이상</button><button data-v="300">300세대 이상</button><button data-v="1000">1,000세대 이상</button></div></div>
+          <div class="fl"><span class="fk">대출 한도 구간</span><div class="chips" id="fCap"><button data-v="" class="on">전체</button><button data-v="b15">15억 이하<small>대출 최대 6억</small></button><button data-v="b25">15억~25억<small>최대 4억</small></button><button data-v="over">25억 초과<small>최대 2억</small></button></div></div>
+          <div class="fl"><label class="fk" for="fSort">정렬</label><select id="fSort"><option value="fv">미래가치 높은 순</option><option value="cash">필요 현금 적은 순</option><option value="price">가격 높은 순</option></select></div>
+        </div>
+        <p class="fnote" id="fNote"></p>
         <div id="recList"><div class="recload">실거래 자료를 불러오는 중이에요…</div></div>
-        <p class="recnote">미래가치 점수는 국토교통부 실거래가·인구·입주 물량 등 공공 자료로 같은 시·도 아파트끼리 비교한 순위예요. 과거 여러 때에 그때까지의 자료만으로 점수를 매긴 뒤 실제 시세와 맞춰 보는 방식으로 점검해요. 같은 지역 평균 대비 순위라, 시장 전체가 내리면 점수가 높은 단지도 내릴 수 있어요.</p>
+        <button type="button" class="more" id="recMore" hidden>더 보기</button>
+        <div class="nearHead"><h3>조금만 더 있으면 되는 단지 <small>1억 이내 부족</small></h3>
+          <select id="nSort" aria-label="정렬"><option value="short">부족 금액 적은 순</option><option value="fv">미래가치 높은 순</option></select></div>
+        <div id="nearList"></div>
+        <button type="button" class="more" id="nearMore" hidden>더 보기</button>
+        <p class="recnote">필요 현금 = 집값 − 새 대출 + 취득세·지방교육세(85㎡ 초과는 농어촌특별세) + 살 때 중개보수 + 이사·등기 등 기타. 세대수는 공개된 단지 정보가 있는 단지만 걸러져요. 미래가치 점수는 국토교통부 실거래가·인구·입주 물량 등 공공 자료로 같은 시·도 아파트끼리 비교한 순위예요. 과거 여러 때에 그때까지의 자료만으로 점수를 매긴 뒤 실제 시세와 맞춰 보는 방식으로 점검해요. 같은 지역 평균 대비 순위라, 시장 전체가 내리면 점수가 높은 단지도 내릴 수 있어요.</p>
       </div>
 
       <div class="panel section" id="vsBox">
@@ -493,10 +608,26 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
         <a id="premBtn" href="../buy/report/" target="_blank" rel="noopener">갈아탈 단지 추천받기 →</a>
       </div>
 
-      <div class="cta">
-        <p>갈아타기 순서·타이밍이 고민된다면<small>1차 진단은 무료 · 심층 컨설팅은 유료로 별도 안내 · 계산 결과는 신청서에 자동 입력됩니다</small></p>
-        <div class="btns">
-          <a class="btn primary" id="consultBtn" data-track="consult_click" href="#" target="_blank" rel="noopener">상담 신청</a>
+      <div class="panel section plan" id="planBox">
+        <h2>이 계획으로 상담받기</h2>
+        <p class="muted" style="font-size:15px;margin:0 0 12px">위 루트(단계·단지·금액)와 계산 결과가 신청서에 자동으로 들어가요. 이름·연락처는 신청서에만 적고, 이 화면에는 남지 않아요.</p>
+        <div class="plans">
+          <div class="pl">
+            <b>장대장 갈아타기 상담</b>
+            <small>옮길 순서·시기·단지를 함께 점검해요. 1차 진단은 무료, 심층 컨설팅은 유료로 따로 안내해요.</small>
+            <a class="btn primary" id="consultBtn" data-track="consult_click" href="#" target="_blank" rel="noopener">장대장 상담 신청</a>
+          </div>
+          <div class="pl">
+            <b>분야별 제휴 세무사 <span class="soon">준비 중</span></b>
+            <small>제휴 세무사를 모으고 있어요. 지금 신청해 두시면 분야에 맞는 세무사가 정해지는 대로 연락드려요.</small>
+            <div class="taxf" id="taxF">
+              <a data-tf="양도세" data-track="tax_consult" href="#" target="_blank" rel="noopener">양도세<small>지금 집 팔 때</small></a>
+              <a data-tf="취득세·일시적 2주택" data-track="tax_consult" href="#" target="_blank" rel="noopener">취득세<small>일시적 2주택</small></a>
+              <a data-tf="보유세(재산세·종부세)" data-track="tax_consult" href="#" target="_blank" rel="noopener">보유세<small>재산세·종부세</small></a>
+            </div>
+          </div>
+        </div>
+        <div class="btns" style="margin-top:12px">
           <a class="btn" data-track="youtube_click" href="https://www.youtube.com/results?search_query=%EC%9E%A5%EB%8C%80%EC%9E%A5TV" target="_blank" rel="noopener">장대장TV 보기</a>
           <button class="btn ghost" id="copyBtn" data-track="copy_result">결과 복사</button>
         </div>
@@ -513,7 +644,9 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
       <li>장기보유특별공제: 1세대 1주택·거주 2년 이상이면 보유 연 4% + 거주 연 4% (최대 80%), 그 밖에는 보유 연 2% (최대 30%). 정부가 발표한 장기보유특별공제 개편안은 아직 시행 전이라 현행 기준으로 계산</li>
       <li>다주택: 팔 때 조정대상지역이면 2주택 +20%p, 3주택 이상 +30%p 중과(2026.5.10 이후 양도분, 장기보유특별공제 배제). 조정대상지역 여부는 국토교통부 지정·해제 공고 이력으로 판정하고, 일부 지역만 지정됐던 기간은 직접 골라 주세요.</li>
       <li>필요경비를 비워두면 산 가격 기준 1주택 취득세(현행 세율)+지방교육세+중개보수 상한으로 추정. 수리·확장비 등 실제 영수증이 있는 비용은 직접 입력하면 더 정확</li>
-      <li>새 집 대출: 1주택은 기존 주택 처분 조건. 규제지역 LTV 40%, 비규제 70%, 다주택은 수도권·규제지역 주택구입 주담대 불가(지방 60%). 수도권·규제지역 주담대 한도 15억 이하 6억 / 25억 이하 4억 / 25억 초과 2억. DSR 40%, 스트레스 금리 수도권·규제지역 3.0% × 금리유형 비율</li>
+      <li>새 집 대출 (2026년 11월 20일 확인): 1주택은 기존 주택 처분 조건. 규제지역 LTV 40%, 비규제 70%, 다주택은 수도권·규제지역 주택구입 주담대 불가(지방 60%). 수도권·규제지역 주담대 한도 15억 이하 6억 / 25억 이하 4억 / 25억 초과 2억, 은행권 DSR 40% — 금융위원회 '부동산 시장 안정을 위한 금융 종합대책'(2026.8.13)에서 그대로 유지. 스트레스 금리는 수도권·규제지역 3.0%, 지방 1.5%의 50%(0.75%) × 금리유형 비율(주기형 수도권 40%·지방 30%) — 은행연합회 '2026년 하반기 스트레스 DSR 운영방안'(금융위원회 행정지도, 2026.7.1~12.31)</li>
+      <li>갈아타기 루트: 자녀 만 나이로 학교 시기를 잡아요(초등학교는 만 6세가 된 다음 해 3월 입학 — 초·중등교육법 제13조). 보수적 루트는 대출을 한도의 70%까지만 쓰고 매달 상환액 6개월치를 남기며, 적극적 루트는 한도를 끝까지 써서 갈 수 있는 가장 비싼 축(그 안 최고가의 90% 이상) 단지 중에서 골라요. 중학교 배정 전 단계는 가까운 중학교가 같은 구 중학교 중 순전입 상위 30% 안인 단지만 봐요(학교알리미 공시). 단계 사이 집값은 오늘 시세 그대로 두고, 대출 원금 상환과 한 해 모을 돈만 더해요.</li>
+      <li>미래가치 전망: 단지 점수(2년·1·3·5·7년)를 과거 여러 때에 그때까지 자료만으로 매긴 뒤 실제 시세와 맞춰 봤어요. 상위 20% 단지가 평균보다 더 오른 횟수가 절반 이상이고 평균으로도 더 오른 기간만 '더 오를 가능성'으로 말하고, 나머지는 '참고'로 보여 드려요.</li>
       <li>새 집 취득세: 세금 계산기와 같은 엔진(지방세법 기준). 1주택자는 일시적 2주택 일반세율 1~3% + 지방교육세, 85㎡ 초과 농특세. 2주택 이상은 이 집을 판 뒤 새 집을 사는 것으로 보고 취득 후 주택 수로 중과 여부를 판정. 중개보수는 법정 상한요율 + 부가세</li>
       <li>추천 단지: 내 집 마련 리포트와 같은 자료·점수 기준. 추정 시세는 최근 3개월 실거래 평당가 중앙값 × 전용면적(최근 3개월 거래가 없으면 마지막 거래 기준)이며, 실제 호가·매물과 다를 수 있어요.</li>
       <li>기존 주담대는 매도 대금으로 상환하고, 매도 대금이 새 집 잔금에 쓰인다고 가정했습니다. 실제 세액·한도는 세무사·은행 확인이 필요합니다.</li>
@@ -689,7 +822,7 @@ function render(){
     tips.push(['warn',`<b>15억 경계 주의.</b> 새 집이 15억을 넘으면 대출 한도가 6억 → 4억으로 줄어요.`]);
   }
   if (ld.by==='DSR' && rtype!=='cyc'){
-    const P2=SW.maxPrice(c, SW.dsrMax(c, Math.round(c.stressBase*.4*100)/100), oo);
+    const P2=SW.maxPrice(c, SW.dsrMax(c, Math.round(c.stressBase*(c.capital?SW.TYPE_RATIO:SW.TYPE_RATIO_LOCAL).cyc*1000)/1000), oo);
     if (P2>P) tips.push(['',`<b>주기형 금리로 바꾸면 ${fmt(P2-P)}원 더 비싼 집</b>까지 계산돼요.`]);
   }
   if (houses===1){
@@ -705,15 +838,28 @@ function render(){
 }
 
 const FORM='https://docs.google.com/forms/d/e/1FAIpQLScCG7wzIlY3FE6EHU5QWo92uW5NQe7aiP-GJ9jvh41Rx2E8Zw/viewform';
+function routeSummary(){
+  const R=ROUTE_LAST&&ROUTE_LAST[RMODE]; if(!R) return '';
+  const F=famInputs();
+  return `[${SW.ROUTE_MODE[RMODE].name} 루트${F.kids.length?` · 자녀 만 ${F.kids.join('·')}세`:''}${F.age!=null?` · 본인 만 ${F.age}세`:''}] `+R.map(r=>{
+    const t=r.st.key==='now'?`지금(${r.st.year})`:r.st.title;
+    if(r.x) return `${t}: ${r.x.apt} ${r.x.band} ${fmt(r.x.P)} (필요 현금 ${fmt(r.x.need)}, 대출 ${fmt(r.x.nd.loan.L)}, 취득세 등 ${fmt(r.x.nd.cost.tax)}, 미래가치 ${r.x.fv!=null?r.x.fv+'점':'-'})`;
+    return `${t}: ${r.stay?'그대로 거주':'갈 단지 없음'}`;
+  }).join(' → ');
+}
 function updateConsult(){
   const {t,net,cash,P,ld,c}=last;
-  const q=new URLSearchParams({usp:'pp_url'});
-  q.set('entry.146176170', fmtW(c.income));
-  q.set('entry.1872979900', `자기자본 ${fmt(cash)}원 (현재 집 매도가 ${fmt(t.sale)}, 양도세 ${fmt(t.total)}, 매도 후 ${fmt(net)})`);
-  q.set('entry.397234060', $('region').options[$('region').selectedIndex].text);
-  q.set('entry.1054811896', '1주택 갈아타기');
-  q.set('entry.658364183', `[갈아타기] ${fmt(P)}원 (새 대출 ${fmt(ld.L)}, ${TYPE_NAME[rtype]} ${c.rate}%·${c.term}년) | ${JDJ.label()}`);
-  $('consultBtn').href=FORM+'?'+q.toString().replace(/\+/g,'%20');
+  const mk=kind=>{
+    const q=new URLSearchParams({usp:'pp_url'});
+    q.set('entry.146176170', fmtW(c.income));
+    q.set('entry.1872979900', `자기자본 ${fmt(cash)}원 (현재 집 매도가 ${fmt(t.sale)}, 양도세 ${fmt(t.total)}, 매도 후 ${fmt(net)})`);
+    q.set('entry.397234060', $('region').options[$('region').selectedIndex].text);
+    q.set('entry.1054811896', kind);
+    q.set('entry.658364183', (`[갈아타기] ${fmt(P)}원 (새 대출 ${fmt(ld.L)}, ${TYPE_NAME[rtype]} ${c.rate}%·${c.term}년) | ${routeSummary()} | ${JDJ.label()}`).slice(0,1500));
+    return FORM+'?'+q.toString().replace(/\+/g,'%20');
+  };
+  $('consultBtn').href=mk(ROUTE_LAST?'갈아타기 루트 · 장대장 상담':'1주택 갈아타기');
+  document.querySelectorAll('#taxF a[data-tf]').forEach(a=>{ a.href=mk(`갈아타기 루트 · 제휴 세무사 상담 신청(준비 중) · ${a.dataset.tf}`); });
   if (typeof updateSwitchReport==='function') updateSwitchReport();
 }
 
@@ -743,7 +889,7 @@ const RBASE = (code, kind) => window.JDJ_PLAIN && AG_IX ? JDJ_PLAIN.rankBase(AG_
 /* 공유: 내 금액은 담지 않고 갈아타기 계산기 주소만 */
 /* 공유(assets/share.js): 매도가·대출·손에 남는 돈 같은 금액은 빼고 '몇 곳을 찾았는지'만. 받는 분은 갈아타기 계산기 첫 화면으로 */
 /* 가족과 자세히 공유: 매도가·산 가격·대출·연소득 같은 입력칸과 고른 버튼·지역·지금 집을 주소 # 뒤에만 담아 받는 분 화면에 같은 계산을 띄움 */
-const SW_IDS = ['sale','acq','exp','acqDate','saleDate','live','oldLoan','oldMon','extra','etc','income','debt','rate','term','target'];
+const SW_IDS = ['sale','acq','exp','acqDate','saleDate','live','oldLoan','oldMon','extra','etc','income','debt','rate','term','target','myAge','save','kid1','kid2','kid3'];
 if (window.JDJ_SHARE) JDJ_SHARE.setup({tool:'switch', detail(){
   if (!last || !last.c) return null;
   const RG = window.JDJ_REGION || {}, q = {};
@@ -757,7 +903,7 @@ function shareSw(){
   JDJ_SHARE.update({
     head: n ? `지금 집 팔고 갈아탈 수 있는 단지 ${n.toLocaleString()}곳을 찾았어요` : '지금 집 팔고 어디까지 갈아탈 수 있는지 계산했어요',
     lines: ['양도세·손에 남는 돈·새 대출을 한 번에 계산', n ? '예산 안에서 미래가치 점수가 높은 단지 순서로' : '예산 안에서 미래가치 점수가 높은 단지 찾기', '지금 집 유지와 갈아타기를 나란히 비교']
-  }, {root: $('recBox').parentNode, after: $('vsBox'), bottomAfter: document.querySelector('.cta .btns')});
+  }, {root: $('recBox').parentNode, after: $('vsBox'), bottomAfter: document.querySelector('#planBox .btns')});
 }
 { const _r = runRec; runRec = async function(){ const v = await _r.apply(this, arguments); shareSw(); return v; }; }
 document.addEventListener('click',e=>{ const a=e.target.closest&&e.target.closest('a[data-fin]'); if(a&&window.JDJ_SHARE&&REC_LAST_O) JDJ_SHARE.saveFin(REC_LAST_O); },true);
@@ -1012,45 +1158,171 @@ function recReasons(x){
   if(x.c.capital && x.P>140000 && x.P<=150000) r.push(['c', '이 단지는 15억 바로 아래예요 — 15억을 넘으면 대출 한도가 6억 → 4억으로 줄어요']);
   return r;
 }
+/* ---------- ③ 지금 갈 수 있는 단지 · 조금만 더 있으면 되는 단지 · 갈아타기 루트 (switch-core scan/route) ---------- */
+let MH_L=null, MH_P=null;
+function loadMH(){ if(!MH_P) MH_P=fetch(AG_DATA+'model_h.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(m=>MH_L=m).catch(()=>null); return MH_P; }
+const FLT={hh:0, cap:'', sort:'fv', nsort:'short', show:8, nshow:5};
+let RMODE='safe', SCAN=null, ROUTE_LAST=null, GU_RANK=null, GU_RANK_SRC=null;
+const sidoOfCode=code=>(AG_IX&&AG_IX.sgg[code]||{}).sido||'';
+const shortSido=name=>{ const d=AG_IX&&AG_IX.sido.find(v=>v.name===name); return d?d.short:name; };
+const VAL=sido=>SW.validity(MH_L, sido);
+const hitTxt=v=>`과거에 그대로 써 봤더니 ${v.n}번 중 ${v.hit}번 맞았어요`;
+const topPct=v=>(v=Math.round(v), v>=50?`상위 ${Math.max(1,100-v)}%`:`하위 ${Math.max(1,v)}%`);
+function famInputs(){
+  const kids=['kid1','kid2','kid3'].map(id=>$(id).value.trim()).filter(v=>v!=='').map(v=>parseInt(v,10)).filter(v=>v>=0&&v<=30);
+  const age=parseInt($('myAge').value,10);
+  return {kids, age: age>=19&&age<=90?age:null, save:num($('save').value)};
+}
+function kidHint(){
+  const Y=new Date().getFullYear(), S=SW.schedule(famInputs().kids, Y);
+  $('kidHint').textContent = S.length ? S.map((k,i)=>`${['첫째','둘째','셋째'][i]}(${k.by}년생): `+(k.elem>Y?`초등 입학 ${k.elem}년 3월`:k.mid>Y?`중학교 입학 ${k.mid}년`:k.high>Y?`고등학교 입학 ${k.high}년`:k.univ>Y?`대학 진학 ${k.univ}년`:'성인')).join(' · ')+' — 올해 생일이 지났다고 보고 계산해요(연도가 1년 다를 수 있어요)' : '';
+}
+function scanOpt(units, inArea, bands, o){
+  return {units, inArea, bands, B:SW.budgets(o), o,
+    sggPpy: code=>{ const s=AG_IX.sgg[code]; return s?REC.lastNZ(s.s):0; }, note: noteOf,
+    exclude: u=>!!(HOME&&HOME.u&&u[0]===HOME.u[0]&&u[2]===HOME.u[2])};
+}
+function guRankTxt(x){
+  const r=GU_RANK&&GU_RANK(x.u), g=(AG_IX.sgg[x.code]||{}).name||'';
+  return r ? `${escH(g)} 단지 ${r.n.toLocaleString()}곳 중 ${r.r}위` : (x.fvg!=null?`${escH(g)} 안 ${topPct(x.fvg)}`:'');
+}
+/* 단지 미래가치 한 묶음: 점수 · 같은 구 안 순위 · 과거 성적(2년). 기준에 못 미친 기간이면 '참고' */
+function fvBlock(x){
+  if(x.fv==null) return `<div class="fvx ref">미래가치 점수가 아직 없는 단지예요(최근 거래가 적거나 자료 준비 중).</div>`;
+  const v=VAL(sidoOfCode(x.code))[2];
+  const gr=guRankTxt(x);
+  return `<div class="fvx${v&&!v.ok?' ref':''}"><b>미래가치 ${x.fv}점</b> · ${escH(RANK(x.fv, RBASE(x.code,'fv')))}${gr?` · <b>${gr}</b>`:''}`+
+    (v?`<span class="hit">${v.ok?'2년 전망 — ':'참고 — '}${hitTxt(v)}${v.where&&v.where!=='전국'?` (${escH(v.where)} 단지 기준)`:''}</span>`:'')+`</div>`;
+}
+function recCard(x, i){
+  const k=recKey(x), sg=AG_IX.sgg[x.code]||{}, o=last.o, on=k===(CMP_SEL||(REC_LAST&&REC_LAST.picked[0]&&recKey(REC_LAST.picked[0])));
+  const q=new URLSearchParams({o:houses>=2?'multi':'one', t:rtype, rt:o.rate, tm:o.term, sd:sg.sido||'', g:x.code, src:'switch_rec'});
+  const cd=x.nd.cost;
+  const rs=recReasons(x).filter(([c,t])=>!/^예산:|^이 단지는 미래가치/.test(t));
+  return `<div class="rc ${on?'on':''}">
+      <div class="hd"><div><div class="rk">${i+1}</div><h3>${escH(x.apt)} ${escH(x.band)}</h3><div class="loc">${escH(sg.sido)} ${escH(sg.name)} ${escH(x.dong)} · 전용 ${x.area}㎡${x.hh?` · ${x.hh.toLocaleString()}세대`:''} · ${GROUP_NAME[x.g]}</div></div>
+        <div class="fv"><b>${x.fv!=null?x.fv:'–'}</b><small>${x.fv!=null?'미래가치':'점수 준비 중'}</small></div></div>
+      <div class="nums n4"><div><div class="k">추정 시세</div><div class="v">${fmtShort(x.P)}</div></div><div><div class="k">필요 현금</div><div class="v need">${fmtShort(x.need)}</div></div><div><div class="k">새 대출</div><div class="v">${fmtShort(x.nd.loan.L)}</div></div><div><div class="k">매달 상환</div><div class="v">${Math.round(x.mon).toLocaleString()}만</div></div></div>
+      ${fvBlock(x)}
+      <ul><li>살 때 드는 돈: 취득세 등 ${fmt(cd.tax)}원 · 중개보수 ${fmt(cd.broker)}원 · 기타 ${fmt(last.etc)}원 · 매수 뒤 남는 현금 ${fmt(x.left)}원</li>${rs.map(([c,t])=>`<li class="${c}">${t}</li>`).join('')}</ul>
+      <div class="acts">${PB(x.code,x.dong,x.apt,x.band,x.u&&x.u[8],'switch_top')}<button type="button" data-cmp="${escH(k)}" class="${on?'cmpOn':''}">${on?'④에서 비교 중':'지금 집과 비교하기'}</button><a href="../buy/report/?${q}" target="_blank" rel="noopener" data-track="switch_rec_report" data-fin="1">이 지역 리포트</a></div>
+    </div>`;
+}
+function nearRow(x){
+  const sg=AG_IX.sgg[x.code]||{};
+  return `<div class="nr"><div><b>${escH(x.apt)} ${escH(x.band)}</b><div class="loc">${escH(sg.name)} ${escH(x.dong)} · 추정 시세 ${fmt(x.P)}원${x.hh?` · ${x.hh.toLocaleString()}세대`:''}</div></div>
+    <div class="sh">부족<b>${fmt(x.short)}원</b></div>
+    <div class="ln">${x.fv!=null?`미래가치 ${x.fv}점${guRankTxt(x)?' · '+guRankTxt(x):''} · `:''}필요 현금 ${fmt(x.need)}원 · 새 대출 ${fmt(x.nd.loan.L)}원${x.c.capital&&x.P>150000&&x.P<=152000?' · 15억을 조금 넘어 대출 한도가 4억으로 줄어든 단지예요':''}${PB(x.code,x.dong,x.apt,x.band,x.u&&x.u[8],'switch_near','sm')}</div></div>`;
+}
+function drawRecList(){
+  if(!SCAN) return;
+  const box=$('recList'), {can,near,cnt,hhMiss}=SCAN;
+  const list=SW.sortList(can, FLT.sort), shown=list.slice(0, FLT.show);
+  REC_LAST={picked:shown, total:list.length};
+  if(CMP_SEL && !shown.some(x=>recKey(x)===CMP_SEL)) CMP_SEL=null;
+  $('fNote').textContent = FLT.hh ? `세대수 자료가 있는 단지만 걸렀어요 — 자료가 없어 빠진 단지 ${hhMiss.toLocaleString()}곳` : '';
+  box.innerHTML = shown.length ? '<div class="recs">'+shown.map(recCard).join('')+'</div>'
+    : `<div class="recload">조건에 맞는 단지가 없어요. 세대수·대출 한도 구간을 '전체'로 바꾸거나, STEP 2에서 지역·전용면적을 넓혀 보세요.</div>`;
+  $('recMore').hidden = list.length<=FLT.show; $('recMore').textContent=`더 보기 (${Math.min(8,list.length-FLT.show)}곳 더 · 모두 ${list.length.toLocaleString()}곳)`;
+  const nl=SW.sortList(near, FLT.nsort), ns=nl.slice(0, FLT.nshow);
+  $('nearList').innerHTML = ns.length ? ns.map(nearRow).join('') : '<div class="recload">1억 이내로 모자란 단지는 없어요.</div>';
+  $('nearMore').hidden = nl.length<=FLT.nshow; $('nearMore').textContent=`더 보기 (모두 ${nl.length.toLocaleString()}곳)`;
+  box.querySelectorAll('[data-cmp]').forEach(b=>b.onclick=()=>{ CMP_SEL=b.dataset.cmp; JDJ.track('switch_rec_compare'); drawRecList(); setTimeout(()=>$('vsBox').scrollIntoView({behavior:'smooth',block:'start'}),60); });
+  renderVs(); shareSw();
+}
+function chipSeg(id, key, cb){ $(id).addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; [...$(id).children].forEach(x=>x.classList.toggle('on',x===b)); FLT[key]=key==='hh'?+b.dataset.v:b.dataset.v; FLT.show=8; JDJ.track('switch_filter',{k:key, v:b.dataset.v}); cb(); }); }
+chipSeg('fHh','hh',()=>runRec()); chipSeg('fCap','cap',()=>runRec());
+$('fSort').addEventListener('change',()=>{ FLT.sort=$('fSort').value; FLT.show=8; JDJ.track('switch_sort',{v:FLT.sort}); drawRecList(); });
+$('nSort').addEventListener('change',()=>{ FLT.nsort=$('nSort').value; drawRecList(); });
+$('recMore').addEventListener('click',()=>{ FLT.show+=8; drawRecList(); });
+$('nearMore').addEventListener('click',()=>{ FLT.nshow+=10; drawRecList(); });
+$('rmode').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; [...$('rmode').children].forEach(x=>x.classList.toggle('on',x===b)); RMODE=b.dataset.v; JDJ.track('switch_route_mode',{v:RMODE}); drawRoute(); });
+
+/* 지금 집 vs 갈 집 흐름 비교 한 줄 (같은 기간 점수, 그 기간 과거 성적이 기준을 넘었을 때만 단정, 아니면 참고) */
+function flowLine(x, h){
+  const hu=HOME&&HOME.u&&HOME.u[9]; if(!x||!x.f) return '';
+  if(!hu) return `<div class="flowc muted">STEP 1에서 지금 집 단지를 고르면 두 집의 앞으로 흐름을 나란히 비교해 드려요.</div>`;
+  const a=SW.scoreAt(hu,h), b=SW.scoreAt(x.f,h); if(a==null||b==null) return '';
+  const v=VAL(sidoOfCode(x.code))[h], d=b-a, sd=shortSido(sidoOfCode(x.code));
+  const verdict = Math.abs(d)<5 ? '두 집이 비슷하게 움직일 쪽이에요' : d>0 ? '갈 집이 더 오를 쪽이에요' : '지금 집이 더 오를 쪽이에요';
+  return `<div class="flowc">${v&&v.ok?'':'참고 · '}앞으로 ${h}년 흐름: 지금 집 ${sd} 아파트 중 ${topPct(a)}, 갈 집 ${topPct(b)} — ${verdict}${v?` <span class="muted" style="font-weight:500">(${hitTxt(v)})</span>`:''}</div>`;
+}
+function outBox(r, years){
+  const o=r.out; if(!o) return '';
+  const nm=r.x?escH(r.x.apt):'지금 사는 집', sd=shortSido(sidoOfCode((r.x||r.cur).code));
+  const head = o.ok ? `<span class="tag2">더 오를 가능성</span>` : `<span class="tag2">참고</span>`;
+  return `<div class="out${o.ok?'':' ref'}">${head}다음 단계까지 ${years}년, ${nm}의 ${o.h}년 전망은 ${sd} 아파트 <b>${o.text}</b> (${sd} 아파트 중 ${topPct(o.s)}).<br><span class="muted">${hitTxt(o)}${o.ok?'':' — 맞은 횟수가 적거나 평균보다 덜 올라서 참고로만 보세요'}.${o.ok&&o.s>=55?' 이대로라면 다음 단계 예산은 아래 금액보다 늘어날 수 있어요.':''}</span></div>`;
+}
+function routeRow(k, v, cls){ return `<tr class="${cls||''}"><td>${k}</td><td>${v}</td></tr>`; }
+function drawRoute(){
+  const box=$('routeRes'); const R=ROUTE_LAST&&ROUTE_LAST[RMODE];
+  $('rDesc').textContent=SW.ROUTE_MODE[RMODE].desc+'.';
+  if(!R){ return; }
+  const F=famInputs(), Y=new Date().getFullYear();
+  box.innerHTML='<div class="rt">'+R.map((r,i)=>{
+    const st=r.st, nextY=R[i+1]?R[i+1].st.year:st.year+5, yrs=nextY-st.year;
+    const when=`${st.key==='now'?'1단계 · 지금 ('+st.year+'년)':(i+1)+'단계 · '+st.title}`;
+    const ageAt=F.age!=null?F.age+(st.year-Y):null;
+    let body='';
+    const saleRows = r.sale ? routeRow(`이전 집 팔기 <small>${r.sale.years}년 보유 · 오늘 시세 그대로 · 그동안 갚은 원금 ${fmt(r.sale.paid)}</small>`, fmtW(r.sale.P))
+      + routeRow('남은 대출 갚기', '−'+fmtW(r.sale.bal)) + routeRow(`양도세 <small>${r.sale.cgt?'':'시세가 그대로면 차익이 없어 0원'}</small>`, r.sale.cgt?'−'+fmtW(r.sale.cgt):'0원') + routeRow('팔 때 중개보수', '−'+fmtW(r.sale.fee)) : '';
+    if(r.x){
+      const x=r.x, sg=AG_IX.sgg[x.code]||{}, cd=x.nd.cost;
+      body=`<div class="card"><h3>${escH(x.apt)} ${escH(x.band)}</h3><div class="loc">${escH(sg.sido)} ${escH(sg.name)} ${escH(x.dong)} · 전용 ${x.area}㎡${x.hh?` · ${x.hh.toLocaleString()}세대`:''}${x.f&&x.f.sc&&SW.schoolGood(x.f)?' · 학군 좋은 편':''}</div>
+        <table><tbody>${saleRows}
+        ${routeRow(`이 단계에 쓸 수 있는 자기자본${i>0&&F.save?` <small>한 해 ${fmt(F.save)}원씩 모은 돈 포함</small>`:''}`, fmtW(r.pool), 'sub')}
+        ${routeRow('추정 시세 <small>최근 3개월 실거래 기준</small>', fmtW(x.P))}
+        ${routeRow(`새 대출 <small>${st.key==='after'?'대출 없이 사는 것으로 계산':`${x.nd.loan.full!=null?`한도 ${fmt(x.nd.loan.full)} 중 `:''}${x.c.rate}% · ${x.c.term}년${ageAt!=null&&x.nd.loan.L>0?` · 만 ${ageAt+x.c.term}세에 상환 끝`:''}`}</small>`, fmtW(x.nd.loan.L))}
+        ${routeRow('매달 상환', Math.round(x.mon).toLocaleString()+'만원')}
+        ${routeRow(`취득세 등 <small>${(cd.rate*100).toFixed(2).replace(/\.?0+$/,'')}% · 지방교육세${cd.farm?'·농특세':''} 포함</small>`, fmtW(cd.tax))}
+        ${routeRow('살 때 중개보수 <small>법정 상한 + 부가세</small>', fmtW(cd.broker))}
+        ${routeRow('이사·등기 등 기타', fmtW(last.etc))}
+        ${routeRow('필요 현금 (자기자본)', fmtW(x.need), 'total')}
+        ${routeRow(`매수 뒤 남는 현금${SW.ROUTE_MODE[RMODE].reserveM&&st.key!=='after'?' <small>비상금 6개월치 포함</small>':''}`, fmtW(r.left))}
+        </tbody></table>
+        ${outBox(r, yrs)}
+        ${st.key==='now'?flowLine(x, SW.horizonFor(VAL(sidoOfCode(x.code)), yrs)):''}
+        <div class="acts">${PB(x.code,x.dong,x.apt,x.band,x.u&&x.u[8],'switch_route','sm')}</div></div>`;
+    } else if(r.stay){
+      body=`<div class="stayc"><b>그대로 살아요.</b> ${st.key==='school'&&r.cur&&SW.schoolGood(r.cur.f)?'지금 집 가까운 중학교가 이미 같은 구에서 전입이 많은 편이에요.':'이 단계 예산으로 더 나은 곳(이 루트 기준)을 찾지 못했어요.'} 이때 쓸 수 있는 자기자본은 ${fmt(r.pool)}원이에요(지금 집을 오늘 시세로 판다고 볼 때).${outBox(r, yrs)}</div>`;
+    } else {
+      body=`<div class="stayc">이 단계 예산(${fmt(r.pool)}원)으로 갈 수 있는 단지를 찾지 못했어요. STEP 2에서 지역·전용면적을 넓혀 보세요.</div>`;
+    }
+    return `<div class="rs${r.x?'':' stay'}"><div class="when">${when}${ageAt!=null?` · 내 나이 만 ${ageAt}세`:''}</div>${st.why?`<div class="whyl">${escH(st.why)}</div>`:''}${body}</div>`;
+  }).join('')+'</div>';
+  updateConsult();
+}
 async function runRec(){
   const seq=++recSeq; if(!last.o) return;
+  kidHint();
   const RG=window.JDJ_REGION||{sido:'서울특별시', sgg:'', label:'서울특별시'};
   const box=$('recList');
-  loadModel();
+  loadModel(); loadMH();
   let units=null;
-  try{ units=await unitsFor(RG,(i,n,nm)=>{ if(seq===recSeq) box.innerHTML=`<div class="recload">전국 실거래 자료를 불러오는 중이에요… (${i+1}/${n} ${escH(nm)})</div>`; }); await loadModel(); }catch(e){ units=null; }
+  try{ units=await unitsFor(RG,(i,n,nm)=>{ if(seq===recSeq) box.innerHTML=`<div class="recload">전국 실거래 자료를 불러오는 중이에요… (${i+1}/${n} ${escH(nm)})</div>`; }); await loadModel(); await loadMH(); }catch(e){ units=null; }
   if(seq!==recSeq) return;
-  if(!units||!AG_IX){ box.innerHTML='<div class="recload">실거래 자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.</div>'; REC_LAST=null; renderVs(); return; }
-  const o=last.o, B=SW.budgets(o);
+  if(!units||!AG_IX){ box.innerHTML='<div class="recload">실거래 자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.</div>'; $('routeRes').innerHTML=''; REC_LAST=null; SCAN=null; renderVs(); return; }
+  if(GU_RANK_SRC!==units){ GU_RANK=SW.guRanks(units); GU_RANK_SRC=units; }
+  const o=last.o;
   const bands = area==='small' ? new Set(SMALL_B) : area==='large' ? new Set(LARGE_B) : null;
   const inArea = RG.any ? ()=>true : code=>{ const s=AG_IX.sgg[code]; return !!s && s.sido===RG.sido && (!RG.sgg || code===RG.sgg); };
-  const res = SW.recommend({units, inArea, bands, B, o, max:5, any:!!RG.any,
-    sggPpy: code=>{ const s=AG_IX.sgg[code]; return s?REC.lastNZ(s.s):0; }, note: noteOf,
-    exclude: u=>!!(HOME&&HOME.u&&u[0]===HOME.u[0]&&u[2]===HOME.u[2]), sidoOf: code=>(AG_IX.sgg[code]||{}).sido});
-  REC_LAST=res; REC_LAST_O={i:o.income, c:Math.round(o.cash), d:o.debt, e:o.etc};
-  if(CMP_SEL && !res.picked.some(x=>recKey(x)===CMP_SEL)) CMP_SEL=null;
-  const multiG = new Set(res.picked.map(x=>x.g)).size>1;
-  $('recLead').innerHTML = `${escH(RG.label||RG.sido)} · ${area==='small'?'전용 85㎡ 이하':area==='large'?'전용 85㎡ 초과':'모든 평형'} · 새 집에 쓸 수 있는 자기자본 <b>${fmt(o.cash)}원</b> 기준으로, 대출·취득세·중개보수·기타 비용을 모두 내고도 예산 안에 드는 단지 ${res.total.toLocaleString()}곳 가운데 미래가치 점수가 높은 순서예요. 같은 단지·같은 구에 몰리지 않게 골랐어요.`
+  const base=scanOpt(units, inArea, bands, o);
+  const all=SW.scan(Object.assign({}, base, {cap:FLT.cap}));
+  const res=FLT.hh ? SW.scan(Object.assign({}, base, {cap:FLT.cap, hhMin:FLT.hh})) : all;
+  SCAN={can:res.can, near:res.near, hhMiss: all.can.length-res.can.length};
+  REC_LAST_O={i:o.income, c:Math.round(o.cash), d:o.debt, e:o.etc};
+  const multiG = new Set(res.can.map(x=>x.g)).size>1;
+  $('recLead').innerHTML = `${escH(RG.label||RG.sido)} · ${area==='small'?'전용 85㎡ 이하':area==='large'?'전용 85㎡ 초과':'모든 평형'} · 새 집에 쓸 수 있는 자기자본 <b>${fmt(o.cash)}원</b> 기준으로, 대출·취득세·중개보수·기타 비용을 모두 내고도 살 수 있는 단지 <b>${res.can.length.toLocaleString()}곳</b>이에요.`
     + (multiG?' 단지 위치(규제지역·비규제)마다 대출 기준이 달라 단지별로 다시 계산했어요.':'');
-  if(!res.picked.length){
-    box.innerHTML=`<div class="recload">예산 안에 드는 단지를 찾지 못했어요. STEP 2에서 구·시·군을 '전체'로 넓히거나 전용면적을 '상관없음'으로 바꿔 보세요.</div>`;
-    renderVs(); return;
-  }
-  const sel = CMP_SEL || recKey(res.picked[0]);
-  box.innerHTML='<div class="recs">'+res.picked.map((x,i)=>{
-    const k=recKey(x), on=k===sel, sg=AG_IX.sgg[x.code]||{};
-    const q=new URLSearchParams({o:houses>=2?'multi':'one', t:rtype, rt:o.rate, tm:o.term, sd:sg.sido||'', g:x.code, src:'switch_rec'});
-    return `<div class="rc ${on?'on':''}">
-      <div class="hd"><div><div class="rk">TOP ${i+1}</div><h3>${escH(x.apt)} ${escH(x.band)}</h3><div class="loc">${escH(sg.sido)} ${escH(sg.name)} ${escH(x.dong)} · 전용 ${x.area}㎡ · ${GROUP_NAME[x.g]}</div></div>
-        <div class="fv"><b>${x.hasFv?x.disp:'–'}</b><small>${x.hasFv?'미래가치':'점수 준비 중'}</small></div></div>
-      <div class="nums"><div><div class="k">추정 시세</div><div class="v">${fmtShort(x.P)}</div></div><div><div class="k">새 대출</div><div class="v">${fmtShort(x.nd.loan.L)}</div></div><div><div class="k">매달 상환</div><div class="v">${Math.round(x.mon).toLocaleString()}만</div></div></div>
-      <ul>${recReasons(x).map(([c,t])=>`<li class="${c}">${t}</li>`).join('')}</ul>
-      <div class="acts">${PB(x.code,x.dong,x.apt,x.band,x.u&&x.u[8],'switch_top')}<button type="button" data-cmp="${escH(k)}" class="${on?'cmpOn':''}">${on?'④에서 비교 중':'지금 집과 비교하기'}</button><a href="../buy/report/?${q}" target="_blank" rel="noopener" data-track="switch_rec_report" data-fin="1">이 지역 리포트</a></div>
-    </div>`; }).join('')+'</div>';
-  box.querySelectorAll('[data-cmp]').forEach(b=>b.onclick=()=>{ CMP_SEL=b.dataset.cmp; JDJ.track('switch_rec_compare'); runRec(); setTimeout(()=>$('vsBox').scrollIntoView({behavior:'smooth',block:'start'}),60); });
-  renderVs();
+  drawRecList();
+  /* 루트: 보수적·적극적 두 갈래 (세대수·대출 구간 필터는 루트에도 그대로) */
+  const F=famInputs(), Y=new Date().getFullYear(), stg=SW.stages(F.kids, Y);
+  const V0=VAL(RG.any?'':RG.sido);
+  const pick=(oo, st, cur, h, mode)=>{ const r=SW.scan(Object.assign({}, scanOpt(units, inArea, bands, oo), {cap:FLT.cap, hhMin:FLT.hh||0, near:0})); return SW.pickFor(r.can, st, cur, h, mode); };
+  ROUTE_LAST={};
+  for(const m of ['safe','bold']) ROUTE_LAST[m]=SW.route({mode:m, year:Y, stages:stg, cash:o.cash, save:F.save, o, V:V0, pick});
+  drawRoute();
 }
-
 /* 분석 설명(assets/narrative.js cat.sw): 결과 맨 위 한 줄 결론 → 요약(양도세·대출 한도·갈아타는 비용·예산 안 1위 단지) → 자세히 보기. 입력값은 화면 안에서만 씀 */
 const NARON = !/[?&]nar=0(&|$)/.test(location.search) && !!window.JDJ_NAR;
 function narSw(x){
@@ -1112,6 +1384,8 @@ seg('adj',v=>adj=v); seg('sadj',v=>sadj=v); seg('rtype',v=>rtype=v); seg('area',
   $(id).addEventListener('input',e=>{ const el=e.target, raw=el.value.replace(/[^0-9]/g,''); el.value = raw ? parseInt(raw,10).toLocaleString() : ''; render(); });
 });
 ['live','rate'].forEach(id=>$(id).addEventListener('input',render));
+$('save').addEventListener('input',e=>{ const el=e.target, raw=el.value.replace(/[^0-9]/g,''); el.value = raw ? parseInt(raw,10).toLocaleString() : ''; scheduleRec(); });
+['myAge','kid1','kid2','kid3'].forEach(id=>$(id).addEventListener('input',e=>{ e.target.value=e.target.value.replace(/[^0-9]/g,'').slice(0,2); kidHint(); scheduleRec(); }));
 ['acqDate','saleDate'].forEach(id=>$(id).addEventListener('change',()=>{ autoAdj(); render(); }));
 $('term').addEventListener('change',render);
 $('region').addEventListener('change',()=>{setTermOptions();render();});

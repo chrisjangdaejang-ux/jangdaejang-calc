@@ -1,8 +1,11 @@
 /* 장대장 갈아타기 계산 엔진 — 브라우저 안에서만 계산 (금액 단위: 만원)
    - 양도세·취득세: tax/tax-engine.js (JDJ_TAX) 그대로 사용 (소득세법·지방세법 조문 근거는 그 파일 머리말)
    - 단지 점수·순위: assets/rec-core.js (JDJ_REC) — 내 집 마련 리포트와 같은 기준
-   - 대출: 2025.10.15 대책 기준 LTV, 수도권·규제지역 주담대 가격구간 한도(15억 이하 6억, 25억 이하 4억, 초과 2억),
-           DSR 40%, 스트레스 금리(수도권·규제지역 3.0%, 지방 0.75%) × 금리유형 비율
+   - 대출 (확인일 2026-11-20): 2025.10.15 대책 LTV(규제지역 40%·비규제 70%), 수도권·규제지역 주담대 가격구간 한도
+           (15억 이하 6억, 15억 초과 25억 이하 4억, 25억 초과 2억), 은행권 DSR 40% — 금융위원회 '부동산 시장 안정을 위한
+           금융 종합대책'(2026.8.13)에서 '대출규제 유지'로 다시 확인. 스트레스 금리: 수도권·규제지역 3.0%(3단계, 기본 적용 100%),
+           지방 1.5% × 기본 적용 50% = 0.75% — 금융위원회 행정지도에 따른 은행연합회 '2026년 하반기 스트레스 DSR 운영방안'
+           (2026.7.1~12.31). 금리유형 비율: 변동형 100%, 주기형 수도권·규제지역 20~40%·지방 10~30%(각 상한을 써서 보수적으로)
    - 중개보수: 공인중개사법 시행규칙 [별표1] 주택 매매 상한요율 + 부가세 10% */
 (function (root) {
   'use strict';
@@ -11,6 +14,7 @@
   const ADJ = root.JDJ_ADJ || (typeof require === 'function' ? require('../tax/adjusted-areas.js') : null);
   const W = 10000;                // 만원 → 원
   const TYPE_RATIO = { var: 1, mix: 0.8, cyc: 0.4 };
+  const TYPE_RATIO_LOCAL = { var: 1, mix: 0.8, cyc: 0.3 };   // 지방 주기형 10~30% 상한 (2026 하반기 운영방안)
 
   function brokerFee(P) {
     let br, cap = Infinity;
@@ -48,7 +52,7 @@
     const own = (o.houses || 1) >= 2 ? 'multi' : 'one';
     const stressBase = capital ? 3.0 : 0.75;
     return { g, capital, regulated, own, ltv: REC.LTV[g][own], stressBase,
-      stress: Math.round(stressBase * TYPE_RATIO[o.rtype || 'cyc'] * 100) / 100,
+      stress: Math.round(stressBase * (capital ? TYPE_RATIO : TYPE_RATIO_LOCAL)[o.rtype || 'cyc'] * 1000) / 1000,
       income: o.income || 0, debt: o.debt || 0, rate: o.rate || 0, term: Math.min(o.term || 30, capital ? 30 : 40) };
   }
   function capByPrice(P, c) { if (!c.capital && !c.regulated) return Infinity; if (P <= 150000) return 60000; if (P <= 250000) return 40000; return 20000; }
@@ -75,6 +79,8 @@
   /** 이 가격의 집을 사는 데 필요한 자기자본 = 집값 − 새 대출 + 취득비용 + 이사·등기 등 기타 */
   function need(P, c, dsr, o) {
     const l = loanAt(P, c, dsr), cost = buyCost(P, c, o);
+    /* 보수적 루트: 한도의 일부만 빌림(o.loanUse 0~1). 한도 결정 요인(by)은 그대로 */
+    if (o.loanUse != null && o.loanUse < 1) { l.full = l.L; l.L = Math.max(0, l.L * o.loanUse); }
     return { loan: l, cost, need: P - l.L + cost.total + (o.etc || 0) };
   }
   function maxPrice(c, dsr, o) {
@@ -146,7 +152,198 @@
 
   function isAdj(sidoName, guName, date) { if (!ADJ || !sidoName) return 'ask'; const k = adjKey(sidoName, guName); return ADJ.isAdjusted(k.sido, k.gu, date); }
 
-  const API = { isAdj, brokerFee, expEstimate, sell, ctx, capByPrice, dsrMax, monthly, loanAt, buyCost, need, maxPrice, budgets, recommend, compare, adjKey, TYPE_RATIO };
+  /* =====================================================================
+     갈아타기 루트 (가족 일정·보수적/적극적·지금 갈 수 있는 단지·조금만 더 있으면 되는 단지·미래가치)
+     - 금액은 모두 오늘 시세 기준. 집값이 몇 % 오른다는 숫자는 넣지 않는다.
+     - 미래가치는 공개 자료 fx(fv: 2년 점수, fh: 1·3·5·7년 점수, fvg: 같은 구 안 백분위)와 model_h.json 기간별 성적만 쓴다.
+     ===================================================================== */
+  const NEAR = 10000;                       // '조금만 더 있으면 되는 단지': 부족 금액 1억 이내
+  const HH_STEPS = [0, 100, 300, 1000];     // 세대수 필터
+  const HORIZONS = [1, 2, 3, 5, 7];
+
+  /** 주담대 가격구간 한도 구간: 'b15'(15억 이하·6억) | 'b25'(25억 이하·4억) | 'over'(25억 초과·2억) */
+  function capBand(P) { return P <= 150000 ? 'b15' : P <= 250000 ? 'b25' : 'over'; }
+
+  /** 원리금균등: t년 상환 뒤 남은 원금 */
+  function balance(L, rate, term, years) {
+    if (!(L > 0)) return 0;
+    const i = rate / 1200, n = term * 12, k = Math.min(n, Math.max(0, Math.round(years * 12)));
+    if (i === 0) return L * (1 - k / n);
+    const m = monthly(L, rate, term);
+    return Math.max(0, L * Math.pow(1 + i, k) - m * (Math.pow(1 + i, k) - 1) / i);
+  }
+
+  /** 기간별 과거 성적 (narrative.js MR 과 같은 규칙): 시·도 성적(reg)이 있으면 그것, 없거나 전국 대체(fb='all')면 전국.
+      ok = 평균 초과 수익(oos_avg) > 0 이고 절반 이상 맞음 (시·도 성적은 엔진이 정한 ok 그대로) */
+  function validity(MH, sido) {
+    const out = {};
+    for (const h of HORIZONS) {
+      const m = MH && MH[String(h)]; if (!m) continue;
+      const r = m.reg && sido ? m.reg[sido] : null;
+      if (r && r.fb !== 'all' && (r.oos_all || []).length) { out[h] = { h, n: r.oos_all.length, hit: r.hit || 0, ok: !!r.ok, where: r.name || sido }; continue; }
+      const O = m.oos_all || []; if (!O.length) continue;
+      const hit = m.oos_hit != null ? m.oos_hit : O.filter(o => (o.top20 || 0) > 0).length;
+      out[h] = { h, n: O.length, hit, ok: O.length >= 2 && m.oos_avg > 0 && 2 * hit >= O.length, where: '전국' };
+    }
+    return out;
+  }
+  /** 단지 점수(0~100, 시·도 안 백분위) h년 — 2년은 fv, 나머지는 fh */
+  const scoreAt = (f, h) => !f ? null : h === 2 ? (f.fv != null ? f.fv : null) : (f.fh && f.fh[h] != null ? f.fh[h] : null);
+  /** 점수 → 말 (narrative.js lean 과 같은 구간) */
+  function lean(s) {
+    if (s == null) return '';
+    return s >= 70 ? '평균보다 더 오를 가능성이 커요' : s >= 55 ? '평균보다 더 오를 쪽이에요' : s > 45 ? '평균과 비슷하게 움직일 쪽이에요'
+      : s > 30 ? '평균보다 덜 오를 쪽이에요' : '평균보다 덜 오를 가능성이 커요';
+  }
+  /** 보유 예정 기간(years)에 맞는 전망: 기준을 넘은 기간 중 가장 가까운 것(같으면 긴 쪽). 없으면 가장 가까운 기간을 '참고'로
+      → null 또는 { h, s(점수), ok, n, hit, text } */
+  function outlook(f, V, years) {
+    const hs = HORIZONS.filter(h => scoreAt(f, h) != null && V && V[h]);
+    if (!hs.length) return null;
+    const d = h => Math.abs(h - years) - h / 100;
+    const okH = hs.filter(h => V[h].ok).sort((a, b) => d(a) - d(b));
+    const h = okH.length ? okH[0] : hs.slice().sort((a, b) => d(a) - d(b))[0];
+    const s = scoreAt(f, h), v = V[h];
+    return { h, s, ok: !!v.ok, n: v.n, hit: v.hit, text: lean(s) };
+  }
+  /** 보유 예정 기간에 맞춰 볼 기간: 기준을 넘은 기간 중 가장 가까운 것(같으면 긴 쪽), 없으면 2 */
+  function horizonFor(V, years) {
+    const okH = HORIZONS.filter(h => V && V[h] && V[h].ok);
+    if (!okH.length) return 2;
+    return okH.slice().sort((a, b) => (Math.abs(a - years) - a / 100) - (Math.abs(b - years) - b / 100))[0];
+  }
+  /** 학군 좋은 편: 가까운 중학교가 같은 구 중학교 3곳 이상 중 순전입 상위 30% 안 (fx.sc = 학교알리미 공시 전·출입) */
+  const schoolGood = f => !!(f && Array.isArray(f.sc) && f.sc[5] >= 3 && f.sc[4] >= 1 && f.sc[4] / f.sc[5] <= 0.3);
+  /** 루트 단계별 단지 고르기: 중학교 배정 전은 학군 좋은 편 단지 중에서(지금 집이 이미 그렇다면 그대로),
+      막내 독립 뒤는 지금 집보다 싼 집 중에서, 그 밖에는 그대로. 모두 '그 기간 미래가치 높은 순' 1위.
+      적극적(mode 'bold')은 예산을 끝까지 써서 갈 수 있는 가장 비싼 축(그 안 최고가의 90% 이상) 안에서 고른다 */
+  const BOLD_TOP = 0.9;
+  function pickFor(list, st, cur, h, mode) {
+    let L = list;
+    if (st && st.key === 'school') { if (cur && schoolGood(cur.f)) return cur; L = L.filter(x => schoolGood(x.f)); }
+    if (st && st.key === 'after' && cur) L = L.filter(x => x.P < cur.P);
+    if (mode === 'bold' && !(st && st.key === 'after') && L.length) { const top = Math.max(...L.map(x => x.P)); L = L.filter(x => x.P >= top * BOLD_TOP); }
+    return sortList(L, 'fv', h)[0] || null;
+  }
+  /** 같은 구 안 순위: 단지별(시군구|동|단지) 가장 높은 fvg 로 줄 세움 → { r, n } (같은 점수는 같은 등수) */
+  function guRanks(units) {
+    const best = new Map();
+    for (const u of units || []) { const f = u && u[9]; if (!f || f.fvg == null) continue; const k = u[0] + '|' + u[1] + '|' + u[2]; if (!best.has(k) || best.get(k) < f.fvg) best.set(k, f.fvg); }
+    const byGu = new Map();
+    for (const [k, v] of best) { const g = k.split('|')[0]; if (!byGu.has(g)) byGu.set(g, []); byGu.get(g).push(v); }
+    for (const a of byGu.values()) a.sort((x, y) => y - x);
+    return function (u) {
+      const k = u[0] + '|' + u[1] + '|' + u[2], v = best.get(k), a = byGu.get(u[0]); if (v == null || !a) return null;
+      let lo = 0, hi = a.length; while (lo < hi) { const m = (lo + hi) >> 1; if (a[m] > v) lo = m + 1; else hi = m; }
+      return { r: lo + 1, n: a.length };
+    };
+  }
+
+  /**
+   * 예산으로 갈 수 있는 단지 전부 + 1억 이내로 모자란 단지
+   * opt: { units, inArea, bands, B, o(cash 포함; loanUse·reserveM 선택), exclude, hhMin, cap('b15'|'b25'|'over'|''), sggPpy, note, cheap(false면 너무 싼 단지도 남김) }
+   * → { can:[...], near:[...] } 항목: { u, code, dong, apt, band, area, n, P, g, c, nd, large, need, left, short, mon, hh, f, hasFv, fv, fvg, cap, ch3, disp, sortv, score }
+   */
+  function scan(opt) {
+    const can = [], near = [], o = opt.o, resM = o.reserveM || 0, lim = opt.near == null ? NEAR : opt.near;
+    for (const u of opt.units) {
+      const [code, dong, apt, band, area, n, series, cnt] = u;
+      if (!opt.inArea(code)) continue;
+      if (opt.bands && opt.bands.size && !opt.bands.has(band)) continue;
+      if (!REC.lastNZ(series) || REC.recentCnt(cnt) < 1) continue;
+      if (opt.exclude && opt.exclude(u)) continue;
+      const f = u[9] || null, hh = f && f.hh ? f.hh : 0;
+      if (opt.hhMin && !(hh >= opt.hhMin)) continue;
+      const g = REC.groupOf(code), b = opt.B[g]; if (!b) continue;
+      const P = REC.unitPrice(u); if (!P) continue;
+      const cap = capBand(P); if (opt.cap && cap !== opt.cap) continue;
+      const large = area > 85;
+      const nd = need(P, b.c, b.dsr, Object.assign({}, o, { large }));
+      const mon = monthly(nd.loan.L, b.c.rate, b.c.term);
+      const short = nd.need + resM * mon - o.cash;
+      if (short > lim) continue;
+      const gp = opt.sggPpy ? opt.sggPpy(code) : 0;
+      const sc = REC.scoreUnit(u, P, Math.max(b.max || 0, P), gp, opt.note ? !!opt.note(code) : false);
+      if (short <= 0 && opt.cheap !== false && b.max && REC.tooCheap(REC.scoreUnit(u, P, b.max, gp, false).fit, P, gp ? REC.r100(gp * area / REC.PY) : 0)) continue;
+      const x = Object.assign({ u, code, dong, apt, band, area, n, series, P, g, c: b.c, nd, large, need: nd.need, left: o.cash - nd.need - resM * mon, short: Math.max(0, short), mon,
+        hh, f, fv: f && f.fv != null ? f.fv : null, fvg: f && f.fvg != null ? f.fvg : null, cap, ch3: REC.change3y(series) }, sc);
+      (short <= 0 ? can : near).push(x);
+    }
+    return { can, near };
+  }
+  /** 정렬(h: 미래가치를 볼 기간, 없으면 2년): 'fv' 미래가치 높은 순 | 'cash' 필요 현금 적은 순 | 'price' 가격 높은 순 | 'short' 부족 금액 적은 순 */
+  function sortList(list, key, h) {
+    const sv = x => h && h !== 2 ? scoreAt(x.f, h) : x.fv;
+    const fvC = (a, b) => (sv(b) != null) - (sv(a) != null) || (sv(b) || 0) - (sv(a) || 0) || (b.fv || 0) - (a.fv || 0) || (b.fvg || 0) - (a.fvg || 0) || a.need - b.need;
+    const cmp = key === 'cash' ? (a, b) => a.need - b.need || fvC(a, b)
+      : key === 'price' ? (a, b) => b.P - a.P || fvC(a, b)
+      : key === 'short' ? (a, b) => a.short - b.short || fvC(a, b) : fvC;
+    return list.slice().sort(cmp);
+  }
+
+  /** 가족 일정: 자녀 만 나이 → 학교 시기 (생일이 지났다고 보고 출생연도 = 올해 − 만 나이).
+      초등 입학: 만 6세가 된 해의 다음 해 3월 (초·중등교육법 제13조 제1항) → 출생연도 + 7.
+      중학교 입학 출생연도 + 13, 고등학교 + 16, 대학 + 19 (학년제 그대로, 조기·유예 입학은 반영 안 함) */
+  function schedule(kids, year) {
+    return (kids || []).filter(a => a != null && a >= 0 && a <= 30).map(a => {
+      const by = year - a;
+      return { age: a, by, elem: by + 7, mid: by + 13, high: by + 16, univ: by + 19 };
+    });
+  }
+  /** 루트 단계(연도·이름·이유). 첫째 기준으로 학군 시기를, 막내 기준으로 독립 시기를 잡는다. 자녀가 없으면 지금 → 5년 뒤 */
+  function stages(kids, year) {
+    const S = schedule(kids, year), out = [{ key: 'now', year, title: '지금', why: '' }];
+    if (!S.length) { out.push({ key: 'later', year: year + 5, title: '5년 뒤', why: '대출을 갚아 늘어난 자기자본으로 한 번 더 옮길 수 있는지 봐요' }); return out; }
+    const first = S.slice().sort((a, b) => b.age - a.age)[0], last = S.slice().sort((a, b) => a.age - b.age)[0];
+    if (first.elem > year) out[0].why = `첫째 초등학교 입학(${first.elem}년 3월) 전에 옮기면 입학 뒤 전학 없이 다닐 수 있어요`;
+    else if (first.mid - 1 === year) out[0].why = '첫째가 6학년이라 중학교 배정 전 마지막 이사 시기예요';
+    else if (first.mid - 1 < year && first.high + 2 >= year) out[0].why = '첫째가 중·고등학생이라 졸업 전 이사는 전학이 따라요. 옮긴다면 학년이 바뀌는 때가 좋아요';
+    const midY = first.mid - 1;                                  // 6학년 해: 중학교는 보통 이때 사는 곳 기준으로 배정
+    if (midY > year) out.push({ key: 'school', year: midY, title: `${midY}년 · 중학교 배정 전`, why: `첫째가 6학년이 되는 해예요. 중학교는 보통 6학년 때 사는 주소를 기준으로 배정돼요(기준일은 교육청마다 달라요)` });
+    const outY = last.univ;
+    if (outY > year && outY > (out[out.length - 1].year)) out.push({ key: 'after', year: outY, title: `${outY}년 · 막내 대학 진학 뒤`, why: '학군이 더는 필요 없는 때예요. 대출 없이 살 수 있는 집으로 줄이면 현금을 마련할 수 있어요' });
+    return out;
+  }
+  const ROUTE_MODE = {
+    safe: { loanUse: 0.7, reserveM: 6, name: '보수적', desc: '대출은 한도의 70%까지만, 매달 상환액 6개월치를 비상금으로 남겨요' },
+    bold: { loanUse: 1, reserveM: 0, name: '적극적', desc: '대출 한도를 끝까지 쓰고, 갈 수 있는 가장 비싼 축 단지 중 미래가치가 높은 곳으로 가요' }
+  };
+  /**
+   * 루트 계산 — 금액은 오늘 시세 그대로(집값 변화 0)로 이어 계산하고, 단계 사이 집값 흐름은 outlook(기준을 넘은 기간 점수)으로 말로만.
+   * a: { mode:'safe'|'bold', year, stages, cash(지금 쓸 수 있는 자기자본), save(한 해 모을 돈), o(대출 조건),
+   *      pick(o, st, cur, h, mode) => 후보 or null (보통 scan → pickFor) (o.cash = 그 단계에 쓸 수 있는 자기자본), V(validity) }
+   * → [{ st, x(고른 단지)|null, stay(그대로 삶), pool(그 단계 자기자본), sale(이전 집 정산)|null, cur(그대로 사는 집), out(전망), left(매수 뒤 현금) }]
+   */
+  function route(a) {
+    const M = ROUTE_MODE[a.mode] || ROUTE_MODE.safe, res = [];
+    let cash = a.cash, cashY = a.year, cur = null, curY = a.year;
+    a.stages.forEach((st, i) => {
+      const nextY = a.stages[i + 1] ? a.stages[i + 1].year : st.year + 5;
+      const liquid = cash + (i > 0 ? (a.save || 0) * Math.max(0, st.year - cashY) : 0);
+      let sale = null, pool = liquid;
+      if (cur) {
+        const t = st.year - curY, bal = balance(cur.nd.loan.L, cur.c.rate, cur.c.term, t);
+        const S = sell({ sale: cur.P, acq: cur.P, exp: Math.round(cur.nd.cost.total), acqDate: curY + '-03-01', saleDate: st.year + '-03-01',
+          residMonths: t * 12, houses: 1, acqAdj: !!cur.c.regulated, saleAdj: !!cur.c.regulated, oldLoan: bal });
+        sale = { P: cur.P, bal, cgt: S.cgt, fee: S.fee, net: S.net, paid: cur.nd.loan.L - bal, years: t };
+        pool = liquid + S.net;
+      }
+      const after = st.key === 'after';
+      const o = Object.assign({}, a.o, { cash: Math.max(0, pool), loanUse: after ? 0 : M.loanUse, reserveM: after ? 0 : M.reserveM });
+      const x = a.pick(o, st, cur, horizonFor(a.V, nextY - st.year), a.mode);
+      if (!x || (cur && x.u === cur.u)) {
+        res.push({ st, x: null, stay: !!cur, pool, sale, cur, out: cur && cur.f ? outlook(cur.f, a.V, nextY - st.year) : null });
+        cash = liquid; cashY = st.year;
+        return;
+      }
+      res.push({ st, x, stay: false, pool, sale, out: x.f ? outlook(x.f, a.V, nextY - st.year) : null, left: pool - x.need });
+      cash = pool - x.need; cashY = st.year; cur = x; curY = st.year;
+    });
+    return res;
+  }
+
+  const API = { isAdj, brokerFee, expEstimate, sell, ctx, capByPrice, dsrMax, monthly, loanAt, buyCost, need, maxPrice, budgets, recommend, compare, adjKey, TYPE_RATIO, TYPE_RATIO_LOCAL,
+    NEAR, HH_STEPS, HORIZONS, capBand, balance, validity, scoreAt, lean, outlook, guRanks, scan, sortList, schedule, stages, ROUTE_MODE, route, horizonFor, schoolGood, pickFor, BOLD_TOP };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_SWITCH = API;
 })(typeof self !== 'undefined' ? self : this);
