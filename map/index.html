@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="집예보">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="/jangdaejang-calc/assets/pwa.js" defer></script>
+<title>집예보 지도 — 지도에서 단지 시세·미래가치 점수·전세가율 한눈에</title>
+<meta name="description" content="지도에서 아파트 단지를 골라 최근 실거래 시세, 미래가치 점수, 전세가율을 한눈에 비교해 보세요. 구·동 평균 평당가와 평형·가격대 필터도 있어요.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="집예보 지도 — 단지 시세·미래가치 한눈에">
+<meta property="og:description" content="지도에서 단지를 골라 최근 실거래 시세, 미래가치 점수, 전세가율을 바로 확인하세요.">
+<meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/map/">
+<meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/default.png">
+<script>window.JDJ_CONFIG = { tool:'map', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../assets/track.js?v=2"></script>
+<script src="../assets/stat.js?v=7"></script>
+<script src="../assets/config.js?v=2"></script>
+<script src="../assets/plain-words.js?v=10"></script>
+<script src="../assets/narrative.js?v=4"></script>
+<script src="../assets/mine-core.js?v=14"></script>
+<script src="../assets/map-core.js?v=1"></script>
+<script src="../assets/map-engine.js?v=1"></script>
+<script src="../assets/sale-status.js?v=1"></script>
+<script src="../assets/devproj-view.js?v=2"></script>
+<script src="../assets/tabbar.js?v=1" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
+<style>
+html,body{height:100%}
+html:has(body.jm-full){overflow:hidden;zoom:1}   /* 지도는 PC 12.5% 확대(aplus.css) 없이 — 확대하면 높이·지도 좌표가 어긋남 */
+body.jm-full{overflow:hidden;overscroll-behavior:none;height:100vh;height:100dvh;display:flex;flex-direction:column}
+body.jm-full>.top{position:relative;flex:none}
+.top h1{margin:0;font-size:17px;font-weight:800;letter-spacing:-.3px;white-space:nowrap}
+.mwrap{position:relative;flex:1;min-height:0;margin-bottom:calc(58px + env(safe-area-inset-bottom));overflow:hidden;overflow:clip;background:#EEF1F4}
+#map{position:absolute;inset:0;z-index:1}
+.leaflet-container{font-family:inherit;background:#EEF1F4}
+/* 위쪽 조작 칸 */
+.mtop{position:absolute;left:0;right:0;top:0;z-index:30;padding:10px 12px 0;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.mtop>*{pointer-events:auto}
+.srch{position:relative;max-width:560px;width:100%;margin:0 auto}
+.srch .box{display:flex;align-items:center;gap:8px;background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.14);padding:0 6px 0 14px;min-height:48px;border:2px solid transparent}
+.srch .box:focus-within{border-color:var(--blue)}
+.srch svg{width:20px;height:20px;flex:none;stroke:#4E5968;fill:none;stroke-width:2.2;stroke-linecap:round}
+.srch input::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
+.srch input{flex:1;min-width:0;border:0;outline:none;font:inherit;font-size:16px;background:transparent;color:var(--text);min-height:44px}
+.srch .clr{flex:none;border:0;background:none;font:inherit;font-size:14px;color:var(--sub2);min-width:44px;min-height:44px;cursor:pointer}
+.sres{position:absolute;left:0;right:0;top:100%;z-index:5;list-style:none;margin:6px 0 0;padding:6px;background:#fff;border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.16);max-height:50vh;overflow:auto}
+.sres:empty{display:none}
+.sres button{display:flex;flex-direction:column;align-items:flex-start;width:100%;text-align:left;border:0;background:none;font:inherit;padding:10px 12px;border-radius:10px;cursor:pointer;min-height:48px}
+.sres button:hover,.sres button:focus{background:var(--gray2)}
+.sres b{font-size:16px}
+.sres small{font-size:13.5px;color:var(--sub2)}
+.sres .msg{padding:10px 12px;font-size:14px;color:var(--sub2);line-height:1.5}
+.row1{display:flex;gap:8px;align-items:center;max-width:560px;width:100%;margin:0 auto}
+.seg{display:flex;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.12);padding:3px;flex:none}
+.seg button{border:0;background:none;font:inherit;font-size:14.5px;font-weight:700;color:var(--sub2);min-height:40px;padding:0 12px;border-radius:9px;cursor:pointer;white-space:nowrap}
+.seg button.on{background:var(--blue);color:#fff}
+.fil{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;max-width:560px;width:100%;margin:0 auto;padding-bottom:2px}
+.fil::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:#fff;font:inherit;font-size:14px;font-weight:700;color:var(--sub);min-height:40px;padding:0 12px;border-radius:999px;cursor:pointer;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.chip.on{border-color:var(--blue);color:var(--blue);background:var(--blue-l)}
+.chip.lay.on{border-color:#6D4AFF;color:#5B3BE0;background:#F1EDFF}
+.chip.lay.bun.on{border-color:#0E7A4F;color:#0E7A4F;background:#E6F5EE}
+select.chip{appearance:none;-webkit-appearance:none;padding-right:28px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%234E5968' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 10px center}
+select.chip.on{background-color:var(--blue-l)}
+/* 오른쪽 버튼 */
+.mside{position:absolute;right:12px;z-index:25;display:flex;flex-direction:column;gap:8px;bottom:84px;transition:bottom .2s}
+.fab{width:48px;height:48px;border-radius:14px;border:0;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.16);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text);font:inherit;font-size:22px;font-weight:700}
+.fab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.fab.busy{color:var(--blue)}
+/* 아래쪽 안내·범례 */
+.mstat{position:absolute;left:12px;bottom:14px;z-index:25;max-width:calc(100% - 84px);background:rgba(25,31,40,.86);color:#fff;font-size:13.5px;font-weight:500;line-height:1.45;padding:8px 12px;border-radius:12px;pointer-events:none}
+.mstat:empty{display:none}
+.legend{position:absolute;left:12px;bottom:62px;z-index:25;background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.14);padding:8px 10px;font-size:12.5px;color:var(--sub);display:flex;flex-direction:column;gap:3px;max-width:calc(100% - 84px)}
+.legend:empty{display:none}
+.legend span{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.legend i{width:12px;height:12px;border-radius:4px;flex:none}
+.legend .lgb{border:0;background:none;font:inherit;font-size:12.5px;color:var(--sub);padding:0;min-height:28px;cursor:pointer;text-align:left}
+.legend .scl{display:flex;align-items:center;gap:3px;flex-wrap:wrap}
+.legend .scl i{width:10px;height:10px;border-radius:3px}
+.legend .sm{font-size:12px;color:var(--sub3);white-space:normal}
+.cmpbar{position:absolute;left:12px;right:72px;top:auto;bottom:14px;z-index:26;background:#fff;border:2px solid var(--blue);border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.14);padding:6px 6px 6px 12px;display:flex;align-items:center;gap:8px;font-size:14px}
+.cmpbar[hidden]{display:none}
+.cmpbar .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--sub)}
+.cmpbar .nm b{color:var(--text)}
+.cmpbar a,.cmpbar button{flex:none;font:inherit;font-size:14px;font-weight:700;border-radius:10px;min-height:40px;padding:0 12px;display:inline-flex;align-items:center;white-space:nowrap;cursor:pointer;text-decoration:none}
+.cmpbar a{background:var(--blue);color:#fff}
+.cmpbar a.off{background:var(--gray);color:var(--sub3);pointer-events:none}
+.cmpbar button{border:0;background:none;color:var(--sub2);min-width:44px}
+body.has-cmp .mstat,body.has-cmp .legend{transform:translateY(-56px)}
+body.has-cmp .mside{bottom:140px}
+/* 하단 카드 */
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:35;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,.18);max-height:64%;overflow:auto;padding:8px 18px 18px;max-width:640px;margin:0 auto;overscroll-behavior:contain}
+.sheet[hidden]{display:none}
+.sheet .grab{width:40px;height:4px;border-radius:2px;background:#D1D6DB;margin:4px auto 10px}
+.sheet .hd{display:flex;align-items:flex-start;gap:10px}
+.sheet h2{margin:0;font-size:20px;font-weight:800;letter-spacing:-.4px;line-height:1.35;flex:1;min-width:0}
+.sheet .x{flex:none;width:44px;height:44px;margin:-6px -10px 0 0;border:0;background:none;font-size:24px;color:var(--sub2);cursor:pointer}
+.sheet .meta{margin:4px 0 0;font-size:14px;color:var(--sub2);line-height:1.5}
+.sheet .bands{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 0}
+.sheet .bands button{font:inherit;font-size:14px;font-weight:700;min-height:40px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--sub);cursor:pointer;white-space:nowrap}
+.sheet .bands button.on{border-color:var(--blue);color:var(--blue);background:var(--blue-l)}
+.sheet .kv{margin:14px 0 0;display:grid;grid-template-columns:auto 1fr;gap:10px 14px;align-items:baseline}
+.sheet .kv dt{font-size:14px;color:var(--sub2);font-weight:700;white-space:nowrap}
+.sheet .kv dd{margin:0;font-size:15px;line-height:1.55;min-width:0}
+.sheet .kv dd b{font-size:19px;font-weight:800;white-space:nowrap}
+.sheet .kv dd .ppy{margin-left:6px;font-size:14px;color:var(--sub2);white-space:nowrap}
+.sheet .kv dd small{display:block;font-size:13px;color:var(--sub3);margin-top:2px}
+.sheet .fvrow{display:flex;gap:10px;align-items:flex-start}
+.sheet .fvb{flex:none;min-width:54px;text-align:center;border-radius:10px;color:#fff;font-weight:800;font-size:17px;padding:4px 8px;white-space:nowrap}
+.sheet .head{font-size:14.5px;line-height:1.65;color:var(--text)}
+.sheet .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;position:sticky;bottom:-18px;background:#fff;padding:10px 0 16px;margin-bottom:-18px;box-shadow:0 -8px 12px -8px rgba(0,0,0,.08)}
+.sheet .acts a,.sheet .acts button{display:flex;align-items:center;justify-content:center;min-height:50px;border-radius:14px;font:inherit;font-size:16px;font-weight:800;text-decoration:none;cursor:pointer;white-space:nowrap;padding:0 10px}
+.sheet .acts a{background:var(--blue);color:#fff;border:0}
+.sheet .acts button{background:#fff;color:var(--blue);border:1.5px solid var(--blue)}
+.sheet .acts button.done{color:var(--sub2);border-color:var(--line);background:var(--gray2)}
+.sheet .note{margin:10px 0 0;font-size:13px;color:var(--sub3);line-height:1.55}
+.sheet .src{font-size:14px;margin:10px 0 0}
+.sheet .src a{display:inline-flex;align-items:center;min-height:44px;font-weight:700}
+/* 지도 위 말풍선 */
+.jm-pin{background:none;border:0}
+.jm-n{position:relative;width:0;height:0}
+.jm-b{position:absolute;left:0;top:0;pointer-events:auto;cursor:pointer;white-space:nowrap;font-family:'Noto Sans KR',system-ui,sans-serif;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+.jm-b.dj{transform:translate(-50%,calc(-100% - 7px));display:flex;flex-direction:column;align-items:center;background:#fff;border:2px solid var(--blue);border-radius:10px;padding:2px 7px 3px;box-shadow:0 2px 6px rgba(0,0,0,.18);line-height:1.25}
+.jm-b.dj::after{content:'';position:absolute;left:50%;bottom:-7px;margin-left:-6px;border:6px solid transparent;border-bottom:0;border-top:7px solid var(--blue)}
+.jm-b.dj .v{display:flex;align-items:center;gap:4px;font-size:14px;font-weight:800;color:var(--text)}
+.jm-b.dj .v i{font-style:normal;font-size:11.5px;font-weight:800;color:#fff;border-radius:6px;padding:0 4px;line-height:17px}
+.jm-b.dj .nm{font-size:11.5px;font-weight:500;color:var(--sub2);max-width:110px;overflow:hidden;text-overflow:ellipsis}
+.jm-b.dj .more{position:absolute;right:-12px;top:-12px;font-style:normal;font-size:11.5px;font-weight:800;color:#fff;background:#191F28;border-radius:999px;min-width:24px;height:24px;line-height:24px;padding:0 6px;text-align:center;box-shadow:0 0 0 2px #fff}
+.jm-b.dj.na .v{color:var(--sub3);font-weight:700;font-size:12.5px}
+.jm-b.dj.solid{color:#fff}
+.jm-b.dj.solid .v{color:#fff}
+.jm-b.dj.solid .nm{color:rgba(255,255,255,.9)}
+.jm-b.dj.sel{z-index:5;outline:3px solid rgba(25,31,40,.85);outline-offset:1px}
+.jm-b.gp{transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;background:var(--blue);color:#fff;border-radius:12px;padding:4px 9px 5px;box-shadow:0 2px 8px rgba(0,0,0,.22);line-height:1.3;min-width:56px}
+.jm-b.gp b{font-size:13px;font-weight:800}
+.jm-b.gp span{font-size:12.5px;font-weight:700;opacity:.95}
+.jm-b.gp small{font-size:11px;opacity:.85}
+.jm-b.gp.sd{background:#191F28}
+.jm-b.gp.t5{background:#1F4FD1}.jm-b.gp.t3{background:#6B7684}.jm-b.gp.t1{background:#C2410C}
+.jm-b.cl{transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;background:rgba(47,107,255,.92);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 0 0 5px rgba(47,107,255,.22);line-height:1.1}
+.jm-b.cl b{font-size:15px;font-weight:800}
+.jm-b.cl small{font-size:10.5px}
+.jm-b.ly{transform:translate(-50%,calc(-100% - 6px));background:#5B3BE0;color:#fff;border-radius:8px;padding:3px 7px;font-size:12px;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.2);max-width:150px;overflow:hidden;text-overflow:ellipsis}
+.jm-b.ly::after{content:'';position:absolute;left:50%;bottom:-6px;margin-left:-5px;border:5px solid transparent;border-bottom:0;border-top:6px solid #5B3BE0}
+.jm-b.ly.bun{background:#0E7A4F}.jm-b.ly.bun::after{border-top-color:#0E7A4F}
+.jm-b.me{transform:translate(-50%,-50%);width:18px;height:18px;border-radius:50%;background:#2F6BFF;border:3px solid #fff;box-shadow:0 0 0 6px rgba(47,107,255,.25);pointer-events:none}
+.t5{background:#1F4FD1}.t4{background:#3D72F5}.t3{background:#6B7684}.t2{background:#C26A00}.t1{background:#C2410C}.na{background:#B0B8C1}
+.jm-b.dj.solid.t5{border-color:#1F4FD1;background:#1F4FD1}.jm-b.dj.solid.t5::after{border-top-color:#1F4FD1}
+.jm-b.dj.solid.t4{border-color:#3D72F5;background:#3D72F5}.jm-b.dj.solid.t4::after{border-top-color:#3D72F5}
+.jm-b.dj.solid.t3{border-color:#6B7684;background:#6B7684}.jm-b.dj.solid.t3::after{border-top-color:#6B7684}
+.jm-b.dj.solid.t2{border-color:#C26A00;background:#C26A00}.jm-b.dj.solid.t2::after{border-top-color:#C26A00}
+.jm-b.dj.solid.t1{border-color:#C2410C;background:#C2410C}.jm-b.dj.solid.t1::after{border-top-color:#C2410C}
+.jm-b.dj.solid.na{border-color:#B0B8C1;background:#B0B8C1}.jm-b.dj.solid.na::after{border-top-color:#B0B8C1}
+.jm-b.dj:not(.solid).na{background:#fff;border-color:#B0B8C1}.jm-b.dj:not(.solid).na::after{border-top-color:#B0B8C1}
+@media(min-width:900px){.cmpbar{left:432px;right:84px}body.has-cmp .mstat,body.has-cmp .legend{transform:none}body.has-cmp .mstat{left:432px;bottom:70px}.mtop{padding:14px 16px 0}.sheet{left:16px;right:auto;bottom:16px;width:400px;max-height:calc(100% - 140px);border-radius:20px}.mside{bottom:24px}}
+@media(max-width:380px){.seg button{padding:0 9px;font-size:14px}.top .badge{display:none}}
+</style>
+</head>
+<body class="jm-full">
+<header class="top">
+  <a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>집예보</a>
+  <h1>지도</h1>
+  <div class="badge">PREMIUM INSIGHT</div>
+</header>
+<div class="mwrap" id="mwrap">
+  <div id="map" role="application" aria-label="단지 지도"></div>
+  <div class="mtop">
+    <div class="srch">
+      <div class="box"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        <input id="q" type="search" enterkeyhint="search" placeholder="단지 이름 찾기 (예: 헬리오시티)" autocomplete="off" aria-label="단지 이름 찾기">
+        <button type="button" class="clr" id="qClr" hidden aria-label="검색어 지우기">지우기</button></div>
+      <ul class="sres" id="sres" aria-live="polite"></ul>
+    </div>
+    <div class="row1">
+      <div class="seg" id="mode" role="group" aria-label="지도에 보여 줄 값"></div>
+    </div>
+    <div class="fil" id="fil"></div>
+  </div>
+  <div class="mside">
+    <button type="button" class="fab" id="zin" aria-label="확대">+</button>
+    <button type="button" class="fab" id="zout" aria-label="축소">−</button>
+    <button type="button" class="fab" id="me" aria-label="내 위치로"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button>
+  </div>
+  <div class="legend" id="legend"></div>
+  <div class="mstat" id="mstat">지도를 준비하고 있어요…</div>
+  <div class="cmpbar" id="cmpbar" hidden></div>
+  <section class="sheet" id="sheet" hidden aria-live="polite"></section>
+</div>
+<script>
+(function(){
+'use strict';
+const C = window.JDJ_MAPC, M = window.JDJ_MINE, E = window.JDJ_MAPE, PL = window.JDJ_PLAIN, NAR = window.JDJ_NAR;
+const DATA = '/jangdaejang-data/data/';
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const J = (u, o) => fetch(u, Object.assign({cache:'no-cache'}, o || {})).then(r => r.ok ? r.json() : null).catch(() => null);
+const Q = new URLSearchParams(location.search);
+const S = { mode: ['price','fv','jr'].includes(Q.get('m')) ? Q.get('m') : 'price', size: ['s','m','l'].includes(Q.get('sz')) ? Q.get('sz') : '',
+  price: C.PRICES.some(p => p.id && p.id === Q.get('pr')) ? Q.get('pr') : '', dev: Q.get('ly') === 'dev' || Q.get('ly') === 'all', bun: Q.get('ly') === 'bun' || Q.get('ly') === 'all' };
+let IX = null, GEO = null, MH = null, MREG = false, MAP = null, SEL = null, MOVED = false;
+const SD = {};                       // 시·도 id → {st:'wait'|'ok'|'err', list, byKey}
+const PINS = new Map();              // 지금 지도에 올린 말풍선 key → {h, html}
+let LAY = { dev: null, bun: null };
+
+/* ---------- 이름 ---------- */
+const sggOf = code => (IX && IX.sgg[code]) || {};
+const sidoOf = code => (IX && IX.sido.find(s => s.name === sggOf(code).sido)) || {};
+const sggName = code => sggOf(code).name || '';
+
+/* ---------- 위쪽 조작 칸 ---------- */
+function drawControls(){
+  $('mode').innerHTML = C.MODES.map(m => `<button type="button" data-m="${m.id}" class="${S.mode === m.id ? 'on' : ''}" aria-pressed="${S.mode === m.id}">${m.t}</button>`).join('');
+  $('fil').innerHTML = C.SIZES.map(z => `<button type="button" class="chip${S.size === z.id ? ' on' : ''}" data-sz="${z.id}" aria-pressed="${S.size === z.id}"${z.d ? ` title="${z.d}"` : ''}>${z.t}</button>`).join('')
+    + `<select class="chip${S.price ? ' on' : ''}" id="fPrice" aria-label="가격대">${C.PRICES.map(p => `<option value="${p.id}"${S.price === p.id ? ' selected' : ''}>${p.t}</option>`).join('')}</select>`
+    + `<button type="button" class="chip lay${S.dev ? ' on' : ''}" data-ly="dev" aria-pressed="${S.dev}">개발사업</button>`
+    + `<button type="button" class="chip lay bun${S.bun ? ' on' : ''}" data-ly="bun" aria-pressed="${S.bun}">분양 단지</button>`;
+  $('fPrice').onchange = e => { S.price = e.target.value; after(); };
+}
+$('mode').addEventListener('click', e => { const b = e.target.closest('button[data-m]'); if (!b) return; S.mode = b.dataset.m; after(); });
+$('fil').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.sz != null) S.size = b.dataset.sz;
+  else if (b.dataset.ly) { S[b.dataset.ly] = !S[b.dataset.ly]; if (S[b.dataset.ly]) loadLayer(b.dataset.ly); }
+  after();
+});
+function after(){ drawControls(); LASTLV = ''; legend(); render(); if (SEL && SEL.d) openCard(SEL.d, SEL.band, true); if (window.jdjStat) jdjStat('feature_use', {feature:'map_filter'}); }
+
+let LEGOPEN = false, LASTLV = '';
+function legend(){
+  const el = $('legend'), lv = MAP && IX ? C.level(MAP.zoom()) : '';
+  if (lv !== 'danji') { el.innerHTML = ''; return; }
+  const scale = `<span class="scl">${S.mode === 'fv' ? '' : '배지 = '}미래가치 점수 낮음 <i class="t1"></i><i class="t2"></i><i class="t3"></i><i class="t4"></i><i class="t5"></i> 높음 ⓘ</span>`;
+  el.innerHTML = `<button type="button" class="lgb" aria-expanded="${LEGOPEN}">${scale}</button>` + (LEGOPEN ? C.TONES.map(t => `<span><i class="${t[0]}"></i>${t[2]} · ${t[1]}</span>`).join('') + '<span class="sm">앞으로 2년, 같은 시·도 아파트와 비교한 점수(100점 만점)</span>' : '');
+  el.querySelector('.lgb').onclick = () => { LEGOPEN = !LEGOPEN; legend(); };
+}
+
+/* ---------- 자료 불러오기 (보이는 시·도만) ---------- */
+function ensure(ids){
+  let want = 0;
+  for (const id of ids) {
+    if (SD[id]) { if (SD[id].st === 'wait') want++; continue; }
+    const sd = IX.sido.find(s => s.id === id); if (!sd) continue;
+    SD[id] = { st: 'wait', list: [], byKey: new Map() }; want++;
+    Promise.all([J(DATA + id + '.json'), J(DATA + (sd.xy || id + '_xy.json'))]).then(([u, x]) => {
+      if (!u || !x) { SD[id].st = 'err'; render(); return; }
+      const list = C.danjiList(u.units || [], x.xy || {}, id);
+      SD[id] = { st: 'ok', list, byKey: new Map(list.map(d => [d.key, d])) };
+      render();
+      if (PENDING && PENDING.sd === id) { const d = SD[id].byKey.get(PENDING.d); const b = PENDING.b; PENDING = null; if (d) { MAP.setView(d.lat, d.lng, Math.max(MAP.zoom(), 16)); openCard(d, b); } }
+    });
+  }
+  return want;
+}
+let PENDING = null;
+function viewIds(bb){ const ids = C.sidosIn(GEO, bb); return ids || IX.sido.map(s => s.id); }
+
+/* ---------- 말풍선 그리기 ---------- */
+function node(cls, html, onClick){
+  const n = document.createElement('div'); n.className = 'jm-n';
+  const b = document.createElement('div'); b.className = 'jm-b ' + cls; b.innerHTML = html; n.appendChild(b);
+  b.addEventListener('click', e => { e.stopPropagation(); if (MOVED) return; onClick(e); });
+  return n;
+}
+function put(next){
+  for (const [k, p] of PINS) if (!next.has(k)) { p.h.remove(); PINS.delete(k); }
+  for (const [k, v] of next) {
+    const p = PINS.get(k);
+    if (p && p.sig === v.sig) { if (p.lat !== v.lat || p.lng !== v.lng) { p.h.move(v.lat, v.lng); p.lat = v.lat; p.lng = v.lng; } continue; }
+    if (p) p.h.remove();
+    const h = MAP.add(v.lat, v.lng, node(v.cls, v.html, v.tap), v.z || 0);
+    PINS.set(k, { h, sig: v.sig, lat: v.lat, lng: v.lng });
+  }
+}
+const pin = (m, k, o) => m.set(k, Object.assign({ sig: o.cls + '|' + o.html }, o));
+function status(t){ $('mstat').textContent = t || ''; }
+
+function render(){
+  if (!MAP || !IX) return;
+  const z = MAP.zoom(), lv = C.level(z), bb = MAP.bounds(), next = new Map(), gl = [];
+  saveUrl(z);
+  let msg = '';
+  if (lv === 'sido') {
+    for (const s of IX.sido) {
+      const g = GEO && GEO.sido[s.id]; if (!g) continue;
+      const r = s.r || {}, v = S.mode === 'jr' ? (r.jr != null ? `전세 ${Math.round(r.jr)}%` : '') : S.mode === 'price' ? (r.mom != null ? `1년 ${r.mom > 0 ? '+' : ''}${r.mom}%` : '') : '';
+      gl.push({ k: 'S' + s.id, lat: g.c[1], lng: g.c[0], cls: 'gp sd', name: s.short, v, p: (s.units || 0) * (s.id === 's00' ? 100 : 1),   // 겹치면 서울을 먼저(경기 가운데와 가까움)
+      tap: () => MAP.setView(g.c[1], g.c[0], C.LV.sido + 2) });
+    }
+    msg = S.mode === 'price' ? '시·도별 최근 1년 아파트 시세 변동이에요. 지역을 누르면 가까이 볼 수 있어요.' : S.mode === 'jr' ? '시·도별 아파트 전세가율이에요. 지역을 누르면 가까이 볼 수 있어요.' : '미래가치 점수는 구·동·단지로 확대하면 보여요. 지역을 눌러 주세요.';
+  } else if (lv === 'sgg') {
+    const ids = viewIds(bb);
+    let wait = S.mode === 'fv' ? ensure(ids) : 0;   // 구 순위(미래가치)는 단지 자료에 들어 있어 그때만 불러옴
+    const gsBy = {};
+    if (S.mode === 'fv') for (const id of ids) if (SD[id] && SD[id].st === 'ok') for (const d of SD[id].list) { if (gsBy[d.code] != null) continue; const f = d.bands.map(u => u[9]).find(f => f && typeof f === 'object' && f.gs != null); if (f) gsBy[d.code] = f.gs; }
+    for (const code in (GEO ? GEO.sgg : {})) {
+      const c = GEO.sgg[code]; if (!C.inBox(bb, c[1], c[0], 0.1)) continue;
+      const g = sggOf(code); if (!g.name) continue;
+      let v = '';
+      if (S.mode === 'price') { const s = g.s || []; for (let i = s.length - 1; i >= Math.max(0, s.length - 3); i--) if (s[i] > 0) { v = C.ppyText(s[i]); break; } }
+      else if (S.mode === 'jr') v = g.r && g.r.jr != null ? `전세 ${Math.round(g.r.jr)}%` : '';
+      let cls = 'gp';
+      if (S.mode === 'fv' && gsBy[code] != null && PL && PL.regionPlace) { const rp = PL.regionPlace(IX, code, gsBy[code]); if (rp) { v = `${rp.n}곳 중 ${/약 /.test(rp.text) ? '약 ' : ''}${rp.r}위`; cls += rp.pos === '상위권' ? ' t5' : rp.pos === '하위권' ? ' t1' : ' t3'; } }
+      gl.push({ k: 'G' + code, lat: c[1], lng: c[0], cls, name: g.name, v, p: (g.c || []).reduce((a, x) => a + x, 0), tap: () => MAP.setView(c[1], c[0], C.LV.sgg + 1) });
+    }
+    msg = wait ? '구별 미래가치 순위 자료를 불러오는 중이에요…' : S.mode === 'price' ? '구 전체 아파트 평당가(전용 3.3㎡당, 최근 3개월 실거래 중앙값)예요.' : S.mode === 'jr' ? '구 전체 아파트 전세가율(집값 대비 전셋값)이에요.' : '구별 미래가치 순위(같은 시·도 안 지역 흐름 점수)예요. 파랑 상위권 · 회색 중위권 · 주황 하위권';
+  } else {
+    const ids = viewIds(bb), wait = ensure(ids);
+    const items = [];
+    for (const id of ids) {
+      const s = SD[id]; if (!s || s.st !== 'ok') continue;
+      for (const d of s.list) { if (!C.inBox(bb, d.lat, d.lng, 0.15)) continue; const b = C.pick(d, IX.months, { size: S.size, price: S.price }); if (b) items.push({ d, b }); }
+    }
+    if (lv === 'dong') {
+      for (const g of C.groups(items, 'dong')) {
+        const v = C.groupText(S.mode, g);
+        gl.push({ k: 'D' + g.k, lat: g.lat, lng: g.lng, cls: 'gp', name: g.dong, v, sub: `단지 ${g.n}`, p: g.n, tap: () => MAP.setView(g.lat, g.lng, C.LV.dong + 1) });
+      }
+      msg = S.mode === 'price' ? '동별 단지 평균 평당가예요. 동을 누르면 단지가 보여요.' : S.mode === 'fv' ? '동별 단지 미래가치 점수 평균이에요. 동을 누르면 단지가 보여요.' : '동별 단지 전세가율 평균이에요. 동을 누르면 단지가 보여요.';
+    } else {
+      const sz = MAP.size(), pts = [];
+      for (const it of items) { const p = MAP.project(it.d.lat, it.d.lng); if (p.x < -60 || p.y < -60 || p.x > sz.w + 60 || p.y > sz.h + 60) continue; pts.push({ x: p.x, y: p.y, w: it.d.n, it }); }
+      const big = z >= 15, cells = C.gather(pts, big ? 92 : 50, big ? 44 : 46);
+      const showName = z >= 16;
+      for (const c of cells) {
+        const more = c.list.length - 1;
+        if (more && !big) {
+          const ll = c.list.map(p => p.it.d), lat = C.mean(ll.map(d => d.lat)), lng = C.mean(ll.map(d => d.lng));
+          pin(next, 'C' + Math.round(lat * 2e3) + ',' + Math.round(lng * 2e3) + ',' + c.list.length, { lat, lng, cls: 'cl', html: `<b>${c.list.length}</b><small>단지</small>`, z: 600, tap: () => MAP.zoomBy(2, lat, lng) });
+          continue;
+        }
+        const { d, b } = c.list[0].it, t = C.tone(b.fv), main = C.mainText(S.mode, b);
+        const solid = S.mode === 'fv';
+        const badge = S.mode !== 'fv' && b.fv != null ? `<i class="${t}">${b.fv}</i>` : '';
+        const html = `<span class="v">${badge}${esc(main || (S.mode === 'price' ? '최근 거래 없음' : '자료 없음'))}</span>${showName ? `<span class="nm">${esc(d.apt)}</span>` : ''}`
+          + (more ? `<em class="more" data-more="1" title="가까이 보면 ${more}곳 더 보여요">+${more}</em>` : '');
+        const cls = 'dj' + (solid ? ' solid ' + t : !main ? ' na' : '') + (SEL && SEL.d && SEL.d.key === d.key ? ' sel' : '');
+        pin(next, 'A' + d.sd + d.key, { lat: d.lat, lng: d.lng, cls, html, z: Math.min(900, d.n), tap: e => { if (e && e.target && e.target.closest && e.target.closest('[data-more]')) MAP.zoomBy(2, d.lat, d.lng); else openCard(d); } });
+      }
+      msg = items.length ? '' : (wait ? '' : (S.size || S.price) ? '이 화면에 고른 평형·가격대에 맞는 단지가 없어요.' : '이 화면에는 표시할 단지가 없어요.');
+    }
+    if (wait) msg = '단지 자료를 불러오는 중이에요…';
+    else if (ids.some(id => SD[id] && SD[id].st === 'err')) msg = '일부 지역 자료를 불러오지 못했어요. 잠시 뒤 지도를 다시 움직여 주세요.';
+  }
+  /* 구·동·시·도 묶음: 겹치면 단지(거래) 많은 쪽만 — 가까이 확대하면 나머지가 나와요 */
+  const boxes = gl.map(o => { const q = MAP.project(o.lat, o.lng), sz = C.boxSize([o.name, o.v, o.sub], 13); return Object.assign(o, { x: q.x, y: q.y, w: sz.w, h: sz.h }); });
+  for (const o of C.declutter(boxes, 3)) pin(next, o.k, { lat: o.lat, lng: o.lng, cls: o.cls, z: 500, tap: o.tap,
+    html: `<b>${esc(o.name)}</b>${o.v ? `<span>${esc(o.v)}</span>` : ''}${o.sub ? `<small>${esc(o.sub)}</small>` : ''}` });
+  layerPins(next, z, bb);
+  if (!msg && ((S.dev && LAY.dev && LAY.dev.st === 'err') || (S.bun && LAY.bun && LAY.bun.st === 'err'))) msg = `${S.dev && LAY.dev && LAY.dev.st === 'err' ? '개발사업' : '분양 단지'} 자료를 불러오지 못했어요.`;
+  else if (!msg && S.bun && z < 12 && lv !== 'sido') msg = '분양 단지는 조금 더 확대하면 보여요.';
+  if (lv !== LASTLV) { LASTLV = lv; legend(); }
+  if (ME) next.set('ME', { lat: ME.lat, lng: ME.lng, cls: 'me', html: '', sig: 'me' + ME.lat + ME.lng, z: 1000, tap: () => {} });
+  put(next);
+  status(msg);
+}
+
+/* ---------- 레이어: 개발사업·분양 단지 ---------- */
+async function loadLayer(k){
+  if (LAY[k]) return;
+  LAY[k] = { st: 'wait', list: [] };
+  if (k === 'dev') {
+    const d = window.JDJDev ? await JDJDev.load(DATA).catch(() => null) : null;
+    LAY.dev = { st: d ? 'ok' : 'err', list: ((d && d.projects) || []).filter(p => Array.isArray(p.xy) && isFinite(p.xy[0]) && isFinite(p.xy[1])) };
+  } else {
+    const [n, p] = await Promise.all([J(DATA + 'bunyang/notices.json'), J(DATA + 'bunyang/plan.json')]);
+    const T0 = window.JDJ_SALE ? JDJ_SALE.ymd(new Date()) : '';
+    const rows = [...((n && n.rows) || []), ...((p && p.rows) || [])].filter(x => x && x.n && Array.isArray(x.xy) && isFinite(x.xy[0]) && isFinite(x.xy[1]));
+    rows.forEach(x => { if (x.st !== 'plan' && window.JDJ_SALE) { const s = JDJ_SALE.status(x, T0); if (s) x.st = s; } });
+    LAY.bun = { st: n || p ? 'ok' : 'err', list: rows.filter(x => ['pre', 'on', 'wait', 'mv', 'plan'].includes(x.st)) };
+  }
+  render();
+}
+const SALE_L = { pre: '분양예정', on: '청약중', wait: '발표 대기', mv: '입주예정', plan: '분양예정(시기 미정)' };
+function layerPins(next, z, bb){
+  if (z < 10) return;
+  if (S.dev && LAY.dev && LAY.dev.st === 'ok') for (const p of LAY.dev.list) {
+    if (!C.inBox(bb, p.xy[1], p.xy[0], 0.1)) continue;
+    pin(next, 'L' + p.id, { lat: p.xy[1], lng: p.xy[0], cls: 'ly', html: `개발 · ${esc(z >= 13 ? (p.short || p.name) : (p.types || ['사업'])[0])}`, z: 950, tap: () => devCard(p) });
+  }
+  if (S.bun && LAY.bun && LAY.bun.st === 'ok' && z >= 12) for (const x of LAY.bun.list) {
+    if (!C.inBox(bb, x.xy[1], x.xy[0], 0.1)) continue;
+    pin(next, 'B' + x.id, { lat: x.xy[1], lng: x.xy[0], cls: 'ly bun', html: `${esc(SALE_L[x.st] || '분양')}${z >= 15 ? ' · ' + esc(x.n) : ''}`, z: 940, tap: () => bunCard(x) });
+  }
+}
+const fd = d => { if (!d) return ''; const a = String(d).split('-'); return a[0] + (a[1] ? '.' + (+a[1]) : '') + (a[2] ? '.' + (+a[2]) : ''); };
+function devCard(p){
+  SEL = { lay: p.id }; render();
+  const last = (p.stages || []).slice(-1)[0], nx = (p.plan || [])[0], src = (p.src || [])[0];
+  $('sheet').innerHTML = `<div class="grab"></div><div class="hd"><h2>${esc(p.name)}</h2><button type="button" class="x" aria-label="닫기">×</button></div>
+    <p class="meta">개발사업 · ${esc((p.types || []).join('·'))}</p>
+    <dl class="kv">${last ? `<dt>지금 단계</dt><dd><b>${esc(last.s)}</b> <span class="ppy">${esc(fd(last.d))}</span>${last.note ? `<small>${esc(last.note)}</small>` : ''}</dd>` : ''}
+    ${nx ? `<dt>다음 계획</dt><dd>${esc(nx.s)} ${esc(fd(nx.d))}${nx.note ? `<small>${esc(nx.note)}</small>` : ''}</dd>` : ''}
+    ${p.scale ? `<dt>규모</dt><dd>${esc(p.scale)}</dd>` : ''}</dl>
+    ${p.xy_basis ? `<p class="note">지도 위치: ${esc(p.xy_basis)}</p>` : ''}
+    ${src && src[1] && /^https:\/\//.test(src[1]) ? `<p class="src"><a href="${esc(src[1])}" target="_blank" rel="noopener noreferrer">공식 자료 보기 ›</a></p>` : ''}
+    <p class="note">공식 원문으로 확인한 단계·날짜만 적었어요. 주변 단지를 누르면 그 단지 시세 화면에서 이 사업과의 거리도 볼 수 있어요.</p>`;
+  showSheet();
+}
+function bunCard(x){
+  SEL = { lay: x.id }; render();
+  const tp = (x.ty || []).map(t => t[3]).filter(v => v > 0);
+  $('sheet').innerHTML = `<div class="grab"></div><div class="hd"><h2>${esc(x.n)}</h2><button type="button" class="x" aria-label="닫기">×</button></div>
+    <p class="meta">${esc(SALE_L[x.st] || '분양')}${x.k ? ' · ' + esc(x.k) : ''}${x.hh ? ' · ' + Number(x.hh).toLocaleString('ko-KR') + '세대' : ''}</p>
+    <dl class="kv">${x.ad ? `<dt>위치</dt><dd>${esc(x.ad)}</dd>` : ''}
+    ${tp.length ? `<dt>분양가</dt><dd><b>${esc(M.won(Math.min(...tp)))}</b>${tp.length > 1 && Math.max(...tp) > Math.min(...tp) ? ` ~ <b>${esc(M.won(Math.max(...tp)))}</b>` : ''}<small>공고의 주택형별 최고 분양가 기준</small></dd>` : ''}
+    ${x.rc && x.rc[0] ? `<dt>청약 접수</dt><dd>${esc(x.rc[0].replace(/(\d{4})(\d\d)(\d\d)/, '$1.$2.$3'))}${x.rc[1] ? ' ~ ' + esc(x.rc[1].replace(/(\d{4})(\d\d)(\d\d)/, '$1.$2.$3')) : ''}</dd>` : ''}</dl>
+    <div class="acts" style="grid-template-columns:1fr"><a href="/jangdaejang-calc/bunyang/" data-track="map_to_bunyang">분양 화면에서 자세히 보기</a></div>`;
+  showSheet();
+}
+
+/* ---------- 하단 카드 ---------- */
+function showSheet(){
+  const el = $('sheet'); el.hidden = false; el.scrollTop = 0;
+  el.querySelector('.x').onclick = closeSheet;
+}
+/* 카드에 가린 단지를 카드 위 지도 칸 가운데쯤으로 (넓은 화면은 카드가 왼쪽이라 그대로) */
+function reveal(lat, lng){
+  requestAnimationFrame(() => {
+    const sz = MAP.size(), sh = $('sheet'), p = MAP.project(lat, lng);
+    if (sh.hidden) return;
+    if (innerWidth >= 900) {                                   // 넓은 화면: 카드는 왼쪽 → 오른쪽 빈 곳 가운데로
+      const L0 = sh.getBoundingClientRect().right - $('mwrap').getBoundingClientRect().left + 16;
+      if (p.x < L0 || p.y < 240 || p.y > sz.h - 90) MAP.panBy(p.x - (L0 + (sz.w - L0) / 2), p.y - (240 + (sz.h - 330) / 2));
+      return;
+    }
+    const free = sz.h - sh.offsetHeight, top = 200;            // 위쪽 검색·필터 칸 아래부터
+    const want = Math.max(top + 30, (top + free) / 2);
+    if (p.y > free - 30 || p.y < top) MAP.panBy(0, p.y - want);
+  });
+}
+function closeSheet(){ $('sheet').hidden = true; if (SEL) { SEL = null; render(); } }
+function openCard(d, band, keep){
+  const b = (band && d.bands.find(u => u[3] === band) ? C.bandInfo(d.bands.find(u => u[3] === band), IX.months) : null) || C.pick(d, IX.months, { size: S.size, price: S.price }) || C.bandInfo(d.bands[0], IX.months);
+  SEL = { d, band: b.band };
+  if (!keep) render();
+  const f = (b.u[9] && typeof b.u[9] === 'object') ? b.u[9] : null;
+  let head = '';
+  if (f && f.fv != null && NAR) { try { head = NAR.build(f, { apt: d.apt, dong: d.dong, code: d.code, band: b.band, area: b.area, IX, MH, PL, year: new Date().getFullYear(), s: b.u[6], regionUsed: MREG }).head || ''; } catch (e) { head = ''; } }
+  const meta = [`${sggName(d.code)} ${d.dong}`, d.by ? `${d.by}년 준공` : '', d.hh ? `${Number(d.hh).toLocaleString('ko-KR')}세대` : ''].filter(Boolean).join(' · ');
+  const inCmp = loadCmp().some(x => C.cmpId(x) === C.cmpId(d));
+  $('sheet').innerHTML = `<div class="grab"></div><div class="hd"><h2>${esc(d.apt)}</h2><button type="button" class="x" aria-label="닫기">×</button></div>
+    <p class="meta">${esc(meta)}</p>
+    ${d.bands.length > 1 ? `<div class="bands" role="group" aria-label="평형">${d.bands.map(u => `<button type="button" data-b="${esc(u[3])}" class="${u[3] === b.band ? 'on' : ''}" aria-pressed="${u[3] === b.band}">${esc(u[3])}</button>`).join('')}</div>` : ''}
+    <dl class="kv">
+      <dt>최근 시세</dt><dd>${b.price > 0 ? `<b>${esc(M.won(b.price))}</b><span class="ppy">${esc(C.ppyText(b.ppy))}</span><small>${esc(b.band)} · ${esc(M.ymLabel(b.at))} 기준 최근 3개월 실거래 중앙값</small>` : '최근 3개월 실거래가 없어요<small>시세·전망 보기에서 지난 거래를 볼 수 있어요</small>'}</dd>
+      <dt>미래가치</dt><dd>${b.fv != null ? `<div class="fvrow"><span class="fvb ${C.tone(b.fv)}">${b.fv}점</span><span class="head">${esc(head || '100점 만점, 앞으로 2년 같은 시·도 아파트와 비교한 점수예요.')}</span></div>` : '이 평형은 미래가치 점수 자료가 없어요'}</dd>
+      ${b.jr != null ? `<dt>전세가율</dt><dd><b>${esc(C.pct(b.jr))}</b><small>집값 대비 전셋값 비율</small></dd>` : ''}
+    </dl>
+    <div class="acts"><a href="${esc(C.mineUrl(d, b.band))}" data-track="map_to_mine">시세·전망 보기</a><button type="button" id="addCmp" class="${inCmp ? 'done' : ''}">${inCmp ? '비교함에 있어요' : '비교에 담기'}</button></div>`;
+  showSheet();
+  if (!keep) reveal(d.lat, d.lng);
+  $('sheet').querySelectorAll('.bands button').forEach(x => x.onclick = () => openCard(d, x.dataset.b, true));
+  $('addCmp').onclick = () => { saveCmp(C.cmpAdd(loadCmp(), Object.assign({}, d, { band: b.band }))); openCard(d, b.band, true); if (window.jdjStat) jdjStat('feature_use', {feature:'map_compare_add'}); };
+  if (!keep && window.jdjStat) jdjStat('feature_use', {feature:'map_card'});
+}
+
+/* ---------- 비교함 (이 기기 sessionStorage, 최대 3곳) ---------- */
+function loadCmp(){ try { const v = JSON.parse(sessionStorage.getItem(C.CMP_KEY) || '[]'); return Array.isArray(v) ? v.slice(-C.CMP_MAX) : []; } catch (e) { return []; } }
+function saveCmp(l){ try { sessionStorage.setItem(C.CMP_KEY, JSON.stringify(l)); } catch (e) {} drawCmp(); }
+function drawCmp(){
+  const l = loadCmp(), el = $('cmpbar');
+  el.hidden = !l.length; document.body.classList.toggle('has-cmp', !!l.length);
+  if (!l.length) return;
+  el.innerHTML = `<span class="nm">비교함 <b>${l.length}곳</b> · ${l.map(x => esc(x.apt)).join(', ')}</span>`
+    + `<a href="${esc(C.askUrl(l))}" class="${l.length < 2 ? 'off' : ''}" data-track="map_to_ask"${l.length < 2 ? ' aria-disabled="true" title="2곳 이상 담으면 비교할 수 있어요"' : ''}>${l.length < 2 ? '1곳 더 담기' : '비교하기'}</a>`
+    + `<button type="button" id="cmpClr" aria-label="비교함 비우기">비우기</button>`;
+  $('cmpClr').onclick = () => { saveCmp([]); if (SEL && SEL.d) openCard(SEL.d, SEL.band, true); };
+}
+
+/* ---------- 검색 (mine-core searchDanji — 지금 불러온 시·도 + 검색어 앞 지역 이름) ---------- */
+let qt = null;
+function sidoFromQuery(q){
+  const t = q.trim().split(/\s+/);
+  if (t.length < 2) return null;
+  const s = IX.sido.find(x => x.short === t[0] || x.name === t[0] || x.name.indexOf(t[0]) === 0 && t[0].length >= 2);
+  return s ? { id: s.id, rest: t.slice(1).join(' ') } : null;
+}
+function centerSido(){
+  if (!GEO) return null; const c = MAP.center();
+  let best = null, bd = Infinity;
+  for (const id in GEO.sido) { const b = GEO.sido[id].b; if (c.lng >= b[0] && c.lng <= b[2] && c.lat >= b[1] && c.lat <= b[3]) { const g = GEO.sido[id].c, dd = (g[0] - c.lng) ** 2 + (g[1] - c.lat) ** 2; if (dd < bd) { bd = dd; best = id; } } }
+  return best;
+}
+function runSearch(){
+  const q = $('q').value.trim(), out = $('sres');
+  $('qClr').hidden = !q;
+  if (!q) { out.innerHTML = ''; return; }
+  const sq = sidoFromQuery(q), ids = sq ? [sq.id] : [...new Set([centerSido(), ...Object.keys(SD).filter(id => SD[id].st === 'ok')].filter(Boolean))];
+  const text = sq ? sq.rest : q;
+  if (ensure(ids)) { out.innerHTML = '<li class="msg">단지 목록을 불러오는 중이에요…</li>'; clearTimeout(qt); qt = setTimeout(runSearch, 500); return; }
+  const res = [];
+  for (const id of ids) { const s = SD[id]; if (!s || s.st !== 'ok') continue; for (const d of M.searchDanji(s.byKey, text, 8)) res.push(d); }
+  const sdn = id => (IX.sido.find(s => s.id === id) || {}).short || '';
+  out.innerHTML = res.length ? res.slice(0, 8).map(d => `<li><button type="button" data-sd="${d.sd}" data-k="${esc(d.key)}"><b>${esc(d.apt)}</b><small>${esc(sdn(d.sd))} ${esc(sggName(d.code))} ${esc(d.dong)}${d.by ? ' · ' + d.by + '년' : ''}</small></button></li>`).join('')
+    : `<li class="msg">'${esc(text)}' 단지를 ${sq ? esc(sdn(sq.id)) + '에서' : '지금 지도 주변 지역에서'} 찾지 못했어요.${sq ? '' : " 다른 지역이면 '부산 해운대'처럼 지역 이름을 앞에 붙여 주세요."} 지도에는 미래가치 점수 자료가 있는 단지만 있어요.</li>`;
+}
+$('q').addEventListener('input', () => { clearTimeout(qt); qt = setTimeout(runSearch, 200); });
+$('q').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); clearTimeout(qt); runSearch(); const f = $('sres').querySelector('button'); if (f) f.click(); } if (e.key === 'Escape') { $('sres').innerHTML = ''; } });
+$('qClr').onclick = () => { $('q').value = ''; runSearch(); $('q').focus(); };
+$('sres').addEventListener('click', e => {
+  const b = e.target.closest('button[data-k]'); if (!b) return;
+  const s = SD[b.dataset.sd], d = s && s.byKey.get(b.dataset.k); if (!d) return;
+  $('sres').innerHTML = ''; $('q').blur();
+  MAP.setView(d.lat, d.lng, 17); openCard(d);
+  if (window.jdjStat) jdjStat('feature_use', {feature:'map_search'});
+});
+
+/* ---------- 내 위치 (권한이 없거나 실패하면 조용히 그대로) ---------- */
+let ME = null;
+$('me').onclick = () => {
+  if (!navigator.geolocation) return;
+  const b = $('me'); b.classList.add('busy');
+  navigator.geolocation.getCurrentPosition(p => { b.classList.remove('busy'); ME = { lat: p.coords.latitude, lng: p.coords.longitude }; MAP.setView(ME.lat, ME.lng, 15); render(); },
+    () => b.classList.remove('busy'), { enableHighAccuracy: false, timeout: 8000, maximumAge: 120000 });
+};
+$('zin').onclick = () => MAP.zoomBy(1);
+$('zout').onclick = () => MAP.zoomBy(-1);
+
+/* ---------- 주소(지금 보는 곳·필터)를 남겨 새로 고침·공유해도 같은 화면 ---------- */
+let ut = null;
+function saveUrl(z){
+  clearTimeout(ut); ut = setTimeout(() => {
+    const c = MAP.center(), u = new URL(location.href), p = u.searchParams;
+    p.set('lat', c.lat.toFixed(5)); p.set('lng', c.lng.toFixed(5)); p.set('z', String(Math.round(z)));
+    S.mode !== 'price' ? p.set('m', S.mode) : p.delete('m'); S.size ? p.set('sz', S.size) : p.delete('sz'); S.price ? p.set('pr', S.price) : p.delete('pr');
+    (S.dev || S.bun) ? p.set('ly', S.dev && S.bun ? 'all' : S.dev ? 'dev' : 'bun') : p.delete('ly');
+    if (SEL && SEL.d) { p.set('sd', SEL.d.sd); p.set('d', SEL.d.key); SEL.band ? p.set('b', SEL.band) : p.delete('b'); } else { p.delete('sd'); p.delete('d'); p.delete('b'); }
+    history.replaceState(null, '', u);
+  }, 300);
+}
+
+/* ---------- 시작 ---------- */
+async function init(){
+  drawControls(); legend(); drawCmp();
+  const [ix, geo, mj, mh] = await Promise.all([J(DATA + 'index.json'), J('/jangdaejang-calc/assets/map-geo.json'), J(DATA + 'model.json'), J(DATA + 'model_h.json')]);
+  if (!ix) { status('지도 자료를 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.'); return; }
+  IX = ix; GEO = geo; MH = mh; MREG = !!(mj && mj.region && mj.region.used);
+  const lat = parseFloat(Q.get('lat')), lng = parseFloat(Q.get('lng')), z = parseInt(Q.get('z'), 10);
+  const v = isFinite(lat) && isFinite(lng) && lat > 32 && lat < 39.5 && lng > 124 && lng < 132 ? { lat, lng, zoom: isFinite(z) ? Math.max(6, Math.min(19, z)) : 14 } : { lat: 37.5400, lng: 127.0050, zoom: 11 };
+  try { MAP = await E.create($('map'), v); }
+  catch (e) { status('지도를 불러오지 못했어요. 인터넷 연결을 확인하고 다시 열어 주세요.'); return; }
+  document.documentElement.dataset.mapEngine = MAP.kind + (MAP.tiles ? ':' + MAP.tiles : '');
+  MAP.onIdle(() => { MOVED = false; render(); });
+  MAP.onMoveStart(() => { MOVED = true; });
+  MAP.onTap(() => { $('sres').innerHTML = ''; if (!$('sheet').hidden) closeSheet(); });
+  addEventListener('pointerdown', () => { MOVED = false; }, true);
+  addEventListener('resize', () => { MAP.relayout(); render(); });
+  if (S.dev) loadLayer('dev'); if (S.bun) loadLayer('bun');
+  const qsd = Q.get('sd'), qd = Q.get('d');
+  if (qsd && qd && IX.sido.some(s => s.id === qsd)) { PENDING = { sd: qsd, d: qd, b: Q.get('b') || '' }; ensure([qsd]); }
+  render();
+  if (window.jdjStat) jdjStat('feature_use', {feature:'map'});
+}
+init();
+})();
+</script>
+</body>
+</html>
