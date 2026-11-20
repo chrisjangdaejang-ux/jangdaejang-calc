@@ -234,7 +234,7 @@
       + '<button type="button" class="btn" data-jshare="mid">공유하기</button></div>';
   }
   function bottomHTML() {
-    return '<div class="jshare-bottom noprint" data-jshare-box="bottom"><button type="button" class="btn" data-jshare="bottom">' + ICON + ' 결과 요약 공유하기</button>'
+    return '<div class="jshare-bottom noprint" data-jshare-box="bottom"><button type="button" class="btn" data-jshare="bottom">' + ICON + ' 결과 공유하기</button>'
       + '<small>받는 분은 링크를 눌러 바로 자기 조건으로 해 볼 수 있어요.</small></div>';
   }
   function topBtn() {
@@ -243,7 +243,7 @@
     var b = h.querySelector('.jshare-top');
     if (!b) {
       b = d.createElement('button'); b.type = 'button'; b.className = 'jshare-top'; b.setAttribute('data-jshare', 'top');
-      b.setAttribute('aria-label', '결과 요약 공유하기'); b.innerHTML = ICON + '<span>공유</span>'; b.hidden = true;
+      b.setAttribute('aria-label', '결과 공유하기'); b.innerHTML = ICON + '<span>공유</span>'; b.hidden = true;
       var side = h.querySelector('.badge, .topbtn');
       if (side) { var g = d.createElement('div'); g.className = 'jshare-tg'; side.parentNode.insertBefore(g, side); g.appendChild(side); g.appendChild(b); }
       else h.appendChild(b);
