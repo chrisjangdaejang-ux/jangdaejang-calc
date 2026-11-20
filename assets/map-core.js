@@ -119,6 +119,26 @@
   }
   /** 묶음 말풍선 크기 어림(px): 글자 수 × 글자 폭 + 여백 */
   const boxSize = (lines, fs) => ({ w: Math.max(...lines.map(t => String(t || '').length)) * (fs || 13) * 0.95 + 20, h: lines.filter(Boolean).length * (fs || 13) * 1.35 + 12 });
+  /** 글자 폭 어림(px, 굵은 Noto Sans KR): 한글 1글자 = 글자 크기, 숫자·영문은 약 0.56, 빈칸·쉼표·점은 약 0.3 */
+  function textW(s, fs) {
+    let w = 0;
+    for (const ch of String(s == null ? '' : s)) w += /[ᄀ-ᇿ㄰-㆏가-힯㎡]/.test(ch) ? fs : /[\s.,·:]/.test(ch) ? fs * 0.32 : /[%~+\-]/.test(ch) ? fs * 0.7 : fs * 0.56;
+    return w;
+  }
+  const hit = (a, b, gap) => a.l - gap < b.r && b.l - gap < a.r && a.t - gap < b.b && b.t - gap < a.b;
+  /** 말풍선 겹침 정리: items = [{box:{l,t,r,b}(화면 px), p(높을수록 먼저), list?}], walls = 말풍선을 두면 안 되는 칸(조작 버튼·안내·지도 로고 등).
+      우선순위 순서로 자리를 잡고, 벽에 걸리면 숨김, 이미 자리 잡은 말풍선과 겹치면 숨기고 그 list 를 자리 잡은 쪽 list 뒤에 붙인다(+N 으로 보이게). → 남길 것만 */
+  function settle(items, walls, gap) {
+    gap = gap == null ? 4 : gap; walls = walls || [];
+    const kept = [];
+    for (const it of items.slice().sort((a, b) => (b.p || 0) - (a.p || 0))) {
+      if (walls.some(w => hit(w, it.box, gap))) continue;
+      const k = kept.find(k => hit(k.box, it.box, gap));
+      if (k) { if (k.list && it.list) k.list.push(...it.list); continue; }
+      kept.push(it);
+    }
+    return kept;
+  }
 
   /* ---------- 보이는 시·도 ---------- */
   /** geo = map-geo.json, bb = {w, s, e, n} → 상자가 겹치는 시·도 id (geo 가 없으면 null = 모름) */
@@ -180,7 +200,7 @@
     return BASE + 'ask/?' + q.toString();
   }
 
-  const API = { gather, declutter, boxSize, LV, level, kakaoToZoom, zoomToKakao, SIZES, sizeOf, PRICES, priceOk, MODES, danjiList, bandInfo, pick, groups, cluster, sidosIn, inBox,
+  const API = { gather, declutter, settle, textW, boxSize, LV, level, kakaoToZoom, zoomToKakao, SIZES, sizeOf, PRICES, priceOk, MODES, danjiList, bandInfo, pick, groups, cluster, sidosIn, inBox,
     eokShort, ppyText, pct, tone, TONES, mainText, groupText, mineUrl, CMP_KEY, CMP_MAX, cmpId, cmpAdd, askUrl, mean };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_MAPC = API;

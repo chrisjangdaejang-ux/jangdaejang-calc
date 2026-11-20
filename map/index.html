@@ -27,7 +27,7 @@
 <script src="../assets/plain-words.js?v=11"></script>
 <script src="../assets/narrative.js?v=5"></script>
 <script src="../assets/mine-core.js?v=14"></script>
-<script src="../assets/map-core.js?v=1"></script>
+<script src="../assets/map-core.js?v=2"></script>
 <script src="../assets/map-engine.js?v=1"></script>
 <script src="../assets/sale-status.js?v=1"></script>
 <script src="../assets/devproj-view.js?v=2"></script>
@@ -42,19 +42,18 @@ html:has(body.jm-full){overflow:hidden;zoom:1}   /* 지도는 PC 12.5% 확대(ap
 body.jm-full{overflow:hidden;overscroll-behavior:none;height:100vh;height:100dvh;display:flex;flex-direction:column}
 body.jm-full>.top{position:relative;flex:none}
 .top h1{margin:0;font-size:17px;font-weight:800;letter-spacing:-.3px;white-space:nowrap}
-.mwrap{position:relative;flex:1;min-height:0;margin-bottom:calc(58px + env(safe-area-inset-bottom));overflow:hidden;overflow:clip;background:#EEF1F4}
-#map{position:absolute;inset:0;z-index:1}
+.mwrap{--mt:0px;position:relative;flex:1;min-height:0;margin-bottom:calc(58px + env(safe-area-inset-bottom));overflow:hidden;overflow:clip;background:#EEF1F4}
+#map{position:absolute;left:0;right:0;bottom:0;top:var(--mt);z-index:1}   /* 지도는 위쪽 조작 칸 아래부터 — 말풍선이 조작 칸 밑에 비쳐 보이지 않게 */
 .leaflet-container{font-family:inherit;background:#EEF1F4}
 /* 위쪽 조작 칸 */
-.mtop{position:absolute;left:0;right:0;top:0;z-index:30;padding:10px 12px 0;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.mtop>*{pointer-events:auto}
+.mtop{position:absolute;left:0;right:0;top:0;z-index:30;padding:8px 12px;display:flex;flex-direction:column;gap:6px;background:#fff;border-bottom:1px solid #E5E8EB;box-shadow:0 2px 8px rgba(0,0,0,.06)}
 .srch{position:relative;max-width:560px;width:100%;margin:0 auto}
-.srch .box{display:flex;align-items:center;gap:8px;background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.14);padding:0 6px 0 14px;min-height:48px;border:2px solid transparent}
+.srch .box{display:flex;align-items:center;gap:8px;background:#fff;border-radius:14px;padding:0 6px 0 14px;min-height:46px;border:1.5px solid #D1D6DB}
 .srch .box:focus-within{border-color:var(--blue)}
 .srch svg{width:20px;height:20px;flex:none;stroke:#4E5968;fill:none;stroke-width:2.2;stroke-linecap:round}
 .srch input::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
-.srch input{flex:1;min-width:0;border:0;outline:none;font:inherit;font-size:16px;background:transparent;color:var(--text);min-height:44px}
-.srch .clr{flex:none;border:0;background:none;font:inherit;font-size:14px;color:var(--sub2);min-width:44px;min-height:44px;cursor:pointer}
+.srch input{flex:1;min-width:0;border:0;outline:none;font:inherit;font-size:16px;background:transparent;color:var(--text);min-height:42px}
+.srch .clr{flex:none;border:0;background:none;font:inherit;font-size:14px;color:var(--sub2);min-width:44px;min-height:42px;cursor:pointer}
 .sres{position:absolute;left:0;right:0;top:100%;z-index:5;list-style:none;margin:6px 0 0;padding:6px;background:#fff;border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.16);max-height:50vh;overflow:auto}
 .sres:empty{display:none}
 .sres button{display:flex;flex-direction:column;align-items:flex-start;width:100%;text-align:left;border:0;background:none;font:inherit;padding:10px 12px;border-radius:10px;cursor:pointer;min-height:48px}
@@ -62,27 +61,27 @@ body.jm-full>.top{position:relative;flex:none}
 .sres b{font-size:16px}
 .sres small{font-size:13.5px;color:var(--sub2)}
 .sres .msg{padding:10px 12px;font-size:14px;color:var(--sub2);line-height:1.5}
-.row1{display:flex;gap:8px;align-items:center;max-width:560px;width:100%;margin:0 auto}
-.seg{display:flex;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.12);padding:3px;flex:none}
-.seg button{border:0;background:none;font:inherit;font-size:14.5px;font-weight:700;color:var(--sub2);min-height:40px;padding:0 12px;border-radius:9px;cursor:pointer;white-space:nowrap}
+.row1{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;max-width:560px;width:100%;margin:0 auto}
+.seg{display:flex;background:#F2F4F6;border-radius:12px;padding:3px;flex:none}
+.seg button{border:0;background:none;font:inherit;font-size:14.5px;font-weight:700;color:var(--sub2);min-height:38px;padding:0 13px;border-radius:9px;cursor:pointer;white-space:nowrap}
 .seg button.on{background:var(--blue);color:#fff}
-.fil{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;max-width:560px;width:100%;margin:0 auto;padding-bottom:2px}
+.fil{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;flex:1 1 100%;min-width:0;margin:0 -12px;padding:0 12px;scroll-padding:0 12px}
 .fil::-webkit-scrollbar{display:none}
-.chip{flex:none;border:1px solid var(--line);background:#fff;font:inherit;font-size:14px;font-weight:700;color:var(--sub);min-height:40px;padding:0 12px;border-radius:999px;cursor:pointer;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.chip{flex:none;border:1px solid var(--line);background:#fff;font:inherit;font-size:14px;font-weight:700;color:var(--sub);min-height:40px;padding:0 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
 .chip.on{border-color:var(--blue);color:var(--blue);background:var(--blue-l)}
 .chip.lay.on{border-color:#6D4AFF;color:#5B3BE0;background:#F1EDFF}
 .chip.lay.bun.on{border-color:#0E7A4F;color:#0E7A4F;background:#E6F5EE}
 select.chip{appearance:none;-webkit-appearance:none;padding-right:28px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%234E5968' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 10px center}
 select.chip.on{background-color:var(--blue-l)}
 /* 오른쪽 버튼 */
-.mside{position:absolute;right:12px;z-index:25;display:flex;flex-direction:column;gap:8px;bottom:84px;transition:bottom .2s}
-.fab{width:48px;height:48px;border-radius:14px;border:0;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.16);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text);font:inherit;font-size:22px;font-weight:700}
+.mside{position:absolute;right:12px;z-index:25;display:flex;flex-direction:column;gap:8px;bottom:40px;transition:bottom .2s}   /* 아래 32px 은 지도 로고·축척·출처 자리(가리면 안 됨) */
+.fab{width:46px;height:46px;border-radius:12px;border:1px solid #E5E8EB;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text);font:inherit;font-size:22px;font-weight:700}
 .fab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .fab.busy{color:var(--blue)}
 /* 아래쪽 안내·범례 */
-.mstat{position:absolute;left:12px;bottom:14px;z-index:25;max-width:calc(100% - 84px);background:rgba(25,31,40,.86);color:#fff;font-size:13.5px;font-weight:500;line-height:1.45;padding:8px 12px;border-radius:12px;pointer-events:none}
+.mstat{position:absolute;left:50%;top:calc(var(--mt) + 8px);transform:translateX(-50%);z-index:25;width:max-content;max-width:min(calc(100% - 24px),520px);box-sizing:border-box;background:#191F28;color:#fff;font-size:13px;font-weight:500;line-height:1.45;padding:6px 12px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.18);text-align:center;pointer-events:none}   /* 안내는 지도 위쪽 가운데 — 아래 왼쪽 카카오 로고·축척을 가리지 않게 */
 .mstat:empty{display:none}
-.legend{position:absolute;left:12px;bottom:62px;z-index:25;background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.14);padding:8px 10px;font-size:12.5px;color:var(--sub);display:flex;flex-direction:column;gap:3px;max-width:calc(100% - 84px)}
+.legend{position:absolute;left:12px;bottom:40px;z-index:25;background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.14);padding:8px 10px;font-size:12.5px;color:var(--sub);display:flex;flex-direction:column;gap:3px;max-width:calc(100% - 84px)}
 .legend:empty{display:none}
 .legend span{display:flex;align-items:center;gap:6px;white-space:nowrap}
 .legend i{width:12px;height:12px;border-radius:4px;flex:none}
@@ -90,7 +89,7 @@ select.chip.on{background-color:var(--blue-l)}
 .legend .scl{display:flex;align-items:center;gap:3px;flex-wrap:wrap}
 .legend .scl i{width:10px;height:10px;border-radius:3px}
 .legend .sm{font-size:12px;color:var(--sub3);white-space:normal}
-.cmpbar{position:absolute;left:12px;right:72px;top:auto;bottom:14px;z-index:26;background:#fff;border:2px solid var(--blue);border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.14);padding:6px 6px 6px 12px;display:flex;align-items:center;gap:8px;font-size:14px}
+.cmpbar{position:absolute;left:12px;right:70px;top:auto;bottom:40px;z-index:26;background:#fff;border:2px solid var(--blue);border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.14);padding:6px 6px 6px 12px;display:flex;align-items:center;gap:8px;font-size:14px}
 .cmpbar[hidden]{display:none}
 .cmpbar .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--sub)}
 .cmpbar .nm b{color:var(--text)}
@@ -98,8 +97,7 @@ select.chip.on{background-color:var(--blue-l)}
 .cmpbar a{background:var(--blue);color:#fff}
 .cmpbar a.off{background:var(--gray);color:var(--sub3);pointer-events:none}
 .cmpbar button{border:0;background:none;color:var(--sub2);min-width:44px}
-body.has-cmp .mstat,body.has-cmp .legend{transform:translateY(-56px)}
-body.has-cmp .mside{bottom:140px}
+body.has-cmp .legend{transform:translateY(-62px)}
 /* 하단 카드 */
 .sheet{position:absolute;left:0;right:0;bottom:0;z-index:35;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,.18);max-height:64%;overflow:auto;padding:8px 18px 18px;max-width:640px;margin:0 auto;overscroll-behavior:contain}
 .sheet[hidden]{display:none}
@@ -164,8 +162,10 @@ body.has-cmp .mside{bottom:140px}
 .jm-b.dj.solid.t1{border-color:#C2410C;background:#C2410C}.jm-b.dj.solid.t1::after{border-top-color:#C2410C}
 .jm-b.dj.solid.na{border-color:#B0B8C1;background:#B0B8C1}.jm-b.dj.solid.na::after{border-top-color:#B0B8C1}
 .jm-b.dj:not(.solid).na{background:#fff;border-color:#B0B8C1}.jm-b.dj:not(.solid).na::after{border-top-color:#B0B8C1}
-@media(min-width:900px){.cmpbar{left:432px;right:84px}body.has-cmp .mstat,body.has-cmp .legend{transform:none}body.has-cmp .mstat{left:432px;bottom:70px}.mtop{padding:14px 16px 0}.sheet{left:16px;right:auto;bottom:16px;width:400px;max-height:calc(100% - 140px);border-radius:20px}.mside{bottom:24px}}
-@media(max-width:380px){.seg button{padding:0 9px;font-size:14px}.top .badge{display:none}}
+@media(min-width:720px){.srch,.row1{max-width:860px}.row1{flex-wrap:nowrap}.fil{flex:1 1 auto;margin:0;padding:0 0 0 2px}}
+@media(min-width:900px){.cmpbar{left:432px;right:84px}body.has-cmp .legend{transform:none}body.has-sheet .legend{left:432px}.mtop{padding:10px 16px}.sheet{left:16px;right:auto;bottom:40px;width:400px;max-height:calc(100% - var(--mt) - 56px);border-radius:20px}}
+@media(max-width:380px){.seg button{padding:0 10px;font-size:14px}.chip{padding:0 11px}}
+@media(max-width:340px){.top .badge{display:none}}   /* 360px 폭에서는 배지가 들어가므로 숨기지 않음(숨기면 '지도' 제목이 오른쪽 끝으로 밀림) */
 </style>
 </head>
 <body class="jm-full">
@@ -185,8 +185,8 @@ body.has-cmp .mside{bottom:140px}
     </div>
     <div class="row1">
       <div class="seg" id="mode" role="group" aria-label="지도에 보여 줄 값"></div>
+      <div class="fil" id="fil"></div>
     </div>
-    <div class="fil" id="fil"></div>
   </div>
   <div class="mside">
     <button type="button" class="fab" id="zin" aria-label="확대">+</button>
@@ -243,7 +243,7 @@ function legend(){
   if (lv !== 'danji') { el.innerHTML = ''; return; }
   const scale = `<span class="scl">${S.mode === 'fv' ? '' : '배지 = '}미래가치 점수 낮음 <i class="t1"></i><i class="t2"></i><i class="t3"></i><i class="t4"></i><i class="t5"></i> 높음 ⓘ</span>`;
   el.innerHTML = `<button type="button" class="lgb" aria-expanded="${LEGOPEN}">${scale}</button>` + (LEGOPEN ? C.TONES.map(t => `<span><i class="${t[0]}"></i>${t[2]} · ${t[1]}</span>`).join('') + '<span class="sm">앞으로 2년, 같은 시·도 아파트와 비교한 점수(100점 만점)</span>' : '');
-  el.querySelector('.lgb').onclick = () => { LEGOPEN = !LEGOPEN; legend(); };
+  el.querySelector('.lgb').onclick = () => { LEGOPEN = !LEGOPEN; legend(); render(); };
 }
 
 /* ---------- 자료 불러오기 (보이는 시·도만) ---------- */
@@ -285,10 +285,30 @@ function put(next){
 }
 const pin = (m, k, o) => m.set(k, Object.assign({ sig: o.cls + '|' + o.html }, o));
 function status(t){ $('mstat').textContent = t || ''; }
+/* 말풍선을 두면 안 되는 칸(지도 좌표 px): 지도 위쪽 바깥, 위 안내, 범례, 오른쪽 버튼, 비교함, 지도 로고·축척·출처 */
+function walls(){
+  const mr = $('map').getBoundingClientRect(), H = mr.height, X = mr.width;   // 지도 네 가장자리 바깥(반쯤 잘린 말풍선 없게)
+  const W = [{ l: -1e5, t: -1e5, r: 1e5, b: 0 }, { l: -1e5, t: H, r: 1e5, b: 1e5 }, { l: -1e5, t: -1e5, r: 0, b: 1e5 }, { l: X, t: -1e5, r: 1e5, b: 1e5 }];
+  const add = el => { if (!el || el.hidden) return; const r = el.getBoundingClientRect(); if (!r.width || !r.height) return; W.push({ l: r.left - mr.left, t: r.top - mr.top, r: r.right - mr.left, b: r.bottom - mr.top }); };
+  for (const id of ['mstat', 'legend', 'cmpbar']) if ($(id).childNodes.length) add($(id));
+  add($('sheet'));                                                                         // 열린 카드 밑에 반쯤 걸린 말풍선 없게
+  add(document.querySelector('.mside'));
+  if (MAP.kind === 'kakao') W.push({ l: 0, t: H - 30, r: 190, b: H });   // 카카오 로고·축척(왼쪽 아래)
+  else add($('map').querySelector('.leaflet-control-attribution'));
+  return W;
+}
+const TW = C.textW;
+/* 말풍선 자리(지도 좌표 px) 어림 — CSS .jm-b.* 크기와 맞춤 */
+function gpBox(o){ const w = Math.max(56, TW(o.name, 13), TW(o.v, 12.5), TW(o.sub, 11)) + 20, h = 9 + 17 + (o.v ? 16 : 0) + (o.sub ? 14 : 0); return { l: o.x - w / 2, t: o.y - h / 2, r: o.x + w / 2, b: o.y + h / 2 }; }
+function djBox(x, y, main, badge, name, more){
+  const w = Math.max(TW(main, 14) + (badge ? TW(badge, 11.5) + 12 : 0), name ? Math.min(110, TW(name, 11.5)) : 0) + 18, h = 9 + 18 + (name ? 15 : 0);
+  return { l: x - w / 2, t: y - 7 - h - (more ? 12 : 0), r: x + w / 2 + (more ? 12 : 0), b: y };
+}
 
 function render(){
   if (!MAP || !IX) return;
-  const z = MAP.zoom(), lv = C.level(z), bb = MAP.bounds(), next = new Map(), gl = [];
+  const z = MAP.zoom(), lv = C.level(z), bb = MAP.bounds(), next = new Map(), gl = [], djc = [];
+  let showName = false;
   saveUrl(z);
   let msg = '';
   if (lv === 'sido') {
@@ -318,7 +338,7 @@ function render(){
     }
     msg = wait ? '구별 미래가치 순위 자료를 불러오는 중이에요…' : S.mode === 'price' ? '구 전체 아파트 평당가(전용 3.3㎡당, 최근 3개월 실거래 중앙값)예요.' : S.mode === 'jr' ? '구 전체 아파트 전세가율(집값 대비 전셋값)이에요.' : '구별 미래가치 순위(같은 시·도 안 지역 흐름 점수)예요. 구를 누르면 이유가 보여요. 파랑 상위권 · 회색 중위권 · 주황 하위권';
   } else {
-    const ids = viewIds(bb), wait = ensure(ids);
+    const ids = viewIds(bb), wait = ensure(ids);   // (djc·showName 은 아래 겹침 정리 뒤 말풍선으로)
     const items = [];
     for (const id of ids) {
       const s = SD[id]; if (!s || s.st !== 'ok') continue;
@@ -334,38 +354,44 @@ function render(){
       const sz = MAP.size(), pts = [];
       for (const it of items) { const p = MAP.project(it.d.lat, it.d.lng); if (p.x < -60 || p.y < -60 || p.x > sz.w + 60 || p.y > sz.h + 60) continue; pts.push({ x: p.x, y: p.y, w: it.d.n, it }); }
       const big = z >= 15, cells = C.gather(pts, big ? 92 : 50, big ? 44 : 46);
-      const showName = z >= 16;
+      showName = z >= 16;
       for (const c of cells) {
-        const more = c.list.length - 1;
-        if (more && !big) {
-          const ll = c.list.map(p => p.it.d), lat = C.mean(ll.map(d => d.lat)), lng = C.mean(ll.map(d => d.lng));
-          pin(next, 'C' + Math.round(lat * 2e3) + ',' + Math.round(lng * 2e3) + ',' + c.list.length, { lat, lng, cls: 'cl', html: `<b>${c.list.length}</b><small>단지</small>`, z: 600, tap: () => MAP.zoomBy(2, lat, lng) });
+        if (c.list.length > 1 && !big) {   // 묶음 동그라미: 자리는 처음 묶인 단지들 가운데(합쳐져도 안 움직이게)
+          const ll = c.list.map(p => p.it.d), lat = C.mean(ll.map(d => d.lat)), lng = C.mean(ll.map(d => d.lng)), q = MAP.project(lat, lng);
+          djc.push({ cl: true, lat, lng, list: c.list, p: 1e6 + c.list.length, box: { l: q.x - 28, t: q.y - 28, r: q.x + 28, b: q.y + 28 } });
           continue;
         }
-        const { d, b } = c.list[0].it, t = C.tone(b.fv), main = C.mainText(S.mode, b);
-        const solid = S.mode === 'fv';
-        const badge = S.mode !== 'fv' && b.fv != null ? `<i class="${t}">${b.fv}</i>` : '';
-        const html = `<span class="v">${badge}${esc(main || (S.mode === 'price' ? '최근 거래 없음' : '자료 없음'))}</span>${showName ? `<span class="nm">${esc(d.apt)}</span>` : ''}`
-          + (more ? `<em class="more" data-more="1" title="가까이 보면 ${more}곳 더 보여요">+${more}</em>` : '');
-        const cls = 'dj' + (solid ? ' solid ' + t : !main ? ' na' : '') + (SEL && SEL.d && SEL.d.key === d.key ? ' sel' : '');
-        pin(next, 'A' + d.sd + d.key, { lat: d.lat, lng: d.lng, cls, html, z: Math.min(900, d.n), tap: e => { if (e && e.target && e.target.closest && e.target.closest('[data-more]')) MAP.zoomBy(2, d.lat, d.lng); else openCard(d); } });
+        const { d, b } = c.list[0].it, main = C.mainText(S.mode, b), badge = S.mode !== 'fv' && b.fv != null ? String(b.fv) : '';
+        const sel = !!(SEL && SEL.d && SEL.d.key === d.key);
+        djc.push({ d, b, main, list: c.list, p: (sel ? 1e7 : 0) + (d.n || 0), box: djBox(c.list[0].x, c.list[0].y, main || '최근 거래 없음', badge, showName ? d.apt : '', c.list.length > 1) });
       }
       msg = items.length ? '' : (wait ? '' : (S.size || S.price) ? '이 화면에 고른 평형·가격대에 맞는 단지가 없어요.' : '이 화면에는 표시할 단지가 없어요.');
     }
     if (wait) msg = '단지 자료를 불러오는 중이에요…';
     else if (ids.some(id => SD[id] && SD[id].st === 'err')) msg = '일부 지역 자료를 불러오지 못했어요. 잠시 뒤 지도를 다시 움직여 주세요.';
   }
-  /* 구·동·시·도 묶음: 겹치면 단지(거래) 많은 쪽만 — 가까이 확대하면 나머지가 나와요 */
-  const boxes = gl.map(o => { const q = MAP.project(o.lat, o.lng), sz = C.boxSize([o.name, o.v, o.sub], 13); return Object.assign(o, { x: q.x, y: q.y, w: sz.w, h: sz.h }); });
-  for (const o of C.declutter(boxes, 3)) pin(next, o.k, { lat: o.lat, lng: o.lng, cls: o.cls, z: 500, tap: o.tap,
-    html: `<b>${esc(o.name)}</b>${o.v ? `<span>${esc(o.v)}</span>` : ''}${o.sub ? `<small>${esc(o.sub)}</small>` : ''}` });
-  layerPins(next, z, bb);
   if (!msg && ((S.dev && LAY.dev && LAY.dev.st === 'err') || (S.bun && LAY.bun && LAY.bun.st === 'err'))) msg = `${S.dev && LAY.dev && LAY.dev.st === 'err' ? '개발사업' : '분양 단지'} 자료를 불러오지 못했어요.`;
   else if (!msg && S.bun && z < 12 && lv !== 'sido') msg = '분양 단지는 조금 더 확대하면 보여요.';
   if (lv !== LASTLV) { LASTLV = lv; legend(); }
+  status(msg);                                   // 안내·범례 크기가 정해진 뒤 그 자리를 비워 두고 말풍선을 놓는다
+  const W = walls();
+  /* 개발사업·분양 단지(켰을 때) 먼저 자리를 잡고 → 구·동·시·도 묶음 → 단지. 겹치면 점수(거래·단지 수) 높은 쪽만, 가까이 확대하면 나머지가 나와요 */
+  for (const o of C.settle(layerPins(z, bb), W, 3)) { pin(next, o.k, o); W.push(o.box); }
+  for (const o of C.settle(gl.map(o => { const q = MAP.project(o.lat, o.lng); o.x = q.x; o.y = q.y; o.box = gpBox(o); return o; }), W, 3))
+    pin(next, o.k, { lat: o.lat, lng: o.lng, cls: o.cls, z: 500, tap: o.tap,
+      html: `<b>${esc(o.name)}</b>${o.v ? `<span>${esc(o.v)}</span>` : ''}${o.sub ? `<small>${esc(o.sub)}</small>` : ''}` });
+  for (const c of C.settle(djc, W, 3)) {
+    const more = c.list.length - 1;
+    if (c.cl) { const { lat, lng } = c; pin(next, 'C' + Math.round(lat * 2e3) + ',' + Math.round(lng * 2e3) + ',' + c.list.length, { lat, lng, cls: 'cl', html: `<b>${c.list.length}</b><small>단지</small>`, z: 600, tap: () => MAP.zoomBy(2, lat, lng) }); continue; }
+    const { d, b, main } = c, t = C.tone(b.fv), solid = S.mode === 'fv';
+    const badge = S.mode !== 'fv' && b.fv != null ? `<i class="${t}">${b.fv}</i>` : '';
+    const html = `<span class="v">${badge}${esc(main || (S.mode === 'price' ? '최근 거래 없음' : '자료 없음'))}</span>${showName ? `<span class="nm">${esc(d.apt)}</span>` : ''}`
+      + (more ? `<em class="more" data-more="1" title="가까이 보면 ${more}곳 더 보여요">+${more}</em>` : '');
+    const cls = 'dj' + (solid ? ' solid ' + t : !main ? ' na' : '') + (SEL && SEL.d && SEL.d.key === d.key ? ' sel' : '');
+    pin(next, 'A' + d.sd + d.key, { lat: d.lat, lng: d.lng, cls, html, z: Math.min(900, d.n), tap: e => { if (e && e.target && e.target.closest && e.target.closest('[data-more]')) MAP.zoomBy(2, d.lat, d.lng); else openCard(d); } });
+  }
   if (ME) next.set('ME', { lat: ME.lat, lng: ME.lng, cls: 'me', html: '', sig: 'me' + ME.lat + ME.lng, z: 1000, tap: () => {} });
   put(next);
-  status(msg);
 }
 
 /* ---------- 레이어: 개발사업·분양 단지 ---------- */
@@ -385,16 +411,20 @@ async function loadLayer(k){
   render();
 }
 const SALE_L = { pre: '분양예정', on: '청약중', wait: '발표 대기', mv: '입주예정', plan: '분양예정(시기 미정)' };
-function layerPins(next, z, bb){
-  if (z < 10) return;
+function layerPins(z, bb){
+  const out = [];
+  if (z < 10) return out;
+  const one = (k, lat, lng, cls, text, zz, p, tap) => { const q = MAP.project(lat, lng), w = Math.min(150, TW(text, 12) + 14), h = 24;
+    out.push({ k, lat, lng, cls, html: esc(text), z: zz, p, tap, box: { l: q.x - w / 2, t: q.y - 6 - h, r: q.x + w / 2, b: q.y } }); };
   if (S.dev && LAY.dev && LAY.dev.st === 'ok') for (const p of LAY.dev.list) {
     if (!C.inBox(bb, p.xy[1], p.xy[0], 0.1)) continue;
-    pin(next, 'L' + p.id, { lat: p.xy[1], lng: p.xy[0], cls: 'ly', html: `개발 · ${esc(z >= 13 ? (p.short || p.name) : (p.types || ['사업'])[0])}`, z: 950, tap: () => devCard(p) });
+    one('L' + p.id, p.xy[1], p.xy[0], 'ly', `개발 · ${z >= 13 ? (p.short || p.name) : (p.types || ['사업'])[0]}`, 950, (SEL && SEL.lay === p.id ? 1e7 : 0) + 2e3, () => devCard(p));
   }
   if (S.bun && LAY.bun && LAY.bun.st === 'ok' && z >= 12) for (const x of LAY.bun.list) {
     if (!C.inBox(bb, x.xy[1], x.xy[0], 0.1)) continue;
-    pin(next, 'B' + x.id, { lat: x.xy[1], lng: x.xy[0], cls: 'ly bun', html: `${esc(SALE_L[x.st] || '분양')}${z >= 15 ? ' · ' + esc(x.n) : ''}`, z: 940, tap: () => bunCard(x) });
+    one('B' + x.id, x.xy[1], x.xy[0], 'ly bun', `${SALE_L[x.st] || '분양'}${z >= 15 ? ' · ' + x.n : ''}`, 940, (SEL && SEL.lay === x.id ? 1e7 : 0) + 1e3 + (+x.hh || 0) / 1e3, () => bunCard(x));
   }
+  return out;
 }
 const fd = d => { if (!d) return ''; const a = String(d).split('-'); return a[0] + (a[1] ? '.' + (+a[1]) : '') + (a[2] ? '.' + (+a[2]) : ''); };
 function devCard(p){
@@ -445,8 +475,9 @@ function openGuCard(code, gs){
 
 /* ---------- 하단 카드 ---------- */
 function showSheet(){
-  const el = $('sheet'); el.hidden = false; el.scrollTop = 0;
+  const el = $('sheet'); el.hidden = false; el.scrollTop = 0; document.body.classList.add('has-sheet');
   el.querySelector('.x').onclick = closeSheet;
+  render();
 }
 /* 카드에 가린 단지를 카드 위 지도 칸 가운데쯤으로 (넓은 화면은 카드가 왼쪽이라 그대로) */
 function reveal(lat, lng){
@@ -455,15 +486,15 @@ function reveal(lat, lng){
     if (sh.hidden) return;
     if (innerWidth >= 900) {                                   // 넓은 화면: 카드는 왼쪽 → 오른쪽 빈 곳 가운데로
       const L0 = sh.getBoundingClientRect().right - $('mwrap').getBoundingClientRect().left + 16;
-      if (p.x < L0 || p.y < 240 || p.y > sz.h - 90) MAP.panBy(p.x - (L0 + (sz.w - L0) / 2), p.y - (240 + (sz.h - 330) / 2));
+      if (p.x < L0 || p.y < 70 || p.y > sz.h - 90) MAP.panBy(p.x - (L0 + (sz.w - L0) / 2), p.y - (70 + (sz.h - 160) / 2));
       return;
     }
-    const free = sz.h - sh.offsetHeight, top = 200;            // 위쪽 검색·필터 칸 아래부터
+    const free = sz.h - sh.offsetHeight, top = 70;             // 지도는 검색·필터 칸 아래부터(위 안내 한 줄 비움)
     const want = Math.max(top + 30, (top + free) / 2);
     if (p.y > free - 30 || p.y < top) MAP.panBy(0, p.y - want);
   });
 }
-function closeSheet(){ $('sheet').hidden = true; if (SEL) { SEL = null; render(); } }
+function closeSheet(){ $('sheet').hidden = true; document.body.classList.remove('has-sheet'); SEL = null; render(); }
 function openCard(d, band, keep){
   const b = (band && d.bands.find(u => u[3] === band) ? C.bandInfo(d.bands.find(u => u[3] === band), IX.months) : null) || C.pick(d, IX.months, { size: S.size, price: S.price }) || C.bandInfo(d.bands[0], IX.months);
   SEL = { d, band: b.band };
@@ -564,9 +595,19 @@ function saveUrl(z){
   }, 300);
 }
 
+/* ---------- 위쪽 조작 칸 높이 → 지도 시작 위치(--mt) ---------- */
+let MT = -1;
+function syncTop(){
+  const h = document.querySelector('.mtop').offsetHeight;
+  if (h === MT) return; MT = h;
+  $('mwrap').style.setProperty('--mt', h + 'px');
+  if (MAP) { MAP.relayout(); render(); }
+}
+if (window.ResizeObserver) new ResizeObserver(syncTop).observe(document.querySelector('.mtop'));
+
 /* ---------- 시작 ---------- */
 async function init(){
-  drawControls(); legend(); drawCmp();
+  drawControls(); legend(); drawCmp(); syncTop();
   const [ix, geo, mj, mh] = await Promise.all([J(DATA + 'index.json'), J('/jangdaejang-calc/assets/map-geo.json'), J(DATA + 'model.json'), J(DATA + 'model_h.json')]);
   if (!ix) { status('지도 자료를 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.'); return; }
   IX = ix; GEO = geo; MH = mh; MREG = !!(mj && mj.region && mj.region.used);
@@ -579,7 +620,7 @@ async function init(){
   MAP.onMoveStart(() => { MOVED = true; });
   MAP.onTap(() => { $('sres').innerHTML = ''; if (!$('sheet').hidden) closeSheet(); });
   addEventListener('pointerdown', () => { MOVED = false; }, true);
-  addEventListener('resize', () => { MAP.relayout(); render(); });
+  addEventListener('resize', () => { syncTop(); MAP.relayout(); render(); });
   if (S.dev) loadLayer('dev'); if (S.bun) loadLayer('bun');
   const qsd = Q.get('sd'), qd = Q.get('d');
   if (qsd && qd && IX.sido.some(s => s.id === qsd)) { PENDING = { sd: qsd, d: qd, b: Q.get('b') || '' }; ensure([qsd]); }
