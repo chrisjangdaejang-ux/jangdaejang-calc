@@ -34,6 +34,18 @@
   }
   const eok = man => (Math.round(man / 1000) / 10).toFixed(1).replace(/\.0$/, '') + '억';
   const VOK = m => !!(m && (m.oos_all || []).length >= 2 && m.oos_avg > 0);
+  /* 지역별 검증 성적(model_h.json 기간별 reg[시·도 이름]): 이 단지 시·도 성적이 있으면 그 성적으로 통과 여부·검증 카드를 쓴다.
+     reg 가 없거나(예전 자료) 시험할 단지가 적어 전국으로 대체(fb='all')한 시·도는 전국 성적. 도는 도 지역 묶음(fb='do').
+     → { oos_all, oos_hit, oos_avg, ok, where(성적을 낸 곳 이름), fb } — 통과 기준은 엔진이 정한 ok 그대로 */
+  function MR(MH, h, sido) {
+    const m = MH && MH[String(h)]; if (!m) return null;
+    const r = m.reg && sido ? m.reg[sido] : null;
+    if (!r || r.fb === 'all' || !(r.oos_all || []).length)
+      return { oos_all: m.oos_all, oos_hit: m.oos_hit || 0, oos_avg: m.oos_avg, ok: VOK(m), where: '전국', fb: r && r.fb === 'all' ? 'all' : '', q5: m.q5 };
+    const v = r.oos_all.map(o => o.top20).filter(x => x != null);
+    return { oos_all: r.oos_all, oos_hit: r.hit || 0, oos_avg: v.length ? v.reduce((a, b) => a + b, 0) / v.length : null, ok: !!r.ok, where: r.name, fb: r.fb || '', q5: m.q5 };
+  }
+  const VR = m => !!(m && m.ok);
   /* 용어 풀이: 한 묶음(요약 전체 / 펼친 문단 하나) 안에서 처음 나올 때만 */
   const GL = { '%p': '%p(두 상승률의 차이)', '전세가율': '전세가율(집값 대비 전셋값 비율)', '평당': '평당(전용 3.3㎡당)' };
   /* 용어 풀이는 괄호 대신 화면에서 점선+누르면 설명 상자(plain-words.js tipDom) — 문장에는 용어만 */
@@ -170,11 +182,12 @@
     const g = (IX.sgg && IX.sgg[c.code]) || {}, sdo = (IX.sido || []).find(s => s.name === g.sido) || {};
     c.sgg = g.name || '같은 구'; c.sido = sdo.short || g.sido || ''; c.sid = sdo.id; c.year = c.year || new Date().getFullYear();
     const A = J(c.apt, '은', '는'), SG = c.sgg, SD = c.sido, MH = c.MH || {};
+    const MV = h => MR(MH, h, g.sido);
     const out = { head: '', gap: '', lines: [], names: [c.apt, c.dong, c.sgg, f.ln, f.subs].filter(Boolean) };
     if (!f || f.fv == null) return out;
     const Gs = glosser();                         // 요약(맨 위 + 요약 줄)용 풀이
     const fh = f.fh || {};
-    const longH = [3, 5].filter(h => fh[h] != null && VOK(MH[h]));
+    const longH = [3, 5].filter(h => fh[h] != null && VR(MV(h)));
     const L = longH[0];
     const sL = L != null ? fh[L] : null;
     const rp = PL.regionPlace ? PL.regionPlace(IX, c.code, f.gs) : null;
@@ -203,7 +216,7 @@
       return `${SG} 전체 흐름이 ${rp.text}로 ${dn ? '약하기' : '강하기'} 때문이고`;
     };
     /* 결론에는 과거 시험을 통과한 기간만(대표 확정 11/20). model_h 가 없으면 확인할 수 없어 2년은 그대로 둔다 */
-    const ok2 = !c.MH || !MH['2'] || VOK(MH['2']);
+    const ok2 = !c.MH || !MH['2'] || VR(MV(2));
     {
       let h = '';
       if (ok2) {
@@ -215,16 +228,17 @@
         }
         if (sL != null) h += ` ${L}년 이상 길게 보면 ${lean(sL)}.`;
       } else if (sL != null) h = `${A} ${L}년 이상 길게 보면 ${SD} 아파트 ${lean(sL)}.`;
-      else h = `${A} 1~7년 순위 모두 과거 시험을 통과하지 못해 결론을 내지 않았어요.`;
+      else { const w = (MV(2) || {}).where; h = `${A} 1~7년 순위 모두 ${w && w !== '전국' ? w + ' 단지로 한 ' : ''}과거 시험을 통과하지 못해 결론을 내지 않았어요.`; }
       out.head = h;
     }
-    /* 이 예측, 믿을 수 있나요? — 기간별 과거 시험 성적(전국 단지로 시험) */
-    out.trust = [1, 2, 3, 5, 7].filter(h => (h === 2 ? f.fv : fh[h]) != null && MH[String(h)] && (MH[String(h)].oos_all || []).length)
-      .map(h => { const m = MH[String(h)], per = (m.oos_all || []).filter(o => o && o.t0).slice().sort((x, y) => String(x.t0).localeCompare(String(y.t0)));
-        return { h, n: m.oos_all.length, hit: m.oos_hit || 0, ok: VOK(m), avg: m.oos_avg, per: per.map(o => [String(o.t0), o.top20, o.bottom20]) }; });
+    /* 이 예측, 믿을 수 있나요? — 기간별 과거 시험 성적(이 단지 시·도 단지로 시험, 단지가 적으면 도 지역 묶음·전국) */
+    out.trust = [1, 2, 3, 5, 7].filter(h => (h === 2 ? f.fv : fh[h]) != null && MV(h) && (MV(h).oos_all || []).length)
+      .map(h => { const m = MV(h), per = (m.oos_all || []).filter(o => o && o.t0).slice().sort((x, y) => String(x.t0).localeCompare(String(y.t0)));
+        return { h, n: m.oos_all.length, hit: m.oos_hit || 0, ok: VR(m), avg: m.oos_avg, where: m.where, fb: m.fb, per: per.map(o => [String(o.t0), o.top20, o.bottom20]) }; });
+    out.sidoShort = SD;
     out.regionOk = !!regionUsed;
     out.headH = (ok2 ? [2] : []).concat(sL != null ? [L] : []);
-    out.dim = [1, 2, 3, 5, 7].filter(h => (h === 2 ? f.fv : fh[h]) != null && MH[String(h)] && !VOK(MH[String(h)])).map(h => `${h}년 ${topPct(h === 2 ? f.fv : fh[h])}`);
+    out.dim = [1, 2, 3, 5, 7].filter(h => (h === 2 ? f.fv : fh[h]) != null && MV(h) && !VR(MV(h))).map(h => `${h}년 ${topPct(h === 2 ? f.fv : fh[h])}`);
 
     /* ② 이유 줄 */
     const reasons = [];
@@ -355,7 +369,7 @@
     /* ⑤ 보유 기간별로 맞는 사람 */
     {
       const G = glosser();
-      const hs = (ok2 ? [2] : []).concat([3, 5, 7].filter(h => fh[h] != null && VOK(MH[h])));
+      const hs = (ok2 ? [2] : []).concat([3, 5, 7].filter(h => fh[h] != null && VR(MV(h))));
       if (hs.length >= 2) {
         const sc = h => h === 2 ? f.fv : fh[h];
         const good = hs.filter(h => side(sc(h)) > 0), bad = hs.filter(h => side(sc(h)) < 0);
@@ -367,9 +381,9 @@
         else if (bad.length === hs.length) sum = `짧게(${hs[0]}년) 보유해도, 길게(${hs[hs.length - 1]}년) 보유해도 불리한 쪽이에요(${hs.map(lab).join(', ')}).`;
         else sum = `보유 기간별 순위는 ${hs.map(lab).join(', ')}예요 — 기간에 따라 평균과 비슷한 구간이 섞여 있어요.`;
         const fact = `${A} ${SD} 아파트 전체와 비교해 ` + hs.map(h => `${h}년 기준 ${topPct(sc(h))}`).join(', ') + '예요.';
-        const tested = hs.filter(h => MH[String(h)] && MH[String(h)].oos_all);
+        const tested = hs.filter(h => MV(h) && MV(h).oos_all);
         const cmp = tested.length ? `과거 시험(그때까지의 자료로만 순위를 매긴 뒤 실제 결과와 비교)에서 순위 상위 20% 단지가 같은 구 평균보다 더 오른 경우는 `
-          + tested.map(h => { const m = MH[String(h)]; return `${h}년 ${m.oos_all.length}번 중 ${m.oos_hit}번`; }).join(', ') + '이었어요.' : '';
+          + tested.map(h => { const m = MV(h); return `${h}년 ${m.oos_all.length}번 중 ${m.oos_hit}번`; }).join(', ') + `이었어요${whereNote(tested.map(h => Object.assign({ h }, MV(h))), SD, '(', ')')}.` : '';
         const pq = [];
         for (const h of hs) {
           if (h === 2) continue;
@@ -379,7 +393,7 @@
         const so = '그래서 ' + (bad.includes(2) && good.length ? `${A} 단기 시세 차익보다 ${good[0]}년 이상 실거주·보유 목적에 더 맞아요.`
           : good.includes(2) && bad.length ? `${A} 오래 묵히기보다 2년 안팎 보유 계획에 더 맞아요.`
           : good.length === hs.length ? `${A} 보유 기간과 관계없이 유리한 쪽이에요(${hs.map(lab).join(', ')}).` : bad.length === hs.length ? `${A} 보유 기간과 관계없이 평균보다 덜 오를 쪽이에요(${hs.map(lab).join(', ')}).` : `${A} 보유 기간을 정한 뒤 해당 기간 순위(${hs.map(lab).join(', ')})를 기준으로 보세요.`);
-        lines.push({ k: 'fit', t: sum, d: [fact, cmp, pq.join(' '), so], hz: hs.map(h => [h, sc(h), MH[String(h)]]) });
+        lines.push({ k: 'fit', t: sum, d: [fact, cmp, pq.join(' '), so], hz: hs.map(h => [h, sc(h), MV(h)]) });
       }
     }
 
@@ -456,6 +470,19 @@
     if (x.chart) h += spark(c, 340, 120);
     return h;
   }
+  /* 검증 카드 끝 문장: 어느 지역 단지로 시험했는지 — 기간마다 다르면 기간별로 */
+  const DO_NAMES = '강원·충북·충남·전북·경북·경남·제주';
+  function whereOne(t, sd) {
+    if (!t || t.where === '전국') return t && t.fb === 'all' && sd ? `${sd} 단지만으로는 시험할 단지가 적어 전국 단지로` : '전국 단지로';
+    if (t.fb === 'do') return `${sd ? sd + '처럼 ' : ''}도 지역(${DO_NAMES}) 단지를 묶어`;
+    return `${t.where} 단지로`;
+  }
+  function whereNote(T, sd, pre, post) {
+    T = (T || []).filter(Boolean); if (!T.length) return '';
+    const ws = T.map(t => whereOne(t, sd)), u = [...new Set(ws)];
+    const s = u.length === 1 ? `${u[0]} 시험한 결과예요` : u.map(w => `${T.filter((t, i) => ws[i] === w).map(t => t.h != null ? t.h + '년' : '').filter(Boolean).join('·')}은 ${w}`).join(', ') + ' 시험한 결과예요';
+    return pre != null ? `${pre}${s.replace(/결과예요$/, '결과')}${post}` : s + '.';
+  }
   function html(N, o) {
     o = o || {};
     if (!N || !N.head) return '';
@@ -478,7 +505,7 @@
     };
     const trust = T.length ? `<div class="nar-trust"><button type="button" class="nar-tbtn" data-nar-trust aria-expanded="false" aria-controls="${id}-trust">이 점수는 이렇게 검증했어요</button>`
       + `<div class="nar-trust-body" id="${id}-trust" hidden>` + T.slice().sort((a, b) => (b.ok - a.ok) || (a.h - b.h)).map(one).join('')
-      + `<p class="nar-tnote">상위 20%·하위 20%는 점수 순으로 줄 세웠을 때 위·아래 20% 단지예요. 표의 숫자는 점수를 매긴 때부터 그 기간 동안 같은 구 평균보다 더(+)·덜(−) 오른 정도예요. 점수 상위 20% 단지가 같은 구 평균보다 더 올랐으면 맞음이에요. 전국 단지로 시험한 결과예요.</p></div></div>` : '';
+      + `<p class="nar-tnote">상위 20%·하위 20%는 점수 순으로 줄 세웠을 때 위·아래 20% 단지예요. 표의 숫자는 점수를 매긴 때부터 그 기간 동안 같은 구 평균보다 더(+)·덜(−) 오른 정도예요. 점수 상위 20% 단지가 같은 구 평균보다 더 올랐으면 맞음이에요. ${E(whereNote(T, N.sidoShort))}</p></div></div>` : '';
     return `<section class="nar" id="${E(id)}" data-nar="1">`
       + `<p class="nar-head">${E(N.head)}</p>` + trust
       + (N.gap ? `<p class="nar-gap">${E(N.gap)}</p>` : '')

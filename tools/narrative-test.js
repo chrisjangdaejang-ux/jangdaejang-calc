@@ -146,6 +146,29 @@ const st = fs.readFileSync(path.join(__dirname, '..', 'assets', 'stat.js'), 'utf
 eq(N.KINDS.concat(['all', 'trust', 'term']).every(k => st.includes(`'${k}'`)), true, 'stat.js 줄 종류 허용');
 has(st, 'nar_open:', 'stat.js 이벤트 허용');
 
+/* 지역별 검증 성적(model_h reg): 이 단지 시·도 성적으로 카드·결론, 없거나 전국 대체면 전국 */
+{
+  const reg = (oa, hit, ok, extra) => Object.assign({ name: '서울', oos_all: oa, hit, ok }, extra || {});
+  const MHr = JSON.parse(JSON.stringify(MH));
+  MHr['2'].reg = { '서울특별시': reg([{ t0: '202310', top20: -0.5, bottom20: 0.4 }, { t0: '202410', top20: -0.2, bottom20: 0.3 }], 0, false) };
+  MHr['3'].reg = { '서울특별시': reg([{ t0: '202110', top20: 2.1, bottom20: -1.0 }, { t0: '202210', top20: 0.9, bottom20: -0.2 }], 2, true) };
+  MHr['5'].reg = { '서울특별시': { name: '전국', fb: 'all' } };
+  const Rr = N.build(fE, Object.assign({}, C, { MH: MHr }));
+  eq(Rr.trust.map(t => [t.h, t.n, t.hit, t.ok, t.where]), [[1, 2, 0, false, '전국'], [2, 2, 0, false, '서울'], [3, 2, 2, true, '서울'], [5, 3, 3, true, '전국'], [7, 1, 1, false, '전국']], '지역 성적: 기간별(서울 있으면 서울, 대체·없음은 전국)');
+  eq(Rr.head.startsWith('잠실엘스는 3년 이상 길게 보면'), true, '지역 성적: 서울에서 2년 불통과면 결론에서 2년 뺌');
+  const Hr = N.html(Rr, { id: 't' });
+  has(Hr, '1년·7년은 전국 단지로, 2년·3년은 서울 단지로, 5년은 서울 단지만으로는 시험할 단지가 적어 전국 단지로 시험한 결과예요.', '지역 성적: 카드 끝 문장(기간별)');
+  has(Hr, '<td>2023.10</td><td class="num">−0.5%</td><td class="num">+0.4%</td><td>틀림</td>', '지역 성적: 서울 시점 표');
+  const MHs = JSON.parse(JSON.stringify(MH));
+  for (const h of ['1', '2', '3', '5', '7']) MHs[h].reg = { '서울특별시': reg(MHs[h].oos_all.map((o, i) => ({ t0: o.t0 || `20${21 + i}10`, top20: 1, bottom20: -1 })), MHs[h].oos_all.length, MHs[h].oos_all.length >= 2) };
+  const Hs = N.html(N.build(fE, Object.assign({}, C, { MH: MHs })), { id: 't' });
+  has(Hs, '서울 단지로 시험한 결과예요.', '지역 성적: 모두 서울이면 한 문장');
+  not(Hs, '전국 단지로', '지역 성적: 모두 서울이면 전국 문구 없음');
+  has(N.html(R, { id: 't' }), '전국 단지로 시험한 결과예요.', '지역 성적 없음(예전 자료): 전국');
+  const MHd = JSON.parse(JSON.stringify(MH)); MHd['2'].reg = { '경기도': reg([{ t0: '202310', top20: 1, bottom20: -1 }, { t0: '202410', top20: 1, bottom20: -1 }], 2, true, { name: '도 지역', fb: 'do' }) };
+  eq(N.build(fE, Object.assign({}, C, { MH: MHd })).trust.find(t => t.h === 2).where, '전국', '지역 성적: 다른 시·도 성적은 안 씀');
+}
+
 /* 실제 자료(옆에 jangdaejang-data 가 있으면): 전국 모든 단지·평형에 문장 규칙 적용 */
 {
   const D = path.join(__dirname, '..', '..', 'jangdaejang-data', 'data');
