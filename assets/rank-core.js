@@ -3,7 +3,7 @@
    model.json region(지역 점수 검증), rank.json(지난달 스냅숏 대비 점수 변화 — 아직 없음). 여기서 새 숫자를 만들지 않고 두 달 값의 비율·정렬만 한다.
    단지 미래가치 순위(첫 화면 'TOP 3'·/rank/ 단지별)는 공개 요약 home/sNN.json top(엔진 scripts/home_pulse.py 가 sNN.json 점수로 줄 세운 것)을 그대로 읽는다
    → 두 화면의 등수·점수가 같은 파일에서 나와 어긋나지 않는다.
-   window.JDJ_RANK = { PERIODS, MIN_TRADES, sidoOf, price, future, check, mapUrl, gsFromUnits, moves, mineUrl, ym, won, pct, spark, danji, vcheck, danjiKey } */
+   window.JDJ_RANK = { PERIODS, MIN_TRADES, sidoOf, price, future, check, mapUrl, gsFromUnits, moves, mineUrl, ym, won, pct, spark, danji, danjiRule, vcheck, danjiKey } */
 (function (root) {
   'use strict';
   const PERIODS = [1, 3, 6, 12];
@@ -101,13 +101,22 @@
     return { from: RK.from, to: RK.to, up: (S.up || []).map(m), down: (S.down || []).map(m) };
   }
   /* 단지 미래가치 순위(home/sNN.json top) — g: 'all' 또는 구 코드, n: 보여 줄 줄 수(없으면 전부)
-     → null(자료 없음) 또는 { n(비교한 단지 수), min(최근 3년 거래 하한), rows:[{r(등수, 같은 점수 같은 등수), tie(공동 등수), code, dong, jibun, apt, band, fv, fvg, trades, key}] } */
+     → null(자료 없음) 또는 { n(비교한 단지 수), min(후보 기준), order('rank' 엔진 등수 | 'score' 예전 자료), rows:[{r(등수 = 파일 순서), tie(같은 등수가 있으면), code, dong, jibun, apt, band, fv, fvg, trades, key}] } */
   function danji(H, g, n) {
     const T = H && H.top; if (!T || !T.lists || !T.rows) return null;
-    const L = T.lists[g || 'all']; if (!L) return { n: (T.n && T.n[g]) || 0, min: T.min, rows: [] };
+    const L = T.lists[g || 'all']; if (!L) return { n: (T.n && T.n[g]) || 0, min: T.min, order: T.order, rows: [] };
     const all = L.map(([i, r]) => { const x = T.rows[i] || []; return { r, code: x[0], dong: x[1], jibun: x[2], apt: x[3], band: x[4], fv: x[5], fvg: x[6], trades: x[7], key: danjiKey(x) }; });
     all.forEach(x => { x.tie = all.filter(y => y.r === x.r).length > 1; });
-    return { n: (T.n && T.n[g || 'all']) || all.length, min: T.min, rows: n ? all.slice(0, n) : all };
+    return { n: (T.n && T.n[g || 'all']) || all.length, min: T.min, order: T.order, rows: n ? all.slice(0, n) : all };
+  }
+  /* 단지 순위 기준·순서 한 줄(첫 화면·/rank/ 같은 문장) — 파일에 적힌 기준값만 씀 */
+  function danjiRule(o) {
+    const m = o && o.min; if (m == null) return '';
+    const base = typeof m === 'object'
+      ? `${m.hh}세대 이상(세대수 자료가 없으면 단지 전체 최근 3년 거래 ${m.danji3y}건 이상), 그 평형 최근 1년 거래 ${m.y1}건 이상인 단지만`
+      : `최근 3년 거래 ${m}건 이상인 단지만`;
+    const ord = o.order === 'rank' ? '같은 점수는 엔진이 매긴 실제 등수 순이에요' : o.order === 'score' ? '같은 점수는 구 안 점수·최근 1년 거래가 많은 순이에요' : '같은 점수는 같은 등수예요';
+    return `${base}, 단지마다 순위가 가장 높은 평형으로 줄 세웠어요. ${ord}.`;
   }
   /* 단지 키(내 집 시세 주소 d): 시군구|동|지번|단지 — mine-core danjiKey 와 같은 순서 */
   const danjiKey = x => [x[0], x[1], x[2], x[3]].join('|');
@@ -147,7 +156,7 @@
     return v.map((p, k) => (k ? 'L' : 'M') + (p[0] / n * w).toFixed(1) + ',' + y(p[1]).toFixed(1)).join('');
   }
 
-  const API = { PERIODS, MIN_TRADES, sidoOf, price, future, check, mapUrl, gsFromUnits, moves, mineUrl, ym, won, pct, spark, danji, vcheck, danjiKey };
+  const API = { PERIODS, MIN_TRADES, sidoOf, price, future, check, mapUrl, gsFromUnits, moves, mineUrl, ym, won, pct, spark, danji, danjiRule, vcheck, danjiKey };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   root.JDJ_RANK = API;
 })(typeof window !== 'undefined' ? window : globalThis);

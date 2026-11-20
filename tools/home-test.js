@@ -14,7 +14,10 @@ const H = { v: 1, top: { min: 10, n: { all: 4, g1: 2 }, cols: [], rows: [
   lists: { all: [[0, 1], [1, 1], [2, 3], [3, 4]], g1: [[0, 1], [2, 2]] } } };
 const t = R.danji(H, 'all', 3);
 check('TOP 3 = 파일 순서·등수 그대로', t.rows.map(x => x.apt + x.r), ['가아파트1', '나아파트1', '다아파트3'], 'home_pulse.py 가 매긴 등수');
-check('같은 점수 → 공동 표시', t.rows.map(x => x.tie), [true, true, false], '');
+check('같은 등수가 있으면 공동 표시(예전 파일)', t.rows.map(x => x.tie), [true, true, false], '');
+check('기준 한 줄(새 기준)', R.danjiRule({ min: { y1: 3, hh: 100, danji3y: 30 }, order: 'rank' }), '100세대 이상(세대수 자료가 없으면 단지 전체 최근 3년 거래 30건 이상), 그 평형 최근 1년 거래 3건 이상인 단지만, 단지마다 순위가 가장 높은 평형으로 줄 세웠어요. 같은 점수는 엔진이 매긴 실제 등수 순이에요.', 'home_pulse.py min·order');
+check('기준 한 줄(예전 자료 순서)', /구 안 점수·최근 1년 거래가 많은 순/.test(R.danjiRule({ min: { y1: 3, hh: 100, danji3y: 30 }, order: 'score' })), true, '');
+check('기준값 없으면 빈 문장', R.danjiRule({}), '', '');
 check('비교한 단지 수', [t.n, t.min], [4, 10], 'top.n·min');
 check('구 목록', R.danji(H, 'g1').rows.map(x => x.apt), ['가아파트', '다아파트'], 'lists[구]');
 check('내 집 시세 키 = 시군구|동|지번|단지', t.rows[0].key, 'g1|갑동|1|가아파트', 'mine-core danjiKey');
@@ -97,10 +100,12 @@ if (dir && fs.existsSync(path.join(dir, 'home', 's00.json'))) {
   const X = JSON.parse(fs.readFileSync(path.join(dir, 'index.json'), 'utf8'));
   const Hs = JSON.parse(fs.readFileSync(path.join(dir, 'home', 's00.json'), 'utf8'));
   const S0 = JSON.parse(fs.readFileSync(path.join(dir, 's00.json'), 'utf8')).units;
-  /* TOP: 점수 = 공개 sNN.json 점수, 점수 높은 순, 등수는 같은 점수 같은 등수 */
+  /* TOP: 점수 = 공개 sNN.json 점수, 점수 높은 순, 등수 = 줄 순서, 기준(세대수·거래) 충족 */
   const fx = new Map(S0.filter(u => u[9] && typeof u[9] === 'object').map(u => [[u[0], u[1], u[8], u[2], u[3]].join('|'), u[9].fv]));
   const tp = R.danji(Hs, 'all');
-  let bad = 0; tp.rows.forEach((x, i) => { if (fx.get([x.code, x.dong, x.jibun, x.apt, x.band].join('|')) !== x.fv) bad++; if (i && (tp.rows[i - 1].fv < x.fv || (tp.rows[i - 1].fv === x.fv ? tp.rows[i - 1].r !== x.r : x.r !== i + 1))) bad++; });
+  let bad = 0; tp.rows.forEach((x, i) => { if (fx.get([x.code, x.dong, x.jibun, x.apt, x.band].join('|')) !== x.fv) bad++; if (x.r !== i + 1 || (i && tp.rows[i - 1].fv < x.fv)) bad++; });
+  const T0 = Hs.top, okc = T0.rows.every(r => (r[9] || 0) >= T0.min.y1 && (r[8] == null || r[8] >= T0.min.hh));
+  check('실제 자료: TOP 후보 = 최근 1년 거래·세대수 기준 충족', okc, true, 'home_pulse.py MIN_Y1·MIN_HH');
   check(`실제 자료: 서울 TOP ${tp.rows.length}곳 점수 = s00.json, 등수 규칙`, bad, 0, '');
   /* 레이스: 하락률·신고가를 price/{구}.json 실거래로 다시 계산 */
   const R0 = Hs.race, med = a => { const s = a.slice().sort((x, y) => x - y), n = s.length; return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2; };

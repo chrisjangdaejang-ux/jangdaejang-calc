@@ -29,7 +29,7 @@
 <script src="../assets/share.js?v=6"></script>
 <script src="../assets/plain-words.js?v=12"></script>
 <script src="../assets/narrative.js?v=6"></script>
-<script src="../assets/rank-core.js?v=3"></script>
+<script src="../assets/rank-core.js?v=4"></script>
 <script src="../assets/tabbar.js?v=2" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -247,7 +247,7 @@ function drawApt(){
     <span class="vals"><span class="num"><b class="sc">${x.fv}점</b><small>100점 만점</small></span></span></a></li>`).join('');
   $('pane').innerHTML = vb + `<ol class="list">${li}</ol>`
     + (o.rows.length > SHOW ? `<button type="button" class="more" id="more" aria-expanded="${S.all}">${S.all ? '접기' : `상위 ${o.rows.length}곳 모두 보기`}</button>` : '')
-    + `<p class="note">점수는 같은 ${esc(sd.short)} 단지 중 앞으로 2년 동안 평균보다 더 오를 가능성 순위예요(100점 만점, 가격 예측이 아니에요). 최근 3년 거래 ${o.min}건 이상인 단지만, 단지마다 점수가 가장 높은 평형으로 줄 세웠어요. 같은 점수는 같은 등수이고, 같은 점수 안에서는 구 안 점수·거래 수 순이에요. 시·도 전체는 상위 50곳, 구·시·군은 상위 10곳까지 보여 드려요.</p>`;
+    + `<p class="note">점수는 같은 ${esc(sd.short)} 단지 중 앞으로 2년 동안 평균보다 더 오를 가능성 순위예요(100점 만점, 가격 예측이 아니에요). <b>기준</b> ${esc(R.danjiRule(o))} 시·도 전체는 상위 50곳, 구·시·군은 상위 10곳까지 보여 드려요.</p>`;
   const m = $('more'); if (m) m.onclick = () => { S.all = !S.all; drawApt(); };
   share({ head: `${where} 2년 뒤 더 오를 단지 순위(미래가치 점수)`,
     lines: [o.rows.slice(0, 3).map(x => `${x.r}위 ${x.apt}`).join(', '), `${where} 단지 ${o.n.toLocaleString()}곳 비교`, `과거 검증 ${v.n}번 중 ${v.hit}번 맞음`] });
