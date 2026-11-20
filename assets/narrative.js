@@ -19,6 +19,7 @@
     if (c >= 0xAC00 && c <= 0xD7A3) return w + ((c - 0xAC00) % 28 ? a : b);
     const d = String(w).trim().slice(-1);
     if (/[0-9]/.test(d)) return w + ('013678'.includes(d) ? a : b);
+    if (d === '%') return w + b;
     return w + a;
   }
   const r1 = v => (Math.round(Math.abs(v) * 10) / 10).toFixed(1).replace(/\.0$/, '');
@@ -166,7 +167,7 @@
       case 'rel': {
         const v = WF.rel ? WF.rel[0] : null; if (v == null) return null;
         const t = Math.abs(v) < 0.03 ? `${SG} 전체 시세와 비슷해요` : `${SG} 전체 시세보다 ${Math.round(Math.abs(v) * 100)}% ${v > 0 ? '비싸요' : '싸요'}`;
-        return { sum: `${G('평당')} 시세가 ${t}`, fact: `${A} ${G('평당')} 시세가 ${t}.`, cmp: where('rel', '구 안 가격 수준') ? `${where('rel', '구 안 가격 수준')}이에요.` : '', ev: 'rel', cond: `같은 구 안 가격 수준이 ${Q5[qb('rel')] || ''}` };
+        return { sum: `${G('평당')} 시세가 ${t}`, fact: `${A} ${G('평당')} 시세가 ${t}.`, cmp: where('rel', '구 안 가격 수준') ? `${J(where("rel", "구 안 가격 수준"), "이에요", "예요")}.` : '', ev: 'rel', cond: `같은 구 안 가격 수준이 ${Q5[qb('rel')] || ''}` };
       }
       case 'dd': {
         const v = wfv('dd', f.dd); if (v == null) return null;
@@ -221,6 +222,194 @@
     stg: { up: '이 단계 재건축 단지가 이후 더 오른 경우가 많아', dn: '이 단계 재건축 단지가 이후 덜 오른 경우가 많아' }
   };
 
+  /* =====================================================================
+     오를 이유 · 조심할 점 · 지켜볼 것 (why3)
+     항목마다 사실(숫자·비교 기준) → 과거 사례 성적(그 조건을 과거 시점에 그대로 대입해 2년 뒤와 비교) → 그래서.
+     - 이유·조심할 점은 공개 사례 표(evidence.json)에서 같은 방향이 확인된 것만: 사례 다수가 그 방향이고,
+       시기별로도 절반 넘게 같은 방향일 때. 사례가 없거나 반대·엇갈리면 그 항목은 이유에 넣지 않는다.
+     - 지켜볼 것은 날짜·단계가 있는 것(신설역·주변 개발사업·대규모 공급·재건축·정책 일정). 과거 사례가 엇갈리면 숫자만 적고 '그래서'는 붙이지 않는다.
+     → { up:[it], dn:[it], watch:[it], key(관심 단지 알림 키), apt }
+       it = { k, t(제목), o(한 줄), d:[사실, 과거 사례, 그래서], ev(시기별 표), evBase, when(지켜볼 것 날짜 YYYYMM), devHtml } */
+  const W3MIN = { n: 30, rn: 20, ex: 0.5, sh: 55 };
+  const W3COND = {
+    mom: '최근 6개월 상승 폭이', rc: '예전 최고가 회복 정도가', dd: '하락기 방어가', jr: '전세가율이', rel: '같은 구 안 가격 수준이',
+    lg: '동네 대장 단지 대비 가격이', sch: '가까운 중학교 전입이'
+  };
+  const W3MEAN = {
+    mom: { up: '최근 쉬어 간 단지가 이후 따라 오른 경우가 많았어요', dn: '최근 짧게 많이 오른 단지가 이후 쉬어 간 경우가 많았어요' },
+    rc: { up: '예전 최고가를 덜 회복한 단지가 이후 따라 오른 경우가 많았어요', dn: '예전 최고가를 이미 많이 회복한 단지는 이후 덜 오른 경우가 많았어요' },
+    dd: { up: '하락기에 많이 내렸던 단지가 이후 더 오른 경우가 많았어요', dn: '하락기에 잘 버틴 단지는 이후 덜 오른 경우가 많았어요' },
+    jr: { up: '전세가율이 이 수준인 단지가 이후 더 오른 경우가 많았어요', dn: '전세가율이 이 수준인 단지가 이후 덜 오른 경우가 많았어요' },
+    rel: { up: '구 안에서 비싼 단지가 이후에도 더 오른 경우가 많았어요', dn: '구 안에서 싼 단지가 이후에도 덜 오른 경우가 많았어요' },
+    lg: { up: '대장 단지와 이 정도 차이인 단지가 이후 더 오른 경우가 많았어요', dn: '대장 단지와 이 정도 차이인 단지가 이후 덜 오른 경우가 많았어요' },
+    sch: { up: '학생이 모이는 학교 근처 단지가 이후 더 오른 경우가 많았어요', dn: '학생이 빠지는 학교 근처 단지가 이후 덜 오른 경우가 많았어요' },
+    stg: { up: '이 단계 재건축 단지가 이후 더 오른 경우가 많았어요', dn: '이 단계 재건축 단지가 이후 덜 오른 경우가 많았어요' },
+    rail: { up: '이 단계 신설역 가까운 단지가 이후 더 오른 경우가 많았어요', dn: '이 단계 신설역 가까운 단지가 이후 덜 오른 경우가 많았어요' }
+  };
+  const RAILST = { plan: '계획 확정·착공 전', build: '공사 중', open: '개통 2년 이내' };
+  /* 사례 표 한 칸 → 방향 판단(사례 다수 + 시기별 다수가 같은 방향일 때만) */
+  function w3dir(e, nmin) {
+    if (!e || !(e.n >= nmin) || e.ex == null || Math.abs(e.ex) < W3MIN.ex || e.hit == null) return null;
+    const up = e.ex > 0, k = Math.round(e.n * (up ? e.hit : 100 - e.hit) / 100);
+    if (k * 100 < e.n * W3MIN.sh) return null;
+    const per = (e.per || []).filter(p => p && p[2] != null), same = per.filter(p => up ? p[2] > 0 : p[2] < 0).length;
+    if (per.length && same * 2 <= per.length) return null;
+    return { up, k, np: per.length, same, from: per.length ? per.map(p => String(p[0])).sort()[0] : null, to: per.length ? per.map(p => String(p[0])).sort().slice(-1)[0] : null };
+  }
+  const recOne = (e, r, who, base) => `과거 ${who} ${n0(e.n)}건 중 ${n0(r.k)}건이 2년 뒤 ${base}보다 ${r.up ? '더' : '덜'} 올랐어요(평균 ${r.up ? '+' : '−'}${r1(e.ex)}%p).`;
+  const recPer = r => r.np ? ` 시점을 바꿔 ${ymKo(r.from)}~${ymKo(r.to)} 사이 ${r.np}번 그대로 대입해 봤더니 ${r.np}번 중 ${r.same}번 같은 방향이었어요.` : '';
+  /* 정책 대상 지역(policy-view.js applies 와 같은 규칙, 동 단위 지정은 동이 맞을 때만) */
+  function polHit(p, sgg, dong) {
+    const tok = t => t === 'all' || (t === 'metro' ? ['11', '28', '41'].includes(sgg.slice(0, 2)) : t === 'nonmetro' ? !['11', '28', '41'].includes(sgg.slice(0, 2))
+      : t.includes(':') ? t.split(':')[0] === sgg && !!dong && (dong === t.split(':')[1] || String(dong).split(' ').pop() === t.split(':')[1]) : t.length === 2 ? sgg.slice(0, 2) === t : t === sgg);
+    return (p.in || []).some(tok) && !(p.not || []).some(tok);
+  }
+  const ymOf = d => { const a = String(d || '').split('-'); return a[0] + (a[1] ? a[1].padStart(2, '0') : '12'); };
+  const dKo = d => { const a = String(d || '').split('-'); return a[1] ? `${a[0]}년 ${+a[1]}월` : `${a[0]}년`; };
+
+  function why3(f, c) {
+    const PL = c.PL || root.JDJ_PLAIN || {}, IX = c.IX || {};
+    const g = (IX.sgg && IX.sgg[c.code]) || {}, sdo = (IX.sido || []).find(s => s.name === g.sido) || {};
+    const SG = g.name || '같은 구', SD = sdo.short || g.sido || '', sid = sdo.id, A = J(c.apt, '은', '는'), AG = J(c.apt, '이', '가');
+    const ri = PL.regionInfo ? PL.regionInfo(IX, c.code) : { unit: '구' }, UNIT = ri.unit === '구' ? '구' : '시·군·구';
+    const cx = Object.assign({}, c, { f, sgg: SG, sido: SD, sid });
+    const out = { up: [], dn: [], watch: [], apt: c.apt, sido: SD, sgg: SG };
+    const jb = c.jibun || (c.dev && c.dev.u && c.dev.u.jibun);
+    if (c.code && c.dong && jb) out.key = [c.code, c.dong, jb, c.apt].join('|');
+    if (!f) return out;
+    const P = priceFacts(cx), cand = [];
+    const unitBase = '자기 구 평균', who = `${SD}에서 비슷한 단지`;
+    /* ① 단지 사례(5분위·단계) */
+    const ub = f.eb || {};
+    const qOf = k => /^[0-4]$/.test(String(ub[k])) ? Q5[+ub[k]] : '';
+    const factOf = k => {
+      const F = k === 'rc' ? null : unitFact(k, cx, t => t);
+      if (k === 'rc') {
+        if (!P || !P.pk || P.pkIsNow) return P && P.pkIsNow ? { t: '최근 3년 최고 시세 수준', fact: `${A} 지금 ${'평당'} 시세가 최근 3년 중 가장 높은 수준이에요(${ymKo(P.at)} ${won(P.now)}).` } : null;
+        const pc = Math.round(P.now / P.pk * 100);
+        return { t: `최근 3년 최고 시세의 ${pc}%까지 회복`, fact: `${A} 지금 ${'평당'} 시세가 ${won(P.now)}으로, 최근 3년 최고였던 ${ymKo(P.pkAt)}(${won(P.pk)})의 ${pc}%예요.` };
+      }
+      if (k === 'rail') {
+        const RL = f.rl; if (!RL || RL.x) return null;
+        return { t: `${RL.line} ${RL.st}${RL.m != null ? ` 직선 ${n0(RL.m)}m` : ''}(${RAILST[ub.rail] || ''})`, fact: `${A} ${RL.line} ${RL.st}${RL.m != null ? `까지 직선 ${n0(RL.m)}m` : ' 근처'}예요.` };
+      }
+      if (!F) return null;
+      return { t: F.sum.replace(/\(.*\)$/, ''), fact: [F.fact, F.cmp].filter(Boolean).join(' ') };
+    };
+    for (const k of ['rel', 'mom', 'rc', 'dd', 'jr', 'lg', 'sch', 'stg', 'rail']) {
+      if (ub[k] == null || (k === 'rail' && ub[k] === 'none') || (k === 'stg' && String(ub[k]) === '0')) continue;
+      const e = unitEv(cx, k), r = w3dir(e, W3MIN.n); if (!r) continue;
+      const F = factOf(k); if (!F) continue;
+      const cond = k === 'stg' ? `재건축 ${(PL.STAGE && PL.STAGE[ub.stg]) || ub.stg + '단계'} 단계였던` : k === 'rail' ? `${RAILST[ub.rail] || ''}인 신설역 700m 안이었던` : `${W3COND[k]} ${SD} 단지 중 ${qOf(k)}였던`;
+      const mean = (W3MEAN[k] || {})[r.up ? 'up' : 'dn'] || '';
+      cand.push({ side: r.up ? 'up' : 'dn', k, sc: Math.abs(e.ex) * (r.k / e.n), t: F.t, o: recOne(e, r, who, unitBase),
+        d: [F.fact, `과거 ${SD}에서 ${cond} 단지 ${n0(e.n)}건을 2년 뒤와 비교해 봤더니 ${n0(r.k)}건이 ${unitBase}보다 ${r.up ? '더' : '덜'} 올랐고, 평균 차이는 ${r.up ? '+' : '−'}${r1(e.ex)}%p였어요.` + recPer(r),
+          `그래서 ${mean ? mean.replace(/많았어요$/, '많았던 만큼') + ', ' : '이 점은 '}${AG} 앞으로 2년 ${SG} 평균보다 ${r.up ? '더 오를 쪽이에요' : '덜 오를 수 있어요'}.`],
+        ev: e, evBase: '자기 구 평균 대비' });
+    }
+    /* ② 구 흐름 사례(구 1년 상승률·구 전세가율) */
+    const R = g.r || {}, SR = sdo.r || {};
+    for (const k of ['mom', 'jr']) {
+      const e = regionEv(cx, k), r = w3dir(e, W3MIN.rn); if (!r || R[k] == null) continue;
+      const fact = k === 'mom' ? `${SG} 아파트 전체 시세가 최근 1년 ${R.mom >= 0 ? '+' : '−'}${r1(R.mom)}% ${Math.abs(R.mom) < 0.05 ? '그대로예요' : R.mom > 0 ? '올랐어요' : '내렸어요'}` + (SR.mom != null ? `(${SD} ${UNIT} 중간값 ${SR.mom >= 0 ? '+' : '−'}${r1(SR.mom)}%).` : '.')
+        : `${SG} 아파트 전체 전세가율이 ${r1(R.jr)}%예요` + (SR.jr != null ? `(${SD} ${UNIT} 중간값 ${r1(SR.jr)}%).` : '.');
+      const t = k === 'mom' ? `${SG} 전체 최근 1년 ${R.mom >= 0 ? '+' : '−'}${r1(R.mom)}%` + (SR.mom != null ? `(${SD} ${UNIT} 중간값 ${SR.mom >= 0 ? '+' : '−'}${r1(SR.mom)}%)` : '')
+        : `${SG} 전체 전세가율 ${r1(R.jr)}%` + (SR.jr != null ? `(${SD} ${UNIT} 중간값 ${r1(SR.jr)}%)` : '');
+      const cond = `${GCOND[k]} ${SD} ${UNIT} 중 ${GQ[e.b]}였던 ${UNIT}`;
+      cand.push({ side: r.up ? 'up' : 'dn', k: 'g' + k, kind: k, sc: Math.abs(e.ex) * (r.k / e.n), t, o: recOne(e, r, `${SD}에서 비슷한 ${UNIT}`, `${SD} 평균`),
+        d: [fact, `과거 ${SD}에서 ${cond} ${n0(e.n)}곳(시점별로 센 수)을 2년 뒤와 비교해 봤더니 ${n0(r.k)}곳이 ${SD} 평균보다 ${r.up ? '더' : '덜'} 올랐고, 평균 차이는 ${r.up ? '+' : '−'}${r1(e.ex)}%p였어요.` + recPer(r),
+          `그래서 ${SG} 전체 흐름은 앞으로 2년 ${SD} 평균보다 ${r.up ? '더 오를 쪽이에요' : '덜 오를 수 있어요'} — ${c.apt}에도 같은 방향으로 작용해요.`],
+        ev: e, evBase: `${SD} 평균 대비` });
+    }
+    /* 같은 통계가 단지·구에서 반대 방향이면 구 쪽을 뺀다(사례가 많은 단지 쪽만) */
+    const conflict = x => x.kind && cand.some(y => y.k === x.kind && y.side !== x.side);
+    const pick = side => cand.filter(x => x.side === side && !conflict(x)).sort((a, b) => b.sc - a.sc).slice(0, 3).map(x => { delete x.sc; delete x.side; return x; });
+    out.up = pick('up'); out.dn = pick('dn');
+
+    /* ③ 지켜볼 것: 날짜·단계가 있는 것 */
+    const W = [];
+    const RL = f.rl;
+    if (RL && !RL.x && !RL.opened) {
+      const dl = RL.dl || {}, tg = RL.target || dl.cur;
+      const st = RL.stage === 'plan' ? '계획 확정, 착공 전' : '공사 중';
+      const late = dl.delay > 0 && dl.orig_s ? ` 처음 목표(${String(dl.orig_s).slice(0, 4)}년)보다 ${dl.delay}개월 늦어졌어요.` : '';
+      const e = ub.rail && ub.rail !== 'none' ? unitEv(cx, 'rail') : null, r = w3dir(e, W3MIN.n);
+      const past = e && e.n ? `과거 ${SD}에서 ${RAILST[ub.rail] || ''}인 신설역 700m 안 단지 ${n0(e.n)}건 중 ${n0(Math.round(e.n * e.hit / 100))}건(${e.hit}%)이 2년 뒤 ${unitBase}보다 더 올랐어요(평균 ${e.ex >= 0 ? '+' : '−'}${r1(e.ex)}%p).` + (r ? '' : ' 더 오른 단지와 덜 오른 단지가 비슷해서 오를 이유로는 넣지 않았어요.') : '';
+      W.push({ k: 'rail', when: tg || '', t: `${RL.line} ${RL.st} 개통${tg ? ` — 목표 ${ymKo(tg)}` : ''}`,
+        o: `${A} ${RL.line} ${RL.st}${RL.m != null ? `까지 직선 ${n0(RL.m)}m` : ' 근처'}예요(${st}).` + late,
+        d: [`${A} ${RL.line} ${RL.st}${RL.m != null ? `까지 직선 ${n0(RL.m)}m` : ' 근처'}예요. 지금 ${st} 단계이고, 개통 목표는 ${tg ? ymKo(tg) : '공식 자료로 확인 안 됨'}이에요.` + late, past,
+          r ? `그래서 개통 일정이 앞당겨지거나 늦어지는 발표가 나오면 다시 확인해야 해요.` : ''], ev: e, evBase: '자기 구 평균 대비' });
+    }
+    /* 주변 개발사업(공식 원문 확인 사업, 다음 단계 날짜가 있는 가장 가까운 곳) */
+    const DD = c.dev && c.dev.data;
+    if (DD && DD.units && DD.projects && c.code && c.dong && jb) {
+      const byId = {}; DD.projects.forEach(p => { byId[p.id] = p; });
+      const recs = (DD.units[[c.code, c.dong, jb].join('|')] || []).filter(r => byId[r[0]] && (byId[r[0]].plan || []).length).sort((a, b) => a[1] - b[1]);
+      const x = recs[0];
+      if (x) {
+        const p = byId[x[0]], nx = p.plan[0], last = (p.stages || []).slice(-1)[0];
+        const DV = root.JDJDev, cs = DV && DV.caseOf ? DV.caseOf(p, x[2]) : null;
+        const km = (Math.round(x[1] / 100) / 10).toFixed(1);
+        W.push({ k: 'dev', when: ymOf(nx.d), t: `${p.short} ${nx.s} — 목표 ${dKo(nx.d)}`,
+          o: `${A} ${p.short}에서 약 ${km}km예요${last ? `(지금 ${last.s} 단계, ${dKo(last.d)})` : ''}.`,
+          d: [`${A} ${p.short}에서 약 ${km}km예요.${last ? ` 마지막으로 확인된 단계는 ${dKo(last.d)} ${last.s}이고,` : ''} 다음 단계는 ${dKo(nx.d)} ${nx.s} 목표예요.`,
+            cs && cs.t ? (DV.factCase ? DV.factCase(cs.t) : cs.t) : '', ''],
+          devHtml: DV && DV.detailHtml ? DV.detailHtml(DD, c.dev.u, c.dev.o || {}) : '' });
+      }
+    }
+    /* 대규모 공급(같은 생활권·가까운 곳, 입주 전) */
+    const SP = c.SP;
+    if (f.sl && SP && SP.zones) {
+      const zs = f.sl.map(([id, ring]) => [SP.zones[id], ring]).filter(([z]) => z && !z.x && z.st !== 3);
+      if (zs.length) {
+        const nm = z => z.n.replace(/\s*(공공주택지구|공공택지|지구)$/, '').replace(/^(서울|경기|인천)\s*/, '');
+        const pYm = v => String(v).length >= 6 ? String(v).slice(0, 6) : String(v) + '12', pKo = v => String(v).length >= 6 ? ymKo(v) : v + '년';
+        const tot = zs.reduce((a, [z]) => a + (z.u || 0), 0), plans = zs.map(([z]) => z.plan).filter(Boolean).sort((a, b) => pYm(a).localeCompare(pYm(b)));
+        const ring = zs.some(([, r]) => r === 'n') ? 'near' : 'life', where = ring === 'near' ? '가까운 곳' : '같은 생활권';
+        const RR = SP.ring && SP.ring[ring] && SP.ring[ring].ann;
+        W.push({ k: 'supply', when: plans[0] ? pYm(plans[0]) : '', t: `${where} 대규모 공급 ${r1(tot / 10000)}만 가구${plans[0] ? ` — 첫 입주 목표 ${pKo(plans[0])}` : ''}`,
+          o: `${zs.map(([z]) => `${nm(z)} ${r1(z.u / 10000)}만 가구${z.plan ? `(${pKo(z.plan)} 입주 목표)` : ''}`).join(', ')} 공급이 발표돼 있어요.`,
+          d: [`${A} ${where}에 대규모 공급 ${zs.length}곳, 모두 ${n0(tot)}가구가 발표돼 있어요: ` + zs.map(([z]) => `${z.n} ${n0(z.u)}가구(${z.h && z.h[0] ? ymKo(z.h[0][0]) + ' 발표' : '발표 시기 확인 안 됨'}${z.plan ? `, 첫 입주 목표 ${pKo(z.plan)}` : ''})`).join(', ') + '.',
+            RR && RR.n >= 3 && RR.ex != null ? `과거 ${where}에 대규모 공급이 발표된 단지 ${RR.n}곳은 이후 2년 ${unitBase}보다 평균 ${r1(RR.ex)}%p ${RR.ex >= 0 ? '더' : '덜'} 올랐어요.`
+              + (RR.sig ? '' : ' 다만 사례마다 차이가 커서 오를 이유나 조심할 점으로는 넣지 않았어요.') : '', ''] });
+      }
+    }
+    /* 재건축 진행 단계(서울 정비구역) */
+    const z = f.rz;
+    if (z && z.lv && PL.STAGE && z.lv < 10) {
+      W.push({ k: 'stg', when: '', t: `재건축 다음 단계: ${PL.STAGE[z.lv + 1]}`, o: `${A} 재건축 10단계 중 ${z.lv}번째인 ${PL.STAGE[z.lv]} 단계예요${z.ym ? `(${ymKo(z.ym)})` : ''}.`,
+        d: [`${A} 재건축 10단계 중 ${z.lv}번째인 ${PL.STAGE[z.lv]} 단계예요${z.ym ? `(${ymKo(z.ym)})` : ''}. 다음은 ${PL.STAGE[z.lv + 1]} 단계예요.`, '', ''] });
+    }
+    /* 정책 일정(시행 전 단계가 남은 정책 중 이 지역·가격대에 해당하는 것) */
+    const POL = c.pol, nowYm = c.nowYm || (IX.dataTo || '');
+    if (POL && POL.policies && c.code) {
+      const eokNow = P && c.area ? P.now * c.area / 3.3058 / 10000 : null;
+      for (const p of POL.policies) {
+        if (!(p.status === 'active' || p.status === 'bill') || !(p.plan || []).length || !polHit(p, c.code, c.dong)) continue;
+        if (p.ptier && p.ptier[0] && !(eokNow != null && eokNow >= p.ptier[0])) continue;
+        const nx = p.plan.filter(s => ymOf(s.d) >= nowYm); if (!nx.length) continue;
+        W.push({ k: 'pol', when: ymOf(nx[0].d), t: `${p.name.replace(/\(.*\)$/, '')} — ${dKo(nx[0].d)} ${nx[0].s}`,
+          o: `지금 ${p.stage} 단계예요. ` + nx.map(s => `${dKo(s.d)} ${s.s}`).join(', ') + ' 예정이에요.',
+          d: [`${p.name}: 지금 ${p.stage} 단계이고, 다음 일정은 ` + nx.map(s => `${dKo(s.d)} ${s.s}${s.note ? `(${s.note})` : ''}`).join(', ') + '예요.' + (p.price ? ` 대상은 ${p.price}이에요` + (eokNow ? `(${c.apt} ${c.band || ''} 지금 시세 약 ${r1(eokNow)}억 원).` : '.') : ''),
+            (p.verdict || [])[0] && p.verdict[0].text ? p.verdict[0].text : '', ''] });
+      }
+    }
+    out.watch = W.sort((a, b) => (a.when || '999999').localeCompare(b.when || '999999')).slice(0, 4);
+    return out;
+  }
+  /* why3 문장 검사: 금지어(시험·통과 등)·숫자 없는 한 줄·지어낸 '그래서'(과거 사례 없는 그래서) */
+  function lint3(W) {
+    const bad = [], BAN = BANNED.concat(['시험', '통과']);
+    const nm = [W.apt, W.sgg].filter(Boolean);
+    ['up', 'dn', 'watch'].forEach(s => (W[s] || []).forEach((x, i) => {
+      [x.t, x.o].concat(x.d || []).forEach(t => { if (!t) return; let u = t; nm.forEach(n => { u = u.split(n).join('〇'); }); BAN.forEach(b => { if (u.includes(b)) bad.push(`${s}${i}: 금지어 '${b}' — ${t}`); }); });
+      if (!/\d/.test(x.o)) bad.push(`${s}${i}: 한 줄에 숫자 없음 — ${x.o}`);
+      if (s !== 'watch' && !(x.ev && x.d[1])) bad.push(`${s}${i}: 과거 사례 없는 이유`);
+      if (x.d[2] && !/^그래서 /.test(x.d[2])) bad.push(`${s}${i}: 마지막 문장이 '그래서'가 아님`);
+    }));
+    return bad;
+  }
+
   /* ---------- 줄 만들기 ---------- */
   function build(f, c) {
     c = Object.assign({}, c, { f });
@@ -233,6 +422,10 @@
     if (!f || f.fv == null) return out;
     const Gs = glosser();                         // 요약(맨 위 + 요약 줄)용 풀이
     const fh = f.fh || {};
+    /* 오를 이유·조심할 점·지켜볼 것(why3): 기본 노출. 여기서 쓴 과거 사례·앞으로 볼 일정은 아래 4단계 설명에서 다시 쓰지 않는다 */
+    const W3 = c.why3 !== false ? why3(f, c) : null;
+    if (W3 && (W3.up.length || W3.dn.length || W3.watch.length)) out.why3 = W3;
+    const w3k = new Set(W3 ? W3.up.concat(W3.dn).map(x => x.k) : []);
     const longH = [3, 5].filter(h => fh[h] != null && VR(MV(h)));
     const L = longH[0];
     const sL = L != null ? fh[L] : null;
@@ -297,14 +490,14 @@
       const fact = `${SG} 아파트 ${G('평당')} 시세는 최근 1년 ${r1(R.mom)}% ${R.mom >= 0 ? '올랐어요' : '내렸어요'}` + (R.jr != null ? `. ${SG} 전체 ${G('전세가율')}은 ${r1(R.jr)}%예요.` : '.');
       const cmp = SR.mom != null ? `${SD} ${rp.n}개 ${UNIT}의 중간값은 1년 상승률 ${r1(SR.mom)}%` + (SR.jr != null && R.jr != null ? `, 전세가율 ${r1(SR.jr)}%예요. ${J(SG, '은', '는')} 상승률이 ${r1(R.mom - SR.mom)}${G('%p')} ${R.mom > SR.mom ? '높고' : '낮고'}, 전세가율은 ${r1(R.jr - SR.jr)}%p ${R.jr > SR.jr ? '높아요' : '낮아요'}.` : `예요. ${J(SG, '은', '는')} ${r1(R.mom - SR.mom)}${G('%p')} ${R.mom > SR.mom ? '높아요' : '낮아요'}.`) : '';
       /* 과거 사례 문장은 순위 화면·지도 구 카드와 같은 공용 guPast */
-      const gp = guPast(Object.assign({}, c, { unit: UNIT === '구' ? '구' : '시·군·구' }), 'mom', !dn), e = gp ? gp.e : null, past = gp ? gp.t : '';
+      const gp = w3k.has('gmom') ? null : guPast(Object.assign({}, c, { unit: UNIT === '구' ? '구' : '시·군·구' }), 'mom', !dn), e = gp ? gp.e : null, past = gp ? gp.t : '';
       const sameSide = side(f.fvg) !== 0 && side(f.fvg) === side(f.fv);
       const so = sameSide ? `그래서 ${c.apt}의 2년 순위(${SD} ${topPct(f.fv)})는 ${SG} 전체 흐름 때문에 더 ${dn ? '낮아졌어요' : '높아졌어요'}. ${SG} 안에서만 비교해도 ${A} ${topPct(f.fvg)}예요.`
         : `그래서 ${c.apt}의 2년 순위(${SD} ${topPct(f.fv)})는 단지보다 ${SG} 전체 흐름 때문에 ${dn ? '낮아졌어요' : '높아졌어요'}. ${SG} 안에서만 비교하면 ${A} ${topPct(f.fvg)}예요.`;
       reasons.push({ k: 'reg', t: sum, d: [fact, cmp, past, so], ev: e, evBase: `${SD} 평균 대비` });
     }
     /* 단지 자체: 2년 점수 방향 태그 → 사실값이 있는 것만, 이미 쓴 통계는 다시 안 씀 */
-    const usedEv = new Set();
+    const usedEv = new Set([...w3k].filter(k => !k.startsWith('g')));
     const tagLines = (h, max) => {
       const w = (f.why && f.why[String(h)]) || [];
       const res = [];
@@ -403,7 +596,7 @@
         devHtml = DV.detailHtml(dd.data, dd.u, dd.o || {});
         const L0 = DV.forUnit(dd.data, dd.u)[0]; if (L0 && L0.p && L0.p.short) nextTxt.push(L0.p.short);
       }
-      if (parts.length) {
+      if (parts.length && !(out.why3 && out.why3.watch.length)) {
         const so = !parts.length ? '' : nextTxt.length ? `그래서 ${A} ${nextTxt.join(', ')}의 다음 단계 발표가 나올 때 다시 확인해야 해요.`
           : `그래서 ${RL.line} ${RL.st} 개통(${ymKo(RL.stym)}) 뒤 ${c.apt} 시세가 ${SG} 전체보다 더 움직였는지 함께 보세요.`;
         lines.push({ k: 'watch', t: `앞으로 볼 변수: ${parts.join(' · ')}.`, d: [facts.join(' '), '', pasts.join(' '), so], devHtml });
@@ -982,6 +1175,30 @@
     const s = u.length === 1 ? `${u[0]} 써 본 결과예요` : u.map(w => `${T.filter((t, i) => ws[i] === w).map(t => t.h != null ? t.h + '년' : '').filter(Boolean).join('·')}은 ${w}`).join(', ') + ' 써 본 결과예요';
     return pre != null ? `${pre}${s.replace(/결과예요$/, '결과')}${post}` : s + '.';
   }
+  /* 오를 이유·조심할 점·지켜볼 것 칸. 무료: 제목 + 한 줄. 프리미엄(o.premium): 항목마다 사실·과거 사례·그래서 + 시기별 표 */
+  function w3html(W, o) {
+    o = o || {};
+    if (!W || !(W.up.length || W.dn.length || W.watch.length)) return '';
+    const pro = !!o.premium, id = (o.id || 'nar') + '-w3';
+    const LB = ['이 단지 숫자', '과거에 이런 경우', '의미'];
+    const li = (x, cls) => `<li class="w3-li"><b class="w3-t">${E(x.t)}</b><span class="w3-o">${E(x.o)}</span>`
+      + (pro ? `<div class="w3-d">${x.d.map((p, j) => p ? `<p class="nar-p"><b>${LB[j]}</b>${E(p)}</p>` : '').join('')}`
+        + (x.ev && x.ev.per && x.ev.per.length ? proHtml({ ev: x.ev, evBase: x.evBase }, {}) : '')
+        + (x.devHtml ? `<details class="w3-dv"><summary>주변 개발사업 자세히(공식 원문 확인)</summary><div class="nar-dev dv-sec">${x.devHtml}</div></details>` : '') + '</div>' : '') + '</li>';
+    const col = (arr, cls, name) => arr.length ? `<div class="w3-col ${cls}"><h4 class="w3-k">${name} <span>${arr.length}</span></h4><ol class="w3-ol">${arr.map(x => li(x, cls)).join('')}</ol></div>` : '';
+    const AU = root.JDJ_AUTH, alert = W.key && o.alert !== false && AU && AU.on && AU.on();
+    const miss = [W.up.length ? '' : '오를 이유', W.dn.length ? '' : '조심할 점'].filter(Boolean);
+    return `<div class="w3${pro ? ' w3x' : ''}" id="${E(id)}">`
+      + `<h3 class="w3-h">${[W.up.length ? `오를 이유 ${W.up.length}` : '', W.dn.length ? `조심할 점 ${W.dn.length}` : '', W.watch.length ? '지켜볼 것' : ''].filter(Boolean).join(' · ')}</h3>`
+      + `<p class="w3-lead">공공 통계를 과거 시점에 그대로 대입해 2년 뒤 실제로 어땠는지 확인된 것만 이유로 적었어요.</p>`
+      + `<div class="w3-grid">${col(W.up, 'w3-up', '오를 이유')}${col(W.dn, 'w3-dn', '조심할 점')}`
+      + (W.watch.length || alert ? `<div class="w3-col w3-wt"><h4 class="w3-k">지켜볼 것</h4>${W.watch.length ? `<ol class="w3-ol">${W.watch.map(x => li(x, 'w3-wt')).join('')}</ol>` : ''}`
+        + (alert ? `<button type="button" class="w3-alert" data-w3-alert="${E(W.key)}" data-w3-name="${E(W.apt)}">관심 단지 알림 받기</button><span class="w3-msg" role="status"></span>` : '') + '</div>' : '')
+      + `</div>`
+      + (miss.length ? `<p class="w3-miss">${E(miss.join('·'))}: 과거 사례에서 같은 방향이 확인된 항목이 없어 적지 않았어요.</p>` : '')
+      + (pro ? '' : `<p class="w3-pro">항목별 숫자와 과거 시기별 결과는 프리미엄 리포트에서 펼쳐 볼 수 있어요.</p>`)
+      + `</div>`;
+  }
   function html(N, o) {
     o = o || {};
     if (!N || !N.head) return '';
@@ -1012,6 +1229,7 @@
     return `<section class="nar" id="${E(id)}" data-nar="1" data-nogloss${N.cat ? ` data-cat="${E(N.cat)}"` : ''}>`
       + `<p class="nar-head">${E(N.head)}</p>` + trust
       + '<p class="nar-str" data-jdj-str="card" hidden style="margin:8px 0 0;font-size:13px;line-height:1.55;color:#6B5A2E"></p>' /* 강점 문구(assets/strength.js 있는 화면만 채움) */
+      + (N.why3 && o.why3 !== false ? w3html(N.why3, o) : '')
       + (N.gap ? `<p class="nar-gap">${E(N.gap)}</p>` : '')
       + `<div class="nar-tools"><span>핵심 요약 ${N.lines.length}줄</span><button type="button" class="nar-all" data-nar-all aria-expanded="false">전체 펼치기</button></div>`
       + `<ol class="nar-list">` + N.lines.map((x, i) => {
@@ -1055,10 +1273,37 @@
 .nar-tnote{margin:4px 0 0;font-size:12.5px;color:#6B6B6B}
 .nar-dim{margin:4px 0 0 26px;font-size:13px;color:#9A9A9A;line-height:1.55;word-break:keep-all}
 .nar-foot{margin:10px 0 2px;font-size:12.5px;color:#6B6B6B}.nar-terms{color:#8A6D12;font-weight:700}
-@media(min-width:900px){.nar-head{font-size:18.5px}.nar-sum{font-size:15.5px}}`;
+.w3{margin:0 0 12px;padding:12px 12px 8px;background:#fff;border:1px solid #E6DFC8;border-radius:12px}
+.w3-h{margin:0 0 2px;font-size:16px;font-weight:800;color:#1F1F1F;letter-spacing:-.01em}
+.w3-lead{margin:0 0 8px;font-size:12.5px;line-height:1.5;color:#6B6B6B;word-break:keep-all}
+.w3-grid{display:grid;grid-template-columns:1fr;gap:10px}
+.w3-col{border-radius:10px;padding:8px 10px 6px}.w3-col.w3-up{background:#EEF4FC}.w3-col.w3-dn{background:#FBEFEC}.w3-col.w3-wt{background:#F8F4E8}
+.w3-k{margin:0 0 4px;font-size:13.5px;font-weight:800}.w3-k span{display:inline-block;min-width:18px;padding:0 5px;border-radius:9px;color:#fff;font-size:11.5px;text-align:center;margin-left:2px}
+.w3-up .w3-k{color:#1F5FA8}.w3-up .w3-k span{background:#1F5FA8}.w3-dn .w3-k{color:#B4473A}.w3-dn .w3-k span{background:#B4473A}.w3-wt .w3-k{color:#8A6D12}
+.w3-d td,.w3-d th{color:#333}.w3-dv>summary{cursor:pointer;font-size:13px;color:#8A6D12;font-weight:700;margin-top:6px}
+.w3-ol{list-style:none;margin:0;padding:0}
+.w3-li{padding:6px 0;border-top:1px solid rgba(0,0,0,.06)}.w3-li:first-child{border-top:0}
+.w3-t{display:block;font-size:14.5px;line-height:1.5;color:#1F1F1F;word-break:keep-all}
+.w3-o{display:block;font-size:13.5px;line-height:1.6;color:#444;word-break:keep-all;margin-top:1px}
+.w3-d{margin-top:6px;padding:8px 10px;background:rgba(255,255,255,.75);border-radius:8px}
+.w3-alert{margin:6px 0 4px;width:100%;min-height:40px;border:1px solid #B8942A;background:#fff;color:#5A4A1A;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer}
+.w3-msg{display:block;font-size:12.5px;color:#4E5968}.w3-msg:empty{display:none}
+.w3-miss,.w3-pro{margin:8px 0 0;font-size:12.5px;line-height:1.5;color:#6B6B6B;word-break:keep-all}
+@media(min-width:900px){.nar-head{font-size:18.5px}.nar-sum{font-size:15.5px}.w3-grid{grid-template-columns:repeat(auto-fit,minmax(0,1fr))}.w3x .w3-grid{grid-template-columns:1fr}}`;
   function css(doc) {
     doc = doc || root.document; if (!doc || doc.getElementById('nar-css')) return;
     const s = doc.createElement('style'); s.id = 'nar-css'; s.textContent = CSS; (doc.head || doc.documentElement).appendChild(s);
+  }
+  /* [관심 단지 알림 받기]: 카카오 로그인 중이면 이 단지 새 실거래·신고가 알림 신청(auth.js subscribe = alertSubscribe), 아니면 로그인 */
+  function w3alert(b) {
+    const AU = root.JDJ_AUTH, msg = b.nextElementSibling; if (!AU || !AU.on()) return;
+    try { root.jdjStat && root.jdjStat('nar_open', { line: 'w3alert' }); } catch (_) { }
+    if (!AU.user()) { AU.login('why3'); return; }
+    const key = b.getAttribute('data-w3-alert'), name = b.getAttribute('data-w3-name');
+    b.disabled = true; if (msg) msg.textContent = '신청하는 중이에요…';
+    AU.subscribe([{ kind: 'trade', key, name }, { kind: 'high', key, name }])
+      .then(() => { b.textContent = '알림 신청됨'; if (msg) msg.textContent = '이 단지에 새 실거래·신고가가 나오면 카카오톡으로 알려 드릴게요(발송 시작 시 먼저 안내).'; })
+      .catch(e => { b.disabled = false; if (msg) msg.textContent = (e && e.message) || '신청하지 못했어요. 잠시 뒤 다시 눌러 주세요.'; });
   }
   /* 펼침 동작 + 줄 종류별 집계(stat.js, 개인정보 없음) + 개발사업 칸 채우기 */
   function bind(el, o) {
@@ -1069,6 +1314,8 @@
       const t = e.target.closest('[data-nar-trust]');
       if (t && el.contains(t)) { const d = el.ownerDocument.getElementById(t.getAttribute('aria-controls')), open = t.getAttribute('aria-expanded') !== 'true';
         if (d) d.hidden = !open; t.setAttribute('aria-expanded', String(open)); t.textContent = open ? '접기' : '자세히 보기'; if (open) stat('trust'); return; }
+      const w = e.target.closest('[data-w3-alert]');
+      if (w && el.contains(w)) { w3alert(w); return; }
       const b = e.target.closest('.nar-more');
       if (b && el.contains(b)) { const open = b.getAttribute('aria-expanded') !== 'true'; set(b, open); if (open) stat(b.dataset.narK); return; }
       const a = e.target.closest('[data-nar-all]');
@@ -1077,9 +1324,9 @@
     });
     /* 어려운 용어: 점선 + 누르면 바로 아래 설명 상자(plain-words.js tipDom, 한 번에 하나) */
     const PLx = root.JDJ_PLAIN;
-    if (PLx && PLx.tipDom) PLx.tipDom(el, { blockSel: '.nar-head,.nar-gap,.nar-sum,.nar-dim,.nar-p,.nar-t1,.nar-tnote', onOpen: () => stat('term') });
+    if (PLx && PLx.tipDom) PLx.tipDom(el, { blockSel: '.nar-head,.nar-gap,.nar-sum,.nar-dim,.nar-p,.nar-t1,.nar-tnote,.w3-t,.w3-o', onOpen: () => stat('term') });
   }
-  const NAR = { build, html, bind, lint, css, sentences, BANNED, KINDS, CKINDS, cat, guWhy, guPast };
+  const NAR = { build, html, bind, lint, css, sentences, BANNED, KINDS, CKINDS, cat, guWhy, guPast, why3, lint3, w3html };
   root.JDJ_NAR = NAR;
   if (typeof module !== 'undefined' && module.exports) module.exports = NAR;
 })(typeof window !== 'undefined' ? window : globalThis);

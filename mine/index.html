@@ -37,7 +37,7 @@
 <script src="../assets/auth.js?v=3"></script>
 <script src="../assets/kchat.js?v=1"></script>
 <script src="../assets/plain-words.js?v=13"></script>
-<script src="../assets/narrative.js?v=8"></script>
+<script src="../assets/narrative.js?v=9"></script>
 <script src="../assets/strength.js?v=1"></script>
 <script src="../assets/mine-core.js?v=15"></script>
 <script src="../assets/ask-core.js?v=3"></script>
@@ -266,7 +266,7 @@ const M = window.JDJ_MINE, $ = id => document.getElementById(id);
 const DATA = '/jangdaejang-data/data/';
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num = s => { const v = parseInt(String(s || '').replace(/[^\d]/g, ''), 10); return isFinite(v) ? v : 0; };
-let IX = null, LABEL = null, EVD = null, SUP = null, MH = null, MREG = false, DEVP = null;
+let IX = null, LABEL = null, EVD = null, SUP = null, MH = null, MREG = false, DEVP = null, POL = null;
 /* 새 분석 설명(assets/narrative.js) — 대표 승인(11/20)으로 기본 적용, ?nar=0 이면 예전 설명 */
 const NARON = !/[?&]nar=0(&|$)/.test(location.search) && !!window.JDJ_NAR;
 const PL = window.JDJ_PLAIN;
@@ -556,7 +556,7 @@ function render(d, map, units){
 
   <div class="panel">
     <h2>미래가치 점수와 근거<small>공개 자료에 있는 점수를 그대로 보여 드려요 (2년 보유 기준, 같은 시·도 단지 비교)</small></h2>
-    ${f.fv != null ? (NARON ? JDJ_NAR.html(JDJ_NAR.build(f, {apt:d.apt, dong:d.dong, code:d.code, band:S.band, area:u[4], IX, EV:EVD, MH, SP:SUP, PL, year:new Date().getFullYear(), s:u[6], regionUsed:MREG, dev: DEVP ? {data:DEVP, u:{code:d.code, dong:d.dong, jibun:d.jibun}, o:{apt:d.apt, sggName}} : null}), {id:'narM'})
+    ${f.fv != null ? (NARON ? JDJ_NAR.html(JDJ_NAR.build(f, {apt:d.apt, dong:d.dong, code:d.code, band:S.band, area:u[4], IX, EV:EVD, MH, SP:SUP, PL, year:new Date().getFullYear(), s:u[6], regionUsed:MREG, jibun:d.jibun, pol:POL, dev: DEVP ? {data:DEVP, u:{code:d.code, dong:d.dong, jibun:d.jibun}, o:{apt:d.apt, sggName}} : null}), {id:'narM'})
       + `<details class="msum"><summary>자세한 자료 보기</summary><ul class="why">${rs.map(rli).join('')}</ul></details>` : `<ul class="why">${rs.map(rli).join('')}</ul>`) + `
       <p class="basis">미래가치 점수는 과거 여러 때에 그때까지의 자료만으로 예측한 뒤 실제 시세와 맞춰 본 방법으로 매긴 점수예요. 같은 지역 평균 대비 순위라, 시장 전체가 내리면 점수가 높은 단지도 내릴 수 있어요.</p>`
       : !has ? `<p class="note" style="font-size:15px">거래가 적어 미래가치 점수는 아직 매기지 않아요(최근 3년 ${u[5]}건). 시세·추이·거래량과 실거래 목록은 위에서 확인할 수 있어요.</p>`
@@ -725,6 +725,7 @@ async function init(){
   const [mj, ej, sj, mh] = await Promise.all([j('model.json'), j('evidence.json'), j('supply.json'), NARON ? j('model_h.json') : null]);
   LABEL = (mj && mj.label) || null; EVD = ej; SUP = sj; MH = mh; MREG = !!(mj && mj.region && mj.region.used);
   if (NARON && window.JDJDev) DEVP = await JDJDev.load(DATA).catch(() => null);
+  if (NARON && window.JDJPolicy) POL = await JDJPolicy.load(DATA).catch(() => null);   /* 오를 이유·지켜볼 것(narrative why3)의 정책 일정 */
   $('src').insertAdjacentHTML('afterbegin', `자료 기간 ${M.ymLabel(IX.months[0])}~${M.ymLabel(IX.dataTo)} · ${esc(IX.updated)} 갱신 · `);
   fillSido();
   homesNote();

@@ -28,7 +28,7 @@ const s = Array(36).fill(0).map((_, i) => i < 27 ? 9000 + i * 160 : i === 27 ? 1
 const fE = { fv: 28, fvg: 65, gs: 14, fh: { 1: 55, 3: 78, 5: 85, 7: 99 }, mom: -0.003, jr: 0.38, lg: 0.73, ln: '아시아선수촌아파트', hh: 5678, by: 2008,
   eb: { mom: 0, jr: 0, rel: 4, lg: 2 }, why: { '2': ['reg-', 'mom+', 'jr-'], '3': ['size+'] }, wf: { mom: [-0.003, 0.012, 9], jr: [0.38, 0.52, 21], rel: [0.5, 0, 92], size: [5678, 880, 99] },
   sl: [['seoripul', 'l', 0], ['topyeong2', 'l', 0]], sc: ['신천중학교', -0.1, 2024, 2026, 15, 29, '11710', 300] };
-const C = { apt: '잠실엘스', dong: '잠실동', code: '11710', band: '84㎡대', area: 84.8, IX, EV, MH, SP, PL, year: 2026, s, regionUsed: true };
+const C = { apt: '잠실엘스', dong: '잠실동', code: '11710', band: '84㎡대', area: 84.8, IX, EV, MH, SP, PL, year: 2026, s, regionUsed: true, why3: false };  /* 오를 이유·조심할 점(why3)은 tools/why3-test.js */
 const R = N.build(fE, C);
 const all = [R.head, R.gap].concat(...R.lines.map(x => [x.t].concat(x.d))).join(' ');
 

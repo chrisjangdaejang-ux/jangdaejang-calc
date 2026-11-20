@@ -42,7 +42,7 @@
 <script src="../../assets/loan-core.js?v=1"></script>
 <script src="../../assets/kchat.js?v=1"></script>
 <script src="../../assets/plain-words.js?v=13"></script>
-<script src="../../assets/narrative.js?v=8"></script>
+<script src="../../assets/narrative.js?v=9"></script>
 <script src="../../assets/strength.js?v=1"></script>
 <script src="../../assets/policy-view.js?v=1"></script>
 <script src="../../assets/devproj-view.js?v=2"></script>
@@ -586,13 +586,13 @@ let MODEL=null, RAIL=null, MH=null, SUPPLY=null, EVD=null;
 /* 근거 등급(data/evidence.json): 과거 같은 조건 단지의 2년 뒤 성적 — 무료 리포트는 등급 + 한 줄 요약만 */
 const EVK=(x,kind)=>PL.evid(EVD, sdIdOf(x.code), (x.fx||{}).eb, kind, PL.regionInfo(IX,x.code).short, GLS);
 const liR=r=>`<li class="${r[0]}">${esc(r[1])}${r[2]?PL.evHtml(r[2],false,esc):''}${r[3]||''}</li>`;   /* r[3]: 모듈이 이스케이프해 만든 펼침 문단(주변 개발사업) */
-let DEVP=null;
+let DEVP=null, POLD=null;
 /* 새 분석 설명(한 줄 결론 → 핵심 요약 → 줄별 자세히 보기, assets/narrative.js) — 대표 승인(11/20)으로 기본 적용, ?nar=0 이면 예전 설명 */
 const NARON = !/[?&]nar=0(&|$)/.test(location.search) && !!window.JDJ_NAR;
 function narFor(x, i){
   if (!NARON || !x.fx || x.fx.fv==null) return '';
   const N = JDJ_NAR.build(x.fx, {apt:x.apt, dong:x.dong, code:x.code, band:x.band, area:x.area, IX, EV:EVD, MH, SP:SUPPLY, PL, year:new Date().getFullYear(), s:x.series,
-    regionUsed:!!(MODEL&&MODEL.region&&MODEL.region.used), dev: DEVP ? {data:DEVP, u:{code:x.code, dong:x.dong, jibun:x.jb}, o:{apt:x.apt, sggName}} : null});
+    regionUsed:!!(MODEL&&MODEL.region&&MODEL.region.used), jibun:x.jb, pol:POLD, dev: DEVP ? {data:DEVP, u:{code:x.code, dong:x.dong, jibun:x.jb}, o:{apt:x.apt, sggName}} : null});
   return JDJ_NAR.html(N, {id:'nar'+i});
 }
 let HZ=2;
@@ -614,7 +614,7 @@ const rzYm=v=>v?`${v.slice(0,4)}.${v.slice(4)}`:'';
 const rzSrc=z=>z.src==='busan'?'부산시 정비사업 추진현황 기준':z.src==='nat'?'국토교통부 전국 도시정비사업 통합 데이터 기준, 연 1회 갱신':'서울시 정비사업 추진현황·서울플랜+ 기준';
 const rzText=z=>`${PL.rzText(z,GLS,rzYm)} (${rzSrc(z)})`;
 const RUSED=()=>!!(MODEL&&MODEL.region&&MODEL.region.used);
-async function loadIndex(){ try{ const m=await fetch(DATA+'model.json',{cache:'no-cache'}); MODEL=m.ok?await m.json():null; }catch(e){} try{ const mh=await fetch(DATA+'model_h.json',{cache:'no-cache'}); MH=mh.ok?await mh.json():null; }catch(e){} try{ const q=await fetch(DATA+'rail.json',{cache:'no-cache'}); RAIL=q.ok?await q.json():null; }catch(e){} try{ const q=await fetch(DATA+'supply.json',{cache:'no-cache'}); SUPPLY=q.ok?await q.json():null; }catch(e){} try{ const q=await fetch(DATA+'evidence.json',{cache:'no-cache'}); EVD=q.ok?await q.json():null; }catch(e){} try{ DEVP=window.JDJDev?await JDJDev.load(DATA):null; }catch(e){} const r=await fetch(DATA+'index.json',{cache:'no-cache'}); if(!r.ok) throw new Error('index'); return r.json(); }
+async function loadIndex(){ try{ const m=await fetch(DATA+'model.json',{cache:'no-cache'}); MODEL=m.ok?await m.json():null; }catch(e){} try{ const mh=await fetch(DATA+'model_h.json',{cache:'no-cache'}); MH=mh.ok?await mh.json():null; }catch(e){} try{ const q=await fetch(DATA+'rail.json',{cache:'no-cache'}); RAIL=q.ok?await q.json():null; }catch(e){} try{ const q=await fetch(DATA+'supply.json',{cache:'no-cache'}); SUPPLY=q.ok?await q.json():null; }catch(e){} try{ const q=await fetch(DATA+'evidence.json',{cache:'no-cache'}); EVD=q.ok?await q.json():null; }catch(e){} try{ DEVP=window.JDJDev?await JDJDev.load(DATA):null; }catch(e){} try{ POLD=NARON&&window.JDJPolicy?await JDJPolicy.load(DATA):null; }catch(e){} const r=await fetch(DATA+'index.json',{cache:'no-cache'}); if(!r.ok) throw new Error('index'); return r.json(); }
 /* 지역 상관없음: 시·도 파일을 하나씩 순서대로 불러온다(한꺼번에 받지 않아 휴대폰 데이터·메모리 부담을 나눔). 받은 파일은 다시 받지 않음 */
 function loadAll(onStep){
   if (ALL_UNITS) return Promise.resolve(ALL_UNITS);

@@ -156,7 +156,7 @@
       <h3>최근 3년 시세 흐름</h3>${chart(x.series, IX.months)}
       <h3>미래가치 점수와 그 이유</h3>
       ${NARON && f.fv != null ? window.JDJ_NAR.html(window.JDJ_NAR.build(f, { apt: x.apt, dong: x.dong, code: x.code, band: x.band, area: x.area, IX, EV: ctx.EV, MH: ctx.MH, SP: ctx.SP, PL, year: Y, s: x.series,
-        regionUsed: !!(ctx.MODEL && ctx.MODEL.region && ctx.MODEL.region.used), dev: ctx.DEVP ? { data: ctx.DEVP, u: { code: x.code, dong: x.dong, jibun: x.jb }, o: { apt: x.apt, sggName: c => (IX.sgg[c] || {}).name || '' } } : null }),
+        regionUsed: !!(ctx.MODEL && ctx.MODEL.region && ctx.MODEL.region.used), jibun: x.jb, pol: ctx.POL, dev: ctx.DEVP ? { data: ctx.DEVP, u: { code: x.code, dong: x.dong, jibun: x.jb }, o: { apt: x.apt, sggName: c => (IX.sgg[c] || {}).name || '' } } : null }),
         { id: 'narP' + i, premium: true, c: { s: x.series, IX, code: x.code, apt: x.apt, sgg: g.name || '', sido: PL.regionInfo(IX, x.code).short } }) : ''}
       ${f.fv != null ? PL.easy(esc(`이 단지는 앞으로 2년 동안 다른 아파트보다 더 오를 가능성을 매긴 순위에서 ${fvRank(x, ctx)}예요.`)) : ''}
       <ul class="pr-reasons">${rs.map(li).join('') || '<li>이 단지는 아직 미래가치 점수를 낼 자료가 부족합니다.</li>'}</ul>
@@ -210,8 +210,8 @@
   async function render(box, keys, order) {
     box.innerHTML = '<div class="msg info"><span class="spin"></span>리포트를 만드는 중입니다…</div>';
     const j = async u => { try { const r = await fetch(DATA + u); return r.ok ? r.json() : null; } catch (e) { return null; } };
-    const [IX, MODEL, MH, EV, SP] = await Promise.all([P.index(), j('model.json'), j('model_h.json'), j('evidence.json'), j('supply.json')]);
-    const ctx = { IX, MODEL, MH, EV, SP, DEVP: NARON && window.JDJDev ? await window.JDJDev.load(DATA).catch(() => null) : null };
+    const [IX, MODEL, MH, EV, SP, POL] = await Promise.all([P.index(), j('model.json'), j('model_h.json'), j('evidence.json'), j('supply.json'), NARON ? j('policy.json') : null]);
+    const ctx = { IX, MODEL, MH, EV, SP, POL, DEVP: NARON && window.JDJDev ? await window.JDJDev.load(DATA).catch(() => null) : null };
     const items = [], miss = [];
     for (const k of keys) {
       const p = P.keyParse(k); if (!p) continue;
