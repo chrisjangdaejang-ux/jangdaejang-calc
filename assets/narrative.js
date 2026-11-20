@@ -369,7 +369,7 @@
     const up = e.ex > 0, k = Math.round(e.n * (up ? e.hit : 100 - e.hit) / 100);
     if (k * 100 < e.n * W3MIN.sh) return null;
     const per = (e.per || []).filter(p => p && p[2] != null), same = per.filter(p => up ? p[2] > 0 : p[2] < 0).length;
-    if (per.length && same * 2 <= per.length) return null;
+    if (per.length < 2 || same * 2 <= per.length) return null;   // 시점 2번 이상 대입해 본 사례만(학교 자료처럼 1번뿐이면 이유로 안 씀)
     return { up, k, np: per.length, same, from: per.length ? per.map(p => String(p[0])).sort()[0] : null, to: per.length ? per.map(p => String(p[0])).sort().slice(-1)[0] : null };
   }
   const recOne = (e, r, who, base) => `과거 ${who} ${n0(e.n)}건 중 ${n0(r.k)}건이 2년 뒤 ${base}보다 ${r.up ? '더' : '덜'} 올랐어요(평균 ${r.up ? '+' : '−'}${r1(e.ex)}%p).`;
