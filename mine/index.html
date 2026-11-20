@@ -46,6 +46,7 @@
 <script src="../assets/offi-view.js?v=4"></script>
 <script src="../assets/policy-view.js?v=1"></script>
 <script src="../assets/devproj-view.js?v=2"></script>
+<script src="../assets/src-box.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
@@ -566,6 +567,8 @@ function render(d, map, units){
   <div id="devSec" hidden></div>
 
   <div id="polSec" hidden></div>
+
+  ${window.JDJ_SRC ? `<div class="srcwrap">${JDJ_SRC.html(JDJ_SRC.rows({IX, f, jeonse: !!(HT && HT.j && HT.j.some(v => v > 0))}))}</div>` : ''}
 
   <div class="panel">
     <h2>이 집으로 이어서 계산하기</h2>

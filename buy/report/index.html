@@ -45,6 +45,7 @@
 <script src="../../assets/narrative.js?v=6"></script>
 <script src="../../assets/policy-view.js?v=1"></script>
 <script src="../../assets/devproj-view.js?v=2"></script>
+<script src="../../assets/src-box.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -1312,6 +1313,7 @@ async function render(){
           </div>
           <div class="loc">최근 시세 흐름 ${spark(x.series)}</div>
           ${NARON && x.fx && x.fx.fv!=null ? `<h4 class="narx">자세한 자료</h4><ul class="reasons">${rs.map(li).join('')}</ul>` : rs.length>3?`<ul class="reasons">${rs.slice(3).map(li).join('')}</ul>`:''}
+          ${window.JDJ_SRC ? JDJ_SRC.html(JDJ_SRC.rows({IX, f:x.fx})) : ''}
           <a class="premlink noprint" href="/jangdaejang-calc/premium/?p=single&k=${encodeURIComponent(k)}" data-track="report_to_premium">이 단지 프리미엄 리포트 (9,900원) · 시나리오·세금 시뮬레이션 순차 제공 ›</a>
         </div>
         <div class="cgate" id="pg${i}" hidden></div>

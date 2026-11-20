@@ -1,7 +1,9 @@
 /* 집예보 순위 화면(/rank/) 계산 — 화면·테스트(tools/rank-test.js) 공용, DOM 없음.
    자료는 공개 파일 그대로: index.json sgg[구].s(그 달까지 3개월 실거래 평당가 중앙값, 만원)·c(월별 거래 수)·gs(지역 흐름 점수 0~100),
    model.json region(지역 점수 검증), rank.json(지난달 스냅숏 대비 점수 변화 — 아직 없음). 여기서 새 숫자를 만들지 않고 두 달 값의 비율·정렬만 한다.
-   window.JDJ_RANK = { PERIODS, MIN_TRADES, sidoOf, price, future, check, mapUrl, gsFromUnits, moves, mineUrl, ym, won, pct, spark } */
+   단지 미래가치 순위(첫 화면 'TOP 3'·/rank/ 단지별)는 공개 요약 home/sNN.json top(엔진 scripts/home_pulse.py 가 sNN.json 점수로 줄 세운 것)을 그대로 읽는다
+   → 두 화면의 등수·점수가 같은 파일에서 나와 어긋나지 않는다.
+   window.JDJ_RANK = { PERIODS, MIN_TRADES, sidoOf, price, future, check, mapUrl, gsFromUnits, moves, mineUrl, ym, won, pct, spark, danji, vcheck, danjiKey } */
 (function (root) {
   'use strict';
   const PERIODS = [1, 3, 6, 12];
@@ -98,6 +100,27 @@
     const m = r => ({ key: r[0], apt: r[1], code: r[2], dong: r[3], band: r[4], a: r[5], b: r[6], d: r[6] - r[5] });
     return { from: RK.from, to: RK.to, up: (S.up || []).map(m), down: (S.down || []).map(m) };
   }
+  /* 단지 미래가치 순위(home/sNN.json top) — g: 'all' 또는 구 코드, n: 보여 줄 줄 수(없으면 전부)
+     → null(자료 없음) 또는 { n(비교한 단지 수), min(최근 3년 거래 하한), rows:[{r(등수, 같은 점수 같은 등수), tie(공동 등수), code, dong, jibun, apt, band, fv, fvg, trades, key}] } */
+  function danji(H, g, n) {
+    const T = H && H.top; if (!T || !T.lists || !T.rows) return null;
+    const L = T.lists[g || 'all']; if (!L) return { n: (T.n && T.n[g]) || 0, min: T.min, rows: [] };
+    const all = L.map(([i, r]) => { const x = T.rows[i] || []; return { r, code: x[0], dong: x[1], jibun: x[2], apt: x[3], band: x[4], fv: x[5], fvg: x[6], trades: x[7], key: danjiKey(x) }; });
+    all.forEach(x => { x.tie = all.filter(y => y.r === x.r).length > 1; });
+    return { n: (T.n && T.n[g || 'all']) || all.length, min: T.min, rows: n ? all.slice(0, n) : all };
+  }
+  /* 단지 키(내 집 시세 주소 d): 시군구|동|지번|단지 — mine-core danjiKey 와 같은 순서 */
+  const danjiKey = x => [x[0], x[1], x[2], x[3]].join('|');
+  /* 2년 미래가치 점수 검증 성적(model_h.json '2', 시·도 성적 reg 가 있으면 그것) — narrative.js MR 과 같은 규칙
+     → null 또는 { n(표본 외 검증 수), hit(점수 상위 20%가 같은 구 평균보다 더 오른 수), ok(엔진 통과 판정), where(성적을 낸 곳) } */
+  function vcheck(MH, sido) {
+    const m = MH && MH['2']; if (!m) return null;
+    const r = m.reg && sido ? m.reg[sido] : null;
+    if (r && r.fb !== 'all' && (r.oos_all || []).length) return { n: r.oos_all.length, hit: r.hit || 0, ok: !!r.ok, where: r.name || sido };
+    const O = m.oos_all || []; if (!O.length) return null;
+    const hit = m.oos_hit != null ? m.oos_hit : O.filter(o => (o.top20 || 0) > 0).length;
+    return { n: O.length, hit, ok: O.length >= 2 && m.oos_avg > 0 && 2 * hit >= O.length, where: '전국' };
+  }
   /* 단지 → 내 집 시세 주소 */
   function mineUrl(sid, key, band) {
     const q = new URLSearchParams(); q.set('sd', sid); q.set('d', key); if (band) q.set('b', band);
@@ -124,7 +147,7 @@
     return v.map((p, k) => (k ? 'L' : 'M') + (p[0] / n * w).toFixed(1) + ',' + y(p[1]).toFixed(1)).join('');
   }
 
-  const API = { PERIODS, MIN_TRADES, sidoOf, price, future, check, mapUrl, gsFromUnits, moves, mineUrl, ym, won, pct, spark };
+  const API = { PERIODS, MIN_TRADES, sidoOf, price, future, check, mapUrl, gsFromUnits, moves, mineUrl, ym, won, pct, spark, danji, vcheck, danjiKey };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   root.JDJ_RANK = API;
 })(typeof window !== 'undefined' ? window : globalThis);
