@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="/jangdaejang-calc/assets/pwa.js" defer></script>
 <script src="/jangdaejang-calc/assets/biz.js" defer></script>
-<script src="/jangdaejang-calc/assets/kchat.js?v=1" defer></script>
+<script src="/jangdaejang-calc/assets/kchat.js?v=2" defer></script>
 <title>집예보 — 집값에도 예보가 있어요</title>
 <meta name="description" content="집값에도 예보가 있어요. 공공 통계 수십 가지를 과거 실거래에 그대로 대입해 보고, 맞지 않은 지표는 빼고 만든 미래가치 점수로 앞으로의 집값 흐름을 미리 살펴보세요. 대출 한도, 추천 단지, 내 집 시세까지 무료로 확인할 수 있어요.">
 <meta property="og:type" content="website">
@@ -117,6 +117,15 @@
 .minelink{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0 0;padding:16px 18px;border:2.5px solid #2F6BFF;border-radius:16px;background:#fff;color:inherit;text-decoration:none}.minelink b{display:block;font-size:18px;font-weight:800}.minelink small{display:block;font-size:14px;color:#4E5968;margin-top:3px}.minelink .new{display:inline-block;margin-left:6px;font-size:11px;font-weight:700;color:var(--blue);background:var(--blue-l);border-radius:4px;padding:1px 6px;vertical-align:3px}.minelink .go{font-size:24px;color:#2F6BFF;font-weight:800}
 .maplink{display:flex;align-items:center;gap:14px;margin:18px 20px 0;padding:16px 18px;border-radius:16px;background:var(--blue);color:#fff;text-decoration:none;box-shadow:0 3px 12px rgba(47,107,255,.25)}.maplink .ic{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:none}.maplink .ic svg{width:26px;height:26px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.maplink b{display:block;font-size:18px;font-weight:800}.maplink small{display:block;font-size:14px;opacity:.92;margin-top:2px;line-height:1.5}.maplink .go{margin-left:auto;font-size:24px;font-weight:800;flex:none}
 .ranklink{display:flex;align-items:center;gap:14px;margin:10px 20px 0;padding:14px 18px;border-radius:16px;background:#fff;border:1.5px solid var(--blue);color:var(--text);text-decoration:none}.ranklink .ic{width:40px;height:40px;border-radius:12px;background:var(--blue-l);display:flex;align-items:center;justify-content:center;flex:none}.ranklink .ic svg{width:24px;height:24px;stroke:var(--blue);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.ranklink b{display:block;font-size:17px;font-weight:800}.ranklink small{display:block;font-size:14px;color:var(--sub2);margin-top:2px;line-height:1.5}.ranklink .go{margin-left:auto;font-size:22px;font-weight:800;color:var(--blue);flex:none}
+.brieflink{display:flex;align-items:center;gap:14px;margin:12px 20px 0;padding:16px 18px;border-radius:16px;background:#fff;border:1.5px solid var(--blue);color:var(--text);text-decoration:none;box-shadow:0 2px 10px rgba(47,107,255,.08)}
+.brieflink .ic{flex:none;width:44px;height:44px;border-radius:12px;background:var(--blue-l);display:flex;align-items:center;justify-content:center}
+.brieflink .ic svg{width:24px;height:24px;fill:none;stroke:var(--blue);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.brieflink .tx{flex:1;min-width:0}
+.brieflink b{display:block;font-size:17px;font-weight:900;letter-spacing:-.3px;line-height:1.35}
+.brieflink small{display:block;font-size:14px;color:var(--sub2);line-height:1.5;margin-top:2px;word-break:keep-all}
+.brieflink .free{display:inline-block;margin:0 0 4px;font-size:12px;font-weight:800;color:#8A6A12;background:var(--creamc);border:1px solid var(--creamb);border-radius:999px;padding:1px 8px;white-space:nowrap}
+.brieflink .go{flex:none;font-size:22px;color:var(--blue);font-weight:700}
+.brieflink:hover{background:#F9FBFF}
 /* 첫 화면 호기심 카드(우리 지역 지금): 탭 하나에 '더 오를 단지 · 하락 레이스 · 신고가 레이스' */
 .pulse{margin:22px 20px 0;border:1px solid var(--line);border-radius:20px;background:#fff;box-shadow:0 2px 10px rgba(25,31,40,.05);overflow:hidden}
 .pulse[hidden]{display:none}
@@ -195,6 +204,7 @@
     <div class="pl-sz" id="plSz" role="group" aria-label="평형대" hidden></div>
     <div class="pl-body" id="plBody" role="tabpanel" aria-live="polite"></div>
   </section>
+  <a class="brieflink" href="brief/" data-track="home_to_brief"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="4"/><path d="M12 3v2M4.9 6.9l1.4 1.4M19.1 6.9l-1.4 1.4M3 13h2M19 13h2M4 20h16"/></svg></span><span class="tx"><span class="free">7일 무료 체험</span><b>우리 동네 아침 브리핑</b><small>어제 새로 올라온 실거래·신고가·분양 일정을 매일 아침 한 번에 받아 보세요</small></span><span class="go" aria-hidden="true">›</span></a>
   <details class="accl" id="accl" hidden></details>
 
   <section class="askwrap" id="askBox" aria-label="단지 이름으로 물어보기"></section>

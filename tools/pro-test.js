@@ -215,7 +215,9 @@ const pe = p => R.profileError(R.cleanProfile(p));
 check('화면 검사: 정상', pe(PROF) === '');
 check('화면 검사: 등록번호', /등록번호/.test(pe(Object.assign({}, PROF, { reg: '' }))));
 check('화면 검사: 소속 본인 이름', /소속공인중개사/.test(pe(Object.assign({}, PROF, { role: 'member' }))));
-check('화면 검사: 전문가 이름', /이름/.test(pe({ role: 'pro', office: 'a', phone: '010-1111-2222' })));
+check('화면 검사: 자격사 이름', /이름/.test(pe({ role: 'licensed', title: '세무사', office: 'a', phone: '010-1111-2222' })));
+check('화면 검사: 예전 유형(pro) → 컨설팅·전문가(활동명·연락처만)', pe({ role: 'pro', office: 'a', phone: '010-1111-2222' }) === '' && R.cleanProfile({ role: 'pro' }).role === 'consult'
+  && R.cleanProfile({ role: 'pro', title: '세무사' }).role === 'licensed');
 check('화면 검사: 사칭', pe(Object.assign({}, PROF, { office: '집예보 인증 사무소' })) !== '');
 check('화면·서버 사칭 규칙 같음', String(R.FAKE) === String(T.PRO_FAKE));
 check('의견 사칭 검사', /집예보가 쓴/.test(R.notesError({ summary: '집예보의 분석으로는 확실' })) && R.notesError({ summary: '집예보 숫자를 같이 보세요' }) === '');
@@ -229,6 +231,53 @@ check('카카오 주소는 카카오 도메인만', R.cleanProfile({ kakao: 'htt
 const fh = R.footHtml({ refresh: true });
 check('하단 출처 표기: 데이터·분석 집예보', /데이터·분석: 집예보/.test(fh));
 check('항목 정리', R.cleanSecs(['fv', 'fv', 'x', 'money']).join() === 'fv,money');
+
+// 11. v20 유형 확대: 분양대행사 · 부동산 컨설팅·전문가 · 자격사 (중개보조원 제외, 공인중개사 법정 표기 유지)
+const BIZ = '1208147521';   // 체크섬이 맞는 예시 번호
+const SELLER = { role: 'seller', office: '한빛분양대행(주)', biz: BIZ, ceo: '김대표', name: '이담당', title: '○○역 현장 분양 상담', phone: '02-3333-4444' };
+const C = buy([k1], 'single', '01077778888'); post({ action: 'openReport', o: C.o, t: C.t, open: true });
+r = post({ action: 'proSave', o: C.o, t: C.t, profile: SELLER, secs: ['sum'], notes: { summary: '현장 견본주택에서 평면을 같이 보세요.' } });
+check('분양대행사 저장', r.ok, r);
+row = findP(r.id);
+check('분양대행사: 유형·직함·사업자번호 기록', pc(row, '유형') === '분양대행사' && pc(row, '직함') === SELLER.title && String(pc(row, '사업자번호')).replace(/\D/g, '') === BIZ, row);
+let op = post({ action: 'proOpen', id: r.id, tk: r.token });
+check('분양대행사: 고객 열기에 유형·사업자번호·직함', op.ok && op.report.profile.role === 'seller' && op.report.profile.biz === BIZ && op.report.profile.title === SELLER.title, op);
+const sp = R.cleanProfile(op.report.profile);
+check('분양대행사: 의견 상자 이름', R.opinionLabel(sp) === '한빛분양대행(주) 분양대행 의견', R.opinionLabel(sp));
+check('분양대행사: 머리말에 사업자등록번호·대표자, 의견에 판매 회사 안내', /사업자등록번호 120-81-47521/.test(R.headHtml(sp)) && /대표 김대표/.test(R.headHtml(sp)) && /분양 판매를 맡은 회사/.test(R.noteHtml(sp, 'x', 'summary')));
+r = post({ action: 'proSave', o: C.o, t: C.t, profile: Object.assign({}, SELLER, { biz: '' }), secs: ['sum'] });
+check('분양대행사: 사업자등록번호 없음 → 거절', !r.ok && /사업자등록번호/.test(r.err), r);
+r = post({ action: 'proSave', o: C.o, t: C.t, profile: Object.assign({}, SELLER, { biz: '1208147520' }), secs: ['sum'] });
+check('분양대행사: 사업자등록번호 체크섬 틀림 → 거절', !r.ok && /다시 확인/.test(r.err), r);
+r = post({ action: 'proSave', o: C.o, t: C.t, profile: Object.assign({}, SELLER, { ceo: '' }), secs: ['sum'] });
+check('분양대행사: 대표자 없음 → 거절', !r.ok && /대표자/.test(r.err), r);
+r = post({ action: 'proSave', o: C.o, t: C.t, profile: Object.assign({}, SELLER, { office: '한빛공인중개사사무소' }), secs: ['sum'] });
+check('공인중개사 아닌 유형이 중개사 명칭 사용 → 거절(제18조)', !r.ok && /제18조/.test(r.err), r);
+check('화면 검사도 같음: 분양대행사', pe(SELLER) === '' && /사업자등록번호/.test(pe(Object.assign({}, SELLER, { biz: '' }))) && /제18조/.test(pe(Object.assign({}, SELLER, { office: '행복공인중개사사무소' }))));
+const CONS = { role: 'consult', office: '장대장TV', name: '장대장', title: '유튜브·경제방송 출연', phone: '02-3444-5008' };
+r = post({ action: 'proSave', o: C.o, t: C.t, profile: CONS, secs: ['fv'] });
+check('컨설팅·전문가: 활동명·연락처만으로 저장(사업자번호 선택)', r.ok, r);
+op = post({ action: 'proOpen', id: r.id, tk: r.token });
+check('컨설팅·전문가: 의견 상자 이름', op.ok && op.report.profile.role === 'consult' && R.opinionLabel(R.cleanProfile(op.report.profile)) === '장대장 부동산 전문가 의견', op.report && op.report.profile);
+r = post({ action: 'proSave', o: C.o, t: C.t, profile: Object.assign({}, CONS, { office: '' }), secs: ['fv'] });
+check('컨설팅·전문가: 상호·활동명 없음 → 거절', !r.ok && /활동명/.test(r.err), r);
+const TAX = { role: 'licensed', title: '세무사', name: '김세무', office: '김세무회계', phone: '02-555-6666' };
+r = post({ action: 'proSave', o: C.o, t: C.t, profile: TAX, secs: ['money'], notes: { summary: '양도세 신고 수임료 50% 할인해 드려요' } });
+check('세무사: 수임료 할인 문구 → 거절(광고 규정)', !r.ok && /세무사 광고 규정/.test(r.err), r);
+r = post({ action: 'proSave', o: C.o, t: C.t, profile: TAX, secs: ['money'], notes: { summary: '상담 고객께 상품권 드립니다' } });
+check('세무사: 금전 혜택 문구 → 거절', !r.ok, r);
+r = post({ action: 'proSave', o: C.o, t: C.t, profile: TAX, secs: ['money'], notes: { summary: '1주택 비과세 요건(보유 2년)을 먼저 확인해 보세요.' } });
+check('세무사: 일반 의견은 저장', r.ok, r);
+op = post({ action: 'proOpen', id: r.id, tk: r.token });
+check('세무사: 고객 화면 자격명 표기', op.ok && R.opinionLabel(R.cleanProfile(op.report.profile)) === '김세무 세무사 의견' && /세무사 김세무/.test(R.headHtml(R.cleanProfile(op.report.profile))), op.report && op.report.profile);
+check('화면 검사: 세무사 금지 문구', /세무사 광고 규정/.test(R.notesError({ summary: '기장료 최저가 비교' }, R.cleanProfile(TAX))) && R.notesError({ summary: '기장료 최저가 비교' }, R.cleanProfile(CONS)) === '');
+r = post({ action: 'proSave', o: C.o, t: C.t, profile: Object.assign({}, TAX, { title: '대출상담사' }), secs: ['sum'] });
+check('자격사: 목록에 없는 자격 → 거절', !r.ok && /자격/.test(r.err), r);
+r = post({ action: 'proSave', o: C.o, t: C.t, profile: Object.assign({}, PROF, { role: 'member', name: '박보조', title: '중개보조원' }), secs: ['sum'] });
+check('중개보조원 직함 → 거절', !r.ok && /중개보조원/.test(r.err), r);
+check('화면 검사: 중개보조원', /중개보조원/.test(pe({ role: 'consult', office: '중개보조원 박○○', phone: '010-1111-2222' })));
+check('공인중개사 법정 표기 유지', /중개사무소 등록번호 11680-2020-00123/.test(R.headHtml(R.cleanProfile(PROF))) && /대표 공인중개사 홍길동/.test(R.headHtml(R.cleanProfile(PROF))));
+check('유형 키 화면·서버 같음', Object.keys(R.ROLE).join() === Object.keys(vm.runInContext('PRO_ROLE', ctx)).join());
 
 console.log(`전문가 이름 리포트 검증: ${pass}개 확인, ${fail}개 어긋남`);
 process.exit(fail ? 1 : 0);

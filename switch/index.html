@@ -36,7 +36,7 @@
 <script src="../assets/agents.js"></script>
 <script src="../assets/config.js?v=3"></script>
 <script src="../assets/auth.js?v=3"></script>
-<script src="../assets/kchat.js?v=1"></script>
+<script src="../assets/kchat.js?v=2"></script>
 <script src="../assets/region-notes.js"></script>
 <script src="../tax/adjusted-areas.js"></script>
 <script src="../tax/tax-engine.js?v=4"></script>
@@ -250,7 +250,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .bticks{display:flex;justify-content:space-between;font-size:13px;color:#4E5968}
 .burden .hint{font-size:13.5px;color:#4E5968;margin-top:6px}
 .rs .whyx{margin:10px 0 0;font-size:14.5px;font-weight:700;word-break:keep-all}
-.rs .whyx span{display:inline-block;font-size:12.5px;font-weight:900;background:var(--olive,#3E4A2B);color:#fff;border-radius:4px;padding:1px 6px;margin-right:5px;vertical-align:1px}
+.rs .whyx span{display:inline-block;font-size:12.5px;font-weight:900;background:var(--olive,#2F6BFF);color:#fff;border-radius:4px;padding:1px 6px;margin-right:5px;vertical-align:1px}
 .rs .tm{margin-top:10px;border:1.5px solid var(--line);border-radius:9px;padding:10px 12px;font-size:14.5px;word-break:keep-all}
 .rs .tm b{font-weight:900}
 .rs .tm .v{display:block;font-size:15.5px;font-weight:900;margin-bottom:2px}
@@ -961,7 +961,7 @@ $('sSgg').addEventListener('change', async ()=>{
   }
   box.innerHTML=`<div class="aglist">`+ranked.map(a=>{
     const tel=String(a.ph||'').replace(/[^\d]/g,'');
-    return `<div class="agc"><b>${escH(a.n)}</b><span class="tag">제휴·광고</span><small>${escH(a.ogn)} ${escH(a.dong)} · 대표 ${escH(a.ceo)} · ${escH(a.ph)}</small>${a.intro?`<small style="color:#23241A">${escH(a.intro)}</small>`:''}
+    return `<div class="agc"><b>${escH(a.n)}</b><span class="tag">제휴·광고</span><small>${escH(a.ogn)} ${escH(a.dong)} · 대표 ${escH(a.ceo)} · ${escH(a.ph)}</small>${a.intro?`<small style="color:#191F28">${escH(a.intro)}</small>`:''}
       <div class="acts">${tel?`<a href="tel:${tel}" data-a="${a.id}" data-act="call">전화 상담</a>`:''}${window.KChat?KChat.btn(a.kk,{a:a.id,g,name:a.n}):''}</div></div>`;
   }).join('')+`</div><p class="muted" style="font-size:13.5px;margin:8px 0 0">제휴(광고) 중개사무소입니다. 집예보는 중개 행위에 관여하지 않으며, 거래 조건은 해당 중개사무소에 직접 확인하세요.</p>`;
   A.log('rec', ranked.map(a=>a.id).sort().join(','), g, '');
@@ -1067,9 +1067,9 @@ function drawGap(){
     const W=560,H=120,xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]); const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
     const X=x=>10+(x-x0)/(x1-x0||1)*(W-20), Y=y=>H-14-(y-y0)/(y1-y0||1)*(H-28);
     svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;margin-top:8px"><polyline fill="none" stroke="#A23B2A" stroke-width="2.5" points="${pts.map(p=>X(p[0])+','+Y(p[1])).join(' ')}"/>
-      <text x="10" y="12" font-size="11" fill="#6B6A58">최대 ${fmt(y1)}</text><text x="10" y="${H-2}" font-size="11" fill="#6B6A58">최소 ${fmt(y0)}</text>
-      <text x="${W-10}" y="${H-2}" font-size="11" fill="#6B6A58" text-anchor="end">${months[x1].slice(0,4)}.${months[x1].slice(4)}</text>
-      <text x="${W/2}" y="${H-2}" font-size="11" fill="#6B6A58" text-anchor="middle">${months[x0].slice(0,4)}.${months[x0].slice(4)} 부터</text></svg>`;
+      <text x="10" y="12" font-size="11" fill="#4E5968">최대 ${fmt(y1)}</text><text x="10" y="${H-2}" font-size="11" fill="#4E5968">최소 ${fmt(y0)}</text>
+      <text x="${W-10}" y="${H-2}" font-size="11" fill="#4E5968" text-anchor="end">${months[x1].slice(0,4)}.${months[x1].slice(4)}</text>
+      <text x="${W/2}" y="${H-2}" font-size="11" fill="#4E5968" text-anchor="middle">${months[x0].slice(0,4)}.${months[x0].slice(4)} 부터</text></svg>`;
   }
   const ys=pts.map(p=>p[1]); const lo=ys.length?Math.min(...ys):gap, hi=ys.length?Math.max(...ys):gap;
   const pos=hi>lo? Math.round((gap-lo)/(hi-lo)*100):50;
@@ -1092,7 +1092,7 @@ function drawGap(){
     const cond=document.querySelector('input[name=gcond]:checked').value;
     const val= cond==='below' ? Math.round(parseFloat($('gBelow').value)*10000) : parseFloat($('gPct').value);
     const pack=x=>({key:x.key, sido:x.sido, name:x.name, area:x.area});
-    $('gSub').disabled=true; msg.style.color='#6B6A58'; msg.textContent='등록 중…';
+    $('gSub').disabled=true; msg.style.color='#4E5968'; msg.textContent='등록 중…';
     try{
       await A.post({action:'alert_sub', email:$('gMail').value, agree:true, mine:pack(m), target:pack(t), cond, val, baseGap:gap, marketing:$('gMkt').checked});
       msg.style.color='#4E6B2E'; msg.textContent='등록되었습니다. 확인 메일을 보내 드렸어요.';

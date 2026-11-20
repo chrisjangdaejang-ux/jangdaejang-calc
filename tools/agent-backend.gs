@@ -1,5 +1,14 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ *
+ * v21 변경 요약 (v20과 같은 11/28 재배포에 함께 들어감: 배포 → 배포 관리 → 수정 → 새 버전 → 배포. v21 몫으로 따로 실행할 함수 없음)
+ *  - 전문가 이름 리포트(proSave·proOpen) 유형을 공인중개사로 한정하지 않음: 개업·소속공인중개사(법정 표기 필수 그대로) ·
+ *    분양대행사(상호·사업자등록번호·대표자·연락처 필수, 사업자번호 체크섬 검사) · 부동산 컨설팅·전문가(유튜브·방송·세미나 등, 상호 또는 활동명·연락처 필수) ·
+ *    세무사·법무사 등 자격사(자격명·이름 필수, 세무사는 수임료 비교·할인·금전 혜택 문구 거절). 중개보조원은 계속 제외.
+ *  - 공인중개사가 아닌 유형이 '공인중개사'·'중개사무소' 명칭을 쓰면 거절(공인중개사법 제18조).
+ *  - '전문가리포트' 시트 오른쪽에 '직함'·'사업자번호' 칸 추가(첫 저장 때 제목줄만 자동으로 늘어남). 예전 '전문가' 유형 행은 컨설팅·전문가로 읽음.
+ *  - 관리용 시트 제목줄·갈아타기 알림 메일 색을 사이트 테마(파랑 #2F6BFF)로 맞춤.
+ *  - 검증: node tools/pro-test.js
  *
  * v20 변경 요약 (재배포 필요: 배포 → 배포 관리 → 수정 → 새 버전 → 배포, 그다음 편집기에서 setupAgency 한 번 실행)
  *  - 분양대행 전속 의뢰 agencyApply(bunyang/agency/): '분양대행의뢰' 시트. 광고 신청(adApply)과 별개. 연락처는 메일에 넣지 않음.
@@ -123,7 +132,7 @@ const COL = Object.fromEntries(H.map((h, i) => [h, i]));
 function setup() {
   const ss = book();
   let a = ss.getSheetByName(SH_A) || ss.insertSheet(SH_A);
-  a.getRange(1, 1, 1, H.length).setValues([H]).setFontWeight('bold').setBackground('#3B3F22').setFontColor('#F5EFDC');
+  a.getRange(1, 1, 1, H.length).setValues([H]).setFontWeight('bold').setBackground('#2F6BFF').setFontColor('#FFFFFF');
   a.setFrozenRows(1);
   a.getRange(2, COL['만료일'] + 1, 999, 1).setNumberFormat('yyyy-mm-dd');
   a.getRange(2, COL['신청일'] + 1, 999, 1).setNumberFormat('yyyy-mm-dd');
@@ -203,7 +212,7 @@ function doGet(e) {
 function ensureHeader() {
   const sh = book().getSheetByName(SH_A);
   const cur = sh.getRange(1, 1, 1, H.length).getValues()[0];
-  if (cur[H.length - 1] !== H[H.length - 1]) sh.getRange(1, 1, 1, H.length).setValues([H]).setFontWeight('bold').setBackground('#3B3F22').setFontColor('#F5EFDC');
+  if (cur[H.length - 1] !== H[H.length - 1]) sh.getRange(1, 1, 1, H.length).setValues([H]).setFontWeight('bold').setBackground('#2F6BFF').setFontColor('#FFFFFF');
 }
 
 function doPost(e) {
@@ -458,11 +467,11 @@ function alertSheet() {
   let sh = ss.getSheetByName(SH_AL);
   if (!sh) {
     sh = ss.insertSheet(SH_AL);
-    sh.getRange(1, 1, 1, AL_H.length).setValues([AL_H]).setFontWeight('bold').setBackground('#3B3F22').setFontColor('#F5EFDC');
+    sh.getRange(1, 1, 1, AL_H.length).setValues([AL_H]).setFontWeight('bold').setBackground('#2F6BFF').setFontColor('#FFFFFF');
     sh.setFrozenRows(1);
   }
   if (sh.getRange(1, AL_H.length).getValue() !== AL_H[AL_H.length - 1])     // 예전 시트면 새 열 제목 채움
-    sh.getRange(1, 1, 1, AL_H.length).setValues([AL_H]).setFontWeight('bold').setBackground('#3B3F22').setFontColor('#F5EFDC');
+    sh.getRange(1, 1, 1, AL_H.length).setValues([AL_H]).setFontWeight('bold').setBackground('#2F6BFF').setFontColor('#FFFFFF');
   return sh;
 }
 
@@ -515,7 +524,7 @@ function alertSub(b) {
       htmlBody: mailHtml('갭 알림 등록 완료',
         `<p><b>${str(m.name, 80)}</b> → <b>${str(t.name, 80)}</b></p>
          <p>지금 갭 <b>${eok(base)}</b> · 조건: ${condTxt} 메일을 보내 드립니다.</p>
-         <p style="color:#6B6A58;font-size:13px">국토교통부 실거래가(최근 3개월 중앙값)로 매일 오전 다시 계산합니다.</p>`, id, token)
+         <p style="color:#4E5968;font-size:13px">국토교통부 실거래가(최근 3개월 중앙값)로 매일 오전 다시 계산합니다.</p>`, id, token)
     });
   } catch (x) {}
   return { ok: true, id: id };
@@ -537,12 +546,12 @@ function unsubscribe(p) {
 
 function mailHtml(title, body, id, token) {
   const unsub = ScriptApp.getService().getUrl() + `?action=unsub&id=${id}&t=${token}`;
-  return `<div style="font-family:'Noto Sans KR',sans-serif;max-width:560px;margin:auto;background:#F5EFDC;border-radius:12px;overflow:hidden">
-    <div style="background:#3B3F22;color:#F5EFDC;padding:14px 18px;font-weight:900">★ 장대장 <span style="color:#D9B85A">갈아타기 알림</span></div>
-    <div style="padding:20px 22px;color:#23241A"><h2 style="margin:0 0 10px">${title}</h2>${body}
-      <p style="margin-top:18px"><a href="${SITE_URL}" style="background:#B8942A;color:#23241A;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:900">갈아타기 계산기에서 다시 계산하기</a></p>
-      <p style="font-size:11px;color:#6B6A58;margin-top:20px">추정 시세는 같은 단지·평형대 최근 3개월 실거래 중앙값이며 호가와 다를 수 있습니다. 매수·매도 권유가 아닙니다.<br>
-      <a href="${unsub}" style="color:#6B6A58">알림 해지</a></p></div></div>`;
+  return `<div style="font-family:'Noto Sans KR',sans-serif;max-width:560px;margin:auto;background:#FFFFFF;border:1px solid #E5E8EB;border-radius:12px;overflow:hidden">
+    <div style="background:#2F6BFF;color:#FFFFFF;padding:14px 18px;font-weight:900"><span style="color:#F3E3B0">★</span> 집예보 <span style="color:#FBF8EF">갈아타기 알림</span></div>
+    <div style="padding:20px 22px;color:#191F28"><h2 style="margin:0 0 10px">${title}</h2>${body}
+      <p style="margin-top:18px"><a href="${SITE_URL}" style="background:#2F6BFF;color:#FFFFFF;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:900">갈아타기 계산기에서 다시 계산하기</a></p>
+      <p style="font-size:11px;color:#4E5968;margin-top:20px;border-top:1px solid #EFE6CC;padding-top:10px">추정 시세는 같은 단지·평형대 최근 3개월 실거래 중앙값이며 호가와 다를 수 있습니다. 매수·매도 권유가 아닙니다.<br>
+      <a href="${unsub}" style="color:#4E5968">알림 해지</a></p></div></div>`;
 }
 
 /* 매일 실행: 실거래 데이터로 갭 재계산 → 조건 만족 시 메일 */
@@ -600,7 +609,7 @@ function checkAlerts() {
             <tr><td style="padding:6px 0">지금 집 · ${r[AC['지금집']]}</td><td style="text-align:right"><b>${eok(pm)}</b></td></tr>
             <tr><td style="padding:6px 0">갈아탈 집 · ${r[AC['갈아탈집']]}</td><td style="text-align:right"><b>${eok(pt)}</b></td></tr>
             <tr><td style="padding:8px 0;border-top:1px solid #DCCFA8"><b>가격 차이(갭)</b></td><td style="text-align:right;border-top:1px solid #DCCFA8;color:#A23B2A"><b>${eok(gap)}</b></td></tr>
-            <tr><td style="color:#6B6A58;font-size:13px">등록할 때 갭</td><td style="text-align:right;color:#6B6A58;font-size:13px">${eok(base)}</td></tr>
+            <tr><td style="color:#4E5968;font-size:13px">등록할 때 갭</td><td style="text-align:right;color:#4E5968;font-size:13px">${eok(base)}</td></tr>
           </table>`, r[AC['id']], r[AC['토큰']])
       });
       sent++;
@@ -626,7 +635,7 @@ function reviewSheet() {
   let sh = ss.getSheetByName(SH_R);
   if (!sh) {
     sh = ss.insertSheet(SH_R);
-    sh.getRange(1, 1, 1, RH.length).setValues([RH]).setFontWeight('bold').setBackground('#3B3F22').setFontColor('#F5EFDC');
+    sh.getRange(1, 1, 1, RH.length).setValues([RH]).setFontWeight('bold').setBackground('#2F6BFF').setFontColor('#FFFFFF');
     sh.setFrozenRows(1);
   }
   return sh;
@@ -748,7 +757,7 @@ function orderSheet() {
   let sh = ss.getSheetByName(SH_O);
   if (!sh) {
     sh = ss.insertSheet(SH_O);
-    sh.getRange(1, 1, 1, OH.length).setValues([OH]).setFontWeight('bold').setBackground('#3B3F22').setFontColor('#F5EFDC');
+    sh.getRange(1, 1, 1, OH.length).setValues([OH]).setFontWeight('bold').setBackground('#2F6BFF').setFontColor('#FFFFFF');
     sh.setFrozenRows(1);
   }
   return sh;
@@ -1033,12 +1042,12 @@ function adSheet() {
   let sh = ss.getSheetByName(SH_AD);
   if (!sh) {
     sh = ss.insertSheet(SH_AD);
-    sh.getRange(1, 1, 1, ADH.length).setValues([ADH]).setFontWeight('bold').setBackground('#3B3F22').setFontColor('#F5EFDC');
+    sh.getRange(1, 1, 1, ADH.length).setValues([ADH]).setFontWeight('bold').setBackground('#2F6BFF').setFontColor('#FFFFFF');
     sh.setFrozenRows(1);
     sh.getRange(2, ADC['시작일'] + 1, 999, 2).setNumberFormat('yyyy-mm-dd');
   } else {
     const head = sh.getRange(1, 1, 1, ADH.length).getValues()[0];        // v15 이전 시트: 오른쪽 새 열 제목만 채움
-    if (String(head[ADH.length - 1] || '') !== ADH[ADH.length - 1]) sh.getRange(1, 1, 1, ADH.length).setValues([ADH]).setFontWeight('bold').setBackground('#3B3F22').setFontColor('#F5EFDC');
+    if (String(head[ADH.length - 1] || '') !== ADH[ADH.length - 1]) sh.getRange(1, 1, 1, ADH.length).setValues([ADH]).setFontWeight('bold').setBackground('#2F6BFF').setFontColor('#FFFFFF');
   }
   return sh;
 }
@@ -1243,7 +1252,7 @@ function ldSheet() {
   let sh = ss.getSheetByName(SH_LD);
   if (!sh) {
     sh = ss.insertSheet(SH_LD);
-    sh.getRange(1, 1, 1, LDH.length).setValues([LDH]).setFontWeight('bold').setBackground('#3B3F22').setFontColor('#F5EFDC');
+    sh.getRange(1, 1, 1, LDH.length).setValues([LDH]).setFontWeight('bold').setBackground('#2F6BFF').setFontColor('#FFFFFF');
     sh.setFrozenRows(1);
   }
   return sh;
@@ -1366,7 +1375,7 @@ function aqSheet() {
   let sh = ss.getSheetByName(SH_AQ);
   if (!sh) {
     sh = ss.insertSheet(SH_AQ);
-    sh.getRange(1, 1, 1, AQH.length).setValues([AQH]).setFontWeight('bold').setBackground('#3B3F22').setFontColor('#F5EFDC');
+    sh.getRange(1, 1, 1, AQH.length).setValues([AQH]).setFontWeight('bold').setBackground('#2F6BFF').setFontColor('#FFFFFF');
     sh.setFrozenRows(1);
   }
   return sh;
@@ -1464,7 +1473,7 @@ function uSheet(name, head) {
   let sh = ss.getSheetByName(name);
   if (!sh) {
     sh = ss.insertSheet(name);
-    sh.getRange(1, 1, 1, head.length).setValues([head]).setFontWeight('bold').setBackground('#3B3F22').setFontColor('#F5EFDC');
+    sh.getRange(1, 1, 1, head.length).setValues([head]).setFontWeight('bold').setBackground('#2F6BFF').setFontColor('#FFFFFF');
     sh.setFrozenRows(1);
   }
   return sh;
@@ -1695,12 +1704,25 @@ function userDelete(b) {
    ===================================================================== */
 const SH_P = '전문가리포트';
 const PH = ['id','만든시각','고친시각','주문번호','토큰해시','만료일','상태','자료기준','유형','사무소명','대표','이름','등록번호','주소',
-            '연락처','카카오','로고','고객이름','섹션','의견','조건','열람횟수','최근열람','문의클릭','메모'];
+            '연락처','카카오','로고','고객이름','섹션','의견','조건','열람횟수','최근열람','문의클릭','메모','직함','사업자번호'];
 const PCX = Object.fromEntries(PH.map((h, i) => [h, i]));
 const PRO_ACTIONS = { proSave: 1, proList: 1, proRevoke: 1, proOpen: 1, proClick: 1 };
 const PRO_MAX_LINKS = 20;            // 주문 1건으로 만들 수 있는 고객 링크 수(요금제 정하기 전 임시 상한)
 const PRO_DAYS = [30, 90];           // 고객 링크 열람 기간(일)
-const PRO_ROLE = { agent: '개업공인중개사', member: '소속공인중개사', pro: '전문가' };
+/* v21: 공인중개사로 한정하지 않음 — 분양대행사·부동산 컨설팅/방송·세미나 전문가·세무사 등 자격사도 보냄(중개보조원은 계속 제외).
+   시트 '유형' 칸 값. 예전 '전문가'(v17~v20 pro) 행은 직함이 자격명이면 자격사, 아니면 컨설팅·전문가로 읽음. */
+const PRO_ROLE = { agent: '개업공인중개사', member: '소속공인중개사', seller: '분양대행사', consult: '부동산컨설팅·전문가', licensed: '자격사' };
+const PRO_QUALS = ['세무사', '법무사', '감정평가사', '변호사', '공인회계사', '행정사'];
+const PRO_BROKER_WORD = /공인\s*중개|중개\s*사무소|부동산\s*중개/, PRO_ASSIST = /중개\s*보조/;
+const PRO_TAX_AD = /(수임료|보수|수수료|기장료|신고\s*대행료)[^\n]{0,12}(할인|무료|최저|저렴|싸게|비교|면제|반값|0\s*원)|(최저|저렴한|무료)\s*(수임료|보수|기장|신고\s*대행)|현금\s*(지급|제공|사은)|상품권|사은품|경품|캐시백|페이백/;
+function proRoleOf(r, title) { return PRO_ROLE[r] ? r : r === 'pro' ? (PRO_QUALS.indexOf(String(title || '').trim()) >= 0 ? 'licensed' : 'consult') : ''; }
+function proBizOk(d) {
+  d = String(d || '').replace(/[^0-9]/g, ''); if (d.length !== 10) return false;
+  const w = [1, 3, 7, 1, 3, 7, 1, 3, 5]; let s = 0;
+  for (let i = 0; i < 9; i++) s += +d[i] * w[i];
+  s += Math.floor(+d[8] * 5 / 10);
+  return (10 - s % 10) % 10 === +d[9];
+}
 const PRO_SECS = ['cmp', 'sum', 'trend', 'fv', 'hz', 'money'];
 const PRO_NOTE_MAX = 800, PRO_NOTES_TOTAL = 9000, PRO_LOGO_MAX = 45000;
 const PRO_ST = { on: '보냄', off: '멈춤' };
@@ -1719,7 +1741,13 @@ function proDispatch(b) {
     return { ok: false, err: String(x.message || x), code: x.code || '' };
   }
 }
-function proSheet() { return uSheet(SH_P, PH); }
+function proSheet() {
+  const sh = uSheet(SH_P, PH);
+  /* v21: 오른쪽에 '직함'·'사업자번호' 칸이 늘어남 — 예전 시트는 제목줄만 늘림(기존 행·열 위치 그대로) */
+  const cur = sh.getRange(1, 1, 1, PH.length).getValues()[0];
+  if (String(cur[PH.length - 1] || '') !== PH[PH.length - 1]) sh.getRange(1, 1, 1, PH.length).setValues([PH]).setFontWeight('bold').setBackground('#2F6BFF').setFontColor('#FFFFFF');
+  return sh;
+}
 function proRows() {
   const sh = book().getSheetByName(SH_P); if (!sh) return [];
   const v = sh.getDataRange().getValues(), list = [];
@@ -1748,19 +1776,31 @@ function proPhone(v) {
 const PRO_FAKE = /집\s*예\s*보\s*(의\s*)?(분석|의견|공식|인증|보증|추천)|장대장\s*(분석|인증|보증)/;
 function proProfile(p) {
   p = p && typeof p === 'object' ? p : {};
-  const role = PRO_ROLE[p.role] ? p.role : '';
+  const role = proRoleOf(p.role, p.title);
   if (!role) throw new Error('어떤 전문가인지 골라 주세요.');
+  const broker = role === 'agent' || role === 'member';
   const f = { role, office: proText(p.office, 40), ceo: proText(p.ceo, 20), name: proText(p.name, 20), reg: proText(p.reg, 30).replace(/[^0-9A-Za-z가-힣-]/g, ''),
-    addr: proText(p.addr, 80), phone: proPhone(p.phone), kakao: kakaoUrl(p.kakao), title: proText(p.title, 20), logo: '' };
-  if (!f.office) throw new Error(role === 'pro' ? '소속(사무소·회사) 이름을 적어 주세요.' : '중개사무소 이름을 적어 주세요.');
+    addr: proText(p.addr, 80), phone: proPhone(p.phone), kakao: kakaoUrl(p.kakao), title: proText(p.title, 20), biz: String(p.biz || '').replace(/[^0-9]/g, '').slice(0, 10), logo: '' };
+  if ([f.office, f.ceo, f.name, f.title].some(x => PRO_ASSIST.test(x))) throw new Error('중개보조원은 이름을 넣어 보낼 수 없어요. 개업·소속공인중개사 이름으로 보내 주세요.');
+  if (!f.office) throw new Error(role === 'seller' ? '분양대행사 상호를 적어 주세요.' : role === 'consult' ? '상호 또는 활동명을 적어 주세요.' : role === 'licensed' ? '사무소 이름을 적어 주세요.' : '중개사무소 이름을 적어 주세요.');
   if (!f.phone) throw new Error('연락처(전화번호)를 정확히 적어 주세요.');
-  if (role !== 'pro') {
+  if (broker) {
+    /* 공인중개사법 제18조의2(중개대상물 표시·광고)·시행령 제17조의2: 명칭·소재지·연락처·등록번호·개업공인중개사 성명 */
     if (!f.reg || f.reg.replace(/[^0-9]/g, '').length < 5) throw new Error('중개사무소 등록번호를 적어 주세요. 공인중개사는 등록번호를 꼭 표시해야 해요.');
     if (!f.ceo) throw new Error('개업공인중개사(대표) 이름을 적어 주세요.');
     if (!f.addr) throw new Error('중개사무소 소재지(주소)를 적어 주세요.');
     if (role === 'member' && !f.name) throw new Error('소속공인중개사 본인 이름을 적어 주세요.');
     if (role === 'agent') f.name = '';
-  } else if (!f.name) throw new Error('이름을 적어 주세요.');
+    f.biz = '';
+  } else {
+    if ([f.office, f.name, f.title].some(x => PRO_BROKER_WORD.test(x))) throw new Error("공인중개사가 아니면 '공인중개사'·'중개사무소' 같은 이름을 쓸 수 없어요(공인중개사법 제18조). 공인중개사라면 공인중개사 유형을 골라 주세요.");
+    if (role === 'seller' && !f.biz) throw new Error('사업자등록번호를 적어 주세요. 분양대행사는 상호·사업자등록번호·대표자·연락처를 꼭 표시해야 해요.');
+    if (f.biz && !proBizOk(f.biz)) throw new Error('사업자등록번호 10자리를 다시 확인해 주세요.');
+    if (role === 'seller' && !f.ceo) throw new Error('대표자 이름을 적어 주세요.');
+    if (role === 'licensed' && PRO_QUALS.indexOf(f.title) < 0) throw new Error('자격(세무사·법무사 등)을 골라 주세요.');
+    if (role === 'licensed' && !f.name) throw new Error('이름을 적어 주세요.');
+    if (role !== 'seller') f.ceo = '';
+  }
   if ([f.office, f.ceo, f.name, f.title].some(x => PRO_FAKE.test(x))) throw new Error('이름·소속에는 집예보가 쓴 것처럼 보이는 말을 넣을 수 없어요.');
   const logo = String(p.logo || '');
   if (logo) {
@@ -1770,13 +1810,15 @@ function proProfile(p) {
   return f;
 }
 /* 의견 글: 요약 아래(summary) · 맺음말(closing) · 항목별 메모(단지번호.섹션) */
-function proNotes(n) {
+function proNotes(n, prof) {
   n = n && typeof n === 'object' ? n : {};
+  const taxAd = prof && prof.role === 'licensed' && prof.title === '세무사';
   const out = {}; let total = 0;
   Object.keys(n).slice(0, 40).forEach(k => {
     if (!(k === 'summary' || k === 'closing' || /^[0-2]\.(sum|trend|fv|hz|money)$/.test(k) || k === 'cmp')) return;
     const t = String(n[k] == null ? '' : n[k]).replace(/[\u0000-\u0009\u000B-\u001F\u007F<>]/g, ' ').replace(/\n{3,}/g, '\n\n').trim().slice(0, PRO_NOTE_MAX);
     if (!t) return;
+    if (taxAd && PRO_TAX_AD.test(t)) throw new Error('세무사 광고 규정상 수임료 비교·할인·무료 문구나 현금·상품권 같은 금전 혜택 문구는 넣을 수 없어요. 해당 문장을 빼 주세요.');
     if (PRO_FAKE.test(t)) throw new Error('의견에는 집예보가 쓴 것처럼 보이는 말(예: 집예보 분석·집예보 의견)을 넣을 수 없어요. 전문가 의견은 전문가 이름으로 따로 표시돼요.');
     total += t.length; out[k] = t;
   });
@@ -1800,9 +1842,11 @@ function proCond(c, secs) {
 
 function proOut(x, withMeta) {
   const r = x.r, p = {
-    role: Object.keys(PRO_ROLE).find(k => PRO_ROLE[k] === String(r[PCX['유형']])) || 'pro', office: String(r[PCX['사무소명']]), ceo: String(r[PCX['대표']]), name: String(r[PCX['이름']]),
-    reg: String(r[PCX['등록번호']]), addr: String(r[PCX['주소']]), phone: String(r[PCX['연락처']]), kakao: String(r[PCX['카카오']]), logo: String(r[PCX['로고']])
+    role: '', office: String(r[PCX['사무소명']]), ceo: String(r[PCX['대표']]), name: String(r[PCX['이름']]),
+    reg: String(r[PCX['등록번호']]), addr: String(r[PCX['주소']]), phone: String(r[PCX['연락처']]), kakao: String(r[PCX['카카오']]), logo: String(r[PCX['로고']]),
+    title: String(r[PCX['직함']] == null ? '' : r[PCX['직함']]), biz: String(r[PCX['사업자번호']] == null ? '' : r[PCX['사업자번호']]).replace(/[^0-9]/g, '')
   };
+  p.role = Object.keys(PRO_ROLE).find(k => PRO_ROLE[k] === String(r[PCX['유형']])) || proRoleOf('pro', p.title);
   const o = { id: String(r[PCX['id']]), profile: p, client: String(r[PCX['고객이름']]), secs: parseJ(r[PCX['섹션']], []), notes: parseJ(r[PCX['의견']], {}),
     cond: parseJ(r[PCX['조건']], null), dataTo: String(r[PCX['자료기준']]), created: ymd(r[PCX['만든시각']] instanceof Date ? r[PCX['만든시각']] : new Date(r[PCX['만든시각']])),
     expires: r[PCX['만료일']] instanceof Date ? ymd(r[PCX['만료일']]) : String(r[PCX['만료일']]).slice(0, 10) };
@@ -1813,7 +1857,7 @@ function proOut(x, withMeta) {
 /* 만들기(id 없음) · 고치기(id 있음 — 같은 주문의 링크만, 링크 주소는 그대로) */
 function proSave(b) {
   const { o, s } = proOrder(b);
-  const prof = proProfile(b.profile), secs = proSecs(b.secs), notes = proNotes(b.notes);
+  const prof = proProfile(b.profile), secs = proSecs(b.secs), notes = proNotes(b.notes, prof);
   const client = proText(b.client, 20), cond = proCond(b.cond, secs), dataTo = /^\d{6}$/.test(String(b.dataTo || '')) ? String(b.dataTo) : '';
   const days = PRO_DAYS.indexOf(Number(b.days)) >= 0 ? Number(b.days) : PRO_DAYS[0];
   const now = new Date(), orderExp = new Date(s.expires + 'T23:59:59+09:00');
@@ -1824,6 +1868,7 @@ function proSave(b) {
     put(row, '사무소명', prof.office); put(row, '대표', prof.ceo); put(row, '이름', prof.name); put(row, '등록번호', prof.reg); put(row, '주소', prof.addr);
     put(row, '연락처', prof.phone); put(row, '카카오', prof.kakao); put(row, '로고', prof.logo); put(row, '고객이름', client);
     put(row, '섹션', JSON.stringify(secs)); put(row, '의견', JSON.stringify(notes)); put(row, '조건', cond);
+    put(row, '직함', prof.title); put(row, '사업자번호', prof.biz ? "'" + prof.biz : '');
   };
   const oid = String(o.r[OC['주문번호']]);
   if (b.id) {

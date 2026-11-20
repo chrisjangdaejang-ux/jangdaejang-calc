@@ -37,15 +37,15 @@ a.kchat:focus-visible{outline:3px solid #191919;outline-offset:2px}
 a.kchat .kchat-i{flex:none}
 a.kchat.sm{font-size:13px;padding:0 12px;border-radius:999px}
 .kqr-bg{position:fixed;inset:0;background:rgba(25,25,20,.55);display:flex;align-items:center;justify-content:center;z-index:80;padding:16px}
-.kqr{background:#fff;color:#191919;border-radius:16px;max-width:320px;width:100%;padding:20px 20px 16px;text-align:center;position:relative;box-shadow:0 12px 40px rgba(0,0,0,.3);font-family:inherit}
+.kqr{background:#fff;color:#191F28;border-radius:16px;max-width:320px;width:100%;padding:20px 20px 16px;text-align:center;position:relative;box-shadow:0 12px 40px rgba(0,0,0,.3);font-family:inherit}
 .kqr h3{margin:0 0 4px;font-size:17px;font-weight:900}
-.kqr .kqr-n{font-size:13px;color:#6B6A58;margin:0 0 10px}
-.kqr .kqr-c{display:inline-block;padding:10px;border:1px solid #E6E0CC;border-radius:12px;background:#fff;line-height:0}
+.kqr .kqr-n{font-size:13px;color:#4E5968;margin:0 0 10px}
+.kqr .kqr-c{display:inline-block;padding:10px;border:1px solid #E5E8EB;border-radius:12px;background:#fff;line-height:0}
 .kqr .kqr-c svg{width:200px;height:200px;display:block}
 .kqr p{margin:12px 0 10px;font-size:14px;font-weight:700;line-height:1.5}
-.kqr .kqr-pc{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;font-size:13.5px;font-weight:700;color:#3B3F22;text-decoration:underline}
-.kqr .kqr-x{position:absolute;right:6px;top:6px;width:44px;height:44px;border:0;background:none;font-size:22px;line-height:1;cursor:pointer;color:#6B6A58;border-radius:10px}
-.kqr .kqr-err{font-size:13px;color:#A23B2A}
+.kqr .kqr-pc{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;font-size:13.5px;font-weight:700;color:#2F6BFF;text-decoration:underline}
+.kqr .kqr-x{position:absolute;right:6px;top:6px;width:44px;height:44px;border:0;background:none;font-size:22px;line-height:1;cursor:pointer;color:#4E5968;border-radius:10px}
+.kqr .kqr-err{font-size:13px;color:#C2410C}
 @media print{a.kchat,.kqr-bg{display:none!important}}`;
   const st = document.createElement('style'); st.id = 'kchat-css'; st.textContent = css;
   (document.head || document.documentElement).appendChild(st);

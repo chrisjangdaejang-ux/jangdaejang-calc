@@ -29,7 +29,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
 <script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
-<link rel="stylesheet" href="/jangdaejang-calc/assets/pay.css?v=1">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/pay.css?v=2">
 <script src="/jangdaejang-calc/assets/agents.js"></script>
 <script src="/jangdaejang-calc/assets/config.js?v=3"></script>
 <script src="/jangdaejang-calc/assets/auth.js?v=3"></script>
@@ -118,7 +118,7 @@
       return;
     }
     box.innerHTML = `<div class="vtools noprint btnrow" style="margin:0 0 6px"><button type="button" class="btn2 blue" id="pdfBtn">PDF로 저장 · 인쇄</button><a class="btn2" href="${P.ROOT}pro/?o=${encodeURIComponent(o)}&t=${encodeURIComponent(t)}">내 이름으로 고객에게 보내기</a><a class="btn2" href="${P.ROOT}">프리미엄 리포트 안내</a></div>
-      <div class="links noprint" style="margin:0 0 6px">중개사·전문가라면 이 리포트에 사무소 이름·로고·연락처와 내 의견을 넣어 고객에게 링크나 PDF로 보낼 수 있어요. 집예보 숫자는 그대로예요.</div>
+      <div class="links noprint" style="margin:0 0 6px">공인중개사·분양대행사·부동산 컨설턴트·세무사 등 전문가라면 이 리포트에 상호·로고·연락처와 내 의견을 넣어 고객에게 링크나 PDF로 보낼 수 있어요. 집예보 숫자는 그대로예요.</div>
       <div class="links noprint" style="margin:0 0 8px">최초 열람 ${esc(j.order.firstViewAt)} · PDF 저장은 인쇄 창에서 대상(프린터)을 [PDF로 저장]으로 고르세요.</div><div id="rep"></div>`;
     document.getElementById('pdfBtn').onclick = () => window.print();
     document.title = '장대장 프리미엄 리포트 · ' + j.order.names;

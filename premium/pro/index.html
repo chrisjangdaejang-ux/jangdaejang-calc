@@ -12,7 +12,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="집예보">
 <meta property="og:title" content="내 이름으로 고객에게 보내기 | 집예보">
-<meta property="og:description" content="중개사·전문가가 집예보 리포트를 내 이름·로고·의견으로 고객에게 보내는 화면">
+<meta property="og:description" content="중개사·분양대행사·부동산 전문가·세무사 등이 집예보 리포트를 내 이름·로고·의견으로 고객에게 보내는 화면">
 <meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/premium/pro/">
 <meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/premium.png">
 <meta property="og:image:width" content="1200">
@@ -20,7 +20,7 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="내 이름으로 고객에게 보내기 | 집예보">
-<meta name="twitter:description" content="중개사·전문가가 집예보 리포트를 내 이름·로고·의견으로 고객에게 보내는 화면">
+<meta name="twitter:description" content="중개사·분양대행사·부동산 전문가·세무사 등이 집예보 리포트를 내 이름·로고·의견으로 고객에게 보내는 화면">
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/premium.png">
 <script>window.JDJ_CONFIG = { tool:'pro_edit', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../../assets/track.js?v=2"></script>
@@ -29,7 +29,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
 <script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
-<link rel="stylesheet" href="/jangdaejang-calc/assets/pay.css?v=1">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/pay.css?v=2">
 <script src="/jangdaejang-calc/assets/agents.js"></script>
 <script src="/jangdaejang-calc/assets/config.js?v=3"></script>
 <script src="/jangdaejang-calc/assets/auth.js?v=3"></script>
@@ -41,8 +41,8 @@
 <script src="/jangdaejang-calc/assets/narrative.js?v=12"></script>
 <script src="/jangdaejang-calc/tax/tax-engine.js?v=4"></script>
 <script src="/jangdaejang-calc/assets/premium-report.js?v=18"></script>
-<script src="/jangdaejang-calc/assets/pro-report.js?v=1"></script>
-<link rel="stylesheet" href="/jangdaejang-calc/assets/pro.css?v=1">
+<script src="/jangdaejang-calc/assets/pro-report.js?v=2"></script>
+<link rel="stylesheet" href="/jangdaejang-calc/assets/pro.css?v=2">
 <script src="/jangdaejang-calc/assets/strength.js?v=1"></script>
 </head>
 <body>
@@ -93,21 +93,24 @@
 
   function layout() {
     box.innerHTML = `<h1 class="noprint">내 이름으로 고객에게 보내기</h1>
-    <p class="lead noprint">산 리포트에 사무소 이름·로고·연락처와 내 의견을 넣어 고객에게 링크나 PDF로 보내요. 집예보가 계산한 숫자·점수·순위는 그대로 두고, 내 의견은 내 이름으로 따로 표시돼요.</p>
+    <p class="lead noprint">공인중개사·분양대행사·부동산 컨설턴트·세무사 등 누구나 산 리포트에 상호·로고·연락처와 내 의견을 넣어 고객에게 링크나 PDF로 보내요. 집예보가 계산한 숫자·점수·순위는 그대로 두고, 내 의견은 내 이름으로 따로 표시돼요.</p>
     <div class="pro-tabs noprint" role="tablist"><button type="button" role="tab" data-tab="ed" aria-selected="true">편집</button><button type="button" role="tab" data-tab="pv" aria-selected="false">미리보기</button></div>
     <div class="pro-wrap" data-tab="ed" id="wrap">
     <aside class="pro-ed noprint" id="ed">
       <div class="msg info" id="editBar" hidden></div>
       <section class="card2"><h2><span class="n">1</span>누구 이름으로 보낼까요?</h2>
         <div class="pro-roles" role="radiogroup" aria-label="전문가 종류">${Object.keys(R.ROLE).map(k => `<label><input type="radio" name="role" value="${k}">${R.ROLE[k].t}</label>`).join('')}</div>
+        <div class="hint" id="roleHint"></div>
         <details class="pfield" id="agBox"><summary style="cursor:pointer;color:var(--blue);font-weight:700;font-size:14px">집예보 제휴 중개사라면 내 정보 불러오기</summary>
           <div class="pfield"><label for="agReg">중개사무소 등록번호</label><input id="agReg" autocomplete="off"></div>
           <div class="pfield"><label for="agCode">관리코드</label><input id="agCode" autocomplete="off"></div>
           <button type="button" class="btn2" id="agBtn" style="width:100%">내 정보 불러오기</button><div class="msg" id="agMsg" role="alert"></div></details>
+        <div class="pfield" data-f="qual"><label for="f_qual">자격<span class="req" aria-label="꼭 적기">*</span></label><select id="f_qual"><option value="">자격을 골라 주세요</option>${R.QUALS.map(q => `<option>${q}</option>`).join('')}</select></div>
         ${F('office', '사무소 이름', { req: 1, ph: '예: 행복공인중개사사무소' })}
         ${F('ceo', '대표 공인중개사 이름', { req: 1, max: 20 })}
         ${F('name', '내 이름', { req: 1, max: 20 })}
-        ${F('title', '직함', { max: 20, ph: '예: 세무사, 대출상담사' })}
+        ${F('title', '직함', { max: 20 })}
+        ${F('biz', '사업자등록번호', { type: 'numeric', max: 12, ph: '예: 123-45-67890' })}
         ${F('reg', '중개사무소 등록번호', { req: 1, max: 30, ph: '예: 11680-2020-00123', hint: '공인중개사법에 따라 중개사무소 명칭·소재지·연락처·등록번호와 개업공인중개사 이름을 함께 보여 줘요. 중개보조원 이름은 넣을 수 없어요.' })}
         ${F('addr', '사무소 소재지', { req: 1, max: 80, ph: '예: 서울 강남구 대치동 000-0' })}
         ${F('phone', '연락처(전화)', { req: 1, type: 'tel', max: 20, ph: '예: 02-1234-5678' })}
@@ -119,7 +122,8 @@
         ${F('client', '고객 이름 (선택)', { max: 20, ph: '예: 김○○', hint: '표지에 "○○님께 드리는"으로 나와요. 성만 적거나 줄여 적는 걸 권해요. 고객 연락처는 받지 않아요.' })}
         ${F('n_summary', '요약 아래 의견', { area: 1, ph: '예: 학군과 역세권을 같이 보시는 고객님께 맞는 단지예요. 아래 오를 이유와 조심할 점을 같이 봐 주세요.' })}
         ${F('n_closing', '맺음말', { area: 1, ph: '예: 궁금한 점은 편하게 전화 주세요. 실제 매물 상태는 방문해서 같이 확인해 드릴게요.' })}
-        <div class="hint">의견은 "${'○○ 공인중개사 의견'}" 상자로 따로 보여요. 집예보 분석처럼 보이게 쓸 수는 없어요.</div>
+        <div class="hint">의견은 "<b id="opLabel">○○ 공인중개사 의견</b>" 상자로 따로 보여요. 집예보 분석처럼 보이게 쓸 수는 없어요.</div>
+        <div class="msg warn" id="adWarn" hidden></div>
       </section>
       <section class="card2"><h2><span class="n">3</span>넣을 항목과 순서</h2>
         <p style="margin:0;font-size:14px;color:var(--sub)">체크한 항목만 고객에게 보여요. 화살표로 순서를 바꾸고, 항목마다 메모를 붙일 수 있어요.</p>
@@ -136,7 +140,7 @@
       </section>
       <section class="card2"><h2>보낸 링크</h2><div id="list"><div class="links">불러오는 중…</div></div></section>
       <section class="card2 pro-plan"><h2>전문가 요금제<span class="soon">준비 중</span></h2>
-        <ul><li>지금은 산 리포트 1건으로 고객 링크를 여러 개(최대 20개) 만들 수 있어요.</li><li>여러 단지를 자주 보내는 중개사·전문가를 위한 월 정액 요금제를 준비하고 있어요.</li><li>집예보 제휴 중개사는 제휴 요금과 묶어 쓰는 방법도 함께 준비 중이에요.</li></ul></section>
+        <ul><li>지금은 산 리포트 1건으로 고객 링크를 여러 개(최대 20개) 만들 수 있어요.</li><li>여러 단지를 자주 보내는 중개사·분양대행사·전문가를 위한 월 정액 요금제를 준비하고 있어요.</li><li>집예보 제휴 중개사는 제휴 요금과 묶어 쓰는 방법도 함께 준비 중이에요.</li></ul></section>
     </aside>
     <div class="pro-pv" id="pv"><div class="pro-pvh"><span>고객이 보는 화면 미리보기</span><span>집예보 숫자는 고칠 수 없어요</span></div><div id="pvHead"></div><div id="rep"></div></div>
     </div>`;
@@ -160,40 +164,60 @@
     secList();
   }
   const $ = id => document.getElementById(id);
-  const PF = ['office', 'ceo', 'name', 'title', 'reg', 'addr', 'phone', 'kakao'];
+  const PF = ['office', 'ceo', 'name', 'title', 'reg', 'biz', 'addr', 'phone', 'kakao'];
   function fillForm() {
     const p = st.profile;
     box.querySelectorAll('input[name=role]').forEach(r => { r.checked = r.value === p.role; });
-    PF.forEach(k => { $('f_' + k).value = p[k] || ''; });
+    PF.forEach(k => { $('f_' + k).value = k === 'biz' ? R.bizFmt(p.biz) : (p[k] || ''); });
+    $('f_qual').value = R.QUALS.indexOf(p.title) >= 0 ? p.title : '';
     $('f_client').value = st.client || '';
     $('f_n_summary').value = st.notes.summary || ''; $('f_n_closing').value = st.notes.closing || '';
     box.querySelectorAll('input[name=days]').forEach(r => { r.checked = +r.value === st.days; });
     roleFields(); fillLogo();
   }
   function fillLogo() { const im = $('logoImg'), d = $('logoDel'); im.hidden = d.hidden = !st.profile.logo; if (st.profile.logo) im.src = st.profile.logo; }
+  /* 유형별 칸·이름표·안내 — 필수 여부는 R.fieldsOf(서버와 같은 기준) */
+  const ROLE_HINT = {
+    agent: '공인중개사법 제18조의2(중개대상물 표시·광고)에 따라 중개사무소 명칭·소재지·연락처·등록번호와 개업공인중개사 이름을 함께 보여 줘요. 중개보조원 이름은 넣을 수 없어요.',
+    member: '공인중개사법 제18조의2에 따라 중개사무소 명칭·소재지·연락처·등록번호, 개업공인중개사 이름과 소속공인중개사 본인 이름을 함께 보여 줘요. 중개보조원 이름은 넣을 수 없어요.',
+    seller: '분양 현장의 판매를 맡은 분양대행사예요. 상호·사업자등록번호·대표자·연락처를 꼭 보여 주고, 고객 화면에는 "분양 판매를 맡은 회사의 의견"이라고 함께 표시돼요. 공인중개사가 아니면 상호·직함에 "공인중개사"·"중개사무소"를 쓸 수 없어요.',
+    consult: '부동산 컨설팅 회사, 유튜브·경제방송 출연 전문가, 세미나·강의 업체 등이에요. 상호 또는 활동명과 연락처를 꼭 보여 줘요. 사업자라면 사업자등록번호도 넣어 주세요. 공인중개사가 아니면 "공인중개사"·"중개사무소" 명칭을 쓸 수 없어요.',
+    licensed: '세무사·법무사·감정평가사·변호사 등 자격을 가진 분이에요. 고객 화면에 자격명과 이름이 함께 보여요. 세무사는 광고 규정상 수임료 비교·할인·무료나 금전 혜택 문구를 쓸 수 없어요.'
+  };
+  const OFFICE_PH = { agent: '예: 행복공인중개사사무소', member: '예: 행복공인중개사사무소', seller: '예: ○○분양대행(주)', consult: '예: ○○부동산연구소, ○○TV', licensed: '예: ○○세무회계' };
+  const TITLE_PH = { seller: '예: ○○역 ○○아파트 분양 상담', consult: '예: 유튜브 ○○TV 운영 · ○○경제방송 출연' };
   function roleFields() {
-    const r = st.profile.role, show = (k, on) => { box.querySelector(`[data-f="${k}"]`).hidden = !on; };
-    show('ceo', r !== 'pro'); show('name', r !== 'agent'); show('title', r === 'pro'); show('addr', true);
+    const r = st.profile.role, f = R.fieldsOf(r), show = (k, on) => { box.querySelector(`[data-f="${k}"]`).hidden = !on; };
     const lab = (k, t, req) => { box.querySelector(`[data-f="${k}"] label`).innerHTML = esc(t) + (req ? '<span class="req" aria-label="꼭 적기">*</span>' : ''); };
-    lab('office', r === 'pro' ? '소속(사무소·회사) 이름' : '중개사무소 이름', 1);
-    lab('ceo', '대표 공인중개사 이름', 1);
-    lab('name', r === 'member' ? '내 이름(소속공인중개사)' : '내 이름', 1);
-    lab('reg', r === 'pro' ? '자격·등록번호 (선택)' : '중개사무소 등록번호', r !== 'pro');
-    lab('addr', r === 'pro' ? '사무소 주소 (선택)' : '중개사무소 소재지', r !== 'pro');
-    box.querySelector('[data-f="reg"] .hint').hidden = r === 'pro';
-    $('agBox').hidden = r === 'pro';
+    ['office', 'ceo', 'name', 'title', 'reg', 'biz', 'addr'].forEach(k => {
+      const on = !!f[k] && !(k === 'title' && r === 'licensed');
+      show(k, on); if (on) lab(k, f[k][0], f[k][1]);
+    });
+    show('qual', r === 'licensed');
+    $('f_office').placeholder = OFFICE_PH[r] || '';
+    $('f_title').placeholder = TITLE_PH[r] || '';
+    box.querySelector('[data-f="reg"] .hint') && (box.querySelector('[data-f="reg"] .hint').hidden = true);
+    $('roleHint').textContent = ROLE_HINT[r] || '';
+    $('agBox').hidden = !R.BROKER(r);
+    opHint();
+  }
+  function opHint() {
+    const p = R.cleanProfile(st.profile), w = R.adWarn(p, st.notes), el = $('adWarn');
+    $('opLabel').textContent = R.opinionLabel(p);
+    el.hidden = !w.length; el.textContent = w.join(' ');
   }
   let tm = 0;
   function onInput(e) {
     const el = e.target;
-    if (el.name === 'role') { st.profile.role = el.value; roleFields(); }
+    if (el.name === 'role') { st.profile.role = el.value; if (el.value !== 'licensed' && R.QUALS.indexOf(st.profile.title) >= 0) { st.profile.title = ''; $('f_title').value = ''; } roleFields(); }
+    else if (el.id === 'f_qual') { st.profile.title = el.value; opHint(); }
     else if (el.name === 'days') st.days = +el.value;
     else if (el.id && el.id.indexOf('f_n_') === 0) st.notes[el.id.slice(4)] = el.value;
     else if (el.dataset && el.dataset.note) st.notes[el.dataset.note] = el.value;
     else if (el.id === 'f_client') st.client = el.value;
     else if (el.id && PF.indexOf(el.id.slice(2)) >= 0) st.profile[el.id.slice(2)] = el.value;
     else return;
-    clearTimeout(tm); tm = setTimeout(() => { saveDraft(); refresh(); }, 160);
+    clearTimeout(tm); tm = setTimeout(() => { saveDraft(); refresh(); opHint(); }, 160);
   }
 
   /* 항목 목록(넣기·빼기·순서·메모) */
@@ -257,7 +281,7 @@
   /* 저장(만들기·고치기) */
   async function save() {
     const m = $('saveMsg'), b = $('saveBtn'), p = R.cleanProfile(st.profile), s = secs();
-    const er = R.profileError(p) || R.notesError(st.notes) || (s.filter(k => k !== 'cmp').length ? '' : '넣을 항목을 하나 이상 골라 주세요.');
+    const er = R.profileError(p) || R.notesError(st.notes, p) || (s.filter(k => k !== 'cmp').length ? '' : '넣을 항목을 하나 이상 골라 주세요.');
     if (er) { m.className = 'msg err'; m.textContent = er; return; }
     b.disabled = true; m.className = 'msg info'; m.innerHTML = '<span class="spin"></span>만드는 중…';
     try {
@@ -272,7 +296,7 @@
   function shareInfo(id) {
     const tk = tokens()[id]; if (!tk) return null;
     const p = R.cleanProfile(st.profile), names = st.items.map(x => x.apt).join(' · ');
-    return { url: R.linkOf(id, tk), title: `${p.office} ${R.who(p)}님이 보낸 단지 분석 리포트`, desc: `${names} · 데이터·분석 집예보` };
+    return { url: R.linkOf(id, tk), title: `${R.senderOf(p)}${p.role === 'seller' || (p.role === 'consult' && !p.name) ? '에서' : '님이'} 보낸 단지 분석 리포트`, desc: `${names} · 데이터·분석 집예보` };
   }
   function result(id) {
     const s = shareInfo(id), el = $('result');
