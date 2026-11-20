@@ -94,7 +94,7 @@ check('키 없음 → Leaflet + OSM 미리 보기', E.plan({}), { kind: 'leaflet
 check('브이월드 키만 → Leaflet + 브이월드', E.plan({ VWORLD_KEY: 'k' }), { kind: 'leaflet', tiles: 'vworld' }, '');
 check('카카오 키 → 카카오맵', E.plan({ KAKAO_JS_KEY: 'k', VWORLD_KEY: 'v' }), { kind: 'kakao' }, '');
 check("MAP_ENGINE 'leaflet' 이면 카카오 키가 있어도 Leaflet", E.plan({ KAKAO_JS_KEY: 'k', MAP_ENGINE: 'leaflet' }), { kind: 'leaflet', tiles: 'osm' }, '');
-check('설정 파일에 키가 비어 있음(저장소에 키 노출 금지)', (() => { const s = fs.readFileSync(path.join(__dirname, '..', 'assets', 'config.js'), 'utf8'); return [/KAKAO_JS_KEY:\s*''/.test(s), /VWORLD_KEY:\s*''/.test(s)]; })(), [true, true], 'assets/config.js');
+check('설정 파일: 카카오 JavaScript 키(공개용)는 비었거나 32자리, 브이월드 키는 비어 있음', (() => { const s = fs.readFileSync(path.join(__dirname, '..', 'assets', 'config.js'), 'utf8'); return [/KAKAO_JS_KEY:\s*'([0-9a-f]{32})?'/.test(s), /VWORLD_KEY:\s*''/.test(s)]; })(), [true, true], 'assets/config.js');
 
 /* 실제 자료 (선택) */
 const dir = process.argv[2];
