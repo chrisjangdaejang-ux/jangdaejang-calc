@@ -27,7 +27,8 @@
 <script src="../assets/plain-words.js?v=13"></script>
 <script src="../assets/narrative.js?v=10"></script>
 <script src="../assets/mine-core.js?v=15"></script>
-<script src="../assets/map-core.js?v=2"></script>
+<script src="../assets/map-core.js?v=3"></script>
+<script src="../assets/region-core.js?v=1"></script>
 <script src="../assets/map-engine.js?v=1"></script>
 <script src="../assets/sale-status.js?v=1"></script>
 <script src="../assets/devproj-view.js?v=2"></script>
@@ -42,8 +43,8 @@ html:has(body.jm-full){overflow:hidden;zoom:1}   /* 지도는 PC 12.5% 확대(ap
 body.jm-full{overflow:hidden;overscroll-behavior:none;height:100vh;height:100dvh;display:flex;flex-direction:column}
 body.jm-full>.top{position:relative;flex:none}
 .top h1{margin:0;font-size:17px;font-weight:800;letter-spacing:-.3px;white-space:nowrap}
-.mwrap{--mt:0px;position:relative;flex:1;min-height:0;margin-bottom:calc(58px + env(safe-area-inset-bottom));overflow:hidden;overflow:clip;background:#EEF1F4}
-#map{position:absolute;left:0;right:0;bottom:0;top:var(--mt);z-index:1}   /* 지도는 위쪽 조작 칸 아래부터 — 말풍선이 조작 칸 밑에 비쳐 보이지 않게 */
+.mwrap{--mt:0px;--mb:0px;--ml:0px;position:relative;flex:1;min-height:0;margin-bottom:calc(58px + env(safe-area-inset-bottom));overflow:hidden;overflow:clip;background:#EEF1F4}
+#map{position:absolute;left:var(--ml);right:0;bottom:var(--mb);top:var(--mt);z-index:1}   /* --mb·--ml: 지역 분석 칸(모바일 아래·PC 왼쪽)만큼 지도를 비켜서 지도 로고·축척이 가려지지 않게 */   /* 지도는 위쪽 조작 칸 아래부터 — 말풍선이 조작 칸 밑에 비쳐 보이지 않게 */
 .leaflet-container{font-family:inherit;background:#EEF1F4}
 /* 위쪽 조작 칸 */
 .mtop{position:absolute;left:0;right:0;top:0;z-index:30;padding:8px 12px;display:flex;flex-direction:column;gap:6px;background:#fff;border-bottom:1px solid #E5E8EB;box-shadow:0 2px 8px rgba(0,0,0,.06)}
@@ -74,14 +75,14 @@ body.jm-full>.top{position:relative;flex:none}
 select.chip{appearance:none;-webkit-appearance:none;padding-right:28px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%234E5968' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 10px center}
 select.chip.on{background-color:var(--blue-l)}
 /* 오른쪽 버튼 */
-.mside{position:absolute;right:12px;z-index:25;display:flex;flex-direction:column;gap:8px;bottom:40px;transition:bottom .2s}   /* 아래 32px 은 지도 로고·축척·출처 자리(가리면 안 됨) */
+.mside{position:absolute;right:12px;z-index:25;display:flex;flex-direction:column;gap:8px;bottom:calc(var(--mb) + 40px);transition:bottom .2s}   /* 아래 32px 은 지도 로고·축척·출처 자리(가리면 안 됨) */
 .fab{width:46px;height:46px;border-radius:12px;border:1px solid #E5E8EB;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text);font:inherit;font-size:22px;font-weight:700}
 .fab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .fab.busy{color:var(--blue)}
 /* 아래쪽 안내·범례 */
-.mstat{position:absolute;left:50%;top:calc(var(--mt) + 8px);transform:translateX(-50%);z-index:25;width:max-content;max-width:min(calc(100% - 24px),520px);box-sizing:border-box;background:#191F28;color:#fff;font-size:13px;font-weight:500;line-height:1.45;padding:6px 12px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.18);text-align:center;pointer-events:none}   /* 안내는 지도 위쪽 가운데 — 아래 왼쪽 카카오 로고·축척을 가리지 않게 */
+.mstat{position:absolute;left:calc(var(--ml) + (100% - var(--ml)) / 2);top:calc(var(--mt) + 8px);transform:translateX(-50%);z-index:25;width:max-content;max-width:min(calc(100% - 24px),520px);box-sizing:border-box;background:#191F28;color:#fff;font-size:13px;font-weight:500;line-height:1.45;padding:6px 12px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.18);text-align:center;pointer-events:none}   /* 안내는 지도 위쪽 가운데 — 아래 왼쪽 카카오 로고·축척을 가리지 않게 */
 .mstat:empty{display:none}
-.legend{position:absolute;left:12px;bottom:40px;z-index:25;background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.14);padding:8px 10px;font-size:12.5px;color:var(--sub);display:flex;flex-direction:column;gap:3px;max-width:calc(100% - 84px)}
+.legend{position:absolute;left:calc(var(--ml) + 12px);bottom:calc(var(--mb) + 40px);z-index:25;background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.14);padding:8px 10px;font-size:12.5px;color:var(--sub);display:flex;flex-direction:column;gap:3px;max-width:calc(100% - 84px)}
 .legend:empty{display:none}
 .legend span{display:flex;align-items:center;gap:6px;white-space:nowrap}
 .legend i{width:12px;height:12px;border-radius:4px;flex:none}
@@ -126,6 +127,66 @@ body.has-cmp .legend{transform:translateY(-62px)}
 .sheet .note{margin:10px 0 0;font-size:13px;color:var(--sub3);line-height:1.55}
 .sheet .src{font-size:14px;margin:10px 0 0}
 .sheet .src a{display:inline-flex;align-items:center;min-height:44px;font-weight:700}
+/* 지역 분석 칸 (모바일 아래 · PC 왼쪽) */
+body.reg .cmpbar{display:none}
+.rpanel{position:absolute;left:0;right:0;bottom:0;z-index:34;background:#fff;border-radius:18px 18px 0 0;box-shadow:0 -4px 16px rgba(0,0,0,.14);max-height:60%;overflow:auto;padding:4px 14px 12px;overscroll-behavior:contain}
+.rpanel[hidden]{display:none}
+.rpanel .grab{width:40px;height:4px;border-radius:2px;background:#D1D6DB;margin:4px auto 6px}
+.rp-hd{display:flex;align-items:center;gap:8px}
+.rp-hd select{appearance:none;-webkit-appearance:none;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:15px;font-weight:800;color:var(--text);min-height:40px;padding:0 28px 0 10px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%234E5968' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 9px center;max-width:46%}
+.rp-hd .ttl{flex:1;min-width:0;font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rp-hd .tog{flex:none;border:0;background:var(--gray);border-radius:10px;font:inherit;font-size:14px;font-weight:700;color:var(--sub);min-height:40px;padding:0 12px;cursor:pointer;white-space:nowrap}
+.rp-per{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 0;align-items:center}
+.rp-per .seg button{font-size:14px;min-height:34px;padding:0 11px}
+.rp-past{margin:8px 0 0;font-size:13.5px;line-height:1.6;color:var(--sub)}
+.rp-past .tag{display:inline-block;font-size:12px;font-weight:800;border-radius:6px;padding:0 6px;margin-right:5px;line-height:20px;vertical-align:1px}
+.rp-past .tag.use{background:var(--blue-l);color:var(--blue-d)}
+.rp-past .tag.ref{background:var(--gray);color:var(--sub2)}
+.rp-past small{color:var(--sub3);font-size:12.5px}
+.rp-gu{margin:10px 0 0;padding:10px 0 0;border-top:1px solid var(--line2)}
+.rp-gu h3{margin:0;font-size:17px;font-weight:800;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.rp-gu h3 em{font-style:normal;font-size:15px;font-weight:800}
+.rp-gu h3 small{font-size:13px;font-weight:500;color:var(--sub2)}
+.rp-kv{display:flex;flex-wrap:wrap;gap:4px 12px;margin:6px 0 0;font-size:13.5px;color:var(--sub)}
+.rp-kv b{color:var(--text)}
+.rp-chart{margin:8px 0 0;position:relative}
+.rp-chart svg{display:block;width:100%;height:auto;overflow:visible;touch-action:pan-y}
+.rp-chart .lg{display:flex;gap:12px;font-size:12.5px;color:var(--sub2);margin:0 0 2px}
+.rp-chart .lg i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:4px}
+.rp-chart .tip{position:absolute;top:0;pointer-events:none;background:#191F28;color:#fff;font-size:12px;line-height:1.45;padding:4px 8px;border-radius:8px;white-space:nowrap;transform:translateX(-50%)}
+.rp-chart .tip[hidden]{display:none}
+.rp-gpast{margin:6px 0 0;font-size:13px;line-height:1.6;color:var(--sub2)}
+.rp-badges{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 0}
+.rp-badges span{font-size:13.5px;font-weight:700;border-radius:999px;padding:4px 10px;background:#F1EDFF;color:#5B3BE0}
+.rp-rank{margin:12px 0 0;padding:10px 0 0;border-top:1px solid var(--line2)}
+.rp-rank h4{margin:0 0 4px;font-size:14px;font-weight:800;color:var(--sub)}
+.rp-rank button{display:grid;grid-template-columns:5.6em 1fr 5.4em;align-items:center;gap:8px;width:100%;border:0;background:none;font:inherit;font-size:13.5px;text-align:left;padding:3px 4px;min-height:32px;border-radius:8px;cursor:pointer;color:var(--text)}
+.rp-rank button.on{background:var(--blue-l)}
+.rp-rank button span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}
+.rp-rank button span:last-child{text-align:right;font-weight:700;white-space:nowrap}
+.rp-rank .bar{position:relative;height:10px}
+.rp-rank .bar i{position:absolute;top:0;height:10px;border-radius:3px}
+.rp-rank .bar .z{position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:#D1D6DB}
+.rp-src{margin:10px 0 0;font-size:12.5px;line-height:1.6;color:var(--sub3)}
+.rpanel:not(.open) .rp-more,.rpanel:not(.open) .rp-kv,.rpanel:not(.open) .grab{display:none}
+.rpanel:not(.open) .rp-past{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:6px}
+.rpanel:not(.open) .rp-gu{margin-top:6px;padding-top:6px}
+.rpanel:not(.open){padding-top:8px}
+@media(min-width:900px){.rpanel{top:var(--mt);bottom:0;right:auto;width:380px;max-height:none;border-radius:0;box-shadow:2px 0 10px rgba(0,0,0,.08);border-right:1px solid var(--line);padding:10px 16px 16px}.rpanel .grab,.rp-hd .tog{display:none}}
+/* 지역 분석 구 동그라미 */
+.jm-b.rg{transform:translate(-50%,-50%);border-radius:50%;background:#A7B0BA;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.2;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25);text-align:center}
+.jm-b.rg.s1{width:60px;height:60px}.jm-b.rg.s2{width:68px;height:68px}.jm-b.rg.s3{width:76px;height:76px}
+.jm-b.rg b{font-size:11.5px;font-weight:800}
+.jm-b.rg span{font-size:13px;font-weight:800}
+.jm-b.rg small{font-size:10.5px;opacity:.95}
+.jm-b.rg.up{background:#E5484D}.jm-b.rg.dn{background:#2F6BFF}.jm-b.rg.fl{background:#6B7684}.jm-b.rg.fw{background:#8B95A1}.jm-b.rg.sq{background:#6D4AFF}
+.jm-b.rg small{white-space:nowrap}
+.jm-b.rg.sel{outline:3px solid rgba(25,31,40,.85);outline-offset:1px}
+.legend i.dot,.legend .scl i.dot{width:11px;height:11px;border-radius:50%}
+.rp-hd .persel{max-width:none;flex:none}
+.mwrap.rp-open .mside,.mwrap.rp-open .legend{display:none}
+@media(max-width:599px){.rp-per{display:none}.rp-hd .ttl{visibility:hidden}.jm-b.rg.s1{width:52px;height:52px}.jm-b.rg.s2{width:58px;height:58px}.jm-b.rg.s3{width:64px;height:64px}.jm-b.rg b{font-size:10.5px}.jm-b.rg span{font-size:12px}.jm-b.rg small{font-size:9.5px}}
+@media(min-width:600px){.rp-hd .persel{display:none}}
 /* 지도 위 말풍선 */
 .jm-pin{background:none;border:0}
 .jm-n{position:relative;width:0;height:0}
@@ -197,17 +258,18 @@ body.has-cmp .legend{transform:translateY(-62px)}
   <div class="mstat" id="mstat">지도를 준비하고 있어요…</div>
   <div class="cmpbar" id="cmpbar" hidden></div>
   <section class="sheet" id="sheet" hidden aria-live="polite"></section>
+  <section class="rpanel" id="rpanel" hidden aria-label="지역 분석"></section>
 </div>
 <script>
 (function(){
 'use strict';
-const C = window.JDJ_MAPC, M = window.JDJ_MINE, E = window.JDJ_MAPE, PL = window.JDJ_PLAIN, NAR = window.JDJ_NAR;
+const C = window.JDJ_MAPC, M = window.JDJ_MINE, E = window.JDJ_MAPE, PL = window.JDJ_PLAIN, NAR = window.JDJ_NAR, RC = window.JDJ_REGC;
 const DATA = '/jangdaejang-data/data/';
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const J = (u, o) => fetch(u, Object.assign({cache:'no-cache'}, o || {})).then(r => r.ok ? r.json() : null).catch(() => null);
 const Q = new URLSearchParams(location.search);
-const S = { mode: ['price','fv','jr'].includes(Q.get('m')) ? Q.get('m') : 'price', size: ['s','m','l'].includes(Q.get('sz')) ? Q.get('sz') : '',
+const S = { mode: ['price','fv','jr','reg'].includes(Q.get('m')) ? Q.get('m') : 'price', size: ['s','m','l'].includes(Q.get('sz')) ? Q.get('sz') : '',
   price: C.PRICES.some(p => p.id && p.id === Q.get('pr')) ? Q.get('pr') : '', dev: Q.get('ly') === 'dev' || Q.get('ly') === 'all', bun: Q.get('ly') === 'bun' || Q.get('ly') === 'all' };
 let IX = null, GEO = null, MH = null, MREG = false, MAP = null, SEL = null, MOVED = false;
 const SD = {};                       // 시·도 id → {st:'wait'|'ok'|'err', list, byKey}
@@ -222,6 +284,8 @@ const sggName = code => sggOf(code).name || '';
 /* ---------- 위쪽 조작 칸 ---------- */
 function drawControls(){
   $('mode').innerHTML = C.MODES.map(m => `<button type="button" data-m="${m.id}" class="${S.mode === m.id ? 'on' : ''}" aria-pressed="${S.mode === m.id}">${m.t}</button>`).join('');
+  document.body.classList.toggle('reg', S.mode === 'reg');
+  if (S.mode === 'reg') { $('fil').innerHTML = regChips(); return; }
   $('fil').innerHTML = C.SIZES.map(z => `<button type="button" class="chip${S.size === z.id ? ' on' : ''}" data-sz="${z.id}" aria-pressed="${S.size === z.id}"${z.d ? ` title="${z.d}"` : ''}>${z.t}</button>`).join('')
     + `<select class="chip${S.price ? ' on' : ''}" id="fPrice" aria-label="가격대">${C.PRICES.map(p => `<option value="${p.id}"${S.price === p.id ? ' selected' : ''}>${p.t}</option>`).join('')}</select>`
     + `<button type="button" class="chip lay${S.dev ? ' on' : ''}" data-ly="dev" aria-pressed="${S.dev}">개발사업</button>`
@@ -231,15 +295,23 @@ function drawControls(){
 $('mode').addEventListener('click', e => { const b = e.target.closest('button[data-m]'); if (!b) return; S.mode = b.dataset.m; after(); });
 $('fil').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.ri) { REG.ind = b.dataset.ri; after(); return; }
   if (b.dataset.sz != null) S.size = b.dataset.sz;
   else if (b.dataset.ly) { S[b.dataset.ly] = !S[b.dataset.ly]; if (S[b.dataset.ly]) loadLayer(b.dataset.ly); }
   after();
 });
-function after(){ drawControls(); LASTLV = ''; legend(); render(); if (SEL && SEL.d) openCard(SEL.d, SEL.band, true); if (window.jdjStat) jdjStat('feature_use', {feature:'map_filter'}); }
+function after(){
+  if (S.mode === 'reg' && !$('sheet').hidden) closeSheet();
+  drawControls(); LASTLV = ''; regPanel(); legend(); render();
+  if (S.mode !== 'reg' && SEL && SEL.d) openCard(SEL.d, SEL.band, true);
+  if (window.jdjStat) jdjStat('feature_use', {feature: S.mode === 'reg' ? 'map_region' : 'map_filter'});
+}
 
 let LEGOPEN = false, LASTLV = '';
 function legend(){
   const el = $('legend'), lv = MAP && IX ? C.level(MAP.zoom()) : '';
+  if (S.mode === 'reg') { el.innerHTML = lv && lv !== 'sido' ? regLegend() : ''; el.onclick = e => { if (e.target.closest('#rlgb') || (RLEG && innerWidth < 900)) { RLEG = !RLEG; legend(); render(); } }; return; }
+  el.onclick = null;
   if (lv !== 'danji') { el.innerHTML = ''; return; }
   const scale = `<span class="scl">${S.mode === 'fv' ? '' : '배지 = '}미래가치 점수 낮음 <i class="t1"></i><i class="t2"></i><i class="t3"></i><i class="t4"></i><i class="t5"></i> 높음 ⓘ</span>`;
   el.innerHTML = `<button type="button" class="lgb" aria-expanded="${LEGOPEN}">${scale}</button>` + (LEGOPEN ? C.TONES.map(t => `<span><i class="${t[0]}"></i>${t[2]} · ${t[1]}</span>`).join('') + '<span class="sm">앞으로 2년, 같은 시·도 아파트와 비교한 점수(100점 만점)</span>' : '');
@@ -311,6 +383,7 @@ function render(){
   let showName = false;
   saveUrl(z);
   let msg = '';
+  if (S.mode === 'reg') return renderReg(z, lv, bb, next);
   if (lv === 'sido') {
     for (const s of IX.sido) {
       const g = GEO && GEO.sido[s.id]; if (!g) continue;
@@ -473,6 +546,260 @@ function openGuCard(code, gs){
   if (window.jdjStat && EV !== null) jdjStat('feature_use', {feature:'map_gu_card'});
 }
 
+/* ---------- 지역 분석: 구별 지표(가격 변화·거래량·입주 예정·미분양·전세가율·외지인 매입·정비사업) ----------
+   자료: region/sNN.json(엔진 region_pulse.py, 공개 자료 요약) + index.json + evidence.json(과거 구 사례). 계산은 assets/region-core.js */
+const REG = { ind: RC.IND.some(i => i.id === Q.get('ri')) ? Q.get('ri') : 'price', per: RC.PERIODS.some(p => p.id === Q.get('rp')) ? Q.get('rp') : '1y',
+  freq: Q.get('rf') === 'w' ? 'w' : 'm', sd: Q.get('rs') || '', gu: Q.get('rg') || '', open: false };
+const REGD = {};                     // 시·도 id → {st, d}
+const ymKo = v => v ? `${String(v).slice(0, 4)}년 ${+String(v).slice(4, 6)}월` : '';
+const sumc = a => (a || []).reduce((s, x) => s + (x > 0 ? x : 0), 0);
+function regLoad(ids){
+  let w = 0;
+  for (const id of ids) {
+    if (REGD[id]) { if (REGD[id].st === 'wait') w++; continue; }
+    REGD[id] = { st: 'wait' }; w++;
+    J(DATA + 'region/' + id + '.json').then(d => { REGD[id] = { st: d ? 'ok' : 'err', d }; if (S.mode !== 'reg') return; if (id === REG.sd) { drawControls(); regPanel(); } render(); });
+  }
+  return w;
+}
+function regEV(){ if (EV === null && !EVload) EVload = J(DATA + 'evidence.json').then(j => { EV = j || false; if (S.mode === 'reg') regPanel(); }); }
+function regInds(){ const R = REGD[REG.sd] && REGD[REG.sd].d; return RC.IND.filter(i => R ? RC.has(i.id, R, IX) : ['price', 'vol', 'jr'].includes(i.id)); }
+function regChips(){
+  const L = regInds(), ld = REGD[REG.sd] && REGD[REG.sd].st !== 'wait';
+  if (!L.some(i => i.id === REG.ind)) { if (ld) REG.ind = 'price'; else L.push(RC.IND.find(i => i.id === REG.ind)); }   // 자료를 받기 전엔 주소의 지표를 그대로 둠
+  return L.map(i => `<button type="button" class="chip${REG.ind === i.id ? ' on' : ''}" data-ri="${i.id}" aria-pressed="${REG.ind === i.id}" title="${esc(i.d)}">${i.t}</button>`).join('');
+}
+const regOpt = () => ({ period: REG.per, freq: REG.freq });
+/** 시·도 안 구 목록 [{code, name, x(index.json), g(region), st}] */
+function regRows(sd, R){
+  const out = [];
+  for (const code in IX.sgg) { const x = IX.sgg[code]; if (x.sido !== sd.name) continue; const g = (R && R.gu && R.gu[code]) || {}; out.push({ code, name: x.name, x, g, st: RC.stat(REG.ind, g, x, regOpt()) }); }
+  return out;
+}
+const DIV = { price: 1, vol: 1 };
+let RLEG = innerWidth >= 900;
+function regLegend(){
+  if (!RLEG) return `<button type="button" class="lgb" id="rlgb" aria-expanded="false">${DIV[REG.ind] ? `<span class="scl"><i class="dot" style="background:${RC.COL.up}"></i>오름 <i class="dot" style="background:${RC.COL.dn}"></i>내림 <i class="dot" style="background:${RC.COL.flat}"></i>보합${REG.ind === 'price' && REG.freq !== 'w' ? ` <i class="dot" style="background:#8B95A1"></i>거래 적음` : ''} ⓘ</span>` : '<span class="scl">크기 = 값 ⓘ</span>'}</button>`;
+  return regLegendFull();
+}
+function regLegendFull(){
+  if (DIV[REG.ind]) return `<span><i class="dot" style="background:${RC.COL.up}"></i>올랐어요 <i class="dot" style="background:${RC.COL.dn}"></i>내렸어요 <i class="dot" style="background:${RC.COL.flat}"></i>보합</span>`
+    + (REG.ind === 'price' && REG.freq !== 'w' ? `<span><i class="dot" style="background:#8B95A1"></i>거래 적음(최근 3개월 ${RC.FEW}건 미만)</span>` : '') + '<span class="sm">동그라미가 클수록 많이 변했어요' + (REG.ind === 'price' ? ' · 작은 글씨는 평당가' : '') + '</span>';
+  return '<span class="sm">동그라미가 클수록 값이 커요</span>';
+}
+const toneCls = t => ({ up: 'up', dn: 'dn', flat: 'fl', few: 'fw', seq: 'sq', seq0: 'z', na: 'z' })[t] || 'z';
+
+function renderReg(z, lv, bb, next){
+  const gl = [];
+  if (lv !== LASTLV) { LASTLV = lv; legend(); }
+  if (lv === 'sido') {
+    for (const s of IX.sido) { const g = GEO && GEO.sido[s.id]; if (!g) continue;
+      gl.push({ k: 'S' + s.id, lat: g.c[1], lng: g.c[0], cls: 'gp sd', name: s.short, v: '', p: (s.units || 0) * (s.id === 's00' ? 100 : 1),
+        tap: () => { REG.sd = s.id; REG.gu = ''; drawControls(); regPanel(); MAP.setView(g.c[1], g.c[0], C.LV.sido + 2); } }); }
+    status('시·도를 누르면 구별 지역 분석이 보여요.');
+    const W = walls();
+    for (const o of C.settle(gl.map(o => { const q = MAP.project(o.lat, o.lng); o.x = q.x; o.y = q.y; o.box = gpBox(o); return o; }), W, 3))
+      pin(next, o.k, { lat: o.lat, lng: o.lng, cls: o.cls, z: 500, tap: o.tap, html: `<b>${esc(o.name)}</b>` });
+  } else {
+    const ids = viewIds(bb), wait = regLoad(ids), items = [];
+    for (const id of ids) {
+      const R = REGD[id]; if (!R || R.st !== 'ok') continue;
+      const sd = IX.sido.find(s => s.id === id); if (!sd) continue;
+      const rows = regRows(sd, R.d), max = Math.max(0, ...rows.map(r => Math.abs(r.st.v || 0)));
+      for (const r of rows) {
+        const c = GEO && GEO.sgg[r.code]; if (!c || !C.inBox(bb, c[1], c[0], 0.05)) continue;
+        const q = MAP.project(c[1], c[0]), sz = RC.size(r.st.v, max), sel = REG.gu === r.code;
+        items.push({ r, c, sid: id, sz, sel, p: (sel ? 1e7 : 0) + sumc(r.x.c), box: C.circleBox(q.x, q.y, (innerWidth < 600 ? [0, 52, 58, 64] : [0, 60, 68, 76])[sz] + 6) });
+      }
+    }
+    const err = ids.some(id => REGD[id] && REGD[id].st === 'err');
+    status(wait ? '지역 자료를 불러오는 중이에요…' : err && !items.length ? '지역 자료를 불러오지 못했어요. 잠시 뒤 지도를 다시 움직여 주세요.' : '');
+    const W = walls();
+    for (const it of C.settle(items, W, 2)) {
+      const { r, c } = it, st = r.st;
+      const I = REG.ind, main = I === 'sup' ? RC.n0(st.v || 0) : st.main;
+      const sub = st.tone === 'few' ? '거래 적음' : I === 'price' ? st.sub.replace(/^평당 /, '') : I === 'vol' ? (st.y1 != null && st.v != null ? RC.n0(st.y1) + '건' : '') : I === 'sup' ? '세대' : I === 'uns' ? st.sub.replace(/^1년 전 /, '전년 ') : '';
+      pin(next, 'R' + r.code, { lat: c[1], lng: c[0], z: 700, cls: `rg s${it.sz} ${toneCls(st.tone)}${it.sel ? ' sel' : ''}`,
+        html: `<b>${esc(C.shortGu(r.name))}</b><span>${esc(main || '자료 없음')}</span>${sub && main ? `<small>${esc(sub)}</small>` : ''}`,
+        tap: () => { REG.sd = it.sid; REG.gu = r.code; drawControls(); regPanel(true); render(); if (window.jdjStat) jdjStat('feature_use', {feature:'map_region_gu'}); } });
+    }
+  }
+  if (ME) next.set('ME', { lat: ME.lat, lng: ME.lng, cls: 'me', html: '', sig: 'me' + ME.lat + ME.lng, z: 1000, tap: () => {} });
+  put(next);
+}
+
+/* 패널 */
+function regPanel(focus){
+  const el = $('rpanel');
+  if (S.mode !== 'reg' || !IX) { $('mwrap').classList.remove('rp-open'); if (!el.hidden) { el.hidden = true; el.innerHTML = ''; syncPanel(); } return; }
+  if (!REG.sd || !IX.sido.some(s => s.id === REG.sd)) REG.sd = (MAP && GEO && centerSido()) || 's00';
+  regLoad([REG.sd]); regEV();
+  const sd = IX.sido.find(s => s.id === REG.sd), RS = REGD[REG.sd] || {}, R = RS.d || null;
+  const ind = RC.IND.find(i => i.id === REG.ind) || RC.IND[0], wide = innerWidth >= 900;
+  const rows = regRows(sd, R);
+  if (!rows.some(r => r.code === REG.gu)) REG.gu = (rows.slice().sort((a, b) => sumc(b.x.c) - sumc(a.x.c))[0] || {}).code || '';
+  const cur = rows.find(r => r.code === REG.gu);
+  const wk = RC.hasWeekly(R), chartInd = ['price', 'jr'].includes(ind.id);
+  if (REG.freq === 'w' && !wk) REG.freq = 'm';
+  const per = chartInd ? `<div class="rp-per"><div class="seg" role="group" aria-label="기간">${RC.PERIODS.filter(p => REG.freq !== 'w' || p.m && p.m <= 36).map(p => `<button type="button" data-per="${p.id}" class="${REG.per === p.id ? 'on' : ''}" aria-pressed="${REG.per === p.id}">${p.t}</button>`).join('')}</div>`
+    + (wk && ind.id === 'price' ? `<div class="seg" role="group" aria-label="월간·주간"><button type="button" data-fq="m" class="${REG.freq === 'm' ? 'on' : ''}">월간</button><button type="button" data-fq="w" class="${REG.freq === 'w' ? 'on' : ''}">주간</button></div>` : '') + '</div>' : '';
+  const pl = RC.pastLine(ind.id, EV || null, sd.id, sd.short, R && R.used);
+  const tag = pl.used === true ? '<b class="tag use">미래가치 점수에 넣는 지표</b>' : pl.used === false ? '<b class="tag ref">참고 지표(미래가치 점수엔 안 씀)</b>' : '';
+  const pastTxt = pl.past ? `${esc(pl.past)} <small>(${esc(pl.span)} ${esc(sd.short)} 사례)</small>` : EV === null ? '과거 사례를 불러오고 있어요…' : '이 지표가 과거 집값과 맞았는지는 아직 정리된 자료가 없어요.';
+  const loading = RS.st === 'wait' ? '<p class="rp-src">지역 자료를 불러오고 있어요…</p>' : RS.st === 'err' ? '<p class="rp-src">지역 자료를 불러오지 못했어요. 가격 변화·거래량·전세가율만 보여요.</p>' : '';
+  el.innerHTML = `<div class="grab"></div>
+    <div class="rp-hd"><select id="rpSd" aria-label="시·도">${IX.sido.map(s => `<option value="${s.id}"${s.id === sd.id ? ' selected' : ''}>${esc(s.short)}</option>`).join('')}</select>
+      ${chartInd ? `<select id="rpPer" class="persel" aria-label="기간">${RC.PERIODS.filter(p => REG.freq !== 'w' || p.m && p.m <= 36).map(p => `<option value="${p.id}"${REG.per === p.id ? ' selected' : ''}>${p.t}</option>`).join('')}</select>` : ''}
+      <span class="ttl">${esc(ind.t)}${chartInd && ind.id === 'price' ? ' · ' + esc((RC.PERIODS.find(p => p.id === REG.per) || {}).t || '') : ''}</span>
+      <button type="button" class="tog" id="rpTog" aria-expanded="${REG.open}">${REG.open ? '접기' : '펼치기'}</button></div>
+    ${per}
+    <p class="rp-past">${tag}${pastTxt}</p>
+    ${loading}
+    ${cur ? regGu(cur, sd, R, ind) : ''}
+    <div class="rp-more">${regRank(rows, ind)}<p class="rp-src">${regSrc(ind, R, cur)}</p></div>`;
+  el.hidden = false; el.classList.toggle('open', REG.open || wide); $('mwrap').classList.toggle('rp-open', REG.open && !wide);
+  $('rpSd').onchange = e => { REG.sd = e.target.value; REG.gu = ''; const g = GEO && GEO.sido[REG.sd]; drawControls(); regPanel(); if (g) MAP.setView(g.c[1], g.c[0], C.LV.sido + 2); };
+  $('rpTog').onclick = () => { REG.open = !REG.open; regPanel(); };
+  if ($('rpPer')) $('rpPer').onchange = e => { REG.per = e.target.value; regPanel(); render(); };
+  el.querySelectorAll('[data-per]').forEach(b => b.onclick = () => { REG.per = b.dataset.per; regPanel(); render(); });
+  el.querySelectorAll('[data-fq]').forEach(b => b.onclick = () => { REG.freq = b.dataset.fq; if (REG.freq === 'w' && !['1y', '3y'].includes(REG.per)) REG.per = '1y'; regPanel(); legend(); render(); });
+  el.querySelectorAll('[data-gu]').forEach(b => b.onclick = () => { REG.gu = b.dataset.gu; regPanel(true); render(); const c = GEO && GEO.sgg[REG.gu]; if (c && MAP && !C.inBox(MAP.bounds(), c[1], c[0], -0.1)) MAP.setView(c[1], c[0]); });
+  if (cur && (REG.open || wide)) regCharts(cur, ind);
+  if (focus && (REG.open || wide)) { const h = el.querySelector('.rp-gu'); if (h) el.scrollTop = Math.max(0, h.offsetTop - 8); }
+  syncPanel();
+}
+const sgnB = v => `<em style="color:${v >= 0.5 ? '#D62F35' : v <= -0.5 ? '#1F56E0' : 'var(--sub2)'}">${esc(RC.sgn(v))}</em>`;
+function regGu(r, sd, R, ind){
+  const g = r.g, x = r.x, st = r.st, nm = esc(r.name);
+  let h = '', kv = '', more = '';
+  if (ind.id === 'price') {
+    const p = RC.points(g.s), last = p.length ? p[p.length - 1] : null, jp = RC.points(g.j), jl = jp.length ? jp[jp.length - 1] : null;
+    h = `${nm} ${st.v != null ? sgnB(st.v) : ''} <small>${last ? '평당 ' + esc(RC.ppy(last.v)) + ' · ' + esc(ymKo(last.ym)) : ''}</small>`;
+    const ch = [1, 3, 12].map(m => [m, (g.ix && g.ix.ms ? RC.change(g.ix.ms, m) : null) || RC.change(g.s, m)]).filter(a => a[1]);
+    kv = ch.map(([m, c]) => `<span>${m === 12 ? '1년' : m + '개월'} <b>${esc(RC.sgn(c.pct))}</b></span>`).join('') + (jl ? `<span>전세 평당 <b>${esc(RC.ppy(jl.v))}</b></span>` : '');
+    const n3 = sumc((x.c || []).slice(-3));
+    if (st.tone === 'few') more = `<p class="rp-gpast">최근 3개월 거래가 ${n3}건뿐이라 중간값이 몇 건에 크게 흔들릴 수 있어요.</p>`;
+  } else if (ind.id === 'jr') {
+    const sr = (IX.sido.find(s => s.id === sd.id) || {}).r || {};
+    h = `${nm} <em>${esc(st.main || '자료 없음')}</em>`;
+    kv = sr.jr != null ? `<span>${esc(sd.short)} 전체 <b>${Math.round(sr.jr)}%</b></span>` : '';
+  } else if (ind.id === 'vol') {
+    const v = RC.vol(x.c);
+    h = `${nm} ${v && v.pct != null ? sgnB(v.pct) : ''}`;
+    kv = v ? `<span>최근 1년 <b>${RC.n0(v.y1)}건</b></span>${v.y0 != null ? `<span>그 전 1년 <b>${RC.n0(v.y0)}건</b></span>` : ''}` : '';
+  } else if (ind.id === 'sup') {
+    const s = g.sup || [0, 0, 0, 0];
+    h = `${nm} <em>${RC.n0(s[0] + s[1] + s[2])}세대</em> <small>3년 안 입주 예정</small>`;
+    kv = `<span>1년 안 <b>${RC.n0(s[0])}</b></span><span>1~2년 <b>${RC.n0(s[1])}</b></span><span>2~3년 <b>${RC.n0(s[2])}</b></span><span>단지 <b>${s[3]}곳</b></span>`;
+  } else if (ind.id === 'uns') {
+    h = `${nm} <em>${esc(st.main || '자료 없음')}</em>`; kv = st.sub ? `<span>${esc(st.sub)}</span>` : '';
+    if (st.grp) more = `<p class="rp-gpast">이 값은 같은 시의 구 ${st.grp}곳을 합친 시 전체 미분양이에요.</p>`;
+  } else if (ind.id === 'out') {
+    h = `${nm} <em>${esc(st.main || '자료 없음')}</em> <small>최근 6개월</small>`; kv = st.sub ? `<span>${esc(st.sub)}</span>` : '';
+  } else if (ind.id === 'dev') {
+    const d = g.dev || {};
+    h = `${nm} <em>${esc(st.main)}</em> <small>진행 중인 정비구역</small>`;
+    more = `<div class="rp-badges">${['재개발', '재건축', '주거환경개선'].filter(k => d[k]).map(k => `<span>${k} ${d[k]}</span>`).join('') || '<span>구역 없음</span>'}</div>`;
+  }
+  const gp = EV ? RC.guPast(ind.id, EV, sd.id, sd.short, r.name, x.r && x.r.eb) : '';
+  return `<section class="rp-gu"><h3>${h}</h3>${kv ? `<div class="rp-kv">${kv}</div>` : ''}${more}
+    <div class="rp-more"><div class="rp-chart" id="rpChart"></div><div class="rp-chart" id="rpBars"></div>${gp ? `<p class="rp-gpast">${esc(gp)}</p>` : ''}</div></section>`;
+}
+function regRank(rows, ind){
+  const L = RC.rank(rows), max = Math.max(0, ...L.map(r => Math.abs(r.st.v || 0))), dv = !!DIV[ind.id];
+  const head = { price: '구별 가격 변화', vol: '구별 거래량 증감(최근 1년)', sup: '구별 입주 예정(3년 안)', uns: '구별 미분양', jr: '구별 전세가율', out: '구별 외지인 매입 비율', dev: '구별 정비구역 수' }[ind.id];
+  return `<div class="rp-rank"><h4>${head}</h4>` + L.map(r => {
+    const v = r.st.v, w = v == null || !max ? 0 : Math.abs(v) / max * (dv ? 50 : 100);
+    const col = r.st.tone === 'few' ? '#B0B8C1' : dv ? (v >= 0 ? RC.COL.up : RC.COL.dn) : RC.COL.seq;
+    const bar = v == null ? '' : dv ? `<i style="${v >= 0 ? 'left:50%' : 'right:50%'};width:${w.toFixed(1)}%;background:${col}"></i><span class="z"></span>` : `<i style="left:0;width:${w.toFixed(1)}%;background:${col}"></i>`;
+    return `<button type="button" data-gu="${r.code}" class="${r.code === REG.gu ? 'on' : ''}" aria-pressed="${r.code === REG.gu}"><span>${esc(r.name)}</span><span class="bar">${bar}</span><span>${esc(r.st.main || '—')}${r.st.tone === 'few' ? '*' : ''}</span></button>`;
+  }).join('') + (ind.id === 'price' && L.some(r => r.st.tone === 'few') ? `<p class="rp-src">* 거래 적음(최근 3개월 ${RC.FEW}건 미만)</p>` : '') + '</div>';
+}
+function regSrc(ind, R, cur){
+  const src = (R && R.src) || {}, to = IX.dataTo || (src.price && src.price.to);
+  const ixn = cur && cur.st && cur.st.src === 'idx' ? ((src.ix || {})[REG.freq === 'w' ? 'ws' : 'ms'] || {}) : null;
+  if (ind.id === 'price') return ixn ? `출처: 한국부동산원 ${REG.freq === 'w' ? '주간' : '월간'} 아파트 매매가격지수${ixn.desc ? '(' + esc(ixn.desc) + ' 기준)' : ''}. 평당가는 국토교통부 실거래가(${esc(ymKo(to))}까지).`
+    : `출처: 국토교통부 아파트 매매·전월세 실거래가(${esc(ymKo(to))}까지, 직거래·해제 제외). 평당가 = 전용 3.3㎡당 값, 구 안 모든 거래의 3개월 중간값이에요. 증감은 고른 기간 처음 달과 마지막 달 평당가를 비교했어요.`;
+  if (ind.id === 'vol') return `출처: 국토교통부 아파트 매매 실거래가(${esc(ymKo(to))}까지 신고분). 최근 12개월 거래 건수를 그 전 12개월과 비교했어요.`;
+  if (ind.id === 'jr') return `출처: 국토교통부 아파트 매매·전월세 실거래가(${esc(ymKo(to))}까지). 전세가율 = 구 전체 전셋값 ÷ 집값이에요.`;
+  if (ind.id === 'sup') return `출처: ${esc((src.sup || {}).nm || '청약홈 분양 모집공고')}${(src.sup || {}).at ? '(' + esc(src.sup.at) + ' 확인)' : ''}. 공고의 입주예정월·공급 세대를 더했어요. 재건축·재개발 조합원 몫은 공고에 없어 빠져요.`;
+  if (ind.id === 'uns') return `출처: ${esc((src.uns || {}).nm || '')}${(src.uns || {}).ym ? '(' + esc(ymKo(src.uns.ym)) + ' 기준)' : ''}.`;
+  if (ind.id === 'out') return `출처: ${esc((src.out || {}).nm || '')}${(src.out || {}).ym ? '(' + esc(ymKo(src.out.ym)) + '까지 6개월)' : ''}. 외지인 = 그 시·군·구 밖에 사는 매수자예요.`;
+  if (ind.id === 'dev') return `출처: ${esc((src.dev || {}).nm || '')}. 지금 진행 중인 재개발·재건축·주거환경개선 구역 수예요(모아타운·리모델링은 공식 통합 자료가 없어 빠져요).`;
+  return '';
+}
+
+/* 그래프 (선: 매매·전세 평당가, 막대: 기간별 증감률) */
+function regCharts(r, ind){
+  const box = $('rpChart'), bx = $('rpBars'); if (!box || !bx) return;
+  const P = RC.PERIODS.find(p => p.id === REG.per) || RC.PERIODS[0];
+  if (ind.id === 'price' || ind.id === 'jr') {
+    const s = RC.slice(r.g.s, P.m), j = RC.slice(r.g.j, P.m);
+    const from = s.length ? s[0].ym : '';
+    lineChart(box, [{ nm: '매매', col: RC.COL.sale, pts: s }, { nm: '전세', col: RC.COL.jeon, pts: j.filter(p => !from || p.ym >= from) }], v => '평당 ' + RC.ppy(v));
+    barChart(bx, RC.bars(s, P.m).map(b => ({ lab: b.lab, v: b.pct, txt: RC.sgn(b.pct), col: b.pct >= 0 ? RC.COL.up : RC.COL.dn })), true, P.m && P.m <= 12 ? '매매 평당가 월별 증감' : '매매 평당가 해마다 증감(그해 마지막 달 기준)');
+  } else if (ind.id === 'vol') {
+    box.innerHTML = '';
+    barChart(bx, (r.x.c || []).map((v, i) => ({ lab: (+String(IX.months[i]).slice(4)) === 1 ? String(IX.months[i]).slice(2, 4) + '년' : '', v, txt: `${ymKo(IX.months[i])} ${v}건`, col: RC.COL.seq })), false, '월별 매매 건수(최근 3년)');
+  } else if (ind.id === 'sup') {
+    const s = r.g.sup || [0, 0, 0];
+    box.innerHTML = '';
+    barChart(bx, [['1년 안', s[0]], ['1~2년', s[1]], ['2~3년', s[2]]].map(([l, v]) => ({ lab: l, v, txt: `${l} ${RC.n0(v)}세대`, col: RC.COL.seq, show: true })), false, '입주 예정 세대');
+  } else { box.innerHTML = ''; bx.innerHTML = ''; }
+}
+const SVGNS = 'http://www.w3.org/2000/svg';
+function lineChart(el, series, fmt){
+  series = series.filter(s => s.pts.length >= 2);
+  const all = series.flatMap(s => s.pts);
+  if (!all.length) { el.innerHTML = '<p class="rp-gpast">이 기간은 그래프로 볼 자료가 없어요.</p>'; return; }
+  const Wd = Math.max(260, el.clientWidth || 320), H = 150, L = 50, RR = 10, T = 10, B = 20;
+  const yms = [...new Set(all.map(p => p.ym))].sort(), x0 = yms[0], span = RC.ymDiff(x0, yms[yms.length - 1]) || 1;
+  let lo = Math.min(...all.map(p => p.v)), hi = Math.max(...all.map(p => p.v)); const pad = (hi - lo) * 0.08 || hi * 0.05; lo -= pad; hi += pad;
+  const tk = RC.ticks(lo, hi, 3).filter(v => v >= lo && v <= hi);
+  const X = ym => L + (Wd - L - RR) * RC.ymDiff(x0, ym) / span, Y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
+  let g = tk.map(v => `<line x1="${L}" x2="${Wd - RR}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="#EEF0F2"/><text x="${L - 6}" y="${(Y(v) + 4).toFixed(1)}" text-anchor="end" font-size="11" fill="#6B7684">${RC.ppy(v)}</text>`).join('');
+  g += `<text x="${L}" y="${H - 4}" font-size="11" fill="#6B7684">${RC.ymDot(x0)}</text><text x="${Wd - RR}" y="${H - 4}" text-anchor="end" font-size="11" fill="#6B7684">${RC.ymDot(yms[yms.length - 1])}</text>`;
+  for (const s of series) {
+    let d = '', prev = null;
+    for (const p of s.pts) { d += (prev && RC.ymDiff(prev, p.ym) === 1 ? 'L' : 'M') + X(p.ym).toFixed(1) + ' ' + Y(p.v).toFixed(1); prev = p.ym; }
+    g += `<path d="${d}" fill="none" stroke="${s.col}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  }
+  g += `<line class="vl" y1="${T}" y2="${H - B}" stroke="#8B95A1" stroke-width="1" visibility="hidden"/>` + series.map((s, i) => `<circle class="pt${i}" r="4" fill="${s.col}" stroke="#fff" stroke-width="2" visibility="hidden"/>`).join('');
+  el.innerHTML = `<div class="lg">${series.map(s => `<span><i style="background:${s.col}"></i>${s.nm} ${esc(fmt(s.pts[s.pts.length - 1].v))}</span>`).join('')}</div>`
+    + `<svg viewBox="0 0 ${Wd} ${H}" role="img" aria-label="${esc(series.map(s => s.nm).join('·'))} 평당가 추이">${g}<rect x="${L}" y="0" width="${Wd - L - RR}" height="${H}" fill="transparent"/></svg><div class="tip" hidden></div>`;
+  const svg = el.querySelector('svg'), tip = el.querySelector('.tip'), vl = svg.querySelector('.vl');
+  const show = e => {
+    const r = svg.getBoundingClientRect(), x = (e.clientX - r.left) * Wd / r.width;
+    const ym = RC.ymAdd(x0, Math.max(0, Math.min(span, Math.round((x - L) / (Wd - L - RR) * span))));
+    const vals = series.map(s => s.pts.find(p => p.ym === ym));
+    if (!vals.some(Boolean)) return;
+    vl.setAttribute('x1', X(ym)); vl.setAttribute('x2', X(ym)); vl.setAttribute('visibility', 'visible');
+    vals.forEach((p, i) => { const c = svg.querySelector('.pt' + i); if (p) { c.setAttribute('cx', X(p.ym)); c.setAttribute('cy', Y(p.v)); c.setAttribute('visibility', 'visible'); } else c.setAttribute('visibility', 'hidden'); });
+    tip.innerHTML = `<b>${esc(ymKo(ym))}</b>` + vals.map((p, i) => p ? `<br>${series[i].nm} ${esc(fmt(p.v))}` : '').join('');
+    tip.hidden = false; tip.style.left = Math.max(60, Math.min(r.width - 60, X(ym) * r.width / Wd)) + 'px';
+  };
+  const hide = () => { tip.hidden = true; vl.setAttribute('visibility', 'hidden'); svg.querySelectorAll('circle').forEach(c => c.setAttribute('visibility', 'hidden')); };
+  svg.addEventListener('pointermove', show); svg.addEventListener('pointerdown', show); svg.addEventListener('pointerleave', hide);
+}
+function barChart(el, bars, div, title){
+  if (!bars.length) { el.innerHTML = ''; return; }
+  const Wd = Math.max(260, el.clientWidth || 320), H = 96, L = 6, RR = 6, T = 16, B = 18;
+  const vals = bars.map(b => b.v), mx = Math.max(...vals.map(Math.abs), 0.0001);
+  const lo = div ? Math.min(0, ...vals) : 0, hi = Math.max(0, ...vals), rng = (hi - lo) || 1;
+  const Y = v => T + (H - T - B) * (1 - (v - lo) / rng), bw = (Wd - L - RR) / bars.length, gap = Math.min(2, bw * 0.2);
+  let g = `<line x1="${L}" x2="${Wd - RR}" y1="${Y(0).toFixed(1)}" y2="${Y(0).toFixed(1)}" stroke="#D1D6DB"/>`;
+  bars.forEach((b, i) => {
+    const x = L + i * bw + gap / 2, y0 = Y(0), y1 = Y(b.v), h = Math.max(1, Math.abs(y1 - y0));
+    g += `<rect x="${x.toFixed(1)}" y="${Math.min(y0, y1).toFixed(1)}" width="${Math.max(1, bw - gap).toFixed(1)}" height="${h.toFixed(1)}" rx="${Math.min(3, (bw - gap) / 2).toFixed(1)}" fill="${b.col}"><title>${esc(b.txt)}</title></rect>`;
+    if (b.lab && (bars.length <= 14 || b.show || i === 0 || i === bars.length - 1 || /년$/.test(b.lab))) g += `<text x="${(x + (bw - gap) / 2).toFixed(1)}" y="${H - 4}" text-anchor="middle" font-size="10.5" fill="#6B7684">${esc(b.lab)}</text>`;
+  });
+  const lastB = bars[bars.length - 1], mxB = bars.reduce((a, b) => Math.abs(b.v) > Math.abs(a.v) ? b : a);
+  for (const b of new Set([lastB, mxB])) { const i = bars.indexOf(b), x = L + i * bw + bw / 2, y = b.v >= 0 ? Y(b.v) - 3 : Y(b.v) + 11;
+    if (bars.length <= 14 || b === lastB) g += `<text x="${Math.max(18, Math.min(Wd - 18, x)).toFixed(1)}" y="${Math.max(10, y).toFixed(1)}" text-anchor="middle" font-size="10.5" font-weight="700" fill="#3E4754">${esc(b.txt.replace(/^.* (?=[\d+−])/, ''))}</text>`; }
+  el.innerHTML = `<div class="lg">${esc(title)}</div><svg viewBox="0 0 ${Wd} ${H}" role="img" aria-label="${esc(title)}">${g}</svg>`;
+  void mx;
+}
+
 /* ---------- 하단 카드 ---------- */
 function showSheet(){
   const el = $('sheet'); el.hidden = false; el.scrollTop = 0; document.body.classList.add('has-sheet');
@@ -590,6 +917,7 @@ function saveUrl(z){
     p.set('lat', c.lat.toFixed(5)); p.set('lng', c.lng.toFixed(5)); p.set('z', String(Math.round(z)));
     S.mode !== 'price' ? p.set('m', S.mode) : p.delete('m'); S.size ? p.set('sz', S.size) : p.delete('sz'); S.price ? p.set('pr', S.price) : p.delete('pr');
     (S.dev || S.bun) ? p.set('ly', S.dev && S.bun ? 'all' : S.dev ? 'dev' : 'bun') : p.delete('ly');
+    for (const [k, v, d] of [['ri', REG.ind, 'price'], ['rp', REG.per, '1y'], ['rf', REG.freq, 'm'], ['rs', REG.sd, ''], ['rg', REG.gu, '']]) S.mode === 'reg' && v && v !== d ? p.set(k, v) : p.delete(k);
     if (SEL && SEL.d) { p.set('sd', SEL.d.sd); p.set('d', SEL.d.key); SEL.band ? p.set('b', SEL.band) : p.delete('b'); } else { p.delete('sd'); p.delete('d'); p.delete('b'); }
     history.replaceState(null, '', u);
   }, 300);
@@ -604,6 +932,16 @@ function syncTop(){
   if (MAP) { MAP.relayout(); render(); }
 }
 if (window.ResizeObserver) new ResizeObserver(syncTop).observe(document.querySelector('.mtop'));
+/* 지역 분석 칸 크기 → 지도 비키기(모바일: 아래 --mb, PC: 왼쪽 --ml) */
+let MBL = '';
+function syncPanel(){
+  const el = $('rpanel'), wide = innerWidth >= 900, on = !el.hidden;
+  const mb = on && !wide ? el.offsetHeight : 0, ml = on && wide ? el.offsetWidth : 0, k = mb + '|' + ml;
+  if (k === MBL) return; MBL = k;
+  $('mwrap').style.setProperty('--mb', mb + 'px'); $('mwrap').style.setProperty('--ml', ml + 'px');
+  if (MAP) { MAP.relayout(); render(); }
+}
+if (window.ResizeObserver) new ResizeObserver(syncPanel).observe($('rpanel'));
 
 /* ---------- 시작 ---------- */
 async function init(){
@@ -620,8 +958,9 @@ async function init(){
   MAP.onMoveStart(() => { MOVED = true; });
   MAP.onTap(() => { $('sres').innerHTML = ''; if (!$('sheet').hidden) closeSheet(); });
   addEventListener('pointerdown', () => { MOVED = false; }, true);
-  addEventListener('resize', () => { syncTop(); MAP.relayout(); render(); });
+  addEventListener('resize', () => { syncTop(); syncPanel(); MAP.relayout(); render(); });
   if (S.dev) loadLayer('dev'); if (S.bun) loadLayer('bun');
+  if (S.mode === 'reg') { regPanel(); drawControls(); }
   const qsd = Q.get('sd'), qd = Q.get('d');
   if (qsd && qd && IX.sido.some(s => s.id === qsd)) { PENDING = { sd: qsd, d: qd, b: Q.get('b') || '' }; ensure([qsd]); }
   render();

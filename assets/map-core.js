@@ -25,7 +25,7 @@
     const p = PRICES.find(x => x.id === id); if (!p || !p.id) return true;
     return man > 0 && man > p.lo && man <= p.hi;     // 경계 금액은 아래 칸(예: 정확히 9억 → 6억~9억)
   }
-  const MODES = [{ id: 'price', t: '시세' }, { id: 'fv', t: '미래가치' }, { id: 'jr', t: '전세가율' }];
+  const MODES = [{ id: 'price', t: '시세' }, { id: 'fv', t: '미래가치' }, { id: 'jr', t: '전세가율' }, { id: 'reg', t: '지역 분석' }];   // reg: 구별 지표(assets/region-core.js)
 
   /* ---------- 단지 목록 ---------- */
   /** sNN.json units + xy → 지도에 올릴 단지 [{key, sd, code, dong, apt, jibun, lat, lng, bands, n, by, hh}] (좌표 없는 단지는 뺌) */
@@ -200,7 +200,12 @@
     return BASE + 'ask/?' + q.toString();
   }
 
-  const API = { gather, declutter, settle, textW, boxSize, LV, level, kakaoToZoom, zoomToKakao, SIZES, sizeOf, PRICES, priceOk, MODES, danjiList, bandInfo, pick, groups, cluster, sidosIn, inBox,
+  /** 지역 분석 구 동그라미 자리(지도 좌표 px): 지름 d — 겹침 정리(settle)용 */
+  const circleBox = (x, y, d) => ({ l: x - d / 2, t: y - d / 2, r: x + d / 2, b: y + d / 2 });
+  /** 동그라미 안 구 이름: '수원시 장안구' → '장안구'(같은 시·도 안에서 보므로) */
+  const shortGu = n => { const t = String(n || '').split(' '); return t.length > 1 ? t[t.length - 1] : t[0]; };
+
+  const API = { circleBox, shortGu, gather, declutter, settle, textW, boxSize, LV, level, kakaoToZoom, zoomToKakao, SIZES, sizeOf, PRICES, priceOk, MODES, danjiList, bandInfo, pick, groups, cluster, sidosIn, inBox,
     eokShort, ppyText, pct, tone, TONES, mainText, groupText, mineUrl, CMP_KEY, CMP_MAX, cmpId, cmpAdd, askUrl, mean };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_MAPC = API;
