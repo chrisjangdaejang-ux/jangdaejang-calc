@@ -152,7 +152,7 @@
     }
     const xLab = sp.xLab || ((ym, short) => n > 36 ? (short ? "'" + String(ym).slice(2, 4) + '년' : String(ym).slice(0, 4) + '년') : short ? "'" + String(ym).slice(2, 4) + '.' + String(ym).slice(4, 6) : m.ymLabel(ym));
     const xl = m.xTicks(n, W - L - R, fs, x, months, (ym, short) => xLab(ym, short)).map(t => `<text x="${t.x.toFixed(1)}" y="${H - 5}" font-size="${fs}" fill="#4E5968" text-anchor="${t.a}">${t.t}</text>`).join('');
-    const over = live ? `<g class="jhv-o" style="display:none" pointer-events="none"><line x1="0" x2="0" y1="${T - 4}" y2="${s0 + SH}" stroke="#191F28" stroke-opacity=".45" stroke-width="1.2"/>${pts.map(p => `<circle r="4.6" stroke="${p.c}" stroke-width="2.2" fill="${p.c}"/>`).join('')}</g>` : '';
+    const over = live ? `<g class="jhv-o" style="display:none" pointer-events="none"><line x1="0" x2="0" y1="${T - 4}" y2="${s0 + SH}" stroke="#4E5968" stroke-opacity=".7" stroke-width="1" stroke-dasharray="3 3" shape-rendering="crispEdges"/>${pts.map(p => `<circle r="4.2" stroke="#fff" stroke-width="2" fill="${p.c}"/>`).join('')}</g>` : '';
     /* dash = 비교선(구 전체 등): 회색 점선 한 줄, 점·끝점 없음 */
     const dashP = l => { let d = '', on = false; l.a.forEach((v, i) => { if (v > 0) { d += (on ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1); on = true; } else on = false; });
       return d ? `<path d="${d}" fill="none" stroke="${l.c}" stroke-width="${l.w || 1.8}" stroke-dasharray="5 3" class="cmp"/>` : ''; };
@@ -188,7 +188,7 @@
       }
       const fl = out.rows.filter(r => r.fill).map(r => r.sk || r.k);
       if (fl.length) out.extra.push(`${fl.join('·')} 거래 없음 — 앞뒤 거래로 이은 값이에요`);
-      if (o.cnt && o.cnt.has(ym)) { const c = o.cnt.get(ym), t = c ? `이 달 ${o.cntK || '매매'} 신고 ${c}건` : `이 달 ${o.cntK || '매매'} 신고 없음 · 값은 앞 3개월 거래 기준`; out.extra.push(t); say.push(t); }
+      if (o.cnt && o.cnt.has(ym)) { const c = o.cnt.get(ym); out.cnt = c; const t = c ? `이 달 ${o.cntK || '매매'} 신고 ${c}건` : `이 달 ${o.cntK || '매매'} 신고 없음 · 값은 앞 3개월 거래 기준`; out.extra.push(t); say.push(t); }
       out.say = say.join(', ');
       return out;
     };
@@ -207,11 +207,18 @@
     return mp;
   }
   const GRAY = '#8B95A1';
-  const tipHtml = o => `<b class="h">${esc(o.head)}</b>${o.gap ? `<div class="g">갭 <b>${esc(o.gap.v)}</b> <span>(매매가의 ${o.gap.pct}%)</span></div>` : ''}`
-    + o.rows.map(r => `<div class="r${r.fill || r.none ? ' f' : ''}"><i style="background:${r.c}"></i>${esc(r.k)} <b>${esc(r.v)}</b></div>`).join('')
-    + (o.vs ? `<div class="r v">→ ${esc(o.vs.txt)}</div>` : '')
-    + (o.gap ? `<div class="r s">전세가율 <b>${o.gap.jr}%</b></div>` : '')
-    + o.extra.map(e => `<div class="x">${esc(e)}</div>`).join('');
+  /* 말풍선(호갱노노·아실처럼 작은 카드): 날짜 1줄 + [색 점 · 이름 · 값(오른쪽 정렬)] 줄들. 값 없는 달 = '거래 없음' 작게 */
+  const tv = v => String(v).replace(/억원$/, '억').replace(/만원$/, '만');
+  const tRow = (c, k, v, cls) => `<span class="k${cls ? ' ' + cls : ''}"><i${c ? ` style="background:${c}"` : ' class="o"'}></i>${esc(k)}</span><b class="${cls || ''}">${v}</b>`;
+  const tipHtml = o => {
+    const rs = o.rows.map(r => r.none ? tRow(r.c, r.sk || r.k, `<small>${/^자료 없음/.test(r.v) ? '자료 없음' : '거래 없음'}</small>`, 'f')
+      : tRow(r.c, r.sk || r.k, esc(tv(r.v)), r.fill ? 'f' : ''));
+    if (o.gap) rs.push(tRow('', '갭', esc(tv(o.gap.v))), tRow('', '갭 비율', o.gap.pct + '%'), tRow('', '전세가율', o.gap.jr + '%'));
+    if (o.cnt != null) rs.push(tRow('', '거래', o.cnt ? o.cnt + '건' : '<small>없음</small>', o.cnt ? '' : 'f'));
+    return `<div class="h">${esc(o.head)}</div><div class="t">${rs.join('')}</div>`
+      + (o.vs ? `<div class="v">${esc(o.vs.txt)}</div>` : '')
+      + (o.rows.some(r => r.fill) ? '<div class="x">약 = 거래 없는 달(앞뒤 거래로 이은 값)</div>' : '');
+  };
   const sumHtml = (o, idle) => `<b>${esc(o.head)}</b>${idle ? ' 최근' : ''} · ${o.rows.map(r => `${esc(r.sk || r.k)} ${esc(r.v)}`).join(' · ')}${o.gap ? ` · 갭 ${esc(o.gap.v)}(${o.gap.pct}%) · 전세가율 ${o.gap.jr}%` : ''}${o.vs ? ` · ${esc(o.vs.txt)}` : ''}`
     + (idle ? '<span class="hint"> — 차트를 움직이거나 눌러 보세요</span>' : '');
   /** el 에 차트를 그리고 안내선 연결. 반환: plot 결과 */
@@ -228,37 +235,42 @@
     const inr = box.querySelector('.jhv-in'), svg = inr.querySelector('svg'), g = svg.querySelector('.jhv-o'), ln = g.querySelector('line'),
       cs = [...g.querySelectorAll('circle')], tb = inr.querySelector('.jhv-tip'), sum = box.querySelector('.jhv-sum'), sr = box.querySelector('.jhv-sr'), m = M();
     let lastI = md.n - 1; while (lastI > 0 && !md.pts.some(p => p.a[lastI] > 0)) lastI--;
-    let cur = -1, pin = false, touch = null, raf = 0, want = -1, pt = 'mouse';
+    let cur = -1, pin = false, touch = null, raf = 0, want = -1, pt = 'mouse', fade = 0;
     const idle = () => { sum.innerHTML = sumHtml(tip(lastI), true); };
     const show = i => {
       i = Math.max(0, Math.min(md.n - 1, i)); if (i === cur && !tb.hidden) return; cur = i;
       const x = md.x(i).toFixed(1); g.style.display = ''; ln.setAttribute('x1', x); ln.setAttribute('x2', x);
-      cs.forEach((c, k) => { const p = md.pts[k], v = m.valAt(p.a, i);
+      cs.forEach((c, k) => { const p = md.pts[k], v = p.raw ? (p.a[i] > 0 ? { v: p.a[i], real: true } : null) : m.valAt(p.a, i);
         if (!v) { c.style.display = 'none'; return; }
-        c.style.display = ''; c.setAttribute('cx', x); c.setAttribute('cy', p.y(v.v).toFixed(1)); c.setAttribute('fill', v.real ? p.c : '#fff'); });
+        c.style.display = ''; c.setAttribute('cx', x); c.setAttribute('cy', p.y(v.v).toFixed(1)); c.setAttribute('fill', v.real ? p.c : '#fff'); c.setAttribute('stroke', v.real ? '#fff' : p.c); });
       const o = tip(i); tb.innerHTML = tipHtml(o); tb.hidden = false; sum.innerHTML = sumHtml(o);
-      /* 말풍선: 안내선 오른쪽, 넘치면 왼쪽 — 차트 밖으로 안 나가게 */
-      const rw = inr.clientWidth, sw = svg.getBoundingClientRect().width || rw, px = md.x(i) / md.W * sw, tw = tb.offsetWidth;
-      let left = px + 12; if (left + tw > rw) left = px - 12 - tw; left = Math.max(0, Math.min(rw - tw, left));
-      tb.style.left = left.toFixed(0) + 'px';
+      /* 말풍선: 커서·손가락 반대편 위 모서리(오른쪽 절반이면 왼쪽 위, 왼쪽 절반이면 오른쪽 위) — 선을 덜 가리고 차트 밖으로 안 나가게.
+         zoom(PC aplus.css 1.125)이 걸려도 clientWidth·offsetWidth·md 비율은 같은 좌표계라 그대로 맞음 */
+      const rw = inr.clientWidth, sw = svg.clientWidth || rw, k = sw / md.W, px = md.x(i) * k, tw = tb.offsetWidth,
+        pl = md.L * k + 4, pr = (md.W - md.R) * k - 4;
+      let left = px > (pl + pr) / 2 ? pl : pr - tw;
+      if (left < px && left + tw > px - 6 && left + tw <= pr) left = Math.max(0, px - 8 - tw);   // 좁은 화면에서 안내선과 겹치면 비켜 감
+      left = Math.max(0, Math.min(rw - tw, left));
+      tb.style.left = left.toFixed(0) + 'px'; tb.style.top = Math.max(0, md.top * k - 6).toFixed(0) + 'px';
       box._say = o.say;
     };
-    const hide = () => { cur = -1; pin = false; box.classList.remove('pin'); g.style.display = 'none'; tb.hidden = true; idle(); };
+    const hide = () => { clearTimeout(fade); fade = 0; cur = -1; pin = false; box.classList.remove('pin'); g.style.display = 'none'; tb.hidden = true; idle(); };
     const say = () => { if (box._say) sr.textContent = box._say; };
-    const at = cx => { const r = svg.getBoundingClientRect(), vx = (cx - r.left) * md.W / (r.width || 1); return Math.round((vx - md.L) / (md.W - md.L - md.R) * (md.n - 1)); };
+    const at = cx => { const r = svg.getBoundingClientRect(), vx = (cx - r.left) * md.W / (r.width || 1); return md.ix ? md.ix(vx) : Math.round((vx - md.L) / (md.W - md.L - md.R) * (md.n - 1)); };
     const later = i => { want = i; if (!raf) raf = requestAnimationFrame(() => { raf = 0; show(want); }); };
     const setPin = v => { pin = v; box.classList.toggle('pin', v); };
     inr.addEventListener('pointerdown', e => {
       pt = e.pointerType || 'mouse'; if (pt === 'mouse') return;
-      touch = { pin, cur }; show(at(e.clientX));
+      clearTimeout(fade); touch = true; show(at(e.clientX));
     });
     inr.addEventListener('pointermove', e => {
       if (e.pointerType === 'mouse') { if (!pin) later(at(e.clientX)); return; }
       if (touch) later(at(e.clientX));
     });
-    inr.addEventListener('pointerup', e => { if (e.pointerType === 'mouse' || !touch) return; touch = null; setPin(true); say(); });
-    /* 세로로 문지르면 브라우저가 스크롤로 가져가며 pointercancel — 안내선은 이전 상태로 */
-    inr.addEventListener('pointercancel', () => { if (!touch) return; const p = touch; touch = null; if (p.pin && p.cur >= 0) { cur = -1; show(p.cur); setPin(true); } else hide(); });
+    /* 모바일: 손가락이 닿아 있는 동안만 — 떼면 1.5초 뒤 사라짐 */
+    inr.addEventListener('pointerup', e => { if (e.pointerType === 'mouse' || !touch) return; touch = null; say(); clearTimeout(fade); fade = setTimeout(hide, 1500); });
+    /* 세로로 문지르면 브라우저가 스크롤로 가져가며 pointercancel — 스크롤을 막지 않고 바로 감춤 */
+    inr.addEventListener('pointercancel', () => { if (!touch) return; touch = null; hide(); });
     inr.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse' && !pin) hide(); });
     inr.addEventListener('click', e => { if (pt !== 'mouse' || touch) return;
       if (pin) { setPin(false); show(at(e.clientX)); } else { show(at(e.clientX)); setPin(true); say(); } });
@@ -341,6 +353,25 @@
   }
   /** el 에 전체 기간 차트 + 안내선(세로선·말풍선·전세가율 보조 그래프) */
   function mountHist(el, t, opts) { return mount(el, histSpec(t, Object.assign({ tip: true }, opts))); }
+  /** 월별 막대(거래 건수 등) + 같은 안내선·작은 말풍선. o = {months, a, c, h, L, fs, k(말풍선 이름), unit('건'), aria} */
+  function mountBars(el, o) {
+    if (!el) return null;
+    const m = M(), months = o.months || [], a = o.a || [], n = a.length, W = Math.max(280, Math.round(el.clientWidth || 600)), fs = o.fs || 13.5;
+    const H = o.h || 160, L = o.L || 56, R = 12, T = 12, B = 26, mx = Math.max(1, ...a), st = Math.max(1, Math.ceil(mx / 3)), top = st * Math.ceil(mx / st);
+    const y = v => T + (top - v) / top * (H - T - B), slot = (W - L - R) / Math.max(1, n), bw = Math.max(2, slot * 0.66), x = i => L + i * slot + slot / 2, c = o.c || '#9DB8FF', u = o.unit || '건';
+    let grid = ''; for (let v = 0; v <= top; v += st) grid += `<line x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#E5E8EB"/><text x="${L - 6}" y="${(y(v) + 4).toFixed(1)}" font-size="${fs}" fill="#4E5968" text-anchor="end">${v}</text>`;
+    const bars = a.map((v, i) => v > 0 ? `<rect x="${(x(i) - bw / 2).toFixed(1)}" y="${y(v).toFixed(1)}" width="${bw.toFixed(1)}" height="${(y(0) - y(v)).toFixed(1)}" rx="2" fill="${c}"/>` : '').join('');
+    const xl = m.xTicks(n, W - L - R, fs, x, months).map(t => `<text x="${t.x.toFixed(1)}" y="${H - 6}" font-size="${fs}" fill="#4E5968" text-anchor="${t.a}">${t.t}</text>`).join('');
+    const over = `<g class="jhv-o" style="display:none" pointer-events="none"><line x1="0" x2="0" y1="${T - 4}" y2="${H - B}" stroke="#4E5968" stroke-opacity=".7" stroke-width="1" stroke-dasharray="3 3" shape-rendering="crispEdges"/><circle r="4.2" stroke="#fff" stroke-width="2" fill="#2F6BFF"/></g>`;
+    const aria = o.aria || '월별 거래 건수';
+    el.innerHTML = `<div class="jhv" tabindex="0" role="group" aria-roledescription="차트" aria-label="${esc(aria + ' — 왼쪽·오른쪽 화살표 키로 달을 옮기며 값을 들을 수 있어요')}"><div class="jhv-sum" aria-hidden="true" hidden></div>`
+      + `<div class="jhv-in"><svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(aria)}">${grid}${bars}${xl}${over}</svg><div class="jhv-tip" hidden></div></div><div class="jhv-sr" aria-live="polite"></div></div>`;
+    const k = o.k || '거래', tip = i => { const v = a[i] || 0, head = m.ymLabel(months[i]);
+      return { head, rows: [{ k, c: '#2F6BFF', v: v ? v + u : '거래 없음', none: !v }], extra: [], say: `${head}, ${k} ${v ? v + u : '없음'}` }; };
+    const md = { W, H, L, R, n, x, top: T, months, pts: [{ a, c: '#2F6BFF', y, raw: true }], ix: vx => Math.floor((vx - L) / slot) };
+    wire(el.querySelector('.jhv'), md, tip);
+    return { model: md };
+  }
   /** 기간 단추 HTML (data-hspan) */
   const spanBtns = (t, cur, cls) => `<div class="${cls || 'jps-seg'}" role="group" aria-label="기간">${M().histSpans(t).map(b => `<button type="button" data-hspan="${b.span}" class="${b.span === cur ? 'on' : ''}" aria-pressed="${b.span === cur}">${b.label}</button>`).join('')}</div>`;
   /** 차트 아래 자료 기간 문구: 수집 시작 달(cover)을 실제 값으로 */
@@ -405,13 +436,14 @@
 .jhv-in svg{display:block}
 .jhv-sum{font-size:13.5px;line-height:1.5;color:#3E4754;margin:0 0 4px;min-height:20px;font-variant-numeric:tabular-nums;word-break:keep-all}
 .jhv-sum b{color:#191F28}.jhv-sum .hint{color:#6B7684}
-.jhv-tip{position:absolute;top:2px;left:0;z-index:2;pointer-events:none;background:rgba(25,31,40,.94);color:#fff;border-radius:10px;padding:8px 10px;font-size:14px;line-height:1.45;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.18);font-variant-numeric:tabular-nums}
-.jhv-tip{max-width:100%;box-sizing:border-box}.jhv-tip .r,.jhv-tip .x{white-space:normal;word-break:keep-all}
-.jhv-tip .h{display:block;font-size:14px;margin-bottom:2px}
-.jhv-tip .g{font-size:14.5px}.jhv-tip .g b{color:#FFD66B}.jhv-tip .g span{color:#D1D6DB}
-.jhv-tip .r i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:1px}
-.jhv-tip .r.f{color:#C9CED4}.jhv-tip .r.f b{font-weight:600}
-.jhv-tip .r.s{color:#D1D6DB}.jhv-tip .r.v{color:#FFD66B;font-weight:700}.jhv-tip .x{color:#C9CED4;font-size:13.5px}
+.jhv-tip{position:absolute;top:0;left:0;z-index:2;pointer-events:none;box-sizing:border-box;max-width:calc(100% - 4px);background:rgba(255,255,255,.95);color:#191F28;border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:5px 8px 6px;font-size:12px;line-height:1.35;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.08);font-variant-numeric:tabular-nums;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.jhv-tip .h{font-weight:700;margin-bottom:2px;color:#191F28}
+.jhv-tip .t{display:grid;grid-template-columns:auto auto;column-gap:10px;row-gap:1px}
+.jhv-tip .k{color:#4E5968}.jhv-tip .k i{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px;vertical-align:1px}.jhv-tip .k i.o{background:transparent}
+.jhv-tip .t b{text-align:right;font-weight:700;color:#191F28}.jhv-tip .t b.f{font-weight:500;color:#6B7684}
+.jhv-tip small{font-size:11px;font-weight:500;color:#8B95A1}
+.jhv-tip .v{margin-top:2px;font-size:11px;font-weight:700;color:#2F6BFF}.jhv-tip .x{margin-top:1px;font-size:10.5px;color:#8B95A1}
+@media(min-width:1024px){.jhv-tip{font-size:11.5px}.jhv-tip small,.jhv-tip .v{font-size:10.5px}.jhv-tip .x{font-size:10px}}
 .jhv-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media print{.jps-btn{display:none!important}}
 @media(max-width:400px){.jps-hi{grid-template-columns:1fr}}
@@ -542,7 +574,7 @@
     <a class="jps-go" href="${esc(link)}">내 집 시세에서 자세히 보기 →</a>`;
   }
 
-  const API = { open, close, btn, loadSgg, loadHist, histOf, scoreUnits, findUnit, tradesHtml, pastYearsHtml, wireMore, miniChart, histChart, histNote, linePaths, SPARSE, highsHtml, spanBtns, baseName, plot, mount, tipFn, histTip, histSpec, mountHist, cntMap, eok, guOf, guNote, ppySpec, mountPpy };
+  const API = { open, close, btn, loadSgg, loadHist, histOf, scoreUnits, findUnit, tradesHtml, pastYearsHtml, wireMore, miniChart, histChart, histNote, linePaths, mountBars, SPARSE, highsHtml, spanBtns, baseName, plot, mount, tipFn, histTip, histSpec, mountHist, cntMap, eok, guOf, guNote, ppySpec, mountPpy };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_PRICE = API;
 })(typeof self !== 'undefined' ? self : this);
