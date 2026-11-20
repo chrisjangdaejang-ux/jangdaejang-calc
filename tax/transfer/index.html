@@ -126,7 +126,8 @@ ul.cau{margin:8px 0 0;padding-left:18px;font-size:14.5px;line-height:1.6;display
       <div class="fl"><label for="mk">지금 시세</label><div class="box"><input id="mk" class="money" inputmode="numeric" autocomplete="off" placeholder="100,000"><span>만 원</span></div><div class="conv" id="mkC"></div></div>
       <div class="fl"><label for="std">공시가격 (선택)</label><div class="box"><input id="std" class="money" inputmode="numeric" autocomplete="off" placeholder="70,000"><span>만 원</span></div><div class="conv" id="stdC"></div></div>
     </div>
-    <div class="help">공시가격은 <a href="https://www.realtyprice.kr/notice/main/mainBody.htm" target="_blank" rel="noopener">부동산공시가격알리미 ↗</a>에서 동·호수로 확인할 수 있어요. 상속 취득세와 증여 취득세 중과(3억 원 기준)를 정하는 데 써요. 비워 두면 그 칸은 계산하지 않아요.</div>
+    <div id="stdGs" hidden></div>
+    <div class="help" id="stdHelp">공시가격은 <a href="https://www.realtyprice.kr/notice/main/mainBody.htm" target="_blank" rel="noopener">부동산공시가격알리미 ↗</a>에서 동·호수로 확인할 수 있어요. 상속 취득세와 증여 취득세 중과(3억 원 기준)를 정하는 데 써요. 비워 두면 그 칸은 계산하지 않아요.</div>
     <div class="fl"><span class="lb">위치</span><div class="selrow"><select id="sd" aria-label="시·도"></select><select id="gu" aria-label="시·군·구"></select></div><div class="help" id="adjTxt"></div></div>
     <label class="tog"><input type="checkbox" id="o85"><span>전용면적 85㎡ 초과예요<small>농어촌특별세가 붙어요</small></span></label>
   </section>
@@ -184,8 +185,9 @@ ul.cau{margin:8px 0 0;padding-left:18px;font-size:14.5px;line-height:1.6;display
 <script src="../adjusted-areas.js"></script>
 <script src="../tax-engine.js?v=3"></script>
 <script src="../transfer-engine.js?v=2"></script>
-<script src="../../assets/tax-box.js?v=1"></script>
-<script src="transfer-ui.js?v=1"></script>
+<script src="../../assets/tax-box.js?v=2"></script>
+<script src="../../assets/gongsi.js?v=1"></script>
+<script src="transfer-ui.js?v=2"></script>
 <script src="../tax-trust.js?v=1"></script>
 </body>
 </html>

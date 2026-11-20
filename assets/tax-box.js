@@ -1,5 +1,6 @@
 /* 단지 화면 '세금' 칸 (/mine/ 내 집 시세 카드, /buy/report/ 단지 카드) + '이 결과로 상담받기'
-   - 시세를 그대로 넣어 취득세 · 보유세(공시가격은 직접 입력 — 공시가격 자동 연결 전, 시세×현실화율 추정은 하지 않음) · 양도세(취득가·취득일 입력)
+   - 시세를 그대로 넣어 취득세 · 보유세(공시가격: 그 단지·평형 호별 중간값을 미리 넣고 출처 한 줄 — assets/gongsi.js, 고칠 수 있음.
+     공시가격 자료가 없는 단지는 직접 입력. 시세×현실화율 추정은 하지 않음) · 양도세(취득가·취득일 입력)
    - 계산식은 /tax/tax-engine.js(JDJ_TAX)를 그대로 씀. 입력값은 이 기기 밖으로 보내지 않음.
    - [자세히] → /tax/ 로 값 넘김: 주소 # 뒤에만 담아(서버·통계로 가지 않음) 받는 화면이 읽고 바로 지움
    - 상담: 기존 상담 신청서(구글 폼)를 그대로 씀. 연락처는 신청서에 직접 적고, 이 화면은 조건 요약만 미리 채움(금액은 동의할 때만). */
@@ -27,7 +28,8 @@
     if (window.JDJ_TAX && window.JDJ_ADJ) return Promise.resolve();
     if (loading) return loading;
     const add = src => new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
-    loading = (window.JDJ_ADJ ? Promise.resolve() : add(BASE + 'tax/adjusted-areas.js')).then(() => window.JDJ_TAX ? null : add(BASE + 'tax/tax-engine.js?v=3'));
+    loading = (window.JDJ_ADJ ? Promise.resolve() : add(BASE + 'tax/adjusted-areas.js')).then(() => window.JDJ_TAX ? null : add(BASE + 'tax/tax-engine.js?v=3'))
+      .then(() => window.JDJ_GONGSI ? null : add(BASE + 'assets/gongsi.js?v=1').catch(() => null));     // 공시가격 자료는 없어도 세금 칸은 그대로
     return loading;
   }
 
@@ -123,7 +125,8 @@
 
   /* ---------- 세금 칸 ---------- */
   let seq = 0;
-  /** o: { price(만원), area(㎡), sido(시·도 전체 이름), gu(시·군·구 이름), apt, band, mode:'mine'|'buy', bpEl, bdEl(매수가·매수 시기 입력칸) } */
+  /** o: { price(만원), area(㎡), sido(시·도 전체 이름), gu(시·군·구 이름), apt, band, mode:'mine'|'buy', bpEl, bdEl(매수가·매수 시기 입력칸),
+          code(시군구 코드)·dong·jibun(공시가격 찾기용 — 없으면 직접 입력만) } */
   function mount(el, o) {
     if (!el || !(o.price > 0)) return Promise.resolve(false);
     css();
@@ -145,7 +148,8 @@
   <div class="tsec"><h3>해마다 내는 보유세</h3>
     <div class="f2"><div><label class="l" for="${id}s">올해 공시가격</label><div class="in"><input id="${id}s" inputmode="numeric" autocomplete="off" placeholder="공시가격"><span>만 원</span></div></div>
       <div><label class="l" for="${id}o">세대 주택 수</label><div class="in"><select id="${id}o"><option value="y">이 집 한 채</option><option value="n">다른 집도 있어요</option></select></div></div></div>
-    <p class="hint">${esc(o.apt || '이 집')}의 공시가격은 <a href="https://www.realtyprice.kr/notice/main/mainBody.htm" target="_blank" rel="noopener">부동산공시가격알리미 ↗</a>에서 동·호수로 확인해 넣어 주세요. 시세로 공시가격을 추정하지 않아요.</p>
+    <div data-gsn hidden></div>
+    <p class="hint" data-gsh>${esc(o.apt || '이 집')}의 공시가격은 <a href="https://www.realtyprice.kr/notice/main/mainBody.htm" target="_blank" rel="noopener">부동산공시가격알리미 ↗</a>에서 동·호수로 확인해 넣어 주세요. 시세로 공시가격을 추정하지 않아요.</p>
     <div class="out" data-o="hold" aria-live="polite"></div>
     <a class="more" data-a="prop" href="#" data-track="taxbox_prop_more">재산세 자세히 ›</a></div>
   ${own ? `<div class="tsec"><h3>팔면 내는 양도세 (오늘 시세로 판다면)</h3>
@@ -174,6 +178,8 @@
     pull();
     if (own) { [o.bpEl, o.bdEl].forEach(x => x && x.addEventListener('change', () => { pull(); upd(); })); $i('d').addEventListener('input', () => { q('[data-bdh]').hidden = true; }); }
 
+    let gs = null;                                     // 공시가격 자동 채움(assets/gongsi.js attach 결과)
+    const gsd = () => gs && !gs.edited() ? gs.info.d : '';   // 넘기는 화면에 출처 표시용(고친 값이면 안 넘김)
     const hash = (v, kv) => BASE + 'tax/' + '#' + v + ';' + Object.entries(kv).filter(([, x]) => x !== '' && x != null).map(([k, x]) => k + '=' + encodeURIComponent(x)).join(';');
     let last = {};
     function upd() {
@@ -192,7 +198,8 @@
         else hold = `<span class="big">${krw(pt.total)}</span><span class="pl">재산세</span><small>다른 집이 있으면 종합부동산세는 가진 집 공시가격을 모두 합쳐 계산해요 → <a href="${hash('cpt', {})}">종부세 계산</a><br>지방세법 제110조·제111조 (공정시장가액비율 60%)</small>`;
       } else hold = '<small style="margin:0">공시가격을 넣으면 재산세·종합부동산세가 바로 나와요.</small>';
       q('[data-o="hold"]').innerHTML = hold;
-      q('[data-a="prop"]').href = hash('prop', { std: std ? std / MAN : '', one: one ? 'y' : 'n' });
+      q('[data-a="prop"]').href = hash('prop', { std: std ? std / MAN : '', one: one ? 'y' : 'n', gs: std ? gsd() : '' });
+      const ca = q('[data-o="hold"] a'); if (ca) ca.href = hash('cpt', { std: std ? std / MAN : '', gs: std ? gsd() : '' });
       // 양도세
       let cgt = null;
       if (own) {
@@ -208,11 +215,19 @@
         q('[data-a="cgt"]').href = hash('cgt', { sp: o.price, ap: ap ? ap / MAN : '', ad, sd: rg.sido, gu: rg.gu, hs, rm, ask: askAdj === 'ask' ? $i('k').value : '' });
         last = { ap, ad, rm, hs };
       }
-      const xk = { mk: o.price, sd: rg.sido, gu: rg.gu, ar: o.area || '', std: std ? std / MAN : '', ap: last.ap ? last.ap / MAN : '', ad: last.ad || '', rm: last.rm || '', hs: last.hs || '' };
+      const xk = { mk: o.price, sd: rg.sido, gu: rg.gu, ar: o.area || '', std: std ? std / MAN : '', gs: std ? gsd() : '', ap: last.ap ? last.ap / MAN : '', ad: last.ad || '', rm: last.rm || '', hs: last.hs || '' };
       q('[data-a="xfer"]').href = BASE + 'tax/transfer/#' + Object.entries(xk).filter(([, x]) => x !== '' && x != null).map(([k, x]) => k + '=' + encodeURIComponent(x)).join('&');
       el._ctx = { a, std, cgt };
     }
     upd();
+    // 공시가격: 그 단지·평형 호별 중간값을 미리 넣기(자료가 없거나 받기 실패면 지금처럼 직접 입력)
+    if (window.JDJ_GONGSI && o.code && o.dong && o.jibun != null) {
+      JDJ_GONGSI.get(o).then(info => {
+        if (!info || !el.contains($i('s'))) return;
+        gs = JDJ_GONGSI.attach($i('s'), info, q('[data-gsn]'));
+        if (gs) { q('[data-gsh]').hidden = true; track('taxbox_gongsi_fill', { band: o.band || '' }); upd(); }
+      }).catch(() => {});
+    }
     bindConsult($i('c'), () => {
       const c = el._ctx || {};
       return { from: '세금 칸 · ' + (o.apt || '') + ' ' + (o.band || ''), region: (o.sido || '') + ' ' + (o.gu || ''), field: '양도',

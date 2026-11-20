@@ -585,6 +585,11 @@
   }
   window.JDJ_TAXUI = { snap, restore, views: Object.keys(SECS) };
 
+  /* 단지 세금 칸에서 미리 넣은 공시가격(같은 평형 호별 중간값)이면 gs=기준일 이 함께 옴 → 입력칸 아래 출처 한 줄(assets/gongsi.js) */
+  function gsAttach(input, P, noteEl) {
+    if (!window.JDJ_GONGSI || !/^\d{4}-\d{2}-\d{2}$/.test(P.gs || '') || !/^\d{1,7}$/.test(P.std || '')) return null;
+    return JDJ_GONGSI.attach(input, { v: +P.std, d: P.gs }, noteEl);
+  }
   /* 단지 화면 '세금' 칸(assets/tax-box.js)에서 넘어온 값: #cgt;sp=..;ap=.. — 주소 # 뒤에만 담겨 서버·통계로 가지 않고, 읽은 뒤 바로 지움 */
   function prefill() {
     const raw = (location.hash || '').slice(1);
@@ -606,7 +611,12 @@
         if (P.pr) $('aRun').click();
       } else if (v === 'prop') {
         money($('pPrice'), P.std);
-        if (P.std && (P.one === 'y' || P.one === 'n')) { WZ.pWiz.st.one = P.one; $('pWiz').querySelectorAll('.opts[data-key="one"] .opt').forEach(o => o.classList.toggle('on', o.dataset.v === P.one)); WZ.pWiz.finish(); }
+        const g = gsAttach($('pPrice'), P, $('pGs'));
+        if (P.std && (P.one === 'y' || P.one === 'n')) { WZ.pWiz.st.one = P.one; $('pWiz').querySelectorAll('.opts[data-key="one"] .opt').forEach(o => o.classList.toggle('on', o.dataset.v === P.one)); WZ.pWiz.finish();
+          if (g && $('pRes')) $('pRes').insertAdjacentHTML('afterbegin', '<p class="gsn">' + JDJ_GONGSI.noteHtml(g.info, false).replace(/<span class="gsx">[^<]*<\/span>$/, '<span class="gsx">미리 넣은 값이에요. [입력 고치기]에서 우리 집 값으로 고칠 수 있어요.</span>') + '</p>'); }
+      } else if (v === 'cpt') {
+        const first = $('cList').querySelector('input');
+        if (first) { money(first, P.std); gsAttach(first, P, $('cGs')); }
       } else if (v === 'cgt') {
         region($('rSido'), $('rGu'), P.sd, P.gu);
         if (date(P.ad)) $('acqDate').value = P.ad;

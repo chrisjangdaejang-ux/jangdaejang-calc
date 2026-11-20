@@ -355,7 +355,8 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
       <p class="ql">이 집의 올해 공시가격은 얼마인가요?</p>
       <div class="box"><input id="pPrice" class="money" inputmode="numeric" autocomplete="off" placeholder="60,000" aria-label="공시가격(만 원)"><span>만 원</span></div>
       <div class="conv" id="pPriceC"></div>
-      <div class="help">공동주택은 국토교통부 부동산공시가격알리미에서 6월 1일 기준 공시가격을 확인하실 수 있어요. 시세가 아니라 공시가격을 넣어 주세요. 재산세는 6월 1일에 갖고 계신 분이 냅니다.</div>
+      <div id="pGs" hidden></div>
+      <div class="help">공동주택 공시가격(매년 1월 1일 기준, 4월 말 공시)은 국토교통부 부동산공시가격알리미에서 확인하실 수 있어요. 시세가 아니라 공시가격을 넣어 주세요. 재산세는 6월 1일에 갖고 계신 분이 냅니다.</div>
     </div>
     <div class="wq" data-q="one" hidden>
       <p class="ql">세대 전체가 가진 집이 이 한 채뿐인가요?</p>
@@ -399,6 +400,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
     <div class="wq" data-q="list" hidden>
       <p class="ql">가진 주택의 올해 공시가격을 넣어 주세요</p>
       <div class="plist" id="cList"></div>
+      <div id="cGs" hidden></div>
       <button type="button" class="btn ghost" id="cAdd">한 채 더 넣기</button>
       <div class="sum" id="cSum"></div>
       <div class="help">6월 1일 기준으로 이 분(법인) 명의인 주택을 모두 넣어 주세요. 3채 이상이면 높은 세율표가 적용됩니다.</div>
@@ -506,7 +508,8 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
 <script src="adjusted-areas.js"></script>
 <script src="tax-engine.js?v=3"></script>
 <script src="offi-tax.js?v=1"></script>
-<script src="tax-ui.js?v=2"></script>
+<script src="../assets/gongsi.js?v=1"></script>
+<script src="tax-ui.js?v=3"></script>
 <script src="tax-trust.js?v=1"></script>
 <script>
 /* 공유(assets/share.js): 결과가 보이면 '어떤 세금을 계산했는지'만. 매도가·공시가격·세액 같은 금액은 담지 않음. 받는 분은 같은 계산기(#cgt 등)로 */

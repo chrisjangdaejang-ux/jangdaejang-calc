@@ -57,6 +57,9 @@
     try { history.replaceState(null, '', location.pathname); } catch (e) {}
     const money = (id, v) => { if (v && /^\d{1,7}$/.test(v)) { $(id).value = (+v).toLocaleString('ko-KR'); $(id).dispatchEvent(new Event('input')); } };
     money('mk', P.mk); money('std', P.std); money('ap', P.ap);
+    // 단지 세금 칸에서 미리 넣은 공시가격(같은 평형 호별 중간값)이면 출처 한 줄(assets/gongsi.js) — 고칠 수 있음
+    if (window.JDJ_GONGSI && /^\d{4}-\d{2}-\d{2}$/.test(P.gs || '') && /^\d{1,7}$/.test(P.std || '') && $('stdGs') && JDJ_GONGSI.attach($('std'), { v: +P.std, d: P.gs }, $('stdGs')) && $('stdHelp'))
+      $('stdHelp').textContent = '공시가격은 상속 취득세와 증여 취득세 중과(3억 원 기준)를 정하는 데 써요. 비워 두면 그 칸은 계산하지 않아요.';     // 알리미 안내는 위 출처 줄에 있음
     if (P.sd && A.SIDO.indexOf(P.sd) >= 0) { $('sd').value = P.sd; fillGu(); if (P.gu && [...$('gu').options].some(o => o.value === P.gu)) $('gu').value = P.gu; }
     if (/^\d{4}-\d{2}-\d{2}$/.test(P.ad || '')) $('ad').value = P.ad;
     if (/^\d{1,3}$/.test(P.rm || '')) $('rm').value = P.rm;

@@ -47,7 +47,7 @@
 <script src="../../assets/policy-view.js?v=1"></script>
 <script src="../../assets/devproj-view.js?v=2"></script>
 <script src="../../assets/src-box.js?v=1"></script>
-<script src="../../assets/tax-box.js?v=1"></script>
+<script src="../../assets/tax-box.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -1401,7 +1401,7 @@ async function render(){
   document.querySelectorAll('[data-more]').forEach(b=>b.onclick=()=>{ const m=$(b.dataset.more); if(!m) return;
     if (repLocked()){ const g=$(b.dataset.more.replace('pm','pg')); if(!g) return; g.hidden=!g.hidden; if(!g.innerHTML) g.innerHTML=JDJ_AUTH.gate('대출·필요 현금·월 상환과 추천 이유 전체는 로그인하면 볼 수 있어요. 요약과 점수는 지금처럼 그대로 보여 드려요.', '카카오 간편 로그인하고 상세 보기', 'report_detail'); b.setAttribute('aria-expanded', String(!g.hidden)); b.textContent=g.hidden?'자세한 리포트':'간단히 보기'; if(!g.hidden) JDJ.track('report_detail_gate'); return; } m.hidden=!m.hidden; b.setAttribute('aria-expanded', String(!m.hidden)); b.textContent=m.hidden?'자세한 리포트':'간단히 보기'; if(!m.hidden) JDJ.track('report_card_more'); });
   document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>goCard(+b.dataset.i||0, b.dataset.go));
-  if (window.JDJ_TAXBOX) document.querySelectorAll('[data-txb]').forEach(el=>{ const x=picked[+el.dataset.txb]; if(x) { el.hidden=false; JDJ_TAXBOX.lazy(el, {price:x.P, area:x.area, sido:sidoOfCode(x.code), gu:sggName(x.code), apt:x.apt, band:x.band, mode:'buy'}); } });
+  if (window.JDJ_TAXBOX) document.querySelectorAll('[data-txb]').forEach(el=>{ const x=picked[+el.dataset.txb]; if(x) { el.hidden=false; JDJ_TAXBOX.lazy(el, {price:x.P, area:x.area, sido:sidoOfCode(x.code), gu:sggName(x.code), apt:x.apt, band:x.band, code:x.code, dong:x.dong, jibun:x.jb, mode:'buy'}); } });
   if (NARON) document.querySelectorAll('#report .nar').forEach(el=>JDJ_NAR.bind(el));
   const wb=document.getElementById('widenBtn'); if(wb) wb.onclick=()=>{ S.sggs=new Set(sggsOfSido(S.sido)); renderSggChips(); render(); JDJ.track('report_widen',{region:S.sido.short}); };
   fillAgents(picked.length ? picked : near).catch(e=>console.warn('agents',e));
