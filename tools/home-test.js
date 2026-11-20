@@ -82,7 +82,7 @@ check('표 HTML: 접는 상자·세 칸', /<details class="jsrc"><summary>데이
   check('홈: 카드 자리·공용 계산 파일', [home.includes('id="pulse"'), home.includes('id="accl"'), /home-core\.js\?v=\d+/.test(home), /rank-core\.js\?v=\d+/.test(home)], [true, true, true, true], '');
   check('홈: 자료 없으면 숨김으로 시작', /id="pulse" hidden/.test(home) && /id="accl" hidden/.test(home), true, '');
   check('홈: 전체 순위 보기 → /rank/ 단지별', home.includes('rank/?t=fv&amp;v=apt'), true, '');
-  check("홈: '과거 검증 N번 중 M번 맞음' 문구", home.includes('과거 검증 ${v.n}번 중 ${v.hit}번 맞음'), true, '');
+  check("홈: '과거에 써 봤더니 N번 중 M번 맞음' 문구", home.includes('과거에 써 봤더니 ${v.n}번 중 ${v.hit}번 맞음'), true, '');
   check("새 화면에 '시험·통과' 대신 '검증·맞음'", /시험|통과/.test(home.slice(home.indexOf('우리 지역 지금 (assets'), home.indexOf('<footer'))) || /시험|통과/.test(rank.slice(rank.indexOf('function drawApt'), rank.indexOf('/* ---------- 점수 많이 바뀐'))), false, '');
   check("가격 단정 문구 없음('N% 오른다')", /% 오른다|% 오를 거|오를 것입니다/.test(home + rank), false, '');
   const vh = (home.match(/rank-core\.js\?v=(\d+)/) || [])[1], vr = (rank.match(/rank-core\.js\?v=(\d+)/) || [])[1];
