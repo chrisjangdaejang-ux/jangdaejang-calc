@@ -1,5 +1,5 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v15: 관심 지역 저장 추가)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v15.1: 관심 지역 저장 + 카카오 로그인 재시도·오류 코드 표시)
  *
  * v15 변경 요약
  *  - 회원 저장 자료(userSave·userLoad)에 관심 지역(areas) 추가: 시·도/시·군·구 최대 10곳 + 알림 종류(새 분양 공고·무순위/잔여세대).
@@ -1233,7 +1233,12 @@ function authErr(msg) { const e = new Error(msg || '로그인이 끝났어요. �
 
 /* 카카오 API 호출 */
 function kakaoFetch(url, opt) {
-  const r = UrlFetchApp.fetch(url, Object.assign({ muteHttpExceptions: true }, opt));
+  let r, last;
+  for (let i = 0; i < 3 && !r; i++) {                       // 구글 쪽 일시 연결 실패('사용할 수 없는 주소')는 잠깐 쉬고 다시
+    try { r = UrlFetchApp.fetch(url, Object.assign({ muteHttpExceptions: true }, opt)); }
+    catch (e) { last = e; if (i < 2) Utilities.sleep(400 * (i + 1) + Math.floor(Math.random() * 300)); }
+  }
+  if (!r) throw last;
   let j = {}; try { j = JSON.parse(r.getContentText() || '{}'); } catch (e) {}
   return { code: r.getResponseCode(), j };
 }
@@ -1250,7 +1255,10 @@ function kakaoLogin(b) {
   if (secret) payload.client_secret = secret;
   const t = kakaoFetch('https://kauth.kakao.com/oauth/token', { method: 'post', payload: payload });
   const at = t.j && t.j.access_token;
-  if (t.code !== 200 || !at) throw new Error('카카오 로그인을 마치지 못했어요. 다시 시도해 주세요.');
+  if (t.code !== 200 || !at) {
+    const ec = uText((t.j && (t.j.error_code || t.j.error)) || ('HTTP ' + t.code), 40);   // 예: KOE010(클라이언트 시크릿), KOE006(리다이렉트 URI), KOE320(코드 재사용)
+    throw new Error('카카오 로그인을 마치지 못했어요. 다시 시도해 주세요. (' + ec + ')');
+  }
   let me;
   try {
     me = kakaoFetch('https://kapi.kakao.com/v2/user/me', { method: 'get', headers: { Authorization: 'Bearer ' + at } });
