@@ -359,10 +359,10 @@ function rowsOf(items){
   const pct = v => A.pctTop(v);
   /* 집예보 강점(아실에 없는 값) — 맨 위 */
   add({ grp: '집예보 통계 — 앞으로를 보는 값' });
-  add({ ours: 1, l: '미래가치 점수', h: `과거 자료로 검증한 통계 점수예요. 같은 시·도(${esc(items.map(x => x.sidoShort).filter((v, i, a) => a.indexOf(v) === i).join('·'))}) 아파트 안에서의 순위(2년 보유 기준)이고, 높을수록 앞으로 2년 동안 다른 아파트보다 더 오른 단지들과 비슷한 조건이에요. 시·도가 다른 단지끼리는 기준이 달라요.`,
+  add({ ours: 1, l: '미래가치 점수', h: `이 단지가 앞으로 2년 동안 ${esc(items.map(x => x.sidoShort).filter((v, i, a) => a.indexOf(v) === i).join('·'))}의 다른 아파트보다 더 오를 가능성을 100점 만점으로 매긴 점수예요. 50점이 중간이고, 높을수록 더 오를 가능성이 커요. 과거에도 이 방식으로 매긴 점수가 실제 2년 뒤 시세와 맞았는지 확인했어요. 서울 단지는 서울끼리, 경기 단지는 경기끼리 비교한 순위라 시·도가 다르면 점수를 직접 견주지 마세요.`,
     v: items.map(x => x.fv != null ? `<b>${x.fv}점</b><small>${esc(x.fvBase)} 중 ${pct(x.fv)}</small>` : NA), n: items.map(x => new Set(items.map(y => y.sd)).size === 1 ? x.fv : null), d: 1 });
   const hw = [1, 2, 3].map(h => A.winner(items.map(x => x.fv == null || !x.hzOk[h] ? null : h === 2 ? x.fv : (x.fh && x.fh[h] != null && new Set(items.map(y => y.sd)).size === 1 ? x.fh[h] : null)), 1));
-  add({ ours: 1, l: '보유 기간별 전망', h: '1·2·3년 보유를 가정했을 때 같은 시·도 아파트 안 순위예요. 과거 시험을 통과하지 못한 보유 기간은 ‘참고만’으로 흐리게 보여 드려요.',
+  add({ ours: 1, l: '보유 기간별 전망', h: '1년·2년·3년 뒤를 각각 따로 계산한 순위예요. 상위 23%면 같은 시·도 아파트 100곳 중 23등쯤이라는 뜻이에요. 과거 자료로 맞춰 봤을 때 잘 맞지 않았던 기간은 ‘참고만’으로 흐리게 보여 드려요.',
     v: items.map((x, i) => { if (x.fv == null) return NA; return `<div class="hz">${[1, 2, 3].map((h, hi) => { const v = h === 2 ? x.fv : (x.fh && x.fh[h] != null ? x.fh[h] : null); if (v == null) return `<span class="ref">${h}년: 자료 없음</span>`;
       const t = `${h}년: ${pct(v)}${x.hzOk[h] ? '' : ' (참고만)'}`; return hw[hi] === i ? `<span><b class="w${i}">${t}</b></span>` : `<span class="${x.hzOk[h] ? '' : 'ref'}">${t}</span>`; }).join('')}</div>`; }) });
   add({ ours: 1, l: '구 안 위치', h: '같은 구(시) 아파트끼리만 비교한 미래가치 순위예요. 높을수록 그 구 안에서 앞서는 단지예요.',
