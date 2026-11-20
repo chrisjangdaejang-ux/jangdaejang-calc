@@ -43,7 +43,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
 <script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
-<script src="/jangdaejang-calc/assets/tabbar.js?v=1" defer></script>
+<script src="/jangdaejang-calc/assets/tabbar.js?v=2" defer></script>
 <style>
 .wrap{max-width:560px;margin:0 auto}
 .hero{padding:28px 24px 8px;display:flex;flex-direction:column;gap:12px}
@@ -112,6 +112,7 @@
 .askwrap.jask{margin:18px 20px 0}
 .minelink{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0 0;padding:16px 18px;border:2.5px solid #2F6BFF;border-radius:16px;background:#fff;color:inherit;text-decoration:none}.minelink b{display:block;font-size:18px;font-weight:800}.minelink small{display:block;font-size:14px;color:#4E5968;margin-top:3px}.minelink .new{display:inline-block;margin-left:6px;font-size:11px;font-weight:700;color:var(--blue);background:var(--blue-l);border-radius:4px;padding:1px 6px;vertical-align:3px}.minelink .go{font-size:24px;color:#2F6BFF;font-weight:800}
 .maplink{display:flex;align-items:center;gap:14px;margin:18px 20px 0;padding:16px 18px;border-radius:16px;background:var(--blue);color:#fff;text-decoration:none;box-shadow:0 3px 12px rgba(47,107,255,.25)}.maplink .ic{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:none}.maplink .ic svg{width:26px;height:26px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.maplink b{display:block;font-size:18px;font-weight:800}.maplink small{display:block;font-size:14px;opacity:.92;margin-top:2px;line-height:1.5}.maplink .go{margin-left:auto;font-size:24px;font-weight:800;flex:none}
+.ranklink{display:flex;align-items:center;gap:14px;margin:10px 20px 0;padding:14px 18px;border-radius:16px;background:#fff;border:1.5px solid var(--blue);color:var(--text);text-decoration:none}.ranklink .ic{width:40px;height:40px;border-radius:12px;background:var(--blue-l);display:flex;align-items:center;justify-content:center;flex:none}.ranklink .ic svg{width:24px;height:24px;stroke:var(--blue);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.ranklink b{display:block;font-size:17px;font-weight:800}.ranklink small{display:block;font-size:14px;color:var(--sub2);margin-top:2px;line-height:1.5}.ranklink .go{margin-left:auto;font-size:22px;font-weight:800;color:var(--blue);flex:none}
 </style>
 </head>
 <body>
@@ -128,6 +129,7 @@
   </div>
 
   <a class="maplink" href="map/" data-track="home_to_map"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg></span><span><b>지도로 단지 찾기<span class="new" style="margin-left:6px;font-size:11px;font-weight:700;color:#2F6BFF;background:#fff;border-radius:4px;padding:1px 6px;vertical-align:3px">NEW</span></b><small>단지 시세·미래가치 점수·전세가율을 지도에서 한눈에</small></span><span class="go">›</span></a>
+  <a class="ranklink" href="rank/" data-track="home_to_rank"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M9 20V8h6v12"/><path d="M3 20v-7h6M15 11h6v9"/></svg></span><span><b>우리 구는 몇 위?</b><small>구별 시세 상승·하락 순위와 미래가치 순위</small></span><span class="go">›</span></a>
 
   <section class="askwrap" id="askBox" aria-label="단지 이름으로 물어보기"></section>
 

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="집예보">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="/jangdaejang-calc/assets/pwa.js" defer></script>
+<script src="/jangdaejang-calc/assets/biz.js" defer></script>
+<title>집예보 주간 순위 — 구별 아파트 시세 변동·미래가치 순위</title>
+<meta name="description" content="시·도별로 구·시·군 아파트 평당가가 1개월·3개월·6개월·1년 동안 얼마나 올랐고 내렸는지, 앞으로 2년 지역 흐름 점수로 본 구별 미래가치 순위를 한눈에 보세요.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="집예보 주간 순위 — 구별 시세 변동·미래가치 순위">
+<meta property="og:description" content="우리 구 아파트 평당가는 몇 위일까? 상승·하락 순위와 구별 미래가치 순위를 한눈에.">
+<meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/rank/">
+<meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/default.png">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script>window.JDJ_CONFIG = { tool:'rank', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../assets/track.js?v=2"></script>
+<script src="../assets/stat.js?v=7"></script>
+<script src="../assets/share.js?v=6"></script>
+<script src="../assets/plain-words.js?v=10"></script>
+<script src="../assets/rank-core.js?v=1"></script>
+<script src="../assets/tabbar.js?v=2" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
+<style>
+.wrap{max-width:760px;margin:0 auto;padding:22px 16px 40px}
+h1{font-size:clamp(26px,6vw,36px);margin:6px 0 8px}
+.lead{margin:0 0 16px;font-size:16px;color:#4E5968;line-height:1.6}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--gray);border-radius:14px;padding:4px;margin:0 0 14px}
+.tabs button{font:inherit;font-size:15px;font-weight:800;min-height:48px;border:0;border-radius:11px;background:none;color:var(--sub2);cursor:pointer;line-height:1.3;padding:4px 6px;word-break:keep-all}
+.tabs button[aria-selected="true"]{background:#fff;color:var(--blue);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+.ctl select{font:inherit;font-size:16px;font-weight:700;min-height:44px;padding:0 34px 0 12px;border:1px solid var(--line);border-radius:12px;color:var(--text);appearance:none;-webkit-appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%234E5968' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 12px center}
+.pills{display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+.pills button{font:inherit;font-size:15px;font-weight:700;min-height:42px;min-width:44px;padding:0 11px;border:0;border-left:1px solid var(--line);background:#fff;color:var(--sub2);cursor:pointer;white-space:nowrap}
+.pills button:first-child{border-left:0}
+.pills button[aria-pressed="true"]{background:var(--blue);color:#fff}
+.sum{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;margin:0 0 6px;font-size:15px;color:var(--sub)}
+.sum .cnt{display:flex;gap:10px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sum .at{font-size:14px;color:var(--sub2)}
+.up{color:#C2410C}.dn{color:#1F56E0}.fl{color:#4E5968}
+.list{list-style:none;margin:8px 0 0;padding:0;border-top:1px solid var(--line)}
+.list a{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--line);color:var(--text);text-decoration:none;min-height:56px}
+.list a:hover{background:var(--gray2)}
+.rk{font-size:17px;font-weight:900;color:var(--sub2);text-align:center;font-variant-numeric:tabular-nums}
+.list li:nth-child(-n+3) .rk{color:var(--blue)}
+.nm{min-width:0}
+.nm b{display:block;font-size:16.5px;font-weight:800;line-height:1.35;word-break:keep-all}
+.nm small{display:block;font-size:13px;color:var(--sub2);margin-top:1px}
+.vals{display:flex;align-items:center;gap:10px;justify-content:flex-end}
+.vals svg{width:56px;height:24px;flex:none;overflow:visible}
+.vals svg path{fill:none;stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round}
+.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.num b{display:block;font-size:17px;font-weight:900}
+.num small{display:block;font-size:13.5px;color:var(--sub2)}
+.fv a{grid-template-columns:30px minmax(0,1fr)}
+.fv .nm b{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px}
+.fv .nm b span{font-size:14px;font-weight:700;color:var(--sub2);white-space:nowrap}
+.fv .pos{display:inline-block;font-size:12.5px;font-weight:800;border-radius:6px;padding:1px 6px;white-space:nowrap}
+.pos.t5{background:#E8F0FF;color:#1F4FD1}.pos.t3{background:#F2F4F6;color:#4E5968}.pos.t1{background:#FDECE4;color:#C2410C}
+.fv .why{display:block;font-size:14.5px;color:var(--sub);line-height:1.55;margin-top:4px;font-weight:500}
+.vbox{margin:0 0 12px;padding:14px 16px;border-radius:14px;background:#F4F7FF;border:1px solid #D6E2FF;font-size:14.5px;line-height:1.6;color:var(--sub)}
+.vbox b{color:var(--text)}
+.vbox a{font-weight:700;white-space:nowrap}
+.note{font-size:13.5px;color:var(--sub2);line-height:1.6;margin:12px 0 0}
+.empty{padding:28px 18px;text-align:center;border:1px dashed var(--line);border-radius:16px;color:var(--sub);font-size:15px;line-height:1.65}
+.empty b{display:block;font-size:19px;font-weight:900;color:var(--text);margin-bottom:6px}
+.more{display:block;width:100%;margin:12px 0 0;min-height:48px;font:inherit;font-size:15px;font-weight:700;border:1px solid var(--line);background:#fff;color:var(--sub);border-radius:12px;cursor:pointer}
+.mv h3{font-size:17px;font-weight:900;margin:18px 0 0}
+@media(max-width:380px){.list a{grid-template-columns:24px minmax(0,1fr) auto;gap:4px 8px}.vals{gap:8px}.vals svg{width:44px}.num b{font-size:16px}.pills button{padding:0 9px;font-size:14.5px}.tabs button{font-size:14px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>집예보</a>
+  <div class="badge plain">순위</div>
+</header>
+
+<main class="wrap">
+  <span class="tag">주간 순위</span>
+  <h1>우리 구, 지금 몇 위일까요?</h1>
+  <p class="lead">같은 시·도 안에서 구·시·군 아파트 평당가가 얼마나 올랐는지, 앞으로 2년 지역 흐름은 몇 위인지 줄 세워 보여 드려요. 줄을 누르면 지도에서 그 구를 볼 수 있어요.</p>
+
+  <div class="tabs" role="tablist" aria-label="순위 종류">
+    <button type="button" role="tab" id="tb-price" data-t="price" aria-controls="pane">구별 시세</button>
+    <button type="button" role="tab" id="tb-fv" data-t="fv" aria-controls="pane">구별 미래가치</button>
+    <button type="button" role="tab" id="tb-move" data-t="move" aria-controls="pane">점수 많이 바뀐 단지</button>
+  </div>
+  <div class="ctl" id="ctl"></div>
+  <section id="pane" role="tabpanel" aria-live="polite"><p class="note">순위 자료를 불러오고 있어요…</p></section>
+</main>
+
+<footer class="foot">국토교통부 실거래 신고와 공공 통계로 만든 순위예요. 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 장대장부동산그룹 · <a href="../">집예보 홈</a></footer>
+
+<script>
+(function(){
+'use strict';
+const R = window.JDJ_RANK, PL = window.JDJ_PLAIN;
+const DATA = '/jangdaejang-data/data/';
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const J = u => fetch(u, {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null);
+const Q = new URLSearchParams(location.search);
+const S = { t: ['price','fv','move'].includes(Q.get('t')) ? Q.get('t') : 'price', sd: Q.get('sd') || 's00',
+  k: R.PERIODS.includes(+Q.get('k')) ? +Q.get('k') : 1, dir: Q.get('dir') === 'down' ? 'down' : 'up', all: false };
+const KL = { 1: '1개월', 3: '3개월', 6: '6개월', 12: '1년' };
+let IX = null, MJ = null, GEO = null, RK, RKload = null;
+const GS = {};                      // 시·도 id → {구: gs} | 'wait' | 'err'
+
+const sdObj = () => IX.sido.find(s => s.id === S.sd) || IX.sido[0];
+const unitOf = sd => { const l = Object.values(IX.sgg).filter(g => g.sido === sd.name); return l.length && l.every(g => /구$/.test(g.name)) ? '구' : '시·군·구'; };
+
+function saveUrl(){
+  const u = new URL(location.href), p = u.searchParams;
+  S.t !== 'price' ? p.set('t', S.t) : p.delete('t');
+  S.sd !== 's00' ? p.set('sd', S.sd) : p.delete('sd');
+  S.t === 'price' && S.k !== 1 ? p.set('k', S.k) : p.delete('k');
+  S.t === 'price' && S.dir === 'down' ? p.set('dir', 'down') : p.delete('dir');
+  history.replaceState(null, '', u);
+}
+
+function drawTabs(){
+  document.querySelectorAll('.tabs button').forEach(b => { const on = b.dataset.t === S.t; b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1; });
+  $('pane').setAttribute('aria-labelledby', 'tb-' + S.t);
+}
+function drawCtl(){
+  const sel = `<select id="sdSel" aria-label="시·도">${IX.sido.map(s => `<option value="${s.id}"${s.id === S.sd ? ' selected' : ''}>${esc(s.short)}</option>`).join('')}</select>`;
+  const pills = (name, list, cur) => `<div class="pills" role="group" aria-label="${name}">${list.map(([v, t]) => `<button type="button" data-${name === '기간' ? 'k' : 'dir'}="${v}" aria-pressed="${String(v) === String(cur)}">${t}</button>`).join('')}</div>`;
+  $('ctl').innerHTML = sel + (S.t === 'price' ? pills('기간', R.PERIODS.map(k => [k, KL[k]]), S.k) + pills('순서', [['up', '상승'], ['down', '하락']], S.dir) : '');
+  $('sdSel').onchange = e => { S.sd = e.target.value; S.all = false; go('sido'); };
+}
+$('ctl').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.k) S.k = +b.dataset.k; else if (b.dataset.dir) S.dir = b.dataset.dir; else return;
+  S.all = false; go('filter');
+});
+document.querySelector('.tabs').addEventListener('click', e => { const b = e.target.closest('button[data-t]'); if (!b || b.dataset.t === S.t) return; S.t = b.dataset.t; S.all = false; go('tab'); });
+document.querySelector('.tabs').addEventListener('keydown', e => {
+  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+  const T = ['price', 'fv', 'move'], i = (T.indexOf(S.t) + (e.key === 'ArrowRight' ? 1 : 2)) % 3;
+  S.t = T[i]; go('tab'); $('tb-' + S.t).focus();
+});
+
+function go(why){
+  saveUrl(); drawTabs(); drawCtl();
+  if (S.t === 'price') drawPrice(); else if (S.t === 'fv') drawFv(); else drawMove();
+  if (why && window.jdjStat) jdjStat('feature_use', {feature: 'rank_' + S.t});
+}
+
+/* ---------- 구별 시세 ---------- */
+const SHOW = 10;
+function sparkSvg(vals, cls){
+  const d = R.spark(vals, 56, 24);
+  return d ? `<svg viewBox="0 0 56 24" aria-hidden="true"><path d="${d}" stroke="currentColor" class="${cls}"/></svg>` : '<svg viewBox="0 0 56 24" aria-hidden="true"></svg>';
+}
+function drawPrice(){
+  const sd = sdObj(), o = R.price(IX, sd.name, S.k, S.dir), unit = unitOf(sd), tot = o.rows.length + o.skip;
+  if (!o.rows.length) { $('pane').innerHTML = `<div class="empty"><b>비교할 수 있는 ${unit}가 없어요</b>${esc(sd.short)}은 ${KL[S.k]} 전과 지금 모두 거래가 충분한 ${unit}가 없어요. 기간을 바꿔 보세요.</div>`; share(null); return; }
+  const rows = S.all ? o.rows : o.rows.slice(0, SHOW);
+  const head = `<div class="sum"><span>${esc(sd.short)} ${tot}개 ${unit} 중</span><span class="cnt"><span class="up">상승 ${o.up}</span><span class="dn">하락 ${o.down}</span><span class="fl">보합 ${o.flat}</span></span></div>
+    <p class="sum"><span class="at">${R.ym(o.at)} 기준 · ${R.ym(o.from)}보다 평당가가 ${S.dir === 'up' ? '많이 오른' : '많이 내린'} 순</span></p>`;
+  const li = rows.map(x => {
+    const cls = x.ch > 0 ? 'up' : x.ch < 0 ? 'dn' : 'fl';
+    return `<li><a href="${esc(R.mapUrl(GEO, x.code, 'price'))}" data-track="rank_to_map"><span class="rk">${x.r}</span>
+      <span class="nm"><b>${esc(x.name)}</b><small>지도에서 보기 ›</small></span>
+      <span class="vals">${sparkSvg(x.spark, cls)}<span class="num"><b class="${cls}">${R.pct(x.ch)}</b><small>평당 ${esc(R.won(x.p))}</small></span></span></a></li>`;
+  }).join('');
+  $('pane').innerHTML = head + `<ol class="list">${li}</ol>`
+    + (o.rows.length > SHOW ? `<button type="button" class="more" id="more" aria-expanded="${S.all}">${S.all ? '접기' : `${o.rows.length}곳 모두 보기`}</button>` : '')
+    + `<p class="note">평당가는 전용 3.3㎡당 가격이에요. 그 달까지 최근 3개월 아파트 실거래가의 중앙값으로, 작은 선은 최근 12개월 흐름이에요. `
+    + `비교하는 두 달 모두 3개월 거래가 ${R.MIN_TRADES}건 이상인 ${unit}만 넣었어요${o.skip ? `(거래가 적어 ${o.skip}곳 뺌)` : ''}. 보합은 변동률이 0.0%인 곳이에요.</p>`;
+  const m = $('more'); if (m) m.onclick = () => { S.all = !S.all; drawPrice(); };
+  const t3 = o.rows.slice(0, 3);
+  share({ head: `${sd.short} ${unit}별 아파트 평당가 ${KL[S.k]} ${S.dir === 'up' ? '상승' : '하락'} 순위`,
+    lines: [`${R.ym(o.at)} 기준 ${tot}개 ${unit} 중 상승 ${o.up} · 하락 ${o.down} · 보합 ${o.flat}`,
+      t3.map(x => `${x.r}위 ${x.name} ${R.pct(x.ch)}`).join(', '), '국토교통부 실거래 신고 기준'] });
+}
+
+/* ---------- 구별 미래가치 ---------- */
+function loadGs(id){
+  if (GS[id]) return;
+  GS[id] = 'wait';
+  J(DATA + id + '.json').then(u => { GS[id] = u && u.units ? R.gsFromUnits(u.units) : 'err'; if (S.t === 'fv' && S.sd === id) drawFv(); });
+}
+const sg = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(Math.round(v * 10) / 10).toFixed(1) + '%p';
+function drawFv(){
+  const sd = sdObj(), unit = unitOf(sd), ck = R.check(MJ);
+  if (!ck) { $('pane').innerHTML = `<div class="empty"><b>지역 흐름 점수를 검증하는 중이에요</b>과거 여러 시기 시험을 통과하면 구별 미래가치 순위를 공개해요. 지금은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 검증 상황을 볼 수 있어요.</div>`; share(null); return; }
+  const gm = GS[S.sd];
+  if (!gm || gm === 'wait') { loadGs(S.sd); $('pane').innerHTML = '<p class="note">구별 미래가치 자료를 불러오고 있어요…</p>'; return; }
+  if (gm === 'err') { $('pane').innerHTML = '<div class="empty"><b>자료를 불러오지 못했어요</b>잠시 뒤 다시 열어 주세요.</div>'; GS[S.sd] = null; return; }
+  const f = R.future(IX, sd.name, gm);
+  if (!f.rows.length) { $('pane').innerHTML = `<div class="empty"><b>${esc(sd.short)}은 순위를 매기지 않아요</b>점수가 있는 ${unit}가 ${f.n}곳뿐이라 줄 세워 비교하기 어려워요.</div>`; share(null); return; }
+  const rows = S.all ? f.rows : f.rows.slice(0, SHOW);
+  const vb = `<div class="vbox">${esc(sd.short)} ${f.n}개 ${unit}를 <b>앞으로 2년 지역 흐름 점수</b>로 줄 세웠어요. 이 점수는 검증을 통과했어요 — ${ck.y0}~${ck.y1}년 ${ck.n}번 시험에서 점수 상위 20% ${unit}가 같은 시·도 평균보다 <b>${ck.hit === ck.n ? `${ck.n}번 모두` : `${ck.hit}번`}</b> 더 올랐어요${ck.oos != null ? `(가장 최근 표본 외 시험 ${sg(ck.oos)})` : ''}. <a href="/jangdaejang-calc/about/">검증 방법 ›</a></div>`;
+  const li = rows.map(x => {
+    const t = PL && PL.regionText ? PL.regionText({ gs: x.gs }, IX, x.code) : null, w0 = t && t.why && t.why[0] ? t.why[0] : '', why = !w0 || /쪽:/.test(w0) ? w0 : (x.pos === '하위권' ? '점수를 낮춘 가장 큰 이유: ' : '점수를 올린 가장 큰 이유: ') + w0;
+    const tone = x.pos === '상위권' ? 't5' : x.pos === '하위권' ? 't1' : 't3';
+    return `<li><a href="${esc(R.mapUrl(GEO, x.code, 'fv'))}" data-track="rank_to_map"><span class="rk">${x.r}</span>
+      <span class="nm"><b>${esc(x.name)}<span>${esc(sd.short)} ${f.n}개 ${unit} 중 ${x.r}위</span><span class="pos ${tone}">${x.pos}</span></b>${why ? `<span class="why">${esc(why)}</span>` : ''}<small>지도에서 보기 ›</small></span></a></li>`;
+  }).join('');
+  $('pane').innerHTML = vb + `<ol class="list fv">${li}</ol>`
+    + (f.rows.length > SHOW ? `<button type="button" class="more" id="more" aria-expanded="${S.all}">${S.all ? '접기' : `${f.rows.length}곳 모두 보기`}</button>` : '')
+    + `<p class="note">지역 흐름 점수는 ${esc(sd.short)} 안 ${unit}끼리 비교한 점수예요(100점 만점). 이유는 그 ${unit} 점수를 가장 많이 올리거나 내린 항목이에요. 하위권은 나쁜 동네라는 뜻이 아니라, 앞으로 2년 오름폭이 ${esc(sd.short)} 다른 ${unit}보다 작을 수 있다는 뜻이에요.</p>`;
+  const m = $('more'); if (m) m.onclick = () => { S.all = !S.all; drawFv(); };
+  share({ head: `${sd.short} ${unit}별 미래가치 순위(앞으로 2년 지역 흐름)`,
+    lines: [f.rows.slice(0, 3).map(x => `${x.r}위 ${x.name}`).join(', '), `${sd.short} ${f.n}개 ${unit}를 같은 시·도 기준으로 비교`, `과거 ${ck.n}번 시험으로 검증한 점수`] });
+}
+
+/* ---------- 점수 많이 바뀐 단지 (월별 스냅숏 두 달치가 생기면) ---------- */
+function drawMove(){
+  if (RK === undefined) {
+    $('pane').innerHTML = '<p class="note">자료를 확인하고 있어요…</p>';
+    if (!RKload) RKload = J(DATA + 'rank.json').then(j => { RK = j; if (S.t === 'move') drawMove(); });
+    return;
+  }
+  const sd = sdObj(), mv = R.moves(RK, S.sd);
+  if (!mv) { $('pane').innerHTML = `<div class="empty"><b>다음 달부터 공개해요</b>지난달과 이번 달 단지 미래가치 점수를 비교할 수 있게 되면, ${esc(sd.short)}에서 점수가 많이 오른 단지와 내린 단지를 여기에 보여 드려요.<br>그동안 <a href="/jangdaejang-calc/mine/">내 집 시세</a>에서 관심 단지 점수를 확인해 보세요.</div>`; share(null); return; }
+  const list = (rows, cls) => rows.length ? `<ol class="list">${rows.map((x, i) => `<li><a href="${esc(R.mineUrl(S.sd, x.key, x.band))}" data-track="rank_to_mine"><span class="rk">${i + 1}</span>
+    <span class="nm"><b>${esc(x.apt)}</b><small>${esc((IX.sgg[x.code] || {}).name || '')} ${esc(x.dong)} · ${esc(x.band)}</small></span>
+    <span class="vals"><span class="num"><b class="${cls}">${x.d > 0 ? '+' : x.d < 0 ? '−' : ''}${Math.abs(x.d)}점</b><small>${x.a}점 → ${x.b}점</small></span></span></a></li>`).join('')}</ol>` : '<p class="note">해당하는 단지가 없어요.</p>';
+  $('pane').innerHTML = `<div class="mv"><p class="sum"><span class="at">${R.ym(mv.from)} → ${R.ym(mv.to)} 미래가치 점수(100점 만점, 같은 시·도 단지 비교) 변화</span></p>
+    <h3>점수가 많이 오른 단지</h3>${list(mv.up, 'up')}<h3>점수가 많이 내린 단지</h3>${list(mv.down, 'dn')}</div>`;
+  share({ head: `${sd.short} 미래가치 점수가 많이 바뀐 단지`, lines: [`${R.ym(mv.from)} → ${R.ym(mv.to)} 점수 변화`, mv.up.slice(0, 3).map(x => x.apt).join(', ')] });
+}
+
+/* ---------- 공유 (단지·구 공개 정보만) ---------- */
+function share(sum){
+  if (!window.JDJ_SHARE) return;
+  if (!sum) { JDJ_SHARE.clear && JDJ_SHARE.clear(); return; }
+  JDJ_SHARE.update(Object.assign({ allowNum: true, params: Object.fromEntries(new URLSearchParams(location.search)) }, sum), { root: $('pane'), mid: false });
+}
+if (window.JDJ_SHARE) JDJ_SHARE.setup({ tool: 'rank', keep: ['t', 'sd', 'k', 'dir'] });
+
+async function init(){
+  const [ix, mj, geo] = await Promise.all([J(DATA + 'index.json'), J(DATA + 'model.json'), J('/jangdaejang-calc/assets/map-geo.json')]);
+  if (!ix || !ix.sgg || !ix.sido) { $('pane').innerHTML = '<div class="empty"><b>자료를 불러오지 못했어요</b>잠시 뒤 다시 열어 주세요.</div>'; return; }
+  IX = ix; MJ = mj; GEO = geo;
+  if (!IX.sido.some(s => s.id === S.sd)) S.sd = 's00';
+  go();
+  if (window.jdjStat) jdjStat('feature_use', {feature: 'rank'});
+}
+init();
+})();
+</script>
+</body>
+</html>

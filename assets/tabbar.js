@@ -1,5 +1,5 @@
-/* 집예보 하단 탭(휴대폰·PC 공통): 홈 · 지도 · 내 집 시세 · 단지 비교
-   <script src="/jangdaejang-calc/assets/tabbar.js?v=1" defer></script> 만 넣으면 화면 맨 아래에 붙는다(지금 화면 탭은 파랑).
+/* 집예보 하단 탭(휴대폰·PC 공통): 홈 · 지도 · 순위 · 내 집 시세 · 단지 비교 (5개를 넘기지 않음)
+   <script src="/jangdaejang-calc/assets/tabbar.js?v=2" defer></script> 만 넣으면 화면 맨 아래에 붙는다(지금 화면 탭은 파랑).
    본문이 탭에 가리지 않게 body 아래 여백을 탭 높이만큼 더한다. 지도 화면은 body.jm-full 로 여백 대신 지도 높이에서 뺀다. */
 (function () {
   'use strict';
@@ -8,6 +8,7 @@
   var T = [
     ['', '홈', '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>', 'tab_home'],
     ['map/', '지도', '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/>', 'tab_map'],
+    ['rank/', '순위', '<path d="M3 20h18"/><path d="M9 20V8h6v12"/><path d="M3 20v-7h6M15 11h6v9"/>', 'tab_rank'],
     ['mine/', '내 집 시세', '<path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/>', 'tab_mine'],
     ['ask/', '단지 비교', '<rect x="3" y="5" width="7" height="14" rx="1.5"/><rect x="14" y="5" width="7" height="14" rx="1.5"/>', 'tab_ask']
   ];
