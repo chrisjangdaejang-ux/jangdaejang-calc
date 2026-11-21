@@ -80,6 +80,6 @@ const adH = BA.html({ adv: '좋은은행', title: '주담대 <b>비교</b>', des
 check('광고 자리: 광고 표시·광고주·https 링크·글 이스케이프', [/>광고</.test(adH), /좋은은행/.test(adH), /href="https:\/\/example.com\/x"/.test(adH), /&lt;b&gt;/.test(adH), /sponsored/.test(adH)], [true, true, true, true, true]);
 check('광고 자리: 광고 없거나 http 링크면 비움', [BA.html(null), BA.html({ title: 't', url: 'http://x.com' })], ['', '']);
 globalThis.window = globalThis.window || {}; const BS = require('../assets/brief-stat.js');
-check('광고주 통계: 메일 광고 동의자 수(있을 때만)', [/메일 광고 받는 구독자\(이른 아침 광고 동의\) 12명/.test(BS.html({ n: 40, amAd: 12, at: '2026-11-28' })), /메일 광고/.test(BS.html({ n: 40, amAd: null, at: '2026-11-28' }))], [true, false]);
+check('광고주 통계: 메일 광고 동의자 수(있을 때만)', [/메일 광고 받는 구독자\(광고성 정보·이른 아침 광고 모두 동의\) 12명/.test(BS.html({ n: 40, amAd: 12, at: '2026-11-28' })), /메일 광고/.test(BS.html({ n: 40, amAd: null, at: '2026-11-28' }))], [true, false]);
 console.log(`모닝 브리핑 화면 계산 검증: ${pass}개 통과, ${fail}개 실패`);
 process.exit(fail ? 1 : 0);

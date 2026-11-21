@@ -12,7 +12,7 @@
     var sd = top(j.sido, 4); if (sd.length) bits.push('관심 지역: ' + sd.map(function (x) { return esc(x[0]) + ' ' + fmt(x[1]) + '명'; }).join(' · '));
     var bg = top(j.budget, 3); if (bg.length) bits.push('예산: ' + bg.map(function (x) { return esc(x[0]) + ' ' + fmt(x[1]) + '명'; }).join(' · '));
     var ag = top(j.age, 3); if (ag.length) bits.push('연령: ' + ag.map(function (x) { return esc(x[0]) + ' ' + fmt(x[1]) + '명'; }).join(' · '));
-    if (j.amAd != null) bits.push('메일 광고 받는 구독자(이른 아침 광고 동의) ' + fmt(j.amAd) + '명');
+    if (j.amAd != null) bits.push('메일 광고 받는 구독자(광고성 정보·이른 아침 광고 모두 동의) ' + fmt(j.amAd) + '명');
     if (j.open != null) bits.push('최근 30일 웹 열람률 ' + j.open + '%');
     return '<b>' + esc(name) + ' 구독자 ' + fmt(j.n) + '명</b>' + (j.paid ? ' <span>(유료 ' + fmt(j.paid) + '명)</span>' : '')
       + (bits.length ? '<small>' + bits.join('<br>') + '</small>' : '') + '<small>' + esc(j.at) + ' 기준 · 매일 아침 브리핑을 받는 실제 구독자 익명 집계(10명 미만 칸은 숨김)</small>';
