@@ -70,6 +70,8 @@ check('서비스 이름은 집코드(회사명 아님)', !vis.includes('장대�
 check('없는 자료는 확인 불가로', (vis.match(/확인 불가/g) || []).length >= 5, true);
 check('출처 표시', (vis.match(/출처: /g) || []).length >= 4, true);
 
+check('결과 화면: 접는 칸(자세히 보기) 사용', (view.match(/det\('/g) || []).length >= 6, true);
+check('결과 화면: 동별·최근 거래는 5개만 먼저(더보기)', (view.match(/moreBox\([^]*?, 5\)/g) || []).length >= 3 && view.includes('더보기'), true);
 // 페이지 연결
 const mine = read('mine/index.html'), sw = read('sw.js');
 check('탭 3개(아파트·오피스텔·상가·건물)', (mine.match(/<button type="button" role="tab" data-t="(a|o|c)"/g) || []).length, 3);

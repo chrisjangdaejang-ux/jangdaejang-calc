@@ -26,7 +26,7 @@
     if ($('commCss')) return;
     const st = document.createElement('style'); st.id = 'commCss';
     st.textContent = `.cm-seg{display:inline-grid;grid-template-columns:1fr 1fr;gap:4px;background:#F2F4F6;border-radius:12px;padding:4px;margin:4px 0 2px;width:100%;max-width:420px}
-.cm-seg button{font:inherit;font-size:15px;font-weight:700;border:0;background:transparent;color:#4E5968;min-height:42px;border-radius:9px;cursor:pointer;padding:0 6px;word-break:keep-all}
+.cm-seg button{font:inherit;font-size:15px;font-weight:700;border:0;background:transparent;color:#4E5968;min-height:44px;border-radius:9px;cursor:pointer;padding:0 6px;word-break:keep-all}
 .cm-seg button.on{background:#fff;color:#2560E8;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .cm-def{background:#F5F8FF;border:1px solid #C9D8FF;border-radius:14px;padding:12px 14px;font-size:15px;line-height:1.65;margin:10px 0}
 .cm-def b{color:#1F56E0}
@@ -61,6 +61,30 @@
 .cm-tr .b{font-size:13.5px;color:#4E5968;line-height:1.5;margin-top:2px;word-break:keep-all;overflow-wrap:anywhere}
 .cm-tbl td,.cm-tbl th{padding:8px 4px}
 .cm-tbl td:first-child{word-break:keep-all}
+.cm-det{border-top:1px solid var(--line);margin:0}
+.cm-det:first-of-type{border-top:0}
+.cm-det>summary{list-style:none;cursor:pointer;padding:12px 2px;min-height:44px;display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center}
+.cm-det>summary::-webkit-details-marker{display:none}
+.cm-det>summary .t{font-size:16px;font-weight:800;color:#191F28}
+.cm-det>summary .s{grid-column:1;font-size:14px;color:#4E5968;line-height:1.5;word-break:keep-all;overflow-wrap:anywhere}
+.cm-det>summary .m{grid-column:2;grid-row:1/span 2;font-size:13.5px;font-weight:700;color:#2560E8;white-space:nowrap}
+.cm-det[open]>summary .m::after{content:' 접기'}
+.cm-det[open]>summary .m span{display:none}
+.cm-det>.cm-db{padding:0 0 12px}
+.cm-more{font:inherit;font-size:14.5px;font-weight:700;color:#2560E8;background:#F5F8FF;border:1px solid #C9D8FF;border-radius:10px;min-height:44px;width:100%;margin-top:8px;cursor:pointer}
+.cm-x{display:none}
+.cm-open .cm-x{display:revert}
+.cm-q>summary{cursor:pointer;font-size:14.5px;font-weight:700;color:#2560E8;padding:10px 0 4px}
+.cm-sum{margin:0;padding-left:18px;font-size:15px;line-height:1.65}
+.cm-sum li{margin:2px 0;word-break:keep-all}
+.cm-pick{grid-template-columns:1fr 1fr!important;gap:8px 10px}
+.cm-pick select{min-width:0;width:100%}
+.cm-links{display:flex;flex-wrap:wrap;gap:8px}
+.cm-links a{flex:1 1 100px;border:1px solid var(--line);border-radius:12px;padding:10px 6px;font-size:13.5px;word-break:keep-all;font-weight:700;text-decoration:none;color:#191F28;text-align:center}
+.cm-links a.main{border-color:#C9D8FF;background:#F5F8FF;color:#1F56E0}
+.cm-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.cm-stats .st{padding:10px 12px}
+@media(min-width:720px){.cm-stats{grid-template-columns:repeat(4,1fr)}}
 .cm-mask{display:inline-block;font-size:12px;font-weight:700;color:#6B7684;background:#F2F4F6;border-radius:6px;padding:0 5px;margin-left:3px}`;
     document.head.appendChild(st);
   }
@@ -75,7 +99,11 @@
       HIDE.forEach(id => { const el = $(id); if (el) { if (!(id in was)) was[id] = el.hidden; el.hidden = true; } });
       sec.hidden = false;
       if (!inited) init();
-    } else sec.hidden = true;
+      ['askBox'].concat([...document.querySelectorAll('main > p.lead')].map(x => (x.id = x.id || 'mineLead'))).forEach(id => { const el = $(id); if (el && !el.hidden) { el.hidden = true; el.dataset.cmHid = '1'; } });
+    } else {
+      sec.hidden = true;
+      document.querySelectorAll('[data-cm-hid]').forEach(el => { el.hidden = false; delete el.dataset.cmHid; });
+    }
     if (push) {
       const u = new URL(location.href);
       ['cg', 'ck', 'cb'].forEach(k => u.searchParams.delete(k));
@@ -102,23 +130,22 @@
     const n = CX && CX.n;
     $('commSec').innerHTML = `
     <section class="panel" aria-labelledby="cmT">
-      <h2 id="cmT">상가·건물 찾기<small>시·도 → 시·군·구를 고르면 그 지역 상가·건물 시세를 보여 드려요. 구분상가·사무실은 동 → 건물(지번)까지 고를 수 있어요.</small></h2>
+      <h2 id="cmT">상가·건물 찾기<small>시·군·구를 고르면 그 지역 상가·건물 시세를 보여 드려요.</small></h2>
       ${ready() ? '' : `<div class="cm-prep"><b>상가·건물 실거래 자료를 준비하고 있어요.</b><br>국토교통부 상업업무용 부동산 실거래 자료가 들어오는 대로 시세를 자동으로 보여 드려요. 지금은 시·군·구를 고르면 그 지역 상권·수요 공식 통계를 먼저 볼 수 있어요.</div>`}
       <div class="cm-seg" role="group" aria-label="상가·건물 종류" id="cmSeg"><button type="button" data-k="c" aria-pressed="true">구분상가·사무실<br><small style="font-weight:600">건물 안 한 칸</small></button><button type="button" data-k="g" aria-pressed="false">통건물<br><small style="font-weight:600">건물 한 채 전체</small></button></div>
-      <div class="pick" style="margin-top:10px">
+      <div class="pick cm-pick" style="margin-top:10px">
         <div><label for="cmSd">시·도</label><select id="cmSd"></select></div>
         <div><label for="cmG">시·군·구</label><select id="cmG"><option value="">시·군·구 선택</option></select></div>
         <div id="cmDw"><label for="cmD">동</label><select id="cmD" disabled><option value="">동 선택</option></select></div>
         <div id="cmBw"><label for="cmB">건물(지번)</label><select id="cmB" disabled><option value="">건물 선택</option></select></div>
       </div>
-      <div id="cmQw"><p class="or">또는 지번으로 찾기 <span style="font-weight:500">(선택한 시·군·구 안 구분상가·사무실 건물)</span></p>
-      <div class="pick"><div class="full"><label for="cmQ" style="position:absolute;left:-9999px">지번</label><input id="cmQ" type="search" inputmode="numeric" placeholder="예: 828-10" autocomplete="off" enterkeyhint="search"></div></div>
-      <div class="sres" id="cmSres" aria-live="polite"></div></div>
+      <details id="cmQw" class="cm-q"><summary>지번으로 건물 찾기</summary>
+      <div class="pick"><div class="full"><label for="cmQ" style="position:absolute;left:-9999px">지번</label><input id="cmQ" type="search" inputmode="numeric" placeholder="예: 828-10 (선택한 시·군·구 안)" autocomplete="off" enterkeyhint="search"></div></div>
+      <div class="sres" id="cmSres" aria-live="polite"></div></details>
       <div id="cmMsg" class="note" aria-live="polite"></div>
-      ${n && (n.c || n.g) ? `<p class="note" style="margin-top:8px">구분상가·사무실 ${n.c.toLocaleString()}건 · 통건물 ${n.g.toLocaleString()}건 (${ymL(CX.hm)}~${ymL(CX.to)} 계약, 국토교통부 신고 기준)</p>` : ''}
     </section>
     <section id="cmRes" hidden aria-live="polite"></section>
-    <p class="disc">자료: ${esc(((CX && CX.src) || {}).trade || '국토교통부 상업업무용 부동산 매매 실거래가')}. 해제(취소) 신고된 거래는 빼고, 직거래와 지분 거래는 목록에만 보여 주고 시세 계산에서는 빼요. 상가·사무실 임대료는 실거래처럼 신고되는 공개 자료가 없어요.</p>`;
+    <p class="disc">자료: ${esc(((CX && CX.src) || {}).trade || '국토교통부 상업업무용 부동산 매매 실거래가')}${n && (n.c || n.g) ? ` — 구분상가·사무실 ${n.c.toLocaleString()}건 · 통건물 ${n.g.toLocaleString()}건(${ymL(CX.hm)}~${ymL(CX.to)} 계약)` : ''}. 해제(취소) 신고된 거래는 빼고, 직거래와 지분 거래는 목록에만 보여 주고 시세 계산에서는 빼요. 상가·사무실 임대료는 실거래처럼 신고되는 공개 자료가 없어요.</p>`;
     const first = ['서울', '경기', '인천'];
     const list = [...IX.sido].sort((a, b) => { const ia = first.indexOf(a.short), ib = first.indexOf(b.short); return (ia < 0 ? 9 : ia) - (ib < 0 ? 9 : ib) || a.name.localeCompare(b.name, 'ko'); });
     $('cmSd').innerHTML = list.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
@@ -250,7 +277,7 @@
     const us = K.unitSeries(u, DOC), last = K.latest(us.s, us.months), any = K.lastAny(us.s, us.months), tr = K.unitTrades(u);
     const val = p => Math.round(p * u.a / 100) * 100;
     const hiBox = (k, h) => h ? `<div><div class="k">${k}</div><div class="v">${won(h[0])}</div><div class="d">${ymL(String(h[1]).slice(0, 6))} · 전용 ${h[2]}㎡ · ㎡당 ${K.perM2(h[0] / h[2])}</div></div>` : '';
-    return `<div class="panel">
+    return `<div class="panel cm-list">
       <div class="dhead"><div><h2>${esc(u.d)} ${esc(u.j)}${u.u ? ` <small style="font-size:15px;color:#4E5968">${esc(u.u)}</small>` : ''}</h2><div class="loc">${esc(sidoName(S.g))} ${esc(sggName(S.g))} ${esc(u.d)} ${esc(u.j)} · ${esc(u.lu || '')}${u.by ? ` · ${u.by}년 준공` : ''} · 대표 전용 ${u.a}㎡</div></div></div>
       <p class="cm-one">이 건물의 구분상가·사무실은 ${last ? `최근 3개월 거래 기준 전용 ㎡당 ${K.perM2(last.v)}(3.3㎡당 약 ${K.perPy(last.v)})에 거래됐어요.` : any ? `${ymK(any.at)}에 마지막으로 전용 ㎡당 ${K.perM2(any.v)}에 거래됐고, 최근 3개월에는 거래가 없어요.` : '시세에 쓸 수 있는 거래(직거래·지분 거래 제외)가 없어요.'}</p>
       <div class="stats">
@@ -260,10 +287,16 @@
       ${u.hi ? `<div class="hib">${hiBox(`㎡당 최고가 (${ymK(DOC.hm)} 이후)`, u.hi)}${hiBox('최근 1년 ㎡당 최고가', u.hi1)}</div>` : ''}
       <div class="chead" style="margin-top:12px"><h3>이 건물 전용 ㎡당 가격 추이</h3></div><div class="cm-chart" id="cmCU"></div>
       <p class="basis">각 달 값 = 이 건물의 그 달까지 3개월 매매 실거래 전용 ㎡당 가격 중간값(직거래·지분 거래 제외). 거래가 없던 기간은 점선으로 이어요. 같은 건물이라도 층·위치(1층 길가인지)에 따라 값 차이가 커요.</p>
-      ${tr.length ? `<div class="tbl cm-tbl"><table><thead><tr><th>계약일</th><th class="num">전용·층</th><th class="num">거래금액</th></tr></thead><tbody>${tr.slice(0, 30).map(t => `<tr><td>${esc(t.date)}</td><td class="num">${t.area}㎡<small>${t.floor != null ? t.floor + '층' : '층 정보 없음'}</small></td><td class="num">${t.hi ? '<span class="jps-new">신고가</span> ' : ''}<b>${won(t.amt)}</b><small>㎡당 ${K.perM2(t.amt / t.area)}${t.direct ? ' · 직거래' : ''}${t.share ? ' · 지분' : ''}</small></td></tr>`).join('')}</tbody></table></div>
+      ${tr.length ? `<div class="tbl cm-tbl"><table><thead><tr><th>계약일</th><th class="num">전용·층</th><th class="num">거래금액</th></tr></thead><tbody>${moreBox(tr.slice(0, 30).map(t => `<tr><td>${esc(t.date)}</td><td class="num">${t.area}㎡<small>${t.floor != null ? t.floor + '층' : '층 정보 없음'}</small></td><td class="num">${t.hi ? '<span class="jps-new">신고가</span> ' : ''}<b>${won(t.amt)}</b><small>㎡당 ${K.perM2(t.amt / t.area)}${t.direct ? ' · 직거래' : ''}${t.share ? ' · 지분' : ''}</small></td></tr>`), 5)}</tbody></table></div>${moreBtn(5, Math.min(30, tr.length), '거래')}
       <p class="basis"><span class="jps-new">신고가</span> = 같은 건물 같은 전용면적에서 그 전까지 가장 높았던 값보다 비싸게 거래된 경우(수집 자료 기준, 직거래·지분 거래 제외).</p>` : ''}
     </div>`;
   }
+  /* 접는 칸: 제목 · 한 줄 요약 · '자세히 보기' (리포트 분석 설명과 같은 순서: 결론 → 요약 → 자세히) */
+  const det = (t, sum, body, open) => `<details class="cm-det"${open ? ' open' : ''}><summary><span class="t">${esc(t)}</span><span class="s">${esc(sum)}</span><span class="m"><span>자세히 보기</span></span></summary><div class="cm-db">${body}</div></details>`;
+  /* 목록 앞 n개만, 나머지는 '더보기' */
+  const moreBox = (items, n, label) => items.length <= n ? items.join('')
+    : items.slice(0, n).join('') + items.slice(n).map(x => x.replace(/^<(\w+) class="/, '<$1 class="cm-x ').replace(/^<(\w+)>/, '<$1 class="cm-x">')).join('');
+  const moreBtn = (n, all, label) => all > n ? `<button type="button" class="cm-more" data-cmmore aria-expanded="false">${esc(label)} 더보기 (${(all - n).toLocaleString()}건 더)</button>` : '';
   function render() {
     const r = $('cmRes'); if (!S.g) { r.hidden = true; return; }
     const g = S.g, k = S.k, s = (CX && CX.sgg[g]) || {}, sk = (s.k || {})[k] || null, sum = ((DOC && DOC.sum) || {})[k] || null;
@@ -275,90 +308,81 @@
       : `${nm} ${tn}은 ${last ? `최근 3개월 거래 기준 ${K.TYPES[k].unit} ${K.perM2(last.v)}(3.3㎡당 약 ${K.perPy(last.v)})이에요` : '최근 3개월 동안 시세를 낼 만큼 거래가 없었어요'}${y && y.c != null ? `. 최근 1년 중간값은 그 전 1년보다 ${Math.abs(y.c * 100).toFixed(1)}% ${y.c >= 0 ? '올랐어요' : '내렸어요'}` : ''}.`;
     const hiBox = (lab, t) => { if (!t) return ''; const x = K.trades([t])[0], p = K.tradePpm(x, k); return `<div><div class="k">${lab}</div><div class="v">${won(x.amt)}</div><div class="d">${esc(x.date)} · ${esc(x.dong)} ${esc(x.jibun)} · ${esc(x.use)}${p ? ` · ${K.TYPES[k].unit} ${K.perM2(p)}` : ''}</div></div>`; };
     const lg = rs ? ['all', 'com', 'res', 'etc'].filter(x => rs.lines[x] && rs.lines[x].some(v => v > 0)) : [];
-    const dongRows = ((DOC && DOC.dong) || []).filter(x => x[1] === k).slice(0, 15);
-    const trs = K.trades(((DOC && DOC.tr) || {})[k]);
-    const st = K.scoreState(CX), sc = sk && sk.sc && K.passed(CX).filter(h => sk.sc[h] != null);
+    const dongAll = ((DOC && DOC.dong) || []).filter(x => x[1] === k);
+    const trs = K.trades(((DOC && DOC.tr) || {})[k]).slice(0, 30);
+    const sc = sk && sk.sc && K.passed(CX).filter(h => sk.sc[h] != null);
     const skr = K.skRows(DOC && DOC.sk), sks = K.skSummary(DOC && DOC.sk), shop = DOC && DOC.shop, rone = K.roneRows(DOC && DOC.rone);
     const av = (CX && CX.avail) || {}, src = (CX && CX.src) || {};
     const isSeoul = sidoName(g) === '서울특별시';
+    const dem = K.demandRows(s, CX, DOC), sup = K.supplyRow(s, CX);
+    const lastOf = rs ? (key => { const a = rs.lines[key]; const l = a && K.latest(a, rs.months); return l ? K.perM2(l.v) : null; }) : () => null;
+    /* 한 줄 요약들 */
+    const sumTrend = rs && lg.length ? lg.filter(x => x !== 'all' && lastOf(x)).map(x => `${K.LU[x]} ${lastOf(x)}`).join(' · ') || `전체 ${lastOf('all') || '-'}` : '';
+    const sumSk = skr.length ? (sks ? `서울시 지정 상권 ${sks.n}곳 중 ${sks.up}곳은 매출이 늘고 ${sks.down}곳은 줄었어요(${K.qLabel(sks.q)}).` : '상권 매출 변화를 계산할 만큼 자료가 없어요.')
+      : (isSeoul ? '이 구의 상권 자료를 아직 받지 못했어요.' : '상권별 매출은 서울만 있어 이 지역은 확인 불가예요.');
+    const sumRone = rone.length ? rone[0].items.slice(0, 2).map(i => `${i.label} ${i.v}${i.unit}`).join(' · ') + ` (${rone[0].area})` : '확인 불가 — 상가 임대료는 신고되는 공개 자료가 없어요.';
+    const okDem = dem.filter(x => x.ok);
+    const sumDem = okDem.length ? okDem.slice(0, 2).map(x => `${x.label.replace(/\(.*\)/, '').trim()} ${x.value}`).join(' · ') : '확인 가능한 통계가 아직 없어요.';
     r.hidden = false;
     r.innerHTML = `${u ? unitPanel(u) : ''}
     <div class="panel">
-      <div class="dhead"><div><h2>${esc(nm)} ${esc(tn)} 시세</h2><div class="loc">${esc(sidoName(g))} ${esc(nm)} · ${esc(K.TYPES[k].long)}</div></div></div>
+      <div class="dhead"><div><h2>${esc(nm)} ${esc(tn)} 시세</h2><div class="loc">${esc(K.TYPES[k].long)}</div></div></div>
       <p class="cm-one">${esc(one)}</p>
-      ${sum ? `<div class="stats">
-        <div class="st key"><div class="k">${esc(K.TYPES[k].unit)} (최근 3개월)</div><div class="v">${last ? K.perM2(last.v) : '확인 불가'}</div><div class="d">${last ? `3.3㎡당 약 ${K.perPy(last.v)} · ${ymL(last.at)} 기준` : '최근 3개월 거래가 적어요'}</div></div>
-        <div class="st"><div class="k">1년 변화</div><div class="v">${y && y.c != null ? `<span class="${updown(y.c)}">${pct(y.c)}</span>` : '-'}</div><div class="d">${esc(K.yearText(y))}</div></div>
-        <div class="st"><div class="k">최근 1년 거래</div><div class="v">${sum.n1.toLocaleString()}건</div><div class="d">그중 직거래·지분 ${sum.nd1.toLocaleString()}건은 시세에서 뺐어요</div></div>
-        ${k === 'g' ? `<div class="st"><div class="k">연면적 ㎡당 (최근 1년 중앙)</div><div class="v">${yb && yb.now ? K.perM2(yb.now) : '확인 불가'}</div><div class="d">건물 바닥 면적을 모두 더한 넓이 기준</div></div>`
-          : `<div class="st"><div class="k">신고가 (최근 1년)</div><div class="v">${(sum.nh1 || 0).toLocaleString()}건</div><div class="d">같은 건물·같은 면적의 이전 최고가보다 비싸게 거래</div></div>`}
-      </div>
-      <div class="hib">${hiBox('최근 1년 최고 거래금액', sum.hi1)}${hiBox(`최근 1년 ${K.TYPES[k].unit} 최고`, sum.hip)}</div>
-      <p class="basis"><b>계산 근거</b> · ${k === 'c' ? '구분상가·사무실은 전용면적(혼자 쓰는 넓이) 1㎡당 가격으로 비교해요.' : '통건물은 값의 대부분이 땅값이라 대지면적(땅 넓이) 1㎡당 가격으로 비교해요.'} 시세 = 그 달까지 3개월 매매 실거래 ㎡당 가격의 중간값(가운데 값)이에요. 3개월 동안 거래가 3건보다 적으면 값을 비워 둬요. 해제(취소)·직거래·지분 거래는 빼요.</p>` : ''}
-    </div>
+      ${sum ? `<div class="cm-stats">
+        <div class="st key"><div class="k">${esc(K.TYPES[k].unit)}</div><div class="v">${last ? K.perM2(last.v) : '확인 불가'}</div><div class="d">${last ? `3.3㎡당 약 ${K.perPy(last.v)}` : '최근 3개월 거래가 적어요'}</div></div>
+        <div class="st"><div class="k">1년 변화</div><div class="v">${y && y.c != null ? `<span class="${updown(y.c)}">${pct(y.c)}</span>` : '-'}</div><div class="d">1년 중간값 비교</div></div>
+        <div class="st"><div class="k">최근 1년 거래</div><div class="v">${sum.n1.toLocaleString()}건</div><div class="d">${last ? ymL(last.at) + ' 기준' : ''}</div></div>
+        ${k === 'g' ? `<div class="st"><div class="k">연면적 ㎡당</div><div class="v">${yb && yb.now ? K.perM2(yb.now) : '확인 불가'}</div><div class="d">최근 1년 중간값</div></div>`
+          : `<div class="st"><div class="k">신고가</div><div class="v">${(sum.nh1 || 0).toLocaleString()}건</div><div class="d">최근 1년</div></div>`}
+      </div>` : ''}
+      ${rs && lg.length ? det('용도지역별 가격 추이', sumTrend, `${spans(rs.months.length, S.span)}<div class="cm-chart" id="cmCP"></div>
+        <div class="cm-lg">${lg.map(x => `<span><i style="background:${COL[x]}"></i>${esc(K.LU[x])}</span>`).join('')}</div>
+        <p class="basis">각 선은 땅의 용도(용도지역)별로 나눠 계산했어요. 상업지역은 큰길가 상가·빌딩이 많은 곳, 주거지역은 주택가 안 근린상가가 많은 곳이에요. 거래가 적던 달은 비우고 점선으로 이어요(사이 값을 지어내지 않아요).${CX && CX.hm ? ` 이 화면의 실거래는 ${ymK(CX.hm)}부터 모았어요.` : ''}</p>`) : ''}
+      ${sum ? det('최고가와 계산 근거', `최근 1년 ${K.TYPES[k].unit} 최고 ${sum.hip ? K.perM2(K.tradePpm(K.trades([sum.hip])[0], k)) : '-'}`, `<div class="hib">${hiBox('최근 1년 최고 거래금액', sum.hi1)}${hiBox(`최근 1년 ${K.TYPES[k].unit} 최고`, sum.hip)}</div>
+        <p class="basis"><b>계산 근거</b> · ${k === 'c' ? '구분상가·사무실은 전용면적(혼자 쓰는 넓이) 1㎡당 가격으로 비교해요.' : '통건물은 값의 대부분이 땅값이라 대지면적(땅 넓이) 1㎡당 가격으로 비교해요.'} 시세 = 그 달까지 3개월 매매 실거래 ㎡당 가격의 중간값(가운데 값)이에요. 3개월 동안 거래가 3건보다 적으면 값을 비워 둬요. 해제(취소)·직거래·지분 거래는 빼요.${k === 'c' ? ' 신고가 = 같은 건물·같은 면적의 이전 최고가보다 비싸게 거래된 경우예요.' : ''}</p>`) : ''}
 
-    ${rs && lg.length ? `<div class="panel">
-      <div class="chead"><h3>${esc(K.TYPES[k].unit)} 가격 추이</h3>${spans(rs.months.length, S.span)}</div>
-      <div class="cm-chart" id="cmCP"></div>
-      <div class="cm-lg">${lg.map(x => `<span><i style="background:${COL[x]}"></i>${esc(K.LU[x])}</span>`).join('')}</div>
-      <p class="basis">각 선은 땅의 용도(용도지역)별로 나눠 계산했어요. 상업지역은 큰길가 상가·빌딩이 많은 곳, 주거지역은 주택가 안 근린상가가 많은 곳이에요. 거래가 적던 달은 비우고 점선으로 이어요(사이 값을 지어내지 않아요).${CX && CX.hm ? ` 이 화면의 실거래는 ${ymK(CX.hm)}부터 모았어요.` : ''}</p>
-    </div>` : ''}
-
-    ${dongRows.length ? `<div class="panel"><h2>동별 ${esc(tn)} 거래<small>최근 3년 · 거래 많은 순</small></h2>
-      <div class="tbl"><table><thead><tr><th>동</th><th class="num">3년 거래</th><th class="num">${esc(K.TYPES[k].unit)}<br><small>3년 중앙</small></th><th class="num">마지막 계약</th></tr></thead><tbody>
-      ${dongRows.map(x => `<tr><td>${esc(x[0])}</td><td class="num">${x[2].toLocaleString()}건</td><td class="num">${x[3] ? K.perM2(x[3]) : '-'}</td><td class="num">${esc(String(x[4]).replace(/^(\d{4})(\d{2})(\d{2})$/, '$1.$2.$3'))}</td></tr>`).join('')}</tbody></table></div>
-      <p class="basis">㎡당 중간값은 거래가 3건 이상인 동만 보여 드려요. 동 안에서도 큰길가와 골목 안 값 차이가 커요.</p></div>` : ''}
-
-    <div class="panel"><h2>상권 흐름<small>가게 매출과 가게 수가 늘어나는 동네는 상가를 찾는 사람이 늘어날 수 있어요</small></h2>
-      ${skr.length ? `<p class="cm-one">${esc(nm)}의 서울시 지정 상권 ${sks ? sks.n : skr.length}곳 중 ${sks ? `${sks.up}곳은 1년 전 같은 분기보다 매출이 늘었고, ${sks.down}곳은 줄었어요(${K.qLabel(sks.q)} 기준).` : '매출 변화를 계산할 만큼 자료가 쌓이지 않았어요.'}</p>
-        <div class="tbl cm-tbl"><table><thead><tr><th>상권</th><th class="num">분기 매출(추정)</th><th class="num">1년 변화</th>${av.stor ? '<th class="num">가게 수</th>' : ''}</tr></thead><tbody>
-        ${skr.slice(0, 10).map(x => `<tr><td>${esc(x.name)}<small>${esc(x.kind || '')}</small></td><td class="num">${K.eokWon(x.sales)}<small>${esc(K.qLabel(x.q))}</small></td><td class="num">${x.c != null ? `<span class="${updown(x.c)}">${pct(x.c)}</span>` : '-'}</td>${av.stor ? `<td class="num">${x.stores != null ? x.stores.toLocaleString() + '곳' : '-'}${x.open != null ? `<small>1년 개업 ${x.open} · 폐업 ${x.close}</small>` : ''}</td>` : ''}</tr>`).join('')}</tbody></table></div>
-        <p class="basis">분기 매출은 서울시가 카드 결제 등으로 추정한 값이에요(실제 장부 매출이 아니에요). 매출 많은 순 10곳만 보여 드려요.${av.stor ? '' : ' 상권별 가게 수·개업·폐업은 서울시 점포 자료를 받는 중이라 아직 확인 불가예요.'}</p>
-        <div class="cm-src">출처: ${esc(src.sk || '서울시 상권분석서비스')}</div>`
-        : `<div class="cm-row no"><div class="k">상권별 매출</div><div class="v">확인 불가</div><div class="d">${isSeoul ? '이 구의 상권 자료를 아직 받지 못했어요.' : '상권별 매출(서울시 상권분석서비스)은 서울만 있어요.'}</div></div>`}
-      <div class="cm-rows" style="margin-top:10px">
-        ${shop ? `<div class="cm-row"><div class="k">영업 중인 가게 업종 구성</div><div class="v">${shop.n.toLocaleString()}곳 (${esc(K.qLabel(shop.at))})</div>
-          <div class="d">${shop.mix.slice(0, 8).map(x => `${esc(x[0])} ${x[1].toLocaleString()}곳${x[2] != null ? `(${x[2] >= 0 ? '+' : ''}${x[2].toLocaleString()})` : ''}`).join(' · ')}${shop.prev ? ` — 괄호는 ${esc(K.qLabel(shop.prev))}보다 늘거나 준 수예요.` : ' — 업종별 변화는 다음 분기 자료가 쌓이면 비교해 드려요.'}</div>
-          <div class="cm-src">출처: ${esc(src.shop || '')}</div></div>`
-        : `<div class="cm-row no"><div class="k">영업 중인 가게 수·업종 구성</div><div class="v">확인 불가</div><div class="d">${av.shop ? '이 지역 자료가 없어요.' : '소상공인시장진흥공단 상가(상권)정보를 받는 중이에요. 이 자료는 지금 영업 중인 가게만 알려 줘서, 변화는 분기마다 쌓은 뒤부터 비교할 수 있어요.'}</div><div class="cm-src">출처: ${esc(src.shop || '')}</div></div>`}
-      </div></div>
-
-    <div class="panel"><h2>임대료·빈 가게 비율·수익률<small>상가를 살 때는 세를 얼마나 받을 수 있는지와 빈 곳이 얼마나 되는지가 중요해요</small></h2>
-      <div class="cm-def"><b>상가 임대료는 실거래처럼 신고되는 공개 자료가 없어요.</b> 그래서 집코드는 한국부동산원이 분기마다 표본 건물을 조사해 발표하는 지역 평균(상업용부동산 임대동향조사)을 그대로 보여 드려요. <b>공실률</b>은 비어 있는 가게·사무실 비율, <b>투자수익률</b>은 1년 동안 받은 임대 수입과 건물값 변화를 합친 수익률이에요.</div>
-      ${rone.length ? `<div class="cm-rows">${rone.map(x => `<div class="cm-row"><div class="k">${esc(x.area)} <small style="font-weight:600;color:#6B7684">(${esc(K.HOW[x.how] || '')})</small></div>
-        <div class="d">${x.items.map(i => `${esc(i.label)} <b>${esc(i.v)}${esc(i.unit)}</b>${i.at ? ` (${esc(i.at)})` : ''}`).join(' · ')}</div></div>`).join('')}</div>
-        <p class="basis">부동산원 조사 지역(상권)은 공식 경계 자료가 없어 이름이 이 시·군·구의 동 이름과 같은 곳만 이어 보여 드려요. 이 건물 바로 앞 사정과 다를 수 있어요.</p>
-        <div class="cm-src">출처: ${esc(src.rone || '')}${CX.rone_at ? ` · ${esc(CX.rone_at)} 받음` : ''}</div>`
-        : `<div class="cm-row no"><div class="k">지역 임대료·공실률·투자수익률</div><div class="v">확인 불가</div><div class="d">${av.rone ? `이 시·군·구와 이름이 이어지는 부동산원 조사 지역이 없어요.` : '한국부동산원 자료 연결을 마치는 대로 지역 평균을 보여 드려요.'}</div><div class="cm-src">출처: ${esc(src.rone || '')}</div></div>`}
-    </div>
-
-    <div class="panel"><h2>찾는 사람·새로 생기는 상가<small>공식 통계만 쓰고, 없는 자료는 '확인 불가'로 그대로 보여 드려요</small></h2>
-      ${rowsHtml(K.demandRows(s, CX, DOC).concat([K.supplyRow(s, CX)]))}
-      <p class="basis">일자리·세대 통계는 시·군·구 단위예요(건물 바로 옆 사정과 다를 수 있어요). 과거 자료와 맞춰 보지 않은 지표는 점수에 넣지 않고 사실로만 보여 드려요.</p></div>
-
-    <div class="panel"><h2>앞으로의 가격 점수<small>과거에 그대로 써 봐서 잘 맞은 보유 기간만 점수를 보여 드려요</small></h2>
+      ${det('상권 흐름', sumSk, (skr.length ? `<div class="tbl cm-tbl"><table><thead><tr><th>상권</th><th class="num">분기 매출(추정)</th><th class="num">1년 변화</th></tr></thead><tbody>
+        ${skr.slice(0, 10).map(x => `<tr><td>${esc(x.name)}<small>${esc(x.kind || '')}${x.stores != null ? ` · 가게 ${x.stores.toLocaleString()}곳` : ''}</small></td><td class="num">${K.eokWon(x.sales)}<small>${esc(K.qLabel(x.q))}</small></td><td class="num">${x.c != null ? `<span class="${updown(x.c)}">${pct(x.c)}</span>` : '-'}</td></tr>`).join('')}</tbody></table></div>
+        <p class="basis">분기 매출은 서울시가 카드 결제 등으로 추정한 값이에요(실제 장부 매출이 아니에요). 매출 많은 순 10곳이에요.${av.stor ? '' : ' 상권별 가게 수·개업·폐업은 서울시 점포 자료를 받는 중이라 아직 확인 불가예요.'}</p><div class="cm-src">출처: ${esc(src.sk || '')}</div>` : '')
+        + (shop ? `<div class="cm-row" style="margin-top:8px"><div class="k">영업 중인 가게 업종 구성</div><div class="v">${shop.n.toLocaleString()}곳 (${esc(K.qLabel(shop.at))})</div>
+          <div class="d">${shop.mix.slice(0, 8).map(x => `${esc(x[0])} ${x[1].toLocaleString()}곳${x[2] != null ? `(${x[2] >= 0 ? '+' : ''}${x[2].toLocaleString()})` : ''}`).join(' · ')}${shop.prev ? ` — 괄호는 ${esc(K.qLabel(shop.prev))}보다 늘거나 준 수예요.` : ' — 업종별 변화는 다음 분기 자료가 쌓이면 비교해 드려요.'}</div><div class="cm-src">출처: ${esc(src.shop || '')}</div></div>`
+          : `<div class="cm-row no" style="margin-top:8px"><div class="k">영업 중인 가게 수·업종 구성</div><div class="v">확인 불가</div><div class="d">${av.shop ? '이 지역 자료가 없어요.' : '소상공인시장진흥공단 상가(상권)정보를 받는 중이에요. 이 자료는 지금 영업 중인 가게만 알려 줘서, 변화는 분기마다 쌓은 뒤부터 비교할 수 있어요.'}</div><div class="cm-src">출처: ${esc(src.shop || '')}</div></div>`))}
+      ${det('임대료·빈 가게 비율·수익률', sumRone, `<div class="cm-def"><b>상가 임대료는 실거래처럼 신고되는 공개 자료가 없어요.</b> 그래서 집코드는 한국부동산원이 분기마다 표본 건물을 조사해 발표하는 지역 평균(상업용부동산 임대동향조사)을 그대로 보여 드려요. <b>공실률</b>은 비어 있는 가게·사무실 비율, <b>투자수익률</b>은 1년 동안 받은 임대 수입과 건물값 변화를 합친 수익률이에요.</div>
+        ${rone.length ? `<div class="cm-rows">${rone.map(x => `<div class="cm-row"><div class="k">${esc(x.area)} <small style="font-weight:600;color:#6B7684">(${esc(K.HOW[x.how] || '')})</small></div>
+          <div class="d">${x.items.map(i => `${esc(i.label)} <b>${esc(i.v)}${esc(i.unit)}</b>${i.at ? ` (${esc(i.at)})` : ''}`).join(' · ')}</div></div>`).join('')}</div>
+          <p class="basis">부동산원 조사 지역(상권)은 공식 경계 자료가 없어 이름이 이 시·군·구의 동 이름과 같은 곳만 이어 보여 드려요.</p><div class="cm-src">출처: ${esc(src.rone || '')}${CX.rone_at ? ` · ${esc(CX.rone_at)} 받음` : ''}</div>`
+          : `<div class="cm-row no"><div class="k">지역 임대료·공실률·투자수익률</div><div class="v">확인 불가</div><div class="d">${av.rone ? '이 시·군·구와 이름이 이어지는 부동산원 조사 지역이 없어요.' : '한국부동산원 자료 연결을 마치는 대로 지역 평균을 보여 드려요.'}</div><div class="cm-src">출처: ${esc(src.rone || '')}</div></div>`}`)}
+      ${det('일자리·지하철·새 상가', sumDem, `${rowsHtml(dem.concat([sup]))}<p class="basis">일자리·세대 통계는 시·군·구 단위예요(건물 바로 옆 사정과 다를 수 있어요). 과거 자료와 맞춰 보지 않은 지표는 점수에 넣지 않고 사실로만 보여 드려요.</p>`)}
+      <h3 style="margin:14px 0 6px;font-size:16px">앞으로의 가격 점수</h3>
       ${sc && sc.length ? `<div class="cm-score">${sc.map(h => `<div><small>${h}년 보유</small><b>${sk.sc[h]}점</b><small>${esc(sdShort(g))} ${esc(tn)} 지역 중 ${esc(K.scoreRank(sk.sc[h]))}</small></div>`).join('')}</div>
-        ${sk.why ? `<ul class="why">${sk.why.map(w => `<li>${esc(w[0])}: 점수를 ${w[1] > 0 ? '올렸어요' : '내렸어요'}</li>`).join('')}</ul>` : ''}
-        <p class="basis">점수 = ${esc(sdShort(g))}의 시·군·구별 ${esc(tn)} 시세를 서로 비교한 순위예요(100점 만점, 50점이 가운데). 과거 여러 때에 그때까지의 자료만으로 매긴 점수가 그 뒤 ㎡당 가격 변화(같은 시·도 평균 대비)를 잘 맞힌 보유 기간만 보여 드려요. 시장 전체가 내리면 점수가 높은 지역도 내릴 수 있어요.</p>`
-        : `<div class="cm-wait">${esc(K.scoreHead(CX))}</div>
-        <p class="note" style="font-size:15px;margin-top:8px">집코드는 과거 여러 때에 그때까지의 자료만으로 점수를 매겨 보고, 그 뒤 실제 가격과 절반 넘게 맞고 평균보다 나은 보유 기간에만 점수를 보여 드려요. 그 전에는 위의 사실 지표만 보여 드려요.</p>`}
-      <ul class="why" style="font-size:14px">${K.btLines(CX && CX.bt).map(t => `<li>${esc(t)}</li>`).join('')}</ul>
+        ${sk.why ? `<ul class="why">${sk.why.map(w => `<li>${esc(w[0])}: 점수를 ${w[1] > 0 ? '올렸어요' : '내렸어요'}</li>`).join('')}</ul>` : ''}`
+        : `<div class="cm-wait">${esc(K.scoreHead(CX))}</div>`}
+      ${det('점수를 보여 주는 기준', sc && sc.length ? '과거에 잘 맞은 보유 기간만 보여 드려요' : '과거에 절반 넘게 맞은 보유 기간만 점수를 보여 드려요', `${sc && sc.length ? `<p class="basis">점수 = ${esc(sdShort(g))}의 시·군·구별 ${esc(tn)} 시세를 서로 비교한 순위예요(100점 만점, 50점이 가운데). 시장 전체가 내리면 점수가 높은 지역도 내릴 수 있어요.</p>` : ''}
+        <p class="basis">집코드는 과거 여러 때에 그때까지의 자료만으로 점수를 매겨 보고, 그 뒤 실제 가격과 절반 넘게 맞고 평균보다 나은 보유 기간에만 점수를 보여 드려요. 그 전에는 위의 사실 지표만 보여 드려요.</p>
+        <ul class="why" style="font-size:14px">${K.btLines(CX && CX.bt).map(t => `<li>${esc(t)}</li>`).join('')}</ul>`)}
     </div>
 
-    ${trs.length ? `<div class="panel"><h2>최근 ${esc(tn)} 매매 실거래<small>국토교통부 신고 그대로예요(최근 3년, 최신순)</small></h2>
-      <div class="cm-trs">${trs.slice(0, 30).map(t => { const p = K.tradePpm(t, k); return `<div class="cm-tr"><div class="a"><span>${esc(t.date)} · ${esc(t.dong)} ${esc(t.jibun)}${t.masked ? '<span class="cm-mask">일부 가림</span>' : ''}</span><b>${t.hi ? '<span class="jps-new">신고가</span> ' : ''}${won(t.amt)}</b></div>
-        <div class="b">${esc(t.use)} · ${esc(t.lu)} · ${k === 'g' ? `대지 ${t.la ? t.la.toLocaleString() + '㎡' : '-'} · 연면적 ${t.ba.toLocaleString()}㎡` : `전용 ${t.ba}㎡${t.floor != null ? ' · ' + t.floor + '층' : ''}`}${p ? ` · ㎡당 ${K.perM2(p)}` : ''}${t.by ? ` · ${t.by}년 준공` : ''}${t.direct ? ' · <b>직거래</b>' : ''}${t.share ? ' · <b>지분</b>' : ''}</div></div>`; }).join('')}</div>
-      ${k === 'g' ? '<p class="basis"><b>지번이 일부 가려진 이유</b> · 국토교통부는 통건물(일반 건물) 거래의 지번을 첫 자리만 남기고 가려서 공개해요(예: 5**). 그래서 집코드도 건물별로 묶지 않고 동·시·군·구 단위로만 모아 보여 드려요. 같은 이유로 통건물은 건물별 신고가를 확인할 수 없어요.</p>' : '<p class="basis">구분상가·사무실은 지번이 공개돼 건물별로 묶어요. 위에서 동과 건물(지번)을 고르면 건물별 시세와 신고가를 볼 수 있어요.</p>'}
-      ${trs.length > 30 ? `<p class="basis">최근 30건만 보여 드려요(최근 3년 ${trs.length.toLocaleString()}건${trs.length >= 300 ? ' 이상' : ''}).</p>` : ''}
+    ${dongAll.length ? `<div class="panel cm-list"><h2>동별 ${esc(tn)} 거래<small>최근 3년 · 거래 많은 순 · ㎡당은 3건 이상인 동만</small></h2>
+      <div class="tbl cm-tbl"><table><thead><tr><th>동</th><th class="num">3년 거래</th><th class="num">${esc(K.TYPES[k].unit)}<br><small>3년 중간</small></th></tr></thead><tbody>
+      ${moreBox(dongAll.slice(0, 30).map(x => `<tr><td>${esc(x[0])}</td><td class="num">${x[2].toLocaleString()}건</td><td class="num">${x[3] ? K.perM2(x[3]) : '-'}</td></tr>`), 5)}</tbody></table></div>
+      ${moreBtn(5, Math.min(30, dongAll.length), '동')}
+      </div>` : ''}
+
+    ${trs.length ? `<div class="panel cm-list"><h2>최근 ${esc(tn)} 매매 실거래<small>국토교통부 신고 그대로예요(최근 3년, 최신순)</small></h2>
+      <div class="cm-trs">${moreBox(trs.map(t => { const p = K.tradePpm(t, k); return `<div class="cm-tr"><div class="a"><span>${esc(t.date)} · ${esc(t.dong)} ${esc(t.jibun)}${t.masked ? '<span class="cm-mask">일부 가림</span>' : ''}</span><b>${won(t.amt)}</b></div>
+        <div class="b">${t.hi ? '<span class="jps-new">신고가</span> ' : ''}${esc(t.use)} · ${k === 'g' ? `대지 ${t.la ? t.la.toLocaleString() + '㎡' : '-'} · 연면적 ${t.ba.toLocaleString()}㎡` : `전용 ${t.ba}㎡${t.floor != null ? ' · ' + t.floor + '층' : ''}`}${p ? ` · ㎡당 ${K.perM2(p)}` : ''}${t.direct ? ' · <b>직거래</b>' : ''}${t.share ? ' · <b>지분</b>' : ''}</div></div>`; }), 5)}</div>
+      ${moreBtn(5, trs.length, '거래')}
+      ${k === 'g' ? det('지번이 일부 가려진 이유', '국토교통부가 통건물 지번을 첫 자리만 남기고 공개해요', '<p class="basis">국토교통부는 통건물(일반 건물) 거래의 지번을 첫 자리만 남기고 가려서 공개해요(예: 5**). 그래서 집코드도 건물별로 묶지 않고 동·시·군·구 단위로만 모아 보여 드려요. 같은 이유로 통건물은 건물별 신고가를 확인할 수 없어요.</p>') : ''}
     </div>` : ''}
 
-    <div class="panel"><h2>이어서 알아보기</h2>
-      <div class="links">
-        <a class="main" href="../loan/?src=comm" data-track="comm_to_loan"><b>대출 한도 계산하기 →</b><small>내 소득·지역으로 받을 수 있는 대출을 알아봐요</small></a>
-        <a href="../tax/" data-track="comm_to_tax"><b>취득세·양도세 계산 →</b><small>사고팔 때 내는 세금을 미리 계산해요</small></a>
-        <a href="../map/" data-track="comm_to_map"><b>지도에서 보기 →</b><small>개발·교통 예정 사업을 지도로 확인해요</small></a>
-      </div>
+    <div class="cm-links" style="margin:12px 0">
+      <a class="main" href="../loan/?src=comm" data-track="comm_to_loan">대출 한도 계산 →</a>
+      <a href="../tax/" data-track="comm_to_tax">세금 계산 →</a>
+      <a href="../map/" data-track="comm_to_map">개발·교통 지도 →</a>
     </div>`;
+    r.querySelectorAll('details.cm-det').forEach(d => d.addEventListener('toggle', () => { if (d.open && d.querySelector('#cmCP,#cmCU')) drawCharts(); }));
+    r.querySelectorAll('[data-cmmore]').forEach(b => b.onclick = () => { const box = b.closest('.cm-list, .panel'); const on = !box.classList.contains('cm-open'); box.classList.toggle('cm-open', on); b.setAttribute('aria-expanded', on); b.textContent = on ? '접기' : b.dataset.lab || b.textContent; });
+    r.querySelectorAll('[data-cmmore]').forEach(b => { b.dataset.lab = b.textContent; });
     drawCharts();
     r.querySelectorAll('[data-cmspan]').forEach(b => b.onclick = () => { S.span = +b.dataset.cmspan || 0; r.querySelectorAll('[data-cmspan]').forEach(x => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); }); drawCharts(); });
     if (window.jdjStat) jdjStat('feature_use', { feature: 'mine_comm' });
