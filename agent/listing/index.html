@@ -24,6 +24,8 @@
 <script src="/jangdaejang-calc/tax/adjusted-areas.js"></script>
 <script src="/jangdaejang-calc/assets/pro-report.js?v=5"></script>
 <script src="/jangdaejang-calc/assets/broker-tools.js?v=3"></script>
+<script src="/jangdaejang-calc/assets/conf.js?v=1"></script>
+<script src="/jangdaejang-calc/assets/life-view.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
@@ -91,6 +93,7 @@ h1{font-size:clamp(22px,5.4vw,30px);margin:4px 0 6px;line-height:1.3;letter-spac
 .ls .lst li{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line2);padding:4px 0;font-size:13.5px}
 .ls .lst li b{font-weight:700}
 .ls .lst li span{color:#4E5968;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ls .lst.lf li b{white-space:nowrap;flex:none}.ls .lst.lf li span{white-space:normal;text-align:right;min-width:0}
 .ls .fv{display:flex;gap:12px;align-items:flex-start;background:#F9FAFB;border-radius:12px;padding:10px 12px}
 .ls .ring{flex:none;width:52px;height:52px;border-radius:50%;border:4px solid #B8942A;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:900;box-sizing:border-box}
 .ls .fv p{margin:0;font-size:13px;line-height:1.55}
@@ -284,9 +287,13 @@ async function render(prof){
   let fx = null;
   try { const us = await P.scoreUnits(ST.sd), key = M.unitKey(u); const hit = us.find(x => M.unitKey(x) === key); fx = hit && hit[9] && typeof hit[9] === 'object' ? M.cleanFx(hit[9]) : null; } catch (e) {}
   if (!MH) MH = await j('model_h.json').catch(() => null);
-  const [xy, poi] = await Promise.all([j(ST.sd + '_xy.json').then(x => x.xy || null).catch(() => null), j('poi/' + ST.sd + '.json').catch(() => null)]);
+  const [xy, poi, life] = await Promise.all([j(ST.sd + '_xy.json').then(x => x.xy || null).catch(() => null), j('poi/' + ST.sd + '.json').catch(() => null),
+    window.JDJ_LIFE ? JDJ_LIFE.load(DATA, ST.sd) : null]);
   const sido = (IX.sgg[ST.g] || {}).sido || '';
   const S = T.listing({ u, IX, M, fx, vc: R.vcheck(MH, sido), units: g.units, xy, poi, TAX: window.JDJ_TAX, ADJ: window.JDJ_ADJ, ask: ST.ask, memo: ST.memo, bd: ST.bd, fl: ST.fl, kind: T.kindOf(prof) });
+  /* 학군·생활(공개 data/life) · 믿을 만한 정도(공개 점수 묶음 cf) — 자료가 있을 때만 */
+  S.life = life ? { F: life, o: JDJ_LIFE.unit(life, [u[0], u[1], u[8]].join('|')) } : null;
+  S.conf = fx && fx.fv != null && window.JDJ_CONF ? JDJ_CONF.build(fx, { MH, sido, cnt: M.counts(u[7]) }) : null;
   out.innerHTML = sheetHtml(S, prof);
   $('acts').hidden = SHARED && !PROF;
   document.title = `${S.apt} ${S.band} ${S.title} | ${SITE}`;
@@ -324,10 +331,17 @@ function sheetHtml(S, prof){
   /* 4 학교·역 */
   const pl = (a, miss, unit) => a.length ? `<ul class="lst">${a.map(x => `<li><b>${esc(x.nm)}${unit}</b><span>직선 ${T.mText(x.m)} · 걸어서 약 ${T.walkMin(x.m)}분</span></li>`).join('')}</ul>` : `<p class="miss">${esc(miss)}</p>`;
   const po = S.poi;
-  const t4 = `<div class="lab">지하철역</div>${pl(po.st, po.stMiss, '역')}<div class="lab">중학교</div>${pl(po.sc, po.scMiss, '')}<p class="src">${esc(po.elem)} 걷는 시간은 직선 거리로 어림한 값이라 실제로는 더 걸려요.</p>${po.src ? srcLine(`${po.src.st} · ${po.src.sc}`, `역 ${T.ymd(po.asOf.st)}, 학교 ${T.ymd(po.asOf.sc)}`) : ''}`;
+  const LF = S.life && S.life.o ? JDJ_LIFE.rows(S.life.o, S.life.F, {compact: true}) : [];
+  const lfE = LF.find(r => r.k === '배정 초등학교' && r.s), lfX = LF.filter(r => r.k !== '배정 초등학교' && r.k !== '가까운 중학교');
+  const lsc = !po.sc.length && S.life && S.life.o && (S.life.o.sc || []).length ? S.life.o.sc.map(x => ({ nm: x[0], m: x[1] })) : null;   // 설명서용 학교 위치 파일이 없을 때 생활 정보의 중학교
+  const t4 = `<div class="lab">지하철역</div>${pl(po.st, po.stMiss, '역')}<div class="lab">중학교</div>${pl(lsc || po.sc, po.scMiss, '')}`
+    + (lfE ? `<div class="lab">배정 초등학교</div><ul class="lst"><li><b>${esc(lfE.v)}</b><span>교육청 통학구역 기준</span></li></ul>` : '')
+    + (lfX.length ? `<div class="lab">생활 정보 (직선 거리)</div><ul class="lst lf">${lfX.map(r => `<li><b>${esc(r.k)}</b><span>${esc(r.v)}</span></li>`).join('')}</ul>` : '')
+    + `<p class="src">${lfE ? '초등학교 배정은 해마다 바뀔 수 있어 입학 전 관할 교육지원청에서 다시 확인해 주세요.' : esc(po.elem)} 걷는 시간은 직선 거리로 어림한 값이라 실제로는 더 걸려요.</p>${po.src ? srcLine(`${po.src.st} · ${po.src.sc}`, `역 ${T.ymd(po.asOf.st)}, 학교 ${T.ymd(po.asOf.sc)}`) : ''}`
+    + (LF.length && (lfE || lfX.length || lsc) ? `<p class="src">${esc(JDJ_LIFE.srcText(S.life.F, (lfE ? [lfE] : []).concat(lfX).map(r => r.s).concat(lsc ? ['sc'] : []).filter(Boolean)))}</p>` : '');
   /* 5 미래가치 */
   const f = S.fv;
-  const t5 = f.has ? `<div class="fv"><div class="ring">${esc(f.head.match(/\d+/)[0])}</div><div><p><b>${esc(f.head)}</b></p><p>${esc(f.what)}</p><p>${esc(f.past)}</p></div></div>` : `<div class="fv"><div><p>${esc(f.miss)}</p><p>${esc(f.past)}</p></div></div>`;
+  const t5 = f.has ? `<div class="fv"><div class="ring">${esc(f.head.match(/\d+/)[0])}</div><div><p><b>${esc(f.head)}</b></p>${S.conf ? `<p class="cfl"><b>${esc(JDJ_CONF.line(S.conf))}</b></p>` : ''}<p>${esc(f.what)}</p><p>${esc(f.past)}</p></div></div>` : `<div class="fv"><div><p>${esc(f.miss)}</p><p>${esc(f.past)}</p></div></div>`;
   /* 6 취득세 */
   const tx = S.tax;
   const t6 = tx.rows && tx.rows.length ? `<p class="sm">${tx.baseKind === 'ask' ? '호가' : tx.baseKind === 'band' ? `이 평형 ${SITE} 시세` : `${SITE} 시세`} ${T.won(tx.base)}에 샀다고 할 때 <span class="est">예상</span>${tx.regulated === true ? ' · 조정대상지역' : tx.regulated === false ? ' · 조정대상지역 아님' : ''}${tx.large ? ' · 85㎡ 초과' : ''}</p>

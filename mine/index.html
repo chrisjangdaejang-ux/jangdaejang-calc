@@ -40,6 +40,8 @@
 <script src="../assets/plain-words.js?v=14"></script>
 <script src="../assets/narrative.js?v=13"></script>
 <script src="../assets/strength.js?v=1"></script>
+<script src="../assets/conf.js?v=1"></script>
+<script src="../assets/life-view.js?v=1"></script>
 <script src="../assets/mine-core.js?v=16"></script>
 <script src="../assets/ask-core.js?v=3"></script>
 <script src="../assets/ask.js?v=1"></script>
@@ -560,12 +562,15 @@ function render(d, map, units){
 
   <div class="panel">
     <h2>미래가치 점수와 근거<small>공개 자료에 있는 점수를 그대로 보여 드려요 (2년 보유 기준, 같은 시·도 단지 비교)</small></h2>
+    ${f.fv != null && window.JDJ_CONF ? JDJ_CONF.html(JDJ_CONF.build(f, {MH, sido: sidoName(d.code), cnt: c}), {more: '../guide/method/#conf'}) : ''}
     ${f.fv != null ? (NARON ? JDJ_NAR.html(JDJ_NAR.build(f, {apt:d.apt, dong:d.dong, code:d.code, band:S.band, area:u[4], IX, EV:EVD, MH, SP:SUP, PL, year:new Date().getFullYear(), s:u[6], regionUsed:MREG, jibun:d.jibun, pol:POL, dev: DEVP ? {data:DEVP, u:{code:d.code, dong:d.dong, jibun:d.jibun}, o:{apt:d.apt, sggName}} : null}), {id:'narM'})
       + `<details class="msum"><summary>자세한 자료 보기</summary><ul class="why">${rs.map(rli).join('')}</ul></details>` : `<ul class="why">${rs.map(rli).join('')}</ul>`) + `
       <p class="basis">미래가치 점수는 과거 여러 때에 그때까지의 자료만으로 예측한 뒤 실제 시세와 맞춰 본 방법으로 매긴 점수예요. 같은 지역 평균 대비 순위라, 시장 전체가 내리면 점수가 높은 단지도 내릴 수 있어요.</p>`
       : !has ? `<p class="note" style="font-size:15px">거래가 적어 미래가치 점수는 아직 매기지 않아요(최근 3년 ${u[5]}건). 시세·추이·거래량과 실거래 목록은 위에서 확인할 수 있어요.</p>`
       : `<p class="note" style="font-size:15px">이 단지·평형은 아직 미래가치 점수가 없어요. 점수를 매길 거래 자료가 충분히 쌓이면 자동으로 보여 드려요.</p>${rs.length ? `<ul class="why">${rs.map(rli).join('')}</ul>` : ''}`}
   </div>
+
+  <div class="panel" id="lifeSec" hidden></div>
 
   <div id="alertSec"></div>
 
@@ -591,6 +596,8 @@ function render(d, map, units){
   <div id="agentSec"></div>`;
 
   $('res').hidden = false;
+  if (window.JDJ_CONF) JDJ_CONF.css();
+  fillLife(d);
   CUR.ht = HT;
   /* 공유(assets/share.js): 단지 공개 정보(이름·변동률·점수·거래 건수)만. 매수가·매수 시기(bp·bd)는 주소·문구·이미지에 넣지 않음 */
   if (window.JDJ_SHARE) JDJ_SHARE.update({allowNum: true,
@@ -611,6 +618,20 @@ function render(d, map, units){
     head:'<h2>이 지역에 영향을 주는 정책<small>이 단지가 있는 ' + esc(sggName(d.code) + ' ' + d.dong) + '에 적용 중이거나 국회에서 논의 중인 정책이에요</small></h2>'}).catch(e => console.warn('policy', e));
   if (window.JDJDev && !(NARON && DEVP)) JDJDev.mount($('devSec'), {code:d.code, dong:d.dong, jibun:d.jibun, apt:d.apt, sggName,
     head:'<h2>주변 개발사업<small>서울시·국토부 등 공식 원문으로 확인한 사업만, 이 단지에서 가까운 순이에요</small></h2>'}).catch(e => console.warn('devproj', e));
+}
+
+/* 학군·생활 정보(assets/life-view.js, 공개 data/life/{시·도}.json) — 자료가 없으면 칸을 숨김 */
+function fillLife(d){
+  const el = $('lifeSec'); if (!el || !window.JDJ_LIFE) return;
+  const sd = S.sd, key = S.dkey;
+  JDJ_LIFE.load(DATA, sd).then(F => {
+    if (!F || S.sd !== sd || S.dkey !== key) return;
+    const o = JDJ_LIFE.unit(F, [d.code, d.dong, d.jibun].join('|'));
+    JDJ_LIFE.css();
+    el.innerHTML = `<h2>학군·생활 정보<small>공공 자료로 이 단지 주변 학교·학원·병원·공원을 정리했어요</small></h2>`
+      + JDJ_LIFE.html(o, F, {empty: '이 단지 위치 자료가 없어 주변 정보를 정리하지 못했어요.'});
+    el.hidden = false;
+  });
 }
 
 /* ---------- 차트 (SVG 직접 그리기) ---------- */

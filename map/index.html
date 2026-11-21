@@ -26,6 +26,8 @@
 <script src="../assets/config.js?v=4"></script>
 <script src="../assets/plain-words.js?v=14"></script>
 <script src="../assets/narrative.js?v=13"></script>
+<script src="../assets/conf.js?v=1"></script>
+<script src="../assets/life-view.js?v=1"></script>
 <script src="../assets/mine-core.js?v=16"></script>
 <script src="../assets/map-core.js?v=3"></script>
 <script src="../assets/region-core.js?v=1"></script>
@@ -124,6 +126,8 @@ body.has-cmp .legend{transform:translateY(-62px)}
 .sheet .fvrow{display:flex;gap:10px;align-items:flex-start}
 .sheet .fvb{flex:none;min-width:54px;text-align:center;border-radius:10px;color:#fff;font-weight:800;font-size:17px;padding:4px 8px;white-space:nowrap}
 .sheet .head{font-size:14.5px;line-height:1.65;color:var(--text)}
+.sheet .kv dd small.cfl{margin-top:6px;font-weight:700;color:var(--sub)}
+.sheet .kv dd small.cfl.cf-h{color:var(--blue)}.sheet .kv dd small.cfl.cf-l{color:var(--neg)}
 .sheet .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;position:sticky;bottom:-18px;background:#fff;padding:10px 0 16px;margin-bottom:-18px;box-shadow:0 -8px 12px -8px rgba(0,0,0,.08)}
 .sheet .acts a,.sheet .acts button{display:flex;align-items:center;justify-content:center;min-height:50px;border-radius:14px;font:inherit;font-size:16px;font-weight:800;text-decoration:none;cursor:pointer;white-space:nowrap;padding:0 10px}
 .sheet .acts a{background:var(--blue);color:#fff;border:0}
@@ -1003,17 +1007,26 @@ function openCard(d, band, keep){
   let head = '';
   if (f && f.fv != null && NAR) { try { head = NAR.build(f, { apt: d.apt, dong: d.dong, code: d.code, band: b.band, area: b.area, IX, MH, PL, year: new Date().getFullYear(), s: b.u[6], regionUsed: MREG }).head || ''; } catch (e) { head = ''; } }
   const meta = [`${sggName(d.code)} ${d.dong}`, d.by ? `${d.by}년 준공` : '', d.hh ? `${Number(d.hh).toLocaleString('ko-KR')}세대` : ''].filter(Boolean).join(' · ');
+  const cfo = f && f.fv != null && window.JDJ_CONF ? JDJ_CONF.build(f, { MH, sido: sggOf(d.code).sido, cnt: M.counts(b.u[7]) }) : null;
   const inCmp = loadCmp().some(x => C.cmpId(x) === C.cmpId(d));
   $('sheet').innerHTML = `<div class="grab"></div><div class="hd"><h2>${esc(d.apt)}</h2><button type="button" class="x" aria-label="닫기">×</button></div>
     <p class="meta">${esc(meta)}</p>
     ${d.bands.length > 1 ? `<div class="bands" role="group" aria-label="평형">${d.bands.map(u => `<button type="button" data-b="${esc(u[3])}" class="${u[3] === b.band ? 'on' : ''}" aria-pressed="${u[3] === b.band}">${esc(u[3])}</button>`).join('')}</div>` : ''}
     <dl class="kv">
       <dt>최근 시세</dt><dd>${b.price > 0 ? `<b>${esc(M.won(b.price))}</b><span class="ppy">${esc(C.ppyText(b.ppy))}</span><small>${esc(b.band)} · ${esc(M.ymLabel(b.at))} 기준 최근 3개월 실거래 중앙값</small>` : '최근 3개월 실거래가 없어요<small>시세·전망 보기에서 지난 거래를 볼 수 있어요</small>'}</dd>
-      <dt>미래가치</dt><dd>${b.fv != null ? `<div class="fvrow"><span class="fvb ${C.tone(b.fv)}">${b.fv}점</span><span class="head">${esc(head || '100점 만점, 앞으로 2년 같은 시·도 아파트와 비교한 점수예요.')}</span></div>` : '이 평형은 미래가치 점수 자료가 없어요'}</dd>
+      <dt>미래가치</dt><dd>${b.fv != null ? `<div class="fvrow"><span class="fvb ${C.tone(b.fv)}">${b.fv}점</span><span class="head">${esc(head || '100점 만점, 앞으로 2년 같은 시·도 아파트와 비교한 점수예요.')}</span></div>${cfo ? `<small class="cfl cf-${cfo.lv}">${esc(window.JDJ_CONF.line(cfo))}</small>` : ''}` : '이 평형은 미래가치 점수 자료가 없어요'}</dd>
+      <dt class="lfr" hidden>학군·생활</dt><dd class="lfr" hidden id="lfrV"></dd>
       ${b.jr != null ? `<dt>전세가율</dt><dd><b>${esc(C.pct(b.jr))}</b><small>집값 대비 전셋값 비율</small></dd>` : ''}
     </dl>
     <div class="acts"><a href="${esc(C.mineUrl(d, b.band))}" data-track="map_to_mine">시세·전망 보기</a><button type="button" id="addCmp" class="${inCmp ? 'done' : ''}">${inCmp ? '비교함에 있어요' : '비교에 담기'}</button></div>`;
   showSheet();
+  if (window.JDJ_LIFE) JDJ_LIFE.load(DATA, d.sd).then(F => {          // 학군·생활 한 줄(자료가 있을 때만)
+    const t = JDJ_LIFE.compact(JDJ_LIFE.unit(F, [d.code, d.dong, d.jibun].join('|')), F), v = $('lfrV');
+    if (!t || !v || !SEL || SEL.d !== d) return;
+    const o = JDJ_LIFE.unit(F, [d.code, d.dong, d.jibun].join('|'));
+    v.innerHTML = `${esc(t)}<small>직선 거리 · ${esc(JDJ_LIFE.srcShort(o, F))}</small>`;
+    $('sheet').querySelectorAll('.lfr').forEach(x => x.hidden = false);
+  });
   if (!keep) reveal(d.lat, d.lng);
   $('sheet').querySelectorAll('.bands button').forEach(x => x.onclick = () => openCard(d, x.dataset.b, true));
   $('addCmp').onclick = () => { saveCmp(C.cmpAdd(loadCmp(), Object.assign({}, d, { band: b.band }))); openCard(d, b.band, true); if (window.jdjStat) jdjStat('feature_use', {feature:'map_compare_add'}); };
