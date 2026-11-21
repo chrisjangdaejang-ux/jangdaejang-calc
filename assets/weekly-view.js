@@ -18,7 +18,8 @@
     document.title = `주간 실거래 동향 ${V.w} (${K.period(V)}) | ${SITE()}`;
     $('hd').innerHTML = k.chg == null ? esc(K.headline(V)) :
       `${esc(K.period(V))} 전국 아파트,<br>같은 집 직전 거래보다 <em class="${cls(k.chg)}">${esc(K.pct(k.chg))}</em>`;
-    $('hdSub').textContent = `${K.weekName(V)}에 계약된 아파트 매매 ${K.num(k.n)}건 가운데, 같은 단지·같은 면적의 직전 거래(${m.lookback || 90}일 안)와 비교할 수 있는 ${K.num(k.np)}건의 변화율 중간값이에요.`;
+    $('hdSub').textContent = (m.m || 1) >= 2 ? `${K.weekName(V)}에 계약된 아파트 매매 ${K.num(k.n)}건 가운데, 같은 단지·같은 면적의 직전 거래(${m.lookback || 90}일 안)와 비교할 수 있는 ${K.num(k.np)}건의 변화율을 줄 세워, 가장 많이 오른 4분의 1과 가장 많이 내린 4분의 1을 빼고 평균한 값(가운데 50% 평균)이에요.${k.med != null ? ` 중간값은 ${K.pct(k.med)}예요.` : ''}` :
+      `${K.weekName(V)}에 계약된 아파트 매매 ${K.num(k.n)}건 가운데, 같은 단지·같은 면적의 직전 거래(${m.lookback || 90}일 안)와 비교할 수 있는 ${K.num(k.np)}건의 변화율 중간값이에요. 이 판은 예전 계산 방법(방법 판 1, 중간값)으로 만든 그대로 보관한 판이에요.`;
     $('stl').innerHTML = `<span class="pill ${V.status === 'final' ? 'final' : 'prov'}">${esc(K.statusText(V))}</span><span class="pill ver">제${V.ver}판 · ${esc(K.dot(V.asof))} 자료 기준</span>
       <span class="fn">${esc(K.finalNote(V))}</span><span class="fn"><b>${esc(K.scheduleText(V))}</b>${V.release ? ` 이 판 발표: ${esc(K.whenText(V.release))}.` : ''}</span>`;
     document.querySelectorAll('[data-m]').forEach(el => { const v = m[el.dataset.m]; if (v != null) el.textContent = v; });
@@ -40,7 +41,7 @@
   function cards() {
     const k = K.row(V, '00') || {}, s = K.row(V, '11') || {}, min = (V.method || {}).min;
     const chgCard = (nm, r) => r.chg == null ? card(nm + ' 변동률', '표본 부족', 'na', `비교 ${K.num(r.np)}건 · 기준 ${min}건`) :
-      card(nm + ' 변동률', K.pct(r.chg), cls(r.chg), `비교 ${K.num(r.np)}건 · 오른 거래 ${K.share(r.up)}, 내린 거래 ${K.share(r.dn)}<br>오차 범위 ${esc(K.pct(r.lo))} ~ ${esc(K.pct(r.hi))}`);
+      card(nm + ' 변동률', K.pct(r.chg), cls(r.chg), `${esc(K.methodName(V))}${r.med != null && K.methodName(V) !== '중간값' ? ` · 중간값 ${esc(K.pct(r.med))}` : ''}<br>비교 ${K.num(r.np)}건 · 오른 거래 ${K.share(r.up)}, 내린 거래 ${K.share(r.dn)}<br>오차 범위 ${esc(K.pct(r.lo))} ~ ${esc(K.pct(r.hi))}`);
     const vc = K.volCell(k, V);
     const us = K.usCell(k), ob = K.obCell(k);
     $('cards').innerHTML = chgCard('전국', k) + chgCard('서울', s) +
@@ -102,11 +103,11 @@
 
   function table(rows, tot) {
     const min = (V.method || {}).min, b = BASIS;
-    const hd = `<thead><tr><th>지역</th><th>변동률<br>중간값</th><th>비교<br>거래</th><th>오른·내린<br>비율</th><th>거래<br>건수</th><th>거래량<br>변화</th><th>신고가<br>비율</th><th>급매<br>비율</th><th>외지인<br>매수(월)</th><th>부동산원<br>(참고)</th></tr></thead>`;
+    const hd = `<thead><tr><th>지역</th><th>변동률<br>${K.methodName(V) === '중간값' ? '중간값' : '(가운데 50%)'}</th><th>비교<br>거래</th><th>오른·내린<br>비율</th><th>거래<br>건수</th><th>거래량<br>변화</th><th>신고가<br>비율</th><th>급매<br>비율</th><th>외지인<br>매수(월)</th><th>부동산원<br>(참고)</th></tr></thead>`;
     const tr = (r, cl) => {
       const c = K.chgCell(r, b, min), p = K.pick(r, b), v = K.volCell(r, V), ro = K.roneCell(r);
       const ud = b === 'w' && r.up != null && p.ok ? `${Math.round(r.up)}% · ${Math.round(r.dn)}%` : '—';
-      return `<tr class="${cl || ''} ${c.cls === 'na' ? 'na' : ''}"><td>${esc(r.nm)}${r.old ? '<small>자료 확인 늦음</small>' : ''}</td><td class="c ${c.cls}"><b>${esc(c.t)}</b>${c.sub ? `<small>${esc(c.sub)}</small>` : ''}</td>
+      return `<tr class="${cl || ''} ${c.cls === 'na' ? 'na' : ''}"><td>${esc(r.nm)}${r.old ? '<small>자료 확인 늦음</small>' : ''}</td><td class="c ${c.cls}"><b>${esc(c.t)}</b>${c.sub ? `<small>${esc(c.sub)}</small>` : ''}${c.med && K.methodName(V) !== '중간값' ? `<small>${esc(c.med)}</small>` : ''}</td>
         <td>${K.num(p.np)}${p.gap != null ? `<small>간격 ${p.gap}일</small>` : ''}</td><td>${ud}</td><td>${K.num(b === 'w' ? r.n : (r.m || {}).n)}</td>
         <td class="${cls(r.vc)}">${esc(b === 'w' ? v.t : '—')}</td><td>${esc(b !== 'w' ? '—' : r.hs != null ? K.share(r.hs) : r.nh ? r.nh + '건' : '—')}</td>
         <td class="${K.usCell(r).cls || ''}">${esc(b !== 'w' ? '—' : K.usCell(r).t)}</td><td class="${K.obCell(r).cls || ''}">${esc(K.obCell(r).t)}${r.ob ? `<small>${esc(K.ymText(r.ob.ym))}</small>` : ''}</td><td class="${cls((r.ro || {}).chg)}">${esc(ro.t)}${ro.why ? `<small>${esc(ro.why)}</small>` : ''}</td></tr>`;
@@ -121,7 +122,7 @@
     $('sgSel').innerHTML = sds.map(s => `<option${s === SD ? ' selected' : ''}>${esc(s)}</option>`).join('');
     const sdRow = K.levelRows(V, 'sd').find(r => r.nm === SD);
     $('sgTbl').innerHTML = table(K.levelRows(V, 'sgg', SD), sdRow);
-    $('tblNote').textContent = `변동률 아래 작은 글씨 = 오차 범위(90%) · 비교 거래 = 같은 집 직전 거래와 짝지은 건수(간격 = 두 거래 사이 날 수의 중간값) · 거래 건수 = 해제 뺀 그 기간 신고분 · 거래량 변화 = 같은 신고 기간의 지난주 판과 비교 · 변동률은 비교 거래 ${(V.method || {}).min}건 이상일 때만${BASIS === 'm' ? ' · 최근 4주 보기에서는 비율·거래량 칸을 비워요' : ''}.`;
+    $('tblNote').textContent = `변동률 = ${K.methodName(V)}${K.methodName(V) !== '중간값' ? '(가장 많이 오른 4분의 1과 내린 4분의 1을 뺀 평균), 그 아래 작은 글씨 = 오차 범위(90%)·중간값' : ', 아래 작은 글씨 = 오차 범위(90%)'} · 비교 거래 = 같은 집 직전 거래와 짝지은 건수(간격 = 두 거래 사이 날 수의 중간값) · 거래 건수 = 해제 뺀 그 기간 신고분 · 거래량 변화 = 같은 신고 기간의 지난주 판과 비교 · 변동률은 비교 거래 ${(V.method || {}).min}건 이상일 때만${BASIS === 'm' ? ' · 최근 4주 보기에서는 비율·거래량 칸을 비워요' : ''}.`;
   }
 
   /* 주별 흐름(전국·서울) — 목록 index.json 의 각 주 최신 판 */
@@ -184,7 +185,11 @@
     if (!S) return;
     const L = Object.entries(C.levels || {}).sort((a, b) => a[0] < b[0] ? -1 : 1);
     const big = (C.big || []).slice(0, 8);
-    $('cmpA').insertAdjacentHTML('beforeend', `<p><b>${esc(S.from)}~${esc(S.to)} 주, 전국·시·도 ${K.num(S.n)}번 비교에서 방향(오름·내림·보합)이 같았던 비율은 ${esc(K.share(S.pct))}(${K.num(S.same)}번)예요.</b> 둘 다 보합이 아니었던 ${K.num(S.nz)}번만 보면 ${esc(K.share(S.nzPct))}가 같은 방향이었어요. 우리 숫자가 0.00%(보합)였던 경우가 ${K.num(S.ours0)}번 있었고, 두 숫자 차이의 중간값은 ${esc(K.pct(S.gap).replace('+', ''))}p예요.</p>
+    const z = K.zeroText(S);
+    if (z) document.querySelectorAll('[data-cz]').forEach(el => { if (z[el.dataset.cz]) el.textContent = z[el.dataset.cz]; });
+    const m1 = S.m1, mt = (a, nm) => `<tr><td>${esc(nm)}</td><td>${esc(K.share(a.pct))} <small>${K.num(a.same)}/${K.num(a.n)}번</small></td><td>${esc(K.share(a.nzPct))} <small>${K.num(a.nz)}번 중</small></td><td>${K.num(a.ours0)}번 <small>${esc(K.share(a.ours0 / a.n * 100))}</small></td></tr>`;
+    $('cmpA').insertAdjacentHTML('beforeend', `<p><b>${esc(S.from)}~${esc(S.to)} 주, 전국·시·도 ${K.num(S.n)}번 비교에서 방향(오름·내림·보합)이 같았던 비율은 ${esc(K.share(S.pct))}(${K.num(S.same)}번)예요.</b> 둘 다 보합이 아니었던 ${K.num(S.nz)}번만 보면 ${esc(K.share(S.nzPct))}가 같은 방향이었어요. 우리 숫자가 0.00%(보합)였던 경우는 ${K.num(S.ours0)}번, 두 숫자 차이의 중간값은 ${esc(K.pct(S.gap).replace('+', ''))}p예요(지금 방법: 가운데 50% 평균).</p>
+      ${m1 ? `<p><b>예전 방법(중간값)과 나란히</b> — 같은 기간·같은 규칙으로 두 방법을 모두 계산했어요.</p><div class="tw"><table class="tt cmpt"><thead><tr><th>계산 방법</th><th>방향 같음</th><th>둘 다 보합 아님</th><th>우리 0.00%</th></tr></thead><tbody>${mt(S, '가운데 50% 평균(지금)')}${mt(m1, '중간값(예전)')}</tbody></table></div>` : ''}
       <div class="tw"><table class="tt cmpt"><thead><tr><th>지역</th><th>비교 주</th><th>방향 같음</th><th>둘 다 보합 아님</th><th>차이 중간값</th></tr></thead><tbody>${L.map(([c, v]) => `<tr><td>${esc(v.nm)}</td><td>${K.num(v.n)}</td><td>${esc(K.share(v.pct))}</td><td>${v.nz ? esc(K.share(v.nz_pct)) + ` <small>${v.nz}번</small>` : '—'}</td><td>${esc(K.pct(v.gap_med).replace('+', ''))}p</td></tr>`).join('')}</tbody></table></div>
       <p><b>차이가 가장 컸던 주</b>(숨기지 않고 그대로 보여 드려요)</p>
       <div class="tw"><table class="tt cmpt"><thead><tr><th>주(계약)</th><th>지역</th><th>우리</th><th>부동산원</th><th>차이</th></tr></thead><tbody>${big.map(r => `<tr><td>${esc(String(r.from).slice(0, 4))}년 ${esc(K.md(r.from))}~${esc(K.md(r.to))}</td><td>${esc(r.nm)}</td><td>${esc(K.pct(r.ours))}<small>비교 ${K.num(r.np)}건</small></td><td>${esc(K.pct(r.off))}<small>${esc(r.off_t)}</small></td><td>${esc(K.pct(r.gap))}p</td></tr>`).join('')}</tbody></table></div>

@@ -39,6 +39,8 @@
     $('dl').innerHTML = `<li><a href="${u.csv}" download>이번 주 표(CSV, 엑셀에서 열림)</a> — 전국·시·도·시·군·구 모든 숫자와 표본 수</li><li><a href="${u.json}">이번 주 원본(JSON)</a></li>
       <li><a href="${K.DATA}compare.csv" download>공식 주간 지수와 나란히 본 기록(CSV)</a></li><li><a href="${K.PAGE}#cmpD">방향이 같았던 비율 보기</a></li>`;
     $('past').innerHTML = ws.map(x => `<li><b>${esc(x.w)} · ${esc(K.period(x))}</b><span>${x.status === 'final' ? '확정' : '잠정'} 제${x.ver}판</span><a href="${K.PAGE}${x.w}/">최신 판</a><a href="${K.PAGE}${x.w}/?v=1">첫 발표(제1판)</a><a href="${K.DATA}${x.w}/v${x.ver}.csv" download>CSV</a></li>`).join('');
+    const z = K.zeroText(K.cmpSummary(await J(K.DATA + 'compare.json')));
+    if (z) document.querySelectorAll('[data-cz="p"]').forEach(el => { el.textContent = z.p; });
     T('press_view', { w: V.w });
   })();
 })();

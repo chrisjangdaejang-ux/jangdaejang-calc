@@ -41,14 +41,14 @@
   function pick(row, basis) {
     const x = basis === 'm' ? (row && row.m) || {} : row || {};
     return { chg: x.chg == null ? null : x.chg, lo: x.lo == null ? null : x.lo, hi: x.hi == null ? null : x.hi, np: x.np || 0, gap: x.gap,
-      ok: x.chg != null };
+      med: x.med == null ? null : x.med, ok: x.chg != null };
   }
   /** 변동률 칸 글: 표본 부족이면 '표본 부족(비교 12건)' */
   function chgCell(row, basis, min) {
     const p = pick(row, basis);
     if (row && row.old) return { t: '자료 확인 늦음', cls: 'na' };
     if (!p.ok) return { t: '표본 부족', sub: `기준 ${min}건`, cls: 'na' };
-    return { t: pct(p.chg), sub: p.lo != null ? `${pct(p.lo)} ~ ${pct(p.hi)}` : '', cls: p.chg > 0 ? 'up' : p.chg < 0 ? 'dn' : 'eq' };
+    return { t: pct(p.chg), sub: p.lo != null ? `${pct(p.lo)} ~ ${pct(p.hi)}` : '', med: p.med != null ? `중간값 ${pct(p.med)}` : '', cls: p.chg > 0 ? 'up' : p.chg < 0 ? 'dn' : 'eq' };
   }
   /** 거래량 변화 글(같은 신고 기간끼리만) */
   function volCell(row, V) {
@@ -81,7 +81,7 @@
   function headline(V) {
     const k = row(V, '00') || {};
     if (k.chg == null) return `${period(V)} 전국 아파트 매매 ${num(k.n)}건`;
-    return `${period(V)} 전국 아파트, 같은 집 직전 거래보다 중간값 ${pct(k.chg)}`;
+    return `${period(V)} 전국 아파트, 같은 집 직전 거래보다 ${pct(k.chg)}`;
   }
   /** 막대 그래프 눈금: 보이는 값(변동률·오차 범위) 중 가장 큰 절댓값을 0.5%p 단위로 올림, 최소 1% */
   function scaleMax(rows, basis) {
@@ -139,9 +139,19 @@
   /* ---------- 공식 지수와 나란히 본 기록 ---------- */
   function cmpSummary(C) {
     if (!C || !C.all || !C.all.n) return null;
-    const a = C.all;
-    return { n: a.n, pct: a.pct, same: a.same, nz: a.nz, nzPct: a.nz_pct, ours0: a.ours0, gap: a.gap_med, from: C.from, to: C.to };
+    const f = a => a && { n: a.n, pct: a.pct, same: a.same, nz: a.nz, nzPct: a.nz_pct, ours0: a.ours0, gap: a.gap_med };
+    return Object.assign(f(C.all), { from: C.from, to: C.to, m: C.m || 1, m1: C.m1 ? f(C.m1.all) : null });
   }
+  /** 방법 변경 설명의 0.00% 횟수 글(compare.json 그대로) */
+  function zeroText(S) {
+    if (!S || !S.m1) return null;
+    const p = (a) => `${num(a.n)}번 중 ${num(a.ours0)}번`;
+    return { m1: `${S.from}~${S.to} 주를 같은 규칙으로 다시 계산해 보니 전국·시·도 ${p(S.m1)}이 0.00%였어요.`,
+      m2: `같은 기간에 가운데 50% 평균은 ${p(S)}만 0.00%였어요.`,
+      p: `(${S.from}~${S.to} 주 전국·시·도 ${p(S.m1)}). 가운데 50% 평균으로 바꾸자 같은 기간 ${num(S.ours0)}번으로 줄었음` };
+  }
+  /** 방법 판 이름(판 JSON method.m) */
+  function methodName(V) { return ((V && V.method) || {}).m >= 2 ? '가운데 50% 평균' : '중간값'; }
 
   /* ---------- 보도자료실(/press/) — 기자가 그대로 붙여 쓰는 짧은 칼럼체(~다). 숫자는 판 자료 그대로 ---------- */
   function josa(w, a, b) { const c = String(w).slice(-1); if (/[가-힣]/.test(c)) return (c.charCodeAt(0) - 0xAC00) % 28 ? a : b; return /[013678]/.test(c) ? a : b; }
@@ -160,8 +170,8 @@
   function pressKeys(V) {
     const k = row(V, '00') || {}, s = row(V, '11') || {};
     return [
-      { lb: '전국 같은 집 비교 변동률', v: k.chg == null ? '표본 부족' : pct(k.chg), nt: `비교 ${num(k.np)}건 · 오차 범위 ${pct(k.lo)} ~ ${pct(k.hi)}` },
-      { lb: '서울 같은 집 비교 변동률', v: s.chg == null ? '표본 부족' : pct(s.chg), nt: `비교 ${num(s.np)}건` },
+      { lb: `전국 같은 집 비교 변동률(${methodName(V)})`, v: k.chg == null ? '표본 부족' : pct(k.chg), nt: `비교 ${num(k.np)}건 · 오차 범위 ${pct(k.lo)} ~ ${pct(k.hi)}${k.med != null && methodName(V) !== '중간값' ? ` · 중간값 ${pct(k.med)}` : ''}` },
+      { lb: `서울 같은 집 비교 변동률(${methodName(V)})`, v: s.chg == null ? '표본 부족' : pct(s.chg), nt: `비교 ${num(s.np)}건${s.med != null && methodName(V) !== '중간값' ? ` · 중간값 ${pct(s.med)}` : ''}` },
       { lb: '전국 신고가 비율', v: k.hs == null ? num(k.nh) + '건' : share(k.hs), nt: `거래 ${num(k.n)}건(해제 제외) 중 ${num(k.nh)}건` }];
   }
   /** 기사용 문장(칼럼체) */
@@ -169,7 +179,8 @@
     const k = row(V, '00') || {}, s = row(V, '11') || {}, S = site || '집예보', out = [];
     const prov = V.status !== 'final';
     out.push(`${S} 주간 실거래 동향에 따르면 지난주(${pressPeriod(V)} 계약) 전국 아파트 매매는 ${num(k.n)}건 신고됐다${prov ? '(잠정)' : ''}.`);
-    if (k.chg != null) out.push(`같은 단지·같은 면적의 직전 거래와 비교한 가격 변동률 중간값은 ${pct(k.chg)}다. 비교한 거래는 ${num(k.np)}건이다.`);
+    if (k.chg != null) out.push(methodName(V) === '중간값' ? `같은 단지·같은 면적의 직전 거래와 비교한 가격 변동률 중간값은 ${pct(k.chg)}다. 비교한 거래는 ${num(k.np)}건이다.` :
+      `같은 단지·같은 면적의 직전 거래와 비교한 가격 변동률(가운데 50% 평균)은 ${pct(k.chg)}다. 중간값은 ${pct(k.med)}, 비교한 거래는 ${num(k.np)}건이다.`);
     if (k.up != null) out.push(`직전 거래보다 비싸게 팔린 거래는 ${share(k.up)}, 싸게 팔린 거래는 ${share(k.dn)}였다.`);
     if (s.chg != null) out.push(`서울은 ${pct(s.chg)}였다(비교 ${num(s.np)}건).`);
     const t = (((V.top || {}).m || {}).up || [])[0], d = (((V.top || {}).m || {}).down || [])[0];
@@ -182,7 +193,7 @@
   }
 
   const API = { DATA, PAGE, ORIGIN, weekFrom, verFrom, num, pct, share, md, dot, period, weekName, statusText, verText, pick, chgCell, volCell,
-    roneCell, levelRows, row, sidos, cite, urls, headline, scaleMax, days, finalNote, RELEASE, released, whenText, scheduleText, ymText, obCell, usCell, segRows, cmpSummary, pressTitles, pressKeys, pressLines, pressPeriod };
+    roneCell, levelRows, row, sidos, cite, urls, headline, scaleMax, days, finalNote, RELEASE, released, whenText, scheduleText, ymText, obCell, usCell, segRows, cmpSummary, zeroText, methodName, pressTitles, pressKeys, pressLines, pressPeriod };
   root.JDJ_WEEKLY = API;
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
 })(typeof window !== 'undefined' ? window : globalThis);

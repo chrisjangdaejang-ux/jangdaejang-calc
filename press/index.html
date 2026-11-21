@@ -66,11 +66,12 @@
 
   <h2>통계 설명 한 장</h2>
   <ol class="pr-1p">
-    <li><b>무엇:</b> 그 주(월~일)에 계약된 아파트 매매를 같은 단지·같은 전용면적의 직전 정상 거래(90일 안)와 비교한 변화율의 중간값.</li>
+    <li><b>무엇:</b> 그 주(월~일)에 계약된 아파트 매매를 같은 단지·같은 전용면적의 직전 정상 거래(90일 안)와 비교한 변화율의 가운데 50% 평균(가장 많이 오른 4분의 1과 내린 4분의 1을 뺀 평균). 중간값도 함께 공개.</li>
     <li><b>빼는 거래:</b> 해제(취소) 신고, 직거래, 특수 거래 의심(같은 집 최근 3개월 가운데 값보다 30% 넘게 싼 거래). 전용 30㎡ 미만은 변동률에서만 뺌.</li>
     <li><b>표본 기준:</b> 비교 거래 30건 미만이면 숫자를 비우고 순위에서 뺌. 모든 숫자에 표본 수와 기간을 함께 적음.</li>
     <li><b>잠정→확정:</b> 계약 후 30일 신고 기한 때문에 매주 월요일 오전 7시 새 판으로 다시 계산. 주 끝 35일 뒤 자료로 확정(보통 제6판). 지난 판은 고치지 않고 보관.</li>
-    <li><b>오차 범위:</b> 중간값의 90% 범위(순서 통계). 같은 값 거래가 많아 중간값이 0.00%에 머물 수 있어 오른·내린 거래 비율을 함께 냄.</li>
+    <li><b>오차 범위:</b> 가운데 50% 평균의 90% 범위(정해진 공식, 다시 계산해도 같은 값). 오른·내린 거래 비율을 함께 냄.</li>
+    <li><b>방법 변경(2026.11.21, 방법 판 2):</b> 중간값은 같은 값 거래 때문에 0.00%에 자주 멈춰 방향을 읽기 어려웠음<span class="cz" data-cz="p"></span>. 다른 규칙은 그대로, 예전 판은 고치지 않고 보관, 두 방법 결과를 나란히 공개.</li>
     <li><b>함께 내는 지표:</b> 신고가 비율, 같은 신고 기간끼리 비교한 거래량 변화, 급매 비율, 외지인 매수 비율(한국부동산원 월간 매입자 거주지 자료), 단지 연식별·규모별 변동.</li>
     <li><b>공식 지수와 차이:</b> 한국부동산원 주간 지수는 표본 아파트 시세 조사, 이 통계는 실제 거래 비교. 두 숫자를 나란히 쌓은 기록과 방향이 같았던 비율을 공개함.</li>
   </ol>
@@ -83,7 +84,7 @@
   <p class="lead2">자료 문의: <span data-biz="contact">사이트 아래 사업자 정보의 고객문의 연락처</span></p>
 </main>
 <footer class="foot">★ <span data-site-name>집예보</span> · <a href="/jangdaejang-calc/">홈</a> · <a href="/jangdaejang-calc/weekly/">주간 실거래 동향</a> · <a href="/jangdaejang-calc/about/">서비스 소개</a></footer>
-<script src="/jangdaejang-calc/assets/weekly-core.js?v=2"></script>
-<script src="/jangdaejang-calc/assets/press-view.js?v=1"></script>
+<script src="/jangdaejang-calc/assets/weekly-core.js?v=3"></script>
+<script src="/jangdaejang-calc/assets/press-view.js?v=2"></script>
 </body>
 </html>
