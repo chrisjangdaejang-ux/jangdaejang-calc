@@ -124,7 +124,7 @@ check('체험은 한 번만', !r.ok && /한 번/.test(r.err), r);
 r = post({ action: 'briefOrder', s: s1, product: 'brief', channel: 'email', contact: 'me@example.com', privacy: true, agree: false });
 check('환불 안내 동의 없으면 거절', !r.ok, r);
 r = post({ action: 'briefOrder', s: s1, product: 'brief_pro', channel: 'email', contact: 'me@example.com', privacy: true, agree: true, amount: 10 });
-check('주문: 서버 가격 14,900원', r.ok && r.amount === 14900 && /^JDJ\d{6}-[0-9A-F]{10}$/.test(r.orderId), r);
+check('주문: 서버 가격 4,900원', r.ok && r.amount === 4900 && /^JDJ\d{6}-[0-9A-F]{10}$/.test(r.orderId), r);
 const OID = r.orderId;
 const ord = sheets['주문'].rows.find(x => x[T.OC['주문번호']] === OID);
 check('주문 시트: 연락처 가린 값만', ord && ord[T.OC['연락처']] === 'me***@example.com' && !JSON.stringify(ord).includes('me@example.com'));
@@ -132,11 +132,11 @@ r = post({ action: 'briefConfirm', paymentKey: 'tgen_b1', orderId: OID, amount: 
 check('금액 위변조 거절', !r.ok, r);
 r = post({ action: 'briefOrder', s: s1, product: 'brief_pro', channel: 'email', contact: 'me@example.com', privacy: true, agree: true });
 const OID2 = r.orderId;
-r = post({ action: 'briefConfirm', paymentKey: 'tgen_b2', orderId: OID2, amount: 14900 });
+r = post({ action: 'briefConfirm', paymentKey: 'tgen_b2', orderId: OID2, amount: 4900 });
 check('승인 → 체험 끝난 다음 날부터 30일', r.ok && r.sub.start === '2026-11-28' && r.sub.end === '2026-12-27' && r.sub.pro === true, r);
-r = post({ action: 'briefConfirm', paymentKey: 'tgen_b2', orderId: OID2, amount: 14900 });
+r = post({ action: 'briefConfirm', paymentKey: 'tgen_b2', orderId: OID2, amount: 4900 });
 check('같은 결제키 다시 → 그대로', r.ok && r.sub.start === '2026-11-28', r);
-r = post({ action: 'confirmPayment', paymentKey: 'tgen_other', orderId: OID2, amount: 14900 });
+r = post({ action: 'confirmPayment', paymentKey: 'tgen_other', orderId: OID2, amount: 4900 });
 check('리포트 승인 경로로 다른 결제키 → 거절', !r.ok, r);
 
 // 4. 아침 발송
@@ -178,7 +178,7 @@ for (let i = 0; i < 3; i++) lg.appendRow([new FakeDate(NOW - 3600000), 'rec', 'A
 const it = get({ action: 'briefInterest', k: 'pull-FAKE-123' });
 check('관심도: 방문자 5명 이상 단지만', it.ok && JSON.stringify(it.gu) === JSON.stringify({ '11710': [['잠실동', '리센츠', 6, 0]] }), it);
 r = post({ action: 'briefRefund', s: s1, id: paidId, reason: '테스트' });
-check('첫 발송 전 환불 요청 → 전액 예정·발송 중단', r.ok && r.sub.refundEst === 14900 && r.sub.state === '해지', r.sub);
+check('첫 발송 전 환불 요청 → 전액 예정·발송 중단', r.ok && r.sub.refundEst === 4900 && r.sub.state === '해지', r.sub);
 check('운영자 메일', mails.some(a => typeof a[1] === 'string' && /아침 브리핑 환불 요청/.test(a[1])));
 r = post({ action: 'briefStop', s: s1, id: trialId });
 check('해지', r.ok && r.sub.state === '해지' && !r.sub.active, r);
@@ -188,7 +188,7 @@ check('해지 뒤 발송 없음', !fetches.some(f => f.url.indexOf('solapi') >= 
 
 // 7. 일할 환불 예정액
 const st = T.briefState({ r: Object.assign([], subRows().find(x => bc(x, '주문번호') === OID2), { [T.BC['발송수']]: 10, [T.BC['상태']]: '이용' }) }, new FakeDate(Date.parse('2026-12-08T10:00:00+09:00')));
-check('이용 중 환불 = 남은 날 일할(20일 → 9,930원)', st.left === 20 && st.refundEst === 9930, st);
+check('이용 중 환불 = 남은 날 일할(20일 → 3,260원)', st.left === 20 && st.refundEst === 3260, st);
 
 // 8. 연락처 정리(이용 끝난 뒤 30일)
 NOW = Date.parse('2027-02-10T07:10:00+09:00');

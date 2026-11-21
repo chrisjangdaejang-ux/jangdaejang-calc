@@ -8,7 +8,7 @@
   const B = {
     DATA: '/jangdaejang-data/data/brief/',
     DROP: -10,                                      // '최근 2년 최고가보다 많이 내린 거래' 기준(%)
-    PRICE: { brief: { name: '아침 브리핑', amount: 3900, areas: 3 }, brief_pro: { name: '아침 브리핑 중개사용', amount: 14900, areas: 10 } },
+    PRICE: { brief: { name: '아침 브리핑', amount: 3900, areas: 3 }, brief_pro: { name: '아침 브리핑 중개사용', amount: 4900, areas: 10 } },
     TRIAL_DAYS: 7,
     esc: s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])),
     /** '11710-잠실동' → {g:'11710', dn:'잠실동'} (잘못된 값이면 null) */

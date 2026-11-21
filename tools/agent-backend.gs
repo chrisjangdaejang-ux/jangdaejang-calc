@@ -1945,7 +1945,7 @@ const BC = Object.fromEntries(BH.map((h, i) => [h, i]));
 const BLH = ['날짜', '구독id', '채널', '결과', '동네수'];
 const BRIEF_PRICE = {
   brief:     { name: '아침 브리핑 1개월', amount: 3900, areas: 3, days: 30 },
-  brief_pro: { name: '아침 브리핑 중개사용 1개월', amount: 14900, areas: 10, days: 30, pro: true }
+  brief_pro: { name: '아침 브리핑 중개사용 1개월', amount: 4900, areas: 10, days: 30, pro: true }
 };
 const BRIEF_TRIAL = { name: '아침 브리핑 7일 체험', amount: 0, areas: 3, days: 7 };
 const BST = { wait: '결제대기', on: '이용', trial: '체험', stop: '해지', refund: '환불' };
