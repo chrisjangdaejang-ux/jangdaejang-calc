@@ -41,7 +41,7 @@
 <script src="../assets/narrative.js?v=13"></script>
 <script src="../assets/strength.js?v=1"></script>
 <script src="../assets/conf.js?v=1"></script>
-<script src="../assets/life-view.js?v=1"></script>
+<script src="../assets/life-view.js?v=2"></script>
 <script src="../assets/mine-core.js?v=16"></script>
 <script src="../assets/ask-core.js?v=3"></script>
 <script src="../assets/ask.js?v=1"></script>
@@ -628,7 +628,7 @@ function fillLife(d){
     if (!F || S.sd !== sd || S.dkey !== key) return;
     const o = JDJ_LIFE.unit(F, [d.code, d.dong, d.jibun].join('|'));
     JDJ_LIFE.css();
-    el.innerHTML = `<h2>학군·생활 정보<small>공공 자료로 이 단지 주변 학교·학원·병원·공원을 정리했어요</small></h2>`
+    el.innerHTML = `<h2>학군·생활 정보<small>${esc(JDJ_LIFE.lead(o))}</small></h2>`
       + JDJ_LIFE.html(o, F, {empty: '이 단지 위치 자료가 없어 주변 정보를 정리하지 못했어요.'});
     el.hidden = false;
   });

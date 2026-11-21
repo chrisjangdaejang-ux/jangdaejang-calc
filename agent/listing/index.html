@@ -25,7 +25,7 @@
 <script src="/jangdaejang-calc/assets/pro-report.js?v=5"></script>
 <script src="/jangdaejang-calc/assets/broker-tools.js?v=3"></script>
 <script src="/jangdaejang-calc/assets/conf.js?v=1"></script>
-<script src="/jangdaejang-calc/assets/life-view.js?v=1"></script>
+<script src="/jangdaejang-calc/assets/life-view.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
@@ -336,7 +336,7 @@ function sheetHtml(S, prof){
   const lsc = !po.sc.length && S.life && S.life.o && (S.life.o.sc || []).length ? S.life.o.sc.map(x => ({ nm: x[0], m: x[1] })) : null;   // 설명서용 학교 위치 파일이 없을 때 생활 정보의 중학교
   const t4 = `<div class="lab">지하철역</div>${pl(po.st, po.stMiss, '역')}<div class="lab">중학교</div>${pl(lsc || po.sc, po.scMiss, '')}`
     + (lfE ? `<div class="lab">배정 초등학교</div><ul class="lst"><li><b>${esc(lfE.v)}</b><span>교육청 통학구역 기준</span></li></ul>` : '')
-    + (lfX.length ? `<div class="lab">생활 정보 (직선 거리)</div><ul class="lst lf">${lfX.map(r => `<li><b>${esc(r.k)}</b><span>${esc(r.v)}</span></li>`).join('')}</ul>` : '')
+    + (lfX.length ? `<div class="lab">${esc(JDJ_LIFE.topics({h: S.life.o.h, a: S.life.o.a, p: S.life.o.p, m: S.life.o.m, hs: lfX.some(r => r.s === 'hs') ? S.life.o.hs : null}) || '주변 정보')} (직선 거리)</div><ul class="lst lf">${lfX.map(r => `<li><b>${esc(r.k)}</b><span>${esc(r.v)}</span></li>`).join('')}</ul>` : '')
     + `<p class="src">${lfE ? '초등학교 배정은 해마다 바뀔 수 있어 입학 전 관할 교육지원청에서 다시 확인해 주세요.' : esc(po.elem)} 걷는 시간은 직선 거리로 어림한 값이라 실제로는 더 걸려요.</p>${po.src ? srcLine(`${po.src.st} · ${po.src.sc}`, `역 ${T.ymd(po.asOf.st)}, 학교 ${T.ymd(po.asOf.sc)}`) : ''}`
     + (LF.length && (lfE || lfX.length || lsc) ? `<p class="src">${esc(JDJ_LIFE.srcText(S.life.F, (lfE ? [lfE] : []).concat(lfX).map(r => r.s).concat(lsc ? ['sc'] : []).filter(Boolean)))}</p>` : '');
   /* 5 미래가치 */

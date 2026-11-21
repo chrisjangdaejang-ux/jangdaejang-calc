@@ -75,6 +75,11 @@
     for (const k of ks) { const n = SHORT[k]; if (seen.has(n)) continue; seen.add(n); out.push(`${n}${F.at && F.at[k] ? ' ' + ymd(F.at[k]) : ''}`); }
     return out.length ? '출처: ' + out.join(' · ') + ' 기준' : '';
   }
+  /* 화면에 실제로 보이는 항목 이름만: '학교·병원' (자료 없는 항목은 이름도 안 나옴) */
+  const TOPIC = [['학교', o => !!(o.e && o.e.length) || !!(o.sc && o.sc.length) || !!(o.hs && o.hs.length)], ['학원', o => !!o.a], ['병원', o => !!o.h], ['공원', o => !!(o.p && o.p[0])], ['대형마트', o => !!(o.m && o.m[0])]];
+  function topics(o) { return o ? TOPIC.filter(t => t[1](o)).map(t => t[0]).join('·') : ''; }
+  /* 소제목: '공공 자료로 이 단지 주변 학교·병원을 정리했어요' */
+  function lead(o) { const t = topics(o); return t ? `공공 자료로 이 단지 주변 ${t}${/[가-힣]$/.test(t) && ((t.charCodeAt(t.length - 1) - 0xAC00) % 28) ? '을' : '를'} 정리했어요` : '공공 자료로 이 단지 주변 정보를 정리했어요'; }
   function css(doc) {
     doc = doc || (typeof document !== 'undefined' ? document : null);
     if (!doc || doc.getElementById('jlf-css')) return;
@@ -86,7 +91,7 @@
       + '@media(max-width:420px){.jlf>div{grid-template-columns:1fr;gap:2px}}';
     doc.head.appendChild(st);
   }
-  const API = { load, unit, rows, html, srcText, srcShort, compact, css, ELEM_NOTE, mText, walk };
+  const API = { load, unit, rows, html, srcText, srcShort, compact, topics, lead, css, ELEM_NOTE, mText, walk };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   root.JDJ_LIFE = API;
 })(typeof window !== 'undefined' ? window : globalThis);
