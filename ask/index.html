@@ -33,6 +33,7 @@
 <script src="../assets/price-sheet.js?v=17"></script>
 <script src="../assets/ask-core.js?v=5"></script>
 <script src="../assets/ask.js?v=3"></script>
+<script src="../assets/fac-view.js?v=1"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/alerts-core.js?v=1"></script>
 <script src="../assets/watch-core.js?v=2"></script>
@@ -217,7 +218,8 @@ async function load(k, want){
   if (!bands.length) return { k, miss: true };
   const band = bands.some(u => u[3] === want) ? want : A.pickBand({ bands }, null);
   const u = bands.find(x => x[3] === band);
-  const [map, hf, rj] = await Promise.all([bands.some(M.hasScore) ? scoreMap(k.sd).catch(() => null) : null, P.loadHist(sg).catch(() => null), rentOf(k.code)]);
+  const [map, hf, rj, FC] = await Promise.all([bands.some(M.hasScore) ? scoreMap(k.sd).catch(() => null) : null, P.loadHist(sg).catch(() => null), rentOf(k.code),
+    window.JDJ_FAC ? JDJ_FAC.load(DATA, k.sd).catch(() => null) : null]);   // 단지 시설(K-apt 관리사무소 등록 정보, 파일이 없으면 null)
   const f = M.scoreOf(u, map) || {};
   const sm = M.bandSummary(u, IX.months), ht = P.histOf(sg, hf, u), gp = M.sggPosition(IX.sgg[k.code], u, IX.months);
   const rent = rj ? (rj.units || []).find(r => r[0] === k.dong && r[1] === k.apt && r[2] === band && String(r[3]) === String(k.jibun)) || (rj.units || []).find(r => r[0] === k.dong && r[1] === k.apt && r[2] === band) : null;
@@ -236,7 +238,8 @@ async function load(k, want){
     fvg: f.fvg != null ? f.fvg : null, gs: f.gs != null ? f.gs : null,
     fh: f.fh || null, hzOk: hz, fx: f, turn: A.turnover(bands, f.hh),
     gu: gp ? { diff: gp.diff, name: `${sggName(k.code)} 아파트 중간값`, at: gp.at, me: gp.me, ref: gp.sggPpy } : null,
-    jeon: A.jeonseOf(ht, f.jr), ht, rent, rentBase: rj && rj.m0
+    jeon: A.jeonseOf(ht, f.jr), ht, rent, rentBase: rj && rj.m0,
+    fac: FC && window.JDJ_FAC ? JDJ_FAC.unit(FC, `${k.code}|${k.dong}|${k.jibun}`, k.apt) : null
   };
 }
 
@@ -412,9 +415,14 @@ function rowsOf(items){
   add({ l: '학군', h: '단지에서 직선거리로 가장 가까운(1.5km 안) 중학교예요. 순전입은 최근 3개 공시연도의 (전학 온 학생 − 떠난 학생) ÷ 재학생을 한 해 평균으로 본 값이에요(교육부 학교알리미). 학군을 찾아 들어오는 수요가 많을수록 높아요. 순위는 학교가 있는 구의 중학교끼리 비교했어요.',
     v: items.map(x => { const s = PL && PL.scParts(x.sc, x.sc ? sggName(x.sc[6]) : ''); return s ? `<b>${esc(s.name)}</b><small>${esc(s.dist)}</small><small>${esc(s.move)}</small>${s.rank ? `<small>${esc(s.rank)}</small>` : ''}<small>${esc(s.base)}</small>` : NA; }),
     n: items.map(x => x.sc ? x.sc[1] : null), d: 1 });
-  add({ l: '주차', h: '세대당 주차 대수는 아직 공개 자료로 연결하지 않았어요.', v: items.map(() => NA) });
-  add({ l: '초등학교 거리', h: '가까운 초등학교까지 거리는 아직 공개 자료로 연결하지 않았어요.', v: items.map(() => NA) });
-  return rows;
+  /* 주차: 단지 시설 자료(K-apt 관리사무소 등록, assets/fac-view.js) — 세대당 대수가 있으면 비교 */
+  const park = items.map(x => (x.fac && window.JDJ_FAC ? JDJ_FAC.rows(x.fac).find(r => r.k === '주차') : null) || null);
+  add({ opt: 1, l: '주차', h: '관리사무소가 공동주택관리정보시스템(K-apt)에 등록한 주차 대수예요. 세대당 대수는 주차 칸 수 ÷ 세대 수예요. 실제와 다를 수 있어요.',
+    v: park.map(r => { if (!r) return NA; const [a, ...b] = r.v.split(' · '); return `<b>${esc(a)}</b>${b.map(t => `<small>${esc(t)}</small>`).join('')}<small>관리사무소 등록 정보</small>`; }),
+    n: items.map(x => x.fac && x.fac.pk && x.fac.pk[3] != null ? x.fac.pk[3] : null), d: 1 });
+  add({ opt: 1, l: '초등학교 거리', h: '가까운 초등학교까지 거리예요.', v: items.map(() => NA) });
+  /* opt 줄: 비교하는 단지 모두 자료가 없으면 줄을 숨김(한 곳이라도 있으면 보여 줌) */
+  return rows.filter(r => !r.opt || r.v.some(v => v !== NA));
 }
 function vsTable(items){
   const n = items.length, rows = rowsOf(items);

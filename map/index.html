@@ -518,7 +518,7 @@ function render(){
     if (wait) msg = '단지 자료를 불러오는 중이에요…';
     else if (ids.some(id => SD[id] && SD[id].st === 'err')) msg = '일부 지역 자료를 불러오지 못했어요. 잠시 뒤 지도를 다시 움직여 주세요.';
   }
-  if (!msg && S.bun && LAY.bun && LAY.bun.st === 'err') msg = '분양 단지 자료를 불러오지 못했어요.';
+  if (!msg && S.bun && LAY.bun && LAY.bun.st === 'err') msg = '분양 단지 자료는 아직 준비 중이에요. 잠시 뒤 다시 열어 주세요.';
   else if (!msg && S.nb && LAY.nb && LAY.nb.st === 'err') msg = '신축 공사 중 자료는 아직 준비 중이에요.';
   else if (!msg && S.bun && z < 12 && lv !== 'sido') msg = '분양 단지는 조금 더 확대하면 보여요.';
   else if (!msg && S.nb && z < 13 && lv !== 'sido') msg = '신축 공사 중 현장은 조금 더 확대하면 보여요.';

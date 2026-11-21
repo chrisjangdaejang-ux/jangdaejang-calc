@@ -64,6 +64,7 @@
 .cnt{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
 .cnt span{font-size:14.5px;font-weight:700;padding:6px 12px;border-radius:999px;background:var(--blue-l);color:var(--blue)}
 .cnt span.t{background:var(--blue);color:#fff}
+.cntn{margin:0 0 12px;padding:12px 14px;border-radius:14px;background:var(--blue-l);font-size:14.5px;line-height:1.6;word-break:keep-all}.cntn b{color:var(--blue)}
 .ig{display:grid;grid-template-columns:1fr;gap:8px}
 @media(min-width:620px){.ig{grid-template-columns:1fr 1fr}}
 .ic{border:1px solid var(--line);border-radius:16px;background:#fff;overflow:hidden;min-width:0}
@@ -229,13 +230,14 @@
 <script src="../../assets/config.js?v=7"></script>
 <script src="../../assets/track-core.js?v=2"></script>
 <script src="../../assets/narrative.js?v=17"></script>
+<script src="../../assets/strength.js?v=4" data-lazy></script>
 <script>
 var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 (async function () {
   const $ = id => document.getElementById(id), T = window.JDJ_TRACK, D = JB.DATA + 'data/';
   const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   const get = async f => { try { const r = await fetch(D + f, { cache: 'no-cache' }); return r.ok ? await r.json() : null; } catch (e) { return null; } };
-  const [EX, BT, EVD] = await Promise.all([get('excluded.json'), get('bt/index.json'), get('evidence.json')]);
+  const [EX, BT, EVD, MT] = await Promise.all([get('excluded.json'), get('bt/index.json'), get('evidence.json'), get('meta.json')]);
   /* 과거 사례(evidence.json, 단지 화면 '오를 이유 · 조심할 점'과 같은 문장·같은 표시 기준 — narrative.js xCases) */
   const NAR = window.JDJ_NAR;
   const XS = { sd: ['s00', '서울'] };
@@ -264,7 +266,9 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
     + (x.w ? `<dt>왜 집값과 관련 있나요</dt><dd>${esc(x.w)}</dd>` : '')
     + (x.s ? `<dt>자료 출처</dt><dd>${esc(x.s)}</dd>` : '')
     + `<dt>과거 성적</dt><dd>이 항목을 넣은 점수 전체를 과거에 그대로 써 본 결과는 <a href="${JB.SITE}track/">성적표</a>에서 볼 수 있어요.</dd></dl></details>`;
-  let h = `<div class="cnt"><span>단지 항목 ${nu}가지</span>${nr ? `<span>지역 항목 ${nr}가지</span>` : ''}<span class="t">총 ${I.use.length}가지</span></div><div class="ig">`;
+  /* 개수는 모든 화면이 같은 공개 파일(meta.json)에서 — 엔진이 이 목록과 같은 방식으로 셈. 파일이 없으면 개수 문장 없이 목록만 */
+  const SG = window.JDJ_STRENGTH, cl = MT && MT.n_tested > 0 && MT.n_used > 0 && SG ? SG.count(SG.facts(null, null, MT)) : '';
+  let h = `${cl ? `<p class="cntn"><b>${esc(cl)}.</b></p>` : ''}<div class="cnt"><span>단지 항목 ${nu}가지</span>${nr ? `<span>지역 항목 ${nr}가지</span>` : ''}</div><div class="ig">`;
   h += I.use.map(card).join('') + '</div>';
   if (nr) h += '<p class="nd">지역 항목은 구·시 전체가 같은 시·도 안에서 더 오를지 보는 ‘지역 흐름’ 점수에 쓰고, 이 지역 흐름을 단지 점수에 함께 반영해요.</p>';
   $('useBox').innerHTML = h;

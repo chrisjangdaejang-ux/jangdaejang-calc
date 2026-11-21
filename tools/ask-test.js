@@ -114,7 +114,13 @@ check('홈·내 집 시세에 입력창', [/JDJ_ASK\.mount\(/.test(home), /JDJ_A
 check("화면 문구에 'AI' 단어 없음", [home, mine, ask, askjs].some(t => /\bAI\b|인공지능|챗봇/.test(t.replace(/<!--[\s\S]*?-->/g, ''))), false);
 check("'통계로 답해요' 표현", /통계로 답해요/.test(askjs), true);
 check('공유 모듈 재사용(setup·update)', /JDJ_SHARE\.setup\(\{tool:'ask'\}\)/.test(ask) && /JDJ_SHARE\.update\(/.test(ask), true);
-check("없는 자료는 '자료 없음'(주차·초등학교 거리)", /자료 없음/.test(ask) && /l: '주차'[^\n]*v: items\.map\(\(\) => NA\)/.test(ask) && /l: '초등학교 거리'[^\n]*v: items\.map\(\(\) => NA\)/.test(ask), true);
+{ const rs = ask.slice(ask.indexOf('function rowsOf'), ask.indexOf('function vsTable'));
+  check("주차·초등학교 거리 줄: 두 단지 모두 자료 없으면 숨김(opt), 한 곳이라도 있으면 보여 줌", [/opt: 1, l: '주차'/.test(rs), /opt: 1, l: '초등학교 거리'/.test(rs), /rows\.filter\(r => !r\.opt \|\| r\.v\.some\(v => v !== NA\)\)/.test(rs), /자료 없음/.test(ask)], [true, true, true, true]);
+  check('주차: 단지 시설 자료(fac-view) 연결', [/assets\/fac-view\.js\?v=\d+/.test(ask), /JDJ_FAC\.load\(DATA, k\.sd\)/.test(ask), /JDJ_FAC\.unit\(FC, `\$\{k\.code\}\|\$\{k\.dong\}\|\$\{k\.jibun\}`, k\.apt\)/.test(ask), /JDJ_FAC\.rows\(x\.fac\)/.test(rs)], [true, true, true, true]); }
+/* 숨김 규칙 동작: opt 줄 거르기를 그대로 떼어 실행 */
+{ const NA = '<span class="na">자료 없음</span>';
+  const keep = rows => rows.filter(r => !r.opt || r.v.some(v => v !== NA));
+  check('숨김 규칙: 둘 다 없으면 빠짐 · 한쪽만 있어도 남음 · 일반 줄은 그대로', keep([{ opt: 1, l: 'a', v: [NA, NA] }, { opt: 1, l: 'b', v: [NA, '세대당 1.2대'] }, { l: 'c', v: [NA, NA] }]).map(r => r.l), ['b', 'c']); }
 { const rs = ask.slice(ask.indexOf('function rowsOf'), ask.indexOf('function vsTable'));
   check('학업성취도는 공개 자료가 없어 표에 없음', /학업성취/.test(rs), false);
   check('학군 행: 가까운 중학교 순전입(fx.sc) + 자료 없으면 자료 없음', [/l: '학군'/.test(rs), /PL\.scParts\(x\.sc/.test(rs), /: NA; }\),\s*n: items\.map\(x => x\.sc/.test(rs)], [true, true, true]); }

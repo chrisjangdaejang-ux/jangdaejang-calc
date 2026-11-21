@@ -172,7 +172,7 @@ $('dlZip').onclick = async () => {
   PROF = T.mountProfile($('prof'), () => { if (K) draw(); });
   IDX = await fetch(KIT + 'index.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null);
   const as = (IDX && IDX.areas) || [];
-  if (!as.length){ $('ed').insertAdjacentHTML('beforebegin', '<div class="st0">이번 주 재료를 준비하고 있어요. 월요일 아침에 다시 열어 주세요.</div>'); $('make').disabled = true; return; }
+  if (!as.length){ $('ed').insertAdjacentHTML('beforebegin', '<div class="st0">이번 주 재료를 준비하고 있어요. 매일 새벽에 새로 만들어요 — 내일 아침에 다시 열어 주세요.</div>'); $('make').disabled = true; return; }
   $('area').innerHTML = as.map(a => `<option value="${esc(a.g)}">${esc(a.sd)} ${esc(a.name)} · 거래 ${a.n}건</option>`).join('');
   if (qg && as.some(a => a.g === qg)) $('area').value = qg;
   $("areaH").textContent = "목록에 없는 지역은 모닝 브리핑 관심 지역에 넣어 두면 다음 날 아침부터 준비돼요.";

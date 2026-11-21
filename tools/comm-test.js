@@ -31,7 +31,7 @@ check('동별 건물: 거래 많은 순', K.inDong(units, '역삼동').map(u => 
 const sb0 = { status: 'short', from: '202407', bf: 'run', bf_from: '201101', eta: '2026-11-26' };
 const filling = { bt: { 1: sb0, 2: sb0, 3: sb0 } };
 const today = new Date(2026, 10, 22);
-check('과거 자료 채우는 중: 머리 문장', K.scoreHead(filling, today), '점수 준비 중 — 과거 자료를 채우는 중이에요 (11월 26일까지 완료 예정)');
+check('과거 자료 채우는 중: 머리 문장(날짜 약속 없음)', K.scoreHead(filling, today), '점수 준비 중 — 과거 자료를 채우는 중이에요. 자료가 다 모이면 자동으로 점수가 나와요.');
 check('해가 다르면 연도까지', K.etaText('2027-01-05', today), '2027년 1월 5일');
 check('채우기 끝났는데 짧으면', K.scoreHead({ bt: { 1: { status: 'short', bf: 'done' } } }), '점수 준비 중 — 과거 자료 기간이 아직 짧아요');
 check('자료 없으면', K.scoreHead({ bt: { 1: { status: 'nodata' } } }), '점수 준비 중 — 상가·건물 실거래 자료를 받는 중이에요');

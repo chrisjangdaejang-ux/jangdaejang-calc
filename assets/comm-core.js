@@ -86,7 +86,7 @@
   /** 점수 칸 머리 문장 */
   function scoreHead(ix, today) {
     const st = scoreState(ix);
-    if (st.s === 'filling') { const e = etaText(st.eta, today); return `점수 준비 중 — 과거 자료를 채우는 중이에요${e ? ` (${e}까지 완료 예정)` : ''}`; }
+    if (st.s === 'filling') return '점수 준비 중 — 과거 자료를 채우는 중이에요. 자료가 다 모이면 자동으로 점수가 나와요.';
     if (st.s === 'nodata') return '점수 준비 중 — 상가·건물 실거래 자료를 받는 중이에요';
     if (st.s === 'short') return '점수 준비 중 — 과거 자료 기간이 아직 짧아요';
     if (st.s === 'fail') return '이 예측 방법은 과거에 써 봤을 때 맞은 횟수가 적어 점수를 보여 드리지 않아요';

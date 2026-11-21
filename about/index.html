@@ -71,6 +71,7 @@
 .cnt{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
 .cnt span{font-size:14.5px;font-weight:700;padding:6px 12px;border-radius:999px;background:var(--blue-l);color:var(--blue)}
 .cnt span.t{background:var(--blue);color:#fff}
+.cntn{margin:0 0 14px;padding:12px 14px;border-radius:14px;background:var(--blue-l);font-size:14.5px;line-height:1.6;color:var(--sub2);word-break:keep-all}.cntn b{color:var(--blue)}
 .grp{border:1px solid var(--line);border-radius:16px;background:#fff;margin:0 0 10px;overflow:hidden}
 .grp>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:14px 16px;min-height:64px}
 .grp>summary::-webkit-details-marker{display:none}
@@ -178,7 +179,7 @@
 
   <section class="diff" aria-labelledby="diffH">
     <h2 id="diffH">다른 앱과 무엇이 다른가요?</h2>
-    <div class="dt" data-jdj-str="about"><p>집값이 오를 이유는 누구나 그럴듯하게 쓸 수 있어요. 집코드는 이유를 그럴듯하게 쓰는 것보다, 그 이유가 과거에 정말 맞았는지를 먼저 확인해요.</p><p>집코드는 공공 통계를 과거 실거래에 그대로 대입해 보고, 과거에 맞지 않은 지표는 빼고 미래가치를 계산해요.</p></div>
+    <div class="dt" data-jdj-str="about"><p>집값이 오를 이유는 누구나 그럴듯하게 쓸 수 있어요. 집코드는 이유를 그럴듯하게 쓰는 것보다, 그 이유가 과거에 정말 맞았는지를 먼저 확인해요.</p><p>집코드는 공공 통계를 살펴보고, 과거 자료로 효과가 확인된 것만 지금 점수에 써요.</p></div>
     <p class="own">기본 통계만 보지 않아요. 집값이 떨어질 때 얼마나 덜 빠졌는지 보는 <a href="../guide/terms/#drop-defense">‘하락기 방어력’</a>, 새 역이 계획에서 개통까지 어느 단계인지 보는 <a href="../guide/terms/#new-station">‘신설역 단계’</a>처럼 <b>집코드만 쓰는 지표</b>도 과거에 그대로 대입해 보고, 맞았던 것만 미래가치에 넣어요.</p>
   </section>
 
@@ -454,7 +455,7 @@
 <footer class="foot">★ 집코드 · <a href="../">홈</a></footer>
 <script src="../assets/config.js?v=7"></script>
 <script src="../assets/plain-words.js?v=15"></script>
-<script src="../assets/strength.js?v=3"></script>
+<script src="../assets/strength.js?v=4"></script>
 <script>
 var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 (async function(){
@@ -469,14 +470,13 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
   const ymAdd = (t, k) => { let y = +t.slice(0, 4), m = +t.slice(4, 6) + k; while (m > 12) { m -= 12; y++; } while (m < 1) { m += 12; y--; } return `${y}${String(m).padStart(2, '0')}`; };
   const get = async f => { try { const r = await fetch(D + f, { cache: 'no-cache' }); return r.ok ? await r.json() : null; } catch (e) { return null; } };
 
-  /* 항목 사전: 실제 나열한 항목 수를 세어 표시(신설역 4·공공택지 3처럼 묶은 카드는 data-n) */
-  const cnt = g => [...document.querySelectorAll(`.grp[data-g="${g}"] .it`)].reduce((s, e) => s + (+e.dataset.n || 1), 0);
-  document.querySelectorAll('.grp').forEach(d => { const n = [...d.querySelectorAll('.it')].reduce((s, e) => s + (+e.dataset.n || 1), 0); d.querySelector('summary b i').textContent = `${n}가지`; });
-  const nU = cnt('unit'), nR = cnt('region');
-  $('cnt').innerHTML = `<span>단지 항목 ${nU}가지</span><span>지역 항목 ${nR}가지</span><span class="t">총 ${nU + nR}가지</span>`;
-  $('defN').textContent = `단지·지역 항목 ${nU + nR}가지`;
+  const [IX, M, MH, RL, SP, MT] = await Promise.all(['index.json', 'model.json', 'model_h.json', 'rail.json', 'supply.json', 'meta.json'].map(get));
 
-  const [IX, M, MH, RL, SP] = await Promise.all(['index.json', 'model.json', 'model_h.json', 'rail.json', 'supply.json'].map(get));
+  /* 개수: 모든 화면이 같은 공개 파일(meta.json) 하나에서 읽음 — 아래 항목 사전은 대표 항목 설명이라 개수를 따로 세지 않음. 파일이 없으면 칸을 숨김 */
+  if (MT && MT.n_tested > 0 && MT.n_used > 0 && window.JDJ_STRENGTH) {
+    $('cnt').outerHTML = `<p class="cntn" id="cnt"><b>${esc(JDJ_STRENGTH.count(JDJ_STRENGTH.facts(null, null, MT)))}.</b> 아래는 살펴본 항목의 설명이고, 지금 점수에 쓰는 항목 목록은 <a href="../guide/method/" data-track="about_cnt_method">점수 읽는 법</a>에서 볼 수 있어요.</p>`;
+    $('defN').textContent = `공공 통계 ${MT.n_tested}가지`;
+  } else $('cnt').hidden = true;
 
   /* 데이터 규모: 공개 데이터에서 읽을 수 있는 숫자만. 없는 값은 칸을 숨김 */
   if (IX) {
