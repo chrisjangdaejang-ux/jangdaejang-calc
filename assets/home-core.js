@@ -84,7 +84,7 @@
   }
 
   /* 첫 화면 소개 글 숫자: 공개 index.json 값만 읽음(직접 쓴 숫자 없음). 없는 값은 null·빈 목록 → 화면은 숫자 없는 문장으로
-     → { trades: '838만'|null, eyebrow: '2010년부터 쌓은 공공 통계로 만든 부동산 미래 예보'|null, facts: ['아파트 1.6만 단지', '하루 4번 갱신'] } — 시작 연도는 eyebrow 에만(겹치지 않게) */
+     → { trades: '838만'|null, eyebrow: '2010년부터 쌓은 공공 통계로 푸는 부동산의 내일'|null, facts: ['아파트 1.6만 단지', '하루 4번 갱신'] } — 시작 연도는 eyebrow 에만(겹치지 않게) */
   function heroFacts(IX) {
     const S = (IX && IX.stats) || {}, facts = [];
     const man = n => n >= 1e4 ? `${(n / 1e4).toFixed(n >= 1e6 ? 0 : 1).replace(/\.0$/, '')}만` : n.toLocaleString('ko-KR');
@@ -95,7 +95,7 @@
     else { const nu = ((IX && IX.sido) || []).reduce((a, x) => a + (x.units || 0), 0); if (nu) facts.push(`단지·평형 ${man(nu)} 개`); }
     if (/^\d{6}$/.test(S.from || '')) {
       const y0 = +S.from.slice(0, 4);   // 연수(○년간)는 반올림 혼란이 있어 쓰지 않고 시작 연도만
-      eyebrow = `${y0}년부터 쌓은 공공 통계로 만든 부동산 미래 예보`;
+      eyebrow = `${y0}년부터 쌓은 공공 통계로 푸는 부동산의 내일`;
     }
     facts.push('하루 4번 갱신');
     return { trades, eyebrow, facts };
