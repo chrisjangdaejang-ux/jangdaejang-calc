@@ -209,6 +209,13 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
 .sl-rules{margin:14px 0 0;padding:0 0 0 20px}
 .sl-rules li{font-size:15px;color:var(--sub);line-height:1.7;margin-bottom:2px}
 #prod small.pp{display:block;font-size:13px;font-weight:500;color:var(--sub2);line-height:1.5}
+.planbox{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:6px 14px;margin:18px 0 0;padding:16px 18px;border-radius:18px;background:var(--blue-l);border:1px solid #C9D8FF;text-decoration:none;color:var(--text)}
+.planbox .pi{flex:none;width:44px;height:44px;border-radius:12px;background:var(--blue);display:inline-flex;align-items:center;justify-content:center}
+.planbox .pi svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round}
+.planbox b{display:block;font-size:17px;font-weight:900;letter-spacing:-.3px}
+.planbox small{display:block;font-size:14px;color:var(--sub);line-height:1.55;margin-top:2px}
+.planbox .go{font-size:14.5px;font-weight:700;color:var(--blue);white-space:nowrap}
+@media(max-width:560px){.planbox{grid-template-columns:44px minmax(0,1fr);align-items:start}.planbox .go{grid-column:2}}
 </style>
 </head>
 <body>
@@ -225,6 +232,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
       <a class="btn blue" href="#ask" data-track="ad_to_form">광고 문의하기</a>
       <a class="btn ghost" id="kakaoTop" href="https://pf.kakao.com/_UxnzuV" target="_blank" rel="noopener noreferrer" data-track="ad_kakao">카카오톡으로 상담</a>
     </div>
+    <a class="planbox" href="plan/" data-track="ad_to_plan"><span class="pi" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19h16"/><path d="M7 15V9M12 15V5M17 15v-3"/></svg></span><span><b>예산만 넣으면 광고 구성을 짜 드려요</b><small>업종·목적·예산 세 가지만 고르면, 맞는 자리만 골라 예산 안에서 구성해 드려요.</small></span><span class="go">광고 설계 도우미 ›</span></a>
     <nav class="toc" aria-label="이 페이지 목차">
       <a href="#why">왜 장대장인가</a><a href="#who">이용자</a><a href="#products">상품</a><a href="#slots">광고 위치</a><a href="#target">타겟팅</a><a href="#prices">단가표</a><a href="#packages">패키지</a><a href="#developer">시행사 리포트</a><a href="#guide">집행 가이드</a><a href="#flow">진행 절차</a><a href="#ask">문의</a>
     </nav>
@@ -528,8 +536,8 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
               <label><input type="checkbox" value="native"> 결과 하단 카드</label>
               <label><input type="checkbox" value="jeonse"> 전세사기 예방 체크리스트 스폰서</label>
               <label><input type="checkbox" value="brief_ad"> <span data-brief-name>집예보 모닝 브리핑</span> 지면 광고</label>
-              <label><input type="checkbox" value="home_top"> <span>홈 상단 배너<small class="pp">1주 50만 · 4주 150만 원</small></span></label>
-              <label><input type="checkbox" value="cat_top"> <span>카테고리 상단 배너<small class="pp">1주 25만 · 4주 80만 원</small><small class="pp">분양·청약 1주 28만 · 4주 90만 원</small></span></label>
+              <label><input type="checkbox" value="home_top"> <span>홈 상단 배너<small class="pp" data-wk="home_top"></small></span></label>
+              <label><input type="checkbox" value="cat_top"> <span>카테고리 상단 배너<small class="pp" data-wk="cat_top"></small><small class="pp" data-wk="cat_top_bun" data-pre="분양·청약 "></small></span></label>
               <label><input type="checkbox" value="package"> 패키지</label>
               <label><input type="checkbox" value="etc"> 기타·제휴</label>
             </div></div>
@@ -567,71 +575,9 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
 <script src="../assets/agents.js"></script>
 <script src="../assets/config.js?v=4"></script>
 <script src="../assets/brief-stat.js?v=3"></script>
+<script src="../assets/ad-prices.js?v=1"></script>
 <script>
-/* PRICE-CORE:START ─────────────────────────────────────────────
-   ★ 단가·할인·할증·집행 기준은 아래 PRICES 한 곳에서만 고치면 페이지 전체(상품 카드·단가표·기간 선택·패키지·집행 가이드)에 반영돼요.
-     모든 금액은 원 단위 숫자, VAT 별도. (tools/ad-test.js 가 이 구간을 떼어 계산을 검증해요)
-     weeks : 주 단위 상품 금액 {주 수: 금액}            — 분양 단지 광고·분양 집중 패키지
-     tiers : 월 단가 상품 [{label, month}]               — 기간 할인표(period)를 따라 1주~1년 금액 계산
-     text  : 금액 대신 그대로 보여 줄 문구(고정 요금)    — 지역 제휴 중개사
-     비어 있으면 '문의 시 안내'로 보여요.
-   ───────────────────────────────────────────────────────────── */
-const PRICES = {
-  bunyang:      { weeks: { 1: 300000, 2: 500000, 4: 900000 }, pass3: 10, launchOff: 50 },   // 분양 단지 광고(목록 상단 카드·추천 현장) · pass3 = 3회 이용권 할인(%) · launchOff = 창립 광고주 할인(%)
-  /* 분양 프리미엄 — tiers[].month = 정가(월), launch = 창립 광고주 런칭가(월). 기간 할인(period)은 둘 다 똑같이 적용 */
-  bunyang_pin:    { tiers: [{ label: '시·군·구 1곳', month: 1500000 }], launch: 490000 },                     // 지도 프리미엄 마커
-  bunyang_alert:  { tiers: [{ label: '시·군·구 1곳 · 사이트 알림', month: 600000 }], launch: 190000, per: { label: '카카오톡 1건(준비 중)', list: 300, launch: 150 } },
-  bunyang_lead:   { tiers: [{ label: '월 정액(건수 제한 없음)', month: 1500000 }], launch: 490000, per: { label: '상담 신청 1건', list: 50000, launch: 20000 } },
-  bunyang_report: { once: { label: '현장 1곳 · 1회', list: 990000, launch: 290000 } },
-  pkg_found:      { tiers: [{ label: '', month: 4000000 }], launch: 1290000 },                                 // 창립 광고주 분양 패키지(마커+상단 카드+상담 월정액+리포트)
-  bunyang_more: { perWeek: 200000 },                                         // 분양 광고 노출 화면 확장(청약·내 집 마련·갈아타기) — 준비 중, 1주당 추가
-  agent:        { text: '기본 월 29,000원 · 프리미엄 월 49,000원 · 1년 결제', note: '연 348,000원 · 588,000원 (소속 공인중개사 상담 전용 월 19,000원) · 제휴 페이지 공개 요금 그대로예요' },  // agent/ 페이지와 같게
-  agent_top:    { tiers: [{ label: '1등급 구', month: 150000 }, { label: '2등급 구', month: 90000 }, { label: '3등급 구', month: 50000 }] },   // 시·군·구 우선 노출 — 준비 중
-  native:       { tiers: [{ label: '전국', month: 500000 }, { label: '시·도', month: 300000 }, { label: '시·군·구', month: 150000 }] },  // 결과 하단 카드 — 준비 중
-  jeonse:       { tiers: [{ label: '전국 단독', month: 800000 }], note: '1년 계약 시 다음 해 업종 우선 연장권' },   // 체크리스트 스폰서(업종당 1구좌) — 준비 중
-  pkg_bunyang:  { weeks: { 4: 1500000 } },                    // 패키지: 분양 집중
-  pkg_local:    { tiers: [{ label: '', month: 200000 }] },     // 패키지: 지역 밀착
-  pkg_jeonse:   { tiers: [{ label: '', month: 1100000 }] },    // 패키지: 전월세 안심
-  period:       { w1: 30, w2: 55, m3: 10, m6: 15, y1: 25 },   // 1주·2주 = 월 단가의 %, 3개월·6개월·1년 = 할인 %
-  roundTo:      1000,                                          // 계산 금액은 천 원 단위 반올림
-  surcharge:    { region: 0, near: 20, service: 10, kind: 10 },  // 타겟팅 할증(%) — region 0 = 없음(지역 상품을 따로 둠)
-  brief_ad:     { text: '1주(7일) 25만 원 · 4주 80만 원', note: '구독자 1,000명까지 기준 · 1주(7일) 단위' },   // 모닝 브리핑 지면 광고 — 정식 상품(대표 승인 2026-11-21)
-  guide:        { minSpend: 0, minWeeks: 1, firstWeekOff: 50 }   // 최소 집행 금액(0 = 없음), 최소 기간(주), 첫 광고 첫 주 할인(%)
-};
-const PERIODS = [
-  { id: 'w1', label: '1주', weeks: 1 }, { id: 'w2', label: '2주', weeks: 2 }, { id: 'm1', label: '1개월', months: 1 },
-  { id: 'm3', label: '3개월', months: 3 }, { id: 'm6', label: '6개월', months: 6 }, { id: 'y1', label: '1년', months: 12 }
-];
-function rnd(n) { const u = PRICES.roundTo || 1; return Math.round(n / u) * u; }
-/* 450만 원 · 37.5만 원 · 6.75만 원 · 5,000원 · 1억 2,000만 원 */
-function man(n) {
-  n = Math.round(+n); if (!(n > 0)) return '0원';
-  if (n >= 1e8) { const e = Math.floor(n / 1e8), r = n % 1e8; return e + '억' + (r ? ' ' + man(r) : ' 원'); }
-  if (n >= 1e4 && n % 100 === 0) { const v = n / 1e4; return (Number.isInteger(v) ? v.toLocaleString('ko-KR') : String(+v.toFixed(2))) + '만 원'; }
-  return n.toLocaleString('ko-KR') + '원';
-}
-/* 할인율(%): 그 기간 이하에서 가장 긴 할인 구간 (예: 4개월 → 3개월 할인율) */
-function rateOf(months) { const R = PRICES.period; return months >= 12 ? R.y1 : months >= 6 ? R.m6 : months >= 3 ? R.m3 : 0; }
-/* 월 단가 상품의 기간 금액 → { total, list(정가), off(할인액), rate, perMonth(월 꼴), pct(1·2주: 월 단가의 %) } */
-function periodPrice(month, pid) {
-  const p = PERIODS.find(x => x.id === pid), R = PRICES.period;
-  if (!p || !(month > 0)) return null;
-  if (p.weeks) { const pct = p.weeks === 1 ? R.w1 : R.w2; return { total: rnd(month * pct / 100), pct, weeks: p.weeks, months: 0, off: 0, rate: 0 }; }
-  const list = month * p.months, rate = rateOf(p.months), total = rnd(list * (100 - rate) / 100);
-  return { total, list, off: list - total, rate, months: p.months, perMonth: Math.round(total / p.months) };
-}
-/* 주 단위 상품: 고른 기간에 맞는 주 수(1주·2주·그 외 4주, 없으면 가장 긴 것) */
-function weekKey(p, pid) {
-  const want = pid === 'w1' ? 1 : pid === 'w2' ? 2 : 4, ks = Object.keys(p.weeks).map(Number).sort((a, b) => a - b);
-  return ks.includes(want) ? want : ks[ks.length - 1];
-}
-function launchWeek(amount) { return rnd(amount * (100 - (PRICES.bunyang.launchOff || 0)) / 100); }
-function passPrice(amount) { const list = amount * 3; return { list, total: rnd(list * (100 - (PRICES.bunyang.pass3 || 0)) / 100) }; }
-/* 첫 광고 첫 주 할인 금액 */
-function firstWeekPrice(oneWeek) { return rnd(oneWeek * (100 - (PRICES.guide.firstWeekOff || 0)) / 100); }
-/* 1주 광고 뒤 1개월 이상 연장: 연장 금액 − 첫 주 결제액 */
-function extendPrice(month, pid, paidFirstWeek) { const q = periodPrice(month, pid); return q && q.months >= 1 ? Math.max(0, q.total - paidFirstWeek) : null; }
-/* PRICE-CORE:END */
+
 
 const ASK = '문의 시 안내';
 const $ = id => document.getElementById(id);
@@ -829,7 +775,11 @@ $('form').addEventListener('submit', async e => {
 })();
 </script>
 <script>
-/* 광고 위치 안내: 위치 그림 + 설명 (docs/ad_slots.md 표와 같은 내용) */
+/* 광고 위치 안내: 위치 그림 + 설명 (docs/ad_slots.md 표와 같은 내용). 가격은 assets/ad-prices.js 한 곳에서 */
+/* 주 단위 상품 가격 한 줄: '1주 25만 · 4주 80만 원' */
+function WK(k) { const p = PRICES[k]; if (!p || !p.weeks) return ''; const ks = Object.keys(p.weeks).map(Number).sort((a, b) => a - b);
+  return ks.map(w => w + '주 ' + man(p.weeks[w]).replace(/ 원$/, '')).join(' · ') + ' 원'; }
+document.querySelectorAll('[data-wk]').forEach(el => { el.textContent = (el.dataset.pre || '') + WK(el.dataset.wk); });
 (function(){
   const PH = {
     top:  '<i class="h"></i><i></i><i class="ad big"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="sp"></i>',
@@ -838,19 +788,32 @@ $('form').addEventListener('submit', async e => {
     map:  '<i class="r"></i><i class="ad"></i><i class="map"></i>'
   };
   const L = [
-    ['top', '홈 상단 배너', '첫 화면 소개 글 바로 아래 한 줄(휴대폰 첫 화면에 보임)', '대출 상담 · 법무사 · 보증보험 · 이사 · 인테리어 · 세무사(정액) · 시행사 · 분양대행사', '1주 50만 · 4주 150만 원', '가장 비싼 자리', 1],
-    ['top', '카테고리 상단 배너 — 분양 · 청약', '제목·설명 바로 아래 한 줄', '시행사 · 분양대행사', '1주 28만 · 4주 90만 원'],
-    ['top', '카테고리 상단 배너 — 순위 · 전월세 · 빌라 · 갈아타기', '제목·설명 바로 아래, 입력 칸 위 한 줄', '화면별 업종(전월세: 보증보험·법무사·이사 / 빌라: 법무사·감정평가·보증보험·이사)', '1주 25만 · 4주 80만 원'],
-    ['map', '지도 상단 배너', '검색·보기 버튼 아래 한 줄(지도를 가리지 않고 그만큼 아래에서 시작)', '시행사 · 분양대행사 · 대출 상담 · 이사 · 인테리어', '1주 25만 · 4주 80만 원'],
-    ['top', '세금 상단 배너', '세금 계산기 첫 화면 제목 아래, 계산 메뉴 위(입력·결과 화면에는 없음)', '세무사(정액 광고비만)', '1주 25만 · 4주 80만 원'],
-    ['end', '결과 아래 카드', '내 집 시세 · 단지 비교 · 전월세 · 청약 · 내 집 마련 · 리포트 · 땅 결과를 다 본 뒤', '화면별 업종(대출 상담 · 법무사 · 이사 · 인테리어 · 보증보험 · 감정평가 등)', '월 전국 50만 · 시·도 30만 · 시·군·구 15만 원'],
-    ['list', '목록 사이 카드', '순위·분양 목록 10번째 뒤(목록이 10개 넘을 때만)', '순위: 시행사 · 분양대행사 · 대출 상담 · 이사 · 인테리어 / 분양: 시행사 · 분양대행사', '월 시·도 30만 원'],
-    ['end', '페이지 끝 카드', '홈 · 순위 · 세금 · 빌라 · 갈아타기 · 모닝 브리핑 · 중개사 화면 맨 아래', '화면별 업종(세금은 세무사 정액만, 중개사 화면은 중개사 도구만)', '월 15만~50만 원 · 브리핑 화면은 브리핑 지면 광고에 포함'],
-    ['end', '전세사기 체크리스트 아래', '체크리스트·상담 안내 다음', '보증보험 · 법무사 · 이사', '월 80만 원(전국 단독 · 업종당 1곳)']
+    ['top', '홈 상단 배너', '첫 화면 소개 글 바로 아래 한 줄(휴대폰 첫 화면에 보임)', '대출 상담 · 법무사 · 보증보험 · 이사 · 인테리어 · 세무사(정액) · 시행사 · 분양대행사', WK('home_top'), '가장 비싼 자리', 1],
+    ['top', '카테고리 상단 배너 — 분양 · 청약', '제목·설명 바로 아래 한 줄', '시행사 · 분양대행사', WK('cat_top_bun')],
+    ['top', '카테고리 상단 배너 — 순위 · 전월세 · 빌라 · 갈아타기', '제목·설명 바로 아래, 입력 칸 위 한 줄', '화면별 업종(전월세: 보증보험·법무사·이사 / 빌라: 법무사·감정평가·보증보험·이사)', WK('cat_top')],
+    ['map', '지도 상단 배너', '검색·보기 버튼 아래 한 줄(지도를 가리지 않고 그만큼 아래에서 시작)', '시행사 · 분양대행사 · 대출 상담 · 이사 · 인테리어', WK('cat_top')],
+    ['top', '세금 상단 배너', '세금 계산기 첫 화면 제목 아래, 계산 메뉴 위(입력·결과 화면에는 없음)', '세무사(정액 광고비만)', WK('cat_top')],
+    ['end', '결과 아래 카드', '내 집 시세 · 단지 비교 · 전월세 · 청약 · 내 집 마련 · 리포트 · 땅 결과를 다 본 뒤', '화면별 업종(대출 상담 · 법무사 · 이사 · 인테리어 · 보증보험 · 감정평가 등)', '월 ' + PRICES.native.tiers.map(t => t.label + ' ' + man(t.month).replace(/ 원$/, '')).join(' · ') + ' 원'],
+    ['list', '목록 사이 카드', '순위·분양 목록 10번째 뒤(목록이 10개 넘을 때만)', '순위: 시행사 · 분양대행사 · 대출 상담 · 이사 · 인테리어 / 분양: 시행사 · 분양대행사', '월 시·도 ' + man(PRICES.native.tiers[1].month)],
+    ['end', '페이지 끝 카드', '홈 · 순위 · 세금 · 빌라 · 갈아타기 · 모닝 브리핑 · 중개사 화면 맨 아래', '화면별 업종(세금은 세무사 정액만, 중개사 화면은 중개사 도구만)', '월 ' + man(Math.min(PRICES.native.tiers[2].month, PRICES.agent_top.tiers[0].month)).replace(/ 원$/, '') + '~' + man(PRICES.native.tiers[0].month) + ' · 브리핑 화면은 브리핑 지면 광고에 포함'],
+    ['end', '전세사기 체크리스트 아래', '체크리스트·상담 안내 다음', '보증보험 · 법무사 · 이사', '월 ' + man(PRICES.jeonse.tiers[0].month) + '(전국 단독 · 업종당 1곳)']
   ];
   const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const g = document.getElementById('slGrid'); if (!g) return;
   g.innerHTML = L.map(x => `<div class="sl${x[6] ? ' prem' : ''}"><div class="sl-ph" aria-hidden="true">${PH[x[0]]}</div><div class="sl-tx"><b>${esc(x[1])}${x[5] ? `<span class="sl-tag">${esc(x[5])}</span>` : ''}</b><span class="w">${esc(x[2])}</span><span class="ind">받는 업종: ${esc(x[3])}</span><span class="pr">${esc(x[4])}<small>VAT 별도</small></span></div></div>`).join('');
+})();
+</script>
+<script>
+/* 광고 설계 도우미(/ad/plan/)에서 [이 구성으로 문의하기]로 오면: 업종·목적·자리·기간·금액을 문의 폼에 미리 채움(assets/ad-plan-core.js formFill) */
+(function () {
+  let q = null; try { const v = new URLSearchParams(location.search).get('plan'); q = v ? JSON.parse(v) : null; } catch (e) { q = null; }
+  if (!q || typeof q !== 'object') return;
+  const box = document.getElementById('prod');
+  (Array.isArray(q.p) ? q.p : []).forEach(k => { const c = box && box.querySelector(`input[value="${String(k).replace(/[^a-z_]/g, '')}"]`); if (c) c.checked = true; });
+  const set = (id, v) => { const el = document.getElementById(id); if (el && typeof v === 'string' && v) el.value = v.slice(0, +(el.getAttribute('maxlength') || 1000)); };
+  set('region', q.r); set('memo', q.m);
+  const per = document.getElementById('period'); if (per && q.per && [...per.options].some(o => o.text === q.per)) per.value = q.per;
+  const f = document.getElementById('ask'); if (f) setTimeout(() => f.scrollIntoView({ block: 'start' }), 50);
 })();
 </script>
 </body>

@@ -121,11 +121,12 @@ const doc = read('docs/ad_slots.md');
   const adp = read('ad/index.html');
   check('/ad/: 광고 위치 안내 칸', adp.includes('id="slots"') && adp.includes('광고 위치 안내'), '');
   const slotSec = adp.slice(adp.indexOf('id="slots"'), adp.indexOf('id="target"'));
-  check('/ad/: 홈 상단 = 가장 비싼 자리 · 1주 50만·4주 150만', adp.includes('가장 비싼 자리') && adp.includes("'1주 50만 · 4주 150만 원'"), '');
-  check('/ad/: 브리핑 지면 광고 1주(7일) 25만·4주 80만, 과금 1주·4주', adp.includes("brief_ad:     { text: '1주(7일) 25만 원 · 4주 80만 원'") && adp.includes('<td data-l="과금">1주 · 4주 정액(7일 단위)</td>'), '');
+  const PX = require('../assets/ad-prices.js').PRICES, wk = k => JSON.stringify(PX[k] && PX[k].weeks);
+  check('/ad/: 홈 상단 = 가장 비싼 자리 · 단가표 1주 50만·4주 150만(위치 안내는 단가표에서 읽음)', adp.includes('가장 비싼 자리') && adp.includes("WK('home_top'), '가장 비싼 자리', 1]") && wk('home_top') === '{"1":500000,"4":1500000}', wk('home_top'));
+  check('단가표: 브리핑 지면 광고 1주(7일) 25만·4주 80만, /ad/ 과금 1주·4주', /text: '1주\(7일\) 25만 원 · 4주 80만 원'/.test(read('assets/ad-prices.js')) && wk('brief_ad') === '{"1":250000,"4":800000}' && adp.includes('<td data-l="과금">1주 · 4주 정액(7일 단위)</td>'), wk('brief_ad'));
   check('/ad/: 브리핑 광고 하루 1개 노출 규칙은 그대로', adp.includes('하루 한 광고주만 실려요') && adp.includes('(하루 1개 광고주)'), '');
-  check('/ad/: 카테고리 상단 1주 25만·4주 80만(분양·청약 1주 28만·4주 90만), 하루 단위 없음', adp.includes("'1주 25만 · 4주 80만 원'") && adp.includes("'1주 28만 · 4주 90만 원'") && !/'1일 [0-9]+만 · 1주 2[58]만/.test(adp), '');
-  check('/ad/ 문의 폼: 상단 배너 가격 표시', adp.includes('카테고리 상단 배너<small class="pp">1주 25만 · 4주 80만 원</small><small class="pp">분양·청약 1주 28만 · 4주 90만 원</small>') && adp.includes('홈 상단 배너<small class="pp">1주 50만 · 4주 150만 원</small>'), '');
+  check('단가표: 카테고리 상단 1주 25만·4주 80만, 분양·청약 1주 28만·4주 90만(하루 단위 없음) · 위치 안내가 단가표에서 읽음', wk('cat_top') === '{"1":250000,"4":800000}' && wk('cat_top_bun') === '{"1":280000,"4":900000}' && adp.includes("WK('cat_top')]") && adp.includes("WK('cat_top_bun')]"), [wk('cat_top'), wk('cat_top_bun')]);
+  check('/ad/ 문의 폼: 상단 배너 가격 표시(단가표에서 채움)', adp.includes('홈 상단 배너<small class="pp" data-wk="home_top"></small>') && adp.includes('<small class="pp" data-wk="cat_top"></small><small class="pp" data-wk="cat_top_bun" data-pre="분양·청약 "></small>') && /el\.textContent = \(el\.dataset\.pre \|\| ''\) \+ WK\(el\.dataset\.wk\)/.test(adp), '');
   const topRows = doc.split('\n').filter(l => /`\w+_top`/.test(l));
   check('문서: 상단 배너 줄 가격(홈 1주 50만·4주 150만, 분양·청약 1주 28만·4주 90만, 나머지 1주 25만·4주 80만)', topRows.every(l => /`home_top`/.test(l) ? l.includes('1주 50만 · 4주 150만 원') && !l.includes('1일') : /`(bunyang|chungyak)_top`/.test(l) ? l.includes('| 1주 28만 · 4주 90만 원 |') : l.includes('| 1주 25만 · 4주 80만 원 |')) && topRows.length === 9, topRows.length);
   check("/ad/·문서: '제안가'·'확정 전' 문구 없음", !/제안가|확정 전/.test(adp + doc), '');
@@ -133,7 +134,7 @@ const doc = read('docs/ad_slots.md');
   const gs = read('tools/agent-backend.gs');
   /* 하루 단위 광고 가격 표시가 남아 있으면 실패 ('1일 5만 원', '1일 10만 ·', '하루 5만원' 등. '하루 1개 광고주'·'하루 4번' 같은 노출 규칙은 괜찮음) */
   const DAY = /(?:1일|하루)\s*\(?\s*[0-9][0-9,.]*\s*(?:만\s*원|만|원)/;
-  const dayFiles = ['ad/index.html', 'docs/ad_slots.md', 'pro/developer/index.html', 'tools/agent-backend.gs', 'assets/ad-slot.js', 'assets/brief-core.js', 'assets/brief-ad.js', 'assets/brief-stat.js',
+  const dayFiles = ['ad/index.html', 'ad/plan/index.html', 'assets/ad-prices.js', 'assets/ad-plan-core.js', 'docs/ad_slots.md', 'pro/developer/index.html', 'tools/agent-backend.gs', 'assets/ad-slot.js', 'assets/brief-core.js', 'assets/brief-ad.js', 'assets/brief-stat.js',
     ...['brief', 'bunyang/apply', 'bunyang/agency', 'agent', 'premium'].flatMap(d => fs.readdirSync(path.join(ROOT, d), { recursive: true }).filter(f => /\.html$/.test(f)).map(f => d + '/' + f))];
   for (const f of dayFiles) { if (!fs.existsSync(path.join(ROOT, f))) continue; const m = read(f).match(DAY); check(`${f}: '1일·하루 …원' 광고 가격 표시 없음`, !m, m && m[0]); }
   check('하루 단위 검사 자체 확인(1일 5만 원 → 걸림, 하루 1개 광고주 → 통과)', DAY.test('1일 5만 원 · 1주') && DAY.test('1일 10만 · 1주') && !DAY.test('하루 1개 광고주') && !DAY.test('하루 4번 갱신'), '');

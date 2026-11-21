@@ -272,11 +272,11 @@ r = post(aq());
 check('하루 문의 상한', !r.ok && /카카오톡/.test(r.err), r);
 
 
-// 8. 광고 안내 페이지(ad/index.html) 단가·기간 계산 — PRICE-CORE 구간만 떼어 검증
+// 8. 광고 단가(assets/ad-prices.js, ad/ 와 ad/plan/ 이 같이 읽음)·기간 계산 — PRICE-CORE 구간만 떼어 검증
 {
   const html = fs.readFileSync(path.join(__dirname, '..', 'ad', 'index.html'), 'utf8');
-  const m = html.match(/\/\* PRICE-CORE:START[\s\S]*?\/\* PRICE-CORE:END \*\//);
-  check('PRICE-CORE 구간 있음', !!m);
+  const m = fs.readFileSync(path.join(__dirname, '..', 'assets', 'ad-prices.js'), 'utf8').match(/\/\* PRICE-CORE:START[\s\S]*?\/\* PRICE-CORE:END \*\//);   // 단가 한 곳: assets/ad-prices.js
+  check('PRICE-CORE 구간 있음(assets/ad-prices.js) · ad/ 가 그 파일을 읽음', !!m && /assets\/ad-prices\.js\?v=\d+/.test(html));
   const pc = {}; vm.createContext(pc);
   vm.runInContext(m[0] + '\n;globalThis.__P = { PRICES, PERIODS, rnd, man, rateOf, periodPrice, weekKey, passPrice, firstWeekPrice, extendPrice, launchWeek };', pc);
   const P = pc.__P, pp = (mo, id) => P.periodPrice(mo, id);
