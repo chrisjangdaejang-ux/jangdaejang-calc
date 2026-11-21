@@ -91,11 +91,11 @@ select,input[type=number]{font:inherit;font-size:16px;min-height:46px;border:1px
       <label for="sido" id="regL">지역</label><select id="sido"><option value="">시·도</option></select><select id="sgg" hidden><option value="">시·군·구</option></select>
     </div></section>
 
-  <section class="step" aria-labelledby="s3"><h2 id="s3"><span class="n">3</span>예산과 기간</h2>
-    <div class="money"><label for="bud">한 달 예산</label><input type="number" id="bud" inputmode="numeric" min="0" step="10" value="100" aria-describedby="budH"><span>만 원</span></div>
+  <section class="step" aria-labelledby="s3"><h2 id="s3"><span class="n">3</span>광고에 쓸 돈과 기간</h2>
+    <div class="money"><label for="bud">광고에 쓸 돈(총액)</label><input type="number" id="bud" inputmode="numeric" min="0" step="10" value="100" aria-describedby="budH"><span>만 원</span></div>
     <div class="chips" id="quick" role="group" aria-label="예산 빠른 선택" style="margin-top:10px"></div>
-    <div class="row"><span id="perL" style="font-size:14.5px;font-weight:700;color:var(--sub)">기간</span><div class="chips" id="per" role="group" aria-labelledby="perL"></div></div>
-    <p class="hint" id="budH">모든 금액은 VAT 별도예요. 광고는 1주 단위로 팔아요. 8주를 고르면 한 달 예산의 두 배까지 써요.</p></section>
+    <div class="row"><span id="perL" style="font-size:14.5px;font-weight:700;color:var(--sub)">원하는 기간</span><div class="chips" id="per" role="group" aria-labelledby="perL"></div></div>
+    <p class="hint" id="budH">모든 금액은 VAT 별도예요. 고른 금액을 넘는 구성은 만들지 않아요. 기간은 원하는 기간으로 참고해요(광고는 1주 단위).</p></section>
 
   <section class="res" id="res" aria-live="polite" hidden></section>
 </main>
@@ -112,7 +112,7 @@ select,input[type=number]{font:inherit;font-size:16px;min-height:46px;border:1px
   const A = window.JDJ_ADPLAN, $ = id => document.getElementById(id);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const SITE = (window.JDJ_SITE && window.JDJ_SITE.SITE_NAME) || '집예보';
-  const S = { industry: '', purpose: '', monthMan: 100, weeks: 4, sido: '', sgg: '' };
+  const S = { industry: '', purpose: '', totalMan: 100, weeks: 4, sido: '', sgg: '' };
   let IX = null, STATS = {}, ADT = null;
   const chips = (el, list, key, lab) => { el.innerHTML = list.map(x => `<button type="button" data-v="${esc(x.id != null ? x.id : x)}" aria-pressed="false">${esc(lab ? lab(x) : x.label)}</button>`).join('');
     el.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S[key] = key === 'weeks' ? +b.dataset.v : b.dataset.v; sync(); }); };
@@ -120,8 +120,8 @@ select,input[type=number]{font:inherit;font-size:16px;min-height:46px;border:1px
   chips($('pur'), A.PURPOSES, 'purpose');
   chips($('per'), A.PERIODS, 'weeks', w => w + '주');
   $('quick').innerHTML = A.QUICK.map(v => `<button type="button" data-v="${v}" aria-pressed="false">${v}만 원</button>`).join('');
-  $('quick').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S.monthMan = +b.dataset.v; $('bud').value = S.monthMan; sync(); });
-  $('bud').addEventListener('input', () => { S.monthMan = Math.max(0, Math.round(+$('bud').value || 0)); sync(); });
+  $('quick').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S.totalMan = +b.dataset.v; $('bud').value = S.totalMan; sync(); });
+  $('bud').addEventListener('input', () => { S.totalMan = Math.max(0, Math.round(+$('bud').value || 0)); sync(); });
   $('sido').addEventListener('change', () => { S.sido = $('sido').value; S.sgg = ''; fillSgg(); sync(); });
   $('sgg').addEventListener('change', () => { S.sgg = $('sgg').value; sync(); });
 
@@ -145,7 +145,7 @@ select,input[type=number]{font:inherit;font-size:16px;min-height:46px;border:1px
   }).catch(() => {});
 
   function sync() {
-    [['ind', S.industry], ['pur', S.purpose], ['per', String(S.weeks)], ['quick', String(S.monthMan)]].forEach(([id, v]) =>
+    [['ind', S.industry], ['pur', S.purpose], ['per', String(S.weeks)], ['quick', String(S.totalMan)]].forEach(([id, v]) =>
       $(id).querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === v))));
     const U = A.PURPOSES.find(p => p.id === S.purpose);
     $('regRow').hidden = !(U && U.region);
@@ -165,16 +165,16 @@ select,input[type=number]{font:inherit;font-size:16px;min-height:46px;border:1px
     } else if (r.kind === 'broker') {
       h = `<h2>공인중개사는 '지역 제휴 중개사'가 맞아요</h2><p class="sum">광고 칸이 아니라, 이용자가 그 동네 단지를 볼 때 사무소가 '제휴·광고' 표시와 함께 보이는 상품이에요. 1년 결제예요.</p>
         <table class="plan"><thead><tr><th>상품</th><th>기간</th><th>금액(VAT 별도)</th><th>이유</th></tr></thead><tbody>${r.plans.map(p => `<tr><td data-l="상품"><b>지역 제휴 중개사 ${esc(p.label)}</b>${r.pick && r.pick.label === p.label ? '<span class="st">추천</span>' : ''}</td><td data-l="기간">1년</td><td class="m" data-l="금액">${W(p.year)}<small>월 ${W(p.month)} 꼴</small></td><td data-l="이유"><span class="why">${p.label === '프리미엄' ? '매물이 있는 단지(최대 10곳) 카드에서 사무소가 맨 앞에 보여요.' : '사무소가 있는 구와 원하는 구 2곳의 단지 카드·결과 화면에 사무소가 보여요.'}</span></td></tr>`).join('')}</tbody></table>
-        ${r.pick ? `<p class="note">한 달 예산 ${S.monthMan}만 원이면 <b>${esc(r.pick.label)}</b>(월 ${W(r.pick.month)} 꼴)까지 돼요.</p>` : `<p class="note">가장 싼 것은 기본 월 ${W(r.cheapest.month)} 꼴(1년 ${W(r.cheapest.year)})이에요.</p>`}`;
+        ${r.pick ? `<p class="note">${S.totalMan}만 원이면 <b>${esc(r.pick.label)}</b>(1년 ${W(r.pick.year)})까지 돼요.</p>` : `<p class="note">가장 싼 것은 기본 월 ${W(r.cheapest.month)} 꼴(1년 ${W(r.cheapest.year)})이에요.</p>`}`;
     } else if (r.kind === 'none') {
       h = `<h2>이 업종·목적에 맞는 자리가 아직 없어요</h2><p class="sum">목적을 바꿔 보시거나, 문의 주시면 맞는 방법을 함께 찾아 드려요.</p>`;
     } else if (r.kind === 'short') {
-      h = `<h2>이 예산으로는 들어가는 자리가 없어요</h2><p class="sum">${r.weeks}주에 쓸 수 있는 돈은 ${W(r.budget)}이에요.</p>
-        <div class="extra">${r.cheapest ? `가장 싼 자리는 <b>${esc(r.cheapest.name)}</b>이고, ${r.cheapest.weeks}주에 <b>${W(r.cheapest.cost)}</b>이 필요해요. 한 달 예산을 <b>${Math.ceil(r.cheapest.cost / 10000 / (r.weeks > 4 ? r.weeks / 4 : 1))}만 원</b> 이상으로 해 보세요.` : ''}
+      h = `<h2>이 예산으로는 들어가는 자리가 없어요</h2><p class="sum">광고에 쓸 돈 ${W(r.budget)}으로 원하는 기간 ${r.weeks}주에 들어가는 자리가 없어요.</p>
+        <div class="extra">${r.cheapest ? `가장 싼 자리는 <b>${esc(r.cheapest.name)}</b>이고, ${r.cheapest.weeks}주에 <b>${W(r.cheapest.cost)}</b>이 필요해요. 광고에 쓸 돈을 <b>${Math.ceil(r.cheapest.cost / 10000)}만 원</b> 이상으로 해 보세요.` : ''}
         ${r.shorter ? `<br>기간을 <b>${r.shorter.weeks}주</b>로 줄이면 <b>${esc(r.shorter.name)}</b>를 ${W(r.shorter.cost)}에 할 수 있어요. <button type="button" class="btn ghost" id="toShort" data-w="${r.shorter.weeks}" style="min-height:40px;margin-top:8px">${r.shorter.weeks}주 구성 보기</button>` : ''}</div>`;
     } else {
-      h = `<h2>추천 구성 <small style="font-size:14px;font-weight:500;color:var(--sub2)">${esc(A.INDUSTRIES.find(x => x.id === S.industry).label)} · ${esc(A.PURPOSES.find(x => x.id === S.purpose).label)}${region ? ' · ' + esc(region) : ''}</small></h2>
-        <p class="sum">${r.weeks}주에 쓸 수 있는 돈 ${W(r.budget)} 안에서, 효과가 클 만한 순서로 골랐어요. 모든 자리에는 '광고' 표시가 붙어요.</p>
+      h = `<h2>${S.totalMan}만 원 안에서 고른 구성 <small style="font-size:14px;font-weight:500;color:var(--sub2)">${esc(A.INDUSTRIES.find(x => x.id === S.industry).label)} · ${esc(A.PURPOSES.find(x => x.id === S.purpose).label)}${region ? ' · ' + esc(region) : ''}</small></h2>
+        <p class="sum">광고에 쓸 돈 ${W(r.budget)}을 넘지 않게, 원하는 기간 ${r.weeks}주로 효과가 클 만한 순서로 골랐어요. 모든 자리에는 '광고' 표시가 붙어요.</p>
         <table class="plan"><thead><tr><th>자리</th><th>기간</th><th>금액(VAT 별도)</th><th>이유</th></tr></thead><tbody>
         ${r.items.map(x => `<tr><td data-l="자리"><b><span class="adlbl">광고</span>${esc(x.name)}${x.soon ? '<span class="soon">준비 중</span>' : ''}</b><small>${esc(x.where)}</small></td><td data-l="기간">${x.weeks}주</td><td class="m" data-l="금액">${W(x.cost)}</td><td data-l="이유"><span class="why">${esc(x.why)}</span>${x.stat ? `<br><span class="st">${esc(x.stat)}</span>` : ''}</td></tr>`).join('')}
         </tbody><tfoot><tr><td>합계</td><td class="hm"></td><td class="m">${W(r.total)}</td><td>${r.left > 0 ? `남는 예산 ${W(r.left)}` : '예산을 모두 썼어요'}</td></tr></tfoot></table>

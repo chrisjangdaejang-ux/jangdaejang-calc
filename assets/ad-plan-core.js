@@ -112,8 +112,8 @@
     if (it.kind === 'tier') return P.tiers && P.tiers[0] ? PR.tierWeeks(P.tiers[0].month, n) : null;
     return null;
   }
-  /** 이번 광고에 쓸 수 있는 돈: 4주 이하면 월 예산, 8주면 월 예산 × 2 */
-  function budgetFor(monthMan, weeks) { var m = Math.max(0, Math.round(+monthMan || 0)) * 10000; return weeks > 4 ? m * (weeks / 4) : m; }
+  /** 이번 광고에 쓸 돈(총액, 만 원 → 원). 기간과 관계없이 이 금액을 넘는 구성은 만들지 않아요 */
+  function budgetFor(totalMan) { return Math.max(0, Math.round(+totalMan || 0)) * 10000; }
 
   function statLine(it, stats) {
     stats = stats || {};
@@ -124,20 +124,20 @@
   }
 
   /**
-   * 추천 구성. q = { industry, purpose, monthMan(월 예산, 만 원), weeks(1·2·4·8), sido, sgg }, stats(선택) = { slots: {자리 id: {weeks:4, views, clicks}}, briefSubs }
+   * 추천 구성. q = { industry, purpose, totalMan(광고에 쓸 돈 총액, 만 원, VAT 별도), weeks(원하는 기간 1·2·4·8주), sido, sgg }, stats(선택) = { slots: {자리 id: {weeks:4, views, clicks}}, briefSubs }
    * → { ok, kind: 'items'|'broker'|'etc'|'short', items:[{id, name, where, weeks, cost, why, stat, prod}], total, left, budget,
    *     cheapest: {name, weeks, cost} (예산 부족일 때), shorter: {weeks, name, cost} (기간을 줄이면 들어가는 자리), adTarget(분양 목적) }
    */
   function plan(q, stats, extra) {
     q = q || {}; extra = extra || {};
-    var I = indOf(q.industry), U = purOf(q.purpose), n = PERIODS.indexOf(+q.weeks) >= 0 ? +q.weeks : 4, budget = budgetFor(q.monthMan, n);
+    var I = indOf(q.industry), U = purOf(q.purpose), n = PERIODS.indexOf(+q.weeks) >= 0 ? +q.weeks : 4, budget = budgetFor(q.totalMan);
     var out = { ok: false, kind: 'items', items: [], total: 0, left: budget, budget: budget, weeks: n, note: '' };
     if (!I || !U) { out.kind = 'none'; return out; }
     if (I.id === 'etc') { out.kind = 'etc'; return out; }
     if (I.id === 'broker') {   // 공인중개사: 광고 칸이 아니라 지역 제휴 중개사(1년 결제). 월로 나눈 값이 월 예산 안이어야
       out.kind = 'broker';
       var plans = (PR.PRICES.agent && PR.PRICES.agent.plans) || [];
-      var fit = plans.filter(function (p) { return p.month <= (+q.monthMan || 0) * 10000; });
+      var fit = plans.filter(function (p) { return p.year <= budgetFor(q.totalMan); });   // 1년 결제 금액이 총액 안
       out.plans = plans; out.pick = fit.length ? fit[fit.length - 1] : null; out.ok = !!out.pick;
       out.cheapest = plans.length ? plans[0] : null;
       return out;
@@ -160,7 +160,7 @@
       if (cheap) out.cheapest = { name: cheap.it.name, weeks: n, cost: cheap.cost };
       for (var k = PERIODS.indexOf(n) - 1; k >= 0 && !out.shorter; k--) {
         var w = PERIODS[k], best = null;
-        cands.forEach(function (c) { var p = priceOf(c.it, w); if (p > 0 && p <= budgetFor(q.monthMan, w) && (!best || c.it.score[U.id] > best.s)) best = { s: c.it.score[U.id], weeks: w, name: c.it.name, cost: p }; });
+        cands.forEach(function (c) { var p = priceOf(c.it, w); if (p > 0 && p <= budgetFor(q.totalMan) && (!best || c.it.score[U.id] > best.s)) best = { s: c.it.score[U.id], weeks: w, name: c.it.name, cost: p }; });
         if (best) out.shorter = { weeks: best.weeks, name: best.name, cost: best.cost };
       }
       if (!cands.length) out.kind = 'none';
@@ -179,7 +179,7 @@
     if (r.kind === 'broker') prods = ['agent'];
     if (!prods.length) prods = ['etc'];
     var region = [q.sido, q.sgg].filter(Boolean).join(' ');
-    var lines = ['[광고 설계 도우미]', '업종: ' + (I.label || ''), '목적: ' + (U.label || ''), region ? '지역: ' + region : '', '기간: ' + r.weeks + '주', '월 예산: ' + (+q.monthMan || 0) + '만 원'];
+    var lines = ['[광고 설계 도우미]', '업종: ' + (I.label || ''), '목적: ' + (U.label || ''), region ? '지역: ' + region : '', '기간: ' + r.weeks + '주', '광고에 쓸 돈(총액): ' + (+q.totalMan || 0) + '만 원'];
     if (r.kind === 'broker' && r.pick) lines.push('구성: 지역 제휴 중개사 ' + r.pick.label + ' — 1년 ' + won(r.pick.year) + '(월 ' + won(r.pick.month) + ' 꼴)');
     (r.items || []).forEach(function (x) { lines.push('구성: ' + x.name + ' · ' + x.weeks + '주 · ' + won(x.cost)); });
     if ((r.items || []).length) lines.push('합계: ' + won(r.total) + ' (VAT 별도)');

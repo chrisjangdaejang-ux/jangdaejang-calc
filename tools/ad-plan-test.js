@@ -6,10 +6,10 @@ const A = require('../assets/ad-plan-core.js'), PR = require('../assets/ad-price
 const ROOT = path.join(__dirname, '..'), read = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const rows = [], check = (name, ok, got) => rows.push({ name, ok: !!ok, got });
 
-const BUD = [0, 10, 30, 50, 100, 150, 200, 300, 500, 1000];
+const BUD = [0, 10, 30, 40, 50, 60, 70, 80, 90, 100, 120, 150, 180, 200, 250, 300, 500, 1000];
 const all = [];
 for (const I of A.INDUSTRIES) for (const U of A.PURPOSES) for (const b of BUD) for (const w of A.PERIODS) {
-  const q = { industry: I.id, purpose: U.id, monthMan: b, weeks: w, sido: '서울특별시', sgg: '강남구' };
+  const q = { industry: I.id, purpose: U.id, totalMan: b, weeks: w, sido: '서울특별시', sgg: '강남구' };
   all.push([q, A.plan(q, {})]);
 }
 
@@ -26,7 +26,7 @@ for (const I of A.INDUSTRIES) for (const U of A.PURPOSES) for (const b of BUD) f
   const tax = all.filter(([q]) => q.industry === 'tax').flatMap(([, r]) => r.items);
   check('세무사: 세금 화면 자리만', tax.length > 0 && tax.every(x => ['tax_top', 'tax_end'].includes(x.id)), [...new Set(tax.map(x => x.id))]);
   check('세무사: 세금 화면은 정액 광고만 받는 자리(flatOnly)', SL.CATS.tax.flatOnly === true, '');
-  const dev = A.plan({ industry: 'dev', purpose: 'bunyang', monthMan: 300, weeks: 4, sido: '서울특별시' }, {});
+  const dev = A.plan({ industry: 'dev', purpose: 'bunyang', totalMan: 300, weeks: 4, sido: '서울특별시' }, {});
   check('분양 목적: 분양·청약 화면 자리가 먼저', ['bun_list', 'chungyak_top', 'bunyang_top'].includes(dev.items[0].id) && dev.items.slice(0, 2).every(x => ['bun_list', 'chungyak_top', 'bunyang_top'].includes(x.id)), dev.items.map(x => x.id));
   const jg = all.filter(([q]) => q.industry === 'guar').flatMap(([, r]) => r.items.map(x => x.id));
   check('보증보험: 전월세 자리 포함, 세금·분양 자리 없음', jg.includes('jeonse_sponsor') && !jg.some(id => /^(tax_|bun_|chungyak_top|bunyang_top|map_pin)/.test(id)), [...new Set(jg)]);
@@ -39,24 +39,30 @@ for (const I of A.INDUSTRIES) for (const U of A.PURPOSES) for (const b of BUD) f
 
 /* ② 예산 */
 {
-  const over = all.find(([q, r]) => r.total > A.budgetFor(q.monthMan, q.weeks) || r.items.reduce((s, x) => s + x.cost, 0) !== r.total || r.left !== r.budget - r.total);
+  const over = all.find(([q, r]) => r.total > q.totalMan * 10000 || r.total > A.budgetFor(q.totalMan) || r.items.reduce((s, x) => s + x.cost, 0) !== r.total || r.left !== r.budget - r.total);
   check('모든 조합: 합계 ≤ 쓸 수 있는 돈, 합계 = 자리 금액의 합, 남는 돈 = 예산 − 합계', !over, over && [over[0], over[1].total, over[1].budget]);
-  check('쓸 수 있는 돈: 4주 이하는 월 예산, 8주는 2배', A.budgetFor(100, 1) === 1e6 && A.budgetFor(100, 4) === 1e6 && A.budgetFor(100, 8) === 2e6, '');
-  const t = A.plan({ industry: 'tax', purpose: 'consult', monthMan: 30, weeks: 4 }, {});
+  check('광고에 쓸 돈은 총액: 기간과 관계없이 그대로(100만 원 → 100만 원)', A.budgetFor(100, 1) === 1e6 && A.budgetFor(100, 8) === 1e6, '');
+  { let bad = null; for (const w of [1, 2, 4, 8]) for (let b = 30; b <= 300; b += 10) for (const I of A.INDUSTRIES) for (const U of A.PURPOSES) {
+      const r = A.plan({ industry: I.id, purpose: U.id, totalMan: b, weeks: w, sido: '서울특별시', sgg: '강남구' }, {});
+      const sum = (r.items || []).reduce((s, x) => s + x.cost, 0) + (r.kind === 'broker' && r.pick ? r.pick.year : 0);
+      if (sum > b * 10000 || (r.shorter && r.shorter.cost > b * 10000) || !bad && r.total > b * 10000) bad = bad || [I.id, U.id, b, w, sum]; }
+    check('1주·2주·4주·8주 × 30~300만 원(10만 원 단위) 전 조합: 합계가 고른 총액 이하', !bad, bad); }
+  check('100만 원·8주: 합계가 100만 원을 넘지 않음(예전 180만 원 문제)', A.plan({ industry: 'dev', purpose: 'bunyang', totalMan: 100, weeks: 8, sido: '서울특별시' }, {}).total <= 1e6, A.plan({ industry: 'dev', purpose: 'bunyang', totalMan: 100, weeks: 8, sido: '서울특별시' }, {}).total);
+  const t = A.plan({ industry: 'tax', purpose: 'consult', totalMan: 30, weeks: 4 }, {});
   check('예산 부족(세무사 30만·4주): 자리 없음 + 가장 싼 자리·필요 금액', t.kind === 'short' && !t.items.length && t.cheapest && t.cheapest.cost === PR.tierWeeks(PR.PRICES.native.tiers[0].month, 4), t.cheapest);
-  check('예산 부족: 기간을 줄이면 들어가는 자리(예산 안)', t.shorter && t.shorter.cost <= A.budgetFor(30, t.shorter.weeks) && t.shorter.weeks < 4, t.shorter);
-  const d = A.plan({ industry: 'dev', purpose: 'bunyang', monthMan: 100, weeks: 4, sido: '서울특별시' }, {});
+  check('예산 부족: 기간을 줄이면 들어가는 자리(예산 안)', t.shorter && t.shorter.cost <= A.budgetFor(30) && t.shorter.weeks < 4, t.shorter);
+  const d = A.plan({ industry: 'dev', purpose: 'bunyang', totalMan: 100, weeks: 4, sido: '서울특별시' }, {});
   check('예시(시행사·분양·100만·4주): 분양 목록 맨 위 카드 90만, 남는 10만', d.items.length === 1 && d.items[0].id === 'bun_list' && d.total === 900000 && d.left === 100000, d.items.map(x => [x.id, x.cost]));
   check('분양 목적이면 광고 지역 추천 리포트를 함께(합계에는 넣지 않음)', d.adTarget && d.total === 900000, '');
-  const br = A.plan({ industry: 'broker', purpose: 'region', monthMan: 3, weeks: 4 }, {});
-  check('공인중개사: 월로 나눈 금액이 월 예산 안인 요금제만 추천(3만 원 → 기본)', br.pick && br.pick.label === '기본' && br.pick.month <= 30000, br.pick);
+  const br = A.plan({ industry: 'broker', purpose: 'region', totalMan: 3, weeks: 4 }, {});
+  check('공인중개사: 1년 금액이 총액 안인 요금제만 추천(3만 원 → 없음, 40만 원 → 기본)', !br.pick && (A.plan({ industry: 'broker', purpose: 'region', totalMan: 40, weeks: 4 }, {}).pick || {}).label === '기본', br.pick);
 }
 
 /* ③ 측정값 */
 {
   const any = all.flatMap(([, r]) => r.items).filter(x => x.stat);
   check('측정값이 없으면 어떤 자리에도 숫자(노출·구독자)를 붙이지 않음', any.length === 0, any.slice(0, 2));
-  const q = { industry: 'dev', purpose: 'brand', monthMan: 500, weeks: 4 };
+  const q = { industry: 'dev', purpose: 'brand', totalMan: 500, weeks: 4 };
   const r1 = A.plan(q, { slots: { home_top: { weeks: 4, views: 12345, clicks: 67 } }, briefSubs: 9 });
   const h = r1.items.find(x => x.id === 'home_top'), b = r1.items.find(x => x.id === 'brief');
   check('실제 4주 집계가 있으면 "최근 4주 실제 노출 ○회"', h && h.stat === '최근 4주 실제 노출 12,345회 · 누름 67회', h && h.stat);
@@ -65,12 +71,13 @@ for (const I of A.INDUSTRIES) for (const U of A.PURPOSES) for (const b of BUD) f
   check('브리핑 구독자 10명 이상이면 실제 집계 수', (r2.items.find(x => x.id === 'brief') || {}).stat === '지금 구독자 120명(실제 집계)', '');
   check('4주 집계가 아니면 노출 수를 보여 주지 않음', !(r2.items.find(x => x.id === 'home_top') || {}).stat, '');
   const page = read('ad/plan/index.html');
+  check('화면: "광고에 쓸 돈(총액)" 칸, 두 배 안내 문구 없음, 제목 "○만 원 안에서 고른 구성"', page.includes('<label for="bud">광고에 쓸 돈(총액)</label>') && !page.includes('두 배') && page.includes('${S.totalMan}만 원 안에서 고른 구성'), '');
   check('측정값이 없을 때 문구: "집행 후 노출·클릭 수를 매주 알려 드려요"', page.includes('집행 후 노출·클릭 수를 매주 알려 드려요.'), '');
 }
 
 /* ④ 문의 폼 */
 {
-  const q = { industry: 'dev', purpose: 'bunyang', monthMan: 100, weeks: 4, sido: '서울특별시' };
+  const q = { industry: 'dev', purpose: 'bunyang', totalMan: 100, weeks: 4, sido: '서울특별시' };
   const f = A.formFill(q, A.plan(q, {}));
   check('폼 채우기: 관심 상품·지역·기간', JSON.stringify(f.prods) === '["bunyang"]' && f.region === '서울특별시' && f.period === '1개월', f);
   check('폼 채우기: 문의 내용에 업종·목적·자리·기간·금액·합계', ['업종: 시행사·분양대행사', '목적: 분양 현장 알리기', '구성: 분양 목록 맨 위 카드 · 4주 · 90만 원', '합계: 90만 원 (VAT 별도)'].every(s => f.memo.includes(s)), f.memo);
