@@ -406,6 +406,16 @@ function mineHtml(S, area){
   m.rank.forEach(r => { const x = B.rankText(r); h += `<div class="box"><b>미래가치 순위 · ${esc(x.name)} ${esc(x.val)}</b></div>`; });
   return h + cal + `</section>`;
 }
+/* 지난주 우리 지역은?(주간 실거래 동향 — 월요일 새벽 계산 뒤 첫 브리핑에만 자료에 들어옴, 엔진 brief.weekly_pick). 내 지역 먼저, 그다음 전국 */
+function weeklyHtml(S, M){
+  const a = S && S.wk, m = M && M.wk, w = a || m;
+  if (!w) return '';
+  const st = w.status === 'final' ? '확정' : '잠정(신고 진행 중)', md = x => `${+x.slice(5, 7)}/${+x.slice(8, 10)}`;
+  return `<section class="part" id="wk" aria-labelledby="h-wk"><h2 id="h-wk">지난주 우리 지역은? <small>${esc(md(w.from))}~${esc(md(w.to))} 계약 · ${st}</small></h2>
+    ${a ? (a.lines || []).map(x => `<div class="box">${esc(x)}</div>`).join('') : ''}${m && m.line ? `<div class="box">${esc(m.line)}</div>` : ''}
+    <p class="sub">${esc(B.SITE)} 주간 실거래 동향(국토교통부 실거래가 분석, ${esc(w.asof.replace(/-/g, '.'))} 기준, 제${w.ver}판)이에요. 같은 단지·같은 면적의 직전 거래와 비교한 값이라 조사 기반 공식 주간 지수와 다를 수 있어요. 늦게 신고되는 거래가 들어오면 매주 새 판으로 다시 계산해요.</p>
+    <div class="row2"><a class="btn" href="${esc(w.url)}" data-track="brief_weekly_click">지역별 표·계산 방법 보기</a></div></section>`;
+}
 function render(S, M){
   const dn = D.dn, v = B.scope(S, dn), area = S.name + (dn ? ' ' + dn : '');
   if (/^\d{5}$/.test(String(S.g || ''))) document.body.setAttribute('data-ad-region', String(S.g));   /* 광고 칸(assets/ad-slot.js): 이 관심 지역 광고를 먼저 */
@@ -416,6 +426,7 @@ function render(S, M){
   let h = (isSub() ? '' : `<div class="mini"><span><b>${esc(B.NAME)}</b> · 이 브리핑을 매일 아침 받아 보세요. 7일 무료, 결제 수단 없이 시작해요.</span><a class="btn primary" href="subscribe/?d=${encodeURIComponent(B.dKey(S.g, dn))}" data-track="brief_mini_sub">7일 무료로 받아 보기</a></div>`) + `<span class="tag">${esc(B.NAME)}</span>
   <h1>${esc(B.dateLabel(S.date))} 아침</h1>
   <p class="meta">① 오늘의 부동산 시장 · ② 내 관심 지역 ${esc(area)} · ③ 내 관심 단지</p>
+  ${weeklyHtml(S, M)}
   ${marketHtml(M)}
   <section class="part" aria-labelledby="h-area"><h2 id="h-area"><span class="no">2</span>내 관심 지역 <small>${esc(area)}</small></h2>
   <p class="sub">${esc(B.windowDetail(w))}</p>

@@ -1,5 +1,11 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ *
+ * v41 변경 요약 (v20~v40과 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — 시트 변경 없음)
+ *  - 모닝 브리핑 메일 맨 위(① 오늘의 부동산 시장 앞)에 '지난주 우리 지역은?' 칸(briefWeeklyHtml): 엔진 brief.py 가 월요일 새벽 주간 실거래 동향 계산 뒤
+ *    첫 브리핑 자료에만 넣는 wk(동네 {시군구}.json → 내 지역·그 시·도 문장, market.json → 전국 문장)를 그대로 싣는다 — 내 지역 먼저, 그다음 전국.
+ *    문장·숫자는 엔진이 만든 그대로(서버에서 새 숫자를 만들지 않음). 자료에 wk 가 없는 날은 칸 자체가 없음. 웹 브리핑(brief/)은 재배포 없이 바로 보임.
+ *  - 검증: node tools/brief-test.js
  *
  * v40 변경 요약 (v20~v39와 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — 시트 변경 없음)
  *  - 갈아타기 갭 알림 메일 보내는 이름 '장대장 갈아타기 알림' → '{SITE_NAME} 갈아타기 알림', 수신 거부 화면 링크 글자 '{SITE_NAME} 갈아타기 계산기로 가기', 중개사 리뷰 안내 '{SITE_NAME} 리포트에서'(예전 서비스 이름 정리)
@@ -2990,7 +2996,7 @@ function briefPiece(S, a, pro, apts, thr) {
     urgent: bUrgent(S, thr).filter(u => (!dn || u.d === dn) && !u.sus).slice(0, 2).map(u => `${apts.indexOf(u.a) >= 0 ? '[관심 단지] ' : ''}${u.a} ${u.b} ${bWon(u.p)} — 최근 3개월 같은 평형 중간값 ${bWon(u.med)}보다 ${Math.abs(u.disc).toFixed(0)}% 낮음${u.x ? ' (직거래)' : ''}`),
     gap: (S.gap || []).filter(g => (!dn || g.d === dn) && (apts.indexOf(g.a) >= 0 || (S.gap || []).indexOf(g) < 2)).slice(0, 2).map(g => `${g.a} ${g.b} 전세가율 ${Math.round(g.jr0)}% → ${Math.round(g.jr)}% (${g.dlt > 0 ? '갭 기회·전세 위험 함께 확인' : '보증금은 더 안전, 갭 부담 커짐'})`),
     rise: (S.rise || []).filter(r => !dn || r.d === dn).slice(0, 2).map(r => `${r.a} ${r.b} 최근 3개월 ${r.chg > 0 ? '+' : ''}${r.chg}% (거래량 증가 상위 20%, 내리다 반등)`),
-    pn: S.pnews && (S.pnews.items || []).length ? S.pnews : null,
+    pn: S.pnews && (S.pnews.items || []).length ? S.pnews : null, wk: S.wk && (S.wk.lines || []).length ? S.wk : null,
     g: S.g, gn: S.name, pro: pro ? (((S.pro || {})[dn] || (S.pro || {})['']) || []) : [], url: BRIEF_WEB + '?d=' + S.g + (dn ? '-' + encodeURIComponent(dn) : '') + (pro ? '&v=pro' : '') };
 }
 /* 새로 발표된 정책·교통·공급 소식(엔진 policy_news.py — 공식 보도자료 제목 그대로 + 고정 용어 풀이) → 메일 조각. 없으면 '' */
@@ -3094,6 +3100,20 @@ function briefKitHtml(pieces, pro, date) {
     <p style="margin:4px 0 8px;font-size:13.5px;color:#4E5968;line-height:1.55">관심 지역의 실거래·신고가·청약 일정을 공개 자료로 정리한 블로그 글, 카드 이미지, 설명글을 바로 만들 수 있어요.</p>
     ${gs.slice(0, 5).map(g => `<a href="${BRIEF_KIT_WEB}?g=${g}&go=1" style="display:inline-block;margin:0 6px 6px 0;background:#2F6BFF;color:#fff;padding:9px 14px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px">${bEsc((pieces.find(p => p.g === g) || {}).gn || g)} 글 만들기</a>`).join('')}</div>`;
 }
+/* v41 지난주 우리 지역은?(주간 실거래 동향) — 내 지역 문장(그 시·도 문장 포함) 먼저, 그다음 전국. 자료가 없으면 '' */
+function briefWeeklyHtml(pieces, M) {
+  const seen = {}, lines = [];
+  pieces.forEach(p => (p.wk ? p.wk.lines : []).forEach(x => { if (!seen[x]) { seen[x] = 1; lines.push(x); } }));
+  const m = M && M.wk, w = (pieces.find(p => p.wk) || {}).wk || m;
+  if (!w || (!lines.length && !(m && m.line))) return '';
+  if (m && m.line) lines.push(m.line);
+  const md = x => `${+String(x).slice(5, 7)}/${+String(x).slice(8, 10)}`;
+  return `<div style="border:2px solid #2F6BFF;border-radius:12px;padding:14px 16px;margin:0 0 14px">
+    <div style="font-size:17px;font-weight:900;margin:0 0 6px">지난주 우리 지역은? <span style="font-size:12.5px;color:#4E5968;font-weight:500">${md(w.from)}~${md(w.to)} 계약 · ${w.status === 'final' ? '확정' : '잠정(신고 진행 중)'}</span></div>
+    ${lines.map(x => `<p style="margin:0 0 6px;line-height:1.6">${bEsc(x)}</p>`).join('')}
+    <p style="margin:4px 0 6px;font-size:12.5px;color:#4E5968;line-height:1.55">${bEsc(SITE_NAME)} 주간 실거래 동향(국토교통부 실거래가 분석, ${bEsc(String(w.asof).replace(/-/g, '.'))} 기준, 제${Number(w.ver) || 1}판). 같은 단지·같은 면적의 직전 거래와 비교한 값이라 조사 기반 공식 주간 지수와 다를 수 있어요.</p>
+    ${/^https:\/\//.test(w.url || '') ? `<a href="${bEsc(w.url)}" style="font-size:13.5px;color:#2F6BFF">지역별 표·계산 방법 보기</a>` : ''}</div>`;
+}
 function briefMail(to, date, pieces, s, pro, M, ub, extra, ad) {
   const title = ((ad ? '(광고) ' : '') + `[${SITE_NAME}] ${date.slice(5).replace('-', '/')} ${BRIEF_NAME} — ${pieces.map(p => p.nm).join(', ')}`).slice(0, 120);
   const body = pieces.map(p => `<div style="border:1px solid #E5E8EB;border-radius:12px;padding:14px 16px;margin:0 0 12px">
@@ -3105,7 +3125,7 @@ function briefMail(to, date, pieces, s, pro, M, ub, extra, ad) {
       ${p.pro.length ? '<div style="background:#F4F7FF;border-radius:10px;padding:10px 12px;margin:8px 0"><b>손님께 할 이야기</b><ol style="margin:6px 0 0;padding-left:18px;line-height:1.6">' + p.pro.map(x => `<li>${bEsc(x)}</li>`).join('') + '</ol></div>' : ''}
       <a href="${p.url}" style="display:inline-block;margin-top:6px;background:#2F6BFF;color:#fff;padding:10px 16px;border-radius:10px;text-decoration:none;font-weight:700">전체 브리핑 보기</a></div>`).join('');
   const html = `<div style="font-family:'Noto Sans KR',sans-serif;max-width:600px;margin:auto;color:#191F28">
-    <div style="font-weight:900;font-size:19px;margin:6px 0 12px">${bEsc(SITE_NAME)} <span style="color:#2F6BFF">모닝 브리핑</span></div>${extra || ''}${briefMarketHtml(M, ub)}
+    <div style="font-weight:900;font-size:19px;margin:6px 0 12px">${bEsc(SITE_NAME)} <span style="color:#2F6BFF">모닝 브리핑</span></div>${extra || ''}${briefWeeklyHtml(pieces, M)}${briefMarketHtml(M, ub)}
     ${briefKitHtml(pieces, pro, date)}<div style="font-size:17px;font-weight:900;margin:4px 0 8px">② 내 관심 지역 · ③ 내 관심 단지</div>${body}
     <p style="font-size:12.5px;color:#4E5968;line-height:1.6">국토교통부 실거래 공개 자료에 새로 올라온 거래를 동네별로 모았어요. 신고가는 같은 단지·같은 평형의 이전 최고가를 넘은 거래예요.<br>
     이 메일은 ${bEsc(s.product)}(이용 기간 ${s.start} ~ ${s.end})을 신청하신 분께 보내 드려요. 받는 방법 바꾸기·해지: <a href="${BRIEF_WEB}manage/">${BRIEF_WEB}manage/</a></p>

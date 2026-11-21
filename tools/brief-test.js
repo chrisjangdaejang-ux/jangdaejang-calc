@@ -86,7 +86,7 @@ const MARKET = { date: '2026-11-21', name: '집예보 모닝 브리핑', win: { 
     { t: '경인선 철도지하화 종합계획 반영', d: '2026-11-19', org: '인천광역시', u: 'javascript:alert(1)', c: '교통', rg: '인천' }] } };
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(__dirname, 'agent-backend.gs'), 'utf8')
-  + '\n;globalThis.__T = { BC, OC, UC, SC, UH, SSH, BRIEF_PRICE, BRIEF_TRIAL, BRIEF_NAME, SITE_NAME, bProdKey, briefPublic, briefStats, briefSeen, bKey, hashOf, cleanBrief, briefDaily, briefState, bRows, briefAreas, briefInterest, briefCleanup, briefMarketHtml, briefPnHtml, bChangeAmt, bBrokerNo, bUrgent };', ctx);
+  + '\n;globalThis.__T = { BC, OC, UC, SC, UH, SSH, BRIEF_PRICE, BRIEF_TRIAL, BRIEF_NAME, SITE_NAME, bProdKey, briefPublic, briefStats, briefSeen, bKey, hashOf, cleanBrief, briefDaily, briefState, bRows, briefAreas, briefInterest, briefCleanup, briefMarketHtml, briefPnHtml, bChangeAmt, bBrokerNo, bUrgent, briefWeeklyHtml, briefPiece };', ctx);
 const T = ctx.__T;
 const post = b => JSON.parse(ctx.doPost({ postData: { contents: JSON.stringify(b) } }).s);
 const get = p => JSON.parse(ctx.doGet({ parameter: p }).s);
@@ -447,6 +447,22 @@ check('2년 지난 두 동의 → 확인 안내(두 항목·날짜)·확인 일�
 check('2년 지난 광고성 정보 동의만 있어도 확인 안내', !!rc('i@example.com') && /광고성 정보 받기: 2025-09-02에 동의/.test(rc('i@example.com')[0].htmlBody) && !/이른 아침/.test(rc('i@example.com')[0].htmlBody));
 mails.length = 0; props.BRIEF_SENT = ''; NOW = Date.parse('2027-09-05T07:10:00+09:00'); T.briefDaily();
 check('확인 안내는 2년에 한 번', !mails.some(a => a[0] && /수신 동의 확인 안내/.test(a[0].subject)));
+
+/* v41 지난주 우리 지역은?(주간 실거래 동향) — 엔진 문장 그대로, 내 지역 먼저·전국 나중, 같은 시·도 문장은 한 번만, 자료 없으면 칸 없음 */
+{
+  const wk = { w: '2026-46', from: '2026-11-09', to: '2026-11-15', ver: 1, status: 'prov', asof: '2026-11-23', url: 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/weekly/2026-46/' };
+  const S1 = { g: '11710', name: '송파구', trades: [], lines: {}, wk: Object.assign({ lines: ['송파구 지난주 문장', '서울 지난주 문장'] }, wk) };
+  const S2 = { g: '11680', name: '강남구', trades: [], lines: {}, wk: Object.assign({ lines: ['강남구 지난주 문장', '서울 지난주 문장'] }, wk) };
+  const p1 = T.briefPiece(S1, { g: '11710' }, false, [], 10), p2 = T.briefPiece(S2, { g: '11680' }, false, [], 10), p0 = T.briefPiece({ g: '11650', name: '서초구', trades: [], lines: {} }, { g: '11650' }, false, [], 10);
+  const h = T.briefWeeklyHtml([p1, p2], { wk: Object.assign({ line: '전국 지난주 문장' }, wk) });
+  const at = x => h.indexOf(x);
+  check('주간: 내 지역 → 시·도 → 다른 내 지역 → 전국 순서', at('송파구 지난주') < at('서울 지난주') && at('서울 지난주') < at('강남구 지난주') && at('강남구 지난주') < at('전국 지난주'), h);
+  check('주간: 같은 시·도 문장은 한 번', h.split('서울 지난주 문장').length === 2);
+  check('주간: 잠정·기간·판·기준일·출처', /11\/9~11\/15 계약 · 잠정/.test(h) && /제1판/.test(h) && /2026\.11\.23 기준/.test(h) && /국토교통부 실거래가 분석/.test(h));
+  check('주간: 자료 없으면 칸 없음', T.briefWeeklyHtml([p0], { kr: {} }) === '');
+  check('주간: 전국만 있어도 칸', /전국 지난주 문장/.test(T.briefWeeklyHtml([p0], { wk: Object.assign({ line: '전국 지난주 문장' }, wk) })));
+  check('주간: 이상한 주소는 링크 안 함', !/javascript/.test(T.briefWeeklyHtml([p0], { wk: Object.assign({ line: 'x' }, wk, { url: 'javascript:alert(1)' }) })));
+}
 
 console.log(`모닝 브리핑 서버 로직 검증: ${pass}개 통과, ${fail}개 실패`);
 process.exit(fail ? 1 : 0);
