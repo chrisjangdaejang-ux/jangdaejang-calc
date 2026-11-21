@@ -106,7 +106,11 @@ const isDate = d => /^\d{4}-\d{2}-\d{2}$/.test(String(d || ''));
   check('보금자리론: 소득 7,000 이하 OK · 7,001 안 됨', [pol({ price: 50000, income: 7000 }).bogeum.ok, pol({ price: 50000, income: 7001 }).bogeum.ok], [true, false]);
   check('보금자리론: 신혼 자녀 1명 9,000까지', [pol({ price: 50000, income: 9000, newly: true, kids: 1 }).bogeum.ok, pol({ price: 50000, income: 9001, newly: true, kids: 1 }).bogeum.ok], [true, false]);
   check('보금자리론 한도: 일반 3.6억·생애최초 4.2억·다자녀 4억', [pol({ price: 60000, income: 5000 }).bogeum.cap, pol({ price: 60000, income: 5000, own: 'first' }).bogeum.cap, pol({ price: 60000, income: 5000, kids: 2 }).bogeum.cap], [36000, 42000, 40000]);
-  check('보금자리론 규제지역 LTV 60%(생애최초는 70%)', [pol({ price: 50000, income: 5000, g: 'reg' }).bogeum.ltv, pol({ price: 50000, income: 5000, g: 'reg', own: 'first' }).bogeum.ltv], [0.6, 0.7]);
+  /* 리뷰 수정: 한국주택금융공사 상품 안내 — 규제지역 10%p 차감은 생애최초·실수요자(무주택·6억 이하·부부 합산 7,000만 이하)에는 하지 않음 */
+  check('보금자리론 규제지역 LTV: 실수요자 무주택 70% · 생애최초 70% · 1주택(일시적 2주택) 60% · 신혼 소득 8,000 60%',
+    [pol({ price: 50000, income: 5000, g: 'reg' }).bogeum.ltv, pol({ price: 50000, income: 5000, g: 'reg', own: 'first' }).bogeum.ltv, pol({ price: 50000, income: 5000, g: 'reg', own: 'one' }).bogeum.ltv, pol({ price: 50000, income: 8000, g: 'reg', newly: true }).bogeum.ltv], [0.7, 0.7, 0.6, 0.6], 'hf.go.kr 보금자리론 상품소개');
+  check('보금자리론 DTI: 보통 60% · 규제지역 차감 대상 50% · 실수요자는 60%',
+    [pol({ price: 50000, income: 5000 }).bogeum.dti, pol({ price: 50000, income: 5000, g: 'reg', own: 'one' }).bogeum.dti, pol({ price: 50000, income: 5000, g: 'reg' }).bogeum.dti], [0.6, 0.5, 0.6], 'hf.go.kr · 금융위 10.15 FAQ');
   check('보금자리론: 2주택 이상은 안 됨', pol({ price: 50000, income: 5000, own: 'multi' }).bogeum.ok, false);
   check('디딤돌: 집값 5억 이하 OK · 초과 안 됨(신혼은 6억)', [pol({ price: 50000, income: 6000 }).didim.ok, pol({ price: 50001, income: 6000 }).didim.ok, pol({ price: 60000, income: 6000, newly: true }).didim.ok], [true, false, true]);
   check('디딤돌: 소득 6,000 이하 · 생애최초 7,000 이하', [pol({ price: 40000, income: 6001 }).didim.ok, pol({ price: 40000, income: 7000, own: 'first' }).didim.ok, pol({ price: 40000, income: 7001, own: 'first' }).didim.ok], [false, true, false]);
@@ -117,6 +121,22 @@ const isDate = d => /^\d{4}-\d{2}-\d{2}$/.test(String(d || ''));
   check('신생아 특례: 집값 9억 이하 · 소득 1.3억 이하(맞벌이 2억)', [pol({ price: 90000, income: 13000, baby: true }).baby.ok, pol({ price: 90001, income: 5000, baby: true }).baby.ok, pol({ price: 50000, income: 13001, baby: true }).baby.ok, pol({ price: 50000, income: 20000, baby: true, dual: true }).baby.ok], [true, false, false, true]);
   check('신생아 특례 한도 4억(2025.6.27 이후 계약)', pol({ price: 90000, income: 5000, baby: true }).baby.est, 40000);
   check('정책 대출은 가격대별 최대(6억·4억·2억)를 따르지 않음 — 상품 한도와 LTV만', pol({ price: 60000, income: 5000, own: 'first' }).bogeum.est, 42000);
+}
+
+/* ⑤-2 리뷰 수정: DTI(규제지역 40%·수도권 60%, 스트레스 금리 없음) — DSR을 안 따지는 1억 이하·2금융권 고정금리에서 먼저 막을 수 있음 */
+{
+  check('DTI 규칙: 규제지역 40% · 수도권 60% · 지방은 넣지 않음', [R.dtiOf('reg'), R.dtiOf('capfree'), R.dtiOf('local')], [0.4, 0.6, null], '금융위 10.15 FAQ 표');
+  const nb = L.limit({ price: 100000, g: 'reg', own: 'none', income: 6000, rate: 5, term: 30, rtype: 'fixed', lender: 'nonbank' });
+  check('규제지역·2금융권·고정금리·연소득 6,000·10억: DTI 40%가 막음 → 3억 7,256만', [nb.by, Math.round(nb.L)], ['DTI', 37256], '6000×0.4÷12×186.28');
+  check('위 경우 4억까지 받으려면 연소득 6,442만', nb.incomeNeed, 6442, '(40000÷186.28×12)÷0.4');
+  const sm = L.limit({ price: 20000, g: 'reg', own: 'none', income: 1000, rate: 5, term: 30, rtype: 'var' });
+  check('규제지역 2억·연소득 1,000: DSR은 안 따져도(1억 이하) DTI 40%로 6,209만', [sm.dsrOff, sm.by, Math.round(sm.L)], [true, 'DTI', 6209], '1000×0.4÷12×186.28');
+  const loc = L.limit({ price: 14000, g: 'local', own: 'none', income: 1000, rate: 5, term: 30, rtype: 'var' });
+  check('지방은 DTI 없음 → 1억 이하면 LTV대로', [loc.by, loc.L, loc.dti], ['LTV', 9800, Infinity]);
+  const u1 = L.limit({ price: 30000, g: 'local', own: 'none', income: 1500, rate: 5, term: 30, rtype: 'var' });
+  check('DSR로 1억 아래가 되면(다른 대출 없음) 1억까지 가능할 수 있다는 참고 표시', [u1.by, u1.under1, Math.round(u1.L)], ['DSR', true, 8568]);
+  const sp = L.limit({ price: 100000, code: '11710', own: 'none', income: 7000, rate: 5, term: 30, rtype: 'var' });
+  check('은행·변동금리에서는 DTI보다 DSR이 먼저(서울 예시 그대로)', [sp.by, Math.round(sp.dti)], ['DSR', 43466]);
 }
 
 /* ⑦ 손으로 계산한 예시(금리 5%, 30년, 변동, 은행, 다른 대출 없음) — 계산식은 아래 주석 */
@@ -147,6 +167,9 @@ const isDate = d => /^\d{4}-\d{2}-\d{2}$/.test(String(d || ''));
   check('화면: 광고 칸은 대출 상담 업종(loan) 하나', (h.match(/data-ad-slot=/g) || []).length === 1 && h.includes('data-ad-slot="loan_end" data-ad-cat="loan"'), true);
   check('화면: 규제가 바뀌면 알려 드려요 → 모닝 브리핑', h.includes('규제가 바뀌면 알려 드려요') && h.includes('href="../brief/?src=loan"'), true);
   check('화면: 서비스 이름은 SITE_NAME 칸', h.includes('data-site-name') && !h.includes('장대장부동산그룹'), true);
+  check('화면: DTI 막힘 문구·DTI 막대·용어 풀이', ['소득 기준(DTI)이 가장 먼저 막혀요', 'DTI란?', '④ 소득 기준(DTI)'].every(t => h.includes(t)), true);
+  check('화면: 지방 2주택 이상 60%는 참고 문구(1주택 유지는 은행 확인)', h.includes('60%는 이미 집이 2채 이상인 경우예요'), true);
+  check('화면: 정책 대출 DTI는 상품별 비율로 표시(60% 고정 문구 없음)', !h.includes('DTI) 60% 이내 심사가 따로') && h.includes('DTI ${pct(p.dti)} 이내 심사 따로'), true);
   check('화면: 금지 단어 없음(시험·검증·채점)', /(시험|검증|채점)/.test(h), false);
   check('화면: 주소로 받은 값(p·g·n·b·a·o)만 채우고 연소득은 주소에 없음', h.includes("Q.get('p')") && !/Q\.get\('(i|income)'\)/.test(h), true);
   const home = read('index.html');
@@ -160,7 +183,7 @@ const isDate = d => /^\d{4}-\d{2}-\d{2}$/.test(String(d || ''));
     check(`${f}: loan-rules.js 를 rec-core·loan-core 보다 먼저`, i >= 0 && i < j, true);
   }
   const sw = read('sw.js');
-  check('sw.js: 대출 한도 화면·규칙 파일 미리 저장', sw.includes("'/jangdaejang-calc/loan/'") && sw.includes('/assets/loan-rules.js?v=1') && sw.includes('/assets/loan-core.js?v=3'), true);
+  check('sw.js: 대출 한도 화면·규칙 파일 미리 저장', sw.includes("'/jangdaejang-calc/loan/'") && sw.includes('/assets/loan-rules.js?v=2') && sw.includes('/assets/loan-core.js?v=4'), true);
 }
 
 let pass = 0;

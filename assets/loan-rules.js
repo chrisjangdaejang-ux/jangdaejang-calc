@@ -87,6 +87,14 @@
     over:    { v: 10000, src: ['fsc220617'], eff: { from: '2022-07-01' } }
   };
 
+  /* ---------- DTI(1년 동안 갚는 이 주담대 원리금 + 다른 대출 이자 ÷ 연소득) ----------
+     DSR(스트레스 금리 포함)보다 대개 느슨하지만, DSR을 따지지 않는 1억 원 이하 대출이나 2금융권(DSR 50%)·고정금리에서는 DTI가 먼저 막을 수 있어요.
+     계산에서는 다른 대출의 1년 원리금 전체를 넣어 보수적으로 봐요(실제 DTI는 다른 대출의 이자만 넣음). 스트레스 금리는 더하지 않아요. */
+  var DTI = {
+    reg:     { v: 0.40, src: ['fscfaq251017'], eff: { from: '2025-10-16' }, note: '투기과열지구 기준(지금 규제지역은 모두 투기과열지구)' },
+    capfree: { v: 0.60, src: ['fscfaq251017'], eff: { from: '2025-10-16' }, note: '수도권(규제지역 아님) 아파트' }
+  };
+
   /* ---------- 대출 기간 ---------- */
   var TERM = { metroRegMax: { v: 30, src: ['fsc250627'], eff: { from: '2025-06-28' }, scope: '수도권·규제지역 주담대' } };
 
@@ -117,9 +125,10 @@
       income: { v: 7000, newly: [8500, 9000, 10000], multiKid: 10000, newlyOne: 7000, note: '부부 합산. 신혼(혼인 7년 이내)은 자녀 없음 8,500만·1명 9,000만·2명 이상 1억, 다자녀 1억. 신혼은 신청인 1명 소득이 7,000만 이하여도 돼요' },
       price: { v: 60000 },
       cap: { v: 36000, multiKid: 40000, first: 42000 },
-      ltv: { v: 0.70, regMinus: 0.10, note: '아파트 기준. 규제지역은 10%p 낮음(생애최초는 낮추지 않음)' },
-      dti: 0.60,
-      rate: { v: 5.20, term: 30, kind: '아낌e보금자리론 30년 고정', pub: '2026-11-09', regPlus: 0.2 },
+      ltv: { v: 0.70, regMinus: 0.10, note: '아파트 기준. 규제지역은 10%p 낮음. 다만 생애최초와 실수요자(무주택·집값 6억 이하·부부 합산 연소득 7,000만 이하)는 낮추지 않음' },
+      real: { income: 7000, price: 60000 },
+      dti: 0.60, dtiRegMinus: 0.10,
+      rate: { v: 5.20, term: 30, kind: '아낌e보금자리론 30년 고정', pub: '2026-11-09', regPlus: 0.2 },   /* 규제지역 담보 0.2%p 가산(hfRate) */
       movein: '수도권·규제지역은 대출 후 6개월 안에 전입'
     },
     didim: {
@@ -154,7 +163,7 @@
     { id: 'living', scope: 'metroReg', t: '집을 담보로 생활비(생활안정자금)를 빌릴 때 수도권·규제지역 1주택자는 최대 1억 원, 2채 이상은 금지예요.', src: ['fsc250627'], eff: { from: '2025-06-28' } },
     { id: 'jeonse', scope: 'metroReg', t: '1주택자가 수도권·규제지역에서 전세대출을 받으면 그 이자가 DSR에 들어가요(원금은 빼요).', src: ['fsc251015', 'fscfaq251015'], eff: { from: '2025-10-29' } },
     { id: 'credit', scope: 'reg', t: '1억 원이 넘는 신용대출을 받으면 그날부터 1년 동안 규제지역에서 집을 살 수 없어요.', src: ['fsc251015'], eff: { from: '2025-10-16' } },
-    { id: 'toheo', scope: 'reg', t: '규제지역 아파트는 토지거래허가구역으로도 묶여 있어, 허가를 받아 산 뒤 2년 동안 직접 살아야(실거주) 해요. 세입자가 있는 집은 유예 신청 제도가 있어요.', src: ['kr251015', 'kr251015b'], eff: { from: '2025-10-20' } }
+    { id: 'toheo', scope: 'reg', t: '규제지역 아파트는 대부분 토지거래허가구역으로도 묶여 있어, 허가를 받아 산 뒤 2년 동안 직접 살아야(실거주) 해요. 지역별 지정 여부와 기간은 시·도 공고를 확인해 주세요.', src: ['kr251015', 'kr251015b'], eff: { from: '2025-10-20' } }
   ];
 
   /* ---------- 다가오는 변경(정해진 날짜) ---------- 화면 '곧 바뀌는 규칙'과 모닝 브리핑 정책 목록(엔진 data/policy.json plan)에 같은 날짜로 들어가요 */
@@ -170,7 +179,9 @@
     '한국은행 예금은행 주택담보대출 평균 금리(2026년 9월) — 공식 보도자료 본문에서 숫자를 확인하지 못해 기본 금리로 쓰지 않음(이용자가 입력)',
     '내집마련 디딤돌대출 금리 — 공식 안내 페이지끼리 금리 범위가 달라 넣지 않음',
     '혼합형·주기형 스트레스 비율의 만기 30년 외 구간표 — 공식 표의 칸 배치를 확인하지 못해 30년 기준 비율만 씀',
-    '2027년 1월 이후 스트레스 금리 — 아직 발표 전'
+    '2027년 1월 이후 스트레스 금리 — 아직 발표 전',
+    '지방(규제지역 아님) DTI — 공식 표에서 확인하지 못해 넣지 않음(DSR로만 계산)',
+    '지방에서 1주택자가 기존 집을 팔지 않고 집을 더 살 때 LTV — 공식 발표에서 60%·70% 중 어느 쪽인지 확인하지 못해 2주택 이상(60%)으로 보수적으로 계산하고 화면에 참고로 알림'
   ];
 
   /* ---------- 판정 함수 ---------- */
@@ -180,6 +191,8 @@
   function groupOf(code) { return regulated(code) ? 'reg' : metro(code) ? 'capfree' : 'local'; }
   /** 그 지역에 해당하는 안내(NOTES) */
   function notesFor(g) { return NOTES.filter(function (n) { return n.scope === 'reg' ? g === 'reg' : g === 'reg' || g === 'capfree'; }); }
+  /** 그 지역 DTI 비율. 규칙을 넣지 않은 지방이면 null */
+  function dtiOf(g) { return DTI[g] ? DTI[g].v : null; }
   function ltvOf(g, own) { var r = LTV[g] && LTV[g][own]; return r ? r.v : null; }
   /** 수도권·규제지역 가격대별 최대 금액(만원). 지방이면 Infinity */
   function capOf(price, g) {
@@ -207,8 +220,8 @@
     return Math.round(p.rate * p.base * typeRatio(p.stage, rtype, band) * 10000) / 10000;
   }
 
-  var API = { ASOF: ASOF, SRC: SRC, REGION: REGION, LTV: LTV, CAP: CAP, DSR: DSR, TERM: TERM, STRESS: STRESS, POLICY: POLICY, NOTES: NOTES, UPCOMING: UPCOMING, EXCLUDED: EXCLUDED,
-    regulated: regulated, metro: metro, groupOf: groupOf, notesFor: notesFor, ltvOf: ltvOf, capOf: capOf, stressPeriod: stressPeriod, typeRatio: typeRatio, stressAdd: stressAdd };
+  var API = { ASOF: ASOF, SRC: SRC, REGION: REGION, LTV: LTV, CAP: CAP, DSR: DSR, DTI: DTI, TERM: TERM, STRESS: STRESS, POLICY: POLICY, NOTES: NOTES, UPCOMING: UPCOMING, EXCLUDED: EXCLUDED,
+    regulated: regulated, metro: metro, groupOf: groupOf, notesFor: notesFor, ltvOf: ltvOf, dtiOf: dtiOf, capOf: capOf, stressPeriod: stressPeriod, typeRatio: typeRatio, stressAdd: stressAdd };
   root.JDJ_LOAN_RULES = API;
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
 })(typeof window !== 'undefined' ? window : globalThis);

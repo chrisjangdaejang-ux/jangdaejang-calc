@@ -73,11 +73,16 @@
     var a = P * c.ltv, b = capByPrice(P, c), ab = Math.min(a, b);
     var annF = annuity(c.rate + c.stress, c.term);
     var d = dsrMax(c), dsrOff = ab <= R.DSR.over.v && !(c.debt > 0);   // 다른 대출이 없고 이 대출이 1억 원 이하면 DSR 적용 안 함
-    var dEff = dsrOff ? Infinity : d, L = Math.max(0, Math.min(ab, dEff));
-    var by = c.ltv === 0 ? 'BAN' : (dEff < ab ? 'DSR' : (b < a ? 'CAP' : 'LTV'));
-    /* DSR 때문에 덜 받을 때: LTV·가격대 한도(ab)까지 받으려면 필요한 연소득 */
-    var incomeNeed = by === 'DSR' ? Math.ceil((ab / annF * 12 + c.debt) / c.dsrRatio) : null;
-    return { g: g, c: c, price: P, ltv: c.ltv, a: a, b: b, d: d, dsrOff: dsrOff, L: L, by: by,
+    /* DTI(수도권·규제지역): 실제 금리로(스트레스 금리 없이), 다른 대출 1년 원리금을 빼고 계산 */
+    var dtiR = R.dtiOf(g), dti = dtiR == null ? Infinity : Math.max(0, c.income * dtiR - c.debt) / 12 * annuity(c.rate, c.term);
+    var dEff = dsrOff ? Infinity : d, L = Math.max(0, Math.min(ab, dEff, dti));
+    var by = c.ltv === 0 ? 'BAN' : (dti < Math.min(ab, dEff) ? 'DTI' : dEff < ab ? 'DSR' : (b < a ? 'CAP' : 'LTV'));
+    /* 소득 규칙(DSR·DTI) 때문에 덜 받을 때: LTV·가격대 한도(ab)까지 받으려면 필요한 연소득(두 규칙을 모두 넘는 소득) */
+    var needDsr = dsrOff ? 0 : (ab / annF * 12 + c.debt) / c.dsrRatio, needDti = dtiR == null ? 0 : (ab / annuity(c.rate, c.term) * 12 + c.debt) / dtiR;
+    var incomeNeed = by === 'DSR' || by === 'DTI' ? Math.ceil(Math.max(needDsr, needDti)) : null;
+    /* 소득 기준(DSR)으로 1억 원 아래로 줄었는데 다른 대출이 없으면: 모든 대출이 1억 원 이하일 때는 DSR을 따지지 않아 1억 원까지는 받을 수도 있음(은행 자체 심사) — 금액은 바꾸지 않고 안내만 */
+    var under1 = by === 'DSR' && !(c.debt > 0) && L < R.DSR.over.v;
+    return { g: g, c: c, price: P, ltv: c.ltv, a: a, b: b, d: d, dti: dti, dtiRatio: dtiR, dsrOff: dsrOff, under1: under1, L: L, by: by,
       stress: c.stress, dsrRate: Math.round((c.rate + c.stress) * 10000) / 10000, term: c.term,
       pay: monthly(L, c.rate, c.term), cashNeed: Math.max(0, P - L),
       incomeNeed: incomeNeed, incomeMore: incomeNeed == null ? null : Math.max(0, incomeNeed - c.income) };
@@ -95,8 +100,11 @@
       if (h.newly) lim = Math.max(lim, p.income.newly[Math.min(kids, 2)]);
       var conds = [why(own(p), p.ownNote), why(price <= p.price.v, '집값 ' + p.price.v / 10000 + '억 원 이하'), why(inc <= lim || (h.newly && h.selfIncome != null && h.selfIncome <= p.income.newlyOne), '부부 합산 연소득 ' + fmtMan(lim) + ' 이하')];
       var cap = h.own === 'first' ? p.cap.first : kids >= 2 ? p.cap.multiKid : p.cap.v;
-      var ltv = p.ltv.v - (h.g === 'reg' && h.own !== 'first' ? p.ltv.regMinus : 0);
-      out.push(pack(p, 'bogeum', conds, cap, ltv, price));
+      /* 규제지역 10%p 차감은 생애최초·실수요자(무주택·6억 이하·부부 합산 7,000만 이하)에는 하지 않음(한국주택금융공사 상품 안내) */
+      var real = h.own === 'first' || (h.own === 'none' && price <= p.real.price && inc <= p.real.income);
+      var minus = h.g === 'reg' && !real;
+      var ltv = p.ltv.v - (minus ? p.ltv.regMinus : 0);
+      out.push(pack(p, 'bogeum', conds, cap, ltv, price, '', Math.round((p.dti - (minus ? p.dtiRegMinus : 0)) * 100) / 100));
     })();
     /* 디딤돌 */
     (function () {
@@ -117,9 +125,9 @@
     })();
     return out;
   }
-  function pack(p, id, conds, cap, ltv, price, extraCond) {
+  function pack(p, id, conds, cap, ltv, price, extraCond, dti) {
     var ok = conds.every(function (x) { return x.ok; });
-    return { id: id, name: p.name, org: p.org, ok: ok, conds: conds, cap: cap, ltv: ltv, est: Math.min(cap, Math.floor(price * ltv)), dti: p.dti, rate: p.rate || null, extra: extraCond || '', src: p.src };
+    return { id: id, name: p.name, org: p.org, ok: ok, conds: conds, cap: cap, ltv: ltv, est: Math.min(cap, Math.floor(price * ltv)), dti: dti == null ? p.dti : dti, rate: p.rate || null, extra: extraCond || '', src: p.src };
   }
   function fmtMan(v) { var e = Math.floor(v / 10000), m = v % 10000; return (e ? e + '억' : '') + (m ? (e ? ' ' : '') + m.toLocaleString('ko-KR') + '만' : '') + ' 원'; }
 

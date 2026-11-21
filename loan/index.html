@@ -34,8 +34,8 @@
 <script src="../assets/stat.js?v=7"></script>
 <script src="../assets/config.js?v=4"></script>
 <script src="../tax/tax-engine.js?v=4"></script>
-<script src="../assets/loan-rules.js?v=1"></script>
-<script src="../assets/loan-core.js?v=3"></script>
+<script src="../assets/loan-rules.js?v=2"></script>
+<script src="../assets/loan-core.js?v=4"></script>
 <script src="../assets/mine-core.js?v=16"></script>
 <script src="../assets/price-sheet.js?v=15"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -430,9 +430,10 @@ function inputs(){
 function bindText(r, o){
   const rule = r.by;
   if (rule === 'BAN') return ['이 지역에서는 집을 사려고 받는 주택담보대출이 막혀 있어요', S.g === 'local' ? '' : '수도권·규제지역에서 2주택 이상인 사람이 집을 더 사면 LTV가 0%예요. 1주택인데 기존 집을 6개월 안에 판다면 "1주택(기존 집 팔 예정)"을 골라 주세요.'];
-  if (rule === 'DSR') return ['소득 기준(DSR)이 가장 먼저 막혀요', `1년에 갚는 원금+이자가 연소득의 ${pct(r.c.dsrRatio)}를 넘을 수 없어요. 한도를 계산할 때는 실제 금리 ${o.rate}%에 스트레스 금리 ${r.stress}%p를 더한 ${r.dsrRate}%로 따져요.`];
+  if (rule === 'DSR') return ['소득 기준(DSR)이 가장 먼저 막혀요', `1년에 갚는 원금+이자가 연소득의 ${pct(r.c.dsrRatio)}를 넘을 수 없어요. 한도를 계산할 때는 실제 금리 ${o.rate}%에 스트레스 금리 ${r.stress}%p를 더한 ${r.dsrRate}%로 따져요.${r.under1 ? ' 참고: 다른 대출이 없고 모든 대출이 1억 원 이하이면 DSR을 따지지 않아서, 은행 심사에 따라 1억 원까지 받을 수도 있어요.' : ''}`];
+  if (rule === 'DTI') return ['소득 기준(DTI)이 가장 먼저 막혀요', `${S.g === 'reg' ? '규제지역' : '수도권'}에서는 이 대출의 1년 원금+이자(다른 대출이 있으면 그것까지)가 연소득의 ${pct(r.dtiRatio)}를 넘을 수 없어요(DTI). 스트레스 금리 없이 실제 금리 ${o.rate}%로 따져요.`];
   if (rule === 'CAP') { const t = R.CAP.v.find(x => x.upTo == null || o.price <= x.upTo); return ['집값 구간별 최대 금액이 가장 먼저 막혀요', `수도권·규제지역에서는 ${t.upTo ? (t === R.CAP.v[0] ? '15억 원 이하' : '15억 원 초과 25억 원 이하') : '25억 원 초과'} 집이면 집을 사는 주택담보대출을 최대 ${won(t.max)}까지만 받을 수 있어요.`]; }
-  return ['집값 기준(LTV)이 가장 먼저 막혀요', `${GNAME[S.g]}에서 ${OWN[S.own]}은 집값의 ${pct(r.ltv)}까지만 빌릴 수 있어요.`];
+  return ['집값 기준(LTV)이 가장 먼저 막혀요', `${GNAME[S.g]}에서 ${OWN[S.own]}은 집값의 ${pct(r.ltv)}까지만 빌릴 수 있어요.${S.g === 'local' && S.own === 'multi' ? ' 참고: 60%는 이미 집이 2채 이상인 경우예요. 지금 1주택이고 기존 집을 팔지 않는다면 은행에 따라 다를 수 있으니 은행에 확인해 보세요.' : ''}`];
 }
 function calc(){
   const o = inputs(), box = $('res');
@@ -444,7 +445,7 @@ function calc(){
   const cd = L.costDetail(o.price, { own: S.own, regulated: S.g === 'reg', large: $('small').value === '0' });
   const types = ['var', 'mix', 'cyc', 'fixed'].map(t => ({ t, r: L.limit({ price: o.price, g: S.g, own: S.own, income: o.income, debt: o.debt, rtype: t, band: t === S.rtype ? o.band : '5-9', term: o.term, rate: o.rate, lender: S.lender }) }));
   const pol = L.policyLoans({ price: o.price, g: S.g, own: S.own, income: o.income, kids: +$('kids').value, newly: $('newly').checked, baby: $('baby').checked, dual: $('dual').checked, small: $('small').value === '' ? null : $('small').value === '1' });
-  const maxBar = Math.max(r.a, isFinite(r.b) ? r.b : 0, r.dsrOff ? 0 : r.d, 1);
+  const maxBar = Math.max(r.a, isFinite(r.b) ? r.b : 0, r.dsrOff ? 0 : r.d, isFinite(r.dti) ? r.dti : 0, 1);
   const bar = (k, v, on, d) => `<div class="b${on ? ' min' : ''}"><div class="bh"><span>${k}${on ? ' ← 지금 한도' : ''}</span><span>${isFinite(v) ? won(v) : '제한 없음'}</span></div><div class="trk"><i style="width:${isFinite(v) ? Math.max(2, Math.min(100, v / maxBar * 100)) : 100}%"></i></div><div class="bd">${d}</div></div>`;
   const capTxt = S.g === 'local' ? '지방은 가격대별 최대 금액이 없어요' : `수도권·규제지역 집값 구간별 최대 금액(15억 이하 6억 · 25억 이하 4억 · 25억 초과 2억)`;
   const dsrTxt = r.dsrOff ? '다른 대출이 없고 이 대출이 1억 원 이하라 DSR을 따지지 않아요' : `(연소득 ${won(o.income)} × ${pct(r.c.dsrRatio)} − 다른 대출 ${won(o.debt)}) 안에서 ${r.term}년 동안 ${r.dsrRate}%로 갚을 수 있는 금액`;
@@ -459,15 +460,16 @@ function calc(){
   <div class="stats">
     <div class="stat"><div class="k">매달 갚을 돈</div><div class="v">${r.L > 0 ? wonM(L.monthly(r.L, o.rate, r.term)) : '-'}</div><div class="d">${o.rate}% · ${r.term}년 · 원리금 균등</div></div>
     <div class="stat"><div class="k">내 돈으로 낼 금액</div><div class="v">${won(r.cashNeed)}</div><div class="d">집값 − 대출 · 취득세·중개보수 약 ${won(cd.total)} 별도</div></div>
-    <div class="stat"><div class="k">${r.by === 'DSR' ? '한도를 다 받으려면' : '소득 기준'}</div><div class="v">${r.by === 'DSR' ? '연소득 +' + wonUp(r.incomeMore) : r.dsrOff ? '해당 없음' : '여유 있어요'}</div><div class="d">${r.by === 'DSR' ? `연소득이 ${wonUp(r.incomeNeed)}이면 ${won(ab)}까지` : r.dsrOff ? '1억 원 이하 대출' : `소득으로는 ${won(r.d)}까지 가능`}</div></div>
+    <div class="stat"><div class="k">${r.incomeNeed != null ? '한도를 다 받으려면' : '소득 기준'}</div><div class="v">${r.incomeNeed != null ? '연소득 +' + wonUp(r.incomeMore) : r.dsrOff && !isFinite(r.dti) ? '해당 없음' : '여유 있어요'}</div><div class="d">${r.incomeNeed != null ? `연소득이 ${wonUp(r.incomeNeed)}이면 ${won(ab)}까지` : r.dsrOff && !isFinite(r.dti) ? '1억 원 이하 대출' : `소득으로는 ${won(Math.min(r.dsrOff ? Infinity : r.d, r.dti))}까지 가능`}</div></div>
   </div>
 
   <div class="panel sec">
-    <h2>세 가지 한도 중 가장 작은 금액<small>은행은 세 규칙을 모두 따져 가장 작은 금액까지만 빌려줘요.</small></h2>
+    <h2>${r.dtiRatio != null ? '네' : '세'} 가지 한도 중 가장 작은 금액<small>은행은 ${r.dtiRatio != null ? '네' : '세'} 규칙을 모두 따져 가장 작은 금액까지만 빌려줘요.</small></h2>
     <div class="bars">
       ${bar(`집값 기준(LTV ${pct(r.ltv)})`, r.a, r.by === 'LTV' || r.by === 'BAN', `집값 ${won(o.price)} × ${pct(r.ltv)} <details class="term"><summary>LTV란?</summary><div><b>LTV(주택담보대출비율)</b>는 집값 대비 빌릴 수 있는 비율이에요. LTV 40%면 10억 원 집으로 4억 원까지 빌릴 수 있어요. 지역(규제지역·수도권·지방)과 집을 몇 채 가졌는지에 따라 달라요.</div></details>`)}
       ${bar('가격대별 최대 금액', r.b, r.by === 'CAP', capTxt)}
       ${bar(`소득 기준(DSR ${pct(r.c.dsrRatio)})`, r.dsrOff ? Infinity : r.d, r.by === 'DSR', dsrTxt)}
+      ${r.dtiRatio != null ? bar(`소득 기준(DTI ${pct(r.dtiRatio)})`, r.dti, r.by === 'DTI', `${S.g === 'reg' ? '규제지역' : '수도권'}은 (연소득 × ${pct(r.dtiRatio)} − 다른 대출) 안에서 ${r.term}년 동안 실제 금리 ${o.rate}%로 갚을 수 있는 금액 <details class="term"><summary>DTI란?</summary><div><b>DTI(총부채상환비율)</b>는 이번 주택담보대출의 1년 원금+이자에 다른 대출 이자를 더해 연소득으로 나눈 비율이에요. DSR과 달리 스트레스 금리를 더하지 않아서 보통은 DSR이 먼저 막지만, DSR을 따지지 않는 1억 원 이하 대출이나 2금융권에서는 DTI가 먼저 막을 수 있어요.</div></details>`) : ''}
     </div>
   </div>
 
@@ -481,7 +483,8 @@ function calc(){
         <tr><td>② 가격대별 최대</td><td>${S.g === 'local' ? '지방은 없음' : '집값 ' + won(o.price) + ' 구간'}</td><td class="num">${isFinite(r.b) ? won(r.b) : '-'}</td></tr>
         <tr><td>스트레스 금리</td><td>${esc(TYPE[S.rtype])}${o.band ? ' · ' + esc((BANDS[S.rtype].find(x => x[0] === o.band) || [])[1] || '') : ''}<small>${esc(stressLine(r))}</small></td><td class="num">${sOne}</td></tr>
         <tr><td>③ 소득 기준</td><td>${r.dsrOff ? '1억 원 이하·다른 대출 없음' : `연 ${won(o.income * r.c.dsrRatio - o.debt)} 갚는 한도 · 심사 금리 ${r.dsrRate}% · ${r.term}년`}</td><td class="num">${r.dsrOff ? '-' : won(r.d)}</td></tr>
-        <tr class="fin"><td>최대 대출</td><td>①·②·③ 중 가장 작은 금액</td><td class="num">${won(r.L)}</td></tr>
+        ${r.dtiRatio != null ? `<tr><td>④ 소득 기준(DTI)</td><td>연 ${won(Math.max(0, o.income * r.dtiRatio - o.debt))} 갚는 한도 · 실제 금리 ${o.rate}% · ${r.term}년</td><td class="num">${won(r.dti)}</td></tr>` : ''}
+        <tr class="fin"><td>최대 대출</td><td>${r.dtiRatio != null ? '①~④' : '①·②·③'} 중 가장 작은 금액</td><td class="num">${won(r.L)}</td></tr>
       </tbody>
     </table></div>
   </div>
@@ -494,7 +497,7 @@ function calc(){
   </div>
 
   <div class="panel sec">
-    <h2>정책 대출 자격<small>나라에서 정한 조건에 맞으면 은행 주담대의 가격대별 최대 금액 대신 상품별 한도를 따라요. 소득 대비 갚는 돈(DTI) 60% 이내 심사가 따로 있어요.</small></h2>
+    <h2>정책 대출 자격<small>나라에서 정한 조건에 맞으면 은행 주담대의 가격대별 최대 금액 대신 상품별 한도를 따라요. 소득 대비 갚는 돈(DTI) 심사가 따로 있어요(상품마다 적힌 비율).</small></h2>
     <div class="pl">${pol.map(polCard).join('')}</div>
     ${$('hhBox').open ? '' : '<p class="hint">신혼·출산·자녀 조건은 입력 칸 맨 아래 "정책 대출 자격도 확인하기"에서 넣을 수 있어요.</p>'}
   </div>
@@ -526,7 +529,7 @@ function polCard(p){
   const src = p.src.map(id => R.SRC[id]).filter(Boolean)[0];
   return `<div class="pc${p.ok ? ' ok' : ''}"><h3><span>${esc(p.name)}</span><span class="st">${p.ok ? '조건에 맞아요' : '조건이 안 맞아요'}</span></h3>
     <ul>${p.conds.map(c => `<li class="${c.ok ? '' : 'no'}">${esc(c.t)}</li>`).join('')}${p.extra ? `<li>${esc(p.extra)}(직접 확인)</li>` : ''}</ul>
-    <div class="amt">상품 최대 ${won(p.cap)} · 이 집 기준 예상 <b>${won(p.est)}</b> <small>(집값 × LTV ${pct(p.ltv)}와 상품 최대 중 작은 금액)</small></div>
+    <div class="amt">상품 최대 ${won(p.cap)} · 이 집 기준 예상 <b>${won(p.est)}</b> <small>(집값 × LTV ${pct(p.ltv)}와 상품 최대 중 작은 금액 · DTI ${pct(p.dti)} 이내 심사 따로)</small></div>
     ${p.rate && p.rate.v ? `<div class="hint">${esc(p.rate.kind)} 연 ${p.rate.v}%(${fd(p.rate.pub)} 공시)${S.g === 'reg' ? ` · 규제지역 ${p.rate.regPlus}%p 더함` : ''}</div>` : p.rate && p.rate.lo ? `<div class="hint">특례 금리 연 ${p.rate.lo}~${p.rate.hi}%(소득·기간별)</div>` : ''}
     ${src ? `<div class="src">출처: <a href="${esc(src.url)}" target="_blank" rel="noopener">${esc(src.org)} ${esc(src.title)}</a></div>` : ''}</div>`;
 }
@@ -545,10 +548,11 @@ function rulesHtml(){
   const e = f => f.eff ? `적용 ${fd(f.eff.from)}${f.eff.to ? '~' + fd(f.eff.to) : ''}` : '';
   const lt = g => ['none', 'first', 'one', 'multi'].map(o => `${OWN[o]} ${pct(R.LTV[g][o].v)}`).join(' · ');
   const st = R.STRESS.periods;
-  return `<h3 id="rulesT">계산 기준 · 기준일 ${R.ASOF}</h3><p>모든 숫자는 금융위원회·국토교통부·한국주택금융공사·주택도시기금의 공식 발표에서 확인했어요.</p><details class="more"><summary>규칙별 숫자와 공식 출처 보기</summary><ul>
+  return `<h3 id="rulesT">계산 기준 · 기준일 ${R.ASOF}</h3><p>모든 숫자는 금융위원회·국토교통부·한국주택금융공사·주택도시기금의 공식 발표에서 확인했어요. 지방(규제지역 아님)의 DTI처럼 공식 표에서 확인하지 못한 규칙은 계산에 넣지 않았어요.</p><details class="more"><summary>규칙별 숫자와 공식 출처 보기</summary><ul>
     <li><b>LTV</b> 규제지역: ${lt('reg')} / 수도권(규제지역 아님): ${lt('capfree')} / 지방: ${lt('local')} — ${s(['fsc251015', 'fsc250627', 'fscfaq251017', 'fsc230302'])}</li>
     <li><b>가격대별 최대 금액</b>(수도권·규제지역 주택 구입): 15억 원 이하 6억 · 15억 초과~25억 이하 4억 · 25억 초과 2억, ${e(R.CAP)} — ${s(R.CAP.src)}</li>
     <li><b>DSR</b> 은행 ${pct(R.DSR.bank.v)} · 2금융권 ${pct(R.DSR.nonbank.v)}, 모든 대출 합계 1억 원 초과 시 적용 — ${s(['fsc220617', 'fsc260813'])}</li>
+    <li><b>DTI</b> 규제지역 ${pct(R.DTI.reg.v)} · 수도권(규제지역 아님) ${pct(R.DTI.capfree.v)}(아파트), 스트레스 금리 없이 실제 금리로 — ${s(R.DTI.reg.src)}</li>
     <li><b>스트레스 금리</b> ${st.map(p => `${p.scope} ${p.rate}% × 기본 ${pct(p.base)}(${p.stage}단계, ${e(p)})`).join(' · ')}. 금리 방식별 비율(만기 30년 기준) 3단계 혼합형 80·60·40%, 주기형 40·30·20% / 2단계 혼합형 60·40·20%, 주기형 30·20·10% — ${s(['fsc231227', 'fsc250520', 'fsc251210', 'fsc260618'])}</li>
     <li><b>규제지역</b> 서울 25개 구, 경기 ${Object.values(R.REGION.reg.v.gg).join('·')} — ${s(R.REGION.reg.src)}</li>
     <li><b>대출 기간</b> 수도권·규제지역 주담대 최대 ${R.TERM.metroRegMax.v}년 — ${s(R.TERM.metroRegMax.src)}</li>
