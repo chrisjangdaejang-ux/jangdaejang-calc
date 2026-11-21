@@ -68,6 +68,17 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
 .shots img{width:100%;height:auto;display:block;border-radius:6px;aspect-ratio:794/1123;object-fit:cover;background:var(--gray2)}
 .shots figcaption{font-size:13.5px;color:var(--sub2);text-align:center;margin-top:6px;line-height:1.5}
 .shots a{display:block;text-decoration:none;color:inherit}
+.shots.wide img{aspect-ratio:auto;object-fit:contain;background:#fff}
+.cmp{width:100%;border-collapse:collapse;font-size:15px;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-top:12px}
+.cmp th,.cmp td{border-bottom:1px solid var(--line2);padding:11px 12px;text-align:left;vertical-align:top;line-height:1.6}
+.cmp thead th{background:var(--blue-l,#EEF3FF);font-size:15px;color:var(--text)}
+.cmp thead th small{display:block;font-size:13px;font-weight:500;color:var(--sub2)}
+.cmp tbody th{width:118px;font-size:14px;color:var(--sub2);font-weight:700;background:var(--gray2)}
+.cmp tr:last-child th,.cmp tr:last-child td{border-bottom:0}
+.cmp .y{color:var(--pos);font-weight:700}.cmp .n{color:var(--sub3);font-weight:700}
+@media(max-width:620px){.cmp{font-size:14px}.cmp th,.cmp td{padding:9px 8px}.cmp tbody th{width:84px}}
+.pick{margin-top:10px;font-size:15px;color:var(--text);background:#FBF8EF;border:1px solid #EFE6CC;border-radius:14px;padding:12px 14px;line-height:1.7}
+.terms{margin:0;padding-left:20px;font-size:15px;line-height:1.7;color:var(--sub)}.terms li{margin:3px 0}.terms b{color:var(--text)}
 .ex{margin-top:12px;background:var(--gray2);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:14.5px;color:var(--sub);line-height:1.7}
 .more{display:inline-flex;align-items:center;min-height:44px;font-size:15px;font-weight:700;text-decoration:none;margin-top:6px;margin-right:14px}
 .rule{margin:0;padding:0;list-style:none;display:grid;gap:8px}
@@ -127,13 +138,13 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
   <div class="hero">
     <span class="tag">시행사·분양대행사 데이터 리포트</span>
     <h1>예정 분양가, 주변과 비교하면<br><em>어디쯤인지</em> 숫자로 보여 드려요</h1>
-    <p class="lead">사업지 주소와 평형별 예정 분양가만 주시면, 주변 신축·준신축 실거래, 최근 주변 분양가·청약 경쟁률·당첨 가점, 미래가치 점수 분포, 수요·공급·미분양, 정책·대출 조건을 공개 자료로만 모아 PDF 리포트로 드려요. 이미 분양 중인 미분양 단지에는 수요층 분석과 분양 광고 묶음, 진행 보고서를 함께 드려요. 청약 공고가 올라온 단지는 고객에게 그대로 나눠 줄 수 있는 현장 분석 브로슈어도 만들어 드려요.</p>
+    <p class="lead">사업지 주소와 평형별 예정 분양가만 주시면, 주변 신축·준신축 실거래, 최근 주변 분양가·청약 경쟁률·당첨 가점, 미래가치 점수 분포, 수요·공급·미분양, 정책·대출 조건을 공개 자료로만 모아 PDF 리포트로 드려요. 이미 분양 중인 미분양 단지에는 수요층 분석과 분양 광고 묶음, 진행 보고서를 함께 드려요. 청약 공고가 올라온 단지는 고객에게 그대로 나눠 줄 수 있는 집예보 분석 브로슈어나, 자기 브로슈어에 골라 넣는 그래프·표·지도 자료 팩도 만들어 드려요.</p>
     <div class="btns">
       <a class="btn blue" href="#ask" data-track="dev_to_form">리포트 신청하기</a>
       <a class="btn ghost" href="sample-price.pdf" target="_blank" rel="noopener" data-track="dev_sample_pdf">샘플 리포트 PDF 보기</a>
     </div>
     <nav class="toc" aria-label="이 페이지 목차">
-      <a href="#p-price">분양가 리포트</a><a href="#p-unsold">미분양 해소 패키지</a><a href="#p-brochure">현장 분석 브로슈어</a><a href="#rules">원칙</a><a href="#prices">가격</a><a href="#flow">진행 절차</a><a href="#ask">신청</a>
+      <a href="#p-price">분양가 리포트</a><a href="#p-unsold">미분양 해소 패키지</a><a href="#p-brochure">분석 브로슈어(잠금형)</a><a href="#p-datapack">자료 팩(편집형)</a><a href="#rules">원칙</a><a href="#prices">가격</a><a href="#flow">진행 절차</a><a href="#ask">신청</a>
     </nav>
   </div>
 
@@ -190,7 +201,7 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
 
   <section id="p-brochure">
     <div class="sh">PRODUCT 3</div>
-    <h2 class="t">현장 분석 브로슈어 — 고객에게 나눠 주는 분석 자료</h2>
+    <h2 class="t">집예보 분석 브로슈어(잠금형) — 고객에게 나눠 주는 분석 자료</h2>
     <p class="sub">청약 화면에서 모든 공고에 자동으로 붙는 분양가·입지 분석을, 상담 고객에게 그대로 건넬 수 있는 A4 4쪽 PDF로 만들어 드려요. 분석 숫자는 광고 여부와 관계없이 다른 공고와 같고, 불리한 숫자도 빼지 않아요 — 그래서 고객이 믿고 읽어요.</p>
     <article class="prod">
       <div class="ph"><div><span class="num">공고 1곳 · PDF 4쪽 · 인쇄·카카오톡 공유</span><h3>무엇이 들어가나요</h3></div><span class="st">바로 가능</span></div>
@@ -211,6 +222,57 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
     </div>
     <p class="ex">샘플은 청약홈에 공고된 실제 단지의 공개 자료로 만들었고, 의견 칸 문구는 예시예요. 이 샘플은 해당 단지 사업 주체와 관계가 없어요.</p>
     <a class="more" href="sample-brochure.pdf" target="_blank" rel="noopener" data-track="dev_sample_brochure">브로슈어 샘플 전체(PDF) ›</a>
+  </section>
+
+  <section id="p-datapack">
+    <div class="sh">PRODUCT 4</div>
+    <h2 class="t">현장 자료 팩(편집형) — 우리 브로슈어에 골라 넣는 그래프·표·지도</h2>
+    <p class="sub">이미 쓰는 브로슈어·분양 홍보물이 있다면, 필요한 그림만 골라 넣으세요. 그래프·표·위치도를 한 장씩 고해상도 PNG(흰 바탕·투명 배경 둘 다)로, 그림에 쓴 숫자는 엑셀 원자료로 드려요. 그림마다 공공기관 출처·기준일이 그림 안에 들어가 있고, 집예보 이름·로고는 넣지 않아요.</p>
+    <table class="cmp" aria-label="잠금형 브로슈어와 자료 팩 비교">
+      <thead><tr><th scope="col"></th><th scope="col">① 집예보 분석 브로슈어<small>잠금형 · 완성 A4 4쪽</small></th><th scope="col">② 현장 자료 팩<small>편집형 · PNG + 엑셀 zip</small></th></tr></thead>
+      <tbody>
+        <tr><th scope="row">받는 것</th><td>그대로 인쇄·공유하는 완성 PDF</td><td>그림 한 장씩(PNG) + 원자료 엑셀 — 골라서 우리 디자인에 배치</td></tr>
+        <tr><th scope="row">주변 실거래·분양가 위치</th><td class="y">들어감</td><td class="y">들어감</td></tr>
+        <tr><th scope="row">주변 분양 경쟁률·가점</th><td class="y">들어감</td><td class="y">들어감</td></tr>
+        <tr><th scope="row">수요·공급·교통·학교</th><td class="y">들어감(교통·학교 제외)</td><td class="y">들어감 + 위치도</td></tr>
+        <tr><th scope="row">미래가치 점수·과거 성적</th><td class="y">들어감</td><td class="n">빠짐</td></tr>
+        <tr><th scope="row">리스크 정리·분석 문장</th><td class="y">들어감(뺄 수 없음)</td><td class="n">빠짐(숫자만)</td></tr>
+        <tr><th scope="row">우리 회사 의견</th><td>구분된 의견 칸 1개</td><td>자유롭게(우리 브로슈어 본문)</td></tr>
+        <tr><th scope="row">색·배치 바꾸기</th><td class="n">안 됨</td><td class="y">됨(숫자·출처는 그대로)</td></tr>
+        <tr><th scope="row">'데이터·분석: 집예보'</th><td>모든 쪽에 표시</td><td>넣지 않음 · 집예보 이름 사용 금지</td></tr>
+      </tbody>
+    </table>
+    <p class="pick"><b>미래가치 점수·과거 성적까지 고객에게 보여 주려면 ① 분석 브로슈어</b>를 골라 주세요. 집예보 고유 분석은 출처 없이 떼어 쓰이면 근거를 알 수 없는 숫자가 되기 때문에, 잠금형에서만 드려요.</p>
+    <article class="prod">
+      <div class="ph"><div><span class="num">청약 공고 1곳 · 그림 10장 안팎 · zip</span><h3>무엇이 들어가나요</h3></div><span class="st">바로 가능</span></div>
+      <dl class="spec">
+        <dt>주변 실거래 비교</dt><dd>면적 구간마다 반경 1km·2km·같은 구 × 신축(5년 이내)·준신축(6~10년) 최근 12개월 매매의 하위 25%·중앙값·상위 25% 막대 그림 + 개별 거래 원자료(엑셀)</dd>
+        <dt>분양가 위치</dt><dd>주변 거래를 점으로 찍은 그림 위에 분양가 위치, 분양가보다 낮은 거래 비율과 주변 시세 대비 구간(하위·중간·상위)</dd>
+        <dt>주변 분양</dt><dd>최근 2년 같은 구·반경 3km 분양 단지의 1순위 최고 경쟁률, 당첨 가점(최저/평균), 면적 구간별 분양가(엑셀)</dd>
+        <dt>수요</dt><dd>30~40대 인구 3년 증감·순이동(통계청), 월별 매입자 거주지 — 같은 구·다른 구·다른 시·도(한국부동산원)</dd>
+        <dt>공급</dt><dd>앞으로 3년 입주 예정 세대(청약홈 공고), 미분양·준공 후 미분양 24개월 추이(국토교통부)</dd>
+        <dt>교통·학교</dt><dd>가까운 지하철역(2km)·중학교(1.5km) 직선거리, 학교알리미 전입·전출·재학생 수 — 지하철역은 지금 서울 시내 역만 있어요</dd>
+        <dt>위치도</dt><dd>사업지 중심 반경 1·2km, 역·중학교·비교 단지 위치. 배경 지도는 OpenStreetMap(그림 안에 © OpenStreetMap contributors 표기)만 쓰고, 재배포가 허용되지 않는 지도 서비스 화면은 쓰지 않아요</dd>
+        <dt>형식</dt><dd>PNG 가로 2,000px 안팎(흰 바탕·투명 배경 두 벌), 기본은 회색 + 강조색 1개 — 신청 때 회사 색(색상 코드)을 알려 주시면 강조색을 맞춰 드려요. 엑셀은 시트마다 출처·기준일 줄이 있어요</dd>
+        <dt>빠지는 것</dt><dd>미래가치 점수·과거 성적·집예보 분석 문장(리스크 해설 등). 자료가 없는 항목은 숫자를 채우지 않고 빼며, 빠진 이유를 목록에 적어요</dd>
+        <dt>주실 것</dt><dd>청약홈 공고명(또는 공고번호), 강조색(선택) — 공고가 청약홈에 올라온 단지만 만들 수 있어요</dd>
+      </dl>
+    </article>
+    <div class="shots wide" aria-label="현장 자료 팩 샘플 미리보기">
+      <figure><a href="sample-datapack.zip" data-track="dev_sample_datapack"><img src="d1.jpg" width="900" height="495" loading="lazy" alt="자료 팩 샘플: 전용 60㎡ 이하 주변 거래 점 그림과 분양가 위치, 그림 아래 청약홈·국토교통부 출처와 기준일"></a><figcaption>분양가 위치</figcaption></figure>
+      <figure><a href="sample-datapack.zip" data-track="dev_sample_datapack"><img src="d2.jpg" width="900" height="497" loading="lazy" alt="자료 팩 샘플: 주변 최근 분양 단지별 1순위 최고 경쟁률 막대와 당첨 가점"></a><figcaption>주변 분양 경쟁률·가점</figcaption></figure>
+      <figure><a href="sample-datapack.zip" data-track="dev_sample_datapack"><img src="d3.jpg" width="700" height="760" loading="lazy" alt="자료 팩 샘플: 사업지 중심 반경 1·2km 위치도, 지하철역·중학교·비교 단지"></a><figcaption>위치도</figcaption></figure>
+      <figure><a href="sample-datapack.zip" data-track="dev_sample_datapack"><img src="d4.jpg" width="900" height="518" loading="lazy" alt="자료 팩 샘플: 중랑구 월별 아파트 매입자 거주지 누적 막대"></a><figcaption>매입자 거주지</figcaption></figure>
+    </div>
+    <p class="ex">샘플은 청약홈에 공고된 중화역 라온프라이빗 센트로의 공개 자료로 만들었어요(샘플 zip은 흰 바탕 그림만 넣었어요). 이 샘플은 해당 단지 사업 주체와 관계가 없어요.</p>
+    <a class="more" href="sample-datapack.zip" data-track="dev_sample_datapack">자료 팩 샘플 내려받기(zip) ›</a>
+    <h3 style="font-size:17px;margin:18px 0 8px">이용 조건 — 신청 때 동의하시고, zip 안 ‘이용 조건.txt’에도 들어 있어요</h3>
+    <ol class="terms">
+      <li><b>숫자 변경 금지</b> — 가격·거래 수·비율·경쟁률·가점·세대 수·거리·기준일을 바꾸거나 일부만 골라 다른 뜻이 되게 편집할 수 없어요. 색·글꼴·크기·배치는 자유예요.</li>
+      <li><b>출처 표기 유지</b> — 그림 안 공공기관 출처·기준일(위치도의 OpenStreetMap 표기 포함)을 지우거나 가릴 수 없어요. 엑셀로 다시 그릴 때도 같은 출처를 적어 주세요.</li>
+      <li><b>집예보 이름·로고 사용 금지</b> — 광고물에 집예보 이름·로고를 넣거나 ‘집예보가 분석·보증·추천했다’는 표현을 쓸 수 없어요.</li>
+      <li><b>광고 책임은 사용 업체에</b> — 자료를 넣어 만든 광고물의 내용·표현에 대한 책임(표시·광고의 공정화에 관한 법률 등)은 사용 업체에 있어요.</li>
+    </ol>
   </section>
 
   <section id="rules">
@@ -236,7 +298,8 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
         <tr><td><b>평형 추가</b></td><td data-l="포함">4번째 평형부터 1개당</td><td data-l="금액" data-pp="dev_extra"></td></tr>
         <tr><td><b>분양 직전 다시 보기</b></td><td data-l="포함">같은 사업지, 첫 리포트 뒤 90일 안 · 최신 실거래·공고로 다시 계산</td><td data-l="금액" data-pp="dev_update"></td></tr>
         <tr><td><b>미분양 해소 패키지 운영비</b></td><td data-l="포함">수요층 분석 PDF(현장 수요 리포트 포함) · 광고 묶음 설계 · 8주 동안 2주마다 진행 보고서 · 30분 통화 2회</td><td data-l="금액" data-pp="unsold_pack"></td></tr>
-        <tr><td><b>현장 분석 브로슈어</b></td><td data-l="포함">청약 공고 1곳 · PDF 4쪽 · 의견 칸 1개 · 영업일 2일 안 납품 · 분양 광고 1개월 이상 계약 시 1건 포함</td><td data-l="금액" data-pp="brochure"></td></tr>
+        <tr><td><b>① 집예보 분석 브로슈어(잠금형)</b></td><td data-l="포함">청약 공고 1곳 · PDF 4쪽 · 의견 칸 1개 · 영업일 2일 안 납품 · 분양 광고 1개월 이상 계약 시 1건 포함</td><td data-l="금액" data-pp="brochure"></td></tr>
+        <tr><td><b>② 현장 자료 팩(편집형)</b></td><td data-l="포함">청약 공고 1곳 · 그림 PNG(흰 바탕·투명) + 원자료 엑셀 zip · 강조색 1개 맞춤 · 영업일 2일 안 납품 · 미래가치 점수·과거 성적 제외</td><td data-l="금액" data-pp="datapack"></td></tr>
         <tr><td><b>브로슈어 다시 만들기</b></td><td data-l="포함">같은 공고, 새 실거래·청약 결과로 다시 계산(공고 기간 안)</td><td data-l="금액" data-pp="brochure_update"></td></tr>
         <tr><td><b>패키지 광고비</b></td><td data-l="포함">분양 광고 상품(목록 상단·지도 마커·관심 지역 알림·상담 연결)</td><td data-l="금액"><a href="../../ad/#prices">광고 단가표</a>를 따라요 · 묶음 할인은 견적에서 정해요</td></tr>
       </tbody>
@@ -271,7 +334,8 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
             <div class="chk" id="prod" role="group" aria-labelledby="prodL">
               <label><input type="checkbox" value="dev_report"> 분양가 적정성·입지 분석 리포트</label>
               <label><input type="checkbox" value="unsold_pack"> 미분양 해소 패키지</label>
-              <label><input type="checkbox" value="brochure"> 현장 분석 브로슈어</label>
+              <label><input type="checkbox" value="brochure"> 집예보 분석 브로슈어(잠금형)</label>
+              <label><input type="checkbox" value="datapack"> 현장 자료 팩(편집형)</label>
             </div></div>
           <div class="f full"><label class="l" for="site">사업지 주소 <i>*</i></label><input id="site" maxlength="60" placeholder="예: 서울 성북구 장위동 ○○ 일원"><small>지번·도로명 주소 또는 단지명. 좌표가 있으면 문의 내용에 적어 주세요.</small></div>
           <div class="f full"><label class="l" for="types">평형별 전용면적·예정 분양가</label><textarea id="types" maxlength="400" placeholder="예: 59㎡ 8억 9,000만 / 84㎡ 12억 5,000만 / 114㎡ 미정"></textarea><small>미정이면 비워 두셔도 돼요. 미분양 패키지는 현재 분양가(할인가)와 남은 세대를 적어 주세요.</small></div>
@@ -288,6 +352,7 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
           </tbody></table>
           문의 정보는 구글 시트(Google LLC, 국외 서버)에 보관돼요. 동의하지 않으실 수 있으며, 이 경우 카카오톡 채널·전화로 문의해 주세요. 자세한 내용은 <a href="../../privacy/">개인정보처리방침</a>을 확인해 주세요. 사업지·분양가 정보는 리포트 작성에만 쓰고 다른 의뢰인·광고에 쓰지 않아요.
         </div>
+        <label class="agree" id="agreeDpL" hidden><input type="checkbox" id="agreeDp"><span>(자료 팩 필수) 위 <a href="#p-datapack">자료 팩 이용 조건</a>(숫자 변경 금지, 공공기관 출처 표기 유지, 집예보 이름·로고 사용과 보증 표현 금지, 광고 책임은 우리 회사)에 동의합니다.</span></label>
         <label class="agree"><input type="checkbox" id="agree"> (필수) 위 개인정보 수집·이용에 동의합니다.</label>
         <div class="hp" aria-hidden="true"><label for="hpf">이 칸은 비워 두세요</label><input id="hpf" tabindex="-1" autocomplete="off"></div>
         <button class="btn blue big" type="submit" id="send">신청 보내기</button>
@@ -301,7 +366,7 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
     </div>
   </section>
 
-  <p class="src">리포트는 공개 자료(국토교통부·한국부동산원 청약홈·통계청·정책브리핑 등)와 익명 집계만으로 만들며, 감정평가·투자 자문이 아니에요. 집예보 미래가치 점수·순위는 의뢰·광고와 무관해요.<br>
+  <p class="src">리포트는 공개 자료(국토교통부·한국부동산원 청약홈·통계청·정책브리핑 등)와 익명 집계만으로 만들며, 감정평가·투자 자문이 아니에요. 집예보 미래가치 점수·순위는 의뢰·광고와 무관해요. 자료 팩에는 집예보 고유 분석(미래가치 점수·과거 성적·분석 문장)을 넣지 않아요.<br>
   <a href="../../ad/">광고·제휴 안내</a> · <a href="../../bunyang/apply/">분양 광고 신청</a> · <a href="../../bunyang/agency/">분양대행 의뢰(전속)</a> · <a href="../../partner/">판매 파트너</a> · <a href="../../about/">서비스 소개</a></p>
 </main>
 <footer class="foot">★ 집예보 · <a href="../../">홈</a> · <a href="../../ad/">광고·제휴</a></footer>
@@ -315,16 +380,20 @@ const DEV_PRICES = {
   dev_update:  { list: 400000,  launch: 290000 },
   unsold_pack: { list: 900000,  launch: 490000 },
   brochure:    { list: 390000,  launch: 190000 },
+  datapack:    { list: 190000,  launch: 90000 },
   brochure_update: { list: 100000, launch: 50000 },
   until: '2027-03-31'
 };
 /* 신청 상품 → 서버 관심 상품 키. 서버(agent-backend.gs AQ_PROD)가 아직 모르는 키는 버려지므로 'etc'(기타·제휴)를 같이 보내 접수가 되게 함 */
-const DEV_PROD = { dev_report: '분양가 적정성·입지 분석 리포트', unsold_pack: '미분양 해소 패키지', brochure: '현장 분석 브로슈어' };
+const DEV_PROD = { dev_report: '분양가 적정성·입지 분석 리포트', unsold_pack: '미분양 해소 패키지', brochure: '집예보 분석 브로슈어(잠금형)', datapack: '현장 자료 팩(편집형)' };
+/* 자료 팩 이용 조건(신청 폼 필수 동의 · zip 안 '이용 조건.txt' 와 같은 내용) */
+const DP_TERMS_VER = '2026-11-21';
 function won(n) { n = Math.round(+n); if (n >= 1e4 && n % 1e4 === 0) return (n / 1e4).toLocaleString('ko-KR') + '만 원'; return n.toLocaleString('ko-KR') + '원'; }
 function serverProducts(sel) { return [...sel.filter(p => DEV_PROD[p]), 'etc']; }
 function devMemo(b) {
   return [`[시행사 리포트 신청] ${b.sel.map(p => DEV_PROD[p]).join(', ')}`, `회사 구분: ${b.role || '-'}`, `사업지: ${b.site}`,
-          `평형·분양가: ${b.types || '-'}`, `희망 납기: ${b.due || '-'}`, '', b.memo || ''].join('\n').slice(0, 1000);
+          `평형·분양가: ${b.types || '-'}`, `희망 납기: ${b.due || '-'}`,
+          ...(b.sel.includes('datapack') ? [`자료 팩 이용 조건 동의: ${b.dpAgree ? '예' : '아니오'} (${DP_TERMS_VER}판)`] : []), '', b.memo || ''].join('\n').slice(0, 1000);
 }
 /* DEV-PRICE:END */
 
@@ -345,6 +414,8 @@ const formula = v => /^[=+\-@]/.test(String(v).trim());
 const emailOk = v => /^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(v);
 const phoneOk = v => /^(01[016789]\d{7,8}|0[2-6]\d{7,9}|070\d{8}|1[5-9]\d{6})$/.test(v.replace(/[^0-9]/g, '')) && !/[A-Za-z@]/.test(v);
 const sel = () => [...document.querySelectorAll('#prod input:checked')].map(x => x.value);
+const dpShow = () => { $('agreeDpL').hidden = !sel().includes('datapack'); };
+document.querySelectorAll('#prod input').forEach(x => x.addEventListener('change', dpShow)); dpShow();
 function check() {
   for (const [id, n] of [['company', '회사명'], ['manager', '담당자 이름']]) {
     const v = $(id).value.trim();
@@ -357,6 +428,7 @@ function check() {
   if (!sel().length) return ['prod', '신청 상품을 하나 이상 골라 주세요.'];
   if (!$('site').value.trim()) return ['site', '사업지 주소를 입력해 주세요.'];
   for (const [id, n] of [['site', '사업지 주소'], ['types', '평형·분양가'], ['memo', '문의 내용']]) if (formula($(id).value)) return [id, `${n}은(는) = + - @ 기호로 시작할 수 없어요.`];
+  if (sel().includes('datapack') && !$('agreeDp').checked) return ['agreeDp', '자료 팩은 이용 조건에 동의해 주셔야 신청할 수 있어요.'];
   if (!$('agree').checked) return ['agree', '개인정보 수집·이용에 동의해 주셔야 신청을 보낼 수 있어요.'];
   return null;
 }
@@ -378,7 +450,7 @@ $('form').addEventListener('submit', async e => {
     const el = $(bad[0]); if (el) { el.setAttribute('aria-invalid', 'true'); (el.matches('input,select,textarea') ? el : el.querySelector('input')).focus(); }
     return;
   }
-  const f = { sel: sel(), site: $('site').value.trim(), types: $('types').value.trim(), due: $('due').value, role: $('role').value, memo: $('memo').value.trim() };
+  const f = { sel: sel(), site: $('site').value.trim(), types: $('types').value.trim(), due: $('due').value, role: $('role').value, memo: $('memo').value.trim(), dpAgree: $('agreeDp').checked };
   const body = { action: 'adInquiry', type: 'inquiry', company: $('company').value.trim(), manager: $('manager').value.trim(), contact: $('contact').value.trim(),
     products: serverProducts(f.sel), region: f.site.slice(0, 60), period: '미정·협의', memo: devMemo(f), agree: { privacy: true }, hp: $('hpf').value };
   if (!window.JDJ_AGENTS || !JDJ_AGENTS.ready) { fallback(body, '신청 서버에 연결하지 못했어요.'); return; }
