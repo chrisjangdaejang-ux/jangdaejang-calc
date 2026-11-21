@@ -117,7 +117,7 @@ const doc = read('docs/ad_slots.md');
   const j = JSON.parse(read('data/ads.json'));
   check('data/ads.json: ads 배열', Array.isArray(j.ads), typeof j.ads);
   const sw = read('sw.js');
-  check('sw.js: ad-slot.js·aplus v43 미리 저장', sw.includes('/assets/ad-slot.js?v=1') && sw.includes('/assets/aplus.css?v=43'), '');
+  check('sw.js: ad-slot.js·aplus v43 미리 저장', sw.includes('/assets/ad-slot.js?v=2') && sw.includes('/assets/aplus.css?v=43'), '');
   const adp = read('ad/index.html');
   check('/ad/: 광고 위치 안내 칸', adp.includes('id="slots"') && adp.includes('광고 위치 안내'), '');
   const slotSec = adp.slice(adp.indexOf('id="slots"'), adp.indexOf('id="target"'));
@@ -145,6 +145,32 @@ const doc = read('docs/ad_slots.md');
   check('서버 v36: 문의 관심 상품에 home_top·cat_top', /v36: 광고 문의 홈·카테고리 상단 배너/.test(gs) && /AQ_PROD\.home_top = '홈 상단 배너'; AQ_PROD\.cat_top = '카테고리 상단 배너';/.test(gs), '');
   const all = Object.keys(PAGES).map(read).join('\n') + read('assets/ad-slot.js') + adp;
   check('화면 문구에 금지 단어 없음(시험·검증·채점)', !/[>'"][^<'"]*(시험|검증|채점)/.test(read('assets/ad-slot.js')) && !/(시험|검증|채점)/.test(adp.slice(adp.indexOf('id="slots"'), adp.indexOf('id="target"'))), '');
+}
+
+/* ⑦ 지역 광고: 그 지역 광고(시·군·구 → 시·도) → 전국 → 자체 광고 · 같은 자리·같은 지역 한 광고주 */
+{
+  const base = { cat: 'mine', industry: '이사', slot: 'mine_end' };
+  const ads = [ad(Object.assign({ id: 'nat', advertiser: '전국이사', start: '2026-12-01' }, base)), ad(Object.assign({ id: 'sd11', advertiser: '서울이사', region: '11', start: '2026-12-02' }, base)),
+    ad(Object.assign({ id: 'g11680', advertiser: '강남이사', region: '11680', start: '2026-12-03' }, base)), ad(Object.assign({ id: 'g26', advertiser: '부산이사', region: '26', start: '2026-12-01' }, base))];
+  check('지역: 강남구 화면 → 강남구 광고', A.pick(ads, 'mine_end', 'mine', TODAY, [], { sido: '11', sgg: '11680' }).id === 'g11680', '');
+  check('지역: 서초구 화면 → 서울(시·도) 광고', A.pick(ads, 'mine_end', 'mine', TODAY, [], { sido: '11', sgg: '11650' }).id === 'sd11', '');
+  check('지역: 대구 화면 → 전국 광고(다른 지역 광고는 안 보임)', A.pick(ads, 'mine_end', 'mine', TODAY, [], { sido: '27', sgg: '27110' }).id === 'nat', '');
+  check('지역 정보가 없는 화면 → 전국 광고', A.pick(ads, 'mine_end', 'mine', TODAY, [], {}).id === 'nat' && A.pick(ads, 'mine_end', 'mine', TODAY).id === 'nat', '');
+  check('지역 광고만 있고 화면 지역을 모르면 → 자체 광고', A.pick(ads.filter(a => a.region), 'mine_end', 'mine', TODAY, [], {}).house, '');
+  check('시·군·구만 알아도 시·도 광고에 맞음', A.regionScore('11', { sgg: '11680' }) === 2 && A.regionScore('11680', { sido: '11' }) === 0, '');
+  check('지역 코드 형식(2자리·5자리만)', A.normRegion('11680') === '11680' && A.normRegion('11') === '11' && A.normRegion('서울') === '' && A.normRegion('116') === '', '');
+  const c1 = A.conflicts([ad({ id: 'x1', advertiser: 'A', slot: 'tax_end', cat: 'tax', region: '11680', start: '2026-12-01', end: '2026-12-28' }), ad({ id: 'x2', advertiser: 'B', slot: 'tax_end', cat: 'tax', region: '11680', start: '2026-12-20', end: '2027-01-16' })]);
+  check('같은 자리·같은 지역·기간 겹침 → 충돌', JSON.stringify(c1) === '[["x1","x2"]]', c1);
+  const c2 = A.conflicts([ad({ id: 'y1', advertiser: 'A', slot: 'tax_end', region: '11680', start: '2026-12-01', end: '2026-12-28' }), ad({ id: 'y2', advertiser: 'B', slot: 'tax_end', region: '11650', start: '2026-12-01', end: '2026-12-28' }),
+    ad({ id: 'y3', advertiser: 'C', slot: 'tax_end', region: '11680', start: '2026-12-29', end: '2027-01-25' }), ad({ id: 'y4', advertiser: 'D', slot: 'tax_top', region: '11680', start: '2026-12-01', end: '2026-12-28' })]);
+  check('다른 지역·이어지는 기간·다른 자리는 충돌 아님', c2.length === 0, c2);
+  const c3 = A.conflicts([ad({ id: 'z1', advertiser: 'A', cat: 'tax', start: '2026-12-01', end: '2026-12-28' }), ad({ id: 'z2', advertiser: 'B', slot: 'tax_end', start: '2026-12-10', end: '2026-12-17' })]);
+  check('화면 전체(cat) 광고와 그 화면 칸 광고가 같은 지역·기간이면 충돌', c3.length === 1, c3);
+  check('data/ads.json: 같은 자리·같은 지역에 겹치는 광고주 없음', A.conflicts(JSON.parse(read('data/ads.json')).ads).length === 0, A.conflicts(JSON.parse(read('data/ads.json')).ads));
+  const js = read('assets/ad-slot.js');
+  check('GA4 노출·누름 기록에 region', /track\('ad_slot_view', \{[^}]*region: el\._rgv \|\| '전국'/.test(js) && /track\('ad_slot_click', \{[^}]*region: el\._rgv \|\| '전국'/.test(js), '');
+  check('화면 지역: 주소 g·d·k(5자리)·sd, 홈 지역, data-ad-region, setRegion', /q\.get\('g'\)/.test(js) && /jdj_home_region/.test(js) && /data-ad-region/.test(js) && /api\.setRegion = setRegion/.test(js), '');
+  check('세금 화면: 고른 주소로 setRegion · 브리핑: 관심 지역 data-ad-region', /JDJ_ADSLOT\.setRegion\(\{ sido: sd\.value, gu: gu\.value \}\)/.test(read('tax/index.html')) && /document\.body\.setAttribute\('data-ad-region', String\(S\.g\)\)/.test(read('brief/index.html')), '');
 }
 
 const bad = rows.filter(r => !r.ok);

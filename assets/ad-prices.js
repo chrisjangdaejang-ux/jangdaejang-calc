@@ -19,8 +19,8 @@ const PRICES = {
   bunyang_more: { perWeek: 200000 },                                         // 분양 광고 노출 화면 확장(청약·내 집 마련·갈아타기) — 준비 중, 1주당 추가
   agent:        { plans: [{ label: '기본', month: 29000, year: 348000 }, { label: '프리미엄', month: 49000, year: 588000 }], text: '기본 월 29,000원 · 프리미엄 월 49,000원 · 1년 결제', note: '연 348,000원 · 588,000원 (소속 공인중개사 상담 전용 월 19,000원) · 제휴 페이지 공개 요금 그대로예요' },  // agent/ 페이지와 같게
   agent_top:    { soon: true, tiers: [{ label: '1등급 구', month: 150000 }, { label: '2등급 구', month: 90000 }, { label: '3등급 구', month: 50000 }] },   // 시·군·구 우선 노출 — 준비 중
-  native:       { tiers: [{ label: '전국', month: 500000 }, { label: '시·도', month: 300000 }, { label: '시·군·구', month: 150000 }] },  // 결과 하단 카드 — 준비 중
-  jeonse:       { tiers: [{ label: '전국 단독', month: 800000 }], note: '1년 계약 시 다음 해 업종 우선 연장권' },   // 체크리스트 스폰서(업종당 1구좌) — 준비 중
+  native:       { tiers: [{ label: '전국', month: 500000 }, { label: '시·도', month: 300000 }, { label: '시·군·구', month: 150000 }] },  // 결과 하단 카드 — 바로 가능(광고 칸 assets/ad-slot.js, 지역 칸 region)
+  jeonse:       { tiers: [{ label: '전국 단독', month: 800000 }], note: '1년 계약 시 다음 해 업종 우선 연장권' },   // 체크리스트 스폰서(업종당 1구좌) — 바로 가능
   pkg_bunyang:  { weeks: { 4: 1500000 } },                    // 패키지: 분양 집중
   pkg_local:    { tiers: [{ label: '', month: 200000 }] },     // 패키지: 지역 밀착
   pkg_jeonse:   { tiers: [{ label: '', month: 1100000 }] },    // 패키지: 전월세 안심

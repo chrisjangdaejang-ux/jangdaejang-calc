@@ -1,7 +1,7 @@
 /* 집예보 공용 광고 칸 (assets/ad-slot.js) — 위치 계획: docs/ad_slots.md · 광고 상품: /ad/
    페이지에 넣는 법
      <div data-ad-slot="mine_end" data-ad-cat="mine" data-ad-after="#res" hidden></div>
-     <script src="/jangdaejang-calc/assets/ad-slot.js?v=1" defer></script>
+     <script src="/jangdaejang-calc/assets/ad-slot.js?v=2" defer></script>
    - data-ad-slot  : 칸 이름(docs/ad_slots.md 표의 slot id)
    - data-ad-cat   : 화면 종류(아래 CATS) — 받을 수 있는 업종과 집예보 안내 광고를 정함
    - data-ad-skip-if : 이 선택자가 보이면 칸을 숨김(예: 모닝 브리핑 전용 광고 자리가 그날 광고로 채워졌을 때)
@@ -81,16 +81,49 @@
     if ((c.flatOnly || FLAT_ONLY_IND.indexOf(ind) >= 0) && ad.fee !== 'flat') return false;
     return true;
   }
-  /** 칸에 보일 광고 1개: 조건 맞는 유료 광고(시작일 → id 순, used 에 있는 것은 피함), 없으면 집예보 안내 광고 */
-  function pick(ads, slot, cat, today, used) {
+  /* ---------- 지역 ----------
+     광고의 region: '' 또는 없음 = 전국, 2자리 = 시·도(법정동 코드 앞 2자리, 예: 11 서울), 5자리 = 시·군·구(예: 11680 강남구).
+     화면 지역 rg = { sido: '11', sgg: '11680' }(모르면 빈 값). */
+  function normRegion(r) { r = String(r == null ? '' : r).trim(); return /^\d{5}$/.test(r) || /^\d{2}$/.test(r) ? r : ''; }
+  /** 광고 지역이 화면 지역에 맞는 정도: 3 = 같은 시·군·구, 2 = 같은 시·도, 1 = 전국 광고, 0 = 다른 지역(싣지 않음) */
+  function regionScore(adRegion, rg) {
+    var r = normRegion(adRegion); rg = rg || {};
+    if (!r) return 1;
+    if (r.length === 5) return rg.sgg && rg.sgg === r ? 3 : 0;
+    var sd = rg.sido || (rg.sgg ? rg.sgg.slice(0, 2) : '');
+    return sd && sd === r ? 2 : 0;
+  }
+  /** 칸에 보일 광고 1개: 그 지역 광고(시·군·구 → 시·도) → 전국 광고 → 집예보 안내 광고. 같은 단계 안에서는 시작일 → id 순, used 에 있는 것은 피함 */
+  function pick(ads, slot, cat, today, used, rg) {
     used = used || [];
-    var l = (ads || []).filter(function (a) { return allowed(a, slot, cat, today); })
-      .sort(function (a, b) { return String(a.start).localeCompare(String(b.start)) || String(a.id).localeCompare(String(b.id)); });
+    var l = (ads || []).filter(function (a) { return allowed(a, slot, cat, today) && regionScore(a.region, rg) > 0; })
+      .sort(function (a, b) { return (regionScore(b.region, rg) - regionScore(a.region, rg)) || String(a.start).localeCompare(String(b.start)) || String(a.id).localeCompare(String(b.id)); });
     var fresh = l.filter(function (a) { return used.indexOf(a.id) < 0; });
     if (fresh[0] || l[0]) return fresh[0] || l[0];
     var hs = arr((CATS[cat] || {}).house);   /* 안내 광고도 같은 화면에서 겹치지 않게 다음 것으로 */
     for (var i = 0; i < hs.length; i++) if (used.indexOf('house_' + hs[i]) < 0) return houseAd(hs[i]);
     return houseAd(hs[0]);
+  }
+  /** 같은 자리·같은 지역에는 한 광고주만: 칸(slot, 없으면 화면 cat)이 겹치고 지역이 같고 기간이 겹치는 다른 광고주 짝 → [[id, id], …] */
+  function conflicts(ads) {
+    var out = [], L = (ads || []).filter(function (a) { return a && a.id; });
+    var where = function (a) { var s = arr(a.slot); return s.length ? s.map(function (x) { return 's:' + x; }) : arr(a.cat).map(function (x) { return 'c:' + x; }); };
+    var meet = function (a, b) {
+      var A = where(a), B = where(b);
+      if (A.some(function (x) { return B.indexOf(x) >= 0; })) return true;
+      /* 한쪽은 칸 이름, 다른 쪽은 화면 전체(cat)면 그 화면의 칸끼리 겹침 */
+      var cs = function (X) { return X.filter(function (x) { return x[0] === 'c'; }).map(function (x) { return x.slice(2); }); };
+      var ss = function (X) { return X.filter(function (x) { return x[0] === 's'; }).map(function (x) { return x.slice(2).split('_')[0]; }); };
+      return cs(A).some(function (c) { return ss(B).indexOf(c) >= 0; }) || cs(B).some(function (c) { return ss(A).indexOf(c) >= 0; });
+    };
+    for (var i = 0; i < L.length; i++) for (var j = i + 1; j < L.length; j++) {
+      var a = L[i], b = L[j];
+      if (normRegion(a.region) !== normRegion(b.region)) continue;
+      if (String(a.advertiser || '') === String(b.advertiser || '')) continue;
+      if (!(a.start <= b.end && b.start <= a.end)) continue;
+      if (meet(a, b)) out.push([a.id, b.id]);
+    }
+    return out;
   }
 
   /** 위치 y 에 칸을 하나 더 넣으면 한 화면(높이 H) 안 광고가 MOBILE_MAX 를 넘는지 — others: 이미 있는 광고들의 y */
@@ -118,7 +151,7 @@
       + (c.note ? '<p class="jas-n">' + esc(c.note) + '</p>' : '');
   }
 
-  var api = { CATS: CATS, BLOCK: BLOCK, allowed: allowed, pick: pick, html: html, houseAd: houseAd, kstToday: kstToday, tooMany: tooMany, MOBILE_MAX: MOBILE_MAX, BAN: '[aria-live],.result,#res,#result,#report,#gRes,output' };
+  var api = { CATS: CATS, BLOCK: BLOCK, allowed: allowed, pick: pick, regionScore: regionScore, normRegion: normRegion, conflicts: conflicts, html: html, houseAd: houseAd, kstToday: kstToday, tooMany: tooMany, MOBILE_MAX: MOBILE_MAX, BAN: '[aria-live],.result,#res,#result,#report,#gRes,output' };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (typeof document === 'undefined') return;
   root.JDJ_ADSLOT = api;
@@ -144,6 +177,43 @@
   function used(except) {
     return Array.prototype.map.call(document.querySelectorAll('.jas [data-ad-id]'), function (a) { return a.closest('.jas') === except ? '' : a.getAttribute('data-ad-id'); });
   }
+  /* ---------- 화면 지역 ----------
+     순서: JDJ_ADSLOT.setRegion() 으로 화면이 알려 준 값 → 칸(또는 감싼 요소)의 data-ad-region → 주소의 g(5자리)·d·k 안 5자리 코드·sd(sNN)
+     → 홈에서 고른 지역(이 기기 jdj_home_region). 이름(시·도·시·군·구)이나 sNN 은 공개 index.json 으로 코드로 바꿈. 모르면 전국. */
+  var HINT = null, IXP = null;
+  function ix() { if (!IXP) IXP = fetch('/jangdaejang-data/data/index.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }); return IXP; }
+  function hintOf(el) {
+    if (HINT) return HINT;
+    var a = el && el.closest && el.closest('[data-ad-region]'); if (a && normRegion(a.getAttribute('data-ad-region'))) return { code: a.getAttribute('data-ad-region') };
+    try {
+      var q = new URLSearchParams(location.search), g = q.get('g') || '', m = ((q.get('d') || '') + '|' + (q.get('k') || '')).match(/(?:^|[|!])(\d{5})(?=[|!]|$)/);
+      if (/^\d{5}$/.test(g)) return { code: g };
+      if (m) return { code: m[1] };
+      if (/^s\d{2}$/.test(q.get('sd') || '')) return { sd: q.get('sd') };
+      if (location.pathname.replace(/index\.html$/, '') === B) { var h = JSON.parse(localStorage.getItem('jdj_home_region') || 'null'); if (h && /^s\d{2}$/.test(h.sd || '')) return { sd: h.sd, g: /^\d{5}$/.test(h.g || '') ? h.g : '' }; }
+    } catch (e) {}
+    return null;
+  }
+  var short = function (s) { return String(s || '').replace(/(특별자치시|특별자치도|특별시|광역시|통합특별시|도)$/, ''); };
+  /** 지역 힌트 → { sido: '11', sgg: '11680' } (Promise) */
+  function resolve(h) {
+    if (!h) return Promise.resolve({ sido: '', sgg: '' });
+    var c = normRegion(h.code || h.g);
+    if (c.length === 5) return Promise.resolve({ sido: c.slice(0, 2), sgg: c });
+    if (c.length === 2 && !h.sd) return Promise.resolve({ sido: c, sgg: '' });
+    return ix().then(function (IX) {
+      if (!IX || !IX.sgg) return { sido: '', sgg: '' };
+      var sdName = '';
+      if (h.sd) sdName = ((IX.sido || []).filter(function (x) { return x.id === h.sd; })[0] || {}).name || '';
+      if (h.sido) { var w = String(h.sido); sdName = ((IX.sido || []).filter(function (x) { return x.name === w || x.short === w || short(x.name) === short(w); })[0] || {}).name || ''; }
+      if (!sdName) return { sido: '', sgg: '' };
+      var keys = Object.keys(IX.sgg).filter(function (k) { return IX.sgg[k].sido === sdName; });
+      var sido = keys.length ? keys[0].slice(0, 2) : '', sgg = '';
+      if (h.gu) { var gu = String(h.gu); sgg = keys.filter(function (k) { return IX.sgg[k].name === gu; })[0] || keys.filter(function (k) { var n = IX.sgg[k].name; return n.slice(-gu.length) === gu && n.charAt(n.length - gu.length - 1) === ' '; })[0] || ''; }
+      return { sido: sido, sgg: sgg };
+    });
+  }
+  var hkey = function (h) { return h ? JSON.stringify(h) : ''; };
   var SEEN = {};
   function watch(el) {
     if (!('IntersectionObserver' in root)) return;
@@ -157,7 +227,7 @@
           var a = el.querySelector('[data-ad-id]'); if (!a) return;
           var k = el.dataset.adSlot + '|' + a.getAttribute('data-ad-id'); if (SEEN[k]) return; SEEN[k] = 1;
           var house = /^house_/.test(a.getAttribute('data-ad-id'));
-          track('ad_slot_view', { slot_id: el.dataset.adSlot, ad_id: a.getAttribute('data-ad-id'), house: house ? 1 : 0, cat: el.dataset.adCat });
+          track('ad_slot_view', { slot_id: el.dataset.adSlot, ad_id: a.getAttribute('data-ad-id'), house: house ? 1 : 0, cat: el.dataset.adCat, region: el._rgv || '전국' });
           if (!house) agLog('adv', a.getAttribute('data-ad-id'));
         }, 1000);
       });
@@ -175,21 +245,32 @@
     var put = function (ad) { el.innerHTML = html(ad, slot, cat, top); el.hidden = false; watch(el); };
     if (!el.firstChild) put(pick([], slot, cat, '', used(el))); else el.hidden = false;
     if (!top && crowded(el)) { el.hidden = true; return; }
-    load().then(function (ads) {
-      if (!el.isConnected || el.hidden) return;
-      var ad = pick(ads, slot, cat, kstToday(), used(el));
-      var cur = el.querySelector('[data-ad-id]');
-      if (!cur || cur.getAttribute('data-ad-id') !== ad.id) put(ad);
-    });
+    el._put = put; fill(el);
     if (!el._wired) {
       el._wired = 1;
       el.addEventListener('click', function (e) {
         var a = e.target.closest && e.target.closest('[data-ad-id]'); if (!a) return;
         var id = a.getAttribute('data-ad-id'), house = /^house_/.test(id);
-        track('ad_slot_click', { slot_id: slot, ad_id: id, house: house ? 1 : 0, cat: cat });
+        track('ad_slot_click', { slot_id: slot, ad_id: id, house: house ? 1 : 0, cat: cat, region: el._rgv || '전국' });
         if (!house) agLog('adc', id);
       });
     }
+  }
+  /* 광고 고르기: 화면 지역을 알아낸 뒤 그 지역 광고 → 전국 광고 → 안내 광고 */
+  function fill(el) {
+    var h = hintOf(el), tok = (el._ftok = (el._ftok || 0) + 1); el._hk = hkey(h);
+    Promise.all([load(), resolve(h)]).then(function (v) {
+      if (tok !== el._ftok || !el.isConnected || el.hidden || !el._put) return;
+      var rg = v[1]; el._rgv = rg.sgg || rg.sido || '';
+      var ad = pick(v[0], el.dataset.adSlot, el.dataset.adCat, kstToday(), used(el), rg);
+      var cur = el.querySelector('[data-ad-id]');
+      if (!cur || cur.getAttribute('data-ad-id') !== ad.id) el._put(ad);
+    });
+  }
+  /** 화면이 지역을 알려 줌: { code: '11680' | '11' } · { sido: '서울', gu: '마포구' } · { sd: 's00', g: '11680' }. null 이면 주소 등에서 다시 찾음 */
+  function setRegion(h) {
+    HINT = h || null;
+    document.querySelectorAll('.jas[data-ad-slot]').forEach(function (el) { if (!el.hidden && el._put && el._hk !== hkey(hintOf(el))) fill(el); });
   }
   /* 결과가 보일 때만 칸을 보여 줌 */
   function shown(sel) {
@@ -202,7 +283,7 @@
     var sel = el.dataset.adAfter;
     var run = function () {
       var skip = el.dataset.adSkipIf && document.querySelector(el.dataset.adSkipIf);   /* 그 화면 전용 광고가 이미 보이면 비켜 줌 */
-      if (shown(sel) && !skip) { if (el.hidden && !el._capped) { draw(el); if (el.hidden) el._capped = 1; } }
+      if (shown(sel) && !skip) { if (el.hidden && !el._capped) { draw(el); if (el.hidden) el._capped = 1; } else if (!el.hidden && el._put && el._hk !== hkey(hintOf(el))) fill(el); }
       else if (!el.hidden) { el.hidden = true; }
     };
     GATES.push(run); run();
@@ -242,6 +323,6 @@
       if (el.dataset.adAfter) gate(el); else draw(el);
     });
   }
-  api.start = start; api.load = load;
+  api.start = start; api.load = load; api.setRegion = setRegion; api.resolveRegion = resolve; api.regionHint = hintOf;
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })(typeof window !== 'undefined' ? window : globalThis);

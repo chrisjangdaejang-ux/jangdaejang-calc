@@ -408,6 +408,7 @@ function mineHtml(S, area){
 }
 function render(S, M){
   const dn = D.dn, v = B.scope(S, dn), area = S.name + (dn ? ' ' + dn : '');
+  if (/^\d{5}$/.test(String(S.g || ''))) document.body.setAttribute('data-ad-region', String(S.g));   /* 광고 칸(assets/ad-slot.js): 이 관심 지역 광고를 먼저 */
   const w = (S.win || {}).t || {}, wr = (S.win || {}).r || {};
   document.title = `${area} ${B.NAME} ${B.dateLabel(S.date)}`;
   S0date = S.date;
@@ -687,6 +688,6 @@ async function chooser(){
 })();
 })();
 </script>
-<script src="/jangdaejang-calc/assets/ad-slot.js?v=1" defer></script>
+<script src="/jangdaejang-calc/assets/ad-slot.js?v=2" defer></script>
 </body>
 </html>
