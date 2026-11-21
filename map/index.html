@@ -30,6 +30,8 @@
 <script src="../assets/life-view.js?v=2"></script>
 <script src="../assets/mine-core.js?v=16"></script>
 <script src="../assets/map-core.js?v=3"></script>
+<script src="../assets/watch-core.js?v=1"></script>
+<script src="../assets/watch.js?v=2"></script>
 <script src="../assets/region-core.js?v=1"></script>
 <script src="../assets/map-engine.js?v=2"></script>
 <script src="../assets/sale-status.js?v=1"></script>
@@ -1009,7 +1011,7 @@ function openCard(d, band, keep){
   const meta = [`${sggName(d.code)} ${d.dong}`, d.by ? `${d.by}년 준공` : '', d.hh ? `${Number(d.hh).toLocaleString('ko-KR')}세대` : ''].filter(Boolean).join(' · ');
   const cfo = f && f.fv != null && window.JDJ_CONF ? JDJ_CONF.build(f, { MH, sido: sggOf(d.code).sido, cnt: M.counts(b.u[7]) }) : null;
   const inCmp = loadCmp().some(x => C.cmpId(x) === C.cmpId(d));
-  $('sheet').innerHTML = `<div class="grab"></div><div class="hd"><h2>${esc(d.apt)}</h2><button type="button" class="x" aria-label="닫기">×</button></div>
+  $('sheet').innerHTML = `<div class="grab"></div><div class="hd"><h2>${esc(d.apt)}</h2>${window.JDJ_WATCH ? JDJ_WATCH.star({ sd: d.sd, code: d.code, dong: d.dong, jibun: d.jibun || '', apt: d.apt, band: b.band }, { small: true }) : ''}<button type="button" class="x" aria-label="닫기">×</button></div>
     <p class="meta">${esc(meta)}</p>
     ${d.bands.length > 1 ? `<div class="bands" role="group" aria-label="평형">${d.bands.map(u => `<button type="button" data-b="${esc(u[3])}" class="${u[3] === b.band ? 'on' : ''}" aria-pressed="${u[3] === b.band}">${esc(u[3])}</button>`).join('')}</div>` : ''}
     <dl class="kv">

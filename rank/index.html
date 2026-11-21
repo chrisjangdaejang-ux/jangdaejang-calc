@@ -30,6 +30,8 @@
 <script src="../assets/plain-words.js?v=14"></script>
 <script src="../assets/narrative.js?v=13"></script>
 <script src="../assets/rank-core.js?v=5"></script>
+<script src="../assets/watch-core.js?v=1"></script>
+<script src="../assets/watch.js?v=2"></script>
 <script src="../assets/tabbar.js?v=2" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -55,6 +57,7 @@ h1{font-size:clamp(26px,6vw,36px);margin:6px 0 8px}
 .list{list-style:none;margin:8px 0 0;padding:0;border-top:1px solid var(--line)}
 .list a{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--line);color:var(--text);text-decoration:none;min-height:56px}
 .list a:hover{background:var(--gray2)}
+.list li.ws{display:flex;align-items:center;gap:2px;border-bottom:1px solid var(--line)}.list li.ws>a{flex:1;min-width:0;border-bottom:0}
 .rk{font-size:17px;font-weight:900;color:var(--sub2);text-align:center;font-variant-numeric:tabular-nums}
 .list li:nth-child(-n+3) .rk{color:var(--blue)}
 .nm{min-width:0}
@@ -247,9 +250,9 @@ function drawApt(){
   /* 과거 성적 첫 줄(plain-words.js trackHead): 시·도 성적이 있으면 그 회차, 없으면 전국 — 시작월은 model_h data_from */
   const vm = (() => { const m = MH['2'] || {}, r = v.where !== '전국' && m.reg ? m.reg[sd.name] : null; return r ? { oos_all: r.oos_all, oos_hit: r.hit, data_from: m.data_from } : m; })();
   const vb = `<div class="vbox">${esc(where)} 단지 ${o.n.toLocaleString()}곳을 <b>미래가치 점수(2년 보유 기준)</b>로 줄 세웠어요. ${esc(PL.trackHead(vm, 2)).replace(/(\d+번 중 \d+번 맞았어요)/, '<b>$1</b>')}${v.where === '전국' ? ' 전국 단지로 써 본 결과예요.' : ''} <a href="/jangdaejang-calc/about/">예측 방법 ›</a></div>`;
-  const li = rows.map(x => `<li><a href="${esc(R.mineUrl(S.sd, x.key, x.band))}" data-track="rank_apt_to_mine"><span class="rk">${x.r}</span>
+  const li = rows.map(x => `<li class="ws"><a href="${esc(R.mineUrl(S.sd, x.key, x.band))}" data-track="rank_apt_to_mine"><span class="rk">${x.r}</span>
     <span class="nm"><b>${esc(x.apt)}</b><small>${esc(gn(x.code))} ${esc(x.dong)} · ${esc(x.band)}${x.tie ? ' · 공동 ' + x.r + '위' : ''}</small></span>
-    <span class="vals"><span class="num"><b class="sc">${x.fv}점</b><small>100점 만점</small></span></span></a></li>`).join('');
+    <span class="vals"><span class="num"><b class="sc">${x.fv}점</b><small>100점 만점</small></span></span></a>${wstar(x)}</li>`).join('');
   $('pane').innerHTML = vb + `<ol class="list">${li}</ol>`
     + (o.rows.length > SHOW ? `<button type="button" class="more" id="more" aria-expanded="${S.all}">${S.all ? '접기' : `상위 ${o.rows.length}곳 모두 보기`}</button>` : '')
     + `<p class="note">점수는 같은 ${esc(sd.short)} 단지 중 앞으로 2년 동안 평균보다 더 오를 가능성 순위예요(100점 만점, 가격 예측이 아니에요). <b>기준</b> ${esc(R.danjiRule(o))} 시·도 전체는 상위 50곳, 구·시·군은 상위 10곳까지 보여 드려요.</p>`;
@@ -258,6 +261,8 @@ function drawApt(){
     lines: [o.rows.slice(0, 3).map(x => `${x.r}위 ${x.apt}`).join(', '), `${where} 단지 ${o.n.toLocaleString()}곳 비교`, `과거에 그대로 써 봤더니 ${v.n}번 중 ${v.hit}번 맞음`] });
 }
 
+/* 관심 별(assets/watch.js): 단지 키 = 시군구|동|지번|단지 */
+const wstar = x => { if (!window.JDJ_WATCH) return ''; const k = String(x.key || '').split('|'); return JDJ_WATCH.star({ sd: S.sd, code: k[0], dong: k[1], jibun: k[2] || '', apt: k[3] || x.apt, band: x.band }, { small: true }); };
 /* ---------- 점수 많이 바뀐 단지 (월별 스냅숏 두 달치가 생기면) ---------- */
 function drawMove(){
   if (RK === undefined) {
@@ -267,9 +272,9 @@ function drawMove(){
   }
   const sd = sdObj(), mv = R.moves(RK, S.sd);
   if (!mv) { $('pane').innerHTML = `<div class="empty"><b>다음 달부터 공개해요</b>지난달과 이번 달 단지 미래가치 점수를 비교할 수 있게 되면, ${esc(sd.short)}에서 점수가 많이 오른 단지와 내린 단지를 여기에 보여 드려요.<br>그동안 <a href="/jangdaejang-calc/mine/">내 집 시세</a>에서 관심 단지 점수를 확인해 보세요.</div>`; share(null); return; }
-  const list = (rows, cls) => rows.length ? `<ol class="list">${rows.map((x, i) => `<li><a href="${esc(R.mineUrl(S.sd, x.key, x.band))}" data-track="rank_to_mine"><span class="rk">${i + 1}</span>
+  const list = (rows, cls) => rows.length ? `<ol class="list">${rows.map((x, i) => `<li class="ws"><a href="${esc(R.mineUrl(S.sd, x.key, x.band))}" data-track="rank_to_mine"><span class="rk">${i + 1}</span>
     <span class="nm"><b>${esc(x.apt)}</b><small>${esc((IX.sgg[x.code] || {}).name || '')} ${esc(x.dong)} · ${esc(x.band)}</small></span>
-    <span class="vals"><span class="num"><b class="${cls}">${x.d > 0 ? '+' : x.d < 0 ? '−' : ''}${Math.abs(x.d)}점</b><small>${x.a}점 → ${x.b}점</small></span></span></a></li>`).join('')}</ol>` : '<p class="note">해당하는 단지가 없어요.</p>';
+    <span class="vals"><span class="num"><b class="${cls}">${x.d > 0 ? '+' : x.d < 0 ? '−' : ''}${Math.abs(x.d)}점</b><small>${x.a}점 → ${x.b}점</small></span></span></a>${wstar(x)}</li>`).join('')}</ol>` : '<p class="note">해당하는 단지가 없어요.</p>';
   $('pane').innerHTML = `<div class="mv"><p class="sum"><span class="at">${R.ym(mv.from)} → ${R.ym(mv.to)} 미래가치 점수(100점 만점, 같은 시·도 단지 비교) 변화</span></p>
     <h3>점수가 많이 오른 단지</h3>${list(mv.up, 'up')}<h3>점수가 많이 내린 단지</h3>${list(mv.down, 'dn')}</div>`;
   share({ head: `${sd.short} 미래가치 점수가 많이 바뀐 단지`, lines: [`${R.ym(mv.from)} → ${R.ym(mv.to)} 점수 변화`, mv.up.slice(0, 3).map(x => x.apt).join(', ')] });

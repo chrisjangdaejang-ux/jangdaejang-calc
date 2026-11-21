@@ -82,6 +82,10 @@ check('localStorage 는 try/catch 안에서만', (wj.match(/localStorage\.(get|s
 check('새 발송 채널 없음(메일·푸시 호출 없음)', /sendEmail|PushManager|Notification\(/.test(wj + page), false, '');
 check('첫 화면: 관심 목록 한 줄·별 단추', home.includes('id="wRow"') && /JDJ_WATCH\.star\(/.test(home), true, '');
 check('단지 화면: 별 단추(로그인 없이도)', /JDJ_WATCH\.star\(favPlace\(d\), \{label: true\}\)/.test(mine) && !mine.includes('id="favBtn"'), true, '');
+const rank = read('rank/index.html'), map = read('map/index.html');
+check('순위 화면: 단지 순위·점수 변화 목록에 별', (rank.match(/\$\{wstar\(x\)\}/g) || []).length, 2, '');
+check('지도 카드: 단지 이름 옆 별', /JDJ_WATCH\.star\(\{ sd: d\.sd, code: d\.code/.test(map), true, '');
+check('별을 다는 화면은 모두 같은 부품(watch.js)', ['index.html', 'mine/index.html', 'rank/index.html', 'map/index.html', 'my/watch/index.html'].every(f => read(f).includes('watch.js?v=2')), true, '');
 check('화면 문구에 회사 이름 대신 서비스 이름', /장대장부동산그룹/.test(page), false, '');
 
 const fail = rows.filter(r => !r.ok);

@@ -39,8 +39,9 @@
     return syncP;
   }
   function push() {
-    const A = AU(); if (!A) return Promise.resolve(false);
-    ls.set('jdj_watch_dirty', '1');
+    const A = AU();
+    ls.set('jdj_watch_dirty', '1');                          // 로그인 부품이 없는 화면에서 바꿔도 다음 로그인 화면에서 계정과 합침
+    if (!A) return Promise.resolve(false);
     const l = list();
     return A.update(d => { d.favs = l; }).then(() => { ls.set('jdj_watch_dirty', '0'); return briefSync(); }).then(() => true, () => false);
   }
@@ -151,6 +152,7 @@
 .jw-chip{display:inline-flex;align-items:center;gap:4px;min-height:36px;padding:0 11px;border-radius:999px;background:#FBF8EF;border:1px solid #EFE6CC;color:#8A6A12;font-size:13.5px;font-weight:800;text-decoration:none;white-space:nowrap;margin-left:auto}
 .jw-chip b{color:#C2410C}
 .jw-toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(78px + env(safe-area-inset-bottom));z-index:80;max-width:min(92vw,440px);background:#191F28;color:#fff;border-radius:12px;padding:12px 16px;font-size:14.5px;line-height:1.5;box-shadow:0 6px 20px rgba(0,0,0,.2)}
+body.has-sheet .jw-toast{bottom:auto;top:72px}   /* 지도 카드가 열려 있으면 카드 단추를 가리지 않게 위로 */
 .jw-toast a{color:#9CC0FF;font-weight:700;margin-left:6px;white-space:nowrap}
 @media(max-width:400px){.jw-chip{padding:0 9px;font-size:13px}.jw-chip .t{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}}`;
   function style() { if (document.getElementById('jwCss')) return; const s = document.createElement('style'); s.id = 'jwCss'; s.textContent = CSS; document.head.appendChild(s); }
