@@ -141,6 +141,16 @@ details.how p{font-size:14.5px;color:var(--sub);line-height:1.65;margin:4px 0 10
 .bc .mk em.dn{background:#E8F0FF;color:#1F4FD1}
 .bc .mk b{display:block;font-size:34px;font-weight:900;letter-spacing:-1px;line-height:1.25}
 .bc .mk span{display:block;font-size:25px;font-weight:700;color:#3E4754}
+/* ---- 처음 온 분 안내(맨 위) ---- */
+.bi{padding-bottom:0}
+.bi .bi-in{border:1px solid #D6E2FF;background:#F4F7FF;border-radius:18px;padding:16px 16px 14px}
+.bi .bi-k{margin:0 0 4px;font-size:14px;font-weight:800;color:var(--blue)}
+.bi h2{margin:0 0 10px;font-size:20px;font-weight:900;line-height:1.4;word-break:keep-all}
+.bi ol{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:6px}
+.bi li{background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 12px;font-size:15px;line-height:1.45}
+.bi li b{font-weight:800}.bi li small{display:block;font-size:13.5px;color:var(--sub2)}
+.bi .btn{width:100%}
+.bi .bi-n{margin:8px 0 0;font-size:13px;color:var(--sub2);line-height:1.55}
 html.cardmode{zoom:1!important}body.cardmode{margin:0;background:#fff}
 body.cardmode>header.top,body.cardmode>.foot,body.cardmode>.wrap,body.cardmode .jtab{display:none!important}
 @media(max-width:420px){.stats b{font-size:19px}.stats small{font-size:12.5px}.tl .pr b{font-size:15.5px}}
@@ -151,6 +161,15 @@ body.cardmode>header.top,body.cardmode>.foot,body.cardmode>.wrap,body.cardmode .
   <a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>집예보</a>
   <div class="badge plain" data-brief-name>집예보 모닝 브리핑</div>
 </header>
+<section class="wrap bi" aria-labelledby="bi-h"><div class="bi-in">
+  <p class="bi-k">매일 아침 7~8시 · 카카오톡으로 도착</p>
+  <h2 id="bi-h">아침마다 부동산 소식 3가지를 한 번에 보내 드려요</h2>
+  <ol><li><b>① 오늘의 부동산 시장</b><small>전국·서울 신고가·큰 하락 거래, 금리·대출·세금, 이번 주 청약</small></li>
+    <li><b>② 내 관심 지역</b><small>고른 동네의 어제 새로 올라온 실거래·전세</small></li>
+    <li><b>③ 내 관심 단지</b><small>찜한 단지의 새 거래만 따로</small></li></ol>
+  <a class="btn primary" href="subscribe/" data-track="brief_intro_sub">7일 무료로 받아 보기</a>
+  <p class="bi-n">결제 수단 등록 없이 시작하고, 자동 결제는 없어요. 카카오톡 알림이 열리기 전에는 이메일로 보내 드려요.</p>
+</div></section>
 <main class="wrap" id="main"><p class="note">브리핑을 불러오고 있어요…</p></main>
 <div id="cardRoot"></div>
 <footer class="foot">국토교통부 실거래 공개 자료·청약홈 공고·<span data-site-name>집예보</span> 정책 목록으로 만든 브리핑이에요. 만드는 방법은 이 화면 아래 '이 브리핑은 이렇게 만들어요'에서 볼 수 있어요.<br>★ <span data-site-name>집예보</span> · <a href="../">홈</a> · <a href="../refund/">환불 정책</a> · <a href="../terms/">이용약관</a></footer>

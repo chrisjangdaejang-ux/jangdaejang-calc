@@ -16,13 +16,16 @@ vm.runInContext(m[0] + '\n;globalThis.__P = { DEV_PRICES, DEV_PROD, won, serverP
 const P = pc.__P;
 
 // ① 가격
-for (const k of ['dev_report', 'dev_extra', 'dev_update', 'unsold_pack', 'brochure', 'datapack']) {
+for (const k of ['dev_report', 'dev_extra', 'dev_update', 'unsold_pack', 'brochure', 'datapack', 'brochure_update']) {
   const p = P.DEV_PRICES[k];
   check(`가격 ${k}: 정가·런칭가 숫자`, p && p.list > 0 && p.launch > 0 && p.list % 1000 === 0 && p.launch % 1000 === 0, p);
   check(`가격 ${k}: 런칭가 < 정가`, p.launch < p.list, p);
   check(`화면에 ${k} 금액 칸`, html.includes(`data-pp="${k}"`));
 }
 check('자료 팩: 정가 19만 원·런칭가 9만 원, 잠금형 브로슈어 런칭가 19만 원', P.DEV_PRICES.datapack.list === 190000 && P.DEV_PRICES.datapack.launch === 90000 && P.DEV_PRICES.brochure.launch === 190000, P.DEV_PRICES.datapack);
+check('잠금형 브로슈어: 정가 39만 원·런칭가 19만 원', P.DEV_PRICES.brochure.list === 390000 && P.DEV_PRICES.brochure.launch === 190000, P.DEV_PRICES.brochure);
+check('브로슈어 다시 만들기: 정가 10만 원·런칭가 5만 원', P.DEV_PRICES.brochure_update.list === 100000 && P.DEV_PRICES.brochure_update.launch === 50000, P.DEV_PRICES.brochure_update);
+check('비교표에 두 상품 가격 칸(정가 줄 긋기 표시)', /<table class="cmp"[\s\S]*?data-pp="brochure"[\s\S]*?data-pp="datapack"[\s\S]*?<\/table>/.test(html) && html.includes('<s>${won(p.list)}</s>'));
 check('런칭가 기한은 날짜', /^\d{4}-\d{2}-\d{2}$/.test(P.DEV_PRICES.until) && !isNaN(new Date(P.DEV_PRICES.until)));
 check('금액 표기', P.won(990000) === '99만 원' && P.won(1500000) === '150만 원' && P.won(12345) === '12,345원');
 
