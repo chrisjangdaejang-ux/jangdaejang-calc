@@ -27,7 +27,7 @@
 <script src="../assets/config.js?v=4"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/auth.js?v=4"></script>
-<script src="../assets/brief-core.js?v=6"></script>
+<script src="../assets/brief-core.js?v=7"></script>
 <script src="../assets/pro-report.js?v=3"></script>
 <script src="../assets/share.js?v=8"></script>
 <script src="../assets/client-brief.js?v=1"></script>
@@ -422,6 +422,7 @@ function render(S, M){
     h += `<section class="sec" aria-labelledby="h-pro"><h2 id="h-pro">손님께 할 이야기 3줄</h2><p class="sub">공공 자료로 확인된 사실만 골랐어요. 눌러서 복사해 문자·카톡에 붙여 넣으세요.</p>
       ${v.pro.length ? `<ol class="pro3">${v.pro.map(x => `<li>${esc(x.replace(/^"|"$/g, ''))}</li>`).join('')}</ol><div class="row2"><button type="button" class="btn" id="copyPro">3줄 복사하기</button></div>` : '<div class="empty">오늘은 이 동네에서 이야기할 새 자료가 없어요.</div>'}
     </section>
+    ${new Date(String(S.date) + 'T12:00:00+09:00').getUTCDay() === 1 ? `<section class="sec" aria-labelledby="h-kit"><h2 id="h-kit">이번 주 블로그·인스타 글</h2><p class="sub">${esc(S.name)}의 실거래·신고가·청약 일정을 공개 자료로 정리한 블로그 글, 카드 이미지, 설명글이 준비됐어요(월요일마다 새로).</p><div class="row2"><a class="btn" href="../agent/content/?g=${esc(S.g)}&go=1" data-track="brief_kit_click">글 만들러 가기</a></div></section>` : ''}
     <section class="sec" aria-labelledby="h-card"><h2 id="h-card">고객 공유용 카드 <small>1080×1080</small></h2><p class="sub">손님에게 보내기 좋은 정사각형 카드예요. [카드 이미지 저장]을 누르면 휴대폰에 그림으로 저장돼요.</p>
       <div class="cardwrap" id="cardBox"><div class="scale">${cardHtml(S, dn, true)}</div></div>
       <div class="row2"><button type="button" class="btn primary" id="saveCard">카드 이미지 저장</button><a class="btn" href="${url(S.g, dn, true)}&card=1" target="_blank" rel="noopener">카드만 크게 보기</a></div></section>`;

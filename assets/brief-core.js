@@ -15,17 +15,18 @@
      id: 상품 id · label: 화면 이름 · amount: 한 달 금액(원, 부가세 포함) · areas: 관심 지역 수 · apts: 관심 단지 수
      customers: 내 손님 브리핑 손님 수(0 = 없음) · urgPick: 급매 기준(5~20%)을 직접 고름(아니면 10%) · weekly: 주간 시장 리포트(내 이름 PDF)
      pro: 중개사 내용(손님께 할 이야기 3줄·공유 카드) · broker: 가입할 때 중개사무소 등록번호 필요 · launch: '런칭가' 표시
+     listing: 매물 설명서 한 달 장수 · kitAreas: 주간 블로그·인스타 글 한 주 지역 수(서버 BRIEF_TIERS 와 같음)
      show: 화면에 보임(false 면 화면에 안 보이고 서버도 주문을 받지 않아요) · inc: 판매 화면에 보이는 '들어 있는 것'
      새 요금제(예: 중개사 플러스)는 이 표와 서버 표에 줄 하나씩 더하고 show:false 로 두었다가, 내용이 정해지면 true 로 바꾸면 돼요. */
   const TIERS = [
-    { id: 'brief', label: '기본', name: NAME, amount: 3900, areas: 3, apts: 3, customers: 0, urgPick: false, weekly: false, pro: false, broker: false, launch: false, show: true,
+    { id: 'brief', label: '기본', name: NAME, amount: 3900, areas: 3, apts: 3, customers: 0, urgPick: false, weekly: false, pro: false, broker: false, launch: false, listing: 0, kitAreas: 0, show: true,
       who: '내 동네만 챙겨 보는 분', inc: ['관심 지역 3곳', '관심 단지 3개', '오늘의 부동산 시장과 코너 7개'] },
-    { id: 'brief_plus', label: '플러스', name: `${NAME} 플러스`, amount: 5900, areas: 10, apts: 10, customers: 0, urgPick: false, weekly: false, pro: false, broker: false, launch: false, show: true,
-      who: '여러 동네·단지를 비교하는 분', inc: ['관심 지역 10곳', '관심 단지 10개', '기본에 있는 것 모두'] },
-    { id: 'brief_pro', label: '중개사용', name: `${NAME} 중개사용`, amount: 4900, areas: 10, apts: 10, customers: 0, urgPick: false, weekly: false, pro: true, broker: true, launch: true, show: true,
-      who: '공인중개사', inc: ['관심 지역 10곳', '관심 단지 10개', '손님께 할 이야기 3줄(복사 버튼)', '손님에게 보낼 카드 이미지'] },
-    { id: 'brief_pro_plus', label: '중개사 플러스', name: `${NAME} 중개사 플러스`, amount: 9900, areas: 20, apts: 30, customers: 10, urgPick: true, weekly: true, pro: true, broker: true, launch: true, show: true,
-      who: '손님이 많은 공인중개사', inc: ['관심 지역 20곳', '관심 단지 30개', '중개사용에 있는 것 모두', '내 손님 브리핑: 손님 10명까지 손님별 브리핑', '급매 알림 기준 직접 정하기(5~20%, 기본 10%)', '주간 시장 리포트: 내 이름이 들어간 PDF'] }
+    { id: 'brief_plus', label: '플러스', name: `${NAME} 플러스`, amount: 5900, areas: 10, apts: 10, customers: 0, urgPick: false, weekly: false, pro: false, broker: false, launch: false, listing: 10, kitAreas: 1, show: true,
+      who: '여러 동네·단지를 비교하는 분', inc: ['관심 지역 10곳', '관심 단지 10개', '기본에 있는 것 모두', '매물 설명서 한 달 10장', '주간 블로그·인스타 글(지역 1곳)'] },
+    { id: 'brief_pro', label: '중개사용', name: `${NAME} 중개사용`, amount: 4900, areas: 10, apts: 10, customers: 0, urgPick: false, weekly: false, pro: true, broker: true, launch: true, listing: 30, kitAreas: 1, show: true,
+      who: '공인중개사', inc: ['관심 지역 10곳', '관심 단지 10개', '손님께 할 이야기 3줄(복사 버튼)', '손님에게 보낼 카드 이미지', '매물 설명서 한 달 30장', '주간 블로그·인스타 글(지역 1곳)'] },
+    { id: 'brief_pro_plus', label: '중개사 플러스', name: `${NAME} 중개사 플러스`, amount: 9900, areas: 20, apts: 30, customers: 10, urgPick: true, weekly: true, pro: true, broker: true, launch: true, listing: 150, kitAreas: 5, show: true,
+      who: '손님이 많은 공인중개사', inc: ['관심 지역 20곳', '관심 단지 30개', '중개사용에 있는 것 모두', '내 손님 브리핑: 손님 10명까지 손님별 브리핑', '급매 알림 기준 직접 정하기(5~20%, 기본 10%)', '주간 시장 리포트: 내 이름이 들어간 PDF', '매물 설명서 한 달 150장', '주간 블로그·인스타 글(지역 5곳)'] }
   ];
   const PRICE = Object.fromEntries(TIERS.map(t => [t.id, t]));
   const URG = { def: 10, lo: 5, hi: 20 };   // 급매 기준(%) — 서버 BRIEF_URG 와 같음

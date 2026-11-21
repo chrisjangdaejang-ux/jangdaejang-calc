@@ -1,5 +1,13 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ *
+ * v28 변경 요약 (v20~v27과 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — '도구사용' 시트는 첫 사용 때 자동 생성)
+ *  - 요금제 표 BRIEF_TIERS 에 listing(매물 설명서 한 달 장수)·kitAreas(주간 블로그·인스타 글 한 주 지역 수) 칸:
+ *    기본 0·0 · 플러스 10·1(분양·컨설팅 등 중개사가 아닌 전문가용) · 중개사용 30·1 · 중개사 플러스 150·5. 화면 assets/brief-core.js TIERS 와 같아야 함.
+ *  - toolQuota(남은 수 보기) · toolUse(쓸 때 하나 셈: 설명서는 달마다, 주간 글은 주마다 지역 수 — 같은 지역 다시 만들기는 세지 않음).
+ *    시트 '도구사용': 기간·회원 해시·도구·수·지역·갱신일만(설명서 내용·표시 정보·연락처 없음). 재배포 전에는 화면이 세지 않고 그대로 열림.
+ *  - 월요일 모닝 브리핑 메일(중개사 요금제): 관심 지역마다 '이번 주 블로그·인스타 글' 링크(agent/content/?g=…).
+ *  - 검증: node tools/broker-tools-test.js
  *
  * v27 변경 요약 (v20~v26과 같은 11/28 재배포에 함께 들어감. 드라이브 권한이 새로 필요 — 재배포 때 나오는 권한 승인 화면에서 한 번 '허용')
  *  - 중개사 플러스(요금제 표에 customers·weekly 가 있는 요금제): 내 손님 브리핑 — bpMine·bpSave·bpRelink(로그인) · bpOpen(손님 링크, 로그인 없음).
@@ -2022,12 +2030,13 @@ const BLH = ['날짜', '구독id', '채널', '결과', '동네수'];
 /* ★ 요금제 표(v26) — 서버는 이 표 한 곳만 봐요. 화면 assets/brief-core.js 의 TIERS 와 숫자가 같아야 해요(tools/brief-web-test.js 가 대조).
    amount: 한 달 금액(원) · areas: 관심 지역 수 · apts: 관심 단지 수(발송할 때 이 수까지만 씀) · pro: 중개사 내용 · broker: 중개사무소 등록번호 필요
    customers: 내 손님 브리핑 손님 수(0 = 없음) · urgPick: 급매 기준(5~20%)을 직접 고름(아니면 10%) · weekly: 주간 시장 리포트(내 이름 PDF)
-   show: false 면 주문·요금제 바꾸기를 받지 않아요(표에 미리 넣어 두는 새 요금제용). 새 요금제는 줄 하나만 더하면 돼요. */
+   show: false 면 주문·요금제 바꾸기를 받지 않아요(표에 미리 넣어 두는 새 요금제용). 새 요금제는 줄 하나만 더하면 돼요.
+   listing: 매물 설명서(agent/listing/) 한 달 장수 · kitAreas: 주간 블로그·인스타 글(agent/content/) 한 주에 만들 수 있는 지역 수 (v28) */
 const BRIEF_TIERS = [
-  { id: 'brief',          label: '기본',         name: BRIEF_NAME + ' 1개월',               amount: 3900, areas: 3,  apts: 3,  customers: 0,  urgPick: false, weekly: false, pro: false, broker: false, show: true },
-  { id: 'brief_plus',     label: '플러스',       name: BRIEF_NAME + ' 플러스 1개월',        amount: 5900, areas: 10, apts: 10, customers: 0,  urgPick: false, weekly: false, pro: false, broker: false, show: true },
-  { id: 'brief_pro',      label: '중개사용',     name: BRIEF_NAME + ' 중개사용 1개월',      amount: 4900, areas: 10, apts: 10, customers: 0,  urgPick: false, weekly: false, pro: true,  broker: true,  show: true },
-  { id: 'brief_pro_plus', label: '중개사 플러스', name: BRIEF_NAME + ' 중개사 플러스 1개월', amount: 9900, areas: 20, apts: 30, customers: 10, urgPick: true,  weekly: true,  pro: true,  broker: true,  show: true }
+  { id: 'brief',          label: '기본',         name: BRIEF_NAME + ' 1개월',               amount: 3900, areas: 3,  apts: 3,  customers: 0,  urgPick: false, weekly: false, pro: false, broker: false, listing: 0, kitAreas: 0, show: true },
+  { id: 'brief_plus',     label: '플러스',       name: BRIEF_NAME + ' 플러스 1개월',        amount: 5900, areas: 10, apts: 10, customers: 0,  urgPick: false, weekly: false, pro: false, broker: false, listing: 10, kitAreas: 1, show: true },
+  { id: 'brief_pro',      label: '중개사용',     name: BRIEF_NAME + ' 중개사용 1개월',      amount: 4900, areas: 10, apts: 10, customers: 0,  urgPick: false, weekly: false, pro: true,  broker: true,  listing: 30, kitAreas: 1, show: true },
+  { id: 'brief_pro_plus', label: '중개사 플러스', name: BRIEF_NAME + ' 중개사 플러스 1개월', amount: 9900, areas: 20, apts: 30, customers: 10, urgPick: true,  weekly: true,  pro: true,  broker: true,  listing: 150, kitAreas: 5, show: true }
 ];
 const BRIEF_MAX = { areas: Math.max.apply(null, BRIEF_TIERS.map(t => t.areas)), apts: Math.max.apply(null, BRIEF_TIERS.map(t => t.apts)) };   // 회원 저장 자료에 둘 수 있는 최대 수
 const BRIEF_URG = { def: 10, lo: 5, hi: 20 };   // 급매 기준(%): 기본 10, 고를 수 있으면 5~20
@@ -2045,7 +2054,7 @@ function bProdKey(name) {
 }
 function bIsTrial(name) { return bProdKey(name) === 'trial'; }
 const BST = { wait: '결제대기', on: '이용', trial: '체험', stop: '해지', refund: '환불', chg: '변경' };   // 변경 = 요금제를 올려 새 행으로 넘어간 이전 행
-const BRIEF_ACTIONS = { briefTrial: 1, briefOrder: 1, briefConfirm: 1, briefMine: 1, briefUpdate: 1, briefStop: 1, briefRefund: 1, briefChangeQuote: 1, briefChange: 1, briefInvite: 1 };
+const BRIEF_ACTIONS = { briefTrial: 1, briefOrder: 1, briefConfirm: 1, briefMine: 1, briefUpdate: 1, briefStop: 1, briefRefund: 1, briefChangeQuote: 1, briefChange: 1, briefInvite: 1, toolQuota: 1, toolUse: 1 };
 const BROKER_REVIEW = { wait: '확인 대기', ok: '확인됨', no: '확인 안 됨' };   // 운영자가 '중개사확인' 칸을 직접 바꿔요(외부 조회 없음)
 /* 중개사무소 등록번호 형식 확인 — 화면 assets/brief-core.js brokerNo 와 같은 규칙 */
 function bBrokerNo(s, year) {
@@ -2102,6 +2111,8 @@ function briefDispatch(b) {
       if (b.action === 'briefChangeQuote') return briefChangeQuote(b);
       if (b.action === 'briefChange') return briefChange(b);
       if (b.action === 'briefInvite') return briefInvite(b);
+      if (b.action === 'toolQuota') return toolQuota(b);
+      if (b.action === 'toolUse') return toolUse(b);
       return { ok: false, err: 'unknown' };
     });
   } catch (x) {
@@ -2644,7 +2655,7 @@ function briefPiece(S, a, pro, apts, thr) {
     gap: (S.gap || []).filter(g => (!dn || g.d === dn) && (apts.indexOf(g.a) >= 0 || (S.gap || []).indexOf(g) < 2)).slice(0, 2).map(g => `${g.a} ${g.b} 전세가율 ${Math.round(g.jr0)}% → ${Math.round(g.jr)}% (${g.dlt > 0 ? '갭 기회·전세 위험 함께 확인' : '보증금은 더 안전, 갭 부담 커짐'})`),
     rise: (S.rise || []).filter(r => !dn || r.d === dn).slice(0, 2).map(r => `${r.a} ${r.b} 최근 3개월 ${r.chg > 0 ? '+' : ''}${r.chg}% (거래량 증가 상위 20%, 내리다 반등)`),
     pn: S.pnews && (S.pnews.items || []).length ? S.pnews : null,
-    pro: pro ? (((S.pro || {})[dn] || (S.pro || {})['']) || []) : [], url: BRIEF_WEB + '?d=' + S.g + (dn ? '-' + encodeURIComponent(dn) : '') + (pro ? '&v=pro' : '') };
+    g: S.g, gn: S.name, pro: pro ? (((S.pro || {})[dn] || (S.pro || {})['']) || []) : [], url: BRIEF_WEB + '?d=' + S.g + (dn ? '-' + encodeURIComponent(dn) : '') + (pro ? '&v=pro' : '') };
 }
 /* 새로 발표된 정책·교통·공급 소식(엔진 policy_news.py — 공식 보도자료 제목 그대로 + 고정 용어 풀이) → 메일 조각. 없으면 '' */
 const BPN_HEAD = { '정책': '대출·세금·청약·규제', '교통': '철도·도로·역', '공급': '새 집·신도시·정비사업' };
@@ -2689,6 +2700,64 @@ function briefMarketHtml(M, ub) {
     <b>금리·대출·세금</b>${li(rate.concat(pol))}<b>이번 주 청약 일정${cy.n ? ` · 전국 ${cy.n}곳` : ''}</b>${li(cys)}
     <a href="${BRIEF_WEB}" style="font-size:13.5px;color:#2F6BFF">오늘의 시장 전체 보기</a></div>`;
 }
+/* ---------- 중개사 도구 이용 수 (v28) — 매물 설명서(agent/listing/) · 주간 블로그·인스타 글(agent/content/) ----------
+   이용 중인 모닝 브리핑 요금제의 listing(한 달 장수)·kitAreas(한 주 지역 수)까지. 시트 '도구사용'(첫 사용 때 자동 생성)에
+   회원 해시·기간(월 'YYYY-MM' 또는 주 'W'+그 주 월요일)·도구·수·지역만 남김(이름·연락처 없음). 설명서 내용·표시 정보는 서버로 오지 않음. */
+const SH_TU = '도구사용', TUH = ['기간', 'k', '도구', '수', '지역', '갱신'];
+const TUC = Object.fromEntries(TUH.map((h, i) => [h, i]));
+function tuPeriod(tool, now) {
+  if (tool === 'listing') return Utilities.formatDate(now, 'Asia/Seoul', 'yyyy-MM');
+  const d = dOnly(ymd(now)), w = (Number(Utilities.formatDate(now, 'Asia/Seoul', 'u')) + 6) % 7;   // 월요일 0
+  return 'W' + ymd(addDays(d, -w));
+}
+function tuBest(k, now) {
+  let best = null;
+  myBriefs(k).forEach(o => { const st = briefState(o, now), P = BRIEF_PRICE[st.tier]; if (!st.active || !P) return;
+    if (!best || (P.listing || 0) + (P.kitAreas || 0) * 100 > (best.P.listing || 0) + (best.P.kitAreas || 0) * 100) best = { st: st, P: P }; });
+  return best;
+}
+function tuRow(hk, per, tool) {
+  const sh = uSheet(SH_TU, TUH), v = sh.getDataRange().getValues();
+  for (let i = 1; i < v.length; i++) if (String(v[i][TUC['기간']]) === per && String(v[i][TUC['k']]) === hk && String(v[i][TUC['도구']]) === tool) return { sh: sh, row: i + 1, r: v[i] };
+  return { sh: sh, row: 0, r: null };
+}
+function toolQuota(b, use) {
+  const u = sessionUser(b.s), now = new Date(), best = tuBest(u.k, now), hk = hashOf('tool|' + u.k);
+  const lr = tuRow(hk, tuPeriod('listing', now), 'listing'), kr = tuRow(hk, tuPeriod('kit', now), 'kit');
+  const used = { listing: lr.r ? Number(lr.r[TUC['수']]) || 0 : 0, kit: kr.r ? String(kr.r[TUC['지역']] || '').split(',').filter(Boolean) : [] };
+  const out = { ok: true, tier: best ? best.st.tier : '', label: best ? best.P.label : '', limits: { listing: best ? best.P.listing || 0 : 0, kitAreas: best ? best.P.kitAreas || 0 : 0 }, used: used };
+  if (!use) return out;
+  const tool = b.tool === 'kit' ? 'kit' : b.tool === 'listing' ? 'listing' : '';
+  if (!tool) throw new Error('도구를 다시 골라 주세요.');
+  if (!best || !(tool === 'listing' ? out.limits.listing : out.limits.kitAreas)) throw new Error(tool === 'listing' ? '매물 설명서는 모닝 브리핑 플러스·중개사용·중개사 플러스에 들어 있어요.' : '주간 글은 모닝 브리핑 플러스·중개사용·중개사 플러스에 들어 있어요.');
+  const now2 = ymd(now);
+  if (tool === 'listing') {
+    if (used.listing >= out.limits.listing) throw new Error(`이번 달 매물 설명서 ${out.limits.listing}장을 모두 썼어요. 다음 달 1일에 다시 채워져요.`);
+    if (lr.row) { lr.sh.getRange(lr.row, TUC['수'] + 1).setValue(used.listing + 1); lr.sh.getRange(lr.row, TUC['갱신'] + 1).setValue(now2); }
+    else lr.sh.appendRow([tuPeriod('listing', now), hk, 'listing', 1, '', now2]);
+    used.listing += 1;
+  } else {
+    const g = String(b.g || ''); if (!/^\d{5}$/.test(g)) throw new Error('지역을 다시 골라 주세요.');
+    if (used.kit.indexOf(g) < 0) {
+      if (used.kit.length >= out.limits.kitAreas) throw new Error(`이번 주에는 지역 ${out.limits.kitAreas}곳까지 만들 수 있어요. 이미 만든 지역은 몇 번이든 다시 만들 수 있어요.`);
+      used.kit.push(g);
+      if (kr.row) { kr.sh.getRange(kr.row, TUC['지역'] + 1).setValue(used.kit.join(',')); kr.sh.getRange(kr.row, TUC['수'] + 1).setValue(used.kit.length); kr.sh.getRange(kr.row, TUC['갱신'] + 1).setValue(now2); }
+      else kr.sh.appendRow([tuPeriod('kit', now), hk, 'kit', 1, g, now2]);
+    }
+  }
+  return out;
+}
+function toolUse(b) { return toolQuota(b, true); }
+/* 월요일 메일(중개사 요금제): 관심 지역 이번 주 글 재료 링크 */
+const BRIEF_KIT_WEB = BRIEF_WEB.replace(/brief\/$/, '') + 'agent/content/';
+function briefKitHtml(pieces, pro, date) {
+  if (!pro || new Date(date + 'T12:00:00+09:00').getDay() !== 1) return '';
+  const gs = []; pieces.forEach(p => { const g = String(p.g || ''); if (g && gs.indexOf(g) < 0) gs.push(g); });
+  if (!gs.length) return '';
+  return `<div style="background:#F2F6FF;border-radius:12px;padding:12px 14px;margin:0 0 14px"><b>이번 주 블로그·인스타 글 재료가 준비됐어요</b>
+    <p style="margin:4px 0 8px;font-size:13.5px;color:#4E5968;line-height:1.55">관심 지역의 실거래·신고가·청약 일정을 공개 자료로 정리한 블로그 글, 카드 이미지, 설명글을 바로 만들 수 있어요.</p>
+    ${gs.slice(0, 5).map(g => `<a href="${BRIEF_KIT_WEB}?g=${g}&go=1" style="display:inline-block;margin:0 6px 6px 0;background:#2F6BFF;color:#fff;padding:9px 14px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px">${bEsc((pieces.find(p => p.g === g) || {}).gn || g)} 글 만들기</a>`).join('')}</div>`;
+}
 function briefMail(to, date, pieces, s, pro, M, ub, extra) {
   const title = `[${SITE_NAME}] ${date.slice(5).replace('-', '/')} ${BRIEF_NAME} — ${pieces.map(p => p.nm).join(', ')}`.slice(0, 120);
   const body = pieces.map(p => `<div style="border:1px solid #E5E8EB;border-radius:12px;padding:14px 16px;margin:0 0 12px">
@@ -2701,7 +2770,7 @@ function briefMail(to, date, pieces, s, pro, M, ub, extra) {
       <a href="${p.url}" style="display:inline-block;margin-top:6px;background:#2F6BFF;color:#fff;padding:10px 16px;border-radius:10px;text-decoration:none;font-weight:700">전체 브리핑 보기</a></div>`).join('');
   const html = `<div style="font-family:'Noto Sans KR',sans-serif;max-width:600px;margin:auto;color:#191F28">
     <div style="font-weight:900;font-size:19px;margin:6px 0 12px">${bEsc(SITE_NAME)} <span style="color:#2F6BFF">모닝 브리핑</span></div>${extra || ''}${briefMarketHtml(M, ub)}
-    <div style="font-size:17px;font-weight:900;margin:4px 0 8px">② 내 관심 지역 · ③ 내 관심 단지</div>${body}
+    ${briefKitHtml(pieces, pro, date)}<div style="font-size:17px;font-weight:900;margin:4px 0 8px">② 내 관심 지역 · ③ 내 관심 단지</div>${body}
     <p style="font-size:12.5px;color:#4E5968;line-height:1.6">국토교통부 실거래 공개 자료에 새로 올라온 거래를 동네별로 모았어요. 신고가는 같은 단지·같은 평형의 이전 최고가를 넘은 거래예요.<br>
     이 메일은 ${bEsc(s.product)}(이용 기간 ${s.start} ~ ${s.end})을 신청하신 분께 보내 드려요. 받는 방법 바꾸기·해지: <a href="${BRIEF_WEB}manage/">${BRIEF_WEB}manage/</a></p>
     <a href="${BRIEF_WEB}manage/" style="display:block;text-align:center;margin:10px 0 0;border:1px solid #2F6BFF;color:#2F6BFF;padding:11px 16px;border-radius:10px;text-decoration:none;font-weight:700">지역·단지 바꾸기</a></div>`;
