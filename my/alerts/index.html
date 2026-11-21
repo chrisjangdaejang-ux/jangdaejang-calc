@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="../../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="집코드">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="robots" content="noindex">
+<script src="../../assets/pwa.js?v=1" defer></script>
+<title>알림 센터 — 집코드</title>
+<meta name="description" content="관심 단지의 새 실거래·신고가·급매·전세가율 변화와 내 조건에 맞는 청약 공고·접수·발표 일정을 한곳에서 보고, 하루 한 번 메일로 받아요.">
+<script>window.JDJ_CONFIG = { tool:'alerts', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../assets/track.js?v=2"></script>
+<script src="../../assets/stat.js?v=7"></script>
+<script src="../../assets/agents.js"></script>
+<script src="../../assets/config.js?v=7"></script>
+<script src="../../assets/auth.js?v=7"></script>
+<script src="../../chungyak/cy-engine.js?v=2"></script>
+<script src="../../assets/alerts-core.js?v=1"></script>
+<script src="../../assets/watch-core.js?v=2"></script>
+<script src="../../assets/watch.js?v=5"></script>
+<script src="../../assets/tabbar.js?v=3" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/aplus.css?v=44">
+<style>
+.wrap{max-width:720px;margin:0 auto;padding:22px 16px 40px}
+h1{font-size:clamp(26px,6.4vw,32px);margin:4px 0 8px;letter-spacing:-.6px}
+.lead{margin:0 0 14px;font-size:16px;color:var(--sub2);line-height:1.6}
+.sum{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin:0 0 16px;padding:14px 16px;border-radius:16px;background:var(--gray2);border:1px solid var(--line)}
+.sum b{font-size:18px;font-weight:900}.sum .nw{color:#C2410C}.sum small{font-size:13.5px;color:var(--sub2);margin-left:auto}
+.sec{margin:0 0 18px}
+.sec>h2{font-size:19px;font-weight:900;letter-spacing:-.4px;margin:0 0 10px}
+.sec>h2 small{font-size:13.5px;font-weight:500;color:var(--sub2);margin-left:6px}
+.card{border:1px solid var(--line);border-radius:18px;padding:16px;background:#fff;box-shadow:0 2px 8px rgba(25,31,40,.04)}
+.mail{background:var(--creamc);border-color:var(--creamb)}
+.mail h3{margin:0 0 6px;font-size:17px;font-weight:900}
+.mail p{margin:0 0 10px;font-size:15px;color:var(--sub);line-height:1.6}
+.mail .on{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:15px;line-height:1.5}
+.mail .on b{color:#0E7A4F}
+.inp2{width:100%;box-sizing:border-box;min-height:50px;border:1px solid var(--line);border-radius:12px;padding:0 14px;font:inherit;font-size:16px;background:#fff}
+.chk{display:flex;gap:10px;align-items:flex-start;margin:10px 0 4px;font-size:15px;line-height:1.55;cursor:pointer}
+.chk input{width:22px;height:22px;flex:none;margin:1px 0 0;accent-color:var(--blue)}
+details.why{margin:2px 0 10px 32px;font-size:13.5px;color:var(--sub2);line-height:1.6}
+details.why summary{cursor:pointer;min-height:32px;display:flex;align-items:center;color:var(--sub)}
+.rad{display:flex;flex-direction:column;gap:6px;margin:4px 0 8px}
+.rad label{display:flex;gap:8px;align-items:center;font-size:15px;min-height:40px;cursor:pointer}
+.rad input{width:20px;height:20px;accent-color:var(--blue)}
+.msg{margin:8px 0 0;font-size:14.5px;line-height:1.55}.msg.err{color:#C2410C}.msg.ok{color:#0E7A4F}
+.day{margin:14px 0 6px;font-size:14px;font-weight:800;color:var(--sub2)}
+.day:first-child{margin-top:0}
+.it{display:flex;gap:10px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line2)}
+.it:last-child{border-bottom:0}
+.it .tx{flex:1;min-width:0}
+.it .pl{display:block;font-size:13.5px;color:var(--sub2);margin:0 0 2px;text-decoration:none}
+.it .pl b{color:var(--text);font-weight:800}
+.it .tt{display:block;font-size:15.5px;font-weight:800;line-height:1.45;word-break:keep-all}
+.it .ss{display:block;font-size:14px;color:var(--sub2);line-height:1.55;margin-top:2px;word-break:keep-all}
+.it .nw{display:inline-block;font-size:11.5px;font-weight:800;color:#fff;background:#C2410C;border-radius:999px;padding:1px 7px;margin-left:4px;vertical-align:2px}
+.tg{display:inline-block;font-size:12px;font-weight:800;border-radius:6px;padding:1px 6px;margin-right:4px;vertical-align:1px;white-space:nowrap;background:var(--gray);color:var(--sub2)}
+.tg.high{background:#FDECE4;color:#C2410C}.tg.drop{background:#E8F0FF;color:#1F56E0}.tg.jeonse{background:#E9F7F0;color:#0E7A4F}.tg.cy{background:var(--creamc);color:#8A6A12}
+.off{flex:none;font:inherit;font-size:13px;font-weight:700;color:var(--sub2);background:#fff;border:1px solid var(--line);border-radius:999px;min-height:36px;padding:0 11px;cursor:pointer;white-space:nowrap}
+.off:hover{border-color:var(--sub2)}
+.empty{padding:20px 16px;border-radius:16px;border:1px dashed var(--line);text-align:center;color:var(--sub);line-height:1.65;font-size:15px}
+.empty a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 14px;margin:10px 4px 0;border-radius:12px;background:var(--blue-l);color:var(--blue);font-weight:800;text-decoration:none}
+.sw{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;padding:6px 0;border-bottom:1px solid var(--line2);cursor:pointer}
+.sw:last-child{border-bottom:0}
+.sw .lb{flex:1;min-width:0;font-size:15.5px;line-height:1.45}
+.sw .lb small{display:block;font-size:13.5px;color:var(--sub2)}
+.sw input{appearance:none;-webkit-appearance:none;flex:none;width:50px;height:30px;border-radius:999px;background:#D1D6DB;position:relative;cursor:pointer;transition:background .15s;margin:0}
+.sw input:before{content:'';position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left .15s}
+.sw input:checked{background:var(--blue)}.sw input:checked:before{left:23px}
+.sw input:focus-visible{outline:3px solid #9CC0FF;outline-offset:2px}
+.sub3{font-size:14px;font-weight:800;color:var(--sub);margin:16px 0 4px}
+.sub3:first-child{margin-top:0}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row select,.row input[type=number]{min-height:48px;border:1px solid var(--line);border-radius:12px;padding:0 10px;font:inherit;font-size:15.5px;background:#fff}
+.row select{flex:1 1 140px;min-width:0}
+.row input[type=number]{width:92px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px}
+.chips button{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--gray2);font:inherit;font-size:14.5px;font-weight:700;cursor:pointer}
+.chips button span{color:var(--sub2);font-weight:900}
+.note{margin:12px 0 0;font-size:13px;color:var(--sub2);line-height:1.6}
+.hint{font-size:13.5px;line-height:1.55;margin:4px 0 0}
+.lnk{display:inline-flex;align-items:center;min-height:44px;font-size:14.5px;font-weight:800;text-decoration:none}
+@media(min-width:900px){.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);column-gap:18px;align-items:start;grid-auto-flow:dense}.s-list{grid-column:1;grid-row:1 / span 3}.s-mail,.s-set,.s-cy{grid-column:2}.wrap{max-width:1040px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name>집코드</span></a>
+  <div class="badge plain">알림 센터</div>
+</header>
+<main class="wrap">
+  <h1>알림 센터</h1>
+  <p class="lead">관심 목록에 넣은 단지와 직접 고른 청약 조건에 생긴 변화만 모아 보여 드려요. 집코드는 고르지 않은 소식은 보내지 않아요.</p>
+  <div id="sum" class="sum" hidden></div>
+  <div class="grid">
+    <section class="sec s-mail" aria-labelledby="mailT"><h2 id="mailT">메일로 받기</h2><div id="mail" class="card mail"></div></section>
+    <section class="sec s-list" aria-labelledby="listT"><h2 id="listT">최근 알림<small>최근 30일, 이 기기에서 본 것</small></h2>
+      <div id="list" class="card" aria-live="polite"><p class="note" style="margin:0">불러오고 있어요…</p></div></section>
+    <section class="sec s-set" aria-labelledby="setT"><h2 id="setT">알림 받을 것</h2><div id="set" class="card"></div></section>
+    <section class="sec s-cy" aria-labelledby="cyT"><h2 id="cyT">청약 맞춤 알림</h2><div id="cy" class="card"></div></section>
+  </div>
+  <p class="note">자료: 국토교통부 아파트 매매 실거래가 공개 자료(공공데이터포털), 한국부동산원 청약홈 분양정보. '새 실거래'는 하루 4번 갱신할 때 집코드 공개 자료에 처음 보인 거래예요. 신고가는 같은 단지·같은 면적의 그 전 최고가보다 비싼 거래, 급매는 최근 3개월 같은 평형 중간값보다 10% 이상 낮은 거래, 큰 하락은 최근 2년 최고가보다 10% 이상 낮은 거래, 전세가율 변화는 5%p 이상 바뀐 경우예요(모닝 브리핑과 같은 기준). 청약 예상 당첨 가점 범위는 같은 지역 과거 당첨 가점으로 계산한 참고 값이에요.</p>
+</main>
+<footer class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="../../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ <span data-site-name>집코드</span> · <a href="../../">홈</a> · <a href="../watch/">관심 목록</a> · <a href="../../privacy/#alerts">개인정보처리방침</a></footer>
+<script>
+var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+(function(){
+'use strict';
+const W = window.JDJ_WATCH, C = window.JDJ_WATCH_CORE, AC = window.JDJ_ALERTS_CORE, AU = window.JDJ_AUTH || null, CYE = window.JDJ_CYE || null;
+const SITE = ((window.JDJ_SITE || {}).SITE_NAME || '').trim() || '집코드';
+const DATA = JB.DATA + 'data/', BASE = JB.SITE, $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ls = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
+const PEND = 'jdj_alert_pending';
+const SEEN0 = W ? W.aseen() : {};                     // 이 화면을 열 때까지 본 알림(다시 그려도 '새' 표시가 같게)
+const stat = (n, p) => { try { if (window.jdjStat) jdjStat(n, p || {}); } catch (e) {} };
+document.querySelectorAll('[data-site-name]').forEach(el => { el.textContent = SITE; });
+let IX = null, MINE = null, SERVER = 'unknown';      // SERVER: 'ok' 서버가 알림을 받음 · 'wait' 아직 창구가 열리기 전 · 'unknown' 확인 전·로그인 전
+const ixP = fetch(DATA + 'index.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null).then(j => (IX = j));
+const gname = c => ((IX && IX.sgg) || {})[c] ? IX.sgg[c].name : '';
+const mineUrl = p => `${BASE}mine/?sd=${encodeURIComponent(p.sd)}&d=${encodeURIComponent([p.code, p.dong, p.jibun || '', p.apt].join('|'))}&b=${encodeURIComponent(p.band)}`;
+const kst = () => new Date(Date.now() + 9 * 3600000);
+const dayLabel = ms => { const a = new Date(ms + 9 * 3600000).toISOString().slice(0, 10), t = kst().toISOString().slice(0, 10), y = new Date(Date.now() + 9 * 3600000 - 864e5).toISOString().slice(0, 10); return a === t ? '오늘' : a === y ? '어제' : `${+a.slice(5, 7)}월 ${+a.slice(8, 10)}일`; };
+
+/* ---------- 서버(로그인 뒤) ---------- */
+function call(action, body){
+  const s = W.tok(), api = W.apiUrl();
+  if (!s || !api) return Promise.reject(new Error('로그인이 필요해요.'));
+  return fetch(api, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(Object.assign({action, s}, body || {}))})
+    .then(r => r.json()).then(j => { if (j && j.err === 'unknown') { const e = new Error('wait'); e.wait = true; throw e; } if (!j || !j.ok) throw new Error((j && j.err) || '처리하지 못했어요. 잠시 뒤 다시 시도해 주세요.'); return j; });
+}
+const loggedIn = () => !!(AU && AU.on() && AU.user());
+function loadMine(){
+  if (!loggedIn()) { SERVER = 'unknown'; MINE = null; return Promise.resolve(); }
+  return call('alertMine').then(j => { SERVER = 'ok'; MINE = j; return retryPending(); }).catch(e => { SERVER = e.wait ? 'wait' : 'unknown'; MINE = null; });
+}
+/* 창구가 열리기 전에 신청한 것: 동의 시각·내용을 이 기기에 두었다가, 창구가 열린 뒤 이 화면을 열면 그대로 신청 */
+function retryPending(){
+  let p = null; try { p = JSON.parse(ls.get(PEND) || 'null'); } catch (e) {}
+  if (!p || (MINE && MINE.sub && MINE.sub.state === '활성')) { if (p) ls.del(PEND); return Promise.resolve(); }
+  if (p.v !== AC.V) { ls.del(PEND); return Promise.resolve(); }
+  return call('alertJoin', Object.assign({}, p, {prefs: W.aprefs()})).then(j => { MINE = j; ls.del(PEND); stat('alert_join', {from:'pending'}); }).catch(e => { if (!e.wait) ls.del(PEND); });
+}
+let pushT = 0;
+function pushPrefs(){
+  clearTimeout(pushT);
+  if (SERVER !== 'ok' || !(MINE && MINE.sub)) return;
+  pushT = setTimeout(() => { call('alertPrefs', {prefs: W.aprefs()}).then(j => { if (j.sub) MINE.sub = j.sub; }).catch(() => {}); }, 600);
+}
+function setPrefs(fn){ const P = W.aprefs(); fn(P); W.setAprefs(P); pushPrefs(); }
+
+/* ---------- 최근 알림 ---------- */
+async function drawList(){
+  const r = await W.alertsNow(), seen = SEEN0, list = W.list();
+  if (!r) { $('list').innerHTML = '<p class="note" style="margin:0">이 브라우저에서는 알림을 계산하지 못했어요.</p>'; return; }
+  const log = r.log, unread = log.filter(x => !seen[x.id]).length;
+  $('sum').hidden = false;
+  $('sum').innerHTML = `<b${unread ? ' class="nw"' : ''}>새 알림 ${unread}건</b><span>관심 단지 ${list.length}곳${r.P.cy.on ? ` · 청약 지역 ${r.P.cy.regions.length}곳` : ''}</span><small>${r.D.n ? `지금 알릴 것 ${r.D.n}건` : '지금 새로 알릴 것은 없어요'}</small>`;
+  if (!r.any) {
+    $('list').innerHTML = `<div class="empty"><b>아직 알림 받을 것이 없어요.</b><br>단지 화면에서 <b>☆ 관심</b>을 누르거나, 아래 '청약 맞춤 알림'에서 지역을 고르면 여기에 모여요.<br><a href="${BASE}map/">지도로 단지 찾기</a><a href="${BASE}chungyak/">청약 가점 계산</a></div>`;
+    return;
+  }
+  if (!log.length) { $('list').innerHTML = `<div class="empty"><b>최근 30일 동안 새 알림이 없었어요.</b><br>관심 단지에 새 거래가 올라오거나 청약 일정이 다가오면 여기에 보여 드려요.</div>`; return; }
+  let day = '', html = '';
+  log.forEach(x => {
+    const d = dayLabel(x.at); if (d !== day) { html += `<div class="day">${esc(d)}</div>`; day = d; }
+    const cy = !!AC.CY_KINDS[x.k], p = x.p || null;
+    const place = p ? `<a class="pl" href="${esc(mineUrl(p))}" data-track="alert_to_mine"><b>${esc(p.apt)}</b> · ${esc([gname(p.code), p.dong, p.band].filter(Boolean).join(' · '))}</a>` : '';
+    const lab = AC.KINDS[x.k] || AC.CY_KINDS[x.k] || '';
+    html += `<div class="it"><div class="tx">${place}<span class="tt"><span class="tg ${cy ? 'cy' : esc(x.k)}">${esc(lab)}</span>${esc(x.t)}${seen[x.id] ? '' : '<span class="nw">새</span>'}</span>
+      <span class="ss">${esc(x.s)}${(x.tags || []).length ? ` (${esc(x.tags.join(', '))})` : ''}</span>${x.u ? `<a class="lnk" href="${esc(x.u)}" target="_blank" rel="noopener">청약홈 공고 보기 ›</a>` : ''}</div>
+      ${cy ? `<button type="button" class="off" data-offcy="1">청약 알림 끄기</button>` : `<button type="button" class="off" data-off="${esc(x.pid)}">이 단지 끄기</button>`}</div>`;
+  });
+  $('list').innerHTML = html;
+  W.markAlertsSeen(log.map(x => x.id));
+  stat('feature_use', {feature:'alerts_view', n: log.length, unread});
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('[data-off],[data-offcy]'); if (!b) return;
+  if (b.hasAttribute('data-offcy')) setPrefs(P => { P.cy.on = false; });
+  else { const id = b.getAttribute('data-off'); setPrefs(P => { if (P.mute.indexOf(id) < 0) P.mute.push(id); }); }
+  W.toast('알림을 껐어요. 아래 \'알림 받을 것\'에서 다시 켤 수 있어요.');
+  redraw();
+});
+
+/* ---------- 메일로 받기 ---------- */
+function drawMail(){
+  const el = $('mail');
+  const brief = MINE && MINE.brief, sub = MINE && MINE.sub;
+  const mergeTxt = '<p>모닝 브리핑을 이메일로 받고 계시면, 알림은 브리핑 메일 맨 위에 함께 들어가요. 그래서 메일이 두 통 가지 않아요.</p>';
+  if (!AU || !AU.on()) { el.innerHTML = `<h3>하루 한 번, 오전 7시대에 메일로 받아요</h3><p>메일 알림은 카카오 간편 로그인 뒤 신청할 수 있어요. 지금 이 화면의 알림은 이 기기에서만 보여요.</p>`; return; }
+  if (!AU.user()) {
+    el.innerHTML = `<h3>하루 한 번, 오전 7시대에 메일로 받아요</h3><p>지금 이 화면의 알림은 이 기기에서만 보여요. 카카오 간편 로그인하면 알림을 메일로 받을 수 있고, 휴대폰·PC 어디서든 같은 관심 목록을 볼 수 있어요.</p>${AU.btn('카카오 간편 로그인하고 메일로 받기', 'alerts')}`;
+    return;
+  }
+  if (sub && sub.state === '활성') {
+    el.innerHTML = `<h3>메일 알림을 받고 있어요</h3><div class="on"><b>✓ 받는 중</b><span>${esc(sub.mask)}</span></div>
+      <p style="margin-top:6px">알림이 있는 날만 하루 한 번, 오전 7시대에 보내 드려요. 동의한 때: ${esc(sub.at)}${sub.last ? ` · 마지막으로 보낸 날: ${esc(sub.last)}` : ''}</p>${brief ? mergeTxt : ''}
+      <button type="button" class="btn ghost" id="leave">메일 알림 모두 끄기</button><div id="mailMsg" class="msg" role="status"></div>`;
+    $('leave').onclick = () => { $('leave').disabled = true; call('alertLeave').then(j => { MINE = j; stat('alert_leave'); drawMail(); }).catch(e => { $('mailMsg').className = 'msg err'; $('mailMsg').textContent = e.message; $('leave').disabled = false; }); };
+    return;
+  }
+  let pend = null; try { pend = JSON.parse(ls.get(PEND) || 'null'); } catch (e) {}
+  if (pend && SERVER === 'wait') {
+    el.innerHTML = `<h3>메일 알림 신청을 받아 두었어요</h3><p>집코드가 메일 알림 창구를 여는 중이에요. 신청 내용과 동의한 때는 이 기기에 저장해 두었어요. 창구가 열린 뒤 이 화면을 다시 열면 그대로 신청돼요. 그 전까지는 이 화면에서 알림을 볼 수 있어요.</p><button type="button" class="btn ghost" id="cancelP">신청 취소</button>`;
+    $('cancelP').onclick = () => { ls.del(PEND); drawMail(); };
+    return;
+  }
+  el.innerHTML = `<h3>하루 한 번, 오전 7시대에 메일로 받아요</h3>
+    <p>집코드는 관심 목록 단지와 내가 고른 청약 조건에 새 소식이 생긴 날만 메일을 보내요. 광고가 아닌 정보 알림이고, 메일마다 '이 단지 알림 끄기'와 '모든 알림 끄기'가 있어요.</p>${brief ? mergeTxt : ''}
+    ${brief ? `<div class="rad" role="radiogroup" aria-label="받을 이메일"><label><input type="radio" name="em" value="brief" checked> 모닝 브리핑 받는 이메일(${esc(brief.mask)})로 받기</label><label><input type="radio" name="em" value="new"> 다른 이메일 적기</label></div>` : ''}
+    <input class="inp2" id="email" type="email" inputmode="email" autocomplete="email" placeholder="알림 받을 이메일 주소" aria-label="알림 받을 이메일 주소" ${brief ? 'hidden' : ''}>
+    <label class="chk"><input type="checkbox" id="agree"><span>[필수] 관심 목록 단지와 제가 고른 청약 조건에 새 소식이 생기면, 집코드가 하루 한 번 오전 7시대에 이메일로 알려 주는 것에 동의해요.</span></label>
+    <details class="why"><summary>집코드가 받는 것과 지우는 때</summary>집코드가 받는 것: 이메일 주소 1개, 동의한 때, 알림 설정(끈 단지·청약 지역·무주택 여부·가점 범위). 집코드는 이 이메일을 알림을 보내는 데만 써요. 알림을 모두 끄면 집코드는 30일 뒤 이메일을 지우고, 탈퇴하면 바로 지워요. 동의하지 않으면 메일은 가지 않고, 이 화면의 알림은 그대로 볼 수 있어요.</details>
+    <button type="button" class="btn primary big" id="join">메일 알림 신청</button><div id="mailMsg" class="msg" role="status"></div>`;
+  const em = () => { const r = el.querySelector('input[name=em]:checked'); return r ? r.value : 'new'; };
+  el.querySelectorAll('input[name=em]').forEach(r => { r.onchange = () => { $('email').hidden = em() === 'brief'; }; });
+  $('join').onclick = () => {
+    const msg = $('mailMsg'), useBrief = !!brief && em() === 'brief', email = $('email').value.trim();
+    msg.className = 'msg err';
+    if (!useBrief && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { msg.textContent = '알림을 받을 이메일 주소를 정확히 적어 주세요.'; return; }
+    if (!$('agree').checked) { msg.textContent = '메일 알림을 받으려면 동의 칸에 체크해 주세요.'; return; }
+    const P = W.aprefs();
+    if (!W.list().length && !P.cy.on) { msg.textContent = '관심 목록에 단지를 넣거나 청약 맞춤 알림 지역을 고른 뒤 신청해 주세요.'; return; }
+    const body = { consent: true, v: AC.V, at: new Date().toISOString(), useBrief, email: useBrief ? '' : email };
+    $('join').disabled = true; msg.className = 'msg'; msg.textContent = '신청하는 중이에요…';
+    call('alertJoin', Object.assign({prefs: P}, body)).then(j => { MINE = j; SERVER = 'ok'; stat('alert_join', {from:'center'}); drawMail(); const m = $('mailMsg'); if (m) { m.className = 'msg ok'; m.textContent = '신청했어요. 확인 메일을 보내 드렸어요.'; } })
+      .catch(e => {
+        if (e.wait) { ls.set(PEND, JSON.stringify(body)); SERVER = 'wait'; stat('alert_join', {from:'pending_saved'}); drawMail(); return; }
+        msg.className = 'msg err'; msg.textContent = e.message; $('join').disabled = false;
+      });
+  };
+}
+
+/* ---------- 알림 받을 것(종류·단지) ---------- */
+function sw(id, on, label, small, attr){ return `<label class="sw"><span class="lb">${label}${small ? `<small>${small}</small>` : ''}</span><input type="checkbox" role="switch" id="${id}" ${on ? 'checked' : ''} ${attr || ''}></label>`; }
+function drawSet(){
+  const P = W.aprefs(), list = W.list();
+  const KS = { trade: '새로 신고된 거래가 올라오면', high: '같은 면적 그 전 최고가보다 비싸게 팔리면', drop: '급매(최근 3개월 중간값보다 10% 이상 낮음)·큰 하락(최근 2년 최고가보다 10% 이상 낮음)', jeonse: '전세가율이 5%p 이상 바뀌면' };
+  let h = `<div class="sub3">알림 종류</div>` + Object.keys(AC.KINDS).map(k => sw('k_' + k, P.kinds[k], esc(AC.KINDS[k]), esc(KS[k]), `data-kind="${k}"`)).join('');
+  h += `<div class="sub3">관심 단지 ${list.length}곳</div>`;
+  h += list.length ? list.map(p => { const id = C.idOf(p); return sw('p_' + id.replace(/[^0-9A-Za-z가-힣]/g, '_'), P.mute.indexOf(id) < 0, `<b>${esc(p.apt)}</b>`, esc([gname(p.code), p.dong, p.band].filter(Boolean).join(' · ')), `data-pid="${esc(id)}"`); }).join('')
+    : `<p class="hint">관심 목록이 비어 있어요. 단지 화면에서 <b>☆ 관심</b>을 누르면 여기에 생겨요.</p>`;
+  h += `<a class="lnk" href="${BASE}my/watch/">관심 목록에서 단지 더 보기 ›</a>`;
+  $('set').innerHTML = h;
+  $('set').querySelectorAll('input[data-kind]').forEach(i => { i.onchange = () => { setPrefs(P => { P.kinds[i.dataset.kind] = i.checked; }); redraw(true); }; });
+  $('set').querySelectorAll('input[data-pid]').forEach(i => { i.onchange = () => { const id = i.dataset.pid; setPrefs(P => { P.mute = P.mute.filter(x => x !== id); if (!i.checked) P.mute.push(id); }); redraw(true); }; });
+}
+
+/* ---------- 청약 맞춤 알림 ---------- */
+function cyScore(){
+  /* 청약 가점 계산기(chungyak/)에서 이 기기에 남긴 입력으로 오늘 기준 가점 다시 계산 */
+  try { const A = JSON.parse(ls.get('jdj_cy') || 'null'); if (!A || !CYE) return null; const t = kst().toISOString().slice(0, 10); const r = CYE.CY.total(Object.assign({}, A, {ref: t}), t); return r && isFinite(r.sum) ? { sum: r.sum, own: !!A.own } : null; } catch (e) { return null; }
+}
+function drawCy(){
+  const P = W.aprefs(), c = P.cy, el = $('cy');
+  if (!c.regions.length) {   // 분양·청약 화면에서 고른 관심 지역이 있으면 먼저 채워 둠(켜지는 건 사용자가 켤 때)
+    try { const A = JSON.parse(ls.get('jdj_areas') || 'null'); if (A && Array.isArray(A.list) && A.list.length) { c.regions = A.list.map(a => ({sd: a.sd, g: a.g || '', gn: a.gn || ''})); } } catch (e) {}
+  }
+  const sido = ((IX && IX.sido) || []).map(s => s.name);
+  const sc = cyScore();
+  el.innerHTML = sw('cyOn', c.on, '<b>청약 맞춤 알림 받기</b>', '고른 지역에 새 공고가 나오면, 접수 하루 전, 당첨자 발표일에 알려 드려요') + `
+    <div class="sub3">지역 (${c.regions.length}/10)</div>
+    <div class="chips" id="cyChips">${c.regions.map((r, i) => `<button type="button" data-rm="${i}" aria-label="${esc(r.sd + ' ' + (r.gn || '전체'))} 빼기">${esc(r.sd.replace(/(특별자치시|특별자치도|통합특별시|특별시|광역시)$/, ''))} ${esc(r.gn || '전체')} <span aria-hidden="true">×</span></button>`).join('') || '<span class="hint">아직 고른 지역이 없어요.</span>'}</div>
+    <div class="row" style="margin-top:6px"><select id="cySd" aria-label="시·도"><option value="">시·도 고르기</option>${sido.map(s => `<option>${esc(s)}</option>`).join('')}</select><select id="cyG" aria-label="시·군·구"><option value="">시·도 전체</option></select><button type="button" class="btn" id="cyAdd">지역 넣기</button></div>
+    <div class="sub3">무주택 여부</div>
+    <div class="rad" role="radiogroup" aria-label="무주택 여부"><label><input type="radio" name="nh" value="y" ${c.nohome === true ? 'checked' : ''}> 무주택이에요</label><label><input type="radio" name="nh" value="n" ${c.nohome === false ? 'checked' : ''}> 집이 있어요(국민주택 공고는 빼요)</label><label><input type="radio" name="nh" value="" ${c.nohome == null ? 'checked' : ''}> 고르지 않을래요</label></div>
+    <div class="sub3">내 청약 가점 범위(선택)</div>
+    <div class="row"><input type="number" id="cyLo" min="0" max="84" inputmode="numeric" placeholder="낮게" aria-label="가점 범위 낮은 값" value="${c.lo == null ? '' : c.lo}"><span>~</span><input type="number" id="cyHi" min="0" max="84" inputmode="numeric" placeholder="높게" aria-label="가점 범위 높은 값" value="${c.hi == null ? '' : c.hi}"><span>점</span>${sc ? `<button type="button" class="btn gold" id="cyImp">계산한 가점 ${sc.sum}점 넣기</button>` : ''}</div>
+    <p class="hint">가점 범위를 적으면, 민영 공고 가운데 예상 당첨 가점 범위의 아래쪽 끝이 내 범위의 위쪽 끝 이하인 공고만 알려 드려요. 비워 두면 지역에 맞는 공고를 모두 알려 드려요. ${sc ? '' : `가점은 <a href="${BASE}chungyak/">청약 가점 계산</a>에서 먼저 계산할 수 있어요.`}</p>
+    <div class="sub3">받을 때</div>` + Object.keys(AC.CY_KINDS).map(k => sw('ck_' + k, c.kinds[k], esc(AC.CY_KINDS[k]), '', `data-ck="${k}"`)).join('') + `<div id="cyMsg" class="msg" role="status"></div>`;
+  const save = fn => { const msg = $('cyMsg'); setPrefs(P => { P.cy.regions = c.regions; fn(P.cy); }); const Q = W.aprefs(); if (fn.needOn && !Q.cy.on) { msg.className = 'msg err'; msg.textContent = '먼저 지역을 하나 이상 넣어 주세요.'; } redraw(true); };
+  $('cyOn').onchange = () => { const on = $('cyOn').checked; const f = cy => { cy.on = on; }; f.needOn = on; save(f); };
+  $('cySd').onchange = () => { const v = $('cySd').value, gs = Object.entries((IX && IX.sgg) || {}).filter(([k, x]) => x.sido === v).sort((a, b) => a[1].name.localeCompare(b[1].name, 'ko'));
+    $('cyG').innerHTML = '<option value="">시·도 전체</option>' + gs.map(([k, x]) => `<option value="${esc(k)}">${esc(x.name)}</option>`).join(''); };
+  $('cyAdd').onclick = () => { const sd = $('cySd').value, g = $('cyG').value; if (!sd) { $('cyMsg').className = 'msg err'; $('cyMsg').textContent = '시·도를 먼저 골라 주세요.'; return; }
+    if (c.regions.length >= 10) { $('cyMsg').className = 'msg err'; $('cyMsg').textContent = '지역은 10곳까지 넣을 수 있어요.'; return; }
+    save(cy => { cy.regions = c.regions.concat([{sd, g, gn: g ? gname(g) : ''}]); if (!cy.on) cy.on = true; }); };
+  el.querySelectorAll('[data-rm]').forEach(b => { b.onclick = () => { const i = +b.dataset.rm; save(cy => { cy.regions = c.regions.filter((x, j) => j !== i); }); }; });
+  el.querySelectorAll('input[name=nh]').forEach(r => { r.onchange = () => save(cy => { cy.nohome = r.value === 'y' ? true : r.value === 'n' ? false : null; }); });
+  const num = () => save(cy => { cy.lo = $('cyLo').value === '' ? null : +$('cyLo').value; cy.hi = $('cyHi').value === '' ? null : +$('cyHi').value; });
+  $('cyLo').onchange = num; $('cyHi').onchange = num;
+  if ($('cyImp')) $('cyImp').onclick = () => save(cy => { cy.lo = sc.sum; cy.hi = sc.sum; if (cy.nohome == null) cy.nohome = !sc.own; });
+  el.querySelectorAll('input[data-ck]').forEach(i => { i.onchange = () => save(cy => { cy.kinds[i.dataset.ck] = i.checked; }); });
+}
+
+let busy = false;
+async function redraw(keepMail){
+  if (busy) return; busy = true;
+  try { drawSet(); drawCy(); if (!keepMail) drawMail(); await drawList(); } finally { busy = false; }
+}
+async function main(){
+  if (AU && AU.user()) await W.sync();
+  await ixP;
+  drawSet(); drawCy(); drawMail();
+  await Promise.all([drawList(), loadMine()]);
+  if (MINE && MINE.sub && MINE.sub.prefs && SERVER === 'ok') {   // 메일 알림 설정은 서버 것이 기준(다른 기기에서 바꾼 것 반영)
+    const loc = JSON.stringify(W.aprefs()), srv = JSON.stringify(AC.cleanPrefs(MINE.sub.prefs));
+    if (loc !== srv) { W.setAprefs(MINE.sub.prefs); }
+  }
+  redraw();
+}
+W.onChange(() => redraw(true));
+if (AU && AU.onChange) AU.onChange(() => { loadMine().then(() => redraw()); });
+main();
+})();
+</script>
+</body>
+</html>

@@ -1,6 +1,14 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집코드 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집코드 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v44 변경 요약 (v20~v43과 같은 11/28 재배포에 함께 들어감. 재배포 뒤 편집기에서 alertsInstall 한 번 실행 — 시트 '알림구독'·'알림기록'·'알림발송'과 매일 오전 7시대·9시대 트리거)
+ *  - 관심 단지·청약 알림 1단계(맨 아래 'v44' 칸, 안내 docs/alerts.md): 알림 센터(my/alerts/)에서 카카오 로그인 + 동의 체크 + 이메일로 신청(alertJoin·alertMine·alertPrefs·alertLeave).
+ *    관심 목록 단지의 새 실거래·신고가·급매·큰 하락·전세가율 변화와 청약 맞춤(새 공고·접수 하루 전·발표일)을 하루 한 번(오전 7시대) 묶음 메일로.
+ *    모닝 브리핑을 이메일로 받는 사람은 브리핑 메일 맨 위에 함께(한 통만). 같은 알림은 다시 안 보냄. 메일마다 '이 단지 알림 끄기'·'청약 알림 끄기'·'모든 알림 끄기'(GET alertOff).
+ *    광고는 넣지 않음(모닝 브리핑 두 광고 동의가 모두 있는 사람만 브리핑과 같은 규칙). 답장 주소는 BRIEF_SENDER.email. 이메일 원문은 '알림구독' 시트에만.
+ *  - briefAreas 에 알림 구독자 관심 단지 동네를 더함(엔진이 그 동네 급매·전세가율 급변 자료를 만들게).
+ *  - 검증: node tools/alerts-test.js </dev/null
+ *
  * v43 변경 요약 (v20~v42와 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — 시트 변경 없음)
  *  - 새 도메인(zipcode.works) 준비: 메일·알림 속 웹 링크를 모두 WEB_ROOT 한 줄에서 만들고(지금은 예전 주소 그대로),
  *    카카오 로그인 돌아올 주소(KAKAO_REDIRECTS)에 https://zipcode.works/login/ 을 미리 허용 — 예전 주소도 계속 허용.
@@ -381,6 +389,7 @@ function doGet(e) {
   if (act === 'briefStats') return out(briefStats(e.parameter));
   if (act === 'briefSeen') return out(briefSeen(e.parameter));
   if (act === 'bpPull') return out(bpPull(e.parameter));
+  if (act === 'alertOff') return alertOff(e.parameter);                              // v44 알림 메일의 끄기 링크(원클릭)
   return out({ ok: false, err: 'unknown' });
 }
 
@@ -401,6 +410,7 @@ function doPost(e) {
   if (USER_ACTIONS[b.action]) return out(userDispatch(b));
   if (AGT_ACTIONS[b.action]) return out(agtDispatch(b));
   if (BRIEF_ACTIONS[b.action]) return out(briefDispatch(b));
+  if (AX_ACTIONS[b.action]) return out(axDispatch(b));             // v44 관심 단지·청약 알림 메일
   if (PRO_ACTIONS[b.action]) return out(proDispatch(b));
   if (BP_ACTIONS[b.action]) return out(bpDispatch(b));
   if (b.action === 'bpPut') { try { return out(bpPut(b)); } catch (x) { return out({ ok: false, err: String(x.message || x) }); } }
@@ -1954,6 +1964,9 @@ function userDelete(b) {
     const v = sh.getDataRange().getValues();
     for (let i = v.length - 1; i >= 1; i--) if (String(v[i][col]) === u.k) sh.deleteRow(i + 1);
   };
+  const axIds = (book().getSheetByName(SH_AX) ? axRows() : []).filter(o => String(o.r[AXC['카카오id']]) === u.k).map(o => String(o.r[AXC['id']]));   // v44 알림 구독·기록
+  [SH_AXL, SH_AXS].forEach(n => { const sh = book().getSheetByName(n); if (!sh) return; const v = sh.getDataRange().getValues(); for (let i = v.length - 1; i >= 1; i--) if (axIds.indexOf(String(v[i][1])) >= 0) sh.deleteRow(i + 1); });
+  del(SH_AX, AXC['카카오id']);
   del(SH_UA, ALC['카카오id']); del(SH_S, SC['카카오id']); del(SH_U, UC['카카오id']);
   del('플러스중개사', 0); del('내손님', 1);   // v27 중개사 플러스: 표시 정보·손님 이름표·단지(시트 이름은 아래 SH_BPP·SH_BPC 와 같음)
   let unlinked = false;
@@ -2895,6 +2908,7 @@ function briefAreas(p) {
     const on = {}; bpActive(now).forEach(x => { on[x.k] = x; });
     bpRows(SH_BPC).forEach(o => { const x = on[String(o.r[BPCC['카카오id']])]; if (x) parseJ(o.r[BPCC['단지']], []).slice(0, x.lim.apts).forEach(a => { if (/^\d{5}$/.test(String(a.g))) cnt[a.g] = cnt[a.g] || 0; }); });
   } catch (e) {}
+  try { axAreaCodes().forEach(g => { if (/^\d{5}$/.test(g)) cnt[g] = cnt[g] || 0; }); } catch (e) {}   // v44 알림 구독자 관심 단지 동네(구독자 수에는 넣지 않음)
   return { ok: true, at: ymd(now), areas: Object.keys(cnt).sort().map(g => ({ g: g, n: cnt[g] })) };
 }
 /* 최근 7일 vs 그 전 7일, 단지별 서로 다른 방문자 수(추천·내 집·비교 화면에 단지가 보인 기록 'rec') — 5명 이상만 */
@@ -3178,22 +3192,25 @@ function briefDaily() {
   const WKM = M ? bFetchJson(BRIEF_DATA + 'wk/market.json') : null; if (M && WKM && WKM.date === M.date) M.wk = WKM;   // v41 전국 문장(7시 공개분, 날짜가 같을 때만)
   const AD = briefAdToday(now);                         // v29 오늘 진행 중인 브리핑 광고(없으면 null) — 메일에는 이른 아침 광고 동의자에게만
   const cxc = {}, cxOf = g => (g in cxc) ? cxc[g] : (cxc[g] = bFetchJson(BRIEF_DATA + 'cx/' + g + '.json'));   // v27 손님 단지 자료 — 동네마다 한 번만 받음
+  let AXM = null; try { AXM = axMorning(now); } catch (e) { AXM = null; }   // v44 관심 단지·청약 알림 — 이메일 브리핑에 함께 넣어 한 통만
   let sent = 0;
   bRows().forEach(o => {
     const s = briefState(o, now);
     if (!s.active || String(o.r[BC['최근발송일']]).slice(0, 10) === date) return;
+    let AXU = null; if (AXM && s.channel === 'email') try { AXU = AXM.forUser(String(o.r[BC['카카오id']])); } catch (e) { AXU = null; }
     const ub = um[String(o.r[BC['카카오id']])] || { areas: [], apts: [] };
     const myApts = (ub.apts || []).slice(0, s.apts);      // 요금제 표의 관심 단지 수까지만(서버에서 지킴)
     const urg = s.urgPick && ub.urg ? ub.urg : BRIEF_URG.def;   // 급매 기준: 고를 수 있는 요금제만 저장값, 없으면 10%
     const pieces = (ub.areas || []).slice(0, s.areas).map(a => { const S = brief(a.g); return S ? briefPiece(S, a, s.pro, myApts, urg) : null; }).filter(Boolean);
-    if (!pieces.length) { bLog([date, s.id, s.channel, '동네 자료 없음', 0]); return; }
+    if (!pieces.length) { bLog([date, s.id, s.channel, '동네 자료 없음', 0]); if (AXU) try { AXM.alone(AXU); } catch (e) {} return; }   // 브리핑을 못 보내는 날은 알림만 따로
     const to = String(o.r[BC['연락처']]).replace(/^'/, '');
     let res = { ok: false, why: '' };
     try {
       if (s.channel === 'email') { pieces.forEach(p => { p.url += `&src=mail&k=${bKey(s.id)}&day=${date}`; });
         let bx = ''; try { bx = bpMailHtml(String(o.r[BC['카카오id']]), cxOf, date); } catch (e) { bx = ''; }
         const withAd = AD && o.r[BC['광고동의']] === true && o.r[BC['아침광고동의']] === true ? AD : null;   // 두 동의(①항 광고성 정보·③항 이른 아침)가 모두 있을 때만
-        briefMail(to, (pieces[0] && ix && ix.date) || date, pieces, s, s.pro, M, Object.assign({}, ub, { apts: myApts }), bx, withAd); res = { ok: true, ad: !!withAd }; }
+        briefMail(to, (pieces[0] && ix && ix.date) || date, pieces, s, s.pro, M, Object.assign({}, ub, { apts: myApts }), (AXU ? AXU.html : '') + bx, withAd); res = { ok: true, ad: !!withAd };
+        if (AXU) try { AXM.done(AXU); } catch (e) {} }
       else if (s.channel === 'kakao') {
         if (!ch.kakao) res = { ok: false, why: '알림톡 키 없음' };
         else {
@@ -4302,4 +4319,463 @@ function ytKitSend(latest) {
     htmlBody: html, attachments: files });
   if (latest !== true) book().getSheetByName(SH_YT).getRange(o.row, 4).setValue(new Date());
   return { ok: true, week: k.week, files: files.length };
+}
+
+
+/* =====================================================================
+   v44 관심 단지·청약 알림 1단계 — 하루 한 번 묶음 메일 (안내: docs/alerts.md)
+   - 받는 사람: 카카오 간편 로그인 + 알림 센터(my/alerts/)에서 '알림 메일 받기' 동의 체크 + 이메일. 동의 시각·동의 문구 판을 시트에 남김.
+   - 보내는 것: 관심 목록(회원 저장 자료 favs) 단지의 새 실거래·신고가·급매·큰 하락·전세가율 변화 + 청약 맞춤(새 공고·접수 하루 전·발표일).
+     계산은 위 ALERTS-CORE 블록(웹 assets/alerts-core.js 와 같은 글자). 숫자는 공개 자료 그대로.
+   - 하루 한 번(오전 7시대). 모닝 브리핑을 이메일로 받는 사람은 브리핑 메일 맨 위에 함께 넣어 메일이 두 통 가지 않게 함(briefDaily).
+   - 같은 알림은 다시 보내지 않음('알림기록' 시트: 구독 번호·알림 id·날짜만, 90일 보관). 메일 하루 한도가 AX_RESERVE 만큼 남으면 멈추고 다음 날 이어서.
+   - 정보 알림이라 광고를 넣지 않음. 단, 모닝 브리핑의 두 광고 동의(광고성 정보·이른 아침 메일 속 광고)가 모두 있는 사람만 브리핑과 같은 규칙으로 광고 1개.
+   - 끄기: 메일마다 '이 단지 알림 끄기'·'청약 알림 끄기'·'모든 알림 끄기'(GET alertOff, 로그인 없이 한 번 누르면 끝) + 알림 센터.
+   - 보내는 길(AX_SENDERS): 지금은 이메일만. 웹 푸시(VAPID)·카카오 알림톡은 자리만 있음(docs/alerts.md 할 일).
+   - 시트(첫 사용 때 자동 생성): '알림구독'(이메일 원문은 여기에만) · '알림기록' · '알림발송'(연락처 없음)
+   - 재배포 뒤 편집기에서 alertsInstall 한 번 실행(매일 오전 7시대·9시대 alertsDaily 트리거). 검증: node tools/alerts-test.js
+   ===================================================================== */
+/* ALERTS-CORE BEGIN — 이 블록은 tools/agent-backend.gs 에 그대로 복사돼 있어요. 고칠 때는 두 곳을 똑같이 고쳐 주세요(node tools/alerts-test.js 가 비교). */
+const AX_V = 'alerts-2026-11-21';                 // 메일 알림 동의 문구 판(화면 문구를 바꾸면 날짜를 바꿈)
+const AX_KINDS = { trade: '새 실거래', high: '신고가', drop: '급매·큰 하락', jeonse: '전세가율 변화' };
+const AX_CY_KINDS = { cy_new: '새 청약 공고', cy_eve: '청약 접수 하루 전', cy_win: '당첨자 발표일' };
+const AX_URG = 10, AX_DROP = -10, AX_JR = 5;       // 급매(%) · 큰 하락(%) · 전세가율 변화(%p) — 위 설명의 기존 기준
+const AX_MAX_PLACES = 30, AX_MAX_REGIONS = 10, AX_MAX_LINES = 40;
+const AX_BN = ['60㎡ 이하', '60~85㎡', '85㎡ 초과'];
+const AX_SIDO_OLD = { '광주광역시': '전남광주통합특별시', '전라남도': '전남광주통합특별시', '강원도': '강원특별자치도', '전라북도': '전북특별자치도', '제주도': '제주특별자치도' };
+function axEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function axTxt(s, n) { return String(s == null ? '' : s).replace(/[\u0000-\u001F\u007F<>]/g, ' ').trim().slice(0, n); }
+function axWon(m) { m = Math.round(Number(m) || 0); const e = Math.floor(m / 10000), r = m % 10000; return e && r ? `${e}억 ${r.toLocaleString('en-US')}만 원` : e ? `${e}억 원` : `${r.toLocaleString('en-US')}만 원`; }
+function axPid(p) { return [p.code, p.dong, p.jibun || '', p.apt, p.band].join('|'); }          // watch-core idOf 와 같음
+function axRowKey(p) { return [p.dong, p.jibun || '', p.apt, p.band].join('|'); }              // today/g 의 u 키
+function axIso(d8) { d8 = String(d8 || ''); return /^\d{8}$/.test(d8) ? `${d8.slice(0, 4)}-${d8.slice(4, 6)}-${d8.slice(6, 8)}` : ''; }
+function axAddDay(iso, n) { const t = Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) + n * 864e5, d = new Date(t); return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`; }
+function axMd(x) { const s = String(x || '').replace(/-/g, ''); return s.length >= 8 ? `${+s.slice(4, 6)}/${+s.slice(6, 8)}` : ''; }
+function axPct(v) { return (Math.round(Math.abs(v) * 10) / 10).toFixed(1); }
+/** 키 → 짧은 글자(같은 알림을 두 번 보내지 않으려고 기록하는 값). 서버·화면이 같은 값을 만든다 */
+function axKeyId(s) {
+  s = String(s); let a = 0x811c9dc5, b = 0x01000193 ^ s.length;
+  for (let i = 0; i < s.length; i++) { const c = s.charCodeAt(i); a = Math.imul(a ^ c, 16777619) >>> 0; b = Math.imul(b ^ c, 2246822519) >>> 0; }
+  return ('0000000' + a.toString(16)).slice(-8) + ('0000000' + b.toString(16)).slice(-8);
+}
+function axSido(s) { s = String(s || ''); return AX_SIDO_OLD[s] || s; }
+
+/** 알림 설정 정리(서버·화면 같은 규칙). kinds = 관심 단지 알림 종류, mute = 알림을 끈 단지(키), cy = 청약 맞춤 알림 */
+function axCleanPrefs(x) {
+  x = x && typeof x === 'object' ? x : {};
+  const k = x.kinds && typeof x.kinds === 'object' ? x.kinds : {}, kinds = {};
+  Object.keys(AX_KINDS).forEach(n => { kinds[n] = k[n] !== false; });
+  const mute = (Array.isArray(x.mute) ? x.mute : []).map(v => axTxt(v, 160)).filter(v => v.split('|').length === 5).filter((v, i, a) => a.indexOf(v) === i).slice(0, AX_MAX_PLACES);
+  const c = x.cy && typeof x.cy === 'object' ? x.cy : {}, seen = {};
+  const regions = (Array.isArray(c.regions) ? c.regions : []).map(r => r && ({ sd: axSido(axTxt(r.sd, 20)), g: /^\d{5}$/.test(String(r.g || '')) ? String(r.g) : '', gn: axTxt(r.gn, 30) }))
+    .filter(r => r && /^[가-힣]{2,12}$/.test(r.sd) && (!r.g || r.gn)).filter(r => { const q = r.sd + '|' + r.g; if (seen[q]) return false; seen[q] = 1; return true; }).slice(0, AX_MAX_REGIONS);
+  const n = v => { if (v === '' || v == null) return null; v = Math.round(Number(v)); return isFinite(v) && v >= 0 && v <= 84 ? v : null; };
+  let lo = n(c.lo), hi = n(c.hi);
+  if (lo != null && hi != null && lo > hi) { const t = lo; lo = hi; hi = t; }
+  const ck = c.kinds && typeof c.kinds === 'object' ? c.kinds : {}, cyk = {};
+  Object.keys(AX_CY_KINDS).forEach(q => { cyk[q] = ck[q] !== false; });
+  return { kinds: kinds, mute: mute, cy: { on: c.on === true && regions.length > 0, regions: regions, nohome: c.nohome === true ? true : c.nohome === false ? false : null, lo: lo, hi: hi, kinds: cyk } };
+}
+
+/* ---------- 관심 단지 한 곳의 알림 ----------
+   거래 하나는 알림 하나: 신고가 > 급매·큰 하락 > 새 실거래 순으로 하나만 고른다. 거래 키 = 단지|계약일|층|금액(두 자료에서 같은 거래를 한 번만) */
+function axPlaceEvents(p, G, S) {
+  const pid = axPid(p), out = {}, order = [];
+  const put = (key, ev) => { if (!out[key]) order.push(key); out[key] = Object.assign({ key: key, id: axKeyId(key), pid: pid }, ev); };
+  const tkey = t => `t|${pid}|${t.dt}|${t.f == null ? '' : t.f}|${t.p}`;
+  const fl = t => (t.f != null && t.f !== '' ? `${t.f}층 ` : '');
+  const tags = t => [t.x ? '직거래' : '', t.sus ? '특수 거래 의심' : ''].filter(Boolean);
+  ((G && G.rows) || []).forEach(t => {
+    if (t.d !== p.dong || (t.j || '') !== (p.jibun || '') || t.a !== p.apt || t.b !== p.band || !(t.p > 0)) return;
+    const base = { dt: t.dt, p: t.p, f: t.f, day: t.day || '', tags: tags(t) };
+    if (t.hi) put(tkey(t), Object.assign(base, { k: 'high', t: `신고가 거래가 나왔어요: ${axMd(t.dt)} 계약 ${fl(t)}${axWon(t.p)}`,
+      s: t.pm > 0 ? `같은 단지·같은 면적의 그 전 최고가 ${axWon(t.pm)}보다 ${axPct((t.p / t.pm - 1) * 100)}% 높아요.` : '같은 단지·같은 면적의 그 전 최고가보다 높아요.' }));
+    else if (t.dr != null && t.dr <= AX_DROP && !t.sus) put(tkey(t), Object.assign(base, { k: 'drop', t: `큰 하락 거래가 나왔어요: ${axMd(t.dt)} 계약 ${fl(t)}${axWon(t.p)}`,
+      s: `이 거래는 최근 2년 최고가${t.m2 > 0 ? ' ' + axWon(t.m2) : ''}보다 ${axPct(t.dr)}% 낮아요.` }));
+    else put(tkey(t), Object.assign(base, { k: 'trade', t: `새 실거래가 올라왔어요: ${axMd(t.dt)} 계약 ${fl(t)}${axWon(t.p)}`, s: '국토교통부 실거래 공개 자료에 새로 보인 거래예요.' }));
+  });
+  ((S && S.urgent) || []).forEach(u => {
+    if (u.d !== p.dong || u.a !== p.apt || u.b !== p.band || u.sus || !(Math.abs(Number(u.disc)) >= AX_URG) || !(u.p > 0)) return;
+    const key = tkey(u);
+    if (out[key] && out[key].k === 'high') return;
+    put(key, { k: 'drop', dt: u.dt, p: u.p, f: u.f, day: '', tags: u.x ? ['직거래'] : [], t: `급매 수준 거래가 나왔어요: ${axMd(u.dt)} 계약 ${fl(u)}${axWon(u.p)}`,
+      s: `이 거래는 최근 3개월 같은 평형 중간값 ${axWon(u.med)}${u.n3 ? `(${u.n3}건)` : ''}보다 ${axPct(u.disc)}% 낮아요.` });
+  });
+  ((S && S.gap) || []).forEach(g => {
+    if (g.d !== p.dong || g.a !== p.apt || g.b !== p.band || g.jr == null || g.jr0 == null || !(Math.abs(Number(g.dlt)) >= AX_JR)) return;
+    put(`j|${pid}|${g.to || ''}|${g.jr}`, { k: 'jeonse', jr: g.jr, jr0: g.jr0, t: `전세가율이 ${g.jr0}%에서 ${g.jr}%로 ${axPct(g.dlt)}%p ${g.dlt > 0 ? '올랐어요' : '내려갔어요'}`,
+      s: `전세가율은 매매가 대비 전세 보증금 비율이에요(최근 거래 기준${g.to ? ', ' + axMd(g.to) + '까지' : ''}). ${g.dlt > 0 ? '갭 기회와 전세 위험을 함께 확인해 보세요.' : '보증금은 더 안전해졌고, 갭 부담은 커졌어요.'}` });
+  });
+  const u = G && G.u && G.u[axRowKey(p)], u0 = G && G.u0 && G.u0[axRowKey(p)];
+  if (u && u0 && u[2] != null && u0[2] != null && Math.abs(u[2] - u0[2]) >= AX_JR) {
+    const d = u[2] - u0[2];
+    put(`j|${pid}|${G.date || ''}|${u[2]}`, { k: 'jeonse', jr: u[2], jr0: u0[2], t: `전세가율이 ${u0[2].toFixed(1)}%에서 ${u[2].toFixed(1)}%로 ${axPct(d)}%p ${d > 0 ? '올랐어요' : '내려갔어요'}`,
+      s: `전세가율은 매매가 대비 전세 보증금 비율이에요${G.d0 ? `(${axMd(G.d0)} 값과 비교)` : ''}. ${d > 0 ? '갭 기회와 전세 위험을 함께 확인해 보세요.' : '보증금은 더 안전해졌고, 갭 부담은 커졌어요.'}` });
+  }
+  return order.map(q => out[q]);
+}
+
+/* ---------- 청약 ----------
+   지역: 공고의 시·도(sd)와 시·군·구 이름(g)이 고른 지역과 같을 때. 시·군·구를 비우면 시·도 전체.
+   무주택: '집 있음'을 고르면 국민주택(공공) 공고는 뺀다 — 국민주택 일반공급은 무주택 세대구성원만 신청할 수 있어요(주택공급에 관한 규칙).
+   가점 범위: 민영 공고에 예상 당첨 가점 범위(cut)가 있으면, 내 가점 범위의 위쪽 끝이 어느 면적대 예상 범위의 아래쪽 끝 이상일 때만.
+             예상 범위가 없는 공고(국민주택·자료 부족)는 그대로 알리고 '예상 범위 없음'이라고 적는다. 확률처럼 보이는 말은 쓰지 않는다. */
+function axCyMatch(n, cy) {
+  if (!n || !cy || !cy.on) return null;
+  const sd = axSido(n.sd);
+  if (!(cy.regions || []).some(r => r.sd === sd && (!r.g || r.gn === n.g))) return null;
+  if (cy.nohome === false && n.k === '국민') return null;
+  const cuts = (n.cut || []).filter(c => c && !c.insufficient && c.lo != null && c.hi != null);
+  if (cy.lo == null && cy.hi == null) return { fit: '', cuts: cuts };
+  if (!cuts.length) return { fit: '이 공고는 예상 당첨 가점 범위가 없어요(국민주택이거나 비교할 과거 자료가 적어요).', cuts: cuts };
+  const lo = cy.lo != null ? cy.lo : cy.hi, hi = cy.hi != null ? cy.hi : cy.lo;
+  const ok = cuts.filter(c => hi >= c.lo);
+  if (!ok.length) return null;
+  const c = ok[0];
+  return { fit: `${AX_BN[c.band] || ''} 예상 당첨 가점은 ${c.lo}~${c.hi}점이고, 내 가점 범위(${lo}~${hi}점)는 ${lo >= c.hi ? '그보다 높아요' : '그 범위와 겹쳐요'}.`, cuts: ok };
+}
+/** 접수 단계: 특별공급 시작일, 1순위 시작일(같은 날이면 하나로) */
+function axCyStages(n) {
+  const out = [], sp = axIso((n.sp || [])[0]), r1 = axIso((n.r1 || [])[0] || (n.rc || [])[0]);
+  if (sp) out.push({ lab: '특별공급', d: sp });
+  if (r1) { if (out.length && out[0].d === r1) out[0].lab = '특별공급·1순위'; else out.push({ lab: '1순위', d: r1 }); }
+  return out;
+}
+/** 공고 하나 → 오늘 보낼 청약 알림. today = 'YYYY-MM-DD'(한국 날짜), since = 알림을 신청한 날(그 전에 나온 공고는 '새 공고'로 보내지 않음) */
+function axCyEvents(n, cy, today, since) {
+  const m = axCyMatch(n, cy); if (!m) return [];
+  const out = [], kinds = (cy && cy.kinds) || {}, tmr = axAddDay(today, 1), pb = axIso(n.pb), pw = axIso(n.pw), place = [n.sd, n.g].filter(Boolean).join(' ');
+  const st = axCyStages(n), first = st[0];
+  const sub = [place, pb ? `공고 ${axMd(pb)}` : '', st.map(x => `${x.lab} 접수 ${axMd(x.d)}`).join(' · '), pw ? `발표 ${axMd(pw)}` : ''].filter(Boolean).join(' · ');
+  const ev = (k, key, t, extra) => out.push(Object.assign({ k: k, key: key, id: axKeyId(key), no: n.no, n: n.n, u: /^https:\/\//.test(n.u || '') ? n.u : '', t: t, s: [sub ? sub + '.' : '', extra || '', m.fit].filter(Boolean).join(' ') }));
+  const live = !first || st[st.length - 1].d >= today;                    // 접수가 모두 끝난 공고는 '새 공고'로 알리지 않음
+  if (kinds.cy_new !== false && pb && pb <= today && (!since || pb >= since) && live) ev('cy_new', `c|${n.no}|new`, `${n.n} 청약 공고가 나왔어요`, n.k === '국민' ? '국민주택이라 무주택 세대구성원만 신청할 수 있어요.' : '');
+  if (kinds.cy_eve !== false) st.filter(x => x.d === tmr).forEach(x => ev('cy_eve', `c|${n.no}|eve|${x.d}`, `내일(${axMd(x.d)}) ${n.n} ${x.lab} 접수가 시작돼요`, '접수는 청약홈에서 해요.'));
+  if (kinds.cy_win !== false && pw && pw === today) ev('cy_win', `c|${n.no}|win`, `오늘(${axMd(pw)}) ${n.n} 당첨자 발표가 있어요`, '당첨 여부는 청약홈에서 확인해요.');
+  return out;
+}
+
+/* ---------- 하루 묶음 ----------
+   o = { places, g:{구: today/g}, s:{구: brief}, notices:[청약 공고], prefs, today, since, sent:{알림id:1} }
+   → { groups:[{p, pid, ev[]}], cy:[ev], n, ids[] } — 끈 단지·끈 종류·이미 보낸 알림(sent)은 뺀다 */
+function axDigest(o) {
+  o = o || {};
+  const P = axCleanPrefs(o.prefs), sent = o.sent || {}, mute = {}, groups = [], ids = [];
+  P.mute.forEach(x => { mute[x] = 1; });
+  (o.places || []).slice(0, AX_MAX_PLACES).forEach(p => {
+    const pid = axPid(p); if (mute[pid]) return;
+    const ev = axPlaceEvents(p, (o.g || {})[p.code], (o.s || {})[p.code]).filter(e => P.kinds[e.k] && !sent[e.id]);
+    if (ev.length) { groups.push({ p: p, pid: pid, ev: ev }); ev.forEach(e => ids.push(e.id)); }
+  });
+  let cy = [];
+  if (P.cy.on && o.today) (o.notices || []).forEach(n => { cy = cy.concat(axCyEvents(n, P.cy, o.today, o.since || '').filter(e => !sent[e.id])); });
+  cy.forEach(e => ids.push(e.id));
+  return { groups: groups, cy: cy, n: ids.length, ids: ids };
+}
+/** 화면 배지 수: 이 기기에서 아직 안 본 알림 */
+function axUnread(D, seen) { seen = seen || {}; return (D.ids || []).filter(id => !seen[id]).length; }
+
+/* ---------- 받는 사람 확인(동의) ----------
+   sub = { state, consent, consentAt, v, email } — 상태 '활성' + 동의 체크 + 동의 시각 + 동의 문구 판 + 이메일 형식이 모두 있어야 보낸다 */
+function axCanSend(sub) {
+  if (!sub || sub.state !== '활성' || sub.consent !== true) return false;
+  if (!/^\d{4}-\d{2}-\d{2}/.test(String(sub.consentAt || '')) || !String(sub.v || '')) return false;
+  return /^[^\s@]{1,64}@[^\s@]+\.[^\s@]{2,}$/.test(String(sub.email || ''));
+}
+/** 메일 속 광고: 모닝 브리핑과 같은 규칙 — 광고성 정보 받기(①항)와 이른 아침 메일 속 광고 받기(③항) 동의가 모두 있을 때만 */
+function axAdOk(c) { return !!(c && c.ad && c.ad.on === true && c.am && c.am.on === true); }
+
+/* ---------- 끄기 링크 ----------
+   api = 서버 주소, id = 알림 구독 번호, tok(id) = 서버 비밀값으로 만든 확인값, ph(pid) = 단지 키를 줄인 값 */
+function axLinks(api, id, tok, ph) {
+  const b = `${api}?action=alertOff&id=${encodeURIComponent(id)}&t=${encodeURIComponent(tok(id))}`;
+  return { all: b + '&all=1', cy: b + '&cy=1', place: pid => b + '&p=' + encodeURIComponent(ph(pid)) };
+}
+
+/* ---------- 메일 ----------
+   o = { site 서비스 이름, web 사이트 주소(끝 /), links(axLinks 결과), since 신청 시각 글자, sender {name, tel, email}, merged(모닝 브리핑 안에 넣을 때), date 'YYYY-MM-DD', gname(코드 → 구 이름) }
+   → { subject, html, text }. 광고는 넣지 않는다(광고는 따로 붙임 — 붙일 때 제목 앞 (광고)는 보내는 쪽에서) */
+function axMailHtml(D, o) {
+  o = o || {};
+  const site = o.site || '집코드', web = o.web || '', L = o.links, gname = o.gname || (() => ''), lines = [];
+  let left = AX_MAX_LINES, cut = 0;
+  const btn = (href, label) => href ? `<a href="${axEsc(href)}" style="font-size:13px;color:#4E5968;text-decoration:underline;white-space:nowrap">${axEsc(label)}</a>` : '';
+  const tag = k => `<span style="display:inline-block;font-size:11.5px;font-weight:800;color:${k === 'high' ? '#C2410C' : k === 'drop' ? '#1F56E0' : '#4E5968'};background:${k === 'high' ? '#FDECE4' : k === 'drop' ? '#E8F0FF' : '#F2F4F6'};border-radius:6px;padding:1px 6px;margin-right:4px">${axEsc(AX_KINDS[k] || AX_CY_KINDS[k] || '')}</span>`;
+  const li = e => { if (left <= 0) { cut++; return ''; } left--; lines.push(e.t);
+    return `<li style="margin:0 0 8px;line-height:1.55">${tag(e.k)}<b style="color:#191F28">${axEsc(e.t)}</b>${(e.tags || []).length ? ` <span style="font-size:12px;color:#4E5968">(${axEsc(e.tags.join(', '))})</span>` : ''}<br><span style="font-size:13.5px;color:#4E5968">${axEsc(e.s)}</span>${e.u ? `<br><a href="${axEsc(e.u)}" style="font-size:13px;color:#2F6BFF">청약홈 공고 보기</a>` : ''}</li>`; };
+  const blocks = D.groups.map(g => `<div style="border:1px solid #E5E8EB;border-radius:12px;padding:12px 14px;margin:0 0 10px">
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap"><div style="font-size:16px;font-weight:900">${axEsc(g.p.apt)} <span style="font-size:13px;font-weight:500;color:#4E5968">${axEsc([gname(g.p.code), g.p.dong, g.p.band].filter(Boolean).join(' · '))}</span></div>${L ? btn(L.place(g.pid), '이 단지 알림 끄기') : ''}</div>
+      <ul style="list-style:none;margin:8px 0 0;padding:0">${g.ev.map(li).join('')}</ul>
+      ${web ? `<a href="${axEsc(web)}mine/?sd=${encodeURIComponent(g.p.sd)}&d=${encodeURIComponent([g.p.code, g.p.dong, g.p.jibun || '', g.p.apt].join('|'))}&b=${encodeURIComponent(g.p.band)}" style="font-size:13.5px;color:#2F6BFF">이 단지 시세·미래가치 보기</a>` : ''}</div>`).join('');
+  const cyb = D.cy.length ? `<div style="border:1px solid #EFE6CC;background:#FBF8EF;border-radius:12px;padding:12px 14px;margin:0 0 10px">
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap"><div style="font-size:16px;font-weight:900">청약 맞춤 알림</div>${L ? btn(L.cy, '청약 알림 끄기') : ''}</div>
+      <ul style="list-style:none;margin:8px 0 0;padding:0">${D.cy.map(e => li(e)).join('')}</ul></div>` : '';
+  const more = cut ? `<p style="font-size:13.5px;color:#4E5968;margin:0 0 10px">이 밖에 알림 ${cut}건은 <a href="${axEsc(web)}my/alerts/" style="color:#2F6BFF">알림 센터</a>에서 볼 수 있어요.</p>` : '';
+  const head = `<div style="font-size:18px;font-weight:900;margin:0 0 4px">내가 고른 것의 새 소식 <span style="font-size:13px;font-weight:700;color:#2F6BFF">${D.n}건</span></div>
+    <p style="margin:0 0 10px;font-size:13.5px;color:#4E5968;line-height:1.55">관심 목록에 넣은 단지와 직접 고른 청약 조건에 생긴 변화만 모았어요. 숫자는 국토교통부 실거래 공개 자료와 청약홈 공고 그대로예요.</p>`;
+  const offAll = L ? `<a href="${axEsc(L.all)}" style="color:#4E5968">모든 알림 끄기(한 번 누르면 끝)</a>` : '';
+  const foot = `<p style="font-size:12px;color:#4E5968;line-height:1.65;margin:12px 0 0;border-top:1px solid #E5E8EB;padding-top:10px">
+    이 메일은 ${axEsc(site)}에서 관심 단지·청약 메일 알림을 신청하신 분께만 보내는 정보 알림이에요${o.since ? `(신청 ${axEsc(o.since)})` : ''}. 알림이 있는 날만 하루 한 번, 오전 7시대에 보내요.<br>
+    ${offAll}${offAll ? ' · ' : ''}<a href="${axEsc(web)}my/alerts/" style="color:#4E5968">알림 설정 바꾸기</a><br>
+    보낸 사람: ${axEsc(site)}${o.sender ? `(${axEsc(o.sender.name)}) · 전화 ${axEsc(o.sender.tel)} · 답장은 ${axEsc(o.sender.email)}로 가요` : ''}</p>`;
+  const body = head + blocks + cyb + more;
+  const subject = (`[${site}] ${axMd(o.date || '')} 관심 단지·청약 새 소식 ${D.n}건 — ` + D.groups.map(g => g.p.apt).concat(D.cy.length ? ['청약'] : []).join(', ')).slice(0, 120);
+  const html = o.merged ? `<div style="border:2px solid #B8942A;border-radius:12px;padding:14px 16px;margin:0 0 14px">${body}<p style="font-size:12px;color:#4E5968;margin:6px 0 0">${offAll}${offAll ? ' · ' : ''}<a href="${axEsc(web)}my/alerts/" style="color:#4E5968">알림 설정 바꾸기</a></p></div>`
+    : `<div style="font-family:'Noto Sans KR',sans-serif;max-width:600px;margin:auto;color:#191F28"><div style="font-weight:900;font-size:19px;margin:6px 0 12px">${axEsc(site)} <span style="color:#2F6BFF">알림</span></div>${body}${foot}</div>`;
+  return { subject: subject, html: html, text: lines.join('\n') };
+}
+/* ALERTS-CORE END */
+
+const SH_AX = '알림구독', AXH = ['id', '카카오id', '상태', '이메일', '이메일가림', '이메일확인값', '동의', '동의시각', '화면동의시각', '동의문구판', '철회시각', '설정', '구독시작일', '최근발송일', '발송수', '만든시각', '수정시각'];
+const AXC = Object.fromEntries(AXH.map((h, i) => [h, i]));
+const SH_AXL = '알림기록', AXLH = ['날짜', '구독id', '알림id', '종류'];
+const SH_AXS = '알림발송', AXSH = ['날짜', '구독id', '방법', '결과', '건수'];
+const AX_ACTIONS = { alertMine: 1, alertJoin: 1, alertPrefs: 1, alertLeave: 1 };
+const AX_ST = { on: '활성', off: '해지' };
+const AX_KEEP_DAYS = 90;          // 보낸 알림 기록 보관 일수(같은 알림을 다시 보내지 않으려고)
+const AX_RESERVE = 5;             // 메일 하루 한도가 이만큼 남으면 멈춤(중개사 알림 AGT_CHANNELS 와 같은 기준)
+const AX_DATA = BRIEF_DATA.replace(/brief\/$/, '');   // 공개 자료 data/ 주소(모닝 브리핑과 같은 길)
+const AX_WEB = WEB_ROOT + 'my/alerts/';
+
+function axSheet() { return uSheet(SH_AX, AXH); }
+function axRows() { const v = axSheet().getDataRange().getValues(), out = []; for (let i = 1; i < v.length; i++) if (v[i][AXC['id']]) out.push({ row: i + 1, r: v[i] }); return out; }
+function setAX(row, h, v) { axSheet().getRange(row, AXC[h] + 1).setValue(v); }
+function axTok(id) { return hashOf('axoff|' + id).slice(1, 17); }
+function axPh(pid) { return hashOf('axp|' + pid).slice(1, 11); }
+function axFmt(v) { return v instanceof Date ? Utilities.formatDate(v, 'Asia/Seoul', 'yyyy-MM-dd HH:mm') : String(v || ''); }
+/** 시트 행 → 구독 정보 */
+function axSubOf(o) {
+  const r = o.r;
+  return { row: o.row, id: String(r[AXC['id']]), k: String(r[AXC['카카오id']]), state: String(r[AXC['상태']]), email: String(r[AXC['이메일']] || '').replace(/^'/, ''),
+    mask: String(r[AXC['이메일가림']] || ''), consent: r[AXC['동의']] === true, consentAt: axFmt(r[AXC['동의시각']]), v: String(r[AXC['동의문구판']] || ''),
+    prefs: axCleanPrefs(parseJ(r[AXC['설정']], {})), since: String(r[AXC['구독시작일']] instanceof Date ? ymd(r[AXC['구독시작일']]) : r[AXC['구독시작일']] || '').slice(0, 10),
+    last: String(r[AXC['최근발송일']] instanceof Date ? ymd(r[AXC['최근발송일']]) : r[AXC['최근발송일']] || '').slice(0, 10), sent: Number(r[AXC['발송수']]) || 0 };
+}
+function axMine(k) { const o = axRows().filter(x => String(x.r[AXC['카카오id']]) === k).pop(); return o ? axSubOf(o) : null; }
+function axPublic(s) { return s ? { id: s.id, state: s.state, mask: s.mask, at: s.consentAt, v: s.v, prefs: s.prefs, since: s.since, last: s.last } : null; }
+/** 이용 중인 모닝 브리핑(이메일) 행 — 있으면 알림은 브리핑 메일에 함께 들어감 */
+function axBriefMail(k, now) {
+  return myBriefs(k).filter(o => { const s = briefState(o, now || new Date()); return s.active && s.channel === 'email' && String(o.r[BC['연락처']] || ''); }).pop() || null;
+}
+/** 회원 저장 자료의 관심 단지(favs). m 을 주면 한 번 읽은 표에서(하루 발송 때) */
+function axFavsMap() {
+  const sh = book().getSheetByName(SH_U), m = {}; if (!sh) return m;
+  sh.getDataRange().getValues().slice(1).forEach(x => { const d = parseJ(x[UC['저장자료']], {}); m[String(x[UC['카카오id']])] = (Array.isArray(d && d.favs) ? d.favs : []).map(y => cleanPlace(y, false)).filter(Boolean).slice(0, AX_MAX_PLACES); });
+  return m;
+}
+function axFavs(k, m) { return (m || axFavsMap())[k] || []; }
+
+function axDispatch(b) {
+  try {
+    return withLock(() => {
+      if (b.action === 'alertMine') return alertMine(b);
+      if (b.action === 'alertJoin') return alertJoin(b);
+      if (b.action === 'alertPrefs') return alertPrefs(b);
+      if (b.action === 'alertLeave') return alertLeave(b);
+      return { ok: false, err: 'unknown' };
+    });
+  } catch (x) {
+    return { ok: false, err: String(x.message || x), code: x.code || '' };
+  }
+}
+function alertMine(b) {
+  const u = sessionUser(b.s), bm = axBriefMail(u.k);
+  return { ok: true, v: AX_V, sub: axPublic(axMine(u.k)), brief: bm ? { mask: String(bm.r[BC['연락처가림']] || '') } : null, favs: axFavs(u.k).length };
+}
+/** 알림 메일 신청(동의 필수) — 이미 있으면 같은 행을 다시 켬 */
+function alertJoin(b) {
+  const u = sessionUser(b.s), now = new Date();
+  if (b.consent !== true) throw new Error('알림 메일 받기에 동의해 주셔야 보내 드릴 수 있어요.');
+  if (String(b.v || '') !== AX_V) throw new Error('알림 안내 문구가 바뀌었어요. 화면을 새로 고친 뒤 다시 신청해 주세요.');
+  let email = '';
+  if (b.useBrief === true) { const bm = axBriefMail(u.k, now); if (!bm) throw new Error('모닝 브리핑을 이메일로 받고 있지 않아요. 받을 이메일을 적어 주세요.'); email = String(bm.r[BC['연락처']]).replace(/^'/, ''); }
+  else { const ct = parseContact(b.email); if (!ct || ct.kind !== 'email') throw new Error('알림을 받을 이메일 주소를 정확히 적어 주세요.'); email = ct.norm; }
+  const ct = parseContact(email), prefs = axCleanPrefs(b.prefs);
+  if (!axFavs(u.k).length && !prefs.cy.on) throw new Error('관심 목록에 단지를 넣거나 청약 알림 지역을 골라야 알림을 보낼 수 있어요.');
+  const at = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(String(b.at || '')) ? String(b.at).slice(0, 25) : '';
+  const cur = axRows().filter(x => String(x.r[AXC['카카오id']]) === u.k).pop();
+  let row;
+  if (cur) {
+    row = cur.row;
+    if (String(cur.r[AXC['상태']]) !== AX_ST.on) setAX(row, '구독시작일', ymd(now));
+  } else {
+    const r = []; r[AXC['id']] = 'X' + Utilities.getUuid().replace(/-/g, '').slice(0, 9).toUpperCase(); r[AXC['카카오id']] = u.k; r[AXC['만든시각']] = now; r[AXC['구독시작일']] = ymd(now); r[AXC['발송수']] = 0;
+    axSheet().appendRow(AXH.map((h, i) => r[i] === undefined ? '' : r[i]));
+    row = axSheet().getLastRow();
+  }
+  setAX(row, '상태', AX_ST.on); setAX(row, '이메일', cellSafe(ct.norm)); setAX(row, '이메일가림', ct.mask); setAX(row, '이메일확인값', hashOf(ct.norm));
+  setAX(row, '동의', true); setAX(row, '동의시각', now); setAX(row, '화면동의시각', cellSafe(at)); setAX(row, '동의문구판', AX_V); setAX(row, '철회시각', '');
+  setAX(row, '설정', JSON.stringify(prefs)); setAX(row, '수정시각', now);
+  const s = axMine(u.k);
+  if (MailApp.getRemainingDailyQuota() > AX_RESERVE) try {
+    const L = axLinks(bApi(), s.id, axTok, axPh), bm = axBriefMail(u.k, now);
+    axSend('email', s, { subject: `[${SITE_NAME}] 관심 단지·청약 알림 메일 신청을 받았어요`,
+      html: `<div style="font-family:sans-serif;line-height:1.7;max-width:560px">${Utilities.formatDate(now, 'Asia/Seoul', 'yyyy-MM-dd HH:mm')}에 알림 메일 신청을 받았어요.<br>
+        관심 목록 단지와 고르신 청약 조건에 새 소식이 생긴 날만, 하루 한 번 오전 7시대에 메일을 보내 드려요. 광고가 아닌 정보 알림이에요.<br>
+        ${bm ? '모닝 브리핑을 이메일로 받고 계셔서, 알림은 브리핑 메일 맨 위에 함께 넣어 드려요(메일이 두 통 가지 않아요).<br>' : ''}
+        <a href="${AX_WEB}">알림 설정 바꾸기</a> · <a href="${L.all}">모든 알림 끄기</a><br>
+        보낸 사람: ${bEsc(SITE_NAME)}(${bEsc(BRIEF_SENDER.name)}) · 전화 ${bEsc(BRIEF_SENDER.tel)}</div>` });
+  } catch (e) {}
+  return alertMine(b);
+}
+function alertPrefs(b) {
+  const u = sessionUser(b.s), prefs = axCleanPrefs(b.prefs), o = axRows().filter(x => String(x.r[AXC['카카오id']]) === u.k).pop();
+  if (!o) return { ok: true, saved: false, prefs: prefs };
+  setAX(o.row, '설정', JSON.stringify(prefs)); setAX(o.row, '수정시각', new Date());
+  return { ok: true, saved: true, sub: axPublic(axMine(u.k)) };
+}
+function axStop(o, how) {
+  const s = axSubOf(o), now = new Date();
+  if (s.state === AX_ST.off) return false;
+  setAX(o.row, '상태', AX_ST.off); setAX(o.row, '철회시각', now); setAX(o.row, '수정시각', now);
+  if (s.email && MailApp.getRemainingDailyQuota() > AX_RESERVE) try {
+    axSend('email', s, { subject: `[${SITE_NAME}] 알림 메일을 껐어요`, html: `<div style="font-family:sans-serif;line-height:1.7">${Utilities.formatDate(now, 'Asia/Seoul', 'yyyy-MM-dd HH:mm')}에 ${bEsc(how)}에서 요청하신 대로 관심 단지·청약 알림 메일을 모두 껐어요. 받던 이메일 주소는 30일 뒤 지워요.<br>다시 받으시려면 <a href="${AX_WEB}">알림 센터</a>에서 신청해 주세요.</div>` });
+  } catch (e) {}
+  return true;
+}
+function alertLeave(b) {
+  const u = sessionUser(b.s), o = axRows().filter(x => String(x.r[AXC['카카오id']]) === u.k).pop();
+  if (o) axStop(o, '알림 센터');
+  return alertMine(b);
+}
+/* 메일의 한 번 누르는 끄기(로그인 없음): all = 모든 알림, cy = 청약 알림, p = 단지 하나(단지 키를 줄인 값) */
+function alertOff(p) {
+  const id = String(p.id || ''), t = String(p.t || '');
+  let msg = '';
+  if (/^X[0-9A-F]{9}$/.test(id) && safeEq(t, axTok(id))) withLock(() => {
+    const o = axRows().find(x => String(x.r[AXC['id']]) === id); if (!o) return;
+    const s = axSubOf(o);
+    if (p.all) { axStop(o, '메일의 끄기 링크'); msg = '관심 단지·청약 알림 메일을 모두 껐어요. 다시 받으시려면 알림 센터에서 신청해 주세요.'; return; }
+    const prefs = s.prefs;
+    if (p.cy) { prefs.cy.on = false; msg = '청약 알림을 껐어요. 관심 단지 알림은 그대로 받아요.'; }
+    else if (p.p) {
+      const f = axFavs(s.k).find(x => safeEq(axPh(axPid(x)), String(p.p)));
+      if (f) { if (prefs.mute.indexOf(axPid(f)) < 0) prefs.mute.push(axPid(f)); msg = `${f.apt} ${f.band} 알림을 껐어요. 다른 알림은 그대로 받아요.`; }
+    }
+    if (msg) { setAX(o.row, '설정', JSON.stringify(axCleanPrefs(prefs))); setAX(o.row, '수정시각', new Date()); }
+  });
+  return HtmlService.createHtmlOutput(`<div style="font-family:sans-serif;padding:40px 20px;text-align:center;line-height:1.7">
+    <h2>${msg ? '알림을 껐어요' : '처리하지 못했어요'}</h2><p>${bEsc(msg || '링크가 바뀌었거나 이미 꺼진 알림이에요. 알림 센터에서 직접 끌 수 있어요.')}</p>
+    <p><a href="${AX_WEB}">알림 센터로 가기</a></p></div>`);
+}
+
+/* ---------- 보내는 길(채널) — 지금은 이메일만. 나중에 웹 푸시·카카오 알림톡을 여기에 한 칸씩 더함(docs/alerts.md) ----------
+   msg = { subject, html, text } · sub = 알림 구독(axSubOf) · 결과 { ok, why } */
+const AX_SENDERS = {
+  email: {
+    ready: () => true,
+    send(sub, msg) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sub.email || '')) return { ok: false, why: '이메일 없음' };
+      MailApp.sendEmail({ to: sub.email, name: SITE_NAME, replyTo: BRIEF_SENDER.email, subject: msg.subject, htmlBody: msg.html });
+      return { ok: true };
+    }
+  },
+  webpush: { ready: () => false, send: () => ({ ok: false, why: '웹 푸시 준비 중' }) },   // TODO(docs/alerts.md): VAPID 키·구독 저장·서명 발송
+  kakao: { ready: () => false, send: () => ({ ok: false, why: '알림톡 준비 중' }) }       // TODO(docs/alerts.md): solapiSend + 심사받은 정보성 템플릿 SOLAPI_TPL_ALERT
+};
+function axSend(ch, sub, msg) {
+  const S = AX_SENDERS[ch];
+  if (!S || !S.ready()) return { ok: false, why: '준비 중' };
+  try { return S.send(sub, msg); } catch (e) { return { ok: false, why: String(e.message || e).slice(0, 60) }; }
+}
+
+/* ---------- 하루 묶음 만들기 ---------- */
+/** 공개 자료를 한 번씩만 받는 상자 */
+function axCtx(now) {
+  const date = ymd(now || new Date()), gc = {}, sc = {};
+  const ix = bFetchJson(AX_DATA + 'index.json');
+  const N = (bFetchJson(AX_DATA + 'chungyak/notices.json') || {}).rows || [];
+  return { date: date, now: now || new Date(), notices: N, favs: axFavsMap(),
+    g: c => (c in gc) ? gc[c] : (gc[c] = bFetchJson(AX_DATA + 'today/g/' + c + '.json')),
+    s: c => (c in sc) ? sc[c] : (sc[c] = bFetchJson(BRIEF_DATA + c + '.json')),
+    gname: c => (((ix || {}).sgg || {})[c] || {}).name || '' };
+}
+/** 보낸 알림 기록 → { 구독id: { 알림id: 1 } } (보관 기간 안만) */
+function axSentAll(now) {
+  const sh = book().getSheetByName(SH_AXL), out = {}; if (!sh || sh.getLastRow() < 2) return out;
+  const lo = ymd(addDays(now || new Date(), -AX_KEEP_DAYS));
+  sh.getRange(2, 1, sh.getLastRow() - 1, 3).getValues().forEach(r => { const d = r[0] instanceof Date ? ymd(r[0]) : String(r[0]).slice(0, 10); if (d >= lo) (out[String(r[1])] = out[String(r[1])] || {})[String(r[2])] = 1; });
+  return out;
+}
+/** 한 사람의 오늘 묶음. 보낼 것이 없으면 null */
+function axBuild(s, ctx, sent) {
+  if (!axCanSend(s) || s.last === ctx.date) return null;
+  const places = axFavs(s.k, ctx.favs), g = {}, sx = {};
+  places.forEach(p => { if (!(p.code in g)) { g[p.code] = ctx.g(p.code); sx[p.code] = ctx.s(p.code); } });
+  const D = axDigest({ places: places, g: g, s: sx, notices: ctx.notices, prefs: s.prefs, today: ctx.date, since: s.since, sent: (sent || {})[s.id] || {} });
+  return D.n ? D : null;
+}
+function axMsg(s, D, ctx, merged) {
+  return axMailHtml(D, { site: SITE_NAME, web: WEB_ROOT, links: axLinks(bApi(), s.id, axTok, axPh), since: s.consentAt, sender: BRIEF_SENDER, merged: !!merged, date: ctx.date, gname: ctx.gname });
+}
+/** 보낸 뒤: 기록 + 최근발송일 */
+function axDone(s, D, ctx, how) {
+  const sh = uSheet(SH_AXL, AXLH), kinds = {};
+  D.groups.forEach(g => g.ev.forEach(e => { kinds[e.id] = e.k; })); D.cy.forEach(e => { kinds[e.id] = e.k; });
+  D.ids.forEach(id => sh.appendRow([ctx.date, s.id, id, kinds[id] || '']));
+  setAX(s.row, '최근발송일', ctx.date); setAX(s.row, '발송수', s.sent + 1);
+  uSheet(SH_AXS, AXSH).appendRow([ctx.date, s.id, how, '보냄', D.n]);
+}
+/** 알림만 따로 보내기(모닝 브리핑을 이메일로 받지 않는 사람, 또는 그날 브리핑을 못 보낸 사람) */
+function axSendAlone(s, D, ctx) {
+  const m = axMsg(s, D, ctx, false), AD = briefAdToday(ctx.now), c = bConsentOf(s.k);
+  let subject = m.subject, html = m.html;
+  if (AD && axAdOk(c)) {   // 모닝 브리핑과 같은 규칙: 두 동의가 모두 있을 때만, 제목 앞 (광고), 보낸 사람 정보와 원클릭 수신 거부
+    const last = myBriefs(s.k).pop();
+    if (last) { subject = ('(광고) ' + subject).slice(0, 120); html = html.replace(/<\/div>$/, briefAdMailHtml(AD, String(last.r[BC['id']])) + '</div>'); }
+  }
+  const r = axSend('email', s, { subject: subject, html: html, text: m.text });
+  if (r.ok) axDone(s, D, ctx, '이메일'); else uSheet(SH_AXS, AXSH).appendRow([ctx.date, s.id, '이메일', '못 보냄: ' + r.why, D.n]);
+  return r;
+}
+/** 모닝 브리핑(briefDaily)이 부르는 창구: forUser(k) → {s, D, html} | null · done(x) · alone(x) */
+function axMorning(now) {
+  const ctx = axCtx(now), sent = axSentAll(now), subs = {};
+  axRows().forEach(o => { const s = axSubOf(o); if (s.state === AX_ST.on) subs[s.k] = s; });
+  return {
+    ctx: ctx,
+    forUser(k) { const s = subs[k]; if (!s) return null; const D = axBuild(s, ctx, sent); return D ? { s: s, D: D, html: axMsg(s, D, ctx, true).html } : null; },
+    done(x) { axDone(x.s, x.D, ctx, '모닝 브리핑에 함께'); x.s.last = ctx.date; },
+    alone(x) { const r = axSendAlone(x.s, x.D, ctx); if (r.ok) x.s.last = ctx.date; return r; }
+  };
+}
+/* ---------- 매일 오전 7시대(늦으면 9시대) — alertsInstall 이 트리거를 만듦 ----------
+   모닝 브리핑을 이메일로 받는 사람은 건너뜀(briefDaily 가 브리핑 메일에 함께 넣음). 한 사람에게 하루 한 통. */
+function alertsInstall() {
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'alertsDaily').forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('alertsDaily').timeBased().everyDays(1).atHour(7).inTimezone('Asia/Seoul').create();
+  ScriptApp.newTrigger('alertsDaily').timeBased().everyDays(1).atHour(9).inTimezone('Asia/Seoul').create();   // 7시에 한도·오류로 못 보낸 사람만 다시
+  axSheet(); uSheet(SH_AXL, AXLH); uSheet(SH_AXS, AXSH);
+}
+function alertsDaily() {
+  const now = new Date(), ctx = axCtx(now), sent = axSentAll(now);
+  let n = 0, stop = false;
+  axRows().forEach(o => {
+    if (stop) return;
+    const s = axSubOf(o);
+    if (s.state !== AX_ST.on || s.last === ctx.date || !axCanSend(s)) return;
+    if (axBriefMail(s.k, now)) return;                         // 모닝 브리핑 메일에 함께 들어감
+    if (MailApp.getRemainingDailyQuota() <= AX_RESERVE) { stop = true; uSheet(SH_AXS, AXSH).appendRow([ctx.date, '', '이메일', '하루 한도에 닿아 멈춤 — 남은 분은 다음 실행에', 0]); return; }
+    const D = axBuild(s, ctx, sent); if (!D) return;
+    if (axSendAlone(s, D, ctx).ok) n++;
+  });
+  axCleanup(now);
+  return n;
+}
+/* 오래된 기록 지우기 + 끈 지 30일 지난 이메일 원문 지우기(모닝 브리핑 연락처 보관 기간과 같음) */
+function axCleanup(now) {
+  const sh = book().getSheetByName(SH_AXL);
+  if (sh && sh.getLastRow() > 1) {
+    const lo = ymd(addDays(now, -AX_KEEP_DAYS)), v = sh.getRange(2, 1, sh.getLastRow() - 1, 1).getValues();
+    let k = 0; while (k < v.length && (v[k][0] instanceof Date ? ymd(v[k][0]) : String(v[k][0]).slice(0, 10)) < lo) k++;
+    for (let i = k; i >= 1; i--) sh.deleteRow(i + 1);
+  }
+  const lim = addDays(now, -BRIEF_KEEP_DAYS);
+  axRows().forEach(o => { const off = o.r[AXC['철회시각']]; if (String(o.r[AXC['상태']]) === AX_ST.off && off instanceof Date && off < lim && String(o.r[AXC['이메일']] || '')) setAX(o.row, '이메일', ''); });
+}
+/** 모닝 브리핑 자료를 만들 동네에 알림 구독자의 관심 단지 동네를 더함(급매·전세가율 급변 칸) — 구독자 수에는 넣지 않음 */
+function axAreaCodes() {
+  const out = {}, fm = axFavsMap();
+  axRows().forEach(o => { const s = axSubOf(o); if (s.state !== AX_ST.on) return; axFavs(s.k, fm).forEach(p => { out[p.code] = 1; }); });
+  return Object.keys(out);
 }

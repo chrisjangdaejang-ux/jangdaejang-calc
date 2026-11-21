@@ -4,7 +4,9 @@
      모닝 브리핑을 구독 중이면 관심 목록 단지 이름을 브리핑 ③ 내 관심 단지(brief.apts)에 더함(원래 있던 이름은 그대로, 우리가 넣은 이름만 뺄 때 함께 뺌).
      새 발송 채널은 없음 — 브리핑이 원래 보내는 ③ 칸을 쓴다.
    - [관심] 별 단추: JDJ_WATCH.star(p) HTML 을 아무 곳에 넣으면 눌렀을 때 넣기·빼기(문서 전체 클릭 위임). p = {sd, code, dong, jibun, apt, band}
-   - 머리줄 배지: 관심 단지의 어제·오늘 새 거래 중 관심 목록 화면에서 아직 안 본 것 → '★ 새 소식 N' (없으면 안 보임). 자료 today/g/{구}.json */
+   - 머리줄 배지: 관심 단지의 어제·오늘 새 거래 중 관심 목록 화면에서 아직 안 본 것 → '★ 새 소식 N' (없으면 안 보임). 자료 today/g/{구}.json
+   - 알림 종(assets/alerts-core.js 가 함께 실린 화면): 관심 단지 새 실거래·신고가·급매·큰 하락·전세가율 변화 + 청약 맞춤 알림 중 알림 센터(my/alerts/)에서
+     아직 안 본 수. 알림 설정·본 기록·최근 알림 기록은 이 기기 localStorage(jdj_alert_prefs·jdj_alert_seen·jdj_alert_log). 메일은 로그인 뒤 알림 센터에서 신청. */
 (function (root) {
   'use strict';
   var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
@@ -145,7 +147,9 @@
   /** {n 관심 단지 수, news 안 본 새 거래 수} */
   function summary() { const l = list(); if (!l.length) return Promise.resolve({ n: 0, news: 0 }); return gfiles(l).then(gf => ({ n: l.length, news: C.badge(l, gf, seen()), gf })); }
   function badge() {
-    const top = document.querySelector('header.top'); if (!top || location.pathname.indexOf(BASE + 'my/watch/') === 0) return;
+    const top = document.querySelector('header.top'); if (!top) return;
+    if (AC) { const old = top.querySelector('.jw-chip'); if (old) old.remove(); bell(top); return; }   // 알림 종이 '새 소식' 칸을 대신함
+    if (location.pathname.indexOf(BASE + 'my/watch/') === 0) return;
     summary().then(s => {
       let a = top.querySelector('.jw-chip');
       if (!s.news) { if (a) a.remove(); return; }
@@ -159,12 +163,73 @@
     });
   }
 
+  /* ---------- 알림(종 배지·알림 센터 공용) ---------- */
+  const AC = root.JDJ_ALERTS_CORE || null, AP = 'jdj_alert_prefs', AS = 'jdj_alert_seen', AL = 'jdj_alert_log', LOG_MAX = 150, LOG_DAYS = 30;
+  function aprefs() { let x = null; try { x = JSON.parse(ls.get(AP) || 'null'); } catch (e) {} return AC ? AC.cleanPrefs(x) : null; }
+  function setAprefs(p) { if (!AC) return null; const c = AC.cleanPrefs(p); ls.set(AP, JSON.stringify(c)); badge(); return c; }
+  function aseen() { const o = {}; try { (JSON.parse(ls.get(AS) || '[]') || []).forEach(id => { o[id] = 1; }); } catch (e) {} return o; }
+  /** 본 알림으로 남김(ids = 알림 id 목록 또는 묶음 D) */
+  function markAlertsSeen(ids) { ids = Array.isArray(ids) ? ids : ((ids && ids.ids) || []); const cur = Object.keys(aseen()), add = ids.filter(id => cur.indexOf(id) < 0); ls.set(AS, JSON.stringify(cur.concat(add).slice(-1000))); }
+  function alog() { try { const a = JSON.parse(ls.get(AL) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+  /** 지금 알림을 이 기기 기록에 더함(처음 본 시각) — 알림 센터의 '최근 알림' */
+  function logAdd(D) {
+    const cur = alog(), have = {}, now = Date.now(), lo = now - LOG_DAYS * 864e5;
+    cur.forEach(x => { have[x.id] = 1; });
+    const add = [];
+    D.groups.forEach(g => g.ev.forEach(e => { if (!have[e.id]) add.push({ id: e.id, k: e.k, t: e.t, s: e.s, tags: e.tags || [], pid: g.pid, p: g.p, at: now }); }));
+    D.cy.forEach(e => { if (!have[e.id]) add.push({ id: e.id, k: e.k, t: e.t, s: e.s, u: e.u || '', no: e.no, at: now }); });
+    if (!add.length && cur.every(x => x.at >= lo)) return cur;
+    const next = add.concat(cur).filter(x => x && x.at >= lo).slice(0, LOG_MAX);
+    ls.set(AL, JSON.stringify(next));
+    return next;
+  }
+  /** 기록 속 알림을 지금 설정으로 보여 줄지: 관심 목록에서 뺀 단지·끈 단지·끈 종류·끈 청약은 숨김 */
+  function shown(x, P, l) {
+    if (!x) return false;
+    if (AC.CY_KINDS[x.k]) return P.cy.on && P.cy.kinds[x.k] !== false;
+    return !!AC.KINDS[x.k] && P.kinds[x.k] !== false && P.mute.indexOf(x.pid) < 0 && (l || list()).some(p => C.idOf(p) === x.pid);
+  }
+  const BF = {};
+  const bfile = code => BF[code] || (BF[code] = fetch(DATA + 'brief/' + code + '.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null));
+  let NP = null;
+  const notices = () => NP || (NP = fetch(DATA + 'chungyak/notices.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(j => (j && j.rows) || []).catch(() => []));
+  /** 지금 알림: {D 묶음(끈 단지·끈 종류 뺌), unread 안 본 수, P 설정, any 알림 받을 것이 있는지, log 최근 알림 기록} */
+  function alertsNow() {
+    if (!AC) return Promise.resolve(null);
+    const l = list(), P = aprefs();
+    if (!l.length && !P.cy.on) return Promise.resolve({ D: { groups: [], cy: [], n: 0, ids: [] }, unread: 0, P, any: false, log: alog() });
+    const codes = [...new Set(l.map(p => p.code))];
+    return Promise.all([gfiles(l), Promise.all(codes.map(bfile)), P.cy.on ? notices() : Promise.resolve([])]).then(([gf, bs, N]) => {
+      const sx = {}; codes.forEach((c, i) => { sx[c] = bs[i]; });
+      const D = AC.digest({ places: l, g: gf, s: sx, notices: N, prefs: P, today: today() });
+      const log = logAdd(D).filter(x => shown(x, P, l)), seen = aseen();
+      return { D, unread: log.filter(x => !seen[x.id]).length, P, any: true, log, gf };
+    });
+  }
+  const BELL = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 22a2.4 2.4 0 0 0 2.4-2.4H9.6A2.4 2.4 0 0 0 12 22zm7.2-6V11a7.2 7.2 0 0 0-5.4-7V3.3a1.8 1.8 0 1 0-3.6 0V4A7.2 7.2 0 0 0 4.8 11v5L3 17.8v.9h18v-.9z"/></svg>';
+  function bell(top) {
+    if (location.pathname.indexOf(BASE + 'my/alerts/') === 0) return;
+    alertsNow().then(r => {
+      let a = top.querySelector('.jw-bell');
+      if (!r || !r.any) { if (a) a.remove(); return; }
+      if (!a) {
+        a = document.createElement('a'); a.className = 'jw-bell'; a.href = BASE + 'my/alerts/'; a.setAttribute('data-track', 'alert_bell');
+        const brand = top.querySelector('.brand');
+        if (brand && brand.nextSibling) top.insertBefore(a, brand.nextSibling); else top.appendChild(a);
+      }
+      a.innerHTML = BELL + (r.unread ? `<b>${r.unread > 99 ? '99+' : r.unread}</b>` : '');
+      a.setAttribute('aria-label', r.unread ? `새 알림 ${r.unread}건 — 알림 센터 열기` : '알림 센터 열기');
+    });
+  }
+
   const CSS = `.jw-star{display:inline-flex;align-items:center;justify-content:center;gap:3px;flex:none;font:inherit;font-size:14px;font-weight:800;min-height:44px;min-width:44px;padding:0 12px;border-radius:999px;border:1.5px solid #E5E8EB;background:#fff;color:#4E5968;cursor:pointer;line-height:1;white-space:nowrap}
 .jw-star span{font-size:13.5px}.jw-star.on{border-color:#B8942A;color:#8A6A12;background:#FBF8EF}.jw-star:hover{border-color:#B8942A}
 .jw-star.lb{margin-top:10px;font-size:15px;padding:0 16px}.jw-star.lb span{font-size:15px}
 .jw-star.sm{min-height:40px;min-width:40px;padding:0 8px;font-size:17px}.jw-star.sm span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .jw-chip{display:inline-flex;align-items:center;gap:4px;min-height:36px;padding:0 11px;border-radius:999px;background:#FBF8EF;border:1px solid #EFE6CC;color:#8A6A12;font-size:13.5px;font-weight:800;text-decoration:none;white-space:nowrap;margin-left:auto}
 .jw-chip b{color:#C2410C}
+.jw-bell{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;width:44px;height:44px;border-radius:999px;color:#4E5968;text-decoration:none;margin-left:auto}
+.jw-bell:hover{background:#F2F4F6}.jw-bell b{position:absolute;top:3px;right:1px;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:#C2410C;color:#fff;font-size:11.5px;font-weight:800;line-height:19px;text-align:center;box-shadow:0 0 0 2px #fff}
 .jw-toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(78px + env(safe-area-inset-bottom));z-index:80;max-width:min(92vw,440px);background:#191F28;color:#fff;border-radius:12px;padding:12px 16px;font-size:14.5px;line-height:1.5;box-shadow:0 6px 20px rgba(0,0,0,.2)}
 body.has-sheet .jw-toast{bottom:auto;top:72px}   /* 지도 카드가 열려 있으면 카드 단추를 가리지 않게 위로 */
 .jw-toast a{color:#9CC0FF;font-weight:700;margin-left:6px;white-space:nowrap}
@@ -179,5 +244,6 @@ body.has-sheet .jw-toast{bottom:auto;top:72px}   /* 지도 카드가 열려 있�
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready); else ready();
   addEventListener('storage', e => { if (e.key === C.KEY) { paintStars(); badge(); } });
 
-  root.JDJ_WATCH = { list, has, toggle, star, paintStars, onChange, sync, briefState, briefSync, gfile, gfiles, seen, markSeen, summary, badge, toast, today };
+  root.JDJ_WATCH = { list, has, toggle, star, paintStars, onChange, sync, briefState, briefSync, gfile, gfiles, seen, markSeen, summary, badge, toast, today,
+    aprefs, setAprefs, aseen, markAlertsSeen, alog, alertsNow, shown, notices, apiUrl, tok };
 })(typeof window !== 'undefined' ? window : this);
