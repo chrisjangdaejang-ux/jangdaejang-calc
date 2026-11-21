@@ -215,7 +215,12 @@ const pe = p => R.profileError(R.cleanProfile(p));
 check('화면 검사: 정상', pe(PROF) === '');
 check('화면 검사: 등록번호', /등록번호/.test(pe(Object.assign({}, PROF, { reg: '' }))));
 check('화면 검사: 소속 본인 이름', /소속공인중개사/.test(pe(Object.assign({}, PROF, { role: 'member' }))));
-check('화면 검사: 자격사 이름', /이름/.test(pe({ role: 'licensed', title: '세무사', office: 'a', phone: '010-1111-2222' })));
+check('화면 검사: 자격사는 이름 또는 활동명(사무소 이름만 있어도 됨)', pe({ role: 'licensed', title: '세무사', office: 'a', phone: '010-1111-2222' }) === '' && /이름 또는 활동명/.test(pe({ role: 'licensed', title: '세무사', phone: '010-1111-2222' })));
+check('화면 검사: 비중개사 필수는 이름 또는 활동명 + 연락처 하나', ['seller', 'consult', 'licensed'].every(r => pe({ role: r, name: '김민수', phone: '010-1111-2222' }) === '' && pe({ role: r, name: '김민수', kakao: 'https://pf.kakao.com/_abc' }) === ''));
+check('화면 검사: 비중개사 상호·사업자번호·자격은 선택', ['seller', 'consult', 'licensed'].every(r => Object.keys(R.fieldsOf(r)).filter(k => R.fieldsOf(r)[k][1]).join() === 'name'));
+check('화면 검사: 칸마다 이유', ['agent', 'member', 'seller', 'consult', 'licensed'].every(r => Object.values(R.fieldsOf(r)).every(f => f[2] && f[2].length > 5)) && /공인중개사법/.test(R.fieldsOf('agent').reg[2]));
+check('화면 검사: 빠진 칸 모두 한 줄씩(이유 포함)', R.profileErrors(R.cleanProfile({ role: 'agent' })).length === 5 && R.profileErrors(R.cleanProfile({ role: 'agent' })).every(x => /공인중개사법/.test(x)) && R.profileErrors(R.cleanProfile({ role: 'consult' })).length === 2);
+check('화면 검사: 자격은 비워도 되지만 적으면 목록 안에서', pe({ role: 'licensed', name: '김', title: '요리사', phone: '010-1111-2222' }) !== '');
 check('화면 검사: 예전 유형(pro) → 컨설팅·전문가(활동명·연락처만)', pe({ role: 'pro', office: 'a', phone: '010-1111-2222' }) === '' && R.cleanProfile({ role: 'pro' }).role === 'consult'
   && R.cleanProfile({ role: 'pro', title: '세무사' }).role === 'licensed');
 check('화면 검사: 사칭', pe(Object.assign({}, PROF, { office: '집예보 인증 사무소' })) !== '');
@@ -260,7 +265,15 @@ check('컨설팅·전문가: 활동명·연락처만으로 저장(사업자번�
 op = post({ action: 'proOpen', id: r.id, tk: r.token });
 check('컨설팅·전문가: 의견 상자 이름', op.ok && op.report.profile.role === 'consult' && R.opinionLabel(R.cleanProfile(op.report.profile)) === '장대장 부동산 전문가 의견', op.report && op.report.profile);
 r = post({ action: 'proSave', o: C.o, t: C.t, profile: Object.assign({}, CONS, { office: '' }), secs: ['fv'] });
-check('컨설팅·전문가: 상호·활동명 없음 → 거절', !r.ok && /활동명/.test(r.err), r);
+check('컨설팅·전문가: 상호 없이 이름만 → 저장(상호는 선택)', r.ok, r);
+r = post({ action: 'proSave', o: C.o, t: C.t, profile: Object.assign({}, CONS, { office: '', name: '' }), secs: ['fv'] });
+check('컨설팅·전문가: 이름·활동명 모두 없음 → 거절', !r.ok && /이름 또는 활동명/.test(r.err), r);
+for (const rl of ['seller', 'licensed']) {
+  r = post({ action: 'proSave', o: C.o, t: C.t, profile: { role: rl, name: '김민수', kakao: 'https://pf.kakao.com/_abc' }, secs: ['fv'] });
+  check(`서버: ${rl} 이름 + 카카오톡만으로 저장`, r.ok, r);
+}
+r = post({ action: 'proSave', o: C.o, t: C.t, profile: { role: 'licensed', name: '김민수', title: '요리사', phone: '010-1111-2222' }, secs: ['fv'] });
+check('서버: 자격은 적으면 목록 안에서만', !r.ok && /자격/.test(r.err), r);
 const TAX = { role: 'licensed', title: '세무사', name: '김세무', office: '김세무회계', phone: '02-555-6666' };
 r = post({ action: 'proSave', o: C.o, t: C.t, profile: TAX, secs: ['money'], notes: { summary: '양도세 신고 수임료 50% 할인해 드려요' } });
 check('세무사: 수임료 할인 문구 → 거절(광고 규정)', !r.ok && /세무사 광고 규정/.test(r.err), r);
@@ -284,7 +297,7 @@ check('유형 키 화면·서버 같음', Object.keys(R.ROLE).join() === Object.
   const PF = { role: 'consult', office: '○○대 부동산학과', title: '○○대 교수', phone: '', kakao: 'https://pf.kakao.com/_abc' };
   check('교수·컨설턴트: 전화 없이 카톡 채널만 있어도 통과(화면)', pe(PF) === '', pe(PF));
   check('교수·컨설턴트: 연락 방법이 하나도 없으면 안내(화면)', /전화번호나 카카오톡/.test(pe(Object.assign({}, PF, { kakao: '' }))));
-  check('공인중개사는 전화번호 계속 필수(화면)', /공인중개사는 연락처/.test(pe(Object.assign({}, PROF, { phone: '' }))), pe(Object.assign({}, PROF, { phone: '' })));
+  check('공인중개사는 전화번호 계속 필수(화면)', /연락처\(전화번호\).*공인중개사법/.test(pe(Object.assign({}, PROF, { phone: '' }))), pe(Object.assign({}, PROF, { phone: '' })));
 }
 console.log(`전문가 이름 리포트 검증: ${pass}개 확인, ${fail}개 어긋남`);
 process.exit(fail ? 1 : 0);

@@ -64,50 +64,61 @@
     return (10 - s % 10) % 10 === +d[9];
   }
   /* 유형별 칸: 필수(req)·보임(show)·이름표(label) — 편집 화면과 검사가 같은 표를 씀 */
+  /* 유형별 칸: [이름표, 필수(1)/선택(0), 왜 필요한지(작은 글씨)] — 편집 화면·검사·서버(agent-backend.gs proProfile)가 같은 기준.
+     공인중개사: 공인중개사법 제18조의2·시행령 제17조의2 표시 항목은 모두 필수.
+     그 밖의 전문가(분양대행·컨설팅·자격사): 필수는 '이름 또는 활동명' 한 칸 + 연락처(전화나 카카오톡 채널) 하나. 소속·상호·사업자번호 등은 선택(11/21 대표 결정). */
+  const LAW = '법으로 꼭 표시해야 해요(공인중개사법)';
+  const NM = ['이름 또는 활동명', 1, '손님이 누가 보낸 자료인지 알 수 있게 보여 줘요.'];
   function fieldsOf(r) {
     const F = {
-      agent: { office: ['중개사무소 이름', 1], ceo: ['대표 공인중개사 이름', 1], reg: ['중개사무소 등록번호', 1], addr: ['중개사무소 소재지', 1] },
-      member: { office: ['중개사무소 이름', 1], ceo: ['대표 공인중개사 이름', 1], name: ['내 이름(소속공인중개사)', 1], reg: ['중개사무소 등록번호', 1], addr: ['중개사무소 소재지', 1] },
-      seller: { office: ['분양대행사 상호', 1], biz: ['사업자등록번호 (선택)', 0], ceo: ['대표자 이름 (선택)', 0], name: ['담당자 이름 (선택)', 0], title: ['담당 현장·직함 (선택)', 0], addr: ['사무실 주소 (선택)', 0] },
-      consult: { office: ['이름·활동명 또는 소속(학교·회사)', 1], name: ['이름 (선택)', 0], title: ['소개 한 줄 (선택, 예: ○○대 교수)', 0], biz: ['사업자등록번호 (선택)', 0], addr: ['사무실 주소 (선택)', 0] },
-      licensed: { title: ['자격', 1], name: ['이름', 1], office: ['사무소 이름', 1], reg: ['자격 등록번호 (선택)', 0], biz: ['사업자등록번호 (선택)', 0], addr: ['사무소 주소 (선택)', 0] }
+      agent: { office: ['중개사무소 이름', 1, LAW], ceo: ['대표 공인중개사 이름', 1, LAW], reg: ['중개사무소 등록번호', 1, LAW], addr: ['중개사무소 소재지', 1, LAW] },
+      member: { office: ['중개사무소 이름', 1, LAW], ceo: ['대표 공인중개사 이름', 1, LAW], name: ['내 이름(소속공인중개사)', 1, '손님이 상담한 사람을 알 수 있게 보여 줘요.'], reg: ['중개사무소 등록번호', 1, LAW], addr: ['중개사무소 소재지', 1, LAW] },
+      seller: { name: NM, office: ['분양대행사 상호 (선택)', 0, '넣으면 이름 옆에 함께 보여요.'], title: ['담당 현장·직함 (선택)', 0, '어느 현장 담당인지 알려 주면 손님이 믿기 쉬워요.'], ceo: ['대표자 이름 (선택)', 0, '넣으면 함께 보여요.'], biz: ['사업자등록번호 (선택)', 0, '넣으면 함께 보여요. 숫자 10자리예요.'], addr: ['사무실 주소 (선택)', 0, '넣으면 함께 보여요.'] },
+      consult: { name: NM, office: ['소속·상호 (선택)', 0, '학교·회사·채널 이름이에요. 넣으면 이름 옆에 함께 보여요.'], title: ['소개 한 줄 (선택)', 0, '예: ○○대 교수, ○○TV 운영. 넣으면 함께 보여요.'], biz: ['사업자등록번호 (선택)', 0, '넣으면 함께 보여요. 숫자 10자리예요.'], addr: ['사무실 주소 (선택)', 0, '넣으면 함께 보여요.'] },
+      licensed: { name: NM, title: ['자격 (선택)', 0, '세무사·법무사 등 자격을 고르면 이름 옆에 보여요.'], office: ['사무소 이름 (선택)', 0, '넣으면 함께 보여요.'], reg: ['자격 등록번호 (선택)', 0, '넣으면 함께 보여요.'], biz: ['사업자등록번호 (선택)', 0, '넣으면 함께 보여요. 숫자 10자리예요.'], addr: ['사무소 주소 (선택)', 0, '넣으면 함께 보여요.'] }
     };
     return F[roleOf(r)];
   }
-  /* 빠진 칸 안내(서버와 같은 기준). 빈 문자열이면 통과 */
-  function profileError(p) {
-    const r = p.role, d = digits(p.phone), f = fieldsOf(r), need = k => f[k] && f[k][1];
-    if ([p.office, p.ceo, p.name, p.title].some(x => ASSIST.test(x || ''))) return '중개보조원은 이름을 넣어 보낼 수 없어요. 개업·소속공인중개사 이름으로 보내 주세요.';
-    if (!p.office) return r === 'seller' ? '분양대행사 상호를 적어 주세요.' : r === 'consult' ? '상호 또는 활동명을 적어 주세요.' : r === 'licensed' ? '사무소 이름을 적어 주세요.' : '중개사무소 이름을 적어 주세요.';
-    if (d && !(/^0\d{8,10}$/.test(d) || /^1[5-9]\d{6}$/.test(d))) return '전화번호를 다시 확인해 주세요.';
-    if (!d && !p.kakao) return BROKER(r) ? '연락처(전화번호)를 적어 주세요. 공인중개사는 연락처를 꼭 표시해야 해요.' : '고객이 문의할 수 있게 전화번호나 카카오톡 채널 주소 중 하나를 적어 주세요.';
-    if (BROKER(r) && !d) return '연락처(전화번호)를 적어 주세요. 공인중개사는 연락처를 꼭 표시해야 해요.';
+  /** 연락처 칸 이름표·필수·이유 */
+  const contactOf = r => BROKER(r) ? { phone: ['전화번호', 1, LAW], kakao: ['카카오톡 채널 주소 (선택)', 0, '넣으면 손님이 카카오톡으로 바로 문의할 수 있어요.'] }
+    : { phone: ['전화번호 (전화나 카카오톡 중 하나)', 2, '손님이 문의할 곳이 하나는 있어야 해요.'], kakao: ['카카오톡 채널·오픈채팅 주소 (전화나 카카오톡 중 하나)', 2, '전화번호를 알리고 싶지 않으면 이것만 넣어도 돼요.'] };
+  /** 보여 줄 이름(비중개사는 이름 → 없으면 상호) */
+  const nameOf = p => p.office || p.name || '';   // 머리 큰 글씨: 상호가 있으면 상호, 없으면 이름
+  /** 빠진 칸 안내를 모두(한 줄씩). 서버와 같은 기준 */
+  function profileErrors(p) {
+    const r = p.role, d = digits(p.phone), out = [];
+    if ([p.office, p.ceo, p.name, p.title].some(x => ASSIST.test(x || ''))) return ['중개보조원은 이름을 넣어 보낼 수 없어요. 개업·소속공인중개사 이름으로 보내 주세요.'];
+    if (d && !(/^0\d{8,10}$/.test(d) || /^1[5-9]\d{6}$/.test(d))) out.push('전화번호를 다시 확인해 주세요. 숫자 9~11자리예요.');
     if (BROKER(r)) {
-      if (digits(p.reg).length < 5) return '중개사무소 등록번호를 적어 주세요. 공인중개사는 등록번호를 꼭 표시해야 해요.';
-      if (!p.ceo) return '개업공인중개사(대표) 이름을 적어 주세요.';
-      if (!p.addr) return '중개사무소 소재지(주소)를 적어 주세요.';
-      if (r === 'member' && !p.name) return '소속공인중개사 본인 이름을 적어 주세요.';
+      if (!p.office) out.push('중개사무소 이름을 적어 주세요. ' + LAW + '.');
+      if (!d) out.push('연락처(전화번호)를 적어 주세요. ' + LAW + '.');
+      if (digits(p.reg).length < 5) out.push('중개사무소 등록번호를 적어 주세요. ' + LAW + '.');
+      if (!p.ceo) out.push('개업공인중개사(대표) 이름을 적어 주세요. ' + LAW + '.');
+      if (!p.addr) out.push('중개사무소 소재지(주소)를 적어 주세요. ' + LAW + '.');
+      if (r === 'member' && !p.name) out.push('소속공인중개사 본인 이름을 적어 주세요. 손님이 상담한 사람을 알 수 있어야 해요.');
     } else {
-      if ([p.office, p.name, p.title].some(x => BROKER_WORD.test(x || ''))) return "공인중개사가 아니면 '공인중개사'·'중개사무소' 같은 이름을 쓸 수 없어요(공인중개사법 제18조). 공인중개사라면 위에서 공인중개사 유형을 골라 주세요.";
-      if (digits(p.biz) && !bizOk(p.biz)) return '사업자등록번호 10자리를 다시 확인해 주세요.';
-      if (need('ceo') && !p.ceo) return '대표자 이름을 적어 주세요.';
-      if (r === 'licensed' && QUALS.indexOf(p.title) < 0) return '자격(세무사·법무사 등)을 골라 주세요.';
-      if (need('name') && !p.name) return '이름을 적어 주세요.';
+      if (!p.name && !p.office) out.push('이름 또는 활동명을 적어 주세요. 손님이 누가 보낸 자료인지 알 수 있어야 해요.');
+      if (!d && !p.kakao) out.push('전화번호나 카카오톡 채널 주소 중 하나를 적어 주세요. 손님이 문의할 곳이 있어야 해요.');
+      if ([p.office, p.name, p.title].some(x => BROKER_WORD.test(x || ''))) out.push("공인중개사가 아니면 '공인중개사'·'중개사무소' 같은 이름을 쓸 수 없어요(공인중개사법 제18조). 공인중개사라면 위에서 공인중개사 유형을 골라 주세요.");
+      if (digits(p.biz) && !bizOk(p.biz)) out.push('사업자등록번호 10자리를 다시 확인해 주세요. 비워 둬도 돼요.');
+      if (r === 'licensed' && p.title && QUALS.indexOf(p.title) < 0) out.push('자격은 목록(세무사·법무사 등)에서 골라 주세요. 비워 둬도 돼요.');
     }
-    if ([p.office, p.ceo, p.name, p.title].some(x => FAKE.test(x || ''))) return '이름·소속에는 집예보가 쓴 것처럼 보이는 말을 넣을 수 없어요.';
-    return '';
+    if ([p.office, p.ceo, p.name, p.title].some(x => FAKE.test(x || ''))) out.push('이름·소속에는 집예보가 쓴 것처럼 보이는 말을 넣을 수 없어요.');
+    return out;
   }
+  /* 첫 번째 안내(빈 문자열이면 통과) */
+  const profileError = p => profileErrors(p)[0] || '';
   /* 의견 상자 이름: '홍길동 공인중개사 의견' · '○○ 분양대행 의견' · '장대장 부동산 전문가 의견' · '김세무 세무사 의견' */
   function who(p) {
     const r = roleOf(p.role, p.title);
-    if (r === 'seller') return `${p.office || ''} 분양대행`.trim();
+    if (r === 'seller') return `${p.office || p.name || ''} 분양대행`.trim();
     if (r === 'consult') return `${p.name || p.office || ''} ${p.name ? '부동산 전문가' : ''}`.trim() || '부동산 전문가';
-    if (r === 'licensed') return `${p.name || ''} ${p.title || '자격사'}`.trim();
+    if (r === 'licensed') return `${p.name || p.office || ''} ${p.title || '자격사'}`.trim();
     return `${(r === 'member' ? p.name : p.ceo) || ''} 공인중개사`.trim();
   }
   const opinionLabel = p => who(p) + ' 의견';
   /* 표지·공유 제목의 '보낸 분': 사무소 이름이 이미 들어간 이름표(분양대행)는 겹쳐 쓰지 않음 */
-  const senderOf = p => { const w = who(p); return p.office && w.indexOf(p.office) !== 0 ? `${p.office} ${w}` : w; };
+  const senderOf = p => { const w = who(p); return p.office && w.indexOf(p.office) < 0 ? `${p.office} ${w}` : w; };
   /* 편집 화면 경고(저장은 막지 않음 — 서버도 세무사 금지 문구만 거절) */
   function adWarn(p, notes) {
     const out = [];
@@ -162,9 +173,9 @@
     const r = roleOf(p.role, p.title);
     const nm = r === 'member' ? `소속공인중개사 ${p.name} · 대표 ${p.ceo}`
       : r === 'agent' ? `대표 공인중개사 ${p.ceo}`
-      : r === 'seller' ? [p.ceo ? '대표 ' + p.ceo : '', p.name ? `담당 ${p.name}${p.title ? ' (' + p.title + ')' : ''}` : (p.title || '')].filter(Boolean).join(' · ')
-      : r === 'licensed' ? `${p.title} ${p.name}`.trim()
-      : [p.name, p.title || '부동산 컨설팅·전문가'].filter(Boolean).join(' · ');
+      : r === 'seller' ? [p.ceo ? '대표 ' + p.ceo : '', p.name && p.office ? `담당 ${p.name}${p.title ? ' (' + p.title + ')' : ''}` : (p.title || '')].filter(Boolean).join(' · ')
+      : r === 'licensed' ? `${p.title || '자격사'} ${p.office ? p.name : ''}`.trim()
+      : [p.office ? p.name : '', p.title || '부동산 컨설팅·전문가'].filter(Boolean).join(' · ');
     const lines = [
       p.reg ? `${BROKER(r) ? '중개사무소 등록번호' : r === 'licensed' ? (p.title || '자격') + ' 등록번호' : '등록번호'} ${esc(p.reg)}` : '',
       p.biz && !BROKER(r) ? `사업자등록번호 ${esc(bizFmt(p.biz))}` : '',
@@ -172,8 +183,8 @@
       p.phone ? `전화 ${esc(p.phone)}` : ''
     ].filter(Boolean);
     return `<header class="pro-head">
-      <div class="pro-id">${p.logo ? `<img class="pro-logo" src="${p.logo}" alt="${esc(p.office)} 로고">` : `<div class="pro-logo pro-logo0" aria-hidden="true">${esc((p.office || '?').slice(0, 1))}</div>`}
-        <div><div class="pro-office">${esc(p.office)}<span class="pro-kind">${esc(r === 'licensed' && p.title ? p.title : ROLE[r].tag)}</span></div><div class="pro-nm">${esc(nm)}</div><div class="pro-sub">${lines.join(' · ')}</div></div></div>
+      <div class="pro-id">${p.logo ? `<img class="pro-logo" src="${p.logo}" alt="${esc(nameOf(p))} 로고">` : `<div class="pro-logo pro-logo0" aria-hidden="true">${esc((nameOf(p) || '?').slice(0, 1))}</div>`}
+        <div><div class="pro-office">${esc(nameOf(p))}<span class="pro-kind">${esc(r === 'licensed' && p.title ? p.title : ROLE[r].tag)}</span></div><div class="pro-nm">${esc(nm)}</div><div class="pro-sub">${lines.join(' · ')}</div></div></div>
       ${o.noBtn ? '' : `<button type="button" class="pro-ask noprint" data-pro-ask>이 전문가에게 문의하기</button>`}
     </header>`;
   }
@@ -294,7 +305,7 @@
     return (await copy(o.url)) ? 'copy' : 'fail';
   }
 
-  const API = { ROLE, QUALS, BROKER, roleOf, fieldsOf, bizOk, bizFmt, adWarn, TAX_AD, SECS, SEC_KEYS, DEFAULT_SECS, NOTE_MAX, LOGO_MAX, FAKE, esc, cleanProfile, profileError, cleanNotes, notesError, cleanSecs,
+  const API = { ROLE, QUALS, BROKER, roleOf, fieldsOf, bizOk, bizFmt, adWarn, TAX_AD, SECS, SEC_KEYS, DEFAULT_SECS, NOTE_MAX, LOGO_MAX, FAKE, esc, cleanProfile, profileError, profileErrors, contactOf, nameOf, LAW, cleanNotes, notesError, cleanSecs,
     who, opinionLabel, senderOf, linkOf, parseHash, noteHtml, headHtml, askSheet, coverHtml, footHtml, apply, shrinkLogo, share, copy, kakaoSdk, ym6, telOf };
   root.JDJ_PRO = API;
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

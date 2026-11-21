@@ -15,6 +15,9 @@
   const SITE = (((root.JDJ_SITE || {}).SITE_NAME) || '').trim() || '집예보';
   const PRO = () => root.JDJ_PRO || (typeof require === 'function' ? require('./pro-report.js') : null);
   const DISCLAIM = '이 자료는 참고용이며 법정 서류인 중개대상물 확인·설명서를 대신하지 않습니다.';
+  const DANJI_NOTE = '특정 매물 광고(호가·동호수)는 개업공인중개사만 할 수 있어 공인중개사가 아니면 단지 분석 자료로 만들어져요.';
+  /** 표시 정보 유형 → 만들 자료 종류: 공인중개사 'listing'(매물 설명서), 그 밖 'danji'(단지 분석 자료) */
+  const kindOf = p => PRO().BROKER(PRO().cleanProfile(p || {}).role) ? 'listing' : 'danji';
   const PY = 3.3058;
 
   /* ---------- 이용 횟수 ---------- */
@@ -85,10 +88,11 @@
       if (p.role === 'member' && p.name) L.push(['소속공인중개사', p.name]);
       L.push(['전화', p.phone]);
     } else {
-      L.push([p.role === 'seller' ? '분양대행사' : p.role === 'licensed' ? (p.title || '자격사') + ' 사무소' : '소속·활동명', p.office]);
-      if (p.name) L.push(['이름', p.name + (p.title && p.role !== 'licensed' ? ` (${p.title})` : '')]);
+      const ttl = p.role === 'licensed' ? (p.title || '') : p.title;
+      L.push([p.role === 'licensed' && p.title ? p.title : '이름', (p.name || p.office) + (ttl && p.role !== 'licensed' ? ` (${ttl})` : '')]);
+      if (p.name && p.office) L.push([p.role === 'seller' ? '분양대행사' : p.role === 'licensed' ? '사무소' : '소속', p.office]);
       if (p.phone) L.push(['전화', p.phone]);
-      else if (p.kakao) L.push(['카카오톡', p.kakao]);
+      if (p.kakao) L.push(['카카오톡', p.kakao]);
     }
     const lines = L.filter(x => x[1]);
     return { broker, err, p, lines, one: lines.map(x => `${x[0]} ${x[1]}`).join(' · '),
@@ -182,7 +186,10 @@
     const list = M.trades(u), alt = (!sm.price || M.isFew(u)) && last;
     const price = alt ? last.price : sm.price;
     const asOfT = { to: IX.dataTo || months[months.length - 1], at: String(IX.updated || '').slice(0, 10) };
-    const S = { apt: u[2], dong: u[1], gu, sido, short: sdo.short || sido, band: u[3], area: u[4], code: u[0], date: c.date || today(),
+    /* 공인중개사가 아니면(c.kind 'danji') 특정 매물 표시(호가·동·층·메모)를 싣지 않는 '단지 분석 자료' — 공인중개사법 제18조의2 제2항 */
+    const danji = c.kind === 'danji';
+    if (danji) c = Object.assign({}, c, { ask: 0, bd: '', fl: '', memo: '' });
+    const S = { kind: danji ? 'danji' : 'listing', title: danji ? '단지 분석 자료' : '매물 설명서', apt: u[2], dong: u[1], gu, sido, short: sdo.short || sido, band: u[3], area: u[4], code: u[0], date: c.date || today(),
       bd: String(c.bd || '').slice(0, 12), fl: String(c.fl || '').slice(0, 8), memo: c.memo || '', disclaim: DISCLAIM };
     S.ask = c.ask > 0 ? { amt: c.ask, vs: price > 0 ? Math.round((c.ask - price) / price * 1000) / 10 : null } : null;
     /* 1) 같은 단지 같은 평형 실거래 */
@@ -212,10 +219,10 @@
     const base = S.ask ? S.ask.amt : price;
     const adj = c.ADJ && c.ADJ.isAdjusted ? c.ADJ.isAdjusted(S.short, gu, S.date) : 'ask';
     const tx = taxRows(base, u[4], adj, c.TAX);
-    S.tax = tx ? Object.assign(tx, { baseKind: S.ask ? 'ask' : 'price', adj, src: `지방세법·지방세특례제한법 기준 · ${SITE} 세금 계산기와 같은 계산`, asOf: tx.asOf,
+    S.tax = tx ? Object.assign(tx, { baseKind: S.ask ? 'ask' : danji ? 'band' : 'price', adj, src: `지방세법·지방세특례제한법 기준 · ${SITE} 세금 계산기와 같은 계산`, asOf: tx.asOf,
       note: adj === 'ask' ? '이 지역이 조정대상지역인지 자료로 정하지 못해 조정대상지역이 아닌 것으로 계산했어요. 집이 여러 채면 세금이 더 나올 수 있어요.' : '' })
       : { miss: '가격 자료가 없어 취득세를 계산하지 못했어요.', rows: [] };
-    S.gloss = GLOSS;
+    S.gloss = danji ? GLOSS.filter(g => g[0] !== '호가') : GLOSS;
     return S;
   }
 
@@ -468,31 +475,50 @@
   const PKEY = 'jdj_pro_profile';
   function loadProfile() { try { return PRO().cleanProfile(JSON.parse(root.localStorage.getItem(PKEY) || '{}')); } catch (e) { return PRO().cleanProfile({}); } }
   function saveProfile(p) { try { const old = JSON.parse(root.localStorage.getItem(PKEY) || '{}') || {}; const c = PRO().cleanProfile(Object.assign({}, p, { logo: old.logo || '' })); root.localStorage.setItem(PKEY, JSON.stringify(c)); } catch (e) {} }
-  /** box 안에 유형·이름·등록번호 칸을 그리고 바뀔 때마다 on(profile) */
+  /** box 안에 유형·이름·등록번호 칸을 그리고 바뀔 때마다 on(profile).
+      유형을 고르면 꼭 필요한 칸만 먼저 보이고(칸마다 왜 필요한지 작은 글씨), 선택 칸은 [선택 칸 더 보기]로 펼침. 빠진 칸은 한 줄씩 이유와 함께 안내. */
   function mountProfile(box, on) {
-    const R = PRO(); let p = loadProfile();
-    const K = ['office', 'ceo', 'name', 'title', 'reg', 'biz', 'addr', 'phone', 'kakao'];
-    const ph = { office: '예: 잠실한빛공인중개사사무소', ceo: '예: 홍길동', name: '예: 김민수', reg: '예: 11710-2020-00123', biz: '숫자 10자리', addr: '예: 서울 송파구 올림픽로 000, 1층', phone: '예: 02-000-0000', kakao: 'https://open.kakao.com/… (선택)' };
+    const R = PRO(); let p = loadProfile(), more = false;
+    const K = ['name', 'office', 'ceo', 'title', 'reg', 'addr', 'phone', 'kakao', 'biz'];
+    const ph = { office: '예: 잠실한빛공인중개사사무소', ceo: '예: 홍길동', name: '예: 김민수', reg: '예: 11710-2020-00123', biz: '숫자 10자리', addr: '예: 서울 송파구 올림픽로 000, 1층', phone: '예: 02-000-0000', kakao: 'https://pf.kakao.com/…' };
+    const PH = { seller: { office: '예: ○○분양대행(주)', title: '예: ○○역 ○○아파트 분양 상담', name: '예: 김민수 또는 활동명' }, consult: { office: '예: ○○부동산연구소, ○○TV', title: '예: ○○대 교수', name: '예: 김민수 또는 활동명' }, licensed: { office: '예: ○○세무회계', name: '예: 김민수' } };
     box.innerHTML = `<label class="bt-l" for="btRole">나는</label><select id="btRole">${Object.keys(R.ROLE).map(k => `<option value="${k}">${esc(R.ROLE[k].t)}</option>`).join('')}</select>
-      <div class="bt-two">${K.map(k => `<div data-f="${k}"><label class="bt-l" for="bt_${k}"></label>${k === 'title' ? `<input id="bt_${k}" list="btQuals">` : `<input id="bt_${k}" placeholder="${esc(ph[k] || '')}"${k === 'phone' ? ' inputmode="tel"' : ''}>`}</div>`).join('')}</div>
+      <p class="bt-h" id="btRule"></p>
+      <div class="bt-two">${K.map(k => `<div data-f="${k}"><label class="bt-l" for="bt_${k}"></label>${k === 'title' ? `<input id="bt_${k}" list="btQuals">` : `<input id="bt_${k}"${k === 'phone' ? ' inputmode="tel"' : ''}>`}<p class="bt-h bt-why"></p></div>`).join('')}</div>
       <datalist id="btQuals">${R.QUALS.map(q => `<option value="${q}">`).join('')}</datalist>
-      <p class="bt-h" id="btRule"></p><p class="bt-e" id="btErr" role="alert"></p>`;
+      <button type="button" class="bt-more" id="btMore"></button>
+      <ul class="bt-e" id="btErr" role="alert"></ul>`;
+    if (root.document && !root.document.getElementById('bt-css')) {
+      const st = root.document.createElement('style'); st.id = 'bt-css';
+      st.textContent = '.bt-why{font-size:12.5px;color:#5F6B7A;margin:3px 0 4px}.bt-more{font:inherit;font-size:14px;font-weight:700;color:#2F6BFF;background:none;border:0;padding:8px 0;min-height:44px;cursor:pointer}.bt-e{list-style:none;padding:0;margin:6px 0 0;color:#8A6A12!important;font-weight:500!important}.tried .bt-e{color:#C2410C!important;font-weight:700!important}.bt-e li{margin:2px 0}.bt-e li:before{content:"· "}.bt-l .opt{font-weight:500;color:#5F6B7A}';
+      (root.document.head || root.document.documentElement).appendChild(st);
+    }
     const $ = id => box.querySelector('#' + id);
+    const spec = () => Object.assign({}, R.fieldsOf(p.role) || {}, R.contactOf(p.role));
     const paint = () => {
-      const f = R.fieldsOf(p.role) || {};
+      const f = spec(); let opt = 0;
       K.forEach(k => {
-        const d = box.querySelector(`[data-f="${k}"]`), def = f[k] || (k === 'phone' ? ['전화번호' + (R.BROKER(p.role) ? '' : ' (전화나 카카오톡 중 하나)'), R.BROKER(p.role) ? 1 : 0] : k === 'kakao' && !R.BROKER(p.role) ? ['카카오톡 채널·오픈채팅 주소 (선택)', 0] : null);
-        d.hidden = !def; if (def) d.querySelector('label').textContent = def[0] + (def[1] ? '' : '');
+        const d = box.querySelector(`[data-f="${k}"]`), def = f[k];
+        const req = def && def[1] > 0, show = !!def && (req || more || !!p[k]);
+        if (def && !req && !p[k]) opt++;
+        d.hidden = !show; if (!def) return;
+        d.querySelector('label').innerHTML = esc(def[0].replace(/ \(선택[^)]*\)$/, '')) + (req ? '' : ' <span class="opt">(선택)</span>');
+        d.querySelector('.bt-why').textContent = def[2] || '';
+        d.querySelector('input').placeholder = ((PH[p.role] || {})[k]) || ph[k] || '';
       });
+      $('btMore').hidden = !opt; $('btMore').textContent = more ? '선택 칸 접기' : `선택 칸 더 보기 (${opt}개)`;
       $('btRule').textContent = R.BROKER(p.role) ? '공인중개사는 중개사무소 이름·소재지·등록번호·대표 이름·전화번호가 모든 자료에 함께 나와요(공인중개사법 표시 규정).'
-        : '공인중개사가 아니면 이름·소속과 연락 방법 하나만 나와요. \'공인중개사\'·\'중개사무소\' 같은 이름은 쓸 수 없어요.';
-      const e = R.profileError(p); $('btErr').textContent = e; box.classList.toggle('bad', !!e);
+        : '공인중개사가 아니면 이름 또는 활동명과 연락처 하나만 있으면 돼요. \'공인중개사\'·\'중개사무소\' 같은 이름은 쓸 수 없어요.';
+      const e = R.profileErrors(p); $('btErr').innerHTML = e.map(x => `<li>${esc(x)}</li>`).join(''); box.classList.toggle('bad', e.length > 0);
     };
     $('btRole').value = p.role; K.forEach(k => { $('bt_' + k).value = p[k] || ''; });
-    const upd = () => { const raw = { role: $('btRole').value }; K.forEach(k => { raw[k] = $('bt_' + k).value; }); p = R.cleanProfile(raw); saveProfile(p); paint(); on && on(p); };
-    $('btRole').onchange = upd; K.forEach(k => { $('bt_' + k).oninput = upd; });
+    const read = () => { const raw = { role: $('btRole').value }; K.forEach(k => { raw[k] = $('bt_' + k).value; }); return raw; };
+    const upd = () => { p = R.cleanProfile(read()); saveProfile(p); paint(); on && on(p); };
+    $('btRole').onchange = () => { more = false; upd(); };
+    $('btMore').onclick = () => { more = !more; paint(); };
+    K.forEach(k => { $('bt_' + k).oninput = upd; });
     paint(); on && on(p);
-    return { get: () => p, err: () => R.profileError(p) };
+    return { get: () => p, err: () => R.profileError(p), errs: () => R.profileErrors(p), broker: () => R.BROKER(p.role), tried: () => box.classList.add('tried') };
   }
 
   /* ---------- 이용 확인(브라우저): 서버 toolQuota·toolUse ----------
@@ -532,7 +558,7 @@
     return out;
   }
 
-  const API = { SITE, DISCLAIM, FALLBACK, limitsFor, left, esc, J, won, wonW, pct, md, mdS, ymd, ymK, BAN, banHit, cleanMemo, adBlock, packProfile, unpackProfile,
+  const API = { SITE, DISCLAIM, DANJI_NOTE, kindOf, FALLBACK, limitsFor, left, esc, J, won, wonW, pct, md, mdS, ymd, ymK, BAN, banHit, cleanMemo, adBlock, packProfile, unpackProfile,
     distM, nearest, mText, walkMin, GLOSS, taxRows, fvText, nearTrades, listing, encodeListing, decodeListing,
     rng, picker, period, blog, caption, cards, drawCard, zip, crc32, TH, loadProfile, saveProfile, mountProfile, quota, use };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

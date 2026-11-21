@@ -1,5 +1,11 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ *
+ * v33 변경 요약 (v20~v32와 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — 시트 변경 없음)
+ *  - 전문가 표시 정보(proProfile): 공인중개사가 아닌 유형(분양대행·컨설팅·자격사)은 '이름 또는 활동명'(이름·상호 중 하나)과
+ *    연락처(전화나 카카오톡 채널) 하나만 필수. 상호·사업자등록번호·자격은 선택(자격은 적으면 목록 안에서만). 공인중개사 법정 표시 항목은 그대로 필수.
+ *    안내 문장에 이유를 붙임('법으로 꼭 표시해야 해요(공인중개사법)'). 화면 assets/pro-report.js profileErrors 와 같은 기준.
+ *  - 검증: node tools/pro-test.js · node tools/broker-tools-test.js
  *
  * v32 변경 요약 (v20~v31과 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — 시트 변경 없음)
  *  - 광고·제휴 문의(adInquiry) 관심 상품에 시행사 페이지(pro/developer/) 새 판매 상품 키 세 개(대표 가격 승인 2026-11-21):
@@ -1895,24 +1901,25 @@ function proProfile(p) {
   const f = { role, office: proText(p.office, 40), ceo: proText(p.ceo, 20), name: proText(p.name, 20), reg: proText(p.reg, 30).replace(/[^0-9A-Za-z가-힣-]/g, ''),
     addr: proText(p.addr, 80), phone: proPhone(p.phone), kakao: kakaoUrl(p.kakao), title: proText(p.title, 20), biz: String(p.biz || '').replace(/[^0-9]/g, '').slice(0, 10), logo: '' };
   if ([f.office, f.ceo, f.name, f.title].some(x => PRO_ASSIST.test(x))) throw new Error('중개보조원은 이름을 넣어 보낼 수 없어요. 개업·소속공인중개사 이름으로 보내 주세요.');
-  if (!f.office) throw new Error(role === 'seller' ? '분양대행사 상호를 적어 주세요.' : role === 'consult' ? '상호 또는 활동명을 적어 주세요.' : role === 'licensed' ? '사무소 이름을 적어 주세요.' : '중개사무소 이름을 적어 주세요.');
+  /* v33: 공인중개사는 중개사무소 이름 필수(법정 표시), 그 밖의 유형은 '이름 또는 활동명' 한 칸(이름·상호 중 하나)만 필수 — 화면 assets/pro-report.js profileErrors 와 같은 기준 */
+  if (broker && !f.office) throw new Error('중개사무소 이름을 적어 주세요. 법으로 꼭 표시해야 해요(공인중개사법).');
+  if (!broker && !f.office && !f.name) throw new Error('이름 또는 활동명을 적어 주세요. 손님이 누가 보낸 자료인지 알 수 있어야 해요.');
   /* 법정 표기 의무는 공인중개사(중개대상물 표시·광고)만. 그 밖의 유형은 고객이 문의할 연락 방법 하나(전화 또는 카카오톡 채널)만 있으면 됨 — 대표 결정 11/21 */
-  if (broker && !f.phone) throw new Error('연락처(전화번호)를 적어 주세요. 공인중개사는 연락처를 꼭 표시해야 해요.');
-  if (!broker && !f.phone && !f.kakao) throw new Error('고객이 문의할 수 있게 전화번호나 카카오톡 채널 주소 중 하나를 적어 주세요.');
+  if (broker && !f.phone) throw new Error('연락처(전화번호)를 적어 주세요. 법으로 꼭 표시해야 해요(공인중개사법).');
+  if (!broker && !f.phone && !f.kakao) throw new Error('전화번호나 카카오톡 채널 주소 중 하나를 적어 주세요. 손님이 문의할 곳이 있어야 해요.');
   if (!broker && p.phone && String(p.phone).replace(/[^0-9]/g, '') && !f.phone) throw new Error('전화번호를 다시 확인해 주세요.');
   if (broker) {
     /* 공인중개사법 제18조의2(중개대상물 표시·광고)·시행령 제17조의2: 명칭·소재지·연락처·등록번호·개업공인중개사 성명 */
-    if (!f.reg || f.reg.replace(/[^0-9]/g, '').length < 5) throw new Error('중개사무소 등록번호를 적어 주세요. 공인중개사는 등록번호를 꼭 표시해야 해요.');
-    if (!f.ceo) throw new Error('개업공인중개사(대표) 이름을 적어 주세요.');
-    if (!f.addr) throw new Error('중개사무소 소재지(주소)를 적어 주세요.');
+    if (!f.reg || f.reg.replace(/[^0-9]/g, '').length < 5) throw new Error('중개사무소 등록번호를 적어 주세요. 법으로 꼭 표시해야 해요(공인중개사법).');
+    if (!f.ceo) throw new Error('개업공인중개사(대표) 이름을 적어 주세요. 법으로 꼭 표시해야 해요(공인중개사법).');
+    if (!f.addr) throw new Error('중개사무소 소재지(주소)를 적어 주세요. 법으로 꼭 표시해야 해요(공인중개사법).');
     if (role === 'member' && !f.name) throw new Error('소속공인중개사 본인 이름을 적어 주세요.');
     if (role === 'agent') f.name = '';
     f.biz = '';
   } else {
     if ([f.office, f.name, f.title].some(x => PRO_BROKER_WORD.test(x))) throw new Error("공인중개사가 아니면 '공인중개사'·'중개사무소' 같은 이름을 쓸 수 없어요(공인중개사법 제18조). 공인중개사라면 공인중개사 유형을 골라 주세요.");
-    if (f.biz && !proBizOk(f.biz)) throw new Error('사업자등록번호 10자리를 다시 확인해 주세요.');
-    if (role === 'licensed' && PRO_QUALS.indexOf(f.title) < 0) throw new Error('자격(세무사·법무사 등)을 골라 주세요.');
-    if (role === 'licensed' && !f.name) throw new Error('이름을 적어 주세요.');
+    if (f.biz && !proBizOk(f.biz)) throw new Error('사업자등록번호 10자리를 다시 확인해 주세요. 비워 둬도 돼요.');
+    if (role === 'licensed' && f.title && PRO_QUALS.indexOf(f.title) < 0) throw new Error('자격은 목록(세무사·법무사 등)에서 골라 주세요. 비워 둬도 돼요.');
     if (role !== 'seller') f.ceo = '';
   }
   if ([f.office, f.ceo, f.name, f.title].some(x => PRO_FAKE.test(x))) throw new Error('이름·소속에는 집예보가 쓴 것처럼 보이는 말을 넣을 수 없어요.');

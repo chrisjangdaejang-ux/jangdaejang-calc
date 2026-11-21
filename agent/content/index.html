@@ -18,8 +18,8 @@
 <script src="../../assets/agents.js"></script>
 <script src="/jangdaejang-calc/assets/auth.js?v=4"></script>
 <script src="/jangdaejang-calc/assets/brief-core.js?v=7"></script>
-<script src="/jangdaejang-calc/assets/pro-report.js?v=3"></script>
-<script src="/jangdaejang-calc/assets/broker-tools.js?v=1"></script>
+<script src="/jangdaejang-calc/assets/pro-report.js?v=4"></script>
+<script src="/jangdaejang-calc/assets/broker-tools.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
@@ -117,7 +117,7 @@ const nameOf = g => { const a = (IDX && IDX.areas || []).find(x => x.g === g); r
 async function make(){
   const err = $('err'); err.textContent = '';
   const g = $('area').value; if (!g){ err.textContent = '지역을 골라 주세요.'; return; }
-  const pe = PROF.err(); if (pe){ err.textContent = pe; return; }
+  const pe = PROF.errs(); if (pe.length){ PROF.tried(); err.textContent = pe.length > 1 ? `내 표시 정보에 빠진 칸이 ${pe.length}개 있어요. 위 안내를 확인해 주세요.` : pe[0]; return; }
   $('make').disabled = true;
   try {
     const u = await T.use('kit', g);

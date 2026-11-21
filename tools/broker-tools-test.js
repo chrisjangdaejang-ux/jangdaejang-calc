@@ -72,7 +72,20 @@ check('소속공인중개사는 본인 이름도', T.adBlock(MEMBER).lines.map(x
 yes('등록번호 빠지면 막음', T.adBlock(Object.assign({}, BROKER, { reg: '' })).err.includes('등록번호'));
 yes('전화 빠지면 막음', T.adBlock(Object.assign({}, BROKER, { phone: '' })).err.includes('연락처'));
 const A2 = T.adBlock(SELLER);
-check('분양대행: 이름·소속과 연락 방법만', [A2.broker, A2.err, A2.lines.map(x => x[0])], [false, '', ['분양대행사', '이름', '전화']]);
+check('분양대행: 이름·소속과 연락 방법만', [A2.broker, A2.err, A2.lines.map(x => x[0])], [false, '', ['이름', '분양대행사', '전화']]);
+check('비중개사: 이름 + 카카오톡만으로 됨(상호·사업자번호 없이)', ['seller', 'consult', 'licensed'].map(r => T.adBlock({ role: r, name: '김민수', kakao: 'https://pf.kakao.com/_abc' }).err), ['', '', '']);
+check('비중개사: 이름·연락처 둘 다 없으면 두 줄 안내', JDJ_PRO.profileErrors(JDJ_PRO.cleanProfile({ role: 'consult' })).length, 2);
+
+/* 공인중개사가 아니면 '단지 분석 자료'(호가·동·층·메모 없음) */
+check('자료 종류: 공인중개사 → 매물 설명서', [T.kindOf(BROKER), T.kindOf(MEMBER)], ['listing', 'listing']);
+check('자료 종류: 비중개사 → 단지 분석 자료', ['seller', 'consult', 'licensed'].map(r => T.kindOf({ role: r, name: 'a', phone: '010-1111-2222' })), ['danji', 'danji', 'danji']);
+const D = T.listing({ u: U, IX, M, fx, vc, units: [U, N1], xy, poi, TAX, ADJ, ask: 290000, memo: '남향', bd: '101동', fl: '12층', date: '2026-11-21', kind: 'danji' });
+check('단지 분석 자료: 제목', D.title, '단지 분석 자료');
+check('단지 분석 자료: 호가·동·층·메모 안 실림', [D.ask, D.bd, D.fl, D.memo], [null, '', '', '']);
+check('단지 분석 자료: 세금은 평형 시세 기준', D.tax.baseKind, 'band');
+yes('단지 분석 자료: 단지 단위 칸은 그대로', D.trades.rows.length && D.trend.price && D.poi.st.length && D.fv.has);
+check('안내 문장', T.DANJI_NOTE, '특정 매물 광고(호가·동호수)는 개업공인중개사만 할 수 있어 공인중개사가 아니면 단지 분석 자료로 만들어져요.');
+yes('화면: 비중개사면 매물 칸 숨김·안내', /\$\('lot'\)\.hidden = danji/.test(LP) && /T\.DANJI_NOTE/.test(LP) && /kind: T\.kindOf\(prof\)/.test(LP));
 yes('중개사가 아닌데 중개사무소 이름 → 막음', T.adBlock({ role: 'consult', office: '행복공인중개사', phone: '010-1111-2222' }).err.includes('공인중개사법'));
 
 /* ---------- 4. 주간 글 ---------- */
@@ -185,8 +198,8 @@ const CP = fs.readFileSync(path.join(ROOT, 'agent/content/index.html'), 'utf8');
 yes('주간 글 화면: 복사·내려받기', ['cpBlog', 'dlTxt', 'dlMd', 'dlZip', 'cpCap'].every(id => CP.includes(`id="${id}"`)));
 yes('화면 문구에 회사명 없음', !/장대장부동산그룹/.test(CP + LP));
 const SW = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
-yes('sw: 새 파일 저장 목록', SW.includes('/assets/broker-tools.js?v=1') && SW.includes('/agent/listing/') && SW.includes('/agent/content/'));
-yes('페이지가 같은 판 번호를 씀', LP.includes('broker-tools.js?v=1') && CP.includes('broker-tools.js?v=1') && CP.includes('brief-core.js?v=7'));
+yes('sw: 새 파일 저장 목록', SW.includes('/assets/broker-tools.js?v=2') && SW.includes('/agent/listing/') && SW.includes('/agent/content/'));
+yes('페이지가 같은 판 번호를 씀', LP.includes('broker-tools.js?v=2') && CP.includes('broker-tools.js?v=2') && CP.includes('brief-core.js?v=7'));
 
 console.log(`중개사 도구 검사: ${ok}개 맞음, ${bad}개 틀림`);
 process.exit(bad ? 1 : 0);
