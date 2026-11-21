@@ -96,7 +96,7 @@
     return;
   }
   $('editLink').href = P.ROOT + '?p=' + plan + '&k=' + keys.map(encodeURIComponent).join('!');
-  $('pName').textContent = '장대장 ' + pr.name;
+  $('pName').textContent = ((window.JDJ_SITE && window.JDJ_SITE.SITE_NAME) || '집예보') + ' ' + pr.name;
   $('pDesc').textContent = pr.desc;
   $('pPrice').textContent = P.won(pr.amount);
   const isCy = k => /^cy\d+$/.test((P.keyParse(k) || {}).band || '');   /* 청약 분양가 리포트: 평형 자리에 'cy'+공고번호 */

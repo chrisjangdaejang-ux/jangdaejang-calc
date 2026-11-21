@@ -41,5 +41,21 @@ for (const [name, block, base] of [['about', sec, 'about/'], ['guide/method', sv
     if (hash && fs.existsSync(file)) check(`${name}: 링크한 자리 있음 ${href}`, fs.readFileSync(file, 'utf8').includes(`id="${hash}"`));
   }
 }
+/* 예전 서비스 이름(장대장 데이터랩·장대장 계산기·장대장 리포트·장대장 프리미엄 리포트)이 화면 글자·title·og 태그·화면 JS 문구에 다시 나오지 않게.
+   주석은 빼고 봐요. 회사명(법적 표기 '(주)장대장부동산그룹')·유튜브 채널 '장대장TV'는 이 검사 대상이 아니에요. */
+{
+  const OLD = [['데이터랩', /데이터\s*랩/], ['장대장 계산기', /장대장\s*(내 집 마련\s*|갈아타기\s*|부동산\s*)?계산기/], ['장대장 리포트', /장대장\s*(맞춤\s*(매수\s*)?|프리미엄\s*)?리포트/]];
+  const strip = t => t.replace(/<!--[\s\S]*?-->/g, ' ').replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:'"`\\])\/\/[^\n]*/g, '$1');
+  const SKIP = /^(tools|docs|\.git|node_modules|data)$|^vendor$|^leaflet$/;
+  const walk = d => fs.readdirSync(d, { withFileTypes: true }).flatMap(e => e.isDirectory() ? (SKIP.test(e.name) ? [] : walk(path.join(d, e.name))) : [path.join(d, e.name)]);
+  const hits = [];
+  for (const f of walk(ROOT)) {
+    if (!/\.(html|js|webmanifest)$/.test(f)) continue;
+    const t = strip(fs.readFileSync(f, 'utf8'));
+    for (const [n, re] of OLD) if (re.test(t)) hits.push(`${path.relative(ROOT, f)}: ${n}`);
+  }
+  check(`예전 서비스 이름이 화면·title·og 에 없음 ${hits.join(', ')}`, hits.length === 0);
+  check('소개 화면 title 은 SITE_NAME(집예보) 기준', /<title>서비스 소개 · 집예보는 이렇게 분석해요<\/title>/.test(about) && /<h1><span data-site-name>[^<]*<\/span>는<br>이렇게 분석해요<\/h1>/.test(about));
+}
 console.log(`${ok} ok, ${bad} fail`);
 process.exit(bad ? 1 : 0);
