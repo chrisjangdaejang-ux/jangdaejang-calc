@@ -127,6 +127,16 @@ if (dir && fs.existsSync(path.join(dir, 'home', 's00.json'))) {
   check('실제 자료: 기준 달 = index.json dataTo', R0.recent[1], X.dataTo, '');
 }
 
+/* 대표 결정 2026-11-21: 상담 창구 이름은 '부동산 전문가 상담' — 사이트 어디에도 '장대장 상담센터'가 남지 않음(법적 표기·사업자 정보는 별개) */
+{
+  const fs2 = require('fs'), p2 = require('path'), ROOT2 = p2.join(__dirname, '..'), left = [];
+  const walk = d => fs2.readdirSync(d, { withFileTypes: true }).forEach(e => { const f = p2.join(d, e.name);
+    if (e.isDirectory()) { if (!/^(tools|\.git|node_modules|vendor|leaflet)$/.test(e.name)) walk(f); }
+    else if (/\.(html|js|md|json)$/.test(e.name) && fs2.readFileSync(f, 'utf8').includes('장대장 상담센터')) left.push(p2.relative(ROOT2, f)); });
+  walk(ROOT2);
+  check("'장대장 상담센터' 문구 없음(사이트 전체)", left, []);
+  check("홈 상담 칸 이름 '부동산 전문가 상담'", /<b>부동산 전문가 상담<\/b>/.test(fs2.readFileSync(p2.join(ROOT2, 'index.html'), 'utf8')), true);
+}
 /* QA 2026-11-21: 화면 어디에도 'N년간'처럼 자료 연수를 계산해 쓰지 않음 */
 check('소개 글: 연수 계산 문구 없음', /년간 공공 통계|\$\{yrs\}/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'assets', 'home-core.js'), 'utf8')), false);
 /* ---------- 첫 화면 소개 글(assets/home-core.js heroFacts · index.html .hero) ---------- */

@@ -35,6 +35,9 @@ const PRICES = {
   /* 광고 칸 카드 두 자리(docs/ad_slots.md 표 가격 그대로) — 월 단가, 기간 할인(period) 똑같이 적용 */
   list_card:    { tiers: [{ label: '시·도', month: 300000 }] },                                                            // 목록 사이 카드(순위·분양 목록 10번째 뒤)
   end_card:     { tiers: [{ label: '전국', month: 500000 }, { label: '시·도', month: 300000 }, { label: '중개사 화면', month: 150000 }] },   // 페이지 끝 카드(홈·순위·세금·빌라·갈아타기·중개사 화면 맨 아래 · 브리핑 화면은 브리핑 지면 광고에 포함)
+  /* 주 단위 상품 장기 할인(대표 승인 2026-11-21): 4주 금액 × 묶음 수에서 할인, 만 원 단위 반올림.
+     3개월 = 12주 = 4주 × 3 × 90%, 1년 = 52주 = 4주 × 13 × 80%. 6개월(26주)은 정한 값이 없어 3개월 할인율을 그대로 써요(4주 × 6 × 90%, 24주 금액으로 26주) */
+  longWeeks:    { keys: ['home_top', 'cat_top', 'cat_top_bun', 'brief_ad'], m3: { weeks: 12, mult: 3, off: 10 }, m6: { weeks: 26, mult: 6, off: 10 }, y1: { weeks: 52, mult: 13, off: 20 }, roundTo: 10000 },
   guide:        { minSpend: 0, minWeeks: 1, firstWeekOff: 50 }   // 최소 집행 금액(0 = 없음), 최소 기간(주), 첫 광고 첫 주 할인(%)
 };
 const PERIODS = [
@@ -70,10 +73,19 @@ function passPrice(amount) { const list = amount * 3; return { list, total: rnd(
 function firstWeekPrice(oneWeek) { return rnd(oneWeek * (100 - (PRICES.guide.firstWeekOff || 0)) / 100); }
 /* 1주 광고 뒤 1개월 이상 연장: 연장 금액 − 첫 주 결제액 */
 function extendPrice(month, pid, paidFirstWeek) { const q = periodPrice(month, pid); return q && q.months >= 1 ? Math.max(0, q.total - paidFirstWeek) : null; }
+/* 장기 할인 주 단위 상품의 3개월·6개월·1년 금액 → { total, list(할인 전 = 4주 × 묶음), off, rate, weeks } 또는 null(대상 아님) */
+function longWeeksPrice(key, pid) {
+  const L = PRICES.longWeeks, p = PRICES[key], t = L && L[pid];
+  if (!t || !p || !p.weeks || !p.weeks[4] || L.keys.indexOf(key) < 0) return null;
+  const list = p.weeks[4] * t.mult, u = L.roundTo || 1, total = Math.round(list * (100 - t.off) / 100 / u) * u;
+  return { total, list, off: list - total, rate: t.off, weeks: t.weeks };
+}
+function longKeyOf(p) { const L = PRICES.longWeeks; if (!L) return ''; for (const k of L.keys) if (PRICES[k] === p) return k; return ''; }
 /* 주 단위 상품 n주 금액: 정해진 주 수가 있으면 그 값, 없으면 긴 묶음부터 채워 더함(8주 = 4주×2, 2주 = 1주×2). 못 맞추면 null */
 function weeksPrice(p, n) {
   if (!p || !p.weeks || !(n > 0)) return null;
   if (p.weeks[n]) return p.weeks[n];
+  { const k = longKeyOf(p), L = PRICES.longWeeks; if (k) for (const id of ['m3', 'm6', 'y1']) if (L[id].weeks === n) return longWeeksPrice(k, id).total; }   // 12·26·52주 = 장기 할인
   const ks = Object.keys(p.weeks).map(Number).sort((a, b) => b - a); let left = n, sum = 0;
   for (const k of ks) while (left >= k) { sum += p.weeks[k]; left -= k; }
   return left ? null : sum;
@@ -81,10 +93,11 @@ function weeksPrice(p, n) {
 /* 월 단가 상품 n주 금액: 1주·2주는 기간표(월 단가의 %), 4주 = 1개월, 8주 = 1개월×2. 그 밖은 null */
 function tierWeeks(month, n) {
   if (n === 1 || n === 2) { const q = periodPrice(month, 'w' + n); return q && q.total; }
+  const LP = { 12: 'm3', 26: 'm6', 52: 'y1' }[n]; if (LP) { const q = periodPrice(month, LP); return q && q.total; }   // 3개월·6개월·1년 = 기간 할인(period)
   if (n > 0 && n % 4 === 0) { const q = periodPrice(month, 'm1'); return q && q.total * (n / 4); }
   return null;
 }
 /* PRICE-CORE:END */
-var JDJ_AD_PRICE_API = { PRICES, PERIODS, rnd, man, rateOf, periodPrice, weekKey, weeksPrice, tierWeeks };
+var JDJ_AD_PRICE_API = { PRICES, PERIODS, rnd, man, rateOf, periodPrice, weekKey, weeksPrice, tierWeeks, longWeeksPrice };
 if (typeof window !== 'undefined') window.JDJ_AD_PRICES = JDJ_AD_PRICE_API;
 if (typeof module !== 'undefined' && module.exports) module.exports = JDJ_AD_PRICE_API;

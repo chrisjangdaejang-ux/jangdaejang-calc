@@ -332,6 +332,8 @@ check('하루 문의 상한', !r.ok && /카카오톡/.test(r.err), r);
     check('목록 사이·페이지 끝 카드: 상품 소개·단가표·문의 폼에 모두 있음', ['list_card', 'end_card'].every(k => html.includes(`data-price="${k}"`) && html.includes(`data-pp="${k}"`) && html.includes(`value="${k}"`)) && /PRICES\.list_card\.tiers/.test(html) && /PRICES\.end_card\.tiers/.test(html));
     check('목록 사이·페이지 끝 카드: 재배포 전 서버에도 기타·제휴로 함께 접수', /\['brief_ad', 'home_top', 'cat_top', 'list_card', 'end_card'\]/.test(html));
     check('서버 v39: 관심 상품 목록 사이·페이지 끝 카드', /AQ_PROD\.list_card = '목록 사이 카드'; AQ_PROD\.end_card = '페이지 끝 카드'/.test(fs.readFileSync(path.join(__dirname, 'agent-backend.gs'), 'utf8')));
+    check('단가표 장기 할인: 홈 상단 3개월 12주 405만·1년 52주 1,560만, 브리핑 1년 832만, 분양·청약 3개월 243만', /^12주 405만 원/.test(C('home_top', 'm3')) && /^52주 1,560만 원/.test(C('home_top', 'y1')) && /^52주 832만 원/.test(C('brief_ad', 'y1')) && /^12주 243만 원/.test(C('cat_top_bun', 'm3')), [C('home_top', 'm3'), C('home_top', 'y1')]);
+    check("단가표: 어느 상품·기간에도 '문의 시 안내' 없음", Object.keys(P.PRICES).filter(k => html.includes(`data-pp="${k}"`)).every(k => P.PERIODS.every(x => !/문의 시 안내/.test(C(k, x.id)) && C(k, x.id))), Object.keys(P.PRICES).filter(k => html.includes(`data-pp="${k}"`)).flatMap(k => P.PERIODS.filter(x => /문의 시 안내/.test(C(k, x.id)) || !C(k, x.id)).map(x => k + ':' + x.id)));
     check('2주 상단 배너 = 1주 × 2', /^2주 100만 원/.test(C('home_top', 'w2')) && /^2주 50만 원/.test(C('cat_top', 'w2')));
     check('단가표에 상단 배너 3줄(홈·카테고리·분양·청약)', ['home_top', 'cat_top', 'cat_top_bun'].every(k => html.includes(`data-pp="${k}"`)));
     const vis = html.replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, ' ');

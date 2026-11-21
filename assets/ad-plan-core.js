@@ -26,7 +26,7 @@
     { id: 'region', label: '특정 지역 고객 모으기', region: 'sgg' }
   ];
   var PERIODS = [1, 2, 4, 8];   // 주 (고르는 기간)
-  var LONG = [12, 8, 4, 2, 1];   // '오래 노출' 안이 찾아보는 기간(주) — 1주 단위 상품만 있으므로 4주 묶음을 이어 붙인 값
+  var LONG = [52, 12, 8, 4, 2, 1];   // 52주(1년)·12주(3개월)는 장기 할인 금액(ad-prices.js longWeeks·period)으로 계산 
   var QUICK = [30, 50, 100, 200, 300];   // 만 원
 
   /* 자리 목록. cat 이 있으면 광고 칸(ad-slot.js CATS 업종 규칙), ind 가 있으면 그 상품의 업종 규칙(/ad/ 상품 설명).
@@ -233,7 +233,7 @@
   }
 
   /** [이 구성으로 문의하기] → /ad/ 문의 폼에 채울 값 */
-  var PERIOD_TXT = { 1: '1주', 2: '2주', 4: '1개월', 8: '8주(2개월)' };   // /ad/ 문의 폼 희망 기간 목록과 같게(서버 v38 AQ_PERIOD)
+  var PERIOD_TXT = { 1: '1주', 2: '2주', 4: '1개월', 8: '8주(2개월)', 12: '3개월', 52: '1년' };   // /ad/ 문의 폼 희망 기간 목록과 같게(서버 v38 AQ_PERIOD)
   function won(n) { n = Math.round(+n || 0); var m = n / 10000; return (Number.isInteger(m) ? m.toLocaleString('ko-KR') : String(+m.toFixed(1))) + '만 원'; }
   /** r: plan() 결과(추천 안) 또는 그 안의 구성안 하나(plans[i]) */
   function formFill(q, r) {

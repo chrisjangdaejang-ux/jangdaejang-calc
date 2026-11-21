@@ -468,7 +468,7 @@ QA('[data-print]').forEach(b => b.addEventListener('click', () => { QA('details.
 /* 카카오톡 상담(사업자 정보 biz.js 의 채널 주소) */
 function consult(){
   const kk = (window.JDJ_BIZ && JDJ_BIZ.kakao) || 'https://pf.kakao.com/_UxnzuV';
-  const h = window.KChat ? KChat.btn(kk, {name:'장대장 상담센터', label:'카카오톡으로 상담하기'}) : '';
+  const h = window.KChat ? KChat.btn(kk, {name:'부동산 전문가 상담', label:'카카오톡으로 상담하기'}) : '';
   if (h){ $('consult').innerHTML = h; const a = $('consult').querySelector('a'); if (a) a.setAttribute('data-track', 'jeonse_checklist_consult'); }
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', consult); else consult();

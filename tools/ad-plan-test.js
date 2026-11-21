@@ -150,7 +150,8 @@ const plansOf = r => (r.plans || []).filter(p => p.items);
   const atN = q => { const r = A.plan(q, {}); return A.formFill(q, Object.assign({ kind: r.kind }, r.plans.find(p => p.weeks === q.weeks))); };   // 원하는 기간 그대로인 안(넓게·집중)
   check("8주 구성 → 문의 폼 희망 기간 '8주(2개월)'(목록에 있음)", atN(q8).period === '8주(2개월)' && opts.includes('<option>8주(2개월)</option>'), atN(q8).period);
   check('원하는 기간 1·2·4·8주가 모두 문의 폼 목록에 그대로', [1, 2, 4, 8].every(w => opts.includes('<option>' + atN(Object.assign({}, q8, { weeks: w })).period + '</option>')), '');
-  check("목록에 없는 기간(오래 노출 12주 등)은 '미정·협의' + 문의 내용에 주 수", A.formFill(q8, { kind: 'items', weeks: 12, items: [] }).period === '미정·협의' && /기간: 12주/.test(A.formFill(q8, { kind: 'items', weeks: 12, items: [] }).memo), '');
+  check("목록에 없는 기간(오래 노출 26주 등)은 '미정·협의' + 문의 내용에 주 수", A.formFill(q8, { kind: 'items', weeks: 26, items: [] }).period === '미정·협의' && /기간: 26주/.test(A.formFill(q8, { kind: 'items', weeks: 26, items: [] }).memo), '');
+  check("장기 할인 기간 12주·52주 → 문의 폼 '3개월'·'1년'(목록에 있음)", [A.formFill(q8, { kind: 'items', weeks: 12, items: [] }).period, A.formFill(q8, { kind: 'items', weeks: 52, items: [] }).period].join() === '3개월,1년' && opts.includes('<option>3개월</option>') && opts.includes('<option>1년</option>'), '');
   check("예전 서버가 8주를 거절하면 '미정·협의'로 다시 보내고 내용에 적음", /\[희망 기간: 8주\(2개월\)\]/.test(ad) && /period: '미정·협의'/.test(ad), '');
   check('서버 v38: AQ_PERIOD 에 8주(2개월)', /const AQ_PERIOD = \[[^\]]*'8주\(2개월\)'/.test(read('tools/agent-backend.gs')) && /백엔드 \(v(3[89]|[4-9]\d):/.test(read('tools/agent-backend.gs')), '');
 }
@@ -161,6 +162,17 @@ const plansOf = r => (r.plans || []).filter(p => p.items);
   check('공인중개사 문의: 희망 기간 1년·내용 기간 1년', f.period === '1년' && /기간: 1년/.test(f.memo) && !/기간: 4주/.test(f.memo), f);
   const ph = fs.readFileSync(path.join(__dirname, '..', 'ad', 'plan', 'index.html'), 'utf8');
   check('보고 주기: 매주 보고 약속 없음(/ad/ 집행 기준은 기간 종료 뒤 요약)', !/노출·클릭 수를 매주/.test(ph), null);
+}
+/* 장기 할인(대표 승인 2026-11-21): 상단 배너·브리핑 지면 — 3개월 = 4주×3×90%, 1년 = 4주×13×80%, 만 원 반올림 / 월 단가 상품은 기간 할인표 */
+{
+  const L = k => [PR.longWeeksPrice(k, 'm3').total, PR.longWeeksPrice(k, 'y1').total];
+  check('장기 할인: 홈 상단 405만·1,560만 / 카테고리 216만·832만 / 분양·청약 243만·936만 / 브리핑 216만·832만',
+    [L('home_top'), L('cat_top'), L('cat_top_bun'), L('brief_ad')].join('|') === '4050000,15600000|2160000,8320000|2430000,9360000|2160000,8320000', [L('home_top'), L('cat_top'), L('cat_top_bun'), L('brief_ad')]);
+  check('장기 할인: 모두 만 원 단위', ['home_top', 'cat_top', 'cat_top_bun', 'brief_ad'].every(k => ['m3', 'm6', 'y1'].every(id => PR.longWeeksPrice(k, id).total % 10000 === 0)));
+  check('장기 할인: 도우미 12주·52주 금액 = 장기 할인 금액, 분양 단지 광고는 대상 아님', PR.weeksPrice(PR.PRICES.cat_top, 12) === 2160000 && PR.weeksPrice(PR.PRICES.home_top, 52) === 15600000 && PR.longWeeksPrice('bunyang', 'm3') === null);
+  check('월 단가 상품 12주·52주 = 3개월 10%·1년 25% 기간 할인', PR.tierWeeks(500000, 12) === 1350000 && PR.tierWeeks(500000, 52) === 4500000);
+  const q = { industry: 'move', purpose: 'brand', totalMan: 1000, weeks: 4 }, r = A.plan(q), lg = r.plans.find(p => p.id === 'long');
+  check("오래 노출: 총액 1,000만 원이면 1년(52주) 장기 할인 구성, 합계 ≤ 총액", lg && lg.weeks === 52 && lg.total <= 10000000 && lg.items.every(x => x.cost === A.priceOf(A.ITEMS.find(i => i.id === x.id), 52, r.scope)), lg && [lg.weeks, lg.total]);
 }
 const bad = rows.filter(r => !r.ok);
 rows.forEach(r => console.log((r.ok ? '  ok  ' : '  FAIL') + ' ' + r.name + (r.ok ? '' : '  → ' + JSON.stringify(r.got).slice(0, 400))));
