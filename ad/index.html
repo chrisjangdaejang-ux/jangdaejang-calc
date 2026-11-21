@@ -208,6 +208,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
 .sl-tag{display:inline-block;font-size:12px;font-weight:700;color:var(--blue);background:#fff;border:1px solid #C9D8FF;border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:2px}
 .sl-rules{margin:14px 0 0;padding:0 0 0 20px}
 .sl-rules li{font-size:15px;color:var(--sub);line-height:1.7;margin-bottom:2px}
+#prod small.pp{display:block;font-size:13px;font-weight:500;color:var(--sub2);line-height:1.5}
 </style>
 </head>
 <body>
@@ -527,8 +528,8 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
               <label><input type="checkbox" value="native"> 결과 하단 카드</label>
               <label><input type="checkbox" value="jeonse"> 전세사기 예방 체크리스트 스폰서</label>
               <label><input type="checkbox" value="brief_ad"> <span data-brief-name>집예보 모닝 브리핑</span> 지면 광고</label>
-              <label><input type="checkbox" value="home_top"> 홈 상단 배너</label>
-              <label><input type="checkbox" value="cat_top"> 카테고리 상단 배너</label>
+              <label><input type="checkbox" value="home_top"> <span>홈 상단 배너<small class="pp">1일 10만 · 1주 50만 · 4주 150만 원</small></span></label>
+              <label><input type="checkbox" value="cat_top"> <span>카테고리 상단 배너<small class="pp">1주 25만 · 4주 80만 원</small><small class="pp">분양·청약 1주 28만 · 4주 90만 원</small></span></label>
               <label><input type="checkbox" value="package"> 패키지</label>
               <label><input type="checkbox" value="etc"> 기타·제휴</label>
             </div></div>
@@ -838,10 +839,10 @@ $('form').addEventListener('submit', async e => {
   };
   const L = [
     ['top', '홈 상단 배너', '첫 화면 소개 글 바로 아래 한 줄(휴대폰 첫 화면에 보임)', '대출 상담 · 법무사 · 보증보험 · 이사 · 인테리어 · 세무사(정액) · 시행사 · 분양대행사', '1일 10만 · 1주 50만 · 4주 150만 원', '가장 비싼 자리', 1],
-    ['top', '카테고리 상단 배너 — 분양 · 청약', '제목·설명 바로 아래 한 줄', '시행사 · 분양대행사', '4주 90만 원'],
-    ['top', '카테고리 상단 배너 — 순위 · 전월세 · 빌라 · 갈아타기', '제목·설명 바로 아래, 입력 칸 위 한 줄', '화면별 업종(전월세: 보증보험·법무사·이사 / 빌라: 법무사·감정평가·보증보험·이사)', '4주 80만 원'],
-    ['map', '지도 상단 배너', '검색·보기 버튼 아래 한 줄(지도를 가리지 않고 그만큼 아래에서 시작)', '시행사 · 분양대행사 · 대출 상담 · 이사 · 인테리어', '4주 80만 원'],
-    ['top', '세금 상단 배너', '세금 계산기 첫 화면 제목 아래, 계산 메뉴 위(입력·결과 화면에는 없음)', '세무사(정액 광고비만)', '4주 80만 원'],
+    ['top', '카테고리 상단 배너 — 분양 · 청약', '제목·설명 바로 아래 한 줄', '시행사 · 분양대행사', '1주 28만 · 4주 90만 원'],
+    ['top', '카테고리 상단 배너 — 순위 · 전월세 · 빌라 · 갈아타기', '제목·설명 바로 아래, 입력 칸 위 한 줄', '화면별 업종(전월세: 보증보험·법무사·이사 / 빌라: 법무사·감정평가·보증보험·이사)', '1주 25만 · 4주 80만 원'],
+    ['map', '지도 상단 배너', '검색·보기 버튼 아래 한 줄(지도를 가리지 않고 그만큼 아래에서 시작)', '시행사 · 분양대행사 · 대출 상담 · 이사 · 인테리어', '1주 25만 · 4주 80만 원'],
+    ['top', '세금 상단 배너', '세금 계산기 첫 화면 제목 아래, 계산 메뉴 위(입력·결과 화면에는 없음)', '세무사(정액 광고비만)', '1주 25만 · 4주 80만 원'],
     ['end', '결과 아래 카드', '내 집 시세 · 단지 비교 · 전월세 · 청약 · 내 집 마련 · 리포트 · 땅 결과를 다 본 뒤', '화면별 업종(대출 상담 · 법무사 · 이사 · 인테리어 · 보증보험 · 감정평가 등)', '월 전국 50만 · 시·도 30만 · 시·군·구 15만 원'],
     ['list', '목록 사이 카드', '순위·분양 목록 10번째 뒤(목록이 10개 넘을 때만)', '순위: 시행사 · 분양대행사 · 대출 상담 · 이사 · 인테리어 / 분양: 시행사 · 분양대행사', '월 시·도 30만 원'],
     ['end', '페이지 끝 카드', '홈 · 순위 · 세금 · 빌라 · 갈아타기 · 모닝 브리핑 · 중개사 화면 맨 아래', '화면별 업종(세금은 세무사 정액만, 중개사 화면은 중개사 도구만)', '월 15만~50만 원 · 브리핑 화면은 브리핑 지면 광고에 포함'],
