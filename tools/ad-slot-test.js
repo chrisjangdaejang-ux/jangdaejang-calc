@@ -17,7 +17,8 @@ const PAGES = {
   'chungyak/index.html': ['chungyak_top', 'chungyak_end'], 'bunyang/index.html': ['bunyang_top', 'bunyang_list'],
   'villa/index.html': ['villa_top', 'villa_end'], 'jeonse/index.html': ['jeonse_top', 'jeonse_end'], 'jeonse/checklist/index.html': ['jeonse_check_end'],
   'switch/index.html': ['switch_top', 'switch_end'], 'brief/index.html': ['brief_end'], 'buy/index.html': ['buy_end'],
-  'buy/report/index.html': ['report_end'], 'land/draft/index.html': ['land_end'], 'agent/index.html': ['agent_end']
+  'buy/report/index.html': ['report_end'], 'land/draft/index.html': ['land_end'], 'agent/index.html': ['agent_end'],
+  'loan/index.html': ['loan_end']
 };
 const slotsOf = html => [...html.matchAll(/<div\b[^>]*data-ad-slot="([^"]+)"[^>]*>/g)].map(m => ({ id: m[1], tag: m[0], at: m.index }));
 const doc = read('docs/ad_slots.md');
@@ -100,6 +101,26 @@ const doc = read('docs/ad_slots.md');
   check('한국 날짜(UTC 15시 = 다음 날 0시)', A.kstToday(Date.UTC(2026, 10, 21, 15, 0)) === '2026-11-22', A.kstToday(Date.UTC(2026, 10, 21, 15, 0)));
 }
 
+/* ⑤-2 대출 상담 광고: 등록번호 필수·화면에 표시 · 대출 한도 화면은 대출 상담(정액)만 */
+{
+  const loanAd = o => ad(Object.assign({ cat: 'loan', slot: 'loan_end', industry: '대출 상담', regno: '제2026-01234호' }, o));
+  check('대출 한도: 업종은 대출 상담만', JSON.stringify(A.CATS.loan.ind) === '["대출 상담"]', A.CATS.loan.ind);
+  check('대출 한도: 등록번호 있는 정액 대출 상담 광고는 실림', A.allowed(loanAd(), 'loan_end', 'loan', TODAY), '');
+  check('대출 한도: 등록번호 없으면 안 실림', !A.allowed(loanAd({ regno: '' }), 'loan_end', 'loan', TODAY) && !A.allowed(loanAd({ regno: undefined }), 'loan_end', 'loan', TODAY), '');
+  check('대출 한도: 숫자 없는·이상한 등록번호는 안 실림', !A.allowed(loanAd({ regno: '등록 예정' }), 'loan_end', 'loan', TODAY) && !A.allowed(loanAd({ regno: '<b>12</b>' }), 'loan_end', 'loan', TODAY), '');
+  check('대출 한도: 건당 수수료 광고는 안 실림(정액만)', !A.allowed(loanAd({ fee: 'referral' }), 'loan_end', 'loan', TODAY), '');
+  check('대출 한도: 다른 업종(이사·법무사) 안 실림', ['이사', '법무사'].every(i => !A.allowed(loanAd({ industry: i }), 'loan_end', 'loan', TODAY)), '');
+  check('다른 화면(홈)도 대출 상담 광고는 등록번호 필수', !A.allowed(ad({ cat: 'home', industry: '대출 상담' }), 'home_end', 'home', TODAY) && A.allowed(ad({ cat: 'home', industry: '대출 상담', regno: '제2026-01234호' }), 'home_end', 'home', TODAY), '');
+  const h = A.html(loanAd(), 'loan_end', 'loan'), ht = A.html(loanAd(), 'loan_end', 'loan', true);
+  check('대출 상담 광고 칸에 등록번호 표시(카드)', h.includes('대출성 상품 판매대리·중개업자 등록번호 제2026-01234호'), h);
+  check('대출 상담 광고 칸에 등록번호 표시(상단 배너)', ht.includes('대출성 상품 판매대리·중개업자 등록번호 제2026-01234호'), ht);
+  check('대출 한도: 칸 안 문구 "계산 결과와 관계없는 광고"', h.includes('계산 결과와 관계없는 광고예요'), '');
+  check('자체 광고에는 등록번호 줄 없음', !A.html(A.houseAd('brief'), 'loan_end', 'loan').includes('등록번호'), '');
+  const bad = JSON.parse(read('data/ads.json')).ads.filter(a => a.industry === '대출 상담' && !A.okRegno(a.regno));
+  check('data/ads.json: 대출 상담 광고는 모두 등록번호 있음', bad.length === 0, bad.map(a => a.id));
+  check('문서: regno 필드·대출 한도 칸', doc.includes('"regno"') && doc.includes('`loan_end`') && doc.includes('대출성 상품 판매대리·중개업자 등록번호'), '');
+}
+
 /* ⑥ 페이지·문서·자료 */
 {
   for (const [f, want] of Object.entries(PAGES)) {
@@ -117,7 +138,7 @@ const doc = read('docs/ad_slots.md');
   const j = JSON.parse(read('data/ads.json'));
   check('data/ads.json: ads 배열', Array.isArray(j.ads), typeof j.ads);
   const sw = read('sw.js');
-  check('sw.js: ad-slot.js·aplus v43 미리 저장', sw.includes('/assets/ad-slot.js?v=2') && sw.includes('/assets/aplus.css?v=43'), '');
+  check('sw.js: ad-slot.js v3·aplus v43 미리 저장', sw.includes('/assets/ad-slot.js?v=3') && sw.includes('/assets/aplus.css?v=43'), '');
   const adp = read('ad/index.html');
   check('/ad/: 광고 위치 안내 칸', adp.includes('id="slots"') && adp.includes('광고 위치 안내'), '');
   const slotSec = adp.slice(adp.indexOf('id="slots"'), adp.indexOf('id="target"'));

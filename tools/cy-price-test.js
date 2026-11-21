@@ -11,7 +11,7 @@ function check(name, ok, info) { if (ok) pass++; else { fail++; console.log('XX 
 
 const ctx = { console, window: undefined, fetch: () => Promise.reject(new Error('no net')), location: { origin: 'https://x', search: '' }, localStorage: { getItem: () => null, setItem() {} } };
 ctx.globalThis = ctx; vm.createContext(ctx);
-for (const f of ['tax/tax-engine.js', 'assets/rec-core.js', 'assets/loan-core.js', 'assets/cy-price.js']) vm.runInContext(fs.readFileSync(path.join(ROOT, f), 'utf8'), ctx, { filename: f });
+for (const f of ['tax/tax-engine.js', 'assets/loan-rules.js', 'assets/rec-core.js', 'assets/loan-core.js', 'assets/cy-price.js']) vm.runInContext(fs.readFileSync(path.join(ROOT, f), 'utf8'), ctx, { filename: f });
 // rec-core 는 module 이 없으면 root.JDJ_REC 로 붙음
 const C = ctx.JDJ_CYP, L = ctx.JDJ_LOAN;
 check('모듈 로드', !!(C && L && ctx.JDJ_REC));

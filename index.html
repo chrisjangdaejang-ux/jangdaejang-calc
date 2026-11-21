@@ -118,6 +118,7 @@
 .cs{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 12px;padding:16px 18px;border:1.5px solid #2F6BFF;border-radius:16px;background:#F4F7FF}.cs b{display:block;font-size:17px;font-weight:800}.cs small{display:block;font-size:14px;color:#4E5968;margin-top:2px}.csbtn{display:flex;gap:8px;flex-wrap:wrap}.cstel{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border-radius:12px;border:1.5px solid #2F6BFF;color:#2F6BFF;font-weight:800;font-size:14px;text-decoration:none;background:#fff}
 .askwrap.jask{margin:18px 20px 0}
 .minelink{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0 0;padding:16px 18px;border:2.5px solid #2F6BFF;border-radius:16px;background:#fff;color:inherit;text-decoration:none}.minelink b{display:block;font-size:18px;font-weight:800}.minelink small{display:block;font-size:14px;color:#4E5968;margin-top:3px}.minelink .new{display:inline-block;margin-left:6px;font-size:11px;font-weight:700;color:var(--blue);background:var(--blue-l);border-radius:4px;padding:1px 6px;vertical-align:3px}.minelink .go{font-size:24px;color:#2F6BFF;font-weight:800}
+.loanlink{border-width:1.5px;border-color:#B9CCFF;margin-top:10px}
 .maplink{display:flex;align-items:center;gap:14px;margin:18px 20px 0;padding:16px 18px;border-radius:16px;background:var(--blue);color:#fff;text-decoration:none;box-shadow:0 3px 12px rgba(47,107,255,.25)}.maplink .ic{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:none}.maplink .ic svg{width:26px;height:26px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.maplink b{display:block;font-size:18px;font-weight:800}.maplink small{display:block;font-size:14px;opacity:.92;margin-top:2px;line-height:1.5}.maplink .go{margin-left:auto;font-size:24px;font-weight:800;flex:none}
 .ranklink{display:flex;align-items:center;gap:14px;margin:10px 20px 0;padding:14px 18px;border-radius:16px;background:#fff;border:1.5px solid var(--blue);color:var(--text);text-decoration:none}.ranklink .ic{width:40px;height:40px;border-radius:12px;background:var(--blue-l);display:flex;align-items:center;justify-content:center;flex:none}.ranklink .ic svg{width:24px;height:24px;stroke:var(--blue);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.ranklink b{display:block;font-size:17px;font-weight:800}.ranklink small{display:block;font-size:14px;color:var(--sub2);margin-top:2px;line-height:1.5}.ranklink .go{margin-left:auto;font-size:22px;font-weight:800;color:var(--blue);flex:none}
 .brieflink{display:flex;align-items:center;gap:14px;margin:12px 20px 0;padding:16px 18px;border-radius:16px;background:#fff;border:1.5px solid var(--blue);color:var(--text);text-decoration:none;box-shadow:0 2px 10px rgba(47,107,255,.08)}
@@ -261,9 +262,10 @@
 
   <section class="askwrap" id="askBox" aria-label="단지 이름으로 물어보기"></section>
 
-  <p class="mlabel">필요한 서비스를 골라 주세요 · <b>8가지 서비스</b></p>
+  <p class="mlabel">필요한 서비스를 골라 주세요 · <b>9가지 서비스</b></p>
   <nav class="menu" aria-label="서비스 메뉴">
     <a class="wide" href="buy/" data-track="home_to_buy"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></span><span><b>내 집 마련</b><small>예산·대출·추천 단지·단지 비교</small></span></a>
+    <a href="loan/" data-track="home_to_loan"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M7 15h4"/></svg></span><b>대출 한도<span class="new">NEW</span></b><small>LTV·DSR 중 무엇이 막는지</small></a>
     <a href="switch/" data-track="home_to_switch"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h13l-3-3"/><path d="M20 16H7l3 3"/></svg></span><b>갈아타기</b><small>팔고 살 때 차액</small></a>
     <a href="villa/" data-track="home_to_villa"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 21V8l6-4v17"/><path d="M10 21h10V11l-5-3"/><path d="M14 14h2M14 17h2M6 11h2M6 15h2"/></svg></span><b>재개발·빌라<span class="new">NEW</span></b><small>구역 단계·입주권</small></a>
     <a href="chungyak/" data-track="home_to_chungyak"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><b>청약<span class="new">NEW</span></b><small>가점·자격·당첨 가점 비교</small></a>
@@ -272,6 +274,7 @@
     <a href="jeonse/" data-track="home_to_jeonse"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9"/><path d="M16 7l3 3"/><path d="M14 9l2 2"/></svg></span><b>전월세 전망 &amp; 전세사기 예방 체크<span class="new">NEW</span></b><small>실거래 시세와 우리 동네 전세 흐름, 깡통전세 위험 신호까지 계약 전에 한 번에 확인해요</small></a>
   </nav>
   <a class="minelink" href="mine/" data-track="home_to_mine"><span><b>내 집 시세 &amp; 미래가치<span class="new">NEW</span></b><small>실거래 시세부터 보유 기간별 전망까지 한 번에 확인해요</small></span><span class="go">›</span></a>
+  <a class="minelink loanlink" href="loan/" data-track="home_card_loan"><span><b>내 대출 한도는 얼마?<span class="new">NEW</span></b><small>집값·지역·연소득만 넣으면 최대 대출과 매달 갚을 돈, 정책 대출 자격까지 바로 알려 드려요</small></span><span class="go">›</span></a>
   <p class="premlink"><a href="premium/" data-track="home_to_premium">단지 심층 분석이 필요하다면 · 프리미엄 리포트 안내 ›</a></p>
   <div class="jas-in" data-ad-slot="home_end" data-ad-cat="home" hidden></div>
   <section class="cs" aria-label="부동산 전문가 상담">
@@ -513,6 +516,6 @@ addEventListener('DOMContentLoaded', () => {
 <footer class="foot notice">국토교통부 실거래가 등 공공기관 공식 자료 기준 · 2026년 11월 대출 규제 반영<br>★ 집예보 · <a href="agent/" data-track="agent_join_click">공인중개사 제휴</a> · <a href="#" onclick="window.JDJ_PWA&&JDJ_PWA.install();return false">홈 화면에 추가</a></footer>
 <script>/* 단지 이름으로 물어보기(assets/ask.js): 1곳 → 내 집 시세, 2~3곳 → 단지 비교 */ addEventListener('DOMContentLoaded', () => { if (window.JDJ_ASK) JDJ_ASK.mount(document.getElementById('askBox'), {from:'home'}); });</script>
 <script>/* 관심 지역 새 공고 배지(관심 지역을 정한 사람만 공고 자료를 받음). 상태는 분양 화면과 같은 공용 함수(sale-status.js)로 */ addEventListener('DOMContentLoaded', () => { if (window.JDJ_AREA) JDJ_AREA.badge(document.querySelector('a[data-track="home_to_bunyang"]')); });</script>
-<script src="/jangdaejang-calc/assets/ad-slot.js?v=2" defer></script>
+<script src="/jangdaejang-calc/assets/ad-slot.js?v=3" defer></script>
 </body>
 </html>

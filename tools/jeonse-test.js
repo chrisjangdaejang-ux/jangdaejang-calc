@@ -61,7 +61,7 @@ check('권유 표현 없음', /추천합니다|사세요|계약하세요|하셔�
 /* QA 2026-11-21: 홈 서비스 수 = 메뉴 칸 + 내 집 시세 띠(화면에 보이는 서비스 수와 같게) */
 { const nav = (home.match(/<nav class="menu"[\s\S]*?<\/nav>/) || [''])[0], nMenu = (nav.match(/<a /g) || []).length, nMine = /class="minelink"/.test(home) ? 1 : 0, m = home.match(/<b>(\d+)가지 서비스<\/b>/);
   check('홈: n가지 서비스 = 보이는 서비스 칸 수', m && +m[1], nMenu + nMine); }
-check('홈: 8가지 서비스 + 전월세 카드', [home.includes('<b>8가지 서비스</b>'), home.includes('href="jeonse/"'), home.includes('전월세 전망 &amp; 전세사기 예방 체크')], [true, true, true]);
+check('홈: 9가지 서비스(대출 한도 포함) + 전월세 카드', [home.includes('<b>9가지 서비스</b>'), home.includes('href="jeonse/"'), home.includes('전월세 전망 &amp; 전세사기 예방 체크')], [true, true, true]);
 const sw = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
 check('서비스 워커에 새 페이지 등록', sw.includes("'/jangdaejang-calc/jeonse/'") && sw.includes('rent-core.js'), true);
 const stat = fs.readFileSync(path.join(__dirname, '..', 'assets', 'stat.js'), 'utf8');

@@ -1,11 +1,8 @@
 /* 장대장 갈아타기 계산 엔진 — 브라우저 안에서만 계산 (금액 단위: 만원)
    - 양도세·취득세: tax/tax-engine.js (JDJ_TAX) 그대로 사용 (소득세법·지방세법 조문 근거는 그 파일 머리말)
    - 단지 점수·순위: assets/rec-core.js (JDJ_REC) — 내 집 마련 리포트와 같은 기준
-   - 대출 (확인일 2026-11-20): 2025.10.15 대책 LTV(규제지역 40%·비규제 70%), 수도권·규제지역 주담대 가격구간 한도
-           (15억 이하 6억, 15억 초과 25억 이하 4억, 25억 초과 2억), 은행권 DSR 40% — 금융위원회 '부동산 시장 안정을 위한
-           금융 종합대책'(2026.8.13)에서 '대출규제 유지'로 다시 확인. 스트레스 금리: 수도권·규제지역 3.0%(3단계, 기본 적용 100%),
-           지방 1.5% × 기본 적용 50% = 0.75% — 금융위원회 행정지도에 따른 은행연합회 '2026년 하반기 스트레스 DSR 운영방안'
-           (2026.7.1~12.31). 금리유형 비율: 변동형 100%, 주기형 수도권·규제지역 20~40%·지방 10~30%(각 상한을 써서 보수적으로)
+   - 대출: assets/loan-rules.js(LTV·가격대 한도·DSR·스트레스 금리, 공식 출처·적용일)를 assets/loan-core.js 를 거쳐 읽음.
+           금리유형 비율은 고정 5~9년·5년 주기(만기 30년) 기준 — 수도권·규제지역 3단계, 지방 2단계
    - 중개보수: 공인중개사법 시행규칙 [별표1] 주택 매매 상한요율 + 부가세 10% */
 (function (root) {
   'use strict';
@@ -13,8 +10,9 @@
   const REC = root.JDJ_REC || (typeof require === 'function' ? require('../assets/rec-core.js') : null);
   const ADJ = root.JDJ_ADJ || (typeof require === 'function' ? require('../tax/adjusted-areas.js') : null);
   const W = 10000;                // 만원 → 원
-  const TYPE_RATIO = { var: 1, mix: 0.8, cyc: 0.4 };
-  const TYPE_RATIO_LOCAL = { var: 1, mix: 0.8, cyc: 0.3 };   // 지방 주기형 10~30% 상한 (2026 하반기 운영방안)
+  const LOAN = root.JDJ_LOAN || (typeof require === 'function' ? require('../assets/loan-core.js') : null);
+  const RULES = LOAN.R;   // 대출 규칙(assets/loan-rules.js) — LTV·가격대 한도·스트레스 금리·DSR·만기를 여기서만 읽음
+  const TYPE_RATIO = LOAN.TYPE_RATIO, TYPE_RATIO_LOCAL = LOAN.TYPE_RATIO_LOCAL;
 
   function brokerFee(P) {
     let br, cap = Infinity;
@@ -50,14 +48,14 @@
   function ctx(g, o) {
     const capital = g !== 'local', regulated = g === 'reg';
     const own = (o.houses || 1) >= 2 ? 'multi' : 'one';
-    const stressBase = capital ? 3.0 : 0.75;
+    const sp = RULES.stressPeriod(g), stressBase = Math.round(sp.rate * sp.base * 10000) / 10000;
     return { g, capital, regulated, own, ltv: REC.LTV[g][own], stressBase,
-      stress: Math.round(stressBase * (capital ? TYPE_RATIO : TYPE_RATIO_LOCAL)[o.rtype || 'cyc'] * 1000) / 1000,
-      income: o.income || 0, debt: o.debt || 0, rate: o.rate || 0, term: Math.min(o.term || 30, capital ? 30 : 40) };
+      stress: Math.round(RULES.stressAdd(g, o.rtype || 'cyc', '5-9') * 1000) / 1000,
+      income: o.income || 0, debt: o.debt || 0, rate: o.rate || 0, term: Math.min(o.term || 30, capital ? RULES.TERM.metroRegMax.v : 40) };
   }
-  function capByPrice(P, c) { if (!c.capital && !c.regulated) return Infinity; if (P <= 150000) return 60000; if (P <= 250000) return 40000; return 20000; }
+  function capByPrice(P, c) { return RULES.capOf(P, c.regulated ? 'reg' : c.capital ? 'capfree' : 'local'); }
   function dsrMax(c, stress) {
-    const room = c.income * 0.40 - c.debt; if (room <= 0) return 0;
+    const room = c.income * RULES.DSR.bank.v - c.debt; if (room <= 0) return 0;
     const i = (c.rate + (stress === undefined ? c.stress : stress)) / 1200, n = c.term * 12;
     return room / 12 * (i === 0 ? n : (1 - Math.pow(1 + i, -n)) / i);
   }

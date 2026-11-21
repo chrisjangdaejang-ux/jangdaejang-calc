@@ -32,7 +32,8 @@
 <script src="../../assets/track.js?v=2"></script>
 <script src="../../assets/stat.js?v=7"></script>
 <script src="../../assets/region-notes.js"></script>
-<script src="../../assets/rec-core.js?v=2"></script>
+<script src="../../assets/loan-rules.js?v=1"></script>
+<script src="../../assets/rec-core.js?v=3"></script>
 <script src="../../assets/mine-core.js?v=16"></script>
 <script src="../../assets/price-sheet.js?v=14"></script>
 <script src="../../assets/agents.js"></script>
@@ -41,7 +42,7 @@
 <script src="../../assets/auth.js?v=6"></script>
 <script src="../../assets/share.js?v=8"></script>
 <script src="../../tax/tax-engine.js?v=4"></script>
-<script src="../../assets/loan-core.js?v=2"></script>
+<script src="../../assets/loan-core.js?v=3"></script>
 <script src="../../assets/kchat.js?v=2"></script>
 <script src="../../assets/plain-words.js?v=14"></script>
 <script src="../../assets/narrative.js?v=13"></script>
@@ -1311,7 +1312,7 @@ async function render(){
           <div class="ring" aria-label="${rg.k} ${rg.v}점"><b>${rg.v}</b><small>${rg.k}</small></div>
         </div>
         ${narFor(x,i) || `<ul class="reasons">${rs.slice(0,3).map(li).join('')}</ul>`}
-        <div class="cps noprint">${PB(x,'report_top')}</div>
+        <div class="cps noprint">${PB(x,'report_top')}${window.JDJ_PRICE&&x.P>0?` <a class="loanx" href="${esc(JDJ_PRICE.loanHref({src:'report', price:x.P, code:x.code, apt:x.apt, band:x.band, area:x.area, own:S.own}))}" data-track="report_to_loan">이 집 대출 한도 계산하기 ›</a>`:''}</div>
         <div class="cmore" id="pm${i}" hidden>
           <div class="row">
             <div class="mini"><div class="k">대출</div><div class="v">${fmtS(x.nd.loan.L)}</div></div>
@@ -1687,6 +1688,6 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ const bg=$('agm'
   }
 })();
 </script>
-<script src="/jangdaejang-calc/assets/ad-slot.js?v=2" defer></script>
+<script src="/jangdaejang-calc/assets/ad-slot.js?v=3" defer></script>
 </body>
 </html>

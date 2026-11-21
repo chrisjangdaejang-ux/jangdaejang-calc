@@ -40,10 +40,12 @@
 <script src="../assets/region-notes.js"></script>
 <script src="../tax/adjusted-areas.js"></script>
 <script src="../tax/tax-engine.js?v=4"></script>
-<script src="../assets/rec-core.js?v=2"></script>
+<script src="../assets/loan-rules.js?v=1"></script>
+<script src="../assets/loan-core.js?v=3"></script>
+<script src="../assets/rec-core.js?v=3"></script>
 <script src="../assets/mine-core.js?v=16"></script>
 <script src="../assets/price-sheet.js?v=14"></script>
-<script src="switch-core.js?v=4"></script>
+<script src="switch-core.js?v=5"></script>
 <script src="../assets/narrative.js?v=13"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -1228,7 +1230,7 @@ function recCard(x, i){
       <div class="nums n4"><div><div class="k">추정 시세</div><div class="v">${fmtShort(x.P)}</div></div><div><div class="k">필요 현금</div><div class="v need">${fmtShort(x.need)}</div></div><div><div class="k">새 대출</div><div class="v">${fmtShort(x.nd.loan.L)}</div></div><div><div class="k">매달 상환</div><div class="v">${Math.round(x.mon).toLocaleString()}만</div></div></div>
       ${fvBlock(x)}
       <ul><li>살 때 드는 돈: 취득세 등 ${fmt(cd.tax)}원 · 중개보수 ${fmt(cd.broker)}원 · 기타 ${fmt(last.etc)}원 · 매수 뒤 남는 현금 ${fmt(x.left)}원</li>${rs.map(([c,t])=>`<li class="${c}">${t}</li>`).join('')}</ul>
-      <div class="acts">${PB(x.code,x.dong,x.apt,x.band,x.u&&x.u[8],'switch_top')}<button type="button" data-cmp="${escH(k)}" class="${on?'cmpOn':''}">${on?'④에서 비교 중':'지금 집과 비교하기'}</button><a href="../buy/report/?${q}" target="_blank" rel="noopener" data-track="switch_rec_report" data-fin="1">이 지역 리포트</a></div>
+      <div class="acts">${PB(x.code,x.dong,x.apt,x.band,x.u&&x.u[8],'switch_top')}<button type="button" data-cmp="${escH(k)}" class="${on?'cmpOn':''}">${on?'④에서 비교 중':'지금 집과 비교하기'}</button>${window.JDJ_PRICE?`<a href="${escH(JDJ_PRICE.loanHref({src:'switch', price:x.P, code:x.code, apt:x.apt, band:x.band, area:x.area, own:houses>=2?'multi':'one'}))}" data-track="switch_to_loan">이 집 대출 한도</a>`:''}<a href="../buy/report/?${q}" target="_blank" rel="noopener" data-track="switch_rec_report" data-fin="1">이 지역 리포트</a></div>
     </div>`;
 }
 function nearRow(x){
@@ -1462,6 +1464,6 @@ setTermOptions(); autoAdj(); render();
 </script>
 <script src="../assets/plain-words.js?v=14"></script>
 <script>document.addEventListener("DOMContentLoaded",()=>{ if(window.JDJ_PLAIN) JDJ_PLAIN.autoGloss(document.querySelector(".wrap")); });</script>
-<script src="/jangdaejang-calc/assets/ad-slot.js?v=2" defer></script>
+<script src="/jangdaejang-calc/assets/ad-slot.js?v=3" defer></script>
 </body>
 </html>

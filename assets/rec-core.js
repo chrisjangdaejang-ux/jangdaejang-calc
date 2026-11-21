@@ -1,17 +1,18 @@
 /* 장대장 단지 추천 공통 로직 — 내 집 마련 리포트(buy/report)와 갈아타기(switch)가 함께 쓴다.
    자료: /jangdaejang-data/data/sNN.json 의 units
      u = [시군구코드, 동, 단지, 평형대, 전용㎡, 최근1년 거래수, 월별 평당가(만원) 36개, 월별 거래수 문자열, 지역 일자리, 미래가치 등 fx]
-   규제지역(2026.7.1 기준): 서울 전역 + 경기 15곳 (국토교통부공고 제2025-1223호, 제2026-882호)
+   규제지역·LTV: assets/loan-rules.js(공식 출처·적용일 포함) 한 곳에서 읽음 — 이 파일보다 먼저 불러와야 함
    ※ 점수 계산 세부 기준은 내부 기준이라 화면에 숫자로 보여 주지 않는다. */
 (function (root) {
   'use strict';
   const PY = 3.3058;
-  const REG_GG = ['41290', '41210', '41135', '41131', '41133', '41117', '41111', '41115', '41173', '41465', '41430', '41450', '41597', '41463', '41310'];
-  const isReg = c => String(c).startsWith('11') || REG_GG.includes(String(c));
-  const isCap = c => { c = String(c); return c.startsWith('11') || c.startsWith('41') || c.startsWith('28'); };
-  const groupOf = c => isReg(c) ? 'reg' : (isCap(c) ? 'capfree' : 'local');
-  /* 주택담보대출 LTV (2025.10.15 대책·2026.11 기준): 보유 상황별 */
-  const LTV = { reg: { none: .40, first: .70, one: .40, multi: 0 }, capfree: { none: .70, first: .70, one: .70, multi: 0 }, local: { none: .70, first: .80, one: .70, multi: .60 } };
+  const RULES = root.JDJ_LOAN_RULES || (typeof require === 'function' ? require('./loan-rules.js') : null);
+  const REG_GG = Object.keys(RULES.REGION.reg.v.gg);
+  const isReg = c => RULES.regulated(c);
+  const isCap = c => RULES.metro(c);
+  const groupOf = c => RULES.groupOf(c);
+  /* 주택담보대출 LTV: 보유 상황별 (loan-rules.js) */
+  const LTV = {}; ['reg', 'capfree', 'local'].forEach(g => { LTV[g] = {}; ['none', 'first', 'one', 'multi'].forEach(o => { LTV[g][o] = RULES.ltvOf(g, o); }); });
   const r100 = m => Math.round(m / 100) * 100;
   function lastNZ(arr) { for (let i = arr.length - 1; i >= Math.max(0, arr.length - 3); i--) if (arr[i] > 0) return arr[i]; return 0; }
   function firstNZ(arr) { for (let i = 0; i < Math.min(arr.length, 3); i++) if (arr[i] > 0) return arr[i]; return 0; }

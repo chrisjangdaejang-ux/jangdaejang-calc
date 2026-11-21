@@ -142,7 +142,7 @@
         <div class="pr-crk">${total > 1 ? `단지 ${i + 1} · ` : ''}${esc(g.sido || '')} ${esc(g.name || '')} ${esc(x.dong)}</div>
         <h2>${esc(x.apt)}</h2>
         <div class="pr-loc">${esc(x.band)} (전용 ${x.area}㎡)${PL.ageText(f.by, Y) ? ` · ${PL.ageText(f.by, Y, '준공')}` : ''}${f.hh ? ` · ${f.hh.toLocaleString()}세대` : ''}${isReg(x.code) ? ' · 규제지역' : ''}</div>
-        ${window.JDJ_PRICE ? `<div class="noprint" style="margin-top:10px">${window.JDJ_PRICE.btn({ sd: x.sd, sgg: x.code, dong: x.dong, apt: x.apt, band: x.band, jibun: x.jb }, 'premium')}</div>` : ''}
+        ${window.JDJ_PRICE ? `<div class="noprint" style="margin-top:10px">${window.JDJ_PRICE.btn({ sd: x.sd, sgg: x.code, dong: x.dong, apt: x.apt, band: x.band, jibun: x.jb }, 'premium')}${window.JDJ_PRICE.loanHref && x.P > 0 ? ` <a class="pr-loan" href="${esc(window.JDJ_PRICE.loanHref({ src: 'premium', price: x.P, code: x.code, apt: x.apt, band: x.band, area: x.area }))}" data-track="premium_to_loan" style="display:inline-flex;align-items:center;min-height:44px;font-weight:700;color:#2F6BFF;text-decoration:none">이 집 대출 한도 계산하기 ›</a>` : ''}</div>` : ''}
       </div>${f.fv != null ? `<div class="ring" aria-label="미래가치 ${f.fv}점"><b>${f.fv}</b><small>미래가치</small></div>` : ''}</div>
       <div class="pr-stats">
         <div><span>추정 시세</span><b>${fmtS(x.P)}</b><small>${x.stale ? '최근 3개월 거래 없음 · 마지막 거래 기준' : '최근 3개월 실거래 중앙값'}</small></div>

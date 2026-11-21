@@ -577,6 +577,7 @@ function render(d, map, units){
     <h2>이 집으로 이어서 계산하기</h2>
     <div class="links">
       <a class="main" href="../switch/?src=mine&amp;sd=${encodeURIComponent(S.sd)}&amp;d=${encodeURIComponent(d.key)}&amp;b=${encodeURIComponent(S.band)}"><b>이 집 팔고 갈아타기 계산 →</b><small>양도세·매도 후 남는 돈·새 대출 (이 단지·평형을 지금 집으로 넣어 드려요)</small></a>
+      ${(sm.price || (last && last.price)) && window.JDJ_PRICE ? `<a href="${esc(JDJ_PRICE.loanHref({src:'mine', price: sm.price || last.price, code: d.code, apt: d.apt, band: S.band, area: u[4]}))}" data-track="mine_to_loan"><b>이 집 대출 한도 계산하기 →</b><small>최근 시세·지역을 채워 LTV·DSR 한도와 매달 갚을 돈을 보여 드려요</small></a>` : ''}
       <a href="../tax/"><b>이 집 세금 계산 →</b><small>양도세·취득세·보유세</small></a>
       ${has ? `<a href="../premium/?p=single&amp;k=${encodeURIComponent(pk)}"><b>이 단지 프리미엄 리포트 →</b><small>단지 심층 분석 · 유료</small></a>` : ''}
     </div>
@@ -770,6 +771,6 @@ async function init(){
 init();
 })();
 </script>
-<script src="/jangdaejang-calc/assets/ad-slot.js?v=2" defer></script>
+<script src="/jangdaejang-calc/assets/ad-slot.js?v=3" defer></script>
 </body>
 </html>

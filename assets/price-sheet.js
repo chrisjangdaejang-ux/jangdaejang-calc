@@ -10,6 +10,19 @@
   'use strict';
   const DATA = '/jangdaejang-data/data/';
   const MINE = '/jangdaejang-calc/mine/';
+  const LOAN = '/jangdaejang-calc/loan/';
+  /** '이 집 대출 한도 계산하기' 주소: 집값(만원)·시·군·구 코드·단지·평형·전용면적을 대출 한도 계산기에 채워 넘김(공개 시세만, 개인 값 없음) */
+  function loanHref(o) {
+    o = o || {}; const q = new URLSearchParams();
+    if (o.src) q.set('src', o.src);
+    if (o.price > 0) q.set('p', String(Math.round(o.price)));
+    if (/^\d{5}$/.test(String(o.code || ''))) q.set('g', String(o.code));
+    if (o.apt) q.set('n', String(o.apt).slice(0, 40));
+    if (o.band) q.set('b', String(o.band).slice(0, 12));
+    if (o.area > 0) q.set('a', String(o.area));
+    if (/^(none|first|one|multi)$/.test(o.own || '')) q.set('o', o.own);
+    return LOAN + (q.toString() ? '?' + q : '');
+  }
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const C = {};                                    // 불러온 자료(약속) 보관
   const get = (k, url, pick) => C[k] || (C[k] = fetch(url, { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(url); return r.json(); }).then(pick)
@@ -433,6 +446,7 @@
 .jps-morebtn{font:inherit;font-size:14px;font-weight:700;width:100%;min-height:44px;margin-top:8px;border:1px solid #E5E8EB;border-radius:12px;background:#fff;color:#3E4754;cursor:pointer}
 .jps-note{font-size:13px;color:#4E5968;line-height:1.6;margin:6px 0 0}
 .jps-sp{margin:0 0 6px;padding:6px 10px;border-radius:8px;background:#FFF7E6;color:#8A5A00;font-weight:700}
+.jps-loan{display:flex;align-items:center;justify-content:center;min-height:48px;margin-top:8px;border-radius:14px;background:#E8F0FF;color:#2F6BFF!important;font-weight:700;font-size:15.5px;text-decoration:none}
 .jps-go{display:flex;align-items:center;justify-content:center;min-height:50px;margin-top:16px;border-radius:14px;background:#2F6BFF;color:#fff!important;font-weight:700;font-size:16px;text-decoration:none}
 .jps-load{padding:30px 0;text-align:center;color:#4E5968}
 .jps-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 14px;border:1.5px solid #2F6BFF;border-radius:12px;background:#fff;color:#2F6BFF!important;font:inherit;font-size:14.5px;font-weight:700;line-height:1.2;cursor:pointer;white-space:nowrap;text-decoration:none;vertical-align:middle;box-sizing:border-box;max-width:100%}
@@ -579,10 +593,11 @@
     <h4>${isPrice ? '최근 실거래' : '월별 실거래 요약'}</h4>
     ${tradesHtml(u, months, { show: 10 })}
     <div class="jps-pastw"></div>
-    <a class="jps-go" href="${esc(link)}">내 집 시세에서 자세히 보기 →</a>`;
+    <a class="jps-go" href="${esc(link)}">내 집 시세에서 자세히 보기 →</a>
+    ${(sm.price || (last && last.price)) ? `<a class="jps-loan" href="${esc(loanHref({ src: 'sheet', price: sm.price || last.price, code: u[0], apt: u[2], band: u[3], area: u[4] }))}" data-track="sheet_to_loan">이 집 대출 한도 계산하기 →</a>` : ''}`;
   }
 
-  const API = { open, close, btn, loadSgg, loadHist, histOf, scoreUnits, findUnit, tradesHtml, pastYearsHtml, wireMore, miniChart, histChart, histNote, linePaths, mountBars, SPARSE, highsHtml, spanBtns, baseName, plot, mount, tipFn, histTip, histSpec, mountHist, cntMap, eok, guOf, guNote, ppySpec, mountPpy };
+  const API = { open, close, btn, loanHref, loadSgg, loadHist, histOf, scoreUnits, findUnit, tradesHtml, pastYearsHtml, wireMore, miniChart, histChart, histNote, linePaths, mountBars, SPARSE, highsHtml, spanBtns, baseName, plot, mount, tipFn, histTip, histSpec, mountHist, cntMap, eok, guOf, guNote, ppySpec, mountPpy };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_PRICE = API;
 })(typeof self !== 'undefined' ? self : this);

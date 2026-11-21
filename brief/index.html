@@ -336,9 +336,9 @@ function marketHtml(M){
     ${MYCY ? `<h3 style="font-size:16px;margin:12px 0 6px">내 가점 ${esc(MYCY.score)}점으로 넣어 볼 만한 단지</h3>${mm.length ? mm.slice(0, 6).map(x => `<div class="box"><b>${esc(x.n.n)}</b> <span class="tg ${x.g === 'hi' ? 'hi' : 'x'}">${esc(x.label)}</span><br>${esc(x.band)} 예상 최저 당첨 가점 ${x.lo}~${x.hi}점</div>`).join('') : '<div class="empty">지금 공고 중 내 가점이 예상 범위에 드는 곳이 없어요.</div>'}<p class="sub">예상 당첨 가점은 청약 화면과 같은 값(과거 당첨 결과로 만든 범위)이에요. 가점은 <a href="manage/">구독 관리</a>에서 바꿀 수 있어요.</p>` : '<p class="sub">구독 관리에서 청약 가점을 넣어 두면 넣어 볼 만한 단지를 골라 드려요.</p>'}</div>`;
   if (M.score) h += `<div class="sec"><h2>지난 예측 성적</h2><div class="box">${esc(M.score.m)}에 공개한 ${M.score.h}년 예측을 실제 결과와 맞춰 보니, 미래가치 상위 20% 단지가 하위 20%보다 ${esc(B.pct(M.score.diff))}p ${M.score.hit ? '더 올랐어요(맞음)' : '덜 올랐어요(틀림)'}.</div></div>`;
   const rt = B.rateText(M.rate);
-  h += `<div class="sec"><h2>금리·대출·세금</h2><p class="sub">${esc(B.SITE)} 정책 목록(공식 발표·국회·법제처로 확인한 것)에서 최근 ${M.policy_days || 14}일 안에 단계가 바뀐 것만 보여 드려요.</p>
+  h += `<div class="sec"><h2>금리·대출·세금</h2><p class="sub">${esc(B.SITE)} 정책 목록(공식 발표·국회·법제처로 확인한 것)에서 최근 ${M.policy_days || 14}일 안에 단계가 바뀌었거나 앞으로 ${M.policy_days || 14}일 안에 시행·종료되는 것을 보여 드려요.</p>
     ${rt.length ? `<div class="box">${rt.map(esc).join('<br>')}<br><small>한국은행 통계(KOSIS) 월 자료예요.</small></div>` : ''}
-    ${(M.policy || []).length ? M.policy.map(p => `<div class="box"><b>${esc(p.name)}</b> <span class="tg x">${esc(p.stage)} ${esc(p.d.slice(5).replace('-', '/'))}</span> <span class="tg x">${esc(p.scope)}</span><br>${esc(p.plain || '')}${p.src && p.src[1] ? ` · <a href="${esc(p.src[1])}" target="_blank" rel="noopener">공식 발표</a>` : ''}</div>`).join('')
+    ${(M.policy || []).length ? M.policy.map(p => `<div class="box"><b>${esc(p.name)}</b> <span class="tg x">${esc(p.stage)} ${esc(p.d.slice(5).replace('-', '/'))}</span> <span class="tg x">${esc(p.scope)}</span><br>${esc(p.up ? (p.note || p.plain || '') : (p.plain || ''))}${p.src && p.src[1] ? ` · <a href="${esc(p.src[1])}" target="_blank" rel="noopener">공식 발표</a>` : ''}${(p.types || []).indexOf('대출') >= 0 ? ` · <a href="../loan/" data-track="brief_to_loan">내 대출 한도 다시 계산</a>` : ''}</div>`).join('')
       : '<div class="empty">최근 2주 동안 단계가 바뀐 금리·대출·세금 정책은 없어요.</div>'}</div>`;
   const cy = M.cy || {};
   h += `<div class="sec"><h2>이번 주 청약 일정 <small>${cy.from ? esc(B.ds(cy.from.replace(/-/g, ''))) + '~' + esc(B.ds(cy.to.replace(/-/g, ''))) : ''}</small></h2>
@@ -688,6 +688,6 @@ async function chooser(){
 })();
 })();
 </script>
-<script src="/jangdaejang-calc/assets/ad-slot.js?v=2" defer></script>
+<script src="/jangdaejang-calc/assets/ad-slot.js?v=3" defer></script>
 </body>
 </html>

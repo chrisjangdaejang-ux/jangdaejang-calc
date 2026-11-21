@@ -34,7 +34,8 @@
 <script src="../assets/stat.js?v=7"></script>
 <script src="../assets/share.js?v=8"></script>
 <script src="../tax/tax-engine.js?v=4"></script>
-<script src="../assets/loan-core.js?v=2"></script>
+<script src="../assets/loan-rules.js?v=1"></script>
+<script src="../assets/loan-core.js?v=3"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -324,6 +325,7 @@ body.wiz .wiznav{display:flex;gap:8px;margin-top:4px}
       <p class="premlink"><a href="../premium/" data-track="buy_to_premium">단지 심층 분석(유료) · 프리미엄 리포트 안내 ›</a></p>
 
       <a class="xlink" id="cmpLink" data-track="buy_to_compare" href="report/?mode=cmp" target="_blank" rel="noopener"><span><b>마음에 둔 단지가 있다면</b><small>후보 단지 2~3곳 비교하기 · 내 조건으로 대출·필요 현금까지</small></span><span class="go" aria-hidden="true">›</span></a>
+      <a class="xlink" id="loanLink" data-track="buy_to_loan" href="../loan/"><span><b>이 집 대출 한도 계산하기</b><small>최대 매수 금액을 집값으로 넣어 LTV·DSR 한도와 매달 갚을 돈을 자세히 봐요</small></span><span class="go" aria-hidden="true">›</span></a>
       <a class="xlink" data-track="cross_link_switch" href="../switch/"><span><b>이미 집이 있다면</b><small>집예보 갈아타기 계산기 · 양도세 포함</small></span><span class="go" aria-hidden="true">›</span></a>
 
       <div class="panel section">
@@ -461,6 +463,7 @@ function render(){
   const ld = loanAt(P,c,dsr);
   const cost = costs(P,c);
   lastP = P; lastBy = ld.by;
+  { const lq = new URLSearchParams({src:'buy', o:own}); if (P > 0) lq.set('p', String(P)); $('loanLink').href = '../loan/?' + lq; }
 
   document.querySelectorAll('.hint[data-for]').forEach(h=>{
     const v = num($(h.dataset.for).value); h.textContent = v ? '= '+fmtW(v) : '';
@@ -716,6 +719,6 @@ render();
   show(want>=1 && want<=N ? (want>=2 && !num($('income').value) ? 1 : want) : 1);
 })();
 </script>
-<script src="/jangdaejang-calc/assets/ad-slot.js?v=2" defer></script>
+<script src="/jangdaejang-calc/assets/ad-slot.js?v=3" defer></script>
 </body>
 </html>

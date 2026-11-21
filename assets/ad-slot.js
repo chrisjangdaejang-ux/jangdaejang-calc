@@ -1,7 +1,7 @@
 /* 집예보 공용 광고 칸 (assets/ad-slot.js) — 위치 계획: docs/ad_slots.md · 광고 상품: /ad/
    페이지에 넣는 법
      <div data-ad-slot="mine_end" data-ad-cat="mine" data-ad-after="#res" hidden></div>
-     <script src="/jangdaejang-calc/assets/ad-slot.js?v=2" defer></script>
+     <script src="/jangdaejang-calc/assets/ad-slot.js?v=3" defer></script>
    - data-ad-slot  : 칸 이름(docs/ad_slots.md 표의 slot id)
    - data-ad-cat   : 화면 종류(아래 CATS) — 받을 수 있는 업종과 집예보 안내 광고를 정함
    - data-ad-skip-if : 이 선택자가 보이면 칸을 숨김(예: 모닝 브리핑 전용 광고 자리가 그날 광고로 채워졌을 때)
@@ -14,7 +14,8 @@
    - 휴대폰(폭 720px 미만)에서는 한 화면(스크롤 한 번 분량)에 광고 최대 2개(분양 목록 상단 광고 .jad 포함). 상단 배너가 먼저 자리를 잡고,
      같은 화면에 넘치는 목록 사이 칸은 아래 항목으로 내려가고, 끝 칸은 그리지 않음
    - 칸 높이를 고정해 광고를 바꿔 끼워도 아래 내용이 밀리지 않음. 위치는 늘 본문 흐름 안(고정·떠 있는 칸 없음)이라 하단 탭을 가리지 않음
-   - 광고 자료: /jangdaejang-calc/data/ads.json {ads:[{id, slot, cat, advertiser, industry, fee, title, text, image, link, start, end}]}
+   - 광고 자료: /jangdaejang-calc/data/ads.json {ads:[{id, slot, cat, advertiser, industry, fee, title, text, image, link, start, end, regno}]}
+   - 대출 상담 광고는 금융소비자보호법에 따라 광고주의 '대출성 상품 판매대리·중개업자 등록번호'(regno)가 있어야만 싣고, 칸에 그 번호를 함께 보여 줌
    - 기록: 보임(화면에 절반 이상 1초) ad_slot_view · 누름 ad_slot_click — 칸·광고 id 만(JDJ.track → GA4). 누름은 data-track="adslot_칸이름" 으로도 집계 */
 (function (root) {
   'use strict';
@@ -38,8 +39,12 @@
     brief:    { name: '모닝 브리핑', ind: ['시행사', '분양대행사', '대출 상담', '세무사', '이사'], house: ['mine', 'brief'], flatOnly: true },
     report:   { name: '리포트',      ind: ['대출 상담', '법무사', '이사', '인테리어', '시행사', '분양대행사'], house: ['brief', 'mine'], note: '계산·분석 결과와 관계없는 광고예요' },
     land:     { name: '땅',          ind: ['감정평가', '법무사', '세무사'], house: ['brief', 'mine'], flatOnly: true },
-    agent:    { name: '중개사',      ind: ['중개사 도구'], house: ['agent', 'brief'] }
+    agent:    { name: '중개사',      ind: ['중개사 도구'], house: ['agent', 'brief'] },
+    loan:     { name: '대출 한도',   ind: ['대출 상담'], house: ['mine', 'buy'], flatOnly: true, note: '계산 결과와 관계없는 광고예요' }
   };
+  /* 대출 상담 광고: 등록번호(regno) 필수 — 금융위원회 등록 '대출성 상품 판매대리·중개업자' 번호. 화면에 그대로 보여 줌 */
+  var LOAN_IND = '대출 상담', REGNO_LABEL = '대출성 상품 판매대리·중개업자 등록번호';
+  function okRegno(v) { v = String(v == null ? '' : v).trim(); return v.length >= 4 && v.length <= 40 && /\d/.test(v) && /^[0-9A-Za-z가-힣\-\s().]+$/.test(v); }
   /* /ad/ '업종 심사'에서 받지 않는 업종 — 어느 칸에도 싣지 않음 */
   var BLOCK = ['대부업', '미등록 대출 중개', '기획부동산', '지분 쪼개기', '확정 수익', '무자격 중개', '미승인 분양'];
   /* 세무사는 정액 광고비만(세무사법: 소개·알선 대가 금지) — 어느 화면이든 fee 가 'flat' 이 아니면 싣지 않음 */
@@ -53,6 +58,7 @@
       brief: { title: S + ' 모닝 브리핑 7일 무료', text: '매일 아침 관심 동네의 새 실거래·급매·청약 소식을 받아 보세요. 자동 결제는 없어요.', link: B + 'brief/', cta: '7일 무료로 받아 보기' },
       agent: { title: S + ' 중개사 플러스', text: '손님에게 보낼 아침 브리핑 카드, 매물 설명서, 주간 블로그·인스타 글을 한 번에 준비해 드려요.', link: B + 'brief/subscribe/?p=brief_pro_plus', cta: '중개사 플러스 보기' },
       dev:   { title: S + ' 분양가 비교 리포트', text: '시행사·분양대행사용 — 예정 분양가가 주변 시세와 비교해 어디쯤인지 숫자로 보여 드려요.', link: B + 'pro/developer/', cta: '리포트 보기' },
+      loan:  { title: '내 대출 한도는 얼마?', text: '집값·지역·연소득만 넣으면 LTV·DSR 중 무엇이 한도를 막는지 바로 알려 드려요. 회원가입 없이 무료.', link: B + 'loan/', cta: '대출 한도 계산' },
       buy:   { title: '내 예산으로 살 수 있는 집', text: '소득·현금만 넣으면 대출 한도와 살 수 있는 단지를 바로 보여 드려요. 입력값은 이 기기에만 남아요.', link: B + 'buy/', cta: '계산해 보기' },
       mine:  { title: '우리 집 시세, 한 번에 보기', text: '단지 이름만 넣으면 실거래 시세와 앞으로의 흐름을 쉬운 말로 보여 드려요.', link: B + 'mine/', cta: '내 집 시세 보기' }
     };
@@ -79,6 +85,7 @@
     if (BLOCK.some(function (b) { return ind.indexOf(b) >= 0; })) return false;
     if (c.ind.indexOf(ind) < 0) return false;
     if ((c.flatOnly || FLAT_ONLY_IND.indexOf(ind) >= 0) && ad.fee !== 'flat') return false;
+    if (ind === LOAN_IND && !okRegno(ad.regno)) return false;
     return true;
   }
   /* ---------- 지역 ----------
@@ -136,9 +143,10 @@
   /** 칸 안쪽 HTML — 어떤 경우에도 '광고' 표시가 들어감 */
   function html(ad, slot, cat, top) {
     var c = CATS[cat] || {}, house = !!ad.house;
+    var reg = !house && String(ad.industry || '') === LOAN_IND && okRegno(ad.regno) ? REGNO_LABEL + ' ' + String(ad.regno).trim() : '';
     if (top) {   /* 상단 한 줄 배너: [광고] 제목 · 설명 … 보기 › — 높이 고정 */
       return '<a class="jas-c jas-bar" href="' + esc(ad.link) + '"' + (house ? '' : ' target="_blank" rel="sponsored noopener nofollow"') + ' data-track="adslot_' + esc(slot) + '" data-ad-id="' + esc(ad.id) + '">'
-        + '<span class="jas-tag">광고</span><span class="jas-t"><b>' + esc(cut(ad.title, 24)) + '</b><small>' + esc(cut(ad.text, 60)) + '</small></span>'
+        + '<span class="jas-tag">광고</span><span class="jas-t"><b>' + esc(cut(ad.title, 24)) + '</b><small>' + esc(reg || cut(ad.text, 60)) + '</small></span>'
         + '<span class="jas-go">' + esc(cut(ad.cta || '자세히', 12)) + ' ›</span></a>';
     }
     var img = !house && okLink(ad.image) ? '<img class="jas-img" src="' + esc(ad.image) + '" alt="" width="56" height="56" loading="lazy">'
@@ -148,10 +156,11 @@
       + '<a class="jas-c" href="' + esc(ad.link) + '"' + rel + ' data-track="adslot_' + esc(slot) + '" data-ad-id="' + esc(ad.id) + '">'
       + img + '<span class="jas-t"><b>' + esc(cut(ad.title, 24)) + '</b><small>' + esc(cut(ad.text, 60)) + '</small></span>'
       + '<span class="jas-go">' + esc(cut(ad.cta || '자세히', 12)) + ' ›</span></a>'
+      + (reg ? '<p class="jas-n jas-reg">' + esc(cut(ad.advertiser, 24)) + ' · ' + esc(reg) + '</p>' : '')
       + (c.note ? '<p class="jas-n">' + esc(c.note) + '</p>' : '');
   }
 
-  var api = { CATS: CATS, BLOCK: BLOCK, allowed: allowed, pick: pick, regionScore: regionScore, normRegion: normRegion, conflicts: conflicts, html: html, houseAd: houseAd, kstToday: kstToday, tooMany: tooMany, MOBILE_MAX: MOBILE_MAX, BAN: '[aria-live],.result,#res,#result,#report,#gRes,output' };
+  var api = { CATS: CATS, BLOCK: BLOCK, LOAN_IND: LOAN_IND, REGNO_LABEL: REGNO_LABEL, okRegno: okRegno, allowed: allowed, pick: pick, regionScore: regionScore, normRegion: normRegion, conflicts: conflicts, html: html, houseAd: houseAd, kstToday: kstToday, tooMany: tooMany, MOBILE_MAX: MOBILE_MAX, BAN: '[aria-live],.result,#res,#result,#report,#gRes,output' };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (typeof document === 'undefined') return;
   root.JDJ_ADSLOT = api;
