@@ -28,6 +28,9 @@
 <script src="../assets/agents.js"></script>
 <script src="../assets/auth.js?v=4"></script>
 <script src="../assets/brief-core.js?v=6"></script>
+<script src="../assets/pro-report.js?v=3"></script>
+<script src="../assets/share.js?v=8"></script>
+<script src="../assets/client-brief.js?v=1"></script>
 <script src="../assets/plain-words.js?v=13" defer></script>
 <script src="../assets/tabbar.js?v=2" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -415,6 +418,7 @@ function render(S, M){
   <div class="stats"><div><b>${v.n}건</b><small>${esc(B.windowText(w) || '새로 올라온')} 매매</small></div><div class="hi"><b>${v.nhi}건</b><small>그중 신고가</small></div>
     <div><b>${v.m30 ? esc(B.pct(v.m30.chg)) : '—'}</b><small>같은 단지 최근 30일<br>vs 직전 3개월</small></div></div>`;
   if (PRO) {
+    h += `<section class="sec" id="myCards" aria-labelledby="h-mc" hidden></section>`;   /* 중개사 플러스: 로그인했으면 내 손님 카드(assets/client-brief.js) */
     h += `<section class="sec" aria-labelledby="h-pro"><h2 id="h-pro">손님께 할 이야기 3줄</h2><p class="sub">공공 자료로 확인된 사실만 골랐어요. 눌러서 복사해 문자·카톡에 붙여 넣으세요.</p>
       ${v.pro.length ? `<ol class="pro3">${v.pro.map(x => `<li>${esc(x.replace(/^"|"$/g, ''))}</li>`).join('')}</ol><div class="row2"><button type="button" class="btn" id="copyPro">3줄 복사하기</button></div>` : '<div class="empty">오늘은 이 동네에서 이야기할 새 자료가 없어요.</div>'}
     </section>
@@ -490,6 +494,7 @@ function render(S, M){
   const cb = $('cardBox'); if (cb) { fitCard(cb); addEventListener('resize', () => fitCard(cb)); }
   const sv = $('saveCard'); if (sv) sv.onclick = () => saveCard(S, dn, sv);
   bindMarket(M);
+  if (PRO && window.JDJ_CBRIEF) JDJ_CBRIEF.mountMine($('myCards'));
   T('brief_view', { sgg: S.g, dong: dn ? 1 : 0, pro: PRO ? 1 : 0 });
 }
 

@@ -1,5 +1,15 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ *
+ * v27 변경 요약 (v20~v26과 같은 11/28 재배포에 함께 들어감. 드라이브 권한이 새로 필요 — 재배포 때 나오는 권한 승인 화면에서 한 번 '허용')
+ *  - 중개사 플러스(요금제 표에 customers·weekly 가 있는 요금제): 내 손님 브리핑 — bpMine·bpSave·bpRelink(로그인) · bpOpen(손님 링크, 로그인 없음).
+ *    손님 정보는 이름표(20자)·단지 5곳·지역(선택)·목적(선택)만. 전화번호·이메일·실명 모양은 거절. 시트 '플러스중개사'·'내손님'(첫 사용 때 자동 생성).
+ *  - 손님 링크 토큰은 서버 비밀값으로 만든 64자리(저장하지 않음, [링크 새로 만들기]로 예전 링크 막기). 손님 화면은 카드 내용·중개사 표시 정보만.
+ *  - GET bpPull(BRIEF_PULL_TOKEN): 엔진용 손님 단지 목록(모든 손님을 합쳐 단지마다 한 번) + 주간 리포트 중개사 목록. 이름표는 보내지 않음.
+ *    briefAreas 에 손님 단지 동네도 넣음(매일 '어제 올라온 거래'용).
+ *  - POST bpPut(BRIEF_PULL_TOKEN): 엔진이 월요일에 만든 주간 리포트 PDF → 드라이브 폴더(링크가 있는 사람만 보기) + 시트 '주간리포트'.
+ *  - 아침 메일 맨 위에 '내 손님 카드'(손님별 카드 + [손님에게 보내기] + 손님용 링크), 월요일엔 [이번 주 시장 리포트(PDF) 받기].
+ *  - 검증: node tools/client-brief-test.js
  *
  * v26 변경 요약 (v20~v25와 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — '브리핑구독' 시트 뒤 4칸 머리 줄은 첫 사용 때 자동으로 채움)
  *  - 모닝 브리핑 요금제 표 BRIEF_TIERS 한 곳: 기본 3,900원(지역 3·단지 3) · 플러스 5,900원(지역 10·단지 10, 새 상품 brief_plus) · 중개사용 4,900원(지역 10·단지 10 + 중개사 내용)
@@ -262,6 +272,7 @@ function doGet(e) {
   if (act === 'briefPublic') return out(briefPublic());
   if (act === 'briefStats') return out(briefStats(e.parameter));
   if (act === 'briefSeen') return out(briefSeen(e.parameter));
+  if (act === 'bpPull') return out(bpPull(e.parameter));
   return out({ ok: false, err: 'unknown' });
 }
 
@@ -282,6 +293,8 @@ function doPost(e) {
   if (AGT_ACTIONS[b.action]) return out(agtDispatch(b));
   if (BRIEF_ACTIONS[b.action]) return out(briefDispatch(b));
   if (PRO_ACTIONS[b.action]) return out(proDispatch(b));
+  if (BP_ACTIONS[b.action]) return out(bpDispatch(b));
+  if (b.action === 'bpPut') { try { return out(bpPut(b)); } catch (x) { return out({ ok: false, err: String(x.message || x) }); } }
   if (DV_ACTIONS[b.action]) return out(dvDispatch(b));
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
@@ -1742,6 +1755,7 @@ function userDelete(b) {
     for (let i = v.length - 1; i >= 1; i--) if (String(v[i][col]) === u.k) sh.deleteRow(i + 1);
   };
   del(SH_UA, ALC['카카오id']); del(SH_S, SC['카카오id']); del(SH_U, UC['카카오id']);
+  del('플러스중개사', 0); del('내손님', 1);   // v27 중개사 플러스: 표시 정보·손님 이름표·단지(시트 이름은 아래 SH_BPP·SH_BPC 와 같음)
   let unlinked = false;
   const admin = PropertiesService.getScriptProperties().getProperty('KAKAO_ADMIN_KEY');
   if (admin) {
@@ -2505,6 +2519,10 @@ function briefAreas(p) {
     if (!s.active && !s2.active) return;
     ((um[String(o.r[BC['카카오id']])] || {}).areas || []).slice(0, s.areas).forEach(a => { cnt[a.g] = (cnt[a.g] || 0) + 1; });
   });
+  try {   // v27 중개사 플러스: 손님 단지가 있는 동네도 매일 최신 두 달을 다시 받게(구독자 수에는 넣지 않음)
+    const on = {}; bpActive(now).forEach(x => { on[x.k] = x; });
+    bpRows(SH_BPC).forEach(o => { const x = on[String(o.r[BPCC['카카오id']])]; if (x) parseJ(o.r[BPCC['단지']], []).slice(0, x.lim.apts).forEach(a => { if (/^\d{5}$/.test(String(a.g))) cnt[a.g] = cnt[a.g] || 0; }); });
+  } catch (e) {}
   return { ok: true, at: ymd(now), areas: Object.keys(cnt).sort().map(g => ({ g: g, n: cnt[g] })) };
 }
 /* 최근 7일 vs 그 전 7일, 단지별 서로 다른 방문자 수(추천·내 집·비교 화면에 단지가 보인 기록 'rec') — 5명 이상만 */
@@ -2671,7 +2689,7 @@ function briefMarketHtml(M, ub) {
     <b>금리·대출·세금</b>${li(rate.concat(pol))}<b>이번 주 청약 일정${cy.n ? ` · 전국 ${cy.n}곳` : ''}</b>${li(cys)}
     <a href="${BRIEF_WEB}" style="font-size:13.5px;color:#2F6BFF">오늘의 시장 전체 보기</a></div>`;
 }
-function briefMail(to, date, pieces, s, pro, M, ub) {
+function briefMail(to, date, pieces, s, pro, M, ub, extra) {
   const title = `[${SITE_NAME}] ${date.slice(5).replace('-', '/')} ${BRIEF_NAME} — ${pieces.map(p => p.nm).join(', ')}`.slice(0, 120);
   const body = pieces.map(p => `<div style="border:1px solid #E5E8EB;border-radius:12px;padding:14px 16px;margin:0 0 12px">
       <div style="font-size:17px;font-weight:900;margin:0 0 6px">${bEsc(p.nm)} <span style="font-size:13px;color:#2F6BFF">새 매매 ${p.n}건 · 신고가 ${p.hi}건</span></div>
@@ -2682,7 +2700,7 @@ function briefMail(to, date, pieces, s, pro, M, ub) {
       ${p.pro.length ? '<div style="background:#F4F7FF;border-radius:10px;padding:10px 12px;margin:8px 0"><b>손님께 할 이야기</b><ol style="margin:6px 0 0;padding-left:18px;line-height:1.6">' + p.pro.map(x => `<li>${bEsc(x)}</li>`).join('') + '</ol></div>' : ''}
       <a href="${p.url}" style="display:inline-block;margin-top:6px;background:#2F6BFF;color:#fff;padding:10px 16px;border-radius:10px;text-decoration:none;font-weight:700">전체 브리핑 보기</a></div>`).join('');
   const html = `<div style="font-family:'Noto Sans KR',sans-serif;max-width:600px;margin:auto;color:#191F28">
-    <div style="font-weight:900;font-size:19px;margin:6px 0 12px">${bEsc(SITE_NAME)} <span style="color:#2F6BFF">모닝 브리핑</span></div>${briefMarketHtml(M, ub)}
+    <div style="font-weight:900;font-size:19px;margin:6px 0 12px">${bEsc(SITE_NAME)} <span style="color:#2F6BFF">모닝 브리핑</span></div>${extra || ''}${briefMarketHtml(M, ub)}
     <div style="font-size:17px;font-weight:900;margin:4px 0 8px">② 내 관심 지역 · ③ 내 관심 단지</div>${body}
     <p style="font-size:12.5px;color:#4E5968;line-height:1.6">국토교통부 실거래 공개 자료에 새로 올라온 거래를 동네별로 모았어요. 신고가는 같은 단지·같은 평형의 이전 최고가를 넘은 거래예요.<br>
     이 메일은 ${bEsc(s.product)}(이용 기간 ${s.start} ~ ${s.end})을 신청하신 분께 보내 드려요. 받는 방법 바꾸기·해지: <a href="${BRIEF_WEB}manage/">${BRIEF_WEB}manage/</a></p>
@@ -2711,6 +2729,7 @@ function briefDaily() {
   const um = userBriefMap(), now = new Date(), cache = {}, ch = briefChannels();
   const brief = g => (g in cache) ? cache[g] : (cache[g] = bFetchJson(BRIEF_DATA + g + '.json'));
   const M = bFetchJson(BRIEF_DATA + 'market.json');      // 전국 공통 — 하루 1번만 받아 모든 구독자에게 같은 내용
+  const cxc = {}, cxOf = g => (g in cxc) ? cxc[g] : (cxc[g] = bFetchJson(BRIEF_DATA + 'cx/' + g + '.json'));   // v27 손님 단지 자료 — 동네마다 한 번만 받음
   let sent = 0;
   bRows().forEach(o => {
     const s = briefState(o, now);
@@ -2724,7 +2743,8 @@ function briefDaily() {
     let res = { ok: false, why: '' };
     try {
       if (s.channel === 'email') { pieces.forEach(p => { p.url += `&src=mail&k=${bKey(s.id)}&day=${date}`; });
-        briefMail(to, (pieces[0] && ix && ix.date) || date, pieces, s, s.pro, M, Object.assign({}, ub, { apts: myApts })); res = { ok: true }; }
+        let bx = ''; try { bx = bpMailHtml(String(o.r[BC['카카오id']]), cxOf, date); } catch (e) { bx = ''; }
+        briefMail(to, (pieces[0] && ix && ix.date) || date, pieces, s, s.pro, M, Object.assign({}, ub, { apts: myApts }), bx); res = { ok: true }; }
       else if (s.channel === 'kakao') {
         if (!ch.kakao) res = { ok: false, why: '알림톡 키 없음' };
         else {
@@ -3476,4 +3496,253 @@ function setupAgency() {
   ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'settleSheet').forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger('settleSheet').timeBased().everyDays(1).atHour(6).inTimezone('Asia/Seoul').create();
   settleSheet();
+}
+
+/* =====================================================================
+   중개사 플러스 (v27) — ① 내 손님 브리핑 ② 주간 시장 리포트 PDF
+   · 몇 명·몇 곳·주간 리포트: 요금제 표(BRIEF_PRICE)의 customers·weekly 값을 읽음(값이 없는 요금제는 손님 카드 없음). 손님 1명 단지 수 BP_APTS(5).
+   · 손님 정보는 중개사가 정한 이름표(예: 김○○ 손님·302호 손님, 20자) · 단지 5곳 · 지역(선택) · 목적(선택)만. 전화번호·이메일·실명 모양은 거절(bpLabel —
+     화면 assets/client-brief.js cleanLabel 과 같은 규칙). 시트 '내손님'에 저장, 연락처 칸 자체가 없음.
+   · 손님 링크: BRIEF_WEB + 'c/#' + 손님id + '.' + 토큰(64자리). 토큰 = 서버 비밀값(ORDER_SALT)으로 만든 해시 — 저장하지 않고 열 때마다 다시 계산해 비교.
+     [링크 새로 만들기] 는 '링크판' 숫자를 올려 예전 링크를 막음. 손님 화면(bpOpen)은 로그인 없이 그 카드 내용(중개사 표시·단지 목록·목적)만 돌려줌. 이름표는 보내지 않음.
+   · 엔진(bpPull, BRIEF_PULL_TOKEN): 모든 중개사·손님 단지를 (시군구, 동, 단지) 한 번씩으로 합친 목록 cx + 주간 리포트용 중개사 목록(id 해시·표시 정보·관심 지역).
+     이름표는 엔진으로 보내지 않음. 엔진이 매일 cx/{시군구}.json(공개, 단지 수치만)을 만들고, 메일(briefDaily)·화면이 손님 단지만 골라 카드를 그림.
+   · 주간 리포트: 엔진이 월요일에 PDF 를 만들어 bpPut 으로 올림 → 드라이브 폴더(링크가 있는 사람만 보기)·'주간리포트' 시트 → 내 구독 관리·월요일 메일에 받기 링크.
+     (드라이브 권한이 새로 필요해서 11/28 재배포 때 한 번 승인해야 함)
+   ===================================================================== */
+const BP_ACTIONS = { bpMine: 1, bpSave: 1, bpRelink: 1, bpOpen: 1 };
+const BP_APTS = 5, BP_LABEL_MAX = 20;
+const SH_BPP = '플러스중개사', BPPH = ['카카오id', '프로필', '고친시각'];
+const SH_BPC = '내손님', BPCH = ['id', '카카오id', '이름표', '지역', '지역이름', '목적', '단지', '링크판', '만든시각', '고친시각', '열람횟수', '최근열람'];
+const SH_BPW = '주간리포트', BPWH = ['날짜', '중개사키', '파일id', '만든시각'];
+const BPPC = Object.fromEntries(BPPH.map((h, i) => [h, i])), BPCC = Object.fromEntries(BPCH.map((h, i) => [h, i])), BPWC = Object.fromEntries(BPWH.map((h, i) => [h, i]));
+const BP_PURPOSE = { '': '', buy: '매수', sell: '매도', jeonse: '전세' };
+const BP_ID = /^C[0-9A-F]{11}$/;
+const BP_SURNAME = '김이박최정강조윤장임한오서신권황안송류유전홍고문양손배백허남심노하곽성차주우구민진나지엄채원천방공현함변염여추도소석선설마길연위표명기반왕금옥육인맹제모탁국어은편용예봉경사부태';
+const BP_PHONE = /(?:\d[\s.\-)(]*){7,}|01[016789]\s*[-.)]?\s*\d{3,4}/;
+
+function bpDispatch(b) {
+  try {
+    if (b.action === 'bpOpen') return bpOpen(b);
+    return withLock(() => {
+      if (b.action === 'bpMine') return bpMine(b);
+      if (b.action === 'bpSave') return bpSave(b);
+      if (b.action === 'bpRelink') return bpRelink(b);
+      return { ok: false, err: 'unknown' };
+    });
+  } catch (x) {
+    return { ok: false, err: String(x.message || x), code: x.code || '' };
+  }
+}
+/* 이름표 검사 — 화면 JDJ_CBRIEF.cleanLabel 과 같은 규칙 */
+function bpLabel(s) {
+  const t = String(s == null ? '' : s).replace(/[\u0000-\u001F\u007F<>"'`\\]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!t) throw new Error('손님을 부를 이름을 적어 주세요. 예: 김○○ 손님, 302호 손님');
+  if (t.length > BP_LABEL_MAX) throw new Error('이름은 ' + BP_LABEL_MAX + '자까지 적을 수 있어요.');
+  if (BP_PHONE.test(t)) throw new Error('전화번호는 적지 말아 주세요. 손님 연락처는 저장하지 않아요.');
+  if (/@|https?:|www\./i.test(t)) throw new Error('이메일·주소 링크는 적지 말아 주세요. 손님 연락처는 저장하지 않아요.');
+  const nm = t.split(' ').map(w => w.replace(/(손님|고객님|고객|님|씨)$/, '')).filter(w => w.length === 3 && /^[가-힣]{3}$/.test(w) && BP_SURNAME.indexOf(w[0]) >= 0 && !/[구동시군읍면리역로길층호집점관원단]$/.test(w));
+  if (nm.length) throw new Error("손님 실명은 적지 말아 주세요. '" + nm[0][0] + "○○ 손님'처럼 가려서 적어 주세요.");
+  return t;
+}
+/* 이 회원의 손님 카드 한도: 받는 중·시작 예정 구독 중 요금제 표에 customers 가 있는 것 */
+function bpLimit(k, now) {
+  now = now || new Date();
+  const t = ymd(now);
+  let best = { customers: 0, apts: 0, weekly: false, sub: null };
+  myBriefs(k).forEach(o => {
+    const s = briefState(o, now);
+    if (s.state === BST.stop || s.state === BST.refund || s.state === BST.wait || !(s.active || s.start > t)) return;
+    const P = BRIEF_PRICE[bProdKey(o.r[BC['상품']])] || {};
+    const n = Math.max(0, Math.floor(Number(P.customers) || 0));
+    if (n > best.customers || (n && P.weekly && !best.weekly)) best = { customers: n, apts: n ? Math.max(1, Math.min(BP_APTS, Math.floor(Number(P.custApts) || BP_APTS))) : 0, weekly: !!P.weekly, sub: s };
+  });
+  return best;
+}
+function bpKey(k) { return hashOf('bp|' + k).slice(1, 13); }                       // 엔진·PDF 파일 이름용 중개사 키(카카오 id 아님)
+function bpToken(id, ver) { return hashOf('bpc|' + id + '|' + (Number(ver) || 1)).slice(1); }   // 64자리, 서버 비밀값으로만 만들 수 있음
+function bpLink(id, ver) { return BRIEF_WEB + 'c/#' + id + '.' + bpToken(id, ver); }
+function bpRows(sh, head) { const s = book().getSheetByName(sh); if (!s) return []; const v = s.getDataRange().getValues(), out = []; for (let i = 1; i < v.length; i++) if (v[i][0]) out.push({ row: i + 1, r: v[i] }); return out; }
+function bpProfileOf(k) { const x = bpRows(SH_BPP).find(o => String(o.r[BPPC['카카오id']]) === k); return x ? parseJ(x.r[BPPC['프로필']], null) : null; }
+function bpApts(a, max) {
+  const seen = {}, out = [];
+  (Array.isArray(a) ? a : []).slice(0, 20).forEach(x => {
+    if (!x) return;
+    const g = String(x.g || ''), d = uText(x.d, 20), nm = uText(x.a, 40).replace(/["'`\\]/g, '');
+    if (!/^\d{5}$/.test(g) || !nm || (d && !/^[가-힣0-9·.]{1,20}$/.test(d))) return;
+    const key = g + '|' + d + '|' + nm; if (seen[key]) return; seen[key] = 1; out.push({ g: g, d: d, a: nm });
+  });
+  if (!out.length) throw new Error('관심 단지를 하나 이상 골라 주세요.');
+  if (out.length > max) throw new Error('손님 한 분에 단지는 ' + max + '곳까지예요.');
+  return out;
+}
+function bpCustOut(o) {
+  const r = o.r, id = String(r[BPCC['id']]);
+  return { id: id, label: String(r[BPCC['이름표']]).replace(/^'/, ''), g: String(r[BPCC['지역']] || ''), gn: String(r[BPCC['지역이름']] || ''),
+    purpose: Object.keys(BP_PURPOSE).find(k => BP_PURPOSE[k] === String(r[BPCC['목적']])) || '', apts: parseJ(r[BPCC['단지']], []),
+    link: bpLink(id, r[BPCC['링크판']]), views: Number(r[BPCC['열람횟수']]) || 0 };
+}
+function bpWeekly(k) {
+  const key = bpKey(k);
+  return bpRows(SH_BPW).filter(o => String(o.r[BPWC['중개사키']]) === key).map(o => ({ date: String(o.r[BPWC['날짜']]).slice(0, 10), url: 'https://drive.google.com/uc?export=download&id=' + String(o.r[BPWC['파일id']]) }))
+    .sort((a, b) => a.date < b.date ? 1 : -1).slice(0, 8);
+}
+function bpMine(b) {
+  const u = sessionUser(b.s), L = bpLimit(u.k);
+  return { ok: true, limit: { customers: L.customers, apts: L.apts, weekly: L.weekly }, profile: bpProfileOf(u.k),
+    customers: bpRows(SH_BPC).filter(o => String(o.r[BPCC['카카오id']]) === u.k).map(bpCustOut), weekly: L.weekly ? bpWeekly(u.k) : [] };
+}
+/* 저장: 표시 정보 + 손님 목록 전체(목록에 없는 손님은 지움 — 그 손님 링크도 바로 막힘) */
+function bpSave(b) {
+  const u = sessionUser(b.s), L = bpLimit(u.k);
+  if (!L.customers) throw new Error('내 손님 브리핑은 중개사 플러스 요금제에서 쓸 수 있어요.');
+  const prof = proProfile(b.profile);
+  if (prof.role !== 'agent' && prof.role !== 'member') throw new Error('중개사 플러스는 공인중개사(개업·소속)용이에요.');
+  const list = Array.isArray(b.customers) ? b.customers : [];
+  if (list.length > L.customers) throw new Error('손님은 ' + L.customers + '명까지 등록할 수 있어요.');
+  const clean = list.map((c, i) => {
+    c = c && typeof c === 'object' ? c : {};
+    try {
+      return { id: BP_ID.test(String(c.id || '')) ? String(c.id) : '', label: bpLabel(c.label), g: /^\d{5}$/.test(String(c.g || '')) ? String(c.g) : '',
+        gn: uText(c.gn, 30), purpose: BP_PURPOSE.hasOwnProperty(c.purpose) ? c.purpose : '', apts: bpApts(c.apts, L.apts) };
+    } catch (e) { throw new Error((i + 1) + '번째 손님: ' + e.message); }
+  });
+  /* 표시 정보 */
+  const psh = uSheet(SH_BPP, BPPH), px = bpRows(SH_BPP).find(o => String(o.r[BPPC['카카오id']]) === u.k), now = new Date();
+  if (px) psh.getRange(px.row, 1, 1, BPPH.length).setValues([[u.k, JSON.stringify(prof), now]]); else psh.appendRow([u.k, JSON.stringify(prof), now]);
+  /* 손님 */
+  const csh = uSheet(SH_BPC, BPCH), mine = bpRows(SH_BPC).filter(o => String(o.r[BPCC['카카오id']]) === u.k);
+  const keep = {};
+  clean.forEach(c => {
+    const o = c.id && mine.find(x => String(x.r[BPCC['id']]) === c.id);
+    const r = o ? o.r.slice() : [];
+    if (!o) { r[BPCC['id']] = 'C' + Utilities.getUuid().replace(/-/g, '').slice(0, 11).toUpperCase(); r[BPCC['카카오id']] = u.k; r[BPCC['링크판']] = 1; r[BPCC['만든시각']] = now; r[BPCC['열람횟수']] = 0; r[BPCC['최근열람']] = ''; }
+    r[BPCC['이름표']] = cellSafe(c.label); r[BPCC['지역']] = c.g; r[BPCC['지역이름']] = c.g ? cellSafe(c.gn) : ''; r[BPCC['목적']] = BP_PURPOSE[c.purpose];
+    r[BPCC['단지']] = JSON.stringify(c.apts); r[BPCC['고친시각']] = now;
+    const line = BPCH.map((h, i) => r[i] === undefined ? '' : r[i]);
+    if (o) csh.getRange(o.row, 1, 1, BPCH.length).setValues([line]); else csh.appendRow(line);
+    keep[String(r[BPCC['id']])] = 1;
+  });
+  mine.filter(o => !keep[String(o.r[BPCC['id']])]).sort((a, z) => z.row - a.row).forEach(o => csh.deleteRow(o.row));
+  return bpMine(b);
+}
+function bpRelink(b) {
+  const u = sessionUser(b.s), o = bpRows(SH_BPC).find(x => String(x.r[BPCC['id']]) === String(b.id || '') && String(x.r[BPCC['카카오id']]) === u.k);
+  if (!o) throw new Error('손님을 찾지 못했어요.');
+  uSheet(SH_BPC, BPCH).getRange(o.row, BPCC['링크판'] + 1).setValue((Number(o.r[BPCC['링크판']]) || 1) + 1);
+  return bpMine(b);
+}
+/* 손님 화면(로그인 없음): 링크가 맞고 중개사 구독이 이어지는 동안만. 실패 이유는 구분하지 않음(링크 맞히기 막기) */
+function bpOpen(b) {
+  const id = String(b.id || ''), tk = String(b.tk || '');
+  const cache = CacheService.getScriptCache(), ck = 'bo:' + id.slice(0, 12), tries = Number(cache.get(ck) || 0);
+  const bad = () => { cache.put(ck, String(tries + 1), 3600); return { ok: false, err: '링크가 맞지 않거나 볼 수 있는 기간이 끝났어요. 보내 준 중개사님께 새 링크를 요청해 주세요.' }; };
+  if (tries >= 20) return { ok: false, err: '확인 시도가 많아 1시간 뒤에 다시 열어 주세요.' };
+  if (!BP_ID.test(id) || !/^[0-9a-f]{64}$/.test(tk)) return bad();
+  const o = bpRows(SH_BPC).find(x => String(x.r[BPCC['id']]) === id);
+  if (!o || !safeEq(bpToken(id, o.r[BPCC['링크판']]), tk)) return bad();
+  const k = String(o.r[BPCC['카카오id']]), L = bpLimit(k), prof = bpProfileOf(k);
+  if (!L.customers || !L.sub || !L.sub.active || !prof) return bad();
+  try { withLock(() => { const sh = uSheet(SH_BPC, BPCH); sh.getRange(o.row, BPCC['열람횟수'] + 1).setValue((Number(o.r[BPCC['열람횟수']]) || 0) + 1); sh.getRange(o.row, BPCC['최근열람'] + 1).setValue(new Date()); }); } catch (e) {}
+  const c = bpCustOut(o);
+  return { ok: true, card: { profile: prof, apts: c.apts, purpose: c.purpose } };
+}
+/* 엔진용 목록(BRIEF_PULL_TOKEN): 단지는 모든 중개사·손님을 합쳐 한 번씩, 이름표는 보내지 않음 */
+function bpActive(now) {
+  now = now || new Date();
+  const tomorrow = addDays(now, 1), um = userBriefMap(), seen = {}, out = [];
+  bRows().forEach(o => {
+    const k = String(o.r[BC['카카오id']]); if (seen[k]) return;
+    const L = bpLimit(k, now), L2 = bpLimit(k, tomorrow);
+    const lim = L.customers ? L : L2;
+    if (!lim.customers || !((L.sub && L.sub.active) || (L2.sub && L2.sub.active))) return;
+    seen[k] = 1;
+    out.push({ k: k, lim: lim, areas: ((um[k] || {}).areas || []).slice(0, (lim.sub || {}).areas || 10) });
+  });
+  return out;
+}
+function bpPull(p) {
+  if (!pullOk(p)) return { ok: false, err: 'auth' };
+  const act = bpActive(new Date()), on = {}, cx = [], seen = {};
+  act.forEach(x => { on[x.k] = x; });
+  bpRows(SH_BPC).forEach(o => {
+    const x = on[String(o.r[BPCC['카카오id']])]; if (!x) return;
+    parseJ(o.r[BPCC['단지']], []).slice(0, x.lim.apts).forEach(a => { const key = a.g + '|' + (a.d || '') + '|' + a.a; if (seen[key]) return; seen[key] = 1; cx.push({ g: a.g, d: a.d || '', a: a.a }); });
+  });
+  const brokers = act.filter(x => x.lim.weekly).map(x => {
+    const prof = bpProfileOf(x.k); if (!prof) return null;
+    const regs = []; x.areas.forEach(a => { if (regs.indexOf(a.g) < 0) regs.push(a.g); });
+    return { bid: bpKey(x.k), profile: { role: prof.role, office: prof.office, ceo: prof.ceo, name: prof.name, reg: prof.reg, addr: prof.addr, phone: prof.phone }, regions: regs };
+  }).filter(Boolean);
+  return { ok: true, at: ymd(new Date()), cx: cx, brokers: brokers };
+}
+/* 주간 리포트 PDF 받기(엔진 → 서버, BRIEF_PULL_TOKEN). 드라이브 '집예보 주간 리포트' 폴더, 링크가 있는 사람만 보기 */
+function bpPut(b) {
+  if (!pullOk(b)) return { ok: false, err: 'auth' };
+  const bid = String(b.bid || ''), date = String(b.date || '');
+  if (!/^[0-9a-f]{12}$/.test(bid) || !/^\d{4}-\d{2}-\d{2}$/.test(date) || b.kind !== 'weekly') return { ok: false, err: 'bad' };
+  const bytes = Utilities.base64Decode(String(b.b64 || ''));
+  if (!bytes.length || bytes.length > 8 * 1024 * 1024) return { ok: false, err: 'size' };
+  const P = PropertiesService.getScriptProperties();
+  let folder = null; const fid = P.getProperty('BP_WEEKLY_FOLDER');
+  try { folder = fid ? DriveApp.getFolderById(fid) : null; } catch (e) { folder = null; }
+  if (!folder) { folder = DriveApp.createFolder(SITE_NAME + ' 주간 리포트'); P.setProperty('BP_WEEKLY_FOLDER', folder.getId()); }
+  const f = folder.createFile(Utilities.newBlob(bytes, 'application/pdf', SITE_NAME + '_주간시장리포트_' + date + '.pdf'));
+  f.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return withLock(() => {
+    const sh = uSheet(SH_BPW, BPWH);
+    bpRows(SH_BPW).filter(o => String(o.r[BPWC['중개사키']]) === bid && String(o.r[BPWC['날짜']]).slice(0, 10) === date).sort((a, z) => z.row - a.row)
+      .forEach(o => { try { DriveApp.getFileById(String(o.r[BPWC['파일id']])).setTrashed(true); } catch (e) {} sh.deleteRow(o.row); });
+    sh.appendRow([date, bid, f.getId(), new Date()]);
+    const old = ymd(addDays(new Date(), -56));   // 8주 지난 리포트는 파일·줄 모두 지움
+    bpRows(SH_BPW).filter(o => String(o.r[BPWC['날짜']]).slice(0, 10) < old).sort((x, z) => z.row - x.row)
+      .forEach(o => { try { DriveApp.getFileById(String(o.r[BPWC['파일id']])).setTrashed(true); } catch (e) {} sh.deleteRow(o.row); });
+    return { ok: true };
+  });
+}
+/* ---------- 메일 '내 손님 카드' (숫자는 cx 파일 그대로 — 화면 JDJ_CBRIEF.rows 와 같은 문장) ---------- */
+function bpSince(w) {
+  if (!w || !w.to) return '';
+  if (!w.from) return '처음 확인한';
+  const a = new Date(w.from + 'T00:00:00Z'), z = new Date(w.to + 'T00:00:00Z');
+  return (z - a) / 86400000 <= 1 ? '어제' : (a.getUTCMonth() + 1) + '/' + a.getUTCDate() + ' 이후';
+}
+function bpRowsOf(C, apt) {
+  const md = i => Math.floor(i / 100) % 100 + '/' + i % 100;
+  const x = C && C.cx ? C.cx[(apt.d || '') + '|' + apt.a] : null, name = apt.a + (apt.d ? ' (' + apt.d + ')' : ''), out = [];
+  if (!C) return { name: name, lines: ['오늘 자료를 아직 받지 못했어요.'] };
+  if (!x) return { name: name, lines: ['오늘 이 단지 자료가 없어요. 내일 아침 카드부터 들어가요.'] };
+  const w = bpSince(C.win);
+  if (x.none) out.push('공개된 매매 기록이 아직 없어요.');
+  else if (x.nn) {
+    const t = (x.new || []).slice().sort((a, z) => (z.hi ? 1 : 0) - (a.hi ? 1 : 0) || z.dt - a.dt)[0];
+    out.push(w + ' 새 거래 ' + x.nn + '건 · ' + t.b + ' ' + bWon(t.p) + '(' + md(t.dt) + ' 계약' + (t.f != null ? ', ' + t.f + '층' : '') + ')' + (t.hi ? ' · 신고가' : t.dr != null && t.dr <= -10 ? ' · 최근 2년 최고가보다 ' + Math.abs(t.dr).toFixed(0) + '% 낮음' : ''));
+  } else {
+    const l = (x.last || [])[0];
+    out.push(w + ' 새 거래 없음' + (l ? ' · 가장 최근 거래 ' + l.b + ' ' + bWon(l.p) + '(' + String(l.dt).slice(0, 4) + '.' + md(l.dt).replace('/', '.') + ' 계약)' : ''));
+  }
+  if (x.chg) { const c = x.chg; out.push(c.b + ' 최근 3개월 가운데 값 ' + bWon(c.m1) + '(' + c.n1 + '건) · 그 전 3개월 ' + bWon(c.m0) + '(' + c.n0 + '건)보다 ' + (c.pct > 0 ? '+' : c.pct < 0 ? '−' : '') + Math.abs(c.pct).toFixed(1) + '%'); }
+  (x.urg || []).slice(0, 1).forEach(u => out.push('급매로 보이는 거래: ' + u.b + ' ' + bWon(u.p) + ' — 최근 3개월 같은 평형 가운데 값 ' + bWon(u.med) + '보다 ' + Math.abs(u.disc).toFixed(0) + '% 낮아요'));
+  (x.rk || []).slice(0, 1).forEach(r => out.push('미래가치 등수(' + r.b + ') ' + r.r0.toLocaleString() + '위 → ' + r.r1.toLocaleString() + '위 ' + (r.mv > 0 ? '▲' : '▼') + Math.abs(r.mv).toLocaleString()));
+  return { name: name, lines: out };
+}
+/* 메일 칸: 중개사의 손님별 카드(이름표는 중개사 메일에만) + [손님에게 보내기](내 구독 관리 카드 화면) + 월요일이면 주간 리포트 받기 */
+function bpMailHtml(k, cx, date) {
+  const L = bpLimit(k); if (!L.customers) return '';
+  const prof = bpProfileOf(k), list = bpRows(SH_BPC).filter(o => String(o.r[BPCC['카카오id']]) === k).map(bpCustOut).slice(0, L.customers);
+  const wk = L.weekly ? bpWeekly(k).filter(w => w.date === date) : [];
+  if (!list.length && !wk.length) return '';
+  const cards = list.map(c => {
+    const items = c.apts.slice(0, L.apts).map(a => bpRowsOf(cx(a.g), a));
+    return `<div style="border:1px solid #D6E2FF;border-radius:12px;padding:12px 14px;margin:0 0 10px">
+      <div style="font-weight:800;color:#8A6D1C;margin:0 0 6px">${bEsc(c.label)}${c.purpose ? ` · ${BP_PURPOSE[c.purpose]}` : ''}</div>
+      ${items.map(it => `<div style="margin:0 0 6px"><b>${bEsc(it.name)}</b>${it.lines.map(l => `<div style="font-size:14px;line-height:1.55;color:#333D4B">${bEsc(l)}</div>`).join('')}</div>`).join('')}
+      <a href="${BRIEF_WEB}manage/?card=${c.id}#cards" style="display:inline-block;margin-top:4px;background:#2F6BFF;color:#fff;padding:9px 14px;border-radius:10px;text-decoration:none;font-weight:700">손님에게 보내기</a>
+      <div style="font-size:12px;color:#6B7684;margin-top:6px;word-break:break-all">손님용 링크: ${bEsc(c.link)}</div></div>`;
+  }).join('');
+  return `<div style="border:2px solid #2F6BFF;border-radius:12px;padding:14px 16px;margin:0 0 14px">
+    <div style="font-size:17px;font-weight:900;margin:0 0 4px">내 손님 카드 <span style="font-size:12.5px;color:#4E5968;font-weight:500">${list.length}명 · 공공자료(국토교통부 실거래가)</span></div>
+    <p style="margin:0 0 10px;font-size:13px;color:#4E5968;line-height:1.6">손님 이름표는 중개사님께만 보여요. 손님에게는 링크로 카드 내용과 ${bEsc(prof ? prof.office : '')} 표시 정보만 보여요.</p>
+    ${wk.length ? `<a href="${wk[0].url}" style="display:block;text-align:center;margin:0 0 10px;border:1px solid #B8942A;color:#8A6D1C;background:#FBF8EF;padding:11px 16px;border-radius:10px;text-decoration:none;font-weight:800">이번 주 시장 리포트(PDF) 받기</a>` : ''}
+    ${cards}</div>`;
 }

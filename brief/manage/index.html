@@ -17,7 +17,9 @@
 <script src="../../assets/auth.js?v=4"></script>
 <script src="../../assets/pay.js?v=3"></script>
 <script src="../../assets/brief-core.js?v=6"></script>
-<script src="../../assets/share.js?v=7"></script>
+<script src="../../assets/share.js?v=8"></script>
+<script src="../../assets/pro-report.js?v=3"></script>
+<script src="../../assets/client-brief.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
@@ -64,6 +66,17 @@ details{margin:8px 0 0}summary{cursor:pointer;font-weight:700;min-height:40px;di
 .inv .btn{width:100%}
 .inv small{display:block;font-size:13px;color:var(--sub2);margin:8px 0 0;line-height:1.55}
 .tg.lv{background:#FBF4E2;color:#8A6A12}
+.sb h3{font-size:16px;font-weight:900;margin:16px 0 8px}
+.cu{border:1px solid var(--line);border-radius:14px;padding:12px;margin:0 0 10px;background:#FCFDFF}
+.cu-h{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 2px}.cu-h b{font-size:15.5px}
+.cu-h button,.lk button{font:inherit;font-size:14px;min-height:40px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--sub);cursor:pointer}
+.pick3{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 0}.pick3 .full{grid-column:1/-1}.pick3 .inp{margin:0}
+.pick3 .btn{min-height:46px}
+.lk{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:8px 0 0;font-size:13.5px;color:var(--sub2)}
+.pf{display:grid;grid-template-columns:1fr 1fr;gap:0 8px}.pf .full{grid-column:1/-1}.pf .inp{margin:4px 0 8px}
+.wk{list-style:none;margin:0;padding:0}.wk li{display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid var(--line);padding:8px 0;font-weight:700}
+.wk a{white-space:nowrap}
+@media (max-width:420px){.pick3,.pf{grid-template-columns:1fr}.pick3 .full,.pf .full{grid-column:auto}}
 </style>
 </head>
 <body>
@@ -110,6 +123,7 @@ async function draw(note){
       <p class="note" style="margin:4px 0 0">예산·나이는 광고주에게 보여 주는 익명 통계(10명 미만인 칸은 숨김)에만 써요. 누구인지는 알 수 없어요.</p>
       <div class="row2"><button type="button" class="btn primary" id="saveEd">저장하기</button>${(r.brief.areas || [])[0] ? `<a class="btn" href="../?d=${encodeURIComponent(B.dKey(r.brief.areas[0].g, r.brief.areas[0].dn))}">오늘 브리핑 보기</a>` : ''}</div>
       <div id="edMsg" class="msg" role="status" hidden></div></section>
+    <div id="plus"></div>
     ${paidEver ? `<section class="inv" id="inv"><h2>친구 초대하고 1개월 무료</h2>
       <p>초대 링크로 온 친구가 이용권을 결제하면 두 분 모두 1개월을 무료로 더 받아요. 다음 결제가 1개월 뒤로 미뤄지는 방식이에요.</p>
       <button type="button" class="btn primary" id="invBtn">친구 초대하고 1개월 무료</button><div id="invMsg" class="msg" role="status" hidden></div>
@@ -157,6 +171,7 @@ async function draw(note){
       draw('내일 아침 브리핑부터 바뀐 지역으로 보내 드려요.');
     } catch(e){ $('saveEd').disabled = false; edMsg(e.message || '저장하지 못했어요. 잠시 뒤 다시 해 주세요.', 1); }
   };
+  drawPlus(r);
   const act = async (fn, ok) => { try { await fn(); draw(ok); } catch(e){ alert(e.message); } };
   main.querySelectorAll('[data-stop]').forEach(b => b.onclick = () => confirm('내일부터 브리핑을 보내지 않을까요? 남은 기간 환불은 [환불 요청]으로 따로 해요.') && act(() => call('briefStop', { id: b.dataset.stop }), '해지했어요. 내일부터 보내지 않아요.'));
   main.querySelectorAll('[data-ref]').forEach(b => b.onclick = () => { const why = prompt('환불 사유(선택)를 적어 주세요. 요청하면 바로 발송이 멈춰요.', ''); if (why !== null) act(() => call('briefRefund', { id: b.dataset.ref, reason: why }), '환불 요청을 받았어요. 영업일 3일 안에 결제한 수단으로 돌려 드려요.'); });
@@ -219,6 +234,124 @@ async function draw(note){
     b.disabled = false;
   };
   main.querySelectorAll('[data-up]').forEach(b => b.onclick = () => { const id = b.dataset.up; act(() => call('briefUpdate', { id, channel: main.querySelector(`[data-ch="${id}"]`).value, contact: main.querySelector(`[data-ct="${id}"]`).value }), '받는 방법을 바꿨어요.'); });
+}
+
+/* ---------- 중개사 플러스: 내 손님 브리핑 · 주간 시장 리포트 (assets/client-brief.js) ---------- */
+const CB = window.JDJ_CBRIEF, PR = window.JDJ_PRO;
+const PURP = [['', '고르지 않음'], ['buy', '매수'], ['sell', '매도'], ['jeonse', '전세']];
+let IXP = null; const SHARD = {};
+const ixGet = () => IXP || (IXP = fetch('/jangdaejang-data/data/index.json').then(x => x.ok ? x.json() : null).catch(() => null));
+/** 시·군·구의 단지 목록(시세 확인용 price/sNN.json 에서 그 구만) → [{d, a}] */
+async function aptsOf(g){
+  const ix = await ixGet(); if (!ix) return [];
+  const sdName = ((ix.sgg || {})[g] || {}).sido, sd = (ix.sido || []).find(x => x.name === sdName);
+  if (!sd) return [];
+  if (!SHARD[sd.id]) SHARD[sd.id] = fetch('/jangdaejang-data/data/' + (sd.price || ('price/' + sd.id + '.json'))).then(x => x.ok ? x.json() : { units: [] }).catch(() => ({ units: [] }));
+  const seen = {}, out = [];
+  ((await SHARD[sd.id]).units || []).forEach(u => { if (u[0] !== g) return; const k = u[1] + '|' + u[2]; if (seen[k]) return; seen[k] = 1; out.push({ d: u[1], a: u[2] }); });
+  return out.sort((x, y) => x.a.localeCompare(y.a, 'ko'));
+}
+async function drawPlus(r){
+  const box = document.getElementById('plus'); if (!box) return;
+  let d; try { d = await call('bpMine'); } catch(e){ box.innerHTML = ''; return; }
+  const L = d.limit || CB.limits(null);
+  if (!L.customers && !(d.customers || []).length) { box.innerHTML = ''; return; }
+  const q = new URLSearchParams(location.search), focus = q.get('card') || '';
+  const brokerNo = ((r.subs || []).find(x => x.broker && x.broker.no) || {}).broker;
+  const prof = Object.assign({ role: 'agent', office: '', ceo: '', name: '', reg: brokerNo ? brokerNo.no.replace(/^'/, '') : '', addr: '', phone: '' }, d.profile || {});
+  const list = (d.customers || []).map(c => Object.assign({}, c, { apts: (c.apts || []).slice() }));
+  const myAreas = (r.brief.areas || []).map(a => ({ g: a.g, gn: a.gn }));
+  const ix = await ixGet(), SG = (ix && ix.sgg) || {}, SDS = [...new Set(Object.values(SG).map(x => x.sido))];
+  const $ = id => document.getElementById(id);
+  const pfErr = () => CB.brandError(prof);
+  box.innerHTML = `<section class="sb" id="cards"><h2>내 손님 브리핑 <span class="tg">중개사 플러스</span></h2>
+    <p class="note" style="margin-top:0">손님마다 관심 단지를 ${L.apts}곳까지 넣어 두면 매일 아침 손님별 카드를 만들어 드려요. 카드는 링크로 손님에게 바로 보낼 수 있어요. 손님은 ${L.customers}명까지 등록할 수 있어요.</p>
+    <div class="msg info">손님 전화번호와 실제 이름은 저장하지 않아요. 중개사님이 알아볼 수 있게 ‘김○○ 손님’, ‘302호 손님’처럼만 적어 주세요. 이 이름은 중개사님 화면과 메일에만 보이고, 손님이 받는 카드에는 나오지 않아요.</div>
+    <h3>오늘 아침 카드</h3><div id="ccList"><p class="note" style="margin:0">카드를 불러오는 중…</p></div>
+    <h3 id="cuHead"></h3><div id="cuList"></div>
+    <button type="button" class="btn" id="cuAdd" style="width:100%">+ 손님 추가</button>
+    <details id="pfBox" ${pfErr() ? 'open' : ''}><summary>카드에 넣을 중개사무소 표시 정보</summary>
+      <p class="note" style="margin:4px 0 8px">공인중개사법에 따라 손님 카드에 중개사무소 이름·소재지·전화번호·등록번호·대표 공인중개사 이름이 함께 표시돼요.</p>
+      <div class="pf"><select class="inp full" data-p="role" aria-label="공인중개사 유형"><option value="agent">개업공인중개사(대표)</option><option value="member">소속공인중개사</option></select>
+        <label class="fl full">중개사무소 이름<input class="inp" data-p="office" maxlength="40" placeholder="예: 잠실하나공인중개사사무소"></label>
+        <label class="fl">대표 공인중개사 이름<input class="inp" data-p="ceo" maxlength="20"></label>
+        <label class="fl" data-only="member">내 이름(소속공인중개사)<input class="inp" data-p="name" maxlength="20"></label>
+        <label class="fl">중개사무소 등록번호<input class="inp" data-p="reg" maxlength="30" placeholder="예: 11710-2020-00123"></label>
+        <label class="fl">사무소 전화번호<input class="inp" data-p="phone" inputmode="tel" maxlength="20" placeholder="예: 02-412-0000"></label>
+        <label class="fl full">중개사무소 소재지<input class="inp" data-p="addr" maxlength="80" placeholder="예: 서울 송파구 올림픽로 300"></label></div></details>
+    <div class="row2" style="margin-top:10px"><button type="button" class="btn primary" id="cuSave">손님 목록 저장하기</button></div>
+    <div id="cuMsg" class="msg" role="status" hidden></div>
+    ${L.weekly ? `<h3>주간 시장 리포트 <small style="font-weight:500;color:var(--sub2)">PDF · 매주 월요일 아침</small></h3>
+      <p class="note" style="margin:0 0 6px">내 관심 지역의 지난주 새 거래·신고가·하락·급매·이번 주 청약 일정을 2~4쪽 PDF로 만들어 드려요. 표지에 중개사무소 이름과 연락처가 들어가요.</p>
+      ${(d.weekly || []).length ? `<ul class="wk">${d.weekly.map(w => `<li><span>${esc(w.date)} 리포트</span><a class="btn" href="${esc(w.url)}" target="_blank" rel="noopener">PDF 받기</a></li>`).join('')}</ul>` : '<p class="note" style="margin:0">첫 리포트는 다음 월요일 아침에 이곳과 메일로 보내 드려요.</p>'}` : ''}
+  </section>`;
+  /* 표시 정보 */
+  box.querySelectorAll('[data-p]').forEach(el => { el.value = prof[el.dataset.p] || (el.tagName === 'SELECT' ? 'agent' : ''); el.oninput = el.onchange = () => { prof[el.dataset.p] = el.value.trim(); showOnly(); }; });
+  const showOnly = () => box.querySelectorAll('[data-only]').forEach(el => { el.hidden = prof.role !== el.dataset.only; });
+  showOnly();
+  const msg = (t, bad) => { const m = $('cuMsg'); m.hidden = false; m.className = 'msg ' + (bad ? 'err' : 'info'); m.textContent = t; };
+  /* 손님 목록 편집 */
+  const sgOpts = (sel) => `<option value="">고르지 않음</option>` + [...new Map(myAreas.concat(list.flatMap(c => c.apts.map(a => ({ g: a.g, gn: (SG[a.g] || {}).name || '' })))).filter(a => a.g).map(a => [a.g, a])).values()]
+    .map(a => `<option value="${a.g}" ${a.g === sel ? 'selected' : ''}>${esc(a.gn || (SG[a.g] || {}).name || a.g)}</option>`).join('');
+  function drawList(){
+    $('cuHead').textContent = `손님 목록 (${list.length}/${L.customers}명)`;
+    $('cuAdd').disabled = list.length >= L.customers;
+    $('cuAdd').textContent = list.length >= L.customers ? `손님은 ${L.customers}명까지예요` : '+ 손님 추가';
+    $('cuList').innerHTML = list.length ? list.map((c, i) => `<div class="cu" data-i="${i}">
+      <div class="cu-h"><b>손님 ${i + 1}</b><button type="button" data-del>빼기</button></div>
+      <label class="fl">손님을 부를 이름 <small style="font-weight:500;color:var(--sub2)">(전화번호·실명은 적지 않아요)</small><input class="inp" data-f="label" maxlength="${CB.LABEL_MAX}" placeholder="예: 김○○ 손님, 302호 손님" value="${esc(c.label || '')}"></label>
+      <div class="g2"><label class="fl">목적 (선택)<select class="inp" data-f="purpose">${PURP.map(([v, t]) => `<option value="${v}" ${c.purpose === v ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
+        <label class="fl">지역 (선택)<select class="inp" data-f="g">${sgOpts(c.g)}</select></label></div>
+      <div class="fl">관심 단지 (${c.apts.length}/${L.apts}곳)</div>
+      <ul class="al" style="margin:0">${c.apts.map((a, j) => `<li>${esc(a.a)} <small>${esc(a.d)}</small><button type="button" data-rm="${j}" aria-label="${esc(a.a)} 빼기">×</button></li>`).join('')}</ul>
+      ${c.apts.length < L.apts ? `<div class="pick3"><select class="inp" data-k="sd" aria-label="시·도">${SDS.map(x => `<option>${esc(x)}</option>`).join('')}</select><select class="inp" data-k="sg" aria-label="시·군·구"></select>
+        <input class="inp full" data-k="apt" list="dl${i}" placeholder="단지 이름을 적거나 골라 주세요" autocomplete="off"><datalist id="dl${i}"></datalist>
+        <button type="button" class="btn full" data-k="add">이 단지 넣기</button></div>` : ''}
+      ${c.id ? `<div class="lk">손님 링크는 위 카드의 [손님에게 보내기]로 보내요. <button type="button" data-relink>링크 새로 만들기</button><span>누르면 예전 링크는 바로 막혀요.</span></div>` : '<div class="lk">저장하면 이 손님 링크가 만들어져요.</div>'}
+    </div>`).join('') : '<p class="note" style="margin:0 0 8px">아직 등록한 손님이 없어요. [+ 손님 추가]를 눌러 시작해 주세요.</p>';
+    $('cuList').querySelectorAll('.cu').forEach(el => {
+      const i = +el.dataset.i, c = list[i];
+      el.querySelector('[data-del]').onclick = () => { if (!c.id || confirm(`${c.label || '이 손님'}을(를) 빼고 저장할까요? 이 손님 링크도 막혀요.`)) { list.splice(i, 1); drawList(); } };
+      el.querySelectorAll('[data-f]').forEach(f => f.oninput = f.onchange = () => { c[f.dataset.f] = f.value; });
+      el.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { c.apts.splice(+b.dataset.rm, 1); drawList(); });
+      const rl = el.querySelector('[data-relink]');
+      if (rl) rl.onclick = async () => { if (!confirm('새 링크를 만들까요? 이미 보낸 예전 링크로는 더 볼 수 없어요.')) return;
+        try { const x = await call('bpRelink', { id: c.id }); msg('새 링크를 만들었어요. 손님에게 새 링크를 보내 주세요.'); refresh(x); } catch(e){ msg(e.message, 1); } };
+      const sd = el.querySelector('[data-k="sd"]'); if (!sd) return;
+      const sg = el.querySelector('[data-k="sg"]'), ap = el.querySelector('[data-k="apt"]'), dl = el.querySelector('datalist');
+      let opts = [];
+      const g0 = c.g || (c.apts[0] || {}).g || (myAreas[0] || {}).g || '';
+      if (g0 && SG[g0]) sd.value = SG[g0].sido;
+      const fillG = () => { sg.innerHTML = Object.entries(SG).filter(([, x]) => x.sido === sd.value).map(([g, x]) => `<option value="${g}">${esc(x.name)}</option>`).join(''); };
+      const fillA = async () => { const g = sg.value; opts = []; dl.innerHTML = ''; const a = await aptsOf(g); if (sg.value !== g) return; opts = a; dl.innerHTML = a.map(x => `<option value="${esc(x.a + ' (' + x.d + ')')}"></option>`).join(''); };
+      sd.onchange = () => { fillG(); fillA(); }; sg.onchange = fillA;
+      fillG(); if (g0 && SG[g0] && SG[g0].sido === sd.value) sg.value = g0; fillA();
+      el.querySelector('[data-k="add"]').onclick = () => {
+        const t = ap.value.trim(), g = sg.value;
+        const hit = opts.find(x => `${x.a} (${x.d})` === t) || (opts.filter(x => x.a === t).length === 1 ? opts.find(x => x.a === t) : null);
+        if (!hit) return msg(opts.length ? '목록에 있는 단지 이름을 골라 주세요. 같은 이름이 여러 동에 있으면 동까지 골라 주세요.' : '단지 목록을 불러오는 중이에요. 잠시 뒤 다시 눌러 주세요.', 1);
+        if (c.apts.some(a => a.g === g && a.d === hit.d && a.a === hit.a)) return msg('이미 넣은 단지예요.', 1);
+        if (c.apts.length >= L.apts) return msg(`손님 한 분에 단지는 ${L.apts}곳까지예요.`, 1);
+        c.apts.push({ g, d: hit.d, a: hit.a }); if (!c.g) { c.g = g; c.gn = (SG[g] || {}).name || ''; }
+        $('cuMsg').hidden = true; drawList();
+      };
+    });
+  }
+  $('cuAdd').onclick = () => { if (list.length >= L.customers) return; list.push({ label: '', purpose: '', g: '', gn: '', apts: [] }); drawList();
+    const last = $('cuList').querySelector('.cu:last-child [data-f="label"]'); if (last) last.focus(); };
+  const refresh = x => { list.length = 0; (x.customers || []).forEach(c => list.push(Object.assign({}, c, { apts: (c.apts || []).slice() }))); drawList(); CB.mountCards($('ccList'), x, { focus, place: 'manage' }); };
+  $('cuSave').onclick = async () => {
+    const e1 = pfErr(); if (e1) { $('pfBox').open = true; return msg(e1, 1); }
+    list.forEach(c => { c.gn = c.g ? ((SG[c.g] || {}).name || c.gn || '') : ''; });
+    const cl = CB.cleanList(list, L); if (cl.err) return msg(cl.err, 1);
+    try { $('cuSave').disabled = true; const x = await call('bpSave', { profile: PR.cleanProfile(prof), customers: cl.list });
+      msg('저장했어요. 새로 넣은 단지는 내일 아침 카드부터 들어가요.'); refresh(x); }
+    catch(e){ msg(e.message || '저장하지 못했어요. 잠시 뒤 다시 해 주세요.', 1); }
+    finally { $('cuSave').disabled = false; }
+  };
+  drawList();
+  CB.mountCards($('ccList'), d, { focus, place: 'manage' });
+  if (location.hash === '#cards' || focus) setTimeout(() => { const s2 = focus ? document.getElementById('c-' + focus) : $('cards'); if (s2) s2.scrollIntoView({ block: 'start' }); }, 300);
 }
 draw(new URLSearchParams(location.search).get('fail') ? '결제를 마치지 못해서 요금제는 그대로예요. 다시 해 보시거나 고객문의로 알려 주세요.' : '');
 })();

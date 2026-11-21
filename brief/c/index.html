@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
+<title>오늘 아침 관심 단지 소식</title>
+<meta property="og:type" content="website">
+<meta property="og:title" content="오늘 아침 관심 단지 소식">
+<meta property="og:description" content="담당 공인중개사가 보내 드린 관심 단지의 오늘 아침 실거래 소식 · 국토교통부 공개 자료">
+<meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/brief/c/">
+<meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/default.png">
+<meta property="og:locale" content="ko_KR">
+<script>/* 손님 링크의 # 값(손님 id.토큰)은 주소창에서 바로 지우고 이 탭에만 둡니다. 이 화면은 통계 도구를 쓰지 않아요. */
+(function(){ var h = location.hash, ok = /^#C[0-9A-F]{11}\.[0-9a-f]{64}$/;
+  if (ok.test(h)) { try { sessionStorage.setItem('jdj_cc_in', h); } catch (e) {} try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
+  else { try { h = sessionStorage.getItem('jdj_cc_in') || ''; } catch (e) { h = ''; } }
+  window.JDJ_CC_IN = ok.test(h) ? h : ''; })();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<script src="/jangdaejang-calc/assets/config.js?v=4"></script>
+<script src="/jangdaejang-calc/assets/agents.js"></script>
+<script src="/jangdaejang-calc/assets/brief-core.js?v=4"></script>
+<script src="/jangdaejang-calc/assets/pro-report.js?v=3"></script>
+<script src="/jangdaejang-calc/assets/client-brief.js?v=1"></script>
+<style>
+body{background:#F7F9FC}
+.wrap{max-width:560px;margin:0 auto;padding:16px 14px 28px}
+.ask{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 0}
+.ask a{display:flex;align-items:center;justify-content:center;min-height:50px;border-radius:12px;font-weight:800;text-decoration:none;font-size:16px}
+.ask .call{background:#2F6BFF;color:#fff}.ask .sms{background:#fff;color:#1F4FD1;border:1px solid #D6E2FF}.ask .kk{grid-column:1/-1;background:#FEE500;color:rgba(0,0,0,.85)}
+.ask .one{grid-column:1/-1}
+.tiny{margin:18px 0 0;text-align:center;font-size:12.5px;color:#8B95A1;line-height:1.6}
+.tiny a{color:#6B7684}
+.msg{border-radius:12px;padding:14px;background:#fff;border:1px solid #E5E8EB;line-height:1.6}
+</style>
+</head>
+<body>
+<main class="wrap" id="main"><div class="msg">카드를 불러오는 중이에요…</div></main>
+<script>
+(function(){
+'use strict';
+const CB = window.JDJ_CBRIEF, main = document.getElementById('main');
+const css = document.createElement('style'); css.textContent = CB.CSS; document.head.appendChild(css);
+const fail = t => { main.innerHTML = `<div class="msg">${CB.esc(t)}</div>${foot()}`; };
+const foot = () => `<p class="tiny">공공자료로 만든 카드 · <a href="/jangdaejang-calc/?utm_source=client_card">${CB.esc(CB.SITE)}</a></p>`;
+async function go(){
+  const k = CB.parseHash(window.JDJ_CC_IN);
+  if (!k) return fail('링크가 올바르지 않아요. 보내 준 중개사님께 링크를 다시 요청해 주세요.');
+  let r; try { r = await CB.post('bpOpen', { id: k.id, tk: k.tk }); } catch (e) { return fail(e.message || '카드를 열지 못했어요. 잠시 뒤 다시 열어 주세요.'); }
+  const c = r.card, cx = await CB.loadCx([...new Set((c.apts || []).map(a => a.g))]);
+  const m = CB.card({ apts: c.apts, purpose: c.purpose }, cx, c.profile, new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10));
+  const p = m.profile, tel = String(p.phone || '').replace(/[^0-9]/g, '');
+  document.title = `${p.office} · ${m.title}`;
+  main.innerHTML = CB.cardHtml(m, {})
+    + `<div class="ask">${tel ? `<a class="call${p.kakao ? '' : ''}" href="tel:${tel}">전화로 문의하기</a><a class="sms" href="sms:${tel}">문자 보내기</a>` : ''}${p.kakao ? `<a class="kk" href="${CB.esc(p.kakao)}" target="_blank" rel="noopener">카카오톡으로 문의하기</a>` : ''}</div>`
+    + foot();
+}
+go();
+})();
+</script>
+</body>
+</html>

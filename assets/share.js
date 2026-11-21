@@ -349,6 +349,45 @@
     }
     return copyAndTell(place, text, mode);
   }
+  /* 링크 먼저 보내기 — 결과 화면이 아닌 곳(중개사 플러스 손님 카드 등)도 run() 과 같은 순서로 보냄:
+     ① 글+링크 공유(카카오톡에선 미리보기가 붙음) → ② 보낸 뒤 '사진으로 보내기' 안내(사진은 고를 때만). 공유가 안 되면 링크 복사 + 사진 저장 안내.
+     o = { title, text, url, blob(선택: 카드 PNG — 함수면 누를 때 만듦), file(사진 파일 이름), tool·place(통계) } */
+  function sendLink(o) {
+    o = o || {};
+    if (!root.document.getElementById('jshareCss')) { var st = root.document.createElement('style'); st.id = 'jshareCss'; st.textContent = CSS; root.document.head.appendChild(st); }
+    var nav = root.navigator || {}, fname = o.file || 'jibyebo-card.png';
+    var full = (o.text ? o.text + '\n' : '') + o.url;
+    function sv(m) { if (root.jdjStat) try { root.jdjStat('share_click', { tool: o.tool || 'brief_card', place: o.place || 'card', method: m, mode: 'summary' }); } catch (e) {} }
+    function getBlob() { return Promise.resolve(typeof o.blob === 'function' ? o.blob() : o.blob).catch(function () { return null; }); }
+    function save(b) {
+      if (!b) return; var u = URL.createObjectURL(b), a = root.document.createElement('a'); a.href = u; a.download = fname;
+      root.document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 4000);
+    }
+    function imgOffer(msg) {
+      if (!o.blob) return;
+      var el = toast('<span>' + msg + '</span><a href="#" data-jshare-img>사진으로 보내기</a>'), a = el.querySelector('[data-jshare-img]');
+      if (a) a.onclick = function (e) {
+        e.preventDefault();
+        getBlob().then(function (b) {
+          if (!b) return;
+          var f = null, can = false;
+          try { f = new root.File([b], fname, { type: 'image/png' }); can = !!(nav.share && nav.canShare && nav.canShare({ files: [f] })); } catch (er) { can = false; }
+          if (can) nav.share({ files: [f], title: o.title }).then(function () { sv('image'); }, function (er) { if (!(er && er.name === 'AbortError')) save(b); });
+          else { save(b); sv('image'); }
+        });
+      };
+    }
+    function copyTell() {
+      return copyText(full).then(function (r) {
+        if (r === 'copy') { sv('copy'); if (o.blob) imgOffer('링크가 복사됐어요. 카카오톡·문자에 붙여 넣어 보내 주세요. 카드 사진도 필요하면'); else toast('<span>링크가 복사됐어요. 카카오톡·문자에 붙여 넣어 보내 주세요.</span>'); }
+        else toast('<span>복사가 안 됐어요. 링크를 길게 눌러 복사해 주세요.</span>');
+        return r;
+      });
+    }
+    if (nav.share) return nav.share({ title: o.title, text: o.text, url: o.url }).then(function () { sv('link'); imgOffer('링크를 보냈어요. 카드 사진도 함께 보내려면'); return 'share'; },
+      function (e) { if (e && e.name === 'AbortError') return 'cancel'; return copyTell(); });
+    return copyTell();
+  }
   function saveImage() {
     if (!ST.blob) return;
     try { if (lastObj) URL.revokeObjectURL(lastObj); } catch (e) {}
@@ -556,7 +595,7 @@
     TOOLS: TOOLS, setup: setup, update: update, clear: clear, link: link, pick: pick, safeSummary: safeSummary, safeLine: safeLine,
     shareText: shareText, drawCard: drawCard, cardBlob: cardBlob, run: run, saveImage: saveImage, state: function () { return ST; },
     encodeDetail: encodeDetail, decodeDetail: decodeDetail, cleanDetail: cleanDetail, detailLink: detailLink, detailPayload: detailPayload, capture: capture, viewing: viewing,
-    formSnap: formSnap, formFill: formFill, chooser: chooser, PROTECT: PROTECT, leave: leave
+    formSnap: formSnap, formFill: formFill, chooser: chooser, PROTECT: PROTECT, leave: leave, sendLink: sendLink
   };
   root.JDJ_SHARE = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
