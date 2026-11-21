@@ -4,7 +4,7 @@
   'use strict';
   const K = window.JDJ_WEEKLY, $ = id => document.getElementById(id);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const SITE = () => (window.JDJ_SITE && window.JDJ_SITE.SITE_NAME) || '집예보';
+  const SITE = () => (window.JDJ_SITE && window.JDJ_SITE.SITE_NAME) || '집코드';
   const T = (e, p) => { try { if (window.gtag) window.gtag('event', e, p || {}); } catch (x) {} };
   const J = u => fetch(u, { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null);
   let V, IX, BASIS = 'w', SD = '서울';

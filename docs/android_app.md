@@ -7,7 +7,7 @@
 
 | 필요한 것 | 왜 | 비고 |
 |---|---|---|
-| 우리 도메인(예: zipyebo.com) | 앱과 웹이 같은 주인임을 확인하는 파일(assetlinks.json)을 **도메인 맨 위**(`https://도메인/.well-known/assetlinks.json`)에 둬야 함 | 지금 주소(github.io/jangdaejang-calc)는 맨 위가 우리 것이 아니라서 **도메인 없이는 불가** |
+| 우리 도메인(예: zipcode.co.kr — 아직 사지 않음) | 앱과 웹이 같은 주인임을 확인하는 파일(assetlinks.json)을 **도메인 맨 위**(`https://도메인/.well-known/assetlinks.json`)에 둬야 함 | 지금 주소(github.io/jangdaejang-calc)는 맨 위가 우리 것이 아니라서 **도메인 없이는 불가** |
 | Google Play Console **조직(회사) 계정** | 회사 이름으로 앱 등록. 개인 계정은 출시 전 테스터 20명·14일 비공개 테스트 조건이 붙음 | 등록비 25달러(한 번) |
 | D-U-N-S 번호 | 조직 계정 가입 때 회사 확인용 | (주)장대장부동산그룹 이름으로 무료 발급, 보통 1~2주(국내 발급 기관: 나이스디앤비) |
 | 회사 이메일·전화·웹사이트 주소 | 스토어에 공개됨 | 고객문의: 02-3444-5008 / chris938@naver.com |
@@ -21,7 +21,7 @@
 2. Play Console 조직 계정 가입: https://play.google.com/console/signup → **조직** 선택 → D-U-N-S 번호 입력.
 3. 앱 파일 만들기 — 둘 중 하나:
    - **쉬운 방법 (PWABuilder)**: https://www.pwabuilder.com 에 `https://도메인/` 입력 → **Start** → **Package For Stores** → **Android** → **Generate Package**.
-     - Package ID: `kr.zipyebo.app`(도메인에 맞춰 정함, 한 번 정하면 못 바꿈) / App name: 집예보 / Signing key: **New** (키 파일과 비밀번호를 안전하게 보관).
+     - Package ID: `kr.zipcode.app`(도메인에 맞춰 정함, 한 번 정하면 못 바꿈) / App name: 집코드 (영문 ZIPCODE) / Signing key: **New** (키 파일과 비밀번호를 안전하게 보관).
    - **개발자 방법 (Bubblewrap)**: `npm i -g @bubblewrap/cli` → `bubblewrap init --manifest https://도메인/manifest.webmanifest` → `bubblewrap build`.
 4. 만든 파일 중 `.aab` 를 Play Console **앱 만들기** → **프로덕션**(또는 **내부 테스트**) → **새 버전 만들기** 에 올립니다.
 5. 주인 확인 파일 올리기:
@@ -34,20 +34,22 @@
 
 ## 앱 설치 정보(manifest.webmanifest) 상태
 
-이름·짧은 이름 = SITE_NAME(집예보, 매일 자동 맞춤), 아이콘 192·512 + 마스크용 512, 바탕·테마 색 흰색, 시작 주소 `?src=pwa`, 화면 standalone,
+이름·짧은 이름 = SITE_NAME(집코드, 매일 자동 맞춤), 아이콘 192·512 + 마스크용 512, 바탕·테마 색 흰색, 시작 주소 `?src=pwa`, 화면 standalone,
 바로가기 4개(내 집 시세·지도·청약 가점·세금). 도메인을 바꾸면 경로도 자동으로 바뀝니다.
 
 ---
 
 ## Play 스토어 등록 정보 초안
 
-**앱 이름(30자)**: 집예보 - 아파트 실거래가·미래가치
+**앱 이름(30자)**: 집코드 - 아파트 실거래가·미래가치
+
+**영문 이름**: ZIPCODE
 
 **간단한 설명(80자)**: 아파트 실거래가와 미래가치, 청약 가점, 세금 계산기, 전세 사기 체크까지 무료로 한 번에
 
 **자세한 설명(4,000자 이내)**:
 
-집값에도 예보가 있어요. 집예보는 국토교통부 아파트 실거래가와 공공 통계를 모아, 내 집과 관심 단지의 시세와 앞으로의 흐름을 쉽게 보여 드려요.
+공공데이터로 내 집값의 내일을 풉니다. 집코드는 국토교통부 아파트 실거래가와 공공 통계를 모아, 내 집과 관심 단지의 시세와 앞으로의 흐름을 쉽게 보여 드려요.
 
 ■ 아파트 실거래가·시세
 · 전국 아파트 단지별 최근 실거래가, 평형별 시세, 역대 최고가와 신고가 표시

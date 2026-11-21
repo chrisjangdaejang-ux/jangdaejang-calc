@@ -1,4 +1,4 @@
-/* 집예보 첫 화면 호기심 카드 계산 — 화면(index.html)·테스트(tools/home-test.js) 공용, DOM 없음.
+/* 집코드 첫 화면 호기심 카드 계산 — 화면(index.html)·테스트(tools/home-test.js) 공용, DOM 없음.
    자료: 공개 요약 home/sNN.json(엔진 scripts/home_pulse.py — 공개 실거래·점수 파일만 읽어 줄 세운 것),
          track.json·index.json track(엔진 scripts/track.py — 시세 추정 정확도). 여기서는 새 숫자를 만들지 않고 읽어서 고르기·표시만 한다.
    window.JDJ_HOME = { SIZES, SIZE_TXT, race, acc, regionPick, eok, md, qSpark, rule, heroFacts } */

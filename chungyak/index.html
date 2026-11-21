@@ -9,16 +9,16 @@
 <link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="집예보">
+<meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="/jangdaejang-calc/assets/pwa.js" defer></script>
 <script src="/jangdaejang-calc/assets/biz.js" defer></script>
-<title>집예보 청약 가점 계산기 — 가점·1순위·특별공급·과거 당첨 가점 비교</title>
+<title>집코드 청약 가점 계산기 — 가점·1순위·특별공급·과거 당첨 가점 비교</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/chungyak/">
 <meta name="description" content="청약 가점을 계산하면 진행·예정 공고마다 예상 당첨 커트라인과 비교해, 어떤 단지·어떤 면적에서 당첨 가능성이 높은지 보여 드려요. 1순위·특별공급 5가지 해당 가능성과 과거 당첨 가점 비교도 함께.">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="집예보">
-<meta property="og:title" content="집예보 청약 가점 계산기">
+<meta property="og:site_name" content="집코드">
+<meta property="og:title" content="집코드 청약 가점 계산기">
 <meta property="og:description" content="내 가점으로 당첨 가능성 높은 단지는? 공고별 예상 커트라인과 비교 + 특별공급 유형 진단">
 <meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/chungyak/">
 <meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/chungyak.png">
@@ -26,13 +26,13 @@
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="집예보 청약 가점 계산기">
+<meta name="twitter:title" content="집코드 청약 가점 계산기">
 <meta name="twitter:description" content="내 가점으로 당첨 가능성 높은 단지는? 공고별 예상 커트라인과 비교 + 특별공급 유형 진단">
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/chungyak.png">
 <script>window.JDJ_CONFIG = { tool:'chungyak', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
-<script src="../assets/share.js?v=8"></script>
+<script src="../assets/share.js?v=9"></script>
 <script src="../assets/sale-status.js?v=1"></script>
 <script src="../assets/area-watch.js?v=3"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -159,7 +159,7 @@ th.num{white-space:normal;word-break:keep-all}
 .tyl ul{list-style:none;margin:0;padding:0}.tyl li{display:flex;justify-content:space-between;gap:10px;padding:2px 0;font-variant-numeric:tabular-nums}
 .tyl li b{color:#191F28;font-weight:700;white-space:nowrap}
 </style>
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=43">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=44">
 <script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
 <link rel="stylesheet" href="/jangdaejang-calc/assets/cy-price.css?v=2">
 <style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
@@ -236,7 +236,7 @@ td{border-bottom:1px solid var(--line2)}
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>집예보</a>
+  <a class="brand" href="/jangdaejang-calc/" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
   <div class="badge plain">청약 가점</div>
 </header>
 
@@ -343,10 +343,10 @@ td{border-bottom:1px solid var(--line2)}
   자료: 한국부동산원 청약홈 분양정보·청약접수 경쟁률 및 당첨 가점(공공데이터포털). 은행 전산 사정 등으로 접수 건수가 나중에 일부 바뀔 수 있습니다.<br>
   청약 자격과 가점은 청약홈과 입주자모집공고문이 최종 기준입니다.</p>
 </div>
-<div class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집예보 · <a href="../">홈</a></div>
+<div class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집코드 · <a href="../">홈</a></div>
 
 <script src="cy-engine.js?v=2"></script>
-<script src="../assets/cy-price.js?v=3"></script>
+<script src="../assets/cy-price.js?v=4"></script>
 <script src="../assets/narrative.js?v=14"></script>
 <script>
 /* 계산 엔진은 cy-engine.js (node 테스트: tools/chungyak-test.js) */
@@ -742,6 +742,6 @@ init();
 </script>
 <script src="../assets/plain-words.js?v=14"></script>
 <script>document.addEventListener("DOMContentLoaded",()=>{ if(window.JDJ_PLAIN) JDJ_PLAIN.autoGloss(document.querySelector(".wrap")); });</script>
-<script src="/jangdaejang-calc/assets/ad-slot.js?v=3" defer></script>
+<script src="/jangdaejang-calc/assets/ad-slot.js?v=4" defer></script>
 </body>
 </html>

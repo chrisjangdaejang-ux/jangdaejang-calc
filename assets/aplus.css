@@ -1,4 +1,4 @@
-/* 집예보 공통 디자인 (A+ 파랑 강조)
+/* 집코드 공통 디자인 (A+ 파랑 강조)
    - 바탕 흰색, 본문 짙은 회색, 강조는 파랑(누르거나 지금 중요한 것), 금색은 로고 별·배지·점수 링 같은 작은 장식에만.
    - 각 페이지의 예전 색 이름(--cream, --olive …)은 아래에서 새 색으로 이어 주므로 페이지 안의 규칙은 그대로 동작한다. */
 :root{
@@ -24,6 +24,7 @@ a{color:var(--blue)}
 .brand .bi{width:24px;height:24px;flex:none;display:block}
 .brand .star{color:var(--brand)}
 .brand .acc,.brand span:not(.star){color:var(--blue)}
+.brand span[data-site-name]{color:inherit}
 .badge{font-size:10.5px;font-weight:700;letter-spacing:1.2px;border:1px solid var(--brand);color:var(--brand);background:transparent;padding:3px 7px;border-radius:4px;white-space:nowrap}
 .badge.plain{border-color:var(--line);color:var(--sub2);letter-spacing:0;font-size:13.5px;padding:4px 9px;border-radius:999px}
 .topbtn{font:inherit;font-size:15px;font-weight:700;color:var(--sub);background:var(--gray);border:0;border-radius:10px;min-height:44px;padding:0 14px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}

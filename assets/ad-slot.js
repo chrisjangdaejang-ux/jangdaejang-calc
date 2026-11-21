@@ -1,14 +1,14 @@
-/* 집예보 공용 광고 칸 (assets/ad-slot.js) — 위치 계획: docs/ad_slots.md · 광고 상품: /ad/
+/* 집코드 공용 광고 칸 (assets/ad-slot.js) — 위치 계획: docs/ad_slots.md · 광고 상품: /ad/
    페이지에 넣는 법
      <div data-ad-slot="mine_end" data-ad-cat="mine" data-ad-after="#res" hidden></div>
-     <script src="/jangdaejang-calc/assets/ad-slot.js?v=3" defer></script>
+     <script src="/jangdaejang-calc/assets/ad-slot.js?v=4" defer></script>
    - data-ad-slot  : 칸 이름(docs/ad_slots.md 표의 slot id)
-   - data-ad-cat   : 화면 종류(아래 CATS) — 받을 수 있는 업종과 집예보 안내 광고를 정함
+   - data-ad-cat   : 화면 종류(아래 CATS) — 받을 수 있는 업종과 집코드 안내 광고를 정함
    - data-ad-skip-if : 이 선택자가 보이면 칸을 숨김(예: 모닝 브리핑 전용 광고 자리가 그날 광고로 채워졌을 때)
    - data-ad-after : 이 칸보다 먼저 이용자가 봐야 하는 결과(선택자). 결과가 보일 때만 칸을 보여 줌
    - data-ad-list + data-ad-every : 긴 목록 사이 칸. 목록(선택자)의 N번째 항목 뒤에 한 번만 끼움(목록을 다시 그리면 다시 끼움)
    원칙
-   - 모든 칸에 '광고' 표시. 유료 광고가 없으면 빈 칸 대신 그 화면에 맞는 집예보 안내 광고를 보여 줌
+   - 모든 칸에 '광고' 표시. 유료 광고가 없으면 빈 칸 대신 그 화면에 맞는 집코드 안내 광고를 보여 줌
    - 결과·계산 칸([aria-live]·.result·#res·#result·#report 안)에는 절대 그리지 않음 — 특히 세금 계산 결과
    - data-ad-top : 화면 위쪽 한 줄 배너(제목·검색 바로 아래). 높이를 처음부터 잡아 두어 그려져도 아래 내용이 튀지 않음
    - 휴대폰(폭 720px 미만)에서는 한 화면(스크롤 한 번 분량)에 광고 최대 2개(분양 목록 상단 광고 .jad 포함). 상단 배너가 먼저 자리를 잡고,
@@ -23,7 +23,7 @@
   var DATA = B + 'data/ads.json';
   var MOBILE_W = 720, MOBILE_MAX = 2;
 
-  /* 화면 종류별: 이름 · 받을 수 있는 업종 · 유료 광고가 없을 때 보여 줄 집예보 안내 광고 */
+  /* 화면 종류별: 이름 · 받을 수 있는 업종 · 유료 광고가 없을 때 보여 줄 집코드 안내 광고 */
   var CATS = {
     home:     { name: '홈',          ind: ['대출 상담', '법무사', '보증보험', '이사', '인테리어', '세무사', '시행사', '분양대행사'], house: ['mine', 'brief'] },
     map:      { name: '지도',        ind: ['시행사', '분양대행사', '대출 상담', '이사', '인테리어'], house: ['brief', 'mine'] },
@@ -50,8 +50,8 @@
   /* 세무사는 정액 광고비만(세무사법: 소개·알선 대가 금지) — 어느 화면이든 fee 가 'flat' 이 아니면 싣지 않음 */
   var FLAT_ONLY_IND = ['세무사'];
 
-  function site() { var s = root.JDJ_SITE && root.JDJ_SITE.SITE_NAME; return (s && String(s).trim()) || '집예보'; }
-  /* 집예보 안내 광고(하우스 광고) */
+  function site() { var s = root.JDJ_SITE && root.JDJ_SITE.SITE_NAME; return (s && String(s).trim()) || '집코드'; }
+  /* 집코드 안내 광고(하우스 광고) */
   function houseAd(kind) {
     var S = site();
     var H = {
@@ -100,7 +100,7 @@
     var sd = rg.sido || (rg.sgg ? rg.sgg.slice(0, 2) : '');
     return sd && sd === r ? 2 : 0;
   }
-  /** 칸에 보일 광고 1개: 그 지역 광고(시·군·구 → 시·도) → 전국 광고 → 집예보 안내 광고. 같은 단계 안에서는 시작일 → id 순, used 에 있는 것은 피함 */
+  /** 칸에 보일 광고 1개: 그 지역 광고(시·군·구 → 시·도) → 전국 광고 → 집코드 안내 광고. 같은 단계 안에서는 시작일 → id 순, used 에 있는 것은 피함 */
   function pick(ads, slot, cat, today, used, rg) {
     used = used || [];
     var l = (ads || []).filter(function (a) { return allowed(a, slot, cat, today) && regionScore(a.region, rg) > 0; })

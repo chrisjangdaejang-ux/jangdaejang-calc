@@ -1,4 +1,4 @@
-/* 집예보 성적표(/track/)·점수 읽는 법(/guide/method/) 계산 — 화면·테스트(tools/track-test.js) 공용, DOM 없음.
+/* 집코드 성적표(/track/)·점수 읽는 법(/guide/method/) 계산 — 화면·테스트(tools/track-test.js) 공용, DOM 없음.
    자료는 공개 파일 그대로 읽고 새 숫자를 만들지 않는다(가중 평균·묶음 합치기만):
      bt/index.json   엔진 scripts/backtest_monthly.py — 전국·시·도별 10분위(dec: [2년 평균 상승 %, 하락 비율 %, 같은 구 평균 대비 %p, 사례 수]),
                      요약(sum), 연도별(by_year)·국면별(by_phase, 이름 phases), 학습 자료 시작월(data_from), (계획) 전국 기준 점수 nat

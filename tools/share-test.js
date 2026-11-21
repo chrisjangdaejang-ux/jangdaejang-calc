@@ -20,7 +20,7 @@ check('공개 값은 남김', u.searchParams.get('sd'), '서울특별시');
 check('유입 집계 utm', [u.searchParams.get('utm_source'), u.searchParams.get('utm_medium'), u.searchParams.get('utm_campaign')], ['share', 'user_share', 'report']);
 check('세금 해시', new URL(SH.link('tax', { hash: 'cgt' })).hash, '#cgt');
 check('10개 화면 이름', Object.keys(SH.TOOLS).sort(), ['ask', 'checklist', 'chungyak', 'jeonse', 'mine', 'rank', 'report', 'switch', 'tax', 'villa']);
-Object.entries(SH.TOOLS).forEach(([k, t]) => check(k + ' 중간 카드 문구', /쉬워지는 집예보$/.test(t.easy) && !!t.try && !!t.label, true));
+Object.entries(SH.TOOLS).forEach(([k, t]) => check(k + ' 중간 카드 문구', /쉬워지는 집코드$/.test(t.easy) && !!t.try && !!t.label, true));
 
 /* 요약 문장 거르기 */
 check('금액 문장 버림', ['연소득 7,000만원', '현금 4억', '대출 1억 2,000만 원', '내 가점 54점', '가점 54 점'].map(SH.safeLine), ['', '', '', '', '']);

@@ -1,5 +1,5 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집코드 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집코드 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
  * v42 변경 요약 (v20~v41과 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — 시트 변경 없음, 기존 '조건' 칸 JSON에 두 값이 더해짐)
  *  - 전문가 이름 리포트 대출 조건(proCond): 금리 유형 rtype(var 변동·mix 혼합·cyc 주기형)과 대출 기간 term(10~40년, 5년 단위)도 저장하고 proOpen 이 그대로 돌려줌.
@@ -146,7 +146,7 @@
  *  - 검증: node tools/brief-test.js
  *
  * v23 변경 요약 (v20·v21·v22와 같은 11/28 재배포에 함께 들어감. v23 몫으로 따로 실행할 함수 없음)
- *  - 광고·제휴 문의(adInquiry) 관심 상품에 시행사 페이지(pro/developer/) 상품 키 두 개 추가: brochure '집예보 분석 브로슈어(잠금형)',
+ *  - 광고·제휴 문의(adInquiry) 관심 상품에 시행사 페이지(pro/developer/) 상품 키 두 개 추가: brochure '집코드 분석 브로슈어(잠금형)',
  *    datapack '현장 자료 팩(편집형)'. 재배포 전에는 이 키가 버려지고 함께 보내는 'etc'(기타·제휴)로 접수돼요(문의 내용에 상품 이름이 그대로 있어 놓치지 않음).
  *  - 자료 팩 이용 조건 동의 여부는 문의 내용 줄('자료 팩 이용 조건 동의: 예 (판 날짜)')로 남아요 — 시트 칸 변경 없음.
  *  - 검증: node tools/devpro-test.js
@@ -304,7 +304,7 @@ function setup() {
 
 /* ---------- 공통 ---------- */
 /* 서비스 이름 — 여기 한 곳(웹 assets/config.js SITE_NAME · 엔진 scripts/brand.py 와 같은 값). 모닝 브리핑 이름은 이 값으로 조합 */
-const SITE_NAME = '집예보';
+const SITE_NAME = '집코드';
 const BRIEF_NAME = SITE_NAME + ' 모닝 브리핑';
 function out(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
 function today() { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }
@@ -718,7 +718,7 @@ function unsubscribe(p) {
 function mailHtml(title, body, id, token) {
   const unsub = ScriptApp.getService().getUrl() + `?action=unsub&id=${id}&t=${token}`;
   return `<div style="font-family:'Noto Sans KR',sans-serif;max-width:560px;margin:auto;background:#FFFFFF;border:1px solid #E5E8EB;border-radius:12px;overflow:hidden">
-    <div style="background:#2F6BFF;color:#FFFFFF;padding:14px 18px;font-weight:900"><span style="color:#F3E3B0">★</span> 집예보 <span style="color:#FBF8EF">갈아타기 알림</span></div>
+    <div style="background:#2F6BFF;color:#FFFFFF;padding:14px 18px;font-weight:900"><span style="color:#F3E3B0">★</span> 집코드 <span style="color:#FBF8EF">갈아타기 알림</span></div>
     <div style="padding:20px 22px;color:#191F28"><h2 style="margin:0 0 10px">${title}</h2>${body}
       <p style="margin-top:18px"><a href="${SITE_URL}" style="background:#2F6BFF;color:#FFFFFF;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:900">갈아타기 계산기에서 다시 계산하기</a></p>
       <p style="font-size:11px;color:#4E5968;margin-top:20px;border-top:1px solid #EFE6CC;padding-top:10px">추정 시세는 같은 단지·평형대 최근 3개월 실거래 중앙값이며 호가와 다를 수 있습니다. 매수·매도 권유가 아닙니다.<br>
@@ -1464,18 +1464,18 @@ function adLead(b) {
   row[LDC['동의']] = `수집·이용 동의 + 제3자 제공 동의(받는 자 ${co}, 목적 분양 상담 연락, 보유 6개월) ${t0}`;
   let sent = '대기';
   try {
-    MailApp.sendEmail(ad.mail, `[집예보 분양 상담 신청] ${ad.live.n}`,
-      `집예보에서 ${ad.live.n} 분양 상담 신청이 들어왔어요.\n\n이름: ${name}\n연락처: ${phone}\n연락받기 좋은 시간: ${time}\n문의: ${memo || '-'}\n신청 번호: ${id} (${t0})\n\n`
+    MailApp.sendEmail(ad.mail, `[집코드 분양 상담 신청] ${ad.live.n}`,
+      `집코드에서 ${ad.live.n} 분양 상담 신청이 들어왔어요.\n\n이름: ${name}\n연락처: ${phone}\n연락받기 좋은 시간: ${time}\n문의: ${memo || '-'}\n신청 번호: ${id} (${t0})\n\n`
       + `이 정보는 신청자가 '${co}'에 대한 제3자 제공에 동의해 전달하는 것입니다.\n`
       + `· 분양 상담 연락 목적 외에 쓰거나 다른 곳에 넘길 수 없습니다(문자·전화 광고 목록 등록 금지).\n· 연락은 오전 8시~오후 9시에만 해 주세요.\n`
-      + `· 상담이 끝나거나 받은 날로부터 6개월이 지나면 파기해 주세요. 신청자가 삭제를 원하면 바로 지워 주세요.\n— 집예보 ((주)장대장부동산그룹)`);
+      + `· 상담이 끝나거나 받은 날로부터 6개월이 지나면 파기해 주세요. 신청자가 삭제를 원하면 바로 지워 주세요.\n— 집코드 ((주)장대장부동산그룹)`);
     sent = '메일 전달';
   } catch (e) { sent = '전달 실패(수동 전달 필요)'; }
   row[LDC['전달상태']] = sent; row[LDC['전달일']] = sent === '메일 전달' ? now : '';
   row[LDC['파기예정일']] = ymd(new Date(now.getTime() + AD_LEAD_KEEP_DAYS * 86400000));
   ldSheet().appendRow(LDH.map((h, i) => row[i] === undefined ? '' : cellSafe(String(row[i] instanceof Date ? '' : row[i])) || row[i]));
   cache.put(dk, String(n + 1), 86400); cache.put(pk, String(pn + 1), 86400);
-  if (NOTIFY) { try { MailApp.sendEmail(Session.getEffectiveUser().getEmail(), `[집예보 분양 상담] ${ad.live.n}`, `신청 번호 ${id} · 광고주 ${co} · ${sent}\n연락처는 '분양상담' 시트에서만 확인하세요(메일에는 넣지 않아요).\n${book().getUrl()}`); } catch (e) {} }
+  if (NOTIFY) { try { MailApp.sendEmail(Session.getEffectiveUser().getEmail(), `[집코드 분양 상담] ${ad.live.n}`, `신청 번호 ${id} · 광고주 ${co} · ${sent}\n연락처는 '분양상담' 시트에서만 확인하세요(메일에는 넣지 않아요).\n${book().getUrl()}`); } catch (e) {} }
   return { ok: true, id: id, co: co };
 }
 /* 매일: 파기예정일이 지난 상담 신청 행 삭제 */
@@ -1539,7 +1539,7 @@ const AQ_REPORT_PROD = ['weekly_report', 'weekly_locked', 'ad_target'];   // v35
 const AQC = Object.fromEntries(AQH.map((h, i) => [h, i]));
 const AQ_PROD = { bunyang: '분양 단지 광고', bunyang_pro: '분양 프리미엄', agent: '지역 제휴 중개사', native: '결과 하단 카드', jeonse: '전세사기 예방 체크리스트 스폰서', package: '패키지', etc: '기타·제휴',
                   dev_report: '분양가 적정성·입지 분석 리포트', unsold_pack: '미분양 해소 패키지',
-                  brochure: '집예보 분석 브로슈어(잠금형)', datapack: '현장 자료 팩(편집형)',
+                  brochure: '집코드 분석 브로슈어(잠금형)', datapack: '현장 자료 팩(편집형)',
                   weekly_report: '주간 현장 보고서(기본)', weekly_locked: '주간 현장 보고서(잠금형)', ad_target: '광고 지역 추천 리포트' };   // pro/developer/ 신청(시행사·분양대행사) — 'etc'와 함께 와요 (v23 brochure·datapack, v32 weekly_report·weekly_locked·ad_target)
 AQ_PROD.brief_ad = BRIEF_NAME + ' 지면 광고';
 AQ_PROD.list_card = '목록 사이 카드'; AQ_PROD.end_card = '페이지 끝 카드';   // v39: ad/ 문의 폼 광고 칸 카드 두 자리(재배포 전 서버는 함께 보내는 'etc'로 접수)
@@ -1695,7 +1695,7 @@ function adInquiry(b) {
 
 
 /* =====================================================================
-   카카오 로그인 회원 (v14) — 집예보 웹(login/ · mine/ · buy/report/)
+   카카오 로그인 회원 (v14) — 집코드 웹(login/ · mine/ · buy/report/)
    흐름: 화면에서 Kakao.Auth.authorize → login/ 으로 인가 코드(code) 도착 → kakaoLogin
          → 서버가 REST API 키로 토큰 받기 → /v2/user/me 로 회원번호·닉네임 확인 → 카카오 토큰은 바로 만료(저장 안 함)
          → 서버가 만든 무작위 세션 토큰을 화면에 주고, 시트에는 그 해시만 저장
@@ -1964,7 +1964,7 @@ function userDelete(b) {
          → 서버가 링크 id + 무작위 토큰을 만들고 토큰 해시만 저장 → 고객 링크 premium/r/#id.토큰 (# 뒤라 서버·통계로 안 감)
          → 고객이 열면 proOpen: 토큰 해시·만료·주문 상태(환불·열람 기간) 확인 후 표시 정보·의견·단지 키만 돌려줌
    · 숫자(시세·점수·순위·대출)는 저장하지 않음: 고객 화면이 공개 자료로 다시 계산 → 전문가가 숫자를 바꿀 방법이 없음
-   · 의견 글에는 '집예보 분석/의견'처럼 집예보가 쓴 것처럼 보이는 말을 넣을 수 없음
+   · 의견 글에는 '집코드 분석/의견'처럼 집코드가 쓴 것처럼 보이는 말을 넣을 수 없음
    ===================================================================== */
 const SH_P = '전문가리포트';
 const PH = ['id','만든시각','고친시각','주문번호','토큰해시','만료일','상태','자료기준','유형','사무소명','대표','이름','등록번호','주소',
@@ -2037,7 +2037,7 @@ function proPhone(v) {
   const s = uText(v, 20), d = s.replace(/[^0-9]/g, '');
   return /^0\d{8,10}$/.test(d) || /^1[5-9]\d{6}$/.test(d) ? s.replace(/[^0-9-]/g, '') : '';
 }
-const PRO_FAKE = /집\s*예\s*보\s*(의\s*)?(분석|의견|공식|인증|보증|추천)|장대장\s*(분석|인증|보증)/;
+const PRO_FAKE = /(집\s*코\s*드|집\s*예\s*보|zip\s*code)\s*(의\s*)?(분석|의견|공식|인증|보증|추천)|장대장\s*(분석|인증|보증)/i;
 function proProfile(p) {
   p = p && typeof p === 'object' ? p : {};
   const role = proRoleOf(p.role, p.title);
@@ -2067,7 +2067,7 @@ function proProfile(p) {
     if (role === 'licensed' && f.title && PRO_QUALS.indexOf(f.title) < 0) throw new Error('자격은 목록(세무사·법무사 등)에서 골라 주세요. 비워 둬도 돼요.');
     if (role !== 'seller') f.ceo = '';
   }
-  if ([f.office, f.ceo, f.name, f.title].some(x => PRO_FAKE.test(x))) throw new Error('이름·소속에는 집예보가 쓴 것처럼 보이는 말을 넣을 수 없어요.');
+  if ([f.office, f.ceo, f.name, f.title].some(x => PRO_FAKE.test(x))) throw new Error('이름·소속에는 집코드가 쓴 것처럼 보이는 말을 넣을 수 없어요.');
   const logo = String(p.logo || '');
   if (logo) {
     if (logo.length > PRO_LOGO_MAX || !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(logo)) throw new Error('로고 이미지가 너무 크거나 형식이 맞지 않아요. 다시 올려 주세요.');
@@ -2085,7 +2085,7 @@ function proNotes(n, prof) {
     const t = String(n[k] == null ? '' : n[k]).replace(/[\u0000-\u0009\u000B-\u001F\u007F<>]/g, ' ').replace(/\n{3,}/g, '\n\n').trim().slice(0, PRO_NOTE_MAX);
     if (!t) return;
     if (taxAd && PRO_TAX_AD.test(t)) throw new Error('세무사 광고 규정상 수임료 비교·할인·무료 문구나 현금·상품권 같은 금전 혜택 문구는 넣을 수 없어요. 해당 문장을 빼 주세요.');
-    if (PRO_FAKE.test(t)) throw new Error('의견에는 집예보가 쓴 것처럼 보이는 말(예: 집예보 분석·집예보 의견)을 넣을 수 없어요. 전문가 의견은 전문가 이름으로 따로 표시돼요.');
+    if (PRO_FAKE.test(t)) throw new Error('의견에는 집코드가 쓴 것처럼 보이는 말(예: 집코드 분석·집코드 의견)을 넣을 수 없어요. 전문가 의견은 전문가 이름으로 따로 표시돼요.');
     total += t.length; out[k] = t;
   });
   if (total > PRO_NOTES_TOTAL) throw new Error('의견 글이 너무 길어요. 조금 줄여 주세요.');
@@ -2426,7 +2426,7 @@ function briefOrder(b) {
   const bid = newBriefRow(c.u, P, BST.wait, c.channel, c.ct, c.ad, id);
   bConsentApply(c.u.k, { ad: c.ad, am: c.amAd }, '구독 신청 화면');
   if (bn) { const o = bRows().find(x => String(x.r[BC['id']]) === bid); setB(o.row, '중개사번호', cellSafe(bn.norm)); setB(o.row, '중개사확인', BROKER_REVIEW.wait); }
-  return { ok: true, orderId: id, amount: P.amount, orderName: ('집예보 ' + P.name).slice(0, 100), ref: bRefNote(c.u.k, b.ref) };
+  return { ok: true, orderId: id, amount: P.amount, orderName: ('집코드 ' + P.name).slice(0, 100), ref: bRefNote(c.u.k, b.ref) };
 }
 
 /* 결제 승인 → 이용권 시작(이미 받고 있으면 그 끝난 다음 날부터) */
@@ -2566,7 +2566,7 @@ function briefChange(b) {
   ['결제키', '결제수단', '승인시각', '열람토큰', '최초열람시각', '최근열람시각', '환불상태', '환불요청시각', '환불사유', '메모'].forEach(h => row[OC[h]] = '');
   row[OC['열람횟수']] = 0;
   orderSheet().appendRow(row);
-  return { ok: true, kind: 'now', orderId: id, amount: c.amount, orderName: ('집예보 ' + c.nxt.name + BRIEF_CHG_SUFFIX).slice(0, 100) };
+  return { ok: true, kind: 'now', orderId: id, amount: c.amount, orderName: ('집코드 ' + c.nxt.name + BRIEF_CHG_SUFFIX).slice(0, 100) };
 }
 /* 올리기 적용: 이전 행 '변경' + 새 요금제 행(같은 끝날·연락처·보낸 횟수, 낸 돈 = 이전 낸 돈 + 차액) → 새 행 id */
 function bApplyChange(o, nxt, amount, orderId, bn) {
@@ -3235,7 +3235,7 @@ function briefCleanup(now) {
 /* =====================================================================
    v19 중개사 업무 도구 — ① 매수·매도 문의 연결 ② (적정 가격 근거표는 화면만, 서버 없음) ③ 고객 관심 단지 변화 알림
    원칙
-   - 집예보는 중개하지 않고 보수도 받지 않는다: 이용자가 '중개사 연락 받기'에 따로 동의하고 고른(또는 공개 순번 규칙으로 정해진)
+   - 집코드는 중개하지 않고 보수도 받지 않는다: 이용자가 '중개사 연락 받기'에 따로 동의하고 고른(또는 공개 순번 규칙으로 정해진)
      제휴 중개사에게 문의를 '전달'만 한다. 매물을 게시하지 않고, 건별 수수료·성과 보수를 받지 않는다(정액 제휴 이용료만).
    - 연락처 원값은 시트에 쓰지 않는다: 서버 비밀키(스크립트 속성 LEAD_KEY, 처음 쓸 때 자동 생성)로 암호화한 값 + 가린 값(010-****-1234)
      + 중복 확인용 해시만. 받은 중개사가 로그인한 대시보드에서만 풀어서 보여 준다. 90일 뒤(또는 이용자가 취소하면 바로) 지운다.
@@ -3295,7 +3295,7 @@ const AGT_CHANNELS = {
     if (!to.mail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to.mail)) return false;
     if (MailApp.getRemainingDailyQuota && MailApp.getRemainingDailyQuota() < 5) return false;
     const li = (msg.lines || []).map(t => `<li style="margin:4px 0">${uText(t, 300)}</li>`).join('');
-    MailApp.sendEmail({ to: to.mail, name: '집예보 중개사 도구', subject: '[집예보] ' + uText(msg.title, 80),
+    MailApp.sendEmail({ to: to.mail, name: '집코드 중개사 도구', subject: '[집코드] ' + uText(msg.title, 80),
       htmlBody: `<div style="font-family:'Noto Sans KR',sans-serif;max-width:560px;margin:auto;color:#191F28"><h2 style="font-size:18px">${uText(msg.title, 80)}</h2><ul style="padding-left:18px">${li}</ul>`
         + `<p><a href="${msg.url || AGENT_SITE}" style="background:#2F6BFF;color:#fff;padding:10px 16px;border-radius:10px;text-decoration:none;font-weight:700">${uText(msg.button || '중개사 대시보드 열기', 30)}</a></p>`
         + `<p style="font-size:12px;color:#6B7684">고객 연락처는 메일에 넣지 않아요. 대시보드에 로그인해서 확인해 주세요. 알림을 끄려면 대시보드 [설정]에서 [메일 알림]을 끄세요.</p></div>` });
@@ -3474,7 +3474,7 @@ function leadCancel(p) {
     });
   }
   return HtmlService.createHtmlOutput(`<div style="font-family:sans-serif;padding:40px;text-align:center"><h2>${done ? '문의를 취소하고 연락처를 지웠어요' : '문의를 찾지 못했어요'}</h2>
-    <p>${done ? '중개사 화면에서도 더 이상 연락처가 보이지 않아요.' : '이미 취소했거나 보관 기간이 지나 지워졌을 수 있어요.'}</p><p><a href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/">집예보로 가기</a></p></div>`);
+    <p>${done ? '중개사 화면에서도 더 이상 연락처가 보이지 않아요.' : '이미 취소했거나 보관 기간이 지나 지워졌을 수 있어요.'}</p><p><a href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/">집코드로 가기</a></p></div>`);
 }
 
 /* ---------- ① 중개사: 받은 문의 · 응답 처리 ---------- */
@@ -3636,7 +3636,7 @@ function setupAgentTools() {
 
 
 /* =====================================================================
-   집예보 분양대행(v20) — 시행사 전속 의뢰 · 분양 현장 · 판매 파트너(대대행) · 계약 보고 · 수수료 정산
+   집코드 분양대행(v20) — 시행사 전속 의뢰 · 분양 현장 · 판매 파트너(대대행) · 계약 보고 · 수수료 정산
    운영 주체: (주)장대장부동산그룹(사업자 업종 '분양대행'). 신축 최초 분양(사업주체가 파는 것)의 판매 대행이며 중개가 아님.
    기존 주택·분양권 전매 알선(중개)은 이 흐름에 넣지 않는다 — 화면·계약서에 명시.
    원칙
@@ -3747,7 +3747,7 @@ function agencyApply(b) {
   r[DVC['공사단계']] = stage; r[DVC['인허가구분']] = permit; r[DVC['분양시작희망']] = start; r[DVC['희망조건']] = terms; r[DVC['문의내용']] = memo;
   r[DVC['동의']] = `${DV_CONSENT_V} 개인정보 수집·이용 동의 ${ymd(new Date())}`; r[DVC['처리상태']] = '접수';
   uSheet(SH_DV, DVH).appendRow(DVH.map((h, i) => r[i] === undefined ? '' : r[i]));
-  ownerMail(`[집예보 분양대행 의뢰] ${company}`, [`접수 번호 ${id}`, `${role} · ${company}`, `현장 ${kind}${units ? ' ' + units + '세대·호실' : ''} · ${stage} · ${permit}`,
+  ownerMail(`[집코드 분양대행 의뢰] ${company}`, [`접수 번호 ${id}`, `${role} · ${company}`, `현장 ${kind}${units ? ' ' + units + '세대·호실' : ''} · ${stage} · ${permit}`,
     `담당자 연락처는 '${SH_DV}' 시트에서 확인하세요(메일에는 넣지 않아요).`, `계약하면 '${SH_ST}' 시트에 현장을 만들고 [의뢰id]에 ${id} 를 적어 주세요.`]);
   return { ok: true, id: id };
 }
@@ -3781,7 +3781,7 @@ function partnerApply(b) {
   r[PTC['관리코드해시']] = hashOf('ptc|' + id + '|' + code); r[PTC['승인']] = false; r[PTC['계약서일']] = ''; r[PTC['정산방법']] = pay;
   r[PTC['동의']] = `${PT_CONSENT_V} 개인정보 수집·이용 동의 ${ymd(new Date())}`; r[PTC['상태']] = '심사 중';
   uSheet(SH_PT, PTH).appendRow(PTH.map((h, i) => r[i] === undefined ? '' : r[i]));
-  ownerMail(`[집예보 판매 파트너 신청] ${name}`, [`파트너 ${id} · ${typeT} · ${area}`, type === 'broker' ? `중개사무소 등록번호 ${reg} — 국가공간정보포털 부동산중개업 조회로 확인하세요.` : '',
+  ownerMail(`[집코드 판매 파트너 신청] ${name}`, [`파트너 ${id} · ${typeT} · ${area}`, type === 'broker' ? `중개사무소 등록번호 ${reg} — 국가공간정보포털 부동산중개업 조회로 확인하세요.` : '',
     `확인 뒤 '${SH_PT}' 시트에서 [승인] 체크 + 판매 위탁 계약서 서명 뒤 [계약서일]을 적으면 로그인해서 현장을 볼 수 있어요.`]);
   return { ok: true, id: id, code: code };
 }
@@ -3872,7 +3872,7 @@ function partnerJoin(me, b) {
   const id = newDvId('PA'), r = [];
   r[PAC['id']] = id; r[PAC['현장id']] = x.id; r[PAC['파트너id']] = me.id; r[PAC['신청일']] = new Date(); r[PAC['상태']] = '신청';
   uSheet(SH_PA, PAH).appendRow(PAH.map((h, i) => r[i] === undefined ? '' : r[i]));
-  ownerMail(`[집예보 분양대행] 현장 판매 신청 ${x['현장명']}`, [`${me['상호']}(${me.id}) → ${x['현장명']}(${x.id})`, `'${SH_PA}' 시트에서 [상태]를 '배정'으로 바꾸면 수수료 조건·자료가 파트너에게 보여요.`]);
+  ownerMail(`[집코드 분양대행] 현장 판매 신청 ${x['현장명']}`, [`${me['상호']}(${me.id}) → ${x['현장명']}(${x.id})`, `'${SH_PA}' 시트에서 [상태]를 '배정'으로 바꾸면 수수료 조건·자료가 파트너에게 보여요.`]);
   return { ok: true, id: id };
 }
 /* 고객 표시: 이니셜·별칭만. 이름(한글 2~4자 단독)·전화번호·이메일 모양은 거절 */
@@ -3896,12 +3896,12 @@ function partnerDeal(me, b) {
   dvDay('dlday:' + me.id, DL_DAY_MAX, '오늘 보고가 많아요. 내일 이어서 보고해 주세요.');
   const sh = uSheet(SH_DL, DLH), v = sh.getDataRange().getValues();
   if (unit && v.slice(1).some(r => String(r[DLC['현장id']]) === site && String(r[DLC['동호']]) === unit && r[DLC['상태']] !== '취소'))
-    throw new Error('이 동·호수는 이미 보고됐어요. 다른 파트너와 겹치면 집예보 분양대행팀이 확인해 연락드려요.');
+    throw new Error('이 동·호수는 이미 보고됐어요. 다른 파트너와 겹치면 집코드 분양대행팀이 확인해 연락드려요.');
   const id = newDvId('DL'), r = [];
   r[DLC['id']] = id; r[DLC['보고일']] = new Date(); r[DLC['현장id']] = site; r[DLC['파트너id']] = me.id; r[DLC['계약일']] = date; r[DLC['동호']] = unit;
   r[DLC['계약금액만원']] = amt; r[DLC['고객표시']] = alias; r[DLC['상태']] = '보고'; r[DLC['메모']] = memo;
   sh.appendRow(DLH.map((h, i) => r[i] === undefined ? '' : r[i]));
-  ownerMail(`[집예보 분양대행] 계약 보고 ${site}`, [`${me['상호']}(${me.id}) · 현장 ${site} · 계약일 ${date}${unit ? ' · ' + unit : ''}`,
+  ownerMail(`[집코드 분양대행] 계약 보고 ${site}`, [`${me['상호']}(${me.id}) · 현장 ${site} · 계약일 ${date}${unit ? ' · ' + unit : ''}`,
     `시행사 계약 확인 뒤 '${SH_DL}' 시트의 [상태]를 '시행사확인' → '정산대기'로, [회사수수료원]·[파트너몫원]을 적어 주세요. 정산표는 매일 아침 '${SH_SE}' 시트에 다시 만들어져요.`]);
   return { ok: true, id: id };
 }
@@ -4116,7 +4116,7 @@ function bpPull(p) {
   }).filter(Boolean);
   return { ok: true, at: ymd(new Date()), cx: cx, brokers: brokers };
 }
-/* 주간 리포트 PDF 받기(엔진 → 서버, BRIEF_PULL_TOKEN). 드라이브 '집예보 주간 리포트' 폴더, 링크가 있는 사람만 보기 */
+/* 주간 리포트 PDF 받기(엔진 → 서버, BRIEF_PULL_TOKEN). 드라이브 '집코드 주간 리포트' 폴더, 링크가 있는 사람만 보기 */
 function bpPut(b) {
   if (!pullOk(b)) return { ok: false, err: 'auth' };
   const bid = String(b.bid || ''), date = String(b.date || '');

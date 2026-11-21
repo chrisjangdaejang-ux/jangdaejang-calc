@@ -1,4 +1,4 @@
-/* 집예보 카카오 로그인 — 공용 (JDJ_AUTH)
+/* 집코드 카카오 로그인 — 공용 (JDJ_AUTH)
    - assets/config.js 의 KAKAO_JS_KEY 가 비어 있으면 on() = false: 로그인 버튼·잠금이 하나도 나오지 않고 모든 기능이 로그인 없이 그대로.
    - 로그인: Kakao.Auth.authorize → login/ 에 인가 코드 도착 → 서버(agent-backend.gs kakaoLogin)가 카카오 /v2/user/me 로 확인
      → 서버가 만든 세션 토큰만 이 기기 localStorage 'jdj_auth' 에 보관(카카오 토큰은 화면·서버 어디에도 남기지 않음).

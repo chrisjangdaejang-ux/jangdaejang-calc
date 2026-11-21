@@ -81,7 +81,7 @@
   var BASE = '/jangdaejang-calc/';
   function card(r) {
     if (!r) return '';
-    var h = '<div class="cyp" data-cyp="' + esc(r.no) + '"><div class="cyp-h"><b>분양가·입지 분석</b><span class="cyp-src">집예보 분석 · 광고와 무관</span></div>';
+    var h = '<div class="cyp" data-cyp="' + esc(r.no) + '"><div class="cyp-h"><b>분양가·입지 분석</b><span class="cyp-src">집코드 분석 · 광고와 무관</span></div>';
     (r.bands || []).forEach(function (b) {
       h += '<div class="cyp-b"><div class="cyp-bh"><b>' + BAND[b.b] + '</b> 3.3㎡당 ' + fmt(b.ppy) + '만 원 ' + tierPill(b) + '</div>'
         + '<div class="cyp-s">' + esc(posTxt(b)) + '</div>' + (b.m ? '<div class="cyp-s">' + esc(marginTxt(b)) + '</div>' : '') + '</div>';
@@ -157,7 +157,7 @@
       fv += '<div class="cyp-st"><span>' + esc(x[0]) + ' ' + (x[2] || 0) + '곳</span>' + (x[1] ? '<b>중앙 ' + x[1][1] + '점</b><small>하위 25% ' + (x[1][0] == null ? '–' : x[1][0]) + ' · 상위 25% ' + (x[1][2] == null ? '–' : x[1][2]) + '</small>' : '<b class="cyp-na">자료 부족</b>') + '</div>';
     });
     h += section('3. 미래가치 — 주변 단지 점수 분포', '<div class="cyp-g3">' + fv + '</div>' + (f.past ? '<div class="cyp-s cyp-k">' + esc(pastTxt(f.past, D.sd)) + ' (평균 상위 ' + (f.past.top > 0 ? '+' : '') + f.past.top + '% · 하위 ' + (f.past.bot > 0 ? '+' : '') + f.past.bot + '%) 앞으로도 같다는 보장은 없어요.</div>' : '<div class="cyp-s">과거 성적 자료를 정리하고 있어요.</div>')
-      + '<div class="cyp-s">점수는 집예보 공개 점수 그대로(같은 시·도 아파트 안 백분위)예요. 새 단지 자체 점수가 아니라 주변 단지들의 분포예요.</div>', 'cyp3');
+      + '<div class="cyp-s">점수는 집코드 공개 점수 그대로(같은 시·도 아파트 안 백분위)예요. 새 단지 자체 점수가 아니라 주변 단지들의 분포예요.</div>', 'cyp3');
     var sup = '<div class="cyp-g3">'
       + '<div class="cyp-st"><span>입주 예정(청약홈 공고)</span>' + (D.sup ? '<b>' + fmt(D.sup[0] + D.sup[1] + D.sup[2]) + '세대</b><small>1년 안 ' + fmt(D.sup[0]) + ' · 1~2년 ' + fmt(D.sup[1]) + ' · 2~3년 ' + fmt(D.sup[2]) + '</small>' : '<b class="cyp-na">자료 없음</b>') + '</div>'
       + ['uns', 'und'].map(function (k) { var u = D[k]; return '<div class="cyp-st"><span>' + (k === 'uns' ? '미분양' : '준공 후 미분양') + '(국토교통부)</span>' + (u ? '<b>' + fmt(u.now) + '호</b><small>' + ym(u.ym) + (u.y1 != null ? ' · 1년 전 ' + fmt(u.y1) + '호' : '') + (u.grp > 1 ? ' · 시 단위' : '') + '</small>' : '<b class="cyp-na">최근 자료 없음</b>') + '</div>'; }).join('') + '</div>';
@@ -174,7 +174,7 @@
       + '<div id="cypFund"></div>', 'cyp5');
     var rk = D.risks || [];
     h += section('6. 살펴볼 점(리스크)', rk.length ? '<ol class="cyp-rk">' + rk.map(function (x) { return '<li><b>' + esc(x[0]) + '</b> — ' + esc(x[1]) + '</li>'; }).join('') + '</ol>' : '<div class="cyp-s">공개 자료에서 따로 확인되는 리스크 항목은 없어요. 공고문의 분양 조건·현장은 직접 확인하세요.</div>', 'cyp6');
-    h += '<div class="cyp-note">집예보는 광고주 단지라도 모든 공고를 같은 방식으로 계산해요. 광고 여부는 분석 숫자에 영향을 주지 않아요. 자료 기준: 실거래 ' + ym(D.dataTo) + '까지 · 공개 자료 ' + esc(D.updated) + ' 받음.</div>';
+    h += '<div class="cyp-note">집코드는 광고주 단지라도 모든 공고를 같은 방식으로 계산해요. 광고 여부는 분석 숫자에 영향을 주지 않아요. 자료 기준: 실거래 ' + ym(D.dataTo) + '까지 · 공개 자료 ' + esc(D.updated) + ' 받음.</div>';
     return h;
   }
   function bar(b) {

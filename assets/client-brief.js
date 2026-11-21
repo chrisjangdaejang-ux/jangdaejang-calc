@@ -9,7 +9,7 @@
 (function (root) {
   'use strict';
   const B = root.JDJ_BRIEF || (typeof require !== 'undefined' ? require('./brief-core.js') : null);
-  const SITE = ((root.JDJ_SITE || {}).SITE_NAME || '').trim() || (B && B.SITE) || '집예보';
+  const SITE = ((root.JDJ_SITE || {}).SITE_NAME || '').trim() || (B && B.SITE) || '집코드';
   const APTS = 5, LABEL_MAX = 20;
   const PURPOSE = { '': '', buy: '매수', sell: '매도', jeonse: '전세' };
   const PURPOSE_TITLE = { '': '관심 단지 매매', buy: '사려는 단지 매매', sell: '팔려는 단지 매매', jeonse: '전세 알아보는 단지 매매' };

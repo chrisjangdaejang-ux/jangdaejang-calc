@@ -1,7 +1,7 @@
-/* 집예보 전문가 이름 리포트 (premium/pro/ 편집 · premium/r/ 고객 보기) — 공용 모듈
+/* 집코드 전문가 이름 리포트 (premium/pro/ 편집 · premium/r/ 고객 보기) — 공용 모듈
    - 유료 리포트(assets/premium-report.js)가 그린 화면 위에 전문가 표시 정보·의견을 '덧붙이기'만 합니다.
-     집예보가 계산한 숫자·점수·순위·과거 성적·출처 문장은 이 파일이 건드리지 않습니다(고칠 칸 자체가 없음).
-   - 섹션(.pr-sec[data-sec])은 넣기/빼기와 순서만 바꿉니다. 각 섹션 위에 '집예보 분석' 표시.
+     집코드가 계산한 숫자·점수·순위·과거 성적·출처 문장은 이 파일이 건드리지 않습니다(고칠 칸 자체가 없음).
+   - 섹션(.pr-sec[data-sec])은 넣기/빼기와 순서만 바꿉니다. 각 섹션 위에 '집코드 분석' 표시.
    - 전문가 의견은 '○○ 공인중개사 의견'·'○○ 분양대행 의견'·'○○ 세무사 의견' 등 유형별 이름 상자로 따로 그리고, 글은 텍스트로만(HTML 불가) 넣습니다.
    - 고객 링크: premium/r/#<id>.<토큰> — # 뒤는 서버·통계로 가지 않습니다. 서버에는 토큰 해시만 저장(tools/agent-backend.gs v17).
    node 에서도 불러 검사할 수 있게 순수 함수는 DOM 없이 동작합니다(tools/pro-test.js). */
@@ -39,8 +39,8 @@
   const SEC_KEYS = SECS.map(s => s.k);
   const DEFAULT_SECS = ['cmp', 'sum', 'fv', 'trend', 'hz'];
   const NOTE_MAX = 800, NOTES_TOTAL = 9000, LOGO_MAX = 45000;
-  /* 서버(agent-backend.gs PRO_FAKE)와 같은 규칙: 전문가 글이 집예보가 쓴 것처럼 보이지 않게 */
-  const FAKE = /집\s*예\s*보\s*(의\s*)?(분석|의견|공식|인증|보증|추천)|장대장\s*(분석|인증|보증)/;
+  /* 서버(agent-backend.gs PRO_FAKE)와 같은 규칙: 전문가 글이 집코드가 쓴 것처럼 보이지 않게 */
+  const FAKE = /(집\s*코\s*드|집\s*예\s*보|zip\s*code)\s*(의\s*)?(분석|의견|공식|인증|보증|추천)|장대장\s*(분석|인증|보증)/i;
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const txt = (v, n) => String(v == null ? '' : v).replace(/[\u0000-\u001F\u007F<>]/g, ' ').trim().slice(0, n);
   const digits = v => String(v || '').replace(/[^0-9]/g, '');
@@ -105,7 +105,7 @@
       if (digits(p.biz) && !bizOk(p.biz)) out.push('사업자등록번호 10자리를 다시 확인해 주세요. 비워 둬도 돼요.');
       if (r === 'licensed' && p.title && QUALS.indexOf(p.title) < 0) out.push('자격은 목록(세무사·법무사 등)에서 골라 주세요. 비워 둬도 돼요.');
     }
-    if ([p.office, p.ceo, p.name, p.title].some(x => FAKE.test(x || ''))) out.push('이름·소속에는 집예보가 쓴 것처럼 보이는 말을 넣을 수 없어요.');
+    if ([p.office, p.ceo, p.name, p.title].some(x => FAKE.test(x || ''))) out.push('이름·소속에는 집코드가 쓴 것처럼 보이는 말을 넣을 수 없어요.');
     return out;
   }
   /* 첫 번째 안내(빈 문자열이면 통과) */
@@ -146,7 +146,7 @@
     const { notes, total } = cleanNotes(n);
     if (p && roleOf(p.role, p.title) === 'licensed' && p.title === '세무사' && Object.keys(notes).some(k => TAX_AD.test(notes[k])))
       return '세무사 광고 규정상 수임료 비교·할인·무료 문구나 현금·상품권 같은 금전 혜택 문구는 넣을 수 없어요. 해당 문장을 빼 주세요.';
-    if (Object.keys(notes).some(k => FAKE.test(notes[k]))) return '의견에는 집예보가 쓴 것처럼 보이는 말(예: 집예보 분석·집예보 의견)을 넣을 수 없어요. 전문가 의견은 전문가 이름으로 따로 표시돼요.';
+    if (Object.keys(notes).some(k => FAKE.test(notes[k]))) return '의견에는 집코드가 쓴 것처럼 보이는 말(예: 집코드 분석·집코드 의견)을 넣을 수 없어요. 전문가 의견은 전문가 이름으로 따로 표시돼요.';
     if (total > NOTES_TOTAL) return '의견 글이 너무 길어요. 조금 줄여 주세요.';
     return '';
   }
@@ -166,7 +166,7 @@
   const nl = t => esc(t).replace(/\n/g, '<br>');
   function noteHtml(p, t, key) {
     return `<aside class="pro-note" data-note="${esc(key)}"><div class="pro-note-h"><span class="pro-pen" aria-hidden="true">✎</span>${esc(opinionLabel(p))}</div>
-      <p>${nl(t)}</p><div class="pro-note-f">${roleOf(p.role) === 'seller' ? '분양 판매를 맡은 회사(분양대행사)가 직접 쓴 의견이에요. ' : '전문가가 직접 쓴 의견이에요. '}위 집예보 분석과 다를 수 있어요.</div></aside>`;
+      <p>${nl(t)}</p><div class="pro-note-f">${roleOf(p.role) === 'seller' ? '분양 판매를 맡은 회사(분양대행사)가 직접 쓴 의견이에요. ' : '전문가가 직접 쓴 의견이에요. '}위 집코드 분석과 다를 수 있어요.</div></aside>`;
   }
   function telOf(p) { const d = digits(p.phone); return d ? 'tel:' + d : ''; }
   /* 표지 위 전문가 머리말: 로고 · 사무소 · 이름 · 등록번호 · 소재지 · 연락처 · [이 전문가에게 문의하기] */
@@ -197,7 +197,7 @@
       ${tel ? `<a class="btn2 blue" href="${tel}" data-pro-click="call">전화 걸기 (${esc(p.phone)})</a><a class="btn2" href="${sms}" data-pro-click="sms">문자 보내기</a>` : ''}
       ${p.kakao ? `<a class="btn2" href="${esc(p.kakao)}" target="_blank" rel="noopener" data-pro-click="kakao">카카오톡으로 문의하기</a>` : ''}
       <button type="button" class="btn2" data-pro-close>닫기</button>
-      <small>문의는 전문가에게 바로 연결돼요. 집예보는 상담·중개·분양 내용을 보지 않아요.</small></div></div>`;
+      <small>문의는 전문가에게 바로 연결돼요. 집코드는 상담·중개·분양 내용을 보지 않아요.</small></div></div>`;
   }
   function coverHtml(p, o) {
     const names = (o.items || []).map(x => x.apt + ' ' + x.band);
@@ -212,8 +212,8 @@
     o = o || {};
     return `<footer class="pro-src">
       ${o.refresh ? `<p>숫자(시세·점수·순위·대출)는 링크를 열 때마다 최신 공개 자료로 다시 계산해요. 전문가 의견은 보낸 날 기준이에요.</p>` : ''}
-      <p><b>데이터·분석: 집예보</b> · 국토교통부 실거래가 등 공공 자료 기반 · 집예보가 계산한 숫자·점수·순위는 전문가가 고칠 수 없어요. 전문가 의견 상자만 전문가가 쓴 글이에요.</p>
-      <p>집예보는 이 전문가의 중개·분양·상담에 관여하지 않아요. <a href="${SITE}?utm_source=pro">집예보 둘러보기</a></p>
+      <p><b>데이터·분석: 집코드</b> · 국토교통부 실거래가 등 공공 자료 기반 · 집코드가 계산한 숫자·점수·순위는 전문가가 고칠 수 없어요. 전문가 의견 상자만 전문가가 쓴 글이에요.</p>
+      <p>집코드는 이 전문가의 중개·분양·상담에 관여하지 않아요. <a href="${SITE}?utm_source=pro">집코드 둘러보기</a></p>
     </footer>`;
   }
   const ym6 = v => /^\d{6}$/.test(String(v || '')) ? String(v).slice(0, 4) + '년 ' + parseInt(String(v).slice(4), 10) + '월' : '';
@@ -223,7 +223,7 @@
     const p = cfg.profile, secs = cleanSecs(cfg.secs), notes = cleanNotes(cfg.notes).notes, edit = !!cfg.edit;
     box.querySelectorAll('.pro-note,.pro-lock,.pro-gap').forEach(e => e.remove());
     box.classList.add('pro-on');
-    const lock = () => `<div class="pro-lock">집예보 분석${edit ? ' · 숫자는 고칠 수 없어요' : ''}</div>`;
+    const lock = () => `<div class="pro-lock">집코드 분석${edit ? ' · 숫자는 고칠 수 없어요' : ''}</div>`;
     const ins = (el, key) => { if (notes[key]) el.insertAdjacentHTML('afterend', noteHtml(p, notes[key], key)); };
     const cmp = box.querySelector('.pr-sec[data-sec="cmp"]');
     if (cmp) { cmp.hidden = secs.indexOf('cmp') < 0; if (!cmp.hidden) { cmp.insertAdjacentHTML('afterbegin', lock()); ins(cmp, 'cmp'); } }

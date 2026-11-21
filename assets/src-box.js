@@ -49,7 +49,7 @@
     css();
     return `<details class="jsrc"><summary>데이터 출처 보기</summary><div class="jsrc-in"><table><thead><tr><th>구분</th><th>기준일</th><th>출처 기관</th></tr></thead><tbody>`
       + rs.map(r => `<tr><td>${esc(r.k)}</td><td>${esc(r.at || '-')}</td><td>${esc(r.org)}</td></tr>`).join('')
-      + `</tbody></table><p>이 단지 화면에 쓴 자료만 적었어요. 기준일은 집예보가 공공기관 자료를 마지막으로 반영한 날이고, 실거래는 계약한 달 기준이에요. 통계는 기관마다 발표 주기(매월·반기·연 1회)가 달라요. <a href="/jangdaejang-calc/about/">분석 방법 보기</a></p></div></details>`;
+      + `</tbody></table><p>이 단지 화면에 쓴 자료만 적었어요. 기준일은 집코드가 공공기관 자료를 마지막으로 반영한 날이고, 실거래는 계약한 달 기준이에요. 통계는 기관마다 발표 주기(매월·반기·연 1회)가 달라요. <a href="/jangdaejang-calc/about/">분석 방법 보기</a></p></div></details>`;
   }
 
   const API = { rows, html, CSS };

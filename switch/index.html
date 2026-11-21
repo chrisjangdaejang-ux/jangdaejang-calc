@@ -9,17 +9,17 @@
 <link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="집예보">
+<meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="/jangdaejang-calc/assets/pwa.js" defer></script>
 <script src="/jangdaejang-calc/assets/biz.js" defer></script>
 <script src="/jangdaejang-calc/assets/region-pick.js" defer></script>
-<title>집예보 갈아타기 계산기</title>
+<title>집코드 갈아타기 계산기</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/switch/">
 <meta name="description" content="지금 집을 팔면 양도세를 내고 대출을 갚은 뒤 손에 남는 돈, 새 대출로 갈아탈 수 있는 최대 집값, 취득세, 예산 안에서 미래가치 점수가 높은 단지, 지금 집 유지와 갈아타기 비교까지 한 번에 계산합니다. 2026년 11월 규제 반영.">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="집예보">
-<meta property="og:title" content="집예보 갈아타기 계산기 — 지금 집 팔면 어디까지 갈 수 있을까?">
+<meta property="og:site_name" content="집코드">
+<meta property="og:title" content="집코드 갈아타기 계산기 — 지금 집 팔면 어디까지 갈 수 있을까?">
 <meta property="og:description" content="양도세·매도 후 순자금·새 대출·취득세까지 한 번에. 1주택자 갈아타기 무료 계산기.">
 <meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/switch/">
 <meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/switch.png">
@@ -27,15 +27,15 @@
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="집예보 갈아타기 계산기 — 지금 집 팔면 어디까지 갈 수 있을까?">
+<meta name="twitter:title" content="집코드 갈아타기 계산기 — 지금 집 팔면 어디까지 갈 수 있을까?">
 <meta name="twitter:description" content="양도세·매도 후 순자금·새 대출·취득세까지 한 번에. 1주택자 갈아타기 무료 계산기.">
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/switch.png">
 <script>window.JDJ_CONFIG = { tool:'switch', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
-<script src="../assets/share.js?v=8"></script>
+<script src="../assets/share.js?v=9"></script>
 <script src="../assets/agents.js"></script>
-<script src="../assets/config.js?v=5"></script>
+<script src="../assets/config.js?v=6"></script>
 <script src="../assets/auth.js?v=6"></script>
 <script src="../assets/kchat.js?v=2"></script>
 <script src="../assets/region-notes.js"></script>
@@ -324,7 +324,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .taxf a{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:52px;border:1.5px solid var(--blue);color:var(--blue);border-radius:10px;text-decoration:none;font-weight:900;font-size:15px;padding:6px 4px;line-height:1.25}
 .taxf a small{font-size:12.5px;font-weight:500;color:#4E5968}
 </style>
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=43">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=44">
 <script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
 <style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
 :root{--gold:#2F6BFF}
@@ -344,7 +344,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>집예보</a>
+  <a class="brand" href="/jangdaejang-calc/" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
   <div class="badge plain">갈아타기</div>
 </header>
 
@@ -657,7 +657,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
         </div>
       </div>
       <a class="xlink" data-track="cross_link_timing" href="https://claude.ai/artifact/MPDhYTNGfXkiiFg6sDxvdM" target="_blank" rel="noopener"><span><b>지금이 갈아탈 타이밍인지 궁금하다면</b><small>갈아타기 타이밍 · 실거래가 분석</small></span><span class="go" aria-hidden="true">›</span></a>
-      <a class="xlink" data-track="cross_link_buy" href="../buy/"><span><b>무주택자라면</b><small>집예보 내 집 마련 계산기</small></span><span class="go" aria-hidden="true">›</span></a>
+      <a class="xlink" data-track="cross_link_buy" href="../buy/"><span><b>무주택자라면</b><small>집코드 내 집 마련 계산기</small></span><span class="go" aria-hidden="true">›</span></a>
     </div>
   </div>
 
@@ -680,7 +680,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
     </ul>
   </div>
 </div>
-<div class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집예보 · 팔 때 세금부터, 살 때 대출까지 한 번에</div>
+<div class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집코드 · 팔 때 세금부터, 살 때 대출까지 한 번에</div>
 <div class="toast" id="toast">복사되었습니다</div>
 
 <script>
@@ -968,7 +968,7 @@ $('sSgg').addEventListener('change', async ()=>{
     const tel=String(a.ph||'').replace(/[^\d]/g,'');
     return `<div class="agc"><b>${escH(a.n)}</b><span class="tag">제휴·광고</span><small>${escH(a.ogn)} ${escH(a.dong)} · 대표 ${escH(a.ceo)} · ${escH(a.ph)}</small>${a.intro?`<small style="color:#191F28">${escH(a.intro)}</small>`:''}
       <div class="acts">${tel?`<a href="tel:${tel}" data-a="${a.id}" data-act="call">전화 상담</a>`:''}${window.KChat?KChat.btn(a.kk,{a:a.id,g,name:a.n}):''}</div></div>`;
-  }).join('')+`</div><p class="muted" style="font-size:13.5px;margin:8px 0 0">제휴(광고) 중개사무소입니다. 집예보는 중개 행위에 관여하지 않으며, 거래 조건은 해당 중개사무소에 직접 확인하세요.</p>`;
+  }).join('')+`</div><p class="muted" style="font-size:13.5px;margin:8px 0 0">제휴(광고) 중개사무소입니다. 집코드는 중개 행위에 관여하지 않으며, 거래 조건은 해당 중개사무소에 직접 확인하세요.</p>`;
   A.log('rec', ranked.map(a=>a.id).sort().join(','), g, '');
   A.log('imp', ranked[0].id, g, ''); ranked.slice(1).forEach(a=>A.log('imp', a.id, g, ''));
   box.querySelectorAll('[data-act]').forEach(el=>el.addEventListener('click',()=>{ A.log(el.dataset.act, el.dataset.a, g, ''); A.flush(); JDJ.track('agent_'+el.dataset.act,{agent:el.dataset.a, sgg:g, from:'switch'}); }));
@@ -1445,7 +1445,7 @@ $('term').addEventListener('change',render);
 $('region').addEventListener('change',()=>{setTermOptions();render();});
 $('copyBtn').addEventListener('click',async()=>{
   const {t,net,cash,P,ld,c}=last;
-  const txt=`[집예보 갈아타기 계산기]\n현재 집 매도가 ${fmt(t.sale)}원 → 양도세 ${fmt(t.total)}원\n매도 후 손에 남는 돈 ${fmt(net)}원 · 자기자본 ${fmt(cash)}원\n→ ${c.R.name}에서 최대 ${fmt(P)}원까지 갈아타기 가능 (새 대출 ${fmt(ld.L)}원)\n※ 2026년 11월 기준 추정치\n${location.origin+location.pathname}`;
+  const txt=`[집코드 갈아타기 계산기]\n현재 집 매도가 ${fmt(t.sale)}원 → 양도세 ${fmt(t.total)}원\n매도 후 손에 남는 돈 ${fmt(net)}원 · 자기자본 ${fmt(cash)}원\n→ ${c.R.name}에서 최대 ${fmt(P)}원까지 갈아타기 가능 (새 대출 ${fmt(ld.L)}원)\n※ 2026년 11월 기준 추정치\n${location.origin+location.pathname}`;
   try{ await navigator.clipboard.writeText(txt); toast('결과가 복사되었습니다'); }catch(_){ toast('복사가 지원되지 않는 환경입니다'); }
 });
 
@@ -1465,6 +1465,6 @@ setTermOptions(); autoAdj(); render();
 </script>
 <script src="../assets/plain-words.js?v=14"></script>
 <script>document.addEventListener("DOMContentLoaded",()=>{ if(window.JDJ_PLAIN) JDJ_PLAIN.autoGloss(document.querySelector(".wrap")); });</script>
-<script src="/jangdaejang-calc/assets/ad-slot.js?v=3" defer></script>
+<script src="/jangdaejang-calc/assets/ad-slot.js?v=4" defer></script>
 </body>
 </html>

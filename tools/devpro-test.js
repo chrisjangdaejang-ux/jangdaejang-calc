@@ -1,7 +1,7 @@
 /* 시행사·분양대행사 리포트 안내 페이지(pro/developer/) 자동 확인 — 실행: node tools/devpro-test.js
    ① 가격 구간(DEV-PRICE)이 말이 되는지(런칭가 < 정가, 기한 날짜)
    ② 신청 폼이 기존 광고 문의 흐름(agent-backend.gs adInquiry)을 그대로 쓰는지 — 새 서버·옛 서버(새 상품 키를 모르는 서버) 모두 접수되는지
-   ③ 화면 문구 원칙(회사명 대신 '집예보', 금지 단어, 점수와 광고 분리 문구, 샘플 파일·광고 페이지 연결)
+   ③ 화면 문구 원칙(회사명 대신 '집코드', 금지 단어, 점수와 광고 분리 문구, 샘플 파일·광고 페이지 연결)
    (실제 구글 서버에는 접속하지 않습니다.) */
 const fs = require('fs'), vm = require('vm'), path = require('path'), crypto = require('crypto');
 const ROOT = path.join(__dirname, '..');
@@ -112,7 +112,7 @@ check('옛 서버(재배포 전)도 기타·제휴로 접수', r.ok && OLD.sheet
 
 // ③ 화면 문구
 const text = html.replace(/<script[\s\S]*?<\/script>/g, '').replace(/<style[\s\S]*?<\/style>/g, '').replace(/<[^>]+>/g, ' ');
-check('화면에 회사명 대신 집예보', !text.includes('장대장부동산그룹') && text.includes('집예보'));
+check('화면에 회사명 대신 집코드', !text.includes('장대장부동산그룹') && text.includes('집코드'));
 check('금지 단어 없음(시험·통과)', !/시험|통과/.test(text));
 check('점수·순위는 의뢰·광고와 무관 문구', /미래가치 점수·순위는 의뢰·광고·요금과 무관/.test(text));
 check('단정 금지 문구(가까움)', /구간에 가까움/.test(text) && /단정하지 않/.test(text));
@@ -124,7 +124,7 @@ check('이미지 대체 글', (html.match(/<img /g) || []).length === (html.matc
 // 자료 팩(편집형)
 check('자료 팩 상품 칸·가격 칸·신청 선택지', html.includes('id="p-datapack"') && html.includes('data-pp="datapack"') && html.includes('value="datapack"') && html.includes('href="#p-datapack"'));
 check('두 상품 비교표: 미래가치·과거 성적은 잠금형만, 미래가치까지 쓰려면 ①', /미래가치 점수·과거 성적<\/th><td class="y">들어감<\/td><td class="n">빠짐/.test(html) && /미래가치 점수·과거 성적까지[^<]*<\/b>|미래가치 점수·과거 성적까지 고객에게 보여 주려면 ①/.test(html));
-check('이용 조건 네 가지가 화면에', ['숫자 변경 금지', '출처 표기 유지', '집예보 이름·로고 사용 금지', '광고 책임은 사용 업체에'].every(k => text.includes(k)));
+check('이용 조건 네 가지가 화면에', ['숫자 변경 금지', '출처 표기 유지', '집코드 이름·로고 사용 금지', '광고 책임은 사용 업체에'].every(k => text.includes(k)));
 check('자료 팩 동의 칸(필수) · 자료 팩 고르면 동의 없이는 못 보냄', html.includes('id="agreeDp"') && /sel\(\)\.includes\('datapack'\) && !\$\('agreeDp'\)\.checked/.test(html));
 check('지도: OpenStreetMap 표기, 카카오맵 이미지 안 씀', text.includes('OpenStreetMap') && !/카카오맵|kakao map/i.test(text));
 {

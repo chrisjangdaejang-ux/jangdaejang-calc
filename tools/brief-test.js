@@ -83,7 +83,7 @@ const WK = {   // 송파구는 오늘 날짜(실림), 도봉구는 지난 날짜
   '11710': { date: '2026-11-21', w: '2026-46', from: '2026-11-09', to: '2026-11-15', ver: 1, status: 'prov', asof: '2026-11-19', url: 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/weekly/2026-46/', lines: ['송파구 주간 문장', '서울 주간 문장'] },
   '11320': { date: '2026-11-14', w: '2026-45', from: '2026-11-02', to: '2026-11-08', ver: 1, status: 'prov', asof: '2026-11-12', url: 'https://x', lines: ['도봉구 지난주 묵은 문장'] },
   market: { date: '2026-11-21', w: '2026-46', from: '2026-11-09', to: '2026-11-15', ver: 1, status: 'prov', asof: '2026-11-19', url: 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/weekly/2026-46/', line: '전국 주간 문장' } };
-const MARKET = { date: '2026-11-21', name: '집예보 모닝 브리핑', win: { from: '2026-11-20', to: '2026-11-21' },
+const MARKET = { date: '2026-11-21', name: '집코드 모닝 브리핑', win: { from: '2026-11-20', to: '2026-11-21' },
   kr: { n: 812, nhi: 40, hi: [{ sd: '서울', gn: '강남구', d: '압구정동', a: '현대7차', b: '245㎡대', p: 1150000, pm: 1050000, pmd: 20260301, up: 9.5 }], drop: [{ sd: '경기', gn: '화성시', d: '청계동', a: '예시', b: '84㎡대', p: 60000, m2: 80000, m2d: 20250501, dr: -25 }, { sd: '경기', gn: '화성시', d: '청계동', a: '의심거래', b: '84㎡대', p: 30000, m2: 80000, m2d: 20250501, dr: -62, sus: 1 }] },
   seoul: { n: 120, nhi: 12, hi: [], drop: [] }, policy: [{ name: '주담대 한도 조정', stage: '시행', d: '2026-11-17', scope: '전국' }], rate: null,
   cy: { n: 3, rows: [{ n: '이번 주 단지', sd: '서울', gn: '송파구', sp: ['20261117', ''], rc: ['20261118', '20261119'] }] }, lines: ['전국에서 어제 새로 올라온 아파트 매매는 812건이에요.'],
@@ -166,7 +166,7 @@ check('리포트 승인 경로로 다른 결제키 → 거절', !r.ok, r);
 const sent = T.briefDaily();
 check('발송 1건(체험 중 회원)', sent === 1, sent);
 const m = mails.find(a => a[0] && a[0].to === 'me@example.com');
-check('이메일: 받는 사람·제목·동 단위 내용', !!m && /11\/21 집예보 모닝 브리핑/.test(m[0].subject) && /송파구 잠실동/.test(m[0].htmlBody) && /잠실동에서 새로 올라온/.test(m[0].htmlBody) && /도봉구/.test(m[0].htmlBody), m && m[0].subject);
+check('이메일: 받는 사람·제목·동 단위 내용', !!m && /11\/21 집코드 모닝 브리핑/.test(m[0].subject) && /송파구 잠실동/.test(m[0].htmlBody) && /잠실동에서 새로 올라온/.test(m[0].htmlBody) && /도봉구/.test(m[0].htmlBody), m && m[0].subject);
 check('메일: ① 전국 시장(신고가 TOP·하락·정책·이번 주 청약) 먼저', !!m && /① 오늘의 부동산 시장/.test(m[0].htmlBody) && /압구정동 현대7차 245㎡대 115억 원/.test(m[0].htmlBody)
   && /주담대 한도 조정/.test(m[0].htmlBody) && /이번 주 단지/.test(m[0].htmlBody) && m[0].htmlBody.indexOf('① 오늘의') < m[0].htmlBody.indexOf('송파구 잠실동'));
 check('메일 큰 하락 TOP: 특수 거래 의심은 빼고 진짜 하락만', !!m && /청계동 예시 84㎡대/.test(m[0].htmlBody) && !/의심거래/.test(m[0].htmlBody));
@@ -229,7 +229,7 @@ const it = get({ action: 'briefInterest', k: 'pull-FAKE-123' });
 check('관심도: 방문자 5명 이상 단지만', it.ok && JSON.stringify(it.gu) === JSON.stringify({ '11710': [['잠실동', '리센츠', 6, 0]] }), it);
 r = post({ action: 'briefRefund', s: s1, id: paidId, reason: '테스트' });
 check('첫 발송 전 환불 요청 → 전액 예정·발송 중단', r.ok && r.sub.refundEst === 4900 && r.sub.state === '해지', r.sub);
-check('운영자 메일', mails.some(a => typeof a[1] === 'string' && /집예보 모닝 브리핑 환불 요청/.test(a[1])));
+check('운영자 메일', mails.some(a => typeof a[1] === 'string' && /집코드 모닝 브리핑 환불 요청/.test(a[1])));
 r = post({ action: 'briefStop', s: s1, id: trialId });
 check('해지', r.ok && r.sub.state === '해지' && !r.sub.active, r);
 NOW = Date.parse('2026-11-26T07:10:00+09:00'); fetches.length = 0;
@@ -410,8 +410,8 @@ NOW = Date.parse('2027-09-01T07:10:00+09:00'); mails.length = 0; props.BRIEF_SEN
 check('광고 없는 날: 두 동의 다 한 사람도 평소 제목', mailTo('g@example.com').length === 1 && !/^\(광고\)/.test(mailTo('g@example.com')[0][0].subject) && !/광고 수신 거부/.test(mailTo('g@example.com')[0][0].htmlBody));
 NOW = Date.parse('2027-09-02T07:10:00+09:00'); mails.length = 0; props.BRIEF_SENT = ''; T.briefDaily();
 const gm = mailTo('g@example.com')[0], fm = mailTo('f@example.com')[0], im = mailTo('i@example.com')[0];
-check('광고 있는 날 + 두 동의: 제목 맨 앞 (광고)·광고 1개·광고주·라벨', !!gm && /^\(광고\) \[집예보\]/.test(gm[0].subject) && /주담대 금리 비교/.test(gm[0].htmlBody) && /좋은은행/.test(gm[0].htmlBody) && (gm[0].htmlBody.match(/>광고</g) || []).length === 1, gm && gm[0].subject);
-check('광고 메일: 보낸 사람 정보·원클릭 수신 거부 링크', !!gm && /보낸 사람: 집예보\(\(주\)장대장부동산그룹\)/.test(gm[0].htmlBody) && /02-3444-5008/.test(gm[0].htmlBody) && /action=briefAdOff&id=B[0-9A-F]{9}&t=[0-9a-f]{16}/.test(gm[0].htmlBody));
+check('광고 있는 날 + 두 동의: 제목 맨 앞 (광고)·광고 1개·광고주·라벨', !!gm && /^\(광고\) \[집코드\]/.test(gm[0].subject) && /주담대 금리 비교/.test(gm[0].htmlBody) && /좋은은행/.test(gm[0].htmlBody) && (gm[0].htmlBody.match(/>광고</g) || []).length === 1, gm && gm[0].subject);
+check('광고 메일: 보낸 사람 정보·원클릭 수신 거부 링크', !!gm && /보낸 사람: 집코드\(\(주\)장대장부동산그룹\)/.test(gm[0].htmlBody) && /02-3444-5008/.test(gm[0].htmlBody) && /action=briefAdOff&id=B[0-9A-F]{9}&t=[0-9a-f]{16}/.test(gm[0].htmlBody));
 check('동의 없음 → 광고 있는 날도 메일 광고 없음·평소 제목', !!fm && !/^\(광고\)/.test(fm[0].subject) && !/주담대 금리 비교/.test(fm[0].htmlBody));
 check('광고성 정보 동의만(이른 아침 없음) → 메일 광고 없음', !!im && !/^\(광고\)/.test(im[0].subject) && !/주담대 금리 비교/.test(im[0].htmlBody));
 (() => { rowsK(703).forEach(x => { x[T.BC['아침광고동의']] = true; }); })();   // 시트에서 이른 아침만 켜진 경우(광고성 정보 꺼짐)

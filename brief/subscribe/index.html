@@ -8,18 +8,18 @@
 <link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
 <meta name="robots" content="noindex">
 <script src="/jangdaejang-calc/assets/biz.js" defer></script>
-<title>집예보 모닝 브리핑 받기</title>
+<title>집코드 모닝 브리핑 받기</title>
 <script>window.JDJ_CONFIG = { tool:'brief', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../../assets/track.js?v=2"></script>
 <script src="../../assets/stat.js?v=7"></script>
-<script src="../../assets/config.js?v=5"></script>
+<script src="../../assets/config.js?v=6"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/auth.js?v=6"></script>
 <script src="../../assets/pay.js?v=3"></script>
-<script src="../../assets/brief-core.js?v=7"></script>
+<script src="../../assets/brief-core.js?v=8"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=44">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/pay.css?v=2">
 <script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
 <style>
@@ -61,11 +61,11 @@ h1{font-size:clamp(24px,6vw,32px);margin:4px 0 8px}
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>집예보</a>
-  <div class="badge plain" data-brief-name>집예보 모닝 브리핑</div>
+  <a class="brand" href="/jangdaejang-calc/" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
+  <div class="badge plain" data-brief-name>집코드 모닝 브리핑</div>
 </header>
 <main class="wrap" id="main"><p class="note">불러오는 중…</p></main>
-<footer class="foot">★ <span data-site-name>집예보</span> · <a href="../" data-brief-name>집예보 모닝 브리핑</a> · <a href="../manage/">내 구독 관리</a> · <a href="../../refund/">환불 정책</a> · <a href="../../privacy/">개인정보처리방침</a></footer>
+<footer class="foot">★ <span data-site-name>집코드</span> · <a href="../" data-brief-name>집코드 모닝 브리핑</a> · <a href="../manage/">내 구독 관리</a> · <a href="../../refund/">환불 정책</a> · <a href="../../privacy/">개인정보처리방침</a></footer>
 <script>
 (function(){
 'use strict';
@@ -115,7 +115,7 @@ async function boot(){
         <p class="note" style="margin:6px 0 0">중개사 요금제는 공인중개사 전용 할인가라서 등록번호를 확인해요. 사무소 등록증에 적힌 번호를 그대로 적어 주세요. 번호는 운영자가 직접 확인하는 데에만 써요.</p></div>
       <p class="note">1개월 이용권이에요(부가세 포함). 자동으로 다시 결제되지 않고, 끝나기 3일 전과 마지막 날에 알려 드려요. 쓰는 중에 월 요금이 더 비싼 요금제로 바꾸면 남은 날만큼 차액만 내요.</p></section>
     <section class="step"><h2>3. 받는 방법</h2><div class="opt">
-      <label class="${st.kakao ? '' : 'off'}"><input type="radio" name="ch" value="kakao" ${st.kakao ? '' : 'disabled'}><span><b>카카오톡 ${st.kakao ? '' : '(준비 중)'}</b><small>${st.kakao ? '집예보 카카오톡 채널 알림톡으로 받아요(휴대폰 번호 필요)' : '카카오 알림톡 심사가 끝나면 열려요. 그동안 이메일로 받고, 나중에 [내 구독 관리]에서 바꿀 수 있어요.'}</small></span></label>
+      <label class="${st.kakao ? '' : 'off'}"><input type="radio" name="ch" value="kakao" ${st.kakao ? '' : 'disabled'}><span><b>카카오톡 ${st.kakao ? '' : '(준비 중)'}</b><small>${st.kakao ? '집코드 카카오톡 채널 알림톡으로 받아요(휴대폰 번호 필요)' : '카카오 알림톡 심사가 끝나면 열려요. 그동안 이메일로 받고, 나중에 [내 구독 관리]에서 바꿀 수 있어요.'}</small></span></label>
       <label><input type="radio" name="ch" value="email" ${st.kakao ? '' : 'checked'}><span><b>이메일</b><small>매일 아침 7시대에 보내 드려요</small></span></label></div>
       <input class="inp" id="contact" style="margin-top:10px" autocomplete="email" placeholder="받을 이메일 주소" maxlength="100">
       <div class="agree">

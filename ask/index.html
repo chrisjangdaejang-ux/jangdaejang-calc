@@ -9,16 +9,16 @@
 <link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="집예보">
+<meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="/jangdaejang-calc/assets/pwa.js" defer></script>
 <script src="/jangdaejang-calc/assets/biz.js" defer></script>
-<title>집예보 단지 비교 — 실거래 흐름·미래가치 점수 나란히 비교</title>
+<title>집코드 단지 비교 — 실거래 흐름·미래가치 점수 나란히 비교</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/ask/">
 <meta name="description" content="궁금한 아파트 단지 2~3곳을 이름으로 넣으면 실거래 평균·시세·준공·세대수·역까지 거리·미래가치 점수·보유 기간별 전망·구 대비 위치·전세가율·갭을 나란히 비교해 드려요.">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="집예보">
-<meta property="og:title" content="집예보 단지 비교 — 단지 이름으로 물어보면 통계로 답해요">
+<meta property="og:site_name" content="집코드">
+<meta property="og:title" content="집코드 단지 비교 — 단지 이름으로 물어보면 통계로 답해요">
 <meta property="og:description" content="실거래·시세·미래가치 점수·전세가율·갭까지, 궁금한 단지 2~3곳을 나란히 비교해요.">
 <meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/ask/">
 <meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/default.png">
@@ -27,7 +27,7 @@
 <script>window.JDJ_CONFIG = { tool:'ask', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
-<script src="../assets/share.js?v=8"></script>
+<script src="../assets/share.js?v=9"></script>
 <script src="../assets/plain-words.js?v=14"></script>
 <script src="../assets/mine-core.js?v=16"></script>
 <script src="../assets/price-sheet.js?v=15"></script>
@@ -38,7 +38,7 @@
 <script src="../assets/watch.js?v=3"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=43">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=44">
 <script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
 <style>
 .wrap{max-width:980px;margin:0 auto;padding:20px 16px 60px}
@@ -152,14 +152,14 @@ h1{font-size:clamp(24px,5.6vw,34px);margin:6px 0 6px}
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>집예보</a>
+  <a class="brand" href="/jangdaejang-calc/" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
   <div class="badge plain">단지 비교</div>
 </header>
 
 <main class="wrap">
   <span class="tag">단지 비교 · 통계로 답해요</span>
   <h1>궁금한 단지, <em>나란히</em> 비교해요</h1>
-  <p class="lead">실거래 흐름을 겹쳐 보고, 단지 정보와 집예보 미래가치 점수를 한 줄씩 비교해요.</p>
+  <p class="lead">실거래 흐름을 겹쳐 보고, 단지 정보와 집코드 미래가치 점수를 한 줄씩 비교해요.</p>
 
   <section id="res" aria-live="polite"></section>
   <div data-ad-slot="ask_end" data-ad-cat="ask" data-ad-after="#res" hidden></div>
@@ -172,7 +172,7 @@ h1{font-size:clamp(24px,5.6vw,34px);margin:6px 0 6px}
 
   <p class="disc">자료: 국토교통부 아파트 매매·전월세 실거래가(공공데이터포털), 공동주택관리정보시스템(K-apt)·건축물대장 단지 정보. 해제(취소) 신고된 거래와 직거래는 시세·평균 계산에서 빼요. 그래프의 선은 3개월 실거래 중앙값, 점은 실제 신고된 거래예요. 실제 거래가는 동·층·향·수리 상태에 따라 달라요. 미래가치 점수는 과거 자료로 검증한 통계 점수이며 앞으로의 가격을 보장하지 않아요.</p>
 </main>
-<footer class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집예보 · <a href="../">홈</a></footer>
+<footer class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집코드 · <a href="../">홈</a></footer>
 
 <script>
 (function(){
@@ -378,7 +378,7 @@ function otherUi(items){
 function rowsOf(items){
   const rows = [], add = o => rows.push(o);
   const pct = v => A.pctTop(v);
-  /* 집예보 강점(아실에 없는 값) — 맨 위 */
+  /* 집코드 강점(아실에 없는 값) — 맨 위 */
   add({ grp: '미래가치 비교 — 앞으로를 보는 값', ours: 1 });
   add({ ours: 1, l: '미래가치 점수', h: `이 단지가 앞으로 2년 동안 ${esc(items.map(x => x.sidoShort).filter((v, i, a) => a.indexOf(v) === i).join('·'))}의 다른 아파트보다 더 오를 가능성을 100점 만점으로 매긴 점수예요. 50점이 중간이고, 높을수록 더 오를 가능성이 커요. 과거에도 이 방식으로 매긴 점수가 실제 2년 뒤 시세와 맞았는지 확인했어요. 서울 단지는 서울끼리, 경기 단지는 경기끼리 비교한 순위라 시·도가 다르면 점수를 직접 견주지 마세요.`,
     v: items.map((x, i) => x.fv != null ? `<b class="big">${x.fv}<span>점</span></b><span class="bar b${i}"><i style="width:${Math.max(3, Math.min(100, x.fv))}%"></i></span><small>${esc(x.fvBase)} 중 ${pct(x.fv)}</small>` : NA), n: items.map(x => new Set(items.map(y => y.sd)).size === 1 ? x.fv : null), d: 1 });
@@ -420,7 +420,7 @@ function vsTable(items){
     : `<div class="hd">${items.map((x, i) => `<span class="h${i}">${esc(x.apt)}</span>`).join('')}</div>`;
   let h = '', k = 0;
   for (const r of rows){
-    if (r.grp){ h += `<div class="grp ${r.ours ? 'og' : ''}">${r.ours ? '<b>집예보</b>' : ''}${esc(r.grp)}</div>`; continue; }
+    if (r.grp){ h += `<div class="grp ${r.ours ? 'og' : ''}">${r.ours ? '<b>집코드</b>' : ''}${esc(r.grp)}</div>`; continue; }
     const w = r.d ? A.winner(r.n, r.d) : -1, id = 'hp' + (k++);
     const v = i => `<div class="v ${w === i ? 'win w' + i : ''}">${r.v[i]}</div>`;
     const lb = `<div class="lb">${esc(r.l)}<button type="button" class="qm" aria-expanded="false" aria-controls="${id}" aria-label="${esc(r.l)} 도움말">?</button></div>`;
@@ -482,6 +482,6 @@ async function main(){
 main();
 })();
 </script>
-<script src="/jangdaejang-calc/assets/ad-slot.js?v=3" defer></script>
+<script src="/jangdaejang-calc/assets/ad-slot.js?v=4" defer></script>
 </body>
 </html>

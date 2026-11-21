@@ -1,7 +1,7 @@
 # 검색엔진 등록 순서 (도메인을 연결한 뒤에 하세요)
 
 지금 주소(chrisjangdaejang-ux.github.io/jangdaejang-calc)는 빌린 주소라, 등록은 **도메인을 산 뒤 새 주소로 한 번만** 하면 됩니다.
-아래에서 `https://새주소` 는 산 도메인(예: `https://zipyebo.com`)으로 바꿔 읽으세요.
+아래에서 `https://새주소` 는 산 도메인(예: `https://zipcode.co.kr` — 아직 사지 않음)으로 바꿔 읽으세요.
 
 ---
 

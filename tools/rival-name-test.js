@@ -1,4 +1,4 @@
-/* 소개·안내 화면에 다른 부동산 앱·회사 이름이 없는지, '집예보만의 강점' 칸이 제대로 있는지: node tools/rival-name-test.js
+/* 소개·안내 화면에 다른 부동산 앱·회사 이름이 없는지, '집코드만의 강점' 칸이 제대로 있는지: node tools/rival-name-test.js
    다른 회사 이름을 쓰면 그 회사를 홍보하는 셈이라 about/·guide/ 아래 모든 파일에서 막아요. */
 const fs = require('fs'), path = require('path');
 const ROOT = path.join(__dirname, '..');
@@ -46,7 +46,9 @@ for (const [name, block, base] of [['about', sec, 'about/'], ['guide/method', sv
 {
   const OLD = [['데이터랩', /데이터\s*랩/], ['장대장 계산기', /장대장\s*(내 집 마련\s*|갈아타기\s*|부동산\s*)?계산기/], ['장대장 리포트', /장대장\s*(맞춤\s*(매수\s*)?|프리미엄\s*)?리포트/],
     /* 상담 이름은 '부동산 전문가 상담'(대표 결정 2026-11-21). '장대장TV'(채널)·'(주)장대장부동산그룹'(법적 표기)은 아래 표현에 걸리지 않아요 */
-    ['장대장 상담', /장대장\s*상담/], ['장대장에게', /장대장에게/], ['장대장 갈아타기', /장대장\s*갈아타기/], ['장대장이 직접', /장대장이\s*직접/]];
+    ['장대장 상담', /장대장\s*상담/], ['장대장에게', /장대장에게/], ['장대장 갈아타기', /장대장\s*갈아타기/], ['장대장이 직접', /장대장이\s*직접/],
+    /* 가칭 '집예보' → 서비스 이름 '집코드'(대표 결정 2026-11-21). 화면·메일·SEO 페이지(apt/·cy/·weekly/)에 다시 나오지 않게 */
+    ['집예보(예전 가칭)', /집예보/]];
   const strip = t => t.replace(/<!--[\s\S]*?-->/g, ' ').replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:'"`\\])\/\/[^\n]*/g, '$1');
   const SKIP = /^(tools|docs|\.git|node_modules|data)$|^vendor$|^leaflet$/;
   const walk = d => fs.readdirSync(d, { withFileTypes: true }).flatMap(e => e.isDirectory() ? (SKIP.test(e.name) ? [] : walk(path.join(d, e.name))) : [path.join(d, e.name)]);
@@ -57,8 +59,16 @@ for (const [name, block, base] of [['about', sec, 'about/'], ['guide/method', sv
     for (const [n, re] of OLD) if (re.test(t)) hits.push(`${path.relative(ROOT, f)}: ${n}`);
   }
   check(`예전 서비스 이름이 화면·title·og 에 없음 ${hits.join(', ')}`, hits.length === 0);
+  /* 예전 가칭은 주석까지 포함해 화면 파일·서버·바깥에 보이는 문서(스토어 등록 초안·검색 등록 안내)에 없음. 변경 기록은 이 검사 밖(필요하면 docs/ 의 내부 메모에만) */
+  const OLD_NAME = /집예보/, nameHits = [];
+  for (const f of walk(ROOT).concat(['tools/agent-backend.gs', 'docs/android_app.md', 'docs/search_registration.md', 'docs/well-known/assetlinks.json'].map(x => path.join(ROOT, x)))) {
+    if (!/\.(html|js|css|json|webmanifest|gs|md|xml|txt)$/.test(f)) continue;
+    if (OLD_NAME.test(fs.readFileSync(f, 'utf8'))) nameHits.push(path.relative(ROOT, f));
+  }
+  check(`예전 가칭 '집예보' 없음(주석 포함) ${nameHits.slice(0, 10).join(', ')}`, nameHits.length === 0);
+  check('검사가 예전 가칭을 잡아냄', OLD.some(([, re]) => re.test('집예보 모닝 브리핑')));
   check('예외는 그대로: 장대장TV 채널·회사명 법적 표기는 검사에 걸리지 않음', !OLD.some(([, re]) => re.test('장대장TV 보기 · 상호 (주)장대장부동산그룹')));
-  check('소개 화면 title 은 SITE_NAME(집예보) 기준', /<title>서비스 소개 · 집예보는 이렇게 분석해요<\/title>/.test(about) && /<h1><span data-site-name>[^<]*<\/span>는<br>이렇게 분석해요<\/h1>/.test(about));
+  check('소개 화면 title 은 SITE_NAME(집코드) 기준', /<title>서비스 소개 · 집코드는 이렇게 분석해요<\/title>/.test(about) && /<h1><span data-site-name>[^<]*<\/span>는<br>이렇게 분석해요<\/h1>/.test(about));
 }
 console.log(`${ok} ok, ${bad} fail`);
 process.exit(bad ? 1 : 0);

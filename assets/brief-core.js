@@ -8,7 +8,7 @@
 (function (root) {
   'use strict';
   const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
-  const SITE = ((root.JDJ_SITE || {}).SITE_NAME || '').trim() || '집예보';
+  const SITE = ((root.JDJ_SITE || {}).SITE_NAME || '').trim() || '집코드';
   const NAME = `${SITE} 모닝 브리핑`;
   /* ★ 요금제 표 — 화면(판매·신청·관리)은 이 표 한 곳만 봐요.
      서버 tools/agent-backend.gs 의 BRIEF_TIERS 와 숫자가 같아야 해요(tools/brief-web-test.js 가 두 표를 대조해요).

@@ -1,4 +1,4 @@
-/* 집예보 공용 공유 모듈 (청약·맞춤 리포트·내 집 시세·갈아타기·전월세·전세사기 체크리스트·세금·빌라·단지 비교·순위)
+/* 집코드 공용 공유 모듈 (청약·맞춤 리포트·내 집 시세·갈아타기·전월세·전세사기 체크리스트·세금·빌라·단지 비교·순위)
    - 개인 금융값(연소득·현금·대출 원리금·이름·기타 비용)은 주소에 싣지 않고 이 기기(localStorage)에만 둡니다.
    - 결과 화면 공유 3곳: 상단 공유 아이콘(header.top) · 결과 중간 카드 · 결과 아래 단추.
      페이지는 JDJ_SHARE.setup({tool}) 한 번, 결과가 나올 때마다 JDJ_SHARE.update(요약, {root, after}) 를 부릅니다.
@@ -19,16 +19,16 @@
   var SITE = 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/';
   /* 화면별 이름·중간 카드 문구·'나도 해 보기' 주소 */
   var TOOLS = {
-    chungyak:  { easy: '청약이 쉬워지는 집예보', label: '청약 당첨 가능성 진단', path: 'chungyak/', try: '내 가점으로 나도 해 보기' },
-    report:    { easy: '내 집 마련이 쉬워지는 집예보', label: '내 집 마련 맞춤 리포트', path: 'buy/', try: '내 조건으로 나도 해 보기' },
-    mine:      { easy: '내 집 시세 확인이 쉬워지는 집예보', label: '내 집 시세', path: 'mine/', try: '우리 집 시세도 확인해 보기' },
-    switch:    { easy: '갈아타기 계산이 쉬워지는 집예보', label: '갈아타기 계산', path: 'switch/', try: '내 집으로 나도 해 보기' },
-    jeonse:    { easy: '전월세 판단이 쉬워지는 집예보', label: '전월세 시세·위험 체크', path: 'jeonse/', try: '우리 집 전세도 확인해 보기' },
-    checklist: { easy: '전세 계약 점검이 쉬워지는 집예보', label: '전세사기 예방 체크리스트', path: 'jeonse/checklist/', try: '내 계약도 점검해 보기' },
-    tax:       { easy: '부동산 세금 계산이 쉬워지는 집예보', label: '부동산 세금 계산', path: 'tax/', try: '내 세금도 계산해 보기' },
-    villa:     { easy: '재개발 빌라 확인이 쉬워지는 집예보', label: '재개발·빌라 체크', path: 'villa/', try: '관심 빌라도 확인해 보기' },
-    ask:       { easy: '단지 비교가 쉬워지는 집예보', label: '단지 이름으로 물어보기', path: 'ask/', try: '궁금한 단지도 물어보기' },
-    rank:      { easy: '우리 동네 순위 확인이 쉬워지는 집예보', label: '구별 시세·미래가치 순위', path: 'rank/', try: '우리 구 순위도 확인해 보기' }
+    chungyak:  { easy: '청약이 쉬워지는 집코드', label: '청약 당첨 가능성 진단', path: 'chungyak/', try: '내 가점으로 나도 해 보기' },
+    report:    { easy: '내 집 마련이 쉬워지는 집코드', label: '내 집 마련 맞춤 리포트', path: 'buy/', try: '내 조건으로 나도 해 보기' },
+    mine:      { easy: '내 집 시세 확인이 쉬워지는 집코드', label: '내 집 시세', path: 'mine/', try: '우리 집 시세도 확인해 보기' },
+    switch:    { easy: '갈아타기 계산이 쉬워지는 집코드', label: '갈아타기 계산', path: 'switch/', try: '내 집으로 나도 해 보기' },
+    jeonse:    { easy: '전월세 판단이 쉬워지는 집코드', label: '전월세 시세·위험 체크', path: 'jeonse/', try: '우리 집 전세도 확인해 보기' },
+    checklist: { easy: '전세 계약 점검이 쉬워지는 집코드', label: '전세사기 예방 체크리스트', path: 'jeonse/checklist/', try: '내 계약도 점검해 보기' },
+    tax:       { easy: '부동산 세금 계산이 쉬워지는 집코드', label: '부동산 세금 계산', path: 'tax/', try: '내 세금도 계산해 보기' },
+    villa:     { easy: '재개발 빌라 확인이 쉬워지는 집코드', label: '재개발·빌라 체크', path: 'villa/', try: '관심 빌라도 확인해 보기' },
+    ask:       { easy: '단지 비교가 쉬워지는 집코드', label: '단지 이름으로 물어보기', path: 'ask/', try: '궁금한 단지도 물어보기' },
+    rank:      { easy: '우리 동네 순위 확인이 쉬워지는 집코드', label: '구별 시세·미래가치 순위', path: 'rank/', try: '우리 구 순위도 확인해 보기' }
   };
   var PLACES = ['top', 'mid', 'bottom'];
 
@@ -156,27 +156,29 @@
     ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
     ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
   }
-  function logo(ctx, x, y, s) {   // 헤더의 금색 집+해 아이콘(24 단위)을 s 배로
-    ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
-    ctx.fillStyle = '#B8942A'; rrect(ctx, 0, 0, 24, 24, 6); ctx.fill();
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    ctx.beginPath(); ctx.moveTo(5, 12.5); ctx.lineTo(12, 6.5); ctx.lineTo(19, 12.5); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(7.5, 11); ctx.lineTo(7.5, 18); ctx.lineTo(16.5, 18); ctx.lineTo(16.5, 11); ctx.stroke();
-    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(18.2, 5.8, 1.8, 0, Math.PI * 2); ctx.fill();
+  function logo(ctx, x, y, s) {   // 헤더 브랜드 아이콘(남색 집+열쇠 구멍, assets/icons/icon.svg 100 단위)을 24 단위 기준 s 배로
+    ctx.save(); ctx.translate(x, y); ctx.scale(s * 0.24, s * 0.24);
+    ctx.fillStyle = '#4338CA'; rrect(ctx, 0, 0, 100, 100, 22); ctx.fill();
+    ctx.fillStyle = '#FFFFFF'; ctx.fillRect(29, 47, 42, 31);
+    ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 7; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(20, 51); ctx.lineTo(50, 26); ctx.lineTo(80, 51); ctx.stroke();
+    ctx.fillStyle = '#4338CA'; ctx.beginPath(); ctx.arc(50, 59, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(46.5, 62); ctx.lineTo(44, 74); ctx.lineTo(56, 74); ctx.lineTo(53.5, 62); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#5EEAD4'; ctx.beginPath(); ctx.arc(76, 24, 5, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   }
   function fontFam() {
     try { return root.getComputedStyle(root.document.body).fontFamily || 'sans-serif'; } catch (e) { return "'Noto Sans KR', sans-serif"; }
   }
   function drawCard(tool, sum, url) {
-    var t = TOOLS[tool] || { label: '집예보', try: '나도 해 보기' };
+    var t = TOOLS[tool] || { label: '집코드', try: '나도 해 보기' };
     var c = root.document.createElement('canvas'); c.width = 1080; c.height = 1080;
     var ctx = c.getContext('2d'), F = fontFam();
     ctx.fillStyle = '#F7F4EC'; ctx.fillRect(0, 0, 1080, 1080);
     ctx.fillStyle = '#FFFFFF'; rrect(ctx, 60, 60, 960, 960, 44); ctx.fill();
-    /* 머리: 로고 + 집예보 + 화면 이름 */
+    /* 머리: 로고 + 집코드 + 화면 이름 */
     logo(ctx, 112, 112, 3.4);
-    ctx.textBaseline = 'middle'; ctx.fillStyle = '#191F28'; ctx.font = '900 60px ' + F; ctx.fillText('집예보', 214, 154);
+    ctx.textBaseline = 'middle'; ctx.fillStyle = '#191F28'; ctx.font = '900 60px ' + F; ctx.fillText('집코드', 214, 154);
     ctx.font = '700 30px ' + F; var lw = ctx.measureText(t.label).width + 44;
     ctx.fillStyle = '#FBF5E3'; rrect(ctx, 968 - lw, 126, lw, 58, 29); ctx.fill();
     ctx.fillStyle = '#8A6D16'; ctx.textAlign = 'center'; ctx.fillText(t.label, 968 - lw / 2, 156); ctx.textAlign = 'left';
@@ -231,7 +233,7 @@
   function cardHTML() {
     var t = TOOLS[ST.tool] || {};
     return '<div class="jshare-card noprint" data-jshare-box="mid"><span class="ic">' + ICON + '</span>'
-      + '<div class="tx"><b>' + esc(t.easy || '집예보') + ', 다른 분들께도 알려주세요</b>내 금액·점수는 빼고 결과 요약과 링크만 보내요.</div>'
+      + '<div class="tx"><b>' + esc(t.easy || '집코드') + ', 다른 분들께도 알려주세요</b>내 금액·점수는 빼고 결과 요약과 링크만 보내요.</div>'
       + '<button type="button" class="btn" data-jshare="mid">공유하기</button></div>';
   }
   function bottomHTML() {
@@ -324,7 +326,7 @@
     if (!ST.sum) return Promise.resolve('none');
     var url = ST.url;
     if (mode === 'detail') { url = detailLink(); if (!url) mode = 'summary', url = ST.url; } else mode = 'summary';
-    var nav = root.navigator || {}, text = shareText(mode, url), title = '집예보 · ' + ((TOOLS[ST.tool] || {}).label || '');
+    var nav = root.navigator || {}, text = shareText(mode, url), title = '집코드 · ' + ((TOOLS[ST.tool] || {}).label || '');
     var file = null, canFile = false;
     try { if (ST.blob && root.File) file = new root.File([ST.blob], 'jibyebo-' + ST.tool + '.png', { type: 'image/png' }); } catch (e) { file = null; }
     try { canFile = !!(file && nav.share && nav.canShare && nav.canShare({ files: [file] })); } catch (e) { canFile = false; }

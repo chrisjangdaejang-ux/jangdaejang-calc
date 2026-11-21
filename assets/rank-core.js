@@ -1,4 +1,4 @@
-/* 집예보 순위 화면(/rank/) 계산 — 화면·테스트(tools/rank-test.js) 공용, DOM 없음.
+/* 집코드 순위 화면(/rank/) 계산 — 화면·테스트(tools/rank-test.js) 공용, DOM 없음.
    자료는 공개 파일 그대로: index.json sgg[구].s(그 달까지 3개월 실거래 평당가 중앙값, 만원)·c(월별 거래 수)·gs(지역 흐름 점수 0~100),
    model.json region(지역 점수 검증), rank.json(지난달 스냅숏 대비 점수 변화 — 아직 없음). 여기서 새 숫자를 만들지 않고 두 달 값의 비율·정렬만 한다.
    단지 미래가치 순위(첫 화면 'TOP 3'·/rank/ 단지별)는 공개 요약 home/sNN.json top(엔진 scripts/home_pulse.py 가 sNN.json 점수로 줄 세운 것)을 그대로 읽는다
