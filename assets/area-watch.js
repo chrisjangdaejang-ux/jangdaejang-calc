@@ -1,7 +1,7 @@
 /* 관심 지역 (JDJ_AREA) — 분양(bunyang/) · 청약(chungyak/) · 첫 화면 공용
    - 관심 지역: 시·도 또는 시·군·구 여러 개(최대 10곳) + 알림 종류(새 분양 공고 · 무순위/잔여세대 일정).
    - 로그인 전에는 이 기기(localStorage 'jdj_areas')에만, 카카오 로그인 중이면 계정 저장 자료(areas)에도 저장 = 알림 신청.
-   - 카카오톡 발송은 카카오 비즈 인증 뒤 시작. 그 전에는 다시 들어왔을 때 '관심 지역 새 공고 N건' 배지와 분양·청약 화면 위쪽 표시로 알려 줌.
+   - 청약 알림 메일은 알림 센터(my/alerts/). 카카오톡 발송은 카카오 비즈 인증 뒤(날짜 미정). 화면에서는 다시 들어왔을 때 '관심 지역 새 공고 N건' 배지와 분양·청약 화면 위쪽 표시로 알려 줌.
    - '새 공고' = 관심 지역·종류에 맞고 지금 분양예정·청약중인 공고 중 이 기기에서 아직 분양 화면에 보여 주지 않은 것(본 공고 id 는 'jdj_areas_seen'). */
 (function (root) {
   'use strict';
@@ -120,8 +120,8 @@
   function style() { if (typeof document === 'undefined' || document.getElementById('jaCss')) return; const s = document.createElement('style'); s.id = 'jaCss'; s.textContent = CSS; document.head.appendChild(s); }
   const SIDOS = ['서울특별시', '경기도', '인천광역시', '부산광역시', '대구광역시', '전남광주통합특별시', '대전광역시', '울산광역시', '세종특별자치시', '강원특별자치도', '충청북도', '충청남도', '전북특별자치도', '경상북도', '경상남도', '제주특별자치도'];
   function saveNote() {
-    if (authed()) return `카카오 계정(${esc(auth().user().nick)} 님)에 저장돼서 다른 기기에서도 같은 관심 지역이 보여요. 카카오톡 알림 발송을 시작하면 고른 알림을 카카오톡으로 보내 드려요.`;
-    if (auth()) return `지금은 이 기기에만 저장돼요. 카카오 간편 로그인하면 다른 기기에서도 같은 관심 지역을 쓰고, 카카오톡 알림 발송을 시작할 때 가장 먼저 받아볼 수 있어요.`;
+    if (authed()) return `카카오 계정(${esc(auth().user().nick)} 님)에 저장돼서 다른 기기에서도 같은 관심 지역이 보여요. 새 청약 공고·접수 하루 전·발표일 알림은 <a href="${JB.SITE}my/alerts/#cyT">알림 센터</a>에서 메일로 받을 수 있어요. 카카오톡 알림은 준비하고 있어요.`;
+    if (auth()) return `지금은 이 기기에만 저장돼요. 카카오 간편 로그인하면 다른 기기에서도 같은 관심 지역을 쓰고, <a href="${JB.SITE}my/alerts/#cyT">알림 센터</a>에서 청약 알림을 메일로 받을 수 있어요. 카카오톡 알림은 준비하고 있어요.`;
     return '이 기기 브라우저에만 저장돼요.';
   }
   const fmtD = s => s && s.length === 8 ? `${+s.slice(4, 6)}.${+s.slice(6, 8)}` : '';

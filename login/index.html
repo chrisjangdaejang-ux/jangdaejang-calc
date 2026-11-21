@@ -91,7 +91,7 @@ function intro(msg){
       <li><span class="ic">1</span><span><b>실거래 전체 보기</b><small>최근 3년 거래 전부와 그보다 이전 연도별 시세</small></span></li>
       <li><span class="ic">2</span><span><b>내 집·관심 단지 여러 기기에 저장</b><small>휴대폰에서 저장한 집을 PC에서도 그대로</small></span></li>
       <li><span class="ic">3</span><span><b>맞춤 매수 리포트 상세 보기·저장</b><small>대출·필요 현금·월 상환과 추천 이유 전체, 리포트 다시 보기</small></span></li>
-      <li><span class="ic">4</span><span><b>관심 단지·지역 알림 신청</b><small>새 실거래·신고가·지역 시세 흐름을 카카오톡으로 (발송 시작 때 알려 드려요)</small></span></li>
+      <li><span class="ic">4</span><span><b>관심 단지·청약 알림을 메일로</b><small>관심 목록 단지에 새 거래·신고가가 나오거나 고른 청약 일정이 다가오면 하루 한 번 알려 드려요</small></span></li>
     </ul>
     ${A.btn('카카오 간편 로그인', 'login_page', 'full')}
     <p class="note">집코드가 카카오에서 받는 정보는 <b>카카오 회원번호와 닉네임</b>뿐이에요. 이메일·전화번호는 받지 않아요. <a href="${JB.SITE}privacy/#member">개인정보처리방침</a></p></div>
@@ -135,9 +135,9 @@ function areasHtml(d){
     : '<p class="empty">관심 지역을 설정하면 새로운 분양 공고, 무순위 청약 일정을 가장 먼저 받아볼 수 있어요. <a href="' + JB.SITE + 'bunyang/#area">관심 지역 설정</a></p>'}</div>`;
 }
 function alertsHtml(al){
-  return `<div class="box"><h2>알림 신청<small>${al.length}개</small></h2>${al.length ? al.map(a => `<div class="row"><span><b>${esc(a.name)} · ${esc(KIND[a.kind] || a.kind)}</b><small>${esc(a.at)} 신청</small></span><button type="button" data-al="${esc(a.id)}">취소</button></div>`).join('')
-    : '<p class="empty">아직 신청한 알림이 없어요. 내 집 시세 화면의 [이 단지·지역 소식 알림]에서 신청할 수 있어요.</p>'}
-    <p class="note">카카오톡 알림 발송을 준비하고 있어요. 발송을 시작하면 카카오톡으로 먼저 알려 드리고, 신청하신 내용대로 보내 드려요.</p></div>`;
+  return `<div class="box"><h2>예전 알림 신청<small>${al.length}개</small></h2>${al.length ? al.map(a => `<div class="row"><span><b>${esc(a.name)} · ${esc(KIND[a.kind] || a.kind)}</b><small>${esc(a.at)} 신청</small></span><button type="button" data-al="${esc(a.id)}">취소</button></div>`).join('')
+    : '<p class="empty">예전에 신청한 알림이 없어요.</p>'}
+    <p class="note">이제 알림은 관심 목록 단지와 고른 청약 조건으로 받아요. <a href="${JB.SITE}my/alerts/">알림 센터</a>에서 단지별로 켜고 끄고, 메일로 받을 수 있어요. 카카오톡 알림은 준비하고 있어요.</p></div>`;
 }
 async function account(){
   app.innerHTML = '<div class="st">내 계정을 불러오는 중이에요…</div>';

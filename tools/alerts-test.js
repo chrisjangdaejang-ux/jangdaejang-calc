@@ -287,6 +287,9 @@ check('서비스 워커: 알림 센터·계산 파일을 저장 목록에, 판 �
 check('종 단추: 알림 센터로 가는 링크·안 본 수', /my\/alerts\//.test(wj) && /새 알림 \$\{r\.unread\}건/.test(wj));
 const pages = ['index.html', 'my/watch/index.html', 'ask/index.html', 'quiz/index.html', 'mine/index.html', 'buy/report/index.html', 'rank/index.html', 'map/index.html', 'track/index.html'];
 check('watch.js 를 싣는 화면은 모두 새 판(v=5)과 계산 파일', pages.every(p => { const s = read(p); return /watch\.js\?v=5/.test(s) && !/assets\/watch\.js\?v=4/.test(s) && /alerts-core\.js\?v=1/.test(s) && s.indexOf('alerts-core.js') < s.indexOf('assets/watch.js'); }));
+const oldCopy = /카카오톡으로 알려 드릴게요|발송을 시작하면|발송 시작 때|발송 시작 시|id="alrBtn"/;
+check('예전 카카오톡 알림 신청 문구가 남지 않음(단지·로그인·관심 지역·단지 이유 칸)', ['mine/index.html', 'login/index.html', 'assets/area-watch.js', 'assets/narrative.js'].every(p => !oldCopy.test(read(p))));
+check('단지 화면 알림 칸: 관심 목록 넣기 + 알림 센터 + 카카오톡은 준비 중(날짜 약속 없음)', (s => /이 단지에 새 거래·신고가가 나오면 알려 드려요/.test(s) && /JDJ_WATCH\.star\(p, \{label: true\}\)/.test(s) && /my\/alerts\//.test(s) && /카카오톡 알림은 준비하고 있어요/.test(s))(read('mine/index.html')));
 check('안내 문서: 대표가 신청할 것과 걸리는 기간', /비즈니스 채널/.test(read('docs/alerts.md')) && /알림톡 딜러/.test(read('docs/alerts.md')) && /080/.test(read('docs/alerts.md')) && /alertsInstall/.test(read('docs/alerts.md')));
 
 console.log(`\n알림 1단계 확인: ${pass}개 통과, ${fail}개 실패`);

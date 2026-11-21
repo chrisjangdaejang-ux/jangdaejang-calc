@@ -42,7 +42,7 @@
 <script src="../assets/watch.js?v=5"></script>
 <script src="../assets/kchat.js?v=2"></script>
 <script src="../assets/plain-words.js?v=14"></script>
-<script src="../assets/narrative.js?v=15"></script>
+<script src="../assets/narrative.js?v=16"></script>
 <script src="../assets/strength.js?v=3"></script>
 <script src="../assets/conf.js?v=1"></script>
 <script src="../assets/life-view.js?v=3"></script>
@@ -327,34 +327,17 @@ function favPlace(d){ return {sd:S.sd, code:d.code, dong:d.dong, jibun:d.jibun, 
 function paintFav(){ if (window.JDJ_WATCH) JDJ_WATCH.paintStars(); }
 function wireFav(){ paintFav(); }
 if (window.JDJ_WATCH) JDJ_WATCH.onChange(() => renderFavs());
-/* 관심 단지·지역 알림 신청: 신청 내용만 계정에 저장. 카카오톡 발송은 카카오 비즈 인증 뒤 시작 */
+/* 이 단지 알림: 관심 목록에 넣으면(assets/watch.js) 새 거래·신고가가 알림 센터(my/alerts/)와 메일로 옴. 카카오톡 알림은 준비 중(날짜 약속 없음) */
+let LASTD = null;
 async function fillAlert(d){
-  const box = $('alertSec'); if (!box || !AU || !AU.on()) return;
-  const g = sggName(d.code), dk = [d.code, d.dong, d.jibun, d.apt].join('|');
-  const items = [{kind:'trade', key:dk, name:d.apt, t:'이 단지에 새 실거래가 신고되면', s:`${d.apt} · 국토교통부 실거래 신고 기준`},
-                 {kind:'high', key:dk, name:d.apt, t:'이 단지에 신고가가 나오면', s:'같은 평형·같은 전용면적에서 그 전 최고가보다 비싸게 거래된 경우'},
-                 {kind:'area', key:d.code, name:g, t:`${g} 아파트 시세 흐름 (한 달에 한 번)`, s:`${g} 전체 3개월 실거래 평당가 변화`}];
-  const head = `<div class="panel"><h2>이 단지·지역 소식 알림<small>새 실거래·신고가·지역 시세 흐름을 카카오톡으로 알려 드려요.</small></h2>`;
-  if (!AU.user()){
-    box.innerHTML = head + `<div class="alr">${items.map(x => `<label style="cursor:default"><input type="checkbox" disabled><span>${esc(x.t)}<small>${esc(x.s)}</small></span></label>`).join('')}
-      ${AU.gate('알림은 카카오 계정으로 신청해요. 신청 내용은 내 계정에서 언제든 지울 수 있어요.', '카카오 간편 로그인하고 알림 신청', 'alert')}</div></div>`;
-    return;
-  }
-  const cur = await AU.alerts(); if (S.dkey !== d.key) return;
-  const has = x => cur.some(a => a.kind === x.kind && a.key === x.key);
-  box.innerHTML = head + `<div class="alr">${items.map((x, i) => `<label><input type="checkbox" data-i="${i}" ${has(x) ? 'checked disabled' : ''}><span>${esc(x.t)}${has(x) ? ' <b style="color:#0E7A4F;font-size:13.5px">신청됨</b>' : ''}<small>${esc(x.s)}</small></span></label>`).join('')}
-    <div class="acts"><button type="button" class="btn primary" id="alrBtn">알림 신청</button><span class="msg" id="alrMsg" role="status"></span></div>
-    <p class="note" style="margin:8px 0 0">카카오톡 알림 발송을 준비하고 있어요. 지금 신청해 두시면 발송을 시작할 때 카카오톡으로 먼저 알려 드리고, 신청하신 내용대로 보내 드려요. 신청 목록은 <a href="${JB.SITE}login/">내 계정</a>에서 보고 지울 수 있어요.</p></div></div>`;
-  $('alrBtn').onclick = () => {
-    const pick = [...box.querySelectorAll('input[data-i]:checked:not(:disabled)')].map(c => items[+c.dataset.i]).map(x => ({kind:x.kind, key:x.key, name:x.name}));
-    const msg = $('alrMsg');
-    if (!pick.length){ msg.style.color = '#C2410C'; msg.textContent = '알림 받을 내용을 하나 이상 골라 주세요.'; return; }
-    $('alrBtn').disabled = true; msg.style.color = '#4E5968'; msg.textContent = '신청하는 중이에요…';
-    AU.subscribe(pick).then(() => { fillAlert(d).then(() => { const m2 = $('alrMsg'); if (m2){ m2.style.color = '#0E7A4F'; m2.textContent = '신청했어요. 발송을 시작하면 카카오톡으로 알려 드릴게요.'; }
-      const sl = box.querySelector('.alr'); if (sl && window.JDJ_LEAD){ const x = document.createElement('div'); sl.appendChild(x); JDJ_LEAD.mount(x, {src:'alert', kind:'buy', g:d.code, gn:sggName(d.code), k:d.code + '|' + d.dong + '|' + d.apt, apt:d.apt, band:S.band || ''}); } }); })
-      .catch(e => { msg.style.color = '#C2410C'; msg.textContent = e.message; $('alrBtn').disabled = false; });
-  };
+  const box = $('alertSec'); if (!box || !window.JDJ_WATCH) return;
+  const p = favPlace(d), on = JDJ_WATCH.has(p);
+  box.innerHTML = `<div class="panel"><h2>이 단지 알림<small>이 단지에 새 거래·신고가가 나오면 알려 드려요.</small></h2>
+    <div class="alr"><p style="margin:0 0 6px">${on ? `<b>${esc(d.apt)} ${esc(S.band || '')}</b>은(는) 관심 목록에 있어요. 새 거래·신고가·급매·전세가율 변화가 생기면 알림 센터에 모이고, 메일 알림을 신청하면 하루 한 번 메일로도 받아요.` : '관심 목록에 넣으면 이 단지의 새 거래·신고가·급매·전세가율 변화를 알림 센터에서 모아 보고, 메일로도 받을 수 있어요.'}</p>
+    <div class="acts">${JDJ_WATCH.star(p, {label: true})}<a class="btn" href="${JB.SITE}my/alerts/" data-track="mine_to_alerts">알림 센터 열기</a></div>
+    <p class="note" style="margin:8px 0 0">카카오톡 알림은 준비하고 있어요. 지금은 알림 센터와 메일로 받을 수 있어요.</p></div></div>`;
 }
+if (window.JDJ_WATCH) JDJ_WATCH.onChange(() => { if (S.dkey && LASTD) fillAlert(LASTD); });
 
 /* ---------- 자료 ---------- */
 /** 시·도 단지 목록: 시세 확인용 price/sNN.json(거래 1건 이상 모든 단지), 없으면 점수용 sNN.json */
@@ -611,7 +594,7 @@ function render(d, map, units){
   P.wireMore($('trades'));
   wireResult(d, u, sm);
   wireFav(d);
-  fillAlert(d);
+  LASTD = d; fillAlert(d);
   fillAgents(d);
   if (window.JDJ_TAXBOX) JDJ_TAXBOX.mount($('taxSec'), {price: sm.price || (last ? last.price : 0), area: u[4], sido: (sgg || {}).sido, gu: sggName(d.code), apt: d.apt, band: S.band, code: d.code, dong: d.dong, jibun: d.jibun, mode: 'mine', bpEl: $('bp'), bdEl: $('bd')}).catch(() => {});
   if (window.JDJPolicy) JDJPolicy.mount($('polSec'), {mode:'mine', codes:[{sgg:d.code, dong:d.dong}], name:() => sggName(d.code) + ' ' + d.dong, sggName:() => sggName(d.code), price: sm.price || (last ? last.price : 0),

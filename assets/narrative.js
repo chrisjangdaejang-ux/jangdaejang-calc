@@ -397,6 +397,7 @@
     const out = { up: [], dn: [], watch: [], apt: c.apt, sido: SD, sgg: SG };
     const jb = c.jibun || (c.dev && c.dev.u && c.dev.u.jibun);
     if (c.code && c.dong && jb) out.key = [c.code, c.dong, jb, c.apt].join('|');
+    if (out.key && sid && c.band) out.place = { sd: sid, code: c.code, dong: c.dong, jibun: jb, apt: c.apt, band: c.band };   // 관심 목록에 넣을 단지·평형
     if (!f) return out;
     const P = priceFacts(cx), cand = [];
     const unitBase = '자기 구 평균', who = `${SD}에서 비슷한 단지`;
@@ -1341,7 +1342,7 @@
       + `<p class="w3-lead">공공 통계를 과거 시점에 그대로 대입해 2년 뒤 실제로 어땠는지 확인된 것만 이유로 적었어요.</p>`
       + `<div class="w3-grid">${col(W.up, 'w3-up', '오를 이유')}${col(W.dn, 'w3-dn', '조심할 점')}`
       + (W.watch.length || alert ? `<div class="w3-col w3-wt"><h4 class="w3-k">지켜볼 것</h4>${W.watch.length ? `<ol class="w3-ol">${W.watch.map(x => li(x, 'w3-wt')).join('')}</ol>` : ''}`
-        + (alert ? `<button type="button" class="w3-alert" data-w3-alert="${E(W.key)}" data-w3-name="${E(W.apt)}">관심 단지 알림 받기</button><span class="w3-msg" role="status"></span>` : '') + '</div>' : '')
+        + (alert ? `<button type="button" class="w3-alert" data-w3-alert="${E(W.key)}" data-w3-name="${E(W.apt)}"${W.place ? ` data-w3-place="${E(JSON.stringify(W.place))}"` : ''}>이 단지 알림 받기</button><span class="w3-msg" role="status"></span>` : '') + '</div>' : '')
       + `</div>`
       + (miss.length ? `<p class="w3-miss">${E(miss.join('·'))}: 과거 사례에서 같은 방향이 확인된 항목이 없어 적지 않았어요.</p>` : '')
       + (pro ? '' : `<p class="w3-pro">항목별 숫자와 과거 시기별 결과는 프리미엄 리포트에서 펼쳐 볼 수 있어요.</p>`)
@@ -1442,16 +1443,17 @@
     doc = doc || root.document; if (!doc || doc.getElementById('nar-css')) return;
     const s = doc.createElement('style'); s.id = 'nar-css'; s.textContent = CSS; (doc.head || doc.documentElement).appendChild(s);
   }
-  /* [관심 단지 알림 받기]: 카카오 로그인 중이면 이 단지 새 실거래·신고가 알림 신청(auth.js subscribe = alertSubscribe), 아니면 로그인 */
+  /* [이 단지 알림 받기]: 이 단지·평형을 관심 목록에 넣음(assets/watch.js) → 새 거래·신고가는 알림 센터(my/alerts/)와 메일로. 관심 목록 부품이 없으면 알림 센터로 */
   function w3alert(b) {
-    const AU = root.JDJ_AUTH, msg = b.nextElementSibling; if (!AU || !AU.on()) return;
+    const msg = b.nextElementSibling, W = root.JDJ_WATCH, base = (root.JDJ_BASE && root.JDJ_BASE.SITE) || '/';
     try { root.jdjStat && root.jdjStat('nar_open', { line: 'w3alert' }); } catch (_) { }
-    if (!AU.user()) { AU.login('why3'); return; }
-    const key = b.getAttribute('data-w3-alert'), name = b.getAttribute('data-w3-name');
-    b.disabled = true; if (msg) msg.textContent = '신청하는 중이에요…';
-    AU.subscribe([{ kind: 'trade', key, name }, { kind: 'high', key, name }])
-      .then(() => { b.textContent = '알림 신청됨'; if (msg) msg.textContent = '이 단지에 새 실거래·신고가가 나오면 카카오톡으로 알려 드릴게요(발송 시작 시 먼저 안내).'; })
-      .catch(e => { b.disabled = false; if (msg) msg.textContent = (e && e.message) || '신청하지 못했어요. 잠시 뒤 다시 눌러 주세요.'; });
+    let p = null; try { p = JSON.parse(b.getAttribute('data-w3-place') || 'null'); } catch (_) { }
+    if (!W || !p) { root.location.href = base + 'my/alerts/'; return; }
+    const done = () => { b.textContent = '✓ 관심 목록에 있어요'; b.disabled = true;
+      if (msg) msg.innerHTML = `이 단지에 새 거래·신고가가 나오면 <a href="${base}my/alerts/">알림 센터</a>에서 알려 드려요. 메일로도 받을 수 있어요. 카카오톡 알림은 준비하고 있어요.`; };
+    if (W.has(p)) { done(); return; }
+    b.disabled = true;
+    W.toggle(p).then(r => { if (r && r.added) done(); else { b.disabled = false; } }, () => { b.disabled = false; });
   }
   /* 펼침 동작 + 줄 종류별 집계(stat.js, 개인정보 없음) + 개발사업 칸 채우기 */
   function bind(el, o) {
