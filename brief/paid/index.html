@@ -14,7 +14,7 @@
 <script src="../../assets/stat.js?v=7"></script>
 <script src="../../assets/config.js?v=4"></script>
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/auth.js?v=3"></script>
+<script src="../../assets/auth.js?v=4"></script>
 <script src="../../assets/pay.js?v=3"></script>
 <script src="../../assets/brief-core.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -54,6 +54,7 @@ if (!paymentKey || !orderId || !(amount > 0)) { main.innerHTML = '<h1>결제 정
 P.post('briefConfirm', { paymentKey, orderId, amount }).then(j => {
   history.replaceState(null, '', location.pathname + '?done=' + encodeURIComponent(j.orderId));
   const s = j.sub || {};
+  try { localStorage.setItem('jdj_brief_sub', '1'); } catch(e){}
   main.innerHTML = `<span class="tag">${esc(B.NAME)}</span><h1>결제가 끝났어요</h1>
     <section class="sb"><dl><dt>주문번호</dt><dd>${esc(j.orderId)}</dd><dt>상품</dt><dd>${esc(s.product)}</dd><dt>이용 기간</dt><dd>${esc(s.start)} ~ ${esc(s.end)}</dd><dt>받는 곳</dt><dd>${esc(s.contact)}</dd></dl>
     <div class="row2"><a class="btn primary" href="../manage/">내 구독 관리</a><a class="btn" href="../subscribe/">동네 바꾸기</a></div></section>

@@ -47,5 +47,7 @@ check('청약 기회: 저장값 없으면 생략', [B.cyMatch(CYL, '').length, B
 const TC = B.taxCal([{ apt: '가', bd: '2025-03' }, { apt: '나', bd: '' }], '2026-11-21');
 check('세금 캘린더: 비과세 보유 2년·장특공 3년·6/1 기준일 D-day 순', TC.map(x => [x.k, x.date, x.dday]), [['nontax', '2027-03-01', 100], ['base', '2027-06-01', 192], ['ltd', '2028-03-01', 466]]);
 check('세금 캘린더: 집 정보 없으면 기준일만', B.taxCal([], '2026-05-30').map(x => [x.k, x.dday]), [['base', 2]]);
+const AU = {}; new Function('window', 'addEventListener', 'localStorage', require('fs').readFileSync(require('path').join(__dirname, '../assets/auth.js'), 'utf8'))(AU, () => {}, { getItem: () => null, setItem() {} });
+check('머리줄 이름: 기호·빈 값이면 내 정보', ['장대장', '.', '', ' ..', 'kim', '홍길동이름이아주아주긴사람입니다'].map(AU.JDJ_AUTH.chipName), ['장대장 님', '내 정보', '내 정보', '내 정보', 'kim 님', '홍길동이름이아주아주긴사 님']);
 console.log(`모닝 브리핑 화면 계산 검증: ${pass}개 통과, ${fail}개 실패`);
 process.exit(fail ? 1 : 0);

@@ -14,7 +14,7 @@
 <script src="../../assets/stat.js?v=7"></script>
 <script src="../../assets/config.js?v=4"></script>
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/auth.js?v=3"></script>
+<script src="../../assets/auth.js?v=4"></script>
 <script src="../../assets/pay.js?v=3"></script>
 <script src="../../assets/brief-core.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -65,6 +65,7 @@ async function draw(note){
   if (!A || !A.on() || !A.user()) { main.innerHTML = `<h1>내 구독 관리</h1><p class="lead">카카오로 로그인하면 구독 상태를 보고 바꿀 수 있어요.</p>${A && A.on() ? A.btn('카카오로 로그인', 'brief_manage') : ''}`; return; }
   let r; try { r = await call('briefMine'); } catch(e){ main.innerHTML = `<h1>내 구독 관리</h1><div class="msg err">${esc(e.message)}</div>`; return; }
   const cy = r.brief.cy || {};
+  try { const td = new Date().toISOString().slice(0, 10); localStorage.setItem('jdj_brief_sub', r.subs.some(x => x.active || (x.start > td && x.state !== '해지')) ? '1' : '0'); } catch(e){}
   main.innerHTML = `<span class="tag">${esc(B.NAME)}</span><h1>내 구독 관리</h1>${note ? `<div class="msg info">${note}</div>` : ''}
     <section class="sb" id="ed"><h2>받는 지역·관심 단지·청약 정보</h2>
       <p class="note" style="margin-top:0">일반은 ${B.PRICE.brief.areas}곳, 중개사용은 ${B.PRICE.brief_pro.areas}곳까지 보내 드려요.</p>

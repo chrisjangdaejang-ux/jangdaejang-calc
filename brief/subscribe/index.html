@@ -14,7 +14,7 @@
 <script src="../../assets/stat.js?v=7"></script>
 <script src="../../assets/config.js?v=4"></script>
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/auth.js?v=3"></script>
+<script src="../../assets/auth.js?v=4"></script>
 <script src="../../assets/pay.js?v=3"></script>
 <script src="../../assets/brief-core.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -83,6 +83,7 @@ async function boot(){
   st.kakao = !!(cfg && cfg.channels && cfg.channels.kakao);
   st.trialUsed = !!(mine && mine.trialUsed);
   st.active = !!(mine && mine.subs.some(x => x.active || x.start > new Date().toISOString().slice(0, 10) && x.state !== '해지'));
+  try { if (mine) localStorage.setItem('jdj_brief_sub', st.active ? '1' : '0'); } catch(e){}
   const sv = (me && me.data && me.data.brief) || (mine && mine.brief) || { areas: [], apts: [] };
   st.areas = (sv.areas || []).slice(); st.apts = (sv.apts || []).slice();
   const d0 = B.parseD(Q.get('d'));
@@ -142,7 +143,7 @@ async function boot(){
   if ($('trial')) $('trial').onclick = async () => {
     const b = $('trial');
     try { const x = base(); busy(b, true, '시작하는 중…'); await saveAreas(); const r = await call('briefTrial', x);
-      msg(`무료 체험을 시작했어요(${esc(r.sub.start)} ~ ${esc(r.sub.end)}). 내일 아침부터 ${esc(r.sub.contact)}(으)로 보내 드려요. <a href="../manage/">내 구독 관리</a>`); b.remove();
+      msg(`무료 체험을 시작했어요(${esc(r.sub.start)} ~ ${esc(r.sub.end)}). 내일 아침부터 ${esc(r.sub.contact)}(으)로 보내 드려요. <a href="../manage/">내 구독 관리</a>`); b.remove(); try { localStorage.setItem('jdj_brief_sub', '1'); } catch(e){}
       if (window.JDJ && JDJ.track) JDJ.track('brief_trial_start', { n: st.areas.length });
     } catch(e){ busy(b, false, `${B.TRIAL_DAYS}일 무료로 시작하기`); msg(esc(e.message), 1); }
   };

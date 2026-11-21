@@ -26,8 +26,9 @@
 <script src="../assets/stat.js?v=7"></script>
 <script src="../assets/config.js?v=4"></script>
 <script src="../assets/agents.js"></script>
-<script src="../assets/auth.js?v=3"></script>
+<script src="../assets/auth.js?v=4"></script>
 <script src="../assets/brief-core.js?v=4"></script>
+<script src="../assets/plain-words.js?v=13" defer></script>
 <script src="../assets/tabbar.js?v=2" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -141,6 +142,59 @@ details.how p{font-size:14.5px;color:var(--sub);line-height:1.65;margin:4px 0 10
 .bc .mk em.dn{background:#E8F0FF;color:#1F4FD1}
 .bc .mk b{display:block;font-size:34px;font-weight:900;letter-spacing:-1px;line-height:1.25}
 .bc .mk span{display:block;font-size:25px;font-weight:700;color:#3E4754}
+/* ---- 판매 화면(구독 전 첫 화면) ---- */
+.sl{max-width:960px;margin:0 auto}
+.sl-hero{text-align:center;padding:14px 4px 6px}
+.sl-hero .k{display:inline-block;font-size:14px;font-weight:800;color:var(--blue);background:#EEF3FF;border-radius:999px;padding:4px 12px;margin:0 0 10px}
+.sl-hero h1{font-size:clamp(26px,5.4vw,40px);line-height:1.3;margin:0 0 10px;word-break:keep-all}
+.sl-hero p{font-size:16.5px;color:var(--sub);line-height:1.65;margin:0 auto 14px;max-width:640px;word-break:keep-all}
+.sl-cta{display:flex;flex-direction:column;align-items:center;gap:6px}
+.sl-cta .btn{min-width:280px;font-size:17px}
+.sl-cta small{font-size:13.5px;color:var(--sub2)}
+.sl-sec{margin:34px 0 0}
+.sl-sec>h2{font-size:clamp(21px,4vw,27px);font-weight:900;margin:0 0 6px;text-align:center;word-break:keep-all}
+.sl-sec>.d{text-align:center;color:var(--sub);font-size:15.5px;line-height:1.6;margin:0 auto 14px;max-width:640px;word-break:keep-all}
+.who{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.who div{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:#fff;font-size:15px;line-height:1.5}
+.who b{display:block;font-size:16px;margin:0 0 2px}
+.cards3{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:10px}
+.fc{border:1px solid var(--line);border-radius:16px;padding:14px 16px;background:#fff;display:flex;flex-direction:column;gap:6px}
+.fc.main{border-color:#D6E2FF;background:#F8FAFF}
+.fc h3{margin:0;font-size:17.5px;font-weight:900;display:flex;align-items:center;gap:8px}
+.fc h3 .n{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-size:13px}
+.fc p{margin:0;font-size:15px;line-height:1.6;color:var(--text);word-break:keep-all}
+.fc .g{color:#0E7A4F;font-weight:700}
+.fc .ex{font-size:13.5px;color:var(--sub);background:var(--gray);border-radius:10px;padding:8px 10px;line-height:1.55}
+.fc .ex b{color:var(--sub2);font-weight:800;margin-right:4px}
+.term{font-size:13.5px;color:var(--sub2)}
+.term b{color:var(--text)}
+.pv{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.pv figure{margin:0;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}
+.pv img{display:block;width:100%;height:auto}
+.pv figcaption{font-size:13.5px;color:var(--sub2);padding:8px 12px;line-height:1.5}
+.trust{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.trust div{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff;font-size:15px;line-height:1.6}
+.trust b{display:block;font-size:16px;margin:0 0 4px}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+.plan{border:1px solid var(--line);border-radius:18px;padding:16px;background:#fff}
+.plan.pro{border-color:#D6E2FF;background:#F8FAFF}
+.plan h3{margin:0 0 4px;font-size:17px}
+.plan .pr{font-size:28px;font-weight:900;margin:0 0 6px}
+.plan .pr small{font-size:14px;font-weight:600;color:var(--sub2)}
+.plan ul{margin:0;padding-left:18px;font-size:14.5px;line-height:1.7;color:var(--sub)}
+.plan .tag2{display:inline-block;font-size:12.5px;font-weight:800;color:#C2410C;background:#FDECE4;border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:2px}
+.promise{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.promise li{font-size:14px;font-weight:700;background:#EEF8F2;color:#0E7A4F;border-radius:999px;padding:5px 12px}
+.faq details{border:1px solid var(--line);border-radius:14px;padding:4px 14px;margin:0 0 8px;background:#fff}
+.faq summary{cursor:pointer;font-weight:800;min-height:46px;display:flex;align-items:center;font-size:15.5px}
+.faq p{margin:2px 0 12px;font-size:15px;color:var(--sub);line-height:1.65}
+.sl-end{margin:34px 0 0;padding:22px 16px;border-radius:20px;background:linear-gradient(180deg,#F4F7FF,#fff);border:1px solid #D6E2FF;text-align:center}
+.sl-end h2{margin:0 0 8px;font-size:22px}
+.sl-pick{margin:30px 0 0;border-top:1px solid var(--line);padding-top:18px}
+.sl-pick h2{font-size:18px;margin:0 0 4px}
+.mini{border:1px solid #D6E2FF;background:#F4F7FF;border-radius:14px;padding:10px 14px;margin:0 0 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:14.5px;line-height:1.5}
+.mini .btn{min-height:42px;padding:0 14px;font-size:14.5px}
+@media(min-width:900px){.wrap.sales{max-width:960px}}
 /* ---- 처음 온 분 안내(맨 위) ---- */
 .bi{padding-bottom:0}
 .bi .bi-in{border:1px solid #D6E2FF;background:#F4F7FF;border-radius:18px;padding:16px 16px 14px}
@@ -161,18 +215,9 @@ body.cardmode>header.top,body.cardmode>.foot,body.cardmode>.wrap,body.cardmode .
   <a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>집예보</a>
   <div class="badge plain" data-brief-name>집예보 모닝 브리핑</div>
 </header>
-<section class="wrap bi" aria-labelledby="bi-h"><div class="bi-in">
-  <p class="bi-k">매일 아침 7~8시 · 카카오톡으로 도착</p>
-  <h2 id="bi-h">아침마다 부동산 소식 3가지를 한 번에 보내 드려요</h2>
-  <ol><li><b>① 오늘의 부동산 시장</b><small>전국·서울 신고가·큰 하락 거래, 금리·대출·세금, 이번 주 청약</small></li>
-    <li><b>② 내 관심 지역</b><small>고른 동네의 어제 새로 올라온 실거래·전세</small></li>
-    <li><b>③ 내 관심 단지</b><small>찜한 단지의 새 거래만 따로</small></li></ol>
-  <a class="btn primary" href="subscribe/" data-track="brief_intro_sub">7일 무료로 받아 보기</a>
-  <p class="bi-n">결제 수단 등록 없이 시작하고, 자동 결제는 없어요. 카카오톡 알림이 열리기 전에는 이메일로 보내 드려요.</p>
-</div></section>
 <main class="wrap" id="main"><p class="note">브리핑을 불러오고 있어요…</p></main>
 <div id="cardRoot"></div>
-<footer class="foot">국토교통부 실거래 공개 자료·청약홈 공고·<span data-site-name>집예보</span> 정책 목록으로 만든 브리핑이에요. 만드는 방법은 이 화면 아래 '이 브리핑은 이렇게 만들어요'에서 볼 수 있어요.<br>★ <span data-site-name>집예보</span> · <a href="../">홈</a> · <a href="../refund/">환불 정책</a> · <a href="../terms/">이용약관</a></footer>
+<footer class="foot">국토교통부 실거래 공개 자료·청약홈 공고·<span data-site-name>집예보</span> 정책 목록으로 만든 브리핑이에요.<br>★ <span data-site-name>집예보</span> · <a href="../">홈</a> · <a href="../refund/">환불 정책</a> · <a href="../terms/">이용약관</a></footer>
 <script>
 (function(){
 'use strict';
@@ -229,7 +274,7 @@ function fold(items, n, id){ return `<ul class="tl" id="${id}">${items.slice(0, 
 function foldBox(items, n, id){ return `<div id="${id}">${items.slice(0, n).join('')}</div>` + (items.length > n ? `<button type="button" class="more" data-more="${id}">${items.length - n}곳 더 보기</button><template id="${id}-t">${items.slice(n).join('')}</template>` : ''); }
 function bindMore(){ document.querySelectorAll('[data-more]').forEach(b => b.onclick = () => { const id = b.dataset.more; $(id).insertAdjacentHTML('beforeend', $(id + '-t').innerHTML); b.remove(); }); }
 function marketHtml(M){
-  if (!M) return `<section class="part" aria-labelledby="h-m"><h2 id="h-m"><span class="no">1</span>오늘의 부동산 시장</h2><div class="empty">오늘의 전국 시장 자료를 아직 만들지 못했어요. 내일 아침부터 보여 드려요.</div></section>`;
+  if (!M) return '';
   const K = M[MKT_SCOPE] || {}, wt = B.windowText(M.win) || '새로 올라온';
   const old = S0date && M.date !== S0date ? ` · ${esc(B.dateLabel(M.date))} 자료` : '';
   let h = `<section class="part" id="mkt" aria-labelledby="h-m"><h2 id="h-m"><span class="no">1</span>오늘의 부동산 시장 <small>전국 공통${old}</small></h2>
@@ -253,7 +298,7 @@ function marketHtml(M){
   h += `<div class="sec"><h2>청약 기회</h2><p class="sub">접수가 끝나지 않은 공고 중 분양가가 주변 신축·준신축 시세 대비 '하위 구간에 가까운' 면적대예요(${esc(B.SITE)} 청약 분양가 분석).</p>
     ${cyo.length ? cyo.slice(0, 5).map(n => `<div class="box"><b>${esc(n.n)}</b> <span class="tg x">${esc([n.sd, n.g].filter(Boolean).join(' '))}</span><br>${n.low.map(b => `${['60㎡ 이하', '60~85㎡', '85㎡ 초과'][b.b]} 분양가 3.3㎡당 ${Number(b.ppy).toLocaleString('ko-KR')}만 원 · 주변(${esc(b.scope)} ${b.n}건) 하위 구간에 가까워요`).map(esc).join('<br>')}<br><small>접수 ${esc(B.ds(n.rc[0]))}${n.rc[1] && n.rc[1] !== n.rc[0] ? '~' + esc(B.ds(n.rc[1])) : ''}</small>${n.u ? ` · <a href="${esc(n.u)}" target="_blank" rel="noopener">청약홈 공고</a>` : ''}</div>`).join('') : '<div class="empty">지금 주변 시세 대비 하위 구간에 가까운 공고는 없어요.</div>'}
     ${MYCY ? `<h3 style="font-size:16px;margin:12px 0 6px">내 가점 ${esc(MYCY.score)}점으로 넣어 볼 만한 단지</h3>${mm.length ? mm.slice(0, 6).map(x => `<div class="box"><b>${esc(x.n.n)}</b> <span class="tg ${x.g === 'hi' ? 'hi' : 'x'}">${esc(x.label)}</span><br>${esc(x.band)} 예상 최저 당첨 가점 ${x.lo}~${x.hi}점</div>`).join('') : '<div class="empty">지금 공고 중 내 가점이 예상 범위에 드는 곳이 없어요.</div>'}<p class="sub">예상 당첨 가점은 청약 화면과 같은 값(과거 당첨 결과로 만든 범위)이에요. 가점은 <a href="manage/">구독 관리</a>에서 바꿀 수 있어요.</p>` : '<p class="sub">구독 관리에서 청약 가점을 넣어 두면 넣어 볼 만한 단지를 골라 드려요.</p>'}</div>`;
-  if (M.score) h += `<div class="sec"><h2>지난 예측 성적</h2><div class="box">${esc(M.score.m)} 공개 예측(${M.score.h}년) 최종 채점: 미래가치 상위 20% 단지가 하위 20%보다 ${esc(B.pct(M.score.diff))}p ${M.score.hit ? '더 올랐어요(맞음)' : '덜 올랐어요(틀림)'}.</div></div>`;
+  if (M.score) h += `<div class="sec"><h2>지난 예측 성적</h2><div class="box">${esc(M.score.m)}에 공개한 ${M.score.h}년 예측을 실제 결과와 맞춰 보니, 미래가치 상위 20% 단지가 하위 20%보다 ${esc(B.pct(M.score.diff))}p ${M.score.hit ? '더 올랐어요(맞음)' : '덜 올랐어요(틀림)'}.</div></div>`;
   const rt = B.rateText(M.rate);
   h += `<div class="sec"><h2>금리·대출·세금</h2><p class="sub">${esc(B.SITE)} 정책 목록(공식 발표·국회·법제처로 확인한 것)에서 최근 ${M.policy_days || 14}일 안에 단계가 바뀐 것만 보여 드려요.</p>
     ${rt.length ? `<div class="box">${rt.map(esc).join('<br>')}<br><small>한국은행 통계(KOSIS) 월 자료예요.</small></div>` : ''}
@@ -319,7 +364,7 @@ function render(S, M){
   document.title = `${area} ${B.NAME} ${B.dateLabel(S.date)}`;
   S0date = S.date;
   const dongs = (S.dongs || []).filter(x => x[1] + x[3] > 0);
-  let h = `<span class="tag">${esc(B.NAME)}</span>
+  let h = (isSub() ? '' : `<div class="mini"><span><b>${esc(B.NAME)}</b> · 이 브리핑을 매일 아침 받아 보세요. 7일 무료, 결제 수단 없이 시작해요.</span><a class="btn primary" href="subscribe/?d=${encodeURIComponent(B.dKey(S.g, dn))}" data-track="brief_mini_sub">7일 무료로 받아 보기</a></div>`) + `<span class="tag">${esc(B.NAME)}</span>
   <h1>${esc(B.dateLabel(S.date))} 아침</h1>
   <p class="meta">① 오늘의 부동산 시장 · ② 내 관심 지역 ${esc(area)} · ③ 내 관심 단지</p>
   ${marketHtml(M)}
@@ -431,28 +476,134 @@ async function saveCard(S, dn, btn){
   function dl(b, n){ const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = n; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); btn.textContent = '저장했어요'; T('brief_card_save'); }
 }
 
-/* ---------- 동네 고르기(주소에 동네가 없을 때) ---------- */
-async function chooser(){
-  const [IX, M] = await Promise.all([J(B.DATA + 'index.json'), J(B.DATA + 'market.json')]);
+/* ---------- 구독 여부(이 기기에서 확인한 값) ---------- */
+function isSub(){ try { return localStorage.getItem('jdj_brief_sub') === '1'; } catch(e){ return false; } }
+async function checkSub(){
+  const A = window.JDJ_AUTH, api = (window.JDJ_AGENTS || {}).api;
+  if (!A || !A.on || !A.on() || !A.user() || !api) return null;
+  try {
+    const s = (JSON.parse(localStorage.getItem('jdj_auth') || 'null') || {}).s || '';
+    const r = await fetch(api, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'briefMine', s }) }).then(x => x.json());
+    if (!r || !r.ok) return null;
+    const today = new Date().toISOString().slice(0, 10);
+    const on = !!(r && r.subs && r.subs.some(x => x.active || (x.start > today && x.state !== '해지')));
+    try { localStorage.setItem('jdj_brief_sub', on ? '1' : '0'); } catch(e){}
+    return on ? r : null;
+  } catch(e){ return null; }
+}
+
+/* ---------- 판매 화면(구독 전 첫 화면) — 예시 숫자는 실제 공개 자료(11/16 확인 → 11/20 확인 사이 처음 보인 거래, 11/21 브리핑)에서 그대로 ---------- */
+const EX_DATE = '2026년 11월 21일 브리핑 예시';
+function fc(o){
+  return `<div class="fc ${o.main ? 'main' : ''}"><h3>${o.n ? `<span class="n">${o.n}</span>` : ''}${esc(o.t)}</h3>
+    <p>${o.what}</p><p class="g">${o.good}</p>${o.term ? `<p class="term">${o.term}</p>` : ''}${o.ex ? `<p class="ex"><b>예시</b>${o.ex}</p>` : ''}</div>`;
+}
+function salesHtml(IX, MH){
+  const SITE = esc(B.SITE), P1 = B.PRICE.brief, P2 = B.PRICE.brief_pro, TD = B.TRIAL_DAYS;
+  const cta = (id) => `<a class="btn primary" href="subscribe/" data-track="brief_sales_${id}">${TD}일 무료로 받아 보기</a>`;
+  const PL = window.JDJ_PLAIN, m2 = MH && MH['2'];
+  const track = PL && PL.VOK && PL.trackHead && PL.VOK(m2) ? PL.trackHead(m2, 2, { what: `${B.SITE} 미래가치 점수` }) : '';
   const areas = (IX && IX.areas) || [];
-  const sds = [...new Set(areas.map(a => a.sd))];
-  $('main').innerHTML = `<span class="tag">${esc(B.NAME)}</span>
-    <h1>오늘 부동산 시장과<br>내 동네 소식을 한 번에</h1>
-    <p class="lead">전국·서울에서 어제 새로 올라온 신고가와 큰 하락 거래, 금리·대출·세금 정책 변화, 이번 주 청약 일정에 더해 고른 동네(시·군·구 또는 동)와 관심 단지의 새 거래를 매일 아침 정리해 드려요.</p>
-    ${marketHtml(M)}
-    <section class="part" aria-labelledby="h-pick"><h2 id="h-pick"><span class="no">2</span>내 관심 지역 고르기</h2>
-    <ul class="feat"><li><b>새로 올라온 실거래</b>어제 새로 신고가 반영된 매매·전세를 동별로, 신고가와 최고가 대비 하락까지 표시해요.</li>
-      <li><b>오늘의 한 줄</b>사실 → 비교 → 의미 순서로 짧게. 과거 사례 근거가 있을 때만 '그래서'를 붙여요.</li>
-      <li><b>중개사용</b>손님에게 할 이야기 3줄과 바로 보낼 수 있는 1080×1080 공유 카드를 함께 드려요.</li></ul>
-    <div class="pick"><select id="pSd" aria-label="시·도">${sds.map(s => `<option>${esc(s)}</option>`).join('')}</select><select id="pG" aria-label="시·군·구"></select>
+  return `<div class="sl">
+  <section class="sl-hero" aria-labelledby="sl-h">
+    <span class="k">${esc(B.NAME)}</span>
+    <h1 id="sl-h">매일 아침 7시,<br>내가 고른 동네의 집값 변화와<br>놓치면 안 될 기회를 한 번에</h1>
+    <p>어제 새로 신고된 거래, 시세보다 싸게 나온 집, 다시 오르기 시작한 단지, 넣어 볼 만한 청약까지. 바쁜 아침에 3분이면 다 읽어요.</p>
+    <div class="sl-cta">${cta('top')}<small>결제 수단 등록 없이 시작 · 자동 결제 없음 · 언제든 해지</small></div>
+  </section>
+
+  <section class="sl-sec" aria-labelledby="sl-who"><h2 id="sl-who">이런 분께 필요해요</h2>
+    <div class="who">
+      <div><b>집 살 타이밍을 보는 분</b>내 동네 값이 오르는지 내리는지 매일 확인해요.</div>
+      <div><b>갈아타기를 고민하는 분</b>지금 집과 갈 집, 두 동네를 같이 지켜봐요.</div>
+      <div><b>청약을 준비하는 분</b>내 점수로 넣어 볼 만한 단지를 골라 드려요.</div>
+      <div><b>전세 들어갈 집이 걱정되는 분</b>전세금이 위험해지는 단지를 미리 알려 드려요.</div>
+      <div><b>공인중개사</b>손님께 할 이야기 3줄과 보낼 카드를 매일 만들어 드려요.</div>
+    </div></section>
+
+  <section class="sl-sec" aria-labelledby="sl-what"><h2 id="sl-what">매일 아침 받는 것</h2>
+    <p class="d">큰 줄기 3가지에 코너 6개가 붙어요. 예시 숫자는 모두 실제 공개 자료에서 가져왔어요(${EX_DATE}).</p>
+    <div class="cards3">
+      ${fc({ main: 1, n: '1', t: '오늘의 부동산 시장', what: '전국·서울에서 어제 새로 신고된 아파트 거래 중 가장 비싸게 팔린 집과 크게 싸게 팔린 집, 금리·대출·세금 정책 변화, 이번 주 청약 일정을 정리해요.',
+        good: '뉴스를 따로 찾아보지 않아도 오늘 시장 분위기를 1분 만에 알아요.', term: '<b>신고가</b> = 그 아파트가 지금까지 팔린 값 중 가장 비싼 값',
+        ex: '전국 새 아파트 매매 5,949건 중 신고가 524건 · 가장 비싼 신고가: 서울 강남구 압구정동 현대10차(201,202동) 150㎡ 이상 70억 원(이전 최고 65억 5,000만 원)' })}
+      ${fc({ main: 1, n: '2', t: '내 관심 지역', what: '고른 동네(구 전체 또는 동)에 어제 새로 올라온 매매·전세 거래와, 같은 아파트·같은 평형끼리 비교한 가격 흐름을 알려 드려요.',
+        good: '내 동네 집값이 실제로 오르는지 내리는지 거래로 확인해요.',
+        ex: '서울 도봉구: 새 매매 21건 중 신고가 5건 · 최근 30일 계약 117건을 같은 아파트·같은 평형의 직전 3개월과 비교하면 중간 +3.8%' })}
+      ${fc({ main: 1, n: '3', t: '내 관심 단지', what: '찜해 둔 아파트의 새 거래·전세·급매·순위 변화만 따로 모아요.',
+        good: '관심 있는 집 소식을 남보다 먼저 받아요.', ex: '송파구 헬리오시티 49㎡대 24억 7,000만 원(11/6 계약) — 이전 최고 24억 5,000만 원을 넘은 신고가' })}
+      ${fc({ t: '급매 레이더', what: '어제 새로 올라온 거래 중 같은 아파트·같은 평형의 최근 3개월 거래 중간값보다 10% 넘게 싸게 팔린 집을 찾아요. 가족 간 거래처럼 보통 거래가 아닐 수 있는 건은 따로 표시해요.',
+        good: '시세보다 싼 거래를 남보다 먼저 봐요.', term: '<b>급매</b> = 주인이 급해서 시세보다 싸게 내놓은 집',
+        ex: '도봉구 창동 대우 84㎡대 5억 원(10/23 계약) — 최근 3개월 같은 평형 중간값 7억 3,700만 원(4건)보다 32% 낮아 ‘특수 거래 의심’으로 따로 표시' })}
+      ${fc({ t: '상승 전환 신호', what: '최근 6개월 거래가 크게 늘었고, 시세가 내리다가 최근 3개월 다시 오르기 시작한 단지를 골라요.',
+        good: '분위기가 바뀌는 단지를 일찍 알아차려요.', term: '과거 사례가 충분할 때만 근거 숫자를 함께 보여 드려요.',
+        ex: '송파구 잠실동 트리지움 135㎡대: 직전 3개월 −2.7% → 최근 3개월 +7.0% · 근거: 서울에서 과거 4번의 시기에 거래량이 크게 는 단지 2,006곳 중 52%가 2년 뒤 같은 구 평균보다 더 올랐어요' })}
+      ${fc({ t: '미래가치 순위 변화', what: `${SITE} 미래가치 점수로 매긴 같은 시·도 안 등수가 일주일 사이 10계단 넘게 바뀐 단지를 알려 드려요.`,
+        good: '앞으로 더 오를 쪽으로 평가가 바뀐 단지를 놓치지 않아요.', term: '<b>미래가치 점수</b> = 같은 구 평균보다 더 오를지 공공 자료로 매긴 점수' })}
+      ${fc({ t: '청약 기회', what: '접수가 끝나지 않은 청약 중 분양가가 주변 새 아파트 시세보다 낮은 편인 곳을 골라요. 가점을 넣어 두면 내 점수로 넣어 볼 만한 단지도 알려 드려요.',
+        good: '넣을 만한 청약을 놓치지 않아요.', term: '<b>가점</b> = 청약 당첨 순서를 정하는 점수(84점 만점)',
+        ex: '서울 영등포구 해링턴 플레이스 문래 60~85㎡: 분양가 3.3㎡당 6,945만 원 — 반경 1km 주변 새 아파트 거래 15건과 비교해 낮은 쪽에 가까워요' })}
+      ${fc({ t: '전세가율 급변', what: '최근 3개월 사이 전세가율이 크게 오르거나 내린 단지를 알려 드려요.',
+        good: '전세 들어갈 집의 위험과, 적은 돈으로 살 기회를 함께 봐요.', term: '<b>전세가율</b> = 집값에서 전세금이 차지하는 비율. 높으면 적은 돈으로 살 수 있지만, 전세금을 못 돌려받을 위험도 커져요.',
+        ex: '송파구 헬리오시티 40㎡ 이하: 전세가율 40% → 33%' })}
+      ${fc({ t: '내 집 세금 캘린더', what: '내 집 정보를 저장해 두면 비과세 보유 2년, 장기보유특별공제가 올라가는 날, 재산세·종부세 기준일(6월 1일)까지 남은 날을 알려 드려요.',
+        good: '파는 날 하루 차이로 세금이 크게 달라지는 일을 막아요.', term: '<b>장기보유특별공제</b> = 오래 가진 집을 팔 때 세금을 깎아 주는 제도', ex: '2025년 3월에 산 집 → 2027년 3월에 보유 2년' })}
+    </div></section>
+
+  <section class="sl-sec" aria-labelledby="sl-pv"><h2 id="sl-pv">실제 브리핑은 이렇게 와요</h2>
+    <p class="d">아래는 실제 공개 자료로 만든 ${EX_DATE} 카드예요. 전체 브리핑은 이 카드보다 훨씬 자세해요.</p>
+    <div class="pv"><figure><img src="img/sample_jamsil.jpg" width="720" height="720" loading="lazy" alt="서울 송파구 잠실동 모닝 브리핑 예시 카드: 새 매매 3건, 신고가 0건, 같은 단지 최근 30일 −5.2%"><figcaption>일반: 송파구 잠실동</figcaption></figure>
+      <figure><img src="img/sample_pro_changdong.jpg" width="720" height="720" loading="lazy" alt="서울 도봉구 창동 중개사용 예시 카드: 새 매매 10건, 신고가 3건, 주공19단지 99㎡대 12억 4,000만 원 신고가"><figcaption>중개사용 손님 공유 카드: 도봉구 창동</figcaption></figure></div>
+    ${areas.length ? `<div class="row2" style="justify-content:center;margin-top:10px"><a class="btn" href="?d=11710-${encodeURIComponent('잠실동')}" data-track="brief_sales_ex">오늘 브리핑 예시 전체 보기</a></div>` : ''}</section>
+
+  <section class="sl-sec" aria-labelledby="sl-tr"><h2 id="sl-tr">왜 믿을 수 있나요</h2>
+    <div class="trust">
+      <div><b>공공 자료만 써요</b>국토교통부 아파트 실거래가 공개 자료, 청약홈(한국부동산원) 분양 공고, 한국은행·통계청 통계로 계산해요. 소문이나 호가는 쓰지 않아요.</div>
+      <div><b>숫자를 지어내지 않아요</b>비교할 거래가 적으면 '자료 부족'으로 비워 두고, 과거 사례 근거가 없으면 '그래서 오를 거예요' 같은 말을 하지 않아요.</div>
+      <div><b>과거에 그대로 써 본 기록</b>${track ? esc(track) : `${SITE}의 미래가치 점수가 과거에 얼마나 맞았는지는 <a href="../about/">서비스 소개</a>에서 볼 수 있어요.`}</div>
+    </div></section>
+
+  <section class="sl-sec" aria-labelledby="sl-pr"><h2 id="sl-pr">요금</h2>
+    <div class="plans">
+      <div class="plan"><h3>일반</h3><p class="pr">월 ${P1.amount.toLocaleString('ko-KR')}원</p><ul><li>관심 지역 ${P1.areas}곳 + 관심 단지</li><li>오늘의 부동산 시장 + 6개 코너</li><li>커피 한 잔보다 싼 값</li></ul></div>
+      <div class="plan pro"><h3>중개사용<span class="tag2">런칭가</span></h3><p class="pr">월 ${P2.amount.toLocaleString('ko-KR')}원</p><ul><li>관심 지역 ${P2.areas}곳</li><li>손님께 할 이야기 3줄(복사 버튼)</li><li>손님에게 보낼 정사각형 카드 이미지</li></ul></div>
+    </div>
+    <ul class="promise"><li>${TD}일 무료</li><li>결제 수단 없이 시작</li><li>자동 결제 없음</li><li>언제든 해지</li><li>지역은 언제든 바꾸기</li></ul></section>
+
+  <section class="sl-sec faq" aria-labelledby="sl-q"><h2 id="sl-q">자주 묻는 질문</h2>
+    <details><summary>정말 무료로 시작할 수 있나요?</summary><p>네. 처음 ${TD}일은 무료이고, 카드 번호 같은 결제 수단을 미리 넣지 않아요. ${TD}일이 지나도 자동으로 돈이 나가지 않아요. 계속 받고 싶을 때만 1개월 이용권을 사시면 돼요.</p></details>
+    <details><summary>언제, 어디로 받나요?</summary><p>매일 아침 7시대에 보내 드려요(자료가 늦으면 9시대). 지금은 이메일로 보내 드리고, 카카오톡 알림이 열리면 카카오톡으로도 받을 수 있어요. 같은 내용을 웹에서도 볼 수 있어요.</p></details>
+    <details><summary>동네는 바꿀 수 있나요?</summary><p>언제든 바꿀 수 있어요. 구독 관리 화면에서 바꾸면 다음 날 아침 브리핑부터 바뀐 동네로 보내 드려요. 관심 단지와 청약 가점도 같은 화면에서 바꿔요.</p></details>
+    <details><summary>부동산을 잘 몰라도 읽을 수 있나요?</summary><p>네. 어려운 말은 처음 나올 때 쉬운 말로 풀어 드리고, 숫자는 '얼마에 팔렸고, 전보다 얼마나 비싼지'처럼 바로 이해되게 써요.</p></details>
+    <details><summary>해지하거나 환불받을 수 있나요?</summary><p>언제든 해지할 수 있어요. 첫 브리핑을 받기 전이면 전액, 받기 시작한 뒤에는 남은 날만큼 돌려 드려요. 자세한 내용은 <a href="../refund/">환불 정책</a>에 있어요.</p></details>
+  </section>
+
+  <section class="sl-end"><h2>내일 아침부터 받아 보세요</h2><div class="sl-cta">${cta('end')}<small>${TD}일 무료 · 결제 수단 없이 시작 · 언제든 해지</small></div></section>
+
+  ${areas.length ? `<section class="sl-pick" aria-labelledby="h-pick"><h2 id="h-pick">먼저 내 동네 오늘 브리핑 보기</h2><p class="sub">구독하기 전에 고른 동네의 오늘 브리핑을 웹에서 볼 수 있어요.</p>
+    <div class="pick"><select id="pSd" aria-label="시·도">${[...new Set(areas.map(a => a.sd))].map(x => `<option>${esc(x)}</option>`).join('')}</select><select id="pG" aria-label="시·군·구"></select>
       <select id="pDn" class="full" aria-label="동"><option value="">구 전체</option></select></div>
-    <div class="row2"><button type="button" class="btn primary" id="pGo">오늘 브리핑 보기</button><a class="btn" href="?d=11710-${encodeURIComponent('잠실동')}">예시: 송파구 잠실동</a><a class="btn" href="?d=11320-${encodeURIComponent('창동')}">예시: 도봉구 창동</a></div>
-    <p class="note">${IX ? `오늘(${esc(B.dateLabel(IX.date))}) 브리핑이 준비된 동네 ${IX.n}곳` : '브리핑 목록을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.'}</p></section>`;
-  bindMarket(M); bindMore();
-  const fillG = () => { const sd = $('pSd').value; $('pG').innerHTML = areas.filter(a => a.sd === sd).map(a => `<option value="${a.g}">${esc(a.name)}</option>`).join(''); fillDn(); };
-  const fillDn = async () => { const g = $('pG').value; $('pDn').innerHTML = '<option value="">구 전체</option>'; if (!g) return; const S = await J(B.DATA + g + '.json'); if (S && $('pG').value === g) $('pDn').innerHTML += (S.dongs || []).map(x => `<option>${esc(x[0])}</option>`).join(''); };
-  $('pSd').onchange = fillG; $('pG').onchange = fillDn; fillG();
-  $('pGo').onclick = () => { const g = $('pG').value; if (g) location.search = url(g, $('pDn').value, false); };
+    <div class="row2"><button type="button" class="btn" id="pGo">오늘 브리핑 보기</button></div></section>` : ''}
+  </div>`;
+}
+async function chooser(){
+  $('main').classList.add('sales');
+  const [IX, MH] = await Promise.all([J(B.DATA + 'index.json'), J('/jangdaejang-data/data/model_h.json')]);
+  if (!window.JDJ_PLAIN) await new Promise(r => { addEventListener('DOMContentLoaded', r, { once: true }); setTimeout(r, 1500); });
+  document.title = `${B.NAME} — 매일 아침 내 동네 집값 변화와 기회를 한 번에`;
+  $('main').innerHTML = salesHtml(IX, MH);
+  T('brief_sales_view');
+  const areas = (IX && IX.areas) || [];
+  if (areas.length) {
+    const fillG = () => { const sd = $('pSd').value; $('pG').innerHTML = areas.filter(a => a.sd === sd).map(a => `<option value="${a.g}">${esc(a.name)}</option>`).join(''); fillDn(); };
+    const fillDn = async () => { const g = $('pG').value; $('pDn').innerHTML = '<option value="">구 전체</option>'; if (!g) return; const S = await J(B.DATA + g + '.json'); if (S && $('pG').value === g) $('pDn').innerHTML += (S.dongs || []).map(x => `<option>${esc(x[0])}</option>`).join(''); };
+    $('pSd').onchange = fillG; $('pG').onchange = fillDn; fillG();
+    $('pGo').onclick = () => { const g = $('pG').value; if (g) location.search = url(g, $('pDn').value, false); };
+  }
+  /* 이미 구독 중이면 내 첫 지역 브리핑으로 */
+  const r = await checkSub();
+  const a0 = r && r.brief && (r.brief.areas || [])[0];
+  if (a0) location.replace('?d=' + encodeURIComponent(B.dKey(a0.g, a0.dn)));
 }
 
 (async function(){

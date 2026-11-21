@@ -2375,7 +2375,7 @@ function briefMarketHtml(M, ub) {
     ${(M.rise || []).length ? `<b>상승 전환 신호 TOP</b>${li(M.rise.slice(0, 3).map(r => `${r.sd} ${r.d} ${r.a} ${r.b} 최근 3개월 ${r.chg > 0 ? '+' : ''}${r.chg}%`))}` : ''}
     ${M.rank && (M.rank.up || []).length ? `<b>미래가치 순위가 크게 오른 단지</b>${li(M.rank.up.slice(0, 3).map(r => `${r.sd} ${r.d} ${r.a} ${r.b} ${r.r0}위 → ${r.r1}위`))}` : ''}
     ${cyo.length ? `<b>청약 기회(주변 시세 대비 분양가 하위 구간에 가까움)</b>${li(cyo)}` : ''}${my.length ? `<b>내 가점 ${ub.cy.score}점으로 넣어 볼 만한 단지</b>${li(my)}` : ''}
-    ${M.score ? `<p style="margin:4px 0 8px;font-size:13.5px">지난 예측 성적: ${bEsc(M.score.m)} 공개 예측 ${M.score.h}년 최종 채점, 상위 20% 단지가 하위 20%보다 ${M.score.diff}%p ${M.score.hit ? '더 올랐어요' : '덜 올랐어요'}.</p>` : ''}
+    ${M.score ? `<p style="margin:4px 0 8px;font-size:13.5px">지난 예측 성적: ${bEsc(M.score.m)}에 공개한 ${M.score.h}년 예측을 실제 결과와 맞춰 보니 상위 20% 단지가 하위 20%보다 ${M.score.diff}%p ${M.score.hit ? '더 올랐어요' : '덜 올랐어요'}.</p>` : ''}
     <b>금리·대출·세금</b>${li(rate.concat(pol))}<b>이번 주 청약 일정${cy.n ? ` · 전국 ${cy.n}곳` : ''}</b>${li(cys)}
     <a href="${BRIEF_WEB}" style="font-size:13.5px;color:#2F6BFF">오늘의 시장 전체 보기</a></div>`;
 }

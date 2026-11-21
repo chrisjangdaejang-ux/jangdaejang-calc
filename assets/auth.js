@@ -193,6 +193,8 @@
     if (document.getElementById('jdjAuthCss')) return;
     const s = document.createElement('style'); s.id = 'jdjAuthCss'; s.textContent = CSS; document.head.appendChild(s);
   }
+  /* 머리줄 이름: 닉네임에 글자·숫자가 하나도 없으면(빈 값·'.' 같은 기호뿐) '내 정보' */
+  function chipName(nick) { const n = String(nick || '').trim(); return /[0-9A-Za-z\u3131-\u318E\uAC00-\uD7A3]/.test(n) ? `${n.slice(0, 12)} 님` : '내 정보'; }
   /* 머리줄 오른쪽: 로그인 전 '로그인', 로그인 뒤 '닉네임 님' → 내 계정(login/) */
   function paintChip() {
     if (!on() || typeof document === 'undefined') return;
@@ -205,10 +207,10 @@
       top.appendChild(wrap); rest.forEach(c => wrap.appendChild(c));
       a = document.createElement('a'); a.href = LOGIN_PAGE; wrap.prepend(a);
     }
-    const u = user();
+    const u = user(), nm = u ? chipName(u.nick) : '';
     a.className = 'jdj-acct' + (u ? '' : ' out');
-    a.textContent = u ? `${u.nick} 님` : '로그인';
-    a.setAttribute('aria-label', u ? `내 계정 (${u.nick} 님)` : '카카오 로그인');
+    a.textContent = u ? nm : '로그인';
+    a.setAttribute('aria-label', u ? `내 계정 (${nm})` : '카카오 로그인');
     if (!u) a.onclick = e => { if (location.pathname.indexOf(LOGIN_PAGE) === 0) return; e.preventDefault(); login('header'); };
     else a.onclick = null;
   }
@@ -222,5 +224,5 @@
     addEventListener('storage', e => { if (e.key === LS) emit(); });
   }
 
-  root.JDJ_AUTH = { on, user, onChange, login, finish, logout, withdraw, load, update, syncHomes, pushHomes, favs, isFav, toggleFav, saveReport, removeReport, removeFav, alerts, subscribe, unsubscribe, btn, gate, style, placeId, LOGIN_PAGE };
+  root.JDJ_AUTH = { chipName, on, user, onChange, login, finish, logout, withdraw, load, update, syncHomes, pushHomes, favs, isFav, toggleFav, saveReport, removeReport, removeFav, alerts, subscribe, unsubscribe, btn, gate, style, placeId, LOGIN_PAGE };
 })(typeof window !== 'undefined' ? window : this);
