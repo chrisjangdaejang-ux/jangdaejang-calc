@@ -76,6 +76,8 @@ check('분양대행: 이름·소속과 연락 방법만', [A2.broker, A2.err, A2
 check('비중개사: 이름 + 카카오톡만으로 됨(상호·사업자번호 없이)', ['seller', 'consult', 'licensed'].map(r => T.adBlock({ role: r, name: '김민수', kakao: 'https://pf.kakao.com/_abc' }).err), ['', '', '']);
 check('비중개사: 이름·연락처 둘 다 없으면 두 줄 안내', JDJ_PRO.profileErrors(JDJ_PRO.cleanProfile({ role: 'consult' })).length, 2);
 
+check('연락처 칸 이름(비중개사)', [JDJ_PRO.contactOf('consult').phone[0], JDJ_PRO.contactOf('consult').kakao[0]], ['전화번호', '카카오톡 채널·오픈채팅 주소']);
+check('연락처 안내 한 줄', JDJ_PRO.CONTACT_NOTE, '연락처: 둘 중 하나만 있으면 돼요.');
 /* 공인중개사가 아니면 '단지 분석 자료'(호가·동·층·메모 없음) */
 check('자료 종류: 공인중개사 → 매물 설명서', [T.kindOf(BROKER), T.kindOf(MEMBER)], ['listing', 'listing']);
 check('자료 종류: 비중개사 → 단지 분석 자료', ['seller', 'consult', 'licensed'].map(r => T.kindOf({ role: r, name: 'a', phone: '010-1111-2222' })), ['danji', 'danji', 'danji']);
@@ -198,8 +200,8 @@ const CP = fs.readFileSync(path.join(ROOT, 'agent/content/index.html'), 'utf8');
 yes('주간 글 화면: 복사·내려받기', ['cpBlog', 'dlTxt', 'dlMd', 'dlZip', 'cpCap'].every(id => CP.includes(`id="${id}"`)));
 yes('화면 문구에 회사명 없음', !/장대장부동산그룹/.test(CP + LP));
 const SW = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
-yes('sw: 새 파일 저장 목록', SW.includes('/assets/broker-tools.js?v=2') && SW.includes('/agent/listing/') && SW.includes('/agent/content/'));
-yes('페이지가 같은 판 번호를 씀', LP.includes('broker-tools.js?v=2') && CP.includes('broker-tools.js?v=2') && CP.includes('brief-core.js?v=7'));
+yes('sw: 새 파일 저장 목록', SW.includes('/assets/broker-tools.js?v=3') && SW.includes('/agent/listing/') && SW.includes('/agent/content/'));
+yes('페이지가 같은 판 번호를 씀', LP.includes('broker-tools.js?v=3') && CP.includes('broker-tools.js?v=3') && CP.includes('brief-core.js?v=7'));
 
 console.log(`중개사 도구 검사: ${ok}개 맞음, ${bad}개 틀림`);
 process.exit(bad ? 1 : 0);

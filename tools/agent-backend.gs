@@ -1620,14 +1620,14 @@ function kakaoLogin(b) {
   if (KAKAO_REDIRECTS.indexOf(redirect) < 0) throw new Error('로그인 주소가 등록된 주소와 달라요.');
   const P = PropertiesService.getScriptProperties();
   const rest = P.getProperty('KAKAO_REST_KEY'), secret = P.getProperty('KAKAO_CLIENT_SECRET');
-  if (!rest) throw new Error('카카오 로그인 서버 설정이 아직 끝나지 않았어요.');
+  if (!rest) throw new Error('카카오 간편 로그인 서버 설정이 아직 끝나지 않았어요.');
   const payload = { grant_type: 'authorization_code', client_id: rest, redirect_uri: redirect, code: code };
   if (secret) payload.client_secret = secret;
   const t = kakaoFetch('https://kauth.kakao.com/oauth/token', { method: 'post', payload: payload });
   const at = t.j && t.j.access_token;
   if (t.code !== 200 || !at) {
     const ec = uText((t.j && (t.j.error_code || t.j.error)) || ('HTTP ' + t.code), 40);   // 예: KOE010(클라이언트 시크릿), KOE006(리다이렉트 URI), KOE320(코드 재사용)
-    throw new Error('카카오 로그인을 마치지 못했어요. 다시 시도해 주세요. (' + ec + ')');
+    throw new Error('카카오 간편 로그인을 마치지 못했어요. 다시 시도해 주세요. (' + ec + ')');
   }
   let me;
   try {

@@ -484,13 +484,13 @@
     const PH = { seller: { office: '예: ○○분양대행(주)', title: '예: ○○역 ○○아파트 분양 상담', name: '예: 김민수 또는 활동명' }, consult: { office: '예: ○○부동산연구소, ○○TV', title: '예: ○○대 교수', name: '예: 김민수 또는 활동명' }, licensed: { office: '예: ○○세무회계', name: '예: 김민수' } };
     box.innerHTML = `<label class="bt-l" for="btRole">나는</label><select id="btRole">${Object.keys(R.ROLE).map(k => `<option value="${k}">${esc(R.ROLE[k].t)}</option>`).join('')}</select>
       <p class="bt-h" id="btRule"></p>
-      <div class="bt-two">${K.map(k => `<div data-f="${k}"><label class="bt-l" for="bt_${k}"></label>${k === 'title' ? `<input id="bt_${k}" list="btQuals">` : `<input id="bt_${k}"${k === 'phone' ? ' inputmode="tel"' : ''}>`}<p class="bt-h bt-why"></p></div>`).join('')}</div>
+      <div class="bt-two">${K.map(k => `${k === 'phone' ? '<p class="bt-cn" id="btCn"></p>' : ''}<div data-f="${k}"><label class="bt-l" for="bt_${k}"></label>${k === 'title' ? `<input id="bt_${k}" list="btQuals">` : `<input id="bt_${k}"${k === 'phone' ? ' inputmode="tel"' : ''}>`}<p class="bt-h bt-why"></p></div>`).join('')}</div>
       <datalist id="btQuals">${R.QUALS.map(q => `<option value="${q}">`).join('')}</datalist>
       <button type="button" class="bt-more" id="btMore"></button>
       <ul class="bt-e" id="btErr" role="alert"></ul>`;
     if (root.document && !root.document.getElementById('bt-css')) {
       const st = root.document.createElement('style'); st.id = 'bt-css';
-      st.textContent = '.bt-why{font-size:12.5px;color:#5F6B7A;margin:3px 0 4px}.bt-more{font:inherit;font-size:14px;font-weight:700;color:#2F6BFF;background:none;border:0;padding:8px 0;min-height:44px;cursor:pointer}.bt-e{list-style:none;padding:0;margin:6px 0 0;color:#8A6A12!important;font-weight:500!important}.tried .bt-e{color:#C2410C!important;font-weight:700!important}.bt-e li{margin:2px 0}.bt-e li:before{content:"· "}.bt-l .opt{font-weight:500;color:#5F6B7A}';
+      st.textContent = '.bt-why{font-size:12.5px;color:#5F6B7A;margin:3px 0 4px}.bt-cn{grid-column:1/-1;font-size:13.5px;font-weight:700;color:#191F28;margin:12px 0 0}.bt-more{font:inherit;font-size:14px;font-weight:700;color:#2F6BFF;background:none;border:0;padding:8px 0;min-height:44px;cursor:pointer}.bt-e{list-style:none;padding:0;margin:6px 0 0;color:#8A6A12!important;font-weight:500!important}.tried .bt-e{color:#C2410C!important;font-weight:700!important}.bt-e li{margin:2px 0}.bt-e li:before{content:"· "}.bt-l .opt{font-weight:500;color:#5F6B7A}';
       (root.document.head || root.document.documentElement).appendChild(st);
     }
     const $ = id => box.querySelector('#' + id);
@@ -506,6 +506,7 @@
         d.querySelector('.bt-why').textContent = def[2] || '';
         d.querySelector('input').placeholder = ((PH[p.role] || {})[k]) || ph[k] || '';
       });
+      const cn = $('btCn'); cn.hidden = !(f.phone && f.phone[1] === 2); cn.textContent = R.CONTACT_NOTE;
       $('btMore').hidden = !opt; $('btMore').textContent = more ? '선택 칸 접기' : `선택 칸 더 보기 (${opt}개)`;
       $('btRule').textContent = R.BROKER(p.role) ? '공인중개사는 중개사무소 이름·소재지·등록번호·대표 이름·전화번호가 모든 자료에 함께 나와요(공인중개사법 표시 규정).'
         : '공인중개사가 아니면 이름 또는 활동명과 연락처 하나만 있으면 돼요. \'공인중개사\'·\'중개사무소\' 같은 이름은 쓸 수 없어요.';

@@ -14,7 +14,7 @@
 <script src="../../assets/stat.js?v=7"></script>
 <script src="../../assets/config.js?v=4"></script>
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/auth.js?v=4"></script>
+<script src="../../assets/auth.js?v=5"></script>
 <script src="../../assets/pay.js?v=3"></script>
 <script src="../../assets/brief-core.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -79,9 +79,9 @@ const won = n => Number(n).toLocaleString('ko-KR');
 
 async function boot(){
   if (!A || !A.on() || !A.user()) {
-    $('main').innerHTML = `<span class="tag">${esc(B.NAME)} 받기</span><h1>카카오로 로그인하고<br>동네를 골라 주세요</h1>
-      <p class="lead">구독은 카카오 로그인 회원만 할 수 있어요. 받을 동네는 내 계정에 저장돼서 언제든 바꿀 수 있어요. 카카오에서 받는 정보는 회원번호와 닉네임뿐이에요.</p>
-      ${A && A.on() ? A.btn('카카오로 로그인하고 계속하기', 'brief_sub') : '<div class="msg err">로그인 기능을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</div>'}
+    $('main').innerHTML = `<span class="tag">${esc(B.NAME)} 받기</span><h1>카카오 간편 로그인하고<br>동네를 골라 주세요</h1>
+      <p class="lead">구독은 카카오 간편 로그인 회원만 할 수 있어요. 받을 동네는 내 계정에 저장돼서 언제든 바꿀 수 있어요. 카카오에서 받는 정보는 회원번호와 닉네임뿐이에요.</p>
+      ${A && A.on() ? A.btn('카카오 간편 로그인하고 계속하기', 'brief_sub') : '<div class="msg err">로그인 기능을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</div>'}
       <p class="note">처음 ${B.TRIAL_DAYS}일은 무료예요. 결제 수단을 미리 등록하지 않고, 자동으로 결제되지도 않아요.</p>`;
     return;
   }

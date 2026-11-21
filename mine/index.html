@@ -35,7 +35,7 @@
 <script src="../assets/agents.js"></script>
 <script src="../assets/lead.js?v=1"></script>
 <script src="../assets/config.js?v=4"></script>
-<script src="../assets/auth.js?v=4"></script>
+<script src="../assets/auth.js?v=5"></script>
 <script src="../assets/kchat.js?v=2"></script>
 <script src="../assets/plain-words.js?v=13"></script>
 <script src="../assets/narrative.js?v=12"></script>
@@ -293,13 +293,13 @@ if (window.JDJ_SHARE) JDJ_SHARE.setup({tool:'mine', keep:['sd','d','b'], detail(
   return {path:'mine/', q:{sd:S.sd, d:S.dkey, b:S.band}, ls:{[M.STORE_KEY]: M.dumpStore([h])}};
 }});
 if (window.JDJ_ASK) JDJ_ASK.mount($('askBox'), {from:'mine'});
-/* 카카오 로그인 (assets/auth.js) — 키가 없으면 AU.on() = false 라 아래 로그인 기능은 하나도 보이지 않음 */
+/* 카카오 간편 로그인 (assets/auth.js) — 키가 없으면 AU.on() = false 라 아래 로그인 기능은 하나도 보이지 않음 */
 const AU = window.JDJ_AUTH || null;
-const saveWhere = () => AU && AU.user() ? '카카오 계정에 저장돼서 다른 기기에서 로그인해도 보여요.' : AU && AU.on() ? '이 기기에만 저장돼요. 카카오로 로그인하면 다른 기기에서도 볼 수 있어요.' : '이 기기에만 저장되고 서버로 보내지 않아요.';
+const saveWhere = () => AU && AU.user() ? '카카오 계정에 저장돼서 다른 기기에서 로그인해도 보여요.' : AU && AU.on() ? '이 기기에만 저장돼요. 카카오 간편 로그인하면 다른 기기에서도 볼 수 있어요.' : '이 기기에만 저장되고 서버로 보내지 않아요.';
 function homesNote(){
   const el = $('homesNote'); if (!el) return;
   el.innerHTML = AU && AU.user() ? `내 집 목록은 카카오 계정(${esc(AU.user().nick)} 님)에 저장돼서 다른 기기에서 로그인해도 같은 목록이 보여요. 최대 ${M.MAX_HOMES}개까지 저장할 수 있어요.`
-    : AU && AU.on() ? `내 집 정보는 이 기기 브라우저에만 저장돼요. 카카오로 로그인하면 휴대폰·PC 어디서든 같은 목록을 볼 수 있어요. 최대 ${M.MAX_HOMES}개까지 저장할 수 있어요. <button type="button" class="linkbtn" data-jdj-login="homes" style="font:inherit;font-weight:700;color:#2F6BFF;background:none;border:0;padding:0;cursor:pointer;text-decoration:underline">카카오로 로그인</button>`
+    : AU && AU.on() ? `내 집 정보는 이 기기 브라우저에만 저장돼요. 카카오 간편 로그인하면 휴대폰·PC 어디서든 같은 목록을 볼 수 있어요. 최대 ${M.MAX_HOMES}개까지 저장할 수 있어요. <button type="button" class="linkbtn" data-jdj-login="homes" style="font:inherit;font-weight:700;color:#2F6BFF;background:none;border:0;padding:0;cursor:pointer;text-decoration:underline">카카오 간편 로그인</button>`
     : `내 집 정보는 이 기기 브라우저에만 저장돼요. 서버로 보내지 않아요. 최대 ${M.MAX_HOMES}개까지 저장할 수 있어요.`;
 }
 let FAVS = [];
@@ -337,7 +337,7 @@ async function fillAlert(d){
   const head = `<div class="panel"><h2>이 단지·지역 소식 알림<small>새 실거래·신고가·지역 시세 흐름을 카카오톡으로 알려 드려요.</small></h2>`;
   if (!AU.user()){
     box.innerHTML = head + `<div class="alr">${items.map(x => `<label style="cursor:default"><input type="checkbox" disabled><span>${esc(x.t)}<small>${esc(x.s)}</small></span></label>`).join('')}
-      ${AU.gate('알림은 카카오 계정으로 신청해요. 신청 내용은 내 계정에서 언제든 지울 수 있어요.', '카카오로 로그인하고 알림 신청', 'alert')}</div></div>`;
+      ${AU.gate('알림은 카카오 계정으로 신청해요. 신청 내용은 내 계정에서 언제든 지울 수 있어요.', '카카오 간편 로그인하고 알림 신청', 'alert')}</div></div>`;
     return;
   }
   const cur = await AU.alerts(); if (S.dkey !== d.key) return;

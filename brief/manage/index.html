@@ -14,11 +14,11 @@
 <script src="../../assets/stat.js?v=7"></script>
 <script src="../../assets/config.js?v=4"></script>
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/auth.js?v=4"></script>
+<script src="../../assets/auth.js?v=5"></script>
 <script src="../../assets/pay.js?v=3"></script>
 <script src="../../assets/brief-core.js?v=7"></script>
 <script src="../../assets/share.js?v=8"></script>
-<script src="../../assets/pro-report.js?v=4"></script>
+<script src="../../assets/pro-report.js?v=5"></script>
 <script src="../../assets/client-brief.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -100,7 +100,7 @@ const amWhen = (ad, am) => [ad && ad.on && ad.at ? `광고성 정보 받기 ${ad
   am && am.on && am.at ? `이른 아침 광고 받기 ${am.at} 동의` : am && am.off ? `이른 아침 광고 받기 ${am.off} 끔` : ''].filter(Boolean).join(' · ');
 const BUDGETS = ['3억 미만', '3억~6억', '6억~9억', '9억~15억', '15억 이상'], AGES = ['20대', '30대', '40대', '50대', '60대 이상'];
 async function draw(note){
-  if (!A || !A.on() || !A.user()) { main.innerHTML = `<h1>내 구독 관리</h1><p class="lead">카카오로 로그인하면 구독 상태를 보고 바꿀 수 있어요.</p>${A && A.on() ? A.btn('카카오로 로그인', 'brief_manage') : ''}`; return; }
+  if (!A || !A.on() || !A.user()) { main.innerHTML = `<h1>내 구독 관리</h1><p class="lead">카카오 간편 로그인하면 구독 상태를 보고 바꿀 수 있어요.</p>${A && A.on() ? A.btn('카카오 간편 로그인', 'brief_manage') : ''}`; return; }
   let r; try { r = await call('briefMine'); } catch(e){ main.innerHTML = `<h1>내 구독 관리</h1><div class="msg err">${esc(e.message)}</div>`; return; }
   const cy = r.brief.cy || {}, td = new Date().toISOString().slice(0, 10);
   /* 지금 쓰는 요금제(받는 중이거나 시작 예정) 중 한도가 가장 큰 것 — 한도는 brief-core.js 요금제 표 */

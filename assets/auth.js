@@ -72,7 +72,7 @@
       if (!K.isInitialized()) K.init(KEY);
       K.Auth.authorize({ redirectUri: redirectUri(), state: st, scope: 'profile_nickname' });
       return true;
-    }).catch(() => { alert('카카오 로그인 창을 열지 못했어요. 잠시 뒤 다시 눌러 주세요.'); return false; });
+    }).catch(() => { alert('카카오 간편 로그인 창을 열지 못했어요. 잠시 뒤 다시 눌러 주세요.'); return false; });
   }
   /** login/ 화면: 인가 코드로 로그인 마치기 → 돌아갈 주소 */
   function finish(code, state) {
@@ -210,7 +210,7 @@
     const u = user(), nm = u ? chipName(u.nick) : '';
     a.className = 'jdj-acct' + (u ? '' : ' out');
     a.textContent = u ? nm : '로그인';
-    a.setAttribute('aria-label', u ? `내 계정 (${nm})` : '카카오 로그인');
+    a.setAttribute('aria-label', u ? `내 계정 (${nm})` : '카카오 간편 로그인');
     if (!u) a.onclick = e => { if (location.pathname.indexOf(LOGIN_PAGE) === 0) return; e.preventDefault(); login('header'); };
     else a.onclick = null;
   }

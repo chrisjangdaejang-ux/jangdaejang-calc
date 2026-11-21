@@ -12,12 +12,12 @@
 <script src="/jangdaejang-calc/assets/pwa.js" defer data-nobar></script>
 <script src="/jangdaejang-calc/assets/biz.js" defer></script>
 <title>로그인 · 내 계정 | 집예보</title>
-<meta name="description" content="카카오로 로그인하고 내 집·관심 단지·리포트를 여러 기기에서 이어 보세요.">
+<meta name="description" content="카카오 간편 로그인하고 내 집·관심 단지·리포트를 여러 기기에서 이어 보세요.">
 <script>window.JDJ_CONFIG = { tool:'login', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/config.js?v=4"></script>
-<script src="../assets/auth.js?v=4"></script>
+<script src="../assets/auth.js?v=5"></script>
 <script src="../assets/mine-core.js?v=15"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -99,7 +99,7 @@ function intro(msg){
 async function finishLogin(){
   const code = q.get('code'), state = q.get('state') || '';
   clean();
-  app.innerHTML = '<div class="st">카카오 로그인을 마무리하는 중이에요…</div>';
+  app.innerHTML = '<div class="st">카카오 간편 로그인을 마무리하는 중이에요…</div>';
   try {
     const r = await A.finish(code, state);
     app.innerHTML = `<div class="st"><b>${esc(r.nick)} 님, ${r.isNew ? '반가워요' : '다시 오셨네요'}.</b><br>보던 화면으로 돌아가요…</div>`;
@@ -144,7 +144,7 @@ async function account(){
   try { st = await A.load(true); } catch (e) { if (!A.user()) return intro(`<div class="st err" style="margin-bottom:14px">${esc(e.message)}</div>`); app.innerHTML = `<div class="st err">${esc(e.message)}</div>`; return; }
   if (!st) return intro();
   const d = st.data, u = A.user();
-  app.innerHTML = `<div class="who"><span class="av" aria-hidden="true">${esc((u.nick || '카')[0])}</span><div><b>${esc(u.nick)} 님</b><small>카카오로 로그인했어요</small></div></div>
+  app.innerHTML = `<div class="who"><span class="av" aria-hidden="true">${esc((u.nick || '카')[0])}</span><div><b>${esc(u.nick)} 님</b><small>카카오 간편 로그인했어요</small></div></div>
     ${homesHtml(d)}${favsHtml(d)}${repsHtml(d)}${areasHtml(d)}${alertsHtml(st.alerts || [])}
     <div class="box"><h2>로그아웃</h2><p class="empty">이 기기에서만 로그아웃해요. 이 기기에 저장된 내 집 목록은 그대로 남아요.</p><div class="acts" style="margin-top:10px"><button type="button" class="btn ghost" id="outBtn">로그아웃</button></div></div>
     <div class="box del"><h2>탈퇴</h2><p class="empty">탈퇴하면 집예보가 보관한 카카오 회원번호·닉네임과 계정에 저장한 내 집·관심 단지·리포트·알림 신청을 바로 지워요. 지운 뒤에는 되살릴 수 없어요. 이 기기 브라우저에 저장된 내 집 목록은 남아 있고, 브라우저 설정에서 지울 수 있어요.</p>
@@ -165,7 +165,7 @@ async function account(){
 
 if (!A || !A.on()) { clean(); off(); return; }
 if (q.get('code')) finishLogin();
-else if (q.get('error')) { clean(); intro(`<div class="st err" style="margin-bottom:14px">${q.get('error') === 'access_denied' ? '로그인을 취소했어요. 로그인하지 않아도 대부분의 기능은 그대로 쓸 수 있어요.' : '카카오 로그인을 마치지 못했어요. 다시 눌러 주세요.'}</div>`); }
+else if (q.get('error')) { clean(); intro(`<div class="st err" style="margin-bottom:14px">${q.get('error') === 'access_denied' ? '로그인을 취소했어요. 로그인하지 않아도 대부분의 기능은 그대로 쓸 수 있어요.' : '카카오 간편 로그인을 마치지 못했어요. 다시 눌러 주세요.'}</div>`); }
 else if (A.user()) account();
 else intro();
 })();

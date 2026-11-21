@@ -81,7 +81,9 @@
   }
   /** 연락처 칸 이름표·필수·이유 */
   const contactOf = r => BROKER(r) ? { phone: ['전화번호', 1, LAW], kakao: ['카카오톡 채널 주소 (선택)', 0, '넣으면 손님이 카카오톡으로 바로 문의할 수 있어요.'] }
-    : { phone: ['전화번호 (전화나 카카오톡 중 하나)', 2, '손님이 문의할 곳이 하나는 있어야 해요.'], kakao: ['카카오톡 채널·오픈채팅 주소 (전화나 카카오톡 중 하나)', 2, '전화번호를 알리고 싶지 않으면 이것만 넣어도 돼요.'] };
+    : { phone: ['전화번호', 2, '손님이 전화로 문의할 수 있어요.'], kakao: ['카카오톡 채널·오픈채팅 주소', 2, '전화번호를 알리고 싶지 않으면 이것만 넣어도 돼요.'] };
+  /** 비중개사 연락처 두 칸 위 한 줄(2 = 둘 중 하나) */
+  const CONTACT_NOTE = '연락처: 둘 중 하나만 있으면 돼요.';
   /** 보여 줄 이름(비중개사는 이름 → 없으면 상호) */
   const nameOf = p => p.office || p.name || '';   // 머리 큰 글씨: 상호가 있으면 상호, 없으면 이름
   /** 빠진 칸 안내를 모두(한 줄씩). 서버와 같은 기준 */
@@ -305,7 +307,7 @@
     return (await copy(o.url)) ? 'copy' : 'fail';
   }
 
-  const API = { ROLE, QUALS, BROKER, roleOf, fieldsOf, bizOk, bizFmt, adWarn, TAX_AD, SECS, SEC_KEYS, DEFAULT_SECS, NOTE_MAX, LOGO_MAX, FAKE, esc, cleanProfile, profileError, profileErrors, contactOf, nameOf, LAW, cleanNotes, notesError, cleanSecs,
+  const API = { ROLE, QUALS, BROKER, roleOf, fieldsOf, bizOk, bizFmt, adWarn, TAX_AD, SECS, SEC_KEYS, DEFAULT_SECS, NOTE_MAX, LOGO_MAX, FAKE, esc, cleanProfile, profileError, profileErrors, contactOf, CONTACT_NOTE, nameOf, LAW, cleanNotes, notesError, cleanSecs,
     who, opinionLabel, senderOf, linkOf, parseHash, noteHtml, headHtml, askSheet, coverHtml, footHtml, apply, shrinkLogo, share, copy, kakaoSdk, ym6, telOf };
   root.JDJ_PRO = API;
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

@@ -211,6 +211,36 @@ check('REST 키가 없으면 로그인 안 됨(안내 문구)', [N.ok, /설정/.
   check('3년 이전 시세: 로그인 뒤 연도별(2020·2021), 기준 달 이후는 뺌', [/2020년/.test(ph), /2021년/.test(ph), /2023년/.test(ph), /10억 5,000만/.test(ph)], [true, true, false, true]);
 }
 
+/* ---------- 로그인 단추 이름: 사이트 전체 '카카오 간편 로그인' 하나로 ----------
+   HTML·JS·서버(agent-backend.gs)에서 다른 이름('카카오로 로그인', '카카오로 3초 로그인', '3초 로그인', '카카오톡으로 로그인', '카카오 계정으로 로그인')이
+   남아 있으면 실패. HTML 화면 글은 '카카오 로그인'도 쓰지 않음. 단추·잠금 상자 이름표(btn·gate)는 '카카오 간편 로그인'으로 시작해야 함. */
+{
+  const ROOT = path.join(__dirname, '..'), files = [];
+  (function walk(d) {
+    for (const n of fs.readdirSync(d)) {
+      if (n === '.git' || n === 'node_modules' || n === 'vendor') continue;
+      const f = path.join(d, n), st = fs.statSync(f);
+      if (st.isDirectory()) walk(f);
+      else if (/\.(html|js|gs)$/.test(n) && !/-test\.js$/.test(n)) files.push(f);
+    }
+  })(ROOT);
+  const OTHER = /카카오로\s*(3초\s*)?로그인|3초\s*로그인|카카오톡으로\s*로그인|카카오\s*계정으로\s*로그인/;
+  const other = files.filter(f => OTHER.test(fs.readFileSync(f, 'utf8'))).map(f => path.relative(ROOT, f));
+  check('로그인 이름: 다른 이름이 남은 파일 없음', other, []);
+  const htmlOld = files.filter(f => /\.html$/.test(f) && /카카오 로그인/.test(fs.readFileSync(f, 'utf8'))).map(f => path.relative(ROOT, f));
+  check("로그인 이름: 화면(HTML)에 '카카오 로그인' 없음", htmlOld, []);
+  const labels = [];
+  files.forEach(f => {
+    const t = fs.readFileSync(f, 'utf8');
+    for (const m of t.matchAll(/\.btn\(\s*(['`])([^'`]*)\1/g)) labels.push(m[2]);
+    for (const m of t.matchAll(/\.gate\([^;]*?,\s*'([^']*)',\s*'[^']*'\s*\)/g)) labels.push(m[1]);
+  });
+  check('로그인 이름: 단추 이름표가 모두 카카오 간편 로그인으로 시작', labels.filter(l => /로그인/.test(l) && !/^카카오 간편 로그인/.test(l)), []);
+  check('로그인 이름: 단추 이름표를 찾음', labels.length >= 5, true);
+  const AJ = fs.readFileSync(path.join(ROOT, 'assets/auth.js'), 'utf8');
+  check('로그인 이름: 기본 단추 이름', /label \|\| '카카오 간편 로그인'/.test(AJ), true);
+}
+
 const bad = rows.filter(r => !r.ok);
 rows.forEach(r => console.log((r.ok ? 'PASS ' : 'FAIL ') + r.name + (r.ok ? '' : `  got=${JSON.stringify(r.got)} want=${JSON.stringify(r.want)}`)));
 console.log(`\n${rows.length - bad.length}/${rows.length} 통과`);

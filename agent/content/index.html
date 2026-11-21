@@ -16,10 +16,10 @@
 <script src="/jangdaejang-calc/assets/config.js?v=4"></script>
 <script src="../../assets/track.js?v=2"></script>
 <script src="../../assets/agents.js"></script>
-<script src="/jangdaejang-calc/assets/auth.js?v=4"></script>
+<script src="/jangdaejang-calc/assets/auth.js?v=5"></script>
 <script src="/jangdaejang-calc/assets/brief-core.js?v=7"></script>
-<script src="/jangdaejang-calc/assets/pro-report.js?v=4"></script>
-<script src="/jangdaejang-calc/assets/broker-tools.js?v=2"></script>
+<script src="/jangdaejang-calc/assets/pro-report.js?v=5"></script>
+<script src="/jangdaejang-calc/assets/broker-tools.js?v=3"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
@@ -106,7 +106,7 @@ async function showQuota(){
   const q = await T.quota(), el = $('quota');
   if (q.soft){ el.hidden = true; return; }
   el.hidden = false;
-  if (q.login){ el.innerHTML = `주간 글은 ${SITE} 모닝 브리핑 플러스·중개사용·중개사 플러스에 들어 있어요. 로그인하면 쓸 수 있는 지역 수를 알려 드려요. ${window.JDJ_AUTH ? window.JDJ_AUTH.btn('카카오로 로그인', 'agent_content') : ''}`; return; }
+  if (q.login){ el.innerHTML = `주간 글은 ${SITE} 모닝 브리핑 플러스·중개사용·중개사 플러스에 들어 있어요. 로그인하면 쓸 수 있는 지역 수를 알려 드려요. ${window.JDJ_AUTH ? window.JDJ_AUTH.btn('카카오 간편 로그인', 'agent_content') : ''}`; return; }
   if (q.err){ el.textContent = q.err; return; }
   const L = T.limitsFor(q.tier), used = (q.used && q.used.kit) || [];
   el.innerHTML = q.tier && L.kitAreas ? `${esc(q.label || '')} 이용 중 · 이번 주 글은 지역 <b>${L.kitAreas}곳</b>까지 만들 수 있어요${used.length ? ` (쓴 지역: ${used.map(g => esc(nameOf(g))).join(', ')})` : ''}. 같은 지역은 몇 번이든 다시 만들 수 있어요.`

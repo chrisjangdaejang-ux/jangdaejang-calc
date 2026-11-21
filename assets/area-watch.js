@@ -120,7 +120,7 @@
   const SIDOS = ['서울특별시', '경기도', '인천광역시', '부산광역시', '대구광역시', '전남광주통합특별시', '대전광역시', '울산광역시', '세종특별자치시', '강원특별자치도', '충청북도', '충청남도', '전북특별자치도', '경상북도', '경상남도', '제주특별자치도'];
   function saveNote() {
     if (authed()) return `카카오 계정(${esc(auth().user().nick)} 님)에 저장돼서 다른 기기에서도 같은 관심 지역이 보여요. 카카오톡 알림 발송을 시작하면 고른 알림을 카카오톡으로 보내 드려요.`;
-    if (auth()) return `지금은 이 기기에만 저장돼요. 카카오로 로그인하면 다른 기기에서도 같은 관심 지역을 쓰고, 카카오톡 알림 발송을 시작할 때 가장 먼저 받아볼 수 있어요.`;
+    if (auth()) return `지금은 이 기기에만 저장돼요. 카카오 간편 로그인하면 다른 기기에서도 같은 관심 지역을 쓰고, 카카오톡 알림 발송을 시작할 때 가장 먼저 받아볼 수 있어요.`;
     return '이 기기 브라우저에만 저장돼요.';
   }
   const fmtD = s => s && s.length === 8 ? `${+s.slice(4, 6)}.${+s.slice(6, 8)}` : '';
@@ -150,7 +150,7 @@
         <div id="jaAd"></div>
         <p class="note">알림 신청: <b>${esc(kinds)}</b>${mktOn(p) ? ' · 새 분양 광고 소식(광고성 정보 수신 동의 ' + esc(p.mkt.at) + ')' : ''}. ${saveNote()}</p>
         ${mktOld(p) ? `<p class="note"><b>광고 소식 수신 동의가 2년이 지나 멈췄어요.</b> 계속 받으시려면 [관심 지역 바꾸기]에서 다시 체크해 주세요.</p>` : ''}
-        <div class="row" style="margin-top:10px"><button type="button" class="btn2" data-a="edit">관심 지역 바꾸기</button>${!authed() && auth() ? auth().btn('카카오로 로그인하고 알림 받기', 'area') : ''}${msg ? `<span class="msg">${esc(msg)}</span>` : ''}</div></div>`;
+        <div class="row" style="margin-top:10px"><button type="button" class="btn2" data-a="edit">관심 지역 바꾸기</button>${!authed() && auth() ? auth().btn('카카오 간편 로그인하고 알림 받기', 'area') : ''}${msg ? `<span class="msg">${esc(msg)}</span>` : ''}</div></div>`;
       if (m.length) setTimeout(() => markSeen(m.map(x => x.id)), 1500);   // 이 화면에서 보여 준 공고는 '본 공고'로
       drawAds();
     }
@@ -176,7 +176,7 @@
         <label class="kd" style="display:flex;align-items:flex-start;gap:8px;font-size:15px;cursor:pointer;margin:0 0 10px"><input type="checkbox" id="jaK3"${mktOn(draft) ? ' checked' : ''} style="margin-top:2px"><span><b>(선택) 광고성 정보 수신 동의</b> — 관심 지역에 새로 나온 분양 현장의 <b>광고</b> 소식(시행사·분양대행사가 비용을 낸 소식)도 받기
           <small style="display:block;font-size:13.5px;color:#4E5968;line-height:1.55;margin-top:2px">이 화면에 먼저 보여 드리고, 카카오톡 알림은 준비 중이에요(시작하면 오후 9시~오전 8시에는 보내지 않아요). 동의하지 않아도 공고 알림은 그대로 받아요. 언제든 체크를 풀면 바로 멈추고, 2년마다 다시 여쭤봐요.</small></span></label>
         <p class="note" style="margin:0 0 10px">${saveNote()}</p>
-        <div class="row"><button type="button" class="btn2 p" data-a="save">저장</button><button type="button" class="btn2" data-a="cancel">닫기</button>${!authed() && auth() ? auth().btn('카카오로 로그인', 'area_edit') : ''}<span class="msg" id="jaMsg" role="status"></span></div></div>`;
+        <div class="row"><button type="button" class="btn2 p" data-a="save">저장</button><button type="button" class="btn2" data-a="cancel">닫기</button>${!authed() && auth() ? auth().btn('카카오 간편 로그인', 'area_edit') : ''}<span class="msg" id="jaMsg" role="status"></span></div></div>`;
       el.querySelector('#jaSd').onchange = e => { draft.sd = e.target.value; drawEdit(); };
     }
     el.addEventListener('click', async e => {

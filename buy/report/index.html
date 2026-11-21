@@ -38,7 +38,7 @@
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/lead.js?v=1"></script>
 <script src="../../assets/config.js?v=4"></script>
-<script src="../../assets/auth.js?v=4"></script>
+<script src="../../assets/auth.js?v=5"></script>
 <script src="../../assets/share.js?v=8"></script>
 <script src="../../tax/tax-engine.js?v=4"></script>
 <script src="../../assets/loan-core.js?v=2"></script>
@@ -1613,7 +1613,7 @@ document.addEventListener('click', e=>{
   const b = e.target.closest('.agbtn'); if (!b) return;
   openAgent(b.dataset.a, b.dataset.g, b.dataset.k);
 });
-/* 카카오 로그인(assets/auth.js): 키가 없으면 잠금·저장 단추 모두 없음. 로그인 전에는 카드 요약·점수까지, 상세(대출·현금·월 상환·이유 전체)는 로그인 뒤 */
+/* 카카오 간편 로그인(assets/auth.js): 키가 없으면 잠금·저장 단추 모두 없음. 로그인 전에는 카드 요약·점수까지, 상세(대출·현금·월 상환·이유 전체)는 로그인 뒤 */
 function repLocked(){ return !!(window.JDJ_AUTH && JDJ_AUTH.on() && !JDJ_AUTH.user()); }
 function repSnapshot(){
   const q=new URLSearchParams(window.JDJ_SHARE ? JDJ_SHARE.stripPersonal(location.search) : location.search); q.delete('from'); q.delete('full');
