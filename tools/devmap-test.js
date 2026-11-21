@@ -17,8 +17,8 @@ check('공식 출처·날짜 있는 연도는 보임', F.dues(line).map(d => d.s
 check('출처가 공식이 아니면 연도 안 보임', F.dues({ due: [Object.assign({}, due, { src: Object.assign({}, OFF, { official: false }) })] }), []);
 check('출처 날짜가 없으면 연도 안 보임', F.dues({ due: [Object.assign({}, due, { src: Object.assign({}, OFF, { date: null }) })] }), []);
 check('출처 주소가 https 가 아니면 연도 안 보임', F.dues({ due: [Object.assign({}, due, { src: Object.assign({}, OFF, { url: 'javascript:alert(1)' }) })] }), []);
-check('지도 글자: 이름 · 공식 연도', F.label(line), { name: '동북선 경전철', tail: '2027년 개통 목표', year: true });
-check('지도 글자: 연도 없으면 단계만', F.label(Object.assign({}, line, { due: [] })), { name: '동북선 경전철', tail: '공사 중', year: false });
+check('지도 글자: 이름 · 공식 연도', F.label(line), { name: "동북선 경전철", tail: "2027년 개통 목표", year: true, approx: false });
+check('지도 글자: 연도 없으면 단계만', F.label(Object.assign({}, line, { due: [] })), { name: "동북선 경전철", tail: "공사 중", year: false, approx: false });
 check('구역 글자: 괄호 빼고 짧게', F.label({ type: 'area', name: '잠실 스포츠·MICE', short: '잠실 국제교류복합지구(잠실종합운동장 MICE)', stage: '계획 확정' }).name, '잠실 국제교류복합지구');
 
 /* 카드 */
@@ -33,6 +33,14 @@ check('카드: 경계 없는 사업 → 공식 고시 도면 안내 + 공식 링
 check('카드: 국가산단·착공 쉬운 풀이', [c2.includes('국가산업단지(국가산단)'), F.STAGE['공사 중'].includes('착공(공사를 시작함)')], [true, true]);
 check('카드: 글자 이스케이프', F.cardHtml({ type: 'area', name: '<b>x</b>', stage: '계획' }).includes('&lt;b&gt;x&lt;/b&gt;'), true);
 check('보는 법: 점선·면·연도 설명 + 못 그린 목록', (() => { const h = F.infoHtml({ omitted: [{ name: 'GTX-C', stage: '공사 중', why: '공식 자료로 정거장 순서를 확인하지 못해' }] }); return [h.includes('점선은 개통 예정 노선'), h.includes('칠한 면은 개발 구역'), h.includes('못 그린 예정 사업 1곳'), h.includes('GTX-C')]; })(), [true, true, true, true]);
+
+const ap = { id: 'dev_y', type: 'area', kind: '산업단지', name: '용인 반도체 국가산단', stage: '계획 확정', approx: true, at: [127.187, 37.151],
+  at_basis: '지도 위치: 이동읍·남사읍 일대(읍·면 중심, 대략 위치) — 정확한 구역은 공식 고시 도면에서 확인해 주세요',
+  approx_src: [OFF], approx_data: { title: '통계청 SGIS 행정동 경계', url: 'https://github.com/vuski/admdongkor' }, notice: { title: '정책브리핑', url: 'https://www.korea.kr/x' } };
+const c3 = F.cardHtml(ap);
+check('대략 위치 카드: 정해진 문구 + 읍·면 근거 출처 + 점 계산 자료', [c3.includes('지도 위치: 이동읍·남사읍 일대(읍·면 중심, 대략 위치) — 정확한 구역은 공식 고시 도면에서 확인해 주세요'), c3.includes('mediahub.seoul.go.kr'), c3.includes('admdongkor')], [true, true, true]);
+check('대략 위치 카드: 경계 안내 문장 두 번 안 씀(공식 링크는 있음)', [c3.split('공식 고시 도면에서 확인').length - 1, c3.includes('공식 고시·발표 보기')], [1, true]);
+check('대략 위치 글자 표시', F.label(ap).approx, true);
 
 /* 보이는 확대 */
 check('노선: 확대 9부터 선, 10부터 글자', [F.show(line, 8).shape, F.show(line, 9).shape, F.show(line, 9).text, F.show(line, 10).text], [false, true, false, true]);
@@ -52,6 +60,8 @@ if (file && fs.existsSync(file)) {
   check('실제: 좌표 소수 셋째 자리(③)', pts.every(p => p.every(v => Math.round(v * 1000) / 1000 === v)), true);
   check('실제: 지도에서 뺀 목록엔 좌표 없음(④)', (D.omitted || []).every(it => !it.path && !it.poly && !it.at), true);
   check('실제: 이미 개통한 노선 없음', D.items.every(it => it.type !== 'line' || it.stage !== '개통'), true);
+  check("실제: 대략 위치 점은 모두 '대략 위치' 문구", D.items.filter(it => it.approx).every(it => (it.at_basis || '').includes('대략 위치') && !it.poly), true);
+  check('실제: 용인 국가산단 대략 위치 점', D.items.some(it => it.id === 'dev_yongin_semi' && it.approx && it.at), true);
   check('실제: 안내 문장', D.note.includes('바뀔 수 있어요'), true);
 }
 

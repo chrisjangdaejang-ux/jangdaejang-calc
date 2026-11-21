@@ -54,7 +54,7 @@
   /* 지도 글자: '동북선 경전철 · 2027년 개통 목표' / 연도 없으면 '… · 공사 중' */
   function label(it) {
     var d = dues(it), last = d[d.length - 1];
-    return { name: it.type === 'line' ? it.name : shortName(it), tail: last ? last.say : (it.stage || '') , year: !!last };
+    return { name: it.type === 'line' ? it.name : shortName(it), tail: last ? last.say : (it.stage || ''), year: !!last, approx: !!it.approx };
   }
   /* 보이는 확대 범위: 노선 9 이상(글자 10 이상), 사업 구역 11 이상, 정비구역 등 작은 구역은 자료의 zoom(15) 이상 */
   function show(it, z) {
@@ -88,11 +88,14 @@
     if (kp) h += '<dt>쉬운 풀이</dt><dd><small class="plain">' + esc(kp) + '</small></dd>';
     if (isLine && it.stops) h += '<dt>지도 선</dt><dd><small>' + esc((it.part ? it.part + ' — ' : '') + it.stops.join(' · ')) + '. ' + esc(it.path_basis || '') + (it.skipped ? ' 개통 전 신설 정거장 ' + it.skipped + '곳은 위치를 표시하지 않았어요.' : '') + '</small>' + srcLine(it.path_src) + '</dd>';
     else if (it.poly) h += '<dt>구역 경계</dt><dd><small>공식 공간자료의 경계를 지도용으로 단순하게 줄여 그렸어요(약 100m 단위).</small>' + srcLine(it.poly_src) + '</dd>';
+    else if (it.at && it.approx) h += '<dt>지도 위치</dt><dd><span class="head apx">' + esc(it.at_basis || '') + '</span>'
+      + (it.approx_src || []).map(function (x) { return srcLine(x); }).join('')
+      + (it.approx_data && safeUrl(it.approx_data.url) ? '<small>점 위치 계산: <a href="' + esc(it.approx_data.url) + '" target="_blank" rel="noopener noreferrer">' + esc(it.approx_data.title) + '</a></small>' : '') + '</dd>';
     else if (it.at) h += '<dt>지도 위치</dt><dd><small>' + esc(it.at_basis || '') + '</small></dd>';
     h += '</dl><p class="note chg">' + esc(CHANGE) + '</p>';
     if (!isLine && !it.poly) {
       var n = it.notice && safeUrl(it.notice.url);
-      h += '<p class="note">' + esc(NOBOUND) + (n ? '. <a href="' + esc(n) + '" target="_blank" rel="noopener noreferrer">공식 고시·발표 보기 ›</a>' : '.') + '</p>';
+      h += '<p class="note">' + (it.approx ? '' : esc(NOBOUND) + '. ') + (n ? '<a href="' + esc(n) + '" target="_blank" rel="noopener noreferrer">공식 고시·발표 보기 ›</a>' : '') + '</p>';
     }
     return h;
   }
@@ -116,6 +119,7 @@
       + '<dl class="kv"><dt><i class="lg-line" aria-hidden="true"></i></dt><dd><small>점선은 개통 예정 노선이에요. 공식 자료에 적힌 정거장 순서대로, 이미 운행 중인 역만 이었어요. 아직 문을 열지 않은 신설역 위치는 표시하지 않아요.</small></dd>'
       + '<dt><i class="lg-area" aria-hidden="true"></i></dt><dd><small>칠한 면은 개발 구역이에요. 공식 공간자료에 있는 경계만 그렸어요.</small></dd>'
       + '<dt><i class="lg-dot" aria-hidden="true"></i></dt><dd><small>점은 공식 경계를 받지 못한 사업의 위치예요(가까운 역 등 공공 좌표). ' + esc(NOBOUND) + '.</small></dd>'
+      + '<dt><i class="lg-dot ap" aria-hidden="true"></i></dt><dd><small>점선 동그라미는 대략 위치예요. 공식 발표에 읍·면·동만 나와 있어 그 읍·면·동 경계(통계청 행정구역)의 가운데에 찍었어요. 실제 사업 구역과 다를 수 있어요.</small></dd>'
       + '<dt>연도</dt><dd><small>글자에 적힌 예정 연도는 국토교통부·정부·지자체 공식 발표에 적힌 그대로예요. 공식 발표가 없으면 단계(계획·공사 중 등)만 적었어요. ' + esc(CHANGE) + '</small></dd></dl>'
       + (om.length ? '<h3 class="fut-h">지도에 못 그린 예정 사업 ' + om.length + '곳</h3><p class="note">공개할 수 있는 공식 위치나 공식 정거장 순서가 없어 지도에는 그리지 않았어요. 공식 발표에 적힌 연도는 그대로 적었어요.</p>' + listHtml(dd, o) : '')
       + (dd && dd.checked ? '<p class="note">기준일 ' + esc(fd(dd.checked)) + '(공식 원문을 마지막으로 확인한 날)</p>' : '');

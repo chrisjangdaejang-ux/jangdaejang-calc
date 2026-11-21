@@ -33,7 +33,7 @@
 <script src="../assets/sale-status.js?v=1"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/ads.js?v=2"></script>
-<script src="../assets/devmap-view.js?v=1"></script>
+<script src="../assets/devmap-view.js?v=2"></script>
 <script src="../assets/tabbar.js?v=2" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -44,7 +44,7 @@ html,body{height:100%}
 html:has(body.jm-full){overflow:hidden;zoom:1}   /* 지도는 PC 12.5% 확대(aplus.css) 없이 — 확대하면 높이·지도 좌표가 어긋남 */
 body.jm-full{overflow:hidden;overscroll-behavior:none;height:100vh;height:100dvh;display:flex;flex-direction:column}
 body.jm-full>.top{position:relative;flex:none}
-.top h1{margin:0;font-size:17px;font-weight:800;letter-spacing:-.3px;white-space:nowrap}
+.top h1.badge{margin:0}   /* 다른 하위 화면(순위·내 집 시세)처럼 오른쪽 위에 화면 이름 배지 */
 .mwrap{--mt:0px;--mb:0px;--ml:0px;position:relative;flex:1;min-height:0;margin-bottom:calc(58px + env(safe-area-inset-bottom));overflow:hidden;overflow:clip;background:#EEF1F4}
 #map{position:absolute;left:var(--ml);right:0;bottom:var(--mb);top:var(--mt);z-index:1}   /* --mb·--ml: 지역 분석 칸(모바일 아래·PC 왼쪽)만큼 지도를 비켜서 지도 로고·축척이 가려지지 않게 */   /* 지도는 위쪽 조작 칸 아래부터 — 말풍선이 조작 칸 밑에 비쳐 보이지 않게 */
 .leaflet-container{font-family:inherit;background:#EEF1F4}
@@ -229,6 +229,10 @@ body.reg .cmpbar{display:none}
 .jm-b.fu.sel{outline:3px solid rgba(109,74,255,.35)}
 .jm-b.fdot{transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:#6D4AFF;border:3px solid #fff;box-shadow:0 0 0 1.5px #6D4AFF,0 1px 4px rgba(0,0,0,.3);box-sizing:border-box}
 .jm-b.fdot.sel{box-shadow:0 0 0 4px rgba(109,74,255,.35)}
+.jm-b.fdot.ap{width:22px;height:22px;background:rgba(109,74,255,.18);border:2px dashed #6D4AFF;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.jm-b.fu small{font-size:10.5px;font-weight:700;color:#6D4AFF;background:#F1EDFF;border-radius:5px;padding:0 5px;margin-top:1px}
+i.lg-dot.ap{width:15px;height:15px;background:rgba(109,74,255,.18);border:2px dashed #6D4AFF;box-shadow:none}
+.sheet .kv dd .apx{display:block;font-size:14px;line-height:1.55;color:var(--text);font-weight:600}
 .legend .fut-lg{display:flex;flex-wrap:wrap;align-items:center;gap:0 10px}
 .legend .fut-lg span{gap:5px}
 i.lg-line{display:inline-block;width:22px!important;height:0!important;border-top:3px dashed #6D4AFF;border-radius:0!important;vertical-align:middle}
@@ -271,14 +275,12 @@ i.lg-dot{display:inline-block;width:13px;height:13px;border-radius:50%;backgroun
 @media(min-width:720px){.srch,.row1{max-width:860px}.row1{flex-wrap:nowrap}.fil{flex:1 1 auto;margin:0;padding:0 0 0 2px}}
 @media(min-width:900px){.cmpbar{left:432px;right:84px}body.has-cmp .legend{transform:none}body.has-sheet .legend{left:432px}.mtop{padding:10px 16px}.sheet{left:16px;right:auto;bottom:40px;width:400px;max-height:calc(100% - var(--mt) - 56px);border-radius:20px}}
 @media(max-width:380px){.seg button{padding:0 10px;font-size:14px}.chip{padding:0 11px}}
-@media(max-width:340px){.top .badge{display:none}}   /* 360px 폭에서는 배지가 들어가므로 숨기지 않음(숨기면 '지도' 제목이 오른쪽 끝으로 밀림) */
 </style>
 </head>
 <body class="jm-full">
 <header class="top">
   <a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>집예보</a>
-  <h1>지도</h1>
-  <div class="badge">PREMIUM INSIGHT</div>
+  <h1 class="badge plain">지도</h1>
 </header>
 <div class="mwrap" id="mwrap">
   <div id="map" role="application" aria-label="단지 지도"></div>
@@ -559,7 +561,7 @@ function futRender(z, bb, next, W){
     if (it.type !== 'line' && !it.poly) {          // 공식 경계 없는 사업: 점(공공 좌표). 다른 말풍선·안내·범례 자리와 겹치면 더 확대했을 때 보여 줌
       const q = MAP.project(it.at[1], it.at[0]), db = { l: q.x - 9, t: q.y - 9, r: q.x + 9, b: q.y + 9 };
       if (!sel && W.some(b => boxHit(b, db, 2))) continue;
-      pin(next, 'FD' + it.id, { lat: it.at[1], lng: it.at[0], cls: 'fdot' + (sel ? ' sel' : ''), html: '', z: 880, tap: () => futCard(it) });
+      pin(next, 'FD' + it.id, { lat: it.at[1], lng: it.at[0], cls: 'fdot' + (it.approx ? ' ap' : '') + (sel ? ' sel' : ''), html: '', z: 880, tap: () => futCard(it) });
       W.push(db);
     }
     if (sh.text) labs.push({ it, sel });
@@ -568,7 +570,7 @@ function futRender(z, bb, next, W){
   const rank = o => (o.sel ? 0 : 10) + (o.it.type === 'line' ? 0 : FU.dues(o.it).length ? 1 : o.it.kind === '정비구역' ? 3 : 2);
   labs.sort((a, b) => rank(a) - rank(b));
   for (const { it, sel } of labs) {
-    const L = FU.label(it), w = Math.min(220, Math.max(TW(L.name, 11.5), TW(L.tail, 12)) + 20), h = 38;
+    const L = FU.label(it), w = Math.min(220, Math.max(TW(L.name, 11.5), TW(L.tail, 12)) + 20), h = L.approx ? 52 : 38;
     const anchors = it.type === 'line' ? FU.linePoints(it.path) : [it.at];
     let got = null;
     for (const a of anchors) {
@@ -585,7 +587,7 @@ function futRender(z, bb, next, W){
     W.push(got.box);
     pin(next, 'FL' + it.id, { lat: got.a[1], lng: got.a[0], cls: 'fu' + (L.year ? ' yr' : '') + (sel ? ' sel' : ''), z: 890, tap: () => futCard(it),
       st: `transform:translate(calc(-50% + ${Math.round(got.sp[0])}px),calc(-50% + ${Math.round(got.sp[1])}px))`,
-      html: `<span>${esc(L.name)}</span><b>${esc(L.tail)}</b>` });
+      html: `<span>${esc(L.name)}</span><b>${esc(L.tail)}</b>${L.approx ? '<small>대략 위치</small>' : ''}` });
   }
 }
 function futCard(it){
