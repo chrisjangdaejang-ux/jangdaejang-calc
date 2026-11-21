@@ -127,3 +127,8 @@ table.tt{width:100%;border-collapse:collapse;font-size:14.5px;font-variant-numer
 .faq .a{padding:0 2px 16px 36px;font-size:15.5px;color:var(--sub);line-height:1.75}
 .faq .a p{margin:0}.faq .a p+p{margin-top:8px}
 .fine{margin:24px 0 0;font-size:13.5px;color:var(--sub2);line-height:1.65}
+.segs{display:grid;grid-template-columns:1fr;gap:10px;margin:8px 0 0}
+@media(min-width:680px){.segs{grid-template-columns:1fr 1fr}}
+.segs .topb li:before{content:none}
+.cmpt{margin:8px 0 0;font-size:14px}
+.cmpt td,.cmpt th{padding:6px 8px}

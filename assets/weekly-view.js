@@ -20,7 +20,7 @@
       `${esc(K.period(V))} 전국 아파트,<br>같은 집 직전 거래보다 <em class="${cls(k.chg)}">${esc(K.pct(k.chg))}</em>`;
     $('hdSub').textContent = `${K.weekName(V)}에 계약된 아파트 매매 ${K.num(k.n)}건 가운데, 같은 단지·같은 면적의 직전 거래(${m.lookback || 90}일 안)와 비교할 수 있는 ${K.num(k.np)}건의 변화율 중간값이에요.`;
     $('stl').innerHTML = `<span class="pill ${V.status === 'final' ? 'final' : 'prov'}">${esc(K.statusText(V))}</span><span class="pill ver">제${V.ver}판 · ${esc(K.dot(V.asof))} 자료 기준</span>
-      <span class="fn">${esc(K.finalNote(V))}</span>`;
+      <span class="fn">${esc(K.finalNote(V))}</span><span class="fn"><b>${esc(K.scheduleText(V))}</b>${V.release ? ` 이 판 발표: ${esc(K.whenText(V.release))}.` : ''}</span>`;
     document.querySelectorAll('[data-m]').forEach(el => { const v = m[el.dataset.m]; if (v != null) el.textContent = v; });
     const can = document.querySelector('link[rel=canonical]'); if (can) can.href = K.ORIGIN + K.PAGE + V.w + '/';
   }
@@ -42,9 +42,12 @@
     const chgCard = (nm, r) => r.chg == null ? card(nm + ' 변동률', '표본 부족', 'na', `비교 ${K.num(r.np)}건 · 기준 ${min}건`) :
       card(nm + ' 변동률', K.pct(r.chg), cls(r.chg), `비교 ${K.num(r.np)}건 · 오른 거래 ${K.share(r.up)}, 내린 거래 ${K.share(r.dn)}<br>오차 범위 ${esc(K.pct(r.lo))} ~ ${esc(K.pct(r.hi))}`);
     const vc = K.volCell(k, V);
+    const us = K.usCell(k), ob = K.obCell(k);
     $('cards').innerHTML = chgCard('전국', k) + chgCard('서울', s) +
       card('전국 거래 건수', K.num(k.n) + '건', '', `해제 제외 · ${V.status === 'final' ? '확정' : '지금까지 신고분'}<br>지난주 대비 ${esc(vc.t)} <small>(${esc(vc.why)})</small>`) +
-      card('전국 신고가 비율', k.hs != null ? K.share(k.hs) : K.num(k.nh) + '건', '', `${K.num(k.nh)}건 · 직거래 뺀 거래 중 그 전 최고가를 넘은 거래`);
+      card('전국 신고가 비율', k.hs != null ? K.share(k.hs) : K.num(k.nh) + '건', '', `${K.num(k.nh)}건 · 직거래 뺀 거래 중 그 전 최고가를 넘은 거래`) +
+      card('전국 급매 비율', us.t, us.cls || '', `${esc(us.why)} · 같은 집 최근 3개월 가운데 값보다 10~30% 싸게 거래`) +
+      card('외지인 매수 비율', ob.t, ob.cls || '', `${esc(ob.why)} 다른 시·도에 사는 사람이 산 비율(한국부동산원 월간 집계)`);
   }
 
   function rone() {
@@ -99,13 +102,14 @@
 
   function table(rows, tot) {
     const min = (V.method || {}).min, b = BASIS;
-    const hd = `<thead><tr><th>지역</th><th>변동률<br>중간값</th><th>비교<br>거래</th><th>오른·내린<br>비율</th><th>거래<br>건수</th><th>거래량<br>변화</th><th>신고가<br>비율</th><th>부동산원<br>(참고)</th></tr></thead>`;
+    const hd = `<thead><tr><th>지역</th><th>변동률<br>중간값</th><th>비교<br>거래</th><th>오른·내린<br>비율</th><th>거래<br>건수</th><th>거래량<br>변화</th><th>신고가<br>비율</th><th>급매<br>비율</th><th>외지인<br>매수(월)</th><th>부동산원<br>(참고)</th></tr></thead>`;
     const tr = (r, cl) => {
       const c = K.chgCell(r, b, min), p = K.pick(r, b), v = K.volCell(r, V), ro = K.roneCell(r);
       const ud = b === 'w' && r.up != null && p.ok ? `${Math.round(r.up)}% · ${Math.round(r.dn)}%` : '—';
       return `<tr class="${cl || ''} ${c.cls === 'na' ? 'na' : ''}"><td>${esc(r.nm)}${r.old ? '<small>자료 확인 늦음</small>' : ''}</td><td class="c ${c.cls}"><b>${esc(c.t)}</b>${c.sub ? `<small>${esc(c.sub)}</small>` : ''}</td>
         <td>${K.num(p.np)}${p.gap != null ? `<small>간격 ${p.gap}일</small>` : ''}</td><td>${ud}</td><td>${K.num(b === 'w' ? r.n : (r.m || {}).n)}</td>
-        <td class="${cls(r.vc)}">${esc(b === 'w' ? v.t : '—')}</td><td>${esc(b !== 'w' ? '—' : r.hs != null ? K.share(r.hs) : r.nh ? r.nh + '건' : '—')}</td><td class="${cls((r.ro || {}).chg)}">${esc(ro.t)}${ro.why ? `<small>${esc(ro.why)}</small>` : ''}</td></tr>`;
+        <td class="${cls(r.vc)}">${esc(b === 'w' ? v.t : '—')}</td><td>${esc(b !== 'w' ? '—' : r.hs != null ? K.share(r.hs) : r.nh ? r.nh + '건' : '—')}</td>
+        <td class="${K.usCell(r).cls || ''}">${esc(b !== 'w' ? '—' : K.usCell(r).t)}</td><td class="${K.obCell(r).cls || ''}">${esc(K.obCell(r).t)}${r.ob ? `<small>${esc(K.ymText(r.ob.ym))}</small>` : ''}</td><td class="${cls((r.ro || {}).chg)}">${esc(ro.t)}${ro.why ? `<small>${esc(ro.why)}</small>` : ''}</td></tr>`;
     };
     return hd + '<tbody>' + (tot ? tr(tot, 'tot') : '') + rows.map(r => tr(r)).join('') + '</tbody>';
   }
@@ -165,16 +169,45 @@
     };
   }
 
-  function renderBasis() { bars(); tops(); tables(); }
+  let SEG = '00';
+  function segs() {
+    const opts = [['00', '전국']].concat(K.levelRows(V, 'sd').map(r => [r.c, r.nm]));
+    $('segSel').innerHTML = opts.map(([c, nm]) => `<option value="${c}"${c === SEG ? ' selected' : ''}>${esc(nm)}</option>`).join('');
+    const box = (h, kind) => `<div class="topb"><h3>${h}</h3><ol>${K.segRows(V, SEG, kind, BASIS).map(r => `<li><span>${esc(r.nm)} <small>비교 ${K.num(r.np)}건</small></span><b class="${r.ok ? cls(r.chg) : 'na'}">${r.ok ? esc(K.pct(r.chg)) : '표본 부족'}</b></li>`).join('')}</ol></div>`;
+    $('segs').innerHTML = box('단지 나이(준공 후)', 'age') + box('단지 크기(세대수)', 'size');
+    const cov = (((V.seg || {})[SEG] || {}).cov) || {};
+    $('segSmall').textContent = BASIS === 'w' ? '지난주' : '최근 4주';
+    $('segNote').textContent = `건축년도를 아는 거래 ${cov.age != null ? K.share(cov.age) : '—'}, 세대수(공동주택관리정보 K-apt)를 연결한 거래 ${cov.size != null ? K.share(cov.size) : '—'}만 나눠 셌어요(그 주 기준). 세대수를 연결하지 못한 단지는 크기별 칸에 들어가지 않아요.`;
+  }
+  async function cmp() {
+    const C = await J(K.DATA + 'compare.json'), S = K.cmpSummary(C);
+    if (!S) return;
+    const L = Object.entries(C.levels || {}).sort((a, b) => a[0] < b[0] ? -1 : 1);
+    const big = (C.big || []).slice(0, 8);
+    $('cmpA').insertAdjacentHTML('beforeend', `<p><b>${esc(S.from)}~${esc(S.to)} 주, 전국·시·도 ${K.num(S.n)}번 비교에서 방향(오름·내림·보합)이 같았던 비율은 ${esc(K.share(S.pct))}(${K.num(S.same)}번)예요.</b> 둘 다 보합이 아니었던 ${K.num(S.nz)}번만 보면 ${esc(K.share(S.nzPct))}가 같은 방향이었어요. 우리 숫자가 0.00%(보합)였던 경우가 ${K.num(S.ours0)}번 있었고, 두 숫자 차이의 중간값은 ${esc(K.pct(S.gap).replace('+', ''))}p예요.</p>
+      <div class="tw"><table class="tt cmpt"><thead><tr><th>지역</th><th>비교 주</th><th>방향 같음</th><th>둘 다 보합 아님</th><th>차이 중간값</th></tr></thead><tbody>${L.map(([c, v]) => `<tr><td>${esc(v.nm)}</td><td>${K.num(v.n)}</td><td>${esc(K.share(v.pct))}</td><td>${v.nz ? esc(K.share(v.nz_pct)) + ` <small>${v.nz}번</small>` : '—'}</td><td>${esc(K.pct(v.gap_med).replace('+', ''))}p</td></tr>`).join('')}</tbody></table></div>
+      <p><b>차이가 가장 컸던 주</b>(숨기지 않고 그대로 보여 드려요)</p>
+      <div class="tw"><table class="tt cmpt"><thead><tr><th>주(계약)</th><th>지역</th><th>우리</th><th>부동산원</th><th>차이</th></tr></thead><tbody>${big.map(r => `<tr><td>${esc(String(r.from).slice(0, 4))}년 ${esc(K.md(r.from))}~${esc(K.md(r.to))}</td><td>${esc(r.nm)}</td><td>${esc(K.pct(r.ours))}<small>비교 ${K.num(r.np)}건</small></td><td>${esc(K.pct(r.off))}<small>${esc(r.off_t)}</small></td><td>${esc(K.pct(r.gap))}p</td></tr>`).join('')}</tbody></table></div>
+      <p>짝짓는 방법: 우리 주(월~일)는 그다음 월요일이 조사 기준일인 부동산원 주간 지수와 짝지어요(지수 두 주로 계산한 변동률). 방향은 우리 숫자는 0보다 크면 오름·작으면 내림·0.00이면 보합, 부동산원은 +0.01% 이상 오름·−0.01% 이하 내림·그 사이 보합으로 봐요. 비교 거래가 ${C.min}건 미만인 주는 넣지 않았어요. 서비스 시작 전 주는 지금 원자료로 같은 방법으로 다시 계산했어요. <a href="${K.DATA}compare.csv" download>전체 기록 내려받기(CSV)</a></p>`);
+  }
+  function renderBasis() { bars(); tops(); tables(); segs(); }
 
   (async function () {
     const w0 = K.weekFrom(location.pathname, location.search), v0 = K.verFrom(location.search);
     IX = await J(K.DATA + 'index.json');
-    const w = w0 || (IX && IX.latest);
+    if (IX && IX.weeks) IX.weeks = IX.weeks.filter(x => K.released({ release: x.first_release }));    /* 발표 시각(월요일 오전 7시) 전인 주는 숨김 */
+    const w = w0 || (IX && IX.weeks && IX.weeks[0] && IX.weeks[0].w);
     if (!w) return fail('아직 공개한 주간 통계가 없어요. 매주 월요일 새벽에 새로 계산해요.');
     const L = await J(K.DATA + w + '.json');
     if (!L) return fail(`${w} 주 통계를 찾지 못했어요. 아래 통계 설명을 참고해 주세요.`);
+    const relV = (L.versions || []).filter(x => K.released(x));
+    if (!relV.length) return fail(`${w} 주는 ${K.whenText((L.versions || [{}])[0].release) || '월요일 오전 7시'}에 발표해요.`);
+    L.versions = relV;
+    if (!v0 && relV[relV.length - 1].ver !== L.ver) {                       /* 새 판이 발표 시각 전이면 그 앞 판 */
+      const P = await J(`${K.DATA}${w}/v${relV[relV.length - 1].ver}.json`); if (P) Object.assign(L, P, { versions: relV });
+    }
     V = L;
+    if (v0 && !relV.some(x => x.ver === v0)) return fail(`${w} 주 제${v0}판은 아직 발표 전이에요.`);
     if (v0 && v0 !== L.ver) {
       const P = await J(`${K.DATA}${w}/v${v0}.json`);
       if (!P) return fail(`${w} 주 제${v0}판을 찾지 못했어요.`);
@@ -187,6 +220,8 @@
       BASIS = b.dataset.b; document.querySelectorAll('#basis button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); renderBasis(); T('weekly_basis', { b: BASIS });
     });
     $('sgSel').onchange = e => { SD = e.target.value; tables(); T('weekly_sido', { sd: SD }); };
+    $('segSel').onchange = e => { SEG = e.target.value; segs(); };
+    cmp();
     T('weekly_view', { w: V.w, v: V.ver });
   })();
 })();

@@ -57,7 +57,26 @@ check('금지 낱말 없음(시험·검증·채점)', ['시험', '검증', '채�
 check('다른 회사 이름 없음', ['리치고', '호갱', '직방', '아실', '밸류맵', '다방', '네이버', 'KB'].filter(w => txt.includes(w)), []);
 check('통계 설명에 방법·신고 기한·표본 기준·확정', ['같은 단지·같은 전용면적', '30일 안에', '표본 부족', '확정', '한국부동산원'].every(w => main.includes(w)), true);
 const sw = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
-check('서비스 워커에 화면·공유 JS', ['/jangdaejang-calc/weekly/', 'weekly-core.js?v=1', 'weekly-view.js?v=1', 'weekly.css?v=1'].every(s => sw.includes(s)), true);
+const vOf = f => (main.match(new RegExp(f.replace('.', '\\.') + '\\?v=(\\d+)')) || [])[1];
+check('서비스 워커에 화면·공유 JS(판 번호 같음)', ['/jangdaejang-calc/weekly/', '/jangdaejang-calc/press/', 'press-view.js?v=1'].concat(['weekly-core.js', 'weekly-view.js', 'weekly.css'].map(f => f + '?v=' + vOf(f))).every(x => sw.includes(x)), true);
+/* 발표 시각·다른 지표·보도자료실 */
+check('발표 시각 전이면 숨김', [K.released({ release: '2026-11-23T07:00+09:00' }, Date.parse('2026-11-23T06:59+09:00')), K.released({ release: '2026-11-23T07:00+09:00' }, Date.parse('2026-11-23T07:00+09:00')), K.released({})], [false, true, true]);
+check('발표 시각 글', K.whenText('2026-11-23T07:00+09:00'), '11월 23일(월) 오전 7시');
+check('고침 일정: 확정 월요일', K.scheduleText({ status: 'prov', final_on: '2026-12-20', ver: 1 }).includes('12월 21일(월) 오전 7시 판에서 확정'), true);
+check('외지인 칸', [K.obCell({ ob: { ym: '202609', n: 3915, sd: 17.73 } }).t, K.obCell({ ob: { ym: '202609', n: 12 } }).t, K.obCell({}).t], ['17.7%', '표본 부족', '—']);
+check('급매 칸', [K.usCell({ ub: 317, nu: 2, us: 0.63 }).t, K.usCell({ ub: 10, nu: 1 }).t], ['0.6%', '표본 부족']);
+const Vs = Object.assign({}, V, { seg: { '00': { age: [{ nm: '신축(5년 이하)', w: { n: 10, np: 6 }, m: { n: 50, np: 40, chg: 0.3, lo: 0, hi: 0.6 } }] } } });
+check('연식별 줄(표본 부족은 ok=false)', [K.segRows(Vs, '00', 'age', 'w')[0].ok, K.segRows(Vs, '00', 'age', 'm')[0].chg], [false, 0.3]);
+const Vp = Object.assign({}, V, { top: { m: { up: [{ sd: '서울', nm: '중랑구', chg: 2.31, np: 95 }], down: [] } } });
+check('기사 제목 후보는 자료 숫자만', K.pressTitles(Vp), ['지난주 서울 아파트, 같은 집 직전 거래보다 +0.50%', '지난주 전국 아파트 실거래 +0.12%…비교 거래 4,000건', '최근 4주 아파트값 가장 많이 오른 곳은 서울 중랑구(+2.31%)']);
+const pl = K.pressLines(Vp, '집예보');
+check('기사 문장: 칼럼체·기간·잠정·표본 수', [pl[0], pl.every(x => /다\.$|다\)\.$|\)\.$|였다\(.*\)\.$/.test(x)), pl.some(x => x.includes('잠정치')), pl.some(x => x.includes('비교한 거래는 4,000건'))],
+  ['집예보 주간 실거래 동향에 따르면 지난주(11월 9~15일 계약) 전국 아파트 매매는 5,000건 신고됐다(잠정).', true, true, true]);
+check('기사 문장 조사(로/으로)', pl.find(x => x.includes('중랑구')), '최근 4주 기준 가장 많이 오른 시·군·구는 서울 중랑구로 +2.31%였다(비교 95건).');
+const press = fs.readFileSync(path.join(ROOT, 'press/index.html'), 'utf8') + fs.readFileSync(path.join(ROOT, 'assets/press-view.js'), 'utf8');
+check('보도자료실: 광고 독립 문구·문의처 칸·발표 시각·CSV·지난 발표', ['광고는 통계에 영향을 주지 않아요', 'data-biz="contact"', '매주 월요일 오전 7시', '.csv', 'id="past"', '통계 설명 한 장'].every(w => press.includes(w)), true);
+check('보도자료실: 금지 낱말·다른 회사 이름 없음', ['시험', '검증', '채점', '리치고', '호갱', '직방', '아실', '네이버', 'KB'].filter(w => press.includes(w)), []);
+check('통계 설명: 공식 지수와 방향이 같았던 비율·발표 시각', ['공식 주간 지수와 방향이 같았던 비율', '매주 월요일 오전 7시'].every(w => main.includes(w)), true);
 
 const bad = rows.filter(r => !r.ok);
 rows.forEach(r => console.log(r.ok ? 'PASS' : 'FAIL', r.name, r.ok ? '' : `→ ${JSON.stringify(r.got)} (기대 ${JSON.stringify(r.want)})`));

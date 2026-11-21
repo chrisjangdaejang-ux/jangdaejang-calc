@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
+<script src="/jangdaejang-calc/assets/pwa.js" defer data-nobar></script>
+<script src="/jangdaejang-calc/assets/biz.js" defer></script>
+<title>보도자료실 · 주간 실거래 동향 | 집예보</title>
+<meta name="description" content="기자분들을 위한 주간 실거래 동향 보도자료실. 이번 주 요약·제목 후보·핵심 숫자·표, 인용 표기 방법, CSV 내려받기, 통계 설명, 지난 발표 목록.">
+<link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/press/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="보도자료실 · 주간 실거래 동향 | 집예보">
+<meta property="og:description" content="국토교통부 실거래가로 계산한 주간 지역별 아파트 가격 변화. 매주 월요일 오전 7시 발표, 표본 수·잠정/확정·방법 공개.">
+<meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/press/">
+<meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/default.png">
+<script>window.JDJ_CONFIG = { tool:'press', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="/jangdaejang-calc/assets/track.js?v=2"></script>
+<script src="/jangdaejang-calc/assets/config.js?v=4"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=43">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/weekly.css?v=2">
+<style>
+.pr-sum{border:2px solid var(--text);border-radius:18px;padding:16px 16px 14px;margin:14px 0 0}
+.pr-sum .tl{font-size:13.5px;font-weight:700;color:var(--sub2);margin:0 0 4px}
+.pr-sum ol.tit{margin:4px 0 12px;padding-left:20px}
+.pr-sum ol.tit li{font-size:17px;font-weight:900;line-height:1.5;margin:2px 0;letter-spacing:-.3px}
+.pr-keys{display:grid;grid-template-columns:1fr;gap:8px;margin:8px 0 0}
+@media(min-width:640px){.pr-keys{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.pr-lines{background:var(--gray2);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:12px 0 0}
+.pr-lines p{margin:0 0 6px;font-size:15.5px;line-height:1.7;color:var(--text)}
+.pr-1p{margin:0;padding:14px 16px 14px 32px;border:1px solid var(--line);border-radius:14px}
+.pr-1p li{font-size:15px;line-height:1.7;color:var(--sub);margin:2px 0}
+.pr-past{margin:8px 0 0;padding:0;list-style:none;border:1px solid var(--line);border-radius:14px}
+.pr-past li{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;padding:11px 14px;border-top:1px solid var(--line2);font-size:14.5px}
+.pr-past li:first-child{border-top:0}
+.pr-past li b{min-width:150px}
+.pr-past li a{font-weight:700;font-size:14px}
+.pr-note{border-radius:14px;background:#F7F9FF;border:1px solid #B9CCFF;padding:12px 14px;font-size:15px;line-height:1.7;color:var(--sub);margin:10px 0 0}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/jangdaejang-calc/" aria-label="홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg><span data-site-name>집예보</span></a>
+  <div class="badge plain">보도자료실</div>
+</header>
+<main class="wk">
+  <div class="eyebrow">보도자료실 · <span data-site-name>집예보</span> 주간 실거래 동향</div>
+  <h1>기자분들을 위한<br>주간 아파트 실거래 통계</h1>
+  <p class="sub1">국토교통부 실거래가로 매주 계산한 지역별 아파트 가격 변화예요. <b>매주 월요일 오전 7시(한국 시각)</b>에 지난주(월~일) 계약분을 발표하고, 신고 기한이 지나면 확정해요.</p>
+  <div class="pr-note">광고는 통계에 영향을 주지 않아요. 숫자는 공개된 실거래 자료와 공개한 계산 규칙으로만 만들어요. 계산 코드는 비공개로 관리하지만 방법은 모두 공개해요.</div>
+
+  <h2 id="h-sum">이번 주 요약 <small id="sumSmall"></small></h2>
+  <div id="sum"><div class="load">불러오는 중이에요</div></div>
+
+  <h2>인용 표기 방법</h2>
+  <div class="cite" id="cite"></div>
+
+  <h2>내려받기</h2>
+  <ul class="pr-1p" id="dl"></ul>
+
+  <h2>통계 설명 한 장</h2>
+  <ol class="pr-1p">
+    <li><b>무엇:</b> 그 주(월~일)에 계약된 아파트 매매를 같은 단지·같은 전용면적의 직전 정상 거래(90일 안)와 비교한 변화율의 중간값.</li>
+    <li><b>빼는 거래:</b> 해제(취소) 신고, 직거래, 특수 거래 의심(같은 집 최근 3개월 가운데 값보다 30% 넘게 싼 거래). 전용 30㎡ 미만은 변동률에서만 뺌.</li>
+    <li><b>표본 기준:</b> 비교 거래 30건 미만이면 숫자를 비우고 순위에서 뺌. 모든 숫자에 표본 수와 기간을 함께 적음.</li>
+    <li><b>잠정→확정:</b> 계약 후 30일 신고 기한 때문에 매주 월요일 오전 7시 새 판으로 다시 계산. 주 끝 35일 뒤 자료로 확정(보통 제6판). 지난 판은 고치지 않고 보관.</li>
+    <li><b>오차 범위:</b> 중간값의 90% 범위(순서 통계). 같은 값 거래가 많아 중간값이 0.00%에 머물 수 있어 오른·내린 거래 비율을 함께 냄.</li>
+    <li><b>함께 내는 지표:</b> 신고가 비율, 같은 신고 기간끼리 비교한 거래량 변화, 급매 비율, 외지인 매수 비율(한국부동산원 월간 매입자 거주지 자료), 단지 연식별·규모별 변동.</li>
+    <li><b>공식 지수와 차이:</b> 한국부동산원 주간 지수는 표본 아파트 시세 조사, 이 통계는 실제 거래 비교. 두 숫자를 나란히 쌓은 기록과 방향이 같았던 비율을 공개함.</li>
+  </ol>
+  <p class="tnote">자세한 설명: <a href="/jangdaejang-calc/weekly/#faq">주간 실거래 동향 · 통계 설명</a></p>
+
+  <h2>지난 발표 <small>주차별 고정 주소</small></h2>
+  <ul class="pr-past" id="past"><li>불러오는 중이에요</li></ul>
+
+  <h2>문의</h2>
+  <p class="lead2">자료 문의: <span data-biz="contact">사이트 아래 사업자 정보의 고객문의 연락처</span></p>
+</main>
+<footer class="foot">★ <span data-site-name>집예보</span> · <a href="/jangdaejang-calc/">홈</a> · <a href="/jangdaejang-calc/weekly/">주간 실거래 동향</a> · <a href="/jangdaejang-calc/about/">서비스 소개</a></footer>
+<script src="/jangdaejang-calc/assets/weekly-core.js?v=2"></script>
+<script src="/jangdaejang-calc/assets/press-view.js?v=1"></script>
+</body>
+</html>
