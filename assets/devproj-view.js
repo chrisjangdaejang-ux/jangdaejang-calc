@@ -36,6 +36,21 @@
     return '공식 자료';
   }
   function key(u){ return [u.code, u.dong, u.jibun].join('|'); }
+  /* 기준일: 자동 수집이 공식 출처를 마지막으로 읽은 날(checked, 없으면 asof). 7일 넘으면 '자료 갱신 지연'. now: 확인용 'YYYY-MM-DD' */
+  var STALE_DAYS = 7;
+  function fresh(data, now){
+    var d = data && (data.checked || data.asof); if (!d || !/^\d{4}-\d{2}-\d{2}/.test(d)) return null;
+    var t = now || new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
+    var days = Math.round((Date.parse(t + 'T00:00:00Z') - Date.parse(String(d).slice(0, 10) + 'T00:00:00Z')) / 86400000);
+    return {d: String(d).slice(0, 10), days: days, stale: days > STALE_DAYS};
+  }
+  function fdd(d){ var a = String(d).split('-'); return a[0] + '.' + (+a[1]) + '.' + (+a[2]); }
+  /* 화면 문구: 기준일 한 줄(늘) + 지연 안내(7일 넘을 때) */
+  function freshText(data, now){
+    var f = fresh(data, now); if (!f) return {asof: '', stale: ''};
+    return {asof: '기준일 ' + fdd(f.d) + '(공식 원문을 마지막으로 확인한 날)',
+      stale: f.stale ? '자료 갱신 지연: 개발사업 자료를 마지막으로 확인한 날이 ' + fdd(f.d) + '(' + f.days + '일 전)이라 그 뒤 단계 변화는 빠져 있을 수 있어요.' : ''};
+  }
 
   /* 단지 → [{p, d(m), band, f(첫 발표 달), me(이 단지 %), gu(같은 구 중간값 %)}] 가까운 순 */
   function forUnit(data, u){
@@ -81,6 +96,8 @@
     if (D != null) t += ' — ' + fym(x.f) + ' ' + stageAt(p, x.f) + ' 뒤 이 단지가 ' + g + ' 단지 중간값보다 ' + p1(D) + '%p ' + (D >= 0 ? '더' : '덜') + ' 올랐어요';
     if (nx) t += (D != null ? ', ' : ' — ') + fdY(nx.d) + ' ' + nx.s + ' 목표';
     if (L.length > 1) t += ' (그 밖에 ' + (L.length - 1) + '곳)';
+    var fx = freshText(data, o && o.now);
+    if (fx.stale && !(o && o.noStale)) t += ' — ' + fx.stale;            /* 자료가 멈췄으면 요약 한 줄에서 바로 보이게(보고서·내 집·설명 문단 모두 이 줄을 씀) */
     return t;
   }
 
@@ -121,7 +138,8 @@
     h += '<p class="dv-note">' + (data.inModel ? '주변 개발사업은 과거 사례 검증을 거쳐 미래가치 점수에도 반영돼요.' :
       '주변 개발사업은 미래가치 점수에 넣지 않았어요(과거 사례로 검증했을 때 예측이 나아지지 않았어요).') +
       ' 단계·날짜는 서울시·국토부 등 공식 원문으로 확인한 것만 적었고, 확인 못 한 일정은 넣지 않았어요.' +
-      (data.to ? ' 시세 비교는 ' + fym(data.to) + '까지 실거래 기준이에요.' : '') + '</p>';
+      (data.to ? ' 시세 비교는 ' + fym(data.to) + '까지 실거래 기준이에요.' : '') +
+      (freshText(data, o && o.now).asof ? ' ' + freshText(data, o && o.now).asof + '.' : '') + '</p>';
     return h;
   }
 
@@ -129,6 +147,8 @@
     '.dv-sec .dv-nm{font-size:16px}.dv-sec .dv-sc{font-size:13.5px;color:#667;margin-top:2px}.dv-sec .dv-p{margin:6px 0;line-height:1.65;font-size:15px;word-break:keep-all}' +
     '.dv-sec .dv-h summary{cursor:pointer;font-size:14px;color:#456}.dv-sec .dv-h ul{margin:6px 0 0;padding-left:18px;font-size:14px;line-height:1.6}' +
     '.dvd{margin-top:6px}.dvd>summary,.dv-more>summary{cursor:pointer;font-size:14px;color:#456}.dv-sec .dv-plan{color:#667}.dv-sec .dv-note{font-size:13px;color:#778;line-height:1.6;margin:8px 0 0}.dv-sec .dv-sum{font-weight:700;line-height:1.6;word-break:keep-all}';
+  CSS += '.dv-sec .dv-stale{font-size:14.5px;line-height:1.6;margin:0 0 10px;padding:10px 12px;border-radius:12px;background:#FFF6DB;border:1px solid #F1DFA6;color:#5C4500;word-break:keep-all}' +
+    '.dv-sec .dv-stale b{display:block;color:#8A5A00;font-weight:900;margin:0 0 2px}';
   function css(){ if (document.getElementById('dv-css')) return; var s = document.createElement('style'); s.id = 'dv-css'; s.textContent = CSS; document.head.appendChild(s); }
 
   /* el 에 '주변 개발사업' 칸을 채움. 주변 사업이 없으면 숨김. o.base·o.head·o.cls 선택 */
@@ -138,14 +158,16 @@
     var tok = String(Math.random()); if (el.dataset) el.dataset.dvTok = tok;
     return load(o.base).then(function(data){
       if (el.dataset && el.dataset.dvTok !== tok) return null;
-      var u = {code: o.code, dong: o.dong, jibun: o.jibun}, sl = summaryLine(data, u, o);
+      var u = {code: o.code, dong: o.dong, jibun: o.jibun}, sl = summaryLine(data, u, Object.assign({}, o, {noStale: 1})), fx = freshText(data, o.now);
       if (!sl) { el.hidden = true; el.innerHTML = ''; return null; }
-      el.innerHTML = '<div class="' + (o.cls || 'panel') + ' dv-sec">' + (o.head || '<h2>주변 개발사업</h2>') + '<p class="dv-sum">' + esc(sl.replace(/^주변 개발사업: /, '')) + '</p>' +
+      el.innerHTML = '<div class="' + (o.cls || 'panel') + ' dv-sec">' + (o.head || '<h2>주변 개발사업</h2>') +
+        (fx.stale ? '<p class="dv-stale" role="status"><b>자료 갱신 지연</b>' + esc(fx.stale.replace(/^자료 갱신 지연: /, '')) + '</p>' : '') +
+        '<p class="dv-sum">' + esc(sl.replace(/^주변 개발사업: /, '')) + '</p>' +
         '<details class="dv-more"><summary>자세히 보기</summary>' + detailHtml(data, u, o) + '</details></div>';
       el.hidden = false;
       return data;
     });
   }
 
-  window.JDJDev = {load: load, forUnit: forUnit, summaryLine: summaryLine, detailHtml: detailHtml, mount: mount, caseOf: caseOf, eun: eun, factCase: factCase};
+  window.JDJDev = {load: load, forUnit: forUnit, summaryLine: summaryLine, detailHtml: detailHtml, mount: mount, caseOf: caseOf, eun: eun, factCase: factCase, fresh: fresh, freshText: freshText};
 })();

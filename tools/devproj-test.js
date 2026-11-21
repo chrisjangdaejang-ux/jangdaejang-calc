@@ -26,6 +26,10 @@ t('요약: 거리', sl.includes('잠실 국제교류복합지구(잠실종합운
 t('요약: 비교 기준(같은 구 중간값)·차이', sl.includes('송파구 단지 중간값보다 15.8%p 더 올랐어요'), true);
 t('요약: 다음 단계', sl.includes('2032년 준공 목표'), true);
 t('요약: 그 밖에', sl.includes('(그 밖에 1곳)'), true);
+t('요약: 기준일이 7일 안이면 지연 문구 없음', V.summaryLine(D, u, Object.assign({now: '2026-11-21'}, o)).includes('자료 갱신 지연'), false);
+const slS = V.summaryLine(Object.assign({}, D, {checked: '2026-11-12'}), u, Object.assign({now: '2026-11-21'}, o));
+t('요약: 7일 넘으면 요약 한 줄 끝에 자료 갱신 지연(날짜·며칠 전)', /자료 갱신 지연: 개발사업 자료를 마지막으로 확인한 날이 2026\.11\.12\(9일 전\)/.test(slS), true);
+t('펼침: 기준일 한 줄', V.detailHtml(Object.assign({}, D, {checked: '2026-11-21'}), u, Object.assign({now: '2026-11-21'}, o)).includes('기준일 2026.11.21(공식 원문을 마지막으로 확인한 날)'), true);
 const h = V.detailHtml(D, u, o);
 t('문단: 주어·조사', h.includes('잠실엘스는 잠실 국제교류복합지구(잠실종합운동장 MICE)에서 약 0.6km예요.'), true);
 t('문단: 발표 달·이 단지·구 중간값', h.includes('2014.4 계획 발표 뒤 지금까지 이 단지는 267.3% 올라, 송파구 단지 중간값(+251.5%)보다 15.8%p 더 올랐어요'), true);

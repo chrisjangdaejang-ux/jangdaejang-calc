@@ -50,5 +50,11 @@ if (fs.existsSync(f)) {
   const html = P.html(R, {mode: 'mine', codes: [{sgg: '11680', dong: '압구정동'}], price: 300000});
   t('실자료: 강남구 압구정동 칸에 정책 있음', /pol-card/.test(html), true);
 }
+/* 기준일·자료 갱신 지연(자동 수집이 멈추면 최신처럼 보이지 않게) */
+t('기준일: checked 우선, 없으면 asof', [P.fresh({asof: '2026-11-19', checked: '2026-11-21'}, '2026-11-21'), P.fresh({asof: '2026-11-19'}, '2026-11-21').d, P.fresh(null)], [{d: '2026-11-21', days: 0, stale: false}, '2026-11-19', null]);
+t('7일까지는 정상, 8일부터 지연', [P.fresh({checked: '2026-11-14'}, '2026-11-21').stale, P.fresh({checked: '2026-11-13'}, '2026-11-21').stale], [false, true]);
+const F1 = P.html(D, {mode: 'mine', codes: [{sgg: '11680', dong: '대치동'}], now: '2026-11-21'}), F2 = P.html(Object.assign({}, D, {checked: '2026-11-10'}), {mode: 'mine', codes: [{sgg: '11680', dong: '대치동'}], now: '2026-11-21'});
+t('화면: 기준일 한 줄(지연 없음)', [/기준일 2026\.11\.19/.test(F1), /자료 갱신 지연/.test(F1)], [true, false]);
+t('화면: 7일 넘으면 자료 갱신 지연 안내(날짜·며칠 전)', [/pol-stale/.test(F2), /2026\.11\.10\(11일 전\)/.test(F2)], [true, true]);
 console.log(`${ok}/${ok + bad} 통과`);
 process.exit(bad ? 1 : 0);

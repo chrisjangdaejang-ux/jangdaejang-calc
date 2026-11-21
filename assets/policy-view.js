@@ -36,6 +36,22 @@
     return hit ? 'yes' : 'part';
   }
   function fd(d){ if (!d) return ''; var a = String(d).split('-'); return a[0] + '.' + (+a[1]) + (a[2] ? '.' + (+a[2]) : ''); }
+  /* 기준일: 자동 수집이 공식 출처를 마지막으로 읽은 날(checked, 없으면 asof). 7일 넘게 지나면 '자료 갱신 지연'(멈춘 자료가 최신처럼 보이지 않게).
+     now: 확인용 'YYYY-MM-DD'(없으면 오늘, 한국 시각) */
+  var STALE_DAYS = 7;
+  function today(){ var k = new Date(Date.now() + 9 * 3600000); return k.toISOString().slice(0, 10); }
+  function fresh(data, now){
+    var d = data && (data.checked || data.asof); if (!d || !/^\d{4}-\d{2}-\d{2}/.test(d)) return null;
+    var days = Math.round((Date.parse((now || today()) + 'T00:00:00Z') - Date.parse(String(d).slice(0, 10) + 'T00:00:00Z')) / 86400000);
+    return {d: String(d).slice(0, 10), days: days, stale: days > STALE_DAYS};
+  }
+  function freshHtml(data, now){
+    var f = fresh(data, now); if (!f) return '';
+    var h = '<p class="pol-asof">기준일 ' + fd(f.d) + ' · 공식 발표 원문을 마지막으로 확인한 날이에요.</p>';
+    if (f.stale) h = '<p class="pol-stale" role="status"><b>자료 갱신 지연</b> 정책 자료를 마지막으로 확인한 날이 ' + fd(f.d) + '(' + f.days + '일 전)이에요. ' +
+      '그 뒤에 나온 정책 발표나 단계 변화는 아직 반영되지 않았을 수 있어요. 최신 발표는 대한민국 정책브리핑(korea.kr)에서 확인해 주세요.</p>';
+    return h;
+  }
   function fym(ym){ return ym ? ym.slice(0, 4) + '.' + (+ym.slice(4)) : ''; }
   function rng(r){ return r[0] === r[1] ? fym(r[0]) : fym(r[0]) + '~' + fym(r[1]); }
   function badge(p){
@@ -118,6 +134,9 @@
   }
 
   var CSS = '.pol-intro{font-size:14px;color:var(--muted,#4E5968);margin:0 0 12px;line-height:1.6}' +
+    '.pol-asof{font-size:13.5px;color:var(--sub2,#4E5968);margin:-6px 0 12px;line-height:1.55}' +
+    '.pol-stale{font-size:14.5px;line-height:1.6;margin:0 0 10px;padding:10px 12px;border-radius:12px;background:#FFF6DB;border:1px solid #F1DFA6;color:#5C4500;word-break:keep-all}' +
+    '.pol-stale b{display:block;color:#8A5A00;font-weight:900;margin:0 0 2px}' +
     '.pol-list{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}' +
     '.pol-card{border:1px solid var(--line,#E5E8EB);border-radius:12px;padding:16px;background:var(--card,#fff);min-width:0;overflow-wrap:anywhere;word-break:keep-all}' +
     '.pol-card.bill{border-style:dashed}' +
@@ -165,7 +184,7 @@
     var mode = opts.mode, out = [];
     var intro = mode === 'jeonse' ? '전세·월세 계약과 전세대출에 관련된 정책 중 공식 발표 원문으로 확인한 것만 모았어요.'
       : '공식 발표 원문(정책브리핑·부처 보도자료·법제처·서울시)으로 확인한 정책만 모았어요. 정책이 실제로 시세를 움직였는지는 과거 사례를 통계로 따져 본 결과를 함께 보여 드려요.';
-    out.push('<p class="pol-intro">' + intro + (data.asof ? ' ' + fd(data.asof) + ' 기준.' : '') + '</p>');
+    out.push('<p class="pol-intro">' + intro + '</p>' + freshHtml(data, opts.now));
     if (!g.now.length) out.push('<p class="pol-intro">지금 이 지역에 적용 중이거나 논의 중인 정책 중 화면에 올린 것이 없어요.</p>');
     else {
       var top = g.now.slice(0, 3), rest = g.now.slice(3);
@@ -193,5 +212,5 @@
     });
   }
 
-  window.JDJPolicy = {load: load, forCodes: forCodes, html: html, applies: applies, badge: badge, mount: mount};
+  window.JDJPolicy = {load: load, forCodes: forCodes, html: html, applies: applies, badge: badge, mount: mount, fresh: fresh, freshHtml: freshHtml};
 })();

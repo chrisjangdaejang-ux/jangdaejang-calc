@@ -33,7 +33,7 @@
 <script src="../assets/sale-status.js?v=1"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/ads.js?v=2"></script>
-<script src="../assets/devproj-view.js?v=2"></script>
+<script src="../assets/devproj-view.js?v=3"></script>
 <script src="../assets/tabbar.js?v=2" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -128,6 +128,7 @@ body.has-cmp .legend{transform:translateY(-62px)}
 .sheet .acts button{background:#fff;color:var(--blue);border:1.5px solid var(--blue)}
 .sheet .acts button.done{color:var(--sub2);border-color:var(--line);background:var(--gray2)}
 .sheet .note{margin:10px 0 0;font-size:13px;color:var(--sub3);line-height:1.55}
+.sheet .note.stale{padding:9px 11px;border-radius:10px;background:#FFF6DB;border:1px solid #F1DFA6;color:#5C4500;font-size:13.5px;font-weight:600}
 .sheet .src{font-size:14px;margin:10px 0 0}
 .sheet .src a{display:inline-flex;align-items:center;min-height:44px;font-weight:700}
 /* 지역 분석 칸 (모바일 아래 · PC 왼쪽) */
@@ -488,7 +489,7 @@ async function loadLayer(k){
     LAY.nb = { st: d && Array.isArray(d.rows) ? 'ok' : 'err', d: d || {}, list: ((d && d.rows) || []).filter(x => Array.isArray(x.xy) && isFinite(x.xy[0]) && isFinite(x.xy[1])) };
   } else if (k === 'dev') {
     const d = window.JDJDev ? await JDJDev.load(DATA).catch(() => null) : null;
-    LAY.dev = { st: d ? 'ok' : 'err', list: ((d && d.projects) || []).filter(p => Array.isArray(p.xy) && isFinite(p.xy[0]) && isFinite(p.xy[1])) };
+    LAY.dev = { st: d ? 'ok' : 'err', d, list: ((d && d.projects) || []).filter(p => Array.isArray(p.xy) && isFinite(p.xy[0]) && isFinite(p.xy[1])) };
   } else {
     const [n, p] = await Promise.all([J(DATA + 'bunyang/notices.json'), J(DATA + 'bunyang/plan.json')]);
     const T0 = window.JDJ_SALE ? JDJ_SALE.ymd(new Date()) : '';
@@ -568,14 +569,17 @@ const fd = d => { if (!d) return ''; const a = String(d).split('-'); return a[0]
 function devCard(p){
   SEL = { lay: p.id }; render();
   const last = (p.stages || []).slice(-1)[0], nx = (p.plan || [])[0], src = (p.src || [])[0];
+  const FX = window.JDJDev && JDJDev.freshText && LAY.dev ? JDJDev.freshText(LAY.dev.d) : {};
   $('sheet').innerHTML = `<div class="grab"></div><div class="hd"><h2>${esc(p.name)}</h2><button type="button" class="x" aria-label="닫기">×</button></div>
     <p class="meta">개발사업 · ${esc((p.types || []).join('·'))}</p>
+    ${FX.stale ? `<p class="note stale" role="status">${esc(FX.stale)}</p>` : ''}
     <dl class="kv">${last ? `<dt>지금 단계</dt><dd><b>${esc(last.s)}</b> <span class="ppy">${esc(fd(last.d))}</span>${last.note ? `<small>${esc(last.note)}</small>` : ''}</dd>` : ''}
     ${nx ? `<dt>다음 계획</dt><dd>${esc(nx.s)} ${esc(fd(nx.d))}${nx.note ? `<small>${esc(nx.note)}</small>` : ''}</dd>` : ''}
     ${p.scale ? `<dt>규모</dt><dd>${esc(p.scale)}</dd>` : ''}</dl>
     ${p.xy_basis ? `<p class="note">지도 위치: ${esc(p.xy_basis)}</p>` : ''}
     ${src && src[1] && /^https:\/\//.test(src[1]) ? `<p class="src"><a href="${esc(src[1])}" target="_blank" rel="noopener noreferrer">공식 자료 보기 ›</a></p>` : ''}
-    <p class="note">공식 원문으로 확인한 단계·날짜만 적었어요. 주변 단지를 누르면 그 단지 시세 화면에서 이 사업과의 거리도 볼 수 있어요.</p>`;
+    <p class="note">공식 원문으로 확인한 단계·날짜만 적었어요. 주변 단지를 누르면 그 단지 시세 화면에서 이 사업과의 거리도 볼 수 있어요.${FX.asof ? ` ${esc(FX.asof)}.` : ''}</p>
+`;
   showSheet();
 }
 function bunCard(x){
