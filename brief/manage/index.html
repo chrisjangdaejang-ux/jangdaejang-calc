@@ -16,7 +16,8 @@
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/auth.js?v=4"></script>
 <script src="../../assets/pay.js?v=3"></script>
-<script src="../../assets/brief-core.js?v=5"></script>
+<script src="../../assets/brief-core.js?v=6"></script>
+<script src="../../assets/share.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
@@ -45,6 +46,24 @@ h1{font-size:clamp(24px,6vw,32px);margin:4px 0 8px}
 .inp,select.inp{font:inherit;font-size:16px;min-height:46px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:#fff;width:100%;box-sizing:border-box;margin:6px 0}
 .note{font-size:13.5px;color:var(--sub2);line-height:1.65;margin:12px 0 0}
 details{margin:8px 0 0}summary{cursor:pointer;font-weight:700;min-height:40px;display:flex;align-items:center}
+.chg{margin:10px 0 0;border:1px solid #D6E2FF;background:#F8FAFF;border-radius:14px;padding:12px 14px}
+.chg h3{margin:0 0 8px;font-size:16px;font-weight:900}
+.chg .opt{display:grid;gap:6px}
+.chg .opt label{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff;cursor:pointer;line-height:1.45}
+.chg .opt label:has(input:checked){border-color:var(--blue);background:#F4F7FF}
+.chg .opt input{margin-top:3px;width:18px;height:18px;flex:none}
+.chg .opt b{display:block;font-size:15.5px}.chg .opt small{display:block;font-size:13px;color:var(--sub2)}
+.q{margin:10px 0 0;border-radius:12px;background:#fff;border:1px solid var(--line);padding:12px 14px;font-size:15px;line-height:1.6}
+.q .amt{display:block;font-size:24px;font-weight:900;color:var(--blue);margin:2px 0}
+.q small{display:block;color:var(--sub2);font-size:13.5px}
+.nx{font-size:14px;margin:8px 0 0;background:#FBF4E2;border:1px solid #EAD9A8;color:#6B5310;border-radius:10px;padding:8px 12px;display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.nx button{font:inherit;font-size:13.5px;border:0;background:none;color:#1F4FD1;text-decoration:underline;cursor:pointer;min-height:36px}
+.inv{border:1px solid #EAD9A8;background:linear-gradient(180deg,#FFFBF0,#fff);border-radius:16px;padding:16px;margin:0 0 12px}
+.inv h2{font-size:18px;font-weight:900;margin:0 0 4px}
+.inv p{margin:0 0 10px;font-size:14.5px;line-height:1.6;color:var(--sub)}
+.inv .btn{width:100%}
+.inv small{display:block;font-size:13px;color:var(--sub2);margin:8px 0 0;line-height:1.55}
+.tg.lv{background:#FBF4E2;color:#8A6A12}
 </style>
 </head>
 <body>
@@ -64,16 +83,24 @@ const BUDGETS = ['3억 미만', '3억~6억', '6억~9억', '9억~15억', '15억 �
 async function draw(note){
   if (!A || !A.on() || !A.user()) { main.innerHTML = `<h1>내 구독 관리</h1><p class="lead">카카오로 로그인하면 구독 상태를 보고 바꿀 수 있어요.</p>${A && A.on() ? A.btn('카카오로 로그인', 'brief_manage') : ''}`; return; }
   let r; try { r = await call('briefMine'); } catch(e){ main.innerHTML = `<h1>내 구독 관리</h1><div class="msg err">${esc(e.message)}</div>`; return; }
-  const cy = r.brief.cy || {};
+  const cy = r.brief.cy || {}, td = new Date().toISOString().slice(0, 10);
+  /* 지금 쓰는 요금제(받는 중이거나 시작 예정) 중 한도가 가장 큰 것 — 한도는 brief-core.js 요금제 표 */
+  const live = r.subs.filter(x => (x.active || x.start > td) && x.state !== '해지' && x.state !== '변경');
+  const curT = live.map(x => B.PRICE[x.tier]).filter(Boolean).sort((a, b) => b.areas - a.areas || b.apts - a.apts)[0] || B.PRICE.brief;
+  const paidEver = r.subs.some(x => x.orderId && !x.refund);
+  const ON = s => s.state === '이용' && s.orderId && s.left > 0 && s.end >= td;   // 요금제를 바꿀 수 있는 이용권
   try { const td = new Date().toISOString().slice(0, 10); localStorage.setItem('jdj_brief_sub', r.subs.some(x => x.active || (x.start > td && x.state !== '해지')) ? '1' : '0'); } catch(e){}
   main.innerHTML = `<span class="tag">${esc(B.NAME)}</span><h1>내 구독 관리</h1>${note ? `<div class="msg info">${note}</div>` : ''}
     <section class="sb" id="ed"><h2>받는 지역·관심 단지·청약 정보</h2>
-      <p class="note" style="margin-top:0">일반은 ${B.PRICE.brief.areas}곳, 중개사용은 ${B.PRICE.brief_pro.areas}곳까지 보내 드려요.</p>
+      <p class="note" style="margin-top:0">지금 요금제(${esc(curT.label)})는 지역 ${curT.areas}곳, 관심 단지 ${curT.apts}개까지 보내 드려요.</p>
       <div class="pick"><select id="sd" aria-label="시·도"></select><select id="sg" aria-label="시·군·구"></select>
         <select id="dn" class="full" aria-label="동"><option value="">구 전체</option></select><button type="button" class="btn full" id="add">이 지역 넣기</button></div>
       <ul class="al" id="al"></ul>
-      <label class="fl" for="apts">관심 단지(쉼표로 구분, 10곳까지) — 급매 레이더·전세가율·순위 변화를 따로 모아 드려요</label>
-      <input class="inp" id="apts" maxlength="200" placeholder="예: 리센츠, 잠실엘스" value="${esc((r.brief.apts || []).join(', '))}">
+      <label class="fl" for="apts">관심 단지(쉼표로 구분, ${curT.apts}개까지) — 급매 레이더·전세가율·순위 변화를 따로 모아 드려요</label>
+      <input class="inp" id="apts" maxlength="1200" placeholder="예: 리센츠, 잠실엘스" value="${esc((r.brief.apts || []).join(', '))}">
+      ${curT.urgPick ? `<label class="fl" for="urg">급매 알림 기준 — 최근 3개월 같은 평형 중간값보다</label>
+      <select class="inp" id="urg">${[5, 6, 7, 8, 9, 10, 12, 15, 20].map(v => `<option value="${v}" ${(r.brief.urg || B.URG.def) === v ? 'selected' : ''}>${v}% 이상 싸게 팔리면 알려 주기${v === B.URG.def ? ' (기본)' : ''}</option>`).join('')}</select>
+      <p class="note" style="margin:4px 0 0">숫자를 낮추면 더 많은 거래를 알려 드리고, 높이면 아주 싸게 팔린 거래만 알려 드려요.</p>` : ''}
       <label class="fl">청약 정보(선택) — 청약 기회 코너에서 넣어 볼 만한 단지를 골라 드려요</label>
       <div class="g2"><input class="inp" id="cyScore" inputmode="numeric" placeholder="청약 가점(0~84)" value="${esc(cy.score == null ? '' : cy.score)}"><input class="inp" id="cyNohome" inputmode="numeric" placeholder="무주택 기간(년)" value="${esc(cy.nohome == null ? '' : cy.nohome)}"></div>
       <p class="note" style="margin:4px 0 0">가점을 모르면 <a href="../../chungyak/">청약 가점 계산</a>에서 먼저 계산해 보세요.</p>
@@ -83,18 +110,23 @@ async function draw(note){
       <p class="note" style="margin:4px 0 0">예산·나이는 광고주에게 보여 주는 익명 통계(10명 미만인 칸은 숨김)에만 써요. 누구인지는 알 수 없어요.</p>
       <div class="row2"><button type="button" class="btn primary" id="saveEd">저장하기</button>${(r.brief.areas || [])[0] ? `<a class="btn" href="../?d=${encodeURIComponent(B.dKey(r.brief.areas[0].g, r.brief.areas[0].dn))}">오늘 브리핑 보기</a>` : ''}</div>
       <div id="edMsg" class="msg" role="status" hidden></div></section>
-    ${r.subs.length ? r.subs.slice().reverse().map(s => `<section class="sb"><h2>${esc(s.product)} <span class="tg ${s.active ? '' : 'off'}">${s.active ? '받는 중' : s.state === '해지' ? '해지됨' : s.start > new Date().toISOString().slice(0, 10) ? '시작 예정' : '끝남'}</span></h2>
-      <dl><dt>이용 기간</dt><dd>${esc(s.start)} ~ ${esc(s.end)}${s.active ? ` (남은 날 ${s.left}일)` : ''}</dd><dt>받는 곳</dt><dd>${s.channel === 'kakao' ? '카카오톡' : '이메일'} · ${esc(s.contact)}</dd><dt>보낸 브리핑</dt><dd>${s.sent}회</dd>${s.refund ? `<dt>환불</dt><dd>${esc(s.refund)}</dd>` : ''}</dl>
-      ${s.state !== '해지' && s.end >= new Date().toISOString().slice(0, 10) ? `<details><summary>받는 방법 바꾸기</summary>
+    ${paidEver ? `<section class="inv" id="inv"><h2>친구 초대하고 1개월 무료</h2>
+      <p>초대 링크로 온 친구가 이용권을 결제하면 두 분 모두 1개월을 무료로 더 받아요. 다음 결제가 1개월 뒤로 미뤄지는 방식이에요.</p>
+      <button type="button" class="btn primary" id="invBtn">친구 초대하고 1개월 무료</button><div id="invMsg" class="msg" role="status" hidden></div>
+      <small>친구 1명당 한 번 · 무료 체험만 하면 보상이 없어요 · 한 사람이 받는 보상은 1년에 ${B.REF.yearMax}개월까지 · 현금으로 돌려 드리지 않아요. <a href="../../terms/#brief-ref">자세한 조건</a></small></section>` : ''}
+    ${r.subs.length ? r.subs.slice().reverse().filter(s => s.state !== '변경').map(s => `<section class="sb"><h2>${esc(s.label ? `${s.label} 요금제` : s.product)} <span class="tg ${s.active ? '' : 'off'}">${s.active ? '받는 중' : s.state === '해지' ? '해지됨' : s.start > td ? '시작 예정' : '끝남'}</span>${s.reward ? '<span class="tg lv">친구 초대 보상</span>' : ''}</h2>
+      <dl><dt>이용 기간</dt><dd>${esc(s.start)} ~ ${esc(s.end)}${s.active ? ` (남은 날 ${s.left}일)` : ''}</dd><dt>받는 곳</dt><dd>${s.channel === 'kakao' ? '카카오톡' : '이메일'} · ${esc(s.contact)}</dd><dt>보낸 브리핑</dt><dd>${s.sent}회</dd>${s.refund ? `<dt>환불</dt><dd>${esc(s.refund)}</dd>` : ''}${s.broker ? `<dt>중개사 확인</dt><dd>${esc(s.broker.review === '확인됨' ? '확인됐어요' : s.broker.review === '확인 안 됨' ? '확인되지 않았어요(운영자가 연락드려요)' : '확인하고 있어요')}</dd>` : ''}</dl>
+      ${s.next ? `<div class="nx"><span>다음 이용권부터 <b>${esc(s.nextLabel)}</b> 요금제로 바뀌어요. 지금 요금제는 ${esc(s.end)}까지 그대로예요.</span><button type="button" data-keep="${s.id}" data-tier="${esc(s.tier)}">바꾸지 않기</button></div>` : ''}
+      ${ON(s) ? `<div class="row2" style="margin-top:8px"><button type="button" class="btn" data-chg="${s.id}">요금제 바꾸기</button></div><div class="chg" id="chg-${s.id}" hidden></div>` : ''}
+      ${s.state !== '해지' && s.end >= td ? `<details><summary>받는 방법 바꾸기</summary>
         <select class="inp" data-ch="${s.id}"><option value="email">이메일</option><option value="kakao" ${r.channels.kakao ? '' : 'disabled'}>카카오톡${r.channels.kakao ? '' : ' (준비 중)'}</option></select>
         <input class="inp" data-ct="${s.id}" placeholder="새 이메일 또는 휴대폰 번호"><button class="btn" data-up="${s.id}">저장</button></details>
-      <div class="row2" style="margin-top:8px"><button class="btn" data-stop="${s.id}">받지 않기(해지)</button>${s.orderId && !s.refund ? `<button class="btn" data-ref="${s.id}">환불 요청(예정 ${s.refundEst.toLocaleString('ko-KR')}원)</button>` : ''}</div>` : ''}</section>`).join('')
+      <div class="row2" style="margin-top:8px"><button class="btn" data-stop="${s.id}">받지 않기(해지)</button>${s.orderId && !s.refund && s.refundEst > 0 ? `<button class="btn" data-ref="${s.id}">환불 요청(예정 ${s.refundEst.toLocaleString('ko-KR')}원)</button>` : ''}</div>` : ''}</section>`).join('')
       : `<div class="msg info">아직 구독이 없어요. <a href="../subscribe/">${B.TRIAL_DAYS}일 무료로 시작하기</a></div>`}
-    <p class="note">자동 결제는 없어요. 해지하면 다음 날부터 보내지 않아요. 환불은 첫 브리핑 전이면 전액, 받기 시작한 뒤에는 남은 날만큼 일할로 해 드려요(영업일 3일 안 처리). <a href="../../refund/">환불 정책</a></p>`;
+    <p class="note">자동 결제는 없어요. 해지하면 다음 날부터 보내지 않아요. 환불은 첫 브리핑 전이면 전액, 받기 시작한 뒤에는 남은 날만큼 일할로 해 드려요(영업일 3일 안 처리). 더 높은 요금제로 바꾸면 오늘 바로 바뀌고 남은 날만큼 차액만 내요. 더 낮은 요금제는 다음 이용권부터 바뀌어요. <a href="../../refund/#brief">환불 정책</a></p>`;
   /* 받는 지역·관심 단지·청약 정보 편집(회원 저장 자료 brief) */
   const ed = { areas: (r.brief.areas || []).slice() };
-  const pro = r.subs.some(x => x.pro && (x.active || x.start > new Date().toISOString().slice(0, 10)) && x.state !== '해지');
-  const max = pro ? B.PRICE.brief_pro.areas : B.PRICE.brief.areas, $ = id => document.getElementById(id);
+  const max = curT.areas, $ = id => document.getElementById(id);
   const IX = await fetch('/jangdaejang-data/data/index.json').then(x => x.ok ? x.json() : null).catch(() => null), SG = (IX && IX.sgg) || {};
   const sds = [...new Set(Object.values(SG).map(x => x.sido))];
   $('sd').innerHTML = sds.map(x => `<option>${esc(x)}</option>`).join('');
@@ -107,28 +139,88 @@ async function draw(note){
   drawA();
   const edMsg = (t, bad) => { const m = $('edMsg'); m.hidden = false; m.className = 'msg ' + (bad ? 'err' : 'info'); m.textContent = t; };
   $('add').onclick = () => { const g = $('sg').value, dn = $('dn').value; if (!g || ed.areas.some(a => a.g === g && a.dn === dn)) return;
-    if (ed.areas.length >= 10) return edMsg('지역은 10곳까지 넣을 수 있어요.', 1); ed.areas.push({ g, gn: SG[g].name, sd: SG[g].sido, dn }); drawA(); };
+    if (ed.areas.length >= B.MAX.areas) return edMsg(`지역은 ${B.MAX.areas}곳까지 넣을 수 있어요.`, 1); ed.areas.push({ g, gn: SG[g].name, sd: SG[g].sido, dn }); drawA(); };
   $('saveEd').onclick = async () => {
     const num = (v, lo, hi) => { v = String(v).trim(); if (v === '') return null; const n = Math.round(+v); return n >= lo && n <= hi ? n : NaN; };
     const sc = num($('cyScore').value, 0, 84), nh = num($('cyNohome').value, 0, 40);
     if (Number.isNaN(sc)) return edMsg('청약 가점은 0~84 사이 숫자로 넣어 주세요.', 1);
     if (Number.isNaN(nh)) return edMsg('무주택 기간은 0~40 사이 숫자(년)로 넣어 주세요.', 1);
     if (!ed.areas.length) return edMsg('받을 지역을 하나 이상 넣어 주세요.', 1);
-    const apts = $('apts').value.split(',').map(x => x.trim()).filter(Boolean).slice(0, 10);
-    const nb = { areas: ed.areas, apts, v: r.brief.v || '', cy: { score: sc, nohome: nh }, budget: $('budget').value, age: $('age').value };
+    const aptAll = $('apts').value.split(',').map(x => x.trim()).filter(Boolean);
+    if (aptAll.length > curT.apts) return edMsg(`관심 단지는 지금 요금제에서 ${curT.apts}개까지예요. 더 넣으려면 요금제를 바꿔 주세요.`, 1);
+    const apts = aptAll.slice(0, B.MAX.apts), urg = $('urg') ? +$('urg').value : (r.brief.urg || null);
+    const nb = { areas: ed.areas, apts, v: r.brief.v || '', cy: { score: sc, nohome: nh }, budget: $('budget').value, age: $('age').value, urg };
     try {
       $('saveEd').disabled = true;
       await A.update(d => { d.brief = nb; });
-      try { localStorage.setItem('jdj_brief_apts', JSON.stringify(apts)); localStorage.setItem('jdj_brief_cy', JSON.stringify(sc == null ? null : { score: sc, nohome: nh })); } catch(e){}
+      try { localStorage.setItem('jdj_brief_apts', JSON.stringify(apts)); if (curT.urgPick && urg) localStorage.setItem('jdj_brief_urg', String(urg)); else localStorage.removeItem('jdj_brief_urg'); localStorage.setItem('jdj_brief_cy', JSON.stringify(sc == null ? null : { score: sc, nohome: nh })); } catch(e){}
       draw('내일 아침 브리핑부터 바뀐 지역으로 보내 드려요.');
     } catch(e){ $('saveEd').disabled = false; edMsg(e.message || '저장하지 못했어요. 잠시 뒤 다시 해 주세요.', 1); }
   };
   const act = async (fn, ok) => { try { await fn(); draw(ok); } catch(e){ alert(e.message); } };
   main.querySelectorAll('[data-stop]').forEach(b => b.onclick = () => confirm('내일부터 브리핑을 보내지 않을까요? 남은 기간 환불은 [환불 요청]으로 따로 해요.') && act(() => call('briefStop', { id: b.dataset.stop }), '해지했어요. 내일부터 보내지 않아요.'));
   main.querySelectorAll('[data-ref]').forEach(b => b.onclick = () => { const why = prompt('환불 사유(선택)를 적어 주세요. 요청하면 바로 발송이 멈춰요.', ''); if (why !== null) act(() => call('briefRefund', { id: b.dataset.ref, reason: why }), '환불 요청을 받았어요. 영업일 3일 안에 결제한 수단으로 돌려 드려요.'); });
+  /* 요금제 바꾸기: 고르면 서버가 금액·바뀌는 때를 계산해 먼저 보여 주고, 올리기는 차액 결제 → 바로 적용, 내리기는 다음 이용권부터 */
+  const won = n => Number(n).toLocaleString('ko-KR');
+  main.querySelectorAll('[data-chg]').forEach(b => b.onclick = () => {
+    const id = b.dataset.chg, s = r.subs.find(x => x.id === id), box = $('chg-' + id);
+    if (!box.hidden) { box.hidden = true; return; }
+    box.hidden = false;
+    box.innerHTML = `<h3>어느 요금제로 바꿀까요?</h3><div class="opt">${B.shownTiers().filter(t => t.id !== s.tier).map(t => `<label><input type="radio" name="to-${id}" value="${t.id}"><span><b>${esc(t.label)} · 월 ${won(t.amount)}원</b><small>${esc(t.inc.join(' · '))}</small></span></label>`).join('')}</div><div class="qq" aria-live="polite"></div>`;
+    box.querySelectorAll('input[type=radio]').forEach(x => x.onchange = async () => {
+      const qq = box.querySelector('.qq'); qq.innerHTML = '<p class="note">금액을 계산하고 있어요…</p>';
+      let q; try { q = await call('briefChangeQuote', { id, product: x.value }); } catch(e){ qq.innerHTML = `<div class="msg err">${esc(e.message)}</div>`; return; }
+      const T = B.PRICE[q.to] || {};
+      if (q.kind === 'next') {
+        qq.innerHTML = `<div class="q">더 낮은 요금제라 <b>다음 이용권부터</b> 바뀌어요.<small>지금 ${esc(q.from)} 요금제는 ${esc(q.end)}까지 그대로 받아요. 자동 결제는 없고, ${esc(q.at)} 이후 이용권을 살 때 ${esc(q.label)} 요금제(월 ${won(T.amount)}원)로 준비해 둘게요.</small></div>
+          <div class="row2" style="margin-top:8px"><button type="button" class="btn primary" data-go>다음 이용권부터 ${esc(q.label)}로 바꾸기</button></div>`;
+      } else {
+        qq.innerHTML = `<div class="q">오늘 바로 <b>${esc(q.label)}</b> 요금제로 바뀌어요.
+          <span class="amt">${q.free ? '추가 결제 없음' : `차액 ${won(q.amount)}원`}</span>
+          <small>남은 ${q.left}일(~${esc(q.end)}) 동안의 요금 차이만 내요: (월 ${won(q.monthly.to)}원 − 월 ${won(q.monthly.from)}원) × ${q.left}일 ÷ 30일${q.free ? ` = ${won(q.amount)}원이라 남은 날이 짧아 받지 않아요` : ', 10원 미만은 버려요'}. 끝나는 날은 그대로예요.</small></div>
+          ${q.broker ? `<label class="fl" for="bk-${id}">중개사무소 등록번호 (필수)</label><input class="inp" id="bk-${id}" maxlength="30" placeholder="예: 11680-2020-00123"><p class="note" style="margin:2px 0 0">중개사 전용 할인가라서 확인해요. 사무소 등록증에 적힌 번호를 적어 주세요.</p>` : ''}
+          <label class="fl" style="font-weight:500"><input type="checkbox" id="ag-${id}"> 차액 결제와 <a href="../../refund/#brief">환불 정책</a>(바꾼 뒤 환불은 바꾼 요금제의 남은 날 기준)을 확인했어요</label>
+          <div class="row2" style="margin-top:8px"><button type="button" class="btn primary" data-go>${q.free ? '바로 바꾸기' : `${won(q.amount)}원 결제하고 바로 바꾸기`}</button></div>`;
+      }
+      qq.innerHTML += '<div class="msg" role="status" hidden></div>';
+      const go = qq.querySelector('[data-go]'), m = qq.querySelector('.msg'), say = (t, bad) => { m.hidden = false; m.className = 'msg ' + (bad ? 'err' : 'info'); m.textContent = t; };
+      go.onclick = async () => {
+        const body = { id, product: q.to };
+        if (q.kind === 'now') {
+          if (!$('ag-' + id).checked) return say('차액 결제와 환불 정책을 확인해 주세요.', 1);
+          body.agree = true;
+          if (q.broker) { const bn = B.brokerNo($('bk-' + id).value); if (!bn.ok) return say(bn.err + ' 중개사 전용 할인가라서 확인해요.', 1); body.broker = bn.norm; }
+        }
+        go.disabled = true;
+        try {
+          const o = await call('briefChange', body);
+          if (o.kind === 'next') return draw(`다음 이용권부터 ${esc(q.label)} 요금제로 바꿔 둘게요.`);
+          if (o.free) return draw(`오늘부터 ${esc(q.label)} 요금제로 바꿨어요.`);
+          await new Promise((ok, no) => { if (window.TossPayments) return ok(); const sc = document.createElement('script'); sc.src = P.SDK; sc.onload = ok; sc.onerror = () => no(new Error('결제창을 불러오지 못했어요.')); document.head.appendChild(sc); });
+          const toss = window.TossPayments(P.CLIENT_KEY), w = toss.payment({ customerKey: window.TossPayments.ANONYMOUS || 'ANONYMOUS' });
+          const root = location.origin + '/jangdaejang-calc/brief/';
+          await w.requestPayment({ method: 'CARD', amount: { currency: 'KRW', value: o.amount }, orderId: o.orderId, orderName: o.orderName, successUrl: root + 'paid/', failUrl: root + 'manage/?fail=1', card: { flowMode: 'DEFAULT' } });
+        } catch(e){ go.disabled = false; say(e && e.code === 'USER_CANCEL' ? '결제를 취소했어요.' : (e.message || '바꾸지 못했어요.'), 1); }
+      };
+    });
+  });
+  main.querySelectorAll('[data-keep]').forEach(b => b.onclick = () => act(() => call('briefChange', { id: b.dataset.keep, product: b.dataset.tier }), '지금 요금제를 그대로 이어 가요.'));
+  /* 친구 초대: share.js 링크 우선(휴대폰 공유창 → 안 되면 링크 복사) */
+  if ($('invBtn')) $('invBtn').onclick = async () => {
+    const b = $('invBtn'), m = $('invMsg'), say = (t, bad) => { m.hidden = false; m.className = 'msg ' + (bad ? 'err' : 'info'); m.textContent = t; };
+    b.disabled = true;
+    try {
+      const v = await call('briefInvite');
+      const S = window.JDJ_SHARE, url = S && S.link ? S.link('brief', { path: 'brief/', params: { ref: v.code } }) : v.url;
+      const res = S ? await S.share({ url, title: B.NAME, text: `${B.NAME} — 매일 아침 내 동네 집값 변화를 받아 보세요. 이 링크로 시작해 이용권을 결제하면 우리 둘 다 1개월 무료예요.` }) : 'fail';
+      say((res === 'copy' ? '초대 링크를 복사했어요. 카카오톡·문자에 붙여 넣어 보내 주세요. ' : res === 'share' ? '초대 링크를 보냈어요. ' : res === 'fail' ? `복사가 안 됐어요. 이 링크를 보내 주세요: ${url} ` : '')
+        + `지금까지 보상 ${v.done}번${v.wait ? ` · 친구 결제 기다리는 중 ${v.wait}명` : ''} · 올해 남은 보상 ${v.left}개월`);
+    } catch(e){ say(e.message, 1); }
+    b.disabled = false;
+  };
   main.querySelectorAll('[data-up]').forEach(b => b.onclick = () => { const id = b.dataset.up; act(() => call('briefUpdate', { id, channel: main.querySelector(`[data-ch="${id}"]`).value, contact: main.querySelector(`[data-ct="${id}"]`).value }), '받는 방법을 바꿨어요.'); });
 }
-draw();
+draw(new URLSearchParams(location.search).get('fail') ? '결제를 마치지 못해서 요금제는 그대로예요. 다시 해 보시거나 고객문의로 알려 주세요.' : '');
 })();
 </script>
 <script>window.JDJ_BRIEF && JDJ_BRIEF.fillNames();</script>

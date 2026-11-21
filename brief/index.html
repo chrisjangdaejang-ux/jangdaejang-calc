@@ -27,7 +27,7 @@
 <script src="../assets/config.js?v=4"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/auth.js?v=4"></script>
-<script src="../assets/brief-core.js?v=5"></script>
+<script src="../assets/brief-core.js?v=6"></script>
 <script src="../assets/plain-words.js?v=13" defer></script>
 <script src="../assets/tabbar.js?v=2" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -155,7 +155,7 @@ details.how p{font-size:14.5px;color:var(--sub);line-height:1.65;margin:4px 0 10
 .sl-sec>h2{font-size:clamp(21px,4vw,27px);font-weight:900;margin:0 0 6px;text-align:center;word-break:keep-all}
 .sl-sec>.d{text-align:center;color:var(--sub);font-size:15.5px;line-height:1.6;margin:0 auto 14px;max-width:640px;word-break:keep-all}
 .who{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
-.who div{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:#fff;font-size:15px;line-height:1.5}
+.who div{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:#fff;font-size:15px;line-height:1.5;word-break:keep-all}
 .who b{display:block;font-size:16px;margin:0 0 2px}
 .cards3{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:10px}
 .fc{border:1px solid var(--line);border-radius:16px;padding:14px 16px;background:#fff;display:flex;flex-direction:column;gap:6px}
@@ -175,14 +175,17 @@ details.how p{font-size:14.5px;color:var(--sub);line-height:1.65;margin:4px 0 10
 .trust{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
 .trust div{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff;font-size:15px;line-height:1.6}
 .trust b{display:block;font-size:16px;margin:0 0 4px}
-.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
 .plan{border:1px solid var(--line);border-radius:18px;padding:16px;background:#fff}
 .plan.pro{border-color:#D6E2FF;background:#F8FAFF}
 .plan h3{margin:0 0 4px;font-size:17px}
 .plan .pr{font-size:28px;font-weight:900;margin:0 0 6px}
 .plan .pr small{font-size:14px;font-weight:600;color:var(--sub2)}
 .plan ul{margin:0;padding-left:18px;font-size:14.5px;line-height:1.7;color:var(--sub)}
-.plan .tag2{display:inline-block;font-size:12.5px;font-weight:800;color:#C2410C;background:#FDECE4;border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:2px}
+.plan .who2{margin:0 0 2px;font-size:13.5px;color:var(--sub2);font-weight:700}
+.plan .bn{margin:8px 0 0;font-size:12.5px;color:#8A6A12;background:#FBF4E2;border-radius:8px;padding:5px 8px;line-height:1.45}
+.refl{text-align:center;font-size:14px;color:#6B5310;margin:10px auto 0;max-width:640px;line-height:1.55;word-break:keep-all}
+.plan .tag2{display:inline-block;font-size:12.5px;font-weight:800;color:#8A6A12;background:#FBF4E2;border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:2px}
 .promise{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 .promise li{font-size:14px;font-weight:700;background:#EEF8F2;color:#0E7A4F;border-radius:999px;padding:5px 12px}
 .faq details{border:1px solid var(--line);border-radius:14px;padding:4px 14px;margin:0 0 8px;background:#fff}
@@ -374,7 +377,7 @@ function list(items, fn, n, id){
 }
 
 function mineHtml(S, area){
-  const m = B.mine(S, apts);
+  const m = B.mine(S, apts, B.myUrg());
   let h = `<section class="part" aria-labelledby="h-me"><h2 id="h-me"><span class="no">3</span>내 관심 단지 <small>${esc(S.name)} 자료에서</small></h2>`;
   const tc = B.taxCal(HOMES, S.date);
   const cal = `<div class="sec"><h2>내 집 세금 캘린더</h2>${HOMES.length ? '' : '<p class="sub"><a href="../mine/">내 집 시세</a>에 집과 매수 연월을 저장하면 비과세 보유 2년·장기보유특별공제 구간이 바뀌는 날도 알려 드려요.</p>'}
@@ -427,8 +430,8 @@ function render(S, M){
   h += `<section class="sec" aria-labelledby="h-d"><h2 id="h-d">최근 2년 최고가보다 많이 내린 거래</h2><p class="sub">같은 단지·같은 평형의 최근 2년 최고가보다 10% 넘게 낮은 새 거래예요(직거래·원룸형 제외).</p>
     ${v.drops.length ? list(v.drops, tradeLi, 5, 'ld') : '<div class="empty">이번에는 없어요.</div>'}</section>`;
   /* 급매 레이더 */
-  const ug = (S.urgent || []).filter(u => !dn || u.d === dn);
-  h += `<section class="sec" aria-labelledby="h-u"><h2 id="h-u">급매 레이더 <small>${ug.length}건</small></h2><p class="sub">새로 올라온 매매 중 같은 단지·같은 평형의 최근 3개월 거래 중간값보다 10% 넘게 싼 거래예요(그 3개월 거래가 3건 이상일 때만). 직거래와 30% 넘게 싼 거래(지분·가족 간 거래 등일 수 있음)는 따로 표시해요.</p>
+  const UG = B.myUrg(), ug = B.urgentFor(S, UG).filter(u => !dn || u.d === dn);   // 급매 기준: 중개사 플러스가 구독 관리에서 정한 값(없으면 10%)
+  h += `<section class="sec" aria-labelledby="h-u"><h2 id="h-u">급매 레이더 <small>${ug.length}건</small></h2><p class="sub">새로 올라온 매매 중 같은 단지·같은 평형의 최근 3개월 거래 중간값보다 ${UG}% 넘게 싼 거래예요${UG !== B.URG.def ? '(내가 정한 기준)' : ''}(그 3개월 거래가 3건 이상일 때만). 직거래와 30% 넘게 싼 거래(지분·가족 간 거래 등일 수 있음)는 따로 표시해요.</p>
     ${ug.length ? fold(ug.map(u => { const x = B.urgentText(u), mine = apts.includes(u.a); return `<li class="${mine ? 'mine' : ''}"><div class="nm"><b>${esc(x.name)}</b><small>${esc(u.d)} · 전용 ${u.ar}㎡${u.f != null ? ' · ' + u.f + '층' : ''}</small>${mine ? '<span class="tg mine">관심 단지</span>' : ''}${x.tags.map(t => `<span class="tg x">${esc(t)}</span>`).join('')}<small>${esc(x.sub)}</small></div><div class="pr"><b>${esc(x.price)}</b><small>${esc(x.when)}</small></div></li>`; }), 4, 'lu') : '<div class="empty">이번에는 없어요.</div>'}</section>`;
   /* 전세가율 급변 */
   const gp = (S.gap || []).filter(g => !dn || g.d === dn);
@@ -466,8 +469,8 @@ function render(S, M){
   h += `</section>`;
   h += `</section>` + mineHtml(S, area);
   /* 구독 */
-  h += `<section class="cta"><h2>매일 아침 받아 보기</h2><p>오늘의 부동산 시장(전국 공통)과 고른 동네(최대 ${B.PRICE.brief.areas}곳, 중개사용 ${B.PRICE.brief_pro.areas}곳)로 매일 아침 보내 드려요. 처음 ${B.TRIAL_DAYS}일은 무료예요. 자동 결제는 없어요.</p>
-    <div class="price2"><div><b>월 ${B.PRICE.brief.amount.toLocaleString('ko-KR')}원</b><small>일반 · 동네 3곳</small></div><div><b>월 ${B.PRICE.brief_pro.amount.toLocaleString('ko-KR')}원</b><small>중개사용 · 동네 10곳 · 손님 이야기 3줄·공유 카드</small></div></div>
+  h += `<section class="cta"><h2>매일 아침 받아 보기</h2><p>오늘의 부동산 시장(전국 공통)과 고른 동네로 매일 아침 보내 드려요. 처음 ${B.TRIAL_DAYS}일은 무료예요. 자동 결제는 없어요.</p>
+    <div class="price2">${B.shownTiers().map(t => `<div><b>월 ${t.amount.toLocaleString('ko-KR')}원</b><small>${esc(t.label)} · 지역 ${t.areas}곳 · 단지 ${t.apts}개${t.pro ? ' · 손님 이야기·공유 카드' : ''}</small></div>`).join('')}</div>
     <a class="btn primary" style="width:100%" href="subscribe/?d=${encodeURIComponent(B.dKey(S.g, dn))}${PRO ? '&p=brief_pro' : ''}" data-track="brief_sub_click">${B.TRIAL_DAYS}일 무료로 받아 보기</a></section>
     <a class="btn" style="width:100%;margin-top:10px" href="manage/" data-track="brief_to_manage">지역·단지 바꾸기</a>`;
   h += `<details class="how"><summary>이 브리핑은 이렇게 만들어요</summary>
@@ -534,7 +537,7 @@ function fc(o){
     <p>${o.what}</p><p class="g">${o.good}</p>${o.term ? `<p class="term">${o.term}</p>` : ''}${o.ex ? `<p class="ex"><b>예시</b>${o.ex}</p>` : ''}</div>`;
 }
 function salesHtml(IX, MH){
-  const SITE = esc(B.SITE), P1 = B.PRICE.brief, P2 = B.PRICE.brief_pro, TD = B.TRIAL_DAYS;
+  const SITE = esc(B.SITE), TD = B.TRIAL_DAYS;
   const cta = (id) => `<a class="btn primary" href="subscribe/" data-track="brief_sales_${id}">${TD}일 무료로 받아 보기</a>`;
   const PL = window.JDJ_PLAIN, m2 = MH && MH['2'];
   const track = PL && PL.VOK && PL.trackHead && PL.VOK(m2) ? PL.trackHead(m2, 2, { what: `${B.SITE} 미래가치 점수` }) : '';
@@ -553,7 +556,7 @@ function salesHtml(IX, MH){
       <div><b>갈아타기를 고민하는 분</b>지금 집과 갈 집, 두 동네를 같이 지켜봐요.</div>
       <div><b>청약을 준비하는 분</b>내 점수로 넣어 볼 만한 단지를 골라 드려요.</div>
       <div><b>전세 들어갈 집이 걱정되는 분</b>전세금이 위험해지는 단지를 미리 알려 드려요.</div>
-      <div><b>공인중개사</b>손님께 할 이야기 3줄과 보낼 카드를 매일 만들어 드려요.</div>
+      <div><b>공인중개사·부동산업 관계자</b>손님께 할 이야기와 분양·시행·컨설팅에 쓸 여러 지역 시장 흐름을 매일 받아요.</div>
     </div></section>
 
   <section class="sl-sec" aria-labelledby="sl-what"><h2 id="sl-what">매일 아침 받는 것</h2>
@@ -602,15 +605,17 @@ function salesHtml(IX, MH){
     </div></section>
 
   <section class="sl-sec" aria-labelledby="sl-pr"><h2 id="sl-pr">요금</h2>
+    <p class="d">모든 요금제는 매일 아침 같은 브리핑을 받아요. 몇 곳을 챙겨 보는지, 중개 업무용 도구가 필요한지에 따라 고르면 돼요.</p>
     <div class="plans">
-      <div class="plan"><h3>일반</h3><p class="pr">월 ${P1.amount.toLocaleString('ko-KR')}원</p><ul><li>관심 지역 ${P1.areas}곳 + 관심 단지</li><li>오늘의 부동산 시장 + 7개 코너</li><li>커피 한 잔보다 싼 값</li></ul></div>
-      <div class="plan pro"><h3>중개사용<span class="tag2">런칭가</span></h3><p class="pr">월 ${P2.amount.toLocaleString('ko-KR')}원</p><ul><li>관심 지역 ${P2.areas}곳</li><li>손님께 할 이야기 3줄(복사 버튼)</li><li>손님에게 보낼 정사각형 카드 이미지</li></ul></div>
+      ${B.shownTiers().map(t => `<div class="plan ${t.pro ? 'pro' : ''}"><h3>${esc(t.label)}${t.launch ? '<span class="tag2">런칭가</span>' : ''}</h3><p class="who2">${esc(t.who)}</p><p class="pr">월 ${t.amount.toLocaleString('ko-KR')}원</p><ul>${t.inc.map(x => `<li>${esc(x)}</li>`).join('')}</ul>${t.broker ? '<p class="bn">중개사무소 등록번호 확인 필요(중개사 전용 할인가)</p>' : ''}</div>`).join('')}
     </div>
-    <ul class="promise"><li>${TD}일 무료</li><li>결제 수단 없이 시작</li><li>자동 결제 없음</li><li>언제든 해지</li><li>지역은 언제든 바꾸기</li></ul></section>
+    <ul class="promise"><li>${TD}일 무료(한 사람 한 번)</li><li>결제 수단 없이 시작</li><li>자동 결제 없음</li><li>언제든 해지</li><li>지역은 언제든 바꾸기</li></ul>
+    <p class="refl">친구를 초대해 친구가 이용권을 결제하면 두 분 모두 1개월 무료예요(유료 이용 중인 분, 1년에 ${B.REF.yearMax}개월까지).</p></section>
 
   <section class="sl-sec faq" aria-labelledby="sl-q"><h2 id="sl-q">자주 묻는 질문</h2>
     <details><summary>정말 무료로 시작할 수 있나요?</summary><p>네. 처음 ${TD}일은 무료이고, 카드 번호 같은 결제 수단을 미리 넣지 않아요. ${TD}일이 지나도 자동으로 돈이 나가지 않아요. 계속 받고 싶을 때만 1개월 이용권을 사시면 돼요.</p></details>
     <details><summary>언제, 어디로 받나요?</summary><p>매일 아침 7시대에 보내 드려요(자료가 늦으면 9시대). 지금은 이메일로 보내 드리고, 카카오톡 알림이 열리면 카카오톡으로도 받을 수 있어요. 같은 내용을 웹에서도 볼 수 있어요.</p></details>
+    <details><summary>요금제는 쓰다가 바꿀 수 있나요?</summary><p>네. 더 높은 요금제로 올리면 오늘 바로 바뀌고, 이번 이용권의 남은 날만큼 차액만 내요(바꾸기 전에 금액을 먼저 보여 드려요). 더 낮은 요금제로 내리면 지금 이용권이 끝난 뒤 다음 이용권부터 바뀌어요. [내 구독 관리]의 [요금제 바꾸기]에서 해요.</p></details>
     <details><summary>동네는 바꿀 수 있나요?</summary><p>언제든 바꿀 수 있어요. 구독 관리 화면에서 바꾸면 다음 날 아침 브리핑부터 바뀐 동네로 보내 드려요. 관심 단지와 청약 가점도 같은 화면에서 바꿔요.</p></details>
     <details><summary>부동산을 잘 몰라도 읽을 수 있나요?</summary><p>네. 어려운 말은 처음 나올 때 쉬운 말로 풀어 드리고, 숫자는 '얼마에 팔렸고, 전보다 얼마나 비싼지'처럼 바로 이해되게 써요.</p></details>
     <details><summary>해지하거나 환불받을 수 있나요?</summary><p>언제든 해지할 수 있어요. 첫 브리핑을 받기 전이면 전액, 받기 시작한 뒤에는 남은 날만큼 돌려 드려요. 자세한 내용은 <a href="../refund/">환불 정책</a>에 있어요.</p></details>

@@ -35,6 +35,7 @@ const RealDate = Date;
 class FakeDate extends RealDate { constructor(...a) { if (!a.length) super(NOW); else super(...a); } static now() { return NOW; } }
 const BRIEF = {
   '11710': { g: '11710', name: '송파구', trades: [{ d: '잠실동', a: '리센츠', b: '84㎡대', p: 333000, dr: -9.9 }, { d: '가락동', a: '헬리오시티', b: '49㎡대', p: 247000, hi: 1 }],
+    urgent: [{ d: '가락동', a: '급매단지', b: '84㎡대', p: 150000, med: 172000, disc: -12.8, n3: 4, dt: 20261101 }], urgent_lo: [{ d: '가락동', a: '얕은급매', b: '59㎡대', p: 94000, med: 100000, disc: -6.0, n3: 3, dt: 20261102 }],
     lines: { '': { fact: '송파구에서 새로 올라온 매매 거래는 2건이에요.' }, '잠실동': { fact: '잠실동에서 새로 올라온 매매 거래는 1건이에요.' } }, pro: { '': ['"한 줄"'], '잠실동': ['"잠실 한 줄"'] } },
   '11320': { g: '11320', name: '도봉구', trades: [], lines: { '': { fact: '도봉구 새 거래 없음' } }, pro: {},
     pnews: { n: 1, note: { 공급: '공급 고정 문장' }, items: [{ t: '도봉구 창동 재개발 정비구역 지정', d: '2026-11-20', org: '서울특별시', u: 'https://news.seoul.go.kr/citybuild/archives/1', c: '공급', rg: '서울 도봉구', terms: [['정비구역', '재개발·재건축을 해도 된다고 공식으로 정한 구역이에요.']] }] } }
@@ -85,7 +86,7 @@ const MARKET = { date: '2026-11-21', name: '집예보 모닝 브리핑', win: { 
     { t: '경인선 철도지하화 종합계획 반영', d: '2026-11-19', org: '인천광역시', u: 'javascript:alert(1)', c: '교통', rg: '인천' }] } };
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(__dirname, 'agent-backend.gs'), 'utf8')
-  + '\n;globalThis.__T = { BC, OC, UC, SC, UH, SSH, BRIEF_PRICE, BRIEF_TRIAL, BRIEF_NAME, SITE_NAME, bProdKey, briefPublic, briefStats, briefSeen, bKey, hashOf, cleanBrief, briefDaily, briefState, bRows, briefAreas, briefInterest, briefCleanup, briefMarketHtml, briefPnHtml };', ctx);
+  + '\n;globalThis.__T = { BC, OC, UC, SC, UH, SSH, BRIEF_PRICE, BRIEF_TRIAL, BRIEF_NAME, SITE_NAME, bProdKey, briefPublic, briefStats, briefSeen, bKey, hashOf, cleanBrief, briefDaily, briefState, bRows, briefAreas, briefInterest, briefCleanup, briefMarketHtml, briefPnHtml, bChangeAmt, bBrokerNo, bUrgent };', ctx);
 const T = ctx.__T;
 const post = b => JSON.parse(ctx.doPost({ postData: { contents: JSON.stringify(b) } }).s);
 const get = p => JSON.parse(ctx.doGet({ parameter: p }).s);
@@ -132,19 +133,26 @@ check('체험은 한 번만', !r.ok && /한 번/.test(r.err), r);
 // 3. 이용권 주문·승인 — 체험이 끝난 다음 날부터 이어 붙임
 r = post({ action: 'briefOrder', s: s1, product: 'brief', channel: 'email', contact: 'me@example.com', privacy: true, agree: false });
 check('환불 안내 동의 없으면 거절', !r.ok, r);
-r = post({ action: 'briefOrder', s: s1, product: 'brief_pro', channel: 'email', contact: 'me@example.com', privacy: true, agree: true, amount: 10 });
+r = post({ action: 'briefOrder', s: s1, product: 'brief_pro', channel: 'email', contact: 'me@example.com', privacy: true, agree: true });
+check('중개사용: 등록번호 없으면 거절(쉬운 이유)', !r.ok && /등록번호/.test(r.err) && /중개사 전용 할인/.test(r.err), r);
+r = post({ action: 'briefOrder', s: s1, product: 'brief_pro', broker: '010-1234-5678', channel: 'email', contact: 'me@example.com', privacy: true, agree: true });
+check('중개사용: 전화번호를 넣으면 거절', !r.ok && /전화번호가 아니라/.test(r.err), r);
+r = post({ action: 'briefOrder', s: s1, product: 'brief_pro', broker: '11710-2019-00123', channel: 'email', contact: 'me@example.com', privacy: true, agree: true, amount: 10 });
 check('주문: 서버 가격 4,900원', r.ok && r.amount === 4900 && /^JDJ\d{6}-[0-9A-F]{10}$/.test(r.orderId), r);
 const OID = r.orderId;
 const ord = sheets['주문'].rows.find(x => x[T.OC['주문번호']] === OID);
 check('주문 시트: 연락처 가린 값만', ord && ord[T.OC['연락처']] === 'me***@example.com' && !JSON.stringify(ord).includes('me@example.com'));
 r = post({ action: 'briefConfirm', paymentKey: 'tgen_b1', orderId: OID, amount: 100 });
 check('금액 위변조 거절', !r.ok, r);
-r = post({ action: 'briefOrder', s: s1, product: 'brief_pro', channel: 'email', contact: 'me@example.com', privacy: true, agree: true });
+r = post({ action: 'briefOrder', s: s1, product: 'brief_pro', broker: '제 11710-2019-00123 호', channel: 'email', contact: 'me@example.com', privacy: true, agree: true });
 const OID2 = r.orderId;
+check('중개사용 주문: 등록번호 정리·확인 대기', subRows().some(x => bc(x, '주문번호') === OID2 && bc(x, '중개사번호') === '11710-2019-00123' && bc(x, '중개사확인') === '확인 대기'));
 r = post({ action: 'briefConfirm', paymentKey: 'tgen_b2', orderId: OID2, amount: 4900 });
 check('승인 → 체험 끝난 다음 날부터 30일', r.ok && r.sub.start === '2026-11-28' && r.sub.end === '2026-12-27' && r.sub.pro === true, r);
 r = post({ action: 'briefConfirm', paymentKey: 'tgen_b2', orderId: OID2, amount: 4900 });
 check('같은 결제키 다시 → 그대로', r.ok && r.sub.start === '2026-11-28', r);
+check('중개사용 승인 → 운영자에게 등록번호 확인 메일', mails.some(a => typeof a[1] === 'string' && /중개사용 등록번호 확인/.test(a[1]) && /11710-2019-00123/.test(a[2])));
+check('승인 → 낸 돈 기록·중개사 확인 상태', r.sub.broker && r.sub.broker.review === '확인 대기' && subRows().some(x => bc(x, '주문번호') === OID2 && bc(x, '결제액') === 4900));
 r = post({ action: 'confirmPayment', paymentKey: 'tgen_other', orderId: OID2, amount: 4900 });
 check('리포트 승인 경로로 다른 결제키 → 거절', !r.ok, r);
 
@@ -227,6 +235,149 @@ NOW = Date.parse('2027-02-10T07:10:00+09:00');
 T.briefCleanup(new FakeDate());
 check('끝난 지 30일 지난 연락처 원문 삭제', subRows().every(x => !bc(x, '연락처')), subRows().map(x => bc(x, '연락처')));
 check('결제대기 행 정리(이틀 지난 것)', subRows().every(x => bc(x, '상태') !== '결제대기'));
+
+// 9. 요금제 표·관심 단지 수·요금제 바꾸기(v25)
+const WEB = require('../assets/brief-core.js');
+const pick = t => ({ id: t.id, label: t.label, amount: t.amount, areas: t.areas, apts: t.apts, customers: t.customers, urgPick: !!t.urgPick, weekly: !!t.weekly, pro: !!t.pro, broker: !!t.broker, show: !!t.show });
+check('요금제 표: 화면(brief-core TIERS)과 서버(BRIEF_TIERS)가 같음', JSON.stringify(WEB.TIERS.map(pick)) === JSON.stringify(Object.values(T.BRIEF_PRICE).map(pick)),
+  [WEB.TIERS.map(pick), Object.values(T.BRIEF_PRICE).map(pick)]);
+check('요금: 기본 3,900·지역 3 / 플러스 5,900·지역 10·단지 10 / 중개사용 4,900·지역 10', [T.BRIEF_PRICE.brief.amount, T.BRIEF_PRICE.brief.areas, T.BRIEF_PRICE.brief_plus.amount, T.BRIEF_PRICE.brief_plus.areas, T.BRIEF_PRICE.brief_plus.apts, T.BRIEF_PRICE.brief_pro.amount, T.BRIEF_PRICE.brief_pro.areas].join() === '3900,3,5900,10,10,4900,10');
+check('차액 계산: (새 금액−지금 금액)×남은 날/30, 10원 미만 버림', [T.bChangeAmt(T.BRIEF_PRICE.brief, T.BRIEF_PRICE.brief_plus, 18), T.bChangeAmt(T.BRIEF_PRICE.brief, T.BRIEF_PRICE.brief_pro, 30),
+  T.bChangeAmt(T.BRIEF_PRICE.brief, T.BRIEF_PRICE.brief_plus, 1), T.bChangeAmt(T.BRIEF_PRICE.brief_plus, T.BRIEF_PRICE.brief, 20), T.bChangeAmt(T.BRIEF_PRICE.brief, T.BRIEF_PRICE.brief_plus, 0)].join() === '1200,1000,60,0,0');
+check('등록번호 형식: 화면·서버 같은 결과', ['11680-2020-00123', '11680202000123', '제 11680-2020-00123 호', '서울강남-1234', '가1234-5678', '11680-2031-00123', '99999-2020-00123', '010-1234-5678', '123-45-67890', '1234', 'abc-1234', '']
+  .every(x => JSON.stringify(T.bBrokerNo(x, 2026)) === JSON.stringify(WEB.brokerNo(x, 2026))));
+check('등록번호 형식: 맞는 것·틀린 것', ['11680-2020-00123', '11680202000123', '서울강남-1234'].every(x => T.bBrokerNo(x, 2026).ok) && ['11680-2031-00123', '99999-2020-00123', '010-1234-5678', '123-45-67890', '1234', 'abc-1234', ''].every(x => !T.bBrokerNo(x, 2026).ok)
+  && T.bBrokerNo('11680202000123', 2026).norm === '11680-2020-00123' && T.bBrokerNo('서울강남-1234', 2026).kind === 'old');
+NOW = Date.parse('2027-03-01T10:00:00+09:00');
+const s3 = member(333);
+post({ action: 'userSave', s: s3, data: { brief: { areas: [{ g: '11710', gn: '송파구', sd: '서울특별시', dn: '' }], apts: ['가', '나', '다', '헬리오시티'] } } });
+r = post({ action: 'briefOrder', s: s3, product: 'brief_hidden', channel: 'email', contact: 'c@example.com', privacy: true, agree: true });
+check('표에 없는 요금제 주문 거절', !r.ok, r);
+T.BRIEF_PRICE.brief_hidden = { id: 'brief_hidden', label: '숨김', name: T.BRIEF_NAME + ' 숨김 1개월', amount: 9900, areas: 10, apts: 10, days: 30, show: false };
+r = post({ action: 'briefOrder', s: s3, product: 'brief_hidden', channel: 'email', contact: 'c@example.com', privacy: true, agree: true });
+check('show:false 요금제는 주문 거절(미리 넣어 둔 새 요금제)', !r.ok, r);
+r = post({ action: 'briefOrder', s: s3, product: 'brief', channel: 'email', contact: 'c@example.com', privacy: true, agree: true });
+r = post({ action: 'briefConfirm', paymentKey: 'tgen_c1', orderId: r.orderId, amount: 3900 });
+check('기본 승인: 오늘부터 30일', r.ok && r.sub.start === '2027-03-01' && r.sub.end === '2027-03-30' && r.sub.tier === 'brief' && r.sub.apts === 3, r);
+const baseId = r.sub.id;
+mails.length = 0; props.BRIEF_SENT = ''; T.briefDaily();
+let m3 = mails.find(a => a[0] && a[0].to === 'c@example.com');
+check('기본: 관심 단지 4번째(헬리오시티)는 서버에서 빼고 보냄(3개까지)', !!m3 && !/\[관심 단지\] 헬리오시티/.test(m3[0].htmlBody) && /헬리오시티/.test(m3[0].htmlBody));
+NOW = Date.parse('2027-03-13T10:00:00+09:00');
+let q = post({ action: 'briefChangeQuote', s: s3, id: baseId, product: 'brief_plus' });
+check('올리기 미리 보기: 오늘 바로·남은 18일 차액 1,200원(서버 계산)', q.ok && q.kind === 'now' && q.left === 18 && q.amount === 1200 && !q.free, q);
+q = post({ action: 'briefChangeQuote', s: s2, id: baseId, product: 'brief_plus' });
+check('남의 구독은 바꿀 수 없음', !q.ok, q);
+r = post({ action: 'briefChange', s: s3, id: baseId, product: 'brief_plus', agree: true });
+check('올리기 주문: 차액 주문 만들기', r.ok && r.kind === 'now' && r.amount === 1200 && /변경 차액$/.test(r.orderName), r);
+const COID = r.orderId; fetches.length = 0;
+r = post({ action: 'briefConfirm', paymentKey: 'tgen_c2', orderId: COID, amount: 3900 });
+check('차액과 다른 금액 → 토스 승인 전에 거절(돈 안 나감)', !r.ok && !fetches.some(f => /tosspayments/.test(f.url)), r);
+r = post({ action: 'briefChange', s: s3, id: baseId, product: 'brief_plus', agree: true });
+const COID2 = r.orderId;
+NOW = Date.parse('2027-03-14T00:30:00+09:00');
+r = post({ action: 'briefConfirm', paymentKey: 'tgen_c3', orderId: COID2, amount: 1200 });
+check('주문한 날이 지나면 다시 하게 함(남은 날 수가 바뀜)', !r.ok && /주문한 날/.test(r.err), r);
+NOW = Date.parse('2027-03-13T11:00:00+09:00');
+r = post({ action: 'briefChange', s: s3, id: baseId, product: 'brief_plus', agree: true });
+r = post({ action: 'briefConfirm', paymentKey: 'tgen_c4', orderId: r.orderId, amount: 1200 });
+check('차액 승인 → 오늘부터 플러스, 끝날은 그대로', r.ok && r.change && r.sub.tier === 'brief_plus' && r.sub.active && r.sub.start === '2027-03-13' && r.sub.end === '2027-03-30' && r.sub.sent === 1 && r.sub.apts === 10, r);
+const plusId = r.sub.id;
+check('이전 행은 변경(발송·환불 대상 아님)', subRows().some(x => bc(x, 'id') === baseId && bc(x, '상태') === '변경') && T.briefState(T.bRows().find(o => o.r[T.BC['id']] === baseId), new FakeDate()).refundEst === 0);
+check('낸 돈 합계 = 3,900 + 1,200', subRows().some(x => bc(x, 'id') === plusId && bc(x, '결제액') === 5100));
+check('올린 뒤 환불 예정 = 새 금액 남은 날 일할(18일 → 3,540원)', r.sub.refundEst === 3540, r.sub.refundEst);
+mails.length = 0; props.BRIEF_SENT = ''; T.briefDaily();
+m3 = mails.find(a => a[0] && a[0].to === 'c@example.com');
+check('플러스: 같은 날 바로 관심 단지 10개까지(헬리오시티 포함)', !!m3 && /\[관심 단지\] 헬리오시티/.test(m3[0].htmlBody) && mails.filter(a => a[0] && a[0].to === 'c@example.com').length === 1);
+q = post({ action: 'briefChangeQuote', s: s3, id: plusId, product: 'brief' });
+check('내리기 미리 보기: 다음 이용권부터(3/31), 결제 없음', q.ok && q.kind === 'next' && q.at === '2027-03-31' && q.amount === 0, q);
+r = post({ action: 'briefChange', s: s3, id: plusId, product: 'brief' });
+check('내리기: 지금은 플러스 그대로, 다음 요금제만 적어 둠', r.ok && r.kind === 'next' && r.sub.tier === 'brief_plus' && r.sub.next === 'brief' && r.sub.nextLabel === '기본', r);
+check('내 구독에 다음 요금제', post({ action: 'briefMine', s: s3 }).next === 'brief');
+r = post({ action: 'briefChange', s: s3, id: plusId, product: 'brief_plus' });
+check('내리기 되돌리기', r.ok && r.sub.next === '', r);
+r = post({ action: 'briefChange', s: s3, id: plusId, product: 'brief' });
+NOW = Date.parse('2027-03-28T07:10:00+09:00'); mails.length = 0; props.BRIEF_SENT = ''; T.briefDaily();
+check('만료 안내에 다음 요금제', mails.some(a => a[0] && a[0].to === 'c@example.com' && /기본 요금제로 준비/.test(a[0].htmlBody) && /\?p=brief/.test(a[0].htmlBody)));
+NOW = Date.parse('2027-03-30T10:00:00+09:00');
+q = post({ action: 'briefChangeQuote', s: s3, id: plusId, product: 'brief_pro' });
+check('플러스 → 중개사용(더 싼 요금제)은 다음 이용권부터', q.ok && q.kind === 'next', q);
+r = post({ action: 'briefChange', s: s3, id: plusId, product: 'brief_hidden' });
+check('숨긴 요금제로는 못 바꿈', !r.ok, r);
+// 마지막 날 기본 → 중개사용: 차액 30원(100원 미만) → 등록번호 확인 후 결제 없이 바로
+NOW = Date.parse('2027-04-27T09:00:00+09:00'); const s4 = member(444);
+post({ action: 'userSave', s: s4, data: { brief: { areas: [{ g: '11320', gn: '도봉구', sd: '서울특별시', dn: '' }] } } });
+r = post({ action: 'briefOrder', s: s4, product: 'brief', channel: 'email', contact: 'd@example.com', privacy: true, agree: true });
+check('기본 주문', r.ok, r); const lastO = r.orderId; NOW = Date.parse('2027-04-27T10:00:00+09:00');
+r = post({ action: 'briefConfirm', paymentKey: 'tgen_d1', orderId: lastO, amount: 3900 });
+const s1Base = r.sub.id; NOW = Date.parse('2027-05-26T10:00:00+09:00');
+q = post({ action: 'briefChangeQuote', s: s4, id: s1Base, product: 'brief_pro' });
+check('마지막 날 차액 30원 → 결제 없이 바꿈 표시·중개사 표시', q.ok && q.kind === 'now' && q.left === 1 && q.amount === 30 && q.free && q.broker, q);
+r = post({ action: 'briefChange', s: s4, id: s1Base, product: 'brief_pro', agree: true });
+check('중개사용으로 올릴 때도 등록번호 필요', !r.ok && /등록번호/.test(r.err), r);
+r = post({ action: 'briefChange', s: s4, id: s1Base, product: 'brief_pro', agree: true, broker: '서울송파-4567' });
+check('결제 없이 바로 중개사용 + 확인 대기', r.ok && r.free && r.sub.tier === 'brief_pro' && r.sub.pro && r.sub.broker.review === '확인 대기' && r.sub.broker.no === '서울송파-4567', r);
+
+// 10. 중개사 플러스: 한도·중개사용에서 올리기(등록번호 그대로)·급매 기준
+check('중개사 플러스: 9,900원·지역 20·단지 30·손님 10·급매 기준 고름·주간 리포트', ['amount', 'areas', 'apts', 'customers', 'urgPick', 'weekly', 'broker', 'show'].map(k => T.BRIEF_PRICE.brief_pro_plus[k]).join() === '9900,20,30,10,true,true,true,true');
+NOW = Date.parse('2027-06-01T09:00:00+09:00');
+const s5 = member(505);
+const areas20 = Array.from({ length: 25 }, (_, i) => ({ g: String(11000 + i * 10), gn: '구' + i, sd: '서울특별시', dn: '' }));
+areas20[0] = { g: '11710', gn: '송파구', sd: '서울특별시', dn: '' };
+r = post({ action: 'userSave', s: s5, data: { brief: { areas: areas20, apts: Array.from({ length: 40 }, (_, i) => '단지' + i), urg: 6 } } });
+check('저장 한도: 지역 20곳·단지 30개까지(가장 큰 요금제 기준), 급매 기준 저장', r.ok && r.data.brief.areas.length === 20 && r.data.brief.apts.length === 30 && r.data.brief.urg === 6, r.data && [r.data.brief.areas.length, r.data.brief.apts.length, r.data.brief.urg]);
+check('급매 기준 범위 밖(3%)은 저장 안 함', post({ action: 'userSave', s: s5, data: { brief: { areas: areas20, urg: 3 } } }).data.brief.urg === null);
+post({ action: 'userSave', s: s5, data: { brief: { areas: areas20, apts: Array.from({ length: 40 }, (_, i) => '단지' + i), urg: 6 } } });
+r = post({ action: 'briefOrder', s: s5, product: 'brief_pro', broker: '11710-2015-00077', channel: 'email', contact: 'e@example.com', privacy: true, agree: true });
+r = post({ action: 'briefConfirm', paymentKey: 'tgen_e1', orderId: r.orderId, amount: 4900 });
+const e1 = r.sub.id;
+mails.length = 0; props.BRIEF_SENT = ''; T.briefDaily();
+let me = mails.find(a => a[0] && a[0].to === 'e@example.com');
+check('중개사용: 급매 기준은 10% 그대로(6% 저장값 안 씀)', !!me && /급매단지/.test(me[0].htmlBody) && !/얕은급매/.test(me[0].htmlBody));
+NOW = Date.parse('2027-06-11T10:00:00+09:00');
+q = post({ action: 'briefChangeQuote', s: s5, id: e1, product: 'brief_pro_plus' });
+check('중개사용 → 중개사 플러스: 바로·남은 20일 차액 3,330원·등록번호 다시 안 물음', q.ok && q.kind === 'now' && q.left === 20 && q.amount === 3330 && q.broker === false, q);
+r = post({ action: 'briefChange', s: s5, id: e1, product: 'brief_pro_plus', agree: true });
+r = post({ action: 'briefConfirm', paymentKey: 'tgen_e2', orderId: r.orderId, amount: 3330 });
+check('중개사 플러스 적용: 같은 등록번호·확인 상태 이어받음', r.ok && r.sub.tier === 'brief_pro_plus' && r.sub.broker.no === '11710-2015-00077' && r.sub.broker.review === '확인 대기' && r.sub.customers === 10 && r.sub.urgPick, r.sub);
+mails.length = 0; props.BRIEF_SENT = ''; T.briefDaily();
+me = mails.find(a => a[0] && a[0].to === 'e@example.com');
+check('중개사 플러스: 내가 정한 6% 기준으로 급매 더 넓게', !!me && /급매단지/.test(me[0].htmlBody) && /얕은급매/.test(me[0].htmlBody));
+check('급매 목록 계산: 서버·화면 같음', JSON.stringify([5, 6, 10, 12, 20].map(t => T.bUrgent(BRIEF['11710'], t).map(u => u.a))) === JSON.stringify([5, 6, 10, 12, 20].map(t => WEB.urgentFor(BRIEF['11710'], t).map(u => u.a)))
+  && JSON.stringify(T.bUrgent(BRIEF['11710'], 15)) === '[]' && T.bUrgent(BRIEF['11710']).length === 1);
+
+// 11. 친구 초대 보상
+NOW = Date.parse('2027-07-01T09:00:00+09:00');
+const mk = id => { const ss = member(id); post({ action: 'userSave', s: ss, data: { brief: { areas: [{ g: '11320', gn: '도봉구', sd: '서울특별시', dn: '' }] } } }); return ss; };
+const buy = (ss, mail, key) => { const o = post({ action: 'briefOrder', s: ss, product: 'brief', channel: 'email', contact: mail, privacy: true, agree: true, ref: key }); return { o, c: post({ action: 'briefConfirm', paymentKey: 'tgen_' + mail.replace(/\W/g, ''), orderId: o.orderId, amount: 3900 }) }; };
+const sA = mk(601), sX = mk(602), sB = mk(603), sD = mk(604);
+check('유료 이용 안 한 사람은 초대 링크 못 만듦', !post({ action: 'briefInvite', s: sX }).ok);
+buy(sA, 'a@example.com');
+const inv = post({ action: 'briefInvite', s: sA });
+check('초대 링크: 브리핑 주소 ?ref=코드(카카오 id 원문 없음)', inv.ok && /^R[0-9A-F]{8}$/.test(inv.code) && inv.url.endsWith('/brief/?ref=' + inv.code) && !/601/.test(inv.url) && inv.left === 12, inv);
+check('자기 자신 초대는 안 됨', buy(sA, 'a2@example.com', inv.code).o.ref === 'self');
+r = post({ action: 'briefTrial', s: sB, channel: 'email', contact: 'b@example.com', privacy: true, ref: inv.code });
+check('초대받은 체험 → 대기만(체험만 하면 보상 없음)', r.ok && r.ref === 'ok' && sheets['브리핑초대'].rows.slice(1).length === 1 && sheets['브리핑초대'].rows[1][4] === '대기');
+const rowsOf = id => subRows().filter(x => bc(x, '카카오id') === 'k' + id);
+check('체험만 한 상태: 두 사람 모두 보상 이용권 없음', rowsOf(601).every(x => bc(x, '결제액') !== 0) && rowsOf(603).every(x => bc(x, '결제액') !== 0));
+NOW = Date.parse('2027-07-05T09:00:00+09:00');
+const bb = buy(sB, 'b@example.com');
+check('초대받은 사람이 유료 결제 → 두 사람 모두 1개월', bb.c.ok && bb.c.reward && bb.c.reward.inviter === '1개월' && bb.c.reward.me === '1개월', bb.c);
+const rwA = rowsOf(601).filter(x => bc(x, '결제액') === 0), rwB = rowsOf(603).filter(x => bc(x, '결제액') === 0);
+check('보상 = 다음 결제 1개월 미룸(지금 이용권 끝난 다음 날부터 30일, 0원)', rwA.length === 1 && rwB.length === 1 && bc(rwB[0], '시작일') === '2027-08-07' && bc(rwB[0], '만료일') === '2027-09-05' && bc(rwA[0], '시작일') === '2027-08-30' && bc(rwA[0], '주문번호') === '',
+  [rwA.map(x => [bc(x, '시작일'), bc(x, '만료일')]), rwB.map(x => [bc(x, '시작일'), bc(x, '만료일')])]);
+const rwS = T.briefState(T.bRows().find(o => o.r[T.BC['id']] === bc(rwB[0], 'id')), new FakeDate());
+check('보상 이용권은 환불(현금) 없음', rwS.refundEst === 0 && rwS.orderId === '' && rwS.reward === true, rwS);
+r = post({ action: 'briefRefund', s: sB, id: rwS.id });
+check('보상 이용권 환불 요청은 거절', !r.ok, r);
+const sC = mk(605); buy(sC, 'c@example.com'); const invC = post({ action: 'briefInvite', s: sC });
+check('초대받는 보상은 계정당 한 번', buy(sB, 'b2@example.com', invC.code).o.ref === 'once' || post({ action: 'briefTrial', s: sB, channel: 'email', contact: 'b@example.com', privacy: true, ref: invC.code }).ref === 'once');
+check('이미 유료로 쓴 사람은 대상 아님', buy(sC, 'c2@example.com', inv.code).o.ref === 'paid');
+for (let i = 0; i < 11; i++) sheets['브리핑초대'].rows.push([new FakeDate(), inv.code, 'k601', 'kz' + i, '지급', new FakeDate(), '1개월', '1개월', '']);
+check('연 한도 계산', post({ action: 'briefInvite', s: sA }).left === 0);
+const dd = buy(sD, 'd2@example.com', inv.code);
+check('한 사람 보상은 연 12개월까지: 초대한 사람은 연 한도, 받은 사람은 1개월', dd.o.ref === 'ok' && dd.c.reward.inviter === '연 한도' && dd.c.reward.me === '1개월', dd.c.reward);
+check('초대 시트: 카카오 id 외 연락처 없음', !/@example\.com/.test(JSON.stringify(sheets['브리핑초대'].rows)));
 
 console.log(`모닝 브리핑 서버 로직 검증: ${pass}개 통과, ${fail}개 실패`);
 process.exit(fail ? 1 : 0);

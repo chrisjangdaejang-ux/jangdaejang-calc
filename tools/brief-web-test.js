@@ -59,5 +59,20 @@ check('새 발표: 없으면 빈 목록(칸 숨김)', [B.pnewsGroups(null).lengt
 check('새 발표 기간', [B.pnewsWin(PNM), B.pnewsWin(null)], ['11/20~11/21', '']);
 const AU = {}; new Function('window', 'addEventListener', 'localStorage', require('fs').readFileSync(require('path').join(__dirname, '../assets/auth.js'), 'utf8'))(AU, () => {}, { getItem: () => null, setItem() {} });
 check('머리줄 이름: 기호·빈 값이면 내 정보', ['장대장', '.', '', ' ..', 'kim', '홍길동이름이아주아주긴사람입니다'].map(AU.JDJ_AUTH.chipName), ['장대장 님', '내 정보', '내 정보', '내 정보', 'kim 님', '홍길동이름이아주아주긴사 님']);
+/* v25 요금제 표·등록번호·급매 기준 */
+check('요금제: 화면에 4개(기본·플러스·중개사용·중개사 플러스) 순서·가격', B.shownTiers().map(t => [t.id, t.label, t.amount]),
+  [['brief', '기본', 3900], ['brief_plus', '플러스', 5900], ['brief_pro', '중개사용', 4900], ['brief_pro_plus', '중개사 플러스', 9900]]);
+check('요금제 한도: 지역·단지·손님', B.TIERS.map(t => [t.areas, t.apts, t.customers]), [[3, 3, 0], [10, 10, 0], [10, 10, 0], [20, 30, 10]]);
+check('중개사 요금제만 등록번호·런칭가, 급매 기준·주간 리포트는 중개사 플러스만', B.TIERS.map(t => [t.broker, t.launch, t.urgPick, t.weekly]),
+  [[false, false, false, false], [false, false, false, false], [true, true, false, false], [true, true, true, true]]);
+check('저장 최대 = 가장 큰 요금제', B.MAX, { areas: 20, apts: 30 });
+check('show:false 요금제는 화면에서 빠짐', (() => { B.TIERS.push({ id: 'x', show: false }); const n = B.shownTiers().length; B.TIERS.pop(); return n; })(), 4);
+check('요금제 설명은 쉬운 말(내부 용어 없음)', B.TIERS.every(t => t.inc.every(x => !/tier|plan|id|API|시험|검증|채점/i.test(x))), true);
+check('등록번호: 새 형식·옛 형식·틀린 것', ['11680-2020-00123', '제 11680 2020 00123 호', '서울강남-1234', '11680-2030-00123', '99999-2020-00123', '010-1234-5678', '123-45-67890', 'abcd'].map(x => { const r = B.brokerNo(x, 2026); return r.ok ? r.kind + ':' + r.norm : 'X'; }),
+  ['new:11680-2020-00123', 'new:11680-2020-00123', 'old:서울강남-1234', 'X', 'X', 'X', 'X', 'X']);
+const SU = { urgent: [{ a: '가', disc: -12 }, { a: '나', disc: -25 }], urgent_lo: [{ a: '다', disc: -7 }, { a: '라', disc: -5.2 }] };
+check('급매 기준: 기본 10%는 자료 그대로, 6%면 넓게, 15%면 좁게', [10, 6, 5, 15, undefined].map(t => B.urgentFor(SU, t).map(u => u.a).join('')), ['나가', '나가다', '나가다라', '나', '나가']);
+check('내 관심 단지 급매도 같은 기준', B.mine(SU, ['다'], 6).urgent.map(u => u.a), ['다']);
+check('급매 기준 저장값 없으면 10%', B.myUrg(), 10);
 console.log(`모닝 브리핑 화면 계산 검증: ${pass}개 통과, ${fail}개 실패`);
 process.exit(fail ? 1 : 0);

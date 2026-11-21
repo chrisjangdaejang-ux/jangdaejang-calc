@@ -1,5 +1,21 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ *
+ * v26 변경 요약 (v20~v25와 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — '브리핑구독' 시트 뒤 4칸 머리 줄은 첫 사용 때 자동으로 채움)
+ *  - 모닝 브리핑 요금제 표 BRIEF_TIERS 한 곳: 기본 3,900원(지역 3·단지 3) · 플러스 5,900원(지역 10·단지 10, 새 상품 brief_plus) · 중개사용 4,900원(지역 10·단지 10 + 중개사 내용)
+ *    · 중개사 플러스 9,900원(brief_pro_plus: 지역 20·단지 30·내 손님 10명·급매 기준 5~20% 직접·주간 리포트 표시).
+ *    새 요금제는 표에 줄 하나(show:false 면 주문을 받지 않음). 화면 assets/brief-core.js TIERS 와 숫자가 같아야 함(tools/brief-web-test.js 가 대조).
+ *    발송할 때 관심 지역·관심 단지는 요금제 수까지만 씀(서버에서 지킴).
+ *  - 요금제 바꾸기: briefChangeQuote(금액 미리 보기) · briefChange. 올리기는 오늘 바로, 남은 날만큼 차액만 결제(기존 토스 승인 흐름 briefConfirm 재사용,
+ *    금액·날짜·이용권 상태를 승인 전에 서버가 다시 확인). 내리기는 다음 이용권부터('다음요금제' 칸). 자동 환불 없음.
+ *  - 중개사용: 신청·올리기 때 중개사무소 등록번호 필수(형식만 확인, 외부 조회 없음) → '중개사번호'·'중개사확인'(확인 대기) 칸 + 운영자 메일.
+ *    운영자가 직접 확인하고 '중개사확인' 칸을 '확인됨' 또는 '확인 안 됨'으로 바꿈.
+ *  - 시트 '브리핑구독' 뒤에 칸 4개: 결제액 · 다음요금제 · 중개사번호 · 중개사확인. 환불 예정액은 낸 돈(결제액) 기준.
+ *  - 급매 기준: 회원 저장 자료 brief.urg(5~20). urgPick 요금제만 그 값, 아니면 10%. 자료의 urgent(10%↑) + urgent_lo(5~10%, 엔진이 따로 실음)에서 고름.
+ *  - 친구 초대 보상: briefInvite(초대 링크) · 체험·주문 때 ref → '브리핑초대' 시트(첫 사용 때 자동 생성) → 초대받은 사람 첫 유료 결제 때 두 사람 모두 1개월(0원 이용권을 다음 날부터 붙임).
+ *    계정당 한 번·자기 초대 안 됨·체험만 하면 없음·연 12개월 한도. 현금 환급 없음.
+ *  - 광고 문의 관심 상품에 brief_ad(모닝 브리핑 지면 광고) 추가.
+ *  - 검증: node tools/brief-test.js
  *
  * v25 변경 요약 (v20~v24와 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — 시트 변경 없음)
  *  - 모닝 브리핑 메일 ① 오늘의 부동산 시장에 '새로 발표된 정책·교통·공급 소식'(market.json pnews: 정부·지자체 공식 보도자료 제목·부처·날짜·원문 링크,
@@ -1404,6 +1420,7 @@ const AQC = Object.fromEntries(AQH.map((h, i) => [h, i]));
 const AQ_PROD = { bunyang: '분양 단지 광고', bunyang_pro: '분양 프리미엄', agent: '지역 제휴 중개사', native: '결과 하단 카드', jeonse: '전세사기 예방 체크리스트 스폰서', package: '패키지', etc: '기타·제휴',
                   dev_report: '분양가 적정성·입지 분석 리포트', unsold_pack: '미분양 해소 패키지',
                   brochure: '집예보 분석 브로슈어(잠금형)', datapack: '현장 자료 팩(편집형)' };   // pro/developer/ 신청(시행사·분양대행사) — 'etc'와 함께 와요 (v23 brochure·datapack)
+AQ_PROD.brief_ad = BRIEF_NAME + ' 지면 광고';   // v26: ad/ 문의 폼 '모닝 브리핑 지면 광고'(재배포 전 서버는 함께 보내는 'etc'로 접수)
 const AQ_PERIOD = ['', '1주', '2주', '1개월', '3개월', '6개월', '1년', '미정·협의'];
 const AQ_DAILY = 40;          // 하루 전체 문의 상한(스팸 방지)
 
@@ -1978,14 +1995,26 @@ function proClick(b) {
    ===================================================================== */
 const SH_B = '브리핑구독', SH_BL = '발송기록';
 const BH = ['id', '생성시각', '상품', '상태', '주문번호', '카카오id', '채널', '연락처', '연락처가림', '연락처확인값', '광고동의', '시작일', '만료일',
-            '최근발송일', '발송수', '만료알림', '해지일', '환불상태', '환불요청시각', '메모'];
+            '최근발송일', '발송수', '만료알림', '해지일', '환불상태', '환불요청시각', '메모',
+            '결제액', '다음요금제', '중개사번호', '중개사확인'];   // v26: 뒤 4칸 추가(기존 시트는 첫 사용 때 머리 줄만 채움)
 const BC = Object.fromEntries(BH.map((h, i) => [h, i]));
 const BLH = ['날짜', '구독id', '채널', '결과', '동네수'];
-const BRIEF_PRICE = {
-  brief:     { name: BRIEF_NAME + ' 1개월', amount: 3900, areas: 3, days: 30 },
-  brief_pro: { name: BRIEF_NAME + ' 중개사용 1개월', amount: 4900, areas: 10, days: 30, pro: true }
-};
-const BRIEF_TRIAL = { name: BRIEF_NAME + ' 7일 체험', amount: 0, areas: 3, days: 7 };
+/* ★ 요금제 표(v26) — 서버는 이 표 한 곳만 봐요. 화면 assets/brief-core.js 의 TIERS 와 숫자가 같아야 해요(tools/brief-web-test.js 가 대조).
+   amount: 한 달 금액(원) · areas: 관심 지역 수 · apts: 관심 단지 수(발송할 때 이 수까지만 씀) · pro: 중개사 내용 · broker: 중개사무소 등록번호 필요
+   customers: 내 손님 브리핑 손님 수(0 = 없음) · urgPick: 급매 기준(5~20%)을 직접 고름(아니면 10%) · weekly: 주간 시장 리포트(내 이름 PDF)
+   show: false 면 주문·요금제 바꾸기를 받지 않아요(표에 미리 넣어 두는 새 요금제용). 새 요금제는 줄 하나만 더하면 돼요. */
+const BRIEF_TIERS = [
+  { id: 'brief',          label: '기본',         name: BRIEF_NAME + ' 1개월',               amount: 3900, areas: 3,  apts: 3,  customers: 0,  urgPick: false, weekly: false, pro: false, broker: false, show: true },
+  { id: 'brief_plus',     label: '플러스',       name: BRIEF_NAME + ' 플러스 1개월',        amount: 5900, areas: 10, apts: 10, customers: 0,  urgPick: false, weekly: false, pro: false, broker: false, show: true },
+  { id: 'brief_pro',      label: '중개사용',     name: BRIEF_NAME + ' 중개사용 1개월',      amount: 4900, areas: 10, apts: 10, customers: 0,  urgPick: false, weekly: false, pro: true,  broker: true,  show: true },
+  { id: 'brief_pro_plus', label: '중개사 플러스', name: BRIEF_NAME + ' 중개사 플러스 1개월', amount: 9900, areas: 20, apts: 30, customers: 10, urgPick: true,  weekly: true,  pro: true,  broker: true,  show: true }
+];
+const BRIEF_MAX = { areas: Math.max.apply(null, BRIEF_TIERS.map(t => t.areas)), apts: Math.max.apply(null, BRIEF_TIERS.map(t => t.apts)) };   // 회원 저장 자료에 둘 수 있는 최대 수
+const BRIEF_URG = { def: 10, lo: 5, hi: 20 };   // 급매 기준(%): 기본 10, 고를 수 있으면 5~20
+const BRIEF_PRICE = Object.fromEntries(BRIEF_TIERS.map(t => [t.id, Object.assign({ days: 30 }, t)]));
+const BRIEF_TRIAL = { name: BRIEF_NAME + ' 7일 체험', label: '무료 체험', amount: 0, areas: 3, apts: 3, customers: 0, days: 7 };
+const BRIEF_CHG_SUFFIX = ' 변경 차액';    // 요금제 올리기 차액 주문의 상품명 = 새 요금제 이름 + 이 글자
+const BRIEF_MIN_PAY = 100;               // 차액이 이보다 적으면 결제 없이 바로 바꿔 드림(카드 최소 결제 금액)
 /* 예전 상품명(시트에 이미 저장된 행) → 상품 키. 이름이 또 바뀌면 바뀌기 전 이름을 여기에 더해 두면 됨 */
 const BRIEF_OLD_NAMES = { '아침 브리핑 1개월': 'brief', '아침 브리핑 중개사용 1개월': 'brief_pro', '아침 브리핑 7일 체험': 'trial' };
 function bProdKey(name) {
@@ -1995,8 +2024,29 @@ function bProdKey(name) {
   return k || BRIEF_OLD_NAMES[name] || '';
 }
 function bIsTrial(name) { return bProdKey(name) === 'trial'; }
-const BST = { wait: '결제대기', on: '이용', trial: '체험', stop: '해지', refund: '환불' };
-const BRIEF_ACTIONS = { briefTrial: 1, briefOrder: 1, briefConfirm: 1, briefMine: 1, briefUpdate: 1, briefStop: 1, briefRefund: 1 };
+const BST = { wait: '결제대기', on: '이용', trial: '체험', stop: '해지', refund: '환불', chg: '변경' };   // 변경 = 요금제를 올려 새 행으로 넘어간 이전 행
+const BRIEF_ACTIONS = { briefTrial: 1, briefOrder: 1, briefConfirm: 1, briefMine: 1, briefUpdate: 1, briefStop: 1, briefRefund: 1, briefChangeQuote: 1, briefChange: 1, briefInvite: 1 };
+const BROKER_REVIEW = { wait: '확인 대기', ok: '확인됨', no: '확인 안 됨' };   // 운영자가 '중개사확인' 칸을 직접 바꿔요(외부 조회 없음)
+/* 중개사무소 등록번호 형식 확인 — 화면 assets/brief-core.js brokerNo 와 같은 규칙 */
+function bBrokerNo(s, year) {
+  const t = String(s == null ? '' : s).replace(/\s+/g, '').replace(/[‐‑–—−]/g, '-').replace(/^제/, '').replace(/호$/, '');
+  const Y = year || Number(Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy')), bad = m => ({ ok: false, err: m });
+  if (!t) return bad('중개사무소 등록번호를 적어 주세요.');
+  if (t.length > 30) return bad('등록번호가 너무 길어요. 다시 확인해 주세요.');
+  if (/^01[016789]-?\d{3,4}-?\d{4}$/.test(t)) return bad('전화번호가 아니라 중개사무소 등록번호를 적어 주세요.');
+  if (/^\d{3}-?\d{2}-?\d{5}$/.test(t)) return bad('사업자등록번호가 아니라 중개사무소 등록번호를 적어 주세요.');
+  const m = t.match(/^([1-5]\d{4})-?(\d{4})-?(\d{4,5})$/);
+  if (m) return +m[2] >= 1984 && +m[2] <= Y ? { ok: true, norm: m[1] + '-' + m[2] + '-' + m[3], kind: 'new' } : bad('등록 연도(가운데 4자리)를 다시 확인해 주세요.');
+  if (/^\d{5}-?\d{4}-?\d{4,5}$/.test(t)) return bad('앞 5자리(시·군·구 코드)를 다시 확인해 주세요.');
+  if (/^[가-힣0-9]+(-[가-힣0-9]+){0,4}$/.test(t) && /[가-힣-]/.test(t) && (t.match(/\d/g) || []).length >= 4) return { ok: true, norm: t, kind: 'old' };
+  return bad('중개사무소 등록번호 형식이 맞지 않아요. 예: 11680-2020-00123');
+}
+/* 요금제 올리기 차액: (새 금액 − 지금 금액) × 남은 날 / 30, 10원 미만 버림(이용자에게 유리하게). 내리기·같은 값이면 0 */
+function bChangeAmt(cur, nxt, left) {
+  const d = Number(nxt.amount) - Number(cur.amount), days = cur.days || 30;
+  if (!(d > 0) || !(left > 0)) return 0;
+  return Math.floor(d * Math.min(left, days) / days / 10) * 10;
+}
 const BRIEF_DATA = 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/data/brief/';
 const BRIEF_WEB = 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/brief/';
 const BRIEF_KEEP_DAYS = 30;       // 이용 끝난 뒤 연락처 원문 보관 일수
@@ -2007,13 +2057,13 @@ const BRIEF_MIN_VISITORS = 5;     // 관심도 집계: 방문자 5명 이상인 
 function cleanBrief(x) {
   x = x && typeof x === 'object' ? x : {};
   const seen = {};
-  const areas = (Array.isArray(x.areas) ? x.areas : []).slice(0, 20).map(a => a && ({ g: /^\d{5}$/.test(String(a.g || '')) ? String(a.g) : '', gn: uText(a.gn, 30), sd: uText(a.sd, 20), dn: uText(a.dn, 20) }))
+  const areas = (Array.isArray(x.areas) ? x.areas : []).slice(0, BRIEF_MAX.areas + 10).map(a => a && ({ g: /^\d{5}$/.test(String(a.g || '')) ? String(a.g) : '', gn: uText(a.gn, 30), sd: uText(a.sd, 20), dn: uText(a.dn, 20) }))
     .filter(a => a && a.g && a.gn && (!a.dn || /^[가-힣0-9·.]{1,20}$/.test(a.dn)))
-    .filter(a => { const k = a.g + '|' + a.dn; if (seen[k]) return false; seen[k] = 1; return true; }).slice(0, 10);
-  const apts = (Array.isArray(x.apts) ? x.apts : []).slice(0, 20).map(s => uText(s, 40)).filter(Boolean).slice(0, 10);
+    .filter(a => { const k = a.g + '|' + a.dn; if (seen[k]) return false; seen[k] = 1; return true; }).slice(0, BRIEF_MAX.areas);
+  const apts = (Array.isArray(x.apts) ? x.apts : []).slice(0, BRIEF_MAX.apts + 10).map(s => uText(s, 40)).filter(Boolean).slice(0, BRIEF_MAX.apts);
   const n = (v, lo, hi) => { if (v === '' || v == null) return null; v = Math.round(Number(v)); return isFinite(v) && v >= lo && v <= hi ? v : null; };
   const cy = x.cy && typeof x.cy === 'object' ? { score: n(x.cy.score, 0, 84), nohome: n(x.cy.nohome, 0, 40) } : { score: null, nohome: null };
-  return { areas: areas, apts: apts, v: x.v === 'pro' ? 'pro' : '', cy: cy,
+  return { areas: areas, apts: apts, v: x.v === 'pro' ? 'pro' : '', cy: cy, urg: n(x.urg, BRIEF_URG.lo, BRIEF_URG.hi),
     budget: BRIEF_BUDGETS.indexOf(x.budget) >= 0 ? x.budget : '', age: BRIEF_AGES.indexOf(x.age) >= 0 ? x.age : '' };
 }
 /* 선택 입력(광고주용 익명 통계에만): 예산대·연령대 — 화면 brief/manage 의 목록과 같음 */
@@ -2029,13 +2079,24 @@ function briefDispatch(b) {
       if (b.action === 'briefUpdate') return briefUpdate(b);
       if (b.action === 'briefStop') return briefStop(b);
       if (b.action === 'briefRefund') return briefRefund(b);
+      if (b.action === 'briefChangeQuote') return briefChangeQuote(b);
+      if (b.action === 'briefChange') return briefChange(b);
+      if (b.action === 'briefInvite') return briefInvite(b);
       return { ok: false, err: 'unknown' };
     });
   } catch (x) {
     return { ok: false, err: String(x.message || x), code: x.code || '' };
   }
 }
-function bSheet() { return uSheet(SH_B, BH); }
+function bSheet() {
+  const sh = uSheet(SH_B, BH);
+  if (!bSheet.ok) {                 // v26 이전에 만든 시트: 뒤에 붙은 칸의 머리 줄만 채움(기존 자료는 그대로)
+    const h = sh.getRange(1, 1, 1, BH.length).getValues()[0] || [];
+    if (String(h[BH.length - 1] || '') !== BH[BH.length - 1]) sh.getRange(1, 1, 1, BH.length).setValues([BH]);
+    bSheet.ok = 1;
+  }
+  return sh;
+}
 function bRows() {
   const v = bSheet().getDataRange().getValues(), out = [];
   for (let i = 1; i < v.length; i++) if (v[i][BC['id']]) out.push({ row: i + 1, r: v[i] });
@@ -2061,13 +2122,18 @@ function briefState(o, now) {
   const r = o.r, st = String(r[BC['상태']]), s = dOnly(r[BC['시작일']]), e = dOnly(r[BC['만료일']]), t = dOnly(ymd(now));
   const active = (st === BST.on || st === BST.trial) && s && e && s <= t && t <= e;
   const pk = bProdKey(r[BC['상품']]), P = BRIEF_PRICE[pk] || BRIEF_TRIAL;
-  const left = e && t <= e ? Math.round((e - t) / 86400000) + 1 : 0;
+  const left = e && t <= e ? Math.round((e - (s && s > t ? s : t)) / 86400000) + 1 : 0;   // 시작 전이면 시작일부터 센 날 수
   const sent = Number(r[BC['발송수']]) || 0;
-  /* 환불 예정액: 첫 브리핑 발송 전이면 전액, 이용 중이면 남은 날만큼(일할, 위약금 없음) */
-  const refundEst = P.amount ? (sent === 0 ? P.amount : Math.floor(P.amount * Math.min(left, P.days) / P.days / 10) * 10) : 0;
+  /* 환불 예정액: 첫 브리핑 발송 전이면 낸 돈 전부, 이용 중이면 남은 날만큼(일할, 위약금 없음). 낸 돈(결제액)이 비어 있으면 상품 금액(v26 이전 행) */
+  const pv = r[BC['결제액']], paid = pv === '' || pv == null ? P.amount : Number(pv) || 0;   // 0 = 친구 초대 보상(무료 1개월)
+  const refundEst = st === BST.chg || !P.amount ? 0 : sent === 0 ? paid : Math.min(paid, Math.floor(P.amount * Math.min(left, P.days) / P.days / 10) * 10);
+  const nx = String(r[BC['다음요금제']] || '');
   return { id: String(r[BC['id']]), product: String(r[BC['상품']]), state: st, active: !!active, start: s ? ymd(s) : '', end: e ? ymd(e) : '',
     left: left, channel: String(r[BC['채널']]), contact: String(r[BC['연락처가림']]), ad: r[BC['광고동의']] === true, sent: sent,
-    refund: String(r[BC['환불상태']] || ''), refundEst: refundEst, areas: P.areas, pro: !!P.pro, orderId: String(r[BC['주문번호']] || '') };
+    refund: String(r[BC['환불상태']] || ''), refundEst: refundEst, areas: P.areas, apts: P.apts, customers: P.customers || 0, urgPick: !!P.urgPick, weekly: !!P.weekly,
+    pro: !!P.pro, orderId: String(r[BC['주문번호']] || ''), reward: !String(r[BC['주문번호']] || '') && pk !== 'trial' && BRIEF_PRICE[pk] ? true : false,
+    tier: pk, label: P.label || '', next: BRIEF_PRICE[nx] ? nx : '', nextLabel: BRIEF_PRICE[nx] ? BRIEF_PRICE[nx].label : '',
+    broker: P.broker ? { no: String(r[BC['중개사번호']] || ''), review: String(r[BC['중개사확인']] || BROKER_REVIEW.wait) } : null };
 }
 function myBriefs(k) { return bRows().filter(o => String(o.r[BC['카카오id']]) === k); }
 /* 같은 회원의 가장 늦은 이용 끝날(이용·체험 중) — 새 이용권은 그다음 날부터 */
@@ -2081,7 +2147,7 @@ function newBriefRow(u, P, st, channel, ct, ad, orderId) {
   r[BC['id']] = 'B' + Utilities.getUuid().replace(/-/g, '').slice(0, 9).toUpperCase(); r[BC['생성시각']] = new Date(); r[BC['상품']] = P.name; r[BC['상태']] = st;
   r[BC['주문번호']] = orderId || ''; r[BC['카카오id']] = u.k; r[BC['채널']] = channel; r[BC['연락처']] = cellSafe(ct.norm); r[BC['연락처가림']] = ct.mask;
   r[BC['연락처확인값']] = hashOf(ct.norm); r[BC['광고동의']] = !!ad; r[BC['발송수']] = 0;
-  ['시작일', '만료일', '최근발송일', '만료알림', '해지일', '환불상태', '환불요청시각', '메모'].forEach(h => r[BC[h]] = '');
+  ['시작일', '만료일', '최근발송일', '만료알림', '해지일', '환불상태', '환불요청시각', '메모', '결제액', '다음요금제', '중개사번호', '중개사확인'].forEach(h => r[BC[h]] = '');
   bSheet().appendRow(BH.map((h, i) => r[i] === undefined ? '' : r[i]));
   return r[BC['id']];
 }
@@ -2103,17 +2169,20 @@ function briefTrial(b) {
   const c = briefCommon(b);
   if (myBriefs(c.u.k).some(o => bIsTrial(o.r[BC['상품']]))) throw new Error('무료 체험은 계정마다 한 번만 쓸 수 있어요. 이용권으로 이어서 받아 보세요.');
   if (myBriefs(c.u.k).some(o => briefState(o, new Date()).active)) throw new Error('이미 받고 있는 브리핑이 있어요.');
+  const ref = bRefNote(c.u.k, b.ref);
   const id = newBriefRow(c.u, BRIEF_TRIAL, BST.trial, c.channel, c.ct, c.ad, '');
   const o = bRows().find(x => String(x.r[BC['id']]) === id), t = kstToday();
   setB(o.row, '시작일', ymd(t)); setB(o.row, '만료일', ymd(addDays(t, BRIEF_TRIAL.days - 1)));
-  return { ok: true, sub: briefState(bRows().find(x => String(x.r[BC['id']]) === id), new Date()) };
+  return { ok: true, ref: ref, sub: briefState(bRows().find(x => String(x.r[BC['id']]) === id), new Date()) };
 }
 
 /* 이용권 주문 만들기: '주문' 시트(기존 결제 흐름) + '브리핑구독' 결제대기 행 */
 function briefOrder(b) {
   const P = BRIEF_PRICE[b.product];
-  if (!P) throw new Error('상품을 다시 골라 주세요.');
+  if (!P || !P.show) throw new Error('상품을 다시 골라 주세요.');
   if (!b.agree) throw new Error('이용권·환불 안내에 동의해 주세요.');
+  const bn = P.broker ? bBrokerNo(b.broker) : null;
+  if (bn && !bn.ok) throw new Error(bn.err + ' 중개사 요금제는 중개사 전용 할인가라서 등록번호를 확인해요.');
   const c = briefCommon(b);
   const cache = CacheService.getScriptCache(), ck = 'bo:' + Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyyMMddHHmm');
   const n = Number(cache.get(ck) || 0);
@@ -2129,8 +2198,9 @@ function briefOrder(b) {
   ['결제키', '결제수단', '승인시각', '열람토큰', '최초열람시각', '최근열람시각', '환불상태', '환불요청시각', '환불사유', '메모'].forEach(h => row[OC[h]] = '');
   row[OC['열람횟수']] = 0;
   orderSheet().appendRow(row);
-  newBriefRow(c.u, P, BST.wait, c.channel, c.ct, c.ad, id);
-  return { ok: true, orderId: id, amount: P.amount, orderName: ('집예보 ' + P.name).slice(0, 100) };
+  const bid = newBriefRow(c.u, P, BST.wait, c.channel, c.ct, c.ad, id);
+  if (bn) { const o = bRows().find(x => String(x.r[BC['id']]) === bid); setB(o.row, '중개사번호', cellSafe(bn.norm)); setB(o.row, '중개사확인', BROKER_REVIEW.wait); }
+  return { ok: true, orderId: id, amount: P.amount, orderName: ('집예보 ' + P.name).slice(0, 100), ref: bRefNote(c.u.k, b.ref) };
 }
 
 /* 결제 승인 → 이용권 시작(이미 받고 있으면 그 끝난 다음 날부터) */
@@ -2139,6 +2209,7 @@ function briefConfirm(b) {
   if (!paymentKey || !/^[A-Za-z0-9_\-=.]+$/.test(paymentKey)) throw new Error('결제 정보가 올바르지 않아요.');
   const o = findRow(b.orderId);
   if (!o) throw new Error('주문을 찾지 못했어요.');
+  if (String(o.r[OC['상품']]).slice(-BRIEF_CHG_SUFFIX.length) === BRIEF_CHG_SUFFIX) return briefChangeConfirm(b, o, paymentKey, amount);
   const pk = bProdKey(o.r[OC['상품']]);
   if (!BRIEF_PRICE[pk]) throw new Error(BRIEF_NAME + ' 주문이 아니에요.');
   const P = BRIEF_PRICE[pk];
@@ -2171,8 +2242,10 @@ function briefConfirm(b) {
     if (!s) throw new Error('구독 정보를 찾지 못했어요. 고객문의로 주문번호를 알려 주세요.');
     const k = String(s.r[BC['카카오id']]), t = kstToday(), le = lastEnd(k);
     const start = le && le >= t ? addDays(le, 1) : t;
-    setB(s.row, '상태', BST.on); setB(s.row, '시작일', ymd(start)); setB(s.row, '만료일', ymd(addDays(start, P.days - 1)));
-    return { ok: true, orderId: String(o2.r[OC['주문번호']]), sub: briefState(subOf(), new Date()) };
+    setB(s.row, '상태', BST.on); setB(s.row, '시작일', ymd(start)); setB(s.row, '만료일', ymd(addDays(start, P.days - 1))); setB(s.row, '결제액', P.amount);
+    if (P.broker) briefBrokerMail(s, P);
+    const rw = bRefReward(k);
+    return { ok: true, orderId: String(o2.r[OC['주문번호']]), sub: briefState(subOf(), new Date()), reward: rw };
   });
 }
 
@@ -2180,7 +2253,7 @@ function briefMine(b) {
   const u = sessionUser(b.s), now = new Date();
   const list = myBriefs(u.k).filter(o => String(o.r[BC['상태']]) !== BST.wait).map(o => briefState(o, now));
   return { ok: true, subs: list, brief: cleanBrief(u.data && u.data.brief), channels: briefChannels(),
-    trialUsed: myBriefs(u.k).some(o => bIsTrial(o.r[BC['상품']])) };
+    trialUsed: myBriefs(u.k).some(o => bIsTrial(o.r[BC['상품']])), next: (list.filter(x => x.next).pop() || {}).next || '' };
 }
 function mySub(u, id) {
   const o = myBriefs(u.k).find(x => String(x.r[BC['id']]) === String(id || ''));
@@ -2218,11 +2291,196 @@ function briefRefund(b) {
   if (ord) { setO(ord.row, '환불상태', `브리핑 환불 요청(예정 ${s.refundEst.toLocaleString()}원)`); setO(ord.row, '환불요청시각', now); setO(ord.row, '환불사유', reason); }
   try {
     MailApp.sendEmail(Session.getEffectiveUser().getEmail(), `[${SITE_NAME} 결제] ${BRIEF_NAME} 환불 요청 ${s.orderId}`,
-      `주문번호 ${s.orderId}\n상품 ${s.product}\n이용 기간 ${s.start} ~ ${s.end} (남은 날 ${s.left}일, 보낸 브리핑 ${s.sent}회)\n`
+      `주문번호 ${s.orderId}${String(o.r[BC['메모']] || '') ? ' (' + String(o.r[BC['메모']]) + ')' : ''}\n상품 ${s.product}\n이용 기간 ${s.start} ~ ${s.end} (남은 날 ${s.left}일, 보낸 브리핑 ${s.sent}회)\n`
       + `환불 예정액 ${s.refundEst.toLocaleString()}원 (첫 브리핑 전이면 전액, 이용 중이면 남은 날만큼 일할)\n사유: ${reason || '(없음)'}\n\n`
       + `처리: 토스페이먼츠 상점관리자 → 결제 내역에서 주문번호로 찾아 '부분 취소'(예정액) 또는 '전액 취소' → '브리핑구독'·'주문' 시트 환불상태를 '환불완료'로.\n${book().getUrl()}`);
   } catch (e) {}
   return { ok: true, sub: briefState(mySub(u, b.id), now) };
+}
+
+/* ---------- 요금제 바꾸기 (v26) ----------
+   · 올리기(더 비싼 요금제): 오늘 바로 바뀜. 지금 이용권의 남은 날만큼 차액만 결제(서버가 계산, bChangeAmt).
+     결제 승인 뒤 이전 행은 '변경'(발송·환불 대상 아님), 새 요금제 행이 같은 끝날까지 이어받음(보낸 횟수·낸 돈 합계도 이어받음).
+     차액이 100원 미만(남은 날이 아주 짧을 때)이면 결제 없이 바로 바꿔 드림.
+   · 내리기(더 싼 요금제): 지금 이용권은 끝날까지 그대로, 다음 이용권부터 바뀜('다음요금제' 칸에 적어 두고 신청 화면·만료 안내에 반영). 자동 결제는 없음.
+   · 환불은 지금처럼 요청만 받고 운영자가 처리(자동 환불 없음). */
+function briefChangePlan(u, b) {
+  const o = mySub(u, b.id), s = briefState(o, new Date());
+  if (s.state !== BST.on || !s.orderId) throw new Error('결제한 이용권을 받는 중일 때만 요금제를 바꿀 수 있어요. 무료 체험 중이면 신청 화면에서 이용권을 골라 주세요.');
+  if (s.left <= 0) throw new Error('이용 기간이 끝났어요. 신청 화면에서 새 이용권을 골라 주세요.');
+  const cur = BRIEF_PRICE[s.tier], nxt = BRIEF_PRICE[b.product];
+  if (!cur || !nxt || !nxt.show) throw new Error('바꿀 요금제를 다시 골라 주세요.');
+  const up = nxt.amount > cur.amount && nxt.id !== cur.id;
+  return { o: o, s: s, cur: cur, nxt: nxt, up: up, amount: up ? bChangeAmt(cur, nxt, s.left) : 0 };
+}
+function bHasBroker(o) { return !!String(o.r[BC['중개사번호']] || '').replace(/^'/, ''); }
+/* 결제 전에 보여 줄 금액·바뀌는 때 */
+function briefChangeQuote(b) {
+  const u = sessionUser(b.s), c = briefChangePlan(u, b);
+  if (c.nxt.id === c.cur.id) return { ok: true, kind: 'same', to: c.nxt.id, label: c.nxt.label };
+  if (!c.up) return { ok: true, kind: 'next', to: c.nxt.id, label: c.nxt.label, from: c.cur.label, at: ymd(addDays(dOnly(c.s.end), 1)), end: c.s.end, amount: 0 };
+  return { ok: true, kind: 'now', to: c.nxt.id, label: c.nxt.label, from: c.cur.label, left: c.s.left, end: c.s.end, amount: c.amount,
+    free: c.amount < BRIEF_MIN_PAY, monthly: { from: c.cur.amount, to: c.nxt.amount }, broker: !!c.nxt.broker && !bHasBroker(c.o) };
+}
+/* 바꾸기 실행: 내리기 = 다음 요금제만 적어 둠 · 올리기 = 차액 주문 만들기(차액이 아주 작으면 바로 바꿈) */
+function briefChange(b) {
+  const u = sessionUser(b.s), c = briefChangePlan(u, b);
+  if (c.nxt.id === c.cur.id) { setB(c.o.row, '다음요금제', ''); return { ok: true, kind: 'same', sub: briefState(mySub(u, b.id), new Date()) }; }
+  if (!c.up) { setB(c.o.row, '다음요금제', c.nxt.id); return { ok: true, kind: 'next', sub: briefState(mySub(u, b.id), new Date()) }; }
+  if (!b.agree) throw new Error('요금제 바꾸기·환불 안내에 동의해 주세요.');
+  const bn = c.nxt.broker && (String(b.broker || '').trim() || !bHasBroker(c.o)) ? bBrokerNo(b.broker) : null;   // 이미 적어 둔 등록번호가 있으면 그대로 씀
+  if (bn && !bn.ok) throw new Error(bn.err + ' 중개사 요금제는 중개사 전용 할인가라서 등록번호를 확인해요.');
+  if (c.amount < BRIEF_MIN_PAY) { const id = bApplyChange(c.o, c.nxt, 0, '', bn); return { ok: true, kind: 'now', free: true, sub: briefState(bRows().find(x => String(x.r[BC['id']]) === id), new Date()) }; }
+  const id = newOrderId(), row = [];
+  row[OC['주문번호']] = id; row[OC['생성시각']] = new Date(); row[OC['상품']] = c.nxt.name + BRIEF_CHG_SUFFIX;
+  row[OC['단지키']] = JSON.stringify({ sub: c.s.id, from: c.cur.id, to: c.nxt.id, left: c.s.left, broker: bn ? bn.norm : '' });
+  row[OC['단지명']] = `${c.cur.label} → ${c.nxt.label} (남은 ${c.s.left}일, ~${c.s.end})`;
+  row[OC['금액']] = c.amount; row[OC['상태']] = ST.wait;
+  row[OC['연락처']] = String(c.o.r[BC['연락처가림']]); row[OC['연락처확인값']] = String(c.o.r[BC['연락처확인값']]);
+  ['결제키', '결제수단', '승인시각', '열람토큰', '최초열람시각', '최근열람시각', '환불상태', '환불요청시각', '환불사유', '메모'].forEach(h => row[OC[h]] = '');
+  row[OC['열람횟수']] = 0;
+  orderSheet().appendRow(row);
+  return { ok: true, kind: 'now', orderId: id, amount: c.amount, orderName: ('집예보 ' + c.nxt.name + BRIEF_CHG_SUFFIX).slice(0, 100) };
+}
+/* 올리기 적용: 이전 행 '변경' + 새 요금제 행(같은 끝날·연락처·보낸 횟수, 낸 돈 = 이전 낸 돈 + 차액) → 새 행 id */
+function bApplyChange(o, nxt, amount, orderId, bn) {
+  const r = o.r, pv = r[BC['결제액']], prevPaid = pv === '' || pv == null ? (BRIEF_PRICE[bProdKey(r[BC['상품']])] || {}).amount || 0 : Number(pv) || 0;
+  const t = kstToday(), s0 = dOnly(r[BC['시작일']]), start = s0 && s0 > t ? s0 : t;
+  const n = r.slice();
+  n[BC['id']] = 'B' + Utilities.getUuid().replace(/-/g, '').slice(0, 9).toUpperCase(); n[BC['생성시각']] = new Date(); n[BC['상품']] = nxt.name; n[BC['상태']] = BST.on;
+  n[BC['주문번호']] = orderId || String(r[BC['주문번호']]); n[BC['시작일']] = ymd(start); n[BC['결제액']] = prevPaid + amount; n[BC['다음요금제']] = '';
+  n[BC['메모']] = `요금제 변경: ${String(r[BC['id']])}(주문 ${String(r[BC['주문번호']])})에서` + (amount ? ` · 차액 ${amount.toLocaleString()}원` : ' · 차액 없음');
+  n[BC['중개사번호']] = bn ? cellSafe(bn.norm) : (nxt.broker ? String(r[BC['중개사번호']] || '') : '');
+  n[BC['중개사확인']] = nxt.broker ? (bn && bn.norm !== String(r[BC['중개사번호']] || '').replace(/^'/, '') ? BROKER_REVIEW.wait : String(r[BC['중개사확인']] || BROKER_REVIEW.wait)) : '';
+  ['환불상태', '환불요청시각', '해지일'].forEach(h => n[BC[h]] = '');
+  bSheet().appendRow(BH.map((h, i) => n[i] === undefined ? '' : n[i]));
+  setB(o.row, '상태', BST.chg); setB(o.row, '해지일', new Date()); setB(o.row, '메모', (String(r[BC['메모']] || '') + ` → ${n[BC['id']]}로 요금제 변경`).trim());
+  const no = bRows().find(x => String(x.r[BC['id']]) === n[BC['id']]);
+  if (nxt.broker) briefBrokerMail(no, nxt);
+  return n[BC['id']];
+}
+/* 차액 결제 승인: 금액·날짜·이전 행 상태를 토스 승인 전에 다시 확인(맞지 않으면 승인하지 않아 돈이 나가지 않음) */
+function briefChangeConfirm(b, o, paymentKey, amount) {
+  const meta = parseJ(o.r[OC['단지키']], {}) || {}, nxt = BRIEF_PRICE[meta.to];
+  const prev = () => bRows().find(x => String(x.r[BC['id']]) === String(meta.sub || ''));
+  const newOf = () => bRows().find(x => String(x.r[BC['주문번호']]) === String(o.r[OC['주문번호']]));
+  if (String(o.r[OC['상태']]) === ST.paid) {
+    if (!safeEq(o.r[OC['결제키']], paymentKey)) throw new Error('이미 처리된 주문이에요.');
+    const s0 = newOf(); return { ok: true, change: true, orderId: String(o.r[OC['주문번호']]), sub: s0 ? briefState(s0, new Date()) : null };
+  }
+  if (String(o.r[OC['상태']]) !== ST.wait && String(o.r[OC['상태']]) !== ST.fail) throw new Error('처리할 수 없는 주문 상태예요.');
+  const p0 = prev(), made = o.r[OC['생성시각']] instanceof Date ? o.r[OC['생성시각']] : new Date(o.r[OC['생성시각']]);
+  const stop = why => { withLock(() => { setO(o.row, '상태', ST.bad); setO(o.row, '메모', why); }); throw new Error('요금제를 바꾸지 못했어요. 결제는 진행되지 않았어요. ' + why); };
+  if (!nxt || !p0 || String(p0.r[BC['상태']]) !== BST.on || bProdKey(p0.r[BC['상품']]) !== meta.from) stop('이용권 상태가 바뀌었어요. 내 구독 관리에서 다시 해 주세요.');
+  if (ymd(made) !== ymd(new Date())) stop('주문한 날이 지나 남은 날 수가 바뀌었어요. 다시 해 주세요.');
+  const exp = bChangeAmt(BRIEF_PRICE[meta.from], nxt, briefState(p0, new Date()).left);
+  if (!(amount === Number(o.r[OC['금액']]) && amount === exp)) stop(`결제 금액이 차액과 달라요(요청 ${amount}원 / 차액 ${exp}원).`);
+  let res = tossCall('confirm', { paymentKey: paymentKey, orderId: String(o.r[OC['주문번호']]), amount: amount }, 'confirm-' + o.r[OC['주문번호']]);
+  if (res.code !== 200 && res.j && res.j.code === 'ALREADY_PROCESSED_PAYMENT') res = tossCall(encodeURIComponent(paymentKey));
+  const j = res.j || {};
+  return withLock(() => {
+    const o2 = findRow(b.orderId);
+    if (res.code !== 200 || j.status !== 'DONE') {
+      setO(o2.row, '상태', ST.fail); setO(o2.row, '메모', str((j.code || j.status || '') + ' ' + (j.message || ''), 200));
+      return { ok: false, code: str(j.code || j.status, 60), err: str(j.message, 200) || '결제가 완료되지 않았어요.' };
+    }
+    if (String(j.orderId) !== String(o2.r[OC['주문번호']]) || Number(j.totalAmount) !== amount) {
+      setO(o2.row, '상태', ST.bad); setO(o2.row, '메모', '승인 응답 금액/주문번호 불일치 — 토스 상점관리자에서 확인·취소 필요');
+      throw new Error('결제 확인 중 문제가 생겼어요. 운영자가 확인 후 연락드리거나 취소해 드려요.');
+    }
+    setO(o2.row, '결제키', paymentKey); setO(o2.row, '결제수단', str(j.method, 30)); setO(o2.row, '상태', ST.paid);
+    setO(o2.row, '승인시각', j.approvedAt ? new Date(j.approvedAt) : new Date()); setO(o2.row, '메모', '');
+    const bn = meta.broker ? bBrokerNo(meta.broker) : null;
+    bApplyChange(prev(), nxt, amount, String(o2.r[OC['주문번호']]), bn && bn.ok ? bn : null);
+    return { ok: true, change: true, orderId: String(o2.r[OC['주문번호']]), sub: briefState(newOf(), new Date()) };
+  });
+}
+/* 중개사용 시작 알림(운영자 메일) — 등록번호를 직접 확인하고 '중개사확인' 칸을 '확인됨' 또는 '확인 안 됨'으로 바꿔 주세요 */
+function briefBrokerMail(o, P) {
+  if (!o) return;
+  try {
+    MailApp.sendEmail(Session.getEffectiveUser().getEmail(), `[${SITE_NAME}] ${BRIEF_NAME} 중개사용 등록번호 확인 ${String(o.r[BC['id']])}`,
+      `${P.name}\n구독 id ${String(o.r[BC['id']])} · 주문 ${String(o.r[BC['주문번호']])}\n중개사무소 등록번호 ${String(o.r[BC['중개사번호']] || '(없음)').replace(/^'/, '')}\n\n`
+      + `국가공간정보포털 '부동산중개업 조회' 등에서 직접 확인한 뒤 '브리핑구독' 시트의 '중개사확인' 칸을 '${BROKER_REVIEW.ok}' 또는 '${BROKER_REVIEW.no}'으로 바꿔 주세요.\n`
+      + `확인되지 않으면 연락해 일반 요금제로 바꾸거나 환불을 안내해요(자동 처리 없음).\n${book().getUrl()}`);
+  } catch (e) {}
+}
+
+/* ---------- 친구 초대 보상 (v26) ----------
+   · 유료 이용권을 산 적이 있는 회원(환불한 것 제외)이 초대 링크(브리핑 주소 ?ref=코드)를 보냄. 코드 = 카카오 id 해시 앞 8자리(id 원문 없음).
+   · 초대받은 사람이 체험·주문할 때 코드가 함께 오면 '브리핑초대' 시트에 [대기]로 적음. 그 사람이 처음으로 유료 결제를 마치면(briefConfirm)
+     두 사람 모두 1개월 무료 = 다음 결제를 1개월 미룸(지금 이용권 끝난 다음 날부터 30일짜리 0원 이용권을 붙임). 현금 환급 없음.
+   · 남용 방지: 초대받는 사람은 카카오 계정당 한 번만 · 자기 자신 초대 안 됨 · 이미 유료로 쓴 적 있는 사람은 대상 아님 ·
+     무료 체험만 하고 결제하지 않으면 보상 없음 · 한 사람이 받는 보상은 최근 1년(365일) 12개월까지. */
+const SH_BR = '브리핑초대';
+const BRH = ['시각', '초대코드', '초대한id', '받은id', '상태', '처리일', '초대한보상', '받은보상', '메모'];
+const BRC = Object.fromEntries(BRH.map((h, i) => [h, i]));
+const BRIEF_REF = { months: 1, days: 30, yearMax: 12 };
+function brSheet() { return uSheet(SH_BR, BRH); }
+function brRows() { const v = brSheet().getDataRange().getValues(), out = []; for (let i = 1; i < v.length; i++) if (v[i][BRC['초대코드']]) out.push({ row: i + 1, r: v[i] }); return out; }
+function bRefCode(k) { return 'R' + hashOf('ref|' + k).slice(1, 9).toUpperCase(); }
+/* 유료 이용권을 산 적이 있음(환불한 것·결제대기 제외, 초대 보상 이용권 제외) */
+function bPaidEver(k) {
+  return myBriefs(k).some(o => String(o.r[BC['주문번호']] || '') && [BST.on, BST.chg, BST.stop].indexOf(String(o.r[BC['상태']])) >= 0 && !String(o.r[BC['환불상태']] || ''));
+}
+/* 최근 365일 받은 보상 개월 수 */
+function bRefUsed(k, now) {
+  const lo = addDays(now || new Date(), -365);
+  return brRows().reduce((n, x) => {
+    const d = x.r[BRC['처리일']] instanceof Date ? x.r[BRC['처리일']] : new Date(x.r[BRC['처리일']]);
+    if (!(d >= lo)) return n;
+    return n + (String(x.r[BRC['초대한id']]) === k && String(x.r[BRC['초대한보상']]) === '1개월' ? 1 : 0) + (String(x.r[BRC['받은id']]) === k && String(x.r[BRC['받은보상']]) === '1개월' ? 1 : 0);
+  }, 0);
+}
+/* 초대 링크 만들기(유료 이용자만) */
+function briefInvite(b) {
+  const u = sessionUser(b.s);
+  if (!bPaidEver(u.k)) throw new Error('유료 이용권을 쓰는 분만 친구를 초대할 수 있어요.');
+  const code = bRefCode(u.k), used = bRefUsed(u.k);
+  const done = brRows().filter(x => String(x.r[BRC['초대한id']]) === u.k && String(x.r[BRC['상태']]) === '지급').length;
+  const wait = brRows().filter(x => String(x.r[BRC['초대한id']]) === u.k && String(x.r[BRC['상태']]) === '대기').length;
+  return { ok: true, code: code, url: BRIEF_WEB + '?ref=' + code, done: done, wait: wait, used: used, left: Math.max(0, BRIEF_REF.yearMax - used) };
+}
+/* 초대받은 사람이 체험·주문할 때: 조건이 맞으면 [대기]로 적고 이유를 돌려줌(체험·주문은 그대로 진행) */
+function bRefNote(k, ref) {
+  ref = String(ref || '').trim().toUpperCase();
+  if (!/^R[0-9A-F]{8}$/.test(ref)) return '';
+  const seenK = {}; let inviter = '';
+  bRows().some(o => { const kk = String(o.r[BC['카카오id']]); if (seenK[kk]) return false; seenK[kk] = 1; if (bRefCode(kk) === ref) { inviter = kk; return true; } return false; });
+  if (!inviter) return 'none';
+  if (inviter === k) return 'self';
+  if (brRows().some(x => String(x.r[BRC['받은id']]) === k)) return 'once';
+  if (bPaidEver(k)) return 'paid';
+  if (!bPaidEver(inviter)) return 'none';
+  const r = []; r[BRC['시각']] = new Date(); r[BRC['초대코드']] = ref; r[BRC['초대한id']] = inviter; r[BRC['받은id']] = k; r[BRC['상태']] = '대기';
+  ['처리일', '초대한보상', '받은보상', '메모'].forEach(h => r[BRC[h]] = '');
+  brSheet().appendRow(BRH.map((h, i) => r[i] === undefined ? '' : r[i]));
+  return 'ok';
+}
+/* 초대받은 사람이 처음 유료 결제를 마쳤을 때(잠금 안): 두 사람에게 1개월씩(연 12개월 한도) */
+function bRefReward(k) {
+  const x = brRows().find(y => String(y.r[BRC['받은id']]) === k && String(y.r[BRC['상태']]) === '대기');
+  if (!x) return null;
+  const inviter = String(x.r[BRC['초대한id']]), now = new Date();
+  const give = who => bRefUsed(who, now) < BRIEF_REF.yearMax && bGrantMonth(who) ? '1개월' : '연 한도';
+  const a = give(inviter), c = give(k);
+  brSheet().getRange(x.row, BRC['상태'] + 1).setValue('지급'); brSheet().getRange(x.row, BRC['처리일'] + 1).setValue(now);
+  brSheet().getRange(x.row, BRC['초대한보상'] + 1).setValue(a); brSheet().getRange(x.row, BRC['받은보상'] + 1).setValue(c);
+  return { inviter: a, me: c };
+}
+/* 1개월 무료 = 다음 결제 1개월 미룸: 가장 늦게 끝나는 이용권 다음 날(없으면 오늘)부터 30일짜리 0원 이용권. 요금제·연락처는 가장 최근 유료 이용권 그대로 */
+function bGrantMonth(k) {
+  const rows = myBriefs(k).filter(o => [BST.on, BST.chg, BST.stop].indexOf(String(o.r[BC['상태']])) >= 0 && BRIEF_PRICE[bProdKey(o.r[BC['상품']])]);
+  if (!rows.length) return false;
+  const last = rows.slice().sort((p, q) => (dOnly(p.r[BC['만료일']]) || 0) - (dOnly(q.r[BC['만료일']]) || 0)).pop();
+  const t = kstToday(), le = lastEnd(k), start = le && le >= t ? addDays(le, 1) : t;
+  const n = last.r.slice(), P = BRIEF_PRICE[bProdKey(last.r[BC['상품']])];
+  n[BC['id']] = 'B' + Utilities.getUuid().replace(/-/g, '').slice(0, 9).toUpperCase(); n[BC['생성시각']] = new Date(); n[BC['상품']] = P.name; n[BC['상태']] = BST.on;
+  n[BC['주문번호']] = ''; n[BC['시작일']] = ymd(start); n[BC['만료일']] = ymd(addDays(start, BRIEF_REF.days - 1)); n[BC['결제액']] = 0; n[BC['발송수']] = 0;
+  n[BC['메모']] = '친구 초대 보상(1개월 무료, 현금 환급 없음)'; n[BC['다음요금제']] = '';
+  ['최근발송일', '만료알림', '해지일', '환불상태', '환불요청시각'].forEach(h => n[BC[h]] = '');
+  bSheet().appendRow(BH.map((h, i) => n[i] === undefined ? '' : n[i]));
+  return true;
 }
 
 /* ---------- 공개 집계 (워크플로가 읽음, 개인정보 없음) ---------- */
@@ -2346,13 +2604,19 @@ function bFetchJson(url) {
 const bWon = m => { m = Math.round(Number(m) || 0); const e = Math.floor(m / 10000), r = m % 10000; return e && r ? `${e}억 ${r.toLocaleString()}만 원` : e ? `${e}억 원` : `${r.toLocaleString()}만 원`; };
 const bEsc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 /* 동네 하나 요약(발송용): 한 줄 해설 + 숫자 + 대표 거래 3건 */
-function briefPiece(S, a, pro, apts) {
+/* 급매 목록: 기준(%)이 10이면 자료의 urgent 그대로, 다르면 urgent + urgent_lo(5~10%) 에서 기준 이상만 — 화면 brief-core urgentFor 와 같음 */
+function bUrgent(S, thr) {
+  thr = Number(thr) || BRIEF_URG.def;
+  const all = thr === BRIEF_URG.def ? (S.urgent || []) : (S.urgent || []).concat(thr < BRIEF_URG.def ? (S.urgent_lo || []) : []);
+  return all.filter(u => Math.abs(Number(u.disc)) >= thr).sort((x, y) => x.disc - y.disc);
+}
+function briefPiece(S, a, pro, apts, thr) {
   const dn = a.dn || '', tr = (S.trades || []).filter(t => !dn || t.d === dn), lines = (S.lines || {})[dn] || (S.lines || {})[''] || {};
   const nm = S.name + (dn ? ' ' + dn : ''), mine = tr.filter(t => apts.indexOf(t.a) >= 0);
   const pick = mine.concat(tr.filter(t => t.hi && mine.indexOf(t) < 0)).concat(tr.filter(t => !t.hi && mine.indexOf(t) < 0)).slice(0, 3);
   return { nm: nm, n: tr.length, hi: tr.filter(t => t.hi).length, fact: lines.fact || '', cmp: lines.cmp || '', so: lines.so || '',
     mine: mine.length, items: pick.map(t => `${apts.indexOf(t.a) >= 0 ? '[관심 단지] ' : ''}${t.a} ${t.b} ${bWon(t.p)}${t.hi ? ' (신고가)' : t.dr != null && t.dr <= -10 ? ` (최근 2년 최고가보다 ${Math.abs(t.dr).toFixed(0)}% 낮음)` : ''}`),
-    urgent: (S.urgent || []).filter(u => (!dn || u.d === dn) && !u.sus).slice(0, 2).map(u => `${apts.indexOf(u.a) >= 0 ? '[관심 단지] ' : ''}${u.a} ${u.b} ${bWon(u.p)} — 최근 3개월 같은 평형 중간값 ${bWon(u.med)}보다 ${Math.abs(u.disc).toFixed(0)}% 낮음${u.x ? ' (직거래)' : ''}`),
+    urgent: bUrgent(S, thr).filter(u => (!dn || u.d === dn) && !u.sus).slice(0, 2).map(u => `${apts.indexOf(u.a) >= 0 ? '[관심 단지] ' : ''}${u.a} ${u.b} ${bWon(u.p)} — 최근 3개월 같은 평형 중간값 ${bWon(u.med)}보다 ${Math.abs(u.disc).toFixed(0)}% 낮음${u.x ? ' (직거래)' : ''}`),
     gap: (S.gap || []).filter(g => (!dn || g.d === dn) && (apts.indexOf(g.a) >= 0 || (S.gap || []).indexOf(g) < 2)).slice(0, 2).map(g => `${g.a} ${g.b} 전세가율 ${Math.round(g.jr0)}% → ${Math.round(g.jr)}% (${g.dlt > 0 ? '갭 기회·전세 위험 함께 확인' : '보증금은 더 안전, 갭 부담 커짐'})`),
     rise: (S.rise || []).filter(r => !dn || r.d === dn).slice(0, 2).map(r => `${r.a} ${r.b} 최근 3개월 ${r.chg > 0 ? '+' : ''}${r.chg}% (거래량 증가 상위 20%, 내리다 반등)`),
     pn: S.pnews && (S.pnews.items || []).length ? S.pnews : null,
@@ -2446,13 +2710,15 @@ function briefDaily() {
     const s = briefState(o, now);
     if (!s.active || String(o.r[BC['최근발송일']]).slice(0, 10) === date) return;
     const ub = um[String(o.r[BC['카카오id']])] || { areas: [], apts: [] };
-    const pieces = (ub.areas || []).slice(0, s.areas).map(a => { const S = brief(a.g); return S ? briefPiece(S, a, s.pro, ub.apts || []) : null; }).filter(Boolean);
+    const myApts = (ub.apts || []).slice(0, s.apts);      // 요금제 표의 관심 단지 수까지만(서버에서 지킴)
+    const urg = s.urgPick && ub.urg ? ub.urg : BRIEF_URG.def;   // 급매 기준: 고를 수 있는 요금제만 저장값, 없으면 10%
+    const pieces = (ub.areas || []).slice(0, s.areas).map(a => { const S = brief(a.g); return S ? briefPiece(S, a, s.pro, myApts, urg) : null; }).filter(Boolean);
     if (!pieces.length) { bLog([date, s.id, s.channel, '동네 자료 없음', 0]); return; }
     const to = String(o.r[BC['연락처']]).replace(/^'/, '');
     let res = { ok: false, why: '' };
     try {
       if (s.channel === 'email') { pieces.forEach(p => { p.url += `&src=mail&k=${bKey(s.id)}&day=${date}`; });
-        briefMail(to, (pieces[0] && ix && ix.date) || date, pieces, s, s.pro, M, ub); res = { ok: true }; }
+        briefMail(to, (pieces[0] && ix && ix.date) || date, pieces, s, s.pro, M, Object.assign({}, ub, { apts: myApts })); res = { ok: true }; }
       else if (s.channel === 'kakao') {
         if (!ch.kakao) res = { ok: false, why: '알림톡 키 없음' };
         else {
@@ -2481,7 +2747,7 @@ function briefExpiry(now) {
     const to = String(o.r[BC['연락처']]).replace(/^'/, '');
     try {
       if (s.channel === 'email') MailApp.sendEmail({ to: to, name: SITE_NAME, subject: `[${SITE_NAME}] ${BRIEF_NAME} 이용 기간이 ${s.left === 1 ? '오늘' : s.left + '일 뒤'} 끝나요`,
-        htmlBody: `<div style="font-family:sans-serif;line-height:1.7">${bEsc(s.product)} 이용 기간이 ${s.end}에 끝나요. 자동으로 결제되지 않아요.<br>계속 받으시려면 이용권을 새로 구매해 주세요: <a href="${BRIEF_WEB}subscribe/">${BRIEF_WEB}subscribe/</a></div>` });
+        htmlBody: `<div style="font-family:sans-serif;line-height:1.7">${bEsc(s.product)} 이용 기간이 ${s.end}에 끝나요. 자동으로 결제되지 않아요.<br>${s.next ? `다음 이용권은 고르신 대로 ${bEsc(s.nextLabel)} 요금제로 준비해 두었어요.<br>` : ''}계속 받으시려면 이용권을 새로 구매해 주세요: <a href="${BRIEF_WEB}subscribe/${s.next ? '?p=' + s.next : ''}">${BRIEF_WEB}subscribe/</a></div>` });
       else if (s.channel === 'kakao') solapiSend(to, 'SOLAPI_TPL_EXPIRE', { '#{상품}': s.product, '#{만료일}': s.end, '#{링크}': (BRIEF_WEB + 'subscribe/').replace(/^https:\/\//, '') });
       setB(o.row, '만료알림', (String(o.r[BC['만료알림']] || '') + ' ' + tag).trim());
     } catch (e) {}

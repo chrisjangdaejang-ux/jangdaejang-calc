@@ -10,12 +10,62 @@
   const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
   const SITE = ((root.JDJ_SITE || {}).SITE_NAME || '').trim() || '집예보';
   const NAME = `${SITE} 모닝 브리핑`;
+  /* ★ 요금제 표 — 화면(판매·신청·관리)은 이 표 한 곳만 봐요.
+     서버 tools/agent-backend.gs 의 BRIEF_TIERS 와 숫자가 같아야 해요(tools/brief-web-test.js 가 두 표를 대조해요).
+     id: 상품 id · label: 화면 이름 · amount: 한 달 금액(원, 부가세 포함) · areas: 관심 지역 수 · apts: 관심 단지 수
+     customers: 내 손님 브리핑 손님 수(0 = 없음) · urgPick: 급매 기준(5~20%)을 직접 고름(아니면 10%) · weekly: 주간 시장 리포트(내 이름 PDF)
+     pro: 중개사 내용(손님께 할 이야기 3줄·공유 카드) · broker: 가입할 때 중개사무소 등록번호 필요 · launch: '런칭가' 표시
+     show: 화면에 보임(false 면 화면에 안 보이고 서버도 주문을 받지 않아요) · inc: 판매 화면에 보이는 '들어 있는 것'
+     새 요금제(예: 중개사 플러스)는 이 표와 서버 표에 줄 하나씩 더하고 show:false 로 두었다가, 내용이 정해지면 true 로 바꾸면 돼요. */
+  const TIERS = [
+    { id: 'brief', label: '기본', name: NAME, amount: 3900, areas: 3, apts: 3, customers: 0, urgPick: false, weekly: false, pro: false, broker: false, launch: false, show: true,
+      who: '내 동네만 챙겨 보는 분', inc: ['관심 지역 3곳', '관심 단지 3개', '오늘의 부동산 시장과 코너 7개'] },
+    { id: 'brief_plus', label: '플러스', name: `${NAME} 플러스`, amount: 5900, areas: 10, apts: 10, customers: 0, urgPick: false, weekly: false, pro: false, broker: false, launch: false, show: true,
+      who: '여러 동네·단지를 비교하는 분', inc: ['관심 지역 10곳', '관심 단지 10개', '기본에 있는 것 모두'] },
+    { id: 'brief_pro', label: '중개사용', name: `${NAME} 중개사용`, amount: 4900, areas: 10, apts: 10, customers: 0, urgPick: false, weekly: false, pro: true, broker: true, launch: true, show: true,
+      who: '공인중개사', inc: ['관심 지역 10곳', '관심 단지 10개', '손님께 할 이야기 3줄(복사 버튼)', '손님에게 보낼 카드 이미지'] },
+    { id: 'brief_pro_plus', label: '중개사 플러스', name: `${NAME} 중개사 플러스`, amount: 9900, areas: 20, apts: 30, customers: 10, urgPick: true, weekly: true, pro: true, broker: true, launch: true, show: true,
+      who: '손님이 많은 공인중개사', inc: ['관심 지역 20곳', '관심 단지 30개', '중개사용에 있는 것 모두', '내 손님 브리핑: 손님 10명까지 손님별 브리핑', '급매 알림 기준 직접 정하기(5~20%, 기본 10%)', '주간 시장 리포트: 내 이름이 들어간 PDF'] }
+  ];
+  const PRICE = Object.fromEntries(TIERS.map(t => [t.id, t]));
+  const URG = { def: 10, lo: 5, hi: 20 };   // 급매 기준(%) — 서버 BRIEF_URG 와 같음
+  const MAX = { areas: Math.max(...TIERS.map(t => t.areas)), apts: Math.max(...TIERS.map(t => t.apts)) };
   const B = {
     SITE, NAME,
     DATA: '/jangdaejang-data/data/brief/',
     DROP: -10,                                      // '최근 2년 최고가보다 많이 내린 거래' 기준(%)
-    PRICE: { brief: { name: NAME, amount: 3900, areas: 3 }, brief_pro: { name: `${NAME} 중개사용`, amount: 4900, areas: 10 } },
+    TIERS, PRICE, URG, MAX,
     TRIAL_DAYS: 7,
+    REF: { months: 1, yearMax: 12 },        // 친구 초대 보상(서버 BRIEF_REF 와 같음)
+    /** 급매 목록: 기준(%)이 10이면 자료의 urgent 그대로, 다르면 urgent + urgent_lo(5~10% 후보)에서 기준 이상만 — 서버 bUrgent 와 같음 */
+    urgentFor(S, thr) {
+      thr = Number(thr) || URG.def;
+      const all = thr === URG.def ? (S.urgent || []) : (S.urgent || []).concat(thr < URG.def ? (S.urgent_lo || []) : []);
+      return all.filter(u => Math.abs(Number(u.disc)) >= thr).sort((x, y) => x.disc - y.disc);
+    },
+    /** 이 기기에 저장된 내 급매 기준(중개사 플러스가 구독 관리에서 정함). 없거나 범위 밖이면 10 */
+    myUrg() { try { const v = Number(localStorage.getItem('jdj_brief_urg')); return v >= URG.lo && v <= URG.hi ? v : URG.def; } catch (e) { return URG.def; } },
+    /** 금액 '9,900원' */
+    krw: n => `${Number(n).toLocaleString('ko-KR')}원`,
+    /** 화면에 보이는 요금제(표 순서대로) */
+    shownTiers: () => TIERS.filter(t => t.show),
+    tier: id => PRICE[id] || null,
+    /** 중개사무소 등록번호 형식 확인(서버 bBrokerNo 와 같은 규칙). 진짜 등록 여부는 운영자가 따로 확인해요.
+        요즘 형식 '시군구 코드 5자리-등록 연도 4자리-일련번호 4~5자리'(예: 11680-2020-00123)는 kind 'new',
+        예전 형식(한글·숫자·붙임표, 예: 서울강남-1234)은 kind 'old' 로 받아 두고 확인해요. */
+    brokerNo(s, year) {
+      const t = String(s == null ? '' : s).replace(/\s+/g, '').replace(/[‐‑–—−]/g, '-').replace(/^제/, '').replace(/호$/, '');
+      const Y = year || new Date().getFullYear(), bad = m => ({ ok: false, err: m });
+      if (!t) return bad('중개사무소 등록번호를 적어 주세요.');
+      if (t.length > 30) return bad('등록번호가 너무 길어요. 다시 확인해 주세요.');
+      if (/^01[016789]-?\d{3,4}-?\d{4}$/.test(t)) return bad('전화번호가 아니라 중개사무소 등록번호를 적어 주세요.');
+      if (/^\d{3}-?\d{2}-?\d{5}$/.test(t)) return bad('사업자등록번호가 아니라 중개사무소 등록번호를 적어 주세요.');
+      const m = t.match(/^([1-5]\d{4})-?(\d{4})-?(\d{4,5})$/);
+      if (m) return +m[2] >= 1984 && +m[2] <= Y ? { ok: true, norm: `${m[1]}-${m[2]}-${m[3]}`, kind: 'new' } : bad('등록 연도(가운데 4자리)를 다시 확인해 주세요.');
+      if (/^\d{5}-?\d{4}-?\d{4,5}$/.test(t)) return bad('앞 5자리(시·군·구 코드)를 다시 확인해 주세요.');
+      if (/^[가-힣0-9]+(-[가-힣0-9]+){0,4}$/.test(t) && /[가-힣-]/.test(t) && (t.match(/\d/g) || []).length >= 4) return { ok: true, norm: t, kind: 'old' };
+      return bad('중개사무소 등록번호 형식이 맞지 않아요. 예: 11680-2020-00123');
+    },
     esc: s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])),
     /** '11710-잠실동' → {g:'11710', dn:'잠실동'} (잘못된 값이면 null) */
     parseD(d) {
@@ -142,11 +192,11 @@
       return { name: n.n, where: [n.sd, n.gn].filter(Boolean).join(' '), kind: n.k, when: [a, b].filter(Boolean).join(' · ') || B.ds(r[0]), hh: n.hh ? `${Number(n.hh).toLocaleString('ko-KR')}세대` : '' };
     },
     /** ③ 내 관심 단지: 이 동네 자료에서 관심 단지의 새 매매·전세만 */
-    mine(S, apts) {
+    mine(S, apts, thr) {
       apts = (apts || []).map(String); if (!apts.length || !S) return { apts: [], trades: [], rents: [], urgent: [], gap: [], rise: [], rank: [] };
       const has = a => apts.includes(a);
       return { apts: apts, trades: (S.trades || []).filter(t => has(t.a)), rents: (S.rents || []).filter(r => has(r.a) && !r.mo),
-        urgent: (S.urgent || []).filter(u => has(u.a)), gap: (S.gap || []).filter(g => has(g.a)), rise: (S.rise || []).filter(r => has(r.a)),
+        urgent: B.urgentFor(S, thr).filter(u => has(u.a)), gap: (S.gap || []).filter(g => has(g.a)), rise: (S.rise || []).filter(r => has(r.a)),
         rank: S.rank ? [].concat(S.rank.up || [], S.rank.down || []).filter(r => has(r.a)) : [] };
     },
     /** 급매 레이더 한 줄 */
@@ -212,6 +262,14 @@
       };
     }
   };
+  /* 친구 초대 링크(?ref=R…)로 들어오면 이 기기에 30일 기억 → 신청할 때 함께 보냄 */
+  try {
+    if (root.location && root.localStorage) {
+      const ref = new URLSearchParams(root.location.search).get('ref');
+      if (ref && /^R[0-9A-Fa-f]{8}$/.test(ref)) root.localStorage.setItem('jdj_brief_ref', JSON.stringify({ c: ref.toUpperCase(), t: Date.now() }));
+    }
+  } catch (e) {}
+  B.myRef = () => { try { const o = JSON.parse(root.localStorage.getItem('jdj_brief_ref') || 'null'); return o && Date.now() - o.t < 30 * 86400000 ? o.c : ''; } catch (e) { return ''; } };
   root.JDJ_BRIEF = B;
   if (typeof module !== 'undefined') module.exports = B;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -16,7 +16,7 @@
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/auth.js?v=4"></script>
 <script src="../../assets/pay.js?v=3"></script>
-<script src="../../assets/brief-core.js?v=5"></script>
+<script src="../../assets/brief-core.js?v=6"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
@@ -51,6 +51,8 @@ h1{font-size:clamp(24px,6vw,32px);margin:4px 0 8px}
 .go .btn{width:100%}
 .msg{margin:10px 0 0}
 .note{font-size:13.5px;color:var(--sub2);line-height:1.65;margin:12px 0 0}
+.opt em.lt{font-style:normal;font-size:12px;font-weight:800;color:#8A6A12;background:#FBF4E2;border:1px solid #EAD9A8;border-radius:6px;padding:0 6px;margin-left:4px;vertical-align:1px}
+.bk{margin:10px 0 0;border:1px solid #D6E2FF;background:#F8FAFF;border-radius:14px;padding:12px 14px}
 </style>
 </head>
 <body>
@@ -68,7 +70,8 @@ const Q = new URLSearchParams(location.search);
 const J = u => fetch(u, {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null);
 const sess = () => { try { return (JSON.parse(localStorage.getItem('jdj_auth') || 'null') || {}).s || ''; } catch(e){ return ''; } };
 const call = (action, body) => P.post(action, Object.assign({ s: sess() }, body || {}));
-const st = { areas: [], apts: [], plan: Q.get('p') === 'brief_pro' ? 'brief_pro' : 'brief', channel: 'email', trialUsed: false, active: false, kakao: false };
+const st = { areas: [], apts: [], plan: (B.PRICE[Q.get('p')] || {}).show ? Q.get('p') : 'brief', channel: 'email', trialUsed: false, active: false, kakao: false };
+const won = n => Number(n).toLocaleString('ko-KR');
 
 async function boot(){
   if (!A || !A.on() || !A.user()) {
@@ -84,6 +87,7 @@ async function boot(){
   st.trialUsed = !!(mine && mine.trialUsed);
   st.active = !!(mine && mine.subs.some(x => x.active || x.start > new Date().toISOString().slice(0, 10) && x.state !== '해지'));
   try { if (mine) localStorage.setItem('jdj_brief_sub', st.active ? '1' : '0'); } catch(e){}
+  if (!Q.get('p') && mine && mine.next && (B.PRICE[mine.next] || {}).show) st.plan = mine.next;   // 구독 관리에서 '다음 이용권부터' 고른 요금제
   const sv = (me && me.data && me.data.brief) || (mine && mine.brief) || { areas: [], apts: [] };
   st.areas = (sv.areas || []).slice(); st.apts = (sv.apts || []).slice();
   const d0 = B.parseD(Q.get('d'));
@@ -92,16 +96,18 @@ async function boot(){
   const fail = Q.get('fail') ? `<div class="msg err">결제를 마치지 못했어요${Q.get('message') ? ': ' + esc(Q.get('message')) : ''}. 다시 시도해 주세요.</div>` : '';
   const sds = [...new Set(Object.values(SG).map(x => x.sido))];
   $('main').innerHTML = `<span class="tag">${esc(B.NAME)} 받기</span><h1>매일 아침, 오늘의 시장과<br>내 동네·내 단지 소식</h1>${fail}
-    <section class="step"><h2>1. 받을 동네</h2><p class="sub">시·군·구 전체 또는 동을 골라요. 일반은 ${B.PRICE.brief.areas}곳, 중개사용은 ${B.PRICE.brief_pro.areas}곳까지 보내 드려요.</p>
+    <section class="step"><h2>1. 받을 동네</h2><p class="sub">시·군·구 전체 또는 동을 골라요. ${B.shownTiers().map(t => `${esc(t.label)} ${t.areas}곳`).join(' · ')}까지 보내 드려요.</p>
       <div class="pick"><select id="sd" aria-label="시·도">${sds.map(s => `<option>${esc(s)}</option>`).join('')}</select><select id="sg" aria-label="시·군·구"></select>
         <select id="dn" class="full" aria-label="동"><option value="">구 전체</option></select><button type="button" class="btn full" id="add">이 동네 넣기</button></div>
       <ul class="al" id="al"></ul>
-      <label class="sub" for="apts" style="display:block;margin:12px 0 4px">관심 단지(선택, 쉼표로 구분) — 브리핑에서 맨 위에 보여 드려요</label>
-      <input class="inp" id="apts" maxlength="200" placeholder="예: 리센츠, 잠실엘스" value="${esc(st.apts.join(', '))}"></section>
-    <section class="step"><h2>2. 상품</h2><div class="opt">
-      <label><input type="radio" name="plan" value="brief" ${st.plan === 'brief' ? 'checked' : ''}><span><b>일반 · 월 ${B.PRICE.brief.amount.toLocaleString('ko-KR')}원</b><small>동네 3곳 · 새 실거래·신고가·전세·분양·정책·오늘의 한 줄</small></span></label>
-      <label><input type="radio" name="plan" value="brief_pro" ${st.plan === 'brief_pro' ? 'checked' : ''}><span><b>중개사용 · 월 ${B.PRICE.brief_pro.amount.toLocaleString('ko-KR')}원</b><small>동네 10곳 · 일반 내용 + 손님께 할 이야기 3줄 + 고객 공유용 카드 이미지</small></span></label></div>
-      <p class="note">1개월 이용권이에요(부가세 포함). 자동으로 다시 결제되지 않고, 끝나기 3일 전과 마지막 날에 알려 드려요.</p></section>
+      <label class="sub" for="apts" style="display:block;margin:12px 0 4px">관심 단지(선택, 쉼표로 구분) — 브리핑에서 맨 위에 보여 드려요 <span id="aptN"></span></label>
+      <input class="inp" id="apts" maxlength="1200" placeholder="예: 리센츠, 잠실엘스" value="${esc(st.apts.join(', '))}"></section>
+    <section class="step"><h2>2. 요금제</h2><div class="opt">
+      ${B.shownTiers().map(t => `<label><input type="radio" name="plan" value="${t.id}" ${st.plan === t.id ? 'checked' : ''}><span><b>${esc(t.label)} · 월 ${won(t.amount)}원${t.launch ? ' <em class="lt">런칭가</em>' : ''}</b><small>${esc(t.inc.join(' · '))}</small></span></label>`).join('')}</div>
+      <div id="brokerBox" class="bk" hidden><label class="sub" for="broker" style="display:block;margin:0 0 4px"><b>중개사무소 등록번호</b> (필수)</label>
+        <input class="inp" id="broker" maxlength="30" autocomplete="off" placeholder="예: 11680-2020-00123">
+        <p class="note" style="margin:6px 0 0">중개사 요금제는 공인중개사 전용 할인가라서 등록번호를 확인해요. 사무소 등록증에 적힌 번호를 그대로 적어 주세요. 번호는 운영자가 직접 확인하는 데에만 써요.</p></div>
+      <p class="note">1개월 이용권이에요(부가세 포함). 자동으로 다시 결제되지 않고, 끝나기 3일 전과 마지막 날에 알려 드려요. 쓰는 중에 더 높은 요금제로 바꾸면 남은 날만큼 차액만 내요.</p></section>
     <section class="step"><h2>3. 받는 방법</h2><div class="opt">
       <label class="${st.kakao ? '' : 'off'}"><input type="radio" name="ch" value="kakao" ${st.kakao ? '' : 'disabled'}><span><b>카카오톡 ${st.kakao ? '' : '(준비 중)'}</b><small>${st.kakao ? '집예보 카카오톡 채널 알림톡으로 받아요(휴대폰 번호 필요)' : '카카오 알림톡 심사가 끝나면 열려요. 그동안 이메일로 받고, 나중에 [내 구독 관리]에서 바꿀 수 있어요.'}</small></span></label>
       <label><input type="radio" name="ch" value="email" ${st.kakao ? '' : 'checked'}><span><b>이메일</b><small>매일 아침 7시대에 보내 드려요</small></span></label></div>
@@ -123,27 +129,30 @@ async function boot(){
   $('sd').onchange = fillG; $('sg').onchange = fillDn;
   if (d0 && SG[d0.g]) { $('sd').value = SG[d0.g].sido; } fillG();
   const max = () => B.PRICE[st.plan].areas;
+  const aptList = () => $('apts').value.split(',').map(s => s.trim()).filter(Boolean);
   const drawA = () => { $('al').innerHTML = st.areas.map((a, i) => `<li>${esc(a.gn + (a.dn ? ' ' + a.dn : ''))}${i >= max() ? ' <small>(이 상품에선 안 보냄)</small>' : ''}<button type="button" data-i="${i}" aria-label="${esc(a.gn)} 빼기">×</button></li>`).join('') || '<li style="border-style:dashed;background:#fff">아직 고른 동네가 없어요</li>';
     $('al').querySelectorAll('button[data-i]').forEach(b => b.onclick = () => { st.areas.splice(+b.dataset.i, 1); drawA(); }); };
   $('add').onclick = () => { const g = $('sg').value, dn = $('dn').value; if (!g) return; if (st.areas.some(a => a.g === g && a.dn === dn)) return;
-    if (st.areas.length >= 10) return msg('동네는 10곳까지 고를 수 있어요.', 1); st.areas.push({ g, gn: SG[g].name, sd: SG[g].sido, dn }); drawA(); };
+    if (st.areas.length >= B.MAX.areas) return msg(`동네는 ${B.MAX.areas}곳까지 고를 수 있어요.`, 1); st.areas.push({ g, gn: SG[g].name, sd: SG[g].sido, dn }); drawA(); };
   document.querySelectorAll('input[name=plan]').forEach(r => r.onchange = () => { st.plan = r.value; drawA(); sync(); });
   document.querySelectorAll('input[name=ch]').forEach(r => r.onchange = () => { st.channel = r.value; $('contact').placeholder = r.value === 'kakao' ? '받을 휴대폰 번호' : '받을 이메일 주소'; $('contact').autocomplete = r.value === 'kakao' ? 'tel' : 'email'; });
-  const sync = () => { $('pay').textContent = `월 ${B.PRICE[st.plan].amount.toLocaleString('ko-KR')}원 결제하고 받기`; };
+  const sync = () => { const T = B.PRICE[st.plan]; $('pay').textContent = `월 ${won(T.amount)}원 결제하고 받기`; $('brokerBox').hidden = !T.broker;
+    const n = aptList().length; $('aptN').textContent = `(${T.label} ${T.apts}개까지${n > T.apts ? ` · 지금 ${n}개라 앞의 ${T.apts}개만 보내요` : ''})`; };
+  $('apts').oninput = sync;
   drawA(); sync();
-  const saveAreas = () => A.update(d => { d.brief = { ...(d.brief || {}), areas: st.areas, apts: $('apts').value.split(',').map(s => s.trim()).filter(Boolean).slice(0, 10), v: st.plan === 'brief_pro' ? 'pro' : '' }; })
-    .then(() => { try { localStorage.setItem('jdj_brief_apts', JSON.stringify($('apts').value.split(',').map(s => s.trim()).filter(Boolean).slice(0, 10))); } catch(e){} });
+  const saveAreas = () => A.update(d => { d.brief = { ...(d.brief || {}), areas: st.areas, apts: aptList().slice(0, B.MAX.apts), v: B.PRICE[st.plan].pro ? 'pro' : '' }; })
+    .then(() => { try { localStorage.setItem('jdj_brief_apts', JSON.stringify(aptList().slice(0, B.PRICE[st.plan].apts))); } catch(e){} });
   const base = () => { const ch = (document.querySelector('input[name=ch]:checked') || {}).value;
     if (!st.areas.length) throw new Error('받을 동네를 하나 이상 넣어 주세요.');
     if (!ch) throw new Error('받는 방법을 골라 주세요.');
     if (!$('privacy').checked) throw new Error('발송용 연락처 수집·이용에 동의해 주세요.');
-    return { channel: ch, contact: $('contact').value.trim(), privacy: true, ad: $('ad').checked }; };
+    return { channel: ch, contact: $('contact').value.trim(), privacy: true, ad: $('ad').checked, ref: B.myRef() }; };
   function msg(t, bad){ $('msg').className = 'msg ' + (bad ? 'err' : 'info'); $('msg').innerHTML = t; }
   const busy = (b, on, t) => { b.disabled = on; if (t) b.textContent = t; };
   if ($('trial')) $('trial').onclick = async () => {
     const b = $('trial');
     try { const x = base(); busy(b, true, '시작하는 중…'); await saveAreas(); const r = await call('briefTrial', x);
-      msg(`무료 체험을 시작했어요(${esc(r.sub.start)} ~ ${esc(r.sub.end)}). 내일 아침부터 ${esc(r.sub.contact)}(으)로 보내 드려요. <a href="../manage/">내 구독 관리</a>`); b.remove(); try { localStorage.setItem('jdj_brief_sub', '1'); } catch(e){}
+      msg(`무료 체험을 시작했어요(${esc(r.sub.start)} ~ ${esc(r.sub.end)}). 내일 아침부터 ${esc(r.sub.contact)}(으)로 보내 드려요.${r.ref === 'ok' ? ' 친구 초대로 오셨어요. 이용권을 결제하면 두 분 모두 1개월 무료로 더 받아요.' : ''} <a href="../manage/">내 구독 관리</a>`); b.remove(); try { localStorage.setItem('jdj_brief_sub', '1'); } catch(e){}
       if (window.JDJ && JDJ.track) JDJ.track('brief_trial_start', { n: st.areas.length });
     } catch(e){ busy(b, false, `${B.TRIAL_DAYS}일 무료로 시작하기`); msg(esc(e.message), 1); }
   };
@@ -152,6 +161,7 @@ async function boot(){
     const b = $('pay');
     try {
       const x = base(); if (!$('terms').checked) throw new Error('1개월 이용권·환불 안내를 확인해 주세요.');
+      if (B.PRICE[st.plan].broker) { const bn = B.brokerNo($('broker').value); if (!bn.ok) { $('broker').focus(); throw new Error(bn.err + ' 중개사 전용 할인가라서 확인해요.'); } x.broker = bn.norm; }
       busy(b, true, '결제창을 여는 중…'); await saveAreas();
       const o = await call('briefOrder', Object.assign(x, { product: st.plan, agree: true }));
       await new Promise((ok, no) => { if (window.TossPayments) return ok(); const s = document.createElement('script'); s.src = P.SDK; s.onload = ok; s.onerror = () => no(new Error('결제창을 불러오지 못했어요.')); document.head.appendChild(s); });
