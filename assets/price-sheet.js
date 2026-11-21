@@ -51,6 +51,17 @@
 
   /* ---------- 개별 거래 표 (mine/ 화면도 같이 씀) ---------- */
   /** u 의 개별 거래 표 HTML. 개별 거래가 없는 자료면 월별 요약으로 대신. opts.show: 처음 보일 건수(기본 10) */
+  /* 오늘의 '집값 맞혀 보기' 문제 거래(today/quiz.json)는 그날 문제를 풀기 전까지 거래 표에서 금액을 가림 — 같은 날 우리 화면에서 바로 찾아보지 못하게.
+     문제를 풀었거나(이 기기 기록 jdj_quiz) 날이 바뀌면 그대로 보임. 시세 계산·차트에는 영향 없음 */
+  let QZ = null;
+  try { if (root.fetch && root.location && root.location.pathname) root.fetch('/jangdaejang-data/data/today/quiz.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(j => { QZ = j; }, () => {}); } catch (e) {}
+  function quizHide(u, t) {
+    const q = QZ && QZ.q; if (!q || !u) return false;
+    const today = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
+    if (QZ.date !== today) return false;
+    try { const S = JSON.parse(root.localStorage.getItem('jdj_quiz') || 'null'); if (S && S.h && S.h[today] && S.h[today].id === QZ.id) return false; } catch (e) {}
+    return u[0] === q.g && u[1] === q.d && (u[8] || '') === (q.j || '') && u[2] === q.a && u[3] === q.b && t.ymd === q.dt && t.area === q.ar && t.floor === q.f && t.amt === q.p;
+  }
   const FREE_TRADES = 5;                            // 로그인 없이 보여 주는 최근 실거래 건수(카카오 로그인이 켜져 있을 때만 잠금)
   const auth = () => root.JDJ_AUTH && root.JDJ_AUTH.on() ? root.JDJ_AUTH : null;
   const locked = () => { const a = auth(); return !!(a && !a.user()); };
@@ -65,7 +76,7 @@
     }
     /* 좁은 화면: 계약일 앞 '20' 을 숨겨(26.10.22) 네 칸이 가로 스크롤 없이 들어가게. 신고가·직거래 표시는 금액 아래 줄 */
     const dt = d => /^20\d\d\./.test(d) ? `<span class="jps-yy">20</span>${esc(d.slice(2))}` : esc(d);
-    const row = (t, i) => `<tr${i >= show ? ' class="jps-more" hidden' : ''}><td class="jps-dt">${dt(t.date)}</td><td class="n">${t.area}㎡${t.floor != null ? `<br><small>${t.floor}층</small>` : ''}</td><td class="n"><b>${m.won(t.amt)}</b>${t.hi || t.type === '직거래' ? '<br>' : ''}${t.hi ? '<span class="jps-new" title="그 전까지 같은 평형·같은 전용면적 최고가보다 높은 거래">신고가</span>' : ''}${t.type === '직거래' ? `${t.hi ? ' ' : ''}<small class="jps-dir">직거래</small>` : ''}</td></tr>`;
+    const row = (t, i) => `<tr${i >= show ? ' class="jps-more" hidden' : ''}><td class="jps-dt">${dt(t.date)}</td><td class="n">${t.area}㎡${t.floor != null ? `<br><small>${t.floor}층</small>` : ''}</td><td class="n">${quizHide(u, t) ? '<b>?</b><br><a class="jps-new" href="/jangdaejang-calc/quiz/" style="text-decoration:none">오늘의 문제 · 풀고 확인</a>' : `<b>${m.won(t.amt)}</b>`}${t.hi || t.type === '직거래' ? '<br>' : ''}${t.hi ? '<span class="jps-new" title="그 전까지 같은 평형·같은 전용면적 최고가보다 높은 거래">신고가</span>' : ''}${t.type === '직거래' ? `${t.hi ? ' ' : ''}<small class="jps-dir">직거래</small>` : ''}</td></tr>`;
     return `<div class="jps-tbl"><table><thead><tr><th>계약일</th><th class="n">전용·층</th><th class="n">거래금액</th></tr></thead><tbody>${(lock ? list.slice(0, show) : list).map(row).join('')}</tbody></table></div>`
       + (lock ? auth().gate(`최근 거래 ${show}건을 보여 드렸어요. 나머지 <b>${list.length - show}건</b>과 3년보다 이전 시세는 로그인하면 바로 볼 수 있어요.`, '카카오 간편 로그인하고 전체 보기', 'trades')
         : list.length > show ? `<button type="button" class="jps-morebtn" data-jps-more>더보기 (${list.length - show}건 더)</button>` : '')

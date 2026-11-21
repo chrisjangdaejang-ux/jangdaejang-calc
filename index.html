@@ -41,6 +41,11 @@
 <script src="assets/ask.js?v=1" defer></script>
 <script src="assets/rank-core.js?v=5" defer></script>
 <script src="assets/home-core.js?v=3" defer></script>
+<script src="assets/brief-core.js?v=7" defer></script>
+<script src="assets/today-core.js?v=1" defer></script>
+<script src="assets/quiz-core.js?v=1" defer></script>
+<script src="assets/watch-core.js?v=1" defer></script>
+<script src="assets/watch.js?v=1" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=43">
@@ -176,6 +181,46 @@
 .accl .go{flex:none;font-size:13.5px;font-weight:700;color:var(--blue);white-space:nowrap}
 .accl[open] .go{visibility:hidden}
 .accl p{margin:8px 0 2px;font-size:13.5px;color:var(--sub2);line-height:1.6}
+/* 관심 별: 줄 오른쪽 끝(줄 링크 밖) */
+.pl-list li{display:flex;align-items:center;gap:2px}.pl-list li>a{flex:1;min-width:0}
+/* 하루 세 번 바뀌는 카드: 아침 브리핑 요약 · 낮 오늘 새로 신고된 거래 · 저녁 신고가·큰 하락 TOP */
+.t3{margin:22px 20px 0;border:1px solid var(--line);border-radius:20px;background:#fff;box-shadow:0 2px 10px rgba(25,31,40,.05);overflow:hidden}
+.t3[hidden]{display:none}
+.t3-hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:16px 16px 10px}
+.t3-hd h2{margin:0;font-size:18px;font-weight:900;letter-spacing:-.4px}
+.t3-at{font-size:13.5px;font-weight:700;color:var(--sub2);white-space:nowrap}
+.t3-tabs{display:flex;gap:4px;margin:0 12px;padding:4px;border-radius:12px;background:var(--gray)}
+.t3-tabs button{flex:1;font:inherit;font-size:14.5px;font-weight:800;min-height:44px;border:0;border-radius:9px;background:none;color:var(--sub2);cursor:pointer;line-height:1.25;padding:2px 4px}
+.t3-tabs button[aria-selected="true"]{background:#fff;color:var(--blue);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.t3-tabs button small{display:block;font-size:11.5px;font-weight:700;color:var(--sub3)}
+.t3-rg{display:flex;gap:6px;padding:10px 16px 0}
+.t3-rg button{font:inherit;font-size:14px;font-weight:700;min-height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--sub2);cursor:pointer}
+.t3-rg button[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-l);color:var(--blue)}
+.t3-body{padding:8px 16px 14px;min-height:120px}
+.t3-why{margin:4px 0 6px;font-size:13.5px;color:var(--sub2);line-height:1.5;background:var(--gray2);border-radius:10px;padding:8px 10px}
+.t3-big{margin:4px 0 8px;font-size:16px;line-height:1.5}.t3-big b{font-size:20px;font-weight:900}
+.t3-st{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 8px}
+.t3-st div{background:var(--gray2);border-radius:12px;padding:10px 8px;text-align:center}.t3-st b{display:block;font-size:19px;font-weight:900;font-variant-numeric:tabular-nums}.t3-st small{font-size:12.5px;color:var(--sub2)}
+.t3-h{margin:12px 0 2px;font-size:15px;font-weight:900}
+.t3-l{list-style:none;margin:0;padding:0}
+.t3-l li{display:flex;align-items:center;gap:2px;border-bottom:1px solid var(--line2)}.t3-l li:last-child{border-bottom:0}
+.t3-l a{flex:1;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:center;padding:10px 0;color:var(--text);text-decoration:none;min-height:56px}
+.t3-l .nm b{display:block;font-size:15.5px;font-weight:800;line-height:1.35;word-break:break-all}
+.t3-l .nm small{display:block;font-size:13px;color:var(--sub2);line-height:1.45}
+.t3-l .v{text-align:right}.t3-l .v b{display:block;font-size:16.5px;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}.t3-l .v small{display:block;font-size:12.5px;white-space:nowrap}
+.t3-l .tg{display:inline-block;font-size:11.5px;font-weight:800;border-radius:6px;padding:0 5px;margin-left:4px;vertical-align:1px;background:var(--gray);color:var(--sub2)}.t3-l .tg.hi{background:#FDECE4;color:#C2410C}.t3-l .tg.dn{background:#E8F0FF;color:#1F56E0}
+.t3-up{color:#C2410C}.t3-dn{color:#1F56E0}
+.t3-line{margin:6px 0 0;font-size:14.5px;line-height:1.55;color:var(--sub)}
+.t3-more{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;margin-top:8px;border-radius:12px;background:var(--blue-l);color:var(--blue);font-size:14.5px;font-weight:800;text-decoration:none}
+.t3-src{margin:8px 0 0;font-size:12.5px;color:var(--sub2);line-height:1.5}
+.wrow,.qz{display:flex;align-items:center;gap:12px;margin:10px 20px 0;padding:14px 16px;border-radius:16px;text-decoration:none;color:var(--text);min-height:64px}
+.wrow[hidden],.qz[hidden]{display:none}
+.wrow{background:var(--creamc);border:1px solid var(--creamb)}
+.wrow .ic,.qz .ic{flex:none;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900}
+.wrow .ic{background:#fff;color:#B8942A}.qz .ic{background:var(--blue-l);color:var(--blue)}
+.wrow b,.qz b{display:block;font-size:16px;font-weight:900;line-height:1.35}.wrow small,.qz small{display:block;font-size:13.5px;color:var(--sub2);line-height:1.5;word-break:keep-all}
+.wrow .nw{color:#C2410C}.wrow .go,.qz .go{margin-left:auto;flex:none;font-size:22px;font-weight:800;color:var(--blue)}
+.qz{border:1.5px solid var(--blue);background:#fff}
 @media(max-width:380px){.pl-hd{padding:14px 12px 8px}.pl-body{padding:6px 12px 12px}.pl-sz{padding:10px 12px 2px}.pl-tabs{margin:0 8px}.pl-tabs button{font-size:13.5px}.pl-v svg{width:40px}.pl-list a{grid-template-columns:22px minmax(0,1fr) auto;gap:2px 8px}.pl-num b{font-size:16px}.pl-rg select{max-width:120px;font-size:14px}}
 </style>
 </head>
@@ -195,6 +240,15 @@
 
   <a class="maplink" href="map/" data-track="home_to_map"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg></span><span><b>지도로 단지 찾기<span class="new" style="margin-left:6px;font-size:11px;font-weight:700;color:#2F6BFF;background:#fff;border-radius:4px;padding:1px 6px;vertical-align:3px">NEW</span></b><small>단지 시세·미래가치 점수·전세가율을 지도에서 한눈에</small></span><span class="go">›</span></a>
   <a class="ranklink" href="rank/" data-track="home_to_rank"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M9 20V8h6v12"/><path d="M3 20v-7h6M15 11h6v9"/></svg></span><span><b>우리 구는 몇 위?</b><small>구별 시세 상승·하락 순위와 미래가치 순위</small></span><span class="go">›</span></a>
+
+  <section class="t3" id="t3" hidden aria-labelledby="t3T">
+    <div class="t3-hd"><h2 id="t3T">오늘의 집값 소식</h2><span class="t3-at" id="t3At"></span></div>
+    <div class="t3-tabs" role="tablist" aria-label="시간대" id="t3Tabs"></div>
+    <div class="t3-rg" id="t3Rg" role="group" aria-label="지역" hidden></div>
+    <div class="t3-body" id="t3Body" role="tabpanel" aria-live="polite"></div>
+  </section>
+  <a class="wrow" id="wRow" href="my/watch/" data-track="home_to_watch" hidden></a>
+  <a class="qz" id="qzCard" href="quiz/" data-track="home_to_quiz" hidden></a>
 
   <section class="pulse" id="pulse" hidden aria-labelledby="plTitle">
     <div class="pl-hd"><h2 id="plTitle">우리 지역 지금</h2><div class="pl-rg" id="plRg"></div></div>
@@ -299,11 +353,12 @@ addEventListener('DOMContentLoaded', () => {
     const sd = sdObj(), v = R.vcheck(MH, sd.name), o = R.danji(h, S.g, 3);
     if (!o || !o.rows.length) { $('plBody').innerHTML = `<p class="pl-empty">${esc(place())}에는 점수를 비교할 단지가 아직 없어요.</p>`; return; }
     const vk = `과거에 써 봤더니 ${v.n}번 중 ${v.hit}번 맞음`;
+    const st = x => window.JDJ_WATCH ? JDJ_WATCH.star({sd: S.sd, code: x.code, dong: x.dong, jibun: x.jibun, apt: x.apt, band: x.band}, {small: true}) : '';
     $('plBody').innerHTML = `<p class="pl-cnt">${esc(place())} 단지 ${o.n.toLocaleString()}곳을 미래가치 점수(2년 보유 기준)로 줄 세웠어요</p>
       <ol class="pl-list">${o.rows.map(x => `<li><a href="${esc(mine(x))}" data-track="home_pulse_top">
         <span class="pl-rk">${x.r}<small>${x.tie ? '공동' : '위'}</small></span>
         <span class="pl-nm"><b>${esc(x.apt)}</b><small>${esc(gName(x.code))} ${esc(x.dong)} · ${esc(x.band)}</small><span class="vk">✓ ${esc(vk)}</span></span>
-        <span class="pl-v"><span class="pl-num pl-sc"><b>${x.fv}점</b><small>100점 만점</small></span></span></a></li>`).join('')}</ol>
+        <span class="pl-v"><span class="pl-num pl-sc"><b>${x.fv}점</b><small>100점 만점</small></span></span></a>${st(x)}</li>`).join('')}</ol>
       <p class="pl-rule"><b>점수</b> 같은 ${esc(sd.short)} 단지 중 앞으로 2년 동안 평균보다 더 오를 가능성 순위예요(가격 예측이 아니에요). <b>맞음</b> 이 예측 방법을 과거에 그대로 써 봤을 때 점수 상위 20% 단지가 실제로 같은 구 평균보다 더 오른 경우${v.where === '전국' ? '(전국 성적)' : ''}. <a href="track/" data-track="home_pulse_to_track">성적표 보기</a></p>
       <p class="pl-rule"><b>기준</b> ${esc(R.danjiRule(o))}</p>
       <div class="pl-foot"><span></span><a class="pl-more" href="rank/?t=fv&amp;v=apt${S.sd !== 's00' ? '&amp;sd=' + S.sd : ''}${S.g !== 'all' ? '&amp;g=' + S.g : ''}" data-track="home_pulse_to_rank">전체 순위 보기 ›</a></div>`;
@@ -323,7 +378,7 @@ addEventListener('DOMContentLoaded', () => {
       const sub = `${esc(gName(x.code))} ${esc(x.dong)} · 전용 ${x.area}㎡` + (k === 'drop' ? ` · 최근 ${x.nRecent}건` : '');
       return `<li><a href="${esc(mine(x))}" data-track="home_pulse_${k}"><span class="pl-rk">${i + 1}</span>
         <span class="pl-nm"><b>${esc(x.apt)}</b><small>${sub}</small></span>
-        <span class="pl-v">${spark(x.q, cls)}<span class="pl-num">${num}</span></span></a></li>`; }).join('')}</ol>`
+        <span class="pl-v">${spark(x.q, cls)}<span class="pl-num">${num}</span></span></a>${window.JDJ_WATCH ? JDJ_WATCH.star({sd: S.sd, code: x.code, dong: x.dong, jibun: x.jibun, apt: x.apt, band: x.band}, {small: true}) : ''}</li>`; }).join('')}</ol>`
       : `<p class="pl-empty">${esc(place())} ${esc(st)}에는 ${k === 'drop' ? '기준을 채우면서 직전 2년 최고가보다 내린 곳이' : '최근 30일 신고가가'} 없어요.</p>`;
     const rule = k === 'drop' ? '직전 2년 최고가 → 최근 3개월 거래 중간값, 같은 단지·같은 전용면적' : '최근 30일 신고가 → 직전 2년 최고가와 비교, 같은 단지·같은 전용면적';
     const more = (k === 'drop'
@@ -351,6 +406,107 @@ addEventListener('DOMContentLoaded', () => {
     IX = ix; MH = mh; TR = tr;
     const p = HC.regionPick(IX, ld(KEY), ld('jdj_region')); S.sd = p.sd; S.g = p.g;
     await go();
+  })();
+});
+</script>
+<script>
+/* 하루 세 번 바뀌는 카드(assets/today-core.js): 아침 = 모닝 브리핑 요약(brief/market.json) · 낮 = 오늘 새로 신고된 거래 · 저녁 = 오늘의 신고가·큰 하락 TOP(today/index.json, 하루 4번 갱신)
+   + 관심 목록 한 줄(assets/watch.js) + 오늘의 집값 맞혀 보기(today/quiz.json — 문제 거래는 카드 목록에서 뺌). 자료가 없으면 카드를 숨기고 숫자를 지어내지 않음 */
+addEventListener('DOMContentLoaded', () => {
+  const TD = window.JDJ_TODAY, B = window.JDJ_BRIEF, R = window.JDJ_RANK; if (!TD) return;
+  const DATA = '/jangdaejang-data/data/', $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const J = u => fetch(u, {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null);
+  const ld = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
+  let M = null, T = null, Q = null, IX = null, P = null, K = null, RG = 'all', why = true;
+  const today = () => TD.kst(new Date()).date;
+  const sidOf = g => { const v = IX && IX.sgg && IX.sgg[g]; return v ? ((IX.sido || []).find(s => s.name === v.sido) || {}).id || '' : ''; };
+  const shortOf = sid => ((IX && IX.sido || []).find(s => s.id === sid) || {}).short || '';
+  const myRg = () => { const h = ld('jdj_home_region'); return h && h.sd ? h.sd : 's00'; };
+  const mineOf = x => R ? R.mineUrl(sidOf(x.g), [x.g, x.d, x.j || '', x.a].join('|'), x.b) : '#';
+  const TABS = [['am', '아침', '브리핑'], ['day', '낮', '새로 신고된 거래'], ['pm', '저녁', '신고가·큰 하락']];
+
+  function row(x, kind){
+    const sid = sidOf(x.g), tg = TD.tags(x).filter(t => kind === 'new' || t.c === 'x');
+    const v = kind === 'hi' ? `<b class="t3-up">${TD.eok(x.p)}</b><small class="t3-up">+${x.up.toFixed(1)}%</small>`
+      : kind === 'drop' ? `<b class="t3-dn">${TD.eok(x.p)}</b><small class="t3-dn">−${Math.abs(x.dr).toFixed(1)}%</small>`
+      : `<b>${TD.eok(x.p)}</b><small>${esc(x.s || '')} 올라옴</small>`;
+    const base = kind === 'hi' && x.pm ? ` · 이전 최고 ${TD.eok(x.pm)}` : kind === 'drop' && x.m2 ? ` · 2년 최고 ${TD.eok(x.m2)}` : '';
+    const star = window.JDJ_WATCH && sid ? JDJ_WATCH.star({sd: sid, code: x.g, dong: x.d, jibun: x.j || '', apt: x.a, band: x.b}, {small: true}) : '';
+    return `<li><a href="${esc(mineOf(x))}" data-track="home_t3_${kind}"><span class="nm"><b>${esc(x.a)}${tg.map(t => `<span class="tg ${t.c}">${esc(t.t)}</span>`).join('')}</b><small>${esc([x.sd, x.gn, x.d].filter(Boolean).join(' '))} · ${esc(x.b)}${x.f != null ? ` · ${esc(x.f)}층` : ''} · ${TD.md(x.dt)} 계약${base}</small></span><span class="v">${v}</span></a>${star}</li>`;
+  }
+  function amBody(){
+    if (!M) return '<p class="t3-line">아침 브리핑 자료를 아직 받지 못했어요.</p>';
+    const k = M.kr || {}, lines = [];
+    const top = (k.hi || [])[0], dr = (k.drop || [])[0];
+    if (B && top){ const t = B.topText(top); lines.push(`<b>신고가</b> ${esc(t.name)} · ${esc(t.where)} · ${esc(t.price)} (${esc(t.sub)})`); }
+    if (B && dr){ const t = B.topText(dr); lines.push(`<b>큰 하락</b> ${esc(t.name)} · ${esc(t.where)} · ${esc(t.price)} (${esc(t.sub)})`); }
+    const cy = M.cy; if (cy && cy.n) lines.push(`<b>이번 주 청약</b> 접수 ${cy.n.toLocaleString('ko-KR')}곳${cy.hh ? ` · ${cy.hh.toLocaleString('ko-KR')}세대` : ''}`);
+    const pn = M.pnews && M.pnews.items ? M.pnews.items.length : 0; if (pn) lines.push(`<b>새 발표</b> 정책·교통·공급 소식 ${pn}건`);
+    return `<p class="t3-big">${esc(B ? B.NAME : '모닝 브리핑')} ${esc(B ? B.dateLabel(M.date) : '')}</p>
+      ${k.n ? `<div class="t3-st"><div><b>${k.n.toLocaleString('ko-KR')}건</b><small>새로 잡힌 매매</small></div><div><b>${(k.nhi || 0).toLocaleString('ko-KR')}건</b><small>신고가</small></div><div><b>${(k.ndrop || 0).toLocaleString('ko-KR')}건</b><small>큰 하락</small></div></div>` : '<p class="t3-line">브리핑에 새로 잡힌 매매 거래가 없었어요.</p>'}
+      ${lines.map(l => `<p class="t3-line">${l}</p>`).join('')}
+      <a class="t3-more" href="brief/" data-track="home_t3_brief">브리핑 전체 보기 ›</a>`;
+  }
+  function sc(){ return T ? TD.scope(T, RG === 'all' ? '' : RG, Q) : null; }
+  function dayBody(){
+    const c = sc();
+    if (!c || !c.new.length) return `<p class="t3-line">${RG === 'all' ? '' : esc(shortOf(RG)) + '에는 '}오늘 새로 올라온 거래가 아직 없어요. 실거래 공개 자료는 하루 4번 갱신돼요.</p>`;
+    return `<p class="t3-big">${RG === 'all' ? '전국' : esc(shortOf(RG))}에 오늘 <b>${c.n.toLocaleString('ko-KR')}건</b>이 새로 올라왔어요</p>
+      <ul class="t3-l">${c.new.slice(0, 6).map(x => row(x, 'new')).join('')}</ul>
+      <p class="t3-src">최근 올라온 순. 국토교통부 실거래 공개 자료에 오늘 처음 보인 거래예요(실거래 자료에 신고일이 없어 처음 보인 때 기준).</p>`;
+  }
+  function pmBody(){
+    const c = sc();
+    if (!c || !(c.hi.length || c.drop.length)) return `<p class="t3-line">${RG === 'all' ? '' : esc(shortOf(RG)) + '에는 '}오늘 새로 올라온 거래 중 신고가·큰 하락이 아직 없어요.</p>`;
+    return `<div class="t3-st"><div><b>${c.n.toLocaleString('ko-KR')}건</b><small>오늘 새 거래</small></div><div><b class="t3-up">${c.nhi.toLocaleString('ko-KR')}건</b><small>신고가</small></div><div><b class="t3-dn">${c.ndrop.toLocaleString('ko-KR')}건</b><small>큰 하락</small></div></div>
+      ${c.hi.length ? `<p class="t3-h">신고가 TOP <small style="font-weight:500;color:var(--sub2)">비싼 순</small></p><ul class="t3-l">${c.hi.map(x => row(x, 'hi')).join('')}</ul>` : ''}
+      ${c.drop.length ? `<p class="t3-h">큰 하락 TOP <small style="font-weight:500;color:var(--sub2)">많이 내린 순</small></p><ul class="t3-l">${c.drop.map(x => row(x, 'drop')).join('')}</ul>` : ''}
+      <p class="t3-src">모닝 브리핑과 같은 기준이에요. 신고가 = 같은 단지·같은 전용면적의 그 전 최고가보다 비싼 거래, 큰 하락 = 최근 2년 최고가보다 10% 넘게 낮은 1억 원 이상 거래(직거래·특수 거래 의심은 아래로).</p>`;
+  }
+  function draw(k){
+    K = k;
+    $('t3Tabs').innerHTML = TABS.map(([id, t, s]) => `<button type="button" role="tab" id="t3-${id}" aria-selected="${id === k}" tabindex="${id === k ? 0 : -1}">${t}<small>${s}</small></button>`).join('');
+    $('t3Body').setAttribute('aria-labelledby', 't3-' + k);
+    const sid = myRg(), showRg = k !== 'am' && T && T.by && T.by[sid];
+    $('t3Rg').hidden = !showRg;
+    if (showRg) $('t3Rg').innerHTML = [['all', '전국'], [sid, shortOf(sid)]].map(([v, t]) => `<button type="button" data-rg="${v}" aria-pressed="${RG === v}">${esc(t)}</button>`).join('');
+    else RG = 'all';
+    const td = today();
+    $('t3At').textContent = k === 'am' ? (M ? TD.asOf(M.at || M.date, td) : '') : (T ? TD.asOf(T.at, td) : '');
+    const msg = why && P.why === 'empty' && k === P.show ? `<p class="t3-why">${{day: '오늘 새로 올라온 거래가 아직 없어서', pm: '오늘 신고가·큰 하락이 아직 없어서', am: '아침 브리핑 자료가 아직 없어서'}[P.want]} ${{am: '아침 브리핑', day: '오늘 새로 신고된 거래', pm: '신고가·큰 하락 TOP'}[P.show]}을 먼저 보여 드려요.</p>` : '';
+    $('t3Body').innerHTML = msg + (k === 'am' ? amBody() : k === 'day' ? dayBody() : pmBody());
+    if (window.JDJ_WATCH) JDJ_WATCH.paintStars();
+  }
+  $('t3Tabs').addEventListener('click', e => { const b = e.target.closest('button[id^="t3-"]'); if (!b) return; why = false; draw(b.id.slice(3)); if (window.jdjStat) jdjStat('feature_use', {feature: 'home_t3_' + K}); });
+  $('t3Rg').addEventListener('click', e => { const b = e.target.closest('button[data-rg]'); if (!b) return; RG = b.dataset.rg; draw(K); });
+
+  function watchRow(){
+    const W = window.JDJ_WATCH, el = $('wRow'); if (!W) return;
+    W.summary().then(s => {
+      if (!s.n){ el.hidden = true; return; }
+      el.innerHTML = `<span class="ic" aria-hidden="true">★</span><span><b>내 관심 단지 ${s.n}곳${s.news ? ` · <span class="nw">새 소식 ${s.news}건</span>` : ''}</b><small>${s.news ? '어제·오늘 새로 올라온 거래가 있어요' : '새 거래·신고가·순위·전세가율 변화를 한 화면에서'}</small></span><span class="go" aria-hidden="true">›</span>`;
+      el.hidden = false;
+    });
+  }
+  function quizCard(){
+    const Z = window.JDJ_QUIZ, el = $('qzCard');
+    if (!Q || !Q.q || Q.date !== today() || !Z){ el.hidden = true; return; }
+    const q = Q.q, S = Z.load((() => { try { return localStorage.getItem(Z.KEY); } catch (e) { return null; } })());
+    const done = Z.answered(S, Q, today()), n = Z.streakNow(S, today());
+    el.innerHTML = `<span class="ic" aria-hidden="true">?</span><span><b>오늘의 집값 맞혀 보기</b><small>${done ? `오늘 문제 풀었어요${n ? ` · 연속 ${n}일째` : ''} · 설명 다시 보기` : `${esc(q.gn)} ${esc(q.a)} ${esc(q.b)}${q.f != null ? ` ${esc(q.f)}층` : ''}, 얼마에 거래됐을까요?`}</small></span><span class="go" aria-hidden="true">›</span>`;
+    el.hidden = false;
+  }
+
+  (async () => {
+    [M, T, Q, IX] = await Promise.all([J(DATA + 'brief/market.json'), J(DATA + 'today/index.json'), J(DATA + 'today/quiz.json'), J(DATA + 'index.json')]);
+    watchRow(); quizCard();
+    if (window.JDJ_WATCH) JDJ_WATCH.onChange(watchRow);
+    if (!M && !T) return;
+    P = TD.pick(M, T, new Date(), '', Q);
+    if (P.why === 'none' && !M) return;
+    $('t3').hidden = false;
+    draw(P.show);
   })();
 });
 </script>

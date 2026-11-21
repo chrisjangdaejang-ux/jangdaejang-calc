@@ -36,6 +36,8 @@
 <script src="../assets/lead.js?v=1"></script>
 <script src="../assets/config.js?v=4"></script>
 <script src="../assets/auth.js?v=6"></script>
+<script src="../assets/watch-core.js?v=1"></script>
+<script src="../assets/watch.js?v=1"></script>
 <script src="../assets/kchat.js?v=2"></script>
 <script src="../assets/plain-words.js?v=14"></script>
 <script src="../assets/narrative.js?v=13"></script>
@@ -45,7 +47,7 @@
 <script src="../assets/mine-core.js?v=16"></script>
 <script src="../assets/ask-core.js?v=3"></script>
 <script src="../assets/ask.js?v=1"></script>
-<script src="../assets/price-sheet.js?v=13"></script>
+<script src="../assets/price-sheet.js?v=14"></script>
 <script src="../assets/offi-core.js?v=4"></script>
 <script src="../assets/offi-view.js?v=6"></script>
 <script src="../assets/policy-view.js?v=2"></script>
@@ -241,7 +243,7 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
   <section class="sec" id="favSec" hidden aria-labelledby="favT">
     <h2 id="favT" style="font-size:19px;font-weight:900;margin:0 0 10px">관심 단지 <small id="favN" style="font-size:14px;color:#4E5968;font-weight:700"></small></h2>
     <div class="favs" id="favs"></div>
-    <p class="note" style="margin:8px 0 0">카카오 계정에 저장돼서 다른 기기에서 로그인해도 같은 목록이 보여요. <a href="/jangdaejang-calc/login/">내 계정</a>에서 지울 수 있어요.</p>
+    <p class="note" style="margin:8px 0 0" id="favNote">단지 이름 옆 <b>☆ 관심 목록에 넣기</b>로 넣고 빼요. <a href="/jangdaejang-calc/my/watch/">관심 목록에서 새 거래·변화 보기 ›</a></p>
   </section>
 
   <section class="panel" id="findSec" aria-labelledby="findT">
@@ -306,29 +308,18 @@ function homesNote(){
 }
 let FAVS = [];
 const favLink = f => `/jangdaejang-calc/mine/?sd=${encodeURIComponent(f.sd)}&d=${encodeURIComponent([f.code, f.dong, f.jibun, f.apt].join('|'))}&b=${encodeURIComponent(f.band)}`;
+/* 관심 단지 = 관심 목록(assets/watch.js — 로그인 없이 이 기기에, 카카오 간편 로그인 중이면 계정 '관심 단지'와 맞춤) */
 function renderFavs(){
   const sec = $('favSec'); if (!sec) return;
-  if (!(AU && AU.user()) || !FAVS.length){ sec.hidden = true; return; }
+  FAVS = window.JDJ_WATCH ? JDJ_WATCH.list() : [];
+  if (!FAVS.length){ sec.hidden = true; return; }
   sec.hidden = false; $('favN').textContent = `${FAVS.length}곳`;
   $('favs').innerHTML = FAVS.map(f => `<a href="${esc(favLink(f))}"><b>${esc(f.apt)} · ${esc(f.band)}</b><small>${esc(IX ? sggName(f.code) : '')} ${esc(f.dong)}</small></a>`).join('');
 }
 function favPlace(d){ return {sd:S.sd, code:d.code, dong:d.dong, jibun:d.jibun, apt:d.apt, band:S.band}; }
-function paintFav(d){
-  const b = $('favBtn'); if (!b) return;
-  const on = !!(AU.user() && AU.isFav(FAVS, favPlace(d)));
-  b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on));
-  b.textContent = on ? '★ 관심 단지에 저장됨' : '☆ 관심 단지로 저장';
-}
-function wireFav(d){
-  const b = $('favBtn'); if (!b) return;
-  paintFav(d);
-  b.onclick = () => {
-    if (!AU.user()){ AU.login('fav'); return; }
-    b.disabled = true;
-    AU.toggleFav(favPlace(d)).then(r => { FAVS = r.favs; paintFav(d); renderFavs(); })
-      .catch(e => { b.textContent = e.message || '저장하지 못했어요'; }).then(() => { b.disabled = false; });
-  };
-}
+function paintFav(){ if (window.JDJ_WATCH) JDJ_WATCH.paintStars(); }
+function wireFav(){ paintFav(); }
+if (window.JDJ_WATCH) JDJ_WATCH.onChange(() => renderFavs());
 /* 관심 단지·지역 알림 신청: 신청 내용만 계정에 저장. 카카오톡 발송은 카카오 비즈 인증 뒤 시작 */
 async function fillAlert(d){
   const box = $('alertSec'); if (!box || !AU || !AU.on()) return;
@@ -487,7 +478,7 @@ function render(d, map, units){
 
   $('res').innerHTML = `
   <div class="panel">
-    <div class="dhead"><div><h2>${esc(d.apt)}</h2><div class="loc">${esc(sidoName(d.code))} ${esc(sggName(d.code))} ${esc(d.dong)} ${esc(d.jibun)}${meta ? ' · ' + esc(meta) : ''}</div></div>
+    <div class="dhead"><div><h2>${esc(d.apt)}</h2><div class="loc">${esc(sidoName(d.code))} ${esc(sggName(d.code))} ${esc(d.dong)} ${esc(d.jibun)}${meta ? ' · ' + esc(meta) : ''}</div>${window.JDJ_WATCH ? JDJ_WATCH.star(favPlace(d), {label: true}) : ''}</div>
       ${f.fv != null ? `<div class="fvbadge" title="미래가치 점수(2년 기준)"><small>미래가치 점수</small><b>${f.fv}점</b><small>100점 만점</small></div>` : ''}</div>
     <div class="bands" role="group" aria-label="평형 선택">${d.bands.map(x => `<button type="button" data-b="${esc(x[3])}" class="${x[3] === S.band ? 'on' : ''}" aria-pressed="${x[3] === S.band}">${esc(x[3])}</button>`).join('')}</div>
     <div class="stats">
@@ -590,8 +581,6 @@ function render(d, map, units){
       ${has ? `<a href="../premium/?p=single&amp;k=${encodeURIComponent(pk)}"><b>이 단지 프리미엄 리포트 →</b><small>단지 심층 분석 · 유료</small></a>` : ''}
     </div>
   </div>
-
-  ${AU && AU.on() ? '<div class="sharebox"><button type="button" class="btn ghost fav" id="favBtn" aria-pressed="false">☆ 관심 단지로 저장</button></div>' : ''}
 
   <div id="agentSec"></div>`;
 
@@ -758,9 +747,10 @@ async function init(){
   $('src').insertAdjacentHTML('afterbegin', `자료 기간 ${M.ymLabel(IX.months[0])}~${M.ymLabel(IX.dataTo)} · ${esc(IX.updated)} 갱신 · `);
   fillSido();
   homesNote();
-  if (AU && AU.user()){ await AU.syncHomes(); AU.favs().then(f => { FAVS = f; renderFavs(); if (CUR && !$('res').hidden) paintFav(CUR.d); }); }
+  if (AU && AU.user()){ await AU.syncHomes(); if (window.JDJ_WATCH) JDJ_WATCH.sync().then(() => { renderFavs(); paintFav(); }); }
+  renderFavs();
   renderHomes();
-  if (AU) AU.onChange(() => { homesNote(); if (!AU.user()){ FAVS = []; renderFavs(); } if (CUR && !$('res').hidden) render(CUR.d, CUR.map, CUR.units); });
+  if (AU) AU.onChange(() => { homesNote(); renderFavs(); if (CUR && !$('res').hidden) render(CUR.d, CUR.map, CUR.units); });
   const q = new URLSearchParams(location.search), qsd = q.get('sd'), qd = q.get('d') || '';
   const homes = loadHomes();
   let sd = (qsd && IX.sido.some(s => s.id === qsd)) ? qsd : (homes[0] ? homes[0].sd : (IX.sido.find(s => s.short === '서울') || IX.sido[0]).id);

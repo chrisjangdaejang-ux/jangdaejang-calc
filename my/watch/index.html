@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="집예보">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="robots" content="noindex">
+<script src="/jangdaejang-calc/assets/pwa.js" defer></script>
+<title>관심 목록 — 집예보</title>
+<meta name="description" content="관심 단지의 어제·오늘 새로 올라온 실거래, 신고가, 큰 하락, 미래가치 순위와 전세가율 변화를 한 화면에서 확인해요.">
+<script>window.JDJ_CONFIG = { tool:'watch', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="/jangdaejang-calc/assets/track.js?v=2"></script>
+<script src="/jangdaejang-calc/assets/stat.js?v=7"></script>
+<script src="/jangdaejang-calc/assets/agents.js"></script>
+<script src="/jangdaejang-calc/assets/config.js?v=4"></script>
+<script src="/jangdaejang-calc/assets/auth.js?v=6"></script>
+<script src="/jangdaejang-calc/assets/brief-core.js?v=7"></script>
+<script src="/jangdaejang-calc/assets/today-core.js?v=1"></script>
+<script src="/jangdaejang-calc/assets/watch-core.js?v=1"></script>
+<script src="/jangdaejang-calc/assets/watch.js?v=1"></script>
+<script src="/jangdaejang-calc/assets/tabbar.js?v=2" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=43">
+<style>
+.wrap{max-width:640px;margin:0 auto;padding:22px 16px 40px}
+h1{font-size:clamp(26px,6.4vw,32px);margin:4px 0 8px;letter-spacing:-.6px}
+.lead{margin:0 0 14px;font-size:16px;color:var(--sub2);line-height:1.6}
+.sum{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin:0 0 14px;padding:14px 16px;border-radius:16px;background:var(--gray2);border:1px solid var(--line)}
+.sum b{font-size:18px;font-weight:900}.sum .nw{color:#C2410C}.sum small{font-size:13.5px;color:var(--sub2);margin-left:auto}
+.wi{border:1px solid var(--line);border-radius:18px;padding:16px;margin:0 0 12px;background:#fff;box-shadow:0 2px 8px rgba(25,31,40,.04)}
+.wi.hot{border-color:#EFE6CC;box-shadow:0 2px 10px rgba(184,148,42,.12)}
+.wh{display:flex;align-items:flex-start;gap:10px}
+.wh a{flex:1;min-width:0;text-decoration:none;color:var(--text)}
+.wh a b{display:block;font-size:18px;font-weight:900;letter-spacing:-.3px;line-height:1.35;word-break:break-all}
+.wh a small{display:block;font-size:14px;color:var(--sub2);margin-top:2px}
+.nb{display:inline-block;margin-left:6px;font-size:12px;font-weight:800;color:#fff;background:#C2410C;border-radius:999px;padding:1px 8px;vertical-align:3px}
+.now{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0 4px}
+.now div{background:var(--gray2);border-radius:12px;padding:10px;min-width:0}
+.now small{display:block;font-size:12.5px;color:var(--sub2);line-height:1.4}
+.now b{display:block;font-size:16px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.35;word-break:keep-all}
+.now em{display:block;font-style:normal;font-size:12.5px;color:var(--sub2);line-height:1.4}
+.blk{margin:12px 0 0;padding:12px 0 0;border-top:1px solid var(--line2)}
+.blk h3{margin:0 0 6px;font-size:14.5px;font-weight:800;color:var(--sub)}
+.blk h3 small{font-weight:500;color:var(--sub2);margin-left:4px}
+.blk ul{list-style:none;margin:0;padding:0}
+.blk li{font-size:15px;line-height:1.55;padding:5px 0;border-bottom:1px dashed var(--line2)}
+.blk li:last-child{border-bottom:0}
+.blk li b{font-variant-numeric:tabular-nums}
+.blk .none{font-size:14.5px;color:var(--sub2);margin:0}
+.tg{display:inline-block;font-size:12px;font-weight:800;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px;white-space:nowrap}
+.tg.hi{background:#FDECE4;color:#C2410C}.tg.dn{background:#E8F0FF;color:#1F56E0}.tg.x{background:var(--gray);color:var(--sub2)}
+.up{color:#C2410C;font-weight:800}.dn{color:#1F56E0;font-weight:800}
+.b3{margin:10px 0 0;font-size:13.5px;color:var(--sub2);line-height:1.55}
+.b3.ok{color:#0E7A4F}
+.more{display:inline-flex;align-items:center;min-height:44px;font-size:14.5px;font-weight:800;text-decoration:none}
+.brief{margin:20px 0 0;padding:18px;border-radius:18px;background:var(--creamc);border:1px solid var(--creamb)}
+.brief h2{margin:0 0 6px;font-size:18px;font-weight:900}
+.brief p{margin:0 0 10px;font-size:15px;color:var(--sub);line-height:1.6}
+.brief .cta{display:flex;align-items:center;justify-content:center;min-height:52px;border-radius:14px;background:var(--blue);color:#fff;font-size:16.5px;font-weight:900;text-decoration:none}
+.brief .sub{display:inline-flex;align-items:center;min-height:44px;font-size:14.5px;font-weight:700}
+.empty{padding:22px 18px;border-radius:18px;border:1px dashed var(--line);text-align:center;color:var(--sub);line-height:1.65}
+.empty a{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 16px;margin:10px 4px 0;border-radius:12px;background:var(--blue-l);color:var(--blue);font-weight:800;text-decoration:none}
+.login{margin:14px 0 0;font-size:14.5px;color:var(--sub2);line-height:1.6}
+.note{margin:16px 0 0;font-size:13px;color:var(--sub2);line-height:1.6}
+@media(max-width:380px){.now{grid-template-columns:1fr 1fr}.now div:last-child{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg><span data-site-name>집예보</span></a>
+  <div class="badge plain">관심 목록</div>
+</header>
+<main class="wrap">
+  <h1>관심 목록</h1>
+  <p class="lead">단지 화면에서 <b>☆ 관심</b>을 누른 단지·평형을 모아, 어제·오늘 새로 올라온 거래와 지난번 보신 뒤 바뀐 점을 보여 드려요.</p>
+  <div id="sum" class="sum" hidden></div>
+  <div id="list" aria-live="polite"><p class="note">불러오고 있어요…</p></div>
+  <section class="brief" id="brief" hidden aria-labelledby="briefT"></section>
+  <div id="login"></div>
+  <p class="note">자료: 국토교통부 아파트 매매 실거래가 공개 자료(공공데이터포털). '새로 올라온 거래'는 하루 4번 갱신할 때 우리 공개 자료에 처음 보인 거래예요(실거래 자료에 신고일이 없어서 처음 보인 때를 기준으로 해요). 신고가는 같은 단지·같은 전용면적에서 그 전 최고가보다 비싸게 거래된 경우, 큰 하락은 최근 2년 최고가보다 10% 넘게 낮은 거래예요. 미래가치 점수·순위와 전세가율은 공개 자료 값 그대로예요. 지난번 본 기록은 이 기기에만 남아요.</p>
+</main>
+<footer class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ <span data-site-name>집예보</span> · <a href="/jangdaejang-calc/">홈</a></footer>
+<script>
+(function(){
+'use strict';
+const W = window.JDJ_WATCH, C = window.JDJ_WATCH_CORE, TD = window.JDJ_TODAY, B = window.JDJ_BRIEF;
+const SITE = ((window.JDJ_SITE || {}).SITE_NAME || '').trim() || '집예보';
+const DATA = '/jangdaejang-data/data/', BASE = '/jangdaejang-calc/', $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const J = u => fetch(u, {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null);
+const won = m => { m = Math.round(+m || 0); const e = Math.floor(m / 10000), r = m % 10000; return e && r ? `${e}억 ${r.toLocaleString('ko-KR')}만 원` : e ? `${e}억 원` : `${r.toLocaleString('ko-KR')}만 원`; };
+const md = d => { const s = String(d || ''); return s.length >= 8 ? `${+s.slice(4, 6)}/${+s.slice(6, 8)}` : ''; };
+const mdIso = s => s ? `${+s.slice(5, 7)}/${+s.slice(8, 10)}` : '';
+const hm = ms => { const k = new Date(ms + 9 * 3600000); return `${k.getUTCMonth() + 1}/${k.getUTCDate()} ${String(k.getUTCHours()).padStart(2, '0')}:${String(k.getUTCMinutes()).padStart(2, '0')}`; };
+const eok = m => { m = Math.round(+m || 0); if (m < 10000) return m.toLocaleString('ko-KR') + '만'; const v = Math.round(m / 1000) / 10; return (v % 1 ? v.toFixed(1) : String(v)) + '억'; };
+const pp = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(1);
+const AU = window.JDJ_AUTH || null;
+const mineUrl = p => `${BASE}mine/?sd=${encodeURIComponent(p.sd)}&d=${encodeURIComponent([p.code, p.dong, p.jibun, p.apt].join('|'))}&b=${encodeURIComponent(p.band)}`;
+const loadSnaps = () => { try { return JSON.parse(localStorage.getItem(C.SNAP) || '{}') || {}; } catch (e) { return {}; } };
+let SN0 = null;                     // 이 화면을 처음 열 때의 '지난번 본 기록'(별을 눌러 다시 그릴 때도 같은 기록과 비교)
+const saveSnaps = o => { try { localStorage.setItem(C.SNAP, JSON.stringify(o)); } catch (e) {} };
+document.querySelectorAll('[data-site-name]').forEach(el => { el.textContent = SITE; });
+
+function tradeLine(t, withSeen){
+  const tg = [];
+  if (t.hi) tg.push(`<span class="tg hi">신고가${t.pm ? ` +${((t.p / t.pm - 1) * 100).toFixed(1)}%` : ''}</span>`);
+  else if (C.isDrop(t)) tg.push(`<span class="tg dn">최근 2년 최고가보다 ${Math.abs(t.dr).toFixed(0)}% 낮음</span>`);
+  if (t.x) tg.push('<span class="tg x">직거래</span>');
+  if (t.sus) tg.push('<span class="tg x">특수 거래 의심</span>');
+  const seen = withSeen && t.day ? `${mdIso(t.day)} ${esc(t.s || '')} 올라옴 · ` : '';
+  return `<li>${seen}${md(t.dt)} 계약 · ${t.f != null ? esc(t.f) + '층 · ' : ''}<b>${won(t.p)}</b>${tg.join('')}</li>`;
+}
+function rankLine(r, nfv, sdName){
+  const mv = r.from - r.to;
+  return `미래가치 순위 ${esc(sdName)} ${nfv ? `${nfv.toLocaleString('ko-KR')}곳 중 ` : ''}${r.from.toLocaleString('ko-KR')}위 → <b>${r.to.toLocaleString('ko-KR')}위</b> <span class="${mv > 0 ? 'up' : 'dn'}">${Math.abs(mv).toLocaleString('ko-KR')}계단 ${mv > 0 ? '올라감' : '내려감'}</span>`;
+}
+const jrLine = r => `전세가율 ${r.from.toFixed(1)}% → <b>${r.to.toFixed(1)}%</b> <span class="${r.to > r.from ? 'up' : 'dn'}">${pp(r.to - r.from)}%p</span>`;
+
+async function main(){
+  if (AU && AU.user()) await W.sync();
+  const list = W.list();
+  drawLogin();
+  if (!list.length){
+    $('list').innerHTML = `<div class="empty"><b>아직 관심 단지가 없어요.</b><br>단지 화면이나 첫 화면 목록에서 <b>☆ 관심</b>을 누르면 여기에 모여요.<br><a href="${BASE}map/">지도로 단지 찾기</a><a href="${BASE}mine/">단지 이름으로 찾기</a></div>`;
+    drawBrief([], {}, null); return;
+  }
+  const codes = [...new Set(list.map(p => p.code))];
+  const [IX, gfA, prA, bst] = await Promise.all([J(DATA + 'index.json'), Promise.all(codes.map(W.gfile)), Promise.all(codes.map(c => J(DATA + 'price/' + c + '.json'))), W.briefState()]);
+  const gf = {}, pr = {}; codes.forEach((c, i) => { gf[c] = gfA[i]; pr[c] = prA[i]; });
+  const sgg = c => ((IX && IX.sgg) || {})[c] || {};
+  const sdOf = id => ((IX && IX.sido) || []).find(s => s.id === id) || {};
+  const unitOf = p => (((pr[p.code] || {}).units) || []).find(u => u[0] === p.code && u[1] === p.dong && (u[8] || '') === (p.jibun || '') && u[2] === p.apt && u[3] === p.band) || null;
+  SN0 = SN0 || loadSnaps();
+  const snaps = SN0, now = Date.now(), out = [];
+  let news = 0, at = '';
+  codes.forEach(c => { const a = gf[c] && gf[c].at; if (a && a > at) at = a; });
+  const rows = list.map(p => {
+    const unit = unitOf(p), G = gf[p.code], id = C.idOf(p), prev = snaps[id] || null;
+    const D = C.diff(p, { g: G, unit, prev });
+    news += D.n;
+    out.push([id, prev, C.snap(p, unit, G, now)]);
+    return { p, unit, G, D, prev };
+  });
+  $('sum').hidden = false;
+  $('sum').innerHTML = `<b>관심 단지 ${list.length}곳</b>${news ? `<b class="nw">새 소식 ${news}건</b>` : '<span>새 소식 없음</span>'}<small>${esc(TD.asOf(at, TD.kst(new Date()).date) || '')}</small>`;
+  $('list').innerHTML = rows.map(x => card(x, sgg, sdOf, bst)).join('');
+  W.paintStars();
+  /* 지난번 본 기록: 1시간 지났거나 처음이면 지금 상태로 새로 */
+  const S = loadSnaps(); out.forEach(([id, prev, cur]) => { if (C.shouldRoll(prev, now)) S[id] = cur; });
+  Object.keys(S).forEach(k => { if (!list.some(p => C.idOf(p) === k)) delete S[k]; });
+  saveSnaps(S);
+  W.markSeen(gf);
+  drawBrief(rows, gf, bst);
+  if (window.jdjStat) jdjStat('feature_use', {feature: 'watch_view', n: list.length, news});
+}
+
+function card(x, sgg, sdOf, bst){
+  const { p, unit, D } = x, g = sgg(p.code), sd = sdOf(p.sd), sdName = sd.short || '';
+  const last = unit ? C.unitTrades(unit)[0] : null, nowv = D.now;
+  const nowBox = `<div class="now">
+    <div><small>최근 거래</small>${last ? `<b title="${won(last.p)}">${eok(last.p)}</b><em>${String(last.dt).slice(0, 4)}.${md(last.dt).replace('/', '.')} · ${last.f != null ? esc(last.f) + '층' : ''}</em>` : '<b>-</b><em>최근 3년 거래 없음</em>'}</div>
+    <div><small>미래가치 점수</small>${nowv && nowv.fv != null ? `<b>${Math.min(99, nowv.fv)}점</b><em>${nowv.fvr ? `${esc(sdName)} ${sd.nfv ? sd.nfv.toLocaleString('ko-KR') + '곳 중 ' : ''}${nowv.fvr.toLocaleString('ko-KR')}위` : ''}</em>` : '<b>-</b><em>점수 자료 없음</em>'}</div>
+    <div><small>전세가율</small>${nowv && nowv.jr != null ? `<b>${nowv.jr.toFixed(1)}%</b><em>매매가 대비 전세가</em>` : '<b>-</b><em>전세 자료 없음</em>'}</div></div>`;
+  const Y = D.yday, V = D.visit;
+  const yl = Y.trades.length ? `<ul>${Y.trades.map(t => tradeLine(t, true)).join('')}</ul>` : '<p class="none">새로 올라온 거래가 없어요.</p>';
+  const ych = [Y.rank ? rankLine(Y.rank, sd.nfv, sdName) : '', Y.jr ? jrLine(Y.jr) : ''].filter(Boolean);
+  let vis;
+  if (!V) vis = `<div class="blk"><h3>지난번 본 뒤</h3><p class="none">처음 보셨어요. 다음에 들어오시면 지금과 비교해 바뀐 점을 보여 드려요.</p></div>`;
+  else {
+    const items = V.trades.map(t => tradeLine(t, false)).concat([V.rank ? rankLine(V.rank, sd.nfv, sdName) : '', V.jr ? jrLine(V.jr) : ''].filter(Boolean).map(s => `<li>${s}</li>`));
+    vis = `<div class="blk"><h3>지난번 본 뒤<small>${esc(hm(V.at))}에 보신 것과 비교</small></h3>${items.length ? `<ul>${items.join('')}</ul>` : '<p class="none">바뀐 것이 없어요.</p>'}</div>`;
+  }
+  let b3 = '';
+  if (bst && bst.sub) {
+    const f = C.briefFit(p, bst.brief, bst.lim);
+    b3 = f.inArea && f.inList ? '<p class="b3 ok">✓ 매일 아침 모닝 브리핑 ③ 내 관심 단지에 들어가요.</p>'
+      : !f.inArea ? `<p class="b3">모닝 브리핑 관심 지역에 들어 있지 않은 곳이라 브리핑에는 안 나와요. <a href="${BASE}brief/manage/">구독 관리에서 지역 넣기 ›</a></p>`
+      : `<p class="b3">지금 요금제의 관심 단지 수(${bst.lim}개)를 넘어 모닝 브리핑에는 빠져요. <a href="${BASE}brief/manage/">구독 관리 ›</a></p>`;
+  }
+  return `<article class="wi${D.n ? ' hot' : ''}">
+    <div class="wh"><a href="${esc(mineUrl(p))}" data-track="watch_to_mine"><b>${esc(p.apt)}${D.n ? `<span class="nb">새 소식 ${D.n}</span>` : ''}</b><small>${esc(g.name || '')} ${esc(p.dong)} · ${esc(p.band)}</small></a>${W.star(p)}</div>
+    ${nowBox}
+    <div class="blk"><h3>어제·오늘 새로 올라온 거래</h3>${yl}${ych.length ? `<ul style="margin-top:6px">${ych.map(s => `<li>어제${Y.d0 ? `(${mdIso(Y.d0)})` : ''}보다 · ${s}</li>`).join('')}</ul>` : ''}</div>
+    ${vis}${b3}
+    <a class="more" href="${esc(mineUrl(p))}" data-track="watch_to_mine">시세·미래가치 자세히 보기 ›</a></article>`;
+}
+
+function drawBrief(rows, gf, bst){
+  const el = $('brief'), n = rows.reduce((a, x) => a + x.D.yday.trades.length, 0);
+  const nhi = rows.reduce((a, x) => a + x.D.yday.hi.length, 0), ndr = rows.reduce((a, x) => a + x.D.yday.drop.length, 0);
+  const name = B ? B.NAME : `${SITE} 모닝 브리핑`;
+  if (bst && bst.sub){
+    el.innerHTML = `<h2 id="briefT">${esc(name)} ③ 내 관심 단지</h2><p>관심 목록에 넣은 단지는 모닝 브리핑 ③ 내 관심 단지에 함께 들어가요(관심 지역 안 단지, 요금제 관심 단지 수 ${bst.lim}개까지). 단지마다 들어가는지 위에 적어 두었어요.</p><a class="sub" href="${BASE}brief/manage/">구독 관리 ›</a>`;
+  } else {
+    const val = rows.length ? (n ? `관심 단지에 어제·오늘 새로 올라온 거래가 <b>${n}건</b>${nhi ? `(신고가 ${nhi}건${ndr ? `, 큰 하락 ${ndr}건` : ''})` : ndr ? `(큰 하락 ${ndr}건)` : ''} 있어요. 모닝 브리핑을 받으면 이런 소식이 매일 아침 ③ 내 관심 단지에 정리돼 와요.`
+      : '관심 단지에 새 거래·신고가·큰 하락이 생기면 다음 날 아침 모닝 브리핑 ③ 내 관심 단지에 정리돼 와요.') : '관심 단지를 넣어 두면 새 거래·신고가·큰 하락을 매일 아침 모닝 브리핑 ③ 내 관심 단지로 받아 볼 수 있어요.';
+    el.innerHTML = `<h2 id="briefT">매일 아침 관심 단지 소식</h2><p>${val} 전국 신고가·큰 하락, 금리·대출·세금 변화, 이번 주 청약 일정도 함께 와요.</p><a class="cta" href="${BASE}brief/subscribe/" data-track="watch_to_brief">매일 아침 받아 보기 (7일 무료)</a>`;
+  }
+  el.hidden = false;
+}
+function drawLogin(){
+  const el = $('login'); if (!AU || !AU.on() || AU.user()) { el.innerHTML = ''; return; }
+  el.innerHTML = `<p class="login">관심 목록은 지금 이 기기에만 저장돼 있어요. 카카오 간편 로그인하면 휴대폰·PC 어디서든 같은 목록을 볼 수 있어요.</p>${AU.btn('카카오 간편 로그인', 'watch')}`;
+}
+W.onChange(() => main());
+main();
+})();
+</script>
+</body>
+</html>

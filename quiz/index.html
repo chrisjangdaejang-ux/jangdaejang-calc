@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="집예보">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="/jangdaejang-calc/assets/pwa.js" defer></script>
+<title>집값 맞혀 보기 — 하루 한 문제 | 집예보</title>
+<meta name="description" content="최근 실제로 거래된 아파트 한 곳, 얼마에 거래됐을까요? 하루 한 문제를 맞혀 보고 같은 단지 다른 거래와 비교한 쉬운 설명까지 확인해 보세요.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="집값 맞혀 보기 — 하루 한 문제">
+<meta property="og:description" content="최근 실제 거래 한 건, 얼마였을까요? 보기 4개 중에서 골라 보세요.">
+<meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/quiz/">
+<meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/default.png">
+<meta name="twitter:card" content="summary_large_image">
+<script>window.JDJ_CONFIG = { tool:'quiz', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="/jangdaejang-calc/assets/track.js?v=2"></script>
+<script src="/jangdaejang-calc/assets/stat.js?v=7"></script>
+<script src="/jangdaejang-calc/assets/agents.js"></script>
+<script src="/jangdaejang-calc/assets/config.js?v=4"></script>
+<script src="/jangdaejang-calc/assets/auth.js?v=6"></script>
+<script src="/jangdaejang-calc/assets/share.js?v=8"></script>
+<script src="/jangdaejang-calc/assets/quiz-core.js?v=1"></script>
+<script src="/jangdaejang-calc/assets/watch-core.js?v=1"></script>
+<script src="/jangdaejang-calc/assets/watch.js?v=1"></script>
+<script src="/jangdaejang-calc/assets/tabbar.js?v=2" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=43">
+<style>
+.wrap{max-width:560px;margin:0 auto;padding:22px 16px 40px}
+.eye{font-size:14px;font-weight:800;color:var(--brand);margin:0}
+h1{font-size:clamp(26px,6.6vw,32px);margin:2px 0 6px;letter-spacing:-.6px}
+.lead{margin:0 0 14px;font-size:15.5px;color:var(--sub2);line-height:1.6}
+.qc{border-radius:20px;background:var(--creamc);border:1px solid var(--creamb);padding:20px 18px}
+.qc .where{font-size:14.5px;color:var(--sub2);margin:0}
+.qc .apt{font-size:24px;font-weight:900;letter-spacing:-.5px;margin:2px 0 8px;line-height:1.3;word-break:break-all}
+.qc .facts{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px;padding:0;list-style:none}
+.qc .facts li{background:#fff;border-radius:999px;padding:4px 12px;font-size:14.5px;font-weight:700;color:var(--sub)}
+.qc .ask{font-size:19px;font-weight:900;margin:0}
+.opts{display:grid;gap:10px;margin:14px 0 0}
+.opts button{font:inherit;font-size:19px;font-weight:900;min-height:58px;border-radius:14px;border:2px solid var(--line);background:#fff;color:var(--text);cursor:pointer;font-variant-numeric:tabular-nums;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 18px;text-align:left}
+.opts button:hover:not(:disabled){border-color:var(--blue)}
+.opts button:disabled{cursor:default;opacity:1}
+.opts button.ok{border-color:#0E7A4F;background:#E6F5EE;color:#0E7A4F}
+.opts button.no{border-color:#C2410C;background:#FDECE4;color:#C2410C}
+.opts button small{font-size:13.5px;font-weight:800;white-space:nowrap}
+.res{margin:16px 0 0;border:1px solid var(--line);border-radius:18px;padding:16px}
+.res h2{margin:0 0 4px;font-size:20px;font-weight:900}
+.res .real{margin:0 0 10px;font-size:15.5px;color:var(--sub);line-height:1.6}
+.res .real b{color:var(--text);font-size:18px}
+.why{margin:0;padding:12px 14px;border-radius:14px;background:var(--gray2);list-style:none}
+.why li{font-size:15px;line-height:1.6;padding:3px 0}
+.near{width:100%;border-collapse:collapse;margin:12px 0 0;font-size:14.5px;font-variant-numeric:tabular-nums}
+.near th,.near td{padding:7px 4px;border-bottom:1px solid var(--line2);text-align:right}
+.near th:first-child,.near td:first-child{text-align:left}
+.near th{font-size:13px;color:var(--sub2);font-weight:700}
+.near caption{caption-side:top;text-align:left;font-size:14.5px;font-weight:800;color:var(--sub);padding:0 0 4px}
+.src{margin:10px 0 0;font-size:13px;color:var(--sub2);line-height:1.6}
+.go{display:flex;align-items:center;justify-content:center;min-height:50px;margin:12px 0 0;border-radius:14px;background:var(--blue);color:#fff;font-weight:900;font-size:16px;text-decoration:none}
+.stk{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 0}
+.stk div{border-radius:14px;background:var(--blue-l);padding:10px;text-align:center}
+.stk b{display:block;font-size:22px;font-weight:900;color:var(--blue);font-variant-numeric:tabular-nums}
+.stk small{font-size:12.5px;color:var(--sub2)}
+.share{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:50px;margin:12px 0 0;border-radius:14px;border:1.5px solid var(--blue);background:#fff;color:var(--blue);font:inherit;font-size:16px;font-weight:900;cursor:pointer}
+.next{margin:10px 0 0;font-size:14px;color:var(--sub2);text-align:center}
+.note{margin:16px 0 0;font-size:13px;color:var(--sub2);line-height:1.6}
+.empty{padding:22px 18px;border-radius:18px;border:1px dashed var(--line);text-align:center;color:var(--sub);line-height:1.65}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg><span data-site-name>집예보</span></a>
+  <div class="badge plain">집값 맞혀 보기</div>
+</header>
+<main class="wrap">
+  <p class="eye">하루 한 문제</p>
+  <h1>집값 맞혀 보기</h1>
+  <p class="lead">최근 실제로 거래된 아파트 한 곳이에요. 얼마에 거래됐을지 보기에서 골라 보세요.</p>
+  <div id="app" aria-live="polite"><p class="note">문제를 불러오고 있어요…</p></div>
+  <p class="note">문제는 국토교통부 아파트 매매 실거래가 공개 자료에서 최근 두 달 안 실제 거래로 하루 한 번 골라요(직거래·같은 단지 주변 거래와 12% 넘게 다른 거래는 뺌). 맞힌 기록은 이 기기에만 남고 서버로 보내지 않아요. 상품이나 혜택은 없어요.</p>
+</main>
+<footer class="foot">과거 데이터 기반 정보예요. 자세한 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ <span data-site-name>집예보</span> · <a href="/jangdaejang-calc/">홈</a></footer>
+<script>
+(function(){
+'use strict';
+const Z = window.JDJ_QUIZ, $ = id => document.getElementById(id);
+const SITE = ((window.JDJ_SITE || {}).SITE_NAME || '').trim() || '집예보';
+const BASE = '/jangdaejang-calc/', DATA = '/jangdaejang-data/data/';
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
+const ls = { get(k){ try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v){ try { localStorage.setItem(k, v); } catch (e) {} } };
+const dKo = d => { const s = String(d); return `${s.slice(0, 4)}년 ${+s.slice(4, 6)}월 ${+s.slice(6, 8)}일`; };
+const stat = (n, p) => { try { if (window.jdjStat) jdjStat(n, p || {}); } catch (e) {} };
+document.querySelectorAll('[data-site-name]').forEach(el => { el.textContent = SITE; });
+let Q = null, S = Z.load(ls.get(Z.KEY));
+
+function head(q){
+  return `<div class="qc"><p class="where">${esc([q.sd, q.gn, q.d].filter(Boolean).join(' '))}</p><p class="apt">${esc(q.a)}</p>
+    <ul class="facts"><li>전용 ${esc(q.ar)}㎡ (${esc(q.b)})</li>${q.f != null ? `<li>${esc(q.f)}층</li>` : ''}<li>${dKo(q.dt)} 계약</li></ul>
+    <p class="ask">얼마에 거래됐을까요?</p></div>`;
+}
+function draw(){
+  const q = Q.q, opts = Z.options(Q), done = Z.answered(S, Q, today), mine = done ? S.h[today].pick : null;
+  const ob = opts.map((o, i) => {
+    let cls = '', tag = '';
+    if (done){ if (o.ok){ cls = 'ok'; tag = '<small>실제 거래 금액</small>'; } else if (o.v === mine){ cls = 'no'; tag = '<small>내가 고른 금액</small>'; } }
+    return `<button type="button" data-i="${i}" class="${cls}"${done ? ' disabled' : ''}>${esc(Z.won(o.v))}${tag}</button>`;
+  }).join('');
+  let html = head(q) + `<div class="opts" role="group" aria-label="보기">${ob}</div>`;
+  if (done) html += result(mine === q.p);
+  $('app').innerHTML = html;
+  if (!done) $('app').querySelectorAll('.opts button').forEach(b => b.onclick = () => {
+    const o = opts[+b.dataset.i];
+    S = Z.record(S, Q, o.v, today); ls.set(Z.KEY, JSON.stringify(S));
+    stat('feature_use', {feature: 'quiz_answer', ok: o.ok ? 1 : 0});
+    draw();
+    const r = $('app').querySelector('.res'); if (r && r.scrollIntoView) r.scrollIntoView({behavior: 'smooth', block: 'start'});
+  });
+  const sb = $('shareBtn');
+  if (sb) sb.onclick = () => {
+    const url = 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/quiz/?utm_source=share&utm_medium=user_share&utm_campaign=quiz';
+    const n = Z.streakNow(S, today);
+    const text = `${SITE} 집값 맞혀 보기 — 오늘 문제: ${q.gn} ${q.a} ${q.b}, 얼마에 거래됐을까요?${n > 1 ? ` (나는 ${n}일째 푸는 중)` : ''}`;
+    if (window.JDJ_SHARE && JDJ_SHARE.sendLink) JDJ_SHARE.sendLink({ title: `${SITE} 집값 맞혀 보기`, text, url, tool: 'quiz', place: 'result' });
+  };
+}
+function result(ok){
+  const q = Q.q, E = Z.explain(Q), n = Z.streakNow(S, today);
+  const mineUrl = `${BASE}mine/?sd=${encodeURIComponent(q.sid)}&d=${encodeURIComponent([q.g, q.d, q.j, q.a].join('|'))}&b=${encodeURIComponent(q.b)}`;
+  const near = (Q.near || []).slice(0, 8);
+  return `<section class="res" aria-labelledby="resT"><h2 id="resT">${ok ? '맞았어요!' : '아쉬워요, 다음엔 맞혀 봐요'}</h2>
+    <p class="real">실제 거래 금액은 <b>${esc(Z.won(q.p))}</b>이에요.${q.hi ? ' 이 평형 신고가였어요.' : ''}</p>
+    <ul class="why">${E.lines.map(l => `<li>${esc(l)}</li>`).join('')}</ul>
+    ${near.length ? `<table class="near"><caption>같은 단지·같은 평형 앞뒤 1년 거래 (최근 ${near.length}건)</caption><thead><tr><th>계약일</th><th>층</th><th>금액</th></tr></thead><tbody>${near.map(x => `<tr><td>${esc(Z.ymd(x[0]))}</td><td>${x[2] != null ? esc(x[2]) + '층' : '-'}</td><td>${esc(Z.won(x[3]))}</td></tr>`).join('')}</tbody></table>` : ''}
+    <p class="src">출처: ${esc(Q.src || '국토교통부 아파트 매매 실거래가 공개 자료')} · ${esc(q.gn)} ${esc(q.d)} ${esc(q.a)} · 전용 ${esc(q.ar)}㎡ · ${q.f != null ? esc(q.f) + '층 · ' : ''}${esc(Z.ymd(q.dt))} 계약. 직거래는 비교에서 뺐어요. 층·향·수리 상태에 따라 실제 가격은 달라요.</p>
+    <a class="go" href="${esc(mineUrl)}" data-track="quiz_to_mine">이 단지 시세·미래가치 보기 ›</a>
+    <div class="stk"><div><b>${n}일</b><small>연속 참여</small></div><div><b>${S.best}일</b><small>최고 기록</small></div><div><b>${S.ok}/${S.n}</b><small>맞힌 문제</small></div></div>
+    <button type="button" class="share" id="shareBtn">친구에게 오늘 문제 보내기</button>
+    <p class="next">내일 아침 새 문제가 나와요.</p></section>`;
+}
+fetch(DATA + 'today/quiz.json', {cache: 'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null).then(j => {
+  if (!j || !j.q || j.date !== today){ $('app').innerHTML = `<div class="empty"><b>오늘 문제를 준비하고 있어요.</b><br>새 실거래 자료가 올라오면 문제가 나와요. 잠시 뒤에 다시 들러 주세요.</div>`; return; }
+  Q = j; draw();
+});
+})();
+</script>
+</body>
+</html>
