@@ -1,5 +1,9 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ *
+ * v40 변경 요약 (v20~v39와 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — 시트 변경 없음)
+ *  - 갈아타기 갭 알림 메일 보내는 이름 '장대장 갈아타기 알림' → '{SITE_NAME} 갈아타기 알림', 수신 거부 화면 링크 글자 '{SITE_NAME} 갈아타기 계산기로 가기', 중개사 리뷰 안내 '{SITE_NAME} 리포트에서'(예전 서비스 이름 정리)
+ *  - 검증: node tools/rival-name-test.js
  *
  * v39 변경 요약 (v20~v38과 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — 시트 변경 없음)
  *  - 광고·제휴 문의(adInquiry) 관심 상품에 list_card '목록 사이 카드'(월 시·도 30만 원), end_card '페이지 끝 카드'(월 전국 50만·시·도 30만·중개사 화면 15만 원) 추가 — 가격은 assets/ad-prices.js.
@@ -673,7 +677,7 @@ function alertSub(b) {
   const condTxt = cond === 'below' ? `갭이 ${eok(val)} 이하로 좁혀지면` : `갭이 지금보다 ${val}% 이상 줄거나 늘면`;
   try {
     MailApp.sendEmail({
-      to: email, name: '장대장 갈아타기 알림',
+      to: email, name: SITE_NAME + ' 갈아타기 알림',
       subject: '[장대장] 갈아타기 갭 알림이 등록되었습니다',
       htmlBody: mailHtml('갭 알림 등록 완료',
         `<p><b>${str(m.name, 80)}</b> → <b>${str(t.name, 80)}</b></p>
@@ -695,7 +699,7 @@ function unsubscribe(p) {
   }
   return HtmlService.createHtmlOutput(`<div style="font-family:sans-serif;padding:40px;text-align:center">
     <h2>${done ? '알림이 해지되었습니다' : '알림을 찾지 못했습니다'}</h2>
-    <p><a href="${SITE_URL}">장대장 갈아타기 계산기로 가기</a></p></div>`);
+    <p><a href="${SITE_URL}">${SITE_NAME} 갈아타기 계산기로 가기</a></p></div>`);
 }
 
 function mailHtml(title, body, id, token) {
@@ -756,7 +760,7 @@ function checkAlerts() {
     if (!hit) continue;
     try {
       MailApp.sendEmail({
-        to: r[AC['이메일']], name: '장대장 갈아타기 알림',
+        to: r[AC['이메일']], name: SITE_NAME + ' 갈아타기 알림',
         subject: `[장대장] ${r[AC['지금집']]} → ${r[AC['갈아탈집']]} 갭 ${eok(gap)}`,
         htmlBody: mailHtml(why,
           `<table style="width:100%;border-collapse:collapse;font-size:15px">
@@ -839,7 +843,7 @@ function addReview(b) {
   if (!(s >= 1 && s <= 5)) throw new Error('별점을 골라 주세요.');
   const tags = (b.tags || []).filter(t => RTAGS.indexOf(t) >= 0).slice(0, 5);
   const text = str(b.text, 300).replace(/\d{2,3}-?\d{3,4}-?\d{4}/g, '***');   // 전화번호 같은 개인정보는 가림
-  if (!contacted(a, vid)) throw new Error('이 공인중개사에게 장대장 리포트에서 전화·카카오톡으로 문의한 뒤 12시간이 지나야 리뷰를 남길 수 있어요.');
+  if (!contacted(a, vid)) throw new Error('이 공인중개사에게 ' + SITE_NAME + ' 리포트에서 전화·카카오톡으로 문의한 뒤 12시간이 지나야 리뷰를 남길 수 있어요.');
   const sh = reviewSheet(), prev = reviews().find(r => r.a === a && r.vid === vid);
   const row = [new Date(), prev ? prev.id : 'R' + Utilities.getUuid().replace(/-/g, '').slice(0, 7).toUpperCase(), a, vid, s, JSON.stringify(tags), text, true, prev ? prev.flags : 0, prev ? prev.reply : '', ''];
   if (prev) sh.getRange(prev.row, 1, 1, RH.length).setValues([row]); else sh.appendRow(row);

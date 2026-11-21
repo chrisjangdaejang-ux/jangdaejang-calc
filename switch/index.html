@@ -636,9 +636,9 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
         <p class="muted" style="font-size:15px;margin:0 0 12px">위 루트(단계·단지·금액)와 계산 결과가 신청서에 자동으로 들어가요. 이름·연락처는 신청서에만 적고, 이 화면에는 남지 않아요.</p>
         <div class="plans">
           <div class="pl">
-            <b>장대장 갈아타기 상담</b>
+            <b>갈아타기 전문가 상담</b>
             <small>옮길 순서·시기·단지를 함께 점검해요. 1차 진단은 무료, 심층 컨설팅은 유료로 따로 안내해요.</small>
-            <a class="btn primary" id="consultBtn" data-track="consult_click" href="#" target="_blank" rel="noopener">장대장 상담 신청</a>
+            <a class="btn primary" id="consultBtn" data-track="consult_click" href="#" target="_blank" rel="noopener">전문가 상담 신청</a>
           </div>
           <div class="pl">
             <b>분야별 제휴 세무사 <span class="soon">준비 중</span></b>
@@ -655,7 +655,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
           <button class="btn ghost" id="copyBtn" data-track="copy_result">결과 복사</button>
         </div>
       </div>
-      <a class="xlink" data-track="cross_link_timing" href="https://claude.ai/artifact/MPDhYTNGfXkiiFg6sDxvdM" target="_blank" rel="noopener"><span><b>지금이 갈아탈 타이밍인지 궁금하다면</b><small>장대장 갈아타기 타이밍 · 실거래가 분석</small></span><span class="go" aria-hidden="true">›</span></a>
+      <a class="xlink" data-track="cross_link_timing" href="https://claude.ai/artifact/MPDhYTNGfXkiiFg6sDxvdM" target="_blank" rel="noopener"><span><b>지금이 갈아탈 타이밍인지 궁금하다면</b><small>갈아타기 타이밍 · 실거래가 분석</small></span><span class="go" aria-hidden="true">›</span></a>
       <a class="xlink" data-track="cross_link_buy" href="../buy/"><span><b>무주택자라면</b><small>집예보 내 집 마련 계산기</small></span><span class="go" aria-hidden="true">›</span></a>
     </div>
   </div>
@@ -883,7 +883,7 @@ function updateConsult(){
     q.set('entry.658364183', (`[갈아타기] ${fmt(P)}원 (새 대출 ${fmt(ld.L)}, ${TYPE_NAME[rtype]} ${c.rate}%·${c.term}년) | ${routeSummary()} | ${JDJ.label()}`).slice(0,1500));
     return FORM+'?'+q.toString().replace(/\+/g,'%20');
   };
-  $('consultBtn').href=mk(ROUTE_LAST?'갈아타기 루트 · 장대장 상담':'1주택 갈아타기');
+  $('consultBtn').href=mk(ROUTE_LAST?'갈아타기 루트 · 전문가 상담':'1주택 갈아타기');
   document.querySelectorAll('#taxF a[data-tf]').forEach(a=>{ a.href=mk(`갈아타기 루트 · 제휴 세무사 상담 신청(준비 중) · ${a.dataset.tf}`); });
   if (typeof updateSwitchReport==='function') updateSwitchReport();
 }

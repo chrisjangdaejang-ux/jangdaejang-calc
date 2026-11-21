@@ -50,7 +50,7 @@
 <script src="../../assets/policy-view.js?v=2"></script>
 <script src="../../assets/devproj-view.js?v=3"></script>
 <script src="../../assets/src-box.js?v=1"></script>
-<script src="../../assets/tax-box.js?v=3"></script>
+<script src="../../assets/tax-box.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -1123,7 +1123,7 @@ async function renderCompare(){
 
   /* 단지별 상담·제휴 공인중개사 연결 (추천 리포트와 같은 방식) */
   h += `<div class="sec noprint"><h2><span class="no">04</span> 단지별 상담 · 공인중개사 연결</h2>
-    <p class="sub">비교한 단지마다 그 지역 제휴 공인중개사에게 바로 문의하거나, 장대장 상담을 받을 수 있어요.</p>
+    <p class="sub">비교한 단지마다 그 지역 제휴 공인중개사에게 바로 문의하거나, 부동산 전문가 상담을 받을 수 있어요.</p>
     <div class="cards">${items.map(x=>`<div class="card"><div class="head" style="margin-bottom:8px"><div><div class="name">${esc(x.apt)}</div><div class="loc">${esc(sidoOfCode(x.code))} ${esc(sggName(x.code))} ${esc(x.dong)} · ${esc(x.band)}</div></div><div class="price"><b>${fmtS(x.P)}</b><small>추정 시세</small></div></div>
       <div class="cps noprint" style="margin-bottom:8px">${PB(x,'report_compare')}</div>
       <div class="agt" data-g="${x.code}" data-k="${esc(x.code+'|'+x.dong+'|'+x.apt)}"></div></div>`).join('')}</div>
@@ -1510,7 +1510,7 @@ async function fillAgents(picked){
     const k = el.dataset.k, g = el.dataset.g, dong = k.split('|')[1];
     const cand = list.filter(a=>a.r.includes(g));
     if (!cand.length){
-      /* 제휴 중개사가 없는 구: 고객은 장대장 상담으로 연결, 중개사에겐 작은 모집 안내 */
+      /* 제휴 중개사가 없는 구: 고객은 부동산 전문가 상담으로 연결, 중개사에겐 작은 모집 안내 */
       const apt = k.split('|')[2];
       const q = new URLSearchParams({usp:'pp_url'});
       q.set('entry.397234060', sggName(g)+' '+dong); q.set('entry.658364183', `[단지 문의] ${apt} (${sggName(g)} ${dong}) | ${JDJ.label()}`);

@@ -99,8 +99,8 @@
     return `<div class="txc" id="${id}">
   <h3>이 결과로 상담받기</h3>
   <p class="d">연락처는 다음 화면(상담 신청서)에 직접 적어 주세요. 이 화면은 계산 조건만 미리 채워 드려요.</p>
-  <div class="opt"><b>장대장 상담 · 부동산 전망 + 세금</b><small>장대장이 직접, 이 집의 앞으로 흐름과 세금을 같이 봐 드려요.</small>
-    <a class="btn primary" data-txc="jdj" href="${FORM}" target="_blank" rel="noopener">장대장에게 상담 신청</a></div>
+  <div class="opt"><b>부동산 전문가 상담 · 부동산 전망 + 세금</b><small>부동산 전문가가 직접, 이 집의 앞으로 흐름과 세금을 같이 봐 드려요.</small>
+    <a class="btn primary" data-txc="jdj" href="${FORM}" target="_blank" rel="noopener">부동산 전문가에게 상담 신청</a></div>
   <div class="opt"><b>분야별 제휴 세무사<span class="ready">준비 중</span></b><small>제휴 세무사를 모시는 중이에요. 지금 신청을 남겨 주시면 분야에 맞는 세무사가 정해지는 대로 연락드려요.</small>
     <select data-txc-field aria-label="상담 분야"><option value="양도">양도 전문 (팔 때 양도세)</option><option value="증여">증여 전문 (증여·저가 양도)</option><option value="상속">상속 전문 (상속세·상속주택)</option></select>
     <a class="btn ghost" data-txc="tax" href="${FORM}" target="_blank" rel="noopener">제휴 세무사 상담 신청</a></div>
@@ -113,7 +113,7 @@
     const c0 = ctxFn(); if (fld && c0.field) fld.value = c0.field;
     root.querySelectorAll('a[data-txc]').forEach(a => a.addEventListener('click', () => {
       const c = ctxFn(), withAmt = root.querySelector('[data-txc-amt]').checked, kind = a.dataset.txc;
-      const head = kind === 'jdj' ? '[세금 상담 · 장대장]' : '[제휴 세무사 상담 신청 · ' + (fld ? fld.value : '') + ' 전문 · 준비 중]';
+      const head = kind === 'jdj' ? '[세금 상담 · 부동산 전문가 상담]' : '[제휴 세무사 상담 신청 · ' + (fld ? fld.value : '') + ' 전문 · 준비 중]';
       const memo = [head, c.from].concat(c.conds || []).concat(withAmt ? (c.amounts || []) : []).filter(Boolean).join(' | ').slice(0, 900);
       const q = new URLSearchParams({ usp: 'pp_url' });
       if (c.region) q.set(F_REGION, c.region);
