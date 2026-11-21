@@ -81,7 +81,7 @@ const MARKET = { date: '2026-11-21', name: '집예보 모닝 브리핑', win: { 
   cy: { n: 3, rows: [{ n: '이번 주 단지', sd: '서울', gn: '송파구', sp: ['20261117', ''], rc: ['20261118', '20261119'] }] }, lines: ['전국에서 어제 새로 올라온 아파트 매매는 812건이에요.'] };
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(__dirname, 'agent-backend.gs'), 'utf8')
-  + '\n;globalThis.__T = { BC, OC, UC, SC, UH, SSH, BRIEF_PRICE, BRIEF_TRIAL, BRIEF_NAME, SITE_NAME, bProdKey, hashOf, cleanBrief, briefDaily, briefState, bRows, briefAreas, briefInterest, briefCleanup };', ctx);
+  + '\n;globalThis.__T = { BC, OC, UC, SC, UH, SSH, BRIEF_PRICE, BRIEF_TRIAL, BRIEF_NAME, SITE_NAME, bProdKey, briefPublic, briefStats, briefSeen, bKey, hashOf, cleanBrief, briefDaily, briefState, bRows, briefAreas, briefInterest, briefCleanup };', ctx);
 const T = ctx.__T;
 const post = b => JSON.parse(ctx.doPost({ postData: { contents: JSON.stringify(b) } }).s);
 const get = p => JSON.parse(ctx.doGet({ parameter: p }).s);
@@ -154,6 +154,15 @@ check('메일: ① 전국 시장(신고가 TOP·하락·정책·이번 주 청�
 check('시장 자료는 하루 한 번만 받음', fetches.filter(f => /market\.json/.test(f.url)).length === 1);
 check('이름은 SITE_NAME 한 곳에서', T.BRIEF_NAME === T.SITE_NAME + ' 모닝 브리핑' && T.BRIEF_PRICE.brief.name === T.BRIEF_NAME + ' 1개월' && T.BRIEF_TRIAL.name === T.BRIEF_NAME + ' 7일 체험');
 check('예전 이름 행도 인식', T.bProdKey('아침 브리핑 중개사용 1개월') === 'brief_pro' && T.bProdKey('아침 브리핑 7일 체험') === 'trial' && T.bProdKey(T.BRIEF_PRICE.brief.name) === 'brief' && T.bProdKey('다른 상품') === '');
+check('메일: 링크에 열람 표시(구독 id 해시, 연락처 없음)', !!m && /src=mail&amp;k=[0-9a-f]{10}|src=mail&k=[0-9a-f]{10}/.test(m[0].htmlBody) && !/me@example\.com/.test(m[0].htmlBody.split('src=mail')[1] || ''));
+check('메일: [지역·단지 바꾸기] 버튼', !!m && /지역·단지 바꾸기/.test(m[0].htmlBody));
+check('공개 통계: 구독자 10명 미만이면 숫자 없음', T.briefPublic().n === null);
+check('열람 기록: 잘못된 값 거절·같은 날 한 번만', !T.briefSeen({ k: 'xx', d: '2026-11-21' }).ok && T.briefSeen({ k: 'abcdef0123', d: '2026-11-21' }).ok && T.briefSeen({ k: 'abcdef0123', d: '2026-11-21' }).ok && sheets['브리핑열람'].rows.length === 2);
+(() => { const sh = sheets['브리핑구독']; for (let i = 0; i < 12; i++) { const r = []; r[T.BC['id']] = 'X' + i; r[T.BC['상품']] = i < 11 ? T.BRIEF_PRICE.brief.name : '아침 브리핑 7일 체험'; r[T.BC['상태']] = i < 11 ? '이용' : '체험';
+  r[T.BC['시작일']] = '2026-11-01'; r[T.BC['만료일']] = '2026-12-30'; r[T.BC['카카오id']] = 'kx' + i; sh.rows.push(r); } })();
+const PUB = T.briefPublic();
+check('공개 통계: 10명 이상이면 구독자 수·유료 수, 10명 미만 칸 숨김', PUB.n >= 12 && PUB.paid >= 11 && Object.keys(PUB.budget).length === 0 && PUB.open === null && PUB.name === T.BRIEF_NAME, PUB);
+check('운영자 통계: 토큰 없으면 거절', T.briefStats({ k: 'nope' }).ok === false);
 check('체험(일반)은 중개사 줄 없음', m && !/손님께 할 이야기/.test(m[0].htmlBody));
 check('같은 날 두 번 안 보냄', T.briefDaily() === undefined && mails.filter(a => a[0] && a[0].to === 'me@example.com').length === 1);
 check('발송기록: 연락처 없음', sheets['발송기록'] && !JSON.stringify(sheets['발송기록'].rows).includes('me@example.com'));

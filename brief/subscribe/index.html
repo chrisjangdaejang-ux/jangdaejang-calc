@@ -16,7 +16,7 @@
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/auth.js?v=3"></script>
 <script src="../../assets/pay.js?v=3"></script>
-<script src="../../assets/brief-core.js?v=3"></script>
+<script src="../../assets/brief-core.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
@@ -130,7 +130,7 @@ async function boot(){
   document.querySelectorAll('input[name=ch]').forEach(r => r.onchange = () => { st.channel = r.value; $('contact').placeholder = r.value === 'kakao' ? '받을 휴대폰 번호' : '받을 이메일 주소'; $('contact').autocomplete = r.value === 'kakao' ? 'tel' : 'email'; });
   const sync = () => { $('pay').textContent = `월 ${B.PRICE[st.plan].amount.toLocaleString('ko-KR')}원 결제하고 받기`; };
   drawA(); sync();
-  const saveAreas = () => A.update(d => { d.brief = { areas: st.areas, apts: $('apts').value.split(',').map(s => s.trim()).filter(Boolean).slice(0, 10), v: st.plan === 'brief_pro' ? 'pro' : '' }; })
+  const saveAreas = () => A.update(d => { d.brief = { ...(d.brief || {}), areas: st.areas, apts: $('apts').value.split(',').map(s => s.trim()).filter(Boolean).slice(0, 10), v: st.plan === 'brief_pro' ? 'pro' : '' }; })
     .then(() => { try { localStorage.setItem('jdj_brief_apts', JSON.stringify($('apts').value.split(',').map(s => s.trim()).filter(Boolean).slice(0, 10))); } catch(e){} });
   const base = () => { const ch = (document.querySelector('input[name=ch]:checked') || {}).value;
     if (!st.areas.length) throw new Error('받을 동네를 하나 이상 넣어 주세요.');

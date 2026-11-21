@@ -1,5 +1,14 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ *
+ * v24 변경 요약 (v20~v23과 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — '브리핑열람' 시트는 첫 사용 때 자동 생성)
+ *  - 모닝 브리핑 메일에 급매 레이더·전세가율 급변·상승 전환 신호(동네), 상승 전환 TOP·순위 변화·청약 기회·지난 예측 성적(전국) 추가.
+ *    구독자가 저장한 청약 가점(brief.cy.score)이 있으면 '넣어 볼 만한 단지'(예상 최저 당첨 가점 범위와 비교). 없으면 그 칸 생략.
+ *  - 회원 저장 자료 brief 에 cy{score,nohome}·budget·age(선택) 추가 — 구독 관리 화면에서 지역·관심 단지와 함께 바꿈.
+ *  - 광고주용 익명 통계: GET briefPublic(누구나, 구독자 10명 미만이면 숫자 없음·칸마다 10명 미만 숨김) · briefStats(BRIEF_PULL_TOKEN, 12주 추이 포함)
+ *    · briefSeen(메일 링크로 웹 브리핑을 연 날 기록 — 구독 id 해시만, 연락처 없음) → 열람률.
+ *  - 메일 맨 아래 [지역·단지 바꾸기] 버튼(구독 관리로).
+ *  - 검증: node tools/brief-test.js
  *
  * v23 변경 요약 (v20·v21·v22와 같은 11/28 재배포에 함께 들어감. v23 몫으로 따로 실행할 함수 없음)
  *  - 광고·제휴 문의(adInquiry) 관심 상품에 시행사 페이지(pro/developer/) 상품 키 두 개 추가: brochure '집예보 분석 브로슈어(잠금형)',
@@ -222,6 +231,9 @@ function doGet(e) {
   if (act === 'briefConfig') return out({ ok: true, channels: briefChannels(), price: BRIEF_PRICE, trial: BRIEF_TRIAL });
   if (act === 'briefAreas') return out(briefAreas(e.parameter));
   if (act === 'briefInterest') return out(briefInterest(e.parameter));
+  if (act === 'briefPublic') return out(briefPublic());
+  if (act === 'briefStats') return out(briefStats(e.parameter));
+  if (act === 'briefSeen') return out(briefSeen(e.parameter));
   return out({ ok: false, err: 'unknown' });
 }
 
@@ -1983,7 +1995,8 @@ const BRIEF_WEB = 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/brief/
 const BRIEF_KEEP_DAYS = 30;       // 이용 끝난 뒤 연락처 원문 보관 일수
 const BRIEF_MIN_VISITORS = 5;     // 관심도 집계: 방문자 5명 이상인 단지만
 
-/* 회원 저장 자료의 brief: {areas:[{g 시군구 코드, gn 이름, sd 시·도, dn 동(빈 값 = 구 전체)}] 최대 10곳, apts:[관심 단지 이름] 최대 10, v:'pro'|''} */
+/* 회원 저장 자료의 brief: {areas:[{g 시군구 코드, gn 이름, sd 시·도, dn 동(빈 값 = 구 전체)}] 최대 10곳, apts:[관심 단지 이름] 최대 10, v:'pro'|'',
+   cy:{score 청약 가점 0~84, nohome 무주택 기간(년)}(선택, 청약 기회 코너), budget·age(선택, 광고주용 익명 통계에만)} */
 function cleanBrief(x) {
   x = x && typeof x === 'object' ? x : {};
   const seen = {};
@@ -1991,8 +2004,13 @@ function cleanBrief(x) {
     .filter(a => a && a.g && a.gn && (!a.dn || /^[가-힣0-9·.]{1,20}$/.test(a.dn)))
     .filter(a => { const k = a.g + '|' + a.dn; if (seen[k]) return false; seen[k] = 1; return true; }).slice(0, 10);
   const apts = (Array.isArray(x.apts) ? x.apts : []).slice(0, 20).map(s => uText(s, 40)).filter(Boolean).slice(0, 10);
-  return { areas: areas, apts: apts, v: x.v === 'pro' ? 'pro' : '' };
+  const n = (v, lo, hi) => { if (v === '' || v == null) return null; v = Math.round(Number(v)); return isFinite(v) && v >= lo && v <= hi ? v : null; };
+  const cy = x.cy && typeof x.cy === 'object' ? { score: n(x.cy.score, 0, 84), nohome: n(x.cy.nohome, 0, 40) } : { score: null, nohome: null };
+  return { areas: areas, apts: apts, v: x.v === 'pro' ? 'pro' : '', cy: cy,
+    budget: BRIEF_BUDGETS.indexOf(x.budget) >= 0 ? x.budget : '', age: BRIEF_AGES.indexOf(x.age) >= 0 ? x.age : '' };
 }
+/* 선택 입력(광고주용 익명 통계에만): 예산대·연령대 — 화면 brief/manage 의 목록과 같음 */
+const BRIEF_BUDGETS = ['3억 미만', '3억~6억', '6억~9억', '9억~15억', '15억 이상'], BRIEF_AGES = ['20대', '30대', '40대', '50대', '60대 이상'];
 
 function briefDispatch(b) {
   try {
@@ -2244,6 +2262,70 @@ function briefInterest(p) {
   return { ok: true, at: ymd(new Date()), days: 7, min: BRIEF_MIN_VISITORS, gu: gu };
 }
 
+
+/* ---------- 광고주용 익명 구독자 통계 (v23) ----------
+   · 개인을 알 수 없는 숫자만: 구독자 수(유료·체험)·추이, 관심 지역(시·도) 분포, 예산대·연령대(입력한 사람만), 웹 열람률.
+   · 칸 하나라도 BRIEF_STAT_MIN(10)명 미만이면 그 칸은 숨김(공개 요약은 구독자 수 자체가 10명 미만이면 숫자를 내지 않음).
+   · 열람률 = 메일의 [전체 브리핑 보기] 링크로 웹 브리핑을 연 날 ÷ 보낸 날(최근 30일). 링크의 k 는 구독 id 해시 앞 10자리(연락처 아님).
+   · briefPublic(누구나): 광고 안내(/ad/)·시행사 페이지(/pro/developer/)가 읽음. briefStats(BRIEF_PULL_TOKEN): 운영자용 자세한 표. */
+const BRIEF_STAT_MIN = 10, SH_BS = '브리핑열람', BSH = ['날짜', 'k'];
+function bKey(id) { return hashOf('brief|' + id).slice(1, 11); }
+function briefSeen(p) {
+  const k = String((p && p.k) || ''), d = String((p && p.d) || '');
+  if (!/^[0-9a-f]{10}$/.test(k) || !/^\d{4}-\d{2}-\d{2}$/.test(d)) return { ok: false };
+  const sh = uSheet(SH_BS, BSH);
+  const n = sh.getLastRow(), from = Math.max(2, n - 3000 + 1);
+  const recent = n >= 2 ? sh.getRange(from, 1, n - from + 1, 2).getValues() : [];
+  if (!recent.some(r => String(r[0]).slice(0, 10) === d && String(r[1]) === k)) sh.appendRow([d, k]);
+  return { ok: true };
+}
+function bHide(obj) { const o = {}; Object.keys(obj).forEach(k => { if (obj[k] >= BRIEF_STAT_MIN) o[k] = obj[k]; }); return o; }
+function briefAgg(now) {
+  now = now || new Date();
+  const um = userBriefMap(), rows = bRows();
+  const act = rows.map(o => ({ o: o, s: briefState(o, now) })).filter(x => x.s.active);
+  const paid = act.filter(x => !bIsTrial(x.o.r[BC['상품']])).length;
+  const sido = {}, budget = {}, age = {}, seenU = {};
+  act.forEach(x => {
+    const ub = um[String(x.o.r[BC['카카오id']])]; if (!ub) return;
+    const u = String(x.o.r[BC['카카오id']]); if (seenU[u]) return; seenU[u] = 1;
+    const sds = {}; (ub.areas || []).slice(0, x.s.areas).forEach(a => { if (a.sd) sds[a.sd] = 1; });
+    Object.keys(sds).forEach(k => { sido[k] = (sido[k] || 0) + 1; });
+    if (ub.budget) budget[ub.budget] = (budget[ub.budget] || 0) + 1;
+    if (ub.age) age[ub.age] = (age[ub.age] || 0) + 1;
+  });
+  /* 추이: 최근 12주 매주 월요일 기준 이용 중 수 */
+  const trend = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = addDays(kstToday(), -7 * i);
+    trend.push([ymd(d), rows.filter(o => briefState(o, d).active).length]);
+  }
+  /* 열람률(최근 30일) */
+  let sends = 0, seen = 0;
+  const lo = ymd(addDays(kstToday(), -30));
+  const lg = book().getSheetByName(SH_BL), seenSh = book().getSheetByName(SH_BS);
+  const sentDays = {};
+  if (lg && lg.getLastRow() > 1) lg.getRange(2, 1, lg.getLastRow() - 1, 4).getValues().forEach(r => {
+    const d = String(r[0]).slice(0, 10); if (d < lo || String(r[3]) !== '보냄') return; sends++; sentDays[d + '|' + bKey(String(r[1]))] = 1; });
+  if (seenSh && seenSh.getLastRow() > 1) seenSh.getRange(2, 1, seenSh.getLastRow() - 1, 2).getValues().forEach(r => {
+    if (sentDays[String(r[0]).slice(0, 10) + '|' + String(r[1])]) seen++; });
+  return { n: act.length, paid: paid, trial: act.length - paid, sido: sido, budget: budget, age: age, trend: trend, sends: sends, seen: seen };
+}
+function briefPublic() {
+  const A = briefAgg(new Date());
+  if (A.n < BRIEF_STAT_MIN) return { ok: true, name: BRIEF_NAME, n: null, at: ymd(new Date()) };
+  return { ok: true, name: BRIEF_NAME, at: ymd(new Date()), n: A.n, paid: A.paid >= BRIEF_STAT_MIN ? A.paid : null,
+    sido: bHide(A.sido), budget: bHide(A.budget), age: bHide(A.age),
+    open: A.sends >= 100 ? Math.round(A.seen / A.sends * 1000) / 10 : null };
+}
+function briefStats(p) {
+  if (!pullOk(p)) return { ok: false, err: 'auth' };
+  const A = briefAgg(new Date());
+  return { ok: true, name: BRIEF_NAME, at: ymd(new Date()), n: A.n, paid: A.paid, trial: A.trial, trend: A.trend,
+    sido: bHide(A.sido), budget: bHide(A.budget), age: bHide(A.age), sends: A.sends, seen: A.seen,
+    open: A.sends ? Math.round(A.seen / A.sends * 1000) / 10 : null, hidden: '칸마다 ' + BRIEF_STAT_MIN + '명 미만은 숨김' };
+}
+
 /* ---------- 아침 발송 (트리거: briefInstall 을 한 번 실행하면 매일 오전 7시대) ---------- */
 function briefInstall() {
   ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'briefDaily').forEach(t => ScriptApp.deleteTrigger(t));
@@ -2263,6 +2345,9 @@ function briefPiece(S, a, pro, apts) {
   const pick = mine.concat(tr.filter(t => t.hi && mine.indexOf(t) < 0)).concat(tr.filter(t => !t.hi && mine.indexOf(t) < 0)).slice(0, 3);
   return { nm: nm, n: tr.length, hi: tr.filter(t => t.hi).length, fact: lines.fact || '', cmp: lines.cmp || '', so: lines.so || '',
     mine: mine.length, items: pick.map(t => `${apts.indexOf(t.a) >= 0 ? '[관심 단지] ' : ''}${t.a} ${t.b} ${bWon(t.p)}${t.hi ? ' (신고가)' : t.dr != null && t.dr <= -10 ? ` (최근 2년 최고가보다 ${Math.abs(t.dr).toFixed(0)}% 낮음)` : ''}`),
+    urgent: (S.urgent || []).filter(u => (!dn || u.d === dn) && !u.sus).slice(0, 2).map(u => `${apts.indexOf(u.a) >= 0 ? '[관심 단지] ' : ''}${u.a} ${u.b} ${bWon(u.p)} — 최근 3개월 같은 평형 중간값 ${bWon(u.med)}보다 ${Math.abs(u.disc).toFixed(0)}% 낮음${u.x ? ' (직거래)' : ''}`),
+    gap: (S.gap || []).filter(g => (!dn || g.d === dn) && (apts.indexOf(g.a) >= 0 || (S.gap || []).indexOf(g) < 2)).slice(0, 2).map(g => `${g.a} ${g.b} 전세가율 ${Math.round(g.jr0)}% → ${Math.round(g.jr)}% (${g.dlt > 0 ? '갭 기회·전세 위험 함께 확인' : '보증금은 더 안전, 갭 부담 커짐'})`),
+    rise: (S.rise || []).filter(r => !dn || r.d === dn).slice(0, 2).map(r => `${r.a} ${r.b} 최근 3개월 ${r.chg > 0 ? '+' : ''}${r.chg}% (거래량 증가 상위 20%, 내리다 반등)`),
     pro: pro ? (((S.pro || {})[dn] || (S.pro || {})['']) || []) : [], url: BRIEF_WEB + '?d=' + S.g + (dn ? '-' + encodeURIComponent(dn) : '') + (pro ? '&v=pro' : '') };
 }
 /* ① 오늘의 부동산 시장(전국 공통, data/brief/market.json) → 메일 머리 칸. 숫자는 자료 그대로 */
@@ -2271,10 +2356,14 @@ function bTop(x) {
   const sub = x.up != null ? ` (이전 최고 ${bWon(x.pm)}·${ym(x.pmd)} 대비 +${x.up}%)` : x.dr != null ? ` (최근 2년 최고 ${bWon(x.m2)}·${ym(x.m2d)} 대비 ${x.dr}%)` : '';
   return `${[x.sd, x.gn, x.d].filter(Boolean).join(' ')} ${x.a} ${x.b} ${bWon(x.p)}${sub}`;
 }
-function briefMarketHtml(M) {
+function briefMarketHtml(M, ub) {
   if (!M) return '';
   const li = a => a.length ? '<ol style="margin:4px 0 8px;padding-left:20px;line-height:1.6">' + a.map(x => `<li>${bEsc(x)}</li>`).join('') + '</ol>' : '<p style="margin:4px 0 8px;color:#4E5968">이번에는 없어요.</p>';
   const kr = M.kr || {}, se = M.seoul || {}, cy = M.cy || {};
+  const BN = ['60㎡ 이하', '60~85㎡', '85㎡ 초과'];
+  const cyo = (M.cyopp || []).filter(n => (n.low || []).length).slice(0, 3).map(n => `${n.n} (${[n.sd, n.g].filter(Boolean).join(' ')}) · ${n.low.map(b => BN[b.b]).join('·')} · 접수 ${String(n.rc[0]).slice(4, 6)}/${String(n.rc[0]).slice(6, 8)}`);
+  const sc = ub && ub.cy && ub.cy.score != null ? ub.cy.score : null, my = [];
+  if (sc != null) (M.cyopp || []).forEach(n => (n.cut || []).forEach(c => { if (sc >= c.lo && my.length < 4) my.push(`${n.n} ${BN[c.b]} — 예상 최저 당첨 가점 ${c.lo}~${c.hi}점, ${sc >= c.hi ? '가능성 높음' : '경합'}`); }));
   const pol = (M.policy || []).map(p => `${p.name} — ${p.stage} ${String(p.d).slice(5).replace('-', '/')} (${p.scope})`);
   const rate = M.rate ? ['base', 'mort'].filter(k => M.rate[k]).map(k => `${k === 'base' ? '한국은행 기준금리' : '은행 주택담보대출 신규 금리'} ${M.rate[k].v}% (${M.rate[k].ym.slice(0, 4)}.${+M.rate[k].ym.slice(4)})${M.rate[k].chg != null ? ` · 지난달보다 ${M.rate[k].chg > 0 ? '+' : ''}${M.rate[k].chg}%p` : ''}`) : [];
   const cys = (cy.rows || []).slice(0, 5).map(n => `${n.n} (${[n.sd, n.gn].filter(Boolean).join(' ')}) · 접수 ${String((n.sp && n.sp[0]) || (n.rc || [])[0] || '').slice(4, 6)}/${String((n.sp && n.sp[0]) || (n.rc || [])[0] || '').slice(6, 8)}`);
@@ -2283,19 +2372,24 @@ function briefMarketHtml(M) {
     ${(M.lines || []).map(x => `<p style="margin:0 0 6px;line-height:1.6">${bEsc(x)}</p>`).join('')}
     <b>전국 신고가 TOP</b>${li((kr.hi || []).slice(0, 3).map(bTop))}<b>전국 큰 하락 TOP</b>${li((kr.drop || []).slice(0, 3).map(bTop))}
     <b>서울 신고가 TOP</b>${li((se.hi || []).slice(0, 3).map(bTop))}
+    ${(M.rise || []).length ? `<b>상승 전환 신호 TOP</b>${li(M.rise.slice(0, 3).map(r => `${r.sd} ${r.d} ${r.a} ${r.b} 최근 3개월 ${r.chg > 0 ? '+' : ''}${r.chg}%`))}` : ''}
+    ${M.rank && (M.rank.up || []).length ? `<b>미래가치 순위가 크게 오른 단지</b>${li(M.rank.up.slice(0, 3).map(r => `${r.sd} ${r.d} ${r.a} ${r.b} ${r.r0}위 → ${r.r1}위`))}` : ''}
+    ${cyo.length ? `<b>청약 기회(주변 시세 대비 분양가 하위 구간에 가까움)</b>${li(cyo)}` : ''}${my.length ? `<b>내 가점 ${ub.cy.score}점으로 넣어 볼 만한 단지</b>${li(my)}` : ''}
+    ${M.score ? `<p style="margin:4px 0 8px;font-size:13.5px">지난 예측 성적: ${bEsc(M.score.m)} 공개 예측 ${M.score.h}년 최종 채점, 상위 20% 단지가 하위 20%보다 ${M.score.diff}%p ${M.score.hit ? '더 올랐어요' : '덜 올랐어요'}.</p>` : ''}
     <b>금리·대출·세금</b>${li(rate.concat(pol))}<b>이번 주 청약 일정${cy.n ? ` · 전국 ${cy.n}곳` : ''}</b>${li(cys)}
     <a href="${BRIEF_WEB}" style="font-size:13.5px;color:#2F6BFF">오늘의 시장 전체 보기</a></div>`;
 }
-function briefMail(to, date, pieces, s, pro, M) {
+function briefMail(to, date, pieces, s, pro, M, ub) {
   const title = `[${SITE_NAME}] ${date.slice(5).replace('-', '/')} ${BRIEF_NAME} — ${pieces.map(p => p.nm).join(', ')}`.slice(0, 120);
   const body = pieces.map(p => `<div style="border:1px solid #E5E8EB;border-radius:12px;padding:14px 16px;margin:0 0 12px">
       <div style="font-size:17px;font-weight:900;margin:0 0 6px">${bEsc(p.nm)} <span style="font-size:13px;color:#2F6BFF">새 매매 ${p.n}건 · 신고가 ${p.hi}건</span></div>
       <p style="margin:0 0 6px;line-height:1.6">${bEsc(p.fact)}</p>${p.cmp ? `<p style="margin:0 0 6px;line-height:1.6;color:#3E4754">${bEsc(p.cmp)}</p>` : ''}${p.so ? `<p style="margin:0 0 6px;line-height:1.6;color:#3E4754">${bEsc(p.so)}</p>` : ''}
       ${p.items.length ? '<ul style="margin:6px 0;padding-left:18px;line-height:1.6">' + p.items.map(x => `<li>${bEsc(x)}</li>`).join('') + '</ul>' : ''}
+      ${[['급매 레이더', p.urgent], ['전세가율 급변', p.gap], ['상승 전환 신호', p.rise]].filter(x => x[1] && x[1].length).map(x => `<div style="margin:6px 0 0"><b style="font-size:14px">${x[0]}</b><ul style="margin:2px 0 4px;padding-left:18px;line-height:1.6;font-size:14px">${x[1].map(y => `<li>${bEsc(y)}</li>`).join('')}</ul></div>`).join('')}
       ${p.pro.length ? '<div style="background:#F4F7FF;border-radius:10px;padding:10px 12px;margin:8px 0"><b>손님께 할 이야기</b><ol style="margin:6px 0 0;padding-left:18px;line-height:1.6">' + p.pro.map(x => `<li>${bEsc(x)}</li>`).join('') + '</ol></div>' : ''}
       <a href="${p.url}" style="display:inline-block;margin-top:6px;background:#2F6BFF;color:#fff;padding:10px 16px;border-radius:10px;text-decoration:none;font-weight:700">전체 브리핑 보기</a></div>`).join('');
   const html = `<div style="font-family:'Noto Sans KR',sans-serif;max-width:600px;margin:auto;color:#191F28">
-    <div style="font-weight:900;font-size:19px;margin:6px 0 12px">${bEsc(SITE_NAME)} <span style="color:#2F6BFF">모닝 브리핑</span></div>${briefMarketHtml(M)}
+    <div style="font-weight:900;font-size:19px;margin:6px 0 12px">${bEsc(SITE_NAME)} <span style="color:#2F6BFF">모닝 브리핑</span></div>${briefMarketHtml(M, ub)}
     <div style="font-size:17px;font-weight:900;margin:4px 0 8px">② 내 관심 지역 · ③ 내 관심 단지</div>${body}
     <p style="font-size:12.5px;color:#4E5968;line-height:1.6">국토교통부 실거래 공개 자료에 새로 올라온 거래를 동네별로 모았어요. 신고가는 같은 단지·같은 평형의 이전 최고가를 넘은 거래예요.<br>
     이 메일은 ${bEsc(s.product)}(이용 기간 ${s.start} ~ ${s.end})을 신청하신 분께 보내 드려요. 받는 방법 바꾸기·해지: <a href="${BRIEF_WEB}manage/">${BRIEF_WEB}manage/</a></p>
@@ -2334,7 +2428,8 @@ function briefDaily() {
     const to = String(o.r[BC['연락처']]).replace(/^'/, '');
     let res = { ok: false, why: '' };
     try {
-      if (s.channel === 'email') { briefMail(to, (pieces[0] && ix && ix.date) || date, pieces, s, s.pro, M); res = { ok: true }; }
+      if (s.channel === 'email') { pieces.forEach(p => { p.url += `&src=mail&k=${bKey(s.id)}&day=${date}`; });
+        briefMail(to, (pieces[0] && ix && ix.date) || date, pieces, s, s.pro, M, ub); res = { ok: true }; }
       else if (s.channel === 'kakao') {
         if (!ch.kakao) res = { ok: false, why: '알림톡 키 없음' };
         else {

@@ -16,13 +16,22 @@
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/auth.js?v=3"></script>
 <script src="../../assets/pay.js?v=3"></script>
-<script src="../../assets/brief-core.js?v=3"></script>
+<script src="../../assets/brief-core.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/pay.css?v=2">
 <script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
 <style>
+.pick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pick select,.inp{font:inherit;font-size:16px;min-height:48px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--text);width:100%;box-sizing:border-box}
+.pick .full{grid-column:1/-1}
+.al{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.al li{display:inline-flex;align-items:center;gap:4px;border:1px solid #D6E2FF;background:#F4F7FF;border-radius:999px;padding:0 4px 0 12px;min-height:40px;font-weight:700;font-size:15px}
+.al button{border:0;background:none;font-size:20px;min-width:36px;min-height:36px;cursor:pointer;color:var(--sub2)}
+.al small{font-weight:500;color:var(--sub2)}
+.fl{display:block;font-size:14.5px;font-weight:700;margin:12px 0 4px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .wrap{max-width:640px;margin:0 auto;padding:20px 16px 40px}
 h1{font-size:clamp(24px,6vw,32px);margin:4px 0 8px}
 .lead{margin:0 0 16px;color:var(--sub);line-height:1.6}
@@ -51,12 +60,28 @@ details{margin:8px 0 0}summary{cursor:pointer;font-weight:700;min-height:40px;di
 const P = JDJ_PAY, A = window.JDJ_AUTH, B = JDJ_BRIEF, esc = P.esc, main = document.getElementById('main');
 const sess = () => { try { return (JSON.parse(localStorage.getItem('jdj_auth') || 'null') || {}).s || ''; } catch(e){ return ''; } };
 const call = (a, b) => P.post(a, Object.assign({ s: sess() }, b || {}));
+const BUDGETS = ['3억 미만', '3억~6억', '6억~9억', '9억~15억', '15억 이상'], AGES = ['20대', '30대', '40대', '50대', '60대 이상'];
 async function draw(note){
   if (!A || !A.on() || !A.user()) { main.innerHTML = `<h1>내 구독 관리</h1><p class="lead">카카오로 로그인하면 구독 상태를 보고 바꿀 수 있어요.</p>${A && A.on() ? A.btn('카카오로 로그인', 'brief_manage') : ''}`; return; }
   let r; try { r = await call('briefMine'); } catch(e){ main.innerHTML = `<h1>내 구독 관리</h1><div class="msg err">${esc(e.message)}</div>`; return; }
-  const areas = (r.brief.areas || []).map(a => a.gn + (a.dn ? ' ' + a.dn : ''));
+  const cy = r.brief.cy || {};
   main.innerHTML = `<span class="tag">${esc(B.NAME)}</span><h1>내 구독 관리</h1>${note ? `<div class="msg info">${note}</div>` : ''}
-    <section class="sb"><h2>받는 동네</h2><p>${areas.length ? esc(areas.join(', ')) : '아직 고른 동네가 없어요.'}</p><div class="row2"><a class="btn" href="../subscribe/">동네 바꾸기</a>${(r.brief.areas || [])[0] ? `<a class="btn" href="../?d=${encodeURIComponent(B.dKey(r.brief.areas[0].g, r.brief.areas[0].dn))}">오늘 브리핑 보기</a>` : ''}</div></section>
+    <section class="sb" id="ed"><h2>받는 지역·관심 단지·청약 정보</h2>
+      <p class="note" style="margin-top:0">일반은 ${B.PRICE.brief.areas}곳, 중개사용은 ${B.PRICE.brief_pro.areas}곳까지 보내 드려요.</p>
+      <div class="pick"><select id="sd" aria-label="시·도"></select><select id="sg" aria-label="시·군·구"></select>
+        <select id="dn" class="full" aria-label="동"><option value="">구 전체</option></select><button type="button" class="btn full" id="add">이 지역 넣기</button></div>
+      <ul class="al" id="al"></ul>
+      <label class="fl" for="apts">관심 단지(쉼표로 구분, 10곳까지) — 급매 레이더·전세가율·순위 변화를 따로 모아 드려요</label>
+      <input class="inp" id="apts" maxlength="200" placeholder="예: 리센츠, 잠실엘스" value="${esc((r.brief.apts || []).join(', '))}">
+      <label class="fl">청약 정보(선택) — 청약 기회 코너에서 넣어 볼 만한 단지를 골라 드려요</label>
+      <div class="g2"><input class="inp" id="cyScore" inputmode="numeric" placeholder="청약 가점(0~84)" value="${esc(cy.score == null ? '' : cy.score)}"><input class="inp" id="cyNohome" inputmode="numeric" placeholder="무주택 기간(년)" value="${esc(cy.nohome == null ? '' : cy.nohome)}"></div>
+      <p class="note" style="margin:4px 0 0">가점을 모르면 <a href="../../chungyak/">청약 가점 계산</a>에서 먼저 계산해 보세요.</p>
+      <label class="fl">예산·나이(선택)</label>
+      <div class="g2"><select class="inp" id="budget"><option value="">예산 고르지 않음</option>${BUDGETS.map(x => `<option ${r.brief.budget === x ? 'selected' : ''}>${x}</option>`).join('')}</select>
+        <select class="inp" id="age"><option value="">나이 고르지 않음</option>${AGES.map(x => `<option ${r.brief.age === x ? 'selected' : ''}>${x}</option>`).join('')}</select></div>
+      <p class="note" style="margin:4px 0 0">예산·나이는 광고주에게 보여 주는 익명 통계(10명 미만인 칸은 숨김)에만 써요. 누구인지는 알 수 없어요.</p>
+      <div class="row2"><button type="button" class="btn primary" id="saveEd">저장하기</button>${(r.brief.areas || [])[0] ? `<a class="btn" href="../?d=${encodeURIComponent(B.dKey(r.brief.areas[0].g, r.brief.areas[0].dn))}">오늘 브리핑 보기</a>` : ''}</div>
+      <div id="edMsg" class="msg" role="status" hidden></div></section>
     ${r.subs.length ? r.subs.slice().reverse().map(s => `<section class="sb"><h2>${esc(s.product)} <span class="tg ${s.active ? '' : 'off'}">${s.active ? '받는 중' : s.state === '해지' ? '해지됨' : s.start > new Date().toISOString().slice(0, 10) ? '시작 예정' : '끝남'}</span></h2>
       <dl><dt>이용 기간</dt><dd>${esc(s.start)} ~ ${esc(s.end)}${s.active ? ` (남은 날 ${s.left}일)` : ''}</dd><dt>받는 곳</dt><dd>${s.channel === 'kakao' ? '카카오톡' : '이메일'} · ${esc(s.contact)}</dd><dt>보낸 브리핑</dt><dd>${s.sent}회</dd>${s.refund ? `<dt>환불</dt><dd>${esc(s.refund)}</dd>` : ''}</dl>
       ${s.state !== '해지' && s.end >= new Date().toISOString().slice(0, 10) ? `<details><summary>받는 방법 바꾸기</summary>
@@ -65,6 +90,38 @@ async function draw(note){
       <div class="row2" style="margin-top:8px"><button class="btn" data-stop="${s.id}">받지 않기(해지)</button>${s.orderId && !s.refund ? `<button class="btn" data-ref="${s.id}">환불 요청(예정 ${s.refundEst.toLocaleString('ko-KR')}원)</button>` : ''}</div>` : ''}</section>`).join('')
       : `<div class="msg info">아직 구독이 없어요. <a href="../subscribe/">${B.TRIAL_DAYS}일 무료로 시작하기</a></div>`}
     <p class="note">자동 결제는 없어요. 해지하면 다음 날부터 보내지 않아요. 환불은 첫 브리핑 전이면 전액, 받기 시작한 뒤에는 남은 날만큼 일할로 해 드려요(영업일 3일 안 처리). <a href="../../refund/">환불 정책</a></p>`;
+  /* 받는 지역·관심 단지·청약 정보 편집(회원 저장 자료 brief) */
+  const ed = { areas: (r.brief.areas || []).slice() };
+  const pro = r.subs.some(x => x.pro && (x.active || x.start > new Date().toISOString().slice(0, 10)) && x.state !== '해지');
+  const max = pro ? B.PRICE.brief_pro.areas : B.PRICE.brief.areas, $ = id => document.getElementById(id);
+  const IX = await fetch('/jangdaejang-data/data/index.json').then(x => x.ok ? x.json() : null).catch(() => null), SG = (IX && IX.sgg) || {};
+  const sds = [...new Set(Object.values(SG).map(x => x.sido))];
+  $('sd').innerHTML = sds.map(x => `<option>${esc(x)}</option>`).join('');
+  const fillDn = async () => { const g = $('sg').value; $('dn').innerHTML = '<option value="">구 전체</option>'; const S = g && await fetch(B.DATA + g + '.json').then(x => x.ok ? x.json() : null).catch(() => null); if (S && $('sg').value === g) $('dn').innerHTML += (S.dongs || []).map(x => `<option>${esc(x[0])}</option>`).join(''); };
+  const fillG = () => { const sd = $('sd').value; $('sg').innerHTML = Object.entries(SG).filter(([, x]) => x.sido === sd).map(([g, x]) => `<option value="${g}">${esc(x.name)}</option>`).join(''); fillDn(); };
+  if (ed.areas[0] && ed.areas[0].sd) $('sd').value = ed.areas[0].sd;
+  $('sd').onchange = fillG; $('sg').onchange = fillDn; fillG();
+  const drawA = () => { $('al').innerHTML = ed.areas.map((a, i) => `<li>${esc(a.gn + (a.dn ? ' ' + a.dn : ''))}${i >= max ? ' <small>(이 상품에선 안 보냄)</small>' : ''}<button type="button" data-i="${i}" aria-label="${esc(a.gn)} 빼기">×</button></li>`).join('');
+    $('al').querySelectorAll('button[data-i]').forEach(b => b.onclick = () => { ed.areas.splice(+b.dataset.i, 1); drawA(); }); };
+  drawA();
+  const edMsg = (t, bad) => { const m = $('edMsg'); m.hidden = false; m.className = 'msg ' + (bad ? 'err' : 'info'); m.textContent = t; };
+  $('add').onclick = () => { const g = $('sg').value, dn = $('dn').value; if (!g || ed.areas.some(a => a.g === g && a.dn === dn)) return;
+    if (ed.areas.length >= 10) return edMsg('지역은 10곳까지 넣을 수 있어요.', 1); ed.areas.push({ g, gn: SG[g].name, sd: SG[g].sido, dn }); drawA(); };
+  $('saveEd').onclick = async () => {
+    const num = (v, lo, hi) => { v = String(v).trim(); if (v === '') return null; const n = Math.round(+v); return n >= lo && n <= hi ? n : NaN; };
+    const sc = num($('cyScore').value, 0, 84), nh = num($('cyNohome').value, 0, 40);
+    if (Number.isNaN(sc)) return edMsg('청약 가점은 0~84 사이 숫자로 넣어 주세요.', 1);
+    if (Number.isNaN(nh)) return edMsg('무주택 기간은 0~40 사이 숫자(년)로 넣어 주세요.', 1);
+    if (!ed.areas.length) return edMsg('받을 지역을 하나 이상 넣어 주세요.', 1);
+    const apts = $('apts').value.split(',').map(x => x.trim()).filter(Boolean).slice(0, 10);
+    const nb = { areas: ed.areas, apts, v: r.brief.v || '', cy: { score: sc, nohome: nh }, budget: $('budget').value, age: $('age').value };
+    try {
+      $('saveEd').disabled = true;
+      await A.update(d => { d.brief = nb; });
+      try { localStorage.setItem('jdj_brief_apts', JSON.stringify(apts)); localStorage.setItem('jdj_brief_cy', JSON.stringify(sc == null ? null : { score: sc, nohome: nh })); } catch(e){}
+      draw('내일 아침 브리핑부터 바뀐 지역으로 보내 드려요.');
+    } catch(e){ $('saveEd').disabled = false; edMsg(e.message || '저장하지 못했어요. 잠시 뒤 다시 해 주세요.', 1); }
+  };
   const act = async (fn, ok) => { try { await fn(); draw(ok); } catch(e){ alert(e.message); } };
   main.querySelectorAll('[data-stop]').forEach(b => b.onclick = () => confirm('내일부터 브리핑을 보내지 않을까요? 남은 기간 환불은 [환불 요청]으로 따로 해요.') && act(() => call('briefStop', { id: b.dataset.stop }), '해지했어요. 내일부터 보내지 않아요.'));
   main.querySelectorAll('[data-ref]').forEach(b => b.onclick = () => { const why = prompt('환불 사유(선택)를 적어 주세요. 요청하면 바로 발송이 멈춰요.', ''); if (why !== null) act(() => call('briefRefund', { id: b.dataset.ref, reason: why }), '환불 요청을 받았어요. 영업일 3일 안에 결제한 수단으로 돌려 드려요.'); });

@@ -35,5 +35,17 @@ check('이번 주 청약 한 줄', B.cyText({ n: '단지', sd: '서울', gn: '�
   { name: '단지', where: '서울 송파구', kind: '아파트', when: '특별공급 11/17 · 접수 11/18~11/19', hh: '300세대' });
 check('내 관심 단지만', (m => [m.trades.map(t => t.a), m.rents.map(r => r.a)])(B.mine(S, ['가'])), [['가'], ['가']]);
 check('관심 단지 없으면 빈 칸', B.mine(S, []).trades, []);
+check('급매 한 줄·표시', B.urgentText({ a: '가', b: '84㎡대', p: 65000, dt: 20261102, med: 100000, n3: 3, disc: -35, sus: 1, x: 1 }),
+  { name: '가 84㎡대', price: '6억 5,000만 원', when: '11/2 계약', sub: '최근 3개월 같은 평형 중간값 10억 원(3건)보다 35% 낮아요', tags: ['직거래', '특수 거래 의심'] });
+check('전세가율: 오르면 갭 기회·전세 위험 둘 다', (x => [x.val, x.dlt, /갭 기회/.test(x.why) && /전세 위험/.test(x.why)])(B.gapText({ a: '가', b: '84㎡대', jr0: 50, jr: 60, dlt: 10 })), ['50% → 60%', '+10.0%p', true]);
+check('전세가율: 내리면 보증금 안전·갭 부담', /더 안전/.test(B.gapText({ a: '가', b: '', jr0: 60, jr: 50, dlt: -10 }).why), true);
+check('순위 한 줄', B.rankText({ a: '가', b: '84㎡대', sd: '서울', d: '잠실동', r0: 120, r1: 45, mv: 75 }), { name: '가 84㎡대', where: '서울 잠실동', val: '120위 → 45위', up: true, mv: '▲75' });
+check('근거 문장(사례 있을 때만)', [B.evText(null), /4,000곳 중 57%가 2년 뒤/.test(B.evText({ n: 4000, hit: 57, ex: 1.6, from: '202110', to: '202410', h: 24, np: 4 }, '서울'))], ['', true]);
+const CYL = [{ n: 'A', cut: [{ b: 1, lo: 40, hi: 50 }, { b: 2, lo: 60, hi: 70 }] }, { n: 'B', cut: [{ b: 0, lo: 30, hi: 44 }] }];
+check('청약 기회: 저장 가점 비교(가능성 높음 먼저)', B.cyMatch(CYL, 45).map(x => [x.n.n, x.band, x.label]), [['B', '60㎡ 이하', '가능성 높음'], ['A', '60~85㎡', '경합']]);
+check('청약 기회: 저장값 없으면 생략', [B.cyMatch(CYL, '').length, B.cyMatch(CYL, null).length, B.cyMatch(CYL, 99).length], [0, 0, 0]);
+const TC = B.taxCal([{ apt: '가', bd: '2025-03' }, { apt: '나', bd: '' }], '2026-11-21');
+check('세금 캘린더: 비과세 보유 2년·장특공 3년·6/1 기준일 D-day 순', TC.map(x => [x.k, x.date, x.dday]), [['nontax', '2027-03-01', 100], ['base', '2027-06-01', 192], ['ltd', '2028-03-01', 466]]);
+check('세금 캘린더: 집 정보 없으면 기준일만', B.taxCal([], '2026-05-30').map(x => [x.k, x.dday]), [['base', 2]]);
 console.log(`모닝 브리핑 화면 계산 검증: ${pass}개 통과, ${fail}개 실패`);
 process.exit(fail ? 1 : 0);

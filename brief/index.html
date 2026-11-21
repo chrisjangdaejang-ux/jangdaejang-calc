@@ -27,7 +27,7 @@
 <script src="../assets/config.js?v=4"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/auth.js?v=3"></script>
-<script src="../assets/brief-core.js?v=3"></script>
+<script src="../assets/brief-core.js?v=4"></script>
 <script src="../assets/tabbar.js?v=2" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -183,7 +183,9 @@ const PRO = Q.get('v') === 'pro', CARD = Q.get('card') === '1';
 const J = u => fetch(u, {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null);
 const T = (n, p) => { try { window.JDJ && JDJ.track && JDJ.track(n, p || {}); } catch(e){} };
 const LOGO = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>';
-let apts = [];
+let apts = [], MYCY = null, HOMES = [];
+try { const c = JSON.parse(localStorage.getItem('jdj_brief_cy') || 'null'); if (c && c.score !== '' && c.score != null) MYCY = c; } catch(e){}
+try { const h = JSON.parse(localStorage.getItem('jdj_myhome') || 'null'); if (h && Array.isArray(h.list)) HOMES = h.list.filter(x => x && x.apt).slice(0, 5); } catch(e){}
 try { const a = JSON.parse(localStorage.getItem('jdj_brief_apts') || '[]'); if (Array.isArray(a)) apts = a.slice(0, 10).map(String); } catch(e){}
 
 function url(g, dn, pro){ const p = new URLSearchParams(); p.set('d', B.dKey(g, dn)); if (pro) p.set('v', 'pro'); return '?' + p.toString(); }
@@ -238,6 +240,19 @@ function marketHtml(M){
     <div class="sec" style="margin:0"><h2>큰 하락 거래 TOP <small>${K.ndrop || 0}건 중 하락률 순</small></h2>
       ${(K.drop || []).length ? fold(K.drop.map(mktTopLi), 3, 'md') : '<div class="empty">최근 2년 최고가보다 10% 넘게 낮은 1억 원 이상 거래가 없어요.</div>'}</div></div>
     <p class="sub" style="margin-top:6px">큰 하락 = 같은 단지·같은 평형 최근 2년 최고가보다 10% 넘게 낮은 거래(1억 원 이상, 직거래·원룸형·튀는 최고가 제외).</p>`;
+  /* 상승 전환 신호(전국) */
+  if ((M.rise || []).length) h += `<div class="sec"><h2>상승 전환 신호 TOP <small>전국 · 300세대 이상</small></h2><p class="sub">최근 6개월 거래량 증가가 그 시·도 상위 20%이고, 시세가 내리다가 최근 3개월 다시 오른 단지예요.</p>
+    ${fold(M.rise.map((r, i) => `<li><div class="nm"><b><span class="rk">${i + 1}</span> ${esc(r.a)} ${esc(r.b)}</b><small>${esc([r.sd, r.d].join(' '))} · 직전 3개월 ${esc(B.pct(r.prev))}</small></div><div class="pr"><b>${esc(B.pct(r.chg))}</b><small>최근 3개월</small></div></li>`), 3, 'mr')}
+    ${M.ev && M.evsd && M.ev[M.evsd[M.rise[0].sd]] ? `<p class="sub" style="margin-top:6px">${esc(B.evText(M.ev[M.evsd[M.rise[0].sd]], M.rise[0].sd))}</p>` : ''}</div>`;
+  /* 순위 변화(전국) */
+  if (M.rank && ((M.rank.up || []).length || (M.rank.down || []).length)) h += `<div class="sec"><h2>미래가치 순위가 크게 바뀐 단지 <small>${esc(M.rank.from.slice(5).replace('-', '/'))} → ${esc(M.rank.to.slice(5).replace('-', '/'))}</small></h2>
+    ${fold([].concat(M.rank.up || [], M.rank.down || []).map(r => { const x = B.rankText(r); return `<li><div class="nm"><b>${esc(x.name)}</b><small>${esc(x.where)} · 시·도 안 등수</small></div><div class="pr"><b style="color:${x.up ? '#C2410C' : '#1F4FD1'}">${esc(x.mv)}</b><small>${esc(x.val)}</small></div></li>`; }), 4, 'mk')}</div>`;
+  /* 청약 기회 */
+  const cyo = (M.cyopp || []).filter(n => (n.low || []).length), mm = MYCY ? B.cyMatch(M.cyopp, MYCY.score) : [];
+  h += `<div class="sec"><h2>청약 기회</h2><p class="sub">접수가 끝나지 않은 공고 중 분양가가 주변 신축·준신축 시세 대비 '하위 구간에 가까운' 면적대예요(${esc(B.SITE)} 청약 분양가 분석).</p>
+    ${cyo.length ? cyo.slice(0, 5).map(n => `<div class="box"><b>${esc(n.n)}</b> <span class="tg x">${esc([n.sd, n.g].filter(Boolean).join(' '))}</span><br>${n.low.map(b => `${['60㎡ 이하', '60~85㎡', '85㎡ 초과'][b.b]} 분양가 3.3㎡당 ${Number(b.ppy).toLocaleString('ko-KR')}만 원 · 주변(${esc(b.scope)} ${b.n}건) 하위 구간에 가까워요`).map(esc).join('<br>')}<br><small>접수 ${esc(B.ds(n.rc[0]))}${n.rc[1] && n.rc[1] !== n.rc[0] ? '~' + esc(B.ds(n.rc[1])) : ''}</small>${n.u ? ` · <a href="${esc(n.u)}" target="_blank" rel="noopener">청약홈 공고</a>` : ''}</div>`).join('') : '<div class="empty">지금 주변 시세 대비 하위 구간에 가까운 공고는 없어요.</div>'}
+    ${MYCY ? `<h3 style="font-size:16px;margin:12px 0 6px">내 가점 ${esc(MYCY.score)}점으로 넣어 볼 만한 단지</h3>${mm.length ? mm.slice(0, 6).map(x => `<div class="box"><b>${esc(x.n.n)}</b> <span class="tg ${x.g === 'hi' ? 'hi' : 'x'}">${esc(x.label)}</span><br>${esc(x.band)} 예상 최저 당첨 가점 ${x.lo}~${x.hi}점</div>`).join('') : '<div class="empty">지금 공고 중 내 가점이 예상 범위에 드는 곳이 없어요.</div>'}<p class="sub">예상 당첨 가점은 청약 화면과 같은 값(과거 당첨 결과로 만든 범위)이에요. 가점은 <a href="manage/">구독 관리</a>에서 바꿀 수 있어요.</p>` : '<p class="sub">구독 관리에서 청약 가점을 넣어 두면 넣어 볼 만한 단지를 골라 드려요.</p>'}</div>`;
+  if (M.score) h += `<div class="sec"><h2>지난 예측 성적</h2><div class="box">${esc(M.score.m)} 공개 예측(${M.score.h}년) 최종 채점: 미래가치 상위 20% 단지가 하위 20%보다 ${esc(B.pct(M.score.diff))}p ${M.score.hit ? '더 올랐어요(맞음)' : '덜 올랐어요(틀림)'}.</div></div>`;
   const rt = B.rateText(M.rate);
   h += `<div class="sec"><h2>금리·대출·세금</h2><p class="sub">${esc(B.SITE)} 정책 목록(공식 발표·국회·법제처로 확인한 것)에서 최근 ${M.policy_days || 14}일 안에 단계가 바뀐 것만 보여 드려요.</p>
     ${rt.length ? `<div class="box">${rt.map(esc).join('<br>')}<br><small>한국은행 통계(KOSIS) 월 자료예요.</small></div>` : ''}
@@ -281,13 +296,21 @@ function list(items, fn, n, id){
 
 function mineHtml(S, area){
   const m = B.mine(S, apts);
-  let h = `<section class="part" aria-labelledby="h-me"><h2 id="h-me"><span class="no">3</span>내 관심 단지 <small>${esc(area)} 자료에서</small></h2>`;
-  if (!m.apts.length) return h + `<div class="empty">관심 단지를 넣어 두시면 그 단지의 새 거래만 여기 따로 모아 드려요.<br><a href="subscribe/">관심 단지 넣기</a></div></section>`;
+  let h = `<section class="part" aria-labelledby="h-me"><h2 id="h-me"><span class="no">3</span>내 관심 단지 <small>${esc(S.name)} 자료에서</small></h2>`;
+  const tc = B.taxCal(HOMES, S.date);
+  const cal = `<div class="sec"><h2>내 집 세금 캘린더</h2>${HOMES.length ? '' : '<p class="sub"><a href="../mine/">내 집 시세</a>에 집과 매수 연월을 저장하면 비과세 보유 2년·장기보유특별공제 구간이 바뀌는 날도 알려 드려요.</p>'}
+    ${tc.map(x => `<div class="box"><b>${esc(x.title)}</b> <span class="tg x">D-${x.dday}</span><br>${esc(x.date.replace(/-/g, '.'))} · <small>${esc(x.note)}</small></div>`).join('')}<p class="sub">날짜 안내만 해요. 세금 계산은 <a href="../tax/">세금 계산</a>에서, 최종 판단은 세무 전문가와 확인하세요.</p></div>`;
+  if (!m.apts.length) return h + `<div class="empty">관심 단지를 넣어 두시면 그 단지의 새 거래·급매·전세가율 변화만 여기 따로 모아 드려요.<br><a href="manage/">관심 단지 넣기</a></div>${cal}</section>`;
   h += `<p class="sub">${m.apts.map(esc).join(', ')}</p>`;
-  if (!m.trades.length && !m.rents.length) return h + `<div class="empty">이번에는 이 동네 자료에 관심 단지의 새 매매·전세가 없어요.</div></section>`;
+  const any = m.trades.length + m.rents.length + m.urgent.length + m.gap.length + m.rise.length + m.rank.length;
+  if (!any) return h + `<div class="empty">이번에는 이 동네 자료에 관심 단지 소식이 없어요.</div>${cal}</section>`;
   if (m.trades.length) h += `<ul class="tl">${m.trades.map(tradeLi).join('')}</ul>`;
   if (m.rents.length) h += `<ul class="tl" style="margin-top:8px">${m.rents.map(rentLi).join('')}</ul>`;
-  return h + `</section>`;
+  m.urgent.forEach(u => { const x = B.urgentText(u); h += `<div class="box"><b>급매 레이더 · ${esc(x.name)} ${esc(x.price)}</b><br><small>${esc(x.sub)}${x.tags.length ? ' · ' + esc(x.tags.join(', ')) : ''}</small></div>`; });
+  m.gap.forEach(g => { const x = B.gapText(g); h += `<div class="box"><b>전세가율 ${esc(x.name)} ${esc(x.val)}</b><br><small>${esc(x.why)}</small></div>`; });
+  m.rise.forEach(r => { h += `<div class="box"><b>상승 전환 신호 · ${esc(r.a)} ${esc(r.b)} 최근 3개월 ${esc(B.pct(r.chg))}</b></div>`; });
+  m.rank.forEach(r => { const x = B.rankText(r); h += `<div class="box"><b>미래가치 순위 · ${esc(x.name)} ${esc(x.val)}</b></div>`; });
+  return h + cal + `</section>`;
 }
 function render(S, M){
   const dn = D.dn, v = B.scope(S, dn), area = S.name + (dn ? ' ' + dn : '');
@@ -323,6 +346,22 @@ function render(S, M){
   /* 최고가 대비 하락 */
   h += `<section class="sec" aria-labelledby="h-d"><h2 id="h-d">최근 2년 최고가보다 많이 내린 거래</h2><p class="sub">같은 단지·같은 평형의 최근 2년 최고가보다 10% 넘게 낮은 새 거래예요(직거래·원룸형 제외).</p>
     ${v.drops.length ? list(v.drops, tradeLi, 5, 'ld') : '<div class="empty">이번에는 없어요.</div>'}</section>`;
+  /* 급매 레이더 */
+  const ug = (S.urgent || []).filter(u => !dn || u.d === dn);
+  h += `<section class="sec" aria-labelledby="h-u"><h2 id="h-u">급매 레이더 <small>${ug.length}건</small></h2><p class="sub">새로 올라온 매매 중 같은 단지·같은 평형의 최근 3개월 거래 중간값보다 10% 넘게 싼 거래예요(그 3개월 거래가 3건 이상일 때만). 직거래와 30% 넘게 싼 거래(지분·가족 간 거래 등일 수 있음)는 따로 표시해요.</p>
+    ${ug.length ? fold(ug.map(u => { const x = B.urgentText(u), mine = apts.includes(u.a); return `<li class="${mine ? 'mine' : ''}"><div class="nm"><b>${esc(x.name)}</b><small>${esc(u.d)} · 전용 ${u.ar}㎡${u.f != null ? ' · ' + u.f + '층' : ''}</small>${mine ? '<span class="tg mine">관심 단지</span>' : ''}${x.tags.map(t => `<span class="tg x">${esc(t)}</span>`).join('')}<small>${esc(x.sub)}</small></div><div class="pr"><b>${esc(x.price)}</b><small>${esc(x.when)}</small></div></li>`; }), 4, 'lu') : '<div class="empty">이번에는 없어요.</div>'}</section>`;
+  /* 전세가율 급변 */
+  const gp = (S.gap || []).filter(g => !dn || g.d === dn);
+  h += `<section class="sec" aria-labelledby="h-g"><h2 id="h-g">전세가율이 크게 바뀐 단지 <small>최근 3개월 vs 3개월 전</small></h2><p class="sub">같은 단지·같은 평형의 최근 3개월 전세 중간값을 최근 6개월 매매 중간값으로 나눈 값이 5%p 넘게 바뀐 곳이에요(전세 3건·매매 2건 이상).</p>
+    ${gp.length ? fold(gp.map(g => { const x = B.gapText(g); return `<li><div class="nm"><b>${esc(x.name)}</b><small>${esc(g.d)} · 전세 ${g.nj}건·매매 ${g.ns}건</small><small>${esc(x.why)}</small></div><div class="pr"><b>${esc(x.val)}</b><small>${esc(x.dlt)}</small></div></li>`; }), 3, 'lg') : '<div class="empty">크게 바뀐 단지가 없어요.</div>'}</section>`;
+  /* 상승 전환 신호 */
+  const rs = (S.rise || []).filter(r => !dn || r.d === dn);
+  h += `<section class="sec" aria-labelledby="h-s"><h2 id="h-s">상승 전환 신호</h2><p class="sub">최근 6개월 거래량 증가가 ${esc(S.sd || '')} 상위 20%이고, ${esc(B.SITE)} 시세가 내리다가 최근 3개월 다시 오른 단지예요.</p>
+    ${rs.length ? `<ul class="tl">${rs.map(r => `<li><div class="nm"><b>${esc(r.a)} ${esc(r.b)}</b><small>${esc(r.d)}${r.hh ? ' · ' + r.hh.toLocaleString('ko-KR') + '세대' : ''} · 직전 3개월 ${esc(B.pct(r.prev))}</small></div><div class="pr"><b>${esc(B.pct(r.chg))}</b><small>최근 3개월</small></div></li>`).join('')}</ul>${S.ev ? `<p class="sub" style="margin-top:6px">${esc(B.evText(S.ev, S.sd))}</p>` : ''}` : '<div class="empty">지금 이 조건에 맞는 단지가 없어요.</div>'}</section>`;
+  /* 미래가치 순위 변화 */
+  const rk = S.rank, rkl = rk ? [].concat(rk.up || [], rk.down || []).filter(r => !dn || r.d === dn) : [];
+  h += `<section class="sec" aria-labelledby="h-k"><h2 id="h-k">이번 주 미래가치 순위가 크게 바뀐 단지</h2>
+    ${!rk ? '<div class="empty">순위 기록을 모으는 중이에요. 일주일 뒤부터 보여 드려요.</div>' : rkl.length ? `<p class="sub">${esc(S.sd || '')} 안 등수, ${esc(rk.from.slice(5).replace('-', '/'))} → ${esc(rk.to.slice(5).replace('-', '/'))} 기록 비교(10계단 이상).</p><ul class="tl">${rkl.map(r => { const x = B.rankText(r); return `<li><div class="nm"><b>${esc(x.name)}</b><small>${esc(r.d)}</small></div><div class="pr"><b style="color:${x.up ? '#C2410C' : '#1F4FD1'}">${esc(x.mv)}</b><small>${esc(x.val)}</small></div></li>`; }).join('')}</ul>` : '<div class="empty">이번 주에는 10계단 넘게 바뀐 단지가 없어요.</div>'}</section>`;
   /* 전세 */
   h += `<section class="sec" aria-labelledby="h-r"><h2 id="h-r">${esc(B.windowText(wr) || '새로 올라온')} 전세 <small>${v.jeonse.length}건${v.monthly != null ? ` · 월세 ${v.monthly}건` : ''}</small></h2>
     <p class="sub">${esc(B.windowDetail(wr))}. 갱신 계약은 이전 보증금과 비교해 보여 드려요.</p>
@@ -417,6 +456,12 @@ async function chooser(){
 
 (async function(){
   B.fillNames();
+  /* 메일 링크로 들어온 날 기록(열람률 — 구독 id 해시만) 뒤 주소에서 지움 */
+  if (Q.get('src') === 'mail' && /^[0-9a-f]{10}$/.test(Q.get('k') || '')) {
+    const api = (window.JDJ_AGENTS || {}).api;
+    if (api) fetch(`${api}?action=briefSeen&k=${Q.get('k')}&d=${encodeURIComponent(Q.get('day') || '')}`, { mode: 'no-cors' }).catch(() => {});
+    try { ['src', 'k', 'day'].forEach(x => Q.delete(x)); history.replaceState(null, '', '?' + Q.toString()); } catch(e){}
+  }
   if (Q.get('m') === '1' && CARD) {
     const M = await J(B.DATA + 'market.json');
     if (M) { document.documentElement.classList.add('cardmode'); document.body.classList.add('cardmode'); $('cardRoot').innerHTML = marketCardHtml(M); return; }

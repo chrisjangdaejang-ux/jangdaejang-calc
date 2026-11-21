@@ -128,9 +128,60 @@
     },
     /** ③ 내 관심 단지: 이 동네 자료에서 관심 단지의 새 매매·전세만 */
     mine(S, apts) {
-      apts = (apts || []).map(String); if (!apts.length || !S) return { apts: [], trades: [], rents: [] };
+      apts = (apts || []).map(String); if (!apts.length || !S) return { apts: [], trades: [], rents: [], urgent: [], gap: [], rise: [], rank: [] };
       const has = a => apts.includes(a);
-      return { apts: apts, trades: (S.trades || []).filter(t => has(t.a)), rents: (S.rents || []).filter(r => has(r.a) && !r.mo) };
+      return { apts: apts, trades: (S.trades || []).filter(t => has(t.a)), rents: (S.rents || []).filter(r => has(r.a) && !r.mo),
+        urgent: (S.urgent || []).filter(u => has(u.a)), gap: (S.gap || []).filter(g => has(g.a)), rise: (S.rise || []).filter(r => has(r.a)),
+        rank: S.rank ? [].concat(S.rank.up || [], S.rank.down || []).filter(r => has(r.a)) : [] };
+    },
+    /** 급매 레이더 한 줄 */
+    urgentText(u) {
+      const tags = []; if (u.x) tags.push('직거래'); if (u.sus) tags.push('특수 거래 의심');
+      return { name: `${u.a} ${u.b}`, price: B.won(u.p), when: `${B.md(u.dt)} 계약`, sub: `최근 3개월 같은 평형 중간값 ${B.won(u.med)}(${u.n3}건)보다 ${Math.abs(u.disc).toFixed(0)}% 낮아요`, tags };
+    },
+    /** 전세가율 급변 한 줄 + 양쪽 설명 */
+    gapText(g) {
+      const up = g.dlt > 0;
+      return { name: `${g.a} ${g.b}`, val: `${g.jr0.toFixed(0)}% → ${g.jr.toFixed(0)}%`, dlt: `${up ? '+' : '−'}${Math.abs(g.dlt).toFixed(1)}%p`, up,
+        why: up ? '전세가 매매가에 가까워졌어요. 적은 돈으로 살 수 있는 대신(갭 기회), 매매가가 내리면 세입자 보증금이 위험해질 수 있어요(전세 위험).'
+                : '전세가 매매가보다 많이 낮아졌어요. 세입자 보증금은 더 안전한 쪽이고, 전세를 끼고 사려면 돈이 더 들어요(갭 부담).' };
+    },
+    /** 순위 변화 한 줄 */
+    rankText(r) { return { name: `${r.a} ${r.b}`, where: [r.sd, r.d].filter(Boolean).join(' '), val: `${r.r0.toLocaleString('ko-KR')}위 → ${r.r1.toLocaleString('ko-KR')}위`, up: r.mv > 0, mv: `${r.mv > 0 ? '▲' : '▼'}${Math.abs(r.mv)}` }; },
+    /** 상승 전환 근거 문장(과거 사례가 있을 때만) */
+    evText(ev, sd) {
+      if (!ev) return '';
+      return `근거: ${sd ? sd + '에서 ' : ''}과거 ${ev.np}개 시기(${ev.from.slice(0, 4)}~${ev.to.slice(0, 4)}년) 최근 6개월 거래량이 크게 는 상위 20% 단지 ${Number(ev.n).toLocaleString('ko-KR')}곳 중 ${ev.hit}%가 ${Math.round(ev.h / 12)}년 뒤 같은 구 평균보다 더 올랐어요(평균 ${ev.ex > 0 ? '+' : ''}${ev.ex}%p). 앞으로도 그렇다는 보장은 없어요.`;
+    },
+    /** 청약 기회: 저장한 가점(0~84)이 있으면 면적대별 예상 최저 당첨 가점 범위와 비교 — 범위 위쪽 이상 '가능성 높음', 범위 안 '경합' */
+    cyMatch(list, score) {
+      if (score === '' || score == null) return [];
+      score = Number(score);
+      if (!(score >= 0 && score <= 84)) return [];
+      const BAND = ['60㎡ 이하', '60~85㎡', '85㎡ 초과'], out = [];
+      (list || []).forEach(n => (n.cut || []).forEach(c => {
+        const g = score >= c.hi ? 'hi' : score >= c.lo ? 'mid' : '';
+        if (g) out.push({ n, band: BAND[c.b] || '', lo: c.lo, hi: c.hi, g, label: g === 'hi' ? '가능성 높음' : '경합' });
+      }));
+      return out.sort((a, b) => (a.g === 'hi' ? 0 : 1) - (b.g === 'hi' ? 0 : 1));
+    },
+    /** 내 집 세금 캘린더: 저장한 내 집(매수 연월)으로 날짜만 계산(세액 계산 아님). today: 'YYYY-MM-DD' */
+    taxCal(homes, today) {
+      const t = String(today || '').slice(0, 10), y = +t.slice(0, 4), out = [];
+      const d = (a, b) => Math.round((new Date(b + 'T00:00:00Z') - new Date(a + 'T00:00:00Z')) / 86400000);
+      let jun = `${y}-06-01`; if (t > jun) jun = `${y + 1}-06-01`;
+      out.push({ k: 'base', date: jun, dday: d(t, jun), title: '재산세·종합부동산세 기준일', note: '이날 집을 가진 사람에게 그해 재산세(7·9월)·종부세(12월)가 나와요. 사고팔 계획이 있으면 날짜를 꼭 확인하세요.' });
+      (homes || []).forEach(h => {
+        if (!/^\d{4}-\d{2}$/.test(h.bd || '')) return;
+        const by = +h.bd.slice(0, 4), bm = +h.bd.slice(5, 7), ym = n => `${by + Math.floor((bm - 1 + n) / 12)}-${String((bm - 1 + n) % 12 + 1).padStart(2, '0')}`;
+        const held = (y * 12 + +t.slice(5, 7)) - (by * 12 + bm);
+        if (held < 24) out.push({ k: 'nontax', apt: h.apt, date: ym(24) + '-01', dday: d(t, ym(24) + '-01'), title: `${h.apt} 보유 2년(1세대 1주택 비과세 보유 요건)`,
+          note: '매수한 달 기준이라 정확한 날은 잔금일(또는 등기 접수일)로 확인하세요. 조정대상지역에서 샀다면 2년 거주도 필요해요.' });
+        const nx = Math.max(3, Math.floor(held / 12) + 1);
+        if (nx <= 15) out.push({ k: 'ltd', apt: h.apt, date: ym(nx * 12) + '-01', dday: d(t, ym(nx * 12) + '-01'), title: `${h.apt} 보유 ${nx}년(장기보유특별공제 구간 바뀜)`,
+          note: '보유 3년부터 1년마다 공제율이 올라가요. 1세대 1주택이고 2년 이상 살았으면 보유 몫 연 4%(최대 40%)+거주 몫, 아니면 연 2%(최대 30%)예요.' });
+      });
+      return out.filter(x => x.dday >= 0).sort((a, b) => a.dday - b.dday);
     },
     /** 카드 이미지에 넣을 값 (숫자는 모두 자료 그대로) */
     card(S, dn, pro) {

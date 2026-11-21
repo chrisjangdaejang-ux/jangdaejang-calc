@@ -182,6 +182,8 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
 .tierbox select{font:inherit;font-size:16px;min-height:44px;border:1px solid var(--line);border-radius:10px;padding:0 10px;margin:6px 0 10px;background:#fff}
 .tierbox .tg{margin:6px 0}.tierbox .tg b{display:inline-block;min-width:64px}
 .tierbox .tg span{color:var(--sub)}
+.bstat{margin:8px 0 10px;padding:12px 14px;border:1px solid #D6E2FF;background:#F4F7FF;border-radius:14px;font-size:15px;line-height:1.6}
+.bstat small{display:block;font-size:13px;color:var(--sub2);margin-top:4px}
 </style>
 </head>
 <body>
@@ -344,6 +346,21 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
       </dl>
       <p class="note">체크리스트 내용(정부·HUG 공식 안내)은 스폰서가 바꿀 수 없어요. 스폰서 표시는 ‘광고’로 분명히 구분합니다.</p>
     </article>
+
+    <article class="prod" id="p-brief">
+      <div class="ph"><div><span class="num">상품 5</span><h3><span data-brief-name>집예보 모닝 브리핑</span> 지면 광고</h3></div><span class="st soon">준비 중</span></div>
+      <p class="desc">매일 아침 받아 보는 유료 구독 브리핑 맨 아래에 하루 한 광고주만 실려요. 돈을 내고 매일 시장을 챙겨 보는 사람들이라 분양·대출·세무·이사처럼 결정 직전 업종에 맞아요.</p>
+      <div class="bstat" data-brief-stat hidden></div>
+      <dl class="spec">
+        <dt>지면</dt><dd>브리핑 메일 맨 아래 1칸 + 같은 날 웹 브리핑 맨 아래 1칸 (하루 1개 광고주)</dd>
+        <dt>받는 사람</dt><dd>메일은 <b>광고성 정보 수신에 따로 동의한 구독자에게만</b> 실려요. 동의하지 않은 구독자의 메일에는 광고 칸이 없어요.</dd>
+        <dt>표시</dt><dd>‘광고’ 표시 · 브리핑 숫자·순위·급매·청약 기회 고르기와 완전히 분리(광고주라도 같은 계산)</dd>
+        <dt>단가</dt><dd><span class="price-v" data-price="brief_ad">문의 시 안내</span></dd>
+        <dt>타겟팅</dt><dd>구독자 관심 시·도(그 지역 구독자 메일에만) — 구독자 수가 충분해지면 열어요</dd>
+        <dt>소재</dt><dd>제목 20자 · 설명 60자 · https 랜딩 주소 (이미지 없음)</dd>
+      </dl>
+      <p class="note">가격은 제안안이에요. 구독자 수와 열람률이 실제 숫자로 쌓이면(위 집계) 그에 맞춰 다시 정해요. 밤 9시~아침 8시에는 광고성 메일을 보내지 않아요.</p>
+    </article>
   </section>
 
   <section id="developer">
@@ -504,6 +521,8 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
 <footer class="foot">★ 집예보 · <a href="../">홈</a> · <a href="../bunyang/">분양</a></footer>
 
 <script src="../assets/agents.js"></script>
+<script src="../assets/config.js?v=4"></script>
+<script src="../assets/brief-stat.js?v=1"></script>
 <script>
 /* PRICE-CORE:START ─────────────────────────────────────────────
    ★ 단가·할인·할증·집행 기준은 아래 PRICES 한 곳에서만 고치면 페이지 전체(상품 카드·단가표·기간 선택·패키지·집행 가이드)에 반영돼요.
@@ -532,6 +551,7 @@ const PRICES = {
   period:       { w1: 30, w2: 55, m3: 10, m6: 15, y1: 25 },   // 1주·2주 = 월 단가의 %, 3개월·6개월·1년 = 할인 %
   roundTo:      1000,                                          // 계산 금액은 천 원 단위 반올림
   surcharge:    { region: 0, near: 20, service: 10, kind: 10 },  // 타겟팅 할증(%) — region 0 = 없음(지역 상품을 따로 둠)
+  brief_ad:     { text: '1일 5만 원 · 1주(7일) 25만 원 · 4주 80만 원 (구독자 1,000명까지 기준, 제안가)', note: '구독자 1,000명이 넘으면 1,000명마다 같은 비율로 조정' },   // 모닝 브리핑 지면 광고 — 준비 중
   guide:        { minSpend: 0, minWeeks: 1, firstWeekOff: 50 }   // 최소 집행 금액(0 = 없음), 최소 기간(주), 첫 광고 첫 주 할인(%)
 };
 const PERIODS = [
