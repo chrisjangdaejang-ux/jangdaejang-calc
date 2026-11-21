@@ -246,14 +246,14 @@ const sp = R.cleanProfile(op.report.profile);
 check('분양대행사: 의견 상자 이름', R.opinionLabel(sp) === '한빛분양대행(주) 분양대행 의견', R.opinionLabel(sp));
 check('분양대행사: 머리말에 사업자등록번호·대표자, 의견에 판매 회사 안내', /사업자등록번호 120-81-47521/.test(R.headHtml(sp)) && /대표 김대표/.test(R.headHtml(sp)) && /분양 판매를 맡은 회사/.test(R.noteHtml(sp, 'x', 'summary')));
 r = post({ action: 'proSave', o: C.o, t: C.t, profile: Object.assign({}, SELLER, { biz: '' }), secs: ['sum'] });
-check('분양대행사: 사업자등록번호 없음 → 거절', !r.ok && /사업자등록번호/.test(r.err), r);
+check('분양대행사: 사업자등록번호 없어도 저장(선택 항목, 대표 결정 11/21)', r.ok, r);
 r = post({ action: 'proSave', o: C.o, t: C.t, profile: Object.assign({}, SELLER, { biz: '1208147520' }), secs: ['sum'] });
 check('분양대행사: 사업자등록번호 체크섬 틀림 → 거절', !r.ok && /다시 확인/.test(r.err), r);
 r = post({ action: 'proSave', o: C.o, t: C.t, profile: Object.assign({}, SELLER, { ceo: '' }), secs: ['sum'] });
-check('분양대행사: 대표자 없음 → 거절', !r.ok && /대표자/.test(r.err), r);
+check('분양대행사: 대표자 없어도 저장(선택 항목)', r.ok, r);
 r = post({ action: 'proSave', o: C.o, t: C.t, profile: Object.assign({}, SELLER, { office: '한빛공인중개사사무소' }), secs: ['sum'] });
 check('공인중개사 아닌 유형이 중개사 명칭 사용 → 거절(제18조)', !r.ok && /제18조/.test(r.err), r);
-check('화면 검사도 같음: 분양대행사', pe(SELLER) === '' && /사업자등록번호/.test(pe(Object.assign({}, SELLER, { biz: '' }))) && /제18조/.test(pe(Object.assign({}, SELLER, { office: '행복공인중개사사무소' }))));
+check('화면 검사도 같음: 분양대행사', pe(SELLER) === '' && pe(Object.assign({}, SELLER, { biz: '' })) === '' && /제18조/.test(pe(Object.assign({}, SELLER, { office: '행복공인중개사사무소' }))));
 const CONS = { role: 'consult', office: '장대장TV', name: '장대장', title: '유튜브·경제방송 출연', phone: '02-3444-5008' };
 r = post({ action: 'proSave', o: C.o, t: C.t, profile: CONS, secs: ['fv'] });
 check('컨설팅·전문가: 활동명·연락처만으로 저장(사업자번호 선택)', r.ok, r);
@@ -279,5 +279,13 @@ check('화면 검사: 중개보조원', /중개보조원/.test(pe({ role: 'consu
 check('공인중개사 법정 표기 유지', /중개사무소 등록번호 11680-2020-00123/.test(R.headHtml(R.cleanProfile(PROF))) && /대표 공인중개사 홍길동/.test(R.headHtml(R.cleanProfile(PROF))));
 check('유형 키 화면·서버 같음', Object.keys(R.ROLE).join() === Object.keys(vm.runInContext('PRO_ROLE', ctx)).join());
 
+// 대표 결정 11/21: 공인중개사가 아닌 전문가(교수·컨설팅 직원 등)는 이름·활동명과 연락 방법 하나만
+{
+  const PF = { role: 'consult', office: '○○대 부동산학과', title: '○○대 교수', phone: '', kakao: 'https://pf.kakao.com/_abc' };
+  check('교수·컨설턴트: 전화 없이 카톡 채널만 있어도 통과(화면)', pe(PF) === '', pe(PF));
+  check('교수·컨설턴트: 연락 방법이 하나도 없으면 안내(화면)', /전화번호나 카카오톡/.test(pe(Object.assign({}, PF, { kakao: '' }))));
+  check('공인중개사는 전화번호 계속 필수(화면)', /공인중개사는 연락처/.test(pe(Object.assign({}, PROF, { phone: '' }))), pe(Object.assign({}, PROF, { phone: '' })));
+}
 console.log(`전문가 이름 리포트 검증: ${pass}개 확인, ${fail}개 어긋남`);
 process.exit(fail ? 1 : 0);
+

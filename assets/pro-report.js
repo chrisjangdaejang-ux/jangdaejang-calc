@@ -68,8 +68,8 @@
     const F = {
       agent: { office: ['중개사무소 이름', 1], ceo: ['대표 공인중개사 이름', 1], reg: ['중개사무소 등록번호', 1], addr: ['중개사무소 소재지', 1] },
       member: { office: ['중개사무소 이름', 1], ceo: ['대표 공인중개사 이름', 1], name: ['내 이름(소속공인중개사)', 1], reg: ['중개사무소 등록번호', 1], addr: ['중개사무소 소재지', 1] },
-      seller: { office: ['분양대행사 상호', 1], biz: ['사업자등록번호', 1], ceo: ['대표자 이름', 1], name: ['담당자 이름 (선택)', 0], title: ['담당 현장·직함 (선택)', 0], addr: ['사무실 주소 (선택)', 0] },
-      consult: { office: ['상호 또는 활동명', 1], name: ['이름 (선택)', 0], title: ['소개 한 줄 (선택)', 0], biz: ['사업자등록번호 (선택)', 0], addr: ['사무실 주소 (선택)', 0] },
+      seller: { office: ['분양대행사 상호', 1], biz: ['사업자등록번호 (선택)', 0], ceo: ['대표자 이름 (선택)', 0], name: ['담당자 이름 (선택)', 0], title: ['담당 현장·직함 (선택)', 0], addr: ['사무실 주소 (선택)', 0] },
+      consult: { office: ['이름·활동명 또는 소속(학교·회사)', 1], name: ['이름 (선택)', 0], title: ['소개 한 줄 (선택, 예: ○○대 교수)', 0], biz: ['사업자등록번호 (선택)', 0], addr: ['사무실 주소 (선택)', 0] },
       licensed: { title: ['자격', 1], name: ['이름', 1], office: ['사무소 이름', 1], reg: ['자격 등록번호 (선택)', 0], biz: ['사업자등록번호 (선택)', 0], addr: ['사무소 주소 (선택)', 0] }
     };
     return F[roleOf(r)];
@@ -79,7 +79,9 @@
     const r = p.role, d = digits(p.phone), f = fieldsOf(r), need = k => f[k] && f[k][1];
     if ([p.office, p.ceo, p.name, p.title].some(x => ASSIST.test(x || ''))) return '중개보조원은 이름을 넣어 보낼 수 없어요. 개업·소속공인중개사 이름으로 보내 주세요.';
     if (!p.office) return r === 'seller' ? '분양대행사 상호를 적어 주세요.' : r === 'consult' ? '상호 또는 활동명을 적어 주세요.' : r === 'licensed' ? '사무소 이름을 적어 주세요.' : '중개사무소 이름을 적어 주세요.';
-    if (!(/^0\d{8,10}$/.test(d) || /^1[5-9]\d{6}$/.test(d))) return '연락처(전화번호)를 정확히 적어 주세요.';
+    if (d && !(/^0\d{8,10}$/.test(d) || /^1[5-9]\d{6}$/.test(d))) return '전화번호를 다시 확인해 주세요.';
+    if (!d && !p.kakao) return BROKER(r) ? '연락처(전화번호)를 적어 주세요. 공인중개사는 연락처를 꼭 표시해야 해요.' : '고객이 문의할 수 있게 전화번호나 카카오톡 채널 주소 중 하나를 적어 주세요.';
+    if (BROKER(r) && !d) return '연락처(전화번호)를 적어 주세요. 공인중개사는 연락처를 꼭 표시해야 해요.';
     if (BROKER(r)) {
       if (digits(p.reg).length < 5) return '중개사무소 등록번호를 적어 주세요. 공인중개사는 등록번호를 꼭 표시해야 해요.';
       if (!p.ceo) return '개업공인중개사(대표) 이름을 적어 주세요.';
@@ -87,7 +89,6 @@
       if (r === 'member' && !p.name) return '소속공인중개사 본인 이름을 적어 주세요.';
     } else {
       if ([p.office, p.name, p.title].some(x => BROKER_WORD.test(x || ''))) return "공인중개사가 아니면 '공인중개사'·'중개사무소' 같은 이름을 쓸 수 없어요(공인중개사법 제18조). 공인중개사라면 위에서 공인중개사 유형을 골라 주세요.";
-      if (need('biz') && !digits(p.biz)) return '사업자등록번호를 적어 주세요. 분양대행사는 상호·사업자등록번호·대표자·연락처를 꼭 표시해야 해요.';
       if (digits(p.biz) && !bizOk(p.biz)) return '사업자등록번호 10자리를 다시 확인해 주세요.';
       if (need('ceo') && !p.ceo) return '대표자 이름을 적어 주세요.';
       if (r === 'licensed' && QUALS.indexOf(p.title) < 0) return '자격(세무사·법무사 등)을 골라 주세요.';

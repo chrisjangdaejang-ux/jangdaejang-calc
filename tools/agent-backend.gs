@@ -1783,7 +1783,10 @@ function proProfile(p) {
     addr: proText(p.addr, 80), phone: proPhone(p.phone), kakao: kakaoUrl(p.kakao), title: proText(p.title, 20), biz: String(p.biz || '').replace(/[^0-9]/g, '').slice(0, 10), logo: '' };
   if ([f.office, f.ceo, f.name, f.title].some(x => PRO_ASSIST.test(x))) throw new Error('중개보조원은 이름을 넣어 보낼 수 없어요. 개업·소속공인중개사 이름으로 보내 주세요.');
   if (!f.office) throw new Error(role === 'seller' ? '분양대행사 상호를 적어 주세요.' : role === 'consult' ? '상호 또는 활동명을 적어 주세요.' : role === 'licensed' ? '사무소 이름을 적어 주세요.' : '중개사무소 이름을 적어 주세요.');
-  if (!f.phone) throw new Error('연락처(전화번호)를 정확히 적어 주세요.');
+  /* 법정 표기 의무는 공인중개사(중개대상물 표시·광고)만. 그 밖의 유형은 고객이 문의할 연락 방법 하나(전화 또는 카카오톡 채널)만 있으면 됨 — 대표 결정 11/21 */
+  if (broker && !f.phone) throw new Error('연락처(전화번호)를 적어 주세요. 공인중개사는 연락처를 꼭 표시해야 해요.');
+  if (!broker && !f.phone && !f.kakao) throw new Error('고객이 문의할 수 있게 전화번호나 카카오톡 채널 주소 중 하나를 적어 주세요.');
+  if (!broker && p.phone && String(p.phone).replace(/[^0-9]/g, '') && !f.phone) throw new Error('전화번호를 다시 확인해 주세요.');
   if (broker) {
     /* 공인중개사법 제18조의2(중개대상물 표시·광고)·시행령 제17조의2: 명칭·소재지·연락처·등록번호·개업공인중개사 성명 */
     if (!f.reg || f.reg.replace(/[^0-9]/g, '').length < 5) throw new Error('중개사무소 등록번호를 적어 주세요. 공인중개사는 등록번호를 꼭 표시해야 해요.');
@@ -1794,9 +1797,7 @@ function proProfile(p) {
     f.biz = '';
   } else {
     if ([f.office, f.name, f.title].some(x => PRO_BROKER_WORD.test(x))) throw new Error("공인중개사가 아니면 '공인중개사'·'중개사무소' 같은 이름을 쓸 수 없어요(공인중개사법 제18조). 공인중개사라면 공인중개사 유형을 골라 주세요.");
-    if (role === 'seller' && !f.biz) throw new Error('사업자등록번호를 적어 주세요. 분양대행사는 상호·사업자등록번호·대표자·연락처를 꼭 표시해야 해요.');
     if (f.biz && !proBizOk(f.biz)) throw new Error('사업자등록번호 10자리를 다시 확인해 주세요.');
-    if (role === 'seller' && !f.ceo) throw new Error('대표자 이름을 적어 주세요.');
     if (role === 'licensed' && PRO_QUALS.indexOf(f.title) < 0) throw new Error('자격(세무사·법무사 등)을 골라 주세요.');
     if (role === 'licensed' && !f.name) throw new Error('이름을 적어 주세요.');
     if (role !== 'seller') f.ceo = '';
