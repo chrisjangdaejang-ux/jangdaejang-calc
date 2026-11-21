@@ -10,7 +10,8 @@
   const isCap = c => c.startsWith('11') || c.startsWith('41') || c.startsWith('28');
   /* 대출 계산은 대출 한도 계산기(loan/)·내 집 마련(buy/)·갈아타기(switch/)와 같은 assets/loan-core.js(규칙은 assets/loan-rules.js) */
   const LOAN = () => window.JDJ_LOAN;   // 화면마다 불러오는 순서가 달라 쓸 때 읽음
-  const TYPE_RATIO = { var:1, mix:.8, cyc:.4 };
+  const TYPE_RATIO = { var:1, mix:.8, cyc:.4 };   // 금리 유형 이름 확인용(실제 비율은 loan-rules.js)
+  const TYPE_NAME = { var:'변동금리', mix:'혼합형', cyc:'주기형' };
   const OWN_NAME = { none:'무주택', first:'생애최초', one:'1주택(처분조건)', multi:'다주택' };
   const BY_TXT = { LTV:'LTV(집값 대비 비율)', CAP:'가격구간별 대출 한도', DSR:'소득(DSR 40%)', DTI:'소득(DTI)', BAN:'주택구입 주담대 불가' };
   const RZ_LV = {1:'신속통합기획 대상지 선정',2:'신속통합기획 완료',3:'정비구역 지정',4:'추진위원회 승인',5:'조합설립인가',6:'건축심의',7:'사업시행인가',8:'관리처분인가',9:'이주',10:'착공'};
@@ -185,7 +186,7 @@
   }
 
   function condHtml() {
-    if (S._ro) return `<p class="pr-condp">${S._ro === 'money' ? `대출 계산 조건: 연소득 ${fmt(S.income)} · 보유 현금 ${fmt(S.cash)} · ${OWN_NAME[S.own]} · 주기형 ${S.rate}% · ${S.term}년 · 기타 비용 ${fmt(S.etc)}` : ''}</p>`;
+    if (S._ro) return `<p class="pr-condp">${S._ro === 'money' ? `대출 계산 조건: 연소득 ${fmt(S.income)} · 보유 현금 ${fmt(S.cash)} · ${OWN_NAME[S.own]} · ${TYPE_NAME[S.rtype] || '주기형'} ${S.rate}% · ${S.term}년 · 기타 비용 ${fmt(S.etc)}` : ''}</p>`;
     const o = (v, t) => `<option value="${v}" ${S.own === v ? 'selected' : ''}>${t}</option>`;
     return `<section class="pr-cond noprint"><b>내 조건</b> <small>바꾸면 대출·필요 현금이 바로 다시 계산됩니다(이 기기에만 저장).</small>
       <div class="pr-cgrid">
@@ -194,14 +195,14 @@
         <label>주택 보유<select id="cO">${o('none', '무주택')}${o('first', '생애최초')}${o('one', '1주택(처분조건)')}${o('multi', '다주택')}</select></label>
         <label>금리(%)<input id="cR" inputmode="decimal" value="${S.rate}"></label>
       </div></section>
-      <p class="pr-condp">계산 조건: 연소득 ${fmt(S.income)} · 보유 현금 ${fmt(S.cash)} · ${OWN_NAME[S.own]} · 주기형 ${S.rate}% · ${S.term}년 · 기타 비용 ${fmt(S.etc)}</p>`;
+      <p class="pr-condp">계산 조건: 연소득 ${fmt(S.income)} · 보유 현금 ${fmt(S.cash)} · ${OWN_NAME[S.own]} · ${TYPE_NAME[S.rtype] || '주기형'} ${S.rate}% · ${S.term}년 · 기타 비용 ${fmt(S.etc)}</p>`;
   }
 
   /* opt(전문가 이름 리포트 assets/pro-report.js 가 씀): cond — 이 화면에서만 쓸 계산 조건(이 기기 저장값을 바꾸지 않음),
      readOnly — 조건 입력 칸 없이 읽기 전용('money' 면 조건 한 줄 표시), cover(order, items, dataTo) — 표지 HTML, after(box, items) — 그린 뒤 */
   async function render(box, keys, order, opt) {
     opt = opt || {};
-    if (opt.cond) { const c = opt.cond; Object.assign(S, { income: +c.income || S.income, cash: c.cash != null ? +c.cash : S.cash, own: OWN_NAME[c.own] ? c.own : S.own, rate: +c.rate || S.rate }); }
+    if (opt.cond) { const c = opt.cond; Object.assign(S, { income: +c.income || S.income, cash: c.cash != null ? +c.cash : S.cash, own: OWN_NAME[c.own] ? c.own : S.own, rate: +c.rate || S.rate, rtype: TYPE_RATIO[c.rtype] != null ? c.rtype : S.rtype, term: +c.term || S.term }); }
     if (opt.readOnly) S._ro = opt.readOnly;
     if (opt.cond) S._tmp = 1;
     box.innerHTML = '<div class="msg info"><span class="spin"></span>리포트를 만드는 중입니다…</div>';
@@ -243,6 +244,6 @@
     return items.length;
   }
   /* 편집 화면: 지금 계산 조건(대출 칸을 넣을 때 고객 링크에 함께 저장) */
-  const cond = () => ({ income: S.income, cash: S.cash, own: S.own, rate: S.rate });
+  const cond = () => ({ income: S.income, cash: S.cash, own: S.own, rate: S.rate, rtype: S.rtype, term: S.term });
   window.JDJ_PREMIUM = { render, cond };
 })();

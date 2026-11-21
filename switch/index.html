@@ -798,7 +798,7 @@ function render(){
   $('maxSub').innerHTML = P ? `자기자본 <b>${fmt(cash)}</b> + 새 대출 <b>${fmt(ld.L)}</b> − 취득세·중개 <b>${fmt(bc.total)}</b> − 기타 <b>${fmt(etc)}</b>` : '매도 후 자금이 부족해요';
   const diff = P - sale;
   $('binding').textContent = P ? (diff>=0 ? `지금 집보다 ${fmt(diff)}원 더 비싼 집까지 가능` : `지금 집보다 ${fmt(-diff)}원 낮춰야 가능`) : '';
-  const byTxt={LTV:`LTV ${Math.round(c.ltv*100)}%가 한도 결정`, CAP:'가격구간 한도가 결정', DSR:'소득(DSR)이 한도 결정', BAN:'다주택 주담대 불가'};
+  const byTxt={LTV:`LTV ${Math.round(c.ltv*100)}%가 한도 결정`, CAP:'가격구간 한도가 결정', DSR:'소득(DSR)이 한도 결정', DTI:'소득(DTI)이 한도 결정', BAN:'다주택 주담대 불가'};
   $('fSale').textContent=fmtShort(sale);
   $('fOut').textContent=fmtShort(oldLoan+S.cgt+S.fee);
   $('fNet').textContent=fmtShort(net);
