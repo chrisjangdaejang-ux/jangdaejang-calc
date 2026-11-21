@@ -68,6 +68,8 @@ const ctx = {
       opt = opt || {};
       fetches.push({ url, opt });
       const send = (code, j) => ({ getResponseCode: () => code, getContentText: () => JSON.stringify(j) });
+      const wk = url.match(/data\/brief\/wk\/(\w+)\.json/);                 // v41 지난주 우리 지역은?(7시 공개분)
+      if (wk) return WK[wk[1]] ? send(200, WK[wk[1]]) : send(404, {});
       const m = url.match(/data\/brief\/(\w+)\.json/);
       if (m && m[1] === 'market') return send(200, MARKET);
       if (m) return m[1] === 'index' ? send(200, { date: new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new RealDate(NOW)) }) : BRIEF[m[1]] ? send(200, BRIEF[m[1]]) : send(404, {});
@@ -77,6 +79,10 @@ const ctx = {
     }
   }
 };
+const WK = {   // 송파구는 오늘 날짜(실림), 도봉구는 지난 날짜(빠짐), 전국 문장은 오늘
+  '11710': { date: '2026-11-21', w: '2026-46', from: '2026-11-09', to: '2026-11-15', ver: 1, status: 'prov', asof: '2026-11-19', url: 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/weekly/2026-46/', lines: ['송파구 주간 문장', '서울 주간 문장'] },
+  '11320': { date: '2026-11-14', w: '2026-45', from: '2026-11-02', to: '2026-11-08', ver: 1, status: 'prov', asof: '2026-11-12', url: 'https://x', lines: ['도봉구 지난주 묵은 문장'] },
+  market: { date: '2026-11-21', w: '2026-46', from: '2026-11-09', to: '2026-11-15', ver: 1, status: 'prov', asof: '2026-11-19', url: 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/weekly/2026-46/', line: '전국 주간 문장' } };
 const MARKET = { date: '2026-11-21', name: '집예보 모닝 브리핑', win: { from: '2026-11-20', to: '2026-11-21' },
   kr: { n: 812, nhi: 40, hi: [{ sd: '서울', gn: '강남구', d: '압구정동', a: '현대7차', b: '245㎡대', p: 1150000, pm: 1050000, pmd: 20260301, up: 9.5 }], drop: [{ sd: '경기', gn: '화성시', d: '청계동', a: '예시', b: '84㎡대', p: 60000, m2: 80000, m2d: 20250501, dr: -25 }, { sd: '경기', gn: '화성시', d: '청계동', a: '의심거래', b: '84㎡대', p: 30000, m2: 80000, m2d: 20250501, dr: -62, sus: 1 }] },
   seoul: { n: 120, nhi: 12, hi: [], drop: [] }, policy: [{ name: '주담대 한도 조정', stage: '시행', d: '2026-11-17', scope: '전국' }], rate: null,
@@ -172,7 +178,11 @@ check('메일 ②: 그 동네 이름이 나온 발표는 동네 칸 맨 위(없�
   && m[0].htmlBody.indexOf('내 동네 관련 발표') > m[0].htmlBody.indexOf('도봉구') - 400 && (m[0].htmlBody.match(/내 동네 관련 발표/g) || []).length === 1
   && m[0].htmlBody.indexOf('도봉구 창동 재개발 정비구역 지정') < m[0].htmlBody.indexOf('도봉구 새 거래 없음'));
 check('메일: 새 발표가 없으면 칸 자체가 없음(빈 상자 없음)', !/새로 발표된/.test(T.briefMarketHtml(Object.assign({}, MARKET, { pnews: undefined }), {})) && !/새로 발표된/.test(T.briefMarketHtml(Object.assign({}, MARKET, { pnews: { n: 0, items: [] } }), {})) && T.briefPnHtml(null, 3) === '');
-check('시장 자료는 하루 한 번만 받음', fetches.filter(f => /market\.json/.test(f.url)).length === 1);
+check('메일: 7시 공개된 주간 칸(그날 날짜만) — 내 지역 먼저, 전국 나중, 지난 날짜 문장은 안 씀', !!m && /지난주 우리 지역은\?/.test(m[0].htmlBody)
+  && m[0].htmlBody.indexOf('송파구 주간 문장') < m[0].htmlBody.indexOf('전국 주간 문장') && !/묵은 문장/.test(m[0].htmlBody)
+  && m[0].htmlBody.indexOf('지난주 우리 지역은') < m[0].htmlBody.indexOf('① 오늘의'));
+check('시장 자료는 하루 한 번만 받음', fetches.filter(f => /\/brief\/market\.json/.test(f.url)).length === 1);
+check('주간 전국 문장(wk/market.json)도 하루 한 번', fetches.filter(f => /\/wk\/market\.json/.test(f.url)).length <= 1);
 check('이름은 SITE_NAME 한 곳에서', T.BRIEF_NAME === T.SITE_NAME + ' 모닝 브리핑' && T.BRIEF_PRICE.brief.name === T.BRIEF_NAME + ' 1개월' && T.BRIEF_TRIAL.name === T.BRIEF_NAME + ' 7일 체험');
 check('예전 이름 행도 인식', T.bProdKey('아침 브리핑 중개사용 1개월') === 'brief_pro' && T.bProdKey('아침 브리핑 7일 체험') === 'trial' && T.bProdKey(T.BRIEF_PRICE.brief.name) === 'brief' && T.bProdKey('다른 상품') === '');
 check('메일: 링크에 열람 표시(구독 id 해시, 연락처 없음)', !!m && /src=mail&amp;k=[0-9a-f]{10}|src=mail&k=[0-9a-f]{10}/.test(m[0].htmlBody) && !/me@example\.com/.test(m[0].htmlBody.split('src=mail')[1] || ''));

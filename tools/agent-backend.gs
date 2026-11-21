@@ -9,7 +9,8 @@
  *
  * v41 변경 요약 (v20~v40과 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — 시트 변경 없음)
  *  - 모닝 브리핑 메일 맨 위(① 오늘의 부동산 시장 앞)에 '지난주 우리 지역은?' 칸(briefWeeklyHtml): 엔진 brief.py 가 월요일 새벽 주간 실거래 동향 계산 뒤
- *    첫 브리핑 자료에만 넣는 wk(동네 {시군구}.json → 내 지역·그 시·도 문장, market.json → 전국 문장)를 그대로 싣는다 — 내 지역 먼저, 그다음 전국.
+ *    만들고 월요일 오전 7시 발표 단계가 공개하는 brief/wk/{시군구}.json(내 지역·그 시·도 문장)·wk/market.json(전국 문장)을, 그날 브리핑과 날짜가 같을 때만
+ *    그대로 싣는다 — 내 지역 먼저, 그다음 전국. 7시 발표 전에 메일이 나가면 그날은 칸이 빠짐(숫자를 미리 내보내지 않음).
  *    문장·숫자는 엔진이 만든 그대로(서버에서 새 숫자를 만들지 않음). 자료에 wk 가 없는 날은 칸 자체가 없음. 웹 브리핑(brief/)은 재배포 없이 바로 보임.
  *  - 검증: node tools/brief-test.js
  *
@@ -3161,8 +3162,10 @@ function briefDaily() {
   const ix = bFetchJson(BRIEF_DATA + 'index.json');
   if (!ix || ix.date !== date) { if (new Date().getHours() < 9) return; }   // 오늘 자료가 아직 없으면 9시에 다시(9시에도 없으면 어제 자료 그대로 보내고 날짜를 밝힘)
   const um = userBriefMap(), now = new Date(), cache = {}, ch = briefChannels();
-  const brief = g => (g in cache) ? cache[g] : (cache[g] = bFetchJson(BRIEF_DATA + g + '.json'));
+  const wkc = {}, wkOf = g => (g in wkc) ? wkc[g] : (wkc[g] = bFetchJson(BRIEF_DATA + 'wk/' + g + '.json'));   // v41 지난주 우리 지역은?(월요일 오전 7시 공개분)
+  const brief = g => { if (g in cache) return cache[g]; const S = bFetchJson(BRIEF_DATA + g + '.json'); if (S) { const w = wkOf(g); if (w && w.date === S.date) S.wk = w; } return (cache[g] = S); };
   const M = bFetchJson(BRIEF_DATA + 'market.json');      // 전국 공통 — 하루 1번만 받아 모든 구독자에게 같은 내용
+  const WKM = M ? bFetchJson(BRIEF_DATA + 'wk/market.json') : null; if (M && WKM && WKM.date === M.date) M.wk = WKM;   // v41 전국 문장(7시 공개분, 날짜가 같을 때만)
   const AD = briefAdToday(now);                         // v29 오늘 진행 중인 브리핑 광고(없으면 null) — 메일에는 이른 아침 광고 동의자에게만
   const cxc = {}, cxOf = g => (g in cxc) ? cxc[g] : (cxc[g] = bFetchJson(BRIEF_DATA + 'cx/' + g + '.json'));   // v27 손님 단지 자료 — 동네마다 한 번만 받음
   let sent = 0;

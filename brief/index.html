@@ -692,7 +692,10 @@ async function chooser(){
     if (M) { document.documentElement.classList.add('cardmode'); document.body.classList.add('cardmode'); $('cardRoot').innerHTML = marketCardHtml(M); return; }
   }
   if (!D) { if (CARD) document.body.classList.remove('cardmode'); return chooser(); }
-  const [S, M] = await Promise.all([J(B.DATA + D.g + '.json'), J(B.DATA + 'market.json')]);
+  const [S, M, WA, WM] = await Promise.all([J(B.DATA + D.g + '.json'), J(B.DATA + 'market.json'), J(B.DATA + 'wk/' + D.g + '.json'), J(B.DATA + 'wk/market.json')]);
+  /* 지난주 우리 지역은?: 월요일 오전 7시 발표 단계가 brief/wk/ 에 올림(그 전에는 파일이 없음). 그날 브리핑 날짜와 같을 때만 */
+  if (S && WA && WA.date === S.date) S.wk = WA;
+  if (M && WM && WM.date === M.date) M.wk = WM;
   if (!S) { $('main').innerHTML = `<h1>브리핑을 찾지 못했어요</h1><p class="lead">이 동네 브리핑이 아직 없어요. 구독하시면 다음 날 아침부터 만들어 드려요.</p><a class="btn primary" href="subscribe/">구독 안내 보기</a> <a class="btn" href="./">다른 동네 고르기</a>`; return; }
   if (CARD) { document.documentElement.classList.add('cardmode'); document.body.classList.add('cardmode'); $('cardRoot').innerHTML = cardHtml(S, D.dn, PRO); return; }
   render(S, M);
