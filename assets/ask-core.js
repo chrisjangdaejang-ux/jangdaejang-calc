@@ -7,6 +7,7 @@
    화면: assets/ask.js(입력창), ask/(단지 비교) · 검증: node tools/ask-test.js */
 (function (root) {
   'use strict';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   const M = () => root.JDJ_MINE || (typeof require === 'function' ? require('./mine-core.js') : null);
   const PW = () => root.JDJ_PLAIN || (typeof require === 'function' ? (require('./plain-words.js'), globalThis.JDJ_PLAIN) : null);
   const MAX = 3;
@@ -154,7 +155,7 @@
   const unpackList = s => String(s || '').split('!').map(x => x.replace(/%21/gi, '!').replace(/%25/g, '%'));
   /** 1곳이면 내 집 시세, 2~3곳이면 단지 비교 주소 */
   function target(picks, hint, from) {
-    const base = '/jangdaejang-calc/';
+    const base = JB.SITE;
     if (picks.length === 1) {
       const p = picks[0], q = new URLSearchParams({ sd: p.d.sd, d: p.d.key });
       if (p.band) q.set('b', p.band);

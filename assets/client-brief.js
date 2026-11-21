@@ -8,6 +8,7 @@
    node 에서도 불러 검사할 수 있게 순수 함수는 DOM 없이 동작해요(tools/client-brief-test.js). */
 (function (root) {
   'use strict';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   const B = root.JDJ_BRIEF || (typeof require !== 'undefined' ? require('./brief-core.js') : null);
   const SITE = ((root.JDJ_SITE || {}).SITE_NAME || '').trim() || (B && B.SITE) || '집코드';
   const APTS = 5, LABEL_MAX = 20;
@@ -259,7 +260,7 @@
   }
 
   /* ---------- 화면 도우미(브라우저에서만) ---------- */
-  const DATA = (B && B.DATA) || '/jangdaejang-data/data/brief/';
+  const DATA = (B && B.DATA) || JB.DATA + 'data/brief/';
   function sess() { try { return (JSON.parse(root.localStorage.getItem('jdj_auth') || 'null') || {}).s || ''; } catch (e) { return ''; } }
   async function post(action, body) {
     const api = (root.JDJ_AGENTS && root.JDJ_AGENTS.api) || '';

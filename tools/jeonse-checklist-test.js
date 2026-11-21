@@ -28,7 +28,7 @@ check('공유·인쇄 단추 위아래', [(html.match(/data-jshare="(top|bottom)
 check('인쇄용 CSS', /@media print\{/.test(html), true);
 check('개인정보 저장 안 함(체크 상태·종류만)', /localStorage\.setItem\(KEY, JSON\.stringify\(st\)\)/.test(html) && !/hP'\)\.value[^;]*setItem/.test(html), true);
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
-check('서비스 워커 캐시 목록', sw.includes("'/jangdaejang-calc/jeonse/checklist/'"), true);
+check('서비스 워커 캐시 목록', sw.includes("'./jeonse/checklist/'"), true);
 check('통계 기능 이름 등록', /'jeonse_checklist'/.test(fs.readFileSync(path.join(root, 'assets', 'stat.js'), 'utf8')), true);
 check('전월세 화면에서 연결', fs.readFileSync(path.join(root, 'jeonse', 'index.html'), 'utf8').includes('전체 체크리스트 보기 →'), true);
 

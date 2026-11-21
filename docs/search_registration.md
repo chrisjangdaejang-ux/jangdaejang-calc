@@ -1,24 +1,18 @@
 # 검색엔진 등록 순서 (도메인을 연결한 뒤에 하세요)
 
 지금 주소(chrisjangdaejang-ux.github.io/jangdaejang-calc)는 빌린 주소라, 등록은 **도메인을 산 뒤 새 주소로 한 번만** 하면 됩니다.
-아래에서 `https://새주소` 는 산 도메인(예: `https://zipcode.co.kr` — 아직 사지 않음)으로 바꿔 읽으세요.
+아래에서 `https://새주소` 는 우리 도메인 **https://zipcode.works** 로 읽으세요.
 
 ---
 
 ## 0. 먼저 할 일 (한 번)
 
-1. 도메인을 사고 GitHub 저장소 jangdaejang-calc 에 연결합니다.
-   - https://github.com/chrisjangdaejang-ux/jangdaejang-calc/settings/pages 에서 **Custom domain** 칸에 도메인을 적고 **Save** → **Enforce HTTPS** 체크.
-2. 사이트 주소 한 줄을 바꿉니다.
-   - 파일: https://github.com/chrisjangdaejang-ux/jangdaejang-calc/edit/main/assets/config.js
-   - `SITE_URL: 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc',` 를 `SITE_URL: 'https://새주소',` 로 바꾸고 **Commit changes...** → **Commit changes**.
-   - 또는 Claude 에게 "도메인 ○○로 바꿔 줘"라고만 말해도 됩니다.
-3. 다음 날 아침(07:37) 자동 작업이 단지 페이지·sitemap.xml·robots.txt·모든 화면의 대표 주소를 새 주소로 바꿉니다.
+1. 도메인을 사이트에 연결합니다 — 순서와 버튼 이름은 **docs/domain_switch.md** 에 있습니다(가비아 설정 → GitHub 연결 → 주소 한 줄 바꾸기).
+2. 연결 다음 날 아침(07:37) 자동 작업이 단지 페이지·sitemap.xml·robots.txt·모든 화면의 대표 주소를 새 주소로 바꿉니다.
    기다리기 싫으면 https://github.com/chrisjangdaejang-ux/jangdaejang-timing/actions/workflows/seo.yml 에서 **Run workflow** → 초록색 **Run workflow** 를 누르세요.
-4. 확인: 브라우저에서 `https://새주소/robots.txt` 와 `https://새주소/sitemap.xml` 이 열리면 준비 끝.
+3. 확인: 브라우저에서 https://zipcode.works/robots.txt 와 https://zipcode.works/sitemap.xml 이 열리면 준비 끝.
 
-> 주의: 지금 화면들은 내부 파일을 `/jangdaejang-calc/…`, 데이터를 `/jangdaejang-data/…` 경로로 부릅니다.
-> 도메인을 저장소에 직접 연결하면 이 경로를 함께 바꾸는 작업이 필요합니다(도메인 연결 때 Claude 에게 같이 요청하세요).
+> 화면 안의 내부 경로(파일·데이터)는 이미 예전 주소와 새 도메인 양쪽에서 동작하게 바꿔 두었습니다(따로 할 일 없음).
 
 ---
 

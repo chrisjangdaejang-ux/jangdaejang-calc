@@ -1,10 +1,11 @@
 /* 집코드 하단 탭(휴대폰·PC 공통): 홈 · 지도 · 순위 · 내 집 시세 · 단지 비교 (5개를 넘기지 않음)
-   <script src="/jangdaejang-calc/assets/tabbar.js?v=2" defer></script> 만 넣으면 화면 맨 아래에 붙는다(지금 화면 탭은 파랑).
+   <script src="assets/tabbar.js?v=3" defer></script> 만 넣으면 화면 맨 아래에 붙는다(지금 화면 탭은 파랑).
    본문이 탭에 가리지 않게 body 아래 여백을 탭 높이만큼 더한다. 지도 화면은 body.jm-full 로 여백 대신 지도 높이에서 뺀다. */
 (function () {
   'use strict';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   if (typeof document === 'undefined' || document.querySelector('.jtab')) return;
-  var B = '/jangdaejang-calc/';
+  var B = JB.SITE;
   var T = [
     ['', '홈', '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>', 'tab_home'],
     ['map/', '지도', '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/>', 'tab_map'],

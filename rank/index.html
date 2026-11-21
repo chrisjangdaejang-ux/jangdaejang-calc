@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#FFFFFF">
-<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
-<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
+<link rel="icon" type="image/png" href="../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../assets/icons/apple-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script src="/jangdaejang-calc/assets/pwa.js" defer></script>
-<script src="/jangdaejang-calc/assets/biz.js" defer></script>
+<script src="../assets/pwa.js?v=1" defer></script>
+<script src="../assets/biz.js?v=1" defer></script>
 <title>집코드 주간 순위 — 구별 아파트 시세 변동·미래가치 순위</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/rank/">
 <meta name="description" content="시·도별로 구·시·군 아파트 평당가가 1개월·3개월·6개월·1년 동안 얼마나 올랐고 내렸는지, 앞으로 2년 지역 흐름 점수로 본 구별 미래가치 순위를 한눈에 보세요.">
@@ -27,18 +27,18 @@
 <script>window.JDJ_CONFIG = { tool:'rank', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
-<script src="../assets/share.js?v=9"></script>
+<script src="../assets/share.js?v=10"></script>
 <script src="../assets/plain-words.js?v=14"></script>
-<script src="../assets/narrative.js?v=14"></script>
-<script src="../assets/rank-core.js?v=5"></script>
+<script src="../assets/narrative.js?v=15"></script>
+<script src="../assets/rank-core.js?v=6"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/watch-core.js?v=2"></script>
-<script src="../assets/watch.js?v=3"></script>
-<script src="../assets/tabbar.js?v=2" defer></script>
+<script src="../assets/watch.js?v=4"></script>
+<script src="../assets/tabbar.js?v=3" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=44">
-<script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
+<link rel="stylesheet" href="../assets/aplus.css?v=44">
+<script src="../assets/nw.js?v=1" defer></script>
 <style>
 .wrap{max-width:760px;margin:0 auto;padding:22px 16px 40px}
 h1{font-size:clamp(26px,6vw,36px);margin:6px 0 8px}
@@ -91,7 +91,7 @@ h1{font-size:clamp(26px,6vw,36px);margin:6px 0 8px}
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="/jangdaejang-calc/" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
+  <a class="brand" href="../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
   <div class="badge plain">순위</div>
 </header>
 
@@ -112,13 +112,14 @@ h1{font-size:clamp(26px,6vw,36px);margin:6px 0 8px}
   <div data-ad-slot="rank_end" data-ad-cat="rank" data-ad-after="#pane ol.list" hidden></div>
 </main>
 
-<footer class="foot">국토교통부 실거래 신고와 공공 통계로 만든 순위예요. 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집코드 · <a href="../">홈</a></footer>
+<footer class="foot">국토교통부 실거래 신고와 공공 통계로 만든 순위예요. 분석 방법은 <a href="../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집코드 · <a href="../">홈</a></footer>
 
 <script>
+var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 (function(){
 'use strict';
 const R = window.JDJ_RANK, PL = window.JDJ_PLAIN, NAR = window.JDJ_NAR;
-const DATA = '/jangdaejang-data/data/';
+const DATA = JB.DATA + 'data/';
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const J = u => fetch(u, {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null);
@@ -215,14 +216,14 @@ const sg = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(Math.round(v * 10)
 function drawFv(){
   if (S.v === 'apt') return drawApt();
   const sd = sdObj(), unit = unitOf(sd), ck = R.check(MJ);
-  if (!ck) { $('pane').innerHTML = `<div class="empty"><b>지역 흐름 점수를 과거 자료와 맞춰 보는 중이에요</b>과거 여러 때에 그대로 써 봐서 잘 맞으면 구별 미래가치 순위를 공개해요. 지금은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 과거 성적을 볼 수 있어요.</div>`; share(null); return; }
+  if (!ck) { $('pane').innerHTML = `<div class="empty"><b>지역 흐름 점수를 과거 자료와 맞춰 보는 중이에요</b>과거 여러 때에 그대로 써 봐서 잘 맞으면 구별 미래가치 순위를 공개해요. 지금은 <a href="${JB.SITE}about/">서비스 소개</a>에서 과거 성적을 볼 수 있어요.</div>`; share(null); return; }
   const gm = GS[S.sd];
   if (!gm || gm === 'wait') { loadGs(S.sd); $('pane').innerHTML = '<p class="note">구별 미래가치 자료를 불러오고 있어요…</p>'; return; }
   if (gm === 'err') { $('pane').innerHTML = '<div class="empty"><b>자료를 불러오지 못했어요</b>잠시 뒤 다시 열어 주세요.</div>'; GS[S.sd] = null; return; }
   const f = R.future(IX, sd.name, gm);
   if (!f.rows.length) { $('pane').innerHTML = `<div class="empty"><b>${esc(sd.short)}은 순위를 매기지 않아요</b>점수가 있는 ${unit}가 ${f.n}곳뿐이라 줄 세워 비교하기 어려워요.</div>`; share(null); return; }
   const rows = S.all ? f.rows : f.rows.slice(0, SHOW);
-  const vb = `<div class="vbox">${esc(sd.short)} ${f.n}개 ${unit}를 <b>앞으로 2년 지역 흐름 점수</b>로 줄 세웠어요. 이 예측 방법을 과거에 그대로 써 봤더니 <b>${ck.n}번 중 ${ck.hit}번 맞았어요</b>.${ck.oos != null && ck.t0 ? ` (예: ~${ck.t0.slice(0, 4)}년 자료만으로 ${+ck.t0.slice(0, 4) + 2}년을 예측 → 실제로 점수 상위 20% ${unit}${ck.oos > 0 ? '가' : '는'} 같은 시·도 평균보다 ${sg(ck.oos)} ${ck.oos > 0 ? '더' : '덜'} 올랐어요)` : ''} <a href="/jangdaejang-calc/about/">예측 방법 ›</a></div>`;
+  const vb = `<div class="vbox">${esc(sd.short)} ${f.n}개 ${unit}를 <b>앞으로 2년 지역 흐름 점수</b>로 줄 세웠어요. 이 예측 방법을 과거에 그대로 써 봤더니 <b>${ck.n}번 중 ${ck.hit}번 맞았어요</b>.${ck.oos != null && ck.t0 ? ` (예: ~${ck.t0.slice(0, 4)}년 자료만으로 ${+ck.t0.slice(0, 4) + 2}년을 예측 → 실제로 점수 상위 20% ${unit}${ck.oos > 0 ? '가' : '는'} 같은 시·도 평균보다 ${sg(ck.oos)} ${ck.oos > 0 ? '더' : '덜'} 올랐어요)` : ''} <a href="${JB.SITE}about/">예측 방법 ›</a></div>`;
   const li = rows.map(x => {
     /* 구 이유: 공용 narrative.js guWhy(사실 → 비교 → 과거 사례 → 그래서) — 지도 구 카드·리포트 지역 흐름과 같은 문장 */
     const gw = NAR && NAR.guWhy ? NAR.guWhy({ IX, code: x.code, gs: x.gs, EV, PL }) : null, why = gw ? gw.line : '';
@@ -251,7 +252,7 @@ function drawApt(){
   const where = S.g === 'all' ? sd.short : gn(S.g), rows = S.all ? o.rows : o.rows.slice(0, SHOW);
   /* 과거 성적 첫 줄(plain-words.js trackHead): 시·도 성적이 있으면 그 회차, 없으면 전국 — 시작월은 model_h data_from */
   const vm = (() => { const m = MH['2'] || {}, r = v.where !== '전국' && m.reg ? m.reg[sd.name] : null; return r ? { oos_all: r.oos_all, oos_hit: r.hit, data_from: m.data_from } : m; })();
-  const vb = `<div class="vbox">${esc(where)} 단지 ${o.n.toLocaleString()}곳을 <b>미래가치 점수(2년 보유 기준)</b>로 줄 세웠어요. ${esc(PL.trackHead(vm, 2)).replace(/(\d+번 중 \d+번 맞았어요)/, '<b>$1</b>')}${v.where === '전국' ? ' 전국 단지로 써 본 결과예요.' : ''} <a href="/jangdaejang-calc/about/">예측 방법 ›</a></div>`;
+  const vb = `<div class="vbox">${esc(where)} 단지 ${o.n.toLocaleString()}곳을 <b>미래가치 점수(2년 보유 기준)</b>로 줄 세웠어요. ${esc(PL.trackHead(vm, 2)).replace(/(\d+번 중 \d+번 맞았어요)/, '<b>$1</b>')}${v.where === '전국' ? ' 전국 단지로 써 본 결과예요.' : ''} <a href="${JB.SITE}about/">예측 방법 ›</a></div>`;
   const li = rows.map(x => `<li class="ws"><a href="${esc(R.mineUrl(S.sd, x.key, x.band))}" data-track="rank_apt_to_mine"><span class="rk">${x.r}</span>
     <span class="nm"><b>${esc(x.apt)}</b><small>${esc(gn(x.code))} ${esc(x.dong)} · ${esc(x.band)}${x.tie ? ' · 공동 ' + x.r + '위' : ''}</small></span>
     <span class="vals"><span class="num"><b class="sc">${x.fv}점</b><small>100점 만점</small></span></span></a>${wstar(x)}</li>`).join('');
@@ -273,7 +274,7 @@ function drawMove(){
     return;
   }
   const sd = sdObj(), mv = R.moves(RK, S.sd);
-  if (!mv) { $('pane').innerHTML = `<div class="empty"><b>다음 달부터 공개해요</b>지난달과 이번 달 단지 미래가치 점수를 비교할 수 있게 되면, ${esc(sd.short)}에서 점수가 많이 오른 단지와 내린 단지를 여기에 보여 드려요.<br>그동안 <a href="/jangdaejang-calc/mine/">내 집 시세</a>에서 관심 단지 점수를 확인해 보세요.</div>`; share(null); return; }
+  if (!mv) { $('pane').innerHTML = `<div class="empty"><b>다음 달부터 공개해요</b>지난달과 이번 달 단지 미래가치 점수를 비교할 수 있게 되면, ${esc(sd.short)}에서 점수가 많이 오른 단지와 내린 단지를 여기에 보여 드려요.<br>그동안 <a href="${JB.SITE}mine/">내 집 시세</a>에서 관심 단지 점수를 확인해 보세요.</div>`; share(null); return; }
   const list = (rows, cls) => rows.length ? `<ol class="list">${rows.map((x, i) => `<li class="ws"><a href="${esc(R.mineUrl(S.sd, x.key, x.band))}" data-track="rank_to_mine"><span class="rk">${i + 1}</span>
     <span class="nm"><b>${esc(x.apt)}</b><small>${esc((IX.sgg[x.code] || {}).name || '')} ${esc(x.dong)} · ${esc(x.band)}</small></span>
     <span class="vals"><span class="num"><b class="${cls}">${x.d > 0 ? '+' : x.d < 0 ? '−' : ''}${Math.abs(x.d)}점</b><small>${x.a}점 → ${x.b}점</small></span></span></a>${wstar(x)}</li>`).join('')}</ol>` : '<p class="note">해당하는 단지가 없어요.</p>';
@@ -291,7 +292,7 @@ function share(sum){
 if (window.JDJ_SHARE) JDJ_SHARE.setup({ tool: 'rank', keep: ['t', 'sd', 'k', 'dir'] });
 
 async function init(){
-  const [ix, mj, geo, ev] = await Promise.all([J(DATA + 'index.json'), J(DATA + 'model.json'), J('/jangdaejang-calc/assets/map-geo.json'), J(DATA + 'evidence.json')]);
+  const [ix, mj, geo, ev] = await Promise.all([J(DATA + 'index.json'), J(DATA + 'model.json'), J(JB.SITE + 'assets/map-geo.json'), J(DATA + 'evidence.json')]);
   if (!ix || !ix.sgg || !ix.sido) { $('pane').innerHTML = '<div class="empty"><b>자료를 불러오지 못했어요</b>잠시 뒤 다시 열어 주세요.</div>'; return; }
   IX = ix; MJ = mj; GEO = geo; EV = ev;
   if (!IX.sido.some(s => s.id === S.sd)) S.sd = 's00';
@@ -301,6 +302,6 @@ async function init(){
 init();
 })();
 </script>
-<script src="/jangdaejang-calc/assets/ad-slot.js?v=4" defer></script>
+<script src="../assets/ad-slot.js?v=5" defer></script>
 </body>
 </html>

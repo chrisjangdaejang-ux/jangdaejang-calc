@@ -1,6 +1,6 @@
 /* 장대장 '전월세 시세 & 전망' 공통 로직 — jeonse/ 화면과 tools/jeonse-test.js 가 함께 쓴다.
    자료(비공개 엔진 scripts/rent_site.py 가 만듦, 국토교통부 전월세 실거래 그대로 집계):
-     /jangdaejang-data/data/rent/index.json  {v, to, m0, kinds:{a,v,o,d:{n, from, deals}}, sgg:{구코드:{k, js, m60, jr, sup, mig}}}
+     jangdaejang-data data/rent/index.json  {v, to, m0, kinds:{a,v,o,d:{n, from, deals}}, sgg:{구코드:{k, js, m60, jr, sup, mig}}}
      rent/sNN.json            아파트 시·도 검색 목록(price/sNN.json 과 같은 모양 → JDJ_MINE.listRow)
      rent/{구}.json · rent/v/{구}.json · rent/o/{구}.json  units 행
        [0 동, 1 이름, 2 평형, 3 지번, 4 전용 중앙, 5 3년 전세 수, 6 3년 월세 수, 7 J, 8 WD, 9 WR, 10 계약 목록, 11 덧붙임]

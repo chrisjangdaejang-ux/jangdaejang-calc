@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#FFFFFF">
-<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
-<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
+<link rel="icon" type="image/png" href="../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../assets/icons/apple-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script src="/jangdaejang-calc/assets/pwa.js" defer></script>
-<script src="/jangdaejang-calc/assets/biz.js" defer></script>
+<script src="../assets/pwa.js?v=1" defer></script>
+<script src="../assets/biz.js?v=1" defer></script>
 <title>집코드 부동산 세금 계산기 — 양도세 매도 타이밍·매도 순서·취득세·재산세·종부세·증여세</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/tax/">
 <meta name="description" content="언제 팔면 양도세가 줄어드는지 날짜별로 보여 드립니다. 1세대1주택 비과세·12억 고가주택·일시적 2주택·장기보유특별공제·다주택 중과(2026년 11월 시행 기준)와 다주택 매도 순서 비교(최대 5채), 취득세·재산세·종합부동산세·증여세까지 브라우저 안에서 계산합니다.">
@@ -32,11 +32,11 @@
 <script>window.JDJ_CONFIG = { tool:'tax', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
-<script src="../assets/share.js?v=9"></script>
+<script src="../assets/share.js?v=10"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=44">
-<script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
+<link rel="stylesheet" href="../assets/aplus.css?v=44">
+<script src="../assets/nw.js?v=1" defer></script>
 <style>
 .wrap{max-width:560px;margin:0 auto;padding:0 0 40px}
 .hero{padding:28px 24px 8px;display:flex;flex-direction:column;gap:10px}
@@ -174,7 +174,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="/jangdaejang-calc/" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
+  <a class="brand" href="../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
   <div class="badge plain">세금 계산</div>
 </header>
 <main class="wrap">
@@ -513,7 +513,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
 <script src="adjusted-areas.js"></script>
 <script src="tax-engine.js?v=4"></script>
 <script src="offi-tax.js?v=1"></script>
-<script src="../assets/gongsi.js?v=1"></script>
+<script src="../assets/gongsi.js?v=2"></script>
 <script src="tax-ui.js?v=4"></script>
 <script src="tax-trust.js?v=1"></script>
 <script>
@@ -548,7 +548,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
 </script>
 <script src="../assets/plain-words.js?v=14"></script>
 <script>document.addEventListener("DOMContentLoaded",()=>{ if(window.JDJ_PLAIN) JDJ_PLAIN.autoGloss(document.querySelector(".wrap")); });</script>
-<script src="/jangdaejang-calc/assets/ad-slot.js?v=4" defer></script>
+<script src="../assets/ad-slot.js?v=5" defer></script>
 <script>/* 세금 계산에 고른 주소(시·도·시·군·구) → 광고 칸 지역(assets/ad-slot.js). 처음 기본값이 아니라 직접 고른 때만 */
 document.addEventListener('change', e => { const t = e.target; if (!t.matches || !t.matches('#rSido,#rGu,#nSido,#nGu,select.sido,select.gu')) return;
   const row = t.closest('.selrow'), sd = row && row.querySelector('select:first-child'), gu = row && row.querySelector('select:last-child');

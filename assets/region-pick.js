@@ -1,6 +1,7 @@
 /* 매수 지역: 시·도 → 시·군·구를 직접 고르면 규제 구분(서울/경기 규제/비규제 수도권/지방)은 자동으로 정해진다.
    페이지의 기존 <select id="region">(seoul|ggreg|capfree|local)은 숨겨 두고 값만 채워 change 이벤트를 보낸다. */
 (function () {
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   const REG_GG = ['41290', '41210', '41135', '41131', '41133', '41117', '41111', '41115', '41173', '41465', '41430', '41450', '41597', '41463', '41310'];
   const CAT_TXT = { seoul: '규제지역', ggreg: '규제지역', capfree: '비규제 수도권', local: '지방 비규제' };
   const sel = document.getElementById('region');
@@ -53,7 +54,7 @@
   sd.addEventListener('change', () => { fillSgg(); apply(true); });
   sg.addEventListener('change', () => apply(true));
 
-  fetch('/jangdaejang-data/data/index.json', { cache: 'no-cache' }).then(r => r.json()).then(ix => {
+  fetch(JB.DATA + 'data/index.json', { cache: 'no-cache' }).then(r => r.json()).then(ix => {
     IX = ix;
     // 서울·경기·인천 먼저, 나머지는 가나다순
     const first = ['서울', '경기', '인천'];

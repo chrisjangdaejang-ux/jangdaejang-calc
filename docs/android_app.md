@@ -7,35 +7,41 @@
 
 | 필요한 것 | 왜 | 비고 |
 |---|---|---|
-| 우리 도메인(예: zipcode.co.kr — 아직 사지 않음) | 앱과 웹이 같은 주인임을 확인하는 파일(assetlinks.json)을 **도메인 맨 위**(`https://도메인/.well-known/assetlinks.json`)에 둬야 함 | 지금 주소(github.io/jangdaejang-calc)는 맨 위가 우리 것이 아니라서 **도메인 없이는 불가** |
+| 우리 도메인 **zipcode.works** (2026-11-21 구매) | 앱과 웹이 같은 주인임을 확인하는 파일(assetlinks.json)을 **도메인 맨 위** `https://zipcode.works/.well-known/assetlinks.json` 에 둬야 함 | 예전 주소(github.io/jangdaejang-calc)는 맨 위가 우리 것이 아니라 불가 → 도메인 연결(docs/domain_switch.md) 뒤에 가능 |
 | Google Play Console **조직(회사) 계정** | 회사 이름으로 앱 등록. 개인 계정은 출시 전 테스터 20명·14일 비공개 테스트 조건이 붙음 | 등록비 25달러(한 번) |
 | D-U-N-S 번호 | 조직 계정 가입 때 회사 확인용 | (주)장대장부동산그룹 이름으로 무료 발급, 보통 1~2주(국내 발급 기관: 나이스디앤비) |
 | 회사 이메일·전화·웹사이트 주소 | 스토어에 공개됨 | 고객문의: 02-3444-5008 / chris938@naver.com |
-| 개인정보처리방침 주소 | 스토어 필수 | `https://도메인/privacy/` |
+| 개인정보처리방침 주소 | 스토어 필수 | `https://zipcode.works/privacy/` |
 
 > 이 문서는 준비만 합니다. 스토어 계정은 만들지 않았습니다.
 
 ## 순서
 
-1. 도메인 연결(docs/search_registration.md 0번) 후 `https://도메인/` 이 열리는지 확인.
+1. 도메인 연결(docs/domain_switch.md) 후 https://zipcode.works/ 이 열리는지 확인.
 2. Play Console 조직 계정 가입: https://play.google.com/console/signup → **조직** 선택 → D-U-N-S 번호 입력.
 3. 앱 파일 만들기 — 둘 중 하나:
-   - **쉬운 방법 (PWABuilder)**: https://www.pwabuilder.com 에 `https://도메인/` 입력 → **Start** → **Package For Stores** → **Android** → **Generate Package**.
-     - Package ID: `kr.zipcode.app`(도메인에 맞춰 정함, 한 번 정하면 못 바꿈) / App name: 집코드 (영문 ZIPCODE) / Signing key: **New** (키 파일과 비밀번호를 안전하게 보관).
-   - **개발자 방법 (Bubblewrap)**: `npm i -g @bubblewrap/cli` → `bubblewrap init --manifest https://도메인/manifest.webmanifest` → `bubblewrap build`.
+   - **쉬운 방법 (PWABuilder)**: https://www.pwabuilder.com 에 `https://zipcode.works/` 입력 → **Start** → **Package For Stores** → **Android** → **Generate Package**.
+     - Package ID: `works.zipcode.app`(도메인 zipcode.works 를 거꾸로 쓴 이름 — 한 번 정하면 못 바꿈) / App name: 집코드 (영문 ZIPCODE) / Signing key: **New** (키 파일과 비밀번호를 안전하게 보관).
+   - **개발자 방법 (Bubblewrap)**: `npm i -g @bubblewrap/cli` → `bubblewrap init --manifest https://zipcode.works/manifest.webmanifest` → `bubblewrap build`.
 4. 만든 파일 중 `.aab` 를 Play Console **앱 만들기** → **프로덕션**(또는 **내부 테스트**) → **새 버전 만들기** 에 올립니다.
 5. 주인 확인 파일 올리기:
    - Play Console → 앱 → **설정** → **앱 무결성** → **앱 서명** 의 **SHA-256 인증서 지문** 복사.
-   - docs/well-known/assetlinks.json 틀의 `sha256_cert_fingerprints` 에 그 값을, `package_name` 에 3번 Package ID 를 넣어
-     도메인 맨 위 `.well-known/assetlinks.json` 으로 올립니다(Claude 에게 지문 값만 보내면 올려 줌).
-   - 확인: https://developers.google.com/digital-asset-links/tools/generator 에서 도메인·패키지·지문 넣고 **Test statement**.
+   - docs/well-known/assetlinks.json 틀(패키지 이름 `works.zipcode.app` 이미 들어 있음)의 `sha256_cert_fingerprints` 에 그 값을 넣어
+     **웹 저장소(jangdaejang-calc) 맨 위** `.well-known/assetlinks.json` 으로 올립니다(Claude 에게 지문 값만 보내면 올려 줌).
+     - 왜 웹 저장소 맨 위인가: 이 저장소에 도메인을 연결하면 저장소 맨 위 폴더가 곧 `https://zipcode.works/` 입니다.
+       그래서 저장소의 `.well-known/assetlinks.json` 이 그대로 `https://zipcode.works/.well-known/assetlinks.json` 이 됩니다.
+     - 점(.)으로 시작하는 폴더는 GitHub Pages 가 기본으로 빼먹는데, 저장소 맨 위에 `.nojekyll` 파일이 이미 있어 그대로 올라갑니다
+       (tools/domain-test.js 가 `.nojekyll` 이 있는지 확인).
+     - 지문을 받기 전에는 올리지 않습니다(틀 값이 그대로 공개되면 확인 도구가 '틀림'으로 봄).
+   - 열어서 확인: https://zipcode.works/.well-known/assetlinks.json
+   - 확인: https://developers.google.com/digital-asset-links/tools/generator 에서 Hosting site domain `zipcode.works`, App package name `works.zipcode.app`, 지문 넣고 **Test statement**.
    - 이 파일이 맞지 않으면 앱 위쪽에 주소 막대가 보입니다(앱은 동작함).
 6. 스토어 등록 정보(아래 초안) 입력 → 콘텐츠 등급 설문 → **검토를 위해 보내기**.
 
 ## 앱 설치 정보(manifest.webmanifest) 상태
 
 이름·짧은 이름 = SITE_NAME(집코드, 매일 자동 맞춤), 아이콘 192·512 + 마스크용 512, 바탕·테마 색 흰색, 시작 주소 `?src=pwa`, 화면 standalone,
-바로가기 4개(내 집 시세·지도·청약 가점·세금). 도메인을 바꾸면 경로도 자동으로 바뀝니다.
+바로가기 4개(내 집 시세·지도·청약 가점·세금). 경로는 모두 `./` 로 시작하는 상대 경로라 예전 주소와 https://zipcode.works/ 에서 똑같이 동작합니다(바꿀 것 없음).
 
 ---
 
@@ -76,8 +82,8 @@
 **검색 키워드(설명 안에 자연스럽게 포함)**: 아파트 실거래가, 미래가치, 청약 가점, 세금 계산기, 전세 사기 체크, 아파트 시세, 부동산 계산기, 대출 한도, 양도세 계산, 전세가율
 
 **카테고리**: 집 및 홈(House & Home) / 보조: 금융
-**연락처**: 02-3444-5008 · chris938@naver.com · `https://도메인/`
-**개인정보처리방침**: `https://도메인/privacy/`
+**연락처**: 02-3444-5008 · chris938@naver.com · https://zipcode.works/
+**개인정보처리방침**: https://zipcode.works/privacy/
 
 ## 스크린샷 목록 (휴대폰 세로 1080×1920 이상, 2~8장)
 

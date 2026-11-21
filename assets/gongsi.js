@@ -1,12 +1,13 @@
 /* 공시가격 자동 채우기 공용 (단지 세금 칸 assets/tax-box.js, /tax/ 재산세·종부세, /tax/transfer/ 상속·증여 취득세)
-   자료: /jangdaejang-data/data/gongsi/{시군구코드}.json — 엔진 scripts/gongsi.py 가 국토교통부 '주택 공시가격 정보'(공동주택 호별, 매년 1월 1일 기준)로 만든 요약
+   자료: jangdaejang-data data/gongsi/{시군구코드}.json — 엔진 scripts/gongsi.py 가 국토교통부 '주택 공시가격 정보'(공동주택 호별, 매년 1월 1일 기준)로 만든 요약
      {"y":2026,"d":"2026-01-01","u":{"구코드|동|지번"(한 지번 여러 단지면 "…|지번|단지명"): [[평형, 중간값, 호 수, 최소, 최대, 저층, 중층, 고층, 전용㎡], ...]}}  (금액 만 원)
    - 같은 평형 호별 '중간값'을 입력칸에 미리 넣고 출처 한 줄을 붙인다. 사용자가 고칠 수 있고, 고치면 고친 값으로 계산(중간값 다시 넣기 버튼).
    - 공시가격이 없는 단지(새 단지·못 맞춘 단지)는 아무것도 채우지 않음 → 지금처럼 직접 입력.
    - 시세×현실화율 같은 추정은 하지 않음. */
 (function (root) {
   'use strict';
-  var DATA = '/jangdaejang-data/data/gongsi/';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+  var DATA = JB.DATA + 'data/gongsi/';
   var ALIMI = 'https://www.realtyprice.kr/notice/main/mainBody.htm';
   var cache = {};
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };

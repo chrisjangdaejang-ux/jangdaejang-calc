@@ -71,7 +71,7 @@ check('스파크라인 값 2개 미만이면 없음', R.spark([0, 5], 56, 24), '
   const tab = fs.readFileSync(path.join(root, 'assets', 'tabbar.js'), 'utf8');
   check('세 탭 이름', ['구별 시세', '미래가치 순위', '점수 많이 바뀐 단지'].every(t => html.includes(`>${t}</button>`)), true, '');
   check('공유 모듈 tool rank', /JDJ_SHARE\.setup\(\{ tool: 'rank'/.test(html), true, 'assets/share.js');
-  check('sw 첫 화면 목록에 rank/·rank-core', sw.includes("'/jangdaejang-calc/rank/'") && sw.includes('rank-core.js?v='), true, '');
+  check('sw 첫 화면 목록에 rank/·rank-core', sw.includes("'./rank/'") && sw.includes('rank-core.js?v='), true, '');
   const m = html.match(/rank-core\.js\?v=(\d+)/);
   check('화면·sw 의 rank-core 버전 같음', m && sw.includes('rank-core.js?v=' + m[1]), true, '');
   const tabs = (tab.match(/^\s*\['[^']*', '[^']+', '/gm) || []).length;

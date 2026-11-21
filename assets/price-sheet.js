@@ -1,16 +1,17 @@
 /* 장대장 '단지 시세 한눈에' 공용 시트 — 어느 화면에서든 단지 시세를 바로 보여 준다.
-   사용: <script src="/jangdaejang-calc/assets/mine-core.js"></script> 다음에 이 파일을 불러오고
+   사용: <script src="assets/mine-core.js?v=17"></script> 다음에 이 파일을 불러오고
          JDJ_PRICE.open({sd:'s00', sgg:'11680', dong:'청담동', apt:'청담4차이-편한세상', band:'84㎡대', jibun:'28-20'(선택)})
    모바일(폭 640px 이하)은 아래에서 올라오는 시트, PC는 가운데 창으로 열린다.
      ① 최근 시세·1년/3년 변동 + 역대·최근 1년 최고가 ② 가격 추이(전체 기간 price/h 가 있으면 매매·전세 두 선 + 1년/3년/5년/전체, 없으면 최근 3년 평당가) ③ 최근 실거래(신고가 배지, 최신 10건, 더보기) ④ '내 집 시세에서 자세히 보기'
-   자료: /jangdaejang-data/data/price/{구코드}.json (거래가 1건이라도 있는 모든 단지·평형, 개별 실거래 포함)
+   자료: jangdaejang-data data/price/{구코드}.json (거래가 1건이라도 있는 모든 단지·평형, 개별 실거래 포함)
          — 아직 없으면 점수용 sNN.json 으로 대신 보여 준다(개별 거래 없이 월별 요약).
    계산은 assets/mine-core.js(JDJ_MINE) 함수를 그대로 쓴다. 다른 화면용 공개 함수: open·close·btn(단추 HTML)·loadSgg·scoreUnits·findUnit·tradesHtml */
 (function (root) {
   'use strict';
-  const DATA = '/jangdaejang-data/data/';
-  const MINE = '/jangdaejang-calc/mine/';
-  const LOAN = '/jangdaejang-calc/loan/';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+  const DATA = JB.DATA + 'data/';
+  const MINE = JB.SITE + 'mine/';
+  const LOAN = JB.SITE + 'loan/';
   /** '이 집 대출 한도 계산하기' 주소: 집값(만원)·시·군·구 코드·단지·평형·전용면적을 대출 한도 계산기에 채워 넘김(공개 시세만, 개인 값 없음) */
   function loanHref(o) {
     o = o || {}; const q = new URLSearchParams();
@@ -67,7 +68,7 @@
   /* 오늘의 '집값 맞혀 보기' 문제 거래(today/quiz.json)는 그날 문제를 풀기 전까지 거래 표에서 금액을 가림 — 같은 날 우리 화면에서 바로 찾아보지 못하게.
      문제를 풀었거나(이 기기 기록 jdj_quiz) 날이 바뀌면 그대로 보임. 시세 계산·차트에는 영향 없음 */
   let QZ = null;
-  try { if (root.fetch && root.location && root.location.pathname) root.fetch('/jangdaejang-data/data/today/quiz.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(j => { QZ = j; }, () => {}); } catch (e) {}
+  try { if (root.fetch && root.location && root.location.pathname) root.fetch(JB.DATA + 'data/today/quiz.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(j => { QZ = j; }, () => {}); } catch (e) {}
   function quizHide(u, t) {
     const q = QZ && QZ.q; if (!q || !u) return false;
     const today = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
@@ -89,7 +90,7 @@
     }
     /* 좁은 화면: 계약일 앞 '20' 을 숨겨(26.10.22) 네 칸이 가로 스크롤 없이 들어가게. 신고가·직거래 표시는 금액 아래 줄 */
     const dt = d => /^20\d\d\./.test(d) ? `<span class="jps-yy">20</span>${esc(d.slice(2))}` : esc(d);
-    const row = (t, i) => `<tr${i >= show ? ' class="jps-more" hidden' : ''}><td class="jps-dt">${dt(t.date)}</td><td class="n">${t.area}㎡${t.floor != null ? `<br><small>${t.floor}층</small>` : ''}</td><td class="n">${quizHide(u, t) ? '<b>?</b><br><a class="jps-new" href="/jangdaejang-calc/quiz/" style="text-decoration:none">오늘의 문제 · 풀고 확인</a>' : `<b>${m.won(t.amt)}</b>`}${t.hi || t.type === '직거래' ? '<br>' : ''}${t.hi ? '<span class="jps-new" title="그 전까지 같은 평형·같은 전용면적 최고가보다 높은 거래">신고가</span>' : ''}${t.type === '직거래' ? `${t.hi ? ' ' : ''}<small class="jps-dir">직거래</small>` : ''}</td></tr>`;
+    const row = (t, i) => `<tr${i >= show ? ' class="jps-more" hidden' : ''}><td class="jps-dt">${dt(t.date)}</td><td class="n">${t.area}㎡${t.floor != null ? `<br><small>${t.floor}층</small>` : ''}</td><td class="n">${quizHide(u, t) ? '<b>?</b><br><a class="jps-new" href="' + JB.SITE + 'quiz/" style="text-decoration:none">오늘의 문제 · 풀고 확인</a>' : `<b>${m.won(t.amt)}</b>`}${t.hi || t.type === '직거래' ? '<br>' : ''}${t.hi ? '<span class="jps-new" title="그 전까지 같은 평형·같은 전용면적 최고가보다 높은 거래">신고가</span>' : ''}${t.type === '직거래' ? `${t.hi ? ' ' : ''}<small class="jps-dir">직거래</small>` : ''}</td></tr>`;
     return `<div class="jps-tbl"><table><thead><tr><th>계약일</th><th class="n">전용·층</th><th class="n">거래금액</th></tr></thead><tbody>${(lock ? list.slice(0, show) : list).map(row).join('')}</tbody></table></div>`
       + (lock ? auth().gate(`최근 거래 ${show}건을 보여 드렸어요. 나머지 <b>${list.length - show}건</b>과 3년보다 이전 시세는 로그인하면 바로 볼 수 있어요.`, '카카오 간편 로그인하고 전체 보기', 'trades')
         : list.length > show ? `<button type="button" class="jps-morebtn" data-jps-more>더보기 (${list.length - show}건 더)</button>` : '')

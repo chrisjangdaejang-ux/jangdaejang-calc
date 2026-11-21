@@ -127,7 +127,7 @@ const stat = rd('assets/stat.js');
 check('통계 허용: ask_use·danji·ask', /ask_use:\d+/.test(stat) && /danji:/.test(stat) && /'ask'\]/.test(stat), true);
 check('노하우 수치(가중치·근거 코드) 화면에 안 씀', /\b(f|fx)\.(eb|why)\b/.test(core + ask), false);
 const sw = rd('sw.js'), v = f => ((ask.match(new RegExp(f.replace('.', '\\.') + '\\?v=(\\d+)')) || [])[1]);
-check('서비스 워커: 새 화면·파일 버전', [sw.includes("'/jangdaejang-calc/ask/'"), sw.includes(`ask-core.js?v=${v('ask-core.js')}'`), sw.includes(`ask.js?v=${v('ask.js')}'`), sw.includes(`mine-core.js?v=${v('mine-core.js')}'`), sw.includes(`stat.js?v=${v('stat.js')}'`)], [true, true, true, true, true]);
+check('서비스 워커: 새 화면·파일 버전', [sw.includes("'./ask/'"), sw.includes(`ask-core.js?v=${v('ask-core.js')}'`), sw.includes(`ask.js?v=${v('ask.js')}'`), sw.includes(`mine-core.js?v=${v('mine-core.js')}'`), sw.includes(`stat.js?v=${v('stat.js')}'`)], [true, true, true, true, true]);
 
 /* ---------- 실제 자료(있으면) ---------- */
 const DD = path.join(root, '..', 'jangdaejang-data', 'data', 'price', 's00.json');

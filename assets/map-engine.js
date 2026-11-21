@@ -16,8 +16,9 @@
      줌 숫자는 두 엔진 모두 Leaflet 기준(카카오 레벨 = 20 − 줌)으로 맞춘다. */
 (function (root) {
   'use strict';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   const CFG = root.JDJ_SITE || {};
-  const LEAF = '/jangdaejang-calc/assets/leaflet/';
+  const LEAF = JB.SITE + 'assets/leaflet/';
   const KZ = lv => 20 - lv, ZK = z => Math.max(1, Math.min(14, Math.round(20 - z)));
   function script(src) {
     return new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.async = true; s.onload = () => ok(); s.onerror = () => no(new Error(src)); document.head.appendChild(s); });

@@ -3,7 +3,7 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "kr.zipcode.app",
+      "package_name": "works.zipcode.app",
       "sha256_cert_fingerprints": [
         "여기에_Play_Console_앱_서명_키_SHA-256_지문(AA:BB:CC:...)"
       ]

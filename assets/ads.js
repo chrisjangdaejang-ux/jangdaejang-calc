@@ -9,8 +9,9 @@
    기록: 노출 adv·지도 마커 노출 adm·클릭 adc 를 광고 id 로만(JDJ_AGENTS.log) + 구간 통계(jdjStat). 이름·연락처는 상담 신청(adLead) 때 서버로만 갑니다.
    광고가 없으면 칸 자체를 숨깁니다(data-empty="invite" 면 '분양 광고 문의' 한 줄). */
 (function(){
-  const APPLY = '/jangdaejang-calc/bunyang/apply/', ALL = '/jangdaejang-calc/ad/', PRIV = '/jangdaejang-calc/privacy/#lead';
-  const NOTICES = '/jangdaejang-data/data/bunyang/notices.json';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+  const APPLY = JB.SITE + 'bunyang/apply/', ALL = JB.SITE + 'ad/', PRIV = JB.SITE + 'privacy/#lead';
+  const NOTICES = JB.DATA + 'data/bunyang/notices.json';
   const HOUSING = ['아파트', '도시형생활주택', '민간임대', '무순위·잔여세대'];
   const SIDO_OLD = { '광주광역시': '전남광주통합특별시', '전라남도': '전남광주통합특별시', '강원도': '강원특별자치도', '전라북도': '전북특별자치도', '제주도': '제주특별자치도' };
   const sidoNorm = s => SIDO_OLD[s] || s;
@@ -138,7 +139,7 @@
       <div class="m">${esc(legal)}</div>
       <div class="who">${esc(who)}</div>
       <div class="acts">${o.open && r ? `<button type="button" data-ad-open="${esc(r.id)}" data-ad="${esc(a.id)}">현장 정보 보기 ›</button>` : ''}${u ? `<a href="${esc(u)}" target="_blank" rel="noopener sponsored nofollow" data-ad="${esc(a.id)}">공고·홈페이지 ›</a>` : ''}${a.lead ? `<button type="button" class="lead" data-ad-lead="${esc(a.id)}" data-ad="${esc(a.id)}">분양 상담 신청</button>` : ''}</div>
-      ${o.partner && a.pr ? `<div class="jad-pr">공인중개사·분양대행업체라면: 이 현장은 판매 파트너를 모집해요 · <a href="/jangdaejang-calc/agent/" data-track="ad_partner">제휴 안내 ›</a></div>` : ''}</div></div>`;
+      ${o.partner && a.pr ? `<div class="jad-pr">공인중개사·분양대행업체라면: 이 현장은 판매 파트너를 모집해요 · <a href="${JB.SITE}agent/" data-track="ad_partner">제휴 안내 ›</a></div>` : ''}</div></div>`;
   }
   const SEEN = {};
   function seen(list, slot, t){ list.forEach(x => { const k = slot + '|' + x.id; if (SEEN[k]) return; SEEN[k] = 1; log(t || 'adv', x.id, ''); }); }

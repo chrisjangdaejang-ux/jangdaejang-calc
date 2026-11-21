@@ -9,6 +9,7 @@
      N = { head, gap, lines:[{k, t(요약 한 줄), d:[사실, 비교, 과거 사례, 그래서](빈 칸 생략), pro:{rows, per, chart}}] } */
 (function (root) {
   'use strict';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   const Q5 = { 4: '가장 높은 20%', 3: '상위 21~40%', 2: '중간 20%', 1: '하위 21~40%', 0: '가장 낮은 20%' };
   const KINDS = ['r1', 'r2', 'r3', 'price', 'watch', 'fit'];
   const BANNED = ['요인', '참고 정보', '참고만', '영향 작음', '순전입률', '백분위', '가중치', '계수', '임계', '보장하지', '책임지지', '투자 판단은', '모델'];
@@ -1387,7 +1388,7 @@
           + `<div class="nar-det" id="${pid}"${open ? '' : ' hidden'}>${ps}${x.devHtml ? `<div class="nar-dev dv-sec"><b class="nar-devh">주변 개발사업(공식 원문 확인)</b>${x.devHtml}</div>` : ''}${o.premium ? proHtml(x, o.c || {}) : ''}</div></li>`;
       }).join('') + `</ol>`
       + (N.dim && N.dim.length && !N.lines.some(x => x.k === 'fit') ? `<div class="nar-dim">참고로만 보여 드리는 기간: ${E(N.dim.join(', '))}</div>` : '')
-      + `<p class="nar-foot"><a class="nar-terms" href="/jangdaejang-calc/track/" data-track="nar_to_track">성적표</a> · <a class="nar-terms" href="/jangdaejang-calc/guide/terms/">용어 모아 보기</a> · 밑줄 점선 단어를 누르면 바로 아래에 설명이 나와요.</p></section>`;
+      + `<p class="nar-foot"><a class="nar-terms" href="${JB.SITE}track/" data-track="nar_to_track">성적표</a> · <a class="nar-terms" href="${JB.SITE}guide/terms/">용어 모아 보기</a> · 밑줄 점선 단어를 누르면 바로 아래에 설명이 나와요.</p></section>`;
   }
   const CSS = `.nar{margin:12px 0 6px;padding:14px 14px 10px;border:1px solid #E6DFC8;border-radius:14px;background:#FFFDF7}
 .nar-head{font-size:17px;line-height:1.55;font-weight:800;color:#1F1F1F;margin:0 0 8px;word-break:keep-all}

@@ -1,5 +1,5 @@
 /* 장대장 단지 추천 공통 로직 — 내 집 마련 리포트(buy/report)와 갈아타기(switch)가 함께 쓴다.
-   자료: /jangdaejang-data/data/sNN.json 의 units
+   자료: jangdaejang-data data/sNN.json 의 units
      u = [시군구코드, 동, 단지, 평형대, 전용㎡, 최근1년 거래수, 월별 평당가(만원) 36개, 월별 거래수 문자열, 지역 일자리, 미래가치 등 fx]
    규제지역·LTV: assets/loan-rules.js(공식 출처·적용일 포함) 한 곳에서 읽음 — 이 파일보다 먼저 불러와야 함
    ※ 점수 계산 세부 기준은 내부 기준이라 화면에 숫자로 보여 주지 않는다. */

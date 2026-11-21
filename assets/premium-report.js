@@ -1,8 +1,9 @@
 /* 장대장 프리미엄 리포트 화면 (premium/view/) — 결제 확인 후에만 호출
-   - 무료 리포트(buy/report/)와 같은 공개 실거래 자료(/jangdaejang-data/data/)와 같은 표시 문구 규칙으로 단지 상세를 보여 줍니다.
+   - 무료 리포트(buy/report/)와 같은 공개 실거래 자료(jangdaejang-data data/)와 같은 표시 문구 규칙으로 단지 상세를 보여 줍니다.
    - 미래가치 점수는 자료 파일에 이미 계산되어 들어 있는 값을 그대로 씁니다(점수 계산식·가중치는 이 파일에 없습니다).
    - 대출·필요 현금은 공개된 대출 규제(LTV·DSR·가격구간 한도)와 취득세·중개보수 법정 기준으로 계산합니다(무료 리포트와 같은 기준). */
 (function () {
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   const P = window.JDJ_PAY, PL = window.JDJ_PLAIN, esc = P.esc, DATA = P.DATA, PY = 3.3058;
   /* ---------- 대출 규제 기준 (2026.7.1 규제지역: 서울 전역 + 경기 15곳) — 무료 리포트와 동일 ---------- */
   const REG_GG = ['41290','41210','41135','41131','41133','41117','41111','41115','41173','41465','41430','41450','41597','41463','41310'];
@@ -233,7 +234,7 @@
         ${compareHtml(items, ctx)}
         ${items.map((x, i) => unitHtml(x, ctx, i, items.length)).join('')}
         <section class="pr-soon"><b>심층 분석은 순차 제공됩니다</b><p>1~10년 가격 시나리오(보수·기준·낙관), 비슷한 조건이었던 과거 단지 사례 비교, 매도 타이밍·세금(양도세·보유세) 시뮬레이션은 준비되는 대로 이 리포트에 추가됩니다. 같은 링크(또는 주문번호)로 열람 기간 동안 추가 비용 없이 보실 수 있습니다.</p></section>
-        <p class="pr-disc">국토교통부 실거래가 등 공공기관 공식 자료로 만든 과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요. 실제 대출 한도와 세금은 금융기관·세무 전문가에게 확인하세요. 집코드는 부동산 중개를 하지 않습니다. · 작성 집코드</p>`;
+        <p class="pr-disc">국토교통부 실거래가 등 공공기관 공식 자료로 만든 과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="${JB.SITE}about/">서비스 소개</a>에서 볼 수 있어요. 실제 대출 한도와 세금은 금융기관·세무 전문가에게 확인하세요. 집코드는 부동산 중개를 하지 않습니다. · 작성 집코드</p>`;
       const on = (id, k, num) => { const e = document.getElementById(id); if (!e) return; e.onchange = () => { const v = num ? parseFloat(String(e.value).replace(/[^0-9.]/g, '')) : e.value; if (!num || v > 0) S[k] = v; save(); draw(); }; };
       on('cI', 'income', true); on('cC', 'cash', true); on('cO', 'own', false); on('cR', 'rate', true);
       if (NARON) box.querySelectorAll('.nar').forEach(el => { const x = items[+el.id.slice(4)];

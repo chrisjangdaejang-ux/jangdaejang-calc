@@ -214,7 +214,7 @@ const isDate = d => /^\d{4}-\d{2}-\d{2}$/.test(String(d || ''));
     check(`${f}: loan-rules.js 를 rec-core·loan-core 보다 먼저`, i >= 0 && i < j, true);
   }
   const sw = read('sw.js');
-  check('sw.js: 대출 한도 화면·규칙 파일 미리 저장', sw.includes("'/jangdaejang-calc/loan/'") && sw.includes('/assets/loan-rules.js?v=3') && sw.includes('/assets/loan-core.js?v=5'), true);
+  check('sw.js: 대출 한도 화면·규칙 파일 미리 저장', sw.includes("'./loan/'") && sw.includes('/assets/loan-rules.js?v=3') && sw.includes('/assets/loan-core.js?v=5'), true);
 }
 
 let pass = 0;

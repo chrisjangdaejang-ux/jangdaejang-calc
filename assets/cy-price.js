@@ -1,5 +1,5 @@
 /* 청약 공고별 '분양가·입지 분석' 화면 — 청약(/chungyak/) 공고 카드·상세(/chungyak/price/)·유료 리포트(premium/view/)가 같은 함수를 씁니다.
-   자료: /jangdaejang-data/data/chungyak/price.json(무료 요약) · chungyak/price/{공고번호}.json(상세) — 엔진 scripts/cy_price.py 가 시행사용
+   자료: jangdaejang-data data/chungyak/price.json(무료 요약) · chungyak/price/{공고번호}.json(상세) — 엔진 scripts/cy_price.py 가 시행사용
    분양가 적정성 리포트(dev_report.py)와 같은 계산으로 만든 공개 값입니다. 이 파일은 숫자를 새로 만들지 않고 고르기·더하기·나누기만 합니다.
    - 주변 시세 대비 위치: 하위·중간·상위 구간 '에 가까움'까지만(단정하지 않음). 표본이 모자라면 '비교 자료 부족'.
    - 주변 시세와의 차이(안전마진)는 범위로만: 주변 거래 중간 절반(하위 25%~상위 25%)이 분양가보다 몇 % 높고 낮은지 + 표본 수·범위·기간.
@@ -7,6 +7,7 @@
    - 자금 계획: 대출은 내 집 마련 계산기와 같은 assets/loan-core.js(규제지역 구분은 rec-core.js) — 계약금·중도금 비율은 이용자가 공고문 값으로 바꿈. */
 (function (root) {
   'use strict';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   var BAND = ['60㎡ 이하', '60~85㎡', '85㎡ 초과'];
   var TIER = ['하위', '중간', '상위'];
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
@@ -78,7 +79,7 @@
   }
 
   /* ---------- 공고 카드 안 무료 요약 ---------- */
-  var BASE = '/jangdaejang-calc/';
+  var BASE = JB.SITE;
   function card(r) {
     if (!r) return '';
     var h = '<div class="cyp" data-cyp="' + esc(r.no) + '"><div class="cyp-h"><b>분양가·입지 분석</b><span class="cyp-src">집코드 분석 · 광고와 무관</span></div>';
@@ -234,7 +235,7 @@
   var isCyKey = function (k) { var p = parse(k); return !!(p && /^s\d{2}$/.test(p[0]) && /^\d{5}$/.test(p[1]) && /^cy\d{6,16}$/.test(p[4])); };
   var noOfKey = function (k) { var p = parse(k); return p && isCyKey(k) ? p[4].slice(2) : ''; };
 
-  var DATA = '/jangdaejang-data/data/chungyak/', _ix = null, _d = {};
+  var DATA = JB.DATA + 'data/chungyak/', _ix = null, _d = {};
   /* ---------- 분양 예정(공고 전): 주변 신축 평당 시세 참고값 — chungyak/plan_near.json. 분양가 추정은 하지 않아요 ---------- */
   var _pl = null;
   function loadPlan() { if (!_pl) _pl = fetch(DATA + 'plan_near.json').then(function (r) { if (!r.ok) throw new Error('plan'); return r.json(); }).catch(function (e) { _pl = null; throw e; }); return _pl; }

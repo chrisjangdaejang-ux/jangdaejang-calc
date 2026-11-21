@@ -6,10 +6,11 @@
    window.JDJ_RANK = { PERIODS, MIN_TRADES, sidoOf, price, future, check, mapUrl, gsFromUnits, moves, mineUrl, ym, won, pct, spark, danji, danjiRule, vcheck, danjiKey } */
 (function (root) {
   'use strict';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   const PERIODS = [1, 3, 6, 12];
   const MIN_TRADES = 10;            // 비교하는 두 시점 모두 3개월 거래가 10건 이상인 구·시·군만 순위에 넣음(몇 건으로 평당가가 크게 출렁이는 곳 제외)
   const SPARK = 12;
-  const BASE = '/jangdaejang-calc/';
+  const BASE = JB.SITE;
 
   const sum3 = (c, i) => (c[i] || 0) + (c[i - 1] || 0) + (c[i - 2] || 0);
   const r1 = v => Math.round(v * 10) / 10;

@@ -7,13 +7,14 @@
      u = {code, dong, jibun} · o = {apt, sggName: code → 이름} */
 (function(){
   'use strict';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   var CACHE = {};
   var STG = {'구상': '구상 발표', '발표': '계획 발표', '계획 결정': '계획 결정', '착공': '착공', '준공': '준공'};
   var NEXT = {'착공': '착공', '계획 결정': '결정', '준공': '착공', '기반시설 준공': '착공', '입주': '착공', '첫 팹 가동': '착공'};
   var GRP = {'발표': '발표', '구상': '발표', '계획 결정': '결정', '착공': '착공'};
 
   function load(base){
-    var u = (base || '/jangdaejang-data/data/') + 'devproj.json';
+    var u = (base || JB.DATA + 'data/') + 'devproj.json';
     try { css(); } catch (e) {}
     if (!CACHE[u]) CACHE[u] = fetch(u, {cache: 'no-cache'}).then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; });
     return CACHE[u];

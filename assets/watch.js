@@ -7,8 +7,9 @@
    - 머리줄 배지: 관심 단지의 어제·오늘 새 거래 중 관심 목록 화면에서 아직 안 본 것 → '★ 새 소식 N' (없으면 안 보임). 자료 today/g/{구}.json */
 (function (root) {
   'use strict';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   const C = root.JDJ_WATCH_CORE; if (!C || typeof document === 'undefined') return;
-  const BASE = '/jangdaejang-calc/', DATA = '/jangdaejang-data/data/';
+  const BASE = JB.SITE, DATA = JB.DATA + 'data/';
   const ls = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } } };
   const ss = { get(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} } };
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

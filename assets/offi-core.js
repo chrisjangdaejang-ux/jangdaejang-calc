@@ -1,5 +1,5 @@
 /* 장대장 '오피스텔' 분석 계산 규칙 (내 집 시세 화면 오피스텔 탭) — 화면(offi-view.js)·검증(tools/offi-test.js)이 같이 쓴다.
-   자료: /jangdaejang-data/data/offi/index.json · offi/{구코드}.json (엔진 scripts/offi.py 가 국토교통부 오피스텔 매매·전월세 실거래로 만든 것)
+   자료: jangdaejang-data data/offi/index.json · offi/{구코드}.json (엔진 scripts/offi.py 가 국토교통부 오피스텔 매매·전월세 실거래로 만든 것)
    금액 단위: 만원. 수익률: 0~1. 이 파일은 공개 자료를 읽어 보여 줄 문장·숫자만 만든다(가중치·임계값 없음). */
 (function (root) {
   'use strict';

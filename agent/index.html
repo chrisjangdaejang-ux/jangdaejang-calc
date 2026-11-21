@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#FFFFFF">
-<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
-<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
+<link rel="icon" type="image/png" href="../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../assets/icons/apple-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script src="/jangdaejang-calc/assets/pwa.js" defer data-nobar></script>
-<script src="/jangdaejang-calc/assets/biz.js" defer></script>
+<script src="../assets/pwa.js?v=1" defer data-nobar></script>
+<script src="../assets/biz.js?v=1" defer></script>
 <title>집코드 리포트 공인중개사 제휴</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/agent/">
 <meta name="description" content="집코드 맞춤 매수 리포트가 추천하는 단지 지역에 중개사무소를 노출하세요. 매물 보유 단지 상위 노출, 노출·연락 성과표 제공.">
@@ -139,8 +139,8 @@ ol.flow li{margin:5px 0}
 .foot{font-size:13.5px;color:var(--muted);margin-top:22px}
 .foot a{color:var(--olive)}
 </style>
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=44">
-<script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
+<link rel="stylesheet" href="../assets/aplus.css?v=44">
+<script src="../assets/nw.js?v=1" defer></script>
 <style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
 :root{--gold:#2F6BFF}
 .premium .pt{color:var(--blue)}
@@ -172,7 +172,7 @@ p.foot{background:none;border-top:1px solid var(--line);padding:16px 0 0}
 </style>
 </head>
 <body>
-<header class="top"><a class="brand" href="/jangdaejang-calc/" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a><span class="badge plain">중개사 제휴센터</span></header>
+<header class="top"><a class="brand" href="../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a><span class="badge plain">중개사 제휴센터</span></header>
 <div class="wrap">
   <div class="hero">
     <span class="tag">공인중개사 제휴 · 1단계 시범</span>
@@ -307,8 +307,9 @@ p.foot{background:none;border-top:1px solid var(--line);padding:16px 0 0}
 </div>
 
 <script>
+var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 const $ = id => document.getElementById(id);
-const DATA = '/jangdaejang-data/data/';
+const DATA = JB.DATA + 'data/';
 const A = window.JDJ_AGENTS;
 let IX = null; const UNITS = {};
 const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -563,6 +564,6 @@ if (location.hash==='#manage') document.querySelector('.tab[data-p="manage"]').c
   catch(e){ $('a_msg').className='msg err'; $('a_msg').textContent='데이터를 불러오지 못했습니다. 새로고침해 주세요.'; console.error(e); }
 })();
 </script>
-<script src="/jangdaejang-calc/assets/ad-slot.js?v=4" defer></script>
+<script src="../assets/ad-slot.js?v=5" defer></script>
 </body>
 </html>

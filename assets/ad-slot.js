@@ -1,7 +1,7 @@
 /* 집코드 공용 광고 칸 (assets/ad-slot.js) — 위치 계획: docs/ad_slots.md · 광고 상품: /ad/
    페이지에 넣는 법
      <div data-ad-slot="mine_end" data-ad-cat="mine" data-ad-after="#res" hidden></div>
-     <script src="/jangdaejang-calc/assets/ad-slot.js?v=4" defer></script>
+     <script src="assets/ad-slot.js?v=5" defer></script>
    - data-ad-slot  : 칸 이름(docs/ad_slots.md 표의 slot id)
    - data-ad-cat   : 화면 종류(아래 CATS) — 받을 수 있는 업종과 집코드 안내 광고를 정함
    - data-ad-skip-if : 이 선택자가 보이면 칸을 숨김(예: 모닝 브리핑 전용 광고 자리가 그날 광고로 채워졌을 때)
@@ -14,12 +14,13 @@
    - 휴대폰(폭 720px 미만)에서는 한 화면(스크롤 한 번 분량)에 광고 최대 2개(분양 목록 상단 광고 .jad 포함). 상단 배너가 먼저 자리를 잡고,
      같은 화면에 넘치는 목록 사이 칸은 아래 항목으로 내려가고, 끝 칸은 그리지 않음
    - 칸 높이를 고정해 광고를 바꿔 끼워도 아래 내용이 밀리지 않음. 위치는 늘 본문 흐름 안(고정·떠 있는 칸 없음)이라 하단 탭을 가리지 않음
-   - 광고 자료: /jangdaejang-calc/data/ads.json {ads:[{id, slot, cat, advertiser, industry, fee, title, text, image, link, start, end, regno}]}
+   - 광고 자료: data/ads.json {ads:[{id, slot, cat, advertiser, industry, fee, title, text, image, link, start, end, regno}]}
    - 대출 상담 광고는 금융소비자보호법에 따라 광고주의 '대출성 상품 판매대리·중개업자 등록번호'(regno)가 있어야만 싣고, 칸에 그 번호를 함께 보여 줌
    - 기록: 보임(화면에 절반 이상 1초) ad_slot_view · 누름 ad_slot_click — 칸·광고 id 만(JDJ.track → GA4). 누름은 data-track="adslot_칸이름" 으로도 집계 */
 (function (root) {
   'use strict';
-  var B = '/jangdaejang-calc/';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+  var B = JB.SITE;
   var DATA = B + 'data/ads.json';
   var MOBILE_W = 720, MOBILE_MAX = 2;
 
@@ -190,7 +191,7 @@
      순서: JDJ_ADSLOT.setRegion() 으로 화면이 알려 준 값 → 칸(또는 감싼 요소)의 data-ad-region → 주소의 g(5자리)·d·k 안 5자리 코드·sd(sNN)
      → 홈에서 고른 지역(이 기기 jdj_home_region). 이름(시·도·시·군·구)이나 sNN 은 공개 index.json 으로 코드로 바꿈. 모르면 전국. */
   var HINT = null, IXP = null;
-  function ix() { if (!IXP) IXP = fetch('/jangdaejang-data/data/index.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }); return IXP; }
+  function ix() { if (!IXP) IXP = fetch(JB.DATA + 'data/index.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }); return IXP; }
   function hintOf(el) {
     if (HINT) return HINT;
     var a = el && el.closest && el.closest('[data-ad-region]'); if (a && normRegion(a.getAttribute('data-ad-region'))) return { code: a.getAttribute('data-ad-region') };

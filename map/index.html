@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#FFFFFF">
-<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
-<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
+<link rel="icon" type="image/png" href="../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../assets/icons/apple-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script src="/jangdaejang-calc/assets/pwa.js" defer></script>
+<script src="../assets/pwa.js?v=1" defer></script>
 <title>집코드 지도 — 지도에서 단지 시세·미래가치 점수·전세가율 한눈에</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/map/">
 <meta name="description" content="지도에서 아파트 단지를 골라 최근 실거래 시세, 미래가치 점수, 전세가율을 한눈에 비교해 보세요. 구·동 평균 평당가와 평형·가격대 필터도 있어요.">
@@ -24,27 +24,27 @@
 <script>window.JDJ_CONFIG = { tool:'map', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
-<script src="../assets/config.js?v=6"></script>
+<script src="../assets/config.js?v=7"></script>
 <script src="../assets/plain-words.js?v=14"></script>
-<script src="../assets/narrative.js?v=14"></script>
+<script src="../assets/narrative.js?v=15"></script>
 <script src="../assets/conf.js?v=1"></script>
 <script src="../assets/life-view.js?v=3"></script>
 <script src="../assets/fac-view.js?v=1"></script>
-<script src="../assets/mine-core.js?v=16"></script>
-<script src="../assets/map-core.js?v=3"></script>
+<script src="../assets/mine-core.js?v=17"></script>
+<script src="../assets/map-core.js?v=4"></script>
 <script src="../assets/watch-core.js?v=2"></script>
-<script src="../assets/watch.js?v=3"></script>
+<script src="../assets/watch.js?v=4"></script>
 <script src="../assets/region-core.js?v=1"></script>
-<script src="../assets/map-engine.js?v=2"></script>
+<script src="../assets/map-engine.js?v=3"></script>
 <script src="../assets/sale-status.js?v=1"></script>
 <script src="../assets/agents.js"></script>
-<script src="../assets/ads.js?v=3"></script>
-<script src="../assets/devmap-view.js?v=2"></script>
-<script src="../assets/tabbar.js?v=2" defer></script>
+<script src="../assets/ads.js?v=4"></script>
+<script src="../assets/devmap-view.js?v=3"></script>
+<script src="../assets/tabbar.js?v=3" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=44">
-<script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
+<link rel="stylesheet" href="../assets/aplus.css?v=44">
+<script src="../assets/nw.js?v=1" defer></script>
 <style>
 html,body{height:100%}
 html:has(body.jm-full){overflow:hidden;zoom:1}   /* 지도는 PC 12.5% 확대(aplus.css) 없이 — 확대하면 높이·지도 좌표가 어긋남 */
@@ -287,7 +287,7 @@ i.lg-dot{display:inline-block;width:13px;height:13px;border-radius:50%;backgroun
 </head>
 <body class="jm-full">
 <header class="top">
-  <a class="brand" href="/jangdaejang-calc/" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
+  <a class="brand" href="../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
   <h1 class="badge plain">지도</h1>
 </header>
 <div class="mwrap" id="mwrap">
@@ -317,10 +317,11 @@ i.lg-dot{display:inline-block;width:13px;height:13px;border-radius:50%;backgroun
   <section class="rpanel" id="rpanel" hidden aria-label="지역 분석"></section>
 </div>
 <script>
+var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 (function(){
 'use strict';
 const C = window.JDJ_MAPC, M = window.JDJ_MINE, E = window.JDJ_MAPE, PL = window.JDJ_PLAIN, NAR = window.JDJ_NAR, RC = window.JDJ_REGC;
-const DATA = '/jangdaejang-data/data/';
+const DATA = JB.DATA + 'data/';
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const J = (u, o) => fetch(u, Object.assign({cache:'no-cache'}, o || {})).then(r => r.ok ? r.json() : null).catch(() => null);
@@ -690,7 +691,7 @@ function nbCard(x){
     <dl class="kv">${x.pm ? `<dt>건축 허가</dt><dd>${esc(ymDot(x.pm))}</dd>` : ''}${x.rs ? `<dt>착공</dt><dd>${esc(ymDot(x.rs))}</dd>` : ''}${x.ua ? `<dt>사용승인</dt><dd>${esc(ymDot(x.ua))}</dd>` : ''}
     ${NB_LAW[x.law] ? `<dt>분양 규정</dt><dd><small>${esc(NB_LAW[x.law])}</small></dd>` : ''}</dl>
     <p class="note">건축 허가·착공·사용승인 기록(국토교통부 건축HUB, ${esc((LAY.nb.d && LAY.nb.d.asof) || '')} 기준)으로 찾은 신축 현장이에요. 분양 예정일 수 있지만 분양 여부·분양가는 이 자료로 알 수 없어요. 위치는 약 100m 범위로만 보여 드려요.</p>
-    <div class="acts" style="grid-template-columns:1fr"><a href="/jangdaejang-calc/bunyang/agency/" data-track="map_nb_to_agency">이 현장 시행사·건축주라면: 분양대행 의뢰</a></div>`;
+    <div class="acts" style="grid-template-columns:1fr"><a href="${JB.SITE}bunyang/agency/" data-track="map_nb_to_agency">이 현장 시행사·건축주라면: 분양대행 의뢰</a></div>`;
   showSheet();
 }
 function bunCard(x){
@@ -701,7 +702,7 @@ function bunCard(x){
     <dl class="kv">${x.ad ? `<dt>위치</dt><dd>${esc(x.ad)}</dd>` : ''}
     ${tp.length ? `<dt>분양가</dt><dd><b>${esc(M.won(Math.min(...tp)))}</b>${tp.length > 1 && Math.max(...tp) > Math.min(...tp) ? ` ~ <b>${esc(M.won(Math.max(...tp)))}</b>` : ''}<small>공고의 주택형별 최고 분양가 기준</small></dd>` : ''}
     ${x.rc && x.rc[0] ? `<dt>청약 접수</dt><dd>${esc(x.rc[0].replace(/(\d{4})(\d\d)(\d\d)/, '$1.$2.$3'))}${x.rc[1] ? ' ~ ' + esc(x.rc[1].replace(/(\d{4})(\d\d)(\d\d)/, '$1.$2.$3')) : ''}</dd>` : ''}</dl>
-    <div class="acts" style="grid-template-columns:1fr"><a href="/jangdaejang-calc/bunyang/" data-track="map_to_bunyang">분양 화면에서 자세히 보기</a></div>`;
+    <div class="acts" style="grid-template-columns:1fr"><a href="${JB.SITE}bunyang/" data-track="map_to_bunyang">분양 화면에서 자세히 보기</a></div>`;
   showSheet();
 }
 
@@ -720,7 +721,7 @@ function openGuCard(code, gs){
       <dt>순위</dt><dd>${rp ? `<div class="fvrow"><span class="fvb ${tone}">${esc(rp.pos)}</span><span class="head"><b>${esc(rp.text)}</b></span></div>` : '순위 자료가 없어요'}</dd>
       <dt>이유</dt><dd><span class="head">${gw ? esc(gw.line) : EV === null ? '이유를 불러오고 있어요…' : '이 구는 이유 자료가 없어요'}</span></dd>
     </dl>
-    <div class="acts">${sd.id ? `<a href="/jangdaejang-calc/rank/?t=fv${sd.id !== 's00' ? '&sd=' + esc(sd.id) : ''}" data-track="map_to_rank">${esc(sd.short || '')} 순위 전체</a>` : ''}<button type="button" id="guZoom"${sd.id ? '' : ' style="grid-column:1/-1"'}>이 구 단지 보기</button></div>`;
+    <div class="acts">${sd.id ? `<a href="${JB.SITE}rank/?t=fv${sd.id !== 's00' ? '&sd=' + esc(sd.id) : ''}" data-track="map_to_rank">${esc(sd.short || '')} 순위 전체</a>` : ''}<button type="button" id="guZoom"${sd.id ? '' : ' style="grid-column:1/-1"'}>이 구 단지 보기</button></div>`;
   showSheet();
   $('guZoom').onclick = () => { closeSheet(); if (c) MAP.setView(c[1], c[0], C.LV.sgg + 1); };
   if (window.jdjStat && EV !== null) jdjStat('feature_use', {feature:'map_gu_card'});
@@ -1145,7 +1146,7 @@ if (window.ResizeObserver) new ResizeObserver(syncPanel).observe($('rpanel'));
 /* ---------- 시작 ---------- */
 async function init(){
   drawControls(); legend(); drawCmp(); syncTop();
-  const [ix, geo, mj, mh] = await Promise.all([J(DATA + 'index.json'), J('/jangdaejang-calc/assets/map-geo.json'), J(DATA + 'model.json'), J(DATA + 'model_h.json')]);
+  const [ix, geo, mj, mh] = await Promise.all([J(DATA + 'index.json'), J(JB.SITE + 'assets/map-geo.json'), J(DATA + 'model.json'), J(DATA + 'model_h.json')]);
   if (!ix) { status('지도 자료를 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.'); return; }
   IX = ix; GEO = geo; MH = mh; MREG = !!(mj && mj.region && mj.region.used);
   const lat = parseFloat(Q.get('lat')), lng = parseFloat(Q.get('lng')), z = parseInt(Q.get('z'), 10);
@@ -1169,6 +1170,6 @@ async function init(){
 init();
 })();
 </script>
-<script src="/jangdaejang-calc/assets/ad-slot.js?v=4" defer></script>
+<script src="../assets/ad-slot.js?v=5" defer></script>
 </body>
 </html>

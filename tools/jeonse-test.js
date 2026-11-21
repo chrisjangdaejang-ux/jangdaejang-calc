@@ -63,7 +63,7 @@ check('권유 표현 없음', /추천합니다|사세요|계약하세요|하셔�
   check('홈: n가지 서비스 = 보이는 서비스 칸 수', m && +m[1], nMenu + nMine); }
 check('홈: 9가지 서비스(대출 한도 포함) + 전월세 카드', [home.includes('<b>9가지 서비스</b>'), home.includes('href="jeonse/"'), home.includes('전월세 전망 &amp; 전세사기 예방 체크')], [true, true, true]);
 const sw = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
-check('서비스 워커에 새 페이지 등록', sw.includes("'/jangdaejang-calc/jeonse/'") && sw.includes('rent-core.js'), true);
+check('서비스 워커에 새 페이지 등록', sw.includes("'./jeonse/'") && sw.includes('rent-core.js'), true);
 const stat = fs.readFileSync(path.join(__dirname, '..', 'assets', 'stat.js'), 'utf8');
 check('익명 통계 기능 이름 jeonse', /FEATURES = \[[^\]]*'jeonse'/.test(stat), true);
 

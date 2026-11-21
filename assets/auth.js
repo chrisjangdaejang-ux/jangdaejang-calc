@@ -6,12 +6,14 @@
    - 서버 주소는 assets/agents.js 의 Apps Script 웹 앱 주소(JDJ_AGENTS.api)를 그대로 쓴다. */
 (function (root) {
   'use strict';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   const CFG = root.JDJ_SITE || {};
   const KEY = String(CFG.KAKAO_JS_KEY || '').trim();
   const SDK = 'https://t1.kakaocdn.net/kakao_js_sdk/2.8.5/kakao.min.js';
   const SRI = 'sha384-v6JKY3z4FUkWq21oZDHZe74YvuPk/WUrVLrDHTBojHXClOSa3iXy7sCXPY1jkFbj';
-  const REDIRECT = 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/login/';
-  const LOGIN_PAGE = '/jangdaejang-calc/login/';
+  /* 카카오 로그인 돌아올 주소: 지금 열린 사이트 주소 기준(예전 주소·새 도메인 모두). 카카오 개발자 콘솔 [Redirect URI]와 서버 KAKAO_REDIRECTS 에 둘 다 등록 */
+  const REDIRECT = (typeof location !== 'undefined' && /^https?:$/.test(location.protocol) ? location.origin : 'https://chrisjangdaejang-ux.github.io') + JB.SITE + 'login/';
+  const LOGIN_PAGE = JB.SITE + 'login/';
   const LS = 'jdj_auth', DIRTY = 'jdj_auth_dirty', BACK = 'jdj_auth_back', STATE = 'jdj_auth_state', FIRST = 'jdj_auth_first';
   const HOME_KEY = 'jdj_myhome';
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -63,7 +65,7 @@
   }
   function login(from) {
     if (!on()) return Promise.resolve(false);
-    const back = location.pathname.indexOf(LOGIN_PAGE) === 0 ? (ss.get(BACK) || '/jangdaejang-calc/') : location.pathname + location.search + location.hash;
+    const back = location.pathname.indexOf(LOGIN_PAGE) === 0 ? (ss.get(BACK) || JB.SITE) : location.pathname + location.search + location.hash;
     ss.set(BACK, back);
     const st = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => ('0' + b.toString(16)).slice(-2)).join('');
     ss.set(STATE, st);
@@ -83,8 +85,8 @@
       ss.set(FIRST, '1');
       track(j.isNew ? 'sign_up' : 'login', { method: 'kakao' });
       emit();
-      const back = ss.get(BACK) || '/jangdaejang-calc/'; ss.del(BACK);
-      return { nick: j.nick, isNew: j.isNew, back: /^\/jangdaejang-calc\//.test(back) ? back : '/jangdaejang-calc/' };
+      const back = ss.get(BACK) || JB.SITE; ss.del(BACK);
+      return { nick: j.nick, isNew: j.isNew, back: back.indexOf(JB.SITE) === 0 && back.indexOf('//') !== 0 ? back : JB.SITE };
     });
   }
   function logout() {

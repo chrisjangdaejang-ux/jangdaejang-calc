@@ -7,6 +7,7 @@
    window.JDJ_FUT = { load(base), label(it), cardHtml(it, o), listHtml(d, o), infoHtml(d, o), show(it, z), lineZ, areaZ, CHANGE, KIND, STAGE } */
 (function (root) {
   'use strict';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   var CHANGE = '예정 시기는 사업 진행에 따라 바뀔 수 있어요.';
   var NOBOUND = '사업 구역 경계는 공식 고시 도면에서 확인해 주세요';
   /* 쉬운 풀이: 부동산을 몰라도 알아듣게 */
@@ -40,7 +41,7 @@
   function fd(d) { if (!d) return ''; var a = String(d).split('-'); return a[0] + (a[1] ? '.' + (+a[1]) : '') + (a[2] ? '.' + (+a[2]) : ''); }
   function safeUrl(u) { return /^https:\/\//.test(String(u || '')) ? String(u) : ''; }
   function load(base) {
-    var u = (base || '/jangdaejang-data/data/') + 'devmap.json';
+    var u = (base || JB.DATA + 'data/') + 'devmap.json';
     return fetch(u, { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
   }
   /* 예정 연도: 자료에 공식 출처·날짜가 함께 있을 때만(자료 검사를 지나온 것도 한 번 더 확인) */

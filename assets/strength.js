@@ -7,7 +7,8 @@
    쓰는 법: 페이지에 <p data-jdj-str="hero|card|report|about" hidden></p> 를 두고 이 파일을 넣으면 공개 자료를 읽어 채우고 보이게 한다.
    나중에 그린 칸(단지 분석 카드 등)도 MutationObserver 로 채운다. 이 파일이 없는 화면에서는 칸이 숨은 채로 남는다. */
 (function (root) {
-  const DATA = '/jangdaejang-data/data/';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+  const DATA = JB.DATA + 'data/';
   const ym = v => { const t = String(v == null ? '' : v).replace(/[^0-9]/g, ''); return /^(19|20)\d{2}(0[1-9]|1[0-2])/.test(t) ? t.slice(0, 6) : ''; };
   const num = v => (typeof v === 'number' && isFinite(v) && v > 0 ? Math.round(v) : 0);
   /* 838만 · 1,234만 · 9,800 */

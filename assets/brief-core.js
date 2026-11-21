@@ -7,6 +7,7 @@
    - 주소: /brief/?d=11710 (구 전체) · ?d=11710-잠실동 (동) · &v=pro (중개사용) · &card=1 (카드 이미지 화면 1080×1080) */
 (function (root) {
   'use strict';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
   const SITE = ((root.JDJ_SITE || {}).SITE_NAME || '').trim() || '집코드';
   const NAME = `${SITE} 모닝 브리핑`;
@@ -33,7 +34,7 @@
   const MAX = { areas: Math.max(...TIERS.map(t => t.areas)), apts: Math.max(...TIERS.map(t => t.apts)) };
   const B = {
     SITE, NAME,
-    DATA: '/jangdaejang-data/data/brief/',
+    DATA: JB.DATA + 'data/brief/',
     DROP: -10,                                      // '최근 2년 최고가보다 많이 내린 거래' 기준(%)
     TIERS, PRICE, URG, MAX,
     TRIAL_DAYS: 7,

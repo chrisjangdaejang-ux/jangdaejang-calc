@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#FFFFFF">
-<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
 <title>오늘 아침 관심 단지 소식</title>
 <meta property="og:type" content="website">
 <meta property="og:title" content="오늘 아침 관심 단지 소식">
@@ -21,12 +21,12 @@
   window.JDJ_CC_IN = ok.test(h) ? h : ''; })();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=44">
-<script src="/jangdaejang-calc/assets/config.js?v=6"></script>
-<script src="/jangdaejang-calc/assets/agents.js"></script>
-<script src="/jangdaejang-calc/assets/brief-core.js?v=8"></script>
-<script src="/jangdaejang-calc/assets/pro-report.js?v=6"></script>
-<script src="/jangdaejang-calc/assets/client-brief.js?v=2"></script>
+<link rel="stylesheet" href="../../assets/aplus.css?v=44">
+<script src="../../assets/config.js?v=7"></script>
+<script src="../../assets/agents.js"></script>
+<script src="../../assets/brief-core.js?v=9"></script>
+<script src="../../assets/pro-report.js?v=7"></script>
+<script src="../../assets/client-brief.js?v=3"></script>
 <style>
 body{background:#F7F9FC}
 .wrap{max-width:560px;margin:0 auto;padding:16px 14px 28px}
@@ -42,12 +42,13 @@ body{background:#F7F9FC}
 <body>
 <main class="wrap" id="main"><div class="msg">카드를 불러오는 중이에요…</div></main>
 <script>
+var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 (function(){
 'use strict';
 const CB = window.JDJ_CBRIEF, main = document.getElementById('main');
 const css = document.createElement('style'); css.textContent = CB.CSS; document.head.appendChild(css);
 const fail = t => { main.innerHTML = `<div class="msg">${CB.esc(t)}</div>${foot()}`; };
-const foot = () => `<p class="tiny">공공자료로 만든 카드 · <a href="/jangdaejang-calc/?utm_source=client_card">${CB.esc(CB.SITE)}</a></p>`;
+const foot = () => `<p class="tiny">공공자료로 만든 카드 · <a href="${JB.SITE}?utm_source=client_card">${CB.esc(CB.SITE)}</a></p>`;
 async function go(){
   const k = CB.parseHash(window.JDJ_CC_IN);
   if (!k) return fail('링크가 올바르지 않아요. 보내 준 중개사님께 링크를 다시 요청해 주세요.');

@@ -48,13 +48,14 @@ check('잠정 안내에 확정 날짜', K.finalNote(V).includes('12/20 이후 �
 /* 보관 주소 복사본 */
 const main = fs.readFileSync(path.join(ROOT, 'weekly/index.html'), 'utf8');
 const ws = P.weeks(P.FIRST, P.LAST);
-const diff = ws.filter(w => { const f = path.join(ROOT, 'weekly', w, 'index.html'); return !fs.existsSync(f) || fs.readFileSync(f, 'utf8') !== main; });
-check('보관 주소 복사본 = weekly/index.html (다르면 node tools/weekly-pages.js)', diff, []);
+const copy = P.copyOf(main);
+const diff = ws.filter(w => { const f = path.join(ROOT, 'weekly', w, 'index.html'); return !fs.existsSync(f) || fs.readFileSync(f, 'utf8') !== copy; });
+check('보관 주소 복사본 = weekly/index.html 의 한 칸 깊은 복사(다르면 node tools/weekly-pages.js)', diff, []);
 const today = new Date(), mon = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
 const left = ws.filter(w => { const y = +w.slice(0, 4), n = +w.slice(5), j4 = new Date(Date.UTC(y, 0, 4)), d = (j4.getUTCDay() + 6) % 7;
   return new Date(Date.UTC(y, 0, 4 - d + (n - 1) * 7)) > mon; }).length;
 check('앞으로 남은 보관 주소 8주 넘음(모자라면 WEEKLY_LAST 늘려 다시 만들기)', left > 8, true);
-check('화면 경로는 모두 절대 경로(복사본에서도 같게)', /(src|href)="\.\.?\//.test(main), false);
+check('화면 경로는 상대 경로(예전 주소·새 도메인 모두) — 사이트 절대 경로 없음', [/(src|href)="\/jangdaejang-calc\//.test(main), /(src|href)="\.\.\/assets\//.test(main), /(src|href)="\.\.\/\.\.\/assets\//.test(copy)], [false, true, true]);
 check('서비스 이름 칸·config.js', main.includes('data-site-name') && main.includes('/assets/config.js'), true);
 check('공유 JS 판 번호', ['weekly-core.js?v=', 'weekly-view.js?v=', 'weekly.css?v='].every(s => main.includes(s)), true);
 const txt = main + fs.readFileSync(path.join(ROOT, 'assets/weekly-view.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'assets/weekly-core.js'), 'utf8');
@@ -63,7 +64,7 @@ check('다른 회사 이름 없음', ['리치고', '호갱', '직방', '아실',
 check('통계 설명에 방법·신고 기한·표본 기준·확정', ['같은 단지·같은 전용면적', '30일 안에', '표본 부족', '확정', '한국부동산원'].every(w => main.includes(w)), true);
 const sw = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
 const vOf = f => (main.match(new RegExp(f.replace('.', '\\.') + '\\?v=(\\d+)')) || [])[1];
-check('서비스 워커에 화면·공유 JS(판 번호 같음)', ['/jangdaejang-calc/weekly/', '/jangdaejang-calc/press/', 'press-view.js?v=3'].concat(['weekly-core.js', 'weekly-view.js', 'weekly.css'].map(f => f + '?v=' + vOf(f))).every(x => sw.includes(x)), true);
+check('서비스 워커에 화면·공유 JS(판 번호 같음)', ["'./weekly/'", "'./press/'", 'press-view.js?v=3'].concat(['weekly-core.js', 'weekly-view.js', 'weekly.css'].map(f => f + '?v=' + vOf(f))).every(x => sw.includes(x)), true);
 /* 발표 시각·다른 지표·보도자료실 */
 check('발표 시각 전이면 숨김', [K.released({ release: '2026-11-23T07:00+09:00' }, Date.parse('2026-11-23T06:59+09:00')), K.released({ release: '2026-11-23T07:00+09:00' }, Date.parse('2026-11-23T07:00+09:00')), K.released({})], [false, true, true]);
 check('발표 시각 글', K.whenText('2026-11-23T07:00+09:00'), '11월 23일(월) 오전 7시');

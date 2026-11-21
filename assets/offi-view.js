@@ -1,10 +1,11 @@
 /* 내 집 시세 화면의 '오피스텔' 탭 — mine/index.html 의 #mtabs(아파트|오피스텔)·#offiSec 를 쓴다.
    계산 규칙은 assets/offi-core.js(JDJ_OFFI), 금액·날짜 표기는 assets/mine-core.js(JDJ_MINE).
-   자료: /jangdaejang-data/data/offi/index.json, offi/{구}.json, index.json(시·도·구 이름)
+   자료: jangdaejang-data data/offi/index.json, offi/{구}.json, index.json(시·도·구 이름)
    URL: ?t=o&og=구코드&ob=동|지번 (아파트 탭의 sd·d·b 와 겹치지 않게 따로 씀) */
 (function () {
   'use strict';
-  const DATA = '/jangdaejang-data/data/';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+  const DATA = JB.DATA + 'data/';
   const $ = id => document.getElementById(id);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const C = {};

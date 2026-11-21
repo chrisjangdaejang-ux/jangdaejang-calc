@@ -3,26 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#FFFFFF">
 <meta name="robots" content="noindex">
 <meta name="referrer" content="no-referrer">
-<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
-<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
-<script src="/jangdaejang-calc/assets/pwa.js" defer data-nobar></script>
-<script src="/jangdaejang-calc/assets/biz.js" defer></script>
+<link rel="icon" type="image/png" href="../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../assets/icons/apple-180.png">
+<script src="../assets/pwa.js?v=1" defer data-nobar></script>
+<script src="../assets/biz.js?v=1" defer></script>
 <title>로그인 · 내 계정 | 집코드</title>
 <meta name="description" content="카카오 간편 로그인하고 내 집·관심 단지·리포트를 여러 기기에서 이어 보세요.">
 <script>window.JDJ_CONFIG = { tool:'login', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/agents.js"></script>
-<script src="../assets/config.js?v=6"></script>
-<script src="../assets/auth.js?v=6"></script>
-<script src="../assets/mine-core.js?v=16"></script>
+<script src="../assets/config.js?v=7"></script>
+<script src="../assets/auth.js?v=7"></script>
+<script src="../assets/mine-core.js?v=17"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=44">
-<script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
+<link rel="stylesheet" href="../assets/aplus.css?v=44">
+<script src="../assets/nw.js?v=1" defer></script>
 <style>
 .wrap{max-width:640px;margin:0 auto;padding:24px 16px 60px}
 h1{font-size:clamp(24px,6vw,32px);margin:6px 0 10px;line-height:1.3}
@@ -62,12 +62,13 @@ h1{font-size:clamp(24px,6vw,32px);margin:6px 0 10px;line-height:1.3}
 </head>
 <body>
 <header class="top" data-noacct>
-  <a class="brand" href="/jangdaejang-calc/" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
+  <a class="brand" href="../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
   <div class="badge plain">내 계정</div>
 </header>
 <main class="wrap" id="app" aria-live="polite"><div class="st">불러오는 중이에요…</div></main>
-<footer class="foot">★ 집코드 · <a href="/jangdaejang-calc/">홈</a> · <a href="/jangdaejang-calc/privacy/">개인정보처리방침</a></footer>
+<footer class="foot">★ 집코드 · <a href="../">홈</a> · <a href="../privacy/">개인정보처리방침</a></footer>
 <script>
+var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 (function(){
 'use strict';
 const A = window.JDJ_AUTH, $ = id => document.getElementById(id), app = $('app');
@@ -75,13 +76,13 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp
 const won = v => window.JDJ_MINE ? JDJ_MINE.won(v) : (v || 0).toLocaleString() + '만원';
 const q = new URLSearchParams(location.search);
 const KIND = {trade:'새 실거래', high:'신고가', area:'지역 시세 흐름'};
-const mineLink = h => `/jangdaejang-calc/mine/?sd=${encodeURIComponent(h.sd)}&d=${encodeURIComponent([h.code, h.dong, h.jibun, h.apt].join('|'))}&b=${encodeURIComponent(h.band)}`;
+const mineLink = h => `${JB.SITE}mine/?sd=${encodeURIComponent(h.sd)}&d=${encodeURIComponent([h.code, h.dong, h.jibun, h.apt].join('|'))}&b=${encodeURIComponent(h.band)}`;
 const clean = () => history.replaceState(null, '', location.pathname);
 
 function off(){
   app.innerHTML = `<h1>로그인 없이 모두 쓸 수 있어요</h1>
     <p class="lead">집코드는 지금 로그인 없이 시세·차트·미래가치 점수·실거래 목록·맞춤 리포트를 모두 보여 드려요. 내 집은 이 기기에 저장돼요.</p>
-    <a class="btn primary" href="/jangdaejang-calc/mine/">내 집 시세 보러 가기</a>`;
+    <a class="btn primary" href="${JB.SITE}mine/">내 집 시세 보러 가기</a>`;
 }
 function intro(msg){
   app.innerHTML = `${msg || ''}<h1>카카오 간편 로그인</h1>
@@ -93,7 +94,7 @@ function intro(msg){
       <li><span class="ic">4</span><span><b>관심 단지·지역 알림 신청</b><small>새 실거래·신고가·지역 시세 흐름을 카카오톡으로 (발송 시작 때 알려 드려요)</small></span></li>
     </ul>
     ${A.btn('카카오 간편 로그인', 'login_page', 'full')}
-    <p class="note">집코드가 카카오에서 받는 정보는 <b>카카오 회원번호와 닉네임</b>뿐이에요. 이메일·전화번호는 받지 않아요. <a href="/jangdaejang-calc/privacy/#member">개인정보처리방침</a></p></div>
+    <p class="note">집코드가 카카오에서 받는 정보는 <b>카카오 회원번호와 닉네임</b>뿐이에요. 이메일·전화번호는 받지 않아요. <a href="${JB.SITE}privacy/#member">개인정보처리방침</a></p></div>
     <p class="free">로그인하지 않아도 시세·차트·미래가치 점수, 최근 실거래 5건, 이 기기에 내 집 저장, 맞춤 매수 리포트 요약은 지금처럼 그대로 볼 수 있어요.</p>`;
 }
 async function finishLogin(){
@@ -111,8 +112,8 @@ async function finishLogin(){
 function homesHtml(d){
   const list = d.homes || [];
   return `<div class="box"><h2>내 집<small>${list.length}/5</small></h2>${list.length ? list.map(h => `<div class="row"><a href="${esc(mineLink(h))}"><b>${esc(h.apt)} · ${esc(h.band)}</b><small>${esc(h.dong)}${h.bp ? ' · 매수가 ' + esc(won(h.bp)) : ''}</small></a></div>`).join('')
-    : '<p class="empty">아직 저장한 집이 없어요. <a href="/jangdaejang-calc/mine/">내 집 시세</a>에서 단지를 고르고 [내 집으로 저장]을 눌러 주세요.</p>'}
-    ${list.length ? '<p class="note">내 집을 지우거나 고치려면 <a href="/jangdaejang-calc/mine/">내 집 시세</a> 화면의 내 집 카드에서 [삭제]·[매수가·시기 고치기]를 눌러 주세요.</p>' : ''}</div>`;
+    : '<p class="empty">아직 저장한 집이 없어요. <a href="' + JB.SITE + 'mine/">내 집 시세</a>에서 단지를 고르고 [내 집으로 저장]을 눌러 주세요.</p>'}
+    ${list.length ? '<p class="note">내 집을 지우거나 고치려면 <a href="' + JB.SITE + 'mine/">내 집 시세</a> 화면의 내 집 카드에서 [삭제]·[매수가·시기 고치기]를 눌러 주세요.</p>' : ''}</div>`;
 }
 function favsHtml(d){
   const list = d.favs || [];
@@ -121,7 +122,7 @@ function favsHtml(d){
 }
 function repsHtml(d){
   const list = d.reports || [];
-  return `<div class="box"><h2>저장한 리포트<small>${list.length}/10</small></h2>${list.length ? list.map((r, i) => `<div class="row" style="align-items:flex-start"><a href="/jangdaejang-calc/buy/report/?${esc(r.q)}"><b>${esc(r.title || '맞춤 매수 리포트')}</b><small>${esc(r.t)} 저장 · 누르면 같은 조건으로 다시 열어요</small>
+  return `<div class="box"><h2>저장한 리포트<small>${list.length}/10</small></h2>${list.length ? list.map((r, i) => `<div class="row" style="align-items:flex-start"><a href="${JB.SITE}buy/report/?${esc(r.q)}"><b>${esc(r.title || '맞춤 매수 리포트')}</b><small>${esc(r.t)} 저장 · 누르면 같은 조건으로 다시 열어요</small>
       ${r.picks && r.picks.length ? `<ol class="picks">${r.picks.slice(0, 5).map(p => `<li>${esc(p.apt)} ${esc(p.band)} · ${esc(won(p.P))}${p.fv != null ? ' · 미래가치 ' + p.fv : ''}</li>`).join('')}</ol>` : ''}</a><button type="button" data-rep="${i}">지우기</button></div>`).join('')
     : '<p class="empty">아직 저장한 리포트가 없어요. 맞춤 매수 리포트 화면에서 [내 계정에 리포트 저장]을 눌러 주세요.</p>'}
     <p class="note">리포트에는 지역·보유 기간 같은 조건과 그때 추천 단지 목록만 저장해요. 연소득·보유 현금 같은 금액은 저장하지 않아서, 다른 기기에서 열면 그 기기에 넣은 금액으로 다시 계산해요.</p></div>`;
@@ -130,8 +131,8 @@ function areasHtml(d){
   const a = d.areas && Array.isArray(d.areas.list) ? d.areas : {list: [], kinds: {}};
   const sh = s => String(s || '').replace(/(특별자치시|특별자치도|통합특별시|특별시|광역시)$/, '');
   const kinds = [a.kinds.notice !== false ? '새 분양 공고' : '', a.kinds.mu !== false ? '무순위·잔여세대 일정' : ''].filter(Boolean).join(' · ');
-  return `<div class="box"><h2>관심 지역<small>${a.list.length}곳</small></h2>${a.list.length ? `<p class="empty">${a.list.map(x => esc(sh(x.sd) + ' ' + (x.g ? x.gn : '전체'))).join(' · ')}</p><p class="note">알림 신청: ${esc(kinds || '없음')} · <a href="/jangdaejang-calc/bunyang/#area">분양 화면에서 바꾸기</a></p>`
-    : '<p class="empty">관심 지역을 설정하면 새로운 분양 공고, 무순위 청약 일정을 가장 먼저 받아볼 수 있어요. <a href="/jangdaejang-calc/bunyang/#area">관심 지역 설정</a></p>'}</div>`;
+  return `<div class="box"><h2>관심 지역<small>${a.list.length}곳</small></h2>${a.list.length ? `<p class="empty">${a.list.map(x => esc(sh(x.sd) + ' ' + (x.g ? x.gn : '전체'))).join(' · ')}</p><p class="note">알림 신청: ${esc(kinds || '없음')} · <a href="${JB.SITE}bunyang/#area">분양 화면에서 바꾸기</a></p>`
+    : '<p class="empty">관심 지역을 설정하면 새로운 분양 공고, 무순위 청약 일정을 가장 먼저 받아볼 수 있어요. <a href="' + JB.SITE + 'bunyang/#area">관심 지역 설정</a></p>'}</div>`;
 }
 function alertsHtml(al){
   return `<div class="box"><h2>알림 신청<small>${al.length}개</small></h2>${al.length ? al.map(a => `<div class="row"><span><b>${esc(a.name)} · ${esc(KIND[a.kind] || a.kind)}</b><small>${esc(a.at)} 신청</small></span><button type="button" data-al="${esc(a.id)}">취소</button></div>`).join('')
@@ -158,7 +159,7 @@ async function account(){
     const b = $('delBtn'), m = $('delMsg');
     if (!arm){ arm = true; b.classList.add('armed'); b.textContent = '한 번 더 누르면 탈퇴해요'; setTimeout(() => { if (arm){ arm = false; b.classList.remove('armed'); b.textContent = '탈퇴하기'; } }, 6000); return; }
     b.disabled = true; m.style.color = '#4E5968'; m.textContent = '지우는 중이에요…';
-    A.withdraw().then(() => { app.innerHTML = '<div class="st"><b>탈퇴했어요.</b><br>집코드가 보관하던 회원 정보와 계정에 저장한 자료를 모두 지웠어요.<br>로그인 없이 계속 쓸 수 있어요.</div><p style="text-align:center;margin-top:14px"><a class="btn ghost" href="/jangdaejang-calc/">계산기 홈으로</a></p>'; })
+    A.withdraw().then(() => { app.innerHTML = '<div class="st"><b>탈퇴했어요.</b><br>집코드가 보관하던 회원 정보와 계정에 저장한 자료를 모두 지웠어요.<br>로그인 없이 계속 쓸 수 있어요.</div><p style="text-align:center;margin-top:14px"><a class="btn ghost" href="' + JB.SITE + '">계산기 홈으로</a></p>'; })
       .catch(e => { m.style.color = '#C2410C'; m.textContent = e.message; b.disabled = false; });
   };
 }

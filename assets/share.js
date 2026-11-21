@@ -14,9 +14,10 @@
      따로 둔 임시 칸을 씀 — 상단 '공유받은 조건으로 보고 있어요 · 내 조건으로 보기' 바. */
 (function (root) {
   'use strict';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   var KEY = 'jdj_fin';
   var PERSONAL = ['i', 'c', 'd', 'n', 'e', 'bp', 'bd'];   // 주소에 실으면 안 되는 개인값(연소득·현금·대출·이름·기타 비용·매수가·매수 시기)
-  var SITE = 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/';
+  var SITE = (function () { var u = String(((root && root.JDJ_SITE) || {}).SITE_URL || '').trim(); return /^https:\/\//.test(u) ? u.replace(/\/+$/, '') + '/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/'; })();   // config.js SITE_URL(없으면 예전 기본 주소)
   /* 화면별 이름·중간 카드 문구·'나도 해 보기' 주소 */
   var TOOLS = {
     chungyak:  { easy: '청약이 쉬워지는 집코드', label: '청약 당첨 가능성 진단', path: 'chungyak/', try: '내 가점으로 나도 해 보기' },
@@ -61,7 +62,7 @@
   function siteBase() {
     try {
       var l = root.location;
-      if (l && /^https?:$/.test(l.protocol) && l.pathname.indexOf('/jangdaejang-calc/') === 0) return l.origin + '/jangdaejang-calc/';
+      if (l && /^https?:$/.test(l.protocol) && l.pathname.indexOf(JB.SITE) === 0) return l.origin + JB.SITE;
     } catch (e) {}
     return SITE;
   }

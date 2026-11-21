@@ -3,25 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<link rel="manifest" href="../../manifest.webmanifest">
 <meta name="theme-color" content="#FFFFFF">
-<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
 <meta name="robots" content="noindex">
-<script src="/jangdaejang-calc/assets/biz.js" defer></script>
+<script src="../../assets/biz.js?v=1" defer></script>
 <title>집코드 모닝 브리핑 받기</title>
 <script>window.JDJ_CONFIG = { tool:'brief', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../../assets/track.js?v=2"></script>
 <script src="../../assets/stat.js?v=7"></script>
-<script src="../../assets/config.js?v=6"></script>
+<script src="../../assets/config.js?v=7"></script>
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/auth.js?v=6"></script>
-<script src="../../assets/pay.js?v=3"></script>
-<script src="../../assets/brief-core.js?v=8"></script>
+<script src="../../assets/auth.js?v=7"></script>
+<script src="../../assets/pay.js?v=4"></script>
+<script src="../../assets/brief-core.js?v=9"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=44">
-<link rel="stylesheet" href="/jangdaejang-calc/assets/pay.css?v=2">
-<script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
+<link rel="stylesheet" href="../../assets/aplus.css?v=44">
+<link rel="stylesheet" href="../../assets/pay.css?v=2">
+<script src="../../assets/nw.js?v=1" defer></script>
 <style>
 .wrap{max-width:640px;margin:0 auto;padding:20px 16px 40px}
 h1{font-size:clamp(24px,6vw,32px);margin:4px 0 8px}
@@ -61,12 +61,13 @@ h1{font-size:clamp(24px,6vw,32px);margin:4px 0 8px}
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="/jangdaejang-calc/" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
+  <a class="brand" href="../../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
   <div class="badge plain" data-brief-name>집코드 모닝 브리핑</div>
 </header>
 <main class="wrap" id="main"><p class="note">불러오는 중…</p></main>
 <footer class="foot">★ <span data-site-name>집코드</span> · <a href="../" data-brief-name>집코드 모닝 브리핑</a> · <a href="../manage/">내 구독 관리</a> · <a href="../../refund/">환불 정책</a> · <a href="../../privacy/">개인정보처리방침</a></footer>
 <script>
+var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 (function(){
 'use strict';
 const B = JDJ_BRIEF, P = JDJ_PAY, A = window.JDJ_AUTH, esc = B.esc, $ = id => document.getElementById(id);
@@ -85,7 +86,7 @@ async function boot(){
       <p class="note">처음 ${B.TRIAL_DAYS}일은 무료예요. 결제 수단을 미리 등록하지 않고, 자동으로 결제되지도 않아요.</p>`;
     return;
   }
-  const [IX, cfg, mine, me] = await Promise.all([J('/jangdaejang-data/data/index.json'), J((P.api() || '') + '?action=briefConfig'),
+  const [IX, cfg, mine, me] = await Promise.all([J(JB.DATA + 'data/index.json'), J((P.api() || '') + '?action=briefConfig'),
     call('briefMine').catch(() => null), A.load().catch(() => null)]);
   st.kakao = !!(cfg && cfg.channels && cfg.channels.kakao);
   st.trialUsed = !!(mine && mine.trialUsed);
@@ -179,7 +180,7 @@ async function boot(){
       const o = await call('briefOrder', Object.assign(x, { product: st.plan, agree: true }));
       await new Promise((ok, no) => { if (window.TossPayments) return ok(); const s = document.createElement('script'); s.src = P.SDK; s.onload = ok; s.onerror = () => no(new Error('결제창을 불러오지 못했어요.')); document.head.appendChild(s); });
       const toss = window.TossPayments(P.CLIENT_KEY), w = toss.payment({ customerKey: window.TossPayments.ANONYMOUS || 'ANONYMOUS' });
-      const root = location.origin + '/jangdaejang-calc/brief/';
+      const root = location.origin + JB.SITE + 'brief/';
       const req = { method: 'CARD', amount: { currency: 'KRW', value: o.amount }, orderId: o.orderId, orderName: o.orderName, successUrl: root + 'paid/', failUrl: root + 'subscribe/?fail=1', card: { flowMode: 'DEFAULT' } };
       if (x.channel === 'email') req.customerEmail = x.contact.toLowerCase(); else req.customerMobilePhone = x.contact.replace(/[^0-9]/g, '');
       await w.requestPayment(req);

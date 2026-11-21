@@ -1,6 +1,12 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집코드 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집코드 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v43 변경 요약 (v20~v42와 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — 시트 변경 없음)
+ *  - 새 도메인(zipcode.works) 준비: 메일·알림 속 웹 링크를 모두 WEB_ROOT 한 줄에서 만들고(지금은 예전 주소 그대로),
+ *    카카오 로그인 돌아올 주소(KAKAO_REDIRECTS)에 https://zipcode.works/login/ 을 미리 허용 — 예전 주소도 계속 허용.
+ *    도메인을 바꾸는 날엔 WEB_ROOT 한 줄만 바꿔 다시 배포(docs/domain_switch.md). 안 바꿔도 예전 주소 링크는 새 도메인으로 넘어가요.
+ *  - 검증: node tools/domain-test.js
+ *
  * v42 변경 요약 (v20~v41과 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — 시트 변경 없음, 기존 '조건' 칸 JSON에 두 값이 더해짐)
  *  - 전문가 이름 리포트 대출 조건(proCond): 금리 유형 rtype(var 변동·mix 혼합·cyc 주기형)과 대출 기간 term(10~40년, 5년 단위)도 저장하고 proOpen 이 그대로 돌려줌.
  *    전에는 연소득·현금·보유·금리만 남기고 버려서, 고객이 링크를 열면 그 기기 기본값(주기형·30년)으로 대출 한도가 계산될 수 있었음.
@@ -305,6 +311,9 @@ function setup() {
 /* ---------- 공통 ---------- */
 /* 서비스 이름 — 여기 한 곳(웹 assets/config.js SITE_NAME · 엔진 scripts/brand.py 와 같은 값). 모닝 브리핑 이름은 이 값으로 조합 */
 const SITE_NAME = '집코드';
+/* 웹 사이트 주소(끝에 / 붙임) — 메일·알림 속 링크가 모두 이 값을 따름. 도메인을 바꾸면 이 한 줄만 'https://zipcode.works/' 로(docs/domain_switch.md).
+   바꾸기 전이라도 예전 주소는 GitHub 가 새 도메인으로 넘겨 줘서 링크가 끊기지 않아요. */
+const WEB_ROOT = 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/';
 const BRIEF_NAME = SITE_NAME + ' 모닝 브리핑';
 function out(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
 function today() { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }
@@ -630,7 +639,7 @@ const AL_H = ['id','이메일','지금집','지금집키','지금집시도','지
               '조건','조건값','기준갭','최근갭','등록일','최근점검','최근알림','상태','토큰','마케팅동의','마케팅동의일'];
 const AC = Object.fromEntries(AL_H.map((h, i) => [h, i]));
 const DATA_URL = 'https://chrisjangdaejang-ux.github.io/jangdaejang-timing/data/';
-const SITE_URL = 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/switch/';
+const SITE_URL = WEB_ROOT + 'switch/';
 const MAX_ALERTS_PER_EMAIL = 5;
 
 function alertSheet() {
@@ -1702,7 +1711,8 @@ function adInquiry(b) {
    저장: '회원'(카카오 회원번호·닉네임·저장 자료) · '세션'(세션 해시) · '관심알림'(알림 신청) — 탈퇴 시 세 시트에서 바로 삭제
    ===================================================================== */
 const USER_ACTIONS = { kakaoLogin: 1, userLoad: 1, userSave: 1, alertSubscribe: 1, userLogout: 1, userDelete: 1 };
-const KAKAO_REDIRECTS = ['https://chrisjangdaejang-ux.github.io/jangdaejang-calc/login/'];
+// 카카오 로그인 돌아올 주소: 예전 주소와 새 도메인 둘 다 허용(바꾸는 날 로그인이 끊기지 않게). 카카오 개발자 콘솔 [Redirect URI]에도 둘 다 등록.
+const KAKAO_REDIRECTS = [WEB_ROOT + 'login/', 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/login/', 'https://zipcode.works/login/'].filter((u, i, a) => a.indexOf(u) === i);
 const SH_U = '회원', SH_S = '세션', SH_UA = '관심알림';
 const UH = ['카카오id', '닉네임', '가입일', '최근로그인', '저장자료', '수정일'];
 const SSH = ['세션해시', '카카오id', '만든날', '만료일'];
@@ -2264,7 +2274,7 @@ function bChangeAmt(cur, nxt, left) {
   return Math.floor(d * Math.min(left, days) / days / 10) * 10;
 }
 const BRIEF_DATA = 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/data/brief/';
-const BRIEF_WEB = 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/brief/';
+const BRIEF_WEB = WEB_ROOT + 'brief/';
 const BRIEF_KEEP_DAYS = 30;       // 이용 끝난 뒤 연락처 원문 보관 일수
 const BRIEF_MIN_VISITORS = 5;     // 관심도 집계: 방문자 5명 이상인 단지만
 
@@ -3264,7 +3274,7 @@ const LEAD_SRC = { report: '맞춤 매수 리포트', mine: '내 집 시세', al
 const LEAD_STEP = { new: '새 문의', contacted: '연락함', meeting: '상담 중', done: '마무리', pass: '못 맡음' };
 const LEAD_CONSENT_V = 'lead-2026-11-21';   // 화면 동의 문구 판(assets/lead.js CONSENT_V 와 같아야 함)
 const PRICE_URL = 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/data/price/';
-const AGENT_SITE = 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/agent/my/';
+const AGENT_SITE = WEB_ROOT + 'agent/my/';
 
 function agtDispatch(b) {
   try {
@@ -3474,7 +3484,7 @@ function leadCancel(p) {
     });
   }
   return HtmlService.createHtmlOutput(`<div style="font-family:sans-serif;padding:40px;text-align:center"><h2>${done ? '문의를 취소하고 연락처를 지웠어요' : '문의를 찾지 못했어요'}</h2>
-    <p>${done ? '중개사 화면에서도 더 이상 연락처가 보이지 않아요.' : '이미 취소했거나 보관 기간이 지나 지워졌을 수 있어요.'}</p><p><a href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/">집코드로 가기</a></p></div>`);
+    <p>${done ? '중개사 화면에서도 더 이상 연락처가 보이지 않아요.' : '이미 취소했거나 보관 기간이 지나 지워졌을 수 있어요.'}</p><p><a href="${WEB_ROOT}">${SITE_NAME}로 가기</a></p></div>`);
 }
 
 /* ---------- ① 중개사: 받은 문의 · 응답 처리 ---------- */
@@ -3676,7 +3686,7 @@ const PT_PAY = { invoice: '세금계산서(사업자)', income: '사업소득 3.
 const DL_STEP = ['보고', '시행사확인', '정산대기', '지급완료', '취소'];
 const DV_DAILY = 50, PT_DAILY = 50, PT_SESSION_DAYS = 30, PT_JOIN_MAX = 20, DL_DAY_MAX = 30;
 const DV_CONSENT_V = 'dv-2026-11-21', PT_CONSENT_V = 'pt-2026-11-21';
-const PARTNER_SITE = 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/partner/';
+const PARTNER_SITE = WEB_ROOT + 'partner/';
 
 function dvDispatch(b) {
   try {

@@ -6,8 +6,9 @@
    필요: assets/mine-core.js, assets/ask-core.js (+ 있으면 stat.js) · 사용: JDJ_ASK.mount(요소, {from:'home'|'mine'|'ask', value}) */
 (function (root) {
   'use strict';
-  const DATA = '/jangdaejang-data/data/';
-  const POP = '/jangdaejang-calc/assets/ask-popular.json';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+  const DATA = JB.DATA + 'data/';
+  const POP = JB.SITE + 'assets/ask-popular.json';
   const EXAMPLES = ['잠실엘스 헬리오시티 비교', '목동 신시가지 7단지 지금 사도 될까?', '은마 래미안대치팰리스 34평', '헬리오시티'];
   /* 찾는 순서: 문장에 시·도 이름이 있으면 그 시·도부터, 아니면 서울 → 경기·인천 → 나머지 */
   const TIERS = [['s00'], ['s08', 's03'], ['s01', 's02', 's04', 's05', 's06', 's07', 's09', 's10', 's11', 's12', 's13', 's14', 's15']];

@@ -7,7 +7,14 @@
    node 에서도 불러 검사할 수 있게 순수 함수는 DOM 없이 동작합니다(tools/pro-test.js). */
 (function (root) {
   'use strict';
-  const SITE = 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+  /* 사이트 대표 주소(끝 /): assets/config.js SITE_URL → 없으면 지금 열린 사이트 → 없으면 예전 기본 주소. 도메인을 바꾸면 config.js 한 줄로 따라 바뀜 */
+  const SITE = (function () {
+    const u = String(((root && root.JDJ_SITE) || {}).SITE_URL || '').trim();
+    if (/^https:\/\//.test(u)) return u.replace(/\/+$/, '') + '/';
+    try { if (root.location && /^https?:$/.test(root.location.protocol)) return root.location.origin + JB.SITE; } catch (e) {}
+    return 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/';
+  })();
   /* 전문가 유형 — 신축 분양은 분양대행사·컨설팅·방송 출연 전문가·세미나 업체도 상담·소개하므로 공인중개사로 한정하지 않음.
      공인중개사는 법정 표시(공인중개사법 제18조의2·시행령 제17조의2: 중개사무소 명칭·소재지·연락처·등록번호·개업공인중개사 성명) 필수.
      중개보조원은 어느 유형으로도 넣을 수 없음(중개보조원 이름·직함 거절). 서버(agent-backend.gs PRO_ROLE)와 같은 키. */

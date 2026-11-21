@@ -3,26 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<link rel="manifest" href="../../manifest.webmanifest">
 <meta name="theme-color" content="#FFFFFF">
 <meta name="robots" content="noindex">
 <meta name="referrer" content="no-referrer">
-<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
-<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
-<script src="/jangdaejang-calc/assets/pwa.js" defer data-nobar></script>
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
+<script src="../../assets/pwa.js?v=1" defer data-nobar></script>
 <title>주간 블로그·인스타 글 | 집코드</title>
 <meta name="description" content="내 지역의 이번 주 실거래·신고가·하락 거래·청약 일정을 공개 자료로 정리한 블로그 글, 인스타 카드 이미지, 설명글을 한 번에 만들어요.">
 <script>window.JDJ_CONFIG = { tool:'agent_content', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
-<script src="/jangdaejang-calc/assets/config.js?v=6"></script>
+<script src="../../assets/config.js?v=7"></script>
 <script src="../../assets/track.js?v=2"></script>
 <script src="../../assets/agents.js"></script>
-<script src="/jangdaejang-calc/assets/auth.js?v=6"></script>
-<script src="/jangdaejang-calc/assets/brief-core.js?v=8"></script>
-<script src="/jangdaejang-calc/assets/pro-report.js?v=6"></script>
-<script src="/jangdaejang-calc/assets/broker-tools.js?v=4"></script>
+<script src="../../assets/auth.js?v=7"></script>
+<script src="../../assets/brief-core.js?v=9"></script>
+<script src="../../assets/pro-report.js?v=7"></script>
+<script src="../../assets/broker-tools.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=44">
+<link rel="stylesheet" href="../../assets/aplus.css?v=44">
 <style>
 [hidden]{display:none!important}
 .wrap{max-width:900px;margin:0 auto;padding:20px 16px 60px}
@@ -54,7 +54,7 @@ h1{font-size:clamp(22px,5.4vw,30px);margin:4px 0 6px;line-height:1.3;letter-spac
 </style>
 </head>
 <body>
-<header class="top"><a class="brand" href="/jangdaejang-calc/" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name>집코드</span></a><a class="badge plain" href="../my/" style="text-decoration:none">중개사 대시보드</a></header>
+<header class="top"><a class="brand" href="../../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name>집코드</span></a><a class="badge plain" href="../my/" style="text-decoration:none">중개사 대시보드</a></header>
 <div class="wrap">
   <h1>주간 블로그·인스타 글</h1>
   <p class="lead">고른 지역의 실거래·신고가·하락 거래·청약 일정을 공개 자료로 정리해 블로그 글, 인스타 카드 이미지, 설명글을 한 번에 만들어요. 매주 월요일 아침 새 재료가 준비돼요.</p>
@@ -94,11 +94,12 @@ h1{font-size:clamp(22px,5.4vw,30px);margin:4px 0 6px;line-height:1.3;letter-spac
   </div>
 </div>
 <script>
+var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 (function(){
 'use strict';
 const $ = id => document.getElementById(id);
 const T = window.JDJ_BT, PR = window.JDJ_PRO, SITE = T.SITE, esc = T.esc;
-const KIT = '/jangdaejang-data/data/brief/kit/';
+const KIT = JB.DATA + 'data/brief/kit/';
 let IDX = null, K = null, PROF = null, SEED = 0, CARDS = [];
 const qg = new URLSearchParams(location.search).get('g');
 
@@ -110,7 +111,7 @@ async function showQuota(){
   if (q.err){ el.textContent = q.err; return; }
   const L = T.limitsFor(q.tier), used = (q.used && q.used.kit) || [];
   el.innerHTML = q.tier && L.kitAreas ? `${esc(q.label || '')} 이용 중 · 이번 주 글은 지역 <b>${L.kitAreas}곳</b>까지 만들 수 있어요${used.length ? ` (쓴 지역: ${used.map(g => esc(nameOf(g))).join(', ')})` : ''}. 같은 지역은 몇 번이든 다시 만들 수 있어요.`
-    : `주간 글은 ${SITE} 모닝 브리핑 중개사용(지역 ${T.limitsFor('brief_pro').kitAreas}곳)·중개사 플러스(지역 ${T.limitsFor('brief_pro_plus').kitAreas}곳)에 들어 있어요. 중개사가 아닌 분양·컨설팅 전문가는 플러스로 쓸 수 있어요. <a href="/jangdaejang-calc/brief/subscribe/?p=brief_pro">구독 알아보기</a>`;
+    : `주간 글은 ${SITE} 모닝 브리핑 중개사용(지역 ${T.limitsFor('brief_pro').kitAreas}곳)·중개사 플러스(지역 ${T.limitsFor('brief_pro_plus').kitAreas}곳)에 들어 있어요. 중개사가 아닌 분양·컨설팅 전문가는 플러스로 쓸 수 있어요. <a href="${JB.SITE}brief/subscribe/?p=brief_pro">구독 알아보기</a>`;
 }
 const nameOf = g => { const a = (IDX && IDX.areas || []).find(x => x.g === g); return a ? `${a.sd} ${a.name}` : g; };
 

@@ -6,12 +6,13 @@
    window.JDJPolicy = { load(base), forCodes(data, codes, mode), html(data, opts), applies(p, sgg, dong) } */
 (function(){
   'use strict';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   var CACHE = {};
   var TYPE = {'세금-보유':'보유세','세금-양도':'양도세','대출':'대출','규제지역':'규제지역','토허':'토지거래허가','공급':'공급','청약':'청약','임대차':'임대차'};
   var METRO = ['11', '28', '41'];
 
   function load(base){
-    var u = (base || '/jangdaejang-data/data/') + 'policy.json';
+    var u = (base || JB.DATA + 'data/') + 'policy.json';
     if (!CACHE[u]) CACHE[u] = fetch(u, {cache:'no-cache'}).then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; });
     return CACHE[u];
   }

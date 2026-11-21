@@ -5,9 +5,10 @@
    - '새 공고' = 관심 지역·종류에 맞고 지금 분양예정·청약중인 공고 중 이 기기에서 아직 분양 화면에 보여 주지 않은 것(본 공고 id 는 'jdj_areas_seen'). */
 (function (root) {
   'use strict';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   const KEY = 'jdj_areas', SEEN = 'jdj_areas_seen', MAX = 10, MAX_SEEN = 600;
-  const NOTICES = '/jangdaejang-data/data/bunyang/notices.json', INDEX = '/jangdaejang-data/data/index.json';
-  const BUNYANG = '/jangdaejang-calc/bunyang/';
+  const NOTICES = JB.DATA + 'data/bunyang/notices.json', INDEX = JB.DATA + 'data/index.json';
+  const BUNYANG = JB.SITE + 'bunyang/';
   const MU = '무순위·잔여세대';
   const KINDS = { notice: '새 분양 공고', mu: '무순위·잔여세대 일정' };
   const EMPTY_TXT = '관심 지역을 설정하면 새로운 분양 공고, 무순위 청약 일정을 가장 먼저 받아볼 수 있어요';

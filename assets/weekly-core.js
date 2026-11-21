@@ -1,13 +1,16 @@
 /* 주간 실거래 동향(/weekly/) 글·숫자 규칙 — 화면(assets/weekly-view.js)·테스트(tools/weekly-test.js) 공용, DOM 없음.
-   자료: /jangdaejang-data/data/weekly/ (비공개 엔진 scripts/weekly.py — 국토교통부 아파트 매매 실거래가로 만든 우리 통계)
+   자료: jangdaejang-data data/weekly/ (비공개 엔진 scripts/weekly.py — 국토교통부 아파트 매매 실거래가로 만든 우리 통계)
      index.json(주 목록) · {주}.json(그 주 최신 판 + versions) · {주}/v{n}.json·csv(판마다 고정 보관본)
    숫자는 자료 그대로만 쓴다(여기서 새 숫자를 만들지 않음). 표본 기준 미만(chg 없음)은 변동률 대신 '표본 부족'.
    window.JDJ_WEEKLY */
 (function (root) {
   'use strict';
-  const DATA = '/jangdaejang-data/data/weekly/';
-  const PAGE = '/jangdaejang-calc/weekly/';
-  const ORIGIN = 'https://chrisjangdaejang-ux.github.io';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+  const DATA = JB.DATA + 'data/weekly/';
+  const PAGE = JB.SITE + 'weekly/';
+  /* 대표 주소(canonical·인용 주소): assets/config.js 의 SITE_URL(도메인을 바꾸면 따라 바뀜). 화면 경로(PAGE)는 지금 열린 주소 기준 */
+  const SITE_URL = String(((root && root.JDJ_SITE) || {}).SITE_URL || 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc').replace(/\/+$/, '');
+  const ORIGIN = SITE_URL.replace(/^(https?:\/\/[^/]+).*$/, '$1');
   const WRE = /^\d{4}-\d{2}$/;
 
   /** 주소 → 주 ID('2026-46') / null. /weekly/2026-46/ 또는 ?w=2026-46 */
@@ -71,7 +74,7 @@
     const s = site || '집코드';
     return { line: `자료: ${s} 주간 실거래 동향(국토교통부 실거래가 분석, ${dot(V.asof)} 기준)`,
       detail: `${weekName(V)} ${verText(V)}${V.status === 'final' ? '' : ' — 늦게 신고되는 거래가 들어오면 숫자가 바뀔 수 있어요'}`,
-      url: `${ORIGIN}${PAGE}${V.w}/?v=${V.ver}` };
+      url: `${SITE_URL}/weekly/${V.w}/?v=${V.ver}` };
   }
   function urls(V, ver) {
     const v = ver || V.ver;
@@ -192,7 +195,7 @@
     return out;
   }
 
-  const API = { DATA, PAGE, ORIGIN, weekFrom, verFrom, num, pct, share, md, dot, period, weekName, statusText, verText, pick, chgCell, volCell,
+  const API = { DATA, PAGE, ORIGIN, SITE_URL, weekFrom, verFrom, num, pct, share, md, dot, period, weekName, statusText, verText, pick, chgCell, volCell,
     roneCell, levelRows, row, sidos, cite, urls, headline, scaleMax, days, finalNote, RELEASE, released, whenText, scheduleText, ymText, obCell, usCell, segRows, cmpSummary, zeroText, methodName, pressTitles, pressKeys, pressLines, pressPeriod };
   root.JDJ_WEEKLY = API;
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

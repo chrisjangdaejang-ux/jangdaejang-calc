@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#FFFFFF">
-<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
-<script src="/jangdaejang-calc/assets/biz.js" defer></script>
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<script src="../../assets/biz.js?v=1" defer></script>
 <title>결제하기 · 프리미엄 리포트 | 집코드</title>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="집코드">
@@ -26,15 +26,15 @@
 <script src="../../assets/stat.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=44">
-<script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
-<link rel="stylesheet" href="/jangdaejang-calc/assets/pay.css?v=2">
-<script src="/jangdaejang-calc/assets/agents.js"></script>
-<script src="/jangdaejang-calc/assets/pay.js?v=3"></script>
+<link rel="stylesheet" href="../../assets/aplus.css?v=44">
+<script src="../../assets/nw.js?v=1" defer></script>
+<link rel="stylesheet" href="../../assets/pay.css?v=2">
+<script src="../../assets/agents.js"></script>
+<script src="../../assets/pay.js?v=4"></script>
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="/jangdaejang-calc/" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
+  <a class="brand" href="../../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
   <div class="badge plain">프리미엄 리포트</div>
 </header>
 <main class="pay">
@@ -45,7 +45,7 @@
     <h2 id="sumH" class="sr">주문 상품</h2>
     <div class="sum"><div><div class="nm" id="pName">-</div><div class="links" id="pDesc" style="margin:2px 0 0"></div></div><div class="pr" id="pPrice">-</div></div>
     <ul class="dlist" id="pList"></ul>
-    <p class="links"><a href="/jangdaejang-calc/premium/" id="editLink">상품·단지 바꾸기</a> · 부가세 포함 · 결제 즉시 웹 화면 + PDF 저장으로 제공 · 열람 기간 1년</p>
+    <p class="links"><a href="../../premium/" id="editLink">상품·단지 바꾸기</a> · 부가세 포함 · 결제 즉시 웹 화면 + PDF 저장으로 제공 · 열람 기간 1년</p>
   </section>
 
   <section class="card2" aria-labelledby="ctH">
@@ -74,16 +74,17 @@
       열람(제공 개시) 후에는 「전자상거래법」 제17조 제2항 제5호에 따라 청약철회가 제한됩니다.
       단, 시스템 오류로 리포트를 받지 못했거나 내용이 상품 안내와 다르면 열람 여부와 관계없이 전액 환불됩니다.</span>
   </label>
-  <p class="links"><a href="/jangdaejang-calc/terms/" target="_blank" rel="noopener">이용약관</a> · <a href="/jangdaejang-calc/refund/" target="_blank" rel="noopener">환불 정책</a> · <a href="/jangdaejang-calc/privacy/" target="_blank" rel="noopener">개인정보처리방침</a></p>
+  <p class="links"><a href="../../terms/" target="_blank" rel="noopener">이용약관</a> · <a href="../../refund/" target="_blank" rel="noopener">환불 정책</a> · <a href="../../privacy/" target="_blank" rel="noopener">개인정보처리방침</a></p>
 
   <div class="msg" id="err" role="alert"></div>
   <button type="button" class="paybtn" id="payBtn" disabled>결제하기</button>
   <p class="links">결제는 전자지급결제대행사 (주)토스페이먼츠를 통해 처리되며, 회사는 카드번호 등 결제 수단 정보를 저장하지 않습니다.</p>
 </main>
-<footer class="foot">★ 집코드 · <a href="/jangdaejang-calc/">홈</a></footer>
+<footer class="foot">★ 집코드 · <a href="../../">홈</a></footer>
 <style>.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}.pmsel{display:flex;flex-wrap:wrap;gap:8px 16px;margin:8px 0 4px}.pmsel label{display:flex;align-items:center;gap:6px;font-weight:600;cursor:pointer}#pmTestTip{display:block;font-size:13.5px;margin-top:6px}
 </style>
 <script>
+var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 (function(){
   const P = JDJ_PAY, $ = id => document.getElementById(id), esc = P.esc;
   const Q = new URLSearchParams(location.search);
@@ -101,7 +102,7 @@
   $('pPrice').textContent = P.won(pr.amount);
   const isCy = k => /^cy\d+$/.test((P.keyParse(k) || {}).band || '');   /* 청약 분양가 리포트: 평형 자리에 'cy'+공고번호 */
   if (plan === 'cy' ? !keys.every(isCy) : keys.some(isCy)) { location.replace(P.ROOT); return; }
-  if (plan === 'cy') $('editLink').href = '/jangdaejang-calc/chungyak/price/?no=' + P.keyParse(keys[0]).band.slice(2);
+  if (plan === 'cy') $('editLink').href = JB.SITE + 'chungyak/price/?no=' + P.keyParse(keys[0]).band.slice(2);
   $('pList').innerHTML = keys.map(k => { const p = P.keyParse(k); return `<li><span><b>${esc(p.apt)}</b><small>${esc(p.dong)} · ${isCy(k) ? '청약 공고 분양가·입지 분석' : esc(p.band)}</small></span></li>`; }).join('');
   try { sessionStorage.setItem('jdj_pay_back', location.pathname + location.search); } catch(e){}
   P.stat();

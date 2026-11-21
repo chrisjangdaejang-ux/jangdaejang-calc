@@ -6,7 +6,8 @@
    - 상담: 기존 상담 신청서(구글 폼)를 그대로 씀. 연락처는 신청서에 직접 적고, 이 화면은 조건 요약만 미리 채움(금액은 동의할 때만). */
 (function () {
   'use strict';
-  const BASE = '/jangdaejang-calc/';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+  const BASE = JB.SITE;
   const FORM = 'https://docs.google.com/forms/d/e/1FAIpQLScCG7wzIlY3FE6EHU5QWo92uW5NQe7aiP-GJ9jvh41Rx2E8Zw/viewform';
   const F_REGION = 'entry.397234060', F_MEMO = 'entry.658364183';
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -29,7 +30,7 @@
     if (loading) return loading;
     const add = src => new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
     loading = (window.JDJ_ADJ ? Promise.resolve() : add(BASE + 'tax/adjusted-areas.js')).then(() => window.JDJ_TAX ? null : add(BASE + 'tax/tax-engine.js?v=4'))
-      .then(() => window.JDJ_GONGSI ? null : add(BASE + 'assets/gongsi.js?v=1').catch(() => null));     // 공시가격 자료는 없어도 세금 칸은 그대로
+      .then(() => window.JDJ_GONGSI ? null : add(BASE + 'assets/gongsi.js?v=2').catch(() => null));     // 공시가격 자료는 없어도 세금 칸은 그대로
     return loading;
   }
 

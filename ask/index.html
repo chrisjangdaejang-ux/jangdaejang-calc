@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#FFFFFF">
-<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
-<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
+<link rel="icon" type="image/png" href="../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../assets/icons/apple-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script src="/jangdaejang-calc/assets/pwa.js" defer></script>
-<script src="/jangdaejang-calc/assets/biz.js" defer></script>
+<script src="../assets/pwa.js?v=1" defer></script>
+<script src="../assets/biz.js?v=1" defer></script>
 <title>집코드 단지 비교 — 실거래 흐름·미래가치 점수 나란히 비교</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/ask/">
 <meta name="description" content="궁금한 아파트 단지 2~3곳을 이름으로 넣으면 실거래 평균·시세·준공·세대수·역까지 거리·미래가치 점수·보유 기간별 전망·구 대비 위치·전세가율·갭을 나란히 비교해 드려요.">
@@ -27,19 +27,19 @@
 <script>window.JDJ_CONFIG = { tool:'ask', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
-<script src="../assets/share.js?v=9"></script>
+<script src="../assets/share.js?v=10"></script>
 <script src="../assets/plain-words.js?v=14"></script>
-<script src="../assets/mine-core.js?v=16"></script>
-<script src="../assets/price-sheet.js?v=15"></script>
-<script src="../assets/ask-core.js?v=3"></script>
-<script src="../assets/ask.js?v=1"></script>
+<script src="../assets/mine-core.js?v=17"></script>
+<script src="../assets/price-sheet.js?v=16"></script>
+<script src="../assets/ask-core.js?v=4"></script>
+<script src="../assets/ask.js?v=2"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/watch-core.js?v=2"></script>
-<script src="../assets/watch.js?v=3"></script>
+<script src="../assets/watch.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=44">
-<script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
+<link rel="stylesheet" href="../assets/aplus.css?v=44">
+<script src="../assets/nw.js?v=1" defer></script>
 <style>
 .wrap{max-width:980px;margin:0 auto;padding:20px 16px 60px}
 h1{font-size:clamp(24px,5.6vw,34px);margin:6px 0 6px}
@@ -152,7 +152,7 @@ h1{font-size:clamp(24px,5.6vw,34px);margin:6px 0 6px}
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="/jangdaejang-calc/" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
+  <a class="brand" href="../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
   <div class="badge plain">단지 비교</div>
 </header>
 
@@ -172,13 +172,14 @@ h1{font-size:clamp(24px,5.6vw,34px);margin:6px 0 6px}
 
   <p class="disc">자료: 국토교통부 아파트 매매·전월세 실거래가(공공데이터포털), 공동주택관리정보시스템(K-apt)·건축물대장 단지 정보. 해제(취소) 신고된 거래와 직거래는 시세·평균 계산에서 빼요. 그래프의 선은 3개월 실거래 중앙값, 점은 실제 신고된 거래예요. 실제 거래가는 동·층·향·수리 상태에 따라 달라요. 미래가치 점수는 과거 자료로 검증한 통계 점수이며 앞으로의 가격을 보장하지 않아요.</p>
 </main>
-<footer class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집코드 · <a href="../">홈</a></footer>
+<footer class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집코드 · <a href="../">홈</a></footer>
 
 <script>
+var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 (function(){
 'use strict';
 const M = window.JDJ_MINE, A = window.JDJ_ASK_CORE, P = window.JDJ_PRICE, PL = window.JDJ_PLAIN, $ = id => document.getElementById(id);
-const DATA = '/jangdaejang-data/data/';
+const DATA = JB.DATA + 'data/';
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const NA = '<span class="na">자료 없음</span>';
 const COL = ['#2F6BFF', '#F26B1D', '#14A06B'];
@@ -204,7 +205,7 @@ async function scoreMap(sd){
   return (SMAP[sd] = m);
 }
 const rentOf = code => RENT[code] || (RENT[code] = fetch(DATA + 'rent/' + code + '.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null));
-const mineUrl = x => `/jangdaejang-calc/mine/?sd=${encodeURIComponent(x.sd)}&d=${encodeURIComponent(x.dkey)}&b=${encodeURIComponent(x.band)}`;
+const mineUrl = x => `${JB.SITE}mine/?sd=${encodeURIComponent(x.sd)}&d=${encodeURIComponent(x.dkey)}&b=${encodeURIComponent(x.band)}`;
 const rkey = x => [x.sd, x.code, x.dong, x.apt, x.band].map(v => encodeURIComponent(v).replace(/~/g, '%7E').replace(/!/g, '%21')).join('~');
 
 /** 한 단지 자료 모으기 */
@@ -450,7 +451,7 @@ function render(){
   </section>
   <section class="card"><h2>이어서 보기</h2><div class="links">
       ${items.map(x => `<a href="${esc(mineUrl(x))}"><b>${esc(x.apt)} 시세·전망 자세히 →</b><small>실거래 목록·가격 추이·미래가치 근거</small></a>`).join('')}
-      <a class="main" href="/jangdaejang-calc/buy/report/?mode=cmp&amp;cmp=${encodeURIComponent(items.map(rkey).join('!'))}" data-track="ask_to_report_cmp"><b>대출·필요 현금까지 비교하기 →</b><small>내 연소득·보유 현금으로 살 수 있는지 함께 봐요</small></a>
+      <a class="main" href="${JB.SITE}buy/report/?mode=cmp&amp;cmp=${encodeURIComponent(items.map(rkey).join('!'))}" data-track="ask_to_report_cmp"><b>대출·필요 현금까지 비교하기 →</b><small>내 연소득·보유 현금으로 살 수 있는지 함께 봐요</small></a>
   </div></section>`;
   wireChart(items); wirePanels(); otherUi(items);
   document.querySelectorAll('.vs .qm').forEach(b => b.onclick = () => { const h = $(b.getAttribute('aria-controls')); h.hidden = !h.hidden; b.setAttribute('aria-expanded', String(!h.hidden)); });
@@ -469,7 +470,7 @@ let rz = null;
 addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { const it = ITEMS.filter(x => !x.miss); if (it.length >= 2) drawChart(it); }, 150); });
 
 async function main(){
-  if (KEYS.length === 1){ const k = KEYS[0]; location.replace(`/jangdaejang-calc/mine/?sd=${encodeURIComponent(k.sd)}&d=${encodeURIComponent(k.dkey)}${BANDS[0] ? '&b=' + encodeURIComponent(BANDS[0]) : ''}`); return; }
+  if (KEYS.length === 1){ const k = KEYS[0]; location.replace(`${JB.SITE}mine/?sd=${encodeURIComponent(k.sd)}&d=${encodeURIComponent(k.dkey)}${BANDS[0] ? '&b=' + encodeURIComponent(BANDS[0]) : ''}`); return; }
   if (!KEYS.length){ $('res').innerHTML = ''; return; }
   $('res').innerHTML = '<div class="loading">단지 자료를 불러오는 중이에요…</div>';
   try {
@@ -482,6 +483,6 @@ async function main(){
 main();
 })();
 </script>
-<script src="/jangdaejang-calc/assets/ad-slot.js?v=4" defer></script>
+<script src="../assets/ad-slot.js?v=5" defer></script>
 </body>
 </html>

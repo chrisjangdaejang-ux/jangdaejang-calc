@@ -3,32 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<link rel="manifest" href="../../manifest.webmanifest">
 <meta name="theme-color" content="#FFFFFF">
-<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
-<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="robots" content="noindex">
-<script src="/jangdaejang-calc/assets/pwa.js" defer></script>
+<script src="../../assets/pwa.js?v=1" defer></script>
 <title>관심 목록 — 집코드</title>
 <meta name="description" content="관심 단지의 어제·오늘 새로 올라온 실거래, 신고가, 큰 하락, 미래가치 순위와 전세가율 변화를 한 화면에서 확인해요.">
 <script>window.JDJ_CONFIG = { tool:'watch', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
-<script src="/jangdaejang-calc/assets/track.js?v=2"></script>
-<script src="/jangdaejang-calc/assets/stat.js?v=7"></script>
-<script src="/jangdaejang-calc/assets/agents.js"></script>
-<script src="/jangdaejang-calc/assets/config.js?v=6"></script>
-<script src="/jangdaejang-calc/assets/auth.js?v=6"></script>
-<script src="/jangdaejang-calc/assets/brief-core.js?v=8"></script>
-<script src="/jangdaejang-calc/assets/today-core.js?v=1"></script>
-<script src="/jangdaejang-calc/assets/watch-core.js?v=2"></script>
-<script src="/jangdaejang-calc/assets/watch.js?v=3"></script>
-<script src="/jangdaejang-calc/assets/tabbar.js?v=2" defer></script>
+<script src="../../assets/track.js?v=2"></script>
+<script src="../../assets/stat.js?v=7"></script>
+<script src="../../assets/agents.js"></script>
+<script src="../../assets/config.js?v=7"></script>
+<script src="../../assets/auth.js?v=7"></script>
+<script src="../../assets/brief-core.js?v=9"></script>
+<script src="../../assets/today-core.js?v=1"></script>
+<script src="../../assets/watch-core.js?v=2"></script>
+<script src="../../assets/watch.js?v=4"></script>
+<script src="../../assets/tabbar.js?v=3" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=44">
+<link rel="stylesheet" href="../../assets/aplus.css?v=44">
 <style>
 .wrap{max-width:640px;margin:0 auto;padding:22px 16px 40px}
 h1{font-size:clamp(26px,6.4vw,32px);margin:4px 0 8px;letter-spacing:-.6px}
@@ -75,7 +75,7 @@ h1{font-size:clamp(26px,6.4vw,32px);margin:4px 0 8px;letter-spacing:-.6px}
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="/jangdaejang-calc/" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name>집코드</span></a>
+  <a class="brand" href="../../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name>집코드</span></a>
   <div class="badge plain">관심 목록</div>
 </header>
 <main class="wrap">
@@ -87,13 +87,14 @@ h1{font-size:clamp(26px,6.4vw,32px);margin:4px 0 8px;letter-spacing:-.6px}
   <div id="login"></div>
   <p class="note">자료: 국토교통부 아파트 매매 실거래가 공개 자료(공공데이터포털). '새로 올라온 거래'는 하루 4번 갱신할 때 우리 공개 자료에 처음 보인 거래예요(실거래 자료에 신고일이 없어서 처음 보인 때를 기준으로 해요). 신고가는 같은 단지·같은 전용면적에서 그 전 최고가보다 비싸게 거래된 경우, 큰 하락은 최근 2년 최고가보다 10% 넘게 낮은 거래예요. 미래가치 점수·순위와 전세가율은 공개 자료 값 그대로예요. 지난번 본 기록은 이 기기에만 남아요.</p>
 </main>
-<footer class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ <span data-site-name>집코드</span> · <a href="/jangdaejang-calc/">홈</a></footer>
+<footer class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="../../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ <span data-site-name>집코드</span> · <a href="../../">홈</a></footer>
 <script>
+var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 (function(){
 'use strict';
 const W = window.JDJ_WATCH, C = window.JDJ_WATCH_CORE, TD = window.JDJ_TODAY, B = window.JDJ_BRIEF;
 const SITE = ((window.JDJ_SITE || {}).SITE_NAME || '').trim() || '집코드';
-const DATA = '/jangdaejang-data/data/', BASE = '/jangdaejang-calc/', $ = id => document.getElementById(id);
+const DATA = JB.DATA + 'data/', BASE = JB.SITE, $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const J = u => fetch(u, {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null);
 const won = m => { m = Math.round(+m || 0); const e = Math.floor(m / 10000), r = m % 10000; return e && r ? `${e}억 ${r.toLocaleString('ko-KR')}만 원` : e ? `${e}억 원` : `${r.toLocaleString('ko-KR')}만 원`; };

@@ -7,6 +7,7 @@
      - email       : 고객문의 이메일 (회사 대표 메일)
    ───────────────────────────────────────────────────────────── */
 (function () {
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   const BIZ = {
     name: '(주)장대장부동산그룹',
     ceo: '장용석',
@@ -20,7 +21,7 @@
   };
   window.JDJ_BIZ = BIZ;
 
-  const ROOT = '/jangdaejang-calc/';
+  const ROOT = JB.SITE;
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const item = (k, v) => v ? `<span><em>${k}</em> ${v}</span>` : '';
 

@@ -23,7 +23,7 @@
     $('stl').innerHTML = `<span class="pill ${V.status === 'final' ? 'final' : 'prov'}">${esc(K.statusText(V))}</span><span class="pill ver">제${V.ver}판 · ${esc(K.dot(V.asof))} 자료 기준</span>
       <span class="fn">${esc(K.finalNote(V))}</span><span class="fn"><b>${esc(K.scheduleText(V))}</b>${V.release ? ` 이 판 발표: ${esc(K.whenText(V.release))}.` : ''}</span>`;
     document.querySelectorAll('[data-m]').forEach(el => { const v = m[el.dataset.m]; if (v != null) el.textContent = v; });
-    const can = document.querySelector('link[rel=canonical]'); if (can) can.href = K.ORIGIN + K.PAGE + V.w + '/';
+    const can = document.querySelector('link[rel=canonical]'); if (can) can.href = K.SITE_URL + '/weekly/' + V.w + '/';
   }
 
   function nav() {

@@ -8,14 +8,15 @@
    가격은 화면 표시용이고, 실제 결제 금액은 서버(tools/agent-backend.gs 의 PRICE)가 정하고 대조합니다.
    ───────────────────────────────────────────────────────────── */
 (function () {
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   const TEST_MODE = true;
   const CLIENT_KEY = 'test_ck_c19yZcdqn4Yd7M7K7kjT1xjJfvDXxM9SP5';   // API 개별 연동 키(결제창). 결제위젯 키(gck)로 바꾸면 위젯 방식으로 자동 전환
 
-  const ROOT = '/jangdaejang-calc/premium/';
+  const ROOT = JB.SITE + 'premium/';
   const P = window.JDJ_PAY = {
     TEST_MODE, CLIENT_KEY, ROOT,
     SDK: 'https://js.tosspayments.com/v2/standard',
-    DATA: '/jangdaejang-data/data/',
+    DATA: JB.DATA + 'data/',
     PRODUCTS: {
       single: { name: '단지 리포트', amount: 9900, min: 1, max: 1, desc: '관심 단지 1곳' },
       pack: { name: '비교 패키지', amount: 29000, min: 2, max: 3, desc: '후보 단지 2~3곳' },

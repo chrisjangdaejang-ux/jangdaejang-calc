@@ -1,8 +1,9 @@
 /* 장대장 계산기: 홈 화면에 추가(PWA) — 서비스 워커 등록 + 설치 안내 바 */
 (function () {
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   const noBar = !!(document.currentScript && document.currentScript.hasAttribute('data-nobar'));
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('/jangdaejang-calc/sw.js', { scope: '/jangdaejang-calc/' }).catch(() => {}));
+    window.addEventListener('load', () => navigator.serviceWorker.register(JB.SITE + 'sw.js', { scope: JB.SITE }).catch(() => {}));
   }
   const ua = navigator.userAgent || '';
   const standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
@@ -107,7 +108,7 @@
     if (!force && !isMobile && !deferred) return;                 // PC는 설치 가능할 때만
     addCss();
     bar = document.createElement('div'); bar.className = 'jdjpwa';
-    bar.innerHTML = `<img src="/jangdaejang-calc/assets/icons/icon-192.png" alt=""><div class="tx"><b>홈 화면에 추가하세요</b><small>앱처럼 아이콘 한 번에 계산기를 열 수 있어요</small></div>
+    bar.innerHTML = `<img src="${JB.SITE}assets/icons/icon-192.png" alt=""><div class="tx"><b>홈 화면에 추가하세요</b><small>앱처럼 아이콘 한 번에 계산기를 열 수 있어요</small></div>
       <button class="go">추가하기</button><button class="x" aria-label="닫기">×</button>`;
     bar.querySelector('.go').onclick = install;
     bar.querySelector('.x').onclick = () => { close(7); ga('pwa_dismiss'); };

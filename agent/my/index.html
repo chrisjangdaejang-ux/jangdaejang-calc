@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="manifest" href="/jangdaejang-calc/manifest.webmanifest">
+<link rel="manifest" href="../../manifest.webmanifest">
 <meta name="theme-color" content="#FFFFFF">
 <meta name="robots" content="noindex">
 <meta name="referrer" content="no-referrer">
-<link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
-<link rel="apple-touch-icon" href="/jangdaejang-calc/assets/icons/apple-180.png">
-<script src="/jangdaejang-calc/assets/pwa.js" defer data-nobar></script>
-<script src="/jangdaejang-calc/assets/biz.js" defer></script>
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
+<script src="../../assets/pwa.js?v=1" defer data-nobar></script>
+<script src="../../assets/biz.js?v=1" defer></script>
 <title>중개사 대시보드 | 집코드</title>
 <meta name="description" content="집코드 제휴 중개사 업무 도구: 받은 매수·매도 문의, 고객 관심 단지 변화 알림, 적정 가격 근거표.">
 <script>window.JDJ_CONFIG = { tool:'agent_my', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../../assets/track.js?v=2"></script>
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/mine-core.js?v=16"></script>
+<script src="../../assets/mine-core.js?v=17"></script>
 <script src="../../assets/agent-tools-core.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=44">
+<link rel="stylesheet" href="../../assets/aplus.css?v=44">
 <style>
 [hidden]{display:none!important}
 .wrap{max-width:880px;margin:0 auto;padding:20px 16px 60px}
@@ -83,7 +83,7 @@ label.f{display:block;font-size:13.5px;font-weight:700;color:#4E5968;margin:10px
 </style>
 </head>
 <body>
-<header class="top"><a class="brand" href="/jangdaejang-calc/" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a><a class="badge plain" href="../" style="text-decoration:none">중개사 제휴센터</a></header>
+<header class="top"><a class="brand" href="../../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a><a class="badge plain" href="../" style="text-decoration:none">중개사 제휴센터</a></header>
 <div class="wrap">
   <h1>중개사 대시보드</h1>
   <p class="lead" id="lead">받은 매수·매도 문의, 고객 관심 단지 변화, 적정 가격 근거표를 한곳에서 써요.</p>
@@ -167,11 +167,12 @@ label.f{display:block;font-size:13.5px;font-weight:700;color:#4E5968;margin:10px
   </div>
 </div>
 <script>
+var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 (function(){
 'use strict';
 const $ = id => document.getElementById(id);
 const A = window.JDJ_AGENTS, M = window.JDJ_MINE, G = window.JDJ_AGT;
-const DATA = '/jangdaejang-data/data/';
+const DATA = JB.DATA + 'data/';
 const LS = 'jdj_agt';
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const track = (n, p) => { try { JDJ.track(n, p || {}); } catch (e) {} };

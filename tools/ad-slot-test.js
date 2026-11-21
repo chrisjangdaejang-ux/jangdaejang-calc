@@ -138,7 +138,7 @@ const doc = read('docs/ad_slots.md');
   const j = JSON.parse(read('data/ads.json'));
   check('data/ads.json: ads 배열', Array.isArray(j.ads), typeof j.ads);
   const sw = read('sw.js');
-  check('sw.js: ad-slot.js v4·aplus v44 미리 저장', sw.includes('/assets/ad-slot.js?v=4') && sw.includes('/assets/aplus.css?v=44'), '');
+  check('sw.js: ad-slot.js v5·aplus v44 미리 저장', sw.includes('/assets/ad-slot.js?v=5') && sw.includes('/assets/aplus.css?v=44'), '');
   const adp = read('ad/index.html');
   check('/ad/: 광고 위치 안내 칸', adp.includes('id="slots"') && adp.includes('광고 위치 안내'), '');
   const slotSec = adp.slice(adp.indexOf('id="slots"'), adp.indexOf('id="target"'));

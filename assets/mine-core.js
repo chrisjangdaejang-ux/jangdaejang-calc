@@ -1,7 +1,7 @@
 /* 장대장 '내 집 시세' 공통 로직 — mine/ 화면과 tools/mine-test.js 가 함께 쓴다.
-   자료: /jangdaejang-data/data/sNN.json 의 units (assets/rec-core.js 설명과 같음 — 점수·추천용)
+   자료: jangdaejang-data data/sNN.json 의 units (assets/rec-core.js 설명과 같음 — 점수·추천용)
      u = [시군구코드, 동, 단지, 평형대, 전용㎡(중앙값), 자료 기간 거래수, 월별 평당가 36개, 월별 거래수 문자열, 지번, fx]
-   시세 확인용(거래가 1건이라도 있으면 모두): /jangdaejang-data/data/price/
+   시세 확인용(거래가 1건이라도 있으면 모두): jangdaejang-data data/price/
      price/sNN.json   단지 목록(검색용) r = [시군구코드, 동, 단지, 평형대, 전용㎡, 거래수, 지번, 점수 자료 1/0] → listRow(r) 로 u 모양으로
      price/{구코드}.json units: u 와 같은 앞 9칸 + [9] 점수 자료 1/0, [10] 거래 있는 달의 그 달 중앙 평당가(오래된 달부터),
                      [11] 개별 거래 [계약 연월일(YYYYMMDD), 전용㎡, 층, 금액(만원), 유형 0 중개·1 직거래·2 미기재, 신고가 1/0] 최신순,
