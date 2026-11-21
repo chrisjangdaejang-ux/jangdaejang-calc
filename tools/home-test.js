@@ -127,6 +127,30 @@ if (dir && fs.existsSync(path.join(dir, 'home', 's00.json'))) {
   check('실제 자료: 기준 달 = index.json dataTo', R0.recent[1], X.dataTo, '');
 }
 
+/* ---------- 첫 화면 소개 글(assets/home-core.js heroFacts · index.html .hero) ---------- */
+{
+  const IX0 = { dataTo: '202610', stats: { trades: 8380311, from: '201012', apts: 16409 } };
+  const F = HC.heroFacts(IX0);
+  check('소개 글: 실거래 건수 = index.json stats.trades 만 단위', F.trades, '838만', '8,380,311건');
+  check('소개 글: 위 작은 글씨 = 시작 연도·기간', F.eyebrow, '2010년부터 16년간 공공 통계로 만든 부동산 미래 예보', '201012~202610');
+  check('소개 글: 작은 글씨 한 줄 = 단지 수·갱신(연도는 위에만)', F.facts, ['아파트 1.6만 단지', '하루 4번 갱신'], '');
+  const F6 = HC.heroFacts({ dataTo: '202610', stats: { trades: 9512345, from: '200601', apts: 17000 } });
+  check('소개 글: 2006년 자료가 들어오면 자동으로 2006년·21년간', [F6.trades, F6.eyebrow], ['951만', '2006년부터 21년간 공공 통계로 만든 부동산 미래 예보'], '200601~202610');
+  const F0 = HC.heroFacts(null);
+  check('소개 글: 자료 없으면 숫자 없이(지어내지 않음)', [F0.trades, F0.eyebrow, F0.facts], [null, null, ['하루 4번 갱신']], '');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const a = html.indexOf('<div class="hero">'), b = html.indexOf('</div>\n', html.indexOf('<h1>', a)), hero = html.slice(a, html.indexOf('\n  </div>', a));
+  const vis = hero.replace(/<[^>]+>/g, ' ');
+  check('소개 글: 새 문구 1문단', vis.includes('우리 동네와 단지가 앞으로 다른 곳보다 더 오를 가능성이 높은지 미리 보여 드려요.'), true, '');
+  check('소개 글: 새 문구 2문단', vis.includes('실제로 맞았던 것만 골라 썼어요. 날씨 예보처럼 확정이 아닌 가능성이니 결정할 때 참고 자료로 써 주세요.'), true, '');
+  check('소개 글: "회원가입 없이 바로 쓸 수 있어요"·[분석 방법 보기 ›] 작은 글씨 줄', /class="dline"[\s\S]*회원가입 없이 바로 쓸 수 있어요[\s\S]*분석 방법 보기 ›/.test(hero), true, '');
+  check('소개 글: 숫자를 직접 써 넣지 않음(838·2010·1.6만 없음)', /838|2010|1\.6만|16년/.test(hero), false, '');
+  check('소개 글: 노란 상자(data-jdj-str) 없음', /data-jdj-str|class="strl"/.test(hero), false, '');
+  check('소개 글: 어려운 말·금지어 없음', ['하락기 방어력', '시험', '검증', '채점'].filter(w => hero.includes(w)), [], '');
+  const iAd = html.indexOf('data-ad-slot="home_top"'), iHeroEnd = html.indexOf('\n  </div>', a), iMap = html.indexOf('class="maplink"');
+  check('홈 상단 광고: 소개 글 바로 다음, 지도 버튼 앞', iAd > iHeroEnd && iAd < iMap && !/<a |<section/.test(html.slice(iHeroEnd + 9, iAd)), true, '');
+}
+
 const fail = rows.filter(r => !r.ok);
 for (const r of rows) console.log((r.ok ? 'ok   ' : 'FAIL ') + r.name + (r.ok ? '' : `\n      got ${JSON.stringify(r.got)}\n      want ${JSON.stringify(r.want)}  (${r.basis})`));
 console.log(`\n${rows.length - fail.length}/${rows.length} 통과`);

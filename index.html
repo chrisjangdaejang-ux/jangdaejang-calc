@@ -40,8 +40,7 @@
 <script src="assets/ask-core.js?v=3" defer></script>
 <script src="assets/ask.js?v=1" defer></script>
 <script src="assets/rank-core.js?v=5" defer></script>
-<script src="assets/home-core.js?v=1" defer></script>
-<script src="assets/strength.js?v=1" defer></script>
+<script src="assets/home-core.js?v=2" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=43">
@@ -99,11 +98,8 @@
 .row small{display:block;font-size:13.5px;color:var(--sub2)}
 .row .go{margin-left:auto;color:#B0B8C1;font-size:20px}
 .notice{margin-top:32px}
-.hero .strl{margin:0;padding:11px 14px;border-radius:12px;background:#FBF5E3;border-left:4px solid #B8942A;font-size:15px;line-height:1.6;color:#4A3D1A;font-weight:500}
-.dscale{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;min-height:44px;padding:8px 14px;border-radius:12px;background:var(--gray2);border:1px solid var(--line);text-decoration:none;color:var(--sub);font-size:14px;line-height:1.5}
-.dscale span{font-weight:500}
-.dscale b{color:var(--blue);font-size:14.5px;white-space:nowrap;margin-left:auto}
-.dscale:hover{border-color:var(--blue)}
+.hero p.dline{font-size:13.5px;line-height:1.6;color:var(--sub2)}   /* 숫자·갱신·분석 방법 작은 글씨 한 줄 */
+.hero p.dline a{font-weight:700;text-decoration:none;white-space:nowrap}
 .premlink{margin:14px 20px 0;font-size:14.5px}
 .premlink a{color:var(--sub2);text-decoration:none;font-weight:700;display:inline-flex;align-items:center;min-height:44px}
 .premlink a:hover{color:var(--blue)}
@@ -190,15 +186,14 @@
   <div class="hero">
     <div class="eyebrow" id="heroEy">공공 통계로 만든 부동산 미래 예보</div>
     <h1>집값에도<br>예보가 있어요</h1>
-    <p>하락기 방어력·전세가율·역세권·신설역 단계·재건축 사업성·학군·입주 물량·미분양·인구·일자리까지, 단지와 지역 항목이 지역과 시기별로 집값에 어떤 영향을 줬는지 분석해 앞으로의 흐름을 미리 보여 드려요. 날씨 예보처럼 확정된 결과가 아니라 가능성이니, 결정의 참고 자료로 써 주세요. 회원가입 없이 바로 쓸 수 있어요.</p>
-    <p class="strl" data-jdj-str="hero" hidden></p>
-    <a class="dscale" href="about/" data-track="home_to_about"><span id="dsTxt">공공 실거래·통계 기반 · 하루 4번 갱신</span><b>분석 방법 보기 ›</b></a>
+    <p>국토교통부 실거래<span id="heroN"> 자료를</span> 바탕으로, 우리 동네와 단지가 앞으로 다른 곳보다 더 오를 가능성이 높은지 미리 보여 드려요.</p>
+    <p>역까지 거리, 학교, 새 아파트 입주량, 인구 변화처럼 집값을 움직여 온 통계를 과거에 그대로 대입해 보고, 실제로 맞았던 것만 골라 썼어요. 날씨 예보처럼 확정이 아닌 가능성이니 결정할 때 참고 자료로 써 주세요.</p>
+    <p class="dline"><span id="dsTxt">공공 실거래·통계 기반 · 하루 4번 갱신</span> · <span class="nw">회원가입 없이 바로 쓸 수 있어요 · <a href="about/" data-track="home_to_about">분석 방법 보기 ›</a></span></p>
   </div>
+  <div class="jas jas-top jas-in" data-ad-slot="home_top" data-ad-cat="home" data-ad-top></div>
 
   <a class="maplink" href="map/" data-track="home_to_map"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg></span><span><b>지도로 단지 찾기<span class="new" style="margin-left:6px;font-size:11px;font-weight:700;color:#2F6BFF;background:#fff;border-radius:4px;padding:1px 6px;vertical-align:3px">NEW</span></b><small>단지 시세·미래가치 점수·전세가율을 지도에서 한눈에</small></span><span class="go">›</span></a>
   <a class="ranklink" href="rank/" data-track="home_to_rank"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M9 20V8h6v12"/><path d="M3 20v-7h6M15 11h6v9"/></svg></span><span><b>우리 구는 몇 위?</b><small>구별 시세 상승·하락 순위와 미래가치 순위</small></span><span class="go">›</span></a>
-
-  <div class="jas jas-top jas-in" data-ad-slot="home_top" data-ad-cat="home" data-ad-top></div>
 
   <section class="pulse" id="pulse" hidden aria-labelledby="plTitle">
     <div class="pl-hd"><h2 id="plTitle">우리 지역 지금</h2><div class="pl-rg" id="plRg"></div></div>
@@ -231,20 +226,16 @@
   <a class="agband" href="agent/" data-track="home_agent_band"><span><b>공인중개사이신가요?</b><small>추천 단지 카드에 사무소를 노출하세요</small></span><span class="go">제휴 안내 ›</span></a>
 </main>
 <script>
-/* 데이터 규모 한 줄: 공개 분석 데이터(index.json)에서 읽기. 없는 값은 빼고 표시 */
+/* 소개 글 숫자·작은 글씨 한 줄: 공개 분석 데이터(index.json)에서 읽기(assets/home-core.js heroFacts). 없는 값은 빼고 표시 */
 (async function(){
   try {
     const r = await fetch('/jangdaejang-data/data/index.json', { cache: 'no-cache' }); if (!r.ok) return;
-    const IX = await r.json(), S = IX.stats || {}, out = [];
-    const man = n => n >= 1e4 ? `${(n / 1e4).toFixed(n >= 1e6 ? 0 : 1).replace(/\.0$/, '')}만` : n.toLocaleString('ko-KR');
-    if (S.trades) out.push(`실거래 ${man(S.trades)} 건`);
-    else if (IX.total && IX.months) out.push(`최근 ${Math.round(IX.months.length / 12)}년 실거래 ${man(IX.total)} 건`);
-    if (S.apts) out.push(`아파트 ${man(S.apts)} 단지`);
-    else { const nu = (IX.sido || []).reduce((s, x) => s + (x.units || 0), 0); if (nu) out.push(`단지·평형 ${man(nu)} 개`); }
-    if (S.from) { const y0 = +S.from.slice(0, 4); out.push(`${y0}년~`); const to = IX.dataTo || S.from, yrs = Math.round(((+to.slice(0, 4) - y0) * 12 + (+to.slice(4, 6)) - (+S.from.slice(4, 6)) + 1) / 12);
-      document.getElementById('heroEy').textContent = `${y0}년부터 ${yrs}년간 공공 통계로 만든 부동산 미래 예보`; }
-    out.push('하루 4번 갱신');
-    document.getElementById('dsTxt').textContent = out.join(' · ');
+    const IX = await r.json();
+    const go = () => { const F = window.JDJ_HOME.heroFacts(IX);
+      if (F.trades) document.getElementById('heroN').textContent = ` ${F.trades} 건을`;
+      if (F.eyebrow) document.getElementById('heroEy').textContent = F.eyebrow;
+      document.getElementById('dsTxt').textContent = F.facts.join(' · '); };
+    if (window.JDJ_HOME) go(); else addEventListener('DOMContentLoaded', go);
   } catch (e) {}
 })();
 </script>

@@ -1,7 +1,7 @@
 /* 집예보 첫 화면 호기심 카드 계산 — 화면(index.html)·테스트(tools/home-test.js) 공용, DOM 없음.
    자료: 공개 요약 home/sNN.json(엔진 scripts/home_pulse.py — 공개 실거래·점수 파일만 읽어 줄 세운 것),
          track.json·index.json track(엔진 scripts/track.py — 시세 추정 정확도). 여기서는 새 숫자를 만들지 않고 읽어서 고르기·표시만 한다.
-   window.JDJ_HOME = { SIZES, SIZE_TXT, race, acc, regionPick, eok, md, qSpark, rule } */
+   window.JDJ_HOME = { SIZES, SIZE_TXT, race, acc, regionPick, eok, md, qSpark, rule, heroFacts } */
 (function (root) {
   'use strict';
   const SIZES = [['a', '전체'], ['s', '20평 미만'], ['m', '20평대'], ['l', '30평대'], ['x', '40평 이상']];
@@ -83,7 +83,26 @@
     return { d, x: X(l[0]), y: Y(l[1]), lastIsRecent: l[0] === q.length - 1 };
   }
 
-  const API = { SIZES, SIZE_TXT, race, rule, acc, regionPick, eok, md, qSpark };
+  /* 첫 화면 소개 글 숫자: 공개 index.json 값만 읽음(직접 쓴 숫자 없음). 없는 값은 null·빈 목록 → 화면은 숫자 없는 문장으로
+     → { trades: '838만'|null, eyebrow: '2010년부터 16년간 공공 통계로 만든 부동산 미래 예보'|null, facts: ['아파트 1.6만 단지', '하루 4번 갱신'] } — 시작 연도는 eyebrow 에만(겹치지 않게) */
+  function heroFacts(IX) {
+    const S = (IX && IX.stats) || {}, facts = [];
+    const man = n => n >= 1e4 ? `${(n / 1e4).toFixed(n >= 1e6 ? 0 : 1).replace(/\.0$/, '')}만` : n.toLocaleString('ko-KR');
+    let trades = null, eyebrow = null;
+    if (S.trades > 0) trades = man(S.trades);
+    else if (IX && IX.total > 0) trades = man(IX.total);
+    if (S.apts > 0) facts.push(`아파트 ${man(S.apts)} 단지`);
+    else { const nu = ((IX && IX.sido) || []).reduce((a, x) => a + (x.units || 0), 0); if (nu) facts.push(`단지·평형 ${man(nu)} 개`); }
+    if (/^\d{6}$/.test(S.from || '')) {
+      const y0 = +S.from.slice(0, 4), to = /^\d{6}$/.test((IX && IX.dataTo) || '') ? IX.dataTo : S.from;
+      const yrs = Math.round(((+to.slice(0, 4) - y0) * 12 + (+to.slice(4, 6)) - (+S.from.slice(4, 6)) + 1) / 12);
+      eyebrow = `${y0}년부터 ${yrs}년간 공공 통계로 만든 부동산 미래 예보`;
+    }
+    facts.push('하루 4번 갱신');
+    return { trades, eyebrow, facts };
+  }
+
+  const API = { SIZES, SIZE_TXT, race, rule, acc, regionPick, eok, md, qSpark, heroFacts };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   root.JDJ_HOME = API;
 })(typeof window !== 'undefined' ? window : globalThis);
