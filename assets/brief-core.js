@@ -1,14 +1,20 @@
-/* 집예보 우리 동네 아침 브리핑 — 화면 공용 계산 (JDJ_BRIEF)
-   - 자료: 공개 데이터 data/brief/{시군구}.json (엔진 brief.py 가 매일 새벽 동네별로 만듦: 새로 올라온 실거래·신고가·전세·분양·정책·한 줄 해설)
+/* 모닝 브리핑 — 화면 공용 계산 (JDJ_BRIEF)
+   - 이름: B.NAME = `${SITE_NAME} 모닝 브리핑` — 서비스 이름은 assets/config.js 의 JDJ_SITE.SITE_NAME 한 곳에서 읽어요.
+     화면의 [data-brief-name] 칸은 B.fillNames() 가 이 이름으로 채워요(서비스 이름이 바뀌면 함께 바뀜).
+   - 자료: 공개 데이터 data/brief/market.json (① 오늘의 부동산 시장 — 전국 공통 하루 1개)
+           data/brief/{시군구}.json (② 내 관심 지역 · ③ 내 관심 단지 — 엔진 brief.py 가 매일 새벽 동네별로 만듦)
    - 이 파일은 숫자를 새로 만들지 않고, 받은 자료를 동(洞)으로 거르고 읽기 쉬운 글로 바꾸기만 한다.
    - 주소: /brief/?d=11710 (구 전체) · ?d=11710-잠실동 (동) · &v=pro (중개사용) · &card=1 (카드 이미지 화면 1080×1080) */
 (function (root) {
   'use strict';
   const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
+  const SITE = ((root.JDJ_SITE || {}).SITE_NAME || '').trim() || '집예보';
+  const NAME = `${SITE} 모닝 브리핑`;
   const B = {
+    SITE, NAME,
     DATA: '/jangdaejang-data/data/brief/',
     DROP: -10,                                      // '최근 2년 최고가보다 많이 내린 거래' 기준(%)
-    PRICE: { brief: { name: '아침 브리핑', amount: 3900, areas: 3 }, brief_pro: { name: '아침 브리핑 중개사용', amount: 4900, areas: 10 } },
+    PRICE: { brief: { name: NAME, amount: 3900, areas: 3 }, brief_pro: { name: `${NAME} 중개사용`, amount: 4900, areas: 10 } },
     TRIAL_DAYS: 7,
     esc: s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])),
     /** '11710-잠실동' → {g:'11710', dn:'잠실동'} (잘못된 값이면 null) */
@@ -90,6 +96,41 @@
     sortMine(list, apts) {
       if (!apts || !apts.length) return list;
       return list.slice().sort((a, b) => (apts.includes(b.a) ? 1 : 0) - (apts.includes(a.a) ? 1 : 0));
+    },
+    /** [data-brief-name] 칸을 브리핑 이름으로, [data-site-name] 칸을 서비스 이름으로 채움 */
+    fillNames(doc) {
+      doc = doc || (typeof document !== 'undefined' ? document : null); if (!doc) return;
+      doc.querySelectorAll('[data-brief-name]').forEach(el => { el.textContent = el.dataset.briefName ? `${NAME} ${el.dataset.briefName}` : NAME; });
+      doc.querySelectorAll('[data-site-name]').forEach(el => { el.textContent = SITE; });
+    },
+    /** ① 오늘의 부동산 시장 — 거래 한 줄 */
+    topText(x) {
+      const where = [x.sd, x.gn, x.d].filter(Boolean).join(' ');
+      const sub = x.up != null ? `이전 최고 ${B.won(x.pm)}(${B.ymI(x.pmd)})보다 ${B.pct(x.up)}`
+        : x.dr != null ? `최근 2년 최고 ${B.won(x.m2)}(${B.ymI(x.m2d)})보다 ${B.pct(x.dr)}` : '';
+      return { name: `${x.a} ${x.b}`, where, price: B.won(x.p), when: `${B.md(x.dt)} 계약`, sub };
+    },
+    /** 금리(한국은행 기준금리·주담대 신규 금리) 문구 — 자료가 있을 때만 */
+    rateText(r) {
+      if (!r) return [];
+      const ym = s => `${s.slice(0, 4)}.${+s.slice(4, 6)}`, out = [];
+      const one = (lab, o) => o && out.push(`${lab} ${o.v.toFixed(2)}%(${ym(o.ym)})` + (o.chg == null ? '' : o.chg === 0 ? ' · 지난달과 같아요' : ` · 지난달보다 ${o.chg > 0 ? '+' : '−'}${Math.abs(o.chg).toFixed(2)}%p`));
+      one('한국은행 기준금리', r.base); one('은행 주택담보대출 신규 금리', r.mort);
+      return out;
+    },
+    /** 이번 주 청약 접수 일정 한 줄 */
+    cyText(n) {
+      const r = (n.sp && n.sp[0]) ? n.sp : n.rc || [];
+      const rc = n.rc || [];
+      const a = (n.sp && n.sp[0]) ? `특별공급 ${B.ds(n.sp[0])}` : '';
+      const b = rc[0] ? `접수 ${B.ds(rc[0])}${rc[1] && rc[1] !== rc[0] ? '~' + B.ds(rc[1]) : ''}` : '';
+      return { name: n.n, where: [n.sd, n.gn].filter(Boolean).join(' '), kind: n.k, when: [a, b].filter(Boolean).join(' · ') || B.ds(r[0]), hh: n.hh ? `${Number(n.hh).toLocaleString('ko-KR')}세대` : '' };
+    },
+    /** ③ 내 관심 단지: 이 동네 자료에서 관심 단지의 새 매매·전세만 */
+    mine(S, apts) {
+      apts = (apts || []).map(String); if (!apts.length || !S) return { apts: [], trades: [], rents: [] };
+      const has = a => apts.includes(a);
+      return { apts: apts, trades: (S.trades || []).filter(t => has(t.a)), rents: (S.rents || []).filter(r => has(r.a) && !r.mo) };
     },
     /** 카드 이미지에 넣을 값 (숫자는 모두 자료 그대로) */
     card(S, dn, pro) {

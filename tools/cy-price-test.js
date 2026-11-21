@@ -117,5 +117,16 @@ if (dir && fs.existsSync(path.join(dir, 'chungyak/price.json'))) {
   check(`실제 자료 ${n}곳: 카드·상세·자금 계획 오류 없음`, n > 0 && !bad.length, bad.slice(0, 5));
 }
 
+// 분양 예정(공고 전): 주변 신축 평당 시세 참고값 — 분양가 추정 없음
+const PH = { dataTo: '202610', r: { r1: 1, r2: 2, min_n: 10, age: 10 } };
+const P1 = { n: '장위9', gn: '성북구', xy: true, r1: { n: 12, med: 4100, lo: 3900, hi: 4400, apts: 2, span: [20260101, 20260930] }, r2: { n: 5, lack: true }, gu: { n: 40, med: 3800, lo: 3300, hi: 4300, apts: 6, span: [20251101, 20261020] } };
+const pc = C.planCard(P1, PH);
+check('예정: 반경·같은 구 중간값·범위·건수·기준일', pc.includes('반경 1km') && pc.includes('4,100만 원') && pc.includes('3,900~4,400만 원') && pc.includes('12건') && pc.includes('2026.1.1~2026.9.30') && pc.includes('2026년 10월까지'), pc);
+check('예정: 표본 적은 범위는 비교 자료 부족', /반경 2km<\/span><span class="v na">비교 자료 부족/.test(pc), pc);
+check('예정: 분양가 추정 아님·공고되면 바뀜 안내', pc.includes('분양가를 추정한 값이 아니에요') && pc.includes('분양가가 공고되면 분양가 비교 분석으로 바뀌어요'));
+const pc2 = C.planCard({ n: 'x', gn: '종로구', xy: false, gu: { n: 3, lack: true } }, PH);
+check('예정: 좌표 없음·전부 부족 → 숫자 없이 안내', !pc2.includes('cyp-pr') && pc2.includes('반경 비교는 하지 않았어요') && pc2.includes('비교 자료 부족') && !/\d,\d{3}만 원/.test(pc2), pc2);
+check('예정: 목록용 짧은 카드는 설명 없이', !C.planCard(P1, PH, { short: true }).includes('추정한 값이 아니에요') && C.planNote(PH).includes('추정한 값이 아니에요'));
+check('예정: 금지 단어 없음', !/시험|통과/.test(pc + pc2));
 console.log(`${pass}/${pass + fail} 맞음`);
 process.exit(fail ? 1 : 0);

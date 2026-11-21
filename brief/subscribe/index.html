@@ -8,15 +8,15 @@
 <link rel="icon" type="image/png" href="/jangdaejang-calc/assets/icons/favicon-48.png">
 <meta name="robots" content="noindex">
 <script src="/jangdaejang-calc/assets/biz.js" defer></script>
-<title>아침 브리핑 받기 — 집예보</title>
+<title>집예보 모닝 브리핑 받기</title>
 <script>window.JDJ_CONFIG = { tool:'brief', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../../assets/track.js?v=2"></script>
 <script src="../../assets/stat.js?v=7"></script>
-<script src="../../assets/config.js?v=3"></script>
+<script src="../../assets/config.js?v=4"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/auth.js?v=3"></script>
 <script src="../../assets/pay.js?v=3"></script>
-<script src="../../assets/brief-core.js?v=2"></script>
+<script src="../../assets/brief-core.js?v=3"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
@@ -56,10 +56,10 @@ h1{font-size:clamp(24px,6vw,32px);margin:4px 0 8px}
 <body>
 <header class="top">
   <a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>집예보</a>
-  <div class="badge plain">아침 브리핑</div>
+  <div class="badge plain" data-brief-name>집예보 모닝 브리핑</div>
 </header>
 <main class="wrap" id="main"><p class="note">불러오는 중…</p></main>
-<footer class="foot">★ 집예보 · <a href="../">아침 브리핑</a> · <a href="../manage/">내 구독 관리</a> · <a href="../../refund/">환불 정책</a> · <a href="../../privacy/">개인정보처리방침</a></footer>
+<footer class="foot">★ <span data-site-name>집예보</span> · <a href="../" data-brief-name>집예보 모닝 브리핑</a> · <a href="../manage/">내 구독 관리</a> · <a href="../../refund/">환불 정책</a> · <a href="../../privacy/">개인정보처리방침</a></footer>
 <script>
 (function(){
 'use strict';
@@ -72,7 +72,7 @@ const st = { areas: [], apts: [], plan: Q.get('p') === 'brief_pro' ? 'brief_pro'
 
 async function boot(){
   if (!A || !A.on() || !A.user()) {
-    $('main').innerHTML = `<span class="tag">아침 브리핑 받기</span><h1>카카오로 로그인하고<br>동네를 골라 주세요</h1>
+    $('main').innerHTML = `<span class="tag">${esc(B.NAME)} 받기</span><h1>카카오로 로그인하고<br>동네를 골라 주세요</h1>
       <p class="lead">구독은 카카오 로그인 회원만 할 수 있어요. 받을 동네는 내 계정에 저장돼서 언제든 바꿀 수 있어요. 카카오에서 받는 정보는 회원번호와 닉네임뿐이에요.</p>
       ${A && A.on() ? A.btn('카카오로 로그인하고 계속하기', 'brief_sub') : '<div class="msg err">로그인 기능을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</div>'}
       <p class="note">처음 ${B.TRIAL_DAYS}일은 무료예요. 결제 수단을 미리 등록하지 않고, 자동으로 결제되지도 않아요.</p>`;
@@ -90,7 +90,7 @@ async function boot(){
   if (d0 && SG[d0.g] && !st.areas.some(a => a.g === d0.g && a.dn === d0.dn)) st.areas.unshift({ g: d0.g, gn: SG[d0.g].name, sd: SG[d0.g].sido, dn: d0.dn });
   const fail = Q.get('fail') ? `<div class="msg err">결제를 마치지 못했어요${Q.get('message') ? ': ' + esc(Q.get('message')) : ''}. 다시 시도해 주세요.</div>` : '';
   const sds = [...new Set(Object.values(SG).map(x => x.sido))];
-  $('main').innerHTML = `<span class="tag">아침 브리핑 받기</span><h1>매일 아침, 우리 동네 실거래</h1>${fail}
+  $('main').innerHTML = `<span class="tag">${esc(B.NAME)} 받기</span><h1>매일 아침, 오늘의 시장과<br>내 동네·내 단지 소식</h1>${fail}
     <section class="step"><h2>1. 받을 동네</h2><p class="sub">시·군·구 전체 또는 동을 골라요. 일반은 ${B.PRICE.brief.areas}곳, 중개사용은 ${B.PRICE.brief_pro.areas}곳까지 보내 드려요.</p>
       <div class="pick"><select id="sd" aria-label="시·도">${sds.map(s => `<option>${esc(s)}</option>`).join('')}</select><select id="sg" aria-label="시·군·구"></select>
         <select id="dn" class="full" aria-label="동"><option value="">구 전체</option></select><button type="button" class="btn full" id="add">이 동네 넣기</button></div>
@@ -107,16 +107,16 @@ async function boot(){
       <input class="inp" id="contact" style="margin-top:10px" autocomplete="email" placeholder="받을 이메일 주소" maxlength="100">
       <div class="agree">
         <label><input type="checkbox" id="privacy"><span>[필수] 발송용 연락처 수집·이용에 동의해요</span></label>
-        <details><summary>자세히 보기</summary>항목: 이메일 또는 휴대폰 번호(고른 받는 방법 하나) · 목적: 신청한 아침 브리핑과 이용 기간 안내 발송 · 보관: 이용 기간이 끝난 뒤 30일까지(그 뒤 바로 지움). 동의하지 않으면 브리핑을 보내 드릴 수 없어요.</details>
+        <details><summary>자세히 보기</summary>항목: 이메일 또는 휴대폰 번호(고른 받는 방법 하나) · 목적: 신청한 ${esc(B.NAME)}와 이용 기간 안내 발송 · 보관: 이용 기간이 끝난 뒤 30일까지(그 뒤 바로 지움). 동의하지 않으면 브리핑을 보내 드릴 수 없어요.</details>
         <label><input type="checkbox" id="terms"><span>[필수·결제 시] 1개월 이용권·환불 안내를 확인했어요</span></label>
         <details><summary>자세히 보기</summary>첫 브리핑을 받기 전에는 결제일부터 7일 안에 전액 환불, 받기 시작한 뒤에는 남은 날만큼 일할 환불(위약금 없음)해 드려요. 자동 연장·자동 결제는 없어요. <a href="../../refund/">환불 정책</a></details>
-        <label><input type="checkbox" id="ad"><span>[선택] 광고성 정보(집예보 새 서비스·할인 안내) 받기 — 브리핑과 따로, 언제든 끌 수 있어요</span></label>
+        <label><input type="checkbox" id="ad"><span>[선택] 광고성 정보(${esc(B.SITE)} 새 서비스·할인 안내) 받기 — 브리핑과 따로, 언제든 끌 수 있어요</span></label>
       </div></section>
     <div class="go">${st.trialUsed || st.active ? '' : `<button type="button" class="btn primary" id="trial">${B.TRIAL_DAYS}일 무료로 시작하기</button>`}
       <button type="button" class="btn ${st.trialUsed || st.active ? 'primary' : ''}" id="pay">결제하고 받기</button>
       ${st.active ? '<button type="button" class="btn" id="saveOnly">동네만 저장하기(다음 날 아침부터 반영)</button>' : ''}</div>
     <div id="msg" class="msg" role="status"></div>
-    <p class="note">브리핑은 공공 자료(국토교통부 실거래·청약홈·집예보 정책 목록)로 만들고, 같은 내용을 웹에서도 볼 수 있어요. <a href="../?d=11710-${encodeURIComponent('잠실동')}">예시 보기</a></p>`;
+    <p class="note">브리핑은 공공 자료(국토교통부 실거래·청약홈·${esc(B.SITE)} 정책 목록)로 만들고, 같은 내용을 웹에서도 볼 수 있어요. <a href="../?d=11710-${encodeURIComponent('잠실동')}">예시 보기</a></p>`;
   const fillG = () => { const sd = $('sd').value; $('sg').innerHTML = Object.entries(SG).filter(([, x]) => x.sido === sd).map(([g, x]) => `<option value="${g}">${esc(x.name)}</option>`).join(''); fillDn(); };
   const fillDn = async () => { const g = $('sg').value; $('dn').innerHTML = '<option value="">구 전체</option>'; const S = await J(B.DATA + g + '.json'); if (S && $('sg').value === g) $('dn').innerHTML += (S.dongs || []).map(x => `<option>${esc(x[0])}</option>`).join(''); };
   $('sd').onchange = fillG; $('sg').onchange = fillDn;
@@ -146,7 +146,7 @@ async function boot(){
       if (window.JDJ && JDJ.track) JDJ.track('brief_trial_start', { n: st.areas.length });
     } catch(e){ busy(b, false, `${B.TRIAL_DAYS}일 무료로 시작하기`); msg(esc(e.message), 1); }
   };
-  if ($('saveOnly')) $('saveOnly').onclick = () => saveAreas().then(() => msg('동네를 저장했어요. 다음 날 아침 브리핑부터 바뀌어요.')).catch(e => msg(esc(e.message), 1));
+  if ($('saveOnly')) $('saveOnly').onclick = () => saveAreas().then(() => msg('동네를 저장했어요. 다음 날 브리핑부터 바뀌어요.')).catch(e => msg(esc(e.message), 1));
   $('pay').onclick = async () => {
     const b = $('pay');
     try {
@@ -165,5 +165,6 @@ async function boot(){
 boot();
 })();
 </script>
+<script>window.JDJ_BRIEF && JDJ_BRIEF.fillNames();</script>
 </body>
 </html>

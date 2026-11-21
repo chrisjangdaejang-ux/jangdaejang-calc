@@ -12,22 +12,22 @@
 <meta name="apple-mobile-web-app-title" content="집예보">
 <script src="/jangdaejang-calc/assets/pwa.js" defer></script>
 <script src="/jangdaejang-calc/assets/biz.js" defer></script>
-<title>집예보 우리 동네 아침 브리핑 — 어제 새로 올라온 실거래·신고가·전세·분양 일정</title>
-<meta name="description" content="내가 고른 동네의 어제 새로 신고된 아파트 실거래, 신고가, 최고가보다 크게 내린 거래, 전세, 분양 일정과 정책 변화를 매일 아침 한 번에 받아 보세요.">
+<title>집예보 모닝 브리핑 — 오늘의 부동산 시장·내 관심 지역·내 관심 단지</title>
+<meta name="description" content="전국·서울의 어제 새 신고가·큰 하락 거래, 금리·대출·세금 정책 변화, 이번 주 청약 일정에 더해 내가 고른 동네의 어제 새로 신고된 아파트 실거래, 신고가, 최고가보다 크게 내린 거래, 전세, 분양 일정과 정책 변화를 매일 아침 한 번에 받아 보세요.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="집예보">
-<meta property="og:title" content="집예보 우리 동네 아침 브리핑">
-<meta property="og:description" content="어제 우리 동네에 새로 올라온 실거래와 신고가, 매일 아침 한 번에.">
+<meta property="og:title" content="집예보 모닝 브리핑">
+<meta property="og:description" content="오늘의 부동산 시장과 내 관심 지역·단지 소식을 매일 아침 한 번에.">
 <meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/brief/">
 <meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/default.png">
 <meta property="og:locale" content="ko_KR">
 <script>window.JDJ_CONFIG = { tool:'brief', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
-<script src="../assets/config.js?v=3"></script>
+<script src="../assets/config.js?v=4"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/auth.js?v=3"></script>
-<script src="../assets/brief-core.js?v=2"></script>
+<script src="../assets/brief-core.js?v=3"></script>
 <script src="../assets/tabbar.js?v=2" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -98,6 +98,19 @@ details.how p{font-size:14.5px;color:var(--sub);line-height:1.65;margin:4px 0 10
 .price2 div{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff}
 .price2 b{display:block;font-size:20px;font-weight:900}
 .price2 small{display:block;font-size:13.5px;color:var(--sub2);line-height:1.5}
+/* ---- ① 오늘의 부동산 시장 ---- */
+.part{margin:22px 0 0;padding:14px 0 0;border-top:2px solid var(--text)}
+.part>h2{font-size:21px;font-weight:900;margin:0 0 2px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.part>h2 .no{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;font-size:14px}
+.part>h2 small{font-size:13.5px;font-weight:500;color:var(--sub2)}
+.part>.sub{font-size:14px;color:var(--sub2);margin:0 0 10px;line-height:1.55}
+.part:first-of-type{border-top:0;margin-top:6px;padding-top:0}
+.seg{display:inline-grid;grid-auto-flow:column;gap:4px;background:var(--gray);border-radius:12px;padding:3px;margin:0 0 8px}
+.seg button{font:inherit;font-size:14.5px;font-weight:800;min-height:40px;padding:0 16px;border:0;border-radius:10px;background:none;color:var(--sub2);cursor:pointer}
+.seg button[aria-pressed="true"]{background:#fff;color:var(--blue);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.tl .rk{display:inline-block;min-width:20px;font-weight:900;color:var(--blue)}
+.mk2{display:grid;grid-template-columns:1fr;gap:0 18px}
+@media(min-width:720px){.mk2{grid-template-columns:1fr 1fr}}
 /* ---- 카드 이미지(1080×1080) ---- */
 .bc{width:1080px;height:1080px;box-sizing:border-box;padding:64px 72px 56px;background:#fff;display:flex;flex-direction:column;font-family:'Noto Sans KR',sans-serif;color:#191F28;position:relative;overflow:hidden}
 .bc:before{content:'';position:absolute;left:0;top:0;right:0;height:14px;background:#2F6BFF;border-bottom:6px solid #EFE6CC}
@@ -122,6 +135,12 @@ details.how p{font-size:14.5px;color:var(--sub);line-height:1.65;margin:4px 0 10
 .bc .ft{display:flex;justify-content:space-between;align-items:flex-end;border-top:3px solid #EFE6CC;padding-top:20px;font-size:22px;color:#4E5968;line-height:1.45}
 .bc .ft b{color:#2F6BFF}
 .bc .ft b:before{content:'★ ';color:#B8942A}
+.bc .mk{margin:22px 0 0;display:grid;gap:12px}
+.bc .mk div{border:3px solid #E5E8EB;border-radius:22px;padding:16px 24px}
+.bc .mk em{font-style:normal;display:inline-block;font-size:22px;font-weight:900;border-radius:10px;padding:2px 10px;margin:0 0 4px;background:#FDECE4;color:#C2410C}
+.bc .mk em.dn{background:#E8F0FF;color:#1F4FD1}
+.bc .mk b{display:block;font-size:34px;font-weight:900;letter-spacing:-1px;line-height:1.25}
+.bc .mk span{display:block;font-size:25px;font-weight:700;color:#3E4754}
 html.cardmode{zoom:1!important}body.cardmode{margin:0;background:#fff}
 body.cardmode>header.top,body.cardmode>.foot,body.cardmode>.wrap,body.cardmode .jtab{display:none!important}
 @media(max-width:420px){.stats b{font-size:19px}.stats small{font-size:12.5px}.tl .pr b{font-size:15.5px}}
@@ -130,11 +149,11 @@ body.cardmode>header.top,body.cardmode>.foot,body.cardmode>.wrap,body.cardmode .
 <body>
 <header class="top">
   <a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>집예보</a>
-  <div class="badge plain">아침 브리핑</div>
+  <div class="badge plain" data-brief-name>집예보 모닝 브리핑</div>
 </header>
 <main class="wrap" id="main"><p class="note">브리핑을 불러오고 있어요…</p></main>
 <div id="cardRoot"></div>
-<footer class="foot">국토교통부 실거래 공개 자료·청약홈 공고·집예보 정책 목록으로 만든 브리핑이에요. 만드는 방법은 이 화면 아래 '이 브리핑은 이렇게 만들어요'에서 볼 수 있어요.<br>★ 집예보 · <a href="../">홈</a> · <a href="../refund/">환불 정책</a> · <a href="../terms/">이용약관</a></footer>
+<footer class="foot">국토교통부 실거래 공개 자료·청약홈 공고·<span data-site-name>집예보</span> 정책 목록으로 만든 브리핑이에요. 만드는 방법은 이 화면 아래 '이 브리핑은 이렇게 만들어요'에서 볼 수 있어요.<br>★ <span data-site-name>집예보</span> · <a href="../">홈</a> · <a href="../refund/">환불 정책</a> · <a href="../terms/">이용약관</a></footer>
 <script>
 (function(){
 'use strict';
@@ -153,15 +172,70 @@ function url(g, dn, pro){ const p = new URLSearchParams(); p.set('d', B.dKey(g, 
 /* ---------- 카드(1080×1080) ---------- */
 function cardHtml(S, dn, pro){
   const c = B.card(S, dn, pro);
-  return `<div class="bc" id="bcard" role="img" aria-label="${esc(c.area)} 아침 브리핑 카드">
-    <div class="bh"><div class="logo">${LOGO}집예보 <span>아침 브리핑</span></div><div class="dt">${esc(c.date)}</div></div>
+  return `<div class="bc" id="bcard" role="img" aria-label="${esc(c.area)} ${esc(B.NAME)} 카드">
+    <div class="bh"><div class="logo">${LOGO}${esc(B.SITE)} <span>모닝 브리핑</span></div><div class="dt">${esc(c.date)}</div></div>
     <div class="ar"><small>${esc(c.win || '새로 올라온')} 실거래</small>${esc(c.sd ? c.sd + ' ' : '')}${esc(c.area)}</div>
     <div class="st">${c.stats.map((s, i) => `<div class="${i === 1 ? 'hi' : ''}"><b>${esc(s.v)}</b><small>${esc(s.k)}</small></div>`).join('')}</div>
     ${c.top ? `<div class="tp">${c.top.tag ? `<em class="${/낮음/.test(c.top.tag) ? 'dn' : ''}">${esc(c.top.tag)}</em>` : ''}<b>${esc(c.top.name)}</b><span>${esc(c.top.price)} · ${esc(c.top.when)}</span></div>` : ''}
     <div class="ln">${esc(c.line.replace(/^"|"$/g, ''))}</div>
-    <div class="ft"><span>국토교통부 실거래 공개 자료 기준<br>신고가 = 같은 단지·같은 평형 이전 최고가를 넘은 거래</span><span><b>집예보</b></span></div>
+    <div class="ft"><span>국토교통부 실거래 공개 자료 기준<br>신고가 = 같은 단지·같은 평형 이전 최고가를 넘은 거래</span><span><b>${esc(B.SITE)}</b></span></div>
   </div>`;
 }
+/* 전국 공통 카드(1080×1080): 오늘의 부동산 시장 */
+function marketCardHtml(M){
+  const k = M.kr || {}, h = (k.hi || [])[0], d = (k.drop || [])[0];
+  const box = (x, tag, dn) => { const t = B.topText(x); return `<div><em class="${dn ? 'dn' : ''}">${esc(tag)}</em><b>${esc(t.where)} ${esc(t.name)}</b><span>${esc(t.price)} · ${esc(t.sub)}</span></div>`; };
+  return `<div class="bc" id="bcard" role="img" aria-label="${esc(B.NAME)} 오늘의 부동산 시장 카드">
+    <div class="bh"><div class="logo">${LOGO}${esc(B.SITE)} <span>모닝 브리핑</span></div><div class="dt">${esc(B.dateLabel(M.date))}</div></div>
+    <div class="ar"><small>${esc(B.windowText(M.win) || '새로 올라온')} 실거래 · 전국</small>오늘의 부동산 시장</div>
+    <div class="st"><div><b>${Number(k.n || 0).toLocaleString('ko-KR')}건</b><small>새 매매</small></div><div class="hi"><b>${k.nhi || 0}건</b><small>그중 신고가</small></div><div><b>${(M.cy || {}).n || 0}곳</b><small>이번 주 청약 접수</small></div></div>
+    <div class="mk">${h ? box(h, '전국 최고 신고가') : ''}${d ? box(d, '최근 2년 최고가 대비 가장 큰 하락', true) : ''}</div>
+    <div class="ln" style="-webkit-line-clamp:2;font-size:27px;margin-top:20px">${esc((M.lines || [])[1] || '')}</div>
+    <div class="ft"><span>국토교통부 실거래 공개 자료 · 청약홈 공고 기준<br>신고가 = 같은 단지·같은 평형 이전 최고가를 넘은 거래</span><span><b>${esc(B.SITE)}</b></span></div>
+  </div>`;
+}
+
+/* ---------- ① 오늘의 부동산 시장 (전국 공통) ---------- */
+let MKT_SCOPE = 'kr';
+function mktTopLi(x, i){
+  const t = B.topText(x), mine = apts.includes(x.a);
+  return `<li class="${mine ? 'mine' : ''}"><div class="nm"><b><span class="rk">${i + 1}</span> ${esc(t.name)}</b><small>${esc(t.where)} · 전용 ${x.ar}㎡${x.f != null ? ' · ' + x.f + '층' : ''}</small>${t.sub ? `<small>${esc(t.sub)}</small>` : ''}</div>
+    <div class="pr"><b>${esc(t.price)}</b><small>${esc(t.when)}</small></div></li>`;
+}
+/* 앞의 n개만 보이고 나머지는 [n건 더 보기] */
+function fold(items, n, id){ return `<ul class="tl" id="${id}">${items.slice(0, n).join('')}</ul>` + (items.length > n ? `<button type="button" class="more" data-more="${id}">${items.length - n}건 더 보기</button><template id="${id}-t">${items.slice(n).join('')}</template>` : ''); }
+function foldBox(items, n, id){ return `<div id="${id}">${items.slice(0, n).join('')}</div>` + (items.length > n ? `<button type="button" class="more" data-more="${id}">${items.length - n}곳 더 보기</button><template id="${id}-t">${items.slice(n).join('')}</template>` : ''); }
+function bindMore(){ document.querySelectorAll('[data-more]').forEach(b => b.onclick = () => { const id = b.dataset.more; $(id).insertAdjacentHTML('beforeend', $(id + '-t').innerHTML); b.remove(); }); }
+function marketHtml(M){
+  if (!M) return `<section class="part" aria-labelledby="h-m"><h2 id="h-m"><span class="no">1</span>오늘의 부동산 시장</h2><div class="empty">오늘의 전국 시장 자료를 아직 만들지 못했어요. 내일 아침부터 보여 드려요.</div></section>`;
+  const K = M[MKT_SCOPE] || {}, wt = B.windowText(M.win) || '새로 올라온';
+  const old = S0date && M.date !== S0date ? ` · ${esc(B.dateLabel(M.date))} 자료` : '';
+  let h = `<section class="part" id="mkt" aria-labelledby="h-m"><h2 id="h-m"><span class="no">1</span>오늘의 부동산 시장 <small>전국 공통${old}</small></h2>
+    <p class="sub">동네와 상관없이 모든 구독자에게 같은 내용이에요. ${esc(B.windowDetail(M.win).replace('처음 보인 거래', '처음 보인 전국 거래'))}.</p>
+    <div class="one"><h2>오늘의 한 줄</h2>${(M.lines || []).map((x, i) => `<p class="${i ? 'c' : ''}">${esc(x)}</p>`).join('')}</div>
+    <div class="seg" role="group" aria-label="지역"><button type="button" data-ms="kr" aria-pressed="${MKT_SCOPE === 'kr'}">전국</button><button type="button" data-ms="seoul" aria-pressed="${MKT_SCOPE === 'seoul'}">서울</button></div>
+    <div class="mk2"><div class="sec" style="margin:0"><h2>${esc(wt)} 신고가 TOP <small>${K.nhi || 0}건 중 금액 순</small></h2>
+      ${(K.hi || []).length ? fold(K.hi.map(mktTopLi), 3, 'mh') : '<div class="empty">이번에는 신고가가 없어요.</div>'}</div>
+    <div class="sec" style="margin:0"><h2>큰 하락 거래 TOP <small>${K.ndrop || 0}건 중 하락률 순</small></h2>
+      ${(K.drop || []).length ? fold(K.drop.map(mktTopLi), 3, 'md') : '<div class="empty">최근 2년 최고가보다 10% 넘게 낮은 1억 원 이상 거래가 없어요.</div>'}</div></div>
+    <p class="sub" style="margin-top:6px">큰 하락 = 같은 단지·같은 평형 최근 2년 최고가보다 10% 넘게 낮은 거래(1억 원 이상, 직거래·원룸형·튀는 최고가 제외).</p>`;
+  const rt = B.rateText(M.rate);
+  h += `<div class="sec"><h2>금리·대출·세금</h2><p class="sub">${esc(B.SITE)} 정책 목록(공식 발표·국회·법제처로 확인한 것)에서 최근 ${M.policy_days || 14}일 안에 단계가 바뀐 것만 보여 드려요.</p>
+    ${rt.length ? `<div class="box">${rt.map(esc).join('<br>')}<br><small>한국은행 통계(KOSIS) 월 자료예요.</small></div>` : ''}
+    ${(M.policy || []).length ? M.policy.map(p => `<div class="box"><b>${esc(p.name)}</b> <span class="tg x">${esc(p.stage)} ${esc(p.d.slice(5).replace('-', '/'))}</span> <span class="tg x">${esc(p.scope)}</span><br>${esc(p.plain || '')}${p.src && p.src[1] ? ` · <a href="${esc(p.src[1])}" target="_blank" rel="noopener">공식 발표</a>` : ''}</div>`).join('')
+      : '<div class="empty">최근 2주 동안 단계가 바뀐 금리·대출·세금 정책은 없어요.</div>'}</div>`;
+  const cy = M.cy || {};
+  h += `<div class="sec"><h2>이번 주 청약 일정 <small>${cy.from ? esc(B.ds(cy.from.replace(/-/g, ''))) + '~' + esc(B.ds(cy.to.replace(/-/g, ''))) : ''}</small></h2>
+    ${cy.n ? `<p class="sub">전국 ${cy.n}곳${cy.hh ? ` · 공급 ${Number(cy.hh).toLocaleString('ko-KR')}세대` : ''} · ${(cy.bySd || []).slice(0, 5).map(x => `${esc(x[0])} ${x[1]}`).join(' · ')}</p>
+      ${foldBox((cy.rows || []).map(n => { const x = B.cyText(n); return `<div class="box"><b>${esc(x.name)}</b> <span class="tg x">${esc(x.kind)}</span><br>${esc([x.where, x.when, x.hh].filter(Boolean).join(' · '))}${n.u ? ` · <a href="${esc(n.u)}" target="_blank" rel="noopener">청약홈 공고</a>` : ''}</div>`; }), 3, 'mc')}
+      ${cy.n > (cy.rows || []).length ? `<a class="more" style="text-align:center;line-height:46px;text-decoration:none" href="../bunyang/">전체 ${cy.n}곳은 분양 화면에서 보기</a>` : ''}`
+      : '<div class="empty">이번 주에 접수하는 청약 공고가 없어요. 전체 일정은 <a href="../bunyang/">분양</a>에서 볼 수 있어요.</div>'}</div></section>`;
+  return h;
+}
+function bindMarket(M){
+  document.querySelectorAll('[data-ms]').forEach(b => b.onclick = () => { MKT_SCOPE = b.dataset.ms; const el = $('mkt'); if (el) { el.outerHTML = marketHtml(M); bindMarket(M); bindMore(); } T('brief_mkt_scope', { s: MKT_SCOPE }); });
+}
+let S0date = '';
 function fitCard(box){
   const inner = box.querySelector('.scale'); if (!inner) return;
   const w = box.clientWidth, s = w / 1080; inner.style.transform = `scale(${s})`; box.style.height = (1080 * s) + 'px';
@@ -186,14 +260,28 @@ function list(items, fn, n, id){
   return `<ul class="tl" id="${id}">${first}</ul>${rest.length ? `<button type="button" class="more" data-more="${id}" data-n="${rest.length}">${rest.length}건 더 보기</button><template id="${id}-t">${rest.map(fn).join('')}</template>` : ''}`;
 }
 
-function render(S, IX){
+function mineHtml(S, area){
+  const m = B.mine(S, apts);
+  let h = `<section class="part" aria-labelledby="h-me"><h2 id="h-me"><span class="no">3</span>내 관심 단지 <small>${esc(area)} 자료에서</small></h2>`;
+  if (!m.apts.length) return h + `<div class="empty">관심 단지를 넣어 두시면 그 단지의 새 거래만 여기 따로 모아 드려요.<br><a href="subscribe/">관심 단지 넣기</a></div></section>`;
+  h += `<p class="sub">${m.apts.map(esc).join(', ')}</p>`;
+  if (!m.trades.length && !m.rents.length) return h + `<div class="empty">이번에는 이 동네 자료에 관심 단지의 새 매매·전세가 없어요.</div></section>`;
+  if (m.trades.length) h += `<ul class="tl">${m.trades.map(tradeLi).join('')}</ul>`;
+  if (m.rents.length) h += `<ul class="tl" style="margin-top:8px">${m.rents.map(rentLi).join('')}</ul>`;
+  return h + `</section>`;
+}
+function render(S, M){
   const dn = D.dn, v = B.scope(S, dn), area = S.name + (dn ? ' ' + dn : '');
   const w = (S.win || {}).t || {}, wr = (S.win || {}).r || {};
-  document.title = `${area} 아침 브리핑 ${B.dateLabel(S.date)} — 집예보`;
+  document.title = `${area} ${B.NAME} ${B.dateLabel(S.date)}`;
+  S0date = S.date;
   const dongs = (S.dongs || []).filter(x => x[1] + x[3] > 0);
-  let h = `<span class="tag">우리 동네 아침 브리핑</span>
-  <h1>${esc(area)}</h1>
-  <p class="meta">${esc(B.dateLabel(S.date))} 아침 · ${esc(B.windowDetail(w))}</p>
+  let h = `<span class="tag">${esc(B.NAME)}</span>
+  <h1>${esc(B.dateLabel(S.date))} 아침</h1>
+  <p class="meta">① 오늘의 부동산 시장 · ② 내 관심 지역 ${esc(area)} · ③ 내 관심 단지</p>
+  ${marketHtml(M)}
+  <section class="part" aria-labelledby="h-area"><h2 id="h-area"><span class="no">2</span>내 관심 지역 <small>${esc(area)}</small></h2>
+  <p class="sub">${esc(B.windowDetail(w))}</p>
   <div class="vt" role="group" aria-label="보기 종류"><button type="button" data-v="" aria-pressed="${!PRO}">일반</button><button type="button" data-v="pro" aria-pressed="${PRO}">중개사용</button></div>
   ${dongs.length ? `<nav class="chips" aria-label="동 고르기"><a href="${url(S.g, '', PRO)}" aria-current="${!dn}">${esc(S.name)} 전체</a>${dongs.map(x => `<a href="${url(S.g, x[0], PRO)}" aria-current="${x[0] === dn}">${esc(x[0])}<small>${x[1]}건</small></a>`).join('')}</nav>` : ''}
   <section class="one" aria-label="오늘의 한 줄"><h2>오늘의 한 줄</h2>
@@ -231,37 +319,41 @@ function render(S, IX){
   h += `<section class="sec" aria-labelledby="h-n"><h2 id="h-n">새 분양 공고·청약 일정</h2><p class="sub">청약홈 공고 중 최근 7일 안에 나왔거나 2주 안에 접수하는 것만 골랐어요.</p>
     ${nts.length ? nts.map(n => { const x = B.noticeText(n); return `<div class="box"><b>${esc(x.name)}</b> <span class="tg ${x.isNew ? 'hi' : 'x'}">${esc(x.kind)}${x.isNew ? ' · 새 공고' : ''}</span>${n.near ? ' <span class="tg x">같은 구 ' + esc(n.d) + '</span>' : ''}<br>${esc([x.when, x.pw, x.hh].filter(Boolean).join(' · '))}${n.u ? ` · <a href="${esc(n.u)}" target="_blank" rel="noopener">청약홈 공고</a>` : ''}</div>`; }).join('') : '<div class="empty">이 동네의 새 공고·2주 안 접수 일정은 없어요. 전체 일정은 <a href="../bunyang/">분양</a>에서 볼 수 있어요.</div>'}</section>`;
   /* 정책 */
-  h += `<section class="sec" aria-labelledby="h-p"><h2 id="h-p">정책 변화</h2><p class="sub">집예보 정책 목록에서 이 지역에 해당하고 최근 2주 안에 단계가 바뀐 것만 보여 드려요.</p>
+  h += `<section class="sec" aria-labelledby="h-p"><h2 id="h-p">정책 변화</h2><p class="sub">${esc(B.SITE)} 정책 목록에서 이 지역에 해당하고 최근 2주 안에 단계가 바뀐 것만 보여 드려요.</p>
     ${(S.policy || []).length ? S.policy.map(p => `<div class="box"><b>${esc(p.name)}</b> <span class="tg x">${esc(p.stage)} ${esc(p.d.slice(5).replace('-', '/'))}</span><br>${esc(p.plain || '')}${p.src && p.src[1] ? ` · <a href="${esc(p.src[1])}" target="_blank" rel="noopener">공식 발표</a>` : ''}</div>`).join('') : '<div class="empty">최근 2주 동안 이 지역에 해당하는 정책 변화는 없어요.</div>'}</section>`;
   /* 관심도 */
-  h += `<section class="sec" aria-labelledby="h-i"><h2 id="h-i">집예보에서 많이 본 단지</h2>`;
-  if (v.interest && v.interest.rows.length) h += `<p class="sub">최근 ${v.interest.days}일 동안 집예보 내 집·추천·비교 화면에서 이 단지를 본 서로 다른 방문자 수예요(${v.interest.min}명 이상인 단지만, 개인을 알 수 없는 집계).</p><ul class="tl">${v.interest.rows.map(r => `<li><div class="nm"><b>${esc(r.a)}</b><small>${esc(r.d)}</small></div><div class="pr"><b>${r.n}명</b><small>${r.np != null ? `그 전 주 ${r.np}명` : ''}</small></div></li>`).join('')}</ul>`;
+  h += `<section class="sec" aria-labelledby="h-i"><h2 id="h-i">${esc(B.SITE)}에서 많이 본 단지</h2>`;
+  if (v.interest && v.interest.rows.length) h += `<p class="sub">최근 ${v.interest.days}일 동안 ${esc(B.SITE)} 내 집·추천·비교 화면에서 이 단지를 본 서로 다른 방문자 수예요(${v.interest.min}명 이상인 단지만, 개인을 알 수 없는 집계).</p><ul class="tl">${v.interest.rows.map(r => `<li><div class="nm"><b>${esc(r.a)}</b><small>${esc(r.d)}</small></div><div class="pr"><b>${r.n}명</b><small>${r.np != null ? `그 전 주 ${r.np}명` : ''}</small></div></li>`).join('')}</ul>`;
   else h += `<div class="empty">방문 자료가 더 쌓이면 이 동네에서 많이 본 단지를 보여 드려요.</div>`;
   h += `</section>`;
+  h += `</section>` + mineHtml(S, area);
   /* 구독 */
-  h += `<section class="cta"><h2>매일 아침 받아 보기</h2><p>이 브리핑을 고른 동네(최대 ${B.PRICE.brief.areas}곳, 중개사용 ${B.PRICE.brief_pro.areas}곳)로 매일 아침 보내 드려요. 처음 ${B.TRIAL_DAYS}일은 무료예요. 자동 결제는 없어요.</p>
+  h += `<section class="cta"><h2>매일 아침 받아 보기</h2><p>오늘의 부동산 시장(전국 공통)과 고른 동네(최대 ${B.PRICE.brief.areas}곳, 중개사용 ${B.PRICE.brief_pro.areas}곳)로 매일 아침 보내 드려요. 처음 ${B.TRIAL_DAYS}일은 무료예요. 자동 결제는 없어요.</p>
     <div class="price2"><div><b>월 ${B.PRICE.brief.amount.toLocaleString('ko-KR')}원</b><small>일반 · 동네 3곳</small></div><div><b>월 ${B.PRICE.brief_pro.amount.toLocaleString('ko-KR')}원</b><small>중개사용 · 동네 10곳 · 손님 이야기 3줄·공유 카드</small></div></div>
-    <a class="btn primary" style="width:100%" href="subscribe/?d=${encodeURIComponent(B.dKey(S.g, dn))}${PRO ? '&p=brief_pro' : ''}" data-track="brief_sub_click">${B.TRIAL_DAYS}일 무료로 받아 보기</a></section>`;
+    <a class="btn primary" style="width:100%" href="subscribe/?d=${encodeURIComponent(B.dKey(S.g, dn))}${PRO ? '&p=brief_pro' : ''}" data-track="brief_sub_click">${B.TRIAL_DAYS}일 무료로 받아 보기</a></section>
+    <a class="btn" style="width:100%;margin-top:10px" href="manage/" data-track="brief_to_manage">지역·단지 바꾸기</a>`;
   h += `<details class="how"><summary>이 브리핑은 이렇게 만들어요</summary>
-    <p><b>새로 올라온 거래</b> — 국토교통부 실거래 공개 자료에는 신고한 날짜가 없어요. 그래서 집예보가 동네마다 이미 본 거래 목록을 갖고, 새로 받은 자료에 처음 보이는 거래만 골라요. 매일 확인하면 '어제 새로 올라온', 며칠 만에 확인했으면 그 기간을 그대로 밝혀요.</p>
+    <p><b>새로 올라온 거래</b> — 국토교통부 실거래 공개 자료에는 신고한 날짜가 없어요. 그래서 ${esc(B.SITE)}가 동네마다 이미 본 거래 목록을 갖고, 새로 받은 자료에 처음 보이는 거래만 골라요. 매일 확인하면 '어제 새로 올라온', 며칠 만에 확인했으면 그 기간을 그대로 밝혀요.</p>
     <p><b>신고가</b> — 같은 단지·같은 전용면적(㎡ 반올림)에서 그 계약일 전까지의 최고가(직거래·해제 제외)를 넘은 거래예요. <b>최근 2년 최고가보다 많이 내린 거래</b>는 같은 타입의 최근 2년 거래가 3건 이상이고, 최고가가 튀는 한 건이 아닐 때만 보여 드려요.</p>
     <p><b>같은 단지 비교</b> — 최근 30일 계약을 같은 단지·같은 평형의 직전 3개월 중간값과 하나씩 비교해, 비싼 단지가 많이 팔려서 생기는 착시를 뺐어요.</p>
+    <p><b>오늘의 부동산 시장</b> — 전국 모든 시·군·구의 국토부 매매 자료를 같은 방법(이미 본 거래 목록)으로 비교해, 새로 보인 거래 중 신고가는 금액 순, 큰 하락은 하락률 순으로 5건씩 골라요. 시·군·구마다 자료를 다시 받는 날이 달라 확인 기간을 함께 밝혀요. 금리는 한국은행 통계가 들어왔을 때만, 정책은 승인된 정책 목록의 단계 변화만, 청약은 청약홈 공고 중 이번 주(월~일)에 접수하는 것만 보여 드려요. 이 칸은 하루 1번 만들어 모든 구독자에게 똑같이 보내요.</p>
     <p><b>'그래서' 문장</b> — 과거 같은 구에서 비슷한 상황(최근 두 달 신고가 비율이 지금만큼 높거나 낮았던 달)이 6번 이상 있었을 때만, 그 뒤 3개월이 어땠는지 횟수로 알려 드려요. 근거가 없으면 쓰지 않아요.</p>
-    <p>자료: 국토교통부 아파트 매매·전월세 실거래(공공데이터포털), 청약홈 분양 공고, 집예보 정책 목록${S.rone ? ', 한국부동산원 주간 가격지수' : ''}. 데이터 기준일 ${esc(S.ref || '')}.</p></details>`;
+    <p>자료: 국토교통부 아파트 매매·전월세 실거래(공공데이터포털), 청약홈 분양 공고, ${esc(B.SITE)} 정책 목록${S.rone ? ', 한국부동산원 주간 가격지수' : ''}. 데이터 기준일 ${esc(S.ref || '')}.</p></details>`;
   $('main').innerHTML = h;
   /* 이벤트 */
   document.querySelectorAll('.vt button').forEach(b => b.onclick = () => { location.search = url(S.g, dn, b.dataset.v === 'pro'); });
   document.querySelectorAll('[data-more]').forEach(b => b.onclick = () => { const id = b.dataset.more; $(id).insertAdjacentHTML('beforeend', $(id + '-t').innerHTML); b.remove(); });
-  const cp = $('copyPro'); if (cp) cp.onclick = () => { const t = v.pro.map((x, i) => `${i + 1}. ${x.replace(/^"|"$/g, '')}`).join('\n') + `\n(국토교통부 실거래 공개 자료 · 집예보 아침 브리핑)`;
+  const cp = $('copyPro'); if (cp) cp.onclick = () => { const t = v.pro.map((x, i) => `${i + 1}. ${x.replace(/^"|"$/g, '')}`).join('\n') + `\n(국토교통부 실거래 공개 자료 · ${B.NAME})`;
     (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { cp.textContent = '복사했어요'; T('brief_pro_copy'); }).catch(() => { prompt('아래 글을 길게 눌러 복사해 주세요', t); }); };
   const cb = $('cardBox'); if (cb) { fitCard(cb); addEventListener('resize', () => fitCard(cb)); }
   const sv = $('saveCard'); if (sv) sv.onclick = () => saveCard(S, dn, sv);
+  bindMarket(M);
   T('brief_view', { sgg: S.g, dong: dn ? 1 : 0, pro: PRO ? 1 : 0 });
 }
 
 /* 카드 저장: 서버가 만든 그림(data/brief/card/)이 있으면 그것을, 없으면 이 화면의 카드를 그림으로 */
 async function saveCard(S, dn, btn){
-  const name = `집예보_아침브리핑_${S.name}${dn ? '_' + dn : ''}_${S.date}.png`;
+  const name = `${B.NAME.replace(/\s+/g, '_')}_${S.name}${dn ? '_' + dn : ''}_${S.date}.png`;
   const pre = `${B.DATA}card/${B.dKey(S.g, dn)}.png`;
   try {
     const r = await fetch(pre, {cache:'no-cache'});
@@ -282,19 +374,22 @@ async function saveCard(S, dn, btn){
 
 /* ---------- 동네 고르기(주소에 동네가 없을 때) ---------- */
 async function chooser(){
-  const IX = await J(B.DATA + 'index.json');
+  const [IX, M] = await Promise.all([J(B.DATA + 'index.json'), J(B.DATA + 'market.json')]);
   const areas = (IX && IX.areas) || [];
   const sds = [...new Set(areas.map(a => a.sd))];
-  $('main').innerHTML = `<span class="tag">우리 동네 아침 브리핑</span>
-    <h1>어제 우리 동네에<br>무슨 거래가 있었을까요?</h1>
-    <p class="lead">고른 동네(시·군·구 또는 동)에 국토교통부 실거래 자료로 새로 올라온 거래와 신고가, 최고가보다 크게 내린 거래, 전세, 분양 일정, 정책 변화를 매일 아침 한 번에 정리해 드려요.</p>
+  $('main').innerHTML = `<span class="tag">${esc(B.NAME)}</span>
+    <h1>오늘 부동산 시장과<br>내 동네 소식을 한 번에</h1>
+    <p class="lead">전국·서울에서 어제 새로 올라온 신고가와 큰 하락 거래, 금리·대출·세금 정책 변화, 이번 주 청약 일정에 더해 고른 동네(시·군·구 또는 동)와 관심 단지의 새 거래를 매일 아침 정리해 드려요.</p>
+    ${marketHtml(M)}
+    <section class="part" aria-labelledby="h-pick"><h2 id="h-pick"><span class="no">2</span>내 관심 지역 고르기</h2>
     <ul class="feat"><li><b>새로 올라온 실거래</b>어제 새로 신고가 반영된 매매·전세를 동별로, 신고가와 최고가 대비 하락까지 표시해요.</li>
       <li><b>오늘의 한 줄</b>사실 → 비교 → 의미 순서로 짧게. 과거 사례 근거가 있을 때만 '그래서'를 붙여요.</li>
       <li><b>중개사용</b>손님에게 할 이야기 3줄과 바로 보낼 수 있는 1080×1080 공유 카드를 함께 드려요.</li></ul>
     <div class="pick"><select id="pSd" aria-label="시·도">${sds.map(s => `<option>${esc(s)}</option>`).join('')}</select><select id="pG" aria-label="시·군·구"></select>
       <select id="pDn" class="full" aria-label="동"><option value="">구 전체</option></select></div>
     <div class="row2"><button type="button" class="btn primary" id="pGo">오늘 브리핑 보기</button><a class="btn" href="?d=11710-${encodeURIComponent('잠실동')}">예시: 송파구 잠실동</a><a class="btn" href="?d=11320-${encodeURIComponent('창동')}">예시: 도봉구 창동</a></div>
-    <p class="note">${IX ? `오늘(${esc(B.dateLabel(IX.date))}) 브리핑이 준비된 동네 ${IX.n}곳` : '브리핑 목록을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.'}</p>`;
+    <p class="note">${IX ? `오늘(${esc(B.dateLabel(IX.date))}) 브리핑이 준비된 동네 ${IX.n}곳` : '브리핑 목록을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.'}</p></section>`;
+  bindMarket(M); bindMore();
   const fillG = () => { const sd = $('pSd').value; $('pG').innerHTML = areas.filter(a => a.sd === sd).map(a => `<option value="${a.g}">${esc(a.name)}</option>`).join(''); fillDn(); };
   const fillDn = async () => { const g = $('pG').value; $('pDn').innerHTML = '<option value="">구 전체</option>'; if (!g) return; const S = await J(B.DATA + g + '.json'); if (S && $('pG').value === g) $('pDn').innerHTML += (S.dongs || []).map(x => `<option>${esc(x[0])}</option>`).join(''); };
   $('pSd').onchange = fillG; $('pG').onchange = fillDn; fillG();
@@ -302,11 +397,16 @@ async function chooser(){
 }
 
 (async function(){
+  B.fillNames();
+  if (Q.get('m') === '1' && CARD) {
+    const M = await J(B.DATA + 'market.json');
+    if (M) { document.documentElement.classList.add('cardmode'); document.body.classList.add('cardmode'); $('cardRoot').innerHTML = marketCardHtml(M); return; }
+  }
   if (!D) { if (CARD) document.body.classList.remove('cardmode'); return chooser(); }
-  const S = await J(B.DATA + D.g + '.json');
+  const [S, M] = await Promise.all([J(B.DATA + D.g + '.json'), J(B.DATA + 'market.json')]);
   if (!S) { $('main').innerHTML = `<h1>브리핑을 찾지 못했어요</h1><p class="lead">이 동네 브리핑이 아직 없어요. 구독하시면 다음 날 아침부터 만들어 드려요.</p><a class="btn primary" href="subscribe/">구독 안내 보기</a> <a class="btn" href="./">다른 동네 고르기</a>`; return; }
   if (CARD) { document.documentElement.classList.add('cardmode'); document.body.classList.add('cardmode'); $('cardRoot').innerHTML = cardHtml(S, D.dn, PRO); return; }
-  render(S);
+  render(S, M);
 })();
 })();
 </script>

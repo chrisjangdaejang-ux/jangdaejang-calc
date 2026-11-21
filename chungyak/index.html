@@ -160,7 +160,7 @@ th.num{white-space:normal;word-break:keep-all}
 </style>
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
 <script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
-<link rel="stylesheet" href="/jangdaejang-calc/assets/cy-price.css?v=1">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/cy-price.css?v=2">
 <style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
 :root{--gold:#2F6BFF}
 .premium .pt{color:var(--blue)}
@@ -311,6 +311,10 @@ td{border-bottom:1px solid var(--line2)}
     <div id="notices"><div class="loading">분양 공고를 불러오는 중입니다…</div></div>
   </div>
 
+  <!-- 4-2. 공고 전 분양 예정: 주변 신축 평당 시세(참고값, 분양가 추정 아님) -->
+  <h2 class="sec">공고 전 분양 예정 · 주변 신축 평당 시세<small>입주자모집공고·분양가가 아직 없는 곳(관리처분인가·이주·착공 단계 정비사업 등)이에요. 반경 1·2km와 같은 구의 준공 10년 이내 아파트 실거래 3.3㎡당 값을 참고로 보여 드려요. 분양가를 추정한 값이 아니고, 분양가가 공고되면 분양가 비교 분석으로 바뀌어요</small></h2>
+  <div class="box"><div id="plans"><div class="loading">분양 예정 목록을 불러오는 중입니다…</div></div></div>
+
   <details class="how">
     <summary>계산 기준과 한계</summary>
     <ul>
@@ -339,7 +343,7 @@ td{border-bottom:1px solid var(--line2)}
 <div class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집예보 · <a href="../">홈</a></div>
 
 <script src="cy-engine.js?v=2"></script>
-<script src="../assets/cy-price.js?v=1"></script>
+<script src="../assets/cy-price.js?v=2"></script>
 <script src="../assets/narrative.js?v=12"></script>
 <script>
 /* 계산 엔진은 cy-engine.js (node 테스트: tools/chungyak-test.js) */
@@ -614,6 +618,21 @@ function bandBlock(o) {
   if (dt) h += `<div class="prs" style="color:var(--text)">${esc(dt)}</div>`;
   return h + `</div>`;
 }
+/* 공고 전 분양 예정(분양 화면의 '분양예정 · 시기 미정' + 분양가 없는 접수 전 공고) — 주변 신축 평당 시세 참고값 */
+let PLANS = null, PLAN_NEAR = null, PLAN_ALL = false;
+function renderPlans() {
+  const el = $('plans'); if (!el) return;
+  if (!PLANS || !PLAN_NEAR) { el.innerHTML = PLANS === false ? '<div class="empty">분양 예정 자료를 불러오지 못했어요. 잠시 뒤 다시 와 주세요.</div>' : '<div class="loading">분양 예정 목록을 불러오는 중입니다…</div>'; return; }
+  const sd = $('nSido').value;
+  const rows = PLANS.filter(x => PLAN_NEAR.rows[x.id] && (!sd || sidoNorm(x.sd) === sd)).sort((a, b) => (b.lv || 0) - (a.lv || 0) || (b.hh || 0) - (a.hh || 0));
+  if (!rows.length) { el.innerHTML = `<div class="empty">${sd ? esc(sidoLbl(sd)) + '에는 ' : ''}지금 공고 전 분양 예정으로 잡힌 곳이 없어요.</div>`; return; }
+  const n = PLAN_ALL ? rows.length : 8;
+  el.innerHTML = `<ul class="cyp-pl">${rows.slice(0, n).map(x => `<li><div class="nm">${esc(x.n)}</div><div class="lc">${esc([x.gn, x.dg].filter(Boolean).join(' '))} · ${esc(x.k2 || x.k || '')}${x.stn ? ' · 현재 단계 ' + esc(x.stn) : ''}${x.hh ? ' · 공급 예정 ' + fmt(x.hh) + '세대' : ''}</div>${JDJ_CYP.planCard(PLAN_NEAR.rows[x.id], PLAN_NEAR, { short: true })}</li>`).join('')}</ul>
+    ${rows.length > n ? `<button type="button" class="btn ghost" id="planMore" style="width:100%;margin-top:10px">${fmt(rows.length - n)}곳 더 보기</button>` : ''}
+    ${JDJ_CYP.planNote(PLAN_NEAR)}
+    <div class="prs" style="margin-top:8px">목록: 분양 화면의 분양예정(정비사업 공식 단계 자료). 이미 일반분양을 마친 구역이 섞여 있을 수 있어요. <a href="../bunyang/">분양 화면에서 보기</a></div>`;
+  const mb = $('planMore'); if (mb) mb.onclick = () => { PLAN_ALL = true; renderPlans(); };
+}
 function renderNotices() {
   const t = today().replace(/-/g, ''), sd = $('nSido').value;
   const rows = NOT.filter(n => (!sd || noticeSido(n) === sd) && isLive(n, t));
@@ -707,7 +726,9 @@ async function init() {
   const t0 = today().replace(/-/g, ''), live = NOT.filter(n => isLive(n, t0));
   const cnt = s => live.filter(n => noticeSido(n) === s).length;
   $('nSido').innerHTML = `<option value="">전국 전체 (${live.length}건)</option>` + SIDO.map(s => { const c = cnt(s); return `<option value="${esc(s)}">${esc(sidoLbl(s))} · ${c ? c + '건' : '현재 공고 없음'}</option>`; }).join('');
-  $('nSido').onchange = renderNotices;
+  $('nSido').onchange = () => { renderNotices(); PLAN_ALL = false; renderPlans(); };
+  if (window.JDJ_CYP && JDJ_CYP.loadPlan) Promise.all([fetch('/jangdaejang-data/data/bunyang/plan.json').then(r => r.ok ? r.json() : null).catch(() => null), JDJ_CYP.loadPlan().catch(() => null)])
+    .then(([p, n]) => { if (!p || !n) { PLANS = false; renderPlans(); return; } PLANS = (p.rows || []).concat(Object.keys(n.rows).filter(id => !(p.rows || []).some(x => x.id === id)).map(id => Object.assign({ id: id, k: '아파트 분양(분양가 공고 전)', sd: '' }, n.rows[id]))); PLAN_NEAR = n; renderPlans(); });
   renderNotices();
   if (window.JDJ_CYP) JDJ_CYP.load().then(j => { CYP = (j && j.rows) || {}; renderNotices(); }).catch(() => {});
   try { buildPred(); } catch (e) { PRED_ST = 'ok'; }

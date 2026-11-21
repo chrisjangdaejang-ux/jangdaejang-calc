@@ -34,6 +34,7 @@
 <script src="../assets/stat.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/cy-price.css?v=2">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
 <script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
 <style>
@@ -184,9 +185,10 @@ body.lock{overflow:hidden}
 <footer class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집예보 · <a href="../">홈</a> · <a href="apply/">분양 광고 문의</a></footer>
 
 <script src="../assets/agents.js"></script>
-<script src="../assets/config.js?v=3"></script>
+<script src="../assets/config.js?v=4"></script>
 <script src="../assets/auth.js?v=3"></script>
 <script src="../assets/ads.js?v=2"></script>
+<script src="../assets/cy-price.js?v=2"></script>
 <script src="../assets/mine-core.js?v=15"></script>
 <script src="../assets/sale-status.js?v=1"></script>
 <script src="../assets/area-watch.js?v=2"></script>
@@ -303,6 +305,7 @@ function detail(x, push) {
   if (x.st === 'plan') {
     body = `<table>${trow('사업 유형', esc(x.k2 || '정비사업'))}${trow('위치', esc(x.ad))}${trow('현재 단계', `<b>${esc(x.stn)}</b>${x.sym ? ` (${ym(x.sym)} 기준)` : ''}`)}
       ${trow('공급 예정 세대수', x.hh ? fmt(x.hh) + '세대 (공식 자료)' : '')}${trow('분양 시기', '미정 — 이 자료에 연결된 청약홈 공고가 없어요')}${trow('출처', esc(x.srcn))}</table>
+      <div id="planNear"></div>
       <p class="caution">관리처분인가·이주·착공은 일반분양(입주자모집공고) 전후에 거치는 단계예요. 이미 일반분양을 마친 구역이 포함될 수 있고, 가로주택정비 등 소규모 사업은 자료에 따라 빠질 수 있어요. 공고가 나오면 청약홈 공고로 바뀌어 보여 드려요.</p>`;
   } else {
     const ty = (x.ty || []).filter(t => t[0] || t[1]);
@@ -325,6 +328,11 @@ function detail(x, push) {
       <a class="btn blue" href="../chungyak/" data-track="bunyang_detail_to_chungyak">내 청약 진단 받기</a></div>
     ${related(x)}<div id="adRec" data-jdj-ads="bunyang_rec" hidden></div>`;
   $('dlg').hidden = false; document.body.classList.add('lock');
+  if (window.JDJ_CYP && x.st !== 'mv' && (x.st === 'plan' || !(x.ty || []).some(t => t[3]))) JDJ_CYP.loadPlan().then(n => {
+    if (!n.rows[x.id] || ($('dName') || {}).textContent !== x.n) return;
+    let el = $('planNear'); if (!el) { el = document.createElement('div'); el.id = 'planNear'; $('sheet').querySelector('.btns').before(el); }
+    el.innerHTML = JDJ_CYP.planCard(n.rows[x.id], n);
+  }).catch(() => {});
   $('sheet').scrollTop = 0;
   $('dClose').onclick = closeDlg; $('dClose').focus();
   $('sheet').querySelectorAll('.rel button').forEach(b => b.onclick = () => detail(ROWS.find(y => y.id === b.dataset.id)));

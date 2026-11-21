@@ -1,4 +1,4 @@
-/* 아침 브리핑 화면 공용 계산(assets/brief-core.js) 자동 검증 — 실행: node tools/brief-web-test.js */
+/* 모닝 브리핑 화면 공용 계산(assets/brief-core.js) 자동 검증 — 실행: node tools/brief-web-test.js */
 const B = require('../assets/brief-core.js');
 let pass = 0, fail = 0;
 const check = (n, got, want) => { const ok = JSON.stringify(got) === JSON.stringify(want); ok ? pass++ : (fail++, console.log('  실패:', n, JSON.stringify(got), '≠', JSON.stringify(want))); };
@@ -25,5 +25,15 @@ check('카드 값', [c.area, c.top.name, c.top.tag, c.stats.map(s => s.v), c.lin
 check('카드(중개사) 첫 줄', B.card(S, '잠실동', true).line, '"잠실 1"');
 check('관심 단지 먼저', B.sortMine(S.trades, ['다']).map(t => t.a), ['다', '가', '나']);
 check('공고 문구', B.noticeText({ n: '공고', k: '아파트', rc: ['20261123', '20261124'], pw: '20261127', hh: 1200, new: true }), { name: '공고', kind: '아파트', when: '접수 11/23~11/24', pw: '발표 11/27', hh: '1,200세대', isNew: true });
-console.log(`아침 브리핑 화면 계산 검증: ${pass}개 통과, ${fail}개 실패`);
+check('이름: 서비스 이름 + 모닝 브리핑', [B.NAME, B.PRICE.brief.name, B.PRICE.brief_pro.name], [B.SITE + ' 모닝 브리핑', B.SITE + ' 모닝 브리핑', B.SITE + ' 모닝 브리핑 중개사용']);
+check('시장 거래 한 줄(신고가)', B.topText({ sd: '서울', gn: '강남구', d: '압구정동', a: '현대7차', b: '245㎡대', p: 1150000, dt: 20261102, pm: 1050000, pmd: 20260301, up: 9.5 }),
+  { name: '현대7차 245㎡대', where: '서울 강남구 압구정동', price: '115억 원', when: '11/2 계약', sub: '이전 최고 105억 원(2026.3)보다 +9.5%' });
+check('시장 거래 한 줄(하락)', B.topText({ sd: '경기', gn: '화성시', a: '예시', b: '84㎡대', p: 60000, dt: 20261101, m2: 80000, m2d: 20250501, dr: -25 }).sub, '최근 2년 최고 8억 원(2025.5)보다 −25.0%');
+check('금리 문구(자료 있을 때만)', [B.rateText(null), B.rateText({ base: { ym: '202610', v: 2.25, chg: -0.25 }, mort: { ym: '202609', v: 4.1 } })],
+  [[], ['한국은행 기준금리 2.25%(2026.10) · 지난달보다 −0.25%p', '은행 주택담보대출 신규 금리 4.10%(2026.9)']]);
+check('이번 주 청약 한 줄', B.cyText({ n: '단지', sd: '서울', gn: '송파구', k: '아파트', sp: ['20261117', ''], rc: ['20261118', '20261119'], hh: 300 }),
+  { name: '단지', where: '서울 송파구', kind: '아파트', when: '특별공급 11/17 · 접수 11/18~11/19', hh: '300세대' });
+check('내 관심 단지만', (m => [m.trades.map(t => t.a), m.rents.map(r => r.a)])(B.mine(S, ['가'])), [['가'], ['가']]);
+check('관심 단지 없으면 빈 칸', B.mine(S, []).trades, []);
+console.log(`모닝 브리핑 화면 계산 검증: ${pass}개 통과, ${fail}개 실패`);
 process.exit(fail ? 1 : 0);

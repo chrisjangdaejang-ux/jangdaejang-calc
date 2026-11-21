@@ -234,6 +234,32 @@
   var noOfKey = function (k) { var p = parse(k); return p && isCyKey(k) ? p[4].slice(2) : ''; };
 
   var DATA = '/jangdaejang-data/data/chungyak/', _ix = null, _d = {};
+  /* ---------- 분양 예정(공고 전): 주변 신축 평당 시세 참고값 — chungyak/plan_near.json. 분양가 추정은 하지 않아요 ---------- */
+  var _pl = null;
+  function loadPlan() { if (!_pl) _pl = fetch(DATA + 'plan_near.json').then(function (r) { if (!r.ok) throw new Error('plan'); return r.json(); }).catch(function (e) { _pl = null; throw e; }); return _pl; }
+  function planRow(lab, x, minN) {
+    if (!x) return '';
+    if (x.lack) return '<div class="cyp-pr"><span class="lb">' + esc(lab) + '</span><span class="v na">비교 자료 부족</span><small>' + fmt(x.n) + '건(' + minN + '건 미만)</small></div>';
+    var span = x.span ? ymd(x.span[0]) + '~' + ymd(x.span[1]) : '';
+    return '<div class="cyp-pr"><span class="lb">' + esc(lab) + '</span><span class="v">' + fmt(x.med) + '만 원</span>'
+      + '<small>' + (x.lo != null ? '하위 25%~상위 25% ' + fmt(x.lo) + '~' + fmt(x.hi) + '만 원 · ' : '') + fmt(x.n) + '건(' + fmt(x.apts) + '개 단지) · ' + esc(span) + '</small></div>';
+  }
+  function planNote(head) {
+    var r = head && head.r || {}, age = r.age || 10;
+    return '<p class="cyp-s">준공 ' + age + '년 이내 아파트의 최근 12개월 매매(직거래·전용 30㎡ 미만 제외)를 전용 3.3㎡당으로 바꾼 중간값이에요. 기준: 실거래 ' + esc(ym(head && head.dataTo)) + '까지.</p>'
+      + '<p class="cyp-s"><b>분양가를 추정한 값이 아니에요.</b> 분양가가 공고되면 분양가 비교 분석으로 바뀌어요.</p>';
+  }
+  /* opt.short: 목록 안에서 쓸 때 — 설명 문단은 목록 아래 planNote 로 한 번만 */
+  function planCard(o, head, opt) {
+    if (!o) return '';
+    var r = head && head.r || {}, minN = r.min_n || 10, age = r.age || 10;
+    var rows = (o.xy ? planRow('반경 ' + (r.r1 || 1) + 'km', o.r1, minN) + planRow('반경 ' + (r.r2 || 2) + 'km', o.r2, minN) : '') + planRow('같은 구(' + (o.gn || '') + ')', o.gu, minN);
+    var allLack = (!o.xy || (o.r1 && o.r1.lack && o.r2 && o.r2.lack)) && o.gu && o.gu.lack;
+    return '<div class="cyp plan"><div class="cyp-h"><b>주변 신축 평당 시세</b><span class="cyp-tag">참고값 · 3.3㎡당</span></div>'
+      + (allLack ? '<p class="cyp-s">주변에 준공 ' + age + '년 이내 아파트 거래가 적어 숫자를 내지 않았어요(비교 자료 부족).</p>' : rows)
+      + (o.xy ? '' : '<p class="cyp-s">위치 좌표가 없어 반경 비교는 하지 않았어요.</p>')
+      + (opt && opt.short ? '' : planNote(head)) + '</div>';
+  }
   function load() { if (!_ix) _ix = fetch(DATA + 'price.json').then(function (r) { if (!r.ok) throw new Error('price'); return r.json(); }).catch(function (e) { _ix = null; throw e; }); return _ix; }
   function loadOne(no) { if (!_d[no]) _d[no] = fetch(DATA + 'price/' + encodeURIComponent(no) + '.json').then(function (r) { if (!r.ok) throw new Error('nf'); return r.json(); }).catch(function (e) { delete _d[no]; throw e; }); return _d[no]; }
 
@@ -249,7 +275,7 @@
   }
 
   var api = { PRODUCT: PRODUCT, BAND: BAND, won: won, posTxt: posTxt, marginTxt: marginTxt, basisTxt: basisTxt, compTxt: compTxt, fvTxt: fvTxt, pastTxt: pastTxt, supTxt: supTxt,
-    card: card, detail: detail, fund: fund, fundHTML: fundHTML, mountFund: mountFund, keyOf: keyOf, isCyKey: isCyKey, noOfKey: noOfKey, load: load, loadOne: loadOne, renderPaid: renderPaid };
+    card: card, detail: detail, fund: fund, fundHTML: fundHTML, mountFund: mountFund, keyOf: keyOf, isCyKey: isCyKey, noOfKey: noOfKey, load: load, loadOne: loadOne, renderPaid: renderPaid, loadPlan: loadPlan, planCard: planCard, planNote: planNote };
   root.JDJ_CYP = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -12,11 +12,11 @@
 <script>window.JDJ_CONFIG = { tool:'brief', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../../assets/track.js?v=2"></script>
 <script src="../../assets/stat.js?v=7"></script>
-<script src="../../assets/config.js?v=3"></script>
+<script src="../../assets/config.js?v=4"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/auth.js?v=3"></script>
 <script src="../../assets/pay.js?v=3"></script>
-<script src="../../assets/brief-core.js?v=2"></script>
+<script src="../../assets/brief-core.js?v=3"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
@@ -41,20 +41,20 @@ details{margin:8px 0 0}summary{cursor:pointer;font-weight:700;min-height:40px;di
 <body>
 <header class="top">
   <a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>집예보</a>
-  <div class="badge plain">아침 브리핑</div>
+  <div class="badge plain" data-brief-name>집예보 모닝 브리핑</div>
 </header>
 <main class="wrap" id="main"><p class="note">확인하고 있어요… 이 화면을 닫지 마세요.</p></main>
-<footer class="foot">★ 집예보 · <a href="../">아침 브리핑</a> · <a href="../manage/">내 구독 관리</a> · <a href="../../refund/">환불 정책</a></footer>
+<footer class="foot">★ <span data-site-name>집예보</span> · <a href="../" data-brief-name>집예보 모닝 브리핑</a> · <a href="../manage/">내 구독 관리</a> · <a href="../../refund/">환불 정책</a></footer>
 <script>
 (function(){
 'use strict';
-const P = JDJ_PAY, esc = P.esc, main = document.getElementById('main'), Q = new URLSearchParams(location.search);
+const P = JDJ_PAY, B = JDJ_BRIEF, esc = P.esc, main = document.getElementById('main'), Q = new URLSearchParams(location.search);
 const paymentKey = Q.get('paymentKey') || '', orderId = Q.get('orderId') || '', amount = Number(Q.get('amount'));
 if (!paymentKey || !orderId || !(amount > 0)) { main.innerHTML = '<h1>결제 정보가 없어요</h1><p class="lead">구독은 <a href="../manage/">내 구독 관리</a>에서 확인할 수 있어요.</p>'; return; }
 P.post('briefConfirm', { paymentKey, orderId, amount }).then(j => {
   history.replaceState(null, '', location.pathname + '?done=' + encodeURIComponent(j.orderId));
   const s = j.sub || {};
-  main.innerHTML = `<span class="tag">아침 브리핑</span><h1>결제가 끝났어요</h1>
+  main.innerHTML = `<span class="tag">${esc(B.NAME)}</span><h1>결제가 끝났어요</h1>
     <section class="sb"><dl><dt>주문번호</dt><dd>${esc(j.orderId)}</dd><dt>상품</dt><dd>${esc(s.product)}</dd><dt>이용 기간</dt><dd>${esc(s.start)} ~ ${esc(s.end)}</dd><dt>받는 곳</dt><dd>${esc(s.contact)}</dd></dl>
     <div class="row2"><a class="btn primary" href="../manage/">내 구독 관리</a><a class="btn" href="../subscribe/">동네 바꾸기</a></div></section>
     <div class="msg info">이용 기간 첫날 아침부터 보내 드려요. 첫 브리핑을 받기 전에는 7일 안에 전액 환불, 받기 시작한 뒤에는 남은 날만큼 환불할 수 있어요. 자동으로 다시 결제되지 않아요.</div>`;
@@ -64,5 +64,6 @@ P.post('briefConfirm', { paymentKey, orderId, amount }).then(j => {
 });
 })();
 </script>
+<script>window.JDJ_BRIEF && JDJ_BRIEF.fillNames();</script>
 </body>
 </html>

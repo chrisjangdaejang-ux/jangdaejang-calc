@@ -12,11 +12,11 @@
 <script>window.JDJ_CONFIG = { tool:'brief', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../../assets/track.js?v=2"></script>
 <script src="../../assets/stat.js?v=7"></script>
-<script src="../../assets/config.js?v=3"></script>
+<script src="../../assets/config.js?v=4"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/auth.js?v=3"></script>
 <script src="../../assets/pay.js?v=3"></script>
-<script src="../../assets/brief-core.js?v=2"></script>
+<script src="../../assets/brief-core.js?v=3"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
@@ -41,10 +41,10 @@ details{margin:8px 0 0}summary{cursor:pointer;font-weight:700;min-height:40px;di
 <body>
 <header class="top">
   <a class="brand" href="/jangdaejang-calc/" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18.2" cy="5.8" r="1.8" fill="#fff"/></svg>집예보</a>
-  <div class="badge plain">아침 브리핑</div>
+  <div class="badge plain" data-brief-name>집예보 모닝 브리핑</div>
 </header>
 <main class="wrap" id="main"><p class="note">불러오는 중…</p></main>
-<footer class="foot">★ 집예보 · <a href="../">아침 브리핑</a> · <a href="../manage/">내 구독 관리</a> · <a href="../../refund/">환불 정책</a></footer>
+<footer class="foot">★ <span data-site-name>집예보</span> · <a href="../" data-brief-name>집예보 모닝 브리핑</a> · <a href="../manage/">내 구독 관리</a> · <a href="../../refund/">환불 정책</a></footer>
 <script>
 (function(){
 'use strict';
@@ -55,7 +55,7 @@ async function draw(note){
   if (!A || !A.on() || !A.user()) { main.innerHTML = `<h1>내 구독 관리</h1><p class="lead">카카오로 로그인하면 구독 상태를 보고 바꿀 수 있어요.</p>${A && A.on() ? A.btn('카카오로 로그인', 'brief_manage') : ''}`; return; }
   let r; try { r = await call('briefMine'); } catch(e){ main.innerHTML = `<h1>내 구독 관리</h1><div class="msg err">${esc(e.message)}</div>`; return; }
   const areas = (r.brief.areas || []).map(a => a.gn + (a.dn ? ' ' + a.dn : ''));
-  main.innerHTML = `<span class="tag">아침 브리핑</span><h1>내 구독 관리</h1>${note ? `<div class="msg info">${note}</div>` : ''}
+  main.innerHTML = `<span class="tag">${esc(B.NAME)}</span><h1>내 구독 관리</h1>${note ? `<div class="msg info">${note}</div>` : ''}
     <section class="sb"><h2>받는 동네</h2><p>${areas.length ? esc(areas.join(', ')) : '아직 고른 동네가 없어요.'}</p><div class="row2"><a class="btn" href="../subscribe/">동네 바꾸기</a>${(r.brief.areas || [])[0] ? `<a class="btn" href="../?d=${encodeURIComponent(B.dKey(r.brief.areas[0].g, r.brief.areas[0].dn))}">오늘 브리핑 보기</a>` : ''}</div></section>
     ${r.subs.length ? r.subs.slice().reverse().map(s => `<section class="sb"><h2>${esc(s.product)} <span class="tg ${s.active ? '' : 'off'}">${s.active ? '받는 중' : s.state === '해지' ? '해지됨' : s.start > new Date().toISOString().slice(0, 10) ? '시작 예정' : '끝남'}</span></h2>
       <dl><dt>이용 기간</dt><dd>${esc(s.start)} ~ ${esc(s.end)}${s.active ? ` (남은 날 ${s.left}일)` : ''}</dd><dt>받는 곳</dt><dd>${s.channel === 'kakao' ? '카카오톡' : '이메일'} · ${esc(s.contact)}</dd><dt>보낸 브리핑</dt><dd>${s.sent}회</dd>${s.refund ? `<dt>환불</dt><dd>${esc(s.refund)}</dd>` : ''}</dl>
@@ -73,5 +73,6 @@ async function draw(note){
 draw();
 })();
 </script>
+<script>window.JDJ_BRIEF && JDJ_BRIEF.fillNames();</script>
 </body>
 </html>

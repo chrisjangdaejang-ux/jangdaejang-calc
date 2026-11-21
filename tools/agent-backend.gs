@@ -1,5 +1,13 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ *
+ * v22 변경 요약 (v20·v21과 같은 11/28 재배포에 함께 들어감. v22 몫으로 따로 실행할 함수 없음)
+ *  - '우리 동네 아침 브리핑' → '{SITE_NAME} 모닝 브리핑'. 서비스 이름은 이 파일 맨 위 SITE_NAME 한 곳(웹 assets/config.js·엔진 scripts/brand.py 와 같은 값).
+ *    상품명(1개월·중개사용·7일 체험)·메일 제목·메일 머리·만료 안내·환불 요청 메일·알림톡 변수가 모두 이 이름을 따라감.
+ *  - 예전 이름으로 저장된 '브리핑구독'·'주문' 시트 행도 그대로 인식(BRIEF_OLD_NAMES) — 이미 신청한 분의 이용 기간·체험 1회 제한 유지.
+ *  - 발송 메일 맨 위에 ① 오늘의 부동산 시장(전국 공통 data/brief/market.json, 하루 1번 받아 모든 구독자에게 같은 내용):
+ *    전국·서울 신고가 TOP·큰 하락 TOP, 금리·대출·세금 정책 변화, 이번 주 청약 일정. 이어서 ② 내 관심 지역 ③ 내 관심 단지(새 거래가 있을 때).
+ *  - 검증: node tools/brief-test.js
  *
  * v21 변경 요약 (v20과 같은 11/28 재배포에 함께 들어감: 배포 → 배포 관리 → 수정 → 새 버전 → 배포. v21 몫으로 따로 실행할 함수 없음)
  *  - 전문가 이름 리포트(proSave·proOpen) 유형을 공인중개사로 한정하지 않음: 개업·소속공인중개사(법정 표기 필수 그대로) ·
@@ -145,6 +153,9 @@ function setup() {
 }
 
 /* ---------- 공통 ---------- */
+/* 서비스 이름 — 여기 한 곳(웹 assets/config.js SITE_NAME · 엔진 scripts/brand.py 와 같은 값). 모닝 브리핑 이름은 이 값으로 조합 */
+const SITE_NAME = '집예보';
+const BRIEF_NAME = SITE_NAME + ' 모닝 브리핑';
 function out(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
 function today() { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }
 function ymd(d) { return Utilities.formatDate(d, 'Asia/Seoul', 'yyyy-MM-dd'); }
@@ -1928,7 +1939,7 @@ function proClick(b) {
 }
 
 /* =====================================================================
-   우리 동네 아침 브리핑 (유료 구독) — v18
+   모닝 브리핑 (BRIEF_NAME = '{SITE_NAME} 모닝 브리핑', 유료 구독) — v18, 이름·전국 시장 칸 v22
    · 동네별 브리핑은 GitHub Actions(jangdaejang-timing brief.yml)가 매일 새벽 만들어 공개 데이터(data/brief/{시군구}.json)에 올림.
      이 서버는 '누구에게 어떤 동네를 어떤 채널로' 보낼지만 관리하고, 아침(트리거 briefDaily)에 발송.
    · 구독 = 카카오 로그인 회원만. 동네는 회원 저장 자료(userSave)의 brief.areas(시군구·동, 최대 10곳)를 그대로 씀 → 동네 바꾸기는 저장만 하면 다음 날부터.
@@ -1945,10 +1956,19 @@ const BH = ['id', '생성시각', '상품', '상태', '주문번호', '카카오
 const BC = Object.fromEntries(BH.map((h, i) => [h, i]));
 const BLH = ['날짜', '구독id', '채널', '결과', '동네수'];
 const BRIEF_PRICE = {
-  brief:     { name: '아침 브리핑 1개월', amount: 3900, areas: 3, days: 30 },
-  brief_pro: { name: '아침 브리핑 중개사용 1개월', amount: 4900, areas: 10, days: 30, pro: true }
+  brief:     { name: BRIEF_NAME + ' 1개월', amount: 3900, areas: 3, days: 30 },
+  brief_pro: { name: BRIEF_NAME + ' 중개사용 1개월', amount: 4900, areas: 10, days: 30, pro: true }
 };
-const BRIEF_TRIAL = { name: '아침 브리핑 7일 체험', amount: 0, areas: 3, days: 7 };
+const BRIEF_TRIAL = { name: BRIEF_NAME + ' 7일 체험', amount: 0, areas: 3, days: 7 };
+/* 예전 상품명(시트에 이미 저장된 행) → 상품 키. 이름이 또 바뀌면 바뀌기 전 이름을 여기에 더해 두면 됨 */
+const BRIEF_OLD_NAMES = { '아침 브리핑 1개월': 'brief', '아침 브리핑 중개사용 1개월': 'brief_pro', '아침 브리핑 7일 체험': 'trial' };
+function bProdKey(name) {
+  name = String(name || '');
+  if (name === BRIEF_TRIAL.name) return 'trial';
+  const k = Object.keys(BRIEF_PRICE).find(x => BRIEF_PRICE[x].name === name);
+  return k || BRIEF_OLD_NAMES[name] || '';
+}
+function bIsTrial(name) { return bProdKey(name) === 'trial'; }
 const BST = { wait: '결제대기', on: '이용', trial: '체험', stop: '해지', refund: '환불' };
 const BRIEF_ACTIONS = { briefTrial: 1, briefOrder: 1, briefConfirm: 1, briefMine: 1, briefUpdate: 1, briefStop: 1, briefRefund: 1 };
 const BRIEF_DATA = 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/data/brief/';
@@ -2008,7 +2028,7 @@ function briefContact(channel, c) {
 function briefState(o, now) {
   const r = o.r, st = String(r[BC['상태']]), s = dOnly(r[BC['시작일']]), e = dOnly(r[BC['만료일']]), t = dOnly(ymd(now));
   const active = (st === BST.on || st === BST.trial) && s && e && s <= t && t <= e;
-  const P = String(r[BC['상품']]) === BRIEF_TRIAL.name ? BRIEF_TRIAL : (BRIEF_PRICE[Object.keys(BRIEF_PRICE).find(k => BRIEF_PRICE[k].name === String(r[BC['상품']]))] || BRIEF_TRIAL);
+  const pk = bProdKey(r[BC['상품']]), P = BRIEF_PRICE[pk] || BRIEF_TRIAL;
   const left = e && t <= e ? Math.round((e - t) / 86400000) + 1 : 0;
   const sent = Number(r[BC['발송수']]) || 0;
   /* 환불 예정액: 첫 브리핑 발송 전이면 전액, 이용 중이면 남은 날만큼(일할, 위약금 없음) */
@@ -2049,7 +2069,7 @@ function briefCommon(b) {
 /* 7일 무료 체험 (카카오 계정당 1번) */
 function briefTrial(b) {
   const c = briefCommon(b);
-  if (myBriefs(c.u.k).some(o => String(o.r[BC['상품']]) === BRIEF_TRIAL.name)) throw new Error('무료 체험은 계정마다 한 번만 쓸 수 있어요. 이용권으로 이어서 받아 보세요.');
+  if (myBriefs(c.u.k).some(o => bIsTrial(o.r[BC['상품']]))) throw new Error('무료 체험은 계정마다 한 번만 쓸 수 있어요. 이용권으로 이어서 받아 보세요.');
   if (myBriefs(c.u.k).some(o => briefState(o, new Date()).active)) throw new Error('이미 받고 있는 브리핑이 있어요.');
   const id = newBriefRow(c.u, BRIEF_TRIAL, BST.trial, c.channel, c.ct, c.ad, '');
   const o = bRows().find(x => String(x.r[BC['id']]) === id), t = kstToday();
@@ -2087,8 +2107,8 @@ function briefConfirm(b) {
   if (!paymentKey || !/^[A-Za-z0-9_\-=.]+$/.test(paymentKey)) throw new Error('결제 정보가 올바르지 않아요.');
   const o = findRow(b.orderId);
   if (!o) throw new Error('주문을 찾지 못했어요.');
-  const pk = Object.keys(BRIEF_PRICE).find(k => BRIEF_PRICE[k].name === String(o.r[OC['상품']]));
-  if (!pk) throw new Error('아침 브리핑 주문이 아니에요.');
+  const pk = bProdKey(o.r[OC['상품']]);
+  if (!BRIEF_PRICE[pk]) throw new Error(BRIEF_NAME + ' 주문이 아니에요.');
   const P = BRIEF_PRICE[pk];
   const subOf = () => bRows().find(x => String(x.r[BC['주문번호']]) === String(o.r[OC['주문번호']]));
   if (String(o.r[OC['상태']]) === ST.paid) {
@@ -2128,7 +2148,7 @@ function briefMine(b) {
   const u = sessionUser(b.s), now = new Date();
   const list = myBriefs(u.k).filter(o => String(o.r[BC['상태']]) !== BST.wait).map(o => briefState(o, now));
   return { ok: true, subs: list, brief: cleanBrief(u.data && u.data.brief), channels: briefChannels(),
-    trialUsed: myBriefs(u.k).some(o => String(o.r[BC['상품']]) === BRIEF_TRIAL.name) };
+    trialUsed: myBriefs(u.k).some(o => bIsTrial(o.r[BC['상품']])) };
 }
 function mySub(u, id) {
   const o = myBriefs(u.k).find(x => String(x.r[BC['id']]) === String(id || ''));
@@ -2165,7 +2185,7 @@ function briefRefund(b) {
   const ord = findRow(s.orderId);
   if (ord) { setO(ord.row, '환불상태', `브리핑 환불 요청(예정 ${s.refundEst.toLocaleString()}원)`); setO(ord.row, '환불요청시각', now); setO(ord.row, '환불사유', reason); }
   try {
-    MailApp.sendEmail(Session.getEffectiveUser().getEmail(), `[집예보 결제] 아침 브리핑 환불 요청 ${s.orderId}`,
+    MailApp.sendEmail(Session.getEffectiveUser().getEmail(), `[${SITE_NAME} 결제] ${BRIEF_NAME} 환불 요청 ${s.orderId}`,
       `주문번호 ${s.orderId}\n상품 ${s.product}\n이용 기간 ${s.start} ~ ${s.end} (남은 날 ${s.left}일, 보낸 브리핑 ${s.sent}회)\n`
       + `환불 예정액 ${s.refundEst.toLocaleString()}원 (첫 브리핑 전이면 전액, 이용 중이면 남은 날만큼 일할)\n사유: ${reason || '(없음)'}\n\n`
       + `처리: 토스페이먼츠 상점관리자 → 결제 내역에서 주문번호로 찾아 '부분 취소'(예정액) 또는 '전액 취소' → '브리핑구독'·'주문' 시트 환불상태를 '환불완료'로.\n${book().getUrl()}`);
@@ -2235,11 +2255,32 @@ function briefPiece(S, a, pro, apts) {
   const nm = S.name + (dn ? ' ' + dn : ''), mine = tr.filter(t => apts.indexOf(t.a) >= 0);
   const pick = mine.concat(tr.filter(t => t.hi && mine.indexOf(t) < 0)).concat(tr.filter(t => !t.hi && mine.indexOf(t) < 0)).slice(0, 3);
   return { nm: nm, n: tr.length, hi: tr.filter(t => t.hi).length, fact: lines.fact || '', cmp: lines.cmp || '', so: lines.so || '',
-    items: pick.map(t => `${t.a} ${t.b} ${bWon(t.p)}${t.hi ? ' (신고가)' : t.dr != null && t.dr <= -10 ? ` (최근 2년 최고가보다 ${Math.abs(t.dr).toFixed(0)}% 낮음)` : ''}`),
+    mine: mine.length, items: pick.map(t => `${apts.indexOf(t.a) >= 0 ? '[관심 단지] ' : ''}${t.a} ${t.b} ${bWon(t.p)}${t.hi ? ' (신고가)' : t.dr != null && t.dr <= -10 ? ` (최근 2년 최고가보다 ${Math.abs(t.dr).toFixed(0)}% 낮음)` : ''}`),
     pro: pro ? (((S.pro || {})[dn] || (S.pro || {})['']) || []) : [], url: BRIEF_WEB + '?d=' + S.g + (dn ? '-' + encodeURIComponent(dn) : '') + (pro ? '&v=pro' : '') };
 }
-function briefMail(to, date, pieces, s, pro) {
-  const title = `[집예보] ${date.slice(5).replace('-', '/')} 우리 동네 아침 브리핑 — ${pieces.map(p => p.nm).join(', ')}`.slice(0, 120);
+/* ① 오늘의 부동산 시장(전국 공통, data/brief/market.json) → 메일 머리 칸. 숫자는 자료 그대로 */
+function bTop(x) {
+  const ym = i => `${Math.floor(i / 10000)}.${Math.floor(i / 100) % 100}`;
+  const sub = x.up != null ? ` (이전 최고 ${bWon(x.pm)}·${ym(x.pmd)} 대비 +${x.up}%)` : x.dr != null ? ` (최근 2년 최고 ${bWon(x.m2)}·${ym(x.m2d)} 대비 ${x.dr}%)` : '';
+  return `${[x.sd, x.gn, x.d].filter(Boolean).join(' ')} ${x.a} ${x.b} ${bWon(x.p)}${sub}`;
+}
+function briefMarketHtml(M) {
+  if (!M) return '';
+  const li = a => a.length ? '<ol style="margin:4px 0 8px;padding-left:20px;line-height:1.6">' + a.map(x => `<li>${bEsc(x)}</li>`).join('') + '</ol>' : '<p style="margin:4px 0 8px;color:#4E5968">이번에는 없어요.</p>';
+  const kr = M.kr || {}, se = M.seoul || {}, cy = M.cy || {};
+  const pol = (M.policy || []).map(p => `${p.name} — ${p.stage} ${String(p.d).slice(5).replace('-', '/')} (${p.scope})`);
+  const rate = M.rate ? ['base', 'mort'].filter(k => M.rate[k]).map(k => `${k === 'base' ? '한국은행 기준금리' : '은행 주택담보대출 신규 금리'} ${M.rate[k].v}% (${M.rate[k].ym.slice(0, 4)}.${+M.rate[k].ym.slice(4)})${M.rate[k].chg != null ? ` · 지난달보다 ${M.rate[k].chg > 0 ? '+' : ''}${M.rate[k].chg}%p` : ''}`) : [];
+  const cys = (cy.rows || []).slice(0, 5).map(n => `${n.n} (${[n.sd, n.gn].filter(Boolean).join(' ')}) · 접수 ${String((n.sp && n.sp[0]) || (n.rc || [])[0] || '').slice(4, 6)}/${String((n.sp && n.sp[0]) || (n.rc || [])[0] || '').slice(6, 8)}`);
+  return `<div style="border:2px solid #191F28;border-radius:12px;padding:14px 16px;margin:0 0 14px">
+    <div style="font-size:17px;font-weight:900;margin:0 0 6px">① 오늘의 부동산 시장 <span style="font-size:12.5px;color:#4E5968;font-weight:500">전국 공통</span></div>
+    ${(M.lines || []).map(x => `<p style="margin:0 0 6px;line-height:1.6">${bEsc(x)}</p>`).join('')}
+    <b>전국 신고가 TOP</b>${li((kr.hi || []).slice(0, 3).map(bTop))}<b>전국 큰 하락 TOP</b>${li((kr.drop || []).slice(0, 3).map(bTop))}
+    <b>서울 신고가 TOP</b>${li((se.hi || []).slice(0, 3).map(bTop))}
+    <b>금리·대출·세금</b>${li(rate.concat(pol))}<b>이번 주 청약 일정${cy.n ? ` · 전국 ${cy.n}곳` : ''}</b>${li(cys)}
+    <a href="${BRIEF_WEB}" style="font-size:13.5px;color:#2F6BFF">오늘의 시장 전체 보기</a></div>`;
+}
+function briefMail(to, date, pieces, s, pro, M) {
+  const title = `[${SITE_NAME}] ${date.slice(5).replace('-', '/')} ${BRIEF_NAME} — ${pieces.map(p => p.nm).join(', ')}`.slice(0, 120);
   const body = pieces.map(p => `<div style="border:1px solid #E5E8EB;border-radius:12px;padding:14px 16px;margin:0 0 12px">
       <div style="font-size:17px;font-weight:900;margin:0 0 6px">${bEsc(p.nm)} <span style="font-size:13px;color:#2F6BFF">새 매매 ${p.n}건 · 신고가 ${p.hi}건</span></div>
       <p style="margin:0 0 6px;line-height:1.6">${bEsc(p.fact)}</p>${p.cmp ? `<p style="margin:0 0 6px;line-height:1.6;color:#3E4754">${bEsc(p.cmp)}</p>` : ''}${p.so ? `<p style="margin:0 0 6px;line-height:1.6;color:#3E4754">${bEsc(p.so)}</p>` : ''}
@@ -2247,10 +2288,12 @@ function briefMail(to, date, pieces, s, pro) {
       ${p.pro.length ? '<div style="background:#F4F7FF;border-radius:10px;padding:10px 12px;margin:8px 0"><b>손님께 할 이야기</b><ol style="margin:6px 0 0;padding-left:18px;line-height:1.6">' + p.pro.map(x => `<li>${bEsc(x)}</li>`).join('') + '</ol></div>' : ''}
       <a href="${p.url}" style="display:inline-block;margin-top:6px;background:#2F6BFF;color:#fff;padding:10px 16px;border-radius:10px;text-decoration:none;font-weight:700">전체 브리핑 보기</a></div>`).join('');
   const html = `<div style="font-family:'Noto Sans KR',sans-serif;max-width:600px;margin:auto;color:#191F28">
-    <div style="font-weight:900;font-size:19px;margin:6px 0 12px">집예보 <span style="color:#2F6BFF">아침 브리핑</span></div>${body}
+    <div style="font-weight:900;font-size:19px;margin:6px 0 12px">${bEsc(SITE_NAME)} <span style="color:#2F6BFF">모닝 브리핑</span></div>${briefMarketHtml(M)}
+    <div style="font-size:17px;font-weight:900;margin:4px 0 8px">② 내 관심 지역 · ③ 내 관심 단지</div>${body}
     <p style="font-size:12.5px;color:#4E5968;line-height:1.6">국토교통부 실거래 공개 자료에 새로 올라온 거래를 동네별로 모았어요. 신고가는 같은 단지·같은 평형의 이전 최고가를 넘은 거래예요.<br>
-    이 메일은 ${bEsc(s.product)}(이용 기간 ${s.start} ~ ${s.end})을 신청하신 분께 보내 드려요. 받는 방법 바꾸기·해지: <a href="${BRIEF_WEB}manage/">${BRIEF_WEB}manage/</a></p></div>`;
-  MailApp.sendEmail({ to: to, subject: title, htmlBody: html, name: '집예보' });
+    이 메일은 ${bEsc(s.product)}(이용 기간 ${s.start} ~ ${s.end})을 신청하신 분께 보내 드려요. 받는 방법 바꾸기·해지: <a href="${BRIEF_WEB}manage/">${BRIEF_WEB}manage/</a></p>
+    <a href="${BRIEF_WEB}manage/" style="display:block;text-align:center;margin:10px 0 0;border:1px solid #2F6BFF;color:#2F6BFF;padding:11px 16px;border-radius:10px;text-decoration:none;font-weight:700">지역·단지 바꾸기</a></div>`;
+  MailApp.sendEmail({ to: to, subject: title, htmlBody: html, name: SITE_NAME });
 }
 /* 솔라피 알림톡(정보성 템플릿). 실패하면 SOLAPI_FROM 이 있을 때 문자로 대체 */
 function solapiSend(to, tplKey, vars, url) {
@@ -2273,6 +2316,7 @@ function briefDaily() {
   if (!ix || ix.date !== date) { if (new Date().getHours() < 9) return; }   // 오늘 자료가 아직 없으면 9시에 다시(9시에도 없으면 어제 자료 그대로 보내고 날짜를 밝힘)
   const um = userBriefMap(), now = new Date(), cache = {}, ch = briefChannels();
   const brief = g => (g in cache) ? cache[g] : (cache[g] = bFetchJson(BRIEF_DATA + g + '.json'));
+  const M = bFetchJson(BRIEF_DATA + 'market.json');      // 전국 공통 — 하루 1번만 받아 모든 구독자에게 같은 내용
   let sent = 0;
   bRows().forEach(o => {
     const s = briefState(o, now);
@@ -2283,7 +2327,7 @@ function briefDaily() {
     const to = String(o.r[BC['연락처']]).replace(/^'/, '');
     let res = { ok: false, why: '' };
     try {
-      if (s.channel === 'email') { briefMail(to, (pieces[0] && ix && ix.date) || date, pieces, s, s.pro); res = { ok: true }; }
+      if (s.channel === 'email') { briefMail(to, (pieces[0] && ix && ix.date) || date, pieces, s, s.pro, M); res = { ok: true }; }
       else if (s.channel === 'kakao') {
         if (!ch.kakao) res = { ok: false, why: '알림톡 키 없음' };
         else {
@@ -2311,7 +2355,7 @@ function briefExpiry(now) {
     if (!tag || String(o.r[BC['만료알림']]).indexOf(tag) >= 0) return;
     const to = String(o.r[BC['연락처']]).replace(/^'/, '');
     try {
-      if (s.channel === 'email') MailApp.sendEmail({ to: to, name: '집예보', subject: `[집예보] 아침 브리핑 이용 기간이 ${s.left === 1 ? '오늘' : s.left + '일 뒤'} 끝나요`,
+      if (s.channel === 'email') MailApp.sendEmail({ to: to, name: SITE_NAME, subject: `[${SITE_NAME}] ${BRIEF_NAME} 이용 기간이 ${s.left === 1 ? '오늘' : s.left + '일 뒤'} 끝나요`,
         htmlBody: `<div style="font-family:sans-serif;line-height:1.7">${bEsc(s.product)} 이용 기간이 ${s.end}에 끝나요. 자동으로 결제되지 않아요.<br>계속 받으시려면 이용권을 새로 구매해 주세요: <a href="${BRIEF_WEB}subscribe/">${BRIEF_WEB}subscribe/</a></div>` });
       else if (s.channel === 'kakao') solapiSend(to, 'SOLAPI_TPL_EXPIRE', { '#{상품}': s.product, '#{만료일}': s.end, '#{링크}': (BRIEF_WEB + 'subscribe/').replace(/^https:\/\//, '') });
       setB(o.row, '만료알림', (String(o.r[BC['만료알림']] || '') + ' ' + tag).trim());

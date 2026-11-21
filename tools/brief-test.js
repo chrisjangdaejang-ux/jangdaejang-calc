@@ -1,4 +1,4 @@
-/* 우리 동네 아침 브리핑 서버 로직(tools/agent-backend.gs v16) 자동 검증 — 실행: node tools/brief-test.js
+/* 모닝 브리핑 서버 로직(tools/agent-backend.gs v18~v22) 자동 검증 — 실행: node tools/brief-test.js
    가짜 구글 시트·토스·솔라피·공개 데이터 위에서: 동네 저장 → 7일 체험 → 이용권 주문·승인(이어 붙이기) → 아침 발송(이메일·알림톡)
    → 만료 안내 → 해지·환불 예정액 → 집계(개인정보 없음) → 연락처 정리를 확인합니다. (실제 서버에는 접속하지 않습니다.) */
 const fs = require('fs'), vm = require('vm'), path = require('path'), crypto = require('crypto');
@@ -67,6 +67,7 @@ const ctx = {
       fetches.push({ url, opt });
       const send = (code, j) => ({ getResponseCode: () => code, getContentText: () => JSON.stringify(j) });
       const m = url.match(/data\/brief\/(\w+)\.json/);
+      if (m && m[1] === 'market') return send(200, MARKET);
       if (m) return m[1] === 'index' ? send(200, { date: new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new RealDate(NOW)) }) : BRIEF[m[1]] ? send(200, BRIEF[m[1]]) : send(404, {});
       if (url.indexOf('api.solapi.com') >= 0) return send(200, { groupInfo: { count: { total: 1 } } });
       const body = opt.payload ? JSON.parse(opt.payload) : null;
@@ -74,9 +75,13 @@ const ctx = {
     }
   }
 };
+const MARKET = { date: '2026-11-21', name: '집예보 모닝 브리핑', win: { from: '2026-11-20', to: '2026-11-21' },
+  kr: { n: 812, nhi: 40, hi: [{ sd: '서울', gn: '강남구', d: '압구정동', a: '현대7차', b: '245㎡대', p: 1150000, pm: 1050000, pmd: 20260301, up: 9.5 }], drop: [{ sd: '경기', gn: '화성시', d: '청계동', a: '예시', b: '84㎡대', p: 60000, m2: 80000, m2d: 20250501, dr: -25 }] },
+  seoul: { n: 120, nhi: 12, hi: [], drop: [] }, policy: [{ name: '주담대 한도 조정', stage: '시행', d: '2026-11-17', scope: '전국' }], rate: null,
+  cy: { n: 3, rows: [{ n: '이번 주 단지', sd: '서울', gn: '송파구', sp: ['20261117', ''], rc: ['20261118', '20261119'] }] }, lines: ['전국에서 어제 새로 올라온 아파트 매매는 812건이에요.'] };
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(__dirname, 'agent-backend.gs'), 'utf8')
-  + '\n;globalThis.__T = { BC, OC, UC, SC, UH, SSH, BRIEF_PRICE, hashOf, cleanBrief, briefDaily, briefState, bRows, briefAreas, briefInterest, briefCleanup };', ctx);
+  + '\n;globalThis.__T = { BC, OC, UC, SC, UH, SSH, BRIEF_PRICE, BRIEF_TRIAL, BRIEF_NAME, SITE_NAME, bProdKey, hashOf, cleanBrief, briefDaily, briefState, bRows, briefAreas, briefInterest, briefCleanup };', ctx);
 const T = ctx.__T;
 const post = b => JSON.parse(ctx.doPost({ postData: { contents: JSON.stringify(b) } }).s);
 const get = p => JSON.parse(ctx.doGet({ parameter: p }).s);
@@ -143,7 +148,12 @@ check('리포트 승인 경로로 다른 결제키 → 거절', !r.ok, r);
 const sent = T.briefDaily();
 check('발송 1건(체험 중 회원)', sent === 1, sent);
 const m = mails.find(a => a[0] && a[0].to === 'me@example.com');
-check('이메일: 받는 사람·제목·동 단위 내용', !!m && /11\/21 우리 동네 아침 브리핑/.test(m[0].subject) && /송파구 잠실동/.test(m[0].htmlBody) && /잠실동에서 새로 올라온/.test(m[0].htmlBody) && /도봉구/.test(m[0].htmlBody), m && m[0].subject);
+check('이메일: 받는 사람·제목·동 단위 내용', !!m && /11\/21 집예보 모닝 브리핑/.test(m[0].subject) && /송파구 잠실동/.test(m[0].htmlBody) && /잠실동에서 새로 올라온/.test(m[0].htmlBody) && /도봉구/.test(m[0].htmlBody), m && m[0].subject);
+check('메일: ① 전국 시장(신고가 TOP·하락·정책·이번 주 청약) 먼저', !!m && /① 오늘의 부동산 시장/.test(m[0].htmlBody) && /압구정동 현대7차 245㎡대 115억 원/.test(m[0].htmlBody)
+  && /주담대 한도 조정/.test(m[0].htmlBody) && /이번 주 단지/.test(m[0].htmlBody) && m[0].htmlBody.indexOf('① 오늘의') < m[0].htmlBody.indexOf('송파구 잠실동'));
+check('시장 자료는 하루 한 번만 받음', fetches.filter(f => /market\.json/.test(f.url)).length === 1);
+check('이름은 SITE_NAME 한 곳에서', T.BRIEF_NAME === T.SITE_NAME + ' 모닝 브리핑' && T.BRIEF_PRICE.brief.name === T.BRIEF_NAME + ' 1개월' && T.BRIEF_TRIAL.name === T.BRIEF_NAME + ' 7일 체험');
+check('예전 이름 행도 인식', T.bProdKey('아침 브리핑 중개사용 1개월') === 'brief_pro' && T.bProdKey('아침 브리핑 7일 체험') === 'trial' && T.bProdKey(T.BRIEF_PRICE.brief.name) === 'brief' && T.bProdKey('다른 상품') === '');
 check('체험(일반)은 중개사 줄 없음', m && !/손님께 할 이야기/.test(m[0].htmlBody));
 check('같은 날 두 번 안 보냄', T.briefDaily() === undefined && mails.filter(a => a[0] && a[0].to === 'me@example.com').length === 1);
 check('발송기록: 연락처 없음', sheets['발송기록'] && !JSON.stringify(sheets['발송기록'].rows).includes('me@example.com'));
@@ -179,7 +189,7 @@ const it = get({ action: 'briefInterest', k: 'pull-FAKE-123' });
 check('관심도: 방문자 5명 이상 단지만', it.ok && JSON.stringify(it.gu) === JSON.stringify({ '11710': [['잠실동', '리센츠', 6, 0]] }), it);
 r = post({ action: 'briefRefund', s: s1, id: paidId, reason: '테스트' });
 check('첫 발송 전 환불 요청 → 전액 예정·발송 중단', r.ok && r.sub.refundEst === 4900 && r.sub.state === '해지', r.sub);
-check('운영자 메일', mails.some(a => typeof a[1] === 'string' && /아침 브리핑 환불 요청/.test(a[1])));
+check('운영자 메일', mails.some(a => typeof a[1] === 'string' && /집예보 모닝 브리핑 환불 요청/.test(a[1])));
 r = post({ action: 'briefStop', s: s1, id: trialId });
 check('해지', r.ok && r.sub.state === '해지' && !r.sub.active, r);
 NOW = Date.parse('2026-11-26T07:10:00+09:00'); fetches.length = 0;
@@ -196,5 +206,5 @@ T.briefCleanup(new FakeDate());
 check('끝난 지 30일 지난 연락처 원문 삭제', subRows().every(x => !bc(x, '연락처')), subRows().map(x => bc(x, '연락처')));
 check('결제대기 행 정리(이틀 지난 것)', subRows().every(x => bc(x, '상태') !== '결제대기'));
 
-console.log(`아침 브리핑 서버 로직 검증: ${pass}개 통과, ${fail}개 실패`);
+console.log(`모닝 브리핑 서버 로직 검증: ${pass}개 통과, ${fail}개 실패`);
 process.exit(fail ? 1 : 0);
