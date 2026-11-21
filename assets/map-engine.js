@@ -10,7 +10,9 @@
    window.JDJ_MAPE.create(el, {lat, lng, zoom}) → Promise<지도>
      지도 = { kind, zoom(), bounds() {w,s,e,n}, center() {lat,lng}, project(lat,lng) {x,y}, size() {w,h},
               setView(lat,lng,zoom), zoomBy(d, lat, lng), panBy(dx,dy), onIdle(fn), onTap(fn), onMoveStart(fn),
-              add(lat,lng,el,z) → {el, move(lat,lng), remove()}, relayout() }
+              add(lat,lng,el,z) → {el, move(lat,lng), remove()}, relayout(),
+              shape(kind 'line'|'area', pts, st, onTap) → {remove()} }   // pts: 선 [[위도,경도],…] / 면 [[[위도,경도],…],…](고리 여러 개)
+                                                                          // st: {color, weight, dash(true=점선), fill, fillOpacity, opacity}. 말풍선 아래에 그려짐
      줌 숫자는 두 엔진 모두 Leaflet 기준(카카오 레벨 = 20 − 줌)으로 맞춘다. */
 (function (root) {
   'use strict';
@@ -66,11 +68,22 @@
         return { el: node, move: (a, b) => m.setLatLng([a, b]), remove: () => map.removeLayer(m) };
       },
       relayout: () => map.invalidateSize(),
+      shape(kind, pts, st, onTap) {
+        st = st || {};
+        const o = { color: st.color || '#6D4AFF', weight: st.weight || 3, opacity: st.opacity == null ? 0.9 : st.opacity, dashArray: st.dash ? '8 7' : null,
+          lineCap: 'round', interactive: !!onTap, bubblingMouseEvents: false };
+        const g = kind === 'area' ? L.polygon(pts, Object.assign(o, { fill: true, fillColor: st.fill || o.color, fillOpacity: st.fillOpacity == null ? 0.12 : st.fillOpacity }))
+          : L.polyline(pts, o);
+        if (onTap) g.on('click', () => onTap());   // bubblingMouseEvents:false → 지도 빈 곳 누름(카드 닫기)으로 번지지 않음
+        g.addTo(map);
+        return { remove: () => map.removeLayer(g) };
+      },
       _pane: pane
     };
   }
 
   /* ---------- 카카오맵 ---------- */
+  let kakaoShapeTap = 0;
   async function kakao(el, v) {
     const key = String(CFG.KAKAO_JS_KEY || '').trim();
     if (!(root.kakao && root.kakao.maps && root.kakao.maps.Map)) {
@@ -93,13 +106,23 @@
       panBy: (dx, dy) => map.panBy(dx, dy),
       onIdle: fn => ev.addListener(map, 'idle', fn),
       onMoveStart: fn => { ev.addListener(map, 'dragstart', fn); ev.addListener(map, 'zoom_start', fn); },
-      onTap: fn => ev.addListener(map, 'click', fn),
+      onTap: fn => ev.addListener(map, 'click', () => { if (Date.now() - kakaoShapeTap < 400) return; fn(); }),   // 선·면을 누른 같은 누름은 지도 빈 곳 누름으로 치지 않음
       add(lat, lng, node, z) {
         const o = new K.CustomOverlay({ position: new K.LatLng(lat, lng), content: node, xAnchor: 0, yAnchor: 0, zIndex: 10 + (z || 0) / 100, clickable: true });
         o.setMap(map);
         return { el: node, move: (a, b) => o.setPosition(new K.LatLng(a, b)), remove: () => o.setMap(null) };
       },
-      relayout: () => map.relayout()
+      relayout: () => map.relayout(),
+      shape(kind, pts, st, onTap) {
+        st = st || {};
+        const ll = a => a.map(p => new K.LatLng(p[0], p[1]));
+        const o = { strokeWeight: st.weight || 3, strokeColor: st.color || '#6D4AFF', strokeOpacity: st.opacity == null ? 0.9 : st.opacity, strokeStyle: st.dash ? 'shortdash' : 'solid', zIndex: 1 };
+        const g = kind === 'area' ? new K.Polygon(Object.assign(o, { path: pts.map(ll), fillColor: st.fill || o.strokeColor, fillOpacity: st.fillOpacity == null ? 0.12 : st.fillOpacity }))
+          : new K.Polyline(Object.assign(o, { path: ll(pts) }));
+        g.setMap(map);
+        if (onTap) ev.addListener(g, 'click', () => { kakaoShapeTap = Date.now(); onTap(); });
+        return { remove: () => g.setMap(null) };
+      }
     };
   }
 
