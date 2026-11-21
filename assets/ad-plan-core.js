@@ -194,12 +194,23 @@
     if (long) out.plans.push(Object.assign({ id: 'long', label: '오래 노출', head: won(budget) + '으로 최대 ' + long.weeks + '주 동안 실려요' }, long));
     if (wide.items.length) out.plans.push(Object.assign({ id: 'wide', label: '넓게 노출', head: wide.weeks + '주 동안 자리 ' + wide.items.length + '곳에 실려요' }, wide));
     if (focus.items.length) out.plans.push(Object.assign({ id: 'focus', label: '집중 노출', head: focus.weeks + '주 동안 ' + (focus.items.some(function (x) { return /_top$/.test(x.id); }) ? '위쪽 배너 위주로 눈에 띄게' : '가장 잘 맞는 자리에') + ' 실려요' }, focus));
-    out.plans.forEach(function (p) { p.cpc = cpcOf(p, stats); });
+    /* 구성이 같은 안은 하나로 합침(제목 '넓게·집중 노출'처럼). 합친 안의 id 는 맨 앞 안, ids 에 모두 */
+    var merged = [];
+    out.plans.forEach(function (p) {
+      var sig = p.items.map(function (x) { return x.id + '@' + x.weeks + '@' + x.cost; }).join('|');
+      var same = merged.filter(function (m) { return m.sig === sig; })[0];
+      if (!same) { p.sig = sig; p.ids = [p.id]; merged.push(p); return; }
+      same.ids.push(p.id);
+      same.label = same.ids.map(function (id) { return { long: '오래', wide: '넓게', focus: '집중' }[id]; }).join('·') + ' 노출';
+    });
+    out.plans = merged;
+    out.plans.forEach(function (p) { p.cpc = cpcOf(p, stats); delete p.sig; });
+    var planOf = function (id) { return out.plans.filter(function (p) { return p.ids.indexOf(id) >= 0; })[0]; };
     out.ok = out.plans.length > 0;
     if (out.ok) {
-      var near = U.id === 'bunyang' && q.soon === 'near' && out.plans.some(function (p) { return p.id === 'focus'; });
-      out.rec = near ? 'focus' : (long ? 'long' : out.plans[0].id);
-      out.recWhy = near ? '청약 접수 전 짧은 기간에 많이 보이는 게 중요해요.' : out.rec === 'long' ? '처음 광고하시면 오래 실어 반응을 보는 게 좋아요.' : '';
+      var near = U.id === 'bunyang' && q.soon === 'near' && !!planOf('focus');
+      out.rec = (planOf(near ? 'focus' : 'long') || out.plans[0]).id;
+      out.recWhy = near ? '청약 접수 전 짧은 기간에 많이 보이는 게 중요해요.' : planOf('long') && planOf('long').id === out.rec ? '처음 광고하시면 오래 실어 반응을 보는 게 좋아요.' : '';
       /* '최고 효율'은 실제 클릭당 비용이 두 안 이상에서 측정되고 가장 낮은 안이 하나일 때만 */
       var m = out.plans.filter(function (p) { return p.cpc > 0; }).sort(function (a, b) { return a.cpc - b.cpc; });
       if (m.length >= 2 && m[0].cpc < m[1].cpc) out.best = m[0].id;
@@ -222,7 +233,7 @@
   }
 
   /** [이 구성으로 문의하기] → /ad/ 문의 폼에 채울 값 */
-  var PERIOD_TXT = { 1: '1주', 2: '2주', 4: '1개월' };
+  var PERIOD_TXT = { 1: '1주', 2: '2주', 4: '1개월', 8: '8주(2개월)' };   // /ad/ 문의 폼 희망 기간 목록과 같게(서버 v38 AQ_PERIOD)
   function won(n) { n = Math.round(+n || 0); var m = n / 10000; return (Number.isInteger(m) ? m.toLocaleString('ko-KR') : String(+m.toFixed(1))) + '만 원'; }
   /** r: plan() 결과(추천 안) 또는 그 안의 구성안 하나(plans[i]) */
   function formFill(q, r) {

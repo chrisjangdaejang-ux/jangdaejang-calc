@@ -542,7 +542,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
               <label><input type="checkbox" value="etc"> 기타·제휴</label>
             </div></div>
           <div class="f"><label class="l" for="region">지역</label><input id="region" maxlength="60" placeholder="예: 서울 강동구, 경기 전체"></div>
-          <div class="f"><label class="l" for="period">희망 기간</label><select id="period"><option value="">골라 주세요</option><option>1주</option><option>2주</option><option>1개월</option><option>3개월</option><option>6개월</option><option>1년</option><option>미정·협의</option></select></div>
+          <div class="f"><label class="l" for="period">희망 기간</label><select id="period"><option value="">골라 주세요</option><option>1주</option><option>2주</option><option>1개월</option><option>8주(2개월)</option><option>3개월</option><option>6개월</option><option>1년</option><option>미정·협의</option></select></div>
           <div class="f full"><label class="l" for="memo">문의 내용</label><textarea id="memo" maxlength="1000" placeholder="업종, 알리고 싶은 내용, 예산 범위 등을 적어 주시면 더 정확히 안내드려요."></textarea></div>
         </div>
         <div class="pv" id="pv">
@@ -754,6 +754,16 @@ $('form').addEventListener('submit', async e => {
   } catch (err) {
     const msg = String(err && err.message || '');
     /* 서버에 광고 문의 기능이 아직 없거나(unknown) 연결 실패 → 이메일·카카오톡 안내 */
+    /* 8주(2개월)를 모르는 예전 서버(v38 재배포 전): '미정·협의'로 다시 보내고 문의 내용 첫 줄에 희망 기간을 적음 */
+    if (/희망 기간/.test(msg) && body.period === '8주(2개월)') {
+      try {
+        const b2 = Object.assign({}, body, { period: '미정·협의', memo: ('[희망 기간: 8주(2개월)]\n' + body.memo).slice(0, 1000) });
+        const r2 = await JDJ_AGENTS.post(b2);
+        $('form').hidden = true; $('done').hidden = false;
+        $('done').innerHTML = `<div class="done"><b>문의가 접수됐어요</b><br>접수 번호 ${esc(r2.id)} · ${esc(body.company)}<br>영업일 기준 2일 안에 남겨 주신 연락처로 안내드려요.</div>`;
+        $('ask').scrollIntoView(); return;
+      } catch (e2) {}
+    }
     if (!msg || msg === 'unknown' || /fetch|network|json|load/i.test(msg)) fallback(body, '지금은 온라인 접수가 잠시 어려워요.');
     else { m.className = 'msg err'; m.textContent = msg; }
   } finally { $('send').disabled = false; }

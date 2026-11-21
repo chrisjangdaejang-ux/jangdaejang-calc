@@ -138,7 +138,7 @@ const doc = read('docs/ad_slots.md');
     ...['brief', 'bunyang/apply', 'bunyang/agency', 'agent', 'premium'].flatMap(d => fs.readdirSync(path.join(ROOT, d), { recursive: true }).filter(f => /\.html$/.test(f)).map(f => d + '/' + f))];
   for (const f of dayFiles) { if (!fs.existsSync(path.join(ROOT, f))) continue; const m = read(f).match(DAY); check(`${f}: '1일·하루 …원' 광고 가격 표시 없음`, !m, m && m[0]); }
   check('하루 단위 검사 자체 확인(1일 5만 원 → 걸림, 하루 1개 광고주 → 통과)', DAY.test('1일 5만 원 · 1주') && DAY.test('1일 10만 · 1주') && !DAY.test('하루 1개 광고주') && !DAY.test('하루 4번 갱신'), '');
-  check('서버 v37: 브리핑광고 7일 미만 경고', /백엔드 \(v37:/.test(gs) && /const BA_MIN_DAYS = 7;/.test(gs) && /try \{ briefAdWarn\(sh, v\); \}/.test(gs), '');
+  check('서버 v37: 브리핑광고 7일 미만 경고', /v37: 광고 하루 단위 판매 없앰/.test(gs) && /const BA_MIN_DAYS = 7;/.test(gs) && /try \{ briefAdWarn\(sh, v\); \}/.test(gs), '');
   { const src = gs.match(/function baDays\(a, b\) \{[\s\S]*?\n\}/)[0];
     const baDays = new Function('ymd', src + '; return baDays;')(d => d.toISOString().slice(0, 10));
     check('7일 = 1주(경고 없음), 6일 = 경고', baDays('2026-12-01', '2026-12-07') === 7 && baDays('2026-12-01', '2026-12-06') < 7 && baDays('2026-12-01', '2026-12-28') === 28 && baDays('x', '2026-12-01') === 0, ''); }

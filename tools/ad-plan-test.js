@@ -136,6 +136,25 @@ const plansOf = r => (r.plans || []).filter(p => p.items);
   check('회사명 대신 서비스 이름, 자리마다 광고 표시, A+ 테마', !/장대장부동산그룹/.test(page) && page.includes('data-site-name') && page.includes('<span class="adlbl">광고</span>') && /aplus\.css\?v=\d+/.test(page), '');
 }
 
+/* ⑩ 같은 구성 합치기 · 8주(2개월) */
+{
+  let dup = null;
+  for (const [q, r] of all) { const sigs = plansOf(r).map(p => p.items.map(x => x.id + '@' + x.weeks + '@' + x.cost).join('|')); if (new Set(sigs).size !== sigs.length) dup = dup || [q, sigs]; }
+  check('전 조합: 같은 구성이 두 번 나오지 않음', !dup, dup);
+  const t = A.plan({ industry: 'tax', purpose: 'consult', totalMan: 30, weeks: 4, sido: '서울특별시', sgg: '강남구' }, {});
+  check("예시 세무사·강남구 30만·4주: '넓게·집중 노출' 하나로 합침", t.plans.length === 2 && t.plans[1].label === '넓게·집중 노출' && JSON.stringify(t.plans[1].ids) === '["wide","focus"]', t.plans.map(p => p.label));
+  check('합친 뒤에도 [추천]은 남은 안 중 하나', all.every(([, r]) => !r.plans || !r.plans.length || !r.plans[0].items || r.plans.some(p => p.id === r.rec)), '');
+  check('화면: 남은 안 개수에 맞춰 정렬(n1·n2·n3)', page.includes('<div class="pls n${r.plans.length}">') && /\.pls\.n2\{grid-template-columns:repeat\(2/.test(page) && /\.pls\.n1\{/.test(page), '');
+  const q8 = { industry: 'dev', purpose: 'bunyang', totalMan: 300, weeks: 8, sido: '서울특별시' };
+  const ad = read('ad/index.html'), opts = (ad.match(/<select id="period">([\s\S]*?)<\/select>/) || [])[1] || '';
+  const atN = q => { const r = A.plan(q, {}); return A.formFill(q, Object.assign({ kind: r.kind }, r.plans.find(p => p.weeks === q.weeks))); };   // 원하는 기간 그대로인 안(넓게·집중)
+  check("8주 구성 → 문의 폼 희망 기간 '8주(2개월)'(목록에 있음)", atN(q8).period === '8주(2개월)' && opts.includes('<option>8주(2개월)</option>'), atN(q8).period);
+  check('원하는 기간 1·2·4·8주가 모두 문의 폼 목록에 그대로', [1, 2, 4, 8].every(w => opts.includes('<option>' + atN(Object.assign({}, q8, { weeks: w })).period + '</option>')), '');
+  check("목록에 없는 기간(오래 노출 12주 등)은 '미정·협의' + 문의 내용에 주 수", A.formFill(q8, { kind: 'items', weeks: 12, items: [] }).period === '미정·협의' && /기간: 12주/.test(A.formFill(q8, { kind: 'items', weeks: 12, items: [] }).memo), '');
+  check("예전 서버가 8주를 거절하면 '미정·협의'로 다시 보내고 내용에 적음", /\[희망 기간: 8주\(2개월\)\]/.test(ad) && /period: '미정·협의'/.test(ad), '');
+  check('서버 v38: AQ_PERIOD 에 8주(2개월)', /const AQ_PERIOD = \[[^\]]*'8주\(2개월\)'/.test(read('tools/agent-backend.gs')) && /백엔드 \(v38:/.test(read('tools/agent-backend.gs')), '');
+}
+
 const bad = rows.filter(r => !r.ok);
 rows.forEach(r => console.log((r.ok ? '  ok  ' : '  FAIL') + ' ' + r.name + (r.ok ? '' : '  → ' + JSON.stringify(r.got).slice(0, 400))));
 console.log(`\n${rows.length - bad.length}/${rows.length} 통과`);

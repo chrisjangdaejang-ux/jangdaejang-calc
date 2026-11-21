@@ -75,7 +75,9 @@ select,input[type=number]{font:inherit;font-size:16px;min-height:46px;border:1px
 .go{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
 .adlbl{display:inline-block;font-size:12px;font-weight:700;border:1px solid #C5CCD6;border-radius:5px;padding:0 6px;background:#fff;color:var(--sub);margin-right:4px}
 .pls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:stretch}
-@media(max-width:860px){.pls{display:flex;flex-direction:column}}
+.pls.n2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.pls.n1{grid-template-columns:minmax(0,560px)}
+@media(max-width:860px){.pls,.pls.n1,.pls.n2{display:flex;flex-direction:column}}
 .pl{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;min-width:0}
 .pl.rec{border:2px solid var(--blue);box-shadow:0 4px 14px rgba(47,107,255,.12)}
 .plh{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
@@ -133,7 +135,7 @@ select,input[type=number]{font:inherit;font-size:16px;min-height:46px;border:1px
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/ad-prices.js?v=1"></script>
 <script src="../../assets/ad-slot.js?v=2"></script>
-<script src="../../assets/ad-plan-core.js?v=3"></script>
+<script src="../../assets/ad-plan-core.js?v=4"></script>
 <script>
 /* 광고 설계 도우미 화면 — 계산은 assets/ad-plan-core.js, 가격은 assets/ad-prices.js 한 곳 */
 (function () {
@@ -211,8 +213,8 @@ select,input[type=number]{font:inherit;font-size:16px;min-height:46px;border:1px
     } else {
       const order = r.plans.slice().sort((x, y) => (y.id === r.rec) - (x.id === r.rec));   // 휴대폰: 추천 안을 맨 위에
       h = `<h2>${S.totalMan}만 원 안에서 고른 구성 <small style="font-size:14px;font-weight:500;color:var(--sub2)">${esc(A.INDUSTRIES.find(x => x.id === S.industry).label)} · ${esc(A.PURPOSES.find(x => x.id === S.purpose).label)}${region ? ' · ' + esc(region) : ''}</small></h2>
-        <p class="sum">광고에 쓸 돈 ${W(r.budget)}을 넘지 않게 세 가지로 짜 봤어요(원하는 기간 ${r.weeks}주). 모든 자리에는 '광고' 표시가 붙어요.${r.scope ? ` 결과 아래 카드는 ${r.scope === 'sgg' ? '시·군·구' : '시·도'} 단가예요.` : ''}</p>
-        <div class="pls">${r.plans.map(pl => `<article class="pl${pl.id === r.rec ? ' rec' : ''}" style="order:${order.indexOf(pl)}" aria-label="${esc(pl.label)}">
+        <p class="sum">광고에 쓸 돈 ${W(r.budget)}을 넘지 않게 ${['', '한 가지로', '두 가지로', '세 가지로'][r.plans.length]} 짜 봤어요(원하는 기간 ${r.weeks}주)${r.plans.length < 3 ? '. 구성이 같은 안은 하나로 합쳤어요' : ''}. 모든 자리에는 '광고' 표시가 붙어요.${r.scope ? ` 결과 아래 카드는 ${r.scope === 'sgg' ? '시·군·구' : '시·도'} 단가예요.` : ''}</p>
+        <div class="pls n${r.plans.length}">${r.plans.map(pl => `<article class="pl${pl.id === r.rec ? ' rec' : ''}" style="order:${order.indexOf(pl)}" aria-label="${esc(pl.label)}">
           <div class="plh"><b>${esc(pl.label)}</b>${pl.id === r.rec ? '<span class="tagr">추천</span>' : ''}${r.best === pl.id ? '<span class="tagb">최고 효율(실제 클릭당 비용 기준)</span>' : ''}</div>
           <p class="head">${esc(pl.head)}</p>${pl.id === r.rec && r.recWhy ? `<p class="rw">${esc(r.recWhy)}</p>` : ''}
           <ul class="pli">${pl.items.map(x => `<li><span class="nm"><span class="adlbl">광고</span>${esc(x.name)}${x.soon ? '<span class="soon">준비 중</span>' : ''}</span><span class="am">${x.weeks}주 · ${W(x.cost)}${x.tier ? `<small>${esc(x.tier)}</small>` : ''}</span><small class="wh">${esc(x.why)}</small>${x.stat ? `<span class="st">${esc(x.stat)}</span>` : ''}</li>`).join('')}</ul>

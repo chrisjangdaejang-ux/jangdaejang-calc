@@ -265,6 +265,8 @@ r = post(Object.assign(aq(), { contact: 'Ad@Example.COM', products: ['bunyang', 
 check('이메일 연락처·상품 중복 제거·선택 칸 비움', r.ok && aqRows()[1][AQ['연락처']] === 'ad@example.com' && aqRows()[1][AQ['관심상품']] === '분양 단지 광고,기타·제휴', r);
 r = post(Object.assign(aq(), { contact: '070 1234 5678' }));
 check('070 번호 정리', r.ok && aqRows()[2][AQ['연락처']] === '070-1234-5678', r);
+r = post(Object.assign(aq(), { products: ['home_top', 'cat_top', 'native'], period: '8주(2개월)' }));
+check('v38: 희망 기간 8주(2개월)·상단 배너 상품 그대로 저장', r.ok && aqRows()[3][AQ['희망기간']] === '8주(2개월)' && aqRows()[3][AQ['관심상품']] === '홈 상단 배너,카테고리 상단 배너,결과 하단 카드', r.ok ? aqRows()[3][AQ['희망기간']] : r);
 check('분양 광고 시트에는 문의가 섞이지 않음', rows().every(x => !String(x[0]).startsWith('AQ')));
 check('공개 광고 목록에 문의 정보 없음', !JSON.stringify(get({ action: 'adList' })).includes('테스트이사'));
 cacheMap.set('aqday:' + ymd(new Date()), '40');
