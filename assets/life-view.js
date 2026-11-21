@@ -2,7 +2,7 @@
    자료: 공개 data/life/{시·도 id}.json (엔진 scripts/life.py build) =
      { at: {zone, sc, hs, aca, hos, park, mart}, src: {...}, r: {aca:[500,1000], walk, big, sc}, u: { '시군구|동|지번': {
         e: [배정 초등학교…](통학구역 안일 때만), sc/hs: [[이름, 직선 m]…](중·고등학교), a: [500m 안, 1km 안](학원·교습소),
-        h: [1km 안 병·의원 수, 가장 가까운 종합병원 이름, m], p: [1km 안 공원 수, 가장 가까운 공원, m], m: [1km 안 대형마트 수, 가장 가까운 곳, m] } } }
+        h: [1km 안 병·의원 수, 가장 가까운 종합병원 이름, m], p: [500m 안, 1km 안 공원 수, 가장 가까운 공원, m], m: [1km 안 대형마트 수, 가장 가까운 곳, m] } } }
    숫자는 자료 그대로. 자료에 없는 칸은 보여 주지 않는다(지어내지 않음). 거리는 모두 직선 거리.
    window.JDJ_LIFE = { load, unit, rows, html, srcText, compact, ELEM_NOTE } */
 (function (root) {
@@ -33,7 +33,8 @@
     sch(o.sc, '가까운 중학교', 'sc'); sch(o.hs, '가까운 고등학교', 'hs');
     if (o.a) out.push({ k: '학원·교습소', s: 'aca', v: `${mText(A[0])} 안 ${o.a[0].toLocaleString()}곳 · ${mText(A[1])} 안 ${o.a[1].toLocaleString()}곳` });
     if (o.h) out.push({ k: '병원·의원', s: 'hos', v: `${mText(W)} 안 ${o.h[0].toLocaleString()}곳` + (o.h[1] ? ` · 가장 가까운 종합병원 ${o.h[1]}(${mText(o.h[2])})` : ` · ${mText(R.big || 5000)} 안에 종합병원은 없어요`) });
-    if (o.p) out.push({ k: '공원', s: 'park', v: o.p[0] ? `${mText(W)} 안 ${o.p[0].toLocaleString()}곳 · 가장 가까운 곳 ${o.p[1]}(${mText(o.p[2])})` : `${mText(W)} 안에 도시공원이 없어요` });
+    if (o.p) { const PR = R.park || A;                              // p = [500m 안, 1km 안, 가장 가까운 공원, 거리]
+      out.push({ k: '공원', s: 'park', v: o.p[1] ? `${mText(PR[0])} 안 ${o.p[0].toLocaleString()}곳 · ${mText(PR[1])} 안 ${o.p[1].toLocaleString()}곳 · 가장 가까운 곳 ${o.p[2]}(${mText(o.p[3])})` : `${mText(PR[1])} 안에 도시공원이 없어요` }); }
     if (o.m) out.push({ k: '대형마트', s: 'mart', v: o.m[0] ? `${mText(W)} 안 ${o.m[0].toLocaleString()}곳 · 가장 가까운 곳 ${o.m[1]}(${mText(o.m[2])})` : `${mText(W)} 안에 대형마트가 없어요` });
     return out;
   }
@@ -62,7 +63,7 @@
     if (o.sc && o.sc.length) p.push(`중학교 ${o.sc[0][0]} ${mText(o.sc[0][1])}`);
     if (o.a) p.push(`학원 ${mText(A[1])} 안 ${o.a[1].toLocaleString()}곳`);
     if (o.h) p.push(`병·의원 ${o.h[0].toLocaleString()}곳`);
-    if (o.p) p.push(`공원 ${o.p[0].toLocaleString()}곳`);
+    if (o.p) p.push(`공원 ${mText(((R.park || A)[1]))} 안 ${o.p[1].toLocaleString()}곳`);
     if (o.m) p.push(`대형마트 ${o.m[0].toLocaleString()}곳`);
     return p.join(' · ');
   }
@@ -76,7 +77,7 @@
     return out.length ? '출처: ' + out.join(' · ') + ' 기준' : '';
   }
   /* 화면에 실제로 보이는 항목 이름만: '학교·병원' (자료 없는 항목은 이름도 안 나옴) */
-  const TOPIC = [['학교', o => !!(o.e && o.e.length) || !!(o.sc && o.sc.length) || !!(o.hs && o.hs.length)], ['학원', o => !!o.a], ['병원', o => !!o.h], ['공원', o => !!(o.p && o.p[0])], ['대형마트', o => !!(o.m && o.m[0])]];
+  const TOPIC = [['학교', o => !!(o.e && o.e.length) || !!(o.sc && o.sc.length) || !!(o.hs && o.hs.length)], ['학원', o => !!o.a], ['병원', o => !!o.h], ['공원', o => !!o.p], ['대형마트', o => !!(o.m && o.m[0])]];
   function topics(o) { return o ? TOPIC.filter(t => t[1](o)).map(t => t[0]).join('·') : ''; }
   /* 소제목: '공공 자료로 이 단지 주변 학교·병원을 정리했어요' */
   function lead(o) { const t = topics(o); return t ? `공공 자료로 이 단지 주변 ${t}${/[가-힣]$/.test(t) && ((t.charCodeAt(t.length - 1) - 0xAC00) % 28) ? '을' : '를'} 정리했어요` : '공공 자료로 이 단지 주변 정보를 정리했어요'; }
