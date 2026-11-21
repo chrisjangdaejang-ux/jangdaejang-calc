@@ -142,11 +142,16 @@ if (dir && fs.existsSync(path.join(dir, 'home', 's00.json'))) {
   const a = html.indexOf('<div class="hero">'), b = html.indexOf('</div>\n', html.indexOf('<h1>', a)), hero = html.slice(a, html.indexOf('\n  </div>', a));
   const vis = hero.replace(/<[^>]+>/g, ' ');
   check('소개 글: 새 문구 1문단', vis.includes('우리 동네와 단지가 앞으로 다른 곳보다 더 오를 가능성이 높은지 미리 보여 드려요.'), true, '');
-  check('소개 글: 새 문구 2문단', vis.includes('실제로 맞았던 것만 골라 썼어요. 날씨 예보처럼 확정이 아닌 가능성이니 결정할 때 참고 자료로 써 주세요.'), true, '');
+  check('소개 글: 2문단(집예보만 쓰는 지표 + 쉬운 말 풀이)', vis.replace(/\s+/g, ' ').includes('역세권·학군·입주량 같은 기본 통계는 물론, 집값이 떨어질 때 얼마나 덜 빠졌는지 보는 ‘하락기 방어력’ , 새 역이 계획에서 개통까지 어느 단계인지 보는 ‘신설역 단계’ 처럼 집예보만 쓰는 지표 까지 과거에 그대로 대입해 보고, 실제로 맞았던 것만 골라 썼어요. 날씨 예보처럼 확정이 아닌 가능성이니 결정할 때 참고 자료로 써 주세요.'), true, '');
+  check('소개 글: 지표 이름은 강조 + 용어 풀이 링크', /<a class="kw" href="guide\/terms\/#drop-defense"[^>]*>‘하락기 방어력’<\/a>/.test(hero) && /<a class="kw" href="guide\/terms\/#new-station"[^>]*>‘신설역 단계’<\/a>/.test(hero), true, '');
+  const terms = fs.readFileSync(path.join(__dirname, '..', 'guide', 'terms', 'index.html'), 'utf8');
+  check('용어 모아 보기: 하락기 방어력·신설역 단계 항목', /<dt id="drop-defense">하락기 방어력<\/dt>/.test(terms) && /<dt id="new-station">신설역 단계<\/dt>/.test(terms), true, '');
+  check('소개 글: 비중·기준값 같은 노하우 없음', /비중|가중|기준값|%/.test(vis), false, '');
+  for (const f of ['brief/index.html', 'about/index.html']) check(`${f}: '집예보만 쓰는 지표' 한 줄(하락기 방어력·신설역 단계 풀이 링크)`, (t => /(\$\{SITE\}|집예보)만 쓰는 지표/.test(t) && t.includes('#drop-defense') && t.includes('#new-station'))(fs.readFileSync(path.join(__dirname, '..', f), 'utf8')), true, '');
   check('소개 글: "회원가입 없이 바로 쓸 수 있어요"·[분석 방법 보기 ›] 작은 글씨 줄', /class="dline"[\s\S]*회원가입 없이 바로 쓸 수 있어요[\s\S]*분석 방법 보기 ›/.test(hero), true, '');
   check('소개 글: 숫자를 직접 써 넣지 않음(838·2010·1.6만 없음)', /838|2010|1\.6만|16년/.test(hero), false, '');
   check('소개 글: 노란 상자(data-jdj-str) 없음', /data-jdj-str|class="strl"/.test(hero), false, '');
-  check('소개 글: 어려운 말·금지어 없음', ['하락기 방어력', '시험', '검증', '채점'].filter(w => hero.includes(w)), [], '');
+  check('소개 글: 금지어 없음', ['시험', '검증', '채점'].filter(w => hero.includes(w)), [], '');
   const iAd = html.indexOf('data-ad-slot="home_top"'), iHeroEnd = html.indexOf('\n  </div>', a), iMap = html.indexOf('class="maplink"');
   check('홈 상단 광고: 소개 글 바로 다음, 지도 버튼 앞', iAd > iHeroEnd && iAd < iMap && !/<a |<section/.test(html.slice(iHeroEnd + 9, iAd)), true, '');
 }

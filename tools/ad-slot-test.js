@@ -120,7 +120,13 @@ const doc = read('docs/ad_slots.md');
   check('sw.js: ad-slot.js·aplus v43 미리 저장', sw.includes('/assets/ad-slot.js?v=1') && sw.includes('/assets/aplus.css?v=43'), '');
   const adp = read('ad/index.html');
   check('/ad/: 광고 위치 안내 칸', adp.includes('id="slots"') && adp.includes('광고 위치 안내'), '');
-  check('/ad/: 홈 상단 = 가장 비싼 자리 · 제안가', adp.includes('가장 비싼 자리') && adp.includes('제안가'), '');
+  const slotSec = adp.slice(adp.indexOf('id="slots"'), adp.indexOf('id="target"'));
+  check('/ad/: 홈 상단 = 가장 비싼 자리 · 확정가 1일 10만·1주 50만·4주 150만', adp.includes('가장 비싼 자리') && adp.includes("'1일 10만 · 1주 50만 · 4주 150만 원'"), '');
+  check('/ad/: 카테고리 상단 4주 80만(분양·청약 4주 90만)', adp.includes("'4주 80만 원'") && adp.includes("'4주 90만 원'"), '');
+  check("/ad/·문서: '제안가'·'확정 전' 문구 없음", !/제안가|확정 전/.test(adp + doc), '');
+  check('/ad/ 문의 폼: 홈 상단 배너·카테고리 상단 배너', adp.includes('value="home_top"> 홈 상단 배너') && adp.includes('value="cat_top"> 카테고리 상단 배너'), '');
+  const gs = read('tools/agent-backend.gs');
+  check('서버 v36: 문의 관심 상품에 home_top·cat_top', /백엔드 \(v36:/.test(gs) && /AQ_PROD\.home_top = '홈 상단 배너'; AQ_PROD\.cat_top = '카테고리 상단 배너';/.test(gs), '');
   const all = Object.keys(PAGES).map(read).join('\n') + read('assets/ad-slot.js') + adp;
   check('화면 문구에 금지 단어 없음(시험·검증·채점)', !/[>'"][^<'"]*(시험|검증|채점)/.test(read('assets/ad-slot.js')) && !/(시험|검증|채점)/.test(adp.slice(adp.indexOf('id="slots"'), adp.indexOf('id="target"'))), '');
 }

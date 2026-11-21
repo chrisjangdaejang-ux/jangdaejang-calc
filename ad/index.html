@@ -401,7 +401,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
   <section id="slots">
     <div class="sh">AD SLOTS</div>
     <h2 class="t">광고 위치 안내</h2>
-    <p class="sub">화면마다 광고가 들어가는 자리와 받을 수 있는 업종이에요. 그림의 파란 칸이 광고 자리예요. 가격은 모두 <b>제안가</b>(VAT 별도)이고, 계약 전에 함께 정해요.</p>
+    <p class="sub">화면마다 광고가 들어가는 자리와 받을 수 있는 업종이에요. 그림의 파란 칸이 광고 자리예요. 모든 가격은 VAT 별도예요.</p>
     <div class="sl-grid" id="slGrid"></div>
     <ul class="sl-rules">
       <li>모든 광고 칸에는 ‘광고’가 표시돼요. 광고가 없는 기간에는 빈칸 대신 <span data-site-name>집예보</span> 서비스 안내가 들어가요.</li>
@@ -527,6 +527,8 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
               <label><input type="checkbox" value="native"> 결과 하단 카드</label>
               <label><input type="checkbox" value="jeonse"> 전세사기 예방 체크리스트 스폰서</label>
               <label><input type="checkbox" value="brief_ad"> <span data-brief-name>집예보 모닝 브리핑</span> 지면 광고</label>
+              <label><input type="checkbox" value="home_top"> 홈 상단 배너</label>
+              <label><input type="checkbox" value="cat_top"> 카테고리 상단 배너</label>
               <label><input type="checkbox" value="package"> 패키지</label>
               <label><input type="checkbox" value="etc"> 기타·제휴</label>
             </div></div>
@@ -748,7 +750,7 @@ addEventListener('DOMContentLoaded', () => {
 });
 
 /* ---------- 문의 폼 ---------- */
-const PROD_NAME = { bunyang: '분양 단지 광고', bunyang_pro: '분양 프리미엄', agent: '지역 제휴 중개사', native: '결과 하단 카드', jeonse: '전세사기 예방 체크리스트 스폰서', brief_ad: '모닝 브리핑 지면 광고', package: '패키지', etc: '기타·제휴' };
+const PROD_NAME = { bunyang: '분양 단지 광고', bunyang_pro: '분양 프리미엄', agent: '지역 제휴 중개사', native: '결과 하단 카드', jeonse: '전세사기 예방 체크리스트 스폰서', brief_ad: '모닝 브리핑 지면 광고', home_top: '홈 상단 배너', cat_top: '카테고리 상단 배너', package: '패키지', etc: '기타·제휴' };
 const formula = v => /^[=+\-@]/.test(v.trim());
 const emailOk = v => /^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(v);
 const phoneOk = v => /^(01[016789]\d{7,8}|0[2-6]\d{7,9}|070\d{8}|1[5-9]\d{6})$/.test(v.replace(/[^0-9]/g, '')) && !/[A-Za-z@]/.test(v);
@@ -789,9 +791,10 @@ $('form').addEventListener('submit', async e => {
   }
   const body = { action: 'adInquiry', type: 'inquiry', company: $('company').value.trim(), manager: $('manager').value.trim(), contact: $('contact').value.trim(),
     products: prods(), region: $('region').value.trim(), period: $('period').value, memo: $('memo').value.trim(), agree: { privacy: true }, hp: $('hpf').value };
-  if (body.products.includes('brief_ad')) {   // 서버 재배포 전에도 놓치지 않게: '기타·제휴'를 함께 보내고 내용에 상품 이름을 적음
+  const NEWP = body.products.filter(p => ['brief_ad', 'home_top', 'cat_top'].includes(p));
+  if (NEWP.length) {   // 서버 재배포 전에도 놓치지 않게: '기타·제휴'를 함께 보내고 내용에 상품 이름을 적음 (home_top·cat_top 은 서버 v36)
     if (!body.products.includes('etc')) body.products.push('etc');
-    body.memo = ('[관심 상품: 모닝 브리핑 지면 광고]\n' + body.memo).slice(0, 1000);
+    body.memo = ('[관심 상품: ' + NEWP.map(p => PROD_NAME[p]).join(', ') + ']\n' + body.memo).slice(0, 1000);
   }
   if (!window.JDJ_AGENTS || !JDJ_AGENTS.ready) { fallback(body, '문의 서버에 연결하지 못했어요.'); return; }
   $('send').disabled = true; m.textContent = '보내는 중이에요…';
@@ -835,10 +838,10 @@ $('form').addEventListener('submit', async e => {
   };
   const L = [
     ['top', '홈 상단 배너', '첫 화면 소개 글 바로 아래 한 줄(휴대폰 첫 화면에 보임)', '대출 상담 · 법무사 · 보증보험 · 이사 · 인테리어 · 세무사(정액) · 시행사 · 분양대행사', '1일 10만 · 1주 50만 · 4주 150만 원', '가장 비싼 자리', 1],
-    ['top', '카테고리 상단 배너 — 분양 · 청약', '제목·설명 바로 아래 한 줄', '시행사 · 분양대행사', '1일 6만 · 1주 30만 · 4주 90만 원'],
-    ['top', '카테고리 상단 배너 — 순위 · 전월세 · 빌라 · 갈아타기', '제목·설명 바로 아래, 입력 칸 위 한 줄', '화면별 업종(전월세: 보증보험·법무사·이사 / 빌라: 법무사·감정평가·보증보험·이사)', '1일 5만 · 1주 25만 · 4주 80만 원'],
-    ['map', '지도 상단 배너', '검색·보기 버튼 아래 한 줄(지도를 가리지 않고 그만큼 아래에서 시작)', '시행사 · 분양대행사 · 대출 상담 · 이사 · 인테리어', '1일 5만 · 1주 25만 · 4주 80만 원'],
-    ['top', '세금 상단 배너', '세금 계산기 첫 화면 제목 아래, 계산 메뉴 위(입력·결과 화면에는 없음)', '세무사(정액 광고비만)', '1일 5만 · 1주 25만 · 4주 80만 원'],
+    ['top', '카테고리 상단 배너 — 분양 · 청약', '제목·설명 바로 아래 한 줄', '시행사 · 분양대행사', '4주 90만 원'],
+    ['top', '카테고리 상단 배너 — 순위 · 전월세 · 빌라 · 갈아타기', '제목·설명 바로 아래, 입력 칸 위 한 줄', '화면별 업종(전월세: 보증보험·법무사·이사 / 빌라: 법무사·감정평가·보증보험·이사)', '4주 80만 원'],
+    ['map', '지도 상단 배너', '검색·보기 버튼 아래 한 줄(지도를 가리지 않고 그만큼 아래에서 시작)', '시행사 · 분양대행사 · 대출 상담 · 이사 · 인테리어', '4주 80만 원'],
+    ['top', '세금 상단 배너', '세금 계산기 첫 화면 제목 아래, 계산 메뉴 위(입력·결과 화면에는 없음)', '세무사(정액 광고비만)', '4주 80만 원'],
     ['end', '결과 아래 카드', '내 집 시세 · 단지 비교 · 전월세 · 청약 · 내 집 마련 · 리포트 · 땅 결과를 다 본 뒤', '화면별 업종(대출 상담 · 법무사 · 이사 · 인테리어 · 보증보험 · 감정평가 등)', '월 전국 50만 · 시·도 30만 · 시·군·구 15만 원'],
     ['list', '목록 사이 카드', '순위·분양 목록 10번째 뒤(목록이 10개 넘을 때만)', '순위: 시행사 · 분양대행사 · 대출 상담 · 이사 · 인테리어 / 분양: 시행사 · 분양대행사', '월 시·도 30만 원'],
     ['end', '페이지 끝 카드', '홈 · 순위 · 세금 · 빌라 · 갈아타기 · 모닝 브리핑 · 중개사 화면 맨 아래', '화면별 업종(세금은 세무사 정액만, 중개사 화면은 중개사 도구만)', '월 15만~50만 원 · 브리핑 화면은 브리핑 지면 광고에 포함'],
@@ -846,7 +849,7 @@ $('form').addEventListener('submit', async e => {
   ];
   const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const g = document.getElementById('slGrid'); if (!g) return;
-  g.innerHTML = L.map(x => `<div class="sl${x[6] ? ' prem' : ''}"><div class="sl-ph" aria-hidden="true">${PH[x[0]]}</div><div class="sl-tx"><b>${esc(x[1])}${x[5] ? `<span class="sl-tag">${esc(x[5])}</span>` : ''}</b><span class="w">${esc(x[2])}</span><span class="ind">받는 업종: ${esc(x[3])}</span><span class="pr">${esc(x[4])}<small>제안가</small></span></div></div>`).join('');
+  g.innerHTML = L.map(x => `<div class="sl${x[6] ? ' prem' : ''}"><div class="sl-ph" aria-hidden="true">${PH[x[0]]}</div><div class="sl-tx"><b>${esc(x[1])}${x[5] ? `<span class="sl-tag">${esc(x[5])}</span>` : ''}</b><span class="w">${esc(x[2])}</span><span class="ind">받는 업종: ${esc(x[3])}</span><span class="pr">${esc(x[4])}<small>VAT 별도</small></span></div></div>`).join('');
 })();
 </script>
 </body>
