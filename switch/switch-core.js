@@ -44,33 +44,20 @@
   }
 
   /* ---------- 새 집 대출 ---------- */
-  /** g: reg | capfree | local, o: { income, debt, rate, term, rtype, houses } */
+  /** g: reg | capfree | local, o: { income, debt, rate, term, rtype, houses }
+      대출 계산은 대출 한도 계산기(loan/)·내 집 마련(buy/)과 같은 assets/loan-core.js 함수(ctx·dsrMax·loanAt — LTV·가격대 한도·DSR·DTI)를 그대로 씀 */
   function ctx(g, o) {
-    const capital = g !== 'local', regulated = g === 'reg';
     const own = (o.houses || 1) >= 2 ? 'multi' : 'one';
-    const sp = RULES.stressPeriod(g), stressBase = Math.round(sp.rate * sp.base * 10000) / 10000;
-    return { g, capital, regulated, own, ltv: REC.LTV[g][own], stressBase,
-      stress: Math.round(RULES.stressAdd(g, o.rtype || 'cyc', '5-9') * 1000) / 1000,
-      income: o.income || 0, debt: o.debt || 0, rate: o.rate || 0, term: Math.min(o.term || 30, capital ? RULES.TERM.metroRegMax.v : 40) };
+    return LOAN.ctx({ g, own, rtype: o.rtype || 'cyc', band: '5-9', income: o.income || 0, debt: o.debt || 0, rate: o.rate || 0, term: o.term || 30 });
   }
-  function capByPrice(P, c) { return RULES.capOf(P, c.regulated ? 'reg' : c.capital ? 'capfree' : 'local'); }
-  function dsrMax(c, stress) {
-    const room = c.income * RULES.DSR.bank.v - c.debt; if (room <= 0) return 0;
-    const i = (c.rate + (stress === undefined ? c.stress : stress)) / 1200, n = c.term * 12;
-    return room / 12 * (i === 0 ? n : (1 - Math.pow(1 + i, -n)) / i);
-  }
+  const capByPrice = LOAN.capByPrice, monthly = LOAN.monthly;
+  function dsrMax(c, stress) { return LOAN.dsrMax(c, stress); }
   /** 월 상환을 소득의 pct 까지로 할 때 빌릴 수 있는 돈(실제 금리, 다른 대출 원리금 빼고) */
   function payMax(c, pct) {
     const room = c.income * pct - c.debt; if (room <= 0) return 0;
-    const i = c.rate / 1200, n = c.term * 12;
-    return room / 12 * (i === 0 ? n : (1 - Math.pow(1 + i, -n)) / i);
+    return room / 12 * LOAN.annuity(c.rate, c.term);
   }
-  function monthly(L, rate, term) { const i = rate / 1200, n = term * 12; if (L <= 0) return 0; return i === 0 ? L / n : L * i / (1 - Math.pow(1 + i, -n)); }
-  function loanAt(P, c, dsr) {
-    const a = P * c.ltv, b = capByPrice(P, c), d = dsr, L = Math.max(0, Math.min(a, b, d));
-    let by = 'LTV'; if (L === b && b < a && b <= d) by = 'CAP'; if (L === d && d < a && d < b) by = 'DSR'; if (c.ltv === 0) by = 'BAN';
-    return { L, a, b, d, by };
-  }
+  function loanAt(P, c, dsr) { return LOAN.loanAt(P, c, dsr); }
 
   /** 새 집 취득비용: 취득세(tax-engine) + 중개보수. 1주택자는 일시적 2주택(종전 주택 처분 조건) 일반세율 */
   function buyCost(P, c, o) {

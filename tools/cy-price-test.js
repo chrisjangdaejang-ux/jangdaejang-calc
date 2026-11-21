@@ -54,7 +54,7 @@ check('상세: 지금 거래 기준(입주 때 가격 아님)', free.includes('�
 // ② 자금 계획(서울 규제지역 12억 무주택, 계약 10%·중도금 60% 대출)
 const o = { price: 120000, g: '11290', own: 'none', income: 0, dp: 10, mid: 60, midLoan: true, large: false };
 const F = C.fund(o);
-const c = L.ctx({ g: 'reg', own: 'none', income: 0, cash: 0, etc: 0, large: false });
+const c = L.ctx({ g: 'reg', own: 'none', income: 0, cash: 0, etc: 0, large: false }); c.dtiRatio = null;   // 소득 0 = 소득 규칙(DSR·DTI) 빼고
 const ln = L.loanAt(120000, c, Infinity), cd = L.costDetail(120000, c, false);
 check('자금: 잔금 주담대 = loan-core 같은 함수(규제지역 LTV 40%·한도 6억 중 작은 값)', F.loan === ln.L && F.loan === 48000, F);
 check('자금: 계약금 10%', F.down === 12000);

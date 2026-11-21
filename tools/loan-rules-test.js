@@ -139,6 +139,35 @@ const isDate = d => /^\d{4}-\d{2}-\d{2}$/.test(String(d || ''));
   check('은행·변동금리에서는 DTI보다 DSR이 먼저(서울 예시 그대로)', [sp.by, Math.round(sp.dti)], ['DSR', 43466]);
 }
 
+/* ⑤-3 세 화면이 같은 함수: 같은 입력이면 대출 한도 계산기(loan/)·내 집 마련(buy/·리포트)·갈아타기(switch/)의 최대 대출액이 같음 */
+{
+  const SW = require('../switch/switch-core.js');
+  const cases = [
+    ['서울 10억·1주택 처분·7천·변동', { g: 'reg', code: '11710', P: 100000, income: 7000, rtype: 'var' }],
+    ['서울 20억·1주택 처분·2억·주기형', { g: 'reg', code: '11710', P: 200000, income: 20000, rtype: 'cyc' }],
+    ['고양 5억·1주택 처분·5천·혼합', { g: 'capfree', code: '41285', P: 50000, income: 5000, rtype: 'mix' }],
+    ['대구 3억·1주택 처분·6천·변동', { g: 'local', code: '27260', P: 30000, income: 6000, rtype: 'var' }],
+    ['규제지역 2억·1주택 처분·1천(DTI가 막음)', { g: 'reg', code: '11710', P: 20000, income: 1000, rtype: 'var' }],
+    ['수도권 3억·1주택 처분·1,500·다른 대출 300', { g: 'capfree', code: '41285', P: 30000, income: 1500, debt: 300, rtype: 'var' }]
+  ];
+  for (const [name, x] of cases) {
+    const base = { income: x.income, debt: x.debt || 0, rate: 5, term: 30, rtype: x.rtype };
+    const loan = L.limit(Object.assign({ price: x.P, code: x.code, own: 'one', band: '5-9' }, base));
+    const bc = L.ctx(Object.assign({ g: x.g, own: 'one' }, base)), buy = L.loanAt(x.P, bc, L.dsrMax(bc));
+    const sc = SW.ctx(x.g, Object.assign({ houses: 1 }, base)), sw = SW.loanAt(x.P, sc, SW.dsrMax(sc));
+    check('세 화면 같은 최대 대출: ' + name, [Math.round(buy.L), Math.round(sw.L), buy.by, sw.by], [Math.round(loan.L), Math.round(loan.L), loan.by, loan.by]);
+  }
+  const dc = SW.ctx('reg', { houses: 1, income: 1000, rate: 5, term: 30, rtype: 'var' });
+  check('갈아타기도 DTI 반영(규제지역 2억·1천 → 6,209만, DTI)', [Math.round(SW.loanAt(20000, dc, SW.dsrMax(dc)).L), SW.loanAt(20000, dc, SW.dsrMax(dc)).by], [6209, 'DTI']);
+  const mc = SW.ctx('reg', { houses: 2, income: 9000, rate: 5, term: 30 });
+  check('갈아타기 2주택 이상 규제지역 → 0원(BAN)', [SW.loanAt(80000, mc, SW.dsrMax(mc)).L, SW.loanAt(80000, mc, SW.dsrMax(mc)).by], [0, 'BAN']);
+  const swSrc = read('switch/switch-core.js'), prSrc = read('assets/premium-report.js');
+  check('갈아타기·프리미엄 리포트에 따로 만든 LTV·DSR·가격대 계산 없음(loan-core 사용)',
+    [/LOAN\.loanAt\(/.test(swSrc), /RULES\.DSR\.bank/.test(swSrc), /LOAN\(\)\.loanAt\(/.test(prSrc), /none:\.40|0\.40 - S\.debt|p <= 150000 \? 60000/.test(prSrc)], [true, false, true, false]);
+  for (const f of ['premium/pro/index.html', 'premium/r/index.html', 'premium/view/index.html']) check(f + ': loan-rules·loan-core 불러옴', /loan-rules\.js\?v=3/.test(read(f)) && /loan-core\.js\?v=5/.test(read(f)), true);
+  check('막는 규칙 이름에 DTI(내 집 마련·리포트·프리미엄·설명)', ['buy/index.html', 'buy/report/index.html', 'assets/premium-report.js', 'assets/narrative.js'].every(f => /DTI:\s*'/.test(read(f))), true);
+}
+
 /* ⑦ 손으로 계산한 예시(금리 5%, 30년, 변동, 은행, 다른 대출 없음) — 계산식은 아래 주석 */
 {
   /* 서울 송파 무주택, 연소득 7,000, 집값 10억:
@@ -183,7 +212,7 @@ const isDate = d => /^\d{4}-\d{2}-\d{2}$/.test(String(d || ''));
     check(`${f}: loan-rules.js 를 rec-core·loan-core 보다 먼저`, i >= 0 && i < j, true);
   }
   const sw = read('sw.js');
-  check('sw.js: 대출 한도 화면·규칙 파일 미리 저장', sw.includes("'/jangdaejang-calc/loan/'") && sw.includes('/assets/loan-rules.js?v=2') && sw.includes('/assets/loan-core.js?v=4'), true);
+  check('sw.js: 대출 한도 화면·규칙 파일 미리 저장', sw.includes("'/jangdaejang-calc/loan/'") && sw.includes('/assets/loan-rules.js?v=3') && sw.includes('/assets/loan-core.js?v=5'), true);
 }
 
 let pass = 0;

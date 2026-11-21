@@ -1134,7 +1134,7 @@
       L.push({ k: 'cgt', t, d: [fact, cmp && /\d/.test(cmp) ? cmp : '', '', so] });
     }
     if (c.P > 0) {
-      const BY = { LTV: `집값의 ${Math.round(c.ltv * 100)}%(LTV)`, CAP: '가격구간별 대출 한도', DSR: '소득 기준 상환 한도(DSR 40%)', BAN: '다주택 주담대 금지' }[c.by] || c.by;
+      const BY = { LTV: `집값의 ${Math.round(c.ltv * 100)}%(LTV)`, CAP: '가격구간별 대출 한도', DSR: '소득 기준 상환 한도(DSR 40%)', DTI: '소득 기준 상환 한도(DTI)', BAN: '다주택 주담대 금지' }[c.by] || c.by;
       const t = c.by === 'BAN' ? `새 대출 0원 — 다주택은 이 지역에서 주택구입 주담대를 받을 수 없어요.` : `새 대출 ${W(c.L)} — 한도는 ${BY}에 맞춰 정해져요.`;
       const fact = `최대 집값 ${W(c.P)} 기준으로 LTV 한도는 ${W(c.P * c.ltv) || '0원'}, 소득(DSR) 한도는 ${W(c.dsrL) || '0원'}이에요.`;
       const cmp = `자기자본 ${W(c.cash)} + 새 대출 ${W(c.L) || '0원'}에서 취득세·중개 ${J(W(c.buyCost), '과', '와')} 기타 ${W(c.etc) || '0원'}을 빼면 집값 ${J(W(c.P), '이에요', '예요')}.`;

@@ -21,7 +21,7 @@
       g: g, capital: capital, regulated: regulated, own: own, rtype: rtype,
       ltv: LTV[g][own], stressBase: stressBase, stress: R.stressAdd(g, rtype, o.band || '5-9', o.date),
       income: +o.income || 0, cash: +o.cash || 0, debt: +o.debt || 0, rate: o.rate == null ? 4 : +o.rate,
-      dsrRatio: o.lender === 'nonbank' ? R.DSR.nonbank.v : R.DSR.bank.v,
+      dsrRatio: o.lender === 'nonbank' ? R.DSR.nonbank.v : R.DSR.bank.v, dtiRatio: R.dtiOf(g),
       term: Math.min(o.term || 30, maxTerm),
       etc: o.etc == null ? ETC_DEFAULT : +o.etc, costsOn: o.costsOn !== false, large: !!o.large
     };
@@ -32,6 +32,11 @@
   function dsrMax(c, stress, rate, term) {
     var room = c.income * (c.dsrRatio || R.DSR.bank.v) - c.debt; if (room <= 0) return 0;
     return room / 12 * annuity((rate == null ? c.rate : rate) + (stress == null ? c.stress : stress), term == null ? c.term : term);
+  }
+  /* DTI 한도(수도권·규제지역): 실제 금리(스트레스 없음), 다른 대출 1년 원리금을 빼고. 지방은 규칙을 넣지 않아 제한 없음 */
+  function dtiMax(c) {
+    var r = c.dtiRatio === undefined ? R.dtiOf(c.g) : c.dtiRatio; if (r == null) return Infinity;
+    return Math.max(0, c.income * r - c.debt) / 12 * annuity(c.rate, c.term);
   }
   function monthly(L, rate, term) { var i = rate / 1200, n = term * 12; if (L <= 0) return 0; return i === 0 ? L / n : L * i / (1 - Math.pow(1 + i, -n)); }
   /* 취득세는 세금 계산 화면과 같은 엔진(tax/tax-engine.js buyerAcqTax)으로 계산 — 이 파일에 세율을 따로 두지 않음.
@@ -49,10 +54,15 @@
   }
   /* 부대비용(취득세·중개보수) + 기타 비용. 계산기에서 '부대비용 포함'을 끄면 0 */
   function extra(P, c, large) { return c.costsOn ? costDetail(P, c, large).total + c.etc : 0; }
+  /* 집값 P일 때 최대 대출 — 대출 한도 계산기(loan/)·내 집 마련(buy/)·리포트·갈아타기(switch/)가 모두 이 함수 하나로 계산해요.
+     LTV·가격대별 최대(ab), DSR(d, 다른 대출이 없고 ab가 1억 원 이하면 따지지 않음), DTI(dti) 중 가장 작은 금액 */
   function loanAt(P, c, dsr) {
-    var a = P * c.ltv, b = capByPrice(P, c), d = dsr, L = Math.max(0, Math.min(a, b, d));
-    var by = 'LTV'; if (L === b && b < a && b <= d) by = 'CAP'; if (L === d && d < a && d < b) by = 'DSR'; if (c.ltv === 0) by = 'BAN';
-    return { L: L, a: a, b: b, d: d, by: by };
+    if (dsr == null) dsr = dsrMax(c);
+    var a = P * c.ltv, b = capByPrice(P, c), ab = Math.min(a, b), d = dsr;
+    var dsrOff = ab <= R.DSR.over.v && !(c.debt > 0), dEff = dsrOff ? Infinity : d, dti = dtiMax(c);
+    var L = Math.max(0, Math.min(ab, dEff, dti));
+    var by = c.ltv === 0 ? 'BAN' : (dti < Math.min(ab, dEff) ? 'DTI' : dEff < ab ? 'DSR' : (b < a ? 'CAP' : 'LTV'));
+    return { L: L, a: a, b: b, d: d, dti: dti, dsrOff: dsrOff, by: by };
   }
   function need(P, c, dsr, large) { var l = loanAt(P, c, dsr), cd = costDetail(P, c, large); return { loan: l, cost: cd, need: P - l.L + extra(P, c, large) }; }
   function maxPrice(c, dsr, large) {
@@ -70,13 +80,8 @@
   function limit(o) {
     var g = o.g || R.groupOf(o.code), P = +o.price || 0;
     var c = ctx({ g: g, own: o.own, rtype: o.rtype || 'var', band: o.band, income: o.income, debt: o.debt, rate: o.rate, term: o.term, lender: o.lender, date: o.date });
-    var a = P * c.ltv, b = capByPrice(P, c), ab = Math.min(a, b);
     var annF = annuity(c.rate + c.stress, c.term);
-    var d = dsrMax(c), dsrOff = ab <= R.DSR.over.v && !(c.debt > 0);   // 다른 대출이 없고 이 대출이 1억 원 이하면 DSR 적용 안 함
-    /* DTI(수도권·규제지역): 실제 금리로(스트레스 금리 없이), 다른 대출 1년 원리금을 빼고 계산 */
-    var dtiR = R.dtiOf(g), dti = dtiR == null ? Infinity : Math.max(0, c.income * dtiR - c.debt) / 12 * annuity(c.rate, c.term);
-    var dEff = dsrOff ? Infinity : d, L = Math.max(0, Math.min(ab, dEff, dti));
-    var by = c.ltv === 0 ? 'BAN' : (dti < Math.min(ab, dEff) ? 'DTI' : dEff < ab ? 'DSR' : (b < a ? 'CAP' : 'LTV'));
+    var la = loanAt(P, c), a = la.a, b = la.b, ab = Math.min(a, b), d = la.d, dsrOff = la.dsrOff, dti = la.dti, L = la.L, by = la.by, dtiR = c.dtiRatio;
     /* 소득 규칙(DSR·DTI) 때문에 덜 받을 때: LTV·가격대 한도(ab)까지 받으려면 필요한 연소득(두 규칙을 모두 넘는 소득) */
     var needDsr = dsrOff ? 0 : (ab / annF * 12 + c.debt) / c.dsrRatio, needDti = dtiR == null ? 0 : (ab / annuity(c.rate, c.term) * 12 + c.debt) / dtiR;
     var incomeNeed = by === 'DSR' || by === 'DTI' ? Math.ceil(Math.max(needDsr, needDti)) : null;
@@ -131,7 +136,7 @@
   }
   function fmtMan(v) { var e = Math.floor(v / 10000), m = v % 10000; return (e ? e + '억' : '') + (m ? (e ? ' ' : '') + m.toLocaleString('ko-KR') + '만' : '') + ' 원'; }
 
-  var api = { R: R, LTV: LTV, TYPE_RATIO: TYPE_RATIO, TYPE_RATIO_LOCAL: TYPE_RATIO_LOCAL, ETC_DEFAULT: ETC_DEFAULT, ANY_GROUP: ANY_GROUP, ctx: ctx, capByPrice: capByPrice, annuity: annuity, dsrMax: dsrMax, monthly: monthly, costDetail: costDetail, extra: extra, loanAt: loanAt, need: need, maxPrice: maxPrice, limit: limit, policyLoans: policyLoans, fmtMan: fmtMan };
+  var api = { R: R, LTV: LTV, TYPE_RATIO: TYPE_RATIO, TYPE_RATIO_LOCAL: TYPE_RATIO_LOCAL, ETC_DEFAULT: ETC_DEFAULT, ANY_GROUP: ANY_GROUP, ctx: ctx, capByPrice: capByPrice, annuity: annuity, dsrMax: dsrMax, dtiMax: dtiMax, monthly: monthly, costDetail: costDetail, extra: extra, loanAt: loanAt, need: need, maxPrice: maxPrice, limit: limit, policyLoans: policyLoans, fmtMan: fmtMan };
   root.JDJ_LOAN = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

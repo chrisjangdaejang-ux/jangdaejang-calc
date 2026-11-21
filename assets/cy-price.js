@@ -99,6 +99,7 @@
     var L = root.JDJ_LOAN; if (!L) return null;
     var P = +o.price, dp = Math.max(0, Math.min(100, +o.dp)), mid = Math.max(0, Math.min(100 - dp, +o.mid));
     var c = L.ctx({ g: groupOf(o.g), own: o.own || 'none', income: +o.income || 0, cash: 0, rate: o.rate == null ? 4 : +o.rate, term: 30, etc: 0, costsOn: true, large: !!o.large });
+    if (!(+o.income > 0)) c.dtiRatio = null;   // 소득을 안 넣으면 소득 규칙(DSR·DTI) 둘 다 빼고 계산
     var dsr = (+o.income > 0) ? L.dsrMax(c) : Infinity;
     var ln = L.loanAt(P, c, dsr), cd = L.costDetail(P, c, !!o.large);
     var tax = cd.acq - cd.relief + cd.edu + cd.farm;          // 분양은 중개보수가 없어 취득세·지방교육세·농특세만

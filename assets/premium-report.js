@@ -8,10 +8,11 @@
   const REG_GG = ['41290','41210','41135','41131','41133','41117','41111','41115','41173','41465','41430','41450','41597','41463','41310'];
   const isReg = c => c.startsWith('11') || REG_GG.includes(c);
   const isCap = c => c.startsWith('11') || c.startsWith('41') || c.startsWith('28');
-  const LTV = { reg:{none:.40,first:.70,one:.40,multi:0}, capfree:{none:.70,first:.70,one:.70,multi:0}, local:{none:.70,first:.80,one:.70,multi:.60} };
+  /* 대출 계산은 대출 한도 계산기(loan/)·내 집 마련(buy/)·갈아타기(switch/)와 같은 assets/loan-core.js(규칙은 assets/loan-rules.js) */
+  const LOAN = () => window.JDJ_LOAN;   // 화면마다 불러오는 순서가 달라 쓸 때 읽음
   const TYPE_RATIO = { var:1, mix:.8, cyc:.4 };
   const OWN_NAME = { none:'무주택', first:'생애최초', one:'1주택(처분조건)', multi:'다주택' };
-  const BY_TXT = { LTV:'LTV(집값 대비 비율)', CAP:'가격구간별 대출 한도', DSR:'소득(DSR 40%)', BAN:'주택구입 주담대 불가' };
+  const BY_TXT = { LTV:'LTV(집값 대비 비율)', CAP:'가격구간별 대출 한도', DSR:'소득(DSR 40%)', DTI:'소득(DTI)', BAN:'주택구입 주담대 불가' };
   const RZ_LV = {1:'신속통합기획 대상지 선정',2:'신속통합기획 완료',3:'정비구역 지정',4:'추진위원회 승인',5:'조합설립인가',6:'건축심의',7:'사업시행인가',8:'관리처분인가',9:'이주',10:'착공'};
 
   const S = load();
@@ -24,12 +25,7 @@
   }
   function save() { if (S._tmp) return; try { localStorage.setItem('jdj_prem_cond', JSON.stringify(S)); } catch (e) {} }
   const groupOf = c => isReg(c) ? 'reg' : (isCap(c) ? 'capfree' : 'local');
-  function ctxFor(g) {
-    const capital = g !== 'local', regulated = g === 'reg', stressBase = capital ? 3.0 : 0.75, maxTerm = capital ? 30 : 40;
-    return { g, capital, regulated, ltv: LTV[g][S.own], stress: Math.round(stressBase * TYPE_RATIO[S.rtype] * 100) / 100, rate: S.rate, term: Math.min(S.term, maxTerm) };
-  }
-  const capByPrice = (p, c) => (!c.capital && !c.regulated) ? Infinity : p <= 150000 ? 60000 : p <= 250000 ? 40000 : 20000;
-  function dsrMax(c) { const room = S.income * 0.40 - S.debt; if (room <= 0) return 0; const i = (c.rate + c.stress) / 1200, n = c.term * 12; return room / 12 * (i === 0 ? n : (1 - Math.pow(1 + i, -n)) / i); }
+  function ctxFor(g) { return LOAN().ctx({ g, own: S.own, rtype: S.rtype, band: '5-9', income: S.income, debt: S.debt, rate: S.rate, term: S.term }); }
   const monthly = (L, rate, term) => { const i = rate / 1200, n = term * 12; if (L <= 0) return 0; return i === 0 ? L / n : L * i / (1 - Math.pow(1 + i, -n)); };
   /* 취득세는 세금 계산 화면·무료 리포트와 같은 엔진(tax/tax-engine.js buyerAcqTax, 원 단위 → 만원) */
   function costDetail(p, c, large) {
@@ -39,11 +35,7 @@
     const broker = Math.min(p * br / 100, cap) * 1.1;
     return { rate, tax: acq - relief + edu + farm, broker, total: acq - relief + edu + farm + broker };
   }
-  function loanAt(p, c) {
-    const a = p * c.ltv, b = capByPrice(p, c), d = dsrMax(c), L = Math.max(0, Math.min(a, b, d));
-    let by = 'LTV'; if (L === b && b < a && b <= d) by = 'CAP'; if (L === d && d < a && d < b) by = 'DSR'; if (c.ltv === 0) by = 'BAN';
-    return { L, by };
-  }
+  function loanAt(p, c) { return LOAN().loanAt(p, c); }
 
   /* ---------- 표시 도우미 ---------- */
   const fmt = man => { man = Math.round(man); if (man <= 0) return '0원'; const e = Math.floor(man / 10000), r = man % 10000; return !e ? r.toLocaleString() + '만원' : e + '억' + (r ? ' ' + r.toLocaleString() + '만' : '') + '원'; };

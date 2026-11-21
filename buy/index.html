@@ -34,8 +34,8 @@
 <script src="../assets/stat.js?v=7"></script>
 <script src="../assets/share.js?v=8"></script>
 <script src="../tax/tax-engine.js?v=4"></script>
-<script src="../assets/loan-rules.js?v=2"></script>
-<script src="../assets/loan-core.js?v=4"></script>
+<script src="../assets/loan-rules.js?v=3"></script>
+<script src="../assets/loan-core.js?v=5"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -474,7 +474,7 @@ function render(){
 
   $('maxP').textContent = P ? fmtW(P) : '대출 매수 어려움';
   $('maxSub').innerHTML = P ? `현금 <b>${fmt(c.cash)}</b> + 대출 <b>${fmt(ld.L)}</b>${c.costsOn?` − 부대비용 <b>${fmt(cost)}</b>`:''}` : '조건을 조정해 보세요';
-  const byTxt = {LTV:`LTV ${Math.round(c.ltv*100)}%가 한도를 결정`, CAP:'가격구간별 대출 한도가 결정', DSR:'소득(DSR)이 한도를 결정', BAN:'주택구입 목적 주담대 불가'};
+  const byTxt = {LTV:`LTV ${Math.round(c.ltv*100)}%가 한도를 결정`, CAP:'가격구간별 대출 한도가 결정', DSR:'소득(DSR)이 한도를 결정', DTI:'소득(DTI)이 한도를 결정', BAN:'주택구입 목적 주담대 불가'};
   $('binding').textContent = byTxt[ld.by];
 
   $('sLoan').textContent = fmtShort(ld.L);
