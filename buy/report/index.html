@@ -40,6 +40,8 @@
 <script src="../../assets/lead.js?v=1"></script>
 <script src="../../assets/config.js?v=4"></script>
 <script src="../../assets/auth.js?v=6"></script>
+<script src="../../assets/watch-core.js?v=2"></script>
+<script src="../../assets/watch.js?v=3"></script>
 <script src="../../assets/share.js?v=8"></script>
 <script src="../../tax/tax-engine.js?v=4"></script>
 <script src="../../assets/loan-core.js?v=3"></script>
@@ -407,6 +409,8 @@ tr.total td{border-top:1px solid var(--text)}
 .card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:14px;scroll-margin-top:72px}
 .card.flash{box-shadow:0 0 0 3px rgba(47,107,255,.35)}
 .chead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.chead .chr{display:flex;flex-direction:column;align-items:center;gap:6px;flex:none}
+.near .jw-star{vertical-align:middle}@media print{.jw-star{display:none!important}}
 .chead .crk{font-size:13.5px;color:var(--sub2)}
 .chead .crk b{color:var(--blue)}
 .card .name{font-size:20px;font-weight:900;margin-top:3px}
@@ -549,6 +553,7 @@ function fmtS(man){ if(man>=10000) return (Math.round(man/1000)/10).toString().r
 function r100(m){ return Math.round(m/100)*100; }
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 /* 단지 '시세 흐름 보기' 단추 (assets/price-sheet.js 공용 시트) */
+function WS(x){ return window.JDJ_WATCH ? JDJ_WATCH.star({sd:x.sd||sdIdOf(x.code), code:x.code, dong:x.dong, jibun:x.jb||'', apt:x.apt, band:x.band}, {small:true}) : ''; }   /* 관심 별(assets/watch.js) */
 function PB(x, at, cls, apt){ return window.JDJ_PRICE ? JDJ_PRICE.btn({sd:x.sd||sdIdOf(x.code), sgg:x.code, dong:x.dong, apt:apt||x.apt, band:x.band, jibun:apt?'':x.jb}, at, {cls:cls||''}) : ''; }
 
 /* ---------- 상태 ---------- */
@@ -1266,7 +1271,7 @@ async function render(){
       h += `<h3 style="font-size:16px;margin:18px 0 8px">조금만 더 준비하면 가능한 단지</h3>
       <p class="sub">선택한 지역에서 부족한 금액이 가장 적은 단지입니다. 목표로 잡고 자금 계획을 세워 보세요.</p>
       <table class="near"><thead><tr><th style="width:44px">순위</th><th>단지</th><th>평형</th><th class="num">추정 시세</th><th class="num">대출</th><th class="num">부족한 현금</th></tr></thead><tbody>`+
-      near.map((x,i)=>`<tr><td><span class="nrank">${i+1}</span></td><td><b>${esc(x.apt)}</b><br><small>${esc(sggName(x.code))} ${esc(x.dong)}</small></td><td>${x.band}</td><td class="num">${fmtS(x.P)}</td><td class="num">${fmtS(x.nd.loan.L)}</td><td class="num" style="color:var(--red);font-weight:900">${fmt(x.nd.need-S.cash)}</td></tr>
+      near.map((x,i)=>`<tr><td><span class="nrank">${i+1}</span></td><td><b>${esc(x.apt)}</b> ${WS(x)}<br><small>${esc(sggName(x.code))} ${esc(x.dong)}</small></td><td>${x.band}</td><td class="num">${fmtS(x.P)}</td><td class="num">${fmtS(x.nd.loan.L)}</td><td class="num" style="color:var(--red);font-weight:900">${fmt(x.nd.need-S.cash)}</td></tr>
       <tr class="agtr"><td></td><td colspan="5"><div class="cps noprint">${PB(x,'report_near','sm')}</div><div class="agt" data-g="${x.code}" data-k="${esc(x.code+'|'+x.dong+'|'+x.apt)}"></div></td></tr>`).join('')+
       `</tbody></table><div id="agentSec" class="agsec"></div>`;
     }
@@ -1309,7 +1314,7 @@ async function render(){
           <div><div class="crk"><b>추천 ${i+1}위</b> · ${esc(sidoOfCode(x.code))} ${esc(sggName(x.code))} ${esc(x.dong)}</div>
             <div class="name">${esc(x.apt)}</div>
             <div class="loc">${x.band} (전용 ${x.area}㎡) · 추정 시세 ${fmtS(x.P)}${isReg(x.code)?' · 규제지역':''}</div></div>
-          <div class="ring" aria-label="${rg.k} ${rg.v}점"><b>${rg.v}</b><small>${rg.k}</small></div>
+          <div class="chr"><div class="ring" aria-label="${rg.k} ${rg.v}점"><b>${rg.v}</b><small>${rg.k}</small></div>${WS(x)}</div>
         </div>
         ${narFor(x,i) || `<ul class="reasons">${rs.slice(0,3).map(li).join('')}</ul>`}
         <div class="cps noprint">${PB(x,'report_top')}${window.JDJ_PRICE&&x.P>0?` <a class="loanx" href="${esc(JDJ_PRICE.loanHref({src:'report', price:x.P, code:x.code, apt:x.apt, band:x.band, area:x.area, own:S.own}))}" data-track="report_to_loan">이 집 대출 한도 계산하기 ›</a>`:''}</div>

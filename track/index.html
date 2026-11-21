@@ -109,6 +109,7 @@ table.tt{width:100%;border-collapse:collapse;font-size:14.5px;font-variant-numer
 .tml li button:hover{background:var(--gray2)}
 .tmr{margin:12px 0 0}
 .tmr .nm{font-size:18px;font-weight:900;margin:0 0 2px}
+.tmr .tmh{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .tmr .nm small{font-size:14px;font-weight:500;color:var(--sub2);margin-left:6px}
 .tmr .row{display:grid;grid-template-columns:1fr;gap:8px;margin:10px 0 0}
 @media(min-width:620px){.tmr .row{grid-template-columns:1fr 1fr}}
@@ -251,6 +252,9 @@ table.tt{width:100%;border-collapse:collapse;font-size:14.5px;font-variant-numer
 </main>
 <footer class="foot">★ 집예보 · <a href="/jangdaejang-calc/">홈</a> · <a href="/jangdaejang-calc/about/">서비스 소개</a></footer>
 <script src="../assets/track-core.js?v=1"></script>
+<script src="../assets/agents.js"></script>
+<script src="../assets/watch-core.js?v=2"></script>
+<script src="../assets/watch.js?v=3"></script>
 <script>
 (async function () {
   const $ = id => document.getElementById(id), T = window.JDJ_TRACK, D = '/jangdaejang-data/data/';
@@ -366,7 +370,8 @@ table.tt{width:100%;border-collapse:collapse;font-size:14.5px;font-variant-numer
     $('tmL').innerHTML = '';
     if (!P) { $('tmR').innerHTML = '<p class="nowl">이 단지는 과거 점수 기록이 없어요.</p>'; return; }
     const t = P.then, gname = (IX.sgg[gcode] || {}).name || '';
-    let h = `<p class="nm">${esc(u.apt)}<small>${esc(gname)} ${esc(u.umd)} · ${esc(u.band)}</small></p>`;
+    const wsd = ((IX.sido || []).find(s => s.name === (IX.sgg[gcode] || {}).sido) || {}).id || '';
+    let h = `<div class="tmh"><p class="nm">${esc(u.apt)}<small>${esc(gname)} ${esc(u.umd)} · ${esc(u.band)}</small></p>${window.JDJ_WATCH && wsd ? JDJ_WATCH.star({ sd: wsd, code: gcode, dong: u.umd, jibun: u.jibun || '', apt: u.apt, band: u.band }) : ''}</div>`;
     if (t) {
       h += `<div class="row"><div class="bx"><small>${T.ymKo(t.t0)} 점수</small><b>${t.score}점</b><span>${esc(gname)} 안 ${t.gn}곳 중 ${t.gr}등${t.p0 ? ` · 평당 ${T.nf(t.p0)}만 원` : ''}</span></div>`
         + `<div class="bx"><small>그 뒤 2년 실제 시세(${T.ymKo(t.end)}까지)</small><b style="color:${t.chg >= 0 ? 'var(--blue)' : 'var(--neg)'}">${T.pc(t.chg)}</b><span>같은 구 중간값보다 ${T.pp(t.vs)} · 구 안 오른 폭 ${t.q >= 50 ? `상위 ${Math.max(1, 100 - t.q)}%` : `하위 ${Math.max(1, t.q)}%`}${t.p1 ? ` · 평당 약 ${T.nf(t.p1)}만 원` : ''}</span></div></div>`

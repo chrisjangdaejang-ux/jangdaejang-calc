@@ -1,6 +1,6 @@
 /* 관심 목록 화면 부품 (JDJ_WATCH) — 계산은 assets/watch-core.js
    - 로그인 없이: 이 기기 localStorage 'jdj_watch' 에 저장(읽기·쓰기 모두 try/catch, 막혀 있으면 이번 화면에서만 기억).
-   - 카카오 간편 로그인 중이면: 계정 저장 자료의 '관심 단지(favs)'와 맞춤(이 기기에서 처음 맞추거나 저장 못 한 변경이 있으면 합치고, 아니면 계정 목록을 따름).
+   - 카카오 간편 로그인 중이면: 누를 때마다 계정 저장 자료의 '관심 단지(favs)'에 바로 저장(계정 목록 + 이 기기에서 한 넣기·빼기만 적용 — 다른 기기에서 뺀 단지는 되살리지 않음).
      모닝 브리핑을 구독 중이면 관심 목록 단지 이름을 브리핑 ③ 내 관심 단지(brief.apts)에 더함(원래 있던 이름은 그대로, 우리가 넣은 이름만 뺄 때 함께 뺌).
      새 발송 채널은 없음 — 브리핑이 원래 보내는 ③ 칸을 쓴다.
    - [관심] 별 단추: JDJ_WATCH.star(p) HTML 을 아무 곳에 넣으면 눌렀을 때 넣기·빼기(문서 전체 클릭 위임). p = {sd, code, dong, jibun, apt, band}
@@ -23,35 +23,47 @@
   const has = p => C.has(list(), p);
   function onChange(f) { subs.push(f); }
 
-  /* ---------- 계정 맞추기 ---------- */
+  /* ---------- 계정 맞추기 ----------
+     이 기기에서 한 일(넣기·빼기)을 할 일 목록(jdj_watch_ops)에 남기고, 로그인 중이면 바로 계정에 저장한다.
+     저장할 때는 '지금 계정 목록 + 이 기기의 할 일'만 적용 → 다른 기기에서 뺀 단지가 되살아나지 않음.
+     로그인 부품(auth.js)이 없는 화면(순위 등)도 이 기기에 남은 로그인 토큰으로 바로 저장한다. */
+  const ops = () => C.parseOps(ls.get(C.OPS));
+  const setOps = o => ls.set(C.OPS, JSON.stringify(o));
+  const tok = () => { try { const j = JSON.parse(ls.get('jdj_auth') || 'null'); if (!j || !/^[0-9a-f]{64}$/.test(String(j.s || ''))) return ''; if (j.exp && j.exp < today()) return ''; return j.s; } catch (e) { return ''; } };
+  const apiUrl = () => (root.JDJ_AGENTS && root.JDJ_AGENTS.api) || ((root.JDJ_SITE || {}).API) || '';
+  function post(body) {
+    return fetch(apiUrl(), { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) })
+      .then(r => r.json()).then(j => { if (!j || !j.ok) throw new Error((j && j.err) || 'save'); return j; });
+  }
+  /** 계정 창구: {load() → 저장 자료, update(fn)} — 로그인 부품이 있으면 그것, 없으면 토큰으로 직접. 로그인 안 했으면 null */
+  function acct() {
+    if (root.JDJ_AUTH) { const A = AU(); return A ? { load: () => A.load(true).then(st => (st && st.data) || {}), update: fn => A.update(fn) } : null; }
+    const s = tok(); if (!s || !apiUrl()) return null;
+    const load = () => post({ action: 'userLoad', s }).then(j => j.data || {});
+    return { load, update: fn => load().then(d => { d = JSON.parse(JSON.stringify(d)); fn(d); return post({ action: 'userSave', s, data: d }); }) };
+  }
+  /** 할 일을 계정에 적용·저장하고 이 기기 목록을 계정 목록으로 맞춤 */
+  function flush() {
+    const K = acct(); if (!K) return Promise.resolve(null);
+    return K.load().then(d => {
+      const server = (d.favs || []).map(C.clean).filter(Boolean), mine = ops();
+      const todo = ls.get('jdj_watch_synced') === '1' ? mine : C.legacyOps(list(), server).concat(mine);
+      const next = C.applyOps(server, todo), sent = new Set(mine.map(o => C.idOf(o.p) + '#' + o.at));
+      const done = () => { setOps(ops().filter(o => !sent.has(C.idOf(o.p) + '#' + o.at)));   // 저장하는 동안 새로 누른 것은 남김
+        ls.set('jdj_watch_synced', '1'); save(C.applyOps(next, ops())); return briefSync().then(() => next, () => next); };
+      if (JSON.stringify(next.map(C.idOf)) === JSON.stringify(server.map(C.idOf))) return done();
+      return K.update(x => { x.favs = C.applyOps(x.favs || [], todo); }).then(done);
+    }).catch(() => null);
+  }
   let syncP = null;
-  function sync() {
-    const A = AU(); if (!A) return Promise.resolve(list());
-    if (syncP) return syncP;
-    syncP = A.favs().then(server => {
-      const local = list(), first = ls.get('jdj_watch_synced') !== '1' || ls.get('jdj_watch_dirty') === '1';
-      const next = first ? C.merge(local, server) : C.merge(server, []);
-      save(next); ls.set('jdj_watch_synced', '1');
-      const same = JSON.stringify(next.map(C.idOf)) === JSON.stringify(C.merge(server, []).map(C.idOf));
-      const done = () => { ls.set('jdj_watch_dirty', '0'); return briefSync().then(() => next, () => next); };
-      return same ? done() : A.update(d => { d.favs = next; }).then(done, () => { ls.set('jdj_watch_dirty', '1'); return next; });
-    }).catch(() => list());
-    return syncP;
-  }
-  function push() {
-    const A = AU();
-    ls.set('jdj_watch_dirty', '1');                          // 로그인 부품이 없는 화면에서 바꿔도 다음 로그인 화면에서 계정과 합침
-    if (!A) return Promise.resolve(false);
-    const l = list();
-    return A.update(d => { d.favs = l; }).then(() => { ls.set('jdj_watch_dirty', '0'); return briefSync(); }).then(() => true, () => false);
-  }
+  function sync() { if (!acct()) return Promise.resolve(list()); if (!syncP) syncP = flush().then(() => list()); return syncP; }
+  const push = () => flush();
   /* 모닝 브리핑 구독 상태(한 화면에 한 번) → {sub, lim, brief} */
   let briefP = null;
   function briefState(force) {
-    const A = AU(), api = root.JDJ_AGENTS && root.JDJ_AGENTS.api;
-    if (!A || !api) return Promise.resolve(null);
+    const api = apiUrl(), s = acct() ? tok() : '';
+    if (!s || !api) return Promise.resolve(null);
     if (briefP && !force) return briefP;
-    let s = ''; try { s = (JSON.parse(ls.get('jdj_auth') || 'null') || {}).s || ''; } catch (e) {}
     const B = root.JDJ_BRIEF;
     briefP = fetch(api, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'briefMine', s }) })
       .then(r => r.json()).then(j => {
@@ -65,14 +77,14 @@
   function briefSync() {
     return briefState().then(st => {
       if (!st || !st.sub) return st;
-      const A = AU(); if (!A) return st;
+      const K = acct(); if (!K) return st;
       let added = []; try { added = JSON.parse(ls.get('jdj_watch_bnames') || '[]'); } catch (e) {}
       const names = [...new Set(list().map(p => p.apt))];
       const removed = added.filter(a => !names.includes(a));
       const cur = st.brief.apts || [], next = C.briefApts(cur, names, added, removed);
       ls.set('jdj_watch_bnames', JSON.stringify(names.filter(a => !cur.includes(a) || added.includes(a))));
       if (JSON.stringify(next) === JSON.stringify(cur)) return st;
-      return A.update(d => { d.brief = Object.assign({}, d.brief || {}, { apts: next }); }).then(() => { st.brief.apts = next; ls.set('jdj_brief_apts', JSON.stringify(next)); return st; }, () => st);
+      return K.update(d => { d.brief = Object.assign({}, d.brief || {}, { apts: next }); }).then(() => { st.brief.apts = next; ls.set('jdj_brief_apts', JSON.stringify(next)); return st; }, () => st);
     });
   }
 
@@ -81,6 +93,7 @@
     const r = C.toggle(list(), p, today());
     if (r.full) { toast(`관심 목록은 ${C.MAX}곳까지예요. 하나를 빼고 다시 눌러 주세요.`); return Promise.resolve(r); }
     save(r.list);
+    setOps(C.addOp(ops(), r.added ? 'add' : 'del', p, Date.now()));
     stat(r.added ? 'watch_add' : 'watch_remove');
     toast(r.added ? `관심 목록에 넣었어요. <a href="${BASE}my/watch/">관심 목록 보기 ›</a>` : '관심 목록에서 뺐어요.');
     return push().then(() => r);
@@ -159,7 +172,7 @@ body.has-sheet .jw-toast{bottom:auto;top:72px}   /* 지도 카드가 열려 있�
 
   function ready() {
     style(); paintStars(); badge();
-    if (AU()) sync();
+    if (acct()) sync();
     if (root.JDJ_AUTH && root.JDJ_AUTH.onChange) root.JDJ_AUTH.onChange(u => { syncP = null; briefP = null; if (u) sync(); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready); else ready();

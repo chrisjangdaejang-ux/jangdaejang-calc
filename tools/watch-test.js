@@ -23,6 +23,67 @@ check('저장 글 → 목록(망가진 글은 빈 목록)', [C.parse(C.dump([A, 
 check('계정 합치기: 이 기기 먼저, 겹치면 한 번', C.merge([A], [Bp, A]).map(x => x.apt), ['잠실엘스', '은마'], '');
 check('키 = 구|동|지번|단지|평형 (auth.js placeId 와 같음)', C.idOf(A), '11710|잠실동|35|잠실엘스|84㎡대', '');
 
+/* ---------- 기기 간 맞추기(할 일만 적용) ---------- */
+const X = A, Y = Bp, Z = Object.assign({}, A, { jibun: '99', apt: '리센츠' });
+let opsA = C.addOp([], 'del', X, 1);
+const serverAfterA = C.applyOps([X, Y], opsA);
+check('A기기에서 뺌 → 계정 목록에서 빠짐', serverAfterA.map(x => x.apt), ['은마'], '');
+const opsB = C.addOp([], 'add', Z, 2);
+check('B기기(전에 맞춘 적 있음, X가 남아 있음)에서 다른 단지를 넣어도 X는 되살아나지 않음', C.applyOps(serverAfterA, opsB).map(x => x.apt), ['리센츠', '은마'], '계정 목록 + B의 할 일만');
+check('같은 항목 할 일은 마지막 것만', C.addOp(C.addOp([], 'add', X, 1), 'del', X, 2).map(o => o.op), ['del'], '');
+check('B가 직접 다시 넣은 것은 들어감(B의 뜻)', C.applyOps(serverAfterA, C.addOp([], 'add', X, 3)).map(x => x.apt), ['잠실엘스', '은마'], '');
+check('예전 판 기기(맞춘 적 없음)의 목록만 넣기로 바꿈', C.legacyOps([X, Y], [Y]).map(o => [o.op, o.p.apt]), [['add', '잠실엘스']], '');
+check('할 일 기록 읽기: 망가진 줄 버림', C.parseOps(JSON.stringify([{ op: 'add', p: X }, { op: 'zap', p: X }, { op: 'del', p: {} }, null])).length, 1, '');
+
+/* 실제 watch.js 로 두 기기 흉내(가짜 서버·가짜 브라우저 저장소) — 로그인 부품이 없는 화면(순위)처럼 토큰으로 직접 저장 */
+const vm = require('vm');
+const SERVER = { favs: [] };
+function device(name, store) {
+  store = store || {}; const docEvents = {};
+  const el = () => ({ style: {}, setAttribute() {}, appendChild() {}, querySelector: () => null, querySelectorAll: () => [], classList: { toggle() {} } });
+  const ctx = { console, JSON, Promise, Date, Set, Math, setTimeout: f => f(), clearTimeout() {},
+    localStorage: { getItem: k => (k in store ? store[k] : null), setItem: (k, v) => { store[k] = String(v); }, removeItem: k => { delete store[k]; } },
+    sessionStorage: { getItem: () => null, setItem() {} },
+    location: { pathname: '/jangdaejang-calc/rank/' }, addEventListener() {},
+    document: { readyState: 'complete', addEventListener: (t, f) => { docEvents[t] = f; }, querySelectorAll: () => [], querySelector: () => null, getElementById: () => null,
+      createElement: el, head: el(), body: el() },
+    JDJ_AGENTS: { api: 'https://example.invalid/api' },
+    fetch: (u, o) => {
+      if (!o) return Promise.resolve({ ok: false, json: () => Promise.resolve(null) });
+      const b = JSON.parse(o.body);
+      let out = { ok: true };
+      if (b.action === 'userLoad') out.data = JSON.parse(JSON.stringify({ favs: SERVER.favs }));
+      else if (b.action === 'userSave') { SERVER.favs = (b.data.favs || []).map(C.clean).filter(Boolean); out.data = { favs: SERVER.favs }; }
+      else out = { ok: false };
+      return Promise.resolve({ ok: true, json: () => Promise.resolve(out) });
+    } };
+  ctx.window = ctx; ctx.globalThis = ctx;
+  ctx.localStorage.setItem('jdj_auth', JSON.stringify({ s: 'a'.repeat(64), nick: name }));
+  vm.createContext(ctx);
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'assets', 'watch-core.js'), 'utf8'), ctx);
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'assets', 'watch.js'), 'utf8'), ctx);
+  return { W: ctx.JDJ_WATCH, store };
+}
+const devA = device('A'); let devB;
+const flushAll = () => new Promise(r => setImmediate(r));
+(async () => {
+  await devA.W.toggle(X); await devA.W.toggle(Y); await flushAll();
+  check('A에서 넣자마자 계정에 저장(로그인 부품 없는 화면)', SERVER.favs.map(x => x.apt).sort(), ['은마', '잠실엘스'], 'userSave');
+  devB = device('B'); await devB.W.sync(); await flushAll();        // B 기기에서 화면을 엶
+  check('B가 맞추면 A가 넣은 두 곳', devB.W.list().map(x => x.apt).sort(), ['은마', '잠실엘스'], '');
+  await devA.W.toggle(X); await flushAll();
+  check('A에서 뺌 → 계정에서 바로 빠짐', SERVER.favs.map(x => x.apt), ['은마'], '');
+  devB.store[C.KEY] = C.dump([X, Y]);       // B 는 아직 예전 목록(X 포함)을 들고 있음(A 에서 뺀 뒤 B 화면을 다시 열지 않음)
+  await devB.W.toggle(Z); await flushAll();
+  check('A에서 지운 단지가 B에서 합칠 때 되살아나지 않음', SERVER.favs.map(x => x.apt).sort(), ['리센츠', '은마'], 'B 할 일(리센츠 넣기)만 적용');
+  check('B 기기 목록도 계정 목록으로 맞춰짐', devB.W.list().map(x => x.apt).sort(), ['리센츠', '은마'], '');
+  check('저장한 할 일은 비움', JSON.parse(devB.store[C.OPS] || '[]').length, 0, '');
+  const st = Object.assign({}, devB.store); st[C.KEY] = C.dump([X, Y, Z]);
+  const devB2 = device('B', st); await devB2.W.sync(); await flushAll();     // B 가 예전 목록을 들고 화면을 다시 엶
+  check('B 화면을 다시 열어 맞춰도 A에서 지운 단지는 계정·B 목록 모두 없음', [SERVER.favs.some(x => x.apt === '잠실엘스'), devB2.W.list().some(x => x.apt === '잠실엘스')], [false, false], '');
+  finish();
+})();
+
 /* ---------- 변화 ---------- */
 const row = (o) => Object.assign({ d: '잠실동', j: '35', a: '잠실엘스', b: '84㎡대', ar: 84.8, day: '2026-11-21', s: '14:02' }, o);
 const G = { date: '2026-11-21', at: '2026-11-21T14:02+09:00', d0: '2026-11-20',
@@ -85,10 +146,13 @@ check('단지 화면: 별 단추(로그인 없이도)', /JDJ_WATCH\.star\(favPla
 const rank = read('rank/index.html'), map = read('map/index.html');
 check('순위 화면: 단지 순위·점수 변화 목록에 별', (rank.match(/\$\{wstar\(x\)\}/g) || []).length, 2, '');
 check('지도 카드: 단지 이름 옆 별', /JDJ_WATCH\.star\(\{ sd: d\.sd, code: d\.code/.test(map), true, '');
-check('별을 다는 화면은 모두 같은 부품(watch.js)', ['index.html', 'mine/index.html', 'rank/index.html', 'map/index.html', 'my/watch/index.html'].every(f => read(f).includes('watch.js?v=2')), true, '');
+check('단지 비교·리포트 추천 단지·조금만 더 준비하면 가능한 단지·성적표 단지 찾기에도 별', [/JDJ_WATCH\.star\(\{ sd: x\.sd/.test(read('ask/index.html')), (read('buy/report/index.html').match(/\$\{WS\(x\)\}/g) || []).length, /JDJ_WATCH\.star\(\{ sd: wsd/.test(read('track/index.html'))], [true, 2, true], '');
+check('별을 다는 화면은 모두 같은 부품(watch.js)', ['index.html', 'mine/index.html', 'rank/index.html', 'map/index.html', 'my/watch/index.html', 'ask/index.html', 'buy/report/index.html', 'track/index.html'].every(f => read(f).includes('watch.js?v=3')), true, '');
 check('화면 문구에 회사 이름 대신 서비스 이름', /장대장부동산그룹/.test(page), false, '');
 
+function finish(){
 const fail = rows.filter(r => !r.ok);
 for (const r of rows) console.log((r.ok ? 'ok   ' : 'FAIL ') + r.name + (r.ok ? '' : `\n      got ${JSON.stringify(r.got)}\n      want ${JSON.stringify(r.want)}  (${r.basis})`));
 console.log(`\n${rows.length - fail.length}/${rows.length} 통과`);
 process.exit(fail.length ? 1 : 0);
+}

@@ -39,6 +39,32 @@
     list.unshift(c);
     return { list, added: true };
   }
+  /* ---------- 기기 간 맞추기: 목록 전체를 합치지 않고 '이 기기에서 한 일(넣기·빼기)'만 계정 목록 위에 다시 적용 ----------
+     다른 기기에서 뺀 단지는 계정 목록에 이미 없고, 이 기기의 할 일에는 '넣기'가 없으니 되살아나지 않는다.
+     ops = [{op:'add'|'del', p, at(ms)}] — 서버에 저장되면 비움. 같은 항목의 할 일은 마지막 것만 남김. */
+  const OPS = 'jdj_watch_ops', OPS_MAX = 200;
+  function addOp(ops, op, p, at) {
+    const c = clean(p); if (!c) return ops || [];
+    const id = idOf(c), out = (ops || []).filter(o => o && idOf(o.p) !== id);
+    out.push({ op: op === 'del' ? 'del' : 'add', p: c, at: +at || 0 });
+    return out.slice(-OPS_MAX);
+  }
+  function parseOps(raw) {
+    let a = null; try { a = JSON.parse(raw || '[]'); } catch (e) { a = []; }
+    return (Array.isArray(a) ? a : []).filter(o => o && (o.op === 'add' || o.op === 'del') && clean(o.p)).map(o => ({ op: o.op, p: clean(o.p), at: +o.at || 0 })).slice(-OPS_MAX);
+  }
+  /** 계정 목록(server)에 이 기기의 할 일(ops)을 차례로 적용 → 새 목록(넣은 것은 맨 앞, 최대 30곳) */
+  function applyOps(server, ops) {
+    let list = (server || []).map(clean).filter(Boolean);
+    (ops || []).forEach(o => {
+      const id = idOf(o.p);
+      if (o.op === 'del') list = list.filter(x => idOf(x) !== id);
+      else if (!list.some(x => idOf(x) === id)) list.unshift(o.p);
+    });
+    return uniq(list).slice(0, MAX);
+  }
+  /** 예전 판(할 일 기록 없음)에서 이 기기에만 있던 항목 → '넣기' 할 일로(이 기기에서 처음 맞출 때 한 번만) */
+  const legacyOps = (local, server) => (local || []).filter(p => !has(server, p)).reverse().map(p => ({ op: 'add', p: clean(p), at: 0 })).filter(o => o.p);
   /** 이 기기 목록 + 계정 목록 합치기(이 기기 먼저, 같은 항목은 한 번) */
   const merge = (local, server) => uniq((local || []).concat(server || []).map(clean).filter(Boolean)).slice(0, MAX);
 
@@ -123,7 +149,7 @@
     return { inArea, inList: i >= 0 && i < (lim || 0), listed: i >= 0 };
   }
 
-  const API = { KEY, SNAP, SEEN, MAX, DROP, ROLL_MS, clean, idOf, rowKey, parse, dump, has, toggle, merge, tsig, rowsFor, unitTrades, isDrop, snap, diff, shouldRoll, badge, seenSigs, briefApts, briefFit };
+  const API = { KEY, SNAP, SEEN, MAX, OPS, addOp, parseOps, applyOps, legacyOps, DROP, ROLL_MS, clean, idOf, rowKey, parse, dump, has, toggle, merge, tsig, rowsFor, unitTrades, isDrop, snap, diff, shouldRoll, badge, seenSigs, briefApts, briefFit };
   root.JDJ_WATCH_CORE = API;
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
 })(typeof window !== 'undefined' ? window : globalThis);
