@@ -354,7 +354,7 @@ const sA = mk(601), sX = mk(602), sB = mk(603), sD = mk(604);
 check('유료 이용 안 한 사람은 초대 링크 못 만듦', !post({ action: 'briefInvite', s: sX }).ok);
 buy(sA, 'a@example.com');
 const inv = post({ action: 'briefInvite', s: sA });
-check('초대 링크: 브리핑 주소 ?ref=코드(카카오 id 원문 없음)', inv.ok && /^R[0-9A-F]{8}$/.test(inv.code) && inv.url.endsWith('/brief/?ref=' + inv.code) && !/601/.test(inv.url) && inv.left === 12, inv);
+check('초대 링크: 브리핑 주소 ?ref=코드(카카오 id 원문 없음)', inv.ok && /^R[0-9A-F]{8}$/.test(inv.code) && inv.url.endsWith('/brief/?ref=' + inv.code) && [...new URL(inv.url).searchParams.keys()].join() === 'ref' && !/(^|[^0-9A-F])k?601([^0-9A-F]|$)/.test(inv.url) &&   /* 카카오 id(601) 원문이 경계 있는 값으로 없음 — 코드 해시에 우연히 '601'이 들어가도 통과 */ inv.left === 12, inv);
 check('자기 자신 초대는 안 됨', buy(sA, 'a2@example.com', inv.code).o.ref === 'self');
 r = post({ action: 'briefTrial', s: sB, channel: 'email', contact: 'b@example.com', privacy: true, ref: inv.code });
 check('초대받은 체험 → 대기만(체험만 하면 보상 없음)', r.ok && r.ref === 'ok' && sheets['브리핑초대'].rows.slice(1).length === 1 && sheets['브리핑초대'].rows[1][4] === '대기');

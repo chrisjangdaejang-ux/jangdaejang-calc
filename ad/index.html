@@ -506,7 +506,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
     <div class="sh">GUIDE</div>
     <h2 class="t">집행 전 확인해 주세요</h2>
     <h3 class="gs" id="disc">기간별 할인</h3>
-    <p class="sub" style="margin-bottom:6px">월 단가 상품(우선 노출·결과 아래 카드·체크리스트 스폰서·지역 밀착·전월세 안심 패키지)에 똑같이 적용돼요. 상단 배너(홈·카테고리·분양·청약)와 모닝 브리핑 지면 광고는 4주 금액으로 계산해 3개월(12주) 4주 금액 × 3에서 10%, 1년(52주) 4주 금액 × 13에서 20% 할인해요(만 원 단위 반올림). 분양 단지 광고는 1·2·4주 금액과 3회 이용권, 지역 제휴 중개사는 공개 요금을 따라요.</p>
+    <p class="sub" style="margin-bottom:6px">월 단가 상품(우선 노출·결과 아래 카드·체크리스트 스폰서·지역 밀착·전월세 안심 패키지)에 똑같이 적용돼요. 상단 배너(홈·카테고리·분양·청약)와 모닝 브리핑 지면 광고는 4주 금액으로 계산해 3개월(12주) 4주 금액 × 3에서 10%, 6개월(26주) 4주 금액 × 6.5에서 15%, 1년(52주) 4주 금액 × 13에서 20% 할인해요(만 원 단위 반올림). 분양 단지 광고는 1·2·4주 금액과 3회 이용권, 지역 제휴 중개사는 공개 요금을 따라요.</p>
     <table class="dtab" id="dtab"></table>
     <div class="ex" id="ex"></div>
     <h3 class="gs">집행 기준</h3>
@@ -604,7 +604,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
 <script src="../assets/agents.js"></script>
 <script src="../assets/config.js?v=4"></script>
 <script src="../assets/brief-stat.js?v=3"></script>
-<script src="../assets/ad-prices.js?v=2"></script>
+<script src="../assets/ad-prices.js?v=3"></script>
 <script>
 
 
@@ -646,7 +646,7 @@ function cellHtml(key, pid) {
     else if (want === 2 && !p.weeks[2] && a) subs.push(`1주 ${man(p.weeks[1])} × 2`);
     else if (pid === 'm1') subs.push('1개월 = 4주예요');
     const LW = /^(m3|m6|y1)$/.test(pid) ? longWeeksPrice(key, pid) : null;
-    if (LW) return `<span class="ln"><b>${LW.weeks}주 ${man(LW.total)}</b><small class="off">${man(LW.off)} 할인(${LW.rate}%)</small><small>4주 ${man(p.weeks[4])} × ${PRICES.longWeeks[pid].mult} = ${man(LW.list)}${pid === 'm6' ? ' · 6개월은 3개월 할인율' : ''}${p.note ? ' · ' + esc(p.note) : ''}</small></span>`;
+    if (LW) return `<span class="ln"><b>${LW.weeks}주 ${man(LW.total)}</b><small class="off">${man(LW.off)} 할인(${LW.rate}%)</small><small>4주 ${man(p.weeks[4])} × ${PRICES.longWeeks[pid].mult} = ${man(LW.list)}${p.note ? ' · ' + esc(p.note) : ''}</small></span>`;
     if (/^(m3|m6|y1)$/.test(pid)) {
       if (p.pass3) { const q = passPrice(amt); subs.push(`주 단위 상품이라 장기 할인 대신 3회 이용권 ${PRICES.bunyang.pass3}% 할인: ${w}주×3회 ${man(q.list)} → ${man(q.total)}`); }
       else subs.push('주 단위 상품이라 4주 금액이에요');
@@ -682,7 +682,7 @@ function setPeriod(pid) {
   $('pth').textContent = PL(pid);
   const p = PERIODS.find(x => x.id === pid), R = PRICES.period;
   $('phint').textContent = p.weeks ? `${p.label}는 월 단가의 ${p.weeks === 1 ? R.w1 : R.w2}%예요. 처음 광고하시면 첫 주 ${PRICES.guide.firstWeekOff}% 할인, 월 단위 상품은 1개월 이상 연장하면 첫 주 결제액을 빼 드려요(분양 광고 제외).`
-    : rateOf(p.months) ? `${p.label}은 월 단가 합계에서 ${rateOf(p.months)}% 할인돼요. 상단 배너·브리핑 지면 광고는 4주 금액 기준 3개월 ${PRICES.longWeeks.m3.off}%·1년 ${PRICES.longWeeks.y1.off}% 할인(만 원 단위)이에요. 3개월 이상은 한 번에 또는 매달 나눠 낼 수 있어요.`
+    : rateOf(p.months) ? `${p.label}은 월 단가 합계에서 ${rateOf(p.months)}% 할인돼요. 상단 배너·브리핑 지면 광고는 4주 금액 기준 3개월 ${PRICES.longWeeks.m3.off}%·6개월 ${PRICES.longWeeks.m6.off}%·1년 ${PRICES.longWeeks.y1.off}% 할인(만 원 단위)이에요. 3개월 이상은 한 번에 또는 매달 나눠 낼 수 있어요.`
     : `1개월은 기본 단가예요. 3개월 ${R.m3}% · 6개월 ${R.m6}% · 1년 ${R.y1}% 할인돼요.`;
   document.querySelectorAll('[data-pp]').forEach(el => { const h = cellHtml(el.dataset.pp, pid); el.innerHTML = `<div class="pcw">${h || ASK}</div>`; });
   document.querySelectorAll('[data-pk]').forEach(el => { el.textContent = pkgLine(el.dataset.pk, pid); });

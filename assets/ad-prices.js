@@ -36,8 +36,8 @@ const PRICES = {
   list_card:    { tiers: [{ label: '시·도', month: 300000 }] },                                                            // 목록 사이 카드(순위·분양 목록 10번째 뒤)
   end_card:     { tiers: [{ label: '전국', month: 500000 }, { label: '시·도', month: 300000 }, { label: '중개사 화면', month: 150000 }] },   // 페이지 끝 카드(홈·순위·세금·빌라·갈아타기·중개사 화면 맨 아래 · 브리핑 화면은 브리핑 지면 광고에 포함)
   /* 주 단위 상품 장기 할인(대표 승인 2026-11-21): 4주 금액 × 묶음 수에서 할인, 만 원 단위 반올림.
-     3개월 = 12주 = 4주 × 3 × 90%, 1년 = 52주 = 4주 × 13 × 80%. 6개월(26주)은 정한 값이 없어 3개월 할인율을 그대로 써요(4주 × 6 × 90%, 24주 금액으로 26주) */
-  longWeeks:    { keys: ['home_top', 'cat_top', 'cat_top_bun', 'brief_ad'], m3: { weeks: 12, mult: 3, off: 10 }, m6: { weeks: 26, mult: 6, off: 10 }, y1: { weeks: 52, mult: 13, off: 20 }, roundTo: 10000 },
+     3개월 = 12주 = 4주 × 3 × 90%, 6개월 = 26주 = 4주 × 6.5 × 85%, 1년 = 52주 = 4주 × 13 × 80% */
+  longWeeks:    { keys: ['home_top', 'cat_top', 'cat_top_bun', 'brief_ad'], m3: { weeks: 12, mult: 3, off: 10 }, m6: { weeks: 26, mult: 6.5, off: 15 }, y1: { weeks: 52, mult: 13, off: 20 }, roundTo: 10000 },
   guide:        { minSpend: 0, minWeeks: 1, firstWeekOff: 50 }   // 최소 집행 금액(0 = 없음), 최소 기간(주), 첫 광고 첫 주 할인(%)
 };
 const PERIODS = [
