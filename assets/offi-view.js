@@ -51,9 +51,10 @@
 
   /* ---------- 탭 ---------- */
   const HIDE = ['homesSec', 'findSec', 'res', 'src'];
-  const was = {};
+  /* 숨김 기록은 상가·건물 탭(comm-view.js)과 같이 씀 — 아파트 탭으로 돌아올 때만 되살림 */
   function setTab(t, push) {
     const tabs = $('mtabs'); if (!tabs) return;
+    const was = (window.JDJ_TABWAS = window.JDJ_TABWAS || {});
     tabs.querySelectorAll('[data-t]').forEach(b => { const on = b.dataset.t === t; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
     const sec = $('offiSec');
     if (t === 'o') {
@@ -62,11 +63,11 @@
       if (!inited) init();
     } else {
       sec.hidden = true;
-      HIDE.forEach(id => { const el = $(id); if (el && id in was) { el.hidden = was[id]; delete was[id]; } });
+      if (t === 'a') HIDE.forEach(id => { const el = $(id); if (el && id in was) { el.hidden = was[id]; delete was[id]; } });
     }
     if (push) {
       const u = new URL(location.href);
-      if (t === 'o') u.searchParams.set('t', 'o'); else ['t', 'og', 'ob'].forEach(k => u.searchParams.delete(k));
+      if (t === 'o') u.searchParams.set('t', 'o'); else if (t === 'a') ['t', 'og', 'ob'].forEach(k => u.searchParams.delete(k)); else ['og', 'ob'].forEach(k => u.searchParams.delete(k));
       history.replaceState(null, '', u);
     }
   }
