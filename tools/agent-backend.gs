@@ -1,5 +1,15 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ *
+ * v34 변경 요약 (v20~v33과 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — '주간현장보고서' 시트·드라이브 폴더는 첫 발송 때 자동 생성.
+ *   드라이브 권한은 v27(중개사 플러스 주간 리포트)에서 이미 승인 — 재배포 때 권한 화면이 나오면 '허용')
+ *  - POST dwPut(BRIEF_PULL_TOKEN): 엔진(scripts/dev_weekly.py batch, 매주 월요일)이 만든 주간 현장 보고서 PDF를 받아
+ *    드라이브 '{SITE_NAME} 주간 현장 보고서' 폴더(링크가 있는 사람만 보기)에 두고, 신청 시트 '광고문의'의 신청 행(id = AQ…)의 [연락처] 이메일로
+ *    "[현장 이름] 주간 현장 보고서 · M/D" 메일(1쪽 요약 몇 줄 + PDF 링크)을 보냄. 연락처는 엔진·깃에 없고 시트에만 있음.
+ *  - 멈춤: [처리상태]가 '해지'면 [처리일]이 속한 달까지만 보내고 다음 달 1일부터 멈춤(처리일이 비면 바로 멈춤), '취소'면 바로 멈춤.
+ *  - 운영자 알림 메일: PDF를 못 만듦(엔진이 fail 로 알림)·신청 행 없음·[연락처]가 이메일이 아님·발송 실패. 같은 신청·같은 날짜는 한 번만 보냄(다시 돌려도 중복 없음).
+ *  - 기록 시트 '주간현장보고서'(날짜·신청id·현장·파일id·보낸날·결과, 연락처 없음). 8주 지난 PDF는 파일·줄 모두 지움.
+ *  - 검증: node tools/devweekly-test.js
  *
  * v33 변경 요약 (v20~v32와 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — 시트 변경 없음)
  *  - 전문가 표시 정보(proProfile): 공인중개사가 아닌 유형(분양대행·컨설팅·자격사)은 '이름 또는 활동명'(이름·상호 중 하나)과
@@ -340,6 +350,7 @@ function doPost(e) {
   if (PRO_ACTIONS[b.action]) return out(proDispatch(b));
   if (BP_ACTIONS[b.action]) return out(bpDispatch(b));
   if (b.action === 'bpPut') { try { return out(bpPut(b)); } catch (x) { return out({ ok: false, err: String(x.message || x) }); } }
+  if (b.action === 'dwPut') { try { return out(dwPut(b)); } catch (x) { dwAlert('서버 오류', ['주간 현장 보고서를 처리하다 멈췄어요: ' + String(x.message || x).slice(0, 200)]); return out({ ok: false, err: 'server' }); } }   // v34
   if (DV_ACTIONS[b.action]) return out(dvDispatch(b));
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
@@ -1497,6 +1508,85 @@ function aqSheet() {
     sh.setFrozenRows(1);
   }
   return sh;
+}
+
+/* =====================================================================
+   주간 현장 보고서 자동 발송 (v34) — 엔진 dev_weekly.py batch → dwPut → 드라이브(링크가 있는 사람만 보기) + 신청 업체 메일
+   연락처(이메일)는 '광고문의' 시트 [연락처]에만 있고 엔진·깃에는 신청 id(AQ…)만 있음.
+   멈춤: [처리상태] '해지' → [처리일]이 속한 달까지 보내고 다음 달 1일부터 멈춤(처리일 없으면 바로) · '취소' → 바로.
+   ===================================================================== */
+const SH_DW = '주간현장보고서';
+const DWH = ['날짜', '신청id', '현장', '파일id', '보낸날', '결과'];
+const DWC = Object.fromEntries(DWH.map((h, i) => [h, i]));
+const DW_EMAIL = /^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+const dwEsc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function dwAlert(title, lines) {
+  try { MailApp.sendEmail(Session.getEffectiveUser().getEmail(), '[주간 현장 보고서 확인 필요] ' + title, lines.concat(['', '신청 시트: ' + book().getUrl()]).join('\n')); } catch (e) {}
+}
+/* 보낼지: { send, why } */
+function dwStatus(r, now) {
+  const st = String(r[AQC['처리상태']] || '').trim();
+  if (st === '취소') return { send: false, why: '취소' };
+  if (st !== '해지') return { send: true, why: '' };
+  const d = r[AQC['처리일']] ? new Date(r[AQC['처리일']]) : null;
+  if (!d || isNaN(d)) return { send: false, why: '해지(처리일 없음)' };
+  const kst = new Date(d.getTime() + 9 * 3600000), next = Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth() + 1, 1) - 9 * 3600000;   // 해지한 달의 다음 달 1일 0시(한국 시각)
+  return now.getTime() < next ? { send: true, why: '해지 예정(다음 달 1일부터 멈춤)' } : { send: false, why: '해지' };
+}
+const dwDay = v => v instanceof Date ? ymd(v) : String(v || '').slice(0, 10);   // 시트가 날짜 글자를 날짜로 바꿔도 같게 읽기
+function dwLog(row) { uSheet(SH_DW, DWH).appendRow(DWH.map((h, i) => row[i] === undefined ? '' : row[i])); }
+function dwPut(b) {
+  if (!pullOk(b)) return { ok: false, err: 'auth' };
+  const aq = String(b.aq || ''), date = String(b.date || ''), site = uText(b.site, 60) || '현장';
+  if (!/^AQ[0-9A-F]{8}$/.test(aq) || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return { ok: false, err: 'bad' };
+  const now = new Date(), md = Number(date.slice(5, 7)) + '/' + Number(date.slice(8, 10));
+  const r = aqSheet().getDataRange().getValues().find(x => String(x[AQC['id']]) === aq);
+  if (!r) { dwAlert(site + ' · 신청 행 없음', [`신청 id ${aq}가 '광고문의' 시트에 없어요. weekly_sites.json 의 aq 칸을 확인해 주세요. (${date})`]); return { ok: false, err: 'no-row' }; }
+  const done = uSheet(SH_DW, DWH).getDataRange().getValues().some(x => String(x[DWC['신청id']]) === aq && dwDay(x[DWC['날짜']]) === date && String(x[DWC['결과']]) === '보냄');
+  if (done) return { ok: true, sent: false, why: 'already' };
+  if (b.fail) {
+    dwAlert(site + ' · PDF 못 만듦', [`${date} 주간 현장 보고서 PDF를 만들지 못해 메일을 보내지 않았어요.`, '이유: ' + uText(b.fail, 300), `신청 id ${aq} · ${r[AQC['회사명']]}`]);
+    dwLog([date, aq, site, '', now, 'PDF 없음']); return { ok: true, sent: false, why: 'fail' };
+  }
+  const S = dwStatus(r, now);
+  if (!S.send) { dwLog([date, aq, site, '', now, '멈춤(' + S.why + ')']); return { ok: true, sent: false, why: S.why }; }
+  const to = String(r[AQC['연락처']] || '').trim();
+  if (!DW_EMAIL.test(to)) {
+    dwAlert(site + ' · 받는 이메일 없음', [`신청 id ${aq}(${r[AQC['회사명']]})의 [연락처]가 이메일이 아니라 보내지 못했어요. 업체에 이메일을 받아 [연락처] 칸을 이메일로 바꿔 주세요.`]);
+    dwLog([date, aq, site, '', now, '이메일 없음']); return { ok: false, err: 'no-email' };
+  }
+  const bytes = Utilities.base64Decode(String(b.b64 || ''));
+  if (!bytes.length || bytes.length > 8 * 1024 * 1024) {
+    dwAlert(site + ' · PDF 없음', [`${date} 보고서 파일이 비었거나 너무 커서(8MB 넘음) 보내지 못했어요. 신청 id ${aq}`]);
+    dwLog([date, aq, site, '', now, 'PDF 없음']); return { ok: false, err: 'size' };
+  }
+  const P = PropertiesService.getScriptProperties();
+  let folder = null; const fid = P.getProperty('DW_FOLDER');
+  try { folder = fid ? DriveApp.getFolderById(fid) : null; } catch (e) { folder = null; }
+  if (!folder) { folder = DriveApp.createFolder(SITE_NAME + ' 주간 현장 보고서'); P.setProperty('DW_FOLDER', folder.getId()); }
+  const f = folder.createFile(Utilities.newBlob(bytes, 'application/pdf', site.replace(/[\\/:*?"<>|]/g, ' ') + '_주간현장보고서_' + date + '.pdf'));
+  f.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  const url = 'https://drive.google.com/file/d/' + f.getId() + '/view';
+  const lines = (Array.isArray(b.lines) ? b.lines : []).map(x => uText(x, 220)).filter(Boolean).slice(0, 6);
+  const subject = `[${site}] 주간 현장 보고서 · ${md}`;
+  const text = [`${r[AQC['회사명']]} ${r[AQC['담당자']]}님, ${site} 주간 현장 보고서(${date})예요.`, '', ...lines.map(x => '· ' + x), '', 'PDF 보기: ' + url,
+                '', '공개 자료로 만든 보고서예요. 받기를 멈추시려면 이 메일에 회신해 주세요(다음 달부터 멈춰요). PDF 링크는 8주 동안 열려요.'].join('\n');
+  const html = `<div style="font-family:'Noto Sans KR',sans-serif;max-width:560px;margin:auto;color:#191F28;line-height:1.65">
+    <p style="margin:0 0 10px">${dwEsc(r[AQC['회사명']])} ${dwEsc(r[AQC['담당자']])}님, <b>${dwEsc(site)}</b> 주간 현장 보고서(${dwEsc(date)})예요.</p>
+    <ul style="padding-left:18px;margin:0 0 14px">${lines.map(x => `<li style="margin:0 0 4px">${dwEsc(x)}</li>`).join('')}</ul>
+    <a href="${url}" style="display:inline-block;background:#2F6BFF;color:#fff;padding:11px 18px;border-radius:10px;text-decoration:none;font-weight:700">보고서 PDF 보기</a>
+    <p style="font-size:12.5px;color:#6B7684;margin:14px 0 0">공개 자료로 만든 보고서예요. 받기를 멈추시려면 이 메일에 회신해 주세요(다음 달부터 멈춰요). PDF 링크는 8주 동안 열려요.</p></div>`;
+  let res = '보냄';
+  try { MailApp.sendEmail({ to: to, subject: subject, body: text, htmlBody: html, name: SITE_NAME + ' 보고서' }); }
+  catch (e) { res = '발송 실패'; dwAlert(site + ' · 발송 실패', [`${date} 메일을 보내지 못했어요: ${String(e.message || e).slice(0, 200)}`, `신청 id ${aq} · PDF는 드라이브에 있어요: ${url}`]); }
+  return withLock(() => {
+    const sh = uSheet(SH_DW, DWH);
+    dwLog([date, aq, site, f.getId(), now, res]);
+    const old = ymd(addDays(now, -56));   // 8주 지난 보고서는 파일·줄 모두 지움(중개사 플러스 주간 리포트와 같음)
+    sh.getDataRange().getValues().map((x, i) => ({ x, row: i + 1 })).filter(o => o.row > 1 && dwDay(o.x[DWC['날짜']]) < old).sort((p, q) => q.row - p.row)
+      .forEach(o => { try { if (o.x[DWC['파일id']]) DriveApp.getFileById(String(o.x[DWC['파일id']])).setTrashed(true); } catch (e) {} sh.deleteRow(o.row); });
+    return { ok: res === '보냄', sent: res === '보냄', err: res === '보냄' ? undefined : 'mail' };
+  });
 }
 /* 연락처: 전화번호(휴대폰·지역번호·070·대표번호) 또는 이메일 */
 function aqContact(v) {
