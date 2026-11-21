@@ -118,6 +118,21 @@
       one('한국은행 기준금리', r.base); one('은행 주택담보대출 신규 금리', r.mort);
       return out;
     },
+    /** 새로 발표된 정책·교통·공급 소식(공식 보도자료 제목 그대로) → 종류별 묶음.
+        P = market.json 의 pnews 또는 동네 파일의 pnews. 없거나 비면 [] (화면·메일에서 칸을 숨김) */
+    PN_CATS: ['정책', '교통', '공급'],
+    pnewsGroups(P) {
+      const items = (P && P.items) || [];
+      return B.PN_CATS.map(c => ({ c, note: ((P && P.note) || {})[c] || '', items: items.filter(x => x.c === c).map(B.pnewsItem) })).filter(g => g.items.length);
+    },
+    /** 발표 한 건: 제목·공식 링크(https 만)·작은 줄(부처 · 날짜 · 작은 종류 · 지역)·용어 풀이 */
+    pnewsItem(x) {
+      const d = x.d ? `${+x.d.slice(5, 7)}/${+x.d.slice(8, 10)}` : '';
+      const u = /^https:\/\//.test(x.u || '') ? x.u : '';
+      return { title: x.t || '', u, org: x.org || '', meta: [x.org, d ? d + ' 발표' : '', x.sub, x.rg].filter(Boolean).join(' · '), terms: (x.terms || []).filter(t => t && t[0] && t[1]) };
+    },
+    /** 발표 기간 문구: '11/20~11/21' */
+    pnewsWin(P) { const w = (P && P.win) || []; const f = s => s ? `${+s.slice(5, 7)}/${+s.slice(8, 10)}` : ''; return w[0] && w[1] ? `${f(w[0])}~${f(w[1])}` : ''; },
     /** 이번 주 청약 접수 일정 한 줄 */
     cyText(n) {
       const r = (n.sp && n.sp[0]) ? n.sp : n.rc || [];

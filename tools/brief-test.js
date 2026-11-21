@@ -36,7 +36,8 @@ class FakeDate extends RealDate { constructor(...a) { if (!a.length) super(NOW);
 const BRIEF = {
   '11710': { g: '11710', name: '송파구', trades: [{ d: '잠실동', a: '리센츠', b: '84㎡대', p: 333000, dr: -9.9 }, { d: '가락동', a: '헬리오시티', b: '49㎡대', p: 247000, hi: 1 }],
     lines: { '': { fact: '송파구에서 새로 올라온 매매 거래는 2건이에요.' }, '잠실동': { fact: '잠실동에서 새로 올라온 매매 거래는 1건이에요.' } }, pro: { '': ['"한 줄"'], '잠실동': ['"잠실 한 줄"'] } },
-  '11320': { g: '11320', name: '도봉구', trades: [], lines: { '': { fact: '도봉구 새 거래 없음' } }, pro: {} }
+  '11320': { g: '11320', name: '도봉구', trades: [], lines: { '': { fact: '도봉구 새 거래 없음' } }, pro: {},
+    pnews: { n: 1, note: { 공급: '공급 고정 문장' }, items: [{ t: '도봉구 창동 재개발 정비구역 지정', d: '2026-11-20', org: '서울특별시', u: 'https://news.seoul.go.kr/citybuild/archives/1', c: '공급', rg: '서울 도봉구', terms: [['정비구역', '재개발·재건축을 해도 된다고 공식으로 정한 구역이에요.']] }] } }
 };
 const ctx = {
   console, Date: FakeDate, JSON, Math, Object, Array, String, Number, Boolean, RegExp, Error, isNaN, encodeURIComponent, decodeURIComponent,
@@ -78,10 +79,13 @@ const ctx = {
 const MARKET = { date: '2026-11-21', name: '집예보 모닝 브리핑', win: { from: '2026-11-20', to: '2026-11-21' },
   kr: { n: 812, nhi: 40, hi: [{ sd: '서울', gn: '강남구', d: '압구정동', a: '현대7차', b: '245㎡대', p: 1150000, pm: 1050000, pmd: 20260301, up: 9.5 }], drop: [{ sd: '경기', gn: '화성시', d: '청계동', a: '예시', b: '84㎡대', p: 60000, m2: 80000, m2d: 20250501, dr: -25 }, { sd: '경기', gn: '화성시', d: '청계동', a: '의심거래', b: '84㎡대', p: 30000, m2: 80000, m2d: 20250501, dr: -62, sus: 1 }] },
   seoul: { n: 120, nhi: 12, hi: [], drop: [] }, policy: [{ name: '주담대 한도 조정', stage: '시행', d: '2026-11-17', scope: '전국' }], rate: null,
-  cy: { n: 3, rows: [{ n: '이번 주 단지', sd: '서울', gn: '송파구', sp: ['20261117', ''], rc: ['20261118', '20261119'] }] }, lines: ['전국에서 어제 새로 올라온 아파트 매매는 812건이에요.'] };
+  cy: { n: 3, rows: [{ n: '이번 주 단지', sd: '서울', gn: '송파구', sp: ['20261117', ''], rc: ['20261118', '20261119'] }] }, lines: ['전국에서 어제 새로 올라온 아파트 매매는 812건이에요.'],
+  pnews: { n: 2, by: { 정책: 1, 교통: 1 }, note: { 정책: '정책 고정 문장', 교통: '교통이 좋아지면 보통 주변 집값과 수요에 영향을 줘요.' }, items: [
+    { t: "[참고] '27년 부동산 공시가격 시세반영률은 전년 수준 유지", d: '2026-11-20', org: '국토교통부', u: 'https://www.korea.kr/briefing/pressReleaseView.do?newsId=156790000', c: '정책', sub: '세금', terms: [['공시가격', '정부가 세금 계산에 쓰려고 해마다 정해 발표하는 집값이에요.']] },
+    { t: '경인선 철도지하화 종합계획 반영', d: '2026-11-19', org: '인천광역시', u: 'javascript:alert(1)', c: '교통', rg: '인천' }] } };
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(__dirname, 'agent-backend.gs'), 'utf8')
-  + '\n;globalThis.__T = { BC, OC, UC, SC, UH, SSH, BRIEF_PRICE, BRIEF_TRIAL, BRIEF_NAME, SITE_NAME, bProdKey, briefPublic, briefStats, briefSeen, bKey, hashOf, cleanBrief, briefDaily, briefState, bRows, briefAreas, briefInterest, briefCleanup };', ctx);
+  + '\n;globalThis.__T = { BC, OC, UC, SC, UH, SSH, BRIEF_PRICE, BRIEF_TRIAL, BRIEF_NAME, SITE_NAME, bProdKey, briefPublic, briefStats, briefSeen, bKey, hashOf, cleanBrief, briefDaily, briefState, bRows, briefAreas, briefInterest, briefCleanup, briefMarketHtml, briefPnHtml };', ctx);
 const T = ctx.__T;
 const post = b => JSON.parse(ctx.doPost({ postData: { contents: JSON.stringify(b) } }).s);
 const get = p => JSON.parse(ctx.doGet({ parameter: p }).s);
@@ -152,6 +156,14 @@ check('이메일: 받는 사람·제목·동 단위 내용', !!m && /11\/21 집�
 check('메일: ① 전국 시장(신고가 TOP·하락·정책·이번 주 청약) 먼저', !!m && /① 오늘의 부동산 시장/.test(m[0].htmlBody) && /압구정동 현대7차 245㎡대 115억 원/.test(m[0].htmlBody)
   && /주담대 한도 조정/.test(m[0].htmlBody) && /이번 주 단지/.test(m[0].htmlBody) && m[0].htmlBody.indexOf('① 오늘의') < m[0].htmlBody.indexOf('송파구 잠실동'));
 check('메일 큰 하락 TOP: 특수 거래 의심은 빼고 진짜 하락만', !!m && /청계동 예시 84㎡대/.test(m[0].htmlBody) && !/의심거래/.test(m[0].htmlBody));
+check('메일 ①: 새 정책·교통·공급 발표(원문 제목·부처·날짜·용어 풀이·고정 문장, 공식 https 링크만)', !!m && /새로 발표된 정책·교통·공급 소식/.test(m[0].htmlBody)
+  && /href="https:\/\/www\.korea\.kr\/briefing\/pressReleaseView\.do\?newsId=156790000"/.test(m[0].htmlBody) && /국토교통부 · 11\/20 발표 · 세금/.test(m[0].htmlBody)
+  && /<b>공시가격<\/b> — 정부가 세금 계산에/.test(m[0].htmlBody) && /교통이 좋아지면 보통 주변 집값과 수요에 영향을 줘요/.test(m[0].htmlBody)
+  && !/javascript:/.test(m[0].htmlBody) && /<b>경인선 철도지하화 종합계획 반영<\/b>/.test(m[0].htmlBody));
+check('메일 ②: 그 동네 이름이 나온 발표는 동네 칸 맨 위(없는 동네는 생략)', !!m && /내 동네 관련 발표/.test(m[0].htmlBody)
+  && m[0].htmlBody.indexOf('내 동네 관련 발표') > m[0].htmlBody.indexOf('도봉구') - 400 && (m[0].htmlBody.match(/내 동네 관련 발표/g) || []).length === 1
+  && m[0].htmlBody.indexOf('도봉구 창동 재개발 정비구역 지정') < m[0].htmlBody.indexOf('도봉구 새 거래 없음'));
+check('메일: 새 발표가 없으면 칸 자체가 없음(빈 상자 없음)', !/새로 발표된/.test(T.briefMarketHtml(Object.assign({}, MARKET, { pnews: undefined }), {})) && !/새로 발표된/.test(T.briefMarketHtml(Object.assign({}, MARKET, { pnews: { n: 0, items: [] } }), {})) && T.briefPnHtml(null, 3) === '');
 check('시장 자료는 하루 한 번만 받음', fetches.filter(f => /market\.json/.test(f.url)).length === 1);
 check('이름은 SITE_NAME 한 곳에서', T.BRIEF_NAME === T.SITE_NAME + ' 모닝 브리핑' && T.BRIEF_PRICE.brief.name === T.BRIEF_NAME + ' 1개월' && T.BRIEF_TRIAL.name === T.BRIEF_NAME + ' 7일 체험');
 check('예전 이름 행도 인식', T.bProdKey('아침 브리핑 중개사용 1개월') === 'brief_pro' && T.bProdKey('아침 브리핑 7일 체험') === 'trial' && T.bProdKey(T.BRIEF_PRICE.brief.name) === 'brief' && T.bProdKey('다른 상품') === '');

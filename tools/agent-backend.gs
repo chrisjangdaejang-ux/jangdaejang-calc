@@ -1,5 +1,12 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ *
+ * v25 변경 요약 (v20~v24와 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — 시트 변경 없음)
+ *  - 모닝 브리핑 메일 ① 오늘의 부동산 시장에 '새로 발표된 정책·교통·공급 소식'(market.json pnews: 정부·지자체 공식 보도자료 제목·부처·날짜·원문 링크,
+ *    종류별 고정 안내 한 줄, 제목에 나온 용어의 쉬운 풀이). 최대 6건. 자료에 pnews 가 없으면(새 발표 없음) 칸 자체를 넣지 않음.
+ *  - ② 내 관심 지역마다 그 동네 이름이 나온 새 발표({시군구}.json pnews)를 '내 동네 관련 발표'로 동네 칸 맨 위에(최대 3건). 없으면 생략.
+ *  - 재배포 전에는 메일에 이 칸만 빠지고 나머지는 그대로(웹 /brief/ 화면은 바로 보임).
+ *  - 검증: node tools/brief-test.js
  *
  * v24 변경 요약 (v20~v23과 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — '브리핑열람' 시트는 첫 사용 때 자동 생성)
  *  - 모닝 브리핑 메일에 급매 레이더·전세가율 급변·상승 전환 신호(동네), 상승 전환 TOP·순위 변화·청약 기회·지난 예측 성적(전국) 추가.
@@ -2348,7 +2355,21 @@ function briefPiece(S, a, pro, apts) {
     urgent: (S.urgent || []).filter(u => (!dn || u.d === dn) && !u.sus).slice(0, 2).map(u => `${apts.indexOf(u.a) >= 0 ? '[관심 단지] ' : ''}${u.a} ${u.b} ${bWon(u.p)} — 최근 3개월 같은 평형 중간값 ${bWon(u.med)}보다 ${Math.abs(u.disc).toFixed(0)}% 낮음${u.x ? ' (직거래)' : ''}`),
     gap: (S.gap || []).filter(g => (!dn || g.d === dn) && (apts.indexOf(g.a) >= 0 || (S.gap || []).indexOf(g) < 2)).slice(0, 2).map(g => `${g.a} ${g.b} 전세가율 ${Math.round(g.jr0)}% → ${Math.round(g.jr)}% (${g.dlt > 0 ? '갭 기회·전세 위험 함께 확인' : '보증금은 더 안전, 갭 부담 커짐'})`),
     rise: (S.rise || []).filter(r => !dn || r.d === dn).slice(0, 2).map(r => `${r.a} ${r.b} 최근 3개월 ${r.chg > 0 ? '+' : ''}${r.chg}% (거래량 증가 상위 20%, 내리다 반등)`),
+    pn: S.pnews && (S.pnews.items || []).length ? S.pnews : null,
     pro: pro ? (((S.pro || {})[dn] || (S.pro || {})['']) || []) : [], url: BRIEF_WEB + '?d=' + S.g + (dn ? '-' + encodeURIComponent(dn) : '') + (pro ? '&v=pro' : '') };
+}
+/* 새로 발표된 정책·교통·공급 소식(엔진 policy_news.py — 공식 보도자료 제목 그대로 + 고정 용어 풀이) → 메일 조각. 없으면 '' */
+const BPN_HEAD = { '정책': '대출·세금·청약·규제', '교통': '철도·도로·역', '공급': '새 집·신도시·정비사업' };
+function briefPnHtml(P, max) {
+  if (!P || !(P.items || []).length) return '';
+  let n = 0;
+  return ['정책', '교통', '공급'].map(c => {
+    const its = P.items.filter(x => x.c === c); if (!its.length || n >= max) return '';
+    const take = its.slice(0, max - n); n += take.length;
+    return `<div style="margin:8px 0 0"><b style="font-size:14px;color:#1F56E0">${c}</b> <span style="font-size:13px;color:#4E5968">${BPN_HEAD[c]}</span>
+      ${(P.note || {})[c] ? `<p style="margin:2px 0 4px;font-size:13px;color:#4E5968;line-height:1.55">${bEsc(P.note[c])}</p>` : ''}
+      <ul style="margin:2px 0 4px;padding-left:18px;line-height:1.6;font-size:14px">${take.map(x => `<li style="margin:0 0 6px">${/^https:\/\//.test(x.u || '') ? `<a href="${bEsc(x.u)}" style="color:#191F28;font-weight:700">${bEsc(x.t)}</a>` : `<b>${bEsc(x.t)}</b>`}<br><span style="font-size:12.5px;color:#4E5968">${bEsc([x.org, x.d ? +String(x.d).slice(5, 7) + '/' + +String(x.d).slice(8, 10) + ' 발표' : '', x.sub, x.rg].filter(Boolean).join(' · '))}</span>${(x.terms || []).map(t => `<br><span style="font-size:13px;color:#3E4754">· <b>${bEsc(t[0])}</b> — ${bEsc(t[1])}</span>`).join('')}</li>`).join('')}</ul></div>`;
+  }).join('');
 }
 /* ① 오늘의 부동산 시장(전국 공통, data/brief/market.json) → 메일 머리 칸. 숫자는 자료 그대로 */
 function bTop(x) {
@@ -2370,6 +2391,7 @@ function briefMarketHtml(M, ub) {
   return `<div style="border:2px solid #191F28;border-radius:12px;padding:14px 16px;margin:0 0 14px">
     <div style="font-size:17px;font-weight:900;margin:0 0 6px">① 오늘의 부동산 시장 <span style="font-size:12.5px;color:#4E5968;font-weight:500">전국 공통</span></div>
     ${(M.lines || []).map(x => `<p style="margin:0 0 6px;line-height:1.6">${bEsc(x)}</p>`).join('')}
+    ${M.pnews && (M.pnews.items || []).length ? `<div style="margin:6px 0 10px"><b>새로 발표된 정책·교통·공급 소식</b> <span style="font-size:12.5px;color:#4E5968">정부·지자체 공식 보도자료 ${M.pnews.n}건 · 제목은 원문 그대로</span>${briefPnHtml(M.pnews, 6)}</div>` : ''}
     <b>전국 신고가 TOP</b>${li((kr.hi || []).slice(0, 3).map(bTop))}<b>전국 큰 하락 TOP</b>${li((kr.drop || []).filter(x => !x.sus && !x.x).slice(0, 3).map(bTop))}
     <b>서울 신고가 TOP</b>${li((se.hi || []).slice(0, 3).map(bTop))}
     ${(M.rise || []).length ? `<b>상승 전환 신호 TOP</b>${li(M.rise.slice(0, 3).map(r => `${r.sd} ${r.d} ${r.a} ${r.b} 최근 3개월 ${r.chg > 0 ? '+' : ''}${r.chg}%`))}` : ''}
@@ -2383,6 +2405,7 @@ function briefMail(to, date, pieces, s, pro, M, ub) {
   const title = `[${SITE_NAME}] ${date.slice(5).replace('-', '/')} ${BRIEF_NAME} — ${pieces.map(p => p.nm).join(', ')}`.slice(0, 120);
   const body = pieces.map(p => `<div style="border:1px solid #E5E8EB;border-radius:12px;padding:14px 16px;margin:0 0 12px">
       <div style="font-size:17px;font-weight:900;margin:0 0 6px">${bEsc(p.nm)} <span style="font-size:13px;color:#2F6BFF">새 매매 ${p.n}건 · 신고가 ${p.hi}건</span></div>
+      ${p.pn ? `<div style="background:#FBF8EF;border:1px solid #EFE6CC;border-radius:10px;padding:10px 12px;margin:0 0 8px"><b style="color:#191F28">내 동네 관련 발표</b> <span style="font-size:12.5px;color:#4E5968">이 동네 이름이 나온 정부·지자체 보도자료</span>${briefPnHtml(p.pn, 3)}</div>` : ''}
       <p style="margin:0 0 6px;line-height:1.6">${bEsc(p.fact)}</p>${p.cmp ? `<p style="margin:0 0 6px;line-height:1.6;color:#3E4754">${bEsc(p.cmp)}</p>` : ''}${p.so ? `<p style="margin:0 0 6px;line-height:1.6;color:#3E4754">${bEsc(p.so)}</p>` : ''}
       ${p.items.length ? '<ul style="margin:6px 0;padding-left:18px;line-height:1.6">' + p.items.map(x => `<li>${bEsc(x)}</li>`).join('') + '</ul>' : ''}
       ${[['급매 레이더', p.urgent], ['전세가율 급변', p.gap], ['상승 전환 신호', p.rise]].filter(x => x[1] && x[1].length).map(x => `<div style="margin:6px 0 0"><b style="font-size:14px">${x[0]}</b><ul style="margin:2px 0 4px;padding-left:18px;line-height:1.6;font-size:14px">${x[1].map(y => `<li>${bEsc(y)}</li>`).join('')}</ul></div>`).join('')}

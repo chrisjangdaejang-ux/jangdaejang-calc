@@ -47,6 +47,16 @@ check('청약 기회: 저장값 없으면 생략', [B.cyMatch(CYL, '').length, B
 const TC = B.taxCal([{ apt: '가', bd: '2025-03' }, { apt: '나', bd: '' }], '2026-11-21');
 check('세금 캘린더: 비과세 보유 2년·장특공 3년·6/1 기준일 D-day 순', TC.map(x => [x.k, x.date, x.dday]), [['nontax', '2027-03-01', 100], ['base', '2027-06-01', 192], ['ltd', '2028-03-01', 466]]);
 check('세금 캘린더: 집 정보 없으면 기준일만', B.taxCal([], '2026-05-30').map(x => [x.k, x.dday]), [['base', 2]]);
+const PNM = { n: 3, win: ['2026-11-20', '2026-11-21'], note: { 정책: '정책 문장', 공급: '공급 문장' }, items: [
+  { t: "[참고] '27년 부동산 공시가격 시세반영률은 전년 수준 유지", d: '2026-11-20', org: '국토교통부', u: 'https://www.korea.kr/briefing/pressReleaseView.do?newsId=1', c: '정책', sub: '세금', terms: [['공시가격', '정부가 세금 계산에 쓰려고 …']] },
+  { t: '[서남권] 동작구 흑석동 204-104 일대 재개발', d: '2026-11-18', org: '서울특별시', u: 'https://news.seoul.go.kr/citybuild/archives/543916', c: '공급', rg: '서울 동작구', terms: [['재개발', '낡은 집…']] },
+  { t: '나쁜 링크', d: '2026-11-21', org: '국토교통부', u: 'javascript:alert(1)', c: '공급' }] };
+const PG = B.pnewsGroups(PNM);
+check('새 발표: 종류 순(정책→교통→공급), 빈 종류 빼고, 고정 문장', PG.map(g => [g.c, g.note, g.items.length]), [['정책', '정책 문장', 1], ['공급', '공급 문장', 2]]);
+check('새 발표: 작은 줄(부처·날짜·작은 종류·지역)·용어', [PG[0].items[0].meta, PG[1].items[0].meta, PG[0].items[0].terms.length], ['국토교통부 · 11/20 발표 · 세금', '서울특별시 · 11/18 발표 · 서울 동작구', 1]);
+check('새 발표: https 가 아닌 링크는 버림', PG[1].items[1].u, '');
+check('새 발표: 없으면 빈 목록(칸 숨김)', [B.pnewsGroups(null).length, B.pnewsGroups({ items: [] }).length], [0, 0]);
+check('새 발표 기간', [B.pnewsWin(PNM), B.pnewsWin(null)], ['11/20~11/21', '']);
 const AU = {}; new Function('window', 'addEventListener', 'localStorage', require('fs').readFileSync(require('path').join(__dirname, '../assets/auth.js'), 'utf8'))(AU, () => {}, { getItem: () => null, setItem() {} });
 check('머리줄 이름: 기호·빈 값이면 내 정보', ['장대장', '.', '', ' ..', 'kim', '홍길동이름이아주아주긴사람입니다'].map(AU.JDJ_AUTH.chipName), ['장대장 님', '내 정보', '내 정보', '내 정보', 'kim 님', '홍길동이름이아주아주긴사 님']);
 console.log(`모닝 브리핑 화면 계산 검증: ${pass}개 통과, ${fail}개 실패`);

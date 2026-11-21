@@ -27,7 +27,7 @@
 <script src="../assets/config.js?v=4"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/auth.js?v=4"></script>
-<script src="../assets/brief-core.js?v=4"></script>
+<script src="../assets/brief-core.js?v=5"></script>
 <script src="../assets/plain-words.js?v=13" defer></script>
 <script src="../assets/tabbar.js?v=2" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -205,6 +205,26 @@ details.how p{font-size:14.5px;color:var(--sub);line-height:1.65;margin:4px 0 10
 .bi li b{font-weight:800}.bi li small{display:block;font-size:13.5px;color:var(--sub2)}
 .bi .btn{width:100%}
 .bi .bi-n{margin:8px 0 0;font-size:13px;color:var(--sub2);line-height:1.55}
+.pn-sec>h2{margin-bottom:4px}
+.pn-g{margin:12px 0 0}
+.pn-g>h3{font-size:16px;font-weight:900;margin:0 0 2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pn-g>h3 small{font-size:13.5px;font-weight:500;color:var(--sub2)}
+.pn-c{display:inline-flex;align-items:center;font-size:13px;font-weight:900;border-radius:7px;padding:2px 9px;background:var(--blue-l);color:var(--blue-d)}
+.pn-why{font-size:14px;color:var(--sub);line-height:1.6;margin:0 0 8px;word-break:keep-all}
+.pn-it{border:1px solid var(--line);border-radius:14px;padding:12px 14px 6px;margin:0 0 8px;background:#fff}
+.pn-it>b{display:block;font-size:16px;font-weight:800;line-height:1.5;word-break:keep-all;overflow-wrap:anywhere}
+.pn-it>.m{display:block;font-size:13.5px;color:var(--sub2);margin:2px 0 0;line-height:1.5}
+.pn-t{margin:8px 0 2px;padding:9px 11px;background:var(--gray2);border:1px solid var(--line2);border-radius:10px;font-size:14px;line-height:1.6;color:var(--sub)}
+.pn-t p{margin:0 0 4px;word-break:keep-all}.pn-t p:last-child{margin:0}
+.pn-t b{color:var(--text);font-weight:800}
+.pn-it a.o{display:inline-flex;align-items:center;min-height:40px;font-size:14.5px;font-weight:700;color:var(--blue);text-decoration:none}
+.pn-it a.o:hover{text-decoration:underline}
+.pn-mine{border:1px solid var(--creamb);background:var(--creamc);border-radius:16px;padding:14px 14px 6px;margin:0 0 14px}
+.pn-mine>h3{margin:0 0 2px;font-size:17px;font-weight:900;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pn-mine>h3:before{content:'';width:8px;height:8px;border-radius:50%;background:var(--brand);flex:none}
+.pn-mine>h3 small{font-size:13.5px;font-weight:500;color:var(--sub2)}
+.pn-mine>p.sub{margin:0 0 4px}
+.pn-mine .pn-g{margin-top:8px}
 html.cardmode{zoom:1!important}body.cardmode{margin:0;background:#fff}
 body.cardmode>header.top,body.cardmode>.foot,body.cardmode>.wrap,body.cardmode .jtab{display:none!important}
 @media(max-width:420px){.stats b{font-size:19px}.stats small{font-size:12.5px}.tl .pr b{font-size:15.5px}}
@@ -217,7 +237,7 @@ body.cardmode>header.top,body.cardmode>.foot,body.cardmode>.wrap,body.cardmode .
 </header>
 <main class="wrap" id="main"><p class="note">브리핑을 불러오고 있어요…</p></main>
 <div id="cardRoot"></div>
-<footer class="foot">국토교통부 실거래 공개 자료·청약홈 공고·<span data-site-name>집예보</span> 정책 목록으로 만든 브리핑이에요.<br>★ <span data-site-name>집예보</span> · <a href="../">홈</a> · <a href="../refund/">환불 정책</a> · <a href="../terms/">이용약관</a></footer>
+<footer class="foot">국토교통부 실거래 공개 자료·청약홈 공고·정부·지자체 보도자료·<span data-site-name>집예보</span> 정책 목록으로 만든 브리핑이에요.<br>★ <span data-site-name>집예보</span> · <a href="../">홈</a> · <a href="../refund/">환불 정책</a> · <a href="../terms/">이용약관</a></footer>
 <script>
 (function(){
 'use strict';
@@ -280,6 +300,7 @@ function marketHtml(M){
   let h = `<section class="part" id="mkt" aria-labelledby="h-m"><h2 id="h-m"><span class="no">1</span>오늘의 부동산 시장 <small>전국 공통${old}</small></h2>
     <p class="sub">동네와 상관없이 모든 구독자에게 같은 내용이에요. ${esc(B.windowDetail(M.win).replace('처음 보인 거래', '처음 보인 전국 거래'))}.</p>
     <div class="one"><h2>오늘의 한 줄</h2>${(M.lines || []).map((x, i) => `<p class="${i ? 'c' : ''}">${esc(x)}</p>`).join('')}</div>
+    ${pnewsHtml(M.pnews)}
     <div class="seg" role="group" aria-label="지역"><button type="button" data-ms="kr" aria-pressed="${MKT_SCOPE === 'kr'}">전국</button><button type="button" data-ms="seoul" aria-pressed="${MKT_SCOPE === 'seoul'}">서울</button></div>
     <div class="mk2"><div class="sec" style="margin:0"><h2>${esc(wt)} 신고가 TOP <small>${K.nhi || 0}건 중 금액 순</small></h2>
       ${(K.hi || []).length ? fold(K.hi.map(mktTopLi), 3, 'mh') : '<div class="empty">이번에는 신고가가 없어요.</div>'}</div>
@@ -311,6 +332,18 @@ function marketHtml(M){
       ${cy.n > (cy.rows || []).length ? `<a class="more" style="text-align:center;line-height:46px;text-decoration:none" href="../bunyang/">전체 ${cy.n}곳은 분양 화면에서 보기</a>` : ''}`
       : '<div class="empty">이번 주에 접수하는 청약 공고가 없어요. 전체 일정은 <a href="../bunyang/">분양</a>에서 볼 수 있어요.</div>'}</div></section>`;
   return h;
+}
+/* 새로 발표된 정책·교통·공급 소식(공식 보도자료 제목 그대로 + 고정 용어 풀이) — 자료가 없으면 빈 글(칸 숨김) */
+const PN_HEAD = { 정책: '대출·세금·청약·규제', 교통: '철도·도로·역', 공급: '새 집·신도시·정비사업' };
+function pnewsHtml(P, area){
+  const G = B.pnewsGroups(P); if (!G.length) return '';
+  const shown = G.reduce((n, g) => n + g.items.length, 0);
+  const it = x => `<div class="pn-it"><b>${esc(x.title)}</b><span class="m">${esc(x.meta)}</span>${x.terms.length ? `<div class="pn-t">${x.terms.map(t => `<p><b>${esc(t[0])}</b> — ${esc(t[1])}</p>`).join('')}</div>` : ''}${x.u ? `<a class="o" href="${esc(x.u)}" target="_blank" rel="noopener">공식 원문 보기(${esc(x.org || '발표 기관')}) ›</a>` : ''}</div>`;
+  const groups = G.map(g => `<div class="pn-g"><h3><span class="pn-c">${esc(g.c)}</span>${esc(PN_HEAD[g.c] || '')} <small>${g.items.length}건</small></h3>${g.note ? `<p class="pn-why">${esc(g.note)}</p>` : ''}${g.items.map(it).join('')}</div>`).join('');
+  if (area) return `<div class="pn-mine" id="pnMine" aria-label="내 동네 관련 발표"><h3>내 동네 관련 발표 <small class="sub">${esc(area)} 이름이 나온 새 발표 ${P.n}건</small></h3>
+    <p class="sub">정부·지자체 보도자료 제목에 이 동네 이름이 나온 것만 골랐어요. 제목은 원문 그대로예요.</p>${groups}</div>`;
+  return `<div class="sec pn-sec" id="pnMkt"><h2>새로 발표된 정책·교통·공급 소식 <small>${esc(B.pnewsWin(P))} · 공식 보도자료 ${P.n}건${P.n > shown ? `(최근 ${shown}건)` : ''}</small></h2>
+    <p class="sub">국토교통부·금융위원회 같은 정부 부처와 서울시·인천시가 낸 보도자료 중 집과 관련된 것만 골랐어요. 제목은 원문 그대로이고, 어려운 말은 바로 아래에 쉬운 말로 풀었어요. 집값이 얼마나 오르거나 내릴지는 예측하지 않아요.</p>${groups}</div>`;
 }
 function bindMarket(M){
   document.querySelectorAll('[data-ms]').forEach(b => b.onclick = () => { MKT_SCOPE = b.dataset.ms; const el = $('mkt'); if (el) { el.outerHTML = marketHtml(M); bindMarket(M); bindMore(); } T('brief_mkt_scope', { s: MKT_SCOPE }); });
@@ -370,6 +403,7 @@ function render(S, M){
   ${marketHtml(M)}
   <section class="part" aria-labelledby="h-area"><h2 id="h-area"><span class="no">2</span>내 관심 지역 <small>${esc(area)}</small></h2>
   <p class="sub">${esc(B.windowDetail(w))}</p>
+  ${pnewsHtml(S.pnews, S.name)}
   <div class="vt" role="group" aria-label="보기 종류"><button type="button" data-v="" aria-pressed="${!PRO}">일반</button><button type="button" data-v="pro" aria-pressed="${PRO}">중개사용</button></div>
   ${dongs.length ? `<nav class="chips" aria-label="동 고르기"><a href="${url(S.g, '', PRO)}" aria-current="${!dn}">${esc(S.name)} 전체</a>${dongs.map(x => `<a href="${url(S.g, x[0], PRO)}" aria-current="${x[0] === dn}">${esc(x[0])}<small>${x[1]}건</small></a>`).join('')}</nav>` : ''}
   <section class="one" aria-label="오늘의 한 줄"><h2>오늘의 한 줄</h2>
@@ -441,6 +475,7 @@ function render(S, M){
     <p><b>신고가</b> — 같은 단지·같은 전용면적(㎡ 반올림)에서 그 계약일 전까지의 최고가(직거래·해제 제외)를 넘은 거래예요. <b>최근 2년 최고가보다 많이 내린 거래</b>는 같은 타입의 최근 2년 거래가 3건 이상이고, 최고가가 튀는 한 건이 아닐 때만 보여 드려요.</p>
     <p><b>같은 단지 비교</b> — 최근 30일 계약을 같은 단지·같은 평형의 직전 3개월 중간값과 하나씩 비교해, 비싼 단지가 많이 팔려서 생기는 착시를 뺐어요.</p>
     <p><b>오늘의 부동산 시장</b> — 전국 모든 시·군·구의 국토부 매매 자료를 같은 방법(이미 본 거래 목록)으로 비교해, 새로 보인 거래 중 신고가는 금액 순, 큰 하락은 하락률 순으로 5건씩 골라요. 시·군·구마다 자료를 다시 받는 날이 달라 확인 기간을 함께 밝혀요. 금리는 한국은행 통계가 들어왔을 때만, 정책은 승인된 정책 목록의 단계 변화만, 청약은 청약홈 공고 중 이번 주(월~일)에 접수하는 것만 보여 드려요. 이 칸은 하루 1번 만들어 모든 구독자에게 똑같이 보내요.</p>
+    <p><b>새로 발표된 정책·교통·공급 소식</b> — 매일 새벽 국토교통부·금융위원회 보도자료, 대한민국 정책브리핑의 부처 보도자료(재정경제부·행정안전부 등), 서울시·인천시 보도자료 목록을 확인해요. 제목에 대출·세금·청약·규제, 철도·도로·역, 주택 공급·신도시·정비사업 관련 낱말이 있는 것만 골라 최근 이틀 치를 보여 드려요. 행사·인사·현장 방문 소식은 빼고, 같은 발표가 여러 곳에 올라와도 한 번만 보여 드려요. 제목은 원문 그대로 두고, 어려운 낱말은 정해 둔 쉬운 풀이를 붙여요. 집값 영향을 숫자로 예측하지 않아요.</p>
     <p><b>'그래서' 문장</b> — 과거 같은 구에서 비슷한 상황(최근 두 달 신고가 비율이 지금만큼 높거나 낮았던 달)이 6번 이상 있었을 때만, 그 뒤 3개월이 어땠는지 횟수로 알려 드려요. 근거가 없으면 쓰지 않아요.</p>
     <p>자료: 국토교통부 아파트 매매·전월세 실거래(공공데이터포털), 청약홈 분양 공고, ${esc(B.SITE)} 정책 목록${S.rone ? ', 한국부동산원 주간 가격지수' : ''}. 데이터 기준일 ${esc(S.ref || '')}.</p></details>`;
   $('main').innerHTML = h;
@@ -522,7 +557,7 @@ function salesHtml(IX, MH){
     </div></section>
 
   <section class="sl-sec" aria-labelledby="sl-what"><h2 id="sl-what">매일 아침 받는 것</h2>
-    <p class="d">큰 줄기 3가지에 코너 6개가 붙어요. 예시 숫자는 모두 실제 공개 자료에서 가져왔어요(${EX_DATE}).</p>
+    <p class="d">큰 줄기 3가지에 코너 7개가 붙어요. 예시 숫자는 모두 실제 공개 자료에서 가져왔어요(${EX_DATE}).</p>
     <div class="cards3">
       ${fc({ main: 1, n: '1', t: '오늘의 부동산 시장', what: '전국·서울에서 어제 새로 신고된 아파트 거래 중 가장 비싸게 팔린 집과 크게 싸게 팔린 집, 금리·대출·세금 정책 변화, 이번 주 청약 일정을 정리해요.',
         good: '뉴스를 따로 찾아보지 않아도 오늘 시장 분위기를 1분 만에 알아요.', term: '<b>신고가</b> = 그 아파트가 지금까지 팔린 값 중 가장 비싼 값',
@@ -532,6 +567,9 @@ function salesHtml(IX, MH){
         ex: '서울 도봉구: 새 매매 21건 중 신고가 5건 · 최근 30일 계약 117건을 같은 아파트·같은 평형의 직전 3개월과 비교하면 중간 +3.8%' })}
       ${fc({ main: 1, n: '3', t: '내 관심 단지', what: '찜해 둔 아파트의 새 거래·전세·급매·순위 변화만 따로 모아요.',
         good: '관심 있는 집 소식을 남보다 먼저 받아요.', ex: '송파구 헬리오시티 49㎡대 24억 7,000만 원(11/6 계약) — 이전 최고 24억 5,000만 원을 넘은 신고가' })}
+      ${fc({ t: '새 정책·교통·공급 발표', what: '정부와 서울시·인천시가 새로 낸 보도자료 중 대출·세금·청약 규칙, 철도·도로·역, 새 집 공급(신도시·재개발 등) 소식만 골라 공식 원문 링크와 함께 알려 드려요. 내 동네 이름이 나오면 그 동네 브리핑 맨 위에 따로 보여 드려요.',
+        good: '뉴스 제목만 보고 헷갈리지 않게, 공식 발표 원문과 어려운 말의 쉬운 풀이를 함께 받아요.', term: '<b>용어 풀이</b> = 제목에 LTV·토지거래허가구역 같은 말이 나오면 바로 아래에 쉬운 말로 풀어 드려요',
+        ex: "국토교통부(11/20 발표): [참고] '27년 부동산 공시가격 시세반영률은 전년 수준 유지 — <b>공시가격</b>: 정부가 세금 계산에 쓰려고 해마다 정해 발표하는 집값 · 인천광역시(11/19 발표): 경인선 철도지하화, “국토교통부 종합계획(안)에 담겨” — 인천을 고른 분께는 ‘내 동네 관련 발표’로 맨 위에" })}
       ${fc({ t: '급매 레이더', what: '어제 새로 올라온 거래 중 같은 아파트·같은 평형의 최근 3개월 거래 중간값보다 10% 넘게 싸게 팔린 집을 찾아요. 가족 간 거래처럼 보통 거래가 아닐 수 있는 건은 따로 표시해요.',
         good: '시세보다 싼 거래를 남보다 먼저 봐요.', term: '<b>급매</b> = 주인이 급해서 시세보다 싸게 내놓은 집',
         ex: '도봉구 창동 대우 84㎡대 5억 원(10/23 계약) — 최근 3개월 같은 평형 중간값 7억 3,700만 원(4건)보다 32% 낮아 ‘특수 거래 의심’으로 따로 표시' })}
@@ -565,7 +603,7 @@ function salesHtml(IX, MH){
 
   <section class="sl-sec" aria-labelledby="sl-pr"><h2 id="sl-pr">요금</h2>
     <div class="plans">
-      <div class="plan"><h3>일반</h3><p class="pr">월 ${P1.amount.toLocaleString('ko-KR')}원</p><ul><li>관심 지역 ${P1.areas}곳 + 관심 단지</li><li>오늘의 부동산 시장 + 6개 코너</li><li>커피 한 잔보다 싼 값</li></ul></div>
+      <div class="plan"><h3>일반</h3><p class="pr">월 ${P1.amount.toLocaleString('ko-KR')}원</p><ul><li>관심 지역 ${P1.areas}곳 + 관심 단지</li><li>오늘의 부동산 시장 + 7개 코너</li><li>커피 한 잔보다 싼 값</li></ul></div>
       <div class="plan pro"><h3>중개사용<span class="tag2">런칭가</span></h3><p class="pr">월 ${P2.amount.toLocaleString('ko-KR')}원</p><ul><li>관심 지역 ${P2.areas}곳</li><li>손님께 할 이야기 3줄(복사 버튼)</li><li>손님에게 보낼 정사각형 카드 이미지</li></ul></div>
     </div>
     <ul class="promise"><li>${TD}일 무료</li><li>결제 수단 없이 시작</li><li>자동 결제 없음</li><li>언제든 해지</li><li>지역은 언제든 바꾸기</li></ul></section>
