@@ -158,7 +158,7 @@ th.num{white-space:normal;word-break:keep-all}
 .tyl ul{list-style:none;margin:0;padding:0}.tyl li{display:flex;justify-content:space-between;gap:10px;padding:2px 0;font-variant-numeric:tabular-nums}
 .tyl li b{color:#191F28;font-weight:700;white-space:nowrap}
 </style>
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=43">
 <script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
 <link rel="stylesheet" href="/jangdaejang-calc/assets/cy-price.css?v=2">
 <style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
@@ -250,6 +250,7 @@ td{border-bottom:1px solid var(--line2)}
     <li><b>분양가</b> · 공고마다 분양가가 주변 신축·준신축 실거래와 비교해 어디쯤인지 보여 드려요</li>
   </ul>
   <p class="lead" style="font-size:14px;margin-top:6px">입력한 내용은 이 기기 밖으로 보내지 않아요.</p>
+  <div class="jas jas-top" data-ad-slot="chungyak_top" data-ad-cat="chungyak" data-ad-top></div>
   <div id="areaStrip"></div>
 
   <!-- 1. 가점 계산 -->
@@ -331,6 +332,7 @@ td{border-bottom:1px solid var(--line2)}
     </ul>
   </details>
 
+  <div data-ad-slot="chungyak_end" data-ad-cat="chungyak" data-ad-after="#result" hidden></div>
   <div class="cta">
     <p>청약 전략, 함께 세워 보세요<small>내 가점·특별공급 자격으로 노릴 만한 단지와 자금 계획까지 1차 상담은 무료입니다</small></p>
     <a class="btn" id="ctaBtn" data-track="chungyak_consult" target="_blank" rel="noopener">상담 신청</a>
@@ -739,5 +741,6 @@ init();
 </script>
 <script src="../assets/plain-words.js?v=13"></script>
 <script>document.addEventListener("DOMContentLoaded",()=>{ if(window.JDJ_PLAIN) JDJ_PLAIN.autoGloss(document.querySelector(".wrap")); });</script>
+<script src="/jangdaejang-calc/assets/ad-slot.js?v=1" defer></script>
 </body>
 </html>

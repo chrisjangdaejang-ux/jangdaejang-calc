@@ -30,7 +30,7 @@
 <script src="../assets/stat.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=43">
 <script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
 <style>
 .wrap{max-width:960px;margin:0 auto;padding:28px 20px 60px}
@@ -184,6 +184,30 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
 .tierbox .tg span{color:var(--sub)}
 .bstat{margin:8px 0 10px;padding:12px 14px;border:1px solid #D6E2FF;background:#F4F7FF;border-radius:14px;font-size:15px;line-height:1.6}
 .bstat small{display:block;font-size:13px;color:var(--sub2);margin-top:4px}
+
+/* 광고 위치 안내(#slots) — 작은 화면 그림 */
+.sl-grid{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:720px){.sl-grid{grid-template-columns:1fr 1fr}}
+.sl{display:flex;gap:14px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;min-width:0}
+.sl.prem{border-color:#C9D8FF;background:var(--blue-l)}
+.sl-ph{flex:none;width:58px;height:100px;border:2px solid #C5CCD6;border-radius:10px;background:#fff;padding:6px 5px;display:flex;flex-direction:column;gap:3px;overflow:hidden}
+.sl-ph i{display:block;height:5px;border-radius:2px;background:#E5E8EB;flex:none}
+.sl-ph i.h{height:7px;width:70%;background:#C5CCD6}
+.sl-ph i.r{height:9px;background:#F2F4F6;border:1px solid #E5E8EB}
+.sl-ph i.res{height:20px;background:#E8EEF5}
+.sl-ph i.ad{height:9px;background:var(--blue);border-radius:3px}
+.sl-ph i.ad.big{height:14px}
+.sl-ph i.map{flex:1;background:#E3E8EE}
+.sl-ph i.sp{flex:1;background:none}
+.sl-tx{min-width:0;flex:1}
+.sl-tx b{display:block;font-size:16px;font-weight:900;letter-spacing:-.3px}
+.sl-tx .w{display:block;font-size:14.5px;color:var(--sub);line-height:1.6;margin-top:2px}
+.sl-tx .ind{display:block;font-size:13.5px;color:var(--sub2);line-height:1.6;margin-top:4px}
+.sl-tx .pr{display:inline-block;margin-top:6px;font-size:14px;font-weight:700;color:var(--text)}
+.sl-tx .pr small{font-weight:500;color:var(--sub2);margin-left:4px}
+.sl-tag{display:inline-block;font-size:12px;font-weight:700;color:var(--blue);background:#fff;border:1px solid #C9D8FF;border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:2px}
+.sl-rules{margin:14px 0 0;padding:0 0 0 20px}
+.sl-rules li{font-size:15px;color:var(--sub);line-height:1.7;margin-bottom:2px}
 </style>
 </head>
 <body>
@@ -201,7 +225,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
       <a class="btn ghost" id="kakaoTop" href="https://pf.kakao.com/_UxnzuV" target="_blank" rel="noopener noreferrer" data-track="ad_kakao">카카오톡으로 상담</a>
     </div>
     <nav class="toc" aria-label="이 페이지 목차">
-      <a href="#why">왜 장대장인가</a><a href="#who">이용자</a><a href="#products">상품</a><a href="#target">타겟팅</a><a href="#prices">단가표</a><a href="#packages">패키지</a><a href="#developer">시행사 리포트</a><a href="#guide">집행 가이드</a><a href="#flow">진행 절차</a><a href="#ask">문의</a>
+      <a href="#why">왜 장대장인가</a><a href="#who">이용자</a><a href="#products">상품</a><a href="#slots">광고 위치</a><a href="#target">타겟팅</a><a href="#prices">단가표</a><a href="#packages">패키지</a><a href="#developer">시행사 리포트</a><a href="#guide">집행 가이드</a><a href="#flow">진행 절차</a><a href="#ask">문의</a>
     </nav>
   </div>
 
@@ -372,6 +396,20 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
       <div class="card"><div class="k">8주 운영</div><h3>미분양 해소 패키지</h3><p>공식 자료로 확인되는 미분양 단지의 주변 수요층 분석 + 위 분양 광고 상품 묶음 + 2주마다 진행 보고서.</p></div>
     </div>
     <p class="note"><a href="../pro/developer/" data-track="ad_to_developer"><b>상품 설명·샘플 리포트·신청 ›</b></a></p>
+  </section>
+
+  <section id="slots">
+    <div class="sh">AD SLOTS</div>
+    <h2 class="t">광고 위치 안내</h2>
+    <p class="sub">화면마다 광고가 들어가는 자리와 받을 수 있는 업종이에요. 그림의 파란 칸이 광고 자리예요. 가격은 모두 <b>제안가</b>(VAT 별도)이고, 계약 전에 함께 정해요.</p>
+    <div class="sl-grid" id="slGrid"></div>
+    <ul class="sl-rules">
+      <li>모든 광고 칸에는 ‘광고’가 표시돼요. 광고가 없는 기간에는 빈칸 대신 <span data-site-name>집예보</span> 서비스 안내가 들어가요.</li>
+      <li>세금·대출 같은 계산 결과 안에는 광고를 넣지 않아요. 세금 화면은 계산기 첫 화면 위쪽과, 모든 계산 화면이 끝난 아래에만 있어요.</li>
+      <li>휴대폰 한 화면(스크롤 한 번 분량)에 광고는 최대 2개예요. 칸 높이를 미리 잡아 두어 광고가 나타나도 화면이 밀리지 않아요.</li>
+      <li>세무사 광고는 정액 광고비로만 받아요(소개·알선 수수료 방식은 받지 않아요). 아래 ‘업종 심사’에서 받지 않는 업종은 어느 자리에도 싣지 않아요.</li>
+      <li>노출 수와 누른 수는 자리별로 집계해서 기간이 끝나면 보고서로 드려요.</li>
+    </ul>
   </section>
 
   <section id="target">
@@ -784,6 +822,31 @@ $('form').addEventListener('submit', async e => {
     out.innerHTML = [1, 2, 3].map(t => { const n = D.tiers.filter(x => x.sd === sd && x.t === t).map(x => x.n);
       return n.length ? `<div class="tg"><b>${t}등급</b> ${P[t]} · <span>${n.map(esc).join(', ')}</span></div>` : ''; }).join('') + `<p class="note">${esc(D.asof)} 기준 · 구당 1개월 기본가(VAT 별도), 기간 할인은 위 표와 같아요.</p>`;
   };
+})();
+</script>
+<script>
+/* 광고 위치 안내: 위치 그림 + 설명 (docs/ad_slots.md 표와 같은 내용) */
+(function(){
+  const PH = {
+    top:  '<i class="h"></i><i></i><i class="ad big"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="sp"></i>',
+    end:  '<i class="h"></i><i></i><i class="res"></i><i class="r"></i><i class="r"></i><i class="ad big"></i><i class="sp"></i>',
+    list: '<i class="h"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="ad"></i><i class="r"></i><i class="r"></i><i class="sp"></i>',
+    map:  '<i class="r"></i><i class="ad"></i><i class="map"></i>'
+  };
+  const L = [
+    ['top', '홈 상단 배너', '첫 소개와 지도·순위 버튼 바로 아래 한 줄', '대출 상담 · 법무사 · 보증보험 · 이사 · 인테리어 · 세무사(정액) · 시행사 · 분양대행사', '1일 10만 · 1주 50만 · 4주 150만 원', '가장 비싼 자리', 1],
+    ['top', '카테고리 상단 배너 — 분양 · 청약', '제목·설명 바로 아래 한 줄', '시행사 · 분양대행사', '1일 6만 · 1주 30만 · 4주 90만 원'],
+    ['top', '카테고리 상단 배너 — 순위 · 전월세 · 빌라 · 갈아타기', '제목·설명 바로 아래, 입력 칸 위 한 줄', '화면별 업종(전월세: 보증보험·법무사·이사 / 빌라: 법무사·감정평가·보증보험·이사)', '1일 5만 · 1주 25만 · 4주 80만 원'],
+    ['map', '지도 상단 배너', '검색·보기 버튼 아래 한 줄(지도를 가리지 않고 그만큼 아래에서 시작)', '시행사 · 분양대행사 · 대출 상담 · 이사 · 인테리어', '1일 5만 · 1주 25만 · 4주 80만 원'],
+    ['top', '세금 상단 배너', '세금 계산기 첫 화면 제목 아래, 계산 메뉴 위(입력·결과 화면에는 없음)', '세무사(정액 광고비만)', '1일 5만 · 1주 25만 · 4주 80만 원'],
+    ['end', '결과 아래 카드', '내 집 시세 · 단지 비교 · 전월세 · 청약 · 내 집 마련 · 리포트 · 땅 결과를 다 본 뒤', '화면별 업종(대출 상담 · 법무사 · 이사 · 인테리어 · 보증보험 · 감정평가 등)', '월 전국 50만 · 시·도 30만 · 시·군·구 15만 원'],
+    ['list', '목록 사이 카드', '순위·분양 목록 10번째 뒤(목록이 10개 넘을 때만)', '순위: 시행사 · 분양대행사 · 대출 상담 · 이사 · 인테리어 / 분양: 시행사 · 분양대행사', '월 시·도 30만 원'],
+    ['end', '페이지 끝 카드', '홈 · 순위 · 세금 · 빌라 · 갈아타기 · 모닝 브리핑 · 중개사 화면 맨 아래', '화면별 업종(세금은 세무사 정액만, 중개사 화면은 중개사 도구만)', '월 15만~50만 원 · 브리핑 화면은 브리핑 지면 광고에 포함'],
+    ['end', '전세사기 체크리스트 아래', '체크리스트·상담 안내 다음', '보증보험 · 법무사 · 이사', '월 80만 원(전국 단독 · 업종당 1곳)']
+  ];
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const g = document.getElementById('slGrid'); if (!g) return;
+  g.innerHTML = L.map(x => `<div class="sl${x[6] ? ' prem' : ''}"><div class="sl-ph" aria-hidden="true">${PH[x[0]]}</div><div class="sl-tx"><b>${esc(x[1])}${x[5] ? `<span class="sl-tag">${esc(x[5])}</span>` : ''}</b><span class="w">${esc(x[2])}</span><span class="ind">받는 업종: ${esc(x[3])}</span><span class="pr">${esc(x[4])}<small>제안가</small></span></div></div>`).join('');
 })();
 </script>
 </body>

@@ -33,7 +33,7 @@
 <script src="../assets/tabbar.js?v=2" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=43">
 <script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
 <style>
 .wrap{max-width:760px;margin:0 auto;padding:22px 16px 40px}
@@ -95,6 +95,7 @@ h1{font-size:clamp(26px,6vw,36px);margin:6px 0 8px}
   <h1>우리 구, 지금 몇 위일까요?</h1>
   <p class="lead">같은 시·도 안에서 구·시·군 아파트 평당가가 얼마나 올랐는지, 앞으로 2년 지역 흐름은 몇 위인지 줄 세워 보여 드려요. 줄을 누르면 지도에서 그 구를 볼 수 있어요.</p>
 
+  <div class="jas jas-top" data-ad-slot="rank_top" data-ad-cat="rank" data-ad-top></div>
   <div class="tabs" role="tablist" aria-label="순위 종류">
     <button type="button" role="tab" id="tb-price" data-t="price" aria-controls="pane">구별 시세</button>
     <button type="button" role="tab" id="tb-fv" data-t="fv" aria-controls="pane">미래가치 순위</button>
@@ -102,6 +103,8 @@ h1{font-size:clamp(26px,6vw,36px);margin:6px 0 8px}
   </div>
   <div class="ctl" id="ctl"></div>
   <section id="pane" role="tabpanel" aria-live="polite"><p class="note">순위 자료를 불러오고 있어요…</p></section>
+  <div data-ad-slot="rank_list" data-ad-cat="rank" data-ad-list="#pane ol.list" data-ad-list-host="#pane" data-ad-every="10" hidden></div>
+  <div data-ad-slot="rank_end" data-ad-cat="rank" data-ad-after="#pane ol.list" hidden></div>
 </main>
 
 <footer class="foot">국토교통부 실거래 신고와 공공 통계로 만든 순위예요. 분석 방법은 <a href="/jangdaejang-calc/about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집예보 · <a href="../">홈</a></footer>
@@ -291,5 +294,6 @@ async function init(){
 init();
 })();
 </script>
+<script src="/jangdaejang-calc/assets/ad-slot.js?v=1" defer></script>
 </body>
 </html>

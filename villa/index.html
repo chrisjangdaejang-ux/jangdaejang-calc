@@ -110,7 +110,7 @@ td.dt{white-space:nowrap}td small{color:var(--muted);font-size:12.5px}
 .foot a{color:inherit}
 .caution.once{margin:0 0 12px;font-size:15px;line-height:1.6}
 </style>
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=43">
 <script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
 <style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
 :root{--gold:#2F6BFF}
@@ -140,6 +140,7 @@ td.dt{white-space:nowrap}td small{color:var(--muted);font-size:12.5px}
   <h1>이 빌라, <em>재개발</em>과<br>얼마나 가까울까요?</h1>
   <p class="lead">국토교통부 연립·다세대 실거래가로 대지지분 평당가를 동 중앙값과 비교하고, 같은 동의 정비구역 진행 단계와 입주권(현금청산) 위험을 함께 보여 드립니다.</p>
 
+  <div class="jas jas-top" data-ad-slot="villa_top" data-ad-cat="villa" data-ad-top></div>
   <div class="pick">
     <div><label for="sido">시·도</label><select id="sido"></select></div>
     <div><label for="sgg">구·시·군</label><select id="sgg"></select></div>
@@ -168,6 +169,7 @@ td.dt{white-space:nowrap}td small{color:var(--muted);font-size:12.5px}
   <div id="list"><div class="loading">빌라 실거래 자료를 불러오는 중입니다…</div></div>
 
   <div data-jdj-ads="villa" hidden></div>
+  <div data-ad-slot="villa_end" data-ad-cat="villa" data-ad-after="#list .cards" hidden></div>
 
   <div class="cta">
     <p>재개발 빌라, 사기 전에 함께 점검해 보세요<small>권리산정기준일·조합원 자격·감정평가 예상까지 1차 진단은 무료입니다</small></p>
@@ -376,5 +378,6 @@ init();
 </script>
 <script src="../assets/plain-words.js?v=13"></script>
 <script>document.addEventListener("DOMContentLoaded",()=>{ if(window.JDJ_PLAIN) JDJ_PLAIN.autoGloss(document.querySelector(".wrap")); });</script>
+<script src="/jangdaejang-calc/assets/ad-slot.js?v=1" defer></script>
 </body>
 </html>

@@ -52,7 +52,7 @@
 <script src="../assets/tax-box.js?v=3"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=43">
 <script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
 <style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
 :root{--gold:#2F6BFF}
@@ -256,6 +256,7 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
   </section>
 
   <section id="res" hidden aria-live="polite"></section>
+  <div data-ad-slot="mine_end" data-ad-cat="mine" data-ad-after="#res" hidden></div>
 
   <p class="disc" id="src">자료: 국토교통부 아파트 매매 실거래가(공공데이터포털). 해제(취소) 신고된 거래와 직거래는 원자료 기준으로 집계에서 빼요. 월별 평당가는 그 달까지 3개월 실거래 평당가의 중앙값이에요. 직거래는 거래 목록에만 표시하고 시세 계산에서는 빼요. 실제 거래가는 동·층·향·수리 상태에 따라 달라요.</p>
 </main>
@@ -758,5 +759,6 @@ async function init(){
 init();
 })();
 </script>
+<script src="/jangdaejang-calc/assets/ad-slot.js?v=1" defer></script>
 </body>
 </html>

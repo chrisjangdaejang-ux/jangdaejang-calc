@@ -34,7 +34,7 @@
 <script src="../assets/narrative.js?v=12"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=43">
 <script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
 <style>
 .wrap{max-width:860px;margin:0 auto;padding:22px 16px 60px}
@@ -167,6 +167,7 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
   <h1>전세 계약 전,<br><em>사기 위험부터</em> 확인하세요</h1>
   <p class="lead">보증금이 시세보다 너무 높지 않은지, 깡통전세 위험 신호는 없는지 계약 전에 먼저 확인하세요. 국토교통부 전월세 실거래로 전세·월세 시세와 추이, 최근 계약(신규·갱신), 전세가율을 보여 드려요. 전세와 월세 중 어느 쪽이 매달 덜 드는지 계산하고, 우리 동네 입주 예정·재건축 이주 같은 전세 흐름도 함께 확인하세요.</p>
 
+  <div class="jas jas-top" data-ad-slot="jeonse_top" data-ad-cat="jeonse" data-ad-top></div>
   <section class="panel" id="findSec" aria-labelledby="findT">
     <h2 id="findT">집 찾기<small id="findHelp">시·도 → 시·군·구 → 단지 순서로 고르거나, 단지 이름으로 찾아 주세요.</small></h2>
     <div class="ktabs" role="tablist" aria-label="주택 종류" id="ktabs"></div>
@@ -189,6 +190,7 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
 
   <section id="res" hidden aria-live="polite"></section>
   <section id="area" hidden></section>
+  <div data-ad-slot="jeonse_end" data-ad-cat="jeonse" data-ad-after="#res" hidden></div>
 
   <p class="disc" id="src">자료: 국토교통부 아파트·연립다세대·오피스텔·단독다가구 전월세 실거래가(공공데이터포털). 월별 시세는 그 달까지 3개월 계약의 중앙값이에요(전세 = 월세 없는 순수 전세, 월세 = 월세가 있는 계약의 보증금·월세 각각의 중앙값). 실제 보증금은 동·층·향·수리 상태·계약 시점에 따라 달라요. 동·호수 같은 개인정보는 원자료에도 없고 보여 드리지 않아요.</p>
 </main>
@@ -694,5 +696,6 @@ async function init(){
 init();
 })();
 </script>
+<script src="/jangdaejang-calc/assets/ad-slot.js?v=1" defer></script>
 </body>
 </html>

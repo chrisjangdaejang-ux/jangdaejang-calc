@@ -37,7 +37,7 @@
 <script src="../assets/tabbar.js?v=2" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=43">
 <script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
 <style>
 html,body{height:100%}
@@ -50,6 +50,7 @@ body.jm-full>.top{position:relative;flex:none}
 .leaflet-container{font-family:inherit;background:#EEF1F4}
 /* 위쪽 조작 칸 */
 .mtop{position:absolute;left:0;right:0;top:0;z-index:30;padding:8px 12px;display:flex;flex-direction:column;gap:6px;background:#fff;border-bottom:1px solid #E5E8EB;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.mtop .jas.jas-top{height:44px;margin:0 auto;flex:none;width:100%;max-width:560px}@media(min-width:720px){.mtop .jas.jas-top{max-width:860px}}.mtop .jas-bar{height:44px;border-radius:10px}.mtop .jas-bar .jas-t small{display:none}   /* 상단 광고 한 줄(assets/ad-slot.js) — 조작 칸 안에 들어가 --mt 로 지도가 그만큼 아래에서 시작(지도를 가리지 않음) */
 .srch{position:relative;max-width:560px;width:100%;margin:0 auto}
 .srch .box{display:flex;align-items:center;gap:8px;background:#fff;border-radius:14px;padding:0 6px 0 14px;min-height:46px;border:1.5px solid #D1D6DB}
 .srch .box:focus-within{border-color:var(--blue)}
@@ -258,6 +259,7 @@ body.reg .cmpbar{display:none}
       <div class="seg" id="mode" role="group" aria-label="지도에 보여 줄 값"></div>
       <div class="fil" id="fil"></div>
     </div>
+    <div class="jas jas-top" data-ad-slot="map_top" data-ad-cat="map" data-ad-top></div>
   </div>
   <div class="mside">
     <button type="button" class="fab" id="zin" aria-label="확대">+</button>
@@ -1041,5 +1043,6 @@ async function init(){
 init();
 })();
 </script>
+<script src="/jangdaejang-calc/assets/ad-slot.js?v=1" defer></script>
 </body>
 </html>

@@ -34,7 +34,7 @@
 <script src="../assets/ask.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
+<link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=43">
 <script src="/jangdaejang-calc/assets/nw.js?v=1" defer></script>
 <style>
 .wrap{max-width:980px;margin:0 auto;padding:20px 16px 60px}
@@ -157,6 +157,7 @@ h1{font-size:clamp(24px,5.6vw,34px);margin:6px 0 6px}
   <p class="lead">실거래 흐름을 겹쳐 보고, 단지 정보와 집예보 미래가치 점수를 한 줄씩 비교해요.</p>
 
   <section id="res" aria-live="polite"></section>
+  <div data-ad-slot="ask_end" data-ad-cat="ask" data-ad-after="#res" hidden></div>
 
   <section class="card" id="askSec" aria-labelledby="askT">
     <h2 id="askT">다른 단지와 비교<small>단지 이름을 2~3개 넣어 주세요. 1곳만 넣으면 그 단지의 시세·전망 화면으로 가요.</small></h2>
@@ -475,5 +476,6 @@ async function main(){
 main();
 })();
 </script>
+<script src="/jangdaejang-calc/assets/ad-slot.js?v=1" defer></script>
 </body>
 </html>
