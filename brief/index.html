@@ -31,6 +31,7 @@
 <script src="../assets/pro-report.js?v=3"></script>
 <script src="../assets/share.js?v=8"></script>
 <script src="../assets/client-brief.js?v=1"></script>
+<script src="../assets/brief-ad.js?v=1"></script>
 <script src="../assets/plain-words.js?v=13" defer></script>
 <script src="../assets/tabbar.js?v=2" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -234,6 +235,13 @@ details.how p{font-size:14.5px;color:var(--sub);line-height:1.65;margin:4px 0 10
 html.cardmode{zoom:1!important}body.cardmode{margin:0;background:#fff}
 body.cardmode>header.top,body.cardmode>.foot,body.cardmode>.wrap,body.cardmode .jtab{display:none!important}
 @media(max-width:420px){.stats b{font-size:19px}.stats small{font-size:12.5px}.tl .pr b{font-size:15.5px}}
+.bad{margin:16px 0 0}
+.bad-in{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:#fff}
+.bad-k{display:inline-block;font-size:12px;font-weight:800;color:#4E5968;background:#F2F4F6;border-radius:6px;padding:1px 7px;margin-right:6px}
+.bad-a{font-size:13px;color:var(--sub2)}
+.bad-t{display:block;font-size:16.5px;font-weight:800;color:var(--text);text-decoration:none;margin:6px 0 2px;word-break:keep-all}
+.bad-d{margin:0;font-size:14.5px;color:var(--sub);line-height:1.55}
+.bad-n{margin:6px 0 0;font-size:12.5px;color:var(--sub2)}
 </style>
 </head>
 <body>
@@ -473,6 +481,7 @@ function render(S, M){
   else h += `<div class="empty">방문 자료가 더 쌓이면 이 동네에서 많이 본 단지를 보여 드려요.</div>`;
   h += `</section>`;
   h += `</section>` + mineHtml(S, area);
+  h += `<aside class="bad" data-brief-ad hidden aria-label="광고"></aside>`;   /* 브리핑 광고 자리(오늘 광고가 있을 때만 보임) */
   /* 구독 */
   h += `<section class="cta"><h2>매일 아침 받아 보기</h2><p>오늘의 부동산 시장(전국 공통)과 고른 동네로 매일 아침 보내 드려요. 처음 ${B.TRIAL_DAYS}일은 무료예요. 자동 결제는 없어요.</p>
     <div class="price2">${B.shownTiers().map(t => `<div><b>월 ${t.amount.toLocaleString('ko-KR')}원</b><small>${esc(t.label)} · 지역 ${t.areas}곳 · 단지 ${t.apts}개${t.pro ? ' · 손님 이야기·공유 카드' : ''}</small></div>`).join('')}</div>
@@ -487,6 +496,7 @@ function render(S, M){
     <p><b>'그래서' 문장</b> — 과거 같은 구에서 비슷한 상황(최근 두 달 신고가 비율이 지금만큼 높거나 낮았던 달)이 6번 이상 있었을 때만, 그 뒤 3개월이 어땠는지 횟수로 알려 드려요. 근거가 없으면 쓰지 않아요.</p>
     <p>자료: 국토교통부 아파트 매매·전월세 실거래(공공데이터포털), 청약홈 분양 공고, ${esc(B.SITE)} 정책 목록${S.rone ? ', 한국부동산원 주간 가격지수' : ''}. 데이터 기준일 ${esc(S.ref || '')}.</p></details>`;
   $('main').innerHTML = h;
+  if (window.JDJ_BRIEF_AD) JDJ_BRIEF_AD.fill();
   /* 이벤트 */
   document.querySelectorAll('.vt button').forEach(b => b.onclick = () => { location.search = url(S.g, dn, b.dataset.v === 'pro'); });
   document.querySelectorAll('[data-more]').forEach(b => b.onclick = () => { const id = b.dataset.more; $(id).insertAdjacentHTML('beforeend', $(id + '-t').innerHTML); b.remove(); });

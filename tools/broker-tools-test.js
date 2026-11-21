@@ -173,7 +173,7 @@ check('주간 글: 중개사 플러스 5곳', T.left({ tier: 'brief_pro_plus', u
 yes('서버: toolUse 가 한도에서 막음', /이번 달 매물 설명서 \$\{out\.limits\.listing\}장을 모두 썼어요/.test(GS) && /이번 주에는 지역 \$\{out\.limits\.kitAreas\}곳까지/.test(GS));
 yes('서버: 같은 지역 다시 만들기는 세지 않음', /if \(used\.kit\.indexOf\(g\) < 0\)/.test(GS));
 yes('서버: 월요일 메일 링크', /briefKitHtml\(pieces, pro, date\)/.test(GS) && /agent\/content\//.test(GS));
-yes('서버 버전 v28', /백엔드 \(v28:/.test(GS));
+yes('서버 버전 v28 이상(머리말에 v28 몫 포함)', /백엔드 \((v2[89]|v[3-9]\d):[^\n]*/.test(GS) && /v28: 중개사 도구/.test(GS));
 
 /* ---------- 8. zip ---------- */
 check('crc32', T.crc32(new TextEncoder().encode('123456789')).toString(16), 'cbf43926');

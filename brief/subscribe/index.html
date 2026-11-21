@@ -52,6 +52,7 @@ h1{font-size:clamp(24px,6vw,32px);margin:4px 0 8px}
 .msg{margin:10px 0 0}
 .note{font-size:13.5px;color:var(--sub2);line-height:1.65;margin:12px 0 0}
 .opt em.lt{font-style:normal;font-size:12px;font-weight:800;color:#8A6A12;background:#FBF4E2;border:1px solid #EAD9A8;border-radius:6px;padding:0 6px;margin-left:4px;vertical-align:1px}
+.amn{margin:-4px 0 4px 26px;font-size:13px;color:var(--sub2);line-height:1.6}
 .bk{margin:10px 0 0;border:1px solid #D6E2FF;background:#F8FAFF;border-radius:14px;padding:12px 14px}
 </style>
 </head>
@@ -70,7 +71,7 @@ const Q = new URLSearchParams(location.search);
 const J = u => fetch(u, {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null);
 const sess = () => { try { return (JSON.parse(localStorage.getItem('jdj_auth') || 'null') || {}).s || ''; } catch(e){ return ''; } };
 const call = (action, body) => P.post(action, Object.assign({ s: sess() }, body || {}));
-const st = { areas: [], apts: [], plan: (B.PRICE[Q.get('p')] || {}).show ? Q.get('p') : 'brief', channel: 'email', trialUsed: false, active: false, kakao: false };
+const st = { amAd: false, areas: [], apts: [], plan: (B.PRICE[Q.get('p')] || {}).show ? Q.get('p') : 'brief', channel: 'email', trialUsed: false, active: false, kakao: false };
 const won = n => Number(n).toLocaleString('ko-KR');
 
 async function boot(){
@@ -85,6 +86,7 @@ async function boot(){
     call('briefMine').catch(() => null), A.load().catch(() => null)]);
   st.kakao = !!(cfg && cfg.channels && cfg.channels.kakao);
   st.trialUsed = !!(mine && mine.trialUsed);
+  st.amAd = !!(mine && mine.amAd && mine.amAd.on);   // 처음 신청이면 꺼진 채로 시작
   st.active = !!(mine && mine.subs.some(x => x.active || x.start > new Date().toISOString().slice(0, 10) && x.state !== '해지'));
   try { if (mine) localStorage.setItem('jdj_brief_sub', st.active ? '1' : '0'); } catch(e){}
   if (!Q.get('p') && mine && mine.next && (B.PRICE[mine.next] || {}).show) st.plan = mine.next;   // 구독 관리에서 '다음 이용권부터' 고른 요금제
@@ -118,6 +120,8 @@ async function boot(){
         <label><input type="checkbox" id="terms"><span>[필수·결제 시] 1개월 이용권·환불 안내를 확인했어요</span></label>
         <details><summary>자세히 보기</summary>첫 브리핑을 받기 전에는 결제일부터 7일 안에 전액 환불, 받기 시작한 뒤에는 남은 날만큼 일할 환불(위약금 없음)해 드려요. 자동 연장·자동 결제는 없어요. <a href="../../refund/">환불 정책</a></details>
         <label><input type="checkbox" id="ad"><span>[선택] 광고성 정보(${esc(B.SITE)} 새 서비스·할인 안내) 받기 — 브리핑과 따로, 언제든 끌 수 있어요</span></label>
+        <label><input type="checkbox" id="amAd" ${st.amAd ? 'checked' : ''}><span>이른 아침(오전 7시) 브리핑 메일 속 광고 받기 (선택)</span></label>
+        <p class="amn">브리핑 메일이 오전 8시 전에 도착해서, 메일 안에 광고를 넣으려면 따로 동의가 필요해요. 동의하지 않아도 브리핑은 똑같이 받고, 광고는 웹 화면에서만 보여요. 언제든 끌 수 있어요.</p>
       </div></section>
     <div class="go">${st.trialUsed || st.active ? '' : `<button type="button" class="btn primary" id="trial">${B.TRIAL_DAYS}일 무료로 시작하기</button>`}
       <button type="button" class="btn ${st.trialUsed || st.active ? 'primary' : ''}" id="pay">결제하고 받기</button>
@@ -146,7 +150,7 @@ async function boot(){
     if (!st.areas.length) throw new Error('받을 동네를 하나 이상 넣어 주세요.');
     if (!ch) throw new Error('받는 방법을 골라 주세요.');
     if (!$('privacy').checked) throw new Error('발송용 연락처 수집·이용에 동의해 주세요.');
-    return { channel: ch, contact: $('contact').value.trim(), privacy: true, ad: $('ad').checked, ref: B.myRef() }; };
+    return { channel: ch, contact: $('contact').value.trim(), privacy: true, ad: $('ad').checked, amAd: $('amAd').checked, ref: B.myRef() }; };
   function msg(t, bad){ $('msg').className = 'msg ' + (bad ? 'err' : 'info'); $('msg').innerHTML = t; }
   const busy = (b, on, t) => { b.disabled = on; if (t) b.textContent = t; };
   if ($('trial')) $('trial').onclick = async () => {

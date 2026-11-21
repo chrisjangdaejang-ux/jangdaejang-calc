@@ -379,5 +379,55 @@ const dd = buy(sD, 'd2@example.com', inv.code);
 check('한 사람 보상은 연 12개월까지: 초대한 사람은 연 한도, 받은 사람은 1개월', dd.o.ref === 'ok' && dd.c.reward.inviter === '연 한도' && dd.c.reward.me === '1개월', dd.c.reward);
 check('초대 시트: 카카오 id 외 연락처 없음', !/@example\.com/.test(JSON.stringify(sheets['브리핑초대'].rows)));
 
+// 12. 이른 아침 메일 광고 동의(정보통신망법 제50조)·(광고) 제목·수신 거부
+NOW = Date.parse('2027-09-01T06:00:00+09:00');
+const sF = mk(701), sG = mk(702);
+const bf = buy(sF, 'f@example.com');
+r = post({ action: 'briefTrial', s: sG, channel: 'email', contact: 'g@example.com', privacy: true, amAd: true });
+check('신청 때 이른 아침 광고 동의 → 동의·동의 일시 기록', r.ok && subRows().filter(x => bc(x, '카카오id') === 'k702').every(x => bc(x, '아침광고동의') === true && bc(x, '아침광고동의시각') instanceof Date));
+check('동의 처리 결과 메일(14일 안 알림)', mails.some(a => a[0] && a[0].to === 'g@example.com' && /수신 동의 처리 결과/.test(a[0].subject)));
+check('동의 안 한 사람은 기본 꺼짐', subRows().filter(x => bc(x, '카카오id') === 'k701').every(x => bc(x, '아침광고동의') !== true));
+const adSh = () => sheets['브리핑광고'] || (T.briefAdToday(new FakeDate()), sheets['브리핑광고']);
+adSh().rows.push(['A1', '2027-09-02', '2027-09-03', '좋은은행', '주담대 금리 비교', '내 조건 대출 한도 3분 확인', 'https://example.com/loan', '게재', '']);
+adSh().rows.push(['A2', '2027-09-02', '2027-09-30', '나쁜링크', '제목', '설명', 'http://insecure.example', '게재', '']);
+const mailTo = to => mails.filter(a => a[0] && a[0].to === to && /모닝 브리핑 —/.test(a[0].subject));
+NOW = Date.parse('2027-09-01T07:10:00+09:00'); mails.length = 0; props.BRIEF_SENT = ''; T.briefDaily();
+check('광고 없는 날: 동의한 사람도 평소 제목', mailTo('g@example.com').length === 1 && !/^\(광고\)/.test(mailTo('g@example.com')[0][0].subject) && !/광고 수신 거부/.test(mailTo('g@example.com')[0][0].htmlBody));
+NOW = Date.parse('2027-09-02T07:10:00+09:00'); mails.length = 0; props.BRIEF_SENT = ''; T.briefDaily();
+const gm = mailTo('g@example.com')[0], fm = mailTo('f@example.com')[0];
+check('광고 있는 날 + 동의: 제목 맨 앞 (광고)·광고 1개·광고주·라벨', !!gm && /^\(광고\) \[집예보\]/.test(gm[0].subject) && /주담대 금리 비교/.test(gm[0].htmlBody) && /좋은은행/.test(gm[0].htmlBody) && (gm[0].htmlBody.match(/>광고</g) || []).length === 1, gm && gm[0].subject);
+check('광고 메일: 보낸 사람 정보·원클릭 수신 거부 링크', !!gm && /보낸 사람: 집예보\(\(주\)장대장부동산그룹\)/.test(gm[0].htmlBody) && /02-3444-5008/.test(gm[0].htmlBody) && /action=briefAdOff&amp;id=B[0-9A-F]{9}&amp;t=[0-9a-f]{16}|action=briefAdOff&id=B[0-9A-F]{9}&t=[0-9a-f]{16}/.test(gm[0].htmlBody));
+check('동의 없음 → 광고 있는 날도 메일 광고 없음·평소 제목', !!fm && !/^\(광고\)/.test(fm[0].subject) && !/주담대 금리 비교/.test(fm[0].htmlBody));
+check('http 링크 광고는 쓰지 않음', !/insecure/.test(gm[0].htmlBody));
+check('하루 한 번만(재발송 없음)', T.briefDaily() === undefined && mailTo('g@example.com').length === 1);
+check('발송기록에 광고 id', JSON.stringify(sheets['발송기록'].rows).includes('보냄(광고 A1)'));
+check('웹 광고 자리: 공개 정보만', JSON.stringify(get({ action: 'briefAd' })) === JSON.stringify({ ok: true, ad: { id: 'A1', adv: '좋은은행', title: '주담대 금리 비교', desc: '내 조건 대출 한도 3분 확인', url: 'https://example.com/loan' } }));
+const gid = (gm[0].htmlBody.match(/id=(B[0-9A-F]{9})/) || [])[1], gt = (gm[0].htmlBody.match(/t=([0-9a-f]{16})/) || [])[1];
+let off = ctx.doGet({ parameter: { action: 'briefAdOff', id: gid, t: 'f'.repeat(16) } });
+check('수신 거부: 토큰 틀리면 처리 안 함', /처리하지 못했어요/.test(off.s) && subRows().filter(x => bc(x, '카카오id') === 'k702').every(x => bc(x, '아침광고동의') === true));
+mails.length = 0;
+off = ctx.doGet({ parameter: { action: 'briefAdOff', id: gid, t: gt } });
+check('원클릭 수신 거부 → 철회·철회 일시·광고성 정보도 끔·결과 메일', /처리했어요/.test(off.s) && subRows().filter(x => bc(x, '카카오id') === 'k702').every(x => bc(x, '아침광고동의') === false && bc(x, '아침광고철회시각') instanceof Date && bc(x, '광고동의') === false)
+  && mails.some(a => a[0] && /수신 거부 처리 결과/.test(a[0].subject)));
+NOW = Date.parse('2027-09-03T07:10:00+09:00'); mails.length = 0; props.BRIEF_SENT = ''; T.briefDaily();
+check('철회 뒤: 광고 있는 날도 메일 광고 없음', mailTo('g@example.com').length === 1 && !/^\(광고\)/.test(mailTo('g@example.com')[0][0].subject));
+r = post({ action: 'briefAdPref', s: sF, on: true });
+check('구독 관리에서 켜기 → 동의·일시', r.ok && r.amAd.on && /^2027-09-03 /.test(r.amAd.at) && post({ action: 'briefMine', s: sF }).amAd.on === true, r);
+r = post({ action: 'briefAdPref', s: sF, on: false });
+check('구독 관리에서 끄기 → 철회 일시', r.ok && !r.amAd.on && /^2027-09-03 /.test(r.amAd.off), r);
+post({ action: 'briefAdPref', s: sF, on: true });
+check('광고주 통계: 메일 광고 동의자 10명 미만이면 숨김', T.briefPublic().amAd == null);
+(() => { const sh = sheets['브리핑구독']; for (let i = 0; i < 12; i++) { const rr = []; rr[T.BC['id']] = 'Y' + i; rr[T.BC['상품']] = T.BRIEF_PRICE.brief.name; rr[T.BC['상태']] = '이용'; rr[T.BC['채널']] = 'email';
+  rr[T.BC['시작일']] = '2027-09-01'; rr[T.BC['만료일']] = '2027-09-30'; rr[T.BC['카카오id']] = 'ky' + i; rr[T.BC['아침광고동의']] = i < 9; sh.rows.push(rr); } })();
+check('광고주 통계: 메일 광고 동의자 수(사람 수, 10명 이상일 때만)', T.briefPublic().amAd === 10, T.briefPublic().amAd);
+subRows().filter(x => /^Y/.test(bc(x, 'id'))).forEach(x => { x[T.BC['상태']] = '해지'; });
+// 2년 확인 안내
+subRows().filter(x => bc(x, '카카오id') === 'k701').forEach(x => { x[T.BC['아침광고동의시각']] = new FakeDate(Date.parse('2025-09-01T09:00:00+09:00')); });
+NOW = Date.parse('2027-09-04T07:10:00+09:00'); mails.length = 0; props.BRIEF_SENT = ''; T.briefDaily();
+check('2년 지난 동의 → 동의 확인 안내 메일·확인 일시', mails.some(a => a[0] && a[0].to === 'f@example.com' && /수신 동의 확인 안내/.test(a[0].subject) && /2025-09-01/.test(a[0].htmlBody) && /briefAdOff/.test(a[0].htmlBody))
+  && subRows().filter(x => bc(x, '카카오id') === 'k701').every(x => bc(x, '아침광고확인시각') instanceof Date));
+mails.length = 0; props.BRIEF_SENT = ''; NOW = Date.parse('2027-09-05T07:10:00+09:00'); T.briefDaily();
+check('확인 안내는 2년에 한 번', !mails.some(a => a[0] && /수신 동의 확인 안내/.test(a[0].subject)));
+
 console.log(`모닝 브리핑 서버 로직 검증: ${pass}개 통과, ${fail}개 실패`);
 process.exit(fail ? 1 : 0);

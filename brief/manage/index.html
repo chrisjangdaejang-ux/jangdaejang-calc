@@ -60,6 +60,8 @@ details{margin:8px 0 0}summary{cursor:pointer;font-weight:700;min-height:40px;di
 .q small{display:block;color:var(--sub2);font-size:13.5px}
 .nx{font-size:14px;margin:8px 0 0;background:#FBF4E2;border:1px solid #EAD9A8;color:#6B5310;border-radius:10px;padding:8px 12px;display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .nx button{font:inherit;font-size:13.5px;border:0;background:none;color:#1F4FD1;text-decoration:underline;cursor:pointer;min-height:36px}
+.amc{display:flex;gap:10px;align-items:flex-start;font-size:15.5px;font-weight:700;line-height:1.5;cursor:pointer}
+.amc input{margin-top:3px;width:18px;height:18px;flex:none}
 .inv{border:1px solid #EAD9A8;background:linear-gradient(180deg,#FFFBF0,#fff);border-radius:16px;padding:16px;margin:0 0 12px}
 .inv h2{font-size:18px;font-weight:900;margin:0 0 4px}
 .inv p{margin:0 0 10px;font-size:14.5px;line-height:1.6;color:var(--sub)}
@@ -124,6 +126,11 @@ async function draw(note){
       <div class="row2"><button type="button" class="btn primary" id="saveEd">저장하기</button>${(r.brief.areas || [])[0] ? `<a class="btn" href="../?d=${encodeURIComponent(B.dKey(r.brief.areas[0].g, r.brief.areas[0].dn))}">오늘 브리핑 보기</a>` : ''}</div>
       <div id="edMsg" class="msg" role="status" hidden></div></section>
     <div id="plus"></div>
+    ${r.subs.length ? `<section class="sb" id="amBox"><h2>브리핑 메일 속 광고</h2>
+      <label class="amc"><input type="checkbox" id="amAd" ${r.amAd && r.amAd.on ? 'checked' : ''}><span>이른 아침(오전 7시) 브리핑 메일 속 광고 받기 (선택)</span></label>
+      <p class="note" style="margin:4px 0 0 28px">브리핑 메일이 오전 8시 전에 도착해서, 메일 안에 광고를 넣으려면 따로 동의가 필요해요. 동의하지 않아도 브리핑은 똑같이 받고, 광고는 웹 화면에서만 보여요. 언제든 끌 수 있어요.</p>
+      <p class="note" id="amWhen" style="margin:6px 0 0 28px">${r.amAd && r.amAd.on && r.amAd.at ? `${esc(r.amAd.at)}에 동의하셨어요.` : r.amAd && r.amAd.off ? `${esc(r.amAd.off)}에 끄셨어요.` : ''}</p>
+      <div class="row2" style="margin-top:8px"><button type="button" class="btn" id="amSave">저장하기</button></div><div id="amMsg" class="msg" role="status" hidden></div></section>` : ''}
     ${paidEver ? `<section class="inv" id="inv"><h2>친구 초대하고 1개월 무료</h2>
       <p>초대 링크로 온 친구가 이용권을 결제하면 두 분 모두 1개월을 무료로 더 받아요. 다음 결제가 1개월 뒤로 미뤄지는 방식이에요.</p>
       <button type="button" class="btn primary" id="invBtn">친구 초대하고 1개월 무료</button><div id="invMsg" class="msg" role="status" hidden></div>
@@ -220,6 +227,14 @@ async function draw(note){
     });
   });
   main.querySelectorAll('[data-keep]').forEach(b => b.onclick = () => act(() => call('briefChange', { id: b.dataset.keep, product: b.dataset.tier }), '지금 요금제를 그대로 이어 가요.'));
+  if ($('amSave')) $('amSave').onclick = async () => {
+    const m = $('amMsg'), on = $('amAd').checked; $('amSave').disabled = true;
+    try { const j = await call('briefAdPref', { on }); m.hidden = false; m.className = 'msg info';
+      m.textContent = on ? '저장했어요. 광고가 있는 날은 메일 제목 맨 앞에 (광고)가 붙어요. 처리 결과를 메일로도 알려 드려요.' : '저장했어요. 앞으로 브리핑 메일에는 광고가 들어가지 않아요.';
+      $('amWhen').textContent = j.amAd.on && j.amAd.at ? `${j.amAd.at}에 동의하셨어요.` : j.amAd.off ? `${j.amAd.off}에 끄셨어요.` : '';
+    } catch(e){ m.hidden = false; m.className = 'msg err'; m.textContent = e.message; }
+    $('amSave').disabled = false;
+  };
   /* 친구 초대: share.js 링크 우선(휴대폰 공유창 → 안 되면 링크 복사) */
   if ($('invBtn')) $('invBtn').onclick = async () => {
     const b = $('invBtn'), m = $('invMsg'), say = (t, bad) => { m.hidden = false; m.className = 'msg ' + (bad ? 'err' : 'info'); m.textContent = t; };

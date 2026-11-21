@@ -1,5 +1,15 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ *
+ * v29 변경 요약 (v20~v28과 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — '브리핑광고' 시트·'브리핑구독' 뒤 4칸 머리 줄은 첫 사용 때 자동)
+ *  - 정보통신망법 제50조: 브리핑 메일(오전 7시대, 8시 전)에 광고는 '이른 아침(오전 7시) 브리핑 메일 속 광고 받기'(선택·기본 꺼짐)에 동의한 사람에게만.
+ *    '브리핑구독' 뒤 4칸: 아침광고동의 · 아침광고동의시각 · 아침광고철회시각 · 아침광고확인시각(사람의 모든 행을 같게). 바뀔 때마다 처리 결과 메일.
+ *    2년마다 동의 사실 안내 메일(아침 발송 뒤 briefAmRecheck). 신청(briefTrial·briefOrder 의 amAd)·구독 관리(briefAdPref)에서 켜고 끔.
+ *  - 광고: '브리핑광고' 시트(운영자 입력, 상태 '게재'·기간 안·제목 20자·설명 60자·https 링크) 중 맨 위 1개. 광고가 실린 날만 제목 맨 앞 '(광고)',
+ *    본문 끝에 보낸 사람 정보(BRIEF_SENDER = assets/biz.js)와 원클릭 수신 거부(GET briefAdOff, 행 id + 비밀 토큰 → 메일 광고·광고성 정보 받기 모두 끔).
+ *    알림톡에는 광고 없음. 메일은 하루 한 번 그대로(재발송 없음). 웹 브리핑 광고 자리는 GET briefAd(공개 정보만).
+ *  - 광고주용 익명 통계 briefPublic 에 amAd(메일 광고 동의자 수, 10명 미만이면 숨김).
+ *  - 검증: node tools/brief-test.js
  *
  * v28 변경 요약 (v20~v27과 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — '도구사용' 시트는 첫 사용 때 자동 생성)
  *  - 요금제 표 BRIEF_TIERS 에 listing(매물 설명서 한 달 장수)·kitAreas(주간 블로그·인스타 글 한 주 지역 수) 칸:
@@ -278,6 +288,8 @@ function doGet(e) {
   if (act === 'briefAreas') return out(briefAreas(e.parameter));
   if (act === 'briefInterest') return out(briefInterest(e.parameter));
   if (act === 'briefPublic') return out(briefPublic());
+  if (act === 'briefAd') return out({ ok: true, ad: briefAdToday(new Date()) });     // v29 웹 브리핑 광고 자리(공개 정보만)
+  if (act === 'briefAdOff') return briefAdOff(e.parameter);                         // v29 메일 광고 수신 거부(원클릭)
   if (act === 'briefStats') return out(briefStats(e.parameter));
   if (act === 'briefSeen') return out(briefSeen(e.parameter));
   if (act === 'bpPull') return out(bpPull(e.parameter));
@@ -2024,7 +2036,8 @@ function proClick(b) {
 const SH_B = '브리핑구독', SH_BL = '발송기록';
 const BH = ['id', '생성시각', '상품', '상태', '주문번호', '카카오id', '채널', '연락처', '연락처가림', '연락처확인값', '광고동의', '시작일', '만료일',
             '최근발송일', '발송수', '만료알림', '해지일', '환불상태', '환불요청시각', '메모',
-            '결제액', '다음요금제', '중개사번호', '중개사확인'];   // v26: 뒤 4칸 추가(기존 시트는 첫 사용 때 머리 줄만 채움)
+            '결제액', '다음요금제', '중개사번호', '중개사확인',    // v26: 4칸 추가(기존 시트는 첫 사용 때 머리 줄만 채움)
+            '아침광고동의', '아침광고동의시각', '아침광고철회시각', '아침광고확인시각'];   // v29: 이른 아침 메일 광고 동의(정보통신망법 제50조) 4칸
 const BC = Object.fromEntries(BH.map((h, i) => [h, i]));
 const BLH = ['날짜', '구독id', '채널', '결과', '동네수'];
 /* ★ 요금제 표(v26) — 서버는 이 표 한 곳만 봐요. 화면 assets/brief-core.js 의 TIERS 와 숫자가 같아야 해요(tools/brief-web-test.js 가 대조).
@@ -2054,7 +2067,7 @@ function bProdKey(name) {
 }
 function bIsTrial(name) { return bProdKey(name) === 'trial'; }
 const BST = { wait: '결제대기', on: '이용', trial: '체험', stop: '해지', refund: '환불', chg: '변경' };   // 변경 = 요금제를 올려 새 행으로 넘어간 이전 행
-const BRIEF_ACTIONS = { briefTrial: 1, briefOrder: 1, briefConfirm: 1, briefMine: 1, briefUpdate: 1, briefStop: 1, briefRefund: 1, briefChangeQuote: 1, briefChange: 1, briefInvite: 1, toolQuota: 1, toolUse: 1 };
+const BRIEF_ACTIONS = { briefAdPref: 1, briefTrial: 1, briefOrder: 1, briefConfirm: 1, briefMine: 1, briefUpdate: 1, briefStop: 1, briefRefund: 1, briefChangeQuote: 1, briefChange: 1, briefInvite: 1, toolQuota: 1, toolUse: 1 };
 const BROKER_REVIEW = { wait: '확인 대기', ok: '확인됨', no: '확인 안 됨' };   // 운영자가 '중개사확인' 칸을 직접 바꿔요(외부 조회 없음)
 /* 중개사무소 등록번호 형식 확인 — 화면 assets/brief-core.js brokerNo 와 같은 규칙 */
 function bBrokerNo(s, year) {
@@ -2113,6 +2126,7 @@ function briefDispatch(b) {
       if (b.action === 'briefInvite') return briefInvite(b);
       if (b.action === 'toolQuota') return toolQuota(b);
       if (b.action === 'toolUse') return toolUse(b);
+      if (b.action === 'briefAdPref') return briefAdPref(b);
       return { ok: false, err: 'unknown' };
     });
   } catch (x) {
@@ -2178,7 +2192,10 @@ function newBriefRow(u, P, st, channel, ct, ad, orderId) {
   r[BC['id']] = 'B' + Utilities.getUuid().replace(/-/g, '').slice(0, 9).toUpperCase(); r[BC['생성시각']] = new Date(); r[BC['상품']] = P.name; r[BC['상태']] = st;
   r[BC['주문번호']] = orderId || ''; r[BC['카카오id']] = u.k; r[BC['채널']] = channel; r[BC['연락처']] = cellSafe(ct.norm); r[BC['연락처가림']] = ct.mask;
   r[BC['연락처확인값']] = hashOf(ct.norm); r[BC['광고동의']] = !!ad; r[BC['발송수']] = 0;
-  ['시작일', '만료일', '최근발송일', '만료알림', '해지일', '환불상태', '환불요청시각', '메모', '결제액', '다음요금제', '중개사번호', '중개사확인'].forEach(h => r[BC[h]] = '');
+  ['시작일', '만료일', '최근발송일', '만료알림', '해지일', '환불상태', '환불요청시각', '메모', '결제액', '다음요금제', '중개사번호', '중개사확인',
+   '아침광고동의', '아침광고동의시각', '아침광고철회시각', '아침광고확인시각'].forEach(h => r[BC[h]] = '');
+  const am = bAmOf(u.k);                     // 이른 아침 광고 동의는 사람 단위: 이미 동의했으면 새 행도 그대로 이어받음
+  if (am.on) { r[BC['아침광고동의']] = true; r[BC['아침광고동의시각']] = am.at || ''; r[BC['아침광고확인시각']] = am.chk || ''; }
   bSheet().appendRow(BH.map((h, i) => r[i] === undefined ? '' : r[i]));
   return r[BC['id']];
 }
@@ -2192,7 +2209,7 @@ function briefCommon(b) {
   if (!b.privacy) throw new Error('발송용 연락처 수집·이용에 동의해 주세요.');
   const br = cleanBrief(u.data && u.data.brief);
   if (!br.areas.length) throw new Error('받을 동네를 먼저 하나 이상 골라 저장해 주세요.');
-  return { u: u, channel: channel, ct: ct, ad: !!b.ad, br: br };
+  return { u: u, channel: channel, ct: ct, ad: !!b.ad, br: br, amAd: b.amAd === true ? true : b.amAd === false ? false : null };
 }
 
 /* 7일 무료 체험 (카카오 계정당 1번) */
@@ -2202,6 +2219,7 @@ function briefTrial(b) {
   if (myBriefs(c.u.k).some(o => briefState(o, new Date()).active)) throw new Error('이미 받고 있는 브리핑이 있어요.');
   const ref = bRefNote(c.u.k, b.ref);
   const id = newBriefRow(c.u, BRIEF_TRIAL, BST.trial, c.channel, c.ct, c.ad, '');
+  if (c.amAd !== null) bAmApply(c.u.k, c.amAd, '구독 신청 화면');
   const o = bRows().find(x => String(x.r[BC['id']]) === id), t = kstToday();
   setB(o.row, '시작일', ymd(t)); setB(o.row, '만료일', ymd(addDays(t, BRIEF_TRIAL.days - 1)));
   return { ok: true, ref: ref, sub: briefState(bRows().find(x => String(x.r[BC['id']]) === id), new Date()) };
@@ -2230,6 +2248,7 @@ function briefOrder(b) {
   row[OC['열람횟수']] = 0;
   orderSheet().appendRow(row);
   const bid = newBriefRow(c.u, P, BST.wait, c.channel, c.ct, c.ad, id);
+  if (c.amAd !== null) bAmApply(c.u.k, c.amAd, '구독 신청 화면');
   if (bn) { const o = bRows().find(x => String(x.r[BC['id']]) === bid); setB(o.row, '중개사번호', cellSafe(bn.norm)); setB(o.row, '중개사확인', BROKER_REVIEW.wait); }
   return { ok: true, orderId: id, amount: P.amount, orderName: ('집예보 ' + P.name).slice(0, 100), ref: bRefNote(c.u.k, b.ref) };
 }
@@ -2284,7 +2303,7 @@ function briefMine(b) {
   const u = sessionUser(b.s), now = new Date();
   const list = myBriefs(u.k).filter(o => String(o.r[BC['상태']]) !== BST.wait).map(o => briefState(o, now));
   return { ok: true, subs: list, brief: cleanBrief(u.data && u.data.brief), channels: briefChannels(),
-    trialUsed: myBriefs(u.k).some(o => bIsTrial(o.r[BC['상품']])), next: (list.filter(x => x.next).pop() || {}).next || '' };
+    trialUsed: myBriefs(u.k).some(o => bIsTrial(o.r[BC['상품']])), next: (list.filter(x => x.next).pop() || {}).next || '', amAd: bAmPublic(u.k) };
 }
 function mySub(u, id) {
   const o = myBriefs(u.k).find(x => String(x.r[BC['id']]) === String(id || ''));
@@ -2514,6 +2533,114 @@ function bGrantMonth(k) {
   return true;
 }
 
+/* ---------- 브리핑 광고·이른 아침 광고 동의 (v29, 정보통신망법 제50조) ----------
+   · 브리핑 메일은 오전 7시대(8시 전)에 나가므로, 메일 안 광고는 '이른 아침(오전 7시) 브리핑 메일 속 광고 받기'에 따로 동의한 사람에게만(선택, 기본 꺼짐).
+     동의하지 않아도 브리핑은 똑같이 받고, 광고는 웹 브리핑 화면에만 보임. 카카오 알림톡(정보성)에는 광고를 넣지 않음.
+   · 동의·철회 일시는 '브리핑구독' 행(사람의 모든 행을 같게)에 남기고, 바뀔 때마다 처리 결과를 메일로 알림(제50조 제7항).
+   · 2년마다 동의 사실 다시 알림(시행령 제62조의3): 동의(또는 지난 확인)일부터 2년이 되면 아침 발송 뒤 안내 메일 + '아침광고확인시각'.
+   · 광고가 들어간 날만 메일 제목 맨 앞 '(광고)', 본문 끝에 보낸 사람 정보와 원클릭 수신 거부 링크(briefAdOff).
+   · 광고는 '브리핑광고' 시트(첫 사용 때 자동 생성)에 운영자가 한 줄씩: 시작일·종료일·광고주·제목(20자)·설명(60자)·https 링크·상태 '게재'. 하루 1개(맨 위 것). */
+const SH_BA = '브리핑광고', BAH = ['id', '시작일', '종료일', '광고주', '제목', '설명', '링크', '상태', '메모'];
+const BAC = Object.fromEntries(BAH.map((h, i) => [h, i]));
+const BRIEF_SENDER = { name: '(주)장대장부동산그룹', site: SITE_NAME, addr: '서울특별시 강남구 삼성로146길 10, 5층(청담동, 다인빌딩)', tel: '02-3444-5008', email: 'chris938@naver.com' };   // assets/biz.js 와 같게
+const BRIEF_AM_RECHECK = 730;   // 일: 2년마다 동의 사실 다시 알림
+/* 오늘 진행 중인 광고 1개(공개 정보만) */
+function briefAdToday(now) {
+  const sh = uSheet(SH_BA, BAH), t = ymd(now || new Date());
+  const v = sh.getDataRange().getValues().slice(1);
+  for (let i = 0; i < v.length; i++) {
+    const r = v[i], d = x => x instanceof Date ? ymd(x) : String(x || '').slice(0, 10);
+    if (String(r[BAC['상태']]).trim() !== '게재' || !(d(r[BAC['시작일']]) <= t && t <= d(r[BAC['종료일']]))) continue;
+    const title = uText(r[BAC['제목']], 20), desc = uText(r[BAC['설명']], 60), url = String(r[BAC['링크']] || '').trim(), adv = uText(r[BAC['광고주']], 30);
+    if (!title || !adv || !/^https:\/\/[^\s<>"']{4,300}$/.test(url)) continue;
+    return { id: String(r[BAC['id']] || ('A' + (i + 2))), adv: adv, title: title, desc: desc, url: url };
+  }
+  return null;
+}
+/* 이 웹 앱 주소(수신 거부 링크용). 못 읽으면 사이트 assets/agents.js 의 주소 */
+function bApi() { try { const u = ScriptApp.getService().getUrl(); if (u) return u; } catch (e) {} return 'https://script.google.com/macros/s/AKfycbyFwqwleAfwHoVSfWHyFVnszvc0fCjsG-WcEVkxRqUz_FmmL4bL-RymfPc3Eh_aNcrRpQ/exec'; }
+function bAmToken(id) { return hashOf('amoff|' + id).slice(1, 17); }
+/* 메일 속 광고 칸 + 보낸 사람 정보 + 원클릭 수신 거부 */
+function briefAdMailHtml(ad, subId) {
+  const off = `${bApi()}?action=briefAdOff&id=${encodeURIComponent(subId)}&t=${bAmToken(subId)}`;
+  return `<div style="margin:16px 0 0;border:1px solid #E5E8EB;border-radius:12px;padding:12px 14px">
+    <span style="display:inline-block;font-size:12px;font-weight:800;color:#4E5968;background:#F2F4F6;border-radius:6px;padding:1px 7px">광고</span> <span style="font-size:12.5px;color:#4E5968">${bEsc(ad.adv)}</span>
+    <div style="font-size:16px;font-weight:800;margin:6px 0 2px"><a href="${bEsc(ad.url)}" style="color:#191F28;text-decoration:none">${bEsc(ad.title)}</a></div>
+    ${ad.desc ? `<div style="font-size:14px;color:#3E4754;line-height:1.55">${bEsc(ad.desc)}</div>` : ''}
+    <div style="font-size:12px;color:#8B95A1;margin:6px 0 0">브리핑의 숫자·순위는 광고와 관계없이 똑같이 계산해요.</div></div>
+    <p style="font-size:12px;color:#4E5968;line-height:1.6;margin:12px 0 0">보낸 사람: ${bEsc(BRIEF_SENDER.site)}(${bEsc(BRIEF_SENDER.name)}) · ${bEsc(BRIEF_SENDER.addr)} · 전화 ${bEsc(BRIEF_SENDER.tel)} · 이메일 ${bEsc(BRIEF_SENDER.email)}<br>
+    이 광고는 '이른 아침(오전 7시) 브리핑 메일 속 광고 받기'에 동의하신 분께만 보내요. 더 받지 않으려면 <a href="${off}" style="color:#1F4FD1">광고 수신 거부(한 번 누르면 끝)</a>를 누르거나 <a href="${BRIEF_WEB}manage/" style="color:#1F4FD1">내 구독 관리</a>에서 끌 수 있어요. 수신 거부해도 브리핑은 똑같이 받아요.</p>`;
+}
+/* 사람 단위 동의 상태: 그 사람 행 중 하나라도 동의면 동의(행은 늘 같이 바뀜) */
+function bAmOf(k) {
+  let on = false, at = '', off = '', chk = '';
+  myBriefs(k).forEach(o => { const r = o.r;
+    if (r[BC['아침광고동의']] === true) { on = true; at = r[BC['아침광고동의시각']] || at; chk = r[BC['아침광고확인시각']] || chk; }
+    if (r[BC['아침광고철회시각']]) off = r[BC['아침광고철회시각']]; });
+  return { on: on, at: at, off: off, chk: chk };
+}
+function bAmPublic(k) { const a = bAmOf(k), f = x => x instanceof Date ? Utilities.formatDate(x, 'Asia/Seoul', 'yyyy-MM-dd HH:mm') : String(x || ''); return { on: a.on, at: f(a.at), off: f(a.off) }; }
+/* 동의·철회 적용(그 사람의 모든 행) + 처리 결과 메일. 바뀐 게 없으면 아무것도 안 함 → 바뀌었으면 true */
+function bAmApply(k, on, how) {
+  const rows = myBriefs(k), now = new Date(), cur = bAmOf(k);
+  if (!rows.length || !!on === cur.on) return false;
+  rows.forEach(o => {
+    setB(o.row, '아침광고동의', !!on);
+    if (on) { setB(o.row, '아침광고동의시각', now); setB(o.row, '아침광고확인시각', ''); } else setB(o.row, '아침광고철회시각', now);
+  });
+  const em = rows.filter(o => String(o.r[BC['채널']]) === 'email' && String(o.r[BC['연락처']] || '')).pop();
+  if (em) try {
+    MailApp.sendEmail({ to: String(em.r[BC['연락처']]).replace(/^'/, ''), name: SITE_NAME, subject: `[${SITE_NAME}] 이른 아침 브리핑 메일 속 광고 ${on ? '수신 동의' : '수신 거부'} 처리 결과`,
+      htmlBody: `<div style="font-family:sans-serif;line-height:1.7">${Utilities.formatDate(now, 'Asia/Seoul', 'yyyy-MM-dd HH:mm')}에 ${bEsc(how || '')}에서 요청하신 대로
+      '이른 아침(오전 7시) 브리핑 메일 속 광고 받기'를 <b>${on ? '동의' : '수신 거부'}</b>로 처리했어요.<br>${on ? '브리핑 메일에 광고가 있는 날은 제목 맨 앞에 (광고)가 붙어요. 언제든 메일 맨 아래 링크나 내 구독 관리에서 끌 수 있어요.' : '앞으로 브리핑 메일에는 광고가 들어가지 않아요. 브리핑은 똑같이 받아요.'}<br>
+      보낸 사람: ${bEsc(BRIEF_SENDER.site)}(${bEsc(BRIEF_SENDER.name)}) · 전화 ${bEsc(BRIEF_SENDER.tel)} · <a href="${BRIEF_WEB}manage/">${BRIEF_WEB}manage/</a></div>` });
+  } catch (e) {}
+  return true;
+}
+/* 구독 관리 화면에서 켜고 끄기(로그인) */
+function briefAdPref(b) {
+  const u = sessionUser(b.s);
+  if (!myBriefs(u.k).length) throw new Error('구독 정보를 찾지 못했어요.');
+  bAmApply(u.k, b.on === true, '내 구독 관리');
+  return { ok: true, amAd: bAmPublic(u.k) };
+}
+/* 메일의 원클릭 수신 거부(로그인 없음, 행 id + 서버 비밀값으로 만든 토큰) — 브리핑 메일 속 광고와 광고성 정보 받기를 모두 끔 */
+function briefAdOff(p) {
+  const id = String(p.id || ''), t = String(p.t || '');
+  let done = false;
+  if (/^B[0-9A-F]{9}$/.test(id) && safeEq(t, bAmToken(id))) withLock(() => {
+    const o = bRows().find(x => String(x.r[BC['id']]) === id);
+    if (!o) return;
+    const k = String(o.r[BC['카카오id']]);
+    bAmApply(k, false, '메일의 수신 거부 링크');
+    myBriefs(k).forEach(x => setB(x.row, '광고동의', false));
+    done = true;
+  });
+  return HtmlService.createHtmlOutput(`<div style="font-family:sans-serif;padding:40px 20px;text-align:center;line-height:1.7">
+    <h2>${done ? '광고 수신 거부를 처리했어요' : '처리하지 못했어요'}</h2>
+    <p>${done ? '앞으로 브리핑 메일에 광고를 넣지 않고, 광고성 안내도 보내지 않아요. 브리핑은 똑같이 받아요. 처리 결과는 메일로도 알려 드려요.' : '링크가 바뀌었거나 이미 끝난 구독이에요. 내 구독 관리에서 직접 끌 수 있어요.'}</p>
+    <p><a href="${BRIEF_WEB}manage/">내 구독 관리로 가기</a></p></div>`);
+}
+/* 2년마다 동의 사실 다시 알림 */
+function briefAmRecheck(now) {
+  const seen = {};
+  bRows().forEach(o => {
+    const k = String(o.r[BC['카카오id']]); if (seen[k]) return; seen[k] = 1;
+    const a = bAmOf(k); if (!a.on) return;
+    const base = a.chk || a.at, bd = base instanceof Date ? base : new Date(base);
+    if (!(bd instanceof Date) || isNaN(bd) || now - bd < BRIEF_AM_RECHECK * 86400000) return;
+    const em = myBriefs(k).filter(x => String(x.r[BC['채널']]) === 'email' && String(x.r[BC['연락처']] || '')).pop();
+    if (!em) return;
+    try {
+      MailApp.sendEmail({ to: String(em.r[BC['연락처']]).replace(/^'/, ''), name: SITE_NAME, subject: `[${SITE_NAME}] 이른 아침 브리핑 메일 속 광고 수신 동의 확인 안내`,
+        htmlBody: `<div style="font-family:sans-serif;line-height:1.7">${Utilities.formatDate(a.at instanceof Date ? a.at : new Date(a.at), 'Asia/Seoul', 'yyyy-MM-dd')}에 '이른 아침(오전 7시) 브리핑 메일 속 광고 받기'에 동의하셨어요.
+        법에 따라 2년마다 동의 상태를 알려 드려요. 계속 받으시려면 아무것도 하지 않으셔도 돼요.<br>더 받지 않으려면 <a href="${bApi()}?action=briefAdOff&id=${encodeURIComponent(String(em.r[BC['id']]))}&t=${bAmToken(String(em.r[BC['id']]))}">광고 수신 거부</a>를 누르거나 <a href="${BRIEF_WEB}manage/">내 구독 관리</a>에서 끌 수 있어요.<br>
+        보낸 사람: ${bEsc(BRIEF_SENDER.site)}(${bEsc(BRIEF_SENDER.name)}) · 전화 ${bEsc(BRIEF_SENDER.tel)}</div>` });
+      myBriefs(k).forEach(x => setB(x.row, '아침광고확인시각', now));
+    } catch (e) {}
+  });
+}
+
 /* ---------- 공개 집계 (워크플로가 읽음, 개인정보 없음) ---------- */
 function pullOk(p) { const t = PropertiesService.getScriptProperties().getProperty('BRIEF_PULL_TOKEN'); return !!t && safeEq(String(p.k || ''), t); }
 function userBriefMap() {
@@ -2585,7 +2712,8 @@ function briefAgg(now) {
   const um = userBriefMap(), rows = bRows();
   const act = rows.map(o => ({ o: o, s: briefState(o, now) })).filter(x => x.s.active);
   const paid = act.filter(x => !bIsTrial(x.o.r[BC['상품']])).length;
-  const sido = {}, budget = {}, age = {}, seenU = {};
+  const sido = {}, budget = {}, age = {}, seenU = {}, amU = {};
+  act.forEach(x => { if (x.o.r[BC['아침광고동의']] === true && x.s.channel === 'email') amU[String(x.o.r[BC['카카오id']])] = 1; });   // 메일 광고 동의자(사람 수)
   act.forEach(x => {
     const ub = um[String(x.o.r[BC['카카오id']])]; if (!ub) return;
     const u = String(x.o.r[BC['카카오id']]); if (seenU[u]) return; seenU[u] = 1;
@@ -2609,12 +2737,12 @@ function briefAgg(now) {
     const d = String(r[0]).slice(0, 10); if (d < lo || String(r[3]) !== '보냄') return; sends++; sentDays[d + '|' + bKey(String(r[1]))] = 1; });
   if (seenSh && seenSh.getLastRow() > 1) seenSh.getRange(2, 1, seenSh.getLastRow() - 1, 2).getValues().forEach(r => {
     if (sentDays[String(r[0]).slice(0, 10) + '|' + String(r[1])]) seen++; });
-  return { n: act.length, paid: paid, trial: act.length - paid, sido: sido, budget: budget, age: age, trend: trend, sends: sends, seen: seen };
+  return { n: act.length, paid: paid, trial: act.length - paid, amAd: Object.keys(amU).length, sido: sido, budget: budget, age: age, trend: trend, sends: sends, seen: seen };
 }
 function briefPublic() {
   const A = briefAgg(new Date());
   if (A.n < BRIEF_STAT_MIN) return { ok: true, name: BRIEF_NAME, n: null, at: ymd(new Date()) };
-  return { ok: true, name: BRIEF_NAME, at: ymd(new Date()), n: A.n, paid: A.paid >= BRIEF_STAT_MIN ? A.paid : null,
+  return { ok: true, name: BRIEF_NAME, at: ymd(new Date()), n: A.n, paid: A.paid >= BRIEF_STAT_MIN ? A.paid : null, amAd: A.amAd >= BRIEF_STAT_MIN ? A.amAd : null,
     sido: bHide(A.sido), budget: bHide(A.budget), age: bHide(A.age),
     open: A.sends >= 100 ? Math.round(A.seen / A.sends * 1000) / 10 : null };
 }
@@ -2758,8 +2886,8 @@ function briefKitHtml(pieces, pro, date) {
     <p style="margin:4px 0 8px;font-size:13.5px;color:#4E5968;line-height:1.55">관심 지역의 실거래·신고가·청약 일정을 공개 자료로 정리한 블로그 글, 카드 이미지, 설명글을 바로 만들 수 있어요.</p>
     ${gs.slice(0, 5).map(g => `<a href="${BRIEF_KIT_WEB}?g=${g}&go=1" style="display:inline-block;margin:0 6px 6px 0;background:#2F6BFF;color:#fff;padding:9px 14px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px">${bEsc((pieces.find(p => p.g === g) || {}).gn || g)} 글 만들기</a>`).join('')}</div>`;
 }
-function briefMail(to, date, pieces, s, pro, M, ub, extra) {
-  const title = `[${SITE_NAME}] ${date.slice(5).replace('-', '/')} ${BRIEF_NAME} — ${pieces.map(p => p.nm).join(', ')}`.slice(0, 120);
+function briefMail(to, date, pieces, s, pro, M, ub, extra, ad) {
+  const title = ((ad ? '(광고) ' : '') + `[${SITE_NAME}] ${date.slice(5).replace('-', '/')} ${BRIEF_NAME} — ${pieces.map(p => p.nm).join(', ')}`).slice(0, 120);
   const body = pieces.map(p => `<div style="border:1px solid #E5E8EB;border-radius:12px;padding:14px 16px;margin:0 0 12px">
       <div style="font-size:17px;font-weight:900;margin:0 0 6px">${bEsc(p.nm)} <span style="font-size:13px;color:#2F6BFF">새 매매 ${p.n}건 · 신고가 ${p.hi}건</span></div>
       ${p.pn ? `<div style="background:#FBF8EF;border:1px solid #EFE6CC;border-radius:10px;padding:10px 12px;margin:0 0 8px"><b style="color:#191F28">내 동네 관련 발표</b> <span style="font-size:12.5px;color:#4E5968">이 동네 이름이 나온 정부·지자체 보도자료</span>${briefPnHtml(p.pn, 3)}</div>` : ''}
@@ -2773,7 +2901,7 @@ function briefMail(to, date, pieces, s, pro, M, ub, extra) {
     ${briefKitHtml(pieces, pro, date)}<div style="font-size:17px;font-weight:900;margin:4px 0 8px">② 내 관심 지역 · ③ 내 관심 단지</div>${body}
     <p style="font-size:12.5px;color:#4E5968;line-height:1.6">국토교통부 실거래 공개 자료에 새로 올라온 거래를 동네별로 모았어요. 신고가는 같은 단지·같은 평형의 이전 최고가를 넘은 거래예요.<br>
     이 메일은 ${bEsc(s.product)}(이용 기간 ${s.start} ~ ${s.end})을 신청하신 분께 보내 드려요. 받는 방법 바꾸기·해지: <a href="${BRIEF_WEB}manage/">${BRIEF_WEB}manage/</a></p>
-    <a href="${BRIEF_WEB}manage/" style="display:block;text-align:center;margin:10px 0 0;border:1px solid #2F6BFF;color:#2F6BFF;padding:11px 16px;border-radius:10px;text-decoration:none;font-weight:700">지역·단지 바꾸기</a></div>`;
+    <a href="${BRIEF_WEB}manage/" style="display:block;text-align:center;margin:10px 0 0;border:1px solid #2F6BFF;color:#2F6BFF;padding:11px 16px;border-radius:10px;text-decoration:none;font-weight:700">지역·단지 바꾸기</a>${ad ? briefAdMailHtml(ad, s.id) : ''}</div>`;
   MailApp.sendEmail({ to: to, subject: title, htmlBody: html, name: SITE_NAME });
 }
 /* 솔라피 알림톡(정보성 템플릿). 실패하면 SOLAPI_FROM 이 있을 때 문자로 대체 */
@@ -2798,6 +2926,7 @@ function briefDaily() {
   const um = userBriefMap(), now = new Date(), cache = {}, ch = briefChannels();
   const brief = g => (g in cache) ? cache[g] : (cache[g] = bFetchJson(BRIEF_DATA + g + '.json'));
   const M = bFetchJson(BRIEF_DATA + 'market.json');      // 전국 공통 — 하루 1번만 받아 모든 구독자에게 같은 내용
+  const AD = briefAdToday(now);                         // v29 오늘 진행 중인 브리핑 광고(없으면 null) — 메일에는 이른 아침 광고 동의자에게만
   const cxc = {}, cxOf = g => (g in cxc) ? cxc[g] : (cxc[g] = bFetchJson(BRIEF_DATA + 'cx/' + g + '.json'));   // v27 손님 단지 자료 — 동네마다 한 번만 받음
   let sent = 0;
   bRows().forEach(o => {
@@ -2813,7 +2942,8 @@ function briefDaily() {
     try {
       if (s.channel === 'email') { pieces.forEach(p => { p.url += `&src=mail&k=${bKey(s.id)}&day=${date}`; });
         let bx = ''; try { bx = bpMailHtml(String(o.r[BC['카카오id']]), cxOf, date); } catch (e) { bx = ''; }
-        briefMail(to, (pieces[0] && ix && ix.date) || date, pieces, s, s.pro, M, Object.assign({}, ub, { apts: myApts }), bx); res = { ok: true }; }
+        const withAd = AD && o.r[BC['아침광고동의']] === true ? AD : null;
+        briefMail(to, (pieces[0] && ix && ix.date) || date, pieces, s, s.pro, M, Object.assign({}, ub, { apts: myApts }), bx, withAd); res = { ok: true, ad: !!withAd }; }
       else if (s.channel === 'kakao') {
         if (!ch.kakao) res = { ok: false, why: '알림톡 키 없음' };
         else {
@@ -2824,10 +2954,11 @@ function briefDaily() {
         }
       } else res = { ok: false, why: '웹 알림 준비 중' };
     } catch (e) { res = { ok: false, why: String(e.message || e).slice(0, 60) }; }
-    bLog([date, s.id, s.channel, res.ok ? '보냄' : '못 보냄: ' + res.why, pieces.length]);
+    bLog([date, s.id, s.channel, res.ok ? (res.ad ? '보냄(광고 ' + AD.id + ')' : '보냄') : '못 보냄: ' + res.why, pieces.length]);
     if (res.ok) { setB(o.row, '최근발송일', date); setB(o.row, '발송수', s.sent + 1); sent++; }
   });
   briefExpiry(now);
+  try { briefAmRecheck(now); } catch (e) {}
   briefCleanup(now);
   P.setProperty('BRIEF_SENT', date);
   return sent;

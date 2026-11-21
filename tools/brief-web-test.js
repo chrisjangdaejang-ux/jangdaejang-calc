@@ -74,5 +74,12 @@ const SU = { urgent: [{ a: '가', disc: -12 }, { a: '나', disc: -25 }], urgent_
 check('급매 기준: 기본 10%는 자료 그대로, 6%면 넓게, 15%면 좁게', [10, 6, 5, 15, undefined].map(t => B.urgentFor(SU, t).map(u => u.a).join('')), ['나가', '나가다', '나가다라', '나', '나가']);
 check('내 관심 단지 급매도 같은 기준', B.mine(SU, ['다'], 6).urgent.map(u => u.a), ['다']);
 check('급매 기준 저장값 없으면 10%', B.myUrg(), 10);
+/* v29 웹 브리핑 광고 자리·광고주 통계 */
+const BA = require('../assets/brief-ad.js');
+const adH = BA.html({ adv: '좋은은행', title: '주담대 <b>비교</b>', desc: '3분 확인', url: 'https://example.com/x' });
+check('광고 자리: 광고 표시·광고주·https 링크·글 이스케이프', [/>광고</.test(adH), /좋은은행/.test(adH), /href="https:\/\/example.com\/x"/.test(adH), /&lt;b&gt;/.test(adH), /sponsored/.test(adH)], [true, true, true, true, true]);
+check('광고 자리: 광고 없거나 http 링크면 비움', [BA.html(null), BA.html({ title: 't', url: 'http://x.com' })], ['', '']);
+globalThis.window = globalThis.window || {}; const BS = require('../assets/brief-stat.js');
+check('광고주 통계: 메일 광고 동의자 수(있을 때만)', [/메일 광고 받는 구독자\(이른 아침 광고 동의\) 12명/.test(BS.html({ n: 40, amAd: 12, at: '2026-11-28' })), /메일 광고/.test(BS.html({ n: 40, amAd: null, at: '2026-11-28' }))], [true, false]);
 console.log(`모닝 브리핑 화면 계산 검증: ${pass}개 통과, ${fail}개 실패`);
 process.exit(fail ? 1 : 0);
