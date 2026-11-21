@@ -25,7 +25,18 @@ for (const k of ['dev_report', 'dev_extra', 'dev_update', 'unsold_pack', 'brochu
 check('자료 팩: 정가 19만 원·런칭가 9만 원, 잠금형 브로슈어 런칭가 19만 원', P.DEV_PRICES.datapack.list === 190000 && P.DEV_PRICES.datapack.launch === 90000 && P.DEV_PRICES.brochure.launch === 190000, P.DEV_PRICES.datapack);
 check('잠금형 브로슈어: 정가 39만 원·런칭가 19만 원', P.DEV_PRICES.brochure.list === 390000 && P.DEV_PRICES.brochure.launch === 190000, P.DEV_PRICES.brochure);
 check('브로슈어 다시 만들기: 정가 10만 원·런칭가 5만 원', P.DEV_PRICES.brochure_update.list === 100000 && P.DEV_PRICES.brochure_update.launch === 50000, P.DEV_PRICES.brochure_update);
-check('비교표에 두 상품 가격 칸(정가 줄 긋기 표시)', /<table class="cmp"[\s\S]*?data-pp="brochure"[\s\S]*?data-pp="datapack"[\s\S]*?<\/table>/.test(html) && html.includes('<s>${won(p.list)}</s>'));
+check('비교표에 두 상품 가격 칸(정가 줄 긋기 표시)', /<table class="cmp"[\s\S]*?data-pp="brochure"[\s\S]*?data-pp="datapack"[\s\S]*?<\/table>/.test(html) && html.includes('<s>${per}${won(p.list)}</s>'));
+// 출시 예정 상품(주간 현장 보고서·광고 지역 추천): 가격은 '출시 예정'으로만, 문의 받기
+for (const k of ['weekly_report', 'weekly_locked', 'ad_target']) {
+  const p = P.DEV_PRICES[k];
+  check(`출시 예정 ${k}: soon 표시·런칭가 < 정가·천 원 단위`, p && p.soon === true && p.launch < p.list && p.list % 1000 === 0 && p.launch % 1000 === 0, p);
+  check(`화면에 ${k} 금액 칸`, html.includes(`data-pp="${k}"`));
+}
+check('주간 보고서는 월 정액, 잠금형이 더 비쌈(브로슈어·자료 팩과 같은 두 상품 구조)', P.DEV_PRICES.weekly_report.per === '월' && P.DEV_PRICES.weekly_locked.per === '월' && P.DEV_PRICES.weekly_locked.launch > P.DEV_PRICES.weekly_report.launch, P.DEV_PRICES.weekly_report);
+check('출시 예정 상품: 상태 배지·문의 버튼·샘플 PDF', ['p-weekly', 'p-target'].every(id => new RegExp(`<section id="${id}">[\\s\\S]*?출시 예정 · 문의 받기[\\s\\S]*?data-pick=`).test(html)) && html.includes('sample-weekly.pdf') && html.includes('sample-target.pdf'));
+for (const f of ['sample-weekly.pdf', 'sample-target.pdf', 'w1.jpg', 'w4.jpg', 't1.jpg', 't4.jpg']) check(`샘플 파일 ${f}`, fs.existsSync(path.join(ROOT, 'pro/developer', f)));
+check('출시 예정 상품 신청 칸·서버로 보내는 이름', html.includes('value="weekly_report"') && html.includes('value="ad_target"') && JSON.stringify(P.serverProducts(['weekly_report', 'ad_target'])) === '["weekly_report","ad_target","etc"]');
+check('출시 예정 가격은 확정이 아니라고 안내', html.includes('출시 때 확정'));
 check('런칭가 기한은 날짜', /^\d{4}-\d{2}-\d{2}$/.test(P.DEV_PRICES.until) && !isNaN(new Date(P.DEV_PRICES.until)));
 check('금액 표기', P.won(990000) === '99만 원' && P.won(1500000) === '150만 원' && P.won(12345) === '12,345원');
 
@@ -63,7 +74,7 @@ const body = sel => ({ action: 'adInquiry', type: 'inquiry', company: '(주)테�
   memo: P.devMemo({ sel, site: '서울 성북구 장위동', types: '84㎡ 12억', due: '', role: '시행사', memo: '' }) });
 
 const S = runBackend();
-check('서버 상품 목록에 네 상품(화면 이름과 같음)', ['dev_report', 'unsold_pack', 'brochure', 'datapack'].every(k => S.T.AQ_PROD[k] === P.DEV_PROD[k]) && !!S.T.AQ_PROD.etc, S.T.AQ_PROD);
+check('서버 상품 목록에 여섯 상품(화면 이름과 같음)', ['dev_report', 'unsold_pack', 'brochure', 'datapack', 'weekly_report', 'ad_target'].every(k => S.T.AQ_PROD[k] === P.DEV_PROD[k]) && !!S.T.AQ_PROD.etc, S.T.AQ_PROD);
 const dm = P.devMemo({ sel: ['datapack'], site: '중화역 라온프라이빗 센트로', types: '', due: '', role: '분양대행사', memo: '', dpAgree: true });
 check('자료 팩 신청: 문의 내용에 이용 조건 동의·판 날짜', dm.includes('자료 팩 이용 조건 동의: 예') && dm.includes(P.DP_TERMS_VER) && !P.devMemo({ sel: ['dev_report'], site: 'x', memo: '' }).includes('이용 조건'), dm);
 let r = S.post(body(['dev_report', 'unsold_pack']));
@@ -74,7 +85,7 @@ check('새 서버: 사업지·평형이 문의 내용에', /장위동/.test(row[
 check('알림 메일에 연락처 없음', !JSON.stringify(S.mails).includes('dev@example.com'));
 const rd = S.post(body(['datapack']));
 check('새 서버: 자료 팩 접수·관심 상품 이름', rd.ok && S.sheets[S.T.SH_AQ].rows.slice(-1)[0][S.T.AQC['관심상품']] === '현장 자료 팩(편집형),기타·제휴', r);
-const OLD = runBackend(src => src.replace(/,\s*dev_report: '[^']*', unsold_pack: '[^']*',\s*brochure: '[^']*', datapack: '[^']*' \};/, ' };'));
+const OLD = runBackend(src => src.replace(/,\s*dev_report: '[^']*', unsold_pack: '[^']*',\s*brochure: '[^']*', datapack: '[^']*',\s*weekly_report: '[^']*', ad_target: '[^']*' \};/, ' };'));
 check('옛 서버 흉내: 새 상품 키 없음', !OLD.T.AQ_PROD.dev_report && !OLD.T.AQ_PROD.datapack);
 r = OLD.post(body(['dev_report']));
 check('옛 서버(재배포 전)도 기타·제휴로 접수', r.ok && OLD.sheets[OLD.T.SH_AQ].rows[1][OLD.T.AQC['관심상품']] === '기타·제휴', r);

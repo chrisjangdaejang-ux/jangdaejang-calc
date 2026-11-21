@@ -130,6 +130,10 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
 [hidden]{display:none!important}
 .bstat{margin:12px 0;padding:12px 14px;border:1px solid #D6E2FF;background:#F4F7FF;border-radius:14px;font-size:15px;line-height:1.6}
 .bstat small{display:block;font-size:13px;color:var(--sub2);margin-top:4px}
+.st.soon{background:#FBF8EF;color:#8A6D1C;border:1px solid #EFE6CC}
+.soonbox{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px;background:#FBF8EF;border:1px solid #EFE6CC;border-radius:16px;padding:14px 16px}
+.soonbox .pp{font-size:15px;line-height:1.6;color:var(--text);min-width:0}
+.soonbox .btn{min-height:48px}
 </style>
 </head>
 <body>
@@ -148,7 +152,7 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
     </div>
     <div class="bstat" data-brief-stat hidden></div>
     <nav class="toc" aria-label="이 페이지 목차">
-      <a href="#p-price">분양가 리포트</a><a href="#p-unsold">미분양 해소 패키지</a><a href="#p-brochure">분석 브로슈어(잠금형)</a><a href="#p-datapack">자료 팩(편집형)</a><a href="#rules">원칙</a><a href="#prices">가격</a><a href="#flow">진행 절차</a><a href="#ask">신청</a>
+      <a href="#p-price">분양가 리포트</a><a href="#p-unsold">미분양 해소 패키지</a><a href="#p-brochure">분석 브로슈어(잠금형)</a><a href="#p-datapack">자료 팩(편집형)</a><a href="#p-weekly">주간 현장 보고서</a><a href="#p-target">광고 지역 추천</a><a href="#rules">원칙</a><a href="#prices">가격</a><a href="#flow">진행 절차</a><a href="#ask">신청</a>
     </nav>
   </div>
 
@@ -280,6 +284,58 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
     </ol>
   </section>
 
+  <section id="p-weekly">
+    <div class="sh">PRODUCT 5 · 출시 예정</div>
+    <h2 class="t">주간 현장 보고서 — 매주 시행사에 내는 보고서를 대신 만들어 드려요</h2>
+    <p class="sub">분양대행사가 매주 시행사에 보고하는 내용(주변 시세, 경쟁 현장, 새 입주 물량, 미분양, 새 정책)을 공개 자료로 모아, 매주 월요일 아침 A4 3~5쪽 PDF로 보내 드려요. 보고서 머리와 강조색에는 귀사 이름·회사 색이 들어가요.</p>
+    <article class="prod">
+      <div class="ph"><div><span class="num">현장 1곳 · 매주 월요일 · PDF 3~5쪽</span><h3>무엇이 들어가나요</h3></div><span class="st soon">출시 예정 · 문의 받기</span></div>
+      <dl class="spec">
+        <dt>1쪽 이번 주 요약</dt><dd>지난주 보고서 뒤 새로 공개된 주변 거래·새 청약 공고·새 미분양 통계·최근 30일 정책을 한 줄씩. 면적 구간별(전용 60㎡ 이하·60~85㎡·85㎡ 초과) 우리 분양가와 주변 거래 가운데값, 최근 3개월 변화</dd>
+        <dt>주변 실거래 변화</dt><dd>같은 면적 구간의 준공 10년 이내 아파트 월별 거래 수·가운데값 그래프(분양가 선 함께), 지난주 뒤 새로 올라온 거래 목록</dd>
+        <dt>경쟁 현장</dt><dd>같은 구·반경 3km 안 아파트·민간임대·무순위(남은 집 다시 내놓기) 공고와 상태, 1순위 경쟁률, 당첨 가점(최저/평균)</dd>
+        <dt>새 입주 예정</dt><dd>주변 단지의 입주 예정 달·세대 수(입주가 몰리면 전세·매매 물건이 함께 늘 수 있어요)</dd>
+        <dt>미분양·정책</dt><dd>그 시·군·구 미분양·다 지은 뒤 남은 집 24개월 추이, 그 지역에 걸리는 규제·대출 정책(있을 때만)</dd>
+        <dt>두 가지 중 고르기</dt><dd><b>기본</b>: 귀사 이름·색, 서비스 이름 없음, 미래가치 점수 없음 · <b>잠금형</b>: 주변 단지 미래가치 점수 분포·과거 성적 칸이 더 들어가고, 모든 쪽에 ‘데이터·분석: <span data-site-name>집예보</span>’가 표시돼요(자료 팩·분석 브로슈어와 같은 원칙)</dd>
+        <dt>빠지는 것</dt><dd>계약률·남은 세대 수는 사업 주체만 알 수 있어 넣지 않아요. 첫 주 보고서에는 견줄 지난주 기록이 없어 ‘바뀐 것’ 칸이 비어 있어요</dd>
+        <dt>주실 것</dt><dd>청약홈 공고명(또는 공고번호) — 공고 전 현장은 주소·주택형별 전용면적·분양가, 회사 이름·회사 색(색상 코드)</dd>
+      </dl>
+    </article>
+    <div class="shots" aria-label="주간 현장 보고서 샘플 미리보기">
+      <figure><a href="sample-weekly.pdf" target="_blank" rel="noopener"><img src="w1.jpg" width="794" height="1123" loading="lazy" alt="주간 보고서 샘플 1쪽: 이번 주 바뀐 것, 면적 구간별 분양가와 주변 거래 가운데값, 핵심 숫자"></a><figcaption>이번 주 요약</figcaption></figure>
+      <figure><a href="sample-weekly.pdf" target="_blank" rel="noopener"><img src="w2.jpg" width="794" height="1123" loading="lazy" alt="주간 보고서 샘플 2쪽: 면적 구간별 월별 거래 가운데값 그래프와 분양가 선"></a><figcaption>주변 실거래 변화</figcaption></figure>
+      <figure><a href="sample-weekly.pdf" target="_blank" rel="noopener"><img src="w3.jpg" width="794" height="1123" loading="lazy" alt="주간 보고서 샘플 3쪽: 경쟁 현장 공고·경쟁률·당첨 가점과 용어 풀이"></a><figcaption>경쟁 현장</figcaption></figure>
+      <figure><a href="sample-weekly.pdf" target="_blank" rel="noopener"><img src="w4.jpg" width="794" height="1123" loading="lazy" alt="주간 보고서 샘플 4쪽: 주변 입주 예정 단지와 미분양 추이"></a><figcaption>입주 예정·미분양</figcaption></figure>
+    </div>
+    <p class="ex">샘플은 청약홈에 공고된 중화역 라온프라이빗 센트로의 공개 자료로 만든 첫 주 보고서예요. 머리의 ‘예시 분양대행사’ 자리에 귀사 이름이 들어가요. 이 샘플은 해당 단지 사업 주체와 관계가 없어요.</p>
+    <div class="soonbox"><div class="pp"><b>출시 예정 가격</b> <span data-pp="weekly_report"></span><span class="pnote">잠금형 <span data-pp-inline="weekly_locked"></span></span></div><a class="btn blue" href="#ask" data-pick="weekly_report" data-track="dev_weekly_ask">출시 알림·문의 남기기</a></div>
+  </section>
+
+  <section id="p-target">
+    <div class="sh">PRODUCT 6 · 출시 예정</div>
+    <h2 class="t">광고 지역 추천 리포트 — 살 사람이 사는 곳부터 광고하세요</h2>
+    <p class="sub">이 현장 근처 아파트를 실제로 산 사람이 어디 살았는지(한국부동산원), 30~40대가 얼마나 사는지(주민등록), 그 지역 집값으로 옮겨 올 만한지(실거래)를 공개 자료로만 따져, 광고를 먼저 보낼 시·군·구 10곳과 같은 구 안 동네를 순서대로 골라 드려요.</p>
+    <article class="prod">
+      <div class="ph"><div><span class="num">현장 1곳 · 한 번 납품 · PDF 4쪽</span><h3>무엇이 들어가나요</h3></div><span class="st soon">출시 예정 · 문의 받기</span></div>
+      <dl class="spec">
+        <dt>추천 10곳</dt><dd>그 구 아파트를 산 사람이 같은 구·같은 시·도 다른 구·다른 시·도에 산 비율대로 10곳을 나누고, 묶음 안에서는 가까운 곳·30~40대 비율이 높은 곳·집값이 우리 분양가와 비슷한 곳(팔고 옮기기 쉬운 곳) 순서</dd>
+        <dt>이유와 출처</dt><dd>지역마다 쉬운 말 이유와 값, 자료 이름·기간. 자료가 없는 칸은 ‘자료 없음’으로 두고 숫자를 채우지 않아요</dd>
+        <dt>그림</dt><dd>현장 중심 배치도(번호 = 추천 순서), 지역별 지표 한눈에 보기 표</dd>
+        <dt>동네·광고 수단</dt><dd>같은 구 안 동네(가까운 순, 아파트 세대 수·매매 가운데값), 지역 성격별로 알맞은 광고 수단 안내 — 광고 효과 숫자는 공개 자료로 알 수 없어 적지 않아요</dd>
+        <dt>알아 두실 점</dt><dd>‘어느 구에서 어느 구로 이사했는지’ 시·군·구 단위 통계는 리포트에 쓰지 않아요(받아 둔 공개 통계에 없음). 산 사람 거주지도 단지별이 아니라 시·군·구 단위예요</dd>
+        <dt>주실 것</dt><dd>청약홈 공고명(또는 공고 전 현장의 주소·주택형별 분양가), 회사 이름·회사 색(선택)</dd>
+      </dl>
+    </article>
+    <div class="shots" aria-label="광고 지역 추천 리포트 샘플 미리보기">
+      <figure><a href="sample-target.pdf" target="_blank" rel="noopener"><img src="t1.jpg" width="794" height="1123" loading="lazy" alt="광고 지역 추천 샘플 1쪽: 매입자 거주지 비율과 추천 10곳 표"></a><figcaption>추천 10곳</figcaption></figure>
+      <figure><a href="sample-target.pdf" target="_blank" rel="noopener"><img src="t2.jpg" width="794" height="1123" loading="lazy" alt="광고 지역 추천 샘플 2쪽: 현장 중심 배치도와 지표 한눈에 보기 표"></a><figcaption>배치도·지표</figcaption></figure>
+      <figure><a href="sample-target.pdf" target="_blank" rel="noopener"><img src="t3.jpg" width="794" height="1123" loading="lazy" alt="광고 지역 추천 샘플 3쪽: 지역별 이유와 값"></a><figcaption>지역별 이유</figcaption></figure>
+      <figure><a href="sample-target.pdf" target="_blank" rel="noopener"><img src="t4.jpg" width="794" height="1123" loading="lazy" alt="광고 지역 추천 샘플 4쪽: 광고 수단 안내, 같은 구 동네, 출처"></a><figcaption>광고 수단·출처</figcaption></figure>
+    </div>
+    <p class="ex">샘플은 중화역 라온프라이빗 센트로(청약홈 공고)의 공개 자료로 만들었어요. 이 샘플은 해당 단지 사업 주체와 관계가 없어요.</p>
+    <div class="soonbox"><div class="pp"><b>출시 예정 가격</b> <span data-pp="ad_target"></span></div><a class="btn blue" href="#ask" data-pick="ad_target" data-track="dev_target_ask">출시 알림·문의 남기기</a></div>
+  </section>
+
   <section id="rules">
     <div class="sh">PRINCIPLES</div>
     <h2 class="t">의뢰를 받아도 바뀌지 않는 것</h2>
@@ -306,10 +362,13 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
         <tr><td><b>① 집예보 분석 브로슈어(잠금형)</b></td><td data-l="포함">청약 공고 1곳 · PDF 4쪽 · 의견 칸 1개 · 영업일 2일 안 납품 · 분양 광고 1개월 이상 계약 시 1건 포함</td><td data-l="금액" data-pp="brochure"></td></tr>
         <tr><td><b>② 현장 자료 팩(편집형)</b></td><td data-l="포함">청약 공고 1곳 · 그림 PNG(흰 바탕·투명) + 원자료 엑셀 zip · 강조색 1개 맞춤 · 영업일 2일 안 납품 · 미래가치 점수·과거 성적 제외</td><td data-l="금액" data-pp="datapack"></td></tr>
         <tr><td><b>브로슈어 다시 만들기</b></td><td data-l="포함">같은 공고, 새 실거래·청약 결과로 다시 계산(공고 기간 안)</td><td data-l="금액" data-pp="brochure_update"></td></tr>
+        <tr><td><b>주간 현장 보고서</b> <span class="st soon">출시 예정</span></td><td data-l="포함">현장 1곳 · 매주 월요일 PDF 3~5쪽 · 귀사 이름·색 · 미래가치 점수 제외 · 한 달 단위</td><td data-l="금액" data-pp="weekly_report"></td></tr>
+        <tr><td><b>주간 현장 보고서(잠금형)</b> <span class="st soon">출시 예정</span></td><td data-l="포함">위 내용 + 주변 단지 미래가치 점수 분포·과거 성적 · 모든 쪽 ‘데이터·분석: <span data-site-name>집예보</span>’</td><td data-l="금액" data-pp="weekly_locked"></td></tr>
+        <tr><td><b>광고 지역 추천 리포트</b> <span class="st soon">출시 예정</span></td><td data-l="포함">현장 1곳 · 추천 시·군·구 10곳·같은 구 동네 · PDF 4쪽 · 한 번 납품</td><td data-l="금액" data-pp="ad_target"></td></tr>
         <tr><td><b>패키지 광고비</b></td><td data-l="포함">분양 광고 상품(목록 상단·지도 마커·관심 지역 알림·상담 연결)</td><td data-l="금액"><a href="../../ad/#prices">광고 단가표</a>를 따라요 · 묶음 할인은 견적에서 정해요</td></tr>
       </tbody>
     </table>
-    <p class="src" style="margin-top:10px">런칭가는 <span data-guide="until"></span>까지 신청하신 의뢰에 적용돼요. 결제 뒤 작업을 시작하면 환불되지 않아요(작업 시작 전 취소는 전액 환불). 집예보 쪽 오류로 숫자가 틀리면 고쳐서 다시 드려요.</p>
+    <p class="src" style="margin-top:10px">런칭가는 <span data-guide="until"></span>까지 신청하신 의뢰에 적용돼요. ‘출시 예정’ 상품의 가격은 출시 때 확정하며, 지금은 문의만 받아요. 결제 뒤 작업을 시작하면 환불되지 않아요(작업 시작 전 취소는 전액 환불). 집예보 쪽 오류로 숫자가 틀리면 고쳐서 다시 드려요.</p>
   </section>
 
   <section id="flow">
@@ -341,6 +400,8 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
               <label><input type="checkbox" value="unsold_pack"> 미분양 해소 패키지</label>
               <label><input type="checkbox" value="brochure"> 집예보 분석 브로슈어(잠금형)</label>
               <label><input type="checkbox" value="datapack"> 현장 자료 팩(편집형)</label>
+              <label><input type="checkbox" value="weekly_report"> 주간 현장 보고서(출시 예정)</label>
+              <label><input type="checkbox" value="ad_target"> 광고 지역 추천 리포트(출시 예정)</label>
             </div></div>
           <div class="f full"><label class="l" for="site">사업지 주소 <i>*</i></label><input id="site" maxlength="60" placeholder="예: 서울 성북구 장위동 ○○ 일원"><small>지번·도로명 주소 또는 단지명. 좌표가 있으면 문의 내용에 적어 주세요.</small></div>
           <div class="f full"><label class="l" for="types">평형별 전용면적·예정 분양가</label><textarea id="types" maxlength="400" placeholder="예: 59㎡ 8억 9,000만 / 84㎡ 12억 5,000만 / 114㎡ 미정"></textarea><small>미정이면 비워 두셔도 돼요. 미분양 패키지는 현재 분양가(할인가)와 남은 세대를 적어 주세요.</small></div>
@@ -389,10 +450,15 @@ const DEV_PRICES = {
   brochure:    { list: 390000,  launch: 190000 },
   datapack:    { list: 190000,  launch: 90000 },
   brochure_update: { list: 100000, launch: 50000 },
+  /* 출시 예정(soon): 문의만 받음 — 가격은 출시 때 확정. per = 기간 단위(월 정액) */
+  weekly_report: { list: 390000, launch: 190000, per: '월', soon: true },
+  weekly_locked: { list: 590000, launch: 290000, per: '월', soon: true },
+  ad_target:     { list: 290000, launch: 150000, soon: true },
   until: '2027-03-31'
 };
 /* 신청 상품 → 서버 관심 상품 키. 서버(agent-backend.gs AQ_PROD)가 아직 모르는 키는 버려지므로 'etc'(기타·제휴)를 같이 보내 접수가 되게 함 */
-const DEV_PROD = { dev_report: '분양가 적정성·입지 분석 리포트', unsold_pack: '미분양 해소 패키지', brochure: '집예보 분석 브로슈어(잠금형)', datapack: '현장 자료 팩(편집형)' };
+const DEV_PROD = { dev_report: '분양가 적정성·입지 분석 리포트', unsold_pack: '미분양 해소 패키지', brochure: '집예보 분석 브로슈어(잠금형)', datapack: '현장 자료 팩(편집형)',
+                   weekly_report: '주간 현장 보고서(출시 예정)', ad_target: '광고 지역 추천 리포트(출시 예정)' };
 /* 자료 팩 이용 조건(신청 폼 필수 동의 · zip 안 '이용 조건.txt' 와 같은 내용) */
 const DP_TERMS_VER = '2026-11-21';
 function won(n) { n = Math.round(+n); if (n >= 1e4 && n % 1e4 === 0) return (n / 1e4).toLocaleString('ko-KR') + '만 원'; return n.toLocaleString('ko-KR') + '원'; }
@@ -406,10 +472,22 @@ function devMemo(b) {
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function ppText(p) {   // 출시 예정 상품: '출시 예정 런칭가 월 19만 원 · 정가 월 39만 원'
+  const per = p.per ? p.per + ' ' : '';
+  return { v: `${per}${won(p.launch)}<s>${per}${won(p.list)}</s>`, note: p.soon ? `출시 예정 런칭가 · 정가 ${per}${won(p.list)} · 출시 때 확정` : `런칭가 · 정가 ${won(p.list)}` };
+}
 document.querySelectorAll('[data-pp]').forEach(el => {
   const p = DEV_PRICES[el.dataset.pp]; if (!p) return;
-  el.innerHTML = `<span class="price-v">${won(p.launch)}<s>${won(p.list)}</s></span><span class="pnote">런칭가 · 정가 ${won(p.list)}</span>`;
+  const t = ppText(p);
+  el.innerHTML = `<span class="price-v">${t.v}</span><span class="pnote">${t.note}</span>`;
 });
+document.querySelectorAll('[data-pp-inline]').forEach(el => {
+  const p = DEV_PRICES[el.dataset.ppInline]; if (!p) return;
+  el.textContent = `${p.per ? p.per + ' ' : ''}${won(p.launch)} (정가 ${p.per ? p.per + ' ' : ''}${won(p.list)})`;
+});
+document.querySelectorAll('[data-pick]').forEach(a => a.addEventListener('click', () => {
+  const x = document.querySelector(`#prod input[value="${a.dataset.pick}"]`); if (x && !x.checked) { x.checked = true; x.dispatchEvent(new Event('change')); }
+}));
 document.querySelectorAll('[data-guide=until]').forEach(el => { const d = DEV_PRICES.until.split('-'); el.textContent = `${d[0]}년 ${+d[1]}월 ${+d[2]}일`; });
 addEventListener('DOMContentLoaded', () => {
   const B = window.JDJ_BIZ || {};

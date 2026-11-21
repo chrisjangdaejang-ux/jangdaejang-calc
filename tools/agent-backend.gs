@@ -17,6 +17,11 @@
  *  - 광고 문의 관심 상품에 brief_ad(모닝 브리핑 지면 광고) 추가.
  *  - 검증: node tools/brief-test.js
  *
+ * v26 변경 요약 (v20~v25와 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — 시트 변경 없음)
+ *  - 광고·제휴 문의(adInquiry) 관심 상품에 시행사 페이지(pro/developer/) 출시 예정 상품 키 두 개 추가: weekly_report '주간 현장 보고서(출시 예정)',
+ *    ad_target '광고 지역 추천 리포트(출시 예정)'. 재배포 전에는 이 키가 버려지고 함께 보내는 'etc'(기타·제휴)로 접수돼요(문의 내용에 상품 이름이 그대로 있음).
+ *  - 검증: node tools/devpro-test.js
+ *
  * v25 변경 요약 (v20~v24와 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — 시트 변경 없음)
  *  - 모닝 브리핑 메일 ① 오늘의 부동산 시장에 '새로 발표된 정책·교통·공급 소식'(market.json pnews: 정부·지자체 공식 보도자료 제목·부처·날짜·원문 링크,
  *    종류별 고정 안내 한 줄, 제목에 나온 용어의 쉬운 풀이). 최대 6건. 자료에 pnews 가 없으면(새 발표 없음) 칸 자체를 넣지 않음.
@@ -1419,7 +1424,8 @@ const AQH = ['id','접수일','유형','회사명','담당자','연락처','관�
 const AQC = Object.fromEntries(AQH.map((h, i) => [h, i]));
 const AQ_PROD = { bunyang: '분양 단지 광고', bunyang_pro: '분양 프리미엄', agent: '지역 제휴 중개사', native: '결과 하단 카드', jeonse: '전세사기 예방 체크리스트 스폰서', package: '패키지', etc: '기타·제휴',
                   dev_report: '분양가 적정성·입지 분석 리포트', unsold_pack: '미분양 해소 패키지',
-                  brochure: '집예보 분석 브로슈어(잠금형)', datapack: '현장 자료 팩(편집형)' };   // pro/developer/ 신청(시행사·분양대행사) — 'etc'와 함께 와요 (v23 brochure·datapack)
+                  brochure: '집예보 분석 브로슈어(잠금형)', datapack: '현장 자료 팩(편집형)',
+                  weekly_report: '주간 현장 보고서(출시 예정)', ad_target: '광고 지역 추천 리포트(출시 예정)' };   // pro/developer/ 신청(시행사·분양대행사) — 'etc'와 함께 와요 (v23 brochure·datapack, v26 weekly_report·ad_target)
 AQ_PROD.brief_ad = BRIEF_NAME + ' 지면 광고';   // v26: ad/ 문의 폼 '모닝 브리핑 지면 광고'(재배포 전 서버는 함께 보내는 'etc'로 접수)
 const AQ_PERIOD = ['', '1주', '2주', '1개월', '3개월', '6개월', '1년', '미정·협의'];
 const AQ_DAILY = 40;          // 하루 전체 문의 상한(스팸 방지)
