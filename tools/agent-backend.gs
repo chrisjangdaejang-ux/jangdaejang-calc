@@ -2354,7 +2354,7 @@ function briefPiece(S, a, pro, apts) {
 function bTop(x) {
   const ym = i => `${Math.floor(i / 10000)}.${Math.floor(i / 100) % 100}`;
   const sub = x.up != null ? ` (이전 최고 ${bWon(x.pm)}·${ym(x.pmd)} 대비 +${x.up}%)` : x.dr != null ? ` (최근 2년 최고 ${bWon(x.m2)}·${ym(x.m2d)} 대비 ${x.dr}%)` : '';
-  return `${[x.sd, x.gn, x.d].filter(Boolean).join(' ')} ${x.a} ${x.b} ${bWon(x.p)}${sub}`;
+  return `${[x.sd, x.gn, x.d].filter(Boolean).join(' ')} ${x.a} ${x.b} ${bWon(x.p)}${sub}${x.x ? ' · 직거래' : ''}${x.sus ? ' · 특수 거래 의심' : ''}`;
 }
 function briefMarketHtml(M, ub) {
   if (!M) return '';
@@ -2370,7 +2370,7 @@ function briefMarketHtml(M, ub) {
   return `<div style="border:2px solid #191F28;border-radius:12px;padding:14px 16px;margin:0 0 14px">
     <div style="font-size:17px;font-weight:900;margin:0 0 6px">① 오늘의 부동산 시장 <span style="font-size:12.5px;color:#4E5968;font-weight:500">전국 공통</span></div>
     ${(M.lines || []).map(x => `<p style="margin:0 0 6px;line-height:1.6">${bEsc(x)}</p>`).join('')}
-    <b>전국 신고가 TOP</b>${li((kr.hi || []).slice(0, 3).map(bTop))}<b>전국 큰 하락 TOP</b>${li((kr.drop || []).slice(0, 3).map(bTop))}
+    <b>전국 신고가 TOP</b>${li((kr.hi || []).slice(0, 3).map(bTop))}<b>전국 큰 하락 TOP</b>${li((kr.drop || []).filter(x => !x.sus && !x.x).slice(0, 3).map(bTop))}
     <b>서울 신고가 TOP</b>${li((se.hi || []).slice(0, 3).map(bTop))}
     ${(M.rise || []).length ? `<b>상승 전환 신호 TOP</b>${li(M.rise.slice(0, 3).map(r => `${r.sd} ${r.d} ${r.a} ${r.b} 최근 3개월 ${r.chg > 0 ? '+' : ''}${r.chg}%`))}` : ''}
     ${M.rank && (M.rank.up || []).length ? `<b>미래가치 순위가 크게 오른 단지</b>${li(M.rank.up.slice(0, 3).map(r => `${r.sd} ${r.d} ${r.a} ${r.b} ${r.r0}위 → ${r.r1}위`))}` : ''}
