@@ -416,6 +416,7 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
             </div></div>
           <div class="f full"><label class="l" for="site">사업지 주소 <i>*</i></label><input id="site" maxlength="60" placeholder="예: 서울 성북구 장위동 ○○ 일원"><small>지번·도로명 주소 또는 단지명. 좌표가 있으면 문의 내용에 적어 주세요.</small></div>
           <div class="f full"><label class="l" for="types">평형별 전용면적·예정 분양가</label><textarea id="types" maxlength="400" placeholder="예: 59㎡ 8억 9,000만 / 84㎡ 12억 5,000만 / 114㎡ 미정"></textarea><small>미정이면 비워 두셔도 돼요. 미분양 패키지는 현재 분양가(할인가)와 남은 세대를 적어 주세요.</small></div>
+          <div class="f full" id="remailF" hidden><label class="l" for="remail">보고서 받을 이메일 <i>*</i></label><input id="remail" type="email" maxlength="80" inputmode="email" autocomplete="email" placeholder="name@company.com"><small>주간 현장 보고서·광고 지역 추천 PDF를 이 주소로 보내 드려요. 위 연락처가 전화번호여도 이 칸은 이메일로 적어 주세요.</small></div>
           <div class="f full" id="colorF" hidden><label class="l" for="color">회사 색(선택)</label><input id="color" maxlength="7" placeholder="예: #0F766E" autocomplete="off"><small>자료 팩·주간 보고서·광고 지역 추천의 강조색이에요. 비우면 회색으로 만들어요.</small></div>
           <div class="f"><label class="l" for="due">희망 납기</label><select id="due"><option value="">골라 주세요</option><option>1주 안</option><option>2주 안</option><option>1개월 안</option><option>미정·협의</option></select></div>
           <div class="f"><label class="l" for="role">회사 구분</label><select id="role"><option value="">골라 주세요</option><option>시행사</option><option>분양대행사</option><option>시공사</option><option>조합·추진위</option><option>그 밖</option></select></div>
@@ -473,7 +474,8 @@ const DEV_PROD = { dev_report: '분양가 적정성·입지 분석 리포트', u
                    weekly_report: '주간 현장 보고서(기본)', weekly_locked: '주간 현장 보고서(잠금형)', ad_target: '광고 지역 추천 리포트' };
 /* 자료 팩 이용 조건(신청 폼 필수 동의 · zip 안 '이용 조건.txt' 와 같은 내용) */
 const DP_TERMS_VER = '2026-11-21';
-const COLOR_PROD = ['datapack', 'weekly_report', 'ad_target'];   // 회사 색을 받는 상품(잠금형은 사이트 기본색)
+const COLOR_PROD = ['datapack', 'weekly_report', 'ad_target'];
+const REPORT_PROD = ['weekly_report', 'weekly_locked', 'ad_target'];   // 보고서를 이메일로 받는 상품 — 고르면 '보고서 받을 이메일' 필수(서버 AQ_REPORT_PROD 와 같음)   // 회사 색을 받는 상품(잠금형은 사이트 기본색)
 function won(n) { n = Math.round(+n); if (n >= 1e4 && n % 1e4 === 0) return (n / 1e4).toLocaleString('ko-KR') + '만 원'; return n.toLocaleString('ko-KR') + '원'; }
 function serverProducts(sel) { return [...sel.filter(p => DEV_PROD[p]), 'etc']; }
 function devMemo(b) {
@@ -513,7 +515,8 @@ const formula = v => /^[=+\-@]/.test(String(v).trim());
 const emailOk = v => /^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(v);
 const phoneOk = v => /^(01[016789]\d{7,8}|0[2-6]\d{7,9}|070\d{8}|1[5-9]\d{6})$/.test(v.replace(/[^0-9]/g, '')) && !/[A-Za-z@]/.test(v);
 const sel = () => [...document.querySelectorAll('#prod input:checked')].map(x => x.value);
-const dpShow = () => { $('agreeDpL').hidden = !sel().includes('datapack'); $('colorF').hidden = !sel().some(p => COLOR_PROD.includes(p)); };
+const dpShow = () => { $('agreeDpL').hidden = !sel().includes('datapack'); $('colorF').hidden = !sel().some(p => COLOR_PROD.includes(p)); $('remailF').hidden = !needMail(); };
+const needMail = () => sel().some(p => REPORT_PROD.includes(p));
 document.querySelectorAll('#prod input').forEach(x => x.addEventListener('change', dpShow)); dpShow();
 function check() {
   for (const [id, n] of [['company', '회사명'], ['manager', '담당자 이름']]) {
@@ -527,6 +530,11 @@ function check() {
   if (!sel().length) return ['prod', '신청 상품을 하나 이상 골라 주세요.'];
   if (!$('site').value.trim()) return ['site', '사업지 주소를 입력해 주세요.'];
   for (const [id, n] of [['site', '사업지 주소'], ['types', '평형·분양가'], ['memo', '문의 내용']]) if (formula($(id).value)) return [id, `${n}은(는) = + - @ 기호로 시작할 수 없어요.`];
+  if (needMail()) {
+    const em = $('remail').value.trim();
+    if (!em) return ['remail', '보고서를 받을 이메일을 입력해 주세요.'];
+    if (!emailOk(em)) return ['remail', '보고서 받을 이메일 형식을 확인해 주세요(예: name@company.com).'];
+  }
   const col = $('color').value.trim();
   if (col && !/^#[0-9A-Fa-f]{6}$/.test(col)) return ['color', '회사 색은 #과 숫자·영문 6자리로 적어 주세요(예: #0F766E). 모르시면 비워 두셔도 돼요.'];
   if (sel().includes('datapack') && !$('agreeDp').checked) return ['agreeDp', '자료 팩은 이용 조건에 동의해 주셔야 신청할 수 있어요.'];
@@ -553,7 +561,7 @@ $('form').addEventListener('submit', async e => {
   }
   const f = { sel: sel(), site: $('site').value.trim(), types: $('types').value.trim(), due: $('due').value, role: $('role').value, memo: $('memo').value.trim(), dpAgree: $('agreeDp').checked, color: $('color').value.trim() };
   const body = { action: 'adInquiry', type: 'inquiry', company: $('company').value.trim(), manager: $('manager').value.trim(), contact: $('contact').value.trim(),
-    products: serverProducts(f.sel), region: f.site.slice(0, 60), period: '미정·협의', memo: devMemo(f), agree: { privacy: true }, hp: $('hpf').value };
+    products: serverProducts(f.sel), region: f.site.slice(0, 60), reportEmail: needMail() ? $('remail').value.trim() : '', period: '미정·협의', memo: devMemo(f), agree: { privacy: true }, hp: $('hpf').value };
   if (!window.JDJ_AGENTS || !JDJ_AGENTS.ready) { fallback(body, '신청 서버에 연결하지 못했어요.'); return; }
   $('send').disabled = true; m.textContent = '보내는 중이에요…';
   try {

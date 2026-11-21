@@ -53,13 +53,15 @@ const T = ctx.__T;
 const post = b => JSON.parse(ctx.doPost({ postData: { contents: JSON.stringify(b) } }).s);
 
 const aq = sheets[T.SH_AQ] = makeSheet(); aq.appendRow(T.AQH);
-function addApp(id, contact, st, day) { const r = []; r[T.AQC['id']] = id; r[T.AQC['회사명']] = '가나분양대행'; r[T.AQC['담당자']] = '김담당'; r[T.AQC['연락처']] = contact;
+function addApp(id, contact, st, day, remail) { const r = []; r[T.AQC['보고서 이메일']] = remail || ''; r[T.AQC['id']] = id; r[T.AQC['회사명']] = '가나분양대행'; r[T.AQC['담당자']] = '김담당'; r[T.AQC['연락처']] = contact;
   r[T.AQC['관심상품']] = '주간 현장 보고서(기본)'; r[T.AQC['처리상태']] = st || '진행'; r[T.AQC['처리일']] = day || ''; aq.appendRow(T.AQH.map((h, i) => r[i] === undefined ? '' : r[i])); }
 addApp('AQ1A2B3C4D', 'agency@example.com');
 addApp('AQ00000011', 'cancel@example.com', '해지', new RealDate('2026-11-10T10:00:00+09:00'));
 addApp('AQ00000012', 'stop@example.com', '취소');
 addApp('AQ00000013', 'nodate@example.com', '해지', '');
 addApp('AQ00000014', '010-1234-5678');
+addApp('AQ00000015', '010-9999-8888', '', '', 'report@company.co.kr');
+addApp('AQ00000016', 'contact@company.co.kr', '', '', 'report@company.co.kr');
 const PDF = Buffer.from('%PDF-1.4 fake').toString('base64');
 const put = (o) => post(Object.assign({ action: 'dwPut', k: 'pull-FAKE-123', date: '2026-11-23', site: '중화역 라온프라이빗 센트로', lines: ['첫 보고서라 지난주와 견줄 기록이 없습니다.', '전용 60~85㎡: 분양가 3.3㎡당 5,246만 원'], b64: PDF }, o));
 const owner = () => mails.filter(m => m[0] === 'owner@example.com');
@@ -114,6 +116,10 @@ check('메일 발송 실패 → 운영자 알림·기록 "발송 실패"', !r.ok
 r = put({ aq: 'AQ1A2B3C4D', date: '2026-12-09' });
 check('발송 실패한 날짜는 다시 돌리면 보냄', r.sent === true, r);
 
+r = put({ aq: 'AQ00000015', date: '2026-12-07' });
+check('[보고서 이메일]이 있으면 그 주소로(연락처가 전화번호여도)', r.sent === true && mails.some(x => x[0].to === 'report@company.co.kr' && x[0].subject.endsWith('12/7')), r);
+before = mails.length; r = put({ aq: 'AQ00000016', date: '2026-12-07' });
+check('[보고서 이메일]이 [연락처]보다 먼저', r.sent === true && mails.length === before + 1 && mails.slice(-1)[0][0].to === 'report@company.co.kr', mails.slice(-1));
 // 8주 지난 PDF 삭제
 NOW = Date.parse('2027-02-01T07:00:00+09:00');
 r = put({ aq: 'AQ1A2B3C4D', date: '2027-02-01' });

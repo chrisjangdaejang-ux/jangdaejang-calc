@@ -69,7 +69,7 @@ function runBackend(srcPatch) {
   vm.createContext(ctx);
   let src = fs.readFileSync(path.join(ROOT, 'tools/agent-backend.gs'), 'utf8');
   if (srcPatch) src = srcPatch(src);
-  vm.runInContext(src + '\n;globalThis.__T = { AQC, SH_AQ, AQ_PROD };', ctx);
+  vm.runInContext(src + '\n;globalThis.__T = { AQC, SH_AQ, AQ_PROD, AQH };', ctx);
   const post = b => JSON.parse(ctx.doPost({ postData: { contents: JSON.stringify(b) } }).s);
   return { post, sheets, T: ctx.__T, mails };
 }
@@ -89,8 +89,22 @@ check('새 서버: 사업지·평형이 문의 내용에', /장위동/.test(row[
 check('알림 메일에 연락처 없음', !JSON.stringify(S.mails).includes('dev@example.com'));
 const rd = S.post(body(['datapack']));
 check('새 서버: 자료 팩 접수·관심 상품 이름', rd.ok && S.sheets[S.T.SH_AQ].rows.slice(-1)[0][S.T.AQC['관심상품']] === '현장 자료 팩(편집형),기타·제휴', r);
-const mw = S.mails.length; const rw = S.post(body(['weekly_report', 'ad_target']));
+const mw = S.mails.length; const rw = S.post(Object.assign(body(['weekly_report', 'ad_target']), { reportEmail: 'report@example.com' }));
 check('새 서버: 주간 보고서·광고 지역 추천 신청 접수 + 운영자 알림 메일(상품 이름, 연락처 없음)', rw.ok && S.mails.length === mw + 1 && /주간 현장 보고서\(기본\),광고 지역 추천 리포트/.test(S.mails[mw][2]) && !S.mails[mw][2].includes('dev@example.com'), S.mails.slice(-1));
+const aqRows = () => S.sheets[S.T.SH_AQ].rows, AC = S.T.AQC;
+check('보고서 이메일: [연락처]와 따로 [보고서 이메일] 칸에 저장, 시트 머리에 칸 이름', rw.ok && aqRows().slice(-1)[0][AC['보고서 이메일']] === 'report@example.com' && aqRows().slice(-1)[0][AC['연락처']] === 'dev@example.com' && aqRows()[0].includes('보고서 이메일'), aqRows()[0]);
+for (const k of ['weekly_report', 'weekly_locked', 'ad_target']) {
+  const e1 = S.post(Object.assign(body([k]), { contact: '010-1234-5678' }));
+  const e2 = S.post(Object.assign(body([k]), { contact: '010-1234-5678', reportEmail: 'not-an-email' }));
+  check(`${k}: 보고서 이메일 없거나 형식이 틀리면 서버가 거절(전화번호만으로 신청 못 함)`, !e1.ok && /보고서를 받을 이메일/.test(e1.err || e1.error || JSON.stringify(e1)) && !e2.ok && /형식/.test(JSON.stringify(e2)), [e1, e2]);
+}
+const e3 = S.post(Object.assign(body(['weekly_locked']), { contact: '010-1234-5678', reportEmail: 'boss@company.co.kr' }));
+check('전화번호 연락처 + 보고서 이메일이면 접수', e3.ok && aqRows().slice(-1)[0][AC['보고서 이메일']] === 'boss@company.co.kr', e3);
+const e4 = S.post(body(['dev_report']));
+check('다른 상품은 보고서 이메일 없이도 접수(빈칸)', e4.ok && aqRows().slice(-1)[0][AC['보고서 이메일']] === '', e4);
+check('화면: 보고서 이메일 칸(필수 표시)·상품 목록이 서버와 같음·신청 때 함께 보냄',
+  html.includes('id="remail"') && /보고서 받을 이메일 <i>\*<\/i>/.test(html) && html.includes("const REPORT_PROD = ['weekly_report', 'weekly_locked', 'ad_target']") && html.includes("reportEmail: needMail() ? $('remail').value.trim() : ''")
+  && /const AQ_REPORT_PROD = \['weekly_report', 'weekly_locked', 'ad_target'\]/.test(fs.readFileSync(path.join(ROOT, 'tools/agent-backend.gs'), 'utf8')));
 const OLD = runBackend(src => src.replace(/,\s*dev_report: '[^']*', unsold_pack: '[^']*',\s*brochure: '[^']*', datapack: '[^']*',\s*weekly_report: '[^']*', weekly_locked: '[^']*', ad_target: '[^']*' \};/, ' };'));
 check('옛 서버 흉내: 새 상품 키 없음', !OLD.T.AQ_PROD.dev_report && !OLD.T.AQ_PROD.datapack);
 r = OLD.post(body(['dev_report']));

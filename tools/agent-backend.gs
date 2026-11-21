@@ -1,5 +1,10 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ *
+ * v35 변경 요약 (v20~v34와 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — '광고문의' 시트 맨 뒤 [보고서 이메일] 칸은 첫 사용 때 머리 줄만 채움)
+ *  - adInquiry: 주간 현장 보고서(기본·잠금형)·광고 지역 추천(AQ_REPORT_PROD)을 고르면 reportEmail(보고서 받을 이메일) 필수, 서버에서 형식 확인 → [보고서 이메일]에 저장([연락처]와 따로).
+ *  - dwPut: 받는 주소는 [보고서 이메일]을 먼저, 비었거나 이메일이 아니면 [연락처]에서. 둘 다 아니면 운영자 알림(그대로).
+ *  - 검증: node tools/devpro-test.js · node tools/devweekly-test.js
  *
  * v34 변경 요약 (v20~v33과 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — '주간현장보고서' 시트·드라이브 폴더는 첫 발송 때 자동 생성.
  *   드라이브 권한은 v27(중개사 플러스 주간 리포트)에서 이미 승인 — 재배포 때 권한 화면이 나오면 '허용')
@@ -1489,7 +1494,8 @@ function adDemand(sido, sggCode) {
          → 운영자가 연락 후 [처리상태]·[처리일] 입력. 처리일로부터 1년 지나면 행 삭제(개인정보처리방침 보관 기간)
    ===================================================================== */
 const SH_AQ = '광고문의';
-const AQH = ['id','접수일','유형','회사명','담당자','연락처','관심상품','지역','희망기간','문의내용','동의','처리상태','처리일','메모'];
+const AQH = ['id','접수일','유형','회사명','담당자','연락처','관심상품','지역','희망기간','문의내용','동의','처리상태','처리일','메모','보고서 이메일'];   // v35: 맨 뒤 '보고서 이메일'(예전 시트는 첫 사용 때 머리 줄만 채움)
+const AQ_REPORT_PROD = ['weekly_report', 'weekly_locked', 'ad_target'];   // v35: 보고서를 이메일로 받는 상품 — 고르면 '보고서 이메일' 필수
 const AQC = Object.fromEntries(AQH.map((h, i) => [h, i]));
 const AQ_PROD = { bunyang: '분양 단지 광고', bunyang_pro: '분양 프리미엄', agent: '지역 제휴 중개사', native: '결과 하단 카드', jeonse: '전세사기 예방 체크리스트 스폰서', package: '패키지', etc: '기타·제휴',
                   dev_report: '분양가 적정성·입지 분석 리포트', unsold_pack: '미분양 해소 패키지',
@@ -1507,6 +1513,7 @@ function aqSheet() {
     sh.getRange(1, 1, 1, AQH.length).setValues([AQH]).setFontWeight('bold').setBackground('#2F6BFF').setFontColor('#FFFFFF');
     sh.setFrozenRows(1);
   }
+  if (String(sh.getRange(1, AQH.length).getValue() || '') !== AQH[AQH.length - 1]) sh.getRange(1, AQH.length).setValue(AQH[AQH.length - 1]);   // v35 이전 시트: 뒤 칸 머리만
   return sh;
 }
 
@@ -1550,9 +1557,10 @@ function dwPut(b) {
   }
   const S = dwStatus(r, now);
   if (!S.send) { dwLog([date, aq, site, '', now, '멈춤(' + S.why + ')']); return { ok: true, sent: false, why: S.why }; }
-  const to = String(r[AQC['연락처']] || '').trim();
+  const re = String(r[AQC['보고서 이메일']] || '').trim(), ct = String(r[AQC['연락처']] || '').trim();   // v35: [보고서 이메일] 먼저, 비었거나 틀리면 [연락처]
+  const to = DW_EMAIL.test(re) ? re : ct;
   if (!DW_EMAIL.test(to)) {
-    dwAlert(site + ' · 받는 이메일 없음', [`신청 id ${aq}(${r[AQC['회사명']]})의 [연락처]가 이메일이 아니라 보내지 못했어요. 업체에 이메일을 받아 [연락처] 칸을 이메일로 바꿔 주세요.`]);
+    dwAlert(site + ' · 받는 이메일 없음', [`신청 id ${aq}(${r[AQC['회사명']]})의 [보고서 이메일]·[연락처]에 이메일이 없어 보내지 못했어요. 업체에 이메일을 받아 [보고서 이메일] 칸에 적어 주세요.`]);
     dwLog([date, aq, site, '', now, '이메일 없음']); return { ok: false, err: 'no-email' };
   }
   const bytes = Utilities.base64Decode(String(b.b64 || ''));
@@ -1618,13 +1626,18 @@ function adInquiry(b) {
   if (memo.length > 1000) throw new Error('문의 내용은 1,000자 이내로 입력해 주세요.');
   if (/^[=+\-@\t\r]/.test(memo)) throw new Error('문의 내용은 = + - @ 기호로 시작할 수 없습니다.');
   if (!(b.agree && b.agree.privacy === true)) throw new Error('개인정보 수집·이용에 동의해 주세요.');
+  const remail = String(b.reportEmail == null ? '' : b.reportEmail).trim();
+  if (products.some(p => AQ_REPORT_PROD.indexOf(p) >= 0)) {
+    if (!remail) throw new Error('보고서를 받을 이메일을 입력해 주세요.');
+    if (remail.length > 80 || !DW_EMAIL.test(remail)) throw new Error('보고서 받을 이메일 형식을 확인해 주세요(예: name@company.com).');
+  } else if (remail && (remail.length > 80 || !DW_EMAIL.test(remail))) throw new Error('보고서 받을 이메일 형식을 확인해 주세요(예: name@company.com).');
   const t0 = ymd(new Date());
   const id = 'AQ' + Utilities.getUuid().replace(/-/g, '').slice(0, 8).toUpperCase();
   const row = [];
   row[AQC['id']] = id; row[AQC['접수일']] = new Date(); row[AQC['유형']] = '광고 문의'; row[AQC['회사명']] = company; row[AQC['담당자']] = manager;
   row[AQC['연락처']] = contact; row[AQC['관심상품']] = products.map(p => AQ_PROD[p]).join(','); row[AQC['지역']] = region; row[AQC['희망기간']] = period;
   row[AQC['문의내용']] = memo; row[AQC['동의']] = '개인정보 수집·이용 동의(문의 처리 후 1년 보관) ' + t0;
-  row[AQC['처리상태']] = '접수'; row[AQC['처리일']] = ''; row[AQC['메모']] = '';
+  row[AQC['처리상태']] = '접수'; row[AQC['처리일']] = ''; row[AQC['메모']] = ''; row[AQC['보고서 이메일']] = remail;
   const sh = aqSheet();
   sh.appendRow(AQH.map((h, i) => row[i] === undefined ? '' : row[i]));
   cache.put(dk, String(n + 1), 86400);
