@@ -63,7 +63,7 @@ const doc = read('docs/ad_slots.md');
     check(`${c}: 광고 없으면 자체 광고`, p && p.house && p.title && p.link, p && p.id);
   }
   check('분양 화면 자체 광고 = 분양가 비교 리포트(pro/developer)', A.pick([], 'bunyang_top', 'bunyang', TODAY).link.endsWith('/pro/developer/'), '');
-  check('중개사 화면 자체 광고 = 중개사 플러스', A.pick([], 'agent_end', 'agent', TODAY).title === '중개사 플러스', '');
+  check('중개사 화면 자체 광고 = 중개사 플러스(요금제 바로 고름)', /중개사 플러스$/.test(A.pick([], 'agent_end', 'agent', TODAY).title) && A.pick([], 'agent_end', 'agent', TODAY).link.endsWith('brief/subscribe/?p=brief_pro_plus'), '');
   check('홈 자체 광고: 상단 = 내 집 시세(바로 아래 브리핑 카드와 겹치지 않게), 끝 = 모닝 브리핑 7일 무료', A.pick([], 'home_top', 'home', TODAY).id === 'house_mine' && /모닝 브리핑 7일 무료$/.test(A.pick([], 'home_end', 'home', TODAY, ['house_mine']).title), '');
   check('같은 화면 두 번째 칸은 다른 자체 광고', A.pick([], 'rank_end', 'rank', TODAY, ['house_brief']).id === 'house_mine', '');
   check('기간 지난 광고 → 자체 광고', A.pick([ad({ cat: 'mine', industry: '이사', end: '2026-12-05' })], 'mine_end', 'mine', TODAY).house, '');

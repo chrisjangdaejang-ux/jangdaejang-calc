@@ -4,6 +4,7 @@
      <script src="/jangdaejang-calc/assets/ad-slot.js?v=1" defer></script>
    - data-ad-slot  : 칸 이름(docs/ad_slots.md 표의 slot id)
    - data-ad-cat   : 화면 종류(아래 CATS) — 받을 수 있는 업종과 집예보 안내 광고를 정함
+   - data-ad-skip-if : 이 선택자가 보이면 칸을 숨김(예: 모닝 브리핑 전용 광고 자리가 그날 광고로 채워졌을 때)
    - data-ad-after : 이 칸보다 먼저 이용자가 봐야 하는 결과(선택자). 결과가 보일 때만 칸을 보여 줌
    - data-ad-list + data-ad-every : 긴 목록 사이 칸. 목록(선택자)의 N번째 항목 뒤에 한 번만 끼움(목록을 다시 그리면 다시 끼움)
    원칙
@@ -50,7 +51,7 @@
     var S = site();
     var H = {
       brief: { title: S + ' 모닝 브리핑 7일 무료', text: '매일 아침 관심 동네의 새 실거래·급매·청약 소식을 받아 보세요. 자동 결제는 없어요.', link: B + 'brief/', cta: '7일 무료로 받아 보기' },
-      agent: { title: '중개사 플러스', text: '우리 동네 손님이 단지를 볼 때 사무소가 함께 보여요. 문의는 바로 사무소로 와요.', link: B + 'agent/', cta: '제휴 안내 보기' },
+      agent: { title: S + ' 중개사 플러스', text: '손님에게 보낼 아침 브리핑 카드, 매물 설명서, 주간 블로그·인스타 글을 한 번에 준비해 드려요.', link: B + 'brief/subscribe/?p=brief_pro_plus', cta: '중개사 플러스 보기' },
       dev:   { title: S + ' 분양가 비교 리포트', text: '시행사·분양대행사용 — 예정 분양가가 주변 시세와 비교해 어디쯤인지 숫자로 보여 드려요.', link: B + 'pro/developer/', cta: '리포트 보기' },
       buy:   { title: '내 예산으로 살 수 있는 집', text: '소득·현금만 넣으면 대출 한도와 살 수 있는 단지를 바로 보여 드려요. 입력값은 이 기기에만 남아요.', link: B + 'buy/', cta: '계산해 보기' },
       mine:  { title: '우리 집 시세, 한 번에 보기', text: '단지 이름만 넣으면 실거래 시세와 앞으로의 흐름을 쉬운 말로 보여 드려요.', link: B + 'mine/', cta: '내 집 시세 보기' }
@@ -136,7 +137,7 @@
   /* 휴대폰 한 화면(화면 높이만큼) 안에 이 칸 말고 광고가 이미 2개면 true — 상단 배너가 먼저 자리를 잡고, 나머지 칸이 비켜 감 */
   function crowded(el) {
     if (!mobile()) return false;
-    var others = Array.prototype.filter.call(document.querySelectorAll('.jas:not([hidden]),.jad:not([hidden])'), function (x) { return x !== el && x.offsetParent !== null; })
+    var others = Array.prototype.filter.call(document.querySelectorAll('.jas:not([hidden]),.jad:not([hidden]),.bad:not([hidden])'), function (x) { return x !== el && x.offsetParent !== null; })
       .map(function (x) { return x.getBoundingClientRect().top; });
     return tooMany(others, el.getBoundingClientRect().top, root.innerHeight || 800);
   }
@@ -200,7 +201,8 @@
   function gate(el) {
     var sel = el.dataset.adAfter;
     var run = function () {
-      if (shown(sel)) { if (el.hidden && !el._capped) { draw(el); if (el.hidden) el._capped = 1; } }
+      var skip = el.dataset.adSkipIf && document.querySelector(el.dataset.adSkipIf);   /* 그 화면 전용 광고가 이미 보이면 비켜 줌 */
+      if (shown(sel) && !skip) { if (el.hidden && !el._capped) { draw(el); if (el.hidden) el._capped = 1; } }
       else if (!el.hidden) { el.hidden = true; }
     };
     GATES.push(run); run();
