@@ -84,8 +84,8 @@
     st.textContent = '.jcf{border:1px solid #E5E8EB;border-radius:12px;padding:10px 12px;margin:10px 0;background:#FAFBFC}'
       + '.jcf-l{margin:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;font-size:15px;line-height:1.5;color:#191F28}'
       + '.jcf-lv{display:inline-block;min-width:44px;text-align:center;border-radius:999px;padding:2px 10px;font-weight:800;font-size:14px;color:#fff}'
-      + '.jcf--h .jcf-lv{background:#2F6BFF}.jcf--m .jcf-lv{background:#6B7684}.jcf--l .jcf-lv{background:#C2410C}'
-      + '.jcf-r{color:#333D4B;font-weight:600}.jcf-more{font-size:13px;font-weight:700;color:#2F6BFF}'
+      + '.jcf--h .jcf-lv{background:#2560E8}.jcf--m .jcf-lv{background:#6B7684}.jcf--l .jcf-lv{background:#C2410C}'
+      + '.jcf-r{color:#333D4B;font-weight:600}.jcf-more{font-size:13px;font-weight:700;color:#2560E8}'
       + '.jcf-f{margin:6px 0 0;padding:0 0 0 18px;font-size:13.5px;line-height:1.6;color:#4E5968}.jcf-f li{margin:2px 0}';
     doc.head.appendChild(st);
   }

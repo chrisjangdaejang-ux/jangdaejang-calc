@@ -80,7 +80,7 @@ if (dir && fs.existsSync(path.join(dir, 'index.json'))) {
     for (const code in RG.gu) {
       const gg = RG.gu[code], xx = IX.sgg[code] || {};
       // 지역 파일 매매 시계열의 마지막 36개월 = index.json sgg[].s (같은 정의)
-      // (index.json 은 36개월 창 안에서만 3개월 이동 중앙값을 내 첫 두 달이 다름 → 셋째 달부터 비교)
+      // (index.json 은 36개월 창 안에서만 3개월 이동 중간값을 내 첫 두 달이 다름 → 셋째 달부터 비교)
       const byYm = new Map(R.points(gg.s).map(q => [q.ym, q.v]));
       n++; if ((xx.s || []).some((v, i) => i >= 2 && v > 0 && byYm.get(IX.months[i]) !== v)) bad++;
     }

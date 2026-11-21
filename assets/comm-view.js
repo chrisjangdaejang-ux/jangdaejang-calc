@@ -27,7 +27,7 @@
     const st = document.createElement('style'); st.id = 'commCss';
     st.textContent = `.cm-seg{display:inline-grid;grid-template-columns:1fr 1fr;gap:4px;background:#F2F4F6;border-radius:12px;padding:4px;margin:4px 0 2px;width:100%;max-width:420px}
 .cm-seg button{font:inherit;font-size:15px;font-weight:700;border:0;background:transparent;color:#4E5968;min-height:42px;border-radius:9px;cursor:pointer;padding:0 6px;word-break:keep-all}
-.cm-seg button.on{background:#fff;color:#2F6BFF;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.cm-seg button.on{background:#fff;color:#2560E8;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .cm-def{background:#F5F8FF;border:1px solid #C9D8FF;border-radius:14px;padding:12px 14px;font-size:15px;line-height:1.65;margin:10px 0}
 .cm-def b{color:#1F56E0}
 .cm-rows{display:grid;gap:8px;margin-top:8px}
@@ -221,7 +221,7 @@
       .map(t => `<text x="${t.x.toFixed(1)}" y="${H - 5}" font-size="12.5" fill="#4E5968" text-anchor="${t.a}">${t.t}</text>`).join('');
     return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="㎡당 가격 추이 차트">${grid}${lines.map(l => path(l.a, l.c, l.w || 2.4) + (l.dots === false ? '' : dots(l.a, l.c))).join('')}${xl}</svg>`;
   }
-  const COL = { all: '#2F6BFF', com: '#B8942A', res: '#0E9F6E', etc: '#8B95A1' };
+  const COL = { all: '#2560E8', com: '#B8942A', res: '#0E9F6E', etc: '#8B95A1' };
   const spans = (n, cur) => `<div class="seg2" role="group" aria-label="기간">${[12, 36].filter(m => m < n).map(m => ({ s: m, l: m / 12 + '년' })).concat([{ s: 0, l: '전체' }]).map(b => `<button type="button" data-cmspan="${b.s}" class="${b.s === cur || (!b.s && (!cur || cur >= n)) ? 'on' : ''}" aria-pressed="${b.s === cur}">${b.l}</button>`).join('')}</div>`;
   const cut = (a, months, span) => { if (!span || span >= months.length) return { a, months }; const k = months.length - span; return { a: a.map(x => x.slice(k)), months: months.slice(k) }; };
   const m2fmt = v => Math.round(v).toLocaleString();
@@ -236,7 +236,7 @@
     const eu = $('cmCU'), u = S.key && (DOC.units || []).find(x => K.keyOf(x) === S.key);
     if (eu && u) {
       const us = K.unitSeries(u, DOC), w = cut([us.s], us.months, S.span);
-      eu.innerHTML = lineChart([{ a: w.a[0], c: '#2F6BFF', w: 2.6 }], w.months, eu.clientWidth || 600, m2fmt, 170);
+      eu.innerHTML = lineChart([{ a: w.a[0], c: '#2560E8', w: 2.6 }], w.months, eu.clientWidth || 600, m2fmt, 170);
     }
   }
 
@@ -259,7 +259,7 @@
       </div>
       ${u.hi ? `<div class="hib">${hiBox(`㎡당 최고가 (${ymK(DOC.hm)} 이후)`, u.hi)}${hiBox('최근 1년 ㎡당 최고가', u.hi1)}</div>` : ''}
       <div class="chead" style="margin-top:12px"><h3>이 건물 전용 ㎡당 가격 추이</h3></div><div class="cm-chart" id="cmCU"></div>
-      <p class="basis">각 달 값 = 이 건물의 그 달까지 3개월 매매 실거래 전용 ㎡당 가격 중앙값(직거래·지분 거래 제외). 거래가 없던 기간은 점선으로 이어요. 같은 건물이라도 층·위치(1층 길가인지)에 따라 값 차이가 커요.</p>
+      <p class="basis">각 달 값 = 이 건물의 그 달까지 3개월 매매 실거래 전용 ㎡당 가격 중간값(직거래·지분 거래 제외). 거래가 없던 기간은 점선으로 이어요. 같은 건물이라도 층·위치(1층 길가인지)에 따라 값 차이가 커요.</p>
       ${tr.length ? `<div class="tbl cm-tbl"><table><thead><tr><th>계약일</th><th class="num">전용·층</th><th class="num">거래금액</th></tr></thead><tbody>${tr.slice(0, 30).map(t => `<tr><td>${esc(t.date)}</td><td class="num">${t.area}㎡<small>${t.floor != null ? t.floor + '층' : '층 정보 없음'}</small></td><td class="num">${t.hi ? '<span class="jps-new">신고가</span> ' : ''}<b>${won(t.amt)}</b><small>㎡당 ${K.perM2(t.amt / t.area)}${t.direct ? ' · 직거래' : ''}${t.share ? ' · 지분' : ''}</small></td></tr>`).join('')}</tbody></table></div>
       <p class="basis"><span class="jps-new">신고가</span> = 같은 건물 같은 전용면적에서 그 전까지 가장 높았던 값보다 비싸게 거래된 경우(수집 자료 기준, 직거래·지분 거래 제외).</p>` : ''}
     </div>`;
@@ -272,7 +272,7 @@
     const y = sum && sum.y, yb = sum && sum.yb;
     const one = !ready() ? `${nm}의 상가·건물 실거래 자료를 준비하고 있어요. 아래 상권·수요 통계를 먼저 확인해 보세요.`
       : !sum ? `${nm}에는 최근 ${tn} 매매 거래가 없어요.`
-      : `${nm} ${tn}은 ${last ? `최근 3개월 거래 기준 ${K.TYPES[k].unit} ${K.perM2(last.v)}(3.3㎡당 약 ${K.perPy(last.v)})이에요` : '최근 3개월 동안 시세를 낼 만큼 거래가 없었어요'}${y && y.c != null ? `. 최근 1년 중앙값은 그 전 1년보다 ${Math.abs(y.c * 100).toFixed(1)}% ${y.c >= 0 ? '올랐어요' : '내렸어요'}` : ''}.`;
+      : `${nm} ${tn}은 ${last ? `최근 3개월 거래 기준 ${K.TYPES[k].unit} ${K.perM2(last.v)}(3.3㎡당 약 ${K.perPy(last.v)})이에요` : '최근 3개월 동안 시세를 낼 만큼 거래가 없었어요'}${y && y.c != null ? `. 최근 1년 중간값은 그 전 1년보다 ${Math.abs(y.c * 100).toFixed(1)}% ${y.c >= 0 ? '올랐어요' : '내렸어요'}` : ''}.`;
     const hiBox = (lab, t) => { if (!t) return ''; const x = K.trades([t])[0], p = K.tradePpm(x, k); return `<div><div class="k">${lab}</div><div class="v">${won(x.amt)}</div><div class="d">${esc(x.date)} · ${esc(x.dong)} ${esc(x.jibun)} · ${esc(x.use)}${p ? ` · ${K.TYPES[k].unit} ${K.perM2(p)}` : ''}</div></div>`; };
     const lg = rs ? ['all', 'com', 'res', 'etc'].filter(x => rs.lines[x] && rs.lines[x].some(v => v > 0)) : [];
     const dongRows = ((DOC && DOC.dong) || []).filter(x => x[1] === k).slice(0, 15);
@@ -294,7 +294,7 @@
           : `<div class="st"><div class="k">신고가 (최근 1년)</div><div class="v">${(sum.nh1 || 0).toLocaleString()}건</div><div class="d">같은 건물·같은 면적의 이전 최고가보다 비싸게 거래</div></div>`}
       </div>
       <div class="hib">${hiBox('최근 1년 최고 거래금액', sum.hi1)}${hiBox(`최근 1년 ${K.TYPES[k].unit} 최고`, sum.hip)}</div>
-      <p class="basis"><b>계산 근거</b> · ${k === 'c' ? '구분상가·사무실은 전용면적(혼자 쓰는 넓이) 1㎡당 가격으로 비교해요.' : '통건물은 값의 대부분이 땅값이라 대지면적(땅 넓이) 1㎡당 가격으로 비교해요.'} 시세 = 그 달까지 3개월 매매 실거래 ㎡당 가격의 중앙값(가운데 값)이에요. 3개월 동안 거래가 3건보다 적으면 값을 비워 둬요. 해제(취소)·직거래·지분 거래는 빼요.</p>` : ''}
+      <p class="basis"><b>계산 근거</b> · ${k === 'c' ? '구분상가·사무실은 전용면적(혼자 쓰는 넓이) 1㎡당 가격으로 비교해요.' : '통건물은 값의 대부분이 땅값이라 대지면적(땅 넓이) 1㎡당 가격으로 비교해요.'} 시세 = 그 달까지 3개월 매매 실거래 ㎡당 가격의 중간값(가운데 값)이에요. 3개월 동안 거래가 3건보다 적으면 값을 비워 둬요. 해제(취소)·직거래·지분 거래는 빼요.</p>` : ''}
     </div>
 
     ${rs && lg.length ? `<div class="panel">
@@ -307,7 +307,7 @@
     ${dongRows.length ? `<div class="panel"><h2>동별 ${esc(tn)} 거래<small>최근 3년 · 거래 많은 순</small></h2>
       <div class="tbl"><table><thead><tr><th>동</th><th class="num">3년 거래</th><th class="num">${esc(K.TYPES[k].unit)}<br><small>3년 중앙</small></th><th class="num">마지막 계약</th></tr></thead><tbody>
       ${dongRows.map(x => `<tr><td>${esc(x[0])}</td><td class="num">${x[2].toLocaleString()}건</td><td class="num">${x[3] ? K.perM2(x[3]) : '-'}</td><td class="num">${esc(String(x[4]).replace(/^(\d{4})(\d{2})(\d{2})$/, '$1.$2.$3'))}</td></tr>`).join('')}</tbody></table></div>
-      <p class="basis">㎡당 중앙값은 거래가 3건 이상인 동만 보여 드려요. 동 안에서도 큰길가와 골목 안 값 차이가 커요.</p></div>` : ''}
+      <p class="basis">㎡당 중간값은 거래가 3건 이상인 동만 보여 드려요. 동 안에서도 큰길가와 골목 안 값 차이가 커요.</p></div>` : ''}
 
     <div class="panel"><h2>상권 흐름<small>가게 매출과 가게 수가 늘어나는 동네는 상가를 찾는 사람이 늘어날 수 있어요</small></h2>
       ${skr.length ? `<p class="cm-one">${esc(nm)}의 서울시 지정 상권 ${sks ? sks.n : skr.length}곳 중 ${sks ? `${sks.up}곳은 1년 전 같은 분기보다 매출이 늘었고, ${sks.down}곳은 줄었어요(${K.qLabel(sks.q)} 기준).` : '매출 변화를 계산할 만큼 자료가 쌓이지 않았어요.'}</p>

@@ -225,7 +225,7 @@
   const CSS = `.jw-star{display:inline-flex;align-items:center;justify-content:center;gap:3px;flex:none;font:inherit;font-size:14px;font-weight:800;min-height:44px;min-width:44px;padding:0 12px;border-radius:999px;border:1.5px solid #E5E8EB;background:#fff;color:#4E5968;cursor:pointer;line-height:1;white-space:nowrap}
 .jw-star span{font-size:13.5px}.jw-star.on{border-color:#B8942A;color:#8A6A12;background:#FBF8EF}.jw-star:hover{border-color:#B8942A}
 .jw-star.lb{margin-top:10px;font-size:15px;padding:0 16px}.jw-star.lb span{font-size:15px}
-.jw-star.sm{min-height:40px;min-width:40px;padding:0 8px;font-size:17px}.jw-star.sm span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.jw-star.sm{min-height:44px;min-width:44px;padding:0 8px;font-size:17px}.jw-star.sm span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .jw-chip{display:inline-flex;align-items:center;gap:4px;min-height:36px;padding:0 11px;border-radius:999px;background:#FBF8EF;border:1px solid #EFE6CC;color:#8A6A12;font-size:13.5px;font-weight:800;text-decoration:none;white-space:nowrap;margin-left:auto}
 .jw-chip b{color:#C2410C}
 .jw-bell{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;width:44px;height:44px;border-radius:999px;color:#4E5968;text-decoration:none;margin-left:auto}

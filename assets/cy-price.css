@@ -1,7 +1,7 @@
 /* 청약 공고별 분양가·입지 분석(assets/cy-price.js) — A+ 테마: 흰 바탕·파랑 강조. 분석 칸은 파란 왼쪽 선으로, 광고 칸(회색 '광고' 표시)과 구분 */
-.cyp{margin-top:12px;border:1px solid var(--line,#E5E8EB);border-left:4px solid var(--blue,#2F6BFF);border-radius:0 14px 14px 0;padding:10px 12px;background:#fff}
+.cyp{margin-top:12px;border:1px solid var(--line,#E5E8EB);border-left:4px solid var(--blue,#2560E8);border-radius:0 14px 14px 0;padding:10px 12px;background:#fff}
 .cyp-h{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:15px}
-.cyp-src{font-size:12.5px;font-weight:700;color:var(--blue,#2F6BFF);background:var(--blue-l,#E8F0FF);border-radius:999px;padding:1px 9px;white-space:nowrap}
+.cyp-src{font-size:12.5px;font-weight:700;color:var(--blue,#2560E8);background:var(--blue-l,#E8F0FF);border-radius:999px;padding:1px 9px;white-space:nowrap}
 .cyp-b{border-top:1px solid var(--line2,#F0F1F3);padding:8px 0 4px;margin-top:6px}
 .cyp-bh{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:15px;font-variant-numeric:tabular-nums}
 .cyp-s{font-size:13.5px;color:var(--sub2,#4E5968);line-height:1.6;margin-top:3px;word-break:keep-all}
@@ -14,7 +14,7 @@
 b.cyp-na,div.cyp-na{background:none;font-weight:700}
 .cyp-l{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:4px;font-size:13.5px;color:var(--sub2,#4E5968);line-height:1.55}
 .cyp-l b{color:var(--text,#191F28);margin-right:4px}
-.cyp-go{display:flex;align-items:center;justify-content:center;min-height:44px;margin-top:10px;border-radius:12px;background:var(--blue-l,#E8F0FF);color:var(--blue,#2F6BFF);font-weight:700;font-size:15px;text-decoration:none}
+.cyp-go{display:flex;align-items:center;justify-content:center;min-height:44px;margin-top:10px;border-radius:12px;background:var(--blue-l,#E8F0FF);color:var(--blue,#2560E8);font-weight:700;font-size:15px;text-decoration:none}
 .cyp-sec{margin-top:26px}
 .cyp-sec h2{font-size:19px;font-weight:900;letter-spacing:-.4px;margin:0 0 8px}
 .cyp-sec h3{font-size:16px;margin:14px 0 4px}
@@ -42,7 +42,7 @@ b.cyp-na,div.cyp-na{background:none;font-weight:700}
 .cyp-fi label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:700;color:var(--sub,#3E4754);min-width:0}
 .cyp-fi select,.cyp-fi input[type=number]{width:100%;min-height:44px;border:1px solid var(--line,#E5E8EB);border-radius:10px;padding:0 10px;font:inherit;font-size:15px;background:#fff;color:var(--text,#191F28)}
 .cyp-fi .cyp-ck{flex-direction:row;align-items:center;gap:8px;min-height:44px;align-self:end}
-.cyp-fi .cyp-ck input{width:20px;height:20px;accent-color:var(--blue,#2F6BFF)}
+.cyp-fi .cyp-ck input{width:20px;height:20px;accent-color:var(--blue,#2560E8)}
 @media print{.cyp-fi{display:none}}
 /* 분양 예정(공고 전) — 주변 신축 평당 시세 참고값 */
 .cyp.plan{border-left-color:var(--sub2,#8B95A1)}

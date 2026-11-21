@@ -203,7 +203,7 @@
       반환: 쉬운 말 문장 배열(최대 4). 숫자는 화면 표와 같은 값만 쓴다 */
   function summary(items) {
     const out = [], two = items.length === 2;
-    /* ① 가격: 최근 시세(3개월 중앙값 환산) — 둘 다 있을 때만, 차이 금액을 그대로 */
+    /* ① 가격: 최근 시세(3개월 중간값 환산) — 둘 다 있을 때만, 차이 금액을 그대로 */
     const pr = items.filter(x => x.price && x.price.v > 0).sort((a, b) => b.price.v - a.price.v);
     if (pr.length >= 2) {
       const hi = pr[0], lo = pr[pr.length - 1], d = hi.price.v - lo.price.v;
@@ -212,7 +212,7 @@
       else out.push(`최근 시세는 ${Jn(hi, '이', '가')} ${won(hi.price.v)}으로 가장 높고, ${Jn(lo, '이', '가')} ${won(lo.price.v)}으로 가장 낮아요(차이 ${won(d)}).`);
     }
     else {
-      /* 시세(3개월 중앙값)를 둘 이상 못 구하면 같은 기준인 '실거래 평균'끼리만 견줌(서로 다른 기준을 섞지 않음) */
+      /* 시세(3개월 중간값)를 둘 이상 못 구하면 같은 기준인 '실거래 평균'끼리만 견줌(서로 다른 기준을 섞지 않음) */
       const av = items.filter(x => x.avg && x.avg.v > 0).sort((a, b) => b.avg.v - a.avg.v);
       if (av.length >= 2 && new Set(av.map(x => x.avg.span)).size === 1) {   // 같은 기간(3개월 또는 1년)끼리만
         const hi = av[0], lo = av[av.length - 1], d = hi.avg.v - lo.avg.v;
@@ -248,13 +248,13 @@
       if (lo.jeon.gap === hi.jeon.gap) out.push(`전세를 끼고 살 때 필요한 돈(갭)은 ${joinWa(gp)} 모두 ${won(lo.jeon.gap)}으로 같아요.`);
       else out.push(`전세를 끼고 살 때 필요한 돈(갭 = 매매 시세 − 전세 시세)은 ${Jn(lo, '이', '가')} ${won(lo.jeon.gap)}으로 ${two ? `${nm(hi)} ${won(hi.jeon.gap)}보다 ${won(hi.jeon.gap - lo.jeon.gap)} 적어요` : '세 단지 중 가장 적어요'}.`);
     }
-    /* ④ 구 대비 위치(같은 구 아파트 3개월 평당가 중앙값 대비) — 한 문장으로 */
+    /* ④ 구 대비 위치(같은 구 아파트 3개월 평당가 중간값 대비) — 한 문장으로 */
     const gu = items.filter(x => x.gu && x.gu.diff != null);
     if (gu.length >= 2 && out.length < 4) {
       const one = new Set(gu.map(x => x.gu.name)).size === 1;
       const part = (x, last) => { const p = Math.round(Math.abs(x.gu.diff) * 100), up = x.gu.diff > 0;
         return `${Jn(x, '은', '는')} ${one ? '' : x.gu.name + '보다 '}` + (p === 0 ? (last ? '비슷해요' : '비슷하고') : `${p}% ${up ? (last ? '높아요' : '높고') : (last ? '낮아요' : '낮고')}`); };
-      out.push((one ? `평당가로 보면 ${gu[0].gu.name}보다 ` : '같은 구 아파트 평당가 중앙값과 비교하면 ') + gu.map((x, i) => part(x, i === gu.length - 1)).join(', ') + '.');
+      out.push((one ? `평당가로 보면 ${gu[0].gu.name}보다 ` : '같은 구 아파트 평당가 중간값과 비교하면 ') + gu.map((x, i) => part(x, i === gu.length - 1)).join(', ') + '.');
     }
     return out.slice(0, 4);
   }
@@ -291,7 +291,7 @@
   function offSeries(a, base) { const m = new Map(); if (!Array.isArray(a) || a.length < 2 || !base) return m; for (let k = 1; k < a.length; k++) if (a[k] > 0) m.set(M().ymAdd(base, a[0] + k - 1), a[k]); return m; }
   /** 차트 자료: tab = sale(매매)·jeonse(전세)·rent(월세)·cnt(매매 건수)
       src = {ht: histSeries, u: 시세 행(u[11] 개별 거래, u[7] 월별 건수), months: 36개월, rent: 전월세 행, rentBase: m0}
-      반환 {line: Map(달 → 금액), dots: [[달, 금액, 일]]} — 금액 단위 만원, 선은 3개월 중앙값, 점은 실제 신고 거래 */
+      반환 {line: Map(달 → 금액), dots: [[달, 금액, 일]]} — 금액 단위 만원, 선은 3개월 중간값, 점은 실제 신고 거래 */
   function chartData(tab, src) {
     const line = new Map(), dots = [];
     const ym = d => String(d).slice(0, 6);

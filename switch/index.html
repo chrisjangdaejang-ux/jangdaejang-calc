@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script src="../assets/pwa.js?v=1" defer></script>
+<script src="../assets/pwa.js?v=2" defer></script>
 <script src="../assets/biz.js?v=1" defer></script>
 <script src="../assets/region-pick.js?v=1" defer></script>
 <title>집코드 갈아타기 계산기</title>
@@ -33,21 +33,21 @@
 <script>window.JDJ_CONFIG = { tool:'switch', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
-<script src="../assets/share.js?v=10"></script>
+<script src="../assets/share.js?v=11"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/config.js?v=7"></script>
-<script src="../assets/auth.js?v=7"></script>
-<script src="../assets/kchat.js?v=2"></script>
+<script src="../assets/auth.js?v=8"></script>
+<script src="../assets/kchat.js?v=3"></script>
 <script src="../assets/region-notes.js"></script>
 <script src="../tax/adjusted-areas.js"></script>
 <script src="../tax/tax-engine.js?v=4"></script>
 <script src="../assets/loan-rules.js?v=3"></script>
 <script src="../assets/loan-core.js?v=5"></script>
-<script src="../assets/rec-core.js?v=4"></script>
-<script src="../assets/mine-core.js?v=17"></script>
-<script src="../assets/price-sheet.js?v=16"></script>
-<script src="switch-core.js?v=6"></script>
-<script src="../assets/narrative.js?v=16"></script>
+<script src="../assets/rec-core.js?v=5"></script>
+<script src="../assets/mine-core.js?v=18"></script>
+<script src="../assets/price-sheet.js?v=17"></script>
+<script src="switch-core.js?v=7"></script>
+<script src="../assets/narrative.js?v=17"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -149,7 +149,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .agc b{font-size:16px}
 .agc small{display:block;color:#4E5968;font-size:13.5px}
 .agc .acts{display:flex;gap:6px;margin-top:8px}
-.agc .acts a{flex:1;text-align:center;text-decoration:none;font-weight:900;font-size:14px;padding:8px;border-radius:12px;background:#2F6BFF;color:#fff}
+.agc .acts a{flex:1;text-align:center;text-decoration:none;font-weight:900;font-size:14px;padding:8px;border-radius:12px;background:#2560E8;color:#fff}
 .agc .acts a{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
 .agc .acts a.kchat{font-size:14px;font-weight:900;border-radius:7px;padding:8px}
 .agc .tag{font-size:13.5px;font-weight:700;border:1px solid #B8942A;color:#B8942A;padding:1px 5px;border-radius:3px;margin-left:5px}
@@ -157,9 +157,9 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .agnone a{color:#A23B2A}
 .toReport{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;background:#E8F0FF;color:#191F28;border:1px solid #C9D8FF;border-radius:16px;padding:18px 20px;margin:16px 0}
 .toReport b{font-size:18px;display:block}
-.toReport b em{font-style:normal;color:#2F6BFF}
+.toReport b em{font-style:normal;color:#2560E8}
 .toReport span{font-size:14px;color:#3E4754}
-.toReport a{background:#2F6BFF;color:#fff;font-weight:900;font-size:17px;padding:12px 20px;border-radius:14px;text-decoration:none;white-space:nowrap}
+.toReport a{background:#2560E8;color:#fff;font-weight:900;font-size:17px;padding:12px 20px;border-radius:14px;text-decoration:none;white-space:nowrap}
 .gap .pick{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:640px){.gap .pick{grid-template-columns:1fr}}
 .gap .pk{border:1.5px solid #DCCFA8;border-radius:10px;padding:12px;background:#fff}
@@ -170,8 +170,8 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .gap .res div{padding:7px 10px;border-bottom:1px solid #F3EDD9;cursor:pointer;font-size:14.5px}
 .gap .res div:hover{background:#F2F4F6}
 .gap .bands{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
-.gap .bands button{font:inherit;font-size:13.5px;font-weight:700;border:1.5px solid #2F6BFF;background:#fff;color:#2F6BFF;border-radius:999px;padding:5px 10px;cursor:pointer}
-.gap .bands button.on{background:#2F6BFF;color:#fff}
+.gap .bands button{font:inherit;font-size:13.5px;font-weight:700;border:1.5px solid #2560E8;background:#fff;color:#2560E8;border-radius:999px;padding:5px 10px;cursor:pointer}
+.gap .bands button.on{background:#2560E8;color:#fff}
 .gap .sel{font-weight:900;font-size:16px;margin-top:6px}
 .gap .sel small{display:block;font-weight:500;color:#4E5968;font-size:13.5px}
 .gap .gapres{margin-top:14px;background:#F2F4F6;border-radius:10px;padding:14px 16px}
@@ -207,7 +207,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .rc li.c{color:#A23B2A}
 .rc .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .rc .acts button,.rc .acts a{font:inherit;font-size:15px;font-weight:700;min-height:44px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--text);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
-.rc .acts .jps-btn{border:1.5px solid #2F6BFF;color:#2F6BFF}
+.rc .acts .jps-btn{border:1.5px solid #2560E8;color:#2560E8}
 /* 추천 카드 단추 3개: 한 줄에 하나씩 길게 늘어서지 않게 — '지금 집과 비교하기'는 한 줄 전체, 나머지 둘은 반씩 */
 .rc .acts{display:grid;grid-template-columns:1fr 1fr}
 .rc .acts > *{justify-content:center;text-align:center;width:100%;margin:0}
@@ -235,7 +235,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
   .vs td:first-child{grid-column:1/-1;width:auto;font-size:14px;color:#4E5968;padding-bottom:2px}
   .vs td:first-child small{font-size:12.5px}
   .vs tr.hl{background:var(--gray2)}.vs tr.hl td{background:none}
-  .vs th .jps-btn{font-size:13px;min-height:36px;padding:0 8px}
+  .vs th .jps-btn{font-size:13px;min-height:44px;padding:0 8px}
 }
 .vssum{background:var(--gray2);border-radius:10px;padding:12px 14px;font-size:15px;margin-bottom:12px}
 .vssum b{font-weight:900}
@@ -253,7 +253,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .bticks{display:flex;justify-content:space-between;font-size:13px;color:#4E5968}
 .burden .hint{font-size:13.5px;color:#4E5968;margin-top:6px}
 .rs .whyx{margin:10px 0 0;font-size:14.5px;font-weight:700;word-break:keep-all}
-.rs .whyx span{display:inline-block;font-size:12.5px;font-weight:900;background:var(--olive,#2F6BFF);color:#fff;border-radius:4px;padding:1px 6px;margin-right:5px;vertical-align:1px}
+.rs .whyx span{display:inline-block;font-size:12.5px;font-weight:900;background:var(--olive,#2560E8);color:#fff;border-radius:4px;padding:1px 6px;margin-right:5px;vertical-align:1px}
 .rs .tm{margin-top:10px;border:1.5px solid var(--line);border-radius:9px;padding:10px 12px;font-size:14.5px;word-break:keep-all}
 .rs .tm b{font-weight:900}
 .rs .tm .v{display:block;font-size:15.5px;font-weight:900;margin-bottom:2px}
@@ -287,7 +287,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .fl{display:grid;grid-template-columns:88px minmax(0,1fr);align-items:center;gap:8px}
 .fl .fk{font-size:14px;font-weight:700;color:#4E5968}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
-.chips button{font:inherit;font-size:14px;font-weight:700;border:1.5px solid var(--line);background:#fff;color:#4E5968;border-radius:999px;padding:6px 12px;cursor:pointer;line-height:1.25;min-height:36px}
+.chips button{font:inherit;font-size:14px;font-weight:700;border:1.5px solid var(--line);background:#fff;color:#4E5968;border-radius:999px;padding:6px 12px;cursor:pointer;line-height:1.25;min-height:44px}
 .chips button small{font-weight:500;font-size:12.5px;margin-left:4px}
 .chips button.on{background:var(--blue);border-color:var(--blue);color:#fff}
 .fl select{width:auto;max-width:100%;padding:8px 10px;font-size:15px}
@@ -324,10 +324,10 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .taxf a{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:52px;border:1.5px solid var(--blue);color:var(--blue);border-radius:10px;text-decoration:none;font-weight:900;font-size:15px;padding:6px 4px;line-height:1.25}
 .taxf a small{font-size:12.5px;font-weight:500;color:#4E5968}
 </style>
-<link rel="stylesheet" href="../assets/aplus.css?v=44">
+<link rel="stylesheet" href="../assets/aplus.css?v=45">
 <script src="../assets/nw.js?v=1" defer></script>
 <style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
-:root{--gold:#2F6BFF}
+:root{--gold:#2560E8}
 .premium .pt{color:var(--blue)}
 .mpinw.on .mpin{background:var(--blue)}.mpinw.on .mpin:after{border-top-color:var(--blue)}
 .st.pre{background:var(--blue-l);color:var(--blue)}
@@ -378,7 +378,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
         </div>
         <div class="field">
           <label for="exp">필요경비 (살 때 취득세·중개보수·확장공사 등)</label>
-          <div class="inp"><input id="exp" inputmode="numeric" placeholder="모르면 비워두세요"><span class="unit">만원</span></div>
+          <div class="inp"><input id="exp" inputmode="numeric" placeholder="모르면 비워 두세요"><span class="unit">만원</span></div>
           <div class="hint" id="expHint"></div>
         </div>
         <div class="row2">
@@ -427,7 +427,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
         </div>
         <div class="field" style="margin-bottom:0">
           <label for="oldMon">지금 대출 월 상환액 <span class="muted" style="font-weight:500">(선택)</span></label>
-          <div class="inp"><input id="oldMon" inputmode="numeric" placeholder="넣으면 유지·갈아타기 비교에 표시"><span class="unit">만원/월</span></div>
+          <div class="inp"><input id="oldMon" inputmode="numeric" placeholder="모르면 비워 두세요"><span class="unit">만원/월</span></div>
         </div>
       </div>
 
@@ -592,7 +592,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
         <p class="muted" style="font-size:15px;margin:0 0 10px">지금 집이 있는 구를 고르면, 그 지역 제휴 공인중개사에게 바로 매도 상담을 받을 수 있어요.</p>
         <div class="row2">
           <select id="sSido"><option value="">시·도 선택</option></select>
-          <select id="sSgg"><option value="">구·시·군 선택</option></select>
+          <select id="sSgg"><option value="">시·군·구 선택</option></select>
         </div>
         <div id="sellAgents"></div>
       </div>
@@ -665,16 +665,16 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
   <div class="rules">
     <h3>계산 기준 (2026년 11월)</h3>
     <ul>
-      <li>양도세: 세금 계산기와 같은 엔진(소득세법·시행령 기준)으로 계산해요. 1세대 1주택은 2년 이상 보유(취득 당시 조정대상지역이면 2년 거주 포함) 시 양도가 12억까지 비과세, 12억 초과분은 양도차익 × (양도가−12억)/양도가만 과세. 보유기간은 산 날부터 팔 날까지 만 연수로 셉니다.</li>
+      <li>양도세: 세금 계산기와 같은 계산 방식(소득세법·시행령 기준)으로 계산해요. 1세대 1주택은 2년 이상 보유(취득 당시 조정대상지역이면 2년 거주 포함) 시 양도가 12억까지 비과세, 12억 초과분은 양도차익 × (양도가−12억)/양도가만 과세. 보유기간은 산 날부터 팔 날까지 만 연수로 셉니다.</li>
       <li>장기보유특별공제: 1세대 1주택·거주 2년 이상이면 보유 연 4% + 거주 연 4% (최대 80%), 그 밖에는 보유 연 2% (최대 30%). 정부가 발표한 장기보유특별공제 개편안은 아직 시행 전이라 현행 기준으로 계산</li>
       <li>다주택: 팔 때 조정대상지역이면 2주택 +20%p, 3주택 이상 +30%p 중과(2026.5.10 이후 양도분, 장기보유특별공제 배제). 조정대상지역 여부는 국토교통부 지정·해제 공고 이력으로 판정하고, 일부 지역만 지정됐던 기간은 직접 골라 주세요.</li>
       <li>필요경비를 비워두면 산 가격 기준 1주택 취득세(현행 세율)+지방교육세+중개보수 상한으로 추정. 수리·확장비 등 실제 영수증이 있는 비용은 직접 입력하면 더 정확</li>
       <li>새 집 대출 (2026년 11월 20일 확인): 1주택은 기존 주택 처분 조건. 규제지역 LTV 40%, 비규제 70%, 다주택은 수도권·규제지역 주택구입 주담대 불가(지방 60%). 수도권·규제지역 주담대 한도 15억 이하 6억 / 25억 이하 4억 / 25억 초과 2억, 은행권 DSR 40% — 금융위원회 '부동산 시장 안정을 위한 금융 종합대책'(2026.8.13)에서 그대로 유지. 스트레스 금리는 수도권·규제지역 3.0%, 지방 1.5%의 50%(0.75%) × 금리유형 비율(주기형 수도권 40%·지방 30%) — 은행연합회 '2026년 하반기 스트레스 DSR 운영방안'(금융위원회 행정지도, 2026.7.1~12.31)</li>
       <li>갈아타기 루트: 자녀 만 나이로 학교 시기를 잡아요(초등학교는 만 6세가 된 다음 해 3월 입학 — 초·중등교육법 제13조). 같은 예산에서 목적만 달라요 — 자산 우선은 그 기간 미래가치가 높은 순, 가족 우선은 가까운 중학교가 같은 구 중학교 중 전학 오는 학생이 많은 상위 30% 안인 단지 중에서(학교알리미 공시), 안심 우선은 최근 3년(공개 시세 기간) 앞선 최고점 대비 가장 크게 떨어진 폭이 작은 순으로 골라요. 안심 우선은 최근 1년 거래 12건 이상, 전세가율 80% 미만(자료가 있을 때)인 단지만 봐요. 대출은 '월 상환을 소득의 몇 %까지'(실제 금리 기준)로 고른 금액과 규제 한도(LTV·가격구간·DSR) 중 작은 쪽이에요.</li>
-      <li>지금 옮길까, 2년 뒤 다시 볼까: 두 집의 2년 점수를 다섯 대(20%씩)로 나눠 비교하고, 과거에 같은 점수 대 단지들이 평균보다 더 오른 횟수(model_h 2년 점수 대별 성적)를 근거로 보여 드려요. 2년 성적이 기준에 못 미치면 '참고'로 표시해요. 단계 사이 집값은 오늘 시세 그대로 두고, 대출 원금 상환과 한 해 모을 돈만 더해요.</li>
+      <li>지금 옮길까, 2년 뒤 다시 볼까: 두 집의 2년 점수를 다섯 대(20%씩)로 나눠 비교하고, 과거에 같은 점수 대 단지들이 평균보다 더 오른 횟수(2년 점수 대별 과거 성적)를 근거로 보여 드려요. 2년 성적이 기준에 못 미치면 '참고'로 표시해요. 단계 사이 집값은 오늘 시세 그대로 두고, 대출 원금 상환과 한 해 모을 돈만 더해요.</li>
       <li>미래가치 전망: 단지 점수(2년·1·3·5·7년)를 과거 여러 때에 그때까지 자료만으로 매긴 뒤 실제 시세와 맞춰 봤어요. 상위 20% 단지가 평균보다 더 오른 횟수가 절반 이상이고 평균으로도 더 오른 기간만 '더 오를 가능성'으로 말하고, 나머지는 '참고'로 보여 드려요.</li>
-      <li>새 집 취득세: 세금 계산기와 같은 엔진(지방세법 기준). 1주택자는 일시적 2주택 일반세율 1~3% + 지방교육세, 85㎡ 초과 농특세. 2주택 이상은 이 집을 판 뒤 새 집을 사는 것으로 보고 취득 후 주택 수로 중과 여부를 판정. 중개보수는 법정 상한요율 + 부가세</li>
-      <li>추천 단지: 내 집 마련 리포트와 같은 자료·점수 기준. 추정 시세는 최근 3개월 실거래 평당가 중앙값 × 전용면적(최근 3개월 거래가 없으면 마지막 거래 기준)이며, 실제 호가·매물과 다를 수 있어요.</li>
+      <li>새 집 취득세: 세금 계산기와 같은 계산 방식(지방세법 기준). 1주택자는 일시적 2주택 일반세율 1~3% + 지방교육세, 85㎡ 초과 농특세. 2주택 이상은 이 집을 판 뒤 새 집을 사는 것으로 보고 취득 후 주택 수로 중과 여부를 판정. 중개보수는 법정 상한요율 + 부가세</li>
+      <li>추천 단지: 내 집 마련 리포트와 같은 자료·점수 기준. 추정 시세는 최근 3개월 실거래 평당가 중간값 × 전용면적(최근 3개월 거래가 없으면 마지막 거래 기준)이며, 실제 호가·매물과 다를 수 있어요.</li>
       <li>기존 주담대는 매도 대금으로 상환하고, 매도 대금이 새 집 잔금에 쓰인다고 가정했습니다. 실제 세액·한도는 세무사·은행 확인이 필요합니다.</li>
       <li>이용 통계: 서비스 개선을 위해 방문 횟수·유입 경로·사용한 기능을 익명으로 집계합니다(Google 애널리틱스). 이름·연락처는 수집하지 않으며, 입력한 금액은 저장하지 않고 구간(예: 12~15억)으로만 집계합니다.</li>
     </ul>
@@ -726,7 +726,7 @@ function setSeg(id, v){ [...$(id).children].forEach(x=>x.classList.toggle('on', 
 /* 조정대상지역 자동 판정 (tax/adjusted-areas.js 국토교통부 공고 이력). 위치·날짜가 바뀔 때만 다시 정하고, 그 뒤 직접 누른 값은 그대로 둔다 */
 function autoAdj(){
   const ad=$('acqDate').value, sd=$('saleDate').value||TODAY, h=$('adjHint'), sh=$('sadjHint');
-  if (!HOME || !HOME.sido){ h.className='hint'; h.textContent='위에서 지금 집 위치(시·도, 구·시·군)를 고르면 자동으로 판정해요.'; sh.className='hint'; sh.textContent=''; return; }
+  if (!HOME || !HOME.sido){ h.className='hint'; h.textContent='위에서 지금 집 위치(시·도, 시·군·구)를 고르면 자동으로 판정해요.'; sh.className='hint'; sh.textContent=''; return; }
   const a = ad ? SW.isAdj(HOME.sido, HOME.gu, ad) : 'ask';
   if (a===true || a===false){ adj = a?'y':'n'; setSeg('adj', adj); h.className='hint auto'; h.textContent=`자동 판정: ${HOME.label} · 산 날(${ad}) 기준 ${a?'조정대상지역':'조정대상지역 아님'} (국토교통부 지정·해제 공고 이력)`; }
   else { h.className='hint ask'; h.textContent=`${HOME.label}은(는) 산 날 기준으로 일부 지역만 지정됐거나 동마다 달라 자동으로 판정하기 어려워요. 직접 골라 주세요.`; }
@@ -950,7 +950,7 @@ async function sellInit(){
 $('sSido').addEventListener('change',()=>{
   const sd=$('sSido').value;
   const list=Object.keys(AG_IX.sgg).filter(k=>AG_IX.sgg[k].sido===sd).sort((a,b)=>AG_IX.sgg[a].name.localeCompare(AG_IX.sgg[b].name,'ko'));
-  $('sSgg').innerHTML='<option value="">구·시·군 선택</option>'+list.map(k=>`<option value="${k}">${escH(AG_IX.sgg[k].name)}</option>`).join('');
+  $('sSgg').innerHTML='<option value="">시·군·구 선택</option>'+list.map(k=>`<option value="${k}">${escH(AG_IX.sgg[k].name)}</option>`).join('');
   $('sellAgents').innerHTML='';
 });
 $('sSgg').addEventListener('change', async ()=>{
@@ -1014,11 +1014,11 @@ function priceInfo(u){
   for(let i=s.length-1;i>=0;i--) if(s[i]>0&&(!c||c.charCodeAt(i)>48)) return {price:REC.r100(s[i]*u[4]/GPY), at:m[i]||'', last:true};   // 실제 거래가 있었던 달
   return {price:0, last:false};
 }
-const piTxt=pi=>pi.last&&pi.at?`${pi.at.slice(0,4)}.${pi.at.slice(4)} 마지막 거래 기준 · 최근 3개월 거래 없음`:'최근 3개월 실거래 중앙값';
+const piTxt=pi=>pi.last&&pi.at?`${pi.at.slice(0,4)}.${pi.at.slice(4)} 마지막 거래 기준 · 최근 3개월 거래 없음`:'최근 3개월 실거래 중간값';
 function lastNZ(a){ for(let i=a.length-1;i>=Math.max(0,a.length-3);i--) if(a[i]>0) return a[i]; return 0; }
 function unitPrice(u){ return REC.unitPrice(u); }
 function makePicker(el, which, onLoc){
-  el.insertAdjacentHTML('beforeend',`<select class="psido"><option value="">시·도</option></select><select class="psgg"><option value="">구·시·군</option></select>
+  el.insertAdjacentHTML('beforeend',`<select class="psido"><option value="">시·도</option></select><select class="psgg"><option value="">시·군·구</option></select>
     <input class="pq" placeholder="단지명 검색 (먼저 구를 고르세요)"><div class="res"></div><div class="bands"></div><div class="sel"></div>`);
   const $s=c=>el.querySelector(c);
   const fill=async()=>{ const ix=await gapIndex(); if(!ix) return; if($s('.psido').options.length>1) return;
@@ -1026,7 +1026,7 @@ function makePicker(el, which, onLoc){
   ['focus','mousedown','touchstart'].forEach(ev=>$s('.psido').addEventListener(ev,fill,{once:true}));
   $s('.psido').addEventListener('change',()=>{ const sd=$s('.psido').value; const ix=AG_IX;
     const list=Object.keys(ix.sgg).filter(k=>ix.sgg[k].sido===sd).sort((a,b)=>ix.sgg[a].name.localeCompare(ix.sgg[b].name,'ko'));
-    $s('.psgg').innerHTML='<option value="">구·시·군</option>'+list.map(k=>`<option value="${k}">${escH(ix.sgg[k].name)}</option>`).join('');
+    $s('.psgg').innerHTML='<option value="">시·군·구</option>'+list.map(k=>`<option value="${k}">${escH(ix.sgg[k].name)}</option>`).join('');
     $s('.pq').value=''; $s('.res').innerHTML=''; $s('.bands').innerHTML=''; if(onLoc) onLoc(sd,''); });
   /* 단지명 느슨한 검색: 띄어쓰기·'아파트' 무시, 구 이름(예: 송파)이 붙어 있어도 찾고, 글자 순서만 맞으면 일부 생략해도 찾음 (송파하비오 → 파크하비오) */
   const aptMatch=(hay,q,gu,raw,apt)=>(window.JDJ_MINE&&apt&&raw&&JDJ_MINE.matchName(apt,raw)>=0)||aptMatch0(hay,q,gu)||aptMatch0(String(hay).replace(/대림/g,''),q,gu);
@@ -1108,7 +1108,7 @@ function drawGap(){
 }
 makePicker($('pkMine'),'mine'); makePicker($('pkTarget'),'target');
 makePicker($('pkHome'),'home',(sd,g)=>setHomeLoc(sd,g,null));
-$('pkHome').querySelector('.pq').placeholder='단지명 검색 (먼저 시·도와 구·시·군을 고르세요)';
+$('pkHome').querySelector('.pq').placeholder='단지명 검색 (지역 먼저 선택)';
 /* 내 집 시세에서 넘어온 단지(?src=mine&sd=시도id&d=구|동|지번|단지&b=평형)를 STEP 1 지금 집으로 바로 넣음 */
 const FROM_MINE = (async function fromMine(){
   const q=new URLSearchParams(location.search), sdId=q.get('sd'), dk=q.get('d')||'', band=q.get('b')||'';
@@ -1464,7 +1464,7 @@ setTermOptions(); autoAdj(); render();
   });
 })();
 </script>
-<script src="../assets/plain-words.js?v=14"></script>
+<script src="../assets/plain-words.js?v=15"></script>
 <script>document.addEventListener("DOMContentLoaded",()=>{ if(window.JDJ_PLAIN) JDJ_PLAIN.autoGloss(document.querySelector(".wrap")); });</script>
 <script src="../assets/ad-slot.js?v=5" defer></script>
 </body>

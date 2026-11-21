@@ -37,9 +37,9 @@
   /** 1년 비교 {now, prev, c, n, np} → 문장 조각 */
   function yearText(y) {
     if (!y) return '';
-    if (y.c != null) return `최근 1년 중앙값을 그 전 1년 중앙값과 비교했어요`;
+    if (y.c != null) return `최근 1년 중간값을 그 전 1년 중간값과 비교했어요`;
     if (y.now != null) return '그 전 1년 거래가 적어 비교하지 않았어요';
-    return '최근 1년 거래가 적어 중앙값을 내지 않았어요';
+    return '최근 1년 거래가 적어 중간값을 내지 않았어요';
   }
   /** 거래 줄 [계약일, 동, 지번, 용도, 용도지역, 건물면적, 대지면적, 층, 금액, 표시, 준공] → 객체 */
   const ymd = v => { const s = String(v); return `${s.slice(0, 4)}.${s.slice(4, 6)}.${s.slice(6, 8) || '01'}`; };

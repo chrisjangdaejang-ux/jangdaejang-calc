@@ -11,11 +11,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script src="../assets/pwa.js?v=1" defer></script>
+<script src="../assets/pwa.js?v=2" defer></script>
 <script src="../assets/biz.js?v=1" defer></script>
 <title>집코드 재개발·빌라 체크 — 빌라 실거래·정비구역·입주권 위험</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/villa/">
-<meta name="description" content="연립·다세대(빌라) 실거래가로 대지지분 평당가와 동 중앙값을 비교하고, 같은 동 재개발 정비구역의 진행 단계와 입주권(현금청산) 위험을 확인하세요.">
+<meta name="description" content="연립·다세대(빌라) 실거래가로 대지지분 평당가와 동 중간값을 비교하고, 같은 동 재개발 정비구역의 진행 단계와 입주권(현금청산) 위험을 확인하세요.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="집코드">
 <meta property="og:title" content="집코드 재개발·빌라 체크">
@@ -32,8 +32,8 @@
 <script>window.JDJ_CONFIG = { tool:'villa', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
-<script src="../assets/share.js?v=10"></script>
-<script src="../assets/narrative.js?v=16"></script>
+<script src="../assets/share.js?v=11"></script>
+<script src="../assets/narrative.js?v=17"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -47,7 +47,7 @@ h1 em{font-style:normal;color:var(--gold)}
 .pick select,.pick input{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:16px;font-weight:700;background:#fff;color:var(--ink)}
 .pick .full{grid-column:1/-1}
 .seg{display:flex;gap:6px;flex-wrap:wrap;grid-column:1/-1}
-.seg button{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--line);background:#fff;color:var(--muted);padding:7px 12px;border-radius:999px;cursor:pointer}
+.seg button{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--line);background:#fff;color:var(--muted);padding:7px 12px;border-radius:999px;cursor:pointer;min-height:44px}
 .seg button.on{background:var(--olive);border-color:var(--olive);color:var(--cream)}
 .sum{margin:14px 0 10px;font-size:14.5px;color:var(--muted)}
 .sum b{color:var(--ink)}
@@ -84,7 +84,7 @@ h1 em{font-style:normal;color:var(--gold)}
 .zbox .g{display:inline-block;font-size:13.5px;font-weight:900;padding:2px 7px;border-radius:4px;margin-right:4px;vertical-align:1px}
 .zbox .g1{background:var(--olive);color:var(--gold2)}
 .zbox .g2{background:var(--cream2);color:var(--olive)}
-.zbox .more{font-size:13.5px;color:var(--olive);font-weight:700;background:none;border:0;padding:6px 0 0;cursor:pointer;font-family:inherit}
+.zbox .more{font-size:13.5px;color:var(--olive);font-weight:700;background:none;border:0;padding:6px 0 0;min-height:44px;cursor:pointer;font-family:inherit}
 .nozone{font-size:14px;color:var(--muted);margin-top:6px}
 .caution{font-size:13.5px;color:var(--ink);background:rgba(162,59,42,.06);border-left:4px solid var(--red);padding:8px 10px;border-radius:0 6px 6px 0;margin-top:10px;line-height:1.5}
 details.tr{margin-top:10px;font-size:14px}
@@ -111,10 +111,10 @@ td.dt{white-space:nowrap}td small{color:var(--muted);font-size:12.5px}
 .foot a{color:inherit}
 .caution.once{margin:0 0 12px;font-size:15px;line-height:1.6}
 </style>
-<link rel="stylesheet" href="../assets/aplus.css?v=44">
+<link rel="stylesheet" href="../assets/aplus.css?v=45">
 <script src="../assets/nw.js?v=1" defer></script>
 <style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
-:root{--gold:#2F6BFF}
+:root{--gold:#2560E8}
 .premium .pt{color:var(--blue)}
 .mpinw.on .mpin{background:var(--blue)}.mpinw.on .mpin:after{border-top-color:var(--blue)}
 .st.pre{background:var(--blue-l);color:var(--blue)}
@@ -139,12 +139,12 @@ td.dt{white-space:nowrap}td small{color:var(--muted);font-size:12.5px}
 <div class="wrap">
   <span class="tag">빌라 · 재개발 체크</span>
   <h1>이 빌라, <em>재개발</em>과<br>얼마나 가까울까요?</h1>
-  <p class="lead">국토교통부 연립·다세대 실거래가로 대지지분 평당가를 동 중앙값과 비교하고, 같은 동의 정비구역 진행 단계와 입주권(현금청산) 위험을 함께 보여 드립니다.</p>
+  <p class="lead">국토교통부 연립·다세대 실거래가로 대지지분 평당가를 동 중간값과 비교하고, 같은 동의 정비구역 진행 단계와 입주권(현금청산) 위험을 함께 보여 드립니다.</p>
 
   <div class="jas jas-top" data-ad-slot="villa_top" data-ad-cat="villa" data-ad-top></div>
   <div class="pick">
     <div><label for="sido">시·도</label><select id="sido"></select></div>
-    <div><label for="sgg">구·시·군</label><select id="sgg"></select></div>
+    <div><label for="sgg">시·군·구</label><select id="sgg"></select></div>
     <div><label for="dong">동</label><select id="dong"><option value="">전체 동</option></select></div>
     <div><label for="q">건물명·지번 검색</label><input id="q" placeholder="예: 신원빌라, 306" autocomplete="off"></div>
     <div class="seg" id="seg">
@@ -157,7 +157,7 @@ td.dt{white-space:nowrap}td small{color:var(--muted);font-size:12.5px}
   <details class="how">
     <summary>이 화면을 읽는 법</summary>
     <ul>
-      <li><b>대지지분 평당가</b> — 거래가 ÷ 대지권 면적(평). 재개발에서는 건물보다 땅 지분이 권리가액에 크게 작용하므로, 같은 동 최근 12개월 중앙값과 비교해 드립니다.</li>
+      <li><b>대지지분 평당가</b> — 거래가 ÷ 대지권 면적(평). 재개발에서는 건물보다 땅 지분이 권리가액에 크게 작용하므로, 같은 동 최근 12개월 중간값과 비교해 드립니다.</li>
       <li><b>구역 안(공식 경계)</b> — 서울 열린데이터광장 ‘서울시 의제처리구역 위치정보’(정비구역 경계 공개 자료)와 건물 지번 위치로 확인한 경우입니다. 정비구역 경계는 서울시 공개 자료 기준이며 참고용이에요(법적 효력 없음). 최종 확인은 구청 고시도면으로 하세요. 같은 동이라도 경계 밖으로 확인되면 ‘같은 동·구역 밖’으로 표시합니다.</li>
       <li><b>구역 대표 지번</b> — 서울시 정비사업 추진현황의 구역 대표 지번과 건물 지번이 같은 경우입니다. 구역 안에 있을 가능성이 높지만, 구역 경계는 구청 고시도면으로 확인하세요.</li>
       <li><b>같은 동 정비구역</b> — 같은 법정동에 재개발 계열 구역이 있다는 뜻일 뿐, 이 건물이 구역 안에 있다는 뜻은 아닙니다. 구역 포함 여부는 꼭 확인하세요.</li>
@@ -181,7 +181,7 @@ td.dt{white-space:nowrap}td small{color:var(--muted);font-size:12.5px}
 </div>
 <div class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집코드 · <a href="../">홈</a></div>
 <script src="../assets/agents.js"></script>
-<script src="../assets/ads.js?v=4"></script>
+<script src="../assets/ads.js?v=5"></script>
 
 <script>
 var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
@@ -219,12 +219,12 @@ function zoneLine(z, gr, rk, by){
 function worst(zs){ return zs.filter(z=>z[1]!==3).reduce((a,z)=> ORDER.indexOf(z[2]) < ORDER.indexOf(a) ? z[2] : a, 'o'); }
 /* 원자료 단계·날짜가 서로 맞지 않는 구역(엔진 자동 점검) */
 function xnote(z){ return z.x ? '<small style="color:var(--red)">원자료 단계·날짜가 서로 맞지 않아 확인 중 — 믿을 수 있는 단계로만 표시했어요</small>' : ''; }
-/* 공식 경계로 나눈 구역 안 / 같은 동 구역 밖 대지지분 평당가(최근 12개월 중앙값) */
+/* 공식 경계로 나눈 구역 안 / 같은 동 구역 밖 대지지분 평당가(최근 12개월 중간값) */
 const BD_NOTE = '<small style="color:var(--muted)">정비구역 경계는 서울시 공개 자료(서울 열린데이터광장) 기준이며 참고용이에요(법적 효력 없음).</small>';
 function inout(z){
   if (!z.bd || !z.pin) return '';
   const f = v => v[0] ? fmt(v[0])+'만원('+v[1]+'건)' : '거래 없음';
-  return `<small>대지지분 평당가(최근 12개월 중앙값) · 구역 안 ${f(z.pin)} · 같은 동 구역 밖 ${f(z.pout)}${(z.pin[1]<5||z.pout[1]<5)?' · 거래가 적어 참고만':''}</small>`;
+  return `<small>대지지분 평당가(최근 12개월 중간값) · 구역 안 ${f(z.pin)} · 같은 동 구역 밖 ${f(z.pout)}${(z.pin[1]<5||z.pout[1]<5)?' · 거래가 적어 참고만':''}</small>`;
 }
 function linked(b){ return (b.z||[]).filter(z=>z[1]!==3); }
 
@@ -257,7 +257,7 @@ function card(b, i){
     ${narV(b, i)}
     <div class="row">
       <div class="mini"><div class="k">대지지분 평당가</div><div class="v">${b.pp?fmt(b.pp)+'<small>만원</small>':'-'}</div></div>
-      <div class="mini"><div class="k">${esc(b.d)} 빌라 중앙값 대비</div><div class="v">${dm}</div></div>
+      <div class="mini"><div class="k">${esc(b.d)} 빌라 중간값 대비</div><div class="v">${dm}</div></div>
       <div class="mini"><div class="k">대지권</div><div class="v">${b.l?b.l+'<small>㎡ · '+py(b.l)+'평</small>':(b.lbad?'<small>자료 확인 중</small>':'-')}</div></div>
       <div class="mini"><div class="k">전용면적</div><div class="v">${b.a}<small>㎡ · ${py(b.a)}평</small></div></div>
     </div>
@@ -290,7 +290,7 @@ function renderDong(){
   const zl = [...zi.keys()].map(i=>CUR.z[i]).sort((a,b)=>b.lv-a.lv);
   if (zl.length && window.jdjStat) jdjStat('feature_use',{feature:'redev'});
   $('dongBox').innerHTML = `<div class="dong"><h3>${esc(CUR.meta.n)} ${esc(d)}</h3>
-    <div style="font-size:15px">${esc(d)} 빌라 대지지분 평당가는 최근 12개월 중앙값 <b>${m?fmt(m.m)+'만원':'자료 부족'}</b>${m?` <span style="color:var(--muted);font-size:13.5px">(${fmt(m.c)}건 기준)</span>`:''}</div>
+    <div style="font-size:15px">${esc(d)} 빌라 대지지분 평당가는 최근 12개월 중간값 <b>${m?fmt(m.m)+'만원':'자료 부족'}</b>${m?` <span style="color:var(--muted);font-size:13.5px">(${fmt(m.c)}건 기준)</span>`:''}</div>
     ${zl.length?`<div class="zl">${zl.map(z=>`<div class="zrow"><b>${esc(z.n)}</b> <small>${esc(z.t)} · 10단계 중 ${z.lv}단계(${esc(z.st)})${z.b?' · 가장 이른 공식 단계 '+ym(z.b):''}${z.src==='n'?' · 구역 이름으로 같은 동 추정':''}</small>${lvbar(z.lv)}${xnote(z)}${inout(z)}</div>`).join('')}</div>`
       :'<div style="font-size:14px;color:var(--muted);margin-top:6px">자료상 이 동에 연결된 재개발 계열 정비구역이 없습니다.</div>'}</div>`;
 }
@@ -318,7 +318,7 @@ function shareVilla(tot, zc){
   const area = CUR.meta.n + ($('dong').value ? ' ' + $('dong').value : '');
   JDJ_SHARE.update({
     head: zc ? `${area} 빌라 ${fmt(tot)}개 중 정비구역과 연결된 ${fmt(zc)}개를 찾았어요` : `${area} 빌라 ${fmt(tot)}개의 재개발 가능성을 살펴봤어요`,
-    lines: ['대지지분 평당가를 같은 동 중앙값과 비교', '정비구역 진행 단계와 입주권(현금청산) 위험까지', '국토교통부 실거래·서울시 정비사업 공식 자료 기준'],
+    lines: ['대지지분 평당가를 같은 동 중간값과 비교', '정비구역 진행 단계와 입주권(현금청산) 위험까지', '국토교통부 실거래·서울시 정비사업 공식 자료 기준'],
     params: JDJ_SHARE.pick(['g','d'])
   }, {root: $('list')});
 }
@@ -378,7 +378,7 @@ async function init(){
 }
 init();
 </script>
-<script src="../assets/plain-words.js?v=14"></script>
+<script src="../assets/plain-words.js?v=15"></script>
 <script>document.addEventListener("DOMContentLoaded",()=>{ if(window.JDJ_PLAIN) JDJ_PLAIN.autoGloss(document.querySelector(".wrap")); });</script>
 <script src="../assets/ad-slot.js?v=5" defer></script>
 </body>

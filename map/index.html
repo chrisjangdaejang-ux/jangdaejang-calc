@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script src="../assets/pwa.js?v=1" defer></script>
+<script src="../assets/pwa.js?v=2" defer></script>
 <title>집코드 지도 — 지도에서 단지 시세·미래가치 점수·전세가율 한눈에</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/map/">
 <meta name="description" content="지도에서 아파트 단지를 골라 최근 실거래 시세, 미래가치 점수, 전세가율을 한눈에 비교해 보세요. 구·동 평균 평당가와 평형·가격대 필터도 있어요.">
@@ -25,26 +25,26 @@
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
 <script src="../assets/config.js?v=7"></script>
-<script src="../assets/plain-words.js?v=14"></script>
-<script src="../assets/narrative.js?v=16"></script>
-<script src="../assets/conf.js?v=1"></script>
+<script src="../assets/plain-words.js?v=15"></script>
+<script src="../assets/narrative.js?v=17"></script>
+<script src="../assets/conf.js?v=2"></script>
 <script src="../assets/life-view.js?v=3"></script>
 <script src="../assets/fac-view.js?v=1"></script>
-<script src="../assets/mine-core.js?v=17"></script>
-<script src="../assets/map-core.js?v=4"></script>
+<script src="../assets/mine-core.js?v=18"></script>
+<script src="../assets/map-core.js?v=5"></script>
 <script src="../assets/alerts-core.js?v=1"></script>
 <script src="../assets/watch-core.js?v=2"></script>
-<script src="../assets/watch.js?v=5"></script>
-<script src="../assets/region-core.js?v=1"></script>
+<script src="../assets/watch.js?v=6"></script>
+<script src="../assets/region-core.js?v=2"></script>
 <script src="../assets/map-engine.js?v=3"></script>
 <script src="../assets/sale-status.js?v=1"></script>
 <script src="../assets/agents.js"></script>
-<script src="../assets/ads.js?v=4"></script>
+<script src="../assets/ads.js?v=5"></script>
 <script src="../assets/devmap-view.js?v=3"></script>
-<script src="../assets/tabbar.js?v=3" defer></script>
+<script src="../assets/tabbar.js?v=4" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/aplus.css?v=44">
+<link rel="stylesheet" href="../assets/aplus.css?v=45">
 <script src="../assets/nw.js?v=1" defer></script>
 <style>
 html,body{height:100%}
@@ -74,11 +74,11 @@ body.jm-full>.top{position:relative;flex:none}
 .sres .msg{padding:10px 12px;font-size:14px;color:var(--sub2);line-height:1.5}
 .row1{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;max-width:560px;width:100%;margin:0 auto}
 .seg{display:flex;background:#F2F4F6;border-radius:12px;padding:3px;flex:none}
-.seg button{border:0;background:none;font:inherit;font-size:14.5px;font-weight:700;color:var(--sub2);min-height:38px;padding:0 13px;border-radius:9px;cursor:pointer;white-space:nowrap}
+.seg button{border:0;background:none;font:inherit;font-size:14.5px;font-weight:700;color:var(--sub2);min-height:44px;padding:0 13px;border-radius:9px;cursor:pointer;white-space:nowrap}
 .seg button.on{background:var(--blue);color:#fff}
 .fil{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;flex:1 1 100%;min-width:0;margin:0 -12px;padding:0 12px;scroll-padding:0 12px}
 .fil::-webkit-scrollbar{display:none}
-.chip{flex:none;border:1px solid var(--line);background:#fff;font:inherit;font-size:14px;font-weight:700;color:var(--sub);min-height:40px;padding:0 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.chip{flex:none;border:1px solid var(--line);background:#fff;font:inherit;font-size:14px;font-weight:700;color:var(--sub);min-height:44px;padding:0 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
 .chip.on{border-color:var(--blue);color:var(--blue);background:var(--blue-l)}
 .chip.lay.on{border-color:#6D4AFF;color:#5B3BE0;background:#F1EDFF}
 .chip.lay.bun.on{border-color:#0E7A4F;color:#0E7A4F;background:#E6F5EE}
@@ -152,7 +152,7 @@ body.reg .cmpbar{display:none}
 .rp-hd .ttl{flex:1;min-width:0;font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rp-hd .tog{flex:none;border:0;background:var(--gray);border-radius:10px;font:inherit;font-size:14px;font-weight:700;color:var(--sub);min-height:40px;padding:0 12px;cursor:pointer;white-space:nowrap}
 .rp-per{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 0;align-items:center}
-.rp-per .seg button{font-size:14px;min-height:34px;padding:0 11px}
+.rp-per .seg button{font-size:14px;min-height:44px;padding:0 11px}
 .rp-past{margin:8px 0 0;font-size:13.5px;line-height:1.6;color:var(--sub)}
 .rp-past .tag{display:inline-block;font-size:12px;font-weight:800;border-radius:6px;padding:0 6px;margin-right:5px;line-height:20px;vertical-align:1px}
 .rp-past .tag.use{background:var(--blue-l);color:var(--blue-d)}
@@ -194,7 +194,7 @@ body.reg .cmpbar{display:none}
 .jm-b.rg b{font-size:11.5px;font-weight:800}
 .jm-b.rg span{font-size:13px;font-weight:800}
 .jm-b.rg small{font-size:10.5px;opacity:.95}
-.jm-b.rg.up{background:#E5484D}.jm-b.rg.dn{background:#2F6BFF}.jm-b.rg.fl{background:#6B7684}.jm-b.rg.fw{background:#8B95A1}.jm-b.rg.sq{background:#6D4AFF}
+.jm-b.rg.up{background:#E5484D}.jm-b.rg.dn{background:#2560E8}.jm-b.rg.fl{background:#6B7684}.jm-b.rg.fw{background:#8B95A1}.jm-b.rg.sq{background:#6D4AFF}
 .jm-b.rg small{white-space:nowrap}
 .jm-b.rg.sel{outline:3px solid rgba(25,31,40,.85);outline-offset:1px}
 .legend i.dot,.legend .scl i.dot{width:11px;height:11px;border-radius:50%}
@@ -247,7 +247,7 @@ i.lg-dot.ap{width:15px;height:15px;background:rgba(109,74,255,.18);border:2px da
 i.lg-line{display:inline-block;width:22px!important;height:0!important;border-top:3px dashed #6D4AFF;border-radius:0!important;vertical-align:middle}
 i.lg-area{display:inline-block;width:14px;height:12px;background:rgba(109,74,255,.16);border:1.5px solid #6D4AFF;border-radius:3px;box-sizing:border-box;vertical-align:middle}
 i.lg-dot{display:inline-block;width:13px;height:13px;border-radius:50%;background:#6D4AFF;border:2.5px solid #fff;box-shadow:0 0 0 1.5px #6D4AFF;box-sizing:border-box;vertical-align:middle}
-.legend .fib{border:0;background:none;font:inherit;font-size:12.5px;color:var(--sub);padding:0;min-height:28px;cursor:pointer;text-align:left}
+.legend .fib{border:0;background:none;font:inherit;font-size:12.5px;color:var(--sub);padding:0;min-height:44px;cursor:pointer;text-align:left}
 .legend .fnr{display:flex;align-items:flex-start;gap:6px;border:0;border-top:1px solid var(--line2);background:none;font:inherit;font-size:12.5px;color:var(--text);padding:5px 0 1px;margin-top:3px;min-height:40px;cursor:pointer;text-align:left;white-space:normal;line-height:1.4}
 .legend .fnr i{margin-top:2px}
 .legend .fnr>span{display:block;white-space:normal;min-width:0}
@@ -272,7 +272,7 @@ i.lg-dot{display:inline-block;width:13px;height:13px;border-radius:50%;backgroun
 .jm-b.ly.ad::after{border-top-color:#B8942A;bottom:-7px}
 .jm-b.ly.ad i{font-style:normal;display:inline-block;background:#B8942A;color:#fff;font-size:11px;font-weight:800;border-radius:5px;padding:0 4px;margin-right:5px;vertical-align:1px}
 .jm-b.ly.ad.sel{outline:3px solid rgba(184,148,42,.35)}
-.jm-b.me{transform:translate(-50%,-50%);width:18px;height:18px;border-radius:50%;background:#2F6BFF;border:3px solid #fff;box-shadow:0 0 0 6px rgba(47,107,255,.25);pointer-events:none}
+.jm-b.me{transform:translate(-50%,-50%);width:18px;height:18px;border-radius:50%;background:#2560E8;border:3px solid #fff;box-shadow:0 0 0 6px rgba(47,107,255,.25);pointer-events:none}
 .t5{background:#1F4FD1}.t4{background:#3D72F5}.t3{background:#6B7684}.t2{background:#C26A00}.t1{background:#C2410C}.na{background:#B0B8C1}
 .jm-b.dj.solid.t5{border-color:#1F4FD1;background:#1F4FD1}.jm-b.dj.solid.t5::after{border-top-color:#1F4FD1}
 .jm-b.dj.solid.t4{border-color:#3D72F5;background:#3D72F5}.jm-b.dj.solid.t4::after{border-top-color:#3D72F5}
@@ -484,7 +484,7 @@ function render(){
       gl.push({ k: 'G' + code, lat: c[1], lng: c[0], cls, name: g.name, v, p: (g.c || []).reduce((a, x) => a + x, 0),
         tap: gsv != null ? () => openGuCard(code, gsv) : () => MAP.setView(c[1], c[0], C.LV.sgg + 1) });
     }
-    msg = wait ? '구별 미래가치 순위 자료를 불러오는 중이에요…' : S.mode === 'price' ? '구 전체 아파트 평당가(전용 3.3㎡당, 최근 3개월 실거래 중앙값)예요.' : S.mode === 'jr' ? '구 전체 아파트 전세가율(집값 대비 전셋값)이에요.' : '구별 미래가치 순위(같은 시·도 안 지역 흐름 점수)예요. 구를 누르면 이유가 보여요. 파랑 상위권 · 회색 중위권 · 주황 하위권';
+    msg = wait ? '구별 미래가치 순위 자료를 불러오는 중이에요…' : S.mode === 'price' ? '구 전체 아파트 평당가(전용 3.3㎡당, 최근 3개월 실거래 중간값)예요.' : S.mode === 'jr' ? '구 전체 아파트 전세가율(집값 대비 전셋값)이에요.' : '구별 미래가치 순위(같은 시·도 안 지역 흐름 점수)예요. 구를 누르면 이유가 보여요. 파랑 상위권 · 회색 중위권 · 주황 하위권';
   } else {
     const ids = viewIds(bb), wait = ensure(ids);   // (djc·showName 은 아래 겹침 정리 뒤 말풍선으로)
     const items = [];
@@ -1019,7 +1019,7 @@ function openCard(d, band, keep){
     <p class="meta">${esc(meta)}</p>
     ${d.bands.length > 1 ? `<div class="bands" role="group" aria-label="평형">${d.bands.map(u => `<button type="button" data-b="${esc(u[3])}" class="${u[3] === b.band ? 'on' : ''}" aria-pressed="${u[3] === b.band}">${esc(u[3])}</button>`).join('')}</div>` : ''}
     <dl class="kv">
-      <dt>최근 시세</dt><dd>${b.price > 0 ? `<b>${esc(M.won(b.price))}</b><span class="ppy">${esc(C.ppyText(b.ppy))}</span><small>${esc(b.band)} · ${esc(M.ymLabel(b.at))} 기준 최근 3개월 실거래 중앙값</small>` : '최근 3개월 실거래가 없어요<small>시세·전망 보기에서 지난 거래를 볼 수 있어요</small>'}</dd>
+      <dt>최근 시세</dt><dd>${b.price > 0 ? `<b>${esc(M.won(b.price))}</b><span class="ppy">${esc(C.ppyText(b.ppy))}</span><small>${esc(b.band)} · ${esc(M.ymLabel(b.at))} 기준 최근 3개월 실거래 중간값</small>` : '최근 3개월 실거래가 없어요<small>시세·전망 보기에서 지난 거래를 볼 수 있어요</small>'}</dd>
       <dt>미래가치</dt><dd>${b.fv != null ? `<div class="fvrow"><span class="fvb ${C.tone(b.fv)}">${b.fv}점</span><span class="head">${esc(head || '100점 만점, 앞으로 2년 같은 시·도 아파트와 비교한 점수예요.')}</span></div>${cfo ? `<small class="cfl cf-${cfo.lv}">${esc(window.JDJ_CONF.line(cfo))}</small>` : ''}` : '이 평형은 미래가치 점수 자료가 없어요'}</dd>
       <dt class="lfr" hidden id="lfrK">학군·생활</dt><dd class="lfr" hidden id="lfrV"></dd>
       <dt class="fcr" hidden>단지 시설</dt><dd class="fcr" hidden id="fcrV"></dd>

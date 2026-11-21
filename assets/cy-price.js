@@ -47,7 +47,7 @@
   function basisTxt(b, r) {
     if (b.lease || b.lack) return '';
     return '근거: ' + b.scope + ' 준공 10년 이내 아파트 매매 ' + fmt(b.n) + '건·' + fmt(b.apts) + '개 단지' + (b.span ? '(' + ymd(b.span[0]) + '~' + ymd(b.span[1]) + ' 계약)' : '')
-      + ', 같은 면적 주택형 최고 분양가의 3.3㎡당 중앙값 ' + fmt(b.ppy) + '만 원 vs 주변 중앙값 ' + fmt((b.q || [])[1]) + '만 원.';
+      + ', 같은 면적 주택형 최고 분양가의 3.3㎡당 중간값 ' + fmt(b.ppy) + '만 원 vs 주변 중간값 ' + fmt((b.q || [])[1]) + '만 원.';
   }
   function compTxt(c) {
     if (!c || !c.n) return '최근 2년 같은 구·반경 3km 안 아파트 분양이 없어 비교 자료가 부족해요.';
@@ -63,8 +63,8 @@
     return t;
   }
   function fvTxt(f, gn) {
-    if (!f || !f.near) return f && f.gu ? gn + ' 아파트 ' + f.gu_n + '곳의 미래가치 점수 중앙값 ' + f.gu[1] + '점(같은 시·도 안 백분위)' : '주변 미래가치 점수 자료가 부족해요.';
-    return '반경 2km 아파트 ' + f.near_n + '곳의 미래가치 점수 중앙값 ' + f.near[1] + '점(같은 시·도 안 백분위)';
+    if (!f || !f.near) return f && f.gu ? gn + ' 아파트 ' + f.gu_n + '곳의 미래가치 점수 중간값 ' + f.gu[1] + '점(같은 시·도 안 백분위)' : '주변 미래가치 점수 자료가 부족해요.';
+    return '반경 2km 아파트 ' + f.near_n + '곳의 미래가치 점수 중간값 ' + f.near[1] + '점(같은 시·도 안 백분위)';
   }
   function pastTxt(p, sd) {
     if (!p) return '';
@@ -135,14 +135,14 @@
       var q = b.q || [];
       return '<div class="cyp-b"><div class="cyp-bh"><b>' + BAND[b.b] + '</b> ' + b.types + '개 주택형 · ' + fmt(b.hh) + '세대 ' + tierPill(b) + '</div>'
         + '<div class="cyp-s">분양가(최고가) ' + won(b.pmin) + (b.pmin === b.pmax ? '' : ' ~ ' + won(b.pmax)) + ' · 3.3㎡당 ' + fmt(b.ppy) + '만 원'
-        + (b.sale_med ? ' · 최근 2년 주변 분양 ' + fmt(b.sale_med) + '만 원(' + b.sale_n + '곳 중앙값)' : '') + '</div>'
+        + (b.sale_med ? ' · 최근 2년 주변 분양 ' + fmt(b.sale_med) + '만 원(' + b.sale_n + '곳 중간값)' : '') + '</div>'
         + (q[1] && !b.lease ? bar(b) : '')
         + '<div class="cyp-s cyp-k">' + esc(posTxt(b)) + '</div>' + (b.m ? '<div class="cyp-s cyp-k">' + esc(marginTxt(b)) + ' 지금 거래 기준이고, 입주 때 가격이 아니에요.</div>' : '')
         + (basisTxt(b) ? '<div class="cyp-s">' + esc(basisTxt(b)) + '</div>' : '') + '</div>';
     }).join('');
     h += section('1. 분양가, 주변 시세와 비교하면', bands + '<div class="cyp-s">분양가에는 발코니 확장·옵션이 빠진 경우가 많고, 실거래가는 그것이 들어간 값이라 같은 조건이 아니에요. 층·향·브랜드·단지 규모 차이도 숫자에 담기지 않았어요.</div>', 'cyp1');
     if (paid && D.table && D.table.length) {
-      h += section('1-1. 연식·범위별 주변 거래', '<table class="cyp-tb"><tr><th>면적</th><th>연식</th><th>범위</th><th class="num">하위 25%</th><th class="num">중앙값</th><th class="num">상위 25%</th><th class="num">거래</th></tr>'
+      h += section('1-1. 연식·범위별 주변 거래', '<table class="cyp-tb"><tr><th>면적</th><th>연식</th><th>범위</th><th class="num">하위 25%</th><th class="num">중간값</th><th class="num">상위 25%</th><th class="num">거래</th></tr>'
         + D.table.map(function (t) { var q = t.q || []; return '<tr><td>' + BAND[t.band] + '</td><td>' + esc(t.grp) + '</td><td>' + esc(t.scope) + '</td><td class="num">' + (q[0] == null ? '–' : fmt(q[0])) + '</td><td class="num"><b>' + fmt(q[1]) + '</b></td><td class="num">' + (q[2] == null ? '–' : fmt(q[2])) + '</td><td class="num">' + t.n + '</td></tr>'; }).join('') + '</table>'
         + (D.complexes && D.complexes.length ? '<h3>가까운 비교 단지</h3><table class="cyp-tb"><tr><th>단지</th><th class="num">준공</th><th>면적</th><th class="num">거리</th><th class="num">3.3㎡당</th></tr>'
           + D.complexes.map(function (c) { return '<tr><td>' + esc(c.name) + '<br><span class="cyp-s">' + esc(c.dong) + ' · 거래 ' + c.n + '건</span></td><td class="num">' + c.by + '</td><td>' + BAND[c.band] + '</td><td class="num">' + (c.d >= 99 ? '–' : c.d.toFixed(1) + 'km') + '</td><td class="num">' + fmt(c.med) + '</td></tr>'; }).join('') + '</table>' : ''), 'cyp1b');
@@ -182,20 +182,20 @@
     var q = b.q, v = [q[0], q[2], b.ppy, b.sale_med].filter(function (x) { return x; }), lo = Math.min.apply(null, v) * 0.93, hi = Math.max.apply(null, v) * 1.06, W = 340;
     if (q[0] == null || q[2] == null) return '';
     var X = function (x) { return 12 + (x - lo) / (hi - lo) * (W - 24); };
-    /* 분양가 글자는 위, 주변 중앙값 글자는 아래 — 두 값이 가까워도 겹치지 않게 */
+    /* 분양가 글자는 위, 주변 중간값 글자는 아래 — 두 값이 가까워도 겹치지 않게 */
     return '<svg class="cyp-bar" viewBox="0 0 ' + W + ' 62" role="img" aria-label="주변 거래 분포와 분양가"><line x1="6" y1="30" x2="' + (W - 6) + '" y2="30" stroke="#E5E8EB" stroke-width="2"/>'
       + '<rect x="' + X(q[0]).toFixed(1) + '" y="23" width="' + (X(q[2]) - X(q[0])).toFixed(1) + '" height="14" rx="4" fill="#E8F0FF" stroke="#9DB5F5"/>'
       + '<line x1="' + X(q[1]).toFixed(1) + '" y1="19" x2="' + X(q[1]).toFixed(1) + '" y2="41" stroke="#4E5968" stroke-width="2"/>'
       + '<text x="' + Math.min(W - 40, Math.max(40, X(q[1]))).toFixed(1) + '" y="56" font-size="10" text-anchor="middle" fill="#4E5968">주변 중앙 ' + fmt(q[1]) + '</text>'
-      + '<circle cx="' + X(b.ppy).toFixed(1) + '" cy="30" r="6.5" fill="#2F6BFF" stroke="#fff" stroke-width="2"/>'
-      + '<text x="' + Math.min(W - 40, Math.max(40, X(b.ppy))).toFixed(1) + '" y="13" font-size="10" font-weight="700" text-anchor="middle" fill="#2F6BFF">분양가 ' + fmt(b.ppy) + '</text></svg>';
+      + '<circle cx="' + X(b.ppy).toFixed(1) + '" cy="30" r="6.5" fill="#2560E8" stroke="#fff" stroke-width="2"/>'
+      + '<text x="' + Math.min(W - 40, Math.max(40, X(b.ppy))).toFixed(1) + '" y="13" font-size="10" font-weight="700" text-anchor="middle" fill="#2560E8">분양가 ' + fmt(b.ppy) + '</text></svg>';
   }
   function unsBars(s) {
     var pts = s.filter(function (x) { return x[1] != null; }); if (!pts.length) return '';
     var mx = Math.max.apply(null, pts.map(function (x) { return x[1]; })) || 1, W = 340, H = 90, bw = (W - 10) / s.length;
     return '<svg class="cyp-bar" viewBox="0 0 ' + W + ' ' + (H + 14) + '" role="img" aria-label="최근 24개월 미분양">' + s.map(function (x, i) {
       if (x[1] == null) return ''; var h = Math.max(1, (H - 14) * x[1] / mx);
-      return '<rect x="' + (5 + i * bw + 1).toFixed(1) + '" y="' + (H - h).toFixed(1) + '" width="' + (bw - 2).toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + (i === s.length - 1 ? '#2F6BFF' : '#C9D7FB') + '"><title>' + ym(x[0]) + ' ' + fmt(x[1]) + '호</title></rect>'
+      return '<rect x="' + (5 + i * bw + 1).toFixed(1) + '" y="' + (H - h).toFixed(1) + '" width="' + (bw - 2).toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + (i === s.length - 1 ? '#2560E8' : '#C9D7FB') + '"><title>' + ym(x[0]) + ' ' + fmt(x[1]) + '호</title></rect>'
         + (i % 6 === 0 ? '<text x="' + (5 + i * bw).toFixed(1) + '" y="' + (H + 12) + '" font-size="9" fill="#6B7684">' + x[0].slice(2, 4) + '.' + (+x[0].slice(4, 6)) + '</text>' : '');
     }).join('') + '</svg><div class="cyp-s">최근 24개월 미분양(호, 마지막 달 진한 막대)</div>';
   }

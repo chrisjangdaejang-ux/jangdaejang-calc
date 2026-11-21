@@ -58,8 +58,8 @@
     const xl = [0, Math.round(n / 2), n].map(i => `<text x="${sx(i)}" y="${H - 6}" text-anchor="${i === 0 ? 'start' : i === n ? 'end' : 'middle'}">${months && months[i] ? ym(months[i]) : ''}</text>`).join('');
     const lp = v[v.length - 1];
     return `<svg class="pr-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="최근 3년 평당가 흐름(만원)"><g font-size="11" fill="#6B7684">${ticks}${xl}</g>
-      <path d="${d}" fill="none" stroke="#2F6BFF" stroke-width="2.5" stroke-linejoin="round"/><circle cx="${sx(lp[0])}" cy="${sy(lp[1])}" r="4" fill="#2F6BFF"/></svg>
-      <p class="links" style="margin-top:2px">평당가(만원/3.3㎡), 국토교통부 실거래가 월별 중앙값 · 거래 없는 달은 건너뜀</p>`;
+      <path d="${d}" fill="none" stroke="#2560E8" stroke-width="2.5" stroke-linejoin="round"/><circle cx="${sx(lp[0])}" cy="${sy(lp[1])}" r="4" fill="#2560E8"/></svg>
+      <p class="links" style="margin-top:2px">평당가(만원/3.3㎡), 국토교통부 실거래가 월별 중간값 · 거래 없는 달은 건너뜀</p>`;
   }
 
   /* 미래가치 점수가 움직인 이유 — 무료 리포트 상세와 같은 '쉬운 말' 규칙(assets/plain-words.js) */
@@ -136,10 +136,10 @@
         <div class="pr-crk">${total > 1 ? `단지 ${i + 1} · ` : ''}${esc(g.sido || '')} ${esc(g.name || '')} ${esc(x.dong)}</div>
         <h2>${esc(x.apt)}</h2>
         <div class="pr-loc">${esc(x.band)} (전용 ${x.area}㎡)${PL.ageText(f.by, Y) ? ` · ${PL.ageText(f.by, Y, '준공')}` : ''}${f.hh ? ` · ${f.hh.toLocaleString()}세대` : ''}${isReg(x.code) ? ' · 규제지역' : ''}</div>
-        ${window.JDJ_PRICE ? `<div class="noprint" style="margin-top:10px">${window.JDJ_PRICE.btn({ sd: x.sd, sgg: x.code, dong: x.dong, apt: x.apt, band: x.band, jibun: x.jb }, 'premium')}${window.JDJ_PRICE.loanHref && x.P > 0 ? ` <a class="pr-loan" href="${esc(window.JDJ_PRICE.loanHref({ src: 'premium', price: x.P, code: x.code, apt: x.apt, band: x.band, area: x.area }))}" data-track="premium_to_loan" style="display:inline-flex;align-items:center;min-height:44px;font-weight:700;color:#2F6BFF;text-decoration:none">이 집 대출 한도 계산하기 ›</a>` : ''}</div>` : ''}
+        ${window.JDJ_PRICE ? `<div class="noprint" style="margin-top:10px">${window.JDJ_PRICE.btn({ sd: x.sd, sgg: x.code, dong: x.dong, apt: x.apt, band: x.band, jibun: x.jb }, 'premium')}${window.JDJ_PRICE.loanHref && x.P > 0 ? ` <a class="pr-loan" href="${esc(window.JDJ_PRICE.loanHref({ src: 'premium', price: x.P, code: x.code, apt: x.apt, band: x.band, area: x.area }))}" data-track="premium_to_loan" style="display:inline-flex;align-items:center;min-height:44px;font-weight:700;color:#2560E8;text-decoration:none">이 집 대출 한도 계산하기 ›</a>` : ''}</div>` : ''}
       </div>${f.fv != null ? `<div class="ring" aria-label="미래가치 ${f.fv}점"><b>${f.fv}</b><small>미래가치</small></div>` : ''}</div>
       <div class="pr-stats">
-        <div><span>추정 시세</span><b>${fmtS(x.P)}</b><small>${x.stale ? '최근 3개월 거래 없음 · 마지막 거래 기준' : '최근 3개월 실거래 중앙값'}</small></div>
+        <div><span>추정 시세</span><b>${fmtS(x.P)}</b><small>${x.stale ? '최근 3개월 거래 없음 · 마지막 거래 기준' : '최근 3개월 실거래 중간값'}</small></div>
         <div><span>최근 6개월</span><b>${x.ch == null ? '-' : (x.ch >= 0 ? '+' : '') + (x.ch * 100).toFixed(1) + '%'}</b><small>평당가 변화</small></div>
         <div><span>실거래</span><b>${x.n}건</b><small>자료 기간 거래 수</small></div>
         <div><span>구 평균 대비</span><b>${x.rel == null ? '-' : (x.rel >= 0 ? `${Math.round(x.rel * 100)}% 낮음` : `${Math.round(-x.rel * 100)}% 높음`)}</b><small>평당가 기준</small></div>

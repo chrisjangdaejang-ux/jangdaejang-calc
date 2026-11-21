@@ -36,16 +36,16 @@
       score: { bunyang: 100, consult: 75, brand: 45, region: 70 },
       why: { bunyang: '분양 화면에서 그 지역 공고를 찾아보는 사람에게 목록 바로 위에 보여요. 지금 분양을 알아보는 사람이라 현장 광고에 가장 잘 맞아요.',
         all: '분양 화면에서 그 지역 공고를 보는 사람에게 보여요.' } },
-    { id: 'chungyak_top', prod: 'cat_top', name: '청약 화면 위쪽 한 줄 배너', where: '청약 화면 제목 바로 아래', key: 'cat_top_bun', kind: 'weeks', cat: 'chungyak',
+    { id: 'chungyak_top', prod: 'cat_top', name: '청약 화면 상단 한 줄 배너', where: '청약 화면 제목 바로 아래', key: 'cat_top_bun', kind: 'weeks', cat: 'chungyak',
       score: { bunyang: 92, consult: 60, brand: 55, region: 30 },
       why: { bunyang: '청약 화면은 지금 분양을 알아보는 사람이 보는 곳이라 분양 현장 광고에 잘 맞아요.', all: '청약 가점을 계산하러 온 사람이 처음 보는 자리예요.' } },
-    { id: 'bunyang_top', prod: 'cat_top', name: '분양 화면 위쪽 한 줄 배너', where: '분양 화면 제목 바로 아래', key: 'cat_top_bun', kind: 'weeks', cat: 'bunyang',
+    { id: 'bunyang_top', prod: 'cat_top', name: '분양 화면 상단 한 줄 배너', where: '분양 화면 제목 바로 아래', key: 'cat_top_bun', kind: 'weeks', cat: 'bunyang',
       score: { bunyang: 88, consult: 55, brand: 55, region: 30 },
       why: { all: '분양 공고를 둘러보러 온 사람이 화면을 열자마자 보는 자리예요.' } },
     { id: 'map_pin', prod: 'bunyang_pro', name: '지도 프리미엄 분양 마커', where: '시세 지도에서 현장 주변을 볼 때 현장 위치에', key: 'bunyang_pin', kind: 'tier', ind: ['시행사', '분양대행사'], region: 'sgg',
       score: { bunyang: 70, consult: 50, brand: 50, region: 85 },
       why: { region: '현장 주변 지도를 보는 사람에게 현장 위치가 바로 보여요. 그 동네에 관심 있는 사람을 모으기 좋아요.', all: '현장 주변 지도를 보는 사람에게 현장 위치가 바로 보여요.' } },
-    { id: 'home_top', prod: 'home_top', name: '홈 위쪽 한 줄 배너', where: '첫 화면 소개 글 바로 아래(가장 많이 보는 자리)', key: 'home_top', kind: 'weeks', cat: 'home',
+    { id: 'home_top', prod: 'home_top', name: '홈 상단 한 줄 배너', where: '첫 화면 소개 글 바로 아래(가장 많이 보는 자리)', key: 'home_top', kind: 'weeks', cat: 'home',
       score: { bunyang: 50, consult: 40, brand: 100, region: 20 },
       why: { brand: '모든 방문자가 처음 여는 화면이라 이름을 알리기에 가장 좋아요.', all: '모든 방문자가 처음 여는 화면이에요. 대신 관심 분야가 섞여 있어요.' } },
     { id: 'brief', prod: 'brief_ad', name: '모닝 브리핑 지면 광고', where: '매일 아침 브리핑 메일·웹 브리핑 맨 아래(하루 1개 광고주)', key: 'brief_ad', kind: 'weeks', cat: 'brief', stat: 'brief',
@@ -57,10 +57,10 @@
     { id: 'tax_end', prod: 'native', name: '세금 화면 아래 카드', where: '세금 계산을 다 한 뒤, 모든 계산 화면 아래(계산 결과와 떨어진 곳)', key: 'native', kind: 'tier', regional: true, cat: 'tax',
       score: { consult: 95, brand: 60, region: 40 },
       why: { consult: '세금을 직접 계산해 본 사람이 "전문가에게 물어볼까" 하는 때에 보이는 자리예요.', all: '세금을 계산해 본 사람이 보는 자리예요.' } },
-    { id: 'tax_top', prod: 'cat_top', name: '세금 화면 위쪽 한 줄 배너', where: '세금 계산기 첫 화면 제목 아래(입력·결과 화면에는 없음)', key: 'cat_top', kind: 'weeks', cat: 'tax',
+    { id: 'tax_top', prod: 'cat_top', name: '세금 화면 상단 한 줄 배너', where: '세금 계산기 첫 화면 제목 아래(입력·결과 화면에는 없음)', key: 'cat_top', kind: 'weeks', cat: 'tax',
       score: { consult: 85, brand: 90, region: 30 },
       why: { all: '세금 계산기를 연 사람이 처음 보는 자리예요. 세금이 궁금한 사람만 모여요.' } },
-    { id: 'jeonse_top', prod: 'cat_top', name: '전월세 화면 위쪽 한 줄 배너', where: '전월세 화면 제목 바로 아래', key: 'cat_top', kind: 'weeks', cat: 'jeonse',
+    { id: 'jeonse_top', prod: 'cat_top', name: '전월세 화면 상단 한 줄 배너', where: '전월세 화면 제목 바로 아래', key: 'cat_top', kind: 'weeks', cat: 'jeonse',
       score: { consult: 80, brand: 85, region: 30 },
       why: { all: '전세·월세 계약을 앞둔 사람이 처음 보는 자리예요.' } },
     { id: 'jeonse_end', prod: 'native', name: '전월세 결과 아래 카드', where: '전월세 시세 결과를 다 본 뒤', key: 'native', kind: 'tier', regional: true, cat: 'jeonse',
@@ -69,7 +69,7 @@
     { id: 'mine_end', prod: 'native', name: '내 집 시세 결과 아래 카드', where: '내 집 시세·전망 결과를 다 본 뒤', key: 'native', kind: 'tier', regional: true, cat: 'mine',
       score: { consult: 84, brand: 50, region: 35 },
       why: { all: '집을 가진 사람이 시세를 확인한 다음에 보는 자리예요. 대출·이사·세금 상담과 잘 맞아요.' } },
-    { id: 'switch_top', prod: 'cat_top', name: '갈아타기 화면 위쪽 한 줄 배너', where: '갈아타기 화면 제목 아래, 입력 칸 위', key: 'cat_top', kind: 'weeks', cat: 'switch',
+    { id: 'switch_top', prod: 'cat_top', name: '갈아타기 화면 상단 한 줄 배너', where: '갈아타기 화면 제목 아래, 입력 칸 위', key: 'cat_top', kind: 'weeks', cat: 'switch',
       score: { consult: 75, brand: 70, region: 25 },
       why: { all: '지금 집을 팔고 새 집으로 옮기려는 사람이 보는 자리예요. 대출·이사 수요가 커요.' } },
     { id: 'report_end', prod: 'native', name: '내 집 마련 리포트 아래 카드', where: '내 집 마련 계산·리포트를 다 본 뒤', key: 'native', kind: 'tier', regional: true, cat: 'report',
@@ -78,13 +78,13 @@
     { id: 'chungyak_end', prod: 'native', name: '청약 결과 아래 카드', where: '청약 가점·당첨 가능성 결과를 다 본 뒤', key: 'native', kind: 'tier', regional: true, cat: 'chungyak',
       score: { bunyang: 80, consult: 65, brand: 40, region: 30 },
       why: { all: '내 청약 가점을 확인한 사람이 "어디에 넣을까" 고민하는 때에 보여요.' } },
-    { id: 'villa_top', prod: 'cat_top', name: '빌라·재개발 화면 위쪽 한 줄 배너', where: '빌라·재개발 화면 제목 아래', key: 'cat_top', kind: 'weeks', cat: 'villa',
+    { id: 'villa_top', prod: 'cat_top', name: '빌라·재개발 화면 상단 한 줄 배너', where: '빌라·재개발 화면 제목 아래', key: 'cat_top', kind: 'weeks', cat: 'villa',
       score: { consult: 70, brand: 75, region: 30 },
       why: { all: '빌라를 사기 전에 재개발 가능성을 확인하는 사람이 보는 자리예요.' } },
-    { id: 'map_top', prod: 'cat_top', name: '지도 화면 위쪽 한 줄 배너', where: '지도 검색·보기 버튼 아래', key: 'cat_top', kind: 'weeks', cat: 'map',
+    { id: 'map_top', prod: 'cat_top', name: '지도 화면 상단 한 줄 배너', where: '지도 검색·보기 버튼 아래', key: 'cat_top', kind: 'weeks', cat: 'map',
       score: { bunyang: 55, consult: 40, brand: 70, region: 30 },
       why: { all: '시세 지도를 둘러보는 사람이 계속 보는 자리예요.' } },
-    { id: 'rank_top', prod: 'cat_top', name: '순위 화면 위쪽 한 줄 배너', where: '순위 화면 제목 아래', key: 'cat_top', kind: 'weeks', cat: 'rank',
+    { id: 'rank_top', prod: 'cat_top', name: '순위 화면 상단 한 줄 배너', where: '순위 화면 제목 아래', key: 'cat_top', kind: 'weeks', cat: 'rank',
       score: { bunyang: 52, consult: 35, brand: 65, region: 25 },
       why: { all: '우리 구 순위를 보러 온 사람이 처음 보는 자리예요.' } },
     { id: 'ask_end', prod: 'native', name: '단지 비교 결과 아래 카드', where: '단지 비교 결과를 다 본 뒤', key: 'native', kind: 'tier', regional: true, cat: 'ask',
@@ -193,7 +193,7 @@
     var won1 = function (x) { return won(x); };
     if (long) out.plans.push(Object.assign({ id: 'long', label: '오래 노출', head: won(budget) + '으로 최대 ' + long.weeks + '주 동안 실려요' }, long));
     if (wide.items.length) out.plans.push(Object.assign({ id: 'wide', label: '넓게 노출', head: wide.weeks + '주 동안 자리 ' + wide.items.length + '곳에 실려요' }, wide));
-    if (focus.items.length) out.plans.push(Object.assign({ id: 'focus', label: '집중 노출', head: focus.weeks + '주 동안 ' + (focus.items.some(function (x) { return /_top$/.test(x.id); }) ? '위쪽 배너 위주로 눈에 띄게' : '가장 잘 맞는 자리에') + ' 실려요' }, focus));
+    if (focus.items.length) out.plans.push(Object.assign({ id: 'focus', label: '집중 노출', head: focus.weeks + '주 동안 ' + (focus.items.some(function (x) { return /_top$/.test(x.id); }) ? '상단 배너 위주로 눈에 띄게' : '가장 잘 맞는 자리에') + ' 실려요' }, focus));
     /* 구성이 같은 안은 하나로 합침(제목 '넓게·집중 노출'처럼). 합친 안의 id 는 맨 앞 안, ids 에 모두 */
     var merged = [];
     out.plans.forEach(function (p) {

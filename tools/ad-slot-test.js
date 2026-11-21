@@ -127,7 +127,7 @@ const doc = read('docs/ad_slots.md');
     const h = read(f), ss = slotsOf(h);
     check(`${f}: 칸 이름 ${want.join('·')}`, JSON.stringify(ss.map(s => s.id).sort()) === JSON.stringify(want.slice().sort()), ss.map(s => s.id));
     check(`${f}: ad-slot.js 포함`, /assets\/ad-slot\.js\?v=\d+/.test(h), '');
-    check(`${f}: aplus.css?v=44 이상`, /aplus\.css\?v=(4[3-9]|[5-9]\d)/.test(h), '');
+    check(`${f}: aplus.css?v=45 이상`, /aplus\.css\?v=(4[3-9]|[5-9]\d)/.test(h), '');
     ss.forEach(s => {
       const c = (s.tag.match(/data-ad-cat="([^"]+)"/) || [])[1];
       check(`${f}: ${s.id} 화면 종류 '${c}' 있음`, !!A.CATS[c], c);
@@ -138,7 +138,7 @@ const doc = read('docs/ad_slots.md');
   const j = JSON.parse(read('data/ads.json'));
   check('data/ads.json: ads 배열', Array.isArray(j.ads), typeof j.ads);
   const sw = read('sw.js');
-  check('sw.js: ad-slot.js v5·aplus v44 미리 저장', sw.includes('/assets/ad-slot.js?v=5') && sw.includes('/assets/aplus.css?v=44'), '');
+  check('sw.js: ad-slot.js v5·aplus v45 미리 저장', sw.includes('/assets/ad-slot.js?v=5') && sw.includes('/assets/aplus.css?v=45'), '');
   const adp = read('ad/index.html');
   check('/ad/: 광고 위치 안내 칸', adp.includes('id="slots"') && adp.includes('광고 위치 안내'), '');
   const slotSec = adp.slice(adp.indexOf('id="slots"'), adp.indexOf('id="target"'));

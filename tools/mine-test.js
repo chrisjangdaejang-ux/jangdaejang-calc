@@ -1,5 +1,5 @@
 /* '내 집 시세' 집계 로직 자동 검증 — 실행: node tools/mine-test.js [자료 폴더(선택, 예: /tmp/dchk/data)]
-   assets/mine-core.js 의 단순 집계(중앙값·최저·최고·합계·변동률)와 환산, 내 집 저장 형식을 손으로 계산한 값과 맞춰 본다.
+   assets/mine-core.js 의 단순 집계(중간값·최저·최고·합계·변동률)와 환산, 내 집 저장 형식을 손으로 계산한 값과 맞춰 본다.
    금액 단위: 만원. */
 const fs = require('fs'), path = require('path'), vm = require('vm');
 const M = require('../assets/mine-core.js');
@@ -18,8 +18,8 @@ const c1 = months.map((_, i) => i % 3); c1[35] = 0;          // 0,1,2 반복
 const u1 = ['11710', '가락동', '테스트아파트', '84㎡대', 84.9, 36, s1, cstr(c1), '100', { fv: 70, gs: 50, fvg: 80, by: 2000, hh: 1200 }];
 
 check('월별 건수 해독', M.counts('0129'), [0, 1, 2, 9], "'0'=0 … '9'=9 (글자 코드 − 48)");
-check('중앙값(홀수)', M.median([3, 1, 2]), 2, '1,2,3의 가운데');
-check('중앙값(짝수)', M.median([4, 1, 3, 2]), 2.5, '(2+3)/2');
+check('중간값(홀수)', M.median([3, 1, 2]), 2, '1,2,3의 가운데');
+check('중간값(짝수)', M.median([4, 1, 3, 2]), 2.5, '(2+3)/2');
 check('평당가 → 금액 환산', M.toPrice(10000, 84.9), 256800, '10,000 × 84.9 ÷ 3.3058 = 256,821 → 100만 원 단위 256,800');
 check('만원 표시', M.won(256800), '25억 6,800만원', '');
 check('만원 표시(억 딱 떨어짐)', M.won(90000), '9억원', '');
@@ -53,12 +53,12 @@ const mk = (apt, band, p, dong) => ['11710', dong || '가락동', apt, band, 84,
 const units = [u1, mk('A', '84㎡대', 4000), mk('B', '84㎡대', 5000), mk('C', '84㎡대', 3000), mk('D', '59㎡대', 9000), mk('E', '84㎡대', 9999, '문정동')];
 let dp = M.dongPosition(units, u1);
 check('같은 동·같은 평형 비교 대상 수', dp.n, 4, '테스트·A·B·C (59㎡대 D, 문정동 E 제외)');
-check('  └ 동 중앙값', dp.med, 4170, '3000·4000·4340·5000 → (4000+4340)/2');
-check('  └ 중앙값 대비', dp.diff, (4340 - 4170) / 4170, '');
+check('  └ 동 중간값', dp.med, 4170, '3000·4000·4340·5000 → (4000+4340)/2');
+check('  └ 중간값 대비', dp.diff, (4340 - 4170) / 4170, '');
 check('  └ 순위(높은 순)', dp.rank, 2, '5000 > 4340 > 4000 > 3000');
 check('  └ 같은 평형 비교 여부', dp.sameBand, true, '');
 dp = M.dongPosition([u1, mk('A', '84㎡대', 4000), mk('D', '59㎡대', 9000)], u1);
-check('같은 평형 3개 미만 → 동 전체 평형', [dp.sameBand, dp.n, dp.med], [false, 3, 4340], '4000·4340·9000 중앙값 4340');
+check('같은 평형 3개 미만 → 동 전체 평형', [dp.sameBand, dp.n, dp.med], [false, 3, 4340], '4000·4340·9000 중간값 4340');
 
 // 구 비교: 같은 달 값끼리
 const sgg = { s: months.map(() => 5000), c: months.map((_, i) => i < 12 ? 10 : i < 24 ? 20 : 30) };
@@ -235,7 +235,7 @@ if (DIR && fs.existsSync(path.join(DIR, 'index.json'))) {
       const ei = G.findIndex(u => u[2] === '은마' && u[3] === '84㎡대'), em = G[ei];
       const ht = M.histSeries(HJ, M.histRow(HJ, em, ei, GJ.hist.v), em[4]);
       check('[실자료] 은마 84㎡대 전체 기간: 끝 달 = hist.to', ht.months[ht.months.length - 1], GJ.hist.to, '');
-      check('[실자료] 은마 84㎡대 전체 기간 마지막 매매 평당가 = 최근 3년 자료 마지막 값', M.toPrice(em[6][em[6].length - 1], em[4]), ht.s[ht.s.length - 1], '같은 3개월 중앙값');
+      check('[실자료] 은마 84㎡대 전체 기간 마지막 매매 평당가 = 최근 3년 자료 마지막 값', M.toPrice(em[6][em[6].length - 1], em[4]), ht.s[ht.s.length - 1], '같은 3개월 중간값');
       check('[실자료] 은마 84㎡대 전체 기간이 최근 3년보다 김', ht.months.length > 36, true, ht.months[0]);
       const hx = M.highs(em, GJ.hist, 0);
       check('[실자료] 역대 최고가 ≥ 최근 3년 개별 거래(직거래 제외) 최고가', hx.hi.amt >= Math.max(...em[11].filter(t => t[4] !== 1).map(t => t[3])), true, M.won(hx.hi.amt));

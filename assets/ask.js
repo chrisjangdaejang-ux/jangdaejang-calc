@@ -53,16 +53,16 @@
   const CSS = '.jask{margin:0 0 14px;padding:18px;border-radius:18px;background:#F4F7FF;border:1.5px solid #C9D8FF}'
     + '.jask h2{margin:0;font-size:19px;font-weight:900;letter-spacing:-.4px}.jask h2 small{display:block;font-size:14px;font-weight:500;color:#4E5968;margin-top:3px;letter-spacing:0}'
     + '.jask form{display:flex;gap:8px;margin-top:12px}.jask input{flex:1;min-width:0;font:inherit;font-size:16px;min-height:50px;padding:0 14px;border:1.5px solid #C9D8FF;border-radius:14px;background:#fff;color:#191F28}'
-    + '.jask input:focus{outline:0;border-color:#2F6BFF;box-shadow:0 0 0 3px rgba(47,107,255,.15)}'
-    + '.jask form button{flex:none;font:inherit;font-size:16px;font-weight:800;min-height:50px;padding:0 18px;border:0;border-radius:14px;background:#2F6BFF;color:#fff;cursor:pointer}'
+    + '.jask input:focus{outline:0;border-color:#2560E8;box-shadow:0 0 0 3px rgba(47,107,255,.15)}'
+    + '.jask form button{flex:none;font:inherit;font-size:16px;font-weight:800;min-height:50px;padding:0 18px;border:0;border-radius:14px;background:#2560E8;color:#fff;cursor:pointer}'
     + '.jask .msg{font-size:14.5px;line-height:1.55;color:#3E4754;margin-top:10px}.jask .msg:empty{display:none}.jask .msg.err{color:#C2410C;font-weight:700}'
     + '.jask .cands{display:grid;gap:10px;margin-top:10px}.jask .cands:empty{display:none}'
     + '.jask .cg b{display:block;font-size:15px;margin-bottom:6px}.jask .cg .row{display:flex;flex-wrap:wrap;gap:6px}'
     + '.jask .chip{font:inherit;font-size:14.5px;font-weight:700;min-height:44px;padding:4px 14px;border:1px solid #D1D6DB;border-radius:999px;background:#fff;color:#3E4754;cursor:pointer;text-align:left;line-height:1.3}'
-    + '.jask .chip small{display:block;font-size:12.5px;font-weight:500;color:#4E5968}.jask .chip.on{border-color:#2F6BFF;background:#E8F0FF;color:#1F56E0}.jask .chip:hover{border-color:#2F6BFF}'
+    + '.jask .chip small{display:block;font-size:12.5px;font-weight:500;color:#4E5968}.jask .chip.on{border-color:#2560E8;background:#E8F0FF;color:#1F56E0}.jask .chip:hover{border-color:#2560E8}'
     + '.jask .pop{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:12px}.jask .pop>span{font-size:13.5px;font-weight:700;color:#4E5968;margin-right:2px}'
     + '.jask .pop .ex{display:inline-block;font-size:11.5px;font-weight:800;color:#8A6D17;background:#FBF5E3;border:1px solid #EFE2B8;border-radius:5px;padding:0 5px;margin-left:4px;vertical-align:1px}'
-    + '.jask .pop .chip{min-height:40px;font-size:14px;font-weight:600}'
+    + '.jask .pop .chip{min-height:44px;font-size:14px;font-weight:600}'
     + '.jask .note{font-size:13px;color:#4E5968;margin:10px 0 0;line-height:1.5}'
     + '@media(max-width:420px){.jask{padding:16px 14px}.jask form button{padding:0 14px}}';
   function css() { if (document.getElementById('jaskCss')) return; const s = document.createElement('style'); s.id = 'jaskCss'; s.textContent = CSS; document.head.appendChild(s); }
@@ -73,7 +73,7 @@
     el.classList.add('jask');
     el.innerHTML = `<h2>단지 이름으로 물어보기<small>통계로 답해요 · 단지 1곳은 시세와 전망, 2~3곳은 나란히 비교해 드려요</small></h2>
       <form role="search" novalidate><label class="sr" for="jaskQ" style="position:absolute;left:-9999px">단지 이름으로 물어보기</label>
-        <input id="jaskQ" type="search" enterkeyhint="search" autocomplete="off" placeholder="예: 잠실엘스 헬리오시티 비교" value="${esc(opt.value || '')}">
+        <input id="jaskQ" type="search" enterkeyhint="search" autocomplete="off" placeholder="예: 잠실엘스 헬리오시티" value="${esc(opt.value || '')}">
         <button type="submit">물어보기</button></form>
       <div class="msg" role="status" aria-live="polite"></div>
       <div class="cands"></div>

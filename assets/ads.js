@@ -89,13 +89,13 @@
 .jad-c .p small{font-size:13px;font-weight:500;color:#4E5968}
 .jad-c .who{font-size:13px;color:#4E5968;margin-top:4px;line-height:1.5;overflow-wrap:anywhere}
 .jad-c .acts{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;margin-top:6px}
-.jad-c .acts a,.jad-c .acts button{display:inline-flex;align-items:center;min-height:44px;font:inherit;font-size:14.5px;font-weight:700;color:#2F6BFF;text-decoration:none;background:none;border:0;padding:0;cursor:pointer}
-.jad-c .acts button.lead{background:#2F6BFF;color:#fff;border-radius:10px;padding:0 14px}
+.jad-c .acts a,.jad-c .acts button{display:inline-flex;align-items:center;min-height:44px;font:inherit;font-size:14.5px;font-weight:700;color:#2560E8;text-decoration:none;background:none;border:0;padding:0;cursor:pointer}
+.jad-c .acts button.lead{background:#2560E8;color:#fff;border-radius:10px;padding:0 14px}
 .jad-f{font-size:13px;color:#4E5968;margin-top:10px;line-height:1.6}
 .jad-f a{color:#4E5968;font-weight:700}
 .jad.rec{background:#fff;margin:18px 0 6px}
 .jad.inv{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:12px 16px}
-.jad.inv span{font-size:14px;color:#4E5968;flex:1 1 100%}.jad.inv a{font-size:14.5px;font-weight:700;color:#2F6BFF;text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
+.jad.inv span{font-size:14px;color:#4E5968;flex:1 1 100%}.jad.inv a{font-size:14.5px;font-weight:700;color:#2560E8;text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
 .jad-pr{font-size:13px;color:#4E5968;margin-top:2px;line-height:1.5}.jad-pr a{color:#4E5968;font-weight:700}
 .jld{position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
 @media(min-width:700px){.jld{align-items:center}}
@@ -107,11 +107,11 @@
 .jld input[type=text],.jld input[type=tel],.jld select,.jld textarea{width:100%;min-height:48px;padding:0 12px;border:1px solid #E5E8EB;border-radius:12px;font:inherit;font-size:16px;box-sizing:border-box;background:#fff}
 .jld textarea{min-height:72px;padding:10px 12px}
 .jld .ag{display:flex;gap:10px;align-items:flex-start;margin-top:10px;padding:12px;border:1px solid #E5E8EB;border-radius:12px;font-size:14px;line-height:1.55;cursor:pointer}
-.jld .ag input{width:20px;height:20px;flex:none;margin-top:1px;accent-color:#2F6BFF}
+.jld .ag input{width:20px;height:20px;flex:none;margin-top:1px;accent-color:#2560E8}
 .jld .ag small{display:block;color:#4E5968;font-size:13px;margin-top:2px}
 .jld .row{display:flex;gap:8px;margin-top:14px}
 .jld .row button{flex:1;min-height:52px;border-radius:14px;font:inherit;font-size:16px;font-weight:800;border:1px solid #E5E8EB;background:#fff;cursor:pointer;color:#191F28}
-.jld .row button.p{background:#2F6BFF;border-color:#2F6BFF;color:#fff}
+.jld .row button.p{background:#2560E8;border-color:#2560E8;color:#fff}
 .jld .msg{font-size:14.5px;font-weight:700;margin-top:10px;min-height:1em}.jld .msg.err{color:#D92D20}
 .jld .ok{background:#E8F6EF;border-radius:14px;padding:16px;font-size:15.5px;line-height:1.7}`;
     document.head.appendChild(s);

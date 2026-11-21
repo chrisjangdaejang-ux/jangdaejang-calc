@@ -125,11 +125,11 @@
     if (it.nm === '구 시세 최근 1년 흐름' && R.mom != null) {
       k = 'mom';
       fact = `${NM} 전체 시세가 최근 1년 ${sg(R.mom)}로 ${Math.abs(R.mom) < 0.05 ? '거의 그대로예요' : R.mom > 0 ? '올랐어요' : '내렸어요'}.`;
-      if (SR.mom != null) { const d = R.mom - SR.mom; cmp = `${SD} ${UNIT} 중앙값(${sg(SR.mom)})${Math.abs(d) < 0.5 ? '과 비슷해요' : `보다 ${r1(d)}%p ${d > 0 ? '높아요' : '낮아요'}`}.`; }
+      if (SR.mom != null) { const d = R.mom - SR.mom; cmp = `${SD} ${UNIT} 중간값(${sg(SR.mom)})${Math.abs(d) < 0.5 ? '과 비슷해요' : `보다 ${r1(d)}%p ${d > 0 ? '높아요' : '낮아요'}`}.`; }
     } else if (it.nm === '구 전세가율' && R.jr != null) {
       k = 'jr';
       fact = `${NM} 전체 전세가율이 ${r1(R.jr)}%예요.`;
-      if (SR.jr != null) { const d = R.jr - SR.jr; cmp = `${SD} ${UNIT} 중앙값(${r1(SR.jr)}%)${Math.abs(d) < 2 ? '과 비슷해요' : `보다 ${r1(d)}%p ${d > 0 ? '높아요' : '낮아요'}`}.`; }
+      if (SR.jr != null) { const d = R.jr - SR.jr; cmp = `${SD} ${UNIT} 중간값(${r1(SR.jr)}%)${Math.abs(d) < 2 ? '과 비슷해요' : `보다 ${r1(d)}%p ${d > 0 ? '높아요' : '낮아요'}`}.`; }
       const m = /다만 .*$/.exec(it.t); if (m) cmp += ' ' + m[0];
     }
     if (k !== 'etc' && c.EV) past = guPast(cx, k, up);
@@ -1191,7 +1191,7 @@
       const t = `지금 공고 중 가능성 높음 ${uniq(hi).length}곳 · 경합 ${uniq(mid).length}곳 — ` + (hi.length || mid.length ? '' : '가장 가까운 곳은 ') + show.map(x => `${x.name} ${x.band}(${rng(x)})`).join(', ') + '.';
       const fact = show.map(x => `${x.name}(${x.sido} ${x.sgg}) ${x.band}의 예상 최저 당첨 가점은 ${J(rng(x), '이에요', '예요')}`).join('. ') + '.';
       const cmp = `${c.scope} 민영 공고 ${n0(c.nNotice || 0)}곳의 면적대별로 보면 가능성 높음 ${c.cnt.hi}개, 경합 ${c.cnt.mid}개, 낮음 ${c.cnt.lo}개예요.`;
-      const so = hi.length ? `그래서 ${hi[0].name} ${hi[0].band}처럼 커트라인 위쪽(${hi[0].hi}점) 이상인 곳부터 1순위로 넣어 보세요.` : mid.length ? `그래서 ${mid[0].name} ${mid[0].band}는 커트라인 위쪽(${mid[0].hi}점)까지 ${mid[0].need}점 남은 경합이에요.` : `그래서 지금 공고는 커트라인 아래쪽까지 가장 가까운 곳도 ${top.need}점 모자라요.`;
+      const so = hi.length ? `그래서 ${hi[0].name} ${hi[0].band}처럼 커트라인 상단(${hi[0].hi}점) 이상인 곳부터 1순위로 넣어 보세요.` : mid.length ? `그래서 ${mid[0].name} ${mid[0].band}는 커트라인 위쪽(${mid[0].hi}점)까지 ${mid[0].need}점 남은 경합이에요.` : `그래서 지금 공고는 커트라인 아래쪽까지 가장 가까운 곳도 ${top.need}점 모자라요.`;
       L.push({ k: 'cut', t, d: [fact, cmp, '', so] });
     }
     if (c.hist && c.hist.n) {
@@ -1202,7 +1202,7 @@
     }
     if (c.years && c.years.y > 0) {
       const Y = c.years;
-      L.push({ k: 'time', t: `지금 조건이 이어지면 약 ${Y.y}년 뒤 ${Y.target}점(${Y.name} 커트라인 위쪽)에 닿아요.`,
+      L.push({ k: 'time', t: `지금 조건이 이어지면 약 ${Y.y}년 뒤 ${Y.target}점(${Y.name} 커트라인 상단)에 닿아요.`,
         d: [`무주택기간·통장 가입기간이 1년씩 늘 때마다 점수를 다시 매겼어요(부양가족 ${c.d}점은 그대로).`, `지금 ${my}점에서 ${Y.target - my}점이 더 필요해요.`, '',
           `그래서 ${Y.y}년 안에 청약할 계획이면 ${Y.name}급 단지는 추첨제 물량도 함께 노려야 해요(목표 ${Y.target}점).`] });
     }
@@ -1395,24 +1395,24 @@
 .nar-head{font-size:17px;line-height:1.55;font-weight:800;color:#1F1F1F;margin:0 0 8px;word-break:keep-all}
 .nar-gap{font-size:13.5px;line-height:1.6;color:#5A4A1A;background:#F7EFD6;border-radius:10px;padding:8px 10px;margin:0 0 10px;word-break:keep-all}
 .nar-tools{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:#6B6B6B;margin:4px 0 6px}
-.nar-all{border:1px solid #D9CFAE;background:#fff;border-radius:999px;padding:5px 12px;font-size:12.5px;color:#5A4A1A;cursor:pointer;min-height:32px}
+.nar-all{border:1px solid #D9CFAE;background:#fff;border-radius:999px;padding:5px 12px;font-size:12.5px;color:#5A4A1A;cursor:pointer;min-height:44px}
 .nar-list{list-style:none;margin:0;padding:0;counter-reset:n}
 .nar-li{border-top:1px solid #EFE9D6;padding:10px 0 8px;counter-increment:n}
 .nar-sum{font-size:15px;line-height:1.6;font-weight:600;color:#222;word-break:keep-all;padding-left:26px;position:relative}
 .nar-sum:before{content:counter(n);position:absolute;left:0;top:2px;width:19px;height:19px;border-radius:50%;background:#B8942A;color:#fff;font-size:11.5px;font-weight:800;display:flex;align-items:center;justify-content:center}
-.nar-more{margin:6px 0 0 26px;border:0;background:none;color:#8A6D12;font-weight:700;font-size:13.5px;padding:6px 0;cursor:pointer;min-height:32px}
+.nar-more{margin:6px 0 0 26px;border:0;background:none;color:#7D6210;font-weight:700;font-size:13.5px;padding:6px 0;cursor:pointer;min-height:44px}
 .nar-det{margin:4px 0 2px 26px;padding:10px 12px;background:#F8F4E8;border-radius:10px}
 .nar-p{margin:0 0 8px;font-size:14px;line-height:1.7;color:#333;word-break:keep-all}.nar-p:last-child{margin-bottom:0}
-.nar-p b{display:block;font-size:11.5px;color:#8A6D12;letter-spacing:.02em;margin-bottom:1px}
+.nar-p b{display:block;font-size:11.5px;color:#7D6210;letter-spacing:.02em;margin-bottom:1px}
 .nar-pro{margin-top:10px;font-size:13px}.nar-pro b{display:block;margin-bottom:4px;color:#5A4A1A}
 .nar-pro table{width:100%;border-collapse:collapse;font-size:12.5px}.nar-pro th,.nar-pro td{border-bottom:1px solid #E6DFC8;padding:5px 4px;text-align:left}.nar-pro .num{text-align:right;font-variant-numeric:tabular-nums}
 .nar-pro small{color:#6B6B6B}
-.nar-dev{margin-top:10px;padding-top:8px;border-top:1px dashed #D9CFAE;font-size:14px;line-height:1.65}.nar-devh{display:block;font-size:12.5px;color:#8A6D12;margin-bottom:2px}.nar-dev .dv-one{padding:6px 0}.nar-dev .dv-p{margin:4px 0;font-size:14px;line-height:1.7}.nar-dev .dv-note{font-size:12.5px;color:#6B6B6B}
+.nar-dev{margin-top:10px;padding-top:8px;border-top:1px dashed #D9CFAE;font-size:14px;line-height:1.65}.nar-devh{display:block;font-size:12.5px;color:#7D6210;margin-bottom:2px}.nar-dev .dv-one{padding:6px 0}.nar-dev .dv-p{margin:4px 0;font-size:14px;line-height:1.7}.nar-dev .dv-note{font-size:12.5px;color:#6B6B6B}
 .nar-chart{margin:10px 0 0}.nar-chart svg{width:100%;height:auto;display:block}.nar-chart figcaption{font-size:12px;color:#555;margin-top:2px}
 .nar-chart i{display:inline-block;width:12px;height:3px;vertical-align:middle;margin:0 4px 0 6px}.nar-chart i.me{background:#B8942A}.nar-chart i.gu{background:#B9B2A0}
 .nar-trust{margin:0 0 10px;padding:10px 12px;background:#F8F4E8;border-radius:10px;font-size:14px;line-height:1.6;color:#333;word-break:keep-all}
 .nar-t1{margin:0 0 4px;font-weight:600;color:#3A3220}.nar-t2{margin:2px 0 0;font-size:13px;color:#555}.nar-t2.ref{color:#8C8C8C}
-.nar-tbtn{border:0;background:none;color:#8A6D12;font-weight:700;font-size:13.5px;padding:6px 0 0;cursor:pointer;min-height:32px}
+.nar-tbtn{border:0;background:none;color:#7D6210;font-weight:700;font-size:13.5px;padding:6px 0 0;cursor:pointer;min-height:32px}
 .nar-tbtn:after{content:' ▾'}.nar-tbtn[aria-expanded="true"]:after{content:' ▴'}
 .nar-trust-body{margin-top:6px;padding-top:8px;border-top:1px solid #E6DFC8}
 .nar-tone{margin-bottom:8px}.nar-th{display:block;font-size:13px;color:#5A4A1A}.nar-tone.ref .nar-th,.nar-tone.ref li{color:#9A9A9A}
@@ -1421,15 +1421,15 @@
 .nar-trows b{font-weight:700;white-space:nowrap}.nar-trows b.hit{color:#1F5FA8}.nar-trows b.miss{color:#B4473A}.nar-tone.ref .nar-trows b{color:#9A9A9A}
 .nar-tnote{margin:4px 0 0;font-size:12.5px;color:#6B6B6B}
 .nar-dim{margin:4px 0 0 26px;font-size:13px;color:#9A9A9A;line-height:1.55;word-break:keep-all}
-.nar-foot{margin:10px 0 2px;font-size:12.5px;color:#6B6B6B}.nar-terms{color:#8A6D12;font-weight:700}
+.nar-foot{margin:10px 0 2px;font-size:12.5px;color:#6B6B6B}.nar-terms{color:#7D6210;font-weight:700}
 .w3{margin:0 0 12px;padding:12px 12px 8px;background:#fff;border:1px solid #E6DFC8;border-radius:12px}
 .w3-h{margin:0 0 2px;font-size:16px;font-weight:800;color:#1F1F1F;letter-spacing:-.01em}
 .w3-lead{margin:0 0 8px;font-size:12.5px;line-height:1.5;color:#6B6B6B;word-break:keep-all}
 .w3-grid{display:grid;grid-template-columns:1fr;gap:10px}
 .w3-col{border-radius:10px;padding:8px 10px 6px}.w3-col.w3-up{background:#EEF4FC}.w3-col.w3-dn{background:#FBEFEC}.w3-col.w3-wt{background:#F8F4E8}
 .w3-k{margin:0 0 4px;font-size:13.5px;font-weight:800}.w3-k span{display:inline-block;min-width:18px;padding:0 5px;border-radius:9px;color:#fff;font-size:11.5px;text-align:center;margin-left:2px}
-.w3-up .w3-k{color:#1F5FA8}.w3-up .w3-k span{background:#1F5FA8}.w3-dn .w3-k{color:#B4473A}.w3-dn .w3-k span{background:#B4473A}.w3-wt .w3-k{color:#8A6D12}
-.w3-d td,.w3-d th{color:#333}.w3-dv>summary{cursor:pointer;font-size:13px;color:#8A6D12;font-weight:700;margin-top:6px}
+.w3-up .w3-k{color:#1F5FA8}.w3-up .w3-k span{background:#1F5FA8}.w3-dn .w3-k{color:#B4473A}.w3-dn .w3-k span{background:#B4473A}.w3-wt .w3-k{color:#7D6210}
+.w3-d td,.w3-d th{color:#333}.w3-dv>summary{cursor:pointer;font-size:13px;color:#7D6210;font-weight:700;margin-top:6px}
 .w3-ol{list-style:none;margin:0;padding:0}
 .w3-li{padding:6px 0;border-top:1px solid rgba(0,0,0,.06)}.w3-li:first-child{border-top:0}
 .w3-t{display:block;font-size:14.5px;line-height:1.5;color:#1F1F1F;word-break:keep-all}

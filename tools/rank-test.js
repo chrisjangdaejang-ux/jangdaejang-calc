@@ -131,7 +131,7 @@ if (dir && fs.existsSync(path.join(dir, 'index.json'))) {
     check('실제 자료: 과거 사례 문장이 붙은 구가 있음', wp > 0, true, 'evidence.json region');
     const sdb = Object.keys(X.sgg).find(k => X.sgg[k].name === '도봉구' && X.sgg[k].sido === '서울특별시');
     const wd = sdb && gm[sdb] != null ? NR.guWhy({ IX: X, code: sdb, gs: gm[sdb], EV, PL: P }) : null;
-    if (wd && wd.k === 'mom' && wd.past) check('실제 자료: 도봉구 문장 = 사실·비교·과거 사례·그래서', /^도봉구 전체 시세가 최근 1년 .+%로 (내렸어요|올랐어요)\. 서울 구 중앙값\(.+\)보다 .+%p (낮아요|높아요)\. 과거 서울에서 1년 상승률이 .+였던 구는 이후 2년 서울 평균보다 평균 .+%p (더|덜) 올랐어요\(사례 \d+건 중 \d+건\)\. 그래서 도봉구 점수를 (높게|낮게) 봤어요\.$/.test(wd.text), true, wd.text);
+    if (wd && wd.k === 'mom' && wd.past) check('실제 자료: 도봉구 문장 = 사실·비교·과거 사례·그래서', /^도봉구 전체 시세가 최근 1년 .+%로 (내렸어요|올랐어요)\. 서울 구 중간값\(.+\)보다 .+%p (낮아요|높아요)\. 과거 서울에서 1년 상승률이 .+였던 구는 이후 2년 서울 평균보다 평균 .+%p (더|덜) 올랐어요\(사례 \d+건 중 \d+건\)\. 그래서 도봉구 점수를 (높게|낮게) 봤어요\.$/.test(wd.text), true, wd.text);
   }
   const mj = path.join(dir, 'model.json');
   if (fs.existsSync(mj)) { const M = JSON.parse(fs.readFileSync(mj, 'utf8')); check('실제 자료: 검증 결과 읽기', !!R.check(M) === !!(M.region && M.region.used), true, 'model.json region'); }

@@ -10,7 +10,7 @@
     '전세가율': '집값 대비 전셋값 비율',
     '%p': '퍼센트포인트: 두 비율의 차이',
     '순전입률': '전학 온 학생 수에서 떠난 학생 수를 뺀 값을 재학생 수로 나눈 것',
-    '중앙값': '여러 값을 크기순으로 줄 세웠을 때 가운데 값'
+    '중간값': '여러 값을 크기순으로 줄 세웠을 때 가운데 값'
   };
   for (const k in STAGE) GL[STAGE[k]] = `재건축·재개발 10단계 중 ${k}번째: ${STAGE_DESC[k]}`;
   const FIRST = { '평당': '평당(전용 3.3㎡당)' };
@@ -122,7 +122,7 @@
        입주 물량·인구·미분양·일자리 중 up/down 에 없는 것은 '참고 지표'로 뒤에 둔다.
      - r 이 없으면(배포 전 자료) 예전처럼 why = 참고 지표 문장들, real = false */
   const pct1 = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(Math.round(v * 10) / 10).toFixed(1) + '%';
-  /* 인구 구조 문장(index.json sgg[구].r.pp, 시·도 중앙값 sido[i].r.pp) — 주어(구 이름)와 비교 기준을 항상 붙인다.
+  /* 인구 구조 문장(index.json sgg[구].r.pp, 시·도 중간값 sido[i].r.pp) — 주어(구 이름)와 비교 기준을 항상 붙인다.
      자료가 없으면 빈 객체 → 화면에 안 나옴. 키: a3049(30~40대 3년 증감) a65(65세 이상 비중) nm(1년 순이동) nm3049(30~40대 1년 순이동) h12(1·2인 세대 비중) */
   const POP_LABEL = { '30~40대 인구 증감(3년)': 'a3049', '고령화 속도(3년)': 'a65', '인구 순유입(1년)': 'nm', '30~40대 순유입(1년)': 'nm3049',
     '1·2인 세대 비중': 'h12', '1·2인 세대 비중 변화(3년)': 'h12' };
@@ -131,7 +131,7 @@
     const n0 = v => Math.abs(Math.round(v)).toLocaleString('ko-KR');
     const f1 = v => (Math.round(Math.abs(v) * 10) / 10).toFixed(1);
     const rk = (d, how) => d.rk && d.of >= 3 ? ` — ${ri.short} ${d.of}개 ${ri.unit} 중 ${d.rk}위(${how}).` : '';
-    const md = (k, unit) => M[k] != null ? ` — ${ri.short} ${ri.unit} 중앙값 ${unit === '%' ? f1(M[k]) + '%' : n0(M[k]) + unit}.` : '';
+    const md = (k, unit) => M[k] != null ? ` — ${ri.short} ${ri.unit} 중간값 ${unit === '%' ? f1(M[k]) + '%' : n0(M[k]) + unit}.` : '';
     const end = (d, how, k, unit) => rk(d, how) || md(k, unit) || '.';
     let d;
     if ((d = P.a3049) && d.v != null)
@@ -184,7 +184,7 @@
       switch (nm) {
         case '구 시세 최근 1년 흐름': {
           if (R.mom == null) return '';
-          const m = SR.mom, cmp = m != null ? `(${ri.short} ${unit} 중앙값 ${pct1(m)})` : '';
+          const m = SR.mom, cmp = m != null ? `(${ri.short} ${unit} 중간값 ${pct1(m)})` : '';
           if (m != null && R.mom > m) { momHigh = d; return `${NM} 전체 시세가 최근 1년 ${pct1(R.mom)}로 ${d ? '이미 많이 올랐어요' : '많이 올랐어요'}${cmp}.`; }
           if (R.mom < 0) return `${NM} 전체 시세가 최근 1년 ${pct1(R.mom)}로 내렸어요${cmp}.`;
           return `${NM} 전체 시세가 최근 1년 ${pct1(R.mom)}로 ${m != null && R.mom < m ? '덜 올랐어요' : '올랐어요'}${cmp}.`;
@@ -192,10 +192,10 @@
         case '구 전세가율': {
           if (R.jr == null) return '';
           const m = SR.jr, lv = m == null ? '' : Math.abs(R.jr - m) < 2 ? '보통이에요' : R.jr < m ? '낮아요' : '높아요';
-          let t = `${NM} 전체 ${G ? G('전세가율') : '전세가율'}이 ${Math.round(R.jr * 10) / 10}%${lv ? '로 ' + lv : '예요'}${m != null ? `(${ri.short} 중앙값 ${Math.round(m * 10) / 10}%)` : ''}.`;
+          let t = `${NM} 전체 ${G ? G('전세가율') : '전세가율'}이 ${Math.round(R.jr * 10) / 10}%${lv ? '로 ' + lv : '예요'}${m != null ? `(${ri.short} 중간값 ${Math.round(m * 10) / 10}%)` : ''}.`;
           if (m != null && R.jr < m) lowJr = true;
           if (lowJr && R.rz != null && SR.rz != null && R.rz > SR.rz * 1.5 && R.rz >= 5)
-            t += ` 다만 ${NM}처럼 재건축 단지가 많은 ${unit}(재건축 단계 단지 ${Math.round(R.rz * 10) / 10}%, ${ri.short} 중앙값 ${Math.round(SR.rz * 10) / 10}%)는 전세가율이 낮게 나오기 쉬워요.`;
+            t += ` 다만 ${NM}처럼 재건축 단지가 많은 ${unit}(재건축 단계 단지 ${Math.round(R.rz * 10) / 10}%, ${ri.short} 중간값 ${Math.round(SR.rz * 10) / 10}%)는 전세가율이 낮게 나오기 쉬워요.`;
           return t;
         }
         case '향후 2년 입주 물량': used.add('sup'); return T.sup();
@@ -310,7 +310,7 @@
   const stageName = lv => STAGE[lv] || '';
   const rzText = (z, G, ymf) => `재건축 진행: ${z.n} — ${G ? G(STAGE[z.lv] || '') : (STAGE[z.lv] || '')} 단계${z.ym ? `(${ymf ? ymf(z.ym) : z.ym})` : ''} · 10단계 중 ${z.lv}단계`;
 
-  /* 전세가율 비교 기준: 같은 시·도 공개 단지 자료의 중앙값(재건축 단지는 30곳 이상일 때만) */
+  /* 전세가율 비교 기준: 같은 시·도 공개 단지 자료의 중간값(재건축 단지는 30곳 이상일 때만) */
   const JR_MEMO = new WeakMap();
   const median = a => { const s = a.slice().sort((x, y) => x - y), n = s.length; return n ? (n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2) : null; };
   function jrStats(units) {
@@ -332,9 +332,9 @@
     st = st || {};
     if (f.rz && st.rz) {
       const [m, n] = st.rz, d = jr - m, lvl = Math.abs(d) < 0.05 ? '보통인 편' : d < 0 ? '낮은 편' : '높은 편';
-      t += ` ${sidoShort} 재건축 단지 ${n.toLocaleString()}곳(평형별)의 전세가율 ${G ? G('중앙값') : '중앙값'}은 ${Math.round(m * 100)}%라, 이 단지는 ${sidoShort} 재건축 단지 중에서는 ${lvl}이에요.`;
-      if (st.all != null) t += ` ${sidoShort} 아파트 전체 중앙값은 ${Math.round(st.all * 100)}%예요.`;
-    } else if (st.all != null) t += ` ${sidoShort} 아파트 전체 전세가율 ${G ? G('중앙값') : '중앙값'}은 ${Math.round(st.all * 100)}%예요.`;
+      t += ` ${sidoShort} 재건축 단지 ${n.toLocaleString()}곳(평형별)의 전세가율 ${G ? G('중간값') : '중간값'}은 ${Math.round(m * 100)}%라, 이 단지는 ${sidoShort} 재건축 단지 중에서는 ${lvl}이에요.`;
+      if (st.all != null) t += ` ${sidoShort} 아파트 전체 중간값은 ${Math.round(st.all * 100)}%예요.`;
+    } else if (st.all != null) t += ` ${sidoShort} 아파트 전체 전세가율 ${G ? G('중간값') : '중간값'}은 ${Math.round(st.all * 100)}%예요.`;
     return t;
   }
 
@@ -465,7 +465,7 @@
   }
 
   /* ---------- 점수를 움직인 요인(fx.why · fx.wf) → 숫자 근거 문장 ----------
-     엔진 fx.why[보유 년] = ['mom+', 'reg-', …](방향·기여 큰 순, 가중치 없음), fx.wf[지표] = [이 단지 값, 같은 구 중앙값, 같은 시·도 백분위]
+     엔진 fx.why[보유 년] = ['mom+', 'reg-', …](방향·기여 큰 순, 가중치 없음), fx.wf[지표] = [이 단지 값, 같은 구 중간값, 같은 시·도 백분위]
      o = {h:'2', apt, dong, sgg(구 이름), sido(짧은 시·도 이름), sid, ev(evidence.json), G, rp(regionPlace 결과), regionUsed(bool), sp(supply.json)}
      → {items:[{dir:'up'|'dn', k, name, t, ev}], keys:Set} — 점수가 낮으면 내린 요인 먼저, 방향별 최대 3개.
      - 사실값을 댈 수 없는 요인은 싣지 않는다(이름만 나열하지 않음).
@@ -508,7 +508,7 @@
         return { t: wrap(`${A} 최근 6개월 시세 변동 폭이 ${p1(v)}%예요`, [pos('mom2', '변동 폭')]), lv: lvOf('mom2'),
           r: { hi_dn: '짧은 기간 크게 움직인 단지는 이후 되돌림이 있는 경우가 많았어요', lo_up: '시세가 안정적인 단지가 이후 더 오른 경우가 많았어요' } }; },
       rel: () => { const v = WF.rel ? WF.rel[0] : null, b = qb('rel'); let t;
-        if (v != null) t = `${A} ${G ? G('평당') : '평당'} 시세가 ${SG} 전체 거래 ${G ? G('중앙값') : '중앙값'}보다 ` + (Math.abs(v) < 0.03 ? '비슷해요' : `${Math.round(Math.abs(v) * 100)}% ${v > 0 ? '높아요' : '낮아요'}`);
+        if (v != null) t = `${A} ${G ? G('평당') : '평당'} 시세가 ${SG} 전체 거래 ${G ? G('중간값') : '중간값'}보다 ` + (Math.abs(v) < 0.03 ? '비슷해요' : `${Math.round(Math.abs(v) * 100)}% ${v > 0 ? '높아요' : '낮아요'}`);
         else if (b != null) t = `${A} ${SG} 안에서 비싼 편인지 보면 ${SD} 단지 중 ${Q5[b]}에 들어요`;
         else return null;
         return { t: v != null ? wrap(t, [pos('rel', '구 대비 가격')]) : t, lv: lvOf('rel'),
@@ -650,7 +650,7 @@
   }
   /* 요인 한 줄(목록용): '내린 요인 · 지역 흐름 — …' */
   const whyLine = it => `${it.dir === 'up' ? '올린 요인' : '내린 요인'} · ${it.name}: ${it.t}`;
-  /* 프리미엄 표: 요인 | 방향 | 이 단지 | 같은 구 중앙값 | 시·도 안 위치 — 엔진 사실값(wf)이 있는 요인만 */
+  /* 프리미엄 표: 요인 | 방향 | 이 단지 | 같은 구 중간값 | 시·도 안 위치 — 엔진 사실값(wf)이 있는 요인만 */
   function whyTable(f, res, o, esc) {
     const WF = (f && f.wf) || {}, E = esc || (s => String(s));
     const fmt = (k, v) => v == null ? '-' : ['mom', 'mom2', 'sch'].includes(k) ? (k === 'mom2' ? '' : v > 0 ? '+' : v < 0 ? '−' : '') + (Math.round(Math.abs(v) * 1000) / 10).toFixed(1) + '%'
@@ -785,8 +785,8 @@
     o = o || {}; const doc = root.document, T = Object.assign({}, TIP, o.terms || {});
     if (!doc.getElementById('jp-tip-css')) {
       const st = doc.createElement('style'); st.id = 'jp-tip-css';
-      st.textContent = '.jp-tip{all:unset;cursor:pointer;border-bottom:1.5px dotted #8A6D12;color:inherit;font:inherit;line-height:inherit}.jp-tip:focus-visible{outline:2px solid #B8942A;outline-offset:1px}.jp-tip[aria-expanded="true"]{background:#F3E7C2}'
-        + '.jp-tipbox{margin:6px 0 4px;padding:8px 10px;background:#FFF8E1;border:1px solid #E6D9A8;border-radius:8px;font-size:13px;line-height:1.6;color:#4A3F1E;font-weight:500;word-break:keep-all}.jp-tipbox b{color:#8A6D12;margin-right:4px}';
+      st.textContent = '.jp-tip{all:unset;cursor:pointer;border-bottom:1.5px dotted #7D6210;color:inherit;font:inherit;line-height:inherit}.jp-tip:focus-visible{outline:2px solid #B8942A;outline-offset:1px}.jp-tip[aria-expanded="true"]{background:#F3E7C2}'
+        + '.jp-tipbox{margin:6px 0 4px;padding:8px 10px;background:#FFF8E1;border:1px solid #E6D9A8;border-radius:8px;font-size:13px;line-height:1.6;color:#4A3F1E;font-weight:500;word-break:keep-all}.jp-tipbox b{color:#7D6210;margin-right:4px}';
       (doc.head || doc.documentElement).appendChild(st);
     }
     const blocks = o.blockSel ? el.querySelectorAll(o.blockSel) : [el];
@@ -806,6 +806,15 @@
           const mid = cur.splitText(i), rest = mid.splitText(len);
           const bt = doc.createElement('button'); bt.type = 'button'; bt.className = 'jp-tip'; bt.dataset.tip = k; bt.setAttribute('aria-expanded', 'false'); bt.textContent = mid.nodeValue;
           mid.parentNode.replaceChild(bt, mid); cur = rest;
+          /* 버튼 앞뒤에 붙은 글자(숫자·조사·괄호)와 떨어져 줄이 바뀌지 않게 한 덩어리로 묶음 (예: '5.5' + '%p', '전세가율' + '은') */
+          const pv = bt.previousSibling, pm = pv && pv.nodeType === 3 ? /[^\s]{1,12}$/.exec(pv.nodeValue) : null, nm = /^[^\s]{1,6}/.exec(rest.nodeValue || '');
+          if (pm || nm) {
+            const sp = doc.createElement('span'); sp.style.whiteSpace = 'nowrap';
+            bt.parentNode.insertBefore(sp, bt);
+            if (pm) sp.appendChild(pv.splitText(pm.index));
+            sp.appendChild(bt);
+            if (nm) { const r2 = rest.splitText(nm[0].length); sp.appendChild(rest); cur = r2; }
+          }
         }
       }
     });

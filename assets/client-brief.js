@@ -182,8 +182,8 @@
     </article>`;
   }
   const CSS = '.ccard{border:1px solid #D6E2FF;border-radius:18px;background:#fff;padding:16px 16px 12px;box-shadow:0 1px 0 rgba(0,0,0,.02)}'
-    + '.cc-h{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;border-bottom:2px solid #2F6BFF;padding-bottom:8px;margin-bottom:8px}'
-    + '.cc-of{font-weight:900;font-size:17px;color:#191F28;display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}.cc-of span{font-size:12px;font-weight:800;color:#fff;background:#2F6BFF;border-radius:5px;padding:1px 6px}'
+    + '.cc-h{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;border-bottom:2px solid #2560E8;padding-bottom:8px;margin-bottom:8px}'
+    + '.cc-of{font-weight:900;font-size:17px;color:#191F28;display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}.cc-of span{font-size:12px;font-weight:800;color:#fff;background:#2560E8;border-radius:5px;padding:1px 6px}'
     + '.cc-dt{font-size:13.5px;color:#4E5968;white-space:nowrap}'
     + '.cc-lb{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-weight:800;color:#8A6D1C;background:#FBF8EF;border:1px dashed #EFE6CC;border-radius:10px;padding:6px 10px;margin:0 0 8px}.cc-lb small{font-weight:500;color:#6B7684;font-size:12.5px}'
     + '.cc-t{font-size:19px;font-weight:900;margin:2px 0 8px;letter-spacing:-.3px}'
@@ -219,7 +219,7 @@
     const cv = doc.createElement('canvas'); cv.width = 1080; cv.height = 1080;
     const ctx = cv.getContext('2d'), F = "'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif", p = m.profile;
     ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 1080, 1080);
-    ctx.fillStyle = '#2F6BFF'; ctx.fillRect(0, 0, 1080, 128);
+    ctx.fillStyle = '#2560E8'; ctx.fillRect(0, 0, 1080, 128);
     ctx.fillStyle = '#EFE6CC'; ctx.fillRect(0, 128, 1080, 8);
     ctx.fillStyle = '#fff'; ctx.font = `900 44px ${F}`; ctx.textBaseline = 'middle';
     ctx.fillText(wrapText(ctx, p.office, 700, 1)[0] || '', 56, 66);
@@ -276,7 +276,7 @@
     await Promise.all((gs || []).map(g => fetch(DATA + 'cx/' + g + '.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null).then(j => { out[g] = j; })));
     return out;
   }
-  const ACT_CSS = '.ccw{margin:0 0 14px;scroll-margin-top:72px}.ccw.focus .ccard{border-color:#2F6BFF;box-shadow:0 0 0 3px rgba(47,107,255,.18)}'
+  const ACT_CSS = '.ccw{margin:0 0 14px;scroll-margin-top:72px}.ccw.focus .ccard{border-color:#2560E8;box-shadow:0 0 0 3px rgba(47,107,255,.18)}'
     + '.cc-act{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.cc-act .btn{flex:1 1 auto;min-width:140px}';
   function css(doc) {
     if (doc.getElementById('ccCss')) return;

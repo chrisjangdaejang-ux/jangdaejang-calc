@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#FFFFFF">
 <link rel="icon" type="image/png" href="../assets/icons/favicon-48.png">
 <link rel="apple-touch-icon" href="../assets/icons/apple-180.png">
-<script src="../assets/pwa.js?v=1" defer data-nobar></script>
+<script src="../assets/pwa.js?v=2" defer data-nobar></script>
 <script src="../assets/biz.js?v=1" defer></script>
 <title>성적표 · 미래가치 점수를 과거에 그대로 써 봤더니 | 집코드</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/track/">
@@ -29,7 +29,7 @@
 <script src="../assets/track.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/aplus.css?v=44">
+<link rel="stylesheet" href="../assets/aplus.css?v=45">
 <script src="../assets/nw.js?v=1" defer></script>
 <style>
 .tk{max-width:820px;margin:0 auto;padding:24px 20px 40px}
@@ -45,7 +45,7 @@
 /* 범위 고르기 */
 .scp{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:20px 0 0}
 .seg{display:inline-flex;background:var(--gray);border-radius:12px;padding:3px;gap:2px}
-.seg button{font:inherit;font-size:15px;font-weight:700;border:0;background:none;color:var(--sub2);min-height:40px;padding:0 14px;border-radius:9px;cursor:pointer}
+.seg button{font:inherit;font-size:15px;font-weight:700;border:0;background:none;color:var(--sub2);min-height:44px;padding:0 14px;border-radius:9px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:#fff;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .scp select{font:inherit;font-size:15.5px;font-weight:700;min-height:44px;padding:0 34px 0 12px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--text)}
 .weak{margin:14px 0 0;padding:14px 16px;border-radius:14px;background:#FFF6E8;border:1px solid #F3D9A8;font-size:15px;color:var(--sub);line-height:1.7}
@@ -178,7 +178,7 @@ table.tt{width:100%;border-collapse:collapse;font-size:14.5px;font-variant-numer
 
     <section id="secYear" hidden>
       <h2>연도별</h2>
-      <p class="lead2">기준 월이 속한 해마다 나눠 봤어요. 상승장·하락장이 바뀌어도 상위 10%가 하위 10%보다 나았는지 확인할 수 있어요.</p>
+      <p class="lead2">기준 월이 속한 해마다 나눠 봤어요. 상승장·하락장이 바뀌어도 점수 상위 10% 단지가 하위 10% 단지보다 나았는지 확인할 수 있어요.</p>
       <div class="tw"><table class="tt" id="yTbl"></table></div>
     </section>
 
@@ -219,7 +219,7 @@ table.tt{width:100%;border-collapse:collapse;font-size:14.5px;font-variant-numer
       <p class="lead2" style="margin:6px 0 0">지역과 단지를 고르면 과거 점수와 그 뒤 실제 시세를 보여 드려요.</p>
       <div class="tmf">
         <select id="tmSd" aria-label="시·도"></select>
-        <select id="tmGu" aria-label="구·시·군"></select>
+        <select id="tmGu" aria-label="시·군·구"></select>
         <input id="tmQ" type="search" placeholder="단지 이름 (예: 래미안)" aria-label="단지 이름" autocomplete="off">
       </div>
       <ul class="tml" id="tmL"></ul>
@@ -252,11 +252,11 @@ table.tt{width:100%;border-collapse:collapse;font-size:14.5px;font-variant-numer
   <p class="fine">과거 데이터 기반 분석 정보이며, 투자 판단의 책임은 이용자에게 있습니다. 실거래 출처: 국토교통부(공공데이터포털).</p>
 </main>
 <footer class="foot">★ 집코드 · <a href="../">홈</a> · <a href="../about/">서비스 소개</a></footer>
-<script src="../assets/track-core.js?v=1"></script>
+<script src="../assets/track-core.js?v=2"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/alerts-core.js?v=1"></script>
 <script src="../assets/watch-core.js?v=2"></script>
-<script src="../assets/watch.js?v=5"></script>
+<script src="../assets/watch.js?v=6"></script>
 <script>
 var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 (async function () {
@@ -289,7 +289,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
     if (T.weak(sc)) {
       const s = sc.sum;
       $('weak').hidden = false;
-      $('weak').innerHTML = `<b>${esc(T.J(short, '은', '는'))} 아직 약해요 · 개선 중</b><br>과거에 그대로 써 봤더니 ${s.months}번 중 ${s.win_months}번만 상위 10%가 하위 10%보다 더 올랐고, 2년 뒤 내린 비율은 상위 10% ${s.down_top}% · 하위 10% ${s.down_bot}%였어요. 숨기지 않고 그대로 보여 드리고, 점수 계산 방식을 다시 정할 때마다 개선하고 있어요.`;
+      $('weak').innerHTML = `<b>${esc(T.J(short, '은', '는'))} 아직 약해요 · 개선 중</b><br>과거에 그대로 써 봤더니 ${s.months}번 중 ${s.win_months}번만 점수 상위 10% 단지가 하위 10%보다 더 올랐고, 2년 뒤 내린 비율은 상위 10% ${s.down_top}% · 하위 10% ${s.down_bot}%였어요. 숨기지 않고 그대로 보여 드리고, 점수 계산 방식을 다시 정할 때마다 개선하고 있어요.`;
     } else $('weak').hidden = true;
     $('cards').innerHTML = T.cards(sc, { mid: K.mid }).map(c => `<div class="card"><span class="big">${esc(c.big)}</span><span class="lb">${esc(c.label)}</span><span class="nt">${esc(c.note)}</span></div>`).join('');
     const dec = sc.dec || [];
@@ -306,15 +306,15 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
     /* 연도별·국면별(자료가 있을 때만) */
     const Y = T.yearRows(sc);
     $('secYear').hidden = !Y.length;
-    if (Y.length) $('yTbl').innerHTML = `<thead><tr><th>기준 월의 해</th><th>상위 10%<br>2년 상승률</th><th>하위 10%<br>2년 상승률</th><th>상위 10%<br>${esc(K.base)} 대비</th><th>상위가 더 오른 달</th></tr></thead><tbody>`
+    if (Y.length) $('yTbl').innerHTML = `<thead><tr><th>기준 연도</th><th>점수 상위 10%<br>2년 상승률</th><th>점수 하위 10%<br>2년 상승률</th><th>상위 10%<br>${esc(K.base)} 대비</th><th>상위가 더 오른 달</th></tr></thead><tbody>`
       + Y.map(r => `<tr><td><b>${r.label}</b></td><td>${T.pc(r.top)}</td><td>${T.pc(r.bot)}</td><td class="${cls(r.top_ex)}">${T.pp(r.top_ex)}</td><td>${r.win}/${r.months}</td></tr>`).join('') + '</tbody>';
     const PH = T.phaseRows(sc, B.phases);
     $('secPhase').hidden = !PH.length;
-    if (PH.length) $('pTbl').innerHTML = `<thead><tr><th>시장 상황</th><th>전체 2년 상승률</th><th>상위 10%</th><th>하위 10%</th><th>상위가 더 오른 달</th></tr></thead><tbody>`
+    if (PH.length) $('pTbl').innerHTML = `<thead><tr><th>시장 상황</th><th>전체 2년 상승률</th><th>점수 상위 10%</th><th>점수 하위 10%</th><th>상위가 더 오른 달</th></tr></thead><tbody>`
       + PH.map(r => `<tr><td><b>${esc(r.label)}</b></td><td>${T.pc(r.all)}</td><td>${T.pc(r.top)}</td><td>${T.pc(r.bot)}</td><td>${r.win}/${r.months}</td></tr>`).join('') + '</tbody>';
     /* 지역별 */
     const R = T.regionRows(B, IX);
-    $('rTbl').innerHTML = `<thead><tr><th>지역</th><th>상위 10%<br>${esc(K.base)} 대비</th><th>하위 10%</th><th>상위가 더 오른 달</th><th>하락 배수</th></tr></thead><tbody>`
+    $('rTbl').innerHTML = `<thead><tr><th>지역</th><th>점수 상위 10%<br>${esc(K.base)} 대비</th><th>점수 하위 10%</th><th>상위가 더 오른 달</th><th>하락 배수</th></tr></thead><tbody>`
       + R.map(r => `<tr data-k="${esc(r.key)}" class="${r.key === S ? 'on' : ''}"><td><b>${esc(r.short)}</b>${r.weak ? '<span class="wk">아직 약해요</span>' : ''}</td><td class="${cls(r.top)}">${T.pp(r.top)}</td><td class="${cls(r.bot)}">${T.pp(r.bot)}</td><td>${r.win}/${r.months}</td><td>${r.down_x == null ? '–' : r.down_x + '배'}</td></tr>`).join('') + '</tbody>';
     $('note').textContent = '여기 점수는 지금 계산 방식으로 과거 각 달에 그때까지 자료만 넣어 다시 계산한 점수예요(그때 실제로 공개한 점수가 아니에요).' + (/구 점수 제외/.test(B.score_kind || '') ? ' 지역 흐름 점수는 빼고 단지 항목만으로 매긴 같은 시·도 안 순위예요.' : '');
     $('natNote').hidden = KINDS.length < 2;

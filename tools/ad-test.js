@@ -385,13 +385,13 @@ check('하루 문의 상한', !r.ok && /카카오톡/.test(r.err), r);
   const src = fs.readFileSync(path.join(__dirname, '..', 'assets', 'ads.js'), 'utf8');
   check('ads.js: 미래가치 점수·순위에 쓰는 값(fv·score·rank) 안 건드림', !/\.(fv|score|rank)\b/.test(src));
   const bun = fs.readFileSync(path.join(__dirname, '..', 'bunyang', 'index.html'), 'utf8'), mp = fs.readFileSync(path.join(__dirname, '..', 'map', 'index.html'), 'utf8');
-  check('분양 화면: 목록 상단·추천 현장 칸, ads.js?v=4', /id="adTop" data-jdj-ads="bunyang"/.test(bun) && /data-jdj-ads="bunyang_rec"/.test(bun) && /ads\.js\?v=4/.test(bun));
-  check('지도: 광고 마커는 겹침 정리(walls) 안에서, 카카오 로고 자리 유지', /adPins\(z\)/.test(mp) && /카카오 로고·축척/.test(mp) && /ads\.js\?v=4/.test(mp));
+  check('분양 화면: 목록 상단·추천 현장 칸, ads.js?v=5', /id="adTop" data-jdj-ads="bunyang"/.test(bun) && /data-jdj-ads="bunyang_rec"/.test(bun) && /ads\.js\?v=5/.test(bun));
+  check('지도: 광고 마커는 겹침 정리(walls) 안에서, 카카오 로고 자리 유지', /adPins\(z\)/.test(mp) && /카카오 로고·축척/.test(mp) && /ads\.js\?v=5/.test(mp));
   const ap = fs.readFileSync(path.join(__dirname, '..', 'bunyang', 'apply', 'index.html'), 'utf8'), pv = fs.readFileSync(path.join(__dirname, '..', 'privacy', 'index.html'), 'utf8');
   check('신청 폼: 상품 5종·필수 표기(사업주체·시공사·대행사·청약홈 번호·분양신고·신탁·VAT)·상담 이메일·창립·파트너', ['value="top"', 'value="pin"', 'value="alert"', 'value="lead"', 'value="report"', 'id="dev"', 'id="bld"', 'id="agc"', 'id="no"', 'id="dn"', 'id="dd"', 'id="gt"', 'name="vat"', 'id="leadMail"', 'id="founding"', 'id="partner"', 'id="ag4"', 'id="ag5"'].every(x => ap.includes(x)));
   check('처리방침: 분양 상담 신청·제3자 제공(받는 자·목적·항목·기간)·광고성 정보', /id="lead"/.test(pv) && /id="third"/.test(pv) && /받는 자<\/th><th>목적<\/th><th>항목<\/th><th>보유·이용 기간/.test(pv) && /id="ad-consent"/.test(pv));
   const sw = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
-  check('sw.js 에 ads.js?v=4', sw.includes("'./assets/ads.js?v=4'") && !sw.includes("'./assets/ads.js'"));
+  check('sw.js 에 ads.js?v=5', sw.includes("'./assets/ads.js?v=5'") && !sw.includes("'./assets/ads.js'"));
 }
 
 console.log(`분양 광고 서버 로직 검증: ${pass}개 통과, ${fail}개 실패`);

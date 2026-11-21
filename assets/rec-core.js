@@ -20,7 +20,7 @@
   function change6(arr) { const n = arr.length, a = arr[n - 1] || arr[n - 2], b = arr[n - 7] || arr[n - 8]; return (a > 0 && b > 0) ? (a - b) / b : null; }
   /** 자료 기간(약 3년) 처음과 끝 평당가 변동률 — 과거 실거래 기록 */
   function change3y(arr) { const a = lastNZ(arr), b = firstNZ(arr); return (a > 0 && b > 0) ? (a - b) / b : null; }
-  /** 단지·평형 추정 시세(만원): 최근 3개월 실거래 평당가 중앙값(월별 값이 3개월 중앙값) × 전용면적 */
+  /** 단지·평형 추정 시세(만원): 최근 3개월 실거래 평당가 중간값(월별 값이 3개월 중간값) × 전용면적 */
   function unitPrice(u) { const p = lastNZ(u[6]); return p ? r100(p * u[4] / PY) : 0; }
   const MIN_FIT = 0.55;   // 매수 가능액 대비 너무 낮은 단지는 추천에서 뺀다
   /** '너무 싼 단지' 제외를 지역 시세 기준으로 완화: 예산 대비 낮아도 그 시·군·구 같은 면적 시세(구 평당가 × 전용) 이상이면 남긴다.

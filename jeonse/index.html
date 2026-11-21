@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script src="../assets/pwa.js?v=1" defer></script>
+<script src="../assets/pwa.js?v=2" defer></script>
 <script src="../assets/biz.js?v=1" defer></script>
 <title>집코드 전월세 전망 & 전세사기 예방 체크 — 실거래 시세, 깡통전세 위험, 우리 동네 전세 흐름</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/jeonse/">
@@ -23,20 +23,20 @@
 <script>window.JDJ_CONFIG = { tool:'jeonse', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
-<script src="../assets/share.js?v=10"></script>
+<script src="../assets/share.js?v=11"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/config.js?v=7"></script>
-<script src="../assets/auth.js?v=7"></script>
-<script src="../assets/kchat.js?v=2"></script>
-<script src="../assets/mine-core.js?v=17"></script>
-<script src="../assets/price-sheet.js?v=16"></script>
-<script src="../assets/rent-core.js?v=2"></script>
+<script src="../assets/auth.js?v=8"></script>
+<script src="../assets/kchat.js?v=3"></script>
+<script src="../assets/mine-core.js?v=18"></script>
+<script src="../assets/price-sheet.js?v=17"></script>
+<script src="../assets/rent-core.js?v=3"></script>
 <script src="../assets/policy-view.js?v=3"></script>
-<script src="../assets/plain-words.js?v=14"></script>
-<script src="../assets/narrative.js?v=16"></script>
+<script src="../assets/plain-words.js?v=15"></script>
+<script src="../assets/narrative.js?v=17"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/aplus.css?v=44">
+<link rel="stylesheet" href="../assets/aplus.css?v=45">
 <script src="../assets/nw.js?v=1" defer></script>
 <style>
 .wrap{max-width:860px;margin:0 auto;padding:22px 16px 60px}
@@ -46,14 +46,14 @@ h1{font-size:clamp(26px,6vw,38px);margin:6px 0 8px}
 .panel h2 small{display:block;font-size:13.5px;font-weight:500;color:#4E5968;margin-top:4px;letter-spacing:0}
 .ktabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;background:#F2F4F6;border-radius:14px;padding:5px;margin:0 0 12px}
 .ktabs button{font:inherit;font-size:15px;font-weight:700;border:0;background:transparent;color:#4E5968;min-height:46px;padding:0 6px;border-radius:10px;cursor:pointer;word-break:keep-all;line-height:1.25}
-.ktabs button.on{background:#fff;color:#2F6BFF;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.ktabs button.on{background:#fff;color:#2560E8;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .ktabs button small{display:block;font-size:11.5px;font-weight:500;color:#8B95A1}
 @media(max-width:400px){.ktabs button{font-size:14px;padding:0 2px}}
 .pick{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .pick .full{grid-column:1/-1}
 .pick label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
 .pick select,.pick input{width:100%;font:inherit;font-size:16px;padding:0 12px;min-height:48px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--text);min-width:0}
-.pick input:focus{outline:0;border-color:#2F6BFF;box-shadow:0 0 0 3px rgba(47,107,255,.15)}
+.pick input:focus{outline:0;border-color:#2560E8;box-shadow:0 0 0 3px rgba(47,107,255,.15)}
 @media(max-width:520px){.pick{grid-template-columns:1fr}}
 .or{font-size:13.5px;color:#4E5968;margin:12px 0 6px;font-weight:700}
 .sres{display:grid;gap:6px;margin-top:8px}
@@ -63,7 +63,7 @@ h1{font-size:clamp(26px,6vw,38px);margin:6px 0 8px}
 .sres .none{font-size:14px;color:#4E5968;padding:6px 2px}
 .bands{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 4px}
 .bands button{font:inherit;font-size:15px;font-weight:700;min-height:44px;padding:0 14px;border:1px solid var(--line);background:#fff;color:#3E4754;border-radius:999px;cursor:pointer}
-.bands button.on{background:#E8F0FF;border-color:#2F6BFF;color:#2F6BFF}
+.bands button.on{background:#E8F0FF;border-color:#2560E8;color:#2560E8}
 .dhead h2{font-size:22px;margin:0;font-weight:900;letter-spacing:-.5px;line-height:1.3;overflow-wrap:anywhere}
 .dhead .loc{font-size:14px;color:#4E5968;margin-top:2px}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0 6px}
@@ -79,15 +79,15 @@ h1{font-size:clamp(26px,6vw,38px);margin:6px 0 8px}
 .basis{font-size:13.5px;color:#4E5968;line-height:1.6;margin:6px 0 0}
 .basis b{color:#3E4754}
 .seg2{display:inline-flex;gap:4px;background:#F2F4F6;border-radius:12px;padding:4px}
-.seg2 button{font:inherit;font-size:14px;font-weight:700;border:0;background:transparent;color:#4E5968;min-height:40px;min-width:56px;padding:0 12px;border-radius:9px;cursor:pointer}
-.seg2 button.on{background:#fff;color:#2F6BFF;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.seg2 button{font:inherit;font-size:14px;font-weight:700;border:0;background:transparent;color:#4E5968;min-height:44px;min-width:56px;padding:0 12px;border-radius:9px;cursor:pointer}
+.seg2 button.on{background:#fff;color:#2560E8;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .chead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
 .chead h3{margin:0;font-size:17px;font-weight:900}
 .chart{width:100%;min-height:150px}
 .chart svg{display:block;width:100%;height:auto}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;color:#4E5968;margin-top:4px}
 .legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px;background:#14A06B}
-.legend i.w{background:#B8942A}.legend i.g{background:#2F6BFF}
+.legend i.w{background:#B8942A}.legend i.g{background:#2560E8}
 .gauge{position:relative;height:12px;border-radius:6px;background:linear-gradient(90deg,#E7F6EF 0,#E7F6EF 90%,#FDECEC 90%,#FDECEC 100%);margin:28px 0 22px}
 .gauge i{position:absolute;top:-6px;width:4px;height:24px;border-radius:2px;background:#191F28;transform:translateX(-2px)}
 .gauge em{position:absolute;top:-22px;font-size:12.5px;font-style:normal;font-weight:700;color:#C81E1E;transform:translateX(-85%);white-space:nowrap}
@@ -134,22 +134,22 @@ tr.on td{background:#F5F8FF;font-weight:700}
 .chk li.key{border-color:#B8942A;background:#FFFBEF}
 .chk li small{display:block;color:#4E5968;font-size:13.5px}
 .srcl{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:14px}
-.srcl a{color:#2F6BFF;font-weight:700;text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
+.srcl a{color:#2560E8;font-weight:700;text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
 .links{display:grid;gap:8px;grid-template-columns:repeat(2,1fr)}
 @media(max-width:640px){.links{grid-template-columns:1fr}}
 .links a,.links button{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;min-height:64px;padding:10px 14px;border:1px solid var(--line);border-radius:14px;text-decoration:none;color:var(--text);background:#fff;font:inherit;text-align:left;cursor:pointer}
 .links b{font-size:16px}
 .links small{font-size:13.5px;color:#4E5968}
-.links .main{background:#E8F0FF;border-color:#2F6BFF}
+.links .main{background:#E8F0FF;border-color:#2560E8}
 .aglist{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px;margin-top:10px}
 .agc{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:#fff;min-width:0}
 .agc b{font-size:16px}
 .agc .tag2{font-size:12px;font-weight:700;border:1px solid #B8942A;color:#8A6D17;padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:2px}
 .agc small{display:block;color:#4E5968;font-size:13.5px}
-.agc .hl{display:inline-block;font-size:13.5px;font-weight:700;color:#2F6BFF;margin-top:4px}
+.agc .hl{display:inline-block;font-size:13.5px;font-weight:700;color:#2560E8;margin-top:4px}
 .agc .acts{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
 .agc .acts a{flex:1;min-height:44px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;font-weight:700;font-size:14px;border-radius:12px}
-.agc .acts a.tel{background:#2F6BFF;color:#fff}
+.agc .acts a.tel{background:#2560E8;color:#fff}
 .note{font-size:13.5px;color:#4E5968;line-height:1.6}
 .loading,.empty{padding:26px 16px;text-align:center;color:#4E5968;border:1px dashed var(--line);border-radius:14px;background:#fff;font-size:15px}
 .disc{font-size:13.5px;color:#4E5968;line-height:1.7;margin-top:22px;border-top:1px solid var(--line2);padding-top:14px}
@@ -194,7 +194,7 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
   <section id="area" hidden></section>
   <div data-ad-slot="jeonse_end" data-ad-cat="jeonse" data-ad-after="#res" hidden></div>
 
-  <p class="disc" id="src">자료: 국토교통부 아파트·연립다세대·오피스텔·단독다가구 전월세 실거래가(공공데이터포털). 월별 시세는 그 달까지 3개월 계약의 중앙값이에요(전세 = 월세 없는 순수 전세, 월세 = 월세가 있는 계약의 보증금·월세 각각의 중앙값). 실제 보증금은 동·층·향·수리 상태·계약 시점에 따라 달라요. 동·호수 같은 개인정보는 원자료에도 없고 보여 드리지 않아요.</p>
+  <p class="disc" id="src">자료: 국토교통부 아파트·연립다세대·오피스텔·단독다가구 전월세 실거래가(공공데이터포털). 월별 시세는 그 달까지 3개월 계약의 중간값이에요(전세 = 월세 없는 순수 전세, 월세 = 월세가 있는 계약의 보증금·월세 각각의 중간값). 실제 보증금은 동·층·향·수리 상태·계약 시점에 따라 달라요. 동·호수 같은 개인정보는 원자료에도 없고 보여 드리지 않아요.</p>
 </main>
 <footer class="foot">과거 실거래 기반 정보예요. 특정 계약을 권하지 않아요. 자세한 분석 방법은 <a href="../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집코드 · <a href="../">홈</a></footer>
 
@@ -396,16 +396,16 @@ function render(){
       <div class="st"><div class="k">전세 1년 변동</div><div class="v">${chT(sm.ch1)}</div><div class="d">전세 보증금 기준</div></div>
       <div class="st"><div class="k">전세 3년 변동</div><div class="v">${chT(sm.ch3)}</div><div class="d">최근 3년 계약 전세 ${sm.nj.toLocaleString()} · 월세 ${sm.nw.toLocaleString()}건</div></div>
     </div>
-    <p class="basis"><b>계산 근거</b> · 최근 전세 시세 = 그 달까지 3개월 순수 전세 계약 보증금의 중앙값(이 평형, 전용 ${u[4]}㎡ 안팎) · 최근 월세 시세 = 같은 기간 월세 계약의 보증금 중앙값과 월세 중앙값(각각 따로 구해 실제 한 계약과 다를 수 있어요) · 1년 변동: ${chB(sm.ch1)} · 3년 변동: ${chB(sm.ch3)}.</p>
+    <p class="basis"><b>계산 근거</b> · 최근 전세 시세 = 그 달까지 3개월 순수 전세 계약 보증금의 중간값(이 평형, 전용 ${u[4]}㎡ 안팎) · 최근 월세 시세 = 같은 기간 월세 계약의 보증금 중간값과 월세 중간값(각각 따로 구해 실제 한 계약과 다를 수 있어요) · 1년 변동: ${chB(sm.ch1)} · 3년 변동: ${chB(sm.ch3)}.</p>
   </div>
 
   <div class="panel">
     <div class="chead"><h3>전세·월세 추이</h3><div class="seg2" role="group" aria-label="기간">${[[12, '1년'], [36, '3년'], [0, '전체']].map(([n, l]) => `<button type="button" data-span="${n}" class="${S.span === n ? 'on' : ''}" aria-pressed="${S.span === n}"${n === 0 && !c.h ? ' hidden' : ''}>${l}</button>`).join('')}</div></div>
     <div class="chart" id="cJ"></div>
-    <div class="legend"><span><i></i>전세 보증금</span><span>${esc(S.band)} · 3개월 중앙값</span></div>
+    <div class="legend"><span><i></i>전세 보증금</span><span>${esc(S.band)} · 3개월 중간값</span></div>
     <div class="chart" id="cW" style="min-height:120px;margin-top:12px"></div>
-    <div class="legend"><span><i class="w"></i>월세(만원)</span><span>월세 계약 3개월 중앙값 · 최근 3년까지</span></div>
-    <p class="basis">각 달 값 = 그 달까지 3개월 계약의 중앙값. 계약이 없던 기간은 점선으로 이어 표시해요.${c.meta.rm ? ` 전월세 자료는 ${M.ymKo(c.meta.rm)}부터 있어요.` : ''}</p>
+    <div class="legend"><span><i class="w"></i>월세(만원)</span><span>월세 계약 3개월 중간값 · 최근 3년까지</span></div>
+    <p class="basis">각 달 값 = 그 달까지 3개월 계약의 중간값. 계약이 없던 기간은 점선으로 이어 표시해요.${c.meta.rm ? ` 전월세 자료는 ${M.ymKo(c.meta.rm)}부터 있어요.` : ''}</p>
   </div>
 
   ${riskPanel(c, u, sm)}
@@ -457,8 +457,8 @@ function riskPanel(c, u, sm){
   const pos = v => Math.max(0, Math.min(100, v));
   const gauge = rk ? `<div class="gauge" role="img" aria-label="전세가율 ${rk.pct}%"><em style="left:90%">보증 가입 기준 90%</em><i style="left:${pos(rk.pct)}%"></i><span style="left:0;transform:none">0%</span><span style="left:50%">50%</span><span style="left:100%;transform:translateX(-100%)">100%</span></div>` : '';
   let basis = '';
-  if (jr && k === 'a') basis = `${ym(jr.at)} 이 평형 전세 시세 ${won(jr.j)} ÷ 매매 시세 ${won(jr.s)} (각각 3개월 실거래 평당가 중앙값 × 전용면적, 내 집 시세 화면과 같은 값)`;
-  else if (jr) basis = `최근 1년 이 건물·평형 전세 ㎡당 보증금 중앙값(${jr.nj}건) ÷ ${jr.b === 'b' ? `최근 3년 같은 건물 매매 ㎡당 가격 중앙값(${jr.ns}건)` : `최근 1년 같은 동 빌라 매매 ㎡당 가격 중앙값(${jr.ns}건, 건물마다 차이가 커서 참고만)`}`;
+  if (jr && k === 'a') basis = `${ym(jr.at)} 이 평형 전세 시세 ${won(jr.j)} ÷ 매매 시세 ${won(jr.s)} (각각 3개월 실거래 평당가 중간값 × 전용면적, 내 집 시세 화면과 같은 값)`;
+  else if (jr) basis = `최근 1년 이 건물·평형 전세 ㎡당 보증금 중간값(${jr.nj}건) ÷ ${jr.b === 'b' ? `최근 3년 같은 건물 매매 ㎡당 가격 중간값(${jr.ns}건)` : `최근 1년 같은 동 빌라 매매 ㎡당 가격 중간값(${jr.ns}건, 건물마다 차이가 커서 참고만)`}`;
   const msg = rk ? (rk.over
       ? `<div class="rmsg hi"><b>이 집 전세가율은 ${rk.pct}%예요.</b> HUG 전세보증금반환보증은 <b>보증금과 선순위채권(근저당 등)을 더한 금액이 주택가격의 90% 이내</b>여야 가입할 수 있어요. 이 수준이면 보증 가입이 어려울 수 있어요. 매매가 대비 전셋값이 높을수록 보증금 회수 위험이 커져요.</div>`
       : `<div class="rmsg ok"><b>이 집 전세가율은 ${rk.pct}%예요.</b> 매매가 대비 전셋값이 높을수록 보증금 회수 위험이 커져요. 근저당 같은 선순위채권이 있으면 그 금액까지 더해서 봐야 해요(HUG 보증 가입 기준: 보증금 + 선순위채권 ≤ 주택가격의 90%).</div>`)
@@ -485,7 +485,7 @@ function calcPanel(sm){
   </div>
   <div class="acts"><button type="button" id="cFill"${sm.j && sm.wr ? '' : ' disabled'}>이 집 최근 시세로 채우기</button><button type="button" id="cClear">지우기</button></div>
   <div class="cres" id="cRes"><span class="note" style="font-size:15px">전세·월세 금액을 넣으면 매달 드는 돈을 비교해 드려요.</span></div>
-  ${sm.cv ? `<p class="basis">이 단지·평형 최근 1년 전월세 전환율 <b>${(sm.cv.r * 100).toFixed(1)}%</b> — 월세 계약 ${sm.cv.n}건마다 (월세×12) ÷ (순수 전세 보증금 중앙값 ${won(sm.cv.j)} − 그 계약 보증금)을 구한 중앙값이에요.</p>` : ''}
+  ${sm.cv ? `<p class="basis">이 단지·평형 최근 1년 전월세 전환율 <b>${(sm.cv.r * 100).toFixed(1)}%</b> — 월세 계약 ${sm.cv.n}건마다 (월세×12) ÷ (순수 전세 보증금 중간값 ${won(sm.cv.j)} − 그 계약 보증금)을 구한 중간값이에요.</p>` : ''}
   <p class="basis">계산 방법: 전세는 월세 보증금보다 더 내야 하는 돈(전세 − 월세 보증금)을 전세대출로 빌린다고 보고 매달 이자(그 돈 × 금리 ÷ 12)와 월세를 비교해요. 내 돈으로 내면 그 돈을 예금에 둘 때 받을 이자로 바꿔 넣어 보세요. 중개수수료·관리비·보증료는 빼고 계산해요.</p></div></div>`;
 }
 function checkPanel(kind){
@@ -501,7 +501,7 @@ function checkPanel(kind){
     <li><b>전세보증금 반환보증 가입</b> — 집주인이 보증금을 돌려주지 못하면 보증기관이 대신 돌려줘요. 보증금 + 선순위채권이 주택가격의 90% 이내여야 가입할 수 있어요.</li>
   </ul>
   <div class="srcl">${srcA('chk')}${srcA('portal')}${srcA('reg')}${srcA('hug')}${kind === 'o' ? srcA('law') : ''}</div>
-  <a class="morebtn" style="display:flex;align-items:center;justify-content:center;text-decoration:none;color:#2F6BFF" href="checklist/?k=${kind}" data-track="jeonse_to_checklist">전체 체크리스트 보기 →</a></div>`;
+  <a class="morebtn" style="display:flex;align-items:center;justify-content:center;text-decoration:none;color:#2560E8" href="checklist/?k=${kind}" data-track="jeonse_to_checklist">전체 체크리스트 보기 →</a></div>`;
 }
 
 /* ---------- 우리 동네 전세 흐름(구 사실 정보) ---------- */
@@ -515,9 +515,9 @@ function areaPanel(code, box){
   const more = (rows, n) => rows.length > n ? rows.slice(0, n).join('') + `</ul><details class="msum"><summary>${rows.length - n}곳 더 보기</summary><ul>${rows.slice(n).join('')}</ul></details><ul>` : rows.join('');
   box.innerHTML = `<div class="panel"><h2>우리 동네 전세 흐름 · ${esc(nm)}<small>공개된 사실 정보만 모았어요</small></h2>
     ${gs ? `<div class="chead"><h3>${esc(nm)} 아파트 전세 추이 (3.3㎡당 보증금)</h3></div><div class="chart" id="cG" style="min-height:140px"></div>
-    <p class="basis">${last ? `${ym(last.at)} ${last.v.toLocaleString()}만원/3.3㎡` : ''}${ch1 ? ` · 1년 전보다 <span class="${updown(ch1.pct)}">${M.pctTxt(ch1.pct)}</span>` : ''} · 구 안 모든 아파트 순수 전세 계약의 3개월 중앙값(전용면적 3.3㎡당)</p>` : ''}
+    <p class="basis">${last ? `${ym(last.at)} ${last.v.toLocaleString()}만원/3.3㎡` : ''}${ch1 ? ` · 1년 전보다 <span class="${updown(ch1.pct)}">${M.pctTxt(ch1.pct)}</span>` : ''} · 구 안 모든 아파트 순수 전세 계약의 3개월 중간값(전용면적 3.3㎡당)</p>` : ''}
     <div class="facts" style="margin-top:10px">
-      <div class="fbox"><div class="k">${esc(nm)} 아파트 전세가율 중앙값</div><div class="v">${g.jr ? (g.jr[0] * 100).toFixed(1) + '%' : '-'}</div><p class="basis">${g.jr ? `전세가율을 계산할 수 있는 단지·평형 ${g.jr[1].toLocaleString()}개의 가운데 값` : '계산할 단지가 부족해요'}</p></div>
+      <div class="fbox"><div class="k">${esc(nm)} 아파트 전세가율 중간값</div><div class="v">${g.jr ? (g.jr[0] * 100).toFixed(1) + '%' : '-'}</div><p class="basis">${g.jr ? `전세가율을 계산할 수 있는 단지·평형 ${g.jr[1].toLocaleString()}개의 가운데 값` : '계산할 단지가 부족해요'}</p></div>
       <div class="fbox"><div class="k">앞으로 2년 입주 예정</div><div class="v">${sup ? sup.n.toLocaleString() + '세대' : '없음'}</div>
         ${sup ? `<ul>${more(supRows, 5)}</ul>` : ''}
         <p class="basis">${sup ? '입주가 한꺼번에 몰리면 새 전세 물건이 늘어 주변 전셋값이 눌리는 경우가 많아요. ' : ''}청약홈 분양 공고의 공급 세대(조합원 몫 제외) 기준${sup ? '' : '으로 앞으로 2년 안에 입주 예정인 단지가 없어요'}.</p></div>
@@ -526,7 +526,7 @@ function areaPanel(code, box){
         <p class="basis">이주가 시작되면 살던 가구가 주변에서 집을 구해 전세 수요가 늘 수 있어요. 출처: ${srcM ? `서울시 정비사업 추진현황(20${srcM[1]}년 ${srcM[2]}월 기준)` : '정비사업 추진현황'}, 서울 밖은 국토교통부 도시정비사업 현황(현재 단계만).</p></div>` : ''}
     </div>
     <div class="outlook">전세 전망은 과거 자료와 맞춰 보는 중이에요 — 과거에 그대로 써 봐서 잘 맞으면 이 자리에 보여 드려요.</div></div>`;
-  if (gs) chartInto($('cG'), [{ a: gs.s, c: '#2F6BFF', w: 2.4 }], gs.months, v => Math.round(v).toLocaleString(), 170, [{ k: '3.3㎡당 전세', a: gs.s, c: '#2F6BFF', fmt: v => Math.round(v).toLocaleString() + '만' }], { aria: nm + ' 아파트 전세 추이' });
+  if (gs) chartInto($('cG'), [{ a: gs.s, c: '#2560E8', w: 2.4 }], gs.months, v => Math.round(v).toLocaleString(), 170, [{ k: '3.3㎡당 전세', a: gs.s, c: '#2560E8', fmt: v => Math.round(v).toLocaleString() + '만' }], { aria: nm + ' 아파트 전세 추이' });
 }
 
 /* ---------- 단독·다가구: 동 × 면적대 ---------- */
@@ -545,11 +545,11 @@ async function showD(g, dong){
   $('res').innerHTML = `<div class="panel">
     <div class="dhead"><h2>${esc(dong)} 단독·다가구</h2><div class="loc">${esc(sidoName(g))} ${esc(sggName(g))} ${esc(dong)} · 동·계약면적대 단위 시세(건물 정보 없음)</div></div>
     <div class="tbl"><table><thead><tr><th>계약면적</th><th class="num">최근 전세</th><th class="num">최근 월세</th><th class="num">3년 계약</th></tr></thead><tbody>${rows.map(r => { const y = one(r);
-      return `<tr class="${r[1] === S.band ? 'on' : ''}"><td><button type="button" data-b="${esc(r[1])}" style="font:inherit;font-weight:700;border:0;background:none;color:#2F6BFF;cursor:pointer;min-height:44px;padding:0">${esc(r[1])}</button></td><td class="num">${y.j ? won(y.j.v) + `<br><small>${ym(y.j.at)}</small>` : '-'}</td><td class="num">${y.wr ? `${won(y.wd ? y.wd.v : 0)} / ${y.wr.v.toLocaleString()}만<br><small>${ym(y.wr.at)}</small>` : '-'}</td><td class="num">전세 ${r[2]}<br><small>월세 ${r[3]}</small></td></tr>`; }).join('')}</tbody></table></div>
-    <p class="basis">각 값 = 그 달까지 3개월 계약의 중앙값(월세는 보증금·월세 각각). 단독·다가구는 원자료에 지번·건물 정보가 없어(개인정보 보호) 같은 동 같은 계약면적대끼리 묶었어요. 같은 묶음 안에서도 집마다 차이가 커요.</p>
+      return `<tr class="${r[1] === S.band ? 'on' : ''}"><td><button type="button" data-b="${esc(r[1])}" style="font:inherit;font-weight:700;border:0;background:none;color:#2560E8;cursor:pointer;min-height:44px;padding:0">${esc(r[1])}</button></td><td class="num">${y.j ? won(y.j.v) + `<br><small>${ym(y.j.at)}</small>` : '-'}</td><td class="num">${y.wr ? `${won(y.wd ? y.wd.v : 0)} / ${y.wr.v.toLocaleString()}만<br><small>${ym(y.wr.at)}</small>` : '-'}</td><td class="num">전세 ${r[2]}<br><small>월세 ${r[3]}</small></td></tr>`; }).join('')}</tbody></table></div>
+    <p class="basis">각 값 = 그 달까지 3개월 계약의 중간값(월세는 보증금·월세 각각). 단독·다가구는 원자료에 지번·건물 정보가 없어(개인정보 보호) 같은 동 같은 계약면적대끼리 묶었어요. 같은 묶음 안에서도 집마다 차이가 커요.</p>
     <div class="chead" style="margin-top:14px"><h3>${esc(S.band)} 전세 추이</h3><div class="seg2" role="group" aria-label="기간">${[[12, '1년'], [36, '3년'], [0, '전체']].map(([n, l]) => `<button type="button" data-span="${n}" class="${S.span === n ? 'on' : ''}" aria-pressed="${S.span === n}">${l}</button>`).join('')}</div></div>
     <div class="chart" id="cJ"></div>
-    <div class="legend"><span><i></i>전세 보증금 (3개월 중앙값)</span>${x.ch1 ? `<span>1년 변동 <b class="${updown(x.ch1.pct)}">${M.pctTxt(x.ch1.pct)}</b></span>` : ''}</div>
+    <div class="legend"><span><i></i>전세 보증금 (3개월 중간값)</span>${x.ch1 ? `<span>1년 변동 <b class="${updown(x.ch1.pct)}">${M.pctTxt(x.ch1.pct)}</b></span>` : ''}</div>
   </div>
   ${riskPanel(CUR, cur, sm)}
   ${calcPanel(sm)}

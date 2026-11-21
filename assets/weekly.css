@@ -1,4 +1,4 @@
-/* 주간 실거래 동향(/weekly/) — A+ 공통(aplus.css) 위에 이 화면만. 오름 = 주황빨강(#D9480F), 내림 = 파랑(#2F6BFF), 표본 부족 = 회색.
+/* 주간 실거래 동향(/weekly/) — A+ 공통(aplus.css) 위에 이 화면만. 오름 = 주황빨강(#D9480F), 내림 = 파랑(#2560E8), 표본 부족 = 회색.
    색만으로 구분하지 않게 숫자에는 늘 +/− 부호를 붙인다. */
 .wk{max-width:880px;margin:0 auto;padding:22px 20px 44px}
 .wk h1{font-size:clamp(24px,5.4vw,33px);margin:8px 0 8px;word-break:keep-all}
@@ -38,7 +38,7 @@
 .ro .src{font-size:13px;color:var(--sub2)}
 /* 기준 고르기 */
 .seg{display:inline-flex;background:var(--gray);border-radius:12px;padding:3px;gap:2px;margin:6px 0 0}
-.seg button{font:inherit;font-size:15px;font-weight:700;border:0;background:none;color:var(--sub2);min-height:42px;padding:0 14px;border-radius:9px;cursor:pointer}
+.seg button{font:inherit;font-size:15px;font-weight:700;border:0;background:none;color:var(--sub2);min-height:44px;padding:0 14px;border-radius:9px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:#fff;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .segnote{font-size:14px;color:var(--sub2);margin:6px 0 0;line-height:1.6}
 /* 막대 그래프(HTML) */
@@ -49,7 +49,7 @@
 .br .tr{position:relative;height:18px}
 .br .z{position:absolute;top:-6px;bottom:-6px;width:1px;background:#C9CED6}
 .br .b{position:absolute;top:3px;height:12px;border-radius:4px}
-.br .b.up{background:#D9480F}.br .b.dn{background:#2F6BFF}.br .b.eq{background:#8B95A1;width:2px}
+.br .b.up{background:#D9480F}.br .b.dn{background:#2560E8}.br .b.eq{background:#8B95A1;width:2px}
 .br .w{position:absolute;top:8px;height:2px;background:rgba(25,31,40,.55)}
 .br .w:before,.br .w:after{content:'';position:absolute;top:-4px;width:1.5px;height:10px;background:rgba(25,31,40,.55)}
 .br .w:before{left:0}.br .w:after{right:0}
@@ -98,11 +98,11 @@ table.tt{width:100%;border-collapse:collapse;font-size:14.5px;font-variant-numer
 .trend .gl{stroke:#EEF0F3;stroke-width:1}.trend .zl{stroke:#C9CED6;stroke-width:1}
 .trend .yl{font-size:11px;fill:#5F6B7A;font-variant-numeric:tabular-nums}
 .trend .xl{font-size:11px;fill:#5F6B7A;text-anchor:middle}
-.trend .s0{stroke:#191F28}.trend .s1{stroke:#2F6BFF}
+.trend .s0{stroke:#191F28}.trend .s1{stroke:#2560E8}
 .trend .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
 .trend .pt{stroke-width:2;r:4.5}
-.trend .pt.p0{fill:#191F28;stroke:#fff}.trend .pt.p1{fill:#2F6BFF;stroke:#fff}
-.trend .pt.prov.p0{fill:#fff;stroke:#191F28}.trend .pt.prov.p1{fill:#fff;stroke:#2F6BFF}
+.trend .pt.p0{fill:#191F28;stroke:#fff}.trend .pt.p1{fill:#2560E8;stroke:#fff}
+.trend .pt.prov.p0{fill:#fff;stroke:#191F28}.trend .pt.prov.p1{fill:#fff;stroke:#2560E8}
 .trend .hit{fill:transparent;cursor:pointer}
 /* 판 기록 */
 .vers{margin:8px 0 0;padding:0;list-style:none;border:1px solid var(--line);border-radius:14px}

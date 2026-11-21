@@ -1,5 +1,5 @@
 /* 집코드 하단 탭(휴대폰·PC 공통): 홈 · 지도 · 순위 · 내 집 시세 · 단지 비교 (5개를 넘기지 않음)
-   <script src="assets/tabbar.js?v=3" defer></script> 만 넣으면 화면 맨 아래에 붙는다(지금 화면 탭은 파랑).
+   <script src="assets/tabbar.js?v=4" defer></script> 만 넣으면 화면 맨 아래에 붙는다(지금 화면 탭은 파랑).
    본문이 탭에 가리지 않게 body 아래 여백을 탭 높이만큼 더한다. 지도 화면은 body.jm-full 로 여백 대신 지도 높이에서 뺀다. */
 (function () {
   'use strict';
@@ -22,7 +22,7 @@
       '.jtab nav{display:flex;width:100%;max-width:560px}' +
       '.jtab a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:58px;color:#4E5968;text-decoration:none;font-size:12.5px;font-weight:700;white-space:nowrap}' +
       '.jtab a svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}' +
-      '.jtab a.on{color:#2F6BFF}' +
+      '.jtab a.on{color:#2560E8}' +
       'body.jtab-pad{padding-bottom:calc(58px + env(safe-area-inset-bottom))}' +
       '.jdjpwa{bottom:calc(70px + env(safe-area-inset-bottom))!important}' +
       '@media print{.jtab{display:none}}';

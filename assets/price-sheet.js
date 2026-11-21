@@ -1,5 +1,5 @@
 /* 장대장 '단지 시세 한눈에' 공용 시트 — 어느 화면에서든 단지 시세를 바로 보여 준다.
-   사용: <script src="assets/mine-core.js?v=17"></script> 다음에 이 파일을 불러오고
+   사용: <script src="assets/mine-core.js?v=18"></script> 다음에 이 파일을 불러오고
          JDJ_PRICE.open({sd:'s00', sgg:'11680', dong:'청담동', apt:'청담4차이-편한세상', band:'84㎡대', jibun:'28-20'(선택)})
    모바일(폭 640px 이하)은 아래에서 올라오는 시트, PC는 가운데 창으로 열린다.
      ① 최근 시세·1년/3년 변동 + 역대·최근 1년 최고가 ② 가격 추이(전체 기간 price/h 가 있으면 매매·전세 두 선 + 1년/3년/5년/전체, 없으면 최근 3년 평당가) ③ 최근 실거래(신고가 배지, 최신 10건, 더보기) ④ '내 집 시세에서 자세히 보기'
@@ -107,7 +107,7 @@
     const m = M();
     return `<details class="jps-past"><summary>3년보다 이전 시세 보기 (연도별, ${ys[ys.length - 1]}~${ys[0]}년)</summary><div class="jps-tbl"><table><thead><tr><th>연도</th><th class="n">매매 시세</th><th class="n">전세 시세</th></tr></thead><tbody>`
       + ys.map(y => `<tr><td class="jps-dt">${y}년<br><small>${by[y].s.length}개월</small></td><td class="n"><b>${tv(m.won(avg(by[y].s)))}</b></td><td class="n">${by[y].j.length ? tv(m.won(avg(by[y].j))) : '-'}</td></tr>`).join('')
-      + `</tbody></table></div><p class="jps-note">국토교통부 실거래 월별 시세(그 달까지 3개월 중앙값 × 전용면적)를 연도마다 평균 낸 값이에요(연도 아래 숫자 = 시세가 있는 달 수). 개별 거래 목록은 최근 3년치만 있어요.</p></details>`;
+      + `</tbody></table></div><p class="jps-note">국토교통부 실거래 월별 시세(그 달까지 3개월 중간값 × 전용면적)를 연도마다 평균 낸 값이에요(연도 아래 숫자 = 시세가 있는 달 수). 개별 거래 목록은 최근 3년치만 있어요.</p></details>`;
   }
   /** tradesHtml 의 '더보기' 단추 연결 */
   function wireMore(box) {
@@ -139,9 +139,9 @@
     const x = i => L + (n === 1 ? 0 : i * (W - L - R) / (n - 1)), y = v => T + (hi - v) / (hi - lo) * (H - T - B);
     const path = a => { let d = '', on = false; a.forEach((v, i) => { if (v > 0) { d += (on ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1); on = true; } else on = false; }); return d; };
     const ticks = [lo, (lo + hi) / 2, hi].map(v => `<line x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#E5E8EB"/><text x="${L - 5}" y="${(y(v) + 4).toFixed(1)}" font-size="12" fill="#4E5968" text-anchor="end">${Math.round(v).toLocaleString()}</text>`).join('');
-    const dots = me.map((v, i) => v > 0 ? `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2.4" fill="#2F6BFF"><title>${m.ymLabel(months[i])} ${v.toLocaleString()}만/3.3㎡</title></circle>` : '').join('');
+    const dots = me.map((v, i) => v > 0 ? `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2.4" fill="#2560E8"><title>${m.ymLabel(months[i])} ${v.toLocaleString()}만/3.3㎡</title></circle>` : '').join('');
     const xl = [0, Math.floor((n - 1) / 2), n - 1].map((i, k) => `<text x="${x(i).toFixed(1)}" y="${H - 5}" font-size="12" fill="#4E5968" text-anchor="${k === 0 ? 'start' : k === 2 ? 'end' : 'middle'}">${m.ymLabel(months[i])}</text>`).join('');
-    return `${m.isSparse(me) ? SPARSE : ''}<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="월별 평당가 추이">${ticks}<path d="${path(gs)}" fill="none" stroke="#8B95A1" stroke-width="1.8" stroke-dasharray="5 3"/>${linePaths(me, x, y, '#2F6BFF', 2.4)}${dots}${xl}</svg>`;
+    return `${m.isSparse(me) ? SPARSE : ''}<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="월별 평당가 추이">${ticks}<path d="${path(gs)}" fill="none" stroke="#8B95A1" stroke-width="1.8" stroke-dasharray="5 3"/>${linePaths(me, x, y, '#2560E8', 2.4)}${dots}${xl}</svg>`;
   }
 
   /* ---------- 공용 추이 차트: 그리기 + 안내선(세로선·점·말풍선, 호갱노노처럼) ----------
@@ -222,7 +222,7 @@
   }
   /** 전체 기간 매매·전세(histSeries 결과)용 말풍선. cnt = Map(연월 → 매매 건수) 선택 */
   function histTip(t, cnt, gu) {
-    const rows = [{ k: '매매', a: t.s, c: '#2F6BFF' }], two = t.j.some(v => v > 0);
+    const rows = [{ k: '매매', a: t.s, c: '#2560E8' }], two = t.j.some(v => v > 0);
     if (two) rows.push({ k: '전세', a: t.j, c: '#14A06B' });
     if (gu) rows.push({ k: `${gu.name} 전체(같은 면적 환산)`, sk: `${gu.name} 전체`, a: gu.a, c: GRAY });
     return tipFn({ months: t.months, rows, gap: two ? [t.s, t.j] : null, cnt, vs: gu ? { a: t.s, b: gu.a } : null });
@@ -318,7 +318,7 @@
     if (opts.jr && t) { const k = t.jr.findIndex(v => v > 0); if (k > 0) t = Object.assign({}, t, { months: t.months.slice(k), jr: t.jr.slice(k), s: t.s.slice(k), j: t.j.slice(k) }); }   // 전세가율은 전세 자료가 있는 달부터
     const jr = t.jr.map(v => v * 100);
     const sp = { months: t.months, fs: opts.fs || 12.5, h: opts.h || 190, L: opts.jr ? 44 : 54, min: 2,
-      lines: opts.jr ? [{ a: jr, c: '#0E7A4F', w: 2.4 }] : [{ a: t.j, c: '#14A06B', w: 2.2 }, { a: t.s, c: '#2F6BFF', w: 2.6 }],
+      lines: opts.jr ? [{ a: jr, c: '#0E7A4F', w: 2.4 }] : [{ a: t.j, c: '#14A06B', w: 2.2 }, { a: t.s, c: '#2560E8', w: 2.6 }],
       fmtY: opts.jr ? (v => Math.round(v) + '%') : eok, aria: opts.jr ? '전세가율 추이' : '매매·전세 시세 추이',
       empty: opts.jr ? '전세가율을 계산할 달(매매·전세 거래가 모두 있는 달)이 적어요.' : '차트로 보여 드릴 거래가 없어요.',
       pre: opts.sparse ? SPARSE : '' };
@@ -346,7 +346,7 @@
   function guNote(gu, shown) {
     if (!gu || !gu.s || !gu.months || !gu.months.length) return '';
     const m = M(), k = gu.s.findIndex(v => v > 0), from = k >= 0 ? gu.months[k] : '';
-    return `회색 점선 = ${gu.name} 안 모든 아파트의 3개월 실거래 평당가 중앙값 × 이 평형 전용 ${gu.area}㎡ ÷ 3.3058(같은 면적이면 ${gu.name} 아파트 시세가 얼마인지).${from && (!shown || shown < from) ? ` ${gu.name} 전체 자료는 ${m.ymKo(from)}부터 있어요.` : ''}`;
+    return `회색 점선 = ${gu.name} 안 모든 아파트의 3개월 실거래 평당가 중간값 × 이 평형 전용 ${gu.area}㎡ ÷ 3.3058(같은 면적이면 ${gu.name} 아파트 시세가 얼마인지).${from && (!shown || shown < from) ? ` ${gu.name} 전체 자료는 ${m.ymKo(from)}부터 있어요.` : ''}`;
   }
   /* ---------- 예비 차트: 최근 3년 평당가(전체 기간 자료가 없을 때) — 같은 안내선·말풍선 ----------
      t = JDJ_MINE.trend 결과 {months, ppy, sgg, cnt}, opts = {name(구 이름), h, fs, sparse} */
@@ -355,10 +355,10 @@
     opts = opts || {};
     const nm = opts.name || '구', has = (t.sgg || []).some(v => v > 0), cnt = new Map();
     t.months.forEach((ym, i) => { if (t.cnt && i < t.cnt.length) cnt.set(ym, t.cnt[i] || 0); });
-    const rows = [{ k: '이 단지 평당가', sk: '이 단지', a: t.ppy, c: '#2F6BFF', fmt: ppyFmt }];
+    const rows = [{ k: '이 단지 평당가', sk: '이 단지', a: t.ppy, c: '#2560E8', fmt: ppyFmt }];
     if (has) rows.push({ k: `${nm} 전체 평당가`, sk: `${nm} 전체`, a: t.sgg, c: GRAY, fmt: ppyFmt });
     return { months: t.months, fs: opts.fs || 12.5, h: opts.h || 190, L: opts.L || 54, min: 1, pad: 0.12,
-      lines: (has ? [{ a: t.sgg, c: GRAY, w: 2, dash: true }] : []).concat([{ a: t.ppy, c: '#2F6BFF', w: 2.5 }]),
+      lines: (has ? [{ a: t.sgg, c: GRAY, w: 2, dash: true }] : []).concat([{ a: t.ppy, c: '#2560E8', w: 2.5 }]),
       fmtY: v => Math.round(v).toLocaleString(), aria: '월별 평당가 추이(만원/3.3㎡)', empty: '이 기간에 거래가 없어요.', pre: opts.sparse ? SPARSE : '',
       tip: tipFn({ months: t.months, rows, cnt, vs: has ? { a: t.ppy, b: t.sgg } : null }) };
   }
@@ -381,13 +381,13 @@
     let grid = ''; for (let v = 0; v <= top; v += st) grid += `<line x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#E5E8EB"/><text x="${L - 6}" y="${(y(v) + 4).toFixed(1)}" font-size="${fs}" fill="#4E5968" text-anchor="end">${v}</text>`;
     const bars = a.map((v, i) => v > 0 ? `<rect x="${(x(i) - bw / 2).toFixed(1)}" y="${y(v).toFixed(1)}" width="${bw.toFixed(1)}" height="${(y(0) - y(v)).toFixed(1)}" rx="2" fill="${c}"/>` : '').join('');
     const xl = m.xTicks(n, W - L - R, fs, x, months).map(t => `<text x="${t.x.toFixed(1)}" y="${H - 6}" font-size="${fs}" fill="#4E5968" text-anchor="${t.a}">${t.t}</text>`).join('');
-    const over = `<g class="jhv-o" style="display:none" pointer-events="none"><line x1="0" x2="0" y1="${T - 4}" y2="${H - B}" stroke="#4E5968" stroke-opacity=".7" stroke-width="1" stroke-dasharray="3 3" shape-rendering="crispEdges"/><circle r="4.2" stroke="#fff" stroke-width="2" fill="#2F6BFF"/></g>`;
+    const over = `<g class="jhv-o" style="display:none" pointer-events="none"><line x1="0" x2="0" y1="${T - 4}" y2="${H - B}" stroke="#4E5968" stroke-opacity=".7" stroke-width="1" stroke-dasharray="3 3" shape-rendering="crispEdges"/><circle r="4.2" stroke="#fff" stroke-width="2" fill="#2560E8"/></g>`;
     const aria = o.aria || '월별 거래 건수';
     el.innerHTML = `<div class="jhv" tabindex="0" role="group" aria-roledescription="차트" aria-label="${esc(aria + ' — 왼쪽·오른쪽 화살표 키로 달을 옮기며 값을 들을 수 있어요')}"><div class="jhv-rd" aria-hidden="true"></div>`
       + `<div class="jhv-in"><svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(aria)}">${grid}${bars}${xl}${over}</svg></div><div class="jhv-sr" aria-live="polite"></div></div>`;
     const k = o.k || '거래', tip = i => { const v = a[i] || 0, head = m.ymLabel(months[i]);
-      return { head, rows: [{ k, c: '#2F6BFF', v: v ? v + u : '거래 없음', none: !v }], extra: [], say: `${head}, ${k} ${v ? v + u : '없음'}` }; };
-    const md = { W, H, L, R, n, x, top: T, months, pts: [{ a, c: '#2F6BFF', y, raw: true }], ix: vx => Math.floor((vx - L) / slot) };
+      return { head, rows: [{ k, c: '#2560E8', v: v ? v + u : '거래 없음', none: !v }], extra: [], say: `${head}, ${k} ${v ? v + u : '없음'}` }; };
+    const md = { W, H, L, R, n, x, top: T, months, pts: [{ a, c: '#2560E8', y, raw: true }], ix: vx => Math.floor((vx - L) / slot) };
     wire(el.querySelector('.jhv'), md, tip);
     return { model: md };
   }
@@ -396,7 +396,7 @@
   /** 차트 아래 자료 기간 문구: 수집 시작 달(cover)을 실제 값으로 */
   function histNote(hist, t) {
     const m = M(), a = hist && (hist.cover || hist.hm), b = hist && (hist.rcover || hist.rm);
-    return `${a ? `매매 ${m.ymKo(a)}부터` : ''}${b ? ` · 전세 ${m.ymKo(b)}부터` : ''} 국토교통부 실거래 자료${t && t.from && a && t.from > a ? ` · 이 평형 첫 매매 시세 ${m.ymKo(t.from)}` : ''}. 각 달 값 = 그 달까지 3개월 실거래 평당가 중앙값 × 전용면적 ÷ 3.3058(전세는 월세 없는 순수 전세만). 거래가 없던 기간은 점선으로 이어 표시해요.`;
+    return `${a ? `매매 ${m.ymKo(a)}부터` : ''}${b ? ` · 전세 ${m.ymKo(b)}부터` : ''} 국토교통부 실거래 자료${t && t.from && a && t.from > a ? ` · 이 평형 첫 매매 시세 ${m.ymKo(t.from)}` : ''}. 각 달 값 = 그 달까지 3개월 실거래 평당가 중간값 × 전용면적 ÷ 3.3058(전세는 월세 없는 순수 전세만). 거래가 없던 기간은 점선으로 이어 표시해요.`;
   }
   /** 최고가 요약 상자 HTML (역대·최근 1년). h = M().highs 결과 */
   function highsHtml(h, cls) {
@@ -423,7 +423,7 @@
 .jps-st .d{font-size:12.5px;color:#4E5968}
 .jps h4{font-size:16px;font-weight:900;margin:16px 0 6px}
 .jps-lg{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:#4E5968}
-.jps-lg i{display:inline-block;width:16px;height:3px;background:#2F6BFF;vertical-align:middle;margin-right:4px}
+.jps-lg i{display:inline-block;width:16px;height:3px;background:#2560E8;vertical-align:middle;margin-right:4px}
 .jps-lg i.g{background:repeating-linear-gradient(90deg,#8B95A1 0 5px,transparent 5px 8px)}
 .jps-tbl{overflow-x:auto}
 .jps-tbl table{width:100%;border-collapse:collapse;font-size:14.5px}
@@ -440,19 +440,19 @@
 .jps-hi .up{color:#C2410C}.jps-hi .dn{color:#1F56E0}
 .jps-seg{display:inline-flex;gap:3px;background:#F2F4F6;border-radius:10px;padding:3px;flex-wrap:wrap}
 .jps-seg button{font:inherit;font-size:13.5px;font-weight:700;border:0;background:transparent;color:#4E5968;min-height:36px;min-width:44px;padding:0 10px;border-radius:8px;cursor:pointer}
-.jps-seg button.on{background:#fff;color:#2F6BFF;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.jps-seg button.on{background:#fff;color:#2560E8;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .jps-ch{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin:16px 0 6px}.jps-ch h4{margin:0}
 .jps-lg i.j{background:#14A06B}
 .jps-past{margin-top:12px}.jps-past summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44px;display:flex;align-items:center}
 .jps-morebtn{font:inherit;font-size:14px;font-weight:700;width:100%;min-height:44px;margin-top:8px;border:1px solid #E5E8EB;border-radius:12px;background:#fff;color:#3E4754;cursor:pointer}
 .jps-note{font-size:13px;color:#4E5968;line-height:1.6;margin:6px 0 0}
 .jps-sp{margin:0 0 6px;padding:6px 10px;border-radius:8px;background:#FFF7E6;color:#8A5A00;font-weight:700}
-.jps-loan{display:flex;align-items:center;justify-content:center;min-height:48px;margin-top:8px;border-radius:14px;background:#E8F0FF;color:#2F6BFF!important;font-weight:700;font-size:15.5px;text-decoration:none}
-.jps-go{display:flex;align-items:center;justify-content:center;min-height:50px;margin-top:16px;border-radius:14px;background:#2F6BFF;color:#fff!important;font-weight:700;font-size:16px;text-decoration:none}
+.jps-loan{display:flex;align-items:center;justify-content:center;min-height:48px;margin-top:8px;border-radius:14px;background:#E8F0FF;color:#2560E8!important;font-weight:700;font-size:15.5px;text-decoration:none}
+.jps-go{display:flex;align-items:center;justify-content:center;min-height:50px;margin-top:16px;border-radius:14px;background:#2560E8;color:#fff!important;font-weight:700;font-size:16px;text-decoration:none}
 .jps-load{padding:30px 0;text-align:center;color:#4E5968}
-.jps-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 14px;border:1.5px solid #2F6BFF;border-radius:12px;background:#fff;color:#2F6BFF!important;font:inherit;font-size:14.5px;font-weight:700;line-height:1.2;cursor:pointer;white-space:nowrap;text-decoration:none;vertical-align:middle;box-sizing:border-box;max-width:100%}
+.jps-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 14px;border:1.5px solid #2560E8;border-radius:12px;background:#fff;color:#2560E8!important;font:inherit;font-size:14.5px;font-weight:700;line-height:1.2;cursor:pointer;white-space:nowrap;text-decoration:none;vertical-align:middle;box-sizing:border-box;max-width:100%}
 .jps-btn:hover{background:#EEF3FF}.jps-btn:focus-visible{outline:3px solid #9DB8FF;outline-offset:2px}.jps-btn svg{flex:none}
-.jps-btn.sm{padding:0 10px;font-size:13.5px}.jps-btn.blk{display:flex;width:100%;margin-top:8px}
+.jps-btn.sm{padding:0 10px;font-size:13.5px;min-height:44px}.jps-btn.blk{display:flex;width:100%;margin-top:8px}
 .jhv{position:relative;outline:none;border-radius:10px}.jhv:focus-visible{box-shadow:0 0 0 3px #9DB8FF}
 .jhv-in{position:relative;touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;cursor:crosshair}
 .jhv-in svg{display:block}
@@ -464,7 +464,7 @@
 .jhv-rd .r b{font-weight:800;color:#191F28;white-space:nowrap}.jhv-rd .r.f b{font-weight:500;color:#6B7684}
 .jhv-rd i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:0}.jhv-rd i.o{background:transparent}
 .jhv-rd small{font-size:12px;font-weight:500;color:#8B95A1}
-.jhv-rd .g{font-size:12.5px;color:#6B7684;margin-top:2px;display:flex;justify-content:space-between;gap:10px}.jhv-rd .g span:last-child{font-weight:700;color:#2F6BFF;text-align:right}
+.jhv-rd .g{font-size:12.5px;color:#6B7684;margin-top:2px;display:flex;justify-content:space-between;gap:10px}.jhv-rd .g span:last-child{font-weight:700;color:#2560E8;text-align:right}
 .jhv-rd .x{font-size:11.5px;color:#8B95A1;margin-top:1px}
 .jhv.pin .jhv-rd{border-color:#9DB8FF}
 .jhv-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -578,7 +578,7 @@
     const isPrice = !!(g && g.price);
     const m = M(), months = ix.months, sm = m.bandSummary(u, months), last = m.lastDeal(u, months), few = m.isFew(u);
     const pct = c => c ? `<span style="color:${c.pct > 0.0005 ? '#C2410C' : c.pct < -0.0005 ? '#1F56E0' : 'inherit'}">${m.pctTxt(c.pct)}</span>` : '-';
-    let k = '최근 시세', v = sm.price ? m.won(sm.price) : '-', d = sm.at ? m.ymLabel(sm.at) + ' 기준 (3개월 중앙값)' : '';
+    let k = '최근 시세', v = sm.price ? m.won(sm.price) : '-', d = sm.at ? m.ymLabel(sm.at) + ' 기준 (3개월 중간값)' : '';
     if (few && last) { k = '최근 거래'; v = m.won(last.price); d = `${m.ymLabel(last.at)} · 최근 3년 ${u[5]}건`; }
     else if (!sm.price && last) { k = '마지막 실거래'; v = m.won(last.price); d = `${m.ymLabel(last.at)} · 그 뒤 거래 없음`; }
     const sgg = ix.sgg && ix.sgg[u[0]], link = `${MINE}?sd=${encodeURIComponent(q.sd || '')}&d=${encodeURIComponent([u[0], u[1], u[8], u[2]].join('|'))}&b=${encodeURIComponent(u[3])}`;
@@ -590,7 +590,7 @@
     <div class="jps-hsec"><h4>가격 추이 (평당가, 최근 3년)</h4>
     <div class="jps-pc"></div>
     <div class="jps-lg"><span><i></i>이 단지 ${esc(u[3])}</span><span><i class="g"></i>${esc((sgg && sgg.name) || '')} 아파트 전체</span></div>
-    <p class="jps-note">단위: 만원/3.3㎡ · 각 달 값 = 그 달까지 3개월 실거래 평당가 중앙값. 거래가 없던 기간은 점선으로 이어 표시해요.</p></div>
+    <p class="jps-note">단위: 만원/3.3㎡ · 각 달 값 = 그 달까지 3개월 실거래 평당가 중간값. 거래가 없던 기간은 점선으로 이어 표시해요.</p></div>
     <h4>${isPrice ? '최근 실거래' : '월별 실거래 요약'}</h4>
     ${tradesHtml(u, months, { show: 10 })}
     <div class="jps-pastw"></div>

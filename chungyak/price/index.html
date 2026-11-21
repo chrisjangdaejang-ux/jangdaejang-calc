@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#FFFFFF">
 <link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
 <link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
-<script src="../../assets/pwa.js?v=1" defer></script>
+<script src="../../assets/pwa.js?v=2" defer></script>
 <script src="../../assets/biz.js?v=1" defer></script>
 <title>분양가·입지 분석 — 집코드 청약</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/chungyak/price/">
@@ -24,14 +24,14 @@
 <script src="../../assets/stat.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/aplus.css?v=44">
-<link rel="stylesheet" href="../../assets/cy-price.css?v=2">
+<link rel="stylesheet" href="../../assets/aplus.css?v=45">
+<link rel="stylesheet" href="../../assets/cy-price.css?v=3">
 <script src="../../assets/nw.js?v=1" defer></script>
 <script src="../../assets/loan-rules.js?v=3"></script>
-<script src="../../assets/rec-core.js?v=4"></script>
+<script src="../../assets/rec-core.js?v=5"></script>
 <script src="../../tax/tax-engine.js?v=4"></script>
 <script src="../../assets/loan-core.js?v=5"></script>
-<script src="../../assets/cy-price.js?v=5"></script>
+<script src="../../assets/cy-price.js?v=6"></script>
 <style>
 .wrap{max-width:760px;margin:0 auto;padding:24px 20px 60px}
 h1{font-size:clamp(25px,6.4vw,34px);margin:6px 0 8px}
@@ -73,7 +73,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
     <div class="meta">${esc(D.sd)} ${esc(D.gn)} ${esc(D.dg || '')} · ${D.k ? esc(D.k) + ' · ' : ''}총 ${Number(D.hh || 0).toLocaleString('ko-KR')}세대 · 모집공고 ${ymd(D.pb)}</div>
     ${C.detail(D, D, { paid: false })}
     <section class="paid" id="paid"><h2>유료 리포트에서 더 자세히</h2>
-      <ul><li>연식(신축·준신축)·범위(1km·2km·같은 구)별 주변 거래 하위 25%·중앙값·상위 25%</li><li>가까운 비교 단지 10곳의 최근 12개월 3.3㎡당 가격</li>
+      <ul><li>연식(신축·준신축)·범위(1km·2km·같은 구)별 주변 거래 하위 25%·중간값·상위 25%</li><li>가까운 비교 단지 10곳의 최근 12개월 3.3㎡당 가격</li>
       <li>최근 2년 주변 분양 전체의 경쟁률·당첨 가점</li><li>${esc(D.gn)} 미분양 24개월 추이, 30~40대 인구·순이동</li><li>이 지역에 적용되는 규제·대출 정책 목록</li><li>PDF로 저장 · 1년 동안 다시 보기</li></ul>
       ${key ? `<a class="btn blue" href="${JB.SITE}premium/checkout/?p=cy&k=${encodeURIComponent(key)}" data-track="cy_price_buy">${won(PR.amount)} · ${PR.name} 보기</a>
       <div class="pr">결제·열람·환불은 다른 프리미엄 리포트와 같아요(열람 전 7일 안 전액 환불).</div>` : '<div class="pr">유료 리포트를 준비하고 있어요.</div>'}

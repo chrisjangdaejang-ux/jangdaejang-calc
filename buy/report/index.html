@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script src="../../assets/pwa.js?v=1" defer></script>
+<script src="../../assets/pwa.js?v=2" defer></script>
 <script src="../../assets/biz.js?v=1" defer></script>
 <title>집코드 맞춤 매수 리포트</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/buy/report/">
@@ -34,27 +34,27 @@
 <script src="../../assets/stat.js?v=7"></script>
 <script src="../../assets/region-notes.js"></script>
 <script src="../../assets/loan-rules.js?v=3"></script>
-<script src="../../assets/rec-core.js?v=4"></script>
-<script src="../../assets/mine-core.js?v=17"></script>
-<script src="../../assets/price-sheet.js?v=16"></script>
+<script src="../../assets/rec-core.js?v=5"></script>
+<script src="../../assets/mine-core.js?v=18"></script>
+<script src="../../assets/price-sheet.js?v=17"></script>
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/lead.js?v=2"></script>
+<script src="../../assets/lead.js?v=3"></script>
 <script src="../../assets/config.js?v=7"></script>
-<script src="../../assets/auth.js?v=7"></script>
+<script src="../../assets/auth.js?v=8"></script>
 <script src="../../assets/alerts-core.js?v=1"></script>
 <script src="../../assets/watch-core.js?v=2"></script>
-<script src="../../assets/watch.js?v=5"></script>
-<script src="../../assets/share.js?v=10"></script>
+<script src="../../assets/watch.js?v=6"></script>
+<script src="../../assets/share.js?v=11"></script>
 <script src="../../tax/tax-engine.js?v=4"></script>
 <script src="../../assets/loan-core.js?v=5"></script>
-<script src="../../assets/kchat.js?v=2"></script>
-<script src="../../assets/plain-words.js?v=14"></script>
-<script src="../../assets/narrative.js?v=16"></script>
+<script src="../../assets/kchat.js?v=3"></script>
+<script src="../../assets/plain-words.js?v=15"></script>
+<script src="../../assets/narrative.js?v=17"></script>
 <script src="../../assets/strength.js?v=3"></script>
 <script src="../../assets/policy-view.js?v=3"></script>
 <script src="../../assets/devproj-view.js?v=4"></script>
 <script src="../../assets/src-box.js?v=3"></script>
-<script src="../../assets/tax-box.js?v=5"></script>
+<script src="../../assets/tax-box.js?v=6"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -82,7 +82,7 @@
 .field label{display:block;font-size:13.5px;font-weight:700;margin-bottom:5px;color:var(--muted)}
 .field input,.field select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:16px;font-weight:700;background:#fff;color:var(--ink)}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.chip{border:1px solid var(--line);background:#fff;padding:6px 10px;border-radius:999px;font:inherit;font-size:14px;font-weight:700;color:var(--muted);cursor:pointer}
+.chip{border:1px solid var(--line);background:#fff;padding:6px 10px;border-radius:999px;font:inherit;font-size:14px;font-weight:700;color:var(--muted);cursor:pointer;min-height:44px}
 .chip.on{background:var(--olive);border-color:var(--olive);color:var(--cream)}
 .chip.reg{position:relative}
 .chip.reg:after{content:"규제";font-size:13.5px;margin-left:4px;color:var(--gold)}
@@ -318,10 +318,10 @@ tr.hl td{background:rgba(184,148,42,.12);font-weight:700}
 .vbadge{display:inline-block;font-size:13.5px;font-weight:700;color:#0E7A4F;background:#E6F5EE;border-radius:999px;padding:2px 10px}
 .rkbasis.vall{color:#0E7A4F}
 </style>
-<link rel="stylesheet" href="../../assets/aplus.css?v=44">
+<link rel="stylesheet" href="../../assets/aplus.css?v=45">
 <script src="../../assets/nw.js?v=1" defer></script>
 <style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
-:root{--gold:#2F6BFF}
+:root{--gold:#2560E8}
 .premium .pt{color:var(--blue)}
 .mpinw.on .mpin{background:var(--blue)}.mpinw.on .mpin:after{border-top-color:var(--blue)}
 .st.pre{background:var(--blue-l);color:var(--blue)}
@@ -1050,7 +1050,7 @@ async function renderCompare(){
   const best=(vals,hi=true)=>{ const ok=vals.map((v,i)=>[v,i]).filter(a=>a[0]!=null&&!isNaN(a[0])); if(ok.length<2) return -1; ok.sort((a,b)=>hi?b[0]-a[0]:a[0]-b[0]); return ok[0][0]===ok[1][0]?-1:ok[0][1]; };
   const add=(label,cells,vals,hi,grp)=>rows.push({label,cells,b: vals?best(vals,hi):-1, grp});
   add('가격·자금',null,null,null,true);
-  add('추정 시세', items.map(x=>`${fmtS(x.P)}<small>${x.stale?'최근 3개월 거래 없음 — 마지막 거래 기준':'최근 3개월 실거래 중앙값'}</small>${spark(x.series)}`), items.map(x=>x.P), false);
+  add('추정 시세', items.map(x=>`${fmtS(x.P)}<small>${x.stale?'최근 3개월 거래 없음 — 마지막 거래 기준':'최근 3개월 실거래 중간값'}</small>${spark(x.series)}`), items.map(x=>x.P), false);
   add('대출 가능액', items.map(x=>`${fmtS(x.nd.loan.L)}<small>${BY_TXT[x.nd.loan.by]} 기준</small>`), items.map(x=>x.nd.loan.L), true);
   add('필요 현금', items.map(x=>`${fmtS(x.nd.need)}<small>취득세·중개보수·기타 포함</small>`), items.map(x=>x.nd.need), false);
   add('내 예산으로', items.map(x=>x.short<=0 ? `<span style="color:var(--green)">가능</span><small>현금 ${fmt(-x.short)} 남음</small>` : `<span style="color:var(--red)">현금 ${fmt(x.short)} 부족</span>`), items.map(x=>-x.short), true);
@@ -1142,7 +1142,7 @@ async function renderCompare(){
   q.set('entry.658364183', `[단지 비교] ${items.map(x=>x.apt+' '+x.band).join(' vs ')} ${W?`→ 유리: ${W.apt} `:``}| ${JDJ.label()}`);
   h += `<div class="cta noprint"><p>마지막 결정, 전문가와 함께 점검해 보세요<small>비교한 단지가 상담 신청서에 자동 입력됩니다 · 1차 진단은 무료</small></p>
     <a class="btn primary" data-track="cmp_consult" href="${FORM}?${q.toString().replace(/\+/g,'%20')}" target="_blank" rel="noopener">상담 신청</a></div>
-    <div class="sec"><p class="src">실거래가: 국토교통부 아파트 매매·전월세 실거래가, 단지 정보: 공동주택관리정보시스템(K-apt)·건축물대장. 추정 시세는 같은 단지·평형의 최근 3개월 실거래 중앙값이며 호가와 다를 수 있습니다. 대출 한도와 세금은 금융기관·세무 전문가에게 확인하세요.</p></div>
+    <div class="sec"><p class="src">실거래가: 국토교통부 아파트 매매·전월세 실거래가, 단지 정보: 공동주택관리정보시스템(K-apt)·건축물대장. 추정 시세는 같은 단지·평형의 최근 3개월 실거래 중간값이며 호가와 다를 수 있습니다. 대출 한도와 세금은 금융기관·세무 전문가에게 확인하세요.</p></div>
   </div>`;
   $('report').innerHTML=h; wireCompare();
   $('cmpEdit').onclick=e=>{e.preventDefault(); $('settings').classList.add('open'); window.scrollTo(0,0);};
@@ -1263,7 +1263,7 @@ async function render(){
   /* 4. 추천 단지 */
   h += `<div class="sec pb">
     <h2><span class="no">04</span> 예산 맞춤 추천 단지</h2>
-    <p class="sub">국토교통부 실거래가로 최근 3개월 중앙값 시세를 추정해, 지금 조건으로 실제 살 수 있는 단지 중 미래가치가 가장 좋은 단지를 골랐습니다.${S.sido.any?' 지역 상관없음: 자료가 있는 전 시·도에서 찾고, 한 지역에 몰리지 않게 시·도당 3곳까지 보여 드려요.':''}</p>
+    <p class="sub">국토교통부 실거래가로 최근 3개월 중간값 시세를 추정해, 지금 조건으로 실제 살 수 있는 단지 중 미래가치가 가장 좋은 단지를 골랐습니다.${S.sido.any?' 지역 상관없음: 자료가 있는 전 시·도에서 찾고, 한 지역에 몰리지 않게 시·도당 3곳까지 보여 드려요.':''}</p>
     <p class="rkbasis">순위 기준: 미래가치 점수 순, 같으면 예산·거래량 고려.</p>
     <p class="rkbasis vall">✓ 카드의 미래가치 점수: ${esc(vTxt)}</p>`;
   let near = [], rkTop = '';
@@ -1340,7 +1340,7 @@ async function render(){
       </div>`;
     }).join('') + `</div>` +
     ((picked.length<10 && S.sggs.size < sggsOfSido(S.sido).length) ? `<div class="widen"><span>선택한 지역에서 예산에 맞는 단지는 <b>${picked.length}곳</b>입니다. 범위를 넓히면 더 많은 후보를 볼 수 있어요.</span><button type="button" id="widenBtn">${esc(S.sido.name)} 전체로 넓히기</button></div>` : '') + `
-    <p class="note">추정 시세는 같은 단지·같은 평형대의 최근 3개월 실거래 중앙값(전용면적 기준 환산)이며 호가와 다를 수 있습니다. 층·향·동에 따라 실제 가격은 달라집니다. 역까지 거리와 학교 배정은 지도에서 꼭 확인하세요.</p>`;
+    <p class="note">추정 시세는 같은 단지·같은 평형대의 최근 3개월 실거래 중간값(전용면적 기준 환산)이며 호가와 다를 수 있습니다. 층·향·동에 따라 실제 가격은 달라집니다. 역까지 거리와 학교 배정은 지도에서 꼭 확인하세요.</p>`;
     h += `<div id="agentSec" class="agsec"></div>`;
   }
   h += `</div>`;
@@ -1427,7 +1427,7 @@ function shareReport(picked, selNames){
   const n=picked.length, area=S.sido.any ? '전국' : S.sido.name;
   JDJ_SHARE.update({
     head: n ? `내 조건에 맞는 단지 ${n}곳을 찾았어요` : '내 조건으로 살 수 있는 집을 찾아봤어요',
-    lines: [`${area}${S.sido.any ? '' : ` ${selNames.length}개 구·시·군`}에서 미래가치 점수가 높은 순서로`, `보유 ${HZ}년 뒤 전망까지 함께 봤어요`, '단지마다 대출·필요 현금·월 상환까지 계산'],
+    lines: [`${area}${S.sido.any ? '' : ` ${selNames.length}개 시·군·구`}에서 미래가치 점수가 높은 순서로`, `보유 ${HZ}년 뒤 전망까지 함께 봤어요`, '단지마다 대출·필요 현금·월 상환까지 계산'],
     params: {sd: S.sido.any ? 'all' : S.sido.name}
   }, {root: $('report').querySelector('.page') || $('report'), bottomIn: $('report')});
 }

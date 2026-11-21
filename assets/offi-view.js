@@ -43,7 +43,7 @@
 .of-chart{width:100%;min-height:140px}
 .of-chart svg{display:block;width:100%;height:auto}
 .of-lg{display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;color:#4E5968;margin-top:4px}
-.of-lg i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px;background:#2F6BFF}
+.of-lg i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px;background:#2560E8}
 .of-lg i.y{background:#B8942A}
 .of-lg i.g{background:repeating-linear-gradient(90deg,#8B95A1 0 5px,transparent 5px 8px)}`;
     document.head.appendChild(st);
@@ -198,7 +198,7 @@
     const u = CUR.u, j = CUR.j, el = $('ofCP'), ey = $('ofCY');
     if (el) {
       const ps = O.priceSeries(u, j), w = cut([ps.s], ps.months, S.span);
-      el.innerHTML = lineChart([{ a: w.a[0], c: '#2F6BFF', w: 2.6 }], w.months, el.clientWidth || 600, eok);
+      el.innerHTML = lineChart([{ a: w.a[0], c: '#2560E8', w: 2.6 }], w.months, el.clientWidth || 600, eok);
     }
     if (ey) {
       const ys = O.yieldSeries(u, j), gs = (OX.sgg[S.g] || {}).ys, n = ys.months.length;
@@ -252,7 +252,7 @@
     const s = OX ? OX.sgg[g] : null;
     r.innerHTML = `<div class="panel"><div class="dhead"><div><h2>${esc(sggName(g))} 오피스텔 지역 정보</h2><div class="loc">${esc(sidoName(g))} ${esc(sggName(g))}</div></div></div>
       ${narO(g, null, 'narOr')}
-      ${s && s.y ? `<p class="basis">이 지역 오피스텔 임대수익률 중앙값 <b>${O.pct(s.y[0])}</b> (수익률을 계산할 수 있는 건물 ${s.y[1]}곳)</p>` : ''}
+      ${s && s.y ? `<p class="basis">이 지역 오피스텔 임대수익률 중간값 <b>${O.pct(s.y[0])}</b> (수익률을 계산할 수 있는 건물 ${s.y[1]}곳)</p>` : ''}
       <p class="basis">${ready() ? '동과 건물을 고르면 건물별 시세·임대수익률을 보여 드려요.' : '건물별 시세·임대수익률은 실거래 자료 연결 뒤 보여 드려요.'}</p></div>${regionPanels(g, null)}`;
     narBind();
   }
@@ -284,14 +284,14 @@
         <div class="st"><div class="k">3년 변동</div><div class="v">${chTxt(c3)}</div><div class="d">매매 시세 기준</div></div>
       </div>
       ${u.hi ? `<div class="hib">${hiBox(`최고가 (${ymK((OX.from && OX.from.trade) || j.hm)} 이후)`, u.hi)}${hiBox('최근 1년 최고가', u.hi1)}</div>` : ''}
-      <p class="basis"><b>계산 근거</b> · 시세 = 이 건물 최근 3개월 매매 실거래의 전용 ㎡당 가격 중앙값 × 대표 전용 ${u.a}㎡ (100만 원 단위 반올림, 직거래 제외) · 1년·3년 변동 = 같은 방식으로 12·36개월 전 달과 비교 · 최고가 = 수집한 실거래 중 직거래를 뺀 가장 높은 거래.</p>
+      <p class="basis"><b>계산 근거</b> · 시세 = 이 건물 최근 3개월 매매 실거래의 전용 ㎡당 가격 중간값 × 대표 전용 ${u.a}㎡ (100만 원 단위 반올림, 직거래 제외) · 1년·3년 변동 = 같은 방식으로 12·36개월 전 달과 비교 · 최고가 = 수집한 실거래 중 직거래를 뺀 가장 높은 거래.</p>
     </div>
 
     <div class="panel">
       <div class="chead"><h3>매매 시세 추이</h3>${spans(ps.months.length, S.span, 'ofspan')}</div>
       <div class="of-chart" id="ofCP"></div>
       <div class="of-lg"><span><i></i>${esc(O.nameOf(u))} · 전용 ${u.a}㎡ 환산</span></div>
-      <p class="basis">각 달 값 = 그 달까지 3개월 매매 실거래 ㎡당 가격 중앙값 × 전용면적. 거래가 없던 기간은 점선으로 이어 표시해요(사이 달 값을 지어내지 않아요).</p>
+      <p class="basis">각 달 값 = 그 달까지 3개월 매매 실거래 ㎡당 가격 중간값 × 전용면적. 거래가 없던 기간은 점선으로 이어 표시해요(사이 달 값을 지어내지 않아요).</p>
     </div>
 
     <div class="panel">
@@ -300,14 +300,14 @@
       ${y && ex ? `<div class="stats">
         <div class="st key"><div class="k">지금 수익률</div><div class="v">${O.pct(y.r)}</div><div class="d">${ymL(y.at)} 기준</div></div>
         <div class="st"><div class="k">같은 동</div><div class="v">${u.rk && u.rk.d ? O.rankText(u.rk.d) : '-'}</div><div class="d">${u.rk && u.rk.d ? `오피스텔 ${u.rk.d[2]}곳 중` : '비교할 건물이 적어요'}</div></div>
-        <div class="st"><div class="k">같은 시·군·구</div><div class="v">${u.rk && u.rk.g ? O.rankText(u.rk.g) : '-'}</div><div class="d">${u.rk && u.rk.g ? `오피스텔 ${u.rk.g[2]}곳 중` : '비교할 건물이 적어요'}${s.y ? ` · 중앙값 ${O.pct(s.y[0])}` : ''}</div></div>
+        <div class="st"><div class="k">같은 시·군·구</div><div class="v">${u.rk && u.rk.g ? O.rankText(u.rk.g) : '-'}</div><div class="d">${u.rk && u.rk.g ? `오피스텔 ${u.rk.g[2]}곳 중` : '비교할 건물이 적어요'}${s.y ? ` · 중간값 ${O.pct(s.y[0])}` : ''}</div></div>
         <div class="st"><div class="k">월세 계약</div><div class="v">${y.nw}건</div><div class="d">최근 1년 · 매매 ${y.ns}건 기준</div></div>
       </div>
-      <p class="basis"><b>예시(전용 ${u.a}㎡)</b> · 매매가 약 ${won(ex.price)} − 보증금 ${won(ex.dep)} = 들어가는 돈 ${won(ex.cash)} · 월세 ${ex.rent.toLocaleString()}만 원 × 12 = 1년 ${won(ex.year)} → 약 ${O.pct(ex.r)} (보증금·월세는 최근 1년 월세 계약의 중앙값)</p>
-      <p class="basis"><b>계산 근거</b> · 매매가 = 이 건물 최근 매매 실거래 ㎡당 가격 중앙값(${Math.round(y.p).toLocaleString()}만 원/㎡) × 각 월세 계약의 전용면적. 최근 1년 월세 계약 하나하나의 수익률을 구한 뒤 가운데 값(중앙값)을 써요. 전세(월세 0) 계약은 빼요.</p>`
+      <p class="basis"><b>예시(전용 ${u.a}㎡)</b> · 매매가 약 ${won(ex.price)} − 보증금 ${won(ex.dep)} = 들어가는 돈 ${won(ex.cash)} · 월세 ${ex.rent.toLocaleString()}만 원 × 12 = 1년 ${won(ex.year)} → 약 ${O.pct(ex.r)} (보증금·월세는 최근 1년 월세 계약의 중간값)</p>
+      <p class="basis"><b>계산 근거</b> · 매매가 = 이 건물 최근 매매 실거래 ㎡당 가격 중간값(${Math.round(y.p).toLocaleString()}만 원/㎡) × 각 월세 계약의 전용면적. 최근 1년 월세 계약 하나하나의 수익률을 구한 뒤 가운데 값(중간값)을 써요. 전세(월세 0) 계약은 빼요.</p>`
       : `<p class="note" style="font-size:15px">이 건물은 최근 매매나 월세 계약이 적어 수익률을 계산하지 않았어요(확인 불가). 계약 몇 건으로 계산하면 실제와 크게 다를 수 있어서예요.</p>`}
       ${u.ys ? `<div class="chead" style="margin-top:12px"><h3>수익률 추이 (최근 5년)</h3></div><div class="of-chart" id="ofCY"></div>
-      <div class="of-lg"><span><i class="y"></i>이 건물</span>${s.ys ? `<span><i class="g"></i>${esc(sggName(S.g))} 오피스텔 중앙값</span>` : ''}</div>
+      <div class="of-lg"><span><i class="y"></i>이 건물</span>${s.ys ? `<span><i class="g"></i>${esc(sggName(S.g))} 오피스텔 중간값</span>` : ''}</div>
       <p class="basis">각 달 값 = 그 달 기준 최근 1년 월세 계약과 최근 매매로 계산한 수익률. 값이 없던 기간은 점선으로 이어요.</p>` : ''}
     </div>
 

@@ -11,9 +11,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script src="../assets/pwa.js?v=1" defer></script>
+<script src="../assets/pwa.js?v=2" defer></script>
 <script src="../assets/biz.js?v=1" defer></script>
-<script src="../assets/kchat.js?v=2" defer></script>
+<script src="../assets/kchat.js?v=3" defer></script>
 <title>집코드 분양 — 전국 분양예정·청약중·입주예정 단지 (청약홈 공고 기준)</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/bunyang/">
 <meta name="description" content="청약홈 공식 공고로 전국 아파트·오피스텔·도시형생활주택·민간임대·무순위/잔여세대 분양 일정과 분양가를 확인하고, 같은 동네 최근 실거래가와 객관적으로 비교해 보세요.">
@@ -35,8 +35,8 @@
 <script src="../assets/stat.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/cy-price.css?v=2">
-<link rel="stylesheet" href="../assets/aplus.css?v=44">
+<link rel="stylesheet" href="../assets/cy-price.css?v=3">
+<link rel="stylesheet" href="../assets/aplus.css?v=45">
 <script src="../assets/nw.js?v=1" defer></script>
 <style>
 .wrap{max-width:820px;margin:0 auto;padding:28px 20px 60px}
@@ -107,7 +107,7 @@ td.k{color:var(--sub2);width:34%;font-size:14.5px}
 .cmp .vs small{display:block;font-size:13.5px;color:var(--sub2)}
 .cmp .vs strong{font-size:18px}
 .cmp details.du{margin-top:8px}
-.cmp details.du summary{cursor:pointer;font-size:14.5px;font-weight:700;color:var(--blue,#2F6BFF);min-height:44px;display:flex;align-items:center}
+.cmp details.du summary{cursor:pointer;font-size:14.5px;font-weight:700;color:var(--blue,#2560E8);min-height:44px;display:flex;align-items:center}
 .du ul{list-style:none;margin:0;padding:0}
 .du li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--line2)}
 .du li span{min-width:0;font-size:14.5px;word-break:keep-all}
@@ -189,13 +189,13 @@ body.lock{overflow:hidden}
 
 <script src="../assets/agents.js"></script>
 <script src="../assets/config.js?v=7"></script>
-<script src="../assets/auth.js?v=7"></script>
-<script src="../assets/ads.js?v=4"></script>
-<script src="../assets/cy-price.js?v=5"></script>
-<script src="../assets/mine-core.js?v=17"></script>
+<script src="../assets/auth.js?v=8"></script>
+<script src="../assets/ads.js?v=5"></script>
+<script src="../assets/cy-price.js?v=6"></script>
+<script src="../assets/mine-core.js?v=18"></script>
 <script src="../assets/sale-status.js?v=1"></script>
-<script src="../assets/area-watch.js?v=5"></script>
-<script src="../assets/price-sheet.js?v=16"></script>
+<script src="../assets/area-watch.js?v=6"></script>
+<script src="../assets/price-sheet.js?v=17"></script>
 <script>
 var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 const $ = id => document.getElementById(id);
@@ -289,9 +289,9 @@ function cmpHtml(x) {
   return `<h4>같은 동네 실거래가와 비교</h4><div class="cmp">${x.cmp.map(c => {
     const [b, my, nb, nu, nt, sc, nw, nn] = c, d = Math.round((my / nb - 1) * 100);
     return `<div class="row"><b>${BAND[b]}</b>
-      <div class="vs"><div><small>분양가 (3.3㎡당)</small><strong>${fmt(my)}만원</strong></div><div><small>${esc(sc)} 실거래 중앙값 (3.3㎡당)</small><strong>${fmt(nb)}만원</strong></div></div>
-      <div class="why">분양가는 같은 동네 같은 면적대 실거래 중앙값보다 <b>${Math.abs(d)}% ${d >= 0 ? '높은' : '낮은'}</b> 수준이에요.${nw ? ` 준공 10년 이내 단지(${nn}곳)만 보면 실거래 중앙값 ${fmt(nw)}만원이에요.` : ''}<br>
-      근거: ${esc(sc)} 아파트 중 ${BAND[b]} ${nu}개 단지·면적대, ${per} 거래 ${fmt(nt)}건의 최근 3개월 이동 중앙 평당가를 다시 중앙값으로 묶었어요. 분양가는 이 면적대 주택형별 분양 최고금액 ÷ 전용면적(3.3㎡당)의 중앙값이에요.</div>
+      <div class="vs"><div><small>분양가 (3.3㎡당)</small><strong>${fmt(my)}만원</strong></div><div><small>${esc(sc)} 실거래 중간값 (3.3㎡당)</small><strong>${fmt(nb)}만원</strong></div></div>
+      <div class="why">분양가는 같은 동네 같은 면적대 실거래 중간값보다 <b>${Math.abs(d)}% ${d >= 0 ? '높은' : '낮은'}</b> 수준이에요.${nw ? ` 준공 10년 이내 단지(${nn}곳)만 보면 실거래 중간값 ${fmt(nw)}만원이에요.` : ''}<br>
+      근거: ${esc(sc)} 아파트 중 ${BAND[b]} ${nu}개 단지·면적대, ${per} 거래 ${fmt(nt)}건의 최근 3개월 이동 중앙 평당가를 다시 중간값으로 묶었어요. 분양가는 이 면적대 주택형별 분양 최고금액 ÷ 전용면적(3.3㎡당)의 중간값이에요.</div>
       ${x.g && window.JDJ_PRICE ? `<details class="du" data-b="${b}" data-sc="${esc(sc)}"><summary>비교에 쓰인 ${esc(sc)} 단지 ${nu}곳 시세 흐름 보기</summary><div class="dul">불러오는 중이에요…</div></details>` : ''}</div>`; }).join('')}
     <p class="why" style="margin:6px 0 0">분양가에는 발코니 확장·옵션 비용이 빠져 있고, 실거래 단지는 연식·입지·브랜드가 달라요.</p></div>`;
 }
@@ -377,7 +377,7 @@ function loadLeaflet() {
     const s = document.createElement('script'); s.src = base + 'leaflet.js'; s.onload = () => ok(); s.onerror = () => { LF = null; no(new Error('leaflet')); }; document.head.appendChild(s); });
   return LF;
 }
-const COLOR = { on: '#2F6BFF', pre: '#7FA3FF', mv: '#0E7A4F', plan: '#8B95A1', wait: '#E5A100' };
+const COLOR = { on: '#2560E8', pre: '#7FA3FF', mv: '#0E7A4F', plan: '#8B95A1', wait: '#E5A100' };
 async function drawMap() {
   try { await loadLeaflet(); } catch (e) { $('mapNote').textContent = '지도를 불러오지 못했어요. 목록으로 확인해 주세요.'; return; }
   if (!MAP) {

@@ -33,7 +33,7 @@ check('카드: 차이는 범위(하한~상한) + 대표 주택형 금액', card.
 check('카드: 표본 부족이면 숫자 대신 비교 자료 부족', card.includes('비교 자료 부족') && !C.marginTxt(bandLack));
 check('카드: 토지임대부는 비교 조건 다름', C.card(Object.assign({}, R, { bands: [bandLease] })).includes('비교 조건 다름') && !C.marginTxt(bandLease));
 check('카드: 주변 청약(경쟁률 범위·미달)', card.includes('1순위 최고 경쟁률 0.8~12.5대 1') && card.includes('1순위 미달 1곳'));
-check('카드: 미래가치 분포', card.includes('반경 2km 아파트 120곳의 미래가치 점수 중앙값 56점'));
+check('카드: 미래가치 분포', card.includes('반경 2km 아파트 120곳의 미래가치 점수 중간값 56점'));
 check('카드: 상세 링크', card.includes('chungyak/price/?no=2026000001'));
 check('과거 성적: N번 중 M번', C.pastTxt(R.fv.past, R.sd).includes('85번 중 50번'));
 

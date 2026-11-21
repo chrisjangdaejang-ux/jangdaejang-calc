@@ -101,8 +101,8 @@
 @media print{
   .top,.foot,.pay>.eyebrow,.vtools{display:none!important}
   .pay{max-width:none;padding:0}
-  .pr-unit{border:0;border-top:2px solid #2F6BFF;border-radius:0;padding:14px 0;page-break-before:auto}
-  .pr-cover{border:0;border-left:4px solid #2F6BFF;border-radius:0;background:#F4F7FF;padding:12px 14px;margin:0 0 10px}
+  .pr-unit{border:0;border-top:2px solid #2560E8;border-radius:0;padding:14px 0;page-break-before:auto}
+  .pr-cover{border:0;border-left:4px solid #2560E8;border-radius:0;background:#F4F7FF;padding:12px 14px;margin:0 0 10px}
   .pr-stats>div{border:1px solid #E5E8EB}
   body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   @page{size:A4;margin:14mm}

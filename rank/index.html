@@ -11,11 +11,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script src="../assets/pwa.js?v=1" defer></script>
+<script src="../assets/pwa.js?v=2" defer></script>
 <script src="../assets/biz.js?v=1" defer></script>
 <title>집코드 주간 순위 — 구별 아파트 시세 변동·미래가치 순위</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/rank/">
-<meta name="description" content="시·도별로 구·시·군 아파트 평당가가 1개월·3개월·6개월·1년 동안 얼마나 올랐고 내렸는지, 앞으로 2년 지역 흐름 점수로 본 구별 미래가치 순위를 한눈에 보세요.">
+<meta name="description" content="시·도별로 시·군·구 아파트 평당가가 1개월·3개월·6개월·1년 동안 얼마나 올랐고 내렸는지, 앞으로 2년 지역 흐름 점수로 본 구별 미래가치 순위를 한눈에 보세요.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="집코드">
 <meta property="og:title" content="집코드 주간 순위 — 구별 시세 변동·미래가치 순위">
@@ -27,18 +27,18 @@
 <script>window.JDJ_CONFIG = { tool:'rank', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
-<script src="../assets/share.js?v=10"></script>
-<script src="../assets/plain-words.js?v=14"></script>
-<script src="../assets/narrative.js?v=16"></script>
-<script src="../assets/rank-core.js?v=6"></script>
+<script src="../assets/share.js?v=11"></script>
+<script src="../assets/plain-words.js?v=15"></script>
+<script src="../assets/narrative.js?v=17"></script>
+<script src="../assets/rank-core.js?v=7"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/alerts-core.js?v=1"></script>
 <script src="../assets/watch-core.js?v=2"></script>
-<script src="../assets/watch.js?v=5"></script>
-<script src="../assets/tabbar.js?v=3" defer></script>
+<script src="../assets/watch.js?v=6"></script>
+<script src="../assets/tabbar.js?v=4" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/aplus.css?v=44">
+<link rel="stylesheet" href="../assets/aplus.css?v=45">
 <script src="../assets/nw.js?v=1" defer></script>
 <style>
 .wrap{max-width:760px;margin:0 auto;padding:22px 16px 40px}
@@ -50,7 +50,7 @@ h1{font-size:clamp(26px,6vw,36px);margin:6px 0 8px}
 .ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
 .ctl select{font:inherit;font-size:16px;font-weight:700;min-height:44px;padding:0 34px 0 12px;border:1px solid var(--line);border-radius:12px;color:var(--text);appearance:none;-webkit-appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%234E5968' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 12px center}
 .pills{display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
-.pills button{font:inherit;font-size:15px;font-weight:700;min-height:42px;min-width:44px;padding:0 11px;border:0;border-left:1px solid var(--line);background:#fff;color:var(--sub2);cursor:pointer;white-space:nowrap}
+.pills button{font:inherit;font-size:15px;font-weight:700;min-height:44px;min-width:44px;padding:0 11px;border:0;border-left:1px solid var(--line);background:#fff;color:var(--sub2);cursor:pointer;white-space:nowrap}
 .pills button:first-child{border-left:0}
 .pills button[aria-pressed="true"]{background:var(--blue);color:#fff}
 .sum{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;margin:0 0 6px;font-size:15px;color:var(--sub)}
@@ -99,7 +99,7 @@ h1{font-size:clamp(26px,6vw,36px);margin:6px 0 8px}
 <main class="wrap">
   <span class="tag">주간 순위</span>
   <h1>우리 구, 지금 몇 위일까요?</h1>
-  <p class="lead">같은 시·도 안에서 구·시·군 아파트 평당가가 얼마나 올랐는지, 앞으로 2년 지역 흐름은 몇 위인지 줄 세워 보여 드려요. 줄을 누르면 지도에서 그 구를 볼 수 있어요.</p>
+  <p class="lead">같은 시·도 안에서 시·군·구 아파트 평당가가 얼마나 올랐는지, 앞으로 2년 지역 흐름은 몇 위인지 줄 세워 보여 드려요. 줄을 누르면 지도에서 그 구를 볼 수 있어요.</p>
 
   <div class="jas jas-top" data-ad-slot="rank_top" data-ad-cat="rank" data-ad-top></div>
   <div class="tabs" role="tablist" aria-label="순위 종류">
@@ -154,7 +154,7 @@ function drawTabs(){
 function drawCtl(){
   const sel = `<select id="sdSel" aria-label="시·도">${IX.sido.map(s => `<option value="${s.id}"${s.id === S.sd ? ' selected' : ''}>${esc(s.short)}</option>`).join('')}</select>`;
   const pills = (name, list, cur) => `<div class="pills" role="group" aria-label="${name}">${list.map(([v, t]) => `<button type="button" data-${name === '기간' ? 'k' : 'dir'}="${v}" aria-pressed="${String(v) === String(cur)}">${t}</button>`).join('')}</div>`;
-  const gsel = () => `<select id="gSel" aria-label="구·시·군"><option value="all">전체</option>${Object.entries(IX.sgg).filter(([, v]) => v.sido === sdObj().name).sort((a, b) => a[1].name.localeCompare(b[1].name, 'ko')).map(([c, v]) => `<option value="${c}"${c === S.g ? ' selected' : ''}>${esc(v.name)}</option>`).join('')}</select>`;
+  const gsel = () => `<select id="gSel" aria-label="시·군·구"><option value="all">전체</option>${Object.entries(IX.sgg).filter(([, v]) => v.sido === sdObj().name).sort((a, b) => a[1].name.localeCompare(b[1].name, 'ko')).map(([c, v]) => `<option value="${c}"${c === S.g ? ' selected' : ''}>${esc(v.name)}</option>`).join('')}</select>`;
   const vp = `<div class="pills" role="group" aria-label="비교 단위">${[['gu', '구별'], ['apt', '단지별']].map(([v, t]) => `<button type="button" data-v="${v}" aria-pressed="${v === S.v}">${t}</button>`).join('')}</div>`;
   $('ctl').innerHTML = (S.t === 'fv' ? vp : '') + sel + (S.t === 'price' ? pills('기간', R.PERIODS.map(k => [k, KL[k]]), S.k) + pills('순서', [['up', '상승'], ['down', '하락']], S.dir) : S.t === 'fv' && S.v === 'apt' ? gsel() : '');
   $('sdSel').onchange = e => { S.sd = e.target.value; S.g = 'all'; S.all = false; go('sido'); };
@@ -198,7 +198,7 @@ function drawPrice(){
   }).join('');
   $('pane').innerHTML = head + `<ol class="list">${li}</ol>`
     + (o.rows.length > SHOW ? `<button type="button" class="more" id="more" aria-expanded="${S.all}">${S.all ? '접기' : `${o.rows.length}곳 모두 보기`}</button>` : '')
-    + `<p class="note">평당가는 전용 3.3㎡당 가격이에요. 그 달까지 최근 3개월 아파트 실거래가의 중앙값으로, 작은 선은 최근 12개월 흐름이에요. `
+    + `<p class="note">평당가는 전용 3.3㎡당 가격이에요. 그 달까지 최근 3개월 아파트 실거래가의 중간값으로, 작은 선은 최근 12개월 흐름이에요. `
     + `비교하는 두 달 모두 3개월 거래가 ${R.MIN_TRADES}건 이상인 ${unit}만 넣었어요${o.skip ? `(거래가 적어 ${o.skip}곳 뺌)` : ''}. 보합은 변동률이 0.0%인 곳이에요.</p>`;
   const m = $('more'); if (m) m.onclick = () => { S.all = !S.all; drawPrice(); };
   const t3 = o.rows.slice(0, 3);
@@ -259,7 +259,7 @@ function drawApt(){
     <span class="vals"><span class="num"><b class="sc">${x.fv}점</b><small>100점 만점</small></span></span></a>${wstar(x)}</li>`).join('');
   $('pane').innerHTML = vb + `<ol class="list">${li}</ol>`
     + (o.rows.length > SHOW ? `<button type="button" class="more" id="more" aria-expanded="${S.all}">${S.all ? '접기' : `상위 ${o.rows.length}곳 모두 보기`}</button>` : '')
-    + `<p class="note">점수는 같은 ${esc(sd.short)} 단지 중 앞으로 2년 동안 평균보다 더 오를 가능성 순위예요(100점 만점, 가격 예측이 아니에요). <b>기준</b> ${esc(R.danjiRule(o))} 시·도 전체는 상위 50곳, 구·시·군은 상위 10곳까지 보여 드려요.</p>`;
+    + `<p class="note">점수는 같은 ${esc(sd.short)} 단지 중 앞으로 2년 동안 평균보다 더 오를 가능성 순위예요(100점 만점, 가격 예측이 아니에요). <b>기준</b> ${esc(R.danjiRule(o))} 시·도 전체는 상위 50곳, 시·군·구은 상위 10곳까지 보여 드려요.</p>`;
   const m = $('more'); if (m) m.onclick = () => { S.all = !S.all; drawApt(); };
   share({ head: `${where} 2년 뒤 더 오를 단지 순위(미래가치 점수)`,
     lines: [o.rows.slice(0, 3).map(x => `${x.r}위 ${x.apt}`).join(', '), `${where} 단지 ${o.n.toLocaleString()}곳 비교`, `과거에 그대로 써 봤더니 ${v.n}번 중 ${v.hit}번 맞음`] });

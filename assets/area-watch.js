@@ -97,7 +97,7 @@
 .ja p{margin:0 0 10px;font-size:15px;color:#3E4754;line-height:1.55;word-break:keep-all}
 .ja .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .ja .btn2{font:inherit;font-size:15px;font-weight:700;min-height:46px;padding:0 16px;border-radius:12px;border:1px solid #E5E8EB;background:#fff;color:#191F28;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
-.ja .btn2.p{background:#2F6BFF;border-color:#2F6BFF;color:#fff}
+.ja .btn2.p{background:#2560E8;border-color:#2560E8;color:#fff}
 .ja .chipz{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
 .ja .chipz span{display:inline-flex;align-items:center;gap:4px;font-size:14px;font-weight:700;background:#fff;border:1px solid #C9D8FF;color:#1F56E0;border-radius:999px;padding:4px 6px 4px 12px;min-height:36px}
 .ja .chipz span.ro{padding-right:12px}
@@ -108,10 +108,10 @@
 .ja select{width:100%;min-height:46px;padding:0 10px;border:1px solid #E5E8EB;border-radius:12px;font:inherit;font-size:15.5px;background:#fff;color:#191F28}
 .ja .kd{display:flex;flex-wrap:wrap;gap:6px 16px;margin:4px 0 10px}
 .ja .kd label{display:flex;align-items:center;gap:8px;font-size:15px;min-height:40px;cursor:pointer}
-.ja .kd input{width:20px;height:20px;accent-color:#2F6BFF}
+.ja .kd input{width:20px;height:20px;accent-color:#2560E8}
 .ja .lst{display:grid;gap:6px;margin:8px 0 4px}
 .ja .lst button{display:block;width:100%;text-align:left;font:inherit;background:#fff;border:1px solid #E5E8EB;border-radius:12px;padding:10px 12px;cursor:pointer;color:#191F28}
-.ja .lst button:hover{border-color:#2F6BFF}
+.ja .lst button:hover{border-color:#2560E8}
 .ja .lst b{font-size:15.5px}.ja .lst small{display:block;font-size:13.5px;color:#4E5968}
 .ja .new{display:inline-block;font-size:11.5px;font-weight:800;color:#C81E1E;background:#FDECEC;border-radius:5px;padding:0 5px;margin-right:5px;vertical-align:1px}
 .ja .note{font-size:13.5px;color:#4E5968;margin:8px 0 0;line-height:1.6}

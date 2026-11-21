@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script src="../assets/pwa.js?v=1" defer></script>
+<script src="../assets/pwa.js?v=2" defer></script>
 <script src="../assets/biz.js?v=1" defer></script>
 <title>집코드 단지 비교 — 실거래 흐름·미래가치 점수 나란히 비교</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/ask/">
@@ -27,19 +27,19 @@
 <script>window.JDJ_CONFIG = { tool:'ask', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
-<script src="../assets/share.js?v=10"></script>
-<script src="../assets/plain-words.js?v=14"></script>
-<script src="../assets/mine-core.js?v=17"></script>
-<script src="../assets/price-sheet.js?v=16"></script>
-<script src="../assets/ask-core.js?v=4"></script>
-<script src="../assets/ask.js?v=2"></script>
+<script src="../assets/share.js?v=11"></script>
+<script src="../assets/plain-words.js?v=15"></script>
+<script src="../assets/mine-core.js?v=18"></script>
+<script src="../assets/price-sheet.js?v=17"></script>
+<script src="../assets/ask-core.js?v=5"></script>
+<script src="../assets/ask.js?v=3"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/alerts-core.js?v=1"></script>
 <script src="../assets/watch-core.js?v=2"></script>
-<script src="../assets/watch.js?v=5"></script>
+<script src="../assets/watch.js?v=6"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/aplus.css?v=44">
+<link rel="stylesheet" href="../assets/aplus.css?v=45">
 <script src="../assets/nw.js?v=1" defer></script>
 <style>
 .wrap{max-width:980px;margin:0 auto;padding:20px 16px 60px}
@@ -87,7 +87,7 @@ h1{font-size:clamp(24px,5.6vw,34px);margin:6px 0 6px}
 .dp{border-radius:16px;padding:14px;border:1.5px solid;min-width:0}
 .dp.c0{background:#EEF3FF;border-color:#BFD1FF}.dp.c1{background:#FFF2E8;border-color:#FFD3B5}.dp.c2{background:#E9F7F0;border-color:#B5E3CB}
 .dp .no{display:inline-block;font-size:12.5px;font-weight:800;color:#fff;border-radius:6px;padding:1px 8px}
-.dp.c0 .no{background:#2F6BFF}.dp.c1 .no{background:#F26B1D}.dp.c2 .no{background:#14A06B}
+.dp.c0 .no{background:#2560E8}.dp.c1 .no{background:#F26B1D}.dp.c2 .no{background:#14A06B}
 .dp .rg{font-size:13.5px;color:#4E5968;margin:8px 0 4px}
 .dp select{width:100%;font:inherit;font-size:16px;font-weight:800;min-height:46px;padding:0 10px;border:1px solid rgba(0,0,0,.12);border-radius:12px;background:#fff;color:#191F28}
 .dp .bsel{margin-top:8px;color:#fff;border:0;font-size:15px;-webkit-appearance:none;appearance:none;background-image:linear-gradient(45deg,transparent 50%,#fff 50%),linear-gradient(135deg,#fff 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 12px) 50%;background-size:6px 6px;background-repeat:no-repeat;padding-right:30px}
@@ -131,7 +131,7 @@ h1{font-size:clamp(24px,5.6vw,34px);margin:6px 0 6px}
 .vs .grp.og b{font-size:11px;color:#fff;background:#B8942A;border-radius:4px;padding:2px 6px}
 .vs .big{font-size:26px;line-height:1.1;letter-spacing:-.5px}.vs .big span{font-size:14px;margin-left:1px}
 .vs .bar{display:block;width:100%;max-width:120px;height:6px;border-radius:3px;background:#E5E8EB;margin:6px 0 2px;overflow:hidden}
-.vs .bar i{display:block;height:100%;border-radius:3px}.vs .bar.b0 i{background:#2F6BFF}.vs .bar.b1 i{background:#F26B1D}.vs .bar.b2 i{background:#14A06B}
+.vs .bar i{display:block;height:100%;border-radius:3px}.vs .bar.b0 i{background:#2560E8}.vs .bar.b1 i{background:#F26B1D}.vs .bar.b2 i{background:#14A06B}
 .vs.n2 .v:nth-child(3) .bar{display:flex;justify-content:flex-end}
 .vs .hz{display:grid;gap:3px;font-size:14.5px}.vs .hz span{white-space:nowrap}.vs .hz em{font-style:normal;color:#6B7684;font-weight:700;margin-right:3px}
 .vs .hz .ref{color:#8B95A1;font-weight:500}.vs .hz small{display:inline;margin:0 0 0 3px;font-size:11.5px}
@@ -139,7 +139,7 @@ h1{font-size:clamp(24px,5.6vw,34px);margin:6px 0 6px}
 .vs .why{grid-column:1/-1;background:#FFFCF3;border-top:1px dashed var(--line2);padding:0 12px}
 .vs .why summary{cursor:pointer;font-size:13.5px;font-weight:800;color:#5B4A12;padding:10px 0;min-height:24px}
 .vs .why p{margin:0 0 10px;font-size:13.5px;line-height:1.65;color:#3E4754;word-break:keep-all}
-.vs .why p i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}.vs .why .d0{background:#2F6BFF}.vs .why .d1{background:#F26B1D}.vs .why .d2{background:#14A06B}
+.vs .why p i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}.vs .why .d0{background:#2560E8}.vs .why .d1{background:#F26B1D}.vs .why .d2{background:#14A06B}
 .links{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
 .links a{display:flex;flex-direction:column;justify-content:center;gap:2px;min-height:60px;padding:10px 14px;border:1px solid var(--line);border-radius:14px;text-decoration:none;color:var(--text);background:#fff}
 .links a b{font-size:15.5px}.links a small{font-size:13px;color:#4E5968}
@@ -171,7 +171,7 @@ h1{font-size:clamp(24px,5.6vw,34px);margin:6px 0 6px}
     <div id="askBox" style="margin-top:12px"></div>
   </section>
 
-  <p class="disc">자료: 국토교통부 아파트 매매·전월세 실거래가(공공데이터포털), 공동주택관리정보시스템(K-apt)·건축물대장 단지 정보. 해제(취소) 신고된 거래와 직거래는 시세·평균 계산에서 빼요. 그래프의 선은 3개월 실거래 중앙값, 점은 실제 신고된 거래예요. 실제 거래가는 동·층·향·수리 상태에 따라 달라요. 미래가치 점수는 과거 자료로 검증한 통계 점수이며 앞으로의 가격을 보장하지 않아요.</p>
+  <p class="disc">자료: 국토교통부 아파트 매매·전월세 실거래가(공공데이터포털), 공동주택관리정보시스템(K-apt)·건축물대장 단지 정보. 해제(취소) 신고된 거래와 직거래는 시세·평균 계산에서 빼요. 그래프의 선은 3개월 실거래 중간값, 점은 실제 신고된 거래예요. 실제 거래가는 동·층·향·수리 상태에 따라 달라요. 미래가치 점수는 과거 자료로 검증한 통계 점수이며 앞으로의 가격을 보장하지 않아요.</p>
 </main>
 <footer class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집코드 · <a href="../">홈</a></footer>
 
@@ -183,7 +183,7 @@ const M = window.JDJ_MINE, A = window.JDJ_ASK_CORE, P = window.JDJ_PRICE, PL = w
 const DATA = JB.DATA + 'data/';
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const NA = '<span class="na">자료 없음</span>';
-const COL = ['#2F6BFF', '#F26B1D', '#14A06B'];
+const COL = ['#2560E8', '#F26B1D', '#14A06B'];
 const Q = new URLSearchParams(location.search);
 const Y = new Date().getFullYear();
 let IX = null, MH = null;
@@ -235,7 +235,7 @@ async function load(k, want){
     fv: f.fv != null ? f.fv : null, fvBase: PL ? PL.rankBase(IX, k.code, 'fv').name : `${sd.short || ''} 아파트`,
     fvg: f.fvg != null ? f.fvg : null, gs: f.gs != null ? f.gs : null,
     fh: f.fh || null, hzOk: hz, fx: f, turn: A.turnover(bands, f.hh),
-    gu: gp ? { diff: gp.diff, name: `${sggName(k.code)} 아파트 중앙값`, at: gp.at, me: gp.me, ref: gp.sggPpy } : null,
+    gu: gp ? { diff: gp.diff, name: `${sggName(k.code)} 아파트 중간값`, at: gp.at, me: gp.me, ref: gp.sggPpy } : null,
     jeon: A.jeonseOf(ht, f.jr), ht, rent, rentBase: rj && rj.m0
   };
 }
@@ -319,8 +319,8 @@ function wireRange(items){
 }
 function chartCard(items){
   const tabName = TABS.find(t => t[0] === TAB)[1];
-  const note = { sale: '선 = 그 달까지 3개월 매매 실거래 중앙값(이 평형 전용면적으로 환산), 점 = 실제 신고된 매매 거래(최근 3년, 직거래 제외)',
-    jeonse: '선 = 3개월 전세 실거래 중앙값, 점 = 실제 신고된 전세 계약(최근 3년)', rent: '선 = 3개월 월세 중앙값(보증금 별도), 점 = 실제 신고된 월세 계약(최근 3년)',
+  const note = { sale: '선 = 그 달까지 3개월 매매 실거래 중간값(이 평형 전용면적으로 환산), 점 = 실제 신고된 매매 거래(최근 3년, 직거래 제외)',
+    jeonse: '선 = 3개월 전세 실거래 중간값, 점 = 실제 신고된 전세 계약(최근 3년)', rent: '선 = 3개월 월세 중간값(보증금 별도), 점 = 실제 신고된 월세 계약(최근 3년)',
     cnt: '이 평형의 달마다 신고된 매매 건수(최근 3년, 직거래 제외)' }[TAB];
   return `<section class="card" id="chartCard"><h2>실거래 흐름 비교<small>${items.map(x => `${esc(x.apt)} ${esc(x.band)}`).join(' · ')}</small></h2>
     ${rangeUi()}
@@ -400,10 +400,10 @@ function rowsOf(items){
   add({ grp: '단지 · 가격' });
   add({ l: '입주년도', h: '건축물대장·K-apt의 사용승인(준공) 연도예요. 연차는 올해 기준이에요.', v: items.map(x => { const t = A.ageText(x.by, Y); return t ? t.replace(/\((.+)\)/, '<small>$1</small>') : NA; }) });
   add({ l: '세대수', h: '단지 전체 세대수(K-apt)예요. 세대수가 많을수록 거래가 많고 시세 확인이 쉬운 편이에요.', v: items.map(x => x.hh ? `${x.hh.toLocaleString()}세대${x.hh >= 1000 ? '<small>대단지</small>' : ''}` : NA), n: items.map(x => x.hh), d: 1 });
-  add({ l: '평당가', h: '3.3㎡당 가격이에요. 그 달까지 3개월 매매 실거래 평당가의 중앙값이에요.', v: items.map(x => x.ppy ? `${x.ppy.v.toLocaleString()}만원<small>${esc(A.ymText(x.ppy.at))} 기준</small>` : NA) });
-  add({ l: '최근 시세', h: '최근 3개월 매매 실거래 평당가 중앙값 × 이 평형 전용면적이에요.', v: items.map(x => x.price ? `<b>${M.won(x.price.v)}</b><small>${esc(A.ymText(x.price.at))} 기준${x.price.stale ? ' · 이후 거래 없음' : ''}</small>` : NA) });
+  add({ l: '평당가', h: '3.3㎡당 가격이에요. 그 달까지 3개월 매매 실거래 평당가의 중간값이에요.', v: items.map(x => x.ppy ? `${x.ppy.v.toLocaleString()}만원<small>${esc(A.ymText(x.ppy.at))} 기준</small>` : NA) });
+  add({ l: '최근 시세', h: '최근 3개월 매매 실거래 평당가 중간값 × 이 평형 전용면적이에요.', v: items.map(x => x.price ? `<b>${M.won(x.price.v)}</b><small>${esc(A.ymText(x.price.at))} 기준${x.price.stale ? ' · 이후 거래 없음' : ''}</small>` : NA) });
   add({ l: '실거래 평균', h: '최근 3개월(거래가 없으면 1년) 신고된 매매 금액의 단순 평균이에요(직거래 제외). 시세와 계산 방법이 달라 값이 다를 수 있어요.', v: items.map(x => x.avg ? `${M.won(x.avg.v)}<small>${esc(A.ymText(x.avg.from))}~${esc(A.ymText(x.avg.to))} ${x.avg.n}건</small>` : NA) });
-  add({ l: '구 대비 평당가', h: '같은 구(시) 모든 아파트의 3개월 실거래 평당가 중앙값과 비교했어요.', v: items.map(x => { const p = x.gu ? A.pctDiff(x.gu.diff) : null; return p ? (p.same ? '비슷해요' : `${p.p}% ${p.up ? '높아요' : '낮아요'}`) + `<small>${esc(x.gu.name)} 대비</small>` : NA; }) });
+  add({ l: '구 대비 평당가', h: '같은 구(시) 모든 아파트의 3개월 실거래 평당가 중간값과 비교했어요.', v: items.map(x => { const p = x.gu ? A.pctDiff(x.gu.diff) : null; return p ? (p.same ? '비슷해요' : `${p.p}% ${p.up ? '높아요' : '낮아요'}`) + `<small>${esc(x.gu.name)} 대비</small>` : NA; }) });
   add({ l: '전세가율', h: '전세 시세 ÷ 매매 시세예요. 높을수록 매매가와 전세가 차이가 작아요.', v: items.map(x => x.jeon ? `${Math.round(x.jeon.jr * 100)}%${x.jeon.at ? `<small>${esc(A.ymText(x.jeon.at))} 기준</small>` : ''}` : NA) });
   add({ l: '매매전세갭', h: '매매 시세 − 전세 시세예요. 전세를 끼고 살 때 필요한 돈에 가까워요(세금·중개보수 제외). 적을수록 적은 돈으로 살 수 있어요.', v: items.map(x => x.jeon && x.jeon.gap != null ? `${M.won(x.jeon.gap)}<small>매매 ${M.won(x.jeon.sale)} − 전세 ${M.won(x.jeon.jeonse)}</small>` : NA), n: items.map(x => x.jeon && x.jeon.gap != null ? x.jeon.gap : null), d: -1 });
   add({ l: '거래 회전율', h: '최근 1년 매매 건수(모든 평형, 직거래 제외) ÷ 세대수예요. 높을수록 사고팔기가 활발한 단지예요.', v: items.map(x => x.turn ? `${(x.turn.r * 100).toFixed(1)}%<small>1년 ${x.turn.n}건 ÷ ${x.turn.hh.toLocaleString()}세대</small>` : NA), n: items.map(x => x.turn ? Math.round(x.turn.r * 1000) : null), d: 1 });
