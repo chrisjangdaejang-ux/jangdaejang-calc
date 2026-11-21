@@ -29,6 +29,7 @@
 <script src="../assets/narrative.js?v=14"></script>
 <script src="../assets/conf.js?v=1"></script>
 <script src="../assets/life-view.js?v=3"></script>
+<script src="../assets/fac-view.js?v=1"></script>
 <script src="../assets/mine-core.js?v=16"></script>
 <script src="../assets/map-core.js?v=3"></script>
 <script src="../assets/watch-core.js?v=2"></script>
@@ -1019,6 +1020,7 @@ function openCard(d, band, keep){
       <dt>최근 시세</dt><dd>${b.price > 0 ? `<b>${esc(M.won(b.price))}</b><span class="ppy">${esc(C.ppyText(b.ppy))}</span><small>${esc(b.band)} · ${esc(M.ymLabel(b.at))} 기준 최근 3개월 실거래 중앙값</small>` : '최근 3개월 실거래가 없어요<small>시세·전망 보기에서 지난 거래를 볼 수 있어요</small>'}</dd>
       <dt>미래가치</dt><dd>${b.fv != null ? `<div class="fvrow"><span class="fvb ${C.tone(b.fv)}">${b.fv}점</span><span class="head">${esc(head || '100점 만점, 앞으로 2년 같은 시·도 아파트와 비교한 점수예요.')}</span></div>${cfo ? `<small class="cfl cf-${cfo.lv}">${esc(window.JDJ_CONF.line(cfo))}</small>` : ''}` : '이 평형은 미래가치 점수 자료가 없어요'}</dd>
       <dt class="lfr" hidden id="lfrK">학군·생활</dt><dd class="lfr" hidden id="lfrV"></dd>
+      <dt class="fcr" hidden>단지 시설</dt><dd class="fcr" hidden id="fcrV"></dd>
       ${b.jr != null ? `<dt>전세가율</dt><dd><b>${esc(C.pct(b.jr))}</b><small>집값 대비 전셋값 비율</small></dd>` : ''}
     </dl>
     <div class="acts"><a href="${esc(C.mineUrl(d, b.band))}" data-track="map_to_mine">시세·전망 보기</a><button type="button" id="addCmp" class="${inCmp ? 'done' : ''}">${inCmp ? '비교함에 있어요' : '비교에 담기'}</button></div>`;
@@ -1030,6 +1032,12 @@ function openCard(d, band, keep){
     v.innerHTML = `${esc(t)}<small>직선 거리 · ${esc(JDJ_LIFE.srcShort(o, F))}</small>`;
     $('lfrK').textContent = JDJ_LIFE.topics(o) || '주변 정보';
     $('sheet').querySelectorAll('.lfr').forEach(x => x.hidden = false);
+  });
+  if (window.JDJ_FAC) JDJ_FAC.load(DATA, d.sd).then(F => {            // 단지 시설 한 줄(관리사무소 등록 자료가 있을 때만)
+    const o = JDJ_FAC.unit(F, [d.code, d.dong, d.jibun].join('|'), d.apt), t = JDJ_FAC.compact(o), v = $('fcrV');
+    if (!t || !v || !SEL || SEL.d !== d) return;
+    v.innerHTML = `${esc(t)}<small>${esc(JDJ_FAC.srcShort(o))}</small>`;
+    $('sheet').querySelectorAll('.fcr').forEach(x => x.hidden = false);
   });
   if (!keep) reveal(d.lat, d.lng);
   $('sheet').querySelectorAll('.bands button').forEach(x => x.onclick = () => openCard(d, x.dataset.b, true));

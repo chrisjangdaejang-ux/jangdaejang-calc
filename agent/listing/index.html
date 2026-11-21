@@ -26,6 +26,7 @@
 <script src="/jangdaejang-calc/assets/broker-tools.js?v=3"></script>
 <script src="/jangdaejang-calc/assets/conf.js?v=1"></script>
 <script src="/jangdaejang-calc/assets/life-view.js?v=3"></script>
+<script src="/jangdaejang-calc/assets/fac-view.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/jangdaejang-calc/assets/aplus.css?v=42">
@@ -287,12 +288,13 @@ async function render(prof){
   let fx = null;
   try { const us = await P.scoreUnits(ST.sd), key = M.unitKey(u); const hit = us.find(x => M.unitKey(x) === key); fx = hit && hit[9] && typeof hit[9] === 'object' ? M.cleanFx(hit[9]) : null; } catch (e) {}
   if (!MH) MH = await j('model_h.json').catch(() => null);
-  const [xy, poi, life] = await Promise.all([j(ST.sd + '_xy.json').then(x => x.xy || null).catch(() => null), j('poi/' + ST.sd + '.json').catch(() => null),
-    window.JDJ_LIFE ? JDJ_LIFE.load(DATA, ST.sd) : null]);
+  const [xy, poi, life, fac] = await Promise.all([j(ST.sd + '_xy.json').then(x => x.xy || null).catch(() => null), j('poi/' + ST.sd + '.json').catch(() => null),
+    window.JDJ_LIFE ? JDJ_LIFE.load(DATA, ST.sd) : null, window.JDJ_FAC ? JDJ_FAC.load(DATA, ST.sd) : null]);
   const sido = (IX.sgg[ST.g] || {}).sido || '';
   const S = T.listing({ u, IX, M, fx, vc: R.vcheck(MH, sido), units: g.units, xy, poi, TAX: window.JDJ_TAX, ADJ: window.JDJ_ADJ, ask: ST.ask, memo: ST.memo, bd: ST.bd, fl: ST.fl, kind: T.kindOf(prof) });
   /* 학군·생활(공개 data/life) · 믿을 만한 정도(공개 점수 묶음 cf) — 자료가 있을 때만 */
   S.life = life ? { F: life, o: JDJ_LIFE.unit(life, [u[0], u[1], u[8]].join('|')) } : null;
+  S.fac = fac ? { F: fac, o: JDJ_FAC.unit(fac, [u[0], u[1], u[8]].join('|'), u[2]) } : null;   // 단지 시설(관리사무소 등록 자료) — 없으면 칸 없음
   S.conf = fx && fx.fv != null && window.JDJ_CONF ? JDJ_CONF.build(fx, { MH, sido, cnt: M.counts(u[7]) }) : null;
   out.innerHTML = sheetHtml(S, prof);
   $('acts').hidden = SHARED && !PROF;
@@ -339,6 +341,10 @@ function sheetHtml(S, prof){
     + (lfX.length ? `<div class="lab">${esc(JDJ_LIFE.topics({h: S.life.o.h, a: S.life.o.a, p: S.life.o.p, m: S.life.o.m, hs: lfX.some(r => r.s === 'hs') ? S.life.o.hs : null}) || '주변 정보')} (직선 거리)</div><ul class="lst lf">${lfX.map(r => `<li><b>${esc(r.k)}</b><span>${esc(r.v)}</span></li>`).join('')}</ul>` : '')
     + `<p class="src">${lfE ? '초등학교 배정은 해마다 바뀔 수 있어 입학 전 관할 교육지원청에서 다시 확인해 주세요.' : esc(po.elem)} 걷는 시간은 직선 거리로 어림한 값이라 실제로는 더 걸려요.</p>${po.src ? srcLine(`${po.src.st} · ${po.src.sc}`, `역 ${T.ymd(po.asOf.st)}, 학교 ${T.ymd(po.asOf.sc)}`) : ''}`
     + (LF.length && (lfE || lfX.length || lsc) ? `<p class="src">${esc(JDJ_LIFE.srcText(S.life.F, (lfE ? [lfE] : []).concat(lfX).map(r => r.s).concat(lsc ? ['sc'] : []).filter(Boolean)))}</p>` : '');
+  /* 4-2 단지 시설(관리사무소가 K-apt 에 등록한 자료) — 자료가 없으면 아무것도 안 보여 줌 */
+  const FC = S.fac && S.fac.o ? JDJ_FAC.rows(S.fac.o) : [];
+  const t4f = FC.length ? `<div class="lab">단지 시설</div><ul class="lst lf">${FC.map(r => `<li><b>${esc(r.k)}</b><span>${esc(r.v)}</span></li>`).join('')}</ul>`
+    + `<p class="src">${esc(S.fac.F.note || JDJ_FAC.NOTE)}. ${esc(JDJ_FAC.srcText(S.fac.o, S.fac.F))}</p>` : '';
   /* 5 미래가치 */
   const f = S.fv;
   const t5 = f.has ? `<div class="fv"><div class="ring">${esc(f.head.match(/\d+/)[0])}</div><div><p><b>${esc(f.head)}</b></p>${S.conf ? `<p class="cfl"><b>${esc(JDJ_CONF.line(S.conf))}</b></p>` : ''}<p>${esc(f.what)}</p><p>${esc(f.past)}</p></div></div>` : `<div class="fv"><div><p>${esc(f.miss)}</p><p>${esc(f.past)}</p></div></div>`;
@@ -363,7 +369,7 @@ function sheetHtml(S, prof){
         <section class="ls-sec"><h3><span class="n">3</span>가격 흐름 <small>최근 3년</small></h3>${t3}${tr.miss ? '' : srcLine(tr.src, tAsOf(tr.asOf))}</section>
       </div>
       <div class="ls-col">
-        <section class="ls-sec"><h3><span class="n">4</span>가까운 역·학교 <small>직선 1.5km 안</small></h3>${t4}</section>
+        <section class="ls-sec"><h3><span class="n">4</span>${t4f ? '가까운 역·학교와 단지 시설' : '가까운 역·학교'} <small>직선 1.5km 안</small></h3>${t4}${t4f}</section>
         <section class="ls-sec"><h3><span class="n">5</span>미래가치 점수 <small>2년 보유 기준</small></h3>${t5}${srcLine(f.src, `${T.ymK(f.asOf.to)} 자료`)}</section>
         <section class="ls-sec"><h3><span class="n">6</span>${S.kind === 'danji' ? '이 평형을 살 때 취득세 예시' : '사는 분 취득세 예상'}</h3>${t6}</section>
       </div>

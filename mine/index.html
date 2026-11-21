@@ -45,6 +45,7 @@
 <script src="../assets/strength.js?v=1"></script>
 <script src="../assets/conf.js?v=1"></script>
 <script src="../assets/life-view.js?v=3"></script>
+<script src="../assets/fac-view.js?v=1"></script>
 <script src="../assets/mine-core.js?v=16"></script>
 <script src="../assets/ask-core.js?v=3"></script>
 <script src="../assets/ask.js?v=1"></script>
@@ -562,6 +563,8 @@ function render(d, map, units){
       : `<p class="note" style="font-size:15px">이 단지·평형은 아직 미래가치 점수가 없어요. 점수를 매길 거래 자료가 충분히 쌓이면 자동으로 보여 드려요.</p>${rs.length ? `<ul class="why">${rs.map(rli).join('')}</ul>` : ''}`}
   </div>
 
+  <div class="panel" id="facSec" hidden></div>
+
   <div class="panel" id="lifeSec" hidden></div>
 
   <div id="alertSec"></div>
@@ -589,6 +592,7 @@ function render(d, map, units){
   $('res').hidden = false;
   if (window.JDJ_CONF) JDJ_CONF.css();
   fillLife(d);
+  fillFac(d);
   CUR.ht = HT;
   /* 공유(assets/share.js): 단지 공개 정보(이름·변동률·점수·거래 건수)만. 매수가·매수 시기(bp·bd)는 주소·문구·이미지에 넣지 않음 */
   if (window.JDJ_SHARE) JDJ_SHARE.update({allowNum: true,
@@ -609,6 +613,21 @@ function render(d, map, units){
     head:'<h2>이 지역에 영향을 주는 정책<small>이 단지가 있는 ' + esc(sggName(d.code) + ' ' + d.dong) + '에 적용 중이거나 국회에서 논의 중인 정책이에요</small></h2>'}).catch(e => console.warn('policy', e));
   if (window.JDJDev && !(NARON && DEVP)) JDJDev.mount($('devSec'), {code:d.code, dong:d.dong, jibun:d.jibun, apt:d.apt, sggName,
     head:'<h2>주변 개발사업<small>서울시·국토부 등 공식 원문으로 확인한 사업만, 이 단지에서 가까운 순이에요</small></h2>'}).catch(e => console.warn('devproj', e));
+}
+
+/* 단지 시설(assets/fac-view.js, 공개 data/fac/{시·도}.json) — 관리사무소가 K-apt 에 등록한 자료, 없으면 칸 전체를 숨김 */
+function fillFac(d){
+  const el = $('facSec'); if (!el || !window.JDJ_FAC) return;
+  el.hidden = true; el.innerHTML = '';
+  const sd = S.sd, key = S.dkey;
+  JDJ_FAC.load(DATA, sd).then(F => {
+    if (!F || S.sd !== sd || S.dkey !== key) return;
+    const o = JDJ_FAC.unit(F, [d.code, d.dong, d.jibun].join('|'), d.apt), h = JDJ_FAC.html(o, F);
+    if (!h) return;
+    JDJ_FAC.css();
+    el.innerHTML = `<h2>단지 시설<small>주민 공동시설·주차·CCTV·승강기를 정리했어요</small></h2>` + h;
+    el.hidden = false;
+  });
 }
 
 /* 학군·생활 정보(assets/life-view.js, 공개 data/life/{시·도}.json) — 자료가 없으면 칸을 숨김 */
