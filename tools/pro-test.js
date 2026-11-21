@@ -147,6 +147,7 @@ check('유형은 법정 명칭으로 기록', pc(row, '유형') === '개업공�
 
 // 4. 고객 열기
 r = post({ action: 'proOpen', id: L1.id, tk: L1.token });
+const r0cond = r.report && r.report.cond;
 check('고객 열기 성공 + 단지 키', r.ok && r.report.keys.length === 2 && r.report.profile.office === PROF.office && r.report.profile.role === 'agent' && r.report.client === '김○○', r);
 check('고객 응답에 주문번호·토큰·결제 정보 없음', !JSON.stringify(r).includes(A.o) && !JSON.stringify(r).includes(A.t) && !/tgen_|열람횟수|views/.test(JSON.stringify(r)));
 check('고객 응답에 숫자(점수·시세) 없음 — 열 때마다 공개 자료로 다시 계산', !('fv' in r.report) && !('price' in r.report));
@@ -158,6 +159,7 @@ check('없는 링크 → 거절', !r.ok);
 r = post({ action: 'proClick', id: L1.id, tk: L1.token, kind: 'call' });
 check('문의 버튼 횟수만 기록', r.ok && pc(findP(L1.id), '문의클릭') === 1);
 
+check('v41까지 저장하던 조건은 그대로 돌려줌(금리 유형·기간 없이 만든 링크)', JSON.stringify(r0cond) === JSON.stringify({ income: 8000, cash: 50000, own: 'none', rate: 4.1 }), r0cond);
 // 5. 목록·고치기(링크 그대로)·다른 주문은 못 고침
 r = post({ action: 'proList', o: A.o, t: A.t });
 check('목록: 내 주문 링크만 + 열람·문의 수', r.ok && r.links.length === 2 && r.links.some(x => x.id === L1.id && x.views === 1 && x.clicks === 1), r);
@@ -299,6 +301,19 @@ check('유형 키 화면·서버 같음', Object.keys(R.ROLE).join() === Object.
   check('교수·컨설턴트: 연락 방법이 하나도 없으면 안내(화면)', /전화번호나 카카오톡/.test(pe(Object.assign({}, PF, { kakao: '' }))));
   check('공인중개사는 전화번호 계속 필수(화면)', /연락처\(전화번호\).*공인중개사법/.test(pe(Object.assign({}, PROF, { phone: '' }))), pe(Object.assign({}, PROF, { phone: '' })));
 }
+// 4-2. v42: 금리 유형·대출 기간을 넣어 저장한 링크를 다시 열면 같은 값
+{
+  const C2 = buy([k1], 'single', '01077778888'); post({ action: 'openReport', o: C2.o, t: C2.t, open: true });
+  const sv = post({ action: 'proSave', o: C2.o, t: C2.t, profile: PROF, client: '', notes: {}, secs: ['sum', 'money'], cond: { income: 7000, cash: 40000, own: 'one', rate: 5, rtype: 'var', term: 25 }, days: 30, dataTo: '202610' });
+  check('금리 유형·기간 넣어 저장', sv.ok && JSON.parse(pc(findP(sv.id), '조건')).rtype === 'var', sv);
+  const op = post({ action: 'proOpen', id: sv.id, tk: sv.token });
+  check('다시 열면 같은 조건(금리 유형 var·기간 25년 포함)', op.ok && JSON.stringify(op.report.cond) === JSON.stringify({ income: 7000, cash: 40000, own: 'one', rate: 5, rtype: 'var', term: 25 }), op.report && op.report.cond);
+  const bad = post({ action: 'proSave', o: C2.o, t: C2.t, profile: PROF, client: '', notes: {}, secs: ['money'], cond: { income: 7000, cash: 40000, own: 'none', rate: 5, rtype: 'evil', term: 99 }, days: 30, dataTo: '202610' });
+  const bo = post({ action: 'proOpen', id: bad.id, tk: bad.token });
+  check('이상한 금리 유형·기간은 그 칸만 빼고 저장', bo.ok && !('rtype' in bo.report.cond) && !('term' in bo.report.cond) && bo.report.cond.rate === 5, bo.report && bo.report.cond);
+  post({ action: 'proRevoke', o: C2.o, t: C2.t, id: sv.id }); post({ action: 'proRevoke', o: C2.o, t: C2.t, id: bad.id });
+}
+
 console.log(`전문가 이름 리포트 검증: ${pass}개 확인, ${fail}개 어긋남`);
 process.exit(fail ? 1 : 0);
 
