@@ -567,7 +567,7 @@
         const st = R.opened ? 'open' : /^start/.test(R.stage || '') ? 'build' : R.stage === 'plan' ? 'plan' : '';
         if ((k === 'rlo' && st !== 'open') || (k === 'rls' && st !== 'build') || (k === 'rlp' && st !== 'plan') || (k === 'rld' && !(R.dl || R.delays))) return null;
         const SK = { open: `${ymKo(R.stym)} 개통`, build: '공사 중', plan: '계획 확정, 착공 전' };
-        const t = `${A} ${R.line} ${R.st}${R.m != null ? `까지 직선 ${n0(R.m)}m` : ' 인근'}예요 — ${SK[st] || '진행 중'}`
+        const t = `${A} ${R.line} ${R.pl ? `${/역$/.test(R.st || '') ? R.st : R.st + '역'}(개통 예정)` : R.st}${R.m != null ? (R.pl ? ` · 예정 위치 기준 약 ${n0(R.m)}m 거리` : `까지 직선 ${n0(R.m)}m`) : ' 인근'}예요 — ${SK[st] || '진행 중'}`
           + (R.dl ? `, ${delayText(R.dl, '개통')}` : R.target && st !== 'open' ? `, 개통 목표 ${ymKo(R.target)}` : '')
           + (R.pre != null && R.first ? `. ${ymKo(R.first)} 발표 이후 ${o.apt || '이 단지'} 시세는 구 평균보다 ${Math.abs(R.pre)}% ${R.pre >= 0 ? '더' : '덜'} 올랐어요` : '');
         const RR = { rlp: { hi_up: '신설역 계획이 확정되면 기대가 가격에 먼저 반영되는 경우가 많았어요', hi_dn: '계획 단계에서는 기대가 먼저 반영된 뒤 주춤한 경우가 많았어요' },

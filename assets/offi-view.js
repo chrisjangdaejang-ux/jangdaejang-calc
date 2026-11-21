@@ -225,8 +225,8 @@
       <p class="basis">청약홈에 공고된 단지만 들어가요(청약홈을 거치지 않은 소규모 오피스텔·생활형숙박시설은 빠져요). 시·군·구 전체 합계예요.</p></div>
     <div class="panel"><h2>가격이 오를 여지<small>오피스텔은 아파트보다 가격이 덜 오르는 편이라, 수익률과 함께 가격을 끌어올릴 재료가 있는지 봐요.</small></h2>
       <div class="of-rows">
-        <div class="of-row${u && u.rl ? '' : ' no'}"><div class="k">주변 신설역</div><div class="v">${u && u.rl ? u.rl.map(r => `${esc(r[0])} ${esc(r[1])} · ${esc(r[2])}`).join('<br>') : u ? '해당 없음' : '건물을 고르면 보여 드려요'}</div>
-          ${u && u.rl ? `<div class="d">${u.rl.map(r => `${esc(r[1])}: ${ymK(r[3])} '${esc(r[2])}' 단계${r[4] === 'dong' ? ' (건물 위치 대신 역세권 동으로 확인)' : ''}`).join(' · ')}</div>` : ''}
+        <div class="of-row${u && u.rl ? '' : ' no'}"><div class="k">주변 신설역</div><div class="v">${u && u.rl ? u.rl.map(r => `${esc(r[0])} ${esc(r[5] ? (/역$/.test(r[1]) ? r[1] : r[1] + '역') + '(개통 예정)' : r[1])} · ${esc(r[2])}`).join('<br>') : u ? '해당 없음' : '건물을 고르면 보여 드려요'}</div>
+          ${u && u.rl ? `<div class="d">${u.rl.map(r => `${esc(r[1])}: ${ymK(r[3])} '${esc(r[2])}' 단계${r[4] === 'dong' ? ' (건물 위치 대신 역세권 동으로 확인)' : r[5] ? ' (예정 위치 기준)' : ''}`).join(' · ')}</div>` : ''}
           <div class="of-src">출처: ${esc(((OX && OX.src) || {}).rail || '철도 사업 공식 발표')}</div></div>
         <div class="of-row no"><div class="k">업무지구 개발 단계</div><div class="v">확인 불가</div><div class="d">업무지구 개발 계획의 단계별 공식 자료를 아직 정리하지 못했어요.</div></div>
         <div class="of-row${mort || base ? '' : ' no'}"><div class="k">금리와 비교한 수익률</div>

@@ -132,5 +132,11 @@ has(xc[0].text, '역까지 직선 거리가 300m 이내였던 서울 단지 1,75
 eq(N.xCases(EVX, 'hh', 's00', '서울')[0].ok, false, '가이드: 기준 미달 구간은 비슷했다고만');
 eq(N.why3(Object.assign({}, fx, { xf: {} }), Object.assign({}, C, { EV: EVX, pol: null, dev: null })).dn.some(x => x.k === 'sd'), false, '사실값(xf)이 없으면 숫자를 지어내지 않고 뺌');
 
+/* ④ 개통 전 신설역(공공 좌표 없음, 엔진 pl=1·50m 단위): '○○역(개통 예정) · 예정 위치 기준 약 ○m', 개통해서 공공 좌표가 되면(pl 없음) 보통 표시 */
+const WP = N.why3(Object.assign({}, f, { rl: Object.assign({}, f.rl, { line: '서부선', st: '명지대', m: 300, pl: 1 }) }), C).watch.find(x => x.k === 'rail');
+has(WP.o, '서부선 명지대역(개통 예정) · 예정 위치 기준 약 300m 거리예요', '개통 예정 역: 예정 위치 기준 약 ○m');
+eq(/직선/.test(WP.o), false, '개통 예정 역: 직선 거리처럼 쓰지 않음');
+const WO = N.why3(Object.assign({}, f, { rl: Object.assign({}, f.rl, { line: '서부선', st: '명지대', m: 312 }) }), C).watch.find(x => x.k === 'rail');
+eq([/개통 예정|예정 위치/.test(WO.o), /명지대까지 직선 312m/.test(WO.o)], [false, true], '공공 좌표로 바뀐 역(pl 없음): 개통 예정 표시가 자동으로 빠짐');
 console.log(`오를 이유·조심할 점·지켜볼 것 검증: ${ok}개 통과, ${bad}개 실패`);
 if (bad) process.exitCode = 1;

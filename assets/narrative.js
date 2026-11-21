@@ -26,6 +26,10 @@
   const pctAbs = v => r1(v * 100) + '%';                                  // 0.268 → '26.8%'
   const pctSg = v => (v > 0.0005 ? '+' : v < -0.0005 ? '−' : '') + r1(v * 100) + '%';
   const n0 = v => Math.round(v).toLocaleString('ko-KR');
+  /* 신설역 이름·거리 — 개통 전 예정 위치(엔진 rail.py pl=1, 거리 50m 단위)면 '○○역(개통 예정) · 예정 위치 기준 약 ○m'.
+     개통해서 서울시 역사마스터 정보(공공 좌표)에 들어오면 엔진이 pl 을 빼서 자동으로 보통 표시 */
+  const rlNm = R => R.pl ? `${/역$/.test(R.st || '') ? R.st : (R.st || '') + '역'}(개통 예정)` : R.st;
+  const rlAt = (R, pre) => R.m == null ? '' : R.pl ? `예정 위치 기준 약 ${Math.round(R.m).toLocaleString('ko-KR')}m` : `${pre || ''}${Math.round(R.m).toLocaleString('ko-KR')}m`;
   const topPct = v => (v = Math.round(v), v >= 50 ? `상위 ${Math.max(1, 100 - v)}%` : `하위 ${Math.max(1, v)}%`);
   const ymKo = v => `${String(v).slice(0, 4)}년 ${parseInt(String(v).slice(4, 6), 10)}월`;
   function won(man) {
@@ -407,7 +411,7 @@
       }
       if (k === 'rail') {
         const RL = f.rl; if (!RL || RL.x) return null;
-        return { t: `${RL.line} ${RL.st}${RL.m != null ? ` 직선 ${n0(RL.m)}m` : ''}(${RAILST[ub.rail] || ''})`, fact: `${A} ${RL.line} ${RL.st}${RL.m != null ? `까지 직선 ${n0(RL.m)}m` : ' 근처'}예요.` };
+        return { t: `${RL.line} ${rlNm(RL)}${RL.m != null ? (RL.pl ? ` · ${rlAt(RL)}` : ` 직선 ${n0(RL.m)}m`) : ''}(${RAILST[ub.rail] || ''})`, fact: `${A} ${RL.line} ${rlNm(RL)}${RL.m != null ? (RL.pl ? ` · ${rlAt(RL)} 거리` : `까지 직선 ${n0(RL.m)}m`) : ' 근처'}예요.` };
       }
       if (!F) return null;
       return { t: F.sum.replace(/\(.*\)$/, ''), fact: [F.fact, F.cmp].filter(Boolean).join(' ') };
@@ -468,8 +472,8 @@
       const e = ub.rail && ub.rail !== 'none' ? unitEv(cx, 'rail') : null, r = w3dir(e, W3MIN.n);
       const past = e && e.n ? `과거 ${SD}에서 ${RAILST[ub.rail] || ''}인 신설역 700m 안 단지 ${n0(e.n)}건 중 ${n0(Math.round(e.n * e.hit / 100))}건(${e.hit}%)이 2년 뒤 ${unitBase}보다 더 올랐어요(평균 ${e.ex >= 0 ? '+' : '−'}${r1(e.ex)}%p).` + (r ? '' : ' 더 오른 단지와 덜 오른 단지가 비슷해서 오를 이유로는 넣지 않았어요.') : '';
       W.push({ k: 'rail', when: tg || '', t: `${RL.line} ${RL.st} 개통${tg ? ` — 목표 ${ymKo(tg)}` : ''}`,
-        o: `${A} ${RL.line} ${RL.st}${RL.m != null ? `까지 직선 ${n0(RL.m)}m` : ' 근처'}예요(${st}).` + late,
-        d: [`${A} ${RL.line} ${RL.st}${RL.m != null ? `까지 직선 ${n0(RL.m)}m` : ' 근처'}예요. 지금 ${st} 단계이고, 개통 목표는 ${tg ? ymKo(tg) : '공식 자료로 확인 안 됨'}이에요.` + late, past,
+        o: `${A} ${RL.line} ${rlNm(RL)}${RL.m != null ? (RL.pl ? ` · ${rlAt(RL)} 거리` : `까지 직선 ${n0(RL.m)}m`) : ' 근처'}예요(${st}).` + late,
+        d: [`${A} ${RL.line} ${rlNm(RL)}${RL.m != null ? (RL.pl ? ` · ${rlAt(RL)} 거리` : `까지 직선 ${n0(RL.m)}m`) : ' 근처'}예요. 지금 ${st} 단계이고, 개통 목표는 ${tg ? ymKo(tg) : '공식 자료로 확인 안 됨'}이에요.` + late, past,
           r ? `그래서 개통 일정이 앞당겨지거나 늦어지는 발표가 나오면 다시 확인해야 해요.` : ''], ev: e, evBase: '자기 구 평균 대비' });
     }
     /* 주변 개발사업(공식 원문 확인 사업, 다음 단계 날짜가 있는 가장 가까운 곳) */
@@ -724,9 +728,9 @@
       const RL = f.rl;
       if (RL && !RL.x) {
         const st = RL.opened ? `${ymKo(RL.stym)} 개통` : RL.stage === 'plan' ? '계획 확정, 착공 전' : '공사 중';
-        parts.push(`신설역 1곳(${RL.line} ${RL.st}, ${st}${RL.m != null ? `, 직선 ${n0(RL.m)}m` : ''})`);
-        if (!RL.opened) nextTxt.push(`${RL.line} ${RL.st}(${RL.target ? `개통 목표 ${ymKo(RL.target)}` : RL.m != null ? `직선 ${n0(RL.m)}m` : '신설역 1곳'})`);
-        facts.push(`${A} ${RL.line} ${RL.st}${RL.m != null ? `까지 직선 ${n0(RL.m)}m` : ' 근처'}예요(${st}${RL.target && !RL.opened ? `, 개통 목표 ${ymKo(RL.target)}` : ''}).`);
+        parts.push(`신설역 1곳(${RL.line} ${rlNm(RL)}, ${st}${RL.m != null ? `, ${rlAt(RL, '직선 ')}` : ''})`);
+        if (!RL.opened) nextTxt.push(`${RL.line} ${rlNm(RL)}(${RL.target ? `개통 목표 ${ymKo(RL.target)}` : RL.m != null ? rlAt(RL, '직선 ') : '신설역 1곳'})`);
+        facts.push(`${A} ${RL.line} ${rlNm(RL)}${RL.m != null ? (RL.pl ? ` · ${rlAt(RL)} 거리` : `까지 직선 ${n0(RL.m)}m`) : ' 근처'}예요(${st}${RL.target && !RL.opened ? `, 개통 목표 ${ymKo(RL.target)}` : ''}).`);
         const e = unitEv(c, 'rail');
         if (e && Math.abs(e.ex) >= 0.5 && f.eb && f.eb.rail !== 'none') pasts.push(`과거 ${SD}에서 같은 단계 신설역 700m 안 단지 ${n0(e.n)}건은 2년 뒤 같은 구 평균보다 ${ppMore(e.ex, G)} 올랐어요.`);
       }

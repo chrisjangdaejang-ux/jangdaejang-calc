@@ -33,7 +33,7 @@
 <script src="../../assets/stat.js?v=7"></script>
 <script src="../../assets/region-notes.js"></script>
 <script src="../../assets/rec-core.js?v=2"></script>
-<script src="../../assets/mine-core.js?v=15"></script>
+<script src="../../assets/mine-core.js?v=16"></script>
 <script src="../../assets/price-sheet.js?v=13"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/lead.js?v=1"></script>
@@ -43,8 +43,8 @@
 <script src="../../tax/tax-engine.js?v=4"></script>
 <script src="../../assets/loan-core.js?v=2"></script>
 <script src="../../assets/kchat.js?v=2"></script>
-<script src="../../assets/plain-words.js?v=13"></script>
-<script src="../../assets/narrative.js?v=12"></script>
+<script src="../../assets/plain-words.js?v=14"></script>
+<script src="../../assets/narrative.js?v=13"></script>
 <script src="../../assets/strength.js?v=1"></script>
 <script src="../../assets/policy-view.js?v=2"></script>
 <script src="../../assets/devproj-view.js?v=3"></script>
@@ -819,7 +819,7 @@ function futureReasons(x){
   }
   if (f.rl){
     const R=f.rl, d=v=>v?`${v.slice(0,4)}.${v.slice(4)}`:'', SK={plan:'계획 확정',start:'착공',start_real:'본공사 착수',delay:'개통 지연',open:'개통'};
-    let t = `신규 노선: ${R.line} ${R.st}${R.m!=null?`까지 직선 ${R.m.toLocaleString()}m`:' 인근'} — `;
+    let t = `신규 노선: ${R.line} ${R.pl?`${/역$/.test(R.st||'')?R.st:R.st+'역'}(개통 예정)`:R.st}${R.m!=null?(R.pl?` · 예정 위치 기준 약 ${R.m.toLocaleString()}m`:`까지 직선 ${R.m.toLocaleString()}m`):' 인근'} — `;
     t += R.x ? '노선 계획 공식 취소·제외' : R.opened ? `${d(R.stym)} 개통` : `${d(R.stym)} ${SK[R.stage]||R.stage} 이후 공사 중` + (R.dl ? `, ${PL.delayText(R.dl,'개통')}` : (R.target?`, 개통 목표 ${d(R.target)}`:'') + (R.delays?`(일정 지연 ${R.delays}회)`:''));
     if (R.pre!=null) t += ` · ${d(R.first)} 이후 이 단지는 구 평균보다 ${Math.abs(R.pre)}% ${R.pre>=0?'더':'덜'} 올랐어요`;
     const S = RAIL&&RAIL.summary&&RAIL.summary[R.opened?'open':'open'];
@@ -1058,7 +1058,7 @@ async function renderCompare(){
   add('준공·세대수', items.map(x=>{ const f=x.fx||{}; return (PL.ageText(f.by, Y)||'-') + (f.hh?`<small>${f.hh.toLocaleString()}세대${f.hh>=1000?' · 대단지':''}</small>`:''); }), items.map(x=>x.fx&&x.fx.hh?x.fx.hh:null), true);
   add('지하철', items.map(x=>{ const f=x.fx||{}; return f.sub==null?'-':(f.sub>=30?'도보 20분 이상':`도보 ${f.sub<=5?'5분 이내':f.sub+'분 이내'}`)+(f.subs?`<small>${esc(f.subs.replace(/\s+/g,' '))}</small>`:''); }), items.map(x=>x.fx&&x.fx.sub!=null?x.fx.sub:null), false);
   add('신설 노선', items.map(x=>{ const R=x.fx&&x.fx.rl; if(!R) return '-'; const d=v=>v?`${v.slice(0,4)}.${v.slice(4)}`:''; const SK={plan:'계획 확정',start:'착공',start_real:'본공사',delay:'지연',open:'개통'};
-    return `${esc(R.line)} ${esc(R.st)}<small>${R.m!=null?`직선 ${R.m.toLocaleString()}m · `:''}${R.opened?d(R.stym)+' 개통':(SK[R.stage]||R.stage)+(R.target?` · 목표 ${d(R.target)}`:'')}</small>`; }), null);
+    return `${esc(R.line)} ${esc(R.pl?`${/역$/.test(R.st||'')?R.st:R.st+'역'}(개통 예정)`:R.st)}<small>${R.m!=null?(R.pl?`예정 위치 기준 약 ${R.m.toLocaleString()}m · `:`직선 ${R.m.toLocaleString()}m · `):''}${R.opened?d(R.stym)+' 개통':(SK[R.stage]||R.stage)+(R.target?` · 목표 ${d(R.target)}`:'')}</small>`; }), null);
   if (items.some(x=>x.fx&&(x.fx.rz||(x.code.startsWith('11')&&x.fx.by&&PL.ageOf(x.fx.by,Y)>=25)))){
     add('재건축 진행', items.map(x=>{ const z=x.fx&&x.fx.rz; if(z) return `${RZ_LV[z.lv]||''}<small>${esc(z.n)}${z.ym?` · ${rzYm(z.ym)}`:''} · 10단계 중 ${z.lv}단계</small>`;
       return x.code.startsWith('11')&&x.fx&&x.fx.by&&PL.ageOf(x.fx.by,Y)>=25 ? '추진 이력 없음<small>신속통합기획·정비구역 공식 자료에 없음</small>' : '-'; }),
