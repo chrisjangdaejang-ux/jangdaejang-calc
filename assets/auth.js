@@ -187,7 +187,7 @@
 .jdj-gate .jdj-kbtn{width:100%;max-width:360px}
 .jdj-right{display:flex;align-items:center;gap:8px}
 .jdj-acct{display:inline-flex;align-items:center;gap:5px;min-height:36px;padding:0 12px;border-radius:999px;font-size:13.5px;font-weight:700;text-decoration:none;white-space:nowrap;border:1px solid #E5E8EB;color:#3E4754;background:#fff;max-width:132px;overflow:hidden;text-overflow:ellipsis}
-.jdj-acct.out{background:#FEE500;border-color:#FEE500;color:rgba(0,0,0,.85)}
+.jdj-acct.out{background:#FEE500;border-color:#FEE500;color:rgba(0,0,0,.85);max-width:none;padding:0 10px;font-size:13px}
 @media(max-width:400px){.jdj-right .badge{display:none}}`;
   function style() {
     if (document.getElementById('jdjAuthCss')) return;
@@ -195,7 +195,7 @@
   }
   /* 머리줄 이름: 닉네임에 글자·숫자가 하나도 없으면(빈 값·'.' 같은 기호뿐) '내 정보' */
   function chipName(nick) { const n = String(nick || '').trim(); return /[0-9A-Za-z\u3131-\u318E\uAC00-\uD7A3]/.test(n) ? `${n.slice(0, 12)} 님` : '내 정보'; }
-  /* 머리줄 오른쪽: 로그인 전 '로그인', 로그인 뒤 '닉네임 님' → 내 계정(login/) */
+  /* 머리줄 오른쪽: 로그인 전 '카카오 간편 로그인', 로그인 뒤 '닉네임 님' → 내 계정(login/) */
   function paintChip() {
     if (!on() || typeof document === 'undefined') return;
     const top = document.querySelector('header.top'); if (!top || top.hasAttribute('data-noacct')) return;
@@ -209,7 +209,7 @@
     }
     const u = user(), nm = u ? chipName(u.nick) : '';
     a.className = 'jdj-acct' + (u ? '' : ' out');
-    a.textContent = u ? nm : '로그인';
+    a.textContent = u ? nm : '카카오 간편 로그인';
     a.setAttribute('aria-label', u ? `내 계정 (${nm})` : '카카오 간편 로그인');
     if (!u) a.onclick = e => { if (location.pathname.indexOf(LOGIN_PAGE) === 0) return; e.preventDefault(); login('header'); };
     else a.onclick = null;

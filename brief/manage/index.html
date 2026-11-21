@@ -14,7 +14,7 @@
 <script src="../../assets/stat.js?v=7"></script>
 <script src="../../assets/config.js?v=4"></script>
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/auth.js?v=5"></script>
+<script src="../../assets/auth.js?v=6"></script>
 <script src="../../assets/pay.js?v=3"></script>
 <script src="../../assets/brief-core.js?v=7"></script>
 <script src="../../assets/share.js?v=8"></script>
@@ -139,7 +139,7 @@ async function draw(note){
       <p class="note" id="amWhen" style="margin:6px 0 0 28px">${amWhen(r.adc, r.amAd)}</p>
       <div class="row2" style="margin-top:8px"><button type="button" class="btn" id="amSave">저장하기</button></div><div id="amMsg" class="msg" role="status" hidden></div></section>` : ''}
     ${paidEver ? `<section class="inv" id="inv"><h2>친구 초대하고 1개월 무료</h2>
-      <p>초대 링크로 온 친구가 이용권을 결제하면 두 분 모두 1개월을 무료로 더 받아요. 다음 결제가 1개월 뒤로 미뤄지는 방식이에요.</p>
+      <p>초대 링크로 온 친구가 이용권을 결제하면 두 분 모두 1개월(30일)을 무료로 더 받아요. 지금 이용권이 끝난 다음 날부터 무료 1개월이 이어져요.</p>
       <button type="button" class="btn primary" id="invBtn">친구 초대하고 1개월 무료</button><div id="invMsg" class="msg" role="status" hidden></div>
       <small>친구 1명당 한 번 · 무료 체험만 하면 보상이 없어요 · 한 사람이 받는 보상은 1년에 ${B.REF.yearMax}개월까지 · 현금으로 돌려 드리지 않아요. <a href="../../terms/#brief-ref">자세한 조건</a></small></section>` : ''}
     ${r.subs.length ? r.subs.slice().reverse().filter(s => s.state !== '변경').map(s => `<section class="sb"><h2>${esc(s.label ? `${s.label} 요금제` : s.product)} <span class="tg ${s.active ? '' : 'off'}">${s.active ? '받는 중' : s.state === '해지' ? '해지됨' : s.start > td ? '시작 예정' : '끝남'}</span>${s.reward ? '<span class="tg lv">친구 초대 보상</span>' : ''}</h2>
@@ -151,7 +151,7 @@ async function draw(note){
         <input class="inp" data-ct="${s.id}" placeholder="새 이메일 또는 휴대폰 번호"><button class="btn" data-up="${s.id}">저장</button></details>
       <div class="row2" style="margin-top:8px"><button class="btn" data-stop="${s.id}">받지 않기(해지)</button>${s.orderId && !s.refund && s.refundEst > 0 ? `<button class="btn" data-ref="${s.id}">환불 요청(예정 ${s.refundEst.toLocaleString('ko-KR')}원)</button>` : ''}</div>` : ''}</section>`).join('')
       : `<div class="msg info">아직 구독이 없어요. <a href="../subscribe/">${B.TRIAL_DAYS}일 무료로 시작하기</a></div>`}
-    <p class="note">자동 결제는 없어요. 해지하면 다음 날부터 보내지 않아요. 환불은 첫 브리핑 전이면 전액, 받기 시작한 뒤에는 남은 날만큼 일할로 해 드려요(영업일 3일 안 처리). 더 높은 요금제로 바꾸면 오늘 바로 바뀌고 남은 날만큼 차액만 내요. 더 낮은 요금제는 다음 이용권부터 바뀌어요. <a href="../../refund/#brief">환불 정책</a></p>`;
+    <p class="note">자동 결제는 없어요. 해지하면 다음 날부터 보내지 않아요. 환불은 첫 브리핑 전이면 전액, 받기 시작한 뒤에는 남은 날만큼 일할로 해 드려요(영업일 3일 안 처리). 월 요금이 더 비싼 요금제로 바꾸면 오늘 바로 바뀌고 남은 날만큼 차액만 내요. 더 싼 요금제는 다음 이용권부터 바뀌어요. <a href="../../refund/#brief">환불 정책</a></p>`;
   /* 받는 지역·관심 단지·청약 정보 편집(회원 저장 자료 brief) */
   const ed = { areas: (r.brief.areas || []).slice() };
   const max = curT.areas, $ = id => document.getElementById(id);
@@ -201,7 +201,7 @@ async function draw(note){
       let q; try { q = await call('briefChangeQuote', { id, product: x.value }); } catch(e){ qq.innerHTML = `<div class="msg err">${esc(e.message)}</div>`; return; }
       const T = B.PRICE[q.to] || {};
       if (q.kind === 'next') {
-        qq.innerHTML = `<div class="q">더 낮은 요금제라 <b>다음 이용권부터</b> 바뀌어요.<small>지금 ${esc(q.from)} 요금제는 ${esc(q.end)}까지 그대로 받아요. 자동 결제는 없고, ${esc(q.at)} 이후 이용권을 살 때 ${esc(q.label)} 요금제(월 ${won(T.amount)}원)로 준비해 둘게요.</small></div>
+        qq.innerHTML = `<div class="q">월 요금이 더 싼 요금제라 <b>다음 이용권부터</b> 바뀌어요.<small>지금 ${esc(q.from)} 요금제는 ${esc(q.end)}까지 그대로 받아요. 자동 결제는 없고, ${esc(q.at)} 이후 이용권을 살 때 ${esc(q.label)} 요금제(월 ${won(T.amount)}원)로 준비해 둘게요.</small></div>
           <div class="row2" style="margin-top:8px"><button type="button" class="btn primary" data-go>다음 이용권부터 ${esc(q.label)}로 바꾸기</button></div>`;
       } else {
         qq.innerHTML = `<div class="q">오늘 바로 <b>${esc(q.label)}</b> 요금제로 바뀌어요.

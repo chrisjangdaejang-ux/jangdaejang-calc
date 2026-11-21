@@ -14,7 +14,7 @@
 <script src="../../assets/stat.js?v=7"></script>
 <script src="../../assets/config.js?v=4"></script>
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/auth.js?v=5"></script>
+<script src="../../assets/auth.js?v=6"></script>
 <script src="../../assets/pay.js?v=3"></script>
 <script src="../../assets/brief-core.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -113,7 +113,7 @@ async function boot(){
       <div id="brokerBox" class="bk" hidden><label class="sub" for="broker" style="display:block;margin:0 0 4px"><b>중개사무소 등록번호</b> (필수)</label>
         <input class="inp" id="broker" maxlength="30" autocomplete="off" placeholder="예: 11680-2020-00123">
         <p class="note" style="margin:6px 0 0">중개사 요금제는 공인중개사 전용 할인가라서 등록번호를 확인해요. 사무소 등록증에 적힌 번호를 그대로 적어 주세요. 번호는 운영자가 직접 확인하는 데에만 써요.</p></div>
-      <p class="note">1개월 이용권이에요(부가세 포함). 자동으로 다시 결제되지 않고, 끝나기 3일 전과 마지막 날에 알려 드려요. 쓰는 중에 더 높은 요금제로 바꾸면 남은 날만큼 차액만 내요.</p></section>
+      <p class="note">1개월 이용권이에요(부가세 포함). 자동으로 다시 결제되지 않고, 끝나기 3일 전과 마지막 날에 알려 드려요. 쓰는 중에 월 요금이 더 비싼 요금제로 바꾸면 남은 날만큼 차액만 내요.</p></section>
     <section class="step"><h2>3. 받는 방법</h2><div class="opt">
       <label class="${st.kakao ? '' : 'off'}"><input type="radio" name="ch" value="kakao" ${st.kakao ? '' : 'disabled'}><span><b>카카오톡 ${st.kakao ? '' : '(준비 중)'}</b><small>${st.kakao ? '집예보 카카오톡 채널 알림톡으로 받아요(휴대폰 번호 필요)' : '카카오 알림톡 심사가 끝나면 열려요. 그동안 이메일로 받고, 나중에 [내 구독 관리]에서 바꿀 수 있어요.'}</small></span></label>
       <label><input type="radio" name="ch" value="email" ${st.kakao ? '' : 'checked'}><span><b>이메일</b><small>매일 아침 7시대에 보내 드려요</small></span></label></div>

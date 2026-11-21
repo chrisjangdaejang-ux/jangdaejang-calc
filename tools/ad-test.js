@@ -318,6 +318,20 @@ check('하루 문의 상한', !r.ok && /카카오톡/.test(r.err), r);
   check('런칭가에도 기간 할인: 마커 49만 × 3개월 10% = 132.3만', pp(490000, 'm3').total === 1323000);
   check('분양 프리미엄 상품 카드·단가표 칸', ['bunyang_pin', 'bunyang_alert', 'bunyang_lead', 'bunyang_report', 'pkg_found'].every(k => html.includes(`data-price="${k}"`) || html.includes(`data-pk="${k}"`)) && ['bunyang_pin', 'bunyang_alert', 'bunyang_lead', 'bunyang_report'].every(k => html.includes(`data-pp="${k}"`)));
   check('광고 상품 페이지: 광고성 정보·야간 발송·점수 무관 문구', /제50조/.test(html) && /오후 9시~오전 8시에는 보내지 않아요/.test(html) && /미래가치 점수·추천·순위에 반영되지 않아요/.test(html));
+  /* QA 2026-11-21: 단가표 금액 칸 — 주 단위 상품(브리핑 지면·상단 배너)이 '기간과 관계없는 고정 요금'으로 나오던 문제 */
+  {
+    const fn = html.match(/function cellHtml\(key, pid\) \{[\s\S]*?\n\}\n/);
+    const cc = {}; vm.createContext(cc);
+    vm.runInContext(m[0] + '\nconst ASK = "문의 시 안내"; const esc = s => String(s); const PL = id => (PERIODS.find(x => x.id === id) || {}).label || "";\n' + (fn ? fn[0] : 'function cellHtml(){return ""}') + '\n;globalThis.__C = cellHtml;', cc);
+    const C = (k, id) => cc.__C(k, id).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    const wk = ['brief_ad', 'home_top', 'cat_top', 'cat_top_bun', 'bunyang'];
+    check('단가표: 주 단위 상품은 기간마다 금액이 바뀌고 고정 요금 문구 없음', wk.every(k => P.PERIODS.every(x => !/기간과 관계없는/.test(C(k, x.id)))), wk.map(k => C(k, 'w2')));
+    check('단가표: 브리핑 지면 1주 25만·2주 50만(1주×2)·1개월 80만', /^1주 25만 원/.test(C('brief_ad', 'w1')) && /^2주 50만 원/.test(C('brief_ad', 'w2')) && /^4주 80만 원/.test(C('brief_ad', 'm1')), [C('brief_ad', 'w1'), C('brief_ad', 'w2'), C('brief_ad', 'm1')]);
+    check('단가표: 홈 상단 1주 50만·4주 150만, 카테고리 상단 4주 80만, 분양·청약 상단 4주 90만', /^1주 50만 원/.test(C('home_top', 'w1')) && /^4주 150만 원/.test(C('home_top', 'm1')) && /^4주 80만 원/.test(C('cat_top', 'm1')) && /^4주 90만 원/.test(C('cat_top_bun', 'm1')));
+    check('단가표에 상단 배너 3줄(홈·카테고리·분양·청약)', ['home_top', 'cat_top', 'cat_top_bun'].every(k => html.includes(`data-pp="${k}"`)));
+    const vis = html.replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, ' ');
+    check("광고 안내 화면 글에 '장대장'은 법적 표기(상호·운영사)에만", !/왜 장대장|WHY 장대장|장대장 쪽/.test(vis) && !/네이티브/.test(vis));
+  }
   check('예전 최소 집행 50만 원 문구 없음', !/최소 집행[^<]{0,20}50만/.test(html) && !/minSpend:\s*500000/.test(html));
 }
 

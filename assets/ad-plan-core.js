@@ -244,14 +244,15 @@
     if (r.kind === 'broker') prods = ['agent'];
     if (!prods.length) prods = ['etc'];
     var region = [q.sido, q.sgg].filter(Boolean).join(' ');
-    var lines = ['[광고 설계 도우미]', '업종: ' + (I.label || ''), '목적: ' + (U.label || ''), region ? '지역: ' + region : '', '기간: ' + r.weeks + '주', '광고에 쓸 돈(총액): ' + (+q.totalMan || 0) + '만 원'];
+    var lines = ['[광고 설계 도우미]', '업종: ' + (I.label || ''), '목적: ' + (U.label || ''), region ? '지역: ' + region : '', '기간: ' + (r.kind === 'broker' ? '1년(지역 제휴 중개사는 1년 결제)' : r.weeks + '주'), '광고에 쓸 돈(총액): ' + (+q.totalMan || 0) + '만 원'];
     if (r.kind === 'broker' && r.pick) lines.push('구성: 지역 제휴 중개사 ' + r.pick.label + ' — 1년 ' + won(r.pick.year) + '(월 ' + won(r.pick.month) + ' 꼴)');
     if (r.label) lines.push('구성안: ' + r.label + (r.head ? ' — ' + r.head : ''));
     (r.items || []).forEach(function (x) { lines.push('구성: ' + x.name + ' · ' + x.weeks + '주 · ' + won(x.cost) + (x.tier ? ' (' + x.tier + ')' : '')); });
     if ((r.items || []).length) lines.push('합계: ' + won(r.total) + ' (VAT 별도)');
     if (r.kind === 'short' && r.shorter) lines.push('참고: ' + r.shorter.weeks + '주로 줄이면 ' + r.shorter.name + ' ' + won(r.shorter.cost));
     if (r.adTarget) lines.push('함께 보고 싶은 것: 광고 지역 추천 리포트');
-    return { prods: prods, region: region, period: PERIOD_TXT[r.weeks] || '미정·협의', memo: lines.filter(Boolean).join('\n').slice(0, 1000) };
+    return { prods: prods, region: region, period: r.kind === 'broker' ? '1년' : (PERIOD_TXT[r.weeks] || '미정·협의'),   // 공인중개사(지역 제휴 중개사)는 1년 결제
+      memo: lines.filter(Boolean).join('\n').slice(0, 1000) };
   }
 
   var API = { INDUSTRIES: INDUSTRIES, PURPOSES: PURPOSES, PERIODS: PERIODS, LONG: LONG, QUICK: QUICK, ITEMS: ITEMS, plan: plan, formFill: formFill, budgetFor: budgetFor, allowedFor: allowedFor, priceOf: priceOf, scopeOf: scopeOf, won: won };

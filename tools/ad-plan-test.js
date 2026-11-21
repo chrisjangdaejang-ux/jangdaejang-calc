@@ -78,7 +78,7 @@ const plansOf = r => (r.plans || []).filter(p => p.items);
   check("'최고' 문구는 계산 파일에서 측정값 조건 안에만", !/최고 효율/.test(core.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '')), '');
   const b = A.plan({ industry: 'dev', purpose: 'brand', totalMan: 500, weeks: 4 }, { briefSubs: 9 });
   check('브리핑 구독자 10명 미만이면 숨김', plansOf(b).every(p => p.items.every(x => !x.stat)), '');
-  check('측정값이 없을 때 문구: "집행 후 노출·클릭 수를 매주 알려 드려요"', page.includes('집행 후 노출·클릭 수를 매주 알려 드려요.'), '');
+  check('측정값이 없을 때 문구: "광고 기간이 끝나면 자리별 노출·클릭 수를 보고서로 드려요"(/ad/ 집행 기준과 같게)', page.includes('광고 기간이 끝나면 자리별 노출·클릭 수를 보고서로 드려요.'), '');
 }
 
 /* ⑤ 추천 */
@@ -155,6 +155,13 @@ const plansOf = r => (r.plans || []).filter(p => p.items);
   check('서버 v38: AQ_PERIOD 에 8주(2개월)', /const AQ_PERIOD = \[[^\]]*'8주\(2개월\)'/.test(read('tools/agent-backend.gs')) && /백엔드 \(v38:/.test(read('tools/agent-backend.gs')), '');
 }
 
+/* QA 2026-11-21: 공인중개사 문의는 1년 결제 — 문의 폼 희망 기간·내용이 '1개월·4주'로 가던 문제 / 보고 주기 문구가 /ad/(기간 종료 뒤 보고서)와 같게 */
+{
+  const q = { industry: 'broker', purpose: 'consult', totalMan: 60, weeks: 4 }, r = A.plan(q), f = A.formFill(q, r);
+  check('공인중개사 문의: 희망 기간 1년·내용 기간 1년', f.period === '1년' && /기간: 1년/.test(f.memo) && !/기간: 4주/.test(f.memo), f);
+  const ph = fs.readFileSync(path.join(__dirname, '..', 'ad', 'plan', 'index.html'), 'utf8');
+  check('보고 주기: 매주 보고 약속 없음(/ad/ 집행 기준은 기간 종료 뒤 요약)', !/노출·클릭 수를 매주/.test(ph), null);
+}
 const bad = rows.filter(r => !r.ok);
 rows.forEach(r => console.log((r.ok ? '  ok  ' : '  FAIL') + ' ' + r.name + (r.ok ? '' : '  → ' + JSON.stringify(r.got).slice(0, 400))));
 console.log(`\n${rows.length - bad.length}/${rows.length} 통과`);

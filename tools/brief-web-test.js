@@ -81,5 +81,12 @@ check('광고 자리: 광고 표시·광고주·https 링크·글 이스케이�
 check('광고 자리: 광고 없거나 http 링크면 비움', [BA.html(null), BA.html({ title: 't', url: 'http://x.com' })], ['', '']);
 globalThis.window = globalThis.window || {}; const BS = require('../assets/brief-stat.js');
 check('광고주 통계: 메일 광고 동의자 수(있을 때만)', [/메일 광고 받는 구독자\(광고성 정보·이른 아침 광고 모두 동의\) 12명/.test(BS.html({ n: 40, amAd: 12, at: '2026-11-28' })), /메일 광고/.test(BS.html({ n: 40, amAd: null, at: '2026-11-28' }))], [true, false]);
+/* QA 2026-11-21: 자동 결제가 없는데 '다음 결제가 미뤄진다'고 하거나, 4,900원 중개사용을 5,900원 플러스보다 '높은' 요금제로 오해하게 하는 말 */
+{
+  const rd = f => require('fs').readFileSync(require('path').join(__dirname, '..', f), 'utf8');
+  const pages = ['brief/index.html', 'brief/subscribe/index.html', 'brief/manage/index.html'].map(rd).join('\n');
+  check('구독 화면: 자동 결제 없음과 맞게(다음 결제 미룸 표현 없음)', /다음 결제가/.test(pages), false);
+  check("구독 화면: 요금제 올리기·내리기는 '월 요금' 기준으로", [/더 높은 요금제|더 낮은 요금제/.test(pages), /월 요금이 더 비싼 요금제/.test(pages)], [false, true]);
+}
 console.log(`모닝 브리핑 화면 계산 검증: ${pass}개 통과, ${fail}개 실패`);
 process.exit(fail ? 1 : 0);

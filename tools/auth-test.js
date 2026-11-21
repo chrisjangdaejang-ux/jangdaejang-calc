@@ -239,6 +239,7 @@ check('REST 키가 없으면 로그인 안 됨(안내 문구)', [N.ok, /설정/.
   check('로그인 이름: 단추 이름표를 찾음', labels.length >= 5, true);
   const AJ = fs.readFileSync(path.join(ROOT, 'assets/auth.js'), 'utf8');
   check('로그인 이름: 기본 단추 이름', /label \|\| '카카오 간편 로그인'/.test(AJ), true);
+  check('로그인 이름: 머리줄 로그인 단추(로그인 전)도 카카오 간편 로그인', [/a\.textContent = u \? nm : '카카오 간편 로그인'/.test(AJ), /textContent = u \? nm : '로그인'/.test(AJ)], [true, false]);
 }
 
 const bad = rows.filter(r => !r.ok);
