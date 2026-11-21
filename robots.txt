@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /jangdaejang-calc/
+Disallow: /jangdaejang-calc/login/
+Disallow: /jangdaejang-calc/my/
+Disallow: /jangdaejang-calc/premium/r/
+Disallow: /jangdaejang-calc/premium/view/
+Disallow: /jangdaejang-calc/premium/checkout/
+Disallow: /jangdaejang-calc/premium/success/
+Disallow: /jangdaejang-calc/premium/fail/
+Disallow: /jangdaejang-calc/brief/manage/
+Disallow: /jangdaejang-calc/brief/paid/
+Disallow: /jangdaejang-calc/brief/c/
+Disallow: /jangdaejang-calc/agent/my/
+
+Sitemap: https://chrisjangdaejang-ux.github.io/jangdaejang-calc/sitemap.xml

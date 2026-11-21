@@ -29,5 +29,61 @@
       "purpose": "maskable"
     }
   ],
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "categories": [
+    "finance",
+    "business",
+    "lifestyle"
+  ],
+  "orientation": "any",
+  "shortcuts": [
+    {
+      "name": "내 집 시세",
+      "short_name": "내 집 시세",
+      "url": "/jangdaejang-calc/mine/?src=pwa-sc",
+      "icons": [
+        {
+          "src": "/jangdaejang-calc/assets/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "지도",
+      "short_name": "지도",
+      "url": "/jangdaejang-calc/map/?src=pwa-sc",
+      "icons": [
+        {
+          "src": "/jangdaejang-calc/assets/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "청약 가점 계산",
+      "short_name": "청약 가점",
+      "url": "/jangdaejang-calc/chungyak/?src=pwa-sc",
+      "icons": [
+        {
+          "src": "/jangdaejang-calc/assets/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "세금 계산",
+      "short_name": "세금",
+      "url": "/jangdaejang-calc/tax/?src=pwa-sc",
+      "icons": [
+        {
+          "src": "/jangdaejang-calc/assets/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
 }

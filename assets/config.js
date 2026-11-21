@@ -7,7 +7,17 @@
      MAP_ENGINE: 'leaflet' 으로 적으면 카카오 키가 있어도 지도는 Leaflet 으로(로그인만 카카오).
      VWORLD_KEY: 카카오맵을 쓰지 않을 때 Leaflet 배경지도로 쓸 브이월드 인증키(서비스 URL 로 제한된 공개 키).
      비워 두면 미리 보기용 OpenStreetMap 공식 타일(대량·상업 서비스용이 아니라 정식 오픈 전까지만). */
+/* SITE_URL: 사이트 첫 화면 주소(끝에 / 없이). 도메인을 사면 이 한 줄만 바꾸면 돼요(예: 'https://zipyebo.com').
+     매일 도는 검색용 페이지 생성(jangdaejang-timing seo.yml)이 이 값을 읽어 단지 페이지·sitemap.xml·robots.txt·
+     모든 화면의 대표 주소(canonical·공유 주소)·앱 설치 정보(manifest)를 새 주소로 바꿔요.
+   SITE_VERIFY_NAVER / SITE_VERIFY_GOOGLE: 네이버 서치어드바이저·구글 서치 콘솔 [HTML 태그] 확인 코드(content="…" 안의 값만).
+     비워 두면 아무것도 넣지 않아요. 넣으면 다음 생성 때 첫 화면 <head> 의 확인 칸에 태그가 들어가요(docs/search_registration.md).
+   SITE_VERIFY_DAUM: 다음 웹마스터도구 PIN 코드 줄 전체('#DaumWebMasterTool:…'). 넣으면 robots.txt 맨 아래에 붙어요. */
 window.JDJ_SITE = {
+  SITE_URL: 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc',
+  SITE_VERIFY_NAVER: '',
+  SITE_VERIFY_GOOGLE: '',
+  SITE_VERIFY_DAUM: '',
   SITE_NAME: '집예보',
   KAKAO_JS_KEY: '58a1dc9a4dda1516b4316ea72ca03348',
   MAP_ENGINE: '',

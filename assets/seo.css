@@ -1,0 +1,55 @@
+/* 검색용 정적 페이지(apt/·cy/) 공통 — 글꼴 내려받기 없이 가볍게. 색은 aplus.css 와 같은 값 */
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#fff;color:#191F28;font-family:system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;font-size:16px;line-height:1.6;word-break:keep-all}
+a{color:#2F6BFF;text-decoration:none}
+a:hover{text-decoration:underline}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;border-bottom:1px solid #F0F1F3;flex-wrap:wrap}
+.top .logo{font-weight:800;font-size:18px;color:#191F28}
+.top .logo b{color:#B8942A}
+.top nav{display:flex;gap:14px;font-size:14px;font-weight:600}
+.top nav a{color:#4E5968}
+.wrap{max-width:860px;margin:0 auto;padding:16px 20px 40px}
+.bc{font-size:13px;color:#5F6B7A;margin-bottom:10px}
+.bc a{color:#4E5968}
+.bc span{margin:0 2px}
+h1{font-size:26px;line-height:1.3;margin:6px 0 4px;letter-spacing:-.4px}
+h2{font-size:19px;margin:30px 0 10px;letter-spacing:-.2px}
+.addr{color:#4E5968;font-size:14px;margin:0 0 14px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:14px 0}
+.st{background:#F9FAFB;border:1px solid #E5E8EB;border-radius:14px;padding:14px 16px}
+.st span{display:block;font-size:13px;color:#4E5968;font-weight:600}
+.st b{display:block;font-size:22px;letter-spacing:-.4px;margin:2px 0}
+.st small{display:block;font-size:12.5px;color:#5F6B7A}
+.cta{display:block;text-align:center;background:#2F6BFF;color:#fff;font-weight:700;font-size:17px;border-radius:12px;padding:14px 16px;margin:18px 0 6px}
+.cta:hover{background:#1F56E0;text-decoration:none}
+.tw{overflow-x:auto;border:1px solid #E5E8EB;border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid #F0F1F3;white-space:nowrap;vertical-align:top}
+thead th{background:#F9FAFB;font-size:13px;color:#4E5968;font-weight:700}
+tbody tr:last-child td,tbody tr:last-child th{border-bottom:0}
+tbody th{font-weight:600;color:#4E5968;width:38%}
+td small{display:block;font-size:12.5px;color:#5F6B7A}
+td:first-child{white-space:normal;min-width:120px}
+.tg{font-style:normal;font-size:11.5px;font-weight:700;border-radius:6px;padding:1px 6px;margin-left:4px;background:#F2F4F6;color:#4E5968}
+.tg.hi{background:#FDECE4;color:#C2410C}
+.more{font-size:14.5px;margin:12px 0}
+.near{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+.near li{border:1px solid #E5E8EB;border-radius:10px;padding:10px 12px}
+.near a{font-weight:700;display:block}
+.near small{color:#5F6B7A;font-size:12.5px}
+.pg{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0}
+.pg a,.pg span{min-width:36px;text-align:center;padding:6px 10px;border:1px solid #E5E8EB;border-radius:8px;font-size:14px}
+.pg span{background:#2F6BFF;color:#fff;border-color:#2F6BFF}
+.src{font-size:12.5px;color:#5F6B7A;margin-top:26px;line-height:1.55}
+.foot{border-top:1px solid #F0F1F3;padding:18px 20px 30px;text-align:center}
+.foot nav{display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:center;font-size:13px}
+.foot a{color:#4E5968}
+@media (max-width:600px){
+ .wrap{padding:14px 16px 34px}h1{font-size:23px}
+ .stats{grid-template-columns:1fr 1fr;gap:8px}.stats .st:first-child{grid-column:1 / -1}
+ .st{padding:12px 14px}.st b{font-size:19px;white-space:nowrap}.stats .st:first-child b{font-size:23px}
+ th,td{padding:9px 8px;font-size:13.5px}thead th{font-size:12.5px}td:first-child{min-width:0}
+ .near{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.near a{overflow-wrap:anywhere}.near li{padding:9px 10px}
+ .top{padding:10px 16px}.top nav{gap:10px;font-size:13px}
+}
