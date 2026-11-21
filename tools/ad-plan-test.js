@@ -152,7 +152,7 @@ const plansOf = r => (r.plans || []).filter(p => p.items);
   check('원하는 기간 1·2·4·8주가 모두 문의 폼 목록에 그대로', [1, 2, 4, 8].every(w => opts.includes('<option>' + atN(Object.assign({}, q8, { weeks: w })).period + '</option>')), '');
   check("목록에 없는 기간(오래 노출 12주 등)은 '미정·협의' + 문의 내용에 주 수", A.formFill(q8, { kind: 'items', weeks: 12, items: [] }).period === '미정·협의' && /기간: 12주/.test(A.formFill(q8, { kind: 'items', weeks: 12, items: [] }).memo), '');
   check("예전 서버가 8주를 거절하면 '미정·협의'로 다시 보내고 내용에 적음", /\[희망 기간: 8주\(2개월\)\]/.test(ad) && /period: '미정·협의'/.test(ad), '');
-  check('서버 v38: AQ_PERIOD 에 8주(2개월)', /const AQ_PERIOD = \[[^\]]*'8주\(2개월\)'/.test(read('tools/agent-backend.gs')) && /백엔드 \(v38:/.test(read('tools/agent-backend.gs')), '');
+  check('서버 v38: AQ_PERIOD 에 8주(2개월)', /const AQ_PERIOD = \[[^\]]*'8주\(2개월\)'/.test(read('tools/agent-backend.gs')) && /백엔드 \(v(3[89]|[4-9]\d):/.test(read('tools/agent-backend.gs')), '');
 }
 
 /* QA 2026-11-21: 공인중개사 문의는 1년 결제 — 문의 폼 희망 기간·내용이 '1개월·4주'로 가던 문제 / 보고 주기 문구가 /ad/(기간 종료 뒤 보고서)와 같게 */

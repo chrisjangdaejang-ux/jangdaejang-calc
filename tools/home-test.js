@@ -127,15 +127,17 @@ if (dir && fs.existsSync(path.join(dir, 'home', 's00.json'))) {
   check('실제 자료: 기준 달 = index.json dataTo', R0.recent[1], X.dataTo, '');
 }
 
+/* QA 2026-11-21: 화면 어디에도 'N년간'처럼 자료 연수를 계산해 쓰지 않음 */
+check('소개 글: 연수 계산 문구 없음', /년간 공공 통계|\$\{yrs\}/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'assets', 'home-core.js'), 'utf8')), false);
 /* ---------- 첫 화면 소개 글(assets/home-core.js heroFacts · index.html .hero) ---------- */
 {
   const IX0 = { dataTo: '202610', stats: { trades: 8380311, from: '201012', apts: 16409 } };
   const F = HC.heroFacts(IX0);
   check('소개 글: 실거래 건수 = index.json stats.trades 만 단위', F.trades, '838만', '8,380,311건');
-  check('소개 글: 위 작은 글씨 = 시작 연도·기간', F.eyebrow, '2010년부터 16년간 공공 통계로 만든 부동산 미래 예보', '201012~202610');
+  check('소개 글: 위 작은 글씨 = 시작 연도만(연수 계산 없음)', F.eyebrow, '2010년부터 쌓은 공공 통계로 만든 부동산 미래 예보', '201012~202610');
   check('소개 글: 작은 글씨 한 줄 = 단지 수·갱신(연도는 위에만)', F.facts, ['아파트 1.6만 단지', '하루 4번 갱신'], '');
   const F6 = HC.heroFacts({ dataTo: '202610', stats: { trades: 9512345, from: '200601', apts: 17000 } });
-  check('소개 글: 2006년 자료가 들어오면 자동으로 2006년·21년간', [F6.trades, F6.eyebrow], ['951만', '2006년부터 21년간 공공 통계로 만든 부동산 미래 예보'], '200601~202610');
+  check('소개 글: 2006년 자료가 들어오면 자동으로 2006년부터', [F6.trades, F6.eyebrow], ['951만', '2006년부터 쌓은 공공 통계로 만든 부동산 미래 예보'], '200601~202610');
   const F0 = HC.heroFacts(null);
   check('소개 글: 자료 없으면 숫자 없이(지어내지 않음)', [F0.trades, F0.eyebrow, F0.facts], [null, null, ['하루 4번 갱신']], '');
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');

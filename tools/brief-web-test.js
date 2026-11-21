@@ -84,9 +84,10 @@ check('광고주 통계: 메일 광고 동의자 수(있을 때만)', [/메일 �
 /* QA 2026-11-21: 자동 결제가 없는데 '다음 결제가 미뤄진다'고 하거나, 4,900원 중개사용을 5,900원 플러스보다 '높은' 요금제로 오해하게 하는 말 */
 {
   const rd = f => require('fs').readFileSync(require('path').join(__dirname, '..', f), 'utf8');
-  const pages = ['brief/index.html', 'brief/subscribe/index.html', 'brief/manage/index.html'].map(rd).join('\n');
+  const pages = ['brief/index.html', 'brief/subscribe/index.html', 'brief/manage/index.html', 'terms/index.html'].map(rd).join('\n');
   check('구독 화면: 자동 결제 없음과 맞게(다음 결제 미룸 표현 없음)', /다음 결제가/.test(pages), false);
-  check("구독 화면: 요금제 올리기·내리기는 '월 요금' 기준으로", [/더 높은 요금제|더 낮은 요금제/.test(pages), /월 요금이 더 비싼 요금제/.test(pages)], [false, true]);
+  check('약관: 친구 초대 무료 기간 = 지금 이용권이 끝난 다음 날부터 무료 1개월', /지금 이용권이 끝난 다음 날부터 무료 1개월이 이어져요/.test(rd('terms/index.html')), true);
+  check("구독 화면: 요금제 올리기·내리기는 '월 요금' 기준으로", [/더 높은 요금제|더 낮은 요금제/.test(pages.replace(rd('terms/index.html'), '')), /월 요금이 더 비싼 요금제/.test(pages)], [false, true]);
 }
 console.log(`모닝 브리핑 화면 계산 검증: ${pass}개 통과, ${fail}개 실패`);
 process.exit(fail ? 1 : 0);
