@@ -121,15 +121,27 @@ const doc = read('docs/ad_slots.md');
   const adp = read('ad/index.html');
   check('/ad/: 광고 위치 안내 칸', adp.includes('id="slots"') && adp.includes('광고 위치 안내'), '');
   const slotSec = adp.slice(adp.indexOf('id="slots"'), adp.indexOf('id="target"'));
-  check('/ad/: 홈 상단 = 가장 비싼 자리 · 확정가 1일 10만·1주 50만·4주 150만', adp.includes('가장 비싼 자리') && adp.includes("'1일 10만 · 1주 50만 · 4주 150만 원'"), '');
+  check('/ad/: 홈 상단 = 가장 비싼 자리 · 1주 50만·4주 150만', adp.includes('가장 비싼 자리') && adp.includes("'1주 50만 · 4주 150만 원'"), '');
+  check('/ad/: 브리핑 지면 광고 1주(7일) 25만·4주 80만, 과금 1주·4주', adp.includes("brief_ad:     { text: '1주(7일) 25만 원 · 4주 80만 원'") && adp.includes('<td data-l="과금">1주 · 4주 정액(7일 단위)</td>'), '');
+  check('/ad/: 브리핑 광고 하루 1개 노출 규칙은 그대로', adp.includes('하루 한 광고주만 실려요') && adp.includes('(하루 1개 광고주)'), '');
   check('/ad/: 카테고리 상단 1주 25만·4주 80만(분양·청약 1주 28만·4주 90만), 하루 단위 없음', adp.includes("'1주 25만 · 4주 80만 원'") && adp.includes("'1주 28만 · 4주 90만 원'") && !/'1일 [0-9]+만 · 1주 2[58]만/.test(adp), '');
-  check('/ad/ 문의 폼: 상단 배너 가격 표시', adp.includes('카테고리 상단 배너<small class="pp">1주 25만 · 4주 80만 원</small><small class="pp">분양·청약 1주 28만 · 4주 90만 원</small>') && adp.includes('홈 상단 배너<small class="pp">1일 10만 · 1주 50만 · 4주 150만 원</small>'), '');
+  check('/ad/ 문의 폼: 상단 배너 가격 표시', adp.includes('카테고리 상단 배너<small class="pp">1주 25만 · 4주 80만 원</small><small class="pp">분양·청약 1주 28만 · 4주 90만 원</small>') && adp.includes('홈 상단 배너<small class="pp">1주 50만 · 4주 150만 원</small>'), '');
   const topRows = doc.split('\n').filter(l => /`\w+_top`/.test(l));
-  check('문서: 상단 배너 줄 가격(홈 1일·1주·4주, 분양·청약 1주 28만·4주 90만, 나머지 1주 25만·4주 80만)', topRows.every(l => /`home_top`/.test(l) ? l.includes('1일 10만 · 1주 50만 · 4주 150만 원') : /`(bunyang|chungyak)_top`/.test(l) ? l.includes('| 1주 28만 · 4주 90만 원 |') : l.includes('| 1주 25만 · 4주 80만 원 |')) && topRows.length === 9, topRows.length);
+  check('문서: 상단 배너 줄 가격(홈 1주 50만·4주 150만, 분양·청약 1주 28만·4주 90만, 나머지 1주 25만·4주 80만)', topRows.every(l => /`home_top`/.test(l) ? l.includes('1주 50만 · 4주 150만 원') && !l.includes('1일') : /`(bunyang|chungyak)_top`/.test(l) ? l.includes('| 1주 28만 · 4주 90만 원 |') : l.includes('| 1주 25만 · 4주 80만 원 |')) && topRows.length === 9, topRows.length);
   check("/ad/·문서: '제안가'·'확정 전' 문구 없음", !/제안가|확정 전/.test(adp + doc), '');
   check('/ad/ 문의 폼: 홈 상단 배너·카테고리 상단 배너', adp.includes('value="home_top"> <span>홈 상단 배너') && adp.includes('value="cat_top"> <span>카테고리 상단 배너'), '');
   const gs = read('tools/agent-backend.gs');
-  check('서버 v36: 문의 관심 상품에 home_top·cat_top', /백엔드 \(v36:/.test(gs) && /AQ_PROD\.home_top = '홈 상단 배너'; AQ_PROD\.cat_top = '카테고리 상단 배너';/.test(gs), '');
+  /* 하루 단위 광고 가격 표시가 남아 있으면 실패 ('1일 5만 원', '1일 10만 ·', '하루 5만원' 등. '하루 1개 광고주'·'하루 4번' 같은 노출 규칙은 괜찮음) */
+  const DAY = /(?:1일|하루)\s*\(?\s*[0-9][0-9,.]*\s*(?:만\s*원|만|원)/;
+  const dayFiles = ['ad/index.html', 'docs/ad_slots.md', 'pro/developer/index.html', 'tools/agent-backend.gs', 'assets/ad-slot.js', 'assets/brief-core.js', 'assets/brief-ad.js', 'assets/brief-stat.js',
+    ...['brief', 'bunyang/apply', 'bunyang/agency', 'agent', 'premium'].flatMap(d => fs.readdirSync(path.join(ROOT, d), { recursive: true }).filter(f => /\.html$/.test(f)).map(f => d + '/' + f))];
+  for (const f of dayFiles) { if (!fs.existsSync(path.join(ROOT, f))) continue; const m = read(f).match(DAY); check(`${f}: '1일·하루 …원' 광고 가격 표시 없음`, !m, m && m[0]); }
+  check('하루 단위 검사 자체 확인(1일 5만 원 → 걸림, 하루 1개 광고주 → 통과)', DAY.test('1일 5만 원 · 1주') && DAY.test('1일 10만 · 1주') && !DAY.test('하루 1개 광고주') && !DAY.test('하루 4번 갱신'), '');
+  check('서버 v37: 브리핑광고 7일 미만 경고', /백엔드 \(v37:/.test(gs) && /const BA_MIN_DAYS = 7;/.test(gs) && /try \{ briefAdWarn\(sh, v\); \}/.test(gs), '');
+  { const src = gs.match(/function baDays\(a, b\) \{[\s\S]*?\n\}/)[0];
+    const baDays = new Function('ymd', src + '; return baDays;')(d => d.toISOString().slice(0, 10));
+    check('7일 = 1주(경고 없음), 6일 = 경고', baDays('2026-12-01', '2026-12-07') === 7 && baDays('2026-12-01', '2026-12-06') < 7 && baDays('2026-12-01', '2026-12-28') === 28 && baDays('x', '2026-12-01') === 0, ''); }
+  check('서버 v36: 문의 관심 상품에 home_top·cat_top', /v36: 광고 문의 홈·카테고리 상단 배너/.test(gs) && /AQ_PROD\.home_top = '홈 상단 배너'; AQ_PROD\.cat_top = '카테고리 상단 배너';/.test(gs), '');
   const all = Object.keys(PAGES).map(read).join('\n') + read('assets/ad-slot.js') + adp;
   check('화면 문구에 금지 단어 없음(시험·검증·채점)', !/[>'"][^<'"]*(시험|검증|채점)/.test(read('assets/ad-slot.js')) && !/(시험|검증|채점)/.test(adp.slice(adp.indexOf('id="slots"'), adp.indexOf('id="target"'))), '');
 }
