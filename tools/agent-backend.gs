@@ -1,5 +1,12 @@
 /**
- * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
+ *
+ * v30 변경 요약 (v20~v29와 같은 11/28 재배포에 함께 들어감. 재배포 뒤 편집기에서 ytKitInstall 한 번 실행)
+ *  - 장대장TV 주간 유튜브 키트: POST ytKitPut(BRIEF_PULL_TOKEN, 엔진 youtube_kit.py → 시트 '유튜브키트', 첫 사용 때 자동 생성)
+ *    + 월요일 오전 6시대 ytKitSend(트리거 ytKitInstall) — 대표에게 메일(대본·쇼츠·제목·썸네일 문구·설명란·광고용 설명란·고정 댓글·커뮤니티 글 + 그림 zip 첨부).
+ *  - 받는 주소: 스크립트 속성 YT_KIT_EMAIL(필수, 코드에 주소 없음). 미리 보기: ytKitSendLatest.
+ *  - 그림은 공개 데이터 저장소의 추측 불가능한 폴더(data/yt/{32자리 난수}/)에서만 받음(주소 형식 검사). 글은 공개 저장소에 올리지 않음.
+ *  - 검증: node tools/ytkit-test.js
  *
  * v29 변경 요약 (v20~v28과 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — '브리핑광고' 시트·'브리핑구독' 뒤 4칸 머리 줄은 첫 사용 때 자동)
  *  - 정보통신망법 제50조: 브리핑 메일(오전 7시대, 8시 전)에 광고는 '이른 아침(오전 7시) 브리핑 메일 속 광고 받기'(선택·기본 꺼짐)에 동의한 사람에게만.
@@ -307,6 +314,7 @@ function doPost(e) {
   let b;
   try { b = JSON.parse(e.postData.contents); } catch (x) { return out({ ok: false, err: '요청 형식 오류' }); }
   if (b.action === 'log') return out(logEvents(b));
+  if (b.action === 'ytKitPut') return out(ytKitPut(b));            // v30 장대장TV 주간 유튜브 키트(엔진 → 시트)
   if (PAY_ACTIONS[b.action]) return out(payDispatch(b));
   if (b.action === 'adApply' || b.action === 'adInquiry' || b.action === 'adLead') return out(adDispatch(b));
   if (USER_ACTIONS[b.action]) return out(userDispatch(b));
@@ -3945,4 +3953,111 @@ function bpMailHtml(k, cx, date) {
     <p style="margin:0 0 10px;font-size:13px;color:#4E5968;line-height:1.6">손님 이름표는 중개사님께만 보여요. 손님에게는 링크로 카드 내용과 ${bEsc(prof ? prof.office : '')} 표시 정보만 보여요.</p>
     ${wk.length ? `<a href="${wk[0].url}" style="display:block;text-align:center;margin:0 0 10px;border:1px solid #B8942A;color:#8A6D1C;background:#FBF8EF;padding:11px 16px;border-radius:10px;text-decoration:none;font-weight:800">이번 주 시장 리포트(PDF) 받기</a>` : ''}
     ${cards}</div>`;
+}
+
+/* =====================================================================
+   장대장TV 주간 유튜브 키트 (v30) — 엔진 scripts/youtube_kit.py 가 일요일 밤(jangdaejang-timing youtube_kit.yml) 만들어
+   POST ytKitPut(BRIEF_PULL_TOKEN)으로 보내면 시트 '유튜브키트'에 주차별 한 줄로 저장, 월요일 오전 6시대 ytKitSend 가 대표에게 메일.
+   · 받는 사람: 스크립트 속성 YT_KIT_EMAIL (코드에 주소를 적지 않음). 비어 있으면 보내지 않고 실행 기록에 남김.
+   · 메일: 광고 추천 한 줄 · 주제 후보 3개 · 제목 5 · 썸네일 문구 5 · 대본(프롬프터용) · 쇼츠 5 · 설명란(자연·광고용) · 고정 댓글 · 커뮤니티 글 2
+     + 첨부: 글 파일(txt) + B-roll 그림 zip(공개 데이터 저장소의 추측 불가능한 폴더 data/yt/{128비트 난수}/ 에서 받아 묶음 — 선택용).
+   · 그 주 키트가 없으면(일요일 실행 실패) '이번 주 키트 없음' 안내를 한 번만 보냄.
+   · 처음 한 번: 재배포 뒤 편집기에서 ytKitInstall 실행(월요일 오전 6시대 트리거). 미리 보기: ytKitSendLatest(가장 최근 키트를 지금 보냄).
+   ===================================================================== */
+const SH_YT = '유튜브키트';
+const YTH = ['주차', '받은시각', '그림주소', '발송시각', '자료1', '자료2', '자료3', '자료4', '자료5'];
+const YT_CHUNK = 45000;                 // 시트 한 칸 5만 자 제한 → 나눠 저장(각 칸 앞에 'J' 를 붙여 수식으로 읽히지 않게)
+const YT_IMG_RE = /^https:\/\/chrisjangdaejang-ux\.github\.io\/jangdaejang-data\/data\/yt\/[0-9a-f]{32}\/$/;
+const YT_IMG_NAME = /^(long|short|community|thumb)_\d{2}\.png$/;
+
+function ytIsoWeek(d) {                  // 한국 날짜 기준 ISO 주 '2026-W48'
+  const s = Utilities.formatDate(d, 'Asia/Seoul', 'yyyy-MM-dd').split('-').map(Number);
+  const t = new Date(Date.UTC(s[0], s[1] - 1, s[2]));
+  const dow = (t.getUTCDay() + 6) % 7;                       // 월=0
+  t.setUTCDate(t.getUTCDate() - dow + 3);                    // 그 주 목요일
+  const y = t.getUTCFullYear(), jan4 = new Date(Date.UTC(y, 0, 4));
+  const w = 1 + Math.round(((t - jan4) / 86400000 - 3 + ((jan4.getUTCDay() + 6) % 7)) / 7);
+  return y + '-W' + (w < 10 ? '0' : '') + w;
+}
+function ytKitPut(b) {
+  if (!pullOk(b)) return { ok: false, err: 'auth' };
+  const k = b.kit && typeof b.kit === 'object' ? b.kit : null;
+  if (!k || !/^\d{4}-W\d{2}$/.test(String(k.week || ''))) return { ok: false, err: 'week' };
+  const base = String((k.img || {}).base || '');
+  if (base && !YT_IMG_RE.test(base)) return { ok: false, err: 'img' };
+  const js = JSON.stringify(k);
+  if (js.length > YT_CHUNK * 5) return { ok: false, err: 'too big' };
+  const parts = [0, 1, 2, 3, 4].map(i => { const c = js.slice(i * YT_CHUNK, (i + 1) * YT_CHUNK); return c ? 'J' + c : ''; });
+  return withLock(() => {
+    const sh = uSheet(SH_YT, YTH), v = sh.getDataRange().getValues();
+    let row = 0;
+    for (let i = 1; i < v.length; i++) if (String(v[i][0]) === k.week) row = i + 1;
+    const vals = [k.week, new Date(), base, ''].concat(parts);
+    if (row) sh.getRange(row, 1, 1, vals.length).setValues([vals]); else sh.appendRow(vals);
+    return { ok: true, week: k.week, n: js.length };
+  });
+}
+function ytRows() {
+  const sh = book().getSheetByName(SH_YT);
+  if (!sh) return [];
+  return sh.getDataRange().getValues().slice(1).map((r, i) => ({ row: i + 2, week: String(r[0]), base: String(r[2] || ''), sent: r[3],
+    kit: parseJ(r.slice(4, 9).map(x => String(x || '').replace(/^J/, '')).join(''), null) })).filter(o => o.week);
+}
+function ytKitInstall() {
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'ytKitSend').forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('ytKitSend').timeBased().onWeekDay(ScriptApp.WeekDay.MONDAY).atHour(6).inTimezone('Asia/Seoul').create();
+}
+function ytKitSendLatest() { return ytKitSend(true); }
+function ytKitSend(latest) {
+  const P = PropertiesService.getScriptProperties(), to = String(P.getProperty('YT_KIT_EMAIL') || '').trim();
+  if (!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(to)) { console.log('YT_KIT_EMAIL 없음 — 유튜브 키트 메일을 보내지 않음'); return { ok: false, err: 'YT_KIT_EMAIL' }; }
+  const week = ytIsoWeek(new Date()), rows = ytRows();
+  const o = latest === true ? rows[rows.length - 1] : rows.filter(x => x.week === week).pop();
+  if (!o || !o.kit) {
+    if (latest !== true && P.getProperty('YT_KIT_MISS') !== week) {
+      MailApp.sendEmail({ to: to, name: '장대장TV 주간 키트', subject: `[장대장TV] ${week} 유튜브 키트가 아직 없어요`,
+        body: `일요일 밤 자동 생성이 끝나지 않았거나 실패했어요(${week}).\nGitHub Actions jangdaejang-timing '장대장TV 주간 유튜브 키트' 실행 기록을 확인해 주세요. 비공개 엔진 저장소 data/youtube_kit/ 에 글 파일이 남아 있을 수 있어요.` });
+      P.setProperty('YT_KIT_MISS', week);
+    }
+    return { ok: false, err: 'no kit', week: week };
+  }
+  if (latest !== true && o.sent) return { ok: true, already: true };
+  const k = o.kit, files = [];
+  const txt = (name, s) => files.push(Utilities.newBlob(String(s || ''), 'text/plain', name));
+  txt('script.txt', k.script);
+  (k.shorts || []).forEach(s => txt(`shorts_${s.i}.txt`, s.text));
+  txt('description.txt', k.description); txt('description_ads.txt', k.description_ads); txt('pinned.txt', k.pinned);
+  (k.community || []).forEach(c => txt(`community_${c.i}.txt`, c.text + (c.poll && c.poll.length ? '\n\n투표 선택지\n' + c.poll.join('\n') : '')));
+  txt('titles.txt', '제목 후보\n' + (k.titles || []).join('\n') + '\n\n썸네일 문구 후보\n' + (k.thumbs || []).join('\n'));
+  const img = k.img || {}, names = [].concat(img.long || [], img.short || [], img.community || [], img.thumb || []).filter(n => YT_IMG_NAME.test(n));
+  let zipNote = '';
+  if (o.base && YT_IMG_RE.test(o.base) && names.length) {
+    const blobs = [];
+    names.forEach(n => { try { const r = UrlFetchApp.fetch(o.base + n, { muteHttpExceptions: true }); if (r.getResponseCode() === 200) blobs.push(r.getBlob().setName(n)); } catch (e) {} });
+    if (blobs.length) { files.push(Utilities.zip(blobs, `broll_${k.week}.zip`)); zipNote = `그림 ${blobs.length}장을 broll_${k.week}.zip 으로 첨부했어요.`; }
+    if (blobs.length < names.length) zipNote += ` 받지 못한 그림은 아래 링크에서 받아 주세요.`;
+  }
+  const E = bEsc, sec = (t, h) => `<h3 style="margin:22px 0 8px;font-size:16px;color:#3D4225">${E(t)}</h3>${h}`;
+  const pre = s => `<div style="white-space:pre-wrap;background:#F5EFDC;padding:12px 14px;border-radius:8px;font-size:14px;line-height:1.7">${E(s)}</div>`;
+  const cands = (k.candidates || []).map(c => `<div style="margin:0 0 12px"><b>${c.rank}위 ${E(c.name)}</b> — ${E(c.hook)}<br><span style="color:#5B5642">${E(c.why)}</span><ul style="margin:6px 0 0 18px;padding:0">`
+    + (c.points || []).map(p => `<li>${E(p.t)} <span style="color:#8a8470">(${E(p.src)}, ${E(p.per)})</span></li>`).join('') + '</ul></div>').join('');
+  const links = names.map(n => `<a href="${E(o.base + n)}">${E(n)}</a>`).join(' · ');
+  const html = `<div style="font-family:sans-serif;max-width:760px;color:#2B2A22">
+    <div style="background:#3D4225;color:#F5EFDC;padding:12px 16px;font-weight:900">★ 장대장TV 주간 유튜브 키트 · ${E(k.week)}</div>
+    <p style="background:#B8942A;color:#1F1D14;padding:10px 14px;font-weight:700;margin:0">${E((k.ads || {}).line || '')}</p>
+    ${sec('주제 후보(순위)', cands)}
+    ${sec('제목 후보', '<ol>' + (k.titles || []).map(t => `<li>${E(t)}</li>`).join('') + '</ol>')}
+    ${sec('썸네일 문구 후보(12자 이하)', '<ol>' + (k.thumbs || []).map(t => `<li>${E(t)}</li>`).join('') + '</ol>')}
+    ${sec(`1위 주제 대본 — 프롬프터용(${k.script_chars || ''}자, 첨부 script.txt)`, pre(k.script))}
+    ${(k.shorts || []).map(s => sec(`쇼츠 ${s.i} · ${s.label} · 약 ${s.sec}초`, pre(s.text))).join('')}
+    ${sec('설명란(자연 유입 utm_source=youtube)', pre(k.description))}
+    ${sec('광고용 설명란·최종 URL(utm_source=youtube_ads)', pre(k.description_ads) + `<p>광고 최종 URL: ${E((k.ads || {}).url || '')}</p>`)}
+    ${sec('고정 댓글', pre(k.pinned))}
+    ${(k.community || []).map(c => sec(`커뮤니티 글 ${c.i} · ${c.when} 올리기`, pre(c.text + (c.poll && c.poll.length ? '\n\n투표 선택지\n' + c.poll.join('\n') : '')))).join('')}
+    ${sec('B-roll 그림(선택용 — 쇼츠·커뮤니티 글·썸네일 배경에도)', `<p>${E(zipNote)}</p><p style="font-size:13px">${links}</p>`)}
+    <p style="font-size:12px;color:#8a8470;margin-top:24px">숫자는 모두 ${E(SITE_NAME)}에서 모으는 공개 자료(국토부 실거래가·청약홈·공식 보도자료)에서 그대로 계산한 값이에요. 그림 폴더 주소는 이 메일에만 있어요.</p></div>`;
+  MailApp.sendEmail({ to: to, name: '장대장TV 주간 키트', subject: `[장대장TV] ${k.week} 유튜브 키트 — ${(k.candidates || [])[0] ? k.candidates[0].hook : ''}`.slice(0, 120),
+    htmlBody: html, attachments: files });
+  if (latest !== true) book().getSheetByName(SH_YT).getRange(o.row, 4).setValue(new Date());
+  return { ok: true, week: k.week, files: files.length };
 }
