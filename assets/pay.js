@@ -34,7 +34,7 @@
       } catch (e) {
         const er = new Error('서버에 연결하지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.'); er.net = true; throw er;
       }
-      if (!j || !j.ok) { const er = new Error((j && j.err) || '처리하지 못했습니다.'); er.code = j && j.code; throw er; }
+      if (!j || !j.ok) { const t = (j && j.err) || ''; const er = new Error(/[가-힣]/.test(t) ? t : '잠시 뒤 다시 시도해 주세요. 계속되면 카카오톡 상담으로 알려 주세요.'); er.raw = t; er.code = j && j.code; throw er; }
       return j;
     },
     esc: s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])),

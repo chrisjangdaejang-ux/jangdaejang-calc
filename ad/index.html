@@ -602,7 +602,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
 <footer class="foot">★ 집코드 · <a href="../">홈</a> · <a href="../bunyang/">분양</a></footer>
 
 <script src="../assets/agents.js"></script>
-<script src="../assets/config.js?v=8"></script>
+<script src="../assets/config.js?v=9"></script>
 <script src="../assets/brief-stat.js?v=3"></script>
 <script src="../assets/ad-prices.js?v=3"></script>
 <script>
@@ -799,7 +799,7 @@ $('form').addEventListener('submit', async e => {
         $('ask').scrollIntoView(); return;
       } catch (e2) {}
     }
-    if (!msg || msg === 'unknown' || /fetch|network|json|load/i.test(msg)) fallback(body, '지금은 온라인 접수가 잠시 어려워요.');
+    if (!msg || msg === 'unknown' || (err && err.raw === 'unknown') || /fetch|network|json|load/i.test(msg)) fallback(body, '지금은 온라인 접수가 잠시 어려워요.');
     else { m.className = 'msg err'; m.textContent = msg; }
   } finally { $('send').disabled = false; }
 });

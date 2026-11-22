@@ -29,8 +29,9 @@
 <link rel="stylesheet" href="../../assets/aplus.css?v=45">
 <script src="../../assets/nw.js?v=1" defer></script>
 <link rel="stylesheet" href="../../assets/pay.css?v=3">
+<script src="../../assets/config.js?v=9"></script>
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/pay.js?v=4"></script>
+<script src="../../assets/pay.js?v=5"></script>
 </head>
 <body>
 <header class="top">
@@ -113,9 +114,11 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
     return null; };
   const WINDOW_MODE = /^(test|live)_ck_/.test(P.CLIENT_KEY);
   let widgets = null, payWin = null, ready = false, termsOk = true, busy = false;
+  const PAID = !!(window.JDJ_SITE && JDJ_SITE.PAID_OPEN);   // 통신판매업 신고 전에는 결제 잠금(assets/config.js PAID_OPEN, 서버도 거절)
+  if (!PAID) err('유료 리포트 결제는 곧 열려요. 조금만 기다려 주세요.');
   function sync(){
-    $('payBtn').disabled = busy || !ready || !termsOk || !$('refundOk').checked || !parseContact($('contact').value);
-    $('payBtn').textContent = busy ? '결제창을 여는 중…' : `${P.won(pr.amount)} 결제하기`;
+    $('payBtn').disabled = !PAID || busy || !ready || !termsOk || !$('refundOk').checked || !parseContact($('contact').value);
+    $('payBtn').textContent = !PAID ? '유료 이용권은 곧 열려요' : busy ? '결제창을 여는 중…' : `${P.won(pr.amount)} 결제하기`;
   }
   $('refundOk').onchange = sync; $('contact').oninput = sync; sync();
 
@@ -145,7 +148,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
   })();
 
   $('payBtn').onclick = async () => {
-    if ($('payBtn').disabled) return;
+    if (!PAID || $('payBtn').disabled) return;
     const ct = parseContact($('contact').value);
     busy = true; sync(); err('');
     try {

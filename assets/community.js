@@ -55,7 +55,7 @@
     return fetch(api(), { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(b) })
       .then(r => r.json()).then(j => {
         if (j && j.err === 'unknown') { const e = new Error('준비 중이에요. 조금만 기다려 주세요.'); e.code = 'unknown'; throw e; }
-        if (!j || !j.ok) { const e = new Error((j && j.err) || '처리하지 못했어요. 잠시 뒤 다시 시도해 주세요.'); e.code = (j && j.code) || ''; throw e; }
+        if (!j || !j.ok) { const t = (j && j.err) || ''; const e = new Error(/[가-힣]/.test(t) ? t : '잠시 뒤 다시 시도해 주세요. 계속되면 카카오톡 상담으로 알려 주세요.'); e.raw = t; e.code = (j && j.code) || ''; throw e; }
         return j;
       });
   }

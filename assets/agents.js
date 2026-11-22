@@ -3,10 +3,15 @@
 (function(){
   const API = 'https://script.google.com/macros/s/AKfycbyFwqwleAfwHoVSfWHyFVnszvc0fCjsG-WcEVkxRqUz_FmmL4bL-RymfPc3Eh_aNcrRpQ/exec';   // 예: 'https://script.google.com/macros/s/XXXX/exec'
 
+  /* 서버가 돌려준 오류 글: 한글 안내면 그대로, 'unknown'·'auth' 같은 코드·영문 오류면 쉬운 안내로(원래 값은 er.raw) */
+  const FALLBACK_ERR = '잠시 뒤 다시 시도해 주세요. 계속되면 카카오톡 상담으로 알려 주세요.';
+  const errText = t => /[가-힣]/.test(String(t || '')) ? String(t) : FALLBACK_ERR;
+  window.JDJ_ERRTEXT = errText;
   function vid(){ try{ return localStorage.getItem('jdj_vid') || ''; }catch(e){ return ''; } }
   let listP = null;
   const A = {
     api: API,
+    errText,
     ready: !!API,
     list(){
       if (!API) return Promise.resolve({ok:false, agents:[]});
@@ -16,7 +21,7 @@
     post(body){
       if (!API) return Promise.reject(new Error('제휴 서버가 아직 연결되지 않았습니다.'));
       return fetch(API, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)})
-        .then(r=>r.json()).then(j=>{ if(!j.ok) throw new Error(j.err||'처리하지 못했습니다.'); return j; });
+        .then(r=>r.json()).then(j=>{ if(!j || !j.ok){ const er = new Error(errText(j && j.err)); er.raw = (j && j.err) || ''; er.code = (j && j.code) || ''; throw er; } return j; });
     },
     _q: [], _t: null, _seen: new Set(),
     /* t: rec(추천 카드 표시, a에 여러 id 가능)|imp(목록 펼침)|view|call|kakao, a: 중개사 id, g: 구 코드, k: 단지 키(선택) — 같은 화면에서 같은 노출은 한 번만 */

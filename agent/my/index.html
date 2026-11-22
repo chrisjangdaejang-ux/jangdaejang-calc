@@ -201,7 +201,7 @@ $('go').onclick = () => {
   A.post({ action:'agentLogin', reg, code }).then(j => {
     localStorage.setItem(LS, JSON.stringify({ s: j.s, exp: j.exp, me: { id: j.me.id, office: j.me.office } }));
     track('agent_my_login', {}); start();
-  }).catch(e => { $('lmsg').textContent = e.message === 'unknown' ? '서버 업데이트(v19) 전이라 아직 로그인할 수 없어요. 곧 열려요.' : e.message; }).finally(() => { $('go').disabled = false; });
+  }).catch(e => { $('lmsg').textContent = (e.message === 'unknown' || e.raw === 'unknown') ? '서버 업데이트(v19) 전이라 아직 로그인할 수 없어요. 곧 열려요.' : e.message; }).finally(() => { $('go').disabled = false; });
 };
 $('out').onclick = () => { const s = SESS; localStorage.removeItem(LS); if (s) A.post({ action:'agentLogout', s: s.s }).catch(() => {}); showLogin(''); };
 document.querySelectorAll('.tab').forEach(b => b.onclick = () => {

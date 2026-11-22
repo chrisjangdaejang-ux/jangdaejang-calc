@@ -267,7 +267,7 @@
     if (!api) throw new Error('서버에 연결하지 못했어요.');
     let j; try { j = await (await fetch(api, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action }, body || {})) })).json(); }
     catch (e) { throw new Error('서버에 연결하지 못했어요. 인터넷 연결을 확인하고 다시 해 주세요.'); }
-    if (!j || !j.ok) { const er = new Error((j && j.err) || '처리하지 못했어요.'); er.code = j && j.code; throw er; }
+    if (!j || !j.ok) { const t = (j && j.err) || ''; const er = new Error(/[가-힣]/.test(t) ? t : '잠시 뒤 다시 시도해 주세요. 계속되면 카카오톡 상담으로 알려 주세요.'); er.raw = t; er.code = j && j.code; throw er; }
     return j;
   }
   /** 손님 단지가 있는 동네의 cx 파일을 동네마다 한 번씩 받음 */

@@ -20,8 +20,8 @@
 <script src="../../assets/track.js?v=2"></script>
 <script src="../../assets/stat.js?v=7"></script>
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/config.js?v=8"></script>
-<script src="../../assets/auth.js?v=8"></script>
+<script src="../../assets/config.js?v=9"></script>
+<script src="../../assets/auth.js?v=9"></script>
 <script src="../../chungyak/cy-engine.js?v=2"></script>
 <script src="../../assets/alerts-core.js?v=1"></script>
 <script src="../../assets/watch-core.js?v=2"></script>
@@ -137,7 +137,7 @@ function call(action, body){
   const s = W.tok(), api = W.apiUrl();
   if (!s || !api) return Promise.reject(new Error('로그인이 필요해요.'));
   return fetch(api, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(Object.assign({action, s}, body || {}))})
-    .then(r => r.json()).then(j => { if (j && j.err === 'unknown') { const e = new Error('wait'); e.wait = true; throw e; } if (!j || !j.ok) throw new Error((j && j.err) || '처리하지 못했어요. 잠시 뒤 다시 시도해 주세요.'); return j; });
+    .then(r => r.json()).then(j => { if (j && j.err === 'unknown') { const e = new Error('wait'); e.wait = true; throw e; } if (!j || !j.ok) { const t = (j && j.err) || ''; const e = new Error(/[가-힣]/.test(t) ? t : '잠시 뒤 다시 시도해 주세요. 계속되면 카카오톡 상담으로 알려 주세요.'); e.raw = t; throw e; } return j; });
 }
 const loggedIn = () => !!(AU && AU.on() && AU.user());
 function loadMine(){

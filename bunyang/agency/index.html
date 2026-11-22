@@ -311,7 +311,7 @@ $('form').addEventListener('submit', async e => {
     $('ask').scrollIntoView();
   } catch (err) {
     const msg = String(err && err.message || '');
-    if (!msg || msg === 'unknown' || /fetch|network|json|load/i.test(msg)) fallback(body, '지금은 온라인 접수가 잠시 어려워요(서버 업데이트 전일 수 있어요).');
+    if (!msg || msg === 'unknown' || (err && err.raw === 'unknown') || /fetch|network|json|load/i.test(msg)) fallback(body, '지금은 온라인 접수가 잠시 어려워요(서버 업데이트 전일 수 있어요).');
     else { m.className = 'msg err'; m.textContent = msg; }
   } finally { $('send').disabled = false; }
 });

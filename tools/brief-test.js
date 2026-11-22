@@ -91,7 +91,7 @@ const MARKET = { date: '2026-11-21', name: '집코드 모닝 브리핑', win: { 
     { t: "[참고] '27년 부동산 공시가격 시세반영률은 전년 수준 유지", d: '2026-11-20', org: '국토교통부', u: 'https://www.korea.kr/briefing/pressReleaseView.do?newsId=156790000', c: '정책', sub: '세금', terms: [['공시가격', '정부가 세금 계산에 쓰려고 해마다 정해 발표하는 집값이에요.']] },
     { t: '경인선 철도지하화 종합계획 반영', d: '2026-11-19', org: '인천광역시', u: 'javascript:alert(1)', c: '교통', rg: '인천' }] } };
 vm.createContext(ctx);
-vm.runInContext(fs.readFileSync(path.join(__dirname, 'agent-backend.gs'), 'utf8')
+vm.runInContext(fs.readFileSync(path.join(__dirname, 'agent-backend.gs'), 'utf8').replace('const PAID_OPEN = false;', 'const PAID_OPEN = true;')   // 결제 흐름 검증은 판매를 연 상태로(잠금은 tools/paid-lock-test.js)
   + '\n;globalThis.__T = { BC, OC, UC, SC, UH, SSH, BRIEF_PRICE, BRIEF_TRIAL, BRIEF_NAME, SITE_NAME, bProdKey, briefPublic, briefStats, briefSeen, bKey, hashOf, cleanBrief, briefDaily, briefState, bRows, briefAreas, briefInterest, briefCleanup, briefMarketHtml, briefPnHtml, bChangeAmt, bBrokerNo, bUrgent, briefWeeklyHtml, briefPiece };', ctx);
 const T = ctx.__T;
 const post = b => JSON.parse(ctx.doPost({ postData: { contents: JSON.stringify(b) } }).s);

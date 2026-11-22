@@ -13,14 +13,14 @@
 <script>window.JDJ_CONFIG = { tool:'brief', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../../assets/track.js?v=2"></script>
 <script src="../../assets/stat.js?v=7"></script>
-<script src="../../assets/config.js?v=8"></script>
+<script src="../../assets/config.js?v=9"></script>
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/auth.js?v=8"></script>
-<script src="../../assets/pay.js?v=4"></script>
+<script src="../../assets/auth.js?v=9"></script>
+<script src="../../assets/pay.js?v=5"></script>
 <script src="../../assets/brief-core.js?v=9"></script>
 <script src="../../assets/share.js?v=11"></script>
 <script src="../../assets/pro-report.js?v=7"></script>
-<script src="../../assets/client-brief.js?v=4"></script>
+<script src="../../assets/client-brief.js?v=5"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../assets/aplus.css?v=45">
@@ -197,6 +197,7 @@ async function draw(note){
     const id = b.dataset.chg, s = r.subs.find(x => x.id === id), box = $('chg-' + id);
     if (!box.hidden) { box.hidden = true; return; }
     box.hidden = false;
+    if (!(window.JDJ_SITE && JDJ_SITE.PAID_OPEN)) { box.innerHTML = '<div class="msg info">유료 이용권은 곧 열려요. 지금은 7일 무료 체험만 할 수 있어요.</div>'; return; }   // 통신판매업 신고 전 결제 잠금(assets/config.js PAID_OPEN)
     box.innerHTML = `<h3>어느 요금제로 바꿀까요?</h3><div class="opt">${B.shownTiers().filter(t => t.id !== s.tier).map(t => `<label><input type="radio" name="to-${id}" value="${t.id}"><span><b>${esc(t.label)} · 월 ${won(t.amount)}원</b><small>${esc(t.inc.join(' · '))}</small></span></label>`).join('')}</div><div class="qq" aria-live="polite"></div>`;
     box.querySelectorAll('input[type=radio]').forEach(x => x.onchange = async () => {
       const qq = box.querySelector('.qq'); qq.innerHTML = '<p class="note">금액을 계산하고 있어요…</p>';

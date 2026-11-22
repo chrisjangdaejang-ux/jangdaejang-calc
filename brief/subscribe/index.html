@@ -13,10 +13,10 @@
 <script>window.JDJ_CONFIG = { tool:'brief', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../../assets/track.js?v=2"></script>
 <script src="../../assets/stat.js?v=7"></script>
-<script src="../../assets/config.js?v=8"></script>
+<script src="../../assets/config.js?v=9"></script>
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/auth.js?v=8"></script>
-<script src="../../assets/pay.js?v=4"></script>
+<script src="../../assets/auth.js?v=9"></script>
+<script src="../../assets/pay.js?v=5"></script>
 <script src="../../assets/brief-core.js?v=9"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -116,6 +116,7 @@ async function boot(){
   const [IX, cfg, mine, me] = await Promise.all([J(JB.DATA + 'data/index.json'), J((P.api() || '') + '?action=briefConfig'),
     call('briefMine').catch(() => null), A.load().catch(() => null)]);
   st.kakao = !!(cfg && cfg.channels && cfg.channels.kakao);
+  const PAID = !!(window.JDJ_SITE && JDJ_SITE.PAID_OPEN) && !(cfg && cfg.paid === false);   // 통신판매업 신고 전에는 결제 잠금(assets/config.js PAID_OPEN · 서버 briefConfig.paid)
   st.trialUsed = !!(mine && mine.trialUsed);
   st.amAd = !!(mine && mine.amAd && mine.amAd.on);   // 처음 신청이면 둘 다 꺼진 채로 시작
   st.adOn = !!(mine && mine.adc && mine.adc.on);
@@ -171,11 +172,11 @@ async function boot(){
         <p class="paynote" style="text-align:center">결제 수단 없이 시작해요 · 자동 결제 없음</p></div>
       ${foot}
       <details class="step plans" id="plans" ${Q.get('p') ? 'open' : ''}><summary><h2>체험이 끝난 뒤 계속 받고 싶을 때 고르는 요금제예요</h2><p class="sub">지금은 결제되지 않아요. 체험 없이 바로 이용권을 사고 싶을 때만 펼쳐 보세요.</p></summary>
-        <div class="in">${planOpts}${termsH}<button type="button" class="btn ghost" id="pay">결제하고 받기</button>
-        <p class="paynote">누르면 결제 창이 열려요. 무료 체험은 위의 [${trialLbl}] 버튼을 눌러요.</p></div></details>
+        <div class="in">${planOpts}${PAID ? termsH : ''}<button type="button" class="btn ghost" id="pay" ${PAID ? '' : 'disabled'}>${PAID ? '결제하고 받기' : '유료 이용권은 곧 열려요'}</button>
+        <p class="paynote">${PAID ? '누르면 결제 창이 열려요.' : '지금은 결제를 받지 않아요.'} 무료 체험은 위의 [${trialLbl}] 버튼을 눌러요.</p></div></details>
       <div class="stk" id="stk"><button type="button" class="btn primary trialBtn" id="trialStk">${trialLbl}</button></div>`
     : `${secArea(1)}<section class="step"><h2>2. 요금제</h2>${planOpts}</section>${secCh(3)}
-    <div class="go"><button type="button" class="btn primary" id="pay">결제하고 받기</button>
+    <div class="go">${PAID ? '' : '<div class="msg info">유료 이용권은 곧 열려요. 지금은 7일 무료 체험만 할 수 있어요.</div>'}<button type="button" class="btn primary" id="pay" ${PAID ? '' : 'disabled'}>${PAID ? '결제하고 받기' : '유료 이용권은 곧 열려요'}</button>
       ${st.active ? '<button type="button" class="btn" id="saveOnly">동네만 저장하기(다음 날 아침부터 반영)</button>' : ''}</div>
     ${foot}`);
   const fillG = () => { const sd = $('sd').value; $('sg').innerHTML = JDJ_KO.sortBy(Object.entries(SG).filter(([, x]) => x.sido === sd), e => e[1].name).map(([g, x]) => `<option value="${g}">${esc(x.name)}</option>`).join(''); fillDn(); };
@@ -190,7 +191,7 @@ async function boot(){
     if (st.areas.length >= B.MAX.areas) return msg(`동네는 ${B.MAX.areas}곳까지 고를 수 있어요.`, 1); st.areas.push({ g, gn: SG[g].name, sd: SG[g].sido, dn }); drawA(); };
   document.querySelectorAll('input[name=plan]').forEach(r => r.onchange = () => { st.plan = r.value; drawA(); sync(); });
   document.querySelectorAll('input[name=ch]').forEach(r => r.onchange = () => { st.channel = r.value; $('contact').placeholder = r.value === 'kakao' ? '받을 휴대폰 번호' : '받을 이메일 주소'; $('contact').autocomplete = r.value === 'kakao' ? 'tel' : 'email'; });
-  const sync = () => { const T = B.PRICE[st.plan]; $('pay').textContent = `월 ${won(T.amount)}원 결제하고 받기`; $('brokerBox').hidden = !T.broker;
+  const sync = () => { const T = B.PRICE[st.plan]; $('pay').textContent = PAID ? `월 ${won(T.amount)}원 결제하고 받기` : '유료 이용권은 곧 열려요'; $('brokerBox').hidden = !T.broker;
     const n = aptList().length; $('aptN').textContent = `(${T.label} ${T.apts}개까지${n > T.apts ? ` · 지금 ${n}개라 앞의 ${T.apts}개만 보내요` : ''})`; };
   $('apts').oninput = sync;
   drawA(); sync();
@@ -233,6 +234,7 @@ async function boot(){
   }
   if ($('saveOnly')) $('saveOnly').onclick = () => saveAreas().then(() => msg('동네를 저장했어요. 다음 날 브리핑부터 바뀌어요.')).catch(e => msg(esc(e.message), 1));
   $('pay').onclick = async () => {
+    if (!PAID) return msg('유료 이용권은 곧 열려요. 지금은 7일 무료 체험만 할 수 있어요.', 1);
     const b = $('pay');
     try {
       const x = base(); if (!$('terms').checked) throw new Error('1개월 이용권·환불 안내를 확인해 주세요.');

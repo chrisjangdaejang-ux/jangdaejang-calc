@@ -73,7 +73,7 @@ const ctx = {
   }
 };
 vm.createContext(ctx);
-const src = fs.readFileSync(path.join(__dirname, 'agent-backend.gs'), 'utf8');
+const src = fs.readFileSync(path.join(__dirname, 'agent-backend.gs'), 'utf8').replace('const PAID_OPEN = false;', 'const PAID_OPEN = true;');   // 결제 흐름 검증은 판매를 연 상태로(잠금은 tools/paid-lock-test.js)
 vm.runInContext(src + '\n;globalThis.__T = { OC, PCX, PH, SH_P, hashOf, PRO_MAX_LINKS, PRO_FAKE };', ctx);
 const T = ctx.__T;
 const post = b => JSON.parse(ctx.doPost({ postData: { contents: JSON.stringify(b) } }).s);

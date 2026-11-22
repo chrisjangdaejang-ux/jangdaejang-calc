@@ -39,7 +39,7 @@
     return fetch(api(), { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) })
       .then(r => r.json()).then(j => {
         if (j && j.code === 'auth') { ls.del(LS); emit(); }
-        if (!j || !j.ok) throw new Error((j && j.err) || '처리하지 못했어요. 잠시 뒤 다시 시도해 주세요.');
+        if (!j || !j.ok) { const t = (j && j.err) || ''; const er = new Error(/[가-힣]/.test(t) ? t : '잠시 뒤 다시 시도해 주세요. 계속되면 카카오톡 상담으로 알려 주세요.'); er.raw = t; er.code = (j && j.code) || ''; throw er; }
         return j;
       });
   }

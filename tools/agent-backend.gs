@@ -1,6 +1,12 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집코드 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집코드 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v47 변경 요약 (오늘 밤 앞당겨 하는 재배포에 v20~v46 과 함께 들어감 — 안내 docs/redeploy_tonight.md. 따로 실행할 함수: briefInstall(브리핑 아침 발송 트리거가 없을 때))
+ *  - 유료 판매 잠금 PAID_OPEN=false(맨 위): 통신판매업 신고번호가 나오기 전까지 PAID_ACTIONS(리포트 결제·브리핑 이용권 주문·승인·요금제 바꾸기)를
+ *    '유료 이용권은 곧 열려요. 지금은 7일 무료 체험만 할 수 있어요.'(code 'paid_closed')로 거절. 무료 체험(briefTrial)·문의·알림 신청·해지·환불 요청은 그대로.
+ *    briefConfig 에 paid(지금 판매 중인지) 추가. 화면은 assets/config.js PAID_OPEN 으로 결제 버튼을 숨김. 여는 날 두 값을 함께 true 로.
+ *  - 검증: node tools/paid-lock-test.js </dev/null
+ *
  * v46 변경 요약 (v20~v45와 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — 시트 '커뮤니티글'·'커뮤니티신고'·'커뮤니티인증'과 인증 사진 드라이브 폴더는 첫 사용 때 저절로 생김)
  *  - 살아보니(건물별 짧은 후기·이야기, 맨 아래 'v46' 칸): 숨김 상태로 미리 넣어 둠. 화면 assets/config.js COMMUNITY_ENABLED=false 이고
  *    서버 설정 open 도 꺼져 있어서, 운영자 미리 보기 말고는 아무도 읽거나 쓸 수 없어요. 문을 여는 날 두 값을 함께 켬.
@@ -300,6 +306,13 @@ const MAX_EXTRA = 2;       // 사무소 구 외 추가 구 수
 const MAX_DANJI = 10;      // 매물 보유 단지 최대 수
 const CONFIRM_DAYS = 30;   // 매물 보유 재확인 주기(일)
 const NOTIFY = true;       // 새 신청 시 시트 주인에게 메일 알림
+/* v47 유료 판매 잠금 — 통신판매업 신고번호가 나오기 전까지 false. false 면 결제(토스) 주문·승인·요금제 올리기를 모두 거절(무료 체험·문의·알림 신청은 그대로).
+   신고번호를 받은 날: 이 값을 true 로 + 화면 assets/config.js PAID_OPEN 도 true 로 바꾸고 다시 배포(배포 관리 → 수정 → 새 버전). */
+const PAID_OPEN = false;
+const PAID_CLOSED_MSG = '유료 이용권은 곧 열려요. 지금은 7일 무료 체험만 할 수 있어요.';
+/* 돈을 받는(토스 주문·승인) 요청 전부 — 리포트 결제(createOrder·confirmPayment)·모닝 브리핑 이용권(briefOrder·briefConfirm)·요금제 바꾸기(briefChangeQuote·briefChange).
+   이미 산 주문 보기·환불 요청(openReport·findOrder·refundRequest·briefRefund·briefStop)은 막지 않음. 새 결제 요청을 만들면 여기에도 꼭 넣기(tools/paid-lock-test.js 가 확인). */
+const PAID_ACTIONS = { createOrder: 1, confirmPayment: 1, briefOrder: 1, briefConfirm: 1, briefChangeQuote: 1, briefChange: 1 };
 /* 시트 메뉴에서 Apps Script를 열지 못해 script.google.com에서 따로 만든 경우에만,
    시트 주소의 /d/ 와 /edit 사이 문자열(시트 ID)을 아래 따옴표 안에 넣으세요. */
 const SHEET_ID = '';
@@ -394,7 +407,7 @@ function doGet(e) {
   if (act === 'reviews') return out(reviewsPublic(e.parameter.a));
   if (act === 'unsub') return unsubscribe(e.parameter);
   if (act === 'leadCancel') return leadCancel(e.parameter);
-  if (act === 'briefConfig') return out({ ok: true, channels: briefChannels(), price: BRIEF_PRICE, trial: BRIEF_TRIAL });
+  if (act === 'briefConfig') return out({ ok: true, channels: briefChannels(), price: BRIEF_PRICE, trial: BRIEF_TRIAL, paid: PAID_OPEN });
   if (act === 'briefAreas') return out(briefAreas(e.parameter));
   if (act === 'briefInterest') return out(briefInterest(e.parameter));
   if (act === 'briefPublic') return out(briefPublic());
@@ -417,6 +430,7 @@ function ensureHeader() {
 function doPost(e) {
   let b;
   try { b = JSON.parse(e.postData.contents); } catch (x) { return out({ ok: false, err: '요청 형식 오류' }); }
+  if (!PAID_OPEN && PAID_ACTIONS[b && b.action]) return out({ ok: false, err: PAID_CLOSED_MSG, code: 'paid_closed' });   // v47 유료 판매 잠금
   if (b.action === 'log') return out(logEvents(b));
   if (b.action === 'ytKitPut') return out(ytKitPut(b));            // v30 장대장TV 주간 유튜브 키트(엔진 → 시트)
   if (PAY_ACTIONS[b.action]) return out(payDispatch(b));
