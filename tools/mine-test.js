@@ -138,6 +138,16 @@ check('시트: 거래 표 최신 2건 + 더보기', [(th.match(/<tr>/g) || []).l
 const bh = PS.btn({ sd: 's00', sgg: '11680', dong: '청담동', apt: '청담4차이-"편한"세상', band: '135㎡대', jibun: '28-20' }, 'report_top');
 const bq = JSON.parse(bh.match(/data-jps="([^"]*)"/)[1].replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&#39;/g, "'"));
 check('시세 흐름 보기 단추: 시트가 받는 키 그대로', [bq, /data-jps-at="report_top"/.test(bh), /시세 흐름 보기/.test(bh)], [{ sd: 's00', sgg: '11680', dong: '청담동', apt: '청담4차이-"편한"세상', band: '135㎡대', jibun: '28-20' }, true, true], '따옴표 이름도 안전하게');
+{ // 같은 평형 안 여러 전용 타입: 화면은 엔진이 대표 전용 기준으로 맞춘 평당가(칸 6) × 칸 4 그대로 — 근거 문구는 그 규칙을 말하되 기준 숫자는 없음
+  const pg = fs.readFileSync(path.join(__dirname, '../mine/index.html'), 'utf8');
+  const basis = (pg.match(/가장 많이 거래된 전용면적 기준[^)]*\)/) || [''])[0];
+  check('근거 문구: 대표 전용면적 기준·다른 면적은 맞춰 씀', /가장 많이 거래된 전용면적 기준/.test(basis) && /이 면적 값으로 맞춰/.test(basis), true, '수서 까치마을 40㎡ 이하처럼 타입이 섞인 평형');
+  check('근거 문구: 기준 건수·비율 숫자 없음', /\d/.test(basis), false, '엔진 SAME_MIN·ADJ_CLAMP 는 비공개');
+  // 까치마을형 행: 엔진이 39.6㎡ 기준으로 맞춘 평당가 13,028 → 15억 6,100만(예전 섞인 14,638 × 39.6 = 17억 5,300만)
+  const ku = ['11680', '수서동', '까치마을', '40㎡ 이하', 39.6, 188, months.map((_, i) => i === months.length - 1 ? 13028 : 0), cstr(months.map((_, i) => i === months.length - 1 ? 2 : 0)), '713', 1];
+  check('까치마을형: 최근 시세 = 맞춘 평당가 × 39.6㎡', M.bandSummary(ku, months).price, 156100, '13,028 × 39.6 ÷ 3.3058 = 156,062 → 15억 6,100만');
+  check('까치마을형: 리포트·갈아타기 환산도 같음', require('../assets/rec-core.js').unitPrice(ku), 156100, 'rec-core unitPrice');
+}
 check('공개 화면 문구에 내부 기준값 없음', /12건/.test(fs.readFileSync(path.join(__dirname, '../mine/index.html'), 'utf8')), false, '점수용 최소 거래 수는 노출하지 않음');
 
 // 전체 기간 시세(price/h) · 신고가 · 최고가

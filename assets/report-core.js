@@ -67,7 +67,7 @@ function rpLines(c, gname) {
     out.push({ k: 'wk', h: '이번 주 가격 흐름', t: t, s: s });
   } else out.push({ k: 'wk', h: '이번 주 가격 흐름', t: '이번 주 가격 흐름 자료가 아직 없어요', s: '주간 실거래 동향이 나오면 함께 보여 드려요.' });
   if (c.price) out.push({ k: 'price', h: '최근 시세', t: rpWon(c.price.v) + (c.price.v0 ? ` · ${rpDiff(c.price.v, c.price.v0, '원')}` : ''),
-    s: `${rpYm(c.price.at)}까지 3개월 동안 이 단지·이 평형 실거래의 3.3㎡당 값 중간값으로 계산했어요.` });
+    s: `${rpYm(c.price.at)}까지 3개월 동안 이 단지·이 평형의 같은 전용면적 실거래 3.3㎡당 값 중간값으로 계산했어요(같은 면적 거래가 모자라면 다른 면적 거래를 이 면적 값으로 맞춰 함께 써요).` });
   const tr = c.trades.slice(0, 3).map(t => `${rpMd(t.dt)} ${t.f != null ? t.f + '층 ' : ''}${rpWon(t.p)}${t.hi ? '(신고가)' : ''}${t.x ? '(직거래)' : ''}`);
   out.push({ k: 'trade', h: '최근 실거래', t: tr.length ? tr.join(' · ') : '최근 3년 거래가 없어요', s: '계약일 · 층 · 금액이에요. 국토교통부 실거래 신고 자료 그대로예요.' });
   if (c.rank) out.push({ k: 'rank', h: '동네 순위', t: `${c.p.dong} ${c.rank.same ? '같은 평형대 ' : ''}아파트 ${c.rank.n}곳 중 ${c.rank.r}위` + (c.rank.r0 ? ` · ${rpDiff(c.rank.r, c.rank.r0, '위')}` : ''),

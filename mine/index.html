@@ -514,7 +514,7 @@ function render(d, map, units){
     </div>
     ${HI ? P.highsHtml(HI, 'hib') : ''}
     ${!has ? `<p class="basis lowc">최근 3년 거래 <b>${u[5]}건</b> 기준이에요. 거래가 적어 한두 건 가격에 따라 시세가 크게 달라질 수 있으니 아래 실거래 목록을 함께 봐 주세요.</p>` : ''}
-    <p class="basis"><b>계산 근거</b> · ${(few || !sm.price) && last ? `${few ? '최근 거래' : '마지막 실거래'} = ${ym(last.at)} 실거래 평당가 ${last.own ? '' : '(3개월) '}중간값 ${last.ppy.toLocaleString()}만원 × 전용 ${u[4]}㎡ ÷ 3.3058 · ` : ''}${sm.ppy ? `최근 시세 = 최근 3개월 실거래 평당가 중간값 ${sm.ppy.toLocaleString()}만원 × ` : '환산 금액 = 평당가 × '}전용 ${u[4]}㎡ ÷ 3.3058 (100만 원 단위 반올림, 이 평형 거래 전용면적의 중간값 기준) · 1년 변동: ${chBasis(sm.ch1)} · 3년 변동: ${chBasis(sm.ch3)}.${HT ? '' : ' 5년 추이는 공개 자료 기간(최근 3년)을 넘어 아직 보여 드리지 못해요.'}${HI && HI.hi ? ` · 최고가 = 수집한 실거래 중 직거래를 뺀 가장 높은 거래(이 평형 안 모든 전용면적).` : ''}</p>
+    <p class="basis"><b>계산 근거</b> · ${(few || !sm.price) && last ? `${few ? '최근 거래' : '마지막 실거래'} = ${ym(last.at)} 실거래 평당가 ${last.own ? '' : '(3개월) '}중간값 ${last.ppy.toLocaleString()}만원 × 전용 ${u[4]}㎡ ÷ 3.3058 · ` : ''}${sm.ppy ? `최근 시세 = 최근 3개월 실거래 평당가 중간값 ${sm.ppy.toLocaleString()}만원 × ` : '환산 금액 = 평당가 × '}전용 ${u[4]}㎡ ÷ 3.3058 (100만 원 단위 반올림, 이 평형에서 가장 많이 거래된 전용면적 기준 — 이 면적 거래를 먼저 쓰고, 최근 거래가 모자라면 같은 단지 다른 면적 거래를 이 면적 값으로 맞춰 함께 써요) · 1년 변동: ${chBasis(sm.ch1)} · 3년 변동: ${chBasis(sm.ch3)}.${HT ? '' : ' 5년 추이는 공개 자료 기간(최근 3년)을 넘어 아직 보여 드리지 못해요.'}${HI && HI.hi ? ` · 최고가 = 수집한 실거래 중 직거래를 뺀 가장 높은 거래(이 평형 안 모든 전용면적).` : ''}</p>
 
     <div class="save" id="saveBox">
       <b style="font-size:16px">${mine ? '내 집으로 저장되어 있어요' : '이 집이 내 집인가요?'}</b>
@@ -762,7 +762,7 @@ function homeCard(h, u){
       <div class="st"><div class="k">최근 3개월 거래</div><div class="v">${sm.recent3}건</div><div class="d">3개월 중앙 평당가 ${sm.ppy ? sm.ppy.toLocaleString() + '만' : '-'}</div></div>
       <div class="st"><div class="k">1년 변동</div><div class="v">${sm.ch1 ? `<span class="${updown(sm.ch1.pct)}">${M.pctTxt(sm.ch1.pct)}</span>` : '-'}</div><div class="d">${gp ? `${esc(sggName(h.code))} 대비 ${M.pctTxt(gp.diff)}` : '평당가 기준'}</div></div>
     </div>
-    <p class="basis">최근 시세 = 최근 3개월 실거래 평당가 중간값 × 전용 ${u[4]}㎡ ÷ 3.3058${vb ? ' · 매수가 대비 = 최근 시세 − 입력한 매수가' : ''}. 실제 거래가는 동·층·향에 따라 달라요.</p>` + acts;
+    <p class="basis">최근 시세 = 최근 3개월 전용 ${u[4]}㎡ 실거래 평당가 중간값 × 전용 ${u[4]}㎡ ÷ 3.3058${vb ? ' · 매수가 대비 = 최근 시세 − 입력한 매수가' : ''}. 실제 거래가는 동·층·향에 따라 달라요.</p>` + acts;
 }
 function wireHome(el, h, u){
   const id = M.homeId(h);

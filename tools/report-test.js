@@ -197,13 +197,13 @@ check('알림톡은 꺼진 자리만(RP_ALIMTALK=false)', /const RP_ALIMTALK = f
 
 /* ---------- ④ 화면 ---------- */
 const page = read('my/report/index.html'), center = read('my/alerts/index.html'), sw = read('sw.js');
-check('성적표 화면: 계산 블록·내 집·관심 부품을 싣고 서비스 이름은 설정에서', /report-core\.js\?v=1/.test(page) && /mine-core\.js/.test(page) && /watch\.js\?v=7/.test(page) && /SITE_NAME/.test(page) && !/집코드/.test(page.replace("|| '집코드'", '')) && !/장대장부동산그룹/.test(page));
+check('성적표 화면: 계산 블록·내 집·관심 부품을 싣고 서비스 이름은 설정에서', /report-core\.js\?v=2/.test(page) && /mine-core\.js/.test(page) && /watch\.js\?v=7/.test(page) && /SITE_NAME/.test(page) && !/집코드/.test(page.replace("|| '집코드'", '')) && !/장대장부동산그룹/.test(page));
 check('성적표 화면: 경쟁 앱 이름·보장 문구 없음', !/호갱|직방|리치고|아실|다방|네이버 부동산|KB부동산/.test(page) && !/보장|무조건|확실히 오/.test(page));
 check('성적표 화면: 대출·보정은 이 기기(jdj_report_me)와 내 계정에만, 공유 주소에는 공개 칸만', /jdj_report_me/.test(page) && /d\.rp = ME/.test(page) && /shareUrl = p => `\$\{location\.origin\}\$\{BASE\}my\/report\/\?sd=/.test(page) && !/shareUrl[^\n]*loan/.test(page));
 check('성적표 화면: 보정 값은 공식 숫자와 따로("내가 적은 정보")', (page.match(/내가 적은 정보/g) || []).length >= 2 && /공식 숫자와 점수는 바뀌지 않아요/.test(page));
 check('알림 센터: 성적표 메일 켜기(기본 꺼짐)·새 종류 설명·성적표 화면 링크', /id="rp"/.test(center) && /drawRp/.test(center) && /새로 생긴 알림이라 직접 켜야 받아요/.test(center) && /my\/report\//.test(center));
 check('알림 센터: 서버가 새 칸을 모르면 이 기기 값을 지킴', /newSrv\(\)/.test(center) && /S0\.rp = L0\.rp/.test(center));
-check('서비스 워커: 성적표 화면·계산 파일', /'\.\/my\/report\/'/.test(sw) && /report-core\.js\?v=1/.test(sw));
+check('서비스 워커: 성적표 화면·계산 파일', /'\.\/my\/report\/'/.test(sw) && /report-core\.js\?v=2/.test(sw));
 check('내 집 시세 화면에서 성적표로', /my\/report\//.test(read('mine/index.html')));
 check('안내 문서: 재배포·alertsInstall·알림톡 템플릿 초안', (d => /reportWeekly/.test(d) && /alertsInstall/.test(d) && /템플릿/.test(d) && /#{/.test(d))(read('docs/alerts.md')));
 
