@@ -37,6 +37,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/aplus.css?v=45">
+<link rel="stylesheet" href="../assets/layout.css?v=1">
+<script src="../assets/layout.js?v=1" defer></script>
 <script src="../assets/nw.js?v=1" defer></script>
 <style>
 .wrap{max-width:860px;margin:0 auto;padding:22px 16px 60px}
@@ -160,7 +162,7 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
 [hidden]{display:none!important}
 </style>
 </head>
-<body>
+<body data-lay="side" data-lay-key=".stats" data-lay-keyfirst="#res>.panel:first-child>.stats" data-lay-fold="#polSec>.panel,#areaBox>.panel" data-lay-jump="#res">
 <header class="top">
   <a class="brand" href="../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
   <div class="badge plain">전세사기 예방</div>

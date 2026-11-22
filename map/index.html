@@ -42,11 +42,12 @@
 <script src="../assets/agents.js"></script>
 <script src="../assets/ads.js?v=5"></script>
 <script src="../assets/devmap-view.js?v=3"></script>
-<script src="../assets/tabbar.js?v=4" defer></script>
+<script src="../assets/tabbar.js?v=5" defer></script>
 <script src="../assets/chiprow.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/aplus.css?v=45">
+<link rel="stylesheet" href="../assets/layout.css?v=1">
 <script src="../assets/nw.js?v=1" defer></script>
 <style>
 html,body{height:100%}
@@ -318,7 +319,7 @@ i.lg-dot{display:inline-block;width:13px;height:13px;border-radius:50%;backgroun
 @media(max-width:380px){.seg button{padding:0 10px;font-size:14px}.chip{padding:0 11px}}
 </style>
 </head>
-<body class="jm-full">
+<body class="jm-full lay-split">
 <header class="top">
   <a class="brand" href="../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
   <a class="hback" id="hback" href="#" hidden data-track="map_back">← 결과로 돌아가기</a><h1 class="badge plain">지도</h1>
@@ -346,6 +347,7 @@ i.lg-dot{display:inline-block;width:13px;height:13px;border-radius:50%;backgroun
   <div class="legend" id="legend"></div>
   <div class="mstat" id="mstat">지도를 준비하고 있어요…</div>
   <div class="cmpbar" id="cmpbar" hidden></div>
+  <section class="mlist" id="mlist" aria-label="지도에 보이는 곳 목록"></section>
   <section class="sheet" id="sheet" hidden aria-live="polite"></section>
   <section class="rpanel" id="rpanel" hidden aria-label="지역 분석"></section>
 </div>
@@ -492,6 +494,29 @@ function djBox(x, y, main, badge, name, more){
   return { l: x - w / 2, t: y - 7 - h - (more ? 12 : 0), r: x + w / 2 + (more ? 12 : 0), b: y };
 }
 
+/* ---------- PC 나눠 보기: 지금 지도에 보이는 곳 목록(1024px 이상, assets/layout.css .mlist) ----------
+   지도에 올린 말풍선과 같은 값만 그대로 줄 세움(새 숫자를 만들지 않음). 줄을 누르면 말풍선을 누른 것과 같다 */
+let LROWS = [], LSORT = 'p';
+const LV_T = { sido: '시·도', sgg: '시·군·구', dong: '동', danji: '단지' };
+function drawList(lv, msg){
+  const el = $('mlist'); if (!el || innerWidth < 1024) return;
+  const danji = lv === 'danji';
+  if (LSORT === 'v' && !danji) LSORT = 'p';
+  const rows = LROWS.slice().sort(LSORT === 'n' ? (a, b) => a.name.localeCompare(b.name, 'ko') : LSORT === 'v' ? (a, b) => (b.num || -1) - (a.num || -1) : (a, b) => b.p - a.p).slice(0, 200);
+  const mode = (C.MODES.find(m => m.id === S.mode) || {}).t || '';
+  const sorts = [['p', danji ? '거래 많은 순' : '큰 곳 먼저'], ...(danji ? [['v', mode + ' 높은 순']] : []), ['n', '가나다 순']];
+  el.innerHTML = `<div class="mlist-hd"><b>지도에 보이는 ${LV_T[lv] || ''} ${rows.length ? rows.length.toLocaleString() + (LROWS.length > rows.length ? '+' : '') + '곳' : ''}</b><small>${danji ? '줄을 누르면 단지 카드가 열려요' : '줄을 누르면 지도가 그곳으로 가까이 가요'} · 지도를 움직이면 목록도 바뀌어요</small>
+    <div class="mlist-sort" role="group" aria-label="목록 순서">${sorts.map(([k, t]) => `<button type="button" data-ls="${k}" aria-pressed="${LSORT === k}">${esc(t)}</button>`).join('')}</div></div>`
+    + (rows.length ? `<ol>${rows.map((r, i) => `<li><button type="button" data-li="${i}"${SEL && SEL.d && SEL.d.key === r.k ? ' class="sel"' : ''}><span class="nm"><b>${esc(r.name)}</b>${r.sub ? `<small>${esc(r.sub)}</small>` : ''}</span><span class="v">${esc(r.v || '')}</span></button></li>`).join('')}</ol>`
+      : `<p class="empty">${esc(msg || '지도를 움직이거나 확대해 보세요.')}</p>`);
+  el._rows = rows;
+}
+$('mlist').addEventListener('click', e => {
+  const s = e.target.closest('button[data-ls]'); if (s) { LSORT = s.dataset.ls; render(); return; }
+  const b = e.target.closest('button[data-li]'); if (!b) return;
+  const r = ($('mlist')._rows || [])[+b.dataset.li]; if (r && r.tap) r.tap();
+});
+
 function render(){
   if (!MAP || !IX) return;
   const z = MAP.zoom(), lv = C.level(z), bb = MAP.bounds(), next = new Map(), gl = [], djc = [];
@@ -553,6 +578,7 @@ function render(){
         const sel = !!(SEL && SEL.d && SEL.d.key === d.key) || isFoc(d);
         djc.push({ d, b, main, list: c.list, p: (sel ? 1e7 : 0) + (d.n || 0), box: djBox(c.list[0].x, c.list[0].y, main || '최근 거래 없음', badge, showName ? d.apt : '', c.list.length > 1) });
       }
+      LROWS = items.map(({ d, b }) => ({ k: d.key, name: d.apt, sub: `${sggName(d.code)} ${d.dong} · ${b.band}`, v: C.mainText(S.mode, b) || (S.mode === 'price' ? '최근 거래 없음' : '자료 없음'), p: d.n || 0, num: S.mode === 'fv' ? b.fv : S.mode === 'jr' ? b.jr : b.price, tap: () => openCard(d) }));
       msg = items.length ? '' : (wait ? '' : (S.size || S.price) ? '이 화면에 고른 평형·가격대에 맞는 단지가 없어요.' : '이 화면에는 표시할 단지가 없어요.');
     }
     if (wait) msg = '단지 자료를 불러오는 중이에요…';
@@ -562,6 +588,8 @@ function render(){
   else if (!msg && S.nb && LAY.nb && LAY.nb.st === 'err') msg = '신축 공사 중 자료는 아직 준비 중이에요.';
   else if (!msg && S.bun && z < 12 && lv !== 'sido') msg = '분양 단지는 조금 더 확대하면 보여요.';
   else if (!msg && S.nb && z < 13 && lv !== 'sido') msg = '신축 공사 중 현장은 조금 더 확대하면 보여요.';
+  if (lv !== 'danji') LROWS = gl.map(o => ({ k: o.k, name: o.name, sub: o.sub || '', v: o.v, p: o.p || 0, num: null, tap: o.tap }));
+  drawList(lv, msg);
   const lk = lv + '|' + futNear().map(x => x.id).join(',');
   if (lk !== LASTLV) { LASTLV = lk; legend(); }
   if (FOC && FOC.got && FOC.got.length > 1 && lv !== 'danji') msg = '';   // 비교 단지를 넓게 볼 때는 구·동 안내 대신 강조 말풍선만
@@ -1390,8 +1418,9 @@ if (window.ResizeObserver) new ResizeObserver(syncTop).observe(document.querySel
 /* 지역 분석 칸 크기 → 지도 비키기(모바일: 아래 --mb, PC: 왼쪽 --ml) */
 let MBL = '';
 function syncPanel(){
-  const el = $('rpanel'), wide = innerWidth >= 900, on = !el.hidden;
-  const mb = on && !wide ? el.offsetHeight : 0, ml = on && wide ? el.offsetWidth : 0, k = mb + '|' + ml;
+  const el = $('rpanel'), wide = innerWidth >= 900, on = !el.hidden, li = $('mlist'), split = !on && innerWidth >= 1024 && li && li.offsetWidth > 0;
+  document.body.classList.toggle('has-rp', on);
+  const mb = on && !wide ? el.offsetHeight : 0, ml = on && wide ? el.offsetWidth : split ? li.offsetWidth : 0, k = mb + '|' + ml;
   if (k === MBL) return; MBL = k;
   $('mwrap').style.setProperty('--mb', mb + 'px'); $('mwrap').style.setProperty('--ml', ml + 'px');
   if (MAP) { MAP.relayout(); render(); }

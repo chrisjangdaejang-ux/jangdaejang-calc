@@ -1,5 +1,5 @@
 /* 집코드 하단 탭(휴대폰·PC 공통): 홈 · 지도 · 순위 · 내 집 시세 · 단지 비교 (5개를 넘기지 않음)
-   <script src="assets/tabbar.js?v=4" defer></script> 만 넣으면 화면 맨 아래에 붙는다(지금 화면 탭은 파랑).
+   <script src="assets/tabbar.js?v=5" defer></script> 만 넣으면 휴대폰은 화면 맨 아래, PC(1024px 이상)는 머리줄 로고 오른쪽에 붙는다(지금 화면 탭은 파랑).
    본문이 탭에 가리지 않게 body 아래 여백을 탭 높이만큼 더한다. 지도 화면은 body.jm-full 로 여백 대신 지도 높이에서 뺀다. */
 (function () {
   'use strict';
@@ -25,7 +25,13 @@
       '.jtab a.on{color:#2560E8}' +
       'body.jtab-pad{padding-bottom:calc(58px + env(safe-area-inset-bottom))}' +
       '.jdjpwa{bottom:calc(70px + env(safe-area-inset-bottom))!important}' +
-      '@media print{.jtab{display:none}}';
+      '@media print{.jtab{display:none}}' +
+      /* PC(1024px 이상): 아래 탭 대신 머리줄 안 로고 오른쪽에 가로 메뉴(docs/design_guide.md) */
+      '@media(min-width:1024px){.jtab{top:0;bottom:auto;left:150px;right:auto;height:68px;padding:0;background:none;border:0;backdrop-filter:none;z-index:45}' +
+      '.jtab nav{max-width:none;gap:2px;align-items:center}.jtab a{flex:none;flex-direction:row;gap:6px;min-height:44px;padding:0 12px;border-radius:10px;font-size:15px}' +
+      '.jtab a svg{width:18px;height:18px}.jtab a:hover{background:#F2F4F6}.jtab a.on{background:#E8F0FF}' +
+      'body.jtab-pad{padding-bottom:0}.jdjpwa{bottom:16px!important}}' +
+      '@media(min-width:1024px) and (max-width:1279px){.jtab a svg{display:none}.jtab a{padding:0 10px}}';
     document.head.appendChild(st);
     var w = document.createElement('div'); w.className = 'jtab';
     w.innerHTML = '<nav aria-label="주요 화면">' + T.map(function (t) {
