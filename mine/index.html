@@ -50,12 +50,15 @@
 <script src="../assets/mine-core.js?v=19"></script>
 <script src="../assets/ask-core.js?v=5"></script>
 <script src="../assets/ask.js?v=3"></script>
-<script src="../assets/price-sheet.js?v=19"></script>
+<script src="../assets/price-sheet.js?v=20"></script>
 <script src="../assets/mapjump.js?v=1"></script>
 <script src="../assets/offi-core.js?v=6"></script>
 <script src="../assets/offi-view.js?v=12"></script>
 <script src="../assets/comm-core.js?v=3"></script>
 <script src="../assets/comm-view.js?v=5"></script>
+<script src="../assets/rent-core.js?v=5"></script>
+<script src="../assets/villa-core.js?v=1"></script>
+<script src="../assets/villa-view.js?v=1"></script>
 <script src="../assets/policy-view.js?v=3"></script>
 <script src="../assets/devproj-view.js?v=4"></script>
 <script src="../assets/src-box.js?v=3"></script>
@@ -207,7 +210,7 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
 .jps-dir{font-size:12.5px;color:#8A6D17;font-weight:700}
 .jps-note{font-size:13.5px;color:#4E5968;line-height:1.6;margin:6px 0 0}
 [hidden]{display:none!important}
-.mtabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:#F2F4F6;border-radius:14px;padding:5px;margin:0 0 14px;max-width:420px}
+.mtabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;background:#F2F4F6;border-radius:14px;padding:5px;margin:0 0 14px;max-width:480px}
 .mtabs button{font:inherit;font-size:16px;font-weight:700;word-break:keep-all;padding:0 4px;border:0;background:transparent;color:#4E5968;min-height:46px;border-radius:10px;cursor:pointer}
 .mtabs button.on{background:#fff;color:#2560E8;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .sharebox{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:14px 0}
@@ -235,11 +238,12 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
 <main class="wrap">
   <span class="tag">내 집 시세</span>
   <h1>우리 집, <em>지금 얼마</em>일까요?<br>앞으로는 어떨까요?</h1>
-  <p class="lead">국토교통부 아파트 실거래가로 평형별 최근 시세, 1·3년 가격 추이, 거래량, 같은 동·구 대비 위치와 미래가치 점수를 보여 드려요. 내 집으로 저장하면 다음에 들어왔을 때 바로 확인할 수 있어요. 오피스텔과 상가·건물 시세는 아래 탭에서 볼 수 있어요.</p>
+  <p class="lead">국토교통부 아파트 실거래가로 평형별 최근 시세, 1·3년 가격 추이, 거래량, 같은 동·구 대비 위치와 미래가치 점수를 보여 드려요. 내 집으로 저장하면 다음에 들어왔을 때 바로 확인할 수 있어요. 빌라(연립·다세대)·오피스텔·상가·건물 시세는 아래 탭에서 볼 수 있어요.</p>
 
   <section id="askBox" aria-label="단지 이름으로 물어보기"></section>
 
-  <div class="mtabs" role="tablist" aria-label="부동산 종류" id="mtabs"><button type="button" role="tab" data-t="a" class="on" aria-selected="true">아파트</button><button type="button" role="tab" data-t="o" aria-selected="false">오피스텔</button><button type="button" role="tab" data-t="c" aria-selected="false">상가·건물</button></div>
+  <div class="mtabs" role="tablist" aria-label="부동산 종류" id="mtabs"><button type="button" role="tab" data-t="a" class="on" aria-selected="true">아파트</button><button type="button" role="tab" data-t="v" aria-selected="false">빌라</button><button type="button" role="tab" data-t="o" aria-selected="false">오피스텔</button><button type="button" role="tab" data-t="c" aria-selected="false">상가·건물</button></div>
+  <section id="villaSec" hidden></section>
   <section id="offiSec" hidden></section>
   <section id="commSec" hidden></section>
 
@@ -269,7 +273,7 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
   </section>
 
   <section id="res" hidden aria-live="polite"></section>
-  <div data-ad-slot="mine_end" data-ad-cat="mine" data-ad-after="#res:not([hidden]),#ofRes:not([hidden]),#cmRes:not([hidden])" hidden></div>
+  <div data-ad-slot="mine_end" data-ad-cat="mine" data-ad-after="#res:not([hidden]),#vlRes:not([hidden]),#ofRes:not([hidden]),#cmRes:not([hidden])" hidden></div>
 
   <p class="disc" id="src">자료: 국토교통부 아파트 매매 실거래가(공공데이터포털). 해제(취소) 신고된 거래와 직거래는 원자료 기준으로 집계에서 빼요. 월별 평당가는 그 달까지 3개월 실거래 평당가의 중간값이에요. 직거래는 거래 목록에만 표시하고 시세 계산에서는 빼요. 실제 거래가는 동·층·향·수리 상태에 따라 달라요.</p>
 </main>

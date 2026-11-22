@@ -227,7 +227,7 @@
       }
       if (o.vs) {
         const p = m.valAt(o.vs.a, i), q = m.valAt(o.vs.b, i), c = p && q && p.real && q.real ? m.vsSgg(p.v, q.v) : null;
-        if (c) { out.vs = { pct: Math.round(c.pct * 100), txt: c.txt }; say.push(c.txt); }
+        if (c) { const txt = o.vs.me ? c.txt.replace('이 단지가', o.vs.me + '가') : c.txt; out.vs = { pct: Math.round(c.pct * 100), txt }; say.push(txt); }
       }
       const fl = out.rows.filter(r => r.fill).map(r => r.sk || r.k);
       if (fl.length) out.extra.push(`${fl.join('·')} 거래 없음 — 앞뒤 거래로 이은 값이에요`);
@@ -243,7 +243,7 @@
     const rows = [{ k: '매매', a: t.s, c: '#2560E8' }], two = t.j.some(v => v > 0);
     if (two) rows.push({ k: '전세', a: t.j, c: '#14A06B' });
     if (gu) rows.push({ k: `${gu.name} 전체(같은 면적 환산)`, sk: `${gu.name} 전체`, a: gu.a, c: GRAY });
-    return tipFn({ months: t.months, rows, gap: two ? [t.s, t.j] : null, cnt, vs: gu ? { a: t.s, b: gu.a } : null, noFill });
+    return tipFn({ months: t.months, rows, gap: two ? [t.s, t.j] : null, cnt, vs: gu ? { a: t.s, b: gu.a, me: gu.me } : null, noFill });
   }
   /** 최근 3년 월별 매매 건수(u[7]) → Map(연월 → 건수) */
   function cntMap(u, months) {
@@ -345,7 +345,7 @@
       empty: opts.jr ? '전세가율을 계산할 달(매매·전세 거래가 모두 있는 달)이 적어요.' : '차트로 보여 드릴 거래가 없어요.',
       pre: opts.sparse ? SPARSE : '' };
     let gu = null;
-    if (opts.gu && !opts.jr) { const a = M().sggLine(opts.gu.s, opts.gu.months, t.months, opts.gu.area); if (a.some(v => v > 0)) { gu = { name: opts.gu.name || '구', a }; sp.lines.unshift({ a, c: GRAY, w: 1.8, dash: true }); } }
+    if (opts.gu && !opts.jr) { const a = M().sggLine(opts.gu.s, opts.gu.months, t.months, opts.gu.area); if (a.some(v => v > 0)) { gu = { name: opts.gu.name || '구', a, me: opts.gu.me || '' }; sp.lines.unshift({ a, c: GRAY, w: 1.8, dash: true }); } }
     if (opts.sub && !opts.jr && jr.some(v => v > 0)) sp.sub = { a: jr, c: '#0E7A4F', label: '전세가율' };
     if (opts.noFill) sp.noFill = true;
     if (opts.aria) sp.aria = opts.aria;
