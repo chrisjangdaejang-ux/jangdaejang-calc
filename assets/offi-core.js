@@ -72,6 +72,47 @@
   function rents(u) {
     return (u.wr || []).map(t => ({ date: ymd(t[0]), area: t[1], floor: t[2], dep: t[3], rent: t[4], ct: CT[t[5]] || '' }));
   }
+  /** 매매·전세 시세 추이(아파트 화면 공용 차트 JDJ_PRICE.mountHist 모양) → {months, s 매매, j 전세, jr 전세가율 0~1}
+      전세 = 월세 0 인 순수 전세 ㎡당 보증금(3개월 이동 중앙) × 대표 전용, 100만 원 단위. 전세가율 = 같은 달 둘 다 실제 값일 때만 */
+  function histOf(u, meta) {
+    const p = priceSeries(u, meta), n = p.months.length;
+    const j = arr(u.js, n).map(v => v > 0 ? Math.round(v * u.a / 100) * 100 : 0);
+    return { months: p.months, s: p.s, j, jr: p.s.map((v, i) => v > 0 && j[i] > 0 ? j[i] / v : 0) };
+  }
+  /** 월별 매매 신고 건수 Map(연월 → 건수). tc(전체 기간)가 있으면 그것, 없으면 최근 3년 매매 목록(t)으로 그 3년만 셈 */
+  function cntMap(u, meta) {
+    const months = monthsFrom(meta.hm, meta.to), mp = new Map();
+    if (Array.isArray(u.tc) && u.tc.length > 1) { const c = arr(u.tc, months.length); months.forEach((ym, i) => mp.set(ym, c[i])); return mp; }
+    const from = M().ymAdd(meta.to, -35), c = {};
+    (u.t || []).forEach(t => { const ym = String(t[0]).slice(0, 6); c[ym] = (c[ym] || 0) + 1; });
+    months.forEach(ym => { if (ym >= from) mp.set(ym, c[ym] || 0); });
+    return mp;
+  }
+  /** 최근 전세 계약 목록(jl: [계약일, 전용, 층, 보증금, 계약 구분]) */
+  function jeonses(u) { return (u.jl || []).map(t => ({ date: ymd(t[0]), area: t[1], floor: t[2], dep: t[3], ct: CT[t[4]] || '' })); }
+  const med = a => { if (!a.length) return null; const b = [...a].sort((x, y) => x - y), k = b.length >> 1; return b.length % 2 ? b[k] : (b[k - 1] + b[k]) / 2; };
+  /** 이 건물 전월세 요약(화면 숫자 칸) — 공개 자료에 있는 값만, 없으면 null.
+      jNow 최근 전세 시세 {v, at}(최근 3개월 안), jr 전세가율 {v, at}(같은 달 매매·전세가 모두 실제 값인 가장 최근 달, 최근 3개월 안),
+      nj 최근 1년 전세 계약 수, nw/wDep/wRent 최근 1년 월세 계약 수·보증금 중간값·월세 중간값(수익률 계산 y 가 있으면 그 값과 같게) */
+  function rentNow(u, meta) {
+    const h = histOf(u, meta), n = h.months.length, jl = latest(h.j, h.months);
+    let jr = null; for (let i = n - 1; i >= Math.max(0, n - 3); i--) if (h.jr[i] > 0) { jr = { v: h.jr[i], at: h.months[i] }; break; }
+    const y1 = Number(M().ymAdd(meta.to, -11) + '01'), w1 = (u.wr || []).filter(t => t[0] >= y1);
+    const y = u.y;
+    return { jNow: jl, jr, nj: u.nj || 0, nw: w1.length,
+      wDep: y ? y.dep : med(w1.map(t => t[3])), wRent: y ? y.mr : med(w1.map(t => t[4])), wFromY: !!y,
+      nj3: (u.jl || []).length, nw3: (u.wr || []).length };
+  }
+  /** 이 건물에 전월세 계약이 하나도 없을 때 같은 동(dr) → 같은 시·군·구(rs) 최근 1년 요약. {scope:'dong'|'gu', name, j:{n, dep, area, ppm}, w:{n, dep, rent, area}} */
+  function areaRent(u, doc, sggSum, sggName) {
+    const one = (o, scope, name) => {
+      if (!o || !(o.jeonse || o.wolse)) return null;
+      const j = o.jeonse, w = o.wolse;
+      return { scope, name, j: j ? { n: j[0], dep: j[1], area: j[2], ppm: j[3] } : null, w: w ? { n: w[0], dep: w[1], rent: w[2], area: w[3] } : null };
+    };
+    return one(doc && doc.dr && doc.dr[u.d], 'dong', u.d) || one(sggSum && sggSum.rs, 'gu', sggName || '') || null;
+  }
+
   /** 이 월세 계약 하나의 표면 수익률 (매매 ㎡당 가격 p 기준) */
   function contractYield(p, area, dep, rent) {
     const base = p * area - dep; return base > 0 && rent > 0 ? rent * 12 / base : null;
@@ -165,7 +206,7 @@
     return out;
   }
 
-  const API = { arr, monthsFrom, keyOf, nameOf, priceSeries, latest, lastAny, change, yieldSeries, pct, rankText, scoreRank, lastRate, spread, trades, rents,
+  const API = { histOf, cntMap, jeonses, rentNow, areaRent, arr, monthsFrom, keyOf, nameOf, priceSeries, latest, lastAny, change, yieldSeries, pct, rankText, scoreRank, lastRate, spread, trades, rents,
     contractYield, turnover, example, dongs, inDong, search, demandRows, supplyRows, btText, passed, reasons };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_OFFI = API;

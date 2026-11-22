@@ -45,7 +45,12 @@
 .of-lg{display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;color:#4E5968;margin-top:4px}
 .of-lg i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px;background:#2560E8}
 .of-lg i.y{background:#B8942A}
-.of-lg i.g{background:repeating-linear-gradient(90deg,#8B95A1 0 5px,transparent 5px 8px)}`;
+.of-lg i.g{background:repeating-linear-gradient(90deg,#8B95A1 0 5px,transparent 5px 8px)}
+.of-lg i.j{background:#14A06B}
+.of-lg i.r{background:#0E7A4F;height:2px}
+.of-lg i.gap{background:repeating-linear-gradient(90deg,#2560E8 0 3px,transparent 3px 7px);opacity:.55}
+.of-lg i.gap.y2{background:repeating-linear-gradient(90deg,#B8942A 0 3px,transparent 3px 7px)}
+.of-fill{font-size:13px;color:#6B7684;margin:8px 0 0}`;
     document.head.appendChild(st);
   }
 
@@ -168,42 +173,27 @@
     history.replaceState(null, '', u);
   }
 
-  /* ---------- 차트 ---------- */
-  function lineChart(lines, months, W, fmt, H) {
-    W = Math.max(260, Math.round(W || 600)); H = H || 190; const R = 12, T = 12, B = 24, n = months.length;
-    const vals = [].concat(...lines.map(l => l.a)).filter(v => v > 0);
-    if (vals.length < 2) return '<p class="note">차트로 보여 드릴 값이 적어요.</p>';
-    let lo = Math.min(...vals), hi = Math.max(...vals); const pad = (hi - lo) * 0.12 || hi * 0.05; lo = Math.max(0, lo - pad); hi += pad;
-    const L = Math.max(44, Math.max(...[lo, (lo + hi) / 2, hi].map(v => String(fmt(v)).length)) * 7.4 + 10);
-    const x = i => L + (n === 1 ? 0 : i * (W - L - R) / (n - 1)), y = v => T + (hi - v) / (hi - lo) * (H - T - B);
-    const grid = [lo, (lo + hi) / 2, hi].map(v => `<line x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#E5E8EB"/><text x="${L - 5}" y="${(y(v) + 4).toFixed(1)}" font-size="12.5" fill="#4E5968" text-anchor="end">${fmt(v)}</text>`).join('');
-    const path = (a, c, w, dash) => {
-      const p = M.lineParts(a), pt = i => x(i).toFixed(1) + ' ' + y(a[i]).toFixed(1);
-      const sd = p.solid.map(g => g.map((i, k) => (k ? 'L' : 'M') + pt(i)).join('')).join('');
-      const gd = p.gaps.map(g => 'M' + pt(g[0]) + 'L' + pt(g[1])).join('');
-      return (gd ? `<path d="${gd}" fill="none" stroke="${c}" stroke-opacity=".45" stroke-width="${Math.max(1.4, w - .8)}" stroke-dasharray="3 4" stroke-linecap="round" class="gap"/>` : '')
-        + (sd ? `<path d="${sd}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linejoin="round"${dash ? ` stroke-dasharray="${dash}"` : ''}/>` : '');
-    };
-    const dots = (a, c) => a.map((v, i) => v > 0 && (n <= 60 || !(a[i - 1] > 0) || !(a[i + 1] > 0)) ? `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2" fill="${c}"><title>${ymL(months[i])} ${fmt(v)}</title></circle>` : '').join('');
-    /* x축 날짜: 내 집 시세 아파트 차트와 같은 공용 규칙(JDJ_MINE.xTicks — 겹치지 않게 개수 자동, 좁은 화면 짧은 형식) */
-    const xl = M.xTicks(n, W - L - R, 12.5, x, months, n > 36 ? (ym, sh) => sh ? "'" + String(ym).slice(2, 4) + '년' : String(ym).slice(0, 4) + '년' : null)
-      .map(t => `<text x="${t.x.toFixed(1)}" y="${H - 5}" font-size="12.5" fill="#4E5968" text-anchor="${t.a}">${t.t}</text>`).join('');
-    return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="추이 차트">${grid}${lines.map(l => path(l.a, l.c, l.w || 2.4, l.dash) + (l.dots === false ? '' : dots(l.a, l.c))).join('')}${xl}</svg>`;
-  }
-  const eok = v => { v = Math.round(v / 100) * 100; const e = Math.floor(v / 10000), r = v % 10000; return e ? e + '억' + (r ? ' ' + r.toLocaleString() : '') : r.toLocaleString() + '만'; };
+  /* ---------- 차트 ----------
+     아파트 화면과 같은 공용 차트(assets/price-sheet.js JDJ_PRICE.mount): 세로 안내선·값 칸(달·값·거래 건수)·손가락으로 문지르기·화살표 키.
+     오피스텔은 거래가 드물어 noFill — 거래 없던 달은 점·값을 만들지 않고 '거래 없음'으로 보여 줘요(점선은 앞뒤 실제 값을 잇기만). */
+  const P = () => window.JDJ_PRICE;
   const spans = (n, cur, attr) => `<div class="seg2" role="group" aria-label="기간">${[12, 36].filter(m => m < n).map(m => ({ s: m, l: m / 12 + '년' })).concat([{ s: 0, l: '전체' }]).map(b => `<button type="button" data-${attr}="${b.s}" class="${b.s === cur || (!b.s && cur >= n) ? 'on' : ''}" aria-pressed="${b.s === cur}">${b.l}</button>`).join('')}</div>`;
-  const cut = (a, months, span) => { if (!span || span >= months.length) return { a, months }; const k = months.length - span; return { a: a.map(x => x.slice(k)), months: months.slice(k) }; };
+  const pctY = v => (Math.round(v * 10) / 10).toFixed(1).replace(/\.0$/, '') + '%';
   function drawCharts() {
-    if (!CUR || !CUR.u) return;
+    if (!CUR || !CUR.u || !P()) return;
     const u = CUR.u, j = CUR.j, el = $('ofCP'), ey = $('ofCY');
     if (el) {
-      const ps = O.priceSeries(u, j), w = cut([ps.s], ps.months, S.span);
-      el.innerHTML = lineChart([{ a: w.a[0], c: '#2560E8', w: 2.6 }], w.months, el.clientWidth || 600, eok);
+      const h = O.histOf(u, j), w = M.histWindow(h, S.span);
+      P().mountHist(el, w, { h: 240, fs: 13.5, sub: true, noFill: true, cnt: O.cntMap(u, j), aria: h.j.some(v => v > 0) ? '매매·전세 시세 추이' : '매매 시세 추이' });
     }
     if (ey) {
       const ys = O.yieldSeries(u, j), gs = (OX.sgg[S.g] || {}).ys, n = ys.months.length;
-      const g = O.arr(gs, n).map(v => v > 0 ? v / 10 : 0), w = cut([ys.y, g], ys.months, 60);
-      ey.innerHTML = lineChart([{ a: w.a[1], c: '#8B95A1', w: 1.8, dash: '5 3', dots: false }, { a: w.a[0], c: '#B8942A', w: 2.6 }], w.months, ey.clientWidth || 600, v => v.toFixed(1) + '%', 170);
+      const g = O.arr(gs, n).map(v => v > 0 ? v / 10 : 0), w = M.histWindow({ months: ys.months, s: ys.y, j: g, jr: g }, 60), has = w.j.some(v => v > 0);
+      const rows = [{ k: '이 건물 수익률', sk: '이 건물', a: w.s, c: '#B8942A', fmt: pctY }];
+      if (has) rows.push({ k: `${sggName(S.g)} 오피스텔 중간값`, sk: `${sggName(S.g)} 중간값`, a: w.j, c: '#8B95A1', fmt: pctY });
+      P().mount(ey, { months: w.months, fs: 13.5, h: 200, L: 44, min: 2, noFill: true, fmtY: pctY, aria: '임대수익률 추이',
+        lines: (has ? [{ a: w.j, c: '#8B95A1', w: 1.8, dash: true }] : []).concat([{ a: w.s, c: '#B8942A', w: 2.6 }]),
+        empty: '차트로 보여 드릴 값이 적어요.', tip: P().tipFn({ months: w.months, rows, noFill: true }) });
     }
   }
 
@@ -256,6 +246,40 @@
       <p class="basis">${ready() ? '동과 건물을 고르면 건물별 시세·임대수익률을 보여 드려요.' : '건물별 시세·임대수익률은 실거래 자료 연결 뒤 보여 드려요.'}</p></div>${regionPanels(g, null)}`;
     narBind();
   }
+  /* 전세·월세 칸: 이 건물 계약이 있으면 시세·전세가율·계약 수·최근 전세 계약, 없으면 같은 동(없으면 같은 시·군·구) 최근 1년 요약 */
+  const filling = () => !OX || !OX.fill || !!OX.fill.rent;
+  const FILL_NOTE = '<p class="of-fill">집코드는 예전 오피스텔 전월세 기록을 아직 채우고 있어요. 다 채우면 이 화면에 자동으로 반영돼요.</p>';
+  function rentPanel(u, j) {
+    const r = O.rentNow(u, j), hasJ = r.nj3 || r.nj || (u.js && u.js.length > 1);
+    const from = OX && OX.from && OX.from.rent, since = from ? `${ymK(from)}부터 모은 국토교통부 전월세 신고 자료` : '국토교통부 전월세 신고 자료';
+    const head = `<h2>전세·월세 시세<small>${since}로 정리했어요. 동·호수 같은 개인정보는 원자료에도 없어요.</small></h2>`;
+    if (!hasJ) {
+      const ar = O.areaRent(u, j, OX && OX.sgg[S.g], sggName(S.g)), nm = ar ? (ar.scope === 'dong' ? `같은 동(${ar.name})` : `${ar.name}`) : '';
+      const far = a => a && u.a && (a < u.a * 0.6 || a > u.a * 1.6), aft = from ? ymK(from) + ' 이후 ' : '';
+      return `<div class="panel">${head}
+      <p class="note" style="font-size:15px">이 건물은 ${aft}신고된 전세 계약이 없어요. 그래서 이 건물의 전세 시세와 전세가율은 계산하지 않았어요. ${r.nw3 ? `월세 계약은 최근 3년 동안 ${r.nw3}건이 있어요(아래 '최근 월세 계약' 표).` : '이 건물은 최근 3년 월세 계약도 없어요.'}</p>
+      ${ar ? `<p class="basis">대신 ${esc(nm)} 오피스텔의 최근 1년 계약을 정리했어요.${far((ar.j || ar.w || {}).area) ? ` 이 계약들의 전용면적 중간값은 ${(ar.j || ar.w).area}㎡라서, 전용 ${u.a}㎡인 이 건물과 크기가 많이 달라요. 참고로만 봐 주세요.` : ''}</p>
+      <div class="stats">
+        ${ar.j ? `<div class="st"><div class="k">전세 보증금 중간값</div><div class="v">${won(ar.j.dep)}</div><div class="d">전세 ${ar.j.n.toLocaleString()}건 · 전용 중간값 ${ar.j.area}㎡</div></div>
+        <div class="st"><div class="k">전세 ㎡당 보증금</div><div class="v">${Math.round(ar.j.ppm).toLocaleString()}만 원</div><div class="d">전용 1㎡당 중간값</div></div>` : ''}
+        ${ar.w ? `<div class="st"><div class="k">월세 중간값</div><div class="v">${won(ar.w.dep)} / 월 ${ar.w.rent.toLocaleString()}만</div><div class="d">월세 ${ar.w.n.toLocaleString()}건 · 전용 중간값 ${ar.w.area}㎡</div></div>` : ''}
+      </div>` : `<p class="basis">${esc(sggName(S.g))} 오피스텔 전월세 요약은 다음 자료 갱신 때 함께 보여 드려요.</p>`}
+      ${filling() ? FILL_NOTE : ''}</div>`;
+    }
+    const jl = O.jeonses(u), wNote = r.wFromY ? '수익률 계산에 쓴 계약과 같아요' : '최근 1년 계약 중간값';
+    return `<div class="panel">${head}
+      <div class="stats">
+        <div class="st key"><div class="k">최근 전세 시세 (전용 ${u.a}㎡)</div><div class="v">${r.jNow ? won(r.jNow.v) : '확인 불가'}</div><div class="d">${r.jNow ? ymL(r.jNow.at) + ' 기준' : '최근 3개월 전세 계약이 없어요'}</div></div>
+        <div class="st"><div class="k">전세가율</div><div class="v">${r.jr ? Math.round(r.jr.v * 100) + '%' : '확인 불가'}</div><div class="d">${r.jr ? `전세 ÷ 매매 · ${ymL(r.jr.at)} 기준` : '같은 시기 매매·전세 시세가 함께 있어야 계산해요'}</div></div>
+        <div class="st"><div class="k">최근 1년 전세 계약</div><div class="v">${r.nj}건</div><div class="d">최근 3년 목록 ${r.nj3}건</div></div>
+        <div class="st"><div class="k">최근 1년 월세 계약</div><div class="v">${r.nw}건</div><div class="d">${r.wDep != null && r.wRent != null ? `중간값 ${won(r.wDep)} / 월 ${r.wRent.toLocaleString()}만 · ${wNote}` : '계약이 없어요'}</div></div>
+      </div>
+      <p class="basis"><b>계산 근거</b> · 전세 시세 = 이 건물 최근 3개월 순수 전세(월세 0) 계약의 전용 ㎡당 보증금 중간값 × 전용 ${u.a}㎡ · 전세가율 = 같은 달 전세 시세 ÷ 매매 시세 · 계약 수 = 표본 수예요. 표본이 적으면 한두 건에 값이 크게 흔들려요.</p>
+      ${jl.length ? `<h3 style="margin:14px 0 6px;font-size:16px">최근 전세 계약</h3><div class="tbl"><table><thead><tr><th>계약일</th><th class="num">전용·층</th><th class="num">보증금</th></tr></thead><tbody>${jl.slice(0, 10).map(t => `<tr><td>${esc(t.date)}${t.ct ? `<br><small>${t.ct}</small>` : ''}</td><td class="num">${t.area}㎡${t.floor != null ? `<br><small>${t.floor}층</small>` : ''}</td><td class="num"><b>${won(t.dep)}</b></td></tr>`).join('')}</tbody></table></div>
+      ${jl.length > 10 ? `<p class="basis">최근 10건만 보여 드려요(최근 3년 ${jl.length}건).</p>` : ''}` : r.nj ? '' : '<p class="note">최근 3년 전세 계약이 없어요.</p>'}
+      <p class="basis">월세 계약(보증금·월세)은 아래 '최근 월세 계약' 표에 있어요.</p>
+      ${filling() ? FILL_NOTE : ''}</div>`;
+  }
   function show(key, opt) {
     const j = C['u' + S.g]; if (!j) return;
     const u = j.units.find(x => O.keyOf(x) === key); if (!u) return;
@@ -267,7 +291,7 @@
     const c1 = O.change(ps.s, ps.months, 12), c3 = O.change(ps.s, ps.months, 36);
     const y = u.y, ex = O.example(u), s = OX.sgg[S.g] || {}, pass = O.passed(OX);
     const chTxt = c => c ? `<span class="${updown(c.pct)}">${M.pctTxt(c.pct)}</span>` : '-';
-    const tr = O.trades(u), rn = O.rents(u);
+    const tr = O.trades(u), rn = O.rents(u), hasJ = O.histOf(u, j).j.some(v => v > 0);
     const hiBox = (k, h) => h ? `<div><div class="k">${k}</div><div class="v">${won(h[0])}</div><div class="d">${ymL(String(h[1]).slice(0, 6))} · 전용 ${h[2]}㎡</div></div>` : '';
     const sdId = sdOf(S.g);
     const jeonse = `../jeonse/?k=o&sd=${encodeURIComponent(sdId)}&g=${encodeURIComponent(S.g)}&d=${encodeURIComponent([u.d, u.j, u.n].join('|'))}`;
@@ -288,11 +312,13 @@
     </div>
 
     <div class="panel">
-      <div class="chead"><h3>매매 시세 추이</h3>${spans(ps.months.length, S.span, 'ofspan')}</div>
+      <div class="chead"><h3>${hasJ ? '매매·전세 시세 추이' : '매매 시세 추이'}</h3>${spans(ps.months.length, S.span, 'ofspan')}</div>
       <div class="of-chart" id="ofCP"></div>
-      <div class="of-lg"><span><i></i>${esc(O.nameOf(u))} · 전용 ${u.a}㎡ 환산</span></div>
-      <p class="basis">각 달 값 = 그 달까지 3개월 매매 실거래 ㎡당 가격 중간값 × 전용면적. 거래가 없던 기간은 점선으로 이어 표시해요(사이 달 값을 지어내지 않아요).</p>
+      <div class="of-lg"><span><i></i>매매</span>${hasJ ? '<span><i class="j"></i>전세</span><span><i class="r"></i>전세가율(아래 작은 그래프)</span>' : ''}<span><i class="gap"></i>거래가 없던 기간</span></div>
+      <p class="basis">전용 ${u.a}㎡ 기준이에요. 그래프 위에서 손가락이나 마우스를 움직이면 그 달의 시세와 매매 신고 건수가 위 칸에 나와요. 흐린 점선은 거래가 없던 기간이에요. 점선은 앞뒤 실제 거래만 이은 선이라, 점선 위의 달에는 시세 값이 없어요.</p>
+      <p class="basis">각 달 값 = 그 달까지 3개월 실거래 ㎡당 가격 중간값 × 전용 ${u.a}㎡${hasJ ? '(전세는 월세 없는 순수 전세 보증금만)' : ''}.</p>
     </div>
+${rentPanel(u, j)}
 
     <div class="panel">
       <h2>임대수익률<small>실제 월세 계약으로 계산해요</small></h2>
@@ -307,8 +333,8 @@
       <p class="basis"><b>계산 근거</b> · 매매가 = 이 건물 최근 매매 실거래 ㎡당 가격 중간값(${Math.round(y.p).toLocaleString()}만 원/㎡) × 각 월세 계약의 전용면적. 최근 1년 월세 계약 하나하나의 수익률을 구한 뒤 가운데 값(중간값)을 써요. 전세(월세 0) 계약은 빼요.</p>`
       : `<p class="note" style="font-size:15px">이 건물은 최근 매매나 월세 계약이 적어 수익률을 계산하지 않았어요(확인 불가). 계약 몇 건으로 계산하면 실제와 크게 다를 수 있어서예요.</p>`}
       ${u.ys ? `<div class="chead" style="margin-top:12px"><h3>수익률 추이 (최근 5년)</h3></div><div class="of-chart" id="ofCY"></div>
-      <div class="of-lg"><span><i class="y"></i>이 건물</span>${s.ys ? `<span><i class="g"></i>${esc(sggName(S.g))} 오피스텔 중간값</span>` : ''}</div>
-      <p class="basis">각 달 값 = 그 달 기준 최근 1년 월세 계약과 최근 매매로 계산한 수익률. 값이 없던 기간은 점선으로 이어요.</p>` : ''}
+      <div class="of-lg"><span><i class="y"></i>이 건물</span>${s.ys ? `<span><i class="g"></i>${esc(sggName(S.g))} 오피스텔 중간값</span>` : ''}<span><i class="gap y2"></i>값이 없던 기간</span></div>
+      <p class="basis">각 달 값 = 그 달 기준 최근 1년 월세 계약과 최근 매매로 계산한 수익률이에요. 흐린 점선은 값이 없던 기간이고, 점선 위의 달에는 값이 없어요.</p>` : ''}
     </div>
 
     ${regionPanels(S.g, u)}
@@ -328,7 +354,7 @@
 
     <div class="panel"><h2>최근 월세 계약<small>수익률 계산에 쓴 실제 계약이에요(최근 3년, 최신순). 동·호수 같은 개인정보는 원자료에도 없어요.</small></h2>
       ${rn.length ? `<div class="tbl"><table><thead><tr><th>계약일</th><th class="num">전용·층</th><th class="num">보증금·월세</th><th class="num">수익률</th></tr></thead><tbody>${rn.slice(0, 20).map(t => { const cy = y ? O.contractYield(y.p, t.area, t.dep, t.rent) : null; return `<tr><td>${esc(t.date)}${t.ct ? `<br><small>${t.ct}</small>` : ''}</td><td class="num">${t.area}㎡${t.floor != null ? `<br><small>${t.floor}층</small>` : ''}</td><td class="num"><b>${won(t.dep)}</b><br><small>월 ${t.rent.toLocaleString()}만</small></td><td class="num">${cy != null && cy < 0.4 ? O.pct(cy) : '-'}</td></tr>`; }).join('')}</tbody></table></div>
-      ${rn.length > 20 ? `<p class="basis">최근 20건만 보여 드려요(전체 ${rn.length}건).</p>` : ''}<p class="basis">수익률 = 이 계약의 월세 × 12 ÷ (이 건물 지금 ㎡당 매매 시세 × 계약 전용면적 − 보증금). 전세 계약은 전월세 시세 화면에서 볼 수 있어요.</p>` : '<p class="note">최근 3년 월세 계약이 없어요.</p>'}
+      ${rn.length > 20 ? `<p class="basis">최근 20건만 보여 드려요(전체 ${rn.length}건).</p>` : ''}<p class="basis">수익률 = 이 계약의 월세 × 12 ÷ (이 건물 지금 ㎡당 매매 시세 × 계약 전용면적 − 보증금). 전세 계약은 위 '전세·월세 시세' 칸에 있어요.</p>` : '<p class="note">최근 3년 월세 계약이 없어요.</p>'}
     </div>
 
     <div class="panel"><h2>이어서 알아보기</h2>

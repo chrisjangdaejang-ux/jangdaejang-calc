@@ -45,6 +45,7 @@
 .cm-chart svg{display:block;width:100%;height:auto}
 .cm-lg{display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;color:#4E5968;margin-top:4px}
 .cm-lg i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+.cm-lg i.gap{background:repeating-linear-gradient(90deg,#4E5968 0 3px,transparent 3px 7px);opacity:.55}
 .cm-one{font-size:16.5px;font-weight:800;line-height:1.6;margin:6px 0 10px;word-break:keep-all}
 .cm-score{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
 .cm-score div{border:2px solid #B8942A;border-radius:14px;padding:6px 12px;text-align:center;min-width:84px}
@@ -227,43 +228,35 @@
     if (opt && opt.scroll) $('cmRes').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  /* ---------- 차트 ---------- */
-  function lineChart(lines, months, W, fmt, H) {
-    W = Math.max(260, Math.round(W || 600)); H = H || 190; const R = 12, T = 12, B = 24, n = months.length;
-    const vals = [].concat(...lines.map(l => l.a)).filter(v => v > 0);
-    if (vals.length < 2) return '<p class="note">차트로 보여 드릴 값이 적어요.</p>';
-    let lo = Math.min(...vals), hi = Math.max(...vals); const pad = (hi - lo) * 0.12 || hi * 0.05; lo = Math.max(0, lo - pad); hi += pad;
-    const L = Math.max(44, Math.max(...[lo, (lo + hi) / 2, hi].map(v => String(fmt(v)).length)) * 7.4 + 10);
-    const x = i => L + (n === 1 ? 0 : i * (W - L - R) / (n - 1)), y = v => T + (hi - v) / (hi - lo) * (H - T - B);
-    const grid = [lo, (lo + hi) / 2, hi].map(v => `<line x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#E5E8EB"/><text x="${L - 5}" y="${(y(v) + 4).toFixed(1)}" font-size="12.5" fill="#4E5968" text-anchor="end">${fmt(v)}</text>`).join('');
-    const path = (a, c, w) => {
-      const p = M.lineParts(a), pt = i => x(i).toFixed(1) + ' ' + y(a[i]).toFixed(1);
-      const sd = p.solid.map(g => g.map((i, k) => (k ? 'L' : 'M') + pt(i)).join('')).join('');
-      const gd = p.gaps.map(g => 'M' + pt(g[0]) + 'L' + pt(g[1])).join('');
-      return (gd ? `<path d="${gd}" fill="none" stroke="${c}" stroke-opacity=".45" stroke-width="${Math.max(1.4, w - .8)}" stroke-dasharray="3 4" stroke-linecap="round"/>` : '')
-        + (sd ? `<path d="${sd}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linejoin="round"/>` : '');
-    };
-    const dots = (a, c) => a.map((v, i) => v > 0 && (n <= 60 || !(a[i - 1] > 0) || !(a[i + 1] > 0)) ? `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2" fill="${c}"><title>${ymL(months[i])} ${fmt(v)}</title></circle>` : '').join('');
-    const xl = M.xTicks(n, W - L - R, 12.5, x, months, n > 36 ? (ym, sh) => sh ? "'" + String(ym).slice(2, 4) + '년' : String(ym).slice(0, 4) + '년' : null)
-      .map(t => `<text x="${t.x.toFixed(1)}" y="${H - 5}" font-size="12.5" fill="#4E5968" text-anchor="${t.a}">${t.t}</text>`).join('');
-    return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="㎡당 가격 추이 차트">${grid}${lines.map(l => path(l.a, l.c, l.w || 2.4) + (l.dots === false ? '' : dots(l.a, l.c))).join('')}${xl}</svg>`;
+  /* ---------- 차트 ----------
+     아파트·오피스텔 화면과 같은 공용 차트(assets/price-sheet.js JDJ_PRICE.mount): 세로 안내선·값 칸(달·값·거래 건수)·손가락으로 문지르기·화살표 키.
+     거래가 드물어 noFill — 거래 없던 달은 값을 만들지 않고 '거래 없음'(점선은 앞뒤 실제 값을 잇기만). */
+  const P = () => window.JDJ_PRICE;
+  function chart(el, lines, months, rows, cnt, aria, h) {
+    if (!P()) return;
+    P().mount(el, { months, fs: 13.5, h: h || 220, L: 44, min: 2, pad: 0.12, noFill: true, fmtY: m2fmt, aria, empty: '차트로 보여 드릴 값이 적어요.',
+      lines, tip: P().tipFn({ months, rows, cnt, cntK: '매매', noFill: true }) });
   }
   const COL = { all: '#2560E8', com: '#B8942A', res: '#0E9F6E', etc: '#8B95A1' };
   const spans = (n, cur) => `<div class="seg2" role="group" aria-label="기간">${[12, 36].filter(m => m < n).map(m => ({ s: m, l: m / 12 + '년' })).concat([{ s: 0, l: '전체' }]).map(b => `<button type="button" data-cmspan="${b.s}" class="${b.s === cur || (!b.s && (!cur || cur >= n)) ? 'on' : ''}" aria-pressed="${b.s === cur}">${b.l}</button>`).join('')}</div>`;
   const cut = (a, months, span) => { if (!span || span >= months.length) return { a, months }; const k = months.length - span; return { a: a.map(x => x.slice(k)), months: months.slice(k) }; };
-  const m2fmt = v => Math.round(v).toLocaleString();
+  const m2fmt = v => Math.round(v).toLocaleString() + '만';
+  const perM2 = v => '㎡당 ' + K.perM2(v);
   function drawCharts() {
     if (!DOC || !DOC.ser) return;
     const el = $('cmCP');
     if (el) {
       const rs = K.regionSeries(DOC, S.k), keys = ['etc', 'res', 'com', 'all'].filter(k => rs.lines[k] && rs.lines[k].some(v => v > 0));
-      const w = cut(keys.map(k => rs.lines[k]), rs.months, S.span);
-      el.innerHTML = lineChart(keys.map((k, i) => ({ a: w.a[i], c: COL[k], w: k === 'all' ? 2.8 : 1.8, dots: k === 'all' })), w.months, el.clientWidth || 600, m2fmt);
+      const w = cut(keys.map(k => rs.lines[k]).concat([rs.counts]), rs.months, S.span), cnt = new Map(w.months.map((ym, i) => [ym, w.a[keys.length][i] || 0]));
+      chart(el, keys.map((k, i) => ({ a: w.a[i], c: COL[k], w: k === 'all' ? 2.8 : 1.8 })), w.months,
+        keys.slice().reverse().map(k => ({ k: K.LU[k], a: w.a[keys.indexOf(k)], c: COL[k], fmt: perM2 })), cnt, '용도지역별 전용 ㎡당 가격 추이');
     }
     const eu = $('cmCU'), u = S.key && (DOC.units || []).find(x => K.keyOf(x) === S.key);
     if (eu && u) {
-      const us = K.unitSeries(u, DOC), w = cut([us.s], us.months, S.span);
-      eu.innerHTML = lineChart([{ a: w.a[0], c: '#2560E8', w: 2.6 }], w.months, eu.clientWidth || 600, m2fmt, 170);
+      const us = K.unitSeries(u, DOC), w = cut([us.s], us.months, S.span), from = M.ymAdd(DOC.to, -35), c = {};
+      (u.t || []).forEach(t => { const ym = String(t[0]).slice(0, 6); c[ym] = (c[ym] || 0) + 1; });
+      const cnt = new Map(w.months.filter(ym => ym >= from).map(ym => [ym, c[ym] || 0]));   // 거래 목록은 최근 3년만 있어서 그 3년만 셈
+      chart(eu, [{ a: w.a[0], c: '#2560E8', w: 2.6 }], w.months, [{ k: '이 건물', a: w.a[0], c: '#2560E8', fmt: perM2 }], cnt, '이 건물 전용 ㎡당 가격 추이', 200);
     }
   }
 
@@ -286,7 +279,7 @@
       </div>
       ${u.hi ? `<div class="hib">${hiBox(`㎡당 최고가 (${ymK(DOC.hm)} 이후)`, u.hi)}${hiBox('최근 1년 ㎡당 최고가', u.hi1)}</div>` : ''}
       <div class="chead" style="margin-top:12px"><h3>이 건물 전용 ㎡당 가격 추이</h3></div><div class="cm-chart" id="cmCU"></div>
-      <p class="basis">각 달 값 = 이 건물의 그 달까지 3개월 매매 실거래 전용 ㎡당 가격 중간값(직거래·지분 거래 제외). 거래가 없던 기간은 점선으로 이어요. 같은 건물이라도 층·위치(1층 길가인지)에 따라 값 차이가 커요.</p>
+      <p class="basis">각 달 값 = 이 건물의 그 달까지 3개월 매매 실거래 전용 ㎡당 가격 중간값(직거래·지분 거래 제외). 그래프 위에서 손가락이나 마우스를 움직이면 그 달의 값과 거래 건수가 위 칸에 나와요. 흐린 점선은 거래가 없던 기간이고, 점선 위의 달에는 값이 없어요. 같은 건물이라도 층·위치(1층 길가인지)에 따라 값 차이가 커요.</p>
       ${tr.length ? `<div class="tbl cm-tbl"><table><thead><tr><th>계약일</th><th class="num">전용·층</th><th class="num">거래금액</th></tr></thead><tbody>${moreBox(tr.slice(0, 30).map(t => `<tr><td>${esc(t.date)}</td><td class="num">${t.area}㎡<small>${t.floor != null ? t.floor + '층' : '층 정보 없음'}</small></td><td class="num">${t.hi ? '<span class="jps-new">신고가</span> ' : ''}<b>${won(t.amt)}</b><small>㎡당 ${K.perM2(t.amt / t.area)}${t.direct ? ' · 직거래' : ''}${t.share ? ' · 지분' : ''}</small></td></tr>`), 5)}</tbody></table></div>${moreBtn(5, Math.min(30, tr.length), '거래')}
       <p class="basis"><span class="jps-new">신고가</span> = 같은 건물 같은 전용면적에서 그 전까지 가장 높았던 값보다 비싸게 거래된 경우(수집 자료 기준, 직거래·지분 거래 제외).</p>` : ''}
     </div>`;
@@ -336,8 +329,8 @@
           : `<div class="st"><div class="k">신고가</div><div class="v">${(sum.nh1 || 0).toLocaleString()}건</div><div class="d">최근 1년</div></div>`}
       </div>` : ''}
       ${rs && lg.length ? det('용도지역별 가격 추이', sumTrend, `${spans(rs.months.length, S.span)}<div class="cm-chart" id="cmCP"></div>
-        <div class="cm-lg">${lg.map(x => `<span><i style="background:${COL[x]}"></i>${esc(K.LU[x])}</span>`).join('')}</div>
-        <p class="basis">각 선은 땅의 용도(용도지역)별로 나눠 계산했어요. 상업지역은 큰길가 상가·빌딩이 많은 곳, 주거지역은 주택가 안 근린상가가 많은 곳이에요. 거래가 적던 달은 비우고 점선으로 이어요(사이 값을 지어내지 않아요).${CX && CX.hm ? ` 이 화면의 실거래는 ${ymK(CX.hm)}부터 모았어요.` : ''}</p>`) : ''}
+        <div class="cm-lg">${lg.map(x => `<span><i style="background:${COL[x]}"></i>${esc(K.LU[x])}</span>`).join('')}<span><i class="gap"></i>거래가 적던 기간</span></div>
+        <p class="basis">각 선은 땅의 용도(용도지역)별로 나눠 계산했어요. 상업지역은 큰길가 상가·빌딩이 많은 곳, 주거지역은 주택가 안 근린상가가 많은 곳이에요. 거래가 적던 달은 값을 비우고 흐린 점선으로 앞뒤만 이어요(점선 위의 달에는 값이 없어요). 그래프 위에서 손가락이나 마우스를 움직이면 그 달의 값과 거래 건수가 위 칸에 나와요.${CX && CX.hm ? ` 이 화면의 실거래는 ${ymK(CX.hm)}부터 모았어요.` : ''}</p>`) : ''}
       ${sum ? det('최고가와 계산 근거', `최근 1년 ${K.TYPES[k].unit} 최고 ${sum.hip ? K.perM2(K.tradePpm(K.trades([sum.hip])[0], k)) : '-'}`, `<div class="hib">${hiBox('최근 1년 최고 거래금액', sum.hi1)}${hiBox(`최근 1년 ${K.TYPES[k].unit} 최고`, sum.hip)}</div>
         <p class="basis"><b>계산 근거</b> · ${k === 'c' ? '구분상가·사무실은 전용면적(혼자 쓰는 넓이) 1㎡당 가격으로 비교해요.' : '통건물은 값의 대부분이 땅값이라 대지면적(땅 넓이) 1㎡당 가격으로 비교해요.'} 시세 = 그 달까지 3개월 매매 실거래 ㎡당 가격의 중간값(가운데 값)이에요. 3개월 동안 거래가 3건보다 적으면 값을 비워 둬요. 해제(취소)·직거래·지분 거래는 빼요.${k === 'c' ? ' 신고가 = 같은 건물·같은 면적의 이전 최고가보다 비싸게 거래된 경우예요.' : ''}</p>`) : ''}
 

@@ -62,6 +62,27 @@ if (dir && fs.existsSync(path.join(dir, 'offi', 'index.json'))) {
   check('공개 index: 가중치·통계값 없음', /"(w|stats|lo|hi)":/.test(raw), false);
 }
 
+// ---------- 매매·전세 시세 추이·전세가율·건수·전월세 요약 (아파트 화면 공용 차트 모양) ----------
+const uj = Object.assign({}, u, { js: [1, 600, 0, 0], tc: [0, 2, 0, 1, 1], jl: [[20261005, 25, 3, 15000, 1]], nj: 1 });
+const hj = O.histOf(uj, meta);
+check('전세 = ㎡당 전세 × 대표 전용, 100만 원 단위', hj.j, [0, 15000, 0, 0]);
+check('전세가율 = 같은 달 둘 다 실제 값일 때만', hj.jr, [0, 0, 0, 0]);
+const hj2 = O.histOf(Object.assign({}, uj, { js: [0, 600, 0, 610] }), meta);
+check('전세가율 계산', hj2.jr.map(v => Math.round(v * 1000) / 1000), [0.75, 0, 0.746, 0]);
+check('월별 매매 건수: tc(전체 기간)', [...O.cntMap(uj, meta)], [['202607', 2], ['202608', 0], ['202609', 1], ['202610', 1]]);
+check('월별 매매 건수: tc 없으면 최근 3년 목록으로', [...O.cntMap(u, meta)], [['202607', 0], ['202608', 0], ['202609', 1], ['202610', 1]]);
+const rnow = O.rentNow(Object.assign({}, uj, { js: [0, 600, 0, 610] }), meta);
+check('전월세 요약: 최근 전세 시세·전세가율·계약 수·월세 중간값(수익률 계산 값과 같게)', [rnow.jNow, rnow.jr && Math.round(rnow.jr.v * 1000), rnow.nj, rnow.nw, rnow.wDep, rnow.wRent, rnow.wFromY],
+  [{ v: 15300, at: '202609', stale: true }, 746, 1, 1, 1000, 76, true]);
+check('최근 전세 계약 목록', O.jeonses(uj), [{ date: '2026.10.05', area: 25, floor: 3, dep: 15000, ct: '갱신' }]);
+const ar = O.areaRent({ d: '역삼동', a: 30 }, { dr: { 역삼동: { jeonse: [12, 20000, 24, 830], wolse: [30, 1000, 80, 23] } } }, { rs: { jeonse: [99, 1, 1, 1] } }, '강남구');
+check('계약 없는 건물: 같은 동 요약 먼저', [ar.scope, ar.j.n, ar.w.rent], ['dong', 12, 80]);
+check('같은 동 없으면 시·군·구 요약', O.areaRent({ d: '논현동' }, { dr: {} }, { rs: { wolse: [5, 1000, 70, 20] } }, '강남구').scope, 'gu');
+check('둘 다 없으면 null', O.areaRent({ d: '논현동' }, {}, {}, '강남구'), null);
+// 공용 차트 세로축: 둥근 눈금·읽기 쉬운 금액
+const PS = require('../assets/price-sheet.js');
+check('세로축 눈금: 35억·40억·45억·50억', PS.niceTicks(331100, 525100).map(PS.eokAxis), ['35억', '40억', '45억', '50억']);
+check('세로축 금액: 0.1억 단위가 아니면 만 단위까지', [PS.eokAxis(525000), PS.eokAxis(10500), PS.eokAxis(8000)], ['52.5억', '1억 500만', '8,000만']);
 const bad = rows.filter(r => !r.ok);
 bad.forEach(r => console.log('실패:', r.name, '| 결과', JSON.stringify(r.got), '| 기대', JSON.stringify(r.want)));
 console.log(`offi 테스트 ${rows.length - bad.length}/${rows.length} 통과`);

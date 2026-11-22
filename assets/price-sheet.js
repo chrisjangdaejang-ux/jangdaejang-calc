@@ -145,26 +145,41 @@
   }
 
   /* ---------- 공용 추이 차트: 그리기 + 안내선(세로선·점·말풍선, 호갱노노처럼) ----------
-     sp = {months, lines:[{a, c, w}], fmtY, h(본 그래프 높이), L(왼쪽 여백), fs(글자), xLab(연월 → 글자),
+     sp = {months, lines:[{a, c, w}], fmtY, h(본 그래프 높이), L(왼쪽 최소 여백 — 눈금 글자가 길면 넓힘), fs(글자), xLab(연월 → 글자), noFill(거래 없는 달은 점·값 없이 '거래 없음'),
            sub:{a, c, label, fmt}(아래 얇은 보조 그래프 — 같은 세로선 공유, 평균 점선), tip(i) → 말풍선 내용, empty, min, aria}
      plot() 은 SVG 문자열과 좌표(model)를 돌려주고, mount() 가 el 에 넣고 안내선을 연결한다 */
   const eok = v => v >= 10000 ? (Math.round(v / 1000) / 10).toString().replace(/\.0$/, '') + '억' : Math.round(v).toLocaleString() + '만';
+  /** 세로축 눈금 금액: 0.1억 단위로 떨어지면 '52.5억', 아니면 '1억 500만'(만 단위까지 그대로) */
+  const eokAxis = v => { v = Math.round(v); return v >= 10000 && v % 1000 ? Math.floor(v / 10000) + '억 ' + (v % 10000).toLocaleString() + '만' : eok(v); };
+  /** 둥근 눈금: lo~hi 안에 1·2·2.5·5 × 10^k 간격으로 3~4개(안 되면 5개·2개) (예: 30억·40억·50억). 값이 하나뿐이면 그 값 하나 */
+  function niceTicks(lo, hi) {
+    const span = hi - lo; if (!(span > 0)) return [lo];
+    const mag = Math.pow(10, Math.floor(Math.log10(span / 3))), all = [1, 2, 2.5, 5, 10, 20].filter(f => f !== 2.5 || mag >= 10000 || (mag >= 10 && hi < 10000)).map(f => {
+      const st = f * mag, out = [];
+      for (let k = Math.ceil(lo / st - 1e-9); k * st <= hi + 1e-9; k++) out.push(+(k * st).toPrecision(12));
+      return out;
+    });
+    return all.find(o => o.length >= 3 && o.length <= 4) || all.find(o => o.length === 5) || all.find(o => o.length === 2) || all.find(o => o.length === 6) || [lo, hi];
+  }
+  /** 글자 폭 어림(한글 1칸, 숫자·기호 0.6칸) — 세로축 글자가 왼쪽 여백을 넘지 않게 */
+  const textW = (t, fs) => [...String(t)].reduce((w, ch) => w + (/[가-힣]/.test(ch) ? fs : fs * 0.6), 0);
   function plot(sp, W) {
     const m = M(), fs = sp.fs || 12.5, months = sp.months || [], n = months.length;
     W = Math.max(260, Math.round(W || 480));
-    const L = sp.L || 54, R = 12, T = 12, B = 24, PH = (sp.h || 190) - T - B;
+    const R = 12, T = 12, B = 24, PH = (sp.h || 190) - T - B;
     const vals = [].concat(...sp.lines.map(l => l.a)).filter(v => v > 0);
     if (vals.length < (sp.min == null ? 2 : sp.min)) return { html: `<p class="jps-note">${sp.empty || '차트로 보여 드릴 거래가 없어요.'}</p>` };
     let lo = Math.min(...vals), hi = Math.max(...vals); const pad = (hi - lo) * (sp.pad || 0.1) || hi * 0.05; lo = Math.max(0, lo - pad); hi += pad;
+    const fmtY = !sp.fmtY || sp.fmtY === eok ? eokAxis : sp.fmtY, live = !!sp.tip, ticks = niceTicks(lo, hi);
+    const L = Math.max(sp.L || 54, Math.ceil(Math.max(...ticks.map(v => textW(fmtY(v), fs))) + 9));
     const sv = sp.sub && sp.sub.a ? sp.sub.a.filter(v => v > 0) : [], sub = sv.length ? sp.sub : null;
     const SG = sub ? 14 : 0, SH = sub ? (sp.subH || 44) : 0, H = T + PH + SG + SH + B, s0 = T + PH + SG;
     const x = i => L + (n === 1 ? 0 : i * (W - L - R) / (n - 1)), y = v => T + (hi - v) / (hi - lo) * PH;
-    const fmtY = sp.fmtY || eok, live = !!sp.tip;
-    const grid = [lo, (lo + hi) / 2, hi].map(v => `<line x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#E5E8EB"/><text x="${L - 5}" y="${(y(v) + 4).toFixed(1)}" font-size="${fs}" fill="#4E5968" text-anchor="end">${fmtY(v)}</text>`).join('');
+    const grid = ticks.map(v => `<line x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#E5E8EB"/><text x="${L - 5}" y="${(y(v) + 4).toFixed(1)}" font-size="${fs}" fill="#4E5968" text-anchor="end">${fmtY(v)}</text>`).join('');
     /* 실제 값이 있는 달의 작은 점: 기간이 짧으면(5년 이하) 모든 달, 길면 거래 공백 앞뒤·외딴 달만 */
     const dots = (a, c, yy) => a.map((v, i) => v > 0 && (n <= 60 || !(a[i - 1] > 0) || !(a[i + 1] > 0)) ? `<circle cx="${x(i).toFixed(1)}" cy="${yy(v).toFixed(1)}" r="${n <= 60 ? 2 : 2.2}" fill="${c}"/>` : '').join('');
     const last = (a, c) => { for (let i = a.length - 1; i >= 0; i--) if (a[i] > 0) return `<circle cx="${x(i).toFixed(1)}" cy="${y(a[i]).toFixed(1)}" r="4" fill="${c}">${live ? '' : `<title>${m.ymLabel(months[i])} ${fmtY(a[i])}</title>`}</circle>`; return ''; };
-    const pts = sp.lines.map(l => ({ a: l.a, c: l.c, y }));
+    const pts = sp.lines.map(l => ({ a: l.a, c: l.c, y, raw: !!sp.noFill }));
     let subSvg = '';
     if (sub) {
       let a = Math.min(...sv), b = Math.max(...sv); const p2 = (b - a) * 0.15 || 2; a -= p2; b += p2;
@@ -175,7 +190,7 @@
         + `<text x="${L - 5}" y="${(s0 + SH / 2 - 2).toFixed(1)}" font-size="${fs - 1}" fill="#4E5968" text-anchor="end">${esc(sub.label || '')}</text>`
         + `<text x="${L - 5}" y="${(s0 + SH / 2 + fs - 1).toFixed(1)}" font-size="${fs - 1}" fill="#4E5968" text-anchor="end">${f2(sv[sv.length - 1])}</text>`
         + linePaths(sub.a, x, y2, sub.c, 1.8);
-      pts.push({ a: sub.a, c: sub.c, y: y2 });
+      pts.push({ a: sub.a, c: sub.c, y: y2, raw: !!sp.noFill });
     }
     const xLab = sp.xLab || ((ym, short) => n > 36 ? (short ? "'" + String(ym).slice(2, 4) + '년' : String(ym).slice(0, 4) + '년') : short ? "'" + String(ym).slice(2, 4) + '.' + String(ym).slice(4, 6) : m.ymLabel(ym));
     const xl = m.xTicks(n, W - L - R, fs, x, months, (ym, short) => xLab(ym, short)).map(t => `<text x="${t.x.toFixed(1)}" y="${H - 5}" font-size="${fs}" fill="#4E5968" text-anchor="${t.a}">${t.t}</text>`).join('');
@@ -194,9 +209,10 @@
     return i => {
       const ym = o.months[i], out = { head: m.ymLabel(ym), rows: [], extra: [], gapOn: !!o.gap, vsOn: !!o.vs, cntOn: !!o.cnt, cntK: o.cntK || '' }, say = [out.head];
       o.rows.forEach(r => {
-        const p = m.valAt(r.a, i), f = r.fmt || fm;
+        let p = m.valAt(r.a, i); const f = r.fmt || fm, mid = p && !p.real;
+        if (o.noFill && mid) p = null;                       // noFill: 거래 없는 달은 이은 값('약 …')을 보여 주지 않고 '거래 없음'
         let v, fill = false;
-        if (!p) { const k = r.a.findIndex(x => x > 0); v = k > i ? `자료 없음(${m.ymLabel(o.months[k])}부터)` : '최근 거래 없음'; }
+        if (!p) { const k = r.a.findIndex(x => x > 0); v = k > i ? `자료 없음(${m.ymLabel(o.months[k])}부터)` : mid ? '이 달 거래 없음' : '최근 거래 없음'; }
         else if (p.real) v = f(p.v) + (r.ex ? r.ex(i) : '');
         else { v = '약 ' + f(r.fmt ? p.v : m.r100(p.v)); fill = true; }
         out.rows.push({ k: r.k, sk: r.sk, c: r.c, v, fill, none: !p });
@@ -221,11 +237,11 @@
     };
   }
   /** 전체 기간 매매·전세(histSeries 결과)용 말풍선. cnt = Map(연월 → 매매 건수) 선택 */
-  function histTip(t, cnt, gu) {
+  function histTip(t, cnt, gu, noFill) {
     const rows = [{ k: '매매', a: t.s, c: '#2560E8' }], two = t.j.some(v => v > 0);
     if (two) rows.push({ k: '전세', a: t.j, c: '#14A06B' });
     if (gu) rows.push({ k: `${gu.name} 전체(같은 면적 환산)`, sk: `${gu.name} 전체`, a: gu.a, c: GRAY });
-    return tipFn({ months: t.months, rows, gap: two ? [t.s, t.j] : null, cnt, vs: gu ? { a: t.s, b: gu.a } : null });
+    return tipFn({ months: t.months, rows, gap: two ? [t.s, t.j] : null, cnt, vs: gu ? { a: t.s, b: gu.a } : null, noFill });
   }
   /** 최근 3년 월별 매매 건수(u[7]) → Map(연월 → 건수) */
   function cntMap(u, months) {
@@ -325,7 +341,9 @@
     let gu = null;
     if (opts.gu && !opts.jr) { const a = M().sggLine(opts.gu.s, opts.gu.months, t.months, opts.gu.area); if (a.some(v => v > 0)) { gu = { name: opts.gu.name || '구', a }; sp.lines.unshift({ a, c: GRAY, w: 1.8, dash: true }); } }
     if (opts.sub && !opts.jr && jr.some(v => v > 0)) sp.sub = { a: jr, c: '#0E7A4F', label: '전세가율' };
-    if (opts.tip) sp.tip = opts.jr ? tipFn({ months: t.months, rows: [{ k: '전세가율', a: jr, c: '#0E7A4F', fmt: v => Math.round(v) + '%' }] }) : histTip(t, opts.cnt, gu);
+    if (opts.noFill) sp.noFill = true;
+    if (opts.aria) sp.aria = opts.aria;
+    if (opts.tip) sp.tip = opts.jr ? tipFn({ months: t.months, rows: [{ k: '전세가율', a: jr, c: '#0E7A4F', fmt: v => Math.round(v) + '%' }], noFill: opts.noFill }) : histTip(t, opts.cnt, gu, opts.noFill);
     return sp;
   }
   /** 구 전체 비교선 자료 {name, s, months, area}: price/h/{구}.json 의 sgg(전체 기간, 기준 달 hm)가 있으면 그것,
@@ -598,7 +616,7 @@
     ${(sm.price || (last && last.price)) ? `<a class="jps-loan" href="${esc(loanHref({ src: 'sheet', price: sm.price || last.price, code: u[0], apt: u[2], band: u[3], area: u[4] }))}" data-track="sheet_to_loan">이 집 대출 한도 계산하기 →</a>` : ''}`;
   }
 
-  const API = { open, close, btn, loanHref, loadSgg, loadHist, histOf, scoreUnits, findUnit, tradesHtml, pastYearsHtml, wireMore, miniChart, histChart, histNote, linePaths, mountBars, SPARSE, highsHtml, spanBtns, baseName, plot, mount, tipFn, histTip, histSpec, mountHist, cntMap, eok, guOf, guNote, ppySpec, mountPpy };
+  const API = { niceTicks, eokAxis, open, close, btn, loanHref, loadSgg, loadHist, histOf, scoreUnits, findUnit, tradesHtml, pastYearsHtml, wireMore, miniChart, histChart, histNote, linePaths, mountBars, SPARSE, highsHtml, spanBtns, baseName, plot, mount, tipFn, histTip, histSpec, mountHist, cntMap, eok, guOf, guNote, ppySpec, mountPpy };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_PRICE = API;
 })(typeof self !== 'undefined' ? self : this);
