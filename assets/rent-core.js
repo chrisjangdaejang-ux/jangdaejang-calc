@@ -129,7 +129,7 @@
 
   /* ---------- 빌라(연립·다세대) 전세가율 — 재개발·빌라 화면(villa/)과 전월세 빌라 화면(jeonse/?k=v)이 함께 쓴다 ----------
      jr = 엔진 villa_jr 결과 {r, at, a 전용, j 전세 시세, s 매매 시세, nj 전세 계약 수, ns 매매 수, b 'b' 같은 건물 | 'd' 같은 동 비슷한 빌라,
-          sp [첫·끝 매매 연월], nb 건물 수·by [준공 범위]·ar [전용 범위](b='d'), lo 표본 적음} 또는 {x 'nj'|'ns', ns, nd}
+          jw 12 = 최근 3개월 전세가 없어 최근 1년 전세로 계산(at = 가장 최근 계약 달), sp [첫·끝 매매 연월], nb 건물 수·by [준공 범위]·ar [전용 범위](b='d'), lo 표본 적음} 또는 {x 'nj'|'ns', ns, nd}
      문구는 숫자·표본 수만 옮기고, 위험 판단은 공식 기준(HUG 90%) 하나만 쓴다. */
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   /** 80% 이상 90% 미만 = HUG 기준(보증금 + 선순위채권 ≤ 주택가격 90%)까지 선순위채권이 들어갈 여유가 주택가격의 10%가 안 되는 구간(공식 등급이 아니라 화면 안내용) */
@@ -137,11 +137,15 @@
   const VJ_WHY = '빌라는 같은 건물 매매가 드물어서 시세를 정확히 알기 어려워요. 시세가 불확실하면 보증금이 실제 매매가에 가까워져도 세입자가 알아채기 어려워요. '
     + '그래서 빌라는 전셋값이 매맷값의 몇 %인지(전세가율)를 더 꼼꼼히 볼 필요가 있어요. 이 화면의 전세가율은 실거래로 계산한 참고값이라, 계약하기 전에는 공시가격과 등기부등본으로 한 번 더 확인하는 것이 좋아요.';
   const ymDot = ym => ym ? `${String(ym).slice(0, 4)}.${String(ym).slice(4, 6)}` : '';
+  /** 전세 기준 기간 이름: 최근 3개월 계약이 없어 최근 1년 계약으로 계산한 경우(jw=12)만 '최근 1년 전세 계약 기준 (가장 최근 계약: YYYY.MM)' */
+  const vjWin = jr => jr && jr.jw === 12 ? `최근 1년 전세 계약 기준 (가장 최근 계약: ${ymDot(jr.at)})` : '';
   /** 계산 근거 한 줄(글자만, 화면에서 esc) */
   function vjBasis(jr, dong) {
     if (!jr || !(jr.r > 0)) return '';
     const m = M(), w = m.won;
-    const head = `${ymDot(jr.at)} 기준 전세 시세 ${w(jr.j)} ÷ 매매 시세 ${w(jr.s)}이에요. 전세 시세는 이 건물 전용 ${jr.a}㎡ 안팎의 최근 3개월 순수 전세(월세 없는 계약) ${jr.nj}건으로 구한 ㎡당 보증금 중간값이에요.`;
+    const head = jr.jw === 12
+      ? `${vjWin(jr)} 전세 시세 ${w(jr.j)} ÷ 매매 시세 ${w(jr.s)}이에요. 최근 3개월에는 이 평형 전세 계약이 없어서, 전세 시세는 이 건물 전용 ${jr.a}㎡ 안팎의 최근 1년 순수 전세(월세 없는 계약) ${jr.nj}건으로 구한 ㎡당 보증금 중간값이에요.`
+      : `${ymDot(jr.at)} 기준 전세 시세 ${w(jr.j)} ÷ 매매 시세 ${w(jr.s)}이에요. 전세 시세는 이 건물 전용 ${jr.a}㎡ 안팎의 최근 3개월 순수 전세(월세 없는 계약) ${jr.nj}건으로 구한 ㎡당 보증금 중간값이에요.`;
     const sp = jr.sp ? `${ymDot(jr.sp[0])}~${ymDot(jr.sp[1])}` : '';
     const sale = jr.b === 'd'
       ? ` 매매 시세는 같은 동 비슷한 빌라 기준이에요. 이 건물 매매가 적어서 ${dong ? dong + '의 ' : '같은 동의 '}준공 ${jr.by ? jr.by[0] + '~' + jr.by[1] + '년' : ''}${jr.ar ? `, 전용 ${jr.ar[0]}~${jr.ar[1]}㎡` : ''} 빌라 ${jr.nb}곳의 매매 ${jr.ns}건(${sp})으로 ㎡당 가격 중간값을 구했어요.`
@@ -151,7 +155,7 @@
   /** 전세가율을 만들지 않은 이유(글자만) — bld = 건물 전체에 전세 기록이 없을 때 */
   function vjMiss(jr, bld) {
     if (!jr) return `최근 3년 동안 이 ${bld ? '건물' : '평형'}의 순수 전세 계약이 없어서 전세가율을 계산하지 않았어요.`;
-    if (jr.x === 'nj') return '최근 3개월 동안 이 평형의 순수 전세 계약이 없어서 전세가율을 계산하지 않았어요.';
+    if (jr.x === 'nj') return '최근 1년 동안 이 평형의 순수 전세 계약이 없어서 전세가율을 계산하지 않았어요.';
     if (jr.x === 'ns') return `이 건물 매매는 최근 3년 ${jr.ns || 0}건뿐이에요. ${jr.nd == null ? '준공 연도 자료가 없어서 같은 동 비슷한 빌라도 찾지 못했어요.' : `같은 동 비슷한 빌라 매매도 ${jr.nd}건뿐이에요.`} 매매 시세를 정할 표본이 부족해서 전세가율을 계산하지 않았어요.`;
     return '';
   }
@@ -183,7 +187,7 @@
   }
 
   const API = { KINDS, kindOf, HUG, arr, monthsFrom, series, seriesFull, histRow, latest, change, risk, hugCap, convRate, compare, deals, summary, guSeries,
-    groupBld, searchBld, bldName, ymKo, NEAR, VJ_WHY, vjBasis, vjMiss, vjLevel, vjNote, vjPick, vjDong };
+    groupBld, searchBld, bldName, ymKo, NEAR, VJ_WHY, vjWin, vjBasis, vjMiss, vjLevel, vjNote, vjPick, vjDong };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_RENT = API;
 })(typeof self !== 'undefined' ? self : this);

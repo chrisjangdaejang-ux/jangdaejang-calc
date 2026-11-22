@@ -73,8 +73,10 @@ const vb = { r: 0.92, at: '202610', a: 30, j: 27600, s: 30000, nj: 2, ns: 3, b: 
 check('빌라 근거: 전세 ÷ 매매·표본 수·기간·표본 적음', [/전세 시세 2억 7,600만원 ÷ 매매 시세 3억원/.test(R.vjBasis(vb)), /순수 전세\(월세 없는 계약\) 2건/.test(R.vjBasis(vb)), /같은 건물 매매 3건\(2025\.12~2026\.09\)/.test(R.vjBasis(vb)), /표본이 적어서/.test(R.vjBasis(vb))], [true, true, true, true]);
 const vd = Object.assign({}, vb, { b: 'd', nb: 7, by: [2010, 2020], ar: [25.1, 35.8], ns: 40, lo: 0 });
 check('빌라 근거: 같은 동 비슷한 빌라 기준(동·준공·면적·건물 수·건수)', [/같은 동 비슷한 빌라 기준/.test(R.vjBasis(vd, '화곡동')), /화곡동의 준공 2010~2020년, 전용 25\.1~35\.8㎡ 빌라 7곳의 매매 40건/.test(R.vjBasis(vd, '화곡동')), /표본이 적어서/.test(R.vjBasis(vd))], [true, true, false]);
+const v12 = Object.assign({}, vb, { jw: 12, at: '202606' });
+check('빌라 1년 전세 기준: 이름·가장 최근 계약 달·1년 표본', [R.vjWin(v12), /최근 3개월에는 이 평형 전세 계약이 없어서/.test(R.vjBasis(v12)), /최근 1년 순수 전세\(월세 없는 계약\) 2건/.test(R.vjBasis(v12)), R.vjWin(vb)], ['최근 1년 전세 계약 기준 (가장 최근 계약: 2026.06)', true, true, '']);
 check('빌라: 값이 없으면 근거도 없음', R.vjBasis({ x: 'nj' }), '');
-check('빌라: 계산 안 한 이유(표본 수 그대로)', [/3개월/.test(R.vjMiss({ x: 'nj' })), /최근 3년 1건뿐/.test(R.vjMiss({ x: 'ns', ns: 1, nd: 4 })), /같은 동 비슷한 빌라 매매도 4건뿐/.test(R.vjMiss({ x: 'ns', ns: 1, nd: 4 })), /준공 연도 자료가 없어서/.test(R.vjMiss({ x: 'ns', ns: 0, nd: null })), /이 건물/.test(R.vjMiss(null, true))], [true, true, true, true, true]);
+check('빌라: 계산 안 한 이유(표본 수 그대로)', [/최근 1년/.test(R.vjMiss({ x: 'nj' })), /최근 3년 1건뿐/.test(R.vjMiss({ x: 'ns', ns: 1, nd: 4 })), /같은 동 비슷한 빌라 매매도 4건뿐/.test(R.vjMiss({ x: 'ns', ns: 1, nd: 4 })), /준공 연도 자료가 없어서/.test(R.vjMiss({ x: 'ns', ns: 0, nd: null })), /이 건물/.test(R.vjMiss(null, true))], [true, true, true, true, true]);
 check('빌라 단계: 90% 이상 hi(HUG 기준)·80~90% mid·그 아래 없음', [R.vjLevel(0.9), R.vjLevel(0.85), R.vjLevel(0.79), R.vjLevel(0)], ['hi', 'mid', '', '']);
 check('빌라 90% 이상: 아파트·오피스텔과 같은 칩(문구·체크리스트 링크)', R.vjNote(0.93, '202610', '../jeonse/checklist/?k=v'), JDJ_PRICE.jrChip(0.93, '202610', '../jeonse/checklist/?k=v'));
 const mid = R.vjNote(0.86, '202610');

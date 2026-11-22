@@ -179,7 +179,7 @@ td.dt{white-space:nowrap}td small{color:var(--muted);font-size:12.5px}
       <li><b>구역 안(공식 경계)</b> — 서울 열린데이터광장 ‘서울시 의제처리구역 위치정보’(정비구역 경계 공개 자료)와 건물 지번 위치로 확인한 경우입니다. 정비구역 경계는 서울시 공개 자료 기준이며 참고용이에요(법적 효력 없음). 최종 확인은 구청 고시도면으로 하세요. 같은 동이라도 경계 밖으로 확인되면 ‘같은 동·구역 밖’으로 표시합니다.</li>
       <li><b>구역 대표 지번</b> — 서울시 정비사업 추진현황의 구역 대표 지번과 건물 지번이 같은 경우입니다. 구역 안에 있을 가능성이 높지만, 구역 경계는 구청 고시도면으로 확인하세요.</li>
       <li><b>같은 동 정비구역</b> — 같은 법정동에 재개발 계열 구역이 있다는 뜻일 뿐, 이 건물이 구역 안에 있다는 뜻은 아닙니다. 구역 포함 여부는 꼭 확인하세요.</li>
-      <li><b>전세가율</b> — 전셋값 ÷ 매맷값이에요. 전세 시세는 이 건물·평형의 최근 3개월 순수 전세 계약으로, 매매 시세는 같은 건물 매매로 구해요. 같은 건물 매매가 적으면 같은 동에서 준공 연도와 전용면적이 비슷한 빌라 매매로 대신하고, 카드에 ‘같은 동 비슷한 빌라 기준’과 계약 건수를 함께 적어요. 주택도시보증공사(HUG) 전세보증 가입 기준인 90% 이상이면 주의 안내를 보여 드려요.</li>
+      <li><b>전세가율</b> — 전셋값 ÷ 매맷값이에요. 전세 시세는 이 건물·평형의 최근 3개월 순수 전세 계약으로 구하고, 3개월 안에 계약이 없으면 최근 1년 계약으로 구해요(카드에 ‘최근 1년 전세 계약 기준’과 가장 최근 계약 달을 적어요). 매매 시세는 같은 건물 매매로 구해요. 같은 건물 매매가 적으면 같은 동에서 준공 연도와 전용면적이 비슷한 빌라 매매로 대신하고, 카드에 ‘같은 동 비슷한 빌라 기준’과 계약 건수를 함께 적어요. 주택도시보증공사(HUG) 전세보증 가입 기준인 90% 이상이면 주의 안내를 보여 드려요.</li>
       <li><b>입주권 위험</b> — 권리산정기준일 자료가 없어 구역의 가장 이른 공식 단계 날짜를 기준일로 추정하고 건축연도와 비교했습니다. 실제 기준일은 후보지 공모 공고일 등으로 이보다 앞설 수 있습니다.</li>
     </ul>
   </details>
@@ -205,7 +205,7 @@ td.dt{white-space:nowrap}td small{color:var(--muted);font-size:12.5px}
 <script src="../assets/ads.js?v=5"></script>
 <script src="../assets/mine-core.js?v=18"></script>
 <script src="../assets/price-sheet.js?v=19"></script>
-<script src="../assets/rent-core.js?v=4"></script>
+<script src="../assets/rent-core.js?v=5"></script>
 
 <script>
 var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
@@ -302,11 +302,11 @@ function jrBlock(b){
   let h;
   if (j && j.r > 0){
     const lv = R.vjLevel(j.r);
-    h = `<div class="jrt"><span class="k">전세가율</span><b class="${lv === 'hi' ? 'hi' : ''}">${Math.round(j.r * 100)}%</b><small>${esc(j.bd)} · 전용 ${j.a}㎡ · ${j.b === 'd' ? '같은 동 비슷한 빌라 기준' : '같은 건물 매매 기준'}</small></div>
+    h = `<div class="jrt"><span class="k">전세가율</span><b class="${lv === 'hi' ? 'hi' : ''}">${Math.round(j.r * 100)}%</b><small>${esc(j.bd)} · 전용 ${j.a}㎡ · ${j.b === 'd' ? '같은 동 비슷한 빌라 기준' : '같은 건물 매매 기준'}${j.jw === 12 ? ' · ' + esc(R.vjWin(j)) : ''}</small></div>
       <p class="jrb"><b>계산 근거</b> · ${esc(R.vjBasis(j, b.d))}</p>${R.vjNote(j.r, j.at, '../jeonse/checklist/?k=v')}`;
   } else h = `<div class="jrt"><span class="k">전세가율</span></div><p class="jrb miss">${esc(R.vjMiss(j, !list.length))}</p>`;
   const oth = list.filter(x => x !== j && x.r > 0);
-  if (oth.length) h += `<p class="oth">다른 평형 · ${oth.map(x => `${esc(x.bd)}(전용 ${x.a}㎡) ${Math.round(x.r * 100)}%${x.b === 'd' ? '(같은 동 비슷한 빌라 기준)' : ''}`).join(' · ')}</p>`;
+  if (oth.length) h += `<p class="oth">다른 평형 · ${oth.map(x => `${esc(x.bd)}(전용 ${x.a}㎡) ${Math.round(x.r * 100)}%${x.b === 'd' ? '(같은 동 비슷한 빌라 기준)' : ''}${x.jw === 12 ? '(최근 1년 전세 기준)' : ''}`).join(' · ')}</p>`;
   if (jl.length){
     const rows = jl.map(t => { const d = ymd(String(t[0])); return `<tr><td class="dt">${/^20\d\d\./.test(d) ? '<span class="yy">20</span>' + d.slice(2) : d}${CTN[t[4]] ? `<br><small>${CTN[t[4]]}</small>` : ''}</td><td class="num">${t[1]}㎡${t[2] != null ? `<br><small>${t[2]}층</small>` : ''}</td><td class="num"><b>${won(t[3])}</b></td></tr>`; }).join('');
     h += `<details class="tr"><summary>최근 전세 계약 ${jl.length}건 보기</summary><table><tr><th>계약일</th><th class="num">전용·층</th><th class="num">전세 보증금</th></tr>${rows}</table>
