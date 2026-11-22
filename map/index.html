@@ -1223,10 +1223,11 @@ function focusCard(all){
     : !F.jibun && F.kind !== 'a' ? `${place} 가운데를 보여 드려요. 주변 아파트 시세와 개발·교통 예정을 함께 볼 수 있어요.`
     : `이 ${subj}${jo} 건물별 지도 위치 자료가 아직 없어 ${place} 가운데를 점선 동그라미로 보여 드려요. 실제 위치와 다를 수 있어요.`;
   const gNote = '';
+  const src = P.prec === 'exact' && /^[ovc]$/.test(F.kind) ? '건물 위치: 행정안전부 주소정보(도로명주소 건물 출입구 위치)를 약 100m 단위로 줄여 보여 드려요.' : '';   // 공공 주소 좌표(소수 셋째 자리) — 출처 표시
   $('sheet').innerHTML = `<div class="grab"></div><div class="hd"><h2>${esc(P.name || F.name || P.label)}</h2><button type="button" class="x" aria-label="닫기">×</button></div>
     <p class="meta">${esc([sggName(P.code), P.dong, kind].filter(Boolean).join(' · '))}</p>
     <dl class="kv">${F.price > 0 ? `<dt>최근 시세</dt><dd><b>${esc(M.won(F.price))}</b><small>결과 화면과 같은 값이에요</small></dd>` : ''}</dl>
-    ${where ? `<p class="note loc">${where}${esc(gNote)}</p>` : ''}
+    ${where ? `<p class="note loc">${where}${esc(gNote)}</p>` : ''}${src ? `<p class="note">${esc(src)}</p>` : ''}
     ${back ? `<div class="acts" style="grid-template-columns:1fr">${back}</div>` : ''}`;
   showSheet();
   reveal(P.lat, P.lng);
