@@ -81,6 +81,7 @@ label.f{display:block;font-size:13.5px;font-weight:700;color:#4E5968;margin:10px
 .rule{font-size:13.5px;color:#4E5968;background:#F9FAFB;border-radius:12px;padding:10px 12px;line-height:1.6;margin:8px 0 0}
 .local{font-size:12.5px;font-weight:700;color:#0E7A4F;background:#E6F5EE;border-radius:6px;padding:1px 6px;margin-left:4px}
 </style>
+<script src="../../assets/chiprow.js?v=1"></script>
 </head>
 <body>
 <header class="top"><a class="brand" href="../../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a><a class="badge plain" href="../" style="text-decoration:none">중개사 제휴센터</a></header>
@@ -101,7 +102,7 @@ label.f{display:block;font-size:13.5px;font-weight:700;color:#4E5968;margin:10px
 
   <div id="app" hidden>
     <div class="box"><div class="who"><div><b id="office"></b><small id="sub"></small></div><button class="btn ghost sm" id="out" type="button">로그아웃</button></div></div>
-    <div class="tabs" role="tablist">
+    <div class="tabs" role="tablist" data-chiprow="메뉴 모두 보기">
       <button class="tab on" data-t="inbox" type="button">받은 문의<span class="n" id="nNew" hidden></span></button>
       <button class="tab" data-t="watch" type="button">고객 관심 단지<span class="n" id="nEv" hidden></span></button>
       <button class="tab" data-t="sheet" type="button">적정 가격 근거표</button>

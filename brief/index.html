@@ -35,6 +35,7 @@
 <script src="../assets/brief-ad.js?v=1"></script>
 <script src="../assets/plain-words.js?v=16" defer></script>
 <script src="../assets/tabbar.js?v=4" defer></script>
+<script src="../assets/chiprow.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/aplus.css?v=45">
@@ -49,7 +50,7 @@ h1{font-size:clamp(25px,6vw,34px);margin:4px 0 6px}
 .vt button[aria-pressed="true"]{background:#fff;color:var(--blue);box-shadow:0 1px 4px rgba(0,0,0,.1)}
 .chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;margin:0 0 6px;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
-.chips a{flex:none;font-size:14.5px;font-weight:700;min-height:40px;display:inline-flex;align-items:center;padding:0 13px;border:1px solid var(--line);border-radius:999px;color:var(--sub);text-decoration:none;background:#fff;white-space:nowrap}
+.chips a{flex:none;font-size:14.5px;font-weight:700;min-height:44px;display:inline-flex;align-items:center;padding:0 13px;border:1px solid var(--line);border-radius:999px;color:var(--sub);text-decoration:none;background:#fff;white-space:nowrap}
 .chips a[aria-current="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
 .chips a small{font-weight:500;margin-left:4px;opacity:.8}
 .one{background:#F4F7FF;border:1px solid #D6E2FF;border-radius:16px;padding:16px 18px;margin:0 0 14px}
@@ -434,7 +435,7 @@ function render(S, M){
   <p class="sub">${esc(B.windowDetail(w))}</p>
   ${pnewsHtml(S.pnews, S.name)}
   <div class="vt" role="group" aria-label="보기 종류"><button type="button" data-v="" aria-pressed="${!PRO}">일반</button><button type="button" data-v="pro" aria-pressed="${PRO}">중개사용</button></div>
-  ${dongs.length ? `<nav class="chips" aria-label="동 고르기"><a href="${url(S.g, '', PRO)}" aria-current="${!dn}">${esc(S.name)} 전체</a>${dongs.map(x => `<a href="${url(S.g, x[0], PRO)}" aria-current="${x[0] === dn}">${esc(x[0])}<small>${x[1]}건</small></a>`).join('')}</nav>` : ''}
+  ${dongs.length ? `<nav class="chips" aria-label="동 고르기" data-chiprow="동 전체 보기"><a href="${url(S.g, '', PRO)}" aria-current="${!dn}">${esc(S.name)} 전체</a>${dongs.map(x => `<a href="${url(S.g, x[0], PRO)}" aria-current="${x[0] === dn}">${esc(x[0])}<small>${x[1]}건</small></a>`).join('')}</nav>` : ''}
   <section class="one" aria-label="오늘의 한 줄"><h2>오늘의 한 줄</h2>
     ${v.lines.fact ? `<p>${esc(v.lines.fact)}</p>` : ''}${v.lines.cmp ? `<p class="c">${esc(v.lines.cmp)}</p>` : ''}${v.lines.mean ? `<p class="c">${esc(v.lines.mean)}</p>` : ''}${v.lines.so ? `<p class="so">${esc(v.lines.so)}</p>` : ''}
   </section>

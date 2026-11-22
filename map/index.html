@@ -43,6 +43,7 @@
 <script src="../assets/ads.js?v=5"></script>
 <script src="../assets/devmap-view.js?v=3"></script>
 <script src="../assets/tabbar.js?v=4" defer></script>
+<script src="../assets/chiprow.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/aplus.css?v=45">
@@ -82,7 +83,11 @@ body.jm-full>.top{position:relative;flex:none}
 .seg{display:flex;background:#F2F4F6;border-radius:12px;padding:3px;flex:none}
 .seg button{border:0;background:none;font:inherit;font-size:14.5px;font-weight:700;color:var(--sub2);min-height:44px;padding:0 13px;border-radius:9px;cursor:pointer;white-space:nowrap}
 .seg button.on{background:var(--blue);color:#fff}
-.fil{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;flex:1 1 100%;min-width:0;margin:0 -12px;padding:0 12px;scroll-padding:0 12px}
+.fil{display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;flex:1 1 100%;min-width:0}
+.row1>.cr-box{flex:1 1 100%}   /* 칩 줄: assets/chiprow.js — PC는 여러 줄, 휴대폰은 넘기기 + 흐림 + › + '필터 더보기' */
+.lgrp{display:contents}   /* '지도에 함께 보기' 묶음: 휴대폰 한 줄에선 칩과 나란히, PC·펼침에선 따로 한 줄 */
+.lgl{flex:none;align-self:center;font-size:13px;font-weight:700;color:#4E5968;white-space:nowrap;padding:0 2px 0 6px}
+.cr-open .lgrp{display:flex;flex-wrap:wrap;align-items:center;gap:6px;flex:1 1 100%}.cr-open .lgl{padding-left:2px}
 .fil::-webkit-scrollbar{display:none}
 .chip{flex:none;border:1px solid var(--line);background:#fff;font:inherit;font-size:14px;font-weight:700;color:var(--sub);min-height:44px;padding:0 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
 .chip.on{border-color:var(--blue);color:var(--blue);background:var(--blue-l)}
@@ -299,7 +304,7 @@ i.lg-dot{display:inline-block;width:13px;height:13px;border-radius:50%;backgroun
 .jm-b.po i{font-style:normal;font-size:10.5px;font-weight:800;color:#fff;background:#3E4754;border-radius:999px;min-width:16px;height:16px;line-height:16px;text-align:center;padding:0 3px}
 .jm-b.po.sc i{background:#0E7A4F}
 .chip.lay.po.on{border-color:#3E4754;color:#191F28;background:#EEF1F4}
-.top .hback{margin-left:auto;margin-right:8px;display:inline-flex;align-items:center;min-height:40px;padding:0 12px;border-radius:999px;border:1.5px solid var(--blue);color:var(--blue);background:#fff;font-size:14px;font-weight:800;text-decoration:none;white-space:nowrap}
+.top .hback[hidden]{display:none}.top .hback{margin-left:auto;margin-right:8px;display:inline-flex;align-items:center;min-height:40px;padding:0 12px;border-radius:999px;border:1.5px solid var(--blue);color:var(--blue);background:#fff;font-size:14px;font-weight:800;text-decoration:none;white-space:nowrap}
 .sheet .note.loc{padding:8px 11px;border-radius:10px;background:#FFF1F1;color:#8A1F23;font-weight:600;font-size:13.5px}
 .sheet.mini .kv{margin-top:8px;gap:6px 14px}
 .sheet .acts #fxMore{background:var(--blue);color:#fff;border-color:var(--blue)}
@@ -307,7 +312,8 @@ i.lg-dot{display:inline-block;width:13px;height:13px;border-radius:50%;backgroun
 .sheet .fxl{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
 .sheet .fxl{gap:6px}.sheet .fxl button{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;border:1px solid var(--line2);border-radius:12px;background:#fff;font:inherit;padding:6px 12px;cursor:pointer;text-align:left;min-height:48px}
 .sheet .fxl b{font-size:15.5px}.sheet .fxl span{font-size:15px;font-weight:800;white-space:nowrap}.sheet .fxl small{display:block;font-size:12.5px;color:var(--sub2);font-weight:500}
-@media(min-width:720px){.srch,.row1{max-width:860px}.row1{flex-wrap:nowrap}.fil{flex:1 1 auto;margin:0;padding:0 0 0 2px}}
+@media(min-width:720px){.srch,.row1{max-width:860px}}
+@media(min-width:768px){.row1{flex-wrap:nowrap;align-items:flex-start}.row1>.cr-box{flex:1 1 auto}.lgrp{display:flex;flex-wrap:wrap;align-items:center;gap:6px;flex:1 1 100%}.lgl{padding-left:2px}}
 @media(min-width:900px){.cmpbar{left:432px;right:84px}body.has-cmp .legend{transform:none}body.has-sheet .legend{left:432px}.mtop{padding:10px 16px}.sheet{left:16px;right:auto;bottom:40px;width:400px;max-height:calc(100% - var(--mt) - 56px);border-radius:20px}}
 @media(max-width:380px){.seg button{padding:0 10px;font-size:14px}.chip{padding:0 11px}}
 </style>
@@ -328,7 +334,7 @@ i.lg-dot{display:inline-block;width:13px;height:13px;border-radius:50%;backgroun
     </div>
     <div class="row1">
       <div class="seg" id="mode" role="group" aria-label="지도에 보여 줄 값"></div>
-      <div class="fil" id="fil"></div>
+      <div class="fil" id="fil" data-chiprow="필터 더보기"></div>
     </div>
     <div class="jas jas-top" data-ad-slot="map_top" data-ad-cat="map" data-ad-top></div>
   </div>
@@ -376,10 +382,12 @@ function drawControls(){
   if (S.mode === 'reg') { $('fil').innerHTML = regChips(); return; }
   $('fil').innerHTML = C.SIZES.map(z => `<button type="button" class="chip${S.size === z.id ? ' on' : ''}" data-sz="${z.id}" aria-pressed="${S.size === z.id}"${z.d ? ` title="${z.d}"` : ''}>${z.t}</button>`).join('')
     + `<select class="chip${S.price ? ' on' : ''}" id="fPrice" aria-label="가격대">${C.PRICES.map(p => `<option value="${p.id}"${S.price === p.id ? ' selected' : ''}>${p.t}</option>`).join('')}</select>`
+    + `<span class="lgrp" role="group" aria-label="지도에 함께 보기"><span class="lgl">지도에 함께 보기</span>`
     + `<button type="button" class="chip lay fu${S.fut ? ' on' : ''}" data-ly="fut" aria-pressed="${S.fut}" title="공식 발표에 적힌 예정 연도만 보여 줘요">개발·교통 예정</button>`
     + `<button type="button" class="chip lay po${S.poi ? ' on' : ''}" data-ly="poi" aria-pressed="${S.poi}" title="운행 중인 지하철역과 중학교 위치(공공 자료)">역·학교</button>`
     + `<button type="button" class="chip lay bun${S.bun ? ' on' : ''}" data-ly="bun" aria-pressed="${S.bun}">분양 단지</button>`
-    + (NB_OK || S.nb ? `<button type="button" class="chip lay nb${S.nb ? ' on' : ''}" data-ly="nb" aria-pressed="${S.nb}" title="건축 허가·착공 기록으로 찾은 소규모 신축(빌라·도시형·오피스텔·상가). 분양 여부는 이 자료로 알 수 없어요">신축 공사 중</button>` : '');
+    + (NB_OK || S.nb ? `<button type="button" class="chip lay nb${S.nb ? ' on' : ''}" data-ly="nb" aria-pressed="${S.nb}" title="건축 허가·착공 기록으로 찾은 소규모 신축(빌라·도시형·오피스텔·상가). 분양 여부는 이 자료로 알 수 없어요">신축 공사 중</button>` : '')
+    + `</span>`;
   $('fPrice').onchange = e => { S.price = e.target.value; after(); };
 }
 $('mode').addEventListener('click', e => { const b = e.target.closest('button[data-m]'); if (!b) return; S.mode = b.dataset.m; after(); });
