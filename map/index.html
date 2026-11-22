@@ -32,7 +32,7 @@
 <script src="../assets/fac-view.js?v=1"></script>
 <script src="../assets/mine-core.js?v=19"></script>
 <script src="../assets/map-core.js?v=5"></script>
-<script src="../assets/mapjump.js?v=1"></script>
+<script src="../assets/mapjump.js?v=2"></script>
 <script src="../assets/alerts-core.js?v=1"></script>
 <script src="../assets/watch-core.js?v=2"></script>
 <script src="../assets/watch.js?v=6"></script>
@@ -298,6 +298,9 @@ i.lg-dot{display:inline-block;width:13px;height:13px;border-radius:50%;backgroun
 .jm-b.fx b{background:#E5484D;color:#fff;font-size:13px;font-weight:800;border-radius:9px;padding:3px 9px;box-shadow:0 2px 8px rgba(0,0,0,.25);max-width:180px;overflow:hidden;text-overflow:ellipsis}
 .jm-b.fx i{width:16px;height:16px;margin-top:3px;border-radius:50%;background:#E5484D;border:3px solid #fff;box-shadow:0 0 0 6px rgba(229,72,77,.28)}
 .jm-b.fx.ap{transform:translate(-50%,-50%)}
+.jm-b.fx.est b{background:#fff;color:#C8363B;border:2px dashed #E5484D}
+.jm-b.fx.est i{background:#fff;border:3px dashed #E5484D;box-shadow:0 0 0 6px rgba(229,72,77,.18)}
+.sheet .note.loc.est b{color:#C8363B}
 .jm-b.fx.ap i{order:-1;width:96px;height:96px;margin:0 0 -58px;border:2px dashed #E5484D;background:rgba(229,72,77,.08);box-shadow:none;pointer-events:none}
 .jm-b.fx.ap b{position:relative}
 .jm-b.dj.foc{z-index:6;outline:3px solid #E5484D;outline-offset:2px;box-shadow:0 0 0 8px rgba(229,72,77,.22),0 2px 6px rgba(0,0,0,.18)}
@@ -598,8 +601,9 @@ function render(){
   /* 개발사업·분양 단지(켰을 때) 먼저 자리를 잡고 → 구·동·시·도 묶음 → 단지. 겹치면 점수(거래·단지 수) 높은 쪽만, 가까이 확대하면 나머지가 나와요 */
   if (FOC && FOC.pt && S.mode !== 'reg') {               // 표시 핀(정확한 위치) 또는 대략 위치 동그라미 — 가장 먼저 자리 잡음
     const P = FOC.pt, q = MAP.project(P.lat, P.lng), w = Math.min(180, TW(P.label, 13) + 20);
-    pin(next, 'FX', { lat: P.lat, lng: P.lng, cls: 'fx' + (P.prec === 'exact' ? '' : ' ap'), z: P.prec === 'exact' ? 990 : 5, tap: () => focusCard(), html: `<b>${esc(P.label)}</b><i></i>` });
-    W.push(P.prec === 'exact' ? { l: q.x - w / 2, t: q.y - 50, r: q.x + w / 2, b: q.y } : { l: q.x - w / 2, t: q.y - 14, r: q.x + w / 2, b: q.y + 14 });
+    const pt = P.prec === 'exact' || P.prec === 'est';     // 추정 위치(est)도 한 점 — 점선 고리로 '추정'임을 구분
+    pin(next, 'FX', { lat: P.lat, lng: P.lng, cls: 'fx' + (P.prec === 'exact' ? '' : P.prec === 'est' ? ' est' : ' ap'), z: pt ? 990 : 5, tap: () => focusCard(), html: `<b>${esc(P.label)}</b><i></i>` });
+    W.push(pt ? { l: q.x - w / 2, t: q.y - 50, r: q.x + w / 2, b: q.y } : { l: q.x - w / 2, t: q.y - 14, r: q.x + w / 2, b: q.y + 14 });
   }
   if (FOC && FOC.got && lv !== 'danji' && lv !== 'sido') for (const { it, d } of FOC.got) {   // 비교 단지: 단지 말풍선이 안 보이는 넓은 확대에서도 강조해서 보여 줌
     if (!d || !C.inBox(bb, d.lat, d.lng, 0)) continue;
@@ -1177,14 +1181,14 @@ async function focusInit(){
   } else if (F.g) {
     const sd = sdOfCode(F.g), xy = XY[sd] || {};
     let at = null, prec = '';
-    if (F.ll) { at = { lat: F.ll[0], lng: F.ll[1] }; prec = 'exact'; }
+    if (F.ll) { at = { lat: F.ll[0], lng: F.ll[1] }; prec = F.est && F.kind === 'g' ? 'est' : 'exact'; }
     else if (F.dong && F.jibun && Array.isArray(xy[F.g + '|' + F.dong + '|' + F.jibun])) { const p = xy[F.g + '|' + F.dong + '|' + F.jibun]; at = { lat: p[1], lng: p[0] }; prec = 'exact'; }
     else if (F.dong && (at = dongCenter(xy, F.g, F.dong))) prec = 'dong';
     else { const g = GEO && GEO.sgg[F.g]; if (g) { at = { lat: g[1], lng: g[0] }; prec = 'sgg'; } }
-    if (at) { FOC.pt = { lat: at.lat, lng: at.lng, prec, label: prec === 'exact' ? (F.name || '여기') : prec === 'dong' ? F.dong + ' 가운데' : sggName(F.g) + ' 가운데', name: F.name, dong: F.dong, code: F.g }; pts.push([at.lat, at.lng]); }
+    if (at) { FOC.pt = { lat: at.lat, lng: at.lng, prec, label: prec === 'est' ? '추정 위치' : prec === 'exact' ? (F.name || '여기') : prec === 'dong' ? F.dong + ' 가운데' : sggName(F.g) + ' 가운데', name: F.name, dong: F.dong, code: F.g }; pts.push([at.lat, at.lng]); }
   }
   if (!pts.length) { FOC = FOC.want.length ? FOC : null; return null; }
-  const sz = $('map').getBoundingClientRect(), narrow = innerWidth < 600, one = FOC.pt ? (FOC.pt.prec === 'exact' ? (narrow ? 16 : 17) : FOC.pt.prec === 'dong' ? 15 : 13) : (narrow ? 15 : 16);   // 휴대폰은 한 단계 넓게(주변 단지가 함께 보이게)
+  const sz = $('map').getBoundingClientRect(), narrow = innerWidth < 600, one = FOC.pt ? (FOC.pt.prec === 'exact' || FOC.pt.prec === 'est' ? (narrow ? 16 : 17) : FOC.pt.prec === 'dong' ? 15 : 13) : (narrow ? 15 : 16);   // 휴대폰은 한 단계 넓게(주변 단지가 함께 보이게)
   return { lat: C.mean(pts.map(p => p[0])), lng: C.mean(pts.map(p => p[1])), zoom: MJ.fitZoom(pts, sz.width || 390, narrow ? Math.max(180, (sz.height || 600) - 300) : (sz.height || 600), one) };   // 휴대폰은 아래 카드 자리를 빼고 맞춤
 }
 /* 단지 자료(sNN.json)가 들어오면 강조할 단지를 찾아 카드 열기 */
@@ -1218,7 +1222,7 @@ function focusCard(all){
   const P = FOC.pt; if (!P) return;
   const kind = (MJ.KIND[F.kind] || ''), subj = kind || '건물', jo = /[가-힣]$/.test(subj) && (subj.charCodeAt(subj.length - 1) - 0xAC00) % 28 ? '은' : '는';
   const place = esc(P.prec === 'dong' ? P.dong : sggName(P.code));
-  const where = P.prec === 'exact' ? ''
+  const where = P.prec === 'exact' || P.prec === 'est' ? ''
     : F.kind === 'g' ? `통건물은 국토교통부가 지번 일부를 가려 공개해서, 건물 위치 대신 ${place} 가운데를 보여 드려요.`
     : !F.jibun && F.kind !== 'a' ? `${place} 가운데를 보여 드려요. 주변 아파트 시세와 개발·교통 예정을 함께 볼 수 있어요.`
     : `이 ${subj}${jo} 건물별 지도 위치 자료가 아직 없어 ${place} 가운데를 점선 동그라미로 보여 드려요. 실제 위치와 다를 수 있어요.`;
@@ -1226,7 +1230,8 @@ function focusCard(all){
   const src = P.prec === 'exact' && /^[ovc]$/.test(F.kind) ? '건물 위치: 행정안전부 주소정보(도로명주소 건물 출입구 위치)를 약 100m 단위로 줄여 보여 드려요.' : '';   // 공공 주소 좌표(소수 셋째 자리) — 출처 표시
   $('sheet').innerHTML = `<div class="grab"></div><div class="hd"><h2>${esc(P.name || F.name || P.label)}</h2><button type="button" class="x" aria-label="닫기">×</button></div>
     <p class="meta">${esc([sggName(P.code), P.dong, kind].filter(Boolean).join(' · '))}</p>
-    <dl class="kv">${F.price > 0 ? `<dt>최근 시세</dt><dd><b>${esc(M.won(F.price))}</b><small>결과 화면과 같은 값이에요</small></dd>` : ''}</dl>
+    <dl class="kv">${F.price > 0 ? (P.prec === 'est' ? `<dt>거래금액</dt><dd><b>${esc(M.won(F.price))}</b></dd>` : `<dt>최근 시세</dt><dd><b>${esc(M.won(F.price))}</b><small>결과 화면과 같은 값이에요</small></dd>`) : ''}${P.prec === 'est' && F.facts ? `<dt>건축물대장</dt><dd>${esc(F.facts)}</dd>` : ''}</dl>
+    ${P.prec === 'est' ? `<p class="note loc est"><b>추정 위치 · 공개 자료(건축물대장)로 맞춰 본 결과예요</b><br>신고된 면적·준공·용도가 한 건물과만 맞았어요. 약 100m 단위이고 지번은 공개하지 않아요. 실제와 다를 수 있어요.</p>` : ''}
     ${where ? `<p class="note loc">${where}${esc(gNote)}</p>` : ''}${src ? `<p class="note">${esc(src)}</p>` : ''}
     ${back ? `<div class="acts" style="grid-template-columns:1fr">${back}</div>` : ''}`;
   showSheet();

@@ -45,8 +45,22 @@
   const ymd = v => { const s = String(v); return `${s.slice(0, 4)}.${s.slice(4, 6)}.${s.slice(6, 8) || '01'}`; };
   function trades(rows) {
     return (rows || []).map(t => ({ date: ymd(t[0]), dong: t[1], jibun: t[2], use: t[3], lu: t[4], ba: t[5], la: t[6], floor: t[7], amt: t[8],
-      direct: !!(t[9] & 1), share: !!(t[9] & 2), hi: !!(t[9] & 4), by: t[10], masked: /\*/.test(String(t[2] || '')) }));
+      direct: !!(t[9] & 1), share: !!(t[9] & 2), hi: !!(t[9] & 4), by: t[10], masked: /\*/.test(String(t[2] || '')), est: estOf(t[11]) }));
   }
+  /** 통건물 추정 위치(12번째 칸): [경도, 위도, 등급 1 높음·2 보통, 건축물대장 주용도, 연면적 ㎡, 준공 연도] → 객체 또는 null.
+      공개 건축물대장과 대지·연면적·준공·용도가 하나로 맞는 건물이 있을 때만 엔진이 넣어 준다(지번은 공개하지 않음). */
+  function estOf(e) {
+    if (!Array.isArray(e) || e.length < 3) return null;
+    const lng = +e[0], lat = +e[1];
+    if (!(lat > 32 && lat < 39.5 && lng > 124 && lng < 132)) return null;
+    return { lng, lat, band: e[2] === 1 ? 1 : 2, use: e[3] || '', tot: e[4] > 0 ? Math.round(e[4]) : null, year: e[5] > 1800 ? e[5] : null };
+  }
+  /** 추정 건물의 공개 건축물대장 사실 한 줄: '제2종근린생활시설 · 연면적 399㎡ · 1996년 준공' */
+  function estFacts(x) {
+    if (!x) return '';
+    return [x.use, x.tot ? `연면적 ${x.tot.toLocaleString('ko-KR')}㎡` : '', x.year ? `${x.year}년 준공` : ''].filter(Boolean).join(' · ');
+  }
+  const EST_LABEL = '추정 위치 · 공개 자료(건축물대장)로 맞춰 본 결과예요';
   /** 이 거래의 ㎡당 가격 (시세 계산과 같은 기준: 집합 전용, 일반 대지) */
   function tradePpm(t, k) { const a = k === 'g' ? t.la : t.ba; return a > 0 ? t.amt / a : null; }
 
@@ -173,7 +187,7 @@
     return { label: '새로 짓는 상가', ok: false, note: av.nb ? '이 지역에는 찾은 신축 상가가 없어요(서울·인천·경기만 찾아요).' : '건축 인허가 자료 연결을 기다리고 있어요.', src: (ix && ix.src || {}).nb };
   }
 
-  const API = { PY, TYPES, LU, RMET, HOW, arr, monthsFrom, perM2, perPy, latest, lastAny, regionSeries, yearText, trades, tradePpm, keyOf, nameOf, dongs, inDong,
+  const API = { PY, TYPES, LU, RMET, HOW, arr, monthsFrom, perM2, perPy, latest, lastAny, regionSeries, yearText, trades, estOf, estFacts, EST_LABEL, tradePpm, keyOf, nameOf, dongs, inDong,
     findJibun, unitSeries, unitTrades, passed, scoreState, etaText, scoreHead, btText, btLines, scoreRank, roneRows, skRows, qLabel, eokWon, skSummary, demandRows, supplyRow };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_COMM = API;
