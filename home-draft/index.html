@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 첫 화면 새 배치 시안(대표 확인 전). 검색에 내보내지 않음(noindex) · 사이트맵 제외 · 어느 화면에서도 링크하지 않음 -->
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../assets/icons/favicon-48.png">
+<title>첫 화면 시안</title>
+<script src="../assets/pwa.js?v=2" defer></script>
+<script src="../assets/biz.js?v=1" defer></script>
+<script src="../assets/kchat.js?v=3" defer></script>
+<script>window.JDJ_CONFIG = { tool:'home_draft', GA4_ID:'', CLARITY_ID:'' };</script>
+<script src="../assets/track.js?v=2"></script>
+<script src="../assets/stat.js?v=7"></script>
+<script src="../assets/agents.js"></script>
+<script src="../assets/config.js?v=8"></script>
+<script src="../assets/auth.js?v=8"></script>
+<script src="../assets/sale-status.js?v=1" defer></script>
+<script src="../assets/area-watch.js?v=6" defer></script>
+<script src="../assets/mine-core.js?v=19" defer></script>
+<script src="../assets/ask-core.js?v=5" defer></script>
+<script src="../assets/ask.js?v=3" defer></script>
+<script src="../assets/rank-core.js?v=7" defer></script>
+<script src="../assets/home-core.js?v=4" defer></script>
+<script src="../assets/brief-core.js?v=9" defer></script>
+<script src="../assets/today-core.js?v=1" defer></script>
+<script src="../assets/quiz-core.js?v=1" defer></script>
+<script src="../assets/alerts-core.js?v=1" defer></script>
+<script src="../assets/watch-core.js?v=2" defer></script>
+<script src="../assets/watch.js?v=6" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/aplus.css?v=45">
+<link rel="stylesheet" href="../assets/layout.css?v=1">
+<script src="../assets/nw.js?v=1" defer></script>
+<script src="../assets/tabbar.js?v=5" defer></script>
+<script src="../assets/chiprow.js?v=1"></script>
+<style>
+/* ===== 첫 화면 시안: 여백 넉넉히 · 큰 타일 · 강조는 검색 하나 · 이번 주 변화 칸 ===== */
+:root{--hd-w:1080px;--teal:#0F766E;--teal-l:#E3F5F2;--ind:#4338CA;--ind-l:#EEF0FF}
+.draftbar{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:6px 16px;background:#191F28;color:#fff;font-size:13px;font-weight:700;text-align:center}
+.draftbar a{color:#fff;display:inline-flex;align-items:center;min-height:32px}
+main.hd{display:block}
+.hd-in{max-width:var(--hd-w);margin:0 auto;padding:0 16px}
+.hd-sec{margin-top:40px}
+.hd-h{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:0 0 14px}
+.hd-h h2{margin:0;font-size:21px;font-weight:900;letter-spacing:-.5px;line-height:1.35}
+.hd-h h2 small{display:block;font-size:13.5px;font-weight:500;color:var(--sub2);letter-spacing:0;margin-top:2px}
+.hd-more{flex:none;display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 4px;color:var(--blue);font-size:15px;font-weight:800;text-decoration:none;white-space:nowrap}
+.hd-ic svg,.fc-ic svg,.tile-ic svg,.svc-ic svg,.row-ic svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.chev{flex:none;width:20px;height:20px;color:#8B95A1}
+.chev svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;display:block}
+
+/* 1. 머리 띠: 한 줄 제목 + 큰 검색 */
+.hb{background:linear-gradient(180deg,#EAF0FF 0%,#F3F6FF 62%,#FFFFFF 100%);padding:32px 0 28px}
+.hb h1{margin:0 0 18px;font-size:28px;line-height:1.32;letter-spacing:-1px}
+.hb h1 em{font-style:normal;color:var(--blue)}
+.hs.jask{margin:0;padding:0;background:none;border:0;border-radius:0}
+.hs.jask>h2,.hs.jask>.note{display:none}
+.hs.jask form{position:relative;margin:0;gap:6px;padding:6px;background:#fff;border:2px solid var(--blue);border-radius:18px;box-shadow:0 8px 24px rgba(37,96,232,.14)}
+.hs.jask form::before{content:'';position:absolute;left:18px;top:50%;width:22px;height:22px;margin-top:-11px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232560E8' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-4-4'/%3E%3C/svg%3E") no-repeat center/contain;pointer-events:none}
+.hs.jask input{min-height:54px;border:0;padding:0 8px 0 46px;font-size:17px;font-weight:700;border-radius:12px;background:transparent}
+.hs.jask input::placeholder{color:#6B7684;font-weight:500}
+.hs.jask input:focus{box-shadow:none}
+.hs.jask form:focus-within{box-shadow:0 0 0 4px rgba(37,96,232,.18),0 8px 24px rgba(37,96,232,.14)}
+.hs.jask form button{min-height:54px;padding:0 20px;font-size:17px;border-radius:13px}
+.hs.jask .msg{margin-top:12px}
+.hs.jask .cands .chip{background:#fff}
+.hs.jask .pop{flex-wrap:nowrap;overflow-x:auto;margin-top:14px;padding-bottom:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.hs.jask .pop::-webkit-scrollbar{display:none}
+.hs.jask .pop>span{flex:none;font-size:13px}
+.hs.jask .pop>.chip{flex:none;white-space:nowrap;background:rgba(255,255,255,.85);border-color:#D6DEF0}
+.hs.jask .pop>.chip:nth-of-type(n+4){display:none}
+.hb-facts{margin:14px 0 0;font-size:13.5px;line-height:1.6;color:var(--sub2)}
+.hb-facts a{font-weight:700;text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;min-height:44px}
+
+/* 2. 큰 카드 2개(내 집 시세·미래가치 / 전세 안전 체크) */
+.feat{display:grid;gap:12px;margin-top:20px}
+.fc{display:grid;grid-template-columns:52px minmax(0,1fr) 20px;gap:14px;align-items:center;padding:20px 18px;border-radius:20px;background:#fff;border:1px solid var(--line);box-shadow:0 6px 20px rgba(25,31,40,.06);color:var(--text);text-decoration:none;min-height:104px}
+.fc:hover{border-color:#B9CCFF}
+.fc-ic{width:52px;height:52px;border-radius:16px;background:var(--blue-l);color:var(--blue);display:flex;align-items:center;justify-content:center;padding:13px}
+.fc.t2 .fc-ic{background:var(--teal-l);color:var(--teal)}
+.fc-tx{min-width:0}
+.pill{display:inline-block;font-size:12.5px;font-weight:800;line-height:1;padding:5px 9px;border-radius:999px;background:var(--blue-l);color:var(--blue-d)}
+.fc.t2 .pill{background:var(--teal-l);color:var(--teal)}
+.fc b{display:block;margin-top:7px;font-size:19px;font-weight:900;letter-spacing:-.5px;line-height:1.35}
+.fc small{display:block;margin-top:3px;font-size:14.5px;line-height:1.5;color:var(--sub2)}
+.wrow{display:flex;align-items:center;gap:12px;margin-top:12px;padding:14px 16px;border-radius:16px;text-decoration:none;color:var(--text);min-height:64px;background:var(--creamc);border:1px solid var(--creamb)}
+.wrow[hidden]{display:none}
+.wrow .ic{flex:none;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;background:#fff;color:#8A6A12}
+.wrow b{display:block;font-size:16px;font-weight:900;line-height:1.35}.wrow small{display:block;font-size:13.5px;color:var(--sub2);line-height:1.5}
+.wrow .nw{color:var(--blue-d)}.wrow .go{margin-left:auto;flex:none;font-size:22px;font-weight:800;color:var(--blue)}
+
+/* 3. 이번 주 부동산 변화 */
+.wk-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.wc{display:grid;grid-template-columns:minmax(0,1fr) 20px;gap:10px;align-items:center;padding:16px 16px 16px 18px;border-radius:16px;background:var(--gray2);border:1px solid var(--line);color:var(--text);text-decoration:none;min-height:96px}
+.wc:hover{border-color:#B9CCFF;background:#fff}
+.wc-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;color:var(--sub2);line-height:1.4}
+.wc-tag{font-size:12px;font-weight:800;padding:3px 8px;border-radius:999px;background:#fff;border:1px solid var(--line);color:var(--sub)}
+.wc-t{display:block;margin-top:6px;font-size:16.5px;font-weight:700;line-height:1.5;letter-spacing:-.3px;word-break:keep-all}
+.wc-t b{font-weight:900;color:var(--blue-d);white-space:nowrap;font-variant-numeric:tabular-nums}
+.wk-wait{min-height:96px;display:flex;align-items:center;justify-content:center;border-radius:16px;background:var(--gray2);color:var(--sub2);font-size:14.5px}
+.wk-src{margin:10px 2px 0;font-size:12.5px;color:var(--sub2);line-height:1.55}
+.live{margin-top:12px;border:1px solid var(--line);border-radius:16px;background:#fff}
+.live>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:52px;padding:0 16px;font-size:15px;font-weight:800;color:var(--sub)}
+.live>summary::-webkit-details-marker{display:none}
+.live>summary .chev{transition:transform .15s;transform:rotate(90deg)}
+.live[open]>summary .chev{transform:rotate(270deg)}
+.live-in{padding:0 12px 14px}
+.live-in>.t3,.live-in>.pulse,.live-in>.qz{margin:12px 0 0!important}
+.live-in>[hidden]{display:none!important}
+
+/* 4. 큰 타일(종류·화면) */
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tile{display:flex;flex-direction:column;justify-content:space-between;gap:14px;min-height:112px;padding:18px;border-radius:20px;background:#fff;border:1px solid var(--line);color:var(--text);text-decoration:none}
+.tile:hover{border-color:#B9CCFF;box-shadow:0 4px 14px rgba(25,31,40,.06)}
+.tile-ic{width:48px;height:48px;border-radius:14px;background:var(--ind-l);color:var(--ind);padding:12px}
+.tile b{font-size:18px;font-weight:900;letter-spacing:-.4px;line-height:1.3}
+
+/* 6. 계산·정보 모음(작은 칸) */
+.svc{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px 6px}
+.svc a{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 2px 10px;border-radius:14px;color:var(--text);text-decoration:none;min-height:92px;text-align:center}
+.svc a:hover{background:var(--gray2)}
+.svc-ic{width:48px;height:48px;border-radius:14px;background:var(--gray);color:var(--sub);padding:12px}
+.svc span.l{font-size:14px;font-weight:700;line-height:1.35;word-break:keep-all}
+.svc .new{position:absolute;top:6px;left:50%;margin-left:14px;font-size:10px;font-weight:800;line-height:1;padding:3px 5px;border-radius:6px;background:var(--blue);color:#fff}
+.svc .ja-badge{position:absolute;top:8px;left:50%;margin-left:16px;width:10px;height:10px;padding:0;border-radius:50%;background:var(--blue);font-size:0;overflow:hidden}
+
+/* 7. 구독 · 적중 기록 · 상담 */
+.end{display:grid;gap:12px}
+.sub{display:flex;flex-direction:column;gap:12px;padding:22px 20px;border-radius:20px;background:#F4F7FF;border:1px solid #C9D8FF}
+.sub .free{align-self:flex-start;font-size:12.5px;font-weight:800;color:#7A5C0E;background:var(--creamc);border:1px solid var(--creamb);border-radius:999px;padding:3px 10px}
+.sub b{display:block;font-size:20px;font-weight:900;letter-spacing:-.5px;line-height:1.35}
+.sub p{margin:0;font-size:14.5px;line-height:1.6;color:var(--sub2)}
+.sub .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
+.sub .btn{min-height:48px;font-size:15.5px;flex:1 1 auto}
+.row2{display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:18px;background:#fff;border:1px solid var(--line);color:var(--text);text-decoration:none;min-height:76px}
+.row2[hidden]{display:none}
+.row-ic{flex:none;width:44px;height:44px;border-radius:13px;background:var(--pos-l);color:var(--pos);padding:11px}
+.row2 .tx{flex:1;min-width:0}
+.row2 b{display:block;font-size:16.5px;font-weight:900;letter-spacing:-.3px;line-height:1.35}
+.row2 small{display:block;font-size:13.5px;color:var(--sub2);line-height:1.5;margin-top:2px}
+.cs2{flex-wrap:wrap}
+.cs2 .row-ic{background:var(--blue-l);color:var(--blue)}
+.cs2 .btns2{display:flex;gap:8px;flex-wrap:wrap}
+.cstel{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border-radius:12px;border:1.5px solid var(--blue);color:var(--blue);font-weight:800;font-size:14px;text-decoration:none;background:#fff;white-space:nowrap}
+.hd-ad{margin-top:32px}
+.hd-ad .jas{margin:0!important}
+.foot.notice{margin-top:48px}
+
+/* 오늘의 집값 소식·우리 지역 지금(지금 첫 화면 카드 그대로 — 펼쳐 보기 안) */
+.pulse{border:1px solid var(--line);border-radius:20px;background:#fff;overflow:hidden}
+.pulse[hidden]{display:none}
+.pl-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:16px 16px 10px}
+.pl-hd h2{margin:0;font-size:18px;font-weight:900;letter-spacing:-.4px}
+.pl-rg{display:flex;gap:6px;min-width:0}
+.pl-rg select{font:inherit;font-size:14.5px;font-weight:700;min-height:44px;max-width:150px;padding:0 28px 0 10px;border:1px solid var(--line);border-radius:10px;color:var(--text);appearance:none;-webkit-appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%234E5968' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 10px center}
+.pl-tabs{display:flex;gap:4px;margin:0 12px;padding:4px;border-radius:12px;background:var(--gray)}
+.pl-tabs button{flex:1;font:inherit;font-size:14.5px;font-weight:800;min-height:44px;border:0;border-radius:9px;background:none;color:var(--sub2);cursor:pointer;line-height:1.25;padding:2px 4px;word-break:keep-all}
+.pl-tabs button[aria-selected="true"]{background:#fff;color:var(--blue);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.pl-sz{display:flex;gap:6px;overflow-x:auto;padding:10px 16px 2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.pl-sz::-webkit-scrollbar{display:none}
+.pl-sz[hidden]{display:none}
+.pl-sz button{flex:none;font:inherit;font-size:14px;font-weight:700;min-height:44px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--sub2);cursor:pointer;white-space:nowrap}
+.pl-sz button[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-l);color:var(--blue)}
+.pl-body{padding:6px 16px 14px;min-height:120px}
+.pl-cnt{margin:4px 0 2px;font-size:13.5px;color:var(--sub2);line-height:1.5}
+.pl-list{list-style:none;margin:0;padding:0}
+.pl-list li{display:flex;align-items:center;gap:2px}.pl-list li>a{flex:1;min-width:0}
+.pl-list a{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:2px 10px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line2);color:var(--text);text-decoration:none;min-height:56px}
+.pl-list li:last-child a{border-bottom:0}
+.pl-rk{font-size:16px;font-weight:900;color:var(--blue);text-align:center;font-variant-numeric:tabular-nums;line-height:1.1}
+.pl-rk small{display:block;font-size:10.5px;font-weight:700;color:var(--sub2)}
+.pl-nm{min-width:0}
+.pl-nm b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:16px;font-weight:800;line-height:1.35;overflow:hidden;word-break:break-all}
+.pl-nm small{display:block;font-size:13px;color:var(--sub2);line-height:1.45;word-break:keep-all}
+.pl-nm .vk{display:block;margin-top:2px;font-size:12.5px;font-weight:700;color:#0F7B4F;white-space:normal}
+.pl-v{display:flex;align-items:center;gap:8px;text-align:right}
+.pl-v svg{width:50px;height:26px;flex:none;overflow:visible}
+.pl-v svg path{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round}
+.pl-num b{display:block;font-size:17px;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pl-num small{display:block;font-size:12.5px;color:var(--sub2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.pl-sc b{font-size:19px;color:var(--blue)}
+.pl-up{color:#C2410C}.pl-dn{color:#1F56E0}
+.pl-rule{margin:10px 0 0;font-size:13px;color:var(--sub2);line-height:1.55}
+.pl-rule b{color:var(--sub)}
+.pl-why{margin:8px 0 0;font-size:13px;color:var(--sub2);line-height:1.55}
+.pl-why summary{cursor:pointer;display:inline-flex;align-items:center;min-height:44px;font-weight:700;color:var(--sub)}
+.pl-why p{margin:2px 0 0}
+.pl-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:10px}
+.pl-more{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border-radius:12px;background:var(--blue-l);color:var(--blue);font-size:14.5px;font-weight:800;text-decoration:none;white-space:nowrap}
+.pl-empty{padding:22px 8px;text-align:center;font-size:14.5px;color:var(--sub);line-height:1.6}
+.t3{border:1px solid var(--line);border-radius:20px;background:#fff;overflow:hidden}
+.t3[hidden]{display:none}
+.t3-hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:16px 16px 10px}
+.t3-hd h2{margin:0;font-size:18px;font-weight:900;letter-spacing:-.4px}
+.t3-at{font-size:13.5px;font-weight:700;color:var(--sub2);white-space:nowrap}
+.t3-tabs{display:flex;gap:4px;margin:0 12px;padding:4px;border-radius:12px;background:var(--gray)}
+.t3-tabs button{flex:1;font:inherit;font-size:14.5px;font-weight:800;min-height:44px;border:0;border-radius:9px;background:none;color:var(--sub2);cursor:pointer;line-height:1.25;padding:2px 4px}
+.t3-tabs button[aria-selected="true"]{background:#fff;color:var(--blue);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.t3-tabs button small{display:block;font-size:11.5px;font-weight:700;color:var(--sub3)}
+.t3-rg{display:flex;gap:6px;padding:10px 16px 0}.t3-rg[hidden]{display:none}
+.t3-rg button{font:inherit;font-size:14px;font-weight:700;min-height:44px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--sub2);cursor:pointer}
+.t3-rg button[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-l);color:var(--blue)}
+.t3-body{padding:8px 16px 14px;min-height:120px}
+.t3-why{margin:4px 0 6px;font-size:13.5px;color:var(--sub2);line-height:1.5;background:var(--gray2);border-radius:10px;padding:8px 10px}
+.t3-big{margin:4px 0 8px;font-size:16px;line-height:1.5}.t3-big b{font-size:20px;font-weight:900}
+.t3-st{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 8px}
+.t3-st div{background:var(--gray2);border-radius:12px;padding:10px 8px;text-align:center}.t3-st b{display:block;font-size:19px;font-weight:900;font-variant-numeric:tabular-nums}.t3-st small{font-size:12.5px;color:var(--sub2)}
+.t3-h{margin:12px 0 2px;font-size:15px;font-weight:900}
+.t3-l{list-style:none;margin:0;padding:0}
+.t3-l li{display:flex;align-items:center;gap:2px;border-bottom:1px solid var(--line2)}.t3-l li:last-child{border-bottom:0}
+.t3-l a{flex:1;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:center;padding:10px 0;color:var(--text);text-decoration:none;min-height:56px}
+.t3-l .nm b{display:block;font-size:15.5px;font-weight:800;line-height:1.35;word-break:break-all}
+.t3-l .nm small{display:block;font-size:13px;color:var(--sub2);line-height:1.45}
+.t3-l .v{text-align:right}.t3-l .v b{display:block;font-size:16.5px;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}.t3-l .v small{display:block;font-size:12.5px;white-space:nowrap}
+.t3-l .tg{display:inline-block;font-size:11.5px;font-weight:800;border-radius:6px;padding:0 5px;margin-left:4px;vertical-align:1px;background:var(--gray);color:var(--sub2)}.t3-l .tg.hi{background:#FDECE4;color:#C2410C}.t3-l .tg.dn{background:#E8F0FF;color:#1F56E0}
+.t3-up{color:#C2410C}.t3-dn{color:#1F56E0}
+.t3-line{margin:6px 0 0;font-size:14.5px;line-height:1.55;color:var(--sub)}
+.t3-more{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;margin-top:8px;border-radius:12px;background:var(--blue-l);color:var(--blue);font-size:14.5px;font-weight:800;text-decoration:none}
+.t3-src{margin:8px 0 0;font-size:12.5px;color:var(--sub2);line-height:1.5}
+.qz{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:16px;text-decoration:none;color:var(--text);min-height:64px;border:1.5px solid var(--blue);background:#fff}
+.qz[hidden]{display:none}
+.qz .ic{flex:none;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;background:var(--blue-l);color:var(--blue)}
+.qz b{display:block;font-size:16px;font-weight:900;line-height:1.35}.qz small{display:block;font-size:13.5px;color:var(--sub2);line-height:1.5;word-break:keep-all}.qz .go{margin-left:auto;flex:none;font-size:22px;font-weight:800;color:var(--blue)}
+
+@media(max-width:480px){.hs.jask form::before{display:none}.hs.jask input{padding-left:14px;font-size:16px}.hs.jask input::placeholder{font-size:15.5px}.hs.jask form button{padding:0 16px}}
+@media(max-width:380px){.hb h1{font-size:25px}.hs.jask form button{padding:0 14px}.tile{padding:16px}.svc span.l{font-size:13px}}
+@media(min-width:720px){
+  .hd-in{padding:0 24px}
+  .feat{grid-template-columns:1fr 1fr}
+  .wk-list{grid-template-columns:1fr 1fr}
+  .tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .end{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"s t" "s c"}
+  .end .sub{grid-area:s}.end .trk{grid-area:t}.end .cs2{grid-area:c}
+  .end:has(.trk[hidden]){grid-template-areas:"s c"}
+  .cs2 .tx{flex:1 1 200px}
+}
+@media(min-width:1024px){
+  .hb{padding:56px 0 96px}
+  .hb .hd-in{display:flex;flex-direction:column;align-items:center;text-align:center}
+  .hb h1{font-size:38px;margin-bottom:26px}
+  .hb h1 br{display:none}
+  .hs.jask{width:100%;max-width:720px;text-align:left}
+  .hs.jask .pop{justify-content:center;flex-wrap:wrap;overflow:visible;margin-left:-120px;margin-right:-120px}
+  .hs.jask .msg{text-align:center}
+  .feat{margin-top:-60px;position:relative;z-index:2;gap:16px}
+  .fc{padding:24px 24px;min-height:120px;grid-template-columns:60px minmax(0,1fr) 20px;gap:18px}
+  .fc-ic{width:60px;height:60px;padding:15px;border-radius:18px}
+  .fc b{font-size:21px}
+  .hd-sec{margin-top:56px}
+  .wk-list{gap:12px}
+  .tiles{grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+  .tile{align-items:center;text-align:center;justify-content:center;min-height:128px;gap:12px}
+  .tile-ic{width:52px;height:52px;padding:13px}
+  .svc{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+  .svc a{flex-direction:row;justify-content:flex-start;gap:14px;padding:14px 16px;min-height:76px;border:1px solid var(--line);text-align:left}
+  .svc .new{position:static;margin:0 0 0 -6px}
+  .hd-ad{margin-top:48px}
+}
+</style>
+</head>
+<body class="lay-home hd-draft">
+<header class="top">
+  <a class="brand" href="../" aria-label="첫 화면"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name></span></a>
+</header>
+<div class="draftbar">확인용 시안이에요(첫 화면에는 아직 반영 전) · <a href="../" data-track="draft_to_home">지금 첫 화면 보기 ›</a></div>
+<main class="hd">
+  <!-- 1. 한 줄 제목 + 큰 검색(단지 이름 별칭 검색·물어보기와 같은 기능) -->
+  <section class="hb" aria-labelledby="hbT">
+    <div class="hd-in">
+      <h1 id="hbT">우리 집의 내일,<br> <em>공공 통계</em>로 미리 봐요</h1>
+      <section class="hs" id="askBox" aria-label="단지·동네 검색"></section>
+      <p class="hb-facts"><span id="dsTxt">국토교통부 실거래·공공 통계 기반 · 하루 4번 갱신</span> · <a href="../about/" data-track="home_to_about">분석 방법 보기 ›</a></p>
+    </div>
+  </section>
+
+  <div class="hd-in">
+    <!-- 2. 큰 카드 2개 -->
+    <div class="feat">
+      <a class="fc" href="../mine/" data-track="home_to_mine"><span class="fc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></span><span class="fc-tx"><span class="pill">내 집</span><b>내 집 시세·미래가치</b><small>지금 시세와 앞으로 오를 가능성을 한 번에 봐요</small></span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></a>
+      <a class="fc t2" href="../jeonse/" data-track="home_to_jeonse"><span class="fc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9"/><path d="M16 7l3 3"/><path d="M14 9l2 2"/></svg></span><span class="fc-tx"><span class="pill">전세</span><b>전세 안전 체크</b><small>계약 전에 깡통전세 위험 신호를 확인해요</small></span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></a>
+    </div>
+    <a class="wrow" id="wRow" href="../my/watch/" data-track="home_to_watch" hidden></a>
+
+    <!-- 3. 이번 주 부동산 변화(공개 자료 숫자 그대로) -->
+    <section class="hd-sec" aria-labelledby="wkT">
+      <div class="hd-h"><h2 id="wkT">이번 주 부동산 변화<small>공공 실거래 자료로 매일 새로 뽑아요</small></h2><a class="hd-more" id="wkMore" href="../brief/" data-track="home_wk_more">더 보기 →</a></div>
+      <ul class="wk-list" id="wkList" aria-live="polite"><li class="wk-wait">자료를 불러오고 있어요…</li></ul>
+      <details class="live" id="live">
+        <summary data-track="home_live_open">오늘 올라온 거래 · 우리 지역 순위 펼쳐 보기<span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></summary>
+        <div class="live-in">
+          <section class="t3" id="t3" hidden aria-labelledby="t3T">
+            <div class="t3-hd"><h2 id="t3T">오늘의 집값 소식</h2><span class="t3-at" id="t3At"></span></div>
+            <div class="t3-tabs" role="tablist" aria-label="시간대" id="t3Tabs"></div>
+            <div class="t3-rg" id="t3Rg" role="group" aria-label="지역" hidden></div>
+            <div class="t3-body" id="t3Body" role="tabpanel" aria-live="polite"></div>
+          </section>
+          <a class="qz" id="qzCard" href="../quiz/" data-track="home_to_quiz" hidden></a>
+          <section class="pulse" id="pulse" hidden aria-labelledby="plTitle">
+            <div class="pl-hd"><h2 id="plTitle">우리 지역 지금</h2><div class="pl-rg" id="plRg"></div></div>
+            <div class="pl-tabs" role="tablist" aria-label="보기 종류" id="plTabs"></div>
+            <div class="pl-sz" id="plSz" role="group" aria-label="평형대" data-chiprow="평형 더보기" hidden></div>
+            <div class="pl-body" id="plBody" role="tabpanel" aria-live="polite"></div>
+          </section>
+        </div>
+      </details>
+    </section>
+
+    <!-- 4. 큰 타일 -->
+    <section class="hd-sec" aria-labelledby="tlT">
+      <div class="hd-h"><h2 id="tlT">무엇을 찾으세요?</h2></div>
+      <nav class="tiles" aria-label="종류별로 보기">
+        <a class="tile" href="../mine/?t=a" data-track="home_tile_apt"><span class="tile-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 20h20"/><path d="M5 20V10h5v10M14 20V4h5v16"/><path d="M10 13h4"/></svg></span><b>아파트</b></a>
+        <a class="tile" href="../mine/?t=v" data-track="home_to_villa_price"><span class="tile-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 21V8l6-4v17"/><path d="M10 21h10V11l-5-3"/><path d="M14 14h2M14 17h2M6 11h2M6 15h2"/></svg></span><b>빌라</b></a>
+        <a class="tile" href="../mine/?t=o" data-track="home_tile_offi"><span class="tile-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2"/></svg></span><b>오피스텔</b></a>
+        <a class="tile" href="../mine/?t=c" data-track="home_to_comm"><span class="tile-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V9l7-5 7 5v12"/><path d="M9 21v-5h6v5"/><path d="M9 11h.01M15 11h.01"/></svg></span><b>상가·건물</b></a>
+        <a class="tile" href="../map/" data-track="home_to_map"><span class="tile-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg></span><b>지도</b></a>
+        <a class="tile" href="../rank/" data-track="home_to_rank"><span class="tile-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M9 20V8h6v12"/><path d="M3 20v-7h6M15 11h6v9"/></svg></span><b>우리 구 순위</b></a>
+      </nav>
+    </section>
+
+    <!-- 5. 광고(한 칸) -->
+    <div class="hd-ad"><div class="jas jas-top jas-in" data-ad-slot="home_top" data-ad-cat="home" data-ad-top></div></div>
+
+    <!-- 6. 계산·정보 모음 -->
+    <section class="hd-sec" aria-labelledby="svT">
+      <div class="hd-h"><h2 id="svT">계산하고 알아보기</h2></div>
+      <nav class="svc" aria-label="계산·정보 메뉴">
+        <a href="../buy/" data-track="home_to_buy"><span class="svc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></span><span class="l">내 집 마련</span></a>
+        <a href="../loan/" data-track="home_to_loan"><span class="svc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M7 15h4"/></svg></span><span class="l">대출 한도</span><span class="new">NEW</span></a>
+        <a href="../chungyak/" data-track="home_to_chungyak"><span class="svc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><span class="l">청약</span></a>
+        <a href="../bunyang/" data-track="home_to_bunyang"><span class="svc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 21V8l8-5 8 5v13"/><path d="M9 21v-6h6v6"/></svg></span><span class="l">분양</span></a>
+        <a href="../tax/" data-track="home_to_tax"><span class="svc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8"/><path d="M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h2M12 18h4"/></svg></span><span class="l">세금</span></a>
+        <a href="../villa/" data-track="home_to_villa"><span class="svc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l7-5 7 5"/><path d="M4 14h4M16 14h4M4 18h4M16 18h4"/></svg></span><span class="l">재개발</span></a>
+        <a href="../switch/" data-track="home_to_switch"><span class="svc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h13l-3-3"/><path d="M20 16H7l3 3"/></svg></span><span class="l">갈아타기</span></a>
+        <a href="../quiz/" data-track="home_svc_quiz"><span class="svc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5V14"/><path d="M12 17.5h.01"/></svg></span><span class="l">집값 퀴즈</span></a>
+      </nav>
+    </section>
+
+    <!-- 7. 구독 · 예측 적중 기록 · 상담 -->
+    <section class="hd-sec end" aria-label="받아 보기와 상담">
+      <div class="sub">
+        <span class="free">7일 무료</span>
+        <b data-brief-name></b>
+        <p>매일 아침 신고가·큰 하락 거래, 청약·정책 소식과 내 동네·관심 단지 소식을 한 번에 보내 드려요.</p>
+        <div class="acts"><a class="btn primary" href="../brief/subscribe/" data-track="home_brief_sub">7일 무료로 받아 보기</a><a class="btn ghost" href="../brief/" data-track="home_to_brief">오늘 브리핑 보기</a></div>
+      </div>
+      <a class="row2 trk" id="trkRow" href="../track/" data-track="home_to_track" hidden><span class="row-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg></span><span class="tx"><b>예측 적중 기록</b><small id="trkTx">우리 예측이 실제 거래와 얼마나 맞았는지 모두 공개해요</small></span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></a>
+      <div class="row2 cs2" role="group" aria-label="부동산 전문가 상담"><span class="row-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5C6.75 3.5 2.5 6.86 2.5 11c0 2.66 1.76 5 4.4 6.33l-.9 3.3 4.45-2.9c.5.06 1.02.1 1.55.1 5.25 0 9.5-3.36 9.5-7.5S17.25 3.5 12 3.5z"/></svg></span><span class="tx"><b>부동산 전문가 상담</b><small>결과나 궁금한 점을 편하게 물어보세요</small></span>
+        <span class="btns2"><a class="kchat" href="https://pf.kakao.com/_UxnzuV" target="_blank" rel="noopener noreferrer" data-kchat="1" data-name="부동산 전문가 상담" data-track="home_cs_kakao"><svg class="kchat-i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 3.5C6.75 3.5 2.5 6.86 2.5 11c0 2.66 1.76 5 4.4 6.33l-.9 3.3c-.08.3.26.54.52.37l3.93-2.6c.5.06 1.02.1 1.55.1 5.25 0 9.5-3.36 9.5-7.5S17.25 3.5 12 3.5z"/></svg><span>카톡 상담</span></a><a class="cstel" href="tel:0234445008" data-track="home_cs_call">전화 02-3444-5008</a></span></div>
+    </section>
+  </div>
+</main>
+<script>
+var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+/* 우리 지역 지금(assets/home-core.js · rank-core.js): 공개 요약 home/sNN.json 을 읽어 보여 주기만 함. 요약이 없으면 카드를 숨김(숫자를 지어내지 않음) */
+addEventListener('DOMContentLoaded', () => {
+  const R = window.JDJ_RANK, HC = window.JDJ_HOME; if (!R || !HC) return;
+  const DATA = JB.DATA + 'data/', $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const J = u => fetch(u, {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null);
+  const KEY = 'jdj_home_region', ld = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
+  let IX = null, MH = null, TR, H = {}, S = { t: 'top', sz: 'a', sd: 's00', g: 'all' };
+  const sdObj = () => IX.sido.find(s => s.id === S.sd) || IX.sido[0];
+  const gName = c => (IX.sgg[c] || {}).name || '';
+  const place = () => S.g === 'all' ? sdObj().short : gName(S.g);
+  const mine = x => R.mineUrl(S.sd, x.key, x.band);
+  const loadH = id => H[id] !== undefined ? Promise.resolve(H[id]) : J(DATA + 'home/' + id + '.json').then(j => (H[id] = j && j.v ? j : null));
+
+  function drawRegion(){
+    const sido = IX.sido.map(s => `<option value="${s.id}"${s.id === S.sd ? ' selected' : ''}>${esc(s.short)}</option>`).join('');
+    const gs = Object.entries(IX.sgg).filter(([, v]) => v.sido === sdObj().name).sort((a, b) => a[1].name.localeCompare(b[1].name, 'ko'));
+    $('plRg').innerHTML = `<select id="plSd" aria-label="시·도">${sido}</select><select id="plG" aria-label="시·군·구"><option value="all">전체</option>${gs.map(([c, v]) => `<option value="${c}"${c === S.g ? ' selected' : ''}>${esc(v.name)}</option>`).join('')}</select>`;
+    $('plSd').onchange = e => { S.sd = e.target.value; S.g = 'all'; save(); go(); };
+    $('plG').onchange = e => { S.g = e.target.value; save(); draw(); };
+  }
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify({sd: S.sd, g: S.g})); } catch (e) {} };
+
+  function tabs(h){
+    const v = R.vcheck(MH, sdObj().name), T = [];
+    if (h && h.top && v && v.ok) T.push(['top', '더 오를 단지']);
+    if (h && h.race) T.push(['drop', '하락 레이스'], ['high', '신고가 레이스']);
+    if (!T.some(t => t[0] === S.t)) S.t = T.length ? T[0][0] : 'top';
+    $('plTabs').innerHTML = T.map(([k, t]) => `<button type="button" role="tab" id="pt-${k}" aria-selected="${k === S.t}" tabindex="${k === S.t ? 0 : -1}">${t}</button>`).join('');
+    $('plBody').setAttribute('aria-labelledby', 'pt-' + S.t);
+    return T.length;
+  }
+  $('plTabs').addEventListener('click', e => { const b = e.target.closest('button[id^="pt-"]'); if (!b) return; S.t = b.id.slice(3); draw(); if (window.jdjStat) jdjStat('feature_use', {feature: 'home_pulse_' + S.t}); });
+  $('plSz').addEventListener('click', e => { const b = e.target.closest('button[data-sz]'); if (!b) return; S.sz = b.dataset.sz; draw(); });
+
+  async function go(){
+    drawRegion(); drawAcc();
+    $('plBody').innerHTML = '<p class="pl-empty">자료를 불러오고 있어요…</p>';
+    const h = await loadH(S.sd);
+    if (!h) { $('pulse').hidden = true; return; }
+    $('pulse').hidden = false; draw();
+  }
+
+  function draw(){
+    const h = H[S.sd]; if (!h) return;
+    drawRegion();
+    if (!tabs(h)) { $('pulse').hidden = true; return; }
+    const sz = $('plSz'); sz.hidden = S.t === 'top';
+    const sl = sz.scrollLeft;
+    sz.innerHTML = HC.SIZES.map(([k, t]) => `<button type="button" data-sz="${k}" aria-pressed="${k === S.sz}">${t}</button>`).join('');
+    sz.scrollLeft = sl;
+    if (S.t === 'top') drawTop(h); else drawRace(h, S.t);
+  }
+
+  function drawTop(h){
+    const sd = sdObj(), v = R.vcheck(MH, sd.name), o = R.danji(h, S.g, 3);
+    if (!o || !o.rows.length) { $('plBody').innerHTML = `<p class="pl-empty">${esc(place())}에는 점수를 비교할 단지가 아직 없어요.</p>`; return; }
+    const vk = `과거에 써 봤더니 ${v.n}번 중 ${v.hit}번 맞음`;
+    const st = x => window.JDJ_WATCH ? JDJ_WATCH.star({sd: S.sd, code: x.code, dong: x.dong, jibun: x.jibun, apt: x.apt, band: x.band}, {small: true}) : '';
+    $('plBody').innerHTML = `<p class="pl-cnt">${esc(place())} 단지 ${o.n.toLocaleString()}곳을 미래가치 점수(2년 보유 기준)로 줄 세웠어요</p>
+      <ol class="pl-list">${o.rows.map(x => `<li><a href="${esc(mine(x))}" data-track="home_pulse_top">
+        <span class="pl-rk">${x.r}<small>${x.tie ? '공동' : '위'}</small></span>
+        <span class="pl-nm"><b>${esc(x.apt)}</b><small>${esc(gName(x.code))} ${esc(x.dong)} · ${esc(x.band)}</small><span class="vk">✓ ${esc(vk)}</span></span>
+        <span class="pl-v"><span class="pl-num pl-sc"><b>${x.fv}점</b><small>100점 만점</small></span></span></a>${st(x)}</li>`).join('')}</ol>
+      <p class="pl-rule"><b>점수</b> 같은 ${esc(sd.short)} 단지 중 앞으로 2년 동안 평균보다 더 오를 가능성 순위예요(가격 예측이 아니에요). <b>맞음</b> 이 예측 방법을 과거에 그대로 써 봤을 때 점수 상위 20% 단지가 실제로 같은 구 평균보다 더 오른 경우${v.where === '전국' ? '(전국 성적)' : ''}. <a href="${JB.SITE}track/" data-track="home_pulse_to_track">성적표 보기</a></p>
+      <p class="pl-rule"><b>기준</b> ${esc(R.danjiRule(o))}</p>
+      <div class="pl-foot"><span></span><a class="pl-more" href="${JB.SITE}rank/?t=fv&amp;v=apt${S.sd !== 's00' ? '&amp;sd=' + S.sd : ''}${S.g !== 'all' ? '&amp;g=' + S.g : ''}" data-track="home_pulse_to_rank">전체 순위 보기 ›</a></div>`;
+  }
+
+  function spark(q, cls){
+    const p = HC.qSpark(q, 50, 26); if (!p) return '';
+    return `<svg viewBox="0 0 50 26" aria-hidden="true" class="${cls}"><path d="${p.d}"/>${p.lastIsRecent ? `<circle cx="${p.x}" cy="${p.y}" r="2.6" fill="currentColor"/>` : ''}</svg>`;
+  }
+  function drawRace(h, k){
+    const o = HC.race(h, k, S.g, S.sz), ru = HC.rule(h), st = HC.SIZE_TXT[S.sz];
+    const head = o && o.n ? `<p class="pl-cnt">${esc(place())} ${S.sz === 'a' ? '' : esc(st) + ' '}${k === 'drop' ? `기준을 채운 ${o.n.toLocaleString()}곳 중 많이 내린 순` : `최근 30일 신고가 ${o.n.toLocaleString()}곳 중 많이 오른 순`}</p>` : '';
+    const rows = o ? o.rows.slice(0, 5) : [];
+    const list = rows.length ? `<ol class="pl-list">${rows.map((x, i) => {
+      const cls = k === 'drop' ? 'pl-dn' : 'pl-up';
+      const num = k === 'drop' ? `<b class="pl-dn">${R.pct(x.rate)}</b><small>${HC.eok(x.peak)} → ${HC.eok(x.med)}</small>` : `<b class="pl-up">${R.pct(x.rise)}</b><small>${HC.eok(x.amt)} · ${esc(HC.md(x.d))}</small>`;
+      const sub = `${esc(gName(x.code))} ${esc(x.dong)} · 전용 ${x.area}㎡` + (k === 'drop' ? ` · 최근 ${x.nRecent}건` : '');
+      return `<li><a href="${esc(mine(x))}" data-track="home_pulse_${k}"><span class="pl-rk">${i + 1}</span>
+        <span class="pl-nm"><b>${esc(x.apt)}</b><small>${sub}</small></span>
+        <span class="pl-v">${spark(x.q, cls)}<span class="pl-num">${num}</span></span></a>${window.JDJ_WATCH ? JDJ_WATCH.star({sd: S.sd, code: x.code, dong: x.dong, jibun: x.jibun, apt: x.apt, band: x.band}, {small: true}) : ''}</li>`; }).join('')}</ol>`
+      : `<p class="pl-empty">${esc(place())} ${esc(st)}에는 ${k === 'drop' ? '기준을 채우면서 직전 2년 최고가보다 내린 곳이' : '최근 30일 신고가가'} 없어요.</p>`;
+    const rule = k === 'drop' ? '직전 2년 최고가 → 최근 3개월 거래 중간값, 같은 단지·같은 전용면적' : '최근 30일 신고가 → 직전 2년 최고가와 비교, 같은 단지·같은 전용면적';
+    const more = (k === 'drop'
+      ? `직전 2년은 ${esc(ru.prior)}, 최근 3개월은 ${esc(ru.recent)} 계약이에요. 최근 3개월 ${ru.minRecent}건 이상·직전 2년 ${ru.minPrior}건 이상 거래된 곳만 넣었어요(한두 건으로 크게 출렁이는 곳 제외).`
+      : `최근 30일은 ${esc(ru.hiFrom)}~${esc(ru.hiTo)} 계약이에요. 신고가는 그 전날까지 같은 전용면적 최고가보다 비싸게 거래된 경우이고, 직전 2년 ${ru.minPrior}건 이상 거래된 곳만 넣었어요.`)
+      + ` 1억 원 미만·전용 ${ru.minArea}㎡ 미만(원룸형)·직거래는 뺐어요. 작은 선은 직전 2년 분기별 거래 중간값과 최근 3개월(점)이에요. 국토교통부 실거래 신고 기준이고, 최근 거래는 신고 기한(30일) 때문에 더 늘어날 수 있어요.`;
+    $('plBody').innerHTML = head + list + `<p class="pl-rule"><b>기준</b> ${rule}</p><details class="pl-why"><summary>기준 자세히</summary><p>${more}</p></details>`;
+  }
+
+  /* 예측 성적 한 줄: track.json(엔진 track.py) 이 공개된 뒤에만. 없으면 숨김 */
+  function drawAcc(){
+    const a = HC.acc(TR, sdObj().name), el = $('accl'); if (!el) return;
+    if (!a) { el.hidden = true; return; }
+    const m = String(a.m), mm = +m.slice(4, 6), pm = mm === 1 ? 12 : mm - 1;
+    el.innerHTML = `<summary><span class="ai" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg></span>
+      <span class="at">지난달 집코드 시세와 실제 다음 거래 차이${a.where === '전국' ? '' : `(${esc(sdObj().short)})`}: <b>중간 ${a.med.toFixed(1)}%</b> (10% 이내 <b>${Math.round(a.w10)}%</b>)</span><span class="go">자세히</span></summary>
+      <p>${esc(a.where === '전국' ? '전국' : sdObj().short)} 아파트 ${m.slice(0, 4)}년 ${mm}월 실제 거래 ${a.n.toLocaleString()}건을, ${pm}월까지 3개월 실거래 중간값으로 낸 집코드 시세와 비교했어요. 차이가 5% 이내인 거래는 ${a.w5.toFixed(1)}%, 10% 이내는 ${a.w10.toFixed(1)}%예요.</p>
+      <p>${a.kind === 'snap' ? '그달 화면에 공개한 시세를 그대로 고정해 두고, 나중에 실제 거래와 비교한 값이에요.' : '늦게 신고된 거래까지 넣어 다시 계산한 값이라, 그때 화면에 보인 시세와 비교할 때보다 조금 좋게 나올 수 있어요.'} 같은 단지·같은 평형끼리 비교했고, 층·향·수리 상태에 따라 실제 가격은 달라요.</p>`;
+    el.hidden = false;
+  }
+
+  (async () => {
+    const [ix, mh, tr] = await Promise.all([J(DATA + 'index.json'), J(DATA + 'model_h.json'), J(DATA + 'track.json')]);
+    if (!ix || !ix.sido || !ix.sgg) return;
+    IX = ix; MH = mh; TR = tr;
+    const p = HC.regionPick(IX, ld(KEY), ld('jdj_region')); S.sd = p.sd; S.g = p.g;
+    await go();
+  })();
+});
+</script>
+<script>
+var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+/* 하루 세 번 바뀌는 카드(assets/today-core.js): 아침 = 모닝 브리핑 요약(brief/market.json) · 낮 = 오늘 새로 신고된 거래 · 저녁 = 오늘의 신고가·큰 하락 TOP(today/index.json, 하루 4번 갱신)
+   + 관심 목록 한 줄(assets/watch.js) + 오늘의 집값 맞혀 보기(today/quiz.json — 문제 거래는 카드 목록에서 뺌). 자료가 없으면 카드를 숨기고 숫자를 지어내지 않음 */
+addEventListener('DOMContentLoaded', () => {
+  const TD = window.JDJ_TODAY, B = window.JDJ_BRIEF, R = window.JDJ_RANK; if (!TD) return;
+  const DATA = JB.DATA + 'data/', $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const J = u => fetch(u, {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null);
+  const ld = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
+  let M = null, T = null, Q = null, IX = null, P = null, K = null, RG = 'all', why = true;
+  const today = () => TD.kst(new Date()).date;
+  const sidOf = g => { const v = IX && IX.sgg && IX.sgg[g]; return v ? ((IX.sido || []).find(s => s.name === v.sido) || {}).id || '' : ''; };
+  const shortOf = sid => ((IX && IX.sido || []).find(s => s.id === sid) || {}).short || '';
+  const myRg = () => { const h = ld('jdj_home_region'); return h && h.sd ? h.sd : 's00'; };
+  const mineOf = x => R ? R.mineUrl(sidOf(x.g), [x.g, x.d, x.j || '', x.a].join('|'), x.b) : '#';
+  const TABS = [['am', '아침', '브리핑'], ['day', '낮', '새로 신고된 거래'], ['pm', '저녁', '신고가·큰 하락']];
+
+  function row(x, kind){
+    const sid = sidOf(x.g), tg = TD.tags(x).filter(t => kind === 'new' || t.c === 'x');
+    const v = kind === 'hi' ? `<b class="t3-up">${TD.eok(x.p)}</b><small class="t3-up">+${x.up.toFixed(1)}%</small>`
+      : kind === 'drop' ? `<b class="t3-dn">${TD.eok(x.p)}</b><small class="t3-dn">−${Math.abs(x.dr).toFixed(1)}%</small>`
+      : `<b>${TD.eok(x.p)}</b><small>${esc(x.s || '')} 올라옴</small>`;
+    const base = kind === 'hi' && x.pm ? ` · 이전 최고 ${TD.eok(x.pm)}` : kind === 'drop' && x.m2 ? ` · 2년 최고 ${TD.eok(x.m2)}` : '';
+    const star = window.JDJ_WATCH && sid ? JDJ_WATCH.star({sd: sid, code: x.g, dong: x.d, jibun: x.j || '', apt: x.a, band: x.b}, {small: true}) : '';
+    return `<li><a href="${esc(mineOf(x))}" data-track="home_t3_${kind}"><span class="nm"><b>${esc(x.a)}${tg.map(t => `<span class="tg ${t.c}">${esc(t.t)}</span>`).join('')}</b><small>${esc([x.sd, x.gn, x.d].filter(Boolean).join(' '))} · ${esc(x.b)}${x.f != null ? ` · ${esc(x.f)}층` : ''} · ${TD.md(x.dt)} 계약${base}</small></span><span class="v">${v}</span></a>${star}</li>`;
+  }
+  function amBody(){
+    if (!M) return '<p class="t3-line">아침 브리핑 자료를 아직 받지 못했어요.</p>';
+    const k = M.kr || {}, lines = [];
+    const top = (k.hi || [])[0], dr = (k.drop || [])[0];
+    if (B && top){ const t = B.topText(top); lines.push(`<b>신고가</b> ${esc(t.name)} · ${esc(t.where)} · ${esc(t.price)} (${esc(t.sub)})`); }
+    if (B && dr){ const t = B.topText(dr); lines.push(`<b>큰 하락</b> ${esc(t.name)} · ${esc(t.where)} · ${esc(t.price)} (${esc(t.sub)})`); }
+    const cy = M.cy; if (cy && cy.n) lines.push(`<b>이번 주 청약</b> 접수 ${cy.n.toLocaleString('ko-KR')}곳${cy.hh ? ` · ${cy.hh.toLocaleString('ko-KR')}세대` : ''}`);
+    const pn = M.pnews && M.pnews.items ? M.pnews.items.length : 0; if (pn) lines.push(`<b>새 발표</b> 정책·교통·공급 소식 ${pn}건`);
+    return `<p class="t3-big">${esc(B ? B.NAME : '모닝 브리핑')} ${esc(B ? B.dateLabel(M.date) : '')}</p>
+      ${k.n ? `<div class="t3-st"><div><b>${k.n.toLocaleString('ko-KR')}건</b><small>새로 잡힌 매매</small></div><div><b>${(k.nhi || 0).toLocaleString('ko-KR')}건</b><small>신고가</small></div><div><b>${(k.ndrop || 0).toLocaleString('ko-KR')}건</b><small>큰 하락</small></div></div>` : '<p class="t3-line">브리핑에 새로 잡힌 매매 거래가 없었어요.</p>'}
+      ${lines.map(l => `<p class="t3-line">${l}</p>`).join('')}
+      <a class="t3-more" href="${JB.SITE}brief/" data-track="home_t3_brief">브리핑 전체 보기 ›</a>`;
+  }
+  function sc(){ return T ? TD.scope(T, RG === 'all' ? '' : RG, Q) : null; }
+  function dayBody(){
+    const c = sc();
+    if (!c || !c.new.length) return `<p class="t3-line">${RG === 'all' ? '' : esc(shortOf(RG)) + '에는 '}오늘 새로 올라온 거래가 아직 없어요. 실거래 공개 자료는 하루 4번 갱신돼요.</p>`;
+    return `<p class="t3-big">${RG === 'all' ? '전국' : esc(shortOf(RG))}에 오늘 <b>${c.n.toLocaleString('ko-KR')}건</b>이 새로 올라왔어요</p>
+      <ul class="t3-l">${c.new.slice(0, 6).map(x => row(x, 'new')).join('')}</ul>
+      <p class="t3-src">최근 올라온 순. 국토교통부 실거래 공개 자료에 오늘 처음 보인 거래예요(실거래 자료에 신고일이 없어 처음 보인 때 기준).</p>`;
+  }
+  function pmBody(){
+    const c = sc();
+    if (!c || !(c.hi.length || c.drop.length)) return `<p class="t3-line">${RG === 'all' ? '' : esc(shortOf(RG)) + '에는 '}오늘 새로 올라온 거래 중 신고가·큰 하락이 아직 없어요.</p>`;
+    return `<div class="t3-st"><div><b>${c.n.toLocaleString('ko-KR')}건</b><small>오늘 새 거래</small></div><div><b class="t3-up">${c.nhi.toLocaleString('ko-KR')}건</b><small>신고가</small></div><div><b class="t3-dn">${c.ndrop.toLocaleString('ko-KR')}건</b><small>큰 하락</small></div></div>
+      ${c.hi.length ? `<p class="t3-h">신고가 TOP <small style="font-weight:500;color:var(--sub2)">비싼 순</small></p><ul class="t3-l">${c.hi.map(x => row(x, 'hi')).join('')}</ul>` : ''}
+      ${c.drop.length ? `<p class="t3-h">큰 하락 TOP <small style="font-weight:500;color:var(--sub2)">많이 내린 순</small></p><ul class="t3-l">${c.drop.map(x => row(x, 'drop')).join('')}</ul>` : ''}
+      <p class="t3-src">모닝 브리핑과 같은 기준이에요. 신고가 = 같은 단지·같은 전용면적의 그 전 최고가보다 비싼 거래, 큰 하락 = 최근 2년 최고가보다 10% 넘게 낮은 1억 원 이상 거래(직거래·특수 거래 의심은 아래로).</p>`;
+  }
+  function draw(k){
+    K = k;
+    $('t3Tabs').innerHTML = TABS.map(([id, t, s]) => `<button type="button" role="tab" id="t3-${id}" aria-selected="${id === k}" tabindex="${id === k ? 0 : -1}">${t}<small>${s}</small></button>`).join('');
+    $('t3Body').setAttribute('aria-labelledby', 't3-' + k);
+    const sid = myRg(), showRg = k !== 'am' && T && T.by && T.by[sid];
+    $('t3Rg').hidden = !showRg;
+    if (showRg) $('t3Rg').innerHTML = [['all', '전국'], [sid, shortOf(sid)]].map(([v, t]) => `<button type="button" data-rg="${v}" aria-pressed="${RG === v}">${esc(t)}</button>`).join('');
+    else RG = 'all';
+    const td = today();
+    $('t3At').textContent = k === 'am' ? (M ? TD.asOf(M.at || M.date, td) : '') : (T ? TD.asOf(T.at, td) : '');
+    const msg = why && P.why === 'empty' && k === P.show ? `<p class="t3-why">${{day: '오늘 새로 올라온 거래가 아직 없어서', pm: '오늘 신고가·큰 하락이 아직 없어서', am: '아침 브리핑 자료가 아직 없어서'}[P.want]} ${{am: '아침 브리핑', day: '오늘 새로 신고된 거래', pm: '신고가·큰 하락 TOP'}[P.show]}을 먼저 보여 드려요.</p>` : '';
+    $('t3Body').innerHTML = msg + (k === 'am' ? amBody() : k === 'day' ? dayBody() : pmBody());
+    if (window.JDJ_WATCH) JDJ_WATCH.paintStars();
+  }
+  $('t3Tabs').addEventListener('click', e => { const b = e.target.closest('button[id^="t3-"]'); if (!b) return; why = false; draw(b.id.slice(3)); if (window.jdjStat) jdjStat('feature_use', {feature: 'home_t3_' + K}); });
+  $('t3Rg').addEventListener('click', e => { const b = e.target.closest('button[data-rg]'); if (!b) return; RG = b.dataset.rg; draw(K); });
+
+  function watchRow(){
+    const W = window.JDJ_WATCH, el = $('wRow'); if (!W) return;
+    W.summary().then(s => {
+      if (!s.n){ el.hidden = true; return; }
+      el.innerHTML = `<span class="ic" aria-hidden="true">★</span><span><b>내 관심 단지 ${s.n}곳${s.news ? ` · <span class="nw">새 소식 ${s.news}건</span>` : ''}</b><small>${s.news ? '어제·오늘 새로 올라온 거래가 있어요' : '새 거래·신고가·순위·전세가율 변화를 한 화면에서'}</small></span><span class="go" aria-hidden="true">›</span>`;
+      el.hidden = false;
+    });
+  }
+  function quizCard(){
+    const Z = window.JDJ_QUIZ, el = $('qzCard');
+    if (!Q || !Q.q || Q.date !== today() || !Z){ el.hidden = true; return; }
+    const q = Q.q, S = Z.load((() => { try { return localStorage.getItem(Z.KEY); } catch (e) { return null; } })());
+    const done = Z.answered(S, Q, today()), n = Z.streakNow(S, today());
+    el.innerHTML = `<span class="ic" aria-hidden="true">?</span><span><b>오늘의 집값 맞혀 보기</b><small>${done ? `오늘 문제 풀었어요${n ? ` · 연속 ${n}일째` : ''} · 설명 다시 보기` : `${esc(q.gn)} ${esc(q.a)} ${esc(q.b)}${q.f != null ? ` ${esc(q.f)}층` : ''}, 얼마에 거래됐을까요?`}</small></span><span class="go" aria-hidden="true">›</span>`;
+    el.hidden = false;
+  }
+
+  (async () => {
+    [M, T, Q, IX] = await Promise.all([J(DATA + 'brief/market.json'), J(DATA + 'today/index.json'), J(DATA + 'today/quiz.json'), J(DATA + 'index.json')]);
+    watchRow(); quizCard();
+    if (window.JDJ_WATCH) JDJ_WATCH.onChange(watchRow);
+    if (!M && !T) return;
+    P = TD.pick(M, T, new Date(), '', Q);
+    if (P.why === 'none' && !M) return;
+    $('t3').hidden = false;
+    draw(P.show);
+  })();
+});
+</script>
+<script>
+var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+/* 탭 제목: 서비스 이름은 assets/config.js 의 SITE_NAME 에서만(화면에 이름을 직접 쓰지 않음) */
+(function () { var S = (window.JDJ_SITE && window.JDJ_SITE.SITE_NAME) || ''; if (S) document.title = S + ' — 첫 화면 시안'; })();
+
+/* 이번 주 부동산 변화: 공개 자료 숫자 그대로(새 숫자를 만들지 않음). 자료가 없는 칸은 빼고, 모두 없으면 안내 한 줄.
+   ① 주간 실거래 동향(data/weekly/latest.json, 매주 월요일 오전 7시 발표) — 발표 전이면
+     최근 한 달 구별 평당가 순위(index.json, 순위 화면과 같은 계산 assets/rank-core.js price)
+   ② 모닝 브리핑(data/brief/market.json): 새 거래 중 신고가 건수 · 가장 비싼 신고가 · 이번 주 청약 접수 */
+addEventListener('DOMContentLoaded', () => {
+  const R = window.JDJ_RANK, B = window.JDJ_BRIEF, HC = window.JDJ_HOME, SITE = JB.SITE, DATA = JB.DATA + 'data/', $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const J = u => fetch(u, {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null);
+  const pct = (x, d) => (x > 0 ? '+' : x < 0 ? '−' : '') + Math.abs(x).toFixed(d) + '%';
+  const md = iso => { const p = String(iso || '').split('-'); return p.length === 3 ? `${+p[1]}/${+p[2]}` : ''; };
+  const ym = s => s ? `${String(s).slice(0, 4)}년 ${+String(s).slice(4, 6)}월` : '';
+  const chev = '<span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>';
+
+  (async () => {
+    const [W, M, IX, TR] = await Promise.all([J(DATA + 'weekly/latest.json'), J(DATA + 'brief/market.json'), J(DATA + 'index.json'), J(DATA + 'track.json')]);
+    const out = [];
+    const sidOf = g => { const v = IX && IX.sgg && IX.sgg[g]; return v ? ((IX.sido || []).find(s => s.name === v.sido) || {}).id || '' : ''; };
+    const wkOk = W && W.rows && (!W.release || Date.parse(W.release) <= Date.now());
+    if (wkOk) {
+      const k = W.rows['00'], per = `${md(W.from)}~${md(W.to)} 계약 · ${W.status === 'final' ? '확정' : '잠정'}`;
+      if (k && k.chg != null) out.push({ tag: '주간 통계', d: per, href: SITE + 'weekly/', tr: 'home_wk_weekly',
+        t: `지난주 전국 아파트, 같은 집 직전 거래보다 <b>${pct(k.chg, 2)}</b>` });
+      const t = W.top && W.top.m && (W.top.m.up || [])[0];
+      if (t) out.push({ tag: '주간 통계', d: `최근 4주 · 비교 거래 ${Number(t.np).toLocaleString('ko-KR')}건`, href: SITE + 'weekly/', tr: 'home_wk_top',
+        t: `최근 4주 가장 많이 오른 곳은 ${esc(t.sd)} ${esc(t.nm)} <b>${pct(t.chg, 2)}</b>` });
+      $('wkMore').href = SITE + 'weekly/';
+    } else if (IX && R && R.price) {
+      /* 지역: 첫 화면에서 고른 지역 → 다른 화면에서 고른 지역 → 서울(우리 지역 지금 카드와 같은 규칙, home-core regionPick) */
+      const ld = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
+      const rp = HC ? HC.regionPick(IX, ld('jdj_home_region'), ld('jdj_region')) : { sd: 's00' };
+      const sdo = (IX.sido || []).find(s => s.id === rp.sd) || (IX.sido || [])[0] || {};
+      const p = R.price(IX, sdo.name, 1, 'up'), x = p.rows[0];
+      if (x && x.ch > 0) out.push({ tag: '지역 순위', d: `${ym(p.at)} 기준 · 최근 3개월 실거래 평당가`, href: SITE + 'rank/', tr: 'home_wk_rank',
+        t: `한 달 새 ${esc(sdo.short || '')}에서 가장 많이 오른 곳은 ${esc(x.name)} <b>+${x.ch.toFixed(1)}%</b>` });
+    }
+    const kr = M && M.kr, day = M && B ? B.dateLabel(M.date) : '';
+    if (kr && kr.n) out.push({ tag: '신고가', d: `${day} 브리핑`, href: SITE + 'brief/', tr: 'home_wk_hi',
+      t: `${M.win && M.win.from ? md(M.win.from) + ' 이후 ' : ''}새로 올라온 아파트 거래 ${kr.n.toLocaleString('ko-KR')}건 중 <b>${(kr.nhi || 0).toLocaleString('ko-KR')}건</b>이 신고가예요` });
+    const top = kr && (kr.hi || [])[0];
+    if (top && B && R) {
+      const tx = B.topText(top), sid = sidOf(top.g);
+      out.push({ tag: '최고가', d: `${tx.when}${top.up != null ? ` · 이전 최고보다 ${B.pct(top.up)}` : ''}`, tr: 'home_wk_top_hi',
+        href: sid ? R.mineUrl(sid, [top.g, top.d, top.j || '', top.a].join('|'), top.b) : SITE + 'brief/',
+        t: `가장 비싼 신고가는 ${esc(top.gn || '')} ${esc(top.a)} <b>${esc(tx.price)}</b>` });
+    }
+    const cy = M && M.cy;
+    if (cy && cy.n && out.length < 4) out.push({ tag: '청약', d: `${md(cy.from)}~${md(cy.to)} 접수`, href: SITE + 'chungyak/', tr: 'home_wk_cy',
+      t: `이번 주 청약 접수 <b>${cy.n.toLocaleString('ko-KR')}곳</b>${cy.hh ? `, ${cy.hh.toLocaleString('ko-KR')}세대` : ''}` });
+    $('wkList').innerHTML = out.length ? out.slice(0, 4).map(c => `<li><a class="wc" href="${esc(c.href)}" data-track="${c.tr}"><span><span class="wc-top"><span class="wc-tag">${c.tag}</span>${esc(c.d)}</span><span class="wc-t">${c.t}</span></span>${chev}</a></li>`).join('')
+      : '<li class="wk-wait">이번 주 자료를 아직 받지 못했어요. 잠시 뒤 다시 열어 주세요.</li>';
+
+    /* 예측 적중 기록: /track/ 화면이 있을 때만 보여 줌. 숫자는 track.json(엔진 공개 파일) 그대로 */
+    fetch(SITE + 'track/', { method: 'HEAD', cache: 'no-cache' }).then(r => {
+      if (!r.ok) return;
+      const a = HC && TR ? HC.acc(TR, '전국') : null;
+      if (a) $('trkTx').textContent = `지난달 시세와 실제 거래 가격 차이 중간 ${a.med.toFixed(1)}% · 10% 안에 든 거래 ${Math.round(a.w10)}%`;
+      $('trkRow').hidden = false;
+    }).catch(() => {});
+  })();
+
+  /* 소개 한 줄 숫자(home-core heroFacts) */
+  J(DATA + 'index.json').then(IX => { if (!IX || !HC) return; const F = HC.heroFacts(IX); $('dsTxt').textContent = [F.trades ? `실거래 ${F.trades} 건 분석` : ''].concat(F.facts).filter(Boolean).join(' · '); });
+});
+
+/* 검색: 단지 이름은 물어보기(assets/ask.js, 별칭 검색 그대로). 시·군·구 이름만 넣으면 지도 지역 분석으로 */
+addEventListener('DOMContentLoaded', () => {
+  const box = document.getElementById('askBox'); if (!window.JDJ_ASK) return;
+  JDJ_ASK.mount(box, { from: 'home' });
+  const q = box.querySelector('input'), f = box.querySelector('form');
+  q.placeholder = '단지 이름이나 동네를 넣어 보세요'; box.querySelector('label').textContent = '단지 이름이나 동네 검색';
+  box.querySelector('form button').textContent = '찾기';
+  let IX = null; JDJ_ASK.index().then(x => { IX = x; }).catch(() => {});
+  box.addEventListener('submit', e => {
+    const t = String(q.value || '').replace(/\s+/g, '');
+    if (t.length < 2 || !IX) return;
+    const hits = Object.entries(IX.sgg || {}).filter(([, v]) => { const n = String(v.name || '').replace(/\s+/g, ''); return n === t || n.replace(/[시군구]$/, '') === t; });
+    if (!hits.length && /^[가-힣0-9.·]{1,10}(동|읍|면|가)$/.test(t)) { e.preventDefault(); e.stopImmediatePropagation(); dong(t); return; }
+    if (hits.length !== 1) return;
+    const [code, v] = hits[0], sd = ((IX.sido || []).find(s => s.name === v.sido) || {}).id;
+    if (!sd) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    if (window.jdjStat) try { jdjStat('feature_use', { feature: 'home_search_region' }); } catch (er) {}
+    location.href = JB.SITE + 'map/?m=reg&rs=' + encodeURIComponent(sd) + '&rg=' + encodeURIComponent(code);
+  }, true);
+  /* 동·읍·면 이름만 넣으면: 그 동네 아파트 중 최근 3년 거래가 많은 곳부터 골라 보게(단지 자료 그대로, 새 숫자 없음) */
+  const msg = box.querySelector('.msg'), cbox = box.querySelector('.cands');
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  async function dong(t) {
+    msg.classList.remove('err'); msg.textContent = `${t} 단지를 찾는 중이에요…`; cbox.innerHTML = '';
+    try { await JDJ_ASK.ask(t); } catch (er) { msg.textContent = '자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.'; msg.classList.add('err'); return; }
+    const all = [...JDJ_ASK.groups().values()].filter(d => String(d.dong || '').replace(/\s+/g, '') === t).sort((a, b) => (b.n || 0) - (a.n || 0));
+    if (!all.length || !window.JDJ_RANK) { msg.textContent = `‘${t}’에서 최근 3년 아파트 거래를 찾지 못했어요. 단지 이름이나 구 이름(예: 송파구)으로 넣어 보세요.`; msg.classList.add('err'); return; }
+    const gn = c => ((IX && IX.sgg[c]) || {}).name || '';
+    const byG = {}; all.forEach(d => (byG[d.code] = byG[d.code] || []).push(d));
+    const L = Object.values(byG), top = []; for (let i = 0; top.length < 6 && i < 6; i++) L.forEach(a => { if (a[i] && top.length < 6) top.push(a[i]); });   /* 같은 이름 동이 여러 구에 있으면 구마다 고르게 */
+    const d0 = top[0], k = d => [d.code, d.dong, d.jibun, d.apt].join('|');
+    msg.textContent = `${t} 아파트 ${all.length.toLocaleString('ko-KR')}곳 중 최근 3년 거래가 많은 곳이에요${L.length > 1 ? `(같은 이름 동이 ${L.length}개 구에 있어요)` : ''}. 단지를 고르거나 지도에서 보세요.`;
+    cbox.innerHTML = `<div class="cg"><div class="row">${top.map(d => `<a class="chip" style="text-decoration:none;display:inline-flex;flex-direction:column;justify-content:center" href="${esc(JDJ_RANK.mineUrl(d.sd, k(d), ''))}" data-track="home_search_dong">${esc(d.apt)}<small>${esc(gn(d.code))} ${esc(d.dong)} · 거래 ${Number(d.n || 0).toLocaleString('ko-KR')}건</small></a>`).join('')}<a class="chip" style="text-decoration:none;display:inline-flex;align-items:center;border-color:#2560E8;color:#1F56E0" href="${esc(JB.SITE + 'map/?sd=' + encodeURIComponent(d0.sd) + '&d=' + encodeURIComponent(k(d0)))}" data-track="home_search_dong_map">지도에서 ${esc(t)} 보기 ›</a></div></div>`;
+    if (window.jdjStat) try { jdjStat('feature_use', { feature: 'home_search_dong' }); } catch (er) {}
+  }
+});
+</script>
+<footer class="foot notice">국토교통부 실거래가 등 공공기관 공식 자료 기준 · 2026년 11월 대출 규제 반영<br>★ <span data-site-name></span> · <a href="../agent/" data-track="agent_join_click">공인중개사 제휴</a> · <a href="#" onclick="window.JDJ_PWA&&JDJ_PWA.install();return false">홈 화면에 추가</a></footer>
+<script>/* 관심 지역 새 공고 배지(분양) */ addEventListener('DOMContentLoaded', () => { if (window.JDJ_AREA) JDJ_AREA.badge(document.querySelector('a[data-track="home_to_bunyang"]')); });</script>
+<script src="../assets/ad-slot.js?v=5" defer></script>
+</body>
+</html>
