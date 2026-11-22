@@ -60,9 +60,10 @@ check('수요: 지하철 합계', dr[3].value, '하루 약 128,398명');
 check('공급: 신축 자료 없음 → 확인 불가', K.supplyRow({}, ix).ok, false);
 
 // 통건물 추정 위치(12번째 칸)
-const te = K.trades([[20261029, '논현동', '2**', '제2종근린생활', '제2종일반주거', 399.63, 225.7, null, 460000, 0, 1996, [127.029, 37.511, 1, '제2종근린생활시설', 400, 1996]],
+const te = K.trades([[20261029, '논현동', '2**', '제2종근린생활', '제2종일반주거', 399.63, 225.7, null, 460000, 0, 1996, [127.029, 37.511, 1, '제2종근린생활시설', 400, 1996, 'm']],
   [20261020, '논현동', '3**', '업무', '일반상업', 900, 400, null, 300000, 0, 1999], [20261001, '논현동', '1**', '업무', '일반상업', 900, 400, null, 300000, 0, 1999, [0, 0, 1]]]);
-check('추정 위치 해독', te[0].est, { lng: 127.029, lat: 37.511, band: 1, use: '제2종근린생활시설', tot: 400, year: 1996 });
+check('추정 위치 해독', te[0].est, { lng: 127.029, lat: 37.511, band: 1, use: '제2종근린생활시설', tot: 400, year: 1996, src: 'm' });
+check('좌표 출처 문구(업체 이름 없음)', [K.estSrc('m'), K.estSrc('p')], ['위치는 지도 서비스 좌표 기준 추정이에요', '위치는 행정안전부 주소정보 좌표 기준이에요']);
 check('추정 위치 없음·좌표 이상하면 null', [te[1].est, te[2].est], [null, null]);
 check('건축물대장 사실 한 줄', K.estFacts(te[0].est), '제2종근린생활시설 · 연면적 400㎡ · 1996년 준공');
 check('추정 위치 안내 문구', K.EST_LABEL, '추정 위치 · 공개 자료(건축물대장)로 맞춰 본 결과예요');
@@ -99,7 +100,7 @@ if (dir && fs.existsSync(path.join(dir, 'comm', 'index.json'))) {
   check('자료: 가중치·기준값 없음', /"w"|"stats"|"lo"|"sd"|MIN_/.test(t), false);
   const g = Object.keys(j.sgg)[0], d = fs.existsSync(path.join(dir, 'comm', g + '.json')) ? JSON.parse(fs.readFileSync(path.join(dir, 'comm', g + '.json'), 'utf8')) : null;
   if (d && d.tr && d.tr.g && d.tr.g.length) check('자료: 통건물 지번은 가려진 그대로', d.tr.g.every(r => /\*/.test(r[2]) || !r[2]), true);
-  if (d && d.tr && d.tr.g) check('자료: 추정 위치 칸은 [경도, 위도(셋째 자리), 등급, 용도, 연면적, 준공]만', d.tr.g.filter(r => r.length > 11).every(r => r.length === 12 && r[11].length === 6
+  if (d && d.tr && d.tr.g) check('자료: 추정 위치 칸은 [경도, 위도(셋째 자리), 등급, 용도, 연면적, 준공]만', d.tr.g.filter(r => r.length > 11).every(r => r.length === 12 && r[11].length === 7 && ['p', 'm'].includes(r[11][6])
     && [r[11][0], r[11][1]].every(v => Math.abs(v * 1000 - Math.round(v * 1000)) < 1e-6)), true);
 }
 

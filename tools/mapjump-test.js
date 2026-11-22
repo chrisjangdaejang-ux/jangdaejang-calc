@@ -44,9 +44,10 @@ check('비교 왕복(최대 3곳)', p4.items, it.slice(0, 3));
 check('비교: 아파트 종류', p4.kind, 'a');
 
 /* 2-1) 통건물 추정 위치: fe=1 + 사실 한 줄, 좌표는 셋째 자리 — 좌표 없으면 추정 표시도 없음 */
-const pe = MJ.parse(qOf(MJ.url({ kind: 'g', g: '11680', dong: '논현동', name: '논현동 통건물 (추정)', ll: [37.51123, 127.02912], est: 1, facts: '업무시설 · 연면적 1,400㎡ · 2001년 준공' }, lo)));
-check('추정 위치 왕복', [pe.kind, pe.ll, pe.est, pe.facts, pe.jibun], ['g', [37.511, 127.029], true, '업무시설 · 연면적 1,400㎡ · 2001년 준공', '']);
-check('좌표 없으면 추정 표시 없음', MJ.parse(qOf(MJ.url({ kind: 'g', g: '11680', dong: '논현동', est: 1, facts: 'x' }, lo))).est, false);
+const pe = MJ.parse(qOf(MJ.url({ kind: 'g', g: '11680', dong: '논현동', name: '논현동 통건물 (추정)', ll: [37.51123, 127.02912], est: 'm', facts: '업무시설 · 연면적 1,400㎡ · 2001년 준공' }, lo)));
+check('추정 위치 왕복', [pe.kind, pe.ll, pe.est, pe.facts, pe.jibun], ['g', [37.511, 127.029], 'm', '업무시설 · 연면적 1,400㎡ · 2001년 준공', '']);
+check('공공 좌표 출처 왕복', MJ.parse(qOf(MJ.url({ kind: 'g', g: '11680', ll: [37.5, 127.0], est: 'p' }, lo))).est, 'p');
+check('좌표 없으면 추정 표시 없음', MJ.parse(qOf(MJ.url({ kind: 'g', g: '11680', dong: '논현동', est: 'm', facts: 'x' }, lo))).est, '');
 
 /* 3) 돌아갈 주소는 사이트 안 상대 주소만 */
 check('다른 사이트 주소 거부', ['https://evil.example/', '//evil.example', '/abs/path', 'javascript:alert(1)', '../up/', 'a/../../b', 'a b', 'a"b'].map(MJ.back), ['', '', '', '', '', '', '', '']);

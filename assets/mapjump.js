@@ -3,7 +3,7 @@
    주소(map/?…):
      아파트  sd·d·b (지도 화면이 원래 읽던 값 그대로) + 비교 단지 sd2·d2·b2·sd3·d3·b3
      그 밖   fk(o 오피스텔 · v 빌라 · c 구분상가 건물 · g 통건물 · a 아파트) fg(시·군·구 코드) fd(동) fj(지번) fn(이름) fp(최근 가격, 만원) fl(위도,경도 — 소수 셋째 자리)
-             fe=1 + fx(건축물대장 사실 한 줄) — 통건물 추정 위치(공개 건축물대장과 맞춘 건물, 지번 없음)
+             fe(p 행안부 공공 좌표 | m 지도 서비스 좌표) + fx(건축물대장 사실 한 줄) — 통건물 추정 위치(공개 건축물대장과 맞춘 건물, 지번 없음)
      공통    f=1(결과 화면에서 옴: 표시 카드·돌아가기·주변 레이어) · bk(돌아갈 화면, 사이트 안 상대 주소 — 'mine/?t=o&og=…')
    경로는 JDJ_BASE(JB.SITE) 기준이라 예전 주소·새 도메인 어디서든 같게 동작한다(예전 저장소 폴더 이름을 경로에 직접 쓰지 않음).
    window.JDJ_MAPJ = { url, parse, back, backHref, btn, css, fitZoom, railText, KIND } */
@@ -36,7 +36,7 @@
     add('fg', o.g); add('fd', o.dong); add('fj', o.jibun); add('fn', o.name);
     if (o.price > 0) add('fp', Math.round(o.price));
     if (o.ll && isFinite(o.ll[0]) && isFinite(o.ll[1])) add('fl', r3(o.ll[0]) + ',' + r3(o.ll[1]));
-    if (o.est && o.ll) { add('fe', '1'); add('fx', String(o.facts || '').slice(0, 80)); }
+    if (o.est && o.ll) { add('fe', o.est === 'p' ? 'p' : 'm'); add('fx', String(o.facts || '').slice(0, 80)); }
     add('f', '1');
     add('bk', back(o.back != null ? o.back : here(loc)));
     return JB.SITE + 'map/?' + q.join('&');
@@ -52,7 +52,7 @@
     var g = p.get('fg') || '', price = parseInt(p.get('fp'), 10);
     return { on: p.get('f') === '1', items: items, kind: kind, g: /^\d{5}$/.test(g) ? g : '', dong: (p.get('fd') || '').slice(0, 40), jibun: (p.get('fj') || '').slice(0, 30),
       name: (p.get('fn') || '').slice(0, 60), price: price > 0 ? price : 0, ll: ll, back: back(p.get('bk')),
-      est: !!ll && p.get('fe') === '1', facts: ll && p.get('fe') === '1' ? (p.get('fx') || '').slice(0, 80) : '' };
+      est: ll && /^[pm1]$/.test(p.get('fe') || '') ? (p.get('fe') === 'p' ? 'p' : 'm') : '', facts: ll && /^[pm1]$/.test(p.get('fe') || '') ? (p.get('fx') || '').slice(0, 80) : '' };
   }
   /** 돌아가기 링크 주소(사이트 안) — 없으면 '' */
   function backHref(F) { return F && F.back ? JB.SITE + F.back : ''; }

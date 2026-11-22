@@ -47,14 +47,16 @@
     return (rows || []).map(t => ({ date: ymd(t[0]), dong: t[1], jibun: t[2], use: t[3], lu: t[4], ba: t[5], la: t[6], floor: t[7], amt: t[8],
       direct: !!(t[9] & 1), share: !!(t[9] & 2), hi: !!(t[9] & 4), by: t[10], masked: /\*/.test(String(t[2] || '')), est: estOf(t[11]) }));
   }
-  /** 통건물 추정 위치(12번째 칸): [경도, 위도, 등급 1 높음·2 보통, 건축물대장 주용도, 연면적 ㎡, 준공 연도] → 객체 또는 null.
+  /** 통건물 추정 위치(12번째 칸): [경도, 위도, 등급 1 높음·2 보통, 건축물대장 주용도, 연면적 ㎡, 준공 연도, 좌표 출처 p 행안부 공공 좌표 | m 지도 서비스 좌표] → 객체 또는 null.
       공개 건축물대장과 대지·연면적·준공·용도가 하나로 맞는 건물이 있을 때만 엔진이 넣어 준다(지번은 공개하지 않음). */
   function estOf(e) {
     if (!Array.isArray(e) || e.length < 3) return null;
     const lng = +e[0], lat = +e[1];
     if (!(lat > 32 && lat < 39.5 && lng > 124 && lng < 132)) return null;
-    return { lng, lat, band: e[2] === 1 ? 1 : 2, use: e[3] || '', tot: e[4] > 0 ? Math.round(e[4]) : null, year: e[5] > 1800 ? e[5] : null };
+    return { lng, lat, band: e[2] === 1 ? 1 : 2, use: e[3] || '', tot: e[4] > 0 ? Math.round(e[4]) : null, year: e[5] > 1800 ? e[5] : null, src: e[6] === 'p' ? 'p' : 'm' };
   }
+  /** 좌표 출처 한 줄(업체 이름 없이) */
+  const estSrc = s => s === 'p' ? '위치는 행정안전부 주소정보 좌표 기준이에요' : '위치는 지도 서비스 좌표 기준 추정이에요';
   /** 추정 건물의 공개 건축물대장 사실 한 줄: '제2종근린생활시설 · 연면적 399㎡ · 1996년 준공' */
   function estFacts(x) {
     if (!x) return '';
@@ -187,7 +189,7 @@
     return { label: '새로 짓는 상가', ok: false, note: av.nb ? '이 지역에는 찾은 신축 상가가 없어요(서울·인천·경기만 찾아요).' : '건축 인허가 자료 연결을 기다리고 있어요.', src: (ix && ix.src || {}).nb };
   }
 
-  const API = { PY, TYPES, LU, RMET, HOW, arr, monthsFrom, perM2, perPy, latest, lastAny, regionSeries, yearText, trades, estOf, estFacts, EST_LABEL, tradePpm, keyOf, nameOf, dongs, inDong,
+  const API = { PY, TYPES, LU, RMET, HOW, arr, monthsFrom, perM2, perPy, latest, lastAny, regionSeries, yearText, trades, estOf, estFacts, estSrc, EST_LABEL, tradePpm, keyOf, nameOf, dongs, inDong,
     findJibun, unitSeries, unitTrades, passed, scoreState, etaText, scoreHead, btText, btLines, scoreRank, roneRows, skRows, qLabel, eokWon, skSummary, demandRows, supplyRow };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_COMM = API;

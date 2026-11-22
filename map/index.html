@@ -32,7 +32,7 @@
 <script src="../assets/fac-view.js?v=1"></script>
 <script src="../assets/mine-core.js?v=19"></script>
 <script src="../assets/map-core.js?v=5"></script>
-<script src="../assets/mapjump.js?v=2"></script>
+<script src="../assets/mapjump.js?v=3"></script>
 <script src="../assets/alerts-core.js?v=1"></script>
 <script src="../assets/watch-core.js?v=2"></script>
 <script src="../assets/watch.js?v=6"></script>
@@ -1231,7 +1231,7 @@ function focusCard(all){
   $('sheet').innerHTML = `<div class="grab"></div><div class="hd"><h2>${esc(P.name || F.name || P.label)}</h2><button type="button" class="x" aria-label="닫기">×</button></div>
     <p class="meta">${esc([sggName(P.code), P.dong, kind].filter(Boolean).join(' · '))}</p>
     <dl class="kv">${F.price > 0 ? (P.prec === 'est' ? `<dt>거래금액</dt><dd><b>${esc(M.won(F.price))}</b></dd>` : `<dt>최근 시세</dt><dd><b>${esc(M.won(F.price))}</b><small>결과 화면과 같은 값이에요</small></dd>`) : ''}${P.prec === 'est' && F.facts ? `<dt>건축물대장</dt><dd>${esc(F.facts)}</dd>` : ''}</dl>
-    ${P.prec === 'est' ? `<p class="note loc est"><b>추정 위치 · 공개 자료(건축물대장)로 맞춰 본 결과예요</b><br>신고된 면적·준공·용도가 한 건물과만 맞았어요. 약 100m 단위이고 지번은 공개하지 않아요. 실제와 다를 수 있어요.</p>` : ''}
+    ${P.prec === 'est' ? `<p class="note loc est"><b>추정 위치 · 공개 자료(건축물대장)로 맞춰 본 결과예요</b><br>신고된 면적·준공·용도가 한 건물과만 맞았어요. 약 100m 단위이고 지번은 공개하지 않아요. 실제와 다를 수 있어요.<br><small>${F.est === 'p' ? '위치는 행정안전부 주소정보 좌표 기준이에요' : '위치는 지도 서비스 좌표 기준 추정이에요'}</small></p>` : ''}
     ${where ? `<p class="note loc">${where}${esc(gNote)}</p>` : ''}${src ? `<p class="note">${esc(src)}</p>` : ''}
     ${back ? `<div class="acts" style="grid-template-columns:1fr">${back}</div>` : ''}`;
   showSheet();
