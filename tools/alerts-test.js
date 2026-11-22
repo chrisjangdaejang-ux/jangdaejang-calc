@@ -285,7 +285,7 @@ check('알림 센터: 동의 문구에 주어(집코드가 …)와 하루 한 �
 check('알림 센터: 경쟁 앱 이름 없음, 회사명 대신 서비스 이름', !/호갱|직방|리치고|아실|다방/.test(center) && !/장대장부동산그룹/.test(center));
 check('서비스 워커: 알림 센터·계산 파일을 저장 목록에, 판 번호 올림', /'\.\/my\/alerts\/'/.test(sw) && /alerts-core\.js\?v=1/.test(sw) && /watch\.js\?v=6/.test(sw) && /jdj-v(\d+)/.test(sw));
 check('종 단추: 알림 센터로 가는 링크·안 본 수', /my\/alerts\//.test(wj) && /새 알림 \$\{r\.unread\}건/.test(wj));
-const pages = ['index.html', 'my/watch/index.html', 'ask/index.html', 'quiz/index.html', 'mine/index.html', 'buy/report/index.html', 'rank/index.html', 'map/index.html', 'track/index.html'];
+const pages = ['index.html', 'my/watch/index.html', 'ask/index.html', 'quiz/index.html', 'mine/index.html', 'buy/report/index.html', 'rank/index.html', 'map/index.html', 'track/detail/index.html'];
 check('watch.js 를 싣는 화면은 모두 새 판(v=6)과 계산 파일', pages.every(p => { const s = read(p); return /watch\.js\?v=6/.test(s) && !/assets\/watch\.js\?v=5/.test(s) && /alerts-core\.js\?v=1/.test(s) && s.indexOf('alerts-core.js') < s.indexOf('assets/watch.js'); }));
 const oldCopy = /카카오톡으로 알려 드릴게요|발송을 시작하면|발송 시작 때|발송 시작 시|id="alrBtn"/;
 check('예전 카카오톡 알림 신청 문구가 남지 않음(단지·로그인·관심 지역·단지 이유 칸)', ['mine/index.html', 'login/index.html', 'assets/area-watch.js', 'assets/narrative.js'].every(p => !oldCopy.test(read(p))));

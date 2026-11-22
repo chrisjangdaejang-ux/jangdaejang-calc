@@ -99,7 +99,7 @@ const texts = [H.title, H.sub, P.text, ...C.map(c => c.label + c.note), ...CS.ma
   ...Object.values(T.ITEM).map(x => (x.d || '') + (x.w || '') + (x.s || ''))];
 check('계산 문장에 금지 단어 없음', texts.filter(t => BAN.test(t)), []);
 const root = path.join(__dirname, '..');
-for (const f of ['track/index.html', 'guide/method/index.html']) {
+for (const f of ['track/detail/index.html', 'guide/method/index.html']) {
   const body = fs.readFileSync(path.join(root, f), 'utf8').replace(/<script[\s\S]*?<\/script>/g, s => s.replace(/\/\*[\s\S]*?\*\//g, '')).replace(/<!--[\s\S]*?-->/g, '');
   const vis = body.replace(/<head>[\s\S]*?<\/head>/, '').replace(/<[^>]+>/g, ' ');
   check(`${f}: 화면 글에 금지 단어 없음`, (vis.match(/[^\s]*(시험|통과|검증|채점|백테스트)[^\s]*/g) || []), []);

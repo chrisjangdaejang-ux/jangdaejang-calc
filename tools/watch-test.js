@@ -146,8 +146,8 @@ check('단지 화면: 별 단추(로그인 없이도)', /JDJ_WATCH\.star\(favPla
 const rank = read('rank/index.html'), map = read('map/index.html');
 check('순위 화면: 단지 순위·점수 변화 목록에 별', (rank.match(/\$\{wstar\(x\)\}/g) || []).length, 2, '');
 check('지도 카드: 단지 이름 옆 별', /JDJ_WATCH\.star\(\{ sd: d\.sd, code: d\.code/.test(map), true, '');
-check('단지 비교·리포트 추천 단지·조금만 더 준비하면 가능한 단지·성적표 단지 찾기에도 별', [/JDJ_WATCH\.star\(\{ sd: x\.sd/.test(read('ask/index.html')), (read('buy/report/index.html').match(/\$\{WS\(x\)\}/g) || []).length, /JDJ_WATCH\.star\(\{ sd: wsd/.test(read('track/index.html'))], [true, 2, true], '');
-check('별을 다는 화면은 모두 같은 부품(watch.js)', ['index.html', 'mine/index.html', 'rank/index.html', 'map/index.html', 'my/watch/index.html', 'ask/index.html', 'buy/report/index.html', 'track/index.html'].every(f => read(f).includes('assets/watch.js?v=6')), true, '');
+check('단지 비교·리포트 추천 단지·조금만 더 준비하면 가능한 단지·성적표 단지 찾기에도 별', [/JDJ_WATCH\.star\(\{ sd: x\.sd/.test(read('ask/index.html')), (read('buy/report/index.html').match(/\$\{WS\(x\)\}/g) || []).length, /JDJ_WATCH\.star\(\{ sd: wsd/.test(read('track/detail/index.html'))], [true, 2, true], '');
+check('별을 다는 화면은 모두 같은 부품(watch.js)', ['index.html', 'mine/index.html', 'rank/index.html', 'map/index.html', 'my/watch/index.html', 'ask/index.html', 'buy/report/index.html', 'track/detail/index.html'].every(f => read(f).includes('assets/watch.js?v=6')), true, '');
 check('화면 문구에 회사 이름 대신 서비스 이름', /장대장부동산그룹/.test(page), false, '');
 
 function finish(){
