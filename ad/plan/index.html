@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#FFFFFF">
 <link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
 <link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
+<script src="../../assets/region-pick.js?v=2"></script>
 <script src="../../assets/pwa.js?v=2" defer data-nobar></script>
 <script src="../../assets/biz.js?v=1" defer></script>
 <title>광고 설계 도우미 — 집코드</title>
@@ -160,10 +161,10 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
   /* 지역 목록: 공개 index.json(시·도·시·군·구 이름만) */
   fetch(JB.DATA + 'data/index.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(j => {
     IX = j; if (!j) return;
-    $('sido').innerHTML = '<option value="">시·도</option>' + (j.sido || []).map(s => `<option>${esc(s.name)}</option>`).join('');
+    $('sido').innerHTML = '<option value="">시·도</option>' + JDJ_KO.sortSido(j.sido, s => s.name).map(s => `<option>${esc(s.name)}</option>`).join('');
   }).catch(() => {});
   function fillSgg() {
-    const list = IX && IX.sgg ? Object.values(IX.sgg).filter(g => g.sido === S.sido).map(g => g.name).sort() : [];
+    const list = IX && IX.sgg ? Object.values(IX.sgg).filter(g => g.sido === S.sido).map(g => g.name).sort(JDJ_KO.cmp) : [];
     $('sgg').innerHTML = '<option value="">시·군·구</option>' + list.map(n => `<option>${esc(n)}</option>`).join('');
   }
   /* 실제 측정값: 광고 칸 노출·누름(최근 4주 집계 파일이 공개되면) · 브리핑 구독자(서버 공개 집계, 10명 미만이면 없음). 없으면 숫자를 보여 주지 않음 */

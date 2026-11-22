@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집코드">
+<script src="../assets/region-pick.js?v=2"></script>
 <script src="../assets/pwa.js?v=2" defer></script>
 <script src="../assets/biz.js?v=1" defer></script>
 <title>집코드 모닝 브리핑 — 오늘의 부동산 시장·내 관심 지역·내 관심 단지</title>
@@ -659,7 +660,7 @@ function salesHtml(IX, MH){
   <section class="sl-end"><h2>내일 아침부터 받아 보세요</h2><div class="sl-cta">${cta('end')}<small>${TD}일 무료 · 결제 수단 없이 시작 · 언제든 해지</small></div></section>
 
   ${areas.length ? `<section class="sl-pick" aria-labelledby="h-pick"><h2 id="h-pick">먼저 내 동네 오늘 브리핑 보기</h2><p class="sub">구독하기 전에 고른 동네의 오늘 브리핑을 웹에서 볼 수 있어요.</p>
-    <div class="pick"><select id="pSd" aria-label="시·도">${[...new Set(areas.map(a => a.sd))].map(x => `<option>${esc(x)}</option>`).join('')}</select><select id="pG" aria-label="시·군·구"></select>
+    <div class="pick"><select id="pSd" aria-label="시·도">${JDJ_KO.sortSido(new Set(areas.map(a => a.sd))).map(x => `<option>${esc(x)}</option>`).join('')}</select><select id="pG" aria-label="시·군·구"></select>
       <select id="pDn" class="full" aria-label="동"><option value="">구 전체</option></select></div>
     <div class="row2"><button type="button" class="btn" id="pGo">오늘 브리핑 보기</button></div></section>` : ''}
   </div>`;
@@ -673,8 +674,8 @@ async function chooser(){
   T('brief_sales_view');
   const areas = (IX && IX.areas) || [];
   if (areas.length) {
-    const fillG = () => { const sd = $('pSd').value; $('pG').innerHTML = areas.filter(a => a.sd === sd).map(a => `<option value="${a.g}">${esc(a.name)}</option>`).join(''); fillDn(); };
-    const fillDn = async () => { const g = $('pG').value; $('pDn').innerHTML = '<option value="">구 전체</option>'; if (!g) return; const S = await J(B.DATA + g + '.json'); if (S && $('pG').value === g) $('pDn').innerHTML += (S.dongs || []).map(x => `<option>${esc(x[0])}</option>`).join(''); };
+    const fillG = () => { const sd = $('pSd').value; $('pG').innerHTML = JDJ_KO.sortBy(areas.filter(a => a.sd === sd), a => a.name).map(a => `<option value="${a.g}">${esc(a.name)}</option>`).join(''); fillDn(); };
+    const fillDn = async () => { const g = $('pG').value; $('pDn').innerHTML = '<option value="">구 전체</option>'; if (!g) return; const S = await J(B.DATA + g + '.json'); if (S && $('pG').value === g) $('pDn').innerHTML += JDJ_KO.sortBy(S.dongs, x => x[0]).map(x => `<option>${esc(x[0])}</option>`).join(''); };
     $('pSd').onchange = fillG; $('pG').onchange = fillDn; fillG();
     $('pGo').onclick = () => { const g = $('pG').value; if (g) location.search = url(g, $('pDn').value, false); };
   }

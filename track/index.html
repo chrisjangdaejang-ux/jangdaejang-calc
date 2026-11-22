@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#FFFFFF">
 <link rel="icon" type="image/png" href="../assets/icons/favicon-48.png">
 <link rel="apple-touch-icon" href="../assets/icons/apple-180.png">
+<script src="../assets/region-pick.js?v=2"></script>
 <script src="../assets/pwa.js?v=2" defer data-nobar></script>
 <script src="../assets/biz.js?v=1" defer></script>
 <title>성적표 · 미래가치 점수를 과거에 그대로 써 봤더니 | 집코드</title>
@@ -341,7 +342,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
   if (!IX || !IX.sido || !IX.sgg) return;
   const gu = {};
   for (const [c, g] of Object.entries(IX.sgg)) (gu[g.sido] = gu[g.sido] || []).push([c, g.name]);
-  const sds = IX.sido.filter(s => gu[s.name]);
+  const sds = JDJ_KO.sortSido(IX.sido.filter(s => gu[s.name]), s => s.name);
   if (!sds.length) return;
   const g0 = qs.get('g'), k0 = qs.get('k');
   const sd0 = (g0 && IX.sgg[g0] && IX.sgg[g0].sido) || sds[0].name;

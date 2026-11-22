@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#FFFFFF">
 <link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
 <meta name="robots" content="noindex">
+<script src="../../assets/region-pick.js?v=2"></script>
 <script src="../../assets/biz.js?v=1" defer></script>
 <title>내 구독 관리 — 집코드</title>
 <script>window.JDJ_CONFIG = { tool:'brief', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
@@ -157,10 +158,10 @@ async function draw(note){
   const ed = { areas: (r.brief.areas || []).slice() };
   const max = curT.areas, $ = id => document.getElementById(id);
   const IX = await fetch(JB.DATA + 'data/index.json').then(x => x.ok ? x.json() : null).catch(() => null), SG = (IX && IX.sgg) || {};
-  const sds = [...new Set(Object.values(SG).map(x => x.sido))];
+  const sds = JDJ_KO.sortSido(new Set(Object.values(SG).map(x => x.sido)));
   $('sd').innerHTML = sds.map(x => `<option>${esc(x)}</option>`).join('');
-  const fillDn = async () => { const g = $('sg').value; $('dn').innerHTML = '<option value="">구 전체</option>'; const S = g && await fetch(B.DATA + g + '.json').then(x => x.ok ? x.json() : null).catch(() => null); if (S && $('sg').value === g) $('dn').innerHTML += (S.dongs || []).map(x => `<option>${esc(x[0])}</option>`).join(''); };
-  const fillG = () => { const sd = $('sd').value; $('sg').innerHTML = Object.entries(SG).filter(([, x]) => x.sido === sd).map(([g, x]) => `<option value="${g}">${esc(x.name)}</option>`).join(''); fillDn(); };
+  const fillDn = async () => { const g = $('sg').value; $('dn').innerHTML = '<option value="">구 전체</option>'; const S = g && await fetch(B.DATA + g + '.json').then(x => x.ok ? x.json() : null).catch(() => null); if (S && $('sg').value === g) $('dn').innerHTML += JDJ_KO.sortBy(S.dongs, x => x[0]).map(x => `<option>${esc(x[0])}</option>`).join(''); };
+  const fillG = () => { const sd = $('sd').value; $('sg').innerHTML = JDJ_KO.sortBy(Object.entries(SG).filter(([, x]) => x.sido === sd), e => e[1].name).map(([g, x]) => `<option value="${g}">${esc(x.name)}</option>`).join(''); fillDn(); };
   if (ed.areas[0] && ed.areas[0].sd) $('sd').value = ed.areas[0].sd;
   $('sd').onchange = fillG; $('sg').onchange = fillDn; fillG();
   const drawA = () => { $('al').innerHTML = ed.areas.map((a, i) => `<li>${esc(a.gn + (a.dn ? ' ' + a.dn : ''))}${i >= max ? ' <small>(이 상품에선 안 보냄)</small>' : ''}<button type="button" data-i="${i}" aria-label="${esc(a.gn)} 빼기">×</button></li>`).join('');
@@ -346,7 +347,7 @@ async function drawPlus(r){
       let opts = [];
       const g0 = c.g || (c.apts[0] || {}).g || (myAreas[0] || {}).g || '';
       if (g0 && SG[g0]) sd.value = SG[g0].sido;
-      const fillG = () => { sg.innerHTML = Object.entries(SG).filter(([, x]) => x.sido === sd.value).map(([g, x]) => `<option value="${g}">${esc(x.name)}</option>`).join(''); };
+      const fillG = () => { sg.innerHTML = JDJ_KO.sortBy(Object.entries(SG).filter(([, x]) => x.sido === sd.value), e => e[1].name).map(([g, x]) => `<option value="${g}">${esc(x.name)}</option>`).join(''); };
       const fillA = async () => { const g = sg.value; opts = []; dl.innerHTML = ''; const a = await aptsOf(g); if (sg.value !== g) return; opts = a; dl.innerHTML = a.map(x => `<option value="${esc(x.a + ' (' + x.d + ')')}"></option>`).join(''); };
       sd.onchange = () => { fillG(); fillA(); }; sg.onchange = fillA;
       fillG(); if (g0 && SG[g0] && SG[g0].sido === sd.value) sg.value = g0; fillA();

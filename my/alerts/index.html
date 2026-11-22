@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="robots" content="noindex">
+<script src="../../assets/region-pick.js?v=2"></script>
 <script src="../../assets/pwa.js?v=2" defer></script>
 <title>알림 센터 — 집코드</title>
 <meta name="description" content="관심 단지의 새 실거래·신고가·급매·전세가율 변화와 내 조건에 맞는 청약 공고·접수·발표 일정을 한곳에서 보고, 하루 한 번 메일로 받아요.">
@@ -266,7 +267,7 @@ function drawCy(){
   if (!c.regions.length) {   // 분양·청약 화면에서 고른 관심 지역이 있으면 먼저 채워 둠(켜지는 건 사용자가 켤 때)
     try { const A = JSON.parse(ls.get('jdj_areas') || 'null'); if (A && Array.isArray(A.list) && A.list.length) { c.regions = A.list.map(a => ({sd: a.sd, g: a.g || '', gn: a.gn || ''})); } } catch (e) {}
   }
-  const sido = ((IX && IX.sido) || []).map(s => s.name);
+  const sido = JDJ_KO.sortSido(((IX && IX.sido) || []).map(s => s.name));
   const sc = cyScore();
   el.innerHTML = sw('cyOn', c.on, '<b>청약 맞춤 알림 받기</b>', '고른 지역에 새 공고가 나오면, 접수 하루 전, 당첨자 발표일에 알려 드려요') + `
     <div class="sub3">지역 (${c.regions.length}/10)</div>

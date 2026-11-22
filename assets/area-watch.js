@@ -118,7 +118,8 @@
 .ja .msg{font-size:14px;font-weight:700;color:#0E7A4F}
 .ja-badge{display:inline-block;margin-left:6px;font-size:12px;font-weight:800;color:#fff;background:#E5484D;border-radius:999px;padding:1px 7px;vertical-align:2px;white-space:nowrap}`;
   function style() { if (typeof document === 'undefined' || document.getElementById('jaCss')) return; const s = document.createElement('style'); s.id = 'jaCss'; s.textContent = CSS; document.head.appendChild(s); }
-  const SIDOS = ['서울특별시', '경기도', '인천광역시', '부산광역시', '대구광역시', '전남광주통합특별시', '대전광역시', '울산광역시', '세종특별자치시', '강원특별자치도', '충청북도', '충청남도', '전북특별자치도', '경상북도', '경상남도', '제주특별자치도'];
+  /* 고르기 목록 순서: 서울·경기·인천 먼저, 나머지 가나다순(region-pick.js JDJ_KO.sortSido 와 같은 순서 — tools/ko-sort-test.js 가 확인) */
+  const SIDOS = ['서울특별시', '경기도', '인천광역시', '강원특별자치도', '경상남도', '경상북도', '대구광역시', '대전광역시', '부산광역시', '세종특별자치시', '울산광역시', '전남광주통합특별시', '전북특별자치도', '제주특별자치도', '충청남도', '충청북도'];
   function saveNote() {
     if (authed()) return `카카오 계정(${esc(auth().user().nick)} 님)에 저장돼서 다른 기기에서도 같은 관심 지역이 보여요. 새 청약 공고·접수 하루 전·발표일 알림은 <a href="${JB.SITE}my/alerts/#cyT">알림 센터</a>에서 메일로 받을 수 있어요. 카카오톡 알림은 준비하고 있어요.`;
     if (auth()) return `지금은 이 기기에만 저장돼요. 카카오 간편 로그인하면 다른 기기에서도 같은 관심 지역을 쓰고, <a href="${JB.SITE}my/alerts/#cyT">알림 센터</a>에서 청약 알림을 메일로 받을 수 있어요. 카카오톡 알림은 준비하고 있어요.`;

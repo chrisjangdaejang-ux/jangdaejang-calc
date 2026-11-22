@@ -9,6 +9,7 @@
 <meta name="referrer" content="no-referrer">
 <link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
 <link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
+<script src="../../assets/region-pick.js?v=2"></script>
 <script src="../../assets/pwa.js?v=2" defer data-nobar></script>
 <title>매물 설명서 | 집코드</title>
 <meta name="description" content="단지·평형을 고르면 최근 실거래, 주변 단지 거래, 가격 흐름, 학교·역 거리, 미래가치 점수, 취득세 예상을 공개 자료로 한 장에 정리해요. A4 인쇄·PDF·링크 공유.">
@@ -21,7 +22,7 @@
 <script src="../../assets/price-sheet.js?v=21"></script>
 <script src="../../assets/rank-core.js?v=7"></script>
 <script src="../../tax/tax-engine.js?v=4"></script>
-<script src="../../tax/adjusted-areas.js"></script>
+<script src="../../tax/adjusted-areas.js?v=2"></script>
 <script src="../../assets/pro-report.js?v=7"></script>
 <script src="../../assets/broker-tools.js?v=5"></script>
 <script src="../../assets/conf.js?v=2"></script>
@@ -211,7 +212,7 @@ const sggName = c => (IX.sgg[c] || {}).name || c;
 
 /* ---------- 편집 ---------- */
 function setupEditor(){
-  $('sd').innerHTML = IX.sido.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  $('sd').innerHTML = JDJ_KO.sortSido(IX.sido, s => s.name).map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
   if (ST.sd) $('sd').value = ST.sd;
   ['bd','fl','memo'].forEach(k => { if (ST[k]) $(k).value = ST[k]; });
   if (ST.ask) $('ask').value = ST.ask;

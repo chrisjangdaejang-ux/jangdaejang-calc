@@ -8,6 +8,7 @@
 <meta name="robots" content="noindex">
 <link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
 <link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
+<script src="../../assets/region-pick.js?v=2"></script>
 <script src="../../assets/pwa.js?v=2" defer data-nobar></script>
 <script src="../../assets/biz.js?v=1" defer></script>
 <title>적정 가격 근거표 | 집코드</title>
@@ -155,7 +156,7 @@ function sggName(c){ return (IX.sgg[c] || {}).name || c; }
 
 /* ---------- 편집 ---------- */
 function setupEditor(){
-  $('sd').innerHTML = IX.sido.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  $('sd').innerHTML = JDJ_KO.sortSido(IX.sido, s => s.name).map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
   if (ST.sd) $('sd').value = ST.sd;
   if (ST.ask) $('ask').value = ST.ask;
   if (ST.note) $('note').value = ST.note;

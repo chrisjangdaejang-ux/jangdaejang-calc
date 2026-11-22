@@ -11,6 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="../../assets/region-pick.js?v=2"></script>
 <script src="../../assets/pwa.js?v=2" defer></script>
 <script src="../../assets/biz.js?v=1" defer></script>
 <title>집코드 맞춤 매수 리포트</title>
@@ -690,7 +691,7 @@ function defaultSggs(sido){
 function buildSettings(){
   $('s_name').value=S.name; $('s_income').value=S.income.toLocaleString(); $('s_cash').value=S.cash.toLocaleString(); $('s_debt').value=S.debt.toLocaleString();
   $('s_own').value=S.own; $('s_rtype').value=S.rtype; $('s_rate').value=S.rate; $('s_term').value=String(S.term); $('s_etc').value=S.etc.toLocaleString();
-  $('s_sido').innerHTML = `<option value="all">지역 상관없음 (전국)</option>` + IX.sido.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  $('s_sido').innerHTML = `<option value="all">지역 상관없음 (전국)</option>` + JDJ_KO.sortSido(IX.sido, s=>s.name).map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
   $('s_sido').value = S.sido.id;
   renderSggChips();
   $('s_area').innerHTML = BANDS.map(b=>`<button class="chip ${S.areas.has(b)?'on':''}" data-v="${b}">${b}</button>`).join('');
@@ -962,7 +963,7 @@ function cmpSearchHtml(){
   return `<div class="cpick noprint">
     <b style="font-size:16px">비교할 단지 찾기</b> <small style="color:var(--muted)">— 추천 단지가 아니어도, 마음에 두신 단지를 이름으로 찾아 담을 수 있어요 (최대 ${CMP_MAX}개)</small>
     <div class="srow" style="margin-top:10px">
-      <select id="cSido">${IX.sido.map(s=>`<option value="${s.id}" ${s.id===sd.id?'selected':''}>${esc(s.name)}</option>`).join('')}</select>
+      <select id="cSido">${JDJ_KO.sortSido(IX.sido, s=>s.name).map(s=>`<option value="${s.id}" ${s.id===sd.id?'selected':''}>${esc(s.name)}</option>`).join('')}</select>
       <select id="cSgg"><option value="">구·시 전체</option>${sggsOfSido(sd).map(c=>`<option value="${c}" ${c===S.cmpSgg?'selected':''}>${esc(sggName(c))}</option>`).join('')}</select>
       <input id="cQ" type="search" placeholder="아파트 이름 (예: 파크하비오, 래미안)" autocomplete="off" value="${esc(S.cmpQ||'')}">
     </div>

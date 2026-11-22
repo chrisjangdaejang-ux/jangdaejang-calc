@@ -67,8 +67,9 @@
     return false;
   }
   function guList(sido) {
-    if (sido === '경기') return Object.keys(gyeonggi).concat(['그 밖의 시·군']);
-    if (AREAS[sido]) return Object.keys(AREAS[sido]);
+    const ko = (a, b) => a.localeCompare(b, 'ko');   // 고르기 목록은 가나다순, '그 밖의 시·군'은 맨 끝
+    if (sido === '경기') return Object.keys(gyeonggi).sort(ko).concat(['그 밖의 시·군']);
+    if (AREAS[sido]) return Object.keys(AREAS[sido]).sort(ko);
     return [];
   }
   const META = {

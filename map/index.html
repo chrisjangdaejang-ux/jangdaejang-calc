@@ -11,6 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="../assets/region-pick.js?v=2"></script>
 <script src="../assets/pwa.js?v=2" defer></script>
 <title>집코드 지도 — 지도에서 단지 시세·미래가치 점수·전세가율 한눈에</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/map/">
@@ -916,7 +917,7 @@ function regPanel(focus){
   const pastTxt = pl.past ? `${esc(pl.past)} <small>(${esc(pl.span)} ${esc(sd.short)} 사례)</small>` : EV === null ? '과거 사례를 불러오고 있어요…' : '이 지표가 과거 집값과 맞았는지는 아직 정리된 자료가 없어요.';
   const loading = RS.st === 'wait' ? '<p class="rp-src">지역 자료를 불러오고 있어요…</p>' : RS.st === 'err' ? '<p class="rp-src">지역 자료를 불러오지 못했어요. 가격 변화·거래량·전세가율만 보여요.</p>' : '';
   el.innerHTML = `<div class="grab"></div>
-    <div class="rp-hd"><select id="rpSd" aria-label="시·도">${IX.sido.map(s => `<option value="${s.id}"${s.id === sd.id ? ' selected' : ''}>${esc(s.short)}</option>`).join('')}</select>
+    <div class="rp-hd"><select id="rpSd" aria-label="시·도">${JDJ_KO.sortSido(IX.sido, s => s.name).map(s => `<option value="${s.id}"${s.id === sd.id ? ' selected' : ''}>${esc(s.short)}</option>`).join('')}</select>
       ${chartInd ? `<select id="rpPer" class="persel" aria-label="기간">${RC.PERIODS.filter(p => REG.freq !== 'w' || p.m && p.m <= 36).map(p => `<option value="${p.id}"${REG.per === p.id ? ' selected' : ''}>${p.t}</option>`).join('')}</select>` : ''}
       <span class="ttl">${esc(ind.t)}${chartInd && ind.id === 'price' ? ' · ' + esc((RC.PERIODS.find(p => p.id === REG.per) || {}).t || '') : ''}</span>
       <button type="button" class="tog" id="rpTog" aria-expanded="${REG.open}">${REG.open ? '접기' : '펼치기'}</button></div>

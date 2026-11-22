@@ -11,6 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="../assets/region-pick.js?v=2"></script>
 <script src="../assets/pwa.js?v=2" defer data-nobar></script>
 <script src="../assets/biz.js?v=1" defer></script>
 <title>집코드 리포트 공인중개사 제휴</title>
@@ -425,7 +426,7 @@ function makeEditor(el, o){
 let applyEd = null;
 function setupApply(){
   const sel = $('a_sido');
-  sel.innerHTML = `<option value="">선택</option>` + IX.sido.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  sel.innerHTML = `<option value="">선택</option>` + JDJ_KO.sortSido(IX.sido, s => s.name).map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
   const ogSel = $('a_og');
   const refresh = ()=>{
     const s = IX.sido.find(x=>x.id===sel.value);

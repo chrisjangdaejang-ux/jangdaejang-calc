@@ -101,7 +101,7 @@
     </section>
     <section id="vlRes" hidden aria-live="polite"></section>
     <p class="disc">자료: 국토교통부 연립·다세대 매매 실거래가 · 국토교통부 연립·다세대 전월세 실거래가(공공데이터포털). 해제(취소) 신고된 거래는 빼요. 원자료에는 동·호수가 없어서 같은 건물 안 다른 호수의 거래도 함께 보여요.</p>`;
-    $('vlSd').innerHTML = VX.sido.map((s, i) => `<option value="${i}">${esc(s.n)}</option>`).join('');
+    $('vlSd').innerHTML = JDJ_KO.sortSido(VX.sido.map((s, i) => [s, i]), x => x[0].n).map(([s, i]) => `<option value="${i}">${esc(s.n)}</option>`).join('');
     $('vlSd').onchange = () => pickSido(+$('vlSd').value);
     $('vlG').onchange = () => pickSgg($('vlG').value);
     $('vlD').onchange = () => pickDong($('vlD').value);
@@ -114,7 +114,7 @@
   async function pickSido(si, keepG, keepB) {
     S.si = si; $('vlSd').value = si;
     const gs = (VX.sido[si] || { g: [] }).g;
-    $('vlG').innerHTML = '<option value="">시·군·구 선택</option>' + gs.map(g => `<option value="${g.c}">${esc(g.n)} (${fmt(g.b)}곳)</option>`).join('');
+    $('vlG').innerHTML = '<option value="">시·군·구 선택</option>' + JDJ_KO.sortBy(gs, g => g.n).map(g => `<option value="${g.c}">${esc(g.n)} (${fmt(g.b)}곳)</option>`).join('');
     if (keepG && gs.some(g => g.c === keepG)) { $('vlG').value = keepG; await pickSgg(keepG, keepB); }
     else { $('vlD').disabled = $('vlB').disabled = true; $('vlRes').hidden = true; }
   }

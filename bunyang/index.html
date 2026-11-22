@@ -11,6 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="../assets/region-pick.js?v=2"></script>
 <script src="../assets/pwa.js?v=2" defer></script>
 <script src="../assets/biz.js?v=1" defer></script>
 <script src="../assets/kchat.js?v=3" defer></script>
@@ -194,7 +195,7 @@ body.lock{overflow:hidden}
 <script src="../assets/cy-price.js?v=6"></script>
 <script src="../assets/mine-core.js?v=19"></script>
 <script src="../assets/sale-status.js?v=1"></script>
-<script src="../assets/area-watch.js?v=6"></script>
+<script src="../assets/area-watch.js?v=7"></script>
 <script src="../assets/price-sheet.js?v=21"></script>
 <script>
 var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
@@ -419,7 +420,7 @@ function fillSgg() {
 }
 function fillSido() {
   const c = s => ROWS.filter(x => sidoNorm(x.sd) === s).length;
-  $('fSido').innerHTML = `<option value="">전국 전체${ROWS.length ? ` (${fmt(ROWS.length)}곳)` : ''}</option>` + SIDO.map(s => { const n = c(s); return `<option value="${esc(s)}">${esc(sidoLbl(s))}${ROWS.length ? ' · ' + (n ? fmt(n) + '곳' : '현재 없음') : ''}</option>`; }).join('');
+  $('fSido').innerHTML = `<option value="">전국 전체${ROWS.length ? ` (${fmt(ROWS.length)}곳)` : ''}</option>` + JDJ_KO.sortSido(SIDO).map(s => { const n = c(s); return `<option value="${esc(s)}">${esc(sidoLbl(s))}${ROWS.length ? ' · ' + (n ? fmt(n) + '곳' : '현재 없음') : ''}</option>`; }).join('');
   $('fSido').value = F.sido;
 }
 function chips(id, key) {

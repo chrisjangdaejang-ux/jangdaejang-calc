@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#FFFFFF">
 <link rel="icon" type="image/png" href="../assets/icons/favicon-48.png">
 <link rel="apple-touch-icon" href="../assets/icons/apple-180.png">
+<script src="../assets/region-pick.js?v=2"></script>
 <script src="../assets/pwa.js?v=2" defer data-nobar></script>
 <script src="../assets/biz.js?v=1" defer></script>
 <title>프리미엄 리포트 안내 · 가격 | 집코드</title>
@@ -200,7 +201,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
   let IX = null, IXP = null, st = null;
   const norm = x => String(x || '').replace(/\s|아파트/g, '').toLowerCase();
   function loadIx(){ IXP = P.index().then(ix => { IX = ix;
-      $('qSido').innerHTML = ix.sido.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+      $('qSido').innerHTML = JDJ_KO.sortSido(ix.sido, s => s.name).map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
       const k0 = keys[0] && P.keyParse(keys[0]); if (k0) $('qSido').value = k0.sd; })
     .catch(() => { $('qSido').innerHTML = '<option value="">자료를 불러오지 못했습니다</option>'; }); return IXP; }
   async function search(){

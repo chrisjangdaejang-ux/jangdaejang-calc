@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#FFFFFF">
 <link rel="icon" type="image/png" href="../assets/icons/favicon-48.png">
 <title>첫 화면 시안</title>
+<script src="../assets/region-pick.js?v=2"></script>
 <script src="../assets/pwa.js?v=2" defer></script>
 <script src="../assets/biz.js?v=1" defer></script>
 <script src="../assets/kchat.js?v=3" defer></script>
@@ -18,7 +19,7 @@
 <script src="../assets/config.js?v=8"></script>
 <script src="../assets/auth.js?v=8"></script>
 <script src="../assets/sale-status.js?v=1" defer></script>
-<script src="../assets/area-watch.js?v=6" defer></script>
+<script src="../assets/area-watch.js?v=7" defer></script>
 <script src="../assets/mine-core.js?v=19" defer></script>
 <script src="../assets/ask-core.js?v=5" defer></script>
 <script src="../assets/ask.js?v=3" defer></script>
@@ -371,7 +372,7 @@ addEventListener('DOMContentLoaded', () => {
   const loadH = id => H[id] !== undefined ? Promise.resolve(H[id]) : J(DATA + 'home/' + id + '.json').then(j => (H[id] = j && j.v ? j : null));
 
   function drawRegion(){
-    const sido = IX.sido.map(s => `<option value="${s.id}"${s.id === S.sd ? ' selected' : ''}>${esc(s.short)}</option>`).join('');
+    const sido = JDJ_KO.sortSido(IX.sido, s => s.name).map(s => `<option value="${s.id}"${s.id === S.sd ? ' selected' : ''}>${esc(s.short)}</option>`).join('');
     const gs = Object.entries(IX.sgg).filter(([, v]) => v.sido === sdObj().name).sort((a, b) => a[1].name.localeCompare(b[1].name, 'ko'));
     $('plRg').innerHTML = `<select id="plSd" aria-label="시·도">${sido}</select><select id="plG" aria-label="시·군·구"><option value="all">전체</option>${gs.map(([c, v]) => `<option value="${c}"${c === S.g ? ' selected' : ''}>${esc(v.name)}</option>`).join('')}</select>`;
     $('plSd').onchange = e => { S.sd = e.target.value; S.g = 'all'; save(); go(); };

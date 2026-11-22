@@ -11,6 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="../assets/region-pick.js?v=2"></script>
 <script src="../assets/pwa.js?v=2" defer></script>
 <script src="../assets/biz.js?v=1" defer></script>
 <title>집코드 청약 가점 계산기 — 가점·1순위·특별공급·과거 당첨 가점 비교</title>
@@ -34,7 +35,7 @@
 <script src="../assets/stat.js?v=7"></script>
 <script src="../assets/share.js?v=11"></script>
 <script src="../assets/sale-status.js?v=1"></script>
-<script src="../assets/area-watch.js?v=6"></script>
+<script src="../assets/area-watch.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -504,7 +505,7 @@ function histUI() {
     return false;
   }
   const hs = SIDO.map(n => { const f = IDX.scores.sido.filter(x => sidoNorm(x.n) === n); return { n, f, c: f.reduce((a, x) => a + (x.c || 0), 0) }; });
-  $('hist').innerHTML = `<div class="grid2"><div><label for="hSido">지역(시·도)</label><select id="hSido">${hs.map(s => `<option value="${esc(s.n)}">${esc(sidoLbl(s.n))} ${s.c ? '(' + fmt(s.c) + ')' : '· 자료 준비 중'}</option>`).join('')}</select></div>
+  $('hist').innerHTML = `<div class="grid2"><div><label for="hSido">지역(시·도)</label><select id="hSido">${JDJ_KO.sortSido(hs, s => s.n).map(s => `<option value="${esc(s.n)}">${esc(sidoLbl(s.n))} ${s.c ? '(' + fmt(s.c) + ')' : '· 자료 준비 중'}</option>`).join('')}</select></div>
     <div><label for="hPer">기간</label><select id="hPer"><option value="12">최근 1년</option><option value="36" selected>최근 3년</option></select></div></div>
     <div class="seg" id="hBand" style="margin-top:10px">${BANDS.map(b => `<button type="button" data-b="${b[0]}"${b[0] === HB ? ' class="on"' : ''}>${b[1]}</button>`).join('')}</div>
     <div class="seg" id="hRes" style="margin-top:6px"><button type="button" data-r="h" class="on">해당지역 결과</button><button type="button" data-r="all">기타지역 포함</button></div>
@@ -714,7 +715,7 @@ async function init() {
   const q = new URLSearchParams({ usp: 'pp_url' });
   q.set('entry.658364183', `[청약] 상담 문의 | ${window.JDJ ? JDJ.label() : ''}`);
   $('ctaBtn').href = `${FORM}?${q.toString().replace(/\+/g, '%20')}`;
-  $('eSido').innerHTML = SIDO.map(s => `<option value="${s}">${sidoLbl(s)}</option>`).join('');
+  $('eSido').innerHTML = JDJ_KO.sortSido(SIDO).map(s => `<option value="${s}">${sidoLbl(s)}</option>`).join('');
   $('eSido').addEventListener('change', () => { if (window.jdjStat) jdjStat('interest_profile', { from: 'chungyak', sido: jdjStat.sido($('eSido').value), home_own: A.own == null ? '' : (A.own ? '유주택' : '무주택') }); });
   $('refDate').value = A.ref;
   try { const s = JSON.parse(localStorage.getItem('jdj_cy') || 'null'); if (s && typeof s === 'object') { Object.assign(A, s, { ref: today() }); $('refDate').value = A.ref; } } catch (e) {}
@@ -733,7 +734,7 @@ async function init() {
   /* 지역 목록은 공고가 있는 곳만이 아니라 항상 전국 시·도 전체 (공고가 없으면 '현재 공고 없음') */
   const t0 = today().replace(/-/g, ''), live = NOT.filter(n => isLive(n, t0));
   const cnt = s => live.filter(n => noticeSido(n) === s).length;
-  $('nSido').innerHTML = `<option value="">전국 전체 (${live.length}건)</option>` + SIDO.map(s => { const c = cnt(s); return `<option value="${esc(s)}">${esc(sidoLbl(s))} · ${c ? c + '건' : '현재 공고 없음'}</option>`; }).join('');
+  $('nSido').innerHTML = `<option value="">전국 전체 (${live.length}건)</option>` + JDJ_KO.sortSido(SIDO).map(s => { const c = cnt(s); return `<option value="${esc(s)}">${esc(sidoLbl(s))} · ${c ? c + '건' : '현재 공고 없음'}</option>`; }).join('');
   $('nSido').onchange = () => { renderNotices(); PLAN_ALL = false; renderPlans(); };
   if (window.JDJ_CYP && JDJ_CYP.loadPlan) Promise.all([fetch(JB.DATA + 'data/bunyang/plan.json').then(r => r.ok ? r.json() : null).catch(() => null), JDJ_CYP.loadPlan().catch(() => null)])
     .then(([p, n]) => { if (!p || !n) { PLANS = false; renderPlans(); return; } PLANS = (p.rows || []).concat(Object.keys(n.rows).filter(id => !(p.rows || []).some(x => x.id === id)).map(id => Object.assign({ id: id, k: '아파트 분양(분양가 공고 전)', sd: '' }, n.rows[id]))); PLAN_NEAR = n; renderPlans(); });

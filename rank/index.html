@@ -11,6 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="../assets/region-pick.js?v=2"></script>
 <script src="../assets/pwa.js?v=2" defer></script>
 <script src="../assets/biz.js?v=1" defer></script>
 <title>집코드 주간 순위 — 구별 아파트 시세 변동·미래가치 순위</title>
@@ -152,7 +153,7 @@ function drawTabs(){
   $('pane').setAttribute('aria-labelledby', 'tb-' + S.t);
 }
 function drawCtl(){
-  const sel = `<select id="sdSel" aria-label="시·도">${IX.sido.map(s => `<option value="${s.id}"${s.id === S.sd ? ' selected' : ''}>${esc(s.short)}</option>`).join('')}</select>`;
+  const sel = `<select id="sdSel" aria-label="시·도">${JDJ_KO.sortSido(IX.sido, s => s.name).map(s => `<option value="${s.id}"${s.id === S.sd ? ' selected' : ''}>${esc(s.short)}</option>`).join('')}</select>`;
   const pills = (name, list, cur) => `<div class="pills" role="group" aria-label="${name}">${list.map(([v, t]) => `<button type="button" data-${name === '기간' ? 'k' : 'dir'}="${v}" aria-pressed="${String(v) === String(cur)}">${t}</button>`).join('')}</div>`;
   const gsel = () => `<select id="gSel" aria-label="시·군·구"><option value="all">전체</option>${Object.entries(IX.sgg).filter(([, v]) => v.sido === sdObj().name).sort((a, b) => a[1].name.localeCompare(b[1].name, 'ko')).map(([c, v]) => `<option value="${c}"${c === S.g ? ' selected' : ''}>${esc(v.name)}</option>`).join('')}</select>`;
   const vp = `<div class="pills" role="group" aria-label="비교 단위">${[['gu', '구별'], ['apt', '단지별']].map(([v, t]) => `<button type="button" data-v="${v}" aria-pressed="${v === S.v}">${t}</button>`).join('')}</div>`;

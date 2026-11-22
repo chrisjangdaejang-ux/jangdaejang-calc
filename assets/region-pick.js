@@ -1,6 +1,22 @@
 /* 매수 지역: 시·도 → 시·군·구를 직접 고르면 규제 구분(서울/경기 규제/비규제 수도권/지방)은 자동으로 정해진다.
    페이지의 기존 <select id="region">(seoul|ggreg|capfree|local)은 숨겨 두고 값만 채워 change 이벤트를 보낸다. */
+/* 지역 고르기 목록(시·도·시·군·구·동) 가나다순 정렬 — 여러 화면이 함께 쓴다. window.JDJ_KO
+   시·도는 서울·경기·인천을 먼저, 나머지는 가나다순. 시·군·구·동은 모두 가나다순('구 전체' 같은 첫 칸은 화면이 따로 붙임). */
+(function (root) {
+  const FIRST = ['서울', '경기', '인천'];
+  const cmp = (a, b) => String(a == null ? '' : a).localeCompare(String(b == null ? '' : b), 'ko');
+  const head = n => { n = String(n || ''); for (let i = 0; i < FIRST.length; i++) if (n.indexOf(FIRST[i]) === 0) return i; return FIRST.length; };
+  const sidoCmp = (a, b) => head(a) - head(b) || cmp(a, b);
+  const id = x => x;
+  const sortBy = (list, key) => { key = key || id; return Array.from(list || []).sort((a, b) => cmp(key(a), key(b))); };
+  const sortSido = (list, key) => { key = key || id; return Array.from(list || []).sort((a, b) => sidoCmp(key(a), key(b))); };
+  const API = { cmp, sidoCmp, sortBy, sortSido };
+  if (root) root.JDJ_KO = API;
+  if (typeof module !== 'undefined' && module.exports) module.exports = API;
+})(typeof window !== 'undefined' ? window : null);
+
 (function () {
+  if (typeof document === 'undefined' || !document.getElementById('region')) return;   // 고르기 칸이 없는 화면은 정렬 도우미(JDJ_KO)만 씀
   var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   const REG_GG = ['41290', '41210', '41135', '41131', '41133', '41117', '41111', '41115', '41173', '41465', '41430', '41450', '41597', '41463', '41310'];
   const CAT_TXT = { seoul: '규제지역', ggreg: '규제지역', capfree: '비규제 수도권', local: '지방 비규제' };
@@ -46,8 +62,7 @@
     try { localStorage.setItem('jdj_region', JSON.stringify({ sido: any ? ANY : sidoName, sgg })); } catch (e) {}
   }
   function fillSgg(keep) {
-    const list = Object.entries(IX.sgg).filter(([, v]) => v.sido === sd.value)
-      .sort((a, b) => a[1].name.localeCompare(b[1].name, 'ko'));
+    const list = window.JDJ_KO.sortBy(Object.entries(IX.sgg).filter(([, v]) => v.sido === sd.value), e => e[1].name);
     sg.innerHTML = '<option value="">전체</option>' + list.map(([c, v]) => `<option value="${c}">${v.name}${REG_GG.includes(c) || c.startsWith('11') ? ' · 규제' : ''}</option>`).join('');
     if (keep && list.some(([c]) => c === keep)) sg.value = keep;
   }
@@ -57,11 +72,7 @@
   fetch(JB.DATA + 'data/index.json', { cache: 'no-cache' }).then(r => r.json()).then(ix => {
     IX = ix;
     // 서울·경기·인천 먼저, 나머지는 가나다순
-    const first = ['서울', '경기', '인천'];
-    const sidos = [...IX.sido].sort((a, b) => {
-      const ia = first.indexOf(a.short), ib = first.indexOf(b.short);
-      return (ia < 0 ? 9 : ia) - (ib < 0 ? 9 : ib) || a.name.localeCompare(b.name, 'ko');
-    });
+    const sidos = window.JDJ_KO.sortSido(IX.sido, s => s.name);
     sd.innerHTML = sidos.map(s => `<option value="${s.name}">${s.name}</option>`).join('') + `<option value="${ANY}">지역 상관없음 (전국)</option>`;
     let saved = null; try { saved = JSON.parse(localStorage.getItem('jdj_region') || 'null'); } catch (e) {}
     const q = new URLSearchParams(location.search);

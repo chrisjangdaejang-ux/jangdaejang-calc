@@ -11,6 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="../assets/region-pick.js?v=2"></script>
 <script src="../assets/pwa.js?v=2" defer></script>
 <script src="../assets/biz.js?v=1" defer></script>
 <title>집코드 재개발·빌라 체크 — 빌라 실거래·정비구역·입주권 위험</title>
@@ -439,7 +440,7 @@ async function loadSgg(code, dong){
 }
 function fillSgg(si, pick){
   const s = IDX.sido[si];
-  $('sgg').innerHTML = s.g.map(g=>`<option value="${g.c}">${esc(g.n)} (${fmt(g.b)})</option>`).join('');
+  $('sgg').innerHTML = JDJ_KO.sortBy(s.g, g=>g.n).map(g=>`<option value="${g.c}">${esc(g.n)} (${fmt(g.b)})</option>`).join('');
   const c = pick && s.g.some(g=>g.c===pick) ? pick : (s.g.slice().sort((a,b)=>b.z-a.z)[0]||{}).c;
   $('sgg').value = c; return c;
 }
@@ -454,7 +455,7 @@ async function init(){
     const r = await fetch(DATA + 'index.json'); if (!r.ok) throw new Error(r.status);
     IDX = await r.json();
   }catch(e){ $('list').innerHTML = '<div class="empty">빌라 자료를 준비하고 있습니다. 잠시 뒤 다시 와 주세요.</div>'; return; }
-  $('sido').innerHTML = IDX.sido.map((s,i)=>`<option value="${i}">${esc(s.n)}</option>`).join('');
+  $('sido').innerHTML = JDJ_KO.sortSido(IDX.sido.map((s,i)=>[s,i]), x=>x[0].n).map(([s,i])=>`<option value="${i}">${esc(s.n)}</option>`).join('');
   const u = new URLSearchParams(location.search), g = u.get('g');
   let si = Math.max(0, IDX.sido.findIndex(s=>s.g.some(x=>x.c===g)));
   $('sido').value = si;

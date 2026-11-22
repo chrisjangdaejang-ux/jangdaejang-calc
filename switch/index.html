@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="../assets/pwa.js?v=2" defer></script>
 <script src="../assets/biz.js?v=1" defer></script>
-<script src="../assets/region-pick.js?v=1" defer></script>
+<script src="../assets/region-pick.js?v=2" defer></script>
 <title>집코드 갈아타기 계산기</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/switch/">
 <meta name="description" content="지금 집을 팔면 양도세를 내고 대출을 갚은 뒤 손에 남는 돈, 새 대출로 갈아탈 수 있는 최대 집값, 취득세, 예산 안에서 미래가치 점수가 높은 단지, 지금 집 유지와 갈아타기 비교까지 한 번에 계산합니다. 2026년 11월 규제 반영.">
@@ -39,7 +39,7 @@
 <script src="../assets/auth.js?v=8"></script>
 <script src="../assets/kchat.js?v=3"></script>
 <script src="../assets/region-notes.js"></script>
-<script src="../tax/adjusted-areas.js"></script>
+<script src="../tax/adjusted-areas.js?v=2"></script>
 <script src="../tax/tax-engine.js?v=4"></script>
 <script src="../assets/loan-rules.js?v=3"></script>
 <script src="../assets/loan-core.js?v=5"></script>
@@ -942,11 +942,13 @@ $('premBtn').addEventListener('click',()=>JDJ.track('switch_to_report',{region:$
 /* ---------- 지금 집 내놓기: 우리 동네 제휴 중개사 ---------- */
 const AG_DATA=JB.DATA + 'data/';
 let AG_IX=null;
+/* 시·도 목록: 서울·경기·인천 먼저, 나머지 가나다순(region-pick.js 의 JDJ_KO — defer 라 아직 없으면 원래 순서) */
+const sidoSorted=l=>window.JDJ_KO?JDJ_KO.sortSido(l,x=>x.name):l;
 const escH=x=>String(x==null?'':x).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
 async function sellInit(){
   if ($('sSido').options.length>1) return;
   if (!AG_IX){ try{ AG_IX = await (await fetch(AG_DATA+'index.json',{cache:'no-cache'})).json(); }catch(e){ return; } }
-  $('sSido').innerHTML='<option value="">시·도 선택</option>'+AG_IX.sido.map(x=>`<option value="${escH(x.name)}">${escH(x.name)}</option>`).join('');
+  $('sSido').innerHTML='<option value="">시·도 선택</option>'+sidoSorted(AG_IX.sido).map(x=>`<option value="${escH(x.name)}">${escH(x.name)}</option>`).join('');
 }
 ['focus','mousedown','touchstart'].forEach(ev=>$('sSido').addEventListener(ev, sellInit, {once:true}));
 $('sSido').addEventListener('change',()=>{
@@ -1024,7 +1026,7 @@ function makePicker(el, which, onLoc){
     <input class="pq" placeholder="단지명 검색 (먼저 구를 고르세요)"><div class="res"></div><div class="bands"></div><div class="sel"></div>`);
   const $s=c=>el.querySelector(c);
   const fill=async()=>{ const ix=await gapIndex(); if(!ix) return; if($s('.psido').options.length>1) return;
-    $s('.psido').innerHTML='<option value="">시·도</option>'+ix.sido.map(x=>`<option>${escH(x.name)}</option>`).join(''); };
+    $s('.psido').innerHTML='<option value="">시·도</option>'+sidoSorted(ix.sido).map(x=>`<option>${escH(x.name)}</option>`).join(''); };
   ['focus','mousedown','touchstart'].forEach(ev=>$s('.psido').addEventListener(ev,fill,{once:true}));
   $s('.psido').addEventListener('change',()=>{ const sd=$s('.psido').value; const ix=AG_IX;
     const list=Object.keys(ix.sgg).filter(k=>ix.sgg[k].sido===sd).sort((a,b)=>ix.sgg[a].name.localeCompare(ix.sgg[b].name,'ko'));
@@ -1122,7 +1124,7 @@ const FROM_MINE = (async function fromMine(){
   const rows=units.filter(u=>u[0]===code&&u[1]===dong&&u[8]===jb&&u[2]===apt).sort((a,b)=>a[4]-b[4]); if(!rows.length) return;
   const row=rows.find(u=>u[3]===band)||rows[0];
   const el=$('pkHome'), ps=el.querySelector('.psido');
-  ps.innerHTML='<option value="">시·도</option>'+ix.sido.map(x=>`<option>${escH(x.name)}</option>`).join(''); ps.value=sdName; ps.dispatchEvent(new Event('change'));
+  ps.innerHTML='<option value="">시·도</option>'+sidoSorted(ix.sido).map(x=>`<option>${escH(x.name)}</option>`).join(''); ps.value=sdName; ps.dispatchEvent(new Event('change'));
   el.querySelector('.psgg').value=code; el.querySelector('.pq').value=apt;
   el.querySelector('.bands').innerHTML=rows.map(u=>`<button class="${u===row?'on':''}" disabled>${escH(u[3])} · 전용 ${u[4]}㎡</button>`).join('');
   pickHome(await withScore(row, sdName), sdName, code);
