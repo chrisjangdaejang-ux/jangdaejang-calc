@@ -1,0 +1,120 @@
+/* 집코드 화면 배치 공통 규칙 (docs/design_guide.md 와 같은 내용)
+   - 휴대폰: 한 줄 세로 흐름. 핵심 숫자 먼저 → 자세한 내용은 접기(.lay-fold)
+   - PC: 좁은 휴대폰 칸을 늘려 쓰지 않고, 본문 + 오른쪽 요약 칸(.lay-aside, assets/layout.js)
+   - 숫자·크기는 아래 토큰만 쓰기(페이지마다 따로 만들지 않기) */
+:root{
+  /* 글자 크기 */
+  --fs-xs:12.5px; --fs-sm:13.5px; --fs-md:15px; --fs-body:16px; --fs-lg:18px; --fs-xl:20px; --fs-2xl:24px; --fs-num:28px;
+  /* 간격(4의 배수) */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px; --sp-8:32px; --sp-10:40px;
+  /* 폭 */
+  --w-read:760px;            /* 글 읽기 칸 */
+  --w-page:1160px;           /* PC 전체 칸 */
+  --w-aside:300px;           /* PC 오른쪽 요약 칸 */
+  --gap-col:32px;            /* PC 두 칸 사이 */
+  --top-h:56px;              /* 머리줄 높이 */
+  --tap:44px;                /* 누르는 칸 최소 크기 */
+}
+
+/* ---------- 오른쪽 요약 칸 (body[data-lay="side"], assets/layout.js 가 만듦) ---------- */
+.lay-aside{display:none}
+@media(min-width:1200px){
+  body[data-lay="side"] .lay-has-aside{max-width:var(--w-page);position:relative;padding-right:calc(var(--w-aside) + var(--gap-col) + 20px)}
+  body[data-lay="side"] .lay-has-aside>.lay-aside{display:block;position:absolute;top:24px;right:20px;bottom:24px;width:var(--w-aside)}
+  .lay-aside-in{position:sticky;top:calc(var(--top-h) + 20px);max-height:calc(100vh - var(--top-h) - 40px);overflow:auto;display:flex;flex-direction:column;gap:var(--sp-3);padding-bottom:4px}
+}
+.lay-sum{border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px 16px}
+.lay-sum>b{display:block;font-size:var(--fs-lg);font-weight:900;letter-spacing:-.3px;line-height:1.35;margin:0 0 8px;word-break:keep-all}
+.lay-sum .lay-kv{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.lay-sum .lay-kv>*{margin:0!important;min-width:0}
+.lay-sum .lay-kv *{font-size:revert}
+.lay-sum .lay-kv .st,.lay-sum .lay-kv>div{border-radius:12px;padding:9px 10px!important;background:var(--gray);font-size:var(--fs-xs)!important;line-height:1.4}
+.lay-sum .lay-kv b,.lay-sum .lay-kv strong{display:block;font-size:17px!important;font-weight:900;line-height:1.3;white-space:normal;word-break:keep-all}
+.lay-sum .lay-kv small,.lay-sum .lay-kv span{font-size:var(--fs-xs)!important}
+.lay-sum .lay-kv .key{background:var(--blue-l)}
+.lay-sum .lay-kv>:first-child{grid-column:1/-1}
+.lay-sum .lay-kv>:first-child b,.lay-sum .lay-kv>:first-child strong{font-size:20px!important}
+.lay-toc{border:1px solid var(--line);border-radius:16px;background:#fff;padding:10px 8px}
+.lay-toc>b{display:block;font-size:var(--fs-sm);font-weight:700;color:var(--sub2);padding:2px 10px 6px}
+.lay-toc ol{list-style:none;margin:0;padding:0}
+.lay-toc a{display:flex;align-items:center;min-height:38px;padding:0 10px;border-radius:10px;color:var(--sub);text-decoration:none;font-size:14.5px;font-weight:700;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-left:3px solid transparent}
+.lay-toc a:hover{background:var(--gray2);color:var(--text)}
+.lay-toc a.on{color:var(--blue);background:var(--blue-l);border-left-color:var(--blue)}
+.lay-top{display:flex;align-items:center;justify-content:center;min-height:var(--tap);border-radius:12px;background:var(--gray);color:var(--sub);font-size:14px;font-weight:700;text-decoration:none}
+
+/* ---------- 긴 칸 접기 (휴대폰, body[data-lay-fold], assets/layout.js) ---------- */
+.lay-fold{position:relative;max-height:560px;overflow:hidden}
+.lay-fold::after{content:'';position:absolute;left:0;right:0;bottom:0;height:96px;background:linear-gradient(rgba(255,255,255,0),#fff 85%);pointer-events:none}
+.lay-more{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:48px;margin:8px 0 0;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--blue);font:inherit;font-size:15px;font-weight:800;cursor:pointer}
+@media print{.lay-fold{max-height:none}.lay-fold::after,.lay-more,.lay-aside{display:none!important}}
+
+/* ---------- 핵심 숫자 먼저 (body[data-lay-keyfirst], assets/layout.js 가 .lay-kf 를 붙임) ---------- */
+.lay-kf{display:flex;flex-direction:column}
+.lay-kf>*{order:1}
+.lay-kf>.dhead,.lay-kf>h2:first-child{order:-3}
+.lay-kf>.bands{order:-2}
+.lay-kf>.lay-kf-k{order:-1;margin-bottom:12px}
+
+/* ---------- 공통 두 칸·네 칸 격자 ---------- */
+.lay-grid{display:grid;gap:var(--sp-3)}
+@media(min-width:768px){.lay-g2{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1024px){.lay-g3{grid-template-columns:repeat(3,minmax(0,1fr))}.lay-g4{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+/* ---------- 숫자 ---------- */
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- 홈 (index.html: .h-top · .h-mid · .h-end 묶음, 휴대폰에서는 묶음 없이 그대로 세로) ---------- */
+@media(min-width:1024px){
+  body.lay-home main.wrap{max-width:var(--w-page);padding:0 20px}
+  body.lay-home .h-top{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:var(--gap-col);align-items:center;padding:12px 0 8px}
+  body.lay-home .h-top .hero{padding:28px 0 8px}
+  body.lay-home .h-act{display:flex;flex-direction:column;gap:12px}
+  body.lay-home .h-act>*{margin:0!important}
+  body.lay-home .h-act .maplink{min-height:96px}
+  body.lay-home .h-act .jas.jas-top{margin:0!important}
+  body.lay-home .h-mid{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:var(--gap-col);align-items:start;margin-top:12px}
+  body.lay-home .h-main>*,body.lay-home .h-side>*{margin-left:0!important;margin-right:0!important}
+  body.lay-home .h-main>:first-child,body.lay-home .h-side>:first-child{margin-top:12px}
+  body.lay-home .h-side{position:sticky;top:calc(var(--top-h) + 16px)}
+  body.lay-home .mlabel{padding:36px 0 0}
+  body.lay-home .menu{padding:16px 0 0;grid-template-columns:repeat(4,minmax(0,1fr))}
+  body.lay-home .menu .wide{grid-column:span 2}
+  body.lay-home .menu>a:last-child:nth-child(even){grid-column:1/-1}
+  body.lay-home .h-end{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"m l" "c p" "ad ad" "cs ag";gap:0 24px;align-items:stretch;margin-top:16px}
+  body.lay-home .h-end>.minelink:not(.loanlink){grid-area:m}body.lay-home .h-end>.loanlink{grid-area:l;border-width:2.5px}
+  body.lay-home .h-end>.pl-comm{grid-area:c}body.lay-home .h-end>.pl-prem{grid-area:p}
+  body.lay-home .h-end>[data-ad-slot]{grid-area:ad}body.lay-home .h-end>.cs{grid-area:cs;margin-bottom:0!important}body.lay-home .h-end>.agband{grid-area:ag;align-self:stretch}
+  body.lay-home .h-end>*{margin:14px 0 0!important}
+  body.lay-home .h-end>.premlink{margin-top:0!important}
+}
+@media(min-width:1024px) and (max-width:1199px){body.lay-home .h-mid{grid-template-columns:minmax(0,1fr) 340px}}
+
+/* ---------- 지도 PC 나눠 보기 (map/index.html #mlist, 1024px 이상) ---------- */
+.mlist{display:none}
+@media(min-width:1024px){
+  body.lay-split .mwrap{margin-bottom:0}
+  body.lay-split .mlist{display:flex;flex-direction:column;position:absolute;left:0;top:var(--mt);bottom:0;width:400px;z-index:30;background:#fff;border-right:1px solid var(--line);box-shadow:2px 0 10px rgba(0,0,0,.05)}
+  body.lay-split.has-rp .mlist{display:none}
+  body.lay-split .mlist[hidden]{display:none}
+  .mlist-hd{flex:none;padding:14px 16px 10px;border-bottom:1px solid var(--line2)}
+  .mlist-hd b{display:block;font-size:17px;font-weight:900;letter-spacing:-.3px}
+  .mlist-hd small{display:block;font-size:13px;color:var(--sub2);line-height:1.5;margin-top:2px}
+  .mlist-sort{display:flex;gap:6px;margin-top:8px}
+  .mlist-sort button{font:inherit;font-size:13.5px;font-weight:700;min-height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--sub2);cursor:pointer}
+  .mlist-sort button[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-l);color:var(--blue)}
+  .mlist ol{flex:1;min-height:0;overflow:auto;list-style:none;margin:0;padding:4px 8px 12px;overscroll-behavior:contain}
+  .mlist li button{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:center;width:100%;min-height:56px;padding:9px 10px;border:0;border-bottom:1px solid var(--line2);background:none;text-align:left;font:inherit;color:var(--text);cursor:pointer;border-radius:10px}
+  .mlist li button:hover,.mlist li button:focus-visible{background:var(--gray2)}
+  .mlist li button.sel{background:var(--blue-l)}
+  .mlist .nm{min-width:0}
+  .mlist .nm b{display:block;font-size:15.5px;font-weight:800;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mlist .nm small{display:block;font-size:13px;color:var(--sub2);line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mlist .v{font-size:15.5px;font-weight:900;color:var(--blue);white-space:nowrap;font-variant-numeric:tabular-nums;text-align:right}
+  .mlist .v small{display:block;font-size:12px;font-weight:700;color:var(--sub2)}
+  .mlist .empty{padding:28px 16px;text-align:center;font-size:14.5px;color:var(--sub);line-height:1.6}
+  /* 단지 카드는 목록 칸 자리에 붙여서(겹쳐 뜨는 작은 창 대신) */
+  body.lay-split .sheet{left:0!important;top:var(--mt);bottom:0!important;width:400px!important;max-width:none;max-height:none!important;border-radius:0!important;box-shadow:2px 0 10px rgba(0,0,0,.08);border-right:1px solid var(--line);margin:0}
+  body.lay-split .sheet .grab{display:none}
+  body.lay-split.has-sheet .legend{left:416px}
+  body.lay-split .cmpbar{left:416px}
+}
