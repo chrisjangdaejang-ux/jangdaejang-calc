@@ -201,7 +201,7 @@ yes('주간 글 화면: 복사·내려받기', ['cpBlog', 'dlTxt', 'dlMd', 'dlZi
 yes('화면 문구에 회사명 없음', !/장대장부동산그룹/.test(CP + LP));
 const SW = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
 yes('sw: 새 파일 저장 목록', SW.includes('/assets/broker-tools.js?v=5') && SW.includes('/agent/listing/') && SW.includes('/agent/content/'));
-yes('페이지가 같은 판 번호를 씀', LP.includes('broker-tools.js?v=5') && CP.includes('broker-tools.js?v=5') && CP.includes('brief-core.js?v=9'));
+yes('페이지가 같은 판 번호를 씀', LP.includes('broker-tools.js?v=5') && CP.includes('broker-tools.js?v=5') && CP.includes('brief-core.js?v=10'));
 
 console.log(`중개사 도구 검사: ${ok}개 맞음, ${bad}개 틀림`);
 process.exit(bad ? 1 : 0);

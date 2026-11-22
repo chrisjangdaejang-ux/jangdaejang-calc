@@ -17,7 +17,7 @@
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/auth.js?v=9"></script>
 <script src="../../assets/pay.js?v=5"></script>
-<script src="../../assets/brief-core.js?v=9"></script>
+<script src="../../assets/brief-core.js?v=10"></script>
 <script src="../../assets/share.js?v=11"></script>
 <script src="../../assets/pro-report.js?v=7"></script>
 <script src="../../assets/client-brief.js?v=5"></script>
@@ -101,24 +101,38 @@ const call = (a, b) => P.post(a, Object.assign({ s: sess() }, b || {}));
 const amWhen = (ad, am) => [ad && ad.on && ad.at ? `광고성 정보 받기 ${ad.at} 동의` : ad && ad.off ? `광고성 정보 받기 ${ad.off} 끔` : '',
   am && am.on && am.at ? `이른 아침 광고 받기 ${am.at} 동의` : am && am.off ? `이른 아침 광고 받기 ${am.off} 끔` : ''].filter(Boolean).join(' · ');
 const BUDGETS = ['3억 미만', '3억~6억', '6억~9억', '9억~15억', '15억 이상'], AGES = ['20대', '30대', '40대', '50대', '60대 이상'];
+/* 운영자(대표) 모드: 메일 링크 #adm=… 는 로그인을 거쳐도 잃지 않게 이 탭에 잠깐 보관, ?op=1 이면 [운영자 모드 켜기] 칸을 보여 줌 */
+const ADM = (() => { try {
+  const m = location.hash.match(/^#adm=([0-9a-f]{64})$/); if (m) { sessionStorage.setItem('jdj_brief_adm', m[1]); history.replaceState(null, '', location.pathname + location.search); }
+  if (new URLSearchParams(location.search).get('op') === '1') sessionStorage.setItem('jdj_brief_op', '1');
+  return { t: sessionStorage.getItem('jdj_brief_adm') || '', op: sessionStorage.getItem('jdj_brief_op') === '1' };
+} catch(e){ return { t: '', op: false }; } })();
 async function draw(note){
   if (!A || !A.on() || !A.user()) { main.innerHTML = `<h1>내 구독 관리</h1><p class="lead">카카오 간편 로그인하면 구독 상태를 보고 바꿀 수 있어요.</p>${A && A.on() ? A.btn('카카오 간편 로그인', 'brief_manage') : ''}`; return; }
+  if (ADM.t) {                                   // 메일 링크로 들어옴 → 이 계정을 운영자로 켜기
+    const t = ADM.t; ADM.t = ''; try { sessionStorage.removeItem('jdj_brief_adm'); } catch(e){}
+    try { await call('briefAdminEnter', { t }); note = '운영자 모드를 켰어요. 이제 지역·관심 단지를 제한 없이 넣을 수 있어요. 아래 [이 지역 넣기]로 지역을 더한 뒤 [저장하기]를 눌러 주세요.'; }
+    catch(e){ note = esc(e.message); }
+  }
   let r; try { r = await call('briefMine'); } catch(e){ main.innerHTML = `<h1>내 구독 관리</h1><div class="msg err">${esc(e.message)}</div>`; return; }
   const cy = r.brief.cy || {}, td = new Date().toISOString().slice(0, 10);
   /* 지금 쓰는 요금제(받는 중이거나 시작 예정) 중 한도가 가장 큰 것 — 한도는 brief-core.js 요금제 표 */
   const live = r.subs.filter(x => (x.active || x.start > td) && x.state !== '해지' && x.state !== '변경');
-  const curT = live.map(x => B.PRICE[x.tier]).filter(Boolean).sort((a, b) => b.areas - a.areas || b.apts - a.apts)[0] || B.PRICE.brief;
+  const curT0 = live.map(x => B.PRICE[x.tier]).filter(Boolean).sort((a, b) => b.areas - a.areas || b.apts - a.apts)[0] || B.PRICE.brief;
+  /* 운영자(대표) 모드: 받는 지역·관심 단지 수만 늘림(요금제·결제는 그대로) — 서버 briefMine.adm */
+  const curT = r.adm ? Object.assign({}, curT0, { areas: B.ADMIN.areas, apts: B.ADMIN.apts }) : curT0, LIM = r.adm ? B.ADMIN : B.MAX;
   const paidEver = r.subs.some(x => x.orderId && !x.refund);
   const ON = s => s.state === '이용' && s.orderId && s.left > 0 && s.end >= td;   // 요금제를 바꿀 수 있는 이용권
   try { const td = new Date().toISOString().slice(0, 10); localStorage.setItem('jdj_brief_sub', r.subs.some(x => x.active || (x.start > td && x.state !== '해지')) ? '1' : '0'); } catch(e){}
   main.innerHTML = `<span class="tag">${esc(B.NAME)}</span><h1>내 구독 관리</h1>${note ? `<div class="msg info">${note}</div>` : ''}
     <section class="sb" id="ed"><h2>받는 지역·관심 단지·청약 정보</h2>
-      <p class="note" style="margin-top:0">지금 요금제(${esc(curT.label)})는 지역 ${curT.areas}곳, 관심 단지 ${curT.apts}개까지 보내 드려요.</p>
+      ${r.adm ? `<p class="note" style="margin-top:0"><b>운영자: 제한 없음</b> — 지역·관심 단지를 원하는 만큼 넣을 수 있어요(지역 ${B.ADMIN.areas}곳·단지 ${B.ADMIN.apts}개까지, 전국 시·군·구는 약 250곳). 메일은 지역 20곳씩 나눠 여러 통으로 보내요.</p>`
+        : `<p class="note" style="margin-top:0">지금 요금제(${esc(curT.label)})는 지역 ${curT.areas}곳, 관심 단지 ${curT.apts}개까지 보내 드려요.</p>`}
       <div class="pick"><select id="sd" aria-label="시·도"></select><select id="sg" aria-label="시·군·구"></select>
         <select id="dn" class="full" aria-label="동"><option value="">구 전체</option></select><button type="button" class="btn full" id="add">이 지역 넣기</button></div>
       <ul class="al" id="al"></ul>
-      <label class="fl" for="apts">관심 단지(쉼표로 구분, ${curT.apts}개까지) — 급매 레이더·전세가율·순위 변화를 따로 모아 드려요</label>
-      <input class="inp" id="apts" maxlength="1200" placeholder="예: 리센츠, 잠실엘스" value="${esc((r.brief.apts || []).join(', '))}">
+      <label class="fl" for="apts">관심 단지(쉼표로 구분, ${r.adm ? '운영자: 제한 없음' : curT.apts + '개까지'}) — 급매 레이더·전세가율·순위 변화를 따로 모아 드려요</label>
+      <input class="inp" id="apts" maxlength="${r.adm ? 5000 : 1200}" placeholder="예: 리센츠, 잠실엘스" value="${esc((r.brief.apts || []).join(', '))}">
       ${curT.urgPick ? `<label class="fl" for="urg">급매 알림 기준 — 최근 3개월 같은 평형 중간값보다</label>
       <select class="inp" id="urg">${[5, 6, 7, 8, 9, 10, 12, 15, 20].map(v => `<option value="${v}" ${(r.brief.urg || B.URG.def) === v ? 'selected' : ''}>${v}% 이상 싸게 팔리면 알려 주기${v === B.URG.def ? ' (기본)' : ''}</option>`).join('')}</select>
       <p class="note" style="margin:4px 0 0">숫자를 낮추면 더 많은 거래를 알려 드리고, 높이면 아주 싸게 팔린 거래만 알려 드려요.</p>` : ''}
@@ -153,7 +167,11 @@ async function draw(note){
         <input class="inp" data-ct="${s.id}" placeholder="새 이메일 또는 휴대폰 번호"><button class="btn" data-up="${s.id}">저장</button></details>
       <div class="row2" style="margin-top:8px"><button class="btn" data-stop="${s.id}">받지 않기(해지)</button>${s.orderId && !s.refund && s.refundEst > 0 ? `<button class="btn" data-ref="${s.id}">환불 요청(예정 ${s.refundEst.toLocaleString('ko-KR')}원)</button>` : ''}</div>` : ''}</section>`).join('')
       : `<div class="msg info">아직 구독이 없어요. <a href="../subscribe/">${B.TRIAL_DAYS}일 무료로 시작하기</a></div>`}
-    <p class="note">자동 결제는 없어요. 해지하면 다음 날부터 보내지 않아요. 환불은 첫 브리핑 전이면 전액, 받기 시작한 뒤에는 남은 날만큼 일할로 해 드려요(영업일 3일 안 처리). 월 요금이 더 비싼 요금제로 바꾸면 오늘 바로 바뀌고 남은 날만큼 차액만 내요. 더 싼 요금제는 다음 이용권부터 바뀌어요. <a href="../../refund/#brief">환불 정책</a></p>`;
+    <p class="note">자동 결제는 없어요. 해지하면 다음 날부터 보내지 않아요. 환불은 첫 브리핑 전이면 전액, 받기 시작한 뒤에는 남은 날만큼 일할로 해 드려요(영업일 3일 안 처리). 월 요금이 더 비싼 요금제로 바꾸면 오늘 바로 바뀌고 남은 날만큼 차액만 내요. 더 싼 요금제는 다음 이용권부터 바뀌어요. <a href="../../refund/#brief">환불 정책</a></p>
+    ${r.adm ? `<section class="sb" id="admBox"><h2>운영자 모드 <span class="tg">켜짐</span></h2><p class="note" style="margin-top:0">운영자: 제한 없음 — 받는 지역·관심 단지 수에 제한이 없어요. 요금제·결제·중개사 내용은 바뀌지 않아요.</p>
+      <div class="row2"><button type="button" class="btn" id="admOff">운영자 모드 끄기</button></div></section>`
+      : ADM.op ? `<section class="sb" id="admBox"><h2>운영자 모드</h2><p class="note" style="margin-top:0">운영자(대표)만 쓸 수 있어요. 버튼을 누르면 서버 주인 메일로 확인 링크(30분 동안 한 번)가 가요. 메일의 링크를 이 계정으로 로그인한 채 열면 지역·관심 단지 제한이 없어져요.</p>
+      <div class="row2"><button type="button" class="btn primary" id="admOn">운영자 모드 켜기</button></div><div id="admMsg" class="msg" role="status" hidden></div></section>` : ''}`;
   /* 받는 지역·관심 단지·청약 정보 편집(회원 저장 자료 brief) */
   const ed = { areas: (r.brief.areas || []).slice() };
   const max = curT.areas, $ = id => document.getElementById(id);
@@ -169,7 +187,7 @@ async function draw(note){
   drawA();
   const edMsg = (t, bad) => { const m = $('edMsg'); m.hidden = false; m.className = 'msg ' + (bad ? 'err' : 'info'); m.textContent = t; };
   $('add').onclick = () => { const g = $('sg').value, dn = $('dn').value; if (!g || ed.areas.some(a => a.g === g && a.dn === dn)) return;
-    if (ed.areas.length >= B.MAX.areas) return edMsg(`지역은 ${B.MAX.areas}곳까지 넣을 수 있어요.`, 1); ed.areas.push({ g, gn: SG[g].name, sd: SG[g].sido, dn }); drawA(); };
+    if (ed.areas.length >= LIM.areas) return edMsg(`지역은 ${LIM.areas}곳까지 넣을 수 있어요.`, 1); ed.areas.push({ g, gn: SG[g].name, sd: SG[g].sido, dn }); drawA(); };
   $('saveEd').onclick = async () => {
     const num = (v, lo, hi) => { v = String(v).trim(); if (v === '') return null; const n = Math.round(+v); return n >= lo && n <= hi ? n : NaN; };
     const sc = num($('cyScore').value, 0, 84), nh = num($('cyNohome').value, 0, 40);
@@ -178,7 +196,7 @@ async function draw(note){
     if (!ed.areas.length) return edMsg('받을 지역을 하나 이상 넣어 주세요.', 1);
     const aptAll = $('apts').value.split(',').map(x => x.trim()).filter(Boolean);
     if (aptAll.length > curT.apts) return edMsg(`관심 단지는 지금 요금제에서 ${curT.apts}개까지예요. 더 넣으려면 요금제를 바꿔 주세요.`, 1);
-    const apts = aptAll.slice(0, B.MAX.apts), urg = $('urg') ? +$('urg').value : (r.brief.urg || null);
+    const apts = aptAll.slice(0, LIM.apts), urg = $('urg') ? +$('urg').value : (r.brief.urg || null);
     const nb = { areas: ed.areas, apts, v: r.brief.v || '', cy: { score: sc, nohome: nh }, budget: $('budget').value, age: $('age').value, urg };
     try {
       $('saveEd').disabled = true;
@@ -189,6 +207,10 @@ async function draw(note){
   };
   drawPlus(r);
   const act = async (fn, ok) => { try { await fn(); draw(ok); } catch(e){ alert(e.message); } };
+  if ($('admOn')) $('admOn').onclick = async () => { const m = $('admMsg'); $('admOn').disabled = true;
+    try { const x = await call('briefAdminMail'); if (x.already) return draw('이미 운영자 모드가 켜져 있어요.'); m.className = 'msg info'; m.textContent = '확인 메일을 보냈어요. 30분 안에 메일의 링크를 이 계정으로 로그인한 채 열어 주세요.'; }
+    catch(e){ m.className = 'msg err'; m.textContent = e.message; $('admOn').disabled = false; } m.hidden = false; };
+  if ($('admOff')) $('admOff').onclick = () => confirm('운영자 모드를 끌까요? 지역·관심 단지는 요금제 수까지만 보내요.') && act(() => call('briefAdminOff'), '운영자 모드를 껐어요.');
   main.querySelectorAll('[data-stop]').forEach(b => b.onclick = () => confirm('내일부터 브리핑을 보내지 않을까요? 남은 기간 환불은 [환불 요청]으로 따로 해요.') && act(() => call('briefStop', { id: b.dataset.stop }), '해지했어요. 내일부터 보내지 않아요.'));
   main.querySelectorAll('[data-ref]').forEach(b => b.onclick = () => { const why = prompt('환불 사유(선택)를 적어 주세요. 요청하면 바로 발송이 멈춰요.', ''); if (why !== null) act(() => call('briefRefund', { id: b.dataset.ref, reason: why }), '환불 요청을 받았어요. 영업일 3일 안에 결제한 수단으로 돌려 드려요.'); });
   /* 요금제 바꾸기: 고르면 서버가 금액·바뀌는 때를 계산해 먼저 보여 주고, 올리기는 차액 결제 → 바로 적용, 내리기는 다음 이용권부터 */

@@ -17,7 +17,7 @@
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/auth.js?v=9"></script>
 <script src="../../assets/pay.js?v=5"></script>
-<script src="../../assets/brief-core.js?v=9"></script>
+<script src="../../assets/brief-core.js?v=10"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../assets/aplus.css?v=45">
@@ -118,6 +118,7 @@ async function boot(){
   st.kakao = !!(cfg && cfg.channels && cfg.channels.kakao);
   const PAID = !!(window.JDJ_SITE && JDJ_SITE.PAID_OPEN) && !(cfg && cfg.paid === false);   // 통신판매업 신고 전에는 결제 잠금(assets/config.js PAID_OPEN · 서버 briefConfig.paid)
   st.trialUsed = !!(mine && mine.trialUsed);
+  st.adm = !!(mine && mine.adm);   // 운영자(대표) 모드: 지역·관심 단지 제한 없음(요금제·결제는 그대로)
   st.amAd = !!(mine && mine.amAd && mine.amAd.on);   // 처음 신청이면 둘 다 꺼진 채로 시작
   st.adOn = !!(mine && mine.adc && mine.adc.on);
   st.active = !!(mine && mine.subs.some(x => x.active || x.start > new Date().toISOString().slice(0, 10) && x.state !== '해지'));
@@ -132,7 +133,7 @@ async function boot(){
   const sds = JDJ_KO.sortSido(new Set(Object.values(SG).map(x => x.sido)));
   const TR = !st.trialUsed && !st.active;   // 무료 체험을 아직 안 쓴 사람: 체험을 먼저, 요금제는 나중에 고르는 것으로 보여 줌
   const TD = B.TRIAL_DAYS, trialLbl = `${TD}일 무료로 시작하기`;
-  const secArea = n => `<section class="step"><div class="msg err fmsg" hidden></div><h2>${n}. 받을 동네</h2><p class="sub">시·군·구 전체 또는 동을 골라요. ${B.shownTiers().map(t => `${esc(t.label)} ${t.areas}곳`).join(' · ')}까지 보내 드려요.</p>
+  const secArea = n => `<section class="step"><div class="msg err fmsg" hidden></div><h2>${n}. 받을 동네</h2><p class="sub">시·군·구 전체 또는 동을 골라요. ${st.adm ? '<b>운영자: 제한 없음</b> — 원하는 만큼 넣을 수 있어요.' : `${B.shownTiers().map(t => `${esc(t.label)} ${t.areas}곳`).join(' · ')}까지 보내 드려요.`}</p>
       <div class="pick"><select id="sd" aria-label="시·도">${sds.map(s => `<option>${esc(s)}</option>`).join('')}</select><select id="sg" aria-label="시·군·구"></select>
         <select id="dn" class="full" aria-label="동"><option value="">구 전체</option></select><button type="button" class="btn full" id="add">이 동네 넣기</button></div>
       <ul class="al" id="al"></ul>
@@ -183,12 +184,12 @@ async function boot(){
   const fillDn = async () => { const g = $('sg').value; $('dn').innerHTML = '<option value="">구 전체</option>'; const S = await J(B.DATA + g + '.json'); if (S && $('sg').value === g) $('dn').innerHTML += JDJ_KO.sortBy(S.dongs, x => x[0]).map(x => `<option>${esc(x[0])}</option>`).join(''); };
   $('sd').onchange = fillG; $('sg').onchange = fillDn;
   if (d0 && SG[d0.g]) { $('sd').value = SG[d0.g].sido; } fillG();
-  const max = () => B.PRICE[st.plan].areas;
+  const max = () => st.adm ? B.ADMIN.areas : B.PRICE[st.plan].areas, LIM = st.adm ? B.ADMIN : B.MAX;
   const aptList = () => $('apts').value.split(',').map(s => s.trim()).filter(Boolean);
   const drawA = () => { $('al').innerHTML = st.areas.map((a, i) => `<li>${esc(a.gn + (a.dn ? ' ' + a.dn : ''))}${i >= max() ? ' <small>(이 상품에선 안 보냄)</small>' : ''}<button type="button" data-i="${i}" aria-label="${esc(a.gn)} 빼기">×</button></li>`).join('') || '<li style="border-style:dashed;background:#fff">아직 고른 동네가 없어요</li>';
     $('al').querySelectorAll('button[data-i]').forEach(b => b.onclick = () => { st.areas.splice(+b.dataset.i, 1); drawA(); }); };
   $('add').onclick = () => { const g = $('sg').value, dn = $('dn').value; if (!g) return; if (st.areas.some(a => a.g === g && a.dn === dn)) return;
-    if (st.areas.length >= B.MAX.areas) return msg(`동네는 ${B.MAX.areas}곳까지 고를 수 있어요.`, 1); st.areas.push({ g, gn: SG[g].name, sd: SG[g].sido, dn }); drawA(); };
+    if (st.areas.length >= LIM.areas) return msg(`동네는 ${LIM.areas}곳까지 고를 수 있어요.`, 1); st.areas.push({ g, gn: SG[g].name, sd: SG[g].sido, dn }); drawA(); };
   document.querySelectorAll('input[name=plan]').forEach(r => r.onchange = () => { st.plan = r.value; drawA(); sync(); });
   document.querySelectorAll('input[name=ch]').forEach(r => r.onchange = () => { st.channel = r.value; $('contact').placeholder = r.value === 'kakao' ? '받을 휴대폰 번호' : '받을 이메일 주소'; $('contact').autocomplete = r.value === 'kakao' ? 'tel' : 'email'; });
   const sync = () => { const T = B.PRICE[st.plan]; $('pay').textContent = PAID ? `월 ${won(T.amount)}원 결제하고 받기` : '유료 이용권은 곧 열려요'; $('brokerBox').hidden = !T.broker;
@@ -197,7 +198,7 @@ async function boot(){
   drawA(); sync();
   /* 이른 아침 광고는 '광고성 정보 받기'가 켜져 있을 때만 고를 수 있음(자동으로 켜지 않음) */
   $('ad').onchange = () => { const on = $('ad').checked; $('amAd').disabled = !on; if (!on) $('amAd').checked = false; $('amL').className = on ? '' : 'dis'; $('amLock').hidden = on; };
-  const saveAreas = () => A.update(d => { d.brief = { ...(d.brief || {}), areas: st.areas, apts: aptList().slice(0, B.MAX.apts), v: B.PRICE[st.plan].pro ? 'pro' : '' }; })
+  const saveAreas = () => A.update(d => { d.brief = { ...(d.brief || {}), areas: st.areas, apts: aptList().slice(0, LIM.apts), v: B.PRICE[st.plan].pro ? 'pro' : '' }; })
     .then(() => { try { localStorage.setItem('jdj_brief_apts', JSON.stringify(aptList().slice(0, B.PRICE[st.plan].apts))); } catch(e){} });
   const base = () => { const ch = (document.querySelector('input[name=ch]:checked') || {}).value;
     const need = (t, el) => Object.assign(new Error(t), { el: $(el) });

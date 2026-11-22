@@ -32,11 +32,13 @@
   const PRICE = Object.fromEntries(TIERS.map(t => [t.id, t]));
   const URG = { def: 10, lo: 5, hi: 20 };   // 급매 기준(%) — 서버 BRIEF_URG 와 같음
   const MAX = { areas: Math.max(...TIERS.map(t => t.areas)), apts: Math.max(...TIERS.map(t => t.apts)) };
+  /* 운영자(대표) 모드: 받는 지역·관심 단지 수만 늘림(요금제·결제와 무관). 서버 BRIEF_ADMIN_LIM 과 같아야 해요(tools/brief-admin-test.js 가 대조) */
+  const ADMIN = { areas: 300, apts: 100 };
   const B = {
     SITE, NAME,
     DATA: JB.DATA + 'data/brief/',
     DROP: -10,                                      // '최근 2년 최고가보다 많이 내린 거래' 기준(%)
-    TIERS, PRICE, URG, MAX,
+    TIERS, PRICE, URG, MAX, ADMIN,
     TRIAL_DAYS: 7,
     REF: { months: 1, yearMax: 12 },        // 친구 초대 보상(서버 BRIEF_REF 와 같음)
     /** 급매 목록: 기준(%)이 10이면 자료의 urgent 그대로, 다르면 urgent + urgent_lo(5~10% 후보)에서 기준 이상만 — 서버 bUrgent 와 같음 */

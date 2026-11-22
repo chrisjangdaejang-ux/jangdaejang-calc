@@ -1,6 +1,15 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집코드 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집코드 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v48 변경 요약 (따로 실행할 함수 없음 — 코드 바꾸고 저장 → 배포 관리 → 수정 → 새 버전. 안내 docs/redeploy_admin.md)
+ *  - 운영자(대표) 모드: 모닝 브리핑 받는 지역·관심 단지 수 제한 없음(지역 300곳·단지 100개까지 — 전국 시·군·구는 약 250곳). 요금제·결제·PAID_OPEN 과 무관(유료 기능을 열지 않음).
+ *    켜기: 구독 관리 화면(brief/manage/?op=1) [운영자 모드 켜기] → 이 스크립트 주인 메일로 30분짜리 1회용 링크 → 같은 계정으로 카카오 간편 로그인한 채 열면 켜짐.
+ *    저장: 스크립트 속성 BRIEF_ADMIN_IDS(카카오 회원번호 목록). 화면 [운영자 모드 끄기] 또는 속성을 지우면 꺼짐.
+ *  - 운영자 계정 발송: 다른 구독자를 먼저 보내고 마지막에, 메일 한 통에 지역 20곳씩 나눠 보냄(메일 크기 한도). 4분 30초가 넘거나 하루 메일 한도가 10통 아래면
+ *    멈췄다가 9시 실행에서 이어 보냄. briefAreas(엔진 호출 예산)·광고주용 통계에는 운영자 지역을 앞 3곳만 넣음(진짜 구독자 몫을 빼앗지 않게).
+ *  - pullTokenNew(편집기에서 한 번 실행): 엔진 연결 비밀값 BRIEF_PULL_TOKEN 을 새로 만들어 스크립트 속성에 넣고 실행 로그에 보여 줌 → 깃허브 비밀값에 붙여 넣기.
+ *  - 검증: node tools/brief-admin-test.js </dev/null
+ *
  * v47 변경 요약 (오늘 밤 앞당겨 하는 재배포에 v20~v46 과 함께 들어감 — 안내 docs/redeploy_tonight.md. 따로 실행할 함수: briefInstall(브리핑 아침 발송 트리거가 없을 때))
  *  - 유료 판매 잠금 PAID_OPEN=false(맨 위): 통신판매업 신고번호가 나오기 전까지 PAID_ACTIONS(리포트 결제·브리핑 이용권 주문·승인·요금제 바꾸기)를
  *    '유료 이용권은 곧 열려요. 지금은 7일 무료 체험만 할 수 있어요.'(code 'paid_closed')로 거절. 무료 체험(briefTrial)·문의·알림 신청·해지·환불 요청은 그대로.
@@ -1937,7 +1946,7 @@ function cleanAreas(a) {
   if (a.mkt && typeof a.mkt === 'object' && /^\d{4}-\d{2}-\d{2}$/.test(String(a.mkt.at || ''))) o.mkt = { at: String(a.mkt.at) };
   return o;
 }
-function cleanUserData(d) {
+function cleanUserData(d, blim) {
   d = d && typeof d === 'object' ? d : {};
   const uniq = (arr, key) => { const seen = {}; return arr.filter(x => { const k = key(x); if (seen[k]) return false; seen[k] = 1; return true; }); };
   const pk = x => [x.code, x.dong, x.jibun, x.apt, x.band].join('|');
@@ -1947,7 +1956,7 @@ function cleanUserData(d) {
     favs: uniq((Array.isArray(d.favs) ? d.favs : []).slice(0, 40).map(x => cleanPlace(x, false)).filter(Boolean), pk).slice(0, 30),
     reports: uniq((Array.isArray(d.reports) ? d.reports : []).slice(0, 20).map(cleanReport).filter(Boolean), x => x.id || x.t).slice(0, 10),
     areas: cleanAreas(d.areas),
-    brief: cleanBrief(d.brief)
+    brief: cleanBrief(d.brief, blim)
   };
   const json = JSON.stringify(out);
   if (json.length > USER_DATA_MAX) throw new Error('저장할 자료가 너무 많아요. 리포트나 관심 단지를 조금 지운 뒤 다시 저장해 주세요.');
@@ -1962,11 +1971,11 @@ function userAlerts(k) {
 function userLoad(b) {
   const u = sessionUser(b.s);
   const d = u.data && typeof u.data === 'object' ? u.data : {};
-  return { ok: true, nick: u.nick, data: { v: 1, homes: d.homes || [], favs: d.favs || [], reports: d.reports || [], areas: d.areas || { list: [], kinds: { notice: true, mu: true }, t: '' }, brief: cleanBrief(d.brief) }, alerts: userAlerts(u.k) };
+  return { ok: true, nick: u.nick, data: { v: 1, homes: d.homes || [], favs: d.favs || [], reports: d.reports || [], areas: d.areas || { list: [], kinds: { notice: true, mu: true }, t: '' }, brief: cleanBrief(d.brief, bLim(bIsAdmin(u.k))) }, alerts: userAlerts(u.k) };
 }
 function userSave(b) {
   const u = sessionUser(b.s);
-  const data = cleanUserData(b.data);
+  const data = cleanUserData(b.data, bLim(bIsAdmin(u.k)));
   const sh = book().getSheetByName(SH_U);
   sh.getRange(u.row, UC['저장자료'] + 1).setValue(JSON.stringify(data));
   sh.getRange(u.row, UC['수정일'] + 1).setValue(new Date());
@@ -2302,6 +2311,13 @@ const BRIEF_TIERS = [
   { id: 'brief_pro_plus', label: '중개사 플러스', name: BRIEF_NAME + ' 중개사 플러스 1개월', amount: 9900, areas: 20, apts: 30, customers: 10, urgPick: true,  weekly: true,  pro: true,  broker: true,  listing: 150, kitAreas: 5, show: true }
 ];
 const BRIEF_MAX = { areas: Math.max.apply(null, BRIEF_TIERS.map(t => t.areas)), apts: Math.max.apply(null, BRIEF_TIERS.map(t => t.apts)) };   // 회원 저장 자료에 둘 수 있는 최대 수
+/* v48 운영자(대표) 모드 — 받는 지역·관심 단지 수만 늘림(요금제·결제·중개사 내용·PAID_OPEN 과 무관). 화면 assets/brief-core.js ADMIN 과 숫자가 같아야 해요.
+   켜는 법: 구독 관리 [운영자 모드 켜기] → 스크립트 주인 메일의 1회용 링크(30분)를 같은 카카오 계정으로 열기. 목록: 스크립트 속성 BRIEF_ADMIN_IDS(카카오 회원번호 JSON 배열) */
+const BRIEF_ADMIN_LIM = { areas: 300, apts: 100 };
+const BRIEF_ADM_LINK_MIN = 30, BRIEF_ADM_CHUNK = 20, BRIEF_ADM_PULL = 3, BRIEF_ADM_TIME = 270000, BRIEF_ADM_MAIL_MIN = 10;
+function bAdminIds() { const v = parseJ(PropertiesService.getScriptProperties().getProperty('BRIEF_ADMIN_IDS'), []); return Array.isArray(v) ? v.map(String).filter(Boolean) : []; }
+function bIsAdmin(k) { k = String(k == null ? '' : k); return !!k && bAdminIds().indexOf(k) >= 0; }
+function bLim(adm) { return adm ? BRIEF_ADMIN_LIM : BRIEF_MAX; }
 const BRIEF_URG = { def: 10, lo: 5, hi: 20 };   // 급매 기준(%): 기본 10, 고를 수 있으면 5~20
 const BRIEF_PRICE = Object.fromEntries(BRIEF_TIERS.map(t => [t.id, Object.assign({ days: 30 }, t)]));
 const BRIEF_TRIAL = { name: BRIEF_NAME + ' 7일 체험', label: '무료 체험', amount: 0, areas: 3, apts: 3, customers: 0, days: 7 };
@@ -2317,7 +2333,7 @@ function bProdKey(name) {
 }
 function bIsTrial(name) { return bProdKey(name) === 'trial'; }
 const BST = { wait: '결제대기', on: '이용', trial: '체험', stop: '해지', refund: '환불', chg: '변경' };   // 변경 = 요금제를 올려 새 행으로 넘어간 이전 행
-const BRIEF_ACTIONS = { briefAdPref: 1, briefTrial: 1, briefOrder: 1, briefConfirm: 1, briefMine: 1, briefUpdate: 1, briefStop: 1, briefRefund: 1, briefChangeQuote: 1, briefChange: 1, briefInvite: 1, toolQuota: 1, toolUse: 1 };
+const BRIEF_ACTIONS = { briefAdPref: 1, briefTrial: 1, briefOrder: 1, briefConfirm: 1, briefMine: 1, briefUpdate: 1, briefStop: 1, briefRefund: 1, briefChangeQuote: 1, briefChange: 1, briefInvite: 1, toolQuota: 1, toolUse: 1, briefAdminMail: 1, briefAdminEnter: 1, briefAdminOff: 1 };
 const BROKER_REVIEW = { wait: '확인 대기', ok: '확인됨', no: '확인 안 됨' };   // 운영자가 '중개사확인' 칸을 직접 바꿔요(외부 조회 없음)
 /* 중개사무소 등록번호 형식 확인 — 화면 assets/brief-core.js brokerNo 와 같은 규칙 */
 function bBrokerNo(s, year) {
@@ -2346,13 +2362,14 @@ const BRIEF_MIN_VISITORS = 5;     // 관심도 집계: 방문자 5명 이상인 
 
 /* 회원 저장 자료의 brief: {areas:[{g 시군구 코드, gn 이름, sd 시·도, dn 동(빈 값 = 구 전체)}] 최대 10곳, apts:[관심 단지 이름] 최대 10, v:'pro'|'',
    cy:{score 청약 가점 0~84, nohome 무주택 기간(년)}(선택, 청약 기회 코너), budget·age(선택, 광고주용 익명 통계에만)} */
-function cleanBrief(x) {
+function cleanBrief(x, lim) {
   x = x && typeof x === 'object' ? x : {};
+  lim = lim || BRIEF_MAX;                 // v48 운영자 계정은 bLim(true)
   const seen = {};
-  const areas = (Array.isArray(x.areas) ? x.areas : []).slice(0, BRIEF_MAX.areas + 10).map(a => a && ({ g: /^\d{5}$/.test(String(a.g || '')) ? String(a.g) : '', gn: uText(a.gn, 30), sd: uText(a.sd, 20), dn: uText(a.dn, 20) }))
+  const areas = (Array.isArray(x.areas) ? x.areas : []).slice(0, lim.areas + 10).map(a => a && ({ g: /^\d{5}$/.test(String(a.g || '')) ? String(a.g) : '', gn: uText(a.gn, 30), sd: uText(a.sd, 20), dn: uText(a.dn, 20) }))
     .filter(a => a && a.g && a.gn && (!a.dn || /^[가-힣0-9·.]{1,20}$/.test(a.dn)))
-    .filter(a => { const k = a.g + '|' + a.dn; if (seen[k]) return false; seen[k] = 1; return true; }).slice(0, BRIEF_MAX.areas);
-  const apts = (Array.isArray(x.apts) ? x.apts : []).slice(0, BRIEF_MAX.apts + 10).map(s => uText(s, 40)).filter(Boolean).slice(0, BRIEF_MAX.apts);
+    .filter(a => { const k = a.g + '|' + a.dn; if (seen[k]) return false; seen[k] = 1; return true; }).slice(0, lim.areas);
+  const apts = (Array.isArray(x.apts) ? x.apts : []).slice(0, lim.apts + 10).map(s => uText(s, 40)).filter(Boolean).slice(0, lim.apts);
   const n = (v, lo, hi) => { if (v === '' || v == null) return null; v = Math.round(Number(v)); return isFinite(v) && v >= lo && v <= hi ? v : null; };
   const cy = x.cy && typeof x.cy === 'object' ? { score: n(x.cy.score, 0, 84), nohome: n(x.cy.nohome, 0, 40) } : { score: null, nohome: null };
   return { areas: areas, apts: apts, v: x.v === 'pro' ? 'pro' : '', cy: cy, urg: n(x.urg, BRIEF_URG.lo, BRIEF_URG.hi),
@@ -2377,6 +2394,9 @@ function briefDispatch(b) {
       if (b.action === 'toolQuota') return toolQuota(b);
       if (b.action === 'toolUse') return toolUse(b);
       if (b.action === 'briefAdPref') return briefAdPref(b);
+      if (b.action === 'briefAdminMail') return briefAdminMail(b);
+      if (b.action === 'briefAdminEnter') return briefAdminEnter(b);
+      if (b.action === 'briefAdminOff') return briefAdminOff(b);
       return { ok: false, err: 'unknown' };
     });
   } catch (x) {
@@ -2422,10 +2442,10 @@ function briefState(o, now) {
   /* 환불 예정액: 첫 브리핑 발송 전이면 낸 돈 전부, 이용 중이면 남은 날만큼(일할, 위약금 없음). 낸 돈(결제액)이 비어 있으면 상품 금액(v26 이전 행) */
   const pv = r[BC['결제액']], paid = pv === '' || pv == null ? P.amount : Number(pv) || 0;   // 0 = 친구 초대 보상(무료 1개월)
   const refundEst = st === BST.chg || !P.amount ? 0 : sent === 0 ? paid : Math.min(paid, Math.floor(P.amount * Math.min(left, P.days) / P.days / 10) * 10);
-  const nx = String(r[BC['다음요금제']] || '');
+  const nx = String(r[BC['다음요금제']] || ''), adm = bIsAdmin(r[BC['카카오id']]);   // v48 운영자: 받는 지역·단지 수만 늘림(요금제·중개사 내용은 그대로)
   return { id: String(r[BC['id']]), product: String(r[BC['상품']]), state: st, active: !!active, start: s ? ymd(s) : '', end: e ? ymd(e) : '',
     left: left, channel: String(r[BC['채널']]), contact: String(r[BC['연락처가림']]), ad: r[BC['광고동의']] === true, sent: sent,
-    refund: String(r[BC['환불상태']] || ''), refundEst: refundEst, areas: P.areas, apts: P.apts, customers: P.customers || 0, urgPick: !!P.urgPick, weekly: !!P.weekly,
+    refund: String(r[BC['환불상태']] || ''), refundEst: refundEst, areas: adm ? BRIEF_ADMIN_LIM.areas : P.areas, apts: adm ? BRIEF_ADMIN_LIM.apts : P.apts, adm: adm, customers: P.customers || 0, urgPick: !!P.urgPick, weekly: !!P.weekly,
     pro: !!P.pro, orderId: String(r[BC['주문번호']] || ''), reward: !String(r[BC['주문번호']] || '') && pk !== 'trial' && BRIEF_PRICE[pk] ? true : false,
     tier: pk, label: P.label || '', next: BRIEF_PRICE[nx] ? nx : '', nextLabel: BRIEF_PRICE[nx] ? BRIEF_PRICE[nx].label : '',
     broker: P.broker ? { no: String(r[BC['중개사번호']] || ''), review: String(r[BC['중개사확인']] || BROKER_REVIEW.wait) } : null };
@@ -2458,7 +2478,7 @@ function briefCommon(b) {
   const ct = briefContact(channel, b.contact);
   if (!ct) throw new Error(channel === 'kakao' ? '카카오톡을 받을 휴대폰 번호를 정확히 입력해 주세요.' : '받을 이메일 주소를 정확히 입력해 주세요.');
   if (!b.privacy) throw new Error('발송용 연락처 수집·이용에 동의해 주세요.');
-  const br = cleanBrief(u.data && u.data.brief);
+  const br = cleanBrief(u.data && u.data.brief, bLim(bIsAdmin(u.k)));
   if (!br.areas.length) throw new Error('받을 동네를 먼저 하나 이상 골라 저장해 주세요.');
   const tri = v => v === true ? true : v === false ? false : null;
   return { u: u, channel: channel, ct: ct, ad: tri(b.ad), br: br, amAd: tri(b.amAd) };
@@ -2551,10 +2571,51 @@ function briefConfirm(b) {
   });
 }
 
+/* v48 운영자 모드 켜기: ① 로그인한 회원이 [운영자 모드 켜기] → 스크립트 주인 메일로 1회용 링크(30분, 해시만 저장, 누른 카카오 계정 기억)
+   ② 그 링크(구독 관리 화면 #adm=…)를 같은 계정으로 카카오 간편 로그인한 채 열면 BRIEF_ADMIN_IDS 에 더함. 메일을 받는 사람(시트 주인)만 켤 수 있어요. */
+function briefAdminMail(b) {
+  const u = sessionUser(b.s);
+  if (bIsAdmin(u.k)) return { ok: true, already: true };
+  const c = CacheService.getScriptCache(), n = Number(c.get('brAM')) || 0;
+  if (n >= 3) return { ok: false, err: '방금 보냈어요. 메일함을 확인하거나 1시간 뒤에 다시 눌러 주세요.' };
+  c.put('brAM', String(n + 1), 3600);
+  const t = newToken(), P = PropertiesService.getScriptProperties();
+  P.setProperty('BRIEF_ADM_LINK', JSON.stringify({ h: hashOf('bral|' + t), k: u.k, exp: Date.now() + BRIEF_ADM_LINK_MIN * 60000 }));
+  const url = BRIEF_WEB + 'manage/#adm=' + t;
+  try {
+    MailApp.sendEmail({ to: Session.getEffectiveUser().getEmail(), subject: `[${SITE_NAME}] 모닝 브리핑 운영자 모드 켜기 링크`, name: SITE_NAME,
+      body: `카카오 닉네임 '${String(u.nick || '').slice(0, 30)}' 계정을 운영자로 켜는 링크예요(${BRIEF_ADM_LINK_MIN}분 동안 한 번만 쓸 수 있어요).
+${url}
+
+` +
+        `운영자가 되면 모닝 브리핑 받는 지역·관심 단지 수 제한이 없어져요(요금제·결제와는 상관없어요).
+` +
+        `이 링크는 버튼을 누른 그 계정으로 카카오 간편 로그인한 화면에서만 켜져요.
+직접 누르지 않았다면 이 메일은 지워 주세요.` });
+  } catch (e) { return { ok: false, err: '메일을 보내지 못했어요. 잠시 뒤 다시 눌러 주세요.' }; }
+  return { ok: true, sent: true };
+}
+function briefAdminEnter(b) {
+  const u = sessionUser(b.s), t = String(b.t || ''), P = PropertiesService.getScriptProperties(), L = parseJ(P.getProperty('BRIEF_ADM_LINK'), null);
+  if (!/^[0-9a-f]{64}$/.test(t) || !L || !(Number(L.exp) > Date.now()) || !safeEq(String(L.h), hashOf('bral|' + t))) return { ok: false, err: '링크가 맞지 않거나 시간이 지났어요. 구독 관리 화면에서 [운영자 모드 켜기]를 다시 눌러 주세요.' };
+  if (String(L.k) !== u.k) return { ok: false, err: '[운영자 모드 켜기]를 누른 그 계정으로 카카오 간편 로그인한 뒤 메일의 링크를 다시 열어 주세요.' };
+  P.setProperty('BRIEF_ADM_LINK', '');
+  const ids = bAdminIds(); if (ids.indexOf(u.k) < 0) ids.push(u.k);
+  P.setProperty('BRIEF_ADMIN_IDS', JSON.stringify(ids));
+  return { ok: true, adm: true, lim: BRIEF_ADMIN_LIM };
+}
+function briefAdminOff(b) {
+  const u = sessionUser(b.s), P = PropertiesService.getScriptProperties();
+  P.setProperty('BRIEF_ADMIN_IDS', JSON.stringify(bAdminIds().filter(x => x !== u.k)));
+  /* 저장된 지역·단지가 요금제 최대보다 많으면 그대로 두지만 발송은 요금제 수까지만(briefState) — 다음 저장 때 정리됨 */
+  return { ok: true, adm: false };
+}
+
 function briefMine(b) {
   const u = sessionUser(b.s), now = new Date();
   const list = myBriefs(u.k).filter(o => String(o.r[BC['상태']]) !== BST.wait).map(o => briefState(o, now));
-  return { ok: true, subs: list, brief: cleanBrief(u.data && u.data.brief), channels: briefChannels(),
+  const adm = bIsAdmin(u.k);
+  return { ok: true, subs: list, brief: cleanBrief(u.data && u.data.brief, bLim(adm)), channels: briefChannels(), adm: adm, admLim: adm ? BRIEF_ADMIN_LIM : null,
     trialUsed: myBriefs(u.k).some(o => bIsTrial(o.r[BC['상품']])), next: (list.filter(x => x.next).pop() || {}).next || '', amAd: bConsentPublic(u.k).am, adc: bConsentPublic(u.k).ad };
 }
 function mySub(u, id) {
@@ -2943,10 +3004,20 @@ function briefAmRecheck(now) {
 
 /* ---------- 공개 집계 (워크플로가 읽음, 개인정보 없음) ---------- */
 function pullOk(p) { const t = PropertiesService.getScriptProperties().getProperty('BRIEF_PULL_TOKEN'); return !!t && safeEq(String(p.k || ''), t); }
+/* v48 엔진 연결 비밀값 새로 만들기 — 편집기에서 이 함수를 한 번 실행하면 무작위 64자리 값을 스크립트 속성 BRIEF_PULL_TOKEN 에 넣고 실행 로그에 보여 줌.
+   그 값을 깃허브 jangdaejang-timing 저장소 Settings → Secrets and variables → Actions 의 BRIEF_PULL_TOKEN 에 그대로 붙여 넣으면 끝(안내 docs/redeploy_admin.md).
+   다시 실행하면 값이 바뀌므로 깃허브 쪽도 새 값으로 바꿔야 해요. 값은 메일로 보내지 않아요. */
+function pullTokenNew() {
+  const t = newToken();
+  PropertiesService.getScriptProperties().setProperty('BRIEF_PULL_TOKEN', t);
+  Logger.log('BRIEF_PULL_TOKEN 새 값(이 줄의 64자리만 복사해 깃허브에 붙여 넣으세요):\n' + t);
+  return t.length;
+}
 function userBriefMap() {
   const sh = book().getSheetByName(SH_U), m = {};
   if (!sh) return m;
-  sh.getDataRange().getValues().slice(1).forEach(r => { const d = parseJ(r[UC['저장자료']], {}); m[String(r[UC['카카오id']])] = cleanBrief(d && d.brief); });
+  const ad = bAdminIds();
+  sh.getDataRange().getValues().slice(1).forEach(r => { const d = parseJ(r[UC['저장자료']], {}), k = String(r[UC['카카오id']]); m[k] = cleanBrief(d && d.brief, bLim(ad.indexOf(k) >= 0)); });
   return m;
 }
 function briefAreas(p) {
@@ -2955,7 +3026,7 @@ function briefAreas(p) {
   bRows().forEach(o => {
     const s = briefState(o, now), s2 = briefState(o, tomorrow);
     if (!s.active && !s2.active) return;
-    ((um[String(o.r[BC['카카오id']])] || {}).areas || []).slice(0, s.areas).forEach(a => { cnt[a.g] = (cnt[a.g] || 0) + 1; });
+    ((um[String(o.r[BC['카카오id']])] || {}).areas || []).slice(0, s.adm ? BRIEF_ADM_PULL : s.areas).forEach(a => { cnt[a.g] = (cnt[a.g] || 0) + 1; });   // v48 운영자는 앞 3곳만(엔진 호출 예산은 진짜 구독자 몫, 나머지 지역도 전국 자료로 매일 만들어짐)
   });
   try {   // v27 중개사 플러스: 손님 단지가 있는 동네도 매일 최신 두 달을 다시 받게(구독자 수에는 넣지 않음)
     const on = {}; bpActive(now).forEach(x => { on[x.k] = x; });
@@ -3018,7 +3089,7 @@ function briefAgg(now) {
   act.forEach(x => {
     const ub = um[String(x.o.r[BC['카카오id']])]; if (!ub) return;
     const u = String(x.o.r[BC['카카오id']]); if (seenU[u]) return; seenU[u] = 1;
-    const sds = {}; (ub.areas || []).slice(0, x.s.areas).forEach(a => { if (a.sd) sds[a.sd] = 1; });
+    const sds = {}; (ub.areas || []).slice(0, x.s.adm ? BRIEF_ADM_PULL : x.s.areas).forEach(a => { if (a.sd) sds[a.sd] = 1; });   // v48 운영자 계정이 모든 시·도를 부풀리지 않게
     Object.keys(sds).forEach(k => { sido[k] = (sido[k] || 0) + 1; });
     if (ub.budget) budget[ub.budget] = (budget[ub.budget] || 0) + 1;
     if (ub.age) age[ub.age] = (age[ub.age] || 0) + 1;
@@ -3241,15 +3312,25 @@ function briefDaily() {
   const um = userBriefMap(), now = new Date(), cache = {}, ch = briefChannels();
   const wkc = {}, wkOf = g => (g in wkc) ? wkc[g] : (wkc[g] = bFetchJson(BRIEF_DATA + 'wk/' + g + '.json'));   // v41 지난주 우리 지역은?(월요일 오전 7시 공개분)
   const brief = g => { if (g in cache) return cache[g]; const S = bFetchJson(BRIEF_DATA + g + '.json'); if (S) { const w = wkOf(g); if (w && w.date === S.date) S.wk = w; } return (cache[g] = S); };
+  brief.has = g => (g in cache); brief.put = (g, S, W) => { wkc[g] = W || null; if (S && W && W.date === S.date) S.wk = W; cache[g] = S; };   // v48 운영자 계정 미리 받기(bPrefetch)
   const M = bFetchJson(BRIEF_DATA + 'market.json');      // 전국 공통 — 하루 1번만 받아 모든 구독자에게 같은 내용
   const WKM = M ? bFetchJson(BRIEF_DATA + 'wk/market.json') : null; if (M && WKM && WKM.date === M.date) M.wk = WKM;   // v41 전국 문장(7시 공개분, 날짜가 같을 때만)
   const AD = briefAdToday(now);                         // v29 오늘 진행 중인 브리핑 광고(없으면 null) — 메일에는 이른 아침 광고 동의자에게만
   const cxc = {}, cxOf = g => (g in cxc) ? cxc[g] : (cxc[g] = bFetchJson(BRIEF_DATA + 'cx/' + g + '.json'));   // v27 손님 단지 자료 — 동네마다 한 번만 받음
   let AXM = null; try { AXM = axMorning(now); } catch (e) { AXM = null; }   // v44 관심 단지·청약 알림 — 이메일 브리핑에 함께 넣어 한 통만
-  let sent = 0;
-  bRows().forEach(o => {
+  let sent = 0, admStop = false;
+  const t0 = Date.now(), adIds = bAdminIds(), isAdmRow = o => adIds.indexOf(String(o.r[BC['카카오id']])) >= 0;
+  const rows = bRows(); rows.sort((x, y) => (isAdmRow(x) ? 1 : 0) - (isAdmRow(y) ? 1 : 0));   // v48 운영자 계정(지역이 아주 많을 수 있음)은 맨 마지막
+  rows.forEach(o => {
+    if (admStop) return;
     const s = briefState(o, now);
     if (!s.active || String(o.r[BC['최근발송일']]).slice(0, 10) === date) return;
+    if (s.adm && s.channel === 'email') {        // v48 운영자: 메일 한 통에 20곳씩 나눠 보내고, 시간·메일 한도가 모자라면 멈췄다가 다음 실행(9시)에서 이어서
+      const r1 = bAdminSend(o, s, um, date, t0, brief, M, AD, ix, AXM, cxOf);
+      if (r1 === 'stop') { admStop = true; return; }
+      if (r1) { setB(o.row, '최근발송일', date); setB(o.row, '발송수', s.sent + 1); sent++; }
+      return;
+    }
     let AXU = null; if (AXM && s.channel === 'email') try { AXU = AXM.forUser(String(o.r[BC['카카오id']])); } catch (e) { AXU = null; }
     const ub = um[String(o.r[BC['카카오id']])] || { areas: [], apts: [] };
     const myApts = (ub.apts || []).slice(0, s.apts);      // 요금제 표의 관심 단지 수까지만(서버에서 지킴)
@@ -3277,11 +3358,53 @@ function briefDaily() {
     bLog([date, s.id, s.channel, res.ok ? (res.ad ? '보냄(광고 ' + AD.id + ')' : '보냄') : '못 보냄: ' + res.why, pieces.length]);
     if (res.ok) { setB(o.row, '최근발송일', date); setB(o.row, '발송수', s.sent + 1); sent++; }
   });
+  if (admStop) { bLog([date, '', 'email', '운영자 계정: 시간·메일 한도 때문에 멈춤 — 다음 실행에서 이어서', 0]); return sent; }   // BRIEF_SENT 를 적지 않아 9시 실행이 이어 보냄
   briefExpiry(now);
   try { briefAmRecheck(now); } catch (e) {}
   briefCleanup(now);
   P.setProperty('BRIEF_SENT', date);
   return sent;
+}
+/* v48 운영자 계정 발송: 지역 자료를 한꺼번에 받아(fetchAll) 메일 한 통에 BRIEF_ADM_CHUNK 곳씩. 어디까지 보냈는지 스크립트 속성 BRIEF_ADM_PROG 에 적어 두고 이어 보냄.
+   돌려줌: true(다 보냄) · false(보낼 지역 자료 없음) · 'stop'(시간·메일 한도 — 다음 실행에서 이어서) */
+function bAdminSend(o, s, um, date, t0, brief, M, AD, ix, AXM, cxOf) {
+  const P = PropertiesService.getScriptProperties(), k = String(o.r[BC['카카오id']]);
+  const ub = um[k] || { areas: [], apts: [] }, myApts = (ub.apts || []).slice(0, s.apts), urg = s.urgPick && ub.urg ? ub.urg : BRIEF_URG.def;
+  const areas = (ub.areas || []).slice(0, s.areas);
+  bPrefetch(areas.map(a => a.g), brief);
+  const pieces = areas.map(a => { const S = brief(a.g); return S ? briefPiece(S, a, s.pro, myApts, urg) : null; }).filter(Boolean);
+  if (!pieces.length) { bLog([date, s.id, s.channel, '동네 자료 없음', 0]); return false; }
+  const to = String(o.r[BC['연락처']]).replace(/^'/, ''), n = Math.ceil(pieces.length / BRIEF_ADM_CHUNK);
+  const pg = parseJ(P.getProperty('BRIEF_ADM_PROG'), {}) || {};
+  let i = pg.d === date && pg.id === s.id ? Number(pg.i) || 0 : 0;
+  pieces.forEach(p => { p.url += `&src=mail&k=${bKey(s.id)}&day=${date}`; });
+  const withAd = AD && o.r[BC['광고동의']] === true && o.r[BC['아침광고동의']] === true ? AD : null;
+  let AXU = null; if (AXM && i === 0) try { AXU = AXM.forUser(k); } catch (e) { AXU = null; }   // 관심 단지·청약 알림·손님 단지는 첫 메일에만
+  let bx = ''; if (i === 0) try { bx = bpMailHtml(k, cxOf, date); } catch (e) { bx = ''; }
+  for (; i < n; i++) {
+    const quota = MailApp.getRemainingDailyQuota ? MailApp.getRemainingDailyQuota() : 999;
+    if (Date.now() - t0 > BRIEF_ADM_TIME || quota < BRIEF_ADM_MAIL_MIN) { P.setProperty('BRIEF_ADM_PROG', JSON.stringify({ d: date, id: s.id, i: i })); return 'stop'; }
+    const part = pieces.slice(i * BRIEF_ADM_CHUNK, (i + 1) * BRIEF_ADM_CHUNK);
+    try { briefMail(to, (ix && ix.date) || date, part, s, s.pro, M, Object.assign({}, ub, { apts: myApts }), (n > 1 ? `<div style="font-size:13px;color:#4E5968;margin:0 0 10px">운영자 모드 · ${n}통 중 ${i + 1}번째 메일 (지역 ${pieces.length}곳을 ${BRIEF_ADM_CHUNK}곳씩 나눠 보내요)</div>` : '') + (i === 0 ? (AXU ? AXU.html : '') + bx : ''), withAd);
+      if (i === 0 && AXU) try { AXM.done(AXU); } catch (e) {} }
+    catch (e) { bLog([date, s.id, s.channel, '못 보냄: ' + String(e.message || e).slice(0, 60), part.length]); P.setProperty('BRIEF_ADM_PROG', JSON.stringify({ d: date, id: s.id, i: i })); return 'stop'; }
+    bLog([date, s.id, s.channel, `보냄(운영자 ${i + 1}/${n})`, part.length]);
+    P.setProperty('BRIEF_ADM_PROG', JSON.stringify({ d: date, id: s.id, i: i + 1 }));
+  }
+  return true;
+}
+/* 여러 동네 자료를 한 번에 받아 brief() 캐시에 채움(UrlFetchApp.fetchAll, 30개씩) — 지역 수백 곳을 하나씩 받으면 6분 실행 한도에 걸릴 수 있어서 */
+function bPrefetch(gs, brief) {
+  if (!UrlFetchApp.fetchAll) return;
+  const todo = gs.filter((g, i) => /^\d{5}$/.test(g) && gs.indexOf(g) === i && !brief.has(g));
+  for (let i = 0; i < todo.length; i += 30) {
+    const part = todo.slice(i, i + 30), v = Date.now();
+    let res = [];
+    try { res = UrlFetchApp.fetchAll(part.map(g => ({ url: BRIEF_DATA + g + '.json?v=' + v, muteHttpExceptions: true }))
+      .concat(part.map(g => ({ url: BRIEF_DATA + 'wk/' + g + '.json?v=' + v, muteHttpExceptions: true })))); } catch (e) { return; }
+    const js = r => { try { return r && r.getResponseCode() === 200 ? JSON.parse(r.getContentText()) : null; } catch (e) { return null; } };
+    part.forEach((g, j) => { const S = js(res[j]); if (S) brief.put(g, S, js(res[part.length + j])); });
+  }
 }
 /* 만료 3일 전·마지막 날 안내 (자동 결제 없음 — 이어 받으려면 새 이용권) */
 function briefExpiry(now) {
