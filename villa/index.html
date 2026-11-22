@@ -34,6 +34,7 @@
 <script src="../assets/stat.js?v=7"></script>
 <script src="../assets/share.js?v=11"></script>
 <script src="../assets/narrative.js?v=18"></script>
+<script src="../assets/mapjump.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -185,7 +186,9 @@ td.dt{white-space:nowrap}td small{color:var(--muted);font-size:12.5px}
 
   <div id="dongBox"></div>
   <div class="sum" id="sum"></div>
+  <div id="mapTop"></div>
   <div id="list"><div class="loading">빌라 실거래 자료를 불러오는 중입니다…</div></div>
+  <div id="mapEnd"></div>
 
   <div data-jdj-ads="villa" hidden></div>
   <div data-ad-slot="villa_end" data-ad-cat="villa" data-ad-after="#list .cards" hidden></div>
@@ -285,7 +288,7 @@ function card(b, i){
     ${zh}
     ${jrBlock(b)}
     <details class="tr"><summary>최근 거래 ${b.tr.length}건 보기</summary><table><tr><th>계약일</th><th class="num">거래가</th><th class="num">전용·대지권</th><th class="num">층</th></tr>${tr}</table></details>
-    <div class="acts"><a class="btn" href="${href}" target="_blank" rel="noopener" data-track="villa_consult">이 빌라 상담 신청</a></div>
+    <div class="acts"><a class="btn" href="${href}" target="_blank" rel="noopener" data-track="villa_consult">이 빌라 상담 신청</a>${window.JDJ_MAPJ ? JDJ_MAPJ.btn({kind:'v', g:sgg.c, dong:b.d, jibun:b.j, name:b.n||`${b.d} ${b.j}`, price:b.p, ll:Array.isArray(b.xy)?[b.xy[1],b.xy[0]]:null}, 'top', '', 'villa_to_map') : ''}</div>
   </div>`;
 }
 
@@ -370,6 +373,7 @@ function render(){
   const tot = CUR.b.length, zc = CUR.b.filter(b=>linked(b).length).length;
   $('sum').innerHTML = `${esc(CUR.meta.n)} 빌라 <b>${fmt(tot)}</b>개 건물 중 정비구역 연결 <b>${fmt(zc)}</b>개 · 지금 조건 <b>${fmt(rows.length)}</b>개 <span style="font-size:13.5px">(${ym(IDX.from)}~${ym(IDX.to)} 거래, 최근 거래순)</span>`;
   const autoNote = (!USER_PICK && FILTER==='all' && AUTO_ALL!==null) ? `<div class="caution once"><b>전체 건물을 보여 드려요</b> · ${$('dong').value?esc($('dong').value):esc(CUR.meta.n)}에는 정비구역(재개발·재건축 구역)과 연결된 빌라가 ${AUTO_ALL?fmt(AUTO_ALL)+'개뿐이라':'없어서'} 전체 건물로 바꿨어요. 정비구역 연결 건물만 보려면 위 <b>정비구역 연결 건물</b>을 눌러 주세요.</div>` : '';
+  saveUrl(); mapBtns();
   if (!rows.length){ $('list').innerHTML = autoNote + `<div class="empty">조건에 맞는 건물이 없습니다.${FILTER!=='all'?' <b>전체 건물</b>로 바꿔 보세요.':''}</div>`; return; }
   const sorted = rows.slice().sort((a,b)=> b.dt.localeCompare(a.dt));
   $('list').innerHTML = autoNote + `<div class="caution once"><b>모든 건물 공통</b> · 입주권은 권리산정기준일(이날 이전에 지은 건물이어야 새 아파트 입주권을 받을 수 있는 기준 날짜)과 건축 연도로 가늠한 결과예요. 권리산정기준일·조합원 자격·구역 경계(이 건물이 구역 안인지)는 구청·조합에 꼭 확인하세요. 카드의 ⓘ 표시가 그 확인이 필요한 항목이에요.</div>${vWhy()}<div class="cards">${sorted.slice(0,SHOWN).map(card).join('')}</div>${sorted.length>SHOWN?`<button class="morebtn" id="moreBtn">더 보기 (${fmt(sorted.length-SHOWN)}개 남음)</button>`:''}`;
@@ -390,10 +394,21 @@ function shareVilla(tot, zc){
     params: JDJ_SHARE.pick(['g','d'])
   }, {root: $('list')});
 }
+/* 지도에서 보기(assets/mapjump.js): 위쪽·맨 아래 — 고른 동(없으면 시·군·구) 주변. 건물 카드마다 그 건물 버튼도 있음 */
+function mapBtns(){
+  if (!window.JDJ_MAPJ || !CUR) return;
+  const d = $('dong').value, o = {kind:'v', g:CUR.meta.c, dong:d, name:`${CUR.meta.n}${d?' '+d:''} 빌라`};
+  $('mapTop').innerHTML = `<div class="mapj-row" style="margin:0 0 12px">${JDJ_MAPJ.btn(o, 'top', '', 'villa_area_to_map')}</div>`;
+  $('mapEnd').innerHTML = JDJ_MAPJ.btn(o, 'bottom', `${d || CUR.meta.n} 주변 아파트 시세와 개발·교통 예정, 역·학교를 지도에서 확인해 보세요`, 'villa_to_map_end');
+}
 function saveUrl(){
   const u = new URL(location.href);
   if (CUR) u.searchParams.set('g', CUR.meta.c); else u.searchParams.delete('g');
   $('dong').value ? u.searchParams.set('d', $('dong').value) : u.searchParams.delete('d');
+  /* 지도에 갔다 돌아와도 같은 목록: 검색어·고른 필터·더 보기 개수 */
+  $('q').value.trim() ? u.searchParams.set('q', $('q').value.trim()) : u.searchParams.delete('q');
+  USER_PICK && FILTER !== 'z' ? u.searchParams.set('f', FILTER) : u.searchParams.delete('f');
+  SHOWN > PAGE ? u.searchParams.set('n', String(SHOWN)) : u.searchParams.delete('n');
   history.replaceState(null, '', u);
 }
 async function loadSgg(code, dong){
@@ -408,7 +423,16 @@ async function loadSgg(code, dong){
   $('dong').innerHTML = '<option value="">전체 동</option>' + ds.map(d=>`<option>${esc(d)}</option>`).join('');
   if (dong && ds.includes(dong)) $('dong').value = dong;
   if (!USER_PICK){ FILTER = 'z'; AUTO_ALL = null; syncSeg(); }
-  SHOWN = PAGE; render();
+  SHOWN = PAGE;
+  const u0 = new URLSearchParams(location.search);
+  if (!loadSgg.done && u0.get('g') === code){          // 처음 열 때만 주소의 검색어·필터·개수를 되살림
+    if (u0.get('q')) $('q').value = u0.get('q').slice(0, 40);
+    if (['all','g1'].includes(u0.get('f'))){ USER_PICK = true; FILTER = u0.get('f'); syncSeg(); }
+    const n = parseInt(u0.get('n'), 10); if (n > PAGE && n <= 2000) SHOWN = n;
+  }
+  loadSgg.done = true;
+  render();
+  if (window.JDJ_MAPJ) JDJ_MAPJ.restore();
   if (window.JDJ) JDJ.track('villa_sgg', {region: meta.n});
 }
 function fillSgg(si, pick){

@@ -297,10 +297,12 @@
     const sdId = sdOf(S.g);
     const jeonse = `../jeonse/?k=o&sd=${encodeURIComponent(sdId)}&g=${encodeURIComponent(S.g)}&d=${encodeURIComponent([u.d, u.j, u.n].join('|'))}`;
     const sc = u.sc && pass.filter(h => u.sc[h] != null);
+    /* 지도에서 보기(assets/mapjump.js): 건물 좌표(u.xy, 공개 자료에 생기면)가 없으면 지도가 같은 동 가운데를 보여 줌 */
+    const MJ = window.JDJ_MAPJ, mjo = { kind: 'o', g: S.g, dong: u.d, jibun: u.j, name: O.nameOf(u), price: last ? last.v : any ? any.v : 0, ll: Array.isArray(u.xy) ? [u.xy[1], u.xy[0]] : null };
     $('ofRes').hidden = false;
     $('ofRes').innerHTML = `
     <div class="panel">
-      <div class="dhead"><div><h2>${esc(O.nameOf(u))}</h2><div class="loc">${esc(sidoName(S.g))} ${esc(sggName(S.g))} ${esc(u.d)} ${esc(u.j)}${window.JDJ_PLAIN && JDJ_PLAIN.ageText(u.by) ? ` · ${JDJ_PLAIN.ageText(u.by, null, '준공')}` : ''} · 대표 전용 ${u.a}㎡</div></div></div>
+      <div class="dhead"><div><h2>${esc(O.nameOf(u))}</h2><div class="loc">${esc(sidoName(S.g))} ${esc(sggName(S.g))} ${esc(u.d)} ${esc(u.j)}${window.JDJ_PLAIN && JDJ_PLAIN.ageText(u.by) ? ` · ${JDJ_PLAIN.ageText(u.by, null, '준공')}` : ''} · 대표 전용 ${u.a}㎡</div>${MJ ? `<div class="mapj-row">${MJ.btn(mjo, 'top', '', 'offi_to_map')}</div>` : ''}</div></div>
       ${narO(S.g, u, 'narOu')}
       <div class="stats">
         <div class="st key"><div class="k">${last ? '최근 시세' : '마지막 시세'} (전용 ${u.a}㎡)</div><div class="v">${last ? won(last.v) : any ? won(any.v) : '거래 없음'}</div><div class="d">${last ? ymL(last.at) + ' 기준' : any ? ymL(any.at) + ' · 최근 3개월 거래 없음' : '최근 매매가 없어요'}</div></div>
@@ -358,6 +360,8 @@ ${rentPanel(u, j)}
       ${rn.length > 20 ? `<p class="basis">최근 20건만 보여 드려요(전체 ${rn.length}건).</p>` : ''}<p class="basis">수익률 = 이 계약의 월세 × 12 ÷ (이 건물 지금 ㎡당 매매 시세 × 계약 전용면적 − 보증금). 전세 계약은 위 '전세·월세 시세' 칸에 있어요.</p>` : '<p class="note">최근 3년 월세 계약이 없어요.</p>'}
     </div>
 
+    ${MJ ? MJ.btn(mjo, 'bottom', '이 오피스텔 주변 시세와 개발·교통 예정, 역·학교를 지도에서 확인해 보세요', 'offi_to_map_end') : ''}
+
     <div class="panel"><h2>이어서 알아보기</h2>
       <div class="links">
         <a class="main" href="${esc(jeonse)}" data-track="offi_to_jeonse"><b>이 오피스텔 전월세 시세 →</b><small>전세·월세 추이, 전세가율, 깡통전세 체크</small></a>
@@ -368,6 +372,7 @@ ${rentPanel(u, j)}
     drawCharts(); narBind();
     $('ofRes').querySelectorAll('[data-ofspan]').forEach(b => b.onclick = () => { S.span = +b.dataset.ofspan || 0; $('ofRes').querySelectorAll('[data-ofspan]').forEach(x => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); }); drawCharts(); });
     if (opt && opt.scroll) $('ofRes').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    else if (window.JDJ_MAPJ) JDJ_MAPJ.restore();
     if (window.jdjStat) jdjStat('feature_use', { feature: 'mine_offi' });
   }
 

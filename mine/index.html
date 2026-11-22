@@ -51,10 +51,11 @@
 <script src="../assets/ask-core.js?v=5"></script>
 <script src="../assets/ask.js?v=3"></script>
 <script src="../assets/price-sheet.js?v=19"></script>
+<script src="../assets/mapjump.js?v=1"></script>
 <script src="../assets/offi-core.js?v=6"></script>
-<script src="../assets/offi-view.js?v=11"></script>
+<script src="../assets/offi-view.js?v=12"></script>
 <script src="../assets/comm-core.js?v=3"></script>
-<script src="../assets/comm-view.js?v=4"></script>
+<script src="../assets/comm-view.js?v=5"></script>
 <script src="../assets/policy-view.js?v=3"></script>
 <script src="../assets/devproj-view.js?v=4"></script>
 <script src="../assets/src-box.js?v=3"></script>
@@ -463,12 +464,13 @@ function render(d, map, units){
   const rs = M.reasonItems(f, {apt:d.apt, dong:d.dong, sgg:sggName(d.code), sido:sidoName(d.code), sidoShort:sdo.short || '', nfv:sdo.nfv, nfvg:(IX.sgg[d.code] || {}).nfvg, label:LABEL, gname:sggName, schNA:true, PL, G:PL ? PL.gloss() : null, sid:sdo.id, ev:EVD, sp:SUP, IX, code:d.code});
   const rli = o => `<li class="${o.c}">${esc(o.t)}${o.ev && PL ? PL.evHtml(o.ev, false, esc) : ''}</li>`;
   const pk = M.premiumKey({sd:S.sd, code:d.code, dong:d.dong, apt:d.apt, band:S.band});
+  const MAPJ = window.JDJ_MAPJ, MAPJ_O = { items: [{ sd: S.sd, d: d.key, b: S.band }], name: d.apt, price: sm.price || (last ? last.price : 0) };
   const posBar = p => { if (!p) return ''; const lo = Math.min(p.me, p.ref) * 0.85, hi = Math.max(p.me, p.ref) * 1.15, x = v => ((v - lo) / (hi - lo) * 100).toFixed(1);
     return `<div class="bar" aria-hidden="true"><em style="left:${x(p.ref)}%"></em><i style="left:${x(p.me)}%"></i></div>`; };
 
   $('res').innerHTML = `
   <div class="panel">
-    <div class="dhead"><div><h2>${esc(d.apt)}</h2><div class="loc">${esc(sidoName(d.code))} ${esc(sggName(d.code))} ${esc(d.dong)} ${esc(d.jibun)}${meta ? ' · ' + esc(meta) : ''}</div>${window.JDJ_WATCH ? JDJ_WATCH.star(favPlace(d), {label: true}) : ''}</div>
+    <div class="dhead"><div><h2>${esc(d.apt)}</h2><div class="loc">${esc(sidoName(d.code))} ${esc(sggName(d.code))} ${esc(d.dong)} ${esc(d.jibun)}${meta ? ' · ' + esc(meta) : ''}</div>${window.JDJ_WATCH ? JDJ_WATCH.star(favPlace(d), {label: true}) : ''}${MAPJ ? `<div class="mapj-row">${MAPJ.btn(MAPJ_O, 'top', '', 'mine_to_map')}</div>` : ''}</div>
       ${f.fv != null ? `<div class="fvbadge" title="미래가치 점수(2년 기준)"><small>미래가치 점수</small><b>${f.fv}점</b><small>100점 만점</small></div>` : ''}</div>
     <div class="bands" role="group" aria-label="평형 선택">${d.bands.map(x => `<button type="button" data-b="${esc(x[3])}" class="${x[3] === S.band ? 'on' : ''}" aria-pressed="${x[3] === S.band}">${esc(x[3])}</button>`).join('')}</div>
     <div class="stats">
@@ -566,6 +568,8 @@ function render(d, map, units){
 
   <div id="taxSec" hidden></div>
 
+  ${MAPJ ? MAPJ.btn(MAPJ_O, 'bottom', '이 단지 주변 시세와 개발·교통 예정, 역·학교를 지도에서 확인해 보세요', 'mine_to_map_end') : ''}
+
   <div class="panel">
     <h2>이 집으로 이어서 계산하기</h2>
     <div class="links">
@@ -596,6 +600,7 @@ function render(d, map, units){
   wireResult(d, u, sm);
   wireFav(d);
   LASTD = d; fillAlert(d);
+  if (window.JDJ_MAPJ) JDJ_MAPJ.restore();
   fillAgents(d);
   if (window.JDJ_TAXBOX) JDJ_TAXBOX.mount($('taxSec'), {price: sm.price || (last ? last.price : 0), area: u[4], sido: (sgg || {}).sido, gu: sggName(d.code), apt: d.apt, band: S.band, code: d.code, dong: d.dong, jibun: d.jibun, mode: 'mine', bpEl: $('bp'), bdEl: $('bd')}).catch(() => {});
   if (window.JDJPolicy) JDJPolicy.mount($('polSec'), {mode:'mine', codes:[{sgg:d.code, dong:d.dong}], name:() => sggName(d.code) + ' ' + d.dong, sggName:() => sggName(d.code), price: sm.price || (last ? last.price : 0),

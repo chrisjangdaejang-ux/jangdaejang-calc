@@ -54,6 +54,7 @@
 .cm-tbl td small{display:block;color:#6B7684;font-size:12.5px;line-height:1.4}
 .cm-tbl td{vertical-align:top}
 .cm-tbl table{font-size:14px}
+.cm-mapl{display:inline-flex;align-items:center;min-height:32px;padding:0 8px;margin-left:4px;border:1px solid #C9D8FF;border-radius:999px;font-size:12.5px;font-weight:700;color:#2560E8;text-decoration:none}
 .cm-trs{margin-top:6px}
 .cm-tr{border-bottom:1px solid var(--line);padding:9px 2px}
 .cm-tr .a{display:flex;justify-content:space-between;gap:10px;align-items:baseline;font-size:15px}
@@ -266,12 +267,19 @@
       <div class="v">${r.ok ? esc(r.value) : '확인 불가'}</div>${r.note ? `<div class="d">${esc(r.note)}</div>` : ''}
       ${r.src ? `<div class="cm-src">출처: ${esc(r.src)}</div>` : ''}</div>`).join('')}</div>`;
   }
+  /* 지도에서 보기(assets/mapjump.js): 구분상가 건물은 동·지번(좌표 u.xy 가 공개 자료에 생기면 그 자리), 통건물은 지번이 가려져 있어 동 가운데(동을 안 골랐으면 시·군·구 가운데) */
+  function mjOf(u) {
+    if (u) { const us = K.unitSeries(u, DOC), l = K.latest(us.s, us.months) || K.lastAny(us.s, us.months);
+      return { kind: 'c', g: S.g, dong: u.d, jibun: u.j, name: `${u.d} ${u.j}${u.u ? ' ' + u.u : ''}`, price: l ? Math.round(l.v * u.a / 100) * 100 : 0, ll: Array.isArray(u.xy) ? [u.xy[1], u.xy[0]] : null }; }
+    const dn = S.k === 'g' ? '' : (S.d || '');
+    return { kind: S.k === 'g' ? 'g' : 'c', g: S.g, dong: dn, name: `${sggName(S.g)}${dn ? ' ' + dn : ''} ${S.k === 'g' ? '통건물' : '상가·사무실'}` };
+  }
   function unitPanel(u) {
     const us = K.unitSeries(u, DOC), last = K.latest(us.s, us.months), any = K.lastAny(us.s, us.months), tr = K.unitTrades(u);
     const val = p => Math.round(p * u.a / 100) * 100;
     const hiBox = (k, h) => h ? `<div><div class="k">${k}</div><div class="v">${won(h[0])}</div><div class="d">${ymL(String(h[1]).slice(0, 6))} · 전용 ${h[2]}㎡ · ㎡당 ${K.perM2(h[0] / h[2])}</div></div>` : '';
     return `<div class="panel cm-list">
-      <div class="dhead"><div><h2>${esc(u.d)} ${esc(u.j)}${u.u ? ` <small style="font-size:15px;color:#4E5968">${esc(u.u)}</small>` : ''}</h2><div class="loc">${esc(sidoName(S.g))} ${esc(sggName(S.g))} ${esc(u.d)} ${esc(u.j)} · ${esc(u.lu || '')}${u.by ? ` · ${u.by}년 준공` : ''} · 대표 전용 ${u.a}㎡</div></div></div>
+      <div class="dhead"><div><h2>${esc(u.d)} ${esc(u.j)}${u.u ? ` <small style="font-size:15px;color:#4E5968">${esc(u.u)}</small>` : ''}</h2><div class="loc">${esc(sidoName(S.g))} ${esc(sggName(S.g))} ${esc(u.d)} ${esc(u.j)} · ${esc(u.lu || '')}${u.by ? ` · ${u.by}년 준공` : ''} · 대표 전용 ${u.a}㎡</div>${window.JDJ_MAPJ ? `<div class="mapj-row">${JDJ_MAPJ.btn(mjOf(u), 'top', '', 'comm_to_map')}</div>` : ''}</div></div>
       <p class="cm-one">이 건물의 구분상가·사무실은 ${last ? `최근 3개월 거래 기준 전용 ㎡당 ${K.perM2(last.v)}(3.3㎡당 약 ${K.perPy(last.v)})에 거래됐어요.` : any ? `${ymK(any.at)}에 마지막으로 전용 ㎡당 ${K.perM2(any.v)}에 거래됐고, 최근 3개월에는 거래가 없어요.` : '시세에 쓸 수 있는 거래(직거래·지분 거래 제외)가 없어요.'}</p>
       <div class="stats">
         <div class="st key"><div class="k">대표 전용 ${u.a}㎡ 환산</div><div class="v">${last ? won(val(last.v)) : any ? won(val(any.v)) : '확인 불가'}</div><div class="d">${last ? ymL(last.at) + ' 기준' : any ? ymL(any.at) + ' 마지막 거래 기준' : '시세 계산에 쓸 거래가 없어요'}</div></div>
@@ -319,7 +327,7 @@
     r.hidden = false;
     r.innerHTML = `${u ? unitPanel(u) : ''}
     <div class="panel">
-      <div class="dhead"><div><h2>${esc(nm)} ${esc(tn)} 시세</h2><div class="loc">${esc(K.TYPES[k].long)}</div></div></div>
+      <div class="dhead"><div><h2>${esc(nm)} ${esc(tn)} 시세</h2><div class="loc">${esc(K.TYPES[k].long)}</div>${!u && window.JDJ_MAPJ ? `<div class="mapj-row">${JDJ_MAPJ.btn(mjOf(null), 'top', '', 'comm_to_map')}</div>` : ''}</div></div>
       <p class="cm-one">${esc(one)}</p>
       ${sum ? `<div class="cm-stats">
         <div class="st key"><div class="k">${esc(K.TYPES[k].unit)}</div><div class="v">${last ? K.perM2(last.v) : '확인 불가'}</div><div class="d">${last ? `3.3㎡당 약 ${K.perPy(last.v)}` : '최근 3개월 거래가 적어요'}</div></div>
@@ -357,7 +365,7 @@
 
     ${dongAll.length ? `<div class="panel cm-list"><h2>동별 ${esc(tn)} 거래<small>최근 3년 · 거래 많은 순 · ㎡당은 3건 이상인 동만</small></h2>
       <div class="tbl cm-tbl"><table><thead><tr><th>동</th><th class="num">3년 거래</th><th class="num">${esc(K.TYPES[k].unit)}<br><small>3년 중간</small></th></tr></thead><tbody>
-      ${moreBox(dongAll.slice(0, 30).map(x => `<tr><td>${esc(x[0])}</td><td class="num">${x[2].toLocaleString()}건</td><td class="num">${x[3] ? K.perM2(x[3]) : '-'}</td></tr>`), 5)}</tbody></table></div>
+      ${moreBox(dongAll.slice(0, 30).map(x => `<tr><td>${esc(x[0])}${window.JDJ_MAPJ ? ` <a class="cm-mapl" href="${esc(JDJ_MAPJ.url({ kind: k, g, dong: x[0], name: `${x[0]} ${tn}` }))}" data-track="comm_dong_to_map" aria-label="${esc(x[0])} 지도에서 보기">지도</a>` : ''}</td><td class="num">${x[2].toLocaleString()}건</td><td class="num">${x[3] ? K.perM2(x[3]) : '-'}</td></tr>`), 5)}</tbody></table></div>
       ${moreBtn(5, Math.min(30, dongAll.length), '동')}
       </div>` : ''}
 
@@ -368,6 +376,7 @@
       ${k === 'g' ? det('지번이 일부 가려진 이유', '국토교통부가 통건물 지번을 첫 자리만 남기고 공개해요', '<p class="basis">국토교통부는 통건물(일반 건물) 거래의 지번을 첫 자리만 남기고 가려서 공개해요(예: 5**). 그래서 집코드도 건물별로 묶지 않고 동·시·군·구 단위로만 모아 보여 드려요. 같은 이유로 통건물은 건물별 신고가를 확인할 수 없어요.</p>') : ''}
     </div>` : ''}
 
+    ${window.JDJ_MAPJ ? JDJ_MAPJ.btn(mjOf(u || null), 'bottom', u ? '이 건물 주변 시세와 개발·교통 예정, 역·학교를 지도에서 확인해 보세요' : `${mjOf(null).dong || nm} 주변을 지도에서 확인해 보세요${k === 'g' ? ' (통건물은 지번이 가려져 있어 동별 표의 지도 링크로 동 가운데를 볼 수 있어요)' : ''}`, 'comm_to_map_end') : ''}
     <div class="cm-links" style="margin:12px 0">
       <a class="main" href="../loan/?src=comm" data-track="comm_to_loan">대출 한도 계산 →</a>
       <a href="../tax/" data-track="comm_to_tax">세금 계산 →</a>
@@ -377,6 +386,7 @@
     r.querySelectorAll('[data-cmmore]').forEach(b => b.onclick = () => { const box = b.closest('.cm-list, .panel'); const on = !box.classList.contains('cm-open'); box.classList.toggle('cm-open', on); b.setAttribute('aria-expanded', on); b.textContent = on ? '접기' : b.dataset.lab || b.textContent; });
     r.querySelectorAll('[data-cmmore]').forEach(b => { b.dataset.lab = b.textContent; });
     drawCharts();
+    if (window.JDJ_MAPJ) JDJ_MAPJ.restore();
     r.querySelectorAll('[data-cmspan]').forEach(b => b.onclick = () => { S.span = +b.dataset.cmspan || 0; r.querySelectorAll('[data-cmspan]').forEach(x => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); }); drawCharts(); });
     if (window.jdjStat) jdjStat('feature_use', { feature: 'mine_comm' });
   }

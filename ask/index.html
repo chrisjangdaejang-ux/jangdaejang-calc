@@ -32,6 +32,7 @@
 <script src="../assets/mine-core.js?v=18"></script>
 <script src="../assets/price-sheet.js?v=19"></script>
 <script src="../assets/ask-core.js?v=5"></script>
+<script src="../assets/mapjump.js?v=1"></script>
 <script src="../assets/ask.js?v=3"></script>
 <script src="../assets/fac-view.js?v=1"></script>
 <script src="../assets/agents.js"></script>
@@ -451,18 +452,23 @@ function render(){
   }
   if (!ALLM.length || !RANGE){ ALLM = allMonths(items); const n = ALLM.length; setRange(Math.max(0, n - 60), n - 1); }
   const sum = A.summary(items);
-  $('res').innerHTML = `${chartCard(items)}
+  saveUrl();
+  /* 지도에서 보기(assets/mapjump.js): 비교한 단지들을 한 화면에 — 지도가 단지 좌표로 둘 다 보이게 맞춤 */
+  const MJ = window.JDJ_MAPJ, mjo = { items: items.map(x => ({ sd: x.sd, d: x.dkey, b: x.band })) };
+  $('res').innerHTML = `${MJ ? `<div class="mapj-row" style="margin:0 0 12px">${MJ.btn(mjo, 'top', '', 'ask_to_map')}<span style="font-size:13.5px;color:#4E5968">비교한 ${items.length}곳을 지도에 함께 보여 드려요</span></div>` : ''}${chartCard(items)}
   <section class="card" aria-label="비교할 단지">${panels(items)}</section>
   <section class="card"><h2>항목별 비교<small>색이 칠해진 칸이 그 항목에서 앞선 단지예요. 항목 이름 옆 ?를 누르면 설명이 나와요.</small></h2>${vsTable(items)}</section>
   <section class="card" id="sumBox">
     <h2>통계로 본 요약<small>${items.map(x => esc(x.apt)).join(' · ')}</small></h2>
     ${sum.length ? `<ul class="sum">${sum.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : '<p class="basis">요약할 만큼 같은 항목의 자료가 모이지 않았어요. 아래 표를 확인해 주세요.</p>'}
   </section>
+  ${MJ ? MJ.btn(mjo, 'bottom', `비교한 ${items.length}곳과 주변 단지 시세, 개발·교통 예정을 지도에서 확인해 보세요`, 'ask_to_map_end') : ''}
   <section class="card"><h2>이어서 보기</h2><div class="links">
       ${items.map(x => `<a href="${esc(mineUrl(x))}"><b>${esc(x.apt)} 시세·전망 자세히 →</b><small>실거래 목록·가격 추이·미래가치 근거</small></a>`).join('')}
       <a class="main" href="${JB.SITE}buy/report/?mode=cmp&amp;cmp=${encodeURIComponent(items.map(rkey).join('!'))}" data-track="ask_to_report_cmp"><b>대출·필요 현금까지 비교하기 →</b><small>내 연소득·보유 현금으로 살 수 있는지 함께 봐요</small></a>
   </div></section>`;
   wireChart(items); wirePanels(); otherUi(items);
+  if (MJ) MJ.restore();
   document.querySelectorAll('.vs .qm').forEach(b => b.onclick = () => { const h = $(b.getAttribute('aria-controls')); h.hidden = !h.hidden; b.setAttribute('aria-expanded', String(!h.hidden)); });
   if (window.JDJ_SHARE) JDJ_SHARE.update({ allowNum: true, head: A.shareHead(items), lines: sum.slice(0, 3),
     params: { k: A.packList(items.map(x => A.keyOf(x.k))), b: A.packList(items.map(x => x.band)) } }, { root: '#res', after: '#sumBox' });
