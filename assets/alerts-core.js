@@ -3,15 +3,20 @@
    - 숫자는 공개 자료 값 그대로 쓴다. 비율(%)은 자료의 두 값으로 나눈 것만 쓴다. 기준선은 모두 기존 기준을 다시 쓴다:
        급매 = 모닝 브리핑 급매 레이더(최근 3개월 같은 평형 중간값보다 10% 이상 낮음, 엔진 brief_plus URG_DISC)
        큰 하락 = 관심 목록·브리핑(최근 2년 최고가보다 10% 이상 낮음, watch-core DROP)
-       전세가율 변화 = 브리핑 '전세가율 급변'(5%p 이상, 엔진 brief_plus GAP_MIN)
+       전세가율 변화 = 브리핑 '전세가율 급변'(5%p 이상, 엔진 brief_plus GAP_MIN) · 전세가율 80%·90% 선 넘음/내려옴(어제 값과 비교)
+       근처 신축 허가 = newbuild.json 허가 단계 현장이 관심 단지에서 500m 안(최근 3달 허가) · 근처 청약 공고 = 관심 단지와 같은 시·군·구의 새 공고(최근 14일)
+       두 종류는 나중에 생겨서 사용자가 알림 센터에서 직접 켠 경우에만 보낸다(AX_OPTIN).
    - 자료: today/g/{구}.json(하루 4번, 어제·오늘 새로 보인 거래와 단지별 [점수, 순위, 전세가율]) · brief/{구}.json(급매·전세가율 급변)
-           · chungyak/notices.json(청약홈 공고, 접수·발표 날짜와 예상 당첨 가점 범위)
+           · chungyak/notices.json(청약홈 공고, 접수·발표 날짜와 예상 당첨 가점 범위) · newbuild.json + sNN_xy.json(근처 신축 허가) · index.json sgg(근처 청약)
    window.JDJ_ALERTS_CORE */
 (function (root) {
 'use strict';
 /* ALERTS-CORE BEGIN — 이 블록은 tools/agent-backend.gs 에 그대로 복사돼 있어요. 고칠 때는 두 곳을 똑같이 고쳐 주세요(node tools/alerts-test.js 가 비교). */
 const AX_V = 'alerts-2026-11-21';                 // 메일 알림 동의 문구 판(화면 문구를 바꾸면 날짜를 바꿈)
-const AX_KINDS = { trade: '새 실거래', high: '신고가', drop: '급매·큰 하락', jeonse: '전세가율 변화' };
+const AX_KINDS = { high: '신고가', trade: '새 실거래', drop: '급매·큰 하락', jeonse: '전세가율', nb: '근처 신축 허가', cynear: '근처 청약 공고' };
+const AX_OPTIN = { nb: 1, cynear: 1 };            // 나중에 생긴 종류 — 사용자가 직접 켠 경우에만 보냄(먼저 신청한 분께 묻지 않은 알림이 가지 않게)
+const AX_JR_LINES = [80, 90];                     // 전세가율이 이 선을 넘거나 내려오면 알림(%)
+const AX_NB_M = 500, AX_NB_MONTHS = 3, AX_NEAR_DAYS = 14;   // 신축 허가: 관심 단지에서 이 거리(m) 안·최근 이 달 수 안 허가 · 근처 청약: 공고 뒤 이 날 수 안
 const AX_CY_KINDS = { cy_new: '새 청약 공고', cy_eve: '청약 접수 하루 전', cy_win: '당첨자 발표일' };
 const AX_URG = 10, AX_DROP = -10, AX_JR = 5;       // 급매(%) · 큰 하락(%) · 전세가율 변화(%p) — 위 설명의 기존 기준
 const AX_MAX_PLACES = 30, AX_MAX_REGIONS = 10, AX_MAX_LINES = 40;
@@ -38,7 +43,7 @@ function axSido(s) { s = String(s || ''); return AX_SIDO_OLD[s] || s; }
 function axCleanPrefs(x) {
   x = x && typeof x === 'object' ? x : {};
   const k = x.kinds && typeof x.kinds === 'object' ? x.kinds : {}, kinds = {};
-  Object.keys(AX_KINDS).forEach(n => { kinds[n] = k[n] !== false; });
+  Object.keys(AX_KINDS).forEach(n => { kinds[n] = AX_OPTIN[n] ? k[n] === true : k[n] !== false; });
   const mute = (Array.isArray(x.mute) ? x.mute : []).map(v => axTxt(v, 160)).filter(v => v.split('|').length === 5).filter((v, i, a) => a.indexOf(v) === i).slice(0, AX_MAX_PLACES);
   const c = x.cy && typeof x.cy === 'object' ? x.cy : {}, seen = {};
   const regions = (Array.isArray(c.regions) ? c.regions : []).map(r => r && ({ sd: axSido(axTxt(r.sd, 20)), g: /^\d{5}$/.test(String(r.g || '')) ? String(r.g) : '', gn: axTxt(r.gn, 30) }))
@@ -48,7 +53,7 @@ function axCleanPrefs(x) {
   if (lo != null && hi != null && lo > hi) { const t = lo; lo = hi; hi = t; }
   const ck = c.kinds && typeof c.kinds === 'object' ? c.kinds : {}, cyk = {};
   Object.keys(AX_CY_KINDS).forEach(q => { cyk[q] = ck[q] !== false; });
-  return { kinds: kinds, mute: mute, cy: { on: c.on === true && regions.length > 0, regions: regions, nohome: c.nohome === true ? true : c.nohome === false ? false : null, lo: lo, hi: hi, kinds: cyk } };
+  return { kinds: kinds, mute: mute, cy: { on: c.on === true && regions.length > 0, regions: regions, nohome: c.nohome === true ? true : c.nohome === false ? false : null, lo: lo, hi: hi, kinds: cyk }, rp: x.rp === true };
 }
 
 /* ---------- 관심 단지 한 곳의 알림 ----------
@@ -86,7 +91,49 @@ function axPlaceEvents(p, G, S) {
     put(`j|${pid}|${G.date || ''}|${u[2]}`, { k: 'jeonse', jr: u[2], jr0: u0[2], t: `전세가율이 ${u0[2].toFixed(1)}%에서 ${u[2].toFixed(1)}%로 ${axPct(d)}%p ${d > 0 ? '올랐어요' : '내려갔어요'}`,
       s: `전세가율은 매매가 대비 전세 보증금 비율이에요${G.d0 ? `(${axMd(G.d0)} 값과 비교)` : ''}. ${d > 0 ? '갭 기회와 전세 위험을 함께 확인해 보세요.' : '보증금은 더 안전해졌고, 갭 부담은 커졌어요.'}` });
   }
+  if (u && u0 && u[2] != null && u0[2] != null) AX_JR_LINES.forEach(L => {          // 80%·90% 선을 넘거나 내려옴(같은 방향은 90일에 한 번)
+    const up = u0[2] < L && u[2] >= L, dn = u0[2] >= L && u[2] < L;
+    if (!up && !dn) return;
+    put(`jx|${pid}|${L}|${up ? 'u' : 'd'}`, { k: 'jeonse', jr: u[2], jr0: u0[2],
+      t: up ? `전세가율이 ${L}%를 넘었어요: ${u0[2].toFixed(1)}% → ${u[2].toFixed(1)}%` : `전세가율이 ${L}% 아래로 내려왔어요: ${u0[2].toFixed(1)}% → ${u[2].toFixed(1)}%`,
+      s: up ? `전세가율이 ${L}%를 넘으면 집값이 조금만 내려도 전세 보증금을 다 돌려받기 어려워질 수 있어요. 전세로 들어가신다면 보증보험 가입이 되는지 먼저 확인해 보세요.`
+        : `전세 보증금 부담이 조금 줄었어요. 갭(매매가 − 전세가)은 그만큼 커졌어요.` });
+  });
   return order.map(q => out[q]);
+}
+
+/* ---------- 관심 단지 근처 신축 허가(newbuild.json — 건축HUB 건축 인허가 공개 자료) ----------
+   xy = 관심 단지 좌표 [경도, 위도](공개 sNN_xy.json), nb = { rows, kinds, asof }. 허가 단계(아직 공사 전)이고, 허가 달이 최근 AX_NB_MONTHS 달 안이며
+   신청한 달(since) 이후인 현장만. 현장 좌표는 약 100m 범위로 둥글린 값이라 거리도 대략(50m 단위)으로 적는다. */
+function axYm(iso, back) { const y = +String(iso).slice(0, 4), m = +String(iso).slice(5, 7) - (back || 0), t = y * 12 + m - 1; return `${Math.floor(t / 12)}${String(t % 12 + 1).padStart(2, '0')}`; }
+function axDist(a, b) { const r = Math.PI / 180, dx = (b[0] - a[0]) * r * Math.cos((a[1] + b[1]) / 2 * r), dy = (b[1] - a[1]) * r; return 6371000 * Math.sqrt(dx * dx + dy * dy); }
+function axNbEvents(p, xy, nb, since) {
+  if (!Array.isArray(xy) || xy.length < 2 || !nb || !Array.isArray(nb.rows) || !nb.asof) return [];
+  const pid = axPid(p), lo = [axYm(nb.asof, AX_NB_MONTHS - 1), since ? axYm(since, 0) : ''].sort().pop(), out = [];
+  nb.rows.forEach(r => {
+    if (!r || r.st !== 'permit' || !/^\d{6}$/.test(String(r.pm || '')) || r.pm < lo || !Array.isArray(r.xy)) return;
+    const m = axDist(xy, r.xy); if (!(m <= AX_NB_M)) return;
+    const kn = ((nb.kinds || {})[r.k]) || '건물', cnt = r.u > 0 ? ` ${r.u}${r.k === 'offi' ? '실' : r.k === 'shop' ? '호' : '세대'}` : '';
+    out.push({ k: 'nb', key: `n|${pid}|${r.id}`, id: axKeyId(`n|${pid}|${r.id}`), pid: pid, m: Math.max(50, Math.round(m / 50) * 50),
+      t: `관심 단지에서 약 ${Math.max(50, Math.round(m / 50) * 50)}m 거리에 신축 허가가 났어요: ${axTxt(r.dn, 30)} ${kn}${cnt}`,
+      s: `${String(r.pm).slice(0, 4)}년 ${+String(r.pm).slice(4, 6)}월 허가, 아직 공사 시작 전이에요. 국토교통부 건축HUB 건축 인허가 공개 자료이고, 위치는 약 100m 범위라 거리도 대략이에요. 분양 여부는 이 자료로 알 수 없어요.` });
+  });
+  return out.sort((a, b) => a.m - b.m);
+}
+/* ---------- 관심 단지와 같은 시·군·구의 새 청약 공고 ----------
+   sg = 관심 단지 시·군·구 {sido, name}(공개 index.json sgg). 공고일이 오늘 이전·최근 AX_NEAR_DAYS 일 안·신청한 날 이후이고 접수가 끝나지 않은 공고만. */
+function axCyNear(p, sg, notices, today, since) {
+  if (!sg || !sg.name || !today) return [];
+  const pid = axPid(p), lo = axAddDay(today, -AX_NEAR_DAYS), out = [];
+  (notices || []).forEach(n => {
+    if (!n || axSido(n.sd) !== axSido(sg.sido) || n.g !== sg.name) return;
+    const pb = axIso(n.pb), st = axCyStages(n);
+    if (!pb || pb > today || pb < lo || (since && pb < since) || (st.length && st[st.length - 1].d < today)) return;
+    const pw = axIso(n.pw), sub = [pb ? `공고 ${axMd(pb)}` : '', st.map(x => `${x.lab} 접수 ${axMd(x.d)}`).join(' · '), pw ? `발표 ${axMd(pw)}` : ''].filter(Boolean).join(' · ');
+    out.push({ k: 'cynear', key: `c|${n.no}|near`, id: axKeyId(`c|${n.no}|near`), pid: pid, no: n.no, n: n.n, u: /^https:\/\//.test(n.u || '') ? n.u : '',
+      t: `관심 단지와 같은 ${n.g}에 ${n.n} 청약 공고가 나왔어요`, s: [sub ? sub + '.' : '', n.k === '국민' ? '국민주택이라 무주택 세대구성원만 신청할 수 있어요.' : '', '접수는 청약홈에서 해요.'].filter(Boolean).join(' ') });
+  });
+  return out;
 }
 
 /* ---------- 청약 ----------
@@ -130,19 +177,26 @@ function axCyEvents(n, cy, today, since) {
 }
 
 /* ---------- 하루 묶음 ----------
-   o = { places, g:{구: today/g}, s:{구: brief}, notices:[청약 공고], prefs, today, since, sent:{알림id:1} }
-   → { groups:[{p, pid, ev[]}], cy:[ev], n, ids[] } — 끈 단지·끈 종류·이미 보낸 알림(sent)은 뺀다 */
+   o = { places, g:{구: today/g}, s:{구: brief}, notices:[청약 공고], prefs, today, since, sent:{알림id:1},
+         xy(p) → 단지 좌표 [경도, 위도] | null, nb: { rows, kinds, asof }(newbuild.json), sg(code) → { sido, name } | null(index.json sgg) }
+   → { groups:[{p, pid, ev[]}], cy:[ev], n, ids[] } — 끈 단지·끈 종류·이미 보낸 알림(sent)은 뺀다.
+   같은 청약 공고는 한 번만: 청약 맞춤(새 공고)으로 알리는 공고는 근처 청약으로 또 알리지 않고, 근처 청약은 그 공고와 같은 구의 첫 관심 단지에만 붙인다. */
 function axDigest(o) {
   o = o || {};
   const P = axCleanPrefs(o.prefs), sent = o.sent || {}, mute = {}, groups = [], ids = [];
   P.mute.forEach(x => { mute[x] = 1; });
-  (o.places || []).slice(0, AX_MAX_PLACES).forEach(p => {
-    const pid = axPid(p); if (mute[pid]) return;
-    const ev = axPlaceEvents(p, (o.g || {})[p.code], (o.s || {})[p.code]).filter(e => P.kinds[e.k] && !sent[e.id]);
-    if (ev.length) { groups.push({ p: p, pid: pid, ev: ev }); ev.forEach(e => ids.push(e.id)); }
-  });
   let cy = [];
   if (P.cy.on && o.today) (o.notices || []).forEach(n => { cy = cy.concat(axCyEvents(n, P.cy, o.today, o.since || '').filter(e => !sent[e.id])); });
+  const cyNew = {}, nearDone = {};
+  cy.forEach(e => { if (e.k === 'cy_new') cyNew[e.no] = 1; });
+  (o.places || []).slice(0, AX_MAX_PLACES).forEach(p => {
+    const pid = axPid(p); if (mute[pid]) return;
+    let ev = axPlaceEvents(p, (o.g || {})[p.code], (o.s || {})[p.code]);
+    if (P.kinds.nb && o.nb && o.xy) ev = ev.concat(axNbEvents(p, o.xy(p), o.nb, o.since || ''));
+    if (P.kinds.cynear && o.sg) ev = ev.concat(axCyNear(p, o.sg(p.code), o.notices, o.today, o.since || '').filter(e => !cyNew[e.no] && !nearDone[e.no] && (nearDone[e.no] = 1)));
+    ev = ev.filter(e => P.kinds[e.k] && !sent[e.id]);
+    if (ev.length) { groups.push({ p: p, pid: pid, ev: ev }); ev.forEach(e => ids.push(e.id)); }
+  });
   cy.forEach(e => ids.push(e.id));
   return { groups: groups, cy: cy, n: ids.length, ids: ids };
 }
@@ -186,7 +240,7 @@ function axMailHtml(D, o) {
       <ul style="list-style:none;margin:8px 0 0;padding:0">${D.cy.map(e => li(e)).join('')}</ul></div>` : '';
   const more = cut ? `<p style="font-size:13.5px;color:#4E5968;margin:0 0 10px">이 밖에 알림 ${cut}건은 <a href="${axEsc(web)}my/alerts/" style="color:#2F6BFF">알림 센터</a>에서 볼 수 있어요.</p>` : '';
   const head = `<div style="font-size:18px;font-weight:900;margin:0 0 4px">내가 고른 것의 새 소식 <span style="font-size:13px;font-weight:700;color:#2F6BFF">${D.n}건</span></div>
-    <p style="margin:0 0 10px;font-size:13.5px;color:#4E5968;line-height:1.55">관심 목록에 넣은 단지와 직접 고른 청약 조건에 생긴 변화만 모았어요. 숫자는 국토교통부 실거래 공개 자료와 청약홈 공고 그대로예요.</p>`;
+    <p style="margin:0 0 10px;font-size:13.5px;color:#4E5968;line-height:1.55">관심 목록에 넣은 단지와 직접 고른 청약 조건에 생긴 변화 가운데, 알림 센터에서 켜 둔 종류만 모았어요. 숫자는 국토교통부 공개 자료와 청약홈 공고 그대로예요.</p>`;
   const offAll = L ? `<a href="${axEsc(L.all)}" style="color:#4E5968">모든 알림 끄기(한 번 누르면 끝)</a>` : '';
   const foot = `<p style="font-size:12px;color:#4E5968;line-height:1.65;margin:12px 0 0;border-top:1px solid #E5E8EB;padding-top:10px">
     이 메일은 ${axEsc(site)}에서 관심 단지·청약 메일 알림을 신청하신 분께만 보내는 정보 알림이에요${o.since ? `(신청 ${axEsc(o.since)})` : ''}. 알림이 있는 날만 하루 한 번, 오전 7시대에 보내요.<br>
@@ -200,9 +254,9 @@ function axMailHtml(D, o) {
 }
 /* ALERTS-CORE END */
 
-const API = { V: AX_V, KINDS: AX_KINDS, CY_KINDS: AX_CY_KINDS, URG: AX_URG, DROP: AX_DROP, JR: AX_JR, MAX_PLACES: AX_MAX_PLACES, BN: AX_BN,
+const API = { V: AX_V, KINDS: AX_KINDS, OPTIN: AX_OPTIN, JR_LINES: AX_JR_LINES, NB_M: AX_NB_M, CY_KINDS: AX_CY_KINDS, URG: AX_URG, DROP: AX_DROP, JR: AX_JR, MAX_PLACES: AX_MAX_PLACES, BN: AX_BN,
   esc: axEsc, won: axWon, pid: axPid, iso: axIso, addDay: axAddDay, md: axMd, keyId: axKeyId, sido: axSido, cleanPrefs: axCleanPrefs, placeEvents: axPlaceEvents,
-  cyMatch: axCyMatch, cyStages: axCyStages, cyEvents: axCyEvents, digest: axDigest, unread: axUnread, canSend: axCanSend, adOk: axAdOk, links: axLinks, mailHtml: axMailHtml };
+  nbEvents: axNbEvents, cyNear: axCyNear, dist: axDist, ym: axYm, cyMatch: axCyMatch, cyStages: axCyStages, cyEvents: axCyEvents, digest: axDigest, unread: axUnread, canSend: axCanSend, adOk: axAdOk, links: axLinks, mailHtml: axMailHtml };
 root.JDJ_ALERTS_CORE = API;
 if (typeof module !== 'undefined' && module.exports) module.exports = API;
 })(typeof window !== 'undefined' ? window : globalThis);

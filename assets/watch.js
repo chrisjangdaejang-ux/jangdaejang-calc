@@ -5,7 +5,7 @@
      새 발송 채널은 없음 — 브리핑이 원래 보내는 ③ 칸을 쓴다.
    - [관심] 별 단추: JDJ_WATCH.star(p) HTML 을 아무 곳에 넣으면 눌렀을 때 넣기·빼기(문서 전체 클릭 위임). p = {sd, code, dong, jibun, apt, band}
    - 머리줄 배지: 관심 단지의 어제·오늘 새 거래 중 관심 목록 화면에서 아직 안 본 것 → '★ 새 소식 N' (없으면 안 보임). 자료 today/g/{구}.json
-   - 알림 종(assets/alerts-core.js 가 함께 실린 화면): 관심 단지 새 실거래·신고가·급매·큰 하락·전세가율 변화 + 청약 맞춤 알림 중 알림 센터(my/alerts/)에서
+   - 알림 종(assets/alerts-core.js 가 함께 실린 화면): 관심 단지 새 실거래·신고가·급매·큰 하락·전세가율(변화·80/90% 선)·근처 신축 허가·근처 청약 공고 + 청약 맞춤 알림 중 알림 센터(my/alerts/)에서
      아직 안 본 수. 알림 설정·본 기록·최근 알림 기록은 이 기기 localStorage(jdj_alert_prefs·jdj_alert_seen·jdj_alert_log). 메일은 로그인 뒤 알림 센터에서 신청. */
 (function (root) {
   'use strict';
@@ -176,7 +176,7 @@
     const cur = alog(), have = {}, now = Date.now(), lo = now - LOG_DAYS * 864e5;
     cur.forEach(x => { have[x.id] = 1; });
     const add = [];
-    D.groups.forEach(g => g.ev.forEach(e => { if (!have[e.id]) add.push({ id: e.id, k: e.k, t: e.t, s: e.s, tags: e.tags || [], pid: g.pid, p: g.p, at: now }); }));
+    D.groups.forEach(g => g.ev.forEach(e => { if (!have[e.id]) add.push({ id: e.id, k: e.k, t: e.t, s: e.s, tags: e.tags || [], u: e.u || '', pid: g.pid, p: g.p, at: now }); }));
     D.cy.forEach(e => { if (!have[e.id]) add.push({ id: e.id, k: e.k, t: e.t, s: e.s, u: e.u || '', no: e.no, at: now }); });
     if (!add.length && cur.every(x => x.at >= lo)) return cur;
     const next = add.concat(cur).filter(x => x && x.at >= lo).slice(0, LOG_MAX);
@@ -191,6 +191,8 @@
   }
   const BF = {};
   const bfile = code => BF[code] || (BF[code] = fetch(DATA + 'brief/' + code + '.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null));
+  const JF = {};
+  const jget = f => JF[f] || (JF[f] = fetch(DATA + f, { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null));
   let NP = null;
   const notices = () => NP || (NP = fetch(DATA + 'chungyak/notices.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(j => (j && j.rows) || []).catch(() => []));
   /** 지금 알림: {D 묶음(끈 단지·끈 종류 뺌), unread 안 본 수, P 설정, any 알림 받을 것이 있는지, log 최근 알림 기록} */
@@ -198,10 +200,15 @@
     if (!AC) return Promise.resolve(null);
     const l = list(), P = aprefs();
     if (!l.length && !P.cy.on) return Promise.resolve({ D: { groups: [], cy: [], n: 0, ids: [] }, unread: 0, P, any: false, log: alog() });
-    const codes = [...new Set(l.map(p => p.code))];
-    return Promise.all([gfiles(l), Promise.all(codes.map(bfile)), P.cy.on ? notices() : Promise.resolve([])]).then(([gf, bs, N]) => {
+    const codes = [...new Set(l.map(p => p.code))], wantNb = !!(P.kinds.nb && l.length), wantNear = !!(P.kinds.cynear && l.length);
+    const sds = wantNb ? [...new Set(l.map(p => p.sd).filter(x => /^s\d{2}$/.test(x)))] : [];
+    return Promise.all([gfiles(l), Promise.all(codes.map(bfile)), (P.cy.on || wantNear) ? notices() : Promise.resolve([]),
+      wantNb ? jget('newbuild.json') : null, Promise.all(sds.map(f => jget(f + '_xy.json'))), wantNear ? jget('index.json') : null]).then(([gf, bs, N, nb, xs, ix]) => {
       const sx = {}; codes.forEach((c, i) => { sx[c] = bs[i]; });
-      const D = AC.digest({ places: l, g: gf, s: sx, notices: N, prefs: P, today: today() });
+      const XY = {}; sds.forEach((f, i) => { XY[f] = ((xs[i] || {}).xy) || {}; });
+      const D = AC.digest({ places: l, g: gf, s: sx, notices: N, prefs: P, today: today(),
+        nb: nb && nb.rows ? { rows: nb.rows, kinds: nb.kinds, asof: nb.asof } : null, xy: p => (XY[p.sd] || {})[[p.code, p.dong, p.jibun || ''].join('|')] || null,
+        sg: c => { const x = ix && ix.sgg && ix.sgg[c]; return x ? { sido: x.sido, name: x.name } : null; } });
       const log = logAdd(D).filter(x => shown(x, P, l)), seen = aseen();
       return { D, unread: log.filter(x => !seen[x.id]).length, P, any: true, log, gf };
     });

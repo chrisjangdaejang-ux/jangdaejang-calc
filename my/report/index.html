@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="../../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="내 집 성적표">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="robots" content="noindex">
+<script src="../../assets/pwa.js?v=2" defer></script>
+<title>내 집 성적표</title>
+<meta name="description" content="내 집과 관심 단지의 한 주: 이번 주 가격 흐름, 최근 시세와 실거래, 동네 순위, 미래가치 점수, 전세가율, 우리 동네 새 거래를 한 장으로 봐요.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="내 집 성적표">
+<meta property="og:description" content="이번 주 가격 흐름 · 동네 순위 · 미래가치 점수 · 전세가율 · 우리 동네 새 거래를 한 장으로">
+<meta property="og:image" content="../../assets/og/default.png">
+<meta name="twitter:card" content="summary_large_image">
+<script>window.JDJ_CONFIG = { tool:'report', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../assets/track.js?v=2"></script>
+<script src="../../assets/stat.js?v=7"></script>
+<script src="../../assets/agents.js"></script>
+<script src="../../assets/config.js?v=9"></script>
+<script src="../../assets/auth.js?v=9"></script>
+<script src="../../assets/mine-core.js?v=19"></script>
+<script src="../../assets/report-core.js?v=1"></script>
+<script src="../../assets/alerts-core.js?v=2"></script>
+<script src="../../assets/watch-core.js?v=2"></script>
+<script src="../../assets/watch.js?v=7"></script>
+<script src="../../assets/tabbar.js?v=5" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/aplus.css?v=45">
+<style>
+.wrap{max-width:1040px;margin:0 auto;padding:22px 16px 40px}
+h1{font-size:clamp(26px,6.4vw,32px);margin:4px 0 8px;letter-spacing:-.6px}
+.lead{margin:0 0 14px;font-size:16px;color:var(--sub2);line-height:1.6;max-width:640px}
+.pick{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;margin:0 0 6px;scrollbar-width:thin}
+.pick button{flex:none;display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-height:52px;max-width:220px;padding:7px 14px;border-radius:14px;border:1.5px solid var(--line);background:#fff;font:inherit;cursor:pointer;text-align:left}
+.pick button b{font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px}
+.pick button small{font-size:12.5px;color:var(--sub2);white-space:nowrap}
+.pick button small i{font-style:normal;color:#8A6A12;font-weight:800}
+.pick button[aria-pressed=true]{border-color:var(--blue);background:var(--blue-l)}
+.lay{display:block}
+@media(min-width:960px){.lay{display:grid;grid-template-columns:minmax(0,560px) minmax(0,1fr);gap:24px;align-items:start}}
+/* 공유용 한 장 카드 */
+.rc{max-width:560px;border-radius:22px;overflow:hidden;border:1px solid var(--creamb);background:#fff;box-shadow:0 6px 24px rgba(25,31,40,.07)}
+.rc .hd{background:var(--creamc);padding:16px 18px 14px;border-bottom:1px solid var(--creamb)}
+.rc .tp{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;font-weight:800;color:#8A6A12}
+.rc .tp span:last-child{color:var(--sub2);font-weight:700}
+.rc .nm{margin:6px 0 0;font-size:clamp(21px,5.6vw,25px);font-weight:900;letter-spacing:-.5px;line-height:1.3;word-break:keep-all}
+.rc .lc{margin:2px 0 0;font-size:14px;color:var(--sub2)}
+.rc .kp{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line2)}
+.rc .kp div{background:#fff;padding:13px 16px;min-width:0}
+.rc .kp small{display:block;font-size:13px;color:var(--sub2);font-weight:700}
+.rc .kp b{display:block;font-size:21px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-.4px;line-height:1.3;margin-top:2px;word-break:keep-all}
+.rc .kp b em{font-style:normal;font-size:14px;font-weight:700;color:var(--sub2)}
+.rc .kp i{display:block;font-style:normal;font-size:12.5px;line-height:1.45;color:var(--sub2);margin-top:3px}
+.rc .kp i.up{color:#C2410C;font-weight:800}.rc .kp i.dn{color:#1F56E0;font-weight:800}
+.rc .kp div.warn{background:#FFF7F2}
+.rc .rw{padding:13px 18px;border-top:1px solid var(--line2)}
+.rc .rw h3{margin:0 0 3px;font-size:13.5px;font-weight:800;color:var(--sub2)}
+.rc .rw p{margin:0;font-size:15.5px;font-weight:800;line-height:1.5;word-break:keep-all}
+.rc .rw p.s{font-size:13.5px;font-weight:500;color:var(--sub2);margin-top:3px}
+.rc .rw ul{list-style:none;margin:6px 0 0;padding:0}
+.rc .rw li{display:flex;justify-content:space-between;gap:8px;font-size:14.5px;line-height:1.5;padding:4px 0;border-top:1px dashed var(--line2)}
+.rc .rw li:first-child{border-top:0}
+.rc .rw li span{min-width:0;word-break:keep-all}
+.rc .rw li b{flex:none;font-variant-numeric:tabular-nums}
+.tg{display:inline-block;font-size:11.5px;font-weight:800;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px;white-space:nowrap}
+.tg.hi{background:#FDECE4;color:#C2410C}.tg.x{background:var(--gray);color:var(--sub2)}
+.rc .ft{padding:11px 18px 13px;background:var(--gray2);border-top:1px solid var(--line2);font-size:12px;color:var(--sub2);line-height:1.55}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 0;max-width:560px}
+.acts .btn{flex:1 1 150px}
+.side>section{margin:0 0 16px}
+.pn{border:1px solid var(--line);border-radius:18px;padding:16px;background:#fff}
+.pn h2{margin:0 0 4px;font-size:18px;font-weight:900;letter-spacing:-.3px}
+.pn h2 small{font-size:12.5px;font-weight:700;color:var(--sub2);margin-left:6px;vertical-align:1px}
+.pn>p{margin:0 0 10px;font-size:14.5px;color:var(--sub2);line-height:1.6}
+.fr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.fr label{display:flex;flex-direction:column;gap:4px;font-size:13.5px;font-weight:700;color:var(--sub)}
+.fr input,.fr select,.ln input{min-height:48px;border:1px solid var(--line);border-radius:12px;padding:0 10px;font:inherit;font-size:16px;background:#fff;width:100%;box-sizing:border-box}
+.mine{margin:12px 0 0;padding:12px 14px;border-radius:14px;background:var(--gray2);border:1px dashed var(--line);font-size:14.5px;line-height:1.6}
+.mine b{font-variant-numeric:tabular-nums}
+.mine .tgm{display:inline-block;font-size:11.5px;font-weight:800;color:#8A6A12;background:var(--creamc);border:1px solid var(--creamb);border-radius:6px;padding:0 6px;margin-right:4px}
+.ln{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ln input{flex:1 1 160px;min-width:0}
+.ln span{font-size:15px;font-weight:700}
+.nw{display:grid;grid-template-columns:1fr auto;gap:4px 12px;margin:12px 0 0;font-size:15px;line-height:1.5}
+.nw b{font-variant-numeric:tabular-nums;text-align:right}
+.nw .tot{font-size:17px;font-weight:900;border-top:1px solid var(--line);padding-top:6px}
+.nw .tot+b{font-size:19px;border-top:1px solid var(--line);padding-top:6px;color:var(--blue)}
+svg.ch{display:block;width:100%;height:auto;margin:10px 0 0}
+.hl{list-style:none;margin:8px 0 0;padding:0;font-size:13.5px;color:var(--sub2)}
+.hl li{display:flex;justify-content:space-between;padding:3px 0;border-top:1px dashed var(--line2);font-variant-numeric:tabular-nums}
+.saved{margin:8px 0 0;font-size:13px;color:var(--sub2);line-height:1.5}
+.saved.ok{color:#0E7A4F}
+.cta{padding:16px;border-radius:18px;background:var(--creamc);border:1px solid var(--creamb)}
+.cta h2{margin:0 0 4px;font-size:17px;font-weight:900}
+.cta p{margin:0 0 10px;font-size:14.5px;color:var(--sub);line-height:1.6}
+.empty{padding:22px 18px;border-radius:18px;border:1px dashed var(--line);text-align:center;color:var(--sub);line-height:1.65;max-width:640px}
+.empty a{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 16px;margin:10px 4px 0;border-radius:12px;background:var(--blue-l);color:var(--blue);font-weight:800;text-decoration:none}
+.shared{margin:0 0 12px;padding:10px 14px;border-radius:12px;background:var(--blue-l);color:var(--blue-d);font-size:14.5px;line-height:1.55;max-width:560px}
+.note{margin:16px 0 0;font-size:13px;color:var(--sub2);line-height:1.6;max-width:760px}
+@media(max-width:400px){.fr{grid-template-columns:1fr 1fr}.fr label:first-child{grid-column:1/-1}.rc .kp b{font-size:19px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../../" aria-label="홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name></span></a>
+  <div class="badge plain">내 집 성적표</div>
+</header>
+<main class="wrap">
+  <h1>내 집 성적표</h1>
+  <p class="lead" id="lead">등록한 내 집과 관심 단지의 한 주를 한 장으로 정리했어요. 매주 월요일 오전에 새로 만들어요.</p>
+  <div id="pick" class="pick" role="group" aria-label="성적표를 볼 집 고르기"></div>
+  <div class="lay">
+    <div><div id="shared" class="shared" hidden></div><div id="card" aria-live="polite"><p class="note">불러오고 있어요…</p></div><div id="acts" class="acts" hidden></div></div>
+    <div class="side" id="side"></div>
+  </div>
+  <p class="note">자료: 국토교통부 아파트 매매 실거래가 공개 자료(공공데이터포털), <span data-site-name></span> 주간 실거래 동향. 이번 주 가격 흐름은 같은 집이 석 달 안에 다시 팔린 값끼리 비교한 숫자예요. 최근 시세는 최근 3개월 이 단지·이 평형 실거래의 3.3㎡당 값 중간값으로 계산해요. 동네 순위는 같은 동(같은 평형대가 3곳 이상이면 그 평형대) 아파트의 최근 3.3㎡당 값 순서예요. 미래가치 점수는 공개 자료로 따져 본 참고 점수예요. 과거 자료로 만든 참고 정보이고, 앞으로의 집값을 정해 주지는 않아요.</p>
+</main>
+<footer class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="../../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ <span data-site-name></span> · <a href="../../">홈</a> · <a href="../../mine/">내 집 시세</a> · <a href="../watch/">관심 목록</a> · <a href="../alerts/">알림 센터</a></footer>
+<script>
+var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+(function(){
+'use strict';
+const RC = window.JDJ_REPORT_CORE, M = window.JDJ_MINE, W = window.JDJ_WATCH, AU = window.JDJ_AUTH || null;
+const SITE = ((window.JDJ_SITE || {}).SITE_NAME || '').trim() || '집코드';
+const DATA = JB.DATA + 'data/', BASE = JB.SITE, $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ls = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } } };
+const stat = (n, p) => { try { if (window.jdjStat) jdjStat(n, p || {}); } catch (e) {} };
+const today = () => new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
+document.title = SITE + ' 내 집 성적표';
+document.querySelectorAll('[data-site-name]').forEach(el => { el.textContent = SITE; });
+document.querySelector('meta[name="apple-mobile-web-app-title"]').setAttribute('content', SITE);
+const J = {}, jget = f => J[f] || (J[f] = fetch(DATA + f, {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null));
+let IX = null, RIX = null, CUR = null;
+const gname = c => ((IX && IX.sgg) || {})[c] ? IX.sgg[c].name : '';
+const pid = p => [p.code, p.dong, p.jibun || '', p.apt, p.band].join('|');
+
+/* ---------- 내가 적은 정보(보정·대출 잔액·순자산 기록) — 이 기기 + (로그인 중이면) 내 계정 저장 자료에만. 공개 자료·메일·공유 주소에는 넣지 않는다 ---------- */
+const MEK = 'jdj_report_me';
+function meLoad(){ let x = null; try { x = JSON.parse(ls.get(MEK) || 'null'); } catch (e) {} x = x && typeof x === 'object' ? x : {}; return { adj: x.adj || {}, loan: x.loan || {}, hist: Array.isArray(x.hist) ? x.hist : [], t: +x.t || 0 }; }
+let ME = meLoad(), ACCT = '';            // ACCT: 'ok' 계정에도 저장됨 · 'local' 이 기기에만(서버가 아직 이 칸을 받지 않음) · '' 로그인 안 함
+function meSave(){
+  ME.t = Date.now(); ls.set(MEK, JSON.stringify(ME));
+  if (!(AU && AU.user())) { ACCT = ''; return Promise.resolve(); }
+  return AU.update(d => { d.rp = ME; }).then(st => { ACCT = st && st.data && st.data.rp ? 'ok' : 'local'; }).catch(() => { ACCT = 'local'; });
+}
+function meSync(){
+  if (!(AU && AU.user())) return Promise.resolve();
+  return AU.load(true).then(st => {
+    const rp = st && st.data && st.data.rp;
+    if (!rp) { ACCT = 'local'; return; }
+    ACCT = 'ok';
+    if ((+rp.t || 0) > ME.t) { ME = { adj: rp.adj || {}, loan: rp.loan || {}, hist: rp.hist || [], t: +rp.t || 0 }; ls.set(MEK, JSON.stringify(ME)); }
+    else if (ME.t > (+rp.t || 0)) return meSave();
+  }).catch(() => {});
+}
+const savedNote = () => ACCT === 'ok' ? '<p class="saved ok">✓ 이 기기와 내 계정에만 저장돼요. 공개 자료·메일·공유 주소에는 들어가지 않아요.</p>'
+  : ACCT === 'local' ? '<p class="saved">이 기기에만 저장돼요(내 계정 저장은 곧 열려요). 공개 자료·메일·공유 주소에는 들어가지 않아요.</p>'
+  : '<p class="saved">이 기기에만 저장돼요. 공개 자료·메일·공유 주소에는 들어가지 않아요. 카카오 간편 로그인하면 내 계정에도 저장돼요.</p>';
+
+/* ---------- 집 목록 ---------- */
+function homes(){ try { return M.parseStore(ls.get(M.STORE_KEY)); } catch (e) { return []; } }
+function favs(){ try { return W ? W.list() : []; } catch (e) { return []; } }
+function fromUrl(){
+  const q = new URLSearchParams(location.search), d = (q.get('d') || '').split('|');
+  if (d.length < 4 || !/^\d{5}$/.test(d[0]) || !q.get('b')) return null;
+  return { sd: (q.get('sd') || '').slice(0, 12), code: d[0], dong: d[1], jibun: d[2] || '', apt: d[3], band: q.get('b') };
+}
+const SHARED = fromUrl();
+function places(){
+  const h = homes(), mine = {}; h.forEach(p => { mine[pid(p)] = 1; });
+  return RC.places(h, favs()).map(p => ({ p, mine: !!mine[pid(p)] }));
+}
+
+/* ---------- 카드 ---------- */
+const chg = (v, v0, unit, better) => {
+  if (v == null || v0 == null) return '<i>지난 성적표가 생기면 차이를 보여 드려요</i>';
+  const d = Math.round((v - v0) * 10) / 10;
+  if (!d) return '<i>지난번과 같아요</i>';
+  const up = better === 'low' ? d < 0 : d > 0;
+  const txt = unit === '위' ? `지난번 ${v0}위 → ${Math.abs(d)}계단 ${d < 0 ? '↑' : '↓'}` : unit === '원' ? `지난번보다 ${d > 0 ? '+' : '−'}${RC.won(Math.abs(d))}` : `지난번보다 ${d > 0 ? '+' : '−'}${Math.abs(d)}${unit}`;
+  return `<i class="${up ? 'up' : 'dn'}">${esc(txt)}</i>`;
+};
+function cardHtml(c, it){
+  const L = RC.lines(c, gname(c.p.code)), by = {}; L.forEach(l => { by[l.k] = l; });
+  const loc = [gname(c.p.code), c.p.dong, c.p.band].filter(Boolean).join(' · ');
+  const k = [];
+  k.push(`<div><small>최근 시세</small><b>${c.price ? esc(RC.won(c.price.v)) : '-'}</b>${c.price ? chg(c.price.v, c.price.v0, '원') : '<i>최근 3개월 거래가 없어요</i>'}</div>`);
+  k.push(`<div><small>동네 순위</small><b>${c.rank ? `${c.rank.r}위 <em>/ ${c.rank.n}곳</em>` : '-'}</b>${c.rank ? chg(c.rank.r, c.rank.r0, '위', 'low') : '<i>같은 동 비교 단지가 적어요</i>'}</div>`);
+  k.push(`<div><small>미래가치 점수</small><b>${c.fv ? `${c.fv.v}점` : '-'}</b>${c.fv ? chg(c.fv.v, c.fv.v0, '점') : '<i>점수 자료가 없어요</i>'}</div>`);
+  k.push(`<div class="${c.jr && c.jr.line ? 'warn' : ''}"><small>전세가율</small><b>${c.jr ? Number(c.jr.v).toFixed(1) + '%' : '-'}</b>${c.jr ? (c.jr.line ? `<i class="up">${c.jr.line}%를 넘었어요</i>` : chg(Math.round(c.jr.v * 10) / 10, c.jr.v0 == null ? null : Math.round(c.jr.v0 * 10) / 10, '%p')) : '<i>전세 자료가 없어요</i>'}</div>`);
+  const trades = c.trades.length ? `<ul>${c.trades.map(t => `<li><span>${esc(RC.md(t.dt))} 계약 · ${t.f != null ? esc(t.f) + '층' : '층 정보 없음'}${t.hi ? '<span class="tg hi">신고가</span>' : ''}${t.x ? '<span class="tg x">직거래</span>' : ''}</span><b>${esc(RC.won(t.p))}</b></li>`).join('')}</ul>` : '<p class="s">최근 3년 거래가 없어요.</p>';
+  const nr = c.near, near = nr ? `<div class="rw"><h3>${esc(by.near.h)}</h3><p>${esc(by.near.t)}</p>${nr.list.length ? `<ul>${nr.list.slice(0, 5).map(r => `<li><span>${esc(r.apt)} ${esc(r.band)} · ${esc(RC.md(r.dt))} ${r.f != null ? esc(r.f) + '층' : ''}${r.hi ? '<span class="tg hi">신고가</span>' : ''}</span><b>${esc(RC.won(r.p))}</b></li>`).join('')}</ul>` : ''}<p class="s">${esc(nr.mode === 'new' ? '공개 자료에 처음 보인 거래예요.' : '지금까지 신고된 것만 세었어요(신고는 계약 뒤 30일 안에 해요).')}</p></div>` : '';
+  return `<article class="rc" id="rcard">
+    <div class="hd"><div class="tp"><span>★ ${esc(SITE)} 내 집 성적표</span><span>${esc(c.date ? c.date.replace(/-/g, '.') : '')} 기준</span></div>
+      <div class="nm">${esc(c.p.apt)}</div><div class="lc">${esc(loc)}${it && it.mine ? ' · 내 집' : ''}</div></div>
+    <div class="kp">${k.join('')}</div>
+    <div class="rw"><h3>${esc(by.wk.h)}</h3><p>${esc(by.wk.t)}</p><p class="s">${esc(by.wk.s)}</p></div>
+    <div class="rw"><h3>최근 실거래 <small style="font-weight:500">(이 단지·이 평형)</small></h3>${trades}</div>
+    ${near}
+    <div class="ft">${c.pd ? `지난 성적표(${esc(c.pd.replace(/-/g, '.'))})와 비교했어요. ` : ''}${by.fv ? '미래가치 점수는 ' + esc(by.fv.s) : ''} 자료: 국토교통부 실거래가 공개 자료 · ${esc(SITE)} 주간 실거래 동향</div>
+  </article>`;
+}
+const mineUrl = p => `${BASE}mine/?sd=${encodeURIComponent(p.sd)}&d=${encodeURIComponent([p.code, p.dong, p.jibun || '', p.apt].join('|'))}&b=${encodeURIComponent(p.band)}`;
+const shareUrl = p => `${location.origin}${BASE}my/report/?sd=${encodeURIComponent(p.sd)}&d=${encodeURIComponent([p.code, p.dong, p.jibun || '', p.apt].join('|'))}&b=${encodeURIComponent(p.band)}`;
+function drawActs(p){
+  const el = $('acts'); el.hidden = false;
+  el.innerHTML = `<button type="button" class="btn primary" id="shareBtn">이 성적표 공유하기</button><a class="btn ghost" href="${esc(mineUrl(p))}" data-track="report_to_mine">단지 시세 보기</a><div id="shareMsg" class="saved" role="status" style="flex-basis:100%"></div>`;
+  $('shareBtn').onclick = () => {
+    const url = shareUrl(p), title = `${p.apt} ${p.band} — ${SITE} 내 집 성적표`;
+    stat('feature_use', {feature:'report_share'});
+    if (navigator.share) { navigator.share({title, url}).catch(() => {}); return; }
+    (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(() => { $('shareMsg').textContent = '주소를 복사했어요. 카카오톡이나 문자에 붙여 넣어 보내 주세요. 공유 주소에는 공개 숫자만 보이고, 내가 적은 정보(대출·보정)는 보이지 않아요.'; })
+      .catch(() => { $('shareMsg').textContent = '이 주소를 길게 눌러 복사해 주세요: ' + url; });
+  };
+}
+
+/* ---------- 내 집 정보 보정(층·확장·리모델링) — 공식 숫자와 따로 ---------- */
+let PF = {};
+const priceFile = c => PF[c] || (PF[c] = jget('price/' + c + '.json'));
+function adjPanel(c){
+  const id = pid(c.p), a = ME.adj[id] || {};
+  return `<section class="pn" aria-labelledby="adjT"><h2 id="adjT">내 집 정보 보정<small>내가 적은 정보</small></h2>
+    <p>공식 숫자는 단지·평형 기준이라 우리 집 층이나 공사 여부를 몰라요. 직접 적어 두면 아래에 따로 보여 드려요. 위 성적표의 공식 숫자와 점수는 바뀌지 않아요.</p>
+    <div class="fr"><label>우리 집 층<input type="number" id="aFl" inputmode="numeric" min="-5" max="120" placeholder="예: 12" value="${a.fl == null ? '' : esc(a.fl)}"></label>
+      <label>발코니 확장<select id="aExt"><option value="">모름·안 적음</option><option value="y" ${a.ext === 'y' ? 'selected' : ''}>확장했어요</option><option value="n" ${a.ext === 'n' ? 'selected' : ''}>안 했어요</option></select></label>
+      <label>리모델링(인테리어)<select id="aRem"><option value="">모름·안 적음</option><option value="y" ${a.rem === 'y' ? 'selected' : ''}>했어요</option><option value="n" ${a.rem === 'n' ? 'selected' : ''}>안 했어요</option></select></label></div>
+    <div id="adjOut"></div>${savedNote()}</section>`;
+}
+async function drawAdj(c){
+  const out = $('adjOut'); if (!out) return;
+  const a = ME.adj[pid(c.p)] || {}, bits = [];
+  if (a.fl != null) {
+    const P = await priceFile(c.p.code), u = P && (P.units || []).find(x => x[1] === c.p.dong && (x[8] || '') === (c.p.jibun || '') && x[2] === c.p.apt && x[3] === c.p.band);
+    const r = RC.floorRef(u ? u[11] : [], a.fl, today());
+    bits.push(r && r.med ? `<span class="tgm">내 층 참고</span>최근 1년 이 단지·이 평형 <b>${esc(a.fl - 3)}~${esc(a.fl + 3)}층</b> 실거래 ${r.n}건의 중간값은 <b>${esc(RC.won(r.med))}</b>이에요(${esc(RC.won(r.lo))} ~ ${esc(RC.won(r.hi))}, 직거래 뺌).`
+      : `<span class="tgm">내 층 참고</span>최근 1년 이 단지·이 평형에서 ${esc(a.fl)}층 앞뒤 3개 층 거래가 ${r ? r.n : 0}건이라, 비교 값을 내지 않았어요(3건 이상일 때만).`);
+  }
+  if (a.ext || a.rem) bits.push(`<span class="tgm">집 상태</span>${a.ext === 'y' ? '발코니 확장' : a.ext === 'n' ? '확장 안 함' : ''}${a.ext && a.rem ? ' · ' : ''}${a.rem === 'y' ? '리모델링 함' : a.rem === 'n' ? '리모델링 안 함' : ''}. 공개 실거래 자료에는 확장·리모델링 여부가 없어서, 이 정보로 숫자를 바꾸지는 않아요. 실제로 팔 때는 집 상태에 따라 값이 달라질 수 있어요.`);
+  out.innerHTML = bits.length ? `<div class="mine">${bits.join('<br>')}</div>` : '';
+}
+
+/* ---------- 순자산(집값 − 대출) ---------- */
+function netPanel(c){
+  const id = pid(c.p), loan = ME.loan[id];
+  return `<section class="pn" aria-labelledby="nwT"><h2 id="nwT">순자산<small>내가 적은 정보</small></h2>
+    <p>대출 잔액을 적으면 '최근 시세 − 대출 잔액'을 계산하고, 성적표를 열 때마다 흐름을 기록해요.</p>
+    <div class="ln"><input type="number" id="loan" inputmode="numeric" min="0" step="100" placeholder="대출 잔액(만 원), 예: 35000" aria-label="대출 잔액(만 원)" value="${loan == null ? '' : esc(loan)}"><span>만 원</span><button type="button" class="btn ghost" id="loanSave">저장</button></div>
+    <div id="nwOut"></div>${savedNote()}</section>`;
+}
+function recordNet(c){
+  const id = pid(c.p), loan = ME.loan[id];
+  if (!c.price || loan == null) return false;
+  const d = today(), last = ME.hist.filter(h => h[1] === id).pop();
+  if (last && last[0] === d && last[2] === c.price.v && last[3] === loan) return false;
+  ME.hist = ME.hist.filter(h => !(h[1] === id && h[0] === d)).concat([[d, id, c.price.v, loan]]).slice(-120);
+  return true;
+}
+function drawNet(c){
+  const out = $('nwOut'); if (!out) return;
+  const id = pid(c.p), loan = ME.loan[id];
+  if (loan == null) { out.innerHTML = ''; return; }
+  if (!c.price) { out.innerHTML = '<p class="saved">최근 3개월 거래가 없어 집값(최근 시세)을 몰라요. 거래가 생기면 계산해 드려요.</p>'; return; }
+  const n = RC.net(c.price.v, loan), H = ME.hist.filter(h => h[1] === id);
+  let chart = '';
+  if (H.length >= 2) {
+    const w = 320, h = 120, pad = 26, xs = H.map((x, i) => pad + i * (w - pad * 2) / (H.length - 1)), vs = H.map(x => x[2] - x[3]);
+    const lo = Math.min(...vs), hi = Math.max(...vs), sp = hi - lo || 1, ys = vs.map(v => h - 24 - (v - lo) / sp * (h - 48));
+    chart = `<svg class="ch" viewBox="0 0 ${w} ${h}" role="img" aria-label="순자산 흐름 ${H.length}번 기록"><polyline fill="none" stroke="#2560E8" stroke-width="2.5" points="${xs.map((x, i) => x.toFixed(1) + ',' + ys[i].toFixed(1)).join(' ')}"/>
+      ${xs.map((x, i) => `<circle cx="${x.toFixed(1)}" cy="${ys[i].toFixed(1)}" r="3.5" fill="#2560E8"/>`).join('')}
+      <text x="${pad}" y="${h - 4}" font-size="11" fill="#4E5968">${esc(RC.md(H[0][0]))}</text><text x="${w - pad}" y="${h - 4}" font-size="11" fill="#4E5968" text-anchor="end">${esc(RC.md(H[H.length - 1][0]))}</text></svg>`;
+  }
+  out.innerHTML = `<div class="nw"><span>최근 시세(공식 숫자)</span><b>${esc(RC.won(c.price.v))}</b><span>대출 잔액(내가 적은 값)</span><b>− ${esc(RC.won(loan))}</b><span class="tot">순자산</span><b>${esc(RC.won(n.net))}</b></div>
+    <p class="saved">집값의 ${esc(n.ratio)}%가 대출이에요. 집을 팔 때 드는 세금·중개보수는 빼지 않은 값이에요.</p>${chart}
+    ${H.length ? `<ul class="hl">${H.slice(-6).reverse().map(x => `<li><span>${esc(x[0].replace(/-/g, '.'))}</span><span>${esc(RC.won(x[2] - x[3]))}</span></li>`).join('')}</ul>` : ''}${H.length < 2 ? '<p class="saved">기록이 두 번 이상 쌓이면 흐름 그림이 생겨요(성적표는 매주 월요일 새로 나와요).</p>' : ''}`;
+}
+
+/* ---------- 오른쪽(개인 칸) ---------- */
+function drawSide(c, it){
+  const side = $('side');
+  if (SHARED) { side.innerHTML = `<section class="cta"><h2>내 집 성적표도 만들어 보세요</h2><p>내 집을 등록하면 매주 이런 성적표를 볼 수 있어요. 원하면 월요일 아침 메일로도 받아요.</p><a class="btn primary big" href="${BASE}mine/">내 집 등록하기</a></section>`; return; }
+  const mail = `<section class="cta"><h2>매주 월요일 메일로 받기</h2><p>알림 센터에서 '내 집 성적표 메일'을 켜면, 매주 월요일 오전에 이 성적표를 메일로 보내 드려요. 메일마다 끄기 링크가 있어요.</p><a class="btn primary big" href="${BASE}my/alerts/#rp" data-track="report_to_alerts">알림 센터에서 켜기</a></section>`;
+  if (!it.mine) { side.innerHTML = `<section class="pn"><h2>관심 단지예요</h2><p>내 집 정보 보정과 순자산은 '내 집'으로 등록한 집에서만 적을 수 있어요.</p><a class="btn ghost" href="${esc(mineUrl(c.p))}">이 단지를 내 집으로 등록하기</a></section>` + mail; return; }
+  side.innerHTML = adjPanel(c) + netPanel(c) + mail;
+  const saveAdj = () => { const fl = $('aFl').value.trim(), o = { fl: fl === '' ? null : Math.round(+fl), ext: $('aExt').value, rem: $('aRem').value };
+    if (o.fl != null && (!isFinite(o.fl) || o.fl < -5 || o.fl > 120)) return;
+    if (o.fl == null && !o.ext && !o.rem) delete ME.adj[pid(c.p)]; else ME.adj[pid(c.p)] = o;
+    meSave().then(() => { drawAdj(c); }); stat('feature_use', {feature:'report_adj'}); };
+  $('aFl').onchange = saveAdj; $('aExt').onchange = saveAdj; $('aRem').onchange = saveAdj;
+  $('loanSave').onclick = () => { const v = $('loan').value.trim(), id = pid(c.p);
+    if (v === '') delete ME.loan[id]; else { const n = Math.round(+v); if (!isFinite(n) || n < 0 || n >= 10000000) { $('nwOut').innerHTML = '<p class="saved" style="color:#C2410C">대출 잔액을 만 원 단위 숫자로 적어 주세요. 예: 3억 5천만 원이면 35000</p>'; return; } ME.loan[id] = n; recordNet(c); }
+    meSave().then(() => { drawNet(c); $('loanSave').textContent = '저장했어요'; setTimeout(() => { const b = $('loanSave'); if (b) b.textContent = '저장'; }, 1600); }); stat('feature_use', {feature:'report_net'}); };
+  drawAdj(c); drawNet(c);
+}
+
+/* ---------- 그리기 ---------- */
+async function show(it){
+  CUR = it;
+  document.querySelectorAll('#pick button').forEach(b => b.setAttribute('aria-pressed', b.dataset.id === pid(it.p) ? 'true' : 'false'));
+  const R = await jget('report/g/' + it.p.code + '.json'), c = RC.card(it.p, R);
+  if (CUR !== it) return;
+  if (!c) {
+    $('card').innerHTML = `<div class="empty"><b>${esc(it.p.apt)} 성적표를 아직 만들지 못했어요.</b><br>${R ? '이 단지·평형의 성적표 자료를 찾지 못했어요. 최근 3년 실거래가 없거나 단지 정보가 바뀌었을 수 있어요.' : '성적표 자료는 매주 월요일 오전에 새로 만들어요. 잠시 뒤 다시 열어 주세요.'}<br><a href="${esc(mineUrl(it.p))}">단지 시세 보기</a></div>`;
+    $('acts').hidden = true; $('side').innerHTML = ''; return;
+  }
+  $('card').innerHTML = cardHtml(c, it);
+  drawActs(it.p);
+  if (it.mine && recordNet(c)) meSave();
+  drawSide(c, it);
+  stat('feature_use', {feature:'report_view', mine: it.mine ? 1 : 0, shared: SHARED ? 1 : 0});
+}
+async function main(){
+  [IX, RIX] = await Promise.all([jget('index.json'), jget('report/index.json')]);
+  if (SHARED) {
+    $('lead').textContent = '공유받은 성적표예요. 공개 자료로 만든 숫자만 보여요.';
+    $('shared').hidden = false; $('shared').textContent = `${SITE}에서 누구나 볼 수 있는 공개 숫자로 만든 성적표예요.`;
+    $('pick').hidden = true;
+    return show({ p: SHARED, mine: false });
+  }
+  if (AU && AU.user()) { await Promise.all([meSync(), W && W.sync ? W.sync() : null, AU.syncHomes ? AU.syncHomes() : null]); ME = meLoad(); }
+  const L = places();
+  if (!L.length) {
+    $('card').innerHTML = `<div class="empty"><b>성적표를 만들 집이 아직 없어요.</b><br>내 집 시세에서 내 집을 등록하거나, 단지 화면에서 <b>☆ 관심</b>을 누르면 여기에서 매주 성적표를 볼 수 있어요.<br><a href="${BASE}mine/">내 집 등록하기</a><a href="${BASE}map/">지도로 단지 찾기</a></div>`;
+    $('side').innerHTML = ''; return;
+  }
+  $('pick').innerHTML = L.map(it => `<button type="button" data-id="${esc(pid(it.p))}" aria-pressed="false"><b>${esc(it.p.apt)}</b><small>${it.mine ? '<i>내 집</i> · ' : '관심 · '}${esc([gname(it.p.code), it.p.band].filter(Boolean).join(' · '))}</small></button>`).join('');
+  $('pick').querySelectorAll('button').forEach((b, i) => { b.onclick = () => show(L[i]); });
+  const want = (location.hash || '').slice(1), first = L.find(it => pid(it.p) === decodeURIComponent(want)) || L[0];
+  show(first);
+}
+main();
+})();
+</script>
+</body>
+</html>

@@ -10,6 +10,17 @@
  *  - pullTokenNew(편집기에서 한 번 실행): 엔진 연결 비밀값 BRIEF_PULL_TOKEN 을 새로 만들어 스크립트 속성에 넣고 실행 로그에 보여 줌 → 깃허브 비밀값에 붙여 넣기.
  *  - 검증: node tools/brief-admin-test.js </dev/null
  *
+ * v49 변경 요약 (다음 재배포에 함께 들어감 — 안내 docs/alerts.md 6절. 재배포 뒤 편집기에서 alertsInstall 한 번 실행: 매일 알림 트리거 + 월요일 성적표 트리거를 함께 만듦)
+ *  - 내 집 성적표 주간 메일(맨 아래 'v49' 칸): 알림 센터에서 '내 집 성적표 메일'을 켠 알림 구독자(prefs.rp)에게만, 매주 월요일 오전 9시대(못 보내면 11시대)
+ *    내 집(homes)·관심 단지(favs) 최대 6곳의 성적표(공개 data/report/g/{구}.json — 엔진 home_report.py, 월요일 07:52)를 한 통으로. 계산·문장은 REPORT-CORE 블록
+ *    (웹 assets/report-core.js 와 같은 글자). 그날 자료(report/index.json date)가 아니면 보내지 않고 다음 실행에. 같은 주에 두 번 안 보냄('알림기록' rp|날짜).
+ *    메일마다 '성적표 메일만 끄기'(GET alertOff &rp=1)·'모든 알림 끄기'. 순자산·보정 값은 메일에 싣지 않음. 광고 없음.
+ *  - 알림 종류 추가(ALERTS-CORE): 전세가율 80%·90% 선 넘음/내려옴, 관심 단지 500m 안 신축 허가(newbuild.json + sNN_xy.json), 관심 단지와 같은 시·군·구 새 청약 공고.
+ *    새 두 종류(근처 신축 허가·근처 청약)는 사용자가 알림 센터에서 켠 경우에만(AX_OPTIN). 하루 한 통 묶음·같은 알림 다시 안 보내기는 그대로.
+ *  - 회원 저장 자료에 rp(내 집 정보 보정: 층·확장·리모델링 / 대출 잔액 / 순자산 기록)를 받아 둠(cleanRp). 그 사람만 읽고, 공개 자료·메일·시트 다른 칸에는 쓰지 않음.
+ *  - 카카오 알림톡: RP_ALIMTALK=false(자리만). 비즈 채널·템플릿 심사가 끝나면 스크립트 속성 SOLAPI_TPL_REPORT·SOLAPI_TPL_ALERT 를 넣고 true 로(docs/alerts.md).
+ *  - 검증: node tools/report-test.js </dev/null · node tools/alerts-test.js </dev/null
+ *
  * v47 변경 요약 (오늘 밤 앞당겨 하는 재배포에 v20~v46 과 함께 들어감 — 안내 docs/redeploy_tonight.md. 따로 실행할 함수: briefInstall(브리핑 아침 발송 트리거가 없을 때))
  *  - 유료 판매 잠금 PAID_OPEN=false(맨 위): 통신판매업 신고번호가 나오기 전까지 PAID_ACTIONS(리포트 결제·브리핑 이용권 주문·승인·요금제 바꾸기)를
  *    '유료 이용권은 곧 열려요. 지금은 7일 무료 체험만 할 수 있어요.'(code 'paid_closed')로 거절. 무료 체험(briefTrial)·문의·알림 신청·해지·환불 요청은 그대로.
@@ -1956,11 +1967,30 @@ function cleanUserData(d, blim) {
     favs: uniq((Array.isArray(d.favs) ? d.favs : []).slice(0, 40).map(x => cleanPlace(x, false)).filter(Boolean), pk).slice(0, 30),
     reports: uniq((Array.isArray(d.reports) ? d.reports : []).slice(0, 20).map(cleanReport).filter(Boolean), x => x.id || x.t).slice(0, 10),
     areas: cleanAreas(d.areas),
-    brief: cleanBrief(d.brief, blim)
+    brief: cleanBrief(d.brief, blim),
+    rp: cleanRp(d.rp)                                                    // v49 내 집 정보 보정·대출 잔액·순자산 기록(그 사람만 읽음)
   };
   const json = JSON.stringify(out);
   if (json.length > USER_DATA_MAX) throw new Error('저장할 자료가 너무 많아요. 리포트나 관심 단지를 조금 지운 뒤 다시 저장해 주세요.');
   return out;
+}
+/* v49 내 집 성적표 개인 칸: adj{집키: {fl 층, ext 확장 y/n, rem 리모델링 y/n}} · loan{집키: 대출 잔액(만원)} · hist[[날짜, 집키, 집값, 대출]] · t 마지막 수정(ms)
+   집키 = 시군구코드|동|지번|단지|평형(웹 mine-core homeId). 숫자 범위·글자 모양만 확인하고 그대로 둔다. 공개 자료·메일에는 쓰지 않는다. */
+const RP_KEY = /^\d{5}\|[^|<>\u0000-\u001F]{1,30}\|[^|<>\u0000-\u001F]{0,30}\|[^|<>\u0000-\u001F]{1,60}\|[^|<>\u0000-\u001F]{1,20}$/;
+function cleanRp(x) {
+  x = x && typeof x === 'object' ? x : {};
+  const yn = v => v === 'y' || v === 'n' ? v : '', adj = {}, loan = {};
+  Object.keys(x.adj && typeof x.adj === 'object' ? x.adj : {}).filter(k => RP_KEY.test(k)).slice(0, 10).forEach(k => {
+    const a = x.adj[k] || {}, fl = Math.round(Number(a.fl));
+    const o = { fl: a.fl !== '' && a.fl != null && isFinite(fl) && fl >= -5 && fl <= 120 ? fl : null, ext: yn(a.ext), rem: yn(a.rem) };
+    if (o.fl != null || o.ext || o.rem) adj[k] = o;
+  });
+  Object.keys(x.loan && typeof x.loan === 'object' ? x.loan : {}).filter(k => RP_KEY.test(k)).slice(0, 10).forEach(k => {
+    const v = Math.round(Number(x.loan[k])); if (isFinite(v) && v >= 0 && v < 10000000) loan[k] = v;
+  });
+  const hist = (Array.isArray(x.hist) ? x.hist : []).filter(h => Array.isArray(h) && /^\d{4}-\d{2}-\d{2}$/.test(String(h[0])) && RP_KEY.test(String(h[1])))
+    .map(h => [String(h[0]), String(h[1]), Math.round(Number(h[2])) || 0, Math.round(Number(h[3])) || 0]).filter(h => h[2] > 0 && h[2] < 10000000 && h[3] >= 0 && h[3] < 10000000).slice(-120);
+  const t = Math.round(Number(x.t)); return { adj: adj, loan: loan, hist: hist, t: isFinite(t) && t > 0 ? t : 0 };
 }
 function userAlerts(k) {
   const sh = book().getSheetByName(SH_UA); if (!sh) return [];
@@ -1971,7 +2001,7 @@ function userAlerts(k) {
 function userLoad(b) {
   const u = sessionUser(b.s);
   const d = u.data && typeof u.data === 'object' ? u.data : {};
-  return { ok: true, nick: u.nick, data: { v: 1, homes: d.homes || [], favs: d.favs || [], reports: d.reports || [], areas: d.areas || { list: [], kinds: { notice: true, mu: true }, t: '' }, brief: cleanBrief(d.brief, bLim(bIsAdmin(u.k))) }, alerts: userAlerts(u.k) };
+  return { ok: true, nick: u.nick, data: { v: 1, homes: d.homes || [], favs: d.favs || [], reports: d.reports || [], areas: d.areas || { list: [], kinds: { notice: true, mu: true }, t: '' }, brief: cleanBrief(d.brief, bLim(bIsAdmin(u.k))), rp: cleanRp(d.rp) }, alerts: userAlerts(u.k) };
 }
 function userSave(b) {
   const u = sessionUser(b.s);
@@ -4513,7 +4543,10 @@ function ytKitSend(latest) {
    ===================================================================== */
 /* ALERTS-CORE BEGIN — 이 블록은 tools/agent-backend.gs 에 그대로 복사돼 있어요. 고칠 때는 두 곳을 똑같이 고쳐 주세요(node tools/alerts-test.js 가 비교). */
 const AX_V = 'alerts-2026-11-21';                 // 메일 알림 동의 문구 판(화면 문구를 바꾸면 날짜를 바꿈)
-const AX_KINDS = { trade: '새 실거래', high: '신고가', drop: '급매·큰 하락', jeonse: '전세가율 변화' };
+const AX_KINDS = { high: '신고가', trade: '새 실거래', drop: '급매·큰 하락', jeonse: '전세가율', nb: '근처 신축 허가', cynear: '근처 청약 공고' };
+const AX_OPTIN = { nb: 1, cynear: 1 };            // 나중에 생긴 종류 — 사용자가 직접 켠 경우에만 보냄(먼저 신청한 분께 묻지 않은 알림이 가지 않게)
+const AX_JR_LINES = [80, 90];                     // 전세가율이 이 선을 넘거나 내려오면 알림(%)
+const AX_NB_M = 500, AX_NB_MONTHS = 3, AX_NEAR_DAYS = 14;   // 신축 허가: 관심 단지에서 이 거리(m) 안·최근 이 달 수 안 허가 · 근처 청약: 공고 뒤 이 날 수 안
 const AX_CY_KINDS = { cy_new: '새 청약 공고', cy_eve: '청약 접수 하루 전', cy_win: '당첨자 발표일' };
 const AX_URG = 10, AX_DROP = -10, AX_JR = 5;       // 급매(%) · 큰 하락(%) · 전세가율 변화(%p) — 위 설명의 기존 기준
 const AX_MAX_PLACES = 30, AX_MAX_REGIONS = 10, AX_MAX_LINES = 40;
@@ -4540,7 +4573,7 @@ function axSido(s) { s = String(s || ''); return AX_SIDO_OLD[s] || s; }
 function axCleanPrefs(x) {
   x = x && typeof x === 'object' ? x : {};
   const k = x.kinds && typeof x.kinds === 'object' ? x.kinds : {}, kinds = {};
-  Object.keys(AX_KINDS).forEach(n => { kinds[n] = k[n] !== false; });
+  Object.keys(AX_KINDS).forEach(n => { kinds[n] = AX_OPTIN[n] ? k[n] === true : k[n] !== false; });
   const mute = (Array.isArray(x.mute) ? x.mute : []).map(v => axTxt(v, 160)).filter(v => v.split('|').length === 5).filter((v, i, a) => a.indexOf(v) === i).slice(0, AX_MAX_PLACES);
   const c = x.cy && typeof x.cy === 'object' ? x.cy : {}, seen = {};
   const regions = (Array.isArray(c.regions) ? c.regions : []).map(r => r && ({ sd: axSido(axTxt(r.sd, 20)), g: /^\d{5}$/.test(String(r.g || '')) ? String(r.g) : '', gn: axTxt(r.gn, 30) }))
@@ -4550,7 +4583,7 @@ function axCleanPrefs(x) {
   if (lo != null && hi != null && lo > hi) { const t = lo; lo = hi; hi = t; }
   const ck = c.kinds && typeof c.kinds === 'object' ? c.kinds : {}, cyk = {};
   Object.keys(AX_CY_KINDS).forEach(q => { cyk[q] = ck[q] !== false; });
-  return { kinds: kinds, mute: mute, cy: { on: c.on === true && regions.length > 0, regions: regions, nohome: c.nohome === true ? true : c.nohome === false ? false : null, lo: lo, hi: hi, kinds: cyk } };
+  return { kinds: kinds, mute: mute, cy: { on: c.on === true && regions.length > 0, regions: regions, nohome: c.nohome === true ? true : c.nohome === false ? false : null, lo: lo, hi: hi, kinds: cyk }, rp: x.rp === true };
 }
 
 /* ---------- 관심 단지 한 곳의 알림 ----------
@@ -4588,7 +4621,49 @@ function axPlaceEvents(p, G, S) {
     put(`j|${pid}|${G.date || ''}|${u[2]}`, { k: 'jeonse', jr: u[2], jr0: u0[2], t: `전세가율이 ${u0[2].toFixed(1)}%에서 ${u[2].toFixed(1)}%로 ${axPct(d)}%p ${d > 0 ? '올랐어요' : '내려갔어요'}`,
       s: `전세가율은 매매가 대비 전세 보증금 비율이에요${G.d0 ? `(${axMd(G.d0)} 값과 비교)` : ''}. ${d > 0 ? '갭 기회와 전세 위험을 함께 확인해 보세요.' : '보증금은 더 안전해졌고, 갭 부담은 커졌어요.'}` });
   }
+  if (u && u0 && u[2] != null && u0[2] != null) AX_JR_LINES.forEach(L => {          // 80%·90% 선을 넘거나 내려옴(같은 방향은 90일에 한 번)
+    const up = u0[2] < L && u[2] >= L, dn = u0[2] >= L && u[2] < L;
+    if (!up && !dn) return;
+    put(`jx|${pid}|${L}|${up ? 'u' : 'd'}`, { k: 'jeonse', jr: u[2], jr0: u0[2],
+      t: up ? `전세가율이 ${L}%를 넘었어요: ${u0[2].toFixed(1)}% → ${u[2].toFixed(1)}%` : `전세가율이 ${L}% 아래로 내려왔어요: ${u0[2].toFixed(1)}% → ${u[2].toFixed(1)}%`,
+      s: up ? `전세가율이 ${L}%를 넘으면 집값이 조금만 내려도 전세 보증금을 다 돌려받기 어려워질 수 있어요. 전세로 들어가신다면 보증보험 가입이 되는지 먼저 확인해 보세요.`
+        : `전세 보증금 부담이 조금 줄었어요. 갭(매매가 − 전세가)은 그만큼 커졌어요.` });
+  });
   return order.map(q => out[q]);
+}
+
+/* ---------- 관심 단지 근처 신축 허가(newbuild.json — 건축HUB 건축 인허가 공개 자료) ----------
+   xy = 관심 단지 좌표 [경도, 위도](공개 sNN_xy.json), nb = { rows, kinds, asof }. 허가 단계(아직 공사 전)이고, 허가 달이 최근 AX_NB_MONTHS 달 안이며
+   신청한 달(since) 이후인 현장만. 현장 좌표는 약 100m 범위로 둥글린 값이라 거리도 대략(50m 단위)으로 적는다. */
+function axYm(iso, back) { const y = +String(iso).slice(0, 4), m = +String(iso).slice(5, 7) - (back || 0), t = y * 12 + m - 1; return `${Math.floor(t / 12)}${String(t % 12 + 1).padStart(2, '0')}`; }
+function axDist(a, b) { const r = Math.PI / 180, dx = (b[0] - a[0]) * r * Math.cos((a[1] + b[1]) / 2 * r), dy = (b[1] - a[1]) * r; return 6371000 * Math.sqrt(dx * dx + dy * dy); }
+function axNbEvents(p, xy, nb, since) {
+  if (!Array.isArray(xy) || xy.length < 2 || !nb || !Array.isArray(nb.rows) || !nb.asof) return [];
+  const pid = axPid(p), lo = [axYm(nb.asof, AX_NB_MONTHS - 1), since ? axYm(since, 0) : ''].sort().pop(), out = [];
+  nb.rows.forEach(r => {
+    if (!r || r.st !== 'permit' || !/^\d{6}$/.test(String(r.pm || '')) || r.pm < lo || !Array.isArray(r.xy)) return;
+    const m = axDist(xy, r.xy); if (!(m <= AX_NB_M)) return;
+    const kn = ((nb.kinds || {})[r.k]) || '건물', cnt = r.u > 0 ? ` ${r.u}${r.k === 'offi' ? '실' : r.k === 'shop' ? '호' : '세대'}` : '';
+    out.push({ k: 'nb', key: `n|${pid}|${r.id}`, id: axKeyId(`n|${pid}|${r.id}`), pid: pid, m: Math.max(50, Math.round(m / 50) * 50),
+      t: `관심 단지에서 약 ${Math.max(50, Math.round(m / 50) * 50)}m 거리에 신축 허가가 났어요: ${axTxt(r.dn, 30)} ${kn}${cnt}`,
+      s: `${String(r.pm).slice(0, 4)}년 ${+String(r.pm).slice(4, 6)}월 허가, 아직 공사 시작 전이에요. 국토교통부 건축HUB 건축 인허가 공개 자료이고, 위치는 약 100m 범위라 거리도 대략이에요. 분양 여부는 이 자료로 알 수 없어요.` });
+  });
+  return out.sort((a, b) => a.m - b.m);
+}
+/* ---------- 관심 단지와 같은 시·군·구의 새 청약 공고 ----------
+   sg = 관심 단지 시·군·구 {sido, name}(공개 index.json sgg). 공고일이 오늘 이전·최근 AX_NEAR_DAYS 일 안·신청한 날 이후이고 접수가 끝나지 않은 공고만. */
+function axCyNear(p, sg, notices, today, since) {
+  if (!sg || !sg.name || !today) return [];
+  const pid = axPid(p), lo = axAddDay(today, -AX_NEAR_DAYS), out = [];
+  (notices || []).forEach(n => {
+    if (!n || axSido(n.sd) !== axSido(sg.sido) || n.g !== sg.name) return;
+    const pb = axIso(n.pb), st = axCyStages(n);
+    if (!pb || pb > today || pb < lo || (since && pb < since) || (st.length && st[st.length - 1].d < today)) return;
+    const pw = axIso(n.pw), sub = [pb ? `공고 ${axMd(pb)}` : '', st.map(x => `${x.lab} 접수 ${axMd(x.d)}`).join(' · '), pw ? `발표 ${axMd(pw)}` : ''].filter(Boolean).join(' · ');
+    out.push({ k: 'cynear', key: `c|${n.no}|near`, id: axKeyId(`c|${n.no}|near`), pid: pid, no: n.no, n: n.n, u: /^https:\/\//.test(n.u || '') ? n.u : '',
+      t: `관심 단지와 같은 ${n.g}에 ${n.n} 청약 공고가 나왔어요`, s: [sub ? sub + '.' : '', n.k === '국민' ? '국민주택이라 무주택 세대구성원만 신청할 수 있어요.' : '', '접수는 청약홈에서 해요.'].filter(Boolean).join(' ') });
+  });
+  return out;
 }
 
 /* ---------- 청약 ----------
@@ -4632,19 +4707,26 @@ function axCyEvents(n, cy, today, since) {
 }
 
 /* ---------- 하루 묶음 ----------
-   o = { places, g:{구: today/g}, s:{구: brief}, notices:[청약 공고], prefs, today, since, sent:{알림id:1} }
-   → { groups:[{p, pid, ev[]}], cy:[ev], n, ids[] } — 끈 단지·끈 종류·이미 보낸 알림(sent)은 뺀다 */
+   o = { places, g:{구: today/g}, s:{구: brief}, notices:[청약 공고], prefs, today, since, sent:{알림id:1},
+         xy(p) → 단지 좌표 [경도, 위도] | null, nb: { rows, kinds, asof }(newbuild.json), sg(code) → { sido, name } | null(index.json sgg) }
+   → { groups:[{p, pid, ev[]}], cy:[ev], n, ids[] } — 끈 단지·끈 종류·이미 보낸 알림(sent)은 뺀다.
+   같은 청약 공고는 한 번만: 청약 맞춤(새 공고)으로 알리는 공고는 근처 청약으로 또 알리지 않고, 근처 청약은 그 공고와 같은 구의 첫 관심 단지에만 붙인다. */
 function axDigest(o) {
   o = o || {};
   const P = axCleanPrefs(o.prefs), sent = o.sent || {}, mute = {}, groups = [], ids = [];
   P.mute.forEach(x => { mute[x] = 1; });
-  (o.places || []).slice(0, AX_MAX_PLACES).forEach(p => {
-    const pid = axPid(p); if (mute[pid]) return;
-    const ev = axPlaceEvents(p, (o.g || {})[p.code], (o.s || {})[p.code]).filter(e => P.kinds[e.k] && !sent[e.id]);
-    if (ev.length) { groups.push({ p: p, pid: pid, ev: ev }); ev.forEach(e => ids.push(e.id)); }
-  });
   let cy = [];
   if (P.cy.on && o.today) (o.notices || []).forEach(n => { cy = cy.concat(axCyEvents(n, P.cy, o.today, o.since || '').filter(e => !sent[e.id])); });
+  const cyNew = {}, nearDone = {};
+  cy.forEach(e => { if (e.k === 'cy_new') cyNew[e.no] = 1; });
+  (o.places || []).slice(0, AX_MAX_PLACES).forEach(p => {
+    const pid = axPid(p); if (mute[pid]) return;
+    let ev = axPlaceEvents(p, (o.g || {})[p.code], (o.s || {})[p.code]);
+    if (P.kinds.nb && o.nb && o.xy) ev = ev.concat(axNbEvents(p, o.xy(p), o.nb, o.since || ''));
+    if (P.kinds.cynear && o.sg) ev = ev.concat(axCyNear(p, o.sg(p.code), o.notices, o.today, o.since || '').filter(e => !cyNew[e.no] && !nearDone[e.no] && (nearDone[e.no] = 1)));
+    ev = ev.filter(e => P.kinds[e.k] && !sent[e.id]);
+    if (ev.length) { groups.push({ p: p, pid: pid, ev: ev }); ev.forEach(e => ids.push(e.id)); }
+  });
   cy.forEach(e => ids.push(e.id));
   return { groups: groups, cy: cy, n: ids.length, ids: ids };
 }
@@ -4688,7 +4770,7 @@ function axMailHtml(D, o) {
       <ul style="list-style:none;margin:8px 0 0;padding:0">${D.cy.map(e => li(e)).join('')}</ul></div>` : '';
   const more = cut ? `<p style="font-size:13.5px;color:#4E5968;margin:0 0 10px">이 밖에 알림 ${cut}건은 <a href="${axEsc(web)}my/alerts/" style="color:#2F6BFF">알림 센터</a>에서 볼 수 있어요.</p>` : '';
   const head = `<div style="font-size:18px;font-weight:900;margin:0 0 4px">내가 고른 것의 새 소식 <span style="font-size:13px;font-weight:700;color:#2F6BFF">${D.n}건</span></div>
-    <p style="margin:0 0 10px;font-size:13.5px;color:#4E5968;line-height:1.55">관심 목록에 넣은 단지와 직접 고른 청약 조건에 생긴 변화만 모았어요. 숫자는 국토교통부 실거래 공개 자료와 청약홈 공고 그대로예요.</p>`;
+    <p style="margin:0 0 10px;font-size:13.5px;color:#4E5968;line-height:1.55">관심 목록에 넣은 단지와 직접 고른 청약 조건에 생긴 변화 가운데, 알림 센터에서 켜 둔 종류만 모았어요. 숫자는 국토교통부 공개 자료와 청약홈 공고 그대로예요.</p>`;
   const offAll = L ? `<a href="${axEsc(L.all)}" style="color:#4E5968">모든 알림 끄기(한 번 누르면 끝)</a>` : '';
   const foot = `<p style="font-size:12px;color:#4E5968;line-height:1.65;margin:12px 0 0;border-top:1px solid #E5E8EB;padding-top:10px">
     이 메일은 ${axEsc(site)}에서 관심 단지·청약 메일 알림을 신청하신 분께만 보내는 정보 알림이에요${o.since ? `(신청 ${axEsc(o.since)})` : ''}. 알림이 있는 날만 하루 한 번, 오전 7시대에 보내요.<br>
@@ -4740,6 +4822,13 @@ function axFavsMap() {
   return m;
 }
 function axFavs(k, m) { return (m || axFavsMap())[k] || []; }
+/** v49 회원 저장 자료의 내 집(homes) — 성적표 메일용 */
+function axHomesMap() {
+  const sh = book().getSheetByName(SH_U), m = {}; if (!sh) return m;
+  sh.getDataRange().getValues().slice(1).forEach(x => { const d = parseJ(x[UC['저장자료']], {}); m[String(x[UC['카카오id']])] = (Array.isArray(d && d.homes) ? d.homes : []).map(y => cleanPlace(y, false)).filter(Boolean).slice(0, 5); });
+  return m;
+}
+function axHomes(k, m) { return (m || axHomesMap())[k] || []; }
 
 function axDispatch(b) {
   try {
@@ -4756,7 +4845,7 @@ function axDispatch(b) {
 }
 function alertMine(b) {
   const u = sessionUser(b.s), bm = axBriefMail(u.k);
-  return { ok: true, v: AX_V, sub: axPublic(axMine(u.k)), brief: bm ? { mask: String(bm.r[BC['연락처가림']] || '') } : null, favs: axFavs(u.k).length };
+  return { ok: true, v: AX_V, sub: axPublic(axMine(u.k)), brief: bm ? { mask: String(bm.r[BC['연락처가림']] || '') } : null, favs: axFavs(u.k).length, homes: axHomes(u.k).length, rp: 1 };
 }
 /** 알림 메일 신청(동의 필수) — 이미 있으면 같은 행을 다시 켬 */
 function alertJoin(b) {
@@ -4767,7 +4856,7 @@ function alertJoin(b) {
   if (b.useBrief === true) { const bm = axBriefMail(u.k, now); if (!bm) throw new Error('모닝 브리핑을 이메일로 받고 있지 않아요. 받을 이메일을 적어 주세요.'); email = String(bm.r[BC['연락처']]).replace(/^'/, ''); }
   else { const ct = parseContact(b.email); if (!ct || ct.kind !== 'email') throw new Error('알림을 받을 이메일 주소를 정확히 적어 주세요.'); email = ct.norm; }
   const ct = parseContact(email), prefs = axCleanPrefs(b.prefs);
-  if (!axFavs(u.k).length && !prefs.cy.on) throw new Error('관심 목록에 단지를 넣거나 청약 알림 지역을 골라야 알림을 보낼 수 있어요.');
+  if (!axFavs(u.k).length && !prefs.cy.on && !(prefs.rp && axHomes(u.k).length)) throw new Error('관심 목록에 단지를 넣거나, 청약 알림 지역을 고르거나, 내 집을 등록해야 알림을 보낼 수 있어요.');
   const at = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(String(b.at || '')) ? String(b.at).slice(0, 25) : '';
   const cur = axRows().filter(x => String(x.r[AXC['카카오id']]) === u.k).pop();
   let row;
@@ -4823,7 +4912,8 @@ function alertOff(p) {
     const s = axSubOf(o);
     if (p.all) { axStop(o, '메일의 끄기 링크'); msg = '관심 단지·청약 알림 메일을 모두 껐어요. 다시 받으시려면 알림 센터에서 신청해 주세요.'; return; }
     const prefs = s.prefs;
-    if (p.cy) { prefs.cy.on = false; msg = '청약 알림을 껐어요. 관심 단지 알림은 그대로 받아요.'; }
+    if (p.rp) { prefs.rp = false; msg = '내 집 성적표 메일을 껐어요. 관심 단지·청약 알림은 그대로 받아요.'; }
+    else if (p.cy) { prefs.cy.on = false; msg = '청약 알림을 껐어요. 관심 단지 알림은 그대로 받아요.'; }
     else if (p.p) {
       const f = axFavs(s.k).find(x => safeEq(axPh(axPid(x)), String(p.p)));
       if (f) { if (prefs.mute.indexOf(axPid(f)) < 0) prefs.mute.push(axPid(f)); msg = `${f.apt} ${f.band} 알림을 껐어요. 다른 알림은 그대로 받아요.`; }
@@ -4858,13 +4948,17 @@ function axSend(ch, sub, msg) {
 /* ---------- 하루 묶음 만들기 ---------- */
 /** 공개 자료를 한 번씩만 받는 상자 */
 function axCtx(now) {
-  const date = ymd(now || new Date()), gc = {}, sc = {};
+  const date = ymd(now || new Date()), gc = {}, sc = {}, xc = {};
   const ix = bFetchJson(AX_DATA + 'index.json');
   const N = (bFetchJson(AX_DATA + 'chungyak/notices.json') || {}).rows || [];
+  let nbP;                                                                    // v49: 근처 신축 허가 — 켠 사람이 있을 때만 한 번 받음
   return { date: date, now: now || new Date(), notices: N, favs: axFavsMap(),
     g: c => (c in gc) ? gc[c] : (gc[c] = bFetchJson(AX_DATA + 'today/g/' + c + '.json')),
     s: c => (c in sc) ? sc[c] : (sc[c] = bFetchJson(BRIEF_DATA + c + '.json')),
-    gname: c => (((ix || {}).sgg || {})[c] || {}).name || '' };
+    gname: c => (((ix || {}).sgg || {})[c] || {}).name || '',
+    sg: c => { const x = ((ix || {}).sgg || {})[c]; return x ? { sido: x.sido, name: x.name } : null; },
+    nb: () => nbP === undefined ? (nbP = bFetchJson(AX_DATA + 'newbuild.json') || null) : nbP,
+    xy: p => { const f = /^s\d{2}$/.test(String(p.sd || '')) ? p.sd : ''; if (!f) return null; if (!(f in xc)) xc[f] = ((bFetchJson(AX_DATA + f + '_xy.json') || {}).xy) || {}; return xc[f][[p.code, p.dong, p.jibun || ''].join('|')] || null; } };
 }
 /** 보낸 알림 기록 → { 구독id: { 알림id: 1 } } (보관 기간 안만) */
 function axSentAll(now) {
@@ -4878,7 +4972,9 @@ function axBuild(s, ctx, sent) {
   if (!axCanSend(s) || s.last === ctx.date) return null;
   const places = axFavs(s.k, ctx.favs), g = {}, sx = {};
   places.forEach(p => { if (!(p.code in g)) { g[p.code] = ctx.g(p.code); sx[p.code] = ctx.s(p.code); } });
-  const D = axDigest({ places: places, g: g, s: sx, notices: ctx.notices, prefs: s.prefs, today: ctx.date, since: s.since, sent: (sent || {})[s.id] || {} });
+  const nb = s.prefs.kinds.nb ? ctx.nb() : null;
+  const D = axDigest({ places: places, g: g, s: sx, notices: ctx.notices, prefs: s.prefs, today: ctx.date, since: s.since, sent: (sent || {})[s.id] || {},
+    nb: nb ? { rows: nb.rows, kinds: nb.kinds, asof: nb.asof } : null, xy: ctx.xy, sg: ctx.sg });
   return D.n ? D : null;
 }
 function axMsg(s, D, ctx, merged) {
@@ -4921,6 +5017,7 @@ function alertsInstall() {
   ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'alertsDaily').forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger('alertsDaily').timeBased().everyDays(1).atHour(7).inTimezone('Asia/Seoul').create();
   ScriptApp.newTrigger('alertsDaily').timeBased().everyDays(1).atHour(9).inTimezone('Asia/Seoul').create();   // 7시에 한도·오류로 못 보낸 사람만 다시
+  reportInstall();                                                                                               // v49 월요일 내 집 성적표(9시대·11시대)
   axSheet(); uSheet(SH_AXL, AXLH); uSheet(SH_AXS, AXSH);
 }
 function alertsDaily() {
@@ -4954,6 +5051,183 @@ function axAreaCodes() {
   const out = {}, fm = axFavsMap();
   axRows().forEach(o => { const s = axSubOf(o); if (s.state !== AX_ST.on) return; axFavs(s.k, fm).forEach(p => { out[p.code] = 1; }); });
   return Object.keys(out);
+}
+
+
+/* =====================================================================
+   v49 내 집 성적표 주간 메일 (안내 docs/alerts.md 6절)
+   - 받는 사람: 알림 구독(v44 '알림구독' 시트, 동의·이메일 확인 그대로) 가운데 알림 센터에서 '내 집 성적표 메일'(prefs.rp)을 켠 분만.
+   - 싣는 집: 회원 저장 자료의 내 집(homes) 먼저, 관심 단지(favs) 다음, 최대 RP_MAX(6)곳. 끈 단지(mute)는 뺌.
+   - 자료: 공개 data/report/index.json 의 date 가 오늘(월요일)일 때만 — 엔진 home_report.py(월요일 07:52, 예비 08:12·08:37·09:22)가 만든 그날 판.
+     숫자·문장은 아래 REPORT-CORE(웹 assets/report-core.js 와 같은 글자) 그대로. 순자산·보정 값은 싣지 않음. 광고 없음.
+   - 같은 날 두 번 안 보냄('알림기록'에 rp|날짜 한 줄). 메일 하루 한도가 AX_RESERVE 만큼 남으면 멈추고 11시대 실행에 이어서.
+   - 끄기: '성적표 메일만 끄기'(GET alertOff &rp=1) · '모든 알림 끄기'(&all=1) · 알림 센터.
+   - 카카오 알림톡: RP_ALIMTALK=false — 심사 끝나면 SOLAPI_TPL_REPORT 를 넣고 true(지금은 이메일만).
+   - 트리거: alertsInstall 이 reportInstall 을 함께 부름(월요일 오전 9시대·11시대 reportWeekly). 검증: node tools/report-test.js
+   ===================================================================== */
+const RP_ALIMTALK = false;                         // 카카오 알림톡(비즈 채널·템플릿 심사 끝난 뒤에만 true)
+const RP_DATA = AX_DATA + 'report/';
+/* REPORT-CORE BEGIN — 이 블록은 tools/agent-backend.gs 에 그대로 복사돼 있어요. 고칠 때는 두 곳을 똑같이 고쳐 주세요(node tools/report-test.js 가 비교). */
+const RP_MAX = 6;                       // 메일 한 통에 싣는 집 수(내 집 먼저, 그다음 관심 단지)
+const RP_JR_LINES = [90, 80];
+const RP_FLOOR_NEAR = 3, RP_FLOOR_MIN = 3, RP_FLOOR_DAYS = 365;   // 층 참고값: 내 층 ±3층 · 3건 이상 · 최근 1년
+function rpEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function rpWon(m) { m = Math.round(Number(m) || 0); const neg = m < 0; m = Math.abs(m); const e = Math.floor(m / 10000), r = m % 10000; const t = e && r ? `${e}억 ${r.toLocaleString('en-US')}만 원` : e ? `${e}억 원` : `${r.toLocaleString('en-US')}만 원`; return (neg ? '−' : '') + t; }
+function rpKey(p) { return [p.dong, p.jibun || '', p.apt, p.band].join('|'); }
+function rpPid(p) { return [p.code, p.dong, p.jibun || '', p.apt, p.band].join('|'); }
+function rpMd(x) { const s = String(x || '').replace(/-/g, ''); return s.length >= 8 ? `${+s.slice(4, 6)}/${+s.slice(6, 8)}` : ''; }
+function rpYm(ym) { ym = String(ym || ''); return /^\d{6}$/.test(ym) ? `${ym.slice(0, 4)}년 ${+ym.slice(4, 6)}월` : ''; }
+function rpPct(v) { v = Math.round(Number(v) * 100) / 100; return (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(2) + '%'; }
+function rpTrade(t) { return { dt: t[0], f: t[1], p: t[2], x: t[3] === 1, hi: t[4] === 1 }; }
+function rpRow(t) { return { apt: t[0], band: t[1], dt: t[2], f: t[3], p: t[4], x: t[5] === 1, hi: t[6] === 1 }; }
+
+/** 한 집의 성적표 카드(공식 숫자만). R = report/g/{구}.json, 없거나 그 집이 없으면 null */
+function rpCard(p, R) {
+  if (!p || !R || !R.u) return null;
+  const u = R.u[rpKey(p)]; if (!u) return null;
+  const q = (R.p || {})[rpKey(p)] || null, d = (R.d || {})[p.dong] || null, cap = v => v == null ? null : Math.min(99, v);
+  const wk = R.wk && R.wk.w ? { w: R.wk.w, from: R.wk.from, to: R.wk.to, st: R.wk.st, g: R.wk.g || null, sd: R.wk.sd || null, kr: R.wk.kr || null } : null;
+  let near = null;
+  if (d && Array.isArray(d.nw)) near = { mode: 'new', n: d.nn || 0, list: d.nw.map(rpRow) };
+  else if (d && Array.isArray(d.rc)) near = { mode: 'recent', n: d.nr || 0, list: d.rc.map(rpRow) };
+  return {
+    p: p, pid: rpPid(p), date: R.date || '', pd: R.pd || '',
+    price: u[0] ? { v: u[0], at: u[6] || '', v0: q && q[0] ? q[0] : null } : null,
+    rank: u[1] ? { r: u[1], n: u[4], same: u[5] === 1, r0: q && q[1] ? q[1] : null } : null,
+    fv: u[2] != null ? { v: cap(u[2]), v0: q && q[2] != null ? cap(q[2]) : null, sr: u[7] || null } : null,
+    jr: u[3] != null ? { v: u[3], v0: q && q[3] != null ? q[3] : null, line: RP_JR_LINES.find(L => u[3] >= L) || 0 } : null,
+    trades: (u[8] || []).map(rpTrade), wk: wk, near: near
+  };
+}
+/** 차이 글자: 지난 성적표 값이 있을 때만 */
+function rpDiff(v, v0, unit) {
+  if (v == null || v0 == null) return '';
+  const d = Math.round((v - v0) * 10) / 10;
+  if (!d) return '지난번과 같아요';
+  return unit === '위' ? `지난번 ${v0}위 → ${Math.abs(d)}계단 ${d < 0 ? '올랐어요' : '내려갔어요'}`
+    : unit === '원' ? `지난번보다 ${rpWon(Math.abs(d))} ${d > 0 ? '올랐어요' : '내렸어요'}`
+    : `지난번 ${v0}${unit} → ${d > 0 ? '+' : '−'}${Math.abs(d)}${unit === '%' ? '%p' : unit}`;
+}
+/** 카드 → 쉬운 말 줄 [{k, h(제목), t(큰 글), s(설명)}] — 메일과 화면이 같은 문장을 쓴다. gname = 구 이름 */
+function rpLines(c, gname) {
+  const out = [], g = gname || '우리 구';
+  const W = c.wk;
+  if (W && W.g) {
+    const x = W.g, per = `지난주(${rpMd(W.from)}~${rpMd(W.to)})`;
+    let t, s;
+    if (x.chg != null && !x.old) {
+      t = `${per} ${g} 아파트값은 같은 집끼리 비교해 ${rpPct(x.chg)} ${x.chg > 0 ? '올랐어요' : x.chg < 0 ? '내렸어요' : '그대로였어요'}`;
+      s = `석 달 안에 다시 팔린 같은 집 ${Number(x.np).toLocaleString('en-US')}쌍의 값 차이에서, 가장 많이 오르고 내린 4분의 1씩을 빼고 평균 낸 값이에요(${W.st === 'final' ? '확정' : '신고가 더 들어오면 바뀔 수 있는 잠정'} 숫자).`;
+    } else {
+      t = `${per} ${g}는 같은 집 다시 거래가 ${Number(x.np || 0).toLocaleString('en-US')}쌍이라 변동률을 내지 않았어요`;
+      s = `30쌍 이상일 때만 내요.${x.mchg != null ? ` 최근 4주를 합쳐 보면 ${rpPct(x.mchg)}예요.` : ''}`;
+    }
+    const sd = W.sd && W.sd.chg != null ? `${W.sd.nm} 전체 ${rpPct(W.sd.chg)}` : '', kr = W.kr && W.kr.chg != null ? `전국 ${rpPct(W.kr.chg)}` : '';
+    if (sd || kr) s += ` 같은 주 ${[sd, kr].filter(Boolean).join(' · ')}.`;
+    out.push({ k: 'wk', h: '이번 주 가격 흐름', t: t, s: s });
+  } else out.push({ k: 'wk', h: '이번 주 가격 흐름', t: '이번 주 가격 흐름 자료가 아직 없어요', s: '주간 실거래 동향이 나오면 함께 보여 드려요.' });
+  if (c.price) out.push({ k: 'price', h: '최근 시세', t: rpWon(c.price.v) + (c.price.v0 ? ` · ${rpDiff(c.price.v, c.price.v0, '원')}` : ''),
+    s: `${rpYm(c.price.at)}까지 3개월 동안 이 단지·이 평형 실거래의 3.3㎡당 값 중간값으로 계산했어요.` });
+  const tr = c.trades.slice(0, 3).map(t => `${rpMd(t.dt)} ${t.f != null ? t.f + '층 ' : ''}${rpWon(t.p)}${t.hi ? '(신고가)' : ''}${t.x ? '(직거래)' : ''}`);
+  out.push({ k: 'trade', h: '최근 실거래', t: tr.length ? tr.join(' · ') : '최근 3년 거래가 없어요', s: '계약일 · 층 · 금액이에요. 국토교통부 실거래 신고 자료 그대로예요.' });
+  if (c.rank) out.push({ k: 'rank', h: '동네 순위', t: `${c.p.dong} ${c.rank.same ? '같은 평형대 ' : ''}아파트 ${c.rank.n}곳 중 ${c.rank.r}위` + (c.rank.r0 ? ` · ${rpDiff(c.rank.r, c.rank.r0, '위')}` : ''),
+    s: '최근 3.3㎡당 실거래 값이 높은 순서예요.' });
+  if (c.fv) out.push({ k: 'fv', h: '미래가치 점수', t: `${c.fv.v}점` + (c.fv.v0 != null ? ` · ${rpDiff(c.fv.v, c.fv.v0, '점')}` : '') + (c.fv.sr ? ` · 시·도 안 ${Number(c.fv.sr).toLocaleString('en-US')}위` : ''),
+    s: '공개 자료로 따져 본 참고 점수예요. 앞으로의 집값을 정해 주는 숫자는 아니에요.' });
+  if (c.jr) out.push({ k: 'jr', h: '전세가율', t: `${Number(c.jr.v).toFixed(1)}%` + (c.jr.v0 != null ? ` · ${rpDiff(Math.round(c.jr.v * 10) / 10, Math.round(c.jr.v0 * 10) / 10, '%')}` : ''),
+    s: c.jr.line ? `매매가 대비 전세 보증금 비율이 ${c.jr.line}%를 넘었어요. 이 정도면 집값이 조금만 내려도 보증금을 다 돌려받기 어려워질 수 있어요.` : '매매가 대비 전세 보증금 비율이에요. 높을수록 갭(매매가 − 전세가)이 작아요.' });
+  if (c.near) {
+    const L = c.near.list.slice(0, 3).map(r => `${r.apt} ${r.band} ${rpMd(r.dt)} ${r.f != null ? r.f + '층 ' : ''}${rpWon(r.p)}${r.hi ? '(신고가)' : ''}`);
+    out.push({ k: 'near', h: '우리 동네 새 거래',
+      t: c.near.mode === 'new' ? (c.near.n ? `지난 성적표(${rpMd(c.pd)}) 뒤 ${c.p.dong}에 새로 올라온 아파트 거래 ${c.near.n}건` : `지난 성적표(${rpMd(c.pd)}) 뒤 ${c.p.dong}에 새로 올라온 아파트 거래는 없어요`)
+        : (c.near.n ? `최근 2주 ${c.p.dong}에서 계약된 아파트 거래 ${c.near.n}건` : `최근 2주 ${c.p.dong}에서 신고된 아파트 거래는 아직 없어요`),
+      s: (L.length ? L.join(' · ') + '. ' : '') + (c.near.mode === 'new' ? '공개 자료에 처음 보인 거래예요.' : '지금까지 신고된 것만 세었어요(신고는 계약 뒤 30일 안에 해요).') });
+  }
+  return out;
+}
+/** 순자산 = 집값 − 대출 잔액(사용자가 적은 값). 둘 다 있어야 계산 */
+function rpNet(price, loan) {
+  price = Number(price); loan = Number(loan);
+  if (!(price > 0) || !(loan >= 0) || !isFinite(loan)) return null;
+  return { net: price - loan, ratio: Math.round(loan / price * 1000) / 10 };
+}
+/** 층 참고값: 같은 단지·같은 평형 실거래(price/{구}.json units[11]) 가운데 내 층 ±3층 · 최근 1년 · 직거래 뺀 거래의 중간값. 3건 미만이면 null */
+function rpFloorRef(trades, fl, today) {
+  fl = Math.round(Number(fl)); if (!isFinite(fl) || fl < -5 || fl > 120 || !Array.isArray(trades)) return null;
+  const t = String(today || '').replace(/-/g, ''), lo = (+t.slice(0, 4) - 1) * 10000 + +t.slice(4, 8);
+  const v = trades.filter(x => Array.isArray(x) && x[0] >= lo && x[4] !== 1 && x[2] != null && Math.abs(x[2] - fl) <= RP_FLOOR_NEAR && x[3] > 0).map(x => x[3]).sort((a, b) => a - b);
+  if (v.length < RP_FLOOR_MIN) return { n: v.length, med: null };
+  const n = v.length, med = n % 2 ? v[(n - 1) / 2] : Math.round((v[n / 2 - 1] + v[n / 2]) / 2);
+  return { n: n, med: med, lo: v[0], hi: v[n - 1] };
+}
+/** 메일에 실을 집: 내 집(homes) 먼저, 관심 단지(favs) 다음, 같은 집은 한 번, RP_MAX 곳까지 */
+function rpPlaces(homes, favs) {
+  const seen = {}, out = [];
+  (homes || []).concat(favs || []).forEach(p => { if (!p || !p.code) return; const id = rpPid(p); if (seen[id] || out.length >= RP_MAX) return; seen[id] = 1; out.push(p); });
+  return out;
+}
+/* 메일: cards = [{c(카드), g(구 이름), mine(내 집이면 true)}], o = { site, web(끝 /), links: { rp(성적표만 끄기), all(모든 알림 끄기) }, sender, date }
+   → { subject, html, text }. 광고 없음. 순자산·보정 값은 싣지 않는다(메일은 전달될 수 있어서) */
+function rpMailHtml(cards, o) {
+  o = o || {};
+  const site = o.site || '집코드', web = o.web || '', L = o.links || {}, text = [];
+  const blocks = cards.map(x => {
+    const c = x.c, lines = rpLines(c, x.g);
+    text.push(`■ ${c.p.apt} ${c.p.band}`); lines.forEach(l => text.push(`${l.h}: ${l.t}`));
+    const rows = lines.map(l => `<tr><td style="padding:7px 0;border-top:1px solid #F2F4F6;vertical-align:top;width:92px;font-size:13px;color:#4E5968;font-weight:700">${rpEsc(l.h)}</td>
+      <td style="padding:7px 0 7px 8px;border-top:1px solid #F2F4F6"><b style="font-size:14.5px;color:#191F28;line-height:1.5">${rpEsc(l.t)}</b><br><span style="font-size:12.5px;color:#4E5968;line-height:1.55">${rpEsc(l.s)}</span></td></tr>`).join('');
+    const url = web ? `${web}my/report/?sd=${encodeURIComponent(c.p.sd)}&d=${encodeURIComponent([c.p.code, c.p.dong, c.p.jibun || '', c.p.apt].join('|'))}&b=${encodeURIComponent(c.p.band)}` : '';
+    return `<div style="border:1px solid #E5E8EB;border-radius:14px;padding:14px 16px;margin:0 0 12px">
+      <div style="font-size:12px;font-weight:800;color:${x.mine ? '#8A6A12' : '#4E5968'}">${x.mine ? '내 집' : '관심 단지'}</div>
+      <div style="font-size:17px;font-weight:900;margin:2px 0 6px">${rpEsc(c.p.apt)} <span style="font-size:13px;font-weight:500;color:#4E5968">${rpEsc([x.g, c.p.dong, c.p.band].filter(Boolean).join(' · '))}</span></div>
+      <table style="width:100%;border-collapse:collapse">${rows}</table>
+      ${url ? `<a href="${rpEsc(url)}" style="display:inline-block;margin-top:8px;font-size:13.5px;color:#2F6BFF">성적표 크게 보기·공유하기</a>` : ''}</div>`;
+  }).join('');
+  const off = [L.rp ? `<a href="${rpEsc(L.rp)}" style="color:#4E5968">성적표 메일만 끄기(한 번 누르면 끝)</a>` : '', L.all ? `<a href="${rpEsc(L.all)}" style="color:#4E5968">모든 알림 끄기</a>` : '',
+    web ? `<a href="${rpEsc(web)}my/alerts/" style="color:#4E5968">알림 설정 바꾸기</a>` : ''].filter(Boolean).join(' · ');
+  const html = `<div style="font-family:'Noto Sans KR',sans-serif;max-width:600px;margin:auto;color:#191F28">
+    <div style="font-weight:900;font-size:19px;margin:6px 0 2px">${rpEsc(site)} <span style="color:#B8942A">내 집 성적표</span> <span style="font-size:13px;font-weight:700;color:#4E5968">${rpMd(o.date)}</span></div>
+    <p style="margin:0 0 12px;font-size:13.5px;color:#4E5968;line-height:1.55">등록하신 내 집과 관심 단지의 한 주를 공개 자료로만 정리했어요. 지난 성적표와 달라진 점을 함께 적었어요.</p>
+    ${blocks}
+    <p style="font-size:12px;color:#4E5968;line-height:1.65;margin:12px 0 0;border-top:1px solid #E5E8EB;padding-top:10px">
+    자료: 국토교통부 아파트 매매 실거래가 공개 자료, ${rpEsc(site)} 주간 실거래 동향. 과거 자료로 만든 참고 정보예요.<br>
+    이 메일은 ${rpEsc(site)} 알림 센터에서 '내 집 성적표 메일'을 켜신 분께만 매주 월요일 오전에 보내는 정보 메일이에요. 광고가 아니에요.<br>
+    ${off}<br>보낸 사람: ${rpEsc(site)}${o.sender ? `(${rpEsc(o.sender.name)}) · 전화 ${rpEsc(o.sender.tel)} · 답장은 ${rpEsc(o.sender.email)}로 가요` : ''}</p></div>`;
+  const first = cards[0] ? cards[0].c.p.apt : '';
+  const subject = `[${site}] ${rpMd(o.date)} 내 집 성적표 — ${first}${cards.length > 1 ? ` 외 ${cards.length - 1}곳` : ''}`.slice(0, 120);
+  return { subject: subject, html: html, text: text.join('\n') };
+}
+/* REPORT-CORE END */
+function reportInstall() {
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'reportWeekly').forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('reportWeekly').timeBased().onWeekDay(ScriptApp.WeekDay.MONDAY).atHour(9).inTimezone('Asia/Seoul').create();
+  ScriptApp.newTrigger('reportWeekly').timeBased().onWeekDay(ScriptApp.WeekDay.MONDAY).atHour(11).inTimezone('Asia/Seoul').create();   // 9시대에 자료가 늦거나 한도로 못 보낸 분
+}
+/** 월요일 성적표 메일. 반환: 보낸 수(자료가 그날 것이 아니면 -1) */
+function reportWeekly() {
+  const now = new Date(), date = ymd(now), ix = bFetchJson(RP_DATA + 'index.json');
+  if (!ix || ix.date !== date) { uSheet(SH_AXS, AXSH).appendRow([date, '', '성적표', '자료가 아직 없어 다음 실행에(' + String((ix || {}).date || '없음') + ')', 0]); return -1; }
+  const sent = axSentAll(now), hm = axHomesMap(), fm = axFavsMap(), gc = {}, idx = bFetchJson(AX_DATA + 'index.json') || {};
+  const rid = axKeyId('rp|' + date), gfile = c => (c in gc) ? gc[c] : (gc[c] = bFetchJson(RP_DATA + 'g/' + c + '.json'));
+  const gname = c => ((idx.sgg || {})[c] || {}).name || '';
+  let n = 0, stop = false;
+  axRows().forEach(o => {
+    if (stop) return;
+    const s = axSubOf(o);
+    if (s.state !== AX_ST.on || !s.prefs.rp || !axCanSend(s) || ((sent[s.id] || {})[rid])) return;
+    if (MailApp.getRemainingDailyQuota() <= AX_RESERVE) { stop = true; uSheet(SH_AXS, AXSH).appendRow([date, '', '성적표', '하루 한도에 닿아 멈춤 — 남은 분은 다음 실행에', 0]); return; }
+    const mute = {}; s.prefs.mute.forEach(x => { mute[x] = 1; });
+    const homes = axHomes(s.k, hm), mine = {}; homes.forEach(p => { mine[rpPid(p)] = 1; });
+    const cards = rpPlaces(homes, axFavs(s.k, fm).filter(p => !mute[rpPid(p)])).map(p => ({ c: rpCard(p, gfile(p.code)), g: gname(p.code), mine: !!mine[rpPid(p)] })).filter(x => x.c);
+    if (!cards.length) return;
+    const L = axLinks(bApi(), s.id, axTok, axPh);
+    const m = rpMailHtml(cards, { site: SITE_NAME, web: WEB_ROOT, links: { rp: L.all.replace(/&all=1$/, '&rp=1'), all: L.all }, sender: BRIEF_SENDER, date: date });
+    const r = axSend('email', s, m);
+    if (r.ok) { uSheet(SH_AXL, AXLH).appendRow([date, s.id, rid, 'report']); uSheet(SH_AXS, AXSH).appendRow([date, s.id, '성적표', '보냄', cards.length]); n++; }
+    else uSheet(SH_AXS, AXSH).appendRow([date, s.id, '성적표', '못 보냄: ' + r.why, cards.length]);
+    if (RP_ALIMTALK && AX_SENDERS.kakao.ready()) { /* 심사받은 템플릿(SOLAPI_TPL_REPORT)으로 요약 한 줄 + 성적표 링크 — docs/alerts.md 알림톡 템플릿 안 */ }
+  });
+  return n;
 }
 
 
