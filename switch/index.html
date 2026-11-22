@@ -323,8 +323,10 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .taxf{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:auto}
 .taxf a{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:52px;border:1.5px solid var(--blue);color:var(--blue);border-radius:10px;text-decoration:none;font-weight:900;font-size:15px;padding:6px 4px;line-height:1.25}
 .taxf a small{font-size:12.5px;font-weight:500;color:#4E5968}
+@media(max-width:1023px){body.jtab-pad .toast{bottom:calc(82px + env(safe-area-inset-bottom))}}   /* 아래 탭 메뉴 위로 */
 </style>
 <link rel="stylesheet" href="../assets/aplus.css?v=45">
+<script src="../assets/tabbar.js?v=5" defer></script>
 <script src="../assets/nw.js?v=1" defer></script>
 <style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
 :root{--gold:#2560E8}
