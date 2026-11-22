@@ -11,6 +11,7 @@
  *  - 검증: node tools/brief-admin-test.js </dev/null
  *
  * v49 변경 요약 (다음 재배포에 함께 들어감 — 안내 docs/alerts.md 6절. 재배포 뒤 편집기에서 alertsInstall 한 번 실행: 매일 알림 트리거 + 월요일 성적표 트리거를 함께 만듦)
+ *  - 내 집 전용면적(homes[].ar, 함께 재배포): 한 평형에 전용면적이 여럿인 단지에서 사용자가 고른 내 집 면적을 계정에 저장(cleanPlace), 성적표 메일 '최근 시세'가 그 면적 값(report/g u 10번째 칸). 재배포 전에는 이 기기에만 저장돼요.
  *  - 내 집 성적표 주간 메일(맨 아래 'v49' 칸): 알림 센터에서 '내 집 성적표 메일'을 켠 알림 구독자(prefs.rp)에게만, 매주 월요일 오전 9시대(못 보내면 11시대)
  *    내 집(homes)·관심 단지(favs) 최대 6곳의 성적표(공개 data/report/g/{구}.json — 엔진 home_report.py, 월요일 07:52)를 한 통으로. 계산·문장은 REPORT-CORE 블록
  *    (웹 assets/report-core.js 와 같은 글자). 그날 자료(report/index.json date)가 아니면 보내지 않고 다음 실행에. 같은 주에 두 번 안 보냄('알림기록' rp|날짜).
@@ -1927,6 +1928,8 @@ function cleanPlace(x, withBuy) {
   if (!x || typeof x !== 'object') return null;
   const o = { sd: uText(x.sd, 12), code: uText(x.code, 5), dong: uText(x.dong, 30), jibun: uText(x.jibun, 30), apt: uText(x.apt, 60), band: uText(x.band, 20), t: uText(x.t, 10) };
   if (!UD_SD.test(o.sd) || !UD_CODE.test(o.code) || !o.apt || !o.band) return null;
+  const ar = Math.round(Number(x.ar) * 10) / 10;
+  if (isFinite(ar) && ar >= 5 && ar <= 400) o.ar = ar;             // v49: 내 집에 고른 전용면적(㎡) — 성적표 메일이 그 면적 시세를 씀
   if (withBuy) {
     const bp = Math.round(Number(x.bp));
     o.bp = bp > 0 && bp < 10000000 ? bp : null;
@@ -5080,19 +5083,28 @@ function rpYm(ym) { ym = String(ym || ''); return /^\d{6}$/.test(ym) ? `${ym.sli
 function rpPct(v) { v = Math.round(Number(v) * 100) / 100; return (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(2) + '%'; }
 function rpTrade(t) { return { dt: t[0], f: t[1], p: t[2], x: t[3] === 1, hi: t[4] === 1 }; }
 function rpRow(t) { return { apt: t[0], band: t[1], dt: t[2], f: t[3], p: t[4], x: t[5] === 1, hi: t[6] === 1 }; }
+/** 전용면적별 시세 목록([[전용㎡, 시세, 연월], …] — 한 평형에 전용 타입이 여럿일 때만)에서 고른 전용㎡와 가장 가까운 것(2㎡ 안). 없으면 null */
+function rpArea(list, ar) {
+  ar = Number(ar); if (!Array.isArray(list) || !(ar > 0)) return null;
+  let b = null;
+  list.forEach(x => { if (Array.isArray(x) && x[0] > 0 && (!b || Math.abs(x[0] - ar) < Math.abs(b[0] - ar))) b = x; });
+  return b && Math.abs(b[0] - ar) <= 2 ? b : null;
+}
 
 /** 한 집의 성적표 카드(공식 숫자만). R = report/g/{구}.json, 없거나 그 집이 없으면 null */
 function rpCard(p, R) {
   if (!p || !R || !R.u) return null;
   const u = R.u[rpKey(p)]; if (!u) return null;
   const q = (R.p || {})[rpKey(p)] || null, d = (R.d || {})[p.dong] || null, cap = v => v == null ? null : Math.min(99, v);
+  const ta = p.ar ? rpArea(u[9], p.ar) : null, qa = ta && q ? rpArea(q[4], ta[0]) : null;   // 내 집에 고른 전용면적이 있으면 그 면적 시세
   const wk = R.wk && R.wk.w ? { w: R.wk.w, from: R.wk.from, to: R.wk.to, st: R.wk.st, g: R.wk.g || null, sd: R.wk.sd || null, kr: R.wk.kr || null } : null;
   let near = null;
   if (d && Array.isArray(d.nw)) near = { mode: 'new', n: d.nn || 0, list: d.nw.map(rpRow) };
   else if (d && Array.isArray(d.rc)) near = { mode: 'recent', n: d.nr || 0, list: d.rc.map(rpRow) };
   return {
     p: p, pid: rpPid(p), date: R.date || '', pd: R.pd || '',
-    price: u[0] ? { v: u[0], at: u[6] || '', v0: q && q[0] ? q[0] : null } : null,
+    price: ta ? (ta[1] ? { v: ta[1], at: ta[2] || '', v0: qa && qa[1] ? qa[1] : null, ar: ta[0] } : null)
+      : u[0] ? { v: u[0], at: u[6] || '', v0: q && q[0] ? q[0] : null } : null,
     rank: u[1] ? { r: u[1], n: u[4], same: u[5] === 1, r0: q && q[1] ? q[1] : null } : null,
     fv: u[2] != null ? { v: cap(u[2]), v0: q && q[2] != null ? cap(q[2]) : null, sr: u[7] || null } : null,
     jr: u[3] != null ? { v: u[3], v0: q && q[3] != null ? q[3] : null, line: RP_JR_LINES.find(L => u[3] >= L) || 0 } : null,
@@ -5127,7 +5139,7 @@ function rpLines(c, gname) {
     out.push({ k: 'wk', h: '이번 주 가격 흐름', t: t, s: s });
   } else out.push({ k: 'wk', h: '이번 주 가격 흐름', t: '이번 주 가격 흐름 자료가 아직 없어요', s: '주간 실거래 동향이 나오면 함께 보여 드려요.' });
   if (c.price) out.push({ k: 'price', h: '최근 시세', t: rpWon(c.price.v) + (c.price.v0 ? ` · ${rpDiff(c.price.v, c.price.v0, '원')}` : ''),
-    s: `${rpYm(c.price.at)}까지 3개월 동안 이 단지·이 평형의 같은 전용면적 실거래 3.3㎡당 값 중간값으로 계산했어요(같은 면적 거래가 모자라면 다른 면적 거래를 이 면적 값으로 맞춰 함께 써요).` });
+    s: `${rpYm(c.price.at)}까지 3개월 동안 이 단지·이 평형의 ${c.price.ar ? `전용 ${c.price.ar}㎡(내가 고른 면적)` : '같은 전용면적'} 실거래 3.3㎡당 값 중간값으로 계산했어요(같은 면적 거래가 모자라면 다른 면적 거래를 이 면적 값으로 맞춰 함께 써요).` });
   const tr = c.trades.slice(0, 3).map(t => `${rpMd(t.dt)} ${t.f != null ? t.f + '층 ' : ''}${rpWon(t.p)}${t.hi ? '(신고가)' : ''}${t.x ? '(직거래)' : ''}`);
   out.push({ k: 'trade', h: '최근 실거래', t: tr.length ? tr.join(' · ') : '최근 3년 거래가 없어요', s: '계약일 · 층 · 금액이에요. 국토교통부 실거래 신고 자료 그대로예요.' });
   if (c.rank) out.push({ k: 'rank', h: '동네 순위', t: `${c.p.dong} ${c.rank.same ? '같은 평형대 ' : ''}아파트 ${c.rank.n}곳 중 ${c.rank.r}위` + (c.rank.r0 ? ` · ${rpDiff(c.rank.r, c.rank.r0, '위')}` : ''),
@@ -5176,7 +5188,7 @@ function rpMailHtml(cards, o) {
     text.push(`■ ${c.p.apt} ${c.p.band}`); lines.forEach(l => text.push(`${l.h}: ${l.t}`));
     const rows = lines.map(l => `<tr><td style="padding:7px 0;border-top:1px solid #F2F4F6;vertical-align:top;width:92px;font-size:13px;color:#4E5968;font-weight:700">${rpEsc(l.h)}</td>
       <td style="padding:7px 0 7px 8px;border-top:1px solid #F2F4F6"><b style="font-size:14.5px;color:#191F28;line-height:1.5">${rpEsc(l.t)}</b><br><span style="font-size:12.5px;color:#4E5968;line-height:1.55">${rpEsc(l.s)}</span></td></tr>`).join('');
-    const url = web ? `${web}my/report/?sd=${encodeURIComponent(c.p.sd)}&d=${encodeURIComponent([c.p.code, c.p.dong, c.p.jibun || '', c.p.apt].join('|'))}&b=${encodeURIComponent(c.p.band)}` : '';
+    const url = web ? `${web}my/report/?sd=${encodeURIComponent(c.p.sd)}&d=${encodeURIComponent([c.p.code, c.p.dong, c.p.jibun || '', c.p.apt].join('|'))}&b=${encodeURIComponent(c.p.band)}${c.p.ar ? '&a=' + encodeURIComponent(c.p.ar) : ''}` : '';
     return `<div style="border:1px solid #E5E8EB;border-radius:14px;padding:14px 16px;margin:0 0 12px">
       <div style="font-size:12px;font-weight:800;color:${x.mine ? '#8A6A12' : '#4E5968'}">${x.mine ? '내 집' : '관심 단지'}</div>
       <div style="font-size:17px;font-weight:900;margin:2px 0 6px">${rpEsc(c.p.apt)} <span style="font-size:13px;font-weight:500;color:#4E5968">${rpEsc([x.g, c.p.dong, c.p.band].filter(Boolean).join(' · '))}</span></div>

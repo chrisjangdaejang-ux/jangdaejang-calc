@@ -25,9 +25,9 @@
 <script src="../../assets/stat.js?v=7"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/config.js?v=9"></script>
-<script src="../../assets/auth.js?v=9"></script>
-<script src="../../assets/mine-core.js?v=19"></script>
-<script src="../../assets/report-core.js?v=2"></script>
+<script src="../../assets/auth.js?v=10"></script>
+<script src="../../assets/mine-core.js?v=20"></script>
+<script src="../../assets/report-core.js?v=3"></script>
 <script src="../../assets/alerts-core.js?v=2"></script>
 <script src="../../assets/watch-core.js?v=2"></script>
 <script src="../../assets/watch.js?v=7"></script>
@@ -173,7 +173,9 @@ function favs(){ try { return W ? W.list() : []; } catch (e) { return []; } }
 function fromUrl(){
   const q = new URLSearchParams(location.search), d = (q.get('d') || '').split('|');
   if (d.length < 4 || !/^\d{5}$/.test(d[0]) || !q.get('b')) return null;
-  return { sd: (q.get('sd') || '').slice(0, 12), code: d[0], dong: d[1], jibun: d[2] || '', apt: d[3], band: q.get('b') };
+  const o = { sd: (q.get('sd') || '').slice(0, 12), code: d[0], dong: d[1], jibun: d[2] || '', apt: d[3], band: q.get('b') }, ar = Math.round(+q.get('a') * 10) / 10;
+  if (ar >= 5 && ar <= 400) o.ar = ar;                                  // 공유받은 성적표가 고른 전용면적 기준이면 같은 면적으로
+  return o;
 }
 const SHARED = fromUrl();
 function places(){
@@ -192,7 +194,7 @@ const chg = (v, v0, unit, better) => {
 };
 function cardHtml(c, it){
   const L = RC.lines(c, gname(c.p.code)), by = {}; L.forEach(l => { by[l.k] = l; });
-  const loc = [gname(c.p.code), c.p.dong, c.p.band].filter(Boolean).join(' · ');
+  const loc = [gname(c.p.code), c.p.dong, c.p.band, c.price && c.price.ar ? `전용 ${c.price.ar}㎡` : ''].filter(Boolean).join(' · ');
   const k = [];
   k.push(`<div><small>최근 시세</small><b>${c.price ? esc(RC.won(c.price.v)) : '-'}</b>${c.price ? chg(c.price.v, c.price.v0, '원') : '<i>최근 3개월 거래가 없어요</i>'}</div>`);
   k.push(`<div><small>동네 순위</small><b>${c.rank ? `${c.rank.r}위 <em>/ ${c.rank.n}곳</em>` : '-'}</b>${c.rank ? chg(c.rank.r, c.rank.r0, '위', 'low') : '<i>같은 동 비교 단지가 적어요</i>'}</div>`);
@@ -210,8 +212,9 @@ function cardHtml(c, it){
     <div class="ft">${c.pd ? `지난 성적표(${esc(c.pd.replace(/-/g, '.'))})와 비교했어요. ` : ''}${by.fv ? '미래가치 점수는 ' + esc(by.fv.s) : ''} 자료: 국토교통부 실거래가 공개 자료 · ${esc(SITE)} 주간 실거래 동향</div>
   </article>`;
 }
-const mineUrl = p => `${BASE}mine/?sd=${encodeURIComponent(p.sd)}&d=${encodeURIComponent([p.code, p.dong, p.jibun || '', p.apt].join('|'))}&b=${encodeURIComponent(p.band)}`;
-const shareUrl = p => `${location.origin}${BASE}my/report/?sd=${encodeURIComponent(p.sd)}&d=${encodeURIComponent([p.code, p.dong, p.jibun || '', p.apt].join('|'))}&b=${encodeURIComponent(p.band)}`;
+const arQ = p => p.ar ? `&a=${encodeURIComponent(p.ar)}` : '';
+const mineUrl = p => `${BASE}mine/?sd=${encodeURIComponent(p.sd)}&d=${encodeURIComponent([p.code, p.dong, p.jibun || '', p.apt].join('|'))}&b=${encodeURIComponent(p.band)}${arQ(p)}`;
+const shareUrl = p => `${location.origin}${BASE}my/report/?sd=${encodeURIComponent(p.sd)}&d=${encodeURIComponent([p.code, p.dong, p.jibun || '', p.apt].join('|'))}&b=${encodeURIComponent(p.band)}${arQ(p)}`;
 function drawActs(p){
   const el = $('acts'); el.hidden = false;
   el.innerHTML = `<button type="button" class="btn primary" id="shareBtn">이 성적표 공유하기</button><a class="btn ghost" href="${esc(mineUrl(p))}" data-track="report_to_mine">단지 시세 보기</a><div id="shareMsg" class="saved" role="status" style="flex-basis:100%"></div>`;
@@ -221,6 +224,29 @@ function drawActs(p){
     if (navigator.share) { navigator.share({title, url}).catch(() => {}); return; }
     (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(() => { $('shareMsg').textContent = '주소를 복사했어요. 카카오톡이나 문자에 붙여 넣어 보내 주세요. 공유 주소에는 공개 숫자만 보이고, 내가 적은 정보(대출·보정)는 보이지 않아요.'; })
       .catch(() => { $('shareMsg').textContent = '이 주소를 길게 눌러 복사해 주세요: ' + url; });
+  };
+}
+
+/* ---------- 우리 집 전용면적(한 평형에 전용면적이 여럿일 때만) — 내 집 목록(jdj_myhome)에 저장, 로그인 중이면 계정에도 ---------- */
+let RU = null;                                                       // 지금 보는 집의 성적표 자료 행(R.u[키])
+function areaPanel(c, it){
+  const list = RU && Array.isArray(RU[9]) ? RU[9].filter(x => Array.isArray(x) && x[0] > 0) : [];
+  if (!it.mine || list.length < 2) return '';
+  const cur = it.p.ar ? RC.area(list, it.p.ar) : (list.find(x => x[1] && x[1] === RU[0]) || list[0]);
+  return `<section class="pn" aria-labelledby="arT"><h2 id="arT">우리 집 전용면적</h2>
+    <p>이 단지 ${esc(c.p.band)}에는 전용면적이 ${list.length}가지 있어요. 우리 집 면적을 고르면 최근 시세를 그 면적 기준으로 보여 드려요.${it.p.ar ? '' : ' <b>아직 고르지 않아서 가장 많이 거래된 면적으로 보여 드리고 있어요.</b>'}</p>
+    <div class="fr" style="grid-template-columns:1fr"><label>전용면적<select id="arSel">${list.map(x => `<option value="${x[0]}"${x === cur ? ' selected' : ''}>${x[0]}㎡ · 최근 시세 ${x[1] ? esc(RC.won(x[1])) : '최근 3개월 거래 없음'}</option>`).join('')}</select></label></div>
+    <p class="saved" id="arMsg">${AU && AU.user() ? '내 집 목록과 함께 이 기기·내 계정에 저장돼요.' : '내 집 목록과 함께 이 기기에 저장돼요.'}</p></section>`;
+}
+function wireArea(it){
+  const sel = $('arSel'); if (!sel) return;
+  sel.onchange = () => {
+    const ar = +sel.value, list = homes(), h = list.find(x => pid(x) === pid(it.p)); if (!h || !(ar > 0)) return;
+    h.ar = ar; it.p.ar = ar;
+    try { ls.set(M.STORE_KEY, M.dumpStore(list)); } catch (e) {}
+    if (AU && AU.user() && AU.pushHomes) AU.pushHomes();
+    stat('feature_use', {feature:'report_area'});
+    show(it).then(() => { const m = $('arMsg'); if (m){ m.className = 'saved ok'; m.textContent = `✓ 우리 집 전용면적을 ${ar}㎡로 저장했어요. 위 성적표의 최근 시세도 이 면적 기준이에요.`; } });
   };
 }
 
@@ -290,7 +316,8 @@ function drawSide(c, it){
   if (SHARED) { side.innerHTML = `<section class="cta"><h2>내 집 성적표도 만들어 보세요</h2><p>내 집을 등록하면 매주 이런 성적표를 볼 수 있어요. 원하면 월요일 아침 메일로도 받아요.</p><a class="btn primary big" href="${BASE}mine/">내 집 등록하기</a></section>`; return; }
   const mail = `<section class="cta"><h2>매주 월요일 메일로 받기</h2><p>알림 센터에서 '내 집 성적표 메일'을 켜면, 매주 월요일 오전에 이 성적표를 메일로 보내 드려요. 메일마다 끄기 링크가 있어요.</p><a class="btn primary big" href="${BASE}my/alerts/#rp" data-track="report_to_alerts">알림 센터에서 켜기</a></section>`;
   if (!it.mine) { side.innerHTML = `<section class="pn"><h2>관심 단지예요</h2><p>내 집 정보 보정과 순자산은 '내 집'으로 등록한 집에서만 적을 수 있어요.</p><a class="btn ghost" href="${esc(mineUrl(c.p))}">이 단지를 내 집으로 등록하기</a></section>` + mail; return; }
-  side.innerHTML = adjPanel(c) + netPanel(c) + mail;
+  side.innerHTML = areaPanel(c, it) + adjPanel(c) + netPanel(c) + mail;
+  wireArea(it);
   const saveAdj = () => { const fl = $('aFl').value.trim(), o = { fl: fl === '' ? null : Math.round(+fl), ext: $('aExt').value, rem: $('aRem').value };
     if (o.fl != null && (!isFinite(o.fl) || o.fl < -5 || o.fl > 120)) return;
     if (o.fl == null && !o.ext && !o.rem) delete ME.adj[pid(c.p)]; else ME.adj[pid(c.p)] = o;
@@ -308,6 +335,7 @@ async function show(it){
   document.querySelectorAll('#pick button').forEach(b => b.setAttribute('aria-pressed', b.dataset.id === pid(it.p) ? 'true' : 'false'));
   const R = await jget('report/g/' + it.p.code + '.json'), c = RC.card(it.p, R);
   if (CUR !== it) return;
+  RU = R && R.u ? R.u[RC.key(it.p)] || null : null;
   if (!c) {
     $('card').innerHTML = `<div class="empty"><b>${esc(it.p.apt)} 성적표를 아직 만들지 못했어요.</b><br>${R ? '이 단지·평형의 성적표 자료를 찾지 못했어요. 최근 3년 실거래가 없거나 단지 정보가 바뀌었을 수 있어요.' : '성적표 자료는 매주 월요일 오전에 새로 만들어요. 잠시 뒤 다시 열어 주세요.'}<br><a href="${esc(mineUrl(it.p))}">단지 시세 보기</a></div>`;
     $('acts').hidden = true; $('side').innerHTML = ''; return;

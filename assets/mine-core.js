@@ -389,6 +389,41 @@
     return { last12: a, prev12: b, pct: (b && b > 0) ? (a - b) / b : null };
   }
 
+  /* ---------- 평형 안 전용면적 고르기 ----------
+     price/{구}.json 칸 13(한 평형에 전용 타입이 여럿일 때만, 엔진 build_site.type_list): [[전용㎡, 최근 3년 거래 수, 타입 첫 정수, 타입 끝 정수, 월별 시세 36개 | 0], …]
+     월별 시세는 엔진이 그 타입을 기준으로 칸 6 과 같은 방법으로 낸 값(0 = 칸 4 대표 타입 → 칸 6 그대로). 웹은 고르고 보여 주기만 하고 다시 계산하지 않는다. */
+  const areaInt = a => Math.floor(+a + 0.5);
+  /** 칸 13 → [{a 전용㎡, n 3년 거래 수, lo, hi 타입 정수 범위, rep 대표 타입이면 true, s 월별 시세 36개}] (타입이 하나뿐이거나 자료가 없으면 []) */
+  function areaTypes(u) {
+    const t = u && Array.isArray(u[13]) ? u[13] : null;
+    if (!t || t.length < 2) return [];
+    const out = t.filter(x => Array.isArray(x) && x[0] > 0).map(x => ({ a: +x[0], n: +x[1] || 0, lo: +x[2], hi: +x[3], rep: !Array.isArray(x[4]), s: Array.isArray(x[4]) ? x[4] : u[6] }));
+    return out.length >= 2 && out.filter(x => x.rep).length === 1 ? out : [];
+  }
+  /** 고른 전용㎡ → 그 타입(정수 범위 안이면 그 타입, 아니면 전용㎡가 가장 가까운 타입). 고른 값이 없으면 대표 타입 */
+  function areaPick(types, ar) {
+    if (!types || !types.length) return null;
+    ar = +ar;
+    if (!(ar > 0)) return types.find(x => x.rep) || types[0];
+    const i = areaInt(ar);
+    return types.find(x => i >= x.lo && i <= x.hi) || types.slice().sort((x, y) => Math.abs(x.a - ar) - Math.abs(y.a - ar))[0];
+  }
+  /** 고른 전용면적 기준으로 본 평형 행(u 모양 그대로라 bandSummary·lastDeal 등을 그대로 씀).
+      대표 타입이거나 고를 타입이 없으면 u 그대로. 아니면 칸 4 = 그 타입 전용㎡, 칸 5·7 = 그 타입 거래 수(직거래 제외), 칸 6 = 그 타입 월별 시세,
+      칸 10 = 없음(거래 달 값은 3개월 시세로 보여 줌), 칸 11 = 그 타입 개별 거래. u.base = 원래 행, u.ar = 고른 전용㎡ */
+  function areaUnit(u, ar, months) {
+    const types = areaTypes(u), t = areaPick(types, ar);
+    if (!t || t.rep) return u;
+    const inT = x => { const i = areaInt(x[1]); return i >= t.lo && i <= t.hi; };
+    const tr = (Array.isArray(u[11]) ? u[11] : []).filter(inT);
+    const ms = months || [], ix = new Map(ms.map((m, i) => [String(m), i])), c = ms.map(() => 0);
+    tr.forEach(x => { if (x[4] === 1) return; const i = ix.get(String(Math.floor(x[0] / 100))); if (i != null) c[i]++; });
+    const v = u.slice(0, 13);
+    v[4] = t.a; v[5] = t.n; v[6] = t.s; v[7] = c.map(n => String.fromCharCode(48 + Math.min(n, 74))).join(''); v[10] = null; v[11] = tr;
+    v.base = u; v.ar = t.a;
+    return v;
+  }
+
   /* ---------- 내 집 (브라우저 저장) ---------- */
   const okYm = v => /^\d{4}-(0[1-9]|1[0-2])$/.test(String(v || ''));
   function cleanHome(h) {
@@ -399,6 +434,8 @@
     o.bp = (isFinite(bp) && bp > 0 && bp < 10000000) ? bp : null;          // 매수가(만원)
     o.bd = okYm(h.bd) ? h.bd : '';                                          // 매수 연월 YYYY-MM
     o.t = String(h.t || '').slice(0, 10);                                   // 저장한 날
+    const ar = Math.round(+h.ar * 10) / 10;
+    if (isFinite(ar) && ar >= 5 && ar <= 400) o.ar = ar;                   // 고른 전용면적(㎡) — 한 평형에 전용 타입이 여럿일 때만, 없으면 키 없음
     return o;
   }
   const homeId = h => [h.code, h.dong, h.jibun, h.apt, h.band].join('|');
@@ -618,7 +655,7 @@
 
   const API = { PY, r100, STORE_KEY, MAX_HOMES, FEW, counts, lastIdx, median, toPrice, ymLabel, xTicks, danjiKey, agentKey, premiumKey, groupDanji, searchDanji,
     normName, normLight, splitNum, matchName, matchDanji, matchedAlias, suggestDanji, missRows, MISS_WHY, logMiss, dice, listRow, unitKey, hasScore, scoreOf, monthDeals, trades, lastDeal, isFew,
-    bandSummary, changeBack, dongPosition, sggPosition, trend, volume, volumeCounts, cleanHome, homeId, parseStore, dumpStore, addHome, removeHome, findUnit, vsBuy, heldMonths, reasons, reasonItems, won, pctTxt, cleanFx,
+    bandSummary, changeBack, dongPosition, sggPosition, trend, volume, volumeCounts, cleanHome, homeId, parseStore, dumpStore, addHome, removeHome, findUnit, areaTypes, areaPick, areaUnit, vsBuy, heldMonths, reasons, reasonItems, won, pctTxt, cleanFx,
     ymAdd, ymDiff, ymKo, decodeSeries, histRow, histSeries, histWindow, histSpans, sggLine, vsSgg, highs, isNewHigh, lineParts, isSparse, valAt, gapOf, monthPoint };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_MINE = API;

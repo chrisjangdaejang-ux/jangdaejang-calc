@@ -16,6 +16,7 @@
   const LOGIN_PAGE = JB.SITE + 'login/';
   const LS = 'jdj_auth', DIRTY = 'jdj_auth_dirty', BACK = 'jdj_auth_back', STATE = 'jdj_auth_state', FIRST = 'jdj_auth_first';
   const HOME_KEY = 'jdj_myhome';
+  const AR_SENT = 'jdj_myhome_ar';             // 고른 전용면적을 계정에 올린 기록 {sig, ok(서버가 받아 둠), d(날짜)}
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const ls = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
   const ss = { get(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} }, del(k) { try { sessionStorage.removeItem(k); } catch (e) {} } };
@@ -129,9 +130,23 @@
       const merge = ss.get(FIRST) === '1' || ls.get(DIRTY) === '1';
       let list = server;
       if (merge) { list = local.slice(); server.forEach(h => { if (list.length < m.MAX_HOMES && !list.some(x => m.homeId(x) === m.homeId(h))) list.push(h); }); }
+      /* 고른 전용면적(ar): 서버가 아직 이 칸을 저장하지 않으면(재배포 전) 계정 목록에 없음 → 이 기기 값을 지키고, 그것만으로는 다시 올리지 않음 */
+      const srvAr = server.some(h => h.ar != null);
+      list = list.map(h => { if (h.ar != null) return h; const l = local.find(x => m.homeId(x) === m.homeId(h)); return l && l.ar != null ? Object.assign({}, h, { ar: l.ar }) : h; });
+      const cmp = a => JSON.stringify(srvAr ? a : a.map(h => { const o = Object.assign({}, h); delete o.ar; return o; }));
       ss.del(FIRST);
       ls.set(HOME_KEY, m.dumpStore(list));
-      if (JSON.stringify(list) !== JSON.stringify(server)) return update(d => { d.homes = list; }).then(() => { ls.del(DIRTY); return list; }).catch(() => { ls.set(DIRTY, '1'); return list; });
+      /* 고른 전용면적이 계정에 아직 없으면 올림 — 서버가 그 칸을 버리면(재배포 전) 하루 한 번만 다시 시도 */
+      const sig = JSON.stringify(list.filter(h => h.ar != null).map(h => [m.homeId(h), h.ar])), day = new Date().toISOString().slice(0, 10);
+      let rec = {}; try { rec = JSON.parse(ls.get(AR_SENT) || '{}') || {}; } catch (e) { rec = {}; }
+      const srvSig = JSON.stringify(server.filter(h => h.ar != null).map(h => [m.homeId(h), h.ar]));
+      const arPush = sig !== '[]' && sig !== srvSig && (rec.sig !== sig || (!rec.ok && rec.d !== day));
+      if (cmp(list) !== cmp(server) || arPush) return update(d => { d.homes = list; }).then(st2 => {
+        ls.del(DIRTY);
+        const back = st2 && st2.data && Array.isArray(st2.data.homes) ? st2.data.homes : [];
+        if (sig !== '[]') ls.set(AR_SENT, JSON.stringify({ sig, ok: back.some(h => h && h.ar != null), d: day }));
+        return list;
+      }).catch(() => { ls.set(DIRTY, '1'); return list; });
       ls.del(DIRTY);
       return list;
     }).catch(() => null);
