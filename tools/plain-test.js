@@ -249,6 +249,10 @@ eq(P.renewalLine({}, RN, null, null), null, '선도지구 아님');
   const tb = P.whyTable(f1, r1, { sgg: '송파구', sido: '서울' });
   eq(tb.includes('<td>전세가율</td><td>내림</td><td class="num">38%</td><td class="num">52%</td><td class="num">하위 21%</td>'), true, '프리미엄 표: 이 단지 값·구 중간값·위치');
   eq(P.whyItems({ why: { '2': ['liq+'] } }, o).items.length, 0, '사실값이 하나도 없으면 문장 없음(이름만 나열 안 함)');
+  /* 새 이름 whyv(엔진 2026-11-22~) — 예전 이름 wf 와 같은 문장·표 */
+  const f2 = Object.assign({}, f1, { whyv: f1.wf }); delete f2.wf;
+  eq(P.whyItems(f2, o).items.map(x => x.t).join('|'), r1.items.map(x => x.t).join('|'), 'whyv 도 wf 와 같은 문장');
+  eq(P.whyTable(f2, P.whyItems(f2, o), { sgg: '송파구', sido: '서울' }), tb, 'whyv 도 같은 프리미엄 표');
 }
 /* 대규모 공급: 같은 조건 지구 여러 곳은 한 줄로, 과거 통계 한 번만 */
 {

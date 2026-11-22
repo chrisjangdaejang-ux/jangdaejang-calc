@@ -464,8 +464,8 @@
     return out;
   }
 
-  /* ---------- 점수를 움직인 요인(fx.why · fx.wf) → 숫자 근거 문장 ----------
-     엔진 fx.why[보유 년] = ['mom+', 'reg-', …](방향·기여 큰 순, 가중치 없음), fx.wf[지표] = [이 단지 값, 같은 구 중간값, 같은 시·도 백분위]
+  /* ---------- 점수를 움직인 요인(fx.why · fx.whyv) → 숫자 근거 문장 ----------
+     엔진 fx.why[보유 년] = ['mom+', 'reg-', …](방향·기여 큰 순, 가중치 없음), fx.whyv[지표] = [이 단지 값, 같은 구 중간값, 같은 시·도 백분위] (예전 이름 wf — 직전 공개본 호환)
      o = {h:'2', apt, dong, sgg(구 이름), sido(짧은 시·도 이름), sid, ev(evidence.json), G, rp(regionPlace 결과), regionUsed(bool), sp(supply.json)}
      → {items:[{dir:'up'|'dn', k, name, t, ev}], keys:Set} — 점수가 낮으면 내린 요인 먼저, 방향별 최대 3개.
      - 사실값을 댈 수 없는 요인은 싣지 않는다(이름만 나열하지 않음).
@@ -481,7 +481,7 @@
     const h = String(o.h || '2'), w = f.why[h] || (h === '2' ? null : f.why['2']);
     const H = f.why[h] ? h : '2';
     if (!w || !w.length) return out;
-    const WF = f.wf || {}, G = o.G, SD = o.sido || '', SG = o.sgg || '이 구', A = J(o.apt || '이 단지', '은', '는');
+    const WF = f.whyv || f.wf || {}, G = o.G, SD = o.sido || '', SG = o.sgg || '이 구', A = J(o.apt || '이 단지', '은', '는');
     const sg = v => (v > 0 ? '+' : v < 0 ? '−' : '') + (Math.round(Math.abs(v) * 1000) / 10).toFixed(1) + '%';
     const p1 = v => (Math.round(Math.abs(v) * 1000) / 10).toFixed(1);
     const n0 = v => Number(v).toLocaleString('ko-KR');
@@ -652,7 +652,7 @@
   const whyLine = it => `${it.dir === 'up' ? '올린 요인' : '내린 요인'} · ${it.name}: ${it.t}`;
   /* 프리미엄 표: 요인 | 방향 | 이 단지 | 같은 구 중간값 | 시·도 안 위치 — 엔진 사실값(wf)이 있는 요인만 */
   function whyTable(f, res, o, esc) {
-    const WF = (f && f.wf) || {}, E = esc || (s => String(s));
+    const WF = (f && (f.whyv || f.wf)) || {}, E = esc || (s => String(s));
     const fmt = (k, v) => v == null ? '-' : ['mom', 'mom2', 'sch'].includes(k) ? (k === 'mom2' ? '' : v > 0 ? '+' : v < 0 ? '−' : '') + (Math.round(Math.abs(v) * 1000) / 10).toFixed(1) + '%'
       : k === 'rel' ? (v > 0 ? '+' : v < 0 ? '−' : '') + Math.round(Math.abs(v) * 100) + '%' : ['jr', 'lg'].includes(k) ? Math.round(v * 100) + '%'
       : k === 'dd' || k === 'rc' ? (v > 0 ? '+' : v < 0 ? '−' : '') + Math.round(Math.abs(v) * 100) + '%p'

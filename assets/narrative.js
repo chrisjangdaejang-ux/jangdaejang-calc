@@ -147,7 +147,7 @@
      → {sum(요약용 짧은 사실, 비교 포함), fact, cmp, ev(과거 사례 kind)} — 사실값이 없으면 null */
   const EVK = { mom: 'mom', rel: 'rel', jr: 'jr', dd: 'dd', rc: 'rc', lg: 'lg', sch: 'sch' };
   function unitFact(k, c, G) {
-    const f = c.f, WF = f.wf || {}, A = J(c.apt, '은', '는'), SG = c.sgg, SD = c.sido;
+    const f = c.f, WF = f.whyv || f.wf || {}, A = J(c.apt, '은', '는'), SG = c.sgg, SD = c.sido;
     const wfv = (key, raw) => WF[key] && WF[key][0] != null ? WF[key][0] : raw;
     const gm = key => WF[key] && WF[key][1] != null ? WF[key][1] : null;
     const sp = key => WF[key] && WF[key][2] != null ? WF[key][2] : null;

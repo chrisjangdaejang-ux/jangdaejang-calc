@@ -32,7 +32,7 @@ const DEV = { projects: [{ id: 'mice', short: '잠실 국제교류복합지구',
   units: { '11710|잠실동|19': [['mice', 590, '0~1km', '201404', 267.3, 251.5]] } };
 const s = Array(36).fill(0).map((_, i) => i < 27 ? 9000 + i * 160 : i === 27 ? 13293 : 12845);
 const f = { fv: 25, fvg: 65, gs: 10, fh: { 3: 77 }, mom: -0.003, jr: 0.38, lg: 0.73, ln: '아시아선수촌아파트', dd: -0.013, rc: 0.987,
-  eb: { mom: 0, rc: 3, jr: 0, rel: 4, lg: 2, rail: 'build' }, why: { '2': ['mom+', 'reg-'] }, wf: { rel: [0.5124, -0.1642, 91], mom: [-0.0027, 0.0233, 14] },
+  eb: { mom: 0, rc: 3, jr: 0, rel: 4, lg: 2, rail: 'build' }, why: { '2': ['mom+', 'reg-'] }, whyv: { rel: [0.5124, -0.1642, 91], mom: [-0.0027, 0.0233, 14] },
   rl: { line: 'GTX-C', st: '창동역', stage: 'start_real', opened: false, target: '203109', m: 504, dl: { orig_s: '2028', delay: 33 } },
   sl: [['seoripul', 'l', 0]] };
 const C = { apt: '잠실엘스', dong: '잠실동', code: '11710', band: '84㎡대', area: 84.8, IX, EV, SP, PL, year: 2026, s, regionUsed: true, jibun: '19', pol: POL, dev: { data: DEV, u: { code: '11710', dong: '잠실동', jibun: '19' }, o: { apt: '잠실엘스' } } };
