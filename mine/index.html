@@ -50,15 +50,15 @@
 <script src="../assets/mine-core.js?v=19"></script>
 <script src="../assets/ask-core.js?v=5"></script>
 <script src="../assets/ask.js?v=3"></script>
-<script src="../assets/price-sheet.js?v=20"></script>
+<script src="../assets/price-sheet.js?v=21"></script>
 <script src="../assets/mapjump.js?v=1"></script>
 <script src="../assets/offi-core.js?v=6"></script>
 <script src="../assets/offi-view.js?v=12"></script>
 <script src="../assets/comm-core.js?v=3"></script>
 <script src="../assets/comm-view.js?v=5"></script>
-<script src="../assets/rent-core.js?v=5"></script>
+<script src="../assets/rent-core.js?v=6"></script>
 <script src="../assets/villa-core.js?v=1"></script>
-<script src="../assets/villa-view.js?v=1"></script>
+<script src="../assets/villa-view.js?v=2"></script>
 <script src="../assets/policy-view.js?v=3"></script>
 <script src="../assets/devproj-view.js?v=4"></script>
 <script src="../assets/src-box.js?v=3"></script>
@@ -467,6 +467,8 @@ function render(d, map, units){
   /* 전체 기간 시세(price/h)·최고가(행 칸 12)가 있을 때만 — 없으면 예전 화면 그대로 */
   const G0 = CUR && CUR.d.key === d.key ? CUR : {}, HT = P.histOf(G0.g, G0.hf, u), hist = G0.g && G0.g.hist;
   const GU = HT ? guOf(u, sgg) : null;
+  /* 다른 평형 전세가율(세입자 보호): 80% 이상 평형은 맨 위에 그 평형 이름으로, 차트 아래 '다른 평형' 줄마다 표시 */
+  const RJ = window.JDJ_RENT, JO = HT && RJ && RJ.bandTop ? d.bands.filter(x => x !== u).map(x => { const t = P.histOf(G0.g, G0.hf, x), v = t ? jrNow(t) : [0, '']; return { bd: x[3], r: v[0], at: v[1] }; }).filter(x => x.r > 0) : [];
   const HI = M.highs(u, hist, sm.price || (last ? last.price : 0));
   const dp = M.dongPosition(units, u), gp = M.sggPosition(sgg, u, IX.months), vol = M.volume(u);
   const sv = sgg && sgg.c ? M.volumeCounts(sgg.c) : null;
@@ -495,6 +497,7 @@ function render(d, map, units){
     <div class="dhead"><div><h2>${esc(d.apt)}</h2><div class="loc">${esc(sidoName(d.code))} ${esc(sggName(d.code))} ${esc(d.dong)} ${esc(d.jibun)}${meta ? ' · ' + esc(meta) : ''}</div>${window.JDJ_WATCH ? JDJ_WATCH.star(favPlace(d), {label: true}) : ''}${MAPJ ? `<div class="mapj-row">${MAPJ.btn(MAPJ_O, 'top', '', 'mine_to_map')}</div>` : ''}</div>
       ${f.fv != null ? `<div class="fvbadge" title="미래가치 점수(2년 기준)"><small>미래가치 점수</small><b>${f.fv}점</b><small>100점 만점</small></div>` : ''}</div>
     <div class="bands" role="group" aria-label="평형 선택">${d.bands.map(x => `<button type="button" data-b="${esc(x[3])}" class="${x[3] === S.band ? 'on' : ''}" aria-pressed="${x[3] === S.band}">${esc(x[3])}</button>`).join('')}</div>
+    ${JO.length ? RJ.bandTop(JO, '../jeonse/checklist/') : ''}
     <div class="stats">
       ${few && last ? `<div class="st key"><div class="k">최근 거래 (${esc(S.band)})</div><div class="v">${M.won(last.price)}</div><div class="d">${ym(last.at)} 거래 ${last.n}건 · 최근 3년 ${u[5]}건</div></div>`
         : !sm.price && last ? `<div class="st key"><div class="k">마지막 실거래 (${esc(S.band)})</div><div class="v">${M.won(last.price)}</div><div class="d">${ym(last.at)} · 최근 3개월 거래 없음</div></div>`
@@ -529,7 +532,8 @@ function render(d, map, units){
     <div class="legend"><span><i></i>매매 시세</span>${HT.j.some(v => v > 0) ? '<span><i class="j"></i>전세 시세</span>' : ''}${GU ? `<span><i class="g"></i>${esc(GU.name)} 아파트 같은 면적 환산</span>` : ''}<span>${esc(S.band)} · 전용 ${u[4]}㎡ 환산</span></div>
     ${GU ? `<p class="basis" id="guNote">${esc(P.guNote(GU, M.histWindow(HT, S.hspan).months[0]))}</p>` : ''}
     <p class="basis">${esc(P.histNote(hist, HT))}</p>
-    ${HT.jr.some(v => v > 0) ? P.jrChip(...jrNow(HT), '../jeonse/checklist/') : ''}
+    ${HT.jr.some(v => v > 0) ? (RJ && RJ.vjNote ? RJ.vjNote(...jrNow(HT), '../jeonse/checklist/') : P.jrChip(...jrNow(HT), '../jeonse/checklist/')) : ''}
+    ${JO.length ? `<p class="basis">다른 평형 전세가율 · ${JO.map(x => `${esc(x.bd)} ${Math.round(x.r * 100)}%${RJ.bandTag(x.r)}`).join(' · ')}</p>` : ''}
     ${HT.jr.some(v => v > 0) ? `<p class="basis">아래 띠 = 전세가율(전셋값 ÷ 매맷값, 매매·전세 시세가 모두 있는 달만, 점선 = 그 기간 평균). 차트 위를 움직이거나 누르면 그 달 매매·전세·갭(매매 − 전세)·전세가율을 보여 드려요.</p>` : ''}`
     : `<div class="chead"><h3>가격 추이 (평당가)</h3><div class="seg2" role="group" aria-label="기간">${[12, 36].map(n => `<button type="button" data-span="${n}" class="${S.span === n ? 'on' : ''}" aria-pressed="${S.span === n}">${n / 12}년</button>`).join('')}</div></div>
     <div class="chart" id="cPrice"></div>

@@ -172,6 +172,30 @@
       + `그래서 이 집에 근저당 같은 선순위채권이 집값의 ${lim - pct}%보다 많이 잡혀 있으면 이 기준을 넘을 수 있어요. 이 값은 실거래 시세로 계산한 것이라, 실제 계약하는 집의 가격·근저당은 따로 확인해야 해요.</p>`
       + `<a href="${esc(href)}" data-track="jr_chip_to_checklist">전세 계약 전 체크리스트 보기 →</a></div>`;
   }
+  /* ---------- 평형이 여러 개인 집: 대표 평형 말고 다른 평형도 세입자 보호 안내 ----------
+     어느 평형이든 90% 이상이면 맨 위에 그 평형 이름으로 주의 칩, 80~90%면 같은 자리에 안내 한 칸. '다른 평형' 줄마다 같은 단계의 작은 표시.
+     items = [{bd 평형 이름, r 0~1, at 기준 연월}] (대표 평형은 빼고 넘김) */
+  function bandChip(bd, r, at, href) {
+    const lv = vjLevel(r); if (!lv) return '';
+    const pct = Math.round(r * 100), lim = Math.round(HUG.ratio * 100), when = at ? ` <small>(${esc(ymDot(at))} 기준)</small>` : '';
+    href = href || '../jeonse/checklist/';
+    const tail = `<a href="${esc(href)}" data-track="jr_band_to_checklist">전세 계약 전 체크리스트 보기 →</a></div>`;
+    if (lv === 'hi') return `<div class="jps-jrc" role="note"><b>${esc(bd)} 평형은 전세가율 ${pct}% · 보증금 반환 위험을 꼭 확인하세요${when}</b>`
+      + `<p>같은 건물이라도 평형마다 전셋값과 매맷값이 달라요. ${esc(bd)} 평형은 전셋값이 매맷값의 ${pct}%라서, 집값이 조금만 내려도 집을 팔아 보증금을 다 돌려받기 어려울 수 있어요(깡통전세). `
+      + `주택도시보증공사(HUG) 전세보증금반환보증은 보증금과 선순위채권(근저당 등)을 더한 금액이 주택가격의 ${lim}% 이내여야 가입할 수 있어요. 이 값은 실거래 시세로 계산한 것이라, 실제 계약하는 집의 가격·근저당은 따로 확인해야 해요.</p>` + tail;
+    return `<div class="jps-jrc jrm" role="note"><b>${esc(bd)} 평형은 전세가율 ${pct}% · 주의해서 살펴보세요${when}</b>`
+      + `<p>${esc(bd)} 평형 전셋값은 매맷값의 ${pct}% 수준이에요. 주택도시보증공사(HUG) 전세보증금반환보증은 보증금과 선순위채권(근저당 등)을 더한 금액이 주택가격의 ${lim}% 이내여야 가입할 수 있어요. `
+      + `그래서 이 평형 집에 근저당 같은 선순위채권이 집값의 ${lim - pct}%보다 많이 잡혀 있으면 이 기준을 넘을 수 있어요. 이 값은 실거래 시세로 계산한 것이라, 실제 계약하는 집의 가격·근저당은 따로 확인해야 해요.</p>` + tail;
+  }
+  /** 맨 위 칩들(전세가율 높은 평형부터) */
+  function bandTop(items, href) {
+    return (items || []).filter(x => x && vjLevel(x.r)).sort((a, b) => b.r - a.r).map(x => bandChip(x.bd, x.r, x.at, href)).join('');
+  }
+  /** '다른 평형' 줄에 붙이는 작은 표시 */
+  function bandTag(r) {
+    const lv = vjLevel(r);
+    return lv === 'hi' ? '<span class="jr-tag hi">보증금 반환 위험 확인</span>' : lv === 'mid' ? '<span class="jr-tag mid">주의해서 살펴보세요</span>' : '';
+  }
   /** 여러 평형 중 화면에 먼저 보일 것: 전세가율이 있는 평형 중 전용이 area 에 가장 가까운 것(없으면 첫 평형) */
   function vjPick(list, area) {
     const ok = (list || []).filter(j => j.r > 0);
@@ -187,7 +211,7 @@
   }
 
   const API = { KINDS, kindOf, HUG, arr, monthsFrom, series, seriesFull, histRow, latest, change, risk, hugCap, convRate, compare, deals, summary, guSeries,
-    groupBld, searchBld, bldName, ymKo, NEAR, VJ_WHY, vjWin, vjBasis, vjMiss, vjLevel, vjNote, vjPick, vjDong };
+    groupBld, searchBld, bldName, ymKo, NEAR, VJ_WHY, vjWin, vjBasis, vjMiss, vjLevel, vjNote, vjPick, vjDong, bandChip, bandTop, bandTag };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_RENT = API;
 })(typeof self !== 'undefined' ? self : this);

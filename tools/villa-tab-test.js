@@ -75,6 +75,19 @@ check('경쟁 앱 이름 없음', /호갱노노|직방|다방|네이버\s*부동
 check('채우는 중 문구에 완료 날짜 약속 없음', /채우는 중[^`'"]*\d+월\s*\d+일/.test(viewSrc), false);
 check('공개 파일에 가중치·임계값 이름 없음', /\b(weights?|coef|threshold|importance)\b/i.test(viewSrc.replace(/font-weight/g, '')), false);
 
+/* 평형이 여러 개: 다른 평형도 세입자 보호 안내 */
+const RC = global.JDJ_RENT;
+global.JDJ_PRICE = require('../assets/price-sheet.js');
+const top = RC.bandTop([{ bd: '59㎡대', r: 0.7 }, { bd: '83㎡대', r: 0.92, at: '202610' }, { bd: '74㎡대', r: 0.85 }]);
+check('맨 위: 90% 이상 평형 이름과 문구', top.includes('83㎡대 평형은 전세가율 92% · 보증금 반환 위험을 꼭 확인하세요'), true);
+check('맨 위: 80~90% 평형 안내 한 칸', top.includes('74㎡대 평형은 전세가율 85% · 주의해서 살펴보세요'), true);
+check('맨 위: 80% 아래 평형은 안내 없음', top.includes('59㎡대'), false);
+check('높은 평형부터', top.indexOf('83㎡대') < top.indexOf('74㎡대'), true);
+check('80~90% 안내에 선순위채권 여유(90 − 85 = 5%)', top.includes('집값의 5%보다'), true);
+check('줄 표시', [RC.bandTag(0.92).includes('보증금 반환 위험 확인'), RC.bandTag(0.85).includes('주의해서 살펴보세요'), RC.bandTag(0.7)], [true, true, '']);
+const viewAll = ['assets/villa-view.js', 'villa/index.html', 'jeonse/index.html', 'mine/index.html'].map(f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8'));
+check('빌라 탭·재개발·빌라·전월세·아파트 화면 모두 다른 평형 안내', viewAll.map(t => t.includes('bandTop(') && t.includes('bandTag(')), [true, true, true, true]);
+
 /* 자료 폴더 */
 const dir = process.argv[2];
 if (dir) {

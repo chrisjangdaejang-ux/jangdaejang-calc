@@ -241,8 +241,9 @@
         <p><b>계산 근거</b> · ${esc(R.vjBasis(j, b.d))}</p>${R.vjNote(j.r, j.at, '../jeonse/checklist/?k=v')}`;
     } else h = `<div class="t"><span class="k">전세가율</span></div><p style="color:var(--ink,#191F28);font-size:14.5px">${esc(R.vjMiss(j, !list.length))}</p>`;
     const oth = list.filter(x => x !== j && x.r > 0);
-    if (oth.length) h += `<p>다른 평형 · ${oth.map(x => `${esc(x.bd)}(전용 ${x.a}㎡) ${Math.round(x.r * 100)}%${x.b === 'd' ? '(같은 동 비슷한 빌라 기준)' : ''}${x.jw === 12 ? '(최근 1년 전세 기준)' : ''}`).join(' · ')}</p>`;
-    return `<div class="vl-jr">${h}</div>`;
+    if (oth.length) h += `<p>다른 평형 · ${oth.map(x => `${esc(x.bd)}(전용 ${x.a}㎡) ${Math.round(x.r * 100)}%${x.b === 'd' ? '(같은 동 비슷한 빌라 기준)' : ''}${x.jw === 12 ? '(최근 1년 전세 기준)' : ''}${R.bandTag(x.r)}`).join(' · ')}</p>`;
+    /* 대표 평형이 아니어도 80% 이상인 평형은 맨 위에 그 평형 이름으로 안내(세입자 보호) */
+    return `<div class="vl-jr">${R.bandTop(oth.map(x => ({ bd: x.bd, r: x.r, at: x.at })), '../jeonse/checklist/?k=v')}${h}</div>`;
   }
   function rentPanel(b) {
     const head = `<h2>전세·월세<small>국토교통부 전월세 신고 자료로 정리했어요. 원자료에는 동·호수 같은 개인정보가 없어요.</small></h2>`;

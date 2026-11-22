@@ -29,8 +29,8 @@
 <script src="../assets/auth.js?v=8"></script>
 <script src="../assets/kchat.js?v=3"></script>
 <script src="../assets/mine-core.js?v=19"></script>
-<script src="../assets/price-sheet.js?v=20"></script>
-<script src="../assets/rent-core.js?v=5"></script>
+<script src="../assets/price-sheet.js?v=21"></script>
+<script src="../assets/rent-core.js?v=6"></script>
 <script src="../assets/policy-view.js?v=3"></script>
 <script src="../assets/plain-words.js?v=16"></script>
 <script src="../assets/narrative.js?v=18"></script>
@@ -477,8 +477,12 @@ function riskPanel(c, u, sm){
       <div class="row"><div><label for="pubV">${k === 'o' ? '기준시가·공시가격' : '공시가격'} (만원)</label><input id="pubV" inputmode="numeric" placeholder="예: 20,000"><div class="hint" id="pubH"></div></div>
       <div><label for="senV">선순위채권 (만원, 선택)</label><input id="senV" inputmode="numeric" placeholder="근저당 등, 없으면 비워 두세요"><div class="hint" id="senH"></div></div></div>
       <div class="cres" id="hugRes" hidden></div></div>` : '';
+  /* 평형이 여러 개면 다른 평형도: 주의 구간(rent-core NEAR 이상) 평형은 맨 위에 그 평형 이름으로 안내, 아래 '다른 평형' 줄마다 표시(세입자 보호) */
+  const oth = (c.units || []).filter(x => x !== u && ((x[11] || {}).jr || {}).r > 0).map(x => ({ bd: x[2], r: x[11].jr.r, at: x[11].jr.at }));
+  const href = V ? 'checklist/?k=v' : 'checklist/';
+  const othTop = R.bandTop(oth, href), othRow = oth.length ? `<p class="basis">다른 평형 · ${oth.map(x => `${esc(x.bd)} ${Math.round(x.r * 100)}%${R.bandTag(x.r)}`).join(' · ')}</p>` : '';
   return `<div class="panel"><h2>전세 위험 신호<small>전세가율 = 전셋값 ÷ 매맷값 · 기준: ${srcA('hug')}</small></h2>
-    ${rk ? `<div class="rbig ${rk.over ? 'hi' : ''}">${rk.pct}%</div>${gauge}` : ''}${msg}
+    ${othTop}${rk ? `<div class="rbig ${rk.over ? 'hi' : ''}">${rk.pct}%</div>${gauge}` : ''}${msg}${othRow}
     ${basis ? `<p class="basis"><b>계산 근거</b> · ${basis}. 실제 보증 심사의 주택가격은 HUG 가 정해요(${esc(hugPrice)}).</p>` : ''}
     ${V ? vDongBox(c) + `<div class="vwhy"><b>빌라 전세가율을 따로 보는 이유</b><p>${esc(R.VJ_WHY)}</p></div>` : ''}
     ${k === 'a' && (u[11] || {}).jrs ? `<details class="msum" id="jrBox"><summary>전세가율 추이 보기</summary><div class="chart" id="cJr" style="min-height:120px"></div><p class="basis">매매·전세 시세가 모두 있는 달만 계산해요.</p></details>` : ''}

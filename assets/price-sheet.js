@@ -495,6 +495,8 @@
 .jps-jrc b{display:block;color:#8A5A00;font-size:15px}.jps-jrc b small{font-weight:500;color:#8B95A1;font-size:12.5px}
 .jps-jrc p{margin:4px 0 6px}
 .jps-jrc a{display:inline-flex;align-items:center;min-height:44px;font-weight:700;color:#2560E8;text-decoration:none}
+.jps-jrc.jrm{border-color:#D5DCE6;background:#F7F9FC}.jps-jrc.jrm b{color:#3E4754}
+.jr-tag{display:inline-block;font-size:12.5px;font-weight:800;line-height:1.5;padding:0 7px;border-radius:999px;margin-left:4px;vertical-align:1px;white-space:nowrap}.jr-tag.hi{background:#FDECEC;color:#C81E1E}.jr-tag.mid{background:#F2F4F6;color:#3E4754}
 .jhv.pin .jhv-rd{border-color:#9DB8FF}
 .jhv-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media print{.jps-btn{display:none!important}}

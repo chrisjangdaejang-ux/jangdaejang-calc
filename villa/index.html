@@ -204,8 +204,8 @@ td.dt{white-space:nowrap}td small{color:var(--muted);font-size:12.5px}
 <script src="../assets/agents.js"></script>
 <script src="../assets/ads.js?v=5"></script>
 <script src="../assets/mine-core.js?v=19"></script>
-<script src="../assets/price-sheet.js?v=20"></script>
-<script src="../assets/rent-core.js?v=5"></script>
+<script src="../assets/price-sheet.js?v=21"></script>
+<script src="../assets/rent-core.js?v=6"></script>
 
 <script>
 var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
@@ -306,7 +306,8 @@ function jrBlock(b){
       <p class="jrb"><b>계산 근거</b> · ${esc(R.vjBasis(j, b.d))}</p>${R.vjNote(j.r, j.at, '../jeonse/checklist/?k=v')}`;
   } else h = `<div class="jrt"><span class="k">전세가율</span></div><p class="jrb miss">${esc(R.vjMiss(j, !list.length))}</p>`;
   const oth = list.filter(x => x !== j && x.r > 0);
-  if (oth.length) h += `<p class="oth">다른 평형 · ${oth.map(x => `${esc(x.bd)}(전용 ${x.a}㎡) ${Math.round(x.r * 100)}%${x.b === 'd' ? '(같은 동 비슷한 빌라 기준)' : ''}${x.jw === 12 ? '(최근 1년 전세 기준)' : ''}`).join(' · ')}</p>`;
+  if (oth.length) h += `<p class="oth">다른 평형 · ${oth.map(x => `${esc(x.bd)}(전용 ${x.a}㎡) ${Math.round(x.r * 100)}%${x.b === 'd' ? '(같은 동 비슷한 빌라 기준)' : ''}${x.jw === 12 ? '(최근 1년 전세 기준)' : ''}${R.bandTag ? R.bandTag(x.r) : ''}`).join(' · ')}</p>`;
+  if (oth.length && R.bandTop) h = R.bandTop(oth.map(x => ({ bd: x.bd, r: x.r, at: x.at })), '../jeonse/checklist/?k=v') + h;   // 대표 평형이 아니어도 80% 이상 평형은 맨 위에
   if (jl.length){
     const rows = jl.map(t => { const d = ymd(String(t[0])); return `<tr><td class="dt">${/^20\d\d\./.test(d) ? '<span class="yy">20</span>' + d.slice(2) : d}${CTN[t[4]] ? `<br><small>${CTN[t[4]]}</small>` : ''}</td><td class="num">${t[1]}㎡${t[2] != null ? `<br><small>${t[2]}층</small>` : ''}</td><td class="num"><b>${won(t[3])}</b></td></tr>`; }).join('');
     h += `<details class="tr"><summary>최근 전세 계약 ${jl.length}건 보기</summary><table><tr><th>계약일</th><th class="num">전용·층</th><th class="num">전세 보증금</th></tr>${rows}</table>
