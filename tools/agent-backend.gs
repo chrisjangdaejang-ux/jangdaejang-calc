@@ -1,6 +1,15 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집코드 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집코드 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v46 변경 요약 (v20~v45와 같은 11/28 재배포에 함께 들어감. 따로 실행할 함수 없음 — 시트 '커뮤니티글'·'커뮤니티신고'·'커뮤니티인증'과 인증 사진 드라이브 폴더는 첫 사용 때 저절로 생김)
+ *  - 살아보니(건물별 짧은 후기·이야기, 맨 아래 'v46' 칸): 숨김 상태로 미리 넣어 둠. 화면 assets/config.js COMMUNITY_ENABLED=false 이고
+ *    서버 설정 open 도 꺼져 있어서, 운영자 미리 보기 말고는 아무도 읽거나 쓸 수 없어요. 문을 여는 날 두 값을 함께 켬.
+ *  - 거르는 낱말·스팸 점수 무게와 기준은 이 파일에 없음(비공개 엔진 data/community/rules.json → 매일 cmRulesPut, BRIEF_PULL_TOKEN).
+ *    설정이 아직 안 들어왔으면 모든 글이 '검토대기'(운영자가 보고 올림). 재배포 전에는 cmRulesPut 이 'unknown' 으로 무시됨.
+ *  - 실거주 인증 사진은 운영자만 보는 드라이브 폴더에 두었다가 승인·거절 때 바로 휴지통으로(드라이브가 30일 뒤 완전 삭제), 14일 동안 검토 안 되면 지움.
+ *  - 회원 탈퇴(userDelete) 때 그 사람 글·인증 기록도 지움. 드라이브 권한은 v27·v34 에서 이미 승인됨.
+ *  - 검증: node tools/community-test.js </dev/null
+ *
  * v45 변경 요약 (재배포만 하면 됨 — 따로 실행할 함수 없음. 시트 '검색실패'는 첫 기록 때 저절로 생김)
  *  - 단지 검색 결과가 없을 때 검색어 글자만 '검색실패' 시트에 남김(logEvents 의 t:'sq'). 방문자 번호·연락처는 남기지 않고,
  *    전화번호·이메일처럼 보이는 글은 버림. 새 별칭(사람들이 부르는 단지 이름)을 배우는 용도. 재배포 전에는 그냥 무시됨.
@@ -416,6 +425,7 @@ function doPost(e) {
   if (AGT_ACTIONS[b.action]) return out(agtDispatch(b));
   if (BRIEF_ACTIONS[b.action]) return out(briefDispatch(b));
   if (AX_ACTIONS[b.action]) return out(axDispatch(b));             // v44 관심 단지·청약 알림 메일
+  if (CM_ACTIONS[b.action]) return out(cmDispatch(b));             // v46 살아보니(건물별 후기·이야기, 숨김)
   if (PRO_ACTIONS[b.action]) return out(proDispatch(b));
   if (BP_ACTIONS[b.action]) return out(bpDispatch(b));
   if (b.action === 'bpPut') { try { return out(bpPut(b)); } catch (x) { return out({ ok: false, err: String(x.message || x) }); } }
@@ -1996,6 +2006,7 @@ function userDelete(b) {
   [SH_AXL, SH_AXS].forEach(n => { const sh = book().getSheetByName(n); if (!sh) return; const v = sh.getDataRange().getValues(); for (let i = v.length - 1; i >= 1; i--) if (axIds.indexOf(String(v[i][1])) >= 0) sh.deleteRow(i + 1); });
   del(SH_AX, AXC['카카오id']);
   del(SH_UA, ALC['카카오id']); del(SH_S, SC['카카오id']); del(SH_U, UC['카카오id']);
+  try { cmUserGone(u.k); } catch (e) {}   // v46 살아보니: 그 사람 글·인증 기록 지우기
   del('플러스중개사', 0); del('내손님', 1);   // v27 중개사 플러스: 표시 정보·손님 이름표·단지(시트 이름은 아래 SH_BPP·SH_BPC 와 같음)
   let unlinked = false;
   const admin = PropertiesService.getScriptProperties().getProperty('KAKAO_ADMIN_KEY');
@@ -4806,4 +4817,420 @@ function axAreaCodes() {
   const out = {}, fm = axFavsMap();
   axRows().forEach(o => { const s = axSubOf(o); if (s.state !== AX_ST.on) return; axFavs(s.k, fm).forEach(p => { out[p.code] = 1; }); });
   return Object.keys(out);
+}
+
+
+/* =====================================================================
+   v46 살아보니(건물별 이야기) — 아파트 단지·오피스텔·빌라·상가 건물마다 짧은 후기와 이야기 (숨김 상태로 미리 만듦)
+   화면: assets/community.js(내 집 시세 화면 '살아보니' 칸) · community/(건물별 전체 보기) · community/admin/(운영자 검토, 링크 없음)
+   켜기: 화면 assets/config.js COMMUNITY_ENABLED + 서버 설정 open(비공개 엔진 data/community/rules.json → cmRulesPut). 둘 다 꺼져 있으면
+         운영자 미리 보기(관리 화면에서 받은 운영자 토큰)만 읽고 쓸 수 있어요.
+   누가: 기존 카카오 간편 로그인 회원만 글·신고·인증(sessionUser). 카카오 회원번호는 이 칸 시트에 넣지 않고 cmUid(해시)만.
+         화면에 보이는 이름은 닉네임이 아니라 건물마다 다른 '이웃 3F2A' 같은 별명(같은 사람을 건물끼리 이어 볼 수 없게).
+   거르기: 전화번호·인터넷 주소·이메일·동·호수는 여기서 바로 막고, 집값 담합·광고·욕설·개인정보 낱말과 스팸 점수 가중치·기준은
+         비공개 설정(스크립트 속성 CM_RULES_*, 엔진이 BRIEF_PULL_TOKEN 으로 넣음)에만 있어요. 설정이 아직 없으면 모든 글을 '검토대기'로.
+   임시조치(정보통신망법 제44조의2): 신고가 설정한 수 이상 쌓이면 바로 숨기고(임시조치) 운영자가 검토 화면에서 다시 보이기·삭제.
+   실거주 인증: 관리비 고지서 같은 사진을 받아 운영자만 보는 드라이브 폴더(공유 안 함)에 두고, 운영자가 승인·거절하면 그 자리에서
+         파일을 휴지통으로 옮김(드라이브가 30일 뒤 완전히 지움). 남는 것은 '이 건물 실거주 인증됨' 표시 하나. 14일 동안 검토 안 된 사진도 지움.
+   ===================================================================== */
+const CM_ACTIONS = { cmPlace: 1, cmWrite: 1, cmReport: 1, cmMine: 1, cmDelete: 1, cmVerify: 1, cmAdminMail: 1, cmAdminEnter: 1, cmAdminQueue: 1, cmAdminAct: 1, cmAdminVerify: 1, cmRulesPut: 1 };
+const SH_CMP = '커뮤니티글', SH_CMR = '커뮤니티신고', SH_CMV = '커뮤니티인증';
+const CMPH = ['id', '시각', '회원', '장소', '장소이름', '종류', '별점', '내용', '상태', '신고', '이유', '수정일'];
+const CMRH = ['시각', '글id', '신고자', '사유'];
+const CMVH = ['id', '시각', '회원', '장소', '장소이름', '파일', '상태', '처리일'];
+const CMPC = Object.fromEntries(CMPH.map((h, i) => [h, i])), CMRC = Object.fromEntries(CMRH.map((h, i) => [h, i])), CMVC = Object.fromEntries(CMVH.map((h, i) => [h, i]));
+const CM_ST = { on: '공개', hold: '검토대기', tmp: '임시조치', del: '삭제' };
+const CM_CATS = { tr: '교통', no: '소음', pk: '주차', sc: '학군·학원', mg: '관리' };
+const CM_WHY = { abuse: '욕설·비방', pi: '개인 정보', ad: '광고·홍보', dam: '집값 담합', false: '사실이 아닌 내용', etc: '기타' };
+const CM_TEXT = { r: [4, 100], p: [10, 500] };            // 후기 한 줄 · 이야기 글 길이(글자)
+const CM_IMG_MAX = 2500000, CM_VERIFY_KEEP = 14, CM_ADMIN_DAYS = 30, CM_LINK_MIN = 30;
+const CM_PID = /^[aovc]\|\d{5}\|[^|<>\u0000-\u001F]{1,30}\|[^<>\u0000-\u001F]{1,130}$/;
+/* 늘 켜 두는 기본 거르기(누구나 아는 형식만 — 낱말 목록·점수는 비공개 설정에) */
+const CM_GEN = [
+  { id: 'phone', re: /(?:\+?82[\s.\-]*|0)\d{1,2}[\s.\-)]*\d{3,4}[\s.\-]*\d{4}/, msg: '전화번호는 쓸 수 없어요.' },
+  { id: 'mail', re: /[\w.+-]+@[\w-]+\.[\w.]+/, msg: '이메일 주소는 쓸 수 없어요.' },
+  { id: 'url', re: /(https?:\/\/|www\.|open\.kakao|pf\.kakao|[a-z0-9-]{2,}\.(com|net|org|kr|co|me|ly|io|link|site|xyz|shop|app)\b)/i, msg: '인터넷 주소(링크)는 쓸 수 없어요.' },
+  { id: 'unit', re: /\d{1,4}\s*동\s*\d{1,4}\s*호|\d{3,4}\s*호(?!선)/, msg: '동·호수는 쓸 수 없어요. 누가 사는지 알 수 있어서예요.' }
+];
+const CM_MSG = {
+  dam: '집값을 얼마 아래로는 팔지 말자는 식의 글은 쓸 수 없어요. 집값 담합은 법으로 금지돼 있어요(공인중개사법).',
+  ad: '광고나 중개 홍보 글은 쓸 수 없어요.',
+  prof: '욕설이나 남을 깎아내리는 말은 쓸 수 없어요.',
+  pi: '이름·연락처·동·호수처럼 누군지 알 수 있는 내용은 쓸 수 없어요.',
+  spam: '같은 글을 너무 자주 올렸거나 광고처럼 보여서 올리지 못했어요. 잠시 뒤 다시 써 주세요.',
+  hold: '운영자가 확인한 뒤 올라가요.'
+};
+
+function cmDispatch(b) {
+  try {
+    if (b.action === 'cmRulesPut') return cmRulesPut(b);
+    if (b.action === 'cmPlace') return cmPlace(b);
+    if (b.action === 'cmAdminMail') return cmAdminMail(b);
+    if (b.action === 'cmVerify') return cmVerify(b);                 // 사진 저장(드라이브)은 잠금 밖에서 하고 시트 쓰기만 잠금
+    return withLock(() => {
+      if (b.action === 'cmWrite') return cmWrite(b);
+      if (b.action === 'cmReport') return cmReport(b);
+      if (b.action === 'cmMine') return cmMine(b);
+      if (b.action === 'cmDelete') return cmDelete(b);
+      if (b.action === 'cmAdminEnter') return cmAdminEnter(b);
+      if (b.action === 'cmAdminQueue') return cmAdminQueue(b);
+      if (b.action === 'cmAdminAct') return cmAdminAct(b);
+      if (b.action === 'cmAdminVerify') return cmAdminVerify(b);
+      return { ok: false, err: 'unknown' };
+    });
+  } catch (x) {
+    return { ok: false, err: String(x.message || x), code: x.code || '' };
+  }
+}
+
+/* ---------- 비공개 설정(엔진 → 스크립트 속성) ---------- */
+const CM_CHUNK = 8000;
+function cmRules() {
+  const c = CacheService.getScriptCache(), hit = c.get('cmrules');
+  if (hit) return hit === '-' ? null : parseJ(hit, null);
+  const P = PropertiesService.getScriptProperties(), n = Number(P.getProperty('CM_RULES_N')) || 0;
+  let js = ''; for (let i = 0; i < n; i++) js += P.getProperty('CM_RULES_' + i) || '';
+  const r = js ? parseJ(js, null) : null;
+  try { c.put('cmrules', r ? js : '-', 300); } catch (e) {}
+  return r;
+}
+function cmNum(v, d, lo, hi) { v = Number(v); return isFinite(v) && v >= lo && v <= hi ? v : d; }
+/** 설정 값(설정이 없을 때의 값은 일부러 보수적으로 — 실제 값은 비공개 설정) */
+function cmCfg() {
+  const r = cmRules() || {}, L = r.lim && typeof r.lim === 'object' ? r.lim : {};
+  const lim = k => { const a = Array.isArray(L[k]) ? L[k] : []; return [cmNum(a[0], 1, 1, 100), cmNum(a[1], 2, 1, 500)]; };
+  return { ready: !!cmRules(), open: r.open === true, boardMin: cmNum(r.boardMin, 10, 1, 1000), reportHide: cmNum(r.reportHide, 2, 1, 50),
+    nearMin: cmNum(r.nearMin, 3, 0, 50), lim: { r: lim('review'), p: lim('post'), rep: lim('report'), v: lim('verify') } };
+}
+function cmRulesPut(b) {
+  if (!pullOk(b)) return { ok: false, err: 'auth' };
+  const r = b.rules && typeof b.rules === 'object' ? b.rules : null;
+  if (!r || !Array.isArray(r.groups)) return { ok: false, err: 'rules' };
+  let n = 0;
+  for (const g of r.groups) {
+    if (!g || !/^[a-z]{2,10}$/.test(String(g.id || '')) || ['block', 'hold'].indexOf(g.act) < 0 || !Array.isArray(g.re)) return { ok: false, err: 'group' };
+    for (const s of g.re) { try { new RegExp(String(s), 'i'); n++; } catch (e) { return { ok: false, err: 'regex ' + g.id }; } }
+  }
+  const js = JSON.stringify(r);
+  if (js.length > CM_CHUNK * 20) return { ok: false, err: 'too big' };
+  const P = PropertiesService.getScriptProperties(), old = Number(P.getProperty('CM_RULES_N')) || 0, parts = Math.ceil(js.length / CM_CHUNK);
+  for (let i = 0; i < parts; i++) P.setProperty('CM_RULES_' + i, js.slice(i * CM_CHUNK, (i + 1) * CM_CHUNK));
+  for (let i = parts; i < old; i++) { try { P.deleteProperty('CM_RULES_' + i); } catch (e) {} }
+  P.setProperty('CM_RULES_N', String(parts));
+  try { CacheService.getScriptCache().remove('cmrules'); } catch (e) {}
+  return { ok: true, n: n, parts: parts, open: r.open === true };
+}
+
+/* ---------- 거르기 ---------- */
+function cmNorm(s) { return String(s || '').toLowerCase().replace(/[\s​-‍﻿.,·•~!?\-_*'"`^|/\\()[\]{}:;]/g, ''); }
+function cmRe(src) { try { return new RegExp(String(src), 'i'); } catch (e) { return null; } }
+/** 글 한 개 거르기 → { act: 'ok'|'hold'|'block', why, msg }. ctx: { rules, recent:[같은 사람 최근 7일 글], join:가입일, hour:최근 1시간 글 수, r:별점 } */
+function cmCheck(text, ctx) {
+  ctx = ctx || {};
+  const raw = String(text || ''), norm = cmNorm(raw), rules = ctx.rules;
+  for (const g of CM_GEN) if (g.re.test(raw)) return { act: 'block', why: g.id, msg: g.msg };
+  if (/(?:^|\D)0\d{8,10}(?:\D|$)/.test(norm)) return { act: 'block', why: 'phone', msg: CM_GEN[0].msg };   // 띄어 쓰거나 점으로 끊은 전화번호
+  if (!rules) return { act: 'hold', why: 'norules', msg: CM_MSG.hold };          // 비공개 설정이 아직 없으면 모두 검토 뒤 공개
+  let hold = '';
+  for (const g of rules.groups || []) {
+    const hit = (g.re || []).some(s => { const re = cmRe(s); return re && (re.test(raw) || (g.norm !== false && re.test(norm))); });   // norm:false = 띄어쓰기를 붙이면 엉뚱하게 걸리는 낱말
+    if (!hit) continue;
+    if (g.act === 'block') return { act: 'block', why: g.id, msg: CM_MSG[g.id] || CM_MSG.pi };
+    hold = hold || g.id;
+  }
+  const sc = rules.score && typeof rules.score === 'object' ? rules.score : null;
+  if (sc && sc.w) {
+    const w = sc.w, f = cmFeatures(raw, norm, ctx);
+    let s = 0; Object.keys(f).forEach(k => { s += (Number(w[k]) || 0) * f[k]; });
+    if (isFinite(Number(sc.block)) && s >= Number(sc.block)) return { act: 'block', why: 'spam', msg: CM_MSG.spam };
+    if (isFinite(Number(sc.hold)) && s >= Number(sc.hold)) hold = hold || 'spam';
+  }
+  return hold ? { act: 'hold', why: hold, msg: CM_MSG.hold } : { act: 'ok', why: '', msg: '' };
+}
+/** 스팸 점수에 쓰는 특징(0~1). 무게·기준은 비공개 설정에 */
+function cmFeatures(raw, norm, ctx) {
+  const L = Math.max(1, norm.length), cnt = re => (norm.match(re) || []).length;
+  const r = ctx.r || null, vals = r ? Object.keys(CM_CATS).map(k => r[k]) : [];
+  const joinMs = ctx.join instanceof Date ? ctx.join.getTime() : 0;
+  return {
+    dup: (ctx.recent || []).some(t => cmNorm(t) === norm) ? 1 : 0,
+    rep: /(.)\1{4,}/.test(norm) ? 1 : 0,
+    digit: Math.min(1, cnt(/\d/g) / L * 2),
+    latin: Math.min(1, cnt(/[a-z]/g) / L * 1.5),
+    newbie: joinMs && Date.now() - joinMs < 86400000 ? 1 : 0,
+    burst: Math.min(1, (ctx.hour || 0) / 5),
+    flat: vals.length && vals.every(v => v === vals[0]) && (vals[0] === 1 || vals[0] === 5) ? 1 : 0,
+    short: norm.length < 8 ? 1 : 0
+  };
+}
+
+/* ---------- 공통 ---------- */
+function cmUid(k) { return 'u' + hashOf('cmU|' + k).slice(1, 25); }
+function cmAlias(uh, pid) { return '이웃 ' + hashOf('cmA|' + uh + '|' + pid).slice(1, 5).toUpperCase(); }
+function cmPid(v) { const s = uText(v, 180); return CM_PID.test(s) ? s : ''; }
+function cmDongKey(pid) { const p = pid.split('|'); return p[1] + '|' + p[2]; }
+function cmSheet(n) { return n === SH_CMP ? uSheet(SH_CMP, CMPH) : n === SH_CMR ? uSheet(SH_CMR, CMRH) : uSheet(SH_CMV, CMVH); }
+function cmRows(n) { const sh = book().getSheetByName(n); if (!sh) return []; const v = sh.getDataRange().getValues(), out = []; for (let i = 1; i < v.length; i++) if (v[i][0]) out.push({ row: i + 1, r: v[i] }); return out; }
+function cmCell(s) { return cellSafe(String(s || '')); }
+function cmTxt(v) { return String(v == null ? '' : v).replace(/^'/, ''); }
+function cmDay(d) { return d instanceof Date ? ymd(d) : String(d || '').slice(0, 10); }
+function cmIsAdmin(as) {
+  as = String(as || ''); if (!/^[0-9a-f]{64}$/.test(as)) return false;
+  const h = hashOf('cmas|' + as), L = parseJ(PropertiesService.getScriptProperties().getProperty('CM_ADM_SESS'), []);
+  return L.some(x => x && safeEq(String(x.h), h) && Number(x.exp) > Date.now());
+}
+function cmGate(b) {
+  if (cmCfg().open || cmIsAdmin(b.as)) return true;
+  const e = new Error('아직 문을 열지 않은 기능이에요.'); e.code = 'closed'; throw e;
+}
+function cmOptUser(b) { try { return b.s ? sessionUser(b.s) : null; } catch (e) { return null; } }
+/** 사람마다 한 시간·하루 횟수 제한(캐시 — 지워져도 시트 쪽 제한(후기는 건물마다 하나)은 그대로) */
+function cmLimit(uh, kind, lim) {
+  const c = CacheService.getScriptCache(), now = new Date(), hk = 'cmL|' + kind + '|' + uh + '|' + Utilities.formatDate(now, 'Asia/Seoul', 'yyyyMMddHH'), dk = 'cmL|' + kind + '|' + uh + '|' + ymd(now);
+  const h = Number(c.get(hk)) || 0, d = Number(c.get(dk)) || 0;
+  if (h >= lim[0] || d >= lim[1]) { const e = new Error('짧은 시간에 너무 많이 했어요. 조금 뒤에 다시 해 주세요.'); e.code = 'limit'; throw e; }
+  c.put(hk, String(h + 1), 3700); c.put(dk, String(d + 1), 86400);
+  return h + 1;
+}
+function cmVerifiedSet() {
+  const s = {}; cmRows(SH_CMV).forEach(o => { if (String(o.r[CMVC['상태']]) === '승인') s[o.r[CMVC['회원']] + '#' + o.r[CMVC['장소']]] = 1; }); return s;
+}
+function cmPub(o, V, me) {
+  const r = o.r, uh = String(r[CMPC['회원']]), pid = String(r[CMPC['장소']]);
+  return { id: String(r[CMPC['id']]), at: cmDay(r[CMPC['시각']]), who: cmAlias(uh, pid), v: !!V[uh + '#' + pid], k: String(r[CMPC['종류']]) === 'p' ? 'p' : 'r',
+    r: parseJ(r[CMPC['별점']], null), x: cmTxt(r[CMPC['내용']]), n: cmTxt(r[CMPC['장소이름']]), mine: !!me && me === uh };
+}
+function cmPlaceKey(pid) { return 'cmP|' + hashOf('pid|' + pid).slice(1, 33); }
+function cmBust(pids) { try { CacheService.getScriptCache().removeAll(pids.map(cmPlaceKey).concat(pids.map(p => 'cmD|' + hashOf('dong|' + cmDongKey(p)).slice(1, 33)))); } catch (e) {} }
+
+/* ---------- 읽기 ---------- */
+function cmPlace(b) {
+  const pid = cmPid(b.pid); if (!pid) return { ok: false, err: '건물 정보를 확인하지 못했어요.' };
+  const cfg = cmCfg(), admin = cmIsAdmin(b.as);
+  if (!cfg.open && !admin) return { ok: true, open: false };
+  const u = cmOptUser(b), me = u ? cmUid(u.k) : '';
+  const c = CacheService.getScriptCache(), ck = cmPlaceKey(pid);
+  let pub = !me ? parseJ(c.get(ck), null) : null;
+  if (!pub) {
+    const all = cmRows(SH_CMP), V = cmVerifiedSet(), dk = cmDongKey(pid);
+    const here = all.filter(o => String(o.r[CMPC['장소']]) === pid && String(o.r[CMPC['상태']]) === CM_ST.on).reverse();
+    const rv = here.filter(o => String(o.r[CMPC['종류']]) !== 'p'), ps = here.filter(o => String(o.r[CMPC['종류']]) === 'p');
+    const avg = {};
+    Object.keys(CM_CATS).forEach(k => { const a = rv.map(o => (parseJ(o.r[CMPC['별점']], {}) || {})[k]).filter(v => v >= 1 && v <= 5); avg[k] = a.length ? Math.round(a.reduce((s, v) => s + v, 0) / a.length * 10) / 10 : null; });
+    const near = rv.length < cfg.nearMin ? all.filter(o => String(o.r[CMPC['장소']]) !== pid && cmDongKey(String(o.r[CMPC['장소']])) === dk && String(o.r[CMPC['상태']]) === CM_ST.on && String(o.r[CMPC['종류']]) !== 'p').reverse().slice(0, 5) : [];
+    pub = { n: rv.length, avg: avg, reviews: rv.slice(0, 50).map(o => cmPub(o, V, '')), board: rv.length >= cfg.boardMin, boardMin: cfg.boardMin,
+      posts: rv.length >= cfg.boardMin ? ps.slice(0, 50).map(o => cmPub(o, V, '')) : [], near: near.map(o => cmPub(o, V, '')) };
+    if (!me) { try { c.put(ck, JSON.stringify(pub), 120); } catch (e) {} }
+  }
+  const res = Object.assign({ ok: true, open: true, preview: !cfg.open }, pub);
+  if (me) {
+    const all = cmRows(SH_CMP), V = cmVerifiedSet();
+    const mine = all.filter(o => String(o.r[CMPC['장소']]) === pid && String(o.r[CMPC['회원']]) === me && String(o.r[CMPC['상태']]) !== CM_ST.del);
+    const myRv = mine.find(o => String(o.r[CMPC['종류']]) !== 'p');
+    res.me = { alias: cmAlias(me, pid), v: !!V[me + '#' + pid], vWait: cmRows(SH_CMV).some(o => String(o.r[CMVC['회원']]) === me && String(o.r[CMVC['장소']]) === pid && String(o.r[CMVC['상태']]) === '대기'),
+      review: myRv ? Object.assign(cmPub(myRv, V, me), { st: String(myRv.r[CMPC['상태']]) }) : null,
+      held: mine.filter(o => String(o.r[CMPC['상태']]) !== CM_ST.on).map(o => ({ id: String(o.r[CMPC['id']]), st: String(o.r[CMPC['상태']]), k: String(o.r[CMPC['종류']]) === 'p' ? 'p' : 'r' })) };
+    res.reviews = res.reviews.map(x => Object.assign({}, x, { mine: mine.some(o => String(o.r[CMPC['id']]) === x.id) }));
+    res.posts = res.posts.map(x => Object.assign({}, x, { mine: mine.some(o => String(o.r[CMPC['id']]) === x.id) }));
+  }
+  return res;
+}
+
+/* ---------- 쓰기 ---------- */
+function cmWrite(b) {
+  cmGate(b);
+  const u = sessionUser(b.s), uh = cmUid(u.k), cfg = cmCfg();
+  const pid = cmPid(b.pid); if (!pid) throw new Error('건물 정보를 확인하지 못했어요.');
+  const name = uText(b.name, 60) || pid.split('|')[2];
+  const kind = b.kind === 'p' ? 'p' : 'r', text = uText(b.text, 600).replace(/\s+/g, ' ');
+  const [lo, hi] = CM_TEXT[kind];
+  if (text.length < lo) throw new Error(kind === 'r' ? `한 줄 후기를 ${lo}글자 이상 적어 주세요.` : `이야기를 ${lo}글자 이상 적어 주세요.`);
+  if (text.length > hi) throw new Error(`${hi}글자까지 쓸 수 있어요.`);
+  let r = null;
+  if (kind === 'r') {
+    r = {}; for (const k of Object.keys(CM_CATS)) { const v = Math.round(Number((b.r || {})[k])); if (!(v >= 1 && v <= 5)) throw new Error(`${CM_CATS[k]} 별점을 골라 주세요.`); r[k] = v; }
+  }
+  const all = cmRows(SH_CMP), now = new Date(), wk = addDays(now, -7), hr = addDays(now, -1 / 24);
+  if (kind === 'p') {
+    const nrv = all.filter(o => String(o.r[CMPC['장소']]) === pid && String(o.r[CMPC['상태']]) === CM_ST.on && String(o.r[CMPC['종류']]) !== 'p').length;
+    if (nrv < cfg.boardMin) throw new Error('이 건물은 아직 후기가 적어서 이야기 글을 쓸 수 없어요. 먼저 한 줄 후기를 남겨 주세요.');
+  }
+  const myAll = all.filter(o => String(o.r[CMPC['회원']]) === uh);
+  const recent = myAll.filter(o => o.r[CMPC['시각']] instanceof Date && o.r[CMPC['시각']] > wk).map(o => cmTxt(o.r[CMPC['내용']]));
+  const hour = myAll.filter(o => o.r[CMPC['시각']] instanceof Date && o.r[CMPC['시각']] > hr).length;
+  const prev = kind === 'r' ? myAll.find(o => String(o.r[CMPC['장소']]) === pid && String(o.r[CMPC['종류']]) !== 'p' && String(o.r[CMPC['상태']]) !== CM_ST.del) : null;
+  let join = null; try { join = book().getSheetByName(SH_U).getRange(u.row, UC['가입일'] + 1).getValue(); } catch (e) {}
+  const chk = cmCheck(text, { rules: cmRules(), recent: prev ? recent.filter(t => t !== cmTxt(prev.r[CMPC['내용']])) : recent, join: join, hour: hour, r: r });
+  if (chk.act === 'block') { const e = new Error(chk.msg); e.code = 'filter'; throw e; }
+  if (prev && String(prev.r[CMPC['상태']]) === CM_ST.tmp) throw new Error('신고로 잠시 가려진 후기는 운영자가 확인할 때까지 고칠 수 없어요.');
+  cmLimit(uh, kind, cfg.lim[kind]);
+  const st = chk.act === 'hold' ? CM_ST.hold : CM_ST.on, sh = cmSheet(SH_CMP);
+  const id = prev ? String(prev.r[CMPC['id']]) : 'M' + Utilities.getUuid().replace(/-/g, '').slice(0, 9).toUpperCase();
+  const row = [id, prev ? prev.r[CMPC['시각']] : now, uh, pid, cmCell(name), kind, r ? JSON.stringify(r) : '', cmCell(text), st, prev ? Number(prev.r[CMPC['신고']]) || 0 : 0, chk.why, prev ? now : ''];
+  if (prev) sh.getRange(prev.row, 1, 1, CMPH.length).setValues([row]); else sh.appendRow(row);
+  cmBust([pid]);
+  if (st === CM_ST.hold) cmNotify('hold', '검토할 글이 있어요');
+  return { ok: true, id: id, st: st, held: st === CM_ST.hold, msg: st === CM_ST.hold ? CM_MSG.hold : '' };
+}
+function cmReport(b) {
+  cmGate(b);
+  const u = sessionUser(b.s), uh = cmUid(u.k), cfg = cmCfg(), id = str(b.id, 12), why = CM_WHY[b.why] ? b.why : '';
+  if (!/^M[0-9A-F]{9}$/.test(id) || !why) throw new Error('신고 이유를 골라 주세요.');
+  const o = cmRows(SH_CMP).find(x => String(x.r[CMPC['id']]) === id);
+  if (!o || String(o.r[CMPC['상태']]) === CM_ST.del) throw new Error('글을 찾지 못했어요.');
+  if (String(o.r[CMPC['회원']]) === uh) throw new Error('내 글은 신고하지 않고 지울 수 있어요.');
+  if (cmRows(SH_CMR).some(x => String(x.r[CMRC['글id']]) === id && String(x.r[CMRC['신고자']]) === uh)) return { ok: true, again: true };
+  cmLimit(uh, 'rep', cfg.lim.rep);
+  cmSheet(SH_CMR).appendRow([new Date(), id, uh, why]);
+  const n = (Number(o.r[CMPC['신고']]) || 0) + 1, sh = cmSheet(SH_CMP);
+  sh.getRange(o.row, CMPC['신고'] + 1).setValue(n);
+  let hidden = false;
+  if (n >= cfg.reportHide && String(o.r[CMPC['상태']]) === CM_ST.on) {
+    sh.getRange(o.row, CMPC['상태'] + 1).setValue(CM_ST.tmp);
+    sh.getRange(o.row, CMPC['이유'] + 1).setValue('신고 ' + n + '건 — 임시조치 ' + ymd(new Date()));
+    hidden = true; cmNotify('tmp', '신고가 쌓여 잠시 가린 글이 있어요(임시조치)');
+  }
+  cmBust([String(o.r[CMPC['장소']])]);
+  return { ok: true, hidden: hidden };
+}
+function cmMine(b) {
+  const u = sessionUser(b.s), uh = cmUid(u.k), V = cmVerifiedSet();
+  return { ok: true, list: cmRows(SH_CMP).filter(o => String(o.r[CMPC['회원']]) === uh && String(o.r[CMPC['상태']]) !== CM_ST.del).reverse().slice(0, 100)
+    .map(o => Object.assign(cmPub(o, V, uh), { st: String(o.r[CMPC['상태']]), pid: String(o.r[CMPC['장소']]) })) };
+}
+function cmDelete(b) {
+  const u = sessionUser(b.s), uh = cmUid(u.k), id = str(b.id, 12);
+  const o = cmRows(SH_CMP).find(x => String(x.r[CMPC['id']]) === id && String(x.r[CMPC['회원']]) === uh);
+  if (!o) throw new Error('글을 찾지 못했어요.');
+  cmErase(o, '본인 삭제');
+  return { ok: true };
+}
+/** 지우기: 글·별점·건물 이름을 비우고 상태만 남김(신고 기록과 맞춰 보려고 id 는 남김) */
+function cmErase(o, why) {
+  const sh = cmSheet(SH_CMP);
+  ['장소이름', '별점', '내용'].forEach(h => sh.getRange(o.row, CMPC[h] + 1).setValue(''));
+  sh.getRange(o.row, CMPC['상태'] + 1).setValue(CM_ST.del);
+  sh.getRange(o.row, CMPC['이유'] + 1).setValue(why + ' ' + ymd(new Date()));
+  sh.getRange(o.row, CMPC['수정일'] + 1).setValue(new Date());
+  cmBust([String(o.r[CMPC['장소']])]);
+}
+/** 탈퇴(userDelete)할 때: 그 사람 글은 모두 지우고, 인증 사진·기록·신고 기록에서도 뺌 */
+function cmUserGone(k) {
+  const uh = cmUid(k);
+  if (book().getSheetByName(SH_CMP)) cmRows(SH_CMP).filter(o => String(o.r[CMPC['회원']]) === uh && String(o.r[CMPC['상태']]) !== CM_ST.del).forEach(o => cmErase(o, '탈퇴'));
+  const vs = book().getSheetByName(SH_CMV);
+  if (vs) { const v = vs.getDataRange().getValues(); for (let i = v.length - 1; i >= 1; i--) if (String(v[i][CMVC['회원']]) === uh) { cmTrash(v[i][CMVC['파일']]); vs.deleteRow(i + 1); } }
+  const rs = book().getSheetByName(SH_CMR);
+  if (rs) { const v = rs.getDataRange().getValues(); for (let i = v.length - 1; i >= 1; i--) if (String(v[i][CMRC['신고자']]) === uh) rs.getRange(i + 1, CMRC['신고자'] + 1).setValue('탈퇴'); }
+}
+
+/* ---------- 실거주 인증 ---------- */
+function cmFolder() {
+  const P = PropertiesService.getScriptProperties(); let f = null; const id = P.getProperty('CM_VERIFY_FOLDER');
+  try { f = id ? DriveApp.getFolderById(id) : null; } catch (e) { f = null; }
+  if (!f) { f = DriveApp.createFolder(SITE_NAME + ' 실거주 인증 사진(검토 뒤 자동 삭제)'); P.setProperty('CM_VERIFY_FOLDER', f.getId()); }   // 공유 설정 없음 = 운영자만
+  return f;
+}
+function cmTrash(fid) { fid = String(fid || ''); if (!fid) return; try { DriveApp.getFileById(fid).setTrashed(true); } catch (e) {} }
+function cmVerify(b) {
+  cmGate(b);
+  const u = sessionUser(b.s), uh = cmUid(u.k), cfg = cmCfg();
+  const pid = cmPid(b.pid); if (!pid) throw new Error('건물 정보를 확인하지 못했어요.');
+  const m = /^data:image\/(jpeg|png);base64,([A-Za-z0-9+/=]+)$/.exec(String(b.img || ''));
+  if (!m) throw new Error('사진 파일(JPG·PNG)만 올릴 수 있어요.');
+  const bytes = Utilities.base64Decode(m[2]);
+  if (bytes.length > CM_IMG_MAX) throw new Error('사진이 너무 커요. 조금 작게 찍어서 올려 주세요.');
+  if (bytes.length < 2000) throw new Error('사진을 읽지 못했어요. 다시 골라 주세요.');
+  const V = cmVerifiedSet(); if (V[uh + '#' + pid]) return { ok: true, already: true };
+  if (cmRows(SH_CMV).some(o => String(o.r[CMVC['회원']]) === uh && String(o.r[CMVC['장소']]) === pid && String(o.r[CMVC['상태']]) === '대기')) return { ok: true, waiting: true };
+  cmLimit(uh, 'v', cfg.lim.v);
+  const id = 'V' + Utilities.getUuid().replace(/-/g, '').slice(0, 9).toUpperCase();
+  const f = cmFolder().createFile(Utilities.newBlob(bytes, 'image/' + m[1], id + '.' + (m[1] === 'png' ? 'png' : 'jpg')));   // 파일 이름에 사람·주소 정보 없음
+  withLock(() => cmSheet(SH_CMV).appendRow([id, new Date(), uh, pid, cmCell(uText(b.name, 60)), f.getId(), '대기', '']));
+  cmNotify('verify', '실거주 인증 요청이 있어요');
+  return { ok: true, id: id, waiting: true };
+}
+
+/* ---------- 운영자(관리 화면 community/admin/) ----------
+   운영자 확인 = 이 스크립트 주인 메일로만 가는 1회용 링크(30분) → 운영자 토큰(30일, 해시만 저장). 다른 관리 기능과 같이 '시트 주인 메일'을 기준으로 해요. */
+function cmAdminMail(b) {
+  const c = CacheService.getScriptCache(), n = Number(c.get('cmAM')) || 0;
+  if (n >= 3) return { ok: false, err: '방금 보냈어요. 메일함을 확인하거나 1시간 뒤에 다시 눌러 주세요.' };
+  c.put('cmAM', String(n + 1), 3600);
+  const t = newToken(), P = PropertiesService.getScriptProperties();
+  P.setProperty('CM_ADM_LINK', JSON.stringify({ h: hashOf('cmal|' + t), exp: Date.now() + CM_LINK_MIN * 60000 }));
+  const url = WEB_ROOT + 'community/admin/#t=' + t;
+  try {
+    MailApp.sendEmail({ to: Session.getEffectiveUser().getEmail(), subject: `[${SITE_NAME}] 살아보니 운영자 확인 링크`, name: SITE_NAME,
+      body: `살아보니 운영자 화면을 여는 링크예요(${CM_LINK_MIN}분 동안 한 번만 쓸 수 있어요).\n${url}\n\n직접 누르지 않았다면 이 메일은 지워 주세요. 링크가 없으면 아무도 운영자 화면을 열 수 없어요.` });
+  } catch (e) { return { ok: false, err: '메일을 보내지 못했어요. 잠시 뒤 다시 눌러 주세요.' }; }
+  return { ok: true, sent: true };
+}
+function cmAdminEnter(b) {
+  const t = String(b.t || ''), P = PropertiesService.getScriptProperties(), L = parseJ(P.getProperty('CM_ADM_LINK'), null);
+  if (!/^[0-9a-f]{64}$/.test(t) || !L || !(Number(L.exp) > Date.now()) || !safeEq(String(L.h), hashOf('cmal|' + t))) return { ok: false, err: '링크가 맞지 않거나 시간이 지났어요. 확인 메일을 다시 받아 주세요.' };
+  P.deleteProperty('CM_ADM_LINK');
+  const as = newToken(), exp = Date.now() + CM_ADMIN_DAYS * 86400000;
+  const S = parseJ(P.getProperty('CM_ADM_SESS'), []).filter(x => x && Number(x.exp) > Date.now()).slice(-4);
+  S.push({ h: hashOf('cmas|' + as), exp: exp });
+  P.setProperty('CM_ADM_SESS', JSON.stringify(S));
+  return { ok: true, as: as, exp: ymd(new Date(exp)) };
+}
+function cmAdminNeed(b) { if (!cmIsAdmin(b.as)) { const e = new Error('운영자 확인이 끝났어요. 확인 메일을 다시 받아 주세요.'); e.code = 'admin'; throw e; } }
+function cmAdminQueue(b) {
+  cmAdminNeed(b);
+  cmVerifyCleanup(); cmOldCleanup();
+  const cfg = cmCfg(), V = cmVerifiedSet(), R = cmRows(SH_CMR), now = Date.now();
+  const reps = {}; R.forEach(o => { const id = String(o.r[CMRC['글id']]); (reps[id] = reps[id] || []).push(CM_WHY[o.r[CMRC['사유']]] || '기타'); });
+  const pick = st => cmRows(SH_CMP).filter(o => String(o.r[CMPC['상태']]) === st || (st === 'rep' && String(o.r[CMPC['상태']]) === CM_ST.on && Number(o.r[CMPC['신고']]) > 0)).reverse().slice(0, 100)
+    .map(o => Object.assign(cmPub(o, V, ''), { pid: String(o.r[CMPC['장소']]), st: String(o.r[CMPC['상태']]), why: cmTxt(o.r[CMPC['이유']]), reps: reps[String(o.r[CMPC['id']])] || [],
+      days: o.r[CMPC['수정일']] instanceof Date || o.r[CMPC['시각']] instanceof Date ? Math.floor((now - (o.r[CMPC['수정일']] || o.r[CMPC['시각']]).getTime()) / 86400000) : null }));
+  const vs = cmRows(SH_CMV).filter(o => String(o.r[CMVC['상태']]) === '대기').slice(0, 10).map(o => {
+    let img = ''; try { const bl = DriveApp.getFileById(String(o.r[CMVC['파일']])).getBlob(); img = 'data:' + bl.getContentType() + ';base64,' + Utilities.base64Encode(bl.getBytes()); } catch (e) {}
+    return { id: String(o.r[CMVC['id']]), at: cmDay(o.r[CMVC['시각']]), pid: String(o.r[CMVC['장소']]), n: cmTxt(o.r[CMVC['장소이름']]), img: img };
+  });
+  return { ok: true, cfg: { ready: cfg.ready, open: cfg.open, reportHide: cfg.reportHide }, hold: pick(CM_ST.hold), tmp: pick(CM_ST.tmp), rep: pick('rep'), verify: vs };
+}
+function cmAdminAct(b) {
+  cmAdminNeed(b);
+  const id = str(b.id, 12), op = String(b.op || ''), o = cmRows(SH_CMP).find(x => String(x.r[CMPC['id']]) === id);
+  if (!o) throw new Error('글을 찾지 못했어요.');
+  const sh = cmSheet(SH_CMP);
+  if (op === 'show') { sh.getRange(o.row, CMPC['상태'] + 1).setValue(CM_ST.on); sh.getRange(o.row, CMPC['신고'] + 1).setValue(0); sh.getRange(o.row, CMPC['이유'] + 1).setValue('운영자 확인 공개 ' + ymd(new Date())); }
+  else if (op === 'hide') { sh.getRange(o.row, CMPC['상태'] + 1).setValue(CM_ST.tmp); sh.getRange(o.row, CMPC['이유'] + 1).setValue('운영자 임시조치 ' + ymd(new Date())); }
+  else if (op === 'del') cmErase(o, '운영자 삭제');
+  else throw new Error('할 일을 골라 주세요.');
+  cmBust([String(o.r[CMPC['장소']])]);
+  return { ok: true };
+}
+function cmAdminVerify(b) {
+  cmAdminNeed(b);
+  const id = str(b.id, 12), ok = b.op === 'ok', o = cmRows(SH_CMV).find(x => String(x.r[CMVC['id']]) === id);
+  if (!o || String(o.r[CMVC['상태']]) !== '대기') throw new Error('인증 요청을 찾지 못했어요.');
+  cmTrash(o.r[CMVC['파일']]);                                        // 승인이든 거절이든 사진은 바로 지움
+  cmSheet(SH_CMV).getRange(o.row, CMVC['파일'] + 1, 1, 3).setValues([['', ok ? '승인' : '거절', new Date()]]);
+  cmBust([String(o.r[CMVC['장소']])]);
+  return { ok: true };
+}
+/** 14일 동안 검토 안 된 인증 사진 지우기 */
+function cmVerifyCleanup() {
+  const lim = addDays(new Date(), -CM_VERIFY_KEEP), sh = book().getSheetByName(SH_CMV); if (!sh) return 0;
+  let n = 0;
+  cmRows(SH_CMV).forEach(o => { if (String(o.r[CMVC['상태']]) === '대기' && o.r[CMVC['시각']] instanceof Date && o.r[CMVC['시각']] < lim) { cmTrash(o.r[CMVC['파일']]); sh.getRange(o.row, CMVC['파일'] + 1, 1, 3).setValues([['', '기간만료', new Date()]]); n++; } });
+  return n;
+}
+/** 1년 지난 신고 기록·지운 글 처리 기록 지우기(운영정책 초안 6항) */
+function cmOldCleanup() {
+  const lim = addDays(new Date(), -365);
+  const rs = book().getSheetByName(SH_CMR);
+  if (rs) { const v = rs.getDataRange().getValues(); for (let i = v.length - 1; i >= 1; i--) if (v[i][CMRC['시각']] instanceof Date && v[i][CMRC['시각']] < lim) rs.deleteRow(i + 1); }
+  const ps = book().getSheetByName(SH_CMP);
+  if (ps) { const v = ps.getDataRange().getValues(); for (let i = v.length - 1; i >= 1; i--) { const t = v[i][CMPC['수정일']] instanceof Date ? v[i][CMPC['수정일']] : v[i][CMPC['시각']]; if (String(v[i][CMPC['상태']]) === CM_ST.del && t instanceof Date && t < lim) ps.deleteRow(i + 1); } }
+}
+/** 운영자 알림 메일(종류마다 한 시간에 한 번, 글 내용·사람 정보 없이) */
+function cmNotify(kind, title) {
+  if (!NOTIFY) return;
+  const c = CacheService.getScriptCache(); if (c.get('cmN|' + kind)) return;
+  c.put('cmN|' + kind, '1', 3600);
+  try { MailApp.sendEmail(Session.getEffectiveUser().getEmail(), `[${SITE_NAME} 살아보니] ${title}`, `운영자 화면에서 확인해 주세요: ${WEB_ROOT}community/admin/\n(운영자 확인 메일을 받은 기기에서 열려요)\n시트: ${book().getUrl()}`); } catch (e) {}
 }

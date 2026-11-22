@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../assets/icons/apple-180.png">
+<title>살아보니</title>
+<meta name="description" content="건물마다 살아 본 사람들이 남긴 짧은 후기와 이야기">
+<!-- 살아보니(건물별 후기·이야기) 전체 보기 — assets/config.js COMMUNITY_ENABLED 가 false 면 '준비 중'만 보여요(운영자 미리 보기 제외). 검색 제외(noindex) -->
+<script>window.JDJ_CONFIG = { tool:'community', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../assets/pwa.js?v=2" defer></script>
+<script src="../assets/track.js?v=2"></script>
+<script src="../assets/agents.js"></script>
+<script src="../assets/config.js?v=8"></script>
+<script src="../assets/auth.js?v=8"></script>
+<script src="../assets/community.js?v=1"></script>
+<script src="../assets/tabbar.js?v=5" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/aplus.css?v=45">
+<style>
+.wrap{max-width:860px;margin:0 auto;padding:22px 16px 60px}
+h1{font-size:clamp(26px,6.4vw,34px);margin:4px 0 6px;letter-spacing:-.6px;word-break:keep-all}
+.lead{margin:0 0 14px;font-size:16px;color:var(--sub2);line-height:1.6}
+.back{display:inline-flex;align-items:center;min-height:40px;font-size:14.5px;font-weight:700;color:var(--blue);text-decoration:none}
+.soon{margin:18px 0;padding:28px 18px;border-radius:18px;border:1px dashed var(--line);text-align:center;line-height:1.7}
+.soon h1{font-size:24px;margin:0 0 6px}
+.soon p{margin:0 0 14px;color:var(--sub);font-size:15.5px}
+.soon a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 16px;border-radius:12px;background:var(--blue-l);color:var(--blue);font-weight:800;text-decoration:none}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../" aria-label="홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name></span></a>
+  <div class="badge plain">살아보니</div>
+</header>
+<main class="wrap" id="app"></main>
+<footer class="foot">★ <span data-site-name></span> · <a href="../">홈</a> · <a href="../terms/#community">이용약관</a> · <a href="../privacy/">개인정보처리방침</a></footer>
+<script>
+(function () {
+  'use strict';
+  var JB = window.JDJ_BASE || { SITE: '/jangdaejang-calc/' };
+  var CM = window.JDJ_CM, app = document.getElementById('app');
+  var SITE = (CM && CM.site()) || '';
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  document.title = '살아보니' + (SITE ? ' — ' + SITE : '');
+  if (!CM || !CM.enabled()) {
+    app.innerHTML = '<div class="soon"><h1>준비 중이에요</h1><p>이 화면은 아직 열지 않았어요. 조금만 기다려 주세요.</p><a href="' + JB.SITE + '">홈으로 가기</a></div>';
+    return;
+  }
+  var q = new URLSearchParams(location.search), pid = String(q.get('p') || ''), name = String(q.get('n') || '').slice(0, 60);
+  var parts = pid.split('|'), ok = /^[aovc]$/.test(parts[0]) && /^\d{5}$/.test(parts[1] || '') && parts.length >= 4;
+  if (!ok) {
+    app.innerHTML = '<div class="soon"><h1>건물을 찾지 못했어요</h1><p>내 집 시세 화면에서 건물을 고른 뒤 \'살아보니\' 칸의 [모두 보기]를 눌러 주세요.</p><a href="' + JB.SITE + 'mine/">내 집 시세로 가기</a></div>';
+    return;
+  }
+  var t = CM.KIND[parts[0]] || '건물';
+  var title = name || parts[2] + ' ' + t;
+  document.title = title + ' 살아보니' + (SITE ? ' — ' + SITE : '');
+  app.innerHTML = '<a class="back" href="javascript:history.back()">← 돌아가기</a>'
+    + '<h1>' + esc(title) + '</h1><p class="lead">' + esc(parts[2]) + ' · ' + t + ' · 살아 본 사람들의 후기와 이야기예요.</p>'
+    + '<section class="panel cm-box" data-cm-full="1" data-cm-pid="' + esc(pid) + '" data-cm-name="' + esc(name) + '" aria-label="살아보니"></section>';
+})();
+</script>
+</body>
+</html>

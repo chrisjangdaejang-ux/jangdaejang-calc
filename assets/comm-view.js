@@ -376,6 +376,7 @@
       ${k === 'g' ? det('지번이 일부 가려진 이유', '국토교통부가 통건물 지번을 첫 자리만 남기고 공개해요', '<p class="basis">국토교통부는 통건물(일반 건물) 거래의 지번을 첫 자리만 남기고 가려서 공개해요(예: 5**). 그래서 집코드도 건물별로 묶지 않고 동·시·군·구 단위로만 모아 보여 드려요. 같은 이유로 통건물은 건물별 신고가를 확인할 수 없어요.</p>') : ''}
     </div>` : ''}
 
+    ${u && window.JDJ_CM ? JDJ_CM.slot({ t: 'c', g, d: u.d, k: K.keyOf(u), n: K.nameOf(u) }) : ''}
     ${window.JDJ_MAPJ ? JDJ_MAPJ.btn(mjOf(u || null), 'bottom', u ? '이 건물 주변 시세와 개발·교통 예정, 역·학교를 지도에서 확인해 보세요' : `${mjOf(null).dong || nm} 주변을 지도에서 확인해 보세요${k === 'g' ? ' (통건물은 지번이 가려져 있어 동별 표의 지도 링크로 동 가운데를 볼 수 있어요)' : ''}`, 'comm_to_map_end') : ''}
     <div class="cm-links" style="margin:12px 0">
       <a class="main" href="../loan/?src=comm" data-track="comm_to_loan">대출 한도 계산 →</a>

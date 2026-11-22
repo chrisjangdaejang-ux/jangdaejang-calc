@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<title>운영자 검토</title>
+<!-- 살아보니 운영자 검토 화면 — 어디에도 링크하지 않음. 열쇠: 서버가 이 스크립트 주인 메일로만 보내는 1회용 링크(30분) → 운영자 토큰(30일, 이 기기에만).
+     이 화면을 연 기기만 '운영자 미리 보기'(?preview=community)를 쓸 수 있어요. 검색 제외(noindex) -->
+<script src="../../assets/agents.js"></script>
+<script src="../../assets/config.js?v=8"></script>
+<script src="../../assets/community.js?v=1"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/aplus.css?v=45">
+<style>
+.wrap{max-width:1040px;margin:0 auto;padding:22px 16px 60px}
+h1{font-size:clamp(24px,6vw,30px);margin:4px 0 6px;letter-spacing:-.5px}
+.lead{margin:0 0 14px;font-size:15.5px;color:var(--sub2);line-height:1.6}
+.card{border:1px solid var(--line);border-radius:18px;padding:16px;background:#fff;margin:0 0 14px;min-width:0}
+.card h2{font-size:18px;font-weight:900;margin:0 0 4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card h2 .n{font-size:13px;font-weight:800;border-radius:999px;padding:1px 9px;background:var(--gray);color:var(--sub2)}
+.card h2 .n.hot{background:#FDECE4;color:#C2410C}
+.card>p{margin:0 0 8px;font-size:14px;color:var(--sub2);line-height:1.55}
+.st{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14.5px;line-height:1.6}
+.st b{font-weight:800}.st .on{color:#0E7A4F}.st .off{color:#9A5B00}
+.it{border-top:1px solid var(--line2);padding:12px 0;min-width:0}
+.it:first-of-type{border-top:0}
+.it .hd{display:flex;flex-wrap:wrap;gap:4px 8px;font-size:13.5px;color:var(--sub2)}
+.it .hd b{color:var(--text)}
+.it .tx{margin:6px 0;font-size:15.5px;line-height:1.6;overflow-wrap:anywhere}
+.it .why{font-size:13px;color:#9A5B00;margin-top:2px}
+.it .rs{font-size:13px;color:var(--sub2)}
+.acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.b{font:inherit;font-size:14px;font-weight:800;min-height:40px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:#fff;color:var(--sub);cursor:pointer}
+.b.ok{border-color:#0E7A4F;color:#0E7A4F}.b.no{border-color:#C2410C;color:#C2410C}.b.main{background:var(--blue);border-color:var(--blue);color:#fff;min-height:48px;font-size:15px}
+.b[disabled]{opacity:.5}
+.img{display:block;max-width:100%;max-height:420px;border-radius:12px;border:1px solid var(--line);margin:8px 0;object-fit:contain;background:var(--gray2)}
+.msg{font-size:14.5px;margin:8px 0 0;line-height:1.55}.msg.err{color:#C2410C}.msg.ok{color:#0E7A4F}
+.none{font-size:14.5px;color:var(--sub2);margin:4px 0}
+.grid{display:grid;gap:0 14px}
+@media(min-width:900px){.grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}}
+</style>
+</head>
+<body>
+<header class="top" data-noacct>
+  <a class="brand" href="../../" aria-label="홈"><span data-site-name></span></a>
+  <div class="badge plain">운영자 검토</div>
+</header>
+<main class="wrap" id="app"><p class="lead">불러오고 있어요…</p></main>
+<script>
+(function () {
+  'use strict';
+  var JB = window.JDJ_BASE || { SITE: '/jangdaejang-calc/' };
+  var CM = window.JDJ_CM, app = document.getElementById('app');
+  var API = (window.JDJ_AGENTS && window.JDJ_AGENTS.api) || '';
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var ls = { get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} }, del: function (k) { try { localStorage.removeItem(k); } catch (e) {} } };
+  var KIND = { a: '아파트', v: '빌라', o: '오피스텔', c: '상가·건물' };
+  function post(b) {
+    return fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(b) }).then(function (r) { return r.json(); }).then(function (j) {
+      if (j && j.err === 'unknown') throw Object.assign(new Error('서버에 아직 이 기능이 없어요. 11월 28일 Apps Script 재배포 뒤에 열려요.'), { code: 'unknown' });
+      if (!j || !j.ok) throw Object.assign(new Error((j && j.err) || '처리하지 못했어요.'), { code: (j && j.code) || '' });
+      return j;
+    });
+  }
+  function as() { return CM ? CM.adminToken() : ''; }
+  function where(pid) { var p = String(pid || '').split('|'); return (KIND[p[0]] || '') + ' · ' + (p[2] || ''); }
+
+  /* 메일 링크로 들어옴(#t=…): 운영자 토큰으로 바꾸고 주소에서 지움 */
+  var m = /^#t=([0-9a-f]{64})$/.exec(location.hash);
+  if (m) {
+    history.replaceState(null, '', location.pathname);
+    app.innerHTML = '<p class="lead">확인하고 있어요…</p>';
+    post({ action: 'cmAdminEnter', t: m[1] }).then(function (j) { ls.set(CM.LS_AS, j.as); ls.set(CM.LS_PV, '1'); queue(); })
+      .catch(function (e) { gate(e.message); });
+    return;
+  }
+  if (as()) queue(); else gate('');
+
+  function gate(err) {
+    app.innerHTML = '<h1>운영자 확인</h1><p class="lead">아래 단추를 누르면 운영자 메일(구글 시트 주인 계정)로 1회용 링크가 가요. 그 링크를 이 기기에서 열면 30일 동안 검토 화면과 미리 보기를 쓸 수 있어요.</p>'
+      + '<div class="card"><button type="button" class="b main" id="send">운영자 확인 메일 받기</button><p class="msg' + (err ? ' err' : '') + '" id="msg" aria-live="polite">' + esc(err) + '</p></div>';
+    document.getElementById('send').onclick = function () {
+      var b = this; b.disabled = true;
+      post({ action: 'cmAdminMail' }).then(function () { document.getElementById('msg').className = 'msg ok'; document.getElementById('msg').textContent = '메일을 보냈어요. 30분 안에 메일 속 링크를 이 기기에서 열어 주세요.'; })
+        .catch(function (e) { b.disabled = false; document.getElementById('msg').className = 'msg err'; document.getElementById('msg').textContent = e.message; });
+    };
+  }
+  function item(x, kind) {
+    var acts = kind === 'v' ? '' : '<div class="acts">'
+      + (x.st !== '공개' ? '<button type="button" class="b ok" data-op="show" data-id="' + esc(x.id) + '">공개하기</button>' : '')
+      + (x.st !== '임시조치' ? '<button type="button" class="b" data-op="hide" data-id="' + esc(x.id) + '">가리기(임시조치)</button>' : '')
+      + '<button type="button" class="b no" data-op="del" data-id="' + esc(x.id) + '">지우기</button></div>';
+    var rs = x.r ? CM.CATS.map(function (c) { return c[1] + ' ' + (x.r[c[0]] || '-'); }).join(' · ') : '';
+    var WHY = { norules: '거르기 설정이 들어오기 전에 쓴 글', watch: '확인이 필요한 표현이 있어요', spam: '도배·광고처럼 보여요' };
+    var why = [WHY[x.why] || x.why || '', x.reps && x.reps.length ? '신고 ' + x.reps.length + '건: ' + x.reps.join(', ') : ''].filter(Boolean).join(' · ');
+    return '<div class="it"><div class="hd"><b>' + esc(x.n || where(x.pid)) + '</b><span>' + esc(where(x.pid)) + '</span><span>' + esc(x.who) + '</span><span>' + esc(x.at) + '</span>'
+      + (x.days != null ? '<span>' + x.days + '일째</span>' : '') + '</div>'
+      + '<p class="tx">' + (x.k === 'p' ? '[이야기] ' : '') + esc(x.x) + '</p>' + (rs ? '<div class="rs">' + esc(rs) + '</div>' : '')
+      + (why ? '<div class="why">' + esc(why) + '</div>' : '') + acts + '</div>';
+  }
+  function sec(title, list, kind, hint, hot) {
+    return '<section class="card"><h2>' + title + '<span class="n' + (hot && list.length ? ' hot' : '') + '">' + list.length + '</span></h2><p>' + hint + '</p>'
+      + (list.length ? list.map(function (x) { return item(x, kind); }).join('') : '<p class="none">없어요.</p>') + '</section>';
+  }
+  function vsec(list) {
+    return '<section class="card"><h2>실거주 인증<span class="n' + (list.length ? ' hot' : '') + '">' + list.length + '</span></h2><p>사진이 그 건물에 사는 것을 보여 주면 [승인], 아니면 [거절]. 어느 쪽이든 사진은 바로 지워져요(드라이브 휴지통에서 30일 뒤 완전 삭제). 14일 지나면 저절로 지워져요.</p>'
+      + (list.length ? list.map(function (x) {
+        return '<div class="it"><div class="hd"><b>' + esc(x.n || where(x.pid)) + '</b><span>' + esc(where(x.pid)) + '</span><span>' + esc(x.at) + '</span></div>'
+          + (/^data:image\/(jpeg|png);base64,[A-Za-z0-9+\/=]+$/.test(x.img || '') ? '<img class="img" alt="실거주 인증 사진" src="' + esc(x.img) + '">' : '<p class="none">사진을 불러오지 못했어요.</p>')
+          + '<div class="acts"><button type="button" class="b ok" data-v="ok" data-id="' + esc(x.id) + '">승인</button><button type="button" class="b no" data-v="no" data-id="' + esc(x.id) + '">거절</button></div></div>';
+      }).join('') : '<p class="none">없어요.</p>') + '</section>';
+  }
+  function queue() {
+    app.innerHTML = '<p class="lead">불러오고 있어요…</p>';
+    post({ action: 'cmAdminQueue', as: as() }).then(function (j) {
+      var cfg = j.cfg || {}, pv = JB.SITE + 'mine/?preview=community';
+      app.innerHTML = '<h1>살아보니 운영자 검토</h1>'
+        + '<div class="card"><div class="st"><span>화면 공개: <b class="' + (CM.enabled() && window.JDJ_SITE && window.JDJ_SITE.COMMUNITY_ENABLED ? 'on">켜짐' : 'off">꺼짐(숨김)') + '</b></span>'
+        + '<span>서버 문 열기: <b class="' + (cfg.open ? 'on">켜짐' : 'off">꺼짐') + '</b></span>'
+        + '<span>거르기 설정: <b class="' + (cfg.ready ? 'on">들어옴' : 'off">아직 없음 — 모든 글이 검토 대기로 와요') + '</b></span>'
+        + '<span>신고 ' + esc(cfg.reportHide) + '건이면 바로 가림</span></div>'
+        + '<div class="acts" style="margin-top:10px"><a class="b main" style="display:inline-flex;align-items:center;text-decoration:none" href="' + esc(pv) + '">미리 보기로 내 집 시세 열기</a><button type="button" class="b" id="pvOff">이 기기 미리 보기 끄기</button><button type="button" class="b" id="re">새로 고침</button></div></div>'
+        + '<div class="grid"><div>'
+        + sec('검토 대기', j.hold || [], 'p', '자동 거르기가 애매하다고 본 글이에요. 괜찮으면 [공개하기].', true)
+        + sec('임시조치 중', j.tmp || [], 'p', '신고가 쌓여 가린 글이에요(정보통신망법 임시조치, 30일 안에 결정). 문제없으면 [공개하기], 문제 있으면 [지우기].', true)
+        + '</div><div>' + vsec(j.verify || [])
+        + sec('신고 받은 공개 글', j.rep || [], 'p', '아직 가릴 만큼 신고가 쌓이지 않은 글이에요.', false) + '</div></div>';
+      document.getElementById('re').onclick = queue;
+      document.getElementById('pvOff').onclick = function () { ls.del(CM.LS_PV); ls.del(CM.LS_AS); try { sessionStorage.removeItem(CM.SS_PV); } catch (e) {} gate(''); };
+      app.onclick = function (e) {
+        var b = e.target.closest('button[data-id]'); if (!b) return;
+        var op = b.getAttribute('data-op'), v = b.getAttribute('data-v');
+        if (op === 'del' && !confirm('이 글을 지울까요? 되돌릴 수 없어요.')) return;
+        b.disabled = true;
+        (v ? post({ action: 'cmAdminVerify', as: as(), id: b.getAttribute('data-id'), op: v }) : post({ action: 'cmAdminAct', as: as(), id: b.getAttribute('data-id'), op: op }))
+          .then(queue).catch(function (x) { b.disabled = false; alert(x.message); });
+      };
+    }).catch(function (e) {
+      if (e.code === 'admin') { ls.del(CM.LS_AS); gate(e.message); return; }
+      app.innerHTML = '<h1>살아보니 운영자 검토</h1><div class="card"><p class="msg err">' + esc(e.message) + '</p><div class="acts"><button type="button" class="b" onclick="location.reload()">다시 시도</button></div></div>';
+    });
+  }
+})();
+</script>
+</body>
+</html>

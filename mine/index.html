@@ -35,7 +35,7 @@
 <script src="../assets/share.js?v=11"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/lead.js?v=3"></script>
-<script src="../assets/config.js?v=7"></script>
+<script src="../assets/config.js?v=8"></script>
 <script src="../assets/auth.js?v=8"></script>
 <script src="../assets/alerts-core.js?v=1"></script>
 <script src="../assets/watch-core.js?v=2"></script>
@@ -53,12 +53,13 @@
 <script src="../assets/price-sheet.js?v=21"></script>
 <script src="../assets/mapjump.js?v=1"></script>
 <script src="../assets/offi-core.js?v=6"></script>
-<script src="../assets/offi-view.js?v=12"></script>
+<script src="../assets/offi-view.js?v=13"></script>
 <script src="../assets/comm-core.js?v=3"></script>
-<script src="../assets/comm-view.js?v=5"></script>
+<script src="../assets/comm-view.js?v=6"></script>
 <script src="../assets/rent-core.js?v=6"></script>
 <script src="../assets/villa-core.js?v=1"></script>
-<script src="../assets/villa-view.js?v=2"></script>
+<script src="../assets/villa-view.js?v=3"></script>
+<script src="../assets/community.js?v=1"></script>
 <script src="../assets/policy-view.js?v=3"></script>
 <script src="../assets/devproj-view.js?v=4"></script>
 <script src="../assets/src-box.js?v=3"></script>
@@ -588,6 +589,8 @@ function render(d, map, units){
   <div class="panel" id="lifeSec" hidden></div>
 
   <div id="alertSec"></div>
+
+  ${window.JDJ_CM ? JDJ_CM.slot({t: 'a', g: d.code, d: d.dong, k: [d.jibun, d.apt].join('|'), n: d.apt}) : ''}
 
   <div id="devSec" hidden></div>
 

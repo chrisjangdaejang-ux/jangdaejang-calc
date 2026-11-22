@@ -360,6 +360,8 @@ ${rentPanel(u, j)}
       ${rn.length > 20 ? `<p class="basis">최근 20건만 보여 드려요(전체 ${rn.length}건).</p>` : ''}<p class="basis">수익률 = 이 계약의 월세 × 12 ÷ (이 건물 지금 ㎡당 매매 시세 × 계약 전용면적 − 보증금). 전세 계약은 위 '전세·월세 시세' 칸에 있어요.</p>` : '<p class="note">최근 3년 월세 계약이 없어요.</p>'}
     </div>
 
+    ${window.JDJ_CM ? JDJ_CM.slot({ t: 'o', g: S.g, d: u.d, k: key, n: O.nameOf(u) }) : ''}
+
     ${MJ ? MJ.btn(mjo, 'bottom', '이 오피스텔 주변 시세와 개발·교통 예정, 역·학교를 지도에서 확인해 보세요', 'offi_to_map_end') : ''}
 
     <div class="panel"><h2>이어서 알아보기</h2>
