@@ -30,7 +30,7 @@
 <script src="../assets/conf.js?v=2"></script>
 <script src="../assets/life-view.js?v=3"></script>
 <script src="../assets/fac-view.js?v=1"></script>
-<script src="../assets/mine-core.js?v=18"></script>
+<script src="../assets/mine-core.js?v=19"></script>
 <script src="../assets/map-core.js?v=5"></script>
 <script src="../assets/mapjump.js?v=1"></script>
 <script src="../assets/alerts-core.js?v=1"></script>
@@ -73,6 +73,11 @@ body.jm-full>.top{position:relative;flex:none}
 .sres b{font-size:16px}
 .sres small{font-size:13.5px;color:var(--sub2)}
 .sres .msg{padding:10px 12px;font-size:14px;color:var(--sub2);line-height:1.5}
+.sres .msg b{color:var(--text)}
+.sres small.via{color:#2560E8;font-size:12.5px}
+.obands{margin:-2px 0 10px;font-size:14px;color:var(--sub2);line-height:1.6}
+.obands a{color:#2560E8;font-weight:700;text-decoration:none;white-space:nowrap}
+.obands small{display:block;font-size:12.5px}
 .row1{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;max-width:560px;width:100%;margin:0 auto}
 .seg{display:flex;background:#F2F4F6;border-radius:12px;padding:3px;flex:none}
 .seg button{border:0;background:none;font:inherit;font-size:14.5px;font-weight:700;color:var(--sub2);min-height:44px;padding:0 13px;border-radius:9px;cursor:pointer;white-space:nowrap}
@@ -1070,6 +1075,16 @@ function openCard(d, band, keep){
     ${isFoc(d) && FOC.keys.size > 1 ? `<p class="note"><button type="button" class="linkb" id="fxAll" style="font:inherit;font-weight:700;color:var(--blue);background:none;border:0;padding:0;min-height:40px;cursor:pointer">비교한 ${FOC.keys.size}곳 함께 보기 ›</button></p>` : ''}
     <div class="acts">${isFoc(d) && MJ.backHref(F) ? `<a href="${esc(MJ.backHref(F))}" class="ghost" data-back="1" data-track="map_back">← 결과로 돌아가기</a>` : ''}<a href="${esc(C.mineUrl(d, b.band))}" data-track="map_to_mine">시세·전망 보기</a>${isFoc(d) && MJ.backHref(F) ? '' : `<button type="button" id="addCmp" class="${inCmp ? 'done' : ''}">${inCmp ? '비교함에 있어요' : '비교에 담기'}</button>`}</div>`;
   showSheet();
+  // 점수 자료가 없는 다른 평형(시세 목록에만 있음): 이름만 보여 주고 시세 보기로 잇는다 — 지도 카드엔 점수가 있는 평형만 있어서 평형이 하나뿐인 것처럼 보이던 문제
+  const otherBands = () => {
+    const p = PLIST[d.sd]; if (!p || p.st !== 'ok' || !SEL || SEL.d !== d || $('sheet').querySelector('.obands')) return;
+    const pd = p.g.get(d.key); if (!pd) return;
+    const have = new Set(d.bands.map(u => u[3])), ot = pd.bands.filter(u => !have.has(u[3]));
+    if (!ot.length) return;
+    const at = $('sheet').querySelector('.bands') || $('sheet').querySelector('.meta');
+    if (at) at.insertAdjacentHTML('afterend', `<p class="obands">다른 평형 ${ot.map(u => `<a href="${esc(C.mineUrl(d, u[3]))}">${esc(u[3])}</a>`).join(' · ')}<small>거래가 적어 점수는 없지만, 시세 보기에서 실거래를 볼 수 있어요</small></p>`);
+  };
+  if (ensurePrice([d.sd])) (function wait(n){ setTimeout(() => (PLIST[d.sd] && PLIST[d.sd].st === 'wait' && n < 40) ? wait(n + 1) : otherBands(), 250); })(0); else otherBands();
   if (window.JDJ_LIFE) JDJ_LIFE.load(DATA, d.sd).then(F => {          // 학군·생활 한 줄(자료가 있을 때만)
     const t = JDJ_LIFE.compact(JDJ_LIFE.unit(F, [d.code, d.dong, d.jibun].join('|')), F), v = $('lfrV');
     if (!t || !v || !SEL || SEL.d !== d) return;
@@ -1258,23 +1273,69 @@ function centerSido(){
   for (const id in GEO.sido) { const b = GEO.sido[id].b; if (c.lng >= b[0] && c.lng <= b[2] && c.lat >= b[1] && c.lat <= b[3]) { const g = GEO.sido[id].c, dd = (g[0] - c.lng) ** 2 + (g[1] - c.lat) ** 2; if (dd < bd) { bd = dd; best = id; } } }
   return best;
 }
+/* 시세 목록(price/sNN.json — 거래가 1건이라도 있으면 모두, 별칭 칸 포함): 점수 자료가 없는 단지·평형도 이름으로 찾게 */
+const PLIST = {};
+function ensurePrice(ids){
+  let want = 0;
+  for (const id of ids) {
+    if (PLIST[id]) { if (PLIST[id].st === 'wait') want++; continue; }
+    const sd = IX.sido.find(s => s.id === id); if (!sd) continue;
+    PLIST[id] = { st: 'wait' }; want++;
+    J(DATA + (sd.price || 'price/' + id + '.json')).then(j => { PLIST[id] = j && j.units ? { st: 'ok', g: M.groupDanji(j.units.map(M.listRow)) } : { st: 'err' }; });
+  }
+  return want;
+}
+const ALX = {};                                                     // alias/sNN.json(최근 3년 목록에 없는 K-apt 단지) — 결과가 없을 때만 읽음
+function aliasX(id){ if (!ALX[id]) ALX[id] = J(DATA + 'alias/' + id + '.json').then(j => (j && j.x) || []); return ALX[id]; }
 function runSearch(){
   const q = $('q').value.trim(), out = $('sres');
   $('qClr').hidden = !q;
   if (!q) { out.innerHTML = ''; return; }
   const sq = sidoFromQuery(q), ids = sq ? [sq.id] : [...new Set([centerSido(), ...Object.keys(SD).filter(id => SD[id].st === 'ok')].filter(Boolean))];
   const text = sq ? sq.rest : q;
-  if (ensure(ids)) { out.innerHTML = '<li class="msg">단지 목록을 불러오는 중이에요…</li>'; clearTimeout(qt); qt = setTimeout(runSearch, 500); return; }
-  const res = [];
-  for (const id of ids) { const s = SD[id]; if (!s || s.st !== 'ok') continue; for (const d of M.searchDanji(s.byKey, text, 8)) res.push(d); }
+  const w1 = ensure(ids), w2 = ensurePrice(ids);
+  if (w1 || w2) { out.innerHTML = '<li class="msg">단지 목록을 불러오는 중이에요…</li>'; clearTimeout(qt); qt = setTimeout(runSearch, 400); return; }
+  const res = [], seen = new Set();
+  for (const id of ids) {
+    const s = SD[id], p = PLIST[id];
+    const pool = p && p.st === 'ok' ? p.g : (s && s.st === 'ok' ? s.byKey : null);
+    if (!pool) continue;
+    for (const d of M.searchDanji(pool, text, 12)) {
+      if (seen.has(id + d.key)) continue; seen.add(id + d.key);
+      const m = s && s.st === 'ok' ? s.byKey.get(d.key) : null;          // 지도에 있는(점수 자료가 있는) 단지면 지도 카드로
+      res.push({ id, d, m, via: M.matchedAlias(d, text) });
+    }
+  }
   const sdn = id => (IX.sido.find(s => s.id === id) || {}).short || '';
-  out.innerHTML = res.length ? res.slice(0, 8).map(d => `<li><button type="button" data-sd="${d.sd}" data-k="${esc(d.key)}"><b>${esc(d.apt)}</b><small>${esc(sdn(d.sd))} ${esc(sggName(d.code))} ${esc(d.dong)}${d.by ? ' · ' + d.by + '년' : ''}</small></button></li>`).join('')
-    : `<li class="msg">'${esc(text)}' 단지를 ${sq ? esc(sdn(sq.id)) + '에서' : '지금 지도 주변 지역에서'} 찾지 못했어요.${sq ? '' : " 다른 지역이면 '부산 해운대'처럼 지역 이름을 앞에 붙여 주세요."} 지도에는 미래가치 점수 자료가 있는 단지만 있어요.</li>`;
+  const row = x => {
+    const d = x.d, by = x.m && x.m.by ? ' · ' + x.m.by + '년' : '';
+    const via = x.via ? `<small class="via">'${esc(x.via)}'(으)로 찾았어요</small>` : '';
+    const where = `${esc(sdn(x.id))} ${esc(sggName(d.code))} ${esc(d.dong)}`;
+    if (x.m) return `<li><button type="button" data-sd="${x.id}" data-k="${esc(d.key)}"><b>${esc(d.apt)}</b><small>${where}${by}</small>${via}</button></li>`;
+    const url = C.mineUrl({ sd: x.id, key: d.key }, (d.bands.find(u => u[3] === '84㎡대') || d.bands.slice().sort((a, b) => b[5] - a[5])[0] || [])[3]);
+    return `<li><button type="button" data-href="${esc(url)}"><b>${esc(d.apt)}</b><small>${where} · 시세 보기(점수 자료 없음, 최근 3년 거래 ${d.n.toLocaleString()}건)</small>${via}</button></li>`;
+  };
+  if (res.length) { out.innerHTML = res.slice(0, 12).map(row).join(''); return; }
+  // 결과 없음: 같은 동(검색어에 동 이름이 있으면)·비슷한 이름 후보 + K-apt 에는 있지만 시세 목록에 없는 단지 안내, 검색어만 익명으로 남김
+  const cand = [];
+  for (const id of ids) { const p = PLIST[id]; if (p && p.st === 'ok') for (const c of M.suggestDanji(p.g, text, 5)) cand.push(Object.assign({ id }, c)); }
+  cand.sort((a, b) => b.s - a.s);
+  const head = `<li class="msg">'${esc(text)}' 이름의 단지를 ${sq ? esc(sdn(sq.id)) + '에서' : '지금 지도 주변 지역에서'} 찾지 못했어요.${sq ? '' : " 다른 지역이면 '부산 해운대'처럼 지역 이름을 앞에 붙여 주세요."}</li>`;
+  const sug = cand.length ? `<li class="msg">${cand[0].dong ? '이 동네 단지 중 이름이 비슷한 곳' : '이름이 비슷한 단지'}이에요</li>` + cand.slice(0, 5).map(c => row({ id: c.id, d: c.d, m: SD[c.id] && SD[c.id].st === 'ok' ? SD[c.id].byKey.get(c.d.key) : null, via: '' })).join('') : '';
+  out.innerHTML = head + sug;
+  M.logMiss(text, 'map');
+  Promise.all(ids.map(aliasX)).then(xs => {
+    if ($('q').value.trim() !== q) return;
+    const rows = M.missRows([].concat(...xs), text, 2);
+    if (!rows.length) return;
+    out.insertAdjacentHTML('afterbegin', rows.map(r => `<li class="msg"><b>${esc(r[2])}</b> (${esc(sggName(r[0]))} ${esc(r[1])}${r[4] ? ' · ' + r[4] + '년' : ''})은 ${esc(M.MISS_WHY[r[5]] || M.MISS_WHY.none)}${r[5] === 'old' && r[6] ? ` (마지막 거래 ${esc(M.ymLabel(r[6]))})` : ''}. 그래서 시세를 보여 드릴 수 없어요.</li>`).join(''));
+  });
 }
 $('q').addEventListener('input', () => { clearTimeout(qt); qt = setTimeout(runSearch, 200); });
 $('q').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); clearTimeout(qt); runSearch(); const f = $('sres').querySelector('button'); if (f) f.click(); } if (e.key === 'Escape') { $('sres').innerHTML = ''; } });
 $('qClr').onclick = () => { $('q').value = ''; runSearch(); $('q').focus(); };
 $('sres').addEventListener('click', e => {
+  const h = e.target.closest('button[data-href]'); if (h) { if (window.jdjStat) jdjStat('feature_use', {feature:'map_search_price'}); location.href = h.dataset.href; return; }
   const b = e.target.closest('button[data-k]'); if (!b) return;
   const s = SD[b.dataset.sd], d = s && s.byKey.get(b.dataset.k); if (!d) return;
   $('sres').innerHTML = ''; $('q').blur();

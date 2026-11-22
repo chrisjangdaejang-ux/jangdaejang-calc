@@ -47,7 +47,7 @@
 <script src="../assets/conf.js?v=2"></script>
 <script src="../assets/life-view.js?v=3"></script>
 <script src="../assets/fac-view.js?v=1"></script>
-<script src="../assets/mine-core.js?v=18"></script>
+<script src="../assets/mine-core.js?v=19"></script>
 <script src="../assets/ask-core.js?v=5"></script>
 <script src="../assets/ask.js?v=3"></script>
 <script src="../assets/price-sheet.js?v=19"></script>
@@ -92,6 +92,8 @@ h1{font-size:clamp(26px,6vw,38px);margin:6px 0 8px}
 .sres button small{display:block;font-size:13.5px;color:#4E5968}
 .sres button:hover{border-color:#2560E8}
 .sres .none{font-size:14px;color:#4E5968;padding:6px 2px}
+.sres .none b{color:var(--text)}
+.sres button small.via{color:#2560E8;font-size:12.5px}
 .bands{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 4px}
 .bands button{font:inherit;font-size:15px;font-weight:700;min-height:44px;padding:0 14px;border:1px solid var(--line);background:#fff;color:#3E4754;border-radius:999px;cursor:pointer}
 .bands button.on{background:#E8F0FF;border-color:#2560E8;color:#2560E8}
@@ -398,13 +400,29 @@ async function pickSido(id, keepSgg, keepDanji){
   if ($('q').value.trim()) runSearch();
 }
 let qt = null;
+const ALX = {};                                                    // alias/sNN.json(최근 3년 목록에 없는 K-apt 단지) — 결과가 없을 때만 읽음
+function aliasX(id){ if (!ALX[id]) ALX[id] = fetch(DATA + 'alias/' + id + '.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).then(j => (j && j.x) || []).catch(() => []); return ALX[id]; }
+function sres(d, via){
+  return `<button type="button" data-k="${esc(d.key)}"><b>${esc(d.apt)}</b><small>${esc(sggName(d.code))} ${esc(d.dong)} · 평형 ${d.bands.length}개 · 최근 3년 거래 ${d.n.toLocaleString()}건</small>${via ? `<small class="via">'${esc(via)}'(으)로 찾았어요</small>` : ''}</button>`;
+}
 function runSearch(){
   const g = GROUPS[S.sd], q = $('q').value.trim(), box = $('sres');
   if (!q){ box.innerHTML = ''; return; }
   if (!g){ box.innerHTML = '<div class="none">자료를 불러오는 중이에요…</div>'; return; }
   const hits = M.searchDanji(g, q, 12);
-  box.innerHTML = hits.length ? hits.map(d => `<button type="button" data-k="${esc(d.key)}"><b>${esc(d.apt)}</b><small>${esc(sggName(d.code))} ${esc(d.dong)} · 평형 ${d.bands.length}개 · 최근 3년 거래 ${d.n.toLocaleString()}건</small></button>`).join('')
-    : `<div class="none">'${esc(q)}' 이름의 단지를 ${esc((IX.sido.find(s => s.id === S.sd) || {}).name || '')}에서 찾지 못했어요. 다른 시·도를 고르거나 이름 일부만 넣어 보세요. (최근 3년 동안 거래가 있었던 단지만 찾을 수 있어요)</div>`;
+  if (hits.length) { box.innerHTML = hits.map(d => sres(d, M.matchedAlias(d, q))).join(''); return; }
+  // 결과 없음: 같은 동(검색어에 동 이름이 있으면)·비슷한 이름 후보 + K-apt 에는 있지만 시세 목록에 없는 단지 안내, 검색어만 익명으로 남김
+  const sdName = (IX.sido.find(s => s.id === S.sd) || {}).name || '';
+  const cand = M.suggestDanji(g, q, 5);
+  box.innerHTML = `<div class="none">'${esc(q)}' 이름의 단지를 ${esc(sdName)}에서 찾지 못했어요. 다른 시·도를 고르거나 이름 일부만 넣어 보세요. (최근 3년 동안 매매 거래가 있었던 단지만 시세를 보여 드려요)</div>`
+    + (cand.length ? `<div class="none">${cand[0].dong ? '이 동네 단지 중 이름이 비슷한 곳' : '이름이 비슷한 단지'}이에요</div>` + cand.map(c => sres(c.d, '')).join('') : '');
+  M.logMiss(q, 'mine');
+  const sd = S.sd;
+  aliasX(sd).then(x => {
+    if ($('q').value.trim() !== q || S.sd !== sd) return;
+    const rows = M.missRows(x, q, 2);
+    if (rows.length) box.insertAdjacentHTML('afterbegin', rows.map(r => `<div class="none miss"><b>${esc(r[2])}</b> (${esc(sggName(r[0]))} ${esc(r[1])}${r[4] ? ' · ' + r[4] + '년' : ''})은 ${esc(M.MISS_WHY[r[5]] || M.MISS_WHY.none)}${r[5] === 'old' && r[6] ? ` (마지막 거래 ${esc(M.ymLabel(r[6]))})` : ''}. 그래서 시세를 보여 드릴 수 없어요.</div>`).join(''));
+  });
 }
 
 /* ---------- 결과 ---------- */
@@ -774,6 +792,11 @@ async function init(){
   const code = qd.split('|')[0];
   await pickSido(sd, /^\d{5}$/.test(code) ? code : '', qd);
   if (qd && GROUPS[sd] && GROUPS[sd].has(qd)) showDanji(qd, q.get('b'));
+  else if (qd && GROUPS[sd]) {                                     // 예전 주소(단지 이름이 바뀌었거나 여러 지번이 한 단지로 묶인 경우): 같은 동에서 그 이름을 별칭으로 가진 단지
+    const [c0, d0, , n0] = qd.split('|'), b0 = String(n0 || '').replace(/\s*\([^()]*\d+\s*동[^()]*\)\s*$/, '');
+    const hit = [...GROUPS[sd].values()].find(d => d.code === c0 && d.dong === d0 && (d.apt === b0 || (d.al || []).includes(n0)));
+    if (hit) showDanji(hit.key, q.get('b'));
+  }
 
   $('sido').onchange = () => { $('sres').innerHTML = ''; pickSido($('sido').value); };
   $('sgg').onchange = () => fillDanji();

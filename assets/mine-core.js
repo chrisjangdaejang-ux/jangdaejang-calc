@@ -2,7 +2,9 @@
    자료: jangdaejang-data data/sNN.json 의 units (assets/rec-core.js 설명과 같음 — 점수·추천용)
      u = [시군구코드, 동, 단지, 평형대, 전용㎡(중간값), 자료 기간 거래수, 월별 평당가 36개, 월별 거래수 문자열, 지번, fx]
    시세 확인용(거래가 1건이라도 있으면 모두): jangdaejang-data data/price/
-     price/sNN.json   단지 목록(검색용) r = [시군구코드, 동, 단지, 평형대, 전용㎡, 거래수, 지번, 점수 자료 1/0] → listRow(r) 로 u 모양으로
+     price/sNN.json   단지 목록(검색용) r = [시군구코드, 동, 단지, 평형대, 전용㎡, 거래수, 지번, 점수 자료 1/0, (단지 첫 행만) 별칭 목록]
+                      → listRow(r) 로 u 모양으로(별칭은 u.al, groupDanji 가 d.al 로 모음)
+     alias/sNN.json   {x: [[구코드, 동, K-apt 이름, 지번, 사용승인 연도, 사유, 마지막 거래 연월]]} 최근 3년 목록에 없는 K-apt 단지(검색 결과 없을 때 안내)
      price/{구코드}.json units: u 와 같은 앞 9칸 + [9] 점수 자료 1/0, [10] 거래 있는 달의 그 달 중앙 평당가(오래된 달부터),
                      [11] 개별 거래 [계약 연월일(YYYYMMDD), 전용㎡, 층, 금액(만원), 유형 0 중개·1 직거래·2 미기재, 신고가 1/0] 최신순,
                      [12] 전체 기간 요약 {f 첫 거래 달, hi 역대 최고가, hi1 최근 1년 최고가} — 파일 hist 와 price/h/{구}.json 은 아래 '전체 기간 시세'
@@ -57,67 +59,235 @@
       let d = m.get(k);
       if (!d) { d = { key: k, code: u[0], dong: u[1], apt: u[2], jibun: u[8], bands: [], n: 0 }; m.set(k, d); }
       d.bands.push(u); d.n += u[5] || 0;
+      if (Array.isArray(u.al) && u.al.length) d.al = (d.al || []).concat(u.al.filter(a => !(d.al || []).includes(a)));
     }
     for (const d of m.values()) d.bands.sort((a, b) => a[4] - b[4]);
     return m;
   }
-  /* ---------- 단지 이름 검색용 별칭 (원래 이름은 그대로 두고 검색어·이름을 같은 규칙으로 맞춘다) ---------- */
-  /** 소문자·공백/하이픈/기호 제거, 'e편한세상'·'이편한세상'·'e-편한세상' → '이편한세상'. dropMaker=true 면 시공사 '대림' 표기도 뺀다 */
+  /* ---------- 단지 이름 검색용 별칭 (원래 이름은 그대로 두고 검색어·이름을 같은 규칙으로 맞춘다) ----------
+     엔진 scripts/aliases.py 의 norm() 과 같은 규칙. 두 가지 꼴로 비교한다:
+       · 가벼운 꼴(normLight): 소문자, 공백·기호 빼기, e편한세상·이편한세상·e-편한세상 → 이편한세상, 엘지 → lg 처럼 영문 표기 하나로
+       · 브랜드 꼴(normName): 위 + 시공사 앞말이 붙은 브랜드를 브랜드 하나로(대림이편한세상·삼성래미안·현대힐스테이트·GS자이·대우푸르지오·
+         현대아이파크·포스코더샵·에스케이뷰·한화꿈에그린·동부센트레빌…) + '아파트' 빼기
+     차수: 로마 숫자(Ⅳ)·'제4차'·띄어 쓴 한글 차수('사차') → '4차', 'N차'와 'N단지'는 같은 번호로 본다 */
+  const ROMAN = { 'Ⅰ': '1', 'Ⅱ': '2', 'Ⅲ': '3', 'Ⅳ': '4', 'Ⅴ': '5', 'Ⅵ': '6', 'Ⅶ': '7', 'Ⅷ': '8', 'Ⅸ': '9', 'Ⅹ': '10',
+    'ⅰ': '1', 'ⅱ': '2', 'ⅲ': '3', 'ⅳ': '4', 'ⅴ': '5', 'ⅵ': '6', 'ⅶ': '7', 'ⅷ': '8', 'ⅸ': '9', 'ⅹ': '10' };
+  const HNUM = { 일: '1', 이: '2', 삼: '3', 사: '4', 오: '5', 육: '6', 칠: '7', 팔: '8', 구: '9', 십: '10' };
+  const LATIN = [['엘지', 'lg'], ['에스케이', 'sk'], ['지에스', 'gs'], ['케이씨씨', 'kcc'], ['엘에이치', 'lh'], ['에이치디씨', 'hdc'], ['케이티', 'kt']];
+  const BRANDS = [
+    [/(?:대림|dl)?\s*(?:e|이)\s*-?\s*편한\s*세상/g, '이편한세상'],
+    [/(?:삼성\s*)?(?:래미안|raemian)/g, '래미안'],
+    [/(?:현대\s*)?(?:힐스테이트|hill\s*state)/g, '힐스테이트'],
+    [/(?:gs|지에스)\s*(?:자이|xi)/g, '자이'],
+    [/(^|[^a-z])xi(?![a-z])/g, '$1자이'],
+    [/(?:대우\s*)?(?:푸르지오|prugio)/g, '푸르지오'],
+    [/(?:현대|hdc|에이치디씨)?\s*(?:아이파크|i-?park)/g, '아이파크'],
+    [/(?:롯데|lotte)\s*(?:캐슬|castle)/g, '롯데캐슬'],
+    [/(?:포스코\s*)?(?:더샵|더#|the\s*#|the\s*sharp)/g, '더샵'],
+    [/(?:sk|에스케이)\s*(?:뷰|view)/g, 'sk뷰'],
+    [/(?:한화\s*)?꿈에그린/g, '꿈에그린'],
+    [/(?:동부\s*)?센트레빌/g, '센트레빌'],
+    [/(?:두산\s*)?(?:위브|we'?ve)/g, '위브'],
+    [/(?:호반\s*)?베르디움/g, '베르디움'],
+    [/(?:한신\s*)?휴\s*플러스/g, '휴플러스'],
+    [/(?:금호\s*)?어울림/g, '어울림']];
+  /** 낱말 안에서 떼어 비교할 브랜드('이편한세상청담4차' → '이편한세상' + '청담4차') */
+  const SPLIT = ['이편한세상', '래미안', '힐스테이트', '자이', '푸르지오', '아이파크', '롯데캐슬', '더샵', 'sk뷰', '꿈에그린', '센트레빌', '위브', '베르디움', '휴플러스', '어울림', '주공'];
+  const PUNCT = /[\s\-_.,·・'"’()\[\]&#]+/g;
+  /** 띄어쓰기를 남긴 채 글자 꼴만 맞춤(로마 숫자·전각 문자·한글 차수·'제N차'·e편한세상·영문 표기) */
+  function prep(s) {
+    let x = String(s || '').replace(/[Ⅰ-Ⅹⅰ-ⅹ]/g, c => ROMAN[c] || c);
+    if (x.normalize) x = x.normalize('NFKC');
+    x = x.toLowerCase()
+      .replace(/(^|\s)(일|이|삼|사|오|육|칠|팔|구|십)\s*차(?=\s|$)/g, (m, a, b) => a + HNUM[b] + '차')
+      .replace(/제\s*(\d+)\s*(차|단지)/g, '$1$2')
+      .replace(/(e|이)\s*-?\s*편한\s*세상/g, '이편한세상');
+    for (const [a, b] of LATIN) x = x.split(a).join(b);
+    return x;
+  }
+  /** 브랜드 꼴(띄어쓰기 남김) */
+  function prepBrand(s) {
+    let x = prep(s);
+    for (const [re, to] of BRANDS) x = x.replace(re, to);
+    const y = x.replace(/아파트|\bapt\b/g, ' ');
+    return y.replace(PUNCT, '') ? y : x;
+  }
+  const NC = new Map();                                                     // 정리 결과 기억(같은 이름을 글자 칠 때마다 다시 정리하지 않게)
+  function memo(k, f) { let v = NC.get(k); if (v === undefined) { if (NC.size > 200000) NC.clear(); v = f(); NC.set(k, v); } return v; }
+  /** 가벼운 꼴: 시공사 앞말은 그대로('청담대림' 검색이 대림 단지만 찾게) */
+  function normLight(s) { return memo('L' + s, () => prep(s).replace(PUNCT, '')); }
+  /** 브랜드 꼴. dropMaker=true 면 시공사 '대림' 표기도 뺀다(예전 호출 그대로) */
   function normName(s, dropMaker) {
-    const n = String(s || '').toLowerCase().replace(/[\s\-_.,·・'"’()\[\]]+/g, '').replace(/e(?=편한)/g, '이');
+    const n = memo('N' + s, () => prepBrand(s).replace(PUNCT, ''));
     return dropMaker ? n.replace(/대림/g, '') : n;
   }
   /** 'N차'·'N단지' 를 따로 떼어 낸다: {rest, nums, bare}
       bare = 이름 끝에 붙은 1~2자리 숫자(예: '목동신시가지7' → '7') — 'N차'·'N단지' 어느 쪽 검색어와도 맞춘다 */
   function splitNum(n) {
-    const nums = []; let rest = n.replace(/(\d+)(차|단지)/g, (m, a, b) => { nums.push(+a + b); return ''; });
-    let bare = '';
-    rest = rest.replace(/([^\d])(\d{1,2})$/, (m, a, b) => { bare = String(+b); return a; });
-    return { rest, nums, bare };
+    return memo('S' + n, () => {
+      if (/^\d{1,2}$/.test(n)) return { rest: '', nums: [], bare: String(+n) };   // 숫자만 쓴 낱말('Ⅳ' → '4')은 번호
+      const nums = []; let rest = n.replace(/(\d+)(차|단지)/g, (m, a, b) => { nums.push(+a + b); return ''; });
+      let bare = '';
+      rest = rest.replace(/([^\d])(\d{1,2})$/, (m, a, b) => { bare = String(+b); return a; });
+      return { rest, nums, bare };
+    });
   }
-  const numOk = (x, ns) => ns.nums.includes(x) || (!!ns.bare && (x === ns.bare + '차' || x === ns.bare + '단지'));
-  /** 검색어 q 가 단지 이름 name 에 맞는지. 0 = 앞부분부터 맞음, 1 = 맞음, -1 = 안 맞음
-      · 이름은 '대림' 표기가 있는 그대로와 뺀 것 둘 다로 비교(검색어의 '대림'은 그대로 둠 → '청담대림'은 대림 단지만)
-      · 띄어쓰기로 나눈 낱말마다: 'N차/N단지'를 뺀 글자가 이름('N차' 뺀 것)에 들어 있고, 'N차'는 이름의 'N차'와 같아야 함
-      · 이름에 '차' 번호가 없으면 '1차'로 본다 (예: 청담대림이-편한세상 = 청담 e편한세상 1차) */
+  const numOf = x => String(parseInt(x, 10));
+  /** 검색어의 'N차'(또는 'N단지')가 이름의 번호와 같은지 — 'N차'와 'N단지'는 같은 번호로 본다 */
+  const numOk = (x, ns) => ns.nums.some(y => numOf(y) === numOf(x)) || (!!ns.bare && ns.bare === numOf(x));
+  /** 낱말 하나를 브랜드 경계에서 나눈다(앞·뒤가 두 글자 이상 남을 때) */
+  function splitBrand(t) {
+    for (const b of SPLIT) {
+      const i = t.indexOf(b);
+      if (i < 0 || t === b) continue;
+      const a = t.slice(0, i), c = t.slice(i + b.length);
+      if ((a && a.replace(/\d+(차|단지)?/g, '').length < 1 && !/\d/.test(a)) || (c && c.replace(/\d+(차|단지)?/g, '').length < 1 && !/\d/.test(c))) continue;
+      return [a, b, c].filter(Boolean);
+    }
+    return [t];
+  }
+  /** 검색어 q 가 단지 이름 name 에 맞는지. -1 = 안 맞음, 0 = 앞부분부터 맞음, 1 = 맞음
+      · 이름·검색어를 가벼운 꼴과 브랜드 꼴 두 가지로 비교(둘 중 잘 맞는 쪽)
+      · 띄어쓰기로 나눈 낱말마다(브랜드 경계에서도 나눔): 'N차/N단지'를 뺀 글자가 이름에 들어 있고, 'N차'는 이름의 번호와 같아야 함
+      · 이름에 '차' 번호가 없으면 '1차'로 본다 (예: 청담대림이-편한세상 = 청담 e편한세상 1차)
+      · 검색어에 '편'이 있으면(이편한세상을 쓰다 만 경우 포함) 검색어의 '대림'도 빼고 비교 — e편한세상은 대림(DL) 브랜드 */
+  const DONG_TAIL = /\s*\([^()]*\d+\s*동[^()]*\)\s*$/;
   function matchName(name, q) {
-    // 'e편한세상'은 2~4차도 모두 대림(DL) 단지라, 검색어에 '편'이 함께 있으면 검색어의 '대림'도 빼고 비교 ('청담대림이편한세상 4차' → 4차)
-    const qd = /편/.test(normName(q)) ? String(q || '').replace(/대림/g, '') : q;
-    const a = matchOne(normName(name), q), b = matchOne(normName(name, true), qd);
-    return a < 0 ? b : b < 0 ? a : Math.min(a, b);
+    const ql = normLight(q); if (!ql) return -1;
+    const nm = String(name || '').replace(DONG_TAIL, '') || String(name || '');    // '(201동,202동)' 같은 동 표기는 비교에서 뺌
+    const rs = [matchOne(normLight(nm), q, normLight), matchOne(normName(nm), q, normName)];
+    if (/편/.test(ql)) {
+      const qd = String(q || '').replace(/대림/g, ''), dl = s => normLight(s).replace(/대림/g, '');
+      rs.push(matchOne(normName(nm, true), qd, s => normName(s, true)), matchOne(dl(nm), qd, dl));
+    }
+    const ok = rs.filter(r => r >= 0);
+    return ok.length ? Math.min(...ok) : -1;
   }
-  function matchOne(nn, q) {
-    const tq = normName(q); if (!tq) return -1;
+  function matchOne(nn, q, f) {
+    const tq = f(q); if (!tq || !nn) return -1;
     if (nn.indexOf(tq) >= 0) return nn.indexOf(tq) === 0 ? 0 : 1;
-    const ns = splitNum(nn), hasCha = ns.nums.some(x => /차$/.test(x));
-    const toks = String(q || '').split(/\s+/).map(t => normName(t)).filter(Boolean);
+    const ns = splitNum(nn), hasCha = ns.nums.length > 0;
+    let toks = [];
+    for (const w of prep(q).split(/\s+/)) { const t = f(w); if (t) toks.push(...splitBrand(t)); }
     if (!toks.length) return -1;
     let first = false;
     for (let i = 0; i < toks.length; i++) {
       const ts = splitNum(toks[i]);
       if (ts.rest && ns.rest.indexOf(ts.rest) < 0) return -1;
-      for (const x of ts.nums) if (!numOk(x, ns) && !(x === '1차' && !hasCha && !ns.bare)) return -1;
-      if (ts.bare && !numOk(ts.bare + '단지', ns) && !numOk(ts.bare + '차', ns)) return -1;
+      for (const x of ts.nums) if (!numOk(x, ns) && !(numOf(x) === '1' && !hasCha && !ns.bare)) return -1;
+      if (ts.bare && !numOk(ts.bare, ns) && !(ts.bare === '1' && !hasCha && !ns.bare)) return -1;
       if (i === 0 && ts.rest && ns.rest.indexOf(ts.rest) === 0) first = true;
     }
     return first ? 0 : 1;
   }
-  /** 단지 이름 검색: 공백·하이픈 무시, e편한세상/이편한세상·대림 표기 차이와 'N차' 띄어쓰기 허용, 거래 많은 단지 먼저 */
+  const dongStem = d => String(d || '').split(/\s+/).pop().replace(/(\d+가)?(동|읍|면|리)$/, '');
+  /** 단지 하나(d)에 검색어가 맞는 정도: 작을수록 앞, null = 안 맞음
+      -2 이름과 똑같음, -1 별칭과 똑같음, 0·1 이름, 0.5·1.5 별칭(K-apt 공식 이름·실거래 다른 이름·도로명 주소),
+      2 동 이름·지번을 뺀 나머지 낱말이 이름에 맞음('청담동 4차 이편한', '청담동 28-20') */
+  function matchDanji(d, q) {
+    const qn = normName(q), ql = normLight(q);
+    if (!ql) return null;
+    if (normName(d.apt) === qn || normLight(d.apt) === ql) return -2;
+    const al = Array.isArray(d.al) ? d.al : [];
+    if (al.some(a => normName(a) === qn || normLight(a) === ql)) return -1;
+    let r = matchName(d.apt, q);
+    if (r >= 0) return r;
+    for (const a of al) { const x = matchName(a, q); if (x >= 0 && (r < 0 || x + 0.5 < r)) r = x + 0.5; }
+    if (r >= 0) return r;
+    const toks = String(q || '').trim().split(/\s+/);
+    if (toks.length < 2) return null;
+    const st = dongStem(d.dong), dn = normLight(String(d.dong || '').split(/\s+/).pop()), jb = String(d.jibun || '');
+    let used = false;
+    const rest = toks.filter(t => {
+      const n = normLight(t);
+      if (n && (n === dn || (st.length >= 2 && n === normLight(st)) || (jb && t === jb))) { used = true; return false; }
+      return true;
+    });
+    if (!used) return null;
+    if (!rest.length) return 2;
+    const rq = rest.join(' ');
+    if (matchName(d.apt, rq) >= 0 || al.some(a => matchName(a, rq) >= 0)) return 2;
+    return null;
+  }
+  /** 단지 이름 검색: 공백·하이픈·브랜드 표기·차수 표기 차이 무시, 별칭(K-apt 이름 등)·동 이름·지번으로도, 똑같은 이름 먼저 → 거래 많은 단지 먼저 */
   function searchDanji(groups, q, limit) {
-    if (!normName(q)) return [];
+    if (!normLight(q)) return [];
     const out = [];
     for (const d of groups.values()) {
-      const r = matchName(d.apt, q);
-      if (r >= 0) out.push([r, -d.n, d]);
+      const r = matchDanji(d, q);
+      if (r != null) out.push([r, -d.n, d]);
     }
     out.sort((a, b) => a[0] - b[0] || a[1] - b[1] || a[2].apt.localeCompare(b[2].apt, 'ko'));
     return out.slice(0, limit || 20).map(x => x[2]);
+  }
+  /** 어떤 이름으로 찾았는지(별칭으로 찾았을 때만 그 별칭, 아니면 '') — 결과 목록에 '○○(으)로 찾음' 표시용 */
+  function matchedAlias(d, q) {
+    if (matchName(d.apt, q) >= 0 || normName(d.apt) === normName(q)) return '';
+    for (const a of (Array.isArray(d.al) ? d.al : [])) if (normName(a) === normName(q) || matchName(a, q) >= 0) return a;
+    return '';
+  }
+  /** 글자 쌍 겹침(0~1) */
+  function dice(a, b) {
+    if (!a || !b) return 0;
+    if (a.length < 2 || b.length < 2) return a === b ? 1 : (b.indexOf(a) >= 0 || a.indexOf(b) >= 0 ? 0.5 : 0);
+    const g = new Map(); for (let i = 0; i < a.length - 1; i++) { const k = a.slice(i, i + 2); g.set(k, (g.get(k) || 0) + 1); }
+    let hit = 0; for (let i = 0; i < b.length - 1; i++) { const k = b.slice(i, i + 2), c = g.get(k); if (c) { hit++; g.set(k, c - 1); } }
+    return 2 * hit / (a.length - 1 + b.length - 1);
+  }
+  /** 검색 결과가 없을 때 가까운 후보: 검색어에 동 이름이 있으면 그 동 단지 중에서, 아니면 전체에서 이름이 비슷한 순.
+      번호(N차)가 다르면 점수를 낮춘다. 돌려줌: [{d, s, dong(동 이름이 맞았는지)}] */
+  function suggestDanji(groups, q, limit) {
+    const toks = prep(q).split(/\s+/).filter(Boolean);
+    if (!toks.length) return [];
+    const all = [...groups.values()];
+    const dongs = new Set(all.map(d => d.dong));
+    const hitDong = new Set();
+    for (const t of toks) { const n = normLight(t); for (const dg of dongs) { const st = dongStem(dg); if (n && (n === normLight(String(dg).split(/\s+/).pop()) || (st.length >= 2 && (n === normLight(st) || n.indexOf(normLight(st)) === 0)))) hitDong.add(dg); } }
+    const qs = splitNum(normName(q)), qtext = qs.rest.replace(/\d+/g, '');
+    const pool = hitDong.size ? all.filter(d => hitDong.has(d.dong)) : all;
+    const out = [];
+    for (const d of pool) {
+      let s = 0;
+      for (const nm of [d.apt].concat(Array.isArray(d.al) ? d.al : [])) {
+        const ns = splitNum(normName(nm));
+        let v = dice(qtext, ns.rest.replace(/\d+/g, ''));
+        if (qs.nums.length && !qs.nums.every(x => numOk(x, ns) || (numOf(x) === '1' && !ns.nums.length && !ns.bare))) v *= 0.6;
+        if (v > s) s = v;
+      }
+      if (hitDong.size) s += 0.3;
+      if (s >= (hitDong.size ? 0.3 : 0.35)) out.push({ d, s, dong: hitDong.size > 0 });
+    }
+    out.sort((a, b) => b.s - a.s || b.d.n - a.d.n);
+    return out.slice(0, limit || 5);
+  }
+  /** K-apt 에는 있지만 최근 3년 시세 목록에 없는 단지(alias/sNN.json 의 x) 중 검색어에 맞는 것 — '왜 안 나오는지' 안내용
+      row = [구코드, 동, K-apt 이름, 지번, 사용승인 연도, 사유 old|rent|none, 마지막 거래 연월] */
+  function missRows(x, q, limit) {
+    const out = [];
+    for (const r of (x || [])) { const m = matchName(r[2], q); if (m >= 0) out.push([m, r]); }
+    out.sort((a, b) => a[0] - b[0]);
+    return out.slice(0, limit || 3).map(v => v[1]);
+  }
+  const MISS_WHY = { old: '최근 3년 동안 매매 거래가 없어요', rent: '임대 단지라 매매 거래 신고가 없어요', none: '국토교통부 매매 실거래 신고를 찾지 못했어요' };
+  /** 검색 결과가 없을 때 검색어만 익명으로 남긴다(새 별칭을 배우는 용도). 방문자 번호·위치·시각 외 정보는 보내지 않고,
+      전화번호·이메일처럼 보이는 글은 보내지 않는다. 같은 검색어는 한 번만. 제휴 서버(assets/agents.js)가 있는 화면에서만 */
+  const MISS_SENT = new Set();
+  function logMiss(q, where) {
+    try {
+      if (typeof window === 'undefined' || !window.JDJ_AGENTS || !window.JDJ_AGENTS.api) return false;
+      const t = String(q || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+      if (t.length < 2 || /\d{6,}|\d{2,4}[-.\s]\d{3,4}[-.\s]\d{4}|@|https?:/i.test(t) || !/[가-힣a-z]/i.test(t) || MISS_SENT.has(t)) return false;
+      MISS_SENT.add(t);
+      fetch(window.JDJ_AGENTS.api, { method: 'POST', mode: 'no-cors', keepalive: true, headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'log', events: [{ t: 'sq', a: '', g: String(where || '').replace(/[^\w]/g, '').slice(0, 12), k: t }] }) }).catch(() => {});
+      return true;
+    } catch (e) { return false; }
   }
 
   /* ---------- 시세 확인용 자료 ---------- */
   const FEW = 3;                                                            // 이보다 적으면 시세 범위 대신 거래 목록 요약만
   /** price/sNN.json 목록 행 → u 모양(시계열 칸은 비움) */
-  const listRow = r => [r[0], r[1], r[2], r[3], r[4], r[5], null, null, r[6], r[7]];
+  const listRow = r => { const u = [r[0], r[1], r[2], r[3], r[4], r[5], null, null, r[6], r[7]]; if (Array.isArray(r[8]) && r[8].length) u.al = r[8]; return u; };
   const unitKey = u => [u[0], u[1], u[8], u[2], u[3]].join('|');            // 시군구|동|지번|단지|평형
   /** 점수 자료가 있는 단지·평형인지(점수용 sNN 의 fx 객체, 또는 시세 자료의 1 표시) */
   const hasScore = u => !!u && (u[9] === 1 || (u[9] != null && typeof u[9] === 'object'));
@@ -447,7 +617,7 @@
   const pctTxt = (v, d) => v == null ? '-' : (v > 0 ? '+' : '') + (v * 100).toFixed(d == null ? 1 : d) + '%';
 
   const API = { PY, r100, STORE_KEY, MAX_HOMES, FEW, counts, lastIdx, median, toPrice, ymLabel, xTicks, danjiKey, agentKey, premiumKey, groupDanji, searchDanji,
-    normName, splitNum, matchName, listRow, unitKey, hasScore, scoreOf, monthDeals, trades, lastDeal, isFew,
+    normName, normLight, splitNum, matchName, matchDanji, matchedAlias, suggestDanji, missRows, MISS_WHY, logMiss, dice, listRow, unitKey, hasScore, scoreOf, monthDeals, trades, lastDeal, isFew,
     bandSummary, changeBack, dongPosition, sggPosition, trend, volume, volumeCounts, cleanHome, homeId, parseStore, dumpStore, addHome, removeHome, findUnit, vsBuy, heldMonths, reasons, reasonItems, won, pctTxt, cleanFx,
     ymAdd, ymDiff, ymKo, decodeSeries, histRow, histSeries, histWindow, histSpans, sggLine, vsSgg, highs, isNewHigh, lineParts, isSparse, valAt, gapOf, monthPoint };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

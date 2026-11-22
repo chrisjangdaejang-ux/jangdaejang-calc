@@ -36,7 +36,7 @@
 <script src="../tax/tax-engine.js?v=4"></script>
 <script src="../assets/loan-rules.js?v=3"></script>
 <script src="../assets/loan-core.js?v=5"></script>
-<script src="../assets/mine-core.js?v=18"></script>
+<script src="../assets/mine-core.js?v=19"></script>
 <script src="../assets/price-sheet.js?v=19"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -403,7 +403,8 @@ async function djSearch(){
   const q = $('djq').value.trim(), box = $('djres'); if (!q) { box.innerHTML = ''; return; }
   box.innerHTML = '<div class="none">단지 자료를 불러오는 중이에요…</div>';
   let us; try { us = await djUnits(); } catch (e) { box.innerHTML = '<div class="none">단지 자료를 불러오지 못했어요. 집값을 직접 넣어 주세요.</div>'; return; }
-  const nq = M.normName(q), hit = us.filter(u => M.normName(u[2]).indexOf(nq) >= 0).sort((a, b) => b[5] - a[5]).slice(0, 8);
+  const hit = us.map(u => [M.matchDanji({ apt: u[2], dong: u[1], jibun: u[8] }, q), u]).filter(x => x[0] != null)   // 단지 검색과 같은 이름 규칙(e편한세상·브랜드·차수 표기)
+    .sort((a, b) => a[0] - b[0] || b[1][5] - a[1][5]).slice(0, 8).map(x => x[1]);
   box.innerHTML = hit.length ? hit.map((u, i) => { const p = priceOf(u); return `<button type="button" data-i="${us.indexOf(u)}"><b>${esc(u[2])}</b> · ${esc(u[3])}<small>${esc(u[1])} · 전용 ${u[4]}㎡ · ${p ? '최근 시세 ' + won(p.price) + ' (' + esc(p.at) + ')' : '최근 거래 없음'}</small></button>`; }).join('')
     : `<div class="none">'${esc(q)}' 이름의 단지를 ${esc(sggName(S.code))}에서 찾지 못했어요.</div>`;
 }

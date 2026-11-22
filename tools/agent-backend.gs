@@ -1,6 +1,11 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집코드 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집코드 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v45 변경 요약 (재배포만 하면 됨 — 따로 실행할 함수 없음. 시트 '검색실패'는 첫 기록 때 저절로 생김)
+ *  - 단지 검색 결과가 없을 때 검색어 글자만 '검색실패' 시트에 남김(logEvents 의 t:'sq'). 방문자 번호·연락처는 남기지 않고,
+ *    전화번호·이메일처럼 보이는 글은 버림. 새 별칭(사람들이 부르는 단지 이름)을 배우는 용도. 재배포 전에는 그냥 무시됨.
+ *  - 검증: node tools/mine-test.js </dev/null
+ *
  * v44 변경 요약 (v20~v43과 같은 11/28 재배포에 함께 들어감. 재배포 뒤 편집기에서 alertsInstall 한 번 실행 — 시트 '알림구독'·'알림기록'·'알림발송'과 매일 오전 7시대·9시대 트리거)
  *  - 관심 단지·청약 알림 1단계(맨 아래 'v44' 칸, 안내 docs/alerts.md): 알림 센터(my/alerts/)에서 카카오 로그인 + 동의 체크 + 이메일로 신청(alertJoin·alertMine·alertPrefs·alertLeave).
  *    관심 목록 단지의 새 실거래·신고가·급매·큰 하락·전세가율 변화와 청약 맞춤(새 공고·접수 하루 전·발표일)을 하루 한 번(오전 7시대) 묶음 메일로.
@@ -587,11 +592,33 @@ function update(b) {
 const TYPES = ['rec', 'imp', 'view', 'call', 'kakao'];
 const AD_LOG = ['adv', 'adm', 'adc'];   // 분양 광고: 목록·추천 노출 · 지도 마커 노출 · 클릭
 const ID_RE = /^A[0-9A-F]{7}$/;
+/* v45 단지 검색 결과 없음(t: 'sq'): 검색어 글자만 '검색실패' 시트에 — 새 별칭을 배우는 용도.
+   방문자 번호(vid)·주소·이름 등은 남기지 않는다(같은 요청에 vid 가 와도 이 시트에는 쓰지 않음).
+   전화번호·이메일·주소처럼 보이는 글, 40자 넘는 글은 버린다. 화면 이름(g)은 영문 소문자 12자까지만. */
+const SH_SQ = '검색실패';
+function cleanQuery(q) {
+  const t = String(q == null ? '' : q).replace(/\s+/g, ' ').trim();
+  if (t.length < 2 || t.length > 40) return '';
+  if (/\d{6,}|\d{2,4}[-.\s]\d{3,4}[-.\s]\d{4}|@|https?:/i.test(t) || !/[가-힣a-z]/i.test(t)) return '';
+  return t.replace(/[<>=+]/g, '');                                   // 시트 수식으로 읽히지 않게
+}
+function logMiss(rows) {
+  if (!rows.length) return;
+  const ss = book();
+  let sh = ss.getSheetByName(SH_SQ);
+  if (!sh) { sh = ss.insertSheet(SH_SQ); sh.appendRow(['시각', '검색어', '화면']); }
+  sh.getRange(sh.getLastRow() + 1, 1, rows.length, 3).setValues(rows);
+}
 function logEvents(b) {
   const ev = (b.events || []).slice(0, 40);
   const vid = str(b.vid, 40), now = new Date();
-  const rows = [];
+  const rows = [], miss = [];
   ev.forEach(x => {
+    if (x.t === 'sq') {                                              // v45 검색 결과 없음 — 검색어만(vid 없이)
+      const q = cleanQuery(x.k), g = String(x.g || '');
+      if (q) miss.push([now, q, /^[a-z]{1,12}$/.test(g) ? g : '']);
+      return;
+    }
     if (AD_LOG.indexOf(x.t) >= 0) {                         // v16 분양 광고 노출·클릭(광고 id만, 개인 정보 없음)
       if (!/^AD[0-9A-F]{8}$/.test(String(x.a || '')) || !/^(\d{5})?$/.test(String(x.g || ''))) return;
       rows.push([now, x.t, String(x.a), String(x.g || ''), str(x.k, 20), vid]); return;
@@ -605,7 +632,8 @@ function logEvents(b) {
     const sh = book().getSheetByName(SH_L);
     sh.getRange(sh.getLastRow() + 1, 1, rows.length, 6).setValues(rows);
   }
-  return { ok: true, n: rows.length };
+  logMiss(miss.slice(0, 5));
+  return { ok: true, n: rows.length + Math.min(miss.length, 5) };
 }
 
 /* 이번 달·지난 달 성과 */
