@@ -274,6 +274,7 @@
         <div class="st"><div class="k">최근 1년 전세 계약</div><div class="v">${r.nj}건</div><div class="d">최근 3년 목록 ${r.nj3}건</div></div>
         <div class="st"><div class="k">최근 1년 월세 계약</div><div class="v">${r.nw}건</div><div class="d">${r.wDep != null && r.wRent != null ? `중간값 ${won(r.wDep)} / 월 ${r.wRent.toLocaleString()}만 · ${wNote}` : '계약이 없어요'}</div></div>
       </div>
+      ${r.jr && P() ? P().jrChip(r.jr.v, r.jr.at, '../jeonse/checklist/') : ''}
       <p class="basis"><b>계산 근거</b> · 전세 시세 = 이 건물 최근 3개월 순수 전세(월세 0) 계약의 전용 ㎡당 보증금 중간값 × 전용 ${u.a}㎡ · 전세가율 = 같은 달 전세 시세 ÷ 매매 시세 · 계약 수 = 표본 수예요. 표본이 적으면 한두 건에 값이 크게 흔들려요.</p>
       ${jl.length ? `<h3 style="margin:14px 0 6px;font-size:16px">최근 전세 계약</h3><div class="tbl"><table><thead><tr><th>계약일</th><th class="num">전용·층</th><th class="num">보증금</th></tr></thead><tbody>${jl.slice(0, 10).map(t => `<tr><td>${esc(t.date)}${t.ct ? `<br><small>${t.ct}</small>` : ''}</td><td class="num">${t.area}㎡${t.floor != null ? `<br><small>${t.floor}층</small>` : ''}</td><td class="num"><b>${won(t.dep)}</b></td></tr>`).join('')}</tbody></table></div>
       ${jl.length > 10 ? `<p class="basis">최근 10건만 보여 드려요(최근 3년 ${jl.length}건).</p>` : ''}` : r.nj ? '' : '<p class="note">최근 3년 전세 계약이 없어요.</p>'}

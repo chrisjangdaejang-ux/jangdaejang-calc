@@ -83,6 +83,10 @@ check('둘 다 없으면 null', O.areaRent({ d: '논현동' }, {}, {}, '강남�
 const PS = require('../assets/price-sheet.js');
 check('세로축 눈금: 35억·40억·45억·50억', PS.niceTicks(331100, 525100).map(PS.eokAxis), ['35억', '40억', '45억', '50억']);
 check('세로축 금액: 0.1억 단위가 아니면 만 단위까지', [PS.eokAxis(525000), PS.eokAxis(10500), PS.eokAxis(8000)], ['52.5억', '1억 500만', '8,000만']);
+// 거래 없던 달 값 칸 = 한 줄, 전세가율 주의 칩(HUG 90% 기준, 체크리스트 링크)
+const tf = PS.tipFn({ months: ['202505', '202506', '202507'], rows: [{ k: '매매', a: [10000, 0, 11000], c: '#000' }], cnt: new Map([['202505', 1], ['202506', 0], ['202507', 2]]), noFill: true });
+check('거래 없던 달: 한 줄 안내', [tf(1).empty, tf(1).say, !!tf(0).empty], [true, '2025.06, 거래가 없던 달이에요', false]);
+check('전세가율 칩: 90% 이상만·체크리스트 링크', [PS.jrChip(0.89, '202610'), /전세가율 91%/.test(PS.jrChip(0.91, '202610', '../jeonse/checklist/')), /jeonse\/checklist\//.test(PS.jrChip(0.91))], ['', true, true]);
 const bad = rows.filter(r => !r.ok);
 bad.forEach(r => console.log('실패:', r.name, '| 결과', JSON.stringify(r.got), '| 기대', JSON.stringify(r.want)));
 console.log(`offi 테스트 ${rows.length - bad.length}/${rows.length} 통과`);

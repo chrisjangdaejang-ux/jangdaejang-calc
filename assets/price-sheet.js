@@ -233,6 +233,8 @@
       if (fl.length) out.extra.push(`${fl.join('·')} 거래 없음 — 앞뒤 거래로 이은 값이에요`);
       if (o.cnt && o.cnt.has(ym)) { const c = o.cnt.get(ym); out.cnt = c; const t = c ? `이 달 ${o.cntK || '매매'} 신고 ${c}건` : `이 달 ${o.cntK || '매매'} 신고 없음 · 값은 앞 3개월 거래 기준`; out.extra.push(t); say.push(t); }
       out.say = say.join(', ');
+      /* 모든 줄이 '거래 없음'(자료 시작 전 제외)이고 그 달 신고도 없으면 값 칸은 한 줄('거래가 없던 달이에요')로 */
+      if (out.rows.length && out.rows.every(r => r.none && !/^자료 없음/.test(r.v)) && !out.cnt) { out.empty = true; out.say = `${out.head}, 거래가 없던 달이에요`; }
       return out;
     };
   }
@@ -256,6 +258,7 @@
   const rRow = (c, k, v, cls) => `<div class="r${cls ? ' ' + cls : ''}"><span><i${c ? ` style="background:${c}"` : ' class="o"'}></i>${esc(k)}</span><b>${v}</b></div>`;
   const NA = '<small>-</small>';
   const rdHtml = (o, latest, fillOn) => {
+    if (o.empty) return `<div class="d e">${esc(o.head)} · 거래가 없던 달이에요</div>`;
     const rs = o.rows.map(r => r.none ? rRow(r.c, r.sk || r.k, `<small>${/^자료 없음/.test(r.v) ? '자료 없음' : '거래 없음'}</small>`, 'f')
       : rRow(r.c, r.sk || r.k, esc(tv(r.v)), r.fill ? 'f' : ''));
     if (o.gapOn) { const g = o.gap; rs.push(rRow('', '갭', g ? esc(tv(g.v)) : NA), rRow('', '갭 비율', g ? g.pct + '%' : NA), rRow('', '전세가율', g ? g.jr + '%' : NA)); }
@@ -317,6 +320,9 @@
     });
     box.addEventListener('focusout', e => { if (!box.contains(e.relatedTarget)) hide(); });
     box._jhvHide = hide; box._md = md;
+    /* 값 칸 높이 고정: 값이 있는 달 기준으로 한 번 재고(거래 없던 달은 한 줄이라 그래프가 위아래로 움직이지 않게) */
+    let full = lastI; for (let i = md.n - 1; i >= 0 && tip(full).empty; i--) full = i;
+    rd.innerHTML = rdHtml(tip(full), true, fillOn); if (rd.offsetHeight) rd.style.minHeight = rd.offsetHeight + 'px';
     idle();
   }
   /* 차트 바깥을 누르면 고정된 안내선 풀기 (차트마다 문서 이벤트를 달지 않도록 한 번만) */
@@ -404,7 +410,7 @@
     el.innerHTML = `<div class="jhv" tabindex="0" role="group" aria-roledescription="차트" aria-label="${esc(aria + ' — 왼쪽·오른쪽 화살표 키로 달을 옮기며 값을 들을 수 있어요')}"><div class="jhv-rd" aria-hidden="true"></div>`
       + `<div class="jhv-in"><svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(aria)}">${grid}${bars}${xl}${over}</svg></div><div class="jhv-sr" aria-live="polite"></div></div>`;
     const k = o.k || '거래', tip = i => { const v = a[i] || 0, head = m.ymLabel(months[i]);
-      return { head, rows: [{ k, c: '#2560E8', v: v ? v + u : '거래 없음', none: !v }], extra: [], say: `${head}, ${k} ${v ? v + u : '없음'}` }; };
+      return { head, rows: [{ k, c: '#2560E8', v: v ? v + u : '거래 없음', none: !v }], extra: [], empty: !v, say: v ? `${head}, ${k} ${v}${u}` : `${head}, 거래가 없던 달이에요` }; };
     const md = { W, H, L, R, n, x, top: T, months, pts: [{ a, c: '#2560E8', y, raw: true }], ix: vx => Math.floor((vx - L) / slot) };
     wire(el.querySelector('.jhv'), md, tip);
     return { model: md };
@@ -484,6 +490,11 @@
 .jhv-rd small{font-size:12px;font-weight:500;color:#8B95A1}
 .jhv-rd .g{font-size:12.5px;color:#6B7684;margin-top:2px;display:flex;justify-content:space-between;gap:10px}.jhv-rd .g span:last-child{font-weight:700;color:#2560E8;text-align:right}
 .jhv-rd .x{font-size:11.5px;color:#8B95A1;margin-top:1px}
+.jhv-rd .d.e{font-size:14px;color:#4E5968;white-space:normal;margin:0}
+.jps-jrc{border:1px solid #F3D19C;background:#FFF8EC;border-radius:14px;padding:10px 14px;margin:10px 0;font-size:14px;line-height:1.6;color:#3E4754}
+.jps-jrc b{display:block;color:#8A5A00;font-size:15px}.jps-jrc b small{font-weight:500;color:#8B95A1;font-size:12.5px}
+.jps-jrc p{margin:4px 0 6px}
+.jps-jrc a{display:inline-flex;align-items:center;min-height:44px;font-weight:700;color:#2560E8;text-decoration:none}
 .jhv.pin .jhv-rd{border-color:#9DB8FF}
 .jhv-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media print{.jps-btn{display:none!important}}
@@ -616,7 +627,18 @@
     ${(sm.price || (last && last.price)) ? `<a class="jps-loan" href="${esc(loanHref({ src: 'sheet', price: sm.price || last.price, code: u[0], apt: u[2], band: u[3], area: u[4] }))}" data-track="sheet_to_loan">이 집 대출 한도 계산하기 →</a>` : ''}`;
   }
 
-  const API = { niceTicks, eokAxis, open, close, btn, loanHref, loadSgg, loadHist, histOf, scoreUnits, findUnit, tradesHtml, pastYearsHtml, wireMore, miniChart, histChart, histNote, linePaths, mountBars, SPARSE, highsHtml, spanBtns, baseName, plot, mount, tipFn, histTip, histSpec, mountHist, cntMap, eok, guOf, guNote, ppySpec, mountPpy };
+  /* ---------- 전세가율 주의 칩(아파트·오피스텔 공용) ----------
+     기준은 전월세 화면(assets/rent-core.js JDJ_RENT.HUG.ratio)과 같은 HUG 전세보증금반환보증 가입 기준 90% — 공식으로 확인한 기준이 이것 하나라서 이 값만 써요.
+     문구는 전세 계약 체크리스트(jeonse/checklist/) 1번 항목 '왜 중요해요?'와 전월세 화면 위험 안내 그대로. r = 0~1, at = 연월, href = 체크리스트 주소 */
+  const jrLimit = () => (root.JDJ_RENT && root.JDJ_RENT.HUG && root.JDJ_RENT.HUG.ratio) || 0.9;
+  function jrChip(r, at, href) {
+    if (!(r >= jrLimit())) return '';
+    const pct = Math.round(r * 100), lim = Math.round(jrLimit() * 100);
+    return `<div class="jps-jrc" role="note"><b>전세가율 ${pct}%${at ? ` <small>(${esc(M().ymLabel(at))} 기준)</small>` : ''} · 전셋값이 집값에 가까워요</b>`
+      + `<p>전셋값이 집값에 가까우면 집값이 조금만 내려도 집을 팔아 보증금을 다 돌려받기 어려울 수 있어요(깡통전세). 주택도시보증공사(HUG) 전세보증금반환보증은 보증금과 선순위채권(근저당 등)을 더한 금액이 주택가격의 ${lim}% 이내여야 가입할 수 있어요. 이 값은 실거래 시세로 계산한 것이라, 실제 계약하는 집의 가격·근저당은 따로 확인해야 해요.</p>`
+      + `<a href="${esc(href || '../jeonse/checklist/')}" data-track="jr_chip_to_checklist">전세 계약 전 체크리스트 보기 →</a></div>`;
+  }
+  const API = { jrChip, jrLimit, niceTicks, eokAxis, open, close, btn, loanHref, loadSgg, loadHist, histOf, scoreUnits, findUnit, tradesHtml, pastYearsHtml, wireMore, miniChart, histChart, histNote, linePaths, mountBars, SPARSE, highsHtml, spanBtns, baseName, plot, mount, tipFn, histTip, histSpec, mountHist, cntMap, eok, guOf, guNote, ppySpec, mountPpy };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_PRICE = API;
 })(typeof self !== 'undefined' ? self : this);
