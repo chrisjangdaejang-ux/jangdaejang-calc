@@ -110,6 +110,23 @@ td.dt{white-space:nowrap}td small{color:var(--muted);font-size:12.5px}
 .foot{background:var(--gold);color:var(--ink);text-align:center;font-weight:900;padding:12px;font-size:14px}
 .foot a{color:inherit}
 .caution.once{margin:0 0 12px;font-size:15px;line-height:1.6}
+.jrv{border:1px solid var(--line);border-radius:12px;background:#fff;padding:12px 14px;margin-top:10px}
+.jrv .jrt{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px}
+.jrv .jrt .k{font-size:14px;font-weight:700;color:var(--muted)}
+.jrv .jrt b{font-size:24px;font-weight:900;letter-spacing:-.03em;line-height:1.2}
+.jrv .jrt b.hi{color:#C81E1E}
+.jrv .jrt small{font-size:13.5px;color:var(--muted)}
+.jrv .jrb{font-size:13.5px;line-height:1.6;color:#4E5968;margin:6px 0 0;word-break:keep-all}
+.jrv .jrb.miss{font-size:14.5px;color:var(--ink)}
+.jrv .oth{font-size:13.5px;color:#4E5968;margin:6px 0 0}
+.jrv .jps-jrc{margin:10px 0 2px}
+.jps-jrc.jrm{border-color:#D5DCE6;background:#F7F9FC}.jps-jrc.jrm b{color:#3E4754}
+.jrv details.tr{margin-top:8px}
+.jrv .jrl{display:inline-flex;align-items:center;min-height:44px;font-weight:700;font-size:14.5px;color:var(--blue,#2560E8);text-decoration:none}
+.vwhy{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:0 0 12px;font-size:14.5px;line-height:1.6}
+.vwhy p{margin:4px 0 0}
+.vwhy a{display:inline-flex;align-items:center;min-height:44px;font-weight:700;color:var(--blue,#2560E8);text-decoration:none}
+.dong .vdc{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
 </style>
 <link rel="stylesheet" href="../assets/aplus.css?v=45">
 <script src="../assets/nw.js?v=1" defer></script>
@@ -139,7 +156,7 @@ td.dt{white-space:nowrap}td small{color:var(--muted);font-size:12.5px}
 <div class="wrap">
   <span class="tag">빌라 · 재개발 체크</span>
   <h1>이 빌라, <em>재개발</em>과<br>얼마나 가까울까요?</h1>
-  <p class="lead">국토교통부 연립·다세대 실거래가로 대지지분 평당가를 동 중간값과 비교하고, 같은 동의 정비구역 진행 단계와 입주권(현금청산) 위험을 함께 보여 드립니다.</p>
+  <p class="lead">국토교통부 연립·다세대 실거래가로 대지지분 평당가를 동 중간값과 비교하고, 같은 동의 정비구역 진행 단계와 입주권(현금청산) 위험을 함께 보여 드립니다. 전세를 알아보는 분은 건물별 전세가율과 최근 전세 계약도 확인할 수 있어요.</p>
 
   <div class="jas jas-top" data-ad-slot="villa_top" data-ad-cat="villa" data-ad-top></div>
   <div class="pick">
@@ -161,6 +178,7 @@ td.dt{white-space:nowrap}td small{color:var(--muted);font-size:12.5px}
       <li><b>구역 안(공식 경계)</b> — 서울 열린데이터광장 ‘서울시 의제처리구역 위치정보’(정비구역 경계 공개 자료)와 건물 지번 위치로 확인한 경우입니다. 정비구역 경계는 서울시 공개 자료 기준이며 참고용이에요(법적 효력 없음). 최종 확인은 구청 고시도면으로 하세요. 같은 동이라도 경계 밖으로 확인되면 ‘같은 동·구역 밖’으로 표시합니다.</li>
       <li><b>구역 대표 지번</b> — 서울시 정비사업 추진현황의 구역 대표 지번과 건물 지번이 같은 경우입니다. 구역 안에 있을 가능성이 높지만, 구역 경계는 구청 고시도면으로 확인하세요.</li>
       <li><b>같은 동 정비구역</b> — 같은 법정동에 재개발 계열 구역이 있다는 뜻일 뿐, 이 건물이 구역 안에 있다는 뜻은 아닙니다. 구역 포함 여부는 꼭 확인하세요.</li>
+      <li><b>전세가율</b> — 전셋값 ÷ 매맷값이에요. 전세 시세는 이 건물·평형의 최근 3개월 순수 전세 계약으로, 매매 시세는 같은 건물 매매로 구해요. 같은 건물 매매가 적으면 같은 동에서 준공 연도와 전용면적이 비슷한 빌라 매매로 대신하고, 카드에 ‘같은 동 비슷한 빌라 기준’과 계약 건수를 함께 적어요. 주택도시보증공사(HUG) 전세보증 가입 기준인 90% 이상이면 주의 안내를 보여 드려요.</li>
       <li><b>입주권 위험</b> — 권리산정기준일 자료가 없어 구역의 가장 이른 공식 단계 날짜를 기준일로 추정하고 건축연도와 비교했습니다. 실제 기준일은 후보지 공모 공고일 등으로 이보다 앞설 수 있습니다.</li>
     </ul>
   </details>
@@ -177,11 +195,14 @@ td.dt{white-space:nowrap}td small{color:var(--muted);font-size:12.5px}
     <a class="btn" id="ctaBtn" data-track="villa_consult" target="_blank" rel="noopener">상담 신청</a>
   </div>
 
-  <p class="src" id="src">자료: 국토교통부 연립·다세대 매매 실거래가(공공데이터포털, 해제 거래 제외) · 서울시 정비사업 추진현황 및 서울플랜+(서울 열린데이터광장) · 국토교통부 전국 도시정비사업 통합 데이터(서울 밖, 현재 단계만).</p>
+  <p class="src" id="src">자료: 국토교통부 연립·다세대 매매 실거래가(공공데이터포털, 해제 거래 제외) · 국토교통부 연립·다세대 전월세 실거래가(공공데이터포털) · 서울시 정비사업 추진현황 및 서울플랜+(서울 열린데이터광장) · 국토교통부 전국 도시정비사업 통합 데이터(서울 밖, 현재 단계만).</p>
 </div>
 <div class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집코드 · <a href="../">홈</a></div>
 <script src="../assets/agents.js"></script>
 <script src="../assets/ads.js?v=5"></script>
+<script src="../assets/mine-core.js?v=18"></script>
+<script src="../assets/price-sheet.js?v=19"></script>
+<script src="../assets/rent-core.js?v=4"></script>
 
 <script>
 var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
@@ -262,9 +283,55 @@ function card(b, i){
       <div class="mini"><div class="k">전용면적</div><div class="v">${b.a}<small>㎡ · ${py(b.a)}평</small></div></div>
     </div>
     ${zh}
+    ${jrBlock(b)}
     <details class="tr"><summary>최근 거래 ${b.tr.length}건 보기</summary><table><tr><th>계약일</th><th class="num">거래가</th><th class="num">전용·대지권</th><th class="num">층</th></tr>${tr}</table></details>
     <div class="acts"><a class="btn" href="${href}" target="_blank" rel="noopener" data-track="villa_consult">이 빌라 상담 신청</a></div>
   </div>`;
+}
+
+/* ---------- 전세가율(엔진 villa_jr — 같은 건물 매매, 모자라면 같은 동 비슷한 빌라) · 최근 전세 계약 ----------
+   위험 판단은 HUG 전세보증 가입 기준 90% 하나(아파트·오피스텔과 같은 칩), 80~90%는 '주의해서 살펴보세요' 안내(assets/rent-core.js) */
+const VJ = () => window.JDJ_RENT && window.JDJ_RENT.vjBasis ? window.JDJ_RENT : null;
+const CTN = ['신규', '갱신', ''];
+function jrBlock(b){
+  const R = VJ(); if (!R) return '';
+  const list = b.jr || [], jl = b.jl || [], j = R.vjPick(list, b.a);
+  let h;
+  if (j && j.r > 0){
+    const lv = R.vjLevel(j.r);
+    h = `<div class="jrt"><span class="k">전세가율</span><b class="${lv === 'hi' ? 'hi' : ''}">${Math.round(j.r * 100)}%</b><small>${esc(j.bd)} · 전용 ${j.a}㎡ · ${j.b === 'd' ? '같은 동 비슷한 빌라 기준' : '같은 건물 매매 기준'}</small></div>
+      <p class="jrb"><b>계산 근거</b> · ${esc(R.vjBasis(j, b.d))}</p>${R.vjNote(j.r, j.at, '../jeonse/checklist/?k=v')}`;
+  } else h = `<div class="jrt"><span class="k">전세가율</span></div><p class="jrb miss">${esc(R.vjMiss(j, !list.length))}</p>`;
+  const oth = list.filter(x => x !== j && x.r > 0);
+  if (oth.length) h += `<p class="oth">다른 평형 · ${oth.map(x => `${esc(x.bd)}(전용 ${x.a}㎡) ${Math.round(x.r * 100)}%${x.b === 'd' ? '(같은 동 비슷한 빌라 기준)' : ''}`).join(' · ')}</p>`;
+  if (jl.length){
+    const rows = jl.map(t => { const d = ymd(String(t[0])); return `<tr><td class="dt">${/^20\d\d\./.test(d) ? '<span class="yy">20</span>' + d.slice(2) : d}${CTN[t[4]] ? `<br><small>${CTN[t[4]]}</small>` : ''}</td><td class="num">${t[1]}㎡${t[2] != null ? `<br><small>${t[2]}층</small>` : ''}</td><td class="num"><b>${won(t[3])}</b></td></tr>`; }).join('');
+    h += `<details class="tr"><summary>최근 전세 계약 ${jl.length}건 보기</summary><table><tr><th>계약일</th><th class="num">전용·층</th><th class="num">전세 보증금</th></tr>${rows}</table>
+      <p class="jrb">국토교통부 전월세 신고 그대로예요(최근 3년, 최신순, 월세 없는 계약만).</p></details>`;
+  }
+  const band = (j && j.bd) || '';
+  h += `<a class="jrl" href="../jeonse/?k=v&amp;g=${encodeURIComponent(CUR.meta.c)}&amp;d=${encodeURIComponent([b.d, b.j, b.n].join('|'))}${band ? '&amp;b=' + encodeURIComponent(band) : ''}" data-track="villa_to_jeonse">이 빌라 전월세 시세 자세히 보기 →</a>`;
+  return `<div class="jrv">${h}</div>`;
+}
+function vWhy(){
+  const R = VJ(); if (!R) return '';
+  return `<div class="vwhy"><b>빌라 전세가율을 따로 보는 이유</b><p>${esc(R.VJ_WHY)}</p><a href="../jeonse/checklist/?k=v" data-track="villa_why_to_checklist">전세 계약 전 체크리스트 보기 →</a></div>`;
+}
+/* 동 전세가율 추이(동 전체 3개월 전세 ㎡당 보증금 중간값 ÷ 매매 ㎡당 가격 중간값) */
+function dongJr(d){
+  const R = VJ(); if (!R || !CUR) return '';
+  const t = R.vjDong(CUR.dj, d, CUR.djm, CUR.djt || IDX.to), l = (CUR.djl || {})[d], fill = IDX.fill || {};
+  if (!t) return `<div class="vdc" style="font-size:14px;color:var(--muted)">${esc(d)} 빌라 전체 전세가율은 전세·매매 계약이 충분한 달이 없어서 계산하지 않았어요.</div>`;
+  return `<div class="vdc"><div style="font-size:15px">${esc(d)} 빌라 전체 전세가율${l ? ` <b>${Math.round(l.r * 100)}%</b> <span style="color:var(--muted);font-size:13.5px">(${ym(l.at)} 기준 · 전세 ${fmt(l.nj)}건, 매매 ${fmt(l.ns)}건)</span>` : ' 추이'}</div>
+    <div id="cVd" style="min-height:120px;margin-top:6px"></div>
+    <p style="font-size:13.5px;color:var(--muted);margin:6px 0 0;line-height:1.6">이 값은 ${esc(d)}의 그 달까지 3개월 빌라 순수 전세 ㎡당 보증금 중간값을 매매 ㎡당 가격 중간값으로 나눈 거예요. 같은 건물끼리 맞춘 값이 아니라서 동네 흐름을 보는 참고값이에요. 전세·매매 계약이 충분한 달만 표시해요.${fill.rent || fill.trade ? ' 예전 거래 자료를 아직 모으는 중이라 추이의 앞부분은 비어 있을 수 있어요.' : ''}</p></div>`;
+}
+function drawDongJr(d){
+  const R = VJ(), P = window.JDJ_PRICE, el = $('cVd'); if (!R || !P || !el) return;
+  const t = R.vjDong(CUR.dj, d, CUR.djm, CUR.djt || IDX.to); if (!t) return;
+  const a = t.a.map(v => v * 100), f = v => Math.round(v) + '%';
+  P.mount(el, { months: t.months, lines: [{ a, c: '#0E7A4F', w: 2.2 }], fmtY: f, h: 150, L: 50, fs: 13, pad: 0.12, min: 1, aria: d + ' 빌라 전세가율 추이',
+    tip: P.tipFn({ months: t.months, rows: [{ k: '동 전세가율', a, c: '#0E7A4F', fmt: f }], fmt: f }) });
 }
 
 /* 분석 설명(assets/narrative.js cat.villa): 정비구역 단계·진행 속도·노후도·대지지분 평당가를 한 줄 결론 → 요약 → 자세히 보기로 */
@@ -292,7 +359,8 @@ function renderDong(){
   $('dongBox').innerHTML = `<div class="dong"><h3>${esc(CUR.meta.n)} ${esc(d)}</h3>
     <div style="font-size:15px">${esc(d)} 빌라 대지지분 평당가는 최근 12개월 중간값 <b>${m?fmt(m.m)+'만원':'자료 부족'}</b>${m?` <span style="color:var(--muted);font-size:13.5px">(${fmt(m.c)}건 기준)</span>`:''}</div>
     ${zl.length?`<div class="zl">${zl.map(z=>`<div class="zrow"><b>${esc(z.n)}</b> <small>${esc(z.t)} · 10단계 중 ${z.lv}단계(${esc(z.st)})${z.b?' · 가장 이른 공식 단계 '+ym(z.b):''}${z.src==='n'?' · 구역 이름으로 같은 동 추정':''}</small>${lvbar(z.lv)}${xnote(z)}${inout(z)}</div>`).join('')}</div>`
-      :'<div style="font-size:14px;color:var(--muted);margin-top:6px">자료상 이 동에 연결된 재개발 계열 정비구역이 없습니다.</div>'}</div>`;
+      :'<div style="font-size:14px;color:var(--muted);margin-top:6px">자료상 이 동에 연결된 재개발 계열 정비구역이 없습니다.</div>'}${dongJr(d)}</div>`;
+  drawDongJr(d);
 }
 function render(){
   renderDong();
@@ -304,7 +372,7 @@ function render(){
   const autoNote = (!USER_PICK && FILTER==='all' && AUTO_ALL!==null) ? `<div class="caution once"><b>전체 건물을 보여 드려요</b> · ${$('dong').value?esc($('dong').value):esc(CUR.meta.n)}에는 정비구역(재개발·재건축 구역)과 연결된 빌라가 ${AUTO_ALL?fmt(AUTO_ALL)+'개뿐이라':'없어서'} 전체 건물로 바꿨어요. 정비구역 연결 건물만 보려면 위 <b>정비구역 연결 건물</b>을 눌러 주세요.</div>` : '';
   if (!rows.length){ $('list').innerHTML = autoNote + `<div class="empty">조건에 맞는 건물이 없습니다.${FILTER!=='all'?' <b>전체 건물</b>로 바꿔 보세요.':''}</div>`; return; }
   const sorted = rows.slice().sort((a,b)=> b.dt.localeCompare(a.dt));
-  $('list').innerHTML = autoNote + `<div class="caution once"><b>모든 건물 공통</b> · 입주권은 권리산정기준일(이날 이전에 지은 건물이어야 새 아파트 입주권을 받을 수 있는 기준 날짜)과 건축 연도로 가늠한 결과예요. 권리산정기준일·조합원 자격·구역 경계(이 건물이 구역 안인지)는 구청·조합에 꼭 확인하세요. 카드의 ⓘ 표시가 그 확인이 필요한 항목이에요.</div><div class="cards">${sorted.slice(0,SHOWN).map(card).join('')}</div>${sorted.length>SHOWN?`<button class="morebtn" id="moreBtn">더 보기 (${fmt(sorted.length-SHOWN)}개 남음)</button>`:''}`;
+  $('list').innerHTML = autoNote + `<div class="caution once"><b>모든 건물 공통</b> · 입주권은 권리산정기준일(이날 이전에 지은 건물이어야 새 아파트 입주권을 받을 수 있는 기준 날짜)과 건축 연도로 가늠한 결과예요. 권리산정기준일·조합원 자격·구역 경계(이 건물이 구역 안인지)는 구청·조합에 꼭 확인하세요. 카드의 ⓘ 표시가 그 확인이 필요한 항목이에요.</div>${vWhy()}<div class="cards">${sorted.slice(0,SHOWN).map(card).join('')}</div>${sorted.length>SHOWN?`<button class="morebtn" id="moreBtn">더 보기 (${fmt(sorted.length-SHOWN)}개 남음)</button>`:''}`;
   if (NARON) document.querySelectorAll('#list .nar').forEach(el=>JDJ_NAR.bind(el));
   const mb = $('moreBtn'); if (mb) mb.onclick = ()=>{ SHOWN += PAGE; render(); };
   document.querySelectorAll('[data-more]').forEach(b=>b.onclick=()=>{ const r=b.previousElementSibling; r.hidden=!r.hidden; b.textContent = r.hidden?b.textContent.replace('접기 ▴','더 보기 ▾'):b.textContent.replace('더 보기 ▾','접기 ▴'); });
@@ -334,7 +402,7 @@ async function loadSgg(code, dong){
   $('list').innerHTML = '<div class="loading">건물 정보를 불러오는 중입니다…</div>';
   try{
     const r = await fetch(DATA + code + '.json'); if (!r.ok) throw new Error(r.status);
-    const d = await r.json(); CUR = {meta, b:d.b, z:d.z, dm:d.dm||{}};
+    const d = await r.json(); CUR = {meta, b:d.b, z:d.z, dm:d.dm||{}, dj:d.dj||{}, djl:d.djl||{}, djm:d.djm||'', djt:d.djt||''};
   }catch(e){ CUR=null; $('list').innerHTML = '<div class="empty">자료를 불러오지 못했습니다. 잠시 뒤 다시 시도해 주세요.</div>'; return; }
   const ds = [...new Set(CUR.b.map(b=>b.d))].sort((a,b)=>a.localeCompare(b,'ko'));
   $('dong').innerHTML = '<option value="">전체 동</option>' + ds.map(d=>`<option>${esc(d)}</option>`).join('');

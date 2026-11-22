@@ -30,7 +30,7 @@
 <script src="../assets/kchat.js?v=3"></script>
 <script src="../assets/mine-core.js?v=18"></script>
 <script src="../assets/price-sheet.js?v=19"></script>
-<script src="../assets/rent-core.js?v=3"></script>
+<script src="../assets/rent-core.js?v=4"></script>
 <script src="../assets/policy-view.js?v=3"></script>
 <script src="../assets/plain-words.js?v=16"></script>
 <script src="../assets/narrative.js?v=18"></script>
@@ -95,6 +95,8 @@ h1{font-size:clamp(26px,6vw,38px);margin:6px 0 8px}
 .gauge span{position:absolute;top:16px;font-size:12.5px;color:#4E5968;transform:translateX(-50%)}
 .rbig{font-size:26px;font-weight:900;letter-spacing:-.5px}
 .rbig.hi{color:#C81E1E}
+.vwhy{background:#F7F8FA;border-radius:12px;padding:10px 12px;margin:10px 0 0;font-size:14px;line-height:1.6;color:#3E4754}.vwhy p{margin:4px 0 0}
+.jps-jrc.jrm{border-color:#D5DCE6;background:#F7F9FC}.jps-jrc.jrm b{color:#3E4754}
 .rmsg{border-radius:12px;padding:10px 12px;font-size:15px;line-height:1.6;margin:8px 0 0}
 .rmsg.hi{background:#FDECEC;color:#7F1D1D}.rmsg.ok{background:#F2F4F6;color:#191F28}
 .calc{border:1px solid #C9D8FF;background:#F5F8FF;border-radius:16px;padding:14px}
@@ -453,15 +455,20 @@ function dealsHtml(list){
     + (list.length > show ? `<button type="button" class="morebtn" data-more>더보기 (${list.length - show}건 더)</button>` : '');
 }
 function riskPanel(c, u, sm){
-  const k = c.kind, jr = sm.jr, rk = jr ? R.risk(jr.r) : null;
+  const k = c.kind, jr = sm.jr, rk0 = jr ? R.risk(jr.r) : null;
+  /* 빌라: 큰 숫자도 주의 칩과 같은 정수 %로(94.5%와 95%가 함께 보이지 않게) */
+  const rk = rk0 && k === 'v' ? Object.assign({}, rk0, { pct: Math.round(jr.r * 100) }) : rk0;
   const pos = v => Math.max(0, Math.min(100, v));
   const gauge = rk ? `<div class="gauge" role="img" aria-label="전세가율 ${rk.pct}%"><em style="left:90%">보증 가입 기준 90%</em><i style="left:${pos(rk.pct)}%"></i><span style="left:0;transform:none">0%</span><span style="left:50%">50%</span><span style="left:100%;transform:translateX(-100%)">100%</span></div>` : '';
+  const V = k === 'v', vNote = V && rk ? R.vjNote(jr.r, jr.at, 'checklist/?k=v') : '';
   let basis = '';
-  if (jr && k === 'a') basis = `${ym(jr.at)} 이 평형 전세 시세 ${won(jr.j)} ÷ 매매 시세 ${won(jr.s)} (각각 3개월 실거래 평당가 중간값 × 전용면적, 내 집 시세 화면과 같은 값)`;
+  if (V) basis = jr && jr.r > 0 ? esc(R.vjBasis(jr, c.d.dong).replace(/\.$/, '')) : '';
+  else if (jr && k === 'a') basis = `${ym(jr.at)} 이 평형 전세 시세 ${won(jr.j)} ÷ 매매 시세 ${won(jr.s)} (각각 3개월 실거래 평당가 중간값 × 전용면적, 내 집 시세 화면과 같은 값)`;
   else if (jr) basis = `최근 1년 이 건물·평형 전세 ㎡당 보증금 중간값(${jr.nj}건) ÷ ${jr.b === 'b' ? `최근 3년 같은 건물 매매 ㎡당 가격 중간값(${jr.ns}건)` : `최근 1년 같은 동 빌라 매매 ㎡당 가격 중간값(${jr.ns}건, 건물마다 차이가 커서 참고만)`}`;
-  const msg = rk ? (rk.over
+  const msg = V && vNote ? vNote : rk ? (rk.over
       ? `<div class="rmsg hi"><b>이 집 전세가율은 ${rk.pct}%예요.</b> HUG 전세보증금반환보증은 <b>보증금과 선순위채권(근저당 등)을 더한 금액이 주택가격의 90% 이내</b>여야 가입할 수 있어요. 이 수준이면 보증 가입이 어려울 수 있어요. 매매가 대비 전셋값이 높을수록 보증금 회수 위험이 커져요.</div>`
       : `<div class="rmsg ok"><b>이 집 전세가율은 ${rk.pct}%예요.</b> 매매가 대비 전셋값이 높을수록 보증금 회수 위험이 커져요. 근저당 같은 선순위채권이 있으면 그 금액까지 더해서 봐야 해요(HUG 보증 가입 기준: 보증금 + 선순위채권 ≤ 주택가격의 90%).</div>`)
+    : V ? `<p class="note" style="font-size:15px">${esc(R.vjMiss(jr))} 아래 공시가격으로 보증 가입 기준을 확인해 보세요.</p>`
     : `<p class="note" style="font-size:15px">${k === 'd' ? '단독·다가구는 원자료에 건물 정보가 없어 전세가율을 계산하지 않아요.' : k === 'a' ? '최근 3개월 안에 매매·전세 시세가 함께 있는 달이 없어 전세가율을 계산하지 못했어요.' : '같은 건물 매매 거래가 적어(최근 3년 3건 미만) 전세가율을 계산하지 않았어요.'} 아래 공시가격으로 보증 가입 기준을 확인해 보세요.</p>`;
   const hugPrice = k === 'a' ? '아파트는 KB시세 등 시세정보가 먼저, 없으면 공시가격의 140%' : k === 'o' ? '오피스텔은 KB 하위평균가가 먼저, 없으면 국세청 기준시가(공시가격)의 140%' : k === 'v' ? '연립·다세대는 공동주택가격(공시가격)의 140%가 첫 순위' : '단독·다가구는 개별단독주택가격(공시가격)의 140%가 첫 순위';
   const calc = k !== 'a' ? `<div class="calc" style="margin-top:12px"><b style="font-size:16px">공시가격으로 보증 가입 기준 확인</b>
@@ -472,8 +479,17 @@ function riskPanel(c, u, sm){
   return `<div class="panel"><h2>전세 위험 신호<small>전세가율 = 전셋값 ÷ 매맷값 · 기준: ${srcA('hug')}</small></h2>
     ${rk ? `<div class="rbig ${rk.over ? 'hi' : ''}">${rk.pct}%</div>${gauge}` : ''}${msg}
     ${basis ? `<p class="basis"><b>계산 근거</b> · ${basis}. 실제 보증 심사의 주택가격은 HUG 가 정해요(${esc(hugPrice)}).</p>` : ''}
+    ${V ? vDongBox(c) + `<div class="vwhy"><b>빌라 전세가율을 따로 보는 이유</b><p>${esc(R.VJ_WHY)}</p></div>` : ''}
     ${k === 'a' && (u[11] || {}).jrs ? `<details class="msum" id="jrBox"><summary>전세가율 추이 보기</summary><div class="chart" id="cJr" style="min-height:120px"></div><p class="basis">매매·전세 시세가 모두 있는 달만 계산해요.</p></details>` : ''}
     ${calc}</div>`;
+}
+/* 빌라: 같은 동 빌라 전체 전세가율 추이(엔진 villa_jr.dong_trend — 동 전체 3개월 전세 ㎡당 보증금 중간값 ÷ 매매 ㎡당 가격 중간값) */
+function vDongBox(c){
+  const m = c.meta || {}, d = c.d.dong, t = R.vjDong(m.dj, d, m.rm, m.to), l = (m.djl || {})[d];
+  const fill = ((RX.kinds || {}).v || {}).fill || {};
+  if (!t) return `<p class="basis">${esc(d)} 빌라 전체 전세가율은 전세·매매 계약이 충분한 달이 없어서 계산하지 않았어요.</p>`;
+  return `<details class="msum" id="vdBox"><summary>${esc(d)} 빌라 전체 전세가율 추이${l ? ` · 최근 ${Math.round(l.r * 100)}%` : ''}</summary><div class="chart" id="cVd" style="min-height:120px"></div>
+    <p class="basis">${l ? `${esc(ym(l.at))} 기준 전세 ${l.nj.toLocaleString()}건, 매매 ${l.ns.toLocaleString()}건이에요. ` : ''}이 값은 ${esc(d)}의 그 달까지 3개월 빌라 순수 전세 ㎡당 보증금 중간값을 매매 ㎡당 가격 중간값으로 나눈 거예요. 같은 건물끼리 맞춘 값이 아니라서 동네 흐름을 보는 참고값이에요. 전세·매매 계약이 충분한 달만 표시해요.${fill.rent || fill.trade ? ' 예전 거래 자료를 아직 모으는 중이라 추이의 앞부분은 비어 있을 수 있어요.' : ''}</p></details>`;
 }
 function calcPanel(sm){
   return `<div class="panel"><h2>전세 vs 월세, 매달 얼마 차이?<small>이 집 시세를 채우거나 직접 넣어 보세요. 금액은 만원 단위예요.</small></h2>
@@ -593,6 +609,7 @@ function drawCharts(){
   const ww = cut(t.months, [t.wr, t.wd], S.span === 12 ? 12 : 0);
   if ($('cW')) chartInto($('cW'), [{ a: ww.a[0], c: '#B8942A', w: 2.2 }], ww.months, v => Math.round(v).toLocaleString() + '만', 150,
     [{ k: '보증금', a: ww.a[1], c: '#D9BF7A' }, { k: '월세', a: ww.a[0], c: '#B8942A', fmt: v => Math.round(v).toLocaleString() + '만' }], { aria: '월세 추이' });
+  const vd = $('vdBox'); if (vd && vd.open){ const t = R.vjDong(c.meta.dj, c.d.dong, c.meta.rm, c.meta.to); if (t){ const a = t.a.map(v => v * 100); chartInto($('cVd'), [{ a, c: '#0E7A4F', w: 2.2 }], t.months, v => Math.round(v) + '%', 150, [{ k: '동 전세가율', a, c: '#0E7A4F', fmt: v => Math.round(v) + '%' }], { aria: c.d.dong + ' 빌라 전세가율 추이' }); } }
   const jb = $('jrBox'); if (jb && jb.open){ const k = w.a[1].findIndex(v => v > 0); const ja = w.a[1].slice(Math.max(0, k)).map(v => v * 100); chartInto($('cJr'), [{ a: ja, c: '#0E7A4F', w: 2.2 }], w.months.slice(Math.max(0, k)), v => Math.round(v) + '%', 150, [{ k: '전세가율', a: ja, c: '#0E7A4F', fmt: v => Math.round(v) + '%' }], { aria: '전세가율 추이' }); }
 }
 
@@ -626,6 +643,7 @@ function wire(u, sm){
   res.querySelectorAll('[data-b]').forEach(b => b.onclick = () => { S.band = b.dataset.b; if (CUR.kind === 'd') showD(CUR.code, CUR.key); else showUnit(CUR.key, S.band); });
   res.querySelectorAll('[data-span]').forEach(b => b.onclick = () => { S.span = +b.dataset.span; res.querySelectorAll('[data-span]').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); }); drawCharts(); });
   const jb = $('jrBox'); if (jb) jb.addEventListener('toggle', () => { if (jb.open) drawCharts(); });
+  const vd = $('vdBox'); if (vd) vd.addEventListener('toggle', () => { if (vd.open) drawCharts(); });
   const more = res.querySelector('[data-more]'); if (more) more.onclick = () => { const rest = [...res.querySelectorAll('#deals tr.more')]; rest.slice(0, 20).forEach(r => { r.hidden = false; r.classList.remove('more'); }); const left = rest.length - 20; if (left > 0) more.textContent = `더보기 (${left}건 더)`; else more.remove(); };
   const fmtIn = (el, hint) => el.addEventListener('input', () => { const v = Math.round(num(el.value)); el.value = v ? v.toLocaleString() : ''; if (hint) $(hint).textContent = v ? won(v) : ''; });
   ['cJe', 'cWd'].forEach(id => fmtIn($(id), id + 'H')); fmtIn($('cWr'));
@@ -680,7 +698,9 @@ async function init(){
   const q = new URLSearchParams(location.search), qk = q.get('k'), qsd = q.get('sd'), qg = q.get('g') || '', qd = q.get('d') || '';
   S.kind = (qk && R.KINDS.some(k => k.id === qk)) ? qk : 'a';
   S.band = q.get('b') || '';
-  const sd = (qsd && IX.sido.some(s => s.id === qsd)) ? qsd : (IX.sido.find(s => s.short === '서울') || IX.sido[0]).id;
+  /* 시·도를 주소에 안 넣고 시·군·구만 넘긴 경우(재개발·빌라 화면의 '전월세 시세 자세히 보기')는 시·군·구로 시·도를 찾음 */
+  const sdG = /^\d{5}$/.test(qg) && IX.sgg[qg] ? (IX.sido.find(s => s.name === IX.sgg[qg].sido) || {}).id : null;
+  const sd = (qsd && IX.sido.some(s => s.id === qsd)) ? qsd : sdG || (IX.sido.find(s => s.short === '서울') || IX.sido[0]).id;
   S.sd = sd; S.code = /^\d{5}$/.test(qg) ? qg : '';
   if (S.kind === 'a' && qd) S.code = qd.split('|')[0];
   await setKind(S.kind, true, qd);

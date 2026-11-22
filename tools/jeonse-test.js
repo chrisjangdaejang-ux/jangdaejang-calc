@@ -67,6 +67,29 @@ check('서비스 워커에 새 페이지 등록', sw.includes("'./jeonse/'") && 
 const stat = fs.readFileSync(path.join(__dirname, '..', 'assets', 'stat.js'), 'utf8');
 check('익명 통계 기능 이름 jeonse', /FEATURES = \[[^\]]*'jeonse'/.test(stat), true);
 
+/* ---------- 빌라 전세가율(재개발·빌라 화면 + 전월세 빌라 화면 공용) ---------- */
+global.JDJ_PRICE = require('../assets/price-sheet.js');
+const vb = { r: 0.92, at: '202610', a: 30, j: 27600, s: 30000, nj: 2, ns: 3, b: 'b', sp: ['202512', '202609'], lo: 1 };
+check('빌라 근거: 전세 ÷ 매매·표본 수·기간·표본 적음', [/전세 시세 2억 7,600만원 ÷ 매매 시세 3억원/.test(R.vjBasis(vb)), /순수 전세\(월세 없는 계약\) 2건/.test(R.vjBasis(vb)), /같은 건물 매매 3건\(2025\.12~2026\.09\)/.test(R.vjBasis(vb)), /표본이 적어서/.test(R.vjBasis(vb))], [true, true, true, true]);
+const vd = Object.assign({}, vb, { b: 'd', nb: 7, by: [2010, 2020], ar: [25.1, 35.8], ns: 40, lo: 0 });
+check('빌라 근거: 같은 동 비슷한 빌라 기준(동·준공·면적·건물 수·건수)', [/같은 동 비슷한 빌라 기준/.test(R.vjBasis(vd, '화곡동')), /화곡동의 준공 2010~2020년, 전용 25\.1~35\.8㎡ 빌라 7곳의 매매 40건/.test(R.vjBasis(vd, '화곡동')), /표본이 적어서/.test(R.vjBasis(vd))], [true, true, false]);
+check('빌라: 값이 없으면 근거도 없음', R.vjBasis({ x: 'nj' }), '');
+check('빌라: 계산 안 한 이유(표본 수 그대로)', [/3개월/.test(R.vjMiss({ x: 'nj' })), /최근 3년 1건뿐/.test(R.vjMiss({ x: 'ns', ns: 1, nd: 4 })), /같은 동 비슷한 빌라 매매도 4건뿐/.test(R.vjMiss({ x: 'ns', ns: 1, nd: 4 })), /준공 연도 자료가 없어서/.test(R.vjMiss({ x: 'ns', ns: 0, nd: null })), /이 건물/.test(R.vjMiss(null, true))], [true, true, true, true, true]);
+check('빌라 단계: 90% 이상 hi(HUG 기준)·80~90% mid·그 아래 없음', [R.vjLevel(0.9), R.vjLevel(0.85), R.vjLevel(0.79), R.vjLevel(0)], ['hi', 'mid', '', '']);
+check('빌라 90% 이상: 아파트·오피스텔과 같은 칩(문구·체크리스트 링크)', R.vjNote(0.93, '202610', '../jeonse/checklist/?k=v'), JDJ_PRICE.jrChip(0.93, '202610', '../jeonse/checklist/?k=v'));
+const mid = R.vjNote(0.86, '202610');
+check('빌라 80~90%: 주의해서 살펴보세요·HUG 기준·남은 여유 4%·체크리스트 링크', [/주의해서 살펴보세요/.test(mid), /90% 이내/.test(mid), /집값의 4%보다/.test(mid), /jeonse\/checklist\/\?k=v/.test(mid)], [true, true, true, true]);
+check('빌라 80% 미만: 안내 없음', R.vjNote(0.7, '202610'), '');
+check('빌라 문구: 겁주는 말·약속 없음', /절대|반드시 사기|위험합니다|안전합니다|보장/.test(R.VJ_WHY + mid + R.vjBasis(vd, '화곡동')), false);
+check('빌라 평형 고르기: 전세가율 있는 평형 중 전용이 가까운 것', R.vjPick([{ a: 20, r: 0.5 }, { a: 40, x: 'nj' }, { a: 45, r: 0.7 }], 41).a, 45);
+const dt = R.vjDong({ 화곡동: [2, 800, 0, 850] }, '화곡동', '202606', '202611');
+check('동 추이 해독(‰ → 0~1, 앞뒤 빈 달 자름)', [dt.months, dt.a], [['202608', '202609', '202610'], [0.8, 0, 0.85]]);
+check('동 추이 없음', R.vjDong({}, '화곡동', '202606', '202611'), null);
+const villaHtml = fs.readFileSync(path.join(__dirname, '..', 'villa', 'index.html'), 'utf8');
+check('재개발·빌라 화면: 전세가율 칸·이유·동 추이·공용 스크립트', ['jrBlock(b)', 'vWhy()', 'dongJr(d)', 'rent-core.js?v=', 'price-sheet.js?v=', 'mine-core.js?v='].every(x => villaHtml.includes(x)), true);
+const jeHtml = fs.readFileSync(path.join(__dirname, '..', 'jeonse', 'index.html'), 'utf8');
+check('전월세 빌라 화면: 근거·주의 칩·동 추이·이유', ['R.vjBasis(', 'R.vjNote(', 'vDongBox(c)', 'R.VJ_WHY'].every(x => jeHtml.includes(x)), true);
+
 /* ---------- 공개 자료(선택) ---------- */
 const dir = process.argv[2];
 if (dir && fs.existsSync(path.join(dir, 'rent', 'index.json'))) {

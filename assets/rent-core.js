@@ -127,8 +127,63 @@
   /** 앞으로 n개월 입주 예정 문장용: 'YYYYMM' → '2027년 3월' */
   const ymKo = ym => M().ymKo(ym);
 
+  /* ---------- 빌라(연립·다세대) 전세가율 — 재개발·빌라 화면(villa/)과 전월세 빌라 화면(jeonse/?k=v)이 함께 쓴다 ----------
+     jr = 엔진 villa_jr 결과 {r, at, a 전용, j 전세 시세, s 매매 시세, nj 전세 계약 수, ns 매매 수, b 'b' 같은 건물 | 'd' 같은 동 비슷한 빌라,
+          sp [첫·끝 매매 연월], nb 건물 수·by [준공 범위]·ar [전용 범위](b='d'), lo 표본 적음} 또는 {x 'nj'|'ns', ns, nd}
+     문구는 숫자·표본 수만 옮기고, 위험 판단은 공식 기준(HUG 90%) 하나만 쓴다. */
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  /** 80% 이상 90% 미만 = HUG 기준(보증금 + 선순위채권 ≤ 주택가격 90%)까지 선순위채권이 들어갈 여유가 주택가격의 10%가 안 되는 구간(공식 등급이 아니라 화면 안내용) */
+  const NEAR = 0.8;
+  const VJ_WHY = '빌라는 같은 건물 매매가 드물어서 시세를 정확히 알기 어려워요. 시세가 불확실하면 보증금이 실제 매매가에 가까워져도 세입자가 알아채기 어려워요. '
+    + '그래서 빌라는 전셋값이 매맷값의 몇 %인지(전세가율)를 더 꼼꼼히 볼 필요가 있어요. 이 화면의 전세가율은 실거래로 계산한 참고값이라, 계약하기 전에는 공시가격과 등기부등본으로 한 번 더 확인하는 것이 좋아요.';
+  const ymDot = ym => ym ? `${String(ym).slice(0, 4)}.${String(ym).slice(4, 6)}` : '';
+  /** 계산 근거 한 줄(글자만, 화면에서 esc) */
+  function vjBasis(jr, dong) {
+    if (!jr || !(jr.r > 0)) return '';
+    const m = M(), w = m.won;
+    const head = `${ymDot(jr.at)} 기준 전세 시세 ${w(jr.j)} ÷ 매매 시세 ${w(jr.s)}이에요. 전세 시세는 이 건물 전용 ${jr.a}㎡ 안팎의 최근 3개월 순수 전세(월세 없는 계약) ${jr.nj}건으로 구한 ㎡당 보증금 중간값이에요.`;
+    const sp = jr.sp ? `${ymDot(jr.sp[0])}~${ymDot(jr.sp[1])}` : '';
+    const sale = jr.b === 'd'
+      ? ` 매매 시세는 같은 동 비슷한 빌라 기준이에요. 이 건물 매매가 적어서 ${dong ? dong + '의 ' : '같은 동의 '}준공 ${jr.by ? jr.by[0] + '~' + jr.by[1] + '년' : ''}${jr.ar ? `, 전용 ${jr.ar[0]}~${jr.ar[1]}㎡` : ''} 빌라 ${jr.nb}곳의 매매 ${jr.ns}건(${sp})으로 ㎡당 가격 중간값을 구했어요.`
+      : ` 매매 시세는 같은 건물 매매 ${jr.ns}건(${sp})으로 구한 ㎡당 가격 중간값이에요.`;
+    return head + sale + (jr.lo ? ' 표본이 적어서 계약 한두 건에 값이 크게 달라질 수 있어요.' : '');
+  }
+  /** 전세가율을 만들지 않은 이유(글자만) — bld = 건물 전체에 전세 기록이 없을 때 */
+  function vjMiss(jr, bld) {
+    if (!jr) return `최근 3년 동안 이 ${bld ? '건물' : '평형'}의 순수 전세 계약이 없어서 전세가율을 계산하지 않았어요.`;
+    if (jr.x === 'nj') return '최근 3개월 동안 이 평형의 순수 전세 계약이 없어서 전세가율을 계산하지 않았어요.';
+    if (jr.x === 'ns') return `이 건물 매매는 최근 3년 ${jr.ns || 0}건뿐이에요. ${jr.nd == null ? '준공 연도 자료가 없어서 같은 동 비슷한 빌라도 찾지 못했어요.' : `같은 동 비슷한 빌라 매매도 ${jr.nd}건뿐이에요.`} 매매 시세를 정할 표본이 부족해서 전세가율을 계산하지 않았어요.`;
+    return '';
+  }
+  /** 전세가율 단계: 'hi' HUG 기준 이상, 'mid' NEAR 이상, '' 그 아래 */
+  const vjLevel = r => !(r > 0) ? '' : r >= HUG.ratio ? 'hi' : r >= NEAR ? 'mid' : '';
+  /** 주의 안내: 90% 이상은 아파트·오피스텔과 같은 칩(JDJ_PRICE.jrChip), 80~90%는 '주의해서 살펴보세요' 한 칸 */
+  function vjNote(r, at, href) {
+    const lv = vjLevel(r); href = href || '../jeonse/checklist/?k=v';
+    if (lv === 'hi') { const P = root.JDJ_PRICE || (typeof require === 'function' ? require('./price-sheet.js') : null); return P ? P.jrChip(r, at, href) : ''; }
+    if (lv !== 'mid') return '';
+    const pct = Math.round(r * 100), lim = Math.round(HUG.ratio * 100);
+    return `<div class="jps-jrc jrm" role="note"><b>전세가율 ${pct}%${at ? ` <small>(${esc(ymDot(at))} 기준)</small>` : ''} · 주의해서 살펴보세요</b>`
+      + `<p>이 집 전셋값은 매맷값의 ${pct}% 수준이에요. 주택도시보증공사(HUG) 전세보증금반환보증은 보증금과 선순위채권(근저당 등)을 더한 금액이 주택가격의 ${lim}% 이내여야 가입할 수 있어요. `
+      + `그래서 이 집에 근저당 같은 선순위채권이 집값의 ${lim - pct}%보다 많이 잡혀 있으면 이 기준을 넘을 수 있어요. 이 값은 실거래 시세로 계산한 것이라, 실제 계약하는 집의 가격·근저당은 따로 확인해야 해요.</p>`
+      + `<a href="${esc(href)}" data-track="jr_chip_to_checklist">전세 계약 전 체크리스트 보기 →</a></div>`;
+  }
+  /** 여러 평형 중 화면에 먼저 보일 것: 전세가율이 있는 평형 중 전용이 area 에 가장 가까운 것(없으면 첫 평형) */
+  function vjPick(list, area) {
+    const ok = (list || []).filter(j => j.r > 0);
+    if (!ok.length) return (list || [])[0] || null;
+    return ok.slice().sort((x, y) => Math.abs((x.a || 0) - (area || 0)) - Math.abs((y.a || 0) - (area || 0)))[0];
+  }
+  /** 동 전세가율 추이 {months, a(0~1)} — dj = {동: [시작 칸, ‰…]}, base = 기준 연월, to = 끝 연월 */
+  function vjDong(dj, dong, base, to) {
+    const s = dj && dj[dong]; if (!s || !base || !to) return null;
+    const months = monthsFrom(base, to), a = arr(s, months.length).map(v => v / 1000);
+    const i0 = a.findIndex(v => v > 0); let i1 = a.length - 1; while (i1 > i0 && !(a[i1] > 0)) i1--;
+    return i0 < 0 ? null : { months: months.slice(i0, i1 + 1), a: a.slice(i0, i1 + 1) };
+  }
+
   const API = { KINDS, kindOf, HUG, arr, monthsFrom, series, seriesFull, histRow, latest, change, risk, hugCap, convRate, compare, deals, summary, guSeries,
-    groupBld, searchBld, bldName, ymKo };
+    groupBld, searchBld, bldName, ymKo, NEAR, VJ_WHY, vjBasis, vjMiss, vjLevel, vjNote, vjPick, vjDong };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_RENT = API;
 })(typeof self !== 'undefined' ? self : this);
