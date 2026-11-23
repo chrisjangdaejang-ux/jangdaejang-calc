@@ -538,11 +538,14 @@ for (let d = 1; d <= 13; d++) addPost(pids3[0], d, '첫째 파트너가 매일 �
 addPost(pids3[1], 2, '둘째 파트너 글이에요. 가끔 써요.');
 addPost(pids3[2], 9, '셋째 파트너 글은 오래전이에요.');
 const subk = (() => { const B = S3.sheets['브리핑구독'] || (S3.sheets['브리핑구독'] = makeSheet()); if (!B.rows.length) B.appendRow(S3.T.BH); const rr = []; rr[S3.T.BC['id']] = 'BSUB000001'; rr[S3.T.BC['카카오id']] = 'sw'; rr[S3.T.BC['상태']] = '체험'; rr[S3.T.BC['광고동의']] = true; rr[S3.T.BC['시작일']] = TD(-1); rr[S3.T.BC['만료일']] = TD(5); B.appendRow(S3.T.BH.map((h, i) => rr[i] === undefined ? '' : rr[i])); return S3.T.bKey('BSUB000001'); })();
-const cnt = {}; pids3.forEach(p => { cnt[p] = 0; });
-let secX = null;
-for (let i = 0; i < 20; i++) { S3.T.dpPickReset(); const res = S3.post({ action: 'dpBrief', g: '11680', dn: '개포동', k: subk }); secX = res.sec.list[0]; if (secX.post) cnt[secX.post.pid]++; S3.props.DP_PICK = JSON.stringify(Object.assign(JSON.parse(S3.props.DP_PICK || '{}'))); const F = JSON.parse(S3.props.DP_FEAT || '{}'); Object.keys(F).forEach(k => Object.keys(F[k]).forEach(p => { F[k][p] = C.dpAddDays(F[k][p], -1); })); S3.props.DP_FEAT = JSON.stringify(F); S3.props.DP_PICK = '{}'; }
-check('작은 이름 카드: 다른 파트너 최근 글 첫 줄(40자 이하, 7일 안 글만)', secX.partners.length === 3 && secX.partners.slice(1).every(c => c.line === '' || c.line.length <= 40) && secX.partners.some(c => /^둘째 파트너 글이에요\.$/.test(c.line)) && !secX.partners.some(c => /셋째/.test(c.line)), secX.partners.map(c => c.line));
-check('크게 소개: 글을 자주 쓴 파트너가 더 자주, 7일 안 글이 있는 다른 파트너도 몫을 받음', cnt[pids3[0]] > cnt[pids3[1]] && cnt[pids3[1]] >= 2 && cnt[pids3[2]] === 0, cnt);
+S3.T.dpPickReset();
+const secX = S3.post({ action: 'dpBrief', g: '11680', dn: '개포동', k: subk }).sec.list[0];
+check('작은 이름 카드: 다른 파트너는 최근 글 첫 줄(40자 이하, 7일 안 글만), 크게 소개된 파트너는 줄 없음', secX.post && secX.partners.length === 3 && secX.partners[0].id === secX.post.pid && secX.partners[0].line === '' && secX.partners.slice(1).every(c => c.line.length <= 40) && !secX.partners.some(c => /셋째/.test(c.line)) && secX.partners.some(c => /파트너/.test(c.line)), secX.partners.map(c => c.line));
+check('첫 줄 자르기: 첫 문장, 40자 넘으면 …', C.dpFirstLine('첫째 파트너가 매일 쓰는 글이에요. 둘째 문장') === '첫째 파트너가 매일 쓰는 글이에요.' && C.dpFirstLine('가'.repeat(60)).length === 40 && /…$/.test(C.dpFirstLine('가'.repeat(60))));
+/* 돌려 보이기(60일 흉내): 글 쓴 날이 많을수록 자주, 글이 있는 파트너는 모두 몫을 받음 */
+const cnt = { A: 0, B: 0, C: 0 }; let lastF = {}, prevF = '';
+for (let i = 0; i < 60; i++) { const d = C.dpAddDays('2026-12-01', i), at = C.dpCutoff(d) - 3600e3; const x = C.dpPickFeatured(['A', 'B', 'C'].map(pid => ({ id: pid + i, pid, at })), d, { prev: prevF, last: lastF, days: { A: 13, B: 2, C: 1 } }); cnt[x.pid]++; lastF[x.pid] = d; prevF = x.pid; }
+check('크게 소개: 글을 자주 쓴 파트너가 더 자주 + 모두 4일에 한 번 이상(기본 몫)', cnt.A > cnt.B && cnt.A > cnt.C && cnt.B >= 15 && cnt.C >= 15, cnt);
 const fs3 = C.dpPickFeatured([{ id: 'x', pid: 'A', at: C.dpCutoff('2026-12-10') - 3600e3 }, { id: 'y', pid: 'B', at: C.dpCutoff('2026-12-10') - 3600e3 }], '2026-12-10', { prev: 'B', last: { A: '2026-12-09', B: '2026-12-05' }, days: { A: 14, B: 1 } });
 check('기본 몫 보장: 4일 넘게 소개 안 된 파트너는 그날 꼭 소개', fs3.pid === 'B');
 /* 오늘의 한마디 안내: 3일 없으면, 한 주 2번까지, 4주 넘으면 그만 */
