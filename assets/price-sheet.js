@@ -463,7 +463,7 @@
 .jps-hi .k{font-size:13px;color:#4E5968;font-weight:700}.jps-hi .v{font-size:16.5px;font-weight:900;word-break:keep-all}.jps-hi .d{font-size:12.5px;color:#4E5968;line-height:1.5;overflow-wrap:anywhere}
 .jps-hi .up{color:#C2410C}.jps-hi .dn{color:#1F56E0}
 .jps-seg{display:inline-flex;gap:3px;background:#F2F4F6;border-radius:10px;padding:3px;flex-wrap:wrap}
-.jps-seg button{font:inherit;font-size:13.5px;font-weight:700;border:0;background:transparent;color:#4E5968;min-height:36px;min-width:44px;padding:0 10px;border-radius:8px;cursor:pointer}
+.jps-seg button{font:inherit;font-size:13.5px;font-weight:700;border:0;background:transparent;color:#4E5968;min-height:44px;min-width:44px;padding:0 10px;border-radius:8px;cursor:pointer}
 .jps-seg button.on{background:#fff;color:#2560E8;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .jps-ch{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin:16px 0 6px}.jps-ch h4{margin:0}
 .jps-lg i.j{background:#14A06B}

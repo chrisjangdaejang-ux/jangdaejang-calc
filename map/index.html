@@ -27,7 +27,7 @@
 <script src="../assets/stat.js?v=7"></script>
 <script src="../assets/config.js?v=10"></script>
 <script src="../assets/plain-words.js?v=16"></script>
-<script src="../assets/narrative.js?v=18"></script>
+<script src="../assets/narrative.js?v=19"></script>
 <script src="../assets/conf.js?v=2"></script>
 <script src="../assets/life-view.js?v=3"></script>
 <script src="../assets/fac-view.js?v=1"></script>
@@ -36,7 +36,7 @@
 <script src="../assets/mapjump.js?v=3"></script>
 <script src="../assets/alerts-core.js?v=2"></script>
 <script src="../assets/watch-core.js?v=2"></script>
-<script src="../assets/watch.js?v=7"></script>
+<script src="../assets/watch.js?v=8"></script>
 <script src="../assets/region-core.js?v=2"></script>
 <script src="../assets/map-engine.js?v=3"></script>
 <script src="../assets/sale-status.js?v=1"></script>
@@ -47,8 +47,8 @@
 <script src="../assets/chiprow.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/aplus.css?v=45">
-<link rel="stylesheet" href="../assets/layout.css?v=1">
+<link rel="stylesheet" href="../assets/aplus.css?v=46">
+<link rel="stylesheet" href="../assets/layout.css?v=2">
 <script src="../assets/nw.js?v=1" defer></script>
 <style>
 html,body{height:100%}
@@ -67,8 +67,8 @@ body.jm-full>.top{position:relative;flex:none}
 .srch .box:focus-within{border-color:var(--blue)}
 .srch svg{width:20px;height:20px;flex:none;stroke:#4E5968;fill:none;stroke-width:2.2;stroke-linecap:round}
 .srch input::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
-.srch input{flex:1;min-width:0;border:0;outline:none;font:inherit;font-size:16px;background:transparent;color:var(--text);min-height:42px}
-.srch .clr{flex:none;border:0;background:none;font:inherit;font-size:14px;color:var(--sub2);min-width:44px;min-height:42px;cursor:pointer}
+.srch input{flex:1;min-width:0;border:0;outline:none;font:inherit;font-size:16px;background:transparent;color:var(--text);min-height:44px}
+.srch .clr{flex:none;border:0;background:none;font:inherit;font-size:14px;color:var(--sub2);min-width:44px;min-height:44px;cursor:pointer}
 .sres{position:absolute;left:0;right:0;top:100%;z-index:5;list-style:none;margin:6px 0 0;padding:6px;background:#fff;border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.16);max-height:50vh;overflow:auto}
 .sres:empty{display:none}
 .sres button{display:flex;flex-direction:column;align-items:flex-start;width:100%;text-align:left;border:0;background:none;font:inherit;padding:10px 12px;border-radius:10px;cursor:pointer;min-height:48px}
@@ -111,7 +111,7 @@ select.chip.on{background-color:var(--blue-l)}
 .legend:empty{display:none}
 .legend span{display:flex;align-items:center;gap:6px;white-space:nowrap}
 .legend i{width:12px;height:12px;border-radius:4px;flex:none}
-.legend .lgb{border:0;background:none;font:inherit;font-size:12.5px;color:var(--sub);padding:0;min-height:28px;cursor:pointer;text-align:left}
+.legend .lgb{border:0;background:none;font:inherit;font-size:12.5px;color:var(--sub);padding:0;min-height:44px;cursor:pointer;text-align:left}
 .legend .scl{display:flex;align-items:center;gap:3px;flex-wrap:wrap}
 .legend .scl i{width:10px;height:10px;border-radius:3px}
 .legend .sm{font-size:12px;color:var(--sub3);white-space:normal}
@@ -119,7 +119,7 @@ select.chip.on{background-color:var(--blue-l)}
 .cmpbar[hidden]{display:none}
 .cmpbar .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--sub)}
 .cmpbar .nm b{color:var(--text)}
-.cmpbar a,.cmpbar button{flex:none;font:inherit;font-size:14px;font-weight:700;border-radius:10px;min-height:40px;padding:0 12px;display:inline-flex;align-items:center;white-space:nowrap;cursor:pointer;text-decoration:none}
+.cmpbar a,.cmpbar button{flex:none;font:inherit;font-size:14px;font-weight:700;border-radius:10px;min-height:44px;padding:0 12px;display:inline-flex;align-items:center;white-space:nowrap;cursor:pointer;text-decoration:none}
 .cmpbar a{background:var(--blue);color:#fff}
 .cmpbar a.off{background:var(--gray);color:var(--sub3);pointer-events:none}
 .cmpbar button{border:0;background:none;color:var(--sub2);min-width:44px}
@@ -133,7 +133,7 @@ body.has-cmp .legend{transform:translateY(-62px)}
 .sheet .x{flex:none;width:44px;height:44px;margin:-6px -10px 0 0;border:0;background:none;font-size:24px;color:var(--sub2);cursor:pointer}
 .sheet .meta{margin:4px 0 0;font-size:14px;color:var(--sub2);line-height:1.5}
 .sheet .bands{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 0}
-.sheet .bands button{font:inherit;font-size:14px;font-weight:700;min-height:40px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--sub);cursor:pointer;white-space:nowrap}
+.sheet .bands button{font:inherit;font-size:14px;font-weight:700;min-height:44px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--sub);cursor:pointer;white-space:nowrap}
 .sheet .bands button.on{border-color:var(--blue);color:var(--blue);background:var(--blue-l)}
 .sheet .kv{margin:14px 0 0;display:grid;grid-template-columns:auto 1fr;gap:10px 14px;align-items:baseline}
 .sheet .kv dt{font-size:14px;color:var(--sub2);font-weight:700;white-space:nowrap}
@@ -161,9 +161,9 @@ body.reg .cmpbar{display:none}
 .rpanel[hidden]{display:none}
 .rpanel .grab{width:40px;height:4px;border-radius:2px;background:#D1D6DB;margin:4px auto 6px}
 .rp-hd{display:flex;align-items:center;gap:8px}
-.rp-hd select{appearance:none;-webkit-appearance:none;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:15px;font-weight:800;color:var(--text);min-height:40px;padding:0 28px 0 10px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%234E5968' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 9px center;max-width:46%}
+.rp-hd select{appearance:none;-webkit-appearance:none;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:15px;font-weight:800;color:var(--text);min-height:44px;padding:0 28px 0 10px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%234E5968' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 9px center;max-width:46%}
 .rp-hd .ttl{flex:1;min-width:0;font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rp-hd .tog{flex:none;border:0;background:var(--gray);border-radius:10px;font:inherit;font-size:14px;font-weight:700;color:var(--sub);min-height:40px;padding:0 12px;cursor:pointer;white-space:nowrap}
+.rp-hd .tog{flex:none;border:0;background:var(--gray);border-radius:10px;font:inherit;font-size:14px;font-weight:700;color:var(--sub);min-height:44px;padding:0 12px;cursor:pointer;white-space:nowrap}
 .rp-per{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 0;align-items:center}
 .rp-per .seg button{font-size:14px;min-height:44px;padding:0 11px}
 .rp-past{margin:8px 0 0;font-size:13.5px;line-height:1.6;color:var(--sub)}
@@ -188,7 +188,7 @@ body.reg .cmpbar{display:none}
 .rp-badges span{font-size:13.5px;font-weight:700;border-radius:999px;padding:4px 10px;background:#F1EDFF;color:#5B3BE0}
 .rp-rank{margin:12px 0 0;padding:10px 0 0;border-top:1px solid var(--line2)}
 .rp-rank h4{margin:0 0 4px;font-size:14px;font-weight:800;color:var(--sub)}
-.rp-rank button{display:grid;grid-template-columns:5.6em 1fr 5.4em;align-items:center;gap:8px;width:100%;border:0;background:none;font:inherit;font-size:13.5px;text-align:left;padding:3px 4px;min-height:32px;border-radius:8px;cursor:pointer;color:var(--text)}
+.rp-rank button{display:grid;grid-template-columns:5.6em 1fr 5.4em;align-items:center;gap:8px;width:100%;border:0;background:none;font:inherit;font-size:13.5px;text-align:left;padding:3px 4px;min-height:44px;border-radius:8px;cursor:pointer;color:var(--text)}
 .rp-rank button.on{background:var(--blue-l)}
 .rp-rank button span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}
 .rp-rank button span:last-child{text-align:right;font-weight:700;white-space:nowrap}
@@ -309,7 +309,7 @@ i.lg-dot{display:inline-block;width:13px;height:13px;border-radius:50%;backgroun
 .jm-b.po i{font-style:normal;font-size:10.5px;font-weight:800;color:#fff;background:#3E4754;border-radius:999px;min-width:16px;height:16px;line-height:16px;text-align:center;padding:0 3px}
 .jm-b.po.sc i{background:#0E7A4F}
 .chip.lay.po.on{border-color:#3E4754;color:#191F28;background:#EEF1F4}
-.top .hback[hidden]{display:none}.top .hback{margin-left:auto;margin-right:8px;display:inline-flex;align-items:center;min-height:40px;padding:0 12px;border-radius:999px;border:1.5px solid var(--blue);color:var(--blue);background:#fff;font-size:14px;font-weight:800;text-decoration:none;white-space:nowrap}
+.top .hback[hidden]{display:none}.top .hback{margin-left:auto;margin-right:8px;display:inline-flex;align-items:center;min-height:44px;padding:0 12px;border-radius:999px;border:1.5px solid var(--blue);color:var(--blue);background:#fff;font-size:14px;font-weight:800;text-decoration:none;white-space:nowrap}
 .sheet .note.loc{padding:8px 11px;border-radius:10px;background:#FFF1F1;color:#8A1F23;font-weight:600;font-size:13.5px}
 .sheet.mini .kv{margin-top:8px;gap:6px 14px}
 .sheet .acts #fxMore{background:var(--blue);color:#fff;border-color:var(--blue)}

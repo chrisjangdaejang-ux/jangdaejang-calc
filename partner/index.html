@@ -27,7 +27,7 @@
 <script src="../assets/agents.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/aplus.css?v=45">
+<link rel="stylesheet" href="../assets/aplus.css?v=46">
 <style>
 [hidden]{display:none!important}
 .wrap{max-width:900px;margin:0 auto;padding:24px 18px 60px}
@@ -268,8 +268,8 @@ $('fApply').addEventListener('submit', async e => {
   const v = id => $(id).value.trim(), t = v('type');
   if (!t) return bad(m, 'type', '파트너 유형을 골라 주세요.');
   for (const [id, n] of [['name', '상호(또는 활동명)'], ['manager', '담당자 이름'], ['area', '활동 지역']]) {
-    if (!v(id)) return bad(m, id, `${n}을(를) 입력해 주세요.`);
-    if (formula(v(id))) return bad(m, id, `${n}은(는) = + - @ 기호로 시작할 수 없어요.`);
+    if (!v(id)) return bad(m, id, `${n}${(c=>c>=44032&&c<=55203&&(c-44032)%28?'을':'를')(String(n).slice(-1).charCodeAt(0))} 입력해 주세요.`);
+    if (formula(v(id))) return bad(m, id, `${n}${(c=>c>=44032&&c<=55203&&(c-44032)%28?'은':'는')(String(n).slice(-1).charCodeAt(0))} = + - @ 기호로 시작할 수 없어요.`);
   }
   if (v('biz') && !bizOk(v('biz'))) return bad(m, 'biz', '사업자등록번호 10자리를 확인해 주세요.');
   if ((t === 'agency' || t === 'seminar') && !v('biz')) return bad(m, 'biz', '분양대행사·세미나 업체는 사업자등록번호가 필요해요.');

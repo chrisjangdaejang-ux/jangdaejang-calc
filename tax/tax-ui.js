@@ -198,10 +198,10 @@
     // 가장 유리한 시점
     const b = TL.best, now = TL.now;
     $('tlBest').innerHTML = b.total < now.total
-      ? '<b>' + dKo(b.date) + '</b> 이후에 팔면 오늘보다 <b>' + krw(now.total - b.total) + '</b> 적게 계산됩니다(예상 ' + krw(b.total) + '). 그 사이 시세 변화와 보유 비용은 따로 따져 보세요.'
-      : '앞으로 5년 안에서는 <b>오늘 파는 경우의 세금이 가장 적습니다</b>' + (TL.events.some(e => !e.good) ? '. 아래 표의 기한을 넘기면 세금이 늘어납니다.' : '.');
+      ? '<b>' + dKo(b.date) + '</b> 이후에 팔면 오늘보다 <b>' + krw(now.total - b.total) + '</b> 적게 계산돼요(예상 ' + krw(b.total) + '). 그 사이 시세 변화와 보유 비용은 따로 따져 보세요.'
+      : '앞으로 5년 안에서는 <b>오늘 파는 경우의 세금이 가장 적어요</b>' + (TL.events.some(e => !e.good) ? '. 아래 표의 기한을 넘기면 세금이 늘어나요.' : '.');
     $('tlEv').innerHTML = TL.events.length ? TL.events.map(ev => '<li><b>' + dKo(ev.date) + '</b><div>' + esc(ev.label) + '<small>' + krw(ev.before) + ' → <span class="' + (ev.good ? 'g' : 'w') + '">' + krw(ev.after) + '</span></small></div></li>').join('')
-      : '<li><b>변동 없음</b><div>앞으로 5년 안에 비과세 요건이나 공제율이 바뀌는 날이 없습니다.<small>시세 변화 가정을 바꿔 보세요.</small></div></li>';
+      : '<li><b>변동 없음</b><div>앞으로 5년 안에 비과세 요건이나 공제율이 바뀌는 날이 없어요.<small>시세 변화 가정을 바꿔 보세요.</small></div></li>';
     pick(+$('tlSlider').value);
   }
   function axisMan(v) { const m = Math.round(v / MAN); return m >= 10000 ? (Math.round(m / 1000) / 10) + '억' : m.toLocaleString('ko-KR') + '만'; }
@@ -291,7 +291,7 @@
       '<details><summary>집별 세금 보기</summary><table>' + res.sales.map(s => {
         const b = s.r.exempt === 'full' ? '<span class="badge2 ok">비과세</span>' : s.r.exempt === 'partial' ? '<span class="badge2 mid">12억 초과분 과세</span>' : s.r.heavy ? '<span class="badge2 no">중과 +' + s.r.heavy * 100 + '%p</span>' : '';
         return '<tr><td>' + dKo(s.date) + ' ' + s.name + b + '<br><small style="color:var(--sub2)">' + s.remain + '채 보유 중 매도 · 차익 ' + krw(s.r.gain) + ' · 장기보유특별공제 ' + pct(s.r.ltdRate) + '</small></td><td>' + krw(s.tax + Math.floor(s.tax * 0.1)) + '</td></tr>';
-      }).join('') + (res.compared ? '<tr><td colspan="2"><small style="color:var(--sub2)">같은 해 합산 비교과세로 연도 합계가 집별 합보다 큽니다.</small></td></tr>' : '') + '</table></details></div>';
+      }).join('') + (res.compared ? '<tr><td colspan="2"><small style="color:var(--sub2)">같은 해 합산 비교과세로 연도 합계가 집별 합보다 커요.</small></td></tr>' : '') + '</table></details></div>';
     const TOP = 3, n = C.results.length;
     $('oList').innerHTML = '<div class="help">가능한 순서 ' + n + '가지 중 세금이 적은 ' + Math.min(TOP, n) + '가지</div>' + C.results.slice(0, TOP).map(card).join('');
     $('oAllW').hidden = n <= TOP; $('oAllW').open = false;
@@ -308,7 +308,7 @@
   const aSel = regionPicker($('aSido'), $('aGu'), { sido: '서울', gu: '마포구' });
   let aN = 1;
   const aAdj = () => A.isAdjusted(aSel.get().sido, aSel.get().gu, TODAY) === true;
-  const aUpd = () => { $('aAdjTxt').textContent = '오늘 기준 ' + (aAdj() ? '조정대상지역입니다.' : '조정대상지역이 아닙니다.'); $('aTempW').hidden = !(aN === 2 && aAdj()); };
+  const aUpd = () => { $('aAdjTxt').textContent = '오늘 기준 ' + (aAdj() ? '조정대상지역이에요.' : '조정대상지역이 아닙니다.'); $('aTempW').hidden = !(aN === 2 && aAdj()); };
   aSel.onChange(aUpd); aUpd();
   $('aPrice').addEventListener('input', () => { fmtIn($('aPrice')); $('aPriceC').textContent = num($('aPrice')) ? krw(num($('aPrice')) * MAN) : ''; });
   $('aFirst').addEventListener('change', () => { $('aFirstW').hidden = !$('aFirst').checked; });
@@ -326,7 +326,7 @@
       (r.relief ? '<tr><td>생애최초 감면 (한도 ' + krw(r.reliefCap) + ')</td><td>−' + krw(r.relief) + '</td></tr>' : '') +
       '<tr><td>지방교육세 ' + pct(r.eduRate) + '</td><td>' + krw(r.edu) + '</td></tr>' +
       '<tr><td>농어촌특별세 ' + pct(r.farmRate) + (r.reliefFarm ? ' + 감면세액의 20%' : '') + '</td><td>' + krw(r.farm) + '</td></tr><tr class="tot"><td>합계</td><td>' + krw(r.total) + '</td></tr></table>' +
-      '<ul><li>' + esc(r.why) + '</li><li>주택 수는 이번에 사는 집을 포함한 세대 기준입니다.</li>' + r.notes.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul>' +
+      '<ul><li>' + esc(r.why) + '</li><li>주택 수는 이번에 사는 집을 포함한 세대 기준이에요.</li>' + r.notes.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul>' +
       '<p class="law">지방세법 제11조 제1항 제8호(6억~9억: (취득가액×2/3억 − 3)%), 제13조의2(다주택 중과), 제151조(지방교육세), 농어촌특별세법(85㎡ 초과)' + (r.first ? ', 지방세특례제한법 제36조의3(생애최초 감면)' : '') + '.</p></details>';
     $('aRes').hidden = false;
     stat();
@@ -393,10 +393,10 @@
       const price = num($('pPrice')) * MAN, one = st.one === 'y';
       const r = T.propertyTax({ price, one, prevPrice: num($('pPrev')) * MAN, prevTax: num($('pPrevTax')) * MAN });
       const why = [
-        (one ? '1세대1주택이라 공정시장가액비율 ' + pct(r.ratio) + '(공시 3억 이하 43%, 6억 이하 44%, 6억 초과 45%)를 적용했습니다.' : '1세대1주택이 아니라 공정시장가액비율 60%를 적용했습니다.'),
-        r.special ? '공시가격 9억 원 이하 1세대1주택이라 표준세율보다 0.05%p 낮은 특례세율(0.05~0.35%)을 적용했습니다.' : one ? '공시가격이 9억 원을 넘어 1주택 특례세율은 받지 못하고 표준세율(0.1~0.4%)을 적용했습니다.' : '표준세율(0.1~0.4%)을 적용했습니다.'
+        (one ? '1세대1주택이라 공정시장가액비율 ' + pct(r.ratio) + '(공시 3억 이하 43%, 6억 이하 44%, 6억 초과 45%)를 적용했어요.' : '1세대1주택이 아니라 공정시장가액비율 60%를 적용했어요.'),
+        r.special ? '공시가격 9억 원 이하 1세대1주택이라 표준세율보다 0.05%p 낮은 특례세율(0.05~0.35%)을 적용했어요.' : one ? '공시가격이 9억 원을 넘어 1주택 특례세율은 받지 못하고 표준세율(0.1~0.4%)을 적용했어요.' : '표준세율(0.1~0.4%)을 적용했어요.'
       ].concat(r.notes);
-      if (!(num($('pPrev')) > 0)) why.push('작년 공시가격을 넣지 않아 과세표준상한제(작년 대비 약 5% 한도)는 따지지 않았습니다. 공시가격이 많이 올랐다면 실제 세금은 더 적을 수 있습니다.');
+      if (!(num($('pPrev')) > 0)) why.push('작년 공시가격을 넣지 않아 과세표준상한제(작년 대비 약 5% 한도)는 따지지 않았어요. 공시가격이 많이 올랐다면 실제 세금은 더 적을 수 있어요.');
       why.push(r.lump ? '재산세(도시지역분 포함)가 20만 원 이하라 대부분 지자체 조례에 따라 7월에 한꺼번에 냅니다.' : '주택 재산세는 절반씩 7월(7.16~7.31)과 9월(9.16~9.30)에 나눠 냅니다.');
       $('pRes').innerHTML = '<div class="lbl">공시가격 ' + krw(price) + ' 주택의 2026년 재산세 (도시지역분·지방교육세 포함)</div>' +
         '<div class="big">' + krw(r.total) + '</div>' +
@@ -406,7 +406,7 @@
           ['공시가격', krw(price)], ['공정시장가액비율', pct(r.ratio)], ['과세표준' + (r.base < r.base0 ? ' (상한 적용)' : ''), won1(r.base)],
           ['세율', r.rate + ' · 이 구간 ' + ratePct(r.marginal)], ['재산세', won1(r.tax)], ['도시지역분 (과세표준 × 0.14%)', won1(r.urban)], ['지방교육세 (재산세 × 20%)', won1(r.edu)], ['합계', won1(r.total), 1]
         ]) + ul(why) +
-        '<p class="law">지방세법 제110조(과세표준·과세표준상한), 시행령 제109조(공정시장가액비율 — 2026년분 1주택 43·44·45%는 2025년과 같게 유지), 제109조의2(상한율 5%), 제111조(표준세율), 제111조의2(1세대1주택 특례세율, 현행 2026년분까지), 제112조(도시지역분), 제115조(납기), 제122조(세부담상한 105·110·130%), 제151조(지방교육세). 지역자원시설세(소방분)는 건물 시가표준액이 따로 필요해 빠져 있습니다. 10원 미만은 버렸습니다.</p></details>';
+        '<p class="law">지방세법 제110조(과세표준·과세표준상한), 시행령 제109조(공정시장가액비율 — 2026년분 1주택 43·44·45%는 2025년과 같게 유지), 제109조의2(상한율 5%), 제111조(표준세율), 제111조의2(1세대1주택 특례세율, 현행 2026년분까지), 제112조(도시지역분), 제115조(납기), 제122조(세부담상한 105·110·130%), 제151조(지방교육세). 지역자원시설세(소방분)는 건물 시가표준액이 따로 필요해 빠져 있어요. 10원 미만은 버렸어요.</p></details>';
     }
   });
 
@@ -454,12 +454,12 @@
       const one = !corp && n === 1 && st.cOne === 'y';
       const r = T.compTax({ prices, corp, one, age: num($('cAge')), years: num($('cYears')), prevTotal: corp ? 0 : num($('cPrev')) * MAN });
       const why = [];
-      why.push(corp ? '법인은 기본공제가 없고 ' + (r.heavy ? '3주택 이상 5.0%' : '2주택 이하 2.7%') + ' 단일세율입니다.' : one ? '1세대1주택자라 공시가격에서 12억 원을 빼고 계산합니다.' : '1세대1주택자가 아니라 공시가격 합계에서 9억 원을 빼고 계산합니다' + (r.heavy ? '. 3주택 이상이라 12억 원 초과 과세표준 구간에 2.0~5.0% 세율이 붙습니다.' : '.'));
-      if (r.base > 0) why.push('재산세와 겹치는 부분 ' + krw(r.propDed) + '은 종부세에서 뺍니다(올해 재산세 ' + krw(r.propSum) + ' 기준 추정).');
+      why.push(corp ? '법인은 기본공제가 없고 ' + (r.heavy ? '3주택 이상 5.0%' : '2주택 이하 2.7%') + ' 단일세율이에요.' : one ? '1세대1주택자라 공시가격에서 12억 원을 빼고 계산해요.' : '1세대1주택자가 아니라 공시가격 합계에서 9억 원을 빼고 계산해요' + (r.heavy ? '. 3주택 이상이라 12억 원 초과 과세표준 구간에 2.0~5.0% 세율이 붙어요.' : '.'));
+      if (r.base > 0) why.push('재산세와 겹치는 부분 ' + krw(r.propDed) + '은 종부세에서 빼요(올해 재산세 ' + krw(r.propSum) + ' 기준 추정).');
       if (one) why.push('세액공제: 나이 ' + Math.round(r.ageRate * 100) + '% + 보유 ' + Math.round(r.holdRate * 100) + '% = ' + Math.round(r.creditRate * 100) + '%' + (r.ageRate + r.holdRate > 0.8 ? ' (합계 80% 한도)' : '') + '.');
       why.push.apply(why, r.notes);
-      if (!corp && !(num($('cPrev')) > 0)) why.push('작년 재산세+종부세를 넣지 않아 세부담상한(150%)은 따지지 않았습니다.');
-      if (r.total > 0) why.push('납부: 12월 1일~15일. 종부세가 250만 원을 넘으면 일부를 6개월 안에 나눠 낼 수 있습니다.');
+      if (!corp && !(num($('cPrev')) > 0)) why.push('작년 재산세+종부세를 넣지 않아 세부담상한(150%)은 따지지 않았어요.');
+      if (r.total > 0) why.push('납부: 12월 1일~15일. 종부세가 250만 원을 넘으면 일부를 6개월 안에 나눠 낼 수 있어요.');
       $('cRes').innerHTML = (r.base > 0
         ? '<div class="lbl">' + (corp ? '법인' : one ? '1세대1주택' : n + '주택') + ' · 공시가격 합계 ' + krw(r.sum) + '의 2026년 종부세 (농어촌특별세 포함)</div><div class="big">' + krw(r.total) + '</div>' +
           '<span class="pill ' + (r.heavy || corp ? 'no' : 'mid') + '">세율 ' + r.rateText + '</span>'
@@ -473,14 +473,14 @@
           ['산출세액', won1(r.calc)], ['재산세 중복분 공제', '−' + won1(r.propDed)], ['세액공제 ' + Math.round(r.creditRate * 100) + '%', '−' + won1(r.credit)],
           ['세부담상한 초과분', '−' + won1(r.capCut)], ['종합부동산세', won1(r.tax)], ['농어촌특별세 (20%)', won1(r.farm)], ['합계', won1(r.total), 1]
         ]) + ul(why) +
-        '<p class="law">종합부동산세법 제8조(공제 1세대1주택 12억·그 밖 9억·법인 0, 공정시장가액비율 60% — 시행령 제2조의4), 제9조(세율, 재산세 공제 — 시행령 제4조의3, 고령자 20~40%·장기보유 20~50% 합계 80% 한도), 제10조(세부담상한 150%), 농어촌특별세법 제5조(20%). 임대주택 합산배제, 일시적 2주택·상속주택·지방 저가주택 1주택 특례, 부부 공동명의 1주택 특례 신청은 반영하지 않았습니다. 국회 심의 중인 2026년 세제개편안(1주택 공제 14억, 공정시장가액비율 70~80%, 세율 일원화 등, 2027년분부터)은 통과 전이라 넣지 않았습니다.</p></details>';
+        '<p class="law">종합부동산세법 제8조(공제 1세대1주택 12억·그 밖 9억·법인 0, 공정시장가액비율 60% — 시행령 제2조의4), 제9조(세율, 재산세 공제 — 시행령 제4조의3, 고령자 20~40%·장기보유 20~50% 합계 80% 한도), 제10조(세부담상한 150%), 농어촌특별세법 제5조(20%). 임대주택 합산배제, 일시적 2주택·상속주택·지방 저가주택 1주택 특례, 부부 공동명의 1주택 특례 신청은 반영하지 않았어요. 국회 심의 중인 2026년 세제개편안(1주택 공제 14억, 공정시장가액비율 70~80%, 세율 일원화 등, 2027년분부터)은 통과 전이라 넣지 않았어요.</p></details>';
     }
   });
 
   /* ---------- 6. 증여세 ---------- */
   const gSel = regionPicker($('gSido'), $('gGu'), { sido: '서울', gu: '마포구' });
   const gAdj = () => A.isAdjusted(gSel.get().sido, gSel.get().gu, TODAY) === true;
-  const gAdjUpd = () => { $('gAdjTxt').textContent = '오늘 기준 ' + (gAdj() ? '조정대상지역입니다. 공시가격 3억 원 이상이면 취득세 12% 중과 대상이 될 수 있어요.' : '조정대상지역이 아니라 취득세 3.5%입니다.'); };
+  const gAdjUpd = () => { $('gAdjTxt').textContent = '오늘 기준 ' + (gAdj() ? '조정대상지역이에요. 공시가격 3억 원 이상이면 취득세 12% 중과 대상이 될 수 있어요.' : '조정대상지역이 아니라 취득세 3.5%예요.'); };
   gSel.onChange(gAdjUpd); gAdjUpd();
   let gRecvN = 1;
   $('gRecv').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; gRecvN = +b.dataset.v; $('gRecv').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); });
@@ -509,19 +509,19 @@
       const a = T.giftAcqTax({ value, stdPrice, debt, adj: gAdj(), donorOne: $('gOne').checked, close: !!CLOSE[st.rel], over85: $('gOver').checked, recvHouses: gRecvN });
       const dg = T.giftDebtGain(value, debt, num($('gDonorAcq')) * MAN);
       const why = ['관계: ' + g.relText + ' — 증여재산공제 ' + krw(g.ded) + (g.prior ? ' (10년 안 이전 증여와 합쳐 한 번만 공제)' : '') + '.'];
-      if ($('gMar').checked) why.push('혼인·출산 증여재산공제 1억 원을 더했습니다(평생 한도 1억, 기본 공제와 별도).');
-      if (g.prior) why.push('10년 안 이전 증여 ' + krw(g.prior) + '을 합산하고, 그때 낸 증여세 ' + krw(g.priorTax) + '을 뺐습니다.');
-      if (g.skipRate) why.push('세대를 건너뛴 증여라 산출세액에 ' + Math.round(g.skipRate * 100) + '%를 더했습니다' + (g.skipRate === 0.4 ? ' (미성년자 20억 원 초과).' : '.'));
-      why.push(g.filing ? '기한 안에 신고하면 3% 신고세액공제를 받습니다. 신고기한은 증여일이 속한 달의 말일부터 3개월입니다.' : '기한 안에 신고하지 않으면 신고세액공제가 없고 가산세가 붙습니다.');
-      if (g.base === 0) why.push('공제 뒤 과세표준이 없어(또는 50만 원 미만) 증여세가 없습니다. 그래도 신고해 두면 나중에 취득자금 출처 소명에 도움이 됩니다.');
+      if ($('gMar').checked) why.push('혼인·출산 증여재산공제 1억 원을 더했어요(평생 한도 1억, 기본 공제와 별도).');
+      if (g.prior) why.push('10년 안 이전 증여 ' + krw(g.prior) + '을 합산하고, 그때 낸 증여세 ' + krw(g.priorTax) + '을 뺐어요.');
+      if (g.skipRate) why.push('세대를 건너뛴 증여라 산출세액에 ' + Math.round(g.skipRate * 100) + '%를 더했어요' + (g.skipRate === 0.4 ? ' (미성년자 20억 원 초과).' : '.'));
+      why.push(g.filing ? '기한 안에 신고하면 3% 신고세액공제를 받아요. 신고기한은 증여일이 속한 달의 말일부터 3개월이에요.' : '기한 안에 신고하지 않으면 신고세액공제가 없고 가산세가 붙어요.');
+      if (g.base === 0) why.push('공제 뒤 과세표준이 없어(또는 50만 원 미만) 증여세가 없어요. 그래도 신고해 두면 나중에 취득자금 출처 소명에 도움이 돼요.');
       const total = g.tax + a.total;
       let debtHtml = '';
       if (debt > 0) {
         debtHtml = '<details class="how" open><summary>부담부증여: 채무 ' + krw(debt) + ' 부분은 주는 분의 양도세</summary>' +
           (dg && num($('gDonorAcq')) ? table([['양도가액 (넘긴 채무)', krw(dg.salePrice)], ['취득가액 (취득가 × ' + (Math.round(dg.share * 10000) / 100) + '%)', '−' + krw(dg.acqPrice)], ['양도차익', krw(dg.gain), 1]]) : '') +
-          ul(['주는 분이 이 채무 부분을 판 것으로 보고 양도세를 냅니다. 양도가액은 채무액, 취득가액은 원래 취득가 중 채무 비율만큼입니다(소득세법 시행령 제159조).',
-            '주는 분이 1세대1주택 비과세 요건을 갖췄다면 이 부분도 비과세될 수 있고, 다주택자라면 조정대상지역 중과가 붙을 수 있습니다. 양도세 계산기에서 위 양도가액·취득가액으로 계산해 보세요.',
-            '배우자·직계존비속 사이 부담부증여는 받는 분이 실제로 채무를 갚는지 국세청이 사후관리합니다.']) + '</details>';
+          ul(['주는 분이 이 채무 부분을 판 것으로 보고 양도세를 냅니다. 양도가액은 채무액, 취득가액은 원래 취득가 중 채무 비율만큼이에요(소득세법 시행령 제159조).',
+            '주는 분이 1세대1주택 비과세 요건을 갖췄다면 이 부분도 비과세될 수 있고, 다주택자라면 조정대상지역 중과가 붙을 수 있어요. 양도세 계산기에서 위 양도가액·취득가액으로 계산해 보세요.',
+            '배우자·직계존비속 사이 부담부증여는 받는 분이 실제로 채무를 갚는지 국세청이 사후관리해요.']) + '</details>';
       }
       $('gRes').innerHTML = '<div class="lbl">' + krw(value) + ' 주택 증여 시 받는 분이 낼 세금 (증여세 + 취득세)</div>' +
         '<div class="big">' + krw(total) + '</div><span class="pill ' + (a.heavy ? 'no' : 'mid') + '">' + (a.heavy ? '취득세 12% 중과' : '증여 취득세 3.5%') + '</span>' +
@@ -535,8 +535,8 @@
         '<details class="how"><summary>취득세 계산 근거</summary>' + table([
           ['증여분 과세표준 (시가 − 채무)', krw(a.gift.base)], ['취득세 ' + ratePct(a.gift.rate), won1(a.gift.acq)], ['지방교육세 ' + ratePct(a.gift.eduRate), won1(a.gift.edu)], ['농어촌특별세 ' + ratePct(a.gift.farmRate), won1(a.gift.farm)]
         ].concat(a.debt ? [['채무분 (유상취득) ' + ratePct(a.debt.rate), won1(a.debt.acq)], ['채무분 지방교육세·농특세', won1(a.debt.edu + a.debt.farm)]] : []).concat([['합계', won1(a.total), 1]])) +
-        ul([a.why + '.', '증여 취득세 과세표준은 시가인정액(비슷한 거래가)입니다. 중과 여부(3억 원)는 공시가격으로 판단합니다.']
-          .concat(a.debt ? ['채무 부분은 돈을 주고 산 것(유상취득)으로 보아 받는 분 세대의 주택 수(' + gRecvN + '채)에 따른 1~3% 또는 중과세율을 적용했습니다. 세율 구간은 집 전체 가격 기준으로 잡았으니 위택스에서 확인해 주세요.'] : [])) +
+        ul([a.why + '.', '증여 취득세 과세표준은 시가인정액(비슷한 거래가)예요. 중과 여부(3억 원)는 공시가격으로 판단해요.']
+          .concat(a.debt ? ['채무 부분은 돈을 주고 산 것(유상취득)으로 보아 받는 분 세대의 주택 수(' + gRecvN + '채)에 따른 1~3% 또는 중과세율을 적용했어요. 세율 구간은 집 전체 가격 기준으로 잡았으니 위택스에서 확인해 주세요.'] : [])) +
         '<p class="law">지방세법 제10조의2(시가인정액), 제11조 제1항 제2호(무상취득 3.5%), 제13조의2 제2항·시행령 제28조의6(조정대상지역 3억 이상 12%, 1세대1주택자의 배우자·직계존비속 증여 제외), 제151조(지방교육세), 농어촌특별세법 제5조.</p></details>' +
         debtHtml;
     }

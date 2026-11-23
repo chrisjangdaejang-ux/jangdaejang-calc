@@ -233,7 +233,7 @@
 .jw-star span{font-size:13.5px}.jw-star.on{border-color:#B8942A;color:#8A6A12;background:#FBF8EF}.jw-star:hover{border-color:#B8942A}
 .jw-star.lb{margin-top:10px;font-size:15px;padding:0 16px}.jw-star.lb span{font-size:15px}
 .jw-star.sm{min-height:44px;min-width:44px;padding:0 8px;font-size:17px}.jw-star.sm span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-.jw-chip{display:inline-flex;align-items:center;gap:4px;min-height:36px;padding:0 11px;border-radius:999px;background:#FBF8EF;border:1px solid #EFE6CC;color:#8A6A12;font-size:13.5px;font-weight:800;text-decoration:none;white-space:nowrap;margin-left:auto}
+.jw-chip{display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 11px;border-radius:999px;background:#FBF8EF;border:1px solid #EFE6CC;color:#8A6A12;font-size:13.5px;font-weight:800;text-decoration:none;white-space:nowrap;margin-left:auto}
 .jw-chip b{color:#C2410C}
 .jw-bell{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;width:44px;height:44px;border-radius:999px;color:#4E5968;text-decoration:none;margin-left:auto}
 .jw-bell:hover{background:#F2F4F6}.jw-bell b{position:absolute;top:3px;right:1px;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:#C2410C;color:#fff;font-size:11.5px;font-weight:800;line-height:19px;text-align:center;box-shadow:0 0 0 2px #fff}

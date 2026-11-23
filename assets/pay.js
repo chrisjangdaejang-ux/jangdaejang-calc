@@ -1,11 +1,11 @@
 /* 장대장 프리미엄 리포트 결제 — 공용 설정·도우미 (premium/ 아래 모든 페이지에서 사용)
    ─────────────────────────────────────────────────────────────
-   ★ 심사 후 실제 결제로 바꿀 때 고칠 곳은 이 파일 맨 위 두 줄뿐입니다.
-     - TEST_MODE  : true 이면 화면 위에 '테스트 결제 · 실제 청구 없음' 배지를 보여 줍니다. 실제 결제 시작 때 false.
-     - CLIENT_KEY : 토스페이먼츠 클라이언트 키(공개되어도 되는 값). API 개별 연동 키(test_ck_/live_ck_)면 결제창, 결제위젯 키(gck)면 위젯으로 동작합니다.
+   ★ 심사 후 실제 결제로 바꿀 때 고칠 곳은 이 파일 맨 위 두 줄뿐이에요.
+     - TEST_MODE  : true 이면 화면 위에 '테스트 결제 · 실제 청구 없음' 배지를 보여 줘요. 실제 결제 시작 때 false.
+     - CLIENT_KEY : 토스페이먼츠 클라이언트 키(공개되어도 되는 값). API 개별 연동 키(test_ck_/live_ck_)면 결제창, 결제위젯 키(gck)면 위젯으로 동작해요.
        (시크릿 키는 절대 여기에 넣지 마세요. 시크릿 키는 Apps Script 스크립트 속성 TOSS_SECRET_KEY 에만 넣습니다.)
-   서버 주소는 assets/agents.js 의 Apps Script 웹 앱 주소(API)를 그대로 씁니다.
-   가격은 화면 표시용이고, 실제 결제 금액은 서버(tools/agent-backend.gs 의 PRICE)가 정하고 대조합니다.
+   서버 주소는 assets/agents.js 의 Apps Script 웹 앱 주소(API)를 그대로 써요.
+   가격은 화면 표시용이고, 실제 결제 금액은 서버(tools/agent-backend.gs 의 PRICE)가 정하고 대조해요.
    ───────────────────────────────────────────────────────────── */
 (function () {
   var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
@@ -28,14 +28,14 @@
     api() { return (window.JDJ_AGENTS && window.JDJ_AGENTS.api) || ''; },
     async post(action, body) {
       const api = P.api();
-      if (!api) throw new Error('결제 서버가 아직 연결되지 않았습니다.');
+      if (!api) throw new Error('결제 서버가 아직 연결되지 않았어요.');
       let j;
       try {
         const r = await fetch(api, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify(Object.assign({ action }, body || {})) });
         j = await r.json();
       } catch (e) {
-        const er = new Error('서버에 연결하지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.'); er.net = true; throw er;
+        const er = new Error('서버에 연결하지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.'); er.net = true; throw er;
       }
       if (!j || !j.ok) { const t = (j && j.err) || ''; const er = new Error(/[가-힣]/.test(t) ? t : '잠시 뒤 다시 시도해 주세요. 계속되면 카카오톡 상담으로 알려 주세요.'); er.raw = t; er.code = j && j.code; throw er; }
       return j;

@@ -24,7 +24,7 @@
 <script src="../../assets/stat.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/aplus.css?v=45">
+<link rel="stylesheet" href="../../assets/aplus.css?v=46">
 <script src="../../assets/nw.js?v=1" defer></script>
 <style>
 .wrap{max-width:960px;margin:0 auto;padding:28px 20px 60px}
@@ -33,7 +33,7 @@ h1{font-size:clamp(28px,6.5vw,40px);margin:8px 0 12px;line-height:1.3}
 .hero .btns{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap}
 .hero .btns .btn{min-height:52px}
 .toc{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0 0}
-.toc a{font-size:14px;font-weight:700;color:var(--sub);background:var(--gray);border-radius:999px;padding:0 12px;min-height:40px;display:inline-flex;align-items:center;text-decoration:none}
+.toc a{font-size:14px;font-weight:700;color:var(--sub);background:var(--gray);border-radius:999px;padding:0 12px;min-height:44px;display:inline-flex;align-items:center;text-decoration:none}
 section{margin-top:44px;scroll-margin-top:72px}
 .sh{font-size:13.5px;font-weight:700;color:var(--blue);letter-spacing:.2px}
 h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-height:1.35;margin:4px 0 8px}
@@ -216,7 +216,7 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
         <dt>1쪽 현장 분석</dt><dd>면적대별 분양가(3.3㎡당)가 주변 신축·준신축 실거래와 비교해 하위·중간·상위 구간 중 어디에 가까운지, 비교 범위·표본 수, 주변 시세와의 차이(범위), 핵심 숫자, 함께 보셔야 할 점</dd>
         <dt>2쪽 가격 위치</dt><dd>주변 거래 분포 그림과 이 단지 분양가의 위치, 연식·범위별 하위 25%·중간값·상위 25%</dd>
         <dt>3쪽 청약·미래가치</dt><dd>주변 최근 분양의 1순위 경쟁률·당첨 가점, 가까운 비교 단지, 주변 단지 미래가치 점수 분포와 과거 성적(과거에 그대로 써 봤더니 N번 중 M번), 입주 예정·미분양·인구</dd>
-        <dt>4쪽 규제·의견·출처</dt><dd>규제지역·대출 정책, <b>분양 관계사 의견 칸</b>(집코드 분석과 테두리로 구분하고 ‘이 칸은 집코드 분석이 아니며, 위 숫자는 바꿀 수 없습니다’ 표시), 모든 자료의 출처·기준일</dd>
+        <dt>4쪽 규제·의견·출처</dt><dd>규제지역·대출 정책, <b>분양 관계사 의견 칸</b>(집코드 분석과 테두리로 구분하고 ‘이 칸은 집코드 분석이 아니며, 위 숫자는 바꿀 수 없어요’ 표시), 모든 자료의 출처·기준일</dd>
         <dt>바꿀 수 없는 것</dt><dd>분석 숫자·리스크 항목·출처는 넣고 빼거나 고칠 수 없어요. 모든 쪽 아래에 ‘데이터·분석: 집코드’가 들어가요.</dd>
         <dt>주실 것</dt><dd>청약홈 공고명(또는 공고번호), 의견 칸에 넣을 회사명·문구·연락처(선택) — 공고가 청약홈에 올라온 단지만 만들 수 있어요</dd>
       </dl>
@@ -431,8 +431,8 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
           </tbody></table>
           문의 정보는 구글 시트(Google LLC, 국외 서버)에 보관돼요. 동의하지 않으실 수 있으며, 이 경우 카카오톡 채널·전화로 문의해 주세요. 자세한 내용은 <a href="../../privacy/">개인정보처리방침</a>을 확인해 주세요. 사업지·분양가 정보는 리포트 작성에만 쓰고 다른 의뢰인·광고에 쓰지 않아요.
         </div>
-        <label class="agree" id="agreeDpL" hidden><input type="checkbox" id="agreeDp"><span>(자료 팩 필수) 위 <a href="#p-datapack">자료 팩 이용 조건</a>(숫자 변경 금지, 공공기관 출처 표기 유지, 집코드 이름·로고 사용과 보증 표현 금지, 광고 책임은 우리 회사)에 동의합니다.</span></label>
-        <label class="agree"><input type="checkbox" id="agree"> (필수) 위 개인정보 수집·이용에 동의합니다.</label>
+        <label class="agree" id="agreeDpL" hidden><input type="checkbox" id="agreeDp"><span>(자료 팩 필수) 위 <a href="#p-datapack">자료 팩 이용 조건</a>(숫자 변경 금지, 공공기관 출처 표기 유지, 집코드 이름·로고 사용과 보증 표현 금지, 광고 책임은 우리 회사)에 동의해요.</span></label>
+        <label class="agree"><input type="checkbox" id="agree"> (필수) 위 개인정보 수집·이용에 동의해요.</label>
         <div class="hp" aria-hidden="true"><label for="hpf">이 칸은 비워 두세요</label><input id="hpf" tabindex="-1" autocomplete="off"></div>
         <button class="btn blue big" type="submit" id="send">신청 보내기</button>
         <div class="msg" id="msg" role="status" aria-live="polite"></div>
@@ -521,15 +521,15 @@ document.querySelectorAll('#prod input').forEach(x => x.addEventListener('change
 function check() {
   for (const [id, n] of [['company', '회사명'], ['manager', '담당자 이름']]) {
     const v = $(id).value.trim();
-    if (!v) return [id, `${n}을(를) 입력해 주세요.`];
-    if (formula(v)) return [id, `${n}은(는) = + - @ 기호로 시작할 수 없어요.`];
+    if (!v) return [id, `${n}${(c=>c>=44032&&c<=55203&&(c-44032)%28?'을':'를')(String(n).slice(-1).charCodeAt(0))} 입력해 주세요.`];
+    if (formula(v)) return [id, `${n}${(c=>c>=44032&&c<=55203&&(c-44032)%28?'은':'는')(String(n).slice(-1).charCodeAt(0))} = + - @ 기호로 시작할 수 없어요.`];
   }
   const c = $('contact').value.trim();
   if (!c) return ['contact', '연락처(전화번호 또는 이메일)를 입력해 주세요.'];
   if (!(emailOk(c) || phoneOk(c))) return ['contact', '전화번호 또는 이메일 형식을 확인해 주세요.'];
   if (!sel().length) return ['prod', '신청 상품을 하나 이상 골라 주세요.'];
   if (!$('site').value.trim()) return ['site', '사업지 주소를 입력해 주세요.'];
-  for (const [id, n] of [['site', '사업지 주소'], ['types', '평형·분양가'], ['memo', '문의 내용']]) if (formula($(id).value)) return [id, `${n}은(는) = + - @ 기호로 시작할 수 없어요.`];
+  for (const [id, n] of [['site', '사업지 주소'], ['types', '평형·분양가'], ['memo', '문의 내용']]) if (formula($(id).value)) return [id, `${n}${(c=>c>=44032&&c<=55203&&(c-44032)%28?'은':'는')(String(n).slice(-1).charCodeAt(0))} = + - @ 기호로 시작할 수 없어요.`];
   if (needMail()) {
     const em = $('remail').value.trim();
     if (!em) return ['remail', '보고서를 받을 이메일을 입력해 주세요.'];

@@ -560,7 +560,7 @@
     + '.jshare-ch.sheet{left:0;right:0;bottom:0;border-radius:20px 20px 0 0;padding-bottom:calc(18px + env(safe-area-inset-bottom))}'
     + '.jshare-ch.pop{width:380px;max-width:calc(100vw - 24px);border-radius:16px}'
     + '.jshare-sv{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px 12px;padding:10px 14px;background:#FBF5E3;border-bottom:1px solid #EFE2B8;color:#3E4754;font-size:14.5px;text-align:center}'
-    + '.jshare-sv b{color:#191F28}.jshare-sv button{min-height:40px;padding:0 14px;border:0;border-radius:10px;background:#191F28;color:#fff;font:inherit;font-size:14.5px;font-weight:700;cursor:pointer}'
+    + '.jshare-sv b{color:#191F28}.jshare-sv button{min-height:44px;padding:0 14px;border:0;border-radius:10px;background:#191F28;color:#fff;font:inherit;font-size:14.5px;font-weight:700;cursor:pointer}'
     + '@media print{.jshare-sv,.jshare-ch,.jshare-bk{display:none!important}}';
   function chClose() { [].slice.call(root.document.querySelectorAll('.jshare-ch,.jshare-bk')).forEach(function (n) { n.remove(); }); root.document.removeEventListener('keydown', chKey); }
   function chKey(e) { if (e.key === 'Escape') chClose(); }

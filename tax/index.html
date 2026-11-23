@@ -15,11 +15,11 @@
 <script src="../assets/biz.js?v=2" defer></script>
 <title>집코드 부동산 세금 계산기 — 양도세 매도 타이밍·매도 순서·취득세·재산세·종부세·증여세</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/tax/">
-<meta name="description" content="언제 팔면 양도세가 줄어드는지 날짜별로 보여 드립니다. 1세대1주택 비과세·12억 고가주택·일시적 2주택·장기보유특별공제·다주택 중과(2026년 11월 시행 기준)와 다주택 매도 순서 비교(최대 5채), 취득세·재산세·종합부동산세·증여세까지 브라우저 안에서 계산합니다.">
+<meta name="description" content="언제 팔면 양도세가 줄어드는지 날짜별로 보여 드려요. 1세대1주택 비과세·12억 고가주택·일시적 2주택·장기보유특별공제·다주택 중과(2026년 11월 시행 기준)와 다주택 매도 순서 비교(최대 5채), 취득세·재산세·종합부동산세·증여세까지 브라우저 안에서 계산해요.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="집코드">
 <meta property="og:title" content="집코드 부동산 세금 계산기 — 언제, 어떤 순서로 팔면 세금이 줄어들까?">
-<meta property="og:description" content="양도세 매도 타이밍 그래프 · 다주택 매도 순서 비교 · 취득세 · 재산세 · 종부세 · 증여세. 회원가입 없이 무료, 입력값은 이 기기 밖으로 보내지 않습니다.">
+<meta property="og:description" content="양도세 매도 타이밍 그래프 · 다주택 매도 순서 비교 · 취득세 · 재산세 · 종부세 · 증여세. 회원가입 없이 무료, 입력값은 이 기기 밖으로 보내지 않아요.">
 <meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/tax/">
 <meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/tax.png">
 <meta property="og:image:width" content="1200">
@@ -27,15 +27,15 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="집코드 부동산 세금 계산기 — 언제, 어떤 순서로 팔면 세금이 줄어들까?">
-<meta name="twitter:description" content="양도세 매도 타이밍 그래프 · 다주택 매도 순서 비교 · 취득세 · 재산세 · 종부세 · 증여세. 회원가입 없이 무료, 입력값은 이 기기 밖으로 보내지 않습니다.">
+<meta name="twitter:description" content="양도세 매도 타이밍 그래프 · 다주택 매도 순서 비교 · 취득세 · 재산세 · 종부세 · 증여세. 회원가입 없이 무료, 입력값은 이 기기 밖으로 보내지 않아요.">
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/tax.png">
 <script>window.JDJ_CONFIG = { tool:'tax', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
-<script src="../assets/share.js?v=11"></script>
+<script src="../assets/share.js?v=12"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/aplus.css?v=45">
+<link rel="stylesheet" href="../assets/aplus.css?v=46">
 <script src="../assets/tabbar.js?v=5" defer></script>
 <script src="../assets/nw.js?v=1" defer></script>
 <style>
@@ -64,7 +64,7 @@
 .q .sl{font-size:15px;font-weight:700;color:var(--sub);margin-bottom:-6px}
 .box{display:flex;align-items:center;gap:8px;background:#fff;border-radius:14px;padding:10px 16px;border:2px solid transparent}
 .box:focus-within{border-color:var(--blue)}
-.box input,.box select{border:0;outline:none;font:inherit;font-size:22px;font-weight:700;flex:1;min-width:0;color:var(--text);background:transparent;min-height:40px;box-shadow:none;padding:0}
+.box input,.box select{border:0;outline:none;font:inherit;font-size:22px;font-weight:700;flex:1;min-width:0;color:var(--text);background:transparent;min-height:44px;box-shadow:none;padding:0}
 .box input[type=date]{font-size:19px}
 .box span{font-size:18px;font-weight:700;color:var(--sub);white-space:nowrap}
 .conv{font-size:14px;color:var(--blue);font-weight:700;min-height:1em;margin-top:-6px}
@@ -141,7 +141,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
 .f2>*{min-width:0}
 .fl label{display:block;font-size:13.5px;font-weight:700;color:var(--sub);margin-bottom:4px}
 .fl .box{padding:6px 12px;border-radius:12px}
-.fl .box input,.fl .box select{font-size:17px;min-height:36px}
+.fl .box input,.fl .box select{font-size:17px;min-height:44px}
 .fl .box input[type=date]{font-size:16px}
 .fl .box span{font-size:15px}
 .fl select.s{width:100%;min-height:52px;font:inherit;font-size:16px;font-weight:700;border:0;border-radius:12px;padding:0 8px;background:#fff}
@@ -165,7 +165,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
 .why{margin:10px 20px 0;font-size:15px;font-weight:700;color:var(--blue);background:var(--blue-l);border-radius:12px;padding:10px 14px;line-height:1.55}
 .plist{display:flex;flex-direction:column;gap:8px}
 .plist .box b{font-size:15px;color:var(--sub);white-space:nowrap}
-.plist .box button{font:inherit;font-size:14px;color:var(--sub2);background:none;border:0;text-decoration:underline;min-height:40px;cursor:pointer;padding:0}
+.plist .box button{font:inherit;font-size:14px;color:var(--sub2);background:none;border:0;text-decoration:underline;min-height:44px;cursor:pointer;padding:0}
 .sum{font-size:16px;font-weight:700}
 .sum b{color:var(--blue)}
 .pay2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
@@ -185,7 +185,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
   <div class="hero">
     <div class="eyebrow">부동산 세금 계산기 · 2026년 11월 시행 세법 기준</div>
     <h1>언제, 어떤 순서로 팔면<br><em>세금이 줄어드는지</em> 보여 드려요</h1>
-    <p>비과세 요건이 채워지는 날, 장기보유특별공제가 오르는 날을 날짜로 계산해 드립니다. 결정은 직접 하시고, 유리한 시점과 순서를 비교해 보세요.</p>
+    <p>비과세 요건이 채워지는 날, 장기보유특별공제가 오르는 날을 날짜로 계산해 드려요. 결정은 직접 하시고, 유리한 시점과 순서를 비교해 보세요.</p>
   </div>
   <div class="jas jas-top jas-in" data-ad-slot="tax_top" data-ad-cat="tax" data-ad-top></div>
   <div class="rows">
@@ -198,7 +198,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
     <a class="row" href="transfer/" data-track="tax_to_transfer"><span class="num">7</span><div><b>넘기는 방법 비교<span class="newb">새로</span></b><small>제3자 양도 · 자녀에게 싸게 팔기 · 증여 · 상속까지 보유, 부모·자녀 세금과 준비할 돈을 조항과 함께</small></div><span class="go" aria-hidden="true">›</span></a>
     <div class="row soon" aria-disabled="true"><span class="num">8</span><div><b>보유 vs 매도 지역 전망<span class="soonb">곧 추가</span></b><small>계속 보유할 때 예상 시세와 매도 후 세금을 나란히</small></div></div>
   </div>
-  <p class="trust">입력하신 숫자는 이 기기 안에서만 계산하고 서버로 보내지 않습니다.</p>
+  <p class="trust">입력하신 숫자는 이 기기 안에서만 계산하고 서버로 보내지 않아요.</p>
 </section>
 
 <!-- 1. 양도세 한 질문씩 -->
@@ -216,13 +216,13 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
         <button type="button" class="opt" data-v="2">2채<small>팔려는 집 포함</small></button>
         <button type="button" class="opt" data-v="3">3채 이상<small>팔려는 집 포함</small></button>
       </div>
-      <div class="help">부부·함께 사는 가족을 합친 세대 기준이에요. 여러 채의 순서를 정하시려면 처음 화면의 '다주택 매도 순서 비교'가 더 정확합니다.</div>
+      <div class="help">부부·함께 사는 가족을 합친 세대 기준이에요. 여러 채의 순서를 정하시려면 처음 화면의 '다주택 매도 순서 비교'가 더 정확해요.</div>
     </div>
 
     <div class="wq" data-q="region" hidden>
       <p class="ql">팔려는 집은 어디에 있나요?</p>
       <div class="selrow"><select id="rSido" aria-label="시·도"></select><select id="rGu" aria-label="시·군·구"></select></div>
-      <div class="help">조정대상지역 여부는 사신 날과 파시는 날 기준으로 국토교통부 공고 이력에서 자동으로 판정합니다.</div>
+      <div class="help">조정대상지역 여부는 사신 날과 파시는 날 기준으로 국토교통부 공고 이력에서 자동으로 판정해요.</div>
     </div>
 
     <div class="wq" data-q="acq" hidden>
@@ -240,7 +240,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
         <button type="button" class="opt" data-v="y">네, 조정대상지역이었어요<small>2년 거주해야 비과세</small></button>
         <button type="button" class="opt" data-v="n">아니요<small>2년 보유만으로 비과세 가능</small></button>
       </div>
-      <div class="help" id="acqAdjHelp">이 지역은 해당 기간에 일부 동만 지정됐거나 시·군마다 달라 자동 판정이 어렵습니다. 모르시면 '네'를 고르시면 보수적으로 계산됩니다.</div>
+      <div class="help" id="acqAdjHelp">이 지역은 해당 기간에 일부 동만 지정됐거나 시·군마다 달라 자동 판정이 어려워요. 모르시면 '네'를 고르시면 보수적으로 계산돼요.</div>
     </div>
 
     <div class="wq" data-q="sale" hidden>
@@ -257,7 +257,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
       <p class="ql">취득세·중개보수·수리비 같은 필요경비는요?</p>
       <div class="box"><input id="expenses" inputmode="numeric" autocomplete="off" placeholder="0" aria-label="필요경비(만 원)"><span>만 원</span></div>
       <div class="quick" id="qExp"><button type="button" data-v="0">모름 · 0원</button><button type="button" data-v="est">취득세·중개보수 추정</button></div>
-      <div class="help">영수증이 있는 취득세, 법무사·중개보수, 확장·샷시 같은 자본적 지출이 해당해요. 도배·장판 같은 수선비는 빠집니다.</div>
+      <div class="help">영수증이 있는 취득세, 법무사·중개보수, 확장·샷시 같은 자본적 지출이 해당해요. 도배·장판 같은 수선비는 빠져요.</div>
     </div>
 
     <div class="wq" data-q="resid" hidden>
@@ -273,7 +273,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
       <div class="box"><input type="date" id="newAcq" aria-label="새 집 취득일"></div>
       <div class="sl">새 집 위치</div>
       <div class="selrow"><select id="nSido" aria-label="새 집 시·도"></select><select id="nGu" aria-label="새 집 시·군·구"></select></div>
-      <div class="help">기존 집 취득 후 1년이 지나 새 집을 샀고, 새 집 취득일부터 3년(조정대상지역끼리 2026.8.4 이후 취득이면 2년) 안에 기존 집을 팔아야 비과세가 됩니다.</div>
+      <div class="help">기존 집 취득 후 1년이 지나 새 집을 샀고, 새 집 취득일부터 3년(조정대상지역끼리 2026.8.4 이후 취득이면 2년) 안에 기존 집을 팔아야 비과세가 돼요.</div>
     </div>
 
     <div class="err" id="wErr" role="alert"></div>
@@ -284,16 +284,16 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
     <div class="sec result" id="cgtRes"></div>
     <div class="panel" id="tlPanel">
       <h2>언제 팔면 세금이 줄어들까요?</h2>
-      <p class="desc">오늘부터 5년 동안 매달 같은 날 판다고 가정한 예상 세금(지방소득세 포함)입니다. 막대를 밀어 날짜를 골라 보세요.</p>
+      <p class="desc">오늘부터 5년 동안 매달 같은 날 판다고 가정한 예상 세금(지방소득세 포함)이에요. 막대를 밀어 날짜를 골라 보세요.</p>
       <div class="chips" id="gChips">시세 변화 가정 <button type="button" class="chip on" data-g="0">그대로</button><button type="button" class="chip" data-g="3">연 3% 상승</button><button type="button" class="chip" data-g="-3">연 3% 하락</button></div>
       <svg class="chart" id="tlChart" viewBox="0 0 340 190" role="img" aria-label="월별 예상 양도세 그래프"></svg>
       <div class="slidebox"><input type="range" id="tlSlider" min="0" max="60" value="0" aria-label="매도 시점 고르기 (오늘부터 개월)"></div>
       <div class="pick" aria-live="polite"><div><div class="d" id="pkD"></div><div class="t" id="pkT"></div></div><div class="c" id="pkC"></div></div>
       <div class="best" id="tlBest"></div>
       <ul class="ev" id="tlEv" aria-label="세금이 바뀌는 날"></ul>
-      <p class="law" style="margin-top:12px">2027년 이후 양도분은 국회에서 심의 중인 2026년 세제개편안(다주택 중과 한시 완화, 2028년 장기보유특별공제 거주 중심 개편 등)이 통과되면 달라질 수 있어, 현재 시행 중인 법으로 계산했습니다.</p>
+      <p class="law" style="margin-top:12px">2027년 이후 양도분은 국회에서 심의 중인 2026년 세제개편안(다주택 중과 한시 완화, 2028년 장기보유특별공제 거주 중심 개편 등)이 통과되면 달라질 수 있어, 현재 시행 중인 법으로 계산했어요.</p>
     </div>
-    <div class="soonc"><b>보유 vs 매도 지역 전망 — 곧 추가</b><br>계속 보유할 때 이 지역의 예상 시세 흐름과, 지금 팔 때의 세후 금액을 나란히 비교해 드릴 예정입니다.</div>
+    <div class="soonc"><b>보유 vs 매도 지역 전망 — 곧 추가</b><br>계속 보유할 때 이 지역의 예상 시세 흐름과, 지금 팔 때의 세후 금액을 나란히 비교해 드릴 예정이에요.</div>
     <div class="btns sec"><button type="button" class="btn ghost" id="cgtEdit">입력 고치기</button><button type="button" class="btn ghost" data-go="order">매도 순서 비교</button><button type="button" class="btn ghost" data-go="acq">취득세</button></div>
   </div>
 </section>
@@ -301,8 +301,8 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
 <!-- 2. 다주택 매도 순서 -->
 <section id="vOrder" hidden>
   <div class="backbar"><button type="button" data-go="home">‹ 처음으로</button></div>
-  <div class="hero" style="padding-top:6px"><div class="eyebrow">다주택 매도 순서 비교</div><h1 style="font-size:24px">어떤 집부터 팔아야<br>세금이 가장 적을까요?</h1><p>세대가 가진 집을 모두(최대 5채) 넣어 주시면 가능한 순서를 전부(5채면 120가지) 계산해 비교해 드립니다. 마지막에 남는 집은 1세대1주택 비과세 요건을 따져 반영합니다.</p></div>
-  <p class="why">순서가 중요한 이유: 몇 채를 가진 상태에서 파느냐에 따라 중과(+20·30%p) 여부가 달라지고, 마지막에 남는 한 채만 비과세를 받을 수 있기 때문입니다.</p>
+  <div class="hero" style="padding-top:6px"><div class="eyebrow">다주택 매도 순서 비교</div><h1 style="font-size:24px">어떤 집부터 팔아야<br>세금이 가장 적을까요?</h1><p>세대가 가진 집을 모두(최대 5채) 넣어 주시면 가능한 순서를 전부(5채면 120가지) 계산해 비교해 드려요. 마지막에 남는 집은 1세대1주택 비과세 요건을 따져 반영해요.</p></div>
+  <p class="why">순서가 중요한 이유: 몇 채를 가진 상태에서 파느냐에 따라 중과(+20·30%p) 여부가 달라지고, 마지막에 남는 한 채만 비과세를 받을 수 있기 때문이에요.</p>
   <div id="hList"></div>
   <button type="button" class="btn ghost addh" id="hAdd">집 한 채 더 넣기</button>
   <div class="q">
@@ -314,7 +314,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
   </div>
   <div id="oOut" hidden>
     <div class="panel"><h2>비교 결과</h2><ol class="reason" id="oReason"></ol><div class="orders" id="oList"></div><details class="how" id="oAllW" hidden><summary id="oAllS">나머지 순서 전체 보기</summary><div class="orders" id="oAll" style="margin:0 0 12px"></div></details>
-      <p class="law" style="margin-top:12px">각 집의 매도가는 지금 시세 그대로라고 가정했습니다. 일시적 2주택은 두 채가 남았을 때 먼저 산 집을 파는 경우만 따졌고, 다주택 중과 제외 주택(장기임대 등록, 지방 공시가격 3억 이하 등)과 주택 수 제외 규정은 반영하지 않았습니다.</p></div>
+      <p class="law" style="margin-top:12px">각 집의 매도가는 지금 시세 그대로라고 가정했어요. 일시적 2주택은 두 채가 남았을 때 먼저 산 집을 파는 경우만 따졌고, 다주택 중과 제외 주택(장기임대 등록, 지방 공시가격 3억 이하 등)과 주택 수 제외 규정은 반영하지 않았어요.</p></div>
   </div>
 </section>
 
@@ -334,7 +334,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
     <button type="button" class="btn primary big" id="aRun">취득세 계산하기</button>
   </div>
   <div class="sec result" id="aRes" hidden></div>
-  <p class="notice" style="margin-top:12px">공시가격 1억 원 이하 주택 중과 제외, 출산·양육 가구 감면, 증여·분양권 취득은 반영하지 않았습니다(오피스텔은 아래 따로 안내). 일시적 2주택으로 1~3% 세율을 받고 기한(종전·새 집 모두 조정대상지역이면 2년, 아니면 3년) 안에 종전 집을 팔지 못하면 중과세율과의 차액과 가산세가 추징됩니다.</p>
+  <p class="notice" style="margin-top:12px">공시가격 1억 원 이하 주택 중과 제외, 출산·양육 가구 감면, 증여·분양권 취득은 반영하지 않았어요(오피스텔은 아래 따로 안내). 일시적 2주택으로 1~3% 세율을 받고 기한(종전·새 집 모두 조정대상지역이면 2년, 아니면 3년) 안에 종전 집을 팔지 못하면 중과세율과의 차액과 가산세가 추징돼요.</p>
   <div class="panel" id="offi" style="margin-top:16px">
     <h2 style="font-size:19px">오피스텔을 사면 취득세는?</h2>
     <p style="font-size:15px;line-height:1.7;margin:6px 0">오피스텔은 주거용으로 쓰더라도 살 때는 주택이 아닌 '그 밖의 부동산' 세율을 적용해요. 그래서 <b>주택 수·지역과 관계없이 매수가의 4.6%</b>예요(취득세 4% + 지방교육세 0.4% + 농어촌특별세 0.2%). 주택처럼 1~3% 세율이나 1주택 감면을 받지 못해요.</p>
@@ -377,7 +377,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
       <div class="box"><input id="pPrev" class="money" inputmode="numeric" autocomplete="off" placeholder="모르면 비워 두세요" aria-label="작년 공시가격(만 원)"><span>만 원</span></div>
       <div class="sl">작년 재산세 (도시지역분·지방교육세 뺀 본세)</div>
       <div class="box"><input id="pPrevTax" class="money" inputmode="numeric" autocomplete="off" placeholder="모르면 비워 두세요" aria-label="작년 재산세(만 원)"><span>만 원</span></div>
-      <div class="help">공시가격이 크게 올랐을 때 과세표준상한제(작년 대비 약 5%)와 세부담상한이 적용돼 세금이 줄 수 있어요. 비워 두시면 상한 없이 계산합니다.</div>
+      <div class="help">공시가격이 크게 올랐을 때 과세표준상한제(작년 대비 약 5%)와 세부담상한이 적용돼 세금이 줄 수 있어요. 비워 두시면 상한 없이 계산해요.</div>
     </div>
     <div class="err werr" role="alert"></div>
     <div class="nav"><button type="button" class="btn prev wprev">이전</button><button type="submit" class="btn primary next wnext">다음</button></div>
@@ -408,7 +408,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
       <div id="cGs" hidden></div>
       <button type="button" class="btn ghost" id="cAdd">한 채 더 넣기</button>
       <div class="sum" id="cSum"></div>
-      <div class="help">6월 1일 기준으로 이 분(법인) 명의인 주택을 모두 넣어 주세요. 3채 이상이면 높은 세율표가 적용됩니다.</div>
+      <div class="help">6월 1일 기준으로 이 분(법인) 명의인 주택을 모두 넣어 주세요. 3채 이상이면 높은 세율표가 적용돼요.</div>
     </div>
     <div class="wq" data-q="one" hidden>
       <p class="ql">세대원 모두 합쳐 이 한 채만 갖고 계신가요?</p>
@@ -426,7 +426,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
     <div class="wq" data-q="prev" hidden>
       <p class="ql">작년에 낸 재산세와 종부세 합계를 아시나요? (선택)</p>
       <div class="box"><input id="cPrev" class="money" inputmode="numeric" autocomplete="off" placeholder="모르면 비워 두세요" aria-label="작년 재산세+종부세(만 원)"><span>만 원</span></div>
-      <div class="help">올해 재산세+종부세가 작년의 150%를 넘으면 넘는 만큼 빼 줍니다(세부담상한). 재산세는 도시지역분·지방교육세를 뺀 본세, 종부세는 농어촌특별세를 뺀 금액이에요. 비워 두시면 상한 없이 계산합니다.</div>
+      <div class="help">올해 재산세+종부세가 작년의 150%를 넘으면 넘는 만큼 빼 줘요(세부담상한). 재산세는 도시지역분·지방교육세를 뺀 본세, 종부세는 농어촌특별세를 뺀 금액이에요. 비워 두시면 상한 없이 계산해요.</div>
     </div>
     <div class="err werr" role="alert"></div>
     <div class="nav"><button type="button" class="btn prev wprev">이전</button><button type="submit" class="btn primary next wnext">다음</button></div>
@@ -462,7 +462,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
       <div class="sl">공시가격 (취득세 중과 판단용)</div>
       <div class="box"><input id="gStd" class="money" inputmode="numeric" autocomplete="off" placeholder="55,000" aria-label="공시가격(만 원)"><span>만 원</span></div>
       <label class="tog"><input type="checkbox" id="gOver"> 전용면적 85㎡ 초과예요</label>
-      <div class="help">아파트는 증여일 전후 비슷한 단지의 거래가(매매사례가액)가 시가로 인정돼요. 시가가 없을 때만 공시가격으로 평가합니다.</div>
+      <div class="help">아파트는 증여일 전후 비슷한 단지의 거래가(매매사례가액)가 시가로 인정돼요. 시가가 없을 때만 공시가격으로 평가해요.</div>
     </div>
     <div class="wq" data-q="debt" hidden>
       <p class="ql">전세보증금이나 대출도 함께 넘기시나요?</p>
@@ -506,7 +506,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
   </div>
 </section>
 
-<p class="notice">최종 신고·납부 금액은 국세청 홈택스(양도세·종부세·증여세), 위택스(취득세·재산세)나 세무 전문가와 확인해 주세요. 세율·공제·비과세 요건은 2026년 11월 20일 현재 시행 중인 소득세법·시행령, 지방세법·시행령, 종합부동산세법·시행령, 상속세 및 증여세법과 국토교통부 조정대상지역 공고(서울 25개 구 전역, 경기 15곳)를 기준으로 했습니다. 입력값은 서버로 보내지 않습니다. 각 결과 아래에 기준일·적용 조항과 이 계산이 다루지 않는 경우(세무사 확인 필요)를 함께 보여 드려요.</p>
+<p class="notice">최종 신고·납부 금액은 국세청 홈택스(양도세·종부세·증여세), 위택스(취득세·재산세)나 세무 전문가와 확인해 주세요. 세율·공제·비과세 요건은 2026년 11월 20일 현재 시행 중인 소득세법·시행령, 지방세법·시행령, 종합부동산세법·시행령, 상속세 및 증여세법과 국토교통부 조정대상지역 공고(서울 25개 구 전역, 경기 15곳)를 기준으로 했어요. 입력값은 서버로 보내지 않아요. 각 결과 아래에 기준일·적용 조항과 이 계산이 다루지 않는 경우(세무사 확인 필요)를 함께 보여 드려요.</p>
 <div class="jas-in" data-ad-slot="tax_end" data-ad-cat="tax" hidden></div>
 </main>
 <footer class="foot notice" style="margin:24px 0 0;border-radius:0;border-left:0;border-right:0">근거: 소득세법 제55조·제89조·제95조·제103조·제104조, 같은 법 시행령 제154조·제155조·제159조의4·제167조의10·제167조의11, 지방세법 제11조·제13조의2·제103조의3·제110조·제111조·제111조의2·제112조·제115조·제122조·제151조, 종합부동산세법 제8조·제9조·제10조, 상속세 및 증여세법 제47조·제53조·제53조의2·제56조·제57조·제69조, 국토교통부공고 제2023-2호·제2025-1223호·제2026-882호<br>★ 집코드 · <a href="../">계산기 처음으로</a></footer>
@@ -515,7 +515,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
 <script src="tax-engine.js?v=4"></script>
 <script src="offi-tax.js?v=1"></script>
 <script src="../assets/gongsi.js?v=3"></script>
-<script src="tax-ui.js?v=5"></script>
+<script src="tax-ui.js?v=6"></script>
 <script src="tax-trust.js?v=1"></script>
 <script>
 /* 공유(assets/share.js): 결과가 보이면 '어떤 세금을 계산했는지'만. 매도가·공시가격·세액 같은 금액은 담지 않음. 받는 분은 같은 계산기(#cgt 등)로 */

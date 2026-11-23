@@ -141,7 +141,7 @@ table td{border-bottom:1px solid var(--line2)}
 /* 사업자 정보 바닥글 (assets/biz.js) */
 .bizinfo{margin-top:14px;padding-top:14px;border-top:1px solid var(--line2);font-size:13.5px;line-height:1.7;color:var(--sub2)}
 .bizlinks{display:flex;flex-wrap:wrap;gap:2px 0;margin-bottom:6px}
-.bizlinks a{color:var(--sub2);text-decoration:none;font-weight:700;padding:6px 12px 6px 0;min-height:32px;display:inline-flex;align-items:center}
+.bizlinks a{color:var(--sub2);text-decoration:none;font-weight:700;padding:6px 12px 6px 0;min-height:44px;display:inline-flex;align-items:center}
 .bizlinks a b{color:var(--sub);font-weight:900}
 .bizlinks a:hover{text-decoration:underline}
 .bizrows{margin:0;display:flex;flex-wrap:wrap;gap:0 12px}
@@ -167,7 +167,7 @@ table td{border-bottom:1px solid var(--line2)}
 .doc .box.key{background:var(--blue-l);border-color:#C9D8FF}
 .doc .box p{margin:0}
 .doc .toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
-.doc .toc a{font-size:14px;font-weight:700;color:var(--sub);background:var(--gray);border-radius:999px;padding:0 12px;min-height:36px;display:inline-flex;align-items:center;text-decoration:none}
+.doc .toc a{font-size:14px;font-weight:700;color:var(--sub);background:var(--gray);border-radius:999px;padding:0 12px;min-height:44px;display:inline-flex;align-items:center;text-decoration:none}
 
 /* PC(넓은 화면): 휴대폰과 같은 체감 크기로 — 화면 전체를 12.5% 키우고 보조 글자색을 한 단계 진하게(작은 회색 글씨가 흐려 보이던 문제) */
 @media (min-width:1024px){

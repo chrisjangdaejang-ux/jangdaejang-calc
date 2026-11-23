@@ -31,7 +31,7 @@
 <script src="../../assets/stat.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/aplus.css?v=45">
+<link rel="stylesheet" href="../../assets/aplus.css?v=46">
 <script src="../../assets/nw.js?v=1" defer></script>
 <style>
 .wrap{max-width:720px;margin:0 auto;padding:28px 20px 60px}
@@ -215,7 +215,7 @@ const httpsOk = u => !u || /^https:\/\/[A-Za-z0-9.-]+\.[A-Za-z]{2,}(:\d{2,5})?(\
 const formula = v => /^[=+\-@]/.test(v.trim());
 function check() {
   const txt = [['company', '회사명'], ['manager', '담당자 이름'], ['danji', '단지명'], ['sgg', '시·군·구']];
-  for (const [id, n] of txt) { const v = $(id).value.trim(); if (!v) return [id, `${n}을(를) 입력해 주세요.`]; if (formula(v)) return [id, `${n}은(는) = + - @ 기호로 시작할 수 없어요.`]; }
+  for (const [id, n] of txt) { const v = $(id).value.trim(); if (!v) return [id, `${n}${(c=>c>=44032&&c<=55203&&(c-44032)%28?'을':'를')(String(n).slice(-1).charCodeAt(0))} 입력해 주세요.`]; if (formula(v)) return [id, `${n}${(c=>c>=44032&&c<=55203&&(c-44032)%28?'은':'는')(String(n).slice(-1).charCodeAt(0))} = + - @ 기호로 시작할 수 없어요.`]; }
   if (!bizOk($('biz').value)) return ['biz', '사업자등록번호 10자리를 확인해 주세요.'];
   if (!/^(01[016789]\d{7,8}|0[2-6]\d{7,9}|1[5-9]\d{6})$/.test(digits('phone'))) return ['phone', '담당자 연락처를 확인해 주세요.'];
   if (!$('sido').value) return ['sido', '시·도를 골라 주세요.'];

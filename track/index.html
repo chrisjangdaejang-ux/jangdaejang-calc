@@ -29,8 +29,8 @@
 <script src="../assets/track.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/aplus.css?v=45">
-<link rel="stylesheet" href="../assets/layout.css?v=1">
+<link rel="stylesheet" href="../assets/aplus.css?v=46">
+<link rel="stylesheet" href="../assets/layout.css?v=2">
 <script src="../assets/nw.js?v=1" defer></script>
 <script src="../assets/tabbar.js?v=5" defer></script>
 <style>
@@ -198,7 +198,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
     seg($('sH'), (T.h || [6, 12, 24]).map(h => [h, C.HL[h] + ' 뒤', !C.pick(T, S.a, S.s, h)]), S.h, v => { S.h = +v; render(); });
     const H = C.head(T, S.a, S.s, S.h), x = C.pick(T, S.a, S.s, S.h);
     $('hd').textContent = H.title; $('hdSub').textContent = H.sub;
-    $('cS').textContent = `${S.s} ${A.name} · ${C.HL[S.h]} 뒤 · 점선은 50%(반반)이에요. 점선보다 길수록 같은 구 평균보다 더 오른 단지가 많았다는 뜻이에요.`;
+    $('cS').textContent = `${S.s} ${A.name} · ${C.HL[S.h]} 뒤 · 점선은 50%(반반)예요. 점선보다 길수록 같은 구 평균보다 더 오른 단지가 많았다는 뜻이에요.`;
     const J = C.judge(x) || [];
     $('swarn').hidden = !(J.includes('rev') || J.includes('weak'));
     $('swarn').innerHTML = J.includes('rev') ? `<b>이 범위에서는 점수가 반대로 나왔어요.</b> 점수 하위 20%가 상위 20%보다 같은 구 평균을 더 자주 앞섰어요. 이 범위에서는 점수를 믿고 고르기 어려워요.`

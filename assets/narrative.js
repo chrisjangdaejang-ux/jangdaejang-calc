@@ -1026,7 +1026,7 @@
       const t = `${b.y}년에 지어 ${age}년 됐어요` + (md != null ? ` — ${D}에서 거래된 빌라 중간값(${md}년)${Math.abs(age - md) < 1 ? '과 비슷해요.' : `보다 ${Math.round(Math.abs(age - md))}년 ${age > md ? '오래됐어요' : '새것이에요'}.`}` : '.');
       const fact = `${A} ${b.y}년에 지은 ${b.t || '빌라'}로, 올해 ${age}년째예요.`;
       const cmp = md != null ? `최근 거래가 있는 ${D} 빌라 ${ages.length}곳의 건축 연수 중간값은 ${md}년이에요.` : '';
-      const so = md != null ? `그래서 ${D} 거래 빌라 ${ages.length}곳 중 이 건물보다 오래된 곳은 ${older}곳(${Math.round(older / ages.length * 100)}%)이에요.` : `그래서 이 건물은 지은 지 ${age}년이 지났어요.`;
+      const so = md != null ? `그래서 ${D} 거래 빌라 ${ages.length}곳 중 이 건물보다 오래된 곳은 ${older}곳(${Math.round(older / ages.length * 100)}%)예요.` : `그래서 이 건물은 지은 지 ${age}년이 지났어요.`;
       L.push({ k: 'age', t, d: [fact, cmp, '', so] });
     }
     if (z0 && rel <= 1 && z0.b && b.y && (rk === 'o' || rk === 'r')) {
@@ -1412,7 +1412,7 @@
 .nar-chart i{display:inline-block;width:12px;height:3px;vertical-align:middle;margin:0 4px 0 6px}.nar-chart i.me{background:#B8942A}.nar-chart i.gu{background:#B9B2A0}
 .nar-trust{margin:0 0 10px;padding:10px 12px;background:#F8F4E8;border-radius:10px;font-size:14px;line-height:1.6;color:#333;word-break:keep-all}
 .nar-t1{margin:0 0 4px;font-weight:600;color:#3A3220}.nar-t2{margin:2px 0 0;font-size:13px;color:#555}.nar-t2.ref{color:#8C8C8C}
-.nar-tbtn{border:0;background:none;color:#7D6210;font-weight:700;font-size:13.5px;padding:6px 0 0;cursor:pointer;min-height:32px}
+.nar-tbtn{border:0;background:none;color:#7D6210;font-weight:700;font-size:13.5px;padding:6px 0 0;cursor:pointer;min-height:44px}
 .nar-tbtn:after{content:' ▾'}.nar-tbtn[aria-expanded="true"]:after{content:' ▴'}
 .nar-trust-body{margin-top:6px;padding-top:8px;border-top:1px solid #E6DFC8}
 .nar-tone{margin-bottom:8px}.nar-th{display:block;font-size:13px;color:#5A4A1A}.nar-tone.ref .nar-th,.nar-tone.ref li{color:#9A9A9A}
@@ -1435,7 +1435,7 @@
 .w3-t{display:block;font-size:14.5px;line-height:1.5;color:#1F1F1F;word-break:keep-all}
 .w3-o{display:block;font-size:13.5px;line-height:1.6;color:#444;word-break:keep-all;margin-top:1px}
 .w3-d{margin-top:6px;padding:8px 10px;background:rgba(255,255,255,.75);border-radius:8px}
-.w3-alert{margin:6px 0 4px;width:100%;min-height:40px;border:1px solid #B8942A;background:#fff;color:#5A4A1A;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer}
+.w3-alert{margin:6px 0 4px;width:100%;min-height:44px;border:1px solid #B8942A;background:#fff;color:#5A4A1A;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer}
 .w3-msg{display:block;font-size:12.5px;color:#4E5968}.w3-msg:empty{display:none}
 .w3-miss,.w3-pro{margin:8px 0 0;font-size:12.5px;line-height:1.5;color:#6B6B6B;word-break:keep-all}
 @media(min-width:900px){.nar-head{font-size:18.5px}.nar-sum{font-size:15.5px}.w3-grid{grid-template-columns:repeat(auto-fit,minmax(0,1fr))}.w3x .w3-grid{grid-template-columns:1fr}}`;

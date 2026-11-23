@@ -16,7 +16,7 @@
 <script src="../assets/region-pick.js?v=2" defer></script>
 <title>집코드 갈아타기 계산기</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/switch/">
-<meta name="description" content="지금 집을 팔면 양도세를 내고 대출을 갚은 뒤 손에 남는 돈, 새 대출로 갈아탈 수 있는 최대 집값, 취득세, 예산 안에서 미래가치 점수가 높은 단지, 지금 집 유지와 갈아타기 비교까지 한 번에 계산합니다. 2026년 11월 규제 반영.">
+<meta name="description" content="지금 집을 팔면 양도세를 내고 대출을 갚은 뒤 손에 남는 돈, 새 대출로 갈아탈 수 있는 최대 집값, 취득세, 예산 안에서 미래가치 점수가 높은 단지, 지금 집 유지와 갈아타기 비교까지 한 번에 계산해요. 2026년 11월 규제 반영.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="집코드">
 <meta property="og:title" content="집코드 갈아타기 계산기 — 지금 집 팔면 어디까지 갈 수 있을까?">
@@ -33,7 +33,7 @@
 <script>window.JDJ_CONFIG = { tool:'switch', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
-<script src="../assets/share.js?v=11"></script>
+<script src="../assets/share.js?v=12"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/config.js?v=10"></script>
 <script src="../assets/auth.js?v=10"></script>
@@ -45,9 +45,9 @@
 <script src="../assets/loan-core.js?v=5"></script>
 <script src="../assets/rec-core.js?v=5"></script>
 <script src="../assets/mine-core.js?v=20"></script>
-<script src="../assets/price-sheet.js?v=21"></script>
+<script src="../assets/price-sheet.js?v=22"></script>
 <script src="switch-core.js?v=7"></script>
-<script src="../assets/narrative.js?v=18"></script>
+<script src="../assets/narrative.js?v=19"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -325,7 +325,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .taxf a small{font-size:12.5px;font-weight:500;color:#4E5968}
 @media(max-width:1023px){body.jtab-pad .toast{bottom:calc(82px + env(safe-area-inset-bottom))}}   /* 아래 탭 메뉴 위로 */
 </style>
-<link rel="stylesheet" href="../assets/aplus.css?v=45">
+<link rel="stylesheet" href="../assets/aplus.css?v=46">
 <script src="../assets/tabbar.js?v=5" defer></script>
 <script src="../assets/nw.js?v=1" defer></script>
 <style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
@@ -618,7 +618,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 
       <div class="panel section gap" id="gapBox">
         <h2>⑧ 갭 알림 — 지금 집 ↔ 갈아탈 집</h2>
-        <p class="muted" style="font-size:15px;margin:0 0 12px">두 단지를 고르면 최근 3년 가격 차이(갭) 흐름을 보여 드리고, 갭이 좁혀지거나 벌어지면 이메일로 알려 드립니다.</p>
+        <p class="muted" style="font-size:15px;margin:0 0 12px">두 단지를 고르면 최근 3년 가격 차이(갭) 흐름을 보여 드리고, 갭이 좁혀지거나 벌어지면 이메일로 알려 드려요.</p>
         <div class="pick">
           <div class="pk" id="pkMine"><h3>지금 집</h3></div>
           <div class="pk" id="pkTarget"><h3>갈아탈 집</h3></div>
@@ -630,7 +630,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
       <div class="section"><div class="tips" id="tips"></div></div>
 
       <div class="toReport">
-        <div><b>그 돈으로 <em>갈아탈 단지</em>를 골라 드립니다</b><span>손에 남는 돈 기준 실거래 추천 단지 1~10위 · 단지마다 제휴 중개사 연결 · PDF 저장</span></div>
+        <div><b>그 돈으로 <em>갈아탈 단지</em>를 골라 드려요</b><span>손에 남는 돈 기준 실거래 추천 단지 1~10위 · 단지마다 제휴 중개사 연결 · PDF 저장</span></div>
         <a id="premBtn" href="../buy/report/" target="_blank" rel="noopener">갈아탈 단지 추천받기 →</a>
       </div>
 
@@ -667,7 +667,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
   <div class="rules">
     <h3>계산 기준 (2026년 11월)</h3>
     <ul>
-      <li>양도세: 세금 계산기와 같은 계산 방식(소득세법·시행령 기준)으로 계산해요. 1세대 1주택은 2년 이상 보유(취득 당시 조정대상지역이면 2년 거주 포함) 시 양도가 12억까지 비과세, 12억 초과분은 양도차익 × (양도가−12억)/양도가만 과세. 보유기간은 산 날부터 팔 날까지 만 연수로 셉니다.</li>
+      <li>양도세: 세금 계산기와 같은 계산 방식(소득세법·시행령 기준)으로 계산해요. 1세대 1주택은 2년 이상 보유(취득 당시 조정대상지역이면 2년 거주 포함) 시 양도가 12억까지 비과세, 12억 초과분은 양도차익 × (양도가−12억)/양도가만 과세. 보유기간은 산 날부터 팔 날까지 만 연수로 세요.</li>
       <li>장기보유특별공제: 1세대 1주택·거주 2년 이상이면 보유 연 4% + 거주 연 4% (최대 80%), 그 밖에는 보유 연 2% (최대 30%). 정부가 발표한 장기보유특별공제 개편안은 아직 시행 전이라 현행 기준으로 계산</li>
       <li>다주택: 팔 때 조정대상지역이면 2주택 +20%p, 3주택 이상 +30%p 중과(2026.5.10 이후 양도분, 장기보유특별공제 배제). 조정대상지역 여부는 국토교통부 지정·해제 공고 이력으로 판정하고, 일부 지역만 지정됐던 기간은 직접 골라 주세요.</li>
       <li>필요경비를 비워두면 산 가격 기준 1주택 취득세(현행 세율)+지방교육세+중개보수 상한으로 추정. 수리·확장비 등 실제 영수증이 있는 비용은 직접 입력하면 더 정확</li>
@@ -677,13 +677,13 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
       <li>미래가치 전망: 단지 점수(2년·1·3·5·7년)를 과거 여러 때에 그때까지 자료만으로 매긴 뒤 실제 시세와 맞춰 봤어요. 상위 20% 단지가 평균보다 더 오른 횟수가 절반 이상이고 평균으로도 더 오른 기간만 '더 오를 가능성'으로 말하고, 나머지는 '참고'로 보여 드려요.</li>
       <li>새 집 취득세: 세금 계산기와 같은 계산 방식(지방세법 기준). 1주택자는 일시적 2주택 일반세율 1~3% + 지방교육세, 85㎡ 초과 농특세. 2주택 이상은 이 집을 판 뒤 새 집을 사는 것으로 보고 취득 후 주택 수로 중과 여부를 판정. 중개보수는 법정 상한요율 + 부가세</li>
       <li>추천 단지: 내 집 마련 리포트와 같은 자료·점수 기준. 추정 시세는 최근 3개월 실거래 평당가 중간값 × 전용면적(최근 3개월 거래가 없으면 마지막 거래 기준)이며, 실제 호가·매물과 다를 수 있어요.</li>
-      <li>기존 주담대는 매도 대금으로 상환하고, 매도 대금이 새 집 잔금에 쓰인다고 가정했습니다. 실제 세액·한도는 세무사·은행 확인이 필요합니다.</li>
-      <li>이용 통계: 서비스 개선을 위해 방문 횟수·유입 경로·사용한 기능을 익명으로 집계합니다(Google 애널리틱스). 이름·연락처는 수집하지 않으며, 입력한 금액은 저장하지 않고 구간(예: 12~15억)으로만 집계합니다.</li>
+      <li>기존 주담대는 매도 대금으로 상환하고, 매도 대금이 새 집 잔금에 쓰인다고 가정했어요. 실제 세액·한도는 세무사·은행 확인이 필요해요.</li>
+      <li>이용 통계: 서비스 개선을 위해 방문 횟수·유입 경로·사용한 기능을 익명으로 집계해요(Google 애널리틱스). 이름·연락처는 수집하지 않으며, 입력한 금액은 저장하지 않고 구간(예: 12~15억)으로만 집계해요.</li>
     </ul>
   </div>
 </div>
 <div class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집코드 · 팔 때 세금부터, 살 때 대출까지 한 번에</div>
-<div class="toast" id="toast">복사되었습니다</div>
+<div class="toast" id="toast">복사됐어요</div>
 
 <script>
 var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
@@ -973,7 +973,7 @@ $('sSgg').addEventListener('change', async ()=>{
     const tel=String(a.ph||'').replace(/[^\d]/g,'');
     return `<div class="agc"><b>${escH(a.n)}</b><span class="tag">제휴·광고</span><small>${escH(a.ogn)} ${escH(a.dong)} · 대표 ${escH(a.ceo)} · ${escH(a.ph)}</small>${a.intro?`<small style="color:#191F28">${escH(a.intro)}</small>`:''}
       <div class="acts">${tel?`<a href="tel:${tel}" data-a="${a.id}" data-act="call">전화 상담</a>`:''}${window.KChat?KChat.btn(a.kk,{a:a.id,g,name:a.n}):''}</div></div>`;
-  }).join('')+`</div><p class="muted" style="font-size:13.5px;margin:8px 0 0">제휴(광고) 중개사무소입니다. 집코드는 중개 행위에 관여하지 않으며, 거래 조건은 해당 중개사무소에 직접 확인하세요.</p>`;
+  }).join('')+`</div><p class="muted" style="font-size:13.5px;margin:8px 0 0">제휴(광고) 중개사무소예요. 집코드는 중개 행위에 관여하지 않으며, 거래 조건은 해당 중개사무소에 직접 확인하세요.</p>`;
   A.log('rec', ranked.map(a=>a.id).sort().join(','), g, '');
   A.log('imp', ranked[0].id, g, ''); ranked.slice(1).forEach(a=>A.log('imp', a.id, g, ''));
   box.querySelectorAll('[data-act]').forEach(el=>el.addEventListener('click',()=>{ A.log(el.dataset.act, el.dataset.a, g, ''); A.flush(); JDJ.track('agent_'+el.dataset.act,{agent:el.dataset.a, sgg:g, from:'switch'}); }));
@@ -1042,7 +1042,7 @@ function makePicker(el, which, onLoc){
     const units=await gapSggUnits(sd, g); const seen=new Map(), raw=$s('.pq').value;
     units.filter(u=>u[0]===g && aptMatch(u[2]+u[1], t, AG_IX&&AG_IX.sgg[g]&&AG_IX.sgg[g].name, raw, u[2])).forEach(u=>{ const k=u[1]+'|'+u[8]+'|'+u[2]; seen.set(k,(seen.get(k)||0)+u[5]); });
     const items=[...seen.entries()].sort((a,b)=>b[1]-a[1]).slice(0,40);
-    $s('.res').innerHTML=items.map(([k,n])=>`<div data-k="${escH(k)}"><b>${escH(k.split('|')[2])}</b> <span class="mini">${escH(k.split('|')[0])} · 최근 3년 거래 ${n}건</span></div>`).join('')||'<div class="mini">찾는 단지가 없습니다 (최근 3년 동안 거래가 있었던 단지만 나옵니다)</div>';
+    $s('.res').innerHTML=items.map(([k,n])=>`<div data-k="${escH(k)}"><b>${escH(k.split('|')[2])}</b> <span class="mini">${escH(k.split('|')[0])} · 최근 3년 거래 ${n}건</span></div>`).join('')||'<div class="mini">찾는 단지가 없어요 (최근 3년 동안 거래가 있었던 단지만 나와요)</div>';
     $s('.res').querySelectorAll('[data-k]').forEach(d=>d.onclick=()=>{
       const [dong,jb,apt]=d.dataset.k.split('|');
       const bands=units.filter(u=>u[0]===g&&u[1]===dong&&u[8]===jb&&u[2]===apt).sort((a,b)=>a[4]-b[4]);
@@ -1056,7 +1056,7 @@ function makePicker(el, which, onLoc){
         GAP[which]={u, sido:sd, key:[u[0],u[1],u[2],u[3]].join('|'), name:`${u[2]} ${u[3]}`, area:u[4], price:pi.price};
         $s('.sel').innerHTML=`${escH(u[2])} ${escH(u[3])} <small>${escH(AG_IX.sgg[g].name)} ${escH(dong)} · 추정 시세 ${fmt(GAP[which].price)}원 (${piTxt(pi)}${!u[9]?` · 최근 3년 거래 ${u[5]}건 기준`:''})</small>`+PBu(u,'switch_pick','sm')+
           (which==='mine'?`<button class="btn ghost" style="margin-top:6px;font-size:13.5px;padding:6px 10px" id="useSale">이 시세를 예상 매도가에 넣기</button>`:'');
-        const us=$('useSale'); if(us) us.onclick=()=>{ $('sale').value=GAP.mine.price.toLocaleString(); render(); JDJ.track('gap_use_sale'); toast('예상 매도가에 넣었습니다'); };
+        const us=$('useSale'); if(us) us.onclick=()=>{ $('sale').value=GAP.mine.price.toLocaleString(); render(); JDJ.track('gap_use_sale'); toast('예상 매도가에 넣었어요'); };
         if(which==='target'){ $('target').value=GAP.target.price.toLocaleString(); render(); }
         drawGap();
       });
@@ -1092,7 +1092,7 @@ function drawGap(){
       <label class="r"><input type="radio" name="gcond" value="below" checked> 갭이 <input type="number" id="gBelow" value="${(defBelow/10000).toFixed(1)}" step="0.1" min="0.1"> 억 이하로 좁혀지면</label>
       <label class="r"><input type="radio" name="gcond" value="change"> 갭이 지금보다 <input type="number" id="gPct" value="10" step="1" min="1"> % 이상 줄거나 늘면</label>
       <input type="email" id="gMail" placeholder="알림 받을 이메일">
-      <label class="r" style="font-size:13.5px;flex-wrap:nowrap;align-items:flex-start"><input type="checkbox" id="gAgree" style="margin-top:3px"> <span><b>[필수]</b> 갭 알림 발송을 위한 이메일 수집·이용에 동의합니다 (수집 항목: 이메일·관심 단지 / 보관: 알림 해지 시까지 / 메일 하단에서 언제든 해지)</span></label>
+      <label class="r" style="font-size:13.5px;flex-wrap:nowrap;align-items:flex-start"><input type="checkbox" id="gAgree" style="margin-top:3px"> <span><b>[필수]</b> 갭 알림 발송을 위한 이메일 수집·이용에 동의해요 (수집 항목: 이메일·관심 단지 / 보관: 알림 해지 시까지 / 메일 하단에서 언제든 해지)</span></label>
       <label class="r" style="font-size:13.5px;flex-wrap:nowrap;align-items:flex-start"><input type="checkbox" id="gMkt" style="margin-top:3px"> <span><b>[선택]</b> 관심 지역 시장 동향·급매 소식·세미나 안내 등 <b>광고성 정보</b>를 이메일로 받아볼게요. 동의하지 않아도 갭 알림은 그대로 받을 수 있고, 언제든 해지할 수 있어요.</span></label>
       <button class="btnA" id="gSub">알림 신청</button> <span id="gMsg" class="mini"></span>
     </div>`;
@@ -1105,7 +1105,7 @@ function drawGap(){
     $('gSub').disabled=true; msg.style.color='#4E5968'; msg.textContent='등록 중…';
     try{
       await A.post({action:'alert_sub', email:$('gMail').value, agree:true, mine:pack(m), target:pack(t), cond, val, baseGap:gap, marketing:$('gMkt').checked});
-      msg.style.color='#4E6B2E'; msg.textContent='등록되었습니다. 확인 메일을 보내 드렸어요.';
+      msg.style.color='#4E6B2E'; msg.textContent='등록됐어요. 확인 메일을 보내 드렸어요.';
       JDJ.track('gap_alert_sub',{cond, marketing:$('gMkt').checked?1:0});
     }catch(e){ msg.style.color='#A23B2A'; msg.textContent=e.message; $('gSub').disabled=false; }
   };
@@ -1451,7 +1451,7 @@ $('region').addEventListener('change',()=>{setTermOptions();render();});
 $('copyBtn').addEventListener('click',async()=>{
   const {t,net,cash,P,ld,c}=last;
   const txt=`[집코드 갈아타기 계산기]\n현재 집 매도가 ${fmt(t.sale)}원 → 양도세 ${fmt(t.total)}원\n매도 후 손에 남는 돈 ${fmt(net)}원 · 자기자본 ${fmt(cash)}원\n→ ${c.R.name}에서 최대 ${fmt(P)}원까지 갈아타기 가능 (새 대출 ${fmt(ld.L)}원)\n※ 2026년 11월 기준 추정치\n${location.origin+location.pathname}`;
-  try{ await navigator.clipboard.writeText(txt); toast('결과가 복사되었습니다'); }catch(_){ toast('복사가 지원되지 않는 환경입니다'); }
+  try{ await navigator.clipboard.writeText(txt); toast('결과가 복사됐어요'); }catch(_){ toast('복사가 지원되지 않는 환경이에요'); }
 });
 
 $('saleDate').value=TODAY;

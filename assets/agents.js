@@ -19,7 +19,7 @@
       return listP;
     },
     post(body){
-      if (!API) return Promise.reject(new Error('제휴 서버가 아직 연결되지 않았습니다.'));
+      if (!API) return Promise.reject(new Error('제휴 서버가 아직 연결되지 않았어요.'));
       return fetch(API, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)})
         .then(r=>r.json()).then(j=>{ if(!j || !j.ok){ const er = new Error(errText(j && j.err)); er.raw = (j && j.err) || ''; er.code = (j && j.code) || ''; throw er; } return j; });
     },

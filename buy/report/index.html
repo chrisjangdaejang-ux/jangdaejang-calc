@@ -16,7 +16,7 @@
 <script src="../../assets/biz.js?v=2" defer></script>
 <title>집코드 맞춤 분석 리포트</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/buy/report/">
-<meta name="description" content="내 예산으로 살 수 있는 집 중 미래가치가 가장 좋은 집을 실거래가로 골라 추천 이유와 자금 계획까지 정리해 드립니다.">
+<meta name="description" content="내 예산으로 살 수 있는 집 중 미래가치가 가장 좋은 집을 실거래가로 골라 추천 이유와 자금 계획까지 정리해 드려요.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="집코드">
 <meta property="og:title" content="집코드 맞춤 분석 리포트 — 내 조건으로 살 수 있는 단지는?">
@@ -37,25 +37,25 @@
 <script src="../../assets/loan-rules.js?v=3"></script>
 <script src="../../assets/rec-core.js?v=5"></script>
 <script src="../../assets/mine-core.js?v=20"></script>
-<script src="../../assets/price-sheet.js?v=21"></script>
+<script src="../../assets/price-sheet.js?v=22"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/lead.js?v=3"></script>
 <script src="../../assets/config.js?v=10"></script>
 <script src="../../assets/auth.js?v=10"></script>
 <script src="../../assets/alerts-core.js?v=2"></script>
 <script src="../../assets/watch-core.js?v=2"></script>
-<script src="../../assets/watch.js?v=7"></script>
-<script src="../../assets/share.js?v=11"></script>
+<script src="../../assets/watch.js?v=8"></script>
+<script src="../../assets/share.js?v=12"></script>
 <script src="../../tax/tax-engine.js?v=4"></script>
 <script src="../../assets/loan-core.js?v=5"></script>
 <script src="../../assets/kchat.js?v=3"></script>
 <script src="../../assets/plain-words.js?v=16"></script>
-<script src="../../assets/narrative.js?v=18"></script>
+<script src="../../assets/narrative.js?v=19"></script>
 <script src="../../assets/strength.js?v=4"></script>
 <script src="../../assets/policy-view.js?v=3"></script>
 <script src="../../assets/devproj-view.js?v=4"></script>
 <script src="../../assets/src-box.js?v=3"></script>
-<script src="../../assets/tax-box.js?v=6"></script>
+<script src="../../assets/tax-box.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -319,7 +319,7 @@ tr.hl td{background:rgba(184,148,42,.12);font-weight:700}
 .vbadge{display:inline-block;font-size:13.5px;font-weight:700;color:#0E7A4F;background:#E6F5EE;border-radius:999px;padding:2px 10px}
 .rkbasis.vall{color:#0E7A4F}
 </style>
-<link rel="stylesheet" href="../../assets/aplus.css?v=45">
+<link rel="stylesheet" href="../../assets/aplus.css?v=46">
 <script src="../../assets/nw.js?v=1" defer></script>
 <style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
 :root{--gold:#2560E8}
@@ -454,7 +454,7 @@ tr.total td{border-top:1px solid var(--text)}
 .ctbl td.win{background:var(--blue-l)}
 .ctbl tr.grp td{background:var(--gray)}
 .cpick,.cdet{background:var(--gray2);border-color:var(--line);border-radius:16px}
-.cres .bands button{min-height:40px}
+.cres .bands button{min-height:44px}
 /* 제휴 공인중개사 */
 .agopen{border:0;border-radius:14px;min-height:48px;color:#fff}
 .agopen i{color:#E8F0FF}
@@ -462,7 +462,7 @@ tr.total td{border-top:1px solid var(--text)}
 .agcta b em{color:var(--blue)}
 .agcta span{color:var(--sub)}
 .agcta a{background:var(--blue);color:#fff;border-radius:14px}
-.agchip,.agbtn{min-height:40px}
+.agchip,.agbtn{min-height:44px}
 .rvbox{border:1px solid var(--line);border-radius:20px}
 .rvbox .stars button{min-width:44px;min-height:44px}
 .rvbox .tags label:has(input:checked){color:#fff}
@@ -517,7 +517,7 @@ p.premlink{display:block;margin:10px 0 0}
     </div>
   </div>
 
-  <div id="report"><div class="loading">실거래 데이터를 불러오는 중입니다…</div></div>
+  <div id="report"><div class="loading">실거래 데이터를 불러오는 중이에요…</div></div>
   <div data-ad-slot="report_end" data-ad-cat="report" data-ad-after="#report :not(.loading)" hidden></div>
 </div>
 <footer class="foot noprint">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="../../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집코드 · <a href="../../">홈</a></footer>
@@ -890,7 +890,7 @@ function reasons(x){
     r.push(['', x.rel>0 ? `이 단지 평당가는 ${sggName(x.code)} 평균보다 ${Math.round(x.rel*100)}% 낮아요 — ${sggName(x.code)} 안에서 가격 부담이 적은 편이에요` : `이 단지 평당가는 ${sggName(x.code)} 평균보다 ${Math.round(-x.rel*100)}% 높아요 — ${sggName(x.code)} 안에서 선호가 높은 단지예요`, EVK(x,'rel')]);
   }
   if (x.c.capital && x.P>140000 && x.P<=150000) r.push(['c', '이 단지는 15억 바로 아래예요 — 15억을 넘으면 대출 한도가 6억 → 4억으로 줄어요']);
-  if (x.nd.loan.by==='DSR') r.push(['c', '소득(DSR)이 대출 한도를 결정 — 금리 유형에 따라 한도가 달라집니다']);
+  if (x.nd.loan.by==='DSR') r.push(['c', '소득(DSR)이 대출 한도를 결정 — 금리 유형에 따라 한도가 달라져요']);
   const note = noteOf(x.code);
   if (note && note.t && note.t[0]) r.push(['r', note.t[0]]);
   return r;
@@ -993,7 +993,7 @@ async function cmpSearch(){
     return `<div class="it"><b>${esc(u0[2])}</b><small>${esc(sggName(u0[0]))} ${esc(u0[1])}${e.u[0][9]&&e.u[0][9].hh?` · ${e.u[0][9].hh.toLocaleString()}세대`:''}</small>
       <div class="bands">${e.u.sort((a,b)=>a[4]-b[4]).map(u=>{ const p={sd:sd.id,code:u[0],dong:u[1],apt:u[2],band:u[3]}; const k=cmpKey(p);
         return `<button type="button" class="${cmpHas(k)?'on':''}" data-p="${esc(k)}">${cmpHas(k)?'✓ ':'+ '}${esc(u[3])} · 전용 ${u[4]}㎡</button>`; }).join('')}</div></div>`; }).join('')
-    : '<div class="none">찾는 단지가 없습니다. 이름 일부만 넣어 보시거나 구·시를 바꿔 보세요. (최근 3년 실거래가 있는 단지만 나옵니다)</div>';
+    : '<div class="none">찾는 단지가 없어요. 이름 일부만 넣어 보시거나 구·시를 바꿔 보세요. (최근 3년 실거래가 있는 단지만 나와요)</div>';
 }
 function wireCompare(){
   const sel=$('cSido'); if(!sel) return;
@@ -1037,7 +1037,7 @@ async function renderCompare(){
   </div>
   <div class="sec">
     <h2><span class="no">01</span> 비교할 단지 담기</h2>
-    <p class="sub">추천 리포트의 단지는 카드의 <b>＋ 비교에 담기</b>로, 직접 생각해 두신 단지는 아래에서 이름으로 찾아 담으세요. 대출·필요 현금은 위 조건(연소득·보유 현금)으로 계산합니다. <a href="#" id="cmpEdit" class="noprint" style="color:var(--red);font-weight:900">조건 바꾸기</a></p>
+    <p class="sub">추천 리포트의 단지는 카드의 <b>＋ 비교에 담기</b>로, 직접 생각해 두신 단지는 아래에서 이름으로 찾아 담으세요. 대출·필요 현금은 위 조건(연소득·보유 현금)으로 계산해요. <a href="#" id="cmpEdit" class="noprint" style="color:var(--red);font-weight:900">조건 바꾸기</a></p>
     ${cmpSearchHtml()}
   </div>`;
 
@@ -1087,7 +1087,7 @@ async function renderCompare(){
   add('거래량', items.map(x=>`최근 1년 ${x.n}건<small>${x.n>=60?'거래 활발':x.n>=24?'거래 꾸준':'거래 적음 — 매도 기간 여유'}</small>`), items.map(x=>x.n), true);
 
   h += `<div class="sec pb"><h2><span class="no">02</span> 항목별 비교표</h2>
-    <p class="sub">★ 표시는 그 항목에서 가장 유리한 단지입니다. 모바일에서는 표를 옆으로 밀어 보세요.${new Set(items.map(x=>sidoOfCode(x.code))).size>1?' <b>시·도가 다른 단지가 섞여 있어요.</b> 미래가치 점수는 각 시·도 안에서의 순위라, 서로 다른 시·도끼리는 참고용으로 보세요.':''}</p>
+    <p class="sub">★ 표시는 그 항목에서 가장 유리한 단지예요. 모바일에서는 표를 옆으로 밀어 보세요.${new Set(items.map(x=>sidoOfCode(x.code))).size>1?' <b>시·도가 다른 단지가 섞여 있어요.</b> 미래가치 점수는 각 시·도 안에서의 순위라, 서로 다른 시·도끼리는 참고용으로 보세요.':''}</p>
     ${cmpEasy(items)}
     <div class="ctbl"><table><thead><tr><th></th>${items.map(x=>`<th>${esc(x.apt)}<small>${esc(sggName(x.code))} ${esc(x.dong)} · ${esc(x.band)}</small><div class="cps noprint">${PB(x,'report_compare','sm')}</div></th>`).join('')}</tr></thead><tbody>`+
     rows.map(r=> r.grp ? `<tr class="grp"><td colspan="${items.length+1}">${r.label}</td></tr>`
@@ -1141,9 +1141,9 @@ async function renderCompare(){
   q.set('entry.146176170', fmtW(S.income)); q.set('entry.1872979900', fmtW(S.cash));
   q.set('entry.397234060', [...new Set(items.map(x=>sggName(x.code)))].join('·')); q.set('entry.1054811896', OWN_NAME[S.own]);
   q.set('entry.658364183', `[단지 비교] ${items.map(x=>x.apt+' '+x.band).join(' vs ')} ${W?`→ 유리: ${W.apt} `:``}| ${JDJ.label()}`);
-  h += `<div class="cta noprint"><p>마지막 결정, 전문가와 함께 점검해 보세요<small>비교한 단지가 상담 신청서에 자동 입력됩니다 · 1차 진단은 무료</small></p>
+  h += `<div class="cta noprint"><p>마지막 결정, 전문가와 함께 점검해 보세요<small>비교한 단지가 상담 신청서에 자동 입력돼요 · 1차 진단은 무료</small></p>
     <a class="btn primary" data-track="cmp_consult" href="${FORM}?${q.toString().replace(/\+/g,'%20')}" target="_blank" rel="noopener">상담 신청</a></div>
-    <div class="sec"><p class="src">실거래가: 국토교통부 아파트 매매·전월세 실거래가, 단지 정보: 공동주택관리정보시스템(K-apt)·건축물대장. 추정 시세는 같은 단지·평형의 최근 3개월 실거래 중간값이며 호가와 다를 수 있습니다. 대출 한도와 세금은 금융기관·세무 전문가에게 확인하세요.</p></div>
+    <div class="sec"><p class="src">실거래가: 국토교통부 아파트 매매·전월세 실거래가, 단지 정보: 공동주택관리정보시스템(K-apt)·건축물대장. 추정 시세는 같은 단지·평형의 최근 3개월 실거래 중간값이며 호가와 다를 수 있어요. 대출 한도와 세금은 금융기관·세무 전문가에게 확인하세요.</p></div>
   </div>`;
   $('report').innerHTML=h; wireCompare();
   $('cmpEdit').onclick=e=>{e.preventDefault(); $('settings').classList.add('open'); window.scrollTo(0,0);};
@@ -1160,8 +1160,8 @@ async function render(){
   if (MODE==='cmp') return renderCompare();
   let units;
   if (S.sido.any){
-    if (!ALL_UNITS) $('report').innerHTML = `<div class="loading" id="allLoad">전국 실거래 자료를 시·도별로 순서대로 불러오는 중입니다…</div>`;
-    units = await loadAll((i,n,nm)=>{ const el=$('allLoad'); if(el) el.innerHTML = `전국 실거래 자료를 시·도별로 순서대로 불러오는 중입니다 · <b>${i+1} / ${n}</b> ${esc(nm)}<div class="progress" style="margin-top:10px"><i style="width:${Math.round((i+1)/n*100)}%"></i></div><small style="display:block;margin-top:6px">처음 한 번만 받고, 조건을 바꿀 때는 다시 받지 않아요.</small>`; });
+    if (!ALL_UNITS) $('report').innerHTML = `<div class="loading" id="allLoad">전국 실거래 자료를 시·도별로 순서대로 불러오는 중이에요…</div>`;
+    units = await loadAll((i,n,nm)=>{ const el=$('allLoad'); if(el) el.innerHTML = `전국 실거래 자료를 시·도별로 순서대로 불러오는 중이에요 · <b>${i+1} / ${n}</b> ${esc(nm)}<div class="progress" style="margin-top:10px"><i style="width:${Math.round((i+1)/n*100)}%"></i></div><small style="display:block;margin-top:6px">처음 한 번만 받고, 조건을 바꿀 때는 다시 받지 않아요.</small>`; });
   } else units = await loadSido(S.sido.id);
   const groups = [...new Set([...S.sggs].map(groupOf))];
   const ctxBy={}, dsrBy={}, maxBy={};
@@ -1200,7 +1200,7 @@ async function render(){
   /* 1. 요약 */
   h += `<div class="sec">
     <h2><span class="no">01</span> 한눈에 보는 매수 여력</h2>
-    <p class="sub">${GROUP_NAME[main]} 기준입니다. 취득세·중개보수와 기타 비용 ${fmt(S.etc)}까지 모두 뺀 금액입니다.</p>
+    <p class="sub">${GROUP_NAME[main]} 기준이에요. 취득세·중개보수와 기타 비용 ${fmt(S.etc)}까지 모두 뺀 금액이에요.</p>
     <div class="stats">
       <div class="stat key"><div class="k">최대 매수 가능액</div><div class="v">${M?fmtS(M):'-'}</div><div class="d">${GROUP_NAME[main]}</div></div>
       <div class="stat"><div class="k">대출 가능액</div><div class="v">${fmtS(ld.L)}</div><div class="d">${BY_TXT[ld.by]}이 한도 결정</div></div>
@@ -1210,18 +1210,18 @@ async function render(){
   if (groups.length>1){
     h += `<table style="margin-top:14px"><thead><tr><th>지역 구분</th><th class="num">최대 매수 가능액</th><th class="num">대출 가능액</th></tr></thead><tbody>`+
       groups.map(g=>{ const l=loanAt(maxBy[g],ctxBy[g],dsrBy[g]); return `<tr><td>${GROUP_NAME[g]}</td><td class="num">${fmtW(maxBy[g])}</td><td class="num">${fmtW(l.L)}</td></tr>`; }).join('')+`</tbody></table>
-      <p class="note">선택한 지역에 규제지역과 비규제지역이 섞여 있어 대출 기준(LTV·한도)이 다르게 적용됩니다. 단지 추천은 각 단지 위치 기준으로 계산했습니다.</p>`;
+      <p class="note">선택한 지역에 규제지역과 비규제지역이 섞여 있어 대출 기준(LTV·한도)이 다르게 적용돼요. 단지 추천은 각 단지 위치 기준으로 계산했어요.</p>`;
   }
-  if (c.ltv===0) h += `<div class="warn"><b>다주택자는 이 지역에서 주택구입 목적 주담대를 받을 수 없습니다.</b> 현금만으로 가능한 범위입니다.</div>`;
-  if (c.ltv>0 && S.income*0.4 - S.debt <= 0) h += `<div class="warn"><b>추가 대출이 0원으로 계산됐습니다.</b> 기존 대출의 1년 원리금(${fmtW(S.debt)})이 연소득의 40%(${fmtW(S.income*0.4)})를 넘어 DSR 한도가 남지 않습니다.<br>대출 <b>잔액</b>을 넣으셨다면, 1년 동안 실제로 갚는 원금+이자 합계로 고쳐서 다시 확인해 보세요. (위 <b>조건 수정·지역 선택</b>)</div>`;
-  else if (c.ltv>0 && S.debt>0 && ld.by==='DSR') h += `<p class="note">기존 대출 원리금 ${fmtW(S.debt)}이 DSR 한도를 쓰고 있습니다. 기존 대출을 줄이면 매수 가능액이 늘어납니다.</p>`;
+  if (c.ltv===0) h += `<div class="warn"><b>다주택자는 이 지역에서 주택구입 목적 주담대를 받을 수 없어요.</b> 현금만으로 가능한 범위예요.</div>`;
+  if (c.ltv>0 && S.income*0.4 - S.debt <= 0) h += `<div class="warn"><b>추가 대출이 0원으로 계산됐어요.</b> 기존 대출의 1년 원리금(${fmtW(S.debt)})이 연소득의 40%(${fmtW(S.income*0.4)})를 넘어 DSR 한도가 남지 않아요.<br>대출 <b>잔액</b>을 넣으셨다면, 1년 동안 실제로 갚는 원금+이자 합계로 고쳐서 다시 확인해 보세요. (위 <b>조건 수정·지역 선택</b>)</div>`;
+  else if (c.ltv>0 && S.debt>0 && ld.by==='DSR') h += `<p class="note">기존 대출 원리금 ${fmtW(S.debt)}이 DSR 한도를 쓰고 있어요. 기존 대출을 줄이면 매수 가능액이 늘어나요.</p>`;
   h += `</div>`;
 
   /* 2. 자금 계획표 */
   const own = S.cash, leftover = S.cash - (M - ld.L + cd.total + S.etc);
   h += `<div class="sec">
     <h2><span class="no">02</span> 자금 계획표</h2>
-    <p class="sub">최대 매수 가능액 ${fmtW(M)} 집을 산다고 가정한 돈의 흐름입니다.</p>
+    <p class="sub">최대 매수 가능액 ${fmtW(M)} 집을 산다고 가정한 돈의 흐름이에요.</p>
     <div class="twocol">
       <table><thead><tr><th>들어오는 돈</th><th class="num">금액</th></tr></thead><tbody>
         <tr><td>보유 현금 (자기자본)</td><td class="num">${fmtW(own)}</td></tr>
@@ -1236,8 +1236,8 @@ async function render(){
         <tr class="total"><td>합계</td><td class="num">${fmtW(M+cd.total+S.etc)}</td></tr>
       </tbody></table>
     </div>
-    ${leftover>=0 ? `<div class="ok">모든 비용을 낸 뒤 남는 현금: <b>${fmtW(leftover)}</b>. 실제 계약 때는 비상금으로 월 상환액 6개월분(${fmtW(mon*6)}) 정도를 따로 두는 것을 권합니다.</div>` : ''}
-    <p class="note">취득세는 잔금일로부터 60일 이내 신고·납부합니다. 국민주택채권 할인 비용은 별도이며, 금액은 추정치입니다.</p>
+    ${leftover>=0 ? `<div class="ok">모든 비용을 낸 뒤 남는 현금: <b>${fmtW(leftover)}</b>. 실제 계약 때는 비상금으로 월 상환액 6개월분(${fmtW(mon*6)}) 정도를 따로 두는 것을 권해요.</div>` : ''}
+    <p class="note">취득세는 잔금일로부터 60일 이내 신고·납부해요. 국민주택채권 할인 비용은 별도이며, 금액은 추정치예요.</p>
   </div>`;
 
   /* 3. 대출 시나리오 */
@@ -1251,29 +1251,29 @@ async function render(){
   }
   h += `<div class="sec pb">
     <h2><span class="no">03</span> 대출 시나리오 비교</h2>
-    <p class="sub">금리 유형과 금리 변화에 따라 살 수 있는 집값이 어떻게 달라지는지 비교했습니다. (${GROUP_NAME[main]}, 스트레스 DSR 반영)</p>
+    <p class="sub">금리 유형과 금리 변화에 따라 살 수 있는 집값이 어떻게 달라지는지 비교했어요. (${GROUP_NAME[main]}, 스트레스 DSR 반영)</p>
     <table class="stk"><thead><tr><th>금리 유형</th><th>적용 금리</th><th class="num">대출 가능액</th><th class="num">최대 매수가</th><th class="num">월 상환액</th></tr></thead><tbody>`+
     rows.map(x=>`<tr class="${x.cur?'hl':''}"><td class="sh">${TYPE_NAME[x.t]}${x.cur?' (현재)':''} <span class="stk-r">${(S.rate+x.dr).toFixed(1)}%${x.dr?' (+1%p)':''}</span></td><td class="stk-c"><span class="nw">${(S.rate+x.dr).toFixed(1)}%</span>${x.dr?' <small>(+1%p)</small>':''}</td><td class="num" data-l="대출 가능액"><span class="sv">${fmt(x.L)}</span></td><td class="num" data-l="최대 매수가"><span class="sv">${fmt(x.P)}</span></td><td class="num" data-l="월 상환액"><span class="sv">${Math.round(x.m).toLocaleString()}만</span></td></tr>`).join('')+
     `</tbody></table>`;
   const best = rows.filter(x=>x.dr===0).sort((a,b)=>b.P-a.P)[0];
   const cur = rows.find(x=>x.cur);
-  if (best && cur && best.P>cur.P) h += `<div class="ok"><b>${TYPE_NAME[best.t]}</b>을 선택하면 지금보다 <b>${fmtW(best.P-cur.P)}</b> 더 비싼 집까지 볼 수 있습니다. 스트레스 금리 가산이 가장 작기 때문입니다.</div>`;
-  else if (ld.by!=='DSR') h += `<p class="note">현재는 소득(DSR)보다 ${BY_TXT[ld.by]}이 한도를 정하고 있어 금리 유형을 바꿔도 매수 가능액 차이가 크지 않습니다.</p>`;
+  if (best && cur && best.P>cur.P) h += `<div class="ok"><b>${TYPE_NAME[best.t]}</b>을 선택하면 지금보다 <b>${fmtW(best.P-cur.P)}</b> 더 비싼 집까지 볼 수 있어요. 스트레스 금리 가산이 가장 작기 때문이에요.</div>`;
+  else if (ld.by!=='DSR') h += `<p class="note">현재는 소득(DSR)보다 ${BY_TXT[ld.by]}이 한도를 정하고 있어 금리 유형을 바꿔도 매수 가능액 차이가 크지 않아요.</p>`;
   h += `</div>`;
 
   /* 4. 추천 단지 */
   h += `<div class="sec pb">
     <h2><span class="no">04</span> 예산 맞춤 추천 단지</h2>
-    <p class="sub">국토교통부 실거래가로 최근 3개월 중간값 시세를 추정해, 지금 조건으로 실제 살 수 있는 단지 중 미래가치가 가장 좋은 단지를 골랐습니다.${S.sido.any?' 지역 상관없음: 자료가 있는 전 시·도에서 찾고, 한 지역에 몰리지 않게 시·도당 3곳까지 보여 드려요.':''}</p>
+    <p class="sub">국토교통부 실거래가로 최근 3개월 중간값 시세를 추정해, 지금 조건으로 실제 살 수 있는 단지 중 미래가치가 가장 좋은 단지를 골랐어요.${S.sido.any?' 지역 상관없음: 자료가 있는 전 시·도에서 찾고, 한 지역에 몰리지 않게 시·도당 3곳까지 보여 드려요.':''}</p>
     <p class="rkbasis">순위 기준: 미래가치 점수 순, 같으면 예산·거래량 고려.</p>
     <p class="rkbasis vall">✓ 카드의 미래가치 점수: ${esc(vTxt)}</p>`;
   let near = [], rkTop = '';
   if (!picked.length){
     near = nearMisses(units, ctxBy, dsrBy);
-    h += `<div class="empty">지금 조건으로 바로 살 수 있는 단지를 선택한 지역·평형에서 찾지 못했습니다.<br>위의 <b>조건 수정·지역 선택</b>에서 지역을 넓히거나 평형을 추가해 보세요.</div>` + (S.sggs.size < sggsOfSido(S.sido).length ? `<div class="widen"><span>다른 구까지 함께 찾아볼까요?</span><button type="button" id="widenBtn">${esc(S.sido.name)} 전체로 넓히기</button></div>` : '');
+    h += `<div class="empty">지금 조건으로 바로 살 수 있는 단지를 선택한 지역·평형에서 찾지 못했어요.<br>위의 <b>조건 수정·지역 선택</b>에서 지역을 넓히거나 평형을 추가해 보세요.</div>` + (S.sggs.size < sggsOfSido(S.sido).length ? `<div class="widen"><span>다른 구까지 함께 찾아볼까요?</span><button type="button" id="widenBtn">${esc(S.sido.name)} 전체로 넓히기</button></div>` : '');
     if (near.length){
       h += `<h3 style="font-size:16px;margin:18px 0 8px">조금만 더 준비하면 가능한 단지</h3>
-      <p class="sub">선택한 지역에서 부족한 금액이 가장 적은 단지입니다. 목표로 잡고 자금 계획을 세워 보세요.</p>
+      <p class="sub">선택한 지역에서 부족한 금액이 가장 적은 단지예요. 목표로 잡고 자금 계획을 세워 보세요.</p>
       <table class="near"><thead><tr><th style="width:44px">순위</th><th>단지</th><th>평형</th><th class="num">추정 시세</th><th class="num">대출</th><th class="num">부족한 현금</th></tr></thead><tbody>`+
       near.map((x,i)=>`<tr><td><span class="nrank">${i+1}</span></td><td><b>${esc(x.apt)}</b> ${WS(x)}<br><small>${esc(sggName(x.code))} ${esc(x.dong)}</small></td><td>${x.band}</td><td class="num">${fmtS(x.P)}</td><td class="num">${fmtS(x.nd.loan.L)}</td><td class="num" style="color:var(--red);font-weight:900">${fmt(x.nd.need-S.cash)}</td></tr>
       <tr class="agtr"><td></td><td colspan="5"><div class="cps noprint">${PB(x,'report_near','sm')}</div><div class="agt" data-g="${x.code}" data-k="${esc(x.code+'|'+x.dong+'|'+x.apt)}"></div></td></tr>`).join('')+
@@ -1292,16 +1292,16 @@ async function render(){
     }
     if (picked.some(x=>x.fx)) h += `<details class="fvhow"><summary>추천 단지는 어떤 기준으로 골랐나요? <span>(평가 원칙 보기)</span></summary>
       <ol>
-        <li><b>같은 지역 안에서의 상대 가치</b> — 같은 구·같은 평형끼리 비교해, 지금 가격이 입지와 수요에 비해 저평가인지 고평가인지 봅니다. 동네 대장 단지와의 격차도 함께 봅니다.</li>
-        <li><b>가격의 체력</b> — 하락기에 얼마나 버텼는지, 직전 고점을 얼마나 회복했는지, 최근 흐름이 완만한지 가파른지를 실거래로 확인합니다.</li>
-        <li><b>교통</b> — 기존 역까지의 거리와, 국토교통부·지자체가 공식 발표한 신설 노선의 진행 단계(계획·착공·개통 등)를 반영합니다. 같은 호재라도 단계에 따라 가격에 반영되는 시점이 다르다는 점을 과거 사례로 확인했습니다.</li>
-        <li><b>공급</b> — 주변에 발표된 신도시·공공택지와 지역 입주 물량, 미분양을 봅니다. 대규모 입주는 일정 기간 매물과 전세 공급을 늘리기 때문에, 선택하신 보유 기간과 입주 일정이 겹치는지 함께 알려 드립니다.</li>
-        <li><b>재건축·재개발</b> — 서울시·국토교통부·부산시 공식 자료로 정비사업이 어느 단계까지 왔는지, 대지지분과 용적률로 본 사업성, 완공 후 예상 가치와 분담금을 반영한 기대 차익을 봅니다.</li>
-        <li><b>생활 수요</b> — 학군을 찾아 실제로 이사 오는 수요(교육부 학교알리미 공시), 단지 규모와 연식, 전세가율로 본 실거주 수요, 거래가 꾸준한지를 봅니다.</li>
-        <li><b>지역 전망</b> — 통계청·국토교통부 자료로 인구·세대, 일자리, 공급 부담을 봐서 어느 지역이 더 유리한지 함께 판단합니다.</li>
-        <li><b>예상 보유 기간</b> — 1년·2년·3년·5년·7년 예측을 각각 따로 학습해, 선택하신 기간에 맞는 점수를 보여 드립니다. 기간이 길수록 중요한 요인이 달라지기 때문입니다. 과거에 그대로 써 봤을 때 잘 맞은 기간만 사용하고, 10년 이상은 과거 자료로 맞춰 볼 수 있는 범위를 넘는 장기 전망으로 따로 안내합니다.</li>
+        <li><b>같은 지역 안에서의 상대 가치</b> — 같은 구·같은 평형끼리 비교해, 지금 가격이 입지와 수요에 비해 저평가인지 고평가인지 봐요. 동네 대장 단지와의 격차도 함께 봐요.</li>
+        <li><b>가격의 체력</b> — 하락기에 얼마나 버텼는지, 직전 고점을 얼마나 회복했는지, 최근 흐름이 완만한지 가파른지를 실거래로 확인해요.</li>
+        <li><b>교통</b> — 기존 역까지의 거리와, 국토교통부·지자체가 공식 발표한 신설 노선의 진행 단계(계획·착공·개통 등)를 반영해요. 같은 호재라도 단계에 따라 가격에 반영되는 시점이 다르다는 점을 과거 사례로 확인했어요.</li>
+        <li><b>공급</b> — 주변에 발표된 신도시·공공택지와 지역 입주 물량, 미분양을 봐요. 대규모 입주는 일정 기간 매물과 전세 공급을 늘리기 때문에, 선택하신 보유 기간과 입주 일정이 겹치는지 함께 알려 드려요.</li>
+        <li><b>재건축·재개발</b> — 서울시·국토교통부·부산시 공식 자료로 정비사업이 어느 단계까지 왔는지, 대지지분과 용적률로 본 사업성, 완공 후 예상 가치와 분담금을 반영한 기대 차익을 봐요.</li>
+        <li><b>생활 수요</b> — 학군을 찾아 실제로 이사 오는 수요(교육부 학교알리미 공시), 단지 규모와 연식, 전세가율로 본 실거주 수요, 거래가 꾸준한지를 봐요.</li>
+        <li><b>지역 전망</b> — 통계청·국토교통부 자료로 인구·세대, 일자리, 공급 부담을 봐서 어느 지역이 더 유리한지 함께 판단해요.</li>
+        <li><b>예상 보유 기간</b> — 1년·2년·3년·5년·7년 예측을 각각 따로 학습해, 선택하신 기간에 맞는 점수를 보여 드려요. 기간이 길수록 중요한 요인이 달라지기 때문이에요. 과거에 그대로 써 봤을 때 잘 맞은 기간만 사용하고, 10년 이상은 과거 자료로 맞춰 볼 수 있는 범위를 넘는 장기 전망으로 따로 안내해요.</li>
       </ol>
-      <p>항목마다 얼마나 무게를 둘지는 사람이 정하지 않았습니다. <b>과거 각 시점에 알려져 있던 정보(발표된 교통·공급·정비사업 계획 포함)로 점수를 매겼을 때, 이후 실제로 더 오른 단지를 가장 잘 맞힌 방식</b>을 데이터로 찾아 적용하고, 그 결과를 위의 검증 성적으로 공개합니다. 세부 산정 방식은 집코드 고유의 분석 모델로 공개하지 않습니다.</p>
+      <p>항목마다 얼마나 무게를 둘지는 사람이 정하지 않았어요. <b>과거 각 시점에 알려져 있던 정보(발표된 교통·공급·정비사업 계획 포함)로 점수를 매겼을 때, 이후 실제로 더 오른 단지를 가장 잘 맞힌 방식</b>을 데이터로 찾아 적용하고, 그 결과를 위의 검증 성적으로 공개해요. 세부 산정 방식은 집코드 고유의 분석 모델로 공개하지 않아요.</p>
       <p class="src">자료: 국토교통부 실거래가·정비사업·공공택지 발표, 서울시·부산시 정비사업 현황, 교육부 학교알리미, 통계청 KOSIS, 공동주택관리정보시스템(K-apt) — 자동 갱신</p>
     </details>`;
     const ringOf = x => (x.fx && x.fx.fv!=null) ? {v:x.fx.fv, k:'미래가치'} : {v:'–', k:'점수 준비 중'};
@@ -1341,7 +1341,7 @@ async function render(){
       </div>`;
     }).join('') + `</div>` +
     ((picked.length<10 && S.sggs.size < sggsOfSido(S.sido).length) ? `<div class="widen"><span>선택한 지역에서 예산에 맞는 단지는 <b>${picked.length}곳</b>입니다. 범위를 넓히면 더 많은 후보를 볼 수 있어요.</span><button type="button" id="widenBtn">${esc(S.sido.name)} 전체로 넓히기</button></div>` : '') + `
-    <p class="note">추정 시세는 같은 단지·같은 평형대의 최근 3개월 실거래 중간값(전용면적 기준 환산)이며 호가와 다를 수 있습니다. 층·향·동에 따라 실제 가격은 달라집니다. 역까지 거리와 학교 배정은 지도에서 꼭 확인하세요.</p>`;
+    <p class="note">추정 시세는 같은 단지·같은 평형대의 최근 3개월 실거래 중간값(전용면적 기준 환산)이며 호가와 다를 수 있어요. 층·향·동에 따라 실제 가격은 달라져요. 역까지 거리와 학교 배정은 지도에서 꼭 확인하세요.</p>`;
     h += `<div id="agentSec" class="agsec"></div>`;
   }
   h += `</div>`;
@@ -1352,7 +1352,7 @@ async function render(){
   const noteKeys = withNotes.map(noteKey);
   h += `<div class="sec">
     <h2><span class="no">05</span> 추천 지역 교통·개발 포인트</h2>
-    <p class="sub">${NOTES.asOf} 기준 공공기관 발표 내용이며, 괄호 안이 발표 기관입니다. 개통·준공 일정은 바뀔 수 있습니다.</p>`;
+    <p class="sub">${NOTES.asOf} 기준 공공기관 발표 내용이며, 괄호 안이 발표 기관이에요. 개통·준공 일정은 바뀔 수 있어요.</p>`;
   if (withNotes.length){
     h += withNotes.map(code=>{
       const n=noteOf(code), s=IX.sgg[code], ch=s?change6(s.s):null;
@@ -1360,7 +1360,7 @@ async function render(){
         <ul>${(n.t||[]).map(t=>`<li><b>교통</b> ${esc(t)}</li>`).join('')}${(n.d||[]).map(t=>`<li><b>개발</b> ${esc(t)}</li>`).join('')}</ul></div>`;
     }).join('');
   } else {
-    h += `<div class="empty">추천 지역의 교통·개발 포인트는 상담에서 자세히 안내해 드립니다.</div>`;
+    h += `<div class="empty">추천 지역의 교통·개발 포인트는 상담에서 자세히 안내해 드려요.</div>`;
   }
   h += `</div>`;
 
@@ -1374,14 +1374,14 @@ async function render(){
     <h2><span class="no">07</span> 매수 전 체크리스트</h2>
     <p class="sub">계약 전에 순서대로 확인하세요.</p>
     <ul class="check">
-      <li><b>은행 사전 상담</b> — 이 리포트의 대출 가능액은 추정치입니다. 감정가·신용·소득 인정 방식에 따라 달라지므로 2곳 이상 은행에서 한도와 금리를 확인하세요.</li>
-      ${anyReg?`<li><b>토지거래허가</b> — 서울 전역과 경기 규제지역은 토지거래허가구역입니다. 실거주 목적으로 관할 지자체 허가를 받은 뒤 계약해야 하므로 허가 기간을 일정에 넣어 두세요.</li>
-      <li><b>전입 의무</b> — 규제지역 주담대는 6개월 안에 전입해야 합니다. 세입자가 있는 집은 대출 실행이 어렵습니다.</li>`:''}
-      ${S.own==='one'?`<li><b>기존 주택 처분 기한</b> — 처분조건부 대출은 정해진 기한 안에 기존 주택을 팔아야 합니다. 기한을 넘기면 대출 회수와 세금 추징이 생길 수 있습니다.</li>`:''}
+      <li><b>은행 사전 상담</b> — 이 리포트의 대출 가능액은 추정치예요. 감정가·신용·소득 인정 방식에 따라 달라지므로 2곳 이상 은행에서 한도와 금리를 확인하세요.</li>
+      ${anyReg?`<li><b>토지거래허가</b> — 서울 전역과 경기 규제지역은 토지거래허가구역이에요. 실거주 목적으로 관할 지자체 허가를 받은 뒤 계약해야 하므로 허가 기간을 일정에 넣어 두세요.</li>
+      <li><b>전입 의무</b> — 규제지역 주담대는 6개월 안에 전입해야 해요. 세입자가 있는 집은 대출 실행이 어려워요.</li>`:''}
+      ${S.own==='one'?`<li><b>기존 주택 처분 기한</b> — 처분조건부 대출은 정해진 기한 안에 기존 주택을 팔아야 해요. 기한을 넘기면 대출 회수와 세금 추징이 생길 수 있어요.</li>`:''}
       <li><b>등기부등본·건축물대장</b> — 근저당·가압류·위반건축물 여부를 계약 전에 확인하세요.</li>
-      ${(main!=='local' || picked.some(x=>isCap(x.code)))?`<li><b>15억 경계</b> — 수도권·규제지역은 15억 초과 시 대출 한도가 4억, 25억 초과 시 2억으로 줄어듭니다.</li>`:''}
-      ${main==='local'?`<li><b>지방 스트레스 금리</b> — 지방 주담대의 완화된 스트레스 금리는 2026년 12월 31일까지입니다. 내년에 대출을 실행한다면 한도를 다시 확인하세요.</li>`:''}
-      <li><b>취득세 신고</b> — 잔금일로부터 60일 이내 신고·납부합니다.</li>
+      ${(main!=='local' || picked.some(x=>isCap(x.code)))?`<li><b>15억 경계</b> — 수도권·규제지역은 15억 초과 시 대출 한도가 4억, 25억 초과 시 2억으로 줄어들어요.</li>`:''}
+      ${main==='local'?`<li><b>지방 스트레스 금리</b> — 지방 주담대의 완화된 스트레스 금리는 2026년 12월 31일까지예요. 내년에 대출을 실행한다면 한도를 다시 확인하세요.</li>`:''}
+      <li><b>취득세 신고</b> — 잔금일로부터 60일 이내 신고·납부해요.</li>
       <li><b>현장 확인</b> — 역까지 걷는 시간, 학교 배정, 일조·소음은 지도와 현장에서 직접 확인하세요.</li>
     </ul>
   </div>`;
@@ -1400,7 +1400,7 @@ async function render(){
   q.set('entry.146176170', fmtW(S.income)); q.set('entry.1872979900', fmtW(S.cash));
   q.set('entry.397234060', selTxt); q.set('entry.1054811896', OWN_NAME[S.own]);
   q.set('entry.658364183', `[맞춤 리포트] 최대 ${fmtW(M)} · 추천 1순위 ${picked[0]?picked[0].apt:'-'} | ${JDJ.label()}`);
-  h += `<div class="cta noprint"><p>이 리포트를 바탕으로 1:1 전략을 받아보세요<small>1차 진단은 무료 · 심층 컨설팅은 유료로 별도 안내 · 리포트 내용이 신청서에 자동 입력됩니다</small></p>
+  h += `<div class="cta noprint"><p>이 리포트를 바탕으로 1:1 전략을 받아보세요<small>1차 진단은 무료 · 심층 컨설팅은 유료로 별도 안내 · 리포트 내용이 신청서에 자동 입력돼요</small></p>
     <a class="btn primary" data-track="report_consult" href="${FORM}?${q.toString().replace(/\+/g,'%20')}" target="_blank" rel="noopener">상담 신청</a></div>
   <p class="premlink noprint" style="text-align:center"><a href="${JB.SITE}premium/" data-track="report_to_premium">프리미엄 리포트 안내 (단지 심층 분석 · 비교 패키지) ›</a></p>
   </div>`;
@@ -1503,7 +1503,7 @@ async function fillAgents(picked){
   if (!A || !A.ready || !picked.length) return;
   /* 공인중개사 모집 배너 — 항상 크게 */
   if (box) box.innerHTML = `<div class="agcta noprint"><div><b>공인중개사님, <em>이 단지들 옆에</em> 사무소를 노출하세요</b>
-    <span>고객이 추천받거나 비교하는 단지 카드에 바로 연결됩니다 · 시범 기간 무료 · 사무소 구 + 원하는 구 2곳</span></div>
+    <span>고객이 추천받거나 비교하는 단지 카드에 바로 연결돼요 · 시범 기간 무료 · 사무소 구 + 원하는 구 2곳</span></div>
     <a href="../../agent/" target="_blank" rel="noopener" data-track="agent_join_click">제휴 신청하기 →</a></div>`;
   const res = await A.list();
   const list = (res && res.agents) || [];
@@ -1560,7 +1560,7 @@ function openAgent(id, g, k){
       ${a.dj.length?`<dt>매물 단지</dt><dd>${a.dj.filter(x=>x.startsWith(g+'|')).map(x=>esc(x.split('|')[2])).join(', ')||'-'}</dd>`:''}</dl>
     ${a.intro?`<p style="margin:0;font-size:15px">${esc(a.intro)}</p>`:''}
     <div class="acts">${tel?`<a class="btn primary" href="tel:${tel}" data-act="call">전화하기</a>`:''}${agChat(a,g,k,'btn')}</div>
-    <p class="disc">이 중개사무소는 집코드 리포트 제휴(광고) 사무소입니다. 집코드는 중개 행위에 관여하지 않으며, 매물 정보와 거래 조건은 해당 중개사무소에 직접 확인하세요.</p></div>`;
+    <p class="disc">이 중개사무소는 집코드 리포트 제휴(광고) 사무소예요. 집코드는 중개 행위에 관여하지 않으며, 매물 정보와 거래 조건은 해당 중개사무소에 직접 확인하세요.</p></div>`;
   bg.querySelectorAll('[data-act]').forEach(el=>el.addEventListener('click', ()=>{
     const t = el.dataset.act; A.log(t, id, g, k); A.flush(); JDJ.track('agent_'+t, {agent:id, sgg:g});
     rvTicket(id, a.t==='m'?a.nm+' 공인중개사':a.n);
@@ -1606,7 +1606,7 @@ function rvForm(id, name){
     let vid=''; try{ vid=localStorage.getItem('jdj_vid')||''; }catch(e){}
     window.JDJ_AGENTS.post({action:'review', a:id, vid, s:S, tags, text}).then(()=>{
       const o=rvTickets(); if(o[id]) o[id].done=1; rvSave(o); JDJ.track('agent_review',{agent:id, s:S});
-      box.innerHTML='<b>감사합니다!</b> 리뷰가 등록됐어요. 다른 분들이 좋은 공인중개사를 고르는 데 큰 도움이 돼요.'; setTimeout(close, 2500);
+      box.innerHTML='<b>감사해요!</b> 리뷰가 등록됐어요. 다른 분들이 좋은 공인중개사를 고르는 데 큰 도움이 돼요.'; setTimeout(close, 2500);
     }).catch(e=>{ msg.textContent=e.message; });
   };
 }
@@ -1692,7 +1692,7 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ const bg=$('agm'
     if (PL.autoGloss) PL.autoGloss($('report'));
     JDJ.track('report_view');
   }catch(e){
-    $('report').innerHTML = `<div class="empty">실거래 데이터를 불러오지 못했습니다. 잠시 후 새로고침해 주세요.</div>`;
+    $('report').innerHTML = `<div class="empty">실거래 데이터를 불러오지 못했어요. 잠시 후 새로고침해 주세요.</div>`;
     console.error(e);
   }
 })();

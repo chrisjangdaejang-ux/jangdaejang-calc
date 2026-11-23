@@ -26,11 +26,11 @@
 <script src="../../assets/stat.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/aplus.css?v=45">
+<link rel="stylesheet" href="../../assets/aplus.css?v=46">
 <script src="../../assets/nw.js?v=1" defer></script>
-<link rel="stylesheet" href="../../assets/pay.css?v=3">
+<link rel="stylesheet" href="../../assets/pay.css?v=4">
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/pay.js?v=6"></script>
+<script src="../../assets/pay.js?v=7"></script>
 </head>
 <body>
 <header class="top">
@@ -39,12 +39,12 @@
 </header>
 <main class="pay">
   <div class="eyebrow">프리미엄 리포트 · 결제</div>
-  <h1 id="ft">결제가 완료되지 않았습니다</h1>
+  <h1 id="ft">결제가 완료되지 않았어요</h1>
   <div class="msg err" id="fm"></div>
   <section class="card2">
     <h2>안내</h2>
     <ul style="margin:0;padding-left:20px;font-size:14.5px;color:var(--sub)">
-      <li>결제가 완료되지 않아 <b>금액은 청구되지 않았습니다.</b> 카드사 승인 문자가 왔다면 자동 취소되며, 취소 시점은 카드사마다 다를 수 있습니다.</li>
+      <li>결제가 완료되지 않아 <b>금액은 청구되지 않았어요.</b> 카드사 승인 문자가 왔다면 자동 취소되며, 취소 시점은 카드사마다 다를 수 있어요.</li>
       <li>같은 상품으로 다시 결제하려면 아래 [다시 결제하기]를 눌러 주세요.</li>
       <li>문제가 계속되면 화면 아래 고객문의로 주문번호와 함께 알려 주세요.</li>
     </ul>
@@ -60,8 +60,8 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
   const Q = new URLSearchParams(location.search);
   const code = Q.get('code') || '', msg = Q.get('message') || '', oid = Q.get('orderId') || '';
   const cancel = code === 'PAY_PROCESS_CANCELED' || code === 'USER_CANCEL';
-  $('ft').textContent = cancel ? '결제를 취소했습니다' : '결제가 완료되지 않았습니다';
-  $('fm').textContent = cancel ? '결제창에서 결제를 취소하셨습니다. 금액은 청구되지 않았습니다.' : (msg || '결제 중 문제가 생겼습니다.');
+  $('ft').textContent = cancel ? '결제를 취소했어요' : '결제가 완료되지 않았어요';
+  $('fm').textContent = cancel ? '결제창에서 결제를 취소하셨어요. 금액은 청구되지 않았어요.' : (msg || '결제 중 문제가 생겼어요.');
   $('fk').innerHTML = (oid ? `<dt>주문번호</dt><dd>${esc(oid)}</dd>` : '') + (code ? `<dt>오류 코드</dt><dd>${esc(code)}</dd>` : '');
   let back = ''; try { back = sessionStorage.getItem('jdj_pay_back') || ''; } catch(e){}
   if (back.indexOf(JB.SITE + 'premium/checkout/?') === 0) $('again').href = back;

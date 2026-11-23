@@ -99,9 +99,9 @@
 .ja .btn2{font:inherit;font-size:15px;font-weight:700;min-height:46px;padding:0 16px;border-radius:12px;border:1px solid #E5E8EB;background:#fff;color:#191F28;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
 .ja .btn2.p{background:#2560E8;border-color:#2560E8;color:#fff}
 .ja .chipz{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
-.ja .chipz span{display:inline-flex;align-items:center;gap:4px;font-size:14px;font-weight:700;background:#fff;border:1px solid #C9D8FF;color:#1F56E0;border-radius:999px;padding:4px 6px 4px 12px;min-height:36px}
+.ja .chipz span{display:inline-flex;align-items:center;gap:4px;font-size:14px;font-weight:700;background:#fff;border:1px solid #C9D8FF;color:#1F56E0;border-radius:999px;padding:4px 6px 4px 12px;min-height:44px}
 .ja .chipz span.ro{padding-right:12px}
-.ja .chipz button{font:inherit;border:0;background:none;color:#4E5968;min-width:30px;min-height:30px;cursor:pointer;font-size:16px;line-height:1}
+.ja .chipz button{font:inherit;border:0;background:none;color:#4E5968;min-width:30px;min-height:44px;cursor:pointer;font-size:16px;line-height:1}
 .ja .ed{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;margin:6px 0 8px}
 @media(max-width:520px){.ja .ed{grid-template-columns:1fr 1fr}.ja .ed .add{grid-column:1/-1}}
 .ja label.l{display:block;font-size:13.5px;font-weight:700;color:#4E5968;margin-bottom:4px}

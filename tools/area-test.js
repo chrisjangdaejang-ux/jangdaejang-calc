@@ -30,7 +30,7 @@ check('분양 화면에 관심 지역 상자', [/id="areaBox"/.test(rd('bunyang/
 check('청약 화면 위쪽 표시', [/id="areaStrip"/.test(rd('chungyak/index.html')), /JDJ_AREA\.mountStrip/.test(rd('chungyak/index.html'))], [true, true]);
 check('첫 화면 분양 링크 배지', /JDJ_AREA\.badge\(/.test(rd('index.html')), true);
 const sw = rd('sw.js');
-check('서비스 워커 캐시 목록', sw.includes("'./assets/area-watch.js?v=6'"), true);
+check('서비스 워커 캐시 목록', sw.includes("'./assets/area-watch.js?v=8'"), true);
 check('공고 자료는 관심 지역이 있을 때만 받음', /if \(!p\.list\.length\) return Promise\.resolve\(\{ n: 0/.test(rd('assets/area-watch.js')), true);
 
 const today = new Date().toISOString().slice(0, 10), old = new Date(Date.now() - 800 * 86400000).toISOString().slice(0, 10);

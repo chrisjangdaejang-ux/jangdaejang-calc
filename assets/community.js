@@ -114,7 +114,7 @@
 .cm-msg{margin:8px 0 0;font-size:14.5px;line-height:1.55}.cm-msg.err{color:#C2410C}.cm-msg.ok{color:#0E7A4F}
 .cm-rep{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line,#E5E8EB)}
 .cm-rep p{flex-basis:100%;margin:0;font-size:13.5px;color:var(--sub2,#4E5968);line-height:1.55}
-.cm-chip{font:inherit;font-size:13.5px;font-weight:700;min-height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--line,#E5E8EB);background:#fff;color:var(--sub,#3E4754);cursor:pointer}
+.cm-chip{font:inherit;font-size:13.5px;font-weight:700;min-height:44px;padding:0 12px;border-radius:999px;border:1px solid var(--line,#E5E8EB);background:#fff;color:var(--sub,#3E4754);cursor:pointer}
 .cm-chip[aria-pressed="true"]{border-color:#C2410C;color:#C2410C;background:#FDECE4}
 .cm-board{margin:12px 0 0;padding:12px 14px;border-radius:14px;background:var(--creamc,#FBF8EF);border:1px solid var(--creamb,#EFE6CC);font-size:14.5px;line-height:1.6}
 .cm-board b{font-weight:800}

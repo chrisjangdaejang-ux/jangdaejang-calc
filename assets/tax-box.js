@@ -64,7 +64,7 @@
 .txb label.l{display:block;font-size:13.5px;font-weight:700;color:var(--sub,#3E4754);margin-bottom:4px}
 .txb .in{display:flex;align-items:center;gap:6px;background:var(--gray,#F2F4F6);border-radius:12px;padding:4px 12px;border:2px solid transparent;min-height:48px}
 .txb .in:focus-within{border-color:var(--blue,#2560E8)}
-.txb .in input,.txb .in select{border:0;outline:none;background:transparent;font:inherit;font-size:16px;font-weight:700;flex:1;min-width:0;color:var(--text,#191F28);padding:0;min-height:40px;box-shadow:none}
+.txb .in input,.txb .in select{border:0;outline:none;background:transparent;font:inherit;font-size:16px;font-weight:700;flex:1;min-width:0;color:var(--text,#191F28);padding:0;min-height:44px;box-shadow:none}
 .txb .in input[type=date]{font-size:14.5px;letter-spacing:-.3px}
 .txb .in span{font-size:14px;font-weight:700;color:var(--sub2,#4E5968);white-space:nowrap}
 .txb .out{background:var(--gray2,#F9FAFB);border:1px solid var(--line,#E5E8EB);border-radius:14px;padding:12px 14px;margin-top:4px}

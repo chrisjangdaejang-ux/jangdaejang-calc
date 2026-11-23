@@ -37,7 +37,7 @@
 .lay-toc{border:1px solid var(--line);border-radius:16px;background:#fff;padding:10px 8px}
 .lay-toc>b{display:block;font-size:var(--fs-sm);font-weight:700;color:var(--sub2);padding:2px 10px 6px}
 .lay-toc ol{list-style:none;margin:0;padding:0}
-.lay-toc a{display:flex;align-items:center;min-height:38px;padding:0 10px;border-radius:10px;color:var(--sub);text-decoration:none;font-size:14.5px;font-weight:700;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-left:3px solid transparent}
+.lay-toc a{display:flex;align-items:center;min-height:44px;padding:0 10px;border-radius:10px;color:var(--sub);text-decoration:none;font-size:14.5px;font-weight:700;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-left:3px solid transparent}
 .lay-toc a:hover{background:var(--gray2);color:var(--text)}
 .lay-toc a.on{color:var(--blue);background:var(--blue-l);border-left-color:var(--blue)}
 .lay-top{display:flex;align-items:center;justify-content:center;min-height:var(--tap);border-radius:12px;background:var(--gray);color:var(--sub);font-size:14px;font-weight:700;text-decoration:none}
@@ -100,7 +100,7 @@
   .mlist-hd b{display:block;font-size:17px;font-weight:900;letter-spacing:-.3px}
   .mlist-hd small{display:block;font-size:13px;color:var(--sub2);line-height:1.5;margin-top:2px}
   .mlist-sort{display:flex;gap:6px;margin-top:8px}
-  .mlist-sort button{font:inherit;font-size:13.5px;font-weight:700;min-height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--sub2);cursor:pointer}
+  .mlist-sort button{font:inherit;font-size:13.5px;font-weight:700;min-height:44px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--sub2);cursor:pointer}
   .mlist-sort button[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-l);color:var(--blue)}
   .mlist ol{flex:1;min-height:0;overflow:auto;list-style:none;margin:0;padding:4px 8px 12px;overscroll-behavior:contain}
   .mlist li button{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:center;width:100%;min-height:56px;padding:9px 10px;border:0;border-bottom:1px solid var(--line2);background:none;text-align:left;font:inherit;color:var(--text);cursor:pointer;border-radius:10px}

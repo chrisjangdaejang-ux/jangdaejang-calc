@@ -33,7 +33,7 @@
 <script>window.JDJ_CONFIG = { tool:'mine', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
-<script src="../assets/share.js?v=11"></script>
+<script src="../assets/share.js?v=12"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/lead.js?v=3"></script>
 <script src="../assets/config.js?v=10"></script>
@@ -41,10 +41,10 @@
 <script src="../assets/savefb.js?v=1"></script>
 <script src="../assets/alerts-core.js?v=2"></script>
 <script src="../assets/watch-core.js?v=2"></script>
-<script src="../assets/watch.js?v=7"></script>
+<script src="../assets/watch.js?v=8"></script>
 <script src="../assets/kchat.js?v=3"></script>
 <script src="../assets/plain-words.js?v=16"></script>
-<script src="../assets/narrative.js?v=18"></script>
+<script src="../assets/narrative.js?v=19"></script>
 <script src="../assets/strength.js?v=4"></script>
 <script src="../assets/conf.js?v=2"></script>
 <script src="../assets/life-view.js?v=3"></script>
@@ -52,7 +52,7 @@
 <script src="../assets/mine-core.js?v=20"></script>
 <script src="../assets/ask-core.js?v=5"></script>
 <script src="../assets/ask.js?v=3"></script>
-<script src="../assets/price-sheet.js?v=21"></script>
+<script src="../assets/price-sheet.js?v=22"></script>
 <script src="../assets/mapjump.js?v=3"></script>
 <script src="../assets/offi-core.js?v=6"></script>
 <script src="../assets/offi-view.js?v=13"></script>
@@ -61,15 +61,15 @@
 <script src="../assets/rent-core.js?v=6"></script>
 <script src="../assets/villa-core.js?v=1"></script>
 <script src="../assets/villa-view.js?v=4"></script>
-<script src="../assets/community.js?v=3"></script>
+<script src="../assets/community.js?v=4"></script>
 <script src="../assets/policy-view.js?v=3"></script>
 <script src="../assets/devproj-view.js?v=4"></script>
 <script src="../assets/src-box.js?v=3"></script>
-<script src="../assets/tax-box.js?v=6"></script>
+<script src="../assets/tax-box.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/aplus.css?v=45">
-<link rel="stylesheet" href="../assets/layout.css?v=1">
+<link rel="stylesheet" href="../assets/aplus.css?v=46">
+<link rel="stylesheet" href="../assets/layout.css?v=2">
 <script src="../assets/layout.js?v=1" defer></script>
 <script src="../assets/tabbar.js?v=5" defer></script>
 <script src="../assets/nw.js?v=1" defer></script>
@@ -725,7 +725,7 @@ function wireResult(d, u, sm, AT){
   $('res').querySelectorAll('[data-hspan]').forEach(b => b.onclick = () => { S.hspan = +b.dataset.hspan; $('res').querySelectorAll('[data-hspan]').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); }); drawCharts(u, IX.sgg[d.code]); });
   const jb = $('jrBox'); if (jb) jb.addEventListener('toggle', () => { if (jb.open) drawCharts(u, IX.sgg[d.code]); });
   const bp = $('bp');
-  bp.addEventListener('input', () => { const v = num(bp.value); bp.value = v ? v.toLocaleString() : ''; $('bpHint').textContent = v ? M.won(v) : '만원 단위로 넣어 주세요'; });
+  bp.addEventListener('input', () => { const v = num(bp.value); bp.value = v ? v.toLocaleString() : ''; $('bpHint').textContent = bpWon(v) || '만원 단위로 넣어 주세요'; });
   $('saveBtn').onclick = () => {
     const h = {sd:S.sd, code:d.code, dong:d.dong, jibun:d.jibun, apt:d.apt, band:S.band, bp:num(bp.value) || null, bd:$('bd').value || '', t:new Date().toISOString().slice(0, 10)};
     const ap = AT && AT.length ? M.areaPick(AT, S.ar) : null; if (ap) h.ar = ap.a;   // 평형 안 전용면적이 여럿이면 고른(또는 기본) 면적도 함께 저장
@@ -832,7 +832,7 @@ function wireHome(el, h, u, u0){
     }
   });
   const ib = el.querySelector('.hbp');
-  ib.addEventListener('input', () => { const v = num(ib.value); ib.value = v ? v.toLocaleString() : ''; el.querySelector('.hbpH').textContent = v ? M.won(v) : ''; });
+  ib.addEventListener('input', () => { const v = num(ib.value); ib.value = v ? v.toLocaleString() : ''; el.querySelector('.hbpH').textContent = bpWon(v); });
   el.querySelector('.hsave').onclick = async () => {
     const list = loadHomes(), cur = list.find(x => M.homeId(x) === id); if (!cur) return;
     cur.bp = num(ib.value) || null; cur.bd = el.querySelector('.hbd').value || '';
@@ -844,6 +844,9 @@ function wireHome(el, h, u, u0){
     SF.ok(null, '✓ 매수가·시기를 저장했어요. 매수가 대비 변동을 다시 계산했어요.', { after: at });
   };
 }
+
+/* 매수가 칸 아래 안내: 넣은 값을 원 단위로 읽어 주고, 1,000(=1,000만원)보다 작으면 억 단위로 잘못 넣은 것일 수 있어 바로 알려 줌 */
+function bpWon(v){ return v ? M.won(v) + (v < 1000 ? ' — 혹시 억 원이면 만원 단위로 넣어 주세요(예: 9억 5천만 원 → 95,000)' : '') : ''; }
 
 /* ---------- 시작 ---------- */
 async function init(){

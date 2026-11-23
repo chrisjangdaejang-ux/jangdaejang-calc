@@ -37,10 +37,10 @@
 <script src="../assets/loan-rules.js?v=3"></script>
 <script src="../assets/loan-core.js?v=5"></script>
 <script src="../assets/mine-core.js?v=20"></script>
-<script src="../assets/price-sheet.js?v=21"></script>
+<script src="../assets/price-sheet.js?v=22"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/aplus.css?v=45">
+<link rel="stylesheet" href="../assets/aplus.css?v=46">
 <script src="../assets/tabbar.js?v=5" defer></script>
 <script src="../assets/nw.js?v=1" defer></script>
 <style>
@@ -442,7 +442,7 @@ function bindText(r, o){
 function calc(){
   const o = inputs(), box = $('res');
   const miss = [!S.g && '지역', !o.price && '집값', !o.income && '연소득', o.rate == null && '예상 금리'].filter(Boolean);
-  if (miss.length) { miniOn = false; miniUpd(); box.innerHTML = `<div class="empty">${esc(miss.join('·'))}을(를) 넣으면 바로 계산해요.${o.rate == null && miss.length === 1 ? ' 은행 상담 때 안내받은 금리를 넣거나, 아래 4.0~5.5% 중에서 골라 보세요.' : ''}</div>`; rateHint(); return; }
+  if (miss.length) { miniOn = false; miniUpd(); box.innerHTML = `<div class="empty">${esc(miss.join('·'))}${(c=>c>=44032&&c<=55203&&(c-44032)%28?'을':'를')(String(esc(miss.join('·'))).slice(-1).charCodeAt(0))} 넣으면 바로 계산해요.${o.rate == null && miss.length === 1 ? ' 은행 상담 때 안내받은 금리를 넣거나, 아래 4.0~5.5% 중에서 골라 보세요.' : ''}</div>`; rateHint(); return; }
   rateHint();
   const r = L.limit({ price: o.price, g: S.g, own: S.own, income: o.income, debt: o.debt, rtype: S.rtype, band: o.band, term: o.term, rate: o.rate, lender: S.lender });
   const [w1, w2] = bindText(r, o), ab = Math.min(r.a, r.b);

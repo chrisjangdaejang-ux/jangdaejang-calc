@@ -1,5 +1,5 @@
 /* 장대장 청약 엔진 — 가점 계산 · 1순위/특별공급 간이 판정 · 예정 공고 예상 당첨 가점(커트라인) 범위
-   브라우저 안에서만 계산합니다(입력값을 서버로 보내지 않음). node 테스트: node tools/chungyak-test.js
+   브라우저 안에서만 계산해요(입력값을 서버로 보내지 않음). node 테스트: node tools/chungyak-test.js
    근거: 「주택공급에 관한 규칙」(국토교통부령 제1592호, 2026. 6. 15. 시행) — 국가법령정보센터(law.go.kr)
      · 가점 산정: 별표 1(가점제 적용기준)
      · 가점제·추첨제 비율: 제28조 제2항(85㎡ 이하)·제4항(85㎡ 초과), 추첨 물량 무주택 우선: 제28조 제8항
@@ -14,15 +14,15 @@ const CY = (() => {
   const fmtD = d => `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
   // 무주택기간: 1년 미만 2점, 1년마다 +2, 15년 이상 32점 (별표 1)
   function homeless(a, ref) {
-    if (a.own) return { pts: 0, why: '세대원 중 주택을 가진 사람이 있어 무주택기간 점수는 0점으로 계산했습니다.' };
-    const birth = d8(a.birth); if (!birth) return { pts: 0, why: '생년월일이 없습니다.' };
+    if (a.own) return { pts: 0, why: '세대원 중 주택을 가진 사람이 있어 무주택기간 점수는 0점으로 계산했어요.' };
+    const birth = d8(a.birth); if (!birth) return { pts: 0, why: '생년월일이 없어요.' };
     const at30 = addYears(birth, 30);
     let start = at30, basis = `만 30세가 된 ${fmtD(at30)}`;
     const mar = a.married ? d8(a.marDate) : null;
     if (mar && mar < at30) { start = mar; basis = `30세 전 혼인신고일 ${fmtD(mar)}`; }
     const sold = a.soldDate ? d8(a.soldDate) : null;
     if (sold && sold > start) { start = sold; basis = `마지막으로 집을 처분한 ${fmtD(sold)}`; }
-    if (start > ref) return { pts: 0, why: `무주택기간은 ${basis}부터 셉니다. 기준일에 아직 시작 전이라 0점입니다(만 30세 미만 미혼이면 0점).` };
+    if (start > ref) return { pts: 0, why: `무주택기간은 ${basis}부터 세요. 기준일에 아직 시작 전이라 0점이에요(만 30세 미만 미혼이면 0점).` };
     const m = months(start, ref), y = Math.floor(m / 12);
     const pts = Math.min(32, 2 + 2 * y);
     const band = y >= 15 ? '15년 이상' : (y === 0 ? '1년 미만' : `${y}년 이상 ${y + 1}년 미만`);
@@ -40,7 +40,7 @@ const CY = (() => {
   function spouseScore(m) { return m == null ? 0 : m < 12 ? 1 : m < 24 ? 2 : 3; }
   function account(a, ref) {
     const j = d8(a.accDate);
-    if (!j || a.noAcc) return { pts: 0, why: '청약통장이 없으면 가점제 청약을 할 수 없습니다(0점으로 표시).' };
+    if (!j || a.noAcc) return { pts: 0, why: '청약통장이 없으면 가점제 청약을 할 수 없어요(0점으로 표시).' };
     const m = Math.max(0, months(j, ref)), own = accScore(m);
     let why = `본인 가입 ${fmtD(j)}부터 ${ymTxt(m)} → ${own}점`;
     let sp = 0;
@@ -84,7 +84,7 @@ function eligibility(a, e, ref) {
   function priv(reg) {
     const bad = [], unk = [], ok = [];
     const need = reg === 'y' ? 24 : cap ? 12 : 6;
-    if (a.noAcc || !a.accDate) bad.push('청약통장이 없습니다');
+    if (a.noAcc || !a.accDate) bad.push('청약통장이 없어요');
     else if (acc < need) bad.push(`가입 ${acc}개월 — ${need}개월 이상 필요`);
     else ok.push(`가입 ${acc}개월(필요 ${need}개월)`);
     if (reg !== 'y' && cap) unk.push('시·도지사가 가입기간을 최대 24개월까지 늘려 공고할 수 있어요');
@@ -103,7 +103,7 @@ function eligibility(a, e, ref) {
   function pub(reg) {
     const bad = [], unk = [], ok = [];
     const need = reg === 'y' ? 24 : cap ? 12 : 6;
-    if (a.noAcc || !a.accDate) bad.push('청약통장이 없습니다');
+    if (a.noAcc || !a.accDate) bad.push('청약통장이 없어요');
     else if (acc < need) bad.push(`가입 ${acc}개월 — ${need}개월 이상 필요`);
     else ok.push(`가입 ${acc}개월(필요 ${need}개월)`);
     if (e.cnt === '') unk.push(`월납입금 ${need}회 이상 납입 여부를 확인하세요`);

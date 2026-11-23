@@ -1,7 +1,7 @@
 /* 장대장 프리미엄 리포트 화면 (premium/view/) — 결제 확인 후에만 호출
-   - 무료 리포트(buy/report/)와 같은 공개 실거래 자료(jangdaejang-data data/)와 같은 표시 문구 규칙으로 단지 상세를 보여 줍니다.
-   - 미래가치 점수는 자료 파일에 이미 계산되어 들어 있는 값을 그대로 씁니다(점수 계산식·가중치는 이 파일에 없습니다).
-   - 대출·필요 현금은 공개된 대출 규제(LTV·DSR·가격구간 한도)와 취득세·중개보수 법정 기준으로 계산합니다(무료 리포트와 같은 기준). */
+   - 무료 리포트(buy/report/)와 같은 공개 실거래 자료(jangdaejang-data data/)와 같은 표시 문구 규칙으로 단지 상세를 보여 줘요.
+   - 미래가치 점수는 자료 파일에 이미 계산되어 들어 있는 값을 그대로 써요(점수 계산식·가중치는 이 파일에 없어요).
+   - 대출·필요 현금은 공개된 대출 규제(LTV·DSR·가격구간 한도)와 취득세·중개보수 법정 기준으로 계산해요(무료 리포트와 같은 기준). */
 (function () {
   var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   const P = window.JDJ_PAY, PL = window.JDJ_PLAIN, esc = P.esc, DATA = P.DATA, PY = 3.3058;
@@ -49,7 +49,7 @@
   const ym = v => v ? `${String(v).slice(0, 4)}.${String(v).slice(4)}` : '';
 
   function chart(series, months) {
-    const v = series.map((y, i) => [i, y]).filter(p => p[1] > 0); if (v.length < 2) return '<p class="links">최근 거래가 적어 시세 흐름 그래프를 그리지 않았습니다.</p>';
+    const v = series.map((y, i) => [i, y]).filter(p => p[1] > 0); if (v.length < 2) return '<p class="links">최근 거래가 적어 시세 흐름 그래프를 그리지 않았어요.</p>';
     const W = 640, H = 170, L = 46, R = 10, T = 12, B = 26;
     const ys = v.map(p => p[1]), y0 = Math.min(...ys) * 0.97, y1 = Math.max(...ys) * 1.03, n = series.length - 1;
     const sx = x => L + x / n * (W - L - R), sy = y => T + (1 - (y - y0) / (y1 - y0 || 1)) * (H - T - B);
@@ -150,7 +150,7 @@
         regionUsed: !!(ctx.MODEL && ctx.MODEL.region && ctx.MODEL.region.used), jibun: x.jb, pol: ctx.POL, dev: ctx.DEVP ? { data: ctx.DEVP, u: { code: x.code, dong: x.dong, jibun: x.jb }, o: { apt: x.apt, sggName: c => (IX.sgg[c] || {}).name || '' } } : null }),
         { id: 'narP' + i, premium: true, c: { s: x.series, IX, code: x.code, apt: x.apt, sgg: g.name || '', sido: PL.regionInfo(IX, x.code).short } }) : ''}
       ${f.fv != null ? PL.easy(esc(`이 단지는 앞으로 2년 동안 다른 아파트보다 더 오를 가능성을 매긴 순위에서 ${fvRank(x, ctx)}예요.`)) : ''}
-      <ul class="pr-reasons">${rs.map(li).join('') || '<li>이 단지는 아직 미래가치 점수를 낼 자료가 부족합니다.</li>'}</ul>
+      <ul class="pr-reasons">${rs.map(li).join('') || '<li>이 단지는 아직 미래가치 점수를 낼 자료가 부족해요.</li>'}</ul>
       ${x._why ? PL.whyTable(f, x._why, { sgg: g.name || '', sido: PL.regionInfo(IX, x.code).short }, esc) : ''}</div>
       <div class="pr-sec" data-sec="hz"><h3>보유 기간별 미래가치</h3>
       ${okH.length ? PL.easy(esc(`과거에 그대로 써 봤을 때 잘 맞은 ${okH.join('·')} 점수를 중심으로 보세요.` + (refH.length ? ` ${refH.join('·')} 점수는 맞은 횟수가 적어 참고로만 보세요.` : ''))) : ''}
@@ -189,7 +189,7 @@
   function condHtml() {
     if (S._ro) return `<p class="pr-condp">${S._ro === 'money' ? `대출 계산 조건: 연소득 ${fmt(S.income)} · 보유 현금 ${fmt(S.cash)} · ${OWN_NAME[S.own]} · ${TYPE_NAME[S.rtype] || '주기형'} ${S.rate}% · ${S.term}년 · 기타 비용 ${fmt(S.etc)}` : ''}</p>`;
     const o = (v, t) => `<option value="${v}" ${S.own === v ? 'selected' : ''}>${t}</option>`;
-    return `<section class="pr-cond noprint"><b>내 조건</b> <small>바꾸면 대출·필요 현금이 바로 다시 계산됩니다(이 기기에만 저장).</small>
+    return `<section class="pr-cond noprint"><b>내 조건</b> <small>바꾸면 대출·필요 현금이 바로 다시 계산돼요(이 기기에만 저장).</small>
       <div class="pr-cgrid">
         <label>연소득(만원)<input id="cI" inputmode="numeric" value="${S.income}"></label>
         <label>보유 현금(만원)<input id="cC" inputmode="numeric" value="${S.cash}"></label>
@@ -206,7 +206,7 @@
     if (opt.cond) { const c = opt.cond; Object.assign(S, { income: +c.income || S.income, cash: c.cash != null ? +c.cash : S.cash, own: OWN_NAME[c.own] ? c.own : S.own, rate: +c.rate || S.rate, rtype: TYPE_RATIO[c.rtype] != null ? c.rtype : S.rtype, term: +c.term || S.term }); }
     if (opt.readOnly) S._ro = opt.readOnly;
     if (opt.cond) S._tmp = 1;
-    box.innerHTML = '<div class="msg info"><span class="spin"></span>리포트를 만드는 중입니다…</div>';
+    box.innerHTML = '<div class="msg info"><span class="spin"></span>리포트를 만드는 중이에요…</div>';
     const j = async u => { try { const r = await fetch(DATA + u); return r.ok ? r.json() : null; } catch (e) { return null; } };
     const [IX, MODEL, MH, EV, SP, POL] = await Promise.all([P.index(), j('model.json'), j('model_h.json'), j('evidence.json'), j('supply.json'), NARON ? j('policy.json') : null]);
     const ctx = { IX, MODEL, MH, EV, SP, POL, DEVP: NARON && window.JDJDev ? await window.JDJDev.load(DATA).catch(() => null) : null };
@@ -230,11 +230,11 @@
           <p class="pr-str" data-jdj-str="report" hidden style="margin:12px 0 0;font-size:14.5px;line-height:1.6"></p>
         </div>`) + `
         ${condHtml()}
-        ${miss.length ? `<div class="msg err">최근 실거래 자료에서 찾지 못한 단지가 있습니다: ${miss.map(p => esc(p.apt + ' ' + p.band)).join(', ')}. 시스템 문제로 받지 못한 내용은 환불 정책에 따라 전액 환불해 드립니다.</div>` : ''}
+        ${miss.length ? `<div class="msg err">최근 실거래 자료에서 찾지 못한 단지가 있어요: ${miss.map(p => esc(p.apt + ' ' + p.band)).join(', ')}. 시스템 문제로 받지 못한 내용은 환불 정책에 따라 전액 환불해 드려요.</div>` : ''}
         ${compareHtml(items, ctx)}
         ${items.map((x, i) => unitHtml(x, ctx, i, items.length)).join('')}
-        <section class="pr-soon"><b>심층 분석은 순차 제공됩니다</b><p>1~10년 가격 시나리오(보수·기준·낙관), 비슷한 조건이었던 과거 단지 사례 비교, 보유 기간별 세금(양도세·보유세) 계산은 준비되는 대로 이 리포트에 추가됩니다. 같은 링크(또는 주문번호)로 열람 기간 동안 추가 비용 없이 보실 수 있습니다.</p></section>
-        <p class="pr-disc">국토교통부 실거래가 등 공공기관 공식 자료로 만든 과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="${JB.SITE}about/">서비스 소개</a>에서 볼 수 있어요. 실제 대출 한도와 세금은 금융기관·세무 전문가에게 확인하세요. 집코드는 부동산 중개를 하지 않습니다. · 작성 집코드</p>`;
+        <section class="pr-soon"><b>심층 분석은 순차 제공돼요</b><p>1~10년 가격 시나리오(보수·기준·낙관), 비슷한 조건이었던 과거 단지 사례 비교, 보유 기간별 세금(양도세·보유세) 계산은 준비되는 대로 이 리포트에 추가돼요. 같은 링크(또는 주문번호)로 열람 기간 동안 추가 비용 없이 보실 수 있어요.</p></section>
+        <p class="pr-disc">국토교통부 실거래가 등 공공기관 공식 자료로 만든 과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="${JB.SITE}about/">서비스 소개</a>에서 볼 수 있어요. 실제 대출 한도와 세금은 금융기관·세무 전문가에게 확인하세요. 집코드는 부동산 중개를 하지 않아요. · 작성 집코드</p>`;
       const on = (id, k, num) => { const e = document.getElementById(id); if (!e) return; e.onchange = () => { const v = num ? parseFloat(String(e.value).replace(/[^0-9.]/g, '')) : e.value; if (!num || v > 0) S[k] = v; save(); draw(); }; };
       on('cI', 'income', true); on('cC', 'cash', true); on('cO', 'own', false); on('cR', 'rate', true);
       if (NARON) box.querySelectorAll('.nar').forEach(el => { const x = items[+el.id.slice(4)];
