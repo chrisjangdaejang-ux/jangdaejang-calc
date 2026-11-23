@@ -92,7 +92,7 @@
     opt = opt || {};
     const tel = String(c.tel || '').replace(/[^0-9]/g, '');
     return `<div class="dp-card${opt.small ? ' sm' : ''}">${c.img ? `<img class="dp-face" src="${esc(c.img)}" alt="" loading="lazy">` : `<span class="dp-face none" aria-hidden="true">${esc(String(c.office || '').slice(0, 1))}</span>`}
-      <div class="dp-cb"><b class="dp-on">${esc(c.office)}</b> <span class="dp-badge">${c.found ? '창립 파트너' : '동네 파트너'}</span>${c.intro ? `<p class="dp-intro">${esc(c.intro)}</p>` : ''}${legalHtml(c)}
+      <div class="dp-cb"><b class="dp-on">${esc(c.office)}</b> <span class="dp-badge">${c.found ? '창립 파트너' : '동네 파트너'}</span>${c.intro && !opt.small ? `<p class="dp-intro">${esc(c.intro)}</p>` : ''}${legalHtml(c)}
       ${opt.line ? `<p class="dp-line">“${esc(opt.line)}”</p>` : ''}${!opt.nocall ? `<div class="dp-acts" style="margin-top:4px">${tel ? `<a class="dp-call" href="tel:${esc(tel)}" data-dp-call="${esc(c.id)}">전화하기</a>` : ''}${opt.noreport ? '' : `<button type="button" data-dp-prep="${esc(c.id)}">이 사무소 신고</button>`}</div>` : ''}</div></div>`;
   }
   const CSS = `.dp-sec{border:1px solid #EFE6CC;background:#FBF8EF;border-radius:18px;padding:16px;margin:18px 0}

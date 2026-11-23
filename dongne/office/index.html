@@ -51,7 +51,7 @@
       + '<h1>' + esc(p.office) + '</h1>' + (p.intro ? '<p>' + esc(p.intro) + '</p>' : '')
       + '<dl><dt>소재지</dt><dd>' + esc(p.addr) + '</dd><dt>등록번호</dt><dd>' + esc(p.reg) + '</dd><dt>성명</dt><dd>' + esc(p.kind === 'member' ? '대표 ' + p.ceo + ' · 소속공인중개사 ' + p.name : '대표 ' + p.name) + '</dd><dt>연락처</dt><dd id="tel">[전화번호 보기]를 누르면 보여요</dd></dl>'
       + '<div class="acts"><button type="button" class="btn primary" id="rv">전화번호 보기</button><button type="button" class="btn" data-dp-prep="' + esc(p.id) + '">이 사무소 신고</button></div>'
-      + '<p class="note">' + esc(DP.site()) + '은 중개를 하지 않아요. 이 정보는 사무소가 직접 내고 공공 자료로 확인한 내용이에요.</p></section>';
+      + '<p class="note">이 정보는 사무소가 직접 내고 공공 자료로 확인한 내용이에요. 중개는 사무소가 직접 해요.</p></section>';
     DP.style(); DP.bind(app);
     var rv = document.getElementById('rv');
     rv.onclick = function () { JDJ_SAVEFB.busy(rv, '불러오는 중…'); DP.post({ action: 'dpOffice', id: id, reveal: true, v: DP.vid() }).then(function (k) {
