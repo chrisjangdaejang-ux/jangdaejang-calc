@@ -17,7 +17,7 @@
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/auth.js?v=10"></script>
 <script src="../../assets/pay.js?v=5"></script>
-<script src="../../assets/brief-core.js?v=10"></script>
+<script src="../../assets/brief-core.js?v=11"></script>
 <script src="../../assets/share.js?v=11"></script>
 <script src="../../assets/pro-report.js?v=7"></script>
 <script src="../../assets/client-brief.js?v=5"></script>
@@ -30,6 +30,8 @@
 .pick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .pick select,.inp{font:inherit;font-size:16px;min-height:48px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--text);width:100%;box-sizing:border-box}
 .pick .full{grid-column:1/-1}
+.repBox{margin:10px 0 4px;padding:10px;border:1px dashed var(--line);border-radius:12px;background:#FBF8EF}
+.repBox .btn{width:100%}
 .al{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
 .al li{display:inline-flex;align-items:center;gap:4px;border:1px solid #D6E2FF;background:#F4F7FF;border-radius:999px;padding:0 4px 0 12px;min-height:40px;font-weight:700;font-size:15px}
 .al button{border:0;background:none;font-size:20px;min-width:36px;min-height:36px;cursor:pointer;color:var(--sub2)}
@@ -131,6 +133,8 @@ async function draw(note){
       <div class="pick"><select id="sd" aria-label="시·도"></select><select id="sg" aria-label="시·군·구"></select>
         <select id="dn" class="full" aria-label="동"><option value="">구 전체</option></select><button type="button" class="btn full" id="add">이 지역 넣기</button></div>
       <ul class="al" id="al"></ul>
+      ${r.adm ? `<div class="repBox" id="repBox"><button type="button" class="btn full" id="repAdd">시·도마다 대표 지역 1곳씩 한 번에 넣기</button>
+        <p class="note" style="margin:4px 0 0">운영자만 보여요. 전국 시·도마다 대표 시·군·구 1곳씩(17곳)을 지금 목록 뒤에 더해요. 이미 있는 곳은 다시 넣지 않아요. 넣은 뒤 아래 [저장하기]를 눌러야 저장돼요.</p></div>` : ''}
       <label class="fl" for="apts">관심 단지(쉼표로 구분, ${r.adm ? '운영자: 제한 없음' : curT.apts + '개까지'}) — 급매 레이더·전세가율·순위 변화를 따로 모아 드려요</label>
       <input class="inp" id="apts" maxlength="${r.adm ? 5000 : 1200}" placeholder="예: 리센츠, 잠실엘스" value="${esc((r.brief.apts || []).join(', '))}">
       ${curT.urgPick ? `<label class="fl" for="urg">급매 알림 기준 — 최근 3개월 같은 평형 중간값보다</label>
@@ -182,12 +186,17 @@ async function draw(note){
   const fillG = () => { const sd = $('sd').value; $('sg').innerHTML = JDJ_KO.sortBy(Object.entries(SG).filter(([, x]) => x.sido === sd), e => e[1].name).map(([g, x]) => `<option value="${g}">${esc(x.name)}</option>`).join(''); fillDn(); };
   if (ed.areas[0] && ed.areas[0].sd) $('sd').value = ed.areas[0].sd;
   $('sd').onchange = fillG; $('sg').onchange = fillDn; fillG();
-  const drawA = () => { $('al').innerHTML = ed.areas.map((a, i) => `<li>${esc(a.gn + (a.dn ? ' ' + a.dn : ''))}${i >= max ? ' <small>(이 상품에선 안 보냄)</small>' : ''}<button type="button" data-i="${i}" aria-label="${esc(a.gn)} 빼기">×</button></li>`).join('');
+  /* 같은 이름이 여러 시·도에 있는 구(서구·남구 등)는 시·도 이름을 앞에 붙여 헷갈리지 않게 */
+  const dupN = (m => (Object.values(SG).forEach(x => m[x.name] = (m[x.name] || 0) + 1), m))({}), aName = a => (dupN[a.gn] > 1 && a.sd ? a.sd + ' ' : '') + a.gn;
+  const drawA = () => { $('al').innerHTML = ed.areas.map((a, i) => `<li>${esc(aName(a) + (a.dn ? ' ' + a.dn : ''))}${i >= max ? ' <small>(이 상품에선 안 보냄)</small>' : ''}<button type="button" data-i="${i}" aria-label="${esc(a.gn)} 빼기">×</button></li>`).join('');
     $('al').querySelectorAll('button[data-i]').forEach(b => b.onclick = () => { ed.areas.splice(+b.dataset.i, 1); drawA(); }); };
   drawA();
   const edMsg = (t, bad) => { const m = $('edMsg'); m.hidden = false; m.className = 'msg ' + (bad ? 'err' : 'info'); m.textContent = t; };
   $('add').onclick = () => { const g = $('sg').value, dn = $('dn').value; if (!g || ed.areas.some(a => a.g === g && a.dn === dn)) return;
     if (ed.areas.length >= LIM.areas) return edMsg(`지역은 ${LIM.areas}곳까지 넣을 수 있어요.`, 1); ed.areas.push({ g, gn: SG[g].name, sd: SG[g].sido, dn }); drawA(); };
+  if ($('repAdd')) $('repAdd').onclick = () => { const x = B.repAreas(SG, ed.areas, LIM.areas); ed.areas = x.areas; drawA();
+    edMsg(x.added ? `${x.added}곳을 더했어요. 지금 모두 ${ed.areas.length}곳이에요. 아래 [저장하기]를 눌러야 저장돼요.${x.missing.length ? ` (못 찾은 곳: ${x.missing.join(', ')})` : ''}`
+      : (x.missing.length ? `더할 곳이 없어요. 못 찾은 곳: ${x.missing.join(', ')}` : '대표 지역이 이미 모두 들어 있어요.'), !x.added && x.missing.length); };
   $('saveEd').onclick = async () => {
     const num = (v, lo, hi) => { v = String(v).trim(); if (v === '') return null; const n = Math.round(+v); return n >= lo && n <= hi ? n : NaN; };
     const sc = num($('cyScore').value, 0, 84), nh = num($('cyNohome').value, 0, 40);

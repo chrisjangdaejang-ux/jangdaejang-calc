@@ -34,11 +34,34 @@
   const MAX = { areas: Math.max(...TIERS.map(t => t.areas)), apts: Math.max(...TIERS.map(t => t.apts)) };
   /* 운영자(대표) 모드: 받는 지역·관심 단지 수만 늘림(요금제·결제와 무관). 서버 BRIEF_ADMIN_LIM 과 같아야 해요(tools/brief-admin-test.js 가 대조) */
   const ADMIN = { areas: 300, apts: 100 };
+  /* 운영자 [시·도마다 대표 지역 1곳씩 한 번에 넣기] — 시·도 이름이 바뀌어도(통합·특별자치도) 찾게 시·도는 낱말 여럿으로, 시·군·구는 이름 그대로 찾아요.
+     광주·전남은 '전남광주통합특별시' 하나로 합쳐져서 두 곳(광주 서구·여수시)을 넣어 17곳이에요. */
+  const REP = [
+    [['서울'], '강남구'], [['부산'], '해운대구'], [['대구'], '수성구'], [['인천'], '연수구'], [['광주'], '서구'],
+    [['대전'], '유성구'], [['울산'], '남구'], [['세종'], '세종시'], [['경기'], '성남시 분당구'], [['강원'], '춘천시'],
+    [['충청북', '충북'], '청주시 흥덕구'], [['충청남', '충남'], '천안시 서북구'], [['전북', '전라북'], '전주시 완산구'],
+    [['전남', '전라남'], '여수시'], [['경상북', '경북'], '포항시 남구'], [['경상남', '경남'], '창원시 성산구'], [['제주'], '제주시']
+  ];
   const B = {
     SITE, NAME,
     DATA: JB.DATA + 'data/brief/',
     DROP: -10,                                      // '최근 2년 최고가보다 많이 내린 거래' 기준(%)
     TIERS, PRICE, URG, MAX, ADMIN,
+    REP,
+    /** 대표 지역 넣기: SG(data/index.json 의 sgg) 에서 REP 를 찾아 cur(지금 목록) 뒤에 겹치지 않게 더함. 지금 목록은 그대로 둠.
+        돌려줌 { areas 새 목록, added 더한 수, missing 못 찾은 이름[] } — lim 을 넘으면 거기까지만 */
+    repAreas(SG, cur, lim) {
+      const out = (cur || []).slice(), missing = [], E = Object.entries(SG || {}); let added = 0;
+      REP.forEach(([keys, name]) => {
+        const hit = E.find(([, x]) => x && x.name === name && keys.some(k => String(x.sido || '').indexOf(k) >= 0));
+        if (!hit) { missing.push(keys[0] + ' ' + name); return; }
+        const [g, x] = hit;
+        if (out.some(a => a.g === g && !a.dn)) return;
+        if (lim && out.length >= lim) { missing.push(keys[0] + ' ' + name); return; }
+        out.push({ g, gn: x.name, sd: x.sido, dn: '' }); added++;
+      });
+      return { areas: out, added, missing };
+    },
     TRIAL_DAYS: 7,
     REF: { months: 1, yearMax: 12 },        // 친구 초대 보상(서버 BRIEF_REF 와 같음)
     /** 급매 목록: 기준(%)이 10이면 자료의 urgent 그대로, 다르면 urgent + urgent_lo(5~10% 후보)에서 기준 이상만 — 서버 bUrgent 와 같음 */

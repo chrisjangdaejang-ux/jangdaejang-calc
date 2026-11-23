@@ -91,5 +91,25 @@ check('광고주 통계: 메일 광고 동의자 수(있을 때만)', [/메일 �
     check('구독 화면: 체험 전이면 맨 위 체험 안내·시작 버튼, 요금제는 접고 결제는 보조 버튼', [/결제 수단 없이 시작<\/span> · <span>자동 결제 없음/.test(su), /id="trialTop"/.test(su), /체험이 끝난 뒤 계속 받고 싶을 때 고르는 요금제예요/.test(su), /지금은 결제되지 않아요/.test(su), /class="btn ghost" id="pay"/.test(su), /const TR = !st\.trialUsed && !st\.active/.test(su)], [true, true, true, true, true, true]); }
   check("구독 화면: 요금제 올리기·내리기는 '월 요금' 기준으로", [/더 높은 요금제|더 낮은 요금제/.test(pages.replace(rd('terms/index.html'), '')), /월 요금이 더 비싼 요금제/.test(pages)], [false, true]);
 }
+/* 운영자 [시·도마다 대표 지역 1곳씩 한 번에 넣기] — 지금 자료의 시·도 이름(통합·특별자치도)으로 17곳을 찾고, 강남구는 그대로·겹치지 않게 */
+{
+  const fs = require('fs'), rd = f => fs.readFileSync(require('path').join(__dirname, '..', f), 'utf8');
+  const SDN = { '서울': '서울특별시', '부산': '부산광역시', '대구': '대구광역시', '인천': '인천광역시', '광주': '전남광주통합특별시', '대전': '대전광역시', '울산': '울산광역시', '세종': '세종특별자치시', '경기': '경기도', '강원': '강원특별자치도', '충청북': '충청북도', '충청남': '충청남도', '전북': '전북특별자치도', '전남': '전남광주통합특별시', '경상북': '경상북도', '경상남': '경상남도', '제주': '제주특별자치도' };
+  const SGF = {}; B.REP.forEach(([k, n], i) => { SGF[String(10000 + i)] = { sido: SDN[k[0]], name: n }; });
+  SGF['99001'] = { sido: '부산광역시', name: '남구' }; SGF['99002'] = { sido: '전남광주통합특별시', name: '남구' };   // 같은 이름 다른 시·도는 고르지 않음
+  const cur = [{ g: '10000', gn: '강남구', sd: '서울특별시', dn: '' }, { g: '10001', gn: '해운대구', sd: '부산광역시', dn: '우동' }];
+  const x = B.repAreas(SGF, cur, 300);
+  check('대표 지역: 17곳 목록', B.REP.length, 17);
+  check('대표 지역: 강남구 그대로 + 16곳 더함(겹침 없음)', [x.added, x.areas.length, x.areas[0].gn, x.missing, new Set(x.areas.map(a => a.g + '-' + a.dn)).size], [16, 18, '강남구', [], 18]);
+  check('대표 지역: 울산 남구는 울산 것만', x.areas.filter(a => a.gn === '남구').map(a => a.sd), ['울산광역시']);
+  check('대표 지역: 두 번 눌러도 그대로', B.repAreas(SGF, x.areas, 300).added, 0);
+  check('대표 지역: 한도 넘으면 거기까지', B.repAreas(SGF, cur, 5).areas.length, 5);
+  check('대표 지역: 자료에 없으면 못 찾은 곳으로', B.repAreas({}, [], 300).missing.length, 17);
+  check('대표 지역: 옛 시·도 이름(광주광역시·전라남도·강원도)도 찾음', B.repAreas({ a: { sido: '광주광역시', name: '서구' }, b: { sido: '전라남도', name: '여수시' }, c: { sido: '강원도', name: '춘천시' } }, [], 300).added, 3);
+  const IXP = process.env.JDJ_INDEX;   // 실제 자료로도 확인: JDJ_INDEX=/경로/data/index.json node tools/brief-web-test.js
+  if (IXP && fs.existsSync(IXP)) { const r = B.repAreas(JSON.parse(fs.readFileSync(IXP, 'utf8')).sgg, [], 300); check('대표 지역: 실제 index.json 에서 17곳 모두 찾음', [r.added, r.missing], [17, []]); }
+  const mg = rd('brief/manage/index.html'), su2 = rd('brief/subscribe/index.html');
+  check('대표 지역 버튼: 운영자 모드(서버 adm)일 때만 그림', [/\$\{r\.adm \? `<div class="repBox"/.test(mg), /\$\{st\.adm \? `<div class="repBox"/.test(su2), /시·도마다 대표 지역 1곳씩 한 번에 넣기/.test(mg)], [true, true, true]);
+}
 console.log(`모닝 브리핑 화면 계산 검증: ${pass}개 통과, ${fail}개 실패`);
 process.exit(fail ? 1 : 0);
