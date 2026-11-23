@@ -6020,6 +6020,8 @@ function dpCheck(text) {
 }
 
 /* ---------- 공공 자료로 중개사무소 확인 ---------- */
+/** 확인 결과 이름(운영자 화면·시트에 보이는 글자) */
+function dpVerName(st) { return ({ match: '공공 자료와 맞음', mismatch: '공공 자료와 다름', notfound: '공공 자료에 없음', closed: '휴업·폐업 등', unknown: '자동 확인 못 함', review: '운영자 확인 필요' })[st] || String(st || ''); }
 function dpNorm(s) { return String(s || '').replace(/\(주\)|주식회사|공인중개사사무소|공인중개사|중개사무소|부동산중개|부동산|중개법인|[\s()\-·.,]/g, '').toLowerCase(); }
 function dpRegNorm(s) { return String(s || '').replace(/[^0-9A-Za-z가-힣]/g, ''); }
 function dpGetJson(url) {
@@ -6188,7 +6190,7 @@ function dpApply(b) {
     r[DPC['사무소명']] = cellSafe(a.office); r[DPC['등록번호']] = cellSafe(a.reg); r[DPC['대표자']] = cellSafe(a.ceo); r[DPC['성명']] = cellSafe(a.name);
     r[DPC['전화']] = cellSafe(a.tel); r[DPC['이메일']] = cellSafe(a.mail); r[DPC['주소']] = cellSafe(a.addr); r[DPC['시군구']] = a.g; r[DPC['사무소동']] = a.dn;
     r[DPC['동목록']] = JSON.stringify(got.map(k => ({ k: k, at: t, sw: '' }))); r[DPC['사진']] = photo; r[DPC['사진상태']] = photo ? '확인대기' : '';
-    r[DPC['소개']] = cellSafe(a.intro); r[DPC['초대코드']] = code; r[DPC['확인결과']] = cellSafe(vr.st + ' · ' + vr.why);
+    r[DPC['소개']] = cellSafe(a.intro); r[DPC['초대코드']] = code; r[DPC['확인결과']] = cellSafe(dpVerName(vr.st) + ' · ' + vr.why);
     r[DPC['신청일']] = new Date(); r[DPC['승인일']] = auto ? new Date() : ''; r[DPC['창립']] = founding ? 'Y' : '';
     r[DPC['요금제']] = DP_PLAN[plan]; r[DPC['결제상태']] = bill ? DP_PAY.card : DP_PAY.trial; r[DPC['경고']] = 0;
     ['카드', '첫결제일', '다음결제일', '만료일', '실패일', '해지예정일', '노출중지', '마지막글', '알림', '메모'].forEach(h => r[DPC[h]] = '');
@@ -6736,7 +6738,7 @@ function dpMonthlyCheck(t) {
   todo.forEach(p => {
     seen.push(p.id);
     const v = dpVerify({ reg: p.reg, office: p.office, name: p.name, ceo: p.ceo, kind: p.kind, gn: (p.addr.match(/[가-힣]+(시|군|구)(?=\s)/g) || []).pop() || '' });
-    dpSet(p.row, '확인결과', '매달 확인 ' + t + ' · ' + v.st + ' · ' + v.why);
+    dpSet(p.row, '확인결과', '매달 확인 ' + t + ' · ' + dpVerName(v.st) + ' · ' + v.why);
     if (v.st === 'closed' || v.st === 'notfound') {
       dpSet(p.row, '상태', DP_ST.wait); dpSet(p.row, '메모', '매달 확인에서 노출 멈춤(' + v.st + ') ' + t); bad.push(p.office + ' — ' + v.why); n++;
       dpMailTo(p.mail, `[${SITE_NAME}] 동네 파트너 노출을 잠시 멈췄어요`, `매달 하는 공공 자료 확인에서 사무소 등록 상태를 확인하지 못했어요(${bEsc(v.why)}). 운영자가 확인하는 동안 노출을 멈춰요. 휴업·폐업이 아니라면 이 메일에 답장으로 알려 주세요.`);

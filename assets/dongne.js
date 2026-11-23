@@ -93,7 +93,7 @@
     const tel = String(c.tel || '').replace(/[^0-9]/g, '');
     return `<div class="dp-card${opt.small ? ' sm' : ''}">${c.img ? `<img class="dp-face" src="${esc(c.img)}" alt="" loading="lazy">` : `<span class="dp-face none" aria-hidden="true">${esc(String(c.office || '').slice(0, 1))}</span>`}
       <div class="dp-cb"><b class="dp-on">${esc(c.office)}</b> <span class="dp-badge">${c.found ? '창립 파트너' : '동네 파트너'}</span>${c.intro ? `<p class="dp-intro">${esc(c.intro)}</p>` : ''}${legalHtml(c)}
-      ${!opt.nocall ? `<div class="dp-acts" style="margin-top:4px">${tel ? `<a class="dp-call" href="tel:${esc(tel)}" data-dp-call="${esc(c.id)}">전화하기</a>` : ''}${opt.noreport ? '' : `<button type="button" data-dp-prep="${esc(c.id)}">신고</button>`}</div>` : ''}</div></div>`;
+      ${!opt.nocall ? `<div class="dp-acts" style="margin-top:4px">${tel ? `<a class="dp-call" href="tel:${esc(tel)}" data-dp-call="${esc(c.id)}">전화하기</a>` : ''}${opt.noreport ? '' : `<button type="button" data-dp-prep="${esc(c.id)}">이 사무소 신고</button>`}</div>` : ''}</div></div>`;
   }
   const CSS = `.dp-sec{border:1px solid #EFE6CC;background:#FBF8EF;border-radius:18px;padding:16px;margin:18px 0}
 .dp-sec h2{font-size:19px;margin:0 0 2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -102,6 +102,7 @@
 .dp-dong{border-top:1px solid #EFE6CC;padding:12px 0 4px}
 .dp-dong h3{font-size:16px;margin:0 0 6px}
 .dp-post{background:#fff;border:1px solid #EFE6CC;border-radius:14px;padding:12px;margin:0 0 10px}
+.dp-post .dp-by{font-size:12.5px;color:var(--sub2,#4E5968)}
 .dp-post .dp-tp{font-size:12.5px;font-weight:800;color:#8A6A12}
 .dp-post p{margin:4px 0 6px;line-height:1.65;font-size:15.5px;word-break:keep-all}
 .dp-post img{max-width:100%;border-radius:10px;display:block;margin:4px 0}
@@ -134,8 +135,8 @@
   function secHtml(sec) {
     const dongs = (sec.list || []).map(x => {
       const top = x.partners[0], p = x.post && top && x.post.pid === top.id ? x.post : null;
-      return `<div class="dp-dong"><h3>${esc(x.dn)}</h3>${p ? `<div class="dp-post"><span class="dp-tp">${esc(p.tn)}</span><p>${esc(p.text)}</p>${p.img ? `<img src="${esc(p.img)}" alt="" loading="lazy">` : ''}
-        <div class="dp-acts"><button type="button" data-dp-help="${esc(p.id)}">도움돼요${p.help ? ' ' + Number(p.help) : ''}</button><button type="button" data-dp-rep="${esc(p.id)}">신고</button></div></div>` : ''}
+      return `<div class="dp-dong"><h3>${esc(x.dn)}</h3>${p ? `<div class="dp-post"><span class="dp-tp">${esc(p.tn)}</span> <span class="dp-by">· ${esc(top.office)}</span><p>${esc(p.text)}</p>${p.img ? `<img src="${esc(p.img)}" alt="" loading="lazy">` : ''}
+        <div class="dp-acts"><button type="button" data-dp-help="${esc(p.id)}">도움돼요${p.help ? ' ' + Number(p.help) : ''}</button><button type="button" data-dp-rep="${esc(p.id)}">이 글 신고</button></div></div>` : ''}
         ${x.partners.map(c => cardHtml(c)).join('')}</div>`;
     }).join('');
     const best = sec.best ? `<div class="dp-best"><b>이번 주 우수 동네 소식</b> · ${esc(sec.best.dn)} · ${esc(sec.best.office)}<p style="margin:4px 0 0;line-height:1.6">${esc(sec.best.text)}</p></div>` : '';
@@ -219,7 +220,7 @@
   root.JDJ_DP = apiObj;
   if (typeof module !== 'undefined' && module.exports) module.exports = apiObj;
   if (typeof document !== 'undefined') {
-    const go = () => { if (!enabled()) return; fillBest(); fillInvite(); };
+    const go = () => { if (!enabled()) return; style(); fillBest(); fillInvite(); };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
   }
 })(typeof window !== 'undefined' ? window : globalThis);

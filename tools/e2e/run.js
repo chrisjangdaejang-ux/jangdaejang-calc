@@ -22,7 +22,7 @@ const PAGES = ['', 'about/', 'terms/', 'privacy/', 'refund/', 'rank/', 'loan/', 
   'map/', 'mine/', 'villa/', 'comm/', 'jeonse/', 'jeonse/checklist/', 'brief/', 'brief/subscribe/', 'brief/manage/', 'brief/c/', 'brief/paid/',
   'my/alerts/', 'my/report/', 'my/watch/', 'track/', 'track/detail/', 'ad/', 'ad/plan/', 'agent/', 'agent/my/', 'agent/listing/', 'agent/content/',
   'agent/sheet/', 'login/', 'bunyang/', 'bunyang/agency/', 'bunyang/apply/', 'partner/', 'premium/', 'premium/pro/', 'quiz/', 'ask/', 'switch/',
-  'buy/', 'buy/report/', 'press/', 'guide/method/', 'guide/terms/', 'weekly/', 'pro/developer/', 'community/'];
+  'buy/', 'buy/report/', 'press/', 'guide/method/', 'guide/terms/', 'weekly/', 'pro/developer/', 'community/', 'dongne/', 'dongne/my/', 'dongne/terms/'];
 /* 법률 문서(약관·개인정보·환불)는 ~습니다 문장이 정상 */
 const LEGAL = /^(terms|privacy|refund|guide\/terms)\//;
 /* 문장 속 용어 풀이 단추(jp-tip)·지도 핀(mpin)·지도 저작권 표시는 글자 링크와 같게 봄 */
@@ -252,6 +252,30 @@ const JOURNEYS = {
     const ps = page.locator('button', { hasText: '신청 보내기' }).first(); await ps.click(); await sleep(600);
     ok(await feedbackNear(page, ps, '주세요'), '파트너: 빈칸이면 [신청 보내기] 가까이 안내');
   }
+};
+
+/* 동네 파트너(숨김 기능): 꺼져 있으면 준비 중 · 운영자 미리 보기에서 신청(빈칸 안내)·내 화면 글쓰기(주제 안내)·브리핑 칸·운영자 검토 */
+JOURNEYS.dongne = async function (page, v, mock) {
+  await open(page, 'dongne/');
+  ok(/준비 중이에요/.test(await txt(page, 'main')), '동네 파트너: 꺼져 있으면 준비 중');
+  const FX = require('./dongne-fixtures');
+  FX.install(mock); await page.context().addInitScript(FX.PREVIEW_INIT);
+  mock.set('dpMine', { ok: true, me: null, cfg: FX.cfg });
+  await open(page, 'dongne/?preview=dongne'); await sleep(1200);
+  ok(/운영자 미리 보기/.test(await txt(page, 'main')) && /월 9,900원/.test(await txt(page, 'main')), '미리 보기: 소개·요금이 보임');
+  const go = page.locator('#go'); await go.click(); await sleep(500);
+  ok(await feedbackNear(page, go, '적어 주세요'), '신청: 빈칸이면 [파트너 신청하기] 가까이 안내');
+  mock.set('dpMine', FX.mine);
+  await open(page, 'dongne/my/?preview=dongne'); await sleep(1200);
+  ok(/최근 30일 성과/.test(await txt(page, 'main')) && /초대 링크/.test(await txt(page, 'main')), '내 파트너 화면: 성과·초대 링크');
+  const wg = page.locator('#wgo'); await wg.click(); await sleep(500);
+  ok(await feedbackNear(page, wg, '주제를'), '글쓰기: 주제 없이 [올리기]면 가까이 안내');
+  const bp = await page.context().newPage();   /* 웹 브리핑은 주간 자료(wk/*.json)가 없는 날 404 가 정상이라 따로 연 화면에서 확인 */
+  await open(bp, 'brief/?d=11680-' + encodeURIComponent('개포동') + '&k=abcdef0123&preview=dongne'); await sleep(2500);
+  ok(/우리 동네 중개사 한마디/.test(await txt(bp, '[data-dp-brief]')) && /등록번호/.test(await txt(bp, '[data-dp-brief]')), '웹 브리핑: 맨 아래 제휴 칸 + 법정 표시');
+  await bp.close();
+  await open(page, 'dongne/admin/'); await sleep(1200);
+  ok(/검토 대기 신청/.test(await txt(page, 'main')) && /중대 위반 박탈/.test(await txt(page, 'main')), '운영자 검토: 신청·제재 버튼');
 };
 
 /* ---------- 실행 ---------- */
