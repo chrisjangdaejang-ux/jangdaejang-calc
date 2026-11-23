@@ -28,6 +28,7 @@
 <script>window.JDJ_CONFIG = { tool:'ad', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
+<script src="../assets/savefb.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/aplus.css?v=45">
@@ -759,6 +760,7 @@ function fallback(b, why) {
   const mail = B.email ? `mailto:${B.email}?subject=${encodeURIComponent('[집코드 광고 문의] ' + b.company)}&body=${encodeURIComponent(mailBody(b))}` : '';
   const m = $('msg'); m.className = 'msg err';
   m.innerHTML = `${esc(why)} ${mail ? '<a href="' + esc(mail) + '" id="mailAsk">이메일로 보내기</a> 또는 ' : ''}카카오톡 채널로 문의해 주세요. 입력하신 내용은 이메일 본문에 그대로 담겨요.`;
+  m.setAttribute('role', 'alert'); if (window.JDJ_SAVEFB) { JDJ_SAVEFB.reveal(m); JDJ_SAVEFB.toast(why, true); }
 }
 document.querySelectorAll('#form input, #form textarea, #form select').forEach(el => el.addEventListener('input', () => el.removeAttribute('aria-invalid')));
 $('form').addEventListener('submit', async e => {
@@ -767,8 +769,9 @@ $('form').addEventListener('submit', async e => {
   document.querySelectorAll('[aria-invalid]').forEach(x => x.removeAttribute('aria-invalid'));
   const bad = check();
   if (bad) {
-    m.className = 'msg err'; m.textContent = bad[1];
+    m.className = 'msg err'; m.textContent = bad[1]; m.setAttribute('role', 'alert');
     const el = $(bad[0]); if (el) { el.setAttribute('aria-invalid', 'true'); (el.matches('input,select,textarea') ? el : el.querySelector('input')).focus(); }
+    JDJ_SAVEFB.toast(bad[1], true);   // 빠진 칸으로 화면이 옮겨 가도 휴대폰에선 무엇이 빠졌는지 보이게
     return;
   }
   const body = { action: 'adInquiry', type: 'inquiry', company: $('company').value.trim(), manager: $('manager').value.trim(), contact: $('contact').value.trim(),
@@ -779,13 +782,13 @@ $('form').addEventListener('submit', async e => {
     body.memo = ('[관심 상품: ' + NEWP.map(p => PROD_NAME[p]).join(', ') + ']\n' + body.memo).slice(0, 1000);
   }
   if (!window.JDJ_AGENTS || !JDJ_AGENTS.ready) { fallback(body, '문의 서버에 연결하지 못했어요.'); return; }
-  $('send').disabled = true; m.textContent = '보내는 중이에요…';
+  JDJ_SAVEFB.busy('send', '보내는 중…'); m.setAttribute('role', 'status'); m.textContent = '보내는 중이에요…';
   try {
     const r = await JDJ_AGENTS.post(body);
     $('form').hidden = true; $('done').hidden = false;
     $('done').innerHTML = `<div class="done"><b>문의가 접수됐어요</b><br>접수 번호 ${esc(r.id)} · ${esc(body.company)}<br>영업일 기준 2일 안에 남겨 주신 연락처로 안내드릴게요.</div>`;
     if (window.jdjStat) jdjStat('feature_use', { feature: 'ad_inquiry' });   // 연락처·회사명은 보내지 않음
-    $('ask').scrollIntoView();
+    $('ask').scrollIntoView(); JDJ_SAVEFB.toast('✓ 문의가 접수됐어요.');
   } catch (err) {
     const msg = String(err && err.message || '');
     /* 서버에 광고 문의 기능이 아직 없거나(unknown) 연결 실패 → 이메일·카카오톡 안내 */
@@ -800,8 +803,8 @@ $('form').addEventListener('submit', async e => {
       } catch (e2) {}
     }
     if (!msg || msg === 'unknown' || (err && err.raw === 'unknown') || /fetch|network|json|load/i.test(msg)) fallback(body, '지금은 온라인 접수가 잠시 어려워요.');
-    else { m.className = 'msg err'; m.textContent = msg; }
-  } finally { $('send').disabled = false; }
+    else JDJ_SAVEFB.err('send', msg, { msg: m });   // [문의 보내기] 바로 아래 빨간 안내(role=alert)
+  } finally { JDJ_SAVEFB.restore('send'); }
 });
 </script>
 <script>

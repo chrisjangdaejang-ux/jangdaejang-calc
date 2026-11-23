@@ -23,6 +23,7 @@
 <script>window.JDJ_CONFIG = { tool:'partner', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
+<script src="../assets/savefb.js?v=1"></script>
 <script src="../assets/agents.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -257,7 +258,9 @@ function typeUi() {
 }
 $('type').addEventListener('change', typeUi);
 document.querySelectorAll('input,select,textarea').forEach(el => el.addEventListener('input', () => el.removeAttribute('aria-invalid')));
-function bad(msgEl, id, text) { msgEl.className = 'msg err'; msgEl.textContent = text; const el = $(id); if (el) { el.setAttribute('aria-invalid', 'true'); el.focus(); } }
+function bad(msgEl, id, text) { msgEl.className = 'msg err'; msgEl.textContent = text; msgEl.setAttribute('role', 'alert'); const el = $(id); if (el) { el.setAttribute('aria-invalid', 'true'); el.focus(); }
+  SF.toast(text, true); }   // 빠진 칸으로 화면이 옮겨 가도 휴대폰에선 무엇이 빠졌는지 보이게
+const SF = window.JDJ_SAVEFB;   // 보내기 버튼: '보내는 중…' → 결과는 버튼 바로 아래(assets/savefb.js)
 
 $('fApply').addEventListener('submit', async e => {
   e.preventDefault();
@@ -278,7 +281,7 @@ $('fApply').addEventListener('submit', async e => {
   if (!$('agree').checked) return bad(m, 'agree', '개인정보 수집·이용에 동의해 주셔야 신청할 수 있어요.');
   const body = { action: 'partnerApply', type: t, name: v('name'), biz: v('biz'), reg: v('reg'), manager: v('manager'), phone: v('phone'), email: v('email'),
     area: v('area'), channel: v('channel'), intro: v('intro'), pay: v('biz') ? 'invoice' : 'income', agree: true, cv: CV, hp: $('hpf').value };
-  $('sendA').disabled = true; m.textContent = '보내는 중이에요…';
+  SF.busy('sendA', '보내는 중…'); m.setAttribute('role', 'status'); m.textContent = '보내는 중이에요…';
   try {
     const r = await api(body);
     $('fApply').hidden = true; $('doneA').hidden = false;
@@ -286,8 +289,9 @@ $('fApply').addEventListener('submit', async e => {
       관리코드는 <b>지금 한 번만</b> 보여 드려요. 캡처하거나 적어 두세요(집코드도 원래 값을 몰라요). 심사가 끝나면 판매 위탁 계약서를 보내 드리고, 그 뒤 로그인하면 현장이 보여요.</div>`;
     $('lid').value = r.id;
     if (window.jdjStat) jdjStat('feature_use', { feature: 'partner_apply' });
-  } catch (err) { m.className = 'msg err'; m.textContent = String(err && err.message || '') || '지금은 접수가 어려워요. 카카오톡 채널로 문의해 주세요.'; }
-  finally { $('sendA').disabled = false; }
+    SF.reveal($('doneA')); SF.toast('✓ 신청이 접수됐어요.');
+  } catch (err) { SF.err('sendA', String(err && err.message || '') || '지금은 접수가 어려워요. 카카오톡 채널로 문의해 주세요.', { msg: m }); }
+  finally { SF.restore('sendA'); }
 });
 
 $('fLogin').addEventListener('submit', async e => {
@@ -295,10 +299,10 @@ $('fLogin').addEventListener('submit', async e => {
   const m = $('msgL'); m.className = 'msg'; m.textContent = '';
   const id = $('lid').value.trim(), code = $('lcode').value.trim();
   if (!id || !code) return bad(m, id ? 'lcode' : 'lid', '파트너 번호와 관리코드를 입력해 주세요.');
-  $('sendL').disabled = true;
+  SF.busy('sendL', '확인 중…');
   try { const r = await api({ action: 'partnerLogin', id, code }); store.set({ s: r.s, exp: r.exp }); $('lcode').value = ''; home(); }
-  catch (err) { m.className = 'msg err'; m.textContent = String(err && err.message || '로그인하지 못했어요.'); }
-  finally { $('sendL').disabled = false; }
+  catch (err) { SF.err('sendL', String(err && err.message || '로그인하지 못했어요.'), { msg: m }); }
+  finally { SF.restore('sendL'); }
 });
 $('logout').addEventListener('click', async () => { const s = store.get(); store.set(null); if (s) api({ action: 'partnerLogout', s: s.s }).catch(() => {}); show(false); });
 
@@ -331,9 +335,9 @@ async function home() {
 }
 $('sites').addEventListener('click', async e => {
   const b = e.target.closest('[data-join]'); if (!b) return;
-  b.disabled = true;
-  try { await api({ action: 'partnerJoin', s: store.get().s, site: b.dataset.join }); home(); }
-  catch (err) { b.disabled = false; alert(err.message); }
+  SF.busy(b, '신청 중…');
+  try { await api({ action: 'partnerJoin', s: store.get().s, site: b.dataset.join }); await home(); SF.toast('✓ 판매 신청을 보냈어요. 배정을 확인하고 있어요.', false, true); }
+  catch (err) { SF.err(b, err.message); }
 });
 $('fDeal').addEventListener('submit', async e => {
   e.preventDefault();
@@ -343,15 +347,14 @@ $('fDeal').addEventListener('submit', async e => {
   if (v('dAmt') && !/^\d{1,8}$/.test(v('dAmt').replace(/,/g, ''))) return bad(m, 'dAmt', '계약 금액은 만 원 단위 숫자로 입력해 주세요.');
   if (/\d{3,}|@/.test(v('dAlias')) || /^[가-힣]{2,4}$/.test(v('dAlias'))) return bad(m, 'dAlias', '고객 이름·전화번호는 적지 말아 주세요. 이니셜이나 별칭만 적어 주세요.');
   for (const id of ['dUnit', 'dAlias', 'dMemo']) if (formula(v(id))) return bad(m, id, '= + - @ 기호로 시작할 수 없어요.');
-  $('sendD').disabled = true;
+  SF.busy('sendD', '보내는 중…');
   try {
     await api({ action: 'partnerDeal', s: store.get().s, site: v('dSite'), date: v('dDate'), unit: v('dUnit'), amt: v('dAmt').replace(/,/g, ''), alias: v('dAlias'), memo: v('dMemo') });
-    m.className = 'msg ok'; m.textContent = '보고했어요. 시행사 확인 뒤 정산 상태가 바뀌어요.';
+    SF.ok('sendD', '보고했어요. 시행사 확인 뒤 정산 상태가 바뀌어요.', { msg: m, done: '✓ 보고했어요' });
     ['dUnit', 'dAmt', 'dAlias', 'dMemo'].forEach(id => $(id).value = '');
     if (window.jdjStat) jdjStat('feature_use', { feature: 'partner_deal' });
     home();
-  } catch (err) { m.className = 'msg err'; m.textContent = err.message; }
-  finally { $('sendD').disabled = false; }
+  } catch (err) { SF.err('sendD', err.message, { msg: m }); }
 });
 typeUi();
 if (store.get()) home();

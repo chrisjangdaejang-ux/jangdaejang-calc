@@ -26,6 +26,7 @@
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/config.js?v=9"></script>
 <script src="../../assets/auth.js?v=10"></script>
+<script src="../../assets/savefb.js?v=1"></script>
 <script src="../../assets/mine-core.js?v=20"></script>
 <script src="../../assets/report-core.js?v=3"></script>
 <script src="../../assets/alerts-core.js?v=2"></script>
@@ -129,7 +130,7 @@ svg.ch{display:block;width:100%;height:auto;margin:10px 0 0}
 var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 (function(){
 'use strict';
-const RC = window.JDJ_REPORT_CORE, M = window.JDJ_MINE, W = window.JDJ_WATCH, AU = window.JDJ_AUTH || null;
+const SF = window.JDJ_SAVEFB, RC = window.JDJ_REPORT_CORE, M = window.JDJ_MINE, W = window.JDJ_WATCH, AU = window.JDJ_AUTH || null;
 const SITE = ((window.JDJ_SITE || {}).SITE_NAME || '').trim() || '집코드';
 const DATA = JB.DATA + 'data/', BASE = JB.SITE, $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -260,7 +261,7 @@ function adjPanel(c){
     <div class="fr"><label>우리 집 층<input type="number" id="aFl" inputmode="numeric" min="-5" max="120" placeholder="예: 12" value="${a.fl == null ? '' : esc(a.fl)}"></label>
       <label>발코니 확장<select id="aExt"><option value="">모름·안 적음</option><option value="y" ${a.ext === 'y' ? 'selected' : ''}>확장했어요</option><option value="n" ${a.ext === 'n' ? 'selected' : ''}>안 했어요</option></select></label>
       <label>리모델링(인테리어)<select id="aRem"><option value="">모름·안 적음</option><option value="y" ${a.rem === 'y' ? 'selected' : ''}>했어요</option><option value="n" ${a.rem === 'n' ? 'selected' : ''}>안 했어요</option></select></label></div>
-    <div id="adjOut"></div>${savedNote()}</section>`;
+    <div id="adjMsg" class="sf-msg" role="status" hidden></div><div id="adjOut"></div>${savedNote()}</section>`;
 }
 async function drawAdj(c){
   const out = $('adjOut'); if (!out) return;
@@ -319,13 +320,16 @@ function drawSide(c, it){
   side.innerHTML = areaPanel(c, it) + adjPanel(c) + netPanel(c) + mail;
   wireArea(it);
   const saveAdj = () => { const fl = $('aFl').value.trim(), o = { fl: fl === '' ? null : Math.round(+fl), ext: $('aExt').value, rem: $('aRem').value };
-    if (o.fl != null && (!isFinite(o.fl) || o.fl < -5 || o.fl > 120)) return;
+    if (o.fl != null && (!isFinite(o.fl) || o.fl < -5 || o.fl > 120)) return void SF.err(null, '층은 -5~120 사이 숫자로 적어 주세요.', { msg: 'adjMsg' });
     if (o.fl == null && !o.ext && !o.rem) delete ME.adj[pid(c.p)]; else ME.adj[pid(c.p)] = o;
-    meSave().then(() => { drawAdj(c); }); stat('feature_use', {feature:'report_adj'}); };
+    /* 고르거나 적으면 바로 저장 — 그 칸 바로 아래에 '✓ 저장했어요'(assets/savefb.js) */
+    meSave().then(() => { drawAdj(c); SF.ok(null, '✓ 내 집 정보 보정을 저장했어요.', { msg: 'adjMsg' }); }); stat('feature_use', {feature:'report_adj'}); };
   $('aFl').onchange = saveAdj; $('aExt').onchange = saveAdj; $('aRem').onchange = saveAdj;
   $('loanSave').onclick = () => { const v = $('loan').value.trim(), id = pid(c.p);
-    if (v === '') delete ME.loan[id]; else { const n = Math.round(+v); if (!isFinite(n) || n < 0 || n >= 10000000) { $('nwOut').innerHTML = '<p class="saved" style="color:#C2410C">대출 잔액을 만 원 단위 숫자로 적어 주세요. 예: 3억 5천만 원이면 35000</p>'; return; } ME.loan[id] = n; recordNet(c); }
-    meSave().then(() => { drawNet(c); $('loanSave').textContent = '저장했어요'; setTimeout(() => { const b = $('loanSave'); if (b) b.textContent = '저장'; }, 1600); }); stat('feature_use', {feature:'report_net'}); };
+    if (v === '') delete ME.loan[id]; else { const n = Math.round(+v); if (!isFinite(n) || n < 0 || n >= 10000000) return void SF.err('loanSave', '대출 잔액을 만 원 단위 숫자로 적어 주세요. 예: 3억 5천만 원이면 35000'); ME.loan[id] = n; recordNet(c); }
+    /* '저장 중…' → '✓ 저장했어요'(초록 2.5초), [저장] 바로 아래에 안내 — assets/savefb.js */
+    SF.busy('loanSave');
+    meSave().then(() => { drawNet(c); SF.ok('loanSave', v === '' ? '대출 잔액을 지웠어요.' : '대출 잔액을 저장했어요. 아래 순자산을 다시 계산했어요.'); }); stat('feature_use', {feature:'report_net'}); };
   drawAdj(c); drawNet(c);
 }
 

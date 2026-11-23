@@ -33,6 +33,7 @@
 <script>window.JDJ_CONFIG = { tool:'agent', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
+<script src="../assets/savefb.js?v=1"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/kchat.js?v=3"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -444,10 +445,10 @@ function setupApply(){
     applyEd.set({used});
   });
   $('a_submit').onclick = async ()=>{
-    const msg = $('a_msg'); msg.className='msg'; msg.textContent='';
+    const msg = $('a_msg'), SF = window.JDJ_SAVEFB, bad = t => SF.err('a_submit', t, { msg }); msg.className='msg'; msg.textContent='';   // 빠진 칸·실패는 [제휴 신청하기] 바로 아래 빨간 안내(assets/savefb.js)
     const need=[...document.querySelectorAll('input.ag')].filter(x=>x.closest('label').style.display!=='none');
-    if (need.some(x=>!x.checked)){ msg.className='msg err'; msg.textContent=`유의사항 ${need.length}가지에 모두 동의해 주세요.`; return; }
-    if (!kakaoOk('a_kakao')){ msg.className='msg err'; msg.textContent='카카오톡 채팅 링크 형식을 확인해 주세요.'; $('a_kakao').focus(); return; }
+    if (need.some(x=>!x.checked))return bad(`유의사항 ${need.length}가지에 모두 동의해 주세요.`);
+    if (!kakaoOk('a_kakao')){ bad('카카오톡 채팅 링크 형식을 확인해 주세요.'); $('a_kakao').focus({preventScroll:true}); return; }
     const s = IX.sido.find(x=>x.id===$('a_sido').value);
     const ed = applyEd.get();
     const body = {action:'apply', reg:$('a_reg').value, office:$('a_office').value, ceo:$('a_ceo').value, phone:$('a_phone').value,
@@ -456,9 +457,9 @@ function setupApply(){
       plan:planVal(), biz:$('a_biz').value, mail:$('a_mail').value,
       type:typeVal(), name:$('a_name').value, lic:$('a_lic').value,
       names:Object.fromEntries([$('a_og').value, ...ed.extras].filter(Boolean).map(c=>[c, sggName(c)]))};
-    if (body.type==='member' && (!body.name.trim()||!body.lic.trim())){ msg.className='msg err'; msg.textContent='소속 공인중개사는 본인 이름과 자격증 번호를 입력해 주세요.'; return; }
-    if (!body.reg.trim()||!body.office.trim()||!body.ceo.trim()||!body.phone.trim()||!body.og){ msg.className='msg err'; msg.textContent='* 표시 항목을 모두 입력해 주세요.'; return; }
-    const btn = $('a_submit'); btn.disabled = true; btn.textContent='접수 중…';
+    if (body.type==='member' && (!body.name.trim()||!body.lic.trim()))return bad('소속 공인중개사는 본인 이름과 자격증 번호를 입력해 주세요.');
+    if (!body.reg.trim()||!body.office.trim()||!body.ceo.trim()||!body.phone.trim()||!body.og)return bad('* 표시 항목을 모두 입력해 주세요.');
+    const btn = $('a_submit'); SF.busy(btn, '접수 중…');
     try{
       const j = await A.post(body);
       JDJ.track('agent_apply', {plan:body.plan, sgg:body.og, extras:body.extras.length, danji:body.danji.length});
@@ -467,7 +468,8 @@ function setupApply(){
         <div class="code">${esc(j.code)}</div>
         ${payNote(body.plan)}</div>`;
       btn.style.display='none';
-    }catch(e){ msg.className='msg err'; msg.textContent=nice(e.message); btn.disabled=false; btn.textContent='제휴 신청하기'; }
+      SF.reveal($('a_done')); SF.toast('✓ 신청이 접수되었어요.');
+    }catch(e){ bad(nice(e.message)); }
   };
 }
 
@@ -536,20 +538,20 @@ function drawManage(j){
       :'<p class="small">아직 리뷰가 없어요.</p>'}`;
   document.querySelectorAll('[data-rps]').forEach(b=>b.onclick=async ()=>{
     const id=b.dataset.rps, text=document.querySelector(`[data-rp="${id}"]`).value.trim(), cred=JSON.parse(sessionStorage.getItem('jdj_agent')||'{}');
-    if(!text) return; b.disabled=true;
-    try{ const r=await A.post({action:'reply', ...cred, id, text}); JDJ.track('agent_reply'); drawManage(r); }catch(e){ alert(nice(e.message)); b.disabled=false; }
+    if(!text) return; window.JDJ_SAVEFB.busy(b);
+    try{ const r=await A.post({action:'reply', ...cred, id, text}); JDJ.track('agent_reply'); drawManage(r); const nb=document.querySelector(`[data-rps="${id}"]`); if(nb) window.JDJ_SAVEFB.ok(nb, '답글을 저장했어요.'); }catch(e){ window.JDJ_SAVEFB.err(b, nice(e.message)); }
   });
   manageEd = makeEditor($('m_editor'), {sido, og:m.og, extras:m.extras, danji:m.danji, used:j.used, premium:(m.plan||'프리미엄')==='프리미엄'});
   $('m_save').onclick = async ()=>{
-    const msg=$('m_msg2'); msg.className='msg'; msg.textContent='';
+    const msg=$('m_msg2'), SF=window.JDJ_SAVEFB; msg.className='msg'; msg.textContent='';
     const ed = manageEd.get(), cred = JSON.parse(sessionStorage.getItem('jdj_agent')||'{}');
-    if (!kakaoOk('m_kakao')){ msg.className='msg err'; msg.textContent='카카오톡 채팅 링크 형식을 확인해 주세요.'; $('m_kakao').focus(); return; }
-    const btn=$('m_save'); btn.disabled=true;
+    if (!kakaoOk('m_kakao')){ SF.err('m_save', '카카오톡 채팅 링크 형식을 확인해 주세요.', { msg }); $('m_kakao').focus({preventScroll:true}); return; }
+    const btn=$('m_save'); SF.busy(btn);
     try{
       const r = await A.post({action:'update', ...cred, extras:ed.extras, danji:ed.danji, phone:$('m_phone').value, kakao:$('m_kakao').value, intro:$('m_intro').value, biz:$('m_biz').value, mail:$('m_mail').value, names:Object.fromEntries([ME.me.og, ...ed.extras].map(c=>[c, sggName(c)])), reconfirm:$('m_re').checked});
       JDJ.track('agent_update', {extras:ed.extras.length, danji:ed.danji.length, reconfirm:$('m_re').checked?1:0});
-      drawManage(r); const m2=$('m_msg2'); m2.className='msg ok'; m2.textContent='저장되었습니다. 리포트에는 5분 안에 반영됩니다.';
-    }catch(e){ msg.className='msg err'; msg.textContent=nice(e.message); btn.disabled=false; }
+      drawManage(r); SF.ok('m_save', '저장되었습니다. 리포트에는 5분 안에 반영됩니다.', { msg: 'm_msg2' });   // 다시 그린 [저장] 바로 아래 + '✓ 저장했어요'
+    }catch(e){ SF.err('m_save', nice(e.message), { msg }); }
   };
   $('m_out').onclick = ()=>{ sessionStorage.removeItem('jdj_agent'); $('m_area').style.display='none'; $('m_login').style.display=''; };
   $('m_login').style.display='none'; $('m_area').style.display='';

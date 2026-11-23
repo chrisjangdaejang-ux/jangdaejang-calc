@@ -17,6 +17,7 @@
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/auth.js?v=10"></script>
 <script src="../../assets/pay.js?v=5"></script>
+<script src="../../assets/savefb.js?v=1"></script>
 <script src="../../assets/brief-core.js?v=11"></script>
 <script src="../../assets/share.js?v=11"></script>
 <script src="../../assets/pro-report.js?v=7"></script>
@@ -96,7 +97,7 @@ details{margin:8px 0 0}summary{cursor:pointer;font-weight:700;min-height:40px;di
 var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 (function(){
 'use strict';
-const P = JDJ_PAY, A = window.JDJ_AUTH, B = JDJ_BRIEF, esc = P.esc, main = document.getElementById('main');
+const SF = window.JDJ_SAVEFB, P = JDJ_PAY, A = window.JDJ_AUTH, B = JDJ_BRIEF, esc = P.esc, main = document.getElementById('main');
 const sess = () => { try { return (JSON.parse(localStorage.getItem('jdj_auth') || 'null') || {}).s || ''; } catch(e){ return ''; } };
 const call = (a, b) => P.post(a, Object.assign({ s: sess() }, b || {}));
 /* 동의 일시 안내 한 줄 */
@@ -191,37 +192,45 @@ async function draw(note){
   const drawA = () => { $('al').innerHTML = ed.areas.map((a, i) => `<li>${esc(aName(a) + (a.dn ? ' ' + a.dn : ''))}${i >= max ? ' <small>(이 상품에선 안 보냄)</small>' : ''}<button type="button" data-i="${i}" aria-label="${esc(a.gn)} 빼기">×</button></li>`).join('');
     $('al').querySelectorAll('button[data-i]').forEach(b => b.onclick = () => { ed.areas.splice(+b.dataset.i, 1); drawA(); }); };
   drawA();
-  const edMsg = (t, bad) => { const m = $('edMsg'); m.hidden = false; m.className = 'msg ' + (bad ? 'err' : 'info'); m.textContent = t; };
+  /* 잘못된 값·실패는 [저장하기] 바로 아래 빨간 안내(화면 밖이면 그 자리로 스크롤) — assets/savefb.js */
+  const edMsg = (t, bad, b) => { if (bad) return void SF.err(b || null, t, { msg: 'edMsg' }); const m = $('edMsg'); m.hidden = false; m.className = 'msg info'; m.textContent = t; };
   $('add').onclick = () => { const g = $('sg').value, dn = $('dn').value; if (!g || ed.areas.some(a => a.g === g && a.dn === dn)) return;
-    if (ed.areas.length >= LIM.areas) return edMsg(`지역은 ${LIM.areas}곳까지 넣을 수 있어요.`, 1); ed.areas.push({ g, gn: SG[g].name, sd: SG[g].sido, dn }); drawA(); };
+    if (ed.areas.length >= LIM.areas) return edMsg(`지역은 ${LIM.areas}곳까지 넣을 수 있어요.`, 1, $('add')); ed.areas.push({ g, gn: SG[g].name, sd: SG[g].sido, dn }); drawA(); };
   if ($('repAdd')) $('repAdd').onclick = () => { const x = B.repAreas(SG, ed.areas, LIM.areas); ed.areas = x.areas; drawA();
     edMsg(x.added ? `${x.added}곳을 더했어요. 지금 모두 ${ed.areas.length}곳이에요. 아래 [저장하기]를 눌러야 저장돼요.${x.missing.length ? ` (못 찾은 곳: ${x.missing.join(', ')})` : ''}`
       : (x.missing.length ? `더할 곳이 없어요. 못 찾은 곳: ${x.missing.join(', ')}` : '대표 지역이 이미 모두 들어 있어요.'), !x.added && x.missing.length); };
   $('saveEd').onclick = async () => {
     const num = (v, lo, hi) => { v = String(v).trim(); if (v === '') return null; const n = Math.round(+v); return n >= lo && n <= hi ? n : NaN; };
     const sc = num($('cyScore').value, 0, 84), nh = num($('cyNohome').value, 0, 40);
-    if (Number.isNaN(sc)) return edMsg('청약 가점은 0~84 사이 숫자로 넣어 주세요.', 1);
-    if (Number.isNaN(nh)) return edMsg('무주택 기간은 0~40 사이 숫자(년)로 넣어 주세요.', 1);
-    if (!ed.areas.length) return edMsg('받을 지역을 하나 이상 넣어 주세요.', 1);
+    if (Number.isNaN(sc)) return edMsg('청약 가점은 0~84 사이 숫자로 넣어 주세요.', 1, $('saveEd'));
+    if (Number.isNaN(nh)) return edMsg('무주택 기간은 0~40 사이 숫자(년)로 넣어 주세요.', 1, $('saveEd'));
+    if (!ed.areas.length) return edMsg('받을 지역을 하나 이상 넣어 주세요.', 1, $('saveEd'));
     const aptAll = $('apts').value.split(',').map(x => x.trim()).filter(Boolean);
-    if (aptAll.length > curT.apts) return edMsg(`관심 단지는 지금 요금제에서 ${curT.apts}개까지예요. 더 넣으려면 요금제를 바꿔 주세요.`, 1);
+    if (aptAll.length > curT.apts) return edMsg(`관심 단지는 지금 요금제에서 ${curT.apts}개까지예요. 더 넣으려면 요금제를 바꿔 주세요.`, 1, $('saveEd'));
     const apts = aptAll.slice(0, LIM.apts), urg = $('urg') ? +$('urg').value : (r.brief.urg || null);
     const nb = { areas: ed.areas, apts, v: r.brief.v || '', cy: { score: sc, nohome: nh }, budget: $('budget').value, age: $('age').value, urg };
     try {
-      $('saveEd').disabled = true;
+      SF.busy('saveEd');
       await A.update(d => { d.brief = nb; });
       try { localStorage.setItem('jdj_brief_apts', JSON.stringify(apts)); if (curT.urgPick && urg) localStorage.setItem('jdj_brief_urg', String(urg)); else localStorage.removeItem('jdj_brief_urg'); localStorage.setItem('jdj_brief_cy', JSON.stringify(sc == null ? null : { score: sc, nohome: nh })); } catch(e){}
-      draw('내일 아침 브리핑부터 바뀐 지역으로 보내 드려요.');
-    } catch(e){ $('saveEd').disabled = false; edMsg(e.message || '저장하지 못했어요. 잠시 뒤 다시 해 주세요.', 1); }
+      const okT = '내일 아침 브리핑부터 바뀐 지역으로 보내 드려요.';
+      await draw(okT);                                   // 맨 위 안내는 그대로 두고
+      SF.ok('saveEd', okT, { msg: 'edMsg' });             // 다시 그린 [저장하기] 바로 아래에도 '✓ 저장했어요'(화면 밖이면 그 자리로만 스크롤)
+    } catch(e){ SF.err('saveEd', e.message || '저장하지 못했어요. 잠시 뒤 다시 해 주세요.', { msg: 'edMsg' }); }
   };
   drawPlus(r);
-  const act = async (fn, ok) => { try { await fn(); draw(ok); } catch(e){ alert(e.message); } };
+  /* 해지·환불·받는 방법 바꾸기 등: 누른 버튼은 '처리 중…', 다시 그린 뒤 같은 버튼이 보이면 그 아래에, 없어졌으면 토스트로도 알림. 실패는 버튼 바로 아래 빨간 안내 */
+  const act = async (fn, ok, b, sel) => { if (b) SF.busy(b, '처리 중…');
+    try { await fn(); await draw(ok); const nb = sel && main.querySelector(sel);
+      if (nb && nb.offsetParent) SF.ok(nb, ok, { html: true, done: '✓ 처리했어요' }); else SF.toast(ok.replace(/<[^>]*>/g, ''), false, true); }
+    catch(e){ if (b && b.isConnected) SF.err(b, e.message); else alert(e.message); } };
   if ($('admOn')) $('admOn').onclick = async () => { const m = $('admMsg'); $('admOn').disabled = true;
-    try { const x = await call('briefAdminMail'); if (x.already) return draw('이미 운영자 모드가 켜져 있어요.'); m.className = 'msg info'; m.textContent = '확인 메일을 보냈어요. 30분 안에 메일의 링크를 이 계정으로 로그인한 채 열어 주세요.'; }
-    catch(e){ m.className = 'msg err'; m.textContent = e.message; $('admOn').disabled = false; } m.hidden = false; };
-  if ($('admOff')) $('admOff').onclick = () => confirm('운영자 모드를 끌까요? 지역·관심 단지는 요금제 수까지만 보내요.') && act(() => call('briefAdminOff'), '운영자 모드를 껐어요.');
-  main.querySelectorAll('[data-stop]').forEach(b => b.onclick = () => confirm('내일부터 브리핑을 보내지 않을까요? 남은 기간 환불은 [환불 요청]으로 따로 해요.') && act(() => call('briefStop', { id: b.dataset.stop }), '해지했어요. 내일부터 보내지 않아요.'));
-  main.querySelectorAll('[data-ref]').forEach(b => b.onclick = () => { const why = prompt('환불 사유(선택)를 적어 주세요. 요청하면 바로 발송이 멈춰요.', ''); if (why !== null) act(() => call('briefRefund', { id: b.dataset.ref, reason: why }), '환불 요청을 받았어요. 영업일 3일 안에 결제한 수단으로 돌려 드려요.'); });
+    SF.busy('admOn', '보내는 중…');
+    try { const x = await call('briefAdminMail'); if (x.already) return draw('이미 운영자 모드가 켜져 있어요.'); SF.ok('admOn', '확인 메일을 보냈어요. 30분 안에 메일의 링크를 이 계정으로 로그인한 채 열어 주세요.', { msg: m, done: '✓ 보냈어요' }); $('admOn').disabled = true; }
+    catch(e){ SF.err('admOn', e.message, { msg: m }); } };
+  if ($('admOff')) $('admOff').onclick = () => confirm('운영자 모드를 끌까요? 지역·관심 단지는 요금제 수까지만 보내요.') && act(() => call('briefAdminOff'), '운영자 모드를 껐어요.', $('admOff'));
+  main.querySelectorAll('[data-stop]').forEach(b => b.onclick = () => confirm('내일부터 브리핑을 보내지 않을까요? 남은 기간 환불은 [환불 요청]으로 따로 해요.') && act(() => call('briefStop', { id: b.dataset.stop }), '해지했어요. 내일부터 보내지 않아요.', b));
+  main.querySelectorAll('[data-ref]').forEach(b => b.onclick = () => { const why = prompt('환불 사유(선택)를 적어 주세요. 요청하면 바로 발송이 멈춰요.', ''); if (why !== null) act(() => call('briefRefund', { id: b.dataset.ref, reason: why }), '환불 요청을 받았어요. 영업일 3일 안에 결제한 수단으로 돌려 드려요.', b); });
   /* 요금제 바꾸기: 고르면 서버가 금액·바뀌는 때를 계산해 먼저 보여 주고, 올리기는 차액 결제 → 바로 적용, 내리기는 다음 이용권부터 */
   const won = n => Number(n).toLocaleString('ko-KR');
   main.querySelectorAll('[data-chg]').forEach(b => b.onclick = () => {
@@ -267,15 +276,14 @@ async function draw(note){
       };
     });
   });
-  main.querySelectorAll('[data-keep]').forEach(b => b.onclick = () => act(() => call('briefChange', { id: b.dataset.keep, product: b.dataset.tier }), '지금 요금제를 그대로 이어 가요.'));
+  main.querySelectorAll('[data-keep]').forEach(b => b.onclick = () => act(() => call('briefChange', { id: b.dataset.keep, product: b.dataset.tier }), '지금 요금제를 그대로 이어 가요.', b));
   if ($('adOn')) $('adOn').onchange = () => { const on = $('adOn').checked; $('amAd').disabled = !on; if (!on) $('amAd').checked = false; $('amL').classList.toggle('dis', !on); $('amLock').hidden = on; };
   if ($('amSave')) $('amSave').onclick = async () => {
-    const m = $('amMsg'), ad = $('adOn').checked, on = ad && $('amAd').checked; $('amSave').disabled = true;
-    try { const j = await call('briefAdPref', { ad, on }); m.hidden = false; m.className = 'msg info';
-      m.textContent = on ? '저장했어요. 광고가 있는 날은 메일 제목 맨 앞에 (광고)가 붙어요. 처리 결과를 메일로도 알려 드려요.' : '저장했어요. 브리핑 메일에는 광고가 들어가지 않아요. 처리 결과를 메일로도 알려 드려요.';
+    const m = $('amMsg'), ad = $('adOn').checked, on = ad && $('amAd').checked; SF.busy('amSave');
+    try { const j = await call('briefAdPref', { ad, on });
+      SF.ok('amSave', on ? '저장했어요. 광고가 있는 날은 메일 제목 맨 앞에 (광고)가 붙어요. 처리 결과를 메일로도 알려 드려요.' : '저장했어요. 브리핑 메일에는 광고가 들어가지 않아요. 처리 결과를 메일로도 알려 드려요.', { msg: m });
       $('amWhen').textContent = amWhen(j.adc, j.amAd);
-    } catch(e){ m.hidden = false; m.className = 'msg err'; m.textContent = e.message; }
-    $('amSave').disabled = false;
+    } catch(e){ SF.err('amSave', e.message, { msg: m }); }
   };
   /* 친구 초대: share.js 링크 우선(휴대폰 공유창 → 안 되면 링크 복사) */
   if ($('invBtn')) $('invBtn').onclick = async () => {
@@ -290,7 +298,7 @@ async function draw(note){
     } catch(e){ say(e.message, 1); }
     b.disabled = false;
   };
-  main.querySelectorAll('[data-up]').forEach(b => b.onclick = () => { const id = b.dataset.up; act(() => call('briefUpdate', { id, channel: main.querySelector(`[data-ch="${id}"]`).value, contact: main.querySelector(`[data-ct="${id}"]`).value }), '받는 방법을 바꿨어요.'); });
+  main.querySelectorAll('[data-up]').forEach(b => b.onclick = () => { const id = b.dataset.up; act(() => call('briefUpdate', { id, channel: main.querySelector(`[data-ch="${id}"]`).value, contact: main.querySelector(`[data-ct="${id}"]`).value }), '받는 방법을 바꿨어요.', b, `[data-up="${id}"]`); });
 }
 
 /* ---------- 중개사 플러스: 내 손님 브리핑 · 주간 시장 리포트 (assets/client-brief.js) ---------- */
@@ -346,7 +354,9 @@ async function drawPlus(r){
   box.querySelectorAll('[data-p]').forEach(el => { el.value = prof[el.dataset.p] || (el.tagName === 'SELECT' ? 'agent' : ''); el.oninput = el.onchange = () => { prof[el.dataset.p] = el.value.trim(); showOnly(); }; });
   const showOnly = () => box.querySelectorAll('[data-only]').forEach(el => { el.hidden = prof.role !== el.dataset.only; });
   showOnly();
-  const msg = (t, bad) => { const m = $('cuMsg'); m.hidden = false; m.className = 'msg ' + (bad ? 'err' : 'info'); m.textContent = t; };
+  /* 안내: 버튼(b)을 주면 그 버튼 바로 아래, 아니면 [손님 목록 저장하기] 아래 칸. 실패는 빨간 안내 + 화면 밖이면 그 자리로 스크롤 */
+  const msg = (t, bad, b) => { if (b) return void (bad ? SF.err(b, t) : SF.ok(b, t, { done: '✓ 됐어요' }));
+    if (bad) return void SF.err(null, t, { msg: 'cuMsg' }); const m = $('cuMsg'); m.hidden = false; m.className = 'msg info'; m.textContent = t; };
   /* 손님 목록 편집 */
   const sgOpts = (sel) => `<option value="">고르지 않음</option>` + [...new Map(myAreas.concat(list.flatMap(c => c.apts.map(a => ({ g: a.g, gn: (SG[a.g] || {}).name || '' })))).filter(a => a.g).map(a => [a.g, a])).values()]
     .map(a => `<option value="${a.g}" ${a.g === sel ? 'selected' : ''}>${esc(a.gn || (SG[a.g] || {}).name || a.g)}</option>`).join('');
@@ -373,7 +383,7 @@ async function drawPlus(r){
       el.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { c.apts.splice(+b.dataset.rm, 1); drawList(); });
       const rl = el.querySelector('[data-relink]');
       if (rl) rl.onclick = async () => { if (!confirm('새 링크를 만들까요? 이미 보낸 예전 링크로는 더 볼 수 없어요.')) return;
-        try { const x = await call('bpRelink', { id: c.id }); msg('새 링크를 만들었어요. 손님에게 새 링크를 보내 주세요.'); refresh(x); } catch(e){ msg(e.message, 1); } };
+        try { SF.busy(rl, '만드는 중…'); const x = await call('bpRelink', { id: c.id }); refresh(x); SF.ok(null, '새 링크를 만들었어요. 손님에게 새 링크를 보내 주세요.', { msg: 'cuMsg' }); } catch(e){ msg(e.message, 1, rl); } };
       const sd = el.querySelector('[data-k="sd"]'); if (!sd) return;
       const sg = el.querySelector('[data-k="sg"]'), ap = el.querySelector('[data-k="apt"]'), dl = el.querySelector('datalist');
       let opts = [];
@@ -386,9 +396,10 @@ async function drawPlus(r){
       el.querySelector('[data-k="add"]').onclick = () => {
         const t = ap.value.trim(), g = sg.value;
         const hit = opts.find(x => `${x.a} (${x.d})` === t) || (opts.filter(x => x.a === t).length === 1 ? opts.find(x => x.a === t) : null);
-        if (!hit) return msg(opts.length ? '목록에 있는 단지 이름을 골라 주세요. 같은 이름이 여러 동에 있으면 동까지 골라 주세요.' : '단지 목록을 불러오는 중이에요. 잠시 뒤 다시 눌러 주세요.', 1);
-        if (c.apts.some(a => a.g === g && a.d === hit.d && a.a === hit.a)) return msg('이미 넣은 단지예요.', 1);
-        if (c.apts.length >= L.apts) return msg(`손님 한 분에 단지는 ${L.apts}곳까지예요.`, 1);
+        const ab = el.querySelector('[data-k="add"]');
+        if (!hit) return msg(opts.length ? '목록에 있는 단지 이름을 골라 주세요. 같은 이름이 여러 동에 있으면 동까지 골라 주세요.' : '단지 목록을 불러오는 중이에요. 잠시 뒤 다시 눌러 주세요.', 1, ab);
+        if (c.apts.some(a => a.g === g && a.d === hit.d && a.a === hit.a)) return msg('이미 넣은 단지예요.', 1, ab);
+        if (c.apts.length >= L.apts) return msg(`손님 한 분에 단지는 ${L.apts}곳까지예요.`, 1, ab);
         c.apts.push({ g, d: hit.d, a: hit.a }); if (!c.g) { c.g = g; c.gn = (SG[g] || {}).name || ''; }
         $('cuMsg').hidden = true; drawList();
       };
@@ -401,10 +412,9 @@ async function drawPlus(r){
     const e1 = pfErr(); if (e1) { $('pfBox').open = true; return msg(e1, 1); }
     list.forEach(c => { c.gn = c.g ? ((SG[c.g] || {}).name || c.gn || '') : ''; });
     const cl = CB.cleanList(list, L); if (cl.err) return msg(cl.err, 1);
-    try { $('cuSave').disabled = true; const x = await call('bpSave', { profile: PR.cleanProfile(prof), customers: cl.list });
-      msg('저장했어요. 새로 넣은 단지는 내일 아침 카드부터 들어가요.'); refresh(x); }
-    catch(e){ msg(e.message || '저장하지 못했어요. 잠시 뒤 다시 해 주세요.', 1); }
-    finally { $('cuSave').disabled = false; }
+    try { SF.busy('cuSave'); const x = await call('bpSave', { profile: PR.cleanProfile(prof), customers: cl.list });
+      refresh(x); SF.ok('cuSave', '저장했어요. 새로 넣은 단지는 내일 아침 카드부터 들어가요.', { msg: 'cuMsg' }); }
+    catch(e){ SF.err('cuSave', e.message || '저장하지 못했어요. 잠시 뒤 다시 해 주세요.', { msg: 'cuMsg' }); }
   };
   drawList();
   CB.mountCards($('ccList'), d, { focus, place: 'manage' });

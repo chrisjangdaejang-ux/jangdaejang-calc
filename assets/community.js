@@ -236,7 +236,11 @@
       <div class="cm-acts"><button type="button" class="cm-btn" data-cm-send-r>${my ? '고친 후기 올리기' : '후기 올리기'}</button><button type="button" class="cm-btn sub" data-cm-close>닫기</button></div>
       <p class="cm-msg" data-cm-msg aria-live="polite"></p></div>`;
   }
-  function msg(el, t, ok) { const m = el.querySelector('[data-cm-msg]'); if (m) { m.className = 'cm-msg ' + (ok ? 'ok' : 'err'); m.textContent = t; } }
+  /* 안내는 [올리기] 바로 아래 칸에 — 실패는 role=alert, 화면 밖이면 그 자리로만 스크롤(assets/savefb.js 가 있을 때) */
+  const SF = () => root.JDJ_SAVEFB || null;
+  function msg(el, t, ok) { const m = el.querySelector('[data-cm-msg]'); if (m) { m.className = 'cm-msg ' + (ok ? 'ok' : 'err'); m.textContent = t; m.setAttribute('role', ok ? 'status' : 'alert'); if (SF()) SF().reveal(m); } }
+  const busyB = (t, label) => { if (SF()) SF().busy(t, label); else t.disabled = true; };
+  const freeB = t => { if (SF()) SF().restore(t); else t.disabled = false; };
   /** 사진 줄이기(긴 쪽 1600px, JPG) — 사진 속 위치 정보(EXIF)도 이때 빠져요 */
   function shrink(file) {
     return new Promise((ok, no) => {
@@ -269,18 +273,21 @@
         if (kind === 'r') form.querySelectorAll('[data-cm-cat]').forEach(g => { const v = +g.dataset.v; if (v) r[g.dataset.cmCat] = v; else if (!miss) miss = CATS.find(c => c[0] === g.dataset.cmCat)[1]; });
         if (miss) return msg(form, `${miss} 별점을 골라 주세요.`);
         if (text.length < (kind === 'r' ? 4 : 10)) return msg(form, kind === 'r' ? '한 줄 후기를 4글자 이상 적어 주세요.' : '이야기를 10글자 이상 적어 주세요.');
-        t.disabled = true;
+        busyB(t, '올리는 중…');
         post({ action: 'cmWrite', pid: st.pid, name: st.name, kind, r: kind === 'r' ? r : null, text }).then(j => {
-          st.open = ''; return load(el).then(() => { const m = el.querySelector('.cm-acts'); if (m) m.insertAdjacentHTML('beforebegin', `<p class="cm-msg ok">${j.held ? '받았어요. 운영자가 확인한 뒤 올라가요.' : '올렸어요. 고맙습니다!'}</p>`); });
-        }).catch(x => { t.disabled = false; msg(form, x.message); });
+          const okT = j.held ? '받았어요. 운영자가 확인한 뒤 올라가요.' : '올렸어요. 고맙습니다!';
+          st.open = ''; return load(el).then(() => { const m = el.querySelector('.cm-acts'); if (m) m.insertAdjacentHTML('beforebegin', `<p class="cm-msg ok" role="status">${okT}</p>`);
+            if (SF()) { SF().reveal(m ? m.previousElementSibling : el); SF().toast('✓ ' + okT); } });
+        }).catch(x => { freeB(t); msg(form, x.message); });
         return;
       }
       if (t.hasAttribute('data-cm-send-v')) {
         const form = t.closest('.cm-form'), f = form.querySelector('[data-cm-file]').files[0];
         if (!f) return msg(form, '사진을 먼저 골라 주세요.');
-        t.disabled = true; msg(form, '보내고 있어요…', true);
+        busyB(t, '보내는 중…'); msg(form, '보내고 있어요…', true);
         shrink(f).then(img => post({ action: 'cmVerify', pid: st.pid, name: st.name, img })).then(() => { st.open = ''; return load(el); })
-          .catch(x => { t.disabled = false; msg(form, x.message); });
+          .then(() => { if (SF()) SF().toast('✓ 사진을 보냈어요.'); })
+          .catch(x => { freeB(t); msg(form, x.message); });
         return;
       }
       if (t.hasAttribute('data-cm-rep')) {

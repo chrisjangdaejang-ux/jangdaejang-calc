@@ -38,6 +38,7 @@
 <script src="../assets/lead.js?v=3"></script>
 <script src="../assets/config.js?v=9"></script>
 <script src="../assets/auth.js?v=10"></script>
+<script src="../assets/savefb.js?v=1"></script>
 <script src="../assets/alerts-core.js?v=2"></script>
 <script src="../assets/watch-core.js?v=2"></script>
 <script src="../assets/watch.js?v=7"></script>
@@ -60,7 +61,7 @@
 <script src="../assets/rent-core.js?v=6"></script>
 <script src="../assets/villa-core.js?v=1"></script>
 <script src="../assets/villa-view.js?v=4"></script>
-<script src="../assets/community.js?v=2"></script>
+<script src="../assets/community.js?v=3"></script>
 <script src="../assets/policy-view.js?v=3"></script>
 <script src="../assets/devproj-view.js?v=4"></script>
 <script src="../assets/src-box.js?v=3"></script>
@@ -728,12 +729,12 @@ function wireResult(d, u, sm, AT){
   $('saveBtn').onclick = () => {
     const h = {sd:S.sd, code:d.code, dong:d.dong, jibun:d.jibun, apt:d.apt, band:S.band, bp:num(bp.value) || null, bd:$('bd').value || '', t:new Date().toISOString().slice(0, 10)};
     const ap = AT && AT.length ? M.areaPick(AT, S.ar) : null; if (ap) h.ar = ap.a;   // 평형 안 전용면적이 여럿이면 고른(또는 기본) 면적도 함께 저장
-    const r = M.addHome(loadHomes(), h), msg = $('saveMsg');
-    if (!r.ok){ msg.style.color = '#C2410C'; msg.textContent = r.full ? `내 집은 최대 ${M.MAX_HOMES}개까지 저장돼요. 위 '내 집'에서 하나를 지운 뒤 다시 눌러 주세요.` : '저장하지 못했어요. 입력값을 확인해 주세요.'; return; }
-    if (!saveHomes(r.list)){ msg.style.color = '#C2410C'; msg.textContent = '이 브라우저에서는 저장할 수 없어요(사생활 보호 모드 등).'; return; }
-    msg.style.color = '#0E7A4F'; msg.textContent = '저장했어요. 다음에 들어오면 위 \'내 집\'에서 바로 보여 드려요.';
-    $('saveBtn').textContent = '내 집 정보 고치기';
+    const r = M.addHome(loadHomes(), h), msg = $('saveMsg'), SF = window.JDJ_SAVEFB;
+    /* 결과는 [내 집으로 저장] 바로 옆 칸에 — 위 '내 집' 목록이 늘어나 버튼이 밀려도 그 자리로만 스크롤(assets/savefb.js) */
+    if (!r.ok) return void SF.err('saveBtn', r.full ? `내 집은 최대 ${M.MAX_HOMES}개까지 저장돼요. 위 '내 집'에서 하나를 지운 뒤 다시 눌러 주세요.` : '저장하지 못했어요. 입력값을 확인해 주세요.', { msg });
+    if (!saveHomes(r.list)) return void SF.err('saveBtn', '이 브라우저에서는 저장할 수 없어요(사생활 보호 모드 등).', { msg });
     renderHomes();
+    SF.ok('saveBtn', '저장했어요. 다음에 들어오면 위 \'내 집\'에서 바로 보여 드려요.', { msg, next: '내 집 정보 고치기' });
   };
 }
 
@@ -832,10 +833,15 @@ function wireHome(el, h, u, u0){
   });
   const ib = el.querySelector('.hbp');
   ib.addEventListener('input', () => { const v = num(ib.value); ib.value = v ? v.toLocaleString() : ''; el.querySelector('.hbpH').textContent = v ? M.won(v) : ''; });
-  el.querySelector('.hsave').onclick = () => {
+  el.querySelector('.hsave').onclick = async () => {
     const list = loadHomes(), cur = list.find(x => M.homeId(x) === id); if (!cur) return;
     cur.bp = num(ib.value) || null; cur.bd = el.querySelector('.hbd').value || '';
-    saveHomes(M.parseStore(M.dumpStore(list))); renderHomes();
+    const SF = window.JDJ_SAVEFB, hb = el.querySelector('.hsave'); SF.busy(hb);
+    if (!saveHomes(M.parseStore(M.dumpStore(list)))) return void SF.err(hb, '이 브라우저에서는 저장할 수 없어요(사생활 보호 모드 등).');
+    await renderHomes();
+    /* 카드가 다시 그려지며 입력 칸이 닫히므로, 그 집 카드 버튼 줄 바로 아래에 '✓ 저장했어요' */
+    const card = $('homes').querySelector(`[data-id="${CSS.escape(id)}"]`), at = card && card.querySelector('.acts');
+    SF.ok(null, '✓ 매수가·시기를 저장했어요. 매수가 대비 변동을 다시 계산했어요.', { after: at });
   };
 }
 

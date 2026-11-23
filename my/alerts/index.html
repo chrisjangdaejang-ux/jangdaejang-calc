@@ -22,6 +22,7 @@
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/config.js?v=9"></script>
 <script src="../../assets/auth.js?v=10"></script>
+<script src="../../assets/savefb.js?v=1"></script>
 <script src="../../chungyak/cy-engine.js?v=2"></script>
 <script src="../../assets/alerts-core.js?v=2"></script>
 <script src="../../assets/watch-core.js?v=2"></script>
@@ -124,6 +125,7 @@ const DATA = JB.DATA + 'data/', BASE = JB.SITE, $ = id => document.getElementByI
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ls = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
 const PEND = 'jdj_alert_pending';
+const SF = window.JDJ_SAVEFB;                         // 저장·신청 버튼 반응(assets/savefb.js)
 const SEEN0 = W ? W.aseen() : {};                     // 이 화면을 열 때까지 본 알림(다시 그려도 '새' 표시가 같게)
 const stat = (n, p) => { try { if (window.jdjStat) jdjStat(n, p || {}); } catch (e) {} };
 document.querySelectorAll('[data-site-name]').forEach(el => { el.textContent = SITE; });
@@ -211,7 +213,7 @@ function drawMail(){
     el.innerHTML = `<h3>메일 알림을 받고 있어요</h3><div class="on"><b>✓ 받는 중</b><span>${esc(sub.mask)}</span></div>
       <p style="margin-top:6px">알림이 있는 날만 하루 한 번, 오전 7시대에 보내 드려요. 동의한 때: ${esc(sub.at)}${sub.last ? ` · 마지막으로 보낸 날: ${esc(sub.last)}` : ''}</p>${brief ? mergeTxt : ''}
       <button type="button" class="btn ghost" id="leave">메일 알림 모두 끄기</button><div id="mailMsg" class="msg" role="status"></div>`;
-    $('leave').onclick = () => { $('leave').disabled = true; call('alertLeave').then(j => { MINE = j; stat('alert_leave'); drawMail(); }).catch(e => { $('mailMsg').className = 'msg err'; $('mailMsg').textContent = e.message; $('leave').disabled = false; }); };
+    $('leave').onclick = () => { SF.busy('leave', '끄는 중…'); call('alertLeave').then(j => { MINE = j; stat('alert_leave'); drawMail(); SF.toast('메일 알림을 모두 껐어요.', false, true); }).catch(e => SF.err('leave', e.message, { msg: 'mailMsg' })); };
     return;
   }
   let pend = null; try { pend = JSON.parse(ls.get(PEND) || 'null'); } catch (e) {}
@@ -231,17 +233,18 @@ function drawMail(){
   el.querySelectorAll('input[name=em]').forEach(r => { r.onchange = () => { $('email').hidden = em() === 'brief'; }; });
   $('join').onclick = () => {
     const msg = $('mailMsg'), useBrief = !!brief && em() === 'brief', email = $('email').value.trim();
-    msg.className = 'msg err';
-    if (!useBrief && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { msg.textContent = '알림을 받을 이메일 주소를 정확히 적어 주세요.'; return; }
-    if (!$('agree').checked) { msg.textContent = '메일 알림을 받으려면 동의 칸에 체크해 주세요.'; return; }
+    /* 빠진 칸·실패는 [메일 알림 신청] 바로 아래 빨간 안내(화면 밖이면 그 자리로 스크롤) — assets/savefb.js */
+    const bad = t => SF.err('join', t, { msg });
+    if (!useBrief && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return bad('알림을 받을 이메일 주소를 정확히 적어 주세요.');
+    if (!$('agree').checked) return bad('메일 알림을 받으려면 동의 칸에 체크해 주세요.');
     const P = W.aprefs();
-    if (!W.list().length && !P.cy.on && !(P.rp && homesN())) { msg.textContent = '관심 목록에 단지를 넣거나, 청약 맞춤 알림 지역을 고르거나, 내 집 성적표 메일을 켠 뒤 신청해 주세요.'; return; }
+    if (!W.list().length && !P.cy.on && !(P.rp && homesN())) return bad('관심 목록에 단지를 넣거나, 청약 맞춤 알림 지역을 고르거나, 내 집 성적표 메일을 켠 뒤 신청해 주세요.');
     const body = { consent: true, v: AC.V, at: new Date().toISOString(), useBrief, email: useBrief ? '' : email };
-    $('join').disabled = true; msg.className = 'msg'; msg.textContent = '신청하는 중이에요…';
-    call('alertJoin', Object.assign({prefs: P}, body)).then(j => { MINE = j; SERVER = 'ok'; stat('alert_join', {from:'center'}); drawMail(); const m = $('mailMsg'); if (m) { m.className = 'msg ok'; m.textContent = '신청했어요. 확인 메일을 보내 드렸어요.'; } })
+    SF.busy('join', '신청하는 중…'); msg.className = 'msg'; msg.textContent = '신청하는 중이에요…';
+    call('alertJoin', Object.assign({prefs: P}, body)).then(j => { MINE = j; SERVER = 'ok'; stat('alert_join', {from:'center'}); drawMail(); if ($('mailMsg')) SF.ok(null, '신청했어요. 확인 메일을 보내 드렸어요.', { msg: 'mailMsg' }); })
       .catch(e => {
         if (e.wait) { ls.set(PEND, JSON.stringify(body)); SERVER = 'wait'; stat('alert_join', {from:'pending_saved'}); drawMail(); return; }
-        msg.className = 'msg err'; msg.textContent = e.message; $('join').disabled = false;
+        SF.err('join', e.message, { msg });
       });
   };
 }

@@ -16,6 +16,7 @@
 <meta name="description" content="집코드 제휴 중개사 업무 도구: 받은 매수·매도 문의, 고객 관심 단지 변화 알림, 적정 가격 근거표.">
 <script>window.JDJ_CONFIG = { tool:'agent_my', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../../assets/track.js?v=2"></script>
+<script src="../../assets/savefb.js?v=1"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/mine-core.js?v=20"></script>
 <script src="../../assets/agent-tools-core.js?v=2"></script>
@@ -276,18 +277,19 @@ function drawKeys(){
   $('wKeys').querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { KEYS.splice(+b.dataset.rm, 1); drawKeys(); });
 }
 function saveWatch(){
-  const m = $('wMsg'); m.className = 'msg err';
-  const al = G.aliasOk($('wAlias').value); if (!al.ok){ m.textContent = al.err; return; }
-  if (!KEYS.length){ m.textContent = '관심 단지를 1곳 이상 골라 주세요.'; return; }
+  const m = $('wMsg'), SF = window.JDJ_SAVEFB; m.className = 'msg err';
+  const al = G.aliasOk($('wAlias').value); if (!al.ok) return void SF.err('wSave', al.err, { msg: m });
+  if (!KEYS.length) return void SF.err('wSave', '관심 단지를 1곳 이상 골라 주세요.', { msg: m });
   const kinds = {}; $('wKinds').querySelectorAll('input').forEach(c => kinds[c.value] = c.checked);
   const cs = CS(), prev = EDIT ? cs.get(EDIT) : null, ref = (prev && prev.ref) || G.newRef();
-  $('wSave').disabled = true; m.className = 'msg'; m.textContent = '저장하는 중이에요…';
+  SF.busy('wSave'); m.className = 'msg'; m.textContent = '저장하는 중이에요…';
   call('watchSave', { id: EDIT || '', alias: al.v, ref, keys: KEYS, kinds }).then(j => {
     cs.set(j.saved, { name: $('wName').value.trim(), ref });
-    WL = j; drawWatch(); m.className = 'msg ok'; m.textContent = '저장했어요. 내일 아침부터 변화를 확인해요.';
+    WL = j; drawWatch();
     track('agent_watch_save', { n: KEYS.length });
-    EDIT = null; KEYS = []; $('wName').value = ''; $('wAlias').value = ''; drawKeys(); $('wNew').hidden = true; $('wSave').textContent = '저장';
-  }).catch(e => { m.className = 'msg err'; m.textContent = e.message; }).finally(() => { $('wSave').disabled = false; });
+    EDIT = null; KEYS = []; $('wName').value = ''; $('wAlias').value = ''; drawKeys(); $('wNew').hidden = true;
+    SF.ok('wSave', '저장했어요. 내일 아침부터 변화를 확인해요.', { msg: m, next: '저장' });   // '✓ 저장했어요' → 2.5초 뒤 '저장'
+  }).catch(e => SF.err('wSave', e.message, { msg: m }));
 }
 function loadWatch(){
   $('watches').innerHTML = '<div class="empty">불러오는 중이에요…</div>';
@@ -322,9 +324,10 @@ function drawWatch(){
 function drawPrefs(){
   const p = INBOX.prefs || {}; $('pMail').value = p.mail || ''; $('pOn').checked = p.on !== false;
   $('pSave').onclick = () => {
+    const SF = window.JDJ_SAVEFB; SF.busy('pSave');
     $('pMsg').className = 'msg'; $('pMsg').textContent = '저장하는 중이에요…';
-    call('agentPrefs', { set: true, mail: $('pMail').value.trim(), on: $('pOn').checked }).then(j => { INBOX.prefs = j; $('pMsg').className = 'msg ok'; $('pMsg').textContent = '저장했어요.'; })
-      .catch(e => { $('pMsg').className = 'msg err'; $('pMsg').textContent = e.message; });
+    call('agentPrefs', { set: true, mail: $('pMail').value.trim(), on: $('pOn').checked }).then(j => { INBOX.prefs = j; SF.ok('pSave', '저장했어요.', { msg: 'pMsg' }); })
+      .catch(e => SF.err('pSave', e.message, { msg: 'pMsg' }));
   };
 }
 

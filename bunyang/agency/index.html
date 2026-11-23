@@ -22,6 +22,7 @@
 <script>window.JDJ_CONFIG = { tool:'bunyang_agency', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../../assets/track.js?v=2"></script>
 <script src="../../assets/stat.js?v=7"></script>
+<script src="../../assets/savefb.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../assets/aplus.css?v=45">
@@ -291,29 +292,30 @@ function fallback(b, why) {
   const mail = B.email ? `mailto:${B.email}?subject=${encodeURIComponent('[집코드 분양대행 의뢰] ' + b.company)}&body=${encodeURIComponent(body)}` : '';
   const m = $('msg'); m.className = 'msg err';
   m.innerHTML = `${esc(why)} ${mail ? '<a href="' + esc(mail) + '">이메일로 보내기</a> 또는 ' : ''}카카오톡 채널로 연락해 주세요.`;
+  m.setAttribute('role', 'alert'); JDJ_SAVEFB.reveal(m); JDJ_SAVEFB.toast(why, true);
 }
 document.querySelectorAll('#form input, #form textarea, #form select').forEach(el => el.addEventListener('input', () => el.removeAttribute('aria-invalid')));
 $('form').addEventListener('submit', async e => {
   e.preventDefault();
   const m = $('msg'); m.className = 'msg'; m.textContent = '';
   const bad = check();
-  if (bad) { m.className = 'msg err'; m.textContent = bad[1]; const el = $(bad[0]); if (el) { el.setAttribute('aria-invalid', 'true'); el.focus(); } return; }
+  if (bad) { m.className = 'msg err'; m.textContent = bad[1]; m.setAttribute('role', 'alert'); const el = $(bad[0]); if (el) { el.setAttribute('aria-invalid', 'true'); el.focus(); } JDJ_SAVEFB.toast(bad[1], true); return; }
   const v = id => $(id).value.trim();
   const body = { action: 'agencyApply', company: v('company'), biz: v('biz'), role: v('role'), manager: v('manager'), contact: v('contact'), addr: v('addr'),
     kind: v('kind'), units: v('units').replace(/,/g, ''), stage: v('stage'), permit: v('permit'), start: v('start'), terms: v('terms'), memo: v('memo'), agree: true, cv: CV, hp: $('hpf').value };
   if (!window.JDJ_AGENTS || !JDJ_AGENTS.ready) { fallback(body, '의뢰 서버에 연결하지 못했어요.'); return; }
-  $('send').disabled = true; m.textContent = '보내는 중이에요…';
+  JDJ_SAVEFB.busy('send', '보내는 중…'); m.setAttribute('role', 'status'); m.textContent = '보내는 중이에요…';
   try {
     const r = await JDJ_AGENTS.post(body);
     $('form').hidden = true; $('done').hidden = false;
     $('done').innerHTML = `<div class="done"><b>의뢰가 접수됐어요</b><br>접수 번호 ${esc(r.id)} · ${esc(body.company)}<br>영업일 기준 2일 안에 남겨 주신 연락처로 연락드릴게요.</div>`;
     if (window.jdjStat) jdjStat('feature_use', { feature: 'agency_apply' });   // 회사·연락처·현장 정보는 보내지 않음
-    $('ask').scrollIntoView();
+    $('ask').scrollIntoView(); JDJ_SAVEFB.toast('✓ 의뢰가 접수됐어요.');
   } catch (err) {
     const msg = String(err && err.message || '');
     if (!msg || msg === 'unknown' || (err && err.raw === 'unknown') || /fetch|network|json|load/i.test(msg)) fallback(body, '지금은 온라인 접수가 잠시 어려워요(서버 업데이트 전일 수 있어요).');
-    else { m.className = 'msg err'; m.textContent = msg; }
-  } finally { $('send').disabled = false; }
+    else JDJ_SAVEFB.err('send', msg, { msg: m });   // [보내기] 바로 아래 빨간 안내(role=alert)
+  } finally { JDJ_SAVEFB.restore('send'); }
 });
 </script>
 </body>
