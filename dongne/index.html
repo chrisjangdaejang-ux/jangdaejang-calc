@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../assets/icons/apple-180.png">
+<title>동네 파트너</title>
+<meta name="description" content="우리 동네 중개사가 동네 소식을 아침 브리핑에 전해요.">
+<!-- 동네 중개사 파트너 소개·신청 — assets/config.js PARTNER_ENABLED 가 false 면 '준비 중'만 보여요(운영자 미리 보기 제외). 검색 제외(noindex) -->
+<script>window.JDJ_CONFIG = { tool:'dongne', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../assets/pwa.js?v=2" defer></script>
+<script src="../assets/biz.js?v=2" defer></script>
+<script src="../assets/track.js?v=2"></script>
+<script src="../assets/agents.js"></script>
+<script src="../assets/config.js?v=10"></script>
+<script src="../assets/auth.js?v=10"></script>
+<script src="../assets/savefb.js?v=1"></script>
+<script src="../assets/region-pick.js?v=2"></script>
+<script src="../assets/dongne-core.js?v=1"></script>
+<script src="../assets/dongne.js?v=1"></script>
+<script src="../assets/tabbar.js?v=5" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/aplus.css?v=46">
+<style>
+[hidden]{display:none!important}
+.wrap{max-width:860px;margin:0 auto;padding:22px 16px 60px}
+h1{font-size:clamp(26px,6.4vw,36px);margin:4px 0 8px;letter-spacing:-.6px;word-break:keep-all;line-height:1.3}
+.lead{margin:0 0 16px;font-size:16.5px;color:var(--sub2);line-height:1.7;word-break:keep-all}
+.soon{margin:18px 0;padding:28px 18px;border-radius:18px;border:1px dashed var(--line);text-align:center;line-height:1.7}
+.soon h1{font-size:24px;margin:0 0 6px}.soon p{margin:0 0 14px;color:var(--sub);font-size:15.5px}
+.soon a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 16px;border-radius:12px;background:var(--blue-l);color:var(--blue);font-weight:800;text-decoration:none}
+.pv{display:inline-block;font-size:12.5px;font-weight:800;border-radius:999px;padding:3px 10px;background:#FFF4E0;color:#9A5B00;margin:0 0 6px}
+.how{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 18px;padding:0;list-style:none;counter-reset:h}
+@media(max-width:700px){.how{grid-template-columns:1fr}}
+.how li{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fff;min-width:0}
+.how li::before{counter-increment:h;content:counter(h);display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--creamc);color:#8A6A12;font-weight:900;margin-bottom:6px}
+.how b{display:block;font-size:16px;margin-bottom:2px}.how span{font-size:14.5px;color:var(--sub2);line-height:1.6;display:block}
+.price{border:1px solid var(--creamb);background:var(--creamc);border-radius:18px;padding:16px;margin:0 0 18px}
+.price h2{font-size:18px;margin:0 0 8px}
+.price table{width:100%;border-collapse:collapse;font-size:15px}
+.price td{padding:7px 0;border-top:1px solid var(--creamb);vertical-align:top}.price td:last-child{text-align:right;font-weight:800;white-space:nowrap;padding-left:10px}
+.price tr:first-child td{border-top:0}
+.price p{margin:8px 0 0;font-size:13.5px;color:var(--sub2);line-height:1.6}
+.form{border:1px solid var(--line);border-radius:18px;padding:18px;background:#fff}
+.form h2{font-size:20px;margin:0 0 4px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+@media(max-width:600px){.fg{grid-template-columns:1fr}}
+.fg .full{grid-column:1/-1}
+label.l{display:block;font-size:14.5px;font-weight:800;color:var(--sub);margin-bottom:5px}
+label.l small{font-weight:500;color:var(--sub2)}
+.fg input[type=text],.fg input[type=tel],.fg input[type=email],.fg select{width:100%;min-height:48px;font:inherit;font-size:16px;border:1px solid var(--line);border-radius:12px;padding:0 12px;background:#fff}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1 1 140px;min-width:0}
+.seg2{display:flex;gap:8px}.seg2 button{flex:1;font:inherit;font-size:15.5px;font-weight:800;min-height:48px;border-radius:12px;border:1px solid var(--line);background:#fff;color:var(--sub);cursor:pointer}
+.seg2 button.on{background:#191F28;border-color:#191F28;color:#fff}
+.hint{font-size:13.5px;color:var(--sub2);margin:5px 0 0;line-height:1.55}
+.picks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:6px 0}
+@media(max-width:600px){.picks{grid-template-columns:1fr}}
+.pk{display:flex;align-items:center;gap:10px;min-height:48px;border:1px solid var(--line);border-radius:12px;padding:6px 12px;background:#fff;cursor:pointer;font-size:15px}
+.pk input{width:20px;height:20px;flex:none}
+.pk .s{margin-left:auto;font-size:13px;color:var(--sub2);white-space:nowrap}
+.pk.full{opacity:.6}.pk.full .s{color:#C2410C}
+.agree{display:grid;gap:8px;margin:8px 0}
+.ag{display:flex;gap:10px;align-items:flex-start;min-height:44px;font-size:15px;line-height:1.55;padding:4px 0}
+.ag input{width:20px;height:20px;flex:none;margin-top:2px}
+.ag a{font-weight:700}
+.go{width:100%;min-height:54px;font-size:17px}
+.ok{border:1px solid #B5E2C8;background:#E7F6EE;border-radius:16px;padding:16px;line-height:1.7}
+.ok b{font-size:17px}
+.legal{font-size:13px;color:var(--sub2);line-height:1.6;margin:10px 0 0}
+.addrbtn{flex:0 0 auto!important}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../" aria-label="홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name></span></a>
+  <div class="badge plain">동네 파트너</div>
+</header>
+<main class="wrap" id="app"><p class="lead">불러오고 있어요…</p></main>
+<footer class="foot">★ <span data-site-name></span> · <a href="../">홈</a> · <a href="terms/">동네 파트너 약관</a> · <a href="../privacy/">개인정보처리방침</a></footer>
+<script>
+(function () {
+  'use strict';
+  var DP = window.JDJ_DP, C = window.JDJ_DPCORE, A = window.JDJ_AUTH, app = document.getElementById('app');
+  var esc = DP ? DP.esc : function (s) { return String(s); };
+  var SITE = (DP && DP.site()) || '';
+  document.title = '동네 파트너' + (SITE ? ' — ' + SITE : '');
+  function soon() { app.innerHTML = '<div class="soon"><h1>준비 중이에요</h1><p>이 화면은 아직 열지 않았어요. 조금만 기다려 주세요.</p><a href="../">홈으로 가기</a></div>'; }
+  if (!DP || !DP.enabled()) return soon();
+  var R = C.DP_RULE, won = function (n) { return Number(n).toLocaleString('ko-KR') + '원'; };
+  var st = { kind: 'owner', g: '', gn: '', dn: '', sd: '', picks: [], near: [], rows: {}, used: {}, photo: '', cfg: null };
+
+  function intro(cfg) {
+    var pr = C.dpPrice(3, {}), pv = cfg.preview ? '<span class="pv">운영자 미리 보기 · 아직 아무에게도 보이지 않아요</span>' : '';
+    var fe = cfg.founding;
+    return pv + '<h1>우리 동네 소식을 아침 브리핑에 전하는 중개사</h1>'
+      + '<p class="lead">' + esc(SITE) + ' 모닝 브리핑을 받는 우리 동네 구독자에게, 사무소 이름과 함께 짧은 동네 소식을 보여 드려요. 한 동에 세 곳까지만 받아요.</p>'
+      + '<ol class="how"><li><b>신청하면 바로 확인</b><span>중개사무소 등록번호를 공공 자료로 확인해요. 보통 바로 승인돼요. 확인이 필요하면 2영업일 안에 알려 드려요.</span></li>'
+      + '<li><b>일주일에 한마디</b><span>거래 분위기·전세·재건축·학군·교통 중에 골라 200자 안으로 써요. 밤 10시 전에 쓰면 다음 날 아침 브리핑에 실려요.</span></li>'
+      + '<li><b>동네 구독자에게 노출</b><span>광고성 정보 받기에 동의한 구독자의 브리핑 맨 아래 \'우리 동네 중개사 한마디 (제휴)\' 칸에 보여요.</span></li></ol>'
+      + '<section class="price" aria-label="요금"><h2>요금</h2><table>'
+      + '<tr><td>기본 · 사무소 동 + 가까운 동 2곳(모두 3개 동)</td><td>월 ' + won(pr.base) + '</td></tr>'
+      + '<tr><td>동 하나 더(최대 ' + R.max + '개 동)</td><td>월 ' + won(R.extra) + '</td></tr>'
+      + '<tr><td>창립 파트너(문을 연 날부터 3개월 안에 신청)</td><td>3개월 무료</td></tr>'
+      + '<tr><td>창립 파트너 · 무료 기간 뒤 동 하나 더</td><td>월 ' + won(R.extra * (1 - R.foundExtraOff)) + '</td></tr></table>'
+      + '<p>자동으로 결제되지 않아요. 기간이 끝나기 7일 전에 메일로 알려 드려요.' + (cfg.paid ? '' : ' 결제는 아직 열리지 않아서 지금은 사무소 동을 합쳐 ' + R.incl + '개 동까지 신청할 수 있어요.') + (fe ? ' 지금 신청하면 창립 파트너예요.' : '') + '</p></section>'
+      + '<p class="hint" style="margin:-6px 0 18px">한 동에 세 자리예요. 먼저 신청한 순서로 받고, 자리가 차면 대기 순서대로 자리가 날 때 메일로 알려 드려요. 가맹점·대리점이 아니고, 간판·상표는 쓸 수 없어요(온라인 \'동네 파트너\' 표시만). <a href="' + DP.link('dongne/terms/') + '">동네 파트너 약관 보기</a></p>';
+  }
+
+  function formHtml() {
+    var cap = st.cfg.paid ? R.max - 1 : R.incl - 1;
+    return '<section class="form" id="formBox" aria-labelledby="fh"><h2 id="fh">파트너 신청</h2><p class="hint">보통 바로 승인돼요. 확인이 필요하면 2영업일 안에 알려 드려요.</p>'
+      + '<div class="fg"><div class="full"><label class="l">구분</label><div class="seg2" role="group" aria-label="개업·소속 구분"><button type="button" data-k="owner" class="on">개업공인중개사</button><button type="button" data-k="member">소속공인중개사</button></div></div>'
+      + '<div><label class="l" for="office">사무소 이름</label><input type="text" id="office" maxlength="40" autocomplete="organization" placeholder="예: 행복공인중개사사무소"></div>'
+      + '<div><label class="l" for="reg">중개사무소 개설등록번호</label><input type="text" id="reg" maxlength="30" inputmode="text" placeholder="예: 11680-2020-00123"></div>'
+      + '<div><label class="l" for="name">성명 <small id="nameHint">(개업공인중개사)</small></label><input type="text" id="name" maxlength="20" autocomplete="name"></div>'
+      + '<div id="ceoBox" hidden><label class="l" for="ceo">대표(개업공인중개사) 성명</label><input type="text" id="ceo" maxlength="20"></div>'
+      + '<div><label class="l" for="tel">사무소 전화번호 <small>(카드에 보여요)</small></label><input type="tel" id="tel" maxlength="20" autocomplete="tel" placeholder="예: 02-1234-5678"></div>'
+      + '<div><label class="l" for="mail">알림 받을 이메일 <small>(보이지 않아요)</small></label><input type="email" id="mail" maxlength="80" autocomplete="email"></div>'
+      + '<div class="full"><label class="l" for="addr">사무소 주소</label><div class="row"><input type="text" id="addr" maxlength="120" placeholder="예: 서울 강남구 개포로 000, 1층 (개포동)"><button type="button" class="btn addrbtn" id="find">주소 찾기</button></div>'
+      + '<div id="pcBox" hidden style="margin-top:8px;border:1px solid var(--line);border-radius:12px;overflow:hidden;height:420px"></div>'
+      + '<div class="row" style="margin-top:8px"><select id="sd" aria-label="시·도"><option value="">시·도</option></select><select id="sg" aria-label="시·군·구"><option value="">시·군·구</option></select><select id="dn" aria-label="사무소 동"><option value="">동</option></select></div>'
+      + '<p class="hint" id="dnHint">[주소 찾기]로 주소를 고르면 사무소 동이 저절로 골라져요.</p></div>'
+      + '<div class="full"><label class="l">가까운 동 고르기 <small>(사무소 동 말고 ' + cap + '곳까지)</small></label><div id="nearBox"><p class="hint">사무소 동을 고르면 가까운 동이 보여요.</p></div></div>'
+      + '<div><label class="l" for="photo">사진 <small>(선택 · 얼굴이나 사무소, 확인 뒤 보여요)</small></label><input type="file" id="photo" accept="image/*"></div>'
+      + '<div><label class="l" for="intro">한 줄 소개 <small>(선택 · 40자)</small></label><input type="text" id="intro" maxlength="40" placeholder="예: 개포동에서 15년째 동네 소식을 전해요"></div>'
+      + '<div class="full"><label class="l">동의</label><div class="agree">'
+      + '<label class="ag"><input type="checkbox" id="agAll"><span><b>모두 동의</b></span></label>'
+      + '<label class="ag"><input type="checkbox" data-ag="rules"><span>[필수] 글쓰기 규칙: 가격 예측·담합·매물 홍보·전화번호·링크·욕설·비방은 쓰지 않아요. <a href="' + DP.link('dongne/terms/') + '#rules">보기</a></span></label>'
+      + '<label class="ag"><input type="checkbox" data-ag="ad"><span>[필수] 광고 표시 규칙: 카드에 사무소 이름·소재지·연락처·등록번호·성명이 함께 보여요(공인중개사법). <a href="' + DP.link('dongne/terms/') + '#ad">보기</a></span></label>'
+      + '<label class="ag"><input type="checkbox" data-ag="privacy"><span>[필수] 개인정보 수집·이용: 성명·전화·이메일·주소를 파트너 운영에만 쓰고, 그만두면 지워요. <a href="' + DP.link('dongne/terms/') + '#privacy">보기</a></span></label>'
+      + '<label class="ag"><input type="checkbox" data-ag="terms"><span>[필수] 동네 파트너 약관 <a href="' + DP.link('dongne/terms/') + '">보기</a></span></label></div></div></div>'
+      + '<div id="priceNow" class="hint"></div>'
+      + '<button type="button" class="btn primary go" id="go">파트너 신청하기</button><div id="msg" class="msg" role="status"></div>'
+      + '<p class="legal">신청한 등록번호는 공공데이터포털의 공인중개사사무소 자료로 확인해요. 휴업·폐업이거나 정보가 다르면 운영자가 확인한 뒤 결과와 이유를 메일로 알려 드려요.</p></section>';
+  }
+
+  function priceNow() {
+    var n = 1 + st.picks.length, p = C.dpPrice(n, { founding: st.cfg.founding, freeUntil: C.dpAddDays(C.dpAddMonths(C.dpYmd(Date.now()), R.foundFreeMonths), -1), today: C.dpYmd(Date.now()) });
+    document.getElementById('priceNow').innerHTML = '고른 동 ' + n + '곳 · ' + (p.free ? '창립 파트너 무료(3개월) · 그 뒤 월 ' + won(C.dpPrice(n, { founding: true }).total) : '월 ' + won(p.total)) + ' · 자동 결제 없음';
+  }
+  function drawNear() {
+    var box = document.getElementById('nearBox'), key = C.dpKey(st.g, st.dn);
+    if (!key) { box.innerHTML = '<p class="hint">사무소 동을 고르면 가까운 동이 보여요.</p>'; return; }
+    box.innerHTML = '<p class="hint">가까운 동을 찾고 있어요…</p>';
+    DP.near(key).then(function (r) {
+      st.rows = r.rows; st.near = r.list;
+      var keys = [key].concat(r.list.map(function (x) { return x.key; }));
+      return DP.post({ action: 'dpSlots', keys: keys }).then(function (j) { st.used = {}; Object.keys(j.slots || {}).forEach(function (k) { st.used[k] = j.slots[k].used; }); }).catch(function () { st.used = {}; }).then(function () { paintNear(key); });
+    });
+  }
+  function paintNear(key) {
+    var box = document.getElementById('nearBox'), cap = st.cfg.paid ? R.max - 1 : R.incl - 1;
+    st.picks = st.picks.filter(function (k) { return st.near.some(function (x) { return x.key === k; }); });
+    if (!st.near.length) { box.innerHTML = '<p class="hint">이 동은 가까운 동 자료가 아직 없어요. 사무소 동만으로 신청할 수 있어요.</p>'; priceNow(); return; }
+    var mine = st.used[key] || 0;
+    box.innerHTML = DP.miniMap(key, st.rows, st.near, st.picks, st.used)
+      + '<p class="hint">사무소 동 ' + esc(st.dn) + ': ' + (mine >= R.slots ? '자리가 다 찼어요. 신청하면 대기 순서에 올려 드려요.' : '남은 자리 ' + (R.slots - mine) + '곳') + '</p>'
+      + '<div class="picks">' + st.near.map(function (x) {
+        var u = st.used[x.key] || 0, full = u >= R.slots, on = st.picks.indexOf(x.key) >= 0, dn = x.key.slice(6), gn = x.key.slice(0, 5) !== st.g ? ' (다른 구)' : '';
+        return '<label class="pk' + (full ? ' full' : '') + '"><input type="checkbox" data-pk="' + esc(x.key) + '"' + (on ? ' checked' : '') + '><span>' + esc(dn) + esc(gn) + '</span><span class="s">' + x.km + 'km · ' + (full ? '마감(대기)' : '남은 자리 ' + (R.slots - u)) + '</span></label>';
+      }).join('') + '</div>';
+    box.querySelectorAll('[data-pk]').forEach(function (c) {
+      c.onchange = function () {
+        var k = c.getAttribute('data-pk');
+        if (c.checked && st.picks.length >= cap) { c.checked = false; window.JDJ_SAVEFB && JDJ_SAVEFB.err(c.closest('.pk'), '사무소 동 말고 ' + cap + '곳까지 고를 수 있어요.' + (st.cfg.paid ? '' : ' 동 추가는 결제가 열리면 할 수 있어요.'), { after: box }); return; }
+        st.picks = st.picks.filter(function (x) { return x !== k; }); if (c.checked) st.picks.push(k);
+        paintNear(key);
+      };
+    });
+    priceNow();
+  }
+
+  /* 시·도 → 시·군·구 → 동 */
+  var SG = {};
+  function fillSd() {
+    return fetch((window.JDJ_BASE || {}).DATA + 'data/index.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (ix) {
+      SG = (ix && ix.sgg) || {};
+      var sds = window.JDJ_KO ? JDJ_KO.sortSido(Array.from(new Set(Object.values(SG).map(function (x) { return x.sido; })))) : [];
+      document.getElementById('sd').innerHTML = '<option value="">시·도</option>' + sds.map(function (x) { return '<option>' + esc(x) + '</option>'; }).join('');
+    });
+  }
+  function fillSg(want) {
+    var sd = document.getElementById('sd').value, list = Object.keys(SG).filter(function (g) { return SG[g].sido === sd; });
+    if (window.JDJ_KO) list = JDJ_KO.sortBy(list, function (g) { return SG[g].name; });
+    document.getElementById('sg').innerHTML = '<option value="">시·군·구</option>' + list.map(function (g) { return '<option value="' + g + '"' + (g === want ? ' selected' : '') + '>' + esc(SG[g].name) + '</option>'; }).join('');
+  }
+  function fillDn(want) {
+    var g = document.getElementById('sg').value, sel = document.getElementById('dn');
+    st.g = g; st.gn = g && SG[g] ? SG[g].name : '';
+    if (!g) { sel.innerHTML = '<option value="">동</option>'; st.dn = ''; drawNear(); return Promise.resolve(); }
+    return DP.dongsOf(g).then(function (list) {
+      if (want && list.indexOf(want) < 0) list = list.concat([want]);
+      sel.innerHTML = '<option value="">동</option>' + list.map(function (d) { return '<option' + (d === want ? ' selected' : '') + '>' + esc(d) + '</option>'; }).join('');
+      st.dn = sel.value; drawNear();
+    });
+  }
+  function setPlace(g, dn) {
+    var sdName = SG[g] ? SG[g].sido : '';
+    if (!sdName) { document.getElementById('dnHint').textContent = '시·군·구를 찾지 못했어요. 아래 칸에서 직접 골라 주세요.'; return; }
+    document.getElementById('sd').value = sdName; fillSg(g); fillDn(dn);
+    document.getElementById('dnHint').textContent = '사무소 동: ' + dn + ' (맞지 않으면 직접 바꿔 주세요)';
+  }
+  /* 주소 찾기: 우편번호 서비스(누를 때만 불러옴). 못 불러오면 주소 글자의 '(○○동)'으로 찾고, 아니면 직접 고르기 */
+  function findAddr() {
+    var box = document.getElementById('pcBox');
+    var run = function () {
+      box.hidden = false;
+      new window.daum.Postcode({ width: '100%', height: '100%', oncomplete: function (d) {
+        box.hidden = true;
+        document.getElementById('addr').value = (d.roadAddress || d.jibunAddress || d.address || '') + (d.bname ? ' (' + d.bname + ')' : '');
+        var dn = /리$/.test(d.bname || '') && d.bname1 ? d.bname1 : (d.bname || d.bname1 || '');
+        setPlace(String(d.sigunguCode || ''), dn);
+      } }).embed(box);
+    };
+    if (window.daum && window.daum.Postcode) return run();
+    var s = document.createElement('script'); s.src = 'https://t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js'; s.async = true;
+    s.onload = run;
+    s.onerror = function () { guessFromText(); document.getElementById('dnHint').textContent = '주소 찾기를 열지 못했어요. 주소를 적고 아래 칸에서 시·도·시·군·구·동을 골라 주세요.'; };
+    document.head.appendChild(s);
+  }
+  function guessFromText() {
+    var a = document.getElementById('addr').value, m = /\(([가-힣0-9·.]+(?:동|가|읍|면|리))/.exec(a) || /\s([가-힣0-9·.]+동)\s/.exec(a + ' ');
+    if (m && st.g) fillDn(m[1]);
+  }
+
+  function collect() {
+    var v = function (id) { return document.getElementById(id).value.trim(); };
+    var ag = {}; document.querySelectorAll('[data-ag]').forEach(function (c) { ag[c.getAttribute('data-ag')] = c.checked; });
+    var need = [['office', '사무소 이름'], ['reg', '개설등록번호'], ['name', '성명'], ['tel', '사무소 전화번호'], ['mail', '이메일'], ['addr', '사무소 주소']].filter(function (x) { return !v(x[0]); });
+    if (st.kind === 'member' && !v('ceo')) need.push(['ceo', '대표 성명']);
+    if (need.length) throw new Error(need.map(function (x) { return x[1]; }).join('·') + '을 적어 주세요.');
+    if (!C.dpKey(st.g, st.dn)) throw new Error('사무소 동을 골라 주세요. [주소 찾기]를 누르면 저절로 골라져요.');
+    if (Object.keys(ag).some(function (k) { return !ag[k]; })) throw new Error('필수 동의 네 가지에 모두 체크해 주세요.');
+    return { action: 'dpApply', kind: st.kind, office: v('office'), reg: v('reg'), name: v('name'), ceo: v('ceo'), tel: v('tel'), mail: v('mail'), addr: v('addr'),
+      g: st.g, gn: (SG[st.g] || {}).name || '', dn: st.dn, picks: st.picks, intro: v('intro'), agree: ag, v: st.cfg.terms, photo: st.photo };
+  }
+  function bindForm() {
+    document.querySelectorAll('.seg2 button').forEach(function (b) { b.onclick = function () {
+      st.kind = b.getAttribute('data-k'); document.querySelectorAll('.seg2 button').forEach(function (x) { x.classList.toggle('on', x === b); });
+      document.getElementById('ceoBox').hidden = st.kind !== 'member'; document.getElementById('nameHint').textContent = st.kind === 'member' ? '(소속공인중개사 본인)' : '(개업공인중개사)';
+    }; });
+    document.getElementById('find').onclick = findAddr;
+    document.getElementById('addr').onblur = guessFromText;
+    document.getElementById('sd').onchange = function () { fillSg(''); fillDn(''); };
+    document.getElementById('sg').onchange = function () { fillDn(''); };
+    document.getElementById('dn').onchange = function () { st.dn = this.value; drawNear(); };
+    document.getElementById('photo').onchange = function () { var f = this.files && this.files[0], me = this; DP.shrink(f).then(function (d) { st.photo = d; }).catch(function (e) { me.value = ''; st.photo = ''; JDJ_SAVEFB.err(me, e.message); }); };
+    var all = document.getElementById('agAll'), items = document.querySelectorAll('[data-ag]');
+    all.onchange = function () { items.forEach(function (c) { c.checked = all.checked; }); };
+    items.forEach(function (c) { c.onchange = function () { all.checked = Array.from(items).every(function (x) { return x.checked; }); }; });
+    var go = document.getElementById('go');
+    go.onclick = function () {
+      var body; try { body = collect(); } catch (e) { JDJ_SAVEFB.err(go, e.message, { msg: 'msg' }); return; }
+      JDJ_SAVEFB.busy(go, '확인하는 중…');
+      DP.post(body).then(function (j) {
+        var got = (j.got || []).map(function (k) { return k.slice(6); }), wt = (j.wait || []).map(function (k) { return k.slice(6); });
+        document.getElementById('formBox').outerHTML = '<div class="ok" role="status"><b>' + (j.auto ? '승인됐어요' : '신청을 받았어요') + '</b><br>'
+          + (j.auto ? '공공 자료로 바로 확인됐어요. 이제 이번 주 우리 동네 한마디를 쓸 수 있어요.' : '확인이 필요해서 2영업일 안에 결과를 메일로 알려 드려요.')
+          + '<br>받은 동: ' + (got.length ? esc(got.join(', ')) : '없음') + (wt.length ? '<br>대기한 동: ' + esc(wt.join(', ')) + ' (자리가 나면 메일로 알려 드려요)' : '')
+          + (j.founding && j.freeUntil ? '<br>창립 파트너라서 ' + esc(j.freeUntil) + '까지 무료예요.' : '')
+          + '<br><a class="btn primary" style="margin-top:10px" href="' + DP.link('dongne/my/') + '">내 파트너 화면 열기</a></div>';
+      }).catch(function (e) { JDJ_SAVEFB.err(go, e.message, { msg: 'msg' }); });
+    };
+  }
+
+  function start() {
+    DP.post({ action: 'dpConfig' }).then(function (cfg) {
+      if (!cfg.open && !cfg.preview) return soon();
+      st.cfg = cfg;
+      var h = intro(cfg);
+      if (!A || !A.user()) {
+        app.innerHTML = h + '<section class="form"><h2>파트너 신청</h2>' + (A && A.on() ? A.gate('신청은 카카오 간편 로그인 뒤에 할 수 있어요. 알림 메일과 내 파트너 화면에 쓰여요.', '카카오 간편 로그인', 'dongne') : '<p class="hint">로그인 기능을 준비 중이에요.</p>') + '</section>';
+        return;
+      }
+      return DP.post({ action: 'dpMine' }).then(function (m) {
+        if (m.me) { app.innerHTML = h + '<div class="ok"><b>이미 동네 파트너예요</b><br>' + esc(m.me.office) + ' · ' + esc(m.me.st) + '<br><a class="btn primary" style="margin-top:10px" href="' + DP.link('dongne/my/') + '">내 파트너 화면 열기</a></div>'; return; }
+        app.innerHTML = h + formHtml(); bindForm(); priceNow();
+        return fillSd();
+      });
+    }).catch(function (e) {
+      if (e.code === 'closed' || e.code === 'unknown') return soon();
+      app.innerHTML = '<div class="soon"><h1>잠시 뒤 다시 열어 주세요</h1><p>' + esc(e.message) + '</p><a href="../">홈으로 가기</a></div>';
+    });
+  }
+  start();
+})();
+</script>
+</body>
+</html>
