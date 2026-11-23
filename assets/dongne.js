@@ -93,7 +93,7 @@
     const tel = String(c.tel || '').replace(/[^0-9]/g, '');
     return `<div class="dp-card${opt.small ? ' sm' : ''}">${c.img ? `<img class="dp-face" src="${esc(c.img)}" alt="" loading="lazy">` : `<span class="dp-face none" aria-hidden="true">${esc(String(c.office || '').slice(0, 1))}</span>`}
       <div class="dp-cb"><b class="dp-on">${esc(c.office)}</b> <span class="dp-badge">${c.found ? '창립 파트너' : '동네 파트너'}</span>${c.intro ? `<p class="dp-intro">${esc(c.intro)}</p>` : ''}${legalHtml(c)}
-      ${!opt.nocall ? `<div class="dp-acts" style="margin-top:4px">${tel ? `<a class="dp-call" href="tel:${esc(tel)}" data-dp-call="${esc(c.id)}">전화하기</a>` : ''}${opt.noreport ? '' : `<button type="button" data-dp-prep="${esc(c.id)}">이 사무소 신고</button>`}</div>` : ''}</div></div>`;
+      ${opt.line ? `<p class="dp-line">“${esc(opt.line)}”</p>` : ''}${!opt.nocall ? `<div class="dp-acts" style="margin-top:4px">${tel ? `<a class="dp-call" href="tel:${esc(tel)}" data-dp-call="${esc(c.id)}">전화하기</a>` : ''}${opt.noreport ? '' : `<button type="button" data-dp-prep="${esc(c.id)}">이 사무소 신고</button>`}</div>` : ''}</div></div>`;
   }
   const CSS = `.dp-sec{border:1px solid #EFE6CC;background:#FBF8EF;border-radius:18px;padding:16px;margin:18px 0}
 .dp-sec h2{font-size:19px;margin:0 0 2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -117,6 +117,13 @@
 .dp-intro{margin:2px 0;font-size:14px;color:var(--sub,#3E4754)}
 .dp-legal{margin:2px 0 0;font-size:12.5px;color:var(--sub2,#4E5968);line-height:1.55;word-break:keep-all}
 .dp-call{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border-radius:12px;background:#191F28;color:#fff;font-weight:800;font-size:14px;text-decoration:none}
+.dp-mini{border-top:1px dashed #EFE6CC;margin-top:6px;padding-top:2px}
+.dp-card.sm .dp-face{width:36px;height:36px}.dp-card.sm .dp-on{font-size:14.5px}
+.dp-line{margin:2px 0;font-size:14px;color:var(--text,#191F28);line-height:1.5}
+.dp-list{border-top:1px dashed #EFE6CC;margin-top:8px;padding-top:8px}.dp-list b{font-size:14.5px}
+.dp-list ul{list-style:none;margin:4px 0 0;padding:0}.dp-list li{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:44px;border-bottom:1px solid #F2EAD3;font-size:14.5px}
+.dp-list li a{display:inline-flex;align-items:center;min-height:44px;font-weight:700;white-space:nowrap}
+.dp-ok{display:inline-block;font-size:11.5px;font-weight:800;color:#0B5A3B;background:#E7F6EE;border-radius:6px;padding:1px 6px;margin-left:4px}
 .dp-best{background:#fff;border:1px solid #EFE6CC;border-radius:14px;padding:12px;margin:6px 0 10px}
 .dp-best b{color:#8A6A12}
 .dp-note{font-size:12.5px;color:var(--sub2,#4E5968);margin:10px 0 0;line-height:1.6}
@@ -134,10 +141,12 @@
   const PWHY = [['false', '사실이 아닌 정보'], ['ad', '무리한 영업'], ['defame', '불친절·비방'], ['etc', '기타(사기·금전 사고 의심 등)']];
   function secHtml(sec) {
     const dongs = (sec.list || []).map(x => {
-      const top = x.partners[0], p = x.post && top && x.post.pid === top.id ? x.post : null;
-      return `<div class="dp-dong"><h3>${esc(x.dn)}</h3>${p ? `<div class="dp-post"><span class="dp-tp">${esc(p.tn)}</span> <span class="dp-by">· ${esc(top.office)}</span><p>${esc(p.text)}</p>${p.img ? `<img src="${esc(p.img)}" alt="" loading="lazy">` : ''}
-        <div class="dp-acts"><button type="button" data-dp-help="${esc(p.id)}">도움돼요${p.help ? ' ' + Number(p.help) : ''}</button><button type="button" data-dp-rep="${esc(p.id)}">이 글 신고</button></div></div>` : ''}
-        ${x.partners.map(c => cardHtml(c)).join('')}</div>`;
+      const top = x.partners[0], p = x.post && top && x.post.pid === top.id ? x.post : null, rest = p ? x.partners.slice(1) : x.partners;
+      /* 오늘 크게 소개하는 글 1개(파트너끼리 돌아가며) + 그 파트너 카드 → 다른 파트너는 작은 이름 카드와 최근 글 첫 줄 → 일반 등록 '이 동네 중개사' 목록(날마다 순서 섞음) */
+      return `<div class="dp-dong"><h3>${esc(x.dn)}</h3>${p ? `<div class="dp-post"><span class="dp-tp">오늘의 한마디 · ${esc(p.tn)}</span> <span class="dp-by">· ${esc(top.office)}</span><p>${esc(p.text)}</p>${p.img ? `<img src="${esc(p.img)}" alt="" loading="lazy">` : ''}
+        <div class="dp-acts"><button type="button" data-dp-help="${esc(p.id)}">도움돼요${p.help ? ' ' + Number(p.help) : ''}</button><button type="button" data-dp-rep="${esc(p.id)}">이 글 신고</button></div></div>${cardHtml(top)}` : ''}
+        ${rest.length ? `<div class="dp-mini">${rest.map(c => cardHtml(c, { small: true, line: c.line })).join('')}</div>` : ''}
+        ${(x.listing || []).length ? `<div class="dp-list"><b>이 동네 중개사</b><ul>${x.listing.map(c => `<li><span>${esc(c.office)}${c.verified ? ' <span class="dp-ok">등록 확인</span>' : ''}</span><a href="${link('dongne/office/?id=' + encodeURIComponent(c.id))}">사무소 보기</a></li>`).join('')}</ul></div>` : ''}</div>`;
     }).join('');
     const best = sec.best ? `<div class="dp-best"><b>이번 주 우수 동네 소식</b> · ${esc(sec.best.dn)} · ${esc(sec.best.office)}<p style="margin:4px 0 0;line-height:1.6">${esc(sec.best.text)}</p></div>` : '';
     if (!dongs && !best) return '';

@@ -106,7 +106,7 @@ function server(opts) {
       getFileById(id) { const f = files[id]; if (!f) throw new Error('no file'); return { setTrashed(v) { f.trashed = v; }, setSharing() { f.shared = true; }, getBlob: () => ({ getContentType: () => f.type, getBytes: () => f.bytes }) }; },
       Access: { ANYONE_WITH_LINK: 'x' }, Permission: { VIEW: 'v' } },
     Utilities: { getUuid: () => crypto.randomUUID(),
-      formatDate: (d, tz, f) => { const q = Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(d).map(x => [x.type, x.value])); return f.replace('yyyy', q.year).replace('yy', q.year.slice(2)).replace('MM', q.month).replace('dd', q.day).replace('HH', q.hour).replace('hh', q.hour).replace('mm', q.minute); },
+      formatDate: (d, tz, f) => { if (f === 'u') { const w = new Intl.DateTimeFormat('en-US', { timeZone: tz, weekday: 'short' }).format(d); return String(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].indexOf(w) + 1); } const q = Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(d).map(x => [x.type, x.value])); return f.replace('yyyy', q.year).replace('yy', q.year.slice(2)).replace('MM', q.month).replace('dd', q.day).replace('HH', q.hour).replace('hh', q.hour).replace('mm', q.minute); },
       computeDigest: (alg, s) => Array.from(crypto.createHash('sha256').update(s, 'utf8').digest()).map(b => b > 127 ? b - 256 : b), DigestAlgorithm: { SHA_256: 'sha256' }, Charset: { UTF_8: 'utf8' },
       base64Decode: s => Array.from(Buffer.from(s, 'base64')), base64Encode: b => Buffer.from(typeof b === 'string' ? b : b.map(x => x & 255)).toString('base64'), newBlob: (bytes, type, name) => ({ bytes, type, name }) },
     UrlFetchApp: { fetch(url, o) { fetches.push({ url, o }); const r = (opts.fetch || (() => null))(url, o); if (!r) throw new Error('network'); return { getResponseCode: () => r.code || 200, getContentText: () => JSON.stringify(r.body) }; } } };
@@ -114,7 +114,7 @@ function server(opts) {
   let src = GS;
   if (opts.open) src = src.replace('const DONGNE_ENABLED = false;', 'const DONGNE_ENABLED = true;');
   if (opts.billing) src = src.replace('const BILLING_OPEN = false;', 'const BILLING_OPEN = true;').replace('const PAID_OPEN = false;', 'const PAID_OPEN = true;');
-  vm.runInContext(src + '\n;globalThis.__T = { UC, SC, UH, SSH, BH, BC, DPC, DPPC, DPEC, BRAC, hashOf, dpAll, dpDaily, dpPickDay, dpPickReset, brBillDaily: baBillDaily, briefExpiry, brTrialEnded: baTrialEnded, bKey, DP_RULE, ymd, dpUid };', ctx);
+  vm.runInContext(src + '\n;globalThis.__T = { UC, SC, UH, SSH, BH, BC, DPC, DPPC, DPEC, BRAC, hashOf, dpAll, dpDaily, dpPickDay, dpPickReset, brBillDaily: baBillDaily, briefExpiry, brTrialEnded: baTrialEnded, bKey, DP_RULE, ymd, dpUid, dpPlusFor, dpPlusBriefs, userBriefMap, dpOfferTick };', ctx);
   const T = ctx.__T, VD = vm.runInContext('Date', ctx);
   const post = b => JSON.parse(ctx.doPost({ postData: { contents: JSON.stringify(b) } }).s);
   function addUser(k) {
@@ -198,7 +198,9 @@ check('인터넷 주소 막기', W(u1, { text: '동네 소식은 https://example
 r = W(u1);
 check('비공개 설정이 없으면 모든 글은 검토 대기', r.ok && r.held === true, r);
 check('하루 한 글', /하루에 한 개/.test(W(u1).err));
-const RULES = JSON.parse(fs.readFileSync(path.join(ROOT, '..', fs.existsSync(path.join(ROOT, '..', 'pt-engine')) ? 'pt-engine' : 'jangdaejang-engine', 'data', 'dongne', 'rules.json'), 'utf8'));
+/* 비공개 거르기 설정: 옆 폴더 엔진이 있으면 진짜 값(낱말은 찍지 않음), 없으면 시험용 가짜 값 */
+const ENG = (process.env.DP_RULES_FILE ? [process.env.DP_RULES_FILE] : []).concat(fs.readdirSync(path.join(ROOT, '..')).filter(d => /engine$/.test(d)).map(d => path.join(ROOT, '..', d, 'data', 'dongne', 'rules.json'))).find(f => fs.existsSync(f));
+const RULES = ENG ? JSON.parse(fs.readFileSync(ENG, 'utf8')) : { groups: [{ id: 'dam', act: 'block', re: ['(이하|밑)로\\s*(는\\s*)?팔(지|면)\\s*(말|맙)'] }, { id: 'price', act: 'hold', re: ['\\d+\\s*억\\s*까지\\s*갑'] }] };
 check('설정 넣기: 토큰 틀리면 거절', S.post({ action: 'dpRulesPut', k: 'no', rules: RULES }).err === 'auth');
 r = S.post({ action: 'dpRulesPut', k: S.props.BRIEF_PULL_TOKEN, rules: RULES });
 check('설정 넣기: 스크립트 속성 DP_RULES_* 에', r.ok && Number(S.props.DP_RULES_N) >= 1, r);
@@ -248,7 +250,9 @@ const p2 = S.T.dpAll().find(x => x.mail === 'b@example.com');
 check('거절은 이유 필수', /이유/.test(S.post({ action: 'dpAdminAct', s: adm, op: 'reject', id: p2.id }).err));
 S.post({ action: 'dpAdminAct', s: adm, op: 'reject', id: p2.id, why: '등록 정보가 공공 자료와 달라요' });
 const p4 = S.T.dpAll().find(x => x.mail === 'd@example.com');
-check('자리가 나면 대기 1번에게 넣고 메일', p4.keys.some(k => k.k === '11680|개포동') && S.mails.some(m => m.to === 'd@example.com' && /자리가 났어요/.test(m.subject)) && S.mails.some(m => m.to === 'b@example.com' && /등록 정보가 공공 자료와 달라요/.test(m.htmlBody)));
+check('자리가 나면 대기 1번에게 48시간 받기 제안 메일 + 거절 이유 메일', S.mails.some(m => m.to === 'd@example.com' && /48시간/.test(m.subject)) && S.mails.some(m => m.to === 'b@example.com' && /등록 정보가 공공 자료와 달라요/.test(m.htmlBody)));
+check('제안 중에는 자리를 잡아 둠', S.post({ action: 'dpSlots', s: u1, keys: ['11680|개포동'] }).slots['11680|개포동'].used === 3);
+check('48시간 안에 [자리 받기]', S.post({ action: 'dpClaim', s: u4, key: '11680|개포동' }).ok && S.T.dpAll().find(x => x.mail === 'd@example.com').keys.some(k => k.k === '11680|개포동'));
 
 /* 동 바꾸기 30일 */
 const p1 = () => S.T.dpAll().find(x => x.mail === 'happy@example.com');
@@ -384,6 +388,186 @@ check('체험 끝·카드 없음: 멈춤 + 카드 등록 안내 딱 한 번', en
 const t3 = SB.addUser('t3'); trialRow('t3', -20, -10);
 SB.T.brTrialEnded(new Date());
 check('오래전에 끝난 체험자에게는 안 보냄', !SB.mails.some(m => m.to === 't3@mail.kr'));
+
+
+/* ---------- ⑥ v51: 중개사 플러스 포함 · 설정값 · 일반 등록 · 48시간 받기 · 돌려 보이기 · 오늘의 한마디 안내 ---------- */
+tossLog = []; tossFail = false;
+const TD = n => new Date(Date.now() + n * 864e5 + 9 * 3600e3).toISOString().slice(0, 10);
+const SV = server({ open: true, billing: true, fetch: fakeFetch, props: { DATA_GO_KR_KEY: 'k', TOSS_SECRET_KEY: 'test_sk_FAKE', TOSS_BILLING_CLIENT_KEY: 'test_ck_FAKE',
+  DP_SETTINGS: JSON.stringify({ SLOTS_PER_DONG: 2, PRICE_BY_DONG: { '11680|대치동': 12900 }, LISTING_TIER_ENABLED: true, PARTNER_OPEN_DATE: TD(0), BOGUS: 1 }) } });
+const vA = SV.addUser('vA'), vB = SV.addUser('vB'), vC = SV.addUser('vC'), vD = SV.addUser('vD'), vE = SV.addUser('vE'), vAd = SV.addUser('vAd');
+SV.props.BRIEF_ADMIN_IDS = JSON.stringify(['vAd']);
+r = SV.post({ action: 'dpConfig', s: vA });
+const until0 = C.dpAddDays(C.dpAddMonths(TD(0), 3), -1);
+check('설정값: 동마다 자리 2 · 플러스 포함 마감 = 문 연 날 + 3개월 − 1일 · 일반 등록 켜짐', r.rule.slots === 2 && r.bundleUntil === until0 && r.bundleOk === true && r.listingTier === true, { s: r.rule && r.rule.slots, u: r.bundleUntil });
+check('설정값: 모르는 이름은 받아들이지 않음(운영자 화면에 표시)', (SV.post({ action: 'dpAdminQueue', s: vAd }).settings.bad || []).indexOf('BOGUS') >= 0);
+check('가입 화면: "○월 ○일까지 가입하면 중개사 플러스 포함"', /까지 가입하면 중개사 플러스 포함/.test(read('dongne/index.html')) && /월 ' \+ won\(R\.base\) \+ '에 우리 동네 구독자 홍보' \+ \(cfg\.bundleOk \? ' \+ 중개사 플러스 도구 전부'/.test(read('dongne/index.html')));
+const AGP = Object.assign({ pay: true }, AG);
+const appV = (s, o) => SV.post(app0(Object.assign({ s, agree: AGP }, o || {})));
+r = appV(vA);
+check('플러스 포함 대상으로 가입 + 고정가(사무소 동 기본 9,900원)', r.ok && r.bundle === true && SV.T.dpAll().find(p => p.id === r.id).base === 9900, r);
+const idA = r.id;
+check('카드 등록 전(카드대기)에는 플러스 없음', SV.T.dpPlusFor('vA') === null);
+SV.post({ action: 'dpBillingIssue', s: vA, authKey: 'AA', customerKey: r.ck });
+check('카드 등록 뒤(첫 무료 달)부터 플러스 포함', !!SV.T.dpPlusFor('vA'));
+let tq = SV.post({ action: 'toolQuota', s: vA });
+check('이용권 없는 파트너: 매물 설명서 150 · 주간 글 5(덧씌우기)', tq.ok && tq.limits.listing === 150 && tq.limits.kitAreas === 5 && tq.tier === 'brief_pro_plus', tq);
+let bm = SV.post({ action: 'bpMine', s: vA });
+check('이용권 없는 파트너: 내 손님 브리핑 10명 · 주간 리포트', bm.ok && bm.limit.customers === 10 && bm.limit.weekly === true, bm);
+check('결제 행을 만들지 않음(주문·브리핑구독 시트에 파트너 행 없음)', !(SV.sheets['주문'] && SV.sheets['주문'].rows.length > 1) && !(SV.sheets['브리핑구독'] && SV.sheets['브리핑구독'].rows.slice(1).some(x => x[SV.T.BC['카카오id']] === 'vA')));
+function subRow(SS, k, prod, st, extra) {
+  const B = SS.sheets['브리핑구독'] || (SS.sheets['브리핑구독'] = makeSheet()); if (!B.rows.length) B.appendRow(SS.T.BH);
+  const rr = [], id = 'B' + crypto.randomBytes(5).toString('hex').toUpperCase().slice(0, 9);
+  rr[SS.T.BC['id']] = id; rr[SS.T.BC['카카오id']] = k; rr[SS.T.BC['상태']] = st; rr[SS.T.BC['상품']] = prod; rr[SS.T.BC['채널']] = 'email'; rr[SS.T.BC['연락처']] = k + '@mail.kr'; rr[SS.T.BC['광고동의']] = false; rr[SS.T.BC['발송수']] = 1;
+  rr[SS.T.BC['시작일']] = TD(-2); rr[SS.T.BC['만료일']] = TD(20); Object.assign(rr, extra || {});
+  B.appendRow(SS.T.BH.map((h, i) => rr[i] === undefined ? '' : rr[i])); return id;
+}
+const SNAME = /const SITE_NAME = '([^']+)'/.exec(GS)[1];
+subRow(SV, 'vA', SNAME + ' 모닝 브리핑 7일 체험', '체험');
+bm = SV.post({ action: 'briefMine', s: vA });
+check('체험 이용권이 있어도 한도는 플러스(지역 20·단지 30·손님 10·급매 기준)', bm.subs[0].areas === 20 && bm.subs[0].apts === 30 && bm.subs[0].customers === 10 && bm.subs[0].urgPick === true && bm.subs[0].plusBy === 'dongne' && bm.plusBy && bm.plusBy.on, bm.subs[0]);
+const PLUSNAME = SNAME + ' 모닝 브리핑 중개사 플러스 1개월';
+subRow(SV, 'vA', PLUSNAME, '이용', { [SV.T.BC['주문번호']]: 'JDJ-ORDER1', [SV.T.BC['결제액']]: 9900 });
+bm = SV.post({ action: 'briefMine', s: vA });
+check('따로 낸 플러스가 있으면 알림 대상(sepPlus)', bm.plusBy.sepPlus === true && bm.plusBy.sepAuto === false, bm.plusBy);
+check('구독 관리 화면 문구: "동네 파트너에 중개사 플러스가 들어 있어요 — 따로 낸 플러스는 다음 결제일부터 멈출 수 있어요"', /동네 파트너에 중개사 플러스가 들어 있어요 — 따로 낸 플러스는 다음 결제일부터 멈출 수 있어요/.test(read('brief/manage/index.html')) && /plusStop/.test(read('brief/manage/index.html')));
+check('파트너 플러스가 있는 동안 플러스 자동 결제 새로 시작은 막음', /들어 있어요/.test(SV.post({ action: 'briefBillStart', s: vA, product: 'brief_pro_plus', agree: true }).err || ''));
+/* 따로 낸 플러스 자동 결제: 결제일이 와도 결제하지 않고 한 달 미룸 */
+SV.post({ action: 'briefBillStart', s: vB, product: 'brief', agree: true });   // 시트 만들기용(체험 없음 → 거절돼도 됨)
+const BRA = SV.sheets['브리핑자동결제'] || (SV.sheets['브리핑자동결제'] = makeSheet()); if (!BRA.rows.length) BRA.appendRow(Object.keys(SV.T.BRAC));
+const brr = []; brr[SV.T.BRAC['회원']] = 'b' + SV.T.hashOf('brU|vA').slice(1, 25); brr[SV.T.BRAC['상태']] = '정상'; brr[SV.T.BRAC['요금제']] = 'brief_pro_plus'; brr[SV.T.BRAC['첫결제일']] = TD(-40); brr[SV.T.BRAC['다음결제일']] = TD(0); brr[SV.T.BRAC['알림']] = '';
+BRA.appendRow(Object.keys(SV.T.BRAC).map((h, i) => brr[i] === undefined ? '' : brr[i]));
+SV.props['BK_BR_' + brr[SV.T.BRAC['회원']]] = JSON.stringify({ ck: 'ck_x', bk: 'BK_SECRET_PLUS' });
+bm = SV.post({ action: 'briefMine', s: vA });
+check('따로 낸 플러스 자동 결제가 있으면 [멈추기] 버튼 대상(sepAuto)', bm.plusBy.sepAuto === true, bm.plusBy);
+const nCh0 = tossLog.filter(x => x[0] === 'charge').length;
+SV.T.brBillDaily(new Date());
+check('파트너 플러스가 있는 동안 따로 낸 플러스는 결제하지 않고 30일 미룸 + 안내', tossLog.filter(x => x[0] === 'charge').length === nCh0 && BRA.rows[1][SV.T.BRAC['다음결제일']] === TD(30) && SV.mails.some(m => /결제하지 않았어요/.test(m.subject)));
+r = SV.post({ action: 'briefBillCancel', s: vA });
+check('[따로 낸 플러스 자동 결제 멈추기] = 자동 결제 해지(자동 환불 없음)', r.ok && r.bill.st === '해지예정');
+/* 고정가: 동마다 요금을 바꿔도 가입한 파트너는 그대로 */
+r = appV(vB, { office: '대치공인중개사사무소', reg: '11680-2019-00789', name: '박대치', mail: 'vb@example.com', dn: '대치동', picks: [] });
+const idB = r.id;
+check('대치동 사무소는 동 요금 12,900원으로 고정', SV.T.dpAll().find(p => p.id === idB).base === 12900 && /12,900원/.test(r.payText), r.payText);
+SV.props.DP_SETTINGS = JSON.stringify({ SLOTS_PER_DONG: 2, PRICE_BY_DONG: { '11680|대치동': 15000 }, LISTING_TIER_ENABLED: true, PARTNER_OPEN_DATE: TD(0) });
+SV.post({ action: 'dpBillingIssue', s: vB, authKey: 'BB', customerKey: SV.post({ action: 'dpMine', s: vB }).me.ck });
+SV.post({ action: 'dpBillingIssue', s: vA, start: true });
+check('요금 설정을 바꿔도 이미 가입한 파트너는 가입 때 값(12,900원)', SV.post({ action: 'dpMine', s: vB }).me.price.base === 12900 && C.dpPrice(1, { base: 12900, plan: 'y' }).total === 129000);
+/* 일반 등록: 자리 제한 없음·한마디 없음·플러스 없음 */
+const vF = SV.addUser('vF');
+r = appV(vF, { office: '네번째공인중개사사무소', reg: '11680-2018-00111', name: '최넷', mail: 'vf@example.com' });
+const idF = r.id; SV.post({ action: 'dpBillingIssue', s: vF, authKey: 'FF', customerKey: r.ck });
+r = appV(vC, { office: '개포부동산공인중개사사무소', reg: '11680-2021-00456', name: '이개포', mail: 'vc0@example.com' });
+check('대표 자리 2개(설정)가 차면 세 번째 대표 신청은 대기', r.ok && r.wait.indexOf('11680|개포동') >= 0 && r.got.length === 0, r);
+SV.post({ action: 'dpCancel', s: vC });
+r = appV(vD, { tier: 'listing', office: '행복공인중개사사무소', reg: '11680-2020-00123', name: '김행복', mail: 'vd@example.com', kind: 'owner', office2: '' });
+check('같은 등록번호 대표가 있으면 일반 등록도 막음', r.ok === false, r);
+REG['11680-2022-00222'] = { medOfficeNm: '목록공인중개사사무소', rprsvNm: '정목록', lctnRoadNmAddr: '서울특별시 강남구 개포로 5', crtrYmd: '2026-11-01' };
+REG['11680-2022-00333'] = { medOfficeNm: '둘째목록공인중개사사무소', rprsvNm: '한둘째', lctnRoadNmAddr: '서울특별시 강남구 개포로 6', crtrYmd: '2026-11-01' };
+r = appV(vD, { tier: 'listing', office: '목록공인중개사사무소', reg: '11680-2022-00222', name: '정목록', mail: 'vd@example.com' });
+check('일반 등록: 자리가 차도 바로 등록(자리 제한 없음)·플러스·창립 없음·월 4,900원', r.ok && r.listing === true && r.got.indexOf('11680|개포동') >= 0 && r.bundle === false && r.founding === false && /4,900원/.test(r.payText), r);
+const idD = r.id;
+SV.post({ action: 'dpBillingIssue', s: vD, authKey: 'DD', customerKey: r.ck });
+r = appV(vE, { tier: 'listing', office: '둘째목록공인중개사사무소', reg: '11680-2022-00333', name: '한둘째', mail: 've@example.com' });
+SV.post({ action: 'dpBillingIssue', s: vE, authKey: 'EE', customerKey: r.ck });
+const idE = r.id;
+check('일반 등록은 대표 자리 수에 들어가지 않음', SV.post({ action: 'dpSlots', s: vA, keys: ['11680|개포동'] }).slots['11680|개포동'].used === 2);
+check('일반 등록은 오늘의 한마디를 못 씀', /일반 등록은 오늘의 한마디/.test(SV.post({ action: 'dpWrite', s: vD, topic: 'deal', text: '오늘 개포동은 매수 문의가 조금 늘었어요.' }).err));
+check('일반 등록에는 플러스 없음', SV.T.dpPlusFor('vD') === null);
+const subV = SV.addUser('subV'); const kV = (() => { const id = subRow(SV, 'subV', SNAME + ' 모닝 브리핑 7일 체험', '체험', { [SV.T.BC['광고동의']]: true }); return SV.T.bKey(id); })();
+SV.T.dpPickReset();
+r = SV.post({ action: 'dpBrief', g: '11680', dn: '개포동', k: kV });
+const lx = r.sec && r.sec.list[0];
+check('브리핑: 대표 파트너 아래 "이 동네 중개사" 목록(일반 등록 2곳, 사무소 보기용 id·등록 확인 표시)', lx && lx.listing.length === 2 && lx.listing.every(c => /^D/.test(c.id) && c.verified === true) && lx.partners.every(c => !c.listing), lx);
+const ord1 = lx.listing.map(c => c.id).join();
+const orders = new Set(); for (let i = 0; i < 12; i++) { SV.T.dpPickReset(); orders.add(SV.post({ action: 'dpBrief', g: '11680', dn: '개포동', k: kV, day: TD(i) }).sec.list[0].listing.map(c => c.id).join()); }
+check('이 동네 중개사 순서는 날마다 바뀜(고정 1등 없음)', orders.size === 2, [...orders]);
+r = SV.post({ action: 'dpOffice', id: idD });
+check('사무소 보기: 이름·주소·등록 확인, 전화번호는 [전화번호 보기] 뒤에만 + 누름 기록', r.p && r.p.office === '목록공인중개사사무소' && r.p.verified && !r.p.tel && SV.post({ action: 'dpOffice', id: idD, reveal: true, v: 'visitor_x1' }).p.tel === '02-1234-5678' && SV.sheets['동네파트너기록'].rows.some(x => x[1] === 'call' && x[2] === idD));
+check('사무소 보기 화면: 꺼져 있으면 준비 중·검색 제외', /noindex/.test(read('dongne/office/index.html')) && /준비 중이에요/.test(read('dongne/office/index.html')) && /전화번호 보기/.test(read('dongne/office/index.html')));
+/* 48시간 받기: 그 동 일반 등록(가입 순) → 대기 */
+SV.post({ action: 'dpWait', s: vB, key: '11680|개포동' });   // 대치동 파트너가 개포동 대기
+r = SV.post({ action: 'dpAdminAct', s: vAd, op: 'end', id: idA, why: '시험 해지' });
+const off1 = JSON.parse(SV.props.DP_OFFER || '{}')['11680|개포동'];
+check('대표 자리가 나면 그 동 일반 등록 회원(먼저 가입)에게 먼저 48시간 제안 + 자리는 잡아 둠', off1 && off1.pid === idD && SV.mails.some(m => m.to === 'vd@example.com' && /48시간/.test(m.subject)) && SV.post({ action: 'dpSlots', s: vB, keys: ['11680|개포동'] }).slots['11680|개포동'].used === 2, off1);
+check('내 파트너 화면에 받을 자리가 보임', (SV.post({ action: 'dpMine', s: vD }).me.offers || []).length === 1);
+check('다른 사람은 받을 수 없음', SV.post({ action: 'dpClaim', s: vE, key: '11680|개포동' }).ok === false);
+r = SV.post({ action: 'dpClaim', s: vD, key: '11680|개포동', no: true });
+const off2 = JSON.parse(SV.props.DP_OFFER || '{}')['11680|개포동'];
+check('넘기면 다음 일반 등록 회원에게', r.ok && off2 && off2.pid === idE, off2);
+const O3 = JSON.parse(SV.props.DP_OFFER); O3['11680|개포동'].until = Date.now() - 1000; SV.props.DP_OFFER = JSON.stringify(O3);
+SV.T.dpOfferTick();
+const off3 = JSON.parse(SV.props.DP_OFFER || '{}')['11680|개포동'];
+check('48시간이 지나면 그다음(일반 등록 다 돌면 대기 순서)으로', off3 && off3.pid === idB, off3);
+r = SV.post({ action: 'dpClaim', s: vB, key: '11680|개포동' });
+check('대기 파트너가 받으면 그 동이 더해짐', r.ok && SV.T.dpAll().find(p => p.id === idB).keys.some(k => k.k === '11680|개포동') && !JSON.parse(SV.props.DP_OFFER || '{}')['11680|개포동']);
+/* 일반 등록 회원이 받으면 대표 파트너로 */
+const vG = SV.addUser('vG');
+r = SV.post({ action: 'dpAdminAct', s: vAd, op: 'end', id: idF, why: '시험 해지 2' });
+const off4 = JSON.parse(SV.props.DP_OFFER || '{}')['11680|개포동'];
+check('다시 자리가 나면 새로 일반 등록 순서부터(이전 제안 기록은 지움)', off4 && (off4.pid === idD || off4.pid === idE), off4);
+const who = off4.pid === idD ? vD : vE;
+r = SV.post({ action: 'dpClaim', s: who, key: '11680|개포동' });
+const conv = SV.T.dpAll().find(p => p.id === off4.pid);
+check('일반 등록 회원이 받으면 대표 파트너로 바뀜(그 동·대표 요금 고정·그날 기준 플러스 포함)', r.ok && r.wasListing && !conv.listing && conv.keys.length === 1 && conv.base === 9900 && conv.bundle === true, conv);
+/* 플러스는 파트너가 끝나는 날 함께 끝남 */
+SV.T.dpPickReset();
+r = SV.post({ action: 'dpCancel', s: who });
+check('해지 예정(그달 말일)까지는 플러스 그대로', r.ok && !!SV.T.dpPlusFor(who === vD ? 'vD' : 'vE'));
+const rowC = SV.sheets['동네파트너'].rows.find(x => x[0] === conv.id); rowC[SV.T.DPC['해지예정일']] = TD(-1);
+check('말일이 지나면 플러스 끝', (() => { SV.T.dpPickReset(); SV.post({ action: 'dpConfig', s: vAd }); return SV.T.dpPlusFor(who === vD ? 'vD' : 'vE') === null; })());
+/* 마감 뒤 가입은 플러스 없음, 끊긴 지 30일 안 다시 가입은 이어 받음 */
+SV.props.DP_SETTINGS = JSON.stringify({ SLOTS_PER_DONG: 2, LISTING_TIER_ENABLED: true, PARTNER_OPEN_DATE: TD(-200) });
+r = appV(vC, { office: '대치공인중개사사무소', reg: '11680-2019-00789', name: '박대치', mail: 'vc@example.com', dn: '대치동' });
+check('플러스 포함 마감 뒤 처음 가입: 포함 안 됨', r.ok === false || r.bundle === false, r);
+check('가입 화면 설정: 마감이 지나면 bundleOk=false', SV.post({ action: 'dpConfig', s: vC }).bundleOk === false);
+const rowA = SV.sheets['동네파트너'].rows.find(x => x[0] === idA); rowA[SV.T.DPC['해지예정일']] = TD(-10);
+const vA2 = vA;
+SV.post({ action: 'dpBillingIssue', s: vA2 });
+r = appV(vA2, { mail: 'happy2@example.com' });
+check('끊긴 지 30일 안에 다시 가입하면 플러스 포함 이어 받음(마감이 지나도)', r.ok && r.bundle === true, r);
+/* 돌려 보이기 + 작은 카드 첫 줄 */
+const S3 = server({ open: true, fetch: fakeFetch, props: { DATA_GO_KR_KEY: 'k' } });
+const w1 = S3.addUser('w1'), w2 = S3.addUser('w2'), w3 = S3.addUser('w3'), sw = S3.addUser('sw');
+REG['11680-2023-00444'] = { medOfficeNm: '세번째공인중개사사무소', rprsvNm: '구세번', lctnRoadNmAddr: '서울특별시 강남구 개포로 7', crtrYmd: '2026-11-01' };
+const pids3 = [[w1, '행복공인중개사사무소', '11680-2020-00123', '김행복', 'w1'], [w2, '개포부동산공인중개사사무소', '11680-2021-00456', '이개포', 'w2'], [w3, '세번째공인중개사사무소', '11680-2023-00444', '구세번', 'w3']]
+  .map(([s, o, rg, n, m]) => { const x = S3.post(app0({ s, office: o, reg: rg, name: n, mail: m + '@example.com' })); if (!x.ok) console.log('APPFAIL', x.err); return x.id; });
+const PP = S3.sheets['동네한마디'] || (S3.sheets['동네한마디'] = makeSheet()); if (!PP.rows.length) PP.appendRow(Object.keys(S3.T.DPPC));
+const addPost = (pid, daysAgo, text) => { const rr = []; rr[S3.T.DPPC['id']] = 'N' + crypto.randomBytes(5).toString('hex').toUpperCase().slice(0, 9); rr[S3.T.DPPC['시각']] = new S3.VD(Date.now() - daysAgo * 864e5 - 2 * 3600e3); rr[S3.T.DPPC['파트너']] = pid; rr[S3.T.DPPC['동']] = '11680|개포동'; rr[S3.T.DPPC['주제']] = 'deal'; rr[S3.T.DPPC['내용']] = text; rr[S3.T.DPPC['상태']] = '공개'; rr[S3.T.DPPC['도움']] = 0; rr[S3.T.DPPC['신고']] = 0; PP.appendRow(Object.keys(S3.T.DPPC).map((h, i) => rr[i] === undefined ? '' : rr[i])); };
+for (let d = 1; d <= 13; d++) addPost(pids3[0], d, '첫째 파트너가 매일 쓰는 글이에요. 오늘도 개포동 매수 문의가 많았어요 정말로요.');
+addPost(pids3[1], 2, '둘째 파트너 글이에요. 가끔 써요.');
+addPost(pids3[2], 9, '셋째 파트너 글은 오래전이에요.');
+const subk = (() => { const B = S3.sheets['브리핑구독'] || (S3.sheets['브리핑구독'] = makeSheet()); if (!B.rows.length) B.appendRow(S3.T.BH); const rr = []; rr[S3.T.BC['id']] = 'BSUB000001'; rr[S3.T.BC['카카오id']] = 'sw'; rr[S3.T.BC['상태']] = '체험'; rr[S3.T.BC['광고동의']] = true; rr[S3.T.BC['시작일']] = TD(-1); rr[S3.T.BC['만료일']] = TD(5); B.appendRow(S3.T.BH.map((h, i) => rr[i] === undefined ? '' : rr[i])); return S3.T.bKey('BSUB000001'); })();
+const cnt = {}; pids3.forEach(p => { cnt[p] = 0; });
+let secX = null;
+for (let i = 0; i < 20; i++) { S3.T.dpPickReset(); const res = S3.post({ action: 'dpBrief', g: '11680', dn: '개포동', k: subk }); secX = res.sec.list[0]; if (secX.post) cnt[secX.post.pid]++; S3.props.DP_PICK = JSON.stringify(Object.assign(JSON.parse(S3.props.DP_PICK || '{}'))); const F = JSON.parse(S3.props.DP_FEAT || '{}'); Object.keys(F).forEach(k => Object.keys(F[k]).forEach(p => { F[k][p] = C.dpAddDays(F[k][p], -1); })); S3.props.DP_FEAT = JSON.stringify(F); S3.props.DP_PICK = '{}'; }
+check('작은 이름 카드: 다른 파트너 최근 글 첫 줄(40자 이하, 7일 안 글만)', secX.partners.length === 3 && secX.partners.slice(1).every(c => c.line === '' || c.line.length <= 40) && secX.partners.some(c => /^둘째 파트너 글이에요\.$/.test(c.line)) && !secX.partners.some(c => /셋째/.test(c.line)), secX.partners.map(c => c.line));
+check('크게 소개: 글을 자주 쓴 파트너가 더 자주, 7일 안 글이 있는 다른 파트너도 몫을 받음', cnt[pids3[0]] > cnt[pids3[1]] && cnt[pids3[1]] >= 2 && cnt[pids3[2]] === 0, cnt);
+const fs3 = C.dpPickFeatured([{ id: 'x', pid: 'A', at: C.dpCutoff('2026-12-10') - 3600e3 }, { id: 'y', pid: 'B', at: C.dpCutoff('2026-12-10') - 3600e3 }], '2026-12-10', { prev: 'B', last: { A: '2026-12-09', B: '2026-12-05' }, days: { A: 14, B: 1 } });
+check('기본 몫 보장: 4일 넘게 소개 안 된 파트너는 그날 꼭 소개', fs3.pid === 'B');
+/* 오늘의 한마디 안내: 3일 없으면, 한 주 2번까지, 4주 넘으면 그만 */
+const pW = S3.T.dpAll().find(p => p.id === pids3[1]), rowW = S3.sheets['동네파트너'].rows.find(x => x[0] === pids3[1]);
+const nud = () => S3.mails.filter(m => m.to === 'w2@example.com' && /오늘 동네 소식 하나 남겨 주세요/.test(m.subject)).length;
+rowW[S3.T.DPC['마지막글']] = TD(-3); S3.props.DP_DAILY = ''; S3.T.dpDaily(new Date());
+check('3일 글이 없으면 "오늘 동네 소식 하나 남겨 주세요"', nud() === 1);
+S3.props.DP_DAILY = ''; S3.T.dpDaily(new Date());
+check('같은 날·3일 안에는 다시 안 보냄', nud() === 1);
+const wkNow = C.dpWeek(TD(0));
+rowW[S3.T.DPC['알림']] = `nud|${wkNow}|${TD(-6)} nud|${wkNow}|${TD(-3)}`.replace(/\|[0-9-]+$/, '|' + TD(-3)); rowW[S3.T.DPC['마지막글']] = TD(-9);
+const twoThisWeek = (`nud|${wkNow}|` + TD(-6)).split('|')[2] >= wkNow;
+S3.props.DP_DAILY = ''; S3.T.dpDaily(new Date());
+check('한 주에 2번까지', twoThisWeek ? nud() === 1 : nud() <= 2);
+rowW[S3.T.DPC['알림']] = ''; rowW[S3.T.DPC['마지막글']] = TD(-30); S3.props.DP_DAILY = ''; S3.T.dpDaily(new Date());
+check('4주 넘게 글이 없으면 이 안내는 그만(4주 안내만)', nud() <= 2 && S3.mails.some(m => m.to === 'w2@example.com' && /4주 동안/.test(m.subject)));
+check('"이번 주 우리 동네 한마디" 글자가 남아 있지 않음', ![GS, read('dongne/index.html'), read('dongne/my/index.html'), read('assets/dongne.js'), read('dongne/terms/index.html')].some(t => /이번 주 우리 동네 한마디/.test(t)) && /오늘의 우리 동네 한마디/.test(GS));
+check('월요일 한마디 안내 메일은 없어짐', !/이번 주 우리 동네 한마디를 남겨 주세요/.test(GS) && /오늘 동네 소식 하나 남겨 주세요/.test(GS));
+/* 이용권 없는 파트너에게 아침 브리핑(파트너 이메일, 플러스 한도) */
+const S4 = server({ open: true, fetch: fakeFetch, props: { DATA_GO_KR_KEY: 'k' } });
+const x1 = S4.addUser('x1'); S4.post(app0({ s: x1 }));
+const BS = { g: '11680', name: '강남구', date: TD(0), trades: [], lines: { '': { fact: '어제 새로 올라온 거래가 없어요.' } } };
+const bf = g => g === '11680' ? BS : null; bf.has = () => true; bf.put = () => {};
+const nB = S4.T.dpPlusBriefs(TD(0), S4.T.userBriefMap(), bf, null, { date: TD(0) });
+check('이용권 없는 파트너: 파트너 이메일로 아침 브리핑(중개사 플러스, 결제 행 없음) + 하루 한 번', nB === 1 && S4.mails.some(m => m.to === 'happy@example.com' && /모닝 브리핑/.test(m.subject)) && S4.T.dpPlusBriefs(TD(0), S4.T.userBriefMap(), bf, null, { date: TD(0) }) === 0);
 
 /* ---------- ⑤ 공개 저장소 ---------- */
 const PUB = walk(ROOT, []).concat(['assets/dongne.js', 'assets/dongne-core.js', 'tools/agent-backend.gs', 'assets/billing.js'].map(f => path.join(ROOT, f)));

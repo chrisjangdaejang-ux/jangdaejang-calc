@@ -13,7 +13,16 @@ const DP_RULE = { slots: 3, incl: 3, max: 10, base: 9900, extra: 5000, yearBase:
   retryDays: 3, holdDays: 14, noticeM: [7], noticeY: [30, 7], foundKeepDays: 30, swapDays: 30,
   /* 묶음 혜택(기존 중개사 제휴 = 검색 결과 노출 함께 쓰는 사무소) — 지금은 끔. 시범 운영 뒤 대표가 정해요.
      'off' 없음 · 'include' 제휴 가입자는 기본 3개 동 무료(추가 동만 결제) · 'discount' 둘 다 가입하면 bundlePct% 할인 */
-  bundleMode: 'off', bundlePct: 0, cutoffH: 22, textMax: 200, nearK: 8, postDays: 7, idleDays: 28, bestBoost: 2, reportW: 3 };
+  bundleMode: 'off', bundlePct: 0,
+  /* v51 설정값(대표가 나중에 코드 없이 바꾸는 값 — 서버 스크립트 속성 DP_SETTINGS 에 JSON 으로 넣으면 이 기본값 위에 덮어써요. 이름은 dpSettings 참고)
+     plusBundleUntil: 이 날짜(포함)까지 가입한 파트너에게 중개사 플러스를 함께 드림('' = 늘). 구독이 끊기지 않는 동안만(창립 혜택과 같은 30일 규칙)
+     slotsMap: 동마다 자리 수 따로({'11680|대치동': 4}) · priceMap: 동마다 월 기본 요금 따로({'11680|대치동': 12900}) — 가입한 파트너는 그때 값을 끊기지 않는 동안 그대로
+     listingTier: '일반 등록'(자리 제한 없이 '이 동네 중개사' 목록에만, 한마디·브리핑 소개 없음) 켜기 · listingPrice: 일반 등록 월 요금(0 = 아직 안 정함) */
+  /* plusBundleMonths·openDate: plusBundleUntil 을 따로 정하지 않으면 '문 연 날(openDate) + 3개월 − 1일'까지(문 열기 전에는 모두 대상)
+     listingPrice: 일반 등록 월 요금(연간은 10배), 동 하나 더는 그 절반 · 일반 등록은 자리 제한 없음·한마디·중개사 플러스 없음 */
+  plusBundleUntil: '', plusBundleMonths: 3, openDate: '', slotsMap: {}, priceMap: {}, listingTier: false, listingPrice: 4900, listingIncl: 1, offerHours: 48,
+  /* v51 오늘의 한마디: 3일 글이 없으면 안내(한 주 2번까지, 4주 넘게 없으면 그만) · 소개 글 돌려 보이기: 최근 14일 글 쓴 날 수 + 기본 몫 featBase, 각 파트너는 featGap 일에 한 번은 꼭 */
+  nudgeIdle: 3, nudgeWeek: 2, featBase: 2, featGap: 4, featDays: 14, lineMax: 40, cutoffH: 22, textMax: 200, nearK: 8, postDays: 7, idleDays: 28, bestBoost: 2, reportW: 3 };
 const DP_TOPICS = [['deal', '거래 분위기'], ['rent', '전세·월세 동향'], ['rebuild', '재건축·재개발 진행'], ['life', '학군·생활'], ['traffic', '교통·공사']];
 function dpTopicName(id) { for (let i = 0; i < DP_TOPICS.length; i++) if (DP_TOPICS[i][0] === id) return DP_TOPICS[i][1]; return ''; }
 /** 동 열쇠: '시군구코드|법정동 이름' (브리핑이 쓰는 동 단위와 같음) */
@@ -42,13 +51,70 @@ function dpFounding(launchYmd, joinYmd) { return !!launchYmd && !!joinYmd && joi
 function dpPrice(n, o) {
   o = o || {};
   n = Math.max(1, Math.min(DP_RULE.max, Math.round(Number(n) || 1)));
-  const y = o.plan === 'y', extraN = Math.max(0, n - DP_RULE.incl), one = y ? DP_RULE.yearExtra : DP_RULE.extra;
-  const each = o.founding ? Math.floor(one * (1 - DP_RULE.foundExtraOff) / 10) * 10 : one, base0 = y ? DP_RULE.yearBase : DP_RULE.base;
+  if (o.listing) {                                                    // 일반 등록: 사무소 동 1곳 + 동 하나 더는 절반(10원 아래 버림), 연간은 10배
+    const lp = Math.max(0, Math.round(Number(o.base) > 0 ? Number(o.base) : Number(DP_RULE.listingPrice) || 0)), y1 = o.plan === 'y', m = y1 ? 10 : 1;
+    const xN = Math.max(0, n - DP_RULE.listingIncl), xe = Math.floor(lp / 2 / 10) * 10 * m, b1 = lp * m;
+    return { n: n, plan: y1 ? 'y' : 'm', incl: Math.min(n, DP_RULE.listingIncl), extraN: xN, extraEach: xe, base: b1, baseList: b1, extraSum: xN * xe, total: b1 + xN * xe, bundle: '', bundleOff: 0, months: y1 ? 12 : 1, monthly: y1 ? Math.round((b1 + xN * xe) / 12) : b1 + xN * xe, listing: true };
+  }
+  const y = o.plan === 'y', extraN = Math.max(0, n - DP_RULE.incl), one = y ? DP_RULE.yearExtra : DP_RULE.extra, mb = Number(o.base) > 0 ? Math.round(Number(o.base)) : 0;   // o.base = 가입 때 고정된 월 기본 요금(연간은 10배 = 2개월 할인)
+  const each = o.founding ? Math.floor(one * (1 - DP_RULE.foundExtraOff) / 10) * 10 : one, base0 = y ? (mb ? mb * 10 : DP_RULE.yearBase) : (mb || DP_RULE.base);
   const bm = o.affiliate ? DP_RULE.bundleMode : 'off', pct = Math.max(0, Math.min(100, Number(DP_RULE.bundlePct) || 0));
   const base = bm === 'include' ? 0 : base0, sum = base + extraN * each;
   const total = bm === 'discount' && pct ? Math.floor(sum * (1 - pct / 100) / 10) * 10 : sum;
   return { n: n, plan: y ? 'y' : 'm', incl: Math.min(n, DP_RULE.incl), extraN: extraN, extraEach: each, base: base, baseList: base0, extraSum: extraN * each, total: total,
     bundle: bm !== 'off' ? bm : '', bundleOff: sum - total + (base0 - base), months: y ? 12 : 1, monthly: y ? Math.round(total / 12) : total };
+}
+/** 동마다 자리 수(설정 slotsMap 이 있으면 그 값) */
+function dpSlotsOf(key) { const v = Math.round(Number((DP_RULE.slotsMap || {})[key])); return v >= 1 && v <= 20 ? v : DP_RULE.slots; }
+/** 이 동 사무소로 새로 가입할 때 월 기본 요금(설정 priceMap 이 있으면 그 값) */
+function dpBaseOf(key) { const v = Math.round(Number((DP_RULE.priceMap || {})[key])); return v >= 1000 && v <= 1000000 ? v : DP_RULE.base; }
+/** 중개사 플러스 함께 드리는 대상인지(가입일 기준). 끊기지 않는지는 서버가 따로 봐요 */
+function dpBundleUntil() { return DP_RULE.plusBundleUntil || (DP_RULE.openDate ? dpAddDays(dpAddMonths(DP_RULE.openDate, DP_RULE.plusBundleMonths), -1) : ''); }
+function dpBundleOk(joinYmd) { const u = dpBundleUntil(); return !u || (!!joinYmd && joinYmd <= u); }
+/** 설정값 덮어쓰기(서버 스크립트 속성 DP_SETTINGS · 화면은 서버가 준 rule). 이름·모양이 틀린 값은 버림. 돌려줌: 받아들인 이름 목록 */
+function dpSettings(x) {
+  x = x && typeof x === 'object' ? x : {};
+  const ok = [], num = (v, lo, hi) => { v = Number(v); return isFinite(v) && v >= lo && v <= hi ? Math.round(v) : null; };
+  const map = (v, lo, hi) => { if (!v || typeof v !== 'object' || Array.isArray(v)) return null; const o = {}; Object.keys(v).forEach(k => { const n = num(v[k], lo, hi); if (/^\d{5}\|[가-힣0-9·.]{1,20}$/.test(k) && n != null) o[k] = n; }); return o; };
+  const set = (name, key, v) => { if (v !== null && v !== undefined) { DP_RULE[key] = v; ok.push(name); } };
+  if ('PLUS_BUNDLE_MONTHS' in x) set('PLUS_BUNDLE_MONTHS', 'plusBundleMonths', num(x.PLUS_BUNDLE_MONTHS, 1, 36));
+  if ('PARTNER_OPEN_DATE' in x) set('PARTNER_OPEN_DATE', 'openDate', x.PARTNER_OPEN_DATE === '' || /^\d{4}-\d{2}-\d{2}$/.test(String(x.PARTNER_OPEN_DATE)) ? String(x.PARTNER_OPEN_DATE) : null);
+  if ('PLUS_BUNDLE_UNTIL' in x) set('PLUS_BUNDLE_UNTIL', 'plusBundleUntil', x.PLUS_BUNDLE_UNTIL === '' || /^\d{4}-\d{2}-\d{2}$/.test(String(x.PLUS_BUNDLE_UNTIL)) ? String(x.PLUS_BUNDLE_UNTIL) : null);
+  if ('SLOTS_PER_DONG' in x) set('SLOTS_PER_DONG', 'slots', num(x.SLOTS_PER_DONG, 1, 20));
+  if ('SLOTS_BY_DONG' in x) set('SLOTS_BY_DONG', 'slotsMap', map(x.SLOTS_BY_DONG, 1, 20));
+  if ('PARTNER_PRICE' in x) { const v = num(x.PARTNER_PRICE, 1000, 1000000); set('PARTNER_PRICE', 'base', v); if (v != null) DP_RULE.yearBase = v * 10; }
+  if ('PRICE_BY_DONG' in x) set('PRICE_BY_DONG', 'priceMap', map(x.PRICE_BY_DONG, 1000, 1000000));
+  if ('LISTING_TIER_ENABLED' in x) set('LISTING_TIER_ENABLED', 'listingTier', typeof x.LISTING_TIER_ENABLED === 'boolean' ? x.LISTING_TIER_ENABLED : null);
+  if ('LISTING_PRICE' in x) set('LISTING_PRICE', 'listingPrice', num(x.LISTING_PRICE, 0, 1000000));
+  if ('BUNDLE_MODE' in x) set('BUNDLE_MODE', 'bundleMode', ['off', 'include', 'discount'].indexOf(x.BUNDLE_MODE) >= 0 ? x.BUNDLE_MODE : null);
+  if ('BUNDLE_PCT' in x) set('BUNDLE_PCT', 'bundlePct', num(x.BUNDLE_PCT, 0, 100));
+  return ok;
+}
+/** 글 첫 줄(첫 문장, 40자 넘으면 자르고 …) */
+function dpFirstLine(t) {
+  const s = String(t || '').replace(/\s+/g, ' ').trim(), m = /^(.+?[.!?。])(\s|$)/.exec(s), f = m ? m[1] : s;
+  return f.length > DP_RULE.lineMax ? f.slice(0, DP_RULE.lineMax - 1) + '…' : f;
+}
+/** 오늘 크게 소개할 파트너 고르기(동 하나). posts = 공개 글 [{ id, pid, at, help, rep, boost, found }],
+    o = { prev(어제 소개된 파트너), last: { pid: 마지막으로 소개된 날 }, days: { pid: 최근 14일 중 글 쓴 날 수 } }.
+    ① 마감 전·7일 안 글이 있는 파트너만 후보 ② featGap(4)일 넘게 소개 안 된 파트너가 있으면 그중 가장 오래된 파트너(기본 몫 보장)
+    ③ 아니면 (기본 몫 featBase + 글 쓴 날 수) 무게로 날짜마다 정해지는 추첨, 어제 파트너는 다른 후보가 있으면 빼요. 그 파트너의 가장 좋은 글을 돌려줌 */
+function dpPickFeatured(posts, dayYmd, o) {
+  o = o || {};
+  const cut = dpCutoff(dayYmd), from = cut - DP_RULE.postDays * 86400000, best = {};
+  (posts || []).filter(p => p && Number(p.at) < cut && Number(p.at) >= from).forEach(p => {
+    const s = dpScore(p, dayYmd); if (!(s > 0)) return;
+    const cur = best[p.pid]; if (!cur || s > cur.s || (s === cur.s && Number(p.at) > Number(cur.p.at))) best[p.pid] = { p: p, s: s };
+  });
+  const pids = Object.keys(best).sort(); if (!pids.length) return null;
+  const last = o.last || {}, days = o.days || {}, age = pid => last[pid] ? Math.round((dpDayMs(dayYmd) - dpDayMs(last[pid])) / 86400000) : 9999;
+  const over = pids.filter(pid => age(pid) >= DP_RULE.featGap).sort((a, b) => age(b) - age(a) || (best[b].p.found ? 1 : 0) - (best[a].p.found ? 1 : 0) || dpHash(dayYmd + '|' + a) - dpHash(dayYmd + '|' + b));
+  if (over.length) return best[over[0]].p;
+  const pool = pids.length > 1 ? pids.filter(pid => pid !== o.prev) : pids;
+  const w = pool.map(pid => DP_RULE.featBase + Math.max(0, Math.min(DP_RULE.featDays, Number(days[pid]) || 0)) + (best[pid].p.found ? 1 : 0));
+  let r = dpHash(dayYmd + '|feat|' + pool.join(',')) % w.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < pool.length; i++) { if (r < w[i]) return best[pool[i]].p; r -= w[i]; }
+  return best[pool[0]].p;
 }
 /** 묶음 혜택 안내 문장(화면용). 꺼져 있으면 빈 글자 */
 function dpBundleText() {
@@ -148,7 +214,7 @@ function dpLegal(c) {
   return [c.office || '', c.addr || '', c.tel || '', '등록번호 ' + (c.reg || ''), who];
 }
 /* DONGNE-CORE END */
-  const api = { DP_RULE, DP_TOPICS, dpTopicName, dpKey, dpSplit, dpDayMs, dpYmd, dpAddDays, dpAddMonths, dpCutoff, dpBriefDay, dpFounding, dpPrice, dpBundleText, dpFirstCharge, dpNextCharge, dpMonthEnd, dpNoticeDue, dpFailStep, dpDist, dpNear,
+  const api = { DP_RULE, DP_TOPICS, dpTopicName, dpKey, dpSplit, dpDayMs, dpYmd, dpAddDays, dpAddMonths, dpCutoff, dpBriefDay, dpFounding, dpPrice, dpBundleText, dpSlotsOf, dpBaseOf, dpBundleUntil, dpBundleOk, dpSettings, dpFirstLine, dpPickFeatured, dpFirstCharge, dpNextCharge, dpMonthEnd, dpNoticeDue, dpFailStep, dpDist, dpNear,
     dpSwapOk, dpHash, dpScore, dpPickPost, dpOrder, dpAreaDongs, dpWeek, dpBest, dpLegal };
   root.JDJ_DPCORE = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

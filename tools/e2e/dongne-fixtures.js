@@ -8,7 +8,7 @@ const card = (id, office, name, dn, found, extra) => Object.assign({ id, office,
 const A = card('D000000011', '개포햇살공인중개사사무소', '김해솔', '개포동', true);
 const B = card('D000000022', '대치나무공인중개사사무소', '이나래', '대치동', false);
 const Cc = card('D000000033', '도곡바람공인중개사사무소', '박도윤', '도곡동', false, { kind: 'member', ceo: '정대표' });
-const cfg = { ok: true, open: false, preview: true, admin: true, paid: false, billing: false, rule: RULE, topics: C.DP_TOPICS, terms: '2026-11-23 초안', agree: { rules: '글쓰기 규칙', ad: '광고 표시 규칙', privacy: '개인정보 수집·이용', terms: '동네 파트너 약관' },
+const cfg = { ok: true, open: false, preview: true, admin: true, paid: false, billing: false, rule: RULE, topics: C.DP_TOPICS, terms: '2026-11-24 초안', agree: { rules: '글쓰기 규칙', ad: '광고 표시 규칙', privacy: '개인정보 수집·이용', terms: '동네 파트너 약관' },
   launch: T, founding: true, foundingUntil: C.dpAddMonths(T, 3), firstCharge: C.dpFirstCharge(T), clientKey: '', plusPrice: 9900 };
 const keys = [{ k: '11680|개포동', dn: '개포동', office: true, at: T, sw: '', swap: { ok: true, wait: 0 }, used: 2 }, { k: '11680|대치동', dn: '대치동', office: false, at: T, sw: '', swap: { ok: true, wait: 0 }, used: 3 },
   { k: '11680|일원동', dn: '일원동', office: false, at: T, sw: C.dpAddDays(T, -10), swap: { ok: false, wait: 20 }, used: 1 }];

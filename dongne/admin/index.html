@@ -13,8 +13,8 @@
 <script src="../../assets/config.js?v=10"></script>
 <script src="../../assets/auth.js?v=10"></script>
 <script src="../../assets/savefb.js?v=1"></script>
-<script src="../../assets/dongne-core.js?v=1"></script>
-<script src="../../assets/dongne.js?v=1"></script>
+<script src="../../assets/dongne-core.js?v=2"></script>
+<script src="../../assets/dongne.js?v=2"></script>
 <link rel="stylesheet" href="../../assets/aplus.css?v=46">
 <style>
 [hidden]{display:none!important}
@@ -61,12 +61,12 @@ h1{font-size:clamp(24px,6vw,30px);margin:4px 0 6px;letter-spacing:-.5px}
       + '<section class="card"><h2>지금 상태</h2><div class="st"><span>문 열림: <b class="' + (Q.open ? 'on">열림' : 'off">닫힘(미리 보기만)') + '</b></span>'
       + '<span>자동 확인 키: <b class="' + (Q.keyReady ? 'on">있음' : 'off">없음 — 모든 신청이 검토 대기') + '</b></span>'
       + '<span>거르기 설정: <b class="' + (Q.rulesReady ? 'on">들어옴' : 'off">없음 — 모든 글이 검토 대기') + '</b></span>'
-      + '<span>자동 결제: <b class="' + (Q.billing ? 'on">열림' : 'off">잠김(시범 파트너만)') + '</b></span></div>'
+      + '<span>자동 결제: <b class="' + (Q.billing ? 'on">열림' : 'off">잠김(시범 파트너만)') + '</b></span></div>' + settingsHtml()
       + '<div class="acts"><button type="button" class="b ' + (pv ? '' : 'main') + '" id="pv">' + (pv ? '이 기기 미리 보기 끄기' : '이 기기에서 미리 보기 켜기') + '</button>'
       + (pv ? '<a class="b" style="display:inline-flex;align-items:center;text-decoration:none" href="../?preview=dongne">신청 화면 미리 보기</a><a class="b" style="display:inline-flex;align-items:center;text-decoration:none" href="../my/?preview=dongne">내 파트너 화면 미리 보기</a>' : '') + '</div></section>';
   }
   function sec(title, n, body, hot) { return '<section class="card"><h2>' + title + ' <span class="n' + (hot && n ? ' hot' : '') + '">' + n + '</span></h2>' + (n ? body : '<p class="empty">없어요.</p>') + '</section>'; }
-  function partnerHd(p) { return '<div class="hd"><b>' + esc(p.office) + '</b><span>' + esc(p.kind === 'member' ? '소속 ' + p.name + ' (대표 ' + p.ceo + ')' : '개업 ' + p.name) + '</span><span>등록번호 ' + esc(p.reg) + '</span><span>' + esc(p.addr) + '</span><span>' + esc(p.tel) + '</span></div>'; }
+  function partnerHd(p) { return '<div class="hd"><b>' + esc(p.office) + '</b><span>' + (p.listing ? '일반 등록' : '대표 파트너' + (p.bundle ? ' · 플러스 포함 대상' : '')) + '</span><span>' + esc(p.kind === 'member' ? '소속 ' + p.name + ' (대표 ' + p.ceo + ')' : '개업 ' + p.name) + '</span><span>등록번호 ' + esc(p.reg) + '</span><span>' + esc(p.addr) + '</span><span>' + esc(p.tel) + '</span></div>'; }
   function catSel(list, id) { return '<select data-cat="' + id + '" aria-label="사유">' + list.map(function (t) { return '<option value="' + t.k + '">' + esc(t.name) + '</option>'; }).join('') + '</select>'; }
   function sanctionBox(p) {
     return '<div class="acts">' + catSel(Q.tpl.strike, 's' + p.id) + '<button type="button" class="b no" data-op="strike" data-id="' + esc(p.id) + '" data-c="s' + esc(p.id) + '">단계 제재(' + Math.min(3, (p.warn || 0) + 1) + '차)</button></div>'
@@ -75,6 +75,15 @@ h1{font-size:clamp(24px,6vw,30px);margin:4px 0 6px;letter-spacing:-.5px}
       + (p.st === '노출중지' ? '<button type="button" class="b ok" data-op="unstop" data-id="' + esc(p.id) + '">노출 다시 켜기</button>' : '')
       + (p.pay !== '시범' ? '<button type="button" class="b" data-op="trial" data-id="' + esc(p.id) + '">시범 파트너로(무료)</button>' : '')
       + '<button type="button" class="b" data-op="end" data-id="' + esc(p.id) + '">일반 해지</button></div>';
+  }
+  /* 설정값(스크립트 속성 DP_SETTINGS) 지금 값 — 바꾸는 법은 docs/redeploy_v51.md */
+  function settingsHtml() {
+    var S = Q.settings || {}, R = S.rule || {}, won = function (n) { return Number(n || 0).toLocaleString('ko-KR') + '원'; }, obj = function (o) { var k = Object.keys(o || {}); return k.length ? k.map(function (x) { return x.slice(6) + ' ' + o[x]; }).join(', ') : '없음'; };
+    return '<details style="margin-top:8px"><summary class="b" style="display:inline-flex;align-items:center">설정값 보기</summary><div class="st" style="margin-top:6px">'
+      + '<span>중개사 플러스 포함: <b>' + esc(S.bundleUntil ? S.bundleUntil + '까지 가입' : '문 연 날부터 ' + (R.plusBundleMonths || 3) + '개월(문 열기 전)') + '</b></span>'
+      + '<span>문 연 날: <b>' + esc(R.openDate || '아직') + '</b></span><span>동마다 자리: <b>' + (R.slots || 3) + '</b> (따로: ' + esc(obj(R.slotsMap)) + ')</span>'
+      + '<span>대표 파트너 월 요금: <b>' + won(R.base) + '</b> (따로: ' + esc(obj(R.priceMap)) + ')</span><span>일반 등록: <b>' + (R.listingTier ? '켜짐' : '꺼짐') + ' · 월 ' + won(R.listingPrice) + '</b></span>'
+      + ((S.bad || []).length ? '<span style="color:#C2410C">받아들이지 않은 설정: ' + esc(S.bad.join(', ')) + '</span>' : '') + '</div></details>';
   }
   function draw() {
     var h = head();
@@ -94,10 +103,11 @@ h1{font-size:clamp(24px,6vw,30px);margin:4px 0 6px;letter-spacing:-.5px}
     h += sec('구독자 신고가 들어온 파트너', Q.reported.length, '<p>' + Q.prepQ + '건 이상 쌓이면 운영자 메일이 가요. 확인한 뒤 [신고 확인 끝] 또는 제재를 눌러 주세요.</p>' + Q.reported.map(function (p) {
       return '<div class="it"><div class="hd"><b>' + esc(p.office) + '</b><span>신고 ' + p.reps + '건</span><span>' + esc(p.why.join(', ')) + '</span></div><div class="acts"><button type="button" class="b ok" data-op="repClear" data-id="' + esc(p.id) + '">신고 확인 끝(문제 없음)</button></div>' + sanctionBox(p) + '</div>';
     }).join(''), true);
+    h += sec('48시간 받기 제안 중인 자리', (Q.offers || []).length, (Q.offers || []).map(function (o) { return '<div class="it"><div class="hd"><b>' + esc(o.dn) + '</b><span>' + esc(o.office) + '</span><span>' + esc(o.until) + '까지</span></div></div>'; }).join(''));
     h += sec('노출 중인 파트너', Q.live.length, '<p>단계 제재: 1차 경고 메일 → 2차 7일 노출 중지 → 3차 해지 + 창립 혜택 박탈. 중대 위반(행정처분·휴업·폐업, 사기·전세사기·금전 사고, 허위 가입, 피해)은 노출·결제를 멈추고 혜택을 없애고 바로 해지해요(환불 없음).</p>'
       + '<details><summary class="b" style="display:inline-flex;align-items:center">사유 메일 문구 보기</summary>' + Q.tpl.strike.concat(Q.tpl.ban).map(function (t) { return '<p class="tpl"><b>' + esc(t.name) + '</b> — ' + esc(t.body) + '</p>'; }).join('') + '</details>'
       + Q.live.map(function (p) {
-        return '<div class="it"><div class="hd"><b>' + esc(p.office) + '</b><span>' + esc(p.st) + '</span><span>결제 ' + esc(p.pay) + (p.next ? ' · 다음 ' + esc(p.next) : '') + '</span><span>' + (p.founding ? '창립 혜택 중' : '') + '</span><span>제재 ' + (p.warn || 0) + '차</span><span>' + esc(p.keys.join(', ')) + '</span><span>마지막 글 ' + esc(p.last || '없음') + '</span></div>'
+        return '<div class="it"><div class="hd"><b>' + esc(p.office) + '</b><span>' + (p.listing ? '일반 등록' : '대표 파트너') + (p.plusOn ? ' · 플러스 포함' : '') + (p.base ? ' · 월 ' + Number(p.base).toLocaleString('ko-KR') + '원 고정' : '') + '</span><span>' + esc(p.st) + '</span><span>결제 ' + esc(p.pay) + (p.next ? ' · 다음 ' + esc(p.next) : '') + '</span><span>' + (p.founding ? '창립 혜택 중' : '') + '</span><span>제재 ' + (p.warn || 0) + '차</span><span>' + esc(p.keys.join(', ')) + '</span><span>마지막 글 ' + esc(p.last || '없음') + '</span></div>'
           + (p.chk ? '<p class="why">' + esc(p.chk) + '</p>' : '') + sanctionBox(p) + '</div>';
       }).join(''));
     app.innerHTML = h;

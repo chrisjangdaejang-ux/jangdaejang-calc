@@ -112,6 +112,14 @@ const ADM = (() => { try {
   return { t: sessionStorage.getItem('jdj_brief_adm') || '', op: sessionStorage.getItem('jdj_brief_op') === '1' };
 } catch(e){ return { t: '', op: false }; } })();
 /* 자동결제(빌링) — 서버 briefMine.bill.on(BILLING_OPEN·PAID_OPEN 모두 켜짐)일 때만 보임. 결제일·금액을 크게 보여 주고 자동 결제 동의를 따로 받음 */
+const $m = id => document.getElementById(id);
+/* v51 동네 파트너에 들어 있는 중개사 플러스 — 따로 낸 플러스가 있으면 알림 + 자동 결제 멈추기(자동 환불 없음) */
+function plusByHtml(r) {
+  const p = r.plusBy; if (!p || !p.on) return '';
+  return `<section class="sb" id="plusBy"><h2>중개사 플러스 <span class="tg">동네 파트너 포함</span></h2><p class="note" style="margin-top:0">동네 파트너를 이어 가는 동안 중개사 플러스(받는 지역 20곳·관심 단지 30개·내 손님 브리핑·주간 리포트·매물 설명서·블로그·인스타 글)를 써요.${r.subs.some(x => x.active) ? '' : ` 아침 브리핑은 파트너 이메일(${esc(p.mail)})로 보내 드려요.`}</p>
+    ${p.sepPlus ? `<div class="msg info">동네 파트너에 중개사 플러스가 들어 있어요 — 따로 낸 플러스는 다음 결제일부터 멈출 수 있어요${p.sepEnd ? ` (지금 이용권 ${esc(p.sepEnd)}까지)` : ''}. 이미 낸 금액은 자동으로 돌려 드리지 않아요.</div>
+    ${p.sepAuto ? '<div class="row2"><button type="button" class="btn" id="plusStop">따로 낸 플러스 자동 결제 멈추기</button></div>' : '<p class="note">1개월 이용권은 자동으로 이어지지 않아서 따로 멈출 필요가 없어요.</p>'}` : ''}</section>`;
+}
 function billInfo(r, td, tier) {
   const live = r.subs.filter(x => (x.active || x.start > td) && x.state !== '해지' && x.state !== '변경');
   const end = live.map(x => x.end).sort().pop() || '', inTrial = live.some(x => x.active && x.tier === 'trial');
@@ -163,7 +171,7 @@ async function draw(note){
   const cy = r.brief.cy || {}, td = new Date().toISOString().slice(0, 10);
   /* 지금 쓰는 요금제(받는 중이거나 시작 예정) 중 한도가 가장 큰 것 — 한도는 brief-core.js 요금제 표 */
   const live = r.subs.filter(x => (x.active || x.start > td) && x.state !== '해지' && x.state !== '변경');
-  const curT0 = live.map(x => B.PRICE[x.tier]).filter(Boolean).sort((a, b) => b.areas - a.areas || b.apts - a.apts)[0] || B.PRICE.brief;
+  const curT0 = r.plusBy && r.plusBy.on ? B.PRICE.brief_pro_plus : live.map(x => B.PRICE[x.tier]).filter(Boolean).sort((a, b) => b.areas - a.areas || b.apts - a.apts)[0] || B.PRICE.brief;   /* v51 동네 파트너: 중개사 플러스 한도 */
   /* 운영자(대표) 모드: 받는 지역·관심 단지 수만 늘림(요금제·결제는 그대로) — 서버 briefMine.adm */
   const curT = r.adm ? Object.assign({}, curT0, { areas: B.ADMIN.areas, apts: B.ADMIN.apts }) : curT0, LIM = r.adm ? B.ADMIN : B.MAX;
   const paidEver = r.subs.some(x => x.orderId && !x.refund);
@@ -215,7 +223,7 @@ async function draw(note){
       <div class="row2" style="margin-top:8px"><button class="btn" data-stop="${s.id}">받지 않기(해지)</button>${s.orderId && !s.refund && s.refundEst > 0 ? `<button class="btn" data-ref="${s.id}">환불 요청(예정 ${s.refundEst.toLocaleString('ko-KR')}원)</button>` : ''}</div>` : ''}</section>`).join('')
       : `<div class="msg info">아직 구독이 없어요. <a href="../subscribe/">${B.TRIAL_DAYS}일 무료로 시작하기</a></div>`}
     <p class="note">${r.bill && r.bill.on ? '자동 결제는 카드를 등록하고 따로 동의한 경우에만 돼요(아래 [자동 결제]).' : '자동 결제는 없어요.'} 해지하면 다음 날부터 보내지 않아요. 환불은 첫 브리핑 전이면 전액, 받기 시작한 뒤에는 남은 날만큼 일할로 해 드려요(영업일 3일 안 처리). 월 요금이 더 비싼 요금제로 바꾸면 오늘 바로 바뀌고 남은 날만큼 차액만 내요. 더 싼 요금제는 다음 이용권부터 바뀌어요. <a href="../../refund/#brief">환불 정책</a></p>
-    ${billHtml(r, td)}
+    ${plusByHtml(r)}${billHtml(r, td)}
     ${r.adm ? `<section class="sb" id="admBox"><h2>운영자 모드 <span class="tg">켜짐</span></h2><p class="note" style="margin-top:0">운영자: 제한 없음 — 받는 지역·관심 단지 수에 제한이 없어요. 요금제·결제·중개사 내용은 바뀌지 않아요.</p>
       <div class="row2"><button type="button" class="btn" id="admOff">운영자 모드 끄기</button></div></section>`
       : ADM.op ? `<section class="sb" id="admBox"><h2>운영자 모드</h2><p class="note" style="margin-top:0">운영자(대표)만 쓸 수 있어요. 버튼을 누르면 서버 주인 메일로 확인 링크(30분 동안 한 번)가 가요. 메일의 링크를 이 계정으로 로그인한 채 열면 지역·관심 단지 제한이 없어져요.</p>
@@ -272,6 +280,7 @@ async function draw(note){
     try { const x = await call('briefAdminMail'); if (x.already) return draw('이미 운영자 모드가 켜져 있어요.'); SF.ok('admOn', '확인 메일을 보냈어요. 30분 안에 메일의 링크를 이 계정으로 로그인한 채 열어 주세요.', { msg: m, done: '✓ 보냈어요' }); $('admOn').disabled = true; }
     catch(e){ SF.err('admOn', e.message, { msg: m }); } };
   billBind(r, td, act);
+  if ($m('plusStop')) $m('plusStop').onclick = () => confirm('따로 낸 중개사 플러스 자동 결제를 멈출까요? 이미 낸 기간은 끝까지 받고, 동네 파트너의 플러스는 그대로예요.') && act(() => call('briefBillCancel'), '따로 낸 플러스 자동 결제를 멈췄어요. 동네 파트너의 플러스는 그대로예요.', $m('plusStop'));
   if ($('admOff')) $('admOff').onclick = () => confirm('운영자 모드를 끌까요? 지역·관심 단지는 요금제 수까지만 보내요.') && act(() => call('briefAdminOff'), '운영자 모드를 껐어요.', $('admOff'));
   main.querySelectorAll('[data-stop]').forEach(b => b.onclick = () => confirm('내일부터 브리핑을 보내지 않을까요? 남은 기간 환불은 [환불 요청]으로 따로 해요.') && act(() => call('briefStop', { id: b.dataset.stop }), '해지했어요. 내일부터 보내지 않아요.', b));
   main.querySelectorAll('[data-ref]').forEach(b => b.onclick = () => { const why = prompt('환불 사유(선택)를 적어 주세요. 요청하면 바로 발송이 멈춰요.', ''); if (why !== null) act(() => call('briefRefund', { id: b.dataset.ref, reason: why }), '환불 요청을 받았어요. 영업일 3일 안에 결제한 수단으로 돌려 드려요.', b); });

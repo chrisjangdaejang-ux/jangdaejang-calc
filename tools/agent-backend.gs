@@ -1,6 +1,19 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집코드 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집코드 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v51 변경 요약 (v50 위에 다시 배포. 따로 실행할 함수 없음 — '동네파트너' 시트 맨 뒤 [고정가]·[묶음]·[등록종류] 칸은 첫 사용 때 머리 줄만 채움)
+ *  - 동네 파트너에 중개사 플러스 포함: 파트너가 이어지는 동안(첫 무료 달·시범 파트너 포함) 모닝 브리핑 중개사 플러스 한도(지역 20·단지 30·손님 10·급매 기준·주간 리포트·
+ *    매물 설명서 150·주간 글 5)를 '덧씌워' 줌(결제 행을 만들지 않음 — briefState·tuBest·bpLimit). 브리핑 이용권이 없는 파트너는 파트너 이메일로 매일 아침 보냄.
+ *    따로 낸 플러스: 안내 + [따로 낸 플러스 자동 결제 멈추기], 자동 결제 날이 오면 파트너 플러스가 있는 동안 결제하지 않고 한 달 미룸. 플러스 새로 사기는 막음. 환불 자동 없음.
+ *    끝: 파트너가 끝나는 날(해지는 그달 말일, 박탈은 바로) 함께 끝. 대상: 문 연 날부터 3개월(PLUS_BUNDLE_MONTHS) 안 가입 — 끊긴 지 30일 지나면 다시 못 받음.
+ *  - '이번 주' → '오늘의 우리 동네 한마디'(하루 한 글 그대로). 월요일 안내 대신 3일 글이 없으면 '오늘 동네 소식 하나 남겨 주세요'(한 주 2번까지, 4주 넘게 없으면 그만).
+ *  - 브리핑 칸: 동마다 오늘 크게 소개할 글 하나(최근 14일 글 쓴 날이 많을수록 자주, 각 파트너는 4일에 한 번은 꼭) + 다른 파트너 2곳은 작은 이름 카드와 최근 글 첫 줄(40자).
+ *  - 설정값(스크립트 속성 DP_SETTINGS, JSON — 코드 없이 바꿈): PLUS_BUNDLE_UNTIL·PLUS_BUNDLE_MONTHS·PARTNER_OPEN_DATE·SLOTS_PER_DONG·SLOTS_BY_DONG·PARTNER_PRICE·PRICE_BY_DONG
+ *    ·LISTING_TIER_ENABLED·LISTING_PRICE·BUNDLE_MODE·BUNDLE_PCT. 가입한 파트너 요금은 그때 값(고정가)으로 끊기지 않는 동안 그대로.
+ *  - 일반 등록(LISTING_TIER_ENABLED=false 로 숨김): 자리 제한 없음, 월 4,900원·연 49,000원, 동 하나 더 절반, 브리핑 '이 동네 중개사' 목록(날마다 순서 돌림)·사무소 보기 화면(dongne/office/).
+ *    대표 자리가 나면 그 동 일반 등록 회원(가입 순) → 대기 순으로 48시간 받기 제안 메일.
+ *  - 검증: node tools/dongne-test.js </dev/null
+ *
  * v50 변경 요약 (다음 재배포에 함께 들어감. 따로 실행할 함수 없음 — 시트 '동네파트너'·'동네파트너대기'·'동네한마디'·'동네파트너기록'·'동네파트너동의'와 사진 드라이브 폴더는 첫 사용 때 저절로 생김)
  *  - 동네 중개사 파트너(맨 아래 'v50' 칸): 숨김 상태로 미리 넣어 둠. DONGNE_ENABLED=false(맨 아래 칸)·화면 assets/config.js PARTNER_ENABLED=false 라서
  *    모닝 브리핑 운영자 모드 카카오 계정(BRIEF_ADMIN_IDS) 말고는 아무도 보거나 쓸 수 없어요. 문을 여는 날 두 값을 함께 true 로.
@@ -2495,10 +2508,11 @@ function briefState(o, now) {
   const pv = r[BC['결제액']], paid = pv === '' || pv == null ? P.amount : Number(pv) || 0;   // 0 = 친구 초대 보상(무료 1개월)
   const refundEst = st === BST.chg || !P.amount ? 0 : sent === 0 ? paid : Math.min(paid, Math.floor(P.amount * Math.min(left, P.days) / P.days / 10) * 10);
   const nx = String(r[BC['다음요금제']] || ''), adm = bIsAdmin(r[BC['카카오id']]);   // v48 운영자: 받는 지역·단지 수만 늘림(요금제·중개사 내용은 그대로)
+  let E = P; try { E = bEnt(P, r[BC['카카오id']]); } catch (e) { E = P; }   // v51 동네 파트너 플러스 덧씌우기(한도만, 결제·환불은 원래 요금제)
   return { id: String(r[BC['id']]), product: String(r[BC['상품']]), state: st, active: !!active, start: s ? ymd(s) : '', end: e ? ymd(e) : '',
     left: left, channel: String(r[BC['채널']]), contact: String(r[BC['연락처가림']]), ad: r[BC['광고동의']] === true, sent: sent,
-    refund: String(r[BC['환불상태']] || ''), refundEst: refundEst, areas: adm ? BRIEF_ADMIN_LIM.areas : P.areas, apts: adm ? BRIEF_ADMIN_LIM.apts : P.apts, adm: adm, customers: P.customers || 0, urgPick: !!P.urgPick, weekly: !!P.weekly,
-    pro: !!P.pro, orderId: String(r[BC['주문번호']] || ''), reward: !String(r[BC['주문번호']] || '') && pk !== 'trial' && BRIEF_PRICE[pk] ? true : false,
+    refund: String(r[BC['환불상태']] || ''), refundEst: refundEst, areas: adm ? BRIEF_ADMIN_LIM.areas : E.areas, apts: adm ? BRIEF_ADMIN_LIM.apts : E.apts, adm: adm, customers: E.customers || 0, urgPick: !!E.urgPick, weekly: !!E.weekly,
+    pro: !!E.pro, plusBy: E.plusBy || '', orderId: String(r[BC['주문번호']] || ''), reward: !String(r[BC['주문번호']] || '') && pk !== 'trial' && BRIEF_PRICE[pk] ? true : false,
     tier: pk, label: P.label || '', next: BRIEF_PRICE[nx] ? nx : '', nextLabel: BRIEF_PRICE[nx] ? BRIEF_PRICE[nx].label : '',
     broker: P.broker ? { no: String(r[BC['중개사번호']] || ''), review: String(r[BC['중개사확인']] || BROKER_REVIEW.wait) } : null };
 }
@@ -2555,6 +2569,7 @@ function briefOrder(b) {
   const P = BRIEF_PRICE[b.product];
   if (!P || !P.show) throw new Error('상품을 다시 골라 주세요.');
   if (!b.agree) throw new Error('이용권·환불 안내에 동의해 주세요.');
+  if (b.product === 'brief_pro_plus') { let pl = null; try { pl = dpPlusFor(sessionUser(b.s).k); } catch (e) {} if (pl) throw new Error('동네 파트너에 중개사 플러스가 들어 있어요. 따로 사지 않아도 돼요.'); }   // v51
   const bn = P.broker ? bBrokerNo(b.broker) : null;
   if (bn && !bn.ok) throw new Error(bn.err + ' 중개사 요금제는 중개사 전용 할인가라서 등록번호를 확인해요.');
   const c = briefCommon(b);
@@ -2670,7 +2685,8 @@ function briefMine(b) {
   const adm = bIsAdmin(u.k);
   return { ok: true, subs: list, brief: cleanBrief(u.data && u.data.brief, bLim(adm)), channels: briefChannels(), adm: adm, admLim: adm ? BRIEF_ADMIN_LIM : null,
     trialUsed: myBriefs(u.k).some(o => bIsTrial(o.r[BC['상품']])), next: (list.filter(x => x.next).pop() || {}).next || '', amAd: bConsentPublic(u.k).am, adc: bConsentPublic(u.k).ad,
-    bill: (() => { try { return baBillPub(u.k); } catch (e) { return { on: false, st: '' }; } })() };   // v50 자동결제 상태(빌링키 없음)
+    bill: (() => { try { return baBillPub(u.k); } catch (e) { return { on: false, st: '' }; } })(),   // v50 자동결제 상태(빌링키 없음)
+    plusBy: (() => { try { return dpPlusPub(u.k, list); } catch (e) { return null; } })() };   // v51 동네 파트너 플러스
 }
 function mySub(u, id) {
   const o = myBriefs(u.k).find(x => String(x.r[BC['id']]) === String(id || ''));
@@ -3267,8 +3283,9 @@ function tuPeriod(tool, now) {
 }
 function tuBest(k, now) {
   let best = null;
-  myBriefs(k).forEach(o => { const st = briefState(o, now), P = BRIEF_PRICE[st.tier]; if (!st.active || !P) return;
+  myBriefs(k).forEach(o => { const st = briefState(o, now), P = BRIEF_PRICE[st.tier] ? bEnt(BRIEF_PRICE[st.tier], k) : (st.plusBy ? bEnt({ label: BRIEF_TRIAL.label }, k) : null); if (!st.active || !P) return;
     if (!best || (P.listing || 0) + (P.kitAreas || 0) * 100 > (best.P.listing || 0) + (best.P.kitAreas || 0) * 100) best = { st: st, P: P }; });
+  if (!best && dpPlusFor(k)) best = { st: { tier: 'brief_pro_plus', plusBy: 'dongne' }, P: Object.assign({}, BRIEF_PRICE.brief_pro_plus, { label: BRIEF_PRICE.brief_pro_plus.label + '(동네 파트너 포함)' }) };   // v51
   return best;
 }
 function tuRow(hk, per, tool) {
@@ -3424,6 +3441,7 @@ function briefDaily() {
     bLog([date, s.id, s.channel, res.ok ? (res.ad ? '보냄(광고 ' + AD.id + ')' : '보냄') + (res.dp ? ' · 동네 파트너' : '') : '못 보냄: ' + res.why, pieces.length]);
     if (res.ok) { setB(o.row, '최근발송일', date); setB(o.row, '발송수', s.sent + 1); sent++; }
   });
+  try { if (!admStop) sent += dpPlusBriefs(date, um, brief, M, ix); } catch (e) {}   // v51 이용권이 없는 동네 파트너(중개사 플러스 포함)에게 파트너 이메일로
   try { dpImpFlush(date, dpImp); } catch (e) {}
   if (admStop) { bLog([date, '', 'email', '운영자 계정: 시간·메일 한도 때문에 멈춤 — 다음 실행에서 이어서', 0]); return sent; }   // BRIEF_SENT 를 적지 않아 9시 실행이 이어 보냄
   briefExpiry(now);
@@ -4267,10 +4285,11 @@ function bpLimit(k, now) {
   myBriefs(k).forEach(o => {
     const s = briefState(o, now);
     if (s.state === BST.stop || s.state === BST.refund || s.state === BST.wait || !(s.active || s.start > t)) return;
-    const P = BRIEF_PRICE[bProdKey(o.r[BC['상품']])] || {};
+    const P = bEnt(BRIEF_PRICE[bProdKey(o.r[BC['상품']])] || {}, k);   // v51 동네 파트너 플러스 덧씌우기
     const n = Math.max(0, Math.floor(Number(P.customers) || 0));
     if (n > best.customers || (n && P.weekly && !best.weekly)) best = { customers: n, apts: n ? Math.max(1, Math.min(BP_APTS, Math.floor(Number(P.custApts) || BP_APTS))) : 0, weekly: !!P.weekly, sub: s };
   });
+  if (!best.customers) { const pl = dpPlusFor(k), X = BRIEF_PRICE.brief_pro_plus; if (pl && X) best = { customers: X.customers, apts: Math.max(1, Math.min(BP_APTS, Math.floor(Number(X.custApts) || BP_APTS))), weekly: !!X.weekly, sub: { active: true, plusBy: 'dongne', start: pl.since, end: pl.until } }; }   // v51 이용권 없는 파트너
   return best;
 }
 function bpKey(k) { return hashOf('bp|' + k).slice(1, 13); }                       // 엔진·PDF 파일 이름용 중개사 키(카카오 id 아님)
@@ -5698,7 +5717,7 @@ function cmNotify(kind, title) {
 
 
 /* =====================================================================
-   v50 동네 중개사 파트너(숨김) — 동마다 3자리 선착순 제휴 중개사가 '이번 주 우리 동네 한마디'를 쓰면
+   v50 동네 중개사 파트너(숨김) — 동마다 3자리 선착순 제휴 중개사가 '오늘의 우리 동네 한마디'를 쓰면
    광고성 정보에 동의한 모닝 브리핑 구독자에게 맨 아래 '우리 동네 중개사 한마디 (제휴)' 칸으로 보여 줘요.
    화면: dongne/(소개·신청) · dongne/my/(내 파트너 화면·글쓰기·동 바꾸기) · dongne/admin/(운영자 검토, 링크 없음) · dongne/terms/(약관 초안)
          brief/(웹 브리핑 맨 아래) · 첫 화면(이번 주 우수 동네 소식) · brief/subscribe/?dp=초대코드(초대 링크)
@@ -5727,7 +5746,16 @@ const DP_RULE = { slots: 3, incl: 3, max: 10, base: 9900, extra: 5000, yearBase:
   retryDays: 3, holdDays: 14, noticeM: [7], noticeY: [30, 7], foundKeepDays: 30, swapDays: 30,
   /* 묶음 혜택(기존 중개사 제휴 = 검색 결과 노출 함께 쓰는 사무소) — 지금은 끔. 시범 운영 뒤 대표가 정해요.
      'off' 없음 · 'include' 제휴 가입자는 기본 3개 동 무료(추가 동만 결제) · 'discount' 둘 다 가입하면 bundlePct% 할인 */
-  bundleMode: 'off', bundlePct: 0, cutoffH: 22, textMax: 200, nearK: 8, postDays: 7, idleDays: 28, bestBoost: 2, reportW: 3 };
+  bundleMode: 'off', bundlePct: 0,
+  /* v51 설정값(대표가 나중에 코드 없이 바꾸는 값 — 서버 스크립트 속성 DP_SETTINGS 에 JSON 으로 넣으면 이 기본값 위에 덮어써요. 이름은 dpSettings 참고)
+     plusBundleUntil: 이 날짜(포함)까지 가입한 파트너에게 중개사 플러스를 함께 드림('' = 늘). 구독이 끊기지 않는 동안만(창립 혜택과 같은 30일 규칙)
+     slotsMap: 동마다 자리 수 따로({'11680|대치동': 4}) · priceMap: 동마다 월 기본 요금 따로({'11680|대치동': 12900}) — 가입한 파트너는 그때 값을 끊기지 않는 동안 그대로
+     listingTier: '일반 등록'(자리 제한 없이 '이 동네 중개사' 목록에만, 한마디·브리핑 소개 없음) 켜기 · listingPrice: 일반 등록 월 요금(0 = 아직 안 정함) */
+  /* plusBundleMonths·openDate: plusBundleUntil 을 따로 정하지 않으면 '문 연 날(openDate) + 3개월 − 1일'까지(문 열기 전에는 모두 대상)
+     listingPrice: 일반 등록 월 요금(연간은 10배), 동 하나 더는 그 절반 · 일반 등록은 자리 제한 없음·한마디·중개사 플러스 없음 */
+  plusBundleUntil: '', plusBundleMonths: 3, openDate: '', slotsMap: {}, priceMap: {}, listingTier: false, listingPrice: 4900, listingIncl: 1, offerHours: 48,
+  /* v51 오늘의 한마디: 3일 글이 없으면 안내(한 주 2번까지, 4주 넘게 없으면 그만) · 소개 글 돌려 보이기: 최근 14일 글 쓴 날 수 + 기본 몫 featBase, 각 파트너는 featGap 일에 한 번은 꼭 */
+  nudgeIdle: 3, nudgeWeek: 2, featBase: 2, featGap: 4, featDays: 14, lineMax: 40, cutoffH: 22, textMax: 200, nearK: 8, postDays: 7, idleDays: 28, bestBoost: 2, reportW: 3 };
 const DP_TOPICS = [['deal', '거래 분위기'], ['rent', '전세·월세 동향'], ['rebuild', '재건축·재개발 진행'], ['life', '학군·생활'], ['traffic', '교통·공사']];
 function dpTopicName(id) { for (let i = 0; i < DP_TOPICS.length; i++) if (DP_TOPICS[i][0] === id) return DP_TOPICS[i][1]; return ''; }
 /** 동 열쇠: '시군구코드|법정동 이름' (브리핑이 쓰는 동 단위와 같음) */
@@ -5756,13 +5784,70 @@ function dpFounding(launchYmd, joinYmd) { return !!launchYmd && !!joinYmd && joi
 function dpPrice(n, o) {
   o = o || {};
   n = Math.max(1, Math.min(DP_RULE.max, Math.round(Number(n) || 1)));
-  const y = o.plan === 'y', extraN = Math.max(0, n - DP_RULE.incl), one = y ? DP_RULE.yearExtra : DP_RULE.extra;
-  const each = o.founding ? Math.floor(one * (1 - DP_RULE.foundExtraOff) / 10) * 10 : one, base0 = y ? DP_RULE.yearBase : DP_RULE.base;
+  if (o.listing) {                                                    // 일반 등록: 사무소 동 1곳 + 동 하나 더는 절반(10원 아래 버림), 연간은 10배
+    const lp = Math.max(0, Math.round(Number(o.base) > 0 ? Number(o.base) : Number(DP_RULE.listingPrice) || 0)), y1 = o.plan === 'y', m = y1 ? 10 : 1;
+    const xN = Math.max(0, n - DP_RULE.listingIncl), xe = Math.floor(lp / 2 / 10) * 10 * m, b1 = lp * m;
+    return { n: n, plan: y1 ? 'y' : 'm', incl: Math.min(n, DP_RULE.listingIncl), extraN: xN, extraEach: xe, base: b1, baseList: b1, extraSum: xN * xe, total: b1 + xN * xe, bundle: '', bundleOff: 0, months: y1 ? 12 : 1, monthly: y1 ? Math.round((b1 + xN * xe) / 12) : b1 + xN * xe, listing: true };
+  }
+  const y = o.plan === 'y', extraN = Math.max(0, n - DP_RULE.incl), one = y ? DP_RULE.yearExtra : DP_RULE.extra, mb = Number(o.base) > 0 ? Math.round(Number(o.base)) : 0;   // o.base = 가입 때 고정된 월 기본 요금(연간은 10배 = 2개월 할인)
+  const each = o.founding ? Math.floor(one * (1 - DP_RULE.foundExtraOff) / 10) * 10 : one, base0 = y ? (mb ? mb * 10 : DP_RULE.yearBase) : (mb || DP_RULE.base);
   const bm = o.affiliate ? DP_RULE.bundleMode : 'off', pct = Math.max(0, Math.min(100, Number(DP_RULE.bundlePct) || 0));
   const base = bm === 'include' ? 0 : base0, sum = base + extraN * each;
   const total = bm === 'discount' && pct ? Math.floor(sum * (1 - pct / 100) / 10) * 10 : sum;
   return { n: n, plan: y ? 'y' : 'm', incl: Math.min(n, DP_RULE.incl), extraN: extraN, extraEach: each, base: base, baseList: base0, extraSum: extraN * each, total: total,
     bundle: bm !== 'off' ? bm : '', bundleOff: sum - total + (base0 - base), months: y ? 12 : 1, monthly: y ? Math.round(total / 12) : total };
+}
+/** 동마다 자리 수(설정 slotsMap 이 있으면 그 값) */
+function dpSlotsOf(key) { const v = Math.round(Number((DP_RULE.slotsMap || {})[key])); return v >= 1 && v <= 20 ? v : DP_RULE.slots; }
+/** 이 동 사무소로 새로 가입할 때 월 기본 요금(설정 priceMap 이 있으면 그 값) */
+function dpBaseOf(key) { const v = Math.round(Number((DP_RULE.priceMap || {})[key])); return v >= 1000 && v <= 1000000 ? v : DP_RULE.base; }
+/** 중개사 플러스 함께 드리는 대상인지(가입일 기준). 끊기지 않는지는 서버가 따로 봐요 */
+function dpBundleUntil() { return DP_RULE.plusBundleUntil || (DP_RULE.openDate ? dpAddDays(dpAddMonths(DP_RULE.openDate, DP_RULE.plusBundleMonths), -1) : ''); }
+function dpBundleOk(joinYmd) { const u = dpBundleUntil(); return !u || (!!joinYmd && joinYmd <= u); }
+/** 설정값 덮어쓰기(서버 스크립트 속성 DP_SETTINGS · 화면은 서버가 준 rule). 이름·모양이 틀린 값은 버림. 돌려줌: 받아들인 이름 목록 */
+function dpSettings(x) {
+  x = x && typeof x === 'object' ? x : {};
+  const ok = [], num = (v, lo, hi) => { v = Number(v); return isFinite(v) && v >= lo && v <= hi ? Math.round(v) : null; };
+  const map = (v, lo, hi) => { if (!v || typeof v !== 'object' || Array.isArray(v)) return null; const o = {}; Object.keys(v).forEach(k => { const n = num(v[k], lo, hi); if (/^\d{5}\|[가-힣0-9·.]{1,20}$/.test(k) && n != null) o[k] = n; }); return o; };
+  const set = (name, key, v) => { if (v !== null && v !== undefined) { DP_RULE[key] = v; ok.push(name); } };
+  if ('PLUS_BUNDLE_MONTHS' in x) set('PLUS_BUNDLE_MONTHS', 'plusBundleMonths', num(x.PLUS_BUNDLE_MONTHS, 1, 36));
+  if ('PARTNER_OPEN_DATE' in x) set('PARTNER_OPEN_DATE', 'openDate', x.PARTNER_OPEN_DATE === '' || /^\d{4}-\d{2}-\d{2}$/.test(String(x.PARTNER_OPEN_DATE)) ? String(x.PARTNER_OPEN_DATE) : null);
+  if ('PLUS_BUNDLE_UNTIL' in x) set('PLUS_BUNDLE_UNTIL', 'plusBundleUntil', x.PLUS_BUNDLE_UNTIL === '' || /^\d{4}-\d{2}-\d{2}$/.test(String(x.PLUS_BUNDLE_UNTIL)) ? String(x.PLUS_BUNDLE_UNTIL) : null);
+  if ('SLOTS_PER_DONG' in x) set('SLOTS_PER_DONG', 'slots', num(x.SLOTS_PER_DONG, 1, 20));
+  if ('SLOTS_BY_DONG' in x) set('SLOTS_BY_DONG', 'slotsMap', map(x.SLOTS_BY_DONG, 1, 20));
+  if ('PARTNER_PRICE' in x) { const v = num(x.PARTNER_PRICE, 1000, 1000000); set('PARTNER_PRICE', 'base', v); if (v != null) DP_RULE.yearBase = v * 10; }
+  if ('PRICE_BY_DONG' in x) set('PRICE_BY_DONG', 'priceMap', map(x.PRICE_BY_DONG, 1000, 1000000));
+  if ('LISTING_TIER_ENABLED' in x) set('LISTING_TIER_ENABLED', 'listingTier', typeof x.LISTING_TIER_ENABLED === 'boolean' ? x.LISTING_TIER_ENABLED : null);
+  if ('LISTING_PRICE' in x) set('LISTING_PRICE', 'listingPrice', num(x.LISTING_PRICE, 0, 1000000));
+  if ('BUNDLE_MODE' in x) set('BUNDLE_MODE', 'bundleMode', ['off', 'include', 'discount'].indexOf(x.BUNDLE_MODE) >= 0 ? x.BUNDLE_MODE : null);
+  if ('BUNDLE_PCT' in x) set('BUNDLE_PCT', 'bundlePct', num(x.BUNDLE_PCT, 0, 100));
+  return ok;
+}
+/** 글 첫 줄(첫 문장, 40자 넘으면 자르고 …) */
+function dpFirstLine(t) {
+  const s = String(t || '').replace(/\s+/g, ' ').trim(), m = /^(.+?[.!?。])(\s|$)/.exec(s), f = m ? m[1] : s;
+  return f.length > DP_RULE.lineMax ? f.slice(0, DP_RULE.lineMax - 1) + '…' : f;
+}
+/** 오늘 크게 소개할 파트너 고르기(동 하나). posts = 공개 글 [{ id, pid, at, help, rep, boost, found }],
+    o = { prev(어제 소개된 파트너), last: { pid: 마지막으로 소개된 날 }, days: { pid: 최근 14일 중 글 쓴 날 수 } }.
+    ① 마감 전·7일 안 글이 있는 파트너만 후보 ② featGap(4)일 넘게 소개 안 된 파트너가 있으면 그중 가장 오래된 파트너(기본 몫 보장)
+    ③ 아니면 (기본 몫 featBase + 글 쓴 날 수) 무게로 날짜마다 정해지는 추첨, 어제 파트너는 다른 후보가 있으면 빼요. 그 파트너의 가장 좋은 글을 돌려줌 */
+function dpPickFeatured(posts, dayYmd, o) {
+  o = o || {};
+  const cut = dpCutoff(dayYmd), from = cut - DP_RULE.postDays * 86400000, best = {};
+  (posts || []).filter(p => p && Number(p.at) < cut && Number(p.at) >= from).forEach(p => {
+    const s = dpScore(p, dayYmd); if (!(s > 0)) return;
+    const cur = best[p.pid]; if (!cur || s > cur.s || (s === cur.s && Number(p.at) > Number(cur.p.at))) best[p.pid] = { p: p, s: s };
+  });
+  const pids = Object.keys(best).sort(); if (!pids.length) return null;
+  const last = o.last || {}, days = o.days || {}, age = pid => last[pid] ? Math.round((dpDayMs(dayYmd) - dpDayMs(last[pid])) / 86400000) : 9999;
+  const over = pids.filter(pid => age(pid) >= DP_RULE.featGap).sort((a, b) => age(b) - age(a) || (best[b].p.found ? 1 : 0) - (best[a].p.found ? 1 : 0) || dpHash(dayYmd + '|' + a) - dpHash(dayYmd + '|' + b));
+  if (over.length) return best[over[0]].p;
+  const pool = pids.length > 1 ? pids.filter(pid => pid !== o.prev) : pids;
+  const w = pool.map(pid => DP_RULE.featBase + Math.max(0, Math.min(DP_RULE.featDays, Number(days[pid]) || 0)) + (best[pid].p.found ? 1 : 0));
+  let r = dpHash(dayYmd + '|feat|' + pool.join(',')) % w.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < pool.length; i++) { if (r < w[i]) return best[pool[i]].p; r -= w[i]; }
+  return best[pool[0]].p;
 }
 /** 묶음 혜택 안내 문장(화면용). 꺼져 있으면 빈 글자 */
 function dpBundleText() {
@@ -5863,13 +5948,26 @@ function dpLegal(c) {
 }
 /* DONGNE-CORE END */
 const BILLING_OPEN = false;                                           // 토스 자동결제(빌링) 계약 전 — 빌링키 발급·정기 청구 잠금
+/* v51 설정값: 스크립트 속성 DP_SETTINGS(JSON)를 기본값(DONGNE-CORE 의 DP_RULE) 위에 덮어씀. 문 연 날은 PARTNER_OPEN_DATE 가 없으면 처음 문을 연 날(DP_LAUNCH) */
+const DP_RULE_DEF = JSON.stringify(DP_RULE);
+function dpRuleLoad() {
+  DP_PLUS_MEMO = null;                                                // 요청마다 새로 읽기
+  const P = PropertiesService.getScriptProperties(), d = JSON.parse(DP_RULE_DEF);
+  Object.keys(d).forEach(k => { DP_RULE[k] = d[k]; });
+  const bad = []; let x = {};
+  try { x = JSON.parse(P.getProperty('DP_SETTINGS') || '{}') || {}; } catch (e) { bad.push('DP_SETTINGS JSON'); }
+  const ok = dpSettings(x);
+  Object.keys(x).forEach(k => { if (ok.indexOf(k) < 0) bad.push(k); });
+  if (!DP_RULE.openDate) { let v = P.getProperty('DP_LAUNCH'); if (!v && DONGNE_ENABLED) { v = ymd(new Date()); P.setProperty('DP_LAUNCH', v); } DP_RULE.openDate = v || ''; }
+  return { ok: ok, bad: bad };
+}
 function dpBillOn() { return BILLING_OPEN && PAID_OPEN; }
-const DP_ACTIONS = { dpConfig: 1, dpSlots: 1, dpApply: 1, dpMine: 1, dpWrite: 1, dpPostDel: 1, dpSwap: 1, dpWait: 1, dpMove: 1, dpProfile: 1, dpAdd: 1, dpCancel: 1, dpBillingIssue: 1, dpPlan: 1,
+const DP_ACTIONS = { dpConfig: 1, dpSlots: 1, dpApply: 1, dpMine: 1, dpWrite: 1, dpPostDel: 1, dpSwap: 1, dpWait: 1, dpMove: 1, dpProfile: 1, dpAdd: 1, dpClaim: 1, dpOffice: 1, dpCancel: 1, dpBillingIssue: 1, dpPlan: 1,
   dpBrief: 1, dpBestGet: 1, dpHelp: 1, dpReport: 1, dpLog: 1, dpInvite: 1, dpAdminQueue: 1, dpAdminAct: 1, dpRulesPut: 1 };
 const SH_DP = '동네파트너', SH_DPW = '동네파트너대기', SH_DPP = '동네한마디', SH_DPE = '동네파트너기록', SH_DPA = '동네파트너동의', SH_DPB = '동네파트너결제';
 const DPH = ['id', '회원', '상태', '구분', '사무소명', '등록번호', '대표자', '성명', '전화', '이메일', '주소', '시군구', '사무소동', '동목록', '사진', '사진상태', '소개',
   '초대코드', '확인결과', '신청일', '승인일', '창립', '요금제', '결제상태', '카드', '첫결제일', '다음결제일', '만료일', '실패일', '해지예정일',
-  '경고', '노출중지', '마지막글', '알림', '메모', '수정일'];
+  '경고', '노출중지', '마지막글', '알림', '메모', '수정일', '고정가', '묶음', '등록종류'];   // v51: 맨 뒤 3칸(예전 시트는 첫 사용 때 머리 줄만 채움)
 const DPBH = ['시각', '파트너', '주문번호', '금액', '요금제', '결과', '메시지', '결제키'];
 /* 결제 상태: 시범(카드 없이 무료 — 빌링 잠금 동안) · 카드대기(신청 뒤 카드 등록 전, 노출 안 함) · 정상 · 재시도(결제 실패, 3일 동안 다시) · 실패(노출 멈춤, 자리 14일) · 해지예정(그달 말까지) */
 const DP_PAY = { trial: '시범', card: '카드대기', ok: '정상', retry: '재시도', fail: '실패', bye: '해지예정' };
@@ -5884,7 +5982,7 @@ const DPEC = Object.fromEntries(DPEH.map((h, i) => [h, i]));
 const DP_ST = { wait: '검토대기', on: '승인', no: '거절', stop: '노출중지', end: '해지' };
 const DP_HOLD = [DP_ST.wait, DP_ST.on, DP_ST.stop];                 // 자리를 차지하는 상태
 const DP_PST = { on: '공개', hold: '검토대기', tmp: '임시조치', del: '삭제' };
-const DP_TERMS_V = '2026-11-23 초안';                                 // 약관·규칙 판(화면 dongne/terms/ 와 같은 값)
+const DP_TERMS_V = '2026-11-24 초안';                                 // 약관·규칙 판(화면 dongne/terms/ 와 같은 값)
 const DP_AGREE = { rules: '글쓰기 규칙', ad: '광고 표시 규칙', privacy: '개인정보 수집·이용', terms: '동네 파트너 약관' };
 const DP_PAY_AGREE = '정기 결제(자동결제) 동의';                       // 빌링이 열려 있을 때만 따로 받는 동의
 const DP_WHY = { price: '가격 예측', dam: '집값 담합', ad: '매물 홍보', prof: '욕설', defame: '비방', pi: '개인 정보', false: '사실이 아닌 내용', etc: '기타' };
@@ -5900,12 +5998,14 @@ const DP_IMG_MAX = 1500000, DP_REPORT_HIDE = 3, DP_STOP_DAYS = 7, DP_GRACE = 7, 
 
 function dpDispatch(b) {
   try {
+    dpRuleLoad();
     if (b.action === 'dpRulesPut') return dpRulesPut(b);
     if (b.action === 'dpConfig') return dpConfig(b);
     if (b.action === 'dpBestGet') return dpBestGet(b);
     if (b.action === 'dpInvite') return dpInvite(b);
     if (b.action === 'dpSlots') return dpSlots(b);
     if (b.action === 'dpBrief') return dpBrief(b);
+    if (b.action === 'dpOffice') return withLock(() => dpOffice(b));
     if (b.action === 'dpApply') return dpApply(b);                    // 공공 자료 확인(네트워크)·사진 저장은 잠금 밖, 시트 쓰기만 잠금
     if (b.action === 'dpWrite') return dpWrite(b);
     if (b.action === 'dpBillingIssue') return dpBillingIssue(b);     // 토스 호출(네트워크)은 잠금 밖
@@ -5917,6 +6017,7 @@ function dpDispatch(b) {
       if (b.action === 'dpMove') return dpMove(b);
       if (b.action === 'dpProfile') return dpProfile(b);
       if (b.action === 'dpAdd') return dpAdd(b);
+      if (b.action === 'dpClaim') return dpClaim(b);
       if (b.action === 'dpCancel') return dpCancel(b);
       if (b.action === 'dpPlan') return dpPlan(b);
       if (b.action === 'dpHelp') return dpHelp(b);
@@ -5941,6 +6042,7 @@ function dpGate(b) {
 function dpAdminNeed(b) { if (!dpIsAdmin(b)) { const e = new Error('운영자 계정으로 카카오 간편 로그인해 주세요(모닝 브리핑 운영자 모드).'); e.code = 'admin'; throw e; } }
 /** 문 연 날(창립 파트너 기준) — 처음 문을 연 뒤 첫 신청 때 저장. 열기 전(미리 보기)에는 오늘 기준 */
 function dpLaunch() {
+  if (DP_RULE.openDate) return DP_RULE.openDate;
   const P = PropertiesService.getScriptProperties();
   let v = P.getProperty('DP_LAUNCH');
   if (!v && DONGNE_ENABLED) { v = ymd(new Date()); P.setProperty('DP_LAUNCH', v); }
@@ -5948,7 +6050,8 @@ function dpLaunch() {
 }
 
 /* ---------- 시트 ---------- */
-function dpSheet(n) { return n === SH_DP ? uSheet(SH_DP, DPH) : n === SH_DPW ? uSheet(SH_DPW, DPWH) : n === SH_DPP ? uSheet(SH_DPP, DPPH) : n === SH_DPE ? uSheet(SH_DPE, DPEH) : n === SH_DPB ? uSheet(SH_DPB, DPBH) : uSheet(SH_DPA, DPAH); }
+function dpSheetP() { const sh = uSheet(SH_DP, DPH); if (!dpSheetP.ok) { const h = sh.getRange(1, 1, 1, DPH.length).getValues()[0] || []; if (String(h[DPH.length - 1] || '') !== DPH[DPH.length - 1]) sh.getRange(1, 1, 1, DPH.length).setValues([DPH]); dpSheetP.ok = 1; } return sh; }
+function dpSheet(n) { return n === SH_DP ? dpSheetP() : n === SH_DPW ? uSheet(SH_DPW, DPWH) : n === SH_DPP ? uSheet(SH_DPP, DPPH) : n === SH_DPE ? uSheet(SH_DPE, DPEH) : n === SH_DPB ? uSheet(SH_DPB, DPBH) : uSheet(SH_DPA, DPAH); }
 function dpRows(n) { const sh = book().getSheetByName(n); if (!sh) return []; const v = sh.getDataRange().getValues(), out = []; for (let i = 1; i < v.length; i++) if (v[i][0] !== '' && v[i][0] != null) out.push({ row: i + 1, r: v[i] }); return out; }
 function dpUid(k) { return 'p' + hashOf('dpU|' + k).slice(1, 25); }
 function dpTxt(v) { return String(v == null ? '' : v).replace(/^'/, ''); }
@@ -5960,10 +6063,11 @@ function dpP(o) {                                                    // 파트�
     keys: (parseJ(x('동목록'), []) || []).filter(s => s && s.k), img: x('사진'), imgSt: x('사진상태'), intro: x('소개'), code: x('초대코드'), chk: x('확인결과'),
     applied: dpDay(r[DPC['신청일']]), approved: dpDay(r[DPC['승인일']]), founding: r[DPC['창립']] === true || x('창립') === 'Y', foundLost: x('창립') === '박탈',
     plan: x('요금제') === DP_PLAN.y ? 'y' : 'm', pay: x('결제상태') || DP_PAY.trial, card: x('카드'), first: dpDay(r[DPC['첫결제일']]), next: dpDay(r[DPC['다음결제일']]),
-    until: dpDay(r[DPC['만료일']]), failAt: dpDay(r[DPC['실패일']]), endAt: dpDay(r[DPC['해지예정일']]), made: r[DPC['신청일']] instanceof Date ? r[DPC['신청일']].getTime() : 0, warn: Number(r[DPC['경고']]) || 0, stopUntil: dpDay(r[DPC['노출중지']]), last: dpDay(r[DPC['마지막글']]), notes: x('알림') };
+    until: dpDay(r[DPC['만료일']]), failAt: dpDay(r[DPC['실패일']]), endAt: dpDay(r[DPC['해지예정일']]), made: r[DPC['신청일']] instanceof Date ? r[DPC['신청일']].getTime() : 0, warn: Number(r[DPC['경고']]) || 0, stopUntil: dpDay(r[DPC['노출중지']]), last: dpDay(r[DPC['마지막글']]), notes: x('알림'),
+    base: Number(r[DPC['고정가']]) || 0, bundle: x('묶음') === 'Y', bundleLost: x('묶음') === '박탈', listing: x('등록종류') === '일반' };
 }
 function dpAll() { return dpRows(SH_DP).map(dpP); }
-function dpSet(row, h, v) { dpSheet(SH_DP).getRange(row, DPC[h] + 1).setValue(typeof v === 'string' ? cellSafe(v) : v); }
+function dpSet(row, h, v) { DP_PLUS_MEMO = null; dpSheet(SH_DP).getRange(row, DPC[h] + 1).setValue(typeof v === 'string' ? cellSafe(v) : v); }
 function dpMeOf(u, all) { const uh = dpUid(u.k); return (all || dpAll()).filter(p => p.uh === uh && p.st !== DP_ST.end && p.st !== DP_ST.no).pop() || null; }
 /** 노출 가능: 승인 + 노출 중지 기간이 아님 + 카드 등록을 마쳤고 결제가 멈추지 않음 + 해지 예정일 전 */
 function dpLive(p, today) {
@@ -5971,16 +6075,40 @@ function dpLive(p, today) {
   return p.st === DP_ST.on && !(p.stopUntil && today <= p.stopUntil) && p.pay !== DP_PAY.card && p.pay !== DP_PAY.fail && !(p.endAt && today > p.endAt);
 }
 /** 창립 파트너 혜택이 지금 살아 있는지: 창립(박탈 아님) + 노출 중 + 결제가 끊기지 않음(시범·정상·해지 예정 말일까지) */
-function dpFoundOn(p, today) { return !!p.founding && !p.foundLost && dpLive(p, today) && [DP_PAY.trial, DP_PAY.ok, DP_PAY.bye].indexOf(p.pay) >= 0; }
+function dpFoundOn(p, today) { return !p.listing && !!p.founding && !p.foundLost && dpLive(p, today) && [DP_PAY.trial, DP_PAY.ok, DP_PAY.bye].indexOf(p.pay) >= 0; }
 function dpCap() { return dpBillOn() ? DP_RULE.max : DP_RULE.incl; }
 /** 묶음 혜택: 기존 중개사 제휴(검색 결과 노출) 승인·기간 안 사무소인지(같은 등록번호). 설정 DP_RULE.bundleMode 가 'off' 면 늘 false */
 function dpAffiliate(p) {
   if (DP_RULE.bundleMode === 'off') return false;
   try { const rn = dpRegNorm(p.reg); return agents().some(a => isActive(a) && dpRegNorm(a.reg) === rn); } catch (e) { return false; }
 }
-function dpPriceOf(p, n, plan, t) { return dpPrice(n == null ? p.keys.length : n, { plan: plan || p.plan, founding: dpFoundOn(p, t) || (p.founding && !p.foundLost && p.pay !== DP_PAY.fail), affiliate: dpAffiliate(p) }); }
+function dpPriceOf(p, n, plan, t) { return dpPrice(n == null ? p.keys.length : n, { plan: plan || p.plan, listing: p.listing, base: p.base, founding: !p.listing && (dpFoundOn(p, t) || (p.founding && !p.foundLost && p.pay !== DP_PAY.fail)), affiliate: !p.listing && dpAffiliate(p) }); }
+/* ---------- v51 중개사 플러스 포함(덧씌우기 — 결제 행 없음) ----------
+   대상: 대표 파트너(일반 등록 제외) + 가입 때 대상([묶음] Y) + 지금 이어지는 중(승인·노출 중지 모두, 카드대기·결제 실패 아님, 해지 예정이면 말일까지). */
+let DP_PLUS_MEMO = null;
+function dpPlusOn(p, t) { t = t || ymd(new Date()); return p.bundle && !p.listing && (p.st === DP_ST.on || p.st === DP_ST.stop) && p.pay !== DP_PAY.card && p.pay !== DP_PAY.fail && !(p.endAt && t > p.endAt); }
+/** 카카오 회원 k 가 동네 파트너로 중개사 플러스를 받는 중이면 { pid, since, until, mail, keys } */
+function dpPlusFor(k) {
+  k = String(k == null ? '' : k); if (!k || !book().getSheetByName(SH_DP)) return null;
+  if (!(DONGNE_ENABLED || bIsAdmin(k))) return null;
+  if (!DP_PLUS_MEMO) { DP_PLUS_MEMO = {}; const t = ymd(new Date()); dpAll().forEach(p => { if (dpPlusOn(p, t)) DP_PLUS_MEMO[p.uh] = { pid: p.id, since: p.approved || p.applied, until: p.endAt || '', mail: p.mail, keys: p.keys.map(x => x.k) }; }); }
+  return DP_PLUS_MEMO[dpUid(k)] || null;
+}
+const BRIEF_PLUS_ENT = ['areas', 'apts', 'customers', 'custApts', 'urgPick', 'weekly', 'pro', 'listing', 'kitAreas'];
+/** 요금제 한도 + 파트너 플러스 덧씌우기(더 큰 쪽) */
+function bEnt(P, k) {
+  const pl = dpPlusFor(k), X = BRIEF_PRICE.brief_pro_plus; if (!pl || !X) return P;
+  const E = Object.assign({}, P || {}); BRIEF_PLUS_ENT.forEach(f => { const a = E[f], b = X[f]; E[f] = typeof b === 'boolean' ? !!(a || b) : Math.max(Number(a) || 0, Number(b) || 0); });
+  E.plusBy = 'dongne'; E.plusUntil = pl.until; return E;
+}
 function dpHolds(p) { return DP_HOLD.indexOf(p.st) >= 0; }
-function dpTaken(all, exceptId) { const m = {}; all.filter(p => dpHolds(p) && p.id !== exceptId).forEach(p => p.keys.forEach(s => { m[s.k] = (m[s.k] || 0) + 1; })); return m; }
+function dpTaken(all, exceptId) {
+  const m = {}; all.filter(p => dpHolds(p) && !p.listing && p.id !== exceptId).forEach(p => p.keys.forEach(s => { m[s.k] = (m[s.k] || 0) + 1; }));
+  const O = dpOffers(), now = Date.now(); Object.keys(O).forEach(k => { const o = O[k]; if (o && o.pid && o.pid !== exceptId && Number(o.until) > now) m[k] = (m[k] || 0) + 1; });   // 48시간 받기 제안 중인 자리
+  return m;
+}
+function dpOffers() { return parseJ(PropertiesService.getScriptProperties().getProperty('DP_OFFER'), {}) || {}; }
+function dpOffersPut(O) { PropertiesService.getScriptProperties().setProperty('DP_OFFER', JSON.stringify(O)); }
 function dpWaits() { return dpRows(SH_DPW).filter(o => String(o.r[DPWC['상태']]) === '대기'); }
 
 /* ---------- 비공개 거르기 설정(엔진 → 스크립트 속성) ---------- */
@@ -6106,13 +6234,13 @@ function dpImgUrl(fid, st) { return fid && st === '공개' ? 'https://drive.goog
 /* ---------- 공개 정보 ---------- */
 function dpCard(p, today) {
   return { id: p.id, office: p.office, addr: p.addr, tel: p.tel, reg: p.reg, name: p.name, ceo: p.ceo, kind: p.kind, intro: p.intro, dn: p.dn, g: p.g,
-    img: dpImgUrl(p.img, p.imgSt), live: dpLive(p, today), found: dpFoundOn(p, today) };
+    img: dpImgUrl(p.img, p.imgSt), live: dpLive(p, today), found: dpFoundOn(p, today), listing: !!p.listing, verified: /공공 자료와 맞음|운영자 승인/.test(p.chk) };
 }
 function dpConfig(b) {
   const admin = dpIsAdmin(b), open = DONGNE_ENABLED;
   if (!open && !admin) return { ok: true, open: false };
   const launch = dpLaunch(), t = ymd(new Date());
-  return { ok: true, open: open, preview: !open, admin: admin, paid: PAID_OPEN, billing: dpBillOn(), rule: DP_RULE, topics: DP_TOPICS, terms: DP_TERMS_V, agree: DP_AGREE,
+  return { ok: true, open: open, preview: !open, admin: admin, paid: PAID_OPEN, billing: dpBillOn(), rule: DP_RULE, bundleUntil: dpBundleUntil(), bundleOk: dpBundleOk(t), listingTier: !!DP_RULE.listingTier, topics: DP_TOPICS, terms: DP_TERMS_V, agree: DP_AGREE,
     launch: launch, founding: dpFounding(launch, t) || !open, foundingUntil: dpAddMonths(launch, DP_RULE.foundMonths), firstCharge: dpFirstCharge(t),
     clientKey: dpBillOn() ? String(PropertiesService.getScriptProperties().getProperty('TOSS_BILLING_CLIENT_KEY') || '') : '', plusPrice: (BRIEF_PRICE.brief_pro_plus || {}).amount || DP_RULE.base };
 }
@@ -6121,7 +6249,7 @@ function dpSlots(b) {
   dpGate(b);
   const keys = (Array.isArray(b.keys) ? b.keys : []).slice(0, 40).map(String).filter(k => /^\d{5}\|[가-힣0-9·.]{1,20}$/.test(k));
   const all = dpAll(), taken = dpTaken(all, ''), waits = dpWaits(), out = {};
-  keys.forEach(k => { out[k] = { used: taken[k] || 0, free: Math.max(0, DP_RULE.slots - (taken[k] || 0)), wait: waits.filter(o => String(o.r[DPWC['동']]) === k).length }; });
+  keys.forEach(k => { const mx = dpSlotsOf(k); out[k] = { used: taken[k] || 0, max: mx, free: Math.max(0, mx - (taken[k] || 0)), wait: waits.filter(o => String(o.r[DPWC['동']]) === k).length }; });
   return { ok: true, slots: out, max: DP_RULE.slots };
 }
 
@@ -6166,14 +6294,17 @@ function dpApply(b) {
   dpAgreeOk(b);
   const a = dpClean(b);
   const picks = (Array.isArray(b.picks) ? b.picks : []).map(String).filter((k, i, x) => /^\d{5}\|[가-힣0-9·.]{1,20}$/.test(k) && k !== a.key && x.indexOf(k) === i);
-  const cap = dpCap(), bill = dpBillOn(), plan = b.plan === 'y' ? 'y' : 'm';
+  const cap = dpCap(), bill = dpBillOn(), plan = b.plan === 'y' ? 'y' : 'm', listing = b.tier === 'listing';
+  if (listing && !DP_RULE.listingTier) throw new Error('일반 등록은 아직 받지 않아요.');
   if (picks.length + 1 > cap) throw new Error(bill ? `동은 사무소 동을 합쳐 ${DP_RULE.max}개까지 고를 수 있어요.` : `지금은 시범 운영이라 사무소 동을 합쳐 ${DP_RULE.incl}개 동까지 고를 수 있어요. 동 추가(월 ${DP_RULE.extra.toLocaleString()}원)는 정식 결제가 열리면 할 수 있어요.`);
   const far = picks.filter(k => !dpNearOk(a.key, k));
   if (far.length) throw new Error('사무소 동과 가까운 동만 고를 수 있어요: ' + far.map(k => dpSplit(k).dn).join(', '));
   const launch = dpLaunch(), t = ymd(new Date());
   const hist = dpHistory(dpAll(), dpUid(u.k), a.reg, t);              // 예전 기록: 박탈·중대 위반이면 창립 혜택 없음 + 운영자 확인
-  const founding = hist.carry || (!hist.lost && !hist.any && (dpFounding(launch, t) || !DONGNE_ENABLED));
-  const first = dpFirstCharge(t), payText = bill ? dpPayText(dpPrice(picks.length + 1, { plan: plan, founding: founding, affiliate: dpAffiliate({ reg: a.reg }) }), first) : '';
+  const founding = !listing && (hist.carry || (!hist.lost && !hist.any && (dpFounding(launch, t) || !DONGNE_ENABLED)));
+  const bundle = !listing && !hist.ban && (hist.carryBundle || (!hist.bundleLost && dpBundleOk(t)));   // 중개사 플러스 포함 대상(가입 때 정함)
+  const base = listing ? DP_RULE.listingPrice : dpBaseOf(a.key);      // 가입 때 요금을 고정(끊기지 않는 동안 그대로)
+  const first = dpFirstCharge(t), payText = bill ? dpPayText(dpPrice(picks.length + 1, { plan: plan, listing: listing, base: base, founding: founding, affiliate: !listing && dpAffiliate({ reg: a.reg }) }), first) : '';
   if (bill && (!b.agree || b.agree.pay !== true)) throw new Error(`정기 결제 동의에 따로 체크해 주세요. (${payText})`);
   const vr0 = dpVerify(a), vr = hist.ban ? { st: 'review', why: '예전에 중대 위반으로 해지된 기록이 있어요 — 운영자 확인 필요 · ' + vr0.why } : vr0;                                             // 잠금 밖(네트워크)
   let photo = ''; try { photo = dpSavePhoto(b.photo, 'DPI'); } catch (e) { throw e; }
@@ -6182,7 +6313,7 @@ function dpApply(b) {
     if (dpMeOf(u, all)) throw new Error('이미 신청했어요. 내 파트너 화면에서 확인해 주세요.');
     if (all.some(p => dpHolds(p) && p.kind === a.kind && dpRegNorm(p.reg) === dpRegNorm(a.reg) && (a.kind === 'owner' || p.name === a.name))) throw new Error('이 등록번호로 이미 신청된 파트너가 있어요. 확인이 필요하면 카카오톡 상담으로 알려 주세요.');
     const taken = dpTaken(all, ''), want = [a.key].concat(picks);
-    const got = want.filter(k => (taken[k] || 0) < DP_RULE.slots), wait = want.filter(k => got.indexOf(k) < 0);
+    const got = listing ? want : want.filter(k => (taken[k] || 0) < dpSlotsOf(k)), wait = listing ? [] : want.filter(k => got.indexOf(k) < 0);
     const auto = vr.st === 'match';
     const id = 'D' + Utilities.getUuid().replace(/-/g, '').slice(0, 9).toUpperCase(), code = 'P' + Utilities.getUuid().replace(/-/g, '').slice(0, 7).toUpperCase();
     const r = [];
@@ -6194,8 +6325,8 @@ function dpApply(b) {
     r[DPC['신청일']] = new Date(); r[DPC['승인일']] = auto ? new Date() : ''; r[DPC['창립']] = founding ? 'Y' : '';
     r[DPC['요금제']] = DP_PLAN[plan]; r[DPC['결제상태']] = bill ? DP_PAY.card : DP_PAY.trial; r[DPC['경고']] = 0;
     ['카드', '첫결제일', '다음결제일', '만료일', '실패일', '해지예정일', '노출중지', '마지막글', '알림', '메모'].forEach(h => r[DPC[h]] = '');
-    r[DPC['수정일']] = new Date();
-    dpSheet(SH_DP).appendRow(DPH.map((h, i) => r[i] === undefined ? '' : r[i]));
+    r[DPC['수정일']] = new Date(); r[DPC['고정가']] = base; r[DPC['묶음']] = bundle ? 'Y' : ''; r[DPC['등록종류']] = listing ? '일반' : '';
+    dpSheet(SH_DP).appendRow(DPH.map((h, i) => r[i] === undefined ? '' : r[i])); DP_PLUS_MEMO = null;
     const ws = dpSheet(SH_DPW); wait.forEach(k => ws.appendRow([new Date(), k, id, '대기', '']));
     dpAgreeLog(id, uh, payText);
     let ck = '';
@@ -6204,9 +6335,11 @@ function dpApply(b) {
       (auto ? `${a.office} 동네 파트너 신청이 공공 자료로 바로 확인돼서 승인됐어요.` : `${a.office} 동네 파트너 신청을 받았어요. 확인이 필요해서 2영업일 안에 결과를 알려 드려요.`)
       + `<br>받은 동: ${got.map(k => bEsc(dpSplit(k).dn)).join(', ') || '없음'}${wait.length ? `<br>자리가 차서 대기한 동: ${wait.map(k => bEsc(dpSplit(k).dn)).join(', ')} (자리가 나면 메일로 알려 드려요)` : ''}`
       + `<br>지금은 시범 파트너라서 카드 등록 없이 무료예요. 정식 결제가 열리면 미리 알려 드리고, 카드를 등록하고 따로 동의하신 경우에만 결제돼요.`
-      + (founding ? '<br>창립 파트너예요. 구독을 이어 가는 동안 창립 파트너 표시와 같은 동 안 우선 노출, 추가 동 20% 할인을 드려요.' : '') + `<br><a href="${WEB_ROOT}dongne/my/">내 파트너 화면 열기</a>`);
+      + (founding ? '<br>창립 파트너예요. 구독을 이어 가는 동안 창립 파트너 표시와 같은 동 안 우선 노출, 추가 동 20% 할인을 드려요.' : '')
+      + (bundle ? `<br>중개사 플러스 도구(내 손님 브리핑·주간 리포트·매물 설명서 등)가 함께 들어 있어요. ${bEsc(BRIEF_NAME)}을 파트너를 이어 가는 동안 매일 아침 받아요.` : '')
+      + (listing ? '<br>일반 등록이에요. 브리핑의 \'이 동네 중개사\' 목록에 보여요. 대표 파트너 자리가 나면 먼저 알려 드려요.' : '') + `<br><a href="${WEB_ROOT}dongne/my/">내 파트너 화면 열기</a>`);
     if (!auto || photo) dpNotify('apply', auto ? '새 동네 파트너(사진 확인 필요)' : '동네 파트너 검토 대기');
-    return { ok: true, id: id, st: auto ? DP_ST.on : DP_ST.wait, auto: auto, got: got, wait: wait, founding: founding, pay: bill ? DP_PAY.card : DP_PAY.trial,
+    return { ok: true, id: id, st: auto ? DP_ST.on : DP_ST.wait, auto: auto, got: got, wait: wait, founding: founding, bundle: bundle, listing: listing, pay: bill ? DP_PAY.card : DP_PAY.trial,
       ck: ck, first: bill ? first : '', payText: payText, plan: plan };
   });
 }
@@ -6232,11 +6365,13 @@ function dpMine(b) {
   const posts = dpRows(SH_DPP).filter(o => String(o.r[DPPC['파트너']]) === me.id && String(o.r[DPPC['상태']]) !== DP_PST.del).reverse().slice(0, 20).map(o => dpPostPub(o, true));
   const pr = dpPriceOf(me, null, null, t);
   return { ok: true, cfg: cfg, me: Object.assign(dpCard(me, t), { st: me.st, chk: me.st === DP_ST.wait ? '확인 중이에요. 2영업일 안에 알려 드려요.' : '', mail: me.mail,
-    keys: me.keys.map((s, i) => ({ k: s.k, dn: dpSplit(s.k).dn, office: i === 0 && s.k === dpKey(me.g, me.dn), at: s.at, sw: s.sw, swap: dpSwapOk(s.sw, t), used: taken[s.k] || 0 })),
+    keys: me.keys.map((s, i) => ({ k: s.k, dn: dpSplit(s.k).dn, office: i === 0 && s.k === dpKey(me.g, me.dn), at: s.at, sw: s.sw, swap: dpSwapOk(s.sw, t), used: taken[s.k] || 0, max: dpSlotsOf(s.k) })),
     waits: myWaits, code: me.code, founding: me.founding && !me.foundLost, foundOn: dpFoundOn(me, t), plan: me.plan, pay: me.pay, card: me.card, first: me.first, next: me.next, until: me.until, failAt: me.failAt, endAt: me.endAt,
     ck: me.pay === DP_PAY.card || me.pay === DP_PAY.retry || me.pay === DP_PAY.fail ? (dpBkGet(me.id) || {}).ck || '' : '',
     payText: me.next && [DP_PAY.ok, DP_PAY.retry].indexOf(me.pay) >= 0 ? dpPayText(pr, me.next) : '', warn: me.warn, stopUntil: me.stopUntil, last: me.last,
-    idle: !me.last || (Date.now() - dpDayMs(me.last)) / 86400000 >= DP_RULE.idleDays, imgSt: me.imgSt, price: pr, applied: me.applied }),
+    idle: !me.last || (Date.now() - dpDayMs(me.last)) / 86400000 >= DP_RULE.idleDays, imgSt: me.imgSt, price: pr, applied: me.applied,
+    listing: !!me.listing, plusOn: dpPlusOn(me, t), plusUntil: me.endAt || '', bundle: me.bundle,
+    offers: (() => { const O = dpOffers(), now = Date.now(); return Object.keys(O).filter(k => O[k] && O[k].pid === me.id && Number(O[k].until) > now).map(k => ({ k: k, dn: dpSplit(k).dn, until: Utilities.formatDate(new Date(Number(O[k].until)), 'Asia/Seoul', 'yyyy-MM-dd HH:mm') })); })() }),
     stats: dpStatsFor(me.id), posts: posts, today: t, nextBrief: dpBriefDay(Date.now()) };
 }
 function dpPostPub(o, mine) {
@@ -6249,7 +6384,7 @@ function dpPostPub(o, mine) {
   return x;
 }
 
-/* ---------- 이번 주 우리 동네 한마디 ---------- */
+/* ---------- 오늘의 우리 동네 한마디 ---------- */
 function dpWrite(b) {
   dpGate(b);
   const u = sessionUser(b.s);
@@ -6264,6 +6399,7 @@ function dpWrite(b) {
   return withLock(() => {
     const all = dpAll(), me = dpMeOf(u, all), t = ymd(new Date());
     if (!me) throw new Error('파트너 신청을 먼저 해 주세요.');
+    if (me.listing) throw new Error('일반 등록은 오늘의 한마디를 쓸 수 없어요. 대표 파트너가 되면 쓸 수 있어요.');
     if (me.st === DP_ST.wait) throw new Error('승인된 뒤에 쓸 수 있어요. 보통 바로 승인돼요. 확인이 필요하면 2영업일 안에 알려 드려요.');
     if (!dpLive(me, t)) throw new Error(me.stopUntil && t <= me.stopUntil ? `${me.stopUntil}까지 노출이 멈춰 있어서 쓸 수 없어요.` : '이용 기간이 끝나서 쓸 수 없어요.');
     const key = b.key && me.keys.some(s => s.k === String(b.key)) ? String(b.key) : (me.keys[0] || {}).k;
@@ -6305,7 +6441,7 @@ function dpSwap(b) {
   if (!dpNearOk(officeKey, to)) throw new Error('사무소 동과 가까운 동으로만 바꿀 수 있어요.');
   const sw = dpSwapOk(me.keys[i].sw, t);
   if (!sw.ok) throw new Error(`같은 자리는 30일에 한 번만 바꿀 수 있어요. ${sw.wait}일 뒤에 바꿀 수 있어요.`);
-  if ((dpTaken(all, me.id)[to] || 0) >= DP_RULE.slots) throw new Error('그 동은 자리가 다 찼어요. [대기 걸기]를 누르면 자리가 날 때 메일로 알려 드려요.');
+  if (!me.listing && (dpTaken(all, me.id)[to] || 0) >= dpSlotsOf(to)) throw new Error('그 동은 자리가 다 찼어요. [대기 걸기]를 누르면 자리가 날 때 메일로 알려 드려요.');
   const keys = me.keys.slice(); keys[i] = { k: to, at: t, sw: t };
   dpSet(me.row, '동목록', JSON.stringify(keys)); dpSet(me.row, '수정일', new Date());
   dpWaitDrop(me.id, to);
@@ -6327,21 +6463,47 @@ function dpWaitJoin(b) {
 }
 function dpWaitDrop(pid, k) { dpWaits().forEach(o => { if (String(o.r[DPWC['파트너']]) === pid && (!k || String(o.r[DPWC['동']]) === k)) dpSheet(SH_DPW).getRange(o.row, DPWC['상태'] + 1).setValue('취소'); }); }
 /** 자리 하나가 비면: 대기 1번(아직 자리를 더 받을 수 있는 파트너)에게 넣어 주고 메일. 원하지 않으면 그 파트너가 내 화면에서 빼면 돼요 */
+/** 대표 자리 하나가 비면: 그 동 일반 등록 회원(사무소 동이 그 동, 가입 순) → 대기 순으로 48시간 '받기' 제안 메일. 제안 중에는 그 자리를 잡아 둠.
+    이미 제안했던 사람(tried)은 건너뜀. 받을 사람이 없으면 빈 자리로 둠. 돌려줌: 제안한 파트너 id */
 function dpRelease(k, exceptPid) {
-  const all = dpAll(), taken = dpTaken(all, ''); if ((taken[k] || 0) >= DP_RULE.slots) return '';
-  const cap = dpCap(), sh = dpSheet(SH_DPW);
-  for (const o of dpWaits().filter(x => String(x.r[DPWC['동']]) === k)) {
-    const p = all.find(x => x.id === String(o.r[DPWC['파트너']]));
-    if (!p || !dpHolds(p) || p.id === exceptPid || p.keys.some(s => s.k === k)) { sh.getRange(o.row, DPWC['상태'] + 1).setValue('취소'); continue; }
-    if (p.keys.length >= cap) continue;                               // 자리가 꽉 찬 파트너는 건너뛰고 다음 사람(대기는 그대로)
-    const keys = p.keys.concat([{ k: k, at: ymd(new Date()), sw: '' }]);
-    dpSet(p.row, '동목록', JSON.stringify(keys));
-    sh.getRange(o.row, DPWC['상태'] + 1, 1, 2).setValues([['안내함', new Date()]]);
-    dpMailTo(p.mail, `[${SITE_NAME}] 기다리던 동에 자리가 났어요`, `${bEsc(dpSplit(k).dn)}에 자리가 나서 대기 1번인 ${bEsc(p.office)}에 넣어 드렸어요. 내일 아침 브리핑부터 이 동 구독자에게도 보여요.<br>원하지 않으면 내 파트너 화면에서 빼 주세요: <a href="${WEB_ROOT}dongne/my/">${WEB_ROOT}dongne/my/</a>`);
-    dpPickReset();
-    return p.id;
-  }
-  return '';
+  const O = dpOffers(), cur = O[k] || { pid: '', until: 0, tried: [] };
+  if (cur.pid && Number(cur.until) > Date.now()) return '';
+  const all = dpAll(), taken = dpTaken(all, ''); if ((taken[k] || 0) >= dpSlotsOf(k)) { if (O[k] && !O[k].pid) { delete O[k]; dpOffersPut(O); } return ''; }
+  const tried = cur.tried || [], cap = dpCap(), t = ymd(new Date());
+  const lst = all.filter(p => p.listing && dpLive(p, t) && dpKey(p.g, p.dn) === k && p.id !== exceptPid && tried.indexOf(p.id) < 0).sort((a, b) => (a.made || 0) - (b.made || 0));
+  const wl = dpWaits().filter(x => String(x.r[DPWC['동']]) === k).map(o => all.find(x => x.id === String(o.r[DPWC['파트너']])))
+    .filter(p => p && dpHolds(p) && !p.listing && p.id !== exceptPid && tried.indexOf(p.id) < 0 && !p.keys.some(s => s.k === k) && p.keys.length < cap);
+  const c = lst.concat(wl.filter(p => lst.indexOf(p) < 0))[0];
+  if (!c) { delete O[k]; dpOffersPut(O); return ''; }
+  const until = Date.now() + DP_RULE.offerHours * 3600000;
+  O[k] = { pid: c.id, until: until, tried: tried.concat([c.id]).slice(-50) }; dpOffersPut(O);
+  dpMailTo(c.mail, `[${SITE_NAME}] ${dpSplit(k).dn} 대표 파트너 자리가 났어요(48시간 안에 받기)`, `${bEsc(dpSplit(k).dn)}에 대표 파트너 자리가 하나 났어요. ${c.listing ? '이 동 일반 등록 회원이라 먼저 알려 드려요.' : '대기 순서대로 알려 드려요.'}<br>`
+    + `<b>${Utilities.formatDate(new Date(until), 'Asia/Seoul', 'M월 d일 HH:mm')}까지</b> 내 파트너 화면에서 [자리 받기]를 누르면 돼요. 그때까지 받지 않으면 다음 분께 넘어가요.<br><a href="${WEB_ROOT}dongne/my/#offer">${WEB_ROOT}dongne/my/</a>`);
+  dpPickReset();
+  return c.id;
+}
+/** 제안받은 자리 받기(또는 넘기기 no:true). 일반 등록 회원은 대표 파트너로 바뀜(그 동 하나, 요금은 그날 대표 요금으로 고정, 플러스 포함은 그날 기준) */
+function dpClaim(b) {
+  dpGate(b);
+  const u = sessionUser(b.s), me = dpMeOf(u), k = String(b.key || ''), O = dpOffers(), o = O[k];
+  if (!me || !o || o.pid !== me.id || !(Number(o.until) > Date.now())) throw new Error('받을 수 있는 자리가 없어요. 48시간이 지났거나 다른 분께 넘어갔어요.');
+  o.pid = ''; dpOffersPut(O);
+  if (b.no) { dpRelease(k, me.id); return { ok: true, passed: true }; }
+  const t = ymd(new Date());
+  if (me.listing) {
+    dpSet(me.row, '등록종류', ''); dpSet(me.row, '동목록', JSON.stringify([{ k: k, at: t, sw: '' }])); dpSet(me.row, '고정가', dpBaseOf(k));
+    dpSet(me.row, '묶음', !me.bundleLost && dpBundleOk(t) ? 'Y' : '');
+  } else dpSet(me.row, '동목록', JSON.stringify(me.keys.concat([{ k: k, at: t, sw: '' }])));
+  dpSet(me.row, '수정일', new Date()); dpWaitDrop(me.id, k);
+  const O2 = dpOffers(); delete O2[k]; dpOffersPut(O2);
+  dpPickReset();
+  return { ok: true, key: k, wasListing: !!me.listing };
+}
+/** 매일: 48시간 지난 제안은 다음 사람에게 */
+function dpOfferTick() {
+  const O = dpOffers(), now = Date.now(); let n = 0;
+  Object.keys(O).forEach(k => { const o = O[k]; if (o && o.pid && Number(o.until) <= now) { o.pid = ''; dpOffersPut(O); dpRelease(k, ''); n++; } });
+  return n;
 }
 function dpMove(b) {
   dpGate(b);
@@ -6351,7 +6513,7 @@ function dpMove(b) {
   if (!addr || addr.length < 6 || !key) throw new Error('새 사무소 주소와 동을 골라 주세요.');
   const oldKey = dpKey(me.g, me.dn);
   if (key === oldKey) { dpSet(me.row, '주소', addr); dpSet(me.row, '수정일', new Date()); return { ok: true, same: true }; }
-  if ((dpTaken(all, me.id)[key] || 0) >= DP_RULE.slots && !me.keys.some(s => s.k === key)) throw new Error('새 사무소 동은 자리가 다 찼어요. [대기 걸기]를 누르면 자리가 날 때 알려 드려요.');
+  if (!me.listing && (dpTaken(all, me.id)[key] || 0) >= dpSlotsOf(key) && !me.keys.some(s => s.k === key)) throw new Error('새 사무소 동은 자리가 다 찼어요. [대기 걸기]를 누르면 자리가 날 때 알려 드려요.');
   const keep = me.keys.filter(s => s.k !== oldKey && s.k !== key && dpNearOk(key, s.k)), drop = me.keys.filter(s => s.k !== key && keep.indexOf(s) < 0).map(s => s.k);
   const keys = [{ k: key, at: ymd(new Date()), sw: '' }].concat(keep).slice(0, dpCap());
   dpSet(me.row, '주소', addr); dpSet(me.row, '시군구', String(b.g)); dpSet(me.row, '사무소동', uText(b.dn, 20)); dpSet(me.row, '동목록', JSON.stringify(keys));
@@ -6383,7 +6545,7 @@ function dpAdd(b) {
   if (!/^\d{5}\|[가-힣0-9·.]{1,20}$/.test(k) || me.keys.some(s => s.k === k)) throw new Error('더할 동을 다시 골라 주세요.');
   if (me.keys.length >= dpCap()) throw new Error(dpBillOn() ? `동은 ${DP_RULE.max}개까지예요.` : `지금은 시범 운영이라 ${DP_RULE.incl}개 동까지예요. 동 추가는 정식 결제가 열리면 할 수 있어요.`);
   if (!dpNearOk(dpKey(me.g, me.dn), k)) throw new Error('사무소 동과 가까운 동만 더할 수 있어요.');
-  if ((dpTaken(all, me.id)[k] || 0) >= DP_RULE.slots) throw new Error('그 동은 자리가 다 찼어요. [대기 걸기]를 누르면 자리가 날 때 알려 드려요.');
+  if (!me.listing && (dpTaken(all, me.id)[k] || 0) >= dpSlotsOf(k)) throw new Error('그 동은 자리가 다 찼어요. [대기 걸기]를 누르면 자리가 날 때 알려 드려요.');
   const keys = me.keys.concat([{ k: k, at: ymd(new Date()), sw: '' }]);
   dpSet(me.row, '동목록', JSON.stringify(keys)); dpSet(me.row, '수정일', new Date()); dpWaitDrop(me.id, k); dpPickReset();
   const pr = dpPriceOf(me, keys.length);
@@ -6513,6 +6675,8 @@ function dpEnd(p, why, lose) {
   try { dpBkPut(p.id, null); } catch (e) {}                             // 빌링키 지우기(더는 결제 안 함)
   dpSet(p.row, '해지예정일', p.failAt || p.endAt || ymd(new Date()));   // 끊긴 날: 창립 혜택 30일 기준
   if (lose && p.founding) dpSet(p.row, '창립', '박탈');
+  if (lose && p.bundle) dpSet(p.row, '묶음', '박탈');
+  try { const O = dpOffers(); let ch = false; Object.keys(O).forEach(k => { if (O[k] && O[k].pid === p.id) { O[k].pid = ''; ch = true; } }); if (ch) dpOffersPut(O); } catch (e) {}
   dpSet(p.row, '상태', DP_ST.end); dpSet(p.row, '메모', why + ' ' + ymd(new Date())); dpSet(p.row, '동목록', '[]'); dpSet(p.row, '수정일', new Date());
   if (p.img) { cmTrash(p.img); dpSet(p.row, '사진', ''); dpSet(p.row, '사진상태', ''); }
   dpWaitDrop(p.id, '');
@@ -6541,49 +6705,76 @@ function dpBoostSet(day) {
 function dpPickDay(day) {
   const c = CacheService.getScriptCache(), hit = parseJ(c.get('dpPick'), null);
   if (hit && hit.day === day) return hit;
-  const P = PropertiesService.getScriptProperties(), st = parseJ(P.getProperty('DP_PICK'), {}) || {};
-  const prevDay = dpAddDays(day, -1), prev = st[prevDay] || {};
-  const all = dpAll().filter(p => dpLive(p, day)), boost = dpBoostSet(day), from = dpCutoff(day) - DP_RULE.postDays * 86400000;
-  const byKey = {}, found = {}; all.forEach(p => { if (dpFoundOn(p, day)) found[p.id] = 1; p.keys.forEach(s => { (byKey[s.k] = byKey[s.k] || []).push(p.id); }); });
-  const posts = dpRows(SH_DPP).filter(o => String(o.r[DPPC['상태']]) === DP_PST.on).map(o => dpPostPub(o, false)).filter(x => x.at >= from);
+  dpRuleLoad();
+  const P = PropertiesService.getScriptProperties(), st = parseJ(P.getProperty('DP_PICK'), {}) || {}, FE = parseJ(P.getProperty('DP_FEAT'), {}) || {};
+  const prevDay = dpAddDays(day, -1), prev = st[prevDay] || {}, cut = dpCutoff(day);
+  const all = dpAll().filter(p => dpLive(p, day)), feat = all.filter(p => !p.listing), boost = dpBoostSet(day);
+  const from7 = cut - DP_RULE.postDays * 86400000, from14 = cut - DP_RULE.featDays * 86400000;
+  const byKey = {}, found = {}; feat.forEach(p => { if (dpFoundOn(p, day)) found[p.id] = 1; p.keys.forEach(s => { (byKey[s.k] = byKey[s.k] || []).push(p.id); }); });
+  const posts = dpRows(SH_DPP).filter(o => String(o.r[DPPC['상태']]) === DP_PST.on).map(o => dpPostPub(o, false)).filter(x => x.at >= from14 && x.at < cut);
   const by = {}, picked = {};
   Object.keys(byKey).forEach(k => {
     const mine = posts.filter(x => x.key === k && byKey[k].indexOf(x.pid) >= 0).map(x => Object.assign({}, x, { boost: !!boost[x.pid], found: !!found[x.pid] }));
-    const p = dpPickPost(mine, day, prev[k] || '');
-    const active = {}; mine.forEach(x => { active[x.pid] = 1; });
-    by[k] = { post: p ? { id: p.id, pid: p.pid, tn: p.tn, text: p.text, img: p.img, at: p.at, help: p.help } : null, pids: dpOrder(byKey[k], p ? p.pid : '', active, day, found) };
+    const days = {}, lines = {}, latest = {};
+    mine.forEach(x => { (days[x.pid] = days[x.pid] || {})[dpYmd(x.at)] = 1; if (x.at >= from7 && (!latest[x.pid] || x.at > latest[x.pid].at)) latest[x.pid] = x; });
+    Object.keys(days).forEach(pid => { days[pid] = Object.keys(days[pid]).length; });
+    Object.keys(latest).forEach(pid => { lines[pid] = dpFirstLine(latest[pid].text); });
+    const p = dpPickFeatured(mine, day, { prev: prev[k] || '', last: FE[k] || {}, days: days });
+    const active = {}; Object.keys(latest).forEach(pid => { active[pid] = 1; });
+    by[k] = { post: p ? { id: p.id, pid: p.pid, tn: p.tn, text: p.text, img: p.img, at: p.at, help: p.help } : null, pids: dpOrder(byKey[k], p ? p.pid : '', active, day, found), lines: lines };
     if (p) picked[k] = p.pid;
   });
-  if (!(day in st)) { const keep = {}; keep[day] = picked; if (st[prevDay]) keep[prevDay] = st[prevDay]; try { P.setProperty('DP_PICK', JSON.stringify(keep)); } catch (e) {} }
+  const list = {};
+  if (DP_RULE.listingTier) all.filter(p => p.listing).forEach(p => p.keys.forEach(s => { (list[s.k] = list[s.k] || []).push(p.id); }));
+  Object.keys(list).forEach(k => { list[k].sort((a, b) => dpHash(day + '|' + k + '|' + a) - dpHash(day + '|' + k + '|' + b)); });   // 날마다 순서를 섞어 고정 1등이 없게
+  if (!(day in st)) {
+    const keep = {}; keep[day] = picked; if (st[prevDay]) keep[prevDay] = st[prevDay];
+    Object.keys(picked).forEach(k => { (FE[k] = FE[k] || {})[picked[k]] = day; });
+    const old = dpAddDays(day, -30); Object.keys(FE).forEach(k => { Object.keys(FE[k]).forEach(pid => { if (FE[k][pid] < old) delete FE[k][pid]; }); if (!Object.keys(FE[k]).length) delete FE[k]; });
+    try { P.setProperty('DP_PICK', JSON.stringify(keep)); P.setProperty('DP_FEAT', JSON.stringify(FE)); } catch (e) {}
+  }
   const cards = {}; all.forEach(p => { cards[p.id] = dpCard(p, day); });
-  const res = { day: day, by: by, cards: cards, best: parseJ(P.getProperty('DP_BEST'), null) };
+  const res = { day: day, by: by, list: list, cards: cards, best: parseJ(P.getProperty('DP_BEST'), null) };
   try { c.put('dpPick', JSON.stringify(res), 1800); } catch (e) {}
   return res;
 }
-/** 구독자 한 명의 칸: areas = 받는 지역, apts = 관심 단지 이름, aptDong(g, 이름) → 그 단지 동 이름 */
+/** 구독자 한 명의 칸: areas = 받는 지역, apts = 관심 단지 이름, aptDong(g, 이름) → 그 단지 동 이름.
+    동마다 { post(오늘 크게 소개할 글), partners[0](그 글의 파트너 — 큰 카드), partners[1..2](작은 이름 카드 + 최근 글 첫 줄 line), listing(이 동네 중개사 — 일반 등록) } */
 function dpSection(areas, apts, day, aptDong) {
-  const D = dpPickDay(day), keys = Object.keys(D.by), out = [], seen = {};
+  const D = dpPickDay(day), keys = Object.keys(D.by).concat(Object.keys(D.list || {}).filter(k => !D.by[k])), out = [], seen = {};
   (areas || []).forEach(a => {
     const ad = (apts || []).map(n => aptDong ? aptDong(a.g, n) : '').filter(Boolean);
     dpAreaDongs(a, keys, ad, day).forEach(k => {
       if (seen[k]) return; seen[k] = 1;
-      const x = D.by[k]; if (!x) return;
-      out.push({ key: k, dn: dpSplit(k).dn, gn: a.gn || '', post: x.post, partners: x.pids.map(id => D.cards[id]).filter(Boolean).slice(0, DP_RULE.slots) });
+      const x = D.by[k] || { post: null, pids: [], lines: {} }, fp = x.post ? x.post.pid : '';
+      const partners = x.pids.slice(0, 3).map(id => D.cards[id] && Object.assign({}, D.cards[id], { line: id === fp ? '' : (x.lines[id] || '') })).filter(Boolean);
+      const listing = ((D.list || {})[k] || []).map(id => D.cards[id]).filter(Boolean).map(cd => ({ id: cd.id, office: cd.office, reg: cd.reg, name: cd.name, verified: cd.verified }));
+      if (partners.length || listing.length) out.push({ key: k, dn: dpSplit(k).dn, gn: a.gn || '', post: x.post, partners: partners, listing: listing });
     });
   });
   const best = D.best && D.best.w ? D.best : null, gs = (areas || []).filter(a => !a.dn).map(a => a.g);
   const bestFor = best ? gs.map(g => best.byG && best.byG[g]).filter(Boolean)[0] || '' : '';
   return { list: out.slice(0, 4), best: bestFor && best.posts && best.posts[bestFor] ? best.posts[bestFor] : null };
 }
+/** 사무소 보기(이 동네 중개사·파트너 카드 공통): 이름·주소·등록 확인 표시. 전화번호는 reveal 때만(누른 수 기록) */
+function dpOffice(b) {
+  if (!DONGNE_ENABLED && !dpIsAdmin(b)) return { ok: true, p: null };
+  const p = dpAll().find(x => x.id === String(b.id || '') && dpLive(x)); if (!p) return { ok: true, p: null };
+  const cd = dpCard(p), out = { id: cd.id, office: cd.office, addr: cd.addr, reg: cd.reg, name: cd.name, ceo: cd.ceo, kind: cd.kind, intro: cd.intro, img: cd.img, verified: cd.verified, listing: cd.listing, found: cd.found, dn: cd.dn };
+  if (b.reveal) { out.tel = cd.tel; dpLog({ t: 'call', id: p.id, v: b.v, s: b.s }); }
+  return { ok: true, p: out };
+}
 /** 메일 칸(이른 아침 광고 동의자만 — briefDaily 가 확인). 맨 아래 따로, (제휴)·광고 표시와 수신 거부 */
 function dpMailHtml(sec, subId) {
   if (!sec || (!sec.list.length && !sec.best)) return '';
-  const card = c => `<div style="font-size:12.5px;color:#4E5968;line-height:1.55;margin:4px 0 0">${dpLegal(c).map(bEsc).join(' · ')}</div>`;
+  const legal = c => `<div style="font-size:12px;color:#4E5968;line-height:1.5;margin:3px 0 0">${dpLegal(c).map(bEsc).join(' · ')}</div>`;
+  const badge = c => `<span style="font-size:11.5px;font-weight:800;color:#8A6A12;background:#F6EDD3;border-radius:6px;padding:1px 6px">${c.found ? '창립 파트너' : '동네 파트너'}</span>`;
   const items = sec.list.map(x => {
-    const top = x.partners[0];
-    const post = x.post && top && x.post.pid === top.id ? `<div style="font-size:12.5px;font-weight:800;color:#8A6A12">${bEsc(x.post.tn)}</div><p style="margin:2px 0 4px;line-height:1.6">${bEsc(x.post.text)}</p>${x.post.img ? `<img src="${bEsc(x.post.img)}" alt="" style="max-width:100%;border-radius:8px;margin:2px 0 4px">` : ''}` : '';
-    return `<div style="border-top:1px solid #EFE6CC;padding:10px 0 4px"><div style="font-size:15px;font-weight:900">${bEsc(x.dn)}</div>${post}
-      ${x.partners.map((c, i) => `<div style="margin:${i ? 8 : 2}px 0 0"><b style="font-size:14px">${bEsc(c.office)}</b> <span style="font-size:11.5px;font-weight:800;color:#8A6A12;background:#F6EDD3;border-radius:6px;padding:1px 6px">${c.found ? '창립 파트너' : '동네 파트너'}</span>${c.intro ? `<div style="font-size:13px;color:#3E4754">${bEsc(c.intro)}</div>` : ''}${card(c)}</div>`).join('')}</div>`;
+    const top = x.partners[0], big = x.post && top && x.post.pid === top.id;
+    const head = big ? `<div style="background:#fff;border:1px solid #EFE6CC;border-radius:10px;padding:10px 12px;margin:4px 0 6px"><div style="font-size:12.5px;font-weight:800;color:#8A6A12">${bEsc(x.post.tn)} · ${bEsc(top.office)}</div><p style="margin:3px 0 4px;font-size:15.5px;line-height:1.6">${bEsc(x.post.text)}</p>${x.post.img ? `<img src="${bEsc(x.post.img)}" alt="" style="max-width:100%;border-radius:8px;margin:2px 0 4px">` : ''}<b style="font-size:14px">${bEsc(top.office)}</b> ${badge(top)}${legal(top)}</div>` : '';
+    const small = x.partners.slice(big ? 1 : 0).map(c => `<div style="margin:6px 0 0;font-size:13.5px"><b>${bEsc(c.office)}</b> ${badge(c)}${c.line ? `<div style="color:#3E4754">“${bEsc(c.line)}”</div>` : ''}${legal(c)}</div>`).join('');
+    const lst = (x.listing || []).length ? `<div style="margin:8px 0 0;font-size:13px"><b>이 동네 중개사</b><div style="color:#3E4754;line-height:1.6">${x.listing.map(c => `<a href="${WEB_ROOT}dongne/office/?id=${encodeURIComponent(c.id)}" style="color:#191F28">${bEsc(c.office)}</a>${c.verified ? ' ✓' : ''}`).join(' · ')}</div></div>` : '';
+    return `<div style="border-top:1px solid #EFE6CC;padding:10px 0 4px"><div style="font-size:15px;font-weight:900">${bEsc(x.dn)}</div>${head}${small}${lst}</div>`;
   }).join('');
   const best = sec.best ? `<div style="background:#FFF;border:1px solid #EFE6CC;border-radius:10px;padding:10px 12px;margin:6px 0 8px"><b>이번 주 우수 동네 소식</b> · ${bEsc(sec.best.dn)} · ${bEsc(sec.best.office)}<p style="margin:4px 0 0;line-height:1.6">${bEsc(sec.best.text)}</p></div>` : '';
   const off = `${bApi()}?action=briefAdOff&id=${encodeURIComponent(subId)}&t=${bAmToken(subId)}`;
@@ -6680,7 +6871,7 @@ function dpPhotoData(fid) { try { const bl = DriveApp.getFileById(String(fid)).g
 function dpAdminQueue(b) {
   dpAdminNeed(b);
   const all = dpAll(), t = ymd(new Date());
-  const P = all.filter(p => p.st === DP_ST.wait).slice(0, 50).map(p => Object.assign(dpCard(p, t), { st: p.st, chk: p.chk, applied: p.applied, keys: p.keys.map(s => s.k), mail: p.mail.replace(/^(.{1,2})[^@]*(@.*)$/, '$1***$2') }));
+  const P = all.filter(p => p.st === DP_ST.wait).slice(0, 50).map(p => Object.assign(dpCard(p, t), { bundle: p.bundle, st: p.st, chk: p.chk, applied: p.applied, keys: p.keys.map(s => s.k), mail: p.mail.replace(/^(.{1,2})[^@]*(@.*)$/, '$1***$2') }));
   const posts = dpRows(SH_DPP), name = id => (all.find(p => p.id === id) || {}).office || '';
   const pick = f => posts.filter(f).reverse().slice(0, 100).map(o => Object.assign(dpPostPub(o, true), { office: name(dpTxt(o.r[DPPC['파트너']])) }));
   const hold = pick(o => String(o.r[DPPC['상태']]) === DP_PST.hold), tmp = pick(o => String(o.r[DPPC['상태']]) === DP_PST.tmp);
@@ -6688,9 +6879,11 @@ function dpAdminQueue(b) {
   all.filter(p => p.img && p.imgSt === '확인대기' && dpHolds(p)).slice(0, 10).forEach(p => photos.push({ kind: 'p', id: p.id, office: p.office, img: dpPhotoData(p.img) }));
   posts.filter(o => dpTxt(o.r[DPPC['사진']]) && dpTxt(o.r[DPPC['사진상태']]) === '확인대기' && String(o.r[DPPC['상태']]) !== DP_PST.del).slice(0, 10)
     .forEach(o => photos.push({ kind: 'n', id: dpTxt(o.r[DPPC['id']]), office: name(dpTxt(o.r[DPPC['파트너']])), img: dpPhotoData(dpTxt(o.r[DPPC['사진']])) }));
-  const live = all.filter(p => p.st === DP_ST.on || p.st === DP_ST.stop).slice(0, 200).map(p => ({ id: p.id, office: p.office, st: p.st, pay: p.pay, plan: p.plan, next: p.next, endAt: p.endAt, founding: dpFoundOn(p, t), warn: p.warn, stopUntil: p.stopUntil, keys: p.keys.map(s => dpSplit(s.k).dn), last: p.last, reps: dpPartnerReps(p.id), chk: p.chk }));
+  const live = all.filter(p => p.st === DP_ST.on || p.st === DP_ST.stop).slice(0, 200).map(p => ({ id: p.id, office: p.office, st: p.st, listing: !!p.listing, plusOn: dpPlusOn(p, t), base: p.base, pay: p.pay, plan: p.plan, next: p.next, endAt: p.endAt, founding: dpFoundOn(p, t), warn: p.warn, stopUntil: p.stopUntil, keys: p.keys.map(s => dpSplit(s.k).dn), last: p.last, reps: dpPartnerReps(p.id), chk: p.chk }));
   const reported = live.filter(x => x.reps >= DP_PREP_Q).concat(live.filter(x => x.reps > 0 && x.reps < DP_PREP_Q)).map(x => Object.assign({}, x, { why: dpRows(SH_DPE).filter(o => String(o.r[DPEC['종류']]) === 'prep' && String(o.r[DPEC['파트너']]) === x.id).map(o => DP_WHY[String(o.r[DPEC['글']]).split('|')[1]] || '기타') }));
-  return { ok: true, billing: dpBillOn(), tpl: DP_TPL_PUB(), reported: reported, prepQ: DP_PREP_Q, rulesReady: !!dpRules(), keyReady: !!PropertiesService.getScriptProperties().getProperty('DATA_GO_KR_KEY'), open: DONGNE_ENABLED, partners: P, hold: hold, tmp: tmp, photos: photos, live: live };
+  const O = dpOffers(), offers = Object.keys(O).filter(k => O[k] && O[k].pid).map(k => ({ k: k, dn: dpSplit(k).dn, office: (all.find(p => p.id === O[k].pid) || {}).office || '', until: Utilities.formatDate(new Date(Number(O[k].until)), 'Asia/Seoul', 'yyyy-MM-dd HH:mm') }));
+  const rl = dpRuleLoad();
+  return { ok: true, billing: dpBillOn(), tpl: DP_TPL_PUB(), offers: offers, settings: { rule: DP_RULE, bundleUntil: dpBundleUntil(), bad: rl.bad }, reported: reported, prepQ: DP_PREP_Q, rulesReady: !!dpRules(), keyReady: !!PropertiesService.getScriptProperties().getProperty('DATA_GO_KR_KEY'), open: DONGNE_ENABLED, partners: P, hold: hold, tmp: tmp, photos: photos, live: live };
 }
 /* ---------- 제재·박탈(운영자) ----------
    중대 위반(바로 박탈): 노출 중지 + 결제 중지(빌링키 지움) + 창립 혜택 박탈 + 해지를 한꺼번에. 환불 없음(약관 초안).
@@ -6723,7 +6916,9 @@ function dpHistory(all, uh, reg, t) {
   const ban = old.some(p => /^중대 위반/.test(p.chk) || /^중대 위반/.test(String(p.notes || '')));
   const lost = old.some(p => p.foundLost);
   const carry = !lost && !ban && old.some(p => p.st === DP_ST.end && p.founding && p.endAt && (dpDayMs(t) - dpDayMs(p.endAt)) / 86400000 <= DP_FOUND_KEEP);
-  return { any: old.some(p => p.st === DP_ST.end), lost: lost, ban: ban, carry: carry };
+  const bundleLost = old.some(p => p.bundleLost);
+  const carryBundle = !bundleLost && !ban && old.some(p => p.st === DP_ST.end && p.bundle && p.endAt && (dpDayMs(t) - dpDayMs(p.endAt)) / 86400000 <= DP_FOUND_KEEP);
+  return { any: old.some(p => p.st === DP_ST.end), lost: lost, ban: ban, carry: carry, bundleLost: bundleLost, carryBundle: carryBundle };
 }
 /** 구독자가 파트너 카드에서 누른 신고 수(처리 안 된 것) */
 function dpPartnerReps(pid) { return dpRows(SH_DPE).filter(o => String(o.r[DPEC['종류']]) === 'prep' && String(o.r[DPEC['파트너']]) === pid).length; }
@@ -6769,7 +6964,7 @@ function dpAdminAct(b) {
   if (op === 'approve') {
     if (p.st !== DP_ST.wait) throw new Error('검토 대기인 파트너만 승인할 수 있어요.');
     dpSet(p.row, '상태', DP_ST.on); if (!p.approved) dpSet(p.row, '승인일', new Date()); dpSet(p.row, '확인결과', p.chk + ' → 운영자 승인 ' + t);
-    dpMailTo(p.mail, `[${SITE_NAME}] 동네 파트너 승인됐어요`, `${bEsc(p.office)} 동네 파트너를 확인하고 승인했어요. 이제 '이번 주 우리 동네 한마디'를 쓸 수 있어요.<br><a href="${WEB_ROOT}dongne/my/">내 파트너 화면 열기</a>`);
+    dpMailTo(p.mail, `[${SITE_NAME}] 동네 파트너 승인됐어요`, `${bEsc(p.office)} 동네 파트너를 확인하고 승인했어요. 이제 '오늘의 우리 동네 한마디'를 쓸 수 있어요.<br><a href="${WEB_ROOT}dongne/my/">내 파트너 화면 열기</a>`);
   } else if (op === 'reject') {
     if (!why) throw new Error('거절 이유를 적어 주세요. 신청한 분께 메일로 보내요.');
     try { dpBkPut(p.id, null); } catch (e) {}
@@ -6828,7 +7023,9 @@ function dpDaily(now) {
   if (P.getProperty('DP_DAILY') === t) return 0;
   P.setProperty('DP_DAILY', t);
   let n = 0;
+  dpRuleLoad();
   const mon = new Date(dpDayMs(t) + 9 * 3600000).getUTCDay() === 1, wk = dpWeek(t);
+  try { n += dpOfferTick(); } catch (e) {}
   if (mon) dpBestPick(wk);
   const bill = dpBillOn();
   if (new Date(dpDayMs(t) + 9 * 3600000).getUTCDate() === 1 || P.getProperty('DP_CHK_M') === t.slice(0, 7) + '|go') { try { n += dpMonthlyCheck(t); } catch (e) {} }   // 매달 1일: 등록 상태 다시 확인(나눠서)
@@ -6857,15 +7054,20 @@ function dpDaily(now) {
         return;
       }
     }
-    if (p.st !== DP_ST.on || !dpLive(p, t)) return;
-    if (mon && !note('mon|' + wk)) { dpMailTo(p.mail, `[${SITE_NAME}] 이번 주 우리 동네 한마디를 남겨 주세요`, `${p.keys.map(s => bEsc(dpSplit(s.k).dn)).join(', ')} 소식을 200자 안으로 남기면, 밤 10시 전에 쓴 글은 다음 날 아침 브리핑에 실려요.<br><a href="${WEB_ROOT}dongne/my/#write">글 쓰러 가기</a>`); add('mon|' + wk); n++; }
-    const since = p.last || p.approved || p.applied;
+    if (p.st !== DP_ST.on || !dpLive(p, t) || p.listing) return;     // 일반 등록은 한마디 안내 없음
+    const since = p.last || p.approved || p.applied, idle = since ? Math.round((dpDayMs(t) - dpDayMs(since)) / 86400000) : 0;
+    const nud = (p.notes.match(new RegExp('nud\\|' + wk + '\\|[0-9-]+', 'g')) || []).map(x => x.split('|')[2]).sort(), lastN = nud[nud.length - 1] || '';
+    if (idle >= DP_RULE.nudgeIdle && idle < DP_RULE.idleDays && nud.length < DP_RULE.nudgeWeek && (!lastN || (dpDayMs(t) - dpDayMs(lastN)) / 86400000 >= DP_RULE.nudgeIdle) && !(since && lastN && lastN > since && (dpDayMs(t) - dpDayMs(lastN)) / 86400000 < DP_RULE.nudgeIdle)) {
+      dpMailTo(p.mail, `[${SITE_NAME}] 오늘 동네 소식 하나 남겨 주세요`, `${idle}일 동안 오늘의 우리 동네 한마디가 없었어요. ${p.keys.map(s => bEsc(dpSplit(s.k).dn)).join(', ')} 소식을 200자 안으로 남기면, 밤 10시 전에 쓴 글은 다음 날 아침 브리핑에 실려요. 자주 쓸수록 크게 소개되는 날이 많아져요.<br><a href="${WEB_ROOT}dongne/my/#write">글 쓰러 가기</a>`);
+      add('nud|' + wk + '|' + t); n++;
+    }
     if (since && (dpDayMs(t) - dpDayMs(since)) / 86400000 >= DP_RULE.idleDays && !note('idle|' + since)) {
       dpMailTo(p.mail, `[${SITE_NAME}] 4주 동안 동네 한마디가 없었어요`, `글이 없으면 이름 카드만 뒤쪽에 보여요. 짧은 동네 소식 하나면 충분해요.<br><a href="${WEB_ROOT}dongne/my/#write">글 쓰러 가기</a>`); add('idle|' + since); n++;
     }
   });
   /* 끊긴 지 30일 지난 창립 혜택은 영영 사라짐(다시 가입해도 없음) */
   dpAll().filter(p => p.st === DP_ST.end && p.founding && !p.foundLost && p.endAt && (dpDayMs(t) - dpDayMs(p.endAt)) / 86400000 > DP_FOUND_KEEP).forEach(p => dpSet(p.row, '창립', '박탈'));
+  dpAll().filter(p => p.st === DP_ST.end && p.bundle && p.endAt && (dpDayMs(t) - dpDayMs(p.endAt)) / 86400000 > DP_FOUND_KEEP).forEach(p => dpSet(p.row, '묶음', '박탈'));   // 플러스 포함도 같은 30일 규칙
   return n;
 }
 /** 월요일: 지난주 우수 동네 소식 고르기 → DP_BEST(브리핑·첫 화면), 고른 파트너는 다음 달 순위 가산(DP_BEST_LOG) */
@@ -6944,6 +7146,7 @@ function baBillDispatch(b) {
 /** 카드 등록 시작: 요금제·자동 결제 동의를 받아 고객키를 줌(화면이 토스 카드 인증 창을 엶) */
 function baBillStart(b) {
   const u = sessionUser(b.s), P = BRIEF_PRICE[b.product];
+  if (b.product === 'brief_pro_plus' && !b.recard && dpPlusFor(u.k)) throw new Error('동네 파트너에 중개사 플러스가 들어 있어요. 따로 결제하지 않아도 돼요.');   // v51
   if (!P || !P.show) throw new Error('요금제를 다시 골라 주세요.');
   if (!myBriefs(u.k).length) throw new Error('먼저 7일 무료 체험을 시작해 주세요.');
   let bn = ''; if (P.broker) { const x = bBrokerNo(b.broker); if (!x.ok) throw new Error(x.err + ' 중개사 요금제는 중개사 전용 할인가라서 등록번호를 확인해요.'); bn = x.norm; }
@@ -7027,10 +7230,24 @@ function baBillDaily(now) {
       const left = Math.round((dpDayMs(nx) - dpDayMs(t)) / 86400000);
       if (left === BR_NOTICE && notes.indexOf('pay|' + nx) < 0) {
         const k = baKOf(String(r[BRAC['회원']])), P = BRIEF_PRICE[String(r[BRAC['요금제']])], half = String(r[BRAC['첫달반값']]) === 'Y' && nx === dpDay(r[BRAC['첫결제일']]);
-        const to = k ? baEmail(k) : '';
-        if (to && P) { dpMailTo(to, `[${SITE_NAME}] 7일 뒤 ${BRIEF_NAME} 이용료가 자동 결제돼요`, `<b>${nx.slice(5).replace('-', '월 ')}일에 ${baAmt(P, half).toLocaleString()}원</b>이 자동 결제돼요(${bEsc(P.name)}${half ? ', 첫 달 반값' : ''}).<br>원하지 않으면 그 전에 내 구독 관리에서 [자동 결제 해지]를 한 번 누르면 돼요. 이미 받은 기간은 끝까지 받아요.<br><a href="${BRIEF_WEB}manage/">${BRIEF_WEB}manage/</a>`); add('pay|' + nx); n++; }
+        const to = k ? baEmail(k) : '', skip = k && String(r[BRAC['요금제']]) === 'brief_pro_plus' && dpPlusFor(k);   // v51 파트너 플러스가 있으면 결제 안내 대신 건너뜀 표시
+        if (skip) add('plusskip|n' + nx);
+        else if (to && P) { dpMailTo(to, `[${SITE_NAME}] 7일 뒤 ${BRIEF_NAME} 이용료가 자동 결제돼요`, `<b>${nx.slice(5).replace('-', '월 ')}일에 ${baAmt(P, half).toLocaleString()}원</b>이 자동 결제돼요(${bEsc(P.name)}${half ? ', 첫 달 반값' : ''}).<br>원하지 않으면 그 전에 내 구독 관리에서 [자동 결제 해지]를 한 번 누르면 돼요. 이미 받은 기간은 끝까지 받아요.<br><a href="${BRIEF_WEB}manage/">${BRIEF_WEB}manage/</a>`); add('pay|' + nx); n++; }
       }
-      if (nx <= t) { baCharge(o, t); n++; }
+      if (nx <= t) {
+        const k2 = baKOf(String(r[BRAC['회원']])), pl = k2 && String(r[BRAC['요금제']]) === 'brief_pro_plus' ? dpPlusFor(k2) : null;
+        if (pl) {                                                     // v51 동네 파트너에 플러스가 들어 있는 동안: 따로 낸 플러스는 결제하지 않고 한 달 미룸(환불 없음)
+          const nx2 = ymd(addDays(dOnly(nx), 30)); baSet(o.row, '다음결제일', nx2); baSet(o.row, '알림', (notes + ' plusskip|' + nx).trim().split(' ').slice(-12).join(' '));
+          const to = baEmail(k2); if (to) dpMailTo(to, `[${SITE_NAME}] 이번 달 중개사 플러스는 결제하지 않았어요`, `동네 파트너에 중개사 플러스가 들어 있어서 따로 낸 플러스 자동 결제를 이번에는 하지 않았어요. 다음 결제일은 ${nx2}예요.<br>아예 멈추려면 내 구독 관리에서 [따로 낸 플러스 자동 결제 멈추기]를 눌러 주세요: <a href="${BRIEF_WEB}manage/">${BRIEF_WEB}manage/</a>`);
+          return;
+        }
+        if (notes.indexOf('pay|' + nx) < 0 && notes.indexOf('plusskip|') >= 0) {   // 건너뛴 뒤 첫 결제는 7일 전 안내가 있어야 함 — 없으면 지금 알리고 7일 뒤로
+          const nx3 = ymd(addDays(dOnly(t), BR_NOTICE)); baSet(o.row, '다음결제일', nx3);
+          const P3 = BRIEF_PRICE[String(r[BRAC['요금제']])], to = baEmail(k2); if (to && P3) dpMailTo(to, `[${SITE_NAME}] 7일 뒤 ${BRIEF_NAME} 이용료가 자동 결제돼요`, `<b>${nx3.slice(5).replace('-', '월 ')}일에 ${P3.amount.toLocaleString()}원</b>이 자동 결제돼요(${bEsc(P3.name)}). 동네 파트너의 중개사 플러스가 끝나서 따로 낸 플러스가 다시 이어져요.<br>원하지 않으면 그 전에 내 구독 관리에서 [자동 결제 해지]를 눌러 주세요: <a href="${BRIEF_WEB}manage/">${BRIEF_WEB}manage/</a>`);
+          baSet(o.row, '알림', (notes + ' pay|' + nx3).trim().split(' ').slice(-12).join(' ')); return;
+        }
+        baCharge(o, t); n++;
+      }
       return;
     }
     if (st === BRA_ST.retry) {
@@ -7079,4 +7296,33 @@ function baStopAll(k) {
   const o = baOf(k); if (!o) return;
   if (String(o.r[BRAC['상태']]) !== BRA_ST.end) { baSet(o.row, '상태', BRA_ST.end); baSet(o.row, '수정일', new Date()); }
   billKeyPut('BR', baUid(k), null);
+}
+/* v51 동네 파트너 플러스: 구독 관리 화면용(따로 낸 플러스가 있으면 알림 + 자동 결제 멈추기) */
+function dpPlusPub(k, subs) {
+  const pl = dpPlusFor(k); if (!pl) return null;
+  const sep = (subs || []).filter(x => x.tier === 'brief_pro_plus' && x.orderId && (x.active || x.start > ymd(new Date())) && x.state !== BST.stop && x.state !== BST.chg);
+  const bs = book().getSheetByName(SH_BRA) ? baBillPub(k) : { st: '' };
+  const sepAuto = bs && bs.product === 'brief_pro_plus' && ['정상', '재시도'].indexOf(bs.st) >= 0;
+  return { on: true, until: pl.until, since: pl.since, mail: String(pl.mail || '').replace(/^(.{1,2})[^@]*(@.*)$/, '$1***$2'), sepPlus: sep.length > 0 || !!sepAuto, sepAuto: !!sepAuto, sepEnd: sep.map(x => x.end).sort().pop() || '' };
+}
+/* v51 이용권이 없는 동네 파트너에게 매일 아침 브리핑(중개사 플러스 한도, 파트너 이메일). 받는 지역 = 저장한 지역, 없으면 파트너 동 */
+function dpPlusBriefs(date, um, brief, M, ix) {
+  if (!book().getSheetByName(SH_DP)) return 0;
+  const P = PropertiesService.getScriptProperties(), st = parseJ(P.getProperty('DP_PLUS_SENT'), {}) || {}, done = st.d === date ? st.ids || [] : [], now = new Date(), X = BRIEF_PRICE.brief_pro_plus;
+  let n = 0;
+  Object.keys(um).forEach(k => {
+    const pl = dpPlusFor(k); if (!pl || !pl.mail || done.indexOf(pl.pid) >= 0) return;
+    if (myBriefs(k).some(o => briefState(o, now).active)) return;    // 이용권이 있으면 그쪽 메일에 이미 플러스 한도로 감
+    const ub = um[k] || { areas: [], apts: [] }, apts = (ub.apts || []).slice(0, X.apts), urg = ub.urg || BRIEF_URG.def;
+    const areas = (ub.areas || []).length ? ub.areas.slice(0, X.areas) : pl.keys.map(key => ({ g: key.slice(0, 5), gn: '', dn: dpSplit(key).dn }));
+    bPrefetch(areas.map(a => a.g), brief);
+    const pieces = areas.map(a => { const S = brief(a.g); return S ? briefPiece(S, a, true, apts, urg) : null; }).filter(Boolean);
+    if (!pieces.length) return;
+    try {
+      briefMail(pl.mail, (ix && ix.date) || date, pieces, { id: 'DP', product: X.label + '(동네 파트너 포함)', start: pl.since, end: pl.until || '파트너를 이어 가는 동안' }, true, M, Object.assign({}, ub, { apts: apts }), '', null, '');
+      done.push(pl.pid); n++; bLog([date, pl.pid, 'email', '보냄(동네 파트너 플러스)', pieces.length]);
+    } catch (e) { bLog([date, pl.pid, 'email', '못 보냄: ' + String(e.message || e).slice(0, 60), 0]); }
+  });
+  P.setProperty('DP_PLUS_SENT', JSON.stringify({ d: date, ids: done }));
+  return n;
 }
