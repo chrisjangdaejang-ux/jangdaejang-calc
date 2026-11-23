@@ -2,7 +2,8 @@
    ─────────────────────────────────────────────────────────────
    ★ 사업자 정보는 아래 BIZ 한 곳에서만 고치면 모든 페이지에 반영됩니다.
      값이 빈 문자열('')이면 그 항목은 화면에 나오지 않습니다(가짜 번호를 넣지 마세요).
-     - mailOrderNo : 통신판매업 신고번호 (예: '제2026-서울강남-00000호')
+     - mailOrderNo : 통신판매업 신고번호. 신고증이 나오면 이 한 줄만 '제2026-서울강남-00000호' 형식의 실제 번호로 바꾸면 돼요.
+                     (지금은 '신고 진행 중' — 가짜 번호를 넣지 마세요.)
      - tel         : 고객문의 전화 (예: '02-000-0000')
      - email       : 고객문의 이메일 (회사 대표 메일)
    ───────────────────────────────────────────────────────────── */
@@ -12,11 +13,12 @@
     name: '(주)장대장부동산그룹',
     ceo: '장용석',
     bizNo: '114-87-22721',
-    mailOrderNo: '',
+    mailOrderNo: '신고 진행 중',   // ★ 통신판매업 신고번호 — 번호가 나오면 여기 한 줄만 바꾸기
     addr: '서울특별시 강남구 삼성로146길 10, 5층(청담동, 다인빌딩)',
     tel: '02-3444-5008',
-    email: 'chris938@naver.com',
+    email: 'chris9387@hanmail.net',
     kakao: 'https://pf.kakao.com/_UxnzuV',   // 카카오톡 채널(장대장부동산그룹) — 부동산 전문가 상담
+    notice: '공공데이터를 정리·분석한 정보 제공 서비스이며, 특정 부동산의 매수·매도를 권유하지 않아요.',
     ftcUrl: 'https://www.ftc.go.kr/bizCommPop.do?wrkr_no=1148722721'
   };
   window.JDJ_BIZ = BIZ;
@@ -31,11 +33,12 @@
                      BIZ.kakao ? `<a href="${esc(BIZ.kakao)}" target="_blank" rel="noopener noreferrer" data-kchat="1" data-name="부동산 전문가 상담">카카오톡 상담</a>` : ''].filter(Boolean).join(' · ');
     return `<div class="bizinfo" id="bizinfo">
   <nav class="bizlinks" aria-label="약관과 정책">
-    <a href="${ROOT}terms/">이용약관</a><a href="${ROOT}privacy/"><b>개인정보처리방침</b></a><a href="${ROOT}refund/">환불 정책</a><a href="${ROOT}premium/">프리미엄 리포트</a><a href="${ROOT}about/">서비스 소개</a><a href="${ROOT}ad/">광고 문의</a>
+    <a href="${ROOT}terms/">이용약관</a><a href="${ROOT}privacy/"><b>개인정보처리방침</b></a><a href="${ROOT}refund/">환불정책</a><a href="${ROOT}premium/">프리미엄 리포트</a><a href="${ROOT}about/">서비스 소개</a><a href="${ROOT}ad/">광고 문의</a>
   </nav>
   <p class="bizrows">
     ${item('상호', esc(BIZ.name))}${item('대표', esc(BIZ.ceo))}${item('사업자등록번호', esc(BIZ.bizNo) + ` <a href="${esc(BIZ.ftcUrl)}" target="_blank" rel="noopener">사업자 정보 확인</a>`)}${item('통신판매업 신고번호', esc(BIZ.mailOrderNo))}${item('주소', esc(BIZ.addr))}${item('고객문의', contact)}
   </p>
+  <p class="bizinfo-note" style="margin:6px 0 0;font-size:12.5px">${esc(BIZ.notice)}</p>
 </div>`;
   }
 

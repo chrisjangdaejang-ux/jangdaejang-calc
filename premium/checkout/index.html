@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#FFFFFF">
 <link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
-<script src="../../assets/biz.js?v=1" defer></script>
+<script src="../../assets/biz.js?v=2" defer></script>
 <title>결제하기 · 프리미엄 리포트 | 집코드</title>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="집코드">
@@ -29,9 +29,9 @@
 <link rel="stylesheet" href="../../assets/aplus.css?v=45">
 <script src="../../assets/nw.js?v=1" defer></script>
 <link rel="stylesheet" href="../../assets/pay.css?v=3">
-<script src="../../assets/config.js?v=9"></script>
+<script src="../../assets/config.js?v=10"></script>
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/pay.js?v=5"></script>
+<script src="../../assets/pay.js?v=6"></script>
 </head>
 <body>
 <header class="top">
@@ -46,6 +46,7 @@
     <h2 id="sumH" class="sr">주문 상품</h2>
     <div class="sum"><div><div class="nm" id="pName">-</div><div class="links" id="pDesc" style="margin:2px 0 0"></div></div><div class="pr" id="pPrice">-</div></div>
     <ul class="dlist" id="pList"></ul>
+    <p class="links" style="margin:8px 0 0"><b>공공 통계 분석 리포트(정보 제공)</b> · 공공데이터를 정리·분석한 정보 제공 서비스이며, 특정 부동산의 매수·매도를 권유하지 않아요. 참고용 정보이며 투자 권유가 아니에요.</p>
     <p class="links"><a href="../../premium/" id="editLink">상품·단지 바꾸기</a> · 부가세 포함 · 결제 즉시 웹 화면 + PDF 저장으로 제공 · 열람 기간 1년</p>
   </section>
 
@@ -114,11 +115,15 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
     return null; };
   const WINDOW_MODE = /^(test|live)_ck_/.test(P.CLIENT_KEY);
   let widgets = null, payWin = null, ready = false, termsOk = true, busy = false;
-  const PAID = !!(window.JDJ_SITE && JDJ_SITE.PAID_OPEN);   // 통신판매업 신고 전에는 결제 잠금(assets/config.js PAID_OPEN, 서버도 거절)
+  const REVIEW = P.review();   // 심사용 테스트 결제(assets/config.js PAY_REVIEW + 테스트 키): 서버 주문 없이 토스 테스트 결제창만 열림, 실제 청구 없음
+  const PAID = !!(window.JDJ_SITE && JDJ_SITE.PAID_OPEN) || REVIEW;   // 통신판매업 신고 전에는 결제 잠금(assets/config.js PAID_OPEN, 서버도 거절)
   if (!PAID) err('유료 리포트 결제는 곧 열려요. 조금만 기다려 주세요.');
+  if (REVIEW) { const n = document.createElement('div'); n.className = 'msg info'; n.id = 'reviewNote';
+    n.innerHTML = '<b>테스트 결제 · 실제 청구 없음</b><br>지금은 결제 심사용 테스트 모드예요. 결제창은 토스페이먼츠 테스트 환경에서 열리고, 카드 정보를 넣어도 돈이 빠져나가지 않아요. 리포트 판매는 아직 시작 전이에요.';
+    $('payBtn').parentNode.insertBefore(n, $('err')); }
   function sync(){
     $('payBtn').disabled = !PAID || busy || !ready || !termsOk || !$('refundOk').checked || !parseContact($('contact').value);
-    $('payBtn').textContent = !PAID ? '유료 이용권은 곧 열려요' : busy ? '결제창을 여는 중…' : `${P.won(pr.amount)} 결제하기`;
+    $('payBtn').textContent = !PAID ? '유료 이용권은 곧 열려요' : busy ? '결제창을 여는 중…' : `${P.won(pr.amount)} ${REVIEW ? '테스트 결제하기' : '결제하기'}`;
   }
   $('refundOk').onchange = sync; $('contact').oninput = sync; sync();
 
@@ -152,7 +157,9 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
     const ct = parseContact($('contact').value);
     busy = true; sync(); err('');
     try {
-      const o = await P.post('createOrder', { product: plan, keys, contact: $('contact').value.trim(), agree: $('refundOk').checked });
+      const o = REVIEW   // 심사용: 서버(판매 잠금)에 주문을 만들지 않고 테스트 주문번호로 결제창만 염 — 승인(confirm)도 하지 않으므로 청구 없음
+        ? { orderId: P.REVIEW_PREFIX + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 8).toUpperCase(), orderName: ((window.JDJ_SITE && JDJ_SITE.SITE_NAME) || '집코드') + ' ' + pr.name + ' (테스트)', amount: pr.amount }
+        : await P.post('createOrder', { product: plan, keys, contact: $('contact').value.trim(), agree: $('refundOk').checked });
       if (!WINDOW_MODE && o.amount !== pr.amount) await widgets.setAmount({ currency: 'KRW', value: o.amount });   // 금액은 서버 기준
       const base = location.origin + P.ROOT;
       const req = { orderId: o.orderId, orderName: o.orderName, successUrl: base + 'success/', failUrl: base + 'fail/' };

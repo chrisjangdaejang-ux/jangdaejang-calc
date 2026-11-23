@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="집코드">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="../assets/pwa.js?v=2" defer></script>
-<script src="../assets/biz.js?v=1" defer></script>
+<script src="../assets/biz.js?v=2" defer></script>
 <script src="../assets/region-pick.js?v=2" defer></script>
 <title>집코드 내 집 마련 계산기</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/buy/">
@@ -320,8 +320,8 @@ body.wiz .wiznav{display:flex;gap:8px;margin-top:4px}
       </div>
 
       <div class="premium" id="premBox">
-        <div><div class="pt">무료 맞춤 리포트</div><p>집코드 맞춤 매수 리포트<small>내 예산으로 살 수 있는 집 중 미래가치가 가장 좋은 집을 추천해 드립니다. 추천 단지 TOP 10과 자금 계획표, 대출 시나리오를 실거래가로 정리 · PDF 저장 가능</small></p></div>
-        <a class="btn" id="premBtn" href="report/" target="_blank" rel="noopener">추천 단지 리포트 보기</a>
+        <div><div class="pt">무료 맞춤 리포트</div><p>집코드 맞춤 분석 리포트<small>내 예산 안의 단지를 공공 통계로 계산한 미래가치 점수 순서로 정리해 드립니다. 조건에 맞는 단지 TOP 10과 자금 계획표, 대출 시나리오를 실거래가로 정리 · PDF 저장 가능</small></p></div>
+        <a class="btn" id="premBtn" href="report/" target="_blank" rel="noopener">맞춤 단지 리포트 보기</a>
       </div>
       <p class="premlink"><a href="../premium/" data-track="buy_to_premium">단지 심층 분석(유료) · 프리미엄 리포트 안내 ›</a></p>
 
@@ -631,7 +631,7 @@ $('copyBtn').addEventListener('click',async()=>{
   catch(_){ toast('복사가 지원되지 않는 환경입니다'); }
 });
 
-// 맞춤 매수 리포트(무료) — 클릭 수로 관심 확인
+// 맞춤 분석 리포트(무료) — 클릭 수로 관심 확인
 function updateReport(c){
   /* 연소득·현금·대출은 주소에 싣지 않고 이 기기에만 저장(공유 링크로 새지 않게) */
   if (window.JDJ_SHARE) JDJ_SHARE.saveFin({i:c.income,c:c.cash,d:c.debt});

@@ -69,6 +69,21 @@ check('구독 화면: 결제 누름도 막음', /if \(!PAID\) return msg\(/.test
 check('구독 관리: 요금제 바꾸기 잠금', /JDJ_SITE\.PAID_OPEN/.test(read('brief/manage/index.html')));
 const co = read('premium/checkout/index.html');
 check('리포트 결제 화면: 설정을 읽고 결제 버튼 잠금', /assets\/config\.js\?v=\d+/.test(co) && /JDJ_SITE\.PAID_OPEN/.test(co) && /!PAID \|\| \$\('payBtn'\)\.disabled/.test(co));
+/* 6) 토스 심사용 테스트 결제(PAY_REVIEW): 테스트 키일 때만, 서버 주문 없이 결제창만, 실제 키면 잠금 그대로 */
+const payjs = read('assets/pay.js');
+const mkPay = (key, site) => { const w = { JDJ_SITE: site }; vm.runInNewContext(payjs.replace(/const CLIENT_KEY = '[^']*'/, `const CLIENT_KEY = '${key}'`), { window: w, location: { pathname: '/jangdaejang-calc/premium/' }, document: { readyState: 'loading', addEventListener() {} }, localStorage: { getItem: () => null } }); return w.JDJ_PAY; };
+check('심사 모드: 테스트 키 + PAY_REVIEW → 켜짐', mkPay('test_ck_x', { PAID_OPEN: false, PAY_REVIEW: true }).review() === true);
+check('심사 모드: 실제 키(live_ck_)면 PAY_REVIEW 여도 꺼짐', mkPay('live_ck_x', { PAID_OPEN: false, PAY_REVIEW: true }).review() === false);
+check('심사 모드: PAY_REVIEW=false 면 꺼짐', mkPay('test_ck_x', { PAID_OPEN: false, PAY_REVIEW: false }).review() === false);
+check('심사 모드: 결제 화면은 심사 때 createOrder 를 부르지 않고 REVIEW- 주문번호', /const o = REVIEW[\s\S]{0,200}P\.REVIEW_PREFIX[\s\S]{0,600}: await P\.post\('createOrder'/.test(co));
+check('심사 모드: 결제 화면에 "테스트 결제 · 실제 청구 없음"', co.includes('테스트 결제 · 실제 청구 없음') && payjs.includes("'테스트 결제 · 실제 청구 없음'"));
+const suc = read('premium/success/index.html');
+check('심사 모드: 완료 화면은 REVIEW- 주문이면 승인 요청 없이 끝냄', suc.indexOf('P.REVIEW_PREFIX') > 0 && suc.indexOf('P.REVIEW_PREFIX') < suc.indexOf("P.post('confirmPayment'"));
+check('서버는 그대로: PAID_OPEN=false 면 createOrder 거절', !!T.PAID_ACTIONS.createOrder && T.PAID_OPEN === false);
+const biz = read('assets/biz.js');
+check('바닥글: 통신판매업 신고번호 자리(신고 진행 중)·정보 제공 안내·약관 링크', /mailOrderNo: '신고 진행 중'/.test(biz) && biz.includes('특정 부동산의 매수·매도를 권유하지 않아요') && /terms\/[\s\S]*privacy\/[\s\S]*refund\//.test(biz));
+['premium/index.html', 'premium/checkout/index.html', 'terms/index.html', 'about/index.html', 'brief/index.html', 'brief/subscribe/index.html'].forEach(f => check(`정보 제공 안내 문구: ${f}`, /특정 부동산의 매수·매도를 권유하지 않(아요|습니다)/.test(read(f))));
+['premium/index.html', 'about/index.html', 'index.html', 'terms/index.html', 'refund/index.html', 'buy/index.html', 'assets/premium-report.js'].forEach(f => check(`권유처럼 읽히는 표현 없음: ${f}`, !/매수 리포트|매도 타이밍|사세요|파세요|유망|추천 단지/.test(read(f))));
 const FB = '잠시 뒤 다시 시도해 주세요. 계속되면 카카오톡 상담으로 알려 주세요.';
 ['assets/agents.js', 'assets/pay.js', 'assets/auth.js', 'assets/client-brief.js', 'assets/community.js', 'my/alerts/index.html'].forEach(f => check(`쉬운 오류 안내: ${f}`, read(f).includes(FB)));
 /* agents.js 의 변환: 'unknown' → 쉬운 안내, 한글 안내는 그대로 */

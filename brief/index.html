@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="집코드">
 <script src="../assets/region-pick.js?v=2"></script>
 <script src="../assets/pwa.js?v=2" defer></script>
-<script src="../assets/biz.js?v=1" defer></script>
+<script src="../assets/biz.js?v=2" defer></script>
 <title>집코드 모닝 브리핑 — 오늘의 부동산 시장·내 관심 지역·내 관심 단지</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/brief/">
 <meta name="description" content="전국·서울의 어제 새 신고가·큰 하락 거래, 금리·대출·세금 정책 변화, 이번 주 청약 일정에 더해 내가 고른 동네의 어제 새로 신고된 아파트 실거래, 신고가, 최고가보다 크게 내린 거래, 전세, 분양 일정과 정책 변화를 매일 아침 한 번에 받아 보세요.">
@@ -26,7 +26,7 @@
 <script>window.JDJ_CONFIG = { tool:'brief', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
-<script src="../assets/config.js?v=9"></script>
+<script src="../assets/config.js?v=10"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/auth.js?v=10"></script>
 <script src="../assets/brief-core.js?v=11"></script>
@@ -496,7 +496,7 @@ function render(S, M){
     ${(S.policy || []).length ? S.policy.map(p => `<div class="box"><b>${esc(p.name)}</b> <span class="tg x">${esc(p.stage)} ${esc(p.d.slice(5).replace('-', '/'))}</span><br>${esc(p.plain || '')}${p.src && p.src[1] ? ` · <a href="${esc(p.src[1])}" target="_blank" rel="noopener">공식 발표</a>` : ''}</div>`).join('') : '<div class="empty">최근 2주 동안 이 지역에 해당하는 정책 변화는 없어요.</div>'}</section>`;
   /* 관심도 */
   h += `<section class="sec" aria-labelledby="h-i"><h2 id="h-i">${esc(B.SITE)}에서 많이 본 단지</h2>`;
-  if (v.interest && v.interest.rows.length) h += `<p class="sub">최근 ${v.interest.days}일 동안 ${esc(B.SITE)} 내 집·추천·비교 화면에서 이 단지를 본 서로 다른 방문자 수예요(${v.interest.min}명 이상인 단지만, 개인을 알 수 없는 집계).</p><ul class="tl">${v.interest.rows.map(r => `<li><div class="nm"><b>${esc(r.a)}</b><small>${esc(r.d)}</small></div><div class="pr"><b>${r.n}명</b><small>${r.np != null ? `그 전 주 ${r.np}명` : ''}</small></div></li>`).join('')}</ul>`;
+  if (v.interest && v.interest.rows.length) h += `<p class="sub">최근 ${v.interest.days}일 동안 ${esc(B.SITE)} 내 집·맞춤 단지·비교 화면에서 이 단지를 본 서로 다른 방문자 수예요(${v.interest.min}명 이상인 단지만, 개인을 알 수 없는 집계).</p><ul class="tl">${v.interest.rows.map(r => `<li><div class="nm"><b>${esc(r.a)}</b><small>${esc(r.d)}</small></div><div class="pr"><b>${r.n}명</b><small>${r.np != null ? `그 전 주 ${r.np}명` : ''}</small></div></li>`).join('')}</ul>`;
   else h += `<div class="empty">방문 자료가 더 쌓이면 이 동네에서 많이 본 단지를 보여 드려요.</div>`;
   h += `</section>`;
   h += `</section>` + mineHtml(S, area);
@@ -587,7 +587,7 @@ function salesHtml(IX, MH){
 
   <section class="sl-sec" aria-labelledby="sl-who"><h2 id="sl-who">이런 분께 필요해요</h2>
     <div class="who">
-      <div><b>집 살 타이밍을 보는&nbsp;분</b>내 동네 값이 오르는지 내리는지 매일 확인해요.</div>
+      <div><b>집값 흐름을 살펴보는&nbsp;분</b>내 동네 값이 오르는지 내리는지 매일 확인해요.</div>
       <div><b>갈아타기를 고민하는&nbsp;분</b>지금 집과 갈 집, 두 동네를 같이 지켜봐요.</div>
       <div><b>청약을 준비하는&nbsp;분</b>내 점수로 넣어 볼 만한 단지를 골라 드려요.</div>
       <div><b>전세 들어갈 집이 걱정되는&nbsp;분</b>전세금이 위험해지는 단지를 미리 알려 드려요.</div>
@@ -646,6 +646,7 @@ function salesHtml(IX, MH){
       ${B.shownTiers().map(t => `<div class="plan ${t.pro ? 'pro' : ''}"><h3>${esc(t.label)}${t.launch ? '<span class="tag2">런칭가</span>' : ''}</h3><p class="who2">${esc(t.who)}</p><p class="pr">월 ${t.amount.toLocaleString('ko-KR')}원</p><ul>${t.inc.map(x => `<li>${esc(x)}</li>`).join('')}</ul>${t.broker ? '<p class="bn">중개사무소 등록번호 확인 필요(중개사 전용 할인가)</p>' : ''}</div>`).join('')}
     </div>
     <ul class="promise"><li>${TD}일 무료(한 사람 한 번)</li><li>결제 수단 없이 시작</li><li>자동 결제 없음</li><li>언제든 해지</li><li>지역은 언제든 바꾸기</li></ul>
+    <p class="refl">공공데이터를 정리·분석한 정보 제공 서비스이며, 특정 부동산의 매수·매도를 권유하지 않아요. 참고용 정보이며 투자 권유가 아니에요.</p>
     <p class="refl">친구를 초대해 친구가 이용권을 결제하면 두 분 모두 1개월 무료예요(유료 이용 중인 분, 1년에 ${B.REF.yearMax}개월까지).</p></section>
 
   <section class="sl-sec faq" aria-labelledby="sl-q"><h2 id="sl-q">자주 묻는 질문</h2>

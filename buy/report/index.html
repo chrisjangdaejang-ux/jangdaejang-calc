@@ -13,13 +13,13 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="../../assets/region-pick.js?v=2"></script>
 <script src="../../assets/pwa.js?v=2" defer></script>
-<script src="../../assets/biz.js?v=1" defer></script>
-<title>집코드 맞춤 매수 리포트</title>
+<script src="../../assets/biz.js?v=2" defer></script>
+<title>집코드 맞춤 분석 리포트</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/buy/report/">
 <meta name="description" content="내 예산으로 살 수 있는 집 중 미래가치가 가장 좋은 집을 실거래가로 골라 추천 이유와 자금 계획까지 정리해 드립니다.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="집코드">
-<meta property="og:title" content="집코드 맞춤 매수 리포트 — 내 조건으로 살 수 있는 단지는?">
+<meta property="og:title" content="집코드 맞춤 분석 리포트 — 내 조건으로 살 수 있는 단지는?">
 <meta property="og:description" content="국토부 실거래가 기준 예산 맞춤 단지 추천 + 자금 계획표 + 대출 시나리오">
 <meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/buy/report/">
 <meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/report.png">
@@ -27,7 +27,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="집코드 맞춤 매수 리포트 — 내 조건으로 살 수 있는 단지는?">
+<meta name="twitter:title" content="집코드 맞춤 분석 리포트 — 내 조건으로 살 수 있는 단지는?">
 <meta name="twitter:description" content="국토부 실거래가 기준 예산 맞춤 단지 추천 + 자금 계획표 + 대출 시나리오">
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/report.png">
 <script>window.JDJ_CONFIG = { tool:'report', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
@@ -40,7 +40,7 @@
 <script src="../../assets/price-sheet.js?v=21"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/lead.js?v=3"></script>
-<script src="../../assets/config.js?v=9"></script>
+<script src="../../assets/config.js?v=10"></script>
 <script src="../../assets/auth.js?v=10"></script>
 <script src="../../assets/alerts-core.js?v=2"></script>
 <script src="../../assets/watch-core.js?v=2"></script>
@@ -944,7 +944,7 @@ function goCompare(){ MODE='cmp'; cmpSave(); setModeUi(); repAuthUi(); window.sc
 function goRec(){ MODE='rec'; cmpSave(); setModeUi(); repAuthUi(); window.scrollTo(0,0); render(); }
 function setModeUi(){
   $('cmpBtn').textContent = MODE==='cmp' ? '추천 리포트 보기' : '단지 비교';
-  document.title = MODE==='cmp' ? '집코드 단지 비교' : '집코드 맞춤 매수 리포트';
+  document.title = MODE==='cmp' ? '집코드 단지 비교' : '집코드 맞춤 분석 리포트';
   cmpBar();
 }
 function lastAny(arr){ for(let i=arr.length-1;i>=0;i--) if(arr[i]>0) return arr[i]; return 0; }
@@ -1186,8 +1186,8 @@ async function render(){
 
   let h = `<div class="page">
   <div class="cover">
-    <span class="tag">무료 맞춤 매수 리포트</span>
-    <h1>${who} <em>내 집 마련</em><br>맞춤 매수 리포트</h1>
+    <span class="tag">무료 맞춤 분석 리포트</span>
+    <h1>${who} <em>내 집 마련</em><br>맞춤 분석 리포트</h1>
     <div class="meta">작성일 ${ymd} · 실거래 데이터 ${dataTo}까지 반영 · 2026년 11월 대출 규제 기준</div>
     <div class="meta rkscope">모든 순위는 같은 시·도 안에서 비교했어요.</div>
     <div class="conds">

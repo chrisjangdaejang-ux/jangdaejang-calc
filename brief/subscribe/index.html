@@ -8,15 +8,15 @@
 <link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
 <meta name="robots" content="noindex">
 <script src="../../assets/region-pick.js?v=2"></script>
-<script src="../../assets/biz.js?v=1" defer></script>
+<script src="../../assets/biz.js?v=2" defer></script>
 <title>집코드 모닝 브리핑 받기</title>
 <script>window.JDJ_CONFIG = { tool:'brief', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../../assets/track.js?v=2"></script>
 <script src="../../assets/stat.js?v=7"></script>
-<script src="../../assets/config.js?v=9"></script>
+<script src="../../assets/config.js?v=10"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/auth.js?v=10"></script>
-<script src="../../assets/pay.js?v=5"></script>
+<script src="../../assets/pay.js?v=6"></script>
 <script src="../../assets/savefb.js?v=1"></script>
 <script src="../../assets/brief-core.js?v=11"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -179,7 +179,7 @@ async function boot(){
       ${foot}
       <details class="step plans" id="plans" ${Q.get('p') ? 'open' : ''}><summary><h2>체험이 끝난 뒤 계속 받고 싶을 때 고르는 요금제예요</h2><p class="sub">지금은 결제되지 않아요. 체험 없이 바로 이용권을 사고 싶을 때만 펼쳐 보세요.</p></summary>
         <div class="in">${planOpts}${PAID ? termsH : ''}<button type="button" class="btn ghost" id="pay" ${PAID ? '' : 'disabled'}>${PAID ? '결제하고 받기' : '유료 이용권은 곧 열려요'}</button>
-        <p class="paynote">${PAID ? '누르면 결제 창이 열려요.' : '지금은 결제를 받지 않아요.'} 무료 체험은 위의 [${trialLbl}] 버튼을 눌러요.</p></div></details>
+        <p class="paynote">${PAID ? '누르면 결제 창이 열려요.' : '지금은 결제를 받지 않아요.'} 무료 체험은 위의 [${trialLbl}] 버튼을 눌러요.</p><p class="paynote">공공데이터를 정리·분석한 정보 제공 서비스이며, 특정 부동산의 매수·매도를 권유하지 않아요.</p></div></details>
       <div class="stk" id="stk"><button type="button" class="btn primary trialBtn" id="trialStk">${trialLbl}</button></div>`
     : `${secArea(1)}<section class="step"><h2>2. 요금제</h2>${planOpts}</section>${secCh(3)}
     <div class="go">${PAID ? '' : '<div class="msg info">유료 이용권은 곧 열려요. 지금은 7일 무료 체험만 할 수 있어요.</div>'}<button type="button" class="btn primary" id="pay" ${PAID ? '' : 'disabled'}>${PAID ? '결제하고 받기' : '유료 이용권은 곧 열려요'}</button>

@@ -15,6 +15,9 @@
   const ROOT = JB.SITE + 'premium/';
   const P = window.JDJ_PAY = {
     TEST_MODE, CLIENT_KEY, ROOT,
+    /* 심사용 테스트 결제(assets/config.js PAY_REVIEW): 테스트 키(test_)일 때만 켜짐 — 실제 키면 항상 false(실제 결제는 PAID_OPEN 잠금을 따름) */
+    review() { return TEST_MODE && /^test_/.test(CLIENT_KEY) && !!(window.JDJ_SITE && window.JDJ_SITE.PAY_REVIEW) && !(window.JDJ_SITE && window.JDJ_SITE.PAID_OPEN); },
+    REVIEW_PREFIX: 'REVIEW-',
     SDK: 'https://js.tosspayments.com/v2/standard',
     DATA: JB.DATA + 'data/',
     PRODUCTS: {

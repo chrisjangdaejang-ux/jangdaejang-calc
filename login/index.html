@@ -10,13 +10,13 @@
 <link rel="icon" type="image/png" href="../assets/icons/favicon-48.png">
 <link rel="apple-touch-icon" href="../assets/icons/apple-180.png">
 <script src="../assets/pwa.js?v=2" defer data-nobar></script>
-<script src="../assets/biz.js?v=1" defer></script>
+<script src="../assets/biz.js?v=2" defer></script>
 <title>로그인 · 내 계정 | 집코드</title>
 <meta name="description" content="카카오 간편 로그인하고 내 집·관심 단지·리포트를 여러 기기에서 이어 보세요.">
 <script>window.JDJ_CONFIG = { tool:'login', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/agents.js"></script>
-<script src="../assets/config.js?v=9"></script>
+<script src="../assets/config.js?v=10"></script>
 <script src="../assets/auth.js?v=10"></script>
 <script src="../assets/mine-core.js?v=20"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -90,12 +90,12 @@ function intro(msg){
     <div class="box"><ul class="gets">
       <li><span class="ic">1</span><span><b>실거래 전체 보기</b><small>최근 3년 거래 전부와 그보다 이전 연도별 시세</small></span></li>
       <li><span class="ic">2</span><span><b>내 집·관심 단지 여러 기기에 저장</b><small>휴대폰에서 저장한 집을 PC에서도 그대로</small></span></li>
-      <li><span class="ic">3</span><span><b>맞춤 매수 리포트 상세 보기·저장</b><small>대출·필요 현금·월 상환과 추천 이유 전체, 리포트 다시 보기</small></span></li>
+      <li><span class="ic">3</span><span><b>맞춤 분석 리포트 상세 보기·저장</b><small>대출·필요 현금·월 상환과 추천 이유 전체, 리포트 다시 보기</small></span></li>
       <li><span class="ic">4</span><span><b>관심 단지·청약 알림을 메일로</b><small>관심 목록 단지에 새 거래·신고가가 나오거나 고른 청약 일정이 다가오면 하루 한 번 알려 드려요</small></span></li>
     </ul>
     ${A.btn('카카오 간편 로그인', 'login_page', 'full')}
     <p class="note">집코드가 카카오에서 받는 정보는 <b>카카오 회원번호와 닉네임</b>뿐이에요. 이메일·전화번호는 받지 않아요. <a href="${JB.SITE}privacy/#member">개인정보처리방침</a></p></div>
-    <p class="free">로그인하지 않아도 시세·차트·미래가치 점수, 최근 실거래 5건, 이 기기에 내 집 저장, 맞춤 매수 리포트 요약은 지금처럼 그대로 볼 수 있어요.</p>`;
+    <p class="free">로그인하지 않아도 시세·차트·미래가치 점수, 최근 실거래 5건, 이 기기에 내 집 저장, 맞춤 분석 리포트 요약은 지금처럼 그대로 볼 수 있어요.</p>`;
 }
 async function finishLogin(){
   const code = q.get('code'), state = q.get('state') || '';
@@ -122,9 +122,9 @@ function favsHtml(d){
 }
 function repsHtml(d){
   const list = d.reports || [];
-  return `<div class="box"><h2>저장한 리포트<small>${list.length}/10</small></h2>${list.length ? list.map((r, i) => `<div class="row" style="align-items:flex-start"><a href="${JB.SITE}buy/report/?${esc(r.q)}"><b>${esc(r.title || '맞춤 매수 리포트')}</b><small>${esc(r.t)} 저장 · 누르면 같은 조건으로 다시 열어요</small>
+  return `<div class="box"><h2>저장한 리포트<small>${list.length}/10</small></h2>${list.length ? list.map((r, i) => `<div class="row" style="align-items:flex-start"><a href="${JB.SITE}buy/report/?${esc(r.q)}"><b>${esc(r.title || '맞춤 분석 리포트')}</b><small>${esc(r.t)} 저장 · 누르면 같은 조건으로 다시 열어요</small>
       ${r.picks && r.picks.length ? `<ol class="picks">${r.picks.slice(0, 5).map(p => `<li>${esc(p.apt)} ${esc(p.band)} · ${esc(won(p.P))}${p.fv != null ? ' · 미래가치 ' + p.fv : ''}</li>`).join('')}</ol>` : ''}</a><button type="button" data-rep="${i}">지우기</button></div>`).join('')
-    : '<p class="empty">아직 저장한 리포트가 없어요. 맞춤 매수 리포트 화면에서 [내 계정에 리포트 저장]을 눌러 주세요.</p>'}
+    : '<p class="empty">아직 저장한 리포트가 없어요. 맞춤 분석 리포트 화면에서 [내 계정에 리포트 저장]을 눌러 주세요.</p>'}
     <p class="note">리포트에는 지역·보유 기간 같은 조건과 그때 추천 단지 목록만 저장해요. 연소득·보유 현금 같은 금액은 저장하지 않아서, 다른 기기에서 열면 그 기기에 넣은 금액으로 다시 계산해요.</p></div>`;
 }
 function areasHtml(d){

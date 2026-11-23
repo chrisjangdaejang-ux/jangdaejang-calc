@@ -19,6 +19,9 @@
      켜는 날은 서버 설정 open(비공개 엔진 data/community/rules.json)도 함께 켜요. 대표 확인 전에는 켜지 않아요.
    PAID_OPEN: 유료 결제(모닝 브리핑 이용권·요금제 올리기·프리미엄 리포트) 열기. false 면 결제 버튼이 '유료 이용권은 곧 열려요'로 잠기고 무료 체험만 돼요.
      통신판매업 신고번호가 나온 뒤 서버 tools/agent-backend.gs 의 PAID_OPEN 과 함께 true 로 바꿔요(서버도 false 면 결제 요청을 거절해요).
+   PAY_REVIEW: 토스페이먼츠 심사용 테스트 결제창 보이기. true 이고 assets/pay.js 의 CLIENT_KEY 가 테스트 키(test_ck_…)일 때만
+     프리미엄 리포트 결제 화면에서 [결제하기]가 눌리고 토스 카드 결제창이 테스트 모드로 열려요(위에 '테스트 결제 · 실제 청구 없음' 띠).
+     서버에 주문을 만들지 않아 실제 판매·청구는 없어요. 실제 키(live_ck_…)로 바꾸면 이 값과 상관없이 PAID_OPEN 잠금을 따라요. 심사가 끝나면 false.
    SITE_VERIFY_DAUM: 다음 웹마스터도구 PIN 코드 줄 전체('#DaumWebMasterTool:…'). 넣으면 robots.txt 맨 아래에 붙어요. */
 window.JDJ_SITE = {
   SITE_URL: 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc',
@@ -30,7 +33,8 @@ window.JDJ_SITE = {
   MAP_ENGINE: '',
   VWORLD_KEY: '',
   COMMUNITY_ENABLED: false,
-  PAID_OPEN: false
+  PAID_OPEN: false,
+  PAY_REVIEW: true
 };
 /* 서비스 이름 채우기: 화면의 [data-site-name] 칸은 SITE_NAME, [data-brief-name] 칸은 '{SITE_NAME} 모닝 브리핑'(값이 있으면 뒤에 붙임) */
 (function () {

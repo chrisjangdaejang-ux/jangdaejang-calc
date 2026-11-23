@@ -233,7 +233,7 @@
         ${miss.length ? `<div class="msg err">최근 실거래 자료에서 찾지 못한 단지가 있습니다: ${miss.map(p => esc(p.apt + ' ' + p.band)).join(', ')}. 시스템 문제로 받지 못한 내용은 환불 정책에 따라 전액 환불해 드립니다.</div>` : ''}
         ${compareHtml(items, ctx)}
         ${items.map((x, i) => unitHtml(x, ctx, i, items.length)).join('')}
-        <section class="pr-soon"><b>심층 분석은 순차 제공됩니다</b><p>1~10년 가격 시나리오(보수·기준·낙관), 비슷한 조건이었던 과거 단지 사례 비교, 매도 타이밍·세금(양도세·보유세) 시뮬레이션은 준비되는 대로 이 리포트에 추가됩니다. 같은 링크(또는 주문번호)로 열람 기간 동안 추가 비용 없이 보실 수 있습니다.</p></section>
+        <section class="pr-soon"><b>심층 분석은 순차 제공됩니다</b><p>1~10년 가격 시나리오(보수·기준·낙관), 비슷한 조건이었던 과거 단지 사례 비교, 보유 기간별 세금(양도세·보유세) 계산은 준비되는 대로 이 리포트에 추가됩니다. 같은 링크(또는 주문번호)로 열람 기간 동안 추가 비용 없이 보실 수 있습니다.</p></section>
         <p class="pr-disc">국토교통부 실거래가 등 공공기관 공식 자료로 만든 과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="${JB.SITE}about/">서비스 소개</a>에서 볼 수 있어요. 실제 대출 한도와 세금은 금융기관·세무 전문가에게 확인하세요. 집코드는 부동산 중개를 하지 않습니다. · 작성 집코드</p>`;
       const on = (id, k, num) => { const e = document.getElementById(id); if (!e) return; e.onchange = () => { const v = num ? parseFloat(String(e.value).replace(/[^0-9.]/g, '')) : e.value; if (!num || v > 0) S[k] = v; save(); draw(); }; };
       on('cI', 'income', true); on('cC', 'cash', true); on('cO', 'own', false); on('cR', 'rate', true);
