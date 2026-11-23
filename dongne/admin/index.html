@@ -118,11 +118,11 @@ h1{font-size:clamp(24px,6vw,30px);margin:4px 0 6px;letter-spacing:-.5px}
   }
   function load() {
     return DP.post({ action: 'dpAdminQueue' }).then(function (q) { Q = q; draw(); }).catch(function (e) {
-      if (e.code === 'admin' || e.raw === 'auth') { app.innerHTML = '<h1>동네 파트너 운영자 검토</h1><p class="lead">모닝 브리핑 운영자 모드를 켠 카카오 계정으로 로그인해야 열려요.</p>' + (A && A.on() ? A.gate('운영자 계정으로 로그인해 주세요.', '카카오 간편 로그인', 'dongne_admin') : ''); localStorage.removeItem(DP.LS_PV); return; }
+      if (e.code === 'admin' || e.raw === 'auth') { app.innerHTML = '<h1>동네 파트너 운영자 검토</h1><p class="lead">모닝 브리핑 운영자 모드를 켠 계정으로 카카오 간편 로그인을 해야 열려요.</p>' + (A && A.on() ? A.gate('운영자 계정으로 로그인해 주세요.', '카카오 간편 로그인', 'dongne_admin') : ''); localStorage.removeItem(DP.LS_PV); return; }
       app.innerHTML = '<h1>동네 파트너 운영자 검토</h1><p class="lead">' + esc(e.message) + '</p>';
     });
   }
-  if (!A || !A.user()) { app.innerHTML = '<h1>동네 파트너 운영자 검토</h1><p class="lead">모닝 브리핑 운영자 모드를 켠 카카오 계정으로 로그인해 주세요.</p>' + (A && A.on() ? A.gate('운영자 계정으로 로그인해 주세요.', '카카오 간편 로그인', 'dongne_admin') : ''); return; }
+  if (!A || !A.user()) { app.innerHTML = '<h1>동네 파트너 운영자 검토</h1><p class="lead">모닝 브리핑 운영자 모드를 켠 계정으로 카카오 간편 로그인을 해 주세요.</p>' + (A && A.on() ? A.gate('운영자 계정으로 로그인해 주세요.', '카카오 간편 로그인', 'dongne_admin') : ''); return; }
   load();
 })();
 </script>

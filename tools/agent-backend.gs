@@ -6678,7 +6678,7 @@ function dpPhotoData(fid) { try { const bl = DriveApp.getFileById(String(fid)).g
 function dpAdminQueue(b) {
   dpAdminNeed(b);
   const all = dpAll(), t = ymd(new Date());
-  const P = all.filter(p => p.st === DP_ST.wait).slice(0, 50).map(p => Object.assign(dpCard(p, t), { st: p.st, chk: p.chk, applied: p.applied, keys: p.keys.map(s => s.k), mail: p.mail.replace(/^(.{2}).*(@.*)$/, '$1***$2') }));
+  const P = all.filter(p => p.st === DP_ST.wait).slice(0, 50).map(p => Object.assign(dpCard(p, t), { st: p.st, chk: p.chk, applied: p.applied, keys: p.keys.map(s => s.k), mail: p.mail.replace(/^(.{1,2})[^@]*(@.*)$/, '$1***$2') }));
   const posts = dpRows(SH_DPP), name = id => (all.find(p => p.id === id) || {}).office || '';
   const pick = f => posts.filter(f).reverse().slice(0, 100).map(o => Object.assign(dpPostPub(o, true), { office: name(dpTxt(o.r[DPPC['파트너']])) }));
   const hold = pick(o => String(o.r[DPPC['상태']]) === DP_PST.hold), tmp = pick(o => String(o.r[DPPC['상태']]) === DP_PST.tmp);

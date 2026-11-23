@@ -248,7 +248,7 @@ select,.f input[type=text],.f input[type=tel],.f input[type=email]{min-height:46
   }
 
   function start() {
-    if (!A || !A.user()) { app.innerHTML = '<h1>내 파트너 화면</h1>' + (A && A.on() ? A.gate('동네 파트너 신청에 쓴 카카오 계정으로 로그인해 주세요.', '카카오 간편 로그인', 'dongne_my') : '<p class="lead">로그인 기능을 준비 중이에요.</p>'); return; }
+    if (!A || !A.user()) { app.innerHTML = '<h1>내 파트너 화면</h1>' + (A && A.on() ? A.gate('동네 파트너를 신청한 계정으로 카카오 간편 로그인을 해 주세요.', '카카오 간편 로그인', 'dongne_my') : '<p class="lead">로그인 기능을 준비 중이에요.</p>'); return; }
     var bk = window.JDJ_BILL && JDJ_BILL.back();
     var pre = bk && bk.ok ? DP.post({ action: 'dpBillingIssue', authKey: bk.authKey, customerKey: bk.customerKey }).then(function (j) { return { msg: j.first ? '카드를 등록했어요. 첫 결제일은 ' + md(j.first) + '이에요.' : '카드를 등록했어요.' }; }, function (e) { return { err: e.message }; })
       : Promise.resolve(bk ? { err: bk.msg } : null);
