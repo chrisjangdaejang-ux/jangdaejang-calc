@@ -22,6 +22,7 @@
 <script src="../assets/savefb.js?v=1"></script>
 <script src="../assets/region-pick.js?v=2"></script>
 <script src="../assets/dongne-core.js?v=1"></script>
+<script src="../assets/billing.js?v=1"></script>
 <script src="../assets/dongne.js?v=1"></script>
 <script src="../assets/tabbar.js?v=5" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -74,6 +75,8 @@ label.l small{font-weight:500;color:var(--sub2)}
 .ok b{font-size:17px}
 .legal{font-size:13px;color:var(--sub2);line-height:1.6;margin:10px 0 0}
 .addrbtn{flex:0 0 auto!important}
+.paybox{border:2px solid #191F28;border-radius:16px;padding:14px;margin:12px 0}
+.paybig{font-size:clamp(19px,4.8vw,23px);font-weight:900;margin:0 0 6px;line-height:1.4;word-break:keep-all}
 </style>
 </head>
 <body>
@@ -93,27 +96,31 @@ label.l small{font-weight:500;color:var(--sub2)}
   function soon() { app.innerHTML = '<div class="soon"><h1>준비 중이에요</h1><p>이 화면은 아직 열지 않았어요. 조금만 기다려 주세요.</p><a href="../">홈으로 가기</a></div>'; }
   if (!DP || !DP.enabled()) return soon();
   var R = C.DP_RULE, won = function (n) { return Number(n).toLocaleString('ko-KR') + '원'; };
-  var st = { kind: 'owner', g: '', gn: '', dn: '', sd: '', picks: [], near: [], rows: {}, used: {}, photo: '', cfg: null };
+  var st = { plan: 'm', kind: 'owner', g: '', gn: '', dn: '', sd: '', picks: [], near: [], rows: {}, used: {}, photo: '', cfg: null };
 
   function intro(cfg) {
-    var pr = C.dpPrice(3, {}), pv = cfg.preview ? '<span class="pv">운영자 미리 보기 · 아직 아무에게도 보이지 않아요</span>' : '';
-    var fe = cfg.founding;
+    var pv = cfg.preview ? '<span class="pv">운영자 미리 보기 · 아직 아무에게도 보이지 않아요</span>' : '';
+    var bt = C.dpBundleText ? C.dpBundleText() : '';
     return pv + '<h1>우리 동네 소식을 아침 브리핑에 전하는 중개사</h1>'
       + '<p class="lead">' + esc(SITE) + ' 모닝 브리핑을 받는 우리 동네 구독자에게, 사무소 이름과 함께 짧은 동네 소식을 보여 드려요. 한 동에 세 곳까지만 받아요.</p>'
       + '<ol class="how"><li><b>신청하면 바로 확인</b><span>중개사무소 등록번호를 공공 자료로 확인해요. 보통 바로 승인돼요. 확인이 필요하면 2영업일 안에 알려 드려요.</span></li>'
       + '<li><b>일주일에 한마디</b><span>거래 분위기·전세·재건축·학군·교통 중에 골라 200자 안으로 써요. 밤 10시 전에 쓰면 다음 날 아침 브리핑에 실려요.</span></li>'
       + '<li><b>동네 구독자에게 노출</b><span>광고성 정보 받기에 동의한 구독자의 브리핑 맨 아래 \'우리 동네 중개사 한마디 (제휴)\' 칸에 보여요.</span></li></ol>'
       + '<section class="price" aria-label="요금"><h2>요금</h2><table>'
-      + '<tr><td>기본 · 사무소 동 + 가까운 동 2곳(모두 3개 동)</td><td>월 ' + won(pr.base) + '</td></tr>'
-      + '<tr><td>동 하나 더(최대 ' + R.max + '개 동)</td><td>월 ' + won(R.extra) + '</td></tr>'
-      + '<tr><td>창립 파트너(문을 연 날부터 3개월 안에 신청)</td><td>3개월 무료</td></tr>'
-      + '<tr><td>창립 파트너 · 무료 기간 뒤 동 하나 더</td><td>월 ' + won(R.extra * (1 - R.foundExtraOff)) + '</td></tr></table>'
-      + '<p>자동으로 결제되지 않아요. 기간이 끝나기 7일 전에 메일로 알려 드려요.' + (cfg.paid ? '' : ' 결제는 아직 열리지 않아서 지금은 사무소 동을 합쳐 ' + R.incl + '개 동까지 신청할 수 있어요.') + (fe ? ' 지금 신청하면 창립 파트너예요.' : '') + '</p></section>'
+      + '<tr><td>첫 달</td><td>무료</td></tr>'
+      + '<tr><td>월간 · 사무소 동 + 가까운 동 2곳(모두 3개 동)</td><td>월 ' + won(R.base) + '</td></tr>'
+      + '<tr><td>연간 · 12개월(2개월 할인)</td><td>연 ' + won(R.yearBase) + '</td></tr>'
+      + '<tr><td>동 하나 더(최대 ' + R.max + '개 동)</td><td>월 ' + won(R.extra) + ' · 연 ' + won(R.yearExtra) + '</td></tr></table>'
+      + '<p>가입할 때 카드를 등록하고(0원 인증), 둘째 달부터 자동으로 결제돼요. 결제 7일 전에 메일로 알려 드리고(연간은 30일·7일 전), 해지는 버튼 하나로 바로 돼요. 해지해도 그달 말까지는 보여요.</p>'
+      + '<p><b>창립 파트너</b>(문을 연 날부터 3개월 안에 신청): 구독을 이어 가는 동안 \'창립 파트너\' 표시, 같은 동 안에서 먼저 보이기, 추가 동 20% 할인. 해지하거나 결제가 끊긴 지 30일이 지나면 혜택이 사라지고 다시 가입해도 돌려받지 못해요.</p>'
+      + (bt ? '<p>' + esc(bt) + '</p>' : '')
+      + (cfg.billing ? '' : '<p class="pv" style="margin-top:8px">지금은 시범 운영이에요. 카드 등록 없이 무료로 시작하고(사무소 동 포함 ' + R.incl + '개 동까지), 정식 결제가 열리면 미리 알려 드려요. 그때 카드를 등록하고 따로 동의한 경우에만 결제돼요.</p>')
+      + '</section>'
       + '<p class="hint" style="margin:-6px 0 18px">한 동에 세 자리예요. 먼저 신청한 순서로 받고, 자리가 차면 대기 순서대로 자리가 날 때 메일로 알려 드려요. 가맹점·대리점이 아니고, 간판·상표는 쓸 수 없어요(온라인 \'동네 파트너\' 표시만). <a href="' + DP.link('dongne/terms/') + '">동네 파트너 약관 보기</a></p>';
   }
 
   function formHtml() {
-    var cap = st.cfg.paid ? R.max - 1 : R.incl - 1;
+    var cap = st.cfg.billing ? R.max - 1 : R.incl - 1;
     return '<section class="form" id="formBox" aria-labelledby="fh"><h2 id="fh">파트너 신청</h2><p class="hint">보통 바로 승인돼요. 확인이 필요하면 2영업일 안에 알려 드려요.</p>'
       + '<div class="fg"><div class="full"><label class="l">구분</label><div class="seg2" role="group" aria-label="개업·소속 구분"><button type="button" data-k="owner" class="on">개업공인중개사</button><button type="button" data-k="member">소속공인중개사</button></div></div>'
       + '<div><label class="l" for="office">사무소 이름</label><input type="text" id="office" maxlength="40" autocomplete="organization" placeholder="예: 행복공인중개사사무소"></div>'
@@ -135,14 +142,18 @@ label.l small{font-weight:500;color:var(--sub2)}
       + '<label class="ag"><input type="checkbox" data-ag="ad"><span>[필수] 광고 표시 규칙: 카드에 사무소 이름·소재지·연락처·등록번호·성명이 함께 보여요(공인중개사법). <a href="' + DP.link('dongne/terms/') + '#ad">보기</a></span></label>'
       + '<label class="ag"><input type="checkbox" data-ag="privacy"><span>[필수] 개인정보 수집·이용: 성명·전화·이메일·주소를 파트너 운영에만 쓰고, 그만두면 지워요. <a href="' + DP.link('dongne/terms/') + '#privacy">보기</a></span></label>'
       + '<label class="ag"><input type="checkbox" data-ag="terms"><span>[필수] 동네 파트너 약관 <a href="' + DP.link('dongne/terms/') + '">보기</a></span></label></div></div></div>'
+      + (st.cfg.billing ? '<div class="full"><label class="l">결제 방식</label><div class="seg2" id="planSeg" role="group" aria-label="결제 방식"><button type="button" data-p="m" class="on">월간</button><button type="button" data-p="y">연간(2개월 할인)</button></div></div>' : '')
       + '<div id="priceNow" class="hint"></div>'
+      + (st.cfg.billing ? '<div class="paybox" id="payBox"><p class="paybig" id="payBig"></p><label class="ag"><input type="checkbox" id="agPay"><span>[필수] 위 날짜부터 자동으로 결제되는 데 동의해요. 결제 7일 전에 메일로 알려 주고, 해지는 버튼 하나로 할 수 있어요.</span></label></div>' : '')
       + '<button type="button" class="btn primary go" id="go">파트너 신청하기</button><div id="msg" class="msg" role="status"></div>'
       + '<p class="legal">신청한 등록번호는 공공데이터포털의 공인중개사사무소 자료로 확인해요. 휴업·폐업이거나 정보가 다르면 운영자가 확인한 뒤 결과와 이유를 메일로 알려 드려요.</p></section>';
   }
 
   function priceNow() {
-    var n = 1 + st.picks.length, p = C.dpPrice(n, { founding: st.cfg.founding, freeUntil: C.dpAddDays(C.dpAddMonths(C.dpYmd(Date.now()), R.foundFreeMonths), -1), today: C.dpYmd(Date.now()) });
-    document.getElementById('priceNow').innerHTML = '고른 동 ' + n + '곳 · ' + (p.free ? '창립 파트너 무료(3개월) · 그 뒤 월 ' + won(C.dpPrice(n, { founding: true }).total) : '월 ' + won(p.total)) + ' · 자동 결제 없음';
+    var n = 1 + st.picks.length, p = C.dpPrice(n, { plan: st.plan, founding: st.cfg.founding }), f = st.cfg.firstCharge || C.dpFirstCharge(C.dpYmd(Date.now())), d = f.split('-');
+    if (!st.cfg.billing) { document.getElementById('priceNow').innerHTML = '고른 동 ' + n + '곳 · 시범 운영이라 지금은 무료예요(카드 등록 없음).'; return; }
+    document.getElementById('priceNow').innerHTML = '고른 동 ' + n + '곳 · 첫 달 무료 · 그 뒤 ' + (p.plan === 'y' ? '연 ' : '월 ') + won(p.total) + (p.extraN ? ' (추가 동 ' + p.extraN + '곳' + (st.cfg.founding ? ', 창립 파트너 20% 할인' : '') + ')' : '');
+    document.getElementById('payBig').textContent = (+d[1]) + '월 ' + (+d[2]) + '일부터 ' + (p.plan === 'y' ? '매년 ' : '매월 ') + won(p.total) + '이 자동 결제돼요';
   }
   function drawNear() {
     var box = document.getElementById('nearBox'), key = C.dpKey(st.g, st.dn);
@@ -155,7 +166,7 @@ label.l small{font-weight:500;color:var(--sub2)}
     });
   }
   function paintNear(key) {
-    var box = document.getElementById('nearBox'), cap = st.cfg.paid ? R.max - 1 : R.incl - 1;
+    var box = document.getElementById('nearBox'), cap = st.cfg.billing ? R.max - 1 : R.incl - 1;
     st.picks = st.picks.filter(function (k) { return st.near.some(function (x) { return x.key === k; }); });
     if (!st.near.length) { box.innerHTML = '<p class="hint">이 동은 가까운 동 자료가 아직 없어요. 사무소 동만으로 신청할 수 있어요.</p>'; priceNow(); return; }
     var mine = st.used[key] || 0;
@@ -168,7 +179,7 @@ label.l small{font-weight:500;color:var(--sub2)}
     box.querySelectorAll('[data-pk]').forEach(function (c) {
       c.onchange = function () {
         var k = c.getAttribute('data-pk');
-        if (c.checked && st.picks.length >= cap) { c.checked = false; window.JDJ_SAVEFB && JDJ_SAVEFB.err(c.closest('.pk'), '사무소 동 말고 ' + cap + '곳까지 고를 수 있어요.' + (st.cfg.paid ? '' : ' 동 추가는 결제가 열리면 할 수 있어요.'), { after: box }); return; }
+        if (c.checked && st.picks.length >= cap) { c.checked = false; window.JDJ_SAVEFB && JDJ_SAVEFB.err(c.closest('.pk'), '사무소 동 말고 ' + cap + '곳까지 고를 수 있어요.' + (st.cfg.billing ? '' : ' 동 추가는 정식 결제가 열리면 할 수 있어요.'), { after: box }); return; }
         st.picks = st.picks.filter(function (x) { return x !== k; }); if (c.checked) st.picks.push(k);
         paintNear(key);
       };
@@ -237,12 +248,16 @@ label.l small{font-weight:500;color:var(--sub2)}
     if (need.length) throw new Error(need.map(function (x) { return x[1]; }).join('·') + '을 적어 주세요.');
     if (!C.dpKey(st.g, st.dn)) throw new Error('사무소 동을 골라 주세요. [주소 찾기]를 누르면 저절로 골라져요.');
     if (Object.keys(ag).some(function (k) { return !ag[k]; })) throw new Error('필수 동의 네 가지에 모두 체크해 주세요.');
+    if (st.cfg.billing) { if (!document.getElementById('agPay').checked) throw new Error('자동 결제 동의에 따로 체크해 주세요.'); ag.pay = true; }
     return { action: 'dpApply', kind: st.kind, office: v('office'), reg: v('reg'), name: v('name'), ceo: v('ceo'), tel: v('tel'), mail: v('mail'), addr: v('addr'),
-      g: st.g, gn: (SG[st.g] || {}).name || '', dn: st.dn, picks: st.picks, intro: v('intro'), agree: ag, v: st.cfg.terms, photo: st.photo };
+      g: st.g, gn: (SG[st.g] || {}).name || '', dn: st.dn, picks: st.picks, intro: v('intro'), agree: ag, v: st.cfg.terms, photo: st.photo, plan: st.plan };
   }
   function bindForm() {
-    document.querySelectorAll('.seg2 button').forEach(function (b) { b.onclick = function () {
-      st.kind = b.getAttribute('data-k'); document.querySelectorAll('.seg2 button').forEach(function (x) { x.classList.toggle('on', x === b); });
+    document.querySelectorAll('#planSeg button').forEach(function (b) { b.onclick = function () {
+      st.plan = b.getAttribute('data-p'); document.querySelectorAll('#planSeg button').forEach(function (x) { x.classList.toggle('on', x === b); }); priceNow();
+    }; });
+    document.querySelectorAll('.seg2 button[data-k]').forEach(function (b) { b.onclick = function () {
+      st.kind = b.getAttribute('data-k'); document.querySelectorAll('.seg2 button[data-k]').forEach(function (x) { x.classList.toggle('on', x === b); });
       document.getElementById('ceoBox').hidden = st.kind !== 'member'; document.getElementById('nameHint').textContent = st.kind === 'member' ? '(소속공인중개사 본인)' : '(개업공인중개사)';
     }; });
     document.getElementById('find').onclick = findAddr;
@@ -259,11 +274,12 @@ label.l small{font-weight:500;color:var(--sub2)}
       var body; try { body = collect(); } catch (e) { JDJ_SAVEFB.err(go, e.message, { msg: 'msg' }); return; }
       JDJ_SAVEFB.busy(go, '확인하는 중…');
       DP.post(body).then(function (j) {
+        if (j.ck) return DP.cardAuth(j.ck, st.cfg.clientKey, 'dongne/my/').catch(function (e) { location.href = DP.link('dongne/my/'); throw e; });   // 정식 결제: 토스 카드 인증 창(0원) → 내 파트너 화면에서 등록 마무리
         var got = (j.got || []).map(function (k) { return k.slice(6); }), wt = (j.wait || []).map(function (k) { return k.slice(6); });
         document.getElementById('formBox').outerHTML = '<div class="ok" role="status"><b>' + (j.auto ? '승인됐어요' : '신청을 받았어요') + '</b><br>'
           + (j.auto ? '공공 자료로 바로 확인됐어요. 이제 이번 주 우리 동네 한마디를 쓸 수 있어요.' : '확인이 필요해서 2영업일 안에 결과를 메일로 알려 드려요.')
           + '<br>받은 동: ' + (got.length ? esc(got.join(', ')) : '없음') + (wt.length ? '<br>대기한 동: ' + esc(wt.join(', ')) + ' (자리가 나면 메일로 알려 드려요)' : '')
-          + (j.founding && j.freeUntil ? '<br>창립 파트너라서 ' + esc(j.freeUntil) + '까지 무료예요.' : '')
+          + '<br>시범 파트너라서 카드 등록 없이 무료예요.' + (j.founding ? '<br>창립 파트너예요.' : '')
           + '<br><a class="btn primary" style="margin-top:10px" href="' + DP.link('dongne/my/') + '">내 파트너 화면 열기</a></div>';
       }).catch(function (e) { JDJ_SAVEFB.err(go, e.message, { msg: 'msg' }); });
     };

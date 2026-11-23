@@ -25,6 +25,8 @@
    PARTNER_ENABLED: 동네 중개사 파트너(dongne/ — 동마다 3자리 제휴 중개사의 '우리 동네 한마디'를 브리핑 맨 아래에) 켜기. false 면 화면 어디에도 칸·링크가 없고
      dongne/ 는 '준비 중'만 보여요(검색 제외). 운영자 미리 보기: dongne/admin/ 에서 [이 기기에서 미리 보기 켜기](모닝 브리핑 운영자 모드 카카오 계정만).
      켜는 날은 서버 tools/agent-backend.gs 의 DONGNE_ENABLED 도 함께 true 로. 대표 확인 전에는 켜지 않아요.
+   BILLING_OPEN: 토스 자동결제(빌링 — 모닝 브리핑·동네 파트너 카드 등록·정기 결제) 안내 보이기. 토스 빌링 계약이 끝나기 전에는 false.
+     켜는 날은 서버 tools/agent-backend.gs 의 BILLING_OPEN(그리고 PAID_OPEN)도 함께 true. false 면 약관·환불 정책의 자동 결제 조항(초안)이 숨어 있어요.
    SITE_VERIFY_DAUM: 다음 웹마스터도구 PIN 코드 줄 전체('#DaumWebMasterTool:…'). 넣으면 robots.txt 맨 아래에 붙어요. */
 window.JDJ_SITE = {
   SITE_URL: 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc',
@@ -37,6 +39,7 @@ window.JDJ_SITE = {
   VWORLD_KEY: '',
   COMMUNITY_ENABLED: false,
   PARTNER_ENABLED: false,
+  BILLING_OPEN: false,
   PAID_OPEN: false,
   PAY_REVIEW: true
 };

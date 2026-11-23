@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<title>동네 파트너 운영자 검토</title>
+<!-- 동네 파트너 운영자 검토 — 어디에도 링크하지 않음. 열쇠: 모닝 브리핑 운영자 모드(BRIEF_ADMIN_IDS)에 들어 있는 카카오 계정으로 카카오 간편 로그인.
+     이 화면에서 [이 기기에서 미리 보기 켜기]를 누른 기기만 PARTNER_ENABLED=false 일 때도 ?preview=dongne 로 화면을 미리 볼 수 있어요. 검색 제외 -->
+<script src="../../assets/agents.js"></script>
+<script src="../../assets/config.js?v=10"></script>
+<script src="../../assets/auth.js?v=10"></script>
+<script src="../../assets/savefb.js?v=1"></script>
+<script src="../../assets/dongne-core.js?v=1"></script>
+<script src="../../assets/dongne.js?v=1"></script>
+<link rel="stylesheet" href="../../assets/aplus.css?v=46">
+<style>
+[hidden]{display:none!important}
+.wrap{max-width:1040px;margin:0 auto;padding:22px 16px 60px}
+h1{font-size:clamp(24px,6vw,30px);margin:4px 0 6px;letter-spacing:-.5px}
+.lead{margin:0 0 14px;font-size:15.5px;color:var(--sub2);line-height:1.6}
+.card{border:1px solid var(--line);border-radius:18px;padding:16px;background:#fff;margin:0 0 14px;min-width:0}
+.card h2{font-size:18px;font-weight:900;margin:0 0 4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card h2 .n{font-size:13px;font-weight:800;border-radius:999px;padding:1px 9px;background:var(--gray);color:var(--sub2)}
+.card h2 .n.hot{background:#FDECE4;color:#C2410C}
+.card>p{margin:0 0 8px;font-size:14px;color:var(--sub2);line-height:1.55}
+.st{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14.5px;line-height:1.6}
+.st .on{color:#0E7A4F;font-weight:800}.st .off{color:#9A5B00;font-weight:800}
+.it{border-top:1px solid var(--line2);padding:12px 0;min-width:0}
+.it:first-of-type{border-top:0}
+.it .hd{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:13.5px;color:var(--sub2)}
+.it .hd b{color:var(--text);font-size:15px}
+.it .tx{margin:6px 0;font-size:15.5px;line-height:1.6;overflow-wrap:anywhere}
+.it .why{font-size:13.5px;color:#9A5B00;margin-top:2px;overflow-wrap:anywhere}
+.acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}
+.b{font:inherit;font-size:14px;font-weight:800;min-height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:#fff;color:var(--sub);cursor:pointer}
+.b.ok{border-color:#0E7A4F;color:#0E7A4F}.b.no{border-color:#C2410C;color:#C2410C}.b.main{background:var(--blue);border-color:var(--blue);color:#fff}
+.acts select,.acts input{min-height:44px;font:inherit;font-size:14.5px;border:1px solid var(--line);border-radius:12px;padding:0 10px;max-width:100%}
+.acts input{flex:1 1 200px;min-width:0}
+.img{display:block;max-width:100%;max-height:320px;border-radius:12px;border:1px solid var(--line);margin:8px 0;object-fit:contain;background:var(--gray2)}
+.tpl{font-size:13.5px;color:var(--sub2);line-height:1.6;margin:6px 0 0;background:var(--gray2);border-radius:10px;padding:8px 10px}
+.empty{font-size:14px;color:var(--sub2);margin:4px 0}
+</style>
+</head>
+<body>
+<header class="top" data-noacct>
+  <a class="brand" href="../../" aria-label="홈"><span data-site-name></span></a>
+  <div class="badge plain">동네 파트너 운영자</div>
+</header>
+<main class="wrap" id="app"><p class="lead">불러오고 있어요…</p></main>
+<script>
+(function () {
+  'use strict';
+  var DP = window.JDJ_DP, A = window.JDJ_AUTH, F = window.JDJ_SAVEFB, C = window.JDJ_DPCORE, app = document.getElementById('app');
+  var esc = DP.esc, Q = null;
+  function head() {
+    var pv = localStorage.getItem(DP.LS_PV) === '1';
+    return '<h1>동네 파트너 운영자 검토</h1><p class="lead">신청 확인·글 확인·사진 확인·신고·제재를 여기서 해요. 버튼을 누르면 사유 메일이 파트너에게 바로 가요.</p>'
+      + '<section class="card"><h2>지금 상태</h2><div class="st"><span>문 열림: <b class="' + (Q.open ? 'on">열림' : 'off">닫힘(미리 보기만)') + '</b></span>'
+      + '<span>자동 확인 키: <b class="' + (Q.keyReady ? 'on">있음' : 'off">없음 — 모든 신청이 검토 대기') + '</b></span>'
+      + '<span>거르기 설정: <b class="' + (Q.rulesReady ? 'on">들어옴' : 'off">없음 — 모든 글이 검토 대기') + '</b></span>'
+      + '<span>자동 결제: <b class="' + (Q.billing ? 'on">열림' : 'off">잠김(시범 파트너만)') + '</b></span></div>'
+      + '<div class="acts"><button type="button" class="b ' + (pv ? '' : 'main') + '" id="pv">' + (pv ? '이 기기 미리 보기 끄기' : '이 기기에서 미리 보기 켜기') + '</button>'
+      + (pv ? '<a class="b" style="display:inline-flex;align-items:center;text-decoration:none" href="../?preview=dongne">신청 화면 미리 보기</a><a class="b" style="display:inline-flex;align-items:center;text-decoration:none" href="../my/?preview=dongne">내 파트너 화면 미리 보기</a>' : '') + '</div></section>';
+  }
+  function sec(title, n, body, hot) { return '<section class="card"><h2>' + title + ' <span class="n' + (hot && n ? ' hot' : '') + '">' + n + '</span></h2>' + (n ? body : '<p class="empty">없어요.</p>') + '</section>'; }
+  function partnerHd(p) { return '<div class="hd"><b>' + esc(p.office) + '</b><span>' + esc(p.kind === 'member' ? '소속 ' + p.name + ' (대표 ' + p.ceo + ')' : '개업 ' + p.name) + '</span><span>등록번호 ' + esc(p.reg) + '</span><span>' + esc(p.addr) + '</span><span>' + esc(p.tel) + '</span></div>'; }
+  function catSel(list, id) { return '<select data-cat="' + id + '" aria-label="사유">' + list.map(function (t) { return '<option value="' + t.k + '">' + esc(t.name) + '</option>'; }).join('') + '</select>'; }
+  function sanctionBox(p) {
+    return '<div class="acts">' + catSel(Q.tpl.strike, 's' + p.id) + '<button type="button" class="b no" data-op="strike" data-id="' + esc(p.id) + '" data-c="s' + esc(p.id) + '">단계 제재(' + Math.min(3, (p.warn || 0) + 1) + '차)</button></div>'
+      + '<div class="acts">' + catSel(Q.tpl.ban, 'b' + p.id) + '<button type="button" class="b no" data-op="ban" data-id="' + esc(p.id) + '" data-c="b' + esc(p.id) + '">중대 위반 박탈(바로 해지·환불 없음)</button></div>'
+      + '<div class="acts"><input type="text" maxlength="200" placeholder="사유 메일에 덧붙일 말(선택, 해지·거절은 필수)" data-why="' + esc(p.id) + '" aria-label="사유">'
+      + (p.st === '노출중지' ? '<button type="button" class="b ok" data-op="unstop" data-id="' + esc(p.id) + '">노출 다시 켜기</button>' : '')
+      + (p.pay !== '시범' ? '<button type="button" class="b" data-op="trial" data-id="' + esc(p.id) + '">시범 파트너로(무료)</button>' : '')
+      + '<button type="button" class="b" data-op="end" data-id="' + esc(p.id) + '">일반 해지</button></div>';
+  }
+  function draw() {
+    var h = head();
+    h += sec('검토 대기 신청', Q.partners.length, Q.partners.map(function (p) {
+      return '<div class="it">' + partnerHd(p) + '<p class="why">' + esc(p.chk) + '</p><div class="hd"><span>신청 ' + esc(p.applied) + '</span><span>동 ' + esc(p.keys.map(function (k) { return C.dpSplit(k).dn; }).join(', ')) + '</span><span>' + esc(p.mail) + '</span></div>'
+        + '<p class="tpl">확인할 곳: 국가공간정보포털 부동산중개업 조회(등록·영업 상태), 소속이면 같은 화면의 소속공인중개사 목록.</p>'
+        + '<div class="acts"><button type="button" class="b ok" data-op="approve" data-id="' + esc(p.id) + '">승인</button><input type="text" maxlength="200" placeholder="거절 이유(신청한 분께 메일로 가요)" data-why="' + esc(p.id) + '" aria-label="거절 이유"><button type="button" class="b no" data-op="reject" data-id="' + esc(p.id) + '">거절</button></div></div>';
+    }).join(''), true);
+    var post = function (p, tmp) { return '<div class="it"><div class="hd"><b>' + esc(p.office) + '</b><span>' + esc(p.tn) + '</span><span>' + esc(C.dpSplit(p.key).dn) + '</span><span>신고 ' + p.rep + '</span></div><p class="tx">' + esc(p.text) + '</p>' + (p.why ? '<p class="why">' + esc(p.why) + '</p>' : '')
+      + '<div class="acts"><button type="button" class="b ok" data-op="show" data-id="' + esc(p.id) + '">' + (tmp ? '다시 보이기' : '올리기') + '</button><input type="text" maxlength="200" placeholder="내리는 이유(파트너에게 메일)" data-why="' + esc(p.id) + '" aria-label="내리는 이유"><button type="button" class="b no" data-op="hide" data-id="' + esc(p.id) + '">내리기</button></div></div>'; };
+    h += sec('확인할 동네 한마디', Q.hold.length, Q.hold.map(function (p) { return post(p, false); }).join(''), true);
+    h += sec('신고로 잠시 가린 글', Q.tmp.length, Q.tmp.map(function (p) { return post(p, true); }).join(''), true);
+    h += sec('사진 확인', Q.photos.length, Q.photos.map(function (p) {
+      return '<div class="it"><div class="hd"><b>' + esc(p.office) + '</b><span>' + (p.kind === 'p' ? '프로필 사진' : '한마디 사진') + '</span></div>' + (p.img ? '<img class="img" src="' + esc(p.img) + '" alt="확인할 사진">' : '<p class="empty">사진을 불러오지 못했어요.</p>')
+        + '<div class="acts"><button type="button" class="b ok" data-op="photoOk" data-kind="' + p.kind + '" data-id="' + esc(p.id) + '">보이기</button><button type="button" class="b no" data-op="photoNo" data-kind="' + p.kind + '" data-id="' + esc(p.id) + '">지우기</button></div></div>';
+    }).join(''), true);
+    h += sec('구독자 신고가 들어온 파트너', Q.reported.length, '<p>' + Q.prepQ + '건 이상 쌓이면 운영자 메일이 가요. 확인한 뒤 [신고 확인 끝] 또는 제재를 눌러 주세요.</p>' + Q.reported.map(function (p) {
+      return '<div class="it"><div class="hd"><b>' + esc(p.office) + '</b><span>신고 ' + p.reps + '건</span><span>' + esc(p.why.join(', ')) + '</span></div><div class="acts"><button type="button" class="b ok" data-op="repClear" data-id="' + esc(p.id) + '">신고 확인 끝(문제 없음)</button></div>' + sanctionBox(p) + '</div>';
+    }).join(''), true);
+    h += sec('노출 중인 파트너', Q.live.length, '<p>단계 제재: 1차 경고 메일 → 2차 7일 노출 중지 → 3차 해지 + 창립 혜택 박탈. 중대 위반(행정처분·휴업·폐업, 사기·전세사기·금전 사고, 허위 가입, 피해)은 노출·결제를 멈추고 혜택을 없애고 바로 해지해요(환불 없음).</p>'
+      + '<details><summary class="b" style="display:inline-flex;align-items:center">사유 메일 문구 보기</summary>' + Q.tpl.strike.concat(Q.tpl.ban).map(function (t) { return '<p class="tpl"><b>' + esc(t.name) + '</b> — ' + esc(t.body) + '</p>'; }).join('') + '</details>'
+      + Q.live.map(function (p) {
+        return '<div class="it"><div class="hd"><b>' + esc(p.office) + '</b><span>' + esc(p.st) + '</span><span>결제 ' + esc(p.pay) + (p.next ? ' · 다음 ' + esc(p.next) : '') + '</span><span>' + (p.founding ? '창립 혜택 중' : '') + '</span><span>제재 ' + (p.warn || 0) + '차</span><span>' + esc(p.keys.join(', ')) + '</span><span>마지막 글 ' + esc(p.last || '없음') + '</span></div>'
+          + (p.chk ? '<p class="why">' + esc(p.chk) + '</p>' : '') + sanctionBox(p) + '</div>';
+      }).join(''));
+    app.innerHTML = h;
+    bind();
+  }
+  function bind() {
+    document.getElementById('pv').onclick = function () { if (localStorage.getItem(DP.LS_PV) === '1') localStorage.removeItem(DP.LS_PV); else localStorage.setItem(DP.LS_PV, '1'); draw(); };
+    app.querySelectorAll('[data-op]').forEach(function (b) {
+      b.onclick = function () {
+        var op = b.getAttribute('data-op'), id = b.getAttribute('data-id'), wi = b.closest('.it') && b.closest('.it').querySelector('[data-why="' + id + '"]');
+        var body = { action: 'dpAdminAct', op: op, id: id, why: wi ? wi.value : '', kind: b.getAttribute('data-kind') || '' };
+        if (b.getAttribute('data-c')) body.cat = app.querySelector('[data-cat="' + b.getAttribute('data-c') + '"]').value;
+        if ((op === 'ban' || op === 'end') && !confirm(op === 'ban' ? '중대 위반으로 바로 해지할까요? 노출·자동 결제가 멈추고 창립 혜택도 없어져요(환불 없음).' : '이 파트너를 해지할까요?')) return;
+        F.busy(b, '처리 중…');
+        DP.post(body).then(function (j) { F.ok(b, j.step === 'ban' ? '박탈했어요. 사유 메일을 보냈어요.' : j.step ? j.step + '차 제재를 했어요. 사유 메일을 보냈어요.' : '처리했어요.'); setTimeout(load, 1200); }).catch(function (e) { F.err(b, e.message); });
+      };
+    });
+  }
+  function load() {
+    return DP.post({ action: 'dpAdminQueue' }).then(function (q) { Q = q; draw(); }).catch(function (e) {
+      if (e.code === 'admin' || e.raw === 'auth') { app.innerHTML = '<h1>동네 파트너 운영자 검토</h1><p class="lead">모닝 브리핑 운영자 모드를 켠 카카오 계정으로 로그인해야 열려요.</p>' + (A && A.on() ? A.gate('운영자 계정으로 로그인해 주세요.', '카카오 간편 로그인', 'dongne_admin') : ''); localStorage.removeItem(DP.LS_PV); return; }
+      app.innerHTML = '<h1>동네 파트너 운영자 검토</h1><p class="lead">' + esc(e.message) + '</p>';
+    });
+  }
+  if (!A || !A.user()) { app.innerHTML = '<h1>동네 파트너 운영자 검토</h1><p class="lead">모닝 브리핑 운영자 모드를 켠 카카오 계정으로 로그인해 주세요.</p>' + (A && A.on() ? A.gate('운영자 계정으로 로그인해 주세요.', '카카오 간편 로그인', 'dongne_admin') : ''); return; }
+  load();
+})();
+</script>
+</body>
+</html>

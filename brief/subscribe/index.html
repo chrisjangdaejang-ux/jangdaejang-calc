@@ -19,6 +19,8 @@
 <script src="../../assets/pay.js?v=7"></script>
 <script src="../../assets/savefb.js?v=1"></script>
 <script src="../../assets/brief-core.js?v=11"></script>
+<script src="../../assets/dongne-core.js?v=1"></script>
+<script src="../../assets/dongne.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../assets/aplus.css?v=46">
@@ -94,6 +96,7 @@ details.plans #pay{width:100%;margin-top:12px;font-size:15px;min-height:44px}
   <a class="brand" href="../../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
   <div class="badge plain" data-brief-name>집코드 모닝 브리핑</div>
 </header>
+<div class="wrap" style="padding-bottom:0"><div data-dp-invite hidden></div></div>
 <main class="wrap" id="main"><p class="note">불러오는 중…</p></main>
 <footer class="foot">★ <span data-site-name>집코드</span> · <a href="../" data-brief-name>집코드 모닝 브리핑</a> · <a href="../manage/">내 구독 관리</a> · <a href="../../refund/">환불 정책</a> · <a href="../../privacy/">개인정보처리방침</a></footer>
 <script>
@@ -215,7 +218,7 @@ async function boot(){
     if (!ch) throw need('받는 방법을 골라 주세요.', 'contact');
     if (!$('contact').value.trim()) throw need(ch === 'kakao' ? '받을 휴대폰 번호를 적어 주세요.' : '받을 이메일 주소를 적어 주세요.', 'contact');
     if (!$('privacy').checked) throw need('발송용 연락처 수집·이용에 동의해 주세요.', 'privacy');
-    return { channel: ch, contact: $('contact').value.trim(), privacy: true, ad: $('ad').checked, amAd: $('ad').checked && $('amAd').checked, ref: B.myRef() }; };
+    return { channel: ch, contact: $('contact').value.trim(), privacy: true, ad: $('ad').checked, amAd: $('ad').checked && $('amAd').checked, ref: B.myRef(), dp: window.JDJ_DP && JDJ_DP.enabled() ? JDJ_DP.inviteCode() : '' }; };
   function msg(t, bad){ $('msg').className = 'msg ' + (bad ? 'err' : 'info'); $('msg').innerHTML = t; }
   /* 빠진 칸이 있으면 그 칸이 있는 단계로 옮겨 가서 바로 위에 알려 줌(맨 위 버튼을 눌러도 무엇이 빠졌는지 보이게) */
   const fieldErr = e => { document.querySelectorAll('.fmsg').forEach(x => { x.hidden = true; });

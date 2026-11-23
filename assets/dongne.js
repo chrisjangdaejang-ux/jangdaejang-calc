@@ -92,8 +92,8 @@
     opt = opt || {};
     const tel = String(c.tel || '').replace(/[^0-9]/g, '');
     return `<div class="dp-card${opt.small ? ' sm' : ''}">${c.img ? `<img class="dp-face" src="${esc(c.img)}" alt="" loading="lazy">` : `<span class="dp-face none" aria-hidden="true">${esc(String(c.office || '').slice(0, 1))}</span>`}
-      <div class="dp-cb"><b class="dp-on">${esc(c.office)}</b> <span class="dp-badge">동네 파트너</span>${c.intro ? `<p class="dp-intro">${esc(c.intro)}</p>` : ''}${legalHtml(c)}
-      ${tel && !opt.nocall ? `<a class="dp-call" href="tel:${esc(tel)}" data-dp-call="${esc(c.id)}">전화하기</a>` : ''}</div></div>`;
+      <div class="dp-cb"><b class="dp-on">${esc(c.office)}</b> <span class="dp-badge">${c.found ? '창립 파트너' : '동네 파트너'}</span>${c.intro ? `<p class="dp-intro">${esc(c.intro)}</p>` : ''}${legalHtml(c)}
+      ${!opt.nocall ? `<div class="dp-acts" style="margin-top:4px">${tel ? `<a class="dp-call" href="tel:${esc(tel)}" data-dp-call="${esc(c.id)}">전화하기</a>` : ''}${opt.noreport ? '' : `<button type="button" data-dp-prep="${esc(c.id)}">신고</button>`}</div>` : ''}</div></div>`;
   }
   const CSS = `.dp-sec{border:1px solid #EFE6CC;background:#FBF8EF;border-radius:18px;padding:16px;margin:18px 0}
 .dp-sec h2{font-size:19px;margin:0 0 2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -115,7 +115,7 @@
 .dp-badge{display:inline-block;font-size:11.5px;font-weight:800;color:#8A6A12;background:#F6EDD3;border-radius:6px;padding:1px 6px;vertical-align:1px}
 .dp-intro{margin:2px 0;font-size:14px;color:var(--sub,#3E4754)}
 .dp-legal{margin:2px 0 0;font-size:12.5px;color:var(--sub2,#4E5968);line-height:1.55;word-break:keep-all}
-.dp-call{display:inline-flex;align-items:center;min-height:44px;margin-top:4px;padding:0 14px;border-radius:12px;background:#191F28;color:#fff;font-weight:800;font-size:14px;text-decoration:none}
+.dp-call{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border-radius:12px;background:#191F28;color:#fff;font-weight:800;font-size:14px;text-decoration:none}
 .dp-best{background:#fff;border:1px solid #EFE6CC;border-radius:14px;padding:12px;margin:6px 0 10px}
 .dp-best b{color:#8A6A12}
 .dp-note{font-size:12.5px;color:var(--sub2,#4E5968);margin:10px 0 0;line-height:1.6}
@@ -130,6 +130,7 @@
 
   /* ---------- 웹 브리핑 칸 ---------- */
   const WHY = [['price', '가격 예측'], ['dam', '집값 담합'], ['ad', '매물 홍보'], ['prof', '욕설'], ['defame', '비방'], ['false', '사실이 아닌 내용'], ['etc', '기타']];
+  const PWHY = [['false', '사실이 아닌 정보'], ['ad', '무리한 영업'], ['defame', '불친절·비방'], ['etc', '기타(사기·금전 사고 의심 등)']];
   function secHtml(sec) {
     const dongs = (sec.list || []).map(x => {
       const top = x.partners[0], p = x.post && top && x.post.pid === top.id ? x.post : null;
@@ -144,16 +145,17 @@
   }
   function bind(el) {
     el.addEventListener('click', ev => {
-      const h = ev.target.closest('[data-dp-help]'), r = ev.target.closest('[data-dp-rep]'), c = ev.target.closest('[data-dp-call]');
+      const h = ev.target.closest('[data-dp-help]'), r0 = ev.target.closest('[data-dp-rep]'), pr = ev.target.closest('[data-dp-prep]'), c = ev.target.closest('[data-dp-call]');
+      const r = r0 || pr;
       if (c) post({ action: 'dpLog', t: 'call', id: c.getAttribute('data-dp-call'), v: vid() }).catch(() => {});
       if (h) { h.disabled = true; post({ action: 'dpHelp', id: h.getAttribute('data-dp-help'), v: vid() }).then(j => { h.textContent = j.again ? '이미 눌렀어요' : '도움돼요 ' + j.n; }).catch(e => { h.disabled = false; h.textContent = e.message.slice(0, 30); }); }
       if (r) {
-        const box = r.closest('.dp-post'); if (box.querySelector('.dp-rw')) return;
+        const box = r.closest('.dp-post') || r.closest('.dp-card'); if (box.querySelector('.dp-rw')) return;
         const d = document.createElement('div'); d.className = 'dp-rw';
-        d.innerHTML = `<p class="dp-sub" style="margin:8px 0 4px">신고 이유를 골라 주세요</p><div class="dp-acts">${WHY.map(w => `<button type="button" data-w="${w[0]}">${esc(w[1])}</button>`).join('')}</div>`;
+        d.innerHTML = `<p class="dp-sub" style="margin:8px 0 4px">${pr ? '이 중개사무소를 신고하는 이유를 골라 주세요(운영자가 확인해요)' : '신고 이유를 골라 주세요'}</p><div class="dp-acts">${(pr ? PWHY : WHY).map(w => `<button type="button" data-w="${w[0]}">${esc(w[1])}</button>`).join('')}</div>`;
         box.appendChild(d);
         d.addEventListener('click', e2 => { const w = e2.target.closest('[data-w]'); if (!w) return;
-          post({ action: 'dpReport', id: r.getAttribute('data-dp-rep'), why: w.getAttribute('data-w'), v: vid() })
+          post(Object.assign({ action: 'dpReport', why: w.getAttribute('data-w'), v: vid() }, pr ? { pid: pr.getAttribute('data-dp-prep') } : { id: r.getAttribute('data-dp-rep') }))
             .then(j => { d.innerHTML = `<p class="dp-msg">${j.again ? '이미 신고했어요.' : '신고를 받았어요. 운영자가 확인해요.'}</p>`; })
             .catch(e => { d.innerHTML = `<p class="dp-msg" style="color:#B42318">${esc(e.message)}</p>`; }); });
       }
@@ -212,7 +214,8 @@
     return q.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
   }
 
-  const apiObj = { enabled, preview, link, post, sess, site, vid, esc, points, dongsOf, near, miniMap, shrink, cardHtml, legalHtml, secHtml, fillBrief, fillBest, fillInvite, inviteCode, inviteUrl, qrSvg, style, bind, CSS, LS_PV, WHY };
+  function cardAuth(ck, clientKey, back) { return root.JDJ_BILL ? root.JDJ_BILL.cardAuth(ck, clientKey, back) : Promise.reject(new Error('정식 자동 결제는 아직 열리지 않았어요.')); }
+  const apiObj = { cardAuth, enabled, preview, link, post, sess, site, vid, esc, points, dongsOf, near, miniMap, shrink, cardHtml, legalHtml, secHtml, fillBrief, fillBest, fillInvite, inviteCode, inviteUrl, qrSvg, style, bind, CSS, LS_PV, WHY };
   root.JDJ_DP = apiObj;
   if (typeof module !== 'undefined' && module.exports) module.exports = apiObj;
   if (typeof document !== 'undefined') {

@@ -7036,7 +7036,7 @@ function baBillDaily(now) {
       if (step === 'retry') { if (notes.indexOf('try|' + t) < 0) { add('try|' + t); baCharge(baRows().find(x => x.row === o.row), t); n++; } return; }
       baSet(o.row, '상태', BRA_ST.stop);
       const k = baKOf(String(r[BRAC['회원']])), to = k ? baEmail(k) : '';
-      if (to) dpMailTo(to, `[${SITE_NAME}] 결제가 되지 않아 ${BRIEF_NAME}을 멈췄어요`, `${DP_RULE.retryDays}일 동안 다시 시도했지만 결제가 되지 않았어요. 카드를 다시 등록하면 바로 이어서 받아요: <a href="${BRIEF_WEB}manage/?card=1">${BRIEF_WEB}manage/?card=1</a><br>이 메일 뒤로는 결제 안내를 보내지 않아요.`);
+      if (to) dpMailTo(to, `[${SITE_NAME}] 결제가 되지 않아 ${BRIEF_NAME}을 멈췄어요`, `${DP_RULE.retryDays}일 동안 다시 시도했지만 결제가 되지 않았어요. 카드를 다시 등록하면 바로 이어서 받아요: <a href="${BRIEF_WEB}manage/?autopay=1">${BRIEF_WEB}manage/?autopay=1</a><br>이 메일 뒤로는 결제 안내를 보내지 않아요.`);
       n++;
     }
   });
@@ -7049,7 +7049,7 @@ function baTrialMail(o, s, now) {
   const tags = String(o.r[BC['만료알림']] || ''), to = String(o.r[BC['연락처']] || '').replace(/^'/, '');
   if (s.active && s.left === 3 && !has && tags.indexOf('T5') < 0 && s.channel === 'email' && to) {
     const P = BRIEF_PRICE.brief;
-    dpMailTo(to, `[${SITE_NAME}] 이틀 뒤 ${BRIEF_NAME} 체험이 끝나요`, `이틀 뒤(${s.end}) 무료 체험이 끝나요. <b>카드를 등록하면 끊김 없이 계속 받아요.</b><br>체험 중에 등록하면 첫 달은 반값이에요(기본 요금제 ${baAmt(P, true).toLocaleString()}원, 다른 요금제도 첫 달 50%). 결제일·금액은 등록 화면에 크게 보여 드리고 따로 동의를 받아요.<br><a href="${BRIEF_WEB}manage/?card=1" style="display:inline-block;margin-top:8px;background:#2F6BFF;color:#fff;padding:10px 16px;border-radius:10px;text-decoration:none;font-weight:700">카드 등록하고 계속 받기</a><br>등록하지 않으면 체험이 끝나는 날 브리핑이 멈추고, 그 뒤 한 번만 안내를 드려요.`);
+    dpMailTo(to, `[${SITE_NAME}] 이틀 뒤 ${BRIEF_NAME} 체험이 끝나요`, `이틀 뒤(${s.end}) 무료 체험이 끝나요. <b>카드를 등록하면 끊김 없이 계속 받아요.</b><br>체험 중에 등록하면 첫 달은 반값이에요(기본 요금제 ${baAmt(P, true).toLocaleString()}원, 다른 요금제도 첫 달 50%). 결제일·금액은 등록 화면에 크게 보여 드리고 따로 동의를 받아요.<br><a href="${BRIEF_WEB}manage/?autopay=1" style="display:inline-block;margin-top:8px;background:#2F6BFF;color:#fff;padding:10px 16px;border-radius:10px;text-decoration:none;font-weight:700">카드 등록하고 계속 받기</a><br>등록하지 않으면 체험이 끝나는 날 브리핑이 멈추고, 그 뒤 한 번만 안내를 드려요.`);
     setB(o.row, '만료알림', (tags + ' T5').trim());
     return true;
   }
@@ -7066,7 +7066,7 @@ function baTrialEnded(now) {
     if (tags.indexOf('END1') >= 0 || s.channel !== 'email' || !to) return;
     if (myBriefs(k).some(x => briefState(x, now).active)) { setB(o.row, '만료알림', (tags + ' END1').trim()); return; }
     const bs = baOf(k); if (bs && [BRA_ST.ok, BRA_ST.retry].indexOf(String(bs.r[BRAC['상태']])) >= 0) return;
-    dpMailTo(to, `[${SITE_NAME}] ${BRIEF_NAME} 체험이 끝나 발송을 멈췄어요`, `무료 체험이 끝나서 브리핑 발송을 멈췄어요. 다시 받으려면 카드를 등록해 주세요: <a href="${BRIEF_WEB}manage/?card=1">${BRIEF_WEB}manage/?card=1</a><br>이 안내는 한 번만 보내요. 앞으로 따로 메일을 보내지 않아요.`);
+    dpMailTo(to, `[${SITE_NAME}] ${BRIEF_NAME} 체험이 끝나 발송을 멈췄어요`, `무료 체험이 끝나서 브리핑 발송을 멈췄어요. 다시 받으려면 카드를 등록해 주세요: <a href="${BRIEF_WEB}manage/?autopay=1">${BRIEF_WEB}manage/?autopay=1</a><br>이 안내는 한 번만 보내요. 앞으로 따로 메일을 보내지 않아요.`);
     setB(o.row, '만료알림', (tags + ' END1').trim()); n++;
   });
   return n;
