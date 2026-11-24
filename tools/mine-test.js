@@ -362,6 +362,16 @@ if (DIR && fs.existsSync(path.join(DIR, 'index.json'))) {
   check('구 비교선: 둘 다 없으면 null', [PS.guOf(null, null, ixm, 84.9), PS.guOf(null, { s: [0, 0] }, ixm, 84.9)], [null, null], '');
 }
 
+{ // 동 이름을 붙여 쓴 검색(2026-11-24 대표 제보: '잠실주공5단지' → '주공아파트 5단지'(잠실동))
+  const mk = (apt, dong) => ({ apt, dong, jibun: '', al: [], n: 100 });
+  const G = new Map([['a', mk('주공아파트 5단지', '잠실동')], ['b', mk('잠실엘스', '잠실동')], ['c', mk('주공5단지', '개포동')]]);
+  const f = q => M.searchDanji(G, q).map(x => x.dong + ' ' + x.apt);
+  check('동 이름 붙여 쓴 검색: 잠실주공5단지', f('잠실주공5단지'), ['잠실동 주공아파트 5단지'], '앞의 동 이름(잠실)을 떼고 이름 비교');
+  check('동 이름 붙여 쓴 검색: 잠실동주공5단지', f('잠실동주공5단지'), ['잠실동 주공아파트 5단지'], '동 전체 이름도');
+  check('동 이름 붙여 쓴 검색: 다른 동 단지는 안 섞임', f('개포주공5단지'), ['개포동 주공5단지'], '개포동만');
+  check('이름에 동 이름이 든 단지는 그대로', f('잠실엘스'), ['잠실동 잠실엘스'], '이름 그대로 맞음');
+}
+
 let bad = 0;
 for (const r of rows) { if (!r.ok) bad++; console.log((r.ok ? 'OK  ' : 'FAIL') + ' ' + r.name + (r.ok ? '' : `\n     got ${JSON.stringify(r.got)}\n    want ${JSON.stringify(r.want)}  (${r.basis})`)); }
 console.log(`\n${rows.length - bad}/${rows.length} 통과`);

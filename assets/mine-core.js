@@ -194,6 +194,14 @@
     if (r >= 0) return r;
     for (const a of al) { const x = matchName(a, q); if (x >= 0 && (r < 0 || x + 0.5 < r)) r = x + 0.5; }
     if (r >= 0) return r;
+    {                                              // 동 이름을 붙여 쓴 검색('잠실주공5단지', '반포자이')도 찾기: 앞에 붙은 동 이름을 떼고 다시 비교
+      const st0 = dongStem(d.dong), dn0 = String(d.dong || '').split(/\s+/).pop(), qt = String(q || '').trim();
+      for (const pre of [dn0, st0]) {
+        if (!pre || pre.length < 2 || qt.indexOf(pre) !== 0) continue;
+        const q2 = qt.slice(pre.length).trim();
+        if (q2 && normLight(q2) && (matchName(d.apt, q2) >= 0 || al.some(a => matchName(a, q2) >= 0))) return 2;
+      }
+    }
     const toks = String(q || '').trim().split(/\s+/);
     if (toks.length < 2) return null;
     const st = dongStem(d.dong), dn = normLight(String(d.dong || '').split(/\s+/).pop()), jb = String(d.jibun || '');
