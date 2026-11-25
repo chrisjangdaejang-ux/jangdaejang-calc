@@ -361,6 +361,7 @@ ${rentPanel(u, j)}
     </div>
 
     ${window.JDJ_CM ? JDJ_CM.slot({ t: 'o', g: S.g, d: u.d, k: key, n: O.nameOf(u) }) : ''}
+    ${window.JDJ_CS ? JDJ_CS.slot({ gu: sggName(S.g) }) : ''}
 
     ${MJ ? MJ.btn(mjo, 'bottom', '이 오피스텔 주변 시세와 개발·교통 예정, 역·학교를 지도에서 확인해 보세요', 'offi_to_map_end') : ''}
 

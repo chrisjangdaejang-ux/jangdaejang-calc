@@ -378,6 +378,7 @@
     </div>` : ''}
 
     ${u && window.JDJ_CM ? JDJ_CM.slot({ t: 'c', g, d: u.d, k: K.keyOf(u), n: K.nameOf(u) }) : ''}
+    ${window.JDJ_CS ? JDJ_CS.slot({ gu: sggName(g) }) : ''}
     ${window.JDJ_MAPJ ? JDJ_MAPJ.btn(mjOf(u || null), 'bottom', u ? '이 건물 주변 시세와 개발·교통 예정, 역·학교를 지도에서 확인해 보세요' : `${mjOf(null).dong || nm} 주변을 지도에서 확인해 보세요${k === 'g' ? ' (통건물은 지번이 가려져 있어 동별 표의 지도 링크로 동 가운데를 볼 수 있어요)' : ''}`, 'comm_to_map_end') : ''}
     <div class="cm-links" style="margin:12px 0">
       <a class="main" href="../loan/?src=comm" data-track="comm_to_loan">대출 한도 계산 →</a>

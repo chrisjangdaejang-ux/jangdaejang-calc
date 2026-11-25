@@ -25,6 +25,9 @@
 <script>window.JDJ_CONFIG = { tool:'redev', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../../assets/track.js?v=2"></script>
 <script src="../../assets/config.js?v=11"></script>
+<script src="../../assets/agents.js"></script>
+<script src="../../assets/counsel-core.js?v=4"></script>
+<script src="../../assets/counsel.js?v=4"></script>
 <script src="../../assets/map-engine.js?v=3"></script>
 <script src="../../assets/redev-core.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -227,6 +230,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
     links.push([JB.SITE + 'tax/', '집 살 때 세금(취득세) 계산', 'redev_to_tax']);
     links.push([JB.SITE + 'tax/transfer/', '집 팔 때 세금(양도세) 계산', 'redev_to_transfer']);
     if (z.g) links.push([JB.SITE + 'villa/', '이 근처 빌라 실거래·입주권 위험 보기', 'redev_to_villa']);
+    if (window.JDJ_CS && z.gn) h += JDJ_CS.slot({ gu: z.gn, cat: 'redev' });   // 이 동네 확인된 전문가(재개발·재건축 상담을 해 온 분 먼저, 꺼져 있으면 빈 글자)
     h += `<h4>함께 보면 좋아요</h4>${z.nb && z.nb.length ? `<p class="note" style="margin-top:0">가까운 새 아파트(준공 ${D.new_years}년 안, ${D.near_km}km 안)의 미래가치를 보면 이 구역이 다 지어진 뒤 모습을 가늠하는 데 도움이 돼요.</p>` : ''}<div class="links">${links.map(([u, t, tr]) => `<a href="${esc(u)}" data-track="${tr}">${t}<span>›</span></a>`).join('')}</div></div>`;
     return h;
   }

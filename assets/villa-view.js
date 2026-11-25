@@ -324,6 +324,7 @@
       <p class="basis">${tr.full ? `<span class="jps-new">신고가</span> = 그 전까지 같은 전용면적에서 가장 높았던 값보다 비싸게 거래된 경우예요(수집 자료 기준, 직거래 제외).${tr.list.length > 30 ? ` 최근 30건만 보여 드려요(전체 ${tr.list.length}건).` : ''}` : `지금은 최근 3년 거래를 ${tr.list.length}건까지 보여 드려요. 신고가 표시는 다음 자료 갱신부터 수집한 모든 기간의 거래와 비교해 붙여요.`}</p>` : '<p class="note">최근 3년 매매 거래가 없어요.</p>'}
     </div>
     ${window.JDJ_CM ? JDJ_CM.slot({ t: 'v', g: S.g, d: b.d, k: key, n: V.nameOf(b) }) : ''}
+    ${window.JDJ_CS ? JDJ_CS.slot({ gu: (((VX.sido[S.si] || { g: [] }).g.find(x => x.c === S.g)) || {}).n || '' }) : ''}
 
     ${MJ ? MJ.btn(mjo, 'bottom', '이 빌라 주변 시세와 개발·교통 예정, 역·학교를 지도에서 확인해 보세요', 'villa_tab_to_map_end') : ''}
     <div class="panel"><h2>이어서 알아보기</h2>

@@ -188,13 +188,15 @@ textarea.cs-inp{min-height:150px;resize:vertical;line-height:1.6}
     return `<div class="cs-note"><b>${esc(w.realName)}</b> · ${esc(w.kn)}<br>${w.org ? esc(w.org) + '<br>' : ''}${w.addr ? esc(w.addr) + '<br>' : ''}${w.no ? '등록번호 ' + esc(w.no) + '<br>' : ''}${w.tel ? '사무실 ' + esc(String(w.tel).replace(/^'/, '').replace(/^(02)(\d{3,4})(\d{4})$|^(0\d{2})(\d{3,4})(\d{4})$/, (a, b1, b2, b3, c1, c2, c3) => b1 ? b1 + '-' + b2 + '-' + b3 : c1 + '-' + c2 + '-' + c3)) + '<br>' : ''}<span class="cs-help">${esc(w.where ? '자격 진위는 ' + w.where + '에서 등록번호로 확인할 수 있어요.' : '')}</span></div>`;
   }
   /* ---------- 단지 화면 '이 동네 확인된 전문가' 칸(꺼져 있으면 빈 글자) ---------- */
-  function slot(o) { if (!enabled()) return ''; const g = String((o && o.gu) || '').trim(); return g ? `<section class="panel cs-near" data-cs-near="${esc(g)}" aria-label="이 동네 확인된 전문가"></section>` : ''; }
+  /** o: { gu: 구 이름, cat: 분야(선택 — 'redev' 면 재개발·재건축 답변을 해 온 전문가 먼저) } */
+  function slot(o) { if (!enabled()) return ''; const g = String((o && o.gu) || '').trim(), c = String((o && o.cat) || '').replace(/[^a-z]/g, ''); return g ? `<section class="panel cs-near" data-cs-near="${esc(g)}"${c ? ` data-cs-cat="${esc(c)}"` : ''} aria-label="이 동네 확인된 전문가"></section>` : ''; }
   function mountNear(el) {
     el.setAttribute('data-cs-on', '1'); style();
-    post({ action: 'csProNear', gu: el.getAttribute('data-cs-near') }).then(j => {
+    const cat = el.getAttribute('data-cs-cat') || '', C = root.JDJ_CSCORE, cn = cat && C ? C.catName(cat) : '';
+    post({ action: 'csProNear', gu: el.getAttribute('data-cs-near'), cat: cat }).then(j => {
       if (!j.open || !j.items.length) { el.remove(); return; }
-      el.innerHTML = `<h2>이 동네 확인된 전문가<small>${esc(j.gu)}에서 활동하는, 자격을 확인한 전문가예요. 순서는 날마다 고르게 바뀌어요.</small></h2><div class="cs-pcs">${j.items.map(p => proCard(p)).join('')}</div>
-        <div class="cs-acts"><a class="cs-btn sub" href="${esc(link('counsel/pros/?gu=' + encodeURIComponent(j.gu)))}">이 동네 전문가 모두 보기</a><a class="cs-btn ghost" href="${esc(link('counsel/?w=1'))}">고민 묻기(무료)</a></div>`;
+      el.innerHTML = `<h2>이 동네 확인된 전문가<small>${esc(j.gu)}에서 활동하는, 자격을 확인한 전문가예요.${cn ? ` ${esc(cn)} 상담을 해 온 분을 먼저 보여 드려요.` : ''} 순서는 날마다 고르게 바뀌어요.</small></h2><div class="cs-pcs">${j.items.map(p => proCard(p)).join('')}</div>
+        <div class="cs-acts"><a class="cs-btn sub" href="${esc(link('counsel/pros/?gu=' + encodeURIComponent(j.gu) + (cat ? '&c=' + encodeURIComponent(cat) : '')))}">이 동네 전문가 모두 보기</a><a class="cs-btn ghost" href="${esc(link('counsel/?w=1'))}">고민 묻기(무료)</a></div>`;
     }).catch(() => el.remove());
   }
   if (typeof document !== 'undefined' && typeof MutationObserver !== 'undefined' && enabled()) {

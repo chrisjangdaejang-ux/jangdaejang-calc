@@ -1,6 +1,11 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v59 변경 요약 (v58 위에 다시 배포. 따로 실행할 함수 없음 — 시트 변경 없음. 고민 상담은 아직 숨김)
+ *  - '이 동네 확인된 전문가'(csProNear)가 분야(cat)를 받음: 재개발 구역 지도 상세는 'redev' — 그 분야 답변 자격이 있고 공개 답변을 해 온 전문가를 먼저, 나머지는 그날 순환.
+ *    칸 자리: 내 집 시세 아파트·빌라·오피스텔·상가 결과 + 재개발 구역 지도 상세(화면 assets/counsel.js slot). 채팅 전 신원 숨김 규칙 그대로.
+ *  - 검증: node tools/counsel-test.js </dev/null
+ *
  * v58 변경 요약 (v57 위에 다시 배포. 따로 실행할 함수 없음 — 시트 '상담채팅방'·'상담채팅'·'상담채팅열람'은 첫 사용 때 저절로 생김. 고민 상담은 아직 숨김)
  *  - 고민 상담: 질문한 분 연락처를 전문가에게 넘기던 기능(csContact)을 없애고 앱 안 1:1 상담 채팅으로. 1:1 비공개 상담·전문가 지정 질문은 채팅방이 저절로 열리고,
  *    공개 질문은 질문한 분이 답변한 전문가에게 [이 전문가와 채팅하기]로 요청. 하트는 전문가용 — 전문가가 [채팅 수락]할 때 차감(2개, 7일 안 수락 없으면 만료·차감 없음),
@@ -10225,8 +10230,13 @@ function csProList(b) {
 function csProNear(b) {
   if (!(COUNSEL_OPEN || csIsAdmin(b))) return { ok: true, open: false };
   const gu = csGuOf(uText(b.gu, 20)); if (!gu) return { ok: true, open: true, items: [] };
-  const list = csOkPros().filter(o => csGuOf(csTxt(o.r[CSPC['지역']])) === gu);
-  return { ok: true, open: true, gu: gu, items: list.map(o => ({ o: o, t: csTurn(String(o.r[CSPC['id']]), 'near|' + gu) })).sort((a, c) => c.t - a.t).slice(0, 3).map(x => csProCard(x.o)) };
+  const cat = csCatName(b.cat) ? String(b.cat) : '', kinds = cat ? csKindsFor(cat) : null;
+  const list = csOkPros().filter(o => csGuOf(csTxt(o.r[CSPC['지역']])) === gu && (!kinds || kinds.indexOf(String(o.r[CSPC['종류']])) >= 0));
+  const done = {};                                                                   // v59: 분야(예: 재개발 화면 'redev')를 주면 그 분야 공개 답변을 해 온 전문가 먼저
+  if (cat) { const Q = {}; csRows(SH_CSQ).forEach(q => { if (String(q.r[CSQC['분류']]) === cat) Q[String(q.r[CSQC['id']])] = 1; });
+    csRows(SH_CSA).forEach(a => { if (String(a.r[CSAC['종류']]) === 'pro' && String(a.r[CSAC['상태']]) === CS_ST.on && Q[String(a.r[CSAC['질문id']])]) done[String(a.r[CSAC['전문가id']])] = 1; }); }
+  return { ok: true, open: true, gu: gu, cat: cat, items: list.map(o => { const id = String(o.r[CSPC['id']]); return { o: o, k: done[id] ? 1 : 0, t: csTurn(id, 'near|' + gu + '|' + cat) }; })
+    .sort((a, c) => (c.k - a.k) || (c.t - a.t)).slice(0, 3).map(x => csProCard(x.o)) };
 }
 /** 질문 상세 '이 분야 전문가에게 물어보기' — 같은 구(질문에 지역이 있으면)·분야에 답할 수 있는 전문가 3명(이미 답한 분 빼고) */
 function csRecommend(o, answered) {

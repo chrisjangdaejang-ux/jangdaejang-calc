@@ -86,6 +86,9 @@ check('운영자 미리 보기: 운영자 기기(로그인) + ?preview=counsel �
 check('운영자 미리 보기: 안쪽 링크에 preview 가 이어짐', /counsel\/heart\/\?preview=counsel$/.test(pvc.link('counsel/heart/')) && /\?id=Q1&preview=counsel$/.test(pvc.link('counsel/?id=Q1')));
 check('켜는 날: COUNSEL_ENABLED 만 켜면 하트는 그대로 숨김', clientCtx({ on: true }).enabled() && !clientCtx({ on: true }).heartOn());
 check('켜는 날: 결제 버튼은 HEART_ENABLED + PAID_OPEN 둘 다', !clientCtx({ on: true, heart: true }).payOn() && clientCtx({ on: true, heart: true, paid: true }).payOn());
+check('빌라·오피스텔·상가 결과와 재개발 구역 지도 상세에도 같은 칸(재개발은 분야 redev)', /JDJ_CS \? JDJ_CS\.slot\(\{ gu: /.test(read('assets/villa-view.js')) && /JDJ_CS \? JDJ_CS\.slot\(\{ gu: sggName\(S\.g\) \}\)/.test(read('assets/offi-view.js'))
+  && /JDJ_CS \? JDJ_CS\.slot\(\{ gu: sggName\(g\) \}\)/.test(read('assets/comm-view.js')) && /JDJ_CS\.slot\(\{ gu: z\.gn, cat: 'redev' \}\)/.test(read('villa/zone/index.html'))
+  && /assets\/counsel\.js\?v=\d+/.test(read('villa/zone/index.html')) && /assets\/agents\.js/.test(read('villa/zone/index.html')) && /data-cs-cat="redev"/.test(pvc.slot({ gu: '성북구', cat: 'redev' })) && clientCtx().slot({ gu: '성북구', cat: 'redev' }) === '');
 check("단지 화면 '이 동네 확인된 전문가' 칸: 꺼져 있으면 빈 글자, 미리 보기면 칸", clientCtx().slot({ gu: '강남구' }) === '' && /data-cs-near="강남구"/.test(pvc.slot({ gu: '강남구' })) && /JDJ_CS\.slot\(\{gu: sggName\(d\.code\)\}\)/.test(read('mine/index.html')));
 check('안내 문구: 전문가 글쓰기 칸(늘 회색 한 줄 + 걸러질 때 잠깐) · 고객 [채팅하기] 아래 · 채팅 열릴 때 전체 프로필 알림', pvc.MASK_NOTE === '사무소 이름과 연락처는 가려져요. 고객과 채팅이 열리면 그 고객에게 모두 공개돼요.' && pvc.CHAT_NOTE === '채팅을 시작하면 사무소 이름과 연락처를 볼 수 있어요.'
   && /CS\.maskLine\(\)/.test(read('counsel/index.html')) && /CS\.watchMask\(/.test(read('counsel/index.html')) && /CS\.maskLine\(\)/.test(read('counsel/expert/index.html')) && /setTimeout\(\(\) => \{ box\.hidden = true; \}, 3800\)/.test(read('assets/counsel.js'))
@@ -122,7 +125,7 @@ check('환불 정책 숫자 = 규칙 파일(7일 · 1,950원)', /7일 안에 하
 const SH = require('../assets/share-head.js');
 check('머리줄 공유: 운영자·하트·전문가·채팅 화면에는 단추 없음, 고민 상담 목록에는 있음', ['counsel/admin/', 'counsel/heart/', 'counsel/expert/', 'counsel/chat/'].every(p => SH.isPrivate('/jangdaejang-calc/' + p)) && !SH.isPrivate('/jangdaejang-calc/counsel/'));
 const sw = read('sw.js');
-check('서비스 워커: 하트 결제키가 담긴 주소는 저장 안 함 · 공용 파일', /counsel\/heart\/'\) && u\.search\) return;/.test(sw) && /counsel-core\.js\?v=3/.test(sw) && /counsel\.js\?v=3/.test(sw));
+check('서비스 워커: 하트 결제키가 담긴 주소는 저장 안 함 · 공용 파일', /counsel\/heart\/'\) && u\.search\) return;/.test(sw) && /counsel-core\.js\?v=4/.test(sw) && /counsel\.js\?v=4/.test(sw));
 /* 시드 글 */
 const seed = JSON.parse(read('counsel/seed.json'));
 check('시드: 15개 · 모두 draft:true · 분류가 맞음 · 영상 칸(videoUrl) 있음', seed.items.length === 15 && seed.items.every(x => x.draft === true && C.catName(x.cat) && x.videoUrl === '' && /^s\d{2}$/.test(x.sid)) && new Set(seed.items.map(x => x.sid)).size === 15);
@@ -451,6 +454,11 @@ check('공정 순환: 날마다 순서가 바뀜(무게는 비공개 설정)', t
 delete E.props.CS_PRO_RANK;
 r = E.post({ action: 'csProNear', gu: '서울 서초구' });
 check('이 동네 확인된 전문가: 그 구 전문가 최대 3명', r.ok && r.items.length === 3 && r.items.every(x => x.gu === '서초구'), r);
+const qR = E.post({ action: 'csAsk', s: E.member(91), cat: 'redev', title: '재개발 조합원 지위 문의', body: '재개발 구역 빌라를 사면 조합원 지위가 넘어오는지 궁금해요.' }).id;
+E.post({ action: 'csAnswer', s: five[4], id: qR, text: '투기과열지구라면 조합원 지위 양도 제한부터 확인해 보셔야 해요. 조합에 꼭 문의해 보세요.' });
+r = E.post({ action: 'csProNear', gu: '서초구', cat: 'redev' });
+check('재개발 화면(cat=redev): 재개발·재건축 답변을 해 온 전문가가 맨 앞 · 최대 3명 · 신원 숨김', r.ok && r.cat === 'redev' && r.items.length === 3 && r.items[0].id === fids[4] && r.items.every(x => /○○$/.test(x.name) && !x.org && !x.no), r.items);
+check('분야를 주면 그 분야 자격이 있는 전문가만(세금 → 세무사)', E.post({ action: 'csProNear', gu: '강남구', cat: 'tax' }).items.every(x => x.kind === 'tax') && E.post({ action: 'csProNear', gu: '강남구', cat: 'tax' }).items.length === 1);
 r = E.post({ action: 'csGet', s: u2, id: qO });
 check('질문 상세: 같은 구·분야 전문가 추천 3명(이미 답한 분 빼고)', r.rec.length >= 1 && r.rec.length <= 3 && r.rec.every(x => x.gu === '강남구'), r.rec);
 r = E.post({ action: 'csGet', s: h, id: qP });
