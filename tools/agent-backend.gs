@@ -1,6 +1,12 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v60 변경 요약 (v59 위에 다시 배포. 따로 실행할 함수 없음 — 시트 변경 없음. MOVE_ENABLED=false 라 지금 서비스에는 영향 없음)
+ *  - 이사 견적 보이는 업체 고침(mvViewer): 요청을 만들 때 정한 순서(처음 3곳·12시간마다 3곳씩 더)를 그대로 쓰던 것을, 볼 때마다 '지금 열 수 있는 업체'
+ *    (승인·노출 중 + 무료 열람이 남았거나 그 요청 값만큼 포인트가 있음)만 남겨 다시 셈. 예전에는 요청 뒤 무료 열람·포인트가 떨어진 업체가 보이는 3자리 중 하나를
+ *    차지해(열려고 하면 '포인트가 모자라요') 실제로 연락할 수 있는 업체가 2곳 이하로 줄 수 있었어요. 이미 연 업체는 늘 그대로 보여요.
+ *  - 검증: node tools/move-test.js </dev/null (요청 id 를 정해진 값으로 만들어 순서가 매번 같게 — 예전에는 무작위 id 때문에 약 3번에 1번 실패)
+ *
  * v59 변경 요약 (v58 위에 다시 배포. 따로 실행할 함수 없음 — 시트 변경 없음. 고민 상담은 아직 숨김)
  *  - '이 동네 확인된 전문가'(csProNear)가 분야(cat)를 받음: 재개발 구역 지도 상세는 'redev' — 그 분야 답변 자격이 있고 공개 답변을 해 온 전문가를 먼저, 나머지는 그날 순환.
  *    칸 자리: 내 집 시세 아파트·빌라·오피스텔·상가 결과 + 재개발 구역 지도 상세(화면 assets/counsel.js slot). 채팅 전 신원 숨김 규칙 그대로.
@@ -7257,6 +7263,14 @@ function mvIx() {
 function mvPlace(g, d) { const gn = mvGuName(g); return (gn ? gn + ' ' : '') + (d || ''); }
 
 /* ---------- 포인트(서버에서만) ---------- */
+/** v60 지금 열 수 있는 업체만 보이게: 요청을 만든 뒤 무료 열람·포인트가 떨어지거나 노출이 멈춘 업체는 그 요청의 보이는 자리(처음 3곳·12시간마다 더)에서 빼고 다음 순서로 채움.
+    돌려줌 (요청) → 지금 보이는 업체 id 목록(이미 연 업체는 늘 포함) */
+function mvViewer(t, now) {
+  const bal = {}; mvRows(SH_MVT).forEach(o => { const id = dpTxt(o.r[1]); bal[id] = (bal[id] || 0) + (Number(o.r[3]) || 0); });
+  const P = {}; mvAll().forEach(p => { P[p.id] = p; });
+  const can = (id, price) => { const p = P[id]; return !!p && mvLive(p, t) && (mvFreeLeft(p.freeLeft, p.freeUntil, t) > 0 || (bal[id] || 0) >= price); };
+  return L => { const price = mvPrice(L.size), op = L.opened.map(o => o.p); return mvVisible(L.ranked.filter(id => op.indexOf(id) >= 0 || can(id, price)), L.at, now, op); };
+}
 function mvBalance(pid) { let n = 0; mvRows(SH_MVT).forEach(o => { if (dpTxt(o.r[1]) === pid) n += Number(o.r[3]) || 0; }); return n; }
 function mvLedger(pid, kind, pts, free, lid, oid, memo) { mvSheet(SH_MVT).appendRow([new Date(), pid, kind, pts || 0, free || 0, lid || '', oid || '', cellSafe(String(memo || '').slice(0, 200))]); }
 const MV_LEDGER_NM = { charge: '충전', bonus: '충전 더 드림', open: '연락처 열람', free: '무료 열람', refund: '돌려 드림', freeGrant: '무료 열람 지급', adjust: '운영자 조정' };
@@ -7475,10 +7489,10 @@ function mvPartner(b) {
 function mvLeads(b) {
   const me = mvMeNeed(b), t = ymd(new Date()), now = Date.now();
   const opens = {}; mvRows(SH_MVO).forEach(o => { if (dpTxt(o.r[MVOC['업체']]) === me.id) opens[dpTxt(o.r[MVOC['요청']])] = { at: new Date(o.r[MVOC['시각']]).getTime(), rep: dpTxt(o.r[MVOC['신고']]), done: dpTxt(o.r[MVOC['처리']]), how: dpTxt(o.r[MVOC['결제']]), amt: Number(o.r[MVOC['금액']]) || 0 }; });
-  const out = [];
+  const out = [], vis = mvViewer(t, now);
   mvLeadsAll().reverse().forEach(L => {
     const mine = L.opened.some(o => o.p === me.id);
-    if (!mine && (L.st !== MV_LST.on || !mvLive(me, t) || L.date < t || mvVisible(L.ranked, L.at, now, L.opened.map(o => o.p)).indexOf(me.id) < 0)) return;
+    if (!mine && (L.st !== MV_LST.on || !mvLive(me, t) || L.date < t || vis(L).indexOf(me.id) < 0)) return;
     if (out.length >= 60) return;
     const o = opens[L.id] || {}, gone = L.st === MV_LST.cancel || L.st === MV_LST.gone;
     out.push({ id: L.id, at: Utilities.formatDate(new Date(L.at), 'Asia/Seoul', 'MM-dd HH:mm'), from: mvPlace(L.fg, L.fd), to: mvPlace(L.tg, L.td), date: L.date, size: L.size, elev: L.elev, memo: mine && !gone ? L.memo : '',
@@ -7496,7 +7510,7 @@ function mvOpen(b) {
   if (L.opened.some(o => o.p === me.id)) return { ok: true, again: true, name: openText(L.nameSeal), tel: openText(L.telSeal), memo: L.memo };
   if (L.st !== MV_LST.on) throw new Error(L.st === MV_LST.full ? `이미 ${MV_RULE.maxOpen}곳이 연락처를 열어 마감됐어요. 차감되지 않았어요.` : '고객이 요청을 취소했어요. 차감되지 않았어요.');
   if (L.opened.length >= MV_RULE.maxOpen) throw new Error(`이미 ${MV_RULE.maxOpen}곳이 연락처를 열어 마감됐어요. 차감되지 않았어요.`);
-  if (mvVisible(L.ranked, L.at, now, L.opened.map(o => o.p)).indexOf(me.id) < 0) throw new Error('이 요청은 지금 열 수 없어요.');
+  if (mvVisible(L.ranked, L.at, now, L.opened.map(o => o.p)).indexOf(me.id) < 0 && mvViewer(t, now)(L).indexOf(me.id) < 0) throw new Error('이 요청은 지금 열 수 없어요.');
   const price = mvPrice(L.size), free = mvFreeLeft(me.freeLeft, me.freeUntil, t);
   let how = '';
   if (free > 0) { how = '무료'; mvSetP(me.row, '무료남은', free - 1); mvLedger(me.id, 'free', 0, -1, L.id, '', (mvSize(L.size) || {}).t || ''); }

@@ -93,6 +93,7 @@ const mk = (o) => {
   U.base64DecodeWebSafe = s => s2b('').concat(Array.from(Buffer.from(s.replace(/-/g, '+').replace(/_/g, '/'), 'base64')).map(x => x > 127 ? x - 256 : x));
   U.base64Decode = s => Array.from(Buffer.from(s, 'base64')).map(x => x > 127 ? x - 256 : x);
   E.props.BRIEF_ADMIN_IDS = JSON.stringify(['k99']);
+  let uu = 0; U.getUuid = () => { uu++; const h = require('crypto').createHash('md5').update('mv' + uu).digest('hex'); return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20, 32)}`; };   // 요청·업체 id 를 정해진 값으로(노출 순서가 매번 같게)
   return E;
 };
 const day = (E, ymd, hh) => { E.now = Date.parse(`${ymd}T${hh || '10:00'}:00+09:00`); };
@@ -165,6 +166,10 @@ const P4 = E.sheets['이사업체'].rows.findIndex(x => x[0] === ids[3]) + 1;
 E.sheets['이사업체'].getRange(P4, 19).setValue(0);   // 4번째 업체 무료 열람 다 씀
 const seeL2 = E.post({ action: 'mvLeads', s: ps[3] }).leads.some(x => x.id === L2.id);
 check('포인트·무료 열람이 없는 업체에게는 새 요청이 가지 않음', !seeL2);
+{ const L2v = E.post({ action: 'mvLeads', s: ps[0] }).leads.some(x => x.id === L2.id) + E.post({ action: 'mvLeads', s: ps[1] }).leads.some(x => x.id === L2.id) + E.post({ action: 'mvLeads', s: ps[2] }).leads.some(x => x.id === L2.id);
+  check('열 수 없는 업체가 빠진 자리는 다음 순서 업체로 채움(열 수 있는 3곳 모두에게 보임)', L2v === 3, L2v); }
+r = E.post({ action: 'mvOpen', s: ps[3], id: L2.id });
+check('열 수 없는 업체가 직접 열려고 해도 차감 없이 막힘', !r.ok && E.sheets['이사열람'].rows.every(x => !(x[1] === ids[3] && x[2] === L2.id)), r);
 r = E.post({ action: 'mvAdminAct', s: adm, op: 'adjust', id: ids[3], pts: 20000, why: '계좌 입금 확인(시험)' });
 check('운영자 포인트 조정(메모 필수 · 기록)', r.ok && r.points === 20000 && E.sheets['이사포인트'].rows.some(x => x[2] === 'adjust' && x[3] === 20000));
 const L3 = E.post(leadB({ phone: '010-3333-4444', name: '이영희', size: 'l', fd: '도곡동', date: '2026-12-01' }));
