@@ -145,6 +145,18 @@
   </ul>
   </section>
 
+  <!-- 고민 상담·하트 처리 항목 초안 — 내부 메모: 변호사 검토 필요. COUNSEL_ENABLED 를 켜는 날 함께 보여요. -->
+  <section id="counsel" data-cs-only hidden>
+  <h2>고민 상담·하트 <span style="display:inline-block;font-size:13px;font-weight:800;color:#9A5B00;background:#FFF4E0;border-radius:6px;padding:2px 8px;vertical-align:3px">기능을 여는 날부터 적용</span></h2>
+  <ul>
+    <li>처리 항목: 카카오 회원번호를 되돌릴 수 없게 바꾼 값(원래 번호는 이 기능 기록에 남기지 않음), 질문·답변 글과 별명, 신고한 글 번호·이유.</li>
+    <li>전문가 신청: 이름, 전문가 종류, 등록번호, 소속, 활동 지역, 소개, 휴대폰 번호(암호화해 보관), 이메일. 이름·종류·소속·지역·소개는 답변 옆에 공개되고, 휴대폰 번호·이메일은 자격 확인 연락과 새 질문 알림에만 씁니다. 반려하면 휴대폰 번호는 바로 지웁니다.</li>
+    <li>연락처 보내기: 질문한 분이 동의해 고른 전문가 한 명에게만 휴대폰 번호와 남길 말을 전달합니다(제3자 제공 — 받는 사람: 질문한 분이 고른 그 전문가, 목적: 상담 연결, 보유: 질문한 분이 거두거나 글을 지우거나 탈퇴할 때까지). 번호는 암호화해 보관합니다.</li>
+    <li>하트: 충전 주문번호·금액·결제 수단·승인 시각, 하트 사용·환불 기록. 대금 결제 기록은 「전자상거래 등에서의 소비자보호에 관한 법률」에 따라 5년 동안 보관합니다(회원 탈퇴 뒤에도 회원번호 없이).</li>
+    <li>보유 기간: 글은 지우거나 탈퇴할 때까지(지운 글은 처리 기록만 1년), 신고 기록 1년, 전문가 신청 정보는 답변을 그만두거나 탈퇴할 때까지.</li>
+  </ul>
+  </section>
+
   <h2>4. 파기 절차와 방법</h2>
   <p>보유 기간이 지나거나 처리 목적이 달성된 개인정보는 지체 없이 파기합니다. 전자 파일은 복구할 수 없는 방법으로 삭제하고, 종이 문서는 분쇄하거나 소각합니다. 법령에 따라 보존해야 하는 정보는 별도로 분리해 해당 기간 동안만 보관합니다.</p>
 
@@ -167,6 +179,7 @@
   <h2>9. 방침의 변경</h2>
   <p>이 개인정보처리방침은 2026년 11월 20일부터 적용됩니다(2026년 11월 18일 판에 카카오 간편 로그인 회원 항목 추가). 중개사 연락 받기(제3자 제공)·제휴 중개사 업무 도구 항목은 그 기능을 여는 날부터 적용합니다. 내용이 바뀌면 시행 7일 전부터 사이트에 공지합니다.</p>
 </main>
+<script>(function(){var S=window.JDJ_SITE||{};if(S.COUNSEL_ENABLED!==true)return;document.querySelectorAll("[data-cs-only]").forEach(function(e){e.hidden=false;});if(S.HEART_ENABLED!==true)return;document.querySelectorAll("[data-heart-only]").forEach(function(e){e.hidden=false;});})();</script>
 <footer class="foot">★ 집예보 · <a href="../">홈</a></footer>
 </body>
 </html>

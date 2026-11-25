@@ -30,7 +30,7 @@ check('서버: 지금은 판매 잠금(PAID_OPEN=false)', T.PAID_OPEN === false)
 check('서버: 안내 문구', T.PAID_CLOSED_MSG === MSG, T.PAID_CLOSED_MSG);
 
 /* 1) 돈을 받는 요청은 모두 거절(시트·토스에 닿기 전에) */
-const PAID = ['createOrder', 'confirmPayment', 'briefOrder', 'briefConfirm', 'briefChangeQuote', 'briefChange', 'quizVoucherUse'];   // v55 예측 맞히기 리포트 이용권 쓰기도 유료 잠금
+const PAID = ['createOrder', 'confirmPayment', 'briefOrder', 'briefConfirm', 'briefChangeQuote', 'briefChange', 'quizVoucherUse', 'htOrder', 'htConfirm'];   // v55 예측 맞히기 리포트 이용권 쓰기도 유료 잠금 · 고민 상담 하트 충전도
 check('잠금 목록 = 결제 요청 전부', JSON.stringify(Object.keys(T.PAID_ACTIONS).sort()) === JSON.stringify(PAID.slice().sort()), Object.keys(T.PAID_ACTIONS));
 PAID.forEach(a => {
   touched.length = 0;
@@ -43,8 +43,8 @@ PAID.forEach(a => {
 const fnOf = i => { const all = [...GS.slice(0, i).matchAll(/\nfunction (\w+)\s*\(/g)]; return all.length ? all[all.length - 1][1] : ''; };
 const callers = re => { const out = new Set(); for (const m of GS.matchAll(re)) out.add(fnOf(m.index)); return [...out].sort(); };
 const confirmFns = callers(/tossCall\('confirm'/g), orderFns = callers(/(?<!function )newOrderId\(\)/g);
-check('토스 승인을 부르는 함수', JSON.stringify(confirmFns) === JSON.stringify(['briefChangeConfirm', 'briefConfirm', 'confirmPayment']), confirmFns);
-check('새 주문을 만드는 함수', JSON.stringify(orderFns) === JSON.stringify(['briefChange', 'briefOrder', 'createOrder']), orderFns);
+check('토스 승인을 부르는 함수', JSON.stringify(confirmFns) === JSON.stringify(['briefChangeConfirm', 'briefConfirm', 'confirmPayment', 'htConfirm']), confirmFns);
+check('새 주문을 만드는 함수', JSON.stringify(orderFns) === JSON.stringify(['briefChange', 'briefOrder', 'createOrder', 'htOrder']), orderFns);
 check('요금제 올리기 승인은 briefConfirm 안에서만', /function briefConfirm[^]*?briefChangeConfirm\(/.test(GS));
 
 /* 3) 무료 요청은 잠금에 걸리지 않음(이 가짜 환경에선 다른 이유로 실패해도, 잠금 문구로 거절되면 안 됨) */

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<title>운영자 답변</title>
+<!-- 고민 상담 운영자 화면 — 어디에도 링크하지 않음. 모닝 브리핑 운영자 모드 카카오 계정(서버 스크립트 속성 BRIEF_ADMIN_IDS)으로 로그인한 기기에서만 열려요.
+     새 질문 바로 답변(서비스 이름 + 상담팀) · 전문가 신청 승인/반려 · 신고 처리 · 시드 글 공개/숨김 · 하트 환불 승인 · 이 기기 미리 보기 켜기. 검색 제외(noindex) -->
+<script src="../../assets/agents.js"></script>
+<script src="../../assets/config.js?v=11"></script>
+<script src="../../assets/auth.js?v=10"></script>
+<script src="../../assets/counsel-core.js?v=1"></script>
+<script src="../../assets/counsel.js?v=1"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/aplus.css?v=46">
+<style>
+.wrap{max-width:1180px;margin:0 auto;padding:22px 16px 60px}
+h1{font-size:clamp(24px,6vw,30px);margin:4px 0 6px;letter-spacing:-.5px}
+.lead{margin:0 0 14px;font-size:15.5px;color:var(--sub2);line-height:1.6}
+.card{border:1px solid var(--line);border-radius:18px;padding:16px;background:#fff;margin:0 0 14px;min-width:0}
+.card h2{font-size:18px;font-weight:900;margin:0 0 4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card h2 .n{font-size:13px;font-weight:800;border-radius:999px;padding:1px 9px;background:var(--gray);color:var(--sub2)}
+.card h2 .n.hot{background:#FDECE4;color:#C2410C}
+.card>p{margin:0 0 8px;font-size:14px;color:var(--sub2);line-height:1.55}
+.st{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14.5px;line-height:1.6}
+.st b{font-weight:800}.st .on{color:#0E7A4F}.st .off{color:#9A5B00}
+.it{border-top:1px solid var(--line2);padding:12px 0;min-width:0}
+.it:first-of-type{border-top:0}
+.it .hd{display:flex;flex-wrap:wrap;gap:4px 8px;font-size:13.5px;color:var(--sub2)}
+.it .hd b{color:var(--text)}
+.it .tt{font-size:16px;font-weight:800;margin:4px 0 2px}
+.it .tx{margin:6px 0;font-size:15px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere;max-height:260px;overflow:auto}
+.it .why{font-size:13px;color:#9A5B00;margin-top:2px}
+.acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}
+.acts input,.acts textarea{min-height:42px;font:inherit;font-size:14.5px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;flex:1 1 220px;min-width:0}
+.acts textarea{min-height:120px;flex-basis:100%;line-height:1.6}
+.b{font:inherit;font-size:14px;font-weight:800;min-height:40px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:#fff;color:var(--sub);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.b.ok{border-color:#0E7A4F;color:#0E7A4F}.b.no{border-color:#C2410C;color:#C2410C}.b.main{background:var(--blue);border-color:var(--blue);color:#fff;min-height:46px;font-size:15px}
+.b[disabled]{opacity:.5}
+.none{font-size:14.5px;color:var(--sub2);margin:4px 0}
+.hint{font-size:13px;color:var(--sub2);background:var(--gray2);border-radius:10px;padding:6px 10px;margin:6px 0 0;line-height:1.55}
+.grid{display:grid;gap:0 14px}
+@media(min-width:960px){.grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}}
+details.sd summary{cursor:pointer;font-size:14px;font-weight:700;color:var(--blue);min-height:34px;display:flex;align-items:center}
+.tag{font-size:12px;font-weight:800;border-radius:999px;padding:1px 8px;background:var(--gray);color:var(--sub2)}
+.tag.on{background:#E6F5EE;color:#0E7A4F}.tag.off{background:#FFF4E0;color:#9A5B00}
+</style>
+<script src="../../assets/back.js?v=1" defer></script>
+</head>
+<body>
+<header class="top" data-noacct>
+  <a class="brand" href="../../" aria-label="홈"><span data-site-name></span></a>
+  <div class="badge plain">운영자 답변</div>
+</header>
+<main class="wrap" id="app"><p class="lead">불러오고 있어요…</p></main>
+<script>
+(function () {
+  'use strict';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+  var CS = window.JDJ_CS, C = window.JDJ_CSCORE, app = document.getElementById('app'), esc = CS.esc, SITE = CS.site(), SEED = null;
+  document.title = '고민 상담 운영자';
+  /* 이 기기 미리 보기가 켜져 있으면 안쪽 링크에 ?preview=counsel 을 붙여 숨김 상태에서도 열리게 */
+  function L(p) { var pv = localStorage.getItem(CS.LS_PV) === '1' && !(window.JDJ_SITE || {}).COUNSEL_ENABLED; return JB.SITE + p + (pv ? (p.indexOf('?') < 0 ? '?' : '&') + 'preview=counsel' : ''); }
+  if (!CS.loggedIn()) {
+    app.innerHTML = '<h1>고민 상담 운영자</h1><p class="lead">모닝 브리핑 운영자 모드로 등록한 카카오 계정으로 카카오 간편 로그인을 해 주세요.</p><div class="card">' + (window.JDJ_AUTH && JDJ_AUTH.btn ? JDJ_AUTH.btn('카카오 간편 로그인', 'counsel_admin') : '로그인 기능이 꺼져 있어요.') + '</div>';
+    return;
+  }
+  fetch(JB.SITE + 'counsel/seed.json?v=' + Date.now()).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (s) { SEED = s; queue(); });
+
+  function sec(title, list, html, hint, hot) {
+    return '<section class="card"><h2>' + title + '<span class="n' + (hot && list.length ? ' hot' : '') + '">' + list.length + '</span></h2>' + (hint ? '<p>' + hint + '</p>' : '')
+      + (list.length ? list.map(html).join('') : '<p class="none">없어요.</p>') + '</section>';
+  }
+  function qHd(x) { return '<div class="hd"><b>' + esc(x.cn) + '</b><span>' + esc(x.who) + '</span><span>' + esc(x.day) + '</span>' + (x.priv ? '<span class="tag off">1:1 비공개</span>' : '') + (x.pick ? '<span class="tag">전문가 지정</span>' : '') + (x.answered ? '<span class="tag on">전문가 답변 있음</span>' : '') + '</div>'; }
+  function why(x) { var w = [{ masked: '개인정보를 가려서 올림', norules: '거르기 설정 없음' }[x.why] || x.why || '', x.reps && x.reps.length ? '신고 ' + x.reps.length + '건: ' + x.reps.join(', ') : ''].filter(Boolean).join(' · '); return w ? '<div class="why">' + esc(w) + '</div>' : ''; }
+  function modBtns(x) {
+    return '<div class="acts">' + (x.st !== '공개' ? '<button type="button" class="b ok" data-op="show" data-id="' + esc(x.id) + '">공개하기</button>' : '')
+      + (x.st !== '임시조치' ? '<button type="button" class="b" data-op="hide" data-id="' + esc(x.id) + '">가리기(임시조치)</button>' : '')
+      + '<button type="button" class="b no" data-op="del" data-id="' + esc(x.id) + '">지우기</button></div>';
+  }
+  function qItem(x) {
+    return '<div class="it">' + qHd(x) + '<div class="tt"><a href="' + esc(L('counsel/?id=' + x.id)) + '" target="_blank" rel="noopener">' + esc(x.title) + '</a></div><p class="tx">' + esc(x.body) + '</p>' + why(x) + '</div>';
+  }
+  function fresh(x) {
+    return '<div class="it">' + qHd(x) + '<div class="tt"><a href="' + esc(L('counsel/?id=' + x.id)) + '" target="_blank" rel="noopener">' + esc(x.title) + '</a></div><p class="tx">' + esc(x.body) + '</p>' + why(x)
+      + (x.cat === 'loan' ? '<div class="hint">대출 질문: 상담팀 답변은 일반 안내만(특정 상품 권유·중개 금지). 전문가 답변은 등록된 대출모집인만 할 수 있어요.</div>' : '')
+      + '<div class="acts"><textarea data-ta="' + esc(x.id) + '" maxlength="' + C.LEN.answer[1] + '" placeholder="' + esc(SITE) + ' 상담팀으로 답하기 — 일반 안내로, 확실하지 않은 숫자는 확인할 곳을 알려 주세요."></textarea>'
+      + '<button type="button" class="b main" data-ans="' + esc(x.id) + '">상담팀 답변 올리기</button></div>'
+      + '<div class="acts"><input type="url" data-vu="' + esc(x.id) + '" placeholder="영상으로 답했다면 유튜브 주소" value="' + esc(x.video || '') + '"><button type="button" class="b" data-video="' + esc(x.id) + '">영상 연결</button>'
+      + '<input type="number" min="1" max="10" data-gn="' + esc(x.id) + '" placeholder="무상 하트 수" style="flex:0 1 130px"><button type="button" class="b" data-grant="' + esc(x.id) + '">하트 선물</button></div></div>';
+  }
+  function aItem(x) {
+    return '<div class="it"><div class="hd"><b>' + esc(x.who.name || '') + '</b><span>' + esc(x.who.kn || '상담팀') + '</span><span>' + esc(x.at) + '</span><a href="' + esc(L('counsel/?id=' + x.qid)) + '" target="_blank" rel="noopener">질문 보기</a></div><p class="tx">' + esc(x.text) + '</p>' + why(x) + modBtns(x) + '</div>';
+  }
+  function proItem(x) {
+    return '<div class="it"><div class="hd"><b>' + esc(x.name) + '</b><span>' + esc(x.kn) + '</span><span>신청 ' + esc(x.day) + '</span></div>'
+      + '<div class="tt" style="font-size:15px">' + (x.no ? '번호 ' + esc(x.no) + ' · ' : '') + esc(x.org || '소속 없음') + (x.area ? ' · ' + esc(x.area) : '') + '</div>'
+      + (x.intro ? '<p class="tx">' + esc(x.intro) + '</p>' : '') + '<div class="hint">확인할 곳: ' + esc(x.where) + '<br>연락처 ' + esc(x.phone || '-') + ' · ' + esc(x.mail || '-') + '</div>'
+      + '<div class="acts"><button type="button" class="b ok" data-pro="ok" data-id="' + esc(x.id) + '">승인</button><input type="text" maxlength="200" data-memo="' + esc(x.id) + '" placeholder="반려 이유(신청한 분께 메일로 가요)"><button type="button" class="b no" data-pro="no" data-id="' + esc(x.id) + '">반려</button></div></div>';
+  }
+  function proOk(x) {
+    return '<div class="it"><div class="hd"><b>' + esc(x.name) + '</b><span>' + esc(x.kn) + '</span><span>' + esc(x.org) + '</span><span>승인 ' + esc(x.day) + '</span></div>'
+      + '<div class="acts"><input type="text" maxlength="200" data-memo="' + esc(x.id) + '" placeholder="중지 이유(전문가에게 메일로 가요)"><button type="button" class="b no" data-pro="stop" data-id="' + esc(x.id) + '">답변 중지</button></div></div>';
+  }
+  function refund(x) {
+    return '<div class="it"><div class="hd"><b>' + CS.won(x.refund) + ' 환불</b><span>하트 ' + x.n + '개 · ' + CS.won(x.won) + ' 결제(' + esc(x.day) + ')</span><span>쓴 하트 ' + x.used + '개</span><span>요청 ' + esc(x.req) + '</span></div>'
+      + '<div class="why">' + esc(x.memo) + ' · 주문번호 ' + esc(x.order) + '</div>'
+      + '<div class="acts"><button type="button" class="b ok" data-rf="ok" data-id="' + esc(x.id) + '">승인하고 토스 결제 취소</button><button type="button" class="b" data-rf="done" data-id="' + esc(x.id) + '">토스에서 직접 취소했어요</button>'
+      + '<input type="text" maxlength="100" data-memo="' + esc(x.id) + '" placeholder="거절 이유"><button type="button" class="b no" data-rf="no" data-id="' + esc(x.id) + '">거절</button></div></div>';
+  }
+  function late(x) {
+    return '<div class="it">' + qHd(x) + '<div class="tt"><a href="' + esc(L('counsel/?id=' + x.id)) + '" target="_blank" rel="noopener">' + esc(x.title) + '</a></div>'
+      + '<div class="acts"><button type="button" class="b ok" data-ret="' + esc(x.id) + '">쓴 하트 돌려주기</button></div></div>';
+  }
+  function seeds(st) {
+    var items = SEED && Array.isArray(SEED.items) ? SEED.items : [], on = {};
+    (st || []).forEach(function (s) { on[s.sid] = s; });
+    return '<section class="card"><h2>시드 글<span class="n">' + items.length + '</span></h2><p>자주 묻는 고민 초안이에요(counsel/seed.json, 모두 초안). 내용을 읽어 보고 괜찮은 글만 [공개]해요. 공개하면 질문 + 상담팀 답변으로 올라가요. 고칠 곳이 있으면 seed.json 을 고친 뒤 공개해 주세요.</p>'
+      + (items.length ? items.map(function (s) {
+        var cur = on[s.sid], state = !cur ? '<span class="tag">아직 안 올림</span>' : cur.st === '공개' ? '<span class="tag on">공개 중</span>' : '<span class="tag off">' + esc(cur.st) + '</span>';
+        return '<div class="it"><div class="hd"><b>' + esc(s.sid) + '</b><span>' + esc(C.catName(s.cat)) + '</span>' + state + '</div><div class="tt">' + esc(s.title) + '</div>'
+          + '<details class="sd"><summary>질문·답변 읽어 보기</summary><p class="tx"><b>질문</b>\n' + esc(s.q) + '</p><p class="tx"><b>답변</b>\n' + esc(s.a) + '</p></details>'
+          + '<div class="acts">' + (!cur || cur.st !== '공개' ? '<button type="button" class="b ok" data-seed="pub" data-sid="' + esc(s.sid) + '">공개</button>' : '') + (cur && cur.st === '공개' ? '<button type="button" class="b" data-seed="hide" data-sid="' + esc(s.sid) + '">숨김</button>' : '') + '</div></div>';
+      }).join('') : '<p class="none">seed.json 을 불러오지 못했어요.</p>') + '</section>';
+  }
+  function queue() {
+    CS.post({ action: 'csAdminQueue' }).then(function (j) {
+      var cfg = j.cfg || {}, pv = localStorage.getItem(CS.LS_PV) === '1', S = window.JDJ_SITE || {};
+      app.innerHTML = '<h1>고민 상담 운영자</h1><p class="lead">새 질문에 바로 답하고, 전문가 신청·신고·환불·시드 글을 여기서 처리해요.</p>'
+        + '<div class="card"><div class="st"><span>화면 공개: <b class="' + (S.COUNSEL_ENABLED ? 'on">켜짐' : 'off">꺼짐(숨김)') + '</b></span><span>서버 문 열기: <b class="' + (cfg.open ? 'on">켜짐' : 'off">꺼짐') + '</b></span>'
+        + '<span>하트: <b class="' + (cfg.heart && S.HEART_ENABLED ? 'on">켜짐' : 'off">꺼짐') + '</b></span><span>결제: <b class="' + (cfg.paid ? 'on">열림' : 'off">잠김') + '</b></span>'
+        + '<span>거르기 설정: <b class="' + (cfg.rules ? 'on">들어옴' : 'off">기본 거르기만') + '</b></span><span>신고 ' + esc(cfg.reportHide) + '건이면 바로 가림</span></div>'
+        + '<div class="acts" style="margin-top:10px"><button type="button" class="b ' + (pv ? '' : 'main') + '" id="pv">' + (pv ? '이 기기 미리 보기 끄기' : '이 기기에서 미리 보기 켜기') + '</button>'
+        + (pv ? '<a class="b" href="../?preview=counsel">고민 상담 미리 보기</a><a class="b" href="../heart/?preview=counsel">하트 화면 미리 보기</a><a class="b" href="../expert/?preview=counsel">전문가 화면 미리 보기</a>' : '')
+        + '<button type="button" class="b" id="re">새로 고침</button></div></div>'
+        + '<div class="grid"><div>'
+        + sec('답을 기다리는 새 질문', j.fresh, fresh, '상담팀 답변이 아직 없는 공개 질문이에요(최근 50개).', true)
+        + sec('검토할 질문', j.holdQ, function (x) { return qItem(x) + modBtns(x); }, '거르기에 걸렸거나 신고로 가린 질문이에요. 임시조치는 30일 안에 결정해 주세요.', true)
+        + sec('검토할 답변', j.holdA, aItem, '', true)
+        + sec('신고 받은 공개 글', j.repQ.concat(j.repA), function (x) { return x.qid ? aItem(x) : qItem(x) + modBtns(x); }, '아직 가릴 만큼 신고가 쌓이지 않은 글이에요.', false)
+        + '</div><div>'
+        + sec('전문가 신청', j.pros, proItem, '등록 여부를 공개 조회 서비스로 확인한 뒤 승인해 주세요. 반려하면 연락처는 바로 지워져요.', true)
+        + sec('하트 환불 요청', j.refunds, refund, '금액은 환불 기준대로 계산했어요. 승인하면 토스에 그 금액만 부분 취소를 보내요.', true)
+        + sec('7일 넘게 답이 없는 지정·비공개 질문', j.late, late, '하트를 쓴 질문이에요. 지정한 전문가가 답하지 않았다면 하트를 돌려줄 수 있어요(현금 환불 아님).', true)
+        + seeds(j.seeds)
+        + sec('확인된 전문가', j.prosOk, proOk, '', false)
+        + '</div></div>';
+      document.getElementById('re').onclick = queue;
+      document.getElementById('pv').onclick = function () { if (pv) { localStorage.removeItem(CS.LS_PV); try { sessionStorage.removeItem(CS.SS_PV); } catch (e) {} } else localStorage.setItem(CS.LS_PV, '1'); queue(); };
+      app.onclick = act;
+    }).catch(function (e) {
+      app.innerHTML = '<h1>고민 상담 운영자</h1><div class="card"><p class="msg err" style="color:#C2410C">' + esc(e.code === 'unknown' ? '서버에 아직 이 기능이 없어요. Apps Script 를 다시 배포한 뒤에 열려요.' : e.message) + '</p><div class="acts"><button type="button" class="b" onclick="location.reload()">다시 시도</button></div></div>';
+    });
+  }
+  function memoOf(id) { var el = app.querySelector('[data-memo="' + id + '"]'); return el ? el.value.trim() : ''; }
+  function run(b, body) { b.disabled = true; return CS.post(body).then(queue).catch(function (x) { b.disabled = false; alert(x.message); }); }
+  function act(e) {
+    var b = e.target.closest('button'); if (!b) return;
+    var id = b.getAttribute('data-id');
+    if (b.hasAttribute('data-op')) { var op = b.getAttribute('data-op'); if (op === 'del' && !confirm('이 글을 지울까요? 되돌릴 수 없어요.')) return; return run(b, { action: 'csAdminAct', id: id, op: op }); }
+    if (b.hasAttribute('data-ans')) { var q = b.getAttribute('data-ans'), t = app.querySelector('[data-ta="' + q + '"]').value.trim(), ck = C.checkText('answer', t); if (!ck.ok) return alert(ck.err); return run(b, { action: 'csAnswer', id: q, text: t, team: true }); }
+    if (b.hasAttribute('data-video')) { var v = b.getAttribute('data-video'); return run(b, { action: 'csAdminAct', id: v, op: 'video', url: app.querySelector('[data-vu="' + v + '"]').value.trim() }); }
+    if (b.hasAttribute('data-grant')) { var g = b.getAttribute('data-grant'), n = Number(app.querySelector('[data-gn="' + g + '"]').value); if (!(n >= 1 && n <= 10)) return alert('하트는 1~10개까지 줄 수 있어요.'); if (!confirm('질문한 분께 무상 하트 ' + n + '개를 줄까요? 무상 하트는 환불 대상이 아니에요.')) return; return run(b, { action: 'csAdminGrant', id: g, n: n }); }
+    if (b.hasAttribute('data-pro')) { var po = b.getAttribute('data-pro'), m = memoOf(id); if (po !== 'ok' && !m) return alert('이유를 적어 주세요. 신청한 분께 메일로 가요.'); return run(b, { action: 'csAdminPro', id: id, op: po, memo: m }); }
+    if (b.hasAttribute('data-rf')) { var ro = b.getAttribute('data-rf'); if (ro === 'ok' && !confirm('토스에 결제 부분 취소를 보낼까요? 되돌릴 수 없어요.')) return; if (ro === 'done' && !confirm('토스 상점관리자에서 이미 취소했나요? 환불 완료로 기록해요.')) return; return run(b, { action: 'csAdminRefund', id: id, op: ro, memo: memoOf(id) }); }
+    if (b.hasAttribute('data-ret')) { if (!confirm('쓴 하트를 돌려줄까요?')) return; return run(b, { action: 'csAdminReturn', id: b.getAttribute('data-ret') }); }
+    if (b.hasAttribute('data-seed')) return run(b, { action: 'csAdminSeed', sid: b.getAttribute('data-sid'), op: b.getAttribute('data-seed') });
+  }
+})();
+</script>
+</body>
+</html>

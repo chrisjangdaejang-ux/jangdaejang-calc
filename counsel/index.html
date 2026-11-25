@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../assets/icons/apple-180.png">
+<title>고민 상담</title>
+<meta name="description" content="집 사고팔기·전월세·세금·대출 고민을 묻고, 자격을 확인한 전문가와 상담팀의 답을 받아 보세요">
+<!-- 고민 상담(질문 목록·쓰기·상세·내 질문) — assets/config.js COUNSEL_ENABLED 가 false 면 '준비 중'만 보여요(운영자 미리 보기 제외). 검색 제외(noindex)
+     주소: ?w=1 질문 쓰기 · ?id=Q… 질문 보기 · ?mine=1 내 질문 · ?c=분류 -->
+<script>window.JDJ_CONFIG = { tool:'counsel', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../assets/pwa.js?v=2" defer></script>
+<script src="../assets/biz.js?v=3" defer></script>
+<script src="../assets/track.js?v=2"></script>
+<script src="../assets/agents.js"></script>
+<script src="../assets/config.js?v=11"></script>
+<script src="../assets/auth.js?v=10"></script>
+<script src="../assets/savefb.js?v=1"></script>
+<script src="../assets/counsel-core.js?v=1"></script>
+<script src="../assets/counsel.js?v=1"></script>
+<script src="../assets/tabbar.js?v=5" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/aplus.css?v=46">
+<script src="../assets/back.js?v=1" defer></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../" aria-label="홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name></span></a>
+  <div class="badge plain">고민 상담</div>
+</header>
+<main class="cs-wrap" id="app"></main>
+<footer class="foot">답변은 일반적인 안내예요. 실제 거래·신고 전에는 관계 기관이나 전문가에게 꼭 확인해 주세요.<br>★ <span data-site-name></span> · <a href="../">홈</a> · <a href="../terms/#counsel">이용약관</a> · <a href="../privacy/">개인정보처리방침</a></footer>
+<script>
+(function () {
+  'use strict';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+  var CS = window.JDJ_CS, C = window.JDJ_CSCORE, A = window.JDJ_AUTH, F = window.JDJ_SAVEFB, app = document.getElementById('app');
+  var esc = CS.esc, SITE = CS.site();
+  document.title = '고민 상담' + (SITE ? ' — ' + SITE : '');
+  CS.style();
+  if (!CS.enabled()) { app.innerHTML = CS.soonHtml(); return; }
+  var q = new URLSearchParams(location.search), qid = String(q.get('id') || ''), cat = String(q.get('c') || '');
+  if (!C.catName(cat)) cat = '';
+  if (/^Q[0-9A-F]{10}$/.test(qid)) detail(qid);
+  else if (q.get('w') === '1') write();
+  else if (q.get('mine') === '1') mine();
+  else list();
+
+  function catChips(cur, all) {
+    return '<div class="cs-chips" role="group" aria-label="분류">' + (all ? '<button type="button" class="cs-chip" data-cat="" aria-pressed="' + (!cur) + '">전체</button>' : '')
+      + C.CATS.map(function (c) { return '<button type="button" class="cs-chip" data-cat="' + c[0] + '" aria-pressed="' + (cur === c[0]) + '">' + esc(c[1]) + '</button>'; }).join('') + '</div>';
+  }
+  function side() {
+    var h = '<aside class="cs-side">'
+      + '<section class="cs-panel cs-cream"><h2>이렇게 답해 드려요</h2><ul>'
+      + '<li>자격을 확인한 <b>공인중개사·세무사·분양상담사·법무사·대출상담사</b>가 답해요. 질문 하나에 전문가 답변은 다섯 개까지예요.</li>'
+      + '<li><b>' + esc(SITE) + ' 상담팀</b>이 공식 답변을 함께 달아요.</li>'
+      + '<li>내 연락처는 보이지 않아요. 답변을 보고 마음에 드는 전문가 한 분에게만 직접 보낼 수 있어요.</li>'
+      + '<li>질문하기와 답변 보기는 모두 무료예요.</li></ul>'
+      + '<div class="cs-acts"><a class="cs-btn full" href="' + esc(CS.link('counsel/?w=1')) + '">질문하기</a><a class="cs-btn ghost full" href="' + esc(CS.link('counsel/?mine=1')) + '">내 질문 보기</a></div></section>';
+    if (CS.heartOn()) h += '<section class="cs-panel"><h2><span class="cs-heart"></span>하트</h2><p>하트로 원하는 전문가를 지정해 묻거나, 1:1로 비공개 상담을 요청하거나, 내 질문을 맨 위로 올릴 수 있어요.</p>'
+      + '<div class="cs-acts"><a class="cs-btn sub full" href="' + esc(CS.link('counsel/heart/')) + '">내 하트 보기</a></div></section>';
+    h += '<section class="cs-panel"><h2>전문가이신가요?</h2><p>자격 확인을 마치면 질문에 답하고 내 전문 분야를 알릴 수 있어요.</p><div class="cs-acts"><a class="cs-btn ghost full" href="' + esc(CS.link('counsel/expert/')) + '">전문가로 답하기</a></div></section>';
+    return h + '</aside>';
+  }
+  function itemHtml(x) {
+    return '<a class="cs-item" href="' + esc(CS.link('counsel/?id=' + x.id)) + '"><div class="cs-meta"><span class="cs-tag gray">' + esc(x.cn) + '</span>'
+      + (x.upOn ? '<span class="cs-tag up">위로 올린 질문</span>' : '') + (x.pick ? '<span class="cs-tag">전문가 지정</span>' : '') + (x.team ? '<span class="cs-tag team">공식 답변</span>' : '')
+      + (x.video ? '<span class="cs-tag">영상 답변</span>' : '') + (x.st && x.st !== '공개' ? '<span class="cs-tag pv">' + esc(x.st) + '</span>' : '') + (x.priv ? '<span class="cs-tag pv">1:1 비공개</span>' : '')
+      + '<span>' + esc(x.who) + ' · ' + esc(x.day) + '</span><span class="cs-n">답변 ' + (x.n || 0) + '</span></div>'
+      + '<h3>' + esc(x.title) + '</h3><p>' + esc(x.snip) + '</p></a>';
+  }
+
+  /* ---------- 목록 ---------- */
+  function list() {
+    var page = 0, items = [];
+    app.innerHTML = '<h1>고민 상담' + CS.pvTag() + '</h1><p class="cs-lead">집 사고팔기부터 전월세·세금·대출까지, 혼자 풀기 어려운 고민을 물어보세요. 자격을 확인한 전문가가 답해 드려요.</p>'
+      + '<div class="cs-grid"><div>' + catChips(cat, true) + '<div class="cs-list" id="list"><p class="cs-lead">불러오고 있어요…</p></div><div class="cs-acts" id="more"></div></div>' + side() + '</div>';
+    app.querySelector('.cs-chips').onclick = function (e) {
+      var b = e.target.closest('[data-cat]'); if (!b) return;
+      cat = b.getAttribute('data-cat'); page = 0; items = [];
+      app.querySelectorAll('.cs-chips [data-cat]').forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
+      history.replaceState(null, '', location.pathname + (cat ? '?c=' + cat : '') + (CS.link('').indexOf('preview=') > 0 ? (cat ? '&' : '?') + 'preview=counsel' : ''));
+      load();
+    };
+    load();
+    function load() {
+      var box = document.getElementById('list'), more = document.getElementById('more');
+      if (!page) box.innerHTML = '<p class="cs-lead">불러오고 있어요…</p>';
+      CS.post({ action: 'csList', cat: cat, page: page }).then(function (j) {
+        if (!j.open) { app.innerHTML = CS.soonHtml(); return; }
+        items = items.concat(j.items);
+        box.innerHTML = items.length ? items.map(itemHtml).join('') : '<div class="cs-empty">아직 이 분류에 올라온 고민이 없어요.<br>첫 질문을 남겨 주세요.</div>';
+        more.innerHTML = j.more ? '<button type="button" class="cs-btn ghost full" id="moreB">더 보기</button>' : '';
+        if (j.more) document.getElementById('moreB').onclick = function () { page++; load(); };
+      }).catch(function (e) { box.innerHTML = '<div class="cs-empty">' + esc(e.code === 'unknown' ? '고민 상담은 준비 중이에요.' : '목록을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.') + '</div>'; });
+    }
+  }
+
+  /* ---------- 질문 쓰기 ---------- */
+  function write() {
+    app.innerHTML = '<h1>질문하기' + CS.pvTag() + '</h1><p class="cs-lead">상황을 자세히 적을수록 정확한 답을 받을 수 있어요. 지역, 보유 주택 수, 계약 시기처럼 판단에 필요한 내용을 함께 적어 주세요.</p>'
+      + '<div class="cs-grid"><div class="cs-panel" id="box"></div>' + side() + '</div>';
+    var box = document.getElementById('box');
+    if (!CS.loggedIn()) { box.innerHTML = '<h2>질문하기</h2>' + CS.loginBox('질문하기'); return; }
+    var hearts = CS.heartOn();
+    box.innerHTML = '<form class="cs-form" id="f" novalidate>'
+      + '<div><span class="cs-lab" id="catL">분류</span>' + catChips(cat, false) + '<div id="loanNote"></div></div>'
+      + '<div><label for="t">제목</label><input id="t" class="cs-inp" maxlength="' + C.LEN.title[1] + '" placeholder="예: 전세 만기 전에 이사 가도 보증금을 돌려받을 수 있을까요?"><div class="cs-cnt"><span id="tc">0</span>/' + C.LEN.title[1] + '</div></div>'
+      + '<div><label for="b">내용</label><textarea id="b" class="cs-inp" maxlength="' + C.LEN.body[1] + '" placeholder="상황을 차근차근 적어 주세요."></textarea><div class="cs-cnt"><span id="bc">0</span>/' + C.LEN.body[1] + '</div><p class="cs-help">' + esc(CS.PI_NOTE) + '</p></div>'
+      + '<div><label for="n">별명 <small style="font-weight:500;color:var(--sub2)">(선택 · 비워 두면 \'익명\'으로 보여요)</small></label><input id="n" class="cs-inp" maxlength="' + C.LEN.nick[1] + '" placeholder="예: 첫집준비"></div>'
+      + (hearts ? '<div><span class="cs-lab">질문 방법</span><div class="cs-opt" role="radiogroup">'
+        + '<label><input type="radio" name="use" value="" checked><span>모두에게 묻기<small>무료 · 전문가 누구나 답할 수 있어요</small></span></label>'
+        + '<label><input type="radio" name="use" value="pick"><span>전문가 지정 <span class="cs-heart">' + C.USES.pick.n + '</span><small>고른 전문가에게 알림이 가요. 질문은 모두에게 보여요</small></span></label>'
+        + '<label><input type="radio" name="use" value="private"><span>1:1 비공개 상담 <span class="cs-heart">' + C.USES.private.n + '</span><small>고른 전문가와 나만 볼 수 있어요</small></span></label></div>'
+        + '<div id="pros"></div></div>' : '')
+      + '<div class="cs-acts"><button type="submit" class="cs-btn" id="send">질문 올리기</button><a class="cs-btn ghost" href="' + esc(CS.link('counsel/')) + '">목록으로</a></div><p class="cs-msg" id="msg" aria-live="polite"></p></form>';
+    var f = document.getElementById('f'), use = '', pros = null;
+    function syncCat() {
+      app.querySelectorAll('#f .cs-chips [data-cat]').forEach(function (x) { x.setAttribute('aria-pressed', x.getAttribute('data-cat') === cat); });
+      document.getElementById('loanNote').innerHTML = cat === 'loan' ? '<p class="cs-note warn">' + esc(CS.LOAN_NOTE) + '</p>' : '';
+      if (use) loadPros();
+    }
+    f.querySelector('.cs-chips').onclick = function (e) { var b = e.target.closest('[data-cat]'); if (!b) return; cat = b.getAttribute('data-cat'); syncCat(); };
+    syncCat();
+    ['t', 'b'].forEach(function (id) { var el = document.getElementById(id); el.oninput = function () { document.getElementById(id + 'c').textContent = el.value.length; }; });
+    if (hearts) f.addEventListener('change', function (e) { if (e.target.name === 'use') { use = e.target.value; loadPros(); } });
+    function loadPros() {
+      var el = document.getElementById('pros'); if (!el) return;
+      if (!use) { el.innerHTML = ''; return; }
+      el.innerHTML = '<p class="cs-help">전문가를 불러오고 있어요…</p>';
+      var only = (C.CAT_ONLY[cat] || [])[0] || '';
+      CS.post({ action: 'csExperts', kind: only }).then(function (j) {
+        pros = j.list;
+        el.innerHTML = pros.length ? '<p class="cs-help" style="margin-top:10px">답을 받고 싶은 전문가를 골라 주세요.</p><div class="cs-pros" role="radiogroup">' + pros.map(function (p) {
+          return '<label class="cs-pro"><input type="radio" name="to" value="' + esc(p.id) + '"><span><b>' + esc(p.name) + '</b> <span class="cs-tag ok">' + esc(p.kn) + '</span><small>' + esc([p.org, p.area].filter(Boolean).join(' · ')) + '</small>' + (p.intro ? '<small>' + esc(p.intro) + '</small>' : '') + '</span></label>';
+        }).join('') + '</div>' : '<p class="cs-note">' + (only ? '지금은 이 분야 전문가가 아직 없어요.' : '아직 확인된 전문가가 없어요.') + ' 모두에게 묻기로 올려 주세요.</p>';
+      }).catch(function (e) { el.innerHTML = '<p class="cs-msg err">' + esc(e.message) + '</p>'; });
+    }
+    f.onsubmit = function (e) {
+      e.preventDefault();
+      var m = document.getElementById('msg'), b = document.getElementById('send');
+      var body = { action: 'csAsk', cat: cat, title: document.getElementById('t').value.trim(), body: document.getElementById('b').value.trim(), nick: document.getElementById('n').value.trim() };
+      if (!cat) return CS.msg(m, '분류를 골라 주세요.');
+      var ct = C.checkText('title', body.title); if (!ct.ok) { document.getElementById('t').focus(); return CS.msg(m, ct.err); }
+      var cb = C.checkText('body', body.body); if (!cb.ok) { document.getElementById('b').focus(); return CS.msg(m, cb.err); }
+      if (use) { var to = f.querySelector('input[name=to]:checked'); if (!to) return CS.msg(m, '전문가를 골라 주세요.'); body.use = use; body.to = to.value; }
+      if (F) F.busy(b, '올리는 중…'); else b.disabled = true;
+      CS.post(body).then(function (j) {
+        location.href = CS.link('counsel/?id=' + j.id) + (j.hold ? '#hold' : j.masked ? '#masked' : '');
+      }).catch(function (x) {
+        if (F) F.restore(b); else b.disabled = false;
+        CS.msg(m, x.code === 'heart' ? x.message + ' 하트 화면에서 충전할 수 있어요.' : x.message);
+      });
+    };
+  }
+
+  /* ---------- 질문 보기 ---------- */
+  function detail(id) {
+    app.innerHTML = '<p class="cs-lead">불러오고 있어요…</p>';
+    CS.post({ action: 'csGet', id: id }).then(function (j) { paint(j); }).catch(function (e) {
+      app.innerHTML = '<div class="cs-soon"><h1>' + esc(e.code === 'closed' ? '준비 중이에요' : '글을 볼 수 없어요') + '</h1><p>' + esc(e.message) + '</p><a href="' + esc(CS.link('counsel/')) + '">목록으로</a></div>';
+    });
+    function paint(j) {
+      var x = j.q, can = j.can.answer, flash = location.hash;
+      document.title = x.title + ' — 고민 상담' + (SITE ? ' · ' + SITE : '');
+      var h = '<div class="cs-grid"><div>'
+        + '<article class="cs-q"><div class="cs-meta" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13.5px;color:var(--sub2)"><span class="cs-tag gray">' + esc(x.cn) + '</span>'
+        + (x.priv ? '<span class="cs-tag pv">1:1 비공개 상담</span>' : '') + (x.pick ? '<span class="cs-tag">전문가 지정 질문</span>' : '') + (x.upOn ? '<span class="cs-tag up">위로 올린 질문</span>' : '') + CS.pvTag()
+        + '<span>' + esc(x.who) + ' · ' + esc(x.day) + '</span></div>'
+        + '<h1>' + esc(x.title) + '</h1><p class="cs-body">' + esc(x.body) + '</p>'
+        + (x.to ? '<p class="cs-help" style="margin-top:10px">지정한 전문가: <b>' + esc(x.to.name) + '</b> · ' + esc(x.to.kn) + '</p>' : '')
+        + (x.video ? '<a class="cs-video" href="' + esc(x.video) + '" target="_blank" rel="noopener">이 고민, 영상으로 답했어요</a>' : '')
+        + (x.st && x.st !== '공개' ? '<p class="cs-note warn">' + esc(x.st === '검토대기' ? '운영자가 확인한 뒤 모두에게 보여요.' : x.st === '임시조치' ? '신고가 들어와 잠시 가려 두었어요. 운영자가 확인하고 있어요.' : '지금은 나만 볼 수 있어요.') + '</p>' : '')
+        + (flash === '#masked' ? '<p class="cs-note">전화번호·주민등록번호처럼 보이는 숫자를 가려서 올렸어요.</p>' : '')
+        + (x.cat === 'loan' ? '<p class="cs-note warn">' + esc(CS.LOAN_NOTE) + '</p>' : '')
+        + '<div class="cs-rep">' + (x.mine ? (CS.heartOn() && !x.priv && !x.upOn && x.st === '공개' ? '<button type="button" class="cs-lnk" data-bump>맨 위로 올리기 (하트 ' + C.USES.bump.n + '개 · ' + C.USES.bump.hours + '시간)</button>' : '') + '<button type="button" class="cs-lnk" data-del="' + esc(x.id) + '">질문 지우기</button>'
+          : '<button type="button" class="cs-lnk" data-rep="' + esc(x.id) + '">신고</button>') + '<div data-repbox="' + esc(x.id) + '" style="flex-basis:100%"></div></div>'
+        + '<p class="cs-msg" id="qmsg" aria-live="polite"></p></article>'
+        + '<h2 style="font-size:19px;font-weight:900;margin:22px 0 10px">답변 ' + j.answers.length + '</h2>'
+        + (j.answers.length ? '<div class="cs-list">' + j.answers.map(function (a) { return ansHtml(a, x); }).join('') + '</div>' : '<div class="cs-empty">아직 답변이 없어요. 전문가와 상담팀이 확인하고 있어요.</div>')
+        + answerBox(x, can) + '<div class="cs-acts"><a class="cs-btn ghost" href="' + esc(CS.link('counsel/')) + '">목록으로</a></div></div>' + side() + '</div>';
+      app.innerHTML = h;
+      bind(j);
+    }
+    function ansHtml(a, x) {
+      var pro = a.who && a.who.kind === 'pro';
+      return '<article class="cs-ans' + (a.who.kind === 'team' ? ' team' : '') + '" data-aid="' + esc(a.id) + '"><div class="cs-who">' + CS.whoHtml(a.who) + '<span class="cs-dt">' + esc(a.at) + '</span></div>'
+        + (a.st && a.st !== '공개' ? '<p class="cs-note warn">' + esc(a.st === '검토대기' ? '운영자가 확인한 뒤 모두에게 보여요.' : '신고로 잠시 가려 두었어요.') + '</p>' : '')
+        + '<p class="cs-body">' + esc(a.text) + '</p>'
+        + '<div class="cs-rep">'
+        + (x.mine && pro ? (a.sent ? '<span class="cs-tag ok">이 전문가에게 연락처를 보냈어요</span><button type="button" class="cs-lnk" data-unsend="' + esc(a.id) + '">보낸 연락처 거두기</button>'
+          : '<button type="button" class="cs-btn sub" style="min-height:40px;font-size:14px" data-send="' + esc(a.id) + '">이 전문가에게 내 연락처 보내기</button>') : '')
+        + (a.mine ? '<button type="button" class="cs-lnk" data-del="' + esc(a.id) + '">답변 지우기</button>' : '<button type="button" class="cs-lnk" data-rep="' + esc(a.id) + '">신고</button>')
+        + '<div data-repbox="' + esc(a.id) + '" style="flex-basis:100%"></div><div data-sendbox="' + esc(a.id) + '" style="flex-basis:100%"></div></div></article>';
+    }
+    function answerBox(x, can) {
+      if (!can || !can.ok) {
+        if (can && can.why === 'notpro') return '<p class="cs-note">이 질문에 답하고 싶은 전문가라면 <a href="' + esc(CS.link('counsel/expert/')) + '">전문가 신청</a>을 먼저 해 주세요.</p>';
+        if (can && can.why === 'unverified') return '<p class="cs-note">운영자가 자격을 확인하고 있어요. 확인이 끝나면 답할 수 있어요.</p>';
+        if (can && can.why === 'kind') return '<p class="cs-note">대출 질문에는 등록된 대출모집인(대출상담사)만 답할 수 있어요.</p>';
+        if (can && can.why === 'full') return '<p class="cs-note">전문가 답변이 ' + C.PRO_MAX + '개 모두 찼어요.</p>';
+        return '';
+      }
+      return '<section class="cs-panel" style="margin-top:14px"><h2>' + (can.team ? esc(SITE) + ' 상담팀으로 답하기 <span class="cs-tag team">공식 답변</span>' : '답변 쓰기') + '</h2>'
+        + '<p class="cs-help">일반적인 안내로 써 주세요. 확실하지 않은 숫자는 적지 말고 확인할 곳을 알려 주세요. 연락처·홍보 문구는 쓸 수 없어요.</p>'
+        + '<textarea id="ans" class="cs-inp" maxlength="' + C.LEN.answer[1] + '"></textarea><div class="cs-cnt"><span id="ansc">0</span>/' + C.LEN.answer[1] + '</div>'
+        + '<div class="cs-acts"><button type="button" class="cs-btn" id="ansB">답변 올리기</button></div><p class="cs-msg" id="amsg" aria-live="polite"></p></section>';
+    }
+    function bind(j) {
+      var x = j.q, ta = document.getElementById('ans');
+      if (ta) ta.oninput = function () { document.getElementById('ansc').textContent = ta.value.length; };
+      app.onclick = function (e) {
+        var t = e.target.closest('button'); if (!t) return;
+        if (t.id === 'ansB') {
+          var m = document.getElementById('amsg'), ck = C.checkText('answer', ta.value); if (!ck.ok) return CS.msg(m, ck.err);
+          if (F) F.busy(t, '올리는 중…'); else t.disabled = true;
+          CS.post({ action: 'csAnswer', id: x.id, text: ta.value.trim() }).then(function () { detail(x.id); })
+            .catch(function (er) { if (F) F.restore(t); else t.disabled = false; CS.msg(m, er.message); });
+          return;
+        }
+        if (t.hasAttribute('data-bump')) {
+          if (!confirm('하트 ' + C.USES.bump.n + '개를 써서 이 질문을 ' + C.USES.bump.hours + '시간 동안 목록 맨 위에 올릴까요?')) return;
+          t.disabled = true;
+          CS.post({ action: 'csBump', id: x.id }).then(function () { detail(x.id); }).catch(function (er) { t.disabled = false; CS.msg(document.getElementById('qmsg'), er.code === 'heart' ? er.message + ' 하트 화면에서 충전할 수 있어요.' : er.message); });
+          return;
+        }
+        if (t.hasAttribute('data-del')) {
+          if (!confirm('지울까요? 되돌릴 수 없어요.')) return;
+          t.disabled = true;
+          var did = t.getAttribute('data-del');
+          CS.post({ action: 'csDelete', id: did }).then(function () { if (/^Q/.test(did)) location.href = CS.link('counsel/?mine=1'); else detail(x.id); }).catch(function (er) { t.disabled = false; alert(er.message); });
+          return;
+        }
+        if (t.hasAttribute('data-rep')) { repForm(t.getAttribute('data-rep')); return; }
+        if (t.hasAttribute('data-why')) {
+          var tid = t.closest('[data-repbox]').getAttribute('data-repbox');
+          t.disabled = true;
+          CS.post({ action: 'csReport', id: tid, why: t.getAttribute('data-why') }).then(function (r) { t.closest('[data-repbox]').innerHTML = '<p class="cs-msg ok">' + (r.hidden ? '신고가 쌓여 바로 가렸어요. 운영자가 확인할게요.' : '신고했어요. 운영자가 확인할게요.') + '</p>'; })
+            .catch(function (er) { t.disabled = false; t.closest('[data-repbox]').insertAdjacentHTML('beforeend', '<p class="cs-msg err">' + esc(er.message) + '</p>'); });
+          return;
+        }
+        if (t.hasAttribute('data-send')) { sendForm(t.getAttribute('data-send')); return; }
+        if (t.hasAttribute('data-unsend')) { t.disabled = true; CS.post({ action: 'csContact', aid: t.getAttribute('data-unsend'), off: true }).then(function () { detail(x.id); }).catch(function (er) { t.disabled = false; alert(er.message); }); return; }
+        if (t.hasAttribute('data-sendgo')) {
+          var aid = t.getAttribute('data-sendgo'), box = t.closest('[data-sendbox]'), sm = box.querySelector('.cs-msg');
+          var ph = box.querySelector('input[type=tel]').value, note = box.querySelector('input[type=text]').value, ag = box.querySelector('input[type=checkbox]').checked;
+          if (!/^01[016789]\d{7,8}$/.test(ph.replace(/[^0-9]/g, ''))) return CS.msg(sm, '휴대폰 번호를 정확히 적어 주세요.');
+          if (!ag) return CS.msg(sm, '이 전문가 한 분께만 보내는 데 동의해 주세요.');
+          if (F) F.busy(t, '보내는 중…'); else t.disabled = true;
+          CS.post({ action: 'csContact', aid: aid, phone: ph, note: note, agree: true }).then(function () { detail(x.id); }).catch(function (er) { if (F) F.restore(t); else t.disabled = false; CS.msg(sm, er.message); });
+        }
+      };
+    }
+    function repForm(tid) {
+      var box = app.querySelector('[data-repbox="' + tid + '"]'); if (!box) return;
+      if (!CS.loggedIn()) { box.innerHTML = CS.loginBox('신고'); return; }
+      box.innerHTML = '<p class="cs-help">어떤 점이 문제인가요?</p><div class="cs-acts" style="margin-top:6px">' + CS.WHY.map(function (w) { return '<button type="button" class="cs-lnk" data-why="' + w[0] + '">' + esc(w[1]) + '</button>'; }).join('') + '</div>';
+    }
+    function sendForm(aid) {
+      var box = app.querySelector('[data-sendbox="' + aid + '"]'); if (!box) return;
+      box.innerHTML = '<div class="cs-panel" style="margin-top:8px;background:var(--gray2)"><h2 style="font-size:15.5px">내 연락처 보내기</h2>'
+        + '<p class="cs-help" style="margin-top:0">이 전문가 한 분에게만 보여요. 다른 전문가나 다른 이용자에게는 보이지 않고, 언제든 거둘 수 있어요.</p>'
+        + '<label class="cs-lab" for="ph' + aid + '">휴대폰 번호</label><input id="ph' + aid + '" type="tel" inputmode="numeric" autocomplete="tel" class="cs-inp" placeholder="010-0000-0000" style="margin:4px 0 8px">'
+        + '<label class="cs-lab" for="nt' + aid + '">남길 말 <small style="font-weight:500;color:var(--sub2)">(선택)</small></label><input id="nt' + aid + '" type="text" maxlength="60" class="cs-inp" placeholder="예: 평일 저녁에 연락 주세요" style="margin:4px 0 8px">'
+        + '<label class="cs-check"><input type="checkbox"> 상담 연락을 받기 위해 휴대폰 번호를 이 전문가 한 분께 보내는 데 동의해요. 번호는 상담 연결에만 쓰여요.</label>'
+        + '<div class="cs-acts"><button type="button" class="cs-btn" data-sendgo="' + esc(aid) + '">보내기</button></div><p class="cs-msg" aria-live="polite"></p></div>';
+    }
+  }
+
+  /* ---------- 내 질문 ---------- */
+  function mine() {
+    app.innerHTML = '<h1>내 질문' + CS.pvTag() + '</h1><p class="cs-lead">내가 올린 고민과 답변 수를 한눈에 볼 수 있어요.</p><div class="cs-grid"><div id="box"><p class="cs-lead">불러오고 있어요…</p></div>' + side() + '</div>';
+    var box = document.getElementById('box');
+    if (!CS.loggedIn()) { box.innerHTML = '<div class="cs-panel">' + CS.loginBox('내 질문 보기') + '</div>'; return; }
+    CS.post({ action: 'csMine' }).then(function (j) {
+      box.innerHTML = (CS.heartOn() ? '<p class="cs-note">남은 하트 <span class="cs-heart">' + j.hearts + '</span> · <a href="' + esc(CS.link('counsel/heart/')) + '">하트 내역 보기</a></p>' : '')
+        + (j.list.length ? '<div class="cs-list" style="margin-top:10px">' + j.list.map(itemHtml).join('') + '</div>' : '<div class="cs-empty">아직 올린 질문이 없어요.<br><a href="' + esc(CS.link('counsel/?w=1')) + '">첫 질문 남기기</a></div>');
+    }).catch(function (e) { box.innerHTML = '<div class="cs-empty">' + esc(e.message) + '</div>'; });
+  }
+})();
+</script>
+</body>
+</html>

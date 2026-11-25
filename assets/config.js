@@ -27,6 +27,11 @@
      켜는 날은 서버 tools/agent-backend.gs 의 DONGNE_ENABLED 도 함께 true 로. 대표 확인 전에는 켜지 않아요.
    BILLING_OPEN: 토스 자동결제(빌링 — 모닝 브리핑·동네 파트너 카드 등록·정기 결제) 안내 보이기. 토스 빌링 계약이 끝나기 전에는 false.
      켜는 날은 서버 tools/agent-backend.gs 의 BILLING_OPEN(그리고 PAID_OPEN)도 함께 true. false 면 약관·환불 정책의 자동 결제 조항(초안)이 숨어 있어요.
+   COUNSEL_ENABLED: 고민 상담(counsel/ — 질문·전문가 답변·운영자 답변) 켜기. false 면 메뉴·링크·sitemap 어디에도 없고 counsel/ 은 '준비 중'만 보여요(검색 제외).
+     운영자 미리 보기: counsel/admin/ 에서 [이 기기에서 미리 보기 켜기](모닝 브리핑 운영자 모드 카카오 계정만) + 주소에 ?preview=counsel.
+     켜는 날은 서버 tools/agent-backend.gs 의 COUNSEL_OPEN 도 함께 true 로. 대표 확인 전에는 켜지 않아요.
+   HEART_ENABLED: 하트(돈을 내고 충전해 고민 상담에서 쓰는 것 — counsel/heart/) 켜기. false 면 하트 칸·충전 화면이 보이지 않아요.
+     켜는 날은 서버 HEART_OPEN 도 함께 true. 결제 버튼은 PAID_OPEN 도 true 여야 나와요(서버도 PAID_OPEN 이 false 면 충전 주문을 거절해요).
    SITE_VERIFY_DAUM: 다음 웹마스터도구 PIN 코드 줄 전체('#DaumWebMasterTool:…'). 넣으면 robots.txt 맨 아래에 붙어요. */
 window.JDJ_SITE = {
   SITE_URL: 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc',
@@ -39,6 +44,8 @@ window.JDJ_SITE = {
   VWORLD_KEY: '',
   COMMUNITY_ENABLED: false,
   PARTNER_ENABLED: false,
+  COUNSEL_ENABLED: false,
+  HEART_ENABLED: false,
   BILLING_OPEN: false,
   PAID_OPEN: false,
   PAY_REVIEW: true

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="manifest" href="../../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
+<title>내 하트</title>
+<!-- 하트 충전·사용 내역·환불 요청 — HEART_ENABLED 가 false 면 '준비 중'(운영자 미리 보기 제외). 결제 버튼은 PAID_OPEN 도 켜져야 나와요.
+     토스 결제가 끝나면 이 화면(?paymentKey=…&orderId=…&amount=…)으로 돌아와 서버가 승인을 확인한 뒤에만 하트를 드려요. 검색 제외(noindex) -->
+<script>window.JDJ_CONFIG = { tool:'counsel', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../assets/pwa.js?v=2" defer></script>
+<script src="../../assets/biz.js?v=3" defer></script>
+<script src="../../assets/track.js?v=2"></script>
+<script src="../../assets/agents.js"></script>
+<script src="../../assets/config.js?v=11"></script>
+<script src="../../assets/auth.js?v=10"></script>
+<script src="../../assets/savefb.js?v=1"></script>
+<script src="../../assets/counsel-core.js?v=1"></script>
+<script src="../../assets/counsel.js?v=1"></script>
+<script src="../../assets/tabbar.js?v=5" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/aplus.css?v=46">
+<style>
+.ht-bal{display:flex;align-items:baseline;gap:8px;font-size:15px;color:var(--sub2)}
+.ht-bal b{font-size:40px;font-weight:900;color:#D6336C;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.ht-packs{display:grid;gap:10px;margin-top:10px}
+@media(min-width:640px){.ht-packs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1000px){.ht-packs{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.ht-pack{display:flex;flex-direction:column;gap:4px;border:1px solid var(--line);border-radius:16px;padding:14px;background:#fff;cursor:pointer;text-align:left;font:inherit;color:inherit;min-width:0}
+.ht-pack[aria-pressed="true"]{border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,107,255,.15)}
+.ht-pack .n{font-size:22px;font-weight:900}
+.ht-pack .w{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
+.ht-pack .per{font-size:13px;color:var(--sub2)}
+.ht-pack .off{align-self:flex-start;font-size:12px;font-weight:800;color:#0E7A4F;background:#E6F5EE;border-radius:999px;padding:1px 8px}
+.ht-uses{display:grid;gap:6px;margin:8px 0 0;padding:0;list-style:none}
+.ht-uses li{display:flex;justify-content:space-between;gap:10px;font-size:14.5px;padding:8px 0;border-bottom:1px solid var(--line2)}
+</style>
+<script src="../../assets/back.js?v=1" defer></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../../" aria-label="홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name></span></a>
+  <div class="badge plain">내 하트</div>
+</header>
+<main class="cs-wrap" id="app"></main>
+<footer class="foot">★ <span data-site-name></span> · <a href="../../">홈</a> · <a href="../../terms/#heart">이용약관</a> · <a href="../../refund/#heart">환불 정책</a> · <a href="../../privacy/#counsel">개인정보처리방침</a></footer>
+<script>
+(function () {
+  'use strict';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+  var CS = window.JDJ_CS, C = window.JDJ_CSCORE, F = window.JDJ_SAVEFB, app = document.getElementById('app'), esc = CS.esc, SITE = CS.site();
+  document.title = '내 하트' + (SITE ? ' — ' + SITE : '');
+  CS.style();
+  if (!CS.heartOn()) { app.innerHTML = CS.soonHtml(); return; }
+  var head = '<h1>내 하트' + CS.pvTag() + '</h1><p class="cs-lead">하트는 고민 상담에서 원하는 전문가에게 묻거나, 1:1로 비공개 상담을 요청하거나, 내 질문을 맨 위로 올릴 때 써요. 질문하기와 답변 보기는 하트 없이도 무료예요.</p>';
+  if (!CS.loggedIn()) { app.innerHTML = head + '<div class="cs-panel">' + CS.loginBox('하트 충전') + '</div>'; return; }
+  var Q = new URLSearchParams(location.search), flash = '';
+  /* 토스 결제에서 돌아옴: 서버가 승인을 확인해야 하트가 들어와요 */
+  var pk = Q.get('paymentKey') || '', oid = Q.get('orderId') || '', amt = Number(Q.get('amount'));
+  if (pk && oid && amt > 0) {
+    history.replaceState(null, '', location.pathname);
+    app.innerHTML = head + '<p class="cs-lead">결제를 확인하고 있어요. 창을 닫지 말아 주세요…</p>';
+    CS.post({ action: 'htConfirm', paymentKey: pk, orderId: oid, amount: amt }).then(function (j) { flash = '<p class="cs-note" role="status">하트 ' + j.n + '개를 충전했어요. 지금 ' + j.balance + '개 있어요.</p>'; load(); })
+      .catch(function (e) { flash = '<p class="cs-note warn" role="alert">' + esc(e.message) + ' 결제가 됐는데 하트가 보이지 않으면 주문번호(' + esc(oid) + ')와 함께 고객문의로 알려 주세요.</p>'; load(); });
+  } else {
+    if (Q.get('fail') === '1') { flash = '<p class="cs-note warn" role="alert">결제를 마치지 못했어요. 청구된 금액은 없어요.</p>'; history.replaceState(null, '', location.pathname); }
+    load();
+  }
+
+  function rules() {
+    return '<section class="cs-panel cs-cream" id="rules"><h2>하트 이용 안내</h2><ul class="ht-uses">'
+      + Object.keys(C.USES).map(function (k) { var u = C.USES[k]; return '<li><span>' + esc(u.name) + (u.hours ? ' (' + u.hours + '시간)' : '') + '</span><span class="cs-heart">' + u.n + '</span></li>'; }).join('')
+      + '<li><span>질문하기 · 답변 보기</span><b>무료</b></li></ul>'
+      + '<h2 style="margin-top:14px">환불 기준</h2><ul>'
+      + '<li>결제 후 ' + C.REFUND.days + '일 안에 하나도 쓰지 않은 하트는 전액 환불해 드려요.</li>'
+      + '<li>일부를 쓴 경우 남은 하트만큼 환불해 드려요. 이때 쓴 하트는 묶음 할인 전 값(하트 1개 ' + CS.won(C.unit()) + ')으로 계산해요.</li>'
+      + (C.REFUND.lateFee > 0 ? '<li>결제 후 ' + C.REFUND.days + '일이 지나 환불하면 환불 금액의 ' + Math.round(C.REFUND.lateFee * 100) + '%를 빼고 돌려 드려요.</li>' : '')
+      + '<li>이벤트 등으로 무상으로 받은 하트는 환불 대상이 아니에요.</li>'
+      + '<li>환불은 [환불 요청]을 누르면 운영자가 확인한 뒤 결제한 수단으로 취소해 드려요. 요청한 묶음의 하트는 그동안 쓸 수 없어요.</li>'
+      + '<li>하트는 ' + esc(SITE) + ' 고민 상담 안에서만 쓸 수 있고, 현금으로 바꾸거나 다른 사람에게 넘길 수 없어요.</li></ul>'
+      + '<p class="cs-help">자세한 내용은 <a href="' + esc(JB.SITE) + 'refund/#heart">환불 정책</a>과 <a href="' + esc(JB.SITE) + 'terms/#heart">이용약관</a>에 있어요.</p></section>';
+  }
+  function load() {
+    app.innerHTML = head + flash + '<p class="cs-lead">불러오고 있어요…</p>';
+    CS.post({ action: 'htMine' }).then(paint).catch(function (e) { app.innerHTML = head + flash + '<div class="cs-empty">' + esc(e.message) + '</div>'; });
+  }
+  function paint(j) {
+    var canPay = CS.payOn() && j.pay, pick = C.PACKS[1] ? C.PACKS[1].id : C.PACKS[0].id;
+    var packs = C.PACKS.map(C.packInfo);
+    app.innerHTML = head + flash + '<div class="cs-grid"><div>'
+      + '<section class="cs-panel"><div class="ht-bal">남은 하트 <b>' + j.balance + '</b>개</div>'
+      + '<div class="cs-acts"><a class="cs-btn ghost" href="' + esc(CS.link('counsel/?w=1')) + '">하트로 질문하기</a><a class="cs-btn ghost" href="' + esc(CS.link('counsel/?mine=1')) + '">내 질문</a></div></section>'
+      + '<section class="cs-panel"><h2>하트 충전</h2><div class="ht-packs" role="group" aria-label="하트 묶음">' + packs.map(function (p) {
+        return '<button type="button" class="ht-pack" data-pack="' + p.id + '" aria-pressed="' + (p.id === pick) + '"><span class="n"><span class="cs-heart">' + p.n + '</span></span><span class="w">' + CS.won(p.won) + '</span><span class="per">하트 1개 ' + CS.won(p.per) + '</span>' + (p.off ? '<span class="off">' + p.off + '% 더 알뜰</span>' : '') + '</button>';
+      }).join('') + '</div>'
+      + (canPay ? '<label class="cs-check" style="margin-top:12px"><input type="checkbox" id="ag"> 하트 이용 안내와 환불 기준을 확인했어요.</label><div class="cs-acts"><button type="button" class="cs-btn" id="buy">결제하고 충전하기</button></div><p class="cs-msg" id="msg" aria-live="polite"></p>'
+        : '<p class="cs-note">하트 충전은 곧 열려요. 열리면 이 화면에서 바로 충전할 수 있어요.</p>') + '</section>'
+      + '<section class="cs-panel"><h2>충전 내역</h2>' + (j.lots.length ? '<table class="cs-table"><thead><tr><th>날짜</th><th>내용</th><th class="r">남은 하트</th><th class="r">환불</th></tr></thead><tbody>' + j.lots.map(function (l) {
+        var rf = l.kind === 'free' ? '<span class="cs-help">환불 대상 아님</span>' : l.st === '환불요청' ? '<span class="cs-tag pv">확인 중</span>'
+          : l.refund && l.refund.won > 0 ? '<button type="button" class="cs-lnk" data-ref="' + esc(l.id) + '" data-won="' + l.refund.won + '">' + CS.won(l.refund.won) + ' 환불 요청</button>' : '<span class="cs-help">—</span>';
+        return '<tr><td>' + esc(l.day) + '</td><td>' + (l.kind === 'free' ? '무상 하트 ' + l.n + '개' : '하트 ' + l.n + '개 · ' + CS.won(l.won)) + '</td><td class="r">' + l.left + '</td><td class="r">' + rf + '</td></tr>';
+      }).join('') + '</tbody></table>' : '<p class="cs-help">아직 충전한 하트가 없어요.</p>')
+      + (j.refunds.length ? '<p class="cs-help" style="margin-top:10px">환불 완료: ' + j.refunds.map(function (r) { return esc(r.day) + ' ' + CS.won(r.won); }).join(' · ') + '</p>' : '') + '<p class="cs-msg" id="rmsg" aria-live="polite"></p></section>'
+      + '<section class="cs-panel"><h2>사용 내역</h2>' + (j.uses.length ? '<table class="cs-table"><thead><tr><th>날짜</th><th>쓴 곳</th><th class="r">하트</th></tr></thead><tbody>' + j.uses.map(function (u) {
+        return '<tr><td>' + esc(u.day) + '</td><td>' + (u.ref ? '<a href="' + esc(CS.link('counsel/?id=' + u.ref)) + '">' + esc(u.what) + '</a>' : esc(u.what)) + (u.back ? ' <span class="cs-tag ok">돌려받음</span>' : '') + '</td><td class="r">' + (u.back ? '+' : '−') + u.n + '</td></tr>';
+      }).join('') + '</tbody></table>' : '<p class="cs-help">아직 쓴 하트가 없어요.</p>') + '</section></div>'
+      + '<aside class="cs-side">' + rules() + '</aside></div>';
+    app.onclick = function (e) {
+      var t = e.target.closest('button'); if (!t) return;
+      if (t.hasAttribute('data-pack')) { pick = t.getAttribute('data-pack'); app.querySelectorAll('[data-pack]').forEach(function (x) { x.setAttribute('aria-pressed', x === t); }); return; }
+      if (t.hasAttribute('data-ref')) {
+        var won = Number(t.getAttribute('data-won'));
+        if (!confirm(CS.won(won) + ' 환불을 요청할까요? 운영자가 확인한 뒤 결제한 수단으로 취소해 드려요. 그동안 이 묶음의 하트는 쓸 수 없어요.')) return;
+        t.disabled = true;
+        CS.post({ action: 'htRefundReq', lot: t.getAttribute('data-ref') }).then(function () { flash = '<p class="cs-note" role="status">환불 요청을 받았어요. 운영자가 확인한 뒤 처리해 드릴게요.</p>'; load(); })
+          .catch(function (x) { t.disabled = false; CS.msg(document.getElementById('rmsg'), x.message); });
+        return;
+      }
+      if (t.id === 'buy') buy(t, pick);
+    };
+  }
+  function buy(b, pack) {
+    var m = document.getElementById('msg');
+    if (!document.getElementById('ag').checked) return CS.msg(m, '하트 이용 안내와 환불 기준을 확인해 주세요.');
+    if (F) F.busy(b, '결제창을 여는 중…'); else b.disabled = true;
+    var need = function (src, ok) { return new Promise(function (res, no) { if (ok()) return res(); var s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = function () { no(new Error('결제창을 불러오지 못했어요.')); }; document.head.appendChild(s); }); };
+    var P;
+    need(JB.SITE + 'assets/pay.js?v=7', function () { return !!window.JDJ_PAY; }).then(function () { P = window.JDJ_PAY; return CS.post({ action: 'htOrder', pack: pack, agree: true }); })
+      .then(function (o) {
+        return need(P.SDK, function () { return !!window.TossPayments; }).then(function () {
+          var toss = window.TossPayments(P.CLIENT_KEY), w = toss.payment({ customerKey: window.TossPayments.ANONYMOUS || 'ANONYMOUS' }), root = location.origin + JB.SITE + 'counsel/heart/';
+          return w.requestPayment({ method: 'CARD', amount: { currency: 'KRW', value: o.amount }, orderId: o.orderId, orderName: o.orderName, successUrl: root, failUrl: root + '?fail=1', card: { flowMode: 'DEFAULT' } });
+        });
+      }).catch(function (e) { if (F) F.restore(b); else b.disabled = false; CS.msg(m, e && e.code === 'USER_CANCEL' ? '결제를 취소했어요.' : (e.message || '결제를 시작하지 못했어요.')); });
+  }
+})();
+</script>
+</body>
+</html>

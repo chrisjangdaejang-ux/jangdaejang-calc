@@ -1,6 +1,12 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v56 변경 요약 (v55 위에 다시 배포. 따로 실행할 함수 없음 — 시트 '상담질문'·'상담답변'·'상담전문가'·'상담신고'·'하트내역'은 첫 사용 때 저절로 생김)
+ *  - 고민 상담·하트(숨김: COUNSEL_OPEN·HEART_OPEN=false — 운영자 계정만 미리 보기). 자세한 설명은 맨 아래 '고민 상담·하트' 칸.
+ *    질문(로그인 회원) · 확인된 전문가 답변(질문마다 최대 5명, 대출은 대출모집인만) · 집예보 상담팀 답변 · 고른 전문가 한 분께만 연락처 보내기(암호화 보관)
+ *    하트 충전(토스 승인 확인 뒤 지급, PAID_OPEN 잠금 따름) · 사용(1:1 비공개 상담·지정 질문·위로 올리기) · 환불 요청 → 운영자 승인(토스 부분 취소) · 정산 기능 없음
+ *  - 검증: node tools/counsel-test.js </dev/null
+ *
  * v55 변경 요약 (v53 위에 다시 배포. 재배포 뒤 편집기에서 reportInstall 한 번 실행 — 월요일 성적표 트리거를 7시대·8시대로 다시 검. 시트 '예측답'·'예측별명'·'예측채점'은 첫 사용 때 저절로 생김)
  *  - 월요일 하루 한 통: 내 집 성적표 자료는 엔진이 05:40에 미리 만들어 07:00 주간 동향 발표와 함께 공개(jangdaejang-timing report.yml·weekly_release.sh).
  *    모닝 브리핑을 메일로 받는 분은 7시 브리핑 안에 성적표가 함께(axMorning) — 7시에 성적표 자료가 아직이면 그분 브리핑만 9시 실행으로 미룸(BRIEF_SENT 안 적음).
@@ -402,7 +408,7 @@ const PAID_OPEN = false;
 const PAID_CLOSED_MSG = '유료 이용권은 곧 열려요. 지금은 7일 무료 체험만 할 수 있어요.';
 /* 돈을 받는(토스 주문·승인) 요청 전부 — 리포트 결제(createOrder·confirmPayment)·모닝 브리핑 이용권(briefOrder·briefConfirm)·요금제 바꾸기(briefChangeQuote·briefChange).
    이미 산 주문 보기·환불 요청(openReport·findOrder·refundRequest·briefRefund·briefStop)은 막지 않음. 새 결제 요청을 만들면 여기에도 꼭 넣기(tools/paid-lock-test.js 가 확인). */
-const PAID_ACTIONS = { createOrder: 1, confirmPayment: 1, briefOrder: 1, briefConfirm: 1, briefChangeQuote: 1, briefChange: 1, quizVoucherUse: 1 };
+const PAID_ACTIONS = { createOrder: 1, confirmPayment: 1, briefOrder: 1, briefConfirm: 1, briefChangeQuote: 1, briefChange: 1, quizVoucherUse: 1, htOrder: 1, htConfirm: 1 };
 /* 시트 메뉴에서 Apps Script를 열지 못해 script.google.com에서 따로 만든 경우에만,
    시트 주소의 /d/ 와 /edit 사이 문자열(시트 ID)을 아래 따옴표 안에 넣으세요. */
 const SHEET_ID = '';
@@ -524,6 +530,7 @@ function doPost(e) {
   if (!PAID_OPEN && PAID_ACTIONS[b && b.action]) return out({ ok: false, err: PAID_CLOSED_MSG, code: 'paid_closed' });   // v47 유료 판매 잠금
   if (b.action === 'log') return out(logEvents(b));
   if (b.action === 'ytKitPut') return out(ytKitPut(b));            // v30 장대장TV 주간 유튜브 키트(엔진 → 시트)
+  if (CS_ACTIONS[b.action]) return out(csDispatch(b));             // v56 고민 상담·하트(숨김)
   if (PAY_ACTIONS[b.action]) return out(payDispatch(b));
   if (b.action === 'adApply' || b.action === 'adInquiry' || b.action === 'adLead') return out(adDispatch(b));
   if (USER_ACTIONS[b.action]) return out(userDispatch(b));
@@ -2140,6 +2147,7 @@ function userDelete(b) {
   try { dpUserGone(u.k); } catch (e) {}   // v50 동네 파트너: 해지·연락처 지우기·글 지우기
   try { baStopAll(u.k); } catch (e) {}    // v50 자동결제 멈춤·빌링키 지우기
   try { qzUserGone(u.k); } catch (e) {}   // v55 예측 맞히기: 답·별명 지우기
+  try { csUserGone(u.k); } catch (e) {}   // v56 고민 상담: 질문·답변 내용·연락처 지우기, 전문가 신청 중지
   del('플러스중개사', 0); del('내손님', 1);   // v27 중개사 플러스: 표시 정보·손님 이름표·단지(시트 이름은 아래 SH_BPP·SH_BPC 와 같음)
   let unlinked = false;
   const admin = PropertiesService.getScriptProperties().getProperty('KAKAO_ADMIN_KEY');
@@ -8439,3 +8447,704 @@ function quizMeetExport() {
   out.forEach(r => m.appendRow(r));
   return out.length - 1;
 }
+
+
+// ===== 고민 상담·하트 =====
+/* =====================================================================
+   v56 고민 상담(질문·확인된 전문가 답변·집예보 상담팀 답변) + 하트(돈을 내고 충전해 고민 상담 안에서만 쓰는 것) — 숨김 상태로 미리 만듦
+   화면: counsel/(질문 목록·쓰기·상세) · counsel/expert/(전문가 신청·내 답변함) · counsel/heart/(하트 충전·내역·환불 요청) · counsel/admin/(운영자, 링크 없음)
+         assets/counsel.js(공용) · assets/counsel-core.js(규칙 — 아래 COUNSEL-CORE 와 같은 글자)
+   켜기: 이 칸 COUNSEL_OPEN · HEART_OPEN + 화면 assets/config.js COUNSEL_ENABLED · HEART_ENABLED. 꺼져 있으면 운영자(모닝 브리핑 운영자 모드 —
+         스크립트 속성 BRIEF_ADMIN_IDS 의 카카오 계정)만 미리 보고 써 볼 수 있어요. 하트 충전은 PAID_OPEN 도 true 여야 해요.
+   누가: 질문·신고·연락처 보내기·하트는 카카오 간편 로그인 회원만(sessionUser). 시트에는 카카오 회원번호 대신 csUid(되돌릴 수 없는 값)만.
+         답변은 운영자가 자격을 확인해 승인한 전문가(공인중개사·세무사·분양상담사·법무사·대출상담사)와 집예보 상담팀(운영자)만. 대출 분류는 대출상담사만.
+   연락처: 기본 비공개. 질문한 분이 전문가 답변을 보고 [이 전문가에게 내 연락처 보내기]를 누른 경우에만 그 전문가 한 분께 보임(시트에는 암호화해 보관 — sealText).
+   하트: 결제는 토스 승인(서버 확인) 뒤에만 지급. 환불은 이용자가 요청 → 운영자가 승인(이때 토스 결제 취소) — 자동 환불 없음.
+         무상 하트는 환불 대상이 아니고 현금으로 바꿀 수 없음. 전문가에게 하트를 나눠 주는 정산 기능은 없음(세무 확인 뒤).
+   거르기: 전화번호·주민등록번호 모양은 '***'로 가려서 올리고, 간단한 욕설·인터넷 주소는 막음. 살아보니의 비공개 거르기 설정(CM_RULES_*)이 있으면 함께 씀.
+   신고가 쌓이면(살아보니와 같은 비공개 기준) 바로 가리고(임시조치) 운영자가 다시 보이기·지우기.
+   시드 글: counsel/seed.json(모두 draft:true)을 운영자가 하나씩 [공개]하면 질문 + 상담팀 답변으로 올라감. [숨김]으로 다시 내림.
+   검증: node tools/counsel-test.js </dev/null
+   ===================================================================== */
+const COUNSEL_OPEN = false;
+const HEART_OPEN = false;
+const CS_ACTIONS = { csList: 1, csGet: 1, csAsk: 1, csAnswer: 1, csReport: 1, csDelete: 1, csContact: 1, csBump: 1, csExperts: 1, csProApply: 1, csProMine: 1, csMine: 1,
+  htMine: 1, htOrder: 1, htConfirm: 1, htRefundReq: 1,
+  csAdminQueue: 1, csAdminAct: 1, csAdminPro: 1, csAdminRefund: 1, csAdminSeed: 1, csAdminGrant: 1, csAdminReturn: 1 };
+const SH_CSQ = '상담질문', SH_CSA = '상담답변', SH_CSP = '상담전문가', SH_CSR = '상담신고', SH_HT = '하트내역';
+const CSQH = ['id', '시각', '회원', '별명', '분류', '제목', '내용', '상태', '신고', '이유', '지정', '비공개', '올림까지', '올린시각', '시드', '영상', '수정일'];
+const CSAH = ['id', '시각', '질문id', '종류', '전문가id', '회원', '내용', '상태', '신고', '이유', '연락처', '연락처시각', '수정일'];
+const CSPH = ['id', '신청일', '회원', '종류', '이름', '번호', '소속', '지역', '소개', '연락처', '이메일', '상태', '처리일', '메모', '동의판'];
+const CSRH = ['시각', '대상id', '신고자', '사유'];
+const HTH = ['id', '시각', '회원', '종류', '하트', '금액', '주문번호', '내용', '상태', '처리일', '메모', '환불액'];
+const CSQC = Object.fromEntries(CSQH.map((h, i) => [h, i])), CSAC = Object.fromEntries(CSAH.map((h, i) => [h, i])), CSPC = Object.fromEntries(CSPH.map((h, i) => [h, i])),
+  CSRC = Object.fromEntries(CSRH.map((h, i) => [h, i])), HTC = Object.fromEntries(HTH.map((h, i) => [h, i]));
+const CS_ST = { on: '공개', hold: '검토대기', tmp: '임시조치', del: '삭제', off: '숨김' };
+const CS_PRO_ST = { wait: '확인 대기', ok: '승인', no: '반려', stop: '중지' };
+const HT_KIND = { paid: '충전', free: '무상', use: '사용' };
+const HT_ST = { wait: '결제대기', ok: '사용가능', req: '환불요청', done: '환불완료', fail: '실패', used: '사용', back: '돌려줌' };
+const CS_WHY = { abuse: '욕설·비방', pi: '개인 정보', ad: '광고·홍보', false: '사실이 아닌 내용', illegal: '불법·무자격 영업', etc: '기타' };
+const CS_PRO_CONSENT_V = 'cspro-2026-11-25';
+const CS_LIM = { ask: [3, 10], answer: [10, 40], report: [10, 30], contact: [5, 20], apply: [2, 3], order: [5, 20], bump: [5, 20] };   // [한 시간, 하루] — 도배 막기
+const CS_PAGE = 20, CS_NOANSWER_DAYS = 7;
+const CS_SEED_URL = WEB_ROOT + 'counsel/seed.json';
+
+function csDispatch(b) {
+  try {
+    if (b.action === 'csList') return csList(b);
+    if (b.action === 'csGet') return csGet(b);
+    if (b.action === 'csExperts') return csExperts(b);
+    if (b.action === 'htConfirm') return htConfirm(b);              // 토스 승인(네트워크)은 잠금 밖, 시트 쓰기만 잠금 안
+    if (b.action === 'csAdminRefund') return csAdminRefund(b);
+    if (b.action === 'csAdminSeed') return csAdminSeed(b);          // seed.json 읽기(네트워크)는 잠금 밖
+    return withLock(() => {
+      const f = { csAsk, csAnswer, csReport, csDelete, csContact, csBump, csProApply, csProMine, csMine, htMine, htOrder, htRefundReq,
+        csAdminQueue, csAdminAct, csAdminPro, csAdminGrant, csAdminReturn }[b.action];
+      return f ? f(b) : { ok: false, err: 'unknown' };
+    });
+  } catch (x) {
+    return { ok: false, err: String(x.message || x), code: x.code || '' };
+  }
+}
+
+/* ---------- 공통 ---------- */
+function csUid(k) { return 'u' + hashOf('csU|' + k).slice(1, 25); }
+function csAlias(uh, qid) { return '익명 ' + hashOf('csA|' + uh + '|' + qid).slice(1, 5).toUpperCase(); }
+function csSheet(n) { return uSheet(n, { [SH_CSQ]: CSQH, [SH_CSA]: CSAH, [SH_CSP]: CSPH, [SH_CSR]: CSRH, [SH_HT]: HTH }[n]); }
+function csRows(n) { const sh = book().getSheetByName(n); if (!sh) return []; const v = sh.getDataRange().getValues(), out = []; for (let i = 1; i < v.length; i++) if (v[i][0]) out.push({ row: i + 1, r: v[i] }); return out; }
+function csSet(n, row, C, h, v) { csSheet(n).getRange(row, C[h] + 1).setValue(v); }
+function csClean(v, n) { return String(v == null ? '' : v).replace(/\r\n?/g, '\n').replace(/[\u0000-\u0009\u000B-\u001F\u007F<>]/g, ' ').replace(/\n{3,}/g, '\n\n').trim().slice(0, n); }   // 줄바꿈은 남김
+function csTxt(v) { return String(v == null ? '' : v).replace(/^'/, ''); }
+function csMs(v) { return v instanceof Date ? v.getTime() : (v ? new Date(v).getTime() || 0 : 0); }
+function csDay(v) { return v instanceof Date ? ymd(v) : String(v || '').slice(0, 10); }
+function csNewId(p) { return p + Utilities.getUuid().replace(/-/g, '').slice(0, 10).toUpperCase(); }
+function csOptUser(b) { try { return b.s ? sessionUser(b.s) : null; } catch (e) { return null; } }
+function csIsAdmin(b) { const u = csOptUser(b); return !!u && bIsAdmin(u.k); }
+function csErr(msg, code) { const e = new Error(msg); e.code = code || ''; return e; }
+function csGate(b) { if (COUNSEL_OPEN || csIsAdmin(b)) return true; throw csErr('아직 문을 열지 않은 기능이에요.', 'closed'); }
+function csHeartGate(b) { if (HEART_OPEN || csIsAdmin(b)) return true; throw csErr('하트는 아직 준비 중이에요.', 'closed'); }
+function csAdminNeed(b) { if (!csIsAdmin(b)) throw csErr('운영자 계정으로 카카오 간편 로그인해 주세요(모닝 브리핑 운영자 모드).', 'admin'); return sessionUser(b.s); }
+function csLimit(uh, kind) {
+  const lim = CS_LIM[kind] || [5, 20], c = CacheService.getScriptCache(), now = new Date();
+  const hk = 'csL|' + kind + '|' + uh + '|' + Utilities.formatDate(now, 'Asia/Seoul', 'yyyyMMddHH'), dk = 'csL|' + kind + '|' + uh + '|' + ymd(now);
+  const h = Number(c.get(hk)) || 0, d = Number(c.get(dk)) || 0;
+  if (h >= lim[0] || d >= lim[1]) throw csErr('짧은 시간에 너무 많이 했어요. 조금 뒤에 다시 해 주세요.', 'limit');
+  c.put(hk, String(h + 1), 3700); c.put(dk, String(d + 1), 86400);
+}
+/** 글 거르기: 개인정보 가리기 → 욕설·링크 막기 → (있으면) 살아보니 비공개 설정. → { act:'ok'|'hold'|'block', text, msg, why } */
+function csScreen(raw) {
+  const m = csMask(csClean(raw, 4000)), t = m.text;
+  if (csBad(t)) return { act: 'block', text: t, msg: '욕설이나 남을 깎아내리는 말은 쓸 수 없어요.', why: 'prof' };
+  for (const g of CM_GEN) if ((g.id === 'url' || g.id === 'mail') && g.re.test(t)) return { act: 'block', text: t, msg: g.msg, why: g.id };
+  const rules = cmRules();
+  let hold = '';
+  if (rules) for (const g of rules.groups || []) {
+    if (g.id === 'dam') continue;                                                // 집값 담합 낱말은 건물 후기용(상담 글은 시세 이야기를 자주 해요)
+    const hit = (g.re || []).some(s => { const re = cmRe(s); return re && (re.test(t) || (g.norm !== false && re.test(cmNorm(t)))); });
+    if (!hit) continue;
+    if (g.act === 'block') return { act: 'block', text: t, msg: CM_MSG[g.id] || CM_MSG.pi, why: g.id };
+    hold = hold || g.id;
+  }
+  return { act: hold ? 'hold' : 'ok', text: t, msg: hold ? '운영자가 확인한 뒤 올라가요.' : '', why: hold || (m.hit ? 'masked' : '') };
+}
+function csNick(v) {
+  const s = uText(v, CS_LEN.nick[1]).replace(/\s+/g, ' ');
+  if (!s) return '';
+  if (/\d{4,}|@|https?:|집\s*예\s*보|상담\s*팀|운영자|전문가|관리자/i.test(s) || csBad(s)) throw csErr('이 별명은 쓸 수 없어요. 다른 별명을 적어 주세요.', 'field');
+  return s;
+}
+function csQ(id) { id = String(id || ''); return /^Q[0-9A-F]{10}$/.test(id) ? csRows(SH_CSQ).find(o => String(o.r[CSQC['id']]) === id) || null : null; }
+function csA(id) { id = String(id || ''); return /^A[0-9A-F]{10}$/.test(id) ? csRows(SH_CSA).find(o => String(o.r[CSAC['id']]) === id) || null : null; }
+function csPros() { return csRows(SH_CSP); }
+function csProOf(uh) { return csPros().filter(o => String(o.r[CSPC['회원']]) === uh && [CS_PRO_ST.ok, CS_PRO_ST.wait, CS_PRO_ST.stop].indexOf(String(o.r[CSPC['상태']])) >= 0).pop() || null; }
+function csProById(id) { return csPros().find(o => String(o.r[CSPC['id']]) === String(id || '')) || null; }
+function csProPub(o) {
+  const r = o.r, P = CS_PROS[String(r[CSPC['종류']])] || {};
+  return { id: String(r[CSPC['id']]), kind: String(r[CSPC['종류']]), kn: P.name || '', name: csTxt(r[CSPC['이름']]), org: csTxt(r[CSPC['소속']]), area: csTxt(r[CSPC['지역']]), intro: csTxt(r[CSPC['소개']]) };
+}
+function csProCore(o) { return o ? { id: String(o.r[CSPC['id']]), kind: String(o.r[CSPC['종류']]), ok: String(o.r[CSPC['상태']]) === CS_PRO_ST.ok } : null; }
+function csQCore(o) { return { cat: String(o.r[CSQC['분류']]), priv: o.r[CSQC['비공개']] === true, to: String(o.r[CSQC['지정']] || '') }; }
+function csAnsOf(qid) { return csRows(SH_CSA).filter(o => String(o.r[CSAC['질문id']]) === qid && String(o.r[CSAC['상태']]) !== CS_ST.del); }
+function csNotify(kind, title) {
+  if (!NOTIFY) return;
+  const c = CacheService.getScriptCache(); if (c.get('csN|' + kind)) return;
+  c.put('csN|' + kind, '1', 3600);
+  try { MailApp.sendEmail(Session.getEffectiveUser().getEmail(), `[${SITE_NAME} 고민 상담] ${title}`, `운영자 화면에서 확인해 주세요: ${WEB_ROOT}counsel/admin/\n(모닝 브리핑 운영자 모드 카카오 계정으로 카카오 간편 로그인한 기기에서 열려요)\n시트: ${book().getUrl()}`); } catch (e) {}
+}
+/** 전문가에게 '새 질문이 왔어요' 메일(내용·질문한 분 정보 없이 링크만) */
+function csProMail(o, title) {
+  const to = csTxt(o.r[CSPC['이메일']]); if (!to || !NOTIFY) return;
+  try { MailApp.sendEmail({ to: to, name: SITE_NAME, subject: `[${SITE_NAME} 고민 상담] ${title}`, body: `${title}\n내 답변함에서 확인해 주세요: ${WEB_ROOT}counsel/expert/\n\n이 메일은 ${SITE_NAME} 고민 상담 전문가로 등록한 분께만 보내요.` }); } catch (e) {}
+}
+
+/* ---------- 질문 목록·상세 ---------- */
+function csQPub(o, now, me, nAns) {
+  const r = o.r, id = String(r[CSQC['id']]), uh = String(r[CSQC['회원']]), body = csTxt(r[CSQC['내용']]), up = csMs(r[CSQC['올림까지']]);
+  return { id: id, cat: String(r[CSQC['분류']]), cn: csCatName(String(r[CSQC['분류']])), title: csTxt(r[CSQC['제목']]), snip: body.slice(0, 90), at: csMs(r[CSQC['시각']]), day: csDay(r[CSQC['시각']]),
+    who: csTxt(r[CSQC['별명']]) || (r[CSQC['시드']] ? '자주 묻는 고민' : csAlias(uh, id)), up: up, upAt: csMs(r[CSQC['올린시각']]), upOn: up > now, pick: !!r[CSQC['지정']] && r[CSQC['비공개']] !== true,
+    priv: r[CSQC['비공개']] === true, seed: !!r[CSQC['시드']], video: csTxt(r[CSQC['영상']]), mine: !!me && me === uh, n: nAns || 0 };
+}
+function csList(b) {
+  if (!(COUNSEL_OPEN || csIsAdmin(b))) return { ok: true, open: false };
+  const now = Date.now(), cat = String(b.cat || ''), page = Math.max(0, Math.min(50, Math.floor(Number(b.page) || 0)));
+  const cnt = {}, team = {};
+  csRows(SH_CSA).forEach(o => { if (String(o.r[CSAC['상태']]) !== CS_ST.on) return; const q = String(o.r[CSAC['질문id']]); cnt[q] = (cnt[q] || 0) + 1; if (String(o.r[CSAC['종류']]) === 'team') team[q] = 1; });
+  const all = csRows(SH_CSQ).filter(o => String(o.r[CSQC['상태']]) === CS_ST.on && o.r[CSQC['비공개']] !== true && (!cat || String(o.r[CSQC['분류']]) === cat))
+    .map(o => Object.assign(csQPub(o, now, '', cnt[String(o.r[CSQC['id']])]), { team: !!team[String(o.r[CSQC['id']])] }));
+  const sorted = csOrder(all, now);
+  return { ok: true, open: true, items: sorted.slice(page * CS_PAGE, (page + 1) * CS_PAGE), more: sorted.length > (page + 1) * CS_PAGE, total: sorted.length };
+}
+function csAnsPub(o, P, me, qMine) {
+  const r = o.r, kind = String(r[CSAC['종류']]), pro = kind === 'pro' ? P[String(r[CSAC['전문가id']])] : null;
+  const who = kind === 'team' ? { kind: 'team', name: SITE_NAME + ' 상담팀' } : pro ? Object.assign({ kind: 'pro' }, csProPub(pro)) : { kind: 'pro', name: '전문가', kn: '' };
+  return { id: String(r[CSAC['id']]), at: csDay(r[CSAC['시각']]), who: who, text: csTxt(r[CSAC['내용']]), mine: !!me && String(r[CSAC['회원']]) === me,
+    sent: qMine ? !!r[CSAC['연락처']] : undefined, st: String(r[CSAC['상태']]) };
+}
+function csGet(b) {
+  csGate(b);
+  const o = csQ(b.id); if (!o) throw csErr('질문을 찾지 못했어요.', 'none');
+  const u = csOptUser(b), me = u ? csUid(u.k) : '', admin = !!u && bIsAdmin(u.k), now = Date.now();
+  const myPro = me ? csProCore(csProOf(me)) : null, q = csQCore(o), st = String(o.r[CSQC['상태']]);
+  const mine = !!me && String(o.r[CSQC['회원']]) === me;
+  if (q.priv && !mine && !admin && !(myPro && myPro.ok && myPro.id === q.to)) throw csErr('비공개 상담이에요. 질문한 분과 지정된 전문가만 볼 수 있어요.', 'private');
+  if (st !== CS_ST.on && !mine && !admin) throw csErr(st === CS_ST.tmp ? '신고가 들어와 잠시 가린 글이에요.' : '볼 수 없는 글이에요.', 'hidden');
+  const P = {}; csPros().forEach(p => { P[String(p.r[CSPC['id']])] = p; });
+  const ans = csAnsOf(String(o.r[CSQC['id']])).filter(a => String(a.r[CSAC['상태']]) === CS_ST.on || (me && String(a.r[CSAC['회원']]) === me) || admin);
+  ans.sort((x, y) => (String(x.r[CSAC['종류']]) === 'team' ? -1 : 0) - (String(y.r[CSAC['종류']]) === 'team' ? -1 : 0) || csMs(x.r[CSAC['시각']]) - csMs(y.r[CSAC['시각']]));
+  const core = ans.map(a => ({ pro: String(a.r[CSAC['종류']]) === 'pro' ? String(a.r[CSAC['전문가id']]) : '' }));
+  const to = q.to && P[q.to] ? csProPub(P[q.to]) : null;
+  return { ok: true, q: Object.assign(csQPub(o, now, me, ans.length), { body: csTxt(o.r[CSQC['내용']]), st: st, to: to }),
+    answers: ans.map(a => csAnsPub(a, P, me, mine)),
+    can: { answer: admin ? { ok: true, team: true } : myPro ? csCanAnswer(myPro, q, core) : { ok: false, why: me ? 'notpro' : 'login' } },
+    me: me ? { pro: myPro, admin: admin } : null };
+}
+function csExperts(b) {
+  csGate(b);
+  const kind = String(b.kind || '');
+  return { ok: true, list: csPros().filter(o => String(o.r[CSPC['상태']]) === CS_PRO_ST.ok && (!kind || String(o.r[CSPC['종류']]) === kind)).map(csProPub) };
+}
+function csMine(b) {
+  csGate(b);
+  const u = sessionUser(b.s), me = csUid(u.k), now = Date.now();
+  const cnt = {}; csRows(SH_CSA).forEach(o => { if (String(o.r[CSAC['상태']]) === CS_ST.on) { const q = String(o.r[CSAC['질문id']]); cnt[q] = (cnt[q] || 0) + 1; } });
+  const list = csRows(SH_CSQ).filter(o => String(o.r[CSQC['회원']]) === me && String(o.r[CSQC['상태']]) !== CS_ST.del).reverse()
+    .map(o => Object.assign(csQPub(o, now, me, cnt[String(o.r[CSQC['id']])]), { st: String(o.r[CSQC['상태']]) }));
+  return { ok: true, list: list, hearts: htBalance(me) };
+}
+
+/* ---------- 질문 쓰기 ---------- */
+function csAsk(b) {
+  csGate(b);
+  const u = sessionUser(b.s), me = csUid(u.k);
+  const cat = String(b.cat || ''); if (!csCatName(cat)) throw csErr('분류를 골라 주세요.', 'field');
+  const ct = csCheckText('title', b.title); if (!ct.ok) throw csErr(ct.err, 'field');
+  const cb = csCheckText('body', b.body); if (!cb.ok) throw csErr(cb.err, 'field');
+  const nick = csNick(b.nick);
+  const use = String(b.use || ''); if (use && use !== 'pick' && use !== 'private') throw csErr('질문 방법을 다시 골라 주세요.', 'field');
+  let pro = null;
+  if (use) {
+    pro = csProById(b.to);
+    if (!pro || String(pro.r[CSPC['상태']]) !== CS_PRO_ST.ok) throw csErr('전문가를 다시 골라 주세요.', 'field');
+    const only = CS_CAT_ONLY[cat]; if (only && only.indexOf(String(pro.r[CSPC['종류']])) < 0) throw csErr(cat === 'loan' ? '대출 질문은 등록된 대출모집인(대출상담사)에게만 할 수 있어요.' : '이 분류에는 답할 수 없는 전문가예요.', 'field');
+    if (String(pro.r[CSPC['회원']]) === me) throw csErr('나에게는 질문할 수 없어요.', 'field');
+    csHeartGate(b);
+  }
+  const t1 = csScreen(b.title), t2 = csScreen(b.body);
+  const bad = [t1, t2].find(x => x.act === 'block'); if (bad) throw csErr(bad.msg, 'filter');
+  csLimit(me, 'ask');
+  const id = csNewId('Q'), now = new Date(), hold = [t1, t2].some(x => x.act === 'hold');
+  if (use) htSpend(me, use, id);                                     // 하트가 모자라면 여기서 멈춤(글은 올라가지 않음)
+  const r = []; r[CSQC['id']] = id; r[CSQC['시각']] = now; r[CSQC['회원']] = me; r[CSQC['별명']] = cellSafe(nick); r[CSQC['분류']] = cat;
+  r[CSQC['제목']] = cellSafe(t1.text.trim()); r[CSQC['내용']] = cellSafe(t2.text.trim()); r[CSQC['상태']] = hold ? CS_ST.hold : CS_ST.on; r[CSQC['신고']] = 0;
+  r[CSQC['이유']] = hold ? [t1, t2].map(x => x.why).filter(Boolean).join(',') : ''; r[CSQC['지정']] = pro ? String(pro.r[CSPC['id']]) : ''; r[CSQC['비공개']] = use === 'private';
+  csSheet(SH_CSQ).appendRow(CSQH.map((h, i) => r[i] === undefined ? '' : r[i]));
+  csNotify('ask', hold ? '확인이 필요한 새 질문이 있어요' : '새 질문이 올라왔어요');
+  if (pro) csProMail(pro, use === 'private' ? '1:1 비공개 상담 요청이 왔어요' : '나를 지정한 질문이 왔어요');
+  return { ok: true, id: id, hold: hold, masked: [t1, t2].some(x => x.why === 'masked'), hearts: htBalance(me) };
+}
+
+/* ---------- 답변 ---------- */
+function csAnswer(b) {
+  csGate(b);
+  const u = sessionUser(b.s), me = csUid(u.k), admin = bIsAdmin(u.k);
+  const o = csQ(b.id); if (!o || [CS_ST.on, CS_ST.hold].indexOf(String(o.r[CSQC['상태']])) < 0) throw csErr('답할 수 없는 질문이에요.', 'none');
+  const team = admin && b.team !== false;
+  let pro = null;
+  if (!team) {
+    pro = csProOf(me);
+    const c = csCanAnswer(csProCore(pro), csQCore(o), csAnsOf(String(o.r[CSQC['id']])).map(a => ({ pro: String(a.r[CSAC['종류']]) === 'pro' ? String(a.r[CSAC['전문가id']]) : '' })));
+    if (!c.ok) throw csErr({ unverified: '자격 확인이 끝난 전문가만 답할 수 있어요.', private: '지정된 전문가만 답할 수 있는 비공개 상담이에요.', kind: '대출 질문은 등록된 대출모집인(대출상담사)만 답할 수 있어요.',
+      dup: '이 질문에는 이미 답했어요. 답변을 고치려면 지우고 다시 써 주세요.', full: `전문가 답변이 ${CS_PRO_MAX}개 모두 찼어요.` }[c.why] || '답할 수 없어요.', 'pro');
+  }
+  const ck = csCheckText('answer', b.text); if (!ck.ok) throw csErr(ck.err, 'field');
+  const t = csScreen(b.text); if (t.act === 'block') throw csErr(t.msg, 'filter');
+  csLimit(me, 'answer');
+  const id = csNewId('A'), r = [];
+  r[CSAC['id']] = id; r[CSAC['시각']] = new Date(); r[CSAC['질문id']] = String(o.r[CSQC['id']]); r[CSAC['종류']] = team ? 'team' : 'pro';
+  r[CSAC['전문가id']] = pro ? String(pro.r[CSPC['id']]) : ''; r[CSAC['회원']] = me; r[CSAC['내용']] = cellSafe(t.text.trim());
+  r[CSAC['상태']] = team || t.act === 'ok' ? CS_ST.on : CS_ST.hold; r[CSAC['신고']] = 0; r[CSAC['이유']] = team ? '' : t.why;
+  csSheet(SH_CSA).appendRow(CSAH.map((h, i) => r[i] === undefined ? '' : r[i]));
+  if (!team && t.act === 'hold') csNotify('ans', '확인이 필요한 전문가 답변이 있어요');
+  return { ok: true, id: id, hold: !team && t.act === 'hold' };
+}
+
+/* ---------- 신고·지우기 ---------- */
+function csReport(b) {
+  csGate(b);
+  const u = sessionUser(b.s), me = csUid(u.k), why = CS_WHY[b.why] ? String(b.why) : '';
+  if (!why) throw csErr('신고 이유를 골라 주세요.', 'field');
+  const isQ = /^Q/.test(String(b.id || '')), o = isQ ? csQ(b.id) : csA(b.id);
+  if (!o) throw csErr('글을 찾지 못했어요.', 'none');
+  const C = isQ ? CSQC : CSAC, n = isQ ? SH_CSQ : SH_CSA, id = String(o.r[C['id']]);
+  if (String(o.r[C['회원']]) === me) throw csErr('내 글은 신고할 수 없어요. 지우기를 눌러 주세요.', 'field');
+  if (csRows(SH_CSR).some(x => String(x.r[CSRC['대상id']]) === id && String(x.r[CSRC['신고자']]) === me)) return { ok: true, already: true };
+  csLimit(me, 'report');
+  csSheet(SH_CSR).appendRow([new Date(), id, me, why]);
+  const cnt = Number(o.r[C['신고']] || 0) + 1;
+  csSet(n, o.row, C, '신고', cnt);
+  let hidden = false;
+  if (cnt >= cmCfg().reportHide && String(o.r[C['상태']]) === CS_ST.on) { csSet(n, o.row, C, '상태', CS_ST.tmp); csSet(n, o.row, C, '이유', '신고 임시조치 ' + ymd(new Date())); hidden = true; }
+  csNotify('rep', hidden ? '신고가 쌓여 가린 글이 있어요' : '신고가 들어왔어요');
+  return { ok: true, hidden: hidden };
+}
+function csDelete(b) {
+  csGate(b);
+  const u = sessionUser(b.s), me = csUid(u.k), isQ = /^Q/.test(String(b.id || '')), o = isQ ? csQ(b.id) : csA(b.id);
+  if (!o) throw csErr('글을 찾지 못했어요.', 'none');
+  const C = isQ ? CSQC : CSAC;
+  if (String(o.r[C['회원']]) !== me) throw csErr('내가 쓴 글만 지울 수 있어요.', 'field');
+  csErase(isQ ? SH_CSQ : SH_CSA, o, '본인 삭제');
+  return { ok: true };
+}
+/** 지우기: 내용·연락처는 바로 비우고 처리 기록(번호·상태·날짜)만 남김 */
+function csErase(n, o, why) {
+  const C = n === SH_CSQ ? CSQC : CSAC, sh = csSheet(n);
+  sh.getRange(o.row, C['내용'] + 1).setValue('');
+  if (n === SH_CSQ) { sh.getRange(o.row, C['제목'] + 1).setValue(''); sh.getRange(o.row, C['별명'] + 1).setValue(''); }
+  else sh.getRange(o.row, C['연락처'] + 1).setValue('');
+  sh.getRange(o.row, C['상태'] + 1).setValue(CS_ST.del); sh.getRange(o.row, C['이유'] + 1).setValue(why + ' ' + ymd(new Date())); sh.getRange(o.row, C['수정일'] + 1).setValue(new Date());
+}
+/** 탈퇴: 그 사람 질문·답변 내용과 연락처 지우기, 전문가 신청은 중지(연락처 지움). 하트 결제 기록은 전자상거래법 보관 기간 동안 남김(회원번호 없이) */
+function csUserGone(k) {
+  const me = csUid(k);
+  [SH_CSQ, SH_CSA].forEach(n => { const C = n === SH_CSQ ? CSQC : CSAC; csRows(n).forEach(o => { if (String(o.r[C['회원']]) === me && String(o.r[C['상태']]) !== CS_ST.del) csErase(n, o, '탈퇴'); }); });
+  csPros().forEach(o => { if (String(o.r[CSPC['회원']]) === me) { const sh = csSheet(SH_CSP); sh.getRange(o.row, CSPC['연락처'] + 1).setValue(''); sh.getRange(o.row, CSPC['이메일'] + 1).setValue(''); sh.getRange(o.row, CSPC['상태'] + 1).setValue(CS_PRO_ST.stop); sh.getRange(o.row, CSPC['메모'] + 1).setValue('탈퇴 ' + ymd(new Date())); } });
+}
+
+/* ---------- 연락처 보내기(질문한 분 → 고른 전문가 한 분) ---------- */
+function csPhone(v) { const d = String(v || '').replace(/[^0-9]/g, ''); return /^01[016789]\d{7,8}$/.test(d) ? d : ''; }
+function csContact(b) {
+  csGate(b);
+  const u = sessionUser(b.s), me = csUid(u.k), a = csA(b.aid);
+  if (!a || String(a.r[CSAC['종류']]) !== 'pro' || String(a.r[CSAC['상태']]) !== CS_ST.on) throw csErr('답변을 찾지 못했어요.', 'none');
+  const q = csQ(a.r[CSAC['질문id']]); if (!q || String(q.r[CSQC['회원']]) !== me) throw csErr('내 질문에 달린 답변에만 연락처를 보낼 수 있어요.', 'field');
+  if (b.off === true) { csSet(SH_CSA, a.row, CSAC, '연락처', ''); csSet(SH_CSA, a.row, CSAC, '연락처시각', ''); return { ok: true, sent: false }; }
+  if (b.agree !== true) throw csErr('연락처를 이 전문가 한 분께만 보내는 데 동의해 주세요.', 'field');
+  const ph = csPhone(b.phone), note = uText(b.note, 60);
+  if (!ph) throw csErr('휴대폰 번호를 정확히 적어 주세요.', 'field');
+  if (note && csBad(note)) throw csErr('남길 말에 쓸 수 없는 표현이 있어요.', 'field');
+  csLimit(me, 'contact');
+  csSet(SH_CSA, a.row, CSAC, '연락처', sealText(JSON.stringify({ p: ph, n: note })));
+  csSet(SH_CSA, a.row, CSAC, '연락처시각', new Date());
+  const pro = csProById(a.r[CSAC['전문가id']]); if (pro) csProMail(pro, '질문한 분이 연락처를 보내 왔어요');
+  return { ok: true, sent: true };
+}
+
+/* ---------- 전문가 신청·내 답변함 ---------- */
+function csProApply(b) {
+  csGate(b);
+  const u = sessionUser(b.s), me = csUid(u.k), kind = String(b.kind || ''), P = CS_PROS[kind];
+  if (!P) throw csErr('어떤 전문가인지 골라 주세요.', 'field');
+  const cur = csProOf(me);
+  if (cur && String(cur.r[CSPC['상태']]) !== CS_PRO_ST.stop) throw csErr(String(cur.r[CSPC['상태']]) === CS_PRO_ST.ok ? '이미 확인된 전문가예요.' : '신청을 확인하고 있어요. 조금만 기다려 주세요.', 'field');
+  const name = uText(b.name, 20); if (name.length < 2 || /\d/.test(name)) throw csErr('이름을 적어 주세요.', 'field');
+  const no = P.no ? uText(b.no, 30).replace(/\s/g, '') : '';
+  if (P.no && !/^[0-9A-Za-z가-힣\-]{4,30}$/.test(no)) throw csErr(P.no + '를 정확히 적어 주세요.', 'field');
+  const org = uText(b.org, 40); if (P.orgNeed && org.length < 2) throw csErr(P.org + '을 적어 주세요.', 'field');
+  const area = uText(b.area, 30), intro = uText(b.intro, 200);
+  if ([name, org, area, intro].some(csBad)) throw csErr('쓸 수 없는 표현이 있어요.', 'field');
+  if (CM_GEN.some(g => g.re.test(intro))) throw csErr('소개에는 연락처·인터넷 주소를 쓸 수 없어요. 연락은 질문한 분이 고른 경우에만 연결돼요.', 'field');
+  const ph = csPhone(b.phone); if (!ph) throw csErr('운영자가 확인 연락을 드릴 휴대폰 번호를 적어 주세요.', 'field');
+  const mail = adMail(b.email); if (!mail) throw csErr('새 질문 알림을 받을 이메일을 적어 주세요.', 'field');
+  if (b.agree !== true) throw csErr('자격 확인과 개인정보 수집·이용에 동의해 주세요.', 'field');
+  csLimit(me, 'apply');
+  const id = csNewId('E'), r = [];
+  r[CSPC['id']] = id; r[CSPC['신청일']] = new Date(); r[CSPC['회원']] = me; r[CSPC['종류']] = kind; r[CSPC['이름']] = cellSafe(name); r[CSPC['번호']] = cellSafe(no); r[CSPC['소속']] = cellSafe(org);
+  r[CSPC['지역']] = cellSafe(area); r[CSPC['소개']] = cellSafe(intro); r[CSPC['연락처']] = sealText(ph); r[CSPC['이메일']] = mail; r[CSPC['상태']] = CS_PRO_ST.wait; r[CSPC['동의판']] = CS_PRO_CONSENT_V;
+  csSheet(SH_CSP).appendRow(CSPH.map((h, i) => r[i] === undefined ? '' : r[i]));
+  csNotify('pro', '전문가 신청이 들어왔어요');
+  return { ok: true, id: id, st: CS_PRO_ST.wait };
+}
+function csProMine(b) {
+  csGate(b);
+  const u = sessionUser(b.s), me = csUid(u.k), p = csProOf(me) || csPros().filter(o => String(o.r[CSPC['회원']]) === me).pop();   // 반려된 신청이면 이유를 보여 주고 다시 신청 받음
+  if (!p) return { ok: true, pro: null };
+  const st = String(p.r[CSPC['상태']]), pub = Object.assign(csProPub(p), { st: st, memo: st === CS_PRO_ST.no || st === CS_PRO_ST.stop ? csTxt(p.r[CSPC['메모']]) : '' });
+  if (st !== CS_PRO_ST.ok) return { ok: true, pro: pub };
+  const pid = pub.id, now = Date.now(), Q = {};
+  csRows(SH_CSQ).forEach(o => { Q[String(o.r[CSQC['id']])] = o; });
+  const answered = {};
+  const mine = csRows(SH_CSA).filter(a => String(a.r[CSAC['전문가id']]) === pid && String(a.r[CSAC['상태']]) !== CS_ST.del).reverse().slice(0, 50).map(a => {
+    const q = Q[String(a.r[CSAC['질문id']])]; answered[String(a.r[CSAC['질문id']])] = 1;
+    let c = null; if (a.r[CSAC['연락처']]) { const j = parseJ(openText(String(a.r[CSAC['연락처']])), null); if (j) c = { phone: j.p, note: j.n || '', at: csDay(a.r[CSAC['연락처시각']]) }; }
+    return { id: String(a.r[CSAC['id']]), qid: q ? String(q.r[CSQC['id']]) : '', title: q ? csTxt(q.r[CSQC['제목']]) : '(지운 질문)', at: csDay(a.r[CSAC['시각']]), st: String(a.r[CSAC['상태']]), contact: c };
+  });
+  const inbox = csRows(SH_CSQ).filter(o => String(o.r[CSQC['지정']]) === pid && String(o.r[CSQC['상태']]) === CS_ST.on && !answered[String(o.r[CSQC['id']])]).reverse().map(o => csQPub(o, now, '', 0));
+  const only = Object.keys(CS_CAT_ONLY).filter(c => CS_CAT_ONLY[c].indexOf(pub.kind) < 0);
+  const open = csOrder(csRows(SH_CSQ).filter(o => String(o.r[CSQC['상태']]) === CS_ST.on && o.r[CSQC['비공개']] !== true && !answered[String(o.r[CSQC['id']])] && only.indexOf(String(o.r[CSQC['분류']])) < 0
+    && csAnsOf(String(o.r[CSQC['id']])).filter(a => String(a.r[CSAC['종류']]) === 'pro').length < CS_PRO_MAX).map(o => csQPub(o, now, '', 0)), now).slice(0, 30);
+  return { ok: true, pro: pub, inbox: inbox, answers: mine, open: open };
+}
+
+/* ---------- 하트 ---------- */
+function htRowsOf(me) { return csRows(SH_HT).filter(o => String(o.r[HTC['회원']]) === me); }
+/** 묶음(충전·무상)마다 남은 하트 — 사용 기록의 take 로 셈 */
+function htLots(me) {
+  const rows = htRowsOf(me), used = {};
+  rows.forEach(o => { if (String(o.r[HTC['종류']]) !== HT_KIND.use || String(o.r[HTC['상태']]) === HT_ST.back) return; const j = parseJ(csTxt(o.r[HTC['내용']]), {}); Object.keys(j.take || {}).forEach(k => { used[k] = (used[k] || 0) + Number(j.take[k]); }); });
+  return rows.filter(o => [HT_KIND.paid, HT_KIND.free].indexOf(String(o.r[HTC['종류']])) >= 0 && [HT_ST.ok, HT_ST.req].indexOf(String(o.r[HTC['상태']])) >= 0).map(o => {
+    const id = String(o.r[HTC['id']]), n = Number(o.r[HTC['하트']]) || 0, u = used[id] || 0;
+    return { id: id, kind: String(o.r[HTC['종류']]) === HT_KIND.paid ? 'paid' : 'free', n: n, used: u, left: Math.max(0, n - u), won: Number(o.r[HTC['금액']]) || 0, at: csMs(o.r[HTC['시각']]),
+      lock: String(o.r[HTC['상태']]) === HT_ST.req, st: String(o.r[HTC['상태']]), row: o.row };
+  });
+}
+function htBalance(me) { return htLots(me).filter(l => !l.lock).reduce((s, l) => s + l.left, 0); }
+/** 하트 쓰기(잠금 안에서만 부름) — 모자라면 오류 */
+function htSpend(me, use, ref) {
+  const U = CS_USES[use]; if (!U) throw csErr('쓸 곳을 다시 골라 주세요.', 'field');
+  const al = csAlloc(htLots(me), U.n);
+  if (!al.ok) throw csErr(`하트가 ${U.n}개 필요해요. 지금 ${htBalance(me)}개 있어요.`, 'heart');
+  const r = []; r[HTC['id']] = csNewId('U'); r[HTC['시각']] = new Date(); r[HTC['회원']] = me; r[HTC['종류']] = HT_KIND.use; r[HTC['하트']] = U.n; r[HTC['금액']] = 0;
+  r[HTC['내용']] = JSON.stringify({ use: use, ref: String(ref || ''), take: al.take }); r[HTC['상태']] = HT_ST.used;
+  csSheet(SH_HT).appendRow(HTH.map((h, i) => r[i] === undefined ? '' : r[i]));
+  return al.take;
+}
+function htLotPub(l, now) { const q = csRefund(l, l.used, now); return { id: l.id, kind: l.kind, n: l.n, left: l.left, won: l.won, day: ymd(new Date(l.at)), st: l.st, refund: l.kind === 'paid' && !l.lock ? q : null }; }
+function htMine(b) {
+  csGate(b); csHeartGate(b);
+  const u = sessionUser(b.s), me = csUid(u.k), now = Date.now();
+  const lots = htLots(me), rows = htRowsOf(me);
+  const uses = rows.filter(o => String(o.r[HTC['종류']]) === HT_KIND.use).reverse().slice(0, 50).map(o => { const j = parseJ(csTxt(o.r[HTC['내용']]), {}); return { day: csDay(o.r[HTC['시각']]), n: Number(o.r[HTC['하트']]), what: (CS_USES[j.use] || {}).name || '', ref: j.ref || '', back: String(o.r[HTC['상태']]) === HT_ST.back }; });
+  const done = rows.filter(o => String(o.r[HTC['상태']]) === HT_ST.done).reverse().map(o => ({ day: csDay(o.r[HTC['처리일']]), n: Number(o.r[HTC['하트']]), won: Number(o.r[HTC['환불액']]) || 0 }));
+  return { ok: true, balance: htBalance(me), lots: lots.slice().reverse().map(l => htLotPub(l, now)), uses: uses, refunds: done, pay: PAID_OPEN && (HEART_OPEN || csIsAdmin(b)) };
+}
+function htOrder(b) {
+  csGate(b); csHeartGate(b);
+  if (!PAID_OPEN) throw csErr(PAID_CLOSED_MSG, 'paid_closed');
+  const u = sessionUser(b.s), me = csUid(u.k), P = csPack(String(b.pack || ''));
+  if (!P) throw csErr('하트 묶음을 다시 골라 주세요.', 'field');
+  if (b.agree !== true) throw csErr('하트 이용·환불 안내에 동의해 주세요.', 'field');
+  csLimit(me, 'order');
+  const id = newOrderId(), now = new Date(), row = [];
+  row[OC['주문번호']] = id; row[OC['생성시각']] = now; row[OC['상품']] = '하트 ' + P.n + '개'; row[OC['단지키']] = P.id; row[OC['단지명']] = '';
+  row[OC['금액']] = P.won; row[OC['상태']] = ST.wait; row[OC['연락처']] = ''; row[OC['연락처확인값']] = '';
+  ['결제키', '결제수단', '승인시각', '열람토큰', '최초열람시각', '최근열람시각', '환불상태', '환불요청시각', '환불사유', '메모'].forEach(h => row[OC[h]] = '');
+  row[OC['열람횟수']] = 0;
+  orderSheet().appendRow(row);
+  const r = []; r[HTC['id']] = csNewId('H'); r[HTC['시각']] = now; r[HTC['회원']] = me; r[HTC['종류']] = HT_KIND.paid; r[HTC['하트']] = P.n; r[HTC['금액']] = P.won; r[HTC['주문번호']] = id;
+  r[HTC['내용']] = P.id; r[HTC['상태']] = HT_ST.wait;
+  csSheet(SH_HT).appendRow(HTH.map((h, i) => r[i] === undefined ? '' : r[i]));
+  return { ok: true, orderId: id, amount: P.won, orderName: SITE_NAME + ' 하트 ' + P.n + '개' };
+}
+/** 결제 승인 → 하트 지급. 요청 금액 = 주문 금액 = 서버 상품표, 토스 응답 주문번호·금액·완료 상태까지 맞아야 지급 */
+function htConfirm(b) {
+  csGate(b); csHeartGate(b);
+  if (!PAID_OPEN) throw csErr(PAID_CLOSED_MSG, 'paid_closed');
+  const u = sessionUser(b.s), me = csUid(u.k);
+  const paymentKey = str(b.paymentKey, 200), amount = Number(b.amount);
+  if (!paymentKey || !/^[A-Za-z0-9_\-=.]+$/.test(paymentKey)) throw csErr('결제 정보가 올바르지 않아요.');
+  const o = findRow(b.orderId); if (!o) throw csErr('주문을 찾지 못했어요.');
+  const lotOf = () => csRows(SH_HT).find(x => String(x.r[HTC['주문번호']]) === String(o.r[OC['주문번호']]) && String(x.r[HTC['종류']]) === HT_KIND.paid);
+  const lot = lotOf(); if (!lot || String(lot.r[HTC['회원']]) !== me) throw csErr('하트 주문이 아니에요.');
+  const P = csPack(csTxt(lot.r[HTC['내용']])); if (!P) throw csErr('하트 묶음을 찾지 못했어요.');
+  if (String(o.r[OC['상태']]) === ST.paid) {
+    if (!safeEq(o.r[OC['결제키']], paymentKey)) throw csErr('이미 처리된 주문이에요.');
+    return { ok: true, orderId: String(o.r[OC['주문번호']]), n: P.n, balance: htBalance(me) };
+  }
+  if (String(o.r[OC['상태']]) !== ST.wait && String(o.r[OC['상태']]) !== ST.fail) throw csErr('처리할 수 없는 주문 상태예요.');
+  if (!(amount === Number(o.r[OC['금액']]) && amount === P.won && Number(lot.r[HTC['금액']]) === P.won)) {
+    withLock(() => { setO(o.row, '상태', ST.bad); setO(o.row, '메모', `요청 금액 ${amount} / 주문 금액 ${o.r[OC['금액']]}`); });
+    throw csErr('결제 금액이 주문 금액과 달라 승인하지 않았어요. 결제는 진행되지 않았어요.');
+  }
+  let res = tossCall('confirm', { paymentKey: paymentKey, orderId: String(o.r[OC['주문번호']]), amount: amount }, 'confirm-' + o.r[OC['주문번호']]);
+  if (res.code !== 200 && res.j && res.j.code === 'ALREADY_PROCESSED_PAYMENT') res = tossCall(encodeURIComponent(paymentKey));
+  const j = res.j || {};
+  return withLock(() => {
+    const o2 = findRow(b.orderId), l2 = lotOf();
+    if (res.code !== 200 || j.status !== 'DONE') {
+      setO(o2.row, '상태', ST.fail); setO(o2.row, '메모', str((j.code || j.status || '') + ' ' + (j.message || ''), 200)); csSet(SH_HT, l2.row, HTC, '상태', HT_ST.fail);
+      return { ok: false, code: str(j.code || j.status, 60), err: str(j.message, 200) || '결제가 완료되지 않았어요.' };
+    }
+    if (String(j.orderId) !== String(o2.r[OC['주문번호']]) || Number(j.totalAmount) !== P.won) {
+      setO(o2.row, '상태', ST.bad); setO(o2.row, '메모', '승인 응답 금액/주문번호 불일치 — 토스 상점관리자에서 확인·취소 필요');
+      throw csErr('결제 확인 중 문제가 생겼어요. 운영자가 확인 후 연락드리거나 취소해 드려요.');
+    }
+    const at = j.approvedAt ? new Date(j.approvedAt) : new Date();
+    setO(o2.row, '결제키', paymentKey); setO(o2.row, '결제수단', str(j.method, 30)); setO(o2.row, '상태', ST.paid); setO(o2.row, '승인시각', at); setO(o2.row, '메모', '');
+    csSet(SH_HT, l2.row, HTC, '상태', HT_ST.ok); csSet(SH_HT, l2.row, HTC, '시각', at);
+    return { ok: true, orderId: String(o2.r[OC['주문번호']]), n: P.n, balance: htBalance(me) };
+  });
+}
+/** 환불 요청: 그 묶음을 잠그고(더 쓰지 못하게) 계산한 금액과 함께 운영자에게. 운영자가 승인해야 환불 */
+function htRefundReq(b) {
+  csGate(b); csHeartGate(b);
+  const u = sessionUser(b.s), me = csUid(u.k), l = htLots(me).find(x => x.id === String(b.lot || ''));
+  if (!l || l.kind !== 'paid') throw csErr('환불할 수 있는 충전 내역을 찾지 못했어요. 무상으로 받은 하트는 환불되지 않아요.', 'field');
+  if (l.lock) return { ok: true, already: true };
+  const q = csRefund(l, l.used, Date.now()); if (!(q.won > 0)) throw csErr('남은 하트가 없어 환불할 금액이 없어요.', 'field');
+  const why = uText(b.why, 100);
+  csSet(SH_HT, l.row, HTC, '상태', HT_ST.req); csSet(SH_HT, l.row, HTC, '처리일', new Date()); csSet(SH_HT, l.row, HTC, '환불액', q.won);
+  csSet(SH_HT, l.row, HTC, '메모', cellSafe(('요청: ' + (why || '이유 없음')).slice(0, 120)));
+  csNotify('refund', '하트 환불 요청이 있어요');
+  return { ok: true, won: q.won, full: q.full };
+}
+/** 질문 위로 올리기(하트 1개, 24시간) */
+function csBump(b) {
+  csGate(b); csHeartGate(b);
+  const u = sessionUser(b.s), me = csUid(u.k), o = csQ(b.id);
+  if (!o || String(o.r[CSQC['회원']]) !== me || String(o.r[CSQC['상태']]) !== CS_ST.on || o.r[CSQC['비공개']] === true) throw csErr('공개된 내 질문만 위로 올릴 수 있어요.', 'field');
+  if (csMs(o.r[CSQC['올림까지']]) > Date.now()) throw csErr('이미 위에 올라가 있어요.', 'field');
+  csLimit(me, 'bump');
+  htSpend(me, 'bump', String(o.r[CSQC['id']]));
+  const until = new Date(Date.now() + CS_USES.bump.hours * 3600000);
+  csSet(SH_CSQ, o.row, CSQC, '올림까지', until); csSet(SH_CSQ, o.row, CSQC, '올린시각', new Date());
+  return { ok: true, until: until.getTime(), hearts: htBalance(me) };
+}
+
+/* ---------- 운영자(counsel/admin/) ---------- */
+/** 1년 지난 신고 기록·지운 글 처리 기록 지우기(운영정책 초안 보관 기간) */
+function csOldCleanup() {
+  const lim = Date.now() - 365 * 86400000;
+  const rs = book().getSheetByName(SH_CSR);
+  if (rs) { const v = rs.getDataRange().getValues(); for (let i = v.length - 1; i >= 1; i--) if (csMs(v[i][CSRC['시각']]) && csMs(v[i][CSRC['시각']]) < lim) rs.deleteRow(i + 1); }
+  [SH_CSQ, SH_CSA].forEach(n => { const C = n === SH_CSQ ? CSQC : CSAC, sh = book().getSheetByName(n); if (!sh) return; const v = sh.getDataRange().getValues();
+    for (let i = v.length - 1; i >= 1; i--) { const t = csMs(v[i][C['수정일']]) || csMs(v[i][C['시각']]); if (String(v[i][C['상태']]) === CS_ST.del && t && t < lim) sh.deleteRow(i + 1); } });
+}
+function csAdminQueue(b) {
+  csAdminNeed(b);
+  csOldCleanup();
+  const now = Date.now(), Q = csRows(SH_CSQ), A = csRows(SH_CSA), P = {}; csPros().forEach(p => { P[String(p.r[CSPC['id']])] = p; });
+  const team = {}, any = {}; A.forEach(a => { if (String(a.r[CSAC['상태']]) === CS_ST.del) return; const q = String(a.r[CSAC['질문id']]); any[q] = 1; if (String(a.r[CSAC['종류']]) === 'team') team[q] = 1; });
+  const reps = {}; csRows(SH_CSR).forEach(o => { const id = String(o.r[CSRC['대상id']]); (reps[id] = reps[id] || []).push(CS_WHY[o.r[CSRC['사유']]] || '기타'); });
+  const qx = o => Object.assign(csQPub(o, now, '', 0), { body: csTxt(o.r[CSQC['내용']]), st: String(o.r[CSQC['상태']]), why: csTxt(o.r[CSQC['이유']]), reps: reps[String(o.r[CSQC['id']])] || [], answered: !!any[String(o.r[CSQC['id']])] });
+  const ax = o => Object.assign(csAnsPub(o, P, '', false), { qid: String(o.r[CSAC['질문id']]), why: csTxt(o.r[CSAC['이유']]), reps: reps[String(o.r[CSAC['id']])] || [] });
+  const fresh = Q.filter(o => String(o.r[CSQC['상태']]) === CS_ST.on && !team[String(o.r[CSQC['id']])] && !o.r[CSQC['시드']]).reverse().slice(0, 50).map(qx);
+  const holdQ = Q.filter(o => [CS_ST.hold, CS_ST.tmp].indexOf(String(o.r[CSQC['상태']])) >= 0).reverse().slice(0, 50).map(qx);
+  const holdA = A.filter(o => [CS_ST.hold, CS_ST.tmp].indexOf(String(o.r[CSAC['상태']])) >= 0).reverse().slice(0, 50).map(ax);
+  const repQ = Q.filter(o => String(o.r[CSQC['상태']]) === CS_ST.on && Number(o.r[CSQC['신고']]) > 0).reverse().slice(0, 30).map(qx);
+  const repA = A.filter(o => String(o.r[CSAC['상태']]) === CS_ST.on && Number(o.r[CSAC['신고']]) > 0).reverse().slice(0, 30).map(ax);
+  const pros = csPros().filter(o => String(o.r[CSPC['상태']]) === CS_PRO_ST.wait).map(o => Object.assign(csProPub(o), { no: csTxt(o.r[CSPC['번호']]), day: csDay(o.r[CSPC['신청일']]),
+    phone: (() => { const p = openText(String(o.r[CSPC['연락처']] || '')); return p ? p.replace(/^(\d{3})(\d{3,4})(\d{4})$/, '$1-$2-$3') : ''; })(), mail: csTxt(o.r[CSPC['이메일']]), where: (CS_PROS[String(o.r[CSPC['종류']])] || {}).where || '' }));
+  const prosOk = csPros().filter(o => String(o.r[CSPC['상태']]) === CS_PRO_ST.ok).map(o => Object.assign(csProPub(o), { no: csTxt(o.r[CSPC['번호']]), day: csDay(o.r[CSPC['처리일']]) }));
+  const refunds = csRows(SH_HT).filter(o => String(o.r[HTC['상태']]) === HT_ST.req).map(o => {
+    const me = String(o.r[HTC['회원']]), l = htLots(me).find(x => x.id === String(o.r[HTC['id']])), q = l ? csRefund(l, l.used, csMs(o.r[HTC['처리일']]) || now) : { won: 0 };
+    return { id: String(o.r[HTC['id']]), day: csDay(o.r[HTC['시각']]), req: csDay(o.r[HTC['처리일']]), n: Number(o.r[HTC['하트']]), used: l ? l.used : 0, won: Number(o.r[HTC['금액']]), refund: q.won, memo: csTxt(o.r[HTC['메모']]), order: String(o.r[HTC['주문번호']]) };
+  });
+  const late = Q.filter(o => !!o.r[CSQC['지정']] && String(o.r[CSQC['상태']]) === CS_ST.on && now - csMs(o.r[CSQC['시각']]) > CS_NOANSWER_DAYS * 86400000
+    && !A.some(a => String(a.r[CSAC['질문id']]) === String(o.r[CSQC['id']]) && String(a.r[CSAC['전문가id']]) === String(o.r[CSQC['지정']]) && String(a.r[CSAC['상태']]) !== CS_ST.del))
+    .filter(o => htRowsOf(String(o.r[CSQC['회원']])).some(h => String(h.r[HTC['종류']]) === HT_KIND.use && String(h.r[HTC['상태']]) === HT_ST.used && parseJ(csTxt(h.r[HTC['내용']]), {}).ref === String(o.r[CSQC['id']])))
+    .map(qx);
+  const seeds = csRows(SH_CSQ).filter(o => o.r[CSQC['시드']]).map(o => ({ sid: csTxt(o.r[CSQC['시드']]), id: String(o.r[CSQC['id']]), st: String(o.r[CSQC['상태']]) }));
+  return { ok: true, cfg: { open: COUNSEL_OPEN, heart: HEART_OPEN, paid: PAID_OPEN, rules: !!cmRules(), reportHide: cmCfg().reportHide },
+    fresh: fresh, holdQ: holdQ, holdA: holdA, repQ: repQ, repA: repA, pros: pros, prosOk: prosOk, refunds: refunds, late: late, seeds: seeds };
+}
+function csAdminAct(b) {
+  csAdminNeed(b);
+  const isQ = /^Q/.test(String(b.id || '')), o = isQ ? csQ(b.id) : csA(b.id), op = String(b.op || '');
+  if (!o) throw csErr('글을 찾지 못했어요.');
+  const n = isQ ? SH_CSQ : SH_CSA, C = isQ ? CSQC : CSAC;
+  if (op === 'show') { csSet(n, o.row, C, '상태', CS_ST.on); csSet(n, o.row, C, '신고', 0); csSet(n, o.row, C, '이유', '운영자 확인 공개 ' + ymd(new Date())); }
+  else if (op === 'hide') { csSet(n, o.row, C, '상태', CS_ST.tmp); csSet(n, o.row, C, '이유', '운영자 임시조치 ' + ymd(new Date())); }
+  else if (op === 'del') csErase(n, o, '운영자 삭제');
+  else if (op === 'video' && isQ) {                                                // '영상으로 답한 고민' 연결(유튜브 주소만, 빈 값이면 지움)
+    const v = String(b.url || '').trim();
+    if (v && !/^https:\/\/(www\.|m\.)?(youtube\.com\/(watch\?v=|shorts\/)|youtu\.be\/)[A-Za-z0-9_\-?=&]{6,80}$/.test(v)) throw csErr('유튜브 영상 주소를 넣어 주세요.');
+    csSet(n, o.row, C, '영상', v);
+  }
+  else throw csErr('할 일을 골라 주세요.');
+  return { ok: true };
+}
+function csAdminPro(b) {
+  csAdminNeed(b);
+  const o = csProById(b.id), op = String(b.op || ''), memo = uText(b.memo, 200);
+  if (!o) throw csErr('신청을 찾지 못했어요.');
+  const st = { ok: CS_PRO_ST.ok, no: CS_PRO_ST.no, stop: CS_PRO_ST.stop }[op]; if (!st) throw csErr('할 일을 골라 주세요.');
+  if (op !== 'ok' && !memo) throw csErr('반려·중지 이유를 적어 주세요(신청한 분께 보여요).');
+  csSet(SH_CSP, o.row, CSPC, '상태', st); csSet(SH_CSP, o.row, CSPC, '처리일', new Date()); csSet(SH_CSP, o.row, CSPC, '메모', cellSafe(memo));
+  if (op === 'no') csSet(SH_CSP, o.row, CSPC, '연락처', '');                     // 반려한 신청의 연락처는 바로 지움
+  const mail = csTxt(o.r[CSPC['이메일']]);
+  if (mail && NOTIFY) { try { MailApp.sendEmail({ to: mail, name: SITE_NAME, subject: `[${SITE_NAME} 고민 상담] 전문가 신청 ${op === 'ok' ? '확인이 끝났어요' : op === 'no' ? '결과를 알려 드려요' : '답변이 멈췄어요'}`,
+    body: (op === 'ok' ? '자격 확인이 끝났어요. 이제 질문에 답할 수 있어요.\n' : '사유: ' + memo + '\n') + `내 답변함: ${WEB_ROOT}counsel/expert/` }); } catch (e) {} }
+  return { ok: true };
+}
+/** 환불 처리 — ok: 토스 결제 부분 취소(운영자가 누를 때만) · done: 토스 상점관리자에서 직접 취소함 · no: 거절(묶음 잠금 풀기) */
+function csAdminRefund(b) {
+  csAdminNeed(b);
+  const op = String(b.op || ''), id = String(b.id || '');
+  const find = () => csRows(SH_HT).find(x => String(x.r[HTC['id']]) === id && String(x.r[HTC['상태']]) === HT_ST.req);
+  const o = find(); if (!o) throw csErr('환불 요청을 찾지 못했어요.');
+  const me = String(o.r[HTC['회원']]), l = htLots(me).find(x => x.id === id), q = csRefund(l, l.used, csMs(o.r[HTC['처리일']]) || Date.now());
+  if (op === 'no') return withLock(() => { const x = find(); if (!x) throw csErr('이미 처리됐어요.'); csSet(SH_HT, x.row, HTC, '상태', HT_ST.ok); csSet(SH_HT, x.row, HTC, '환불액', ''); csSet(SH_HT, x.row, HTC, '메모', cellSafe(('거절: ' + uText(b.memo, 100)).slice(0, 120))); return { ok: true }; });
+  if (op !== 'ok' && op !== 'done') throw csErr('할 일을 골라 주세요.');
+  if (!(q.won > 0)) throw csErr('환불할 금액이 없어요.');
+  if (op === 'ok') {
+    const ord = findRow(o.r[HTC['주문번호']]), pk = ord ? String(ord.r[OC['결제키']] || '') : '';
+    if (!pk) throw csErr('결제 키를 찾지 못했어요. 토스 상점관리자에서 직접 취소한 뒤 [직접 취소했어요]를 눌러 주세요.');
+    const res = tossCall(encodeURIComponent(pk) + '/cancel', { cancelReason: '하트 환불', cancelAmount: q.won }, 'cancel-' + id);
+    if (res.code !== 200) throw csErr('토스 취소가 되지 않았어요: ' + str((res.j && res.j.message) || res.code, 120));
+  }
+  return withLock(() => {
+    const x = find(); if (!x) throw csErr('이미 처리됐어요.');
+    csSet(SH_HT, x.row, HTC, '상태', HT_ST.done); csSet(SH_HT, x.row, HTC, '환불액', q.won); csSet(SH_HT, x.row, HTC, '처리일', new Date());
+    csSet(SH_HT, x.row, HTC, '메모', op === 'ok' ? '토스 취소 ' + q.won + '원' : '상점관리자 직접 취소 ' + q.won + '원');
+    const ord = findRow(x.r[HTC['주문번호']]); if (ord) { setO(ord.row, '환불상태', '환불완료 ' + q.won + '원'); }
+    return { ok: true, won: q.won };
+  });
+}
+/** 답을 받지 못한 지정·비공개 질문의 하트 돌려주기(운영자가 누를 때만) */
+function csAdminReturn(b) {
+  csAdminNeed(b);
+  const o = csQ(b.id); if (!o) throw csErr('질문을 찾지 못했어요.');
+  const me = String(o.r[CSQC['회원']]), h = htRowsOf(me).find(x => String(x.r[HTC['종류']]) === HT_KIND.use && String(x.r[HTC['상태']]) === HT_ST.used && parseJ(csTxt(x.r[HTC['내용']]), {}).ref === String(o.r[CSQC['id']]) && parseJ(csTxt(x.r[HTC['내용']]), {}).use !== 'bump');
+  if (!h) throw csErr('돌려줄 하트 사용 기록이 없어요.');
+  csSet(SH_HT, h.row, HTC, '상태', HT_ST.back); csSet(SH_HT, h.row, HTC, '처리일', new Date()); csSet(SH_HT, h.row, HTC, '메모', '답 없음 — 운영자가 돌려줌');
+  return { ok: true, balance: htBalance(me) };
+}
+/** 무상 하트 주기(이벤트·사과) — 질문한 분께. 환불 대상 아님 */
+function csAdminGrant(b) {
+  csAdminNeed(b);
+  const o = csQ(b.id), n = Math.floor(Number(b.n) || 0); if (!o) throw csErr('질문을 찾지 못했어요.');
+  if (!(n >= 1 && n <= 10)) throw csErr('하트는 1~10개까지 줄 수 있어요.');
+  const r = []; r[HTC['id']] = csNewId('F'); r[HTC['시각']] = new Date(); r[HTC['회원']] = String(o.r[CSQC['회원']]); r[HTC['종류']] = HT_KIND.free; r[HTC['하트']] = n; r[HTC['금액']] = 0;
+  r[HTC['내용']] = 'grant'; r[HTC['상태']] = HT_ST.ok; r[HTC['메모']] = cellSafe(uText(b.memo, 100) || '운영자 지급');
+  csSheet(SH_HT).appendRow(HTH.map((h, i) => r[i] === undefined ? '' : r[i]));
+  return { ok: true };
+}
+/** 시드 글 공개·숨김: counsel/seed.json 의 글을 질문 + 상담팀 답변으로 올림(이미 있으면 상태만 바꿈) */
+function csAdminSeed(b) {
+  csAdminNeed(b);
+  const sid = String(b.sid || ''), op = String(b.op || '');
+  if (!/^s\d{2}$/.test(sid) || ['pub', 'hide'].indexOf(op) < 0) throw csErr('시드 글을 다시 골라 주세요.');
+  const cur = csRows(SH_CSQ).find(o => csTxt(o.r[CSQC['시드']]) === sid);
+  if (cur) return withLock(() => { csSet(SH_CSQ, cur.row, CSQC, '상태', op === 'pub' ? CS_ST.on : CS_ST.off); return { ok: true, id: String(cur.r[CSQC['id']]) }; });
+  if (op === 'hide') return { ok: true };
+  let S = null; try { const r = UrlFetchApp.fetch(CS_SEED_URL + '?v=' + Date.now(), { muteHttpExceptions: true }); if (r.getResponseCode() === 200) S = JSON.parse(r.getContentText()); } catch (e) {}
+  const it = S && Array.isArray(S.items) ? S.items.find(x => x && x.sid === sid) : null;
+  if (!it || !csCatName(it.cat) || !it.q || !it.a) throw csErr('seed.json 에서 그 글을 찾지 못했어요.');
+  return withLock(() => {
+    const id = csNewId('Q'), now = new Date(), r = [];
+    r[CSQC['id']] = id; r[CSQC['시각']] = now; r[CSQC['회원']] = 'seed'; r[CSQC['별명']] = ''; r[CSQC['분류']] = it.cat; r[CSQC['제목']] = cellSafe(uText(it.title, 60)); r[CSQC['내용']] = cellSafe(csClean(it.q, 2000));
+    r[CSQC['상태']] = CS_ST.on; r[CSQC['신고']] = 0; r[CSQC['지정']] = ''; r[CSQC['비공개']] = false; r[CSQC['시드']] = sid; r[CSQC['영상']] = /^https:\/\/(www\.|m\.)?(youtube\.com|youtu\.be)\//.test(String(it.videoUrl || '')) ? String(it.videoUrl) : '';
+    csSheet(SH_CSQ).appendRow(CSQH.map((h, i) => r[i] === undefined ? '' : r[i]));
+    const a = []; a[CSAC['id']] = csNewId('A'); a[CSAC['시각']] = now; a[CSAC['질문id']] = id; a[CSAC['종류']] = 'team'; a[CSAC['회원']] = 'seed'; a[CSAC['내용']] = cellSafe(csClean(it.a, 4000)); a[CSAC['상태']] = CS_ST.on; a[CSAC['신고']] = 0;
+    csSheet(SH_CSA).appendRow(CSAH.map((h, i) => a[i] === undefined ? '' : a[i]));
+    return { ok: true, id: id };
+  });
+}
+
+/* COUNSEL-CORE BEGIN — 이 블록은 tools/agent-backend.gs 에 그대로 복사돼 있어요. 고칠 때는 두 곳을 똑같이 고쳐 주세요(node tools/counsel-test.js 가 비교). */
+const CS_V = 'counsel-2026-11-25';
+/* 질문 분류 */
+const CS_CATS = [['buy', '매수·매도'], ['rent', '전월세'], ['tax', '세금'], ['loan', '대출'], ['sub', '청약·분양'], ['redev', '재개발·재건축'], ['legal', '등기·법률'], ['etc', '기타']];
+/* 답변하는 전문가 5종 — no: 확인할 번호 칸 이름(없으면 null) · org: 소속 칸 이름 · orgNeed: 소속 필수 · where: 운영자가 확인할 곳 */
+const CS_PROS = {
+  broker: { name: '공인중개사', no: '중개사무소 개설등록번호', org: '중개사무소 이름', orgNeed: true, where: '국가공간정보포털 부동산중개업 조회(등록·영업 상태)' },
+  tax: { name: '세무사', no: '세무사 등록번호', org: '세무사무소 이름', orgNeed: false, where: '한국세무사회 세무사 찾기' },
+  sales: { name: '분양상담사', no: null, org: '소속 분양대행사', orgNeed: true, where: '소속 분양대행사 확인(재직 확인서 또는 명함·사업자등록증)' },
+  judicial: { name: '법무사', no: '법무사 등록번호', org: '법무사사무소 이름', orgNeed: false, where: '대한법무사협회 법무사 찾기' },
+  loan: { name: '대출상담사', no: '금융위원회 대출모집인 등록번호', org: '소속 금융회사(위탁사)', orgNeed: true, where: '대출모집인 등록 조회(금융소비자 정보포털 파인 또는 대출모집인 통합조회)' }
+};
+const CS_PRO_MAX = 5;                                 // 질문 하나에 전문가 답변 최대 수(상담팀 공식 답변은 따로)
+const CS_CAT_ONLY = { loan: ['loan'] };               // 분류마다 답할 수 있는 전문가 종류(없으면 모두) — 대출은 등록된 대출모집인만
+const CS_LEN = { title: [5, 60], body: [20, 2000], answer: [20, 3000], nick: [0, 12] };
+/* 하트 상품표(초안) — won: 결제 금액(원) · n: 하트 수 */
+const CS_PACKS = [{ id: 'h2', won: 3900, n: 2 }, { id: 'h6', won: 9900, n: 6 }, { id: 'h13', won: 19900, n: 13 }, { id: 'h35', won: 49000, n: 35 }];
+/* 하트 사용처(초안) — n: 쓰는 하트 수. 일반 공개 질문·답변 보기는 무료 */
+const CS_USES = {
+  private: { n: 3, name: '전문가 1:1 비공개 상담 요청' },
+  bump: { n: 1, name: '내 질문 위로 올리기', hours: 24 },
+  pick: { n: 2, name: '원하는 전문가 지정 질문' }
+};
+/* 환불 규칙: 결제 후 days 일 안에 전혀 쓰지 않은 하트는 전액 · 일부 쓴 경우 남은 하트만큼(쓴 하트는 묶음 할인 전 단가로 계산) · 무상 하트는 대상 아님
+   lateFee: days 가 지난 뒤 환불할 때 떼는 비율(0 = 떼지 않음, 대표가 정할 값) */
+const CS_REFUND = { days: 7, lateFee: 0 };
+
+function csCatName(id) { for (let i = 0; i < CS_CATS.length; i++) if (CS_CATS[i][0] === id) return CS_CATS[i][1]; return ''; }
+function csPack(id) { for (let i = 0; i < CS_PACKS.length; i++) if (CS_PACKS[i].id === id) return CS_PACKS[i]; return null; }
+/** 묶음 할인 전 하트 1개 값 = 가장 작은 묶음의 하트 1개 값(원, 10원 아래 올림) */
+function csUnit() {
+  let best = null;
+  CS_PACKS.forEach(p => { if (!best || p.n < best.n) best = p; });
+  return best ? Math.ceil(best.won / best.n / 10) * 10 : 0;
+}
+/** 묶음마다 '하트 1개에 얼마' · 가장 작은 묶음보다 얼마나 싼지(%) — 화면 상품표용 */
+function csPackInfo(p) {
+  const unit = csUnit(), per = Math.round(p.won / p.n);
+  return { id: p.id, won: p.won, n: p.n, per: per, off: unit ? Math.max(0, Math.round((1 - per / unit) * 100)) : 0 };
+}
+/** 환불 금액 계산. lot: { kind:'paid'|'free', won, n, at(ms) } · used: 이 묶음에서 쓴 하트 수 · now(ms)
+    → { won, full, why } why: free(무상) · none(남은 하트 없음) · full(7일 안·안 씀) · part(쓴 만큼 빼고) */
+function csRefund(lot, used, now) {
+  used = Math.max(0, Math.floor(Number(used) || 0));
+  if (!lot || lot.kind !== 'paid') return { won: 0, full: false, why: 'free' };
+  const n = Math.floor(Number(lot.n) || 0), won = Math.floor(Number(lot.won) || 0);
+  if (used >= n) return { won: 0, full: false, why: 'none' };
+  const late = Number(now) - Number(lot.at) > CS_REFUND.days * 86400000;
+  if (!used && !late) return { won: won, full: true, why: 'full' };
+  let r = Math.max(0, won - used * csUnit());
+  if (late && CS_REFUND.lateFee > 0) r = Math.floor(r * (1 - CS_REFUND.lateFee) / 10) * 10;
+  return { won: r, full: false, why: 'part' };
+}
+/** 하트 쓰기: 어느 묶음에서 몇 개를 쓸지. 무상 하트 먼저(오래된 것부터), 그다음 결제 하트(오래된 것부터). 환불 요청 중인 묶음은 건너뜀
+    lots: [{ id, kind, n, left, at, lock }] → { ok, take: { 묶음id: 개수 } } */
+function csAlloc(lots, need) {
+  need = Math.floor(Number(need) || 0);
+  const list = (lots || []).filter(l => !l.lock && l.left > 0).slice().sort((a, b) => (a.kind === b.kind ? 0 : a.kind === 'free' ? -1 : 1) || (a.at - b.at));
+  const take = {}; let left = need;
+  for (let i = 0; i < list.length && left > 0; i++) { const t = Math.min(list[i].left, left); take[list[i].id] = t; left -= t; }
+  return left > 0 ? { ok: false, take: {} } : { ok: true, take: take };
+}
+/* 개인정보 가림: 전화번호·주민등록번호 모양을 '***'로 */
+const CS_PI = [
+  /\d{6}\s*[-–]\s*[1-8]\d{6}/g,                                                   // 주민등록번호·외국인등록번호
+  /(?:\+?82[\s.\-]*|0)1[016789][\s.\-)]*\d{3,4}[\s.\-]*\d{4}/g,                  // 휴대폰
+  /(?:\+?82[\s.\-]*|0)(?:2|[3-6][1-5]|70|50\d?)[\s.\-)]*\d{3,4}[\s.\-]*\d{4}/g    // 지역번호·인터넷 전화·안심번호
+];
+function csMask(text) {
+  let s = String(text == null ? '' : text), hit = false;
+  CS_PI.forEach(re => { s = s.replace(re, () => { hit = true; return '***'; }); });
+  return { text: s, hit: hit };
+}
+/* 간단 욕설 거르기(누구나 아는 낱말만 — 띄어쓰기·기호를 빼고 봄) */
+const CS_BAD = ['씨발', '시발', '씨바', 'ㅅㅂ', 'ㅆㅂ', '병신', 'ㅂㅅ', '개새끼', '개색기', '좆', '존나', 'ㅈㄴ', '지랄', '미친놈', '미친년', '썅', '니애미', '느금마', '꺼져'];
+function csNorm(s) { return String(s || '').toLowerCase().replace(/[\s.,·•~!?\-_*'"`^|/\\()[\]{}:;0-9]/g, ''); }
+function csBad(text) { const n = csNorm(text); return CS_BAD.some(w => n.indexOf(w) >= 0); }
+/** 이 전문가가 이 질문에 답할 수 있나. pro: { id, kind, ok(승인) } · q: { cat, priv, to } · answers: [{ pro(전문가id) }] */
+function csCanAnswer(pro, q, answers) {
+  if (!pro || !pro.ok) return { ok: false, why: 'unverified' };
+  if (q.priv && q.to !== pro.id) return { ok: false, why: 'private' };
+  const only = CS_CAT_ONLY[q.cat];
+  if (only && only.indexOf(pro.kind) < 0) return { ok: false, why: 'kind' };
+  const pros = (answers || []).filter(a => a.pro);
+  if (pros.some(a => a.pro === pro.id)) return { ok: false, why: 'dup' };
+  if (pros.length >= CS_PRO_MAX) return { ok: false, why: 'full' };
+  return { ok: true, why: '' };
+}
+/** 목록 순서: '위로 올리기'가 살아 있는 질문(up > now)이 먼저(올린 시각 최근 순), 그다음 새 질문 순 */
+function csOrder(list, now) {
+  return (list || []).slice().sort((a, b) => {
+    const ua = a.up > now ? a.upAt || 0 : 0, ub = b.up > now ? b.upAt || 0 : 0;
+    if (!!ua !== !!ub) return ua ? -1 : 1;
+    if (ua && ub && ua !== ub) return ub - ua;
+    return (b.at || 0) - (a.at || 0);
+  });
+}
+/** 질문·답변 글 확인: 길이·욕설 → { ok, err } (개인정보는 막지 않고 가려서 올림) */
+function csCheckText(kind, s) {
+  const L = CS_LEN[kind] || [1, 2000], t = String(s == null ? '' : s).trim();
+  if (t.length < L[0]) return { ok: false, err: kind === 'title' ? `제목을 ${L[0]}자 이상 적어 주세요.` : `내용을 ${L[0]}자 이상 적어 주세요.` };
+  if (t.length > L[1]) return { ok: false, err: `${L[1]}자까지 쓸 수 있어요.` };
+  if (csBad(t)) return { ok: false, err: '욕설이나 남을 깎아내리는 말은 쓸 수 없어요.' };
+  return { ok: true, err: '' };
+}
+/* COUNSEL-CORE END */
