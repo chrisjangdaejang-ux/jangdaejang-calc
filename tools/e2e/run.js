@@ -19,7 +19,7 @@ const VIEWS = [{ name: '휴대폰', width: 390, height: 844, mobile: true }, { n
 
 /* ---------- 1) 화면 한 장씩: 처음 열었을 때 ---------- */
 const PAGES = ['', 'about/', 'terms/', 'privacy/', 'refund/', 'rank/', 'loan/', 'tax/', 'tax/transfer/', 'chungyak/', 'chungyak/price/',
-  'map/', 'mine/', 'villa/', 'comm/', 'jeonse/', 'jeonse/checklist/', 'brief/', 'brief/subscribe/', 'brief/manage/', 'brief/c/', 'brief/paid/',
+  'map/', 'mine/', 'villa/', 'villa/zone/', 'comm/', 'jeonse/', 'jeonse/checklist/', 'brief/', 'brief/subscribe/', 'brief/manage/', 'brief/c/', 'brief/paid/',
   'my/alerts/', 'my/report/', 'my/watch/', 'track/', 'track/detail/', 'ad/', 'ad/plan/', 'agent/', 'agent/my/', 'agent/listing/', 'agent/content/',
   'agent/sheet/', 'login/', 'bunyang/', 'bunyang/agency/', 'bunyang/apply/', 'partner/', 'premium/', 'premium/pro/', 'quiz/', 'ask/', 'switch/',
   'buy/', 'buy/report/', 'press/', 'guide/method/', 'guide/terms/', 'weekly/', 'pro/developer/', 'community/', 'dongne/', 'dongne/my/', 'dongne/terms/', 'dongne/office/'];
@@ -297,6 +297,43 @@ JOURNEYS.dongne = async function (page, v, mock) {
   await rv.click(); await sleep(600); ok(/02-555-0144/.test(await txt(page, 'main')), '사무소 보기: [전화번호 보기]를 누르면 보임');
   await open(page, 'dongne/admin/'); await sleep(1200);
   ok(/검토 대기 신청/.test(await txt(page, 'main')) && /중대 위반 박탈/.test(await txt(page, 'main')), '운영자 검토: 신청·제재 버튼');
+};
+
+/* 재개발·재건축 구역 지도: 사업 종류·단계 거르기 → 구역 카드 → 단계 이력·착공 예상(맞힌 기록/참고)·이주 주변 전세·미래가치 링크
+   (공개 데이터에 data/redev/zones.json 이 아직 없으면 server.js 가 tools/e2e/fallback/ 사본을 줌) */
+JOURNEYS.redev = async function (page, v) {
+  await open(page, 'villa/');
+  ok(/구역 지도/.test(await txt(page, 'a.zmap')), '빌라 화면에서 구역 지도로 가는 칸');
+  await open(page, 'villa/zone/'); await sleep(1500);
+  ok(/구역 \d+곳/.test(await txt(page, '#sum')), '구역 수 요약');
+  ok(await page.locator('#map .leaflet-container, #map.leaflet-container').count() > 0 || await page.locator('#map').count() > 0, '지도 칸');
+  await page.locator('#fType button', { hasText: '재개발' }).first().click(); await sleep(400);
+  const t1 = await txt(page, '#list');
+  ok(/재개발/.test(t1) && !/NaN|undefined/.test(t1), '재개발로 거르면 재개발 구역 카드');
+  await page.locator('#fType button', { hasText: '전체' }).first().click();
+  await page.locator('#fStage button', { hasText: '관리처분·이주' }).click(); await sleep(400);
+  ok(/지금 단계: (관리처분인가|이주)/.test(await txt(page, '#list')), '관리처분·이주로 거르면 그 단계 구역만');
+  await page.locator('#fQuick button', { hasText: '맞힌 기록 있는 예상만' }).click(); await sleep(400);
+  ok(/맞힌 기록 있음/.test(await txt(page, '#list')), '맞힌 기록 있는 예상만 보면 배지 보임');
+  await page.locator('#fQuick button', { hasText: '이주 앞둔 구역 주변 전세' }).click(); await sleep(400);
+  await page.locator('#list [data-more]').first().click(); await sleep(400);
+  const det = await txt(page, '#list .det');
+  ok(/단계 이력\(실제 날짜\)/.test(det) && /\d{4}년 \d{1,2}월/.test(det), '단계 이력에 실제 날짜');
+  ok(/착공 예상/.test(det) && /번 중 \d+번 맞았어요/.test(det), '착공 예상 + 과거로 돌아가 맞혀 본 성적');
+  ok(/이주 앞둔 구역 주변 전세/.test(det) && /이주 때문이라고 볼 근거는 아니에요/.test(det), '이주 주변 전세 + 원인 단정 없음');
+  ok(/양도세/.test(det) && /취득세/.test(det), '세금 계산기 링크');
+  await page.locator('#fQuick button', { hasText: '맞힌 기록 있는 예상만' }).click();
+  await page.locator('#fQuick button', { hasText: '이주 앞둔 구역 주변 전세' }).click();
+  await page.locator('#fStage button', { hasText: '전체' }).first().click(); await sleep(300);
+  await page.locator('#fQuick button', { hasText: '착공 예상 빠른 순' }).click(); await sleep(300);
+  ok(/참고/.test(await txt(page, '#list')), '검증 못 한 예상은 참고로 표시');
+  await page.locator('#how summary').click(); await sleep(200);
+  ok(/과거로 돌아가 맞혀 보기/.test(await txt(page, '#how')) && /번 중 \d+번 맞았어요/.test(await txt(page, '#how')), '방법 설명: 전체 맞힌 비율');
+  if (process.env.REDEV_SHOT) {
+    await page.locator('#how').evaluate(e => e.open = false);
+    await page.evaluate(() => scrollTo(0, 0)); await sleep(800);
+    await page.screenshot({ path: process.env.REDEV_SHOT.replace('{w}', v.width), fullPage: !v.mobile ? false : false });
+  }
 };
 
 /* ---------- 실행 ---------- */

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="../../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="집예보">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="../../assets/pwa.js?v=2" defer></script>
+<title>집예보 재개발·재건축 구역 지도 — 단계 이력과 착공까지 남은 기간</title>
+<link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/villa/zone/">
+<meta name="description" content="서울 재개발·재건축 구역을 지도에서 사업 종류·진행 단계별로 보고, 단계별 실제 날짜와 과거 비슷한 구역 기준 착공까지 걸리는 기간을 확인하세요.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="집예보 재개발·재건축 구역 지도">
+<meta property="og:description" content="구역 단계 이력 + 착공까지 보통 몇 년 + 이주 주변 전세 흐름">
+<meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/villa/zone/">
+<meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/villa.png">
+<meta property="og:locale" content="ko_KR">
+<script>window.JDJ_CONFIG = { tool:'redev', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../assets/track.js?v=2"></script>
+<script src="../../assets/config.js?v=11"></script>
+<script src="../../assets/map-engine.js?v=3"></script>
+<script src="../../assets/redev-core.js?v=1"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/aplus.css?v=46">
+<script src="../../assets/tabbar.js?v=5" defer></script>
+<style>
+.wrap{max-width:1160px;margin:0 auto;padding:18px 16px 60px}
+h1{font-size:clamp(24px,6vw,34px);font-weight:900;letter-spacing:-.04em;line-height:1.25;margin:4px 0 8px;word-break:keep-all}
+h1 em{font-style:normal;color:var(--blue)}
+.lead{color:var(--muted);margin:0 0 14px;font-size:15.5px;line-height:1.6;word-break:keep-all}
+.tag{display:block;color:var(--blue);font-size:13.5px;font-weight:900;letter-spacing:.08em}
+.fl{display:grid;gap:8px;margin:0 0 10px}
+.fl .k{font-size:13.5px;font-weight:700;color:var(--muted)}
+.chips{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;font:inherit;font-size:14.5px;font-weight:700;border:1px solid var(--line);background:#fff;color:#4E5968;padding:0 14px;border-radius:999px;min-height:44px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.chip .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row2 select,.row2 input{width:100%;min-height:44px;padding:0 10px;border:1px solid var(--line);border-radius:12px;font:inherit;font-size:16px;font-weight:700;background:#fff;color:var(--ink)}
+.lay{display:grid;gap:14px}
+@media(min-width:960px){.lay{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:start}.mapc{position:sticky;top:64px}}
+#map{height:min(56vh,440px);border-radius:16px;border:1px solid var(--line);background:#EEF2F7;overflow:hidden}
+@media(min-width:960px){#map{height:calc(100vh - 150px);max-height:720px}}
+.mapnote{font-size:13.5px;color:var(--muted);margin:6px 2px 0;line-height:1.5}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13.5px;color:#4E5968;margin:6px 2px 0}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.legend i.dash{background:#fff!important;border:2px dashed #4E5968;border-radius:3px}
+.jm-pin .zp{pointer-events:auto;position:absolute;transform:translate(-50%,-50%);border:0;padding:0;background:none;cursor:pointer;width:44px;height:44px;display:flex;align-items:center;justify-content:center}
+.jm-pin .zp i{display:block;width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+.jm-pin .zl{pointer-events:none;position:absolute;transform:translate(-50%,8px);white-space:nowrap;font-size:12.5px;font-weight:900;background:rgba(255,255,255,.92);border-radius:6px;padding:1px 5px;color:#191F28;box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.sum{font-size:14.5px;color:var(--muted);margin:2px 0 8px}
+.sum b{color:var(--ink)}
+.zc{border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px 16px;margin-bottom:10px}
+.zc.sel{border-color:var(--blue);box-shadow:0 0 0 2px rgba(37,96,232,.18)}
+.zc .hd{display:flex;gap:8px;align-items:flex-start;justify-content:space-between}
+.zc .nm{font-size:17px;font-weight:900;letter-spacing:-.02em;line-height:1.35;word-break:keep-all}
+.zc .loc{font-size:13.5px;color:var(--muted)}
+.tb{display:inline-block;font-size:13px;font-weight:900;border-radius:6px;padding:2px 7px;color:#fff;margin-right:4px;vertical-align:1px}
+.tb.sh{background:#fff;color:#4E5968;border:1px dashed #4E5968}
+.lvbar{display:grid;grid-template-columns:repeat(10,1fr);gap:2px;margin:10px 0 2px}
+.lvbar i{height:6px;border-radius:2px;background:#E5E8EB}
+.lvbar i.on{background:var(--blue)}
+.stg{font-size:14.5px;font-weight:700;margin-top:4px}
+.stg small{font-weight:500;color:var(--muted)}
+.sp{margin-top:10px;background:#F2F6FF;border-radius:12px;padding:10px 12px;font-size:14.5px;line-height:1.6;word-break:keep-all}
+.sp.ref{background:#F7F8FA}
+.sp b{font-weight:900}
+.bd{display:inline-block;font-size:12.5px;font-weight:900;border-radius:999px;padding:1px 8px;margin-right:4px;vertical-align:1px}
+.bd.ok{background:#E3F6EA;color:#0B7A3B}
+.bd.ref{background:#fff;color:#6B7684;border:1px solid #C9CED6}
+.more{font:inherit;font-size:14.5px;font-weight:700;color:var(--blue);background:none;border:0;min-height:44px;padding:0;cursor:pointer;margin-top:4px}
+.det{border-top:1px dashed var(--line);margin-top:8px;padding-top:8px}
+.det h4{font-size:15px;margin:10px 0 6px}
+.tl{list-style:none;margin:0;padding:0 0 0 14px;border-left:2px solid #DDE3EA}
+.tl li{position:relative;padding:0 0 10px 8px;font-size:14.5px}
+.tl li:before{content:'';position:absolute;left:-21px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--blue)}
+.tl li.est:before{background:#fff;border:2px dashed var(--blue);width:8px;height:8px}
+.tl li b{font-weight:900}
+.tl li small{display:block;color:var(--muted);font-size:13.5px;line-height:1.5}
+.mvt{width:100%;border-collapse:collapse;font-size:14px;margin-top:4px}
+.mvt td{padding:7px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+.mvt td.n{white-space:nowrap;font-weight:700}
+.up{color:#C81E1E}.dn{color:#1B64DA}
+.note{font-size:13.5px;color:var(--muted);line-height:1.6;margin:6px 0 0;word-break:keep-all}
+.links{display:grid;gap:6px;margin-top:6px}
+.links a{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:12px;color:var(--ink);text-decoration:none;font-size:14.5px;font-weight:700}
+.links a span{color:var(--blue);flex:none}
+.morebtn{display:block;width:100%;margin-top:6px;min-height:48px;font:inherit;font-weight:900;font-size:15.5px;background:#fff;color:var(--blue);border:1px solid var(--line);border-radius:14px;cursor:pointer}
+.empty,.loading{padding:28px 16px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:16px;background:#fff;line-height:1.6}
+.how{background:#fff;border:1px solid var(--line);border-radius:16px;padding:6px 14px;margin:14px 0;font-size:14.5px;line-height:1.65}
+.how summary{cursor:pointer;font-weight:900;color:var(--blue);min-height:44px;display:flex;align-items:center}
+.how table{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0}
+.how th,.how td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.how td.num,.how th.num{text-align:right;white-space:nowrap}
+.src{font-size:13.5px;color:var(--muted);margin-top:16px;line-height:1.6;word-break:keep-all}
+.src a{color:inherit}
+.back{display:inline-flex;align-items:center;min-height:44px;font-weight:700;color:var(--blue);text-decoration:none;font-size:14.5px}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a>
+  <div class="badge plain">재개발·재건축</div>
+</header>
+<main class="wrap">
+  <a class="back" href="../" data-track="redev_to_villa">← 재개발·빌라 체크로</a>
+  <span class="tag">구역 지도 · 착공까지 기간</span>
+  <h1>이 구역, <em>착공</em>까지 얼마나 남았을까요?</h1>
+  <p class="lead">서울 재개발·재건축 구역의 지금 단계와 단계별 실제 날짜를 보여 드려요. 과거 비슷한 구역이 착공까지 몇 년 걸렸는지 모아, 구역마다 착공 예상 시기도 함께 보여 드려요.</p>
+
+  <div class="fl">
+    <span class="k">사업 종류</span>
+    <div class="chips" id="fType" role="group" aria-label="사업 종류"></div>
+    <span class="k">진행 단계</span>
+    <div class="chips" id="fStage" role="group" aria-label="진행 단계"></div>
+    <span class="k">바로 보기</span>
+    <div class="chips" id="fQuick" role="group" aria-label="바로 보기"></div>
+    <div class="row2">
+      <select id="fGu" aria-label="구 고르기"><option value="">서울 전체</option></select>
+      <input id="fQ" placeholder="구역·동 이름 찾기" autocomplete="off" aria-label="구역·동 이름 찾기">
+    </div>
+  </div>
+
+  <div class="lay">
+    <div class="mapc">
+      <div id="map" role="region" aria-label="구역 지도"></div>
+      <div class="legend" id="legend"></div>
+      <p class="mapnote" id="mapNote"></p>
+    </div>
+    <div>
+      <div class="sum" id="sum"></div>
+      <div id="list"><div class="loading">구역 자료를 불러오는 중이에요…</div></div>
+    </div>
+  </div>
+
+  <details class="how" id="how">
+    <summary>착공까지 기간은 이렇게 셌어요</summary>
+    <div id="howBody"></div>
+  </details>
+
+  <p class="src" id="src"></p>
+</main>
+<div class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="../../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집예보 · <a href="../../">홈</a></div>
+
+<script>
+var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+(function () {
+  'use strict';
+  const R = window.JDJ_REDEV, esc = R.esc, $ = id => document.getElementById(id);
+  const S = { type: '', stage: '', gu: '', q: '', mv: false, ok: false, sort: 'soon', shown: 20, sel: null };
+  let D = null, MAP = null, SH = [], PINS = [];
+  const track = (n, p) => { try { if (window.JDJ_TRACK) JDJ_TRACK.event(n, p || {}); } catch (e) {} };
+
+  function chips() {
+    const t = [['', '전체']].concat(Object.keys(R.TYPES).map(k => [k, R.TYPES[k]])).concat([['sh', '신속통합기획']]);
+    $('fType').innerHTML = t.map(([k, n]) => `<button class="chip${S.type === k ? ' on' : ''}" data-k="${k}">${k && k !== 'sh' ? `<i class="dot" style="background:${R.COLOR[k]}"></i>` : ''}${esc(n)}</button>`).join('');
+    $('fStage').innerHTML = [['', '전체']].concat(R.SG.map(g => [g[0], g[1]])).map(([k, n]) => `<button class="chip${S.stage === k ? ' on' : ''}" data-k="${k}">${esc(n)}</button>`).join('');
+    $('fQuick').innerHTML = [['soon', '착공 예상 빠른 순', S.sort === 'soon'], ['stage', '단계 높은 순', S.sort === 'stage'], ['ok', '맞힌 기록 있는 예상만', S.ok], ['mv', '이주 앞둔 구역 주변 전세', S.mv]]
+      .map(([k, n, on]) => `<button class="chip${on ? ' on' : ''}" data-k="${k}">${esc(n)}</button>`).join('');
+  }
+  function bind() {
+    $('fType').onclick = e => { const b = e.target.closest('button'); if (!b) return; S.type = b.dataset.k; S.shown = 20; track('redev_filter', { f: 'type', v: S.type }); draw(); };
+    $('fStage').onclick = e => { const b = e.target.closest('button'); if (!b) return; S.stage = b.dataset.k; S.shown = 20; track('redev_filter', { f: 'stage', v: S.stage }); draw(); };
+    $('fQuick').onclick = e => {
+      const b = e.target.closest('button'); if (!b) return; const k = b.dataset.k;
+      if (k === 'ok') S.ok = !S.ok; else if (k === 'mv') S.mv = !S.mv; else S.sort = k;
+      S.shown = 20; track('redev_filter', { f: k }); draw();
+    };
+    $('fGu').onchange = () => { S.gu = $('fGu').value; S.shown = 20; draw(true); };
+    let tq; $('fQ').oninput = () => { clearTimeout(tq); tq = setTimeout(() => { S.q = $('fQ').value.trim(); S.shown = 20; draw(true); }, 250); };
+    $('list').onclick = e => {
+      const m = e.target.closest('[data-more]'); if (m) { const z = byId(m.dataset.more); const box = m.parentElement.querySelector('.det'); if (box) { box.remove(); m.textContent = '단계 이력·자세히 보기'; } else { m.insertAdjacentHTML('afterend', detail(z)); m.textContent = '접기'; track('redev_detail', { id: z.id }); } return; }
+      const f = e.target.closest('[data-fly]'); if (f) { fly(byId(f.dataset.fly)); return; }
+      if (e.target.closest('#moreList')) { S.shown += 20; list(); }
+    };
+  }
+  const byId = id => D.z.find(z => z.id === id);
+
+  function current() { return R.sort(R.filter(D.z, S), S.sort); }
+  function draw(fit) { chips(); list(); shapes(fit); }
+
+  function stageLine(z) {
+    const on = z.t === 'nt' ? 0 : (z.st || 0);
+    const bar = z.t === 'nt' ? '' : `<div class="lvbar" aria-hidden="true">${Array.from({ length: 10 }, (_, i) => `<i class="${i < on ? 'on' : ''}"></i>`).join('')}</div>`;
+    const last = (z.h || []).filter(h => h[0] === z.st).map(h => h[1])[0];
+    return bar + `<div class="stg">지금 단계: ${esc(z.sn || '확인 필요')}${last ? ` <small>(${R.ym(last)})</small>` : ''}${z.x ? ' <small>· 원자료 날짜 확인 필요</small>' : ''}</div>`;
+  }
+  function spBox(z) {
+    const s = R.speed(z, D);
+    if (s.state !== 'est') return `<div class="sp ref">${esc(s.head)}</div>`;
+    const bd = s.badge === 'ok' ? '<span class="bd ok">맞힌 기록 있음</span>' : '<span class="bd ref">참고</span>';
+    return `<div class="sp${s.badge === 'ok' ? '' : ' ref'}">${bd}<b>${esc(s.mine)}</b><br>${esc(s.head)}.</div>`;
+  }
+  function card(z) {
+    const tb = `<span class="tb" style="background:${R.COLOR[z.t] || '#4E5968'}">${esc(R.typeName(z))}</span>${z.sh ? '<span class="tb sh">신속통합기획</span>' : ''}`;
+    const loc = [z.gn, z.umd].filter(Boolean).join(' ');
+    const fly = z.pt ? `<button class="more" data-fly="${esc(z.id)}">지도에서 보기</button>` : '';
+    return `<div class="zc${S.sel === z.id ? ' sel' : ''}" id="z-${esc(z.id)}"><div class="hd"><div><div>${tb}</div><div class="nm">${esc(z.n)}</div><div class="loc">${esc(loc)}${z.new ? ` · 새로 지을 집 ${z.new.toLocaleString('ko-KR')}세대` : ''}</div></div></div>
+      ${stageLine(z)}${spBox(z)}
+      <button class="more" data-more="${esc(z.id)}">단계 이력·자세히 보기</button> ${fly}</div>`;
+  }
+  function detail(z) {
+    const tl = R.timeline(z, D).map(r => `<li class="${r.est ? 'est' : ''}"><b>${esc(r.name)}</b> ${esc(r.at)}${r.est ? (r.ok ? ' <span class="bd ok">맞힌 기록 있음</span>' : ' <span class="bd ref">참고</span>') : ''}${r.plain ? `<small>${esc(r.plain)}</small>` : ''}</li>`).join('');
+    let h = `<div class="det"><h4>단계 이력(실제 날짜)</h4>${tl ? `<ul class="tl">${tl}</ul>` : '<p class="note">원자료에 단계 날짜가 없어요.</p>'}`;
+    if (z.t !== 'nt') h += `<p class="note">날짜: 서울시 정비사업 추진현황(${esc(R.ym(D.asof))} 기준) — 인가 날짜는 처음 받은 날 기준이에요.</p>`;
+    else if (z.srcs && z.srcs.length) h += `<p class="note">출처: ${z.srcs.map((u, i) => `<a href="${esc(u)}" target="_blank" rel="noopener">발표·보도 ${i + 1} ↗</a>`).join(' · ')}</p>`;
+    const s = R.speed(z, D);
+    if (s.state === 'est') h += `<h4>착공 예상은 어떻게 나왔나요</h4><p class="note">${esc(s.who)} 구역 기준이에요. ${esc(s.why)}</p>`;
+    const m = R.mv(z, D);
+    if (m) {
+      h += `<h4>이주 앞둔 구역 주변 전세</h4><p class="note" style="color:var(--ink)">${esc(m.head)}</p>`;
+      if (m.rows.length) h += `<table class="mvt"><tbody>${m.rows.map(r => `<tr><td class="n">${esc(r.dong)}<br><small>${esc(r.gn)} · ${r.km}km</small></td><td><span class="${r.up ? 'up' : r.flat ? '' : 'dn'}">${esc(r.line)}</span><br><small>최근 1년 전세 보증금 변화 · ${esc(r.at)} 기준</small></td></tr>`).join('')}</tbody></table>`;
+      else h += `<p class="note">${esc(m.none)}</p>`;
+      h += `<p class="note">${esc(m.note)}</p>`;
+    }
+    const links = [];
+    (z.nb || []).forEach(nb => links.push([R.nbHref(JB.SITE, nb), `${nb.n} 미래가치 보기 <small style="color:var(--muted);font-weight:500">(${nb.by}년 준공 · ${nb.km}km)</small>`, 'redev_to_mine']));
+    links.push([JB.SITE + 'tax/', '집 살 때 세금(취득세) 계산', 'redev_to_tax']);
+    links.push([JB.SITE + 'tax/transfer/', '집 팔 때 세금(양도세) 계산', 'redev_to_transfer']);
+    if (z.g) links.push([JB.SITE + 'villa/', '이 근처 빌라 실거래·입주권 위험 보기', 'redev_to_villa']);
+    h += `<h4>함께 보면 좋아요</h4>${z.nb && z.nb.length ? `<p class="note" style="margin-top:0">가까운 새 아파트(준공 ${D.new_years}년 안, ${D.near_km}km 안)의 미래가치를 보면 이 구역이 다 지어진 뒤 모습을 가늠하는 데 도움이 돼요.</p>` : ''}<div class="links">${links.map(([u, t, tr]) => `<a href="${esc(u)}" data-track="${tr}">${t}<span>›</span></a>`).join('')}</div></div>`;
+    return h;
+  }
+  function list() {
+    const zs = current();
+    const est = zs.filter(z => z.sp && z.sp.y && !R.started(z)), ok = est.filter(z => z.sp.ok).length;
+    $('sum').innerHTML = zs.length ? `구역 <b>${zs.length.toLocaleString('ko-KR')}곳</b> · 착공 예상이 있는 곳 ${est.length}곳(맞힌 기록 있음 ${ok}곳)` : '';
+    if (!zs.length) { $('list').innerHTML = '<div class="empty">조건에 맞는 구역이 없어요. 위에서 고른 칸을 바꿔 보세요.</div>'; return; }
+    $('list').innerHTML = zs.slice(0, S.shown).map(card).join('') + (zs.length > S.shown ? `<button class="morebtn" id="moreList">더 보기 (${(zs.length - S.shown).toLocaleString('ko-KR')}곳 남음)</button>` : '');
+  }
+
+  /* ---------- 지도 ---------- */
+  function clearMap() { SH.forEach(s => s.remove()); PINS.forEach(p => p.remove()); SH = []; PINS = []; }
+  function shapes(fit) {
+    if (!MAP) return;
+    clearMap();
+    const zs = current().filter(z => z.pt);
+    const b = MAP.bounds(), z0 = MAP.zoom(), inB = z => z.pt[0] >= b.w && z.pt[0] <= b.e && z.pt[1] >= b.s && z.pt[1] <= b.n;
+    zs.forEach(z => {
+      const c = R.COLOR[z.t] || '#4E5968', on = S.sel === z.id;
+      if (z.poly) SH.push(MAP.shape('area', z.poly.map(r => r.map(p => [p[1], p[0]])), { color: c, weight: on ? 4 : 2, dash: !!z.sh, fill: c, fillOpacity: on ? 0.35 : 0.2 }, () => pick(z)));
+    });
+    const vis = zs.filter(inB);
+    vis.slice(0, 260).forEach(z => {
+      const c = R.COLOR[z.t] || '#4E5968';
+      const node = document.createElement('div');
+      const showLabel = z0 >= 14 || S.sel === z.id;
+      node.innerHTML = `<button class="zp" aria-label="${esc(z.n)} ${esc(z.sn || '')}"><i style="background:${c}"></i></button>${showLabel ? `<span class="zl">${esc(z.n)} · ${esc(R.SHORT[z.st] || z.sn || '')}</span>` : ''}`;
+      node.querySelector('button').onclick = ev => { ev.stopPropagation(); pick(z); };
+      PINS.push(MAP.add(z.pt[1], z.pt[0], node, S.sel === z.id ? 50 : 0));
+    });
+    if (fit && zs.length) {
+      const xs = zs.map(z => z.pt[0]), ys = zs.map(z => z.pt[1]);
+      const cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2, span = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
+      MAP.setView(cy, cx, span > 0.25 ? 11 : span > 0.08 ? 13 : 14);
+    }
+  }
+  function pick(z) {
+    S.sel = z.id; track('redev_pick', { id: z.id });
+    const zs = current(), i = zs.findIndex(x => x.id === z.id);
+    if (i >= S.shown) S.shown = i + 1;
+    list(); shapes();
+    const el = document.getElementById('z-' + z.id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      const m = el.querySelector('[data-more]'); if (m && !el.querySelector('.det')) m.click();
+    }
+  }
+  function fly(z) { if (!z || !z.pt || !MAP) return; S.sel = z.id; MAP.setView(z.pt[1], z.pt[0], 15); $('map').scrollIntoView({ behavior: 'smooth', block: 'start' }); list(); shapes(); }
+
+  function legend() {
+    $('legend').innerHTML = Object.keys(R.TYPES).filter(k => k !== 'nt').map(k => `<span><i style="background:${R.COLOR[k]}"></i>${esc(R.TYPES[k])}</span>`).join('') + '<span><i class="dash"></i>신속통합기획(점선)</span>';
+    const nP = D.z.filter(z => z.poly).length, nPt = D.z.filter(z => z.pt && !z.poly).length, nNo = D.z.filter(z => !z.pt && z.t !== 'nt').length;
+    $('mapNote').textContent = `면 ${nP}곳은 서울시가 공개한 정비구역 경계(법적 효력 없는 참고자료)예요. 점 ${nPt}곳은 경계가 작아 약 100m 단위로 줄이면 모양이 무너지거나 경계 자료가 없어, 경계 가운데나 구역 대표 지번 위치에 찍었어요. 위치 자료가 없는 ${nNo}곳과 1기 신도시는 목록에만 있어요.`;
+  }
+  function how() {
+    const rows = R.holdRows(D), a = D.hold_all || {};
+    $('howBody').innerHTML = `<p>① <b>자료</b>: 서울시 정비사업 추진현황(${esc(R.ym(D.asof))} 기준)의 단계별 첫 인가 날짜예요. 이 자료에는 지금 진행 중인 구역만 있고 이미 다 지어진 구역은 빠져 있어서, ${esc(R.ym(D.obs_from))}부터의 착공만 셌어요(그 뒤 착공한 구역은 아직 다 지어지지 않아 자료에 모두 남아 있어요).</p>
+      <p>② <b>보통 몇 년</b>: 조합설립인가·사업시행인가·관리처분인가 가운데 그 구역이 마지막으로 받은 인가부터 착공까지 걸린 기간을, 같은 사업 종류·같은 권역(도심·동북·서북·서남·동남) 구역끼리 모았어요. 착공까지 간 곳이 ${D.min_ev}곳보다 적으면 서울 전체, 그래도 적으면 모든 종류를 함께 봤어요. 아직 착공 전인 구역도 "그때까지는 착공 안 함"으로 함께 셌어요. "보통"은 10곳 중 가운데 6곳(20%~80%)이 들어가는 범위예요.</p>
+      <p>③ <b>이 구역 착공 예상</b>: 이 구역이 이미 기다린 기간보다 오래 걸린 구역들만 모아, 그 구역들의 20%~80%가 착공한 시기로 계산했어요.</p>
+      <p>④ <b>과거로 돌아가 맞혀 보기</b>: ${(D.cuts || []).map(R.ym).join('·')} 시점으로 돌아가 그때까지의 날짜만으로 다시 계산한 뒤, ${esc(R.ym(D.asof))}까지 실제로 착공했는지 맞혀 봤어요. 기준: ${D.nmin_ok}번 이상 맞혀 본 결과가 있고, 절반 이상 맞고, "모두 착공 안 함"이라고 했을 때보다 더 잘 맞힌 경우만 <span class="bd ok">맞힌 기록 있음</span>, 나머지는 <span class="bd ref">참고</span>예요. 전체로는 ${a.n || 0}번 중 ${a.hit || 0}번 맞았어요(${a.rate != null ? Math.round(a.rate * 100) : '-'}%, "모두 착공 안 함"이면 ${a.brate != null ? Math.round(a.brate * 100) : '-'}%).</p>
+      <div style="overflow-x:auto"><table><thead><tr><th>기준 단계</th><th>사업 종류</th><th class="num">맞힘</th><th class="num">모두 '안 함'</th><th>표시</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc(r.stage)}</td><td>${esc(r.typ)}</td><td class="num">${r.hit}/${r.n} (${Math.round(r.rate * 100)}%)</td><td class="num">${Math.round(r.brate * 100)}%</td><td>${r.ok ? '<span class="bd ok">맞힌 기록 있음</span>' : '<span class="bd ref">참고</span>'}</td></tr>`).join('')}</tbody></table></div>
+      <p class="note">자료가 쌓이면(매주 새 추진현황) 다시 계산해요. 관찰 기간이 짧아 착공 예상 연도 범위 전체가 끝난 사례는 아직 없어서, 연도 범위 자체를 맞혔는지는 다음 자료부터 확인할 수 있어요. 착공 예상은 과거 흐름일 뿐이고, 조합 분쟁·소송·인허가 지연으로 크게 달라질 수 있어요.</p>`;
+  }
+  function src() {
+    const S2 = D.src || {};
+    const l = (k, extra) => S2[k] ? `<a href="${esc(S2[k][1])}" target="_blank" rel="noopener">${esc(S2[k][0])}</a>${extra || ''}` : '';
+    $('src').innerHTML = '자료: ' + [l('stage', `(${esc(D.src_file || '')})`), l('plan'), l('poly'), l('rent', ' — 이주 주변 전세'), l('region', ' — 권역 구분'), '1기 신도시 선도지구는 국토교통부·경기도 발표와 보도(구역마다 링크)'].filter(Boolean).join(' · ') + `. 자료 만든 날 ${esc(D.v)}.`;
+  }
+
+  async function start() {
+    chips(); bind();
+    try {
+      const r = await fetch(JB.DATA + 'data/redev/zones.json'); if (!r.ok) throw new Error('nodata');
+      D = await r.json();
+    } catch (e) {
+      $('list').innerHTML = '<div class="empty">구역 자료를 준비하고 있어요. 매일 새벽 자료를 만든 뒤부터 보여 드려요.</div>';
+      $('map').style.display = 'none'; return;
+    }
+    const gus = {}; D.z.forEach(z => { if (z.g) gus[z.g] = z.gn; });
+    $('fGu').innerHTML = '<option value="">서울 전체</option>' + Object.keys(gus).sort((a, b) => gus[a].localeCompare(gus[b], 'ko')).map(g => `<option value="${g}">${esc(gus[g])}</option>`).join('') + '<option value="" disabled>1기 신도시는 사업 종류에서 골라요</option>';
+    legend(); how(); src(); list();
+    try {
+      MAP = await window.JDJ_MAPE.create($('map'), { lat: 37.555, lng: 126.99, zoom: 11 });
+      MAP.onIdle(() => shapes());
+      shapes();
+    } catch (e) { $('map').innerHTML = '<div class="empty">지도를 불러오지 못했어요. 아래 목록은 그대로 볼 수 있어요.</div>'; }
+  }
+  start();
+})();
+</script>
+</body>
+</html>

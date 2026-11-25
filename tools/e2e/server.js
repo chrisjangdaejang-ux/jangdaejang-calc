@@ -1,5 +1,5 @@
 /* 화면 점검(E2E)용 작은 웹 서버 — 실제 사이트와 같은 주소 구조로 띄움
-   /jangdaejang-calc/… → 이 저장소 파일, /jangdaejang-data/… → 실제 공개 데이터(처음 한 번 받아 E2E_CACHE 에 저장)
+   /jangdaejang-calc/… → 이 저장소 파일, /jangdaejang-data/… → 실제 공개 데이터(처음 한 번 받아 E2E_CACHE 에 저장, 공개본에 아직 없으면 tools/e2e/fallback/)
    실행: node tools/e2e/server.js [포트]   (기본 8790)
    DATA_ORIGIN: 공개 데이터 원본(기본 raw.githubusercontent.com 의 jangdaejang-data gh-pages) */
 'use strict';
@@ -34,7 +34,11 @@ function start(port) {
         const rel = u.slice('/jangdaejang-data/'.length);
         if (rel.includes('..')) return send(400, 'bad');
         const b = await fetchData(rel);
-        return b ? send(200, b, type(rel)) : send(404, 'not found');
+        if (b) return send(200, b, type(rel));
+        /* 공개 데이터에 아직 없는 새 파일(엔진이 다음 정기 실행에서 처음 만듦)은 tools/e2e/fallback/ 의 같은 경로 파일로 — 실제 엔진 결과를 줄인 것 */
+        const fb = path.join(__dirname, 'fallback', rel);
+        if (fb.startsWith(path.join(__dirname, 'fallback')) && fs.existsSync(fb)) return send(200, fs.readFileSync(fb), type(rel));
+        return send(404, 'not found');
       }
       if (u === '/' ) { res.writeHead(302, { Location: '/jangdaejang-calc/' }); return res.end(); }
       if (!u.startsWith('/jangdaejang-calc/') && u !== '/jangdaejang-calc') return send(404, 'not found');
