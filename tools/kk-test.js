@@ -18,6 +18,9 @@ check('cdf 첫 칸 아래 0.25%', K.cdf(lin, D.grid, -1), 0.0025);
 check('cdf 끝 칸 위 99.75%', K.cdf(lin, D.grid, 1), 0.9975);
 check('같은 값이 이어지면 그 값의 마지막 분위(엔진과 같음)', K.cdf([-0.3].concat(Array(49).fill(-0.2), Array(51).fill(0.1)), D.grid, -0.2), 0.49);
 
+const page = fs.readFileSync(path.join(__dirname, '..', 'jeonse', 'index.html'), 'utf8');
+check('화면은 공개 데이터 rent/kk.json 먼저, 없으면 data/kkang.json', /kkGet\(DATA \+ 'rent\/kk\.json'\)\.then\(j => j \|\| kkGet\(JB\.SITE \+ 'data\/kkang\.json'\)\)/.test(page), true);
+
 /* ② 계산 규칙 */
 const e = K.estimate({ kk: D, code: '28237', dep: 26000, senior: 0, price: 34200 });
 check('확률 = cdf(log(보증금 ÷ 시세))', e.p, K.cdf(q, D.grid, Math.log(26000 / 34200)), 1e-12);

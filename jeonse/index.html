@@ -713,7 +713,10 @@ function runCalc(){
    내가 넣은 보증금·선순위채권·공시가격은 이 화면 안에서만 계산(서버로 보내지 않음) */
 const HG = window.JDJ_HUG, KK = window.JDJ_KK;
 let KKD = null;
-const kkData = () => KKD || (KKD = fetch(JB.SITE + 'data/kkang.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null));
+/* 공개 데이터(엔진 정기 실행이 월 1회 새로 만드는 data/rent/kk.json)를 먼저, 없거나 못 받으면 이 저장소의 data/kkang.json(2026-11 판) */
+const kkOk = j => j && j.reg && Array.isArray(j.grid) && j.bt ? j : null;
+const kkGet = u => fetch(u, {cache:'no-cache'}).then(r => r.ok ? r.json() : null).then(kkOk).catch(() => null);
+const kkData = () => KKD || (KKD = kkGet(DATA + 'rent/kk.json').then(j => j || kkGet(JB.SITE + 'data/kkang.json')));
 const hugType = k => ({ a: 'apt', o: 'offi', v: 'villa', d: 'house' })[k] || 'villa';
 const wonF = v => Math.round(v).toLocaleString() + '원';
 function safetyPanel(c, u, sm){
