@@ -53,6 +53,10 @@
 <style>
 .wrap{max-width:1080px;margin:0 auto;padding:28px 18px 60px}
 .hero{margin-bottom:26px}
+.swtabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#F2F4F6;border-radius:14px;padding:5px;margin:0 0 18px}
+.swtabs a{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:52px;border-radius:10px;text-decoration:none;color:#4E5968;font-weight:800;font-size:16px;line-height:1.25}
+.swtabs a small{font-size:12.5px;font-weight:500;color:#6B7684}
+.swtabs a[aria-current]{background:#fff;color:#2560E8;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .tag{display:inline-block;background:var(--ink);color:var(--gold2);font-size:13.5px;font-weight:700;letter-spacing:.14em;padding:4px 9px;border-radius:2px}
 h1{font-size:clamp(28px,5vw,44px);font-weight:900;letter-spacing:-.04em;line-height:1.15;margin:12px 0 10px}
 h1 em{font-style:normal;color:var(--gold)}
@@ -352,6 +356,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 </header>
 
 <div class="wrap">
+  <nav class="swtabs" aria-label="갈아타기 종류"><a href="./" aria-current="page" data-track="swtab_own">자가<small>집을 팔고 살 때</small></a><a href="rent/" data-track="swtab_rent">전월세<small>전세 갈아타기</small></a></nav>
   <div class="hero">
     <span class="tag">FREE TOOL · 1주택자 갈아타기</span>
     <h1>지금 집 팔면,<br><em>어디까지</em> 갈 수 있을까?</h1>

@@ -24,6 +24,7 @@
     report:    { easy: '내 집 마련이 쉬워지는 집예보', label: '내 집 마련 맞춤 리포트', path: 'buy/', try: '내 조건으로 나도 해 보기' },
     mine:      { easy: '내 집 시세 확인이 쉬워지는 집예보', label: '내 집 시세', path: 'mine/', try: '우리 집 시세도 확인해 보기' },
     switch:    { easy: '갈아타기 계산이 쉬워지는 집예보', label: '갈아타기 계산', path: 'switch/', try: '내 집으로 나도 해 보기' },
+    tswitch:   { easy: '전세 갈아타기가 쉬워지는 집예보', label: '전세 갈아타기', path: 'switch/rent/', try: '내 보증금으로 나도 찾아보기' },
     jeonse:    { easy: '전월세 판단이 쉬워지는 집예보', label: '전월세 시세·위험 체크', path: 'jeonse/', try: '우리 집 전세도 확인해 보기' },
     checklist: { easy: '전세 계약 점검이 쉬워지는 집예보', label: '전세사기 예방 체크리스트', path: 'jeonse/checklist/', try: '내 계약도 점검해 보기' },
     tax:       { easy: '부동산 세금 계산이 쉬워지는 집예보', label: '부동산 세금 계산', path: 'tax/', try: '내 세금도 계산해 보기' },

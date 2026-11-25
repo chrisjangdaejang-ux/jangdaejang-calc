@@ -21,7 +21,7 @@ const VIEWS = [{ name: '휴대폰', width: 390, height: 844, mobile: true }, { n
 const PAGES = ['', 'about/', 'terms/', 'privacy/', 'refund/', 'rank/', 'loan/', 'tax/', 'tax/transfer/', 'chungyak/', 'chungyak/price/',
   'map/', 'mine/', 'villa/', 'villa/zone/', 'comm/', 'jeonse/', 'jeonse/checklist/', 'brief/', 'brief/subscribe/', 'brief/manage/', 'brief/c/', 'brief/paid/',
   'my/alerts/', 'my/report/', 'my/watch/', 'track/', 'track/detail/', 'ad/', 'ad/plan/', 'agent/', 'agent/my/', 'agent/listing/', 'agent/content/',
-  'agent/sheet/', 'login/', 'mine/calendar/', 'bunyang/', 'bunyang/agency/', 'bunyang/apply/', 'partner/', 'premium/', 'premium/pro/', 'quiz/', 'quiz/hall/', 'ask/', 'switch/',
+  'agent/sheet/', 'login/', 'mine/calendar/', 'bunyang/', 'bunyang/agency/', 'bunyang/apply/', 'partner/', 'premium/', 'premium/pro/', 'quiz/', 'quiz/hall/', 'ask/', 'switch/', 'switch/rent/',
   'buy/', 'buy/report/', 'press/', 'guide/method/', 'guide/terms/', 'weekly/', 'pro/developer/', 'community/', 'dongne/', 'dongne/my/', 'dongne/terms/', 'dongne/office/'];
 /* 법률 문서(약관·개인정보·환불)는 ~습니다 문장이 정상 */
 const LEGAL = /^(terms|privacy|refund|guide\/terms)\//;
@@ -611,6 +611,86 @@ JOURNEYS.tenant = async function (page, v, mock) {
   ok(!reqs.some(x => /"dep"|"cash"|"inc"/.test(x)), '서버 요청 어디에도 보증금·현금·소득 칸 없음');
   ok(!/[?&](dep|cash|inc)=/.test(page.url()), '주소에도 금액 없음');
   if (SHOTS) { fs.mkdirSync(SHOTS, { recursive: true }); await page.locator('#ta').scrollIntoViewIfNeeded(); await page.evaluate(() => { const t = document.getElementById('ta'); scrollTo(0, t.getBoundingClientRect().top + scrollY - 70); }); await sleep(400); await page.screenshot({ path: path.join(SHOTS, `tenant_alert_${v.width}.png`) }); }
+};
+
+/* ---------- 전세 갈아타기: 전월세 → [전세 갈아타기] → 결과(더 나은 집·더 싼 집·매수 전환) ---------- */
+JOURNEYS.tswitch = async function (page, v, mock) {
+  const ce = new Date(Date.now() + 9 * 3600000 + 170 * 864e5).toISOString().slice(0, 10);
+  await page.addInitScript(([h, ce]) => { try {
+    localStorage.setItem('jdj_myhome', JSON.stringify({ v: 1, list: [h] }));
+    localStorage.setItem('jdj_cal', JSON.stringify({ h: { '11710|가락동|913|헬리오시티|84㎡대': { t: 'jeonse', cs: '2025-05-20', ce, ta: { on: true, areas: [{ g: '11710', d: '가락동' }, { g: '11710', d: '문정동' }, { g: '11710', d: '송파동' }], work: { g: '11680', d: '역삼동' }, ty: 'a', band: '84㎡대' } } }, n: null, t: '', ms: 1 }));
+  } catch (e) {} }, [E2E_HOME, ce]);
+  await open(page, 'switch/'); await sleep(800);
+  ok(await page.locator('nav.swtabs a[aria-current]').innerText().then(t => /자가/.test(t)).catch(() => false), "갈아타기: '자가' 탭이 지금 화면");
+  ok(await page.locator('nav.swtabs a[href="rent/"]').isVisible(), "갈아타기: '전월세' 탭이 보임");
+  await open(page, 'jeonse/'); await sleep(800);
+  const cta = page.locator('#tswCta');
+  ok(await cta.isVisible() && /전세 갈아타기/.test(await cta.innerText()), "전월세 첫 화면: '전세 갈아타기' 단추가 보임");
+  const cb = await cta.boundingBox(), tb = await page.locator('a.tacta').boundingBox();
+  ok(cb && tb && cb.y < tb.y, "'전세 갈아타기' 단추가 '전세 만기 알림 받기'보다 위(먼저 보임)");
+  await cta.click(); await page.waitForURL(/switch\/rent\//, { timeout: 15000 }).catch(() => {}); await sleep(3000);
+  ok(/switch\/rent\//.test(page.url()), '[전세 갈아타기] → 전세 갈아타기 화면');
+  ok(/전월세/.test(await txt(page, 'nav.swtabs a[aria-current]')), "전세 갈아타기: '전월세' 탭이 지금 화면");
+  ok(/헬리오시티/.test(await txt(page, '#homeNow')), '저장한 전세 집(헬리오시티)을 지금 집으로 골라 둠');
+  ok(await page.locator('#taIn').isVisible(), '전세 만기 알림의 희망 지역·출퇴근지·집 형태·평형을 불러왔다는 안내');
+  ok(/송파구 가락동/.test(await txt(page, '#areas')) && /문정동/.test(await txt(page, '#areas')), '희망 지역 칩 = 알림 설정(가락동·문정동·송파동)');
+  await page.locator('#goBtn').click(); await sleep(600);
+  ok(await feedbackNear(page, page.locator('#goBtn'), '보증금을 넣어'), '보증금 없이 누르면 단추 가까이 "보증금을 넣어 주세요"');
+  ok(!(await page.locator('#cash2').isVisible()), "기본 칸만 보이고 나머지는 '조건 더 넣기' 안에 접혀 있음");
+  await page.fill('#dep', '120000');
+  await page.locator('#moreCond > summary').click(); await sleep(300);
+  await page.fill('#cash2', '3000'); await page.locator('#useLoan').check(); await page.fill('#jl', '2000'); await page.fill('#mv', '300'); await page.fill('#rentMax', '150');
+  await page.locator('[data-pol="youth"]').check(); await sleep(200);
+  ok(/주택도시기금/.test(await txt(page, '#loanNote')) && /추정하지 않아요/.test(await txt(page, '#loanNote')), '청년 체크 → 정책 전세대출 안내(공식 링크·추정 안 함)');
+  await page.locator('#cmode [data-c="transit"]').click(); await page.selectOption('#hh', 'mid'); await page.locator('#park').check(); await page.locator('#pet').check();
+  ok(/2027|20\d\d-/.test(await page.locator('#moveAt').inputValue()), '이사 희망 시기 = 전세 만기일로 미리 넣음');
+  await page.locator('#goBtn').click(); await sleep(9000);
+  let r = await txt(page, '#res');
+  ok(/내 예산 12억 5,000만 원/.test(r), '예산 = 보증금 + 현금 + 전세대출(12억 5,000만 원)');
+  ok(/조건에 맞는 곳 \d+곳/.test(r) && /지금 단지 최근 전세/.test(r), '결과: 조건에 맞는 곳 수 · 지금 단지 최근 전세');
+  ok(/중개보수\(상한\) [\d억만 ,원]+/.test(r) && /이사비 300만 원/.test(r) && /(이사에 새로 드는 돈|이사하고 남는 돈)/.test(r), '카드마다 이사에 드는 돈(보증금 차액·중개보수·이사비)');
+  ok(/주차 대수 자료가 아직 없어/.test(r) && /반려동물 허용 여부는 공개 자료가 없어요/.test(r), '주차·반려동물: 자료 없음 안내(걸러 내는 척하지 않음)');
+  ok(/대중교통: 역 거리 두 배/.test(r) && /자녀 중·고: 학군 두 배/.test(r), '통근수단·가구 형태에 맞춘 무게 안내');
+  ok(await page.locator('#res .cand').count() > 0, '더 나은 집 카드가 하나 이상');
+  ok(/나아지는 점 \d가지/.test(r) && /최근 6개월 신규 계약 \d+건/.test(r), '카드: 나아지는 점 수 · 최근 6개월 신규 계약 건수');
+  ok(/출퇴근지까지 직선/.test(r) && /걸어서 약 \d+분\(어림\)/.test(r), '카드: 출퇴근 직선 거리 · 역까지 걷는 시간(어림) 표시');
+  ok(/HUG 전세보증\(추정\)/.test(r) && /깡통전세 확률/.test(r) && /참고/.test(r), '카드: HUG 기준(추정) · 깡통전세 확률(참고)');
+  ok(/국토교통부 전월세 실거래 최근 6개월 신규 전세 \d+건 중간값/.test(r) && /중개보수: 공인중개사법 시행규칙/.test(r), '카드마다 출처 줄(중개보수 요율 포함)');
+  ok(!/NaN|undefined|Infinity/.test(r), '결과에 NaN·undefined 없음');
+  /* 보증보험 가입 가능한 곳만 */
+  await page.locator('#safeOnly').check(); await page.locator('#goBtn').click(); await sleep(8000);
+  ok(await page.locator('#res .cand').evaluateAll(cs => cs.every(c => /HUG 보증 기준 안이에요/.test(c.innerText))), "'보증보험 가입 가능한 곳만' → HUG 기준 안인 곳만");
+  await page.locator('#safeOnly').uncheck(); await page.locator('#goBtn').click(); await sleep(8000);
+  /* 걸러 보기 */
+  const n0 = await page.locator('#res .cand').count();
+  await page.locator('#res [data-n="safe"]').click(); await sleep(500);
+  r = await txt(page, '#res');
+  ok(await page.locator('#res [data-n="safe"][aria-pressed="true"]').count() === 1, "걸러 보기 '안전 점검 통과' 단추가 눌림 상태");
+  ok((await page.locator('#res .cand').count()) === 0 ? /고른 점이 모두 나아진 곳이 없어요/.test(r) : (await page.locator('#res .cand').evaluateAll(cs => cs.every(c => /HUG 보증 기준 안이에요/.test(c.innerText)))), '걸러 보기: 안전 점검 통과한 곳만');
+  await page.locator('#res [data-n="safe"]').click(); await sleep(400);
+  ok((await page.locator('#res .cand').count()) === n0, '걸러 보기를 끄면 다시 모두');
+  /* 더 싼 집 */
+  await page.locator('#rtabs [data-t="cheap"]').click(); await sleep(500);
+  r = await txt(page, '#res');
+  ok(/덜 들어요/.test(r) || /조건에 맞는 더 싼 곳이 없어요/.test(r), "더 싼 집: '○○ 덜 들어요' 또는 없음 안내");
+  /* 출퇴근지 가까운 곳 */
+  await page.locator('#mode [data-m="work"]').click(); await page.locator('#goBtn').click(); await sleep(10000);
+  ok(/출퇴근지\(강남구 역삼동\) 가까운 동 12곳/.test(await txt(page, '#res')), '찾을 곳: 출퇴근지 가까운 동 12곳');
+  /* 2년 뒤 전망: 시험 불합격이면 숫자 대신 이유 */
+  const fc = await txt(page, '#fcSec');
+  ok(/2년 뒤 전세가 전망/.test(fc) && /참고/.test(fc) && (/전망 숫자는 보여 드리지 않아요/.test(fc) || /통과/.test(fc)), '2년 뒤 전망: 과거 시험 결과와 함께 참고로만');
+  /* 매수 전환 */
+  await page.fill('#cash', '30000'); await page.fill('#inc', '9000'); await page.locator('#buyBtn').click(); await sleep(6000);
+  const by = await txt(page, '#buyRes');
+  ok(/살 수 있는 단지 [\d,]+곳/.test(by) || /살 수 있는 단지가 없어요/.test(by), "매수 전환: '이 보증금 + 대출이면 살 수 있는 단지'");
+  /* 개인 금액은 기기에만 */
+  const reqs = mock.calls.map(c => JSON.stringify(c.body));
+  ok(!reqs.some(x => /\b(120000|125000|30000|9000|150)\b/.test(x) || /"(dep|cash|jl|rentMax|mv)"/.test(x)), '서버 요청 어디에도 보증금·대출·현금·소득·월세 감당액 없음');
+  ok(!/[?&](dep|jl|cash|inc|rent|mv)=/.test(page.url()), '주소에도 금액 없음');
+  const stored = await page.evaluate(() => localStorage.getItem('jdj_ta_me') || '');
+  ok(/120000/.test(stored), '보증금은 이 기기(전세 만기 알림과 같은 칸)에 저장');
+  if (SHOTS) { fs.mkdirSync(SHOTS, { recursive: true }); await page.locator('#mode [data-m="areas"]').click(); await page.locator('#goBtn').click(); await sleep(9000); await page.locator('#rtabs [data-t="better"]').click(); await sleep(400);
+    await page.evaluate(() => { const t = document.getElementById('res'); scrollTo(0, t.getBoundingClientRect().top + scrollY - 70); }); await sleep(400); await page.screenshot({ path: path.join(SHOTS, `tenant_switch_${v.width}.png`) }); }
 };
 
 /* ---------- v55 명예의 전당 ---------- */

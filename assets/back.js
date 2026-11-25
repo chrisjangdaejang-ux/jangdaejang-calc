@@ -17,7 +17,7 @@
   var NAMES = {
     '': ['홈'],
     'buy/': ['내 집 마련 계산기'], 'buy/report/': ['맞춤 분석 리포트', 'buy/'],
-    'switch/': ['갈아타기'],
+    'switch/': ['갈아타기'], 'switch/rent/': ['전세 갈아타기', 'switch/'],
     'villa/': ['재개발·빌라'], 'villa/zone/': ['재개발 구역 지도', 'villa/'],
     'chungyak/': ['청약'], 'chungyak/price/': ['분양가·입지 분석', 'chungyak/'], 'cy/': ['청약 공고', 'chungyak/'],
     'bunyang/': ['분양'], 'bunyang/agency/': ['분양대행 의뢰', 'bunyang/'], 'bunyang/apply/': ['분양 광고 신청', 'bunyang/'], 'partner/': ['분양 판매 파트너', 'bunyang/'],

@@ -407,6 +407,7 @@ async function drawTa(){
     x += dep ? `<p class="big">지금 내 보증금으로 갈 수 있는 단지 ${sc.fit}곳</p>${sc.fitList.length ? `<ul>${sc.fitList.slice(0, 5).map(a => `<li>${esc(a.d + ' ' + a.a + ' ' + a.b)} — 최근 6개월 중간값 ${esc(C.won(a.mr))}(${a.nr}건)${esc(far(a))}</li>`).join('')}</ul>` : ''}`
       : `<p class="ref">내 집 정보에 지금 보증금을 넣으면 '지금 내 보증금으로 갈 수 있는 단지'를 세어 드려요(이 기기에만 저장).</p>`;
     x += `<p class="ref">국토교통부 전월세 실거래 가운데 월세 없는 신규 전세 계약만 셌어요(갱신 계약은 5% 상한이 있어 뺐어요). 두 기간 모두 ${3}건 이상인 곳만 변화율을 내요.</p>`;
+    x += `<p class="ref"><a href="${BASE}switch/rent/" data-track="ta_to_tswitch">전세 갈아타기에서 출퇴근·역·준공·넓이까지 비교해 보기 ›</a></p>`;
     x += `<h4>② 갱신 협상 정보</h4>`;
     if (own && own.nr) x += `<p class="ref" style="margin:0">내 단지 최근 6개월 전세 중간값 <b>${esc(C.won(own.mr))}</b>(${own.nr}건)${own.chg != null ? `, 그 전 6개월보다 ${pct(own.chg)}` : ''}.</p>`;
     if (own && own.nr && dep && own.mr < dep) x += `<p class="nt">내 단지 전세 시세가 내 보증금(${esc(C.won(dep))})보다 낮아졌어요. 만기 6개월 전부터 2개월 전 사이에 계약갱신요구권을 쓰면서, 낮아진 시세를 근거로 보증금 감액을 집주인과 협의해 볼 수 있어요. 정보 안내이고, 결과는 협의에 따라 달라요. <a href="${esc(C.SRC.renew.url)}" target="_blank" rel="noopener">주택임대차보호법 제6조의3 보기</a> · <a href="${BASE}jeonse/" data-track="ta_to_safety">전세 안전 점검 해 보기 ›</a></p>`;

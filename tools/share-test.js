@@ -19,7 +19,7 @@ check('개인값 없음', ['i', 'c', 'd', 'n', 'e', 'bp', 'bd'].filter(k => u.se
 check('공개 값은 남김', u.searchParams.get('sd'), '서울특별시');
 check('유입 집계 utm', [u.searchParams.get('utm_source'), u.searchParams.get('utm_medium'), u.searchParams.get('utm_campaign')], ['share', 'user_share', 'report']);
 check('세금 해시', new URL(SH.link('tax', { hash: 'cgt' })).hash, '#cgt');
-check('10개 화면 + 첫 화면 소개 카드 이름', Object.keys(SH.TOOLS).sort(), ['ask', 'checklist', 'chungyak', 'home', 'jeonse', 'mine', 'rank', 'report', 'switch', 'tax', 'villa']);
+check('11개 화면 + 첫 화면 소개 카드 이름', Object.keys(SH.TOOLS).sort(), ['ask', 'checklist', 'chungyak', 'home', 'jeonse', 'mine', 'rank', 'report', 'switch', 'tax', 'tswitch', 'villa']);
 Object.entries(SH.TOOLS).forEach(([k, t]) => check(k + ' 중간 카드 문구', /쉬워지는 집예보$/.test(t.easy) && !!t.try && !!t.label, true));
 
 /* 요약 문장 거르기 */

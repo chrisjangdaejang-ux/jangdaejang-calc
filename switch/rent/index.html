@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="../../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="집예보">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="../../assets/pwa.js?v=2" defer></script>
+<script src="../../assets/biz.js?v=3" defer></script>
+<title>집예보 전세 갈아타기 — 같은 보증금으로 더 나은 집, 같은 조건에 더 싼 집</title>
+<link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/switch/rent/">
+<meta name="description" content="지금 전세 보증금(과 전세대출)으로 갈 수 있는 단지를 국토교통부 전월세 실거래로 찾아, 출퇴근 거리·역까지 거리·준공 연도·전용면적·학군 지표·HUG 보증 기준을 지금 집과 비교해 드려요. 같은 조건에 더 싼 곳과 아낄 수 있는 금액도 보여 드려요.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="같은 보증금, 더 나은 집 — 집예보 전세 갈아타기">
+<meta property="og:description" content="내 보증금으로 갈 수 있는 단지를 실거래로 찾고, 지금 집보다 무엇이 나아지는지 한눈에 비교해요.">
+<meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/switch/rent/">
+<meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/switch.png">
+<meta property="og:locale" content="ko_KR">
+<script>window.JDJ_CONFIG = { tool:'tswitch', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../assets/track.js?v=2"></script>
+<script src="../../assets/stat.js?v=7"></script>
+<script src="../../assets/share.js?v=13"></script>
+<script src="../../assets/config.js?v=11"></script>
+<script src="../../assets/mine-core.js?v=21"></script>
+<script src="../../assets/cal-core.js?v=2"></script>
+<script src="../../assets/rent-core.js?v=6"></script>
+<script src="../../assets/hug-core.js?v=1"></script>
+<script src="../../assets/kk-core.js?v=1"></script>
+<script src="../../assets/gongsi.js?v=3"></script>
+<script src="../../tax/tax-engine.js?v=4"></script>
+<script src="../../assets/loan-rules.js?v=3"></script>
+<script src="../../assets/loan-core.js?v=5"></script>
+<script src="../../assets/plain-words.js?v=17"></script>
+<script src="../../assets/tswitch-core.js?v=1"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/aplus.css?v=46">
+<script src="../../assets/tabbar.js?v=5" defer></script>
+<style>
+.wrap{max-width:860px;margin:0 auto;padding:18px 16px 60px}
+h1{font-size:clamp(26px,6vw,38px);margin:6px 0 8px}
+.lead{margin:0 0 16px;font-size:16px;color:#4E5968;word-break:keep-all}
+.swtabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#F2F4F6;border-radius:14px;padding:5px;margin:4px 0 16px}
+.swtabs a{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:52px;border-radius:10px;text-decoration:none;color:#4E5968;font-weight:800;font-size:16px;line-height:1.25}
+.swtabs a small{font-size:12.5px;font-weight:500;color:#6B7684}
+.swtabs a[aria-current]{background:#fff;color:#2560E8;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.panel{margin:14px 0}
+.panel h2 small{display:block;font-size:13.5px;font-weight:500;color:#4E5968;margin-top:4px;letter-spacing:0}
+.homes{display:flex;flex-wrap:wrap;gap:8px}
+.homes button{font:inherit;font-size:15px;font-weight:700;min-height:48px;padding:6px 14px;border:1px solid var(--line);background:#fff;color:#3E4754;border-radius:12px;cursor:pointer;text-align:left;line-height:1.35}
+.homes button small{display:block;font-size:12.5px;font-weight:500;color:#6B7684}
+.homes button[aria-pressed=true]{background:#E8F0FF;border-color:#2560E8;color:#1F56E0}
+.pick{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pick .full{grid-column:1/-1}
+.pick label,.lb{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
+.pick select,.pick input{width:100%;font:inherit;font-size:16px;padding:0 12px;min-height:48px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--text);min-width:0}
+.pick input:focus,.pick select:focus{outline:0;border-color:#2560E8;box-shadow:0 0 0 3px rgba(47,107,255,.15)}
+@media(max-width:520px){.pick{grid-template-columns:1fr}}
+.hint{font-size:13.5px;color:#4E5968;margin-top:4px;line-height:1.5;word-break:keep-all}
+.sres{display:grid;gap:6px;margin-top:8px}
+.sres button{font:inherit;text-align:left;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-height:48px;cursor:pointer;color:var(--text)}
+.sres button small{display:block;font-size:13.5px;color:#4E5968}
+.bands{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+.bands button,.chips button,.fl button{font:inherit;font-size:15px;font-weight:700;min-height:44px;padding:0 14px;border:1px solid var(--line);background:#fff;color:#3E4754;border-radius:999px;cursor:pointer;white-space:nowrap}
+.bands button[aria-pressed=true],.fl button[aria-pressed=true]{background:#E8F0FF;border-color:#2560E8;color:#1F56E0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}
+.chips button span{margin-left:4px;color:#8B95A1}
+.seg2{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:#F2F4F6;border-radius:12px;padding:4px}
+.seg2.c2{grid-template-columns:1fr 1fr}
+.seg2 button{font:inherit;font-size:15px;font-weight:700;border:0;background:transparent;color:#4E5968;min-height:44px;padding:4px 8px;border-radius:9px;cursor:pointer;line-height:1.25}
+.seg2 button[aria-pressed=true]{background:#fff;color:#2560E8;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.seg2 button small{display:block;font-size:12.5px;font-weight:500;color:#6B7684}
+.seg2 button:disabled{color:#B0B8C1;cursor:default}
+.gap{margin-top:14px}
+.more2{margin-top:16px;border-top:1px solid var(--line2);padding-top:4px}
+.more2>summary{display:flex;align-items:center;min-height:48px;font-size:16px;font-weight:800;color:#2560E8;cursor:pointer}
+.sh{font-size:15px;font-weight:900;margin:16px 0 8px}
+.ck{display:flex;align-items:center;gap:8px;min-height:44px;font-size:15px;font-weight:600;cursor:pointer}
+.ck input{width:20px;height:20px;flex:none}
+.ckrow{display:flex;flex-wrap:wrap;gap:4px 16px}
+.mc{margin:8px 0 0;background:#F9FAFB;border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.6}
+.mc b{font-variant-numeric:tabular-nums}
+.mc .tot{font-size:16px;font-weight:900}
+.pkw summary{display:flex;align-items:center;min-height:44px;font-size:15px;font-weight:800;color:#2560E8;cursor:pointer}
+.pkw[open] summary{margin-bottom:8px}
+#loanNote details summary{display:inline-flex;align-items:center;min-height:44px;font-weight:700;color:#2560E8;cursor:pointer}
+.ta-in{background:#FBF8EF;border:1px solid #EFE6CC;border-radius:12px;padding:10px 12px;font-size:14px;color:#3E4754;line-height:1.55;margin:0 0 12px;word-break:keep-all}
+.go{display:flex;align-items:center;justify-content:center;width:100%;min-height:54px;margin-top:16px;border:0;border-radius:14px;background:#2560E8;color:#fff;font:inherit;font-size:17px;font-weight:800;cursor:pointer}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 8px}
+@media(max-width:640px){.stats{grid-template-columns:1fr 1fr}.stats .st:last-child{grid-column:1/-1}}
+.st{background:#F2F4F6;border-radius:14px;padding:10px 12px;min-width:0}
+.st.key{background:#E8F0FF}
+.st .k{font-size:13.5px;color:#4E5968;font-weight:700}
+.st .v{font-size:19px;font-weight:900;letter-spacing:-.4px;line-height:1.3;word-break:keep-all;font-variant-numeric:tabular-nums}
+.st .d{font-size:13px;color:#4E5968;line-height:1.4;word-break:keep-all}
+@media(max-width:640px){.st .v{font-size:17px}}
+.nt{background:#FBF8EF;border-left:4px solid #B8942A;border-radius:0 12px 12px 0;padding:12px 14px;font-size:14.5px;line-height:1.6;margin:10px 0;word-break:keep-all}
+.nt a{color:#2560E8;font-weight:700}
+.rtabs{margin:12px 0 10px}
+.fl{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.cards{display:grid;gap:10px}
+.cand{border:1px solid var(--line);border-radius:16px;padding:14px 14px 12px;background:#fff;min-width:0}
+.cand h3{margin:0;font-size:18px;font-weight:900;letter-spacing:-.3px;line-height:1.35;overflow-wrap:anywhere}
+.cand h3 .cnt.hf{color:#9A5B00;background:#FFF4DB}
+.cand h3 .cnt{display:inline-block;font-size:13px;font-weight:800;color:#0E7A4F;background:#E6F5EE;border-radius:999px;padding:2px 9px;margin-left:6px;vertical-align:2px}
+.cand .loc{font-size:14px;color:#4E5968;margin-top:2px;word-break:keep-all}
+.cand .pr{margin:8px 0 2px;font-size:15px;word-break:keep-all}
+.cand .pr b{font-size:20px;font-weight:900;font-variant-numeric:tabular-nums}
+.cand .pr small{display:block;font-size:13px;color:#4E5968}
+.cand .save{font-size:20px;font-weight:900;color:#0E7A4F}
+.gains{list-style:none;padding:0;margin:8px 0 4px;display:flex;flex-wrap:wrap;gap:6px}
+.gains li{font-size:13.5px;font-weight:700;color:#1F56E0;background:#E8F0FF;border-radius:8px;padding:4px 9px;word-break:keep-all}
+.gains li.sf{color:#0E7A4F;background:#E6F5EE}
+.facts{list-style:none;padding:0;margin:8px 0 0;display:grid;gap:4px;font-size:14px;color:#3E4754;line-height:1.5}
+.facts li{word-break:keep-all;overflow-wrap:anywhere}
+.facts b{color:#191F28}
+.facts .ref{display:inline-block;font-size:12px;font-weight:800;color:#6B7684;border:1px solid #C5CCD6;border-radius:4px;padding:0 5px;margin-left:4px;vertical-align:1px}
+.facts .bad{color:#C2410C}.facts .good{color:#0E7A4F}
+.cand .src{font-size:12.5px;color:#6B7684;line-height:1.55;margin:8px 0 0;word-break:keep-all}
+.cand .lk{display:inline-flex;align-items:center;min-height:44px;font-size:14.5px;font-weight:800;color:#2560E8;text-decoration:none}
+.more{display:block;width:100%;min-height:48px;margin-top:10px;border:1px solid var(--line);border-radius:12px;background:#fff;font:inherit;font-size:15px;font-weight:800;color:#2560E8;cursor:pointer}
+.empty{padding:22px 16px;text-align:center;color:#4E5968;border:1px dashed var(--line);border-radius:14px;background:#fff;font-size:15px;line-height:1.6;word-break:keep-all}
+.note{font-size:13.5px;color:#4E5968;line-height:1.6;word-break:keep-all}
+.fc h3{font-size:17px;margin:0 0 6px}
+.fc .tagr{font-size:12px;font-weight:800;color:#6B7684;border:1px solid #C5CCD6;border-radius:4px;padding:1px 6px;margin-left:6px;vertical-align:2px}
+table.bt{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}
+table.bt td,table.bt th{padding:8px 6px;border-bottom:1px solid var(--line2);text-align:left}
+table.bt td:last-child,table.bt th:last-child{text-align:right;white-space:nowrap}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.acts a,.acts button{display:inline-flex;align-items:center;min-height:46px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:#fff;color:#191F28;font:inherit;font-size:15px;font-weight:800;text-decoration:none;cursor:pointer}
+.acts .main{background:#2560E8;border-color:#2560E8;color:#fff}
+.disc{font-size:13.5px;color:#4E5968;line-height:1.7;margin-top:22px;border-top:1px solid var(--line2);padding-top:14px;word-break:keep-all}
+.disc ul{margin:6px 0 0;padding-left:18px}
+.disc a{color:#2560E8}
+</style>
+<script src="../../assets/back.js?v=1" defer></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name>집예보</span></a>
+  <div class="badge plain">갈아타기</div>
+</header>
+
+<main class="wrap">
+  <nav class="swtabs" aria-label="갈아타기 종류"><a href="../" data-track="swtab_own">자가<small>집을 팔고 살 때</small></a><a href="./" aria-current="page" data-track="swtab_rent">전월세<small>전세 갈아타기</small></a></nav>
+  <span class="tag">전세 갈아타기</span>
+  <h1>같은 보증금으로,<br><em>더 나은 집</em> 찾기</h1>
+  <p class="lead">지금 보증금으로 갈 수 있는 단지를 실거래로 찾아, 출퇴근 거리·역까지 거리·준공 연도·넓이·학군 지표·보증 가입 기준을 지금 집과 나란히 비교해 드려요. 같은 조건에 더 싼 곳과 아낄 수 있는 금액도 함께 보여 드려요.</p>
+
+  <section class="panel" id="homeSec" aria-labelledby="homeT">
+    <h2 id="homeT">지금 사는 집<small>저장한 집에서 고르거나, 지역과 단지 이름으로 찾아 주세요.</small></h2>
+    <div class="homes" id="homes"></div>
+    <details id="pickW" class="gap pkw"><summary>다른 집 찾기</summary>
+      <div class="pick">
+        <div><label for="sido">시·도</label><select id="sido"><option value="">불러오는 중…</option></select></div>
+        <div><label for="sgg">시·군·구</label><select id="sgg" disabled><option value="">시·군·구 선택</option></select></div>
+        <div class="full"><label for="q">단지 이름</label><input id="q" type="search" placeholder="예: 헬리오시티" autocomplete="off" enterkeyhint="search" disabled></div>
+      </div>
+      <div class="sres" id="sres" aria-live="polite"></div>
+      <div class="bands" id="bands"></div>
+    </details>
+    <p class="hint" id="homeNow" aria-live="polite"></p>
+  </section>
+
+  <section class="panel" id="condSec" aria-labelledby="condT">
+    <h2 id="condT">조건<small>모든 칸은 넣지 않아도 돼요. 금액은 이 기기에만 저장하고 서버·주소·공유 링크로 보내지 않아요.</small></h2>
+    <div class="ta-in" id="taIn" hidden></div>
+    <div class="pick"><div class="full"><label for="dep">지금 내 보증금 (만원)</label><input id="dep" inputmode="numeric" placeholder="예: 60,000"><div class="hint" id="depH"></div></div></div>
+    <div class="gap"><span class="lb" id="kindL">집 형태</span><div class="seg2" id="kind" role="group" aria-labelledby="kindL"></div></div>
+    <div class="pick gap"><div class="full"><label for="band">평형</label><select id="band"></select><div class="hint">방 개수 자료는 없어서 평형(전용면적)으로 골라요.</div></div></div>
+    <div class="gap"><span class="lb" id="modeL">찾을 곳</span><div class="seg2 c2" id="mode" role="group" aria-labelledby="modeL"></div></div>
+    <div id="areaW" class="gap"><span class="lb">희망 지역 <span id="areaN"></span></span><div class="chips" id="areas"></div><div class="pick"><div class="full"><label for="areaAdd" style="position:absolute;left:-9999px">희망 지역 더하기</label><select id="areaAdd"></select></div></div></div>
+    <div class="gap" id="wk1"><span class="lb">출퇴근지 (선택)</span>
+      <div class="pick"><div><label for="wSido" style="position:absolute;left:-9999px">출퇴근지 시·도</label><select id="wSido"></select></div><div><label for="wSgg" style="position:absolute;left:-9999px">출퇴근지 시·군·구</label><select id="wSgg"></select></div>
+      <div class="full"><label for="wDong" style="position:absolute;left:-9999px">출퇴근지 동</label><select id="wDong"></select></div></div>
+      <div class="hint">출퇴근 거리는 집에서 출퇴근지 동 가운데 점까지의 직선 거리예요. 실제 이동 시간은 교통편에 따라 달라요.</div></div>
+    <details class="more2" id="moreCond"><summary>조건 더 넣기</summary>
+      <h3 class="sh">예산</h3>
+      <div class="pick">
+        <div><label for="cash2">추가로 쓸 수 있는 현금 (만원)</label><input id="cash2" inputmode="numeric" placeholder="없으면 비워 두세요"><div class="hint" id="cash2H"></div></div>
+        <div><label for="rentMax">월세 감당 가능액 (만원/월)</label><input id="rentMax" inputmode="numeric" placeholder="넣으면 반전세도 찾아요"><div class="hint">보증금이 모자란 곳은 그 단지 최근 1년 전월세 전환율로 반전세 월세를 계산해요.</div></div>
+        <div><label for="lo">원하는 보증금 최소 (만원)</label><input id="lo" inputmode="numeric" placeholder="제한 없음"></div>
+        <div><label for="hi">원하는 보증금 최대 (만원)</label><input id="hi" inputmode="numeric" placeholder="제한 없음"></div>
+        <div class="full"><label class="ck"><input type="checkbox" id="reduce"> 보증금 줄이기 — 지금 보증금보다 낮은 곳만 찾아요</label></div>
+        <div><label for="mv">이사 비용 (만원)</label><input id="mv" inputmode="numeric" placeholder="견적 금액, 모르면 비워 두세요"><div class="hint">집 크기·거리·날짜마다 달라 미리 넣지 않았어요.</div></div>
+        <div><label for="moveAt">이사 희망 시기</label><input id="moveAt" type="date"><div class="hint" id="moveAtH"></div></div>
+      </div>
+      <h3 class="sh">전세대출</h3>
+      <label class="ck"><input type="checkbox" id="useLoan"> 전세대출을 쓸 거예요</label>
+      <div id="loanW" hidden>
+        <div class="pick"><div><label for="jl">전세대출 금액 (만원)</label><input id="jl" inputmode="numeric" placeholder="은행에서 안내받은 금액"><div class="hint" id="jlH"></div></div>
+        <div><label for="inc2">연소득 (만원, 선택)</label><input id="inc2" inputmode="numeric" placeholder="예: 6,000"></div></div>
+        <div class="ckrow"><label class="ck"><input type="checkbox" data-pol="youth"> 청년</label><label class="ck"><input type="checkbox" data-pol="newly"> 신혼부부</label><label class="ck"><input type="checkbox" data-pol="multi"> 다자녀</label></div>
+        <div class="hint" id="loanNote"></div>
+      </div>
+      <h3 class="sh">생활 조건</h3>
+      <div class="gap" id="wk2"><span class="lb">두 번째 출퇴근지 (맞벌이, 선택)</span>
+        <div class="pick"><div><label for="w2Sido" style="position:absolute;left:-9999px">두 번째 출퇴근지 시·도</label><select id="w2Sido"></select></div><div><label for="w2Sgg" style="position:absolute;left:-9999px">두 번째 출퇴근지 시·군·구</label><select id="w2Sgg"></select></div>
+        <div class="full"><label for="w2Dong" style="position:absolute;left:-9999px">두 번째 출퇴근지 동</label><select id="w2Dong"></select></div></div></div>
+      <div class="gap"><span class="lb" id="cmL">통근 수단</span><div class="seg2 c2" id="cmode" role="group" aria-labelledby="cmL"><button type="button" data-c="transit" aria-pressed="false">대중교통</button><button type="button" data-c="car" aria-pressed="false">자가용</button></div></div>
+      <div class="pick gap">
+        <div><label for="cmax">최대 통근 거리 (직선 km)</label><input id="cmax" inputmode="decimal" placeholder="제한 없음"><div class="hint">통근 시간 자료가 없어 시간 대신 직선 거리로 걸러요.</div></div>
+        <div><label for="ageMax">최대 연식 (년)</label><input id="ageMax" inputmode="numeric" placeholder="예: 10 — 10년 안 된 집만"></div>
+        <div class="full"><label for="hh">가구 형태</label><select id="hh"><option value="">고르지 않을래요</option><option value="one">1인 가구</option><option value="newly">신혼부부</option><option value="elem">자녀 초등학생</option><option value="mid">자녀 중학생</option><option value="high">자녀 고등학생</option></select><div class="hint" id="hhH"></div></div>
+      </div>
+      <div class="ckrow"><label class="ck"><input type="checkbox" id="park"> 주차가 꼭 필요해요</label><label class="ck"><input type="checkbox" id="pet"> 반려동물과 살아요</label><label class="ck"><input type="checkbox" id="safeOnly"> 보증보험 가입 가능한 곳만</label></div>
+    </details>
+    <button type="button" class="go" id="goBtn" data-track="tsw_run">결과 보기</button>
+    <div class="hint" id="goMsg" aria-live="polite"></div>
+  </section>
+
+  <section id="res" hidden aria-live="polite"></section>
+  <section id="buySec" hidden></section>
+  <section id="fcSec" hidden></section>
+
+  <div class="disc" id="src"></div>
+</main>
+<footer class="foot">과거 실거래 기반 정보예요. 특정 계약을 권하지 않아요. 자세한 분석 방법은 <a href="../../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ <span data-site-name>집예보</span> · <a href="../../">홈</a> · <a href="../../jeonse/">전월세</a> · <a href="../../mine/calendar/">내 부동산 달력</a></footer>
+
+<script>
+var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+(function(){
+'use strict';
+const T = window.JDJ_TSW, M = window.JDJ_MINE, C = window.JDJ_CAL_CORE, HG = window.JDJ_HUG, KK = window.JDJ_KK, G = window.JDJ_GONGSI, LN = window.JDJ_LOAN, LR = window.JDJ_LOAN_RULES, PL = window.JDJ_PLAIN;
+const SITE = ((window.JDJ_SITE || {}).SITE_NAME || '').trim() || '집예보';
+const DATA = JB.DATA + 'data/', BASE = JB.SITE, $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ls = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+const stat = (n, p) => { try { if (window.jdjStat) jdjStat(n, p || {}); } catch (e) {} };
+const num = v => { const n = parseInt(String(v || '').replace(/[^0-9]/g, ''), 10); return n > 0 && n < 10000000 ? n : 0; };
+const today = () => new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
+const wa = w => { const c = String(w).charCodeAt(String(w).length - 1) - 0xAC00; return c >= 0 && c < 11172 && c % 28 ? '과' : '와'; };
+const won = T.won, ymDot = ym => ym ? `${String(ym).slice(0, 4)}.${String(ym).slice(4, 6)}` : '';
+document.querySelectorAll('[data-site-name]').forEach(el => { el.textContent = SITE; });
+document.title = '전세 갈아타기 | ' + SITE;
+
+/* ---------- 자료 받기(한 번만) ---------- */
+const J = {}, getJ = u => J[u] || (J[u] = fetch(u, { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null));
+const dataJ = f => getJ(DATA + f), siteJ = f => getJ(BASE + f);
+let IX = null;
+const sgg = g => ((IX && IX.sgg) || {})[g] || {};
+const gname = g => sgg(g).name || '';
+const sidoOf = g => { const n = sgg(g).sido; return ((IX && IX.sido) || []).find(s => s.name === n) || null; };
+const sd2 = g => String(g).slice(0, 2);
+const xyOf = g => siteJ('assets/xy/' + sd2(g) + '.json').then(j => (j && j.rows) || {});
+const dongOf = g => siteJ('assets/dong/' + sd2(g) + '.json').then(j => (j && j.rows) || {});
+const poiOf = g => { const s = sidoOf(g); return s ? dataJ('poi/' + s.id + '.json') : Promise.resolve(null); };
+const kkData = () => dataJ('rent/kk.json').then(j => j && j.reg ? j : siteJ('data/kkang.json'));
+/* 학군(점수 자료 fx.sc)은 시·도 점수 파일이 커서 결과를 먼저 보여 준 뒤 받아요 */
+const FX = {}, FXM = {};
+function fxLoad(sid){ if (!FX[sid]) FX[sid] = dataJ(sid + '.json').then(j => { const m = new Map(); ((j && j.units) || []).forEach(u => { if (u[9] && typeof u[9] === 'object') m.set([u[0], u[1], u[8], u[2], u[3]].join('|'), u[9]); }); FXM[sid] = m; return m; }); return FX[sid]; }
+
+/* ---------- 이 기기 값 ---------- */
+const TK = 'jdj_ta_me', LK = 'jdj_tsw_me';
+const meGet = () => { try { const x = JSON.parse(ls.get(TK) || 'null'); return x && typeof x === 'object' ? x : {}; } catch (e) { return {}; } };
+function meSet(fn){ const x = meGet(); x.dep = x.dep && typeof x.dep === 'object' ? x.dep : {}; fn(x); ls.set(TK, JSON.stringify({ dep: x.dep, cash: +x.cash || 0, inc: +x.inc || 0, opp: x.opp == null ? 3 : +x.opp })); }
+const homes = () => { try { return M.parseStore(ls.get(M.STORE_KEY)); } catch (e) { return []; } };
+const calAll = () => { try { return C.cleanAll(JSON.parse(ls.get('jdj_cal') || 'null')); } catch (e) { return { h: {} }; } };
+const hid = h => M.homeId(h);
+
+/* ---------- 상태 ---------- */
+const S = { home: null, kind: 'a', band: '', mode: 'areas', areas: [], work: null, work2: null, cmode: '', ce: '', tab: 'better', need: [], show: 8, from: '' };
+let LAST = null;   // 마지막 결과
+
+/* ---------- 지금 사는 집 ---------- */
+function drawHomes(){
+  const list = homes(), cal = calAll().h || {}, box = $('homes');
+  if (!list.length){ box.innerHTML = ''; return; }
+  box.innerHTML = list.map((h, i) => { const c = cal[hid(h)], t = c && (c.t === 'jeonse' ? '전세' : c.t === 'wolse' ? '월세' : '');
+    return `<button type="button" data-h="${i}" aria-pressed="${S.home && hid(S.home) === hid(h)}">${esc(h.apt)} ${esc(h.band)}<small>${esc(gname(h.code))} ${esc(h.dong)}${t ? ' · ' + t + ' 계약' : ''}</small></button>`; }).join('');
+  box.querySelectorAll('[data-h]').forEach(b => b.onclick = () => setHome(list[+b.dataset.h], 'saved'));
+}
+async function setHome(h, from){
+  S.home = h; S.from = from || '';
+  const cal = calAll().h || {}, c = cal[hid(h)], ta = c && c.ta, me = meGet();
+  /* 전세 만기 알림 설정(희망 지역·출퇴근지·집 형태·평형)이 있으면 불러오기 */
+  if (ta && (ta.on || (ta.areas || []).length)){
+    if ((ta.areas || []).length) S.areas = ta.areas.map(a => ({ g: a.g, d: a.d || '' }));
+    if (ta.work) S.work = { g: ta.work.g, d: ta.work.d };
+    if (ta.ty) S.kind = ta.ty;
+    S.band = ta.band || h.band;
+    $('taIn').hidden = false;
+    $('taIn').textContent = '전세 만기 알림에 넣어 둔 희망 지역·출퇴근지·집 형태·평형을 불러왔어요. 여기서 바꿔도 알림 설정은 그대로예요.';
+  } else { S.areas = []; S.band = h.band; $('taIn').hidden = true; }
+  if (!S.areas.length){ const dn = await dongOf(h.code); S.areas = T.nearHome(dn, h.code, h.dong, 3).map(o => ({ g: o.g, d: o.d })); }
+  S.ce = c && c.ce ? c.ce : '';
+  if (S.ce && !$('moveAt').value) { $('moveAt').value = S.ce; moveHint(); }
+  const dep = me.dep && me.dep[hid(h)];
+  if (dep && !num($('dep').value)) { $('dep').value = (+dep).toLocaleString(); depHint(); }
+  $('homeNow').innerHTML = `지금 집 <b>${esc(h.apt)} ${esc(h.band)}</b> · ${esc(gname(h.code))} ${esc(h.dong)}${wa(h.dong)} 비교해요.`;
+  drawHomes(); drawBand(); drawKind(); drawMode(); await drawAreas(); await drawWork();
+}
+
+/* 지역·단지 고르기 */
+const RA = {};
+const rentA = g => RA[g] || (RA[g] = dataJ('rent/' + g + '.json'));
+function fillSido(){
+  const s = $('sido'); s.innerHTML = '<option value="">시·도 선택</option>' + IX.sido.map(x => `<option value="${esc(x.id)}">${esc(x.name)}</option>`).join('');
+  s.onchange = () => { const sd = IX.sido.find(x => x.id === s.value); const gs = sd ? Object.keys(IX.sgg).filter(k => IX.sgg[k].sido === sd.name).sort((a, b) => gname(a).localeCompare(gname(b), 'ko')) : [];
+    $('sgg').innerHTML = '<option value="">시·군·구 선택</option>' + gs.map(k => `<option value="${k}">${esc(gname(k))}</option>`).join(''); $('sgg').disabled = !gs.length; $('q').disabled = true; $('sres').innerHTML = ''; $('bands').innerHTML = ''; };
+  $('sgg').onchange = () => { $('q').disabled = !$('sgg').value; $('sres').innerHTML = ''; $('bands').innerHTML = ''; if ($('sgg').value) { rentA($('sgg').value); $('q').focus(); } };
+  let tm = null; $('q').addEventListener('input', () => { clearTimeout(tm); tm = setTimeout(search, 200); });
+}
+async function search(){
+  const g = $('sgg').value, q = $('q').value.trim(), box = $('sres'); $('bands').innerHTML = '';
+  if (!g || !q){ box.innerHTML = ''; return; }
+  const R = await rentA(g); if (!R){ box.innerHTML = '<div class="note">전월세 자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.</div>'; return; }
+  const m = new Map();
+  for (const u of R.units) { const r = M.matchName(u[1], q); if (r < 0) continue; const k = u[0] + '|' + u[3] + '|' + u[1]; const o = m.get(k) || { r, n: 0, d: u[0], j: u[3], a: u[1], us: [] }; o.n += (u[5] || 0); o.us.push(u); m.set(k, o); }
+  const L = [...m.values()].sort((a, b) => a.r - b.r || b.n - a.n).slice(0, 12);
+  box.innerHTML = L.length ? L.map((o, i) => `<button type="button" data-i="${i}"><b>${esc(o.a)}</b><small>${esc(gname(g))} ${esc(o.d)} · 최근 3년 전세 ${o.n.toLocaleString()}건</small></button>`).join('') : '<div class="note">찾는 단지가 없어요. 최근 3년 전월세 계약이 있는 아파트만 찾을 수 있어요.</div>';
+  box.querySelectorAll('[data-i]').forEach(b => b.onclick = () => { const o = L[+b.dataset.i]; box.innerHTML = '';
+    $('bands').innerHTML = o.us.sort((a, b) => a[4] - b[4]).map((u, i) => `<button type="button" data-b="${i}" aria-pressed="false">${esc(u[2])} · 전용 ${esc(u[4])}㎡</button>`).join('');
+    $('bands').querySelectorAll('[data-b]').forEach(x => x.onclick = () => { const u = o.us[+x.dataset.b], sd = sidoOf(g);
+      $('bands').querySelectorAll('[data-b]').forEach(y => y.setAttribute('aria-pressed', y === x));
+      setHome({ sd: sd ? sd.id : '', code: g, dong: u[0], jibun: String(u[3]), apt: u[1], band: u[2] }, 'pick'); });
+    if (o.us.length === 1) $('bands').querySelector('[data-b]').click();
+  });
+}
+
+/* ---------- 조건 ---------- */
+/* 더 넣은 조건(이 기기에만): 금액·생활 조건 */
+const OPT_IDS = ['jl', 'rentMax', 'lo', 'hi', 'mv', 'cmax', 'ageMax'], OPT_CK = ['reduce', 'useLoan', 'park', 'pet', 'safeOnly'];
+function optLoad(){ let x = {}; try { x = JSON.parse(ls.get(LK) || 'null') || {}; } catch (e) {}
+  OPT_IDS.forEach(id => { if (+x[id] > 0) $(id).value = (+x[id]).toLocaleString(); });
+  OPT_CK.forEach(id => { $(id).checked = !!x[id]; });
+  if (x.hh) $('hh').value = x.hh; if (x.cmode) S.cmode = x.cmode;
+  (x.pol || []).forEach(k => { const el = document.querySelector(`[data-pol="${k}"]`); if (el) el.checked = true; });
+  const me = meGet(); if (me.cash) $('cash2').value = (+me.cash).toLocaleString(); if (me.inc) $('inc2').value = (+me.inc).toLocaleString();
+  if (OPT_IDS.some(id => +x[id] > 0) || OPT_CK.some(id => x[id]) || x.hh || x.cmode || me.cash) $('moreCond').open = true;
+}
+function optSave(){ const x = {}; OPT_IDS.forEach(id => { x[id] = id === 'cmax' ? numF($(id).value) : num($(id).value); }); OPT_CK.forEach(id => { x[id] = $(id).checked; });
+  x.hh = $('hh').value; x.cmode = S.cmode; x.pol = [...document.querySelectorAll('[data-pol]:checked')].map(el => el.dataset.pol); ls.set(LK, JSON.stringify(x));
+  meSet(m => { m.cash = num($('cash2').value); m.inc = num($('inc2').value); }); }
+const numF = v => { const n = parseFloat(String(v || '').replace(/[^0-9.]/g, '')); return n > 0 && n < 1000 ? n : 0; };
+function moveHint(){ const v = $('moveAt').value; $('moveAtH').textContent = v && S.ce ? (v === S.ce ? '전세 계약 만기일로 넣었어요.' : `만기(${S.ce.replace(/-/g, '.')})와 ${Math.abs(Math.round((Date.parse(S.ce) - Date.parse(v)) / 864e5))}일 차이예요.`) : ''; }
+function drawCmode(){ $('cmode').querySelectorAll('[data-c]').forEach(b => { b.setAttribute('aria-pressed', S.cmode === b.dataset.c); b.onclick = () => { S.cmode = S.cmode === b.dataset.c ? '' : b.dataset.c; drawCmode(); }; }); }
+function hhHint(){ const v = $('hh').value; $('hhH').textContent = v === 'elem' ? '초등학교는 학구도로 배정돼 거리 자료로 알 수 없어요. 중학교 학군 지표를 조금 더 무겁게 봐요.' : v === 'mid' || v === 'high' ? '가까운 중학교 학군 지표를 두 배로 무겁게 봐요.' : v === 'newly' ? '신혼부부 전세대출 정보도 함께 보여 드려요.' : ''; }
+
+function depHint(){ const v = num($('dep').value); $('depH').textContent = v ? won(v) : ''; }
+function jlHint(){ const v = num($('jl').value); $('jlH').textContent = v ? won(v) : ''; }
+function fmtIn(el, after){ el.addEventListener('input', () => { const v = num(el.value); el.value = v ? v.toLocaleString() : ''; after(); }); }
+const BANDS = ['', '40㎡ 이하', '49㎡대', '59㎡대', '74㎡대', '84㎡대', '99㎡대', '114㎡대', '135㎡대'];
+function drawBand(){ const b = S.band, opts = BANDS.indexOf(b) < 0 && b ? BANDS.concat([b]) : BANDS;
+  $('band').innerHTML = opts.map(x => `<option value="${esc(x)}"${x === b ? ' selected' : ''}>${x || '모든 평형'}</option>`).join(''); }
+function drawKind(){ $('kind').innerHTML = Object.keys(T.KIND).map(k => `<button type="button" data-k="${k}" aria-pressed="${S.kind === k}">${T.KIND[k].label}</button>`).join('');
+  $('kind').querySelectorAll('[data-k]').forEach(b => b.onclick = () => { S.kind = b.dataset.k; drawKind(); }); }
+function drawMode(){
+  $('mode').innerHTML = `<button type="button" data-m="areas" aria-pressed="${S.mode === 'areas'}">희망 지역</button><button type="button" data-m="work" aria-pressed="${S.mode === 'work'}"${S.work ? '' : ' disabled'}>출퇴근지 가까운 곳</button>`;
+  $('mode').querySelectorAll('[data-m]').forEach(b => b.onclick = () => { if (b.disabled) return; S.mode = b.dataset.m; drawMode(); });
+  $('areaW').hidden = S.mode !== 'areas';
+}
+async function drawAreas(){
+  $('areaN').textContent = `(${S.areas.length}/3)`;
+  $('areas').innerHTML = S.areas.map((a, i) => `<button type="button" data-rm="${i}" aria-label="${esc(gname(a.g) + ' ' + (a.d || '전체'))} 빼기">${esc(gname(a.g) + ' ' + (a.d || '전체'))}<span aria-hidden="true">×</span></button>`).join('');
+  $('areas').querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { S.areas.splice(+b.dataset.rm, 1); drawAreas(); });
+  const h = S.home, sel = $('areaAdd');
+  if (!h || S.areas.length >= 3){ sel.hidden = true; return; }
+  const dn = await dongOf(h.code), L = T.nearHome(dn, h.code, h.dong, 40).filter(o => !S.areas.some(a => a.g === o.g && a.d === o.d));
+  sel.hidden = false;
+  sel.innerHTML = '<option value="">+ 동 더하기(가까운 순)</option>' + L.map(o => `<option value="${esc(o.g + '|' + o.d)}">${esc(gname(o.g) + ' ' + o.d)} (약 ${o.km.toFixed(1)}km)</option>`).join('');
+  sel.onchange = () => { const [g, d] = sel.value.split('|'); if (g) { S.areas.push({ g, d }); drawAreas(); } };
+}
+async function drawWork(){ await workSel('w', 'work'); await workSel('w2', 'work2'); }
+async function workSel(px, key){
+  const w = S[key], s = $(px + 'Sido'), g = $(px + 'Sgg'), d = $(px + 'Dong'), lab = key === 'work' ? '출퇴근지' : '두 번째 출퇴근지';
+  const sdW = w ? sidoOf(w.g) : (S.home ? IX.sido.find(x => x.id === S.home.sd) : null);
+  s.innerHTML = '<option value="">시·도</option>' + IX.sido.map(x => `<option value="${esc(x.id)}"${sdW && sdW.id === x.id ? ' selected' : ''}>${esc(x.name)}</option>`).join('');
+  const fillG = () => { const sd = IX.sido.find(x => x.id === s.value); const gs = sd ? Object.keys(IX.sgg).filter(k => IX.sgg[k].sido === sd.name).sort((a, b) => gname(a).localeCompare(gname(b), 'ko')) : [];
+    g.innerHTML = '<option value="">시·군·구</option>' + gs.map(k => `<option value="${k}"${w && w.g === k ? ' selected' : ''}>${esc(gname(k))}</option>`).join(''); };
+  const fillD = async () => { const gc = g.value; if (!gc){ d.innerHTML = `<option value="">${lab} 동 (고르지 않을래요)</option>`; return; }
+    const dn = await dongOf(gc), ds = Object.keys(dn).filter(k => k.slice(0, 5) === gc).map(k => k.slice(6)).sort((a, b) => a.localeCompare(b, 'ko'));
+    d.innerHTML = `<option value="">${lab} 동 (고르지 않을래요)</option>` + ds.map(x => `<option value="${esc(x)}"${w && w.g === gc && w.d === x ? ' selected' : ''}>${esc(x)}</option>`).join(''); };
+  fillG(); await fillD();
+  s.onchange = () => { S[key] = null; fillG(); fillD(); drawMode(); };
+  g.onchange = () => { S[key] = null; fillD(); drawMode(); };
+  d.onchange = () => { S[key] = d.value ? { g: g.value, d: d.value } : null; if (!S.work && S.mode === 'work') S.mode = 'areas'; drawMode(); };
+}
+
+/* ---------- 실행 ---------- */
+async function scope(){
+  if (S.mode === 'work' && S.work){
+    const dn = await dongOf(S.work.g), c = dn[S.work.g + '|' + S.work.d];
+    if (c) return { list: T.nearWork(dn, [c[0], c[1]], 12, 4).map(o => ({ g: o.g, d: o.d })), how: `출퇴근지(${gname(S.work.g)} ${S.work.d}) 가까운 동 12곳` };
+  }
+  return { list: S.areas.slice(), how: '희망 지역 ' + S.areas.map(a => gname(a.g) + ' ' + (a.d || '전체')).join(', ') };
+}
+async function run(scroll){
+  const msg = $('goMsg'), h = S.home, dep = num($('dep').value), useLoan = $('useLoan').checked, jl = useLoan ? num($('jl').value) : 0;
+  const O = { dep, cash: num($('cash2').value), loan: jl, move: num($('mv').value), rentMax: num($('rentMax').value), lo: num($('lo').value), hi: num($('hi').value), reduce: $('reduce').checked,
+    ageMax: num($('ageMax').value), cmax: numF($('cmax').value), safeOnly: $('safeOnly').checked, hh: $('hh').value, mode: S.cmode, work2: !!S.work2, year: +today().slice(0, 4), park: $('park').checked, pet: $('pet').checked, moveAt: $('moveAt').value };
+  if (!h){ msg.textContent = '먼저 지금 사는 집을 골라 주세요.'; $('homeSec').scrollIntoView({ behavior: 'smooth' }); return; }
+  if (!dep){ msg.textContent = '지금 내 보증금을 넣어 주세요. 이 기기에만 저장해요.'; $('dep').focus(); return; }
+  meSet(x => { x.dep[hid(h)] = dep; }); optSave();
+  S.band = $('band').value;
+  msg.textContent = '실거래 자료를 모으는 중이에요…';
+  const sc = await scope();
+  if (!sc.list.length){ msg.textContent = '희망 지역을 한 곳 이상 넣어 주세요.'; return; }
+  const gs = [...new Set(sc.list.map(a => a.g))], kind = S.kind, t = today();
+  const [workDn, work2Dn, curRent, kk] = await Promise.all([S.work ? dongOf(S.work.g) : null, S.work2 ? dongOf(S.work2.g) : null, rentA(h.code), kkData()]);
+  const wc = S.work && workDn ? workDn[S.work.g + '|' + S.work.d] : null, work = wc ? [wc[0], wc[1]] : null;
+  const wc2 = S.work2 && work2Dn ? work2Dn[S.work2.g + '|' + S.work2.d] : null, work2 = wc2 ? [wc2[0], wc2[1]] : null;
+  const per = {};
+  await Promise.all([...new Set(gs.concat([h.code]))].map(async g => {
+    const [R, xy, dn, poi, gsF, pr] = await Promise.all([kind === 'a' ? rentA(g) : dataJ(T.rentPath(kind, g)), xyOf(g), dongOf(g), poiOf(g), G ? G.load(g) : null, kind === 'a' ? dataJ('price/' + g + '.json') : null]);
+    per[g] = { R, xy, dn, st: poi && poi.st ? poi.st : [], gsF, pr };
+  }));
+  const fxOf = kind === 'a' ? (g, d, j, a, b) => { const sd = sidoOf(g), m = sd && FXM[sd.id]; return m ? m.get([g, d, j, a, b].join('|')) || null : null; } : null;
+  const fxReady = kind !== 'a' || gs.concat([h.code]).every(g => { const sd = sidoOf(g); return !sd || FXM[sd.id]; });
+  const ctxOf = (g, k, meta) => ({ g, kind: k, today: t, meta, xy: per[g].xy, dong: per[g].dn, st: per[g].st, work, work2, fxOf: k === 'a' ? fxOf : null });
+  /* 지금 집 */
+  let cur = null;
+  const cu = curRent && curRent.units ? (curRent.units.find(x => x[0] === h.dong && x[1] === h.apt && x[2] === h.band) || curRent.units.find(x => x[0] === h.dong && String(x[3]) === String(h.jibun) && x[2] === h.band)) : null;
+  if (cu) cur = T.row(cu, ctxOf(h.code, 'a', curRent));
+  else { const lc = T.locate(h.code, h.dong, h.jibun, per[h.code].xy, per[h.code].dn); cur = { key: [h.code, h.dong, h.jibun, h.apt, h.band].join('|'), g: h.code, d: h.dong, a: h.apt, b: h.band, j: h.jibun, area: 0, by: 0, med: 0, n: 0, loc: lc ? lc.by : '', p: lc ? lc.p : null, st: lc && lc.by === 'apt' ? T.nearSt(lc.p, per[h.code].st, 3000) : null, commute: null, sc: null };
+    if (work && cur.p) cur.commute = Math.round(T.km(cur.p, work) * 10) / 10; if (work2 && cur.p) cur.commute2 = Math.round(T.km(cur.p, work2) * 10) / 10; }
+  /* 후보 */
+  const rows = [];
+  for (const g of gs) {
+    const R = per[g].R; if (!R || !R.units) continue;
+    const ctx = ctxOf(g, kind, R);
+    for (const u of R.units) { if (!T.inAreas(sc.list, g, u[0]) || !T.sameBand(u, S.band)) continue; rows.push(T.row(u, ctx)); }
+  }
+  /* 전세 안전 점검(추정): 후보 보증금 = 최근 신규 전세 중간값 */
+  const metro = HG && HG.isMetro(sgg(h.code).sido);
+  const PM = {};
+  const priceOf = (g, r) => { const P = per[g].pr; if (!P || !P.units) return null;
+    if (!PM[g]) { PM[g] = new Map(); P.units.forEach(x => PM[g].set([x[1], x[8], x[2], x[3]].join('|'), x)); }
+    const u = PM[g].get([r.d, r.j, r.a, r.b].join('|')); if (!u) return null; const b = M.bandSummary(u, P.months); return b.price > 0 && !b.stale ? b : null; };
+  for (const r of rows) {
+    if (!(r.med > 0)) continue;
+    const gi = G && per[r.g].gsF ? G.pick(per[r.g].gsF, { code: r.g, dong: r.d, jibun: r.j, apt: r.a, band: r.b, area: r.area }) : null;
+    r.pub = gi; r.hug = T.hugEst(HG, r.med, gi ? gi.v : 0, HG ? HG.isMetro(sgg(r.g).sido) : metro, r.kind);
+    r.safe = !!(r.hug && r.hug.ok === true);
+    if (r.kind === 'a') { const b = priceOf(r.g, r); r.sale = b; r.kk = b ? T.kkEst(KK, kk, r.g, r.med, b.price) : null; }
+  }
+  const budget = dep + O.cash + jl, ref = cur && cur.med > 0 ? cur.med : dep;
+  LAST = Object.assign({}, { fx: fxReady, h, cur, rows, budget, dep, jl, ref, refBy: cur && cur.med > 0 ? 'cur' : 'dep', work, work2, O, sc, kind, band: S.band, kkStatus: kk ? kk.status : '', t });
+  msg.textContent = '';
+  if (scroll) { S.show = 8; draw(); drawBuy(); drawFc(); stat('feature_use', { feature: 'tenant_switch', kind, mode: S.mode, n: rows.length }); }
+  else draw();
+  if (scroll) $('res').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  /* 학군 지표: 점수 자료를 받은 뒤 한 번 더 계산 */
+  if (!fxReady) { const ids = [...new Set(gs.concat([h.code]).map(g => (sidoOf(g) || {}).id).filter(Boolean))], me = LAST;
+    Promise.all(ids.map(fxLoad)).then(() => { if (LAST === me) run(false).then(() => { if (LAST) LAST.fx = true; }); }); }
+}
+
+/* ---------- 결과 그리기 ---------- */
+const kmT = v => v == null ? '' : v.toFixed(1) + 'km';
+function factsHtml(r, cur){
+  const li = [];
+  const ar = r.area ? `전용 ${r.area}㎡(${T.pyeong(r.area)}평)` : '';
+  if (r.commute != null) li.push(`<li>출퇴근지까지 직선 <b>${kmT(r.commute)}</b>${cur && cur.commute != null ? ` (지금 ${kmT(cur.commute)})` : ''}${r.loc === 'dong' ? ' · 동 가운데 점 기준' : ''}</li>`);
+  if (r.commute2 != null) li.push(`<li>두 번째 출퇴근지까지 직선 <b>${kmT(r.commute2)}</b>${cur && cur.commute2 != null ? ` (지금 ${kmT(cur.commute2)})` : ''}</li>`);
+  if (r.st) li.push(`<li>${esc(r.st.nm)}역까지 직선 <b>${r.st.m.toLocaleString()}m</b> · 걸어서 약 ${r.st.min}분(어림)${cur && cur.st ? ` (지금 ${esc(cur.st.nm)}역 ${cur.st.m.toLocaleString()}m)` : ''}</li>`);
+  else if (r.loc === 'dong') li.push('<li>이 집은 정확한 위치 자료가 없어 역까지 거리는 재지 않았어요.</li>');
+  if (r.by) li.push(`<li>${r.by}년 준공${cur && cur.by ? ` (지금 집 ${cur.by}년)` : ''}${ar ? ' · ' + ar : ''}${cur && cur.area ? ` (지금 ${T.pyeong(cur.area)}평)` : ''}</li>`);
+  else if (ar) li.push(`<li>${ar}</li>`);
+  if (r.sc && PL && PL.scText) li.push(`<li>학군: ${esc(PL.scText(r.sc, gname(r.sc[6])))}</li>`);
+  /* HUG */
+  if (r.hug) {
+    if (r.hug.need === 'pub') li.push(`<li>HUG 전세보증: 이 집 공시가격 자료가 없어 계산하지 않았어요.${r.hug.capOk === false ? ' <span class="bad">보증금이 가입 한도를 넘어요.</span>' : ''}</li>`);
+    else if (r.hug.capOk === false) li.push(`<li>HUG 전세보증(추정): <b class="bad">가입 기준을 넘어요</b> — 보증금 ${esc(won(r.med))}이 ${HG.isMetro(sgg(r.g).sido) ? '수도권' : '수도권 밖'} 가입 한도 ${esc(won(r.hug.cap))}보다 많아요</li>`);
+    else li.push(`<li>HUG 전세보증(추정): ${r.hug.ok ? '<b class="good">가입 기준 안이에요</b>' : '<b class="bad">가입 기준을 넘을 수 있어요</b>'} — 보증금 ${esc(won(r.med))} / 기준 ${esc(won(r.hug.limit))}(공시가격 ${esc(won(r.pub.v))} × 140% × 90%)${!r.hug.ok && r.hug.maxDep > 0 ? ` · 보증금 ${esc(won(r.hug.maxDep))} 이하면 기준 안` : ''}</li>`);
+  }
+  if (r.kk) li.push(`<li>2년 뒤 깡통전세 확률 <b>${esc(r.kk.t)}</b><span class="ref">참고</span> — 보증금이 지금 매매 시세(${esc(won(r.sale.price))})의 ${Math.round(r.kk.ratio * 100)}% · 근거 강도 ${esc(r.kk.st)}</li>`);
+  if (r.tr) li.push(`<li>최근 1년 전세 흐름 <b>${esc(T.pct(r.tr.pct))}</b><span class="ref">참고</span> — ${esc(ymDot(r.tr.from))} ${esc(won(r.tr.prev))} → ${esc(ymDot(r.tr.at))} ${esc(won(r.tr.now))} (전망이 아니에요)</li>`);
+  return `<ul class="facts">${li.join('')}</ul>`;
+}
+function srcLine(r){
+  const s = [`전세: 국토교통부 전월세 실거래 최근 ${r.w}개월 신규 전세 ${r.n}건 중간값`];
+  if (r.by) s.push('준공: 건축물대장');
+  if (r.p) s.push(r.loc === 'apt' ? '위치: 실거래 주소 지오코딩' : '위치: 법정동 가운데 점');
+  if (r.st) s.push('역: 서울시 역사마스터(직선 ÷ 분당 67m)');
+  if (r.sc) s.push('학군: 학교알리미');
+  if (r.pub) s.push(`공시가격: 국토교통부 ${esc(G.dayKo(r.pub.d) || '')} 같은 평형 ${r.pub.n}호 중간값`);
+  if (r.hug && r.hug.need !== 'pub') s.push(`HUG 기준: 상품개요(${HG.SRC.checked.replace(/-/g, '.')} 확인)`);
+  if (r.plan) s.push(`중개보수: ${T.FEE_SRC.nm} 상한`);
+  if (r.plan && r.plan.mode === 'h') s.push('전환율: 이 단지 최근 1년 월세 실거래');
+  if (r.kk) s.push(`매매 시세: 국토교통부 매매 실거래 ${ymDot(r.sale.at)} 기준 최근 3개월 중간값`);
+  return `<p class="src">${s.join(' · ')}</p>`;
+}
+function jeonseHref(r){
+  if (r.kind === 'a') { const sd = sidoOf(r.g); return `${BASE}jeonse/?sd=${encodeURIComponent(sd ? sd.id : '')}&d=${encodeURIComponent([r.g, r.d, r.j, r.a].join('|'))}&b=${encodeURIComponent(r.b)}`; }
+  return `${BASE}jeonse/?k=${r.kind}&g=${encodeURIComponent(r.g)}&d=${encodeURIComponent([r.d, r.j, r.a].join('|'))}&b=${encodeURIComponent(r.b)}`;
+}
+const nm = r => r.kind === 'v' && /^\(?[\d\-]+\)?$/.test(r.a) ? `${r.d} ${r.j} 건물` : r.a;
+function costHtml(pl){
+  if (!pl) return '';
+  const sgn = v => v >= 0 ? `${won(v)} 더 내요` : `${won(-v)} 돌려받아요`;
+  const feeT = `중개보수(상한) ${won(pl.fee)}`;
+  return `<div class="mc">${pl.mode === 'h' ? `<b>반전세로 가능해요</b> — 보증금 ${esc(won(pl.dep2))} + 월세 <b>${pl.rent.toLocaleString()}만 원</b> (이 단지 최근 1년 전월세 전환율 ${(pl.rate * 100).toFixed(1)}%, 월세 계약 ${pl.n}건 기준)<br>` : ''}
+    보증금 차액 ${esc(sgn(pl.diff))} · ${esc(feeT)} · 이사비 ${pl.move ? esc(won(pl.move)) : '미입력'}<br>
+    <span class="tot">${pl.out >= 0 ? `이사에 새로 드는 돈 ${esc(won(Math.round(pl.out)))}` : `이사하고 남는 돈 ${esc(won(Math.round(-pl.out)))}`}</span> <small>(보증금 차액 + 중개보수 + 이사비)</small></div>`;
+}
+function card(r, cur, cheap){
+  const gl = (r.gains || []).map(g => `<li class="${g.k === 'safe' ? 'sf' : ''}">${esc(T.GAIN_T[g.k](g))}</li>`).join('');
+  return `<article class="cand"><h3>${esc(nm(r))}${!cheap && cur ? `<span class="cnt">나아지는 점 ${(r.gains || []).length}가지</span>` : ''}${r.plan && r.plan.mode === 'h' ? '<span class="cnt hf">반전세</span>' : ''}</h3>
+    <div class="loc">${esc(gname(r.g))} ${esc(r.d)} · ${esc(r.b)}${cheap && r.near != null ? ` · 지금 집에서 직선 ${kmT(r.near)}` : ''}</div>
+    ${cheap ? `<div class="pr"><span class="save">${esc(won(r.save))} 덜 들어요</span><small>최근 전세 ${esc(won(r.med))} (최근 ${r.w}개월 신규 ${r.n}건 · ${esc(won(r.lo))}~${esc(won(r.hi))}) · 비교 기준 ${LAST.refBy === 'cur' ? '지금 단지 최근 전세' : '내 보증금'} ${esc(won(LAST.ref))}</small></div>`
+      : `<div class="pr">최근 전세 <b>${esc(won(r.med))}</b><small>최근 ${r.w}개월 신규 계약 ${r.n}건 · ${esc(won(r.lo))}~${esc(won(r.hi))}${r.room >= 0 ? ` · 예산보다 ${esc(won(r.room))} 여유` : ''}</small></div>`}
+    ${gl ? `<ul class="gains">${gl}</ul>` : ''}
+    ${costHtml(r.plan || T.plan(r, LAST.O))}
+    ${factsHtml(r, cur)}
+    <a class="lk" href="${esc(jeonseHref(r))}" data-track="tsw_to_jeonse">이 집 전세 시세·안전 점검 자세히 ›</a>
+    ${srcLine(r)}</article>`;
+}
+function draw(){
+  const L = LAST, box = $('res'); if (!L) return;
+  box.hidden = false;
+  const cur = L.cur, better = T.pick(L.rows, cur, L.O), cheap = T.cheaper(L.rows, cur, L.ref, { band: L.band || (cur && cur.b) || '', work: !!L.work });
+  const list = S.tab === 'better' ? T.filt(better, S.need) : (L.O.safeOnly ? cheap.filter(r => r.safe === true) : cheap);
+  const curTxt = cur && cur.med > 0 ? `${won(cur.med)}` : '자료 부족';
+  let x = `<div class="panel"><h2>결과<small>${esc(L.sc.how)} · ${esc(T.KIND[L.kind].label)} ${esc(L.band || '모든 평형')}</small></h2>
+    <div class="stats"><div class="st key"><div class="k">내 예산</div><div class="v">${esc(won(L.budget))}</div><div class="d">보증금 ${esc(won(L.dep))}${L.O.cash ? ' + 현금 ' + esc(won(L.O.cash)) : ''}${L.jl ? ' + 전세대출 ' + esc(won(L.jl)) : ''} · 중개보수·이사비는 집마다 빼요</div></div>
+    <div class="st"><div class="k">지금 단지 최근 전세</div><div class="v">${esc(curTxt)}</div><div class="d">${cur && cur.med > 0 ? `최근 6개월 신규 ${cur.n}건 중간값` : '최근 6개월 신규 계약이 3건보다 적어요'}</div></div>
+    <div class="st"><div class="k">조건에 맞는 곳</div><div class="v">${better.length.toLocaleString()}곳</div><div class="d">더 싼 곳 ${cheap.length.toLocaleString()}곳</div></div></div>`;
+  /* 만기 타이밍 */
+  if (cur && T.renewHint(cur.med, L.dep)) x += `<p class="nt"><b>갱신 협상도 생각해 보세요.</b> 지금 단지 최근 6개월 신규 전세 중간값(${esc(won(cur.med))})이 내 보증금(${esc(won(L.dep))})보다 낮아요. 만기 6개월 전부터 2개월 전 사이에 계약갱신요구권을 쓰면서, 낮아진 시세를 근거로 보증금 감액을 집주인과 협의해 볼 수 있어요. 정보 안내이고, 결과는 협의에 따라 달라요. <a href="${esc(T.SRC.renew.url)}" target="_blank" rel="noopener">${esc(T.SRC.renew.nm)} 보기 ↗</a></p>`;
+  const info = [];
+  if (L.O.moveAt) info.push(`이사 희망 ${L.O.moveAt.replace(/-/g, '.')}${S.ce && L.O.moveAt === S.ce ? '(전세 만기일)' : ''} — HUG 전세보증은 새 계약 기간의 절반이 지나기 전에 신청해야 해요.`);
+  if (L.O.park) info.push('주차 대수 자료가 아직 없어 걸러 드리지 못해요. 계약 전 관리사무소에 세대당 주차 대수를 확인해 주세요.');
+  if (L.O.mode === 'car') info.push('자가용 통근 시간 자료가 없어 직선 거리로만 비교해요.');
+  if (L.O.pet) info.push('반려동물 허용 여부는 공개 자료가 없어요. 집주인·관리 규약을 계약 전에 꼭 확인해 주세요.');
+  if (L.O.hh === 'elem') info.push('초등학교는 학구도로 배정돼 거리만으로 알 수 없어요. 관할 교육지원청 학구도 안내에서 확인해 주세요.');
+  if (info.length) x += `<ul class="note" style="margin:8px 0;padding-left:18px">${info.map(t => `<li>${esc(t)}</li>`).join('')}</ul>`;
+  x += `<div class="seg2 c2 rtabs" id="rtabs" role="group" aria-label="결과 보기"><button type="button" data-t="better" aria-pressed="${S.tab === 'better'}">더 나은 집<small>같은 보증금으로</small></button><button type="button" data-t="cheap" aria-pressed="${S.tab === 'cheap'}">더 싼 집<small>같은 조건으로</small></button></div>`;
+  if (S.tab === 'better') {
+    const keys = ['commute', 'commute2', 'st', 'by', 'area', 'sch', 'safe'].filter(k => (k !== 'commute' || L.work) && (k !== 'commute2' || L.work2) && (k !== 'sch' || L.kind === 'a') && (k !== 'safe' || !L.O.safeOnly));
+    x += `<div class="fl" role="group" aria-label="걸러 보기">${keys.map(k => `<button type="button" data-n="${k}" aria-pressed="${S.need.includes(k)}">${esc(T.GAIN_NAME[k])}</button>`).join('')}</div>`;
+    x += `<p class="note">넣은 조건에 맞는 곳을, 조건에 맞춰 무게를 준 '나아지는 점'이 많은 순서로 보여 드려요${L.O.mode === 'transit' ? '(대중교통: 역 거리 두 배)' : ''}${L.O.hh === 'mid' || L.O.hh === 'high' ? '(자녀 중·고: 학군 두 배)' : ''}. 단추를 누르면 그 점이 나아진 곳만 보여 드려요.${cur && cur.loc !== 'apt' ? ' 지금 집 정확한 위치 자료가 없어 역까지 거리는 비교하지 않았어요.' : ''}${!L.fx && L.kind === 'a' ? ' 학군 지표는 불러오는 중이에요.' : ''}</p>`;
+  } else x += `<p class="note">같은 평형(${esc(L.band || (cur && cur.b) || '')})에서 ${L.work ? '출퇴근 거리가 지금보다 1km 넘게 멀어지지 않는' : '지금 집에서 직선 2km 안에 있는'} 곳 가운데, 최근 전세가 ${L.refBy === 'cur' ? '지금 단지 최근 전세' : '내 보증금'}(${esc(won(L.ref))})보다 낮은 곳을 아끼는 금액 순으로 보여 드려요.</p>`;
+  if (!list.length) x += `<div class="empty">${S.tab === 'better' ? (S.need.length ? '고른 점이 모두 나아진 곳이 없어요. 걸러 보기 단추를 줄여 보세요.' : (L.kind === 'a' ? '조건에 맞으면서 최근 6개월 신규 전세 계약이 3건 이상인 곳이 없어요.' : '조건에 맞으면서 최근 12개월 신규 전세 계약이 2건 이상인 건물이 없어요.') + ' 희망 지역을 넓히거나 조건 더 넣기의 범위를 풀어 보세요.') : '조건에 맞는 더 싼 곳이 없어요.'}</div>`;
+  else x += `<div class="cards">${list.slice(0, S.show).map(r => card(r, cur, S.tab === 'cheap')).join('')}</div>` + (list.length > S.show ? `<button type="button" class="more" id="moreBtn">${(list.length - S.show).toLocaleString()}곳 더 보기</button>` : '');
+  x += `</div>`;
+  box.innerHTML = x;
+  box.querySelectorAll('#rtabs [data-t]').forEach(b => b.onclick = () => { S.tab = b.dataset.t; S.show = 8; draw(); });
+  box.querySelectorAll('[data-n]').forEach(b => b.onclick = () => { const k = b.dataset.n; S.need = S.need.includes(k) ? S.need.filter(z => z !== k) : S.need.concat([k]); S.show = 8; draw(); });
+  if ($('moreBtn')) $('moreBtn').onclick = () => { S.show += 8; draw(); };
+}
+
+/* ---------- 매수 전환(전세 만기 알림 '매수로 바꾸면'과 같은 규칙) ---------- */
+function drawBuy(){
+  const L = LAST, box = $('buySec'); if (!L) return;
+  box.hidden = false;
+  if (L.kind !== 'a') { box.innerHTML = `<div class="panel"><h2>매수로 바꾸면<small>매수 비교는 아파트로만 계산해요.</small></h2></div>`; return; }
+  const me = meGet();
+  box.innerHTML = `<div class="panel"><h2>매수로 바꾸면<small>이 보증금 + 대출이면 살 수 있는 단지를 같은 지역에서 찾아요(참고).</small></h2>
+    <div class="pick"><div><label for="cash">보유 현금 (만원, 선택)</label><input id="cash" inputmode="numeric" value="${me.cash ? (+me.cash).toLocaleString() : ''}" placeholder="예: 10,000"></div>
+    <div><label for="inc">연소득 (만원, 선택)</label><input id="inc" inputmode="numeric" value="${me.inc ? (+me.inc).toLocaleString() : ''}" placeholder="예: 7,000"></div></div>
+    <div class="hint">현금·소득도 이 기기에만 저장해요. 전세 만기 알림의 값과 함께 써요.</div>
+    <div class="acts"><button type="button" class="main" id="buyBtn" data-track="tsw_buy">이 보증금 + 대출이면 살 수 있는 단지 보기</button></div>
+    <div id="buyRes" aria-live="polite"></div></div>`;
+  ['cash', 'inc'].forEach(id => fmtIn($(id), () => {}));
+  $('buyBtn').onclick = runBuy;
+}
+async function runBuy(){
+  const L = LAST, out = $('buyRes'), cash = num($('cash').value), inc = num($('inc').value);
+  meSet(x => { x.cash = cash; x.inc = inc; });
+  out.innerHTML = '<p class="note">계산하는 중이에요…</p>';
+  const gs = [...new Set(L.sc.list.map(a => a.g))], all = [];
+  for (const g of gs) { const [P, TG] = await Promise.all([dataJ('price/' + g + '.json'), dataJ('today/g/' + g + '.json')]); all.push(...T.buyFit(P, g, LN, M, L.sc.list, L.band, L.dep, cash, inc, TG)); }
+  T.buySort(all);
+  if (!all.length) { out.innerHTML = `<p class="note" style="margin-top:10px">지금 입력으로는 이 지역 ${esc(L.band || '')} 아파트 가운데 살 수 있는 단지가 없어요(보증금 + 현금 ${esc(won(L.dep + cash))}, 연소득 ${inc ? esc(won(inc)) : '미입력'}).</p>`; return; }
+  const top = all.slice(0, 5), b = top[0];
+  out.innerHTML = `<p style="font-size:18px;font-weight:900;margin:12px 0 4px">전세 보증금 + 대출로 살 수 있는 단지 ${all.length.toLocaleString()}곳</p>
+    <table class="bt"><thead><tr><th>단지</th><th>시세</th><th>대출</th></tr></thead><tbody>${top.map(r => `<tr><td>${esc(r.d + ' ' + r.a + ' ' + r.b)}${r.fv != null ? `<br><small class="note">미래가치 ${r.fv}점</small>` : ''}</td><td>${esc(won(r.price))}</td><td>${esc(won(r.L))}</td></tr>`).join('')}</tbody></table>
+    <p class="note">대출 한도·필요 현금은 내 집 마련 계산기와 같은 규칙(무주택, ${esc({ reg: '규제지역', capfree: '수도권 비규제', local: '지방' }[b.grp] || '')}, 금리 연 ${b.rate}% 가정)으로 계산했어요. 시세는 국토교통부 매매 실거래 최근 3개월 중간값이에요. 미래가치 점수는 공개 자료로 따져 본 참고 점수예요.</p>
+    <div class="acts"><a href="${BASE}buy/" data-track="tsw_to_buy">내 집 마련 계산기에서 자세히 ›</a><a href="${BASE}mine/calendar/#ta" data-track="tsw_to_calendar">전세 만기 알림 받기 ›</a></div>`;
+}
+
+/* ---------- 2년 뒤 전세가 전망 ---------- */
+async function drawFc(){
+  const box = $('fcSec'), bt = await siteJ('data/rent-dir-bt.json'); box.hidden = false;
+  const head = '<h3>2년 뒤 전세가 전망<span class="tagr">참고</span></h3>';
+  if (!bt) { box.innerHTML = `<div class="panel fc">${head}<p class="note">전망은 보여 드리지 않아요. 단지마다 최근 1년 흐름만 참고로 보여 드려요.</p></div>`; return; }
+  const yy = ym => String(ym).slice(0, 4);
+  box.innerHTML = `<div class="panel fc">${head}<p class="note" style="font-size:15px">${bt.ok ? '' : '<b>전망 숫자는 보여 드리지 않아요.</b> '}'지금 전세가 1년 전보다 높으면 2년 뒤에도 오른다'는 단순 규칙을 ${esc(yy(bt.data.from))}~${esc(yy(bt.data.to))}년 아파트 전월세 실거래로 ${bt.tests}개 시점에 시험해 봤어요. 그때 알 수 있던 시장 전체 방향을 모든 단지에 똑같이 붙인 것보다 평균 ${Math.abs(bt.dev.mean)}%p ${bt.dev.mean >= 0 ? '더' : '덜'} 맞았고, 기준보다 나은 시점은 ${bt.dev.pos}/${bt.dev.n}번이었어요(가장 최근 2개 시점은 따로 떼어 확인).
+    ${bt.ok ? '' : '우연과 구별할 만큼 꾸준히 맞지 않아서, 결과 카드에는 단지마다 <b>최근 1년 흐름</b>만 참고로 보여 드려요. 흐름은 앞으로를 말해 주지 않아요.'}</p>
+    <p class="src" style="font-size:12.5px;color:#6B7684;margin:6px 0 0">시험 자료: ${esc(bt.src)} · 판정 규칙: 집예보 점수 공개 규칙과 같은 틀(평균 ÷ 표준오차 2 이상, 절반 이상 시점에서 기준보다 나음, 잠금 시험·권역 2곳 이상) · ${esc(bt.at)} 계산</p></div>`;
+}
+
+/* ---------- 출처 ---------- */
+function drawSrc(){
+  const notes = LR ? LR.NOTES.filter(n => n.id === 'jeonse') : [], up = LR ? LR.UPCOMING.filter(u => /전세대출/.test(u.t)) : [];
+  const srcT = ids => ids.map(id => { const s = LR.SRC[id]; return s ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.org)} ${esc(s.pub || s.checked || '')} ↗</a>` : ''; }).join(' · ');
+  const pol = [...document.querySelectorAll('[data-pol]:checked')].map(el => el.dataset.pol);
+  const polT = pol.length ? `<div style="margin-top:6px"><b>${esc(pol.map(k => ({ youth: '청년', newly: '신혼부부', multi: '다자녀' })[k]).join('·'))} 전세대출 정보</b> — 정책 전세대출(주택도시기금 버팀목 전세자금)과 전세자금보증(한국주택금융공사)은 소득·자산·보증금 조건이 상품마다 달라요. 집예보 규칙표에는 아직 이 상품들의 조건을 넣지 않아서, 가입 가능 여부와 한도는 공식 안내에서 확인해 주세요. <a href="https://nhuf.molit.go.kr/" target="_blank" rel="noopener">주택도시기금 ↗</a> · <a href="https://www.hf.go.kr/" target="_blank" rel="noopener">한국주택금융공사 ↗</a></div>` : '';
+  $('loanNote').innerHTML = '전세대출 한도는 은행·보증기관 심사로 정해지고, 집예보 대출 규칙표에는 아직 전세대출 한도 규칙이 없어 추정하지 않아요. 은행에서 안내받은 금액을 넣어 주세요.' + polT
+    + ((notes.length || up.length) ? `<details><summary>알아 둘 전세대출 규칙</summary>${notes.map(n => `<div>${esc(n.t)} (${srcT(n.src)})</div>`).join('')}${up.map(u => `<div>${esc(u.d.replace(/-/g, '.'))}부터: ${esc(u.t)} (${srcT(u.src)})</div>`).join('')}</details>` : '');
+  $('src').innerHTML = `<b>자료와 계산 방법</b><ul>
+    <li>전세 시세: ${esc(T.SRC.rent)}. 건수가 모자라면 쓰지 않아요.</li>
+    <li>준공 연도: ${esc(T.SRC.by)} · 전용면적: 같은 평형 계약 전용 중간값</li>
+    <li>위치: ${esc(T.SRC.xy)}(없으면 ${esc(T.SRC.dong)})</li>
+    <li>지하철역: ${esc(T.SRC.poi)} — 직선 거리 ÷ 분당 ${T.WALK}m로 걷는 시간을 어림해요. 실제 길은 더 길 수 있어요.</li>
+    <li>출퇴근: 출퇴근지 동 가운데 점까지 직선 거리예요. 대중교통 시간은 계산하지 않아요.</li>
+    <li>학군 지표: ${esc(T.SRC.sch)} — 점수 자료가 있는 단지만, 가까운 중학교 한 해 평균 순전입률을 비교해요.</li>
+    <li>HUG 전세보증(추정): 보증금 = 그 집 최근 전세 중간값, 선순위채권 없음, 주택가격 = 같은 평형 공시가격 중간값 × 140%로 계산했어요. 아파트는 HUG가 KB시세 같은 시세를 먼저 써서 실제 한도와 다를 수 있어요. 가입 여부는 HUG 심사로 정해져요. <a href="${esc(HG ? HG.SRC.url : '#')}" target="_blank" rel="noopener">${esc(HG ? HG.SRC.name : '')} ↗</a></li>
+    <li>깡통전세 확률: 과거 같은 구 아파트 2년 집값 변화로 계산한 참고값이에요(전세 안전 점검과 같은 방법).</li>
+    <li>나아진 점으로 세는 최소 차이: 출퇴근 ${T.TH.commute}km · 역 ${T.TH.st}m · 준공 ${T.TH.by}년 · 넓이 ${T.TH.area}평 · 학군 순전입률 ${T.TH.sch}%p</li></ul>
+    ${esc(SITE)}은(는) 중개·대출·보증 상품을 팔지 않아요. 실제 계약 조건은 집을 보고 공인중개사·은행·HUG에 확인해 주세요.`;
+}
+
+/* ---------- 시작 ---------- */
+async function init(){
+  IX = await dataJ('index.json');
+  if (!IX){ $('homeNow').textContent = '자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.'; return; }
+  fillSido(); drawHomes(); drawBand(); drawKind(); drawMode(); drawSrc();
+  fmtIn($('dep'), () => { depHint(); jlHint(); }); fmtIn($('jl'), jlHint);
+  ['cash2', 'rentMax', 'lo', 'hi', 'mv', 'ageMax', 'inc2'].forEach(id => fmtIn($(id), () => { if (id === 'cash2') $('cash2H').textContent = num($('cash2').value) ? won(num($('cash2').value)) : ''; }));
+  optLoad(); drawCmode(); hhHint();
+  const lw = () => { $('loanW').hidden = !$('useLoan').checked; }; $('useLoan').onchange = lw; lw();
+  document.querySelectorAll('[data-pol]').forEach(el => el.onchange = drawSrc);
+  $('hh').onchange = () => { hhHint(); if ($('hh').value === 'newly') { const n = document.querySelector('[data-pol="newly"]'); if (n && !n.checked) { n.checked = true; drawSrc(); } } };
+  $('moveAt').onchange = moveHint;
+  $('goBtn').onclick = () => run(true);
+  /* 저장한 집: 전세·월세 계약이 있는 집 먼저 */
+  const list = homes(), cal = calAll().h || {};
+  const first = list.find(h => cal[hid(h)] && (cal[hid(h)].t === 'jeonse' || cal[hid(h)].t === 'wolse')) || list[0];
+  if (first) await setHome(first, 'saved'); else { $('pickW').open = true; $('homeNow').textContent = '저장한 집이 없어요. 위에서 지역과 단지 이름으로 찾아 주세요.'; await drawWork(); }
+  jlHint();
+}
+init();
+})();
+</script>
+</body>
+</html>
