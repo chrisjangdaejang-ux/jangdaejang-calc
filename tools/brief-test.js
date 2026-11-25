@@ -493,5 +493,33 @@ check('확인 안내는 2년에 한 번', !mails.some(a => a[0] && /수신 동�
   check('상승 전환(메일): 전국 칸에 평형·건수', /약 34평/.test(mh) && /9억 6,000만\(3건\)/.test(mh));
 }
 
+{ // v53 메일 보내는 곳: MAIL_PROVIDER='ses' 로 켜면 아침 브리핑이 SES 로 모아 보내지고(지메일 안 씀), 결과는 묶음을 보낸 뒤 '발송기록'·최근발송일에 그대로
+  const RF = ctx.UrlFetchApp.fetch, U = ctx.Utilities, oldD = U.computeDigest, oldH = U.computeHmacSha256Signature, sesQ = [];
+  const sg = a => a.map(b => b > 127 ? b - 256 : b), bf = v => Array.isArray(v) ? Buffer.from(v.map(b => b & 255)) : Buffer.from(String(v), 'utf8');
+  U.newBlob = x => ({ getBytes: () => sg(Array.from(Buffer.from(String(x), 'utf8'))) });
+  U.computeDigest = (alg, v) => Array.isArray(v) || v === '' ? sg(Array.from(crypto.createHash('sha256').update(bf(v)).digest())) : oldD(alg, v);
+  U.computeHmacSha256Signature = (v, k) => Array.isArray(k) ? sg(Array.from(crypto.createHmac('sha256', bf(k)).update(bf(v)).digest())) : oldH(v, k);
+  let sesCode = 200;
+  const R = (code, j) => ({ getResponseCode: () => code, getContentText: () => JSON.stringify(j), getHeaders: () => ({}) });
+  ctx.UrlFetchApp.fetch = (url, opt) => /amazonaws\.com\/v2\/email\/account/.test(url) ? R(200, { SendQuota: { Max24HourSend: 50000, SentLast24Hours: 0, MaxSendRate: 14 }, ProductionAccessEnabled: true }) : RF(url, opt);
+  ctx.UrlFetchApp.fetchAll = qs => qs.map(q => { if (!/amazonaws\.com/.test(q.url)) return RF(q.url, q); sesQ.push(q); return R(sesCode, sesCode === 200 ? { MessageId: 'x' } : { message: 'down' }); });
+  Object.assign(props, { MAIL_PROVIDER: 'ses', MAIL_API_KEY: 'AKIDTEST', MAIL_API_SECRET: 'secretTEST', MAIL_FROM: 'brief@zipyebo.com' });
+  const day = d => sheets['발송기록'].rows.filter(x => String(x[0]) === d);
+  const body = q => JSON.parse(Buffer.from(q.payload.map(b => b & 255)).toString('utf8'));
+  NOW = Date.parse('2027-09-06T07:10:00+09:00'); mails.length = 0; props.BRIEF_SENT = ''; T.briefDaily();
+  const bq = sesQ.filter(q => /모닝 브리핑 —/.test(body(q).Content.Simple.Subject.Data)), ok = day('2027-09-06').filter(x => /^보냄/.test(x[3]));
+  check('v53 SES: 아침 브리핑이 SES 로(한 통 이상)', bq.length >= 1, sesQ.length);
+  check('v53 SES: 구독자 메일은 지메일로 안 감(대표 알림만)', mails.every(a => typeof a[0] === 'string' || a[0].to === 'owner@example.com'), mails.map(a => a[0] && a[0].to));
+  check("v53 SES: '발송기록' 보냄 줄 수 = SES 브리핑 수 = 오늘 최근발송일 줄 수", ok.length === bq.length && subRows().filter(x => String(bc(x, '최근발송일')).slice(0, 10) === '2027-09-06' && bc(x, '채널') === 'email').length === bq.length, { ok: ok.length, bq: bq.length });
+  check('v53 SES: (광고) 제목 규칙 그대로(광고 동의가 없으면 (광고) 없음)', bq.every(q => { const t = body(q).Content.Simple.Subject.Data; return /^\(광고\) \[|^\[/.test(t); }));
+  sesQ.length = 0; sesCode = 500;
+  NOW = Date.parse('2027-09-07T07:10:00+09:00'); mails.length = 0; props.BRIEF_SENT = ''; T.briefDaily();
+  const fb = day('2027-09-07').filter(x => /^보냄/.test(x[3]));
+  check('v53 SES 장애: 지메일로 대신 보내고 발송기록에 표시', fb.length >= 1 && fb.every(x => /지메일로 대신/.test(x[3])) && mails.some(a => a[0] && /모닝 브리핑 —/.test(a[0].subject || '')), fb.map(x => x[3]));
+  check('v53 SES 장애: 실패 원인도 발송기록에', day('2027-09-07').some(x => /메일 서비스 실패\(ses 500|연달아 실패/.test(x[3])));
+  ['MAIL_PROVIDER', 'MAIL_API_KEY', 'MAIL_API_SECRET', 'MAIL_FROM'].forEach(k => delete props[k]);
+  ctx.UrlFetchApp.fetch = RF; delete ctx.UrlFetchApp.fetchAll; U.computeDigest = oldD; U.computeHmacSha256Signature = oldH;
+}
+
 console.log(`모닝 브리핑 서버 로직 검증: ${pass}개 통과, ${fail}개 실패`);
 process.exit(fail ? 1 : 0);

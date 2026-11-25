@@ -1,6 +1,16 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v53 변경 요약 (v52 위에 다시 배포. 따로 실행할 함수 없음 — 시트 변경 없음. 스위치를 켜기 전까지는 지금과 100% 같음: 지메일(MailApp)로 보냄)
+ *  - 메일 보내는 곳 바꾸기(숨김 스위치): 스크립트 속성 MAIL_PROVIDER = 'gmail'(기본) · 'ses'(Amazon SES 서울 리전, HTTP API + AWS 서명).
+ *    'ses' 는 MAIL_API_KEY·MAIL_API_SECRET·MAIL_FROM 이 모두 있어야 켜짐(선택 MAIL_FROM_NAME·MAIL_REPLY_TO·MAIL_SES_REGION·MAIL_SES_CONFIG_SET·MAIL_RATE). 키는 코드에 없음.
+ *  - 모닝 브리핑은 여러 통씩 모아(fetchAll, 초당 한도 안) 보내고 429·5xx·연결 오류는 다시 시도, 그래도 안 되면 지메일로 대신(지메일 5통 남을 때까지) — '발송기록' 시트에 적음.
+ *  - 구독자에게 가는 메일(브리핑·만료 안내·광고 수신 동의 결과·2년 확인·갈아타기 알림·관심 단지 알림·현장 보고서·중개사 도구·동네 파트너)이 같은 길(mailSend)로. 대표 알림 메일은 지메일 그대로.
+ *    제목 (광고)·본문 끝 보낸 사람 정보·수신 거부 링크는 각 메일 그대로. 서비스로 보낼 때만 List-Unsubscribe 머리글(구독 관리 주소)을 더함.
+ *  - 한도 점검이 서비스 값으로(mailLeftNow): 켜져 있으면 SES 하루 한도 남은 수 + 지메일 예비. 09:07 용량 줄(briefAreas cap.prov)에 서비스 하루 한도·초당·시험 모드 여부.
+ *  - (선택) 반송·스팸 신고: SES → SNS → 웹 앱 주소?mailhook=MAIL_HOOK_TOKEN. 영구 반송·신고 주소는 '메일수신불가' 시트(확인값·가린 주소만)에 적고 다시 보내지 않음.
+ *  - 검증: node tools/mail-provider-test.js · node tools/brief-test.js </dev/null · node tools/alerts-test.js
+ *
  * v52 변경 요약 (v51 위에 다시 배포. 따로 실행할 함수 없음 — 시트 변경 없음. 스크립트 속성 CAP_MAIL 은 첫 아침 발송 때 저절로 생김)
  *  - 서비스 이름을 집예보로: SITE_NAME 한 줄(메일 제목 '[집예보] … 집예보 모닝 브리핑'·보내는 이름·안내 문구가 모두 따라 바뀜). 주소(WEB_ROOT)는 그대로.
  *  - 모닝 브리핑 메일 '상승 전환 신호': 엔진이 만든 한 줄(r.t — 평형 ㎡·평, 3개월 구간 실제 거래 중간값, 근거 거래 수)을 그대로(bRiseLine). 예전 자료는 변화율만.
@@ -484,6 +494,7 @@ function ensureHeader() {
 }
 
 function doPost(e) {
+  if (e && e.parameter && e.parameter.mailhook) { try { return out(mailHook(e)); } catch (x) { return out({ ok: false, err: 'server' }); } }   // v53 SES 반송·스팸 신고 알림(SNS)
   let b;
   try { b = JSON.parse(e.postData.contents); } catch (x) { return out({ ok: false, err: '요청 형식 오류' }); }
   if (!PAID_OPEN && PAID_ACTIONS[b && b.action]) return out({ ok: false, err: PAID_CLOSED_MSG, code: 'paid_closed' });   // v47 유료 판매 잠금
@@ -818,7 +829,7 @@ function alertSub(b) {
   sh.appendRow(row);
   const condTxt = cond === 'below' ? `갭이 ${eok(val)} 이하로 좁혀지면` : `갭이 지금보다 ${val}% 이상 줄거나 늘면`;
   try {
-    MailApp.sendEmail({
+    mailSend({
       to: email, name: SITE_NAME + ' 갈아타기 알림',
       subject: '[장대장] 갈아타기 갭 알림이 등록되었습니다',
       htmlBody: mailHtml('갭 알림 등록 완료',
@@ -897,11 +908,11 @@ function checkAlerts() {
       hit = Math.abs(pct) >= val;
       why = `갭이 기준(${eok(base)}) 대비 ${pct > 0 ? '+' : ''}${pct.toFixed(1)}% ${pct < 0 ? '좁혀졌습니다' : '벌어졌습니다'}.`;
     }
-    if (hit && (sent >= 80 || MailApp.getRemainingDailyQuota() < 5)) continue;   // 한도 초과분은 최근갭을 그대로 둬서 내일 다시 보냄
+    if (hit && (sent >= (mailProviderOn() ? 100000 : 80) || mailLeftNow() < 5)) continue;   // 한도 초과분은 최근갭을 그대로 둬서 내일 다시 보냄
     sh.getRange(i + 1, AC['최근갭'] + 1).setValue(gap);
     if (!hit) continue;
     try {
-      MailApp.sendEmail({
+      mailSend({
         to: r[AC['이메일']], name: SITE_NAME + ' 갈아타기 알림',
         subject: `[장대장] ${r[AC['지금집']]} → ${r[AC['갈아탈집']]} 갭 ${eok(gap)}`,
         htmlBody: mailHtml(why,
@@ -1756,7 +1767,7 @@ function dwPut(b) {
     <a href="${url}" style="display:inline-block;background:#2F6BFF;color:#fff;padding:11px 18px;border-radius:10px;text-decoration:none;font-weight:700">보고서 PDF 보기</a>
     <p style="font-size:12.5px;color:#6B7684;margin:14px 0 0">공개 자료로 만든 보고서예요. 받기를 멈추시려면 이 메일에 회신해 주세요(다음 달부터 멈춰요). PDF 링크는 8주 동안 열려요.</p></div>`;
   let res = '보냄';
-  try { MailApp.sendEmail({ to: to, subject: subject, body: text, htmlBody: html, name: SITE_NAME + ' 보고서' }); }
+  try { mailSend({ to: to, subject: subject, body: text, htmlBody: html, name: SITE_NAME + ' 보고서' }); }
   catch (e) { res = '발송 실패'; dwAlert(site + ' · 발송 실패', [`${date} 메일을 보내지 못했어요: ${String(e.message || e).slice(0, 200)}`, `신청 id ${aq} · PDF는 드라이브에 있어요: ${url}`]); }
   return withLock(() => {
     const sh = uSheet(SH_DW, DWH);
@@ -3025,7 +3036,7 @@ function bConsentApply(k, want, how) {
   });
   const em = rows.filter(o => String(o.r[BC['채널']]) === 'email' && String(o.r[BC['연락처']] || '')).pop();
   if (em) try {
-    MailApp.sendEmail({ to: String(em.r[BC['연락처']]).replace(/^'/, ''), name: SITE_NAME, subject: `[${SITE_NAME}] 광고 수신 ${ad || am ? '동의' : '거부'} 처리 결과`,
+    mailSend({ to: String(em.r[BC['연락처']]).replace(/^'/, ''), name: SITE_NAME, subject: `[${SITE_NAME}] 광고 수신 ${ad || am ? '동의' : '거부'} 처리 결과`,
       htmlBody: `<div style="font-family:sans-serif;line-height:1.7">${Utilities.formatDate(now, 'Asia/Seoul', 'yyyy-MM-dd HH:mm')}에 ${bEsc(how || '')}에서 요청하신 대로 처리했어요.<br>${chg.map(bEsc).join('<br>')}<br>
       ${ad && am ? '브리핑 메일에 광고가 있는 날은 제목 맨 앞에 (광고)가 붙어요. ' : '브리핑 메일에는 광고가 들어가지 않아요. 브리핑은 똑같이 받아요. '}언제든 메일 맨 아래 링크나 내 구독 관리에서 바꿀 수 있어요.<br>
       보낸 사람: ${bEsc(BRIEF_SENDER.site)}(${bEsc(BRIEF_SENDER.name)}) · 전화 ${bEsc(BRIEF_SENDER.tel)} · <a href="${BRIEF_WEB}manage/">${BRIEF_WEB}manage/</a></div>` });
@@ -3071,7 +3082,7 @@ function briefAmRecheck(now) {
     const dt = x => x ? Utilities.formatDate(d(x), 'Asia/Seoul', 'yyyy-MM-dd') : '';
     const lines = [`광고성 정보 받기: ${dt(c.ad.at)}에 동의`, c.am.on ? `이른 아침(오전 7시) 브리핑 메일 속 광고 받기: ${dt(c.am.at)}에 동의` : ''].filter(Boolean);
     try {
-      MailApp.sendEmail({ to: String(em.r[BC['연락처']]).replace(/^'/, ''), name: SITE_NAME, subject: `[${SITE_NAME}] 광고 수신 동의 확인 안내`,
+      mailSend({ to: String(em.r[BC['연락처']]).replace(/^'/, ''), name: SITE_NAME, subject: `[${SITE_NAME}] 광고 수신 동의 확인 안내`,
         htmlBody: `<div style="font-family:sans-serif;line-height:1.7">법에 따라 2년마다 광고 수신 동의 상태를 알려 드려요.<br>${lines.map(bEsc).join('<br>')}<br>
         계속 받으시려면 아무것도 하지 않으셔도 돼요. 더 받지 않으려면 <a href="${bApi()}?action=briefAdOff&id=${encodeURIComponent(String(em.r[BC['id']]))}&t=${bAmToken(String(em.r[BC['id']]))}">광고 수신 거부</a>를 누르거나 <a href="${BRIEF_WEB}manage/">내 구독 관리</a>에서 끌 수 있어요.<br>
         보낸 사람: ${bEsc(BRIEF_SENDER.site)}(${bEsc(BRIEF_SENDER.name)}) · 전화 ${bEsc(BRIEF_SENDER.tel)}</div>` });
@@ -3117,17 +3128,241 @@ function briefAreas(p) {
 /* v52 용량 점검: MailApp 하루 한도(개인 구글 계정 100통 — 회사 계정이면 스크립트 속성 MAIL_DAILY_MAX 로 1500 등) 중 남은 수,
    지난 아침 발송이 끝난 뒤 남은 수(CAP_MAIL — briefDaily 가 적음), 지금 받는 구독자 수(이메일·전체). 개인정보 없음(수만). */
 const MAIL_DAILY_MAX_DEF = 100;
-function mailLeft() { try { return MailApp.getRemainingDailyQuota ? MailApp.getRemainingDailyQuota() : null; } catch (e) { return null; } }
+function mailLeft() {   // v53 메일 발송 서비스가 켜져 있으면 그 서비스의 하루 한도 남은 수(못 읽으면 null)
+  try { const pv = mailProvInfo(); if (pv) return pv.err ? null : pv.left; } catch (e) { return null; }
+  try { return MailApp.getRemainingDailyQuota ? MailApp.getRemainingDailyQuota() : null; } catch (e) { return null; }
+}
 function capStatus(now) {
   const P = PropertiesService.getScriptProperties();
   const max = Number(P.getProperty('MAIL_DAILY_MAX')) || MAIL_DAILY_MAX_DEF;
   let subs = 0, email = 0;
   bRows().forEach(o => { const st = briefState(o, now); if (!st.active || st.adm) return; subs++; if (st.channel === 'email') email++; });
   const last = parseJ(P.getProperty('CAP_MAIL'), null);
-  return { mailMax: max, mailLeft: mailLeft(), last: last && last.d ? { d: last.d, left: last.left, sent: last.sent } : null, subs: subs, subsEmail: email };
+  let pv = null; try { pv = mailProvInfo(); } catch (e) { pv = null; }   // v53 메일 발송 서비스(켜져 있을 때만): 하루 한도를 서비스 값으로, 지메일은 예비로 따로
+  const out = { mailMax: pv && !pv.err ? pv.max : max, mailLeft: mailLeft(), last: last && last.d ? { d: last.d, left: last.left, sent: last.sent, via: last.via } : null, subs: subs, subsEmail: email };
+  if (pv) out.prov = Object.assign({}, pv, { gmailMax: max, gmailLeft: gmailLeft() });
+  return out;
 }
 function capRecord(date, sent) {
-  try { PropertiesService.getScriptProperties().setProperty('CAP_MAIL', JSON.stringify({ d: date, left: mailLeft(), sent: sent })); } catch (e) {}
+  try { PropertiesService.getScriptProperties().setProperty('CAP_MAIL', JSON.stringify({ d: date, left: mailLeft(), sent: sent, via: mailCfg().prov })); } catch (e) {}
+}
+
+/* ---------- v53 메일 보내는 곳(숨김 스위치) ----------
+   스크립트 속성 MAIL_PROVIDER: 'gmail'(기본·지금과 똑같음 — MailApp) · 'ses'(Amazon SES 서울 리전 HTTP API, UrlFetchApp + 서명 SigV4).
+   'ses' 는 MAIL_API_KEY(액세스 키 ID)·MAIL_API_SECRET(비밀 액세스 키)·MAIL_FROM(보내는 주소, SES 에서 확인 끝난 주소) 셋이 다 있어야 켜짐 — 하나라도 없으면 지메일 그대로.
+   선택: MAIL_FROM_NAME(보내는 이름, 없으면 각 메일의 name) · MAIL_REPLY_TO · MAIL_SES_REGION(기본 ap-northeast-2 서울) · MAIL_SES_CONFIG_SET(구성 세트 이름)
+         MAIL_RATE(초당 몇 통, 없으면 SES 계정 값) · MAIL_HOOK_TOKEN(반송·스팸 신고 알림 받기, 웹 앱 주소?mailhook=값 을 SNS 구독에).
+   · 키는 코드에 절대 넣지 않음(스크립트 속성에서만 읽음).
+   · 모닝 브리핑은 여러 통을 모아(UrlFetchApp.fetchAll) 초당 한도 안에서 보내고, 429·5xx·연결 오류는 1초·2초 쉬고 두 번 더 시도.
+   · 그래도 안 되면 지메일(MailApp)로 대신 보냄 — 지메일 하루 한도가 MAIL_GMAIL_KEEP(5)통 남을 때까지(대표 알림 몫). 계속 실패하면(3번) 이번 실행은 지메일로만.
+   · 실패·대신 보냄은 '발송기록' 시트에. 제목 (광고)·수신 거부 링크·보낸 사람 정보는 각 메일 본문이 그대로 가지고 감(여기서 바꾸지 않음). */
+const MAIL_GMAIL_KEEP = 5, MAIL_BATCH_MAX = 20, MAIL_TRIES = 3, MAIL_DOWN_AFTER = 3, MAIL_RATE_DEF = 10;
+const SH_MX = '메일수신불가', MXH = ['시각', '주소확인값', '종류', '가린주소'];
+const MAIL_RT = { q: null, sent: 0, fails: 0, down: false, last: 0, supp: null, acc: null };   // 한 번 실행하는 동안만 쓰는 값
+function mailCfg() {
+  const P = PropertiesService.getScriptProperties(), g = k => String(P.getProperty(k) || '').trim();
+  const want = g('MAIL_PROVIDER').toLowerCase() || 'gmail';
+  const c = { want: want, key: g('MAIL_API_KEY'), secret: g('MAIL_API_SECRET'), from: g('MAIL_FROM'), fromName: g('MAIL_FROM_NAME'), replyTo: g('MAIL_REPLY_TO'),
+    region: g('MAIL_SES_REGION') || 'ap-northeast-2', cs: g('MAIL_SES_CONFIG_SET'), rate: Number(g('MAIL_RATE')) || 0 };
+  c.prov = want === 'ses' && c.key && c.secret && /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(c.from) ? 'ses' : 'gmail';
+  return c;
+}
+function mailProviderOn() { return mailCfg().prov !== 'gmail'; }
+function gmailLeft() { try { return MailApp.getRemainingDailyQuota ? MailApp.getRemainingDailyQuota() : 999; } catch (e) { return 999; } }
+/* 지금 더 보낼 수 있는 수: 서비스가 켜져 있으면 서비스 하루 한도 남은 수(+ 지메일 예비), 아니면 지메일 남은 수(지금과 같음) */
+function mailLeftNow() {
+  const c = mailCfg();
+  if (c.prov === 'gmail' || MAIL_RT.down) return gmailLeft();
+  const a = sesAccount(c);
+  if (!a) return gmailLeft();
+  return Math.max(0, a.max - a.sent24 - MAIL_RT.sent) + Math.max(0, gmailLeft() - MAIL_GMAIL_KEEP);
+}
+function mailMask(a) { a = String(a || ''); const i = a.indexOf('@'); return i > 0 ? a.slice(0, Math.min(2, i)) + '***' + a.slice(i) : '***'; }
+function mailLog(why) { try { bLog([ymd(new Date()), '', 'email', String(why).slice(0, 200), 0]); } catch (e) {} }
+/* 보내기 하나. o = MailApp.sendEmail 과 같은 모양({ to, subject, htmlBody, body, name, replyTo }) + 선택 o.unsub(수신 거부 주소 → List-Unsubscribe 머리글)
+   done 이 없으면: 바로 보내고 실패하면 오류를 던짐(지금 MailApp 과 같음). done 이 있으면 done({ ok, why, via }) — 모아 보내기 중이면 나중에 불림. */
+function mailSend(o, done) {
+  const c = mailCfg();
+  if (c.prov === 'gmail') {                                   // 지금과 똑같이
+    const m = Object.assign({}, o); delete m.unsub;
+    MailApp.sendEmail(m);
+    if (done) done({ ok: true, via: 'gmail' });
+    return { ok: true, via: 'gmail' };
+  }
+  if (mailSuppressed(o.to)) { const r = { ok: false, why: '받을 수 없는 주소(반송·스팸 신고 기록)', via: 'skip' }; if (done) { done(r); return r; } throw new Error(r.why); }
+  if (done && MAIL_RT.q && !MAIL_RT.down) {
+    MAIL_RT.q.push({ o: o, done: done });
+    if (MAIL_RT.q.length >= mailBatchSize(c)) mailFlush();
+    return { ok: true, pending: true };
+  }
+  if (MAIL_RT.q && MAIL_RT.q.length) mailFlush();
+  const r = mailDeliver(c, [o])[0];
+  if (done) { done(r); return r; }
+  if (!r.ok) throw new Error(r.why);
+  return r;
+}
+function mailBatchBegin() { MAIL_RT.q = []; }
+function mailBatchEnd() { try { mailFlush(); } finally { MAIL_RT.q = null; } }
+function mailFlush() {
+  const q = MAIL_RT.q; if (!q || !q.length) return;
+  const items = q.splice(0, q.length), c = mailCfg();
+  for (let i = 0; i < items.length;) {
+    const part = items.slice(i, i + mailBatchSize(c)); i += part.length;
+    const rs = mailDeliver(c, part.map(x => x.o));
+    part.forEach((x, j) => { try { x.done(rs[j]); } catch (e) {} });
+  }
+}
+function mailBatchSize(c) {
+  const a = c.rate ? null : sesAccount(c);
+  return Math.max(1, Math.min(MAIL_BATCH_MAX, Math.floor(c.rate || (a && a.rate) || MAIL_RATE_DEF)));
+}
+/* 여러 통을 서비스로 → 실패한 것은 지메일로 대신. 돌려줌: [{ ok, why, via: 'ses'|'gmail-fallback'|'none' }] */
+function mailDeliver(c, list) {
+  let rs = list.map(() => null);
+  if (!MAIL_RT.down) {
+    const left = (() => { const a = sesAccount(c); return a ? a.max - a.sent24 - MAIL_RT.sent : list.length; })();
+    const idx = list.map((o, i) => i).slice(0, Math.max(0, left));     // 서비스 하루 한도가 바닥이면 나머지는 지메일로
+    if (idx.length) {
+      const sr = sesSendMany(c, idx.map(i => list[i]));
+      idx.forEach((i, j) => { rs[i] = sr[j]; });
+    }
+  }
+  return rs.map((r, i) => {
+    if (r && r.ok) { MAIL_RT.sent++; MAIL_RT.fails = 0; return { ok: true, via: 'ses' }; }
+    if (r && !r.soft) { MAIL_RT.fails++; if (MAIL_RT.fails >= MAIL_DOWN_AFTER && !MAIL_RT.down) { MAIL_RT.down = true; mailLog(`메일 발송 서비스가 ${MAIL_DOWN_AFTER}번 연달아 실패(${r.why}) — 이번 실행은 지메일로만 보내요`); } }
+    const why = r ? r.why : (MAIL_RT.down ? '서비스 멈춤' : '서비스 하루 한도 다 씀');
+    if (gmailLeft() > MAIL_GMAIL_KEEP) {
+      try { const m = Object.assign({}, list[i]); delete m.unsub; MailApp.sendEmail(m); if (r) mailLog(`메일 서비스 실패(${why}) → 지메일로 대신 보냄 ${mailMask(list[i].to)}`); return { ok: true, via: 'gmail-fallback', why: why }; }
+      catch (e) { mailLog(`메일 서비스 실패(${why}) · 지메일도 실패 ${mailMask(list[i].to)}: ${String(e.message || e).slice(0, 60)}`); return { ok: false, via: 'none', why: why + ' · 지메일도 실패' }; }
+    }
+    mailLog(`메일 서비스 실패(${why}) · 지메일 하루 한도도 없어 못 보냄 ${mailMask(list[i].to)}`);
+    return { ok: false, via: 'none', why: why + ' · 지메일 한도 없음' };
+  });
+}
+
+/* --- Amazon SES v2 (서울 ap-northeast-2) --- */
+function sesHost(c) { return 'email.' + c.region + '.amazonaws.com'; }
+function mailBytes(s) { return Utilities.newBlob(String(s)).getBytes(); }
+function sesHmac(key, s) { return Utilities.computeHmacSha256Signature(mailBytes(s), key); }
+/* AWS 서명(Signature Version 4). 서명하는 머리글은 host·x-amz-date 만(UrlFetchApp 이 Content-Type 을 바꿔도 서명이 깨지지 않게) */
+function sesSign(c, method, path, bytes, amzDate) {
+  const d = amzDate.slice(0, 8), host = sesHost(c), scope = `${d}/${c.region}/ses/aws4_request`;
+  const ph = hex(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, bytes || ''));
+  const creq = [method, path, '', `host:${host}`, `x-amz-date:${amzDate}`, '', 'host;x-amz-date', ph].join('\n');
+  const sts = ['AWS4-HMAC-SHA256', amzDate, scope, hex(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, mailBytes(creq)))].join('\n');
+  let k = sesHmac(mailBytes('AWS4' + c.secret), d); k = sesHmac(k, c.region); k = sesHmac(k, 'ses'); k = sesHmac(k, 'aws4_request');
+  return { 'X-Amz-Date': amzDate, Authorization: `AWS4-HMAC-SHA256 Credential=${c.key}/${scope}, SignedHeaders=host;x-amz-date, Signature=${hex(sesHmac(k, sts))}` };
+}
+function sesAmzDate() { return new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); }
+function sesReq(c, method, path, body) {
+  const bytes = body ? mailBytes(JSON.stringify(body)) : null;
+  const q = { url: 'https://' + sesHost(c) + path, method: method.toLowerCase(), muteHttpExceptions: true, headers: sesSign(c, method, path, bytes, sesAmzDate()) };
+  if (bytes) { q.contentType = 'application/json'; q.payload = bytes; }
+  return q;
+}
+/* 보내는 사람 "이름 <주소>" — 이름이 한글이면 =?UTF-8?B?…?= 로(SES 규칙) */
+function sesFrom(c, name) {
+  const n = String(c.fromName || name || SITE_NAME).replace(/["\r\n<>]/g, '').slice(0, 60);
+  return (/^[\x20-\x7e]*$/.test(n) ? `"${n}"` : `=?UTF-8?B?${Utilities.base64Encode(n, Utilities.Charset.UTF_8)}?=`) + ` <${c.from}>`;
+}
+function sesBody(c, o) {
+  const simple = { Subject: { Data: String(o.subject || ''), Charset: 'UTF-8' }, Body: {} };
+  if (o.htmlBody) simple.Body.Html = { Data: String(o.htmlBody), Charset: 'UTF-8' };
+  if (o.body || !o.htmlBody) simple.Body.Text = { Data: String(o.body || ''), Charset: 'UTF-8' };
+  if (/^https:\/\//.test(o.unsub || '')) simple.Headers = [{ Name: 'List-Unsubscribe', Value: `<${o.unsub}>` }];
+  const b = { FromEmailAddress: sesFrom(c, o.name), Destination: { ToAddresses: [String(o.to)] }, Content: { Simple: simple } };
+  const rt = o.replyTo || c.replyTo; if (rt) b.ReplyToAddresses = [String(rt)];
+  if (c.cs) b.ConfigurationSetName = c.cs;
+  return b;
+}
+/* 한 묶음 보내기 + 429·5xx·연결 오류는 쉬었다 다시. soft: 이 주소·내용 문제(다른 메일엔 영향 없음 — 연속 실패로 세지 않음) */
+function sesSendMany(c, list) {
+  const out = list.map(() => null);
+  let todo = list.map((o, i) => i);
+  for (let t = 0; t < MAIL_TRIES && todo.length; t++) {
+    if (t) Utilities.sleep(1000 * t);
+    const wait = 1000 - (Date.now() - MAIL_RT.last); if (wait > 0 && MAIL_RT.last) Utilities.sleep(wait);   // 초당 한도: 묶음 사이 1초
+    let res = [];
+    try { res = UrlFetchApp.fetchAll(todo.map(i => sesReq(c, 'POST', '/v2/email/outbound-emails', sesBody(c, list[i])))); }
+    catch (e) { res = todo.map(() => ({ err: String(e.message || e).slice(0, 60) })); }
+    MAIL_RT.last = Date.now();
+    const again = [];
+    todo.forEach((i, j) => {
+      const r = res[j] || { err: '응답 없음' };
+      if (r.err) { out[i] = { ok: false, why: '연결 오류 ' + r.err }; again.push(i); return; }
+      const code = r.getResponseCode();
+      if (code === 200) { out[i] = { ok: true }; return; }
+      let m = {}; try { m = JSON.parse(r.getContentText()) || {}; } catch (e) {}
+      const type = String((r.getHeaders && (r.getHeaders()['x-amzn-ErrorType'] || r.getHeaders()['X-Amzn-ErrorType'])) || m.__type || '').split(':')[0];
+      const why = `ses ${code} ${type} ${String(m.message || m.Message || '').slice(0, 60)}`.replace(/\s+/g, ' ').trim();
+      out[i] = { ok: false, why: why, soft: code === 400 && /MessageRejected|BadRequest/.test(type) && !/not verified|sandbox/i.test(why) };
+      if (code === 429 || code >= 500) again.push(i);
+    });
+    todo = again;
+  }
+  return out;
+}
+/* SES 계정 한도(하루 최대·최근 24시간 보낸 수·초당) — 10분 캐시. 못 읽으면 null */
+function sesAccount(c) {
+  c = c || mailCfg();
+  if (MAIL_RT.acc && Date.now() - MAIL_RT.acc.t < 600000) return MAIL_RT.acc.v;
+  let v = null;
+  try {
+    const q = sesReq(c, 'GET', '/v2/email/account', null), r = UrlFetchApp.fetch(q.url, q);
+    if (r.getResponseCode() === 200) {
+      const j = JSON.parse(r.getContentText()), s = j.SendQuota || {};
+      v = { max: Number(s.Max24HourSend) || 0, sent24: Number(s.SentLast24Hours) || 0, rate: Number(s.MaxSendRate) || MAIL_RATE_DEF, prod: j.ProductionAccessEnabled === true, status: String(j.EnforcementStatus || '') };
+    }
+  } catch (e) { v = null; }
+  if (v) MAIL_RT.sent = 0;   // 새로 읽은 '최근 24시간' 에 이미 들어감
+  MAIL_RT.acc = { t: Date.now(), v: v };
+  return v;
+}
+/* 09:07 용량 줄용: 서비스가 켜져 있으면 { name, max, left, rate, sandbox } (못 읽으면 { name, err }), 아니면 null */
+function mailProvInfo() {
+  const c = mailCfg(); if (c.prov === 'gmail') return null;
+  const a = sesAccount(c);
+  if (!a) return { name: 'Amazon SES', region: c.region, err: true };
+  return { name: 'Amazon SES', region: c.region, max: a.max, left: Math.max(0, a.max - a.sent24 - MAIL_RT.sent), sent24: a.sent24, rate: a.rate, sandbox: !a.prod, status: a.status };
+}
+
+/* --- 반송·스팸 신고(선택): SES → SNS 주제 → HTTPS 구독 '웹 앱 주소?mailhook=MAIL_HOOK_TOKEN'.
+   영구 반송·스팸 신고 주소는 '메일수신불가' 시트(주소는 확인값·가린 주소만)에 적고, 서비스가 켜져 있을 때 다시 보내지 않음(지메일로 대신 보내기도 안 함). */
+function mailSuppressed(to) {
+  if (!MAIL_RT.supp) {
+    MAIL_RT.supp = {};
+    try { const sh = book().getSheetByName(SH_MX); if (sh) sh.getDataRange().getValues().slice(1).forEach(r => { if (r[1]) MAIL_RT.supp[String(r[1])] = 1; }); } catch (e) {}
+  }
+  return !!MAIL_RT.supp[hashOf('mx|' + String(to || '').trim().toLowerCase())];
+}
+function mailHook(e) {
+  const P = PropertiesService.getScriptProperties(), tok = P.getProperty('MAIL_HOOK_TOKEN');
+  if (!tok || !safeEq(String((e.parameter || {}).mailhook || ''), tok)) return { ok: false, err: 'auth' };
+  let m; try { m = JSON.parse(e.postData.contents); } catch (x) { return { ok: false, err: 'format' }; }
+  const c = CacheService.getScriptCache(), id = String(m.MessageId || '');
+  if (id && c.get('mh|' + id)) return { ok: true, dup: true };              // SNS 가 같은 알림을 다시 보낼 때
+  if (id) c.put('mh|' + id, '1', 21600);
+  if (m.Type === 'SubscriptionConfirmation') {
+    const u = String(m.SubscribeURL || ''), want = P.getProperty('MAIL_HOOK_TOPIC');
+    if (!/^https:\/\/sns\.[a-z0-9-]+\.amazonaws\.com\//.test(u) || (want && String(m.TopicArn) !== want)) return { ok: false, err: 'topic' };
+    UrlFetchApp.fetch(u, { muteHttpExceptions: true });
+    mailLog('반송·스팸 신고 알림 구독을 확인했어요: ' + String(m.TopicArn || '').slice(0, 120));
+    return { ok: true, confirmed: true };
+  }
+  if (m.Type !== 'Notification') return { ok: true };
+  let n; try { n = JSON.parse(m.Message); } catch (x) { return { ok: false, err: 'format' }; }
+  const kind = String(n.notificationType || n.eventType || '');
+  let who = [], label = '';
+  if (kind === 'Bounce' && n.bounce) { who = (n.bounce.bouncedRecipients || []).map(x => x.emailAddress); label = n.bounce.bounceType === 'Permanent' ? '반송(영구)' : '반송(일시)'; }
+  else if (kind === 'Complaint' && n.complaint) { who = (n.complaint.complainedRecipients || []).map(x => x.emailAddress); label = '스팸 신고'; }
+  else return { ok: true };
+  const keep = label !== '반송(일시)', now = new Date();
+  who.filter(Boolean).forEach(a => {
+    const norm = String(a).trim().toLowerCase();
+    mailLog(`${label} ${mailMask(norm)}${n.bounce && n.bounce.bounceSubType ? ' · ' + n.bounce.bounceSubType : ''}`);
+    if (keep) { uSheet(SH_MX, MXH).appendRow([now, hashOf('mx|' + norm), label, mailMask(norm)]); if (MAIL_RT.supp) MAIL_RT.supp[hashOf('mx|' + norm)] = 1; }
+  });
+  return { ok: true, n: who.length };
 }
 /* 최근 7일 vs 그 전 7일, 단지별 서로 다른 방문자 수(추천·내 집·비교 화면에 단지가 보인 기록 'rec') — 5명 이상만 */
 function briefInterest(p) {
@@ -3369,7 +3604,7 @@ function briefWeeklyHtml(pieces, M) {
 }
 /* v52 상승 전환 한 줄: 엔진이 만든 글(r.t — 평형 ㎡·평, 3개월 구간 실제 거래 중간값, 근거 거래 수)을 그대로. 예전 자료는 변화율만 */
 function bRiseLine(r) { return r.t ? String(r.t) : `${r.b} 최근 3개월 ${r.chg > 0 ? '+' : ''}${r.chg}%`; }
-function briefMail(to, date, pieces, s, pro, M, ub, extra, ad, tail) {
+function briefMail(to, date, pieces, s, pro, M, ub, extra, ad, tail, done) {
   const title = ((ad || tail ? '(광고) ' : '') + `[${SITE_NAME}] ${date.slice(5).replace('-', '/')} ${BRIEF_NAME} — ${pieces.map(p => p.nm).join(', ')}`).slice(0, 120);
   const body = pieces.map(p => `<div style="border:1px solid #E5E8EB;border-radius:12px;padding:14px 16px;margin:0 0 12px">
       <div style="font-size:17px;font-weight:900;margin:0 0 6px">${bEsc(p.nm)} <span style="font-size:13px;color:#2F6BFF">새 매매 ${p.n}건 · 신고가 ${p.hi}건</span></div>
@@ -3385,7 +3620,7 @@ function briefMail(to, date, pieces, s, pro, M, ub, extra, ad, tail) {
     <p style="font-size:12.5px;color:#4E5968;line-height:1.6">국토교통부 실거래 공개 자료에 새로 올라온 거래를 동네별로 모았어요. 신고가는 같은 단지·같은 평형의 이전 최고가를 넘은 거래예요.<br>
     이 메일은 ${bEsc(s.product)}(이용 기간 ${s.start} ~ ${s.end})을 신청하신 분께 보내 드려요. 받는 방법 바꾸기·해지: <a href="${BRIEF_WEB}manage/">${BRIEF_WEB}manage/</a></p>
     <a href="${BRIEF_WEB}manage/" style="display:block;text-align:center;margin:10px 0 0;border:1px solid #2F6BFF;color:#2F6BFF;padding:11px 16px;border-radius:10px;text-decoration:none;font-weight:700">지역·단지 바꾸기</a>${tail || ''}${ad ? briefAdMailHtml(ad, s.id) : ''}</div>`;
-  MailApp.sendEmail({ to: to, subject: title, htmlBody: html, name: SITE_NAME });
+  return mailSend({ to: to, subject: title, htmlBody: html, name: SITE_NAME, unsub: BRIEF_WEB + 'manage/' }, done);   // v53 보내는 곳(MAIL_PROVIDER) — 기본 지메일 그대로
 }
 /* 솔라피 알림톡(정보성 템플릿). 실패하면 SOLAPI_FROM 이 있을 때 문자로 대체 */
 function solapiSend(to, tplKey, vars, url) {
@@ -3428,6 +3663,7 @@ function briefDaily() {
     } catch (e) { return ''; }
   };
   const rows = bRows(); rows.sort((x, y) => (isAdmRow(x) ? 1 : 0) - (isAdmRow(y) ? 1 : 0));   // v48 운영자 계정(지역이 아주 많을 수 있음)은 맨 마지막
+  mailBatchBegin();                                       // v53 메일 발송 서비스가 켜져 있으면 여러 통씩 모아 보냄(지메일이면 지금처럼 한 통씩)
   rows.forEach(o => {
     if (admStop) return;
     const s = briefState(o, now);
@@ -3445,14 +3681,20 @@ function briefDaily() {
     const pieces = (ub.areas || []).slice(0, s.areas).map(a => { const S = brief(a.g); return S ? briefPiece(S, a, s.pro, myApts, urg) : null; }).filter(Boolean);
     if (!pieces.length) { bLog([date, s.id, s.channel, '동네 자료 없음', 0]); if (AXU) try { AXM.alone(AXU); } catch (e) {} return; }   // 브리핑을 못 보내는 날은 알림만 따로
     const to = String(o.r[BC['연락처']]).replace(/^'/, '');
-    let res = { ok: false, why: '' };
+    let res = { ok: false, why: '' }, later = false, logged = false;
+    const fin = r => {                                    // v53 결과 적기(한 번만) — 메일 서비스로 모아 보내면 묶음을 보낸 뒤에 불림
+      if (logged) return; logged = true;
+      bLog([date, s.id, s.channel, r.ok ? (r.ad ? '보냄(광고 ' + AD.id + ')' : '보냄') + (r.dp ? ' · 동네 파트너' : '') + (r.via === 'gmail-fallback' ? ' · 지메일로 대신' : '') : '못 보냄: ' + r.why, pieces.length]);
+      if (r.ok) { setB(o.row, '최근발송일', date); setB(o.row, '발송수', s.sent + 1); sent++; }
+    };
     try {
       if (s.channel === 'email') { pieces.forEach(p => { p.url += `&src=mail&k=${bKey(s.id)}&day=${date}`; });
         let bx = ''; try { bx = bpMailHtml(String(o.r[BC['카카오id']]), cxOf, date); } catch (e) { bx = ''; }
         const withAd = AD && o.r[BC['광고동의']] === true && o.r[BC['아침광고동의']] === true ? AD : null;   // 두 동의(①항 광고성 정보·③항 이른 아침)가 모두 있을 때만
-        const dx = dpTail(o, s, ub, myApts, true);
-        briefMail(to, (pieces[0] && ix && ix.date) || date, pieces, s, s.pro, M, Object.assign({}, ub, { apts: myApts }), (AXU ? AXU.html : '') + bx, withAd, dx); res = { ok: true, ad: !!withAd, dp: !!dx };
-        if (AXU) try { AXM.done(AXU); } catch (e) {} }
+        const dx = dpTail(o, s, ub, myApts, true), meta = { ad: !!withAd, dp: !!dx };
+        briefMail(to, (pieces[0] && ix && ix.date) || date, pieces, s, s.pro, M, Object.assign({}, ub, { apts: myApts }), (AXU ? AXU.html : '') + bx, withAd, dx,
+          r => { if (r.ok && AXU) try { AXM.done(AXU); } catch (e) {} fin(Object.assign({}, meta, r)); });
+        later = true; }
       else if (s.channel === 'kakao') {
         if (!ch.kakao) res = { ok: false, why: '알림톡 키 없음' };
         else {
@@ -3462,10 +3704,10 @@ function briefDaily() {
             '#{만료일}': s.end, '#{링크}': p.url.replace(/^https:\/\//, '') });
         }
       } else res = { ok: false, why: '웹 알림 준비 중' };
-    } catch (e) { res = { ok: false, why: String(e.message || e).slice(0, 60) }; }
-    bLog([date, s.id, s.channel, res.ok ? (res.ad ? '보냄(광고 ' + AD.id + ')' : '보냄') + (res.dp ? ' · 동네 파트너' : '') : '못 보냄: ' + res.why, pieces.length]);
-    if (res.ok) { setB(o.row, '최근발송일', date); setB(o.row, '발송수', s.sent + 1); sent++; }
+    } catch (e) { res = { ok: false, why: String(e.message || e).slice(0, 60) }; later = false; }
+    if (!later) fin(res);
   });
+  try { mailBatchEnd(); } catch (e) { mailLog('모아 보내기 마무리 오류: ' + String(e.message || e).slice(0, 80)); }   // v53 남은 묶음 보내기(지메일이면 할 일 없음)
   try { if (!admStop) sent += dpPlusBriefs(date, um, brief, M, ix); } catch (e) {}   // v51 이용권이 없는 동네 파트너(중개사 플러스 포함)에게 파트너 이메일로
   try { dpImpFlush(date, dpImp); } catch (e) {}
   capRecord(date, sent);                                 // v52 용량 점검: 아침 발송 뒤 메일 하루 한도가 얼마나 남았는지
@@ -3496,7 +3738,7 @@ function bAdminSend(o, s, um, date, t0, brief, M, AD, ix, AXM, cxOf, dpTail) {
   let bx = ''; if (i === 0) try { bx = bpMailHtml(k, cxOf, date); } catch (e) { bx = ''; }
   const dx = i === 0 && dpTail ? dpTail(o, s, ub, myApts, true) : '';   // v50 동네 파트너 칸은 첫 메일에만
   for (; i < n; i++) {
-    const quota = MailApp.getRemainingDailyQuota ? MailApp.getRemainingDailyQuota() : 999;
+    const quota = mailLeftNow();   // v53 메일 발송 서비스가 켜져 있으면 그 한도
     if (Date.now() - t0 > BRIEF_ADM_TIME || quota < BRIEF_ADM_MAIL_MIN) { P.setProperty('BRIEF_ADM_PROG', JSON.stringify({ d: date, id: s.id, i: i })); return 'stop'; }
     const part = pieces.slice(i * BRIEF_ADM_CHUNK, (i + 1) * BRIEF_ADM_CHUNK);
     try { briefMail(to, (ix && ix.date) || date, part, s, s.pro, M, Object.assign({}, ub, { apts: myApts }), (n > 1 ? `<div style="font-size:13px;color:#4E5968;margin:0 0 10px">운영자 모드 · ${n}통 중 ${i + 1}번째 메일 (지역 ${pieces.length}곳을 ${BRIEF_ADM_CHUNK}곳씩 나눠 보내요)</div>` : '') + (i === 0 ? (AXU ? AXU.html : '') + bx : ''), withAd, i === 0 ? dx : '');
@@ -3530,7 +3772,7 @@ function briefExpiry(now) {
     if (!tag || String(o.r[BC['만료알림']]).indexOf(tag) >= 0) return;
     const to = String(o.r[BC['연락처']]).replace(/^'/, '');
     try {
-      if (s.channel === 'email') MailApp.sendEmail({ to: to, name: SITE_NAME, subject: `[${SITE_NAME}] ${BRIEF_NAME} 이용 기간이 ${s.left === 1 ? '오늘' : s.left + '일 뒤'} 끝나요`,
+      if (s.channel === 'email') mailSend({ to: to, name: SITE_NAME, subject: `[${SITE_NAME}] ${BRIEF_NAME} 이용 기간이 ${s.left === 1 ? '오늘' : s.left + '일 뒤'} 끝나요`,
         htmlBody: `<div style="font-family:sans-serif;line-height:1.7">${bEsc(s.product)} 이용 기간이 ${s.end}에 끝나요. 자동으로 결제되지 않아요.<br>${s.next ? `다음 이용권은 고르신 대로 ${bEsc(s.nextLabel)} 요금제로 준비해 두었어요.<br>` : ''}계속 받으시려면 이용권을 새로 구매해 주세요: <a href="${BRIEF_WEB}subscribe/${s.next ? '?p=' + s.next : ''}">${BRIEF_WEB}subscribe/</a></div>` });
       else if (s.channel === 'kakao') solapiSend(to, 'SOLAPI_TPL_EXPIRE', { '#{상품}': s.product, '#{만료일}': s.end, '#{링크}': (BRIEF_WEB + 'subscribe/').replace(/^https:\/\//, '') });
       setB(o.row, '만료알림', (String(o.r[BC['만료알림']] || '') + ' ' + tag).trim());
@@ -3611,9 +3853,9 @@ function agtDispatch(b) {
 const AGT_CHANNELS = {
   mail(to, msg) {
     if (!to.mail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to.mail)) return false;
-    if (MailApp.getRemainingDailyQuota && MailApp.getRemainingDailyQuota() < 5) return false;
+    if (mailLeftNow() < 5) return false;
     const li = (msg.lines || []).map(t => `<li style="margin:4px 0">${uText(t, 300)}</li>`).join('');
-    MailApp.sendEmail({ to: to.mail, name: '집예보 중개사 도구', subject: '[집예보] ' + uText(msg.title, 80),
+    mailSend({ to: to.mail, name: '집예보 중개사 도구', subject: '[집예보] ' + uText(msg.title, 80),
       htmlBody: `<div style="font-family:'Noto Sans KR',sans-serif;max-width:560px;margin:auto;color:#191F28"><h2 style="font-size:18px">${uText(msg.title, 80)}</h2><ul style="padding-left:18px">${li}</ul>`
         + `<p><a href="${msg.url || AGENT_SITE}" style="background:#2F6BFF;color:#fff;padding:10px 16px;border-radius:10px;text-decoration:none;font-weight:700">${uText(msg.button || '중개사 대시보드 열기', 30)}</a></p>`
         + `<p style="font-size:12px;color:#6B7684">고객 연락처는 메일에 넣지 않아요. 대시보드에 로그인해서 확인해 주세요. 알림을 끄려면 대시보드 [설정]에서 [메일 알림]을 끄세요.</p></div>` });
@@ -4958,7 +5200,7 @@ function alertJoin(b) {
   setAX(row, '동의', true); setAX(row, '동의시각', now); setAX(row, '화면동의시각', cellSafe(at)); setAX(row, '동의문구판', AX_V); setAX(row, '철회시각', '');
   setAX(row, '설정', JSON.stringify(prefs)); setAX(row, '수정시각', now);
   const s = axMine(u.k);
-  if (MailApp.getRemainingDailyQuota() > AX_RESERVE) try {
+  if (mailLeftNow() > AX_RESERVE) try {
     const L = axLinks(bApi(), s.id, axTok, axPh), bm = axBriefMail(u.k, now);
     axSend('email', s, { subject: `[${SITE_NAME}] 관심 단지·청약 알림 메일 신청을 받았어요`,
       html: `<div style="font-family:sans-serif;line-height:1.7;max-width:560px">${Utilities.formatDate(now, 'Asia/Seoul', 'yyyy-MM-dd HH:mm')}에 알림 메일 신청을 받았어요.<br>
@@ -4979,7 +5221,7 @@ function axStop(o, how) {
   const s = axSubOf(o), now = new Date();
   if (s.state === AX_ST.off) return false;
   setAX(o.row, '상태', AX_ST.off); setAX(o.row, '철회시각', now); setAX(o.row, '수정시각', now);
-  if (s.email && MailApp.getRemainingDailyQuota() > AX_RESERVE) try {
+  if (s.email && mailLeftNow() > AX_RESERVE) try {
     axSend('email', s, { subject: `[${SITE_NAME}] 알림 메일을 껐어요`, html: `<div style="font-family:sans-serif;line-height:1.7">${Utilities.formatDate(now, 'Asia/Seoul', 'yyyy-MM-dd HH:mm')}에 ${bEsc(how)}에서 요청하신 대로 관심 단지·청약 알림 메일을 모두 껐어요. 받던 이메일 주소는 30일 뒤 지워요.<br>다시 받으시려면 <a href="${AX_WEB}">알림 센터</a>에서 신청해 주세요.</div>` });
   } catch (e) {}
   return true;
@@ -5018,7 +5260,7 @@ const AX_SENDERS = {
     ready: () => true,
     send(sub, msg) {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sub.email || '')) return { ok: false, why: '이메일 없음' };
-      MailApp.sendEmail({ to: sub.email, name: SITE_NAME, replyTo: BRIEF_SENDER.email, subject: msg.subject, htmlBody: msg.html });
+      mailSend({ to: sub.email, name: SITE_NAME, replyTo: BRIEF_SENDER.email, subject: msg.subject, htmlBody: msg.html });
       return { ok: true };
     }
   },
@@ -5114,7 +5356,7 @@ function alertsDaily() {
     const s = axSubOf(o);
     if (s.state !== AX_ST.on || s.last === ctx.date || !axCanSend(s)) return;
     if (axBriefMail(s.k, now)) return;                         // 모닝 브리핑 메일에 함께 들어감
-    if (MailApp.getRemainingDailyQuota() <= AX_RESERVE) { stop = true; uSheet(SH_AXS, AXSH).appendRow([ctx.date, '', '이메일', '하루 한도에 닿아 멈춤 — 남은 분은 다음 실행에', 0]); return; }
+    if (mailLeftNow() <= AX_RESERVE) { stop = true; uSheet(SH_AXS, AXSH).appendRow([ctx.date, '', '이메일', '하루 한도에 닿아 멈춤 — 남은 분은 다음 실행에', 0]); return; }
     const D = axBuild(s, ctx, sent); if (!D) return;
     if (axSendAlone(s, D, ctx).ok) n++;
   });
@@ -5310,7 +5552,7 @@ function reportWeekly() {
     if (stop) return;
     const s = axSubOf(o);
     if (s.state !== AX_ST.on || !s.prefs.rp || !axCanSend(s) || ((sent[s.id] || {})[rid])) return;
-    if (MailApp.getRemainingDailyQuota() <= AX_RESERVE) { stop = true; uSheet(SH_AXS, AXSH).appendRow([date, '', '성적표', '하루 한도에 닿아 멈춤 — 남은 분은 다음 실행에', 0]); return; }
+    if (mailLeftNow() <= AX_RESERVE) { stop = true; uSheet(SH_AXS, AXSH).appendRow([date, '', '성적표', '하루 한도에 닿아 멈춤 — 남은 분은 다음 실행에', 0]); return; }
     const mute = {}; s.prefs.mute.forEach(x => { mute[x] = 1; });
     const homes = axHomes(s.k, hm), mine = {}; homes.forEach(p => { mine[rpPid(p)] = 1; });
     const cards = rpPlaces(homes, axFavs(s.k, fm).filter(p => !mute[rpPid(p)])).map(p => ({ c: rpCard(p, gfile(p.code)), g: gname(p.code), mine: !!mine[rpPid(p)] })).filter(x => x.c);
@@ -7039,7 +7281,7 @@ function dpNotify(kind, title) {
 }
 function dpMailTo(to, subject, html) {
   if (!to || !/@/.test(to)) return false;
-  try { MailApp.sendEmail({ to: to, name: SITE_NAME, subject: subject, htmlBody: `<div style="font-family:sans-serif;line-height:1.7">${html}<br><br><span style="font-size:12px;color:#4E5968">보낸 사람: ${bEsc(BRIEF_SENDER.site)}(${bEsc(BRIEF_SENDER.name)}) · 전화 ${bEsc(BRIEF_SENDER.tel)}</span></div>` }); return true; } catch (e) { return false; }
+  try { mailSend({ to: to, name: SITE_NAME, subject: subject, htmlBody: `<div style="font-family:sans-serif;line-height:1.7">${html}<br><br><span style="font-size:12px;color:#4E5968">보낸 사람: ${bEsc(BRIEF_SENDER.site)}(${bEsc(BRIEF_SENDER.name)}) · 전화 ${bEsc(BRIEF_SENDER.tel)}</span></div>` }); return true; } catch (e) { return false; }
 }
 
 /* ---------- 매일 할 일(briefDaily 끝에서) ---------- */
