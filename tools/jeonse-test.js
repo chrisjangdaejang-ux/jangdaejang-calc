@@ -56,7 +56,11 @@ const home = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 check('전망 자리 문구는 한 번만', html.split('전세 전망은 과거 자료와 맞춰 보는 중이에요').length - 1, 1);
 check('종류 탭 4개(아파트·빌라·오피스텔·단독·다가구)', R.KINDS.map(k => k.label), ['아파트', '빌라', '오피스텔', '단독·다가구']);
 check('공식 출처 링크(HUG·정책브리핑)', ['khug.or.kr/hug/web/ig/dr/igdr000001.jsp', 'korea.kr/news/policyNewsView.do?newsId=148905628'].every(s => html.includes(s)), true);
-check('확인 안 된 기준 안 씀(80%·126% 등)', /80%|126%|70%/.test(html.replace(/<style[\s\S]*?<\/style>/, '')), false);
+/* 126%·부채비율 70%·80% 는 2026-11-25 HUG 상품개요에서 확인한 기준(assets/hug-core.js) — '전세 안전 점검' 카드 안에서만 쓰고, 그 밖에서는 지금처럼 안 씀 */
+const safeA = html.indexOf('/* ---------- 전세 안전 점검'), safeB = html.indexOf('/* ---------- 제휴 중개사');
+check('전세 안전 점검 코드 자리 찾음', safeA > 0 && safeB > safeA, true);
+check('확인 안 된 기준 안 씀(80%·126% 등) — 안전 점검 카드 밖', /80%|126%|70%/.test((html.slice(0, safeA) + html.slice(safeB)).replace(/<style[\s\S]*?<\/style>/, '')), false);
+check('안전 점검 카드의 HUG 기준은 확인한 출처·날짜를 화면에 표시', /HG\.SRC\.checked/.test(html.slice(safeA, safeB)) && /HG\.SRC\.url/.test(html.slice(safeA, safeB)), true);
 check('권유 표현 없음', /추천합니다|사세요|계약하세요|하셔야/.test(html), false);
 /* QA 2026-11-21: 홈 서비스 수 = 메뉴 칸 + 내 집 시세 띠(화면에 보이는 서비스 수와 같게) */
 { const nav = (home.match(/<nav class="menu"[\s\S]*?<\/nav>/) || [''])[0], nMenu = (nav.match(/<a /g) || []).length, nMine = /class="minelink"/.test(home) ? 1 : 0, m = home.match(/<b>(\d+)가지 서비스<\/b>/);

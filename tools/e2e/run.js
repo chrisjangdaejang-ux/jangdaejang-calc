@@ -211,6 +211,23 @@ const JOURNEYS = {
     if (await cb.count()) { await cb.check({ force: true }); await page.reload(); await sleep(800); ok(await page.locator('input[type=checkbox]').first().isChecked(), '체크리스트: 다시 열어도 체크가 남아 있음'); }
   },
 
+  /* 전세 안전 점검 카드: 깡통전세 확률(근거 강도·과거 비슷한 계약)·HUG 가입 기준·예상 보증료·면책 문구, 보증금을 바꾸면 다시 계산 */
+  async jeonseSafety(page, v) {
+    await open(page, 'jeonse/'); await page.selectOption('#sido', 's03'); await sleep(2500);
+    await page.fill('#q', '부평1,2차금호타운'); await sleep(1500);
+    const hit = page.locator('#sres button').first();
+    if (!ok(await hit.count() > 0, '전세 안전 점검: 단지 찾기 결과')) return;
+    await hit.click(); await sleep(3000);
+    const b59 = page.locator('#res .bands button', { hasText: '59' }).first(); if (await b59.count()) { await b59.click(); await sleep(4000); }
+    const t = await txt(page, '#ksSec');
+    ok(/깡통전세 확률/.test(t) && /근거 강도 (높음|보통|낮음)/.test(t) && /과거 비슷한 계약 [\d,]+건 중 [\d,]+건/.test(t), '전세 안전 점검: 깡통전세 확률·근거 강도·과거 비슷한 계약');
+    ok(/HUG 전세보증 가입 가능성/.test(t) && /주택가격의 90% 이하/.test(t) && /HUG 심사로 정해져요/.test(t), '전세 안전 점검: HUG 가입 기준·면책 문구');
+    await page.fill('#ksDep', '20000'); await sleep(800);
+    const t2 = await txt(page, '#ksSec');
+    ok(/예상 보증료 \(2년\) 약 [\d,]+원/.test(t2), '전세 안전 점검: 기준 안 보증금이면 예상 보증료');
+    ok(!/NaN|undefined|Infinity/.test(t2), '전세 안전 점검: NaN·undefined 없음');
+  },
+
   /* 카카오 로그인(가짜 서버) → 구독 관리·알림 센터·구독 신청, 서버 오류·연결 끊김 때 쉬운 한글 안내 */
   async login(page, v, mock) {
     const td = Date.now(), d = n => new Date(td + n * 864e5).toISOString().slice(0, 10);

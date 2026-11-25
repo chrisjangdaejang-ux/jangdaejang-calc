@@ -31,6 +31,9 @@
 <script src="../assets/mine-core.js?v=21"></script>
 <script src="../assets/price-sheet.js?v=22"></script>
 <script src="../assets/rent-core.js?v=6"></script>
+<script src="../assets/hug-core.js?v=1"></script>
+<script src="../assets/kk-core.js?v=1"></script>
+<script src="../assets/gongsi.js?v=3"></script>
 <script src="../assets/policy-view.js?v=3"></script>
 <script src="../assets/plain-words.js?v=16"></script>
 <script src="../assets/narrative.js?v=20"></script>
@@ -160,6 +163,44 @@ tr.on td{background:#F5F8FF;font-weight:700}
 .disc{font-size:13.5px;color:#4E5968;line-height:1.7;margin-top:22px;border-top:1px solid var(--line2);padding-top:14px}
 details.msum{margin-top:12px}
 details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44px;display:flex;align-items:center}
+/* 전세 안전 점검 카드(깡통전세 확률 + HUG 전세보증) — 휴대폰 먼저 */
+.ks .ksin{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:560px){.ks .ksin{grid-template-columns:1fr 1fr}}
+@media(min-width:820px){.ks .ksin{grid-template-columns:repeat(3,1fr)}}
+.ks .ksin .full{grid-column:1/-1}
+.ks label{display:block;font-size:14px;font-weight:700;margin-bottom:4px}
+.ks input,.ks select{width:100%;font:inherit;font-size:16px;min-height:48px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--text);min-width:0}
+.ks .hint{font-size:13.5px;color:#4E5968;margin-top:3px;line-height:1.5}
+.ks .chkl{display:flex;align-items:center;gap:8px;font-size:14.5px;font-weight:500;min-height:44px}
+.ks .chkl input{width:22px;height:22px;min-height:0;flex:none}
+.ksb{border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:12px;background:#fff}
+.ksb h3{margin:0 0 6px;font-size:17px;font-weight:900;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ksb .tagr{font-size:12.5px;font-weight:800;padding:2px 8px;border-radius:999px;background:#FFF3D6;color:#8A5A00}
+.ksb .tago{font-size:12.5px;font-weight:800;padding:2px 8px;border-radius:999px;background:#E7F6EF;color:#0E7A4F}
+.ksb .big{font-size:28px;font-weight:900;letter-spacing:-.5px;line-height:1.25;font-variant-numeric:tabular-nums}
+.ksb .big.refv{color:#4E5968}
+.ksb .lead2{font-size:15.5px;line-height:1.6;margin:4px 0 0;word-break:keep-all}
+.ksb .pbar{position:relative;height:10px;border-radius:5px;background:#F2F4F6;margin:10px 0 4px;overflow:hidden}
+.ksb .pbar i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:#C2410C}
+.ksb .pbar.refb i{background:#8B95A1}
+.ksb .ev{background:#F7F8FA;border-radius:12px;padding:10px 12px;margin-top:10px;font-size:15px;line-height:1.6;word-break:keep-all}
+.ksb .ev b.n{font-size:18px}
+.ksb .st{display:inline-block;font-size:13px;font-weight:800;padding:2px 8px;border-radius:6px;background:#E8F0FF;color:#1F56E0;margin-right:4px}
+.ksb .st.l0{background:#F2F4F6;color:#4E5968}.ksb .st.l2{background:#E7F6EF;color:#0E7A4F}
+.ksb ul.hc{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
+.ksb ul.hc li{position:relative;padding:9px 10px 9px 36px;border:1px solid var(--line);border-radius:12px;font-size:15px;line-height:1.55;word-break:keep-all}
+.ksb ul.hc li::before{position:absolute;left:10px;top:9px;width:18px;height:18px;border-radius:5px;font-weight:900;font-size:13px;text-align:center;line-height:18px}
+.ksb ul.hc li.y::before{content:'✓';background:#E7F6EF;color:#0E7A4F}
+.ksb ul.hc li.n{border-color:#F5C2C2;background:#FFF7F7}.ksb ul.hc li.n::before{content:'✕';background:#FDECEC;color:#C81E1E}
+.ksb ul.hc li.m::before{content:'?';background:#FFF3D6;color:#8A5A00}
+.ksb ul.hc li small{display:block;color:#4E5968;font-size:13.5px}
+.ksb .fee{margin-top:10px;border-radius:12px;background:#F5F8FF;padding:10px 12px;font-size:15px;line-height:1.65}
+.ksb .fee b.big{font-size:22px}
+.ksb .acts2{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}
+@media(min-width:560px){.ksb .acts2{grid-template-columns:1fr 1fr}}
+.ksb .acts2 a{display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:12px;font-weight:800;font-size:15px;text-decoration:none;border:1px solid #2560E8;color:#2560E8;background:#fff;text-align:center;padding:0 10px}
+.ksb .acts2 a.main{background:#2560E8;color:#fff}
+.ks .kdisc{font-size:13.5px;color:#4E5968;line-height:1.65;margin:12px 0 0}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -375,7 +416,7 @@ async function showUnit(key, band, opt){
 }
 /* 공유: 요약(이 집 공개 실거래·전세가율만) 또는 가족과 자세히(내가 넣은 보증금·월세·금리·공시가격·선순위채권을 주소 # 뒤에만).
    넣은 값이 없으면 요약만 */
-const JE_IDS = ['cJe','cWd','cWr','cRt','pubV','senV'];
+const JE_IDS = ['cJe','cWd','cWr','cRt','pubV','senV','ksDep','ksKb'];
 if (window.JDJ_SHARE) JDJ_SHARE.setup({tool:'jeonse', keep:['k','sd','g','d','b'], detail(){
   const f = JDJ_SHARE.formSnap($('res'), JE_IDS); if (!Object.keys(f).length) return null;
   return {path:'jeonse/', q: JDJ_SHARE.pick(['k','sd','g','d','b']), f};
@@ -414,6 +455,7 @@ function render(){
   </div>
 
   ${riskPanel(c, u, sm)}
+  ${safetyPanel(c, u, sm)}
   ${calcPanel(sm)}
 
   <div class="panel">
@@ -475,11 +517,6 @@ function riskPanel(c, u, sm){
     : V ? `<p class="note" style="font-size:15px">${esc(R.vjMiss(jr))} 아래 공시가격으로 보증 가입 기준을 확인해 보세요.</p>`
     : `<p class="note" style="font-size:15px">${k === 'd' ? '단독·다가구는 원자료에 건물 정보가 없어 전세가율을 계산하지 않아요.' : k === 'a' ? '최근 3개월 안에 매매·전세 시세가 함께 있는 달이 없어 전세가율을 계산하지 못했어요.' : '같은 건물 매매 거래가 적어(최근 3년 3건 미만) 전세가율을 계산하지 않았어요.'} 아래 공시가격으로 보증 가입 기준을 확인해 보세요.</p>`;
   const hugPrice = k === 'a' ? '아파트는 KB시세 등 시세정보가 먼저, 없으면 공시가격의 140%' : k === 'o' ? '오피스텔은 KB 하위평균가가 먼저, 없으면 국세청 기준시가(공시가격)의 140%' : k === 'v' ? '연립·다세대는 공동주택가격(공시가격)의 140%가 첫 순위' : '단독·다가구는 개별단독주택가격(공시가격)의 140%가 첫 순위';
-  const calc = k !== 'a' ? `<div class="calc" style="margin-top:12px"><b style="font-size:16px">공시가격으로 보증 가입 기준 확인</b>
-      <p class="note" style="margin:2px 0 10px">HUG 보증의 주택가격 = ${esc(hugPrice)}. 보증금 + 선순위채권이 주택가격의 90% 이내여야 해요. 공시가격은 ${srcA('pub')}에서 확인할 수 있어요.</p>
-      <div class="row"><div><label for="pubV">${k === 'o' ? '기준시가·공시가격' : '공시가격'} (만원)</label><input id="pubV" inputmode="numeric" placeholder="예: 20,000"><div class="hint" id="pubH"></div></div>
-      <div><label for="senV">선순위채권 (만원, 선택)</label><input id="senV" inputmode="numeric" placeholder="근저당 등, 없으면 비워 두세요"><div class="hint" id="senH"></div></div></div>
-      <div class="cres" id="hugRes" hidden></div></div>` : '';
   /* 평형이 여러 개면 다른 평형도: 주의 구간(rent-core NEAR 이상) 평형은 맨 위에 그 평형 이름으로 안내, 아래 '다른 평형' 줄마다 표시(세입자 보호) */
   const oth = (c.units || []).filter(x => x !== u && ((x[11] || {}).jr || {}).r > 0).map(x => ({ bd: x[2], r: x[11].jr.r, at: x[11].jr.at }));
   const href = V ? 'checklist/?k=v' : 'checklist/';
@@ -489,7 +526,7 @@ function riskPanel(c, u, sm){
     ${basis ? `<p class="basis"><b>계산 근거</b> · ${basis}. 실제 보증 심사의 주택가격은 HUG 가 정해요(${esc(hugPrice)}).</p>` : ''}
     ${V ? vDongBox(c) + `<div class="vwhy"><b>빌라 전세가율을 따로 보는 이유</b><p>${esc(R.VJ_WHY)}</p></div>` : ''}
     ${k === 'a' && (u[11] || {}).jrs ? `<details class="msum" id="jrBox"><summary>전세가율 추이 보기</summary><div class="chart" id="cJr" style="min-height:120px"></div><p class="basis">매매·전세 시세가 모두 있는 달만 계산해요.</p></details>` : ''}
-    ${calc}</div>`;
+    </div>`;
 }
 /* 빌라: 같은 동 빌라 전체 전세가율 추이(엔진 villa_jr.dong_trend — 동 전체 3개월 전세 ㎡당 보증금 중간값 ÷ 매매 ㎡당 가격 중간값) */
 function vDongBox(c){
@@ -659,7 +696,7 @@ function wire(u, sm){
   $('cFill').onclick = () => { if (!sm.j || !sm.wr) return; $('cJe').value = sm.j.v.toLocaleString(); $('cWd').value = sm.wd ? sm.wd.v.toLocaleString() : '0'; $('cWr').value = sm.wr.v.toLocaleString();
     $('cJeH').textContent = won(sm.j.v); $('cWdH').textContent = sm.wd ? won(sm.wd.v) : ''; runCalc(); };
   $('cClear').onclick = () => { ['cJe', 'cWd', 'cWr', 'cRt'].forEach(id => $(id).value = ''); ['cJeH', 'cWdH'].forEach(id => $(id).textContent = ''); runCalc(); };
-  if ($('pubV')){ fmtIn($('pubV'), 'pubH'); fmtIn($('senV'), 'senH'); ['pubV', 'senV'].forEach(id => $(id).addEventListener('input', runHug)); }
+  wireSafety(u, sm);
 }
 function runCalc(){
   const r = R.compare({ jeon: num($('cJe').value), wDep: num($('cWd').value), wRent: num($('cWr').value), rate: $('cRt').value.trim() === '' ? null : num($('cRt').value) }), box = $('cRes');
@@ -670,11 +707,114 @@ function runCalc(){
   box.innerHTML = (r.cheaper === 'same' ? '<b class="big">매달 드는 돈이 거의 같아요</b>' : `<b class="big">${r.cheaper === 'j' ? '전세' : '월세'}가 매달 약 ${d.toLocaleString()}만원 덜 들어요</b>`)
     + `<br>전세: 더 내는 보증금 ${won(r.gap)} × 연 ${r.rate}% ÷ 12 = 월 ${Math.round(r.jCost).toLocaleString()}만원 · 월세: 월 ${r.wRent.toLocaleString()}만원<br>${be}`;
 }
-function runHug(){
-  const r = R.hugCap(num($('pubV').value), num($('senV').value)), box = $('hugRes');
-  if (!r){ box.hidden = true; return; }
-  box.hidden = false;
-  box.innerHTML = `HUG 주택가격 = 공시가격 × 140% = <b>${won(r.price)}</b><br>보증 가입 가능한 보증금 = 주택가격 × 90% − 선순위채권 = <b class="big">${r.cap > 0 ? won(r.cap) + ' 이하' : '가입 어려움'}</b>${r.seniorOver ? '<br><b style="color:#C81E1E">선순위채권이 주택가격의 60%를 넘어 가입이 어려워요(HUG 기준).</b>' : ''}<br><span class="note">실제 심사는 HUG 가 정한 순서의 주택가격(시세·감정평가 등)과 서류로 해요.</span>`;
+/* ---------- 전세 안전 점검: 깡통전세 확률(아파트) + HUG 전세보증 가입 가능성·예상 보증료 ----------
+   깡통전세 확률: data/kkang.json(엔진 kkang.py 공개 요약) + assets/kk-core.js — 지금 매매 시세는 '내 집 시세'와 같은 값(price/{구}.json)
+   HUG: assets/hug-core.js(2026-11-25 HUG 상품개요 확인) — 공시가격은 우리 공개 자료(assets/gongsi.js)로 미리 넣고 고칠 수 있게.
+   내가 넣은 보증금·선순위채권·공시가격은 이 화면 안에서만 계산(서버로 보내지 않음) */
+const HG = window.JDJ_HUG, KK = window.JDJ_KK;
+let KKD = null;
+const kkData = () => KKD || (KKD = fetch(JB.SITE + 'data/kkang.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null));
+const hugType = k => ({ a: 'apt', o: 'offi', v: 'villa', d: 'house' })[k] || 'villa';
+const wonF = v => Math.round(v).toLocaleString() + '원';
+function safetyPanel(c, u, sm){
+  if (!HG) return '';
+  const k = c.kind, apt = k === 'a', kbOk = k === 'a' || k === 'o';
+  const pubL = k === 'o' ? '기준시가·공시가격' : '공시가격';
+  return `<div class="panel ks" id="ksSec"><h2>전세 안전 점검<small>내 보증금으로 ${apt ? '2년 뒤 깡통전세가 될 가능성과 ' : ''}HUG 전세보증 가입 가능성·예상 보증료를 미리 계산해 봐요</small></h2>
+  <div class="calc"><div class="ksin">
+    <div><label for="ksDep">전세 보증금 (만원)</label><input id="ksDep" inputmode="numeric" placeholder="예: 50,000" value="${sm.j ? sm.j.v.toLocaleString() : ''}"><div class="hint" id="ksDepH">${sm.j ? `이 집 최근 전세 시세(${esc(won(sm.j.v))})로 미리 넣었어요. 내 보증금으로 고쳐 주세요.` : ''}</div></div>
+    <div><label for="senV">선순위채권 (만원, 선택)</label><input id="senV" inputmode="numeric" placeholder="근저당 등, 없으면 비워 두세요"><div class="hint" id="senH">등기부등본 '을구'의 채권최고액이에요.</div></div>
+    <div><label for="pubV">${pubL} (만원)</label><input id="pubV" inputmode="numeric" placeholder="예: 40,000"><div class="hint" id="pubH">${srcA('pub')}에서 확인할 수 있어요.</div><div class="gsn" id="pubN"></div></div>
+    ${kbOk ? `<div><label for="ksKb">KB시세 (만원, 선택)</label><input id="ksKb" inputmode="numeric" placeholder="알면 넣어 주세요"><div class="hint">${k === 'a' ? '아파트' : '오피스텔'}는 HUG가 KB시세 같은 시세를 먼저 써요. 비워 두면 공시가격 × 140%로 계산해요.</div></div>` : ''}
+    <div><label for="ksTerm">계약 기간</label><select id="ksTerm"><option value="12">1년</option><option value="24" selected>2년</option><option value="36">3년</option><option value="48">4년</option></select></div>
+    <div><label for="ksDisc">보증료 할인</label><select id="ksDisc"><option value="0">해당 없음</option><option value="0.6">60% 할인 (연소득 5천만 원 이하 가구 등)</option><option value="0.4">40% 할인 (신혼부부·다자녀 가구 등)</option></select></div>
+    ${k === 'd' ? `<div class="full"><label class="chkl"><input type="checkbox" id="ksMulti"> 다른 세입자들의 전세계약확인서를 낼 수 있어요</label><div class="hint">단독·다가구는 이 서류를 내지 않으면 그 구간에서 가장 높은 보증료율이 붙어요.</div></div>` : ''}
+  </div></div>
+  ${apt ? '<div class="ksb" id="ksKK" aria-live="polite"><p class="note">깡통전세 확률을 계산하는 중이에요…</p></div>' : ''}
+  <div class="ksb" id="ksHug" aria-live="polite"></div>
+  <p class="kdisc">이 결과는 공개된 규칙과 과거 실거래로 계산한 참고 값이에요. 실제 보증 가입 여부와 보증료는 HUG 심사로 정해져요. 집예보는 보증 상품을 팔거나 신청을 받지 않아요. 보증료율·가입 기준은 ${esc(HG.SRC.checked.replace(/-/g, '.'))}에 <a href="${HG.SRC.url}" target="_blank" rel="noopener">${esc(HG.SRC.name)} ↗</a>에서 확인한 내용이에요.</p></div>`;
+}
+function wireSafety(u, sm){
+  if (!HG || !$('ksDep')) return;
+  const c = CUR, fmt = (id, hint, keep) => { const el = $(id); if (!el) return; el.addEventListener('input', () => { const v = Math.round(num(el.value)); el.value = v ? v.toLocaleString() : ''; if (hint && !keep) $(hint).textContent = v ? won(v) : ''; }); };
+  fmt('ksDep', 'ksDepH'); fmt('senV', 'senH'); fmt('pubV', null); fmt('ksKb', null);
+  ['ksDep', 'senV', 'pubV', 'ksKb', 'ksTerm', 'ksDisc', 'ksMulti'].forEach(id => { const el = $(id); if (el) el.addEventListener(el.tagName === 'SELECT' || el.type === 'checkbox' ? 'change' : 'input', runSafety); });
+  /* 공시가격: 우리 공개 자료(그 단지·평형 호별 중간값)를 미리 넣기 — 없으면 직접 입력 */
+  if (window.JDJ_GONGSI && c.d && c.d.jibun != null && c.kind !== 'd'){
+    JDJ_GONGSI.get({ code: c.code, dong: c.d.dong, jibun: String(c.d.jibun), apt: c.d.name, band: S.band, area: u[4] }).then(info => {
+      if (!info || CUR !== c || !$('pubV') || $('pubV').value) return;
+      $('pubV').value = (+info.v).toLocaleString(); $('pubH').hidden = true; $('pubN').className = 'gsn';
+      JDJ_GONGSI.attach($('pubV'), info, $('pubN')); runSafety();
+    }).catch(() => {});
+  }
+  /* 지금 매매 시세(내 집 시세와 같은 값) */
+  if (c.kind === 'a' && P && P.loadSgg){
+    c.sale = null;
+    Promise.all([P.loadSgg(c.code, S.sd), kkData()]).then(([g, kk]) => {
+      if (CUR !== c) return;
+      const pu = P.findUnit(g.units || [], { sgg: c.code, dong: c.d.dong, apt: c.d.name, band: S.band, jibun: String(c.d.jibun) });
+      const b = pu ? M.bandSummary(pu, IX.months) : null;
+      c.sale = b && b.price > 0 ? { price: b.price, at: b.at, n: b.recent3 } : { none: true }; c.kk = kk; runSafety();
+    }).catch(() => { if (CUR === c){ c.sale = { none: true }; runSafety(); } });
+  }
+  runSafety();
+}
+function runSafety(){
+  const c = CUR; if (!c || !$('ksHug')) return;
+  const rd = id => { const el = $(id); return el ? Math.round(num(el.value)) : 0; };
+  const dep = rd('ksDep'), sen = rd('senV'), pub = rd('pubV'), kb = rd('ksKb');
+  if (c.kind === 'a') kkDraw(c, dep, sen);
+  hugDraw(c, { dep, senior: sen, pub, kb, type: hugType(c.kind), metro: HG.isMetro(sidoName(c.code)), months: +$('ksTerm').value || 24,
+    disc: +$('ksDisc').value || 0, multi: c.kind === 'd' && !($('ksMulti') && $('ksMulti').checked) });
+}
+function kkDraw(c, dep, sen){
+  const box = $('ksKK'); if (!box) return;
+  if (!c.sale){ box.innerHTML = '<p class="note">깡통전세 확률을 계산하는 중이에요…</p>'; return; }
+  const head = ref => `<h3>깡통전세 확률 ${ref ? '<span class="tagr">참고</span>' : '<span class="tago">과거 시험 통과</span>'}</h3>`;
+  if (!KK || !c.kk){ box.innerHTML = head(true) + '<p class="note" style="font-size:15px">자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.</p>'; return; }
+  if (c.sale.none){ box.innerHTML = head(c.kk.status !== 'ok') + `<p class="note" style="font-size:15px">이 평형은 최근 3개월 매매 거래가 없어 지금 시세를 알 수 없어요. 그래서 깡통전세 확률은 계산하지 않았어요.</p>`; return; }
+  const e = KK.estimate({ kk: c.kk, code: c.code, dep, senior: sen, price: c.sale.price });
+  if (e.miss){ box.innerHTML = head(c.kk.status !== 'ok') + `<p class="note" style="font-size:15px">${e.miss === 'dep' ? '전세 보증금을 넣으면 계산해 드려요.' : '이 지역은 과거 거래가 적어 계산하지 않았어요.'}</p>`; return; }
+  const bt = c.kk.bt || {}, gu = sggName(c.code), pct = Math.round(e.ratio * 100);
+  const yt = KK.yearTop(c.kk).map(x => `${x.y}년 ${Math.round(x.act * 100)}%`).join(' · ');
+  const ptxt = KK.pText(e.p), w = Math.max(2, Math.min(100, e.p * 100));
+  const simTxt = e.sim.n ? `${esc(gu)} 아파트에서 계약 때 보증금이 매매 시세의 <b>${esc(e.sim.label)}</b>${/[미이]만$|이상$/.test(e.sim.label) ? '이었던' : '였던'} ${esc(bt.from ? bt.from.slice(0, 4) : '2019')}~${esc(bt.to ? bt.to.slice(0, 4) : '2022')}년 전세 계약 중 <b>${Math.round(e.sim.k / e.sim.n * 100)}%</b>가 2년 뒤 시세가 보증금보다 낮아졌어요.`
+    : `${esc(gu)} 아파트에서 계약 때 보증금이 매매 시세의 ${esc(e.sim.label)}${/[미이]만$|이상$/.test(e.sim.label) ? '이었던' : '였던'} 과거 전세 계약은 없었어요.`;
+  box.innerHTML = head(e.ref)
+    + `<div class="big${e.ref ? ' refv' : ''}">${esc(ptxt)}</div>
+    <p class="lead2">2년 뒤 이 평형 집값이 <b>보증금${sen ? ' + 선순위채권' : ''}(${esc(won(e.owe))})</b>보다 낮아질 확률이에요. 지금 매매 시세의 ${pct}% 수준이에요.</p>
+    <div class="pbar${e.ref ? ' refb' : ''}" role="img" aria-label="깡통전세 확률 ${esc(ptxt)}"><i style="width:${w}%"></i></div>
+    <div class="ev"><span class="st l${e.st.lv}">근거 강도 ${e.st.t}</span><b>과거 비슷한 계약 ${e.sim.n.toLocaleString()}건 중 ${e.sim.k.toLocaleString()}건</b><br>${simTxt}${e.fb ? ' 이 구는 과거 거래가 적어 같은 시·도 전체 흐름으로 계산했어요.' : ''}</div>
+    <details class="msum"><summary>${e.ref ? '왜 참고로만 보여 주나요? · ' : ''}계산 근거 보기</summary>
+    ${e.ref ? `<p class="basis"><b>참고로만 보여 드리는 이유</b> · ${esc(bt.from ? bt.from.slice(0, 4) : '')}~${esc(bt.to ? bt.to.slice(0, 4) : '')}년 실제 전세 계약 ${(bt.n || 0).toLocaleString()}건으로 맞춰 보니 위험한 집을 가려내는 순서는 대체로 맞았지만, 확률 숫자는 시기에 따라 크게 빗나갔어요. 예를 들어 50% 이상이라고 본 계약 중 실제로 2년 뒤 집값이 보증금보다 낮아진 비율은 ${esc(yt)}였어요. 집값이 오를 때는 높게, 내릴 때는 낮게 나와요.</p>` : ''}
+    <p class="basis"><b>계산 근거</b> · 지금 매매 시세 ${esc(won(c.sale.price))}(${esc(ym(c.sale.at))} 기준 최근 3개월 실거래 중간값, 내 집 시세와 같은 값) · ${esc(gu)} 아파트 단지들의 과거 5년 동안 2년 집값 변화 ${e.pool.toLocaleString()}개를 그대로 적용하면 2년 뒤 이 평형 시세는 10번 중 8번 ${e.range.p10 ? esc(won(e.range.p10)) : '-'}~${e.range.p90 ? esc(won(e.range.p90)) : '-'} 사이예요(참고) · 선순위채권·경매 비용은 따로 생각해야 해요.</p></details>`;
+}
+function hugDraw(c, o){
+  const box = $('ksHug'), r = HG.check(o), cap = r.cap || (o.metro ? HG.CAP.metro : HG.CAP.other);
+  const head = '<h3>HUG 전세보증 가입 가능성</h3>';
+  const area = o.metro ? '수도권' : '수도권 밖';
+  const li = (cls, t, sub) => `<li class="${cls}">${t}${sub ? `<small>${sub}</small>` : ''}</li>`;
+  const rows = [];
+  rows.push(li(!o.dep ? 'm' : r.checks[0].ok ? 'y' : 'n', `보증금 ${area} ${won(cap)} 이하`, o.dep ? `내 보증금 ${won(o.dep)}` : '보증금을 넣어 주세요'));
+  const viaPub = r.by === 'pub';
+  if (r.price){
+    rows.push(li(r.checks[1].ok ? 'y' : 'n', `보증금 + 선순위채권이 주택가격의 90% 이하`,
+      `${won(r.checks[1].val)} / 기준 ${won(r.limit)} · 주택가격 = ${viaPub ? `공시가격 ${won(o.pub)} × 140% = ${won(r.price)} (공시가격의 126%까지)` : `KB시세 ${won(o.kb)}`}`));
+    rows.push(li(r.checks[2].ok ? 'y' : 'n', '선순위채권이 주택가격의 60% 이하', `선순위채권 ${o.senior ? won(o.senior) : '없음'} / 기준 ${won(Math.round(r.checks[2].lim))}`));
+  } else rows.push(li('m', '보증금 + 선순위채권이 주택가격의 90% 이하', `공시가격${c.kind === 'a' || c.kind === 'o' ? '이나 KB시세' : ''}를 넣으면 확인해 드려요`));
+  rows.push(li('m', '직접 확인할 것', '계약 기간의 절반이 지나기 전에 신청 · 전입신고와 확정일자 · 공인중개사를 통한 1년 이상 계약 · 경매·압류·가압류 없음'));
+  const verdict = !o.dep || !r.price ? '<p class="lead2">보증금과 공시가격을 넣으면 가입 기준을 하나씩 확인해 드려요.</p>'
+    : r.ok ? '<p class="lead2"><b style="color:#0E7A4F">공개된 가입 기준은 모두 맞아요.</b></p>'
+    : `<p class="lead2"><b style="color:#C81E1E">공개된 가입 기준을 넘어 가입이 어려울 수 있어요.</b>${r.maxDep > 0 ? ` 이 조건이면 보증금 <b>${esc(won(r.maxDep))} 이하</b>일 때 기준 안이에요.` : ''}</p>`;
+  let fee = '';
+  if (r.fee != null){
+    const dpct = Math.round(r.debt * 1000) / 10, tier = r.debt <= 0.7 ? '70% 이하' : r.debt <= 0.8 ? '70% 초과 80% 이하' : '80% 초과';
+    fee = `<div class="fee">예상 보증료 (${o.months / 12}년) <b class="big">약 ${wonF(r.fee)}</b><br>
+      <small>보증금 ${won(o.dep)} × 연 ${r.rate}% × ${r.days}일 ÷ 365 = ${wonF(r.feeBase)}${r.sur ? ' · 선순위채권이 많아 10% 더해요' : ''}${o.disc ? ` · ${Math.round(o.disc * 100)}% 할인` : ''}<br>
+      보증료율 = ${c.kind === 'a' ? '아파트' : '아파트 외 주택'} · 보증금 구간 · 부채비율 ${dpct}%(${tier})${o.multi ? ' · 다른 세입자 전세계약확인서를 내지 않아 이 구간 최고 요율' : ''}. 부채비율 = (선순위채권 + 보증금) ÷ (주택가격 × 90%)</small></div>`;
+  } else if (o.dep && r.price && !r.ok) fee = '<div class="fee">가입 기준을 넘어 보증료는 계산하지 않았어요.</div>';
+  box.innerHTML = head + verdict + `<ul class="hc">${rows.join('')}</ul>` + fee
+    + `<div class="acts2"><a class="main" href="${HG.SRC.apply}" target="_blank" rel="noopener">HUG 공식 보증료 계산 바로가기 ↗</a><a href="${HG.SRC.url}" target="_blank" rel="noopener">HUG 보증 조건 원문 보기 ↗</a></div>`;
 }
 
 /* ---------- 제휴 중개사 ---------- */
