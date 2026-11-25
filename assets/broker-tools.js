@@ -12,7 +12,7 @@
      표에 칸이 아직 없으면 아래 FALLBACK 을 써요(서버 표와 같은 값). */
 (function (root) {
   'use strict';
-  const SITE = (((root.JDJ_SITE || {}).SITE_NAME) || '').trim() || '집코드';
+  const SITE = (((root.JDJ_SITE || {}).SITE_NAME) || '').trim() || '집예보';
   const PRO = () => root.JDJ_PRO || (typeof require === 'function' ? require('./pro-report.js') : null);
   const DISCLAIM = '이 자료는 참고용이며 법정 서류인 중개대상물 확인·설명서를 대신하지 않습니다.';
   const DANJI_NOTE = '특정 매물 광고(호가·동호수)는 개업공인중개사만 할 수 있어 공인중개사가 아니면 단지 분석 자료로 만들어져요.';

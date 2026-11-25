@@ -9,7 +9,7 @@
   'use strict';
   var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
-  const SITE = ((root.JDJ_SITE || {}).SITE_NAME || '').trim() || '집코드';
+  const SITE = ((root.JDJ_SITE || {}).SITE_NAME || '').trim() || '집예보';
   const NAME = `${SITE} 모닝 브리핑`;
   /* ★ 요금제 표 — 화면(판매·신청·관리)은 이 표 한 곳만 봐요.
      서버 tools/agent-backend.gs 의 BRIEF_TIERS 와 숫자가 같아야 해요(tools/brief-web-test.js 가 두 표를 대조해요).
@@ -240,6 +240,11 @@
     },
     /** 순위 변화 한 줄 */
     rankText(r) { return { name: `${r.a} ${r.b}`, where: [r.sd, r.d].filter(Boolean).join(' '), val: `${r.r0.toLocaleString('ko-KR')}위 → ${r.r1.toLocaleString('ko-KR')}위`, up: r.mv > 0, mv: `${r.mv > 0 ? '▲' : '▼'}${Math.abs(r.mv)}` }; },
+    /** 상승 전환 한 줄: 엔진이 만든 글(t: '84㎡대(약 34평) · 6~8월 중간값 …(n건) → 9~11월 …(n건), +n%')을 그대로. 예전 자료(t 없음)는 변화율만 */
+    riseText(r) {
+      const line = r.t || `${r.b} 최근 3개월 ${B.pct(r.chg)}`;
+      return { name: r.a, line, chg: B.pct(r.chg), low: r.low ? `1~2층 거래 ${r.low}건은 뺐어요` : '' };
+    },
     /** 상승 전환 근거 문장(과거 사례가 있을 때만) */
     evText(ev, sd) {
       if (!ev) return '';

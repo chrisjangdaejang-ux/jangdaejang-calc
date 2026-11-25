@@ -9,12 +9,12 @@
 <link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
 <script src="../../assets/pwa.js?v=2" defer></script>
 <script src="../../assets/biz.js?v=2" defer></script>
-<title>분양가·입지 분석 — 집코드 청약</title>
+<title>분양가·입지 분석 — 집예보 청약</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/chungyak/price/">
 <meta name="description" content="청약 공고마다 분양가가 주변 신축·준신축 실거래와 비교해 어디쯤인지, 주변 청약 경쟁률·당첨 가점, 미래가치, 입주 예정·미분양, 계약금·중도금·잔금 시점별 필요 현금까지 보여 드려요.">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="집코드">
-<meta property="og:title" content="분양가·입지 분석 — 집코드 청약">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="분양가·입지 분석 — 집예보 청약">
 <meta property="og:description" content="이 분양가, 주변 시세와 비교하면 어디쯤일까요? 근거 숫자와 함께 보여 드려요.">
 <meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/chungyak/price/">
 <meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/chungyak.png">
@@ -48,14 +48,14 @@ h1{font-size:clamp(25px,6.4vw,34px);margin:6px 0 8px}
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="../../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
+  <a class="brand" href="../../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a>
   <div class="badge plain">분양가·입지 분석</div>
 </header>
 <main class="wrap">
   <a class="back" href="../../chungyak/#notices">‹ 청약 공고 목록</a>
   <div id="box"><div class="empty">분석 자료를 불러오는 중이에요…</div></div>
 </main>
-<footer class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="../../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집코드 · <a href="../../">홈</a> · <a href="../../chungyak/">청약</a></footer>
+<footer class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="../../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집예보 · <a href="../../">홈</a> · <a href="../../chungyak/">청약</a></footer>
 <script>
 var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 (async function () {
@@ -66,7 +66,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
   if (!no || !C) return fail('공고 번호가 없어요.');
   let D;
   try { D = await C.loadOne(no); } catch (e) { return fail('이 공고의 분석 자료가 없어요. 당첨자 발표가 끝났거나 아직 분석 전인 공고예요.'); }
-  document.title = `${D.name} 분양가·입지 분석 — 집코드`;
+  document.title = `${D.name} 분양가·입지 분석 — 집예보`;
   const ymd = s => s && s.length >= 8 ? `${s.slice(0, 4)}.${+s.slice(4, 6)}.${+s.slice(6, 8)}` : '';
   const key = C.keyOf(D), PR = C.PRODUCT, won = n => Number(n).toLocaleString('ko-KR') + '원';
   box.innerHTML = `<div class="eyebrow">청약 공고 · 분양가·입지 분석</div><h1>${esc(D.name)}</h1>
@@ -78,7 +78,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
       ${key ? `<a class="btn blue" href="${JB.SITE}premium/checkout/?p=cy&k=${encodeURIComponent(key)}" data-track="cy_price_buy">${won(PR.amount)} · ${PR.name} 보기</a>
       <div class="pr">결제·열람·환불은 다른 프리미엄 리포트와 같아요(열람 전 7일 안 전액 환불).</div>` : '<div class="pr">유료 리포트를 준비하고 있어요.</div>'}
     </section>
-    <p class="biz">시행사·분양대행사라면 같은 분석으로 고객에게 나눠 줄 <a href="${JB.SITE}pro/developer/#p-brochure">집코드 분석 브로슈어</a>나, 자기 브로슈어에 골라 넣는 그래프·표·지도 <a href="${JB.SITE}pro/developer/#p-datapack">현장 자료 팩</a>을 신청할 수 있어요. 분석 숫자는 광고 여부와 관계없이 같아요.</p>`;
+    <p class="biz">시행사·분양대행사라면 같은 분석으로 고객에게 나눠 줄 <a href="${JB.SITE}pro/developer/#p-brochure">집예보 분석 브로슈어</a>나, 자기 브로슈어에 골라 넣는 그래프·표·지도 <a href="${JB.SITE}pro/developer/#p-datapack">현장 자료 팩</a>을 신청할 수 있어요. 분석 숫자는 광고 여부와 관계없이 같아요.</p>`;
   C.mountFund($('cypFund'), D);
   if (window.jdjStat) jdjStat('feature_use', { feature: 'chungyak_price' });
 })();

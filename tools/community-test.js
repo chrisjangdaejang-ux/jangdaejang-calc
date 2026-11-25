@@ -59,7 +59,7 @@ check('약관: 살아보니 운영정책 초안은 숨김(hidden + data-cm-only)
 check('개인정보처리방침: 살아보니 초안도 숨김', /<section id="community" data-cm-only hidden>/.test(priv) && /변호사 검토 필요/.test(priv));
 check('약관·방침 화면이 community.js 를 불러야 켜는 날 보임', /assets\/community\.js/.test(terms) && /assets\/community\.js/.test(priv) && /assets\/config\.js/.test(terms));
 const cmJs = read('assets/community.js');
-check('화면 글: 회사 이름·서비스 이름을 직접 쓰지 않음', ![cmJs, cp, ca].some(s => /장대장|집코드/.test(s)));
+check('화면 글: 회사 이름·서비스 이름을 직접 쓰지 않음', ![cmJs, cp, ca].some(s => /장대장|집예보/.test(s)));
 const sw = read('sw.js');
 check('서비스 워커: community.js 판 번호가 mine 과 같음', sw.indexOf('./assets/community.js?v=' + /community\.js\?v=(\d+)/.exec(read('mine/index.html'))[1]) >= 0);
 

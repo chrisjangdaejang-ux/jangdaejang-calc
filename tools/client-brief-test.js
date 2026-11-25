@@ -76,7 +76,7 @@ const ctx = {
     }
   }
 };
-const MARKET = { date: '2026-11-21', name: '집코드 모닝 브리핑', win: { from: '2026-11-20', to: '2026-11-21' },
+const MARKET = { date: '2026-11-21', name: '집예보 모닝 브리핑', win: { from: '2026-11-20', to: '2026-11-21' },
   kr: { n: 812, nhi: 40, hi: [{ sd: '서울', gn: '강남구', d: '압구정동', a: '현대7차', b: '245㎡대', p: 1150000, pm: 1050000, pmd: 20260301, up: 9.5 }], drop: [{ sd: '경기', gn: '화성시', d: '청계동', a: '예시', b: '84㎡대', p: 60000, m2: 80000, m2d: 20250501, dr: -25 }, { sd: '경기', gn: '화성시', d: '청계동', a: '의심거래', b: '84㎡대', p: 30000, m2: 80000, m2d: 20250501, dr: -62, sus: 1 }] },
   seoul: { n: 120, nhi: 12, hi: [], drop: [] }, policy: [{ name: '주담대 한도 조정', stage: '시행', d: '2026-11-17', scope: '전국' }], rate: null,
   cy: { n: 3, rows: [{ n: '이번 주 단지', sd: '서울', gn: '송파구', sp: ['20261117', ''], rc: ['20261118', '20261119'] }] }, lines: ['전국에서 어제 새로 올라온 아파트 매매는 812건이에요.'] };
@@ -242,7 +242,7 @@ check('탈퇴하면 표시 정보·손님 이름표 지움', r.ok && !sheets['�
 check('다른 중개사 손님은 그대로', sheets['내손님'].rows.filter(x => x[1] === 'k1').length === 10);
 
 /* ---------- 화면 공용 계산 ---------- */
-globalThis.JDJ_SITE = { SITE_NAME: '집코드' };
+globalThis.JDJ_SITE = { SITE_NAME: '집예보' };
 require('../assets/brief-core.js'); require('../assets/pro-report.js');
 const CB = require('../assets/client-brief.js');
 const BW = globalThis.JDJ_BRIEF, WT = (BW.TIERS || []).find(t => Number(t.customers) > 0);

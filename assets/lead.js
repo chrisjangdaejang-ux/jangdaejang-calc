@@ -1,6 +1,6 @@
-/* 집코드 '중개사 연락 받기' — 공용 (JDJ_LEAD)
+/* 집예보 '중개사 연락 받기' — 공용 (JDJ_LEAD)
    - 이용자가 따로 동의한 경우에만, 이용자가 고른(최대 3곳) 또는 공개 순번 규칙으로 정해진(2곳) 그 동네 제휴 중개사에게 문의를 전달한다.
-   - 집코드는 중개하지 않고 중개 보수를 받지 않는다. 매물을 게시하지 않는다. 화면에 '제휴·광고' 표시.
+   - 집예보는 중개하지 않고 중개 보수를 받지 않는다. 매물을 게시하지 않는다. 화면에 '제휴·광고' 표시.
    - 서버(agent-backend.gs v19)의 공개 목록에 lead 칸이 있을 때만 켜진다(재배포 전에는 버튼이 나오지 않음).
    - 연락처는 서버로만 보내고 이 기기·통계(GA)에는 남기지 않는다. 이 기기에는 취소 링크(문의 번호·취소 열쇠)만 남긴다.
    사용: JDJ_LEAD.mount(el, {src:'report'|'mine'|'alert'|'sell'|'compare', kind:'buy'|'sell'|'both', g:'11680', gn:'강남구', k:'11680|대치동|은마', apt:'은마', band:'84㎡대'})
@@ -109,12 +109,12 @@
         <table><tr><th>받는 곳</th><td id="ldTo">위에서 고른 제휴 중개사무소</td></tr>
           <tr><th>쓰는 목적</th><td>매수·매도 상담 연락</td></tr>
           <tr><th>주는 항목</th><td>휴대폰 번호, 단지·평형(있으면), 연락 편한 때, 남길 말</td></tr>
-          <tr><th>보관 기간</th><td>받은 중개사 화면에 ${lead.keep}일 동안 보여요. 그 뒤 집코드 서버에서 지워요. 보낸 뒤 받는 [문의 취소] 링크를 누르면 바로 지워요.</td></tr>
-          <tr><th>거부할 권리</th><td>동의하지 않으셔도 돼요. 이 경우 문의만 보낼 수 없고, 집코드의 다른 기능은 그대로 쓸 수 있어요.</td></tr></table>
+          <tr><th>보관 기간</th><td>받은 중개사 화면에 ${lead.keep}일 동안 보여요. 그 뒤 집예보 서버에서 지워요. 보낸 뒤 받는 [문의 취소] 링크를 누르면 바로 지워요.</td></tr>
+          <tr><th>거부할 권리</th><td>동의하지 않으셔도 돼요. 이 경우 문의만 보낼 수 없고, 집예보의 다른 기능은 그대로 쓸 수 있어요.</td></tr></table>
         <label class="agree"><input type="checkbox" id="ldA"> 위 내용대로 고른 중개사에게 제 연락처를 주는 데 동의해요</label>
         <div class="msg" id="ldMsg" role="alert"></div>
         <button type="button" class="go" id="ldGo">연락 받기 신청</button>
-        <p class="disc">집코드는 중개하지 않아요. 고르신 중개사에게 문의를 전해 드리기만 하고, 중개 보수나 건별 수수료를 받지 않아요. 매물·가격·계약 조건은 중개사무소에 직접 확인하세요. 같은 번호로는 하루 3건까지 보낼 수 있어요.</p>
+        <p class="disc">집예보는 중개하지 않아요. 고르신 중개사에게 문의를 전해 드리기만 하고, 중개 보수나 건별 수수료를 받지 않아요. 매물·가격·계약 조건은 중개사무소에 직접 확인하세요. 같은 번호로는 하루 3건까지 보낼 수 있어요.</p>
       </div></div>`;
     const $ = id => bg.querySelector('#' + id);
     bg.querySelector('.x').onclick = close;
@@ -140,7 +140,7 @@
         track('lead_send', { src: ctx.src || '', mode: p.body.mode, n: (r.to || []).length });
         bg.querySelector('.ldf').innerHTML = `<div class="lddone"><b>보냈어요.</b> ${esc((r.to || []).map(x => x.n).join(', '))}에서 연락드릴 거예요.<br>
           문의 번호 ${esc(r.id)} · 연락처는 ${esc(r.keep)}일 뒤 지워져요.<br>마음이 바뀌면 <a href="${esc(cancelUrl(r))}" target="_blank" rel="noopener">문의 취소하고 연락처 지우기</a>를 누르세요(이 기기에도 링크를 저장해 뒀어요).</div>
-          <p class="disc">집코드는 중개하지 않아요. 계약·중개 보수는 중개사무소와 직접 정하세요.</p><button type="button" class="go" id="ldClose">닫기</button>`;
+          <p class="disc">집예보는 중개하지 않아요. 계약·중개 보수는 중개사무소와 직접 정하세요.</p><button type="button" class="go" id="ldClose">닫기</button>`;
         bg.querySelector('#ldClose').onclick = close;
       }).catch(e => { $('ldMsg').textContent = e.message || '보내지 못했어요. 잠시 뒤 다시 시도해 주세요.'; go.disabled = false; go.textContent = '연락 받기 신청'; });
     };

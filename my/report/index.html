@@ -25,7 +25,7 @@
 <script src="../../assets/track.js?v=2"></script>
 <script src="../../assets/stat.js?v=7"></script>
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/config.js?v=10"></script>
+<script src="../../assets/config.js?v=11"></script>
 <script src="../../assets/auth.js?v=10"></script>
 <script src="../../assets/savefb.js?v=1"></script>
 <script src="../../assets/mine-core.js?v=20"></script>
@@ -132,7 +132,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
 (function(){
 'use strict';
 const SF = window.JDJ_SAVEFB, RC = window.JDJ_REPORT_CORE, M = window.JDJ_MINE, W = window.JDJ_WATCH, AU = window.JDJ_AUTH || null;
-const SITE = ((window.JDJ_SITE || {}).SITE_NAME || '').trim() || '집코드';
+const SITE = ((window.JDJ_SITE || {}).SITE_NAME || '').trim() || '집예보';
 const DATA = JB.DATA + 'data/', BASE = JB.SITE, $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ls = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } } };

@@ -1,4 +1,4 @@
-/* 집코드 '지도' 화면(map/) 공통 계산 — 화면과 tools/map-test.js 가 함께 쓴다. 지도 엔진(카카오·Leaflet)과는 상관없는 순수 계산만.
+/* 집예보 '지도' 화면(map/) 공통 계산 — 화면과 tools/map-test.js 가 함께 쓴다. 지도 엔진(카카오·Leaflet)과는 상관없는 순수 계산만.
    자료: jangdaejang-data data/sNN.json units (assets/mine-core.js 설명과 같은 모양) + sNN_xy.json {xy: {'구코드|동|지번': [경도, 위도]}}
    - 단지 묶기는 mine-core 의 groupDanji(같은 키 규칙)를 그대로 쓴다 → [시세·전망 보기] 주소가 내 집 시세 화면과 맞는다.
    - 숫자는 공개 자료 값을 그대로(최근 평당가 = 그 달까지 3개월 실거래 평당가 중간값, 미래가치 점수 fx.fv, 전세가율 fx.jr)

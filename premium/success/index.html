@@ -8,10 +8,10 @@
 <meta name="theme-color" content="#FFFFFF">
 <link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
 <script src="../../assets/biz.js?v=2" defer></script>
-<title>결제 확인 · 프리미엄 리포트 | 집코드</title>
+<title>결제 확인 · 프리미엄 리포트 | 집예보</title>
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="집코드">
-<meta property="og:title" content="결제 확인 · 프리미엄 리포트 | 집코드">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="결제 확인 · 프리미엄 리포트 | 집예보">
 <meta property="og:description" content="공공기관 공식 자료 기반 단지 심층 분석 리포트">
 <meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/premium/success/">
 <meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/premium.png">
@@ -19,7 +19,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="결제 확인 · 프리미엄 리포트 | 집코드">
+<meta name="twitter:title" content="결제 확인 · 프리미엄 리포트 | 집예보">
 <meta name="twitter:description" content="공공기관 공식 자료 기반 단지 심층 분석 리포트">
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/premium.png">
 <script>window.JDJ_CONFIG = { tool:'premium', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
@@ -35,7 +35,7 @@
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="../../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
+  <a class="brand" href="../../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a>
   <div class="badge plain">프리미엄 리포트</div>
 </header>
 <main class="pay" id="main">
@@ -43,7 +43,7 @@
   <h1>결제를 확인하고 있어요</h1>
   <div class="msg info"><span class="spin"></span>잠시만 기다려 주세요. 이 화면을 닫지 마세요.</div>
 </main>
-<footer class="foot">★ 집코드 · <a href="../../">홈</a></footer>
+<footer class="foot">★ 집예보 · <a href="../../">홈</a></footer>
 <script>
 (function(){
   const P = JDJ_PAY, esc = P.esc, main = document.getElementById('main');
@@ -56,7 +56,7 @@
     const url = P.viewUrl(j.orderId, j.token);
     main.innerHTML = head + `<h1>결제가 완료됐어요</h1>
       <section class="card2 key">
-        <dl class="kv"><dt>주문번호</dt><dd>${esc(j.orderId)}</dd><dt>상품</dt><dd>${esc(((window.JDJ_SITE && window.JDJ_SITE.SITE_NAME) || '집코드'))} ${esc(j.product)}</dd><dt>단지</dt><dd>${esc(j.names)}</dd>
+        <dl class="kv"><dt>주문번호</dt><dd>${esc(j.orderId)}</dd><dt>상품</dt><dd>${esc(((window.JDJ_SITE && window.JDJ_SITE.SITE_NAME) || '집예보'))} ${esc(j.product)}</dd><dt>단지</dt><dd>${esc(j.names)}</dd>
         <dt>결제 금액</dt><dd>${P.won(j.amount)}</dd><dt>결제일</dt><dd>${esc(j.paidAt)}</dd></dl>
         <div class="btnrow"><a class="btn2 blue" href="${esc(url)}">리포트 보러 가기</a></div>
       </section>

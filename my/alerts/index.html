@@ -9,19 +9,19 @@
 <link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="집코드">
+<meta name="apple-mobile-web-app-title" content="집예보">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="robots" content="noindex">
 <script src="../../assets/region-pick.js?v=2"></script>
 <script src="../../assets/pwa.js?v=2" defer></script>
-<title>알림 센터 — 집코드</title>
+<title>알림 센터 — 집예보</title>
 <meta name="description" content="관심 단지의 새 실거래·신고가·급매·전세가율·근처 신축 허가와 내 조건에 맞는 청약 공고를 한곳에서 보고, 고른 종류만 하루 한 번 메일로 받아요. 매주 월요일 내 집 성적표 메일도 골라 받을 수 있어요.">
 <script>window.JDJ_CONFIG = { tool:'alerts', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../../assets/biz.js?v=2" defer></script>
 <script src="../../assets/track.js?v=2"></script>
 <script src="../../assets/stat.js?v=7"></script>
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/config.js?v=10"></script>
+<script src="../../assets/config.js?v=11"></script>
 <script src="../../assets/auth.js?v=10"></script>
 <script src="../../assets/savefb.js?v=1"></script>
 <script src="../../chungyak/cy-engine.js?v=3"></script>
@@ -98,12 +98,12 @@ details.why summary{cursor:pointer;min-height:32px;display:flex;align-items:cent
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="../../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name>집코드</span></a>
+  <a class="brand" href="../../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name>집예보</span></a>
   <div class="badge plain">알림 센터</div>
 </header>
 <main class="wrap">
   <h1>알림 센터</h1>
-  <p class="lead">관심 목록에 넣은 단지와 직접 고른 청약 조건에 생긴 변화만 모아 보여 드려요. 알림 종류마다 켜고 끌 수 있고, <span data-site-name>집코드</span>는 켜지 않은 알림은 보내지 않아요. 메일은 여러 소식을 묶어 하루 한 통만 보내요.</p>
+  <p class="lead">관심 목록에 넣은 단지와 직접 고른 청약 조건에 생긴 변화만 모아 보여 드려요. 알림 종류마다 켜고 끌 수 있고, <span data-site-name>집예보</span>는 켜지 않은 알림은 보내지 않아요. 메일은 여러 소식을 묶어 하루 한 통만 보내요.</p>
   <div id="sum" class="sum" hidden></div>
   <div class="grid">
     <section class="sec s-mail" aria-labelledby="mailT"><h2 id="mailT">메일로 받기</h2><div id="mail" class="card mail"></div></section>
@@ -113,15 +113,15 @@ details.why summary{cursor:pointer;min-height:32px;display:flex;align-items:cent
     <section class="sec s-set" aria-labelledby="setT"><h2 id="setT">알림 받을 것</h2><div id="set" class="card"></div></section>
     <section class="sec s-cy" aria-labelledby="cyT"><h2 id="cyT">청약 맞춤 알림</h2><div id="cy" class="card"></div></section>
   </div>
-  <p class="note">자료: 국토교통부 아파트 매매 실거래가 공개 자료(공공데이터포털), 한국부동산원 청약홈 분양정보. '새 실거래'는 하루 4번 갱신할 때 집코드 공개 자료에 처음 보인 거래예요. 신고가는 같은 단지·같은 면적의 그 전 최고가보다 비싼 거래, 급매는 최근 3개월 같은 평형 중간값보다 10% 이상 낮은 거래, 큰 하락은 최근 2년 최고가보다 10% 이상 낮은 거래, 전세가율은 5%p 이상 바뀌거나 80%·90% 선을 넘거나 내려온 경우예요(모닝 브리핑과 같은 기준). 근처 신축 허가는 국토교통부 건축HUB 건축 인허가 공개 자료에서 관심 단지 약 500m 안에 최근 3달 동안 허가가 난 현장(위치는 약 100m 범위), 근처 청약 공고는 관심 단지와 같은 시·군·구에 나온 새 공고예요. 청약 예상 당첨 가점 범위는 같은 지역 과거 당첨 가점으로 계산한 참고 값이에요.</p>
+  <p class="note">자료: 국토교통부 아파트 매매 실거래가 공개 자료(공공데이터포털), 한국부동산원 청약홈 분양정보. '새 실거래'는 하루 4번 갱신할 때 집예보 공개 자료에 처음 보인 거래예요. 신고가는 같은 단지·같은 면적의 그 전 최고가보다 비싼 거래, 급매는 최근 3개월 같은 평형 중간값보다 10% 이상 낮은 거래, 큰 하락은 최근 2년 최고가보다 10% 이상 낮은 거래, 전세가율은 5%p 이상 바뀌거나 80%·90% 선을 넘거나 내려온 경우예요(모닝 브리핑과 같은 기준). 근처 신축 허가는 국토교통부 건축HUB 건축 인허가 공개 자료에서 관심 단지 약 500m 안에 최근 3달 동안 허가가 난 현장(위치는 약 100m 범위), 근처 청약 공고는 관심 단지와 같은 시·군·구에 나온 새 공고예요. 청약 예상 당첨 가점 범위는 같은 지역 과거 당첨 가점으로 계산한 참고 값이에요.</p>
 </main>
-<footer class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="../../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ <span data-site-name>집코드</span> · <a href="../../">홈</a> · <a href="../watch/">관심 목록</a> · <a href="../report/">내 집 성적표</a> · <a href="../../privacy/#alerts">개인정보처리방침</a></footer>
+<footer class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="../../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ <span data-site-name>집예보</span> · <a href="../../">홈</a> · <a href="../watch/">관심 목록</a> · <a href="../report/">내 집 성적표</a> · <a href="../../privacy/#alerts">개인정보처리방침</a></footer>
 <script>
 var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 (function(){
 'use strict';
 const W = window.JDJ_WATCH, C = window.JDJ_WATCH_CORE, AC = window.JDJ_ALERTS_CORE, AU = window.JDJ_AUTH || null, CYE = window.JDJ_CYE || null;
-const SITE = ((window.JDJ_SITE || {}).SITE_NAME || '').trim() || '집코드';
+const SITE = ((window.JDJ_SITE || {}).SITE_NAME || '').trim() || '집예보';
 const DATA = JB.DATA + 'data/', BASE = JB.SITE, $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ls = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
@@ -219,16 +219,16 @@ function drawMail(){
   }
   let pend = null; try { pend = JSON.parse(ls.get(PEND) || 'null'); } catch (e) {}
   if (pend && SERVER === 'wait') {
-    el.innerHTML = `<h3>메일 알림 신청을 받아 두었어요</h3><p>집코드가 메일 알림 창구를 여는 중이에요. 신청 내용과 동의한 때는 이 기기에 저장해 두었어요. 창구가 열린 뒤 이 화면을 다시 열면 그대로 신청돼요. 그 전까지는 이 화면에서 알림을 볼 수 있어요.</p><button type="button" class="btn ghost" id="cancelP">신청 취소</button>`;
+    el.innerHTML = `<h3>메일 알림 신청을 받아 두었어요</h3><p>집예보가 메일 알림 창구를 여는 중이에요. 신청 내용과 동의한 때는 이 기기에 저장해 두었어요. 창구가 열린 뒤 이 화면을 다시 열면 그대로 신청돼요. 그 전까지는 이 화면에서 알림을 볼 수 있어요.</p><button type="button" class="btn ghost" id="cancelP">신청 취소</button>`;
     $('cancelP').onclick = () => { ls.del(PEND); drawMail(); };
     return;
   }
   el.innerHTML = `<h3>하루 한 번, 오전 7시대에 메일로 받아요</h3>
-    <p>집코드는 관심 목록 단지와 내가 고른 청약 조건에 새 소식이 생긴 날만 메일을 보내요. 광고가 아닌 정보 알림이고, 메일마다 '이 단지 알림 끄기'와 '모든 알림 끄기'가 있어요.</p>${brief ? mergeTxt : ''}
+    <p>집예보는 관심 목록 단지와 내가 고른 청약 조건에 새 소식이 생긴 날만 메일을 보내요. 광고가 아닌 정보 알림이고, 메일마다 '이 단지 알림 끄기'와 '모든 알림 끄기'가 있어요.</p>${brief ? mergeTxt : ''}
     ${brief ? `<div class="rad" role="radiogroup" aria-label="받을 이메일"><label><input type="radio" name="em" value="brief" checked> 모닝 브리핑 받는 이메일(${esc(brief.mask)})로 받기</label><label><input type="radio" name="em" value="new"> 다른 이메일 적기</label></div>` : ''}
     <input class="inp2" id="email" type="email" inputmode="email" autocomplete="email" placeholder="알림 받을 이메일 주소" aria-label="알림 받을 이메일 주소" ${brief ? 'hidden' : ''}>
-    <label class="chk"><input type="checkbox" id="agree"><span>[필수] 관심 목록 단지와 제가 고른 청약 조건에 새 소식이 생기면, 집코드가 하루 한 번 오전 7시대에 이메일로 알려 주는 것에 동의해요.</span></label>
-    <details class="why"><summary>집코드가 받는 것과 지우는 때</summary>집코드가 받는 것: 이메일 주소 1개, 동의한 때, 알림 설정(끈 단지·청약 지역·무주택 여부·가점 범위). 집코드는 이 이메일을 알림을 보내는 데만 써요. 알림을 모두 끄면 집코드는 30일 뒤 이메일을 지우고, 탈퇴하면 바로 지워요. 동의하지 않으면 메일은 가지 않고, 이 화면의 알림은 그대로 볼 수 있어요.</details>
+    <label class="chk"><input type="checkbox" id="agree"><span>[필수] 관심 목록 단지와 제가 고른 청약 조건에 새 소식이 생기면, 집예보가 하루 한 번 오전 7시대에 이메일로 알려 주는 것에 동의해요.</span></label>
+    <details class="why"><summary>집예보가 받는 것과 지우는 때</summary>집예보가 받는 것: 이메일 주소 1개, 동의한 때, 알림 설정(끈 단지·청약 지역·무주택 여부·가점 범위). 집예보는 이 이메일을 알림을 보내는 데만 써요. 알림을 모두 끄면 집예보는 30일 뒤 이메일을 지우고, 탈퇴하면 바로 지워요. 동의하지 않으면 메일은 가지 않고, 이 화면의 알림은 그대로 볼 수 있어요.</details>
     <button type="button" class="btn primary big" id="join">메일 알림 신청</button><div id="mailMsg" class="msg" role="status"></div>`;
   const em = () => { const r = el.querySelector('input[name=em]:checked'); return r ? r.value : 'new'; };
   el.querySelectorAll('input[name=em]').forEach(r => { r.onchange = () => { $('email').hidden = em() === 'brief'; }; });

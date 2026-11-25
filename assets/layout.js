@@ -1,4 +1,4 @@
-/* 집코드 화면 배치 도우미 (assets/layout.css 와 함께, docs/design_guide.md)
+/* 집예보 화면 배치 도우미 (assets/layout.css 와 함께, docs/design_guide.md)
    1) PC 오른쪽 요약 칸: <body data-lay="side" data-lay-key=".stats" data-lay-title=".dhead h2"> (본문 칸 = [data-lay-main] 또는 main)
       - data-lay-title 이 없으면 핵심 숫자 칸이 든 카드의 h2 를 제목으로
       - 1200px 이상에서만 main 오른쪽에 붙는다. 휴대폰에서는 아무것도 하지 않는다.

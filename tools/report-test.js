@@ -43,7 +43,7 @@ const fr = RC.floorRef(TR, 10, '2026-11-30');
 check('층 참고값: 내 층 ±3·최근 1년·직거래 뺀 중간값, 3건 미만이면 값 없음', fr.n === 3 && fr.med === 210000 && fr.lo === 200000 && fr.hi === 220000 && RC.floorRef(TR, 25, '2026-11-30').med === null && RC.floorRef(TR, 'x', '2026-11-30') === null, fr);
 check('메일 집 고르기: 내 집 먼저·같은 집 한 번·6곳까지', (() => { const h = [P], f = [P, ...Array.from({ length: 8 }, (_, i) => Object.assign({}, P, { apt: 'F' + i }))]; const x = RC.places(h, f); return x.length === 6 && x[0] === P && x.filter(p => p.apt === P.apt).length === 1; })());
 const MH = RC.mailHtml([{ c, g: '강남구', mine: true }], { site: '테스트웹', web: 'https://web.example/', links: { rp: 'https://s.example/exec?action=alertOff&id=X&t=T&rp=1', all: 'https://s.example/exec?action=alertOff&id=X&t=T&all=1' }, sender: { name: '회사', tel: '02-0000-0000', email: 'help@example.com' }, date: '2026-11-30' });
-check('메일: 서비스 이름은 넘겨받은 값, 제목·끄기 링크 두 개·설정 링크·광고 아님', /\[테스트웹\] 11\/30 내 집 성적표 — A아파트/.test(MH.subject) && /rp=1/.test(MH.html) && /all=1/.test(MH.html) && /my\/alerts\//.test(MH.html) && /광고가 아니에요/.test(MH.html) && !/집코드/.test(MH.html) && !/\(광고\)/.test(MH.subject), MH.subject);
+check('메일: 서비스 이름은 넘겨받은 값, 제목·끄기 링크 두 개·설정 링크·광고 아님', /\[테스트웹\] 11\/30 내 집 성적표 — A아파트/.test(MH.subject) && /rp=1/.test(MH.html) && /all=1/.test(MH.html) && /my\/alerts\//.test(MH.html) && /광고가 아니에요/.test(MH.html) && !/집예보/.test(MH.html) && !/\(광고\)/.test(MH.subject), MH.subject);
 check('메일: 공유 주소에는 공개 칸만(대출·보정 없음)', /my\/report\/\?sd=s00&amp;d=11680%7C%EA%B0%9C%ED%8F%AC%EB%8F%99%7C1%7CA%EC%95%84%ED%8C%8C%ED%8A%B8&amp;b=84/.test(MH.html) && !/대출|순자산|loan/.test(MH.html));
 check('메일: 꺾쇠 막기', !/<script>/.test(RC.mailHtml([{ c: RC.card(Object.assign({}, P, { apt: '<script>' }), { u: { '개포동|1|<script>|84㎡대': [1, null, null, null, null, 0, '', null, []] } }), g: '' }], {}).html));
 
@@ -197,7 +197,7 @@ check('알림톡은 꺼진 자리만(RP_ALIMTALK=false)', /const RP_ALIMTALK = f
 
 /* ---------- ④ 화면 ---------- */
 const page = read('my/report/index.html'), center = read('my/alerts/index.html'), sw = read('sw.js');
-check('성적표 화면: 계산 블록·내 집·관심 부품을 싣고 서비스 이름은 설정에서', /report-core\.js\?v=3/.test(page) && /mine-core\.js/.test(page) && /watch\.js\?v=8/.test(page) && /SITE_NAME/.test(page) && !/집코드/.test(page.replace("|| '집코드'", '')) && !/장대장부동산그룹/.test(page));
+check('성적표 화면: 계산 블록·내 집·관심 부품을 싣고 서비스 이름은 설정에서', /report-core\.js\?v=3/.test(page) && /mine-core\.js/.test(page) && /watch\.js\?v=8/.test(page) && /SITE_NAME/.test(page) && !/집예보/.test(page.replace("|| '집예보'", '')) && !/장대장부동산그룹/.test(page));
 check('성적표 화면: 경쟁 앱 이름·보장 문구 없음', !/호갱|직방|리치고|아실|다방|네이버 부동산|KB부동산/.test(page) && !/보장|무조건|확실히 오/.test(page));
 check('성적표 화면: 대출·보정은 이 기기(jdj_report_me)와 내 계정에만, 공유 주소에는 공개 칸만', /jdj_report_me/.test(page) && /d\.rp = ME/.test(page) && /shareUrl = p => `\$\{location\.origin\}\$\{BASE\}my\/report\/\?sd=/.test(page) && !/shareUrl[^\n]*loan/.test(page));
 check('성적표 화면: 보정 값은 공식 숫자와 따로("내가 적은 정보")', (page.match(/내가 적은 정보/g) || []).length >= 2 && /공식 숫자와 점수는 바뀌지 않아요/.test(page));

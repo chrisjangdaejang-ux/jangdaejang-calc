@@ -1,4 +1,4 @@
-/* 집코드 '분양 광고' — 공용 (tools/agent-backend.gs v16 의 adList·adLead 사용, API 주소는 assets/agents.js 와 같음)
+/* 집예보 '분양 광고' — 공용 (tools/agent-backend.gs v16 의 adList·adLead 사용, API 주소는 assets/agents.js 와 같음)
    지면(data-jdj-ads 값)
    - bunyang      : 분양 목록 바로 위 '목록 상단 카드' — 고른 시·도(·시·군·구) 광고만, 최대 3칸 (JDJ_ADS.render(el, {sido, sgg}) 로 다시 그림)
    - bunyang_rec  : 분양 상세의 '추천 현장' — 같은 시·도(같은 구 먼저), 보고 있는 공고와 같은 현장은 빼고 최대 2칸 (data-sido·data-sgg·data-no)
@@ -163,7 +163,7 @@
     el.setAttribute('aria-label', rec ? '추천 현장 광고' : '분양 광고');
     const where = o.sido ? short(sidoNorm(o.sido)) : '';   // 같은 시·도 광고도 함께 보일 수 있어 시·도 이름으로
     el.innerHTML = `<div class="jad-h"><b>${rec ? '추천 현장' : (where ? esc(where) + ' 분양 광고' : '분양 광고')}</b><small>광고주가 비용을 내고 싣는 광고예요</small></div><div class="jad-l">${show.map(a => cardHtml(a, rowOf(a, list), { open: !!el._open, partner: rec })).join('')}</div>
-      <div class="jad-f">광고는 집코드 미래가치 점수·추천·순위와 무관해요. 청약 자격·분양 조건은 입주자모집공고문으로 꼭 확인하세요. · <a href="${APPLY}">분양 광고 문의</a></div>`;
+      <div class="jad-f">광고는 집예보 미래가치 점수·추천·순위와 무관해요. 청약 자격·분양 조건은 입주자모집공고문으로 꼭 확인하세요. · <a href="${APPLY}">분양 광고 문의</a></div>`;
     seen(show, slot);
     stat('ad_view', { slot, n: Math.min(10, show.length) });
     el._show = show;
@@ -186,12 +186,12 @@
     if (!DLG) { DLG = document.createElement('div'); DLG.className = 'jld'; DLG.hidden = true; DLG.setAttribute('role', 'dialog'); DLG.setAttribute('aria-modal', 'true'); DLG.setAttribute('aria-labelledby', 'jldT'); document.body.appendChild(DLG);
       DLG.addEventListener('click', e => { if (e.target === DLG || (e.target.dataset && e.target.dataset.x)) DLG.hidden = true; });
       addEventListener('keydown', e => { if (e.key === 'Escape' && DLG && !DLG.hidden) DLG.hidden = true; }); }
-    DLG.innerHTML = `<div class="bx"><h3 id="jldT">분양 상담 신청</h3><p class="s"><span class="jad-tag">광고</span>${esc(a.n)} · 광고주 <b>${esc(a.co)}</b>에서 연락드려요. 집코드는 신청 내용을 전달만 해요.</p>
+    DLG.innerHTML = `<div class="bx"><h3 id="jldT">분양 상담 신청</h3><p class="s"><span class="jad-tag">광고</span>${esc(a.n)} · 광고주 <b>${esc(a.co)}</b>에서 연락드려요. 집예보는 신청 내용을 전달만 해요.</p>
       <form novalidate><label class="l" for="jldN">이름</label><input type="text" id="jldN" maxlength="20" autocomplete="name">
       <label class="l" for="jldP">휴대폰 번호</label><input type="tel" id="jldP" inputmode="tel" maxlength="14" placeholder="010-0000-0000" autocomplete="tel">
       <label class="l" for="jldW">연락받기 좋은 시간</label><select id="jldW"><option>상관없음</option><option>오전(9~12시)</option><option>오후(12~18시)</option><option>저녁(18~21시)</option></select>
       <label class="l" for="jldM">궁금한 점 (선택)</label><textarea id="jldM" maxlength="200" placeholder="예: 84㎡ 분양가와 중도금 조건이 궁금해요"></textarea>
-      <label class="ag"><input type="checkbox" id="jldA1"><span><b>(필수) 개인정보 수집·이용 동의</b><small>집코드가 이름·휴대폰 번호·희망 시간·문의를 상담 연결에만 쓰고, 전달 후 6개월이 지나면 지워요. 동의하지 않으면 신청할 수 없어요.</small></span></label>
+      <label class="ag"><input type="checkbox" id="jldA1"><span><b>(필수) 개인정보 수집·이용 동의</b><small>집예보가 이름·휴대폰 번호·희망 시간·문의를 상담 연결에만 쓰고, 전달 후 6개월이 지나면 지워요. 동의하지 않으면 신청할 수 없어요.</small></span></label>
       <label class="ag"><input type="checkbox" id="jldA2"><span><b>(필수) 개인정보 제3자 제공 동의</b><small>받는 곳: ${esc(a.co)} · 목적: ${esc(a.n)} 분양 상담 연락 · 항목: 이름, 휴대폰 번호, 희망 시간, 문의 · 보유 기간: 상담 종료 또는 받은 날로부터 6개월 · 동의하지 않을 수 있고, 그러면 상담 신청은 할 수 없지만 공고문의 분양 문의 전화로 직접 연락하실 수 있어요.</small></span></label>
       <p class="s" style="margin:10px 0 0">광고 문자·전화 수신 동의가 아니에요. 광고주는 이 정보를 상담 연락에만 쓸 수 있어요. <a href="${PRIV}" target="_blank" rel="noopener">개인정보처리방침</a></p>
       <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"><input id="jldH" tabindex="-1" autocomplete="off"></div>

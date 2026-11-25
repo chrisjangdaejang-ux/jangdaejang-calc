@@ -1,4 +1,4 @@
-/* 집코드 — '주변 개발사업' 칸 (buy/report · mine 공용)
+/* 집예보 — '주변 개발사업' 칸 (buy/report · mine 공용)
    자료: jangdaejang-data/data/devproj.json (엔진 scripts/devproj.py 생성)
    - 서울시·국토부 등 공식 원문으로 확인한 단계·날짜만. 확인 안 된 일정은 '확인 불가'
    - 거리·발표 뒤 변화(이 단지 vs 같은 구 단지 중간값)는 실거래 실제 숫자

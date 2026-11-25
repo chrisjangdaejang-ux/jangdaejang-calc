@@ -1,4 +1,4 @@
-/* 집코드 분양대행(v20) 자동 검증 — 실행: node tools/agency-test.js
+/* 집예보 분양대행(v20) 자동 검증 — 실행: node tools/agency-test.js
    ① 시행사 전속 의뢰(agencyApply) ② 판매 파트너 신청·로그인(관리코드 해시만) ③ 파트너에게 보이는 현장 조건(승인·위탁계약·재위탁 승낙·모집 중·기간)
    ④ 수수료 조건은 배정된 파트너에게만 ⑤ 계약 보고(고객 이름·연락처 거절, 동·호수 중복) ⑥ 정산표 ⑦ 화면(partner/, bunyang/agency/) 문구·동의 판.
    구글 시트·메일은 가짜 객체로 흉내 냅니다. */
@@ -180,7 +180,7 @@ check('로그아웃', [post({ action: 'partnerLogout', s: L1.s }).ok, post({ act
 const root = path.join(__dirname, '..');
 const pg = fs.readFileSync(path.join(root, 'partner', 'index.html'), 'utf8'), ag = fs.readFileSync(path.join(root, 'bunyang', 'agency', 'index.html'), 'utf8');
 check('화면: 동의 판이 서버와 같음', [pg.includes(T.PT_CONSENT_V), ag.includes(T.DV_CONSENT_V)], [true, true]);
-check('화면: 법적 고지(집코드 분양대행, 운영 (주)장대장부동산그룹)', [/집코드 분양대행\(운영: \(주\)장대장부동산그룹\)/.test(pg), /집코드 분양대행\(운영: \(주\)장대장부동산그룹\)/.test(ag)], [true, true]);
+check('화면: 법적 고지(집예보 분양대행, 운영 (주)장대장부동산그룹)', [/집예보 분양대행\(운영: \(주\)장대장부동산그룹\)/.test(pg), /집예보 분양대행\(운영: \(주\)장대장부동산그룹\)/.test(ag)], [true, true]);
 check('화면: 점수 무관 원칙', [/미래가치 점수·순위/.test(pg), /미래가치 점수·순위/.test(ag)], [true, true]);
 check('화면: 분양권 전매·기존 주택 알선은 별개(중개)', /분양권 전매/.test(pg), true);
 check('화면: A+ 테마 사용', [/aplus\.css/.test(pg), /aplus\.css/.test(ag)], [true, true]);

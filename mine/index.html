@@ -9,17 +9,17 @@
 <link rel="apple-touch-icon" href="../assets/icons/apple-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="집코드">
+<meta name="apple-mobile-web-app-title" content="집예보">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="../assets/region-pick.js?v=2"></script>
 <script src="../assets/pwa.js?v=2" defer></script>
 <script src="../assets/biz.js?v=2" defer></script>
-<title>집코드 내 집 시세 — 우리 아파트 실거래 시세·추이·미래가치 점수</title>
+<title>집예보 내 집 시세 — 우리 아파트 실거래 시세·추이·미래가치 점수</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/mine/">
 <meta name="description" content="국토교통부 아파트 실거래가로 우리 단지 평형별 최근 시세, 1·3년 가격 추이, 거래량, 같은 동·구 대비 위치, 미래가치 점수를 확인하고 내 집으로 저장해 두세요.">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="집코드">
-<meta property="og:title" content="집코드 내 집 시세 — 우리 아파트 지금 얼마일까?">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="집예보 내 집 시세 — 우리 아파트 지금 얼마일까?">
 <meta property="og:description" content="실거래 시세·추이·거래량·같은 동·구 대비 위치·미래가치 점수를 한 화면에. 내 집 저장은 이 기기에만.">
 <meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/mine/">
 <meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/mine.png">
@@ -27,7 +27,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="집코드 내 집 시세 — 우리 아파트 지금 얼마일까?">
+<meta name="twitter:title" content="집예보 내 집 시세 — 우리 아파트 지금 얼마일까?">
 <meta name="twitter:description" content="실거래 시세·추이·거래량·같은 동·구 대비 위치·미래가치 점수를 한 화면에. 내 집 저장은 이 기기에만.">
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/mine.png">
 <script>window.JDJ_CONFIG = { tool:'mine', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
@@ -36,7 +36,7 @@
 <script src="../assets/share.js?v=12"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/lead.js?v=3"></script>
-<script src="../assets/config.js?v=10"></script>
+<script src="../assets/config.js?v=11"></script>
 <script src="../assets/auth.js?v=10"></script>
 <script src="../assets/savefb.js?v=1"></script>
 <script src="../assets/alerts-core.js?v=2"></script>
@@ -245,7 +245,7 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
 </head>
 <body data-lay="side" data-lay-key=".stats" data-lay-toc="h2,.chead:first-child>h3" data-lay-fold="#polSec>.panel,#taxSec" data-lay-jump="#res,#ofRes,#vlRes,#cmRes">
 <header class="top">
-  <a class="brand" href="../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
+  <a class="brand" href="../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a>
   <div class="badge plain">내 집 시세</div>
 </header>
 
@@ -292,7 +292,7 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
 
   <p class="disc" id="src">자료: 국토교통부 아파트 매매 실거래가(공공데이터포털). 해제(취소) 신고된 거래와 직거래는 원자료 기준으로 집계에서 빼요. 월별 평당가는 그 달까지 3개월 실거래 평당가의 중간값이에요. 직거래는 거래 목록에만 표시하고 시세 계산에서는 빼요. 실제 거래가는 동·층·향·수리 상태에 따라 달라요.</p>
 </main>
-<footer class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집코드 · <a href="../">홈</a></footer>
+<footer class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집예보 · <a href="../">홈</a></footer>
 
 <script>
 var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
@@ -765,7 +765,7 @@ async function fillAgents(d){
     const tel = String(a.ph || '').replace(/[^\d]/g, ''), r = rank(a), hl = r === 0 ? '이 단지 매물 보유' : r === 1 ? '같은 동 사무소' : r === 2 ? '이 지역 사무소' : '';
     return `<div class="agc"><b>${esc(nm(a))}</b><span class="tag2">제휴·광고</span><small>${a.t === 'm' ? esc(a.n) + ' 소속 · ' : ''}${esc(a.ogn)} ${esc(a.dong)}${a.t === 'm' ? '' : ' · 대표 ' + esc(a.ceo)} · ${esc(a.ph)}</small>${hl ? `<span class="hl">${hl}</span>` : ''}${a.intro ? `<small style="color:#191F28;margin-top:4px">${esc(a.intro)}</small>` : ''}
       <div class="acts">${tel ? `<a class="tel" href="tel:${tel}" data-a="${esc(a.id)}" data-act="call">전화 상담</a>` : ''}${window.KChat ? KChat.btn(a.kk, {a:a.id, g, k, name:nm(a)}) : ''}</div></div>`;
-  }).join('') + `</div><div id="ldMine"></div><p class="note" style="margin:8px 0 0">제휴(광고) 중개사무소입니다. 집코드는 중개 행위에 관여하지 않으며, 거래 조건은 해당 중개사무소에 직접 확인하세요.</p></div>`;
+  }).join('') + `</div><div id="ldMine"></div><p class="note" style="margin:8px 0 0">제휴(광고) 중개사무소입니다. 집예보는 중개 행위에 관여하지 않으며, 거래 조건은 해당 중개사무소에 직접 확인하세요.</p></div>`;
   if (window.JDJ_LEAD) JDJ_LEAD.mount($('ldMine'), {src:'mine', kind: loadHomes().some(h => h.code === d.code && h.dong === d.dong && h.apt === d.apt) ? 'sell' : 'buy', g, gn:sggName(g), k, apt:d.apt, band:S.band || ''});
   A.log('rec', all.map(a => a.id).sort().join(','), g, k);
   all.forEach(a => A.log('imp', a.id, g, k));

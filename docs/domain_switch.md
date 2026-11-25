@@ -70,7 +70,7 @@
 
 ## 3. 카카오 개발자 콘솔 — 새 주소 추가(예전 주소는 그대로 둠)
 
-https://developers.kakao.com/console/app → 집코드 앱 선택. (2025년에 바뀐 새 화면 기준. 다르면 화면에 적힌 글자를 따라 주세요.)
+https://developers.kakao.com/console/app → 집예보 앱 선택. (2025년에 바뀐 새 화면 기준. 다르면 화면에 적힌 글자를 따라 주세요.)
 
 1. **[앱] > [플랫폼 키] > [JavaScript 키]** → **JavaScript SDK 도메인** 에 `https://zipcode.works` 추가 → 저장.
    (카카오 로그인 버튼·카카오맵 지도가 새 주소에서 동작하려면 필요)

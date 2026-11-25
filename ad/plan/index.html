@@ -10,12 +10,12 @@
 <script src="../../assets/region-pick.js?v=2"></script>
 <script src="../../assets/pwa.js?v=2" defer data-nobar></script>
 <script src="../../assets/biz.js?v=2" defer></script>
-<title>광고 설계 도우미 — 집코드</title>
-<meta name="description" content="업종·목적·예산만 고르면 집코드 광고 자리 구성을 짜 드려요. 업종별 규칙에 맞는 자리만, 예산 안에서.">
+<title>광고 설계 도우미 — 집예보</title>
+<meta name="description" content="업종·목적·예산만 고르면 집예보 광고 자리 구성을 짜 드려요. 업종별 규칙에 맞는 자리만, 예산 안에서.">
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/ad/plan/">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="집코드">
-<meta property="og:title" content="광고 설계 도우미 — 집코드">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="광고 설계 도우미 — 집예보">
 <meta property="og:description" content="업종·목적·예산만 고르면 광고 자리 구성을 짜 드려요.">
 <meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/ad/plan/">
 <meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/ad.png">
@@ -103,7 +103,7 @@ select,input[type=number]{font:inherit;font-size:16px;min-height:46px;border:1px
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="../../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name>집코드</span></a>
+  <a class="brand" href="../../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name>집예보</span></a>
   <a class="badge plain" href="../">광고·제휴 안내</a>
 </header>
 <main class="wrap">
@@ -130,9 +130,9 @@ select,input[type=number]{font:inherit;font-size:16px;min-height:46px;border:1px
 
   <section class="res" id="res" aria-live="polite" hidden></section>
 </main>
-<footer class="foot">★ <span data-site-name>집코드</span> · <a href="../">광고·제휴 안내</a> · <a href="../#slots">광고 위치 안내</a> · <a href="../../">홈</a></footer>
+<footer class="foot">★ <span data-site-name>집예보</span> · <a href="../">광고·제휴 안내</a> · <a href="../#slots">광고 위치 안내</a> · <a href="../../">홈</a></footer>
 
-<script src="../../assets/config.js?v=10"></script>
+<script src="../../assets/config.js?v=11"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/ad-prices.js?v=3"></script>
 <script src="../../assets/ad-slot.js?v=5"></script>
@@ -143,7 +143,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
 (function () {
   const A = window.JDJ_ADPLAN, $ = id => document.getElementById(id);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const SITE = (window.JDJ_SITE && window.JDJ_SITE.SITE_NAME) || '집코드';
+  const SITE = (window.JDJ_SITE && window.JDJ_SITE.SITE_NAME) || '집예보';
   const S = { industry: '', purpose: '', totalMan: 100, weeks: 4, sido: '', sgg: '', soon: '' };
   let IX = null, STATS = {}, ADT = null;
   const chips = (el, list, key, lab) => { el.innerHTML = list.map(x => `<button type="button" data-v="${esc(x.id != null ? x.id : x)}" aria-pressed="false">${esc(lab ? lab(x) : x.label)}</button>`).join('');

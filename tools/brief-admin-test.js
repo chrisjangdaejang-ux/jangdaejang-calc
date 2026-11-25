@@ -88,7 +88,7 @@ const WK = {   // 송파구는 오늘 날짜(실림), 도봉구는 지난 날짜
   '11710': { date: '2026-11-21', w: '2026-46', from: '2026-11-09', to: '2026-11-15', ver: 1, status: 'prov', asof: '2026-11-19', url: 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/weekly/2026-46/', lines: ['송파구 주간 문장', '서울 주간 문장'] },
   '11320': { date: '2026-11-14', w: '2026-45', from: '2026-11-02', to: '2026-11-08', ver: 1, status: 'prov', asof: '2026-11-12', url: 'https://x', lines: ['도봉구 지난주 묵은 문장'] },
   market: { date: '2026-11-21', w: '2026-46', from: '2026-11-09', to: '2026-11-15', ver: 1, status: 'prov', asof: '2026-11-19', url: 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/weekly/2026-46/', line: '전국 주간 문장' } };
-const MARKET = { date: '2026-11-21', name: '집코드 모닝 브리핑', win: { from: '2026-11-20', to: '2026-11-21' },
+const MARKET = { date: '2026-11-21', name: '집예보 모닝 브리핑', win: { from: '2026-11-20', to: '2026-11-21' },
   kr: { n: 812, nhi: 40, hi: [{ sd: '서울', gn: '강남구', d: '압구정동', a: '현대7차', b: '245㎡대', p: 1150000, pm: 1050000, pmd: 20260301, up: 9.5 }], drop: [{ sd: '경기', gn: '화성시', d: '청계동', a: '예시', b: '84㎡대', p: 60000, m2: 80000, m2d: 20250501, dr: -25 }, { sd: '경기', gn: '화성시', d: '청계동', a: '의심거래', b: '84㎡대', p: 30000, m2: 80000, m2d: 20250501, dr: -62, sus: 1 }] },
   seoul: { n: 120, nhi: 12, hi: [], drop: [] }, policy: [{ name: '주담대 한도 조정', stage: '시행', d: '2026-11-17', scope: '전국' }], rate: null,
   cy: { n: 3, rows: [{ n: '이번 주 단지', sd: '서울', gn: '송파구', sp: ['20261117', ''], rc: ['20261118', '20261119'] }] }, lines: ['전국에서 어제 새로 올라온 아파트 매매는 812건이에요.'],

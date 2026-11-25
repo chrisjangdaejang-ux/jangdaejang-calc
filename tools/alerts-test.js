@@ -75,12 +75,12 @@ check('신고가만 켜면 신고가만', D2.n === 1 && D2.groups[0].ev[0].k ===
 /* 끄기 링크 */
 const L = A.links('https://script.example/exec', 'XABC123DEF', id => 'tok-' + id, pid => 'ph-' + pid.length);
 check('끄기 링크: 모두·청약·단지(단지 키는 줄인 값)', L.all === 'https://script.example/exec?action=alertOff&id=XABC123DEF&t=tok-XABC123DEF&all=1' && L.cy.endsWith('&cy=1') && L.place(A.pid(P1)) === 'https://script.example/exec?action=alertOff&id=XABC123DEF&t=tok-XABC123DEF&p=ph-' + A.pid(P1).length, L);
-const M = A.mailHtml(D, { site: '집코드', web: 'https://web.example/', links: L, since: '2026-11-25 07:00', sender: { name: '(주)장대장부동산그룹', tel: '02-3444-5008', email: 'help@example.com' }, date: '2026-11-25', gname: c => c === '11710' ? '송파구' : '' });
+const M = A.mailHtml(D, { site: '집예보', web: 'https://web.example/', links: L, since: '2026-11-25 07:00', sender: { name: '(주)장대장부동산그룹', tel: '02-3444-5008', email: 'help@example.com' }, date: '2026-11-25', gname: c => c === '11710' ? '송파구' : '' });
 check('메일: 단지마다 끄기 · 청약 끄기 · 모두 끄기 · 설정 링크', (M.html.match(/이 단지 알림 끄기/g) || []).length === 2 && /청약 알림 끄기/.test(M.html) && M.html.indexOf(A.esc(L.all)) >= 0 && /my\/alerts\//.test(M.html), M.html.length);
 check('메일: 광고 아님·보낸 사람·답장 주소·제목에 건수', /광고가 아니|정보 알림/.test(M.html) && /02-3444-5008/.test(M.html) && /help@example\.com/.test(M.html) && /새 소식 8건/.test(M.subject) && !/\(광고\)/.test(M.subject), M.subject);
 check('메일: 경쟁 앱 이름 없음', !/호갱|직방|리치고|아실|네이버 부동산|KB부동산|다방/.test(M.html));
-const Mm = A.mailHtml(D, { site: '집코드', web: 'https://web.example/', links: L, merged: true, date: '2026-11-25' });
-check('브리핑에 넣는 조각: 끄기 링크 유지·바깥 머리 없음', /모든 알림 끄기/.test(Mm.html) && !/집코드 <span style="color:#2F6BFF">알림/.test(Mm.html));
+const Mm = A.mailHtml(D, { site: '집예보', web: 'https://web.example/', links: L, merged: true, date: '2026-11-25' });
+check('브리핑에 넣는 조각: 끄기 링크 유지·바깥 머리 없음', /모든 알림 끄기/.test(Mm.html) && !/집예보 <span style="color:#2F6BFF">알림/.test(Mm.html));
 check('글자 넣기 막기(단지 이름의 꺾쇠)', !/<script>/.test(A.mailHtml(A.digest({ places: [Object.assign({}, P1, { apt: '<script>x' })], g: { '11710': { rows: [{ d: '잠실동', j: '35', a: '<script>x', b: '84㎡대', dt: 20261120, f: 1, p: 1000 }] } }, today: '2026-11-25' }), {}).html));
 
 /* 동의 확인 */
@@ -281,7 +281,7 @@ const root = path.join(__dirname, '..');
 const read = p => fs.readFileSync(path.join(root, p), 'utf8');
 const center = read('my/alerts/index.html'), sw = read('sw.js'), wj = read('assets/watch.js');
 check('알림 센터: 계산·종 부품·로그인 부품을 싣고, 동의 칸은 기본으로 꺼짐', /alerts-core\.js\?v=2/.test(center) && /watch\.js\?v=8/.test(center) && /auth\.js/.test(center) && /id="agree">/.test(center) && !/id="agree" checked/.test(center));
-check('알림 센터: 동의 문구에 주어(집코드가 …)와 하루 한 번·오전 7시대', /집코드가 하루 한 번 오전 7시대에 이메일로 알려 주는 것에 동의해요/.test(center));
+check('알림 센터: 동의 문구에 주어(집예보가 …)와 하루 한 번·오전 7시대', /집예보가 하루 한 번 오전 7시대에 이메일로 알려 주는 것에 동의해요/.test(center));
 check('알림 센터: 경쟁 앱 이름 없음, 회사명 대신 서비스 이름', !/호갱|직방|리치고|아실|다방/.test(center) && !/장대장부동산그룹/.test(center));
 check('서비스 워커: 알림 센터·계산 파일을 저장 목록에, 판 번호 올림', /'\.\/my\/alerts\/'/.test(sw) && /alerts-core\.js\?v=2/.test(sw) && /watch\.js\?v=8/.test(sw) && /jdj-v(\d+)/.test(sw));
 check('종 단추: 알림 센터로 가는 링크·안 본 수', /my\/alerts\//.test(wj) && /새 알림 \$\{r\.unread\}건/.test(wj));

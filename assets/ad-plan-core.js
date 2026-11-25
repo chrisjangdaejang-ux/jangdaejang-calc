@@ -1,4 +1,4 @@
-/* 집코드 '광고 설계 도우미'(/ad/plan/) 계산 — 화면·테스트(tools/ad-plan-test.js) 공용, DOM 없음.
+/* 집예보 '광고 설계 도우미'(/ad/plan/) 계산 — 화면·테스트(tools/ad-plan-test.js) 공용, DOM 없음.
    - 가격은 assets/ad-prices.js(PRICES) 한 곳에서 읽어요. 하루 단위는 없고 1주부터.
    - 자리별 받을 수 있는 업종은 assets/ad-slot.js 의 CATS(= docs/ad_slots.md 표)와 /ad/ 업종 심사를 그대로 따라요. 맞는 자리만 조합해요.
    - 숫자를 지어내지 않아요: 노출·클릭 수는 실제 집계(stats)가 있을 때만, 브리핑 구독자 수는 서버 공개 집계(10명 미만이면 없음)일 때만 보여 줘요.

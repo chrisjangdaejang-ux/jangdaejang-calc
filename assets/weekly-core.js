@@ -71,7 +71,7 @@
   function sidos(V) { return levelRows(V, 'sd').map(r => r.nm); }
   /** 인용 글(기자용) — 첫 줄은 정해진 형식 그대로 */
   function cite(V, site) {
-    const s = site || '집코드';
+    const s = site || '집예보';
     return { line: `자료: ${s} 주간 실거래 동향(국토교통부 실거래가 분석, ${dot(V.asof)} 기준)`,
       detail: `${weekName(V)} ${verText(V)}${V.status === 'final' ? '' : ' — 늦게 신고되는 거래가 들어오면 숫자가 바뀔 수 있어요'}`,
       url: `${SITE_URL}/weekly/${V.w}/?v=${V.ver}` };
@@ -179,7 +179,7 @@
   }
   /** 기사용 문장(칼럼체) */
   function pressLines(V, site) {
-    const k = row(V, '00') || {}, s = row(V, '11') || {}, S = site || '집코드', out = [];
+    const k = row(V, '00') || {}, s = row(V, '11') || {}, S = site || '집예보', out = [];
     const prov = V.status !== 'final';
     out.push(`${S} 주간 실거래 동향에 따르면 지난주(${pressPeriod(V)} 계약) 전국 아파트 매매는 ${num(k.n)}건 신고됐다${prov ? '(잠정)' : ''}.`);
     if (k.chg != null) out.push(methodName(V) === '중간값' ? `같은 단지·같은 면적의 직전 거래와 비교한 가격 변동률 중간값은 ${pct(k.chg)}다. 비교한 거래는 ${num(k.np)}건이다.` :

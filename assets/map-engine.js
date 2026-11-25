@@ -1,4 +1,4 @@
-/* 집코드 지도 엔진 한 겹 — 지도 화면(map/)은 이 파일의 함수만 부르고, 카카오맵/Leaflet 차이는 여기서만 다룬다.
+/* 집예보 지도 엔진 한 겹 — 지도 화면(map/)은 이 파일의 함수만 부르고, 카카오맵/Leaflet 차이는 여기서만 다룬다.
    고르는 순서 (assets/config.js 의 window.JDJ_SITE):
      1) MAP_ENGINE 이 'leaflet' 이 아니고 KAKAO_JS_KEY 가 있으면 → 카카오맵 JavaScript SDK (dapi.kakao.com, autoload=false)
         · 카카오 개발자 콘솔에서 같은 앱의 [플랫폼] Web 사이트 도메인 등록 + [카카오맵] 사용 설정이 되어 있어야 함

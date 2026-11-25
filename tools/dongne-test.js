@@ -31,7 +31,7 @@ check('약관 초안: 변호사 검토 필요 + 가맹사업 아님 + 관할 + �
 check('약관 초안: 자동 결제·해지 버튼·환불·중대 위반 환불 없음·창립 혜택 30일·단계 제재', /자동 결제 동의는 다른 동의와 따로/.test(terms) && /버튼 한 번/.test(terms) && /돌려 드리지 않아요/.test(terms) && /30일이 지나면 혜택은 사라지고/.test(terms) && /1차 경고 메일 → 2차 7일 노출 중지[^→]*→ 3차 해지/.test(terms));
 check('약관 초안: "영구" 혜택 표현 없음', !/영구/.test(terms) && !/영구/.test(read('dongne/index.html')));
 check('이용약관·환불 정책: 자동 결제 조항은 숨김(data-bill-only hidden) + 초안 표시', /<section id="autopay" data-bill-only hidden>/.test(read('terms/index.html')) && /<section id="autopay" data-bill-only hidden>/.test(read('refund/index.html')) && /변호사 검토 필요/.test(read('refund/index.html')));
-check('화면 글: 서비스 이름 하드코딩 없음(dongne/·dongne.js·billing.js)', pages.concat(['assets/dongne.js', 'assets/billing.js', 'assets/dongne-core.js']).every(p => !/집코드|집예보|장대장/.test(read(p).replace(/주식회사 장대장부동산그룹/g, ''))));
+check('화면 글: 서비스 이름 하드코딩 없음(dongne/·dongne.js·billing.js)', pages.concat(['assets/dongne.js', 'assets/billing.js', 'assets/dongne-core.js']).every(p => !/집예보|집예보|장대장/.test(read(p).replace(/주식회사 장대장부동산그룹/g, ''))));
 check('가입 화면: "보통 바로 승인돼요. 확인이 필요하면 2영업일 안에 알려 드려요."', /보통 바로 승인돼요\. 확인이 필요하면 2영업일 안에 알려 드려요\./.test(read('dongne/index.html')));
 check('가입 화면: 자동 결제 문구 크게 + 따로 체크', /paybig/.test(read('dongne/index.html')) && /agPay/.test(read('dongne/index.html')) && /자동 결제돼요/.test(read('dongne/index.html')));
 

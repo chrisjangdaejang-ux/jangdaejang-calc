@@ -21,7 +21,7 @@
 2. Play Console 조직 계정 가입: https://play.google.com/console/signup → **조직** 선택 → D-U-N-S 번호 입력.
 3. 앱 파일 만들기 — 둘 중 하나:
    - **쉬운 방법 (PWABuilder)**: https://www.pwabuilder.com 에 `https://zipcode.works/` 입력 → **Start** → **Package For Stores** → **Android** → **Generate Package**.
-     - Package ID: `works.zipcode.app`(도메인 zipcode.works 를 거꾸로 쓴 이름 — 한 번 정하면 못 바꿈) / App name: 집코드 (영문 ZIPCODE) / Signing key: **New** (키 파일과 비밀번호를 안전하게 보관).
+     - Package ID: `works.zipcode.app`(도메인 zipcode.works 를 거꾸로 쓴 이름 — 한 번 정하면 못 바꿈) / App name: 집예보 (영문 ZIPCODE) / Signing key: **New** (키 파일과 비밀번호를 안전하게 보관).
    - **개발자 방법 (Bubblewrap)**: `npm i -g @bubblewrap/cli` → `bubblewrap init --manifest https://zipcode.works/manifest.webmanifest` → `bubblewrap build`.
 4. 만든 파일 중 `.aab` 를 Play Console **앱 만들기** → **프로덕션**(또는 **내부 테스트**) → **새 버전 만들기** 에 올립니다.
 5. 주인 확인 파일 올리기:
@@ -40,14 +40,14 @@
 
 ## 앱 설치 정보(manifest.webmanifest) 상태
 
-이름·짧은 이름 = SITE_NAME(집코드, 매일 자동 맞춤), 아이콘 192·512 + 마스크용 512, 바탕·테마 색 흰색, 시작 주소 `?src=pwa`, 화면 standalone,
+이름·짧은 이름 = SITE_NAME(집예보, 매일 자동 맞춤), 아이콘 192·512 + 마스크용 512, 바탕·테마 색 흰색, 시작 주소 `?src=pwa`, 화면 standalone,
 바로가기 4개(내 집 시세·지도·청약 가점·세금). 경로는 모두 `./` 로 시작하는 상대 경로라 예전 주소와 https://zipcode.works/ 에서 똑같이 동작합니다(바꿀 것 없음).
 
 ---
 
 ## Play 스토어 등록 정보 초안
 
-**앱 이름(30자)**: 집코드 - 아파트 실거래가·미래가치
+**앱 이름(30자)**: 집예보 - 아파트 실거래가·미래가치
 
 **영문 이름**: ZIPCODE
 
@@ -55,7 +55,7 @@
 
 **자세한 설명(4,000자 이내)**:
 
-공공데이터로 내 집값의 내일을 풉니다. 집코드는 국토교통부 아파트 실거래가와 공공 통계를 모아, 내 집과 관심 단지의 시세와 앞으로의 흐름을 쉽게 보여 드려요.
+공공데이터로 내 집값의 내일을 풉니다. 집예보는 국토교통부 아파트 실거래가와 공공 통계를 모아, 내 집과 관심 단지의 시세와 앞으로의 흐름을 쉽게 보여 드려요.
 
 ■ 아파트 실거래가·시세
 · 전국 아파트 단지별 최근 실거래가, 평형별 시세, 역대 최고가와 신고가 표시

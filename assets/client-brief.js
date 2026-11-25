@@ -10,7 +10,7 @@
   'use strict';
   var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   const B = root.JDJ_BRIEF || (typeof require !== 'undefined' ? require('./brief-core.js') : null);
-  const SITE = ((root.JDJ_SITE || {}).SITE_NAME || '').trim() || (B && B.SITE) || '집코드';
+  const SITE = ((root.JDJ_SITE || {}).SITE_NAME || '').trim() || (B && B.SITE) || '집예보';
   const APTS = 5, LABEL_MAX = 20;
   const PURPOSE = { '': '', buy: '매수', sell: '매도', jeonse: '전세' };
   const PURPOSE_TITLE = { '': '관심 단지 매매', buy: '사려는 단지 매매', sell: '팔려는 단지 매매', jeonse: '전세 알아보는 단지 매매' };

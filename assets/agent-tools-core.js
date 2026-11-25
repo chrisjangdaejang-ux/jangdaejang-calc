@@ -1,4 +1,4 @@
-/* 집코드 중개사 업무 도구 공통 계산 — agent/sheet/(적정 가격 근거표)·agent/my/(대시보드)·tools/agent-tools-test.js 가 함께 쓴다. DOM 없음.
+/* 집예보 중개사 업무 도구 공통 계산 — agent/sheet/(적정 가격 근거표)·agent/my/(대시보드)·tools/agent-tools-test.js 가 함께 쓴다. DOM 없음.
    원칙
    - 공개 자료(price/{구}.json 단지·평형 행, index.json, 점수 fx, model_h.json)에 있는 값만 모아 보여 준다. 새 숫자를 지어내지 않는다:
      하는 계산은 중간값·최고·비율·단위 환산뿐이고, 근거 문장에 계산 방법을 함께 적는다.

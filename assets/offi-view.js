@@ -248,7 +248,7 @@
   }
   /* 전세·월세 칸: 이 건물 계약이 있으면 시세·전세가율·계약 수·최근 전세 계약, 없으면 같은 동(없으면 같은 시·군·구) 최근 1년 요약 */
   const filling = () => !OX || !OX.fill || !!OX.fill.rent;
-  const FILL_NOTE = '<p class="of-fill">집코드는 예전 오피스텔 전월세 기록을 아직 채우고 있어요. 다 채우면 이 화면에 자동으로 반영돼요.</p>';
+  const FILL_NOTE = '<p class="of-fill">집예보는 예전 오피스텔 전월세 기록을 아직 채우고 있어요. 다 채우면 이 화면에 자동으로 반영돼요.</p>';
   function rentPanel(u, j) {
     const r = O.rentNow(u, j), hasJ = r.nj3 || r.nj || (u.js && u.js.length > 1);
     const from = OX && OX.from && OX.from.rent, since = from ? `${ymK(from)}부터 모은 국토교통부 전월세 신고 자료` : '국토교통부 전월세 신고 자료';

@@ -11,7 +11,7 @@
 <script src="../../assets/region-pick.js?v=2"></script>
 <script src="../../assets/pwa.js?v=2" defer data-nobar></script>
 <script src="../../assets/biz.js?v=2" defer></script>
-<title>적정 가격 근거표 | 집코드</title>
+<title>적정 가격 근거표 | 집예보</title>
 <meta name="description" content="단지·평형의 최근 실거래, 시세, 최고가 대비, 같은 구 비교, 미래가치 점수를 한 장으로. 인쇄·PDF·카카오톡 공유.">
 <script>window.JDJ_CONFIG = { tool:'agent_sheet', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../../assets/track.js?v=2"></script>
@@ -100,7 +100,7 @@ h1{font-size:clamp(22px,5.4vw,30px);margin:4px 0 6px;line-height:1.3;letter-spac
 </style>
 </head>
 <body>
-<header class="top"><a class="brand" href="../../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a><a class="badge plain" href="../my/" style="text-decoration:none">중개사 대시보드</a></header>
+<header class="top"><a class="brand" href="../../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a><a class="badge plain" href="../my/" style="text-decoration:none">중개사 대시보드</a></header>
 <div class="wrap">
   <h1>적정 가격 근거표</h1>
   <p class="lead" id="lead">단지와 평형을 고르면 최근 실거래(층), 시세, 최고가 대비, 같은 구 비교, 미래가치 점수를 한 장으로 정리해요. 매도인·매수인에게 인쇄·PDF·카카오톡으로 보여 주세요.</p>
@@ -115,7 +115,7 @@ h1{font-size:clamp(22px,5.4vw,30px);margin:4px 0 6px;line-height:1.3;letter-spac
     <div id="bandBox" hidden><label>평형</label><div class="chips" id="bands"></div></div>
     <h2 style="margin-top:16px">2. 중개사 입력 (선택)</h2>
     <div class="two">
-      <div><label for="ask">호가 (만원) — 중개사가 아는 값</label><input id="ask" inputmode="numeric" placeholder="예: 215000"><div class="hint" id="askH">공개된 호가 자료는 없어서 집코드가 채우지 않아요. 넣으면 '중개사 입력 호가'로 표시돼요.</div></div>
+      <div><label for="ask">호가 (만원) — 중개사가 아는 값</label><input id="ask" inputmode="numeric" placeholder="예: 215000"><div class="hint" id="askH">공개된 호가 자료는 없어서 집예보가 채우지 않아요. 넣으면 '중개사 입력 호가'로 표시돼요.</div></div>
       <div><label for="note">한마디 (60자)</label><input id="note" maxlength="60" placeholder="예: 로열동·남향 매물 기준 설명용"><div class="hint">단정·보장 표현(무조건·확실·보장)과 연락처는 넣을 수 없어요.</div></div>
     </div>
     <div class="err" id="err" role="alert"></div>
@@ -163,7 +163,7 @@ function setupEditor(){
   let t = null;
   $('q').oninput = () => { clearTimeout(t); t = setTimeout(search, 200); };
   $('sd').onchange = () => { $('res').innerHTML = ''; PICK = null; $('bandBox').hidden = true; if ($('q').value.trim()) search(); };
-  $('ask').oninput = () => { const v = Math.round(+$('ask').value.replace(/[^0-9]/g,'')); $('askH').textContent = v > 0 ? M.won(v) + ' · 중개사 입력 호가로 표시돼요' : '공개된 호가 자료는 없어서 집코드가 채우지 않아요. 넣으면 \'중개사 입력 호가\'로 표시돼요.'; };
+  $('ask').oninput = () => { const v = Math.round(+$('ask').value.replace(/[^0-9]/g,'')); $('askH').textContent = v > 0 ? M.won(v) + ' · 중개사 입력 호가로 표시돼요' : '공개된 호가 자료는 없어서 집예보가 채우지 않아요. 넣으면 \'중개사 입력 호가\'로 표시돼요.'; };
   $('make').onclick = make;
 }
 async function search(){
@@ -211,15 +211,15 @@ async function render(){
   if (ST.ag && A && A.ready){ try { const l = await A.list(); ag = ((l && l.agents) || []).find(a => a.id === ST.ag) || null; } catch (e) {} }
   out.innerHTML = sheetHtml(s, ag);
   $('acts').hidden = false;
-  document.title = `${s.apt} ${s.band} 적정 가격 근거표 | 집코드`;
+  document.title = `${s.apt} ${s.band} 적정 가격 근거표 | 집예보`;
 }
 function sheetHtml(s, ag){
   const priceNote = s.priceKind === 'last' ? `${ymK(s.priceAt)} 마지막 실거래 기준(최근 3개월 거래가 적어요)` : `최근 3개월 실거래 평당가 중간값 × 전용 ${s.area}㎡ · ${ymK(s.priceAt)} 기준`;
   const rg = s.range && s.range.lo ? `최근 1년 시세 범위 ${M.won(s.range.lo)} ~ ${M.won(s.range.hi)}` : '';
   const askBox = s.ask ? `<div class="ask"><div class="k">중개사 입력 호가</div><div class="v">${M.won(s.ask.amt)}</div>
-      <small>집코드 시세 대비 <b class="${cls(s.ask.vsPrice)}">${pc(s.ask.vsPrice)}</b>${s.hi ? ` · ${esc(s.hi.label)} 대비 <b class="${cls(s.ask.vsHi)}">${pc(s.ask.vsHi)}</b>` : ''}${s.hi1 ? ` · 최근 1년 최고가 대비 <b class="${cls(s.ask.vsHi1)}">${pc(s.ask.vsHi1)}</b>` : ''}</small>
+      <small>집예보 시세 대비 <b class="${cls(s.ask.vsPrice)}">${pc(s.ask.vsPrice)}</b>${s.hi ? ` · ${esc(s.hi.label)} 대비 <b class="${cls(s.ask.vsHi)}">${pc(s.ask.vsHi)}</b>` : ''}${s.hi1 ? ` · 최근 1년 최고가 대비 <b class="${cls(s.ask.vsHi1)}">${pc(s.ask.vsHi1)}</b>` : ''}</small>
       <small style="margin-top:4px">이 값은 중개사가 직접 넣은 호가예요. 공개 자료가 아니에요.</small></div>`
-    : `<div class="ask"><div class="k">호가</div><div class="v" style="font-size:18px;color:#5F6B7A">입력하지 않았어요</div><small>공개된 호가 자료가 없어 집코드는 호가를 채우지 않아요. 중개사가 아는 호가를 넣으면 시세·최고가와 차이를 보여 드려요.</small></div>`;
+    : `<div class="ask"><div class="k">호가</div><div class="v" style="font-size:18px;color:#5F6B7A">입력하지 않았어요</div><small>공개된 호가 자료가 없어 집예보는 호가를 채우지 않아요. 중개사가 아는 호가를 넣으면 시세·최고가와 차이를 보여 드려요.</small></div>`;
   const tr = s.trades.length ? `<table><thead><tr><th>계약일</th>${s.hasFloor ? '<th class="n">층</th>' : ''}<th class="n ar">전용㎡</th><th class="n">거래가</th><th class="n">평당가</th></tr></thead><tbody>${s.trades.map(t =>
       `<tr><td>${esc(t.date)}${t.hi ? '<span class="hi">신고가</span>' : ''}${t.type === '직거래' ? '<span class="dir">직거래</span>' : ''}</td>${s.hasFloor ? `<td class="n">${t.floor || '-'}</td>` : ''}<td class="n ar">${t.area}</td><td class="n"><b>${M.won(t.amt)}</b></td><td class="n">${t.ppy ? t.ppy.toLocaleString('ko-KR') + '만' : '-'}</td></tr>`).join('')}</tbody></table>`
     : '<p class="hint">개별 거래 목록이 없는 자료예요(월별 요약만 있어요).</p>';
@@ -227,11 +227,11 @@ function sheetHtml(s, ag){
   const vcT = s.vc ? (s.vc.ok ? `이 점수 방법을 과거에 그대로 써 봤더니 ${s.vc.n}번 중 ${s.vc.hit}번 맞았어요(${esc(s.vc.where)} 기준).` : `과거에 그대로 써 봤더니 ${s.vc.n}번 중 ${s.vc.hit}번 맞아, 참고로만 보세요(${esc(s.vc.where)} 기준).`) : '';
   const fv = s.fv != null ? `<div class="fv"><div class="ring">${s.fv}</div><p><b>미래가치 점수(2년) ${s.fv}점</b>${s.fvg != null ? ` · ${esc(s.gu)} 안 점수 ${s.fvg}점` : ''}<br>${vcT}<br><small style="color:#5F6B7A">점수는 광고·제휴·이용료와 상관없이 같은 방법으로 매겨요.</small></p></div>`
     : `<div class="fv"><p>이 단지·평형은 거래가 적어 미래가치 점수를 매기지 않았어요. ${vcT}</p></div>`;
-  const who = ag ? `<div><b>${esc(ag.t === 'm' ? ag.nm + ' 공인중개사' : ag.n)}</b><span class="tag">집코드 제휴·광고</span><br>${ag.t === 'm' ? esc(ag.n) + ' 소속 · ' : '대표 ' + esc(ag.ceo) + ' · '}${esc(ag.ogn)} ${esc(ag.dong)} · 등록번호 ${esc(ag.reg)} · ${esc(ag.ph)}</div>` : '<div><small style="color:#5F6B7A">작성 중개사 정보 없음</small></div>';
+  const who = ag ? `<div><b>${esc(ag.t === 'm' ? ag.nm + ' 공인중개사' : ag.n)}</b><span class="tag">집예보 제휴·광고</span><br>${ag.t === 'm' ? esc(ag.n) + ' 소속 · ' : '대표 ' + esc(ag.ceo) + ' · '}${esc(ag.ogn)} ${esc(ag.dong)} · 등록번호 ${esc(ag.reg)} · ${esc(ag.ph)}</div>` : '<div><small style="color:#5F6B7A">작성 중개사 정보 없음</small></div>';
   return `<article class="sh" id="sheet">
     <div class="top"><div><div class="k">적정 가격 근거표</div><h2>${esc(s.apt)} · ${esc(s.band)}</h2><small>${esc(s.sido)} ${esc(s.gu)} ${esc(s.dong)} · 전용 ${s.area}㎡ · 자료 ${ymK(s.to)}까지</small></div>
-      <div class="logo"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/></svg>집코드</div></div>
-    <div class="big"><div class="pv"><div class="k">집코드 시세</div><div class="v">${s.price ? M.won(s.price) : '거래 없음'}</div><small>${priceNote}</small>${rg ? `<small>${rg}</small>` : ''}</div>${askBox}</div>
+      <div class="logo"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#B8942A"/><path d="M5 12.5 12 6.5l7 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11v7h9v-7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/></svg>집예보</div></div>
+    <div class="big"><div class="pv"><div class="k">집예보 시세</div><div class="v">${s.price ? M.won(s.price) : '거래 없음'}</div><small>${priceNote}</small>${rg ? `<small>${rg}</small>` : ''}</div>${askBox}</div>
     <div class="grid">
       <div class="st"><div class="k">1년 변동</div><div class="v ${cls(s.ch1)}">${pc(s.ch1)}</div><small>평당가 기준</small></div>
       <div class="st"><div class="k">3년 변동</div><div class="v ${cls(s.ch3)}">${pc(s.ch3)}</div><small>${s.ch3From ? ymK(s.ch3From) + '부터' : '평당가 기준'}</small></div>
@@ -248,7 +248,7 @@ function sheetHtml(s, ag){
     <h3>미래가치</h3>${fv}
     ${ST.note ? `<div class="note"><b>중개사 한마디</b> · ${esc(ST.note)}</div>` : ''}
     <div class="who">${who}<div style="text-align:right"><small style="color:#5F6B7A">만든 날 ${(d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`)(new Date())}</small></div></div>
-    <p class="src">자료: 국토교통부 아파트 매매 실거래가 공개 자료(해제·취소 신고 거래 제외, 시세·변동률은 직거래 제외)를 집코드가 정리. 향(방향)은 공개 실거래 자료에 없어 넣지 않았어요. 실제 거래가는 동·층·향·수리 상태에 따라 달라요. 집코드는 중개하지 않아요.</p>
+    <p class="src">자료: 국토교통부 아파트 매매 실거래가 공개 자료(해제·취소 신고 거래 제외, 시세·변동률은 직거래 제외)를 집예보가 정리. 향(방향)은 공개 실거래 자료에 없어 넣지 않았어요. 실제 거래가는 동·층·향·수리 상태에 따라 달라요. 집예보는 중개하지 않아요.</p>
   </article>`;
 }
 
@@ -259,7 +259,7 @@ $('copy').onclick = async () => { try { await navigator.clipboard.writeText(link
 $('share').onclick = async () => {
   JDJ.track && JDJ.track('agent_sheet_share', {});
   const t = `${ST.apt} ${ST.band} 적정 가격 근거표`;
-  if (navigator.share){ try { await navigator.share({ title: t, text: t + ' (집코드)', url: link() }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
+  if (navigator.share){ try { await navigator.share({ title: t, text: t + ' (집예보)', url: link() }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
   $('copy').click();
 };
 $('edit').onclick = () => { $('ed').hidden = false; $('ed').scrollIntoView({behavior:'smooth'}); };

@@ -9,17 +9,17 @@
 <link rel="apple-touch-icon" href="../assets/icons/apple-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="집코드">
+<meta name="apple-mobile-web-app-title" content="집예보">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="../assets/pwa.js?v=2" defer></script>
 <script src="../assets/biz.js?v=2" defer></script>
 <script src="../assets/region-pick.js?v=2" defer></script>
-<title>집코드 내 집 마련 계산기</title>
+<title>집예보 내 집 마련 계산기</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/buy/">
 <meta name="description" content="연봉과 보유 현금만 넣으면 LTV·스트레스 DSR·가격구간별 대출 한도를 따져 최대 매수 가능 금액을 계산해요. 2026년 11월 규제 반영.">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="집코드">
-<meta property="og:title" content="집코드 내 집 마련 계산기 — 나는 얼마짜리 집까지 살 수 있을까?">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="집예보 내 집 마련 계산기 — 나는 얼마짜리 집까지 살 수 있을까?">
 <meta property="og:description" content="LTV·스트레스 DSR·가격구간별 대출 한도와 취득세까지 한 번에 계산. 회원가입 없이 무료.">
 <meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/buy/">
 <meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/buy.png">
@@ -27,7 +27,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="집코드 내 집 마련 계산기 — 나는 얼마짜리 집까지 살 수 있을까?">
+<meta name="twitter:title" content="집예보 내 집 마련 계산기 — 나는 얼마짜리 집까지 살 수 있을까?">
 <meta name="twitter:description" content="LTV·스트레스 DSR·가격구간별 대출 한도와 취득세까지 한 번에 계산. 회원가입 없이 무료.">
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/buy.png">
 <script>window.JDJ_CONFIG = { tool:'buy', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
@@ -208,7 +208,7 @@ body.wiz .wiznav{display:flex;gap:8px;margin-top:4px}
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
+  <a class="brand" href="../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a>
   <div class="badge plain">내 집 마련</div>
 </header>
 
@@ -320,14 +320,14 @@ body.wiz .wiznav{display:flex;gap:8px;margin-top:4px}
       </div>
 
       <div class="premium" id="premBox">
-        <div><div class="pt">무료 맞춤 리포트</div><p>집코드 맞춤 분석 리포트<small>내 예산 안의 단지를 공공 통계로 계산한 미래가치 점수 순서로 정리해 드려요. 조건에 맞는 단지 TOP 10과 자금 계획표, 대출 시나리오를 실거래가로 정리 · PDF 저장 가능</small></p></div>
+        <div><div class="pt">무료 맞춤 리포트</div><p>집예보 맞춤 분석 리포트<small>내 예산 안의 단지를 공공 통계로 계산한 미래가치 점수 순서로 정리해 드려요. 조건에 맞는 단지 TOP 10과 자금 계획표, 대출 시나리오를 실거래가로 정리 · PDF 저장 가능</small></p></div>
         <a class="btn" id="premBtn" href="report/" target="_blank" rel="noopener">맞춤 단지 리포트 보기</a>
       </div>
       <p class="premlink"><a href="../premium/" data-track="buy_to_premium">단지 심층 분석(유료) · 프리미엄 리포트 안내 ›</a></p>
 
       <a class="xlink" id="cmpLink" data-track="buy_to_compare" href="report/?mode=cmp" target="_blank" rel="noopener"><span><b>마음에 둔 단지가 있다면</b><small>후보 단지 2~3곳 비교하기 · 내 조건으로 대출·필요 현금까지</small></span><span class="go" aria-hidden="true">›</span></a>
       <a class="xlink" id="loanLink" data-track="buy_to_loan" href="../loan/"><span><b>이 집 대출 한도 계산하기</b><small>최대 매수 금액을 집값으로 넣어 LTV·DSR 한도와 매달 갚을 돈을 자세히 봐요</small></span><span class="go" aria-hidden="true">›</span></a>
-      <a class="xlink" data-track="cross_link_switch" href="../switch/"><span><b>이미 집이 있다면</b><small>집코드 갈아타기 계산기 · 양도세 포함</small></span><span class="go" aria-hidden="true">›</span></a>
+      <a class="xlink" data-track="cross_link_switch" href="../switch/"><span><b>이미 집이 있다면</b><small>집예보 갈아타기 계산기 · 양도세 포함</small></span><span class="go" aria-hidden="true">›</span></a>
 
       <div class="panel section">
         <h2>대출 한도, 무엇이 막고 있나</h2>
@@ -397,7 +397,7 @@ body.wiz .wiznav{display:flex;gap:8px;margin-top:4px}
     </ul>
   </div>
 </div>
-<footer class="foot">★ 집코드 · <a href="../">홈</a></footer>
+<footer class="foot">★ 집예보 · <a href="../">홈</a></footer>
 <div class="toast" id="toast">복사됐어요</div>
 
 <script>
@@ -626,7 +626,7 @@ $('region').addEventListener('change',()=>{setTermOptions();render();});
 function toast(msg, ms){ $('toast').textContent=msg; $('toast').classList.add('show'); setTimeout(()=>$('toast').classList.remove('show'), ms||1800); }
 $('copyBtn').addEventListener('click',async()=>{
   const c=ctx();
-  const txt = `[집코드 내 집 마련 계산기]\n지역: ${(window.JDJ_REGION&&JDJ_REGION.any)?'지역 상관없음':c.R.name} / ${OWN_NAME[own]} / ${TYPE_NAME[rtype]}\n연소득 ${fmt(c.income)} · 현금 ${fmt(c.cash)}\n→ 최대 매수 가능: ${$('maxP').textContent}\n→ 대출 가능액: ${$('sLoan').textContent} (${$('binding').textContent})\n※ 2026년 11월 규제 기준 추정치\n${location.origin+location.pathname}`;
+  const txt = `[집예보 내 집 마련 계산기]\n지역: ${(window.JDJ_REGION&&JDJ_REGION.any)?'지역 상관없음':c.R.name} / ${OWN_NAME[own]} / ${TYPE_NAME[rtype]}\n연소득 ${fmt(c.income)} · 현금 ${fmt(c.cash)}\n→ 최대 매수 가능: ${$('maxP').textContent}\n→ 대출 가능액: ${$('sLoan').textContent} (${$('binding').textContent})\n※ 2026년 11월 규제 기준 추정치\n${location.origin+location.pathname}`;
   try{ await navigator.clipboard.writeText(txt); toast('결과가 복사됐어요'); }
   catch(_){ toast('복사가 지원되지 않는 환경이에요'); }
 });

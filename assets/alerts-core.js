@@ -225,7 +225,7 @@ function axLinks(api, id, tok, ph) {
    → { subject, html, text }. 광고는 넣지 않는다(광고는 따로 붙임 — 붙일 때 제목 앞 (광고)는 보내는 쪽에서) */
 function axMailHtml(D, o) {
   o = o || {};
-  const site = o.site || '집코드', web = o.web || '', L = o.links, gname = o.gname || (() => ''), lines = [];
+  const site = o.site || '집예보', web = o.web || '', L = o.links, gname = o.gname || (() => ''), lines = [];
   let left = AX_MAX_LINES, cut = 0;
   const btn = (href, label) => href ? `<a href="${axEsc(href)}" style="font-size:13px;color:#4E5968;text-decoration:underline;white-space:nowrap">${axEsc(label)}</a>` : '';
   const tag = k => `<span style="display:inline-block;font-size:11.5px;font-weight:800;color:${k === 'high' ? '#C2410C' : k === 'drop' ? '#1F56E0' : '#4E5968'};background:${k === 'high' ? '#FDECE4' : k === 'drop' ? '#E8F0FF' : '#F2F4F6'};border-radius:6px;padding:1px 6px;margin-right:4px">${axEsc(AX_KINDS[k] || AX_CY_KINDS[k] || '')}</span>`;

@@ -16,7 +16,7 @@
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=7"></script>
 <script src="../assets/agents.js"></script>
-<script src="../assets/config.js?v=10"></script>
+<script src="../assets/config.js?v=11"></script>
 <script src="../assets/auth.js?v=10"></script>
 <script src="../assets/sale-status.js?v=1" defer></script>
 <script src="../assets/area-watch.js?v=8" defer></script>
@@ -25,7 +25,7 @@
 <script src="../assets/ask.js?v=3" defer></script>
 <script src="../assets/rank-core.js?v=7" defer></script>
 <script src="../assets/home-core.js?v=4" defer></script>
-<script src="../assets/brief-core.js?v=11" defer></script>
+<script src="../assets/brief-core.js?v=12" defer></script>
 <script src="../assets/today-core.js?v=1" defer></script>
 <script src="../assets/quiz-core.js?v=1" defer></script>
 <script src="../assets/alerts-core.js?v=2" defer></script>
@@ -456,8 +456,8 @@ addEventListener('DOMContentLoaded', () => {
     if (!a) { el.hidden = true; return; }
     const m = String(a.m), mm = +m.slice(4, 6), pm = mm === 1 ? 12 : mm - 1;
     el.innerHTML = `<summary><span class="ai" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg></span>
-      <span class="at">지난달 집코드 시세와 실제 다음 거래 차이${a.where === '전국' ? '' : `(${esc(sdObj().short)})`}: <b>중간 ${a.med.toFixed(1)}%</b> (10% 이내 <b>${Math.round(a.w10)}%</b>)</span><span class="go">자세히</span></summary>
-      <p>${esc(a.where === '전국' ? '전국' : sdObj().short)} 아파트 ${m.slice(0, 4)}년 ${mm}월 실제 거래 ${a.n.toLocaleString()}건을, ${pm}월까지 3개월 실거래 중간값으로 낸 집코드 시세와 비교했어요. 차이가 5% 이내인 거래는 ${a.w5.toFixed(1)}%, 10% 이내는 ${a.w10.toFixed(1)}%예요.</p>
+      <span class="at">지난달 집예보 시세와 실제 다음 거래 차이${a.where === '전국' ? '' : `(${esc(sdObj().short)})`}: <b>중간 ${a.med.toFixed(1)}%</b> (10% 이내 <b>${Math.round(a.w10)}%</b>)</span><span class="go">자세히</span></summary>
+      <p>${esc(a.where === '전국' ? '전국' : sdObj().short)} 아파트 ${m.slice(0, 4)}년 ${mm}월 실제 거래 ${a.n.toLocaleString()}건을, ${pm}월까지 3개월 실거래 중간값으로 낸 집예보 시세와 비교했어요. 차이가 5% 이내인 거래는 ${a.w5.toFixed(1)}%, 10% 이내는 ${a.w10.toFixed(1)}%예요.</p>
       <p>${a.kind === 'snap' ? '그달 화면에 공개한 시세를 그대로 고정해 두고, 나중에 실제 거래와 비교한 값이에요.' : '늦게 신고된 거래까지 넣어 다시 계산한 값이라, 그때 화면에 보인 시세와 비교할 때보다 조금 좋게 나올 수 있어요.'} 같은 단지·같은 평형끼리 비교했고, 층·향·수리 상태에 따라 실제 가격은 달라요.</p>`;
     el.hidden = false;
   }

@@ -162,8 +162,8 @@
     const ps = passed(ix).filter(h => b && b.sc && b.sc[h] != null);
     if (ps.length) return { ok: true, hs: ps };
     const filling = !!(ix && ix.fill && (ix.fill.trade || ix.fill.rent));
-    return { ok: false, text: filling ? '점수 준비 중 — 집코드는 예전 빌라 기록을 채우는 중이에요. 자료가 다 모이면 과거 자료와 맞춰 본 뒤 자동으로 점수가 나와요.'
-      : '점수 준비 중 — 집코드는 빌라 점수를 과거 자료와 맞춰 보는 중이에요. 잘 맞은 보유 기간이 확인되면 자동으로 점수가 나와요.' };
+    return { ok: false, text: filling ? '점수 준비 중 — 집예보는 예전 빌라 기록을 채우는 중이에요. 자료가 다 모이면 과거 자료와 맞춰 본 뒤 자동으로 점수가 나와요.'
+      : '점수 준비 중 — 집예보는 빌라 점수를 과거 자료와 맞춰 보는 중이에요. 잘 맞은 보유 기간이 확인되면 자동으로 점수가 나와요.' };
   }
   /** 예전 기록 채우는 중(한 줄, 날짜 약속 없음) — 다 채우면 index.fill 이 false 가 되어 자동으로 사라짐 */
   const fillNote = ix => !!(ix && ix.fill && (ix.fill.trade || ix.fill.rent));

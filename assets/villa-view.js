@@ -97,7 +97,7 @@
       <div class="pick"><div class="full"><label for="vlQ" style="position:absolute;left:-9999px">건물 이름, 지번 또는 도로명 주소</label><input id="vlQ" type="search" placeholder="예: 신원빌라 · 망원동 459-15 · 월드컵로12길 34" autocomplete="off" enterkeyhint="search"></div></div>
       <div class="sres" id="vlSres" aria-live="polite"></div>
       <div id="vlMsg" class="note" aria-live="polite"></div>
-      ${V.fillNote(VX) ? '<p class="vl-fill">집코드는 예전 기록을 채우는 중이에요. 다 채우면 이 화면에 자동으로 반영돼요.</p>' : ''}
+      ${V.fillNote(VX) ? '<p class="vl-fill">집예보는 예전 기록을 채우는 중이에요. 다 채우면 이 화면에 자동으로 반영돼요.</p>' : ''}
     </section>
     <section id="vlRes" hidden aria-live="polite"></section>
     <p class="disc">자료: 국토교통부 연립·다세대 매매 실거래가 · 국토교통부 연립·다세대 전월세 실거래가(공공데이터포털). 해제(취소) 신고된 거래는 빼요. 원자료에는 동·호수가 없어서 같은 건물 안 다른 호수의 거래도 함께 보여요.</p>`;
@@ -311,7 +311,7 @@
       <p class="basis">전용 ${area}㎡ 기준이에요. 그래프 위에서 손가락이나 마우스를 움직이면 그 달의 시세와 매매 신고 건수가 위 칸에 나와요. 흐린 점선은 거래가 없던 기간이고, 점선 위의 달에는 시세 값이 없어요.</p>
       <p class="basis" id="vlCB"></p>
       ${tr.full ? '' : `<p class="basis">지금은 이 건물의 최근 3년 거래 ${tr.list.length}건으로 그렸어요. 다음 자료 갱신부터 수집한 모든 기간의 거래로 그려요.</p>`}
-      ${fill ? '<p class="vl-fill">집코드는 예전 기록을 채우는 중이에요. 다 채우면 이 그래프 앞부분이 자동으로 늘어나요.</p>' : ''}
+      ${fill ? '<p class="vl-fill">집예보는 예전 기록을 채우는 중이에요. 다 채우면 이 그래프 앞부분이 자동으로 늘어나요.</p>' : ''}
     </div>
     ${rentPanel(b)}
     ${few ? '' : dongPanel(b, null)}

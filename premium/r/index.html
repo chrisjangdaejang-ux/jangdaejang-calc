@@ -8,19 +8,19 @@
 <meta name="theme-color" content="#FFFFFF">
 <link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
 <script src="../../assets/biz.js?v=2" defer></script>
-<title>전문가가 보낸 단지 분석 리포트 | 집코드</title>
+<title>전문가가 보낸 단지 분석 리포트 | 집예보</title>
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="집코드">
-<meta property="og:title" content="전문가가 보낸 단지 분석 리포트 | 집코드">
-<meta property="og:description" content="중개사·분양대행사 등 전문가가 고객님께 보낸 단지 분석 리포트 · 데이터·분석 집코드">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="전문가가 보낸 단지 분석 리포트 | 집예보">
+<meta property="og:description" content="중개사·분양대행사 등 전문가가 고객님께 보낸 단지 분석 리포트 · 데이터·분석 집예보">
 <meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/premium/r/">
 <meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/premium.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="전문가가 보낸 단지 분석 리포트 | 집코드">
-<meta name="twitter:description" content="중개사·분양대행사 등 전문가가 고객님께 보낸 단지 분석 리포트 · 데이터·분석 집코드">
+<meta name="twitter:title" content="전문가가 보낸 단지 분석 리포트 | 집예보">
+<meta name="twitter:description" content="중개사·분양대행사 등 전문가가 고객님께 보낸 단지 분석 리포트 · 데이터·분석 집예보">
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/premium.png">
 <script>/* 고객 링크의 # 값(링크 id.토큰)은 통계 도구가 주소를 읽기 전에 주소창에서 지우고 이 탭에만 둡니다 */
 (function(){ var h = location.hash, ok = /^#P[0-9A-F]{11}\.[0-9a-fA-F]{64}$/;
@@ -36,7 +36,7 @@
 <script src="../../assets/nw.js?v=1" defer></script>
 <link rel="stylesheet" href="../../assets/pay.css?v=4">
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/config.js?v=10"></script>
+<script src="../../assets/config.js?v=11"></script>
 <script src="../../assets/auth.js?v=10"></script>
 <script src="../../assets/pay.js?v=7"></script>
 <script src="../../assets/mine-core.js?v=20"></script>
@@ -54,25 +54,25 @@
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="../../?utm_source=pro" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
+  <a class="brand" href="../../?utm_source=pro" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a>
   <div class="badge plain">전문가 리포트</div>
 </header>
 <main class="pay" id="main">
   <div id="box"><div class="msg info"><span class="spin"></span>리포트를 열고 있어요…</div></div>
 </main>
-<footer class="foot">★ 집코드 · <a href="../../?utm_source=pro">홈</a></footer>
+<footer class="foot">★ 집예보 · <a href="../../?utm_source=pro">홈</a></footer>
 <script>
 var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 (function(){
   const P = JDJ_PAY, R = JDJ_PRO, esc = P.esc, box = document.getElementById('box');
   const h = R.parseHash(window.JDJ_PRO_IN);
   const errBox = m => { box.innerHTML = `<h1>리포트를 열 수 없어요</h1><div class="msg err">${esc(m)}</div>
-    <div class="btnrow"><a class="btn2" href="${JB.SITE}?utm_source=pro">집코드에서 직접 찾아보기</a></div>`; };
+    <div class="btnrow"><a class="btn2" href="${JB.SITE}?utm_source=pro">집예보에서 직접 찾아보기</a></div>`; };
   if (!h) return errBox('링크 주소가 끝까지 복사되지 않았어요. 받은 메시지의 링크를 다시 눌러 주세요.');
   const st = (f) => { try { if (window.jdjStat) window.jdjStat('feature_use', { feature: f }); } catch (e) {} };
   P.post('proOpen', { id: h.id, tk: h.tk }).then(async j => {
     const v = j.report, p = R.cleanProfile(v.profile);
-    document.title = p.office + ' · 단지 분석 리포트 | 집코드';
+    document.title = p.office + ' · 단지 분석 리포트 | 집예보';
     box.innerHTML = `<div class="noprint btnrow" style="margin:0 0 10px"><button type="button" class="btn2" id="pdfBtn">PDF로 저장 · 인쇄</button></div>
       ${R.headHtml(p)}<div id="rep"></div>`;
     document.getElementById('pdfBtn').onclick = () => window.print();

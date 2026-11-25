@@ -1,4 +1,4 @@
-/* 집코드 '상가·건물' 분석 계산 규칙 (내 집 시세 화면 상가·건물 탭) — 화면(comm-view.js)·검사(tools/comm-test.js)가 같이 쓴다.
+/* 집예보 '상가·건물' 분석 계산 규칙 (내 집 시세 화면 상가·건물 탭) — 화면(comm-view.js)·검사(tools/comm-test.js)가 같이 쓴다.
    자료: jangdaejang-data data/comm/index.json · comm/{구코드}.json (엔진 scripts/commercial.py 가 국토교통부 상업업무용 매매 실거래로 만든 것)
    금액 단위: 만원. ㎡당 가격: 만원/㎡. 이 파일은 공개 자료를 읽어 보여 줄 문장·숫자만 만든다(가중치·기준값 없음).
    종류: c 집합(구분상가·사무실 호실 — 건물 안 한 칸) · g 일반(통건물 — 건물 한 채 전체) */

@@ -12,8 +12,8 @@
 <script src="../../assets/region-pick.js?v=2"></script>
 <script src="../../assets/pwa.js?v=2" defer data-nobar></script>
 <script src="../../assets/biz.js?v=2" defer></script>
-<title>중개사 대시보드 | 집코드</title>
-<meta name="description" content="집코드 제휴 중개사 업무 도구: 받은 매수·매도 문의, 고객 관심 단지 변화 알림, 적정 가격 근거표.">
+<title>중개사 대시보드 | 집예보</title>
+<meta name="description" content="집예보 제휴 중개사 업무 도구: 받은 매수·매도 문의, 고객 관심 단지 변화 알림, 적정 가격 근거표.">
 <script>window.JDJ_CONFIG = { tool:'agent_my', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../../assets/track.js?v=2"></script>
 <script src="../../assets/savefb.js?v=1"></script>
@@ -86,7 +86,7 @@ label.f{display:block;font-size:13.5px;font-weight:700;color:#4E5968;margin:10px
 <script src="../../assets/chiprow.js?v=1"></script>
 </head>
 <body>
-<header class="top"><a class="brand" href="../../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a><a class="badge plain" href="../" style="text-decoration:none">중개사 제휴센터</a></header>
+<header class="top"><a class="brand" href="../../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a><a class="badge plain" href="../" style="text-decoration:none">중개사 제휴센터</a></header>
 <div class="wrap">
   <h1>중개사 대시보드</h1>
   <p class="lead" id="lead">받은 매수·매도 문의, 고객 관심 단지 변화, 적정 가격 근거표를 한곳에서 써요.</p>
@@ -114,7 +114,7 @@ label.f{display:block;font-size:13.5px;font-weight:700;color:#4E5968;margin:10px
     <section id="t_inbox">
       <div class="box">
         <div class="kpis" id="kpis"></div>
-        <p class="rule">집코드 이용자가 <b>'중개사 연락 받기'에 따로 동의하고 직접 고른</b> 문의, 또는 공개 순번 규칙(그 구를 고른 제휴 중개사 중 순번 문의를 가장 오래전에 받은 곳부터 2곳)으로 온 문의예요. 연락처는 받은 날부터 90일 동안만 보이고, 이용자가 취소하면 바로 사라져요. 집코드는 중개하지 않고 건별 수수료를 받지 않아요.</p>
+        <p class="rule">집예보 이용자가 <b>'중개사 연락 받기'에 따로 동의하고 직접 고른</b> 문의, 또는 공개 순번 규칙(그 구를 고른 제휴 중개사 중 순번 문의를 가장 오래전에 받은 곳부터 2곳)으로 온 문의예요. 연락처는 받은 날부터 90일 동안만 보이고, 이용자가 취소하면 바로 사라져요. 집예보는 중개하지 않고 건별 수수료를 받지 않아요.</p>
       </div>
       <div id="leads"></div>
     </section>
@@ -144,13 +144,13 @@ label.f{display:block;font-size:13.5px;font-weight:700;color:#4E5968;margin:10px
     <section id="t_sheet" hidden>
       <div class="box">
         <h2>적정 가격 근거표</h2>
-        <p style="margin:0 0 8px;font-size:15px;line-height:1.6">단지·평형을 고르면 최근 실거래(층), 집코드 시세, 최고가 대비, 같은 구 비교, 미래가치 점수와 과거 성적을 한 장으로 만들어요. 아는 호가를 넣으면 '중개사 입력 호가'로 시세와 차이를 보여 줘요. 인쇄·PDF 저장·카카오톡 공유가 돼요.</p>
+        <p style="margin:0 0 8px;font-size:15px;line-height:1.6">단지·평형을 고르면 최근 실거래(층), 집예보 시세, 최고가 대비, 같은 구 비교, 미래가치 점수와 과거 성적을 한 장으로 만들어요. 아는 호가를 넣으면 '중개사 입력 호가'로 시세와 차이를 보여 줘요. 인쇄·PDF 저장·카카오톡 공유가 돼요.</p>
         <div class="acts"><a class="btn primary" href="../sheet/" id="toSheet">근거표 만들기</a> <a class="btn" href="../listing/">매물 설명서 만들기</a> <a class="btn" href="../content/">주간 블로그·인스타 글</a></div>
-        <p class="rule">로그인한 상태로 만들면 근거표 아래에 사무소 정보가 '집코드 제휴·광고' 표시와 함께 붙어요. 호가는 공개 자료가 없어 집코드가 채우지 않아요.</p>
+        <p class="rule">로그인한 상태로 만들면 근거표 아래에 사무소 정보가 '집예보 제휴·광고' 표시와 함께 붙어요. 호가는 공개 자료가 없어 집예보가 채우지 않아요.</p>
       </div>
       <div class="box">
         <h2>신축 분양 현장 판매 파트너</h2>
-        <p style="margin:0 0 8px;font-size:15px;line-height:1.6">집코드 분양대행이 맡은 신축 현장(빌라·도시형·오피스텔·상가 등)을 고객에게 소개·상담하고, 계약되면 현장별 수수료를 정산받아요. 중개사 제휴와 별도로 신청하고 로그인해요.</p>
+        <p style="margin:0 0 8px;font-size:15px;line-height:1.6">집예보 분양대행이 맡은 신축 현장(빌라·도시형·오피스텔·상가 등)을 고객에게 소개·상담하고, 계약되면 현장별 수수료를 정산받아요. 중개사 제휴와 별도로 신청하고 로그인해요.</p>
         <div class="acts"><a class="btn" href="../../partner/">판매 파트너 안내·신청</a></div>
         <p class="rule">신축 최초 분양 판매는 분양대행의 재위탁이라 중개보수와 섞지 않아요. 분양권 전매·기존 주택 알선은 사무소 이름으로 하는 중개예요.</p>
       </div>
@@ -163,7 +163,7 @@ label.f{display:block;font-size:13.5px;font-weight:700;color:#4E5968;margin:10px
         <div class="chk"><label><input type="checkbox" id="pOn" checked> 새 문의·고객 관심 단지 변화를 메일로 받기</label></div>
         <div class="acts"><button class="btn primary" id="pSave" type="button">저장</button></div>
         <div class="msg" id="pMsg" role="status"></div>
-        <p class="rule">메일에는 고객 연락처를 넣지 않아요. 카카오톡 알림은 집코드 카카오 비즈 인증 뒤에 켤 수 있어요.</p>
+        <p class="rule">메일에는 고객 연락처를 넣지 않아요. 카카오톡 알림은 집예보 카카오 비즈 인증 뒤에 켤 수 있어요.</p>
       </div>
       <div class="box"><h2>성과표·지역·매물 단지</h2><p style="margin:0;font-size:15px">노출 성과와 노출 지역·매물 보유 단지는 <a href="../">제휴센터</a>의 [내 관리]에서 보고 바꿔요.</p></div>
     </section>

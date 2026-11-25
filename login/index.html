@@ -11,12 +11,12 @@
 <link rel="apple-touch-icon" href="../assets/icons/apple-180.png">
 <script src="../assets/pwa.js?v=2" defer data-nobar></script>
 <script src="../assets/biz.js?v=2" defer></script>
-<title>로그인 · 내 계정 | 집코드</title>
+<title>로그인 · 내 계정 | 집예보</title>
 <meta name="description" content="카카오 간편 로그인하고 내 집·관심 단지·리포트를 여러 기기에서 이어 보세요.">
 <script>window.JDJ_CONFIG = { tool:'login', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/agents.js"></script>
-<script src="../assets/config.js?v=10"></script>
+<script src="../assets/config.js?v=11"></script>
 <script src="../assets/auth.js?v=10"></script>
 <script src="../assets/mine-core.js?v=20"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -62,11 +62,11 @@ h1{font-size:clamp(24px,6vw,32px);margin:6px 0 10px;line-height:1.3}
 </head>
 <body>
 <header class="top" data-noacct>
-  <a class="brand" href="../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
+  <a class="brand" href="../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a>
   <div class="badge plain">내 계정</div>
 </header>
 <main class="wrap" id="app" aria-live="polite"><div class="st">불러오는 중이에요…</div></main>
-<footer class="foot">★ 집코드 · <a href="../">홈</a> · <a href="../privacy/">개인정보처리방침</a></footer>
+<footer class="foot">★ 집예보 · <a href="../">홈</a> · <a href="../privacy/">개인정보처리방침</a></footer>
 <script>
 var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 (function(){
@@ -81,7 +81,7 @@ const clean = () => history.replaceState(null, '', location.pathname);
 
 function off(){
   app.innerHTML = `<h1>로그인 없이 모두 쓸 수 있어요</h1>
-    <p class="lead">집코드는 지금 로그인 없이 시세·차트·미래가치 점수·실거래 목록·맞춤 리포트를 모두 보여 드려요. 내 집은 이 기기에 저장돼요.</p>
+    <p class="lead">집예보는 지금 로그인 없이 시세·차트·미래가치 점수·실거래 목록·맞춤 리포트를 모두 보여 드려요. 내 집은 이 기기에 저장돼요.</p>
     <a class="btn primary" href="${JB.SITE}mine/">내 집 시세 보러 가기</a>`;
 }
 function intro(msg){
@@ -94,7 +94,7 @@ function intro(msg){
       <li><span class="ic">4</span><span><b>관심 단지·청약 알림을 메일로</b><small>관심 목록 단지에 새 거래·신고가가 나오거나 고른 청약 일정이 다가오면 하루 한 번 알려 드려요</small></span></li>
     </ul>
     ${A.btn('카카오 간편 로그인', 'login_page', 'full')}
-    <p class="note">집코드가 카카오에서 받는 정보는 <b>카카오 회원번호와 닉네임</b>뿐이에요. 이메일·전화번호는 받지 않아요. <a href="${JB.SITE}privacy/#member">개인정보처리방침</a></p></div>
+    <p class="note">집예보가 카카오에서 받는 정보는 <b>카카오 회원번호와 닉네임</b>뿐이에요. 이메일·전화번호는 받지 않아요. <a href="${JB.SITE}privacy/#member">개인정보처리방침</a></p></div>
     <p class="free">로그인하지 않아도 시세·차트·미래가치 점수, 최근 실거래 5건, 이 기기에 내 집 저장, 맞춤 분석 리포트 요약은 지금처럼 그대로 볼 수 있어요.</p>`;
 }
 async function finishLogin(){
@@ -148,7 +148,7 @@ async function account(){
   app.innerHTML = `<div class="who"><span class="av" aria-hidden="true">${esc((u.nick || '카')[0])}</span><div><b>${esc(u.nick)} 님</b><small>카카오 간편 로그인했어요</small></div></div>
     ${homesHtml(d)}${favsHtml(d)}${repsHtml(d)}${areasHtml(d)}${alertsHtml(st.alerts || [])}
     <div class="box"><h2>로그아웃</h2><p class="empty">이 기기에서만 로그아웃해요. 이 기기에 저장된 내 집 목록은 그대로 남아요.</p><div class="acts" style="margin-top:10px"><button type="button" class="btn ghost" id="outBtn">로그아웃</button></div></div>
-    <div class="box del"><h2>탈퇴</h2><p class="empty">탈퇴하면 집코드가 보관한 카카오 회원번호·닉네임과 계정에 저장한 내 집·관심 단지·리포트·알림 신청을 바로 지워요. 지운 뒤에는 되살릴 수 없어요. 이 기기 브라우저에 저장된 내 집 목록은 남아 있고, 브라우저 설정에서 지울 수 있어요.</p>
+    <div class="box del"><h2>탈퇴</h2><p class="empty">탈퇴하면 집예보가 보관한 카카오 회원번호·닉네임과 계정에 저장한 내 집·관심 단지·리포트·알림 신청을 바로 지워요. 지운 뒤에는 되살릴 수 없어요. 이 기기 브라우저에 저장된 내 집 목록은 남아 있고, 브라우저 설정에서 지울 수 있어요.</p>
       <div class="acts" style="margin-top:10px"><button type="button" class="btn warn" id="delBtn">탈퇴하기</button></div><div class="msg" id="delMsg" role="status"></div></div>`;
   app.querySelectorAll('[data-fav]').forEach(b => b.onclick = () => { b.disabled = true; A.removeFav(d.favs[+b.dataset.fav]).then(account).catch(e => { b.textContent = e.message; }); });
   app.querySelectorAll('[data-rep]').forEach(b => b.onclick = () => { b.disabled = true; A.removeReport(d.reports[+b.dataset.rep].id).then(account).catch(e => { b.textContent = e.message; }); });
@@ -159,7 +159,7 @@ async function account(){
     const b = $('delBtn'), m = $('delMsg');
     if (!arm){ arm = true; b.classList.add('armed'); b.textContent = '한 번 더 누르면 탈퇴해요'; setTimeout(() => { if (arm){ arm = false; b.classList.remove('armed'); b.textContent = '탈퇴하기'; } }, 6000); return; }
     b.disabled = true; m.style.color = '#4E5968'; m.textContent = '지우는 중이에요…';
-    A.withdraw().then(() => { app.innerHTML = '<div class="st"><b>탈퇴했어요.</b><br>집코드가 보관하던 회원 정보와 계정에 저장한 자료를 모두 지웠어요.<br>로그인 없이 계속 쓸 수 있어요.</div><p style="text-align:center;margin-top:14px"><a class="btn ghost" href="' + JB.SITE + '">계산기 홈으로</a></p>'; })
+    A.withdraw().then(() => { app.innerHTML = '<div class="st"><b>탈퇴했어요.</b><br>집예보가 보관하던 회원 정보와 계정에 저장한 자료를 모두 지웠어요.<br>로그인 없이 계속 쓸 수 있어요.</div><p style="text-align:center;margin-top:14px"><a class="btn ghost" href="' + JB.SITE + '">계산기 홈으로</a></p>'; })
       .catch(e => { m.style.color = '#C2410C'; m.textContent = e.message; b.disabled = false; });
   };
 }

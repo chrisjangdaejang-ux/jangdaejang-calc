@@ -75,7 +75,7 @@ const strs = (noCm(view) + noCm(core)).match(/(['`])(?:(?!\1)[^\\]|\\.)*?[가-�
 const vis = strs.join('\n');
 for (const w of ['시험', '검증', '채점', '통과', '백테스트', '가중치']) check(`화면 문구 금지어 '${w}' 없음`, vis.includes(w), false);
 for (const w of ['리치고', '호갱노노', '직방', '밸류맵', '디스코', '부동산플래닛', '아실']) check(`경쟁 서비스 이름 '${w}' 없음`, vis.includes(w), false);
-check('서비스 이름은 집코드(회사명 아님)', !vis.includes('장대장부동산그룹') && vis.includes('집코드'), true);
+check('서비스 이름은 집예보(회사명 아님)', !vis.includes('장대장부동산그룹') && vis.includes('집예보'), true);
 check('없는 자료는 확인 불가로', (vis.match(/확인 불가/g) || []).length >= 5, true);
 check('출처 표시', (vis.match(/출처: /g) || []).length >= 4, true);
 

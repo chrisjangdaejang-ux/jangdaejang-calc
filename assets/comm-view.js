@@ -349,7 +349,7 @@
         + (shop ? `<div class="cm-row" style="margin-top:8px"><div class="k">영업 중인 가게 업종 구성</div><div class="v">${shop.n.toLocaleString()}곳 (${esc(K.qLabel(shop.at))})</div>
           <div class="d">${shop.mix.slice(0, 8).map(x => `${esc(x[0])} ${x[1].toLocaleString()}곳${x[2] != null ? `(${x[2] >= 0 ? '+' : ''}${x[2].toLocaleString()})` : ''}`).join(' · ')}${shop.prev ? ` — 괄호는 ${esc(K.qLabel(shop.prev))}보다 늘거나 준 수예요.` : ' — 업종별 변화는 다음 분기 자료가 쌓이면 비교해 드려요.'}</div><div class="cm-src">출처: ${esc(src.shop || '')}</div></div>`
           : `<div class="cm-row no" style="margin-top:8px"><div class="k">영업 중인 가게 수·업종 구성</div><div class="v">확인 불가</div><div class="d">${av.shop ? '이 지역 자료가 없어요.' : '소상공인시장진흥공단 상가(상권)정보를 받는 중이에요. 이 자료는 지금 영업 중인 가게만 알려 줘서, 변화는 분기마다 쌓은 뒤부터 비교할 수 있어요.'}</div><div class="cm-src">출처: ${esc(src.shop || '')}</div></div>`))}
-      ${det('임대료·빈 가게 비율·수익률', sumRone, `<div class="cm-def"><b>상가 임대료는 실거래처럼 신고되는 공개 자료가 없어요.</b> 그래서 집코드는 한국부동산원이 분기마다 표본 건물을 조사해 발표하는 지역 평균(상업용부동산 임대동향조사)을 그대로 보여 드려요. <b>공실률</b>은 비어 있는 가게·사무실 비율, <b>투자수익률</b>은 1년 동안 받은 임대 수입과 건물값 변화를 합친 수익률이에요.</div>
+      ${det('임대료·빈 가게 비율·수익률', sumRone, `<div class="cm-def"><b>상가 임대료는 실거래처럼 신고되는 공개 자료가 없어요.</b> 그래서 집예보는 한국부동산원이 분기마다 표본 건물을 조사해 발표하는 지역 평균(상업용부동산 임대동향조사)을 그대로 보여 드려요. <b>공실률</b>은 비어 있는 가게·사무실 비율, <b>투자수익률</b>은 1년 동안 받은 임대 수입과 건물값 변화를 합친 수익률이에요.</div>
         ${rone.length ? `<div class="cm-rows">${rone.map(x => `<div class="cm-row"><div class="k">${esc(x.area)} <small style="font-weight:600;color:#6B7684">(${esc(K.HOW[x.how] || '')})</small></div>
           <div class="d">${x.items.map(i => `${esc(i.label)} <b>${esc(i.v)}${esc(i.unit)}</b>${i.at ? ` (${esc(i.at)})` : ''}`).join(' · ')}</div></div>`).join('')}</div>
           <p class="basis">부동산원 조사 지역(상권)은 공식 경계 자료가 없어 이름이 이 시·군·구의 동 이름과 같은 곳만 이어 보여 드려요.</p><div class="cm-src">출처: ${esc(src.rone || '')}${CX.rone_at ? ` · ${esc(CX.rone_at)} 받음` : ''}</div>`
@@ -360,7 +360,7 @@
         ${sk.why ? `<ul class="why">${sk.why.map(w => `<li>${esc(w[0])}: 점수를 ${w[1] > 0 ? '올렸어요' : '내렸어요'}</li>`).join('')}</ul>` : ''}`
         : `<div class="cm-wait">${esc(K.scoreHead(CX))}</div>`}
       ${det('점수를 보여 주는 기준', sc && sc.length ? '과거에 잘 맞은 보유 기간만 보여 드려요' : '과거에 절반 넘게 맞은 보유 기간만 점수를 보여 드려요', `${sc && sc.length ? `<p class="basis">점수 = ${esc(sdShort(g))}의 시·군·구별 ${esc(tn)} 시세를 서로 비교한 순위예요(100점 만점, 50점이 가운데). 시장 전체가 내리면 점수가 높은 지역도 내릴 수 있어요.</p>` : ''}
-        <p class="basis">집코드는 과거 여러 때에 그때까지의 자료만으로 점수를 매겨 보고, 그 뒤 실제 가격과 절반 넘게 맞고 평균보다 나은 보유 기간에만 점수를 보여 드려요. 그 전에는 위의 사실 지표만 보여 드려요.</p>
+        <p class="basis">집예보는 과거 여러 때에 그때까지의 자료만으로 점수를 매겨 보고, 그 뒤 실제 가격과 절반 넘게 맞고 평균보다 나은 보유 기간에만 점수를 보여 드려요. 그 전에는 위의 사실 지표만 보여 드려요.</p>
         <ul class="why" style="font-size:14px">${K.btLines(CX && CX.bt).map(t => `<li>${esc(t)}</li>`).join('')}</ul>`)}
     </div>
 
@@ -374,7 +374,7 @@
       <div class="cm-trs">${moreBox(trs.map(t => { const p = K.tradePpm(t, k); return `<div class="cm-tr"><div class="a"><span>${esc(t.date)} · ${esc(t.dong)} ${esc(t.jibun)}${t.masked ? '<span class="cm-mask">일부 가림</span>' : ''}${t.est && window.JDJ_MAPJ ? ` <a class="cm-mapl cm-est" href="${esc(JDJ_MAPJ.url({ kind: 'g', g, dong: t.dong, name: `${t.dong} 통건물 (추정)`, price: t.amt, ll: [t.est.lat, t.est.lng], est: t.est.src, facts: K.estFacts(t.est) }))}" data-track="comm_est_to_map" aria-label="${esc(t.dong)} 통건물 추정 위치 지도에서 보기">추정 위치</a>` : ''}</span><b>${won(t.amt)}</b></div>
         <div class="b">${t.hi ? '<span class="jps-new">신고가</span> ' : ''}${esc(t.use)} · ${k === 'g' ? `대지 ${t.la ? t.la.toLocaleString() + '㎡' : '-'} · 연면적 ${t.ba.toLocaleString()}㎡` : `전용 ${t.ba}㎡${t.floor != null ? ' · ' + t.floor + '층' : ''}`}${p ? ` · ㎡당 ${K.perM2(p)}` : ''}${t.direct ? ' · <b>직거래</b>' : ''}${t.share ? ' · <b>지분</b>' : ''}</div></div>`; }), 5)}</div>
       ${moreBtn(5, trs.length, '거래')}
-      ${k === 'g' ? det('지번이 일부 가려진 이유', '국토교통부가 통건물 지번을 첫 자리만 남기고 공개해요', '<p class="basis">국토교통부는 통건물(일반 건물) 거래의 지번을 첫 자리만 남기고 가려서 공개해요(예: 5**). 그래서 집코드도 건물별로 묶지 않고 동·시·군·구 단위로만 모아 보여 드려요. 같은 이유로 통건물은 건물별 신고가를 확인할 수 없어요.</p><p class="basis"><b>추정 위치</b> 표시가 붙은 거래는 신고된 대지면적·연면적·준공 연도·용도가 같은 동의 공개 건축물대장에서 딱 한 건물과 맞은 경우예요. 그 건물 자리를 약 100m 단위로 지도에 보여 드리고, 지번은 공개하지 않아요. 맞춰 본 결과라 실제 거래 건물과 다를 수 있어요. 비슷한 건물이 여럿이거나 맞는 건물이 없으면 동 가운데로 보여 드려요. 위치는 행정안전부 주소정보 좌표가 있으면 그것을, 아직 없으면 지도 서비스 좌표를 기준으로 추정해요.</p>') : ''}
+      ${k === 'g' ? det('지번이 일부 가려진 이유', '국토교통부가 통건물 지번을 첫 자리만 남기고 공개해요', '<p class="basis">국토교통부는 통건물(일반 건물) 거래의 지번을 첫 자리만 남기고 가려서 공개해요(예: 5**). 그래서 집예보도 건물별로 묶지 않고 동·시·군·구 단위로만 모아 보여 드려요. 같은 이유로 통건물은 건물별 신고가를 확인할 수 없어요.</p><p class="basis"><b>추정 위치</b> 표시가 붙은 거래는 신고된 대지면적·연면적·준공 연도·용도가 같은 동의 공개 건축물대장에서 딱 한 건물과 맞은 경우예요. 그 건물 자리를 약 100m 단위로 지도에 보여 드리고, 지번은 공개하지 않아요. 맞춰 본 결과라 실제 거래 건물과 다를 수 있어요. 비슷한 건물이 여럿이거나 맞는 건물이 없으면 동 가운데로 보여 드려요. 위치는 행정안전부 주소정보 좌표가 있으면 그것을, 아직 없으면 지도 서비스 좌표를 기준으로 추정해요.</p>') : ''}
     </div>` : ''}
 
     ${u && window.JDJ_CM ? JDJ_CM.slot({ t: 'c', g, d: u.d, k: K.keyOf(u), n: K.nameOf(u) }) : ''}

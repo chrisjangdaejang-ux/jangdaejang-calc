@@ -2,7 +2,7 @@
    ① 문장: 위치는 '구간에 가까워요'까지, 차이는 범위로만, 표본이 적으면 '비교 자료 부족', 토지임대부는 비교하지 않음
    ② 자금 계획: 내 집 마련 계산기와 같은 loan-core.js 로 계산하고, 시점별 금액을 더하면 합계와 같음
    ③ 유료 리포트 키: 결제 서버 단지 키 형식 그대로 + 서버 가격표(cy)와 화면 가격이 같음
-   ④ 화면 문구 원칙(~요체, 금지 단어, 회사명 대신 집코드, 광고와 무관 문구), 청약 화면·상세 화면 연결
+   ④ 화면 문구 원칙(~요체, 금지 단어, 회사명 대신 집예보, 광고와 무관 문구), 청약 화면·상세 화면 연결
    자료 폴더를 주면 실제 chungyak/price.json 의 모든 공고로 카드·상세를 그려 오류·금지 단어가 없는지 봅니다. */
 const fs = require('fs'), vm = require('vm'), path = require('path');
 const ROOT = path.join(__dirname, '..');
@@ -26,7 +26,7 @@ const R = { no: '2026000001', name: '테스트 단지', sd: '서울특별시', s
 
 // ① 문장
 const card = C.card(R);
-check('카드: 분석 칸은 광고와 구분 표시', card.includes('cyp') && card.includes('집코드 분석 · 광고와 무관'), card.slice(0, 200));
+check('카드: 분석 칸은 광고와 구분 표시', card.includes('cyp') && card.includes('집예보 분석 · 광고와 무관'), card.slice(0, 200));
 check('카드: 위치는 구간에 가까움까지', card.includes('상위 구간에 가까워요') && !/비싸다|적정하다|저평가/.test(card));
 check('카드: 위치 근거(범위·표본 수)', card.includes('반경 1km 12건') && card.includes('92%보다 높아요'));
 check('카드: 차이는 범위(하한~상한) + 대표 주택형 금액', card.includes('14% 낮음 ~ 5% 낮음') && card.includes('-1억 6,800만 원 ~ -6,000만 원'), C.marginTxt(bandHi));

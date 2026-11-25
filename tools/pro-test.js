@@ -115,10 +115,10 @@ r = post({ action: 'proSave', o: A.o, t: A.t, profile: Object.assign({}, PROF, {
 check('중개보조원 등 없는 유형 → 거절', !r.ok, r);
 r = post({ action: 'proSave', o: A.o, t: A.t, profile: { role: 'pro', office: '김세무회계', name: '김세무', title: '세무사', phone: '010-2222-3333' }, secs: ['sum'] });
 check('다른 전문가는 등록번호 없이 가능', r.ok, r);
-r = post({ action: 'proSave', o: A.o, t: A.t, profile: Object.assign({}, PROF, { office: '집코드 공식 인증 중개사' }), secs: ['sum'] });
-check('이름에 집코드 사칭 → 거절', !r.ok, r);
-r = post({ action: 'proSave', o: A.o, t: A.t, profile: PROF, secs: ['sum'], notes: { summary: '집코드 분석 결과 꼭 오릅니다' } });
-check('의견에 집코드 분석 사칭 → 거절', !r.ok && /집코드가 쓴 것처럼/.test(r.err), r);
+r = post({ action: 'proSave', o: A.o, t: A.t, profile: Object.assign({}, PROF, { office: '집예보 공식 인증 중개사' }), secs: ['sum'] });
+check('이름에 집예보 사칭 → 거절', !r.ok, r);
+r = post({ action: 'proSave', o: A.o, t: A.t, profile: PROF, secs: ['sum'], notes: { summary: '집예보 분석 결과 꼭 오릅니다' } });
+check('의견에 집예보 분석 사칭 → 거절', !r.ok && /집예보가 쓴 것처럼/.test(r.err), r);
 r = post({ action: 'proSave', o: A.o, t: A.t, profile: Object.assign({}, PROF, { logo: 'data:image/svg+xml;base64,PHN2Zz4=' }), secs: ['sum'] });
 check('SVG 로고 거절(스크립트 위험)', !r.ok, r);
 r = post({ action: 'proSave', o: A.o, t: A.t, profile: Object.assign({}, PROF, { logo: 'data:image/png;base64,' + 'A'.repeat(50000) }), secs: ['sum'] });
@@ -225,9 +225,9 @@ check('화면 검사: 빠진 칸 모두 한 줄씩(이유 포함)', R.profileErr
 check('화면 검사: 자격은 비워도 되지만 적으면 목록 안에서', pe({ role: 'licensed', name: '김', title: '요리사', phone: '010-1111-2222' }) !== '');
 check('화면 검사: 예전 유형(pro) → 컨설팅·전문가(활동명·연락처만)', pe({ role: 'pro', office: 'a', phone: '010-1111-2222' }) === '' && R.cleanProfile({ role: 'pro' }).role === 'consult'
   && R.cleanProfile({ role: 'pro', title: '세무사' }).role === 'licensed');
-check('화면 검사: 사칭', pe(Object.assign({}, PROF, { office: '집코드 인증 사무소' })) !== '');
+check('화면 검사: 사칭', pe(Object.assign({}, PROF, { office: '집예보 인증 사무소' })) !== '');
 check('화면·서버 사칭 규칙 같음', String(R.FAKE) === String(T.PRO_FAKE));
-check('의견 사칭 검사', /집코드가 쓴/.test(R.notesError({ summary: '집코드의 분석으로는 확실' })) && R.notesError({ summary: '집코드 숫자를 같이 보세요' }) === '');
+check('의견 사칭 검사', /집예보가 쓴/.test(R.notesError({ summary: '집예보의 분석으로는 확실' })) && R.notesError({ summary: '집예보 숫자를 같이 보세요' }) === '');
 check('의견 상자 이름', R.opinionLabel(R.cleanProfile(PROF)) === '홍길동 공인중개사 의견' && R.opinionLabel(R.cleanProfile({ role: 'member', ceo: '홍길동', name: '이소속' })) === '이소속 공인중개사 의견'
   && R.opinionLabel(R.cleanProfile({ role: 'pro', name: '김세무', title: '세무사' })) === '김세무 세무사 의견');
 const nh = R.noteHtml(R.cleanProfile(PROF), '<img src=x onerror=alert(1)>\n둘째 줄', 'summary');
@@ -236,7 +236,7 @@ const hh = R.headHtml(R.cleanProfile(Object.assign({}, PROF, { logo: 'javascript
 check('머리말: 등록번호·소재지·연락처 표시, 이상한 로고 무시', /중개사무소 등록번호 11680-2020-00123/.test(hh) && /서울 강남구/.test(hh) && /02-1234-5678/.test(hh) && !/javascript:/.test(hh));
 check('카카오 주소는 카카오 도메인만', R.cleanProfile({ kakao: 'https://evil.com/x' }).kakao === '' && R.cleanProfile({ kakao: 'https://open.kakao.com/o/abc' }).kakao);
 const fh = R.footHtml({ refresh: true });
-check('하단 출처 표기: 데이터·분석 집코드', /데이터·분석: 집코드/.test(fh));
+check('하단 출처 표기: 데이터·분석 집예보', /데이터·분석: 집예보/.test(fh));
 check('항목 정리', R.cleanSecs(['fv', 'fv', 'x', 'money']).join() === 'fv,money');
 
 // 11. v20 유형 확대: 분양대행사 · 부동산 컨설팅·전문가 · 자격사 (중개보조원 제외, 공인중개사 법정 표기 유지)

@@ -7,10 +7,10 @@
 <meta name="theme-color" content="#FFFFFF">
 <link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
 <script src="../../assets/biz.js?v=2" defer></script>
-<title>결제하기 · 프리미엄 리포트 | 집코드</title>
+<title>결제하기 · 프리미엄 리포트 | 집예보</title>
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="집코드">
-<meta property="og:title" content="결제하기 · 프리미엄 리포트 | 집코드">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="결제하기 · 프리미엄 리포트 | 집예보">
 <meta property="og:description" content="공공기관 공식 자료 기반 단지 심층 분석 리포트">
 <meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/premium/checkout/">
 <meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/premium.png">
@@ -18,7 +18,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="결제하기 · 프리미엄 리포트 | 집코드">
+<meta name="twitter:title" content="결제하기 · 프리미엄 리포트 | 집예보">
 <meta name="twitter:description" content="공공기관 공식 자료 기반 단지 심층 분석 리포트">
 <meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/premium.png">
 <script>window.JDJ_CONFIG = { tool:'premium', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
@@ -29,13 +29,13 @@
 <link rel="stylesheet" href="../../assets/aplus.css?v=46">
 <script src="../../assets/nw.js?v=1" defer></script>
 <link rel="stylesheet" href="../../assets/pay.css?v=4">
-<script src="../../assets/config.js?v=10"></script>
+<script src="../../assets/config.js?v=11"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/pay.js?v=7"></script>
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="../../" aria-label="집코드 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집코드</a>
+  <a class="brand" href="../../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a>
   <div class="badge plain">프리미엄 리포트</div>
 </header>
 <main class="pay">
@@ -82,7 +82,7 @@
   <button type="button" class="paybtn" id="payBtn" disabled>결제하기</button>
   <p class="links">결제는 전자지급결제대행사 (주)토스페이먼츠를 통해 처리되며, 회사는 카드번호 등 결제 수단 정보를 저장하지 않아요.</p>
 </main>
-<footer class="foot">★ 집코드 · <a href="../../">홈</a></footer>
+<footer class="foot">★ 집예보 · <a href="../../">홈</a></footer>
 <style>.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}.pmsel{display:flex;flex-wrap:wrap;gap:8px 16px;margin:8px 0 4px}.pmsel label{display:flex;align-items:center;gap:6px;font-weight:600;cursor:pointer}#pmTestTip{display:block;font-size:13.5px;margin-top:6px}
 </style>
 <script>
@@ -99,7 +99,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
     return;
   }
   $('editLink').href = P.ROOT + '?p=' + plan + '&k=' + keys.map(encodeURIComponent).join('!');
-  $('pName').textContent = ((window.JDJ_SITE && window.JDJ_SITE.SITE_NAME) || '집코드') + ' ' + pr.name;
+  $('pName').textContent = ((window.JDJ_SITE && window.JDJ_SITE.SITE_NAME) || '집예보') + ' ' + pr.name;
   $('pDesc').textContent = pr.desc;
   $('pPrice').textContent = P.won(pr.amount);
   const isCy = k => /^cy\d+$/.test((P.keyParse(k) || {}).band || '');   /* 청약 분양가 리포트: 평형 자리에 'cy'+공고번호 */
@@ -158,7 +158,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
     busy = true; sync(); err('');
     try {
       const o = REVIEW   // 심사용: 서버(판매 잠금)에 주문을 만들지 않고 테스트 주문번호로 결제창만 염 — 승인(confirm)도 하지 않으므로 청구 없음
-        ? { orderId: P.REVIEW_PREFIX + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 8).toUpperCase(), orderName: ((window.JDJ_SITE && JDJ_SITE.SITE_NAME) || '집코드') + ' ' + pr.name + ' (테스트)', amount: pr.amount }
+        ? { orderId: P.REVIEW_PREFIX + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 8).toUpperCase(), orderName: ((window.JDJ_SITE && JDJ_SITE.SITE_NAME) || '집예보') + ' ' + pr.name + ' (테스트)', amount: pr.amount }
         : await P.post('createOrder', { product: plan, keys, contact: $('contact').value.trim(), agree: $('refundOk').checked });
       if (!WINDOW_MODE && o.amount !== pr.amount) await widgets.setAmount({ currency: 'KRW', value: o.amount });   // 금액은 서버 기준
       const base = location.origin + P.ROOT;

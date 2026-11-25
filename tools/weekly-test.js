@@ -33,8 +33,8 @@ check('기록이 없으면 설명 숫자도 없음', K.zeroText(K.cmpSummary(nul
 check('자료 늦은 곳은 숫자 대신 안내', K.chgCell(K.row(V, '11680'), 'w', 30).t, '자료 확인 늦음');
 check('같은 신고 기간 판이 없으면 거래량 비교 없음', K.volCell(K.row(V, '00'), V), { t: '—', why: '같은 신고 기간 비교 준비 중' });
 check('같은 신고 기간 거래량', K.volCell({ vc: -12.34, vp: 5600 }, V), { t: '−12.3%', why: '지난주 5,600건(같은 신고 기간)' });
-const C = K.cite(V, '집코드');
-check('인용 첫 줄 형식', C.line, '자료: 집코드 주간 실거래 동향(국토교통부 실거래가 분석, 2026.11.27 기준)');
+const C = K.cite(V, '집예보');
+check('인용 첫 줄 형식', C.line, '자료: 집예보 주간 실거래 동향(국토교통부 실거래가 분석, 2026.11.27 기준)');
 check('인용에 주·판·잠정', C.detail.startsWith('2026년 46번째 주(11/9~11/15 계약) 제2판 · 잠정'), true);
 check('인용 고정 주소에 판 번호', C.url, 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/weekly/2026-46/?v=2');
 check('내려받기 주소', K.urls(V, 1), { csv: '/jangdaejang-data/data/weekly/2026-46/v1.csv', json: '/jangdaejang-data/data/weekly/2026-46/v1.json',
@@ -75,9 +75,9 @@ const Vs = Object.assign({}, V, { seg: { '00': { age: [{ nm: '신축(5년 이하
 check('연식별 줄(표본 부족은 ok=false)', [K.segRows(Vs, '00', 'age', 'w')[0].ok, K.segRows(Vs, '00', 'age', 'm')[0].chg], [false, 0.3]);
 const Vp = Object.assign({}, V, { top: { m: { up: [{ sd: '서울', nm: '중랑구', chg: 2.31, np: 95 }], down: [] } } });
 check('기사 제목 후보는 자료 숫자만', K.pressTitles(Vp), ['지난주 서울 아파트, 같은 집 직전 거래보다 +0.50%', '지난주 전국 아파트 실거래 +0.12%…비교 거래 4,000건', '최근 4주 아파트값 가장 많이 오른 곳은 서울 중랑구(+2.31%)']);
-const pl = K.pressLines(Vp, '집코드');
+const pl = K.pressLines(Vp, '집예보');
 check('기사 문장: 칼럼체·기간·잠정·표본 수', [pl[0], pl.every(x => /다\.$|다\)\.$|\)\.$|였다\(.*\)\.$/.test(x)), pl.some(x => x.includes('잠정치')), pl.some(x => x.includes('비교한 거래는 4,000건'))],
-  ['집코드 주간 실거래 동향에 따르면 지난주(11월 9~15일 계약) 전국 아파트 매매는 5,000건 신고됐다(잠정).', true, true, true]);
+  ['집예보 주간 실거래 동향에 따르면 지난주(11월 9~15일 계약) 전국 아파트 매매는 5,000건 신고됐다(잠정).', true, true, true]);
 check('기사 문장 조사(로/으로)', pl.find(x => x.includes('중랑구')), '최근 4주 기준 가장 많이 오른 시·군·구는 서울 중랑구로 +2.31%였다(비교 95건).');
 check('방법 변경 안내: /weekly/·/press/ 모두, 숫자는 기록에서 채움', [main.includes('계산 방법을 바꿨어요'), main.includes('data-cz="m2"'), fs.readFileSync(path.join(ROOT, 'press/index.html'), 'utf8').includes('방법 변경(2026.11.21, 방법 판 2)')], [true, true, true]);
 const press = fs.readFileSync(path.join(ROOT, 'press/index.html'), 'utf8') + fs.readFileSync(path.join(ROOT, 'assets/press-view.js'), 'utf8');

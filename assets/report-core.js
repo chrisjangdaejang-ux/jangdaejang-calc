@@ -119,7 +119,7 @@ function rpPlaces(homes, favs) {
    → { subject, html, text }. 광고 없음. 순자산·보정 값은 싣지 않는다(메일은 전달될 수 있어서) */
 function rpMailHtml(cards, o) {
   o = o || {};
-  const site = o.site || '집코드', web = o.web || '', L = o.links || {}, text = [];
+  const site = o.site || '집예보', web = o.web || '', L = o.links || {}, text = [];
   const blocks = cards.map(x => {
     const c = x.c, lines = rpLines(c, x.g);
     text.push(`■ ${c.p.apt} ${c.p.band}`); lines.forEach(l => text.push(`${l.h}: ${l.t}`));
