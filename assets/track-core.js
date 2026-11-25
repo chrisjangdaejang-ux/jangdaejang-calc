@@ -5,7 +5,8 @@
      bt/g/{구}.json  단지별 과거 점수(tm: 분기 기준 월마다 [t0, 점수, 구 안 등수, 구 단지 수, 평당 시세, (상승 ‰, 같은 구 중간값 대비 ‰p, 구 안 백분위)×6·12·24개월])
      excluded.json   엔진 build_site.excluded_pub — 쓰는 항목(used)·뺀 항목(unit·off·region)의 이름과 쉬운 말 이유(가중치·기준값 없음)
    화면 말투(대표 확정 11/20): '시험·통과·검증·채점' 대신 '과거에 그대로 써 봤더니 N번 중 M번' — 이 파일이 만드는 문장에 그 단어를 쓰지 않는다.
-   window.JDJ_TRACK = { scopes, shortOf, wavg, head, cards, weak, grades, regionRows, yearRows, phaseRows, period, bars, tmUnits, tmPick, tmRows, items, ITEM, ymKo, pp, pc } */
+   window.JDJ_TRACK = { scopes, shortOf, wavg, head, cards, weak, grades, regionRows, yearRows, phaseRows, period, bars, tmUnits, tmPick, tmRows, items, ITEM, ymKo, pp, pc,
+                        CASE_OF, casesOf, reasonOf, method(뺀 이유·사례·표시), audit(일관성 점검) } */
 (function (root) {
   'use strict';
   const r1 = v => Math.round(v * 10) / 10;
@@ -228,7 +229,89 @@
     return { use, out, nodata, reasons: EX.reasons || {} };
   }
 
-  const API = { scopes, shortOf, wavg, head, cards, weak, grades, regionRows, yearRows, phaseRows, period, bars, tmUnits, tmPick, tmRows, items, ITEM, ymKo, ymAdd, pp, pc, nf, J };
+  /* ---------- 뺀 항목 이유·과거 사례·어디에 쓰는지(/guide/method/) — 대표 지적 2026-11-25 ----------
+     예전에는 엔진이 모든 뺀 항목에 같은 틀의 문장('시기마다 방향이 바뀌어…')을 붙여, 아래 과거 사례(같은 방향이 뚜렷함)와 어긋났어요.
+     이제 이유는 두 가지 실제 결과로 정해요: ① 엔진이 점수에 넣어 과거에 그대로 써 본 결과(code: unstable 방향이 바뀜 · no_gain 더 잘 맞히지 못함)
+     ② 그 항목만 따로 떼어 본 과거 사례(evidence.json → narrative.js xCases: 구간마다 같은 방향이 뚜렷했는지 ok).
+     과거 사례 표 ↔ 항목: 항목마다 자기 구간만(신축 프리미엄 = 지은 지 10년 이내, 재건축 기대감 = 25년 이상) — 같은 사례 문장이 두 항목에 붙지 않게. */
+  const CASE_OF = { sub: [['sd'], ['sw']], size: [['hh']], liq: [['tv12'], ['to']], sch: [['scr']],
+    new: [['ag', ['n5', 'n10']]], old: [['ag', ['r29', 'r30']]] };
+  const HS = ['1', '2', '3', '5'];
+  /** 과거 사례 문장 함수: 종류 → narrative.js xCases(역까지 직선 거리는 서울 자료만, 나머지는 전국) — 화면과 매일 점검이 같은 것을 씀 */
+  const XS = { sd: ['s00', '서울'] };
+  function xcsOf(NAR, EVD) { return k => NAR && NAR.xCases && EVD ? NAR.xCases(EVD, k, (XS[k] || ['all'])[0], (XS[k] || ['', '전국'])[1]) : []; }
+  const hText = hs => hs.map(Number).sort((a, b) => a - b).join('·') + '년 보유';
+  /** 항목 하나의 과거 사례: xcs(종류) → [{ b, ok, up, text }] 중 그 항목 구간만 */
+  function casesOf(key, xcs) {
+    if (typeof xcs !== 'function') return [];
+    return (CASE_OF[key] || []).flatMap(([k, bands]) => (xcs(k) || []).filter(c => !bands || bands.includes(String(c.b))));
+  }
+  /** 뺀 이유(쉬운 말): 엔진 결과 code + 따로 떼어 본 과거 사례 방향 */
+  function reasonOf(name, code, cases, plain) {
+    const A = J(name, '은', '는'), ok = (cases || []).filter(c => c.ok);
+    if (code === 'unstable' || code === 'no_gain') {
+      if (ok.length) return { why: 'combo', text: `${A} 이 항목만 따로 떼어 본 과거 사례에서는 같은 방향이 뚜렷했어요(아래 과거 사례). 하지만 다른 항목과 함께 점수에 넣어 과거에 그대로 써 보니 같은 구 안에서 더 오를 단지를 더 잘 맞히지 못해 뺐어요.` };
+      if ((cases || []).length) return { why: code === 'unstable' ? 'flip_mixed' : 'gain_mixed', text: code === 'unstable'
+        ? `${A} 점수에 넣어 과거에 그대로 써 보니 시기마다 집값에 주는 방향이 바뀌었고(어떤 때는 오르는 쪽, 어떤 때는 내리는 쪽), 따로 떼어 본 과거 사례도 구간마다 더 오른 단지와 덜 오른 단지가 비슷해서 뺐어요.`
+        : `${A} 점수에 넣어 과거에 그대로 써 보니 더 잘 맞히지 못했고, 따로 떼어 본 과거 사례도 구간마다 더 오른 단지와 덜 오른 단지가 비슷해서 뺐어요.` };
+      return { why: code === 'unstable' ? 'flip' : 'gain', text: code === 'unstable'
+        ? `${A} 점수에 넣어 과거에 그대로 써 보니 시기마다 집값에 주는 방향이 바뀌어(어떤 때는 오르는 쪽, 어떤 때는 내리는 쪽) 맞히지 못해 뺐어요.`
+        : `${A} 점수에 넣어 과거에 그대로 써 보니 더 잘 맞히지 못해 뺐어요.` };
+    }
+    return { why: code || '', text: plain || '' };
+  }
+  /** 어디에 쓰는지 표시: 단지 점수에서는 뺐지만 구 점수에는 씀 / ○년 보유에서만 씀(그 기간 목록 기준) */
+  function useMap(EX) {
+    const U = (EX && EX.used) || {}, byH = {};
+    for (const h of HS) for (const [k] of ((U.unit || {})[h] || [])) (byH[k] = byH[k] || []).push(h);
+    const reg = new Map(); for (const [k, nm] of (U.region || [])) reg.set(k, nm);
+    return { byH, reg, hs: HS.filter(h => ((U.unit || {})[h] || []).length) };
+  }
+  /** 화면 묶음(/guide/method/): items() + 뺀 항목마다 이유·과거 사례·표시(tags), 쓰는 항목마다 '○년 보유에서만' 표시.
+      xcs: 과거 사례 종류 → 문장(narrative.js xCases 를 시·도에 맞춰 감싼 함수), 없으면 사례 없이 */
+  function method(EX, h, xcs) {
+    const I = items(EX, h); if (!I) return null;
+    h = String(h || 2);
+    const M = useMap(EX);
+    I.use.forEach(x => {
+      x.tags = [];
+      if (x.kind === 'unit') { const hs = M.byH[x.key] || []; if (hs.length && hs.length < M.hs.length) x.tags.push({ t: 'only', text: `${hText(hs)}에서만 써요` }); }
+    });
+    I.out.forEach(x => {
+      x.cases = x.kind === 'unit' ? casesOf(x.key, xcs) : [];
+      const r = reasonOf(x.name, x.code, x.cases, x.plain); x.why = r.why; x.reason = r.text;
+      x.tags = [];
+      if (x.kind === 'unit' && M.reg.has(x.key)) x.tags.push({ t: 'region', text: `단지 점수에서는 뺐지만 구 점수에는 써요(‘${M.reg.get(x.key)}’)` });
+      const hs = x.kind === 'unit' ? (M.byH[x.key] || []).filter(v => v !== h) : [];
+      if (hs.length) x.tags.push({ t: 'only', text: `${hText(hs)}에서만 써요(${Number(h)}년 보유 점수에서는 뺐어요)` });
+    });
+    return I;
+  }
+  /** 일관성 점검(매일 자동 점검 tools/method-consistency-test.js · 화면 점검 e2e): 문제 문장 목록, 없으면 []
+      ① 이유가 '방향이 바뀌었다'는데 그 항목 과거 사례는 같은 방향이 뚜렷함 ② 같은 과거 사례 문장이 두 항목에 붙음
+      ③ 뺀 항목인데 다른 곳(구 점수·다른 보유 기간)에 쓰면서 그 표시가 없음 ④ 같은 이름이 쓰는 항목·뺀 항목 양쪽에 */
+  function audit(I, EX, h) {
+    if (!I) return [];
+    h = String(h || 2);
+    const bad = [], M = useMap(EX), seen = new Map();
+    for (const x of I.out) {
+      const ok = (x.cases || []).some(c => c.ok);
+      if (ok && /방향이\s*(바뀌|뒤집|불안정)/.test(x.reason || x.plain || '')) bad.push(`${x.name}: 이유는 '방향이 바뀜'인데 과거 사례는 같은 방향이 뚜렷해요`);
+      for (const c of (x.cases || [])) {
+        const o = seen.get(c.text);
+        if (o && o !== x.name) bad.push(`같은 과거 사례 문장이 '${o}'·'${x.name}' 두 항목에 붙어 있어요: ${c.text.slice(0, 40)}…`);
+        else seen.set(c.text, x.name);
+      }
+      const tags = (x.tags || []).map(t => t.t);
+      if (x.kind === 'unit' && M.reg.has(x.key) && !tags.includes('region')) bad.push(`${x.name}: 구 점수에는 쓰는데 '단지 점수에서는 뺐지만 구 점수에는 써요' 표시가 없어요`);
+      if (x.kind === 'unit' && (M.byH[x.key] || []).some(v => v !== h) && !tags.includes('only')) bad.push(`${x.name}: 다른 보유 기간 점수에는 쓰는데 '○년 보유에서만 써요' 표시가 없어요`);
+      if (I.use.some(u => u.name === x.name && u.kind === x.kind)) bad.push(`${x.name}: 쓰는 항목과 뺀 항목에 함께 있어요`);
+    }
+    return bad;
+  }
+
+  const API = { scopes, shortOf, wavg, head, cards, weak, grades, regionRows, yearRows, phaseRows, period, bars, tmUnits, tmPick, tmRows, items, ITEM, ymKo, ymAdd, pp, pc, nf, J,
+    CASE_OF, casesOf, reasonOf, method, audit, xcsOf };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_TRACK = API;
 })(typeof window !== 'undefined' ? window : this);

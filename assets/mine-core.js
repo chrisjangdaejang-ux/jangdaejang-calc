@@ -62,7 +62,41 @@
       if (Array.isArray(u.al) && u.al.length) d.al = (d.al || []).concat(u.al.filter(a => !(d.al || []).includes(a)));
     }
     for (const d of m.values()) d.bands.sort((a, b) => a[4] - b[4]);
+    addNicks(m);
     return m;
+  }
+  /* ---------- 흔히 부르는 별명(사람들이 실제로 부르는 이름) ----------
+     [별명 목록, 시군구 코드, 동, 실거래 단지 이름 목록] — 이름은 공개 자료(data/price/s00·s08.json, 2026-11-25)에 그대로 있는 것만 넣었어요(추측 금지).
+     한 별명이 여러 단지를 묶어 부르면(엘리트 = 잠실엘스·리센츠·트리지움) 묶인 단지 모두에 붙어 함께 나와요. 자료에 없는 이름은 그냥 건너뜀.
+     새 별명은 '검색실패' 기록(logMiss)을 보고 이 표에 더해요. tools/mine-test.js 가 표 모양·검색 결과를 확인. */
+  const NICK = [
+    [['은마'], '11680', '대치동', ['은마']],
+    [['엘리트', '잠실 엘리트'], '11710', '잠실동', ['잠실엘스', '리센츠', '트리지움']],
+    [['엘리트레파'], '11710', '잠실동', ['잠실엘스', '리센츠', '트리지움', '레이크팰리스']],
+    [['엘리트레파'], '11710', '신천동', ['파크리오']],
+    [['헬리오', '헬리오시티'], '11710', '가락동', ['헬리오시티']],
+    [['둔촌주공', '올파포', '둔촌 올림픽파크포레온'], '11740', '둔촌동', ['올림픽파크포레온']],
+    [['잠실주공5단지', '잠실5단지', '잠실주공 5단지'], '11710', '잠실동', ['주공아파트 5단지']],
+    [['올림픽선수촌', '올선'], '11710', '방이동', ['올림픽선수기자촌1단지', '올림픽선수기자촌2단지', '올림픽선수기자촌3단지']],
+    [['마래푸'], '11440', '아현동', ['마포래미안푸르지오1단지', '마포래미안푸르지오2단지', '마포래미안푸르지오3단지', '마포래미안푸르지오4단지']],
+    [['아리팍'], '11650', '반포동', ['아크로리버파크']],
+    [['원베일리'], '11650', '반포동', ['래미안원베일리']],
+    [['래퍼', '래미안 퍼스티지'], '11650', '반포동', ['래미안퍼스티지']],
+    [['반자'], '11650', '반포동', ['반포자이']],
+    [['래대팰', '대치팰리스'], '11680', '대치동', ['래미안대치팰리스']],
+    [['우선미'], '11680', '대치동', ['개포우성1', '개포우성2', '선경1차(1동-7동)', '선경2차(8동-12동)', '선경3차', '한보미도맨션1', '한보미도맨션2']],
+    [['타팰', '타워팰리스'], '11680', '도곡동', ['타워팰리스1', '타워팰리스2', '타워팰리스3']],
+    [['디아너', '디에이치 아너힐즈'], '11680', '개포동', ['디에이치아너힐즈']],
+    [['래블', '래미안 블레스티지'], '11680', '개포동', ['래미안블레스티지']],
+    [['분당 시범단지', '서현 시범단지', '시범단지'], '41135', '서현동', ['시범한양', '시범우성', '시범현대', '시범한신', '시범삼성']]
+  ];
+  function addNicks(m) {
+    const by = new Map();
+    for (const d of m.values()) { const k = d.code + '|' + d.dong + '|' + d.apt; if (!by.has(k)) by.set(k, []); by.get(k).push(d); }
+    for (const [nicks, code, dong, names] of NICK) for (const nm of names) for (const d of (by.get(code + '|' + dong + '|' + nm) || [])) {
+      const al = d.al || (d.al = []);
+      for (const a of nicks) if (al.indexOf(a) < 0 && a !== d.apt) al.push(a);
+    }
   }
   /* ---------- 단지 이름 검색용 별칭 (원래 이름은 그대로 두고 검색어·이름을 같은 규칙으로 맞춘다) ----------
      엔진 scripts/aliases.py 의 norm() 과 같은 규칙. 두 가지 꼴로 비교한다:
@@ -661,7 +695,7 @@
   }
   const pctTxt = (v, d) => v == null ? '-' : (v > 0 ? '+' : '') + (v * 100).toFixed(d == null ? 1 : d) + '%';
 
-  const API = { PY, r100, STORE_KEY, MAX_HOMES, FEW, counts, lastIdx, median, toPrice, ymLabel, xTicks, danjiKey, agentKey, premiumKey, groupDanji, searchDanji,
+  const API = { PY, r100, STORE_KEY, MAX_HOMES, FEW, NICK, counts, lastIdx, median, toPrice, ymLabel, xTicks, danjiKey, agentKey, premiumKey, groupDanji, searchDanji,
     normName, normLight, splitNum, matchName, matchDanji, matchedAlias, suggestDanji, missRows, MISS_WHY, logMiss, dice, listRow, unitKey, hasScore, scoreOf, monthDeals, trades, lastDeal, isFew,
     bandSummary, changeBack, dongPosition, sggPosition, trend, volume, volumeCounts, cleanHome, homeId, parseStore, dumpStore, addHome, removeHome, findUnit, areaTypes, areaPick, areaUnit, vsBuy, heldMonths, reasons, reasonItems, won, pctTxt, cleanFx,
     ymAdd, ymDiff, ymKo, decodeSeries, histRow, histSeries, histWindow, histSpans, sggLine, vsSgg, highs, isNewHigh, lineParts, isSparse, valAt, gapOf, monthPoint };

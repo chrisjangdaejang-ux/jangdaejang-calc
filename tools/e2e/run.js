@@ -157,6 +157,23 @@ const JOURNEYS = {
     ok(a && b && a === b, `헬리오시티 84㎡대 최근 시세가 지도(${a}만)와 내 집 시세(${b}만)에서 같음`);
   },
 
+  /* 점수 읽는 법: 뺀 항목 이유·과거 사례·표시가 서로 맞는지(계산 규칙은 tools/method-consistency-test.js, 여기서는 실제 화면 글자로 한 번 더) */
+  async method(page, v) {
+    if (!v.mobile) return;
+    await open(page, 'guide/method/'); await sleep(2500);
+    const R = await page.evaluate(() => [...document.querySelectorAll('#outBox .ex li')].map(li => ({
+      name: (li.querySelector('b') || {}).innerText || '', reason: [...li.querySelectorAll(':scope > span:not(.tg):not(.xc)')].map(x => x.innerText).join(' '),
+      cases: [...li.querySelectorAll('.xc')].map(x => x.innerText), tags: [...li.querySelectorAll('.tg')].map(x => x.innerText) })));
+    ok(R.length > 0, '뺀 항목 목록이 보임');
+    const flip = R.filter(x => /방향이 바뀌/.test(x.reason) && x.cases.some(c => /같은 방향/.test(c))).map(x => x.name);
+    ok(!flip.length, '뺀 이유가 "방향이 바뀜"인데 과거 사례는 같은 방향인 항목 없음' + (flip.length ? ': ' + flip.join(', ') : ''));
+    const seen = new Map(), dup = [];
+    R.forEach(x => x.cases.forEach(c => { if (seen.has(c) && seen.get(c) !== x.name) dup.push(seen.get(c) + '·' + x.name); else seen.set(c, x.name); }));
+    ok(!dup.length, '같은 과거 사례 문장이 두 항목에 붙지 않음' + (dup.length ? ': ' + dup.slice(0, 3).join(', ') : ''));
+    const generic = R.filter(x => x.reason).map(x => x.reason.replace(x.name, '')).filter((t, i, a) => a.indexOf(t) !== i).length;
+    ok(R.length < 4 || generic < R.length - 3, '뺀 이유가 모두 같은 한 문장이 아님');
+  },
+
   /* 순위: 탭·기간 단추를 누르면 목록이 바뀜 */
   async rank(page, v) {
     await open(page, 'rank/');

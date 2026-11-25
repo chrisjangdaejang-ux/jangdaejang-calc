@@ -90,6 +90,9 @@
 .call{margin:14px 0 0;padding:14px 16px;border-radius:14px;background:#FFF6E8;border:1px solid #F3D9A8;font-size:15px;color:var(--sub);line-height:1.7}
 .call b{color:var(--amber)}
 .ex li .xc{display:block;font-size:13.5px;color:var(--sub);line-height:1.65;margin-top:6px;padding-left:10px;border-left:3px solid var(--line2)}
+.ex li .tg,.ic .tg{display:inline-block;font-size:12.5px;font-weight:700;line-height:1.4;margin:4px 6px 0 0;padding:2px 8px;border-radius:999px;background:#EAF7F0;color:var(--pos)}
+.ex li .tg.only,.ic .tg.only{background:var(--blue-l);color:var(--blue)}
+.exh{margin:16px 0 6px;font-size:16px}
 .xl{list-style:none;margin:10px 0 0;padding:0}
 .xl li{padding:10px 0;border-top:1px solid var(--line2);font-size:14.5px;line-height:1.65;color:var(--sub)}
 .xl li:first-child{border-top:0}
@@ -228,7 +231,7 @@
 </main>
 <footer class="foot">★ 집예보 · <a href="../../">홈</a> · <a href="../../guide/terms/">용어 모아 보기</a></footer>
 <script src="../../assets/config.js?v=11"></script>
-<script src="../../assets/track-core.js?v=2"></script>
+<script src="../../assets/track-core.js?v=3"></script>
 <script src="../../assets/narrative.js?v=19"></script>
 <script src="../../assets/strength.js?v=4" data-lazy></script>
 <script>
@@ -240,20 +243,15 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
   const [EX, BT, EVD, MT] = await Promise.all([get('excluded.json'), get('bt/index.json'), get('evidence.json'), get('meta.json')]);
   /* 과거 사례(evidence.json, 단지 화면 '오를 이유 · 조심할 점'과 같은 문장·같은 표시 기준 — narrative.js xCases) */
   const NAR = window.JDJ_NAR;
-  const XS = { sd: ['s00', '서울'] };
-  const xcs = k => NAR && NAR.xCases && EVD ? NAR.xCases(EVD, k, (XS[k] || ['all'])[0], (XS[k] || ['', '전국'])[1]) : [];
-  const xcLine = key => {
-    const ks = (NAR && NAR.XKIND_OF && NAR.XKIND_OF[key]) || [];
-    const L = ks.flatMap(k => xcs(k));
-    if (!L.length) return '';
-    const ok = L.filter(x => x.ok);
-    return ok.length ? ok.map(x => `<span class="xc">과거 사례: ${esc(x.text)}</span>`).join('')
-      : `<span class="xc">과거 사례: 구간마다 더 오른 단지와 덜 오른 단지가 비슷해 오를 이유나 조심할 점으로 쓰지 않아요.</span>`;
-  };
+  const xcs = T.xcsOf(NAR, EVD);
+  /* 뺀 항목마다 그 항목 구간의 과거 사례만(track-core CASE_OF — 신축 프리미엄·재건축 기대감이 같은 사례를 나눠 갖지 않게) */
+  const xcLine = x => (x.cases || []).length ? ((x.cases.filter(c => c.ok).length ? x.cases.filter(c => c.ok) : x.cases.slice(0, 1))
+    .map(c => `<span class="xc">과거 사례: ${esc(c.text)}</span>`).join('')) : '';
+  const tagHtml = x => (x.tags || []).map(t => `<span class="tg ${t.t}">${esc(t.text)}</span>`).join('');
   /* 성적표 한 줄(자료가 있을 때만): 과거에 그대로 써 봤더니 N번 중 M번 */
   const S = BT && BT.scopes && BT.scopes['전국'];
   if (S && S.sum) $('trkT').innerHTML = `과거 ${S.sum.months}개 달에 그대로 써 봤더니 <b>${S.sum.months}번 중 ${S.sum.win_months}번</b> 점수 상위 10% 단지가 하위 10%보다 더 올랐어요. <em>성적표 보기 →</em>`;
-  const I = T.items(EX, 2);
+  const I = T.method(EX, 2, xcs);
   if (!I) {
     const p = '<div class="pend">항목 목록은 다음 정기 업데이트 뒤 이곳에 공개돼요. 그동안 <a href="' + JB.SITE + 'about/">서비스 소개의 분석 항목 사전</a>에서 살펴보는 항목을 확인할 수 있어요.</div>';
     $('useBox').innerHTML = p; $('outBox').innerHTML = ''; $('outBox').previousElementSibling.hidden = true; $('outBox').previousElementSibling.previousElementSibling.hidden = true;
@@ -261,7 +259,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
   }
   const arrow = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
   const nu = I.use.filter(x => x.kind === 'unit').length, nr = I.use.length - nu;
-  const card = (x, i) => `<details class="ic${x.kind === 'region' ? ' rg' : ''}"><summary><span class="no">${i + 1}</span><span class="tx"><b>${esc(x.name)}</b><small>${x.kind === 'unit' ? '단지 항목 · 같은 구 단지끼리 비교' : '지역 항목 · 같은 시·도 구·시끼리 비교'}</small></span>${arrow}</summary><dl>`
+  const card = (x, i) => `<details class="ic${x.kind === 'region' ? ' rg' : ''}"><summary><span class="no">${i + 1}</span><span class="tx"><b>${esc(x.name)}</b><small>${x.kind === 'unit' ? '단지 항목 · 같은 구 단지끼리 비교' : '지역 항목 · 같은 시·도 구·시끼리 비교'}</small>${tagHtml(x)}</span>${arrow}</summary><dl>`
     + (x.d ? `<dt>어떤 자료로 무엇을 비교하나요</dt><dd>${esc(x.d)}</dd>` : '')
     + (x.w ? `<dt>왜 집값과 관련 있나요</dt><dd>${esc(x.w)}</dd>` : '')
     + (x.s ? `<dt>자료 출처</dt><dd>${esc(x.s)}</dd>` : '')
@@ -275,7 +273,11 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
   /* 뺀 항목: 흔히 중요하다고 알려진 항목이 있으면 먼저 짚어 줌(이름은 자료에서) */
   const famous = ['sub', 'new', 'jr', 'size', 'dd'].map(k => I.out.find(x => x.kind === 'unit' && x.key === k)).filter(Boolean).map(x => x.name);
   let o = famous.length ? `<p class="call"><b>흔히 하는 생각과 다른 결과</b><br>${esc(famous.join('·'))}처럼 집값에 중요하다고 알려진 항목도, 과거에 그대로 써 보니 ‘같은 구 안에서 앞으로 더 오를 단지’는 맞히지 못했어요. 지금 비싼 이유와 앞으로 더 오를 이유는 다를 수 있어요.</p>` : '';
-  o += `<ul class="ex" style="margin-top:12px">` + I.out.map(x => `<li><b>${esc(x.name)}</b><span>${esc(x.plain)}</span>${x.d ? `<small>살펴본 것: ${esc(x.d)}${x.s ? ` · ${esc(x.s)}` : ''}</small>` : ''}${x.kind === 'unit' ? xcLine(x.key) : ''}</li>`).join('') + '</ul>';
+  /* 뺀 항목을 두 묶음으로: 아예 안 쓰는 항목 / 단지 점수(2년)에서만 빼고 다른 곳(구 점수·다른 보유 기간)에는 쓰는 항목 */
+  const li = x => `<li><b>${esc(x.name)}</b>${tagHtml(x)}<span>${esc(x.reason)}</span>${x.d ? `<small>살펴본 것: ${esc(x.d)}${x.s ? ` · ${esc(x.s)}` : ''}</small>` : ''}${xcLine(x)}</li>`;
+  const part = I.out.filter(x => (x.tags || []).length), none = I.out.filter(x => !(x.tags || []).length);
+  if (none.length) o += `<h3 class="exh">점수 어디에도 쓰지 않는 항목</h3><ul class="ex">` + none.map(li).join('') + '</ul>';
+  if (part.length) o += `<h3 class="exh">2년 보유 단지 점수에서는 뺐지만 다른 곳에는 쓰는 항목</h3><p class="nd" style="margin-top:0">구·시 전체 흐름을 보는 ‘구 점수’나 다른 보유 기간 점수에서는 과거에 맞아서 써요.</p><ul class="ex">` + part.map(li).join('') + '</ul>';
   if (I.nodata.length) o += `<p class="nd">자료가 아직 모자라 과거에 써 보지 못한 항목: ${esc(I.nodata.join(' · '))} — 자료가 쌓이면 똑같이 써 보고 맞으면 넣어요.</p>`;
   $('outBox').innerHTML = o;
   /* 점수와 별개로, 단지 화면 '오를 이유 · 조심할 점'에 쓰는 과거 사례(같은 구간이었던 단지가 2년 뒤 자기 구 평균보다 어땠는지) */
