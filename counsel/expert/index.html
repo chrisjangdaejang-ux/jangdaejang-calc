@@ -19,8 +19,8 @@
 <script src="../../assets/config.js?v=11"></script>
 <script src="../../assets/auth.js?v=10"></script>
 <script src="../../assets/savefb.js?v=1"></script>
-<script src="../../assets/counsel-core.js?v=1"></script>
-<script src="../../assets/counsel.js?v=1"></script>
+<script src="../../assets/counsel-core.js?v=3"></script>
+<script src="../../assets/counsel.js?v=3"></script>
 <script src="../../assets/tabbar.js?v=5" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -65,13 +65,65 @@
       + '<div><label for="nm">이름</label><input id="nm" class="cs-inp" maxlength="20" autocomplete="name"></div>'
       + '<div id="noBox"><label for="no" id="noL"></label><input id="no" class="cs-inp" maxlength="30"></div>'
       + '<div><label for="org" id="orgL"></label><input id="org" class="cs-inp" maxlength="40"></div>'
-      + '<div><label for="ar">활동 지역 <small style="font-weight:500;color:var(--sub2)">(선택)</small></label><input id="ar" class="cs-inp" maxlength="30" placeholder="예: 서울 강남구"></div>'
-      + '<div><label for="in">한 줄 소개 <small style="font-weight:500;color:var(--sub2)">(선택 · 연락처·인터넷 주소는 쓸 수 없어요)</small></label><input id="in" class="cs-inp" maxlength="200" placeholder="예: 강남권 아파트 매매·임대차 상담 15년"></div>'
+      + '<div><label for="ar">활동 지역(구까지)</label><input id="ar" class="cs-inp" maxlength="30" placeholder="예: 서울 강남구"></div>'
+      + '<div><label for="yr">경력(년)</label><input id="yr" class="cs-inp" type="number" inputmode="numeric" min="0" max="60" placeholder="예: 12"></div>'
+      + '<div><label for="in">한 줄 소개 <small style="font-weight:500;color:var(--sub2)">(선택)</small></label><input id="in" class="cs-inp" maxlength="200" placeholder="예: 강남권 아파트 매매·임대차 상담 15년">' + CS.maskLine() + '</div>'
+      + '<div><label for="ad">사무소 주소 <small style="font-weight:500;color:var(--sub2)">(채팅이 열린 고객에게만 보여요)</small></label><input id="ad" class="cs-inp" maxlength="80" autocomplete="street-address"></div>'
+      + '<div><label for="tl">사무실 전화 <small style="font-weight:500;color:var(--sub2)">(선택 · 채팅이 열린 고객에게만 보여요)</small></label><input id="tl" class="cs-inp" type="tel" inputmode="numeric"></div>'
+      + '<div><label for="pf">프로필 사진 <small style="font-weight:500;color:var(--sub2)">(선택)</small></label><input id="pf" type="file" accept="image/jpeg,image/png" style="display:block;margin-top:6px;font:inherit"><p class="cs-help">얼굴이 잘 보이는 사진 한 장이면 충분해요. 간판·명함·사무소 이름처럼 글자가 들어간 사진은 올릴 수 없어요(운영자가 확인해요).</p></div>'
       + '<div><label for="ph">휴대폰 번호 <small style="font-weight:500;color:var(--sub2)">(운영자 확인 연락용 · 공개하지 않아요)</small></label><input id="ph" class="cs-inp" type="tel" inputmode="numeric" autocomplete="tel"></div>'
       + '<div><label for="em">이메일 <small style="font-weight:500;color:var(--sub2)">(결과·새 질문 알림용 · 공개하지 않아요)</small></label><input id="em" class="cs-inp" type="email" autocomplete="email"></div>'
-      + '<label class="cs-check"><input type="checkbox" id="ag"> 자격 확인을 위해 이름·등록번호·소속·연락처를 수집·이용하는 데 동의해요. 운영자가 공개된 조회 서비스로 등록 여부를 확인하며, 이름·종류·소속·지역·소개는 답변 옆에 공개돼요.</label>'
+      + '<label class="cs-check"><input type="checkbox" id="ag"> 자격 확인을 위해 이름·등록번호·소속·연락처를 수집·이용하는 데 동의해요. 누구나 보는 곳에는 성+○○·직군·활동 구·경력·소개·사진만 보이고, 실명·사무소 이름·주소·등록번호·사무실 전화는 내가 상담 제안을 보내거나 채팅을 수락한 고객에게만 공개돼요.</label>'
       + '<div class="cs-acts"><button type="submit" class="cs-btn" id="send">신청하기</button></div><p class="cs-msg" id="msg" aria-live="polite"></p></form>'
-      + '<aside class="cs-side"><section class="cs-panel cs-cream"><h2>답변 원칙</h2><ul><li>일반적인 안내로 답해 주세요. 확실하지 않은 숫자는 확인할 곳을 알려 주세요.</li><li>답변에는 연락처·홍보 문구를 쓸 수 없어요. 질문한 분이 고른 경우에만 연락처가 전해져요.</li><li>대출 질문에는 금융위원회에 등록된 대출모집인만 답할 수 있어요.</li><li>법령에서 자격이 필요한 업무(세무 대리·등기 대리·법률 사무 등)는 해당 자격을 가진 분만 맡을 수 있어요.</li></ul></section></aside></div>';
+      + '<aside class="cs-side"><section class="cs-panel cs-cream"><h2>답변 원칙</h2><ul><li>일반적인 안내로 답해 주세요. 확실하지 않은 숫자는 확인할 곳을 알려 주세요.</li><li>공개 답변에 적은 연락처·인터넷 주소는 자동으로 가려져요. 자세한 상담은 1:1 상담 채팅에서 이어가고, 채팅방 안에서는 연락처를 주고받을 수 있어요.</li><li>대출 질문에는 금융위원회에 등록된 대출모집인만 답할 수 있어요.</li><li>법령에서 자격이 필요한 업무(세무 대리·등기 대리·법률 사무 등)는 해당 자격을 가진 분만 맡을 수 있어요.</li></ul></section></aside></div>';
+    var f = document.getElementById('f');
+    function sync() {
+      var k = f.querySelector('input[name=kind]:checked').value, P = C.PROS[k];
+      document.getElementById('noBox').hidden = !P.no; document.getElementById('noL').textContent = P.no || '';
+      document.getElementById('orgL').innerHTML = esc(P.org) + (P.orgNeed ? '' : ' <small style="font-weight:500;color:var(--sub2)">(선택)</small>');
+      document.getElementById('kindNote').innerHTML = k === 'loan' ? '<p class="cs-note warn">금융위원회에 등록된 대출모집인만 신청할 수 있어요. 등록번호와 소속 금융회사(위탁사)를 확인해요.</p>'
+        : k === 'sales' ? '<p class="cs-note">분양상담사는 국가 자격이 없어서 소속 분양대행사를 확인해요. 확인 메일을 받으면 재직 확인서나 명함을 회신해 주세요.</p>' : '';
+    }
+    f.addEventListener('change', function (e) { if (e.target.name === 'kind') sync(); });
+    var photo = '';
+    document.getElementById('pf').onchange = function () {
+      var file = this.files && this.files[0]; photo = ''; if (!file) return;
+      var img = new Image(), url = URL.createObjectURL(file);
+      img.onload = function () { var k = Math.min(1, 360 / Math.max(img.width, img.height)), c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); var q2 = 0.8; photo = c.toDataURL('image/jpeg', q2); while (photo.length > 44000 && q2 > 0.3) { q2 -= 0.1; photo = c.toDataURL('image/jpeg', q2); } };
+      img.src = url;
+    };
+    CS.watchMask(document.getElementById('in'), function () { return document.getElementById('org').value; });
+    sync();
+    f.onsubmit = function (e) {
+      e.preventDefault();
+      var m = document.getElementById('msg'), b = document.getElementById('send'), v = function (id) { return document.getElementById(id).value.trim(); };
+      var body = { action: 'csProApply', kind: f.querySelector('input[name=kind]:checked').value, name: v('nm'), no: v('no'), org: v('org'), area: v('ar'), years: v('yr'), intro: v('in'), addr: v('ad'), tel: v('tl'), photo: photo, phone: v('ph'), email: v('em'), agree: document.getElementById('ag').checked };
+      if (body.name.length < 2) return CS.msg(m, '이름을 적어 주세요.');
+      if (!body.agree) return CS.msg(m, '자격 확인과 개인정보 수집·이용에 동의해 주세요.');
+      if (F) F.busy(b, '보내는 중…'); else b.disabled = true;
+      CS.post(body).then(load).catch(function (x) { if (F) F.restore(b); else b.disabled = false; CS.msg(m, x.message); });
+    };
+  }
+  function qLine(x) {
+    return '<a class="cs-item" href="' + esc(CS.link('counsel/?id=' + x.id)) + '"><div class="cs-meta"><span class="cs-tag gray">' + esc(x.cn) + '</span>' + (x.priv ? '<span class="cs-tag pv">1:1 비공개</span>' : x.pick ? '<span class="cs-tag">나를 지정</span>' : '')
+      + '<span>' + esc(x.day) + '</span></div><h3>' + esc(x.title) + '</h3><p>' + esc(x.snip) + '</p></a>';
+  }
+  function inbox(j) {
+    var p = j.pro;
+    app.innerHTML = head + '<div class="cs-grid"><div>'
+      + '<section class="cs-panel"><h2>나에게 온 질문 <span class="cs-tag' + (j.inbox.length ? ' pv' : ' gray') + '">' + j.inbox.length + '</span></h2><p class="cs-help">나를 지정한 질문과 1:1 비공개 상담이에요.</p>'
+      + (j.inbox.length ? '<div class="cs-list" style="margin-top:8px">' + j.inbox.map(qLine).join('') + '</div>' : '<p class="cs-help">지금은 없어요.</p>') + '</section>'
+      + '<section class="cs-panel"><h2>답을 기다리는 질문</h2><p class="cs-help">내가 답할 수 있는 공개 질문이에요(전문가 답변이 다섯 개 찬 질문은 빠져요).</p>'
+      + (j.open.length ? '<div class="cs-list" style="margin-top:8px">' + j.open.map(qLine).join('') + '</div>' : '<p class="cs-help">지금은 없어요.</p>') + '</section>'
+      + '<section class="cs-panel"><h2>상담 채팅' + (j.rooms.some(function (r) { return r.unread; }) ? ' <span class="cs-tag pv">새 메시지</span>' : '') + '</h2><p class="cs-help">질문 글에서 [상담 제안 보내기]로 먼저 말을 걸거나(하트 ' + C.USES.offer.n + '개), 질문한 분의 채팅 요청을 [채팅 수락](하트 ' + C.USES.accept.n + '개)하면 열려요. 질문한 분이 ' + C.CHAT.offerOpenH + '시간 안에 제안을 열어 보지도 않으면 하트는 저절로 돌아와요. 채팅방 안에서는 [내 연락처 보내기]로 연락처를 주고받을 수 있어요.</p>'
+      + (j.rooms.length ? '<div class="cs-list" style="margin-top:8px">' + j.rooms.map(function (r) {
+        return '<a class="cs-item" href="' + esc(CS.link('counsel/chat/?id=' + r.id)) + '"><div class="cs-meta"><span>' + esc(r.other.name) + '</span><span>' + esc(r.day) + '</span>' + (r.st === '요청' ? '<span class="cs-tag pv">수락 기다림</span>' : r.st === '제안' ? '<span class="cs-tag">제안 보냄</span>' : r.st !== '진행' ? '<span class="cs-tag gray">' + esc({ '끝남': '끝난 상담', '거절': '거절함', '만료': '기간 지남', '사양': '괜찮다고 함' }[r.st] || r.st) + '</span>' : '') + (r.refund ? '<span class="cs-tag ok">하트 돌려받음</span>' : '') + (r.gotContact ? '<span class="cs-tag ok">연락처 받음</span>' : '') + (r.unread ? '<span class="cs-n">새 메시지</span>' : '') + '</div><h3>' + esc(r.title) + '</h3></a>';
+      }).join('') + '</div>' : '<p class="cs-help">아직 상담 채팅이 없어요.</p>') + '</section>'
+      + '<section class="cs-panel"><h2>내 답변</h2>'
+      + (j.answers.length ? '<div class="cs-list" style="margin-top:8px">' + j.answers.map(function (a) {
+        return '<a class="cs-item" href="' + esc(CS.link('counsel/?id=' + a.qid)) + '"><div class="cs-meta"><span>' + esc(a.at) + '</span>' + (a.st !== '공개' ? '<span class="cs-tag pv">' + esc(a.st) + '</span>' : '') + '</div><h3>' + esc(a.title) + '</h3></a>';
+      }).join('') + '</div>' : '<p class="cs-help">아직 쓴 답변이 없어요.</p>') + '</section></div>'
+      + '<aside class="cs-side"><section class="cs-panel cs-cream"><h2>답변 원칙</h2><ul><li>일반적인 안내로 답해 주세요. 확실하지 않은 숫자는 확인할 곳을 알려 주세요.</li><li>공개 답변에 적은 연락처·인터넷 주소는 자동으로 가려져요. 자세한 상담은 1:1 상담 채팅에서 이어가고, 채팅방 안에서는 연락처를 주고받을 수 있어요.</li><li>대출 질문에는 금융위원회에 등록된 대출모집인만 답할 수 있어요.</li><li>법령에서 자격이 필요한 업무(세무 대리·등기 대리·법률 사무 등)는 해당 자격을 가진 분만 맡을 수 있어요.</li></ul></section></aside></div>';
     var f = document.getElementById('f');
     function sync() {
       var k = f.querySelector('input[name=kind]:checked').value, P = C.PROS[k];
@@ -108,8 +160,9 @@
         return '<tr><td>' + (a.qid ? '<a href="' + esc(CS.link('counsel/?id=' + a.qid)) + '">' + esc(a.title) + '</a>' : esc(a.title)) + '<div class="cs-help">' + esc(a.at) + (a.st !== '공개' ? ' · ' + esc(a.st) : '') + '</div></td>'
           + '<td>' + (a.contact ? '<b>' + esc(String(a.contact.phone).replace(/^(\d{3})(\d{3,4})(\d{4})$/, '$1-$2-$3')) + '</b>' + (a.contact.note ? '<div class="cs-help">' + esc(a.contact.note) + '</div>' : '') + '<div class="cs-help">' + esc(a.contact.at) + ' 받음</div>' : '<span class="cs-help">—</span>') + '</td></tr>';
       }).join('') + '</tbody></table>' : '<p class="cs-help">아직 쓴 답변이 없어요.</p>') + '</section></div>'
-      + '<aside class="cs-side"><section class="cs-panel cs-cream"><h2><span class="cs-tag ok">✓ 확인된 전문가</span></h2><p><b>' + esc(p.name) + '</b> · ' + esc(p.kn) + (p.org ? '<br>' + esc(p.org) : '') + (p.area ? '<br>' + esc(p.area) : '') + '</p>'
-      + '<p class="cs-help">소개를 바꾸고 싶으면 고객문의로 알려 주세요.</p></section></aside></div>';
+      + '<aside class="cs-side"><section class="cs-panel cs-cream"><h2><span class="cs-tag ok">✓ 확인된 전문가</span></h2><p><b>' + esc(p.realName || p.name) + '</b> · ' + esc(p.kn) + (p.org ? '<br>' + esc(p.org) : '') + (p.area ? '<br>' + esc(p.area) : '') + '</p>'
+      + '<p class="cs-help">누구나 보는 곳에는 \'' + esc(p.name) + '\'처럼 성만 보이고, 사무소 이름·연락처는 채팅이 열린 고객에게만 공개돼요. <a href="' + esc(CS.link('counsel/pro/?id=' + p.id)) + '">고객에게 보이는 내 프로필</a></p>'
+      + '<p class="cs-help">소개를 바꾸고 싶으면 고객문의로 알려 주세요.</p></section>' + (CS.heartOn() ? '<section class="cs-panel"><h2><span class="cs-heart"></span>전문가 하트</h2><p>공개 답변은 무료예요. 상담 제안을 보내거나 채팅 요청을 수락할 때 하트 ' + C.USES.offer.n + '개를 써요. 승인 때 무료 하트 ' + C.FREE_HEARTS + '개를 드려요.</p><div class="cs-acts"><a class="cs-btn sub full" href="' + esc(CS.link('counsel/heart/')) + '">내 하트 보기·충전</a></div></section>' : '') + '</aside></div>';
   }
 })();
 </script>

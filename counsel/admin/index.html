@@ -12,8 +12,8 @@
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/config.js?v=11"></script>
 <script src="../../assets/auth.js?v=10"></script>
-<script src="../../assets/counsel-core.js?v=1"></script>
-<script src="../../assets/counsel.js?v=1"></script>
+<script src="../../assets/counsel-core.js?v=3"></script>
+<script src="../../assets/counsel.js?v=3"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../assets/aplus.css?v=46">
@@ -80,6 +80,7 @@ details.sd summary{cursor:pointer;font-size:14px;font-weight:700;color:var(--blu
   function modBtns(x) {
     return '<div class="acts">' + (x.st !== '공개' ? '<button type="button" class="b ok" data-op="show" data-id="' + esc(x.id) + '">공개하기</button>' : '')
       + (x.st !== '임시조치' ? '<button type="button" class="b" data-op="hide" data-id="' + esc(x.id) + '">가리기(임시조치)</button>' : '')
+      + (/^Q/.test(x.id) && x.st === '임시조치' ? '<button type="button" class="b no" data-op="keep" data-id="' + esc(x.id) + '">계속 가림(쓴 하트 자동 환불)</button>' : '')
       + '<button type="button" class="b no" data-op="del" data-id="' + esc(x.id) + '">지우기</button></div>';
   }
   function qItem(x) {
@@ -90,8 +91,7 @@ details.sd summary{cursor:pointer;font-size:14px;font-weight:700;color:var(--blu
       + (x.cat === 'loan' ? '<div class="hint">대출 질문: 상담팀 답변은 일반 안내만(특정 상품 권유·중개 금지). 전문가 답변은 등록된 대출모집인만 할 수 있어요.</div>' : '')
       + '<div class="acts"><textarea data-ta="' + esc(x.id) + '" maxlength="' + C.LEN.answer[1] + '" placeholder="' + esc(SITE) + ' 상담팀으로 답하기 — 일반 안내로, 확실하지 않은 숫자는 확인할 곳을 알려 주세요."></textarea>'
       + '<button type="button" class="b main" data-ans="' + esc(x.id) + '">상담팀 답변 올리기</button></div>'
-      + '<div class="acts"><input type="url" data-vu="' + esc(x.id) + '" placeholder="영상으로 답했다면 유튜브 주소" value="' + esc(x.video || '') + '"><button type="button" class="b" data-video="' + esc(x.id) + '">영상 연결</button>'
-      + '<input type="number" min="1" max="10" data-gn="' + esc(x.id) + '" placeholder="무상 하트 수" style="flex:0 1 130px"><button type="button" class="b" data-grant="' + esc(x.id) + '">하트 선물</button></div></div>';
+      + '<div class="acts"><input type="url" data-vu="' + esc(x.id) + '" placeholder="영상으로 답했다면 유튜브 주소" value="' + esc(x.video || '') + '"><button type="button" class="b" data-video="' + esc(x.id) + '">영상 연결</button></div></div>';
   }
   function aItem(x) {
     return '<div class="it"><div class="hd"><b>' + esc(x.who.name || '') + '</b><span>' + esc(x.who.kn || '상담팀') + '</span><span>' + esc(x.at) + '</span><a href="' + esc(L('counsel/?id=' + x.qid)) + '" target="_blank" rel="noopener">질문 보기</a></div><p class="tx">' + esc(x.text) + '</p>' + why(x) + modBtns(x) + '</div>';
@@ -104,6 +104,7 @@ details.sd summary{cursor:pointer;font-size:14px;font-weight:700;color:var(--blu
   }
   function proOk(x) {
     return '<div class="it"><div class="hd"><b>' + esc(x.name) + '</b><span>' + esc(x.kn) + '</span><span>' + esc(x.org) + '</span><span>승인 ' + esc(x.day) + '</span></div>'
+      + '<div class="acts"><input type="number" min="1" max="20" data-gn="' + esc(x.id) + '" placeholder="무료 하트 수" style="flex:0 1 130px"><button type="button" class="b" data-grant="' + esc(x.id) + '">무료 하트 주기</button></div>'
       + '<div class="acts"><input type="text" maxlength="200" data-memo="' + esc(x.id) + '" placeholder="중지 이유(전문가에게 메일로 가요)"><button type="button" class="b no" data-pro="stop" data-id="' + esc(x.id) + '">답변 중지</button></div></div>';
   }
   function refund(x) {
@@ -112,9 +113,12 @@ details.sd summary{cursor:pointer;font-size:14px;font-weight:700;color:var(--blu
       + '<div class="acts"><button type="button" class="b ok" data-rf="ok" data-id="' + esc(x.id) + '">승인하고 토스 결제 취소</button><button type="button" class="b" data-rf="done" data-id="' + esc(x.id) + '">토스에서 직접 취소했어요</button>'
       + '<input type="text" maxlength="100" data-memo="' + esc(x.id) + '" placeholder="거절 이유"><button type="button" class="b no" data-rf="no" data-id="' + esc(x.id) + '">거절</button></div></div>';
   }
-  function late(x) {
-    return '<div class="it">' + qHd(x) + '<div class="tt"><a href="' + esc(L('counsel/?id=' + x.id)) + '" target="_blank" rel="noopener">' + esc(x.title) + '</a></div>'
-      + '<div class="acts"><button type="button" class="b ok" data-ret="' + esc(x.id) + '">쓴 하트 돌려주기</button></div></div>';
+  function room(x) {
+    return '<div class="it"><div class="hd"><b>신고 ' + x.n + '건</b><span>' + esc(x.why.join(', ')) + '</span><span>전문가 ' + esc(x.pro || '-') + '</span><span>' + esc(x.day) + ' 시작 · ' + esc(x.st) + '</span></div>'
+      + '<div class="acts"><button type="button" class="b" data-room="' + esc(x.id) + '">대화 열어 보기(열람 기록이 남아요)</button></div><div data-roombox="' + esc(x.id) + '"></div></div>';
+  }
+  function autoRef(x) {
+    return '<div class="it"><div class="hd"><b>' + esc(x.pro) + '</b><span>' + (x.kind === 'offer' ? '상담 제안' : '채팅 수락') + '</span><span>' + esc(x.why) + '</span></div><div class="tt" style="font-size:15px">' + esc(x.title) + '</div></div>';
   }
   function seeds(st) {
     var items = SEED && Array.isArray(SEED.items) ? SEED.items : [], on = {};
@@ -144,8 +148,9 @@ details.sd summary{cursor:pointer;font-size:14px;font-weight:700;color:var(--blu
         + sec('신고 받은 공개 글', j.repQ.concat(j.repA), function (x) { return x.qid ? aItem(x) : qItem(x) + modBtns(x); }, '아직 가릴 만큼 신고가 쌓이지 않은 글이에요.', false)
         + '</div><div>'
         + sec('전문가 신청', j.pros, proItem, '등록 여부를 공개 조회 서비스로 확인한 뒤 승인해 주세요. 반려하면 연락처는 바로 지워져요.', true)
+        + sec('신고된 상담 채팅', j.rooms || [], room, '운영자는 신고된 상담 채팅만 열어 볼 수 있고, 열 때마다 기록이 남아요. [내 연락처 보내기]로 보낸 휴대폰 번호는 여기에도 보이지 않아요.', true)
         + sec('하트 환불 요청', j.refunds, refund, '금액은 환불 기준대로 계산했어요. 승인하면 토스에 그 금액만 부분 취소를 보내요.', true)
-        + sec('7일 넘게 답이 없는 지정·비공개 질문', j.late, late, '하트를 쓴 질문이에요. 지정한 전문가가 답하지 않았다면 하트를 돌려줄 수 있어요(현금 환불 아님).', true)
+        + sec('하트 자동 환불 기록', j.autoRefunds || [], autoRef, '운영자가 할 일은 없어요. 질문한 분이 ' + C.CHAT.offerOpenH + '시간 안에 제안을 열어 보지 않았거나, 질문을 [계속 가림]·삭제해서 서버가 저절로 돌려 드린 기록이에요(현금 환불 아님).', false)
         + seeds(j.seeds)
         + sec('확인된 전문가', j.prosOk, proOk, '', false)
         + '</div></div>';
@@ -164,10 +169,18 @@ details.sd summary{cursor:pointer;font-size:14px;font-weight:700;color:var(--blu
     if (b.hasAttribute('data-op')) { var op = b.getAttribute('data-op'); if (op === 'del' && !confirm('이 글을 지울까요? 되돌릴 수 없어요.')) return; return run(b, { action: 'csAdminAct', id: id, op: op }); }
     if (b.hasAttribute('data-ans')) { var q = b.getAttribute('data-ans'), t = app.querySelector('[data-ta="' + q + '"]').value.trim(), ck = C.checkText('answer', t); if (!ck.ok) return alert(ck.err); return run(b, { action: 'csAnswer', id: q, text: t, team: true }); }
     if (b.hasAttribute('data-video')) { var v = b.getAttribute('data-video'); return run(b, { action: 'csAdminAct', id: v, op: 'video', url: app.querySelector('[data-vu="' + v + '"]').value.trim() }); }
-    if (b.hasAttribute('data-grant')) { var g = b.getAttribute('data-grant'), n = Number(app.querySelector('[data-gn="' + g + '"]').value); if (!(n >= 1 && n <= 10)) return alert('하트는 1~10개까지 줄 수 있어요.'); if (!confirm('질문한 분께 무상 하트 ' + n + '개를 줄까요? 무상 하트는 환불 대상이 아니에요.')) return; return run(b, { action: 'csAdminGrant', id: g, n: n }); }
+    if (b.hasAttribute('data-grant')) { var g = b.getAttribute('data-grant'), n = Number(app.querySelector('[data-gn="' + g + '"]').value); if (!(n >= 1 && n <= 20)) return alert('하트는 1~20개까지 줄 수 있어요.'); if (!confirm('이 전문가에게 무료 하트 ' + n + '개를 줄까요? 무료 하트는 환불 대상이 아니에요.')) return; return run(b, { action: 'csAdminGrant', pid: g, n: n }); }
     if (b.hasAttribute('data-pro')) { var po = b.getAttribute('data-pro'), m = memoOf(id); if (po !== 'ok' && !m) return alert('이유를 적어 주세요. 신청한 분께 메일로 가요.'); return run(b, { action: 'csAdminPro', id: id, op: po, memo: m }); }
     if (b.hasAttribute('data-rf')) { var ro = b.getAttribute('data-rf'); if (ro === 'ok' && !confirm('토스에 결제 부분 취소를 보낼까요? 되돌릴 수 없어요.')) return; if (ro === 'done' && !confirm('토스 상점관리자에서 이미 취소했나요? 환불 완료로 기록해요.')) return; return run(b, { action: 'csAdminRefund', id: id, op: ro, memo: memoOf(id) }); }
-    if (b.hasAttribute('data-ret')) { if (!confirm('쓴 하트를 돌려줄까요?')) return; return run(b, { action: 'csAdminReturn', id: b.getAttribute('data-ret') }); }
+    if (b.hasAttribute('data-room')) {
+      var rid = b.getAttribute('data-room'); if (!confirm('신고 확인을 위해 이 대화를 열까요? 열람 기록이 남아요.')) return;
+      b.disabled = true;
+      return CS.post({ action: 'csAdminRoom', id: rid, why: '신고 확인' }).then(function (j) {
+        app.querySelector('[data-roombox="' + rid + '"]').innerHTML = '<div class="hint" style="max-height:360px;overflow:auto">' + j.msgs.map(function (m) {
+          return '<div style="margin:4px 0"><b>' + ({ q: '질문한 분', p: '전문가', c: '연락처', s: '안내' }[m.k] || '') + '</b> ' + esc(m.text) + (m.hid ? ' <span style="color:#9A5B00">(연락 수단 가림)</span>' : '') + '</div>';
+        }).join('') + '</div>';
+      }).catch(function (x) { b.disabled = false; alert(x.message); });
+    }
     if (b.hasAttribute('data-seed')) return run(b, { action: 'csAdminSeed', sid: b.getAttribute('data-sid'), op: b.getAttribute('data-seed') });
   }
 })();

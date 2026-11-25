@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link rel="manifest" href="../../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
+<title>전문가 찾기</title>
+<!-- 고민 상담 전문가 찾기 — 동네(구)·직군·분야로 거르기. 기본 순서는 평점·응답률·답변 수·공정 순환(무게는 서버 비공개 설정 CS_PRO_RANK, 유료 순위 없음).
+     카드에는 채팅 전 공개 정보만. COUNSEL_ENABLED 가 false 면 준비 중(운영자 미리 보기 제외). 검색 제외(noindex) -->
+<script>window.JDJ_CONFIG = { tool:'counsel', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../assets/pwa.js?v=2" defer></script>
+<script src="../../assets/biz.js?v=3" defer></script>
+<script src="../../assets/track.js?v=2"></script>
+<script src="../../assets/agents.js"></script>
+<script src="../../assets/config.js?v=11"></script>
+<script src="../../assets/auth.js?v=10"></script>
+<script src="../../assets/counsel-core.js?v=3"></script>
+<script src="../../assets/counsel.js?v=3"></script>
+<script src="../../assets/tabbar.js?v=5" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/aplus.css?v=46">
+<style>
+.pf-filter{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 8px}
+.pf-filter label{display:flex;flex-direction:column;gap:4px;font-size:13.5px;font-weight:800;color:var(--sub);min-width:0}
+.pf-filter select{font:inherit;font-size:15px;min-height:46px;border:1px solid var(--line);border-radius:12px;padding:0 10px;background:#fff;color:var(--text);min-width:0}
+@media(max-width:520px){.pf-filter{grid-template-columns:1fr 1fr}.pf-filter label:first-child{grid-column:1/-1}}
+</style>
+<script src="../../assets/back.js?v=1" defer></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../../" aria-label="홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name></span></a>
+  <div class="badge plain">전문가 찾기</div>
+</header>
+<main class="cs-wrap" id="app"></main>
+<footer class="foot">자격은 운영자가 공개 조회로 확인했어요. 순서와 노출은 돈으로 살 수 없어요.<br>★ <span data-site-name></span> · <a href="../../">홈</a> · <a href="../../terms/#counsel">이용약관</a> · <a href="../../privacy/#counsel">개인정보처리방침</a></footer>
+<script>
+(function () {
+  'use strict';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+  var CS = window.JDJ_CS, C = window.JDJ_CSCORE, app = document.getElementById('app'), esc = CS.esc, SITE = CS.site();
+  document.title = '전문가 찾기' + (SITE ? ' — ' + SITE : '');
+  CS.style();
+  if (!CS.enabled()) { app.innerHTML = CS.soonHtml(); return; }
+  var q = new URLSearchParams(location.search), F = { gu: String(q.get('gu') || '').slice(0, 20), kind: C.PROS[q.get('k')] ? q.get('k') : '', cat: C.catName(q.get('c')) ? q.get('c') : '' }, page = 0, items = [], areas = null;
+  app.innerHTML = '<h1>전문가 찾기' + CS.pvTag() + '</h1><p class="cs-lead">자격을 확인한 공인중개사·세무사·분양상담사·법무사·대출상담사를 동네·직군·분야로 찾아보세요. 기본 순서는 평점·응답률·답변 수와 고른 순환을 섞어 정하고, 돈으로 순위를 살 수 없어요.</p>'
+    + '<div class="cs-grid"><div><div class="pf-filter"><label>동네<select id="fg"><option value="">전체</option></select></label><label>직군<select id="fk"><option value="">전체</option>' + Object.keys(C.PROS).map(function (k) { return '<option value="' + k + '"' + (F.kind === k ? ' selected' : '') + '>' + esc(C.PROS[k].name) + '</option>'; }).join('') + '</select></label>'
+    + '<label>분야<select id="fc"><option value="">전체</option>' + C.CATS.map(function (c) { return '<option value="' + c[0] + '"' + (F.cat === c[0] ? ' selected' : '') + '>' + esc(c[1]) + '</option>'; }).join('') + '</select></label></div>'
+    + '<p class="cs-help" id="cnt"></p><div class="cs-pcs" id="list"><p class="cs-lead">불러오고 있어요…</p></div><div class="cs-acts" id="more"></div></div>'
+    + '<aside class="cs-side"><section class="cs-panel cs-cream"><h2>이렇게 보여 드려요</h2><ul><li>누구나 보는 곳에는 성+○○·직군·활동 구·경력·소개·평점·응답률만 보여요.</li><li>사무소 이름과 연락처는 채팅이 열리면 그 고객에게만 보여요.</li><li>질문하기와 채팅은 무료예요.</li></ul>'
+    + '<div class="cs-acts"><a class="cs-btn full" href="' + esc(CS.link('counsel/?w=1')) + '">고민 묻기</a></div></section></aside></div>';
+  ['fg', 'fk', 'fc'].forEach(function (k) { document.getElementById(k).onchange = function () { F.gu = document.getElementById('fg').value; F.kind = document.getElementById('fk').value; F.cat = document.getElementById('fc').value; page = 0; items = []; load(); }; });
+  load();
+  function load() {
+    var box = document.getElementById('list'), more = document.getElementById('more');
+    if (!page) box.innerHTML = '<p class="cs-lead">불러오고 있어요…</p>';
+    CS.post({ action: 'csProList', gu: F.gu, kind: F.kind, cat: F.cat, page: page }).then(function (j) {
+      if (!areas) { areas = j.areas; document.getElementById('fg').innerHTML = '<option value="">전체</option>' + areas.map(function (a) { return '<option value="' + esc(a.gu) + '"' + (a.gu === F.gu ? ' selected' : '') + '>' + esc(a.gu) + ' (' + a.n + ')</option>'; }).join(''); }
+      items = items.concat(j.items);
+      document.getElementById('cnt').textContent = '확인된 전문가 ' + j.total + '명';
+      box.innerHTML = items.length ? items.map(function (p) { return CS.proCard(p, '<span><a class="cs-btn sub" style="min-height:40px;font-size:14px" href="' + esc(CS.link('counsel/?w=1&to=' + p.id)) + '">채팅하기</a><span class="cs-chatnote">' + esc(CS.CHAT_NOTE) + '</span></span>'); }).join('')
+        : '<div class="cs-empty">조건에 맞는 전문가가 아직 없어요. 조건을 넓혀 보거나, 질문을 올리면 전문가가 먼저 상담을 제안할 수 있어요.</div>';
+      more.innerHTML = j.more ? '<button type="button" class="cs-btn ghost full" id="mb">더 보기</button>' : '';
+      if (j.more) document.getElementById('mb').onclick = function () { page++; load(); };
+    }).catch(function (e) { box.innerHTML = '<div class="cs-empty">' + esc(e.message) + '</div>'; });
+  }
+})();
+</script>
+</body>
+</html>

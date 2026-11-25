@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="manifest" href="../../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
+<title>상담 채팅</title>
+<!-- 고민 상담 1:1 상담 채팅 — 앱 안에서만. 주소: ?id=R… 채팅방 · 없으면 내 채팅 목록. COUNSEL_ENABLED 가 false 면 '준비 중'(운영자 미리 보기 제외). 검색 제외(noindex)
+     실시간이 아니라 화면이 열려 있을 때 5초마다 새 메시지를 확인해요(화면이 숨겨지면 멈춤). 사진 보내기는 아직 없어요. -->
+<script>window.JDJ_CONFIG = { tool:'counsel', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../assets/pwa.js?v=2" defer></script>
+<script src="../../assets/biz.js?v=3" defer></script>
+<script src="../../assets/track.js?v=2"></script>
+<script src="../../assets/agents.js"></script>
+<script src="../../assets/config.js?v=11"></script>
+<script src="../../assets/auth.js?v=10"></script>
+<script src="../../assets/savefb.js?v=1"></script>
+<script src="../../assets/counsel-core.js?v=3"></script>
+<script src="../../assets/counsel.js?v=3"></script>
+<script src="../../assets/tabbar.js?v=5" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/aplus.css?v=46">
+<style>
+.ch{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:20px;background:#fff;overflow:hidden;min-width:0}
+.ch-hd{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 16px;border-bottom:1px solid var(--line2)}
+.ch-hd .nm{font-size:17px;font-weight:900}
+.ch-hd .sub{flex-basis:100%;font-size:13.5px;color:var(--sub2);line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ch-hd .sub a{color:inherit}
+.ch-note{margin:0;padding:10px 16px;background:var(--creamc);border-bottom:1px solid var(--creamb);font-size:13.5px;line-height:1.55;color:#5B4A12}
+.ch-list{flex:1;min-height:320px;max-height:min(62vh,640px);overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;background:#FAFBFC;overscroll-behavior:contain}
+.ch-day{align-self:center;font-size:12.5px;color:var(--sub2);background:#fff;border:1px solid var(--line2);border-radius:999px;padding:2px 10px}
+.ch-row{display:flex;flex-direction:column;max-width:min(78%,520px)}
+.ch-row.me{align-self:flex-end;align-items:flex-end}
+.ch-row.you{align-self:flex-start;align-items:flex-start}
+.ch-b{padding:10px 13px;border-radius:18px;font-size:15.5px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere;word-break:keep-all}
+.me .ch-b{background:var(--blue);color:#fff;border-bottom-right-radius:6px}
+.you .ch-b{background:#fff;border:1px solid var(--line);border-bottom-left-radius:6px}
+.ch-t{font-size:11.5px;color:var(--sub2);margin-top:3px;display:flex;gap:6px}
+.ch-c .ch-b{background:#E6F5EE;color:#0E7A4F;border:1px solid #BFE6D2;font-weight:800}
+.ch-sys{align-self:center;font-size:13px;color:var(--sub2);text-align:center;line-height:1.5}
+.ch-in{display:flex;gap:8px;align-items:flex-end;padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line2);background:#fff}
+.ch-in textarea{flex:1;min-width:0;font:inherit;font-size:16px;line-height:1.5;border:1px solid var(--line);border-radius:14px;padding:10px 12px;resize:none;max-height:140px;min-height:46px}
+.ch-in textarea:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,107,255,.15)}
+.ch-in button{flex:none;min-height:46px}
+.ch-tools{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;border-top:1px solid var(--line2);background:#fff}
+.ch-ended{padding:14px 16px;text-align:center;font-size:14.5px;color:var(--sub2);border-top:1px solid var(--line2)}
+.ch-box{padding:12px 16px;border-top:1px solid var(--line2);background:var(--gray2)}
+.rooms{display:grid;gap:10px}
+.room{display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:16px;padding:14px 16px;background:#fff;text-decoration:none;color:inherit;min-width:0}
+.room:hover{border-color:var(--blue)}
+.room .t{flex:1;min-width:0}
+.room .t b{display:block;font-size:16px;font-weight:800}
+.room .t span{display:block;font-size:13.5px;color:var(--sub2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.room .dot{width:10px;height:10px;border-radius:50%;background:#E03131;flex:none}
+@media(max-width:600px){.ch{border-radius:16px}.ch-list{max-height:none;min-height:52vh}.ch-row{max-width:86%}}
+</style>
+<script src="../../assets/back.js?v=1" defer></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../../" aria-label="홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name></span></a>
+  <div class="badge plain">상담 채팅</div>
+</header>
+<main class="cs-wrap" id="app"></main>
+<footer class="foot">★ <span data-site-name></span> · <a href="../../">홈</a> · <a href="../../terms/#counsel">이용약관</a> · <a href="../../privacy/#counsel">개인정보처리방침</a></footer>
+<script>
+(function () {
+  'use strict';
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+  var CS = window.JDJ_CS, C = window.JDJ_CSCORE, F = window.JDJ_SAVEFB, app = document.getElementById('app'), esc = CS.esc, SITE = CS.site();
+  document.title = '상담 채팅' + (SITE ? ' — ' + SITE : '');
+  CS.style();
+  if (!CS.enabled()) { app.innerHTML = CS.soonHtml(); return; }
+  if (!CS.loggedIn()) { app.innerHTML = '<h1>상담 채팅' + CS.pvTag() + '</h1><div class="cs-panel">' + CS.loginBox('상담 채팅') + '</div>'; return; }
+  var id = String(new URLSearchParams(location.search).get('id') || '');
+  if (/^R[0-9A-F]{10}$/.test(id)) room(id); else list();
+
+  function list() {
+    app.innerHTML = '<h1>상담 채팅' + CS.pvTag() + '</h1><p class="cs-lead">전문가와 나누는 1:1 상담이에요. 원하면 채팅방 안에서 [내 연락처 보내기]로 연락처를 주고받을 수 있어요.</p><div id="box"><p class="cs-lead">불러오고 있어요…</p></div>';
+    CS.post({ action: 'csRooms' }).then(function (j) {
+      document.getElementById('box').innerHTML = j.rooms.length ? '<div class="rooms">' + j.rooms.map(function (r) {
+        return '<a class="room" href="' + esc(CS.link('counsel/chat/?id=' + r.id)) + '"><div class="t"><b>' + esc(r.other.name) + (r.other.kn ? ' <span class="cs-tag ok" style="display:inline-flex">' + esc(r.other.kn) + '</span>' : '') + '</b><span>' + esc(r.title) + '</span><span>' + esc(r.day) + (r.st === '진행' ? '' : ' · ' + ({ '요청': '수락 기다리는 중', '제안': '상담 제안', '끝남': '끝난 상담', '거절': '이번엔 어려워요', '만료': '기간 지남', '사양': '괜찮다고 함' }[r.st] || r.st)) + '</span></div>' + (r.unread ? '<span class="dot" aria-label="새 메시지"></span>' : '') + '</a>';
+      }).join('') + '</div>' : '<div class="cs-empty">아직 상담 채팅이 없어요.<br>질문을 올릴 때 \'전문가 지정\'이나 \'1:1 비공개 상담\'을 고르거나, 답변한 전문가에게 [이 전문가와 채팅하기]를 누르면 요청돼요.</div>';
+    }).catch(function (e) { document.getElementById('box').innerHTML = '<div class="cs-empty">' + esc(e.message) + '</div>'; });
+  }
+
+  function room(rid) {
+    var n = 0, R = null, timer = null, busy = false, lastDay = '';
+    app.innerHTML = '<div class="cs-grid"><div><div class="ch" id="ch"><p class="cs-lead" style="padding:16px">불러오고 있어요…</p></div></div><aside class="cs-side" id="side"></aside></div>';
+    pull(true);
+    function start() { stop(); timer = setInterval(function () { if (!document.hidden) pull(false); }, C.CHAT.poll * 1000); }
+    function stop() { if (timer) clearInterval(timer); timer = null; }
+    document.addEventListener('visibilitychange', function () { if (document.hidden) stop(); else { pull(false); start(); } });
+    function pull(first) {
+      if (busy) return; busy = true;
+      return CS.post({ action: 'csRoom', id: rid, n: n, full: first === true }).then(function (j) {
+        busy = false;
+        if (first) { R = j.room; paint(); start(); }
+        if (j.msgs.length) add(j.msgs);
+        n = j.n;
+        if (R && j.st && j.st !== R.st) { R.st = j.st; paint(true); }
+      }).catch(function (e) {
+        busy = false;
+        if (first) { app.innerHTML = '<div class="cs-soon"><h1>채팅방을 열 수 없어요</h1><p>' + esc(e.message) + '</p><a href="' + esc(CS.link('counsel/chat/')) + '">내 상담 채팅</a></div>'; stop(); }
+      });
+    }
+    function note() {
+      return '두 분만 보는 1:1 상담이에요. 원하면 [내 연락처 보내기]로 상대에게 휴대폰 번호를 직접 보낼 수 있어요. 받은 연락처는 이 상담에만 써 주세요.';
+    }
+    function paint(keep) {
+      var ch = document.getElementById('ch'), old = keep ? document.getElementById('list') : null, on = R.st === '진행';
+      ch.innerHTML = '<div class="ch-hd">' + (R.side === 'q' ? CS.whoHtml(R.other) + (R.other.full ? '<button type="button" class="cs-lnk" id="fullB">전문가 전체 프로필</button>' : '') : '<b class="nm">' + esc(R.other.name) + '</b><span class="cs-tag gray">질문한 분</span>') + CS.pvTag()
+        + (on ? '' : '<span class="cs-tag ' + (R.st === '요청' ? 'pv">수락 기다리는 중' : R.st === '제안' ? 'pv">상담 제안' : 'gray">' + esc({ '끝남': '끝난 상담', '거절': '이번엔 어려워요', '만료': '기간 지남', '사양': '괜찮다고 함' }[R.st] || R.st)) + '</span>') + '<span class="sub">질문: <a href="' + esc(CS.link('counsel/?id=' + R.qid)) + '">' + esc(R.title) + '</a></span></div>'
+        + (R.side === 'q' && R.other.full && !openSeen() ? '<p class="cs-open" id="openBar">이제 전문가의 전체 프로필을 볼 수 있어요 <button type="button" class="cs-lnk" id="fullB2">전체 프로필</button><button type="button" class="cs-lnk" id="openX" aria-label="알림 닫기">닫기</button></p>' : '')
+        + '<p class="ch-note">' + esc(note()) + '</p><div id="fullBox"></div><div class="ch-list" id="list" aria-live="polite"></div>'
+        + (on ? '<form class="ch-in" id="f"><label for="tx" class="sr-only" style="position:absolute;left:-9999px">메시지</label><textarea id="tx" rows="1" maxlength="' + C.CHAT.len[1] + '" placeholder="메시지를 적어 주세요"></textarea><button type="submit" class="cs-btn" id="go">보내기</button></form>'
+          + '<div class="ch-tools">' + (!R.sent ? '<button type="button" class="cs-lnk" id="ct">내 연락처 보내기</button>' : '') + (R.side === 'q' ? '<button type="button" class="cs-lnk" id="ml">' + (R.mail ? '알림 메일 바꾸기' : '새 메시지 알림 메일 받기') + '</button>' : '')
+          + (R.side === 'q' ? '<button type="button" class="cs-lnk" id="bk">' + (R.blocked ? '차단 풀기' : '이 전문가 차단') + '</button>' : '')
+          + '<button type="button" class="cs-lnk" id="rp">신고</button><button type="button" class="cs-lnk" id="end">상담 끝내기</button></div><div id="box"></div><p class="cs-msg" id="msg" aria-live="polite" style="margin:0 16px 10px"></p>'
+          : R.st === '요청' ? reqBox()
+          : R.st === '제안' ? offerBox()
+          : R.st === '사양' ? '<div class="ch-ended">' + (R.side === 'q' ? '이번 제안은 괜찮다고 알렸어요.' : '질문한 분이 이번 제안은 괜찮다고 했어요.') + '</div><div id="box"></div>'
+          : R.st === '만료' && R.kind === 'offer' ? '<div class="ch-ended">' + (R.side === 'q' ? '기간이 지난 제안이에요.' : '질문한 분이 ' + C.CHAT.offerOpenH + '시간 안에 열어 보지 않았어요.' + (R.refund ? ' 쓴 하트는 저절로 돌려 드렸어요.' : '')) + '</div><div id="box"></div>'
+          : R.st === '거절' || R.st === '만료' ? '<div class="ch-ended">' + (R.st === '거절' ? '전문가가 이번 상담은 어렵다고 알려 왔어요.' : '전문가가 ' + C.CHAT.reqDays + '일 동안 수락하지 않아 요청이 만료됐어요.') + (R.side === 'q' ? ' 다른 전문가를 골라 보세요.<div class="cs-acts" style="justify-content:center"><a class="cs-btn" href="' + esc(CS.link('counsel/?id=' + R.qid)) + '">질문으로 돌아가 다른 전문가 고르기</a></div>' : ' 하트는 차감되지 않았어요.') + '</div><div id="box"></div>'
+          : '<div class="ch-ended">끝난 상담이에요. 대화는 상담이 끝난 날부터 ' + Math.round(C.CHAT.keepDays / 365) + '년 동안 보관한 뒤 지워져요.<div class="cs-acts" style="justify-content:center"><button type="button" class="cs-lnk" id="rp">신고</button></div></div><div id="box"></div>');
+      if (R.side === 'q' && R.acc && (R.st === '진행' || R.st === '끝남')) document.getElementById('box').insertAdjacentHTML('beforebegin', R.rated ? '<p class="cs-help" style="margin:8px 16px">내가 남긴 별점 ' + '★'.repeat(R.rated) + '</p>'
+        : '<div class="ch-box" id="rate"><span class="cs-lab">이 상담은 어땠나요? </span>' + [1, 2, 3, 4, 5].map(function (v) { return '<button type="button" class="cs-lnk" data-star="' + v + '" aria-label="별 ' + v + '개">' + '★'.repeat(v) + '</button>'; }).join(' ') + '<p class="cs-help" style="margin:4px 0 0">별점은 전문가 프로필 평점으로만 보여요.</p></div>');
+      if (old) { var nw = document.getElementById('list'); nw.innerHTML = old.innerHTML; nw.scrollTop = nw.scrollHeight; }
+      if (!keep) lastDay = '';
+      side();
+      bind();
+    }
+    function offerBox() {
+      if (R.side === 'p') return '<div class="ch-ended">상담 제안을 보냈어요. 질문한 분이 [대화하기]를 누르면 대화가 이어져요. ' + C.CHAT.offerOpenH + '시간 안에 열어 보지도 않으면 쓴 하트를 저절로 돌려 드려요.</div><div id="box"></div><p class="cs-msg" id="msg" aria-live="polite" style="margin:0 16px 10px"></p>';
+      var p = R.other;
+      return '<div class="ch-ended" style="color:var(--text)"><b>' + esc(p.name) + ' 전문가의 상담 제안이에요.</b><br><span class="cs-help">' + esc([p.kn, p.org].filter(Boolean).join(' · ')) + ' · 공개 답변 ' + (p.answers || 0) + '개 · ' + (p.rating ? '평점 ★ ' + Number(p.rating).toFixed(1) : '평점 없음') + '</span><br>위 메시지를 보고 이어서 이야기할지 골라 주세요. 모두 무료예요.'
+        + '<div class="cs-acts" style="justify-content:center"><button type="button" class="cs-btn" id="og">대화하기</button><button type="button" class="cs-btn ghost" id="op">괜찮아요</button><button type="button" class="cs-lnk" id="bk">이 전문가 차단</button></div></div><div id="box"></div><p class="cs-msg" id="msg" aria-live="polite" style="margin:0 16px 10px"></p>';
+    }
+    function openSeen() { try { return localStorage.getItem('jdj_cs_open_' + rid) === '1'; } catch (e) { return false; } }
+    function reqBox() {
+      if (R.side === 'q') return '<div class="ch-ended">전문가가 [채팅 수락]을 누르면 대화를 시작할 수 있어요. ' + C.CHAT.reqDays + '일 안에 수락하지 않으면 요청이 만료되고, 그때 다른 전문가를 고를 수 있어요.<div class="cs-acts" style="justify-content:center"><button type="button" class="cs-lnk" id="end">요청 취소</button></div></div><div id="box"></div><p class="cs-msg" id="msg" aria-live="polite" style="margin:0 16px 10px"></p>';
+      return '<div class="ch-ended" style="color:var(--text)"><b>질문한 분이 1:1 상담 채팅을 요청했어요.</b><br>수락하면 하트 ' + R.cost + '개가 차감되고 대화가 시작돼요. 수락하지 않으면 차감되지 않아요.'
+        + '<div class="cs-acts" style="justify-content:center"><button type="button" class="cs-btn" id="acc">채팅 수락 · 하트 ' + R.cost + '개</button><button type="button" class="cs-btn ghost" id="dec">이번에는 어려워요</button></div></div><div id="box"></div><p class="cs-msg" id="msg" aria-live="polite" style="margin:0 16px 10px"></p>';
+    }
+    function side() {
+      document.getElementById('side').innerHTML = '<section class="cs-panel cs-cream"><h2>상담 채팅 안내</h2><ul>'
+        + '<li>실시간 메신저가 아니라 화면이 열려 있는 동안 ' + C.CHAT.poll + '초마다 새 메시지를 확인해요.</li>'
+        + '<li>새 메시지 알림 메일은 같은 상담에서 한 시간에 한 번까지만 보내요.</li>'
+        + '<li>답변은 일반적인 안내예요. 계약·신고 전에는 관계 기관에 꼭 확인해 주세요.</li>'
+        + '<li>대화는 상담이 끝난 날부터 ' + Math.round(C.CHAT.keepDays / 365) + '년 보관한 뒤 지워지고, 탈퇴하면 바로 지워져요. 운영자는 신고된 상담만 확인해요.</li></ul>'
+        + '<div class="cs-acts"><a class="cs-btn ghost full" href="' + esc(CS.link('counsel/chat/')) + '">내 상담 채팅 목록</a></div></section>';
+    }
+    function hm(t) { var d = new Date(t); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); }
+    function dayOf(t) { var d = new Date(t); return d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일'; }
+    function add(msgs) {
+      var L = document.getElementById('list'); if (!L) return;
+      var atEnd = L.scrollHeight - L.scrollTop - L.clientHeight < 80;
+      L.insertAdjacentHTML('beforeend', msgs.map(function (m) {
+        var d = dayOf(m.at), h = d !== lastDay ? '<div class="ch-day">' + esc(d) + '</div>' : ''; lastDay = d;
+        if (m.k === 's') return h + '<div class="ch-sys">' + esc(m.text) + '</div>';
+        if (m.k === 'c') return h + '<div class="ch-row ch-c ' + (m.mine ? 'me' : 'you') + '"><div class="ch-b">' + (m.mine ? '내 연락처를 보냈어요 · ' : (R.side === 'q' ? '전문가의 연락처 · ' : '질문한 분의 연락처 · ')) + esc(m.text) + '</div><div class="ch-t">' + hm(m.at) + '</div></div>';
+        return h + '<div class="ch-row ' + (m.mine ? 'me' : 'you') + '"><div class="ch-b">' + esc(m.text) + '</div><div class="ch-t">' + (m.hid ? '<span>주민등록번호를 가렸어요</span>' : '') + hm(m.at) + '</div></div>';
+      }).join(''));
+      if (atEnd || msgs.some(function (m) { return m.mine; })) L.scrollTop = L.scrollHeight;
+    }
+    function bind() {
+      var f = document.getElementById('f'), tx = document.getElementById('tx'), msg = document.getElementById('msg'), box = document.getElementById('box');
+      if (tx) {
+        tx.oninput = function () { tx.style.height = 'auto'; tx.style.height = Math.min(140, tx.scrollHeight) + 'px'; };
+        tx.onkeydown = function (e) { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && window.matchMedia('(min-width:700px)').matches) { e.preventDefault(); f.requestSubmit(); } };
+        f.onsubmit = function (e) {
+          e.preventDefault();
+          var t = tx.value.trim(), b = document.getElementById('go'); if (!t) return;
+          b.disabled = true;
+          CS.post({ action: 'csSay', id: rid, text: t }).then(function (j) { tx.value = ''; tx.oninput(); b.disabled = false; msg.textContent = ''; if (j.notice) CS.msg(msg, j.notice, true); return pull(false); })
+            .catch(function (er) { b.disabled = false; CS.msg(msg, er.message); });
+        };
+      }
+      var ct = document.getElementById('ct');
+      if (ct) ct.onclick = function () {
+        box.innerHTML = '<div class="ch-box"><label class="cs-lab" for="ph">내 휴대폰 번호</label><input id="ph" type="tel" inputmode="numeric" autocomplete="tel" class="cs-inp" placeholder="010-0000-0000" style="margin:6px 0 8px">'
+          + '<p class="cs-help" style="margin:0 0 8px">이 채팅방의 상대 한 분에게만 보여요. 다른 사람이나 운영자에게는 보이지 않아요.</p><div class="cs-acts" style="margin:0"><button type="button" class="cs-btn" id="phgo">보내기</button><button type="button" class="cs-btn ghost" id="phx">닫기</button></div></div>';
+        document.getElementById('phx').onclick = function () { box.innerHTML = ''; };
+        document.getElementById('phgo').onclick = function () {
+          var ph = document.getElementById('ph').value;
+          if (!/^01[016789]\d{7,8}$/.test(ph.replace(/[^0-9]/g, ''))) return CS.msg(msg, '휴대폰 번호를 정확히 적어 주세요.');
+          if (!confirm('상대에게 휴대폰 번호가 보여요. 보낼까요?\n(받는 사람: ' + R.other.name + ' 한 분)')) return;
+          CS.post({ action: 'csSendContact', id: rid, phone: ph, agree: true }).then(function () { R.sent = true; paint(true); return pull(false); }).catch(function (er) { CS.msg(msg, er.message); });
+        };
+      };
+      var ml = document.getElementById('ml');
+      if (ml) ml.onclick = function () {
+        box.innerHTML = '<div class="ch-box"><label class="cs-lab" for="em">알림 받을 이메일 <small style="font-weight:500;color:var(--sub2)">(비우고 저장하면 알림을 끄고 지워요)</small></label><input id="em" type="email" autocomplete="email" class="cs-inp" style="margin:6px 0 8px">'
+          + '<p class="cs-help" style="margin:0 0 8px">새 메시지가 오면 내용 없이 알림만 보내요(같은 상담은 한 시간에 한 번까지). 이 상담 알림에만 쓰고 전문가에게는 보이지 않아요.</p><div class="cs-acts" style="margin:0"><button type="button" class="cs-btn" id="emgo">저장</button><button type="button" class="cs-btn ghost" id="emx">닫기</button></div></div>';
+        document.getElementById('emx').onclick = function () { box.innerHTML = ''; };
+        document.getElementById('emgo').onclick = function () {
+          CS.post({ action: 'csRoomMail', id: rid, email: document.getElementById('em').value.trim() }).then(function (j) { R.mail = j.mail; paint(true); CS.msg(document.getElementById('msg'), j.mail ? '알림 메일을 저장했어요.' : '알림 메일을 껐어요.', true); }).catch(function (er) { CS.msg(msg, er.message); });
+        };
+      };
+      var showFull = function () { var fb = document.getElementById('fullBox'); fb.innerHTML = fb.innerHTML ? '' : '<div style="padding:0 16px">' + CS.fullHtml(R.other) + '</div>'; };
+      ['fullB', 'fullB2'].forEach(function (k) { var e2 = document.getElementById(k); if (e2) e2.onclick = showFull; });
+      var ox = document.getElementById('openX');
+      if (ox) ox.onclick = function () { try { localStorage.setItem('jdj_cs_open_' + rid, '1'); } catch (e) {} document.getElementById('openBar').remove(); };
+      var acc = document.getElementById('acc');
+      if (acc) acc.onclick = function () {
+        if (!confirm('채팅을 수락할까요? 하트 ' + R.cost + '개가 차감돼요.')) return;
+        acc.disabled = true;
+        CS.post({ action: 'csRoomAccept', id: rid }).then(function () { return CS.post({ action: 'csRoom', id: rid, n: n, full: true }).then(function (j) { R = j.room; paint(true); if (j.msgs.length) add(j.msgs); n = j.n; }); })
+          .catch(function (er) { acc.disabled = false; CS.msg(msg, er.code === 'heart' ? er.message + ' 전문가 하트 화면에서 충전할 수 있어요.' : er.message); });
+      };
+      var dec = document.getElementById('dec');
+      if (dec) dec.onclick = function () {
+        if (!confirm('이번 상담 요청을 거절할까요? 하트는 차감되지 않아요.')) return;
+        CS.post({ action: 'csRoomDecline', id: rid }).then(function () { R.st = '거절'; paint(true); return pull(false); }).catch(function (er) { CS.msg(msg, er.message); });
+      };
+      var og = document.getElementById('og'), op = document.getElementById('op');
+      if (og) og.onclick = function () { CS.post({ action: 'csOfferAnswer', id: rid, op: 'go' }).then(function () { return CS.post({ action: 'csRoom', id: rid, n: n, full: true }).then(function (j) { R = j.room; paint(true); if (j.msgs.length) add(j.msgs); n = j.n; }); }).catch(function (er) { CS.msg(msg, er.message); }); };
+      if (op) op.onclick = function () { if (!confirm('이번 제안은 괜찮다고 알릴까요?')) return; CS.post({ action: 'csOfferAnswer', id: rid, op: 'pass' }).then(function () { R.st = '사양'; paint(true); return pull(false); }).catch(function (er) { CS.msg(msg, er.message); }); };
+      var bk = document.getElementById('bk');
+      if (bk) bk.onclick = function () {
+        if (!R.blocked && !confirm(R.other.name + ' 전문가를 차단할까요? 이 전문가는 앞으로 나에게 상담 제안을 보낼 수 없고, 이 상담도 끝나요.')) return;
+        CS.post({ action: 'csBlock', id: rid, off: !!R.blocked }).then(function (j) { R.blocked = j.blocked; if (j.blocked) R.st = '끝남'; paint(true); return pull(false); }).catch(function (er) { CS.msg(msg, er.message); });
+      };
+      var rate = document.getElementById('rate');
+      if (rate) rate.onclick = function (e) {
+        var b = e.target.closest('[data-star]'); if (!b) return;
+        CS.post({ action: 'csRoomRate', id: rid, star: Number(b.getAttribute('data-star')) }).then(function () { R.rated = Number(b.getAttribute('data-star')); paint(true); }).catch(function (er) { CS.msg(msg, er.message); });
+      };
+      var rpb = document.getElementById('rp');
+      if (rpb) rpb.onclick = function () {
+        box.innerHTML = '<div class="ch-box"><p class="cs-help" style="margin:0 0 6px">어떤 점이 문제인가요? 신고하면 운영자가 이 상담을 확인할 수 있어요.</p><div class="cs-acts" style="margin:0">'
+          + C.CHAT_WHY.map(function (w) { return '<button type="button" class="cs-lnk" data-why="' + w[0] + '">' + esc(w[1]) + '</button>'; }).join('') + '</div></div>';
+        box.onclick = function (e) {
+          var b = e.target.closest('[data-why]'); if (!b) return;
+          CS.post({ action: 'csChatReport', id: rid, why: b.getAttribute('data-why') }).then(function () { box.innerHTML = '<p class="cs-msg ok" style="margin:10px 16px">신고했어요. 운영자가 확인할게요.</p>'; }).catch(function (er) { box.insertAdjacentHTML('beforeend', '<p class="cs-msg err">' + esc(er.message) + '</p>'); });
+        };
+      };
+      var end = document.getElementById('end');
+      if (end) end.onclick = function () {
+        if (!confirm(R.st === '요청' ? '채팅 요청을 취소할까요?' : '상담을 끝낼까요? 끝내면 더 이상 메시지를 보낼 수 없어요.')) return;
+        CS.post({ action: 'csRoomEnd', id: rid }).then(function () { R.st = '끝남'; paint(true); return pull(false); }).catch(function (er) { CS.msg(msg, er.message); });
+      };
+    }
+  }
+})();
+</script>
+</body>
+</html>

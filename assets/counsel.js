@@ -134,12 +134,28 @@ textarea.cs-inp{min-height:150px;resize:vertical;line-height:1.6}
 .cs-pro{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line,#E5E8EB);border-radius:14px;padding:10px 12px;cursor:pointer;background:#fff}
 .cs-pro:has(input:checked){border-color:var(--blue,#2560E8);background:var(--blue-l,#E8F0FF)}
 .cs-pro b{font-size:15px}.cs-pro small{display:block;color:var(--sub2,#4E5968);font-size:13px;line-height:1.45}
-.cs-rep{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line,#E5E8EB)}
+.cs-rep{display:flex;flex-wrap:wrap;align-items:flex-start;gap:6px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line,#E5E8EB)}
+.cs-rep>span,.cs-acts>span{display:inline-flex;flex-direction:column;max-width:100%}
 .cs-video{display:flex;align-items:center;gap:8px;margin:12px 0 0;padding:10px 12px;border-radius:12px;background:#fff;border:1px solid var(--creamb,#EFE6CC);font-size:14.5px;font-weight:700;text-decoration:none;color:var(--text,#191F28)}
 .cs-video::before{content:'▶';color:#E03131}
 .cs-table{width:100%;border-collapse:collapse;font-size:14.5px}
 .cs-table th,.cs-table td{padding:10px 6px;border-bottom:1px solid var(--line2,#F0F1F3);text-align:left;vertical-align:top}
 .cs-table th{font-size:13px;color:var(--sub2,#4E5968);font-weight:700}
+.cs-pcs{display:grid;gap:10px;margin-top:10px}
+@media(min-width:760px){.cs-pcs{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}}
+.cs-pc{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line,#E5E8EB);border-radius:16px;padding:12px 14px;background:#fff;min-width:0}
+.cs-pcb{flex:1;min-width:0}
+.cs-pc .cs-who{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
+.cs-pc .cs-who small{flex-basis:100%;font-size:13px;color:var(--sub2,#4E5968)}
+.cs-ph{width:56px;height:56px;border-radius:50%;object-fit:cover;flex:none;background:var(--gray,#F2F4F6)}
+.cs-ph0{display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;color:#4338CA;background:#EEF0FF}
+.cs-near h2 small{display:block;font-size:13.5px;font-weight:500;color:var(--sub2,#4E5968);margin-top:2px}
+.cs-ans .cs-who small{font-size:13px}
+.cs-maskline{font-size:12.5px;color:#8B95A1;margin:4px 0 0}
+.cs-flash{margin:6px 0 0;padding:8px 12px;border-radius:10px;background:#191F28;color:#fff;font-size:13.5px;line-height:1.5}
+.cs-chatnote{display:block;font-size:12.5px;color:#8B95A1;margin-top:4px;line-height:1.45}
+.cs-open{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0;padding:10px 16px;background:#E6F5EE;color:#0E7A4F;font-size:14px;font-weight:700;border-bottom:1px solid #BFE6D2}
+.cs-open button{font:inherit}
 .cs-table td.r,.cs-table th.r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}`;
   function style() {
     if (typeof document === 'undefined' || document.getElementById('csCss')) return;
@@ -151,15 +167,62 @@ textarea.cs-inp{min-height:150px;resize:vertical;line-height:1.6}
     el.className = 'cs-msg ' + (ok ? 'ok' : 'err'); el.textContent = t; el.setAttribute('role', ok ? 'status' : 'alert');
     if (root.JDJ_SAVEFB) root.JDJ_SAVEFB.reveal(el);
   }
-  /** 전문가 이름표(확인된 전문가 배지 · 종류 · 이름 · 소속) */
-  function whoHtml(w) {
+  /** 전문가 이름표. 채팅 전에는 성+○○·직군·구·경력만(서버가 그렇게만 보내요). 하트를 쓴 채팅방의 고객에게는 실명·사무소도 */
+  function whoHtml(w, stat) {
     if (!w) return '';
     if (w.kind === 'team') return `<span class="cs-tag team">공식 답변</span><b>${esc(w.name || (site() + ' 상담팀'))}</b>`;
-    return `<span class="cs-tag ok">✓ 확인된 전문가</span><b>${esc(w.name || '')}</b><small>${esc([w.kn, w.org].filter(Boolean).join(' · '))}</small>`;
+    const nm = w.full && w.realName ? w.realName : w.name, sub = [w.kn, w.gu, w.years ? '경력 ' + w.years + '년' : '', w.full ? w.org : ''].filter(Boolean).join(' · ');
+    const st = stat || w.stat || (('answers' in w) ? w : null);
+    return `<span class="cs-tag ok">✓ 확인된 전문가</span>${w.id ? `<a href="${esc(link('counsel/pro/?id=' + w.id))}" style="color:inherit"><b>${esc(nm || '')}</b></a>` : `<b>${esc(nm || '')}</b>`}<small>${esc(sub)}</small>${st ? `<small>${esc(statTxt(st))}</small>` : ''}`;
+  }
+  function statTxt(st) { return [st.rating != null ? '평점 ★' + Number(st.rating).toFixed(1) : '평점 없음', '답변 ' + (st.answers || 0), st.resp != null ? '응답률 ' + Math.round(st.resp * 100) + '%' : ''].filter(Boolean).join(' · '); }
+  /** 전문가 카드(찾기·추천·동네 칸) — 채팅 전 공개 정보만 */
+  function proCard(p, btn) {
+    const ph = p.photo ? `<img class="cs-ph" src="${esc(p.photo)}" alt="" width="56" height="56">` : `<span class="cs-ph cs-ph0" aria-hidden="true">${esc((p.name || '전').slice(0, 1))}</span>`;
+    return `<div class="cs-pc">${ph}<div class="cs-pcb"><div class="cs-who" style="margin:0">${whoHtml(Object.assign({}, p, { kind: 'pro', stat: undefined }), p.stat)}</div>${p.intro ? `<p class="cs-help" style="margin:4px 0 0">${esc(p.intro)}</p>` : ''}
+      <div class="cs-acts" style="margin-top:8px"><a class="cs-btn ghost" style="min-height:40px;font-size:14px" href="${esc(link('counsel/pro/?id=' + p.id))}">프로필 보기</a>${btn || ''}</div></div></div>`;
+  }
+  /** 전체 프로필(채팅이 열린 고객에게만 서버가 보내 줘요) */
+  function fullHtml(w) {
+    if (!w || !w.full) return '';
+    return `<div class="cs-note"><b>${esc(w.realName)}</b> · ${esc(w.kn)}<br>${w.org ? esc(w.org) + '<br>' : ''}${w.addr ? esc(w.addr) + '<br>' : ''}${w.no ? '등록번호 ' + esc(w.no) + '<br>' : ''}${w.tel ? '사무실 ' + esc(String(w.tel).replace(/^'/, '').replace(/^(02)(\d{3,4})(\d{4})$|^(0\d{2})(\d{3,4})(\d{4})$/, (a, b1, b2, b3, c1, c2, c3) => b1 ? b1 + '-' + b2 + '-' + b3 : c1 + '-' + c2 + '-' + c3)) + '<br>' : ''}<span class="cs-help">${esc(w.where ? '자격 진위는 ' + w.where + '에서 등록번호로 확인할 수 있어요.' : '')}</span></div>`;
+  }
+  /* ---------- 단지 화면 '이 동네 확인된 전문가' 칸(꺼져 있으면 빈 글자) ---------- */
+  function slot(o) { if (!enabled()) return ''; const g = String((o && o.gu) || '').trim(); return g ? `<section class="panel cs-near" data-cs-near="${esc(g)}" aria-label="이 동네 확인된 전문가"></section>` : ''; }
+  function mountNear(el) {
+    el.setAttribute('data-cs-on', '1'); style();
+    post({ action: 'csProNear', gu: el.getAttribute('data-cs-near') }).then(j => {
+      if (!j.open || !j.items.length) { el.remove(); return; }
+      el.innerHTML = `<h2>이 동네 확인된 전문가<small>${esc(j.gu)}에서 활동하는, 자격을 확인한 전문가예요. 순서는 날마다 고르게 바뀌어요.</small></h2><div class="cs-pcs">${j.items.map(p => proCard(p)).join('')}</div>
+        <div class="cs-acts"><a class="cs-btn sub" href="${esc(link('counsel/pros/?gu=' + encodeURIComponent(j.gu)))}">이 동네 전문가 모두 보기</a><a class="cs-btn ghost" href="${esc(link('counsel/?w=1'))}">고민 묻기(무료)</a></div>`;
+    }).catch(() => el.remove());
+  }
+  if (typeof document !== 'undefined' && typeof MutationObserver !== 'undefined' && enabled()) {
+    const scan = () => document.querySelectorAll('[data-cs-near]:not([data-cs-on])').forEach(mountNear);
+    const go = () => { scan(); new MutationObserver(ms => { if (ms.some(m => m.addedNodes.length)) scan(); }).observe(document.body, { childList: true, subtree: true }); };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
   }
   const LOAN_NOTE = '대출 질문에는 금융위원회에 등록된 대출모집인(대출상담사)만 답할 수 있어요. 대출을 권유하며 수수료를 요구하면 불법이니 응하지 마세요.';
-  const PI_NOTE = '전화번호·주민등록번호처럼 보이는 숫자는 올릴 때 저절로 가려져요. 이름·주소·동·호수도 적지 말아 주세요.';
+  const PI_NOTE = '전화번호·주민등록번호·이메일·메신저 아이디·인터넷 주소는 올릴 때 저절로 가려져요. 이름·주소·동·호수도 적지 말아 주세요.';
   const WHY = [['abuse', '욕설·비방'], ['pi', '개인 정보'], ['ad', '광고·홍보'], ['false', '사실이 아닌 내용'], ['illegal', '불법·무자격 영업'], ['etc', '기타']];
 
-  root.JDJ_CS = { LS_PV, SS_PV, enabled, heartOn, payOn, preview, link, post, esc, won, site, loggedIn, loginOn, loginBox, soonHtml, pvTag, style, msg, whoHtml, sess, LOAN_NOTE, PI_NOTE, WHY, JB };
+  /* 전문가 글쓰기 칸 안내: 늘 보이는 회색 한 줄 + 사무소 이름·연락처가 걸러질 때 3~4초 떴다 사라지는 안내(같은 글에서 한 번만) */
+  const MASK_NOTE = '사무소 이름과 연락처는 가려져요. 고객과 채팅이 열리면 그 고객에게 모두 공개돼요.';
+  const CHAT_NOTE = '채팅을 시작하면 사무소 이름과 연락처를 볼 수 있어요.';
+  function maskLine() { return `<p class="cs-help cs-maskline">${esc(MASK_NOTE)}</p><p class="cs-flash" role="status" aria-live="polite" hidden></p>`; }
+  function orgHit(t, org) { const n = s => String(s || '').replace(/\s+/g, ''); org = n(org); return !!org && org.length >= 2 && n(t).indexOf(org) >= 0; }
+  function watchMask(ta, org) {
+    if (!ta) return;
+    let shown = false;
+    ta.addEventListener('input', () => {
+      if (shown) return;
+      const C = root.JDJ_CSCORE, t = ta.value;
+      if (!(orgHit(t, typeof org === 'function' ? org() : org) || (C && C.hideContact(t).hit))) return;
+      shown = true;
+      const box = ta.parentElement && ta.parentElement.querySelector('.cs-flash'); if (!box) return;
+      box.textContent = MASK_NOTE; box.hidden = false;
+      setTimeout(() => { box.hidden = true; }, 3800);
+    });
+  }
+  root.JDJ_CS = { MASK_NOTE, CHAT_NOTE, maskLine, watchMask, orgHit, slot, proCard, fullHtml, statTxt, LS_PV, SS_PV, enabled, heartOn, payOn, preview, link, post, esc, won, site, loggedIn, loginOn, loginBox, soonHtml, pvTag, style, msg, whoHtml, sess, LOAN_NOTE, PI_NOTE, WHY, JB };
 })(typeof window !== 'undefined' ? window : this);

@@ -1,7 +1,11 @@
 /* 고민 상담 · 하트 — 계산 규칙(분류·전문가 종류·하트 상품표·사용처·환불 계산·개인정보 가림·간단 욕설 거르기·목록 순서)
    - 화면(assets/counsel.js · counsel/)과 서버(tools/agent-backend.gs '고민 상담·하트' 칸)가 같은 글자를 써요.
      아래 COUNSEL-CORE 블록은 서버에 그대로 복사돼 있어요(node tools/counsel-test.js 가 두 곳이 같은지 확인).
-   - 하트 값(상품표·사용처)은 대표가 정하기 전 초안이에요. 바꿀 때는 CS_PACKS · CS_USES 두 줄만 고치면 화면·서버·환불 계산이 함께 바뀌어요.
+   - 하트는 전문가(공인중개사 등 답변하는 분)가 충전해 쓰는 것이에요. 일반 이용자는 질문·답변 보기·전문가 지정·상담 채팅이 모두 무료예요.
+     전문가는 공개 답변이 무료예요. 하트는 ① 질문 글에서 [상담 제안 보내기](첫 메시지를 보내는 순간) ② 질문한 분이 요청한 1:1 채팅을 [채팅 수락]할 때만 써요.
+     질문한 분이 72시간 안에 제안을 열어 보지도 않거나, 질문이 신고로 가려진 채 확정되면 서버가 자동으로 하트를 돌려 드려요(운영자 확인 없음). 승인 때 무료 하트 CS_FREE_HEARTS 개.
+   - 하트 값은 대표 확정(2026-11-25): 상품표 3,900원/2·9,900원/6·19,900원/13·49,000원/35 · 상담 제안·채팅 수락 1건 2개 · 승인 무료 5개(무료 먼저) · 환불 7일 안 미사용 전액, 그 뒤 남은 하트 10% 공제, 무료 하트 환불 없음 · 유효기간 5년.
+     바꿀 때는 CS_PACKS · CS_USES · CS_FREE_HEARTS 만 고치면 화면·서버·환불 계산이 함께 바뀌어요.
    - 여기 있는 욕설 목록은 누구나 아는 간단한 낱말뿐이에요. 더 촘촘한 거르기는 서버의 비공개 설정(살아보니와 같은 설정)이 맡아요.
    window.JDJ_CSCORE */
 (function (root) {
@@ -19,20 +23,38 @@ const CS_PROS = {
   loan: { name: '대출상담사', no: '금융위원회 대출모집인 등록번호', org: '소속 금융회사(위탁사)', orgNeed: true, where: '대출모집인 등록 조회(금융소비자 정보포털 파인 또는 대출모집인 통합조회)' }
 };
 const CS_PRO_MAX = 5;                                 // 질문 하나에 전문가 답변 최대 수(상담팀 공식 답변은 따로)
-const CS_CAT_ONLY = { loan: ['loan'] };               // 분류마다 답할 수 있는 전문가 종류(없으면 모두) — 대출은 등록된 대출모집인만
+/* 분류마다 답·상담 제안할 수 있는 전문가(대표 확정 2026-11-25): 세금 = 세무사, 등기·법률 = 법무사, 대출 = 대출상담사(등록된 대출모집인), 나머지 분류 = 다섯 직군 모두 */
+const CS_CAT_ONLY = { tax: ['tax'], legal: ['judicial'], loan: ['loan'] };
 const CS_LEN = { title: [5, 60], body: [20, 2000], answer: [20, 3000], nick: [0, 12] };
-/* 하트 상품표(초안) — won: 결제 금액(원) · n: 하트 수 */
+/* 하트 상품표(확정) — won: 결제 금액(원) · n: 하트 수 */
 const CS_PACKS = [{ id: 'h2', won: 3900, n: 2 }, { id: 'h6', won: 9900, n: 6 }, { id: 'h13', won: 19900, n: 13 }, { id: 'h35', won: 49000, n: 35 }];
-/* 하트 사용처(초안) — n: 쓰는 하트 수. 일반 공개 질문·답변 보기는 무료 */
+/* 하트 사용처(확정, 전문가만) — n: 쓰는 하트 수
+   offer: 질문 글에서 [상담 제안 보내기] — 보내는 순간 차감 · accept: 질문한 분이 요청한 1:1 채팅을 [채팅 수락] — 수락하는 순간 차감(수락하지 않으면 차감 없음) */
 const CS_USES = {
-  private: { n: 3, name: '전문가 1:1 비공개 상담 요청' },
-  bump: { n: 1, name: '내 질문 위로 올리기', hours: 24 },
-  pick: { n: 2, name: '원하는 전문가 지정 질문' }
+  offer: { n: 2, name: '상담 제안 보내기' },
+  accept: { n: 2, name: '1:1 상담 채팅 수락' }
 };
-/* 환불 규칙: 결제 후 days 일 안에 전혀 쓰지 않은 하트는 전액 · 일부 쓴 경우 남은 하트만큼(쓴 하트는 묶음 할인 전 단가로 계산) · 무상 하트는 대상 아님
-   lateFee: days 가 지난 뒤 환불할 때 떼는 비율(0 = 떼지 않음, 대표가 정할 값) */
-const CS_REFUND = { days: 7, lateFee: 0 };
+const CS_FREE_HEARTS = 5;                             // 전문가 승인 때 드리는 무료 하트(한 번)
+/* 환불 규칙: 결제 후 days 일 안에 전혀 쓰지 않은 하트는 전액 · 일부 쓴 경우 남은 하트만큼(쓴 하트는 묶음 할인 전 단가로 계산)
+   · days 가 지난 뒤에는 남은 하트 값에서 lateFee(10%)를 떼고 · 무료 하트는 대상 아님 · 하트 유효기간은 충전한 날부터 validYears 년(지나면 쓰거나 환불할 수 없음) */
+const CS_REFUND = { days: 7, lateFee: 0.1, validYears: 5 };
+function csExpireAt(at) { return Number(at) + CS_REFUND.validYears * 365 * 86400000; }
 
+/** 이 분류에 답할 수 있는 전문가 종류 목록 */
+function csKindsFor(cat) { return CS_CAT_ONLY[cat] ? CS_CAT_ONLY[cat].slice() : Object.keys(CS_PROS); }
+/** 분류에 맞지 않는 전문가에게 보여 줄 말 */
+function csKindMsg(cat) { const k = csKindsFor(cat).map(x => (CS_PROS[x] || {}).name).filter(Boolean); return `${csCatName(cat)} 질문에는 ${k.join('·')}만 답할 수 있어요.`; }
+/** 지역 글자에서 구·군·시 이름만('서울 강남구' → '강남구') */
+function csGuOf(s) { const m = String(s || '').match(/([가-힣]{1,8}(?:구|군|시))\s*$/) || String(s || '').match(/([가-힣]{1,8}(?:구|군))/); return m ? m[1] : ''; }
+/** 등록번호 일부만 보이기('11680-2020-00123' → '11680-20*******') */
+function csNoMask(no) { no = String(no || ''); const k = Math.ceil(no.length / 2); return no ? no.slice(0, k) + '*'.repeat(Math.max(0, no.length - k)) : ''; }
+/** 전문가 찾기 기본 순서 점수: 평점·응답률·답변 수·공정 순환(그날 바뀌는 고른 몫)을 섞음. w(무게)는 서버 비공개 설정에서만 — 돈으로 순위를 살 수 없음
+    st: { rating(1~5|null), resp(0~1|null), answers }, turn: 0~1(그날의 순환 값) */
+function csRankScore(st, w, turn) {
+  w = w || {};
+  const r = st.rating == null ? 0.6 : (st.rating - 1) / 4, p = st.resp == null ? 0.5 : st.resp, a = Math.min(1, Math.log(1 + (st.answers || 0)) / Math.log(51));
+  return (Number(w.r) || 0) * r + (Number(w.p) || 0) * p + (Number(w.a) || 0) * a + (Number(w.f) || 0) * (Number(turn) || 0);
+}
 function csCatName(id) { for (let i = 0; i < CS_CATS.length; i++) if (CS_CATS[i][0] === id) return CS_CATS[i][1]; return ''; }
 function csPack(id) { for (let i = 0; i < CS_PACKS.length; i++) if (CS_PACKS[i].id === id) return CS_PACKS[i]; return null; }
 /** 묶음 할인 전 하트 1개 값 = 가장 작은 묶음의 하트 1개 값(원, 10원 아래 올림) */
@@ -53,6 +75,7 @@ function csRefund(lot, used, now) {
   if (!lot || lot.kind !== 'paid') return { won: 0, full: false, why: 'free' };
   const n = Math.floor(Number(lot.n) || 0), won = Math.floor(Number(lot.won) || 0);
   if (used >= n) return { won: 0, full: false, why: 'none' };
+  if (Number(now) > csExpireAt(lot.at)) return { won: 0, full: false, why: 'expired' };
   const late = Number(now) - Number(lot.at) > CS_REFUND.days * 86400000;
   if (!used && !late) return { won: won, full: true, why: 'full' };
   let r = Math.max(0, won - used * csUnit());
@@ -77,6 +100,30 @@ const CS_PI = [
 function csMask(text) {
   let s = String(text == null ? '' : text), hit = false;
   CS_PI.forEach(re => { s = s.replace(re, () => { hit = true; return '***'; }); });
+  return { text: s, hit: hit };
+}
+/* 상담 채팅 — 앱 안 1:1 대화. 채팅방 안에서는 질문한 분·전문가 모두 연락처를 자유롭게 주고받을 수 있어요([내 연락처 보내기] 단추도 있어요).
+   공개 질문·공개 답변(게시판)은 광고를 막으려고 전화번호·이메일·메신저 아이디·외부 링크를 자동으로 가려요(csHideContact).
+   poll: 채팅방이 열려 있을 때 새 메시지 확인 간격(초, 화면이 숨겨지면 멈춤) · keepDays: 상담이 끝난 뒤 보관 일수(지나면 자동 삭제)
+   idleDays: 이 날 수 동안 메시지가 없으면 상담을 저절로 끝냄 · mailGapMin: 같은 방 같은 사람에게 알림 메일은 이 분에 한 통까지
+   mailDay: 하루 채팅 알림 메일 전체 한도(개인 구글 계정 하루 100통 안에서) · mailReserve: 메일 남은 양이 이만큼이면 알림을 멈춤
+   reqDays: 전문가가 이 날 수 안에 [채팅 수락]을 하지 않으면 요청이 만료(하트 차감 없음)
+   offerMax: 질문 하나에 받는 상담 제안 수(먼저 온 순) · offerOpenH: 질문한 분이 이 시간 안에 제안을 열어 보지도 않으면 하트를 저절로 돌려 드림 */
+const CS_CHAT = { poll: 5, keepDays: 365, idleDays: 90, reqDays: 7, offerMax: 5, offerOpenH: 72, mailGapMin: 60, mailDay: 40, mailReserve: 20, len: [1, 1000] };
+const CS_CHAT_WHY = [['abuse', '욕설·비방'], ['pi', '개인 정보'], ['ad', '광고·홍보'], ['false', '사실이 아닌 내용'], ['illegal', '불법·무자격 영업'], ['etc', '기타']];
+/* 신고 가림: 서로 다른 사람의 신고가 이 수만큼 쌓이면 바로 가리고 운영자가 판단(한 사람이 여러 번 신고해도 1건) — 대표 확정 */
+const CS_REPORT_HIDE = 2;
+/* 게시판 연락 수단 가림: 전화번호·이메일·카카오톡 등 메신저 아이디·외부 링크·길게 이어진 숫자 → '***' */
+const CS_CONTACT = [
+  /[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g,                                                                        // 이메일
+  /(?:https?:\/\/|www\.)\S+/gi,                                                                            // 링크
+  /\b[a-z0-9-]{2,}\.(?:com|net|org|kr|co|me|ly|io|link|site|xyz|shop|app|gl|to|kakao)(?:\.[a-z]{2,})?(?:\/\S*)?/gi,   // 주소(open.kakao.com 등)
+  /((?:카카오톡|카톡|카카오|kakao(?:talk)?|katalk|오픈\s*채팅|라인|line|텔레그램|telegram|텔레|인스타그램|인스타|instagram|insta|위챗|wechat)\s*(?:아이디|id|계정|주소)?\s*[:：]?\s*)@?[A-Za-z0-9._-]{3,}/gi,
+  /(?:\d[\s.\-)(]*){9,}\d/g                                                                                // 띄어 쓴 전화번호 같은 긴 숫자
+];
+function csHideContact(text) {
+  let m = csMask(text), s = m.text, hit = m.hit;
+  CS_CONTACT.forEach((re, i) => { s = s.replace(re, (all, pre) => { hit = true; return i === 3 ? pre + '***' : '***'; }); });
   return { text: s, hit: hit };
 }
 /* 간단 욕설 거르기(누구나 아는 낱말만 — 띄어쓰기·기호를 빼고 봄) */
@@ -113,8 +160,8 @@ function csCheckText(kind, s) {
 }
 /* COUNSEL-CORE END */
 
-const API = { V: CS_V, CATS: CS_CATS, PROS: CS_PROS, PRO_MAX: CS_PRO_MAX, CAT_ONLY: CS_CAT_ONLY, LEN: CS_LEN, PACKS: CS_PACKS, USES: CS_USES, REFUND: CS_REFUND,
-  catName: csCatName, pack: csPack, unit: csUnit, packInfo: csPackInfo, refund: csRefund, alloc: csAlloc, mask: csMask, bad: csBad, canAnswer: csCanAnswer, order: csOrder, checkText: csCheckText };
+const API = { V: CS_V, REPORT_HIDE: CS_REPORT_HIDE, FREE_HEARTS: CS_FREE_HEARTS, expireAt: csExpireAt, CHAT: CS_CHAT, CHAT_WHY: CS_CHAT_WHY, hideContact: csHideContact, CATS: CS_CATS, PROS: CS_PROS, PRO_MAX: CS_PRO_MAX, CAT_ONLY: CS_CAT_ONLY, LEN: CS_LEN, PACKS: CS_PACKS, USES: CS_USES, REFUND: CS_REFUND,
+  catName: csCatName, kindsFor: csKindsFor, kindMsg: csKindMsg, guOf: csGuOf, noMask: csNoMask, rankScore: csRankScore, pack: csPack, unit: csUnit, packInfo: csPackInfo, refund: csRefund, alloc: csAlloc, mask: csMask, bad: csBad, canAnswer: csCanAnswer, order: csOrder, checkText: csCheckText };
 root.JDJ_CSCORE = API;
 if (typeof module !== 'undefined' && module.exports) module.exports = API;
 })(typeof window !== 'undefined' ? window : globalThis);

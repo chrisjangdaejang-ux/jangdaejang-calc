@@ -1,6 +1,20 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v58 변경 요약 (v57 위에 다시 배포. 따로 실행할 함수 없음 — 시트 '상담채팅방'·'상담채팅'·'상담채팅열람'은 첫 사용 때 저절로 생김. 고민 상담은 아직 숨김)
+ *  - 고민 상담: 질문한 분 연락처를 전문가에게 넘기던 기능(csContact)을 없애고 앱 안 1:1 상담 채팅으로. 1:1 비공개 상담·전문가 지정 질문은 채팅방이 저절로 열리고,
+ *    공개 질문은 질문한 분이 답변한 전문가에게 [이 전문가와 채팅하기]로 요청. 하트는 전문가용 — 전문가가 [채팅 수락]할 때 차감(2개, 7일 안 수락 없으면 만료·차감 없음),
+ *    전문가가 질문 글에서 먼저 [상담 제안 보내기](하트 2개, 질문마다 5명) · 질문한 분 [대화하기]/[괜찮아요]/[이 전문가 차단] · 72시간 안 안 읽으면·질문이 가려지면 자동 환불. 승인 때 무료 5개. 이용자의 '위로 올리기'·하트 사용은 없앰. 유효기간 5년, 7일 뒤 환불은 10% 공제.
+ *    채팅방 안에서는 두 사람 모두 연락처를 주고받을 수 있음([내 연락처 보내기] — 상대 한 분께만).
+ *    공개 질문·답변은 전화·이메일·메신저 아이디·외부 링크를 막지 않고 자동으로 가림. 신고는 서로 다른 사람 2건이면 바로 가림(CS_REPORT_HIDE).
+ *    5초 확인(새 메시지가 없으면 캐시로 바로 답함) · 알림 메일 같은 방 1시간 1통·하루 한도 · 끝난 뒤 1년 보관 후 자동 삭제 · 운영자는 신고된 방만 열람(기록 남김).
+ *  - 분야별 답변 자격(대표 확정): 세금 = 세무사 · 등기·법률 = 법무사 · 대출 = 대출상담사 · 나머지 = 다섯 직군 모두(공개 답변·상담 제안 모두 서버에서 막음).
+ *  - 전문가 신원: 채팅 전에는 성+○○·직군·자격 배지·활동 구·경력·소개·사진(선택)만(csProPub). 하트를 쓴 방(제안 전송·요청 수락)의 고객에게만 실명·사무소·주소·등록번호·사무실 전화(csProFull).
+ *    공개 답변·소개의 자기 사무소 이름은 자동 가림(csHideOrg). 고객은 끝까지 익명(연락처는 고객이 [내 연락처 보내기]를 누를 때만).
+ *  - 전문가 노출: 프로필(csProPage — 자격 배지·지역·소개·답변 수·평점·응답률·최근 답변) · 전문가 찾기(csProList — 구·직군·분야, 기본 순서 무게는 스크립트 속성 CS_PRO_RANK)
+ *    · 단지 화면 '이 동네 확인된 전문가'(csProNear, 3명 순환) · 질문 상세 '이 분야 전문가에게 물어보기'(같은 구·분야 3명). 돈으로 순위를 사는 기능 없음.
+ *  - 검증: node tools/counsel-test.js </dev/null
+ *
  * v57 변경 요약 (v56 위에 다시 배포. 따로 실행할 함수 없음 — 시트 '이사견적'·'이사업체'·'이사포인트'·'이사열람'·'이사충전'·'이사동의'와 보험 증빙 드라이브 폴더는 첫 사용 때 저절로 생김.
  *   스위치를 켜기 전까지는 지금과 100% 같음: MOVE_ENABLED=false 라 운영자 계정 말고는 아무도 보거나 쓸 수 없어요)
  *  - 이사 견적 받기(이사업체 제휴, 맨 아래 'v57' 칸 — 숨김): 이용자가 출발지·도착지(동)·이사 날짜·규모(소형 원룸·용달 / 가정 투룸~30평대 / 대형 40평+·사무실)·
@@ -9196,11 +9210,21 @@ function quizMeetExport() {
          assets/counsel.js(공용) · assets/counsel-core.js(규칙 — 아래 COUNSEL-CORE 와 같은 글자)
    켜기: 이 칸 COUNSEL_OPEN · HEART_OPEN + 화면 assets/config.js COUNSEL_ENABLED · HEART_ENABLED. 꺼져 있으면 운영자(모닝 브리핑 운영자 모드 —
          스크립트 속성 BRIEF_ADMIN_IDS 의 카카오 계정)만 미리 보고 써 볼 수 있어요. 하트 충전은 PAID_OPEN 도 true 여야 해요.
-   누가: 질문·신고·연락처 보내기·하트는 카카오 간편 로그인 회원만(sessionUser). 시트에는 카카오 회원번호 대신 csUid(되돌릴 수 없는 값)만.
+   누가: 질문·신고·상담 채팅·하트는 카카오 간편 로그인 회원만(sessionUser). 시트에는 카카오 회원번호 대신 csUid(되돌릴 수 없는 값)만.
          답변은 운영자가 자격을 확인해 승인한 전문가(공인중개사·세무사·분양상담사·법무사·대출상담사)와 집예보 상담팀(운영자)만. 대출 분류는 대출상담사만.
-   연락처: 기본 비공개. 질문한 분이 전문가 답변을 보고 [이 전문가에게 내 연락처 보내기]를 누른 경우에만 그 전문가 한 분께 보임(시트에는 암호화해 보관 — sealText).
-   하트: 결제는 토스 승인(서버 확인) 뒤에만 지급. 환불은 이용자가 요청 → 운영자가 승인(이때 토스 결제 취소) — 자동 환불 없음.
-         무상 하트는 환불 대상이 아니고 현금으로 바꿀 수 없음. 전문가에게 하트를 나눠 주는 정산 기능은 없음(세무 확인 뒤).
+   상담 채팅(v58): 1:1 비공개 상담·전문가 지정 질문·답변한 전문가와의 1:1 상담은 앱 안 채팅방에서. 채팅방 안에서는 두 사람 모두 연락처를 자유롭게 주고받음
+         ([내 연락처 보내기] 단추 — 상대 한 분께만, 시트에는 암호화). 공개 질문·답변(게시판)은 전화번호·이메일·메신저 아이디·외부 링크를 자동으로 가림(광고 막기).
+         신고: 서로 다른 사람 2건(CS_REPORT_HIDE, 한 사람 중복은 1건)이면 바로 가리고 운영자가 판단.
+         실시간이 아니라 화면이 5초마다 확인(CS_CHAT.poll). 새 메시지 알림 메일은 같은 방·같은 사람에게 1시간에 1통, 하루 전체 한도 안에서만.
+         보관: 상담이 끝난 날부터 CS_CHAT.keepDays(스크립트 속성 CS_CHAT_KEEP_DAYS 로 바꿈) 뒤 자동 삭제 · 탈퇴 때 삭제. 운영자는 신고된 방만 열람(열람 기록 '상담채팅열람').
+   하트(v58부터 전문가용): 일반 이용자는 질문·답변 보기·전문가 지정·상담 채팅이 모두 무료. 전문가는 공개 답변이 무료(질문마다 5명까지)이고,
+         ① 질문 글에서 [상담 제안 보내기](첫 메시지, CS_USES.offer) — 보내는 순간 차감. 질문마다 5명까지(먼저 온 순)·같은 전문가는 1번, 질문한 분이 '제안 받기'를 끄거나 그 전문가를 차단하면 불가.
+         ② 질문한 분이 요청한 1:1 채팅을 [채팅 수락](CS_USES.accept) — 수락하는 순간 차감. 수락하지 않으면 차감 없음, 7일 뒤 요청 만료.
+         자동 환불(운영자 확인 없음 — csOfferSweep): 질문한 분이 72시간 안에 제안을 열어 보지도 않으면 그 하트를 돌려줌 · 질문이 신고로 가려진 뒤 운영자가 '계속 가림'(또는 삭제)으로
+         정하면 그 질문에 쓴 하트를 모든 전문가에게 돌려줌. 질문한 분이 열어 보고 [괜찮아요]를 누르거나 답이 없으면 환불 없음. 질문한 분은 [이 전문가 차단]을 할 수 있음('상담차단').
+         승인 때 무료 하트 CS_FREE_HEARTS 개(한 번). 쓰는 순서는 무료 하트 먼저. 유효기간 5년. 이사업체 포인트와는 별도 잔액.
+         결제는 토스 승인(서버 확인) 뒤에만 지급. 환불은 전문가가 요청 → 운영자가 승인(이때 토스 결제 취소) — 자동 환불 없음.
+         무료 하트는 환불 대상이 아니고 현금으로 바꿀 수 없음. 전문가에게 하트를 나눠 주는 정산 기능은 없음(세무 확인 뒤).
    거르기: 전화번호·주민등록번호 모양은 '***'로 가려서 올리고, 간단한 욕설·인터넷 주소는 막음. 살아보니의 비공개 거르기 설정(CM_RULES_*)이 있으면 함께 씀.
    신고가 쌓이면(살아보니와 같은 비공개 기준) 바로 가리고(임시조치) 운영자가 다시 보이기·지우기.
    시드 글: counsel/seed.json(모두 draft:true)을 운영자가 하나씩 [공개]하면 질문 + 상담팀 답변으로 올라감. [숨김]으로 다시 내림.
@@ -9208,38 +9232,43 @@ function quizMeetExport() {
    ===================================================================== */
 const COUNSEL_OPEN = false;
 const HEART_OPEN = false;
-const CS_ACTIONS = { csList: 1, csGet: 1, csAsk: 1, csAnswer: 1, csReport: 1, csDelete: 1, csContact: 1, csBump: 1, csExperts: 1, csProApply: 1, csProMine: 1, csMine: 1,
+const CS_ACTIONS = { csList: 1, csGet: 1, csAsk: 1, csAnswer: 1, csReport: 1, csDelete: 1, csChatStart: 1, csRoomAccept: 1, csRoomDecline: 1, csOffer: 1, csOfferAnswer: 1, csBlock: 1, csRoomRate: 1, csProPage: 1, csProList: 1, csProNear: 1, csRooms: 1, csRoom: 1, csSay: 1, csSendContact: 1, csRoomEnd: 1, csRoomMail: 1, csChatReport: 1, csAdminRoom: 1, csExperts: 1, csProApply: 1, csProMine: 1, csMine: 1,
   htMine: 1, htOrder: 1, htConfirm: 1, htRefundReq: 1,
-  csAdminQueue: 1, csAdminAct: 1, csAdminPro: 1, csAdminRefund: 1, csAdminSeed: 1, csAdminGrant: 1, csAdminReturn: 1 };
+  csAdminQueue: 1, csAdminAct: 1, csAdminPro: 1, csAdminRefund: 1, csAdminSeed: 1, csAdminGrant: 1 };
 const SH_CSQ = '상담질문', SH_CSA = '상담답변', SH_CSP = '상담전문가', SH_CSR = '상담신고', SH_HT = '하트내역';
-const CSQH = ['id', '시각', '회원', '별명', '분류', '제목', '내용', '상태', '신고', '이유', '지정', '비공개', '올림까지', '올린시각', '시드', '영상', '수정일'];
-const CSAH = ['id', '시각', '질문id', '종류', '전문가id', '회원', '내용', '상태', '신고', '이유', '연락처', '연락처시각', '수정일'];
-const CSPH = ['id', '신청일', '회원', '종류', '이름', '번호', '소속', '지역', '소개', '연락처', '이메일', '상태', '처리일', '메모', '동의판'];
+const CSQH = ['id', '시각', '회원', '별명', '분류', '제목', '내용', '상태', '신고', '이유', '지정', '비공개', '올림까지', '올린시각', '시드', '영상', '수정일', '제안끔', '지역'];   // 지역: 질문한 분이 고른 구(선택) — 같은 구 전문가 추천용   // 제안끔: 질문한 분이 '전문가 상담 제안 받기'를 끈 질문(기본은 받음)
+const CSAH = ['id', '시각', '질문id', '종류', '전문가id', '회원', '내용', '상태', '신고', '이유', '연락처', '연락처시각', '수정일'];   // 연락처·연락처시각: v56 칸(v58부터 쓰지 않음 — 채팅방으로)
+const CSPH = ['id', '신청일', '회원', '종류', '이름', '번호', '소속', '지역', '소개', '연락처', '이메일', '상태', '처리일', '메모', '동의판', '경력', '주소', '사무실전화', '사진'];   // 소속·주소·번호·사무실전화·실명은 채팅이 열린 고객에게만
 const CSRH = ['시각', '대상id', '신고자', '사유'];
 const HTH = ['id', '시각', '회원', '종류', '하트', '금액', '주문번호', '내용', '상태', '처리일', '메모', '환불액'];
 const CSQC = Object.fromEntries(CSQH.map((h, i) => [h, i])), CSAC = Object.fromEntries(CSAH.map((h, i) => [h, i])), CSPC = Object.fromEntries(CSPH.map((h, i) => [h, i])),
   CSRC = Object.fromEntries(CSRH.map((h, i) => [h, i])), HTC = Object.fromEntries(HTH.map((h, i) => [h, i]));
-const CS_ST = { on: '공개', hold: '검토대기', tmp: '임시조치', del: '삭제', off: '숨김' };
+const CS_ST = { on: '공개', hold: '검토대기', tmp: '임시조치', del: '삭제', off: '숨김', keep: '가림확정' };
 const CS_PRO_ST = { wait: '확인 대기', ok: '승인', no: '반려', stop: '중지' };
 const HT_KIND = { paid: '충전', free: '무상', use: '사용' };
 const HT_ST = { wait: '결제대기', ok: '사용가능', req: '환불요청', done: '환불완료', fail: '실패', used: '사용', back: '돌려줌' };
 const CS_WHY = { abuse: '욕설·비방', pi: '개인 정보', ad: '광고·홍보', false: '사실이 아닌 내용', illegal: '불법·무자격 영업', etc: '기타' };
 const CS_PRO_CONSENT_V = 'cspro-2026-11-25';
-const CS_LIM = { ask: [3, 10], answer: [10, 40], report: [10, 30], contact: [5, 20], apply: [2, 3], order: [5, 20], bump: [5, 20] };   // [한 시간, 하루] — 도배 막기
-const CS_PAGE = 20, CS_NOANSWER_DAYS = 7;
+const CS_LIM = { ask: [3, 10], answer: [10, 40], report: [10, 30], contact: [5, 20], say: [60, 300], apply: [2, 3], order: [5, 20], offer: [10, 40] };   // [한 시간, 하루] — 도배 막기
+const CS_PAGE = 20;
 const CS_SEED_URL = WEB_ROOT + 'counsel/seed.json';
 
 function csDispatch(b) {
+  CS_STAT.v = null;                                                    // 전문가 통계는 요청 하나 안에서만 다시 씀
   try {
     if (b.action === 'csList') return csList(b);
     if (b.action === 'csGet') return csGet(b);
     if (b.action === 'csExperts') return csExperts(b);
+    if (b.action === 'csProPage') return csProPage(b);
+    if (b.action === 'csProList') return csProList(b);
+    if (b.action === 'csProNear') return csProNear(b);
+    if (b.action === 'csRoom') return csRoom(b);                    // 5초마다 오는 확인 — 새 메시지가 없으면 시트를 읽지 않고 바로 답함
     if (b.action === 'htConfirm') return htConfirm(b);              // 토스 승인(네트워크)은 잠금 밖, 시트 쓰기만 잠금 안
     if (b.action === 'csAdminRefund') return csAdminRefund(b);
     if (b.action === 'csAdminSeed') return csAdminSeed(b);          // seed.json 읽기(네트워크)는 잠금 밖
     return withLock(() => {
-      const f = { csAsk, csAnswer, csReport, csDelete, csContact, csBump, csProApply, csProMine, csMine, htMine, htOrder, htRefundReq,
-        csAdminQueue, csAdminAct, csAdminPro, csAdminGrant, csAdminReturn }[b.action];
+      const f = { csAsk, csAnswer, csReport, csDelete, csChatStart, csRoomAccept, csRoomDecline, csOffer, csOfferAnswer, csBlock, csRoomRate, csRooms, csSay, csSendContact, csRoomEnd, csRoomMail, csChatReport, csAdminRoom, csProApply, csProMine, csMine, htMine, htOrder, htRefundReq,
+        csAdminQueue, csAdminAct, csAdminPro, csAdminGrant }[b.action];
       return f ? f(b) : { ok: false, err: 'unknown' };
     });
   } catch (x) {
@@ -9273,9 +9302,8 @@ function csLimit(uh, kind) {
 }
 /** 글 거르기: 개인정보 가리기 → 욕설·링크 막기 → (있으면) 살아보니 비공개 설정. → { act:'ok'|'hold'|'block', text, msg, why } */
 function csScreen(raw) {
-  const m = csMask(csClean(raw, 4000)), t = m.text;
+  const m = csHideContact(csClean(raw, 4000)), t = m.text;   // 게시판: 전화·이메일·메신저 아이디·외부 링크·주민번호는 가려서 올림(광고 막기)
   if (csBad(t)) return { act: 'block', text: t, msg: '욕설이나 남을 깎아내리는 말은 쓸 수 없어요.', why: 'prof' };
-  for (const g of CM_GEN) if ((g.id === 'url' || g.id === 'mail') && g.re.test(t)) return { act: 'block', text: t, msg: g.msg, why: g.id };
   const rules = cmRules();
   let hold = '';
   if (rules) for (const g of rules.groups || []) {
@@ -9298,10 +9326,30 @@ function csA(id) { id = String(id || ''); return /^A[0-9A-F]{10}$/.test(id) ? cs
 function csPros() { return csRows(SH_CSP); }
 function csProOf(uh) { return csPros().filter(o => String(o.r[CSPC['회원']]) === uh && [CS_PRO_ST.ok, CS_PRO_ST.wait, CS_PRO_ST.stop].indexOf(String(o.r[CSPC['상태']])) >= 0).pop() || null; }
 function csProById(id) { return csPros().find(o => String(o.r[CSPC['id']]) === String(id || '')) || null; }
-function csProPub(o) {
+function csProPub(o) {                                                                // 채팅 전(누구나 보는 곳): 성+○○ · 직군 · 확인된 자격 · 활동 구 · 경력 · 소개 · 사진 — 사무소·주소·번호·전화는 숨김
   const r = o.r, P = CS_PROS[String(r[CSPC['종류']])] || {};
-  return { id: String(r[CSPC['id']]), kind: String(r[CSPC['종류']]), kn: P.name || '', name: csTxt(r[CSPC['이름']]), org: csTxt(r[CSPC['소속']]), area: csTxt(r[CSPC['지역']]), intro: csTxt(r[CSPC['소개']]) };
+  return { id: String(r[CSPC['id']]), kind: String(r[CSPC['종류']]), kn: P.name || '', name: csNameMask(csTxt(r[CSPC['이름']])), gu: csGuOf(csTxt(r[CSPC['지역']])),
+    years: Number(r[CSPC['경력']]) || 0, intro: csProText(csTxt(r[CSPC['소개']]), o), photo: /^data:image\/jpeg;base64,/.test(String(r[CSPC['사진']] || '')) ? String(r[CSPC['사진']]) : '' };
 }
+/** 채팅이 열린 고객(전문가가 하트를 쓴 방)과 운영자·본인에게만: 실명·사무소·주소·등록번호(공식 조회용)·사무실 전화 */
+function csProFull(o) {
+  const r = o.r;
+  return Object.assign(csProPub(o), { full: true, realName: csTxt(r[CSPC['이름']]), org: csTxt(r[CSPC['소속']]), addr: csTxt(r[CSPC['주소']]), no: csTxt(r[CSPC['번호']]), tel: csTxt(r[CSPC['사무실전화']]),
+    area: csTxt(r[CSPC['지역']]), where: (CS_PROS[String(r[CSPC['종류']])] || {}).where || '' });
+}
+function csNameMask(n) { n = String(n || '').trim(); return n ? n.slice(0, 1) + '○○' : '전문가'; }
+/** 공개 글에서 그 전문가의 사무소 이름 가리기(등록한 이름 그대로 · 띄어쓰기 없앤 것 · '공인중개사사무소' 같은 꼬리를 뗀 이름) + 연락 수단 가림 */
+function csOrgNames(org) {
+  org = String(org || '').trim(); if (!org) return [];
+  const core = org.replace(/\s+/g, '').replace(/(공인중개사사무소|공인중개사|중개사무소|부동산중개|부동산|세무회계사무소|세무회계|세무사사무소|세무사|법무사사무소|법무사|합동사무소|사무소|분양대행|주식회사|\(주\)|㈜)+$/g, '').replace(/^(주식회사|\(주\)|㈜)/, '');
+  return [org, org.replace(/\s+/g, ''), core].filter((x, i, a) => x.length >= 2 && a.indexOf(x) === i).sort((a, b) => b.length - a.length);
+}
+function csHideOrg(text, org) {
+  let t = String(text || ''), hit = false;
+  csOrgNames(org).forEach(n => { const re = new RegExp(n.split('').map(ch => ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s*'), 'g'); t = t.replace(re, () => { hit = true; return '***'; }); });
+  return { text: t, hit: hit };
+}
+function csProText(t, o) { return csHideContact(csHideOrg(t, csTxt(o.r[CSPC['소속']])).text).text; }
 function csProCore(o) { return o ? { id: String(o.r[CSPC['id']]), kind: String(o.r[CSPC['종류']]), ok: String(o.r[CSPC['상태']]) === CS_PRO_ST.ok } : null; }
 function csQCore(o) { return { cat: String(o.r[CSQC['분류']]), priv: o.r[CSQC['비공개']] === true, to: String(o.r[CSQC['지정']] || '') }; }
 function csAnsOf(qid) { return csRows(SH_CSA).filter(o => String(o.r[CSAC['질문id']]) === qid && String(o.r[CSAC['상태']]) !== CS_ST.del); }
@@ -9320,7 +9368,7 @@ function csProMail(o, title) {
 /* ---------- 질문 목록·상세 ---------- */
 function csQPub(o, now, me, nAns) {
   const r = o.r, id = String(r[CSQC['id']]), uh = String(r[CSQC['회원']]), body = csTxt(r[CSQC['내용']]), up = csMs(r[CSQC['올림까지']]);
-  return { id: id, cat: String(r[CSQC['분류']]), cn: csCatName(String(r[CSQC['분류']])), title: csTxt(r[CSQC['제목']]), snip: body.slice(0, 90), at: csMs(r[CSQC['시각']]), day: csDay(r[CSQC['시각']]),
+  return { id: id, cat: String(r[CSQC['분류']]), cn: csCatName(String(r[CSQC['분류']])), area: csTxt(r[CSQC['지역']]), title: csTxt(r[CSQC['제목']]), snip: body.slice(0, 90), at: csMs(r[CSQC['시각']]), day: csDay(r[CSQC['시각']]),
     who: csTxt(r[CSQC['별명']]) || (r[CSQC['시드']] ? '자주 묻는 고민' : csAlias(uh, id)), up: up, upAt: csMs(r[CSQC['올린시각']]), upOn: up > now, pick: !!r[CSQC['지정']] && r[CSQC['비공개']] !== true,
     priv: r[CSQC['비공개']] === true, seed: !!r[CSQC['시드']], video: csTxt(r[CSQC['영상']]), mine: !!me && me === uh, n: nAns || 0 };
 }
@@ -9336,9 +9384,8 @@ function csList(b) {
 }
 function csAnsPub(o, P, me, qMine) {
   const r = o.r, kind = String(r[CSAC['종류']]), pro = kind === 'pro' ? P[String(r[CSAC['전문가id']])] : null;
-  const who = kind === 'team' ? { kind: 'team', name: SITE_NAME + ' 상담팀' } : pro ? Object.assign({ kind: 'pro' }, csProPub(pro)) : { kind: 'pro', name: '전문가', kn: '' };
-  return { id: String(r[CSAC['id']]), at: csDay(r[CSAC['시각']]), who: who, text: csTxt(r[CSAC['내용']]), mine: !!me && String(r[CSAC['회원']]) === me,
-    sent: qMine ? !!r[CSAC['연락처']] : undefined, st: String(r[CSAC['상태']]) };
+  const who = kind === 'team' ? { kind: 'team', name: SITE_NAME + ' 상담팀' } : pro ? Object.assign(csProPub(pro), { kind: 'pro', pk: String(pro.r[CSPC['종류']]) }) : { kind: 'pro', name: '전문가', kn: '' };
+  return { id: String(r[CSAC['id']]), at: csDay(r[CSAC['시각']]), who: who, text: csTxt(r[CSAC['내용']]), mine: !!me && String(r[CSAC['회원']]) === me, st: String(r[CSAC['상태']]) };
 }
 function csGet(b) {
   csGate(b);
@@ -9353,8 +9400,14 @@ function csGet(b) {
   ans.sort((x, y) => (String(x.r[CSAC['종류']]) === 'team' ? -1 : 0) - (String(y.r[CSAC['종류']]) === 'team' ? -1 : 0) || csMs(x.r[CSAC['시각']]) - csMs(y.r[CSAC['시각']]));
   const core = ans.map(a => ({ pro: String(a.r[CSAC['종류']]) === 'pro' ? String(a.r[CSAC['전문가id']]) : '' }));
   const to = q.to && P[q.to] ? csProPub(P[q.to]) : null;
-  return { ok: true, q: Object.assign(csQPub(o, now, me, ans.length), { body: csTxt(o.r[CSQC['내용']]), st: st, to: to }),
-    answers: ans.map(a => csAnsPub(a, P, me, mine)),
+  csOfferSweep();
+  const R = me ? csRoomsOf(String(o.r[CSQC['id']])).filter(x => csRoomSide(x, me)) : [];
+  const roomBy = {}; R.forEach(x => { roomBy[String(x.r[CSRMC['전문가id']])] = String(x.r[CSRMC['id']]); });
+  return { ok: true, q: Object.assign(csQPub(o, now, me, ans.length), { body: csTxt(o.r[CSQC['내용']]), st: st, to: to, room: R.length === 1 ? String(R[0].r[CSRMC['id']]) : '' }),
+    rec: csRecommend(o, ans.map(a => String(a.r[CSAC['전문가id']]))),
+    answers: ans.map(a => Object.assign(csAnsPub(a, P, me, mine), String(a.r[CSAC['종류']]) === 'pro' ? { stat: csStatOf(String(a.r[CSAC['전문가id']])) } : {}, mine && String(a.r[CSAC['종류']]) === 'pro' ? { room: roomBy[String(a.r[CSAC['전문가id']])] || '' } : {})),
+    offers: mine ? csRoomsOf(String(o.r[CSQC['id']])).filter(x => String(x.r[CSRMC['종류']]) === 'offer').map(x => csOfferPub(x)) : undefined,
+    offer: myPro && myPro.ok && !mine ? csOfferCan(o, myPro.id) : undefined,
     can: { answer: admin ? { ok: true, team: true } : myPro ? csCanAnswer(myPro, q, core) : { ok: false, why: me ? 'notpro' : 'login' } },
     me: me ? { pro: myPro, admin: admin } : null };
 }
@@ -9369,7 +9422,7 @@ function csMine(b) {
   const cnt = {}; csRows(SH_CSA).forEach(o => { if (String(o.r[CSAC['상태']]) === CS_ST.on) { const q = String(o.r[CSAC['질문id']]); cnt[q] = (cnt[q] || 0) + 1; } });
   const list = csRows(SH_CSQ).filter(o => String(o.r[CSQC['회원']]) === me && String(o.r[CSQC['상태']]) !== CS_ST.del).reverse()
     .map(o => Object.assign(csQPub(o, now, me, cnt[String(o.r[CSQC['id']])]), { st: String(o.r[CSQC['상태']]) }));
-  return { ok: true, list: list, hearts: htBalance(me) };
+  return { ok: true, list: list };
 }
 
 /* ---------- 질문 쓰기 ---------- */
@@ -9385,22 +9438,21 @@ function csAsk(b) {
   if (use) {
     pro = csProById(b.to);
     if (!pro || String(pro.r[CSPC['상태']]) !== CS_PRO_ST.ok) throw csErr('전문가를 다시 골라 주세요.', 'field');
-    const only = CS_CAT_ONLY[cat]; if (only && only.indexOf(String(pro.r[CSPC['종류']])) < 0) throw csErr(cat === 'loan' ? '대출 질문은 등록된 대출모집인(대출상담사)에게만 할 수 있어요.' : '이 분류에는 답할 수 없는 전문가예요.', 'field');
+    const only = CS_CAT_ONLY[cat]; if (only && only.indexOf(String(pro.r[CSPC['종류']])) < 0) throw csErr(csKindMsg(cat) + ' 다른 전문가를 골라 주세요.', 'field');
     if (String(pro.r[CSPC['회원']]) === me) throw csErr('나에게는 질문할 수 없어요.', 'field');
-    csHeartGate(b);
   }
   const t1 = csScreen(b.title), t2 = csScreen(b.body);
   const bad = [t1, t2].find(x => x.act === 'block'); if (bad) throw csErr(bad.msg, 'filter');
   csLimit(me, 'ask');
   const id = csNewId('Q'), now = new Date(), hold = [t1, t2].some(x => x.act === 'hold');
-  if (use) htSpend(me, use, id);                                     // 하트가 모자라면 여기서 멈춤(글은 올라가지 않음)
   const r = []; r[CSQC['id']] = id; r[CSQC['시각']] = now; r[CSQC['회원']] = me; r[CSQC['별명']] = cellSafe(nick); r[CSQC['분류']] = cat;
   r[CSQC['제목']] = cellSafe(t1.text.trim()); r[CSQC['내용']] = cellSafe(t2.text.trim()); r[CSQC['상태']] = hold ? CS_ST.hold : CS_ST.on; r[CSQC['신고']] = 0;
-  r[CSQC['이유']] = hold ? [t1, t2].map(x => x.why).filter(Boolean).join(',') : ''; r[CSQC['지정']] = pro ? String(pro.r[CSPC['id']]) : ''; r[CSQC['비공개']] = use === 'private';
+  r[CSQC['이유']] = hold ? [t1, t2].map(x => x.why).filter(Boolean).join(',') : ''; r[CSQC['지정']] = pro ? String(pro.r[CSPC['id']]) : ''; r[CSQC['비공개']] = use === 'private'; r[CSQC['제안끔']] = b.offers === false; r[CSQC['지역']] = csGuOf(uText(b.area, 20));
   csSheet(SH_CSQ).appendRow(CSQH.map((h, i) => r[i] === undefined ? '' : r[i]));
   csNotify('ask', hold ? '확인이 필요한 새 질문이 있어요' : '새 질문이 올라왔어요');
-  if (pro) csProMail(pro, use === 'private' ? '1:1 비공개 상담 요청이 왔어요' : '나를 지정한 질문이 왔어요');
-  return { ok: true, id: id, hold: hold, masked: [t1, t2].some(x => x.why === 'masked'), hearts: htBalance(me) };
+  let room = '';
+  if (pro) { room = csRoomNew(id, me, String(pro.r[CSPC['id']])); csProMail(pro, use === 'private' ? '1:1 비공개 상담 채팅 요청이 왔어요' : '나를 지정한 질문과 상담 채팅 요청이 왔어요'); }
+  return { ok: true, id: id, room: room, hold: hold, masked: [t1, t2].some(x => x.why === 'masked') };
 }
 
 /* ---------- 답변 ---------- */
@@ -9413,11 +9465,12 @@ function csAnswer(b) {
   if (!team) {
     pro = csProOf(me);
     const c = csCanAnswer(csProCore(pro), csQCore(o), csAnsOf(String(o.r[CSQC['id']])).map(a => ({ pro: String(a.r[CSAC['종류']]) === 'pro' ? String(a.r[CSAC['전문가id']]) : '' })));
-    if (!c.ok) throw csErr({ unverified: '자격 확인이 끝난 전문가만 답할 수 있어요.', private: '지정된 전문가만 답할 수 있는 비공개 상담이에요.', kind: '대출 질문은 등록된 대출모집인(대출상담사)만 답할 수 있어요.',
+    if (!c.ok) throw csErr({ unverified: '자격 확인이 끝난 전문가만 답할 수 있어요.', private: '지정된 전문가만 답할 수 있는 비공개 상담이에요.', kind: csKindMsg(String(o.r[CSQC['분류']])),
       dup: '이 질문에는 이미 답했어요. 답변을 고치려면 지우고 다시 써 주세요.', full: `전문가 답변이 ${CS_PRO_MAX}개 모두 찼어요.` }[c.why] || '답할 수 없어요.', 'pro');
   }
   const ck = csCheckText('answer', b.text); if (!ck.ok) throw csErr(ck.err, 'field');
   const t = csScreen(b.text); if (t.act === 'block') throw csErr(t.msg, 'filter');
+  if (pro) { const h = csHideOrg(t.text, csTxt(pro.r[CSPC['소속']])); if (h.hit) { t.text = h.text; t.why = t.why || 'masked'; } }   // 공개 답변에 내 사무소 이름 → 가림
   csLimit(me, 'answer');
   const id = csNewId('A'), r = [];
   r[CSAC['id']] = id; r[CSAC['시각']] = new Date(); r[CSAC['질문id']] = String(o.r[CSQC['id']]); r[CSAC['종류']] = team ? 'team' : 'pro';
@@ -9443,7 +9496,7 @@ function csReport(b) {
   const cnt = Number(o.r[C['신고']] || 0) + 1;
   csSet(n, o.row, C, '신고', cnt);
   let hidden = false;
-  if (cnt >= cmCfg().reportHide && String(o.r[C['상태']]) === CS_ST.on) { csSet(n, o.row, C, '상태', CS_ST.tmp); csSet(n, o.row, C, '이유', '신고 임시조치 ' + ymd(new Date())); hidden = true; }
+  if (cnt >= CS_REPORT_HIDE && String(o.r[C['상태']]) === CS_ST.on) { csSet(n, o.row, C, '상태', CS_ST.tmp); csSet(n, o.row, C, '이유', '신고 임시조치 ' + ymd(new Date())); hidden = true; }
   csNotify('rep', hidden ? '신고가 쌓여 가린 글이 있어요' : '신고가 들어왔어요');
   return { ok: true, hidden: hidden };
 }
@@ -9467,28 +9520,13 @@ function csErase(n, o, why) {
 /** 탈퇴: 그 사람 질문·답변 내용과 연락처 지우기, 전문가 신청은 중지(연락처 지움). 하트 결제 기록은 전자상거래법 보관 기간 동안 남김(회원번호 없이) */
 function csUserGone(k) {
   const me = csUid(k);
+  try { csRoomsGone(me); } catch (e) {}
+  try { const sh = book().getSheetByName(SH_CSB); if (sh) { const v = sh.getDataRange().getValues(); for (let i = v.length - 1; i >= 1; i--) if (String(v[i][1]) === me) sh.deleteRow(i + 1); } } catch (e) {}                                          // 상담 채팅: 그 사람이 들어 있는 방·메시지 모두 지움
   [SH_CSQ, SH_CSA].forEach(n => { const C = n === SH_CSQ ? CSQC : CSAC; csRows(n).forEach(o => { if (String(o.r[C['회원']]) === me && String(o.r[C['상태']]) !== CS_ST.del) csErase(n, o, '탈퇴'); }); });
   csPros().forEach(o => { if (String(o.r[CSPC['회원']]) === me) { const sh = csSheet(SH_CSP); sh.getRange(o.row, CSPC['연락처'] + 1).setValue(''); sh.getRange(o.row, CSPC['이메일'] + 1).setValue(''); sh.getRange(o.row, CSPC['상태'] + 1).setValue(CS_PRO_ST.stop); sh.getRange(o.row, CSPC['메모'] + 1).setValue('탈퇴 ' + ymd(new Date())); } });
 }
 
-/* ---------- 연락처 보내기(질문한 분 → 고른 전문가 한 분) ---------- */
 function csPhone(v) { const d = String(v || '').replace(/[^0-9]/g, ''); return /^01[016789]\d{7,8}$/.test(d) ? d : ''; }
-function csContact(b) {
-  csGate(b);
-  const u = sessionUser(b.s), me = csUid(u.k), a = csA(b.aid);
-  if (!a || String(a.r[CSAC['종류']]) !== 'pro' || String(a.r[CSAC['상태']]) !== CS_ST.on) throw csErr('답변을 찾지 못했어요.', 'none');
-  const q = csQ(a.r[CSAC['질문id']]); if (!q || String(q.r[CSQC['회원']]) !== me) throw csErr('내 질문에 달린 답변에만 연락처를 보낼 수 있어요.', 'field');
-  if (b.off === true) { csSet(SH_CSA, a.row, CSAC, '연락처', ''); csSet(SH_CSA, a.row, CSAC, '연락처시각', ''); return { ok: true, sent: false }; }
-  if (b.agree !== true) throw csErr('연락처를 이 전문가 한 분께만 보내는 데 동의해 주세요.', 'field');
-  const ph = csPhone(b.phone), note = uText(b.note, 60);
-  if (!ph) throw csErr('휴대폰 번호를 정확히 적어 주세요.', 'field');
-  if (note && csBad(note)) throw csErr('남길 말에 쓸 수 없는 표현이 있어요.', 'field');
-  csLimit(me, 'contact');
-  csSet(SH_CSA, a.row, CSAC, '연락처', sealText(JSON.stringify({ p: ph, n: note })));
-  csSet(SH_CSA, a.row, CSAC, '연락처시각', new Date());
-  const pro = csProById(a.r[CSAC['전문가id']]); if (pro) csProMail(pro, '질문한 분이 연락처를 보내 왔어요');
-  return { ok: true, sent: true };
-}
 
 /* ---------- 전문가 신청·내 답변함 ---------- */
 function csProApply(b) {
@@ -9501,16 +9539,22 @@ function csProApply(b) {
   const no = P.no ? uText(b.no, 30).replace(/\s/g, '') : '';
   if (P.no && !/^[0-9A-Za-z가-힣\-]{4,30}$/.test(no)) throw csErr(P.no + '를 정확히 적어 주세요.', 'field');
   const org = uText(b.org, 40); if (P.orgNeed && org.length < 2) throw csErr(P.org + '을 적어 주세요.', 'field');
-  const area = uText(b.area, 30), intro = uText(b.intro, 200);
+  const area = uText(b.area, 30), intro = uText(b.intro, 200), years = Math.floor(Number(b.years));
+  if (!(years >= 0 && years <= 60)) throw csErr('경력 연수를 숫자로 적어 주세요.', 'field');
+  if (!csGuOf(area)) throw csErr('활동 지역을 구·군·시까지 적어 주세요(예: 서울 강남구).', 'field');
+  const addr = uText(b.addr, 80), tel = String(b.tel || '').replace(/[^0-9]/g, '');
+  if (tel && !/^0\d{8,10}$/.test(tel)) throw csErr('사무실 전화번호를 정확히 적어 주세요.', 'field');
+  const photo = String(b.photo || '');
+  if (photo && (!/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(photo) || photo.length > 45000)) throw csErr('사진을 다시 골라 주세요(작게 줄여서 올려요).', 'field');
   if ([name, org, area, intro].some(csBad)) throw csErr('쓸 수 없는 표현이 있어요.', 'field');
-  if (CM_GEN.some(g => g.re.test(intro))) throw csErr('소개에는 연락처·인터넷 주소를 쓸 수 없어요. 연락은 질문한 분이 고른 경우에만 연결돼요.', 'field');
+  if (CM_GEN.some(g => g.re.test(intro)) || csHideOrg(intro, org).hit) throw csErr('소개에는 사무소 이름·연락처·인터넷 주소를 쓸 수 없어요. 고객과 채팅이 열리면 전체 프로필로 보여 드려요.', 'field');
   const ph = csPhone(b.phone); if (!ph) throw csErr('운영자가 확인 연락을 드릴 휴대폰 번호를 적어 주세요.', 'field');
   const mail = adMail(b.email); if (!mail) throw csErr('새 질문 알림을 받을 이메일을 적어 주세요.', 'field');
   if (b.agree !== true) throw csErr('자격 확인과 개인정보 수집·이용에 동의해 주세요.', 'field');
   csLimit(me, 'apply');
   const id = csNewId('E'), r = [];
   r[CSPC['id']] = id; r[CSPC['신청일']] = new Date(); r[CSPC['회원']] = me; r[CSPC['종류']] = kind; r[CSPC['이름']] = cellSafe(name); r[CSPC['번호']] = cellSafe(no); r[CSPC['소속']] = cellSafe(org);
-  r[CSPC['지역']] = cellSafe(area); r[CSPC['소개']] = cellSafe(intro); r[CSPC['연락처']] = sealText(ph); r[CSPC['이메일']] = mail; r[CSPC['상태']] = CS_PRO_ST.wait; r[CSPC['동의판']] = CS_PRO_CONSENT_V;
+  r[CSPC['지역']] = cellSafe(area); r[CSPC['소개']] = cellSafe(intro); r[CSPC['연락처']] = sealText(ph); r[CSPC['이메일']] = mail; r[CSPC['상태']] = CS_PRO_ST.wait; r[CSPC['동의판']] = CS_PRO_CONSENT_V; r[CSPC['경력']] = years; r[CSPC['주소']] = cellSafe(addr); r[CSPC['사무실전화']] = tel ? "'" + tel : ''; r[CSPC['사진']] = photo;
   csSheet(SH_CSP).appendRow(CSPH.map((h, i) => r[i] === undefined ? '' : r[i]));
   csNotify('pro', '전문가 신청이 들어왔어요');
   return { ok: true, id: id, st: CS_PRO_ST.wait };
@@ -9519,32 +9563,31 @@ function csProMine(b) {
   csGate(b);
   const u = sessionUser(b.s), me = csUid(u.k), p = csProOf(me) || csPros().filter(o => String(o.r[CSPC['회원']]) === me).pop();   // 반려된 신청이면 이유를 보여 주고 다시 신청 받음
   if (!p) return { ok: true, pro: null };
-  const st = String(p.r[CSPC['상태']]), pub = Object.assign(csProPub(p), { st: st, memo: st === CS_PRO_ST.no || st === CS_PRO_ST.stop ? csTxt(p.r[CSPC['메모']]) : '' });
+  const st = String(p.r[CSPC['상태']]), pub = Object.assign(csProFull(p), { st: st, memo: st === CS_PRO_ST.no || st === CS_PRO_ST.stop ? csTxt(p.r[CSPC['메모']]) : '' });
   if (st !== CS_PRO_ST.ok) return { ok: true, pro: pub };
   const pid = pub.id, now = Date.now(), Q = {};
   csRows(SH_CSQ).forEach(o => { Q[String(o.r[CSQC['id']])] = o; });
   const answered = {};
   const mine = csRows(SH_CSA).filter(a => String(a.r[CSAC['전문가id']]) === pid && String(a.r[CSAC['상태']]) !== CS_ST.del).reverse().slice(0, 50).map(a => {
     const q = Q[String(a.r[CSAC['질문id']])]; answered[String(a.r[CSAC['질문id']])] = 1;
-    let c = null; if (a.r[CSAC['연락처']]) { const j = parseJ(openText(String(a.r[CSAC['연락처']])), null); if (j) c = { phone: j.p, note: j.n || '', at: csDay(a.r[CSAC['연락처시각']]) }; }
-    return { id: String(a.r[CSAC['id']]), qid: q ? String(q.r[CSQC['id']]) : '', title: q ? csTxt(q.r[CSQC['제목']]) : '(지운 질문)', at: csDay(a.r[CSAC['시각']]), st: String(a.r[CSAC['상태']]), contact: c };
+    return { id: String(a.r[CSAC['id']]), qid: q ? String(q.r[CSQC['id']]) : '', title: q ? csTxt(q.r[CSQC['제목']]) : '(지운 질문)', at: csDay(a.r[CSAC['시각']]), st: String(a.r[CSAC['상태']]) };
   });
   const inbox = csRows(SH_CSQ).filter(o => String(o.r[CSQC['지정']]) === pid && String(o.r[CSQC['상태']]) === CS_ST.on && !answered[String(o.r[CSQC['id']])]).reverse().map(o => csQPub(o, now, '', 0));
   const only = Object.keys(CS_CAT_ONLY).filter(c => CS_CAT_ONLY[c].indexOf(pub.kind) < 0);
   const open = csOrder(csRows(SH_CSQ).filter(o => String(o.r[CSQC['상태']]) === CS_ST.on && o.r[CSQC['비공개']] !== true && !answered[String(o.r[CSQC['id']])] && only.indexOf(String(o.r[CSQC['분류']])) < 0
     && csAnsOf(String(o.r[CSQC['id']])).filter(a => String(a.r[CSAC['종류']]) === 'pro').length < CS_PRO_MAX).map(o => csQPub(o, now, '', 0)), now).slice(0, 30);
-  return { ok: true, pro: pub, inbox: inbox, answers: mine, open: open };
+  return { ok: true, pro: pub, inbox: inbox, answers: mine, open: open, rooms: csRoomList(me) };
 }
 
 /* ---------- 하트 ---------- */
 function htRowsOf(me) { return csRows(SH_HT).filter(o => String(o.r[HTC['회원']]) === me); }
 /** 묶음(충전·무상)마다 남은 하트 — 사용 기록의 take 로 셈 */
 function htLots(me) {
-  const rows = htRowsOf(me), used = {};
+  const rows = htRowsOf(me), used = {}, now = Date.now();
   rows.forEach(o => { if (String(o.r[HTC['종류']]) !== HT_KIND.use || String(o.r[HTC['상태']]) === HT_ST.back) return; const j = parseJ(csTxt(o.r[HTC['내용']]), {}); Object.keys(j.take || {}).forEach(k => { used[k] = (used[k] || 0) + Number(j.take[k]); }); });
   return rows.filter(o => [HT_KIND.paid, HT_KIND.free].indexOf(String(o.r[HTC['종류']])) >= 0 && [HT_ST.ok, HT_ST.req].indexOf(String(o.r[HTC['상태']])) >= 0).map(o => {
-    const id = String(o.r[HTC['id']]), n = Number(o.r[HTC['하트']]) || 0, u = used[id] || 0;
-    return { id: id, kind: String(o.r[HTC['종류']]) === HT_KIND.paid ? 'paid' : 'free', n: n, used: u, left: Math.max(0, n - u), won: Number(o.r[HTC['금액']]) || 0, at: csMs(o.r[HTC['시각']]),
+    const id = String(o.r[HTC['id']]), n = Number(o.r[HTC['하트']]) || 0, u = used[id] || 0, at = csMs(o.r[HTC['시각']]), exp = now > csExpireAt(at);   // 유효기간(5년)이 지난 하트는 쓰지 못함
+    return { id: id, kind: String(o.r[HTC['종류']]) === HT_KIND.paid ? 'paid' : 'free', n: n, used: u, left: exp ? 0 : Math.max(0, n - u), won: Number(o.r[HTC['금액']]) || 0, at: at, exp: exp,
       lock: String(o.r[HTC['상태']]) === HT_ST.req, st: String(o.r[HTC['상태']]), row: o.row };
   });
 }
@@ -9554,24 +9597,28 @@ function htSpend(me, use, ref) {
   const U = CS_USES[use]; if (!U) throw csErr('쓸 곳을 다시 골라 주세요.', 'field');
   const al = csAlloc(htLots(me), U.n);
   if (!al.ok) throw csErr(`하트가 ${U.n}개 필요해요. 지금 ${htBalance(me)}개 있어요.`, 'heart');
-  const r = []; r[HTC['id']] = csNewId('U'); r[HTC['시각']] = new Date(); r[HTC['회원']] = me; r[HTC['종류']] = HT_KIND.use; r[HTC['하트']] = U.n; r[HTC['금액']] = 0;
+  const id = csNewId('U'), r = []; r[HTC['id']] = id; r[HTC['시각']] = new Date(); r[HTC['회원']] = me; r[HTC['종류']] = HT_KIND.use; r[HTC['하트']] = U.n; r[HTC['금액']] = 0;
   r[HTC['내용']] = JSON.stringify({ use: use, ref: String(ref || ''), take: al.take }); r[HTC['상태']] = HT_ST.used;
   csSheet(SH_HT).appendRow(HTH.map((h, i) => r[i] === undefined ? '' : r[i]));
-  return al.take;
+  return id;
 }
-function htLotPub(l, now) { const q = csRefund(l, l.used, now); return { id: l.id, kind: l.kind, n: l.n, left: l.left, won: l.won, day: ymd(new Date(l.at)), st: l.st, refund: l.kind === 'paid' && !l.lock ? q : null }; }
+/** 확인된 전문가인지(하트는 전문가만 충전·사용) */
+function htIsPro(me) { const p = csProOf(me); return !!p && String(p.r[CSPC['상태']]) === CS_PRO_ST.ok; }
+function htLotPub(l, now) { const q = csRefund(l, l.used, now); return { id: l.id, kind: l.kind, n: l.n, left: l.left, won: l.won, day: ymd(new Date(l.at)), until: ymd(new Date(csExpireAt(l.at))), exp: l.exp, st: l.st, refund: l.kind === 'paid' && !l.lock ? q : null }; }
 function htMine(b) {
   csGate(b); csHeartGate(b);
   const u = sessionUser(b.s), me = csUid(u.k), now = Date.now();
+  if (!htIsPro(me) && !bIsAdmin(u.k)) return { ok: true, pro: false };                // 하트는 확인된 전문가만
   const lots = htLots(me), rows = htRowsOf(me);
   const uses = rows.filter(o => String(o.r[HTC['종류']]) === HT_KIND.use).reverse().slice(0, 50).map(o => { const j = parseJ(csTxt(o.r[HTC['내용']]), {}); return { day: csDay(o.r[HTC['시각']]), n: Number(o.r[HTC['하트']]), what: (CS_USES[j.use] || {}).name || '', ref: j.ref || '', back: String(o.r[HTC['상태']]) === HT_ST.back }; });
   const done = rows.filter(o => String(o.r[HTC['상태']]) === HT_ST.done).reverse().map(o => ({ day: csDay(o.r[HTC['처리일']]), n: Number(o.r[HTC['하트']]), won: Number(o.r[HTC['환불액']]) || 0 }));
-  return { ok: true, balance: htBalance(me), lots: lots.slice().reverse().map(l => htLotPub(l, now)), uses: uses, refunds: done, pay: PAID_OPEN && (HEART_OPEN || csIsAdmin(b)) };
+  return { ok: true, pro: true, balance: htBalance(me), lots: lots.slice().reverse().map(l => htLotPub(l, now)), uses: uses, refunds: done, pay: PAID_OPEN && (HEART_OPEN || csIsAdmin(b)) };
 }
 function htOrder(b) {
   csGate(b); csHeartGate(b);
   if (!PAID_OPEN) throw csErr(PAID_CLOSED_MSG, 'paid_closed');
   const u = sessionUser(b.s), me = csUid(u.k), P = csPack(String(b.pack || ''));
+  if (!htIsPro(me)) throw csErr('하트는 자격 확인이 끝난 전문가만 충전할 수 있어요.', 'pro');
   if (!P) throw csErr('하트 묶음을 다시 골라 주세요.', 'field');
   if (b.agree !== true) throw csErr('하트 이용·환불 안내에 동의해 주세요.', 'field');
   csLimit(me, 'order');
@@ -9629,7 +9676,7 @@ function htConfirm(b) {
 function htRefundReq(b) {
   csGate(b); csHeartGate(b);
   const u = sessionUser(b.s), me = csUid(u.k), l = htLots(me).find(x => x.id === String(b.lot || ''));
-  if (!l || l.kind !== 'paid') throw csErr('환불할 수 있는 충전 내역을 찾지 못했어요. 무상으로 받은 하트는 환불되지 않아요.', 'field');
+  if (!l || l.kind !== 'paid') throw csErr('환불할 수 있는 충전 내역을 찾지 못했어요. 무료로 받은 하트는 환불되지 않아요.', 'field');
   if (l.lock) return { ok: true, already: true };
   const q = csRefund(l, l.used, Date.now()); if (!(q.won > 0)) throw csErr('남은 하트가 없어 환불할 금액이 없어요.', 'field');
   const why = uText(b.why, 100);
@@ -9638,19 +9685,6 @@ function htRefundReq(b) {
   csNotify('refund', '하트 환불 요청이 있어요');
   return { ok: true, won: q.won, full: q.full };
 }
-/** 질문 위로 올리기(하트 1개, 24시간) */
-function csBump(b) {
-  csGate(b); csHeartGate(b);
-  const u = sessionUser(b.s), me = csUid(u.k), o = csQ(b.id);
-  if (!o || String(o.r[CSQC['회원']]) !== me || String(o.r[CSQC['상태']]) !== CS_ST.on || o.r[CSQC['비공개']] === true) throw csErr('공개된 내 질문만 위로 올릴 수 있어요.', 'field');
-  if (csMs(o.r[CSQC['올림까지']]) > Date.now()) throw csErr('이미 위에 올라가 있어요.', 'field');
-  csLimit(me, 'bump');
-  htSpend(me, 'bump', String(o.r[CSQC['id']]));
-  const until = new Date(Date.now() + CS_USES.bump.hours * 3600000);
-  csSet(SH_CSQ, o.row, CSQC, '올림까지', until); csSet(SH_CSQ, o.row, CSQC, '올린시각', new Date());
-  return { ok: true, until: until.getTime(), hearts: htBalance(me) };
-}
-
 /* ---------- 운영자(counsel/admin/) ---------- */
 /** 1년 지난 신고 기록·지운 글 처리 기록 지우기(운영정책 초안 보관 기간) */
 function csOldCleanup() {
@@ -9662,7 +9696,7 @@ function csOldCleanup() {
 }
 function csAdminQueue(b) {
   csAdminNeed(b);
-  csOldCleanup();
+  csOldCleanup(); csChatCleanup(true);
   const now = Date.now(), Q = csRows(SH_CSQ), A = csRows(SH_CSA), P = {}; csPros().forEach(p => { P[String(p.r[CSPC['id']])] = p; });
   const team = {}, any = {}; A.forEach(a => { if (String(a.r[CSAC['상태']]) === CS_ST.del) return; const q = String(a.r[CSAC['질문id']]); any[q] = 1; if (String(a.r[CSAC['종류']]) === 'team') team[q] = 1; });
   const reps = {}; csRows(SH_CSR).forEach(o => { const id = String(o.r[CSRC['대상id']]); (reps[id] = reps[id] || []).push(CS_WHY[o.r[CSRC['사유']]] || '기타'); });
@@ -9673,20 +9707,20 @@ function csAdminQueue(b) {
   const holdA = A.filter(o => [CS_ST.hold, CS_ST.tmp].indexOf(String(o.r[CSAC['상태']])) >= 0).reverse().slice(0, 50).map(ax);
   const repQ = Q.filter(o => String(o.r[CSQC['상태']]) === CS_ST.on && Number(o.r[CSQC['신고']]) > 0).reverse().slice(0, 30).map(qx);
   const repA = A.filter(o => String(o.r[CSAC['상태']]) === CS_ST.on && Number(o.r[CSAC['신고']]) > 0).reverse().slice(0, 30).map(ax);
-  const pros = csPros().filter(o => String(o.r[CSPC['상태']]) === CS_PRO_ST.wait).map(o => Object.assign(csProPub(o), { no: csTxt(o.r[CSPC['번호']]), day: csDay(o.r[CSPC['신청일']]),
+  const pros = csPros().filter(o => String(o.r[CSPC['상태']]) === CS_PRO_ST.wait).map(o => Object.assign(csProFull(o), { no: csTxt(o.r[CSPC['번호']]), day: csDay(o.r[CSPC['신청일']]),
     phone: (() => { const p = openText(String(o.r[CSPC['연락처']] || '')); return p ? p.replace(/^(\d{3})(\d{3,4})(\d{4})$/, '$1-$2-$3') : ''; })(), mail: csTxt(o.r[CSPC['이메일']]), where: (CS_PROS[String(o.r[CSPC['종류']])] || {}).where || '' }));
-  const prosOk = csPros().filter(o => String(o.r[CSPC['상태']]) === CS_PRO_ST.ok).map(o => Object.assign(csProPub(o), { no: csTxt(o.r[CSPC['번호']]), day: csDay(o.r[CSPC['처리일']]) }));
+  const prosOk = csPros().filter(o => String(o.r[CSPC['상태']]) === CS_PRO_ST.ok).map(o => Object.assign(csProFull(o), { no: csTxt(o.r[CSPC['번호']]), day: csDay(o.r[CSPC['처리일']]) }));
   const refunds = csRows(SH_HT).filter(o => String(o.r[HTC['상태']]) === HT_ST.req).map(o => {
     const me = String(o.r[HTC['회원']]), l = htLots(me).find(x => x.id === String(o.r[HTC['id']])), q = l ? csRefund(l, l.used, csMs(o.r[HTC['처리일']]) || now) : { won: 0 };
     return { id: String(o.r[HTC['id']]), day: csDay(o.r[HTC['시각']]), req: csDay(o.r[HTC['처리일']]), n: Number(o.r[HTC['하트']]), used: l ? l.used : 0, won: Number(o.r[HTC['금액']]), refund: q.won, memo: csTxt(o.r[HTC['메모']]), order: String(o.r[HTC['주문번호']]) };
   });
-  const late = Q.filter(o => !!o.r[CSQC['지정']] && String(o.r[CSQC['상태']]) === CS_ST.on && now - csMs(o.r[CSQC['시각']]) > CS_NOANSWER_DAYS * 86400000
-    && !A.some(a => String(a.r[CSAC['질문id']]) === String(o.r[CSQC['id']]) && String(a.r[CSAC['전문가id']]) === String(o.r[CSQC['지정']]) && String(a.r[CSAC['상태']]) !== CS_ST.del))
-    .filter(o => htRowsOf(String(o.r[CSQC['회원']])).some(h => String(h.r[HTC['종류']]) === HT_KIND.use && String(h.r[HTC['상태']]) === HT_ST.used && parseJ(csTxt(h.r[HTC['내용']]), {}).ref === String(o.r[CSQC['id']])))
-    .map(qx);
+  const autoRefunds = csRows(SH_CSRM).filter(x => csTxt(x.r[CSRMC['자동환불']])).reverse().slice(0, 50).map(x => { const p = csProById(x.r[CSRMC['전문가id']]), q = csQ(x.r[CSRMC['질문id']]);
+    return { id: String(x.r[CSRMC['id']]), pro: p ? csProFull(p).realName : '', title: q ? csTxt(q.r[CSQC['제목']]) || '(지운 질문)' : '(지운 질문)', why: csTxt(x.r[CSRMC['자동환불']]), kind: String(x.r[CSRMC['종류']] || 'req') }; });
   const seeds = csRows(SH_CSQ).filter(o => o.r[CSQC['시드']]).map(o => ({ sid: csTxt(o.r[CSQC['시드']]), id: String(o.r[CSQC['id']]), st: String(o.r[CSQC['상태']]) }));
-  return { ok: true, cfg: { open: COUNSEL_OPEN, heart: HEART_OPEN, paid: PAID_OPEN, rules: !!cmRules(), reportHide: cmCfg().reportHide },
-    fresh: fresh, holdQ: holdQ, holdA: holdA, repQ: repQ, repA: repA, pros: pros, prosOk: prosOk, refunds: refunds, late: late, seeds: seeds };
+  const rooms = csRows(SH_CSRM).filter(x => Number(x.r[CSRMC['신고']]) > 0).reverse().slice(0, 50).map(x => ({ id: String(x.r[CSRMC['id']]), day: csDay(x.r[CSRMC['시각']]), st: String(x.r[CSRMC['상태']]),
+    n: Number(x.r[CSRMC['신고']]), why: csTxt(x.r[CSRMC['신고이유']]).split(',').filter(Boolean).map(w => CS_WHY[w] || '기타'), pro: (csProById(x.r[CSRMC['전문가id']]) ? csProFull(csProById(x.r[CSRMC['전문가id']])).realName : '') }));
+  return { ok: true, rooms: rooms, cfg: { open: COUNSEL_OPEN, heart: HEART_OPEN, paid: PAID_OPEN, rules: !!cmRules(), reportHide: CS_REPORT_HIDE },
+    fresh: fresh, holdQ: holdQ, holdA: holdA, repQ: repQ, repA: repA, pros: pros, prosOk: prosOk, refunds: refunds, autoRefunds: autoRefunds, seeds: seeds };
 }
 function csAdminAct(b) {
   csAdminNeed(b);
@@ -9695,7 +9729,8 @@ function csAdminAct(b) {
   const n = isQ ? SH_CSQ : SH_CSA, C = isQ ? CSQC : CSAC;
   if (op === 'show') { csSet(n, o.row, C, '상태', CS_ST.on); csSet(n, o.row, C, '신고', 0); csSet(n, o.row, C, '이유', '운영자 확인 공개 ' + ymd(new Date())); }
   else if (op === 'hide') { csSet(n, o.row, C, '상태', CS_ST.tmp); csSet(n, o.row, C, '이유', '운영자 임시조치 ' + ymd(new Date())); }
-  else if (op === 'del') csErase(n, o, '운영자 삭제');
+  else if (op === 'keep' && isQ) { csSet(n, o.row, C, '상태', CS_ST.keep); csSet(n, o.row, C, '이유', '운영자 계속 가림 ' + ymd(new Date())); csRefundQuestion(String(o.r[CSQC['id']]), '가린 질문'); }
+  else if (op === 'del') { csErase(n, o, '운영자 삭제'); if (isQ) csRefundQuestion(String(o.r[CSQC['id']]), '운영자 삭제 질문'); }
   else if (op === 'video' && isQ) {                                                // '영상으로 답한 고민' 연결(유튜브 주소만, 빈 값이면 지움)
     const v = String(b.url || '').trim();
     if (v && !/^https:\/\/(www\.|m\.)?(youtube\.com\/(watch\?v=|shorts\/)|youtu\.be\/)[A-Za-z0-9_\-?=&]{6,80}$/.test(v)) throw csErr('유튜브 영상 주소를 넣어 주세요.');
@@ -9712,6 +9747,7 @@ function csAdminPro(b) {
   if (op !== 'ok' && !memo) throw csErr('반려·중지 이유를 적어 주세요(신청한 분께 보여요).');
   csSet(SH_CSP, o.row, CSPC, '상태', st); csSet(SH_CSP, o.row, CSPC, '처리일', new Date()); csSet(SH_CSP, o.row, CSPC, '메모', cellSafe(memo));
   if (op === 'no') csSet(SH_CSP, o.row, CSPC, '연락처', '');                     // 반려한 신청의 연락처는 바로 지움
+  if (op === 'ok') htGrant(String(o.r[CSPC['회원']]), CS_FREE_HEARTS, 'approve', '승인 무료 하트');
   const mail = csTxt(o.r[CSPC['이메일']]);
   if (mail && NOTIFY) { try { MailApp.sendEmail({ to: mail, name: SITE_NAME, subject: `[${SITE_NAME} 고민 상담] 전문가 신청 ${op === 'ok' ? '확인이 끝났어요' : op === 'no' ? '결과를 알려 드려요' : '답변이 멈췄어요'}`,
     body: (op === 'ok' ? '자격 확인이 끝났어요. 이제 질문에 답할 수 있어요.\n' : '사유: ' + memo + '\n') + `내 답변함: ${WEB_ROOT}counsel/expert/` }); } catch (e) {} }
@@ -9741,24 +9777,23 @@ function csAdminRefund(b) {
     return { ok: true, won: q.won };
   });
 }
-/** 답을 받지 못한 지정·비공개 질문의 하트 돌려주기(운영자가 누를 때만) */
-function csAdminReturn(b) {
-  csAdminNeed(b);
-  const o = csQ(b.id); if (!o) throw csErr('질문을 찾지 못했어요.');
-  const me = String(o.r[CSQC['회원']]), h = htRowsOf(me).find(x => String(x.r[HTC['종류']]) === HT_KIND.use && String(x.r[HTC['상태']]) === HT_ST.used && parseJ(csTxt(x.r[HTC['내용']]), {}).ref === String(o.r[CSQC['id']]) && parseJ(csTxt(x.r[HTC['내용']]), {}).use !== 'bump');
-  if (!h) throw csErr('돌려줄 하트 사용 기록이 없어요.');
-  csSet(SH_HT, h.row, HTC, '상태', HT_ST.back); csSet(SH_HT, h.row, HTC, '처리일', new Date()); csSet(SH_HT, h.row, HTC, '메모', '답 없음 — 운영자가 돌려줌');
-  return { ok: true, balance: htBalance(me) };
-}
 /** 무상 하트 주기(이벤트·사과) — 질문한 분께. 환불 대상 아님 */
 function csAdminGrant(b) {
   csAdminNeed(b);
-  const o = csQ(b.id), n = Math.floor(Number(b.n) || 0); if (!o) throw csErr('질문을 찾지 못했어요.');
-  if (!(n >= 1 && n <= 10)) throw csErr('하트는 1~10개까지 줄 수 있어요.');
-  const r = []; r[HTC['id']] = csNewId('F'); r[HTC['시각']] = new Date(); r[HTC['회원']] = String(o.r[CSQC['회원']]); r[HTC['종류']] = HT_KIND.free; r[HTC['하트']] = n; r[HTC['금액']] = 0;
-  r[HTC['내용']] = 'grant'; r[HTC['상태']] = HT_ST.ok; r[HTC['메모']] = cellSafe(uText(b.memo, 100) || '운영자 지급');
-  csSheet(SH_HT).appendRow(HTH.map((h, i) => r[i] === undefined ? '' : r[i]));
+  const p = csProById(b.pid), n = Math.floor(Number(b.n) || 0);
+  if (!p || String(p.r[CSPC['상태']]) !== CS_PRO_ST.ok) throw csErr('확인된 전문가를 찾지 못했어요.');
+  if (!(n >= 1 && n <= 20)) throw csErr('하트는 1~20개까지 줄 수 있어요.');
+  htGrant(String(p.r[CSPC['회원']]), n, 'grant', uText(b.memo, 100) || '운영자 지급');
   return { ok: true };
+}
+/** 무료 하트 넣기(환불 대상 아님). why 가 'approve' 면 한 사람에게 한 번만 */
+function htGrant(me, n, why, memo) {
+  if (!me || !(n > 0)) return false;
+  if (why === 'approve' && htRowsOf(me).some(o => String(o.r[HTC['종류']]) === HT_KIND.free && csTxt(o.r[HTC['내용']]) === 'approve')) return false;
+  const r = []; r[HTC['id']] = csNewId('F'); r[HTC['시각']] = new Date(); r[HTC['회원']] = me; r[HTC['종류']] = HT_KIND.free; r[HTC['하트']] = n; r[HTC['금액']] = 0;
+  r[HTC['내용']] = why; r[HTC['상태']] = HT_ST.ok; r[HTC['메모']] = cellSafe(memo || '');
+  csSheet(SH_HT).appendRow(HTH.map((h, i) => r[i] === undefined ? '' : r[i]));
+  return true;
 }
 /** 시드 글 공개·숨김: counsel/seed.json 의 글을 질문 + 상담팀 답변으로 올림(이미 있으면 상태만 바꿈) */
 function csAdminSeed(b) {
@@ -9782,6 +9817,425 @@ function csAdminSeed(b) {
   });
 }
 
+/* ---------- 상담 채팅(앱 안 1:1) ----------
+   방: 질문 하나 × 전문가 한 분. 1:1 비공개 상담·전문가 지정 질문은 질문을 올릴 때 저절로 열리고, 공개 질문은 질문한 분이 답변한 전문가와 [1:1 상담하기](하트)로 열어요.
+   연락 수단: 채팅방 안에서는 두 사람 모두 연락처를 자유롭게 주고받아요(가리지 않음 — 주민등록번호만 가림). [내 연락처 보내기] 단추로 보낸 번호는 시트에 암호화하고 상대 한 분에게만 보여요.
+   확인: 화면이 5초마다 csRoom(n=받은 수)을 부름 → 캐시의 메시지 수가 같으면 시트를 읽지 않고 바로 답함(Apps Script 사용량 아끼기). */
+const SH_CSRM = '상담채팅방', SH_CSM = '상담채팅', SH_CSV = '상담채팅열람';
+const CSRMH = ['id', '시각', '질문id', '회원', '전문가id', '상태', '끝난날', '최근', '질문자읽음', '전문가읽음', '연락처보냄', '신고', '신고이유', '알림메일', '수', '수락일', '사용id', '돌려받기', '종류', '열람일', '자동환불', '평점'];   // 돌려받기: v58 초안 칸(쓰지 않음) · 종류: req(질문한 분 요청)·offer(전문가 제안)
+const CSMH = ['id', '시각', '방id', '쪽', '내용', '가림'];
+const CSVH = ['시각', '방id', '운영자', '이유'];
+const CSRMC = Object.fromEntries(CSRMH.map((h, i) => [h, i])), CSMC = Object.fromEntries(CSMH.map((h, i) => [h, i]));
+const CS_ROOM_ST = { req: '요청', offer: '제안', on: '진행', end: '끝남', no: '거절', exp: '만료', pass: '사양' };
+const SH_CSB = '상담차단', CSBH = ['시각', '회원', '전문가id'];
+const CS_CHAT_WHY_IDS = { abuse: 1, pi: 1, ad: 1, false: 1, illegal: 1, etc: 1 };   // 화면 CS_CHAT_WHY 와 같게
+function csRmSheet() { return uSheet(SH_CSRM, CSRMH); }
+function csMsgSheet() { return uSheet(SH_CSM, CSMH); }
+function csRoomById(id) { id = String(id || ''); return /^R[0-9A-F]{10}$/.test(id) ? csRows(SH_CSRM).find(x => String(x.r[CSRMC['id']]) === id) || null : null; }
+function csRoomsOf(qid) { return csRows(SH_CSRM).filter(x => String(x.r[CSRMC['질문id']]) === String(qid)); }
+function csProMember(pid) { const p = csProById(pid); return p ? String(p.r[CSPC['회원']]) : ''; }
+/** 이 사람이 방에서 어느 쪽인지: 'q'(질문한 분) · 'p'(전문가) · ''(남) */
+function csRoomSide(x, me) { if (!x || !me) return ''; if (String(x.r[CSRMC['회원']]) === me) return 'q'; return csProMember(x.r[CSRMC['전문가id']]) === me ? 'p' : ''; }
+function csRmSet(x, h, v) { csRmSheet().getRange(x.row, CSRMC[h] + 1).setValue(v); }
+function csRv(id, n) { const c = CacheService.getScriptCache(), k = 'csRv|' + id; if (n === undefined) { const v = c.get(k); return v == null ? null : v; } try { c.put(k, String(n), 21600); } catch (e) {} return n; }
+function csRoomNew(qid, uh, pid, kind) {
+  const ex = csRoomsOf(qid).find(x => String(x.r[CSRMC['전문가id']]) === pid); if (ex) return String(ex.r[CSRMC['id']]);
+  const id = csNewId('R'), now = new Date(), r = [];
+  r[CSRMC['id']] = id; r[CSRMC['시각']] = now; r[CSRMC['질문id']] = qid; r[CSRMC['회원']] = uh; r[CSRMC['전문가id']] = pid; r[CSRMC['상태']] = kind === 'offer' ? CS_ROOM_ST.offer : CS_ROOM_ST.req; r[CSRMC['종류']] = kind === 'offer' ? 'offer' : 'req'; r[CSRMC['최근']] = now;
+  r[CSRMC['연락처보냄']] = ''; r[CSRMC['신고']] = 0; r[CSRMC['수']] = 0;
+  csRmSheet().appendRow(CSRMH.map((h, i) => r[i] === undefined ? '' : r[i]));
+  csRv(id, '0|' + (kind === 'offer' ? CS_ROOM_ST.offer : CS_ROOM_ST.req));
+  return id;
+}
+/** 방 하나를 쓰는 사람인지 확인(질문한 분·전문가만). 운영자도 여기로는 못 들어와요(신고된 방은 csAdminRoom) */
+function csRoomNeed(b) {
+  const u = sessionUser(b.s), me = csUid(u.k), x = csRoomById(b.id);
+  const side = csRoomSide(x, me); if (!side) throw csErr('이 상담 채팅방에 들어갈 수 없어요.', 'room');
+  csRoomExpire(x);
+  return { u: u, me: me, x: x, side: side };
+}
+/** 전문가가 CS_CHAT.reqDays 안에 수락하지 않은 요청은 만료(하트 차감 없음) */
+function csRoomExpire(x) {
+  if (String(x.r[CSRMC['상태']]) !== CS_ROOM_ST.req || Date.now() - csMs(x.r[CSRMC['시각']]) <= CS_CHAT.reqDays * 86400000) return false;
+  csRmSet(x, '상태', CS_ROOM_ST.exp); csRmSet(x, '끝난날', new Date()); x.r[CSRMC['상태']] = CS_ROOM_ST.exp;
+  try { CacheService.getScriptCache().remove('csRv|' + String(x.r[CSRMC['id']])); } catch (e) {}
+  return true;
+}
+function csRoomPub(x, me, side, Q) {
+  const q = (Q || {})[String(x.r[CSRMC['질문id']])] || csQ(x.r[CSRMC['질문id']]), pro = csProById(x.r[CSRMC['전문가id']]);
+  const last = csMs(x.r[CSRMC['최근']]), read = csMs(x.r[CSRMC[side === 'q' ? '질문자읽음' : '전문가읽음']]);
+  return { id: String(x.r[CSRMC['id']]), qid: String(x.r[CSRMC['질문id']]), title: q ? csTxt(q.r[CSQC['제목']]) || '(지운 질문)' : '(지운 질문)', side: side, st: String(x.r[CSRMC['상태']]),
+    other: side === 'q' ? (pro ? Object.assign({ kind: 'pro' }, x.r[CSRMC['사용id']] ? csProFull(pro) : csProPub(pro), csProStats(String(x.r[CSRMC['전문가id']])), { kind: 'pro', pk: String(pro.r[CSPC['종류']]) }) : { kind: 'pro', name: '전문가' }) : { kind: 'user', name: q ? (csTxt(q.r[CSQC['별명']]) || csAlias(String(q.r[CSQC['회원']]), String(q.r[CSQC['id']]))) : '질문한 분' },
+    acc: csDay(x.r[CSRMC['수락일']]), kind: String(x.r[CSRMC['종류']] || 'req'), cost: CS_USES.accept.n, refund: csTxt(x.r[CSRMC['자동환불']]), rated: Number(x.r[CSRMC['평점']]) || 0,
+    blocked: side === 'q' ? csBlocked(String(x.r[CSRMC['회원']]), String(x.r[CSRMC['전문가id']])) : undefined,
+    sent: String(x.r[CSRMC['연락처보냄']] || '').indexOf(side) >= 0, gotContact: String(x.r[CSRMC['연락처보냄']] || '').indexOf(side === 'q' ? 'p' : 'q') >= 0, mail: side === 'q' ? !!x.r[CSRMC['알림메일']] : undefined, last: last, day: csDay(x.r[CSRMC['최근']]), unread: last > read && Number(x.r[CSRMC['수']]) > 0 };
+}
+function csRoomList(me) {
+  const pids = {}; csPros().forEach(p => { if (String(p.r[CSPC['회원']]) === me) pids[String(p.r[CSPC['id']])] = 1; });
+  const Q = {}; csRows(SH_CSQ).forEach(o => { Q[String(o.r[CSQC['id']])] = o; });
+  return csRows(SH_CSRM).filter(x => String(x.r[CSRMC['회원']]) === me || pids[String(x.r[CSRMC['전문가id']])])
+    .map(x => csRoomPub(x, me, String(x.r[CSRMC['회원']]) === me ? 'q' : 'p', Q)).sort((a, b) => b.last - a.last);
+}
+function csRooms(b) { csGate(b); csChatCleanup(); const u = sessionUser(b.s); return { ok: true, rooms: csRoomList(csUid(u.k)) }; }
+/** 공개 질문: 질문한 분이 답변한 전문가와 1:1 상담 열기(하트 — 1:1 비공개 상담과 같은 값) */
+function csChatStart(b) {
+  csGate(b);
+  const u = sessionUser(b.s), me = csUid(u.k), a = b.aid ? csA(b.aid) : null;
+  if (b.aid && (!a || String(a.r[CSAC['종류']]) !== 'pro' || String(a.r[CSAC['상태']]) !== CS_ST.on)) throw csErr('답변을 찾지 못했어요.', 'none');
+  const q = csQ(a ? a.r[CSAC['질문id']] : b.qid); if (!q || String(q.r[CSQC['회원']]) !== me) throw csErr('내 질문으로만 채팅을 요청할 수 있어요.', 'field');
+  const pid = a ? String(a.r[CSAC['전문가id']]) : String(b.pid || ''), pro = csProById(pid);
+  if (!a && pro && CS_CAT_ONLY[String(q.r[CSQC['분류']])] && CS_CAT_ONLY[String(q.r[CSQC['분류']])].indexOf(String(pro.r[CSPC['종류']])) < 0) throw csErr(csKindMsg(String(q.r[CSQC['분류']])), 'field');
+  if (!pro || String(pro.r[CSPC['상태']]) !== CS_PRO_ST.ok || csBlocked(me, pid)) throw csErr('지금은 이 전문가와 채팅할 수 없어요.', 'field');
+  const ex = csRoomsOf(String(q.r[CSQC['id']])).find(x => String(x.r[CSRMC['전문가id']]) === pid && [CS_ROOM_ST.req, CS_ROOM_ST.on].indexOf(String(x.r[CSRMC['상태']])) >= 0);
+  if (ex) return { ok: true, room: String(ex.r[CSRMC['id']]) };
+  csLimit(me, 'ask');
+  const old = csRoomsOf(String(q.r[CSQC['id']])).find(x => String(x.r[CSRMC['전문가id']]) === pid);
+  if (old) csRoomsDrop({ [String(old.r[CSRMC['id']])]: 1 });                     // 만료·거절·끝난 방이 있으면 새로 요청
+  const room = csRoomNew(String(q.r[CSQC['id']]), me, pid);
+  csProMail(pro, '1:1 상담 채팅 요청이 왔어요');
+  return { ok: true, room: room };
+}
+/** 전문가 [채팅 수락] — 이 순간 하트 차감(무료 하트 먼저). 모자라면 수락되지 않음 */
+function csRoomAccept(b) {
+  csGate(b); csHeartGate(b);
+  const ctx = csRoomNeed(b), x = ctx.x;
+  if (ctx.side !== 'p') throw csErr('전문가만 수락할 수 있어요.', 'field');
+  const st = String(x.r[CSRMC['상태']]);
+  if (st === CS_ROOM_ST.on) return { ok: true, already: true };
+  if (st !== CS_ROOM_ST.req) throw csErr(st === CS_ROOM_ST.exp ? '요청이 만료됐어요.' : '수락할 수 없는 요청이에요.', 'ended');
+  const uid = htSpend(ctx.me, 'accept', String(x.r[CSRMC['id']]));
+  csRmSet(x, '상태', CS_ROOM_ST.on); csRmSet(x, '수락일', new Date()); csRmSet(x, '사용id', uid); x.r[CSRMC['상태']] = CS_ROOM_ST.on;
+  csMsgAdd(x, 's', '전문가가 상담을 수락했어요. 이제 대화를 나눌 수 있어요.', false);
+  csChatMail(x, 'q');
+  return { ok: true, hearts: htBalance(ctx.me) };
+}
+function csRoomDecline(b) {
+  csGate(b);
+  const ctx = csRoomNeed(b), x = ctx.x;
+  if (ctx.side !== 'p') throw csErr('전문가만 할 수 있어요.', 'field');
+  if (String(x.r[CSRMC['상태']]) !== CS_ROOM_ST.req) throw csErr('이미 처리된 요청이에요.', 'ended');
+  csRmSet(x, '상태', CS_ROOM_ST.no); csRmSet(x, '끝난날', new Date()); x.r[CSRMC['상태']] = CS_ROOM_ST.no;
+  csMsgAdd(x, 's', '전문가가 이번 상담은 어렵다고 알려 왔어요. 다른 전문가를 골라 보세요.', false);
+  csChatMail(x, 'q');
+  return { ok: true };
+}
+/** 새 메시지 확인(5초마다). n = 화면이 이미 받은 메시지 수 */
+function csRoom(b) {
+  try {
+    csGate(b);
+    const id = String(b.id || ''), n = Math.max(0, Math.floor(Number(b.n) || 0)), c = CacheService.getScriptCache();
+    if (!/^R[0-9A-F]{10}$/.test(id) || !/^[0-9a-f]{64}$/.test(String(b.s || ''))) throw csErr('이 상담 채팅방에 들어갈 수 없어요.', 'room');
+    const ak = 'csRA|' + hashOf('csra|' + b.s + '|' + id).slice(1, 33), v = csRv(id);
+    if (n > 0 && b.full !== true && c.get(ak) && v && Number(String(v).split('|')[0]) === n) return { ok: true, n: n, msgs: [], st: String(v).split('|')[1] || '' };
+    const R = withLock(() => {
+      const ctx = csRoomNeed(b), x = ctx.x;
+      try { c.put(ak, ctx.side, 600); } catch (e) {}
+      const all = csRows(SH_CSM).filter(o => String(o.r[CSMC['방id']]) === id), total = all.length;
+      const msgs = all.slice(Math.min(n, total)).map((o, i) => csMsgPub(o, ctx.side, n + i));
+      csRmSet(x, ctx.side === 'q' ? '질문자읽음' : '전문가읽음', new Date());
+      if (ctx.side === 'q' && !x.r[CSRMC['열람일']]) { csRmSet(x, '열람일', new Date()); x.r[CSRMC['열람일']] = new Date(); }   // 제안을 열어 봤는지(자동 환불 기준)
+      csRv(id, total + '|' + String(x.r[CSRMC['상태']]));
+      return { ok: true, n: total, msgs: msgs, st: String(x.r[CSRMC['상태']]), room: n === 0 || b.full === true ? csRoomPub(x, ctx.me, ctx.side) : undefined };
+    });
+    return R;
+  } catch (x) { return { ok: false, err: String(x.message || x), code: x.code || '' }; }
+}
+function csMsgPub(o, side, i) {
+  const k = String(o.r[CSMC['쪽']]);
+  let text = csTxt(o.r[CSMC['내용']]);
+  let by = k;
+  if (k === 'c') { const j = parseJ(openText(text), null); text = j ? j.p.replace(/^(\d{3})(\d{3,4})(\d{4})$/, '$1-$2-$3') : ''; by = j && j.by === 'p' ? 'p' : 'q'; }
+  return { i: i, at: csMs(o.r[CSMC['시각']]), k: k, mine: by === side, text: text, hid: o.r[CSMC['가림']] === true };
+}
+function csSay(b) {
+  csGate(b);
+  const ctx = csRoomNeed(b), x = ctx.x;
+  if (String(x.r[CSRMC['상태']]) !== CS_ROOM_ST.on) throw csErr('끝난 상담이에요. 새로 상담하려면 질문을 다시 올려 주세요.', 'ended');
+  const raw = csClean(b.text, CS_CHAT.len[1] + 10);
+  if (raw.length < CS_CHAT.len[0]) throw csErr('보낼 말을 적어 주세요.', 'field');
+  if (raw.length > CS_CHAT.len[1]) throw csErr(`${CS_CHAT.len[1]}자까지 보낼 수 있어요.`, 'field');
+  if (csBad(raw)) throw csErr('욕설이나 남을 깎아내리는 말은 보낼 수 없어요.', 'filter');
+  csLimit(ctx.me, 'say');
+  let hit = false; const text = raw.replace(/\d{6}\s*[-–]\s*[1-8]\d{6}/g, () => { hit = true; return '***'; });   // 채팅에서도 주민등록번호만은 가림
+  csMsgAdd(x, ctx.side, text, hit);
+  csChatMail(x, ctx.side === 'q' ? 'p' : 'q');
+  return { ok: true, hid: hit, notice: hit ? '주민등록번호처럼 보이는 숫자는 가려서 보냈어요.' : '' };
+}
+function csMsgAdd(x, side, text, hid) {
+  const id = String(x.r[CSRMC['id']]), now = new Date();
+  csMsgSheet().appendRow([csNewId('M'), now, id, side, cellSafe(text), !!hid]);
+  const total = Number(x.r[CSRMC['수']] || 0) + 1;
+  csRmSet(x, '수', total); csRmSet(x, '최근', now); csRmSet(x, side === 'q' ? '질문자읽음' : side === 'p' ? '전문가읽음' : '최근', now);
+  x.r[CSRMC['수']] = total;
+  csRv(id, csRows(SH_CSM).filter(o => String(o.r[CSMC['방id']]) === id).length + '|' + String(x.r[CSRMC['상태']]));
+}
+/** [내 연락처 보내기] — 질문한 분·전문가 누구나. 이 방 상대 한 분께만 보여요(시트에는 암호화) */
+function csSendContact(b) {
+  csGate(b);
+  const ctx = csRoomNeed(b), x = ctx.x;
+  if (String(x.r[CSRMC['상태']]) !== CS_ROOM_ST.on) throw csErr('끝난 상담이에요.', 'ended');
+  if (b.agree !== true) throw csErr('상대에게 휴대폰 번호가 보이는 데 동의해 주세요.', 'field');
+  const ph = csPhone(b.phone); if (!ph) throw csErr('휴대폰 번호를 정확히 적어 주세요.', 'field');
+  csLimit(ctx.me, 'contact');
+  csMsgAdd(x, 'c', sealText(JSON.stringify({ p: ph, by: ctx.side })), false);
+  const was = String(x.r[CSRMC['연락처보냄']] || ''); if (was.indexOf(ctx.side) < 0) csRmSet(x, '연락처보냄', was + ctx.side);
+  csChatMail(x, ctx.side === 'q' ? 'p' : 'q');
+  return { ok: true };
+}
+function csRoomEnd(b) {
+  csGate(b);
+  const ctx = csRoomNeed(b), x = ctx.x;
+  if ([CS_ROOM_ST.end, CS_ROOM_ST.no, CS_ROOM_ST.exp, CS_ROOM_ST.pass].indexOf(String(x.r[CSRMC['상태']])) >= 0) return { ok: true };
+  csRmSet(x, '상태', CS_ROOM_ST.end); csRmSet(x, '끝난날', new Date()); x.r[CSRMC['상태']] = CS_ROOM_ST.end;
+  csMsgAdd(x, 's', (ctx.side === 'q' ? '질문한 분이' : '전문가가') + ' 상담을 끝냈어요.', false);
+  return { ok: true };
+}
+/** 질문한 분의 새 메시지 알림 메일(선택). 비우면 지움. 암호화해 보관하고 이 방 알림에만 써요 */
+function csRoomMail(b) {
+  csGate(b);
+  const ctx = csRoomNeed(b); if (ctx.side !== 'q') throw csErr('질문한 분만 바꿀 수 있어요.', 'field');
+  const v = String(b.email || '').trim();
+  if (!v) { csRmSet(ctx.x, '알림메일', ''); return { ok: true, mail: false }; }
+  const m = adMail(v); if (!m) throw csErr('이메일 주소를 정확히 적어 주세요.', 'field');
+  csRmSet(ctx.x, '알림메일', sealText(m));
+  return { ok: true, mail: true };
+}
+function csChatReport(b) {
+  csGate(b);
+  const ctx = csRoomNeed(b), x = ctx.x, why = String(b.why || '');
+  if (!CS_CHAT_WHY_IDS[why]) throw csErr('신고 이유를 골라 주세요.', 'field');
+  csLimit(ctx.me, 'report');
+  csSheet(SH_CSR).appendRow([new Date(), String(x.r[CSRMC['id']]), ctx.me, why]);
+  csRmSet(x, '신고', Number(x.r[CSRMC['신고']] || 0) + 1);
+  csRmSet(x, '신고이유', String(x.r[CSRMC['신고이유']] || '').split(',').filter(Boolean).concat(why).slice(-10).join(','));
+  csNotify('chatrep', '상담 채팅 신고가 들어왔어요');
+  return { ok: true };
+}
+/** 운영자: 신고된 방만 열람. 열람할 때마다 '상담채팅열람' 시트에 남김. 보낸 휴대폰 번호는 운영자 화면에도 보이지 않음 */
+function csAdminRoom(b) {
+  const u = csAdminNeed(b), x = csRoomById(b.id);
+  if (!x || !(Number(x.r[CSRMC['신고']]) > 0)) throw csErr('신고된 상담 채팅방만 열어 볼 수 있어요.');
+  const why = uText(b.why, 60) || '신고 확인';
+  uSheet(SH_CSV, CSVH).appendRow([new Date(), String(x.r[CSRMC['id']]), csUid(u.k), cellSafe(why)]);
+  const msgs = csRows(SH_CSM).filter(o => String(o.r[CSMC['방id']]) === String(x.r[CSRMC['id']])).map((o, i) => {
+    const k = String(o.r[CSMC['쪽']]); return { i: i, at: csMs(o.r[CSMC['시각']]), k: k, text: k === 'c' ? '([내 연락처 보내기]로 연락처를 보냈어요 — 번호는 운영자에게도 보이지 않아요)' : csTxt(o.r[CSMC['내용']]), hid: o.r[CSMC['가림']] === true };
+  });
+  return { ok: true, room: csRoomPub(x, '', 'q'), msgs: msgs, why: String(x.r[CSRMC['신고이유']] || '').split(',').filter(Boolean).map(w => CS_WHY[w] || '기타') };
+}
+/** 새 메시지 알림 메일: 같은 방·같은 사람에게 CS_CHAT.mailGapMin 분에 한 통, 하루 전체 CS_CHAT.mailDay 통, 메일 남은 양이 CS_CHAT.mailReserve 이하면 보내지 않음 */
+function csChatMail(x, to) {
+  if (!NOTIFY || (to !== 'p' && to !== 'q')) return false;
+  const id = String(x.r[CSRMC['id']]), c = CacheService.getScriptCache(), gk = 'csCM|' + id + '|' + to, dk = 'csCMd|' + ymd(new Date());
+  if (c.get(gk)) return false;
+  const day = Number(c.get(dk)) || 0; if (day >= CS_CHAT.mailDay) return false;
+  let left = 999; try { left = MailApp.getRemainingDailyQuota(); } catch (e) {}
+  if (left <= CS_CHAT.mailReserve) return false;
+  let addr = '';
+  if (to === 'p') { const p = csProById(x.r[CSRMC['전문가id']]); addr = p ? csTxt(p.r[CSPC['이메일']]) : ''; }
+  else addr = x.r[CSRMC['알림메일']] ? openText(String(x.r[CSRMC['알림메일']])) : '';
+  if (!addr) return false;
+  try {
+    MailApp.sendEmail({ to: addr, name: SITE_NAME, subject: `[${SITE_NAME} 고민 상담] 상담 채팅에 새 메시지가 왔어요`,
+      body: `상담 채팅에 새 메시지가 왔어요. 내용은 ${SITE_NAME} 안에서만 볼 수 있어요.\n${WEB_ROOT}counsel/chat/?id=${id}\n\n같은 상담의 알림은 한 시간에 한 번까지만 보내요.` });
+  } catch (e) { return false; }
+  c.put(gk, '1', CS_CHAT.mailGapMin * 60); c.put(dk, String(day + 1), 86400);
+  return true;
+}
+function csChatKeep() { const v = Number(PropertiesService.getScriptProperties().getProperty('CS_CHAT_KEEP_DAYS')); return v >= 30 && v <= 3650 ? v : CS_CHAT.keepDays; }
+/** 보관 정리(6시간에 한 번까지): 오래 조용한 방은 끝내고, 끝난 지 보관 일수가 지난 방은 메시지와 함께 지움 */
+function csChatCleanup(force) {
+  csOfferSweep(force);
+  const c = CacheService.getScriptCache(); if (!force && c.get('csCC')) return 0; c.put('csCC', '1', 21600);
+  const now = Date.now(), keep = csChatKeep() * 86400000, idle = CS_CHAT.idleDays * 86400000, gone = {};
+  csRows(SH_CSRM).forEach(x => {
+    const st = String(x.r[CSRMC['상태']]);
+    if (st === CS_ROOM_ST.on && now - csMs(x.r[CSRMC['최근']]) > idle) { csRmSet(x, '상태', CS_ROOM_ST.end); csRmSet(x, '끝난날', new Date()); try { c.remove('csRv|' + String(x.r[CSRMC['id']])); } catch (e) {} }
+    else if (st === CS_ROOM_ST.req) csRoomExpire(x);
+    else if ([CS_ROOM_ST.end, CS_ROOM_ST.no, CS_ROOM_ST.exp, CS_ROOM_ST.pass].indexOf(st) >= 0 && csMs(x.r[CSRMC['끝난날']]) && now - csMs(x.r[CSRMC['끝난날']]) > keep) gone[String(x.r[CSRMC['id']])] = 1;
+  });
+  return csRoomsDrop(gone);
+}
+function csRoomsDrop(gone) {
+  const ids = Object.keys(gone); if (!ids.length) return 0;
+  [[SH_CSM, CSMC['방id']], [SH_CSRM, CSRMC['id']], [SH_CSV, 1]].forEach(([n, col]) => { const sh = book().getSheetByName(n); if (!sh) return; const v = sh.getDataRange().getValues(); for (let i = v.length - 1; i >= 1; i--) if (gone[String(v[i][col])]) sh.deleteRow(i + 1); });
+  try { CacheService.getScriptCache().removeAll(ids.map(id => 'csRv|' + id)); } catch (e) {}
+  return ids.length;
+}
+/** 탈퇴: 그 사람이 질문한 분이거나 전문가인 방을 메시지와 함께 지움 */
+function csRoomsGone(me) {
+  const pids = {}; csPros().forEach(p => { if (String(p.r[CSPC['회원']]) === me) pids[String(p.r[CSPC['id']])] = 1; });
+  const gone = {}; csRows(SH_CSRM).forEach(x => { if (String(x.r[CSRMC['회원']]) === me || pids[String(x.r[CSRMC['전문가id']])]) gone[String(x.r[CSRMC['id']])] = 1; });
+  return csRoomsDrop(gone);
+}
+
+/* ---------- 상담 제안(전문가가 먼저 말 걸기) · 차단 · 자동 환불 · 평점 ---------- */
+function csBlocked(uh, pid) { return csRows(SH_CSB).some(o => String(o.r[1]) === uh && String(o.r[2]) === String(pid)); }
+/** 전문가 프로필(질문한 분에게 보이는 것): 확인된 자격·이름·소속 + 공개 답변 수 + 평점(상담 채팅 뒤 질문한 분이 남긴 별점 평균) */
+function csProStats(pid) {
+  const n = csRows(SH_CSA).filter(a => String(a.r[CSAC['전문가id']]) === pid && String(a.r[CSAC['상태']]) === CS_ST.on).length;
+  const rs = csRows(SH_CSRM).filter(x => String(x.r[CSRMC['전문가id']]) === pid && Number(x.r[CSRMC['평점']]) > 0).map(x => Number(x.r[CSRMC['평점']]));
+  return { answers: n, rating: rs.length ? Math.round(rs.reduce((a, v) => a + v, 0) / rs.length * 10) / 10 : null, ratings: rs.length };
+}
+function csOfferPub(x) {
+  const p = csProById(x.r[CSRMC['전문가id']]), pid = String(x.r[CSRMC['전문가id']]);
+  return { room: String(x.r[CSRMC['id']]), st: String(x.r[CSRMC['상태']]), day: csDay(x.r[CSRMC['시각']]), opened: !!x.r[CSRMC['열람일']],
+    pro: p ? Object.assign(csProPub(p), csProStats(pid), { kind: 'pro', pk: String(p.r[CSPC['종류']]) }) : { kind: 'pro', name: '전문가' } };
+}
+/** 이 전문가가 이 질문에 상담 제안을 보낼 수 있나 → { ok, why, left } */
+function csOfferCan(o, pid) {
+  const qid = String(o.r[CSQC['id']]), rooms = csRoomsOf(qid), offers = rooms.filter(x => String(x.r[CSRMC['종류']]) === 'offer');
+  const why = String(o.r[CSQC['상태']]) !== CS_ST.on || o.r[CSQC['비공개']] === true || o.r[CSQC['시드']] ? 'closed'
+    : o.r[CSQC['제안끔']] === true ? 'off'
+    : csBlocked(String(o.r[CSQC['회원']]), pid) ? 'blocked'
+    : rooms.some(x => String(x.r[CSRMC['전문가id']]) === pid) ? 'dup'
+    : (CS_CAT_ONLY[String(o.r[CSQC['분류']])] && CS_CAT_ONLY[String(o.r[CSQC['분류']])].indexOf(String((csProById(pid) || { r: [] }).r[CSPC['종류']])) < 0) ? 'kind'
+    : offers.length >= CS_CHAT.offerMax ? 'full' : '';
+  return { ok: !why, why: why, left: Math.max(0, CS_CHAT.offerMax - offers.length), cost: CS_USES.offer.n };
+}
+/** 전문가: [상담 제안 보내기] — 첫 메시지와 함께, 보내는 순간 하트 차감 */
+function csOffer(b) {
+  csGate(b); csHeartGate(b);
+  const u = sessionUser(b.s), me = csUid(u.k), p = csProOf(me), o = csQ(b.id);
+  if (!p || String(p.r[CSPC['상태']]) !== CS_PRO_ST.ok) throw csErr('자격 확인이 끝난 전문가만 상담 제안을 보낼 수 있어요.', 'pro');
+  if (!o) throw csErr('질문을 찾지 못했어요.', 'none');
+  if (String(o.r[CSQC['회원']]) === me) throw csErr('내 질문에는 제안할 수 없어요.', 'field');
+  const pid = String(p.r[CSPC['id']]), can = csOfferCan(o, pid);
+  if (!can.ok) throw csErr({ closed: '이 질문에는 상담 제안을 보낼 수 없어요.', off: '질문한 분이 상담 제안을 받지 않기로 했어요.', blocked: '이 질문한 분에게는 제안을 보낼 수 없어요.', dup: '이 질문에는 이미 제안했거나 채팅이 있어요.',
+    kind: csKindMsg(String(o.r[CSQC['분류']])).replace('답할', '상담을 제안할'), full: `이 질문은 상담 제안 ${CS_CHAT.offerMax}개가 모두 찼어요.` }[can.why] || '제안할 수 없어요.', 'offer');
+  const raw = csClean(b.text, CS_CHAT.len[1] + 10);
+  if (raw.length < 10) throw csErr('첫 메시지를 10자 이상 적어 주세요.', 'field');
+  if (raw.length > CS_CHAT.len[1]) throw csErr(`${CS_CHAT.len[1]}자까지 보낼 수 있어요.`, 'field');
+  if (csBad(raw)) throw csErr('욕설이나 남을 깎아내리는 말은 보낼 수 없어요.', 'filter');
+  csLimit(me, 'offer');
+  const room = csRoomNew(String(o.r[CSQC['id']]), String(o.r[CSQC['회원']]), pid, 'offer'), x = csRoomById(room);
+  csRmSet(x, '사용id', htSpend(me, 'offer', room));                           // 하트가 모자라면 여기서 멈춤
+  csMsgAdd(x, 'p', raw.replace(/\d{6}\s*[-–]\s*[1-8]\d{6}/g, '***'), false);
+  return { ok: true, room: room, hearts: htBalance(me) };
+}
+/** 질문한 분: 제안에 [대화하기](go) / [괜찮아요](pass) — 괜찮아요는 환불 없음(제안은 이미 전달됨) */
+function csOfferAnswer(b) {
+  csGate(b);
+  const ctx = csRoomNeed(b), x = ctx.x, op = String(b.op || '');
+  if (ctx.side !== 'q') throw csErr('질문한 분만 고를 수 있어요.', 'field');
+  if (String(x.r[CSRMC['상태']]) !== CS_ROOM_ST.offer) throw csErr('이미 처리된 제안이에요.', 'ended');
+  if (!x.r[CSRMC['열람일']]) csRmSet(x, '열람일', new Date());
+  if (op === 'go') { csRmSet(x, '상태', CS_ROOM_ST.on); csRmSet(x, '수락일', new Date()); x.r[CSRMC['상태']] = CS_ROOM_ST.on; csMsgAdd(x, 's', '질문한 분이 대화를 시작했어요.', false); csChatMail(x, 'p'); }
+  else if (op === 'pass') { csRmSet(x, '상태', CS_ROOM_ST.pass); csRmSet(x, '끝난날', new Date()); x.r[CSRMC['상태']] = CS_ROOM_ST.pass; csMsgAdd(x, 's', '질문한 분이 이번 제안은 괜찮다고 했어요.', false); }
+  else throw csErr('할 일을 골라 주세요.');
+  return { ok: true };
+}
+/** 질문한 분: [이 전문가 차단] — 그 전문가는 이 사람에게 제안할 수 없고, 열려 있는 방은 끝남 */
+function csBlock(b) {
+  csGate(b);
+  const ctx = csRoomNeed(b), x = ctx.x;
+  if (ctx.side !== 'q') throw csErr('질문한 분만 차단할 수 있어요.', 'field');
+  const pid = String(x.r[CSRMC['전문가id']]);
+  if (b.off === true) { const sh = book().getSheetByName(SH_CSB); if (sh) { const v = sh.getDataRange().getValues(); for (let i = v.length - 1; i >= 1; i--) if (String(v[i][1]) === ctx.me && String(v[i][2]) === pid) sh.deleteRow(i + 1); } return { ok: true, blocked: false }; }
+  if (!csBlocked(ctx.me, pid)) uSheet(SH_CSB, CSBH).appendRow([new Date(), ctx.me, pid]);
+  csRows(SH_CSRM).forEach(r => { if (String(r.r[CSRMC['회원']]) === ctx.me && String(r.r[CSRMC['전문가id']]) === pid && [CS_ROOM_ST.on, CS_ROOM_ST.offer, CS_ROOM_ST.req].indexOf(String(r.r[CSRMC['상태']])) >= 0) {
+    csRmSet(r, '상태', CS_ROOM_ST.end); csRmSet(r, '끝난날', new Date()); r.r[CSRMC['상태']] = CS_ROOM_ST.end; csMsgAdd(r, 's', '질문한 분이 상담을 끝냈어요.', false); } });
+  return { ok: true, blocked: true };
+}
+/** 질문한 분: 상담 채팅 뒤 별점(1~5, 한 번) — 전문가 프로필 평점 */
+function csRoomRate(b) {
+  csGate(b);
+  const ctx = csRoomNeed(b), x = ctx.x, v = Math.floor(Number(b.star) || 0);
+  if (ctx.side !== 'q') throw csErr('질문한 분만 평가할 수 있어요.', 'field');
+  if (!x.r[CSRMC['수락일']]) throw csErr('대화를 나눈 상담만 평가할 수 있어요.', 'field');
+  if (Number(x.r[CSRMC['평점']]) > 0) throw csErr('이미 평가했어요.', 'field');
+  if (!(v >= 1 && v <= 5)) throw csErr('별점을 골라 주세요.', 'field');
+  csRmSet(x, '평점', v);
+  return { ok: true };
+}
+/** 방 하나에 쓴 하트를 저절로 돌려 드림(같은 방은 한 번만) */
+function csRoomRefund(x, why) {
+  if (csTxt(x.r[CSRMC['자동환불']])) return false;
+  const h = csRows(SH_HT).find(o => String(o.r[HTC['id']]) === String(x.r[CSRMC['사용id']]) && String(o.r[HTC['상태']]) === HT_ST.used);
+  if (!h) return false;
+  csSet(SH_HT, h.row, HTC, '상태', HT_ST.back); csSet(SH_HT, h.row, HTC, '처리일', new Date()); csSet(SH_HT, h.row, HTC, '메모', '자동 환불: ' + why);
+  csRmSet(x, '자동환불', why + ' ' + ymd(new Date())); x.r[CSRMC['자동환불']] = why;
+  return true;
+}
+/** 질문이 신고로 가려진 채 확정(또는 운영자 삭제)되면 그 질문에 쓴 하트를 모든 전문가에게 돌려 드림 */
+function csRefundQuestion(qid, why) {
+  let n = 0;
+  csRoomsOf(qid).forEach(x => { if (csRoomRefund(x, why)) n++; if ([CS_ROOM_ST.on, CS_ROOM_ST.offer, CS_ROOM_ST.req].indexOf(String(x.r[CSRMC['상태']])) >= 0) { csRmSet(x, '상태', CS_ROOM_ST.end); csRmSet(x, '끝난날', new Date()); } });
+  return n;
+}
+/** 자동 환불 점검(1시간에 한 번까지 — 목록·질문·채팅을 볼 때, 운영자 화면은 바로): 질문한 분이 offerOpenH 시간 안에 제안을 열어 보지도 않으면 하트를 돌려 드리고 제안은 만료 */
+function csOfferSweep(force) {
+  const c = CacheService.getScriptCache(); if (!force && c.get('csOS')) return 0; c.put('csOS', '1', 3600);
+  const lim = CS_CHAT.offerOpenH * 3600000, now = Date.now(); let n = 0;
+  csRows(SH_CSRM).forEach(x => {
+    if (String(x.r[CSRMC['상태']]) !== CS_ROOM_ST.offer || x.r[CSRMC['열람일']] || now - csMs(x.r[CSRMC['시각']]) <= lim) return;
+    if (csRoomRefund(x, '72시간 안 읽음')) n++;
+    csRmSet(x, '상태', CS_ROOM_ST.exp); csRmSet(x, '끝난날', new Date());
+    try { c.remove('csRv|' + String(x.r[CSRMC['id']])); } catch (e) {}
+  });
+  return n;
+}
+
+/* ---------- 전문가 노출: 프로필 · 전문가 찾기 · 이 동네 전문가 · 같은 분야 추천 ----------
+   순서: 평점·응답률·답변 수·공정 순환을 섞은 점수(csRankScore). 무게는 스크립트 속성 CS_PRO_RANK(JSON {r,p,a,f})에만 — 코드의 기본값은 고르게(모두 1).
+   돈으로 순위를 사는 기능은 없어요. 개인 휴대폰·이메일은 어디에도 보이지 않고, 등록번호는 앞 절반만. */
+const CS_STAT = { v: null, at: 0 };                                               // 한 번 실행하는 동안만 쓰는 전문가 통계
+function csStatAll() {
+  if (CS_STAT.v) return CS_STAT.v;
+  const out = {}, get = pid => out[pid] || (out[pid] = { answers: 0, rsum: 0, rn: 0, yes: 0, no: 0 }), now = Date.now(), W = CS_CHAT.reqDays * 86400000;
+  csRows(SH_CSA).forEach(a => { if (String(a.r[CSAC['종류']]) === 'pro' && String(a.r[CSAC['상태']]) === CS_ST.on) get(String(a.r[CSAC['전문가id']])).answers++; });
+  csRows(SH_CSRM).forEach(x => {
+    const g = get(String(x.r[CSRMC['전문가id']])), v = Number(x.r[CSRMC['평점']]);
+    if (v > 0 && x.r[CSRMC['수락일']]) { g.rsum += v; g.rn++; }                         // 평점: 실제로 대화한 고객만
+    if (String(x.r[CSRMC['종류']] || 'req') !== 'req') return;                       // 응답률: 받은 채팅 요청 중 7일 안에 수락한 비율(아직 7일 안 지난 대기 요청은 빼고)
+    const at = csMs(x.r[CSRMC['시각']]), acc = csMs(x.r[CSRMC['수락일']]);
+    if (acc && acc - at <= W) g.yes++; else if (acc || now - at > W || [CS_ROOM_ST.no, CS_ROOM_ST.exp].indexOf(String(x.r[CSRMC['상태']])) >= 0) g.no++;
+  });
+  Object.keys(out).forEach(k => { const g = out[k]; out[k] = { answers: g.answers, rating: g.rn ? Math.round(g.rsum / g.rn * 10) / 10 : null, ratings: g.rn, resp: g.yes + g.no ? g.yes / (g.yes + g.no) : null, reqs: g.yes + g.no }; });
+  CS_STAT.v = out; CS_STAT.at = Date.now();
+  return out;
+}
+function csStatOf(pid) { return csStatAll()[pid] || { answers: 0, rating: null, ratings: 0, resp: null, reqs: 0 }; }
+function csRankW() { const v = parseJ(PropertiesService.getScriptProperties().getProperty('CS_PRO_RANK'), null); return v && typeof v === 'object' ? v : { r: 1, p: 1, a: 1, f: 1 }; }
+function csTurn(pid, salt) { return parseInt(hashOf('csT|' + ymd(new Date()) + '|' + (salt || '') + '|' + pid).slice(1, 9), 16) / 0xffffffff; }   // 그날 바뀌는 고른 몫(0~1)
+function csProCard(o) { const p = csProPub(o), st = csStatOf(p.id); return Object.assign(p, { stat: st }); }
+function csOkPros() { return csPros().filter(o => String(o.r[CSPC['상태']]) === CS_PRO_ST.ok); }
+function csRanked(list, salt) { const w = csRankW(); return list.map(o => ({ o: o, sc: csRankScore(csStatOf(String(o.r[CSPC['id']])), w, csTurn(String(o.r[CSPC['id']]), salt)) })).sort((a, b) => b.sc - a.sc).map(x => x.o); }
+/** 전문가 프로필(공개) */
+function csProPage(b) {
+  csGate(b); csOfferSweep();
+  const o = csProById(b.id); if (!o || String(o.r[CSPC['상태']]) !== CS_PRO_ST.ok) throw csErr('전문가를 찾지 못했어요.', 'none');
+  const pid = String(o.r[CSPC['id']]), Q = {}; csRows(SH_CSQ).forEach(q => { Q[String(q.r[CSQC['id']])] = q; });
+  const recent = csRows(SH_CSA).filter(a => String(a.r[CSAC['전문가id']]) === pid && String(a.r[CSAC['상태']]) === CS_ST.on).reverse()
+    .map(a => ({ a: a, q: Q[String(a.r[CSAC['질문id']])] })).filter(x => x.q && String(x.q.r[CSQC['상태']]) === CS_ST.on && x.q.r[CSQC['비공개']] !== true).slice(0, 10)
+    .map(x => ({ qid: String(x.q.r[CSQC['id']]), title: csTxt(x.q.r[CSQC['제목']]), cn: csCatName(String(x.q.r[CSQC['분류']])), day: csDay(x.a.r[CSAC['시각']]), snip: csTxt(x.a.r[CSAC['내용']]).slice(0, 120) }));
+  const cats = CS_CATS.filter(c => csKindsFor(c[0]).indexOf(String(o.r[CSPC['종류']])) >= 0).map(c => c[1]);
+  return { ok: true, pro: Object.assign(csProCard(o), { since: csDay(o.r[CSPC['처리일']]), cats: cats }), recent: recent };
+}
+/** 전문가 찾기: 지역(구)·직군·분야로 거르고 기본 순서로 */
+function csProList(b) {
+  csGate(b);
+  const gu = csGuOf(uText(b.gu, 20)), kind = CS_PROS[b.kind] ? String(b.kind) : '', cat = csCatName(b.cat) ? String(b.cat) : '';
+  const all = csOkPros(), areas = {}; all.forEach(o => { const g = csGuOf(csTxt(o.r[CSPC['지역']])); if (g) areas[g] = (areas[g] || 0) + 1; });
+  const list = all.filter(o => (!gu || csGuOf(csTxt(o.r[CSPC['지역']])) === gu) && (!kind || String(o.r[CSPC['종류']]) === kind) && (!cat || csKindsFor(cat).indexOf(String(o.r[CSPC['종류']])) >= 0));
+  const page = Math.max(0, Math.min(50, Math.floor(Number(b.page) || 0))), sorted = csRanked(list, 'list');
+  return { ok: true, items: sorted.slice(page * CS_PAGE, (page + 1) * CS_PAGE).map(csProCard), more: sorted.length > (page + 1) * CS_PAGE, total: sorted.length,
+    areas: Object.keys(areas).sort().map(g => ({ gu: g, n: areas[g] })) };
+}
+/** 단지·동네 화면 '이 동네 확인된 전문가' — 그 구에서 활동하는 전문가 최대 3명(그날 순환) */
+function csProNear(b) {
+  if (!(COUNSEL_OPEN || csIsAdmin(b))) return { ok: true, open: false };
+  const gu = csGuOf(uText(b.gu, 20)); if (!gu) return { ok: true, open: true, items: [] };
+  const list = csOkPros().filter(o => csGuOf(csTxt(o.r[CSPC['지역']])) === gu);
+  return { ok: true, open: true, gu: gu, items: list.map(o => ({ o: o, t: csTurn(String(o.r[CSPC['id']]), 'near|' + gu) })).sort((a, c) => c.t - a.t).slice(0, 3).map(x => csProCard(x.o)) };
+}
+/** 질문 상세 '이 분야 전문가에게 물어보기' — 같은 구(질문에 지역이 있으면)·분야에 답할 수 있는 전문가 3명(이미 답한 분 빼고) */
+function csRecommend(o, answered) {
+  const cat = String(o.r[CSQC['분류']]), gu = csTxt(o.r[CSQC['지역']]), kinds = csKindsFor(cat), skip = {}; (answered || []).forEach(p => { skip[p] = 1; });
+  let list = csOkPros().filter(p => kinds.indexOf(String(p.r[CSPC['종류']])) >= 0 && !skip[String(p.r[CSPC['id']])] && String(p.r[CSPC['회원']]) !== String(o.r[CSQC['회원']]));
+  if (gu) { const near = list.filter(p => csGuOf(csTxt(p.r[CSPC['지역']])) === gu); if (near.length) list = near; }
+  return csRanked(list, 'rec|' + String(o.r[CSQC['id']])).slice(0, 3).map(csProCard);
+}
+
 /* COUNSEL-CORE BEGIN — 이 블록은 tools/agent-backend.gs 에 그대로 복사돼 있어요. 고칠 때는 두 곳을 똑같이 고쳐 주세요(node tools/counsel-test.js 가 비교). */
 const CS_V = 'counsel-2026-11-25';
 /* 질문 분류 */
@@ -9795,20 +10249,38 @@ const CS_PROS = {
   loan: { name: '대출상담사', no: '금융위원회 대출모집인 등록번호', org: '소속 금융회사(위탁사)', orgNeed: true, where: '대출모집인 등록 조회(금융소비자 정보포털 파인 또는 대출모집인 통합조회)' }
 };
 const CS_PRO_MAX = 5;                                 // 질문 하나에 전문가 답변 최대 수(상담팀 공식 답변은 따로)
-const CS_CAT_ONLY = { loan: ['loan'] };               // 분류마다 답할 수 있는 전문가 종류(없으면 모두) — 대출은 등록된 대출모집인만
+/* 분류마다 답·상담 제안할 수 있는 전문가(대표 확정 2026-11-25): 세금 = 세무사, 등기·법률 = 법무사, 대출 = 대출상담사(등록된 대출모집인), 나머지 분류 = 다섯 직군 모두 */
+const CS_CAT_ONLY = { tax: ['tax'], legal: ['judicial'], loan: ['loan'] };
 const CS_LEN = { title: [5, 60], body: [20, 2000], answer: [20, 3000], nick: [0, 12] };
-/* 하트 상품표(초안) — won: 결제 금액(원) · n: 하트 수 */
+/* 하트 상품표(확정) — won: 결제 금액(원) · n: 하트 수 */
 const CS_PACKS = [{ id: 'h2', won: 3900, n: 2 }, { id: 'h6', won: 9900, n: 6 }, { id: 'h13', won: 19900, n: 13 }, { id: 'h35', won: 49000, n: 35 }];
-/* 하트 사용처(초안) — n: 쓰는 하트 수. 일반 공개 질문·답변 보기는 무료 */
+/* 하트 사용처(확정, 전문가만) — n: 쓰는 하트 수
+   offer: 질문 글에서 [상담 제안 보내기] — 보내는 순간 차감 · accept: 질문한 분이 요청한 1:1 채팅을 [채팅 수락] — 수락하는 순간 차감(수락하지 않으면 차감 없음) */
 const CS_USES = {
-  private: { n: 3, name: '전문가 1:1 비공개 상담 요청' },
-  bump: { n: 1, name: '내 질문 위로 올리기', hours: 24 },
-  pick: { n: 2, name: '원하는 전문가 지정 질문' }
+  offer: { n: 2, name: '상담 제안 보내기' },
+  accept: { n: 2, name: '1:1 상담 채팅 수락' }
 };
-/* 환불 규칙: 결제 후 days 일 안에 전혀 쓰지 않은 하트는 전액 · 일부 쓴 경우 남은 하트만큼(쓴 하트는 묶음 할인 전 단가로 계산) · 무상 하트는 대상 아님
-   lateFee: days 가 지난 뒤 환불할 때 떼는 비율(0 = 떼지 않음, 대표가 정할 값) */
-const CS_REFUND = { days: 7, lateFee: 0 };
+const CS_FREE_HEARTS = 5;                             // 전문가 승인 때 드리는 무료 하트(한 번)
+/* 환불 규칙: 결제 후 days 일 안에 전혀 쓰지 않은 하트는 전액 · 일부 쓴 경우 남은 하트만큼(쓴 하트는 묶음 할인 전 단가로 계산)
+   · days 가 지난 뒤에는 남은 하트 값에서 lateFee(10%)를 떼고 · 무료 하트는 대상 아님 · 하트 유효기간은 충전한 날부터 validYears 년(지나면 쓰거나 환불할 수 없음) */
+const CS_REFUND = { days: 7, lateFee: 0.1, validYears: 5 };
+function csExpireAt(at) { return Number(at) + CS_REFUND.validYears * 365 * 86400000; }
 
+/** 이 분류에 답할 수 있는 전문가 종류 목록 */
+function csKindsFor(cat) { return CS_CAT_ONLY[cat] ? CS_CAT_ONLY[cat].slice() : Object.keys(CS_PROS); }
+/** 분류에 맞지 않는 전문가에게 보여 줄 말 */
+function csKindMsg(cat) { const k = csKindsFor(cat).map(x => (CS_PROS[x] || {}).name).filter(Boolean); return `${csCatName(cat)} 질문에는 ${k.join('·')}만 답할 수 있어요.`; }
+/** 지역 글자에서 구·군·시 이름만('서울 강남구' → '강남구') */
+function csGuOf(s) { const m = String(s || '').match(/([가-힣]{1,8}(?:구|군|시))\s*$/) || String(s || '').match(/([가-힣]{1,8}(?:구|군))/); return m ? m[1] : ''; }
+/** 등록번호 일부만 보이기('11680-2020-00123' → '11680-20*******') */
+function csNoMask(no) { no = String(no || ''); const k = Math.ceil(no.length / 2); return no ? no.slice(0, k) + '*'.repeat(Math.max(0, no.length - k)) : ''; }
+/** 전문가 찾기 기본 순서 점수: 평점·응답률·답변 수·공정 순환(그날 바뀌는 고른 몫)을 섞음. w(무게)는 서버 비공개 설정에서만 — 돈으로 순위를 살 수 없음
+    st: { rating(1~5|null), resp(0~1|null), answers }, turn: 0~1(그날의 순환 값) */
+function csRankScore(st, w, turn) {
+  w = w || {};
+  const r = st.rating == null ? 0.6 : (st.rating - 1) / 4, p = st.resp == null ? 0.5 : st.resp, a = Math.min(1, Math.log(1 + (st.answers || 0)) / Math.log(51));
+  return (Number(w.r) || 0) * r + (Number(w.p) || 0) * p + (Number(w.a) || 0) * a + (Number(w.f) || 0) * (Number(turn) || 0);
+}
 function csCatName(id) { for (let i = 0; i < CS_CATS.length; i++) if (CS_CATS[i][0] === id) return CS_CATS[i][1]; return ''; }
 function csPack(id) { for (let i = 0; i < CS_PACKS.length; i++) if (CS_PACKS[i].id === id) return CS_PACKS[i]; return null; }
 /** 묶음 할인 전 하트 1개 값 = 가장 작은 묶음의 하트 1개 값(원, 10원 아래 올림) */
@@ -9829,6 +10301,7 @@ function csRefund(lot, used, now) {
   if (!lot || lot.kind !== 'paid') return { won: 0, full: false, why: 'free' };
   const n = Math.floor(Number(lot.n) || 0), won = Math.floor(Number(lot.won) || 0);
   if (used >= n) return { won: 0, full: false, why: 'none' };
+  if (Number(now) > csExpireAt(lot.at)) return { won: 0, full: false, why: 'expired' };
   const late = Number(now) - Number(lot.at) > CS_REFUND.days * 86400000;
   if (!used && !late) return { won: won, full: true, why: 'full' };
   let r = Math.max(0, won - used * csUnit());
@@ -9853,6 +10326,30 @@ const CS_PI = [
 function csMask(text) {
   let s = String(text == null ? '' : text), hit = false;
   CS_PI.forEach(re => { s = s.replace(re, () => { hit = true; return '***'; }); });
+  return { text: s, hit: hit };
+}
+/* 상담 채팅 — 앱 안 1:1 대화. 채팅방 안에서는 질문한 분·전문가 모두 연락처를 자유롭게 주고받을 수 있어요([내 연락처 보내기] 단추도 있어요).
+   공개 질문·공개 답변(게시판)은 광고를 막으려고 전화번호·이메일·메신저 아이디·외부 링크를 자동으로 가려요(csHideContact).
+   poll: 채팅방이 열려 있을 때 새 메시지 확인 간격(초, 화면이 숨겨지면 멈춤) · keepDays: 상담이 끝난 뒤 보관 일수(지나면 자동 삭제)
+   idleDays: 이 날 수 동안 메시지가 없으면 상담을 저절로 끝냄 · mailGapMin: 같은 방 같은 사람에게 알림 메일은 이 분에 한 통까지
+   mailDay: 하루 채팅 알림 메일 전체 한도(개인 구글 계정 하루 100통 안에서) · mailReserve: 메일 남은 양이 이만큼이면 알림을 멈춤
+   reqDays: 전문가가 이 날 수 안에 [채팅 수락]을 하지 않으면 요청이 만료(하트 차감 없음)
+   offerMax: 질문 하나에 받는 상담 제안 수(먼저 온 순) · offerOpenH: 질문한 분이 이 시간 안에 제안을 열어 보지도 않으면 하트를 저절로 돌려 드림 */
+const CS_CHAT = { poll: 5, keepDays: 365, idleDays: 90, reqDays: 7, offerMax: 5, offerOpenH: 72, mailGapMin: 60, mailDay: 40, mailReserve: 20, len: [1, 1000] };
+const CS_CHAT_WHY = [['abuse', '욕설·비방'], ['pi', '개인 정보'], ['ad', '광고·홍보'], ['false', '사실이 아닌 내용'], ['illegal', '불법·무자격 영업'], ['etc', '기타']];
+/* 신고 가림: 서로 다른 사람의 신고가 이 수만큼 쌓이면 바로 가리고 운영자가 판단(한 사람이 여러 번 신고해도 1건) — 대표 확정 */
+const CS_REPORT_HIDE = 2;
+/* 게시판 연락 수단 가림: 전화번호·이메일·카카오톡 등 메신저 아이디·외부 링크·길게 이어진 숫자 → '***' */
+const CS_CONTACT = [
+  /[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g,                                                                        // 이메일
+  /(?:https?:\/\/|www\.)\S+/gi,                                                                            // 링크
+  /\b[a-z0-9-]{2,}\.(?:com|net|org|kr|co|me|ly|io|link|site|xyz|shop|app|gl|to|kakao)(?:\.[a-z]{2,})?(?:\/\S*)?/gi,   // 주소(open.kakao.com 등)
+  /((?:카카오톡|카톡|카카오|kakao(?:talk)?|katalk|오픈\s*채팅|라인|line|텔레그램|telegram|텔레|인스타그램|인스타|instagram|insta|위챗|wechat)\s*(?:아이디|id|계정|주소)?\s*[:：]?\s*)@?[A-Za-z0-9._-]{3,}/gi,
+  /(?:\d[\s.\-)(]*){9,}\d/g                                                                                // 띄어 쓴 전화번호 같은 긴 숫자
+];
+function csHideContact(text) {
+  let m = csMask(text), s = m.text, hit = m.hit;
+  CS_CONTACT.forEach((re, i) => { s = s.replace(re, (all, pre) => { hit = true; return i === 3 ? pre + '***' : '***'; }); });
   return { text: s, hit: hit };
 }
 /* 간단 욕설 거르기(누구나 아는 낱말만 — 띄어쓰기·기호를 빼고 봄) */

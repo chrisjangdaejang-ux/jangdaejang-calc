@@ -62,6 +62,8 @@
 <script src="../assets/villa-core.js?v=1"></script>
 <script src="../assets/villa-view.js?v=5"></script>
 <script src="../assets/community.js?v=4"></script>
+<script src="../assets/counsel-core.js?v=3"></script>
+<script src="../assets/counsel.js?v=3"></script>
 <script src="../assets/policy-view.js?v=3"></script>
 <script src="../assets/devproj-view.js?v=4"></script>
 <script src="../assets/src-box.js?v=3"></script>
@@ -622,6 +624,8 @@ function render(d, map, units){
   <div id="alertSec"></div>
 
   ${window.JDJ_CM ? JDJ_CM.slot({t: 'a', g: d.code, d: d.dong, k: [d.jibun, d.apt].join('|'), n: d.apt}) : ''}
+
+  ${window.JDJ_CS ? JDJ_CS.slot({gu: sggName(d.code)}) : ''}
 
   <div id="devSec" hidden></div>
 

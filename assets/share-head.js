@@ -16,7 +16,7 @@
   function siteUrl() { var u = String(((root.JDJ_SITE) || {}).SITE_URL || '').trim(); return /^https:\/\//.test(u) ? u.replace(/\/+$/, '') + '/' : SITE_URL; }
 
   /* 개인 화면: 단추를 만들지 않음(로그인·내 정보·결제·구독 관리·운영자·초안) */
-  var PRIVATE = /^(login|my|premium\/(checkout|success|fail|view|r|pro)|brief\/(manage|paid|c|subscribe)|agent\/(my|sheet|listing|content)|dongne\/(admin|my)|community\/admin|counsel\/(admin|heart|expert)|[^?#]*draft)(\/|$)/;
+  var PRIVATE = /^(login|my|premium\/(checkout|success|fail|view|r|pro)|brief\/(manage|paid|c|subscribe)|agent\/(my|sheet|listing|content)|dongne\/(admin|my)|community\/admin|counsel\/(admin|heart|expert|chat)|[^?#]*draft)(\/|$)/;
   /* 주소에 남겨도 되는 공개 값(단지·지역·화면 탭). 'd' 는 맞춤 리포트(buy/)에서는 대출 금액이라 뺌 */
   var PUBLIC_KEYS = ['id', 'no', 'g', 'k', 'sd', 't', 'tab', 'b', 'a', 'd'];
   var NEVER = ['i', 'c', 'n', 'e', 'bp', 'bd'];

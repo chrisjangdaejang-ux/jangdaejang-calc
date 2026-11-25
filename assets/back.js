@@ -38,7 +38,7 @@
     'agent/': ['중개사 제휴'], 'agent/my/': ['중개사 대시보드', 'agent/'], 'agent/listing/': ['매물 설명서', 'agent/'], 'agent/content/': ['블로그·인스타 글', 'agent/'], 'agent/sheet/': ['적정 가격 근거표', 'agent/'],
     'pro/developer/': ['시행사 데이터 리포트'],
     'community/': ['살아보니'], 'community/admin/': ['운영자 검토', 'community/'],
-    'counsel/': ['고민 상담'], 'counsel/expert/': ['전문가로 답하기', 'counsel/'], 'counsel/heart/': ['내 하트', 'counsel/'], 'counsel/admin/': ['운영자 답변', 'counsel/'],
+    'counsel/': ['고민 상담'], 'counsel/expert/': ['전문가로 답하기', 'counsel/'], 'counsel/heart/': ['전문가 하트', 'counsel/'], 'counsel/chat/': ['상담 채팅', 'counsel/'], 'counsel/pro/': ['전문가 프로필', 'counsel/pros/'], 'counsel/pros/': ['전문가 찾기', 'counsel/'], 'counsel/admin/': ['운영자 답변', 'counsel/'],
     'dongne/': ['동네 파트너'], 'dongne/my/': ['내 파트너 화면', 'dongne/'], 'dongne/office/': ['사무소 보기', 'dongne/'], 'dongne/terms/': ['동네 파트너 약관', 'dongne/'], 'dongne/admin/': ['운영자 검토', 'dongne/'],
     'move/': ['이사 견적 받기'], 'move/partner/': ['이사업체 제휴', 'move/'], 'move/terms/': ['이사 견적 약관', 'move/'], 'move/admin/': ['이사업체 운영자', 'move/'],
     'apt/': ['지역별 아파트'], 'comm/': ['지역별 상가·건물'],
