@@ -237,6 +237,7 @@ td{border-bottom:1px solid var(--line2)}
 .edge{list-style:none;margin:10px 0 4px;padding:12px 14px;border-radius:14px;background:#F2F4F6;font-size:15px;line-height:1.6}
 .edge li{padding:2px 0}.edge b{color:var(--blue)}
 </style>
+<script src="../assets/back.js?v=1" defer></script>
 </head>
 <body data-lay="side">
 <header class="top">
@@ -419,7 +420,7 @@ function readQ() {
 /* 질문 이동을 브라우저 기록에 남김: 뒤로 가기 = 이전 질문, 다른 화면에 갔다 와도 보던 질문으로 */
 const SKEY = 'jdj_cy_s';
 function keep() { try { sessionStorage.setItem(SKEY, JSON.stringify({ A, QI })); } catch (e) {} }
-function hpush(st) { try { history.pushState(st, ''); } catch (e) {} keep(); }
+function hpush(st) { try { history.pushState(window.JDJ_BACK ? JDJ_BACK.st(st, '이전 질문') : st, ''); } catch (e) {} keep(); if (window.JDJ_BACK) JDJ_BACK.refresh(); }   /* jbn·jbl: '← 이전 질문으로' 단추(assets/back.js) */
 function next() {
   const e = readQ(); if (e) { $('err').textContent = e; return; }
   const qs = visible();

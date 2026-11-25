@@ -37,16 +37,21 @@
 
   /* ---------- 화면 전환 ---------- */
   const VIEWS = { home: 'vHome', cgt: 'vCgt', order: 'vOrder', acq: 'vAcq', prop: 'vProp', cpt: 'vCpt', gift: 'vGift' };
+  let curView = (location.hash || '#home').slice(1) in VIEWS ? (location.hash || '#home').slice(1) : 'home';
   function show(v, push) {
     Object.entries(VIEWS).forEach(([k, id]) => { $(id).hidden = k !== v; });
-    if (push !== false) history.pushState(null, '', v === 'home' ? location.pathname : '#' + v);
+    if (push !== false) {   /* jbn·jbl: '← 세금 계산기 목록으로' 단추(assets/back.js) */
+      const from = curView; history.pushState(window.JDJ_BACK ? JDJ_BACK.st(null, from === 'home' ? '세금 계산기 목록' : '이전 계산기') : null, '', v === 'home' ? location.pathname : '#' + v);
+      if (window.JDJ_BACK) JDJ_BACK.refresh();
+    }
+    curView = v;
     window.scrollTo(0, 0);
   }
   document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) { e.preventDefault(); show(b.dataset.go); } });
   window.addEventListener('popstate', () => show((location.hash || '#home').slice(1) in VIEWS ? (location.hash || '#home').slice(1) : 'home', false));
   /* 질문 이동을 브라우저 기록에 남김: 뒤로 가기 = 이전 질문 */
   const TW = {};
-  const twPush = (name, q) => { try { history.pushState({ tw: name, q }, '', location.href); } catch (e) {} };
+  const twPush = (name, q) => { try { history.pushState(window.JDJ_BACK ? JDJ_BACK.st({ tw: name, q }, '이전 질문') : { tw: name, q }, '', location.href); } catch (e) {} if (window.JDJ_BACK) JDJ_BACK.refresh(); };
   const twBack = (name, cur) => { const h = history.state; if (h && h.tw === name && h.q === cur && cur > 0) { history.back(); return true; } return false; };
   window.addEventListener('popstate', e => { const h = e.state; if (h && h.tw && TW[h.tw]) TW[h.tw](h.q); else Object.values(TW).forEach(f => f(0, true)); });
 

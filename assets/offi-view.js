@@ -378,12 +378,25 @@ ${rentPanel(u, j)}
     if (window.jdjStat) jdjStat('feature_use', { feature: 'mine_offi' });
   }
 
+  /** 뒤로 가기(assets/back.js · mine/ 의 JDJ_BACK.inpage)로 돌아온 주소(og·ob) 상태로 다시 그림 */
+  async function navRestore(q) {
+    if (!inited || !IX || !$('ofSd')) return;          // 처음 여는 탭이면 init 이 지금 주소를 읽어 그림
+    const og = q.get('og') || '', ob = q.get('ob') || '';
+    if (og && og === S.g && C['u' + og]) {
+      if (ob) { if (S.key !== ob || $('ofRes').hidden) show(ob); }
+      else { S.key = ''; CUR = null; $('ofB').value = ''; regionOnly(og); }
+      return;
+    }
+    if (/^\d{5}$/.test(og) && sdOf(og)) await pickSido(sdOf(og), og, ob);
+    else { S.key = ''; CUR = null; $('ofRes').hidden = true; }
+  }
   function boot() {
     M = window.JDJ_MINE; O = window.JDJ_OFFI;
     const tabs = $('mtabs'); if (!tabs || !M || !O) return;
     css();
     tabs.addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (b) setTab(b.dataset.t, true); });
     if (new URLSearchParams(location.search).get('t') === 'o') setTab('o', false);
+    (window.JDJ_MINE_NAV = window.JDJ_MINE_NAV || {}).o = navRestore;
     let rz = null, lw = innerWidth;
     addEventListener('resize', () => { if (Math.abs(innerWidth - lw) < 8) return; lw = innerWidth; clearTimeout(rz); rz = setTimeout(drawCharts, 200); });
   }

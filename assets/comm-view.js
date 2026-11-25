@@ -393,12 +393,25 @@
     if (window.jdjStat) jdjStat('feature_use', { feature: 'mine_comm' });
   }
 
+  /** 뒤로 가기(assets/back.js · mine/ 의 JDJ_BACK.inpage)로 돌아온 주소(cg·ck·cb) 상태로 다시 그림 */
+  async function navRestore(q) {
+    if (!inited || !IX || !$('cmSd')) return;          // 처음 여는 탭이면 init 이 지금 주소를 읽어 그림
+    const cg = q.get('cg') || '', cb = q.get('cb') || '', k = q.get('ck') === 'g' ? 'g' : 'c';
+    if (cg && cg === S.g && DOC) {
+      if (cb) { if (S.key !== cb || $('cmRes').hidden) showUnit(cb); }
+      else { if (k !== S.k) { S.k = k; segOn(); fillDong(); } S.key = ''; $('cmB').value = ''; render(); }
+      return;
+    }
+    if (/^\d{5}$/.test(cg) && sdOf(cg)) { S.k = k; segOn(); await pickSido(sdOf(cg), cg, cb); }
+    else { S.key = ''; $('cmRes').hidden = true; }
+  }
   function boot() {
     M = window.JDJ_MINE; K = window.JDJ_COMM;
     const tabs = $('mtabs'); if (!tabs || !M || !K || !$('commSec')) return;
     css();
     tabs.addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (b) setTab(b.dataset.t, true); });
     if (new URLSearchParams(location.search).get('t') === 'c') setTab('c', false);
+    (window.JDJ_MINE_NAV = window.JDJ_MINE_NAV || {}).c = navRestore;
     let rz = null, lw = innerWidth;
     addEventListener('resize', () => { if (Math.abs(innerWidth - lw) < 8) return; lw = innerWidth; clearTimeout(rz); rz = setTimeout(drawCharts, 200); });
   }

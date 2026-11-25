@@ -55,12 +55,12 @@
 <script src="../assets/price-sheet.js?v=22"></script>
 <script src="../assets/mapjump.js?v=3"></script>
 <script src="../assets/offi-core.js?v=6"></script>
-<script src="../assets/offi-view.js?v=13"></script>
+<script src="../assets/offi-view.js?v=14"></script>
 <script src="../assets/comm-core.js?v=5"></script>
-<script src="../assets/comm-view.js?v=8"></script>
+<script src="../assets/comm-view.js?v=9"></script>
 <script src="../assets/rent-core.js?v=6"></script>
 <script src="../assets/villa-core.js?v=1"></script>
-<script src="../assets/villa-view.js?v=4"></script>
+<script src="../assets/villa-view.js?v=5"></script>
 <script src="../assets/community.js?v=4"></script>
 <script src="../assets/policy-view.js?v=3"></script>
 <script src="../assets/devproj-view.js?v=4"></script>
@@ -242,6 +242,7 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
 .alr .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
 .alr .msg{font-size:14px;font-weight:700}
 </style>
+<script src="../assets/back.js?v=1" defer></script>
 </head>
 <body data-lay="side" data-lay-key=".stats" data-lay-toc="h2,.chead:first-child>h3" data-lay-fold="#polSec>.panel,#taxSec" data-lay-jump="#res,#ofRes,#vlRes,#cmRes">
 <header class="top">
@@ -848,6 +849,31 @@ function wireHome(el, h, u, u0){
 /* 매수가 칸 아래 안내: 넣은 값을 원 단위로 읽어 주고, 1,000(=1,000만원)보다 작으면 억 단위로 잘못 넣은 것일 수 있어 바로 알려 줌 */
 function bpWon(v){ return v ? M.won(v) + (v < 1000 ? ' — 혹시 억 원이면 만원 단위로 넣어 주세요(예: 9억 5천만 원 → 95,000)' : '') : ''; }
 
+/* ---------- 뒤로 가기(assets/back.js) ----------
+   탭(아파트·빌라·오피스텔·상가·건물)과 고른 단지·건물이 바뀌면 브라우저 기록에 한 칸씩 쌓음:
+   브라우저 뒤로 가기·'← 이전' 단추 = 바로 전 탭·건물로. 주소 값(sd·d·b·a·t·vg·vb·og·ob·cg·ck·cb)은 예전 그대로라 공유 링크도 그대로 열림 */
+function navSetup(){
+  const BK = window.JDJ_BACK;
+  if (!BK || !BK.inpage){ if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', navSetup, {once:true}); return; }
+  const TN = {a:'아파트', v:'빌라', o:'오피스텔', c:'상가·건물'};
+  const tOf = q => /^[voc]$/.test(q.get('t') || '') ? q.get('t') : 'a';
+  const selOf = (q, t) => (t === 'v' ? q.get('vb') : t === 'o' ? q.get('ob') : t === 'c' ? q.get('cb') : q.get('d')) || '';
+  BK.inpage({
+    key: u => { const q = u.searchParams, t = tOf(q); return t + '|' + selOf(q, t); },
+    label: u => { const q = u.searchParams, t = tOf(q), s = selOf(q, t); return (s && BK.keyName(s)) || (s ? '이전 ' + TN[t] : TN[t] + ' 찾기'); },
+    restore: async q => {
+      const t = tOf(q), on = document.querySelector('#mtabs .on'), cur = on ? on.dataset.t : 'a';
+      if (t !== cur){ const b = document.querySelector('#mtabs [data-t="' + t + '"]'); if (b) b.click(); }
+      if (t !== 'a'){ const f = (window.JDJ_MINE_NAV || {})[t]; if (f) await f(q); return; }
+      const qsd = q.get('sd'), d = q.get('d') || '';
+      if (d){
+        if (qsd && qsd !== S.sd && IX.sido.some(s => s.id === qsd)) await pickSido(qsd, d.split('|')[0], d);
+        if (GROUPS[S.sd] && GROUPS[S.sd].has(d) && (d !== S.dkey || (q.get('b') || '') !== S.band || $('res').hidden)) await showDanji(d, q.get('b'), {ar: +q.get('a') || 0});
+      } else if (S.dkey){ S.dkey = ''; CUR = null; $('res').hidden = true; if ($('danji').value) $('danji').value = ''; }
+    }
+  });
+}
+
 /* ---------- 시작 ---------- */
 async function init(){
   try { const r = await fetch(DATA + 'index.json', {cache:'no-cache'}); if (!r.ok) throw 0; IX = await r.json(); }
@@ -876,6 +902,7 @@ async function init(){
     if (hit) showDanji(hit.key, q.get('b'));
   }
 
+  navSetup();
   $('sido').onchange = () => { $('sres').innerHTML = ''; pickSido($('sido').value); };
   $('sgg').onchange = () => fillDanji();
   $('danji').onchange = () => { if ($('danji').value) showDanji($('danji').value, '', {scroll:true}); };

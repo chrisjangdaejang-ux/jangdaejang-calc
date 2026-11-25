@@ -366,12 +366,26 @@
     legend(); drawCharts();
   }
 
+  /** 뒤로 가기(assets/back.js · mine/ 의 JDJ_BACK.inpage)로 돌아온 주소(vg·vb) 상태로 다시 그림 */
+  async function navRestore(q) {
+    if (!inited || !VX || !$('vlSd')) return;          // 처음 여는 탭이면 init 이 지금 주소를 읽어 그림
+    const vg = q.get('vg') || '', vb = q.get('vb') || '';
+    if (vg && vg === S.g && DOC) {
+      if (vb) { if (S.key !== vb || $('vlRes').hidden) show(vb); }
+      else { S.key = ''; CUR = null; $('vlB').value = ''; $('vlRes').hidden = true; }
+      return;
+    }
+    const si = vg ? VX.sido.findIndex(s => s.g.some(x => x.c === vg)) : -1;
+    if (si < 0) { S.key = ''; CUR = null; $('vlRes').hidden = true; return; }
+    await pickSido(si, vg, vb);
+  }
   function boot() {
     M = window.JDJ_MINE; V = window.JDJ_VILLA; R = window.JDJ_RENT;
     const tabs = $('mtabs'); if (!tabs || !M || !V || !R || !$('villaSec')) return;
     css();
     tabs.addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (b) setTab(b.dataset.t, true); });
     if (new URLSearchParams(location.search).get('t') === 'v') setTab('v', false);
+    (window.JDJ_MINE_NAV = window.JDJ_MINE_NAV || {}).v = navRestore;
     let rz = null, lw = innerWidth;
     addEventListener('resize', () => { if (Math.abs(innerWidth - lw) < 8) return; lw = innerWidth; clearTimeout(rz); rz = setTimeout(drawCharts, 200); });
   }

@@ -370,6 +370,68 @@ JOURNEYS.redev = async function (page, v) {
   }
 };
 
+/* '← 이전으로' 줄(assets/back.js): 바로 들어오면 '← 홈으로', 우리 화면에서 오면 갈 곳 이름 + 뒤로 가기,
+   내 집 시세 안에서 고른 건물·탭은 브라우저 기록에 한 칸씩(브라우저 뒤로 가기·단추 모두 바로 전 상태로) */
+JOURNEYS.back = async function (page, v) {
+  const btnTxt = async () => (await txt(page, '.jbk-btn')).trim();
+  const noOverlap = async () => page.evaluate(() => {
+    const b = document.querySelector('.jbk-btn'), h = document.querySelector('header.top'); if (!b || !h) return false;
+    const r = b.getBoundingClientRect(), t = h.getBoundingClientRect();
+    return r.top >= t.bottom - 1 && r.height >= 43.5 && r.left >= 0 && r.right <= innerWidth;
+  });
+  /* 1) 공유 링크·검색으로 내 집 시세에 바로 들어옴 */
+  await open(page, 'mine/');
+  ok(await btnTxt() === '← 홈으로', '바로 들어온 내 집 시세: ← 홈으로');
+  ok(await page.locator('.jbk-btn').getAttribute('href') === L.SITE, '← 홈으로 = 홈 주소');
+  ok(/홈\s*›\s*내 집 시세/.test(await txt(page, '.jbk-bc')), '위치 표시: 홈 › 내 집 시세');
+  ok(await noOverlap(), '단추가 머리줄 아래·화면 안·44px 이상');
+  /* 2) 홈 → 재개발·빌라 → 빌라 시세(내 집 시세 빌라 탭) */
+  await open(page, '');
+  await page.locator('a[href="villa/"]').first().click();
+  await page.waitForURL(/\/villa\/(\?|$)/, { timeout: 15000 }); await sleep(800);
+  ok(await btnTxt() === '← 홈으로' && await page.locator('.jbk-btn[data-mode="back"]').count() === 1, '재개발·빌라: 홈에서 옴 → 뒤로 가기 단추 ← 홈으로');
+  ok(/홈\s*›\s*재개발·빌라/.test(await txt(page, '.jbk-bc')), '위치 표시: 홈 › 재개발·빌라');
+  await page.locator('a[data-track="villa_lead_to_price"]').click();
+  await page.waitForURL(/\/mine\/\?t=v/, { timeout: 15000 }); await sleep(1500);
+  ok(await btnTxt() === '← 재개발·빌라로', '빌라 시세: ← 재개발·빌라로');
+  ok(/내 집 시세\s*›\s*빌라 시세/.test(await txt(page, '.jbk-bc')), '위치 표시: 홈 › 내 집 시세 › 빌라 시세');
+  /* 3) 양천구 → '대왕빌라' 찾기 → 건물 고르기 */
+  await page.selectOption('#vlG', '11470'); await sleep(2500);
+  await page.fill('#vlQ', '대왕빌라'); await sleep(1200);
+  ok(/대왕빌라/.test(await txt(page, '#vlSres')), '대왕빌라 찾기 결과');
+  await page.locator('#vlSres button[data-k]').first().click(); await sleep(2000);
+  ok(!(await page.locator('#vlRes').isHidden()) && /대왕빌라/.test(await txt(page, '#vlRes')), '고른 빌라 시세 보임');
+  ok(/[?&]vb=/.test(page.url()), '주소에 고른 건물(vb) 그대로');
+  ok(await btnTxt() === '← 빌라 찾기로', '건물을 고른 뒤: ← 빌라 찾기로(같은 화면 안 바로 전 상태)');
+  /* 4) 단추 → 찾기 상태 → 단추 → 재개발·빌라 */
+  await page.locator('.jbk-btn').click(); await sleep(1200);
+  ok(await page.locator('#vlRes').isHidden() && /\/mine\/\?t=v/.test(page.url()) && !/[?&]vb=/.test(page.url()), '단추 한 번: 같은 화면의 빌라 찾기로(결과 닫힘)');
+  ok(await btnTxt() === '← 재개발·빌라로', '다시 ← 재개발·빌라로');
+  if (process.env.BACK_SHOT) { await page.evaluate(() => scrollTo(0, 0)); await sleep(500); await page.screenshot({ path: process.env.BACK_SHOT.replace('{w}', v.width) }); }
+  await page.locator('.jbk-btn').click();
+  await page.waitForURL(/\/villa\/(\?|$)/, { timeout: 15000 }).catch(() => {}); await sleep(800);
+  ok(/\/villa\/(\?|$)/.test(page.url()) && /재개발/.test(await txt(page, 'h1')), '단추 두 번: 재개발·빌라 화면으로 돌아옴');
+  /* 5) 브라우저 뒤로 가기로 탭 되돌리기(아파트 ↔ 오피스텔) + 앞으로 가기로 빌라 결과 다시 */
+  await page.goForward(); await sleep(2500);
+  ok(/\/mine\/\?t=v/.test(page.url()), '앞으로 가기: 빌라 시세로');
+  await page.locator('#mtabs [data-t="o"]').click(); await sleep(1500);
+  ok(/[?&]t=o/.test(page.url()) && await btnTxt() === '← 빌라 찾기로', '오피스텔 탭으로 바꾸면 기록 한 칸(← 빌라 찾기로)');
+  await page.goBack(); await sleep(1500);
+  ok(/[?&]t=v/.test(page.url()) && await page.locator('#mtabs [data-t="v"].on').count() === 1 && !(await page.locator('#villaSec').isHidden()), '브라우저 뒤로 가기: 빌라 탭으로 돌아옴');
+  await page.goForward(); await sleep(1500);
+  ok(await page.locator('#mtabs [data-t="o"].on').count() === 1 && !(await page.locator('#offiSec').isHidden()), '앞으로 가기: 오피스텔 탭 다시');
+  /* 6) 예전 공유 주소(?t=v&vg&vb) 바로 열기는 그대로 + 홈으로 */
+  await open(page, 'mine/?t=v&vg=11470'); await sleep(1500);
+  ok(await btnTxt() === '← 홈으로' && await page.locator('#mtabs [data-t="v"].on').count() === 1 && await page.inputValue('#vlG') === '11470', '공유 주소(?t=v&vg=)로 바로 들어옴: 빌라 탭·시군구 그대로 + ← 홈으로');
+  /* 7) referrer 를 안 보내는 화면(동네 파트너)에서 우리 링크로 와도 갈 곳을 앎 */
+  await open(page, 'dongne/');
+  const a = page.locator('a[href*="mine/"]').first();
+  if (await a.count()) { await a.click(); await page.waitForURL(/\/mine\//, { timeout: 15000 }).catch(() => {}); await sleep(1000); ok(await btnTxt() === '← 동네 파트너로', 'referrer 없는 화면에서 와도: ← 동네 파트너로'); }
+  /* 8) 단지 검색용 페이지(위치 표시가 이미 있음): 단추만 하나, 위치 표시는 두 번 안 보임 */
+  await open(page, 'apt/');
+  ok(await page.locator('.jbk-btn').count() === 1 && await page.locator('.jbk-bc').count() === 0 && await page.locator('nav.bc').count() >= 1, '단지 검색용 페이지: 단추 + 원래 위치 표시만');
+};
+
 /* ---------- 실행 ---------- */
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });

@@ -34,6 +34,7 @@ h1{font-size:clamp(26px,6.4vw,34px);margin:4px 0 6px;letter-spacing:-.6px;word-b
 .soon p{margin:0 0 14px;color:var(--sub);font-size:15.5px}
 .soon a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 16px;border-radius:12px;background:var(--blue-l);color:var(--blue);font-weight:800;text-decoration:none}
 </style>
+<script src="../assets/back.js?v=1" defer></script>
 </head>
 <body>
 <header class="top">
@@ -63,8 +64,7 @@ h1{font-size:clamp(26px,6.4vw,34px);margin:4px 0 6px;letter-spacing:-.6px;word-b
   var t = CM.KIND[parts[0]] || '건물';
   var title = name || parts[2] + ' ' + t;
   document.title = title + ' 살아보니' + (SITE ? ' — ' + SITE : '');
-  app.innerHTML = '<a class="back" href="javascript:history.back()">← 돌아가기</a>'
-    + '<h1>' + esc(title) + '</h1><p class="lead">' + esc(parts[2]) + ' · ' + t + ' · 살아 본 사람들의 후기와 이야기예요.</p>'
+  app.innerHTML = '<h1>' + esc(title) + '</h1><p class="lead">' + esc(parts[2]) + ' · ' + t + ' · 살아 본 사람들의 후기와 이야기예요.</p>'
     + '<section class="panel cm-box" data-cm-full="1" data-cm-pid="' + esc(pid) + '" data-cm-name="' + esc(name) + '" aria-label="살아보니"></section>';
 })();
 </script>
