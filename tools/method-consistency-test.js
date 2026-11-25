@@ -3,6 +3,8 @@
      ① 뺀 이유가 '방향이 바뀌었다'는데 그 항목만 따로 떼어 본 과거 사례는 같은 방향이 뚜렷함
      ② 같은 과거 사례 문장이 두 항목에 붙음(예: 신축 프리미엄·재건축 기대감이 같은 '연식' 사례를 나눠 가짐)
      ③ 뺀 항목인데 다른 곳(구 점수·다른 보유 기간 점수)에 쓰면서 그 표시가 없음
+     ④ '집값에 영향을 준다는데 왜 안 쓰나요?'(#why) 표·이름·개수가 excluded.json 과 다름(구 점수에 쓰는 항목 누락, 뺀 구 후보 누락, 결과 칸 어긋남,
+        개수 합 불일치, 빠질 항목 표시, 한 줄 이유에 숫자 기준·가중치·금지 단어)
    1부: 만든 자료로 규칙 확인(항상)  2부: 실제 공개 자료(excluded.json·evidence.json)로 화면과 같은 계산 — 받지 못하면 건너뜀(실패 아님) */
 'use strict';
 const fs = require('fs'), path = require('path'), https = require('https');
@@ -59,6 +61,36 @@ check('화면 문장에 금지 단어 없음(시험·통과·검증·채점)', I
 const page = fs.readFileSync(path.join(__dirname, '..', 'guide', 'method', 'index.html'), 'utf8');
 check('방법 화면이 같은 계산(T.method·xcsOf)과 표시를 씀', [/T\.method\(EX, 2, xcs\)/.test(page), /T\.xcsOf\(NAR, EVD\)/.test(page), /x\.reason/.test(page), /tagHtml\(x\)/.test(page), !/esc\(x\.plain\)/.test(page)], [true, true, true, true, true]);
 
+/* ---------- 1부-2: '왜 안 쓰나요?'(#why) ---------- */
+const EXW = JSON.parse(JSON.stringify(EX));
+EXW.used.region = [['sup', '향후 2년 입주 물량'], ['pop', '인구 증가'], ['dd', '구 하락기 방어력'], ['ob6', '외지인 매수 비중(6개월)']];
+EXW.region = [['pop3', '인구 증감(3년)', 'no_gain', 'x'], ['uns', '미분양 물량(재고 대비)', 'no_gain', 'x'], ['h12', '1·2인 세대 비중', 'no_data', 'x']];
+const IW = T.method(EXW, 2, xcs), W = T.why(EXW, IW, 2);
+const row = n => W.rows.find(r => r.name === n) || {};
+check('#why: 구 점수에 쓰는 항목은 "구 점수에만"', [row('인구 증가').label, row('향후 2년 입주 물량').label], ['구 점수에만', '구 점수에만']);
+check('#why: 뺀 구 후보(자료 부족 포함)는 "뺐다"', [row('인구 증감(3년)').label, row('미분양 물량(재고 대비)').label, row('1·2인 세대 비중').label], ['뺐다', '뺐다', '뺐다']);
+check('#why: 단지 점수에 쓰는 항목은 "쓴다"', [row('학군 수요').label, row('재건축 진행 단계').label], ['쓴다', '쓴다']);
+check('#why: 단지에서는 뺐지만 구 점수에 쓰는 하락기 방어력 → 한 줄로 합쳐 "구 점수에만"(구 줄 따로 없음)', [row('하락기 방어력').label, !!W.rows.find(r => r.name === '구 하락기 방어력')], ['구 점수에만', false]);
+check('#why: 역세권(따로 보면 뚜렷·함께 넣으면 못 맞힘) → ③ 겹침 예시', [row('역세권').label, W.combo.includes('역세권')], ['뺐다', true]);
+check('#why: 외지인 매수 비중이 아직 구 점수에 있으면 "곧 빠져요"(다음 정기 업데이트부터)', [row('외지인 매수 비중(6개월)').pending, W.drop[0].pending, W.regionUsed.includes('외지인 매수 비중(6개월)')], [true, true, false]);
+const EXW2 = JSON.parse(JSON.stringify(EXW)); EXW2.used.region = EXW2.used.region.filter(x => x[0] !== 'ob6'); EXW2.region.push(['ob6', '외지인 매수 비중(6개월)', 'no_gain', 'x']);
+const W2 = T.why(EXW2, T.method(EXW2, 2, xcs), 2);
+check('#why: 엔진이 빼면 "뺐다"로 바뀜(빠짐 표시도 "뺐어요")', [(W2.rows.find(r => r.key === 'ob6') || {}).label, W2.drop[0].pending], ['뺐다', false]);
+check('#why: ① 이름은 구 점수에 쓰는 인구·세대·입주 물량만', W.regionBig, ['인구 증가', '향후 2년 입주 물량']);
+check('#why: 후보 수·채택 수는 재학습 기록 그대로(28개 중 0개)', [W.rec.tried, W.rec.adopted, W.rec.day], [28, 0, '2026-11-25']);
+check('#why: 결과별 개수 합 = 표 줄 수', W.counts.use + W.counts.region + W.counts.out, W.rows.length);
+check('#why: 정리된 자료는 점검 통과', [T.whyAudit(W, EXW, 2), T.whyAudit(W2, EXW2, 2)], [[], []]);
+const wb1 = JSON.parse(JSON.stringify(W)); wb1.rows = wb1.rows.filter(r => r.name !== '인구 증가');
+check('④ 구 점수에 쓰는 항목이 표에서 빠지면 잡아냄', T.whyAudit(wb1, EXW, 2).some(t => /인구 증가/.test(t)), true);
+const wb2 = JSON.parse(JSON.stringify(W)); wb2.rows.find(r => r.name === '미분양 물량(재고 대비)').res = 'use';
+check('④ 뺀 후보를 "쓴다"로 적으면 잡아냄', T.whyAudit(wb2, EXW, 2).some(t => /미분양/.test(t)), true);
+const wb3 = JSON.parse(JSON.stringify(W)); wb3.rows[0].why = '개선 폭이 0.5%p 보다 커서 써요';
+check('④ 한 줄 이유에 숫자 기준이 들어가면 잡아냄', T.whyAudit(wb3, EXW, 2).some(t => /숫자 기준/.test(t)), true);
+const wb4 = JSON.parse(JSON.stringify(W2)); wb4.drop[0].pending = false;
+check('④ 빠졌다는데 아직 구 점수에 쓰면 잡아냄', T.whyAudit(Object.assign({}, wb4), EXW, 2).some(t => /빠졌다는데/.test(t)), true);
+check('#why 화면이 같은 계산(T.why)과 기록 개수(R.tried·R.adopted)를 쓰고 숫자를 손으로 적지 않음',
+  [/T\.why\(EX, I, 2\)/.test(page), /R\.tried/.test(page), /R\.adopted/.test(page), !/후보 28개|28개 살펴봄|채택 0개/.test(page), /id="why"/.test(page)], [true, true, true, true, true]);
+
 /* ---------- 2부: 실제 공개 자료 ---------- */
 const ORIGIN = (process.env.DATA_ORIGIN || 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/').replace(/\/?$/, '/');
 const LOCAL = process.env.METHOD_DATA_DIR;   // 손으로 받아 둔 공개 자료 폴더로 확인할 때(선택)
@@ -79,6 +111,10 @@ const get = f => LOCAL ? Promise.resolve((() => { try { return JSON.parse(fs.rea
       const P = T.audit(T.method(REX, h, xr), REX, h);
       check(`실제 자료 ${h}년 보유: 이유·과거 사례·표시가 서로 맞음`, P, []);
     }
+    const RW = T.why(REX, T.method(REX, 2, xr), 2);
+    check('실제 자료 #why: 표·이름·개수가 excluded.json 과 맞음', T.whyAudit(RW, REX, 2), []);
+    check('실제 자료 #why: 구 점수에 쓰는 항목이 모두 표에 "구 점수에만"으로 있음', (REX.used.region || []).filter(([k]) => !RW.rows.some(r => r.key === k && r.res === 'region')).map(x => x[1]), []);
+    check('실제 자료 #why: ①·표의 구 점수 항목 수 = excluded.json used.region 수', RW.regionUsed.length + RW.drop.filter(d => d.pending).length, (REX.used.region || []).length);
   }
   console.log(`점수 읽는 법 일관성 점검: ${pass}개 통과, ${fail}개 실패`);
   process.exit(fail ? 1 : 0);

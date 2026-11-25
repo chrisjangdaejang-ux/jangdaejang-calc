@@ -102,6 +102,48 @@
 .trk b{display:block;font-size:16.5px;font-weight:900}
 .trk span{display:block;font-size:15px;color:var(--sub);margin-top:4px;line-height:1.65}
 .trk em{font-style:normal;color:var(--blue);font-weight:700}
+/* 왜 안 쓰나요(#why) */
+.why{margin:6px 0 22px;padding:18px 16px;border-radius:18px;border:1.5px solid #B9CCFF;background:#F7F9FF}
+.why h3{margin:0 0 6px;font-size:19px;font-weight:900;letter-spacing:-.3px;line-height:1.4;word-break:keep-all}
+.why .wl{margin:0;font-size:15.5px;color:var(--sub);line-height:1.75;word-break:keep-all}
+.why .wl b{color:var(--text)}
+.why .wq{margin:12px 0 0;padding:12px 14px;border-radius:14px;background:var(--blue);color:#fff;font-size:15.5px;font-weight:700;line-height:1.65;word-break:keep-all}
+.wy{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.wy>li{padding:14px;border-radius:14px;background:#fff;border:1px solid var(--line)}
+.wy>li>b{display:flex;gap:8px;align-items:flex-start;font-size:16px;font-weight:900;line-height:1.45;letter-spacing:-.2px;word-break:keep-all}
+.wy>li>b i{flex:none;font-style:normal;width:24px;height:24px;border-radius:8px;background:var(--blue-l);color:var(--blue);font-size:13.5px;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.wy>li p{margin:6px 0 0;font-size:15px;color:var(--sub);line-height:1.7;word-break:keep-all}
+.wy>li p b{color:var(--text)}
+.wy .chips{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0 0}
+.wy .chips span{font-size:13.5px;font-weight:700;padding:4px 10px;border-radius:999px;background:#EAF7F0;color:var(--pos)}
+.wy .chips.u span{background:var(--blue-l);color:var(--blue)}
+.wy .chips.o span{background:var(--gray);color:var(--sub2)}
+.wg{list-style:none;margin:8px 0 0;padding:0}
+.wg li{padding:8px 0;border-top:1px solid var(--line2);font-size:14.5px;color:var(--sub);line-height:1.65;word-break:keep-all}
+.wg li:first-child{border-top:0}
+.wg li b{color:var(--text)}
+.wn{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+.wn span{font-size:14px;font-weight:700;padding:6px 12px;border-radius:999px;background:var(--blue-l);color:var(--blue)}
+.wn span.z{background:var(--blue);color:#fff}
+.wth{margin:18px 0 4px;font-size:16.5px;font-weight:900}
+.wt{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;font-size:14px;table-layout:fixed}
+.wt th{background:var(--gray2);font-size:13px;color:var(--sub2);font-weight:700;text-align:left;padding:8px 10px}
+.wt td{padding:9px 10px;border-top:1px solid var(--line2);vertical-align:top;line-height:1.55;word-break:keep-all;overflow-wrap:anywhere}
+.wt td:first-child{font-weight:700;color:var(--text)}
+.wt td:nth-child(3){color:var(--sub)}
+.wt col.c1{width:30%}.wt col.c2{width:16%}
+@media(max-width:619px){.wt,.wt tbody{display:block}.wt colgroup,.wt thead{display:none}
+.wt tr{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:10px 12px;border-top:1px solid var(--line2)}
+.wt tbody tr:first-child{border-top:0}.wt td{padding:0;border-top:0}.wt td:nth-child(2){text-align:right}
+.wt td:nth-child(3){grid-column:1/-1;font-size:13.5px}}
+.wt .r{display:inline-block;font-size:12.5px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.wt .r.use{background:var(--blue);color:#fff}.wt .r.region{background:#EAF7F0;color:var(--pos)}.wt .r.out{background:var(--gray);color:var(--sub2)}
+.wt .r.soon{background:#FFF6E8;color:var(--amber);margin-top:3px}
+.wmore{margin:8px 0 0}
+.wmore>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;min-height:44px;font-size:15px;font-weight:700;color:var(--blue)}
+.wmore>summary::-webkit-details-marker{display:none}
+.wmore[open]>summary{margin-bottom:6px}
+.wsum{margin:6px 0 0;font-size:13.5px;color:var(--sub2);line-height:1.6}
 /* 강점 요약 */
 .stv{margin:30px 0 0;padding:18px;border-radius:18px;border:1px solid var(--line);background:var(--gray2)}
 .stv h2{margin:0 0 8px!important;font-size:19px!important}
@@ -186,6 +228,11 @@
 
   <h2 id="out" style="scroll-margin-top:72px"><span class="n">04</span>넣어 봤는데 과거에 안 맞아서 뺀 항목</h2>
   <p class="lead2">집값과 관련 있다고 알려진 항목이라도, 과거에 그대로 써 봤을 때 같은 구 안에서 더 오를 단지를 맞히지 못하면 점수에서 뺐어요. 흔히 하는 생각과 다른 결과도 그대로 적어요.</p>
+  <section class="why" id="why" aria-labelledby="whyH" style="scroll-margin-top:72px">
+    <h3 id="whyH">집값에 영향을 준다는데 왜 안 쓰나요?</h3>
+    <p class="wl">인구, 외지인 매수, 미분양, 규제지역, 거래 회전율, 지하철 이용… 집값을 움직인다고 많이 알려진 것들이에요. 집예보도 <b>모두 넣어 봤어요.</b> 다만 점수에 쓰려면 ‘과거에 그대로 써 봤을 때 실제로 더 잘 맞혔다’는 증거가 있어야 해요. 안 쓰는 데는 아래 다섯 가지 이유가 있어요.</p>
+    <div id="whyBox"><div class="pend" style="margin-top:12px">내용을 불러오는 중이에요.</div></div>
+  </section>
   <div id="outBox"><div class="pend">항목 목록을 불러오는 중이에요.</div></div>
   <div id="xcBox"></div>
 
@@ -231,7 +278,7 @@
 </main>
 <footer class="foot">★ 집예보 · <a href="../../">홈</a> · <a href="../../guide/terms/">용어 모아 보기</a></footer>
 <script src="../../assets/config.js?v=11"></script>
-<script src="../../assets/track-core.js?v=3"></script>
+<script src="../../assets/track-core.js?v=4"></script>
 <script src="../../assets/narrative.js?v=20"></script>
 <script src="../../assets/strength.js?v=4" data-lazy></script>
 <script>
@@ -254,7 +301,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
   const I = T.method(EX, 2, xcs);
   if (!I) {
     const p = '<div class="pend">항목 목록은 다음 정기 업데이트 뒤 이곳에 공개돼요. 그동안 <a href="' + JB.SITE + 'about/">서비스 소개의 분석 항목 사전</a>에서 살펴보는 항목을 확인할 수 있어요.</div>';
-    $('useBox').innerHTML = p; $('outBox').innerHTML = ''; $('outBox').previousElementSibling.hidden = true; $('outBox').previousElementSibling.previousElementSibling.hidden = true;
+    $('useBox').innerHTML = p; $('outBox').innerHTML = ''; $('why').hidden = true; $('outBox').previousElementSibling.hidden = true; $('outBox').previousElementSibling.previousElementSibling.hidden = true;
     return;
   }
   const arrow = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
@@ -280,6 +327,52 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
   if (part.length) o += `<h3 class="exh">2년 보유 단지 점수에서는 뺐지만 다른 곳에는 쓰는 항목</h3><p class="nd" style="margin-top:0">구·시 전체 흐름을 보는 ‘구 점수’나 다른 보유 기간 점수에서는 과거에 맞아서 써요.</p><ul class="ex">` + part.map(li).join('') + '</ul>';
   if (I.nodata.length) o += `<p class="nd">자료가 아직 모자라 과거에 써 보지 못한 항목: ${esc(I.nodata.join(' · '))} — 자료가 쌓이면 똑같이 써 보고 맞으면 넣어요.</p>`;
   $('outBox').innerHTML = o;
+  /* 집값에 영향을 준다는데 왜 안 쓰나요?(#why) — 이름·개수·결과는 모두 T.why(excluded.json + 이번 재학습 기록)에서. 가중치·기준값 없음 */
+  const W = T.why(EX, I, 2);
+  if (W) {
+    const chips = (arr, c) => arr.length ? `<div class="chips${c ? ' ' + c : ''}">${arr.map(n => `<span>${esc(n)}</span>`).join('')}</div>` : '';
+    const dayKo = d => { const m = String(d || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${m[1]}년 ${+m[2]}월 ${+m[3]}일` : ''; };
+    const R = W.rec, more = W.regionUsed.length - W.regionBig.length;
+    const drop = W.drop.map(d => `원래 구 점수에 쓰던 ‘${esc(d.name)}’도 더 엄격한 기준에서는 우연과 구별되지 않아 <b>${d.pending ? '다음 정기 업데이트부터 빠져요' : '뺐어요'}</b>.`).join(' ');
+    let w = '<ol class="wy">';
+    w += `<li><b><i>1</i>집예보는 ‘집값이 오를까’가 아니라 ‘어느 단지가 더 오를까’를 맞혀요</b>
+      <p>점수는 시장 전체가 오를지 내릴지를 맞히는 게 아니에요. <b>같은 구 안에서 어느 단지가 그 구 평균보다 더 오를지</b>를 맞혀요.</p>
+      <p>인구·미분양·규제처럼 구 전체를 움직이는 일은 그 구의 단지를 <b>모두 함께</b> 밀어 올리거나 끌어내려요. 그래서 같은 구 단지끼리 ‘누가 더 오를지’는 가려 주지 못해요. 금리는 전국이 같은 값이라 더 그래요.</p>
+      <p>그렇다고 버린 게 아니에요. 이런 것은 <b>‘구 점수’</b>(구 전체가 같은 시·도 안에서 더 오를지)에 넣어 보고, 과거에 맞은 것은 실제로 써요. 구 점수는 단지 점수에도 함께 반영돼요.</p>
+      ${chips(W.regionBig)}${more > 0 ? `<p class="wsum">이 밖에 구 점수에 쓰는 항목 ${more}가지가 더 있어요(아래 표).</p>` : ''}</li>`;
+    w += `<li><b><i>2</i>누구나 아는 장점은 이미 값에 들어 있어요</b>
+      <p>역세권·새 아파트처럼 모두 아는 장점은 보통 <b>지금 가격에 이미 들어 있어요.</b> 그래서 ‘앞으로 더 오를지’는 잘 맞히지 못해요.</p>
+      <p>대신 <b>바뀌는 것</b>은 아직 값에 다 들어가지 않아 앞날을 맞히는 데 도움이 돼요. 새로 생기는 역, 새로 들어오는 입주 물량, 학군을 찾아 새로 전학 오는 학생 흐름 같은 것이에요. 지금 이런 변화 항목을 써요.</p>
+      ${chips(W.change.concat(W.regionUsed.filter(n => /입주 물량/.test(n))), 'u')}</li>`;
+    w += `<li><b><i>3</i>이미 쓰는 것과 겹치면 새로 알려 주는 게 없어요</b>
+      <p>어떤 항목은 이미 쓰는 항목과 함께 움직여요. 예를 들어 거래가 활발해지는 곳은 가격도 함께 움직이기 쉬워서, 거래 회전율에 담긴 정보는 이미 쓰는 ‘최근 가격 흐름’과 겹칠 수 있어요.</p>
+      ${W.combo.length ? `<p>실제로 아래 항목은 <b>따로 떼어 보면 같은 방향이 뚜렷했지만</b>, 다른 항목과 함께 점수에 넣으니 더 잘 맞히지 못했어요.</p>${chips(W.combo, 'o')}` : ''}</li>`;
+    w += `<li><b><i>4</i>우연히 맞은 것은 걸러 내요</b>
+      <p class="wq" style="margin-top:8px">그럴듯한 통계를 다 넣으면 과거 성적은 좋아 보여도 실제 미래에는 틀려요. 그래서 진짜로 증명된 것만 써요.</p>
+      <div class="wn"><span>${dayKo(R.day) ? esc(dayKo(R.day)) + ' 재학습' : '이번 재학습'}</span><span>새 후보 ${R.tried}개 살펴봄</span><span class="z">새로 쓰기로 한 것 ${R.adopted}개</span></div>
+      <p>${drop}</p>
+      <ul class="wg">
+        <li><b>봉인 정답지</b> — 가장 최근 시기의 실제 결과(정답)는 항목을 고를 때 아예 보지 않고 봉인해 둬요. 다 고른 뒤에 한 번만 열어 맞춰 봐요.</li>
+        <li><b>잡음보다 커야</b> — 시기마다 저절로 생기는 오르내림보다 확실히 크게 나아져야 써요. 비슷하면 항목이 적은 쪽을 골라요.</li>
+        <li><b>세 지역 중 두 곳</b> — 수도권·광역시·그 밖의 도 지역 가운데 두 곳 이상에서 나아져야 해요. 한 곳에서만 맞으면 우연일 수 있어요.</li>
+        <li><b>방향이 늘 같아야</b> — 모든 시기에 집값에 주는 방향(오르는 쪽·내리는 쪽)이 같아야 써요. 시기마다 바뀌면 빼요.</li>
+        <li><b>발표일 장부</b> — 통계마다 실제로 발표되는 시기를 장부에 적어 두고, 과거 그 시점에 아직 발표되지 않았던 값은 쓰지 않아요. 매번 자동으로 확인해요.</li>
+      </ul>
+      <p class="wsum">기준이 너무 엄격해서 다 떨어뜨리는 건 아닌지도 확인했어요. 진짜 효과를 일부러 넣어 둔 연습용 자료에서는 그 항목이 그대로 뽑혔어요.</p></li>`;
+    w += `<li><b><i>5</i>뺀 항목도 계속 다시 봐요</b>
+      <p>재학습 때마다 뺀 항목도 다시 넣어 보고, 기준을 넘기 시작하면 다시 써요. 자료가 모자랐던 항목도 자료가 쌓이면 똑같이 넣어 봐요.</p>
+      <p class="wsum">마지막 재학습: ${esc(dayKo(R.day) || '–')} · 다음 재학습: ${R.next ? esc(dayKo(R.next) || R.next) : '날짜가 정해지면 이곳에 적어요'}</p></li>`;
+    w += '</ol>';
+    /* 한눈에 보는 표: 대표가 꼽은 것 먼저 10줄, 나머지는 펼쳐 보기 */
+    const tr = r => `<tr><td>${esc(r.name)}</td><td><span class="r ${r.res}">${esc(r.label)}</span>${r.pending ? '<br><span class="r soon">곧 빠져요</span>' : ''}</td><td>${esc(r.why)}</td></tr>`;
+    const tb = rs => `<table class="wt"><colgroup><col class="c1"><col class="c2"><col></colgroup><thead><tr><th scope="col">후보</th><th scope="col">결과</th><th scope="col">한 줄 이유</th></tr></thead><tbody>${rs.map(tr).join('')}</tbody></table>`;
+    const TOP = 10, C = W.counts;
+    w += `<h4 class="wth">항목별 결과 한눈에 보기</h4><p class="wsum" style="margin:0 0 8px">2년 보유 점수 기준 · 쓴다 ${C.use} · 구 점수에만 ${C.region} · 뺐다 ${C.out}</p>`;
+    w += tb(W.rows.slice(0, TOP));
+    if (W.rows.length > TOP) w += `<details class="wmore"><summary>나머지 ${W.rows.length - TOP}개 더 보기</summary>${tb(W.rows.slice(TOP))}</details>`;
+    w += '<p class="wsum">쓴다 = 단지 점수에 써요 · 구 점수에만 = 구 전체 흐름을 보는 구 점수에만 써요 · 뺐다 = 점수에 쓰지 않아요. 항목별 비중과 세부 기준은 공개하지 않아요.</p>';
+    $('whyBox').innerHTML = w;
+  } else $('why').hidden = true;
   /* 점수와 별개로, 단지 화면 '오를 이유 · 조심할 점'에 쓰는 과거 사례(같은 구간이었던 단지가 2년 뒤 자기 구 평균보다 어땠는지) */
   const XG = [['sd', '역까지 직선 거리(서울)', '서울 지하철 승하차 자료에 처음 나온 달 기준으로 그 시점에 있던 역만 · 역 위치는 서울시 역사마스터 정보(공공데이터) · 단지 대표 좌표 기준 · 신설역 근처 단지는 신설역 항목으로 따로'],
     ['sw', '역까지 도보 시간(서울 밖)', 'K-apt 인근 지하철역 도보 시간(지금 값이라 그 사이 생긴 역이 섞일 수 있어요)'],

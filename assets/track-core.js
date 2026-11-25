@@ -6,7 +6,8 @@
      excluded.json   엔진 build_site.excluded_pub — 쓰는 항목(used)·뺀 항목(unit·off·region)의 이름과 쉬운 말 이유(가중치·기준값 없음)
    화면 말투(대표 확정 11/20): '시험·통과·검증·채점' 대신 '과거에 그대로 써 봤더니 N번 중 M번' — 이 파일이 만드는 문장에 그 단어를 쓰지 않는다.
    window.JDJ_TRACK = { scopes, shortOf, wavg, head, cards, weak, grades, regionRows, yearRows, phaseRows, period, bars, tmUnits, tmPick, tmRows, items, ITEM, ymKo, pp, pc,
-                        CASE_OF, casesOf, reasonOf, method(뺀 이유·사례·표시), audit(일관성 점검) } */
+                        CASE_OF, casesOf, reasonOf, method(뺀 이유·사례·표시), audit(일관성 점검),
+                        RETRAIN(이번 재학습 기록), why('왜 안 쓰나요' 묶음·표), whyAudit(그 일관성 점검) } */
 (function (root) {
   'use strict';
   const r1 = v => Math.round(v * 10) / 10;
@@ -310,8 +311,111 @@
     return bad;
   }
 
+  /* ---------- '집값에 영향을 준다는데 왜 안 쓰나요?'(/guide/method/ #why) — 대표 지적 2026-11-25 ----------
+     이번 재학습 기록(엔진 리포트 2026-11-25 · retrain_plan §8): 후보 수·채택 수·빠질 항목·excluded.json 에 없는 후보(규제·거래 회전율·역 승하차 등)의 결과.
+     숫자는 개수·날짜만(가중치·기준값·개선 폭 없음). 엔진이 excluded.json 에 retrain 을 내보내면 그것을 우선 씀.
+     extra 줄: [종류(region|unit|all), key, 이름, 결과('out'), 한 줄 이유] */
+  const RETRAIN = { day: '2026-11-25', tried: 28, adopted: 0, next: '',
+    drop: [['ob6', '외지인 매수 비중']],
+    extra: [
+      ['region', 'x_reg', '규제지역(투기과열·조정대상) 여부', 'out', '구 점수에 넣어 봐도 더 잘 맞히지 못했어요'],
+      ['region', 'x_regc', '최근 1년 새로 규제·해제된 곳', 'out', '넣었을 때와 뺐을 때 차이가 없었어요'],
+      ['region', 'x_thp', '토지거래허가·분양가상한제', 'out', '넣었을 때와 뺐을 때 차이가 없었어요'],
+      ['region', 'x_turn', '거래 회전율(1년 거래 ÷ 세대수)', 'out', '구 점수에 넣어 봐도 더 잘 맞히지 못했어요'],
+      ['unit', 'x_ride', '가까운 역 승하차 인원 1년 변화(서울)', 'out', '시기마다 집값에 주는 방향이 바뀌었어요'],
+      ['unit', 'x_dreg', '동 단위 규제(일부 동만 묶인 규제)', 'out', '넣었을 때와 뺐을 때 차이가 없었어요'],
+      ['all', 'x_rate', '주택담보대출·기준금리', 'out', '전국이 같은 값이라 단지·구 순위를 가를 수 없어요'],
+      ['unit', 'x_acad', '학원 수·증감', 'out', '개설·폐원 날짜 기록이 없어 과거에 써 볼 수 없었어요']] };
+  /* 표에 넣을 단지 항목(흔히 집값과 연결해 생각하는 것) — 쓰는지·뺐는지는 excluded.json 이 정함 */
+  const WHY_UNIT = ['sub', 'sch', 'rlp', 'rls', 'rlo', 'stg', 'new', 'old', 'mom', 'liq', 'jr', 'dd', 'size'];
+  /* '바뀌는 것'(아직 값에 다 들어가지 않은 변화) — 지금 쓰는 단지 항목 중 이것만 ②에 이름으로 */
+  const WHY_CHG = ['rlp', 'rls', 'rlo', 'rld', 'sch', 'stg', 'spa', 'sps', 'spm'];
+  /* 표 맨 위 순서: 대표가 꼽은 '사람들이 집값을 움직인다고 믿는 것' 먼저 */
+  const WHY_TOP = ['pop', 'hhg', 'ob6', 'uns', 'unc', 'x_reg', 'x_turn', 'x_ride', 'job', 'sup', 'sub', 'sch', 'x_rate', 'rlp', 'new', 'jr'];
+  /* ①에 먼저 이름을 드는 '구 전체를 움직이는 것'(인구·세대·일자리·입주 물량) — 지금 구 점수에 쓰는 것만 */
+  const WHY_BIG = ['pop', 'hhg', 'job', 'jbr', 'sup'];
+  const RES = { use: '쓴다', region: '구 점수에만', out: '뺐다' };
+  /** 한 줄 이유(뺀 항목): method() 의 why 를 짧게 */
+  function whyLine(x) {
+    if (x.code === 'no_data' || x.code === 'short') return '자료가 모자라 아직 과거에 써 보지 못했어요';
+    if (x.kind === 'region') return '구 점수에 넣어 봐도 더 잘 맞히지 못했어요';
+    if (x.why === 'combo') return '따로 보면 같은 방향이 뚜렷했지만, 다른 항목과 함께 넣으니 더 잘 맞히지 못했어요';
+    if (x.why === 'flip' || x.why === 'flip_mixed') return '시기마다 집값에 주는 방향이 바뀌었어요';
+    return '넣어 봐도 더 잘 맞히지 못했어요';
+  }
+  /** I = method(EX, h, xcs). → { rec(이번 재학습 기록), regionUsed[이름], change[이름](지금 쓰는 '바뀌는 것'), combo[이름], drop[{name, pending}],
+      rows[{ key, name, res('use'|'region'|'out'), label, why, kind }](WHY_TOP 순서 먼저), counts{use, region, out} } */
+  function why(EX, I, h) {
+    if (!EX || !EX.used || !I) return null;
+    h = String(h || 2);
+    const rec = Object.assign({}, RETRAIN, EX.retrain || {});
+    const U = EX.used, u2 = new Map(((U.unit || {})[h] || []).map(([k, n]) => [k, n])), reg = new Map((U.region || []).map(([k, n]) => [k, n]));
+    const dropK = new Set((rec.drop || []).map(d => d[0]));
+    const rows = [], seen = new Set();
+    const push = r => { if (seen.has(r.name)) return; seen.add(r.name); rows.push(r); };
+    const outU = new Map(I.out.filter(x => x.kind === 'unit').map(x => [x.key, x]));
+    /* nodata(자료 부족) 구 후보는 method().out 에 없으므로 excluded.json 에서 직접 */
+    const outR = (EX.region || []).map(([k, name, code]) => ({ key: k, name, code, kind: 'region' }));
+    const merged = new Set();                                   // 단지 줄에 합친 구 항목(같은 key: 전세가율·하락기 방어력…)
+    for (const k of WHY_UNIT) {
+      if (u2.has(k)) { push({ key: k, name: u2.get(k), kind: 'unit', res: 'use', why: '같은 구 안에서 더 오를 단지를 가려내는 데 과거에 맞아서 써요' }); continue; }
+      const x = outU.get(k); if (!x) continue;
+      if (reg.has(k)) { merged.add(k); push({ key: k, name: x.name, kind: 'unit', res: 'region', why: `단지끼리 가르는 데는 안 맞았지만 구 전체 흐름에는 맞아서 구 점수(‘${reg.get(k)}’)에 써요` }); continue; }
+      push({ key: k, name: x.name, kind: 'unit', res: 'out', why: whyLine(x) });
+    }
+    for (const [k, n] of reg) {
+      if (merged.has(k)) continue;
+      push({ key: k, name: n, kind: 'region', res: 'region', pending: dropK.has(k),
+        why: dropK.has(k) ? '더 엄격한 기준에서는 우연과 구별되지 않아 다음 정기 업데이트부터 빠져요' : '구 전체가 같은 시·도 안에서 더 오를지 맞히는 데 과거에 맞아서 써요' });
+    }
+    for (const x of outR) push({ key: x.key, name: x.name, kind: 'region', res: 'out', why: whyLine(x) });
+    for (const [kind, k, n, res, w] of (rec.extra || [])) push({ key: k, name: n, kind, res, why: w });
+    const pos = k => { const i = WHY_TOP.indexOf(k); return i < 0 ? WHY_TOP.length : i; };
+    rows.forEach((r, i) => { r.i = i; r.label = RES[r.res]; });
+    rows.sort((a, b) => pos(a.key) - pos(b.key) || a.i - b.i).forEach(r => delete r.i);
+    const counts = { use: 0, region: 0, out: 0 }; rows.forEach(r => counts[r.res]++);
+    return {
+      rec, rows, counts,
+      regionUsed: [...reg].filter(([k]) => !dropK.has(k)).map(([, n]) => n),
+      regionBig: WHY_BIG.filter(k => reg.has(k) && !dropK.has(k)).map(k => reg.get(k)),
+      change: [...new Set(WHY_CHG.filter(k => u2.has(k)).map(k => u2.get(k)))],
+      combo: I.out.filter(x => x.kind === 'unit' && x.why === 'combo').map(x => x.name),
+      drop: (rec.drop || []).map(([k, n]) => ({ key: k, name: n, pending: reg.has(k) }))
+    };
+  }
+  /** 일관성 점검(#why ↔ excluded.json · 매일 자동 점검 tools/method-consistency-test.js): 문제 문장 목록, 없으면 [] */
+  function whyAudit(W, EX, h) {
+    if (!W) return ['#why 묶음이 없어요'];
+    h = String(h || 2);
+    const bad = [], U = (EX && EX.used) || {}, by = new Map(W.rows.map(r => [r.name, r]));
+    const regK = new Set((U.region || []).map(x => x[0])), u2 = new Set(((U.unit || {})[h] || []).map(x => x[0]));
+    const unitOut = new Set([...(((EX || {}).unit || {})[h] || []), ...((EX || {}).off || [])].map(x => x[0]));
+    for (const [k, n] of (U.region || [])) {
+      const r = W.rows.find(r => r.key === k && (r.kind === 'region' || r.res === 'region'));
+      if (!r) bad.push(`구 점수에 쓰는 '${n}'이 표에 없어요`);
+      else if (r.res !== 'region') bad.push(`'${n}'은 구 점수에 쓰는데 표에는 '${r.label}'`);
+    }
+    for (const x of ((EX || {}).region || [])) { const r = by.get(x[1]); if (!r) bad.push(`뺀 구 후보 '${x[1]}'이 표에 없어요`); else if (r.res !== 'out') bad.push(`'${x[1]}'은 뺀 항목인데 표에는 '${r.label}'`); }
+    for (const r of W.rows.filter(r => r.kind === 'unit' && !/^x_/.test(r.key))) {
+      const want = u2.has(r.key) ? 'use' : regK.has(r.key) ? 'region' : 'out';
+      if (r.res !== want) bad.push(`'${r.name}': excluded.json 기준 '${RES[want]}'인데 표에는 '${r.label}'`);
+      if (want !== 'use' && !unitOut.has(r.key)) bad.push(`'${r.name}': 쓰는 항목에도 뺀 항목에도 없어요`);
+    }
+    if (W.rows.length !== new Set(W.rows.map(r => r.name)).size) bad.push('표에 같은 이름이 두 번 나와요');
+    const c = W.counts; if (c.use + c.region + c.out !== W.rows.length) bad.push('결과별 개수 합이 표 줄 수와 달라요');
+    const nu = W.regionUsed.length + W.drop.filter(d => d.pending).length;
+    if (nu !== (U.region || []).length) bad.push(`구 점수에 쓰는 항목 수(${(U.region || []).length})와 ①의 이름 수(${nu})가 달라요`);
+    if (W.regionBig.some(n => !W.regionUsed.includes(n))) bad.push('①에 구 점수에 쓰지 않는 이름이 있어요');
+    if (W.change.some(n => !((U.unit || {})[h] || []).some(x => x[1] === n))) bad.push('②의 지금 쓰는 변화 항목에 쓰지 않는 이름이 있어요');
+    if (!(W.rec.tried > 0) || !(W.rec.adopted >= 0) || W.rec.adopted > W.rec.tried) bad.push('후보 수·채택 수가 이상해요');
+    for (const d of W.drop) if (!d.pending && regK.has(d.key)) bad.push(`'${d.name}'은 빠졌다는데 아직 구 점수에 써요`);
+    if (W.rows.some(r => /\d+(\.\d+)?\s*%|표준오차|가중치|기준값/.test(r.why))) bad.push('한 줄 이유에 숫자 기준·가중치가 들어 있어요');
+    if (W.rows.some(r => /시험|통과|검증|채점|백테스트/.test(r.why))) bad.push('한 줄 이유에 금지 단어(시험·통과·검증·채점)가 있어요');
+    return bad;
+  }
+
   const API = { scopes, shortOf, wavg, head, cards, weak, grades, regionRows, yearRows, phaseRows, period, bars, tmUnits, tmPick, tmRows, items, ITEM, ymKo, ymAdd, pp, pc, nf, J,
-    CASE_OF, casesOf, reasonOf, method, audit, xcsOf };
+    CASE_OF, casesOf, reasonOf, method, audit, xcsOf, RETRAIN, why, whyAudit };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_TRACK = API;
 })(typeof window !== 'undefined' ? window : this);
