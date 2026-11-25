@@ -11,7 +11,7 @@
 (function (root) {
   'use strict';
   var HAS_DOC = typeof document !== 'undefined' && typeof window !== 'undefined';
-  var JB = (HAS_DOC && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (HAS_DOC) window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 
   /* 화면 이름표: 사이트 안 경로 → [이름, 카테고리(위 단계) 경로] */
   var NAMES = {
@@ -45,7 +45,7 @@
   var MINE_T = { v: '빌라 시세', o: '오피스텔 시세', c: '상가·건물 시세' };
   var MAXN = 14;          // 이 글자 수보다 긴 이름은 '이전 화면'으로(단추가 두 줄이 되지 않게)
 
-  /** 경로 정리: '/jangdaejang-calc/villa/index.html' → 'villa/' (사이트 밖이면 null) */
+  /** 경로 정리: '(사이트 경로)/villa/index.html' → 'villa/' (사이트 밖이면 null) */
   function relOf(pathname) {
     var p = String(pathname || '');
     try { p = decodeURI(p); } catch (e) {}
