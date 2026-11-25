@@ -1,6 +1,6 @@
 /* 예측 맞히기 자동 확인 — 실행: node tools/predict-test.js </dev/null
    ① assets/predict-core.js: 포인트(맞히면 10점, 3연속부터 +5)·무효는 연속 기록에 영향 없음·배지·고른 비율(합 100%)·주간 순위(같은 점수 같은 등수)·ISO 주·별명 거르기
-   ② 서버(tools/agent-backend.gs v54): PRED-CORE 글자 그대로 · 로그인해야 답함 · 받는 중 문제·마감 전·있는 보기만 · 마감 전 다시 고르기(한 줄) ·
+   ② 서버(tools/agent-backend.gs v55): PRED-CORE 글자 그대로 · 로그인해야 답함 · 받는 중 문제·마감 전·있는 보기만 · 마감 전 다시 고르기(한 줄) ·
       공개 결과를 '예측채점'에 한 번만 옮겨 적음(감사 기록) · 순위에는 별명만(카카오 닉네임·회원번호 없음) · 같은 별명 막기 · 탈퇴하면 답·별명 지움
    ③ 화면 quiz/·첫 화면 카드·서비스 워커·'포인트는 재미용' 문구·e2e 대체 자료 모양 */
 'use strict';
@@ -87,13 +87,13 @@ check('탈퇴: 답·별명 지움', !E.sheets['예측답'].rows.some(x => x[2] =
 
 /* ---------- ③ 화면 ---------- */
 const page = read('quiz/index.html'), home = read('index.html'), sw = read('sw.js');
-check('예측 화면: 계산 파일·로그인·안내 문구(포인트는 재미용)', /predict-core\.js\?v=1/.test(page) && /auth\.js/.test(page) && page.includes('포인트는 재미용이며 현금이나 상품으로 바꿀 수 없어요'));
+check('예측 화면: 계산 파일·로그인·안내 문구(포인트는 재미용)', /predict-core\.js\?v=2/.test(page) && /auth\.js/.test(page) && page.includes('포인트는 재미용이며 현금이나 상품으로 바꿀 수 없어요'));
 check('예측 화면: 기존 하루 한 문제도 그대로(quiz-core)', /quiz-core\.js\?v=1/.test(page) && /id="app"/.test(page) && /today\/quiz\.json/.test(page));
 check('예측 화면: 공개 문제 파일·서버 창구', /quiz\/week\.json/.test(page) && /'quizBoard'/.test(page) && /'quizAnswer'/.test(page) && /'quizMine'/.test(page) && /'quizNick'/.test(page));
 check('예측 화면: 집예보 예측은 자료에 있을 때만', /q\.ai \?/.test(page));
 check('예측 화면: 경쟁 앱 이름·회사 이름 없음', !/호갱|직방|아실|리치고|네이버\s?부동산|장대장부동산그룹/.test(page));
 check('첫 화면: 작은 카드 "이번 주 예측 맞히기"(받는 문제가 있을 때만)', /id="pqCard" href="quiz\/#predict"/.test(home) && /이번 주 예측 맞히기/.test(home) && /quiz\/week\.json/.test(home));
-check('서비스 워커: 계산 파일', /predict-core\.js\?v=1/.test(sw) && /'\.\/quiz\/'/.test(sw));
+check('서비스 워커: 계산 파일', /predict-core\.js\?v=2/.test(sw) && /'\.\/quiz\/'/.test(sw));
 const fb = JSON.parse(read('tools/e2e/fallback/data/quiz/week.json'));
 check('e2e 대체 자료: 엔진 결과 모양(open·wait·done·note)', Array.isArray(fb.open) && Array.isArray(fb.done) && fb.note === P.NOTE && fb.open.every(q => q.id && q.opts && q.close && q.t));
 

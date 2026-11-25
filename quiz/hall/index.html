@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="../../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="집예보">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="../../assets/pwa.js?v=2" defer></script>
+<title>명예의 전당 — 예측 맞히기 | 집예보</title>
+<link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/quiz/hall/">
+<meta name="description" content="예측 맞히기 시즌(분기)마다 가장 잘 맞힌 분들의 별명·등급·정확도를 모았어요. 명예의 전당에 올리기를 켠 분만 보여요.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="예측 맞히기 명예의 전당">
+<meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/default.png">
+<script>window.JDJ_CONFIG = { tool:'quiz_hall', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../assets/biz.js?v=2" defer></script>
+<script src="../../assets/track.js?v=2"></script>
+<script src="../../assets/stat.js?v=7"></script>
+<script src="../../assets/agents.js"></script>
+<script src="../../assets/config.js?v=11"></script>
+<script src="../../assets/predict-core.js?v=2"></script>
+<script src="../../assets/tabbar.js?v=5" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/aplus.css?v=46">
+<style>
+.wrap{max-width:760px;margin:0 auto;padding:22px 16px 40px}
+.eye{font-size:14px;font-weight:800;color:#7D6210;margin:0}
+h1{font-size:clamp(26px,6.6vw,32px);margin:2px 0 6px;letter-spacing:-.6px}
+.lead{margin:0 0 16px;font-size:15.5px;color:var(--sub2);line-height:1.6}
+.card{border:1px solid var(--line);border-radius:18px;padding:16px;margin:0 0 14px;background:#fff}
+.card h2{margin:0 0 8px;font-size:18px;font-weight:900}
+table{width:100%;border-collapse:collapse;font-size:15px;font-variant-numeric:tabular-nums}
+th,td{padding:9px 6px;border-bottom:1px solid var(--line2);text-align:right}
+th:nth-child(2),td:nth-child(2){text-align:left}
+th{font-size:13px;color:var(--sub2);font-weight:700}
+.tb{display:inline-block;font-size:12px;font-weight:800;border-radius:999px;padding:1px 8px;margin-left:4px;background:#FBF3DC;color:#8A6A12;white-space:nowrap}
+.empty{padding:22px 18px;border-radius:18px;border:1px dashed var(--line);text-align:center;color:var(--sub);line-height:1.65}
+.note{margin:14px 0 0;font-size:13px;color:var(--sub2);line-height:1.6}
+.back2{display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:14px;background:var(--blue);color:#fff;font-weight:900;text-decoration:none;margin:12px 0 0}
+</style>
+<script src="../../assets/back.js?v=1" defer></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name>집예보</span></a>
+  <div class="badge plain">명예의 전당</div>
+</header>
+<main class="wrap">
+  <p class="eye">예측 맞히기</p>
+  <h1>명예의 전당</h1>
+  <p class="lead">시즌(분기)마다 가장 잘 맞힌 분들이에요. 예측 맞히기에서 '명예의 전당에 별명 올리기'를 켠 분만, 별명으로만 보여요.</p>
+  <div id="app" aria-live="polite"><p class="note">불러오고 있어요…</p></div>
+  <a class="back2" href="../#predict">이번 주 예측 맞히기 ›</a>
+  <p class="note">순위는 그 시즌에 정답이 나온 문제의 포인트(맞히면 10점, 세 번 연속부터 한 번마다 5점 더) 순서예요. 정확도 = 맞힌 수 ÷ 참여한 수(무효 문제 제외). 포인트는 재미용이며 현금이나 상품으로 바꿀 수 없어요.</p>
+</main>
+<footer class="foot">과거 데이터 기반 정보예요. 자세한 분석 방법은 <a href="../../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ <span data-site-name>집예보</span> · <a href="../../">홈</a> · <a href="../">집값 맞혀 보기</a> · <a href="../../terms/#quiz">이용약관</a></footer>
+<script>
+(function(){
+'use strict';
+const P = window.JDJ_PRED_CORE, $ = id => document.getElementById(id), esc = P.esc;
+const SITE = ((window.JDJ_SITE || {}).SITE_NAME || '').trim() || '집예보';
+document.querySelectorAll('[data-site-name]').forEach(el => { el.textContent = SITE; });
+const api = (window.JDJ_AGENTS && JDJ_AGENTS.api) || '';
+const tbl = rows => `<table><thead><tr><th>순위</th><th>별명</th><th>정확도</th><th>참여</th></tr></thead><tbody>${rows.map((r, i) => `<tr><td>${r.rank || i + 1}</td><td>${esc(r.nick)}${r.tier ? `<span class="tb">${esc(r.tier)}</span>` : ''}</td><td>${r.acc}%</td><td>${r.n}번</td></tr>`).join('')}</tbody></table>`;
+function draw(j){
+  if (!j || (!j.seasons.length && !j.all.length)) { $('app').innerHTML = '<div class="empty"><b>아직 명예의 전당에 오른 분이 없어요.</b><br>첫 시즌이 끝나면 이곳에 이름이 올라가요.</div>'; return; }
+  $('app').innerHTML = (j.all.length ? `<section class="card"><h2>전체 기간 포인트 상위</h2>${tbl(j.all)}</section>` : '') + j.seasons.map(se => `<section class="card"><h2>${esc(se.label)}</h2>${tbl(se.rows)}</section>`).join('');
+}
+if (!api) { draw(null); return; }
+fetch(api, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'quizHall' }) }).then(r => r.json()).then(j => draw(j && j.ok ? j : null)).catch(() => draw(null));
+})();
+</script>
+</body>
+</html>

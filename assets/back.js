@@ -25,7 +25,7 @@
     'loan/': ['대출 한도'],
     'mine/': ['내 집 시세'], 'mine/calendar/': ['내 부동산 달력', 'mine/'], 'map/': ['지도'], 'ask/': ['단지 비교'], 'rank/': ['주간 순위'],
     'jeonse/': ['전월세'], 'jeonse/checklist/': ['전세사기 예방 체크리스트', 'jeonse/'], 'jeonse/safety/draft/': ['전셋집 안전 진단', 'jeonse/'],
-    'quiz/': ['집값 맞혀 보기'],
+    'quiz/': ['집값 맞혀 보기'], 'quiz/hall/': ['명예의 전당', 'quiz/'],
     'track/': ['예측 적중 기록'], 'track/detail/': ['성적표', 'track/'],
     'weekly/': ['주간 실거래 동향'], 'press/': ['보도자료실'],
     'brief/': ['모닝 브리핑'], 'brief/subscribe/': ['브리핑 받기', 'brief/'], 'brief/manage/': ['내 구독 관리', 'brief/'], 'brief/paid/': ['결제 확인', 'brief/'], 'brief/c/': ['관심 단지 소식', 'brief/'],

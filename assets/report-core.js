@@ -49,7 +49,7 @@ function rpCard(p, R) {
     hit: rpHit((R.lw || {})[rpKey(p)], (R.ht || {})[rpKey(p)], R.hitp, q && q[0] ? q[0] : null)
   };
 }
-/** v54 지난번 예측 → 실제: lw = [[계약일, 층, 금액, 비교 값, 차이 %, 적중 1/0], …], ht = [비교한 거래 수, 적중 수], pv = 지난 성적표 시세. 둘 다 없으면 null */
+/** v55 지난번 예측 → 실제: lw = [[계약일, 층, 금액, 비교 값, 차이 %, 적중 1/0], …], ht = [비교한 거래 수, 적중 수], pv = 지난 성적표 시세. 둘 다 없으면 null */
 function rpHit(lw, ht, pct, pv) {
   const rows = (Array.isArray(lw) ? lw : []).filter(r => Array.isArray(r) && r[2] > 0 && r[3] > 0).map(r => ({ dt: r[0], f: r[1], p: r[2], est: r[3], e: Number(r[4]), ok: r[5] === 1 }));
   const n = Array.isArray(ht) ? Math.max(0, Number(ht[0]) || 0) : 0, k = Array.isArray(ht) ? Math.max(0, Number(ht[1]) || 0) : 0;
@@ -131,7 +131,7 @@ function rpPlaces(homes, favs) {
   (homes || []).concat(favs || []).forEach(p => { if (!p || !p.code) return; const id = rpPid(p); if (seen[id] || out.length >= RP_MAX) return; seen[id] = 1; out.push(p); });
   return out;
 }
-/* 메일: cards = [{c(카드), g(구 이름), mine(내 집이면 true)}], o = { site, web(끝 /), links: { rp(성적표만 끄기), all(모든 알림 끄기) }, sender, date }
+/* 메일: cards = [{c(카드), g(구 이름), mine(내 집이면 true)}], o = { site, web(끝 /), links: { rp(성적표만 끄기), all(모든 알림 끄기) }, sender, date, merged(v55 브리핑 안에 넣는 칸) }
    → { subject, html, text }. 광고 없음. 순자산·보정 값은 싣지 않는다(메일은 전달될 수 있어서) */
 function rpMailHtml(cards, o) {
   o = o || {};
@@ -158,6 +158,10 @@ function rpMailHtml(cards, o) {
     자료: 국토교통부 아파트 매매 실거래가 공개 자료, ${rpEsc(site)} 주간 실거래 동향. 과거 자료로 만든 참고 정보예요.<br>
     이 메일은 ${rpEsc(site)} 알림 센터에서 '내 집 성적표 메일'을 켜신 분께만 매주 월요일 오전에 보내는 정보 메일이에요. 광고가 아니에요.<br>
     ${off}<br>보낸 사람: ${rpEsc(site)}${o.sender ? `(${rpEsc(o.sender.name)}) · 전화 ${rpEsc(o.sender.tel)} · 답장은 ${rpEsc(o.sender.email)}로 가요` : ''}</p></div>`;
+  if (o.merged) return { subject: '', text: text.join('\n'), html: `<div style="border:2px solid #B8942A;border-radius:12px;padding:14px 16px;margin:0 0 14px">
+    <div style="font-weight:900;font-size:17px;margin:0 0 2px">이번 주 <span style="color:#B8942A">내 집 성적표</span> <span style="font-size:13px;font-weight:700;color:#4E5968">${rpMd(o.date)}</span></div>
+    <p style="margin:0 0 10px;font-size:13px;color:#4E5968;line-height:1.55">월요일이라 등록하신 내 집·관심 단지의 한 주를 이 메일에 함께 넣었어요(메일은 하루 한 통).</p>${blocks}
+    <p style="font-size:12px;color:#4E5968;margin:6px 0 0">${off}</p></div>` };   // v55 모닝 브리핑 안에 넣을 때: 바깥 머리·꼬리 없이 칸만
   const first = cards[0] ? cards[0].c.p.apt : '';
   const subject = `[${site}] ${rpMd(o.date)} 내 집 성적표 — ${first}${cards.length > 1 ? ` 외 ${cards.length - 1}곳` : ''}`.slice(0, 120);
   return { subject: subject, html: html, text: text.join('\n') };

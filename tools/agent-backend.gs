@@ -1,17 +1,28 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
- * v54 변경 요약 (v53 위에 다시 배포. 따로 실행할 함수 없음 — 시트 '예측답'·'예측별명'·'예측채점'은 첫 사용 때 저절로 생김. 트리거 추가 없음)
+ * v55 변경 요약 (v53 위에 다시 배포. 재배포 뒤 편집기에서 reportInstall 한 번 실행 — 월요일 성적표 트리거를 7시대·8시대로 다시 검. 시트 '예측답'·'예측별명'·'예측채점'은 첫 사용 때 저절로 생김)
+ *  - 월요일 하루 한 통: 내 집 성적표 자료는 엔진이 05:40에 미리 만들어 07:00 주간 동향 발표와 함께 공개(jangdaejang-timing report.yml·weekly_release.sh).
+ *    모닝 브리핑을 메일로 받는 분은 7시 브리핑 안에 성적표가 함께(axMorning) — 7시에 성적표 자료가 아직이면 그분 브리핑만 9시 실행으로 미룸(BRIEF_SENT 안 적음).
+ *    브리핑을 받지 않는 분은 reportWeekly(월요일 7시대, 예비 8시대) 한 통에 성적표 + 그날 관심 단지 알림 + 이번 주 달력. 월요일 9시 전 alertsDaily 는 이분들을 건너뜀.
+ *    8시대에도 자료가 없으면 알림·달력만 한 통(있을 때). 검증: node tools/monday-test.js </dev/null
  *  - 내 부동산 달력(화면 mine/calendar/): 회원 저장 자료에 cal 칸(집마다 자가·전세·월세, 취득일·파는 집 잔금일 또는 전월세 계약 시작·만기일, 세대 보유 주택 수 — 금액 없음)을 받아 둠(calCleanAll).
  *    날짜 규칙은 맨 아래 CAL-CORE(웹 assets/cal-core.js 와 같은 글자): 6월 1일 과세기준일, 재산세 7.16~7.31·9.16~9.30, 종부세 고지(11월 26일까지)·납부 12.1~12.15,
  *    취득세 60일, 양도세 예정신고(양도일이 속한 달 말일부터 2개월), 계약갱신요구권(만기 6개월 전~2개월 전), 전입신고·확정일자·전월세 신고(30일), 내 지역 청약 접수·발표.
  *    공식 원문을 확인하지 못한 규칙(일시적 2주택 처분 기한)은 계산·표시하지 않음(CAL_RULES ok:false).
  *  - 달력 메일: 알림 센터에서 '내 부동산 달력 메일'(prefs.cal)을 켠 알림 구독자만. 모닝 브리핑을 메일로 받으면 브리핑 안에 함께(기한 30일·7일·1일 전, 단계마다 한 번),
  *    아니면 일주일에 한 번까지(alertsDaily 그 주 첫 실행 — 그날 관심 단지 알림이 있으면 같은 메일 안에). 광고 없음. 끄기: 메일의 '달력 알림만 끄기'(alertOff &cal=1).
+ *  - 전세 만기 알림(세입자, 같은 화면): 전세·월세 집의 만기 6·4·2개월 전 알림(CAL-CORE 'ta'). 저장 칸은 켜기·희망 지역(최대 3곳)·출퇴근지 동·집 형태·평형·두 체크뿐
+ *    (calCleanTa — 보증금·현금·소득은 화면 기기에만). 메일 칸: 희망 지역 공개 전월세 실거래(rent/{구}.json·v·o)로 보증금이 내린 동·단지(건수와 함께), 내 단지 전세 시세,
+ *    계약갱신요구권 법 조문·전세 안전 점검 링크(calTaExtra). 달력 메일을 안 켰어도 만기 알림을 켠 집은 같은 규칙(브리핑 안에 함께 / 아니면 주 1회)으로 보냄.
  *  - 내 집 성적표(REPORT-CORE): '지난번 예측 → 실제' 줄 — 지난 성적표 시세와 그 뒤 새로 신고된 같은 단지·평형 거래(엔진 home_report.py lw·ht)를 나란히, ±5% 안이면 적중, 지금까지 적중 수.
  *  - 예측 맞히기(화면 quiz/ · 첫 화면 '이번 주 예측 맞히기' 카드): quizBoard(공개 — 보기별 고른 수·주간 순위 별명만) · quizMine · quizAnswer · quizNick(로그인).
  *    문제·정답은 공개 data/quiz/week.json(엔진 predict_quiz.py, 공개 자료로만). 정답을 '예측채점' 시트에 처음 본 시각과 함께 옮겨 적고(감사 기록) 그 기록으로 채점(PRED-CORE).
  *    포인트는 재미용 — 현금·상품으로 바꾸는 기능 없음. 회원 탈퇴 때 답·별명 지움(qzUserGone).
+ *  - 예측 맞히기 등급·시즌·보상(맨 아래 'v55 예측 맞히기 등급' 칸): 새싹 → 임장러 → 분석가 → 고수 → 부동산 달인(참여 수 + 정확도 + 시즌 순위, 분기 시즌마다 다시).
+ *    기준은 PRED-CORE PQ_TIER_CFG, 바꿀 때는 스크립트 속성 QZ_TIER_CFG(JSON). 시즌이 끝나면 자동 마감('예측시즌'·'예측보상' 시트) — 보상은 서비스 이용권만(현금 없음):
+ *    분석가 리포트 1장 · 고수 브리핑 1개월 · 부동산 달인 브리핑 3개월 + 리포트 3장. PAID_OPEN=false 동안 '대기'로 보관, 열린 뒤 [보상 받기](quizClaim)·[이용권으로 열기](quizVoucherUse).
+ *    순위·내 기록에 등급 배지(숨기기 가능, quizPrefs), 명예의 전당 quizHall(켠 분만·별명만), 임장 모임 '예측임장모임' 시트(운영자만, quizMeetExport 로 다시 정리).
  *  - 검증: node tools/cal-test.js </dev/null · node tools/predict-test.js </dev/null · node tools/report-test.js </dev/null · node tools/alerts-test.js </dev/null
  *
  * v53 변경 요약 (v52 위에 다시 배포. 따로 실행할 함수 없음 — 시트 변경 없음. 스위치를 켜기 전까지는 지금과 100% 같음: 지메일(MailApp)로 보냄)
@@ -391,7 +402,7 @@ const PAID_OPEN = false;
 const PAID_CLOSED_MSG = '유료 이용권은 곧 열려요. 지금은 7일 무료 체험만 할 수 있어요.';
 /* 돈을 받는(토스 주문·승인) 요청 전부 — 리포트 결제(createOrder·confirmPayment)·모닝 브리핑 이용권(briefOrder·briefConfirm)·요금제 바꾸기(briefChangeQuote·briefChange).
    이미 산 주문 보기·환불 요청(openReport·findOrder·refundRequest·briefRefund·briefStop)은 막지 않음. 새 결제 요청을 만들면 여기에도 꼭 넣기(tools/paid-lock-test.js 가 확인). */
-const PAID_ACTIONS = { createOrder: 1, confirmPayment: 1, briefOrder: 1, briefConfirm: 1, briefChangeQuote: 1, briefChange: 1 };
+const PAID_ACTIONS = { createOrder: 1, confirmPayment: 1, briefOrder: 1, briefConfirm: 1, briefChangeQuote: 1, briefChange: 1, quizVoucherUse: 1 };
 /* 시트 메뉴에서 Apps Script를 열지 못해 script.google.com에서 따로 만든 경우에만,
    시트 주소의 /d/ 와 /edit 사이 문자열(시트 ID)을 아래 따옴표 안에 넣으세요. */
 const SHEET_ID = '';
@@ -519,7 +530,7 @@ function doPost(e) {
   if (AGT_ACTIONS[b.action]) return out(agtDispatch(b));
   if (BRIEF_ACTIONS[b.action]) return out(briefDispatch(b));
   if (AX_ACTIONS[b.action]) return out(axDispatch(b));             // v44 관심 단지·청약 알림 메일
-  if (QZ_ACTIONS[b.action]) return out(qzDispatch(b));             // v54 예측 맞히기(답·채점·순위)
+  if (QZ_ACTIONS[b.action]) return out(qzDispatch(b));             // v55 예측 맞히기(답·채점·순위)
   if (CM_ACTIONS[b.action]) return out(cmDispatch(b));             // v46 살아보니(건물별 후기·이야기, 숨김)
   if (DP_ACTIONS[b.action]) return out(dpDispatch(b));             // v50 동네 중개사 파트너(숨김)
   if (BR_BILL_ACTIONS[b.action]) return out(baBillDispatch(b));    // v50 모닝 브리핑 자동결제(BILLING_OPEN 잠금)
@@ -2034,7 +2045,7 @@ function cleanUserData(d, blim) {
     areas: cleanAreas(d.areas),
     brief: cleanBrief(d.brief, blim),
     rp: cleanRp(d.rp),                                                   // v49 내 집 정보 보정·대출 잔액·순자산 기록(그 사람만 읽음)
-    cal: calCleanAll(d.cal)                                              // v54 내 부동산 달력(자가·전세·월세, 날짜, 보유 주택 수 — 금액 없음)
+    cal: calCleanAll(d.cal)                                              // v55 내 부동산 달력(자가·전세·월세, 날짜, 보유 주택 수 — 금액 없음)
   };
   const json = JSON.stringify(out);
   if (json.length > USER_DATA_MAX) throw new Error('저장할 자료가 너무 많아요. 리포트나 관심 단지를 조금 지운 뒤 다시 저장해 주세요.');
@@ -2128,7 +2139,7 @@ function userDelete(b) {
   try { cmUserGone(u.k); } catch (e) {}   // v46 살아보니: 그 사람 글·인증 기록 지우기
   try { dpUserGone(u.k); } catch (e) {}   // v50 동네 파트너: 해지·연락처 지우기·글 지우기
   try { baStopAll(u.k); } catch (e) {}    // v50 자동결제 멈춤·빌링키 지우기
-  try { qzUserGone(u.k); } catch (e) {}   // v54 예측 맞히기: 답·별명 지우기
+  try { qzUserGone(u.k); } catch (e) {}   // v55 예측 맞히기: 답·별명 지우기
   del('플러스중개사', 0); del('내손님', 1);   // v27 중개사 플러스: 표시 정보·손님 이름표·단지(시트 이름은 아래 SH_BPP·SH_BPC 와 같음)
   let unlinked = false;
   const admin = PropertiesService.getScriptProperties().getProperty('KAKAO_ADMIN_KEY');
@@ -3667,7 +3678,7 @@ function briefDaily() {
   const AD = briefAdToday(now);                         // v29 오늘 진행 중인 브리핑 광고(없으면 null) — 메일에는 이른 아침 광고 동의자에게만
   const cxc = {}, cxOf = g => (g in cxc) ? cxc[g] : (cxc[g] = bFetchJson(BRIEF_DATA + 'cx/' + g + '.json'));   // v27 손님 단지 자료 — 동네마다 한 번만 받음
   let AXM = null; try { AXM = axMorning(now); } catch (e) { AXM = null; }   // v44 관심 단지·청약 알림 — 이메일 브리핑에 함께 넣어 한 통만
-  let sent = 0, admStop = false;
+  let sent = 0, admStop = false, held = 0;
   const t0 = Date.now(), adIds = bAdminIds(), isAdmRow = o => adIds.indexOf(String(o.r[BC['카카오id']])) >= 0;
   const dpImp = {}, dpOn = !!book().getSheetByName(SH_DP);   // v50 동네 파트너 칸(광고성 정보·이른 아침 두 동의가 모두 있는 사람만, DONGNE_ENABLED 또는 운영자 계정)
   const dpTail = (o, s, ub, myApts, first) => {
@@ -3691,6 +3702,7 @@ function briefDaily() {
       return;
     }
     let AXU = null; if (AXM && s.channel === 'email') try { AXU = AXM.forUser(String(o.r[BC['카카오id']])); } catch (e) { AXU = null; }
+    if (AXU && AXU.hold) { held++; return; }                    // v55 월요일 성적표 자료가 아직 — 이 분 브리핑은 9시 실행에서 성적표와 함께(하루 한 통)
     const ub = um[String(o.r[BC['카카오id']])] || { areas: [], apts: [] };
     const myApts = (ub.apts || []).slice(0, s.apts);      // 요금제 표의 관심 단지 수까지만(서버에서 지킴)
     const urg = s.urgPick && ub.urg ? ub.urg : BRIEF_URG.def;   // 급매 기준: 고를 수 있는 요금제만 저장값, 없으면 10%
@@ -3728,6 +3740,7 @@ function briefDaily() {
   try { dpImpFlush(date, dpImp); } catch (e) {}
   capRecord(date, sent);                                 // v52 용량 점검: 아침 발송 뒤 메일 하루 한도가 얼마나 남았는지
   if (admStop) { bLog([date, '', 'email', '운영자 계정: 시간·메일 한도 때문에 멈춤 — 다음 실행에서 이어서', 0]); return sent; }   // BRIEF_SENT 를 적지 않아 9시 실행이 이어 보냄
+  if (held) { bLog([date, '', 'email', `월요일 성적표 자료를 기다리는 ${held}분 — 9시 실행에서 성적표와 함께`, held]); return sent; }   // v55 BRIEF_SENT 를 적지 않아 9시 실행이 이어 보냄
   briefExpiry(now);
   try { baTrialEnded(now); } catch (e) {}                // v50 체험 끝·카드 없음 → 딱 한 번 안내(자동결제가 열려 있을 때만)
   try { dpDaily(now); } catch (e) {}                     // v50 동네 파트너 매일 할 일(DONGNE_ENABLED 일 때만)
@@ -5189,7 +5202,7 @@ function axDispatch(b) {
 }
 function alertMine(b) {
   const u = sessionUser(b.s), bm = axBriefMail(u.k);
-  return { ok: true, v: AX_V, sub: axPublic(axMine(u.k)), brief: bm ? { mask: String(bm.r[BC['연락처가림']] || '') } : null, favs: axFavs(u.k).length, homes: axHomes(u.k).length, rp: 1, cal: 1 };
+  return { ok: true, v: AX_V, sub: axPublic(axMine(u.k)), brief: bm ? { mask: String(bm.r[BC['연락처가림']] || '') } : null, favs: axFavs(u.k).length, homes: axHomes(u.k).length, rp: 1, cal: 1, ta: 1 };
 }
 /** 알림 메일 신청(동의 필수) — 이미 있으면 같은 행을 다시 켬 */
 function alertJoin(b) {
@@ -5200,7 +5213,8 @@ function alertJoin(b) {
   if (b.useBrief === true) { const bm = axBriefMail(u.k, now); if (!bm) throw new Error('모닝 브리핑을 이메일로 받고 있지 않아요. 받을 이메일을 적어 주세요.'); email = String(bm.r[BC['연락처']]).replace(/^'/, ''); }
   else { const ct = parseContact(b.email); if (!ct || ct.kind !== 'email') throw new Error('알림을 받을 이메일 주소를 정확히 적어 주세요.'); email = ct.norm; }
   const ct = parseContact(email), prefs = axCleanPrefs(b.prefs);
-  if (!axFavs(u.k).length && !prefs.cy.on && !((prefs.rp || prefs.cal) && axHomes(u.k).length)) throw new Error('관심 목록에 단지를 넣거나, 청약 알림 지역을 고르거나, 내 집을 등록해야 알림을 보낼 수 있어요.');
+  const taOn = Object.keys(calCleanAll((u.data || {}).cal).h).some(k => { const c = calCleanAll((u.data || {}).cal).h[k]; return c.ta && c.ta.on; });   // v55 세입자 만기 알림만 켜도 신청 가능
+  if (!axFavs(u.k).length && !prefs.cy.on && !taOn && !((prefs.rp || prefs.cal) && axHomes(u.k).length)) throw new Error('관심 목록에 단지를 넣거나, 청약 알림 지역을 고르거나, 내 집을 등록해야 알림을 보낼 수 있어요.');
   const at = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(String(b.at || '')) ? String(b.at).slice(0, 25) : '';
   const cur = axRows().filter(x => String(x.r[AXC['카카오id']]) === u.k).pop();
   let row;
@@ -5348,18 +5362,31 @@ function axSendAlone(s, D, ctx) {
 /** 모닝 브리핑(briefDaily)이 부르는 창구: forUser(k) → {s, D, html} | null · done(x) · alone(x) */
 function axMorning(now) {
   const ctx = axCtx(now), sent = axSentAll(now), subs = {};
-  let um = null; const calMap = () => um || (um = calUserMap());               // v54 달력: 켠 분이 있을 때만 회원 자료를 한 번 읽음
+  const mon = Utilities.formatDate(ctx.now, 'Asia/Seoul', 'u') === '1', hour = Number(Utilities.formatDate(ctx.now, 'Asia/Seoul', 'HH'));
+  let rpOk;                                                                                   // v55 성적표 자료가 오늘 판인지(월요일, 처음 필요할 때 한 번)
+  let um = null; const calMap = () => um || (um = calUserMap());               // v55 달력: 켠 분이 있을 때만 회원 자료를 한 번 읽음
   axRows().forEach(o => { const s = axSubOf(o); if (s.state === AX_ST.on) subs[s.k] = s; });
   return {
     ctx: ctx,
     forUser(k) {
       const s = subs[k]; if (!s) return null;
+      /* v55 월요일: 성적표를 켠 브리핑 구독자는 브리핑 안에 성적표를 함께. 자료가 아직이면 9시 전에는 이 분 브리핑을 9시 실행으로 미룸(hold) */
+      let RP = null;
+      if (mon && s.prefs.rp && axCanSend(s) && !((sent[s.id] || {})[axKeyId('rp|' + ctx.date)])) {
+        if (rpOk === undefined) rpOk = rpReady(ctx.date);
+        if (!rpOk && hour < 9) return { hold: true, s: s };
+        if (rpOk) { const cards = rpCardsFor(s, ctx, null, null); if (cards.length) RP = { n: cards.length, html: rpMailHtml(cards, { site: SITE_NAME, web: WEB_ROOT, links: rpLinksFor(s), merged: true, date: ctx.date }).html }; }
+      }
       const D = axBuild(s, ctx, sent);
-      let CI = []; if (s.prefs.cal && axCanSend(s) && s.last !== ctx.date) try { CI = calItemsFor(s, ctx, sent, calMap(), 'daily'); } catch (e) { CI = []; }
-      if (!D && !CI.length) return null;
-      return { s: s, D: D, CI: CI, html: (D ? axMsg(s, D, ctx, true).html : '') + (CI.length ? calMsgFor(s, CI, ctx, true).html : '') };
+      let CI = []; if (axCanSend(s) && s.last !== ctx.date) try { CI = calItemsFor(s, ctx, sent, calMap(), 'daily'); } catch (e) { CI = []; }
+      if (!D && !CI.length && !RP) return null;
+      return { s: s, D: D, CI: CI, RP: RP, html: (RP ? RP.html : '') + (D ? axMsg(s, D, ctx, true).html : '') + (CI.length ? calMsgFor(s, CI, ctx, true).html : '') };
     },
-    done(x) { if (x.D) axDone(x.s, x.D, ctx, '모닝 브리핑에 함께'); if (x.CI && x.CI.length) calDone(x.s, x.CI, ctx, '모닝 브리핑에 함께', !x.D, false); x.s.last = ctx.date; },
+    done(x) {
+      if (x.RP) rpMark(x.s, ctx.date, '모닝 브리핑에 함께', x.RP.n);
+      if (x.D) axDone(x.s, x.D, ctx, '모닝 브리핑에 함께'); else if (!(x.CI && x.CI.length)) { setAX(x.s.row, '최근발송일', ctx.date); setAX(x.s.row, '발송수', x.s.sent + 1); }
+      if (x.CI && x.CI.length) calDone(x.s, x.CI, ctx, '모닝 브리핑에 함께', !x.D, false); x.s.last = ctx.date;
+    },
     alone(x) { const r = axSendWithCal(x.s, x.D, x.CI || [], ctx); if (r.ok) x.s.last = ctx.date; return r; }
   };
 }
@@ -5375,20 +5402,22 @@ function alertsInstall() {
 function alertsDaily() {
   const now = new Date(), ctx = axCtx(now), sent = axSentAll(now);
   let n = 0, stop = false, um = null;
+  const monHold = Utilities.formatDate(now, 'Asia/Seoul', 'u') === '1' && Number(Utilities.formatDate(now, 'Asia/Seoul', 'HH')) < 9;
   axRows().forEach(o => {
     if (stop) return;
     const s = axSubOf(o);
     if (s.state !== AX_ST.on || s.last === ctx.date || !axCanSend(s)) return;
     if (axBriefMail(s.k, now)) return;                         // 모닝 브리핑 메일에 함께 들어감
+    if (monHold && s.prefs.rp) return;                          // v55 월요일 9시 전: 성적표를 켠 분은 성적표 메일(reportWeekly 7·8시대)에 함께 — 하루 한 통
     if (mailLeftNow() <= AX_RESERVE) { stop = true; uSheet(SH_AXS, AXSH).appendRow([ctx.date, '', '이메일', '하루 한도에 닿아 멈춤 — 남은 분은 다음 실행에', 0]); return; }
     const D = axBuild(s, ctx, sent);
-    let CI = [];                                                // v54 달력: 브리핑을 받지 않는 분은 한 주에 한 번(그 주 첫 실행)
-    if (s.prefs.cal && !calWeekDone(s, ctx, sent)) try { CI = calItemsFor(s, ctx, sent, um || (um = calUserMap()), 'weekly'); } catch (e) { CI = []; }
+    let CI = [];                                                // v55 달력: 브리핑을 받지 않는 분은 한 주에 한 번(그 주 첫 실행)
+    if (!calWeekDone(s, ctx, sent)) try { CI = calItemsFor(s, ctx, sent, um || (um = calUserMap()), 'weekly'); } catch (e) { CI = []; }
     if (!D && !CI.length) return;
     if (axSendWithCal(s, D, CI, ctx).ok) n++;
   });
   axCleanup(now);
-  try { qzSettle(qzWeek(true)); } catch (e) {}                 // v54 예측 맞히기: 새로 나온 정답을 채점 기록에
+  try { qzSeasonClose(qzSettle(qzWeek(true)), now); } catch (e) {}   // v55 예측 맞히기: 새로 나온 정답을 채점 기록에 · 지난 시즌 마감(등급·보상)
   return n;
 }
 /* 오래된 기록 지우기 + 끈 지 30일 지난 이메일 원문 지우기(모닝 브리핑 연락처 보관 기간과 같음) */
@@ -5419,7 +5448,7 @@ function axAreaCodes() {
    - 같은 날 두 번 안 보냄('알림기록'에 rp|날짜 한 줄). 메일 하루 한도가 AX_RESERVE 만큼 남으면 멈추고 11시대 실행에 이어서.
    - 끄기: '성적표 메일만 끄기'(GET alertOff &rp=1) · '모든 알림 끄기'(&all=1) · 알림 센터.
    - 카카오 알림톡: RP_ALIMTALK=false — 심사 끝나면 SOLAPI_TPL_REPORT 를 넣고 true(지금은 이메일만).
-   - 트리거: alertsInstall 이 reportInstall 을 함께 부름(월요일 오전 9시대·11시대 reportWeekly). 검증: node tools/report-test.js
+   - 트리거: alertsInstall 이 reportInstall 을 함께 부름(v55: 월요일 오전 7시대·8시대 reportWeekly — 브리핑 구독자는 브리핑 안에). 검증: node tools/report-test.js · tools/monday-test.js
    ===================================================================== */
 const RP_ALIMTALK = false;                         // 카카오 알림톡(비즈 채널·템플릿 심사 끝난 뒤에만 true)
 const RP_DATA = AX_DATA + 'report/';
@@ -5465,7 +5494,7 @@ function rpCard(p, R) {
     hit: rpHit((R.lw || {})[rpKey(p)], (R.ht || {})[rpKey(p)], R.hitp, q && q[0] ? q[0] : null)
   };
 }
-/** v54 지난번 예측 → 실제: lw = [[계약일, 층, 금액, 비교 값, 차이 %, 적중 1/0], …], ht = [비교한 거래 수, 적중 수], pv = 지난 성적표 시세. 둘 다 없으면 null */
+/** v55 지난번 예측 → 실제: lw = [[계약일, 층, 금액, 비교 값, 차이 %, 적중 1/0], …], ht = [비교한 거래 수, 적중 수], pv = 지난 성적표 시세. 둘 다 없으면 null */
 function rpHit(lw, ht, pct, pv) {
   const rows = (Array.isArray(lw) ? lw : []).filter(r => Array.isArray(r) && r[2] > 0 && r[3] > 0).map(r => ({ dt: r[0], f: r[1], p: r[2], est: r[3], e: Number(r[4]), ok: r[5] === 1 }));
   const n = Array.isArray(ht) ? Math.max(0, Number(ht[0]) || 0) : 0, k = Array.isArray(ht) ? Math.max(0, Number(ht[1]) || 0) : 0;
@@ -5547,7 +5576,7 @@ function rpPlaces(homes, favs) {
   (homes || []).concat(favs || []).forEach(p => { if (!p || !p.code) return; const id = rpPid(p); if (seen[id] || out.length >= RP_MAX) return; seen[id] = 1; out.push(p); });
   return out;
 }
-/* 메일: cards = [{c(카드), g(구 이름), mine(내 집이면 true)}], o = { site, web(끝 /), links: { rp(성적표만 끄기), all(모든 알림 끄기) }, sender, date }
+/* 메일: cards = [{c(카드), g(구 이름), mine(내 집이면 true)}], o = { site, web(끝 /), links: { rp(성적표만 끄기), all(모든 알림 끄기) }, sender, date, merged(v55 브리핑 안에 넣는 칸) }
    → { subject, html, text }. 광고 없음. 순자산·보정 값은 싣지 않는다(메일은 전달될 수 있어서) */
 function rpMailHtml(cards, o) {
   o = o || {};
@@ -5574,6 +5603,10 @@ function rpMailHtml(cards, o) {
     자료: 국토교통부 아파트 매매 실거래가 공개 자료, ${rpEsc(site)} 주간 실거래 동향. 과거 자료로 만든 참고 정보예요.<br>
     이 메일은 ${rpEsc(site)} 알림 센터에서 '내 집 성적표 메일'을 켜신 분께만 매주 월요일 오전에 보내는 정보 메일이에요. 광고가 아니에요.<br>
     ${off}<br>보낸 사람: ${rpEsc(site)}${o.sender ? `(${rpEsc(o.sender.name)}) · 전화 ${rpEsc(o.sender.tel)} · 답장은 ${rpEsc(o.sender.email)}로 가요` : ''}</p></div>`;
+  if (o.merged) return { subject: '', text: text.join('\n'), html: `<div style="border:2px solid #B8942A;border-radius:12px;padding:14px 16px;margin:0 0 14px">
+    <div style="font-weight:900;font-size:17px;margin:0 0 2px">이번 주 <span style="color:#B8942A">내 집 성적표</span> <span style="font-size:13px;font-weight:700;color:#4E5968">${rpMd(o.date)}</span></div>
+    <p style="margin:0 0 10px;font-size:13px;color:#4E5968;line-height:1.55">월요일이라 등록하신 내 집·관심 단지의 한 주를 이 메일에 함께 넣었어요(메일은 하루 한 통).</p>${blocks}
+    <p style="font-size:12px;color:#4E5968;margin:6px 0 0">${off}</p></div>` };   // v55 모닝 브리핑 안에 넣을 때: 바깥 머리·꼬리 없이 칸만
   const first = cards[0] ? cards[0].c.p.apt : '';
   const subject = `[${site}] ${rpMd(o.date)} 내 집 성적표 — ${first}${cards.length > 1 ? ` 외 ${cards.length - 1}곳` : ''}`.slice(0, 120);
   return { subject: subject, html: html, text: text.join('\n') };
@@ -5581,31 +5614,51 @@ function rpMailHtml(cards, o) {
 /* REPORT-CORE END */
 function reportInstall() {
   ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'reportWeekly').forEach(t => ScriptApp.deleteTrigger(t));
-  ScriptApp.newTrigger('reportWeekly').timeBased().onWeekDay(ScriptApp.WeekDay.MONDAY).atHour(9).inTimezone('Asia/Seoul').create();
-  ScriptApp.newTrigger('reportWeekly').timeBased().onWeekDay(ScriptApp.WeekDay.MONDAY).atHour(11).inTimezone('Asia/Seoul').create();   // 9시대에 자료가 늦거나 한도로 못 보낸 분
+  ScriptApp.newTrigger('reportWeekly').timeBased().onWeekDay(ScriptApp.WeekDay.MONDAY).atHour(7).inTimezone('Asia/Seoul').create();   // v55: 7시대(자료는 05:40에 미리 만들어 07:00 공개)
+  ScriptApp.newTrigger('reportWeekly').timeBased().onWeekDay(ScriptApp.WeekDay.MONDAY).atHour(8).inTimezone('Asia/Seoul').create();   // 7시대에 자료가 늦거나 한도로 못 보낸 분
 }
-/** 월요일 성적표 메일. 반환: 보낸 수(자료가 그날 것이 아니면 -1) */
+/* v55 하루 한 통: 성적표 자료가 오늘 판인지 · 한 사람의 성적표 카드(없으면 []) */
+function rpReady(date) { const ix = bFetchJson(RP_DATA + 'index.json'); return !!(ix && ix.date === date); }
+function rpCardsFor(s, ctx, hm, fm) {
+  const gc = ctx.rpG = ctx.rpG || {}, gfile = c => (c in gc) ? gc[c] : (gc[c] = bFetchJson(RP_DATA + 'g/' + c + '.json'));
+  const mute = {}; s.prefs.mute.forEach(x => { mute[x] = 1; });
+  const homes = axHomes(s.k, hm), mine = {}; homes.forEach(p => { mine[rpPid(p)] = 1; });
+  return rpPlaces(homes, axFavs(s.k, fm).filter(p => !mute[rpPid(p)])).map(p => ({ c: rpCard(p, gfile(p.code)), g: ctx.gname(p.code), mine: !!mine[rpPid(p)] })).filter(x => x.c);
+}
+function rpLinksFor(s) { const L = axLinks(bApi(), s.id, axTok, axPh); return { rp: L.all.replace(/&all=1$/, '&rp=1'), all: L.all }; }
+function rpMark(s, date, how, n) { uSheet(SH_AXL, AXLH).appendRow([date, s.id, axKeyId('rp|' + date), 'report']); uSheet(SH_AXS, AXSH).appendRow([date, s.id, '성적표', how, n]); }
+/** 월요일 성적표 메일 — 모닝 브리핑을 메일로 받는 분은 브리핑 안에 함께(axMorning)라 여기서는 건너뜀.
+    그 밖의 분: 성적표 + 그날 관심 단지 알림 + 이번 주 달력을 한 통으로(하루 한 통). 반환: 보낸 수(자료가 그날 것이 아니면 -1) */
 function reportWeekly() {
-  const now = new Date(), date = ymd(now), ix = bFetchJson(RP_DATA + 'index.json');
-  if (!ix || ix.date !== date) { uSheet(SH_AXS, AXSH).appendRow([date, '', '성적표', '자료가 아직 없어 다음 실행에(' + String((ix || {}).date || '없음') + ')', 0]); return -1; }
-  const sent = axSentAll(now), hm = axHomesMap(), fm = axFavsMap(), gc = {}, idx = bFetchJson(AX_DATA + 'index.json') || {};
-  const rid = axKeyId('rp|' + date), gfile = c => (c in gc) ? gc[c] : (gc[c] = bFetchJson(RP_DATA + 'g/' + c + '.json'));
-  const gname = c => ((idx.sgg || {})[c] || {}).name || '';
-  let n = 0, stop = false;
+  const now = new Date(), date = ymd(now), last = Number(Utilities.formatDate(now, 'Asia/Seoul', 'HH')) >= 8;
+  const ready = rpReady(date);
+  if (!ready && !last) { uSheet(SH_AXS, AXSH).appendRow([date, '', '성적표', '자료가 아직 없어 8시대 실행에', 0]); return -1; }
+  const sent = axSentAll(now), hm = axHomesMap(), fm = axFavsMap(), ctx = axCtx(now), rid = axKeyId('rp|' + date);
+  let n = 0, stop = false, um = null;
   axRows().forEach(o => {
     if (stop) return;
     const s = axSubOf(o);
-    if (s.state !== AX_ST.on || !s.prefs.rp || !axCanSend(s) || ((sent[s.id] || {})[rid])) return;
+    if (s.state !== AX_ST.on || !s.prefs.rp || !axCanSend(s) || ((sent[s.id] || {})[rid]) || s.last === date) return;
+    if (axBriefMail(s.k, now)) return;                                                       // 브리핑 메일 안에 함께 들어감
     if (mailLeftNow() <= AX_RESERVE) { stop = true; uSheet(SH_AXS, AXSH).appendRow([date, '', '성적표', '하루 한도에 닿아 멈춤 — 남은 분은 다음 실행에', 0]); return; }
-    const mute = {}; s.prefs.mute.forEach(x => { mute[x] = 1; });
-    const homes = axHomes(s.k, hm), mine = {}; homes.forEach(p => { mine[rpPid(p)] = 1; });
-    const cards = rpPlaces(homes, axFavs(s.k, fm).filter(p => !mute[rpPid(p)])).map(p => ({ c: rpCard(p, gfile(p.code)), g: gname(p.code), mine: !!mine[rpPid(p)] })).filter(x => x.c);
-    if (!cards.length) return;
-    const L = axLinks(bApi(), s.id, axTok, axPh);
-    const m = rpMailHtml(cards, { site: SITE_NAME, web: WEB_ROOT, links: { rp: L.all.replace(/&all=1$/, '&rp=1'), all: L.all }, sender: BRIEF_SENDER, date: date });
-    const r = axSend('email', s, m);
-    if (r.ok) { uSheet(SH_AXL, AXLH).appendRow([date, s.id, rid, 'report']); uSheet(SH_AXS, AXSH).appendRow([date, s.id, '성적표', '보냄', cards.length]); n++; }
-    else uSheet(SH_AXS, AXSH).appendRow([date, s.id, '성적표', '못 보냄: ' + r.why, cards.length]);
+    const D = axBuild(s, ctx, sent);
+    let CI = []; if (!calWeekDone(s, ctx, sent)) try { CI = calItemsFor(s, ctx, sent, um || (um = calUserMap()), 'weekly'); } catch (e) { CI = []; }
+    const cards = ready ? rpCardsFor(s, ctx, hm, fm) : [];
+    if (!cards.length) {                                                                     // 8시대에도 자료가 없으면: 알림·달력만 한 통(있을 때)
+      if (last && (D || CI.length) && axSendWithCal(s, D, CI, ctx).ok) { n++; uSheet(SH_AXS, AXSH).appendRow([date, s.id, '성적표', '자료가 늦어 알림·달력만 보냄', 0]); }
+      return;
+    }
+    const m = rpMailHtml(cards, { site: SITE_NAME, web: WEB_ROOT, links: rpLinksFor(s), sender: BRIEF_SENDER, date: date });
+    let html = m.html;
+    if (D) html = calInto(html, axMsg(s, D, ctx, true).html);
+    if (CI.length) html = calInto(html, calMsgFor(s, CI, ctx, true).html);
+    const r = axSend('email', s, { subject: m.subject, html: html, text: m.text });
+    if (r.ok) {
+      rpMark(s, date, '보냄', cards.length);
+      if (D) axDone(s, D, ctx, '성적표 메일에 함께'); else { setAX(s.row, '최근발송일', date); setAX(s.row, '발송수', s.sent + 1); }
+      if (CI.length) calDone(s, CI, ctx, '성적표 메일에 함께', false, true);
+      n++;
+    } else uSheet(SH_AXS, AXSH).appendRow([date, s.id, '성적표', '못 보냄: ' + r.why, cards.length]);
     if (RP_ALIMTALK && AX_SENDERS.kakao.ready()) { /* 심사받은 템플릿(SOLAPI_TPL_REPORT)으로 요약 한 줄 + 성적표 링크 — docs/alerts.md 알림톡 템플릿 안 */ }
   });
   return n;
@@ -7641,7 +7694,7 @@ function dpPlusBriefs(date, um, brief, M, ix) {
 
 
 /* =====================================================================
-   v54 내 부동산 달력 메일 + 예측 맞히기 (맨 위 'v54 변경 요약' · 따로 실행할 함수 없음)
+   v55 내 부동산 달력 메일 + 예측 맞히기 (맨 위 'v55 변경 요약' · 따로 실행할 함수 없음)
    ① 달력: 회원 저장 자료 cal(자가·전세·월세, 날짜, 보유 주택 수 — 금액 없음) + 내 집(homes)으로 아래 CAL-CORE 가 날짜를 만든다.
       - 알림 센터에서 '내 부동산 달력 메일'(prefs.cal)을 켠 알림 구독자에게만. 정보 메일이라 광고를 넣지 않는다.
       - 모닝 브리핑을 메일로 받는 분: 브리핑 메일 안에 함께(axMorning) — 기한 30일·7일·1일 전 단계마다 한 번.
@@ -7667,14 +7720,15 @@ const CAL_SRC = {
   renew2: { nm: '대한민국 정책브리핑 「계약갱신청구권, 언제부터 집주인에게 요구할 수 있어요?」', url: 'https://www.korea.kr/news/visualNewsView.do?newsId=148875466' },
   move: { nm: '주택임대차보호법 제3조(국가법령정보센터)', url: 'https://www.law.go.kr/lsLinkCommonInfo.do?lsJoLnkSeq=1018577211&chrClsCd=010202&ancYnChk=' },
   rent: { nm: '서울특별시 내 손안에 서울 「전·월세 계약 꼭 신고하세요」', url: 'https://mediahub.seoul.go.kr/archives/2001807' },
-  cy: { nm: '한국부동산원 청약홈 분양 공고', url: 'https://www.applyhome.co.kr/' }
+  cy: { nm: '한국부동산원 청약홈 분양 공고', url: 'https://www.applyhome.co.kr/' },
+  rentdata: { nm: '국토교통부 아파트·연립다세대·오피스텔 전월세 실거래가 공개 자료', url: 'https://rt.molit.go.kr/' }
 };
 /* ok:false = 공식 원문을 확인하지 못함 → 계산·표시하지 않음 */
 const CAL_RULES = {
   base: { ok: true, src: ['prop', 'comp'] }, prop1: { ok: true, src: ['prop'] }, prop2: { ok: true, src: ['prop'] },
   compN: { ok: true, src: ['comp'] }, compP: { ok: true, src: ['comp'] }, acq: { ok: true, src: ['acq'] }, cgt: { ok: true, src: ['cgt'] },
   renewO: { ok: true, src: ['renew', 'renew2'] }, renewC: { ok: true, src: ['renew', 'renew2'] }, end: { ok: true, src: ['renew'] },
-  move: { ok: true, src: ['move'] }, rent: { ok: true, src: ['rent'] }, cy: { ok: true, src: ['cy'] },
+  move: { ok: true, src: ['move'] }, rent: { ok: true, src: ['rent'] }, cy: { ok: true, src: ['cy'] }, ta: { ok: true, src: ['renew', 'rentdata'] },
   tmp2: { ok: false, src: [], why: '일시적 2주택 처분 기한은 2026년 10월에 바뀐 규정이라, 공식 사이트에서 법령 원문을 확인한 뒤 보여 드릴게요.' }
 };
 const CAL_AHEAD = 400, CAL_PAST = 0, CAL_MAX = 60;
@@ -7700,8 +7754,18 @@ function calClean(x) {
   const t = CAL_TEN[x.t] ? x.t : '', d = v => calOkDate(v) ? String(v) : '';
   const o = { t: t };
   if (t === 'own') { o.acq = d(x.acq); o.sell = d(x.sell); }
-  if (t === 'jeonse' || t === 'wolse') { o.cs = d(x.cs); o.ce = d(x.ce); if (o.cs && o.ce && o.ce <= o.cs) o.ce = ''; }
+  if (t === 'jeonse' || t === 'wolse') { o.cs = d(x.cs); o.ce = d(x.ce); if (o.cs && o.ce && o.ce <= o.cs) o.ce = ''; if (x.ta && typeof x.ta === 'object') o.ta = calCleanTa(x.ta); }
   return o;
+}
+/* 전세·월세 만기 알림(세입자용) 설정 — 서버에는 이 칸만 저장한다: 켜기, 희망 지역(최대 3곳: 시·군·구 코드 + 동, 동 '' = 시·군·구 전체), 출퇴근지(동),
+   집 형태(a 아파트·v 빌라·o 오피스텔), 평형, '매수도 생각해요'·'보증금 낮추고 싶어요'. 보증금·보유 현금·연소득은 받지 않는다(그 기기에만). */
+const CAL_TA_TY = { a: '아파트', v: '빌라', o: '오피스텔' };
+function calCleanTa(x) {
+  x = x && typeof x === 'object' ? x : {};
+  const pl = v => v && typeof v === 'object' && /^\d{5}$/.test(String(v.g || '')) ? { g: String(v.g), d: /^[0-9가-힣.·]{0,20}$/.test(String(v.d || '')) ? String(v.d || '') : '' } : null;
+  const seen = {}, areas = (Array.isArray(x.areas) ? x.areas : []).map(pl).filter(a => a && !seen[a.g + a.d] && (seen[a.g + a.d] = 1)).slice(0, 3);
+  return { on: x.on === true, areas: areas, work: pl(x.work), ty: CAL_TA_TY[x.ty] ? x.ty : '', band: /^[0-9가-힣㎡ ~.]{2,12}$/.test(String(x.band || '')) ? String(x.band) : '',
+    buy: x.buy === true, down: x.down === true };
 }
 /** 회원 저장 자료의 달력 칸: { h: {집키: calClean}, n: 우리 세대 보유 주택 수 1·2·3(3채 이상)|null, t: 마지막 저장 날짜, ms: 마지막 수정 시각(기기끼리 맞출 때) } */
 const CAL_KEY = /^\d{5}\|[^|<>\u0000-\u001F]{1,30}\|[^|<>\u0000-\u001F]{0,30}\|[^|<>\u0000-\u001F]{1,60}\|[^|<>\u0000-\u001F]{1,20}$/;
@@ -7743,6 +7807,10 @@ function calHome(h) {
       out.push(calEv('renewC', b, Object.assign(o(), { start: a, t: '계약갱신요구권 요청 마감', s: `만기 2개월 전인 ${calKoY(b)}까지 알려야 해요. 문자·내용증명처럼 날짜가 남는 방법이 안전해요. 이사할 계획이면 집주인과 날짜를 미리 맞춰 두세요.` })));
       out.push(calEv('end', c.ce, Object.assign(o(), { t: `${CAL_TEN[c.t]} 계약 만기`, s: '이 날 계약이 끝나요. 갱신이나 이사 일정이 정해졌는지 다시 확인해 보세요.' })));
     }
+    if (c.ce && c.ta && c.ta.on) [6, 4, 2].forEach(m => {
+      out.push(calEv('ta', calAddM(c.ce, -m), Object.assign(o(), { id: `ta|${h.key}|${m}`, sub: 'ta', m: m, end: calAdd(calAddM(c.ce, -m), 14), t: `만기 ${m}개월 전 — 이사·갱신 준비 알림`,
+        s: `만기(${calKoY(c.ce)})까지 ${m}개월 남았어요. 희망 지역에서 전세 보증금이 내린 곳, 내 단지 전세 시세, ${m >= 4 ? '계약갱신요구권 기간(만기 6개월 전~2개월 전)' : '갱신 요구 마감(만기 2개월 전)'}을 모아 드려요.` })));
+    });
     if (c.cs) {
       out.push(calEv('move', c.cs, Object.assign(o(), { t: '이사하는 날 — 전입신고·확정일자', s: '이사한 날 바로 전입신고를 하고 계약서에 확정일자를 받아 두세요. 집에 들어가 전입신고까지 마친 다음 날부터 대항력(새 집주인·은행에도 내 권리를 주장할 힘)이 생겨요.' })));
       out.push(calEv('rent', c.cs, Object.assign(o(), { end: calAdd(c.cs, 30), t: '전월세 계약 신고(계약일부터 30일 안)', s: '보증금 6,000만 원 초과 또는 월세 30만 원 초과 계약은 계약한 날부터 30일 안에 신고해야 해요. 신고하면 확정일자가 저절로 붙고, 전입신고 때 계약서를 함께 내면 신고한 것으로 봐요.' })));
@@ -7789,7 +7857,7 @@ function calStage(dd, mode) {
 }
 function calDue(ev, mode, sent) {
   sent = sent || {};
-  return (ev || []).map(e => Object.assign({}, e, { stage: e.sub === 'new' ? (e.dd <= 0 && e.dd >= -7 ? 'd1' : '') : calStage(e.dd, mode) })).filter(e => e.stage && !sent[e.id + '|' + e.stage] && !(e.stage === 'd30' && sent[e.id + '|d7']) && !(e.stage !== 'd1' && sent[e.id + '|d1']));
+  return (ev || []).map(e => Object.assign({}, e, { stage: e.sub === 'new' ? (e.dd <= 0 && e.dd >= -7 ? 'd1' : '') : e.sub === 'ta' ? (e.dd <= 0 && e.dd >= -14 ? 'ta' : '') : calStage(e.dd, mode) })).filter(e => e.stage && !sent[e.id + '|' + e.stage] && !(e.stage === 'd30' && sent[e.id + '|d7']) && !(e.stage !== 'd1' && sent[e.id + '|d1']));
 }
 function calEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 function calWhen(e) {
@@ -7806,13 +7874,73 @@ function calMailHtml(items, o) {
   const links = `${web ? `<a href="${calEsc(web)}mine/calendar/" style="color:#2F6BFF">내 부동산 달력 전체 보기</a>` : ''}${o.off ? ` · <a href="${calEsc(o.off)}" style="color:#4E5968">달력 알림만 끄기(한 번 누르면 끝)</a>` : ''}`;
   const body = `<div style="font-size:17px;font-weight:900;margin:0 0 4px">내 부동산 달력 <span style="font-size:13px;font-weight:700;color:#B8942A">다가오는 날짜 ${items.length}개</span></div>
     <p style="margin:0 0 10px;font-size:13.5px;color:#4E5968;line-height:1.55">등록하신 집과 지역 기준으로 놓치기 쉬운 세금·계약 날짜를 모았어요. 날짜 규칙은 공식 안내를 확인한 것만 넣었고, 주말·공휴일이면 기한이 다음 평일로 미뤄질 수 있어요.</p>
-    <ul style="list-style:none;margin:0 0 6px;padding:0">${li}</ul><p style="font-size:12.5px;color:#4E5968;margin:4px 0 0">${links}</p>`;
+    <ul style="list-style:none;margin:0 0 6px;padding:0">${li}</ul>${o.extra || ''}<p style="font-size:12.5px;color:#4E5968;margin:4px 0 0">${links}</p>`;
   const subject = `[${site}] ${o.date ? calKo(o.date) + ' ' : ''}내 부동산 달력 — ${items[0] ? items[0].t : ''}${items.length > 1 ? ` 외 ${items.length - 1}개` : ''}`.slice(0, 120);
   const html = o.merged ? `<div style="border:2px solid #B8942A;border-radius:12px;padding:14px 16px;margin:0 0 14px">${body}</div>`
     : `<div style="font-family:'Noto Sans KR',sans-serif;max-width:600px;margin:auto;color:#191F28"><div style="font-weight:900;font-size:19px;margin:6px 0 12px">${calEsc(site)} <span style="color:#B8942A">달력 알림</span></div>${body}
       <p style="font-size:12px;color:#4E5968;line-height:1.65;margin:12px 0 0;border-top:1px solid #E5E8EB;padding-top:10px">이 메일은 ${calEsc(site)} 알림 센터에서 '내 부동산 달력 메일'을 켜신 분께 일주일에 한 번까지 보내는 정보 메일이에요. 광고가 아니에요.<br>
       ${o.off ? `<a href="${calEsc(o.off)}" style="color:#4E5968">달력 알림만 끄기</a> · ` : ''}${web ? `<a href="${calEsc(web)}my/alerts/" style="color:#4E5968">알림 설정 바꾸기</a>` : ''}<br>보낸 사람: ${calEsc(site)}${o.sender ? `(${calEsc(o.sender.name)}) · 전화 ${calEsc(o.sender.tel)} · 답장은 ${calEsc(o.sender.email)}로 가요` : ''}</p></div>`;
   return { subject: subject, html: html, text: text.join('\n') };
+}
+/* ---------- 세입자 만기 알림 계산(공개 전월세 실거래 rent/{구}.json · rent/v · rent/o) ----------
+   행 u = [동, 표시명, 평형, 지번, 전용, 3년 전세 수, 3년 월세 수, J, WD, WR, 계약 목록[[계약일, 전용, 층, 보증금, 월세, 0 신규·1 갱신·2 미기재, …]], 덧붙임]
+   보증금 중간값은 '순수 전세'(월세 0) · 신규 계약(갱신 계약은 5% 상한이 있어 시세와 달라 뺌)만 센다. 최근 6개월 vs 그 전 6개월(7~12개월 전). */
+const CAL_TA_MIN = 3;                         // 두 기간 모두 이 건수 이상일 때만 변화율을 낸다
+function calMed(a) { const v = a.slice().sort((x, y) => x - y), n = v.length; return n ? (n % 2 ? v[(n - 1) / 2] : Math.round((v[n / 2 - 1] + v[n / 2]) / 2)) : 0; }
+function calI8(iso) { return +String(iso).replace(/-/g, ''); }
+function calTaPairs(u, today) {
+  const t = calI8(today), a6 = calI8(calAddM(today, -6)), a12 = calI8(calAddM(today, -12)), r = [], p = [];
+  (Array.isArray(u[10]) ? u[10] : []).forEach(c => { if (!Array.isArray(c) || !(c[3] > 0) || c[4] || c[5] === 1) return; if (c[0] > a6 && c[0] <= t) r.push(c[3]); else if (c[0] > a12 && c[0] <= a6) p.push(c[3]); });
+  return { r: r, p: p };
+}
+function calTaStat(r, p) {
+  const o = { nr: r.length, np: p.length, mr: calMed(r), mp: calMed(p), chg: null };
+  if (o.nr >= CAL_TA_MIN && o.np >= CAL_TA_MIN && o.mp > 0) o.chg = Math.round((o.mr / o.mp - 1) * 1000) / 10;
+  return o;
+}
+/** files = {구코드: rent 파일}, areas = [{g, d}], band = 평형('' = 모든 평형), deposit = 내 보증금(만원, 기기에만 — 없으면 0)
+    → { dongs: [{g, d, …stat}] 내린 동(내림차순), apts: [{g, d, a, b, …stat}] 내린 단지, fit: 내 보증금 이하로 최근 6개월 계약된 단지 수, fitList } */
+function calTaScan(files, areas, band, today, deposit) {
+  const dongs = {}, apts = [], fit = [];
+  (areas || []).forEach(ar => {
+    const R = (files || {})[ar.g]; if (!R || !Array.isArray(R.units)) return;
+    R.units.forEach(u => {
+      if (ar.d && u[0] !== ar.d) return;
+      if (band && u[2] !== band) return;
+      const P = calTaPairs(u, today), k = ar.g + '|' + u[0];
+      const D = dongs[k] = dongs[k] || { g: ar.g, d: u[0], r: [], p: [] }; D.r = D.r.concat(P.r); D.p = D.p.concat(P.p);
+      const st = calTaStat(P.r, P.p);
+      if (st.chg != null && st.chg < 0) apts.push(Object.assign({ g: ar.g, d: u[0], a: u[1], b: u[2], j: u[3] }, st));
+      if (deposit > 0 && P.r.length && st.mr <= deposit) fit.push({ g: ar.g, d: u[0], a: u[1], b: u[2], mr: st.mr, nr: st.nr });
+    });
+  });
+  const dl = Object.keys(dongs).map(k => { const D = dongs[k]; return Object.assign({ g: D.g, d: D.d }, calTaStat(D.r, D.p)); }).filter(x => x.chg != null && x.chg < 0).sort((a, b) => a.chg - b.chg);
+  apts.sort((a, b) => a.chg - b.chg);
+  fit.sort((a, b) => b.nr - a.nr || a.mr - b.mr);
+  return { dongs: dl, apts: apts, fit: fit.length, fitList: fit.slice(0, 10) };
+}
+/** 내 단지(같은 동·단지 이름·평형)의 최근 6개월 vs 그 전 6개월 순수 전세 신규 계약 중간값. 없으면 null */
+function calTaOwn(R, home, today) {
+  if (!R || !Array.isArray(R.units) || !home) return null;
+  const u = R.units.find(x => x[0] === home.dong && x[1] === home.apt && x[2] === home.band) || R.units.find(x => x[0] === home.dong && String(x[3]) === String(home.jibun || '') && x[2] === home.band);
+  if (!u) return null;
+  const P = calTaPairs(u, today); return Object.assign({ a: u[1], b: u[2] }, calTaStat(P.r, P.p));
+}
+function calWon(m) { m = Math.round(Number(m) || 0); const e = Math.floor(m / 10000), r = m % 10000; return e && r ? `${e}억 ${r.toLocaleString('en-US')}만 원` : e ? `${e}억 원` : `${r.toLocaleString('en-US')}만 원`; }
+/** 메일 칸(세입자 만기 알림): name = 집 이름, scan = calTaScan(보증금 없이), own = calTaOwn, gname(코드) → 구 이름 */
+function calTaMailHtml(name, scan, own, o) {
+  o = o || {}; const gn = o.gname || (() => ''), web = o.web || '';
+  const pct = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(1) + '%';
+  const dl = (scan.dongs || []).slice(0, 4).map(x => `${gn(x.g)} ${x.d} ${pct(x.chg)}(최근 6개월 ${x.nr}건 ${calWon(x.mr)} · 그 전 ${x.np}건 ${calWon(x.mp)})`);
+  const al = (scan.apts || []).slice(0, 5).map(x => `${x.d} ${x.a} ${x.b} ${pct(x.chg)}(${x.nr}건·${x.np}건)`);
+  const ow = own && own.chg != null ? `${own.a} ${own.b} 순수 전세 신규 계약 중간값: 최근 6개월 ${calWon(own.mr)}(${own.nr}건) · 그 전 6개월 ${calWon(own.mp)}(${own.np}건), ${pct(own.chg)}.` : '';
+  return `<div style="background:#FBF8EF;border:1px solid #EFE6CC;border-radius:10px;padding:10px 12px;margin:6px 0 8px;font-size:13.5px;line-height:1.6;color:#3E4754">
+    <b style="color:#191F28">${calEsc(name)} 만기 준비</b><br>
+    ${dl.length ? `<b>희망 지역에서 전세 보증금이 내린 동</b><br>${dl.map(calEsc).join('<br>')}<br>` : '희망 지역에서 최근 6개월 전세 보증금이 뚜렷하게 내린 동은 없어요.<br>'}
+    ${al.length ? `<b>내린 단지</b><br>${al.map(calEsc).join('<br>')}<br>` : ''}
+    ${ow ? `<b>내 단지 전세 시세</b><br>${calEsc(ow)} 지금 시세가 내 보증금보다 낮다면 계약갱신요구권을 쓰면서 보증금 감액을 집주인과 협의해 볼 수 있어요(정보 안내예요).<br>` : ''}
+    <span style="font-size:12.5px;color:#4E5968">국토교통부 전월세 실거래 중 월세 없는 신규 전세 계약의 중간값(갱신 계약 제외). 내 보증금으로 갈 수 있는 단지 수와 매수 비교는 보증금·현금을 그 기기에만 저장하는 달력 화면에서 볼 수 있어요.</span>
+    ${web ? `<br><a href="${calEsc(web)}mine/calendar/#ta" style="color:#2F6BFF">만기 준비 자세히 보기</a> · <a href="${calEsc(CAL_SRC.renew.url)}" style="color:#2F6BFF">계약갱신요구권 법 조문</a> · <a href="${calEsc(web)}jeonse/" style="color:#2F6BFF">전세 안전 점검</a>` : ''}</div>`;
 }
 /* CAL-CORE END */
 
@@ -7839,16 +7967,33 @@ function calEventsFor(s, ctx, um) {
 const calSid = (id, stage) => 'c' + axKeyId('cal|' + id + '|' + stage).slice(1);
 /** 보낼 날짜(단계별 한 번) — mode 'daily'(브리핑에 함께) · 'weekly'(따로) */
 function calItemsFor(s, ctx, sent, um, mode) {
-  if (!s.prefs.cal) return [];
-  const ev = calEventsFor(s, ctx, um), mine = (sent || {})[s.id] || {}, done = {};
-  ev.forEach(e => ['d30', 'd7', 'd1'].forEach(st => { if (mine[calSid(e.id, st)]) done[e.id + '|' + st] = 1; }));
+  ctx.calUm = um;
+  const ev0 = calEventsFor(s, ctx, um), ev = s.prefs.cal ? ev0 : ev0.filter(e => e.sub === 'ta');   // 달력 메일을 안 켰어도 세입자 만기 알림(켠 집)은 보냄
+  if (!ev.length) return [];
+  const mine = (sent || {})[s.id] || {}, done = {};
+  ev.forEach(e => ['d30', 'd7', 'd1', 'ta'].forEach(st => { if (mine[calSid(e.id, st)]) done[e.id + '|' + st] = 1; }));
   return calDue(ev, mode, done);
 }
 function calWeekKey(date) { return 'w' + axKeyId('calwk|' + pqWeek(date)).slice(1); }
 function calWeekDone(s, ctx, sent) { return !!(((sent || {})[s.id] || {})[calWeekKey(ctx.date)]); }
 function calMsgFor(s, items, ctx, merged) {
   const L = axLinks(bApi(), s.id, axTok, axPh);
-  return calMailHtml(items, { site: SITE_NAME, web: WEB_ROOT, off: L.all.replace(/&all=1$/, '&cal=1'), merged: !!merged, sender: BRIEF_SENDER, date: ctx.date });
+  let extra = ''; try { extra = calTaExtra(s, items, ctx); } catch (e) { extra = ''; }
+  return calMailHtml(items, { site: SITE_NAME, web: WEB_ROOT, off: L.all.replace(/&all=1$/, '&cal=1'), merged: !!merged, sender: BRIEF_SENDER, date: ctx.date, extra: extra });
+}
+/** 세입자 만기 알림 칸: 희망 지역(없으면 지금 동)의 공개 전월세 실거래(rent/{구}.json · v · o)로 내린 동·단지, 내 단지 전세 시세 — 보증금은 서버에 없어 비교는 화면에서 */
+function calTaExtra(s, items, ctx) {
+  const u = (ctx.calUm || {})[s.k]; if (!u) return '';
+  const rc = ctx.rentC = ctx.rentC || {}, rent = (ty, g) => { const k = (ty || 'a') + g; if (!(k in rc)) rc[k] = bFetchJson(AX_DATA + 'rent/' + (ty === 'v' ? 'v/' : ty === 'o' ? 'o/' : '') + g + '.json'); return rc[k]; };
+  const seen = {};
+  return items.filter(e => e.sub === 'ta' && !seen[e.home] && (seen[e.home] = 1)).map(e => {
+    const h = u.homes.find(x => [x.code, x.dong, x.jibun || '', x.apt, x.band].join('|') === e.home), c = u.cal.h[e.home];
+    if (!h || !c || !c.ta) return '';
+    const areas = c.ta.areas.length ? c.ta.areas : [{ g: h.code, d: h.dong }], files = {};
+    areas.forEach(a => { files[a.g] = rent(c.ta.ty, a.g); });
+    const scan = calTaScan(files, areas, c.ta.band || h.band, ctx.date, 0), own = calTaOwn(rent('a', h.code), h, ctx.date);
+    return calTaMailHtml(h.apt + ' ' + h.band, scan, own, { gname: ctx.gname, web: WEB_ROOT });
+  }).join('');
 }
 /** 보낸 뒤 기록(단계마다 한 줄 + 주간 표시). setLast = 이 메일이 그날 첫 메일이면 최근발송일도 */
 function calDone(s, items, ctx, how, setLast, weekly) {
@@ -7976,9 +8121,78 @@ function pqResultLine(q, k) {
   const head = k == null ? `정답은 '${t(q.ans)}'였어요.` : k === q.ans ? `맞혔어요! 정답은 '${t(q.ans)}'였어요.` : `아쉬워요. 정답은 '${t(q.ans)}'였어요.`;
   return head + (q.why ? ` (${q.why})` : '');
 }
+/* ---------- 등급·시즌(v55) — 기준값은 설정(PQ_TIER_CFG, 서버 스크립트 속성 QZ_TIER_CFG 로 덮어씀)에서 ----------
+   시즌 = 분기(1~3월 Q1 …). 정답을 정한 날(rat)이 속한 분기에 셈. 참여 = 그 시즌 정답이 나온(무효 아닌) 문제 수, 정확도 = 맞힘 ÷ 참여.
+   순위 = 그 시즌 포인트(같은 점수는 같은 등수). 등급은 위에서부터: 부동산 달인 → 고수 → 분석가 → 임장러 → 새싹. */
+const PQ_TIER_CFG = {
+  tiers: [
+    { id: 'master', t: '부동산 달인', n: 50, topN: 10, topPct: 1 },
+    { id: 'pro', t: '고수', n: 50, acc: 60, topPct: 10 },
+    { id: 'analyst', t: '분석가', n: 30, acc: 55 },
+    { id: 'field', t: '임장러', n: 10 },
+    { id: 'sprout', t: '새싹', n: 0 }
+  ],
+  rewards: { analyst: [{ k: 'report', n: 1 }], pro: [{ k: 'brief', n: 1 }], master: [{ k: 'brief', n: 3 }, { k: 'report', n: 3 }] }
+};
+const PQ_REWARD_NM = { report: '프리미엄 리포트 이용권', brief: '모닝 브리핑 무료' };
+function pqCfg(over) {
+  const c = JSON.parse(JSON.stringify(PQ_TIER_CFG));
+  if (over && typeof over === 'object') {
+    (Array.isArray(over.tiers) ? over.tiers : []).forEach(o => { const t = c.tiers.find(x => x.id === o.id); if (t) ['n', 'acc', 'topN', 'topPct'].forEach(k => { if (typeof o[k] === 'number' && o[k] >= 0) t[k] = o[k]; }); });
+    if (over.rewards && typeof over.rewards === 'object') Object.keys(c.rewards).forEach(k => { if (Array.isArray(over.rewards[k])) c.rewards[k] = over.rewards[k].filter(r => r && PQ_REWARD_NM[r.k] && r.n > 0 && r.n <= 12).map(r => ({ k: r.k, n: Math.round(r.n) })); });
+  }
+  return c;
+}
+/** 'YYYY-MM-DD…' → 시즌 'YYYY-Qn' */
+function pqSeason(iso) { const s = String(iso || ''); return /^\d{4}-\d{2}/.test(s) ? `${s.slice(0, 4)}-Q${Math.floor((+s.slice(5, 7) - 1) / 3) + 1}` : ''; }
+function pqSeasonLabel(se) { const y = se.slice(0, 4), q = +se.slice(6); return `${y}년 ${q}분기(${(q - 1) * 3 + 1}~${q * 3}월) 시즌`; }
+function pqPrevSeason(se) { let y = +se.slice(0, 4), q = +se.slice(6) - 1; if (q < 1) { q = 4; y--; } return `${y}-Q${q}`; }
+/** 한 시즌 성적: users = [{uid, nick, answers}], qs = 정답 정한 문제 → [{uid, nick, n, ok, acc, pts, rank, tier}] 포인트 순 */
+function pqSeasonTable(users, qs, season, cfg) {
+  cfg = cfg || PQ_TIER_CFG;
+  const sq = (qs || []).filter(q => q && pqSeason(String(q.rat || '').slice(0, 10)) === season);
+  const rows = (users || []).map(u => {
+    const S = pqScore(u.answers, qs), ids = {}; sq.forEach(q => { ids[q.id] = 1; });
+    const h = S.hist.filter(x => ids[x.id] && !x.void), n = h.length, ok = h.filter(x => x.ok).length;
+    return { uid: u.uid, nick: u.nick, n: n, ok: ok, acc: n ? Math.round(ok / n * 1000) / 10 : 0, pts: h.reduce((a, x) => a + x.pts, 0) };
+  }).filter(r => r.n > 0).sort((a, b) => b.pts - a.pts || b.acc - a.acc || b.n - a.n || (a.nick < b.nick ? -1 : 1));
+  let rank = 0, last = null;
+  rows.forEach((r, i) => { if (last === null || r.pts !== last) { rank = i + 1; last = r.pts; } r.rank = rank; });
+  const N = rows.length;
+  rows.forEach(r => { r.tier = pqTierOf(r, N, cfg).id; });
+  return rows;
+}
+/** 등급 하나: r = {n, acc, rank}, N = 그 시즌 참여자 수 */
+function pqTierOf(r, N, cfg) {
+  cfg = cfg || PQ_TIER_CFG;
+  for (const t of cfg.tiers) {
+    if ((r.n || 0) < (t.n || 0)) continue;
+    if (t.acc != null && (r.acc || 0) < t.acc) continue;
+    if (t.topN != null || t.topPct != null) {
+      const lim = Math.max(t.topN || 0, t.topPct ? Math.ceil(N * t.topPct / 100) : 0);
+      if (!(r.rank > 0 && r.rank <= lim)) continue;
+    }
+    return t;
+  }
+  return cfg.tiers[cfg.tiers.length - 1];
+}
+function pqTierName(id, cfg) { return (((cfg || PQ_TIER_CFG).tiers.find(t => t.id === id)) || {}).t || ''; }
+/** 다음 등급까지 남은 것(참여 수·정확도만 — 순위 조건은 시즌 끝에 정해짐) */
+function pqNext(r, cfg) {
+  cfg = cfg || PQ_TIER_CFG;
+  const order = cfg.tiers.slice().reverse(), i = order.findIndex(t => t.id === r.tier), nx = order[i + 1];
+  if (!nx) return null;
+  const need = [];
+  if ((r.n || 0) < (nx.n || 0)) need.push(`예측 ${nx.n - (r.n || 0)}번 더`);
+  if (nx.acc != null && (r.acc || 0) < nx.acc) need.push(`정확도 ${nx.acc}% 이상`);
+  if (nx.topPct != null || nx.topN != null) need.push(nx.topN ? `시즌 상위 ${nx.topPct}% 또는 ${nx.topN}위 안` : `시즌 상위 ${nx.topPct}%`);
+  return { id: nx.id, t: nx.t, need: need };
+}
+/** 시즌 끝 보상: tier → [{k, n, t}] (현금 없음, 서비스 안 이용권만) */
+function pqRewards(tier, cfg) { return (((cfg || PQ_TIER_CFG).rewards || {})[tier] || []).map(r => ({ k: r.k, n: r.n, t: `${PQ_REWARD_NM[r.k]} ${r.k === 'brief' ? r.n + '개월' : r.n + '장'}` })); }
 /* PRED-CORE END */
 
-const QZ_ACTIONS = { quizBoard: 1, quizMine: 1, quizAnswer: 1, quizNick: 1 };
+const QZ_ACTIONS = { quizBoard: 1, quizMine: 1, quizAnswer: 1, quizNick: 1, quizPrefs: 1, quizClaim: 1, quizHall: 1, quizVoucherUse: 1 };
 const SH_QA = '예측답', QAH = ['시각', '문제id', '회원', '보기', '주'];
 const SH_QN = '예측별명', QNH = ['회원', '별명', '수정시각'];
 const SH_QS = '예측채점', QSH = ['채점시각', '문제id', '종류', '상태', '정답', '근거', '참여', '맞힘', '정한시각', '문제'];
@@ -7997,7 +8211,11 @@ function qzWeek(fresh) {
 function qzDispatch(b) {
   try {
     if (b.action === 'quizBoard') return quizBoard(b);
+    if (b.action === 'quizHall') { withLock(() => qzSeasonClose(qzSettle(qzWeek()), new Date())); return quizHall(); }
     return withLock(() => {
+      if (b.action === 'quizPrefs') return quizPrefs(b);
+      if (b.action === 'quizClaim') return quizClaim(b);
+      if (b.action === 'quizVoucherUse') return quizVoucherUse(b);
       if (b.action === 'quizMine') return quizMine(b);
       if (b.action === 'quizAnswer') return quizAnswer(b);
       if (b.action === 'quizNick') return quizNick(b);
@@ -8054,15 +8272,24 @@ function qzWeekLabel(w) {
 function quizBoard(b) {
   const c = CacheService.getScriptCache(), hit = c.get('qzboard');
   if (hit) { try { return JSON.parse(hit); } catch (e) {} }
-  const W = qzWeek(), res = withLock(() => qzSettle(W)), ans = qzAnswers(), nm = qzNicks(), week = qzBoardWeek(res);
-  const rows = pqBoard(Object.keys(ans).map(uid => ({ nick: qzNickOf(uid, nm), answers: ans[uid] })), res, week, QZ_BOARD_MAX);
-  const r = { ok: true, v: 1, counts: qzCounts(ans), board: { week: week, label: qzWeekLabel(week), rows: rows }, n: Object.keys(ans).length, note: PQ_NOTE };
+  const W = qzWeek(), res = withLock(() => { const x = qzSettle(W); qzSeasonClose(x, new Date()); return x; }), ans = qzAnswers(), nm = qzNicks(), week = qzBoardWeek(res);
+  const cfg = qzCfgNow(), pf = qzPrefsAll(), live = qzLiveTable(res, ans, nm, cfg), tierBy = {};
+  live.forEach(x => { if (!qzPrefsOf(x.uid, pf).hide) tierBy[x.nick] = pqTierName(x.tier, cfg); });
+  const rows = pqBoard(Object.keys(ans).map(uid => ({ nick: qzNickOf(uid, nm), answers: ans[uid] })), res, week, QZ_BOARD_MAX).map(x => Object.assign(x, { tier: tierBy[x.nick] || '' }));
+  const se = pqSeason(ymd(new Date()));
+  const r = { ok: true, v: 2, counts: qzCounts(ans), board: { week: week, label: qzWeekLabel(week), rows: rows }, n: Object.keys(ans).length, note: PQ_NOTE,
+    season: { id: se, label: pqSeasonLabel(se), n: live.length }, cfg: cfg };
   try { c.put('qzboard', JSON.stringify(r), 120); } catch (e) {}
   return r;
 }
 function quizMine(b) {
   const u = sessionUser(b.s), uid = qzUid(u.k), W = qzWeek(), res = qzSettle(W), all = qzAnswers(), mine = all[uid] || [];
-  return { ok: true, nick: qzNickOf(uid), answers: mine.map(a => ({ id: a.id, k: a.k })), score: pqScore(mine, res), note: PQ_NOTE };
+  qzSeasonClose(res, new Date());
+  const nm = qzNicks(), cfg = qzCfgNow(), live = qzLiveTable(res, all, nm, cfg), me = live.find(x => x.uid === uid) || { n: 0, ok: 0, acc: 0, pts: 0, rank: 0, tier: 'sprout' };
+  const se = pqSeason(ymd(new Date())), grants = qzGrantsOf(uid);
+  return { ok: true, nick: qzNickOf(uid, nm), answers: mine.map(a => ({ id: a.id, k: a.k })), score: pqScore(mine, res), note: PQ_NOTE,
+    season: { id: se, label: pqSeasonLabel(se), n: live.length, me: { n: me.n, ok: me.ok, acc: me.acc, pts: me.pts, rank: me.rank, tier: me.tier, t: pqTierName(me.tier, cfg) }, next: pqNext(me, cfg) },
+    prefs: qzPrefsOf(uid), grants: grants.map(qzGrantPublic), vouchers: grants.filter(g => g.k === 'report' && g.st === QR_ST.can).reduce((a, g) => a + g.left, 0), paid: !!PAID_OPEN, cfg: cfg };
 }
 /** 답하기: 공개 파일의 받는 중 문제 · 마감 전 · 있는 보기만. 마감 전에는 다시 고를 수 있음(같은 줄을 고침) */
 function quizAnswer(b) {
@@ -8096,6 +8323,119 @@ function quizNick(b) {
 /** 회원 탈퇴: 그 사람 답·별명 지우기(채점 기록은 문제별 합계만이라 그대로) */
 function qzUserGone(k) {
   const uid = qzUid(k);
-  [[SH_QA, 2], [SH_QN, 0]].forEach(([n, col]) => { const sh = book().getSheetByName(n); if (!sh) return; const v = sh.getDataRange().getValues(); for (let i = v.length - 1; i >= 1; i--) if (String(v[i][col]) === uid) sh.deleteRow(i + 1); });
+  [[SH_QA, 2], [SH_QN, 0], [SH_QP, 0]].forEach(([n, col]) => { const sh = book().getSheetByName(n); if (!sh) return; const v = sh.getDataRange().getValues(); for (let i = v.length - 1; i >= 1; i--) if (String(v[i][col]) === uid) sh.deleteRow(i + 1); });
   try { CacheService.getScriptCache().remove('qzboard'); } catch (e) {}
+}
+
+/* =====================================================================
+   v55 예측 맞히기 등급·시즌·보상·명예의 전당 (맨 위 'v55 변경 요약')
+   - 등급 기준·보상은 PRED-CORE PQ_TIER_CFG(화면과 같은 글자). 운영자가 바꿀 때는 스크립트 속성 QZ_TIER_CFG(JSON, 같은 모양 일부만)로 덮어씀.
+   - 시즌(분기)이 끝나면 다음 시즌 첫 화면 요청·매일 알림 실행 때 한 번 마감(qzSeasonClose): '예측시즌'(최종 등급·순위) + '예측보상'(보상 기록) 시트.
+   - 보상은 서비스 안 이용권만(현금·상품 없음): 분석가 리포트 1장 · 고수 브리핑 1개월 · 부동산 달인 브리핑 3개월 + 리포트 3장.
+     PAID_OPEN=false 동안은 '대기'로 쌓아 두고, 유료가 열린 뒤 회원이 [보상 받기](quizClaim)를 누르면 지급(브리핑 = 기존 1개월 연장 bGrantMonth,
+     리포트 = '사용 가능' 이용권 → 결제 화면 [이용권으로 열기](quizVoucherUse, 단지 리포트·청약 분양가 리포트 1건)). 받는 사람 확인 = 카카오 로그인 계정 하나.
+   - 명예의 전당(quiz/hall/)은 [명예의 전당에 별명 올리기]를 켠 분만, 별명만. 임장 모임은 '예측임장모임' 시트(운영자만) — 날짜 약속 없음.
+   ===================================================================== */
+const SH_QP = '예측설정', QPH = ['회원', '등급숨김', '명예의전당', '임장모임', '수정시각'];
+const SH_QSE = '예측시즌', QSEH = ['시즌', '회원', '별명', '등급', '참여', '맞힘', '정확도', '포인트', '순위', '마감시각'];
+const SH_QR = '예측보상', QRH = ['id', '시즌', '회원', '등급', '종류', '수량', '남은수', '상태', '만든시각', '처리시각', '메모'];
+const SH_QM = '예측임장모임', QMH = ['시즌', '별명', '등급', '정확도', '참여', '알림메일', '정리시각'];
+const QR_ST = { wait: '대기', ok: '지급', can: '사용 가능', used: '다 씀', cancel: '취소' };
+function qzCfgNow() { return pqCfg(parseJ(PropertiesService.getScriptProperties().getProperty('QZ_TIER_CFG'), null)); }
+function qzPrefsAll() {
+  const sh = book().getSheetByName(SH_QP), m = {}; if (!sh || sh.getLastRow() < 2) return m;
+  sh.getRange(2, 1, sh.getLastRow() - 1, QPH.length).getValues().forEach(r => { if (r[0]) m[String(r[0])] = { hide: r[1] === true, hall: r[2] === true, meet: r[3] === true }; });
+  return m;
+}
+function qzPrefsOf(uid, all) { return (all || qzPrefsAll())[uid] || { hide: false, hall: false, meet: false }; }
+function qzUsers(ans, nm) { return Object.keys(ans).map(uid => ({ uid: uid, nick: qzNickOf(uid, nm), answers: ans[uid] })); }
+/** 지난 시즌(들) 마감 — 아직 안 했으면 한 번. 돌려줌: 마감한 시즌 목록 */
+function qzSeasonClose(res, now) {
+  const P = PropertiesService.getScriptProperties(), done = parseJ(P.getProperty('QZ_SEASON_DONE'), []) || [], cur = pqSeason(ymd(now || new Date())), out = [];
+  const seasons = {}; (res || []).forEach(q => { const se = pqSeason(String(q.rat || '').slice(0, 10)); if (se && se < cur && done.indexOf(se) < 0) seasons[se] = 1; });
+  const list = Object.keys(seasons).sort(); if (!list.length) return out;
+  const ans = qzAnswers(), nm = qzNicks(), cfg = qzCfgNow(), pf = qzPrefsAll(), shS = uSheet(SH_QSE, QSEH), shR = uSheet(SH_QR, QRH), shM = uSheet(SH_QM, QMH), t = new Date();
+  const mails = {}; axRows().forEach(o => { const s = axSubOf(o); if (s.state === AX_ST.on) mails[qzUid(s.k)] = s.mask; });
+  list.forEach(se => {
+    const T = pqSeasonTable(qzUsers(ans, nm), res, se, cfg);
+    T.forEach(r => {
+      shS.appendRow([se, r.uid, cellSafe(r.nick), pqTierName(r.tier, cfg), r.n, r.ok, r.acc, r.pts, r.rank, t]);
+      pqRewards(r.tier, cfg).forEach(g => shR.appendRow(['R' + Utilities.getUuid().replace(/-/g, '').slice(0, 9).toUpperCase(), se, r.uid, pqTierName(r.tier, cfg), g.k, g.n, g.n, QR_ST.wait, t, '', '시즌 마감 자동 지급(현금 없음)']));
+      if ((r.tier === 'master' || r.tier === 'pro') && qzPrefsOf(r.uid, pf).meet) shM.appendRow([se, cellSafe(r.nick), pqTierName(r.tier, cfg), r.acc, r.n, mails[r.uid] || '(알림 메일 없음)', t]);
+    });
+    done.push(se); out.push(se);
+  });
+  P.setProperty('QZ_SEASON_DONE', JSON.stringify(done));
+  try { CacheService.getScriptCache().remove('qzboard'); CacheService.getScriptCache().remove('qzhall'); } catch (e) {}
+  return out;
+}
+/** 지금 시즌 실시간 등급표(순위표·내 기록용) */
+function qzLiveTable(res, ans, nm, cfg) { return pqSeasonTable(qzUsers(ans, nm), res, pqSeason(ymd(new Date())), cfg); }
+function qzGrantsOf(uid) {
+  const sh = book().getSheetByName(SH_QR); if (!sh || sh.getLastRow() < 2) return [];
+  return sh.getRange(2, 1, sh.getLastRow() - 1, QRH.length).getValues().map((r, i) => ({ row: i + 2, id: String(r[0]), season: String(r[1]), uid: String(r[2]), tier: String(r[3]), k: String(r[4]), n: Number(r[5]) || 0, left: Number(r[6]) || 0, st: String(r[7]) }))
+    .filter(g => g.uid === uid && g.st !== QR_ST.cancel);
+}
+function qzGrantPublic(g) { return { id: g.id, season: g.season, tier: g.tier, k: g.k, n: g.n, left: g.left, st: g.st, t: (PQ_REWARD_NM[g.k] || '') + ' ' + g.n + (g.k === 'brief' ? '개월' : '장') }; }
+function quizPrefs(b) {
+  const u = sessionUser(b.s), uid = qzUid(u.k), sh = uSheet(SH_QP, QPH), v = sh.getDataRange().getValues();
+  const row = [uid, b.hide === true, b.hall === true, b.meet === true, new Date()];
+  let at = 0; for (let i = 1; i < v.length; i++) if (String(v[i][0]) === uid) { at = i + 1; break; }
+  if (at) sh.getRange(at, 1, 1, QPH.length).setValues([row]); else sh.appendRow(row);
+  try { CacheService.getScriptCache().remove('qzboard'); CacheService.getScriptCache().remove('qzhall'); } catch (e) {}
+  return { ok: true, prefs: { hide: row[1], hall: row[2], meet: row[3] } };
+}
+/** 보상 받기(카카오 로그인 회원 본인만). 유료가 닫혀 있으면 '대기' 그대로 */
+function quizClaim(b) {
+  const u = sessionUser(b.s), uid = qzUid(u.k), gs = qzGrantsOf(uid).filter(g => g.st === QR_ST.wait);
+  if (!gs.length) return { ok: true, grants: qzGrantsOf(uid).map(qzGrantPublic), msg: '받을 보상이 없어요.' };
+  if (!PAID_OPEN) return { ok: true, pending: true, grants: qzGrantsOf(uid).map(qzGrantPublic), msg: '보상은 잘 보관해 두었어요. 유료 서비스가 열리면 이 단추로 바로 받을 수 있어요.' };
+  const sh = uSheet(SH_QR, QRH), now = new Date(), msgs = [];
+  gs.forEach(g => {
+    if (g.k === 'report') { sh.getRange(g.row, 8, 1, 3).setValues([[QR_ST.can, now, '']]); msgs.push(`리포트 이용권 ${g.n}장을 쓸 수 있어요`); return; }
+    if (g.k === 'brief') {
+      let ok = 0; for (let i = 0; i < g.n; i++) if (bGrantMonth(u.k)) ok++;
+      if (ok === g.n) { sh.getRange(g.row, 7, 1, 4).setValues([[0, QR_ST.ok, now, '브리핑 ' + ok + '개월 연장']]); msgs.push(`모닝 브리핑 ${ok}개월을 더했어요`); }
+      else msgs.push('모닝 브리핑 무료는 브리핑을 한 번 신청(체험 포함)한 뒤 받을 수 있어요. 신청 뒤 다시 눌러 주세요.');
+    }
+  });
+  return { ok: true, grants: qzGrantsOf(uid).map(qzGrantPublic), msg: msgs.join(' ') };
+}
+/** 리포트 이용권으로 주문 열기(결제 대신). 단지 리포트·청약 분양가 리포트 1건만. PAID_ACTIONS(유료 잠금)와 같이 막힘 */
+function quizVoucherUse(b) {
+  const u = sessionUser(b.s), uid = qzUid(u.k), o = findRow(b.orderId);
+  if (!o) throw new Error('주문을 찾지 못했어요.');
+  const key = productKeyOf(o.r[OC['상품']]);
+  if (['single', 'cy'].indexOf(key) < 0) throw new Error('이용권은 단지 리포트·청약 분양가 리포트 한 건에 쓸 수 있어요.');
+  if (String(o.r[OC['상태']]) !== ST.wait) throw new Error('이미 처리된 주문이에요.');
+  const g = qzGrantsOf(uid).find(x => x.k === 'report' && x.st === QR_ST.can && x.left > 0);
+  if (!g) throw new Error('쓸 수 있는 리포트 이용권이 없어요.');
+  const sh = uSheet(SH_QR, QRH), left = g.left - 1;
+  sh.getRange(g.row, 7, 1, 2).setValues([[left, left ? QR_ST.can : QR_ST.used]]); sh.getRange(g.row, 10).setValue(new Date());
+  setO(o.row, '상태', ST.paid); setO(o.row, '결제수단', '예측 맞히기 이용권'); setO(o.row, '결제키', 'QZ-' + g.id); setO(o.row, '승인시각', new Date()); setO(o.row, '메모', '예측 맞히기 시즌 보상 이용권(결제 없음)');
+  return paidOut(findRow(b.orderId));
+}
+/** 명예의 전당(공개, 켠 분만·별명만): 시즌별 위 10명 + 전체 기간 포인트 위 10명. 10분 캐시 */
+function quizHall() {
+  const c = CacheService.getScriptCache(), hit = c.get('qzhall'); if (hit) { try { return JSON.parse(hit); } catch (e) {} }
+  const pf = qzPrefsAll(), sh = book().getSheetByName(SH_QSE), rows = sh && sh.getLastRow() > 1 ? sh.getRange(2, 1, sh.getLastRow() - 1, QSEH.length).getValues() : [];
+  const nm = qzNicks(), by = {}, tot = {};
+  rows.forEach(r => { const uid = String(r[1]); if (!qzPrefsOf(uid, pf).hall) return; const se = String(r[0]);
+    (by[se] = by[se] || []).push({ nick: qzNickOf(uid, nm), tier: qzPrefsOf(uid, pf).hide ? '' : String(r[3]), n: Number(r[4]), acc: Number(r[6]), pts: Number(r[7]), rank: Number(r[8]) });
+    const t = tot[uid] = tot[uid] || { nick: qzNickOf(uid, nm), pts: 0, n: 0, ok: 0 }; t.pts += Number(r[7]); t.n += Number(r[4]); t.ok += Number(r[5]); });
+  const seasons = Object.keys(by).sort().reverse().map(se => ({ season: se, label: pqSeasonLabel(se), rows: by[se].sort((a, b) => a.rank - b.rank).slice(0, 10) }));
+  const all = Object.values(tot).map(t => ({ nick: t.nick, pts: t.pts, n: t.n, acc: t.n ? Math.round(t.ok / t.n * 1000) / 10 : 0 })).sort((a, b) => b.pts - a.pts).slice(0, 10);
+  const r = { ok: true, seasons: seasons, all: all, note: PQ_NOTE };
+  try { c.put('qzhall', JSON.stringify(r), 600); } catch (e) {}
+  return r;
+}
+/** 운영자: 임장 모임 명단 다시 정리(편집기에서 실행 → '예측임장모임' 시트를 [파일 → 다운로드 → CSV]). 지금 초대 받기를 켠 시즌 달인·고수만 */
+function quizMeetExport() {
+  const pf = qzPrefsAll(), sh = book().getSheetByName(SH_QSE), rows = sh && sh.getLastRow() > 1 ? sh.getRange(2, 1, sh.getLastRow() - 1, QSEH.length).getValues() : [];
+  const mails = {}; axRows().forEach(o => { const s = axSubOf(o); if (s.state === AX_ST.on) mails[qzUid(s.k)] = s.mask; });
+  const nm = qzNicks(), cfg = qzCfgNow(), keep = [pqTierName('master', cfg), pqTierName('pro', cfg)], out = [QMH], t = new Date();
+  rows.forEach(r => { const uid = String(r[1]); if (keep.indexOf(String(r[3])) >= 0 && qzPrefsOf(uid, pf).meet) out.push([String(r[0]), cellSafe(qzNickOf(uid, nm)), String(r[3]), Number(r[6]), Number(r[4]), mails[uid] || '(알림 메일 없음)', t]); });
+  const m = uSheet(SH_QM, QMH); m.clear && m.clear(); if (m.getLastRow && m.getLastRow() > 0 && m.deleteRows) m.deleteRows(1, m.getLastRow());
+  out.forEach(r => m.appendRow(r));
+  return out.length - 1;
 }

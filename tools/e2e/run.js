@@ -21,7 +21,7 @@ const VIEWS = [{ name: '휴대폰', width: 390, height: 844, mobile: true }, { n
 const PAGES = ['', 'about/', 'terms/', 'privacy/', 'refund/', 'rank/', 'loan/', 'tax/', 'tax/transfer/', 'chungyak/', 'chungyak/price/',
   'map/', 'mine/', 'villa/', 'villa/zone/', 'comm/', 'jeonse/', 'jeonse/checklist/', 'brief/', 'brief/subscribe/', 'brief/manage/', 'brief/c/', 'brief/paid/',
   'my/alerts/', 'my/report/', 'my/watch/', 'track/', 'track/detail/', 'ad/', 'ad/plan/', 'agent/', 'agent/my/', 'agent/listing/', 'agent/content/',
-  'agent/sheet/', 'login/', 'mine/calendar/', 'bunyang/', 'bunyang/agency/', 'bunyang/apply/', 'partner/', 'premium/', 'premium/pro/', 'quiz/', 'ask/', 'switch/',
+  'agent/sheet/', 'login/', 'mine/calendar/', 'bunyang/', 'bunyang/agency/', 'bunyang/apply/', 'partner/', 'premium/', 'premium/pro/', 'quiz/', 'quiz/hall/', 'ask/', 'switch/',
   'buy/', 'buy/report/', 'press/', 'guide/method/', 'guide/terms/', 'weekly/', 'pro/developer/', 'community/', 'dongne/', 'dongne/my/', 'dongne/terms/', 'dongne/office/'];
 /* 법률 문서(약관·개인정보·환불)는 ~습니다 문장이 정상 */
 const LEGAL = /^(terms|privacy|refund|guide\/terms)\//;
@@ -497,7 +497,7 @@ JOURNEYS.share = async function (page, v) {
   ok(/utm_campaign=mine/.test(clip2) && !/[?&](bp|bd)=/.test(clip2), '결과 화면 머리줄 [공유] → 결과 요약 링크(개인값 없음): ' + clip2.replace(/\s+/g, ' ').slice(0, 120));
 };
 
-/* ---------- v54 내 부동산 달력: 로그인 → 내 집에 자가·취득일·주택 수 → 날짜(취득세 기한·재산세 예상)·출처 → 저장(단추 옆 반응·계정 저장 요청) ---------- */
+/* ---------- v55 내 부동산 달력: 로그인 → 내 집에 자가·취득일·주택 수 → 날짜(취득세 기한·재산세 예상)·출처 → 저장(단추 옆 반응·계정 저장 요청) ---------- */
 const E2E_HOME = { sd: 's00', code: '11710', dong: '가락동', jibun: '913', apt: '헬리오시티', band: '84㎡대', bp: null, bd: '', t: '2026-11-20' };
 async function loginAs(page, mock, data) {
   await page.addInitScript(([h]) => {
@@ -537,7 +537,7 @@ JOURNEYS.calendar = async function (page, v, mock) {
   ok(/내 부동산 달력 메일/.test(await txt(page, 'main')), '알림 센터: [내 부동산 달력 메일] 켜기 칸');
 };
 
-/* ---------- v54 예측 맞히기: 첫 화면 카드 → quiz/ 문제(고른 비율·마감) → 로그인 전 안내 → 로그인 뒤 고르기 → 순위·배지·재미용 안내 ---------- */
+/* ---------- v55 예측 맞히기: 첫 화면 카드 → quiz/ 문제(고른 비율·마감) → 로그인 전 안내 → 로그인 뒤 고르기 → 순위·배지·재미용 안내 ---------- */
 JOURNEYS.predict = async function (page, v, mock) {
   const fb = JSON.parse(fs.readFileSync(path.join(__dirname, 'fallback', 'data', 'quiz', 'week.json'), 'utf8'));
   const later = new Date(Date.now() + 9 * 3600000 + 3 * 864e5).toISOString().slice(0, 10) + 'T23:59+09:00';
@@ -559,6 +559,9 @@ JOURNEYS.predict = async function (page, v, mock) {
   /* 로그인 뒤 */
   await loginAs(page, mock, {});
   mock.set('quizAnswer', b => ({ ok: true, answers: [{ id: b.id, k: b.k }], counts: { [b.k]: 13 } }));
+  mock.set('quizMine', { ok: true, nick: '집 박사', answers: [], score: { pts: 25, n: 3, ok: 2, streak: 1, best: 2, hist: [], badges: ['first'] },
+    season: { id: '2027-Q1', label: '2027년 1분기(1~3월) 시즌', n: 120, me: { n: 12, ok: 8, acc: 66.7, pts: 85, rank: 9, tier: 'field', t: '임장러' }, next: { id: 'analyst', t: '분석가', need: ['예측 18번 더'] } },
+    prefs: { hide: false, hall: false, meet: false }, grants: [{ id: 'R1', season: '2026-Q4', tier: '분석가', k: 'report', n: 1, left: 1, st: '대기', t: '프리미엄 리포트 이용권 1장' }], vouchers: 0, paid: false });
   await open(page, 'quiz/'); await sleep(2500);
   ok(/내 포인트/.test(await txt(page, '#pqMe')) && /별명/.test(await txt(page, '#pqMe')), '로그인 뒤: 내 포인트·연속 적중·별명');
   const b0 = page.locator('#pqOpen .pc').first().locator('.ops button').first();
@@ -567,8 +570,57 @@ JOURNEYS.predict = async function (page, v, mock) {
   ok(la && la.body.id === q0.id && la.body.k === q0.opts[0].k, '보기를 누르면 서버에 그 문제·보기로 답함');
   ok(/✓/.test(await page.locator('#pqOpen .pc').first().locator('.ops button').first().innerText()) && /다시 고를 수 있어요/.test(await txt(page, '#pqOpen .pc')), '고른 보기에 ✓ · 마감 전 다시 고를 수 있다는 안내');
   ok(await page.locator('#pqBadges .bgs span').count() === 7, '배지 7개가 보임(아직 못 받은 것은 흐리게)');
+  const tb = await txt(page, '#tierBox');
+  ok(/임장러/.test(tb) && /분석가/.test(tb) && /18번 더/.test(tb), '등급 칸: 지금 등급(임장러)·다음 등급까지 남은 것');
+  ok(/시즌 달인께는 임장 모임 초대 소식을 보내 드려요/.test(tb), "'시즌 달인께는 임장 모임 초대 소식을 보내 드려요'");
+  await page.locator('#claimBtn').click(); await sleep(800);
+  ok(/유료 서비스가 열리면/.test(await txt(page, '#claimMsg')), '[보상 받기] → 유료가 열리기 전에는 보관 안내');
+  await page.locator('#pfHall').check(); await sleep(800);
+  ok(mock.last('quizPrefs') && mock.last('quizPrefs').body.hall === true, '[명예의 전당에 별명 올리기] → 서버에 저장');
+  ok(/임장러/.test(await txt(page, '#pqMe .nk')), '별명 옆 등급 배지');
   ok(!/NaN|undefined/.test(await txt(page, 'main')), '예측 화면: NaN·undefined 없음');
   await shot(page, 'quiz', v);
+};
+
+/* ---------- v55 전세 만기 알림(세입자): 첫 화면·전월세 화면 [전세 만기 알림 받기] → 달력에서 전세·만기 → 알림 켜기(희망 지역 기본값) → 보증금(기기에만)·매수 비교 ---------- */
+JOURNEYS.tenant = async function (page, v, mock) {
+  await open(page, ''); await sleep(1500);
+  ok(await page.locator('#taCard').isVisible() && /전세 만기 알림 받기/.test(await txt(page, '#taCard')), "첫 화면: '전세 만기 알림 받기' 카드가 보임");
+  await open(page, 'jeonse/'); await sleep(1500);
+  ok(await page.locator('a.tacta').isVisible(), "전월세 화면: '전세 만기 알림 받기'가 보임");
+  const ce = new Date(Date.now() + 9 * 3600000 + 170 * 864e5).toISOString().slice(0, 10);
+  await loginAs(page, mock, { cal: { h: { '11710|가락동|913|헬리오시티|84㎡대': { t: 'jeonse', cs: '2025-05-20', ce } }, n: null, t: '', ms: 1 } });
+  await page.locator('a.tacta').click(); await page.waitForURL(/mine\/calendar\//, { timeout: 15000 }).catch(() => {}); await sleep(3000);
+  ok(/전세 만기 알림/.test(await txt(page, '#homes')), '달력: 전세 집 카드에 [전세 만기 알림]');
+  await page.locator('#homes [data-ta-on]').check(); await sleep(3500);
+  const hm = await txt(page, '#homes');
+  ok(/희망 지역 \(3\/3\)/.test(hm) && /가락동/.test(hm), '알림을 켜면 희망 지역 기본값: 지금 동 + 가까운 동 2곳');
+  ok(await page.locator('#ta').isVisible() && /① 전세 보증금이 내린 곳/.test(await txt(page, '#ta')) && /② 갱신 협상 정보/.test(await txt(page, '#ta')), '만기 준비: ① 내린 곳 · ② 갱신 협상 정보');
+  await page.locator('#homes [data-ta-dep]').fill('100000'); await page.locator('#homes [data-ta-dep]').dispatchEvent('change'); await sleep(2500);
+  ok(/지금 내 보증금으로 갈 수 있는 단지 \d+곳/.test(await txt(page, '#ta')), "보증금을 넣으면 '지금 내 보증금으로 갈 수 있는 단지 ○곳'");
+  await page.locator('#homes [data-ta-buy]').check(); await sleep(1500);
+  await page.locator('#homes [data-ta-cash]').fill('30000'); await page.locator('#homes [data-ta-cash]').dispatchEvent('change'); await sleep(500);
+  await page.locator('#homes [data-ta-inc]').fill('9000'); await page.locator('#homes [data-ta-inc]').dispatchEvent('change'); await sleep(4000);
+  const ta = await txt(page, '#ta');
+  ok(/③ 매수로 바꾸면\(참고\)/.test(ta) && (/살 수 있는 단지 \d+곳/.test(ta) || /살 수 있는 단지가 없어요/.test(ta)), '매수도 생각해요 → ③ 매수 전환 비교(참고)');
+  ok(!/NaN|undefined|Infinity/.test(ta), '만기 준비: NaN·undefined 없음');
+  await page.waitForTimeout(2200);
+  const sv = mock.calls.filter(c => c.action === 'userSave').map(c => JSON.stringify(c.body.data || {}));
+  ok(sv.length && sv.every(x => !/100000|30000|9000/.test(x)) && sv.some(x => /"ta":\{"on":true/.test(x)), '계정 저장에는 만기 알림 설정만 — 보증금·현금·소득은 보내지 않음');
+  const reqs = mock.calls.map(c => JSON.stringify(c.body));
+  ok(!reqs.some(x => /"dep"|"cash"|"inc"/.test(x)), '서버 요청 어디에도 보증금·현금·소득 칸 없음');
+  ok(!/[?&](dep|cash|inc)=/.test(page.url()), '주소에도 금액 없음');
+  if (SHOTS) { fs.mkdirSync(SHOTS, { recursive: true }); await page.locator('#ta').scrollIntoViewIfNeeded(); await page.evaluate(() => { const t = document.getElementById('ta'); scrollTo(0, t.getBoundingClientRect().top + scrollY - 70); }); await sleep(400); await page.screenshot({ path: path.join(SHOTS, `tenant_alert_${v.width}.png`) }); }
+};
+
+/* ---------- v55 명예의 전당 ---------- */
+JOURNEYS.hall = async function (page, v, mock) {
+  await open(page, 'quiz/hall/'); await sleep(1500);
+  const t = await txt(page, 'main');
+  ok(/전체 기간 포인트 상위/.test(t) && /2026년 4분기/.test(t) && /집 박사/.test(t) && /부동산 달인/.test(t), '명예의 전당: 전체 기간·시즌별 위 10명(별명·등급·정확도·참여)');
+  ok(/켠 분만, 별명으로만/.test(t), '명예의 전당: 켠 분만·별명만 안내');
+  mock.set('quizHall', { ok: true, seasons: [], all: [] }); await page.reload(); await sleep(1500);
+  ok(/아직 명예의 전당에 오른 분이 없어요/.test(await txt(page, 'main')), '아직 없으면 빈 안내');
 };
 
 /* ---------- 실행 ---------- */

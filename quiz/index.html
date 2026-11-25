@@ -31,7 +31,7 @@
 <script src="../assets/auth.js?v=10"></script>
 <script src="../assets/share.js?v=13"></script>
 <script src="../assets/quiz-core.js?v=1"></script>
-<script src="../assets/predict-core.js?v=1"></script>
+<script src="../assets/predict-core.js?v=2"></script>
 <script src="../assets/alerts-core.js?v=3"></script>
 <script src="../assets/watch-core.js?v=2"></script>
 <script src="../assets/watch.js?v=8"></script>
@@ -122,6 +122,15 @@ h1{font-size:clamp(26px,6.6vw,32px);margin:2px 0 6px;letter-spacing:-.6px}
 .bgs span.on{border-color:#E4CF8F;background:#FBF3DC;color:#8A6A12}
 .fun{margin:12px 0 0;padding:10px 12px;border-radius:12px;background:var(--gray2);font-size:14px;font-weight:700;color:var(--sub);line-height:1.55}
 .qhd{font-size:clamp(21px,5.4vw,24px);font-weight:900;letter-spacing:-.5px;margin:0 0 4px}
+.tb{display:inline-block;font-size:12px;font-weight:800;border-radius:999px;padding:1px 8px;margin-left:4px;background:#FBF3DC;color:#8A6A12;vertical-align:1px;white-space:nowrap}
+.tierbox{border:1px solid var(--creamb);background:var(--creamc);border-radius:16px;padding:12px 14px;margin:0 0 12px;font-size:14.5px;line-height:1.6;color:var(--sub)}
+.tierbox b.tt{font-size:17px;color:var(--text)}
+.tierbox .gr{margin:8px 0 0;padding:8px 0 0;border-top:1px dashed var(--creamb)}
+.tierbox button.claim{min-height:44px;padding:0 14px;border:0;border-radius:12px;background:var(--blue);color:#fff;font:inherit;font-weight:900;cursor:pointer;margin:6px 0 0}
+.tierbox .sw2{display:flex;gap:10px;align-items:center;min-height:44px;font-size:14.5px;cursor:pointer}
+.tierbox .sw2 input{width:22px;height:22px;accent-color:var(--blue);flex:none;margin:0}
+.hall{display:flex;align-items:center;justify-content:center;min-height:48px;margin:10px 0 0;border-radius:14px;border:1.5px solid var(--creamb);background:#fff;color:#8A6A12;font-weight:900;text-decoration:none}
+
 @media(min-width:900px){.wrap{max-width:1040px}.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,440px);gap:28px;align-items:start}}
 </style>
 <script src="../assets/back.js?v=1" defer></script>
@@ -145,8 +154,9 @@ h1{font-size:clamp(26px,6.6vw,32px);margin:2px 0 6px;letter-spacing:-.6px}
     <div id="pqDone"></div>
     <div id="pqBoard"></div>
     <div id="pqBadges"></div>
+    <a class="hall" href="hall/" data-track="quiz_to_hall">명예의 전당 보기 ›</a>
     <p class="fun">포인트는 재미용이며 현금이나 상품으로 바꿀 수 없어요.</p>
-    <p class="note">문제와 정답은 공개 자료로만 정해요. 한국부동산원 주간 아파트 매매가격지수(목요일 발표), 국토교통부 아파트 매매 실거래가(계약 뒤 30일 신고 기한이 지난 뒤), 청약홈 청약접수 경쟁률을 써요. 보합·같은 값·거래 없음처럼 정답을 정할 수 없으면 무효로 하고, 포인트와 연속 기록에는 영향이 없어요. 맞히면 10점, 세 번 연속 맞힐 때부터 한 번마다 5점을 더해요. 순위에는 직접 정한 별명만 보여요. 만든 문제와 정한 정답은 아래 '문제·정답 기록'에 그대로 남겨요.</p>
+    <p class="note">문제와 정답은 공개 자료로만 정해요. 한국부동산원 주간 아파트 매매가격지수(목요일 발표), 국토교통부 아파트 매매 실거래가(계약 뒤 30일 신고 기한이 지난 뒤), 청약홈 청약접수 경쟁률을 써요. 보합·같은 값·거래 없음처럼 정답을 정할 수 없으면 무효로 하고, 포인트와 연속 기록에는 영향이 없어요. 맞히면 10점, 세 번 연속 맞힐 때부터 한 번마다 5점을 더해요. 순위에는 직접 정한 별명과 등급(숨길 수 있어요)만 보여요. 등급·보상 기준은 <a href="../terms/#quiz">이용약관</a>에 적었어요. 만든 문제와 정한 정답은 아래 '문제·정답 기록'에 그대로 남겨요.</p>
     <details class="note" id="pqAudit"><summary style="min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:800;color:var(--sub)">문제·정답 기록 보기</summary><div id="pqAuditBody"></div></details>
   </section>
   <section aria-labelledby="dqT">
@@ -224,7 +234,7 @@ fetch(DATA + 'today/quiz.json', {cache: 'no-cache'}).then(r => r.ok ? r.json() :
 })();
 </script>
 <script>
-/* 이번 주 예측 맞히기(v54) — 문제·정답: 공개 data/quiz/week.json(엔진 predict_quiz.py) · 답·포인트·순위: 서버(agent-backend.gs quiz*) · 계산: assets/predict-core.js */
+/* 이번 주 예측 맞히기(v55) — 문제·정답: 공개 data/quiz/week.json(엔진 predict_quiz.py) · 답·포인트·순위: 서버(agent-backend.gs quiz*) · 계산: assets/predict-core.js */
 (function(){
 'use strict';
 const P = window.JDJ_PRED_CORE, AU = window.JDJ_AUTH || null, W = window.JDJ_WATCH || null, $ = id => document.getElementById(id);
@@ -270,7 +280,8 @@ function drawMe(){
   if (!ME) { el.innerHTML = ''; return; }
   const S = ME.score || { pts: 0, ok: 0, n: 0, streak: 0 };
   el.innerHTML = `<div class="me"><div><b>${S.pts.toLocaleString('ko-KR')}</b><small>내 포인트</small></div><div><b>${S.streak}</b><small>연속 적중</small></div><div><b>${S.ok}/${S.n}</b><small>맞힌 예측</small></div></div>
-    <div class="nk"><span>순위에 보이는 별명: <b>${esc(ME.nick || '')}</b></span><button type="button" id="nkEdit">별명 바꾸기</button></div><div id="nkBox"></div>`;
+    <div class="nk"><span>순위에 보이는 별명: <b>${esc(ME.nick || '')}</b>${ME.season && ME.prefs && !ME.prefs.hide ? `<span class="tb">${esc(ME.season.me.t)}</span>` : ''}</span><button type="button" id="nkEdit">별명 바꾸기</button></div><div id="nkBox"></div>${tierHtml()}`;
+  bindTier();
   $('nkEdit').onclick = () => {
     $('nkBox').innerHTML = `<div class="nkf"><input id="nkIn" maxlength="10" value="${esc(ME.nick || '')}" aria-label="새 별명(2~10자)"><button type="button" id="nkSave">저장</button></div><p class="sr" id="nkMsg" role="status">한글·영문·숫자 2~10자. 실명이나 연락처는 넣지 말아 주세요.</p>`;
     $('nkSave').onclick = () => {
@@ -278,6 +289,26 @@ function drawMe(){
       call('quizNick', { nick: v }).then(j => { ME.nick = j.nick; drawMe(); drawBoard(); }).catch(e => { $('nkMsg').textContent = e.message; });
     };
   };
+}
+/* v55 등급·시즌·보상 */
+function tierHtml(){
+  const Se = ME && ME.season; if (!Se) return '';
+  const m = Se.me, nx = Se.next, pr = ME.prefs || {}, gs = (ME.grants || []);
+  const wait = gs.filter(g => g.st === '대기'), can = gs.filter(g => g.st === '사용 가능' && g.left > 0);
+  return `<div class="tierbox" id="tierBox"><div><b class="tt">${esc(m.t)}</b> · ${esc(Se.label)}</div>
+    <div>이번 시즌 예측 ${m.n}번 · 정확도 ${m.n ? m.acc + '%' : '-'}${m.rank ? ` · ${Se.n}명 중 ${m.rank}위` : ''} · ${m.pts}점</div>
+    ${nx ? `<div>다음 등급 <b>${esc(nx.t)}</b>까지: ${esc(nx.need.join(', '))}</div>` : '<div>가장 높은 등급이에요.</div>'}
+    <div style="font-size:13px;color:var(--sub2)">등급은 시즌(분기)마다 새로 매겨요. 시즌이 끝나면 분석가는 프리미엄 리포트 이용권 1장, 고수는 모닝 브리핑 1개월, 부동산 달인은 브리핑 3개월과 리포트 이용권 3장을 받아요. 시즌 달인께는 임장 모임 초대 소식을 보내 드려요.</div>
+    ${wait.length || can.length ? `<div class="gr"><b>내 보상</b><br>${wait.map(g => `${esc(g.season)} ${esc(g.t)} — 보관 중`).concat(can.map(g => `${esc(g.t)} — ${g.left}장 남음(결제 화면에서 [이용권으로 열기])`)).join('<br>')}${wait.length ? `<br><button type="button" class="claim" id="claimBtn">보상 받기</button><div class="sr" id="claimMsg" role="status"></div>` : ''}</div>` : ''}
+    <div class="gr"><label class="sw2"><input type="checkbox" id="pfHide" ${pr.hide ? 'checked' : ''}> 등급 배지 숨기기</label>
+    <label class="sw2"><input type="checkbox" id="pfHall" ${pr.hall ? 'checked' : ''}> 명예의 전당에 별명 올리기</label>
+    <label class="sw2"><input type="checkbox" id="pfMeet" ${pr.meet ? 'checked' : ''}> 임장 모임 초대 받기(시즌 달인·고수)</label></div></div>`;
+}
+function bindTier(){
+  const box = $('tierBox'); if (!box) return;
+  const save = () => call('quizPrefs', { hide: $('pfHide').checked, hall: $('pfHall').checked, meet: $('pfMeet').checked }).then(j => { ME.prefs = j.prefs; drawMe(); drawBoard(); }).catch(() => {});
+  ['pfHide', 'pfHall', 'pfMeet'].forEach(id => { $(id).onchange = save; });
+  if ($('claimBtn')) $('claimBtn').onclick = () => call('quizClaim').then(j => { ME.grants = j.grants; $('claimMsg').textContent = j.msg || ''; if (!j.pending) drawMe(); }).catch(e => { $('claimMsg').textContent = e.message; });
 }
 function drawQs(){
   const now = nowK(), open = (WK.open || []).filter(q => P.isOpen(q, now)), wait = (WK.wait || []).concat((WK.open || []).filter(q => !P.isOpen(q, now)));
@@ -302,7 +333,7 @@ function drawBoard(){
   if (!B || !B.rows) { $('pqBoard').innerHTML = ''; return; }
   const myNick = ME && ME.nick;
   $('pqBoard').innerHTML = `<p class="h3">이번 주 순위 <span style="font-size:13px;font-weight:500;color:var(--sub2)">${esc(B.label || '')}</span></p>` + (B.rows.length
-    ? `<table class="bd"><thead><tr><th>순위</th><th>별명</th><th>맞힘</th><th>포인트</th></tr></thead><tbody>${B.rows.map(r => `<tr${r.nick === myNick ? ' class="mine"' : ''}><td>${r.rank}</td><td>${esc(r.nick)}</td><td>${r.ok}/${r.n}</td><td>${r.pts}</td></tr>`).join('')}</tbody></table>`
+    ? `<table class="bd"><thead><tr><th>순위</th><th>별명</th><th>맞힘</th><th>포인트</th></tr></thead><tbody>${B.rows.map(r => `<tr${r.nick === myNick ? ' class="mine"' : ''}><td>${r.rank}</td><td>${esc(r.nick)}${r.tier ? `<span class="tb">${esc(r.tier)}</span>` : ''}</td><td>${r.ok}/${r.n}</td><td>${r.pts}</td></tr>`).join('')}</tbody></table>`
     : `<p class="sr">이번 주에 결과가 나온 예측이 아직 없어요. 결과가 나오면 순위가 생겨요.</p>`);
 }
 function drawBadges(){

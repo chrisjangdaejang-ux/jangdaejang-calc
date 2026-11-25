@@ -278,8 +278,8 @@ function drawRp(){
   $('rpOn').onchange = () => { setPrefs(P => { P.rp = $('rpOn').checked; }); stat('feature_use', {feature: 'report_mail', on: $('rpOn').checked ? 1 : 0}); drawRp(); };
 }
 
-/* ---------- 내 부동산 달력 메일(v54) — 모닝 브리핑을 메일로 받으면 브리핑 안에, 아니면 일주일에 한 번까지 ---------- */
-const calSrv = () => !!(MINE && MINE.cal === 1);     // 서버가 v54(달력 메일)를 아는지
+/* ---------- 내 부동산 달력 메일(v55) — 모닝 브리핑을 메일로 받으면 브리핑 안에, 아니면 일주일에 한 번까지 ---------- */
+const calSrv = () => !!(MINE && MINE.cal === 1);     // 서버가 v55(달력 메일)를 아는지
 function drawCal(){
   const P = W.aprefs(), el = $('calBox'), hn = homesN(), brief = !!(MINE && MINE.brief);
   el.innerHTML = sw('calOn', P.cal, '<b>세금·계약 날짜를 미리 메일로 받을게요</b>', '재산세·종부세 기간, 취득세·양도세 신고 기한, 전세 계약갱신요구권 기간, 내 지역 청약 접수일을 기한 30일·7일·1일 전에 알려 드려요') +
@@ -338,7 +338,7 @@ async function main(){
   if (MINE && MINE.sub && MINE.sub.prefs && SERVER === 'ok') {   // 메일 알림 설정은 서버 것이 기준(다른 기기에서 바꾼 것 반영)
     const L0 = W.aprefs(), S0 = AC.cleanPrefs(MINE.sub.prefs);
     if (!newSrv()) { Object.keys(AC.OPTIN).forEach(k => { S0.kinds[k] = L0.kinds[k]; }); S0.rp = L0.rp; }   // 서버가 아직 새 칸(성적표·새 알림 종류)을 모르면 이 기기 값을 지킴
-    if (!calSrv()) S0.cal = L0.cal;                                                                                  // 서버가 아직 달력 메일 칸(v54)을 모르면 이 기기 값을 지킴
+    if (!calSrv()) S0.cal = L0.cal;                                                                                  // 서버가 아직 달력 메일 칸(v55)을 모르면 이 기기 값을 지킴
     if (JSON.stringify(L0) !== JSON.stringify(S0)) { W.setAprefs(S0); }
   }
   redraw();

@@ -140,6 +140,16 @@ function alertsHtml(al){
     : '<p class="empty">예전에 신청한 알림이 없어요.</p>'}
     <p class="note">이제 알림은 관심 목록 단지와 고른 청약 조건으로 받아요. <a href="${JB.SITE}my/alerts/">알림 센터</a>에서 단지별로 켜고 끄고, 메일로 받을 수 있어요. 카카오톡 알림은 준비하고 있어요.</p></div>`;
 }
+/* v55 예측 맞히기 등급 배지(숨기기를 켰으면 보이지 않음) */
+function qzTier(){
+  const el = document.getElementById('qzTier'), api = (window.JDJ_AGENTS && JDJ_AGENTS.api) || ''; let s = ''; try { s = (JSON.parse(localStorage.getItem('jdj_auth') || 'null') || {}).s || ''; } catch (e) {}
+  if (!el || !api || !s) return;
+  fetch(api, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'quizMine', s }) }).then(r => r.json()).then(j => {
+    if (!j || !j.ok || !j.season || (j.prefs && j.prefs.hide) || !j.season.me.n) return;
+    el.innerHTML = `<h2>예측 맞히기 등급<small>${esc(j.season.label)}</small></h2><p class="empty"><b>${esc(j.season.me.t)}</b> · 예측 ${j.season.me.n}번 · 정확도 ${j.season.me.acc}%${(j.grants || []).some(g => g.st === '대기') ? ' · 받을 보상이 있어요' : ''}</p><p class="note"><a href="${JB.SITE}quiz/#predict">예측 맞히기로 가기</a> · 등급 배지는 예측 맞히기 화면에서 숨길 수 있어요.</p>`;
+    el.hidden = false;
+  }).catch(() => {});
+}
 async function account(){
   app.innerHTML = '<div class="st">내 계정을 불러오는 중이에요…</div>';
   let st;
@@ -148,12 +158,14 @@ async function account(){
   const d = st.data, u = A.user();
   app.innerHTML = `<div class="who"><span class="av" aria-hidden="true">${esc((u.nick || '카')[0])}</span><div><b>${esc(u.nick)} 님</b><small>카카오 간편 로그인했어요</small></div></div>
     ${homesHtml(d)}${favsHtml(d)}${repsHtml(d)}${areasHtml(d)}${alertsHtml(st.alerts || [])}
+    <div class="box" id="qzTier" hidden></div>
     <div class="box"><h2>로그아웃</h2><p class="empty">이 기기에서만 로그아웃해요. 이 기기에 저장된 내 집 목록은 그대로 남아요.</p><div class="acts" style="margin-top:10px"><button type="button" class="btn ghost" id="outBtn">로그아웃</button></div></div>
     <div class="box del"><h2>탈퇴</h2><p class="empty">탈퇴하면 집예보가 보관한 카카오 회원번호·닉네임과 계정에 저장한 내 집·관심 단지·리포트·알림 신청을 바로 지워요. 지운 뒤에는 되살릴 수 없어요. 이 기기 브라우저에 저장된 내 집 목록은 남아 있고, 브라우저 설정에서 지울 수 있어요.</p>
       <div class="acts" style="margin-top:10px"><button type="button" class="btn warn" id="delBtn">탈퇴하기</button></div><div class="msg" id="delMsg" role="status"></div></div>`;
   app.querySelectorAll('[data-fav]').forEach(b => b.onclick = () => { b.disabled = true; A.removeFav(d.favs[+b.dataset.fav]).then(account).catch(e => { b.textContent = e.message; }); });
   app.querySelectorAll('[data-rep]').forEach(b => b.onclick = () => { b.disabled = true; A.removeReport(d.reports[+b.dataset.rep].id).then(account).catch(e => { b.textContent = e.message; }); });
   app.querySelectorAll('[data-al]').forEach(b => b.onclick = () => { b.disabled = true; A.unsubscribe([b.dataset.al]).then(account).catch(e => { b.textContent = e.message; }); });
+  qzTier();
   $('outBtn').onclick = () => { $('outBtn').disabled = true; A.logout().then(() => intro('<div class="st" style="margin-bottom:14px">로그아웃했어요.</div>')); };
   let arm = false;
   $('delBtn').onclick = () => {

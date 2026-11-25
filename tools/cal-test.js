@@ -2,7 +2,7 @@
    ① assets/cal-core.js 날짜 규칙(손으로 센 날짜와 같음): 6월 1일 과세기준일·재산세 7.16~7.31/9.16~9.30·종부세 고지 11.26·납부 12.1~12.15·
       취득세 60일·양도세 예정신고(양도일이 속한 달 말일부터 2개월)·계약갱신요구권(만기 6개월 전~2개월 전, 말일 맞춤)·전입·확정일자·전월세 신고 30일·청약 일정
    ② 확인하지 못한 규칙(일시적 2주택)은 만들지도 보여 주지도 않음 · 금액 칸은 저장하지 않음 · 메일 단계(30일·7일·1일 / 주 1회)
-   ③ 서버(tools/agent-backend.gs v54): CAL-CORE 글자 그대로 · 저장 자료 cal 저장·불러오기 · 모닝 브리핑 안에 함께(하루 한 통) · 브리핑 없는 분은 주 1회 · 끄기 링크 · 광고 없음
+   ③ 서버(tools/agent-backend.gs v55): CAL-CORE 글자 그대로 · 저장 자료 cal 저장·불러오기 · 모닝 브리핑 안에 함께(하루 한 통) · 브리핑 없는 분은 주 1회 · 끄기 링크 · 광고 없음
    ④ 화면 mine/calendar/·알림 센터·서비스 워커·출처 주소 */
 'use strict';
 const fs = require('fs'), path = require('path');
@@ -66,7 +66,7 @@ check('메일(브리핑 안): 바깥 머리·꼬리 없이 칸만', !/보낸 사
 const gs = read('tools/agent-backend.gs');
 const blk = (s, n) => { const a = s.indexOf(`/* ${n}-CORE BEGIN`), b = s.indexOf(`/* ${n}-CORE END */`); return a >= 0 && b > a ? s.slice(a, b) : null; };
 check('서버 CAL-CORE = 화면 cal-core.js(글자 그대로)', blk(gs, 'CAL') && blk(gs, 'CAL') === blk(read('assets/cal-core.js'), 'CAL'));
-check('서버 v54 변경 요약 표시', /\* v54 변경 요약 \(/.test(gs) && gs.indexOf('v54 변경 요약') < gs.indexOf('v53 변경 요약'));
+check('서버 v55 변경 요약 표시', /\* v55 변경 요약 \(/.test(gs) && gs.indexOf('v55 변경 요약') < gs.indexOf('v53 변경 요약'));
 const E = require('./gs-harness')({ now: '2026-11-25T07:10:00+09:00', data: { 'index.json': { sgg: { '11680': { name: '강남구', sido: '서울특별시' } }, sido: [] }, 'chungyak/notices.json': { rows: N } } });
 const PL = { sd: 's00', code: '11680', dong: '대치동', jibun: '316', apt: '은마', band: '84㎡대', t: '2026-11-20' };
 const calA = { h: { [HOME.key]: { t: 'own', acq: '2026-11-10' } }, n: 1, ms: 10 };
@@ -104,18 +104,65 @@ check('보낸 기록에 연락처·날짜 원문 없음', !JSON.stringify(E.shee
 
 /* ---------- ④ 화면 ---------- */
 const page = read('mine/calendar/index.html'), center = read('my/alerts/index.html'), sw = read('sw.js'), mine = read('mine/index.html');
-check('달력 화면: 계산·세금 엔진·공시가격·로그인 부품', /cal-core\.js\?v=1/.test(page) && /tax-engine\.js/.test(page) && /gongsi\.js/.test(page) && /auth\.js/.test(page) && /back\.js\?v=1/.test(page));
+check('달력 화면: 계산·세금 엔진·공시가격·로그인 부품', /cal-core\.js\?v=2/.test(page) && /tax-engine\.js/.test(page) && /gongsi\.js/.test(page) && /auth\.js/.test(page) && /back\.js\?v=1/.test(page));
 check('달력 화면: 예상 재산세는 "참고" 표시 + 계산 근거', /예상 재산세\(참고\)/.test(page) && /공시가격 중간값/.test(page));
-check('달력 화면: 금액 입력칸 없음(날짜·종류·주택 수만)', !/type="number"/.test(page) && !/inputmode="numeric"/.test(page));
+check('달력 화면: 금액(보증금·현금·소득)은 이 기기(jdj_ta_me)에만 — 계정 저장(d.cal)에는 달력 칸만', /const TK = 'jdj_ta_me'/.test(page) && /d\.cal = Object\.assign\(\{\}, CAL/.test(page) && !/d\.cal[^;]*ME\./.test(page) && !/(dep|cash|inc)=/.test(page.replace(/data-ta-(dep|cash|inc)/g, '')));
 check('달력 화면: 로그인해야 날짜를 넣음', /AU\.gate\(/.test(page) && /loggedIn\(\)/.test(page));
 check('달력 화면: 서비스 이름은 설정에서, 회사 이름·경쟁 앱 이름 없음', /SITE_NAME/.test(page) && !/장대장부동산그룹/.test(page) && !/호갱|직방|아실|리치고|네이버\s?부동산/.test(page));
 check('알림 센터: 달력 메일 켜기(prefs.cal)·서버 새 판 확인', /id="calBox"/.test(center) && /P\.cal = \$\('calOn'\)\.checked/.test(center) && /MINE\.cal === 1/.test(center));
 check('알림 계산: cal 설정은 직접 켠 경우에만', A.cleanPrefs({}).cal === false && A.cleanPrefs({ cal: true }).cal === true && A.cleanPrefs({ cal: 'y' }).cal === false);
 check('내 집 시세 화면에서 달력으로 가는 길', /href="calendar\/"/.test(mine));
-check('서비스 워커: 달력 화면·계산 파일', /'\.\/mine\/calendar\/'/.test(sw) && /cal-core\.js\?v=1/.test(sw));
+check('서비스 워커: 달력 화면·계산 파일', /'\.\/mine\/calendar\/'/.test(sw) && /cal-core\.js\?v=2/.test(sw));
 check('공식 출처 주소가 계산 파일에 그대로', ['news.seoul.go.kr/gov/archives/200106', 'news.seoul.go.kr/gov/archives/200082', 'easylaw.go.kr', 'lsJoLnkSeq=1007847519', 'lsJoLnkSeq=1018577211', 'mediahub.seoul.go.kr/archives/2001807', 'lsiSeq=249983'].every(u => read('assets/cal-core.js').includes(u)));
 const txt = Object.values(C.RULES).map(x => x.why || '').join(' ') + ev.concat(lease, mv2, cy).map(e => e.t + ' ' + e.s + ' ' + (e.p || '')).join(' ');
 check('문구: ~요 말투, 딱딱한 말투·보장 표현 없음', !/습니다|십시오|보장|무조건/.test(txt));
+
+/* ---------- ⑤ 전세 만기 알림(세입자) ---------- */
+const TA = C.cleanTa({ on: true, areas: [{ g: '11710', d: '가락동' }, { g: '11710', d: '문정동' }, { g: '11710', d: '송파동' }, { g: '11680', d: '대치동' }], work: { g: '11680', d: '역삼동' }, ty: 'a', band: '84㎡대', buy: true, down: 'y', dep: 60000, cash: 1, income: 7000 });
+check('만기 알림 설정 정리: 희망 지역 3곳까지·체크는 true 만·보증금·현금·소득은 버림', JSON.stringify(TA) === JSON.stringify({ on: true, areas: [{ g: '11710', d: '가락동' }, { g: '11710', d: '문정동' }, { g: '11710', d: '송파동' }], work: { g: '11680', d: '역삼동' }, ty: 'a', band: '84㎡대', buy: true, down: false }), TA);
+check('저장 정리: 전세 집에만 만기 알림 칸', C.clean({ t: 'jeonse', ce: '2027-08-31', ta: TA }).ta.on === true && C.clean({ t: 'own', ta: TA }).ta === undefined);
+const tev = C.events([Object.assign({}, HOME, { cal: { t: 'jeonse', cs: '2025-08-31', ce: '2027-08-31', ta: TA } })], '2026-11-25', {}).filter(e => e.k === 'ta');
+check('만기 6·4·2개월 전 알림 날짜(2/28·4/30·6/30)', tev.map(e => e.d).join() === '2027-02-28,2027-04-30,2027-06-30', tev.map(e => e.d));
+check('알림을 끄면 만기 알림 날짜 없음', !C.events([Object.assign({}, HOME, { cal: { t: 'jeonse', ce: '2027-08-31', ta: Object.assign({}, TA, { on: false }) } })], '2026-11-25', {}).some(e => e.k === 'ta'));
+const tev2 = C.events([Object.assign({}, HOME, { cal: { t: 'jeonse', ce: '2027-05-30', ta: TA } })], '2026-12-05', {});
+check('메일 단계: 알림 날짜(6개월 전 11/30)가 지나고 14일 안이면 한 번(ta)', C.due(tev2, 'weekly', {}).filter(e => e.k === 'ta').map(e => e.m + ':' + e.stage).join() === '6:ta' && !C.due(tev2, 'weekly', { [tev2.find(e => e.k === 'ta').id + '|ta']: 1 }).some(e => e.k === 'ta'));
+/* 공개 전월세 실거래 모양(rent/{구}.json units)으로 손 계산: 신규·순수 전세만, 최근 6개월(2026-05-25 이후) vs 그 전 6개월 */
+const c_ = (d, dep, mo, kind) => [d, 84.9, 5, dep, mo || 0, kind == null ? 0 : kind];
+const RF = { units: [
+  ['가락동', 'A단지', '84㎡대', '1', 84.9, 0, 0, [], [], [], [c_(20261020, 80000), c_(20261001, 82000), c_(20260901, 84000), c_(20260910, 50000, 100), c_(20260920, 70000, 0, 1),
+    c_(20260401, 90000), c_(20260301, 92000), c_(20260101, 94000)], {}],
+  ['가락동', 'B단지', '84㎡대', '2', 84.9, 0, 0, [], [], [], [c_(20261010, 70000), c_(20261011, 71000), c_(20261012, 72000), c_(20260201, 69000), c_(20260202, 70000), c_(20260203, 71000)], {}],
+  ['문정동', 'C단지', '84㎡대', '3', 84.9, 0, 0, [], [], [], [c_(20261010, 55000), c_(20260110, 54000)], {}],
+  ['문정동', 'D단지', '59㎡대', '4', 59, 0, 0, [], [], [], [c_(20261010, 30000), c_(20261011, 30000), c_(20261012, 30000), c_(20260110, 40000), c_(20260111, 40000), c_(20260112, 40000)], {}] ] };
+const sc = C.taScan({ '11710': RF }, [{ g: '11710', d: '가락동' }, { g: '11710', d: '문정동' }], '84㎡대', '2026-11-25', 72000);
+check('내린 단지: A 82,000(3건) vs 92,000(3건) → −10.9% (월세·갱신 계약 뺌), B 는 올라서 빠짐', JSON.stringify(sc.apts.map(a => [a.a, a.nr, a.np, a.mr, a.mp, a.chg])) === JSON.stringify([['A단지', 3, 3, 82000, 92000, -10.9]]), sc.apts);
+check('내린 동: 가락동 최근 6건 중간값 (72,000+80,000)/2 = 76,000 vs 그 전 6건 (71,000+90,000)/2 = 80,500 → −5.6%', JSON.stringify(sc.dongs.map(d => [d.d, d.nr, d.np, d.mr, d.mp, d.chg])) === JSON.stringify([['가락동', 6, 6, 76000, 80500, -5.6]]), sc.dongs);
+check('표본이 적은 곳(C: 1건·1건)은 변화율을 내지 않음, 다른 평형(D 59㎡)은 뺌', !sc.apts.some(a => a.a === 'C단지' || a.a === 'D단지') && !sc.dongs.some(d => d.d === '문정동'));
+check('내 보증금 7억 2,000만으로 갈 수 있는 단지: B(71,000)·C(55,000) = 2곳', sc.fit === 2 && sc.fitList.map(a => a.a).sort().join() === 'B단지,C단지', sc.fitList);
+check('보증금을 안 넣으면 0곳(서버 메일은 보증금 없이 계산)', C.taScan({ '11710': RF }, [{ g: '11710', d: '가락동' }], '84㎡대', '2026-11-25', 0).fit === 0);
+const own = C.taOwn(RF, { dong: '가락동', apt: 'A단지', band: '84㎡대', jibun: '1' }, '2026-11-25');
+check('내 단지 전세 시세(최근 6개월 82,000 · 그 전 92,000)', own && own.mr === 82000 && own.mp === 92000 && own.chg === -10.9, own);
+const tm = C.taMailHtml('A단지 84㎡대', sc, own, { gname: () => '송파구', web: 'https://w/' });
+check('메일 칸: 내린 동(건수)·내 단지 시세·갱신 요구권 법 조문·전세 안전 점검 링크·보증금 비교는 화면에서', /송파구 가락동 −/.test(tm) && /6건/.test(tm) && /계약갱신요구권/.test(tm) && /lsJoLnkSeq=1007847519/.test(tm) && /jeonse\//.test(tm) && /mine\/calendar\/#ta/.test(tm) && /정보 안내/.test(tm), tm.slice(0, 300));
+/* 서버: 달력 메일은 안 켜고 만기 알림만 켠 세입자 → 주 1회 메일에 만기 준비 칸 */
+const E2 = require('./gs-harness')({ now: '2026-12-04T07:10:00+09:00', data: { 'index.json': { sgg: { '11710': { name: '송파구', sido: '서울특별시' } }, sido: [] }, 'chungyak/notices.json': { rows: [] }, 'rent/11710.json': RF } });
+const TP = { sd: 's00', code: '11710', dong: '가락동', jibun: '1', apt: 'A단지', band: '84㎡대', t: '2026-11-20' }, TK2 = '11710|가락동|1|A단지|84㎡대';
+const sT = E2.member(9, { homes: [TP], cal: { h: { [TK2]: { t: 'jeonse', cs: '2025-05-30', ce: '2027-05-30', ta: Object.assign({}, TA, { areas: [{ g: '11710', d: '가락동' }, { g: '11710', d: '문정동' }] }) } }, ms: 3 } });
+let rT = E2.post({ action: 'alertJoin', s: sT, consent: true, email: 't@example.com', v: A.V, prefs: {} });
+check('서버: 관심 단지·달력 메일 없이 만기 알림만 켜도 알림 메일 신청됨', rT.ok && rT.ta === 1, rT);
+rT = E2.post({ action: 'userLoad', s: sT });
+check('서버: 저장된 만기 알림 설정에 보증금·현금·소득 칸 없음', rT.ok && rT.data.cal.h[TK2].ta.on === true && !/dep|cash|income/.test(JSON.stringify(rT.data.cal)), rT.data && rT.data.cal);
+const n9 = E2.mails.length; E2.T.alertsDaily();
+const mT = E2.mails.slice(n9).filter(m => m.to === 't@example.com');
+check('서버: 만기 6개월 전(11/30) 지난 주 → 만기 준비 칸(내린 동·내 단지 시세·법 조문) 한 통, 광고 없음', mT.length === 1 && /만기 준비/.test(mT[0].htmlBody) && /가락동/.test(mT[0].htmlBody) && /내 단지 전세 시세/.test(mT[0].htmlBody) && /lsJoLnkSeq=1007847519/.test(mT[0].htmlBody) && !/\(광고\)/.test(mT[0].subject), mT.map(m => m.subject));
+check('서버: 달력 메일을 안 켰으니 세금 날짜는 안 들어감', mT.length === 1 && !/종합부동산세|재산세/.test(mT[0].htmlBody));
+E2.now += 7 * 86400000; const n10 = E2.mails.length; E2.T.alertsDaily();
+check('서버: 같은 만기 알림은 다시 안 보냄', !E2.mails.slice(n10).some(m => m.to === 't@example.com'));
+/* 화면·안내 */
+const jeon = read('jeonse/index.html'), homeP = read('index.html'), priv = read('privacy/index.html');
+check("가입 유도: 전월세 화면·첫 화면에 '전세 만기 알림 받기'", /href="\.\.\/mine\/calendar\/#ta"[^>]*>[\s\S]{0,200}전세 만기 알림 받기/.test(jeon) && /id="taCard" href="mine\/calendar\/#ta"[\s\S]{0,200}전세 만기 알림 받기/.test(homeP));
+check('개인정보처리방침: 만기 알림 설정 항목·보증금·현금·소득은 기기에만', /전세 만기 알림을 켠 경우 그 설정/.test(priv) && /보증금·보유 현금·연소득은 이용자 기기에만/.test(priv));
+check('달력 화면: 매수 비교는 내 집 마련 계산 규칙(loan-core)·모두 참고 표시', /loan-core\.js/.test(page) && /LN\.need\(/.test(page) && /③ 매수로 바꾸면\(참고\)/.test(page) && /한 달 비용 비교\(참고\)/.test(page));
 
 console.log(`\n내 부동산 달력 확인: ${pass}개 통과, ${fail}개 실패`);
 process.exit(fail ? 1 : 0);

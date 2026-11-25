@@ -1,4 +1,4 @@
-/* 내 부동산 달력 계산 — 화면 없음. 달력 화면(mine/calendar/)·서버 달력 알림 메일(tools/agent-backend.gs v54)이 함께 쓴다.
+/* 내 부동산 달력 계산 — 화면 없음. 달력 화면(mine/calendar/)·서버 달력 알림 메일(tools/agent-backend.gs v55)이 함께 쓴다.
    - 아래 'CAL-CORE' 블록은 tools/agent-backend.gs 에 글자 그대로 복사돼 있다(서버는 다른 파일을 불러올 수 없어서). tools/cal-test.js 가 두 곳이 같은지 확인한다.
    - 날짜 규칙은 공식 출처(CAL_SRC)를 직접 열어 확인한 것만 보여 준다(CAL_RULES ok:true). 확인하지 못한 규칙(ok:false)은 계산도 표시도 하지 않는다.
    - 사용자가 넣는 것: 자가·전세·월세, 취득일(잔금일)·파는 집 잔금일(선택), 전월세 계약 시작·만기일, 보유 주택 수. 금액은 받지 않는다.
@@ -19,14 +19,15 @@ const CAL_SRC = {
   renew2: { nm: '대한민국 정책브리핑 「계약갱신청구권, 언제부터 집주인에게 요구할 수 있어요?」', url: 'https://www.korea.kr/news/visualNewsView.do?newsId=148875466' },
   move: { nm: '주택임대차보호법 제3조(국가법령정보센터)', url: 'https://www.law.go.kr/lsLinkCommonInfo.do?lsJoLnkSeq=1018577211&chrClsCd=010202&ancYnChk=' },
   rent: { nm: '서울특별시 내 손안에 서울 「전·월세 계약 꼭 신고하세요」', url: 'https://mediahub.seoul.go.kr/archives/2001807' },
-  cy: { nm: '한국부동산원 청약홈 분양 공고', url: 'https://www.applyhome.co.kr/' }
+  cy: { nm: '한국부동산원 청약홈 분양 공고', url: 'https://www.applyhome.co.kr/' },
+  rentdata: { nm: '국토교통부 아파트·연립다세대·오피스텔 전월세 실거래가 공개 자료', url: 'https://rt.molit.go.kr/' }
 };
 /* ok:false = 공식 원문을 확인하지 못함 → 계산·표시하지 않음 */
 const CAL_RULES = {
   base: { ok: true, src: ['prop', 'comp'] }, prop1: { ok: true, src: ['prop'] }, prop2: { ok: true, src: ['prop'] },
   compN: { ok: true, src: ['comp'] }, compP: { ok: true, src: ['comp'] }, acq: { ok: true, src: ['acq'] }, cgt: { ok: true, src: ['cgt'] },
   renewO: { ok: true, src: ['renew', 'renew2'] }, renewC: { ok: true, src: ['renew', 'renew2'] }, end: { ok: true, src: ['renew'] },
-  move: { ok: true, src: ['move'] }, rent: { ok: true, src: ['rent'] }, cy: { ok: true, src: ['cy'] },
+  move: { ok: true, src: ['move'] }, rent: { ok: true, src: ['rent'] }, cy: { ok: true, src: ['cy'] }, ta: { ok: true, src: ['renew', 'rentdata'] },
   tmp2: { ok: false, src: [], why: '일시적 2주택 처분 기한은 2026년 10월에 바뀐 규정이라, 공식 사이트에서 법령 원문을 확인한 뒤 보여 드릴게요.' }
 };
 const CAL_AHEAD = 400, CAL_PAST = 0, CAL_MAX = 60;
@@ -52,8 +53,18 @@ function calClean(x) {
   const t = CAL_TEN[x.t] ? x.t : '', d = v => calOkDate(v) ? String(v) : '';
   const o = { t: t };
   if (t === 'own') { o.acq = d(x.acq); o.sell = d(x.sell); }
-  if (t === 'jeonse' || t === 'wolse') { o.cs = d(x.cs); o.ce = d(x.ce); if (o.cs && o.ce && o.ce <= o.cs) o.ce = ''; }
+  if (t === 'jeonse' || t === 'wolse') { o.cs = d(x.cs); o.ce = d(x.ce); if (o.cs && o.ce && o.ce <= o.cs) o.ce = ''; if (x.ta && typeof x.ta === 'object') o.ta = calCleanTa(x.ta); }
   return o;
+}
+/* 전세·월세 만기 알림(세입자용) 설정 — 서버에는 이 칸만 저장한다: 켜기, 희망 지역(최대 3곳: 시·군·구 코드 + 동, 동 '' = 시·군·구 전체), 출퇴근지(동),
+   집 형태(a 아파트·v 빌라·o 오피스텔), 평형, '매수도 생각해요'·'보증금 낮추고 싶어요'. 보증금·보유 현금·연소득은 받지 않는다(그 기기에만). */
+const CAL_TA_TY = { a: '아파트', v: '빌라', o: '오피스텔' };
+function calCleanTa(x) {
+  x = x && typeof x === 'object' ? x : {};
+  const pl = v => v && typeof v === 'object' && /^\d{5}$/.test(String(v.g || '')) ? { g: String(v.g), d: /^[0-9가-힣.·]{0,20}$/.test(String(v.d || '')) ? String(v.d || '') : '' } : null;
+  const seen = {}, areas = (Array.isArray(x.areas) ? x.areas : []).map(pl).filter(a => a && !seen[a.g + a.d] && (seen[a.g + a.d] = 1)).slice(0, 3);
+  return { on: x.on === true, areas: areas, work: pl(x.work), ty: CAL_TA_TY[x.ty] ? x.ty : '', band: /^[0-9가-힣㎡ ~.]{2,12}$/.test(String(x.band || '')) ? String(x.band) : '',
+    buy: x.buy === true, down: x.down === true };
 }
 /** 회원 저장 자료의 달력 칸: { h: {집키: calClean}, n: 우리 세대 보유 주택 수 1·2·3(3채 이상)|null, t: 마지막 저장 날짜, ms: 마지막 수정 시각(기기끼리 맞출 때) } */
 const CAL_KEY = /^\d{5}\|[^|<>\u0000-\u001F]{1,30}\|[^|<>\u0000-\u001F]{0,30}\|[^|<>\u0000-\u001F]{1,60}\|[^|<>\u0000-\u001F]{1,20}$/;
@@ -95,6 +106,10 @@ function calHome(h) {
       out.push(calEv('renewC', b, Object.assign(o(), { start: a, t: '계약갱신요구권 요청 마감', s: `만기 2개월 전인 ${calKoY(b)}까지 알려야 해요. 문자·내용증명처럼 날짜가 남는 방법이 안전해요. 이사할 계획이면 집주인과 날짜를 미리 맞춰 두세요.` })));
       out.push(calEv('end', c.ce, Object.assign(o(), { t: `${CAL_TEN[c.t]} 계약 만기`, s: '이 날 계약이 끝나요. 갱신이나 이사 일정이 정해졌는지 다시 확인해 보세요.' })));
     }
+    if (c.ce && c.ta && c.ta.on) [6, 4, 2].forEach(m => {
+      out.push(calEv('ta', calAddM(c.ce, -m), Object.assign(o(), { id: `ta|${h.key}|${m}`, sub: 'ta', m: m, end: calAdd(calAddM(c.ce, -m), 14), t: `만기 ${m}개월 전 — 이사·갱신 준비 알림`,
+        s: `만기(${calKoY(c.ce)})까지 ${m}개월 남았어요. 희망 지역에서 전세 보증금이 내린 곳, 내 단지 전세 시세, ${m >= 4 ? '계약갱신요구권 기간(만기 6개월 전~2개월 전)' : '갱신 요구 마감(만기 2개월 전)'}을 모아 드려요.` })));
+    });
     if (c.cs) {
       out.push(calEv('move', c.cs, Object.assign(o(), { t: '이사하는 날 — 전입신고·확정일자', s: '이사한 날 바로 전입신고를 하고 계약서에 확정일자를 받아 두세요. 집에 들어가 전입신고까지 마친 다음 날부터 대항력(새 집주인·은행에도 내 권리를 주장할 힘)이 생겨요.' })));
       out.push(calEv('rent', c.cs, Object.assign(o(), { end: calAdd(c.cs, 30), t: '전월세 계약 신고(계약일부터 30일 안)', s: '보증금 6,000만 원 초과 또는 월세 30만 원 초과 계약은 계약한 날부터 30일 안에 신고해야 해요. 신고하면 확정일자가 저절로 붙고, 전입신고 때 계약서를 함께 내면 신고한 것으로 봐요.' })));
@@ -141,7 +156,7 @@ function calStage(dd, mode) {
 }
 function calDue(ev, mode, sent) {
   sent = sent || {};
-  return (ev || []).map(e => Object.assign({}, e, { stage: e.sub === 'new' ? (e.dd <= 0 && e.dd >= -7 ? 'd1' : '') : calStage(e.dd, mode) })).filter(e => e.stage && !sent[e.id + '|' + e.stage] && !(e.stage === 'd30' && sent[e.id + '|d7']) && !(e.stage !== 'd1' && sent[e.id + '|d1']));
+  return (ev || []).map(e => Object.assign({}, e, { stage: e.sub === 'new' ? (e.dd <= 0 && e.dd >= -7 ? 'd1' : '') : e.sub === 'ta' ? (e.dd <= 0 && e.dd >= -14 ? 'ta' : '') : calStage(e.dd, mode) })).filter(e => e.stage && !sent[e.id + '|' + e.stage] && !(e.stage === 'd30' && sent[e.id + '|d7']) && !(e.stage !== 'd1' && sent[e.id + '|d1']));
 }
 function calEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 function calWhen(e) {
@@ -158,7 +173,7 @@ function calMailHtml(items, o) {
   const links = `${web ? `<a href="${calEsc(web)}mine/calendar/" style="color:#2F6BFF">내 부동산 달력 전체 보기</a>` : ''}${o.off ? ` · <a href="${calEsc(o.off)}" style="color:#4E5968">달력 알림만 끄기(한 번 누르면 끝)</a>` : ''}`;
   const body = `<div style="font-size:17px;font-weight:900;margin:0 0 4px">내 부동산 달력 <span style="font-size:13px;font-weight:700;color:#B8942A">다가오는 날짜 ${items.length}개</span></div>
     <p style="margin:0 0 10px;font-size:13.5px;color:#4E5968;line-height:1.55">등록하신 집과 지역 기준으로 놓치기 쉬운 세금·계약 날짜를 모았어요. 날짜 규칙은 공식 안내를 확인한 것만 넣었고, 주말·공휴일이면 기한이 다음 평일로 미뤄질 수 있어요.</p>
-    <ul style="list-style:none;margin:0 0 6px;padding:0">${li}</ul><p style="font-size:12.5px;color:#4E5968;margin:4px 0 0">${links}</p>`;
+    <ul style="list-style:none;margin:0 0 6px;padding:0">${li}</ul>${o.extra || ''}<p style="font-size:12.5px;color:#4E5968;margin:4px 0 0">${links}</p>`;
   const subject = `[${site}] ${o.date ? calKo(o.date) + ' ' : ''}내 부동산 달력 — ${items[0] ? items[0].t : ''}${items.length > 1 ? ` 외 ${items.length - 1}개` : ''}`.slice(0, 120);
   const html = o.merged ? `<div style="border:2px solid #B8942A;border-radius:12px;padding:14px 16px;margin:0 0 14px">${body}</div>`
     : `<div style="font-family:'Noto Sans KR',sans-serif;max-width:600px;margin:auto;color:#191F28"><div style="font-weight:900;font-size:19px;margin:6px 0 12px">${calEsc(site)} <span style="color:#B8942A">달력 알림</span></div>${body}
@@ -166,10 +181,70 @@ function calMailHtml(items, o) {
       ${o.off ? `<a href="${calEsc(o.off)}" style="color:#4E5968">달력 알림만 끄기</a> · ` : ''}${web ? `<a href="${calEsc(web)}my/alerts/" style="color:#4E5968">알림 설정 바꾸기</a>` : ''}<br>보낸 사람: ${calEsc(site)}${o.sender ? `(${calEsc(o.sender.name)}) · 전화 ${calEsc(o.sender.tel)} · 답장은 ${calEsc(o.sender.email)}로 가요` : ''}</p></div>`;
   return { subject: subject, html: html, text: text.join('\n') };
 }
+/* ---------- 세입자 만기 알림 계산(공개 전월세 실거래 rent/{구}.json · rent/v · rent/o) ----------
+   행 u = [동, 표시명, 평형, 지번, 전용, 3년 전세 수, 3년 월세 수, J, WD, WR, 계약 목록[[계약일, 전용, 층, 보증금, 월세, 0 신규·1 갱신·2 미기재, …]], 덧붙임]
+   보증금 중간값은 '순수 전세'(월세 0) · 신규 계약(갱신 계약은 5% 상한이 있어 시세와 달라 뺌)만 센다. 최근 6개월 vs 그 전 6개월(7~12개월 전). */
+const CAL_TA_MIN = 3;                         // 두 기간 모두 이 건수 이상일 때만 변화율을 낸다
+function calMed(a) { const v = a.slice().sort((x, y) => x - y), n = v.length; return n ? (n % 2 ? v[(n - 1) / 2] : Math.round((v[n / 2 - 1] + v[n / 2]) / 2)) : 0; }
+function calI8(iso) { return +String(iso).replace(/-/g, ''); }
+function calTaPairs(u, today) {
+  const t = calI8(today), a6 = calI8(calAddM(today, -6)), a12 = calI8(calAddM(today, -12)), r = [], p = [];
+  (Array.isArray(u[10]) ? u[10] : []).forEach(c => { if (!Array.isArray(c) || !(c[3] > 0) || c[4] || c[5] === 1) return; if (c[0] > a6 && c[0] <= t) r.push(c[3]); else if (c[0] > a12 && c[0] <= a6) p.push(c[3]); });
+  return { r: r, p: p };
+}
+function calTaStat(r, p) {
+  const o = { nr: r.length, np: p.length, mr: calMed(r), mp: calMed(p), chg: null };
+  if (o.nr >= CAL_TA_MIN && o.np >= CAL_TA_MIN && o.mp > 0) o.chg = Math.round((o.mr / o.mp - 1) * 1000) / 10;
+  return o;
+}
+/** files = {구코드: rent 파일}, areas = [{g, d}], band = 평형('' = 모든 평형), deposit = 내 보증금(만원, 기기에만 — 없으면 0)
+    → { dongs: [{g, d, …stat}] 내린 동(내림차순), apts: [{g, d, a, b, …stat}] 내린 단지, fit: 내 보증금 이하로 최근 6개월 계약된 단지 수, fitList } */
+function calTaScan(files, areas, band, today, deposit) {
+  const dongs = {}, apts = [], fit = [];
+  (areas || []).forEach(ar => {
+    const R = (files || {})[ar.g]; if (!R || !Array.isArray(R.units)) return;
+    R.units.forEach(u => {
+      if (ar.d && u[0] !== ar.d) return;
+      if (band && u[2] !== band) return;
+      const P = calTaPairs(u, today), k = ar.g + '|' + u[0];
+      const D = dongs[k] = dongs[k] || { g: ar.g, d: u[0], r: [], p: [] }; D.r = D.r.concat(P.r); D.p = D.p.concat(P.p);
+      const st = calTaStat(P.r, P.p);
+      if (st.chg != null && st.chg < 0) apts.push(Object.assign({ g: ar.g, d: u[0], a: u[1], b: u[2], j: u[3] }, st));
+      if (deposit > 0 && P.r.length && st.mr <= deposit) fit.push({ g: ar.g, d: u[0], a: u[1], b: u[2], mr: st.mr, nr: st.nr });
+    });
+  });
+  const dl = Object.keys(dongs).map(k => { const D = dongs[k]; return Object.assign({ g: D.g, d: D.d }, calTaStat(D.r, D.p)); }).filter(x => x.chg != null && x.chg < 0).sort((a, b) => a.chg - b.chg);
+  apts.sort((a, b) => a.chg - b.chg);
+  fit.sort((a, b) => b.nr - a.nr || a.mr - b.mr);
+  return { dongs: dl, apts: apts, fit: fit.length, fitList: fit.slice(0, 10) };
+}
+/** 내 단지(같은 동·단지 이름·평형)의 최근 6개월 vs 그 전 6개월 순수 전세 신규 계약 중간값. 없으면 null */
+function calTaOwn(R, home, today) {
+  if (!R || !Array.isArray(R.units) || !home) return null;
+  const u = R.units.find(x => x[0] === home.dong && x[1] === home.apt && x[2] === home.band) || R.units.find(x => x[0] === home.dong && String(x[3]) === String(home.jibun || '') && x[2] === home.band);
+  if (!u) return null;
+  const P = calTaPairs(u, today); return Object.assign({ a: u[1], b: u[2] }, calTaStat(P.r, P.p));
+}
+function calWon(m) { m = Math.round(Number(m) || 0); const e = Math.floor(m / 10000), r = m % 10000; return e && r ? `${e}억 ${r.toLocaleString('en-US')}만 원` : e ? `${e}억 원` : `${r.toLocaleString('en-US')}만 원`; }
+/** 메일 칸(세입자 만기 알림): name = 집 이름, scan = calTaScan(보증금 없이), own = calTaOwn, gname(코드) → 구 이름 */
+function calTaMailHtml(name, scan, own, o) {
+  o = o || {}; const gn = o.gname || (() => ''), web = o.web || '';
+  const pct = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(1) + '%';
+  const dl = (scan.dongs || []).slice(0, 4).map(x => `${gn(x.g)} ${x.d} ${pct(x.chg)}(최근 6개월 ${x.nr}건 ${calWon(x.mr)} · 그 전 ${x.np}건 ${calWon(x.mp)})`);
+  const al = (scan.apts || []).slice(0, 5).map(x => `${x.d} ${x.a} ${x.b} ${pct(x.chg)}(${x.nr}건·${x.np}건)`);
+  const ow = own && own.chg != null ? `${own.a} ${own.b} 순수 전세 신규 계약 중간값: 최근 6개월 ${calWon(own.mr)}(${own.nr}건) · 그 전 6개월 ${calWon(own.mp)}(${own.np}건), ${pct(own.chg)}.` : '';
+  return `<div style="background:#FBF8EF;border:1px solid #EFE6CC;border-radius:10px;padding:10px 12px;margin:6px 0 8px;font-size:13.5px;line-height:1.6;color:#3E4754">
+    <b style="color:#191F28">${calEsc(name)} 만기 준비</b><br>
+    ${dl.length ? `<b>희망 지역에서 전세 보증금이 내린 동</b><br>${dl.map(calEsc).join('<br>')}<br>` : '희망 지역에서 최근 6개월 전세 보증금이 뚜렷하게 내린 동은 없어요.<br>'}
+    ${al.length ? `<b>내린 단지</b><br>${al.map(calEsc).join('<br>')}<br>` : ''}
+    ${ow ? `<b>내 단지 전세 시세</b><br>${calEsc(ow)} 지금 시세가 내 보증금보다 낮다면 계약갱신요구권을 쓰면서 보증금 감액을 집주인과 협의해 볼 수 있어요(정보 안내예요).<br>` : ''}
+    <span style="font-size:12.5px;color:#4E5968">국토교통부 전월세 실거래 중 월세 없는 신규 전세 계약의 중간값(갱신 계약 제외). 내 보증금으로 갈 수 있는 단지 수와 매수 비교는 보증금·현금을 그 기기에만 저장하는 달력 화면에서 볼 수 있어요.</span>
+    ${web ? `<br><a href="${calEsc(web)}mine/calendar/#ta" style="color:#2F6BFF">만기 준비 자세히 보기</a> · <a href="${calEsc(CAL_SRC.renew.url)}" style="color:#2F6BFF">계약갱신요구권 법 조문</a> · <a href="${calEsc(web)}jeonse/" style="color:#2F6BFF">전세 안전 점검</a>` : ''}</div>`;
+}
 /* CAL-CORE END */
 
 const API = { V: CAL_V, TEN: CAL_TEN, SRC: CAL_SRC, RULES: CAL_RULES, AHEAD: CAL_AHEAD, okDate: calOkDate, add: calAdd, addM: calAddM, diff: calDiff, monthEnd: calMonthEnd, ko: calKo, koY: calKoY, dow: calDow,
-  clean: calClean, cleanAll: calCleanAll, KEY: CAL_KEY, year: calYear, home: calHome, cy: calCy, events: calEvents, stage: calStage, due: calDue, when: calWhen, mailHtml: calMailHtml, esc: calEsc };
+  clean: calClean, cleanAll: calCleanAll, cleanTa: calCleanTa, TA_TY: CAL_TA_TY, taScan: calTaScan, taOwn: calTaOwn, taMailHtml: calTaMailHtml, won: calWon, med: calMed, KEY: CAL_KEY, year: calYear, home: calHome, cy: calCy, events: calEvents, stage: calStage, due: calDue, when: calWhen, mailHtml: calMailHtml, esc: calEsc };
 root.JDJ_CAL_CORE = API;
 if (typeof module !== 'undefined' && module.exports) module.exports = API;
 })(typeof window !== 'undefined' ? window : globalThis);

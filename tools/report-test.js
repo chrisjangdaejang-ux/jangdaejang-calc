@@ -37,13 +37,13 @@ const smallWk = RC.lines(RC.card(P, Object.assign({}, R, { wk: Object.assign({},
 check('문장: 표본 부족이면 변동률을 내지 않고 4주 숫자만', /12쌍이라 변동률을 내지 않았어요/.test(smallWk.t) && /30쌍 이상일 때만/.test(smallWk.s) && /\+0\.41%/.test(smallWk.s), smallWk);
 const allText = L.map(l => l.t + ' ' + l.s).join(' ') + noWk.map(l => l.t + ' ' + l.s).join(' ');
 check('문장: 보장·확정 수익 같은 말 없음, 반말 없음', !/보장|확실히|반드시 오|무조건|틀림없|수익을 약속/.test(allText) && L.every(l => /요[.)]?$|요\)|[0-9%원]\)?$|건$|위$|점$/.test(l.s.trim()) || /요/.test(l.s)), L.map(l => l.s));
-/* v54 지난번 예측 → 실제 */
+/* v55 지난번 예측 → 실제 */
 const Rh = Object.assign({}, R, { hitp: 5, lw: { '개포동|1|A아파트|84㎡대': [[20261125, 12, 216000, 210000, 2.9, 1], [20261120, 2, 190000, 209000, -9.1, 0]] }, ht: { '개포동|1|A아파트|84㎡대': [7, 5] } });
 const ch = RC.card(P, Rh), lh = RC.lines(ch, '강남구').find(l => l.k === 'hit');
-check('v54 적중: 지난번 시세 → 실제 거래(차이 %)·지금까지 7건 중 5건(71%)', lh && /지난번 시세 21억 원 → 실제 거래 21억 6,000만 원\(\+2\.9%\) · 19억 원\(−9\.1%\)/.test(lh.t) && /7건 중 5건 적중\(71%\)/.test(lh.s) && /±5%/.test(lh.s), lh);
+check('v55 적중: 지난번 시세 → 실제 거래(차이 %)·지금까지 7건 중 5건(71%)', lh && /지난번 시세 21억 원 → 실제 거래 21억 6,000만 원\(\+2\.9%\) · 19억 원\(−9\.1%\)/.test(lh.t) && /7건 중 5건 적중\(71%\)/.test(lh.s) && /±5%/.test(lh.s), lh);
 const ch0 = RC.lines(RC.card(P, Object.assign({}, Rh, { lw: {} })), '강남구').find(l => l.k === 'hit');
-check('v54 적중: 지난주 새 거래가 없으면 그렇게 말하고 누적만', ch0 && /새로 신고된 거래가 없어요/.test(ch0.t) && /7건 중 5건/.test(ch0.s), ch0);
-check('v54 적중: 자료가 없으면 줄 없음', !RC.lines(c, '강남구').some(l => l.k === 'hit'));
+check('v55 적중: 지난주 새 거래가 없으면 그렇게 말하고 누적만', ch0 && /새로 신고된 거래가 없어요/.test(ch0.t) && /7건 중 5건/.test(ch0.s), ch0);
+check('v55 적중: 자료가 없으면 줄 없음', !RC.lines(c, '강남구').some(l => l.k === 'hit'));
 check('순자산 = 집값 − 대출(비율)', JSON.stringify(RC.net(215000, 80000)) === JSON.stringify({ net: 135000, ratio: 37.2 }) && RC.net(0, 1) === null && RC.net(215000, -1) === null && RC.net(215000, 0).net === 215000);
 const TR = [[20261120, 84.9, 10, 210000, 0, 0], [20261001, 84.9, 12, 220000, 0, 0], [20260801, 84.9, 9, 200000, 0, 0], [20260701, 84.9, 11, 150000, 1, 0], [20250101, 84.9, 10, 100000, 0, 0], [20261102, 84.9, 25, 260000, 0, 0]];
 const fr = RC.floorRef(TR, 10, '2026-11-30');
@@ -110,7 +110,7 @@ const sheets = {};
 const book = { getSheetByName: n => sheets[n] || null, insertSheet: n => (sheets[n] = makeSheet()), getUrl: () => 'https://docs.google.com/spreadsheets/d/TEST', getSheets: () => Object.values(sheets), deleteSheet() {} };
 sheets['중개사'] = makeSheet(); sheets['로그'] = makeSheet();
 const props = { BRIEF_PULL_TOKEN: 'pull-FAKE' }, mails = [], triggers = [];
-let NOW = Date.parse('2026-11-30T09:10:00+09:00'), QUOTA = 100;
+let NOW = Date.parse('2026-11-30T07:10:00+09:00'), QUOTA = 100;   // v55 월요일 7시대 발송
 const RealDate = Date;
 class FakeDate extends RealDate { constructor(...a) { if (!a.length) super(NOW); else super(...a); } static now() { return NOW; } }
 const kday = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new RealDate(NOW));
@@ -199,18 +199,18 @@ r = post({ action: 'userLoad', s: sB });
 check('저장 자료 rp: 다른 사람에게는 빈 값', r.ok && Object.keys(r.data.rp.loan).length === 0);
 check('대출 잔액은 성적표 메일에 없음', !mails.some(m => /35,000|3억 5,000만/.test(m.htmlBody)));
 T.alertsInstall();
-check('트리거: alertsInstall 하나로 매일 알림(7·9시) + 월요일 성적표(9·11시)', JSON.stringify(triggers.filter(t => t[0] === 'reportWeekly').map(t => [t[1], t[2]])) === JSON.stringify([['MONDAY', 9], ['MONDAY', 11]]) && triggers.filter(t => t[0] === 'alertsDaily').length === 2, triggers);
+check('트리거: alertsInstall 하나로 매일 알림(7·9시) + 월요일 성적표(v55: 7·8시)', JSON.stringify(triggers.filter(t => t[0] === 'reportWeekly').map(t => [t[1], t[2]])) === JSON.stringify([['MONDAY', 7], ['MONDAY', 8]]) && triggers.filter(t => t[0] === 'alertsDaily').length === 2, triggers);
 check('알림톡은 꺼진 자리만(RP_ALIMTALK=false)', /const RP_ALIMTALK = false;/.test(gs));
 
 /* ---------- ④ 화면 ---------- */
 const page = read('my/report/index.html'), center = read('my/alerts/index.html'), sw = read('sw.js');
-check('성적표 화면: 계산 블록·내 집·관심 부품을 싣고 서비스 이름은 설정에서', /report-core\.js\?v=4/.test(page) && /mine-core\.js/.test(page) && /watch\.js\?v=8/.test(page) && /SITE_NAME/.test(page) && !/집예보/.test(page.replace("|| '집예보'", '')) && !/장대장부동산그룹/.test(page));
+check('성적표 화면: 계산 블록·내 집·관심 부품을 싣고 서비스 이름은 설정에서', /report-core\.js\?v=5/.test(page) && /mine-core\.js/.test(page) && /watch\.js\?v=8/.test(page) && /SITE_NAME/.test(page) && !/집예보/.test(page.replace("|| '집예보'", '')) && !/장대장부동산그룹/.test(page));
 check('성적표 화면: 경쟁 앱 이름·보장 문구 없음', !/호갱|직방|리치고|아실|다방|네이버 부동산|KB부동산/.test(page) && !/보장|무조건|확실히 오/.test(page));
 check('성적표 화면: 대출·보정은 이 기기(jdj_report_me)와 내 계정에만, 공유 주소에는 공개 칸만', /jdj_report_me/.test(page) && /d\.rp = ME/.test(page) && /shareUrl = p => `\$\{location\.origin\}\$\{BASE\}my\/report\/\?sd=/.test(page) && !/shareUrl[^\n]*loan/.test(page));
 check('성적표 화면: 보정 값은 공식 숫자와 따로("내가 적은 정보")', (page.match(/내가 적은 정보/g) || []).length >= 2 && /공식 숫자와 점수는 바뀌지 않아요/.test(page));
 check('알림 센터: 성적표 메일 켜기(기본 꺼짐)·새 종류 설명·성적표 화면 링크', /id="rp"/.test(center) && /drawRp/.test(center) && /새로 생긴 알림이라 직접 켜야 받아요/.test(center) && /my\/report\//.test(center));
 check('알림 센터: 서버가 새 칸을 모르면 이 기기 값을 지킴', /newSrv\(\)/.test(center) && /S0\.rp = L0\.rp/.test(center));
-check('서비스 워커: 성적표 화면·계산 파일', /'\.\/my\/report\/'/.test(sw) && /report-core\.js\?v=4/.test(sw));
+check('서비스 워커: 성적표 화면·계산 파일', /'\.\/my\/report\/'/.test(sw) && /report-core\.js\?v=5/.test(sw));
 check('내 집 시세 화면에서 성적표로', /my\/report\//.test(read('mine/index.html')));
 check('안내 문서: 재배포·alertsInstall·알림톡 템플릿 초안', (d => /reportWeekly/.test(d) && /alertsInstall/.test(d) && /템플릿/.test(d) && /#{/.test(d))(read('docs/alerts.md')));
 

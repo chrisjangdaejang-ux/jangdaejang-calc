@@ -281,6 +281,7 @@
   <a class="wrow" id="wRow" href="my/watch/" data-track="home_to_watch" hidden></a>
   <a class="qz" id="qzCard" href="quiz/" data-track="home_to_quiz" hidden></a>
   <a class="qz pqc" id="pqCard" href="quiz/#predict" data-track="home_to_predict" hidden></a>
+  <a class="qz pqc" id="taCard" href="mine/calendar/#ta" data-track="home_to_tenant_alert"><span class="ic" aria-hidden="true">⏰</span><span><b>전세 만기 알림 받기</b><small>세입자라면 만기 6·4·2개월 전에 보증금이 내린 동네와 갱신 협상 정보를 알려 드려요</small></span><span class="go" aria-hidden="true">›</span></a>
   <div data-dp-best hidden aria-label="이번 주 우수 동네 소식(제휴)" style="margin:0 0 16px"></div>
 
   <section class="pulse" id="pulse" hidden aria-labelledby="plTitle">
@@ -551,7 +552,7 @@ addEventListener('DOMContentLoaded', () => {
     el.hidden = false;
   }
 
-  /* 이번 주 예측 맞히기(v54) 작은 카드 — 공개 data/quiz/week.json 에 받는 중인 문제가 있을 때만 */
+  /* 이번 주 예측 맞히기(v55) 작은 카드 — 공개 data/quiz/week.json 에 받는 중인 문제가 있을 때만 */
   function predictCard(){
     const el = $('pqCard'), now = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 16) + '+09:00';
     J(DATA + 'quiz/week.json').then(Wk => {

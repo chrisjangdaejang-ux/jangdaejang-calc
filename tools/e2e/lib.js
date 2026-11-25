@@ -35,7 +35,10 @@ function defaultReplies() {
     quizBoard: { ok: true, v: 1, counts: {}, board: { week: '', label: '', rows: [] }, n: 0 },
     quizMine: { ok: true, nick: '예측러 E2E0', answers: [], score: { pts: 0, n: 0, ok: 0, streak: 0, best: 0, hist: [], badges: [] } },
     quizAnswer: { ok: true, answers: [], counts: {} },
-    quizNick: { ok: true, nick: '집 박사' }
+    quizNick: { ok: true, nick: '집 박사' },
+    quizPrefs: { ok: true, prefs: { hide: false, hall: true, meet: false } },
+    quizClaim: { ok: true, pending: true, grants: [], msg: '보상은 잘 보관해 두었어요. 유료 서비스가 열리면 이 단추로 바로 받을 수 있어요.' },
+    quizHall: { ok: true, seasons: [{ season: '2026-Q4', label: '2026년 4분기(10~12월) 시즌', rows: [{ nick: '집 박사', tier: '부동산 달인', n: 55, acc: 81.8, pts: 575, rank: 1 }, { nick: '예측러 F698', tier: '', n: 35, acc: 65.7, pts: 295, rank: 2 }] }], all: [{ nick: '집 박사', pts: 575, n: 55, acc: 81.8 }] }
   };
 }
 function makeMock() {

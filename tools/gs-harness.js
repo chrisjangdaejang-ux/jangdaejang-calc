@@ -5,11 +5,12 @@ const fs = require('fs'), vm = require('vm'), path = require('path'), crypto = r
 const ROOT = path.join(__dirname, '..');
 module.exports = function makeEnv(o) {
   o = o || {};
-  const gs = fs.readFileSync(path.join(ROOT, 'tools', 'agent-backend.gs'), 'utf8');
+  let gs = fs.readFileSync(path.join(ROOT, 'tools', 'agent-backend.gs'), 'utf8');
+  if (o.patch) gs = o.patch(gs);                         // 시험용으로 상수 하나를 바꿀 때(예: 유료 열림)
   function makeSheet() {
     const rows = [];
     const sh = { rows, getDataRange() { return { getValues: () => rows.map(r => r.slice()) }; }, getLastRow() { return rows.length; },
-      appendRow(r) { rows.push(r.slice()); }, deleteRow(i) { rows.splice(i - 1, 1); }, setFrozenRows() {},
+      appendRow(r) { rows.push(r.slice()); }, deleteRow(i) { rows.splice(i - 1, 1); }, clear() { rows.length = 0; }, setFrozenRows() {},
       getRange(r, c, nr, nc) { const rg = {
         setValues(v) { v.forEach((line, i) => line.forEach((x, j) => { (rows[r - 1 + i] = rows[r - 1 + i] || [])[c - 1 + j] = x; })); return rg; },
         setValue(x) { (rows[r - 1] = rows[r - 1] || [])[c - 1] = x; return rg; }, getValue() { return (rows[r - 1] || [])[c - 1]; },
@@ -56,7 +57,7 @@ module.exports = function makeEnv(o) {
     } }
   };
   vm.createContext(ctx);
-  vm.runInContext(gs + '\n;globalThis.__T = { UC, SC, UH, SSH, AXC, BH: typeof BH !== "undefined" ? BH : null, BC: typeof BC !== "undefined" ? BC : null, hashOf, axTok, alertsDaily, briefDaily, axMorning, qzUid, qzSettle, calUserMap, calItemsFor, calWeekKey };', ctx);
+  vm.runInContext(gs + '\n;globalThis.__T = { UC, SC, UH, SSH, AXC, BH: typeof BH !== "undefined" ? BH : null, BC: typeof BC !== "undefined" ? BC : null, hashOf, axTok, alertsDaily, briefDaily, axMorning, qzUid, qzSettle, qzSeasonClose, quizMeetExport, quizVoucherUse, PAID_OPEN, calUserMap, calItemsFor, calWeekKey, reportWeekly };', ctx);
   const T = ctx.__T;
   E.T = T; E.ctx = ctx; E.gs = gs;
   E.post = b => JSON.parse(ctx.doPost({ postData: { contents: JSON.stringify(b) } }).s);

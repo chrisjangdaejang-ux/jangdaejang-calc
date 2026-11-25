@@ -81,6 +81,7 @@
 
   <div class="msg" id="err" role="alert"></div>
   <button type="button" class="paybtn" id="payBtn" disabled>결제하기</button>
+  <button type="button" class="paybtn" id="vcBtn" hidden style="background:#B8942A;margin-top:8px">예측 맞히기 이용권으로 열기</button>
   <p class="links">결제는 전자지급결제대행사 (주)토스페이먼츠를 통해 처리되며, 회사는 카드번호 등 결제 수단 정보를 저장하지 않아요.</p>
 </main>
 <footer class="foot">★ 집예보 · <a href="../../">홈</a></footer>
@@ -151,6 +152,29 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
       $('sdkMsg').className = 'msg err';
       $('sdkMsg').textContent = '결제 수단을 불러오지 못했어요. 새로고침하거나 잠시 후 다시 시도해 주세요. 문제가 계속되면 고객문의로 알려 주세요.';
     }
+  })();
+
+  /* v55 예측 맞히기 시즌 보상 '리포트 이용권'(단지 리포트·청약 분양가 리포트 1건) — 카카오 간편 로그인 회원만, 유료가 열린 뒤에만 */
+  (function voucher(){
+    const api = (window.JDJ_AGENTS && JDJ_AGENTS.api) || ''; let s = ''; try { s = (JSON.parse(localStorage.getItem('jdj_auth') || 'null') || {}).s || ''; } catch (e) {}
+    if (!PAID || REVIEW || !api || !s || ['single', 'cy'].indexOf(plan) < 0) return;
+    const call = (action, body) => fetch(api, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action, s }, body || {})) }).then(r => r.json());
+    call('quizMine').then(j => {
+      if (!j || !j.ok || !(j.vouchers > 0)) return;
+      const b = $('vcBtn'); b.hidden = false; b.textContent = `예측 맞히기 이용권으로 열기(남은 ${j.vouchers}장)`;
+      b.onclick = async () => {
+        if (!parseContact($('contact').value)) return err('리포트를 받을 휴대폰 번호 또는 이메일을 적어 주세요.');
+        if (!$('refundOk').checked) return err('청약철회 제한 안내에 동의해 주세요.');
+        b.disabled = true; err('');
+        try {
+          const o = await P.post('createOrder', { product: plan, keys, contact: $('contact').value.trim(), agree: true });
+          const r = await call('quizVoucherUse', { orderId: o.orderId });
+          if (!r || !r.ok) throw new Error((r && r.err) || '이용권을 쓰지 못했어요.');
+          P.saveOrder({ o: r.orderId, t: r.token, product: r.product, names: r.names, paidAt: r.paidAt });
+          location.href = P.viewUrl(r.orderId, r.token);
+        } catch (x) { b.disabled = false; err(x.message || '이용권을 쓰지 못했어요.'); }
+      };
+    }).catch(() => {});
   })();
 
   $('payBtn').onclick = async () => {
