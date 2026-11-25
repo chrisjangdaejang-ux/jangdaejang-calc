@@ -1,6 +1,25 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v57 변경 요약 (v56 위에 다시 배포. 따로 실행할 함수 없음 — 시트 '이사견적'·'이사업체'·'이사포인트'·'이사열람'·'이사충전'·'이사동의'와 보험 증빙 드라이브 폴더는 첫 사용 때 저절로 생김.
+ *   스위치를 켜기 전까지는 지금과 100% 같음: MOVE_ENABLED=false 라 운영자 계정 말고는 아무도 보거나 쓸 수 없어요)
+ *  - 이사 견적 받기(이사업체 제휴, 맨 아래 'v57' 칸 — 숨김): 이용자가 출발지·도착지(동)·이사 날짜·규모(소형 원룸·용달 / 가정 투룸~30평대 / 대형 40평+·사무실)·
+ *    엘리베이터(선택)·이름·휴대폰을 '견적을 위해 제휴 이사업체 최대 3곳에 연락처가 전달돼요' 동의와 함께 보내면(mvLead) 요청으로 저장(이름·휴대폰은 LEAD_KEY 암호화 + 가린 값).
+ *    출발지 구에서 일하는 승인 업체를 평점 40%·응답률 30%·순서 공정성 30%로 줄 세워 처음 3곳에 보이고, 12시간마다 덜 열렸으면 3곳씩 더(최대 9곳). 3곳이 열면 다른 업체에게는 사라짐.
+ *  - 업체 화면(move/partner/): 받은 요청은 홍*동 · 010-****-1234 로 가림 → [이 고객 연락처 보기](mvOpen) 누르면 1건 차감(무료 열람 먼저) + 공개 + '이사열람' 시트에 누가·언제·어느 요청.
+ *    열람 1건: 소형 3,000 · 가정 8,000 · 대형 15,000원. 충전 5만·10만 원(10만은 10% 더) — 토스 한 번 결제(mvChargeOrder·mvChargeConfirm, PAID_ACTIONS 라 PAID_OPEN=false 동안 잠김).
+ *    포인트 계산은 서버 '이사포인트' 시트에서만. 승인 때 첫 달(30일) 무료 열람 10건. 잘못된 요청(없는 번호·장난)은 열람 뒤 72시간 안 신고 → 운영자 [돌려 드리기].
+ *  - 업체 신청(mvApply): 업체 이름·대표자·사업자등록번호(검증식)·허가 종류(화물자동차 운송사업/운송주선사업)·허가번호·적재물배상보험(증권 사진 또는 번호)·일하는 구·전화·이메일.
+ *    공공 자료(DATA_GO_KR_KEY 가 있고 활용 신청을 했을 때: 국세청 사업자 상태 · 전국화물자동차운수사업자 표준데이터 — 허가번호 칸이 없어 이름·지역·영업 여부만)는 참고로만 적고, 승인은 늘 운영자(move/admin/).
+ *  - 품질: 이사 다음 날부터 30일 '어느 업체와 이사하셨나요?' + 별점·후기(mvReview, 이용자 기기 열쇠 = 서버 비밀키로 다시 만드는 값). 업체별 평점·응답률·계약률(최근 90일).
+ *    이사 다음 날 알림톡은 스크립트 속성 SOLAPI_TPL_MOVE_REVIEW 템플릿(#{날짜}·#{링크})이 있을 때만(mvDaily — 모닝 브리핑 발송 끝에서). 제재: 1차 경고 → 2차 7일 노출 중지 → 3차 해지, 중대 위반은 바로 해지.
+ *  - 설정(스크립트 속성 MOVE_SETTINGS, JSON — 코드 없이 바꿈): PRICE {s,h,l} · TOPUPS [{amt,bonusPct}] · MAX_OPEN · FIRST_SHOW · WAVE_HOURS · WAVE_ADD · MAX_SHOW · FREE_LEADS · FREE_DAYS · REFUND_HOURS · MAX_GU
+ *    · GU_TOP {enabled, price, slots}(구 우선 노출 월 구독 — 자리만, 지금 꺼짐).
+ *  - 함께: 전세 만기 알림 메일에 '이사 견적 받기' 한 줄(MOVE_ENABLED 일 때만, mvMailCta) · 회원 탈퇴 때 보낸 요청 연락처 지우기·업체 해지(mvUserGone) · 이사 날짜 + 90일 뒤 연락처 지우기.
+ *  - 예측 맞히기: '부동산 달인'은 그 시즌 참여자가 100명 이상일 때만 뽑아요(PQ_TIER_CFG master.minN = 100, 아니면 고수까지만). 바꿀 때는 스크립트 속성 QZ_TIER_CFG 에
+ *    {"tiers":[{"id":"master","minN":0}]} 처럼(0 = 제한 없음).
+ *  - 검증: node tools/move-test.js </dev/null · node tools/quiz-tier-test.js </dev/null · node tools/paid-lock-test.js </dev/null
+ *
  * v56 변경 요약 (v55 위에 다시 배포. 따로 실행할 함수 없음 — 시트 '상담질문'·'상담답변'·'상담전문가'·'상담신고'·'하트내역'은 첫 사용 때 저절로 생김)
  *  - 고민 상담·하트(숨김: COUNSEL_OPEN·HEART_OPEN=false — 운영자 계정만 미리 보기). 자세한 설명은 맨 아래 '고민 상담·하트' 칸.
  *    질문(로그인 회원) · 확인된 전문가 답변(질문마다 최대 5명, 대출은 대출모집인만) · 집예보 상담팀 답변 · 고른 전문가 한 분께만 연락처 보내기(암호화 보관)
@@ -408,7 +427,7 @@ const PAID_OPEN = false;
 const PAID_CLOSED_MSG = '유료 이용권은 곧 열려요. 지금은 7일 무료 체험만 할 수 있어요.';
 /* 돈을 받는(토스 주문·승인) 요청 전부 — 리포트 결제(createOrder·confirmPayment)·모닝 브리핑 이용권(briefOrder·briefConfirm)·요금제 바꾸기(briefChangeQuote·briefChange).
    이미 산 주문 보기·환불 요청(openReport·findOrder·refundRequest·briefRefund·briefStop)은 막지 않음. 새 결제 요청을 만들면 여기에도 꼭 넣기(tools/paid-lock-test.js 가 확인). */
-const PAID_ACTIONS = { createOrder: 1, confirmPayment: 1, briefOrder: 1, briefConfirm: 1, briefChangeQuote: 1, briefChange: 1, quizVoucherUse: 1, htOrder: 1, htConfirm: 1 };
+const PAID_ACTIONS = { createOrder: 1, confirmPayment: 1, briefOrder: 1, briefConfirm: 1, briefChangeQuote: 1, briefChange: 1, quizVoucherUse: 1, htOrder: 1, htConfirm: 1, mvChargeOrder: 1, mvChargeConfirm: 1 };   // v57 이사 견적 포인트 충전
 /* 시트 메뉴에서 Apps Script를 열지 못해 script.google.com에서 따로 만든 경우에만,
    시트 주소의 /d/ 와 /edit 사이 문자열(시트 ID)을 아래 따옴표 안에 넣으세요. */
 const SHEET_ID = '';
@@ -540,6 +559,7 @@ function doPost(e) {
   if (QZ_ACTIONS[b.action]) return out(qzDispatch(b));             // v55 예측 맞히기(답·채점·순위)
   if (CM_ACTIONS[b.action]) return out(cmDispatch(b));             // v46 살아보니(건물별 후기·이야기, 숨김)
   if (DP_ACTIONS[b.action]) return out(dpDispatch(b));             // v50 동네 중개사 파트너(숨김)
+  if (MV_ACTIONS[b.action]) return out(mvDispatch(b));             // v57 이사 견적 받기(이사업체 제휴, 숨김)
   if (BR_BILL_ACTIONS[b.action]) return out(baBillDispatch(b));    // v50 모닝 브리핑 자동결제(BILLING_OPEN 잠금)
   if (PRO_ACTIONS[b.action]) return out(proDispatch(b));
   if (BP_ACTIONS[b.action]) return out(bpDispatch(b));
@@ -2148,6 +2168,7 @@ function userDelete(b) {
   try { baStopAll(u.k); } catch (e) {}    // v50 자동결제 멈춤·빌링키 지우기
   try { qzUserGone(u.k); } catch (e) {}   // v55 예측 맞히기: 답·별명 지우기
   try { csUserGone(u.k); } catch (e) {}   // v56 고민 상담: 질문·답변 내용·연락처 지우기, 전문가 신청 중지
+  try { mvUserGone(u.k); } catch (e) {}   // v57 이사 견적: 보낸 요청 연락처 지우기 · 업체 해지
   del('플러스중개사', 0); del('내손님', 1);   // v27 중개사 플러스: 표시 정보·손님 이름표·단지(시트 이름은 아래 SH_BPP·SH_BPC 와 같음)
   let unlinked = false;
   const admin = PropertiesService.getScriptProperties().getProperty('KAKAO_ADMIN_KEY');
@@ -3752,6 +3773,7 @@ function briefDaily() {
   briefExpiry(now);
   try { baTrialEnded(now); } catch (e) {}                // v50 체험 끝·카드 없음 → 딱 한 번 안내(자동결제가 열려 있을 때만)
   try { dpDaily(now); } catch (e) {}                     // v50 동네 파트너 매일 할 일(DONGNE_ENABLED 일 때만)
+  try { mvDaily(now); } catch (e) {}                     // v57 이사 견적 매일 할 일(MOVE_ENABLED 일 때만)
   try { briefAmRecheck(now); } catch (e) {}
   briefCleanup(now);
   P.setProperty('BRIEF_SENT', date);
@@ -6955,6 +6977,722 @@ function dpPlan(b) {
   return { ok: true, plan: plan, from: me.next || '', price: dpPriceOf(me, null, plan) };
 }
 
+/* =====================================================================
+   v57 이사 견적 받기(이사업체 제휴, 숨김) — 이사가 정해진 이용자가 '이사 견적 받기'를 보내면, 출발지 구에서 일하는 제휴 이사업체
+   최대 3곳이 연락처를 열어 보고(열람 1건씩 포인트 차감) 견적 전화를 드려요. 집예보는 연결만 하고 이사 계약·요금·사고는 이용자와 업체 사이 일이에요.
+   화면: move/(이용자 — 견적 받기·내 요청·이사 뒤 후기) · move/partner/(업체 — 신청·받은 요청·연락처 보기·포인트·충전·잘못된 요청 신고)
+         · move/admin/(운영자, 링크 없음) · move/terms/(약관 초안) · 버튼: 내 부동산 달력(만기·이사 날짜·전세 만기 준비), 세입자 갈아타기 결과([data-move-cta])
+   켜기: 이 파일 MOVE_ENABLED + 화면 assets/config.js MOVE_ENABLED 를 함께 true 로. 둘 다 꺼져 있으면 운영자(모닝 브리핑 운영자 모드 카카오 계정)만 미리 보고 써 볼 수 있어요.
+   돈: 포인트 충전(토스 한 번 결제, 5만·10만 원 — 10만 원은 10% 더)은 PAID_OPEN 이 열려야 돼요(PAID_ACTIONS). 자동 충전(빌링)은 아직 없음 — BILLING_OPEN 과 함께 나중에.
+       포인트·무료 열람 계산은 모두 서버에서만(시트 '이사포인트'). 승인 때 첫 달 무료 열람 10건.
+   연락처: 이용자 이름·휴대폰은 시트에 원래 값으로 쓰지 않아요(LEAD_KEY 로 암호화 + 가린 값 + 해시). 업체는 [이 고객 연락처 보기]를 눌러 열람한 요청만 풀어서 봐요.
+           이사 날짜 뒤 90일(또는 이용자가 취소하면 바로) 지워요. 열람 기록(누가·언제·어느 요청)은 '이사열람' 시트에.
+   업체 확인: 사업자등록번호 체크섬 + (DATA_GO_KR_KEY 가 있고 활용 신청을 했으면) 국세청 사업자 상태 조회 · 전국화물자동차운수사업자 표준데이터(이름·지역·영업 여부만 —
+           허가번호·사업자번호 칸이 없어 참고만). 그래서 승인은 늘 운영자가 해요(허가증·보험 증빙을 보고).
+   ===================================================================== */
+const MOVE_ENABLED = false;
+/* MOVE-CORE BEGIN — 이 블록은 tools/agent-backend.gs 에 그대로 복사돼 있어요. 고칠 때는 두 곳을 똑같이 고쳐 주세요(node tools/move-test.js 가 비교). */
+const MV_RULE = {
+  /* 이사 규모와 연락처 열람 1건 값(원) */
+  sizes: [
+    { id: 's', t: '소형', d: '원룸·용달', price: 3000 },
+    { id: 'h', t: '가정', d: '투룸~30평대', price: 8000 },
+    { id: 'l', t: '대형', d: '40평 이상·사무실', price: 15000 }
+  ],
+  maxOpen: 3,                 // 견적 요청 하나를 열어 볼 수 있는 업체 수(다 차면 다른 업체에게는 사라짐)
+  firstShow: 3,               // 처음 보여 주는 업체 수(점수 순)
+  waveHours: 12, waveAdd: 3, maxShow: 9,   // 12시간마다 아직 덜 열렸으면 다음 순서 3곳에 더 보여 줌(최대 9곳)
+  topups: [{ amt: 50000, bonusPct: 0 }, { amt: 100000, bonusPct: 10 }],   // 충전 단위와 더 드리는 비율
+  freeLeads: 10, freeDays: 30,             // 승인 때 첫 달(30일) 무료 열람 10건
+  refundHours: 72,                          // 잘못된 요청 신고: 열람 뒤 72시간 안
+  dateMaxDays: 180,                         // 이사 날짜: 오늘부터 180일 안
+  keepDays: 90,                             // 연락처 보관: 이사 날짜(또는 요청일) 뒤 90일
+  reviewAfterDays: 1, reviewUntilDays: 30,  // 이사 다음 날부터 30일 동안 후기 받기
+  maxGu: 15,                                // 업체가 고를 수 있는 서비스 구 수
+  phoneDay: 2, dayMax: 300,                 // 같은 번호 하루 2건 · 하루 전체 300건
+  /* 노출 순서 점수 = 평점 40% + 응답률 30% + 순서 공정성 30% (처음엔 평점 4.0·응답률 70%로 보고 시작) */
+  w: { rating: 0.4, resp: 0.3, fair: 0.3 }, prior: { rating: 4, rn: 5, resp: 0.7, pn: 5 }, fairHours: 72, statDays: 90,
+  stopDays: 7,                              // 2차 제재 노출 중지 기간
+  lowRating: 3, lowRatingN: 5,              // 평점 3.0 아래(후기 5개 이상)면 운영자 확인 목록에
+  /* 나중에(지금은 꺼짐): 구 우선 노출 월 구독 */
+  guTop: { enabled: false, price: 0, slots: 1 }
+};
+const MV_REPORT = { wrong: '없는 번호·다른 사람 번호', prank: '장난 요청' };
+const MV_ELEV = { y: '있음', n: '없음', u: '모름' };
+/** 규모 하나 */
+function mvSize(id) { for (let i = 0; i < MV_RULE.sizes.length; i++) if (MV_RULE.sizes[i].id === id) return MV_RULE.sizes[i]; return null; }
+/** 연락처 열람 1건 값(원). 모르는 규모면 0 */
+function mvPrice(id) { const s = mvSize(id); return s ? s.price : 0; }
+/** 충전: 결제 금액 → { amt, bonus, pts }. 정해진 단위가 아니면 null */
+function mvTopup(amt) {
+  amt = Math.round(Number(amt) || 0);
+  for (let i = 0; i < MV_RULE.topups.length; i++) { const t = MV_RULE.topups[i]; if (t.amt === amt) { const b = Math.floor(amt * (t.bonusPct || 0) / 100); return { amt: amt, bonus: b, pts: amt + b }; } }
+  return null;
+}
+/** 휴대폰 번호(숫자만, 010…) 확인 */
+function mvPhone(v) { const d = String(v == null ? '' : v).replace(/[^0-9]/g, ''); return /^01[016789]\d{7,8}$/.test(d) ? d : ''; }
+/** 가린 연락처: 010-****-1234 */
+function mvMaskPhone(d) { d = String(d || ''); return d.length >= 10 ? d.slice(0, 3) + '-****-' + d.slice(-4) : ''; }
+/** 가린 이름: 홍*동 · 김* · 남궁**수 */
+function mvMaskName(n) {
+  const s = String(n == null ? '' : n).replace(/\s+/g, '');
+  if (!s) return '';
+  if (s.length === 1) return s + '*';
+  if (s.length === 2) return s[0] + '*';
+  return s[0] + '*'.repeat(s.length - 2) + s[s.length - 1];
+}
+/** 날짜 글자(YYYY-MM-DD) ↔ 한국 0시 ms */
+function mvDayMs(ymdS) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(ymdS || '')); return m ? Date.UTC(+m[1], +m[2] - 1, +m[3]) - 9 * 3600000 : NaN; }
+function mvYmd(ms) { return new Date(ms + 9 * 3600000).toISOString().slice(0, 10); }
+function mvAddDays(ymdS, n) { return mvYmd(mvDayMs(ymdS) + n * 86400000); }
+/** 이사 날짜 확인: 오늘~180일 안. 돌려줌 '' 또는 고칠 점 */
+function mvDateErr(d, todayYmd) {
+  const ms = mvDayMs(d), t = mvDayMs(todayYmd);
+  if (!isFinite(ms) || mvYmd(ms) !== d) return '이사 날짜를 골라 주세요.';
+  if (ms < t) return '이사 날짜가 지났어요. 다시 골라 주세요.';
+  if (ms > t + MV_RULE.dateMaxDays * 86400000) return `이사 날짜는 오늘부터 ${MV_RULE.dateMaxDays}일 안으로 골라 주세요.`;
+  return '';
+}
+/** 잘못된 요청 신고가 아직 되는지(열람 시각 ms, 지금 ms) */
+function mvRefundOk(openMs, nowMs) { return isFinite(openMs) && nowMs - openMs >= 0 && nowMs - openMs <= MV_RULE.refundHours * 3600000; }
+/** 후기를 받을 수 있는지: 이사 다음 날부터 30일 */
+function mvReviewOpen(moveYmd, todayYmd) {
+  const d = (mvDayMs(todayYmd) - mvDayMs(moveYmd)) / 86400000;
+  return d >= MV_RULE.reviewAfterDays && d <= MV_RULE.reviewUntilDays;
+}
+/** 같은 입력이면 늘 같은 값(같은 점수일 때 순서 섞기) */
+function mvHash(s) { s = String(s); let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+/** 업체 성적: st = { stars: 별점 합, rn: 후기 수, offered: 처음 3곳에 든 요청 수, opened: 그중 연 수, asked: 연 요청 중 고객이 '어느 업체' 답을 한 수, won: 그중 이 업체를 고른 수 }
+    돌려줌 { rating(평점, 후기 없으면 null), resp(응답률 %, 없으면 null), contract(계약률 %, 없으면 null), score 부분값 } */
+function mvStats(st) {
+  st = st || {};
+  const rn = Number(st.rn) || 0, of = Number(st.offered) || 0, op = Math.min(of, Number(st.opened) || 0), as = Number(st.asked) || 0, wn = Math.min(as, Number(st.won) || 0);
+  const P = MV_RULE.prior;
+  return {
+    rating: rn ? Math.round((Number(st.stars) || 0) / rn * 10) / 10 : null, rn: rn,
+    resp: of ? Math.round(op / of * 100) : null, offered: of,
+    contract: as ? Math.round(wn / as * 100) : null, asked: as,
+    rS: ((P.rating * P.rn + (Number(st.stars) || 0)) / (P.rn + rn)) / 5,
+    pS: (P.resp * P.pn + op) / (P.pn + of)
+  };
+}
+/** 노출 순서: cands = [{ id, st(mvStats 입력), last(마지막으로 처음 3곳에 든 시각 ms, 없으면 0) }], key = 요청 id(같은 점수 섞기), now ms
+    점수 = 평점 40% + 응답률 30% + 순서 공정성 30%(마지막으로 받은 지 72시간이면 만점). 돌려줌 id 목록(점수 높은 순) */
+function mvRank(cands, key, nowMs) {
+  const W = MV_RULE.w;
+  return (cands || []).map(c => {
+    const s = mvStats(c.st), age = c.last ? (nowMs - Number(c.last)) / 3600000 : MV_RULE.fairHours;
+    const fair = Math.max(0, Math.min(1, age / MV_RULE.fairHours));
+    return { id: c.id, sc: Math.round((W.rating * s.rS + W.resp * s.pS + W.fair * fair) * 10000) / 10000, t: mvHash(key + '|' + c.id) };
+  }).sort((a, b) => b.sc - a.sc || a.t - b.t).map(x => x.id);
+}
+/** 지금 이 요청을 볼 수 있는 업체: ranked = 점수 순 id, made = 요청 시각 ms, opened = 이미 연 업체 id 목록.
+    다 찬 요청(3곳)은 연 업체만. 아니면 처음 3곳 + 12시간마다 3곳씩 더(최대 9곳) — 이미 연 업체는 늘 포함 */
+function mvVisible(ranked, madeMs, nowMs, opened) {
+  opened = opened || [];
+  if (opened.length >= MV_RULE.maxOpen) return opened.slice();
+  const waves = Math.max(0, Math.floor((nowMs - madeMs) / (MV_RULE.waveHours * 3600000)));
+  const n = Math.min(MV_RULE.maxShow, MV_RULE.firstShow + waves * MV_RULE.waveAdd);
+  const out = (ranked || []).slice(0, n);
+  opened.forEach(id => { if (out.indexOf(id) < 0) out.push(id); });
+  return out;
+}
+/** 무료 열람이 아직 쓸 수 있는지(남은 수, 끝나는 날) */
+function mvFreeLeft(left, untilYmd, todayYmd) { return untilYmd && todayYmd <= untilYmd ? Math.max(0, Number(left) || 0) : 0; }
+/** 설정 덮어쓰기(서버 스크립트 속성 MOVE_SETTINGS · 화면은 서버가 준 rule). 이름·모양이 틀린 값은 버림. 돌려줌: 받아들인 이름 목록 */
+function mvSettings(x) {
+  x = x && typeof x === 'object' ? x : {};
+  const ok = [], num = (v, lo, hi) => { v = Number(v); return isFinite(v) && v >= lo && v <= hi ? Math.round(v) : null; };
+  const set = (name, fn) => { const r = fn(); if (r) ok.push(name); };
+  if ('PRICE' in x) set('PRICE', () => {
+    const p = x.PRICE; if (!p || typeof p !== 'object') return false;
+    let n = 0; MV_RULE.sizes.forEach(s => { const v = num(p[s.id], 0, 200000); if (v != null) { s.price = v; n++; } }); return n > 0;
+  });
+  if ('TOPUPS' in x) set('TOPUPS', () => {
+    const a = Array.isArray(x.TOPUPS) ? x.TOPUPS.map(t => ({ amt: num(t && t.amt, 10000, 5000000), bonusPct: num(t && t.bonusPct, 0, 50) })).filter(t => t.amt != null && t.bonusPct != null) : [];
+    if (!a.length) return false; MV_RULE.topups = a.sort((p, q) => p.amt - q.amt); return true;
+  });
+  const one = (name, key, lo, hi) => { if (name in x) set(name, () => { const v = num(x[name], lo, hi); if (v == null) return false; MV_RULE[key] = v; return true; }); };
+  one('MAX_OPEN', 'maxOpen', 1, 10); one('FIRST_SHOW', 'firstShow', 1, 20); one('WAVE_HOURS', 'waveHours', 1, 168); one('WAVE_ADD', 'waveAdd', 0, 20); one('MAX_SHOW', 'maxShow', 1, 50);
+  one('FREE_LEADS', 'freeLeads', 0, 100); one('FREE_DAYS', 'freeDays', 0, 365); one('REFUND_HOURS', 'refundHours', 1, 720); one('MAX_GU', 'maxGu', 1, 80);
+  if ('GU_TOP' in x) set('GU_TOP', () => {
+    const g = x.GU_TOP; if (!g || typeof g !== 'object' || typeof g.enabled !== 'boolean') return false;
+    MV_RULE.guTop = { enabled: g.enabled, price: num(g.price, 0, 5000000) || 0, slots: num(g.slots, 1, 5) || 1 }; return true;
+  });
+  return ok;
+}
+/** 제재 단계 이름(동네 파트너와 같은 순서): 1차 경고 → 2차 7일 노출 중지 → 3차 해지 */
+function mvStrikeStep(warn) { const n = Math.min(3, (Number(warn) || 0) + 1); return { n: n, t: n === 1 ? '1차 경고' : n === 2 ? `2차 ${MV_RULE.stopDays}일 노출 중지` : '3차 해지' }; }
+/* MOVE-CORE END */
+const MV_RULE_DEF = JSON.stringify(MV_RULE);
+/** 요청마다 기본값으로 되돌리고 스크립트 속성 MOVE_SETTINGS(JSON)를 덮어씀. 돌려줌 { ok, bad } */
+function mvRuleLoad() {
+  const d = JSON.parse(MV_RULE_DEF); Object.keys(d).forEach(k => { MV_RULE[k] = d[k]; });
+  const bad = []; let x = {};
+  try { x = JSON.parse(PropertiesService.getScriptProperties().getProperty('MOVE_SETTINGS') || '{}') || {}; } catch (e) { bad.push('MOVE_SETTINGS JSON'); }
+  const ok = mvSettings(x);
+  Object.keys(x).forEach(k => { if (ok.indexOf(k) < 0) bad.push(k); });
+  return { ok: ok, bad: bad };
+}
+const MV_ACTIONS = { mvConfig: 1, mvLead: 1, mvMine: 1, mvCancel: 1, mvReview: 1, mvApply: 1, mvPartner: 1, mvLeads: 1, mvOpen: 1, mvReport: 1, mvProfile: 1,
+  mvChargeOrder: 1, mvChargeConfirm: 1, mvAdminQueue: 1, mvAdminAct: 1 };
+const SH_MVL = '이사견적', SH_MVP = '이사업체', SH_MVT = '이사포인트', SH_MVO = '이사열람', SH_MVC = '이사충전', SH_MVA = '이사동의';
+const MVLH = ['id', '시각', '회원', '출처', '출발구', '출발동', '도착구', '도착동', '이사일', '규모', '엘리베이터', '이름암호', '이름가림', '연락처암호', '연락처가림', '연락처해시',
+  '메모', '동의판', '동의시각', '후보', '열람', '상태', '후기', '후기요청', '삭제예정일'];
+const MVPH = ['id', '회원', '상태', '업체명', '대표자', '사업자번호', '허가종류', '허가번호', '보험번호', '보험파일', '보험만기', '구목록', '전화', '이메일', '소개',
+  '확인결과', '신청일', '승인일', '무료남은', '무료만료', '경고', '노출중지', '메모', '수정일', '구독'];
+const MVTH = ['시각', '업체', '종류', '포인트', '무료', '요청', '주문번호', '메모'];
+const MVOH = ['시각', '업체', '요청', '규모', '결제', '금액', '신고', '신고이유', '신고시각', '처리', '처리시각'];
+const MVCH = ['주문번호', '시각', '업체', '금액', '더드림', '상태', '결제키', '메모'];
+const MVAH = ['시각', '대상', '항목', '판', '확인값'];
+const MVLC = Object.fromEntries(MVLH.map((h, i) => [h, i])), MVPC = Object.fromEntries(MVPH.map((h, i) => [h, i])), MVOC = Object.fromEntries(MVOH.map((h, i) => [h, i])), MVCC = Object.fromEntries(MVCH.map((h, i) => [h, i]));
+const MV_ST = { wait: '검토대기', on: '승인', no: '거절', stop: '노출중지', end: '해지' };
+const MV_LST = { on: '진행', full: '마감', cancel: '취소', gone: '삭제' };
+const MV_PERMIT = { trans: '화물자동차 운송사업', broker: '화물자동차 운송주선사업' };
+const MV_TERMS_V = '2026-11-25 초안';                                  // 약관 판(화면 move/terms/ 와 같은 값)
+const MV_CONSENT_V = 'move-2026-11-25';                              // 이용자 동의 문구 판(화면 move/ 와 같은 값)
+const MV_CONSENT = '견적을 위해 제휴 이사업체 최대 3곳에 연락처가 전달돼요';
+const MV_AGREE = { terms: '이사업체 제휴 약관', privacy: '개인정보 수집·이용', points: '포인트·환불 규칙' };
+const MV_SRC = { move: '이사 견적 화면', cal: '내 부동산 달력', ta: '전세 만기 준비', switch: '세입자 갈아타기', mail: '전세 만기 알림 메일' };
+const MV_BAN = {
+  permit: { name: '허가 취소·영업 정지·폐업', body: '화물자동차 운송(주선)사업 허가 취소·사업 정지나 폐업이 확인됐어요.' },
+  fraud: { name: '부당 요금·사기·파손 미보상', body: '견적과 다른 부당 요금, 사기, 파손·분실 보상 거부가 확인됐어요.' },
+  fake: { name: '허위 정보 가입', body: '가입할 때 낸 정보(허가·보험 등)가 사실과 다른 것으로 확인됐어요.' },
+  misuse: { name: '연락처 목적 외 사용', body: '견적 요청 연락처를 견적 말고 다른 목적(광고·판매 등)에 쓴 것이 확인됐어요.' }
+};
+const MV_STRIKE = {
+  complaint: { name: '고객 민원', body: '견적·이사와 관련한 고객 민원이 접수돼 확인했어요.' },
+  noshow: { name: '연락 없음', body: '연락처를 열람하고도 고객에게 연락하지 않았다는 민원이 있었어요.' },
+  rating: { name: '낮은 평점', body: '최근 후기 평점이 기준(3.0)보다 낮아요.' }
+};
+
+function mvDispatch(b) {
+  try {
+    mvRuleLoad();
+    if (b.action === 'mvConfig') return mvConfig(b);
+    if (b.action === 'mvApply') return mvApply(b);                    // 공공 자료 확인(네트워크)·파일 저장은 잠금 밖
+    if (b.action === 'mvChargeConfirm') return mvChargeConfirm(b);    // 토스 승인(네트워크)은 잠금 밖, 적립만 잠금
+    return withLock(() => {
+      if (b.action === 'mvLead') return mvLead(b);
+      if (b.action === 'mvMine') return mvMine(b);
+      if (b.action === 'mvCancel') return mvCancel(b);
+      if (b.action === 'mvReview') return mvReview(b);
+      if (b.action === 'mvPartner') return mvPartner(b);
+      if (b.action === 'mvLeads') return mvLeads(b);
+      if (b.action === 'mvOpen') return mvOpen(b);
+      if (b.action === 'mvReport') return mvReport(b);
+      if (b.action === 'mvProfile') return mvProfile(b);
+      if (b.action === 'mvChargeOrder') return mvChargeOrder(b);
+      if (b.action === 'mvAdminQueue') return mvAdminQueue(b);
+      if (b.action === 'mvAdminAct') return mvAdminAct(b);
+      return { ok: false, err: 'unknown' };
+    });
+  } catch (x) {
+    return { ok: false, err: String(x.message || x), code: x.code || '' };
+  }
+}
+
+/* ---------- 켜짐·운영자 ---------- */
+function mvIsAdmin(b) { const u = dpOptUser(b); return !!u && bIsAdmin(u.k); }
+function mvGate(b) { if (MOVE_ENABLED || mvIsAdmin(b)) return true; const e = new Error('아직 문을 열지 않은 기능이에요.'); e.code = 'closed'; throw e; }
+function mvAdminNeed(b) { if (!mvIsAdmin(b)) { const e = new Error('운영자 계정으로 카카오 간편 로그인해 주세요(모닝 브리핑 운영자 모드).'); e.code = 'admin'; throw e; } }
+function mvPayOn() { return MOVE_ENABLED && PAID_OPEN; }
+
+/* ---------- 시트 ---------- */
+function mvSheet(n) { return uSheet(n, n === SH_MVL ? MVLH : n === SH_MVP ? MVPH : n === SH_MVT ? MVTH : n === SH_MVO ? MVOH : n === SH_MVC ? MVCH : MVAH); }
+function mvRows(n) { return dpRows(n); }
+function mvUid(k) { return 'm' + hashOf('mvU|' + k).slice(1, 25); }
+function mvTok(id) { return hex(hmac('mvTok|' + id, leadKey())).slice(0, 32); }   // 이용자 요청 열쇠: 저장하지 않고 서버 비밀키로 다시 만들어 맞춰 봄(알림톡 링크도 같은 열쇠)
+function mvTokOk(id, t) { return /^[0-9a-f]{32}$/.test(String(t || '')) && safeEq(mvTok(String(id)), String(t)); }
+function mvP(o) {                                                    // 업체 행 → 쓰기 쉬운 모양
+  const r = o.r, x = k => dpTxt(r[MVPC[k]]);
+  return { row: o.row, id: x('id'), uh: x('회원'), st: x('상태'), name: x('업체명'), ceo: x('대표자'), biz: x('사업자번호'), permitKind: x('허가종류'), permit: x('허가번호'),
+    insNo: x('보험번호'), insFile: x('보험파일'), insUntil: dpDay(r[MVPC['보험만기']]), gus: (parseJ(x('구목록'), []) || []).filter(g => /^\d{5}$/.test(g)), tel: x('전화'), mail: x('이메일'), intro: x('소개'),
+    chk: x('확인결과'), applied: dpDay(r[MVPC['신청일']]), approved: dpDay(r[MVPC['승인일']]), freeLeft: Number(r[MVPC['무료남은']]) || 0, freeUntil: dpDay(r[MVPC['무료만료']]),
+    warn: Number(r[MVPC['경고']]) || 0, stopUntil: dpDay(r[MVPC['노출중지']]), memo: x('메모'), sub: parseJ(x('구독'), null) };
+}
+function mvAll() { return mvRows(SH_MVP).map(mvP); }
+function mvSetP(row, h, v) { mvSheet(SH_MVP).getRange(row, MVPC[h] + 1).setValue(typeof v === 'string' ? cellSafe(v) : v); }
+function mvMe(u, all) { const uh = mvUid(u.k); return (all || mvAll()).filter(p => p.uh === uh && p.st !== MV_ST.end && p.st !== MV_ST.no).pop() || null; }
+/** 견적 요청을 받을 수 있는 업체: 승인 + 노출 중지 기간이 아님 */
+function mvLive(p, t) { t = t || ymd(new Date()); return p.st === MV_ST.on && !(p.stopUntil && t <= p.stopUntil); }
+function mvL(o) {                                                    // 요청 행 → 쓰기 쉬운 모양
+  const r = o.r, x = k => dpTxt(r[MVLC[k]]);
+  return { row: o.row, id: x('id'), at: r[MVLC['시각']] instanceof Date ? r[MVLC['시각']].getTime() : Number(r[MVLC['시각']]) || 0, uh: x('회원'), src: x('출처'),
+    fg: x('출발구'), fd: x('출발동'), tg: x('도착구'), td: x('도착동'), date: dpDay(r[MVLC['이사일']]), size: x('규모'), elev: x('엘리베이터'),
+    nameSeal: x('이름암호'), nameMask: x('이름가림'), telSeal: x('연락처암호'), telMask: x('연락처가림'), telHash: x('연락처해시'), memo: x('메모'),
+    ranked: parseJ(x('후보'), []) || [], opened: parseJ(x('열람'), []) || [], st: x('상태'), review: parseJ(x('후기'), null), asked: dpDay(r[MVLC['후기요청']]), until: dpDay(r[MVLC['삭제예정일']]) };
+}
+function mvLeadsAll() { return mvRows(SH_MVL).map(mvL); }
+function mvSetL(row, h, v) { mvSheet(SH_MVL).getRange(row, MVLC[h] + 1).setValue(typeof v === 'string' ? cellSafe(v) : v); }
+function mvGuName(g) { try { const ix = mvIx(); return ((ix.sgg || {})[g] || {}).name || ''; } catch (e) { return ''; } }
+function mvIx() {
+  if (mvIx.memo) return mvIx.memo;
+  const c = CacheService.getScriptCache(), hit = c.get('mvIx');
+  if (hit) return (mvIx.memo = parseJ(hit, {}));
+  const ix = bFetchJson(AX_DATA + 'index.json') || {}, slim = { sgg: {} };
+  Object.keys(ix.sgg || {}).forEach(g => { slim.sgg[g] = { name: ix.sgg[g].name, sido: ix.sgg[g].sido }; });
+  try { c.put('mvIx', JSON.stringify(slim), 21600); } catch (e) {}
+  return (mvIx.memo = slim);
+}
+function mvPlace(g, d) { const gn = mvGuName(g); return (gn ? gn + ' ' : '') + (d || ''); }
+
+/* ---------- 포인트(서버에서만) ---------- */
+function mvBalance(pid) { let n = 0; mvRows(SH_MVT).forEach(o => { if (dpTxt(o.r[1]) === pid) n += Number(o.r[3]) || 0; }); return n; }
+function mvLedger(pid, kind, pts, free, lid, oid, memo) { mvSheet(SH_MVT).appendRow([new Date(), pid, kind, pts || 0, free || 0, lid || '', oid || '', cellSafe(String(memo || '').slice(0, 200))]); }
+const MV_LEDGER_NM = { charge: '충전', bonus: '충전 더 드림', open: '연락처 열람', free: '무료 열람', refund: '돌려 드림', freeGrant: '무료 열람 지급', adjust: '운영자 조정' };
+
+/* ---------- 업체 성적(평점·응답률·계약률) — 최근 90일 ---------- */
+function mvStatsMap(leads, t) {
+  const from = Date.now() - MV_RULE.statDays * 86400000, M = {}, S = id => M[id] || (M[id] = { stars: 0, rn: 0, offered: 0, opened: 0, asked: 0, won: 0, last: 0 });
+  leads.forEach(L => {
+    if (!L.at) return;
+    const first = L.ranked.slice(0, MV_RULE.firstShow), ids = L.opened.map(o => o.p);
+    first.forEach(id => { const s = S(id); s.last = Math.max(s.last, L.at); if (L.at >= from && L.st !== MV_LST.cancel) { s.offered++; if (ids.indexOf(id) >= 0) s.opened++; } });
+    if (L.review && L.review.pick) {
+      ids.forEach(id => { const s = S(id); s.asked++; if (L.review.pick === id) s.won++; });
+      if (L.review.pick !== 'other' && L.review.pick !== 'none' && L.review.star) { const s = S(L.review.pick); s.stars += Number(L.review.star) || 0; s.rn++; }
+    }
+  });
+  return M;
+}
+
+/* ---------- 공개 설정 ---------- */
+function mvConfig(b) {
+  const admin = mvIsAdmin(b), open = MOVE_ENABLED;
+  if (!open && !admin) return { ok: true, open: false };
+  return { ok: true, open: open, preview: !open, admin: admin, paid: mvPayOn(), billing: billOn() && MOVE_ENABLED, rule: MV_RULE, report: MV_REPORT, elev: MV_ELEV, permit: MV_PERMIT,
+    terms: MV_TERMS_V, consentV: MV_CONSENT_V, consent: MV_CONSENT, agree: MV_AGREE, today: ymd(new Date()) };
+}
+
+/* ---------- 이용자: 견적 요청 ---------- */
+function mvLead(b) {
+  mvGate(b);
+  if (b.agree !== true || String(b.cv || '') !== MV_CONSENT_V) throw new Error(MV_CONSENT + '. 동의에 체크해 주세요.');
+  const fk = dpKey(b.fg, uText(b.fd, 20)), tk = dpKey(b.tg, uText(b.td, 20));
+  if (!fk) throw new Error('출발지(동)를 골라 주세요.');
+  if (!tk) throw new Error('도착지(동)를 골라 주세요.');
+  const t = ymd(new Date()), date = String(b.date || ''), de = mvDateErr(date, t); if (de) throw new Error(de);
+  const size = mvSize(String(b.size || '')); if (!size) throw new Error('이사 규모를 골라 주세요.');
+  const elev = MV_ELEV[b.elev] ? String(b.elev) : 'u';
+  const name = uText(b.name, 12).replace(/\s+/g, ''); if (!name || /[0-9@:/]/.test(name)) throw new Error('이름을 적어 주세요. 성만 적어도 돼요.');
+  const phone = mvPhone(b.phone); if (!phone) throw new Error('휴대폰 번호를 다시 확인해 주세요. 예: 010-1234-5678');
+  const memo = uText(b.memo, 100), src = MV_SRC[b.src] ? String(b.src) : 'move';
+  let uh = ''; try { const u = b.s ? sessionUser(b.s) : null; if (u) uh = mvUid(u.k); } catch (e) {}
+  const all = mvLeadsAll(), ph = hashOf('mvph|' + phone), now = Date.now();
+  if (all.filter(L => L.at && ymd(new Date(L.at)) === t).length >= MV_RULE.dayMax) throw new Error('오늘 요청이 많아 잠시 받을 수 없어요. 내일 다시 보내 주세요.');
+  if (all.filter(L => L.telHash === ph && L.at && ymd(new Date(L.at)) === t).length >= MV_RULE.phoneDay) throw new Error(`같은 번호로는 하루 ${MV_RULE.phoneDay}번까지 보낼 수 있어요.`);
+  if (all.some(L => L.telHash === ph && L.st === MV_LST.on && L.date === date && L.fg === dpSplit(fk).g)) throw new Error('같은 날짜·출발지로 보낸 요청이 이미 있어요. 업체 연락을 기다려 주세요.');
+  const parts = mvAll().filter(p => mvLive(p, t) && p.gus.indexOf(dpSplit(fk).g) >= 0);
+  const price = size.price, pay = p => mvFreeLeft(p.freeLeft, p.freeUntil, t) > 0 || mvBalance(p.id) >= price;
+  const cands = parts.filter(pay);
+  if (!cands.length) { const e = new Error(parts.length ? '지금은 이 지역 제휴 이사업체가 모두 바빠요. 잠시 뒤 다시 보내 주세요.' : '이 지역에는 아직 제휴 이사업체가 없어요. 곧 늘려 갈게요.'); e.code = 'none'; throw e; }
+  const id = 'M' + Utilities.getUuid().replace(/-/g, '').slice(0, 9).toUpperCase();
+  const stats = mvStatsMap(all, t);
+  const ranked = mvRank(cands.map(p => ({ id: p.id, st: stats[p.id] || {}, last: (stats[p.id] || {}).last || 0 })), id, now).slice(0, MV_RULE.maxShow);
+  const r = [];
+  r[MVLC['id']] = id; r[MVLC['시각']] = new Date(now); r[MVLC['회원']] = uh; r[MVLC['출처']] = src;
+  r[MVLC['출발구']] = dpSplit(fk).g; r[MVLC['출발동']] = dpSplit(fk).dn; r[MVLC['도착구']] = dpSplit(tk).g; r[MVLC['도착동']] = dpSplit(tk).dn;
+  r[MVLC['이사일']] = date; r[MVLC['규모']] = size.id; r[MVLC['엘리베이터']] = elev;
+  r[MVLC['이름암호']] = sealText(name); r[MVLC['이름가림']] = mvMaskName(name); r[MVLC['연락처암호']] = sealText(phone); r[MVLC['연락처가림']] = mvMaskPhone(phone); r[MVLC['연락처해시']] = ph;
+  r[MVLC['메모']] = cellSafe(memo); r[MVLC['동의판']] = MV_CONSENT_V; r[MVLC['동의시각']] = new Date(now);
+  r[MVLC['후보']] = JSON.stringify(ranked); r[MVLC['열람']] = '[]'; r[MVLC['상태']] = MV_LST.on; r[MVLC['후기']] = ''; r[MVLC['후기요청']] = '';
+  r[MVLC['삭제예정일']] = mvAddDays(date, MV_RULE.keepDays);
+  mvSheet(SH_MVL).appendRow(MVLH.map((h, i) => r[i] === undefined ? '' : r[i]));
+  mvSheet(SH_MVA).appendRow([new Date(now), id, '연락처 제3자 제공: ' + MV_CONSENT, MV_CONSENT_V, hashOf('mvag|' + id + '|' + now).slice(0, 17)]);
+  const first = ranked.slice(0, MV_RULE.firstShow), byId = {}; cands.forEach(p => { byId[p.id] = p; });
+  const where = `${mvPlace(dpSplit(fk).g, dpSplit(fk).dn)} → ${mvPlace(dpSplit(tk).g, dpSplit(tk).dn)}`;
+  first.forEach(pid => { const p = byId[pid]; if (p) mvMail(p.mail, `[${SITE_NAME}] 새 이사 견적 요청이 왔어요 (${size.t})`, `${bEsc(where)} · ${bEsc(date)} · ${bEsc(size.t)}(${bEsc(size.d)})<br>최대 ${MV_RULE.maxOpen}곳이 먼저 연락처를 열면 다른 업체에게는 사라져요.<br><a href="${WEB_ROOT}move/partner/">받은 요청 보기</a>`); });
+  return { ok: true, id: id, t: mvTok(id), n: Math.min(MV_RULE.maxOpen, ranked.length), date: date };
+}
+/** 내 요청(이 기기에 저장된 열쇠로): 상태·연 업체·후기 받기 */
+function mvMine(b) {
+  mvGate(b);
+  const list = (Array.isArray(b.mine) ? b.mine : []).slice(0, 10).filter(x => x && /^M[0-9A-F]{9}$/.test(String(x.id)) && mvTokOk(x.id, x.t));
+  if (!list.length) return { ok: true, items: [] };
+  const want = {}; list.forEach(x => { want[x.id] = 1; });
+  const t = ymd(new Date()), parts = {}; mvAll().forEach(p => { parts[p.id] = p; });
+  const items = mvLeadsAll().filter(L => want[L.id]).map(L => ({
+    id: L.id, date: L.date, size: L.size, from: mvPlace(L.fg, L.fd), to: mvPlace(L.tg, L.td), st: L.st,
+    opened: L.opened.map(o => { const p = parts[o.p] || {}; return { id: o.p, name: p.name || '', tel: L.st === MV_LST.cancel ? '' : p.tel || '' }; }),
+    reviewOpen: !L.review && L.st !== MV_LST.cancel && mvReviewOpen(L.date, t), review: L.review ? { pick: L.review.pick, star: L.review.star || 0 } : null
+  }));
+  return { ok: true, items: items };
+}
+/** 이용자 취소: 연락처를 바로 지우고 요청을 닫음 */
+function mvCancel(b) {
+  mvGate(b);
+  if (!mvTokOk(b.id, b.t)) throw new Error('요청을 찾지 못했어요.');
+  const L = mvLeadsAll().find(x => x.id === String(b.id)); if (!L) throw new Error('요청을 찾지 못했어요.');
+  if (L.st === MV_LST.cancel) return { ok: true };
+  ['이름암호', '연락처암호', '메모'].forEach(h => mvSetL(L.row, h, ''));
+  mvSetL(L.row, '상태', MV_LST.cancel);
+  return { ok: true, opened: L.opened.length };
+}
+/** 이사 다음 날부터 30일: 어느 업체와 이사했는지 + 별점·후기 */
+function mvReview(b) {
+  mvGate(b);
+  if (!mvTokOk(b.id, b.t)) throw new Error('요청을 찾지 못했어요.');
+  const L = mvLeadsAll().find(x => x.id === String(b.id)); if (!L) throw new Error('요청을 찾지 못했어요.');
+  if (L.review) throw new Error('이미 후기를 남겼어요. 고마워요!');
+  if (!mvReviewOpen(L.date, ymd(new Date()))) throw new Error('후기는 이사 다음 날부터 30일 동안 남길 수 있어요.');
+  const pick = String(b.pick || ''), ids = L.opened.map(o => o.p);
+  if (pick !== 'other' && pick !== 'none' && ids.indexOf(pick) < 0) throw new Error('어느 업체와 이사했는지 골라 주세요.');
+  const rv = { pick: pick, at: Date.now() };
+  if (pick !== 'other' && pick !== 'none') {
+    const star = Math.round(Number(b.star)); if (!(star >= 1 && star <= 5)) throw new Error('별점을 골라 주세요.');
+    rv.star = star; rv.text = uText(b.text, 300);
+  }
+  mvSetL(L.row, '후기', JSON.stringify(rv));
+  return { ok: true };
+}
+
+/* ---------- 업체: 신청 ---------- */
+function mvFolder() {
+  const P = PropertiesService.getScriptProperties(); let f = null; const id = P.getProperty('MV_FILE_FOLDER');
+  try { f = id ? DriveApp.getFolderById(id) : null; } catch (e) { f = null; }
+  if (!f) { f = DriveApp.createFolder(SITE_NAME + ' 이사업체 증빙'); P.setProperty('MV_FILE_FOLDER', f.getId()); }   // 공유 없음 — 운영자만
+  return f;
+}
+function mvSaveFile(img) {
+  if (!img) return '';
+  const m = /^data:image\/(jpeg|png);base64,([A-Za-z0-9+/=]+)$/.exec(String(img));
+  if (!m) throw new Error('보험 증빙은 사진(JPG·PNG)으로 올려 주세요.');
+  const bytes = Utilities.base64Decode(m[2]);
+  if (bytes.length > DP_IMG_MAX) throw new Error('사진이 너무 커요. 조금 작게 해서 올려 주세요.');
+  if (bytes.length < 1000) throw new Error('사진을 읽지 못했어요. 다시 골라 주세요.');
+  const id = 'MVI' + Utilities.getUuid().replace(/-/g, '').slice(0, 9).toUpperCase();
+  return mvFolder().createFile(Utilities.newBlob(bytes, 'image/' + m[1], id + (m[1] === 'png' ? '.png' : '.jpg'))).getId();
+}
+function mvClean(b) {
+  const a = { name: uText(b.name, 40), ceo: uText(b.ceo, 20), biz: bizOk(b.biz), permitKind: MV_PERMIT[b.permitKind] ? String(b.permitKind) : '', permit: uText(b.permit, 40),
+    insNo: uText(b.insNo, 40), insUntil: /^\d{4}-\d{2}-\d{2}$/.test(String(b.insUntil || '')) ? String(b.insUntil) : '', tel: uText(b.tel, 20), mail: uText(b.mail, 80).toLowerCase(), intro: uText(b.intro, 60).replace(/\s+/g, ' ') };
+  if (!a.name) throw new Error('업체 이름을 적어 주세요.');
+  if (!a.ceo) throw new Error('대표자 성명을 적어 주세요.');
+  if (!a.biz) throw new Error('사업자등록번호 10자리를 다시 확인해 주세요.');
+  if (!a.permitKind) throw new Error('허가 종류를 골라 주세요. 포장이사는 화물자동차 운송사업 또는 운송주선사업 허가가 있어야 해요.');
+  if (!a.permit || a.permit.length < 3) throw new Error('화물자동차 운송(주선)사업 허가번호를 적어 주세요. 허가증에 적힌 번호예요.');
+  const ph = a.tel.replace(/[^0-9]/g, '');
+  if (!/^0\d{8,10}$/.test(ph) && !/^1[5-9]\d{6}$/.test(ph)) throw new Error('업체 전화번호를 다시 확인해 주세요. 예: 02-1234-5678');
+  a.tel = ph.length === 8 ? ph.slice(0, 4) + '-' + ph.slice(4) : ph.replace(/^(02)(\d{3,4})(\d{4})$/, '$1-$2-$3').replace(/^(0\d{2})(\d{3,4})(\d{4})$/, '$1-$2-$3');
+  if (!/^[a-z0-9._%+-]{1,64}@[a-z0-9.-]+\.[a-z]{2,}$/.test(a.mail)) throw new Error('알림을 받을 이메일 주소를 다시 확인해 주세요.');
+  a.gus = (Array.isArray(b.gus) ? b.gus : []).map(String).filter((g, i, x) => /^\d{5}$/.test(g) && x.indexOf(g) === i);
+  if (!a.gus.length) throw new Error('일하는 지역(구)을 1곳 이상 골라 주세요.');
+  if (a.gus.length > MV_RULE.maxGu) throw new Error(`일하는 지역은 ${MV_RULE.maxGu}곳까지 고를 수 있어요.`);
+  if (!a.insNo && !b.insImg) throw new Error('적재물배상보험 가입 증빙(증권 사진 또는 증권번호)을 넣어 주세요.');
+  return a;
+}
+function mvAgreeOk(b) {
+  const ag = b.agree && typeof b.agree === 'object' ? b.agree : {};
+  const miss = Object.keys(MV_AGREE).filter(k => ag[k] !== true);
+  if (miss.length) throw new Error(miss.map(k => MV_AGREE[k]).join('·') + '에 동의해 주세요.');
+  if (String(b.v || '') !== MV_TERMS_V) { const e = new Error('약관이 바뀌었어요. 화면을 새로 고친 뒤 다시 동의해 주세요.'); e.code = 'terms'; throw e; }
+}
+/** 공공 자료로 참고 확인(바로 승인하지 않음): ① 국세청 사업자 상태 ② 전국화물자동차운수사업자 표준데이터(이름·지역·영업 여부) */
+function mvVerify(a) {
+  const P = PropertiesService.getScriptProperties(), key = P.getProperty('DATA_GO_KR_KEY'), out = [];
+  if (!key) return '자동 확인 키(DATA_GO_KR_KEY)가 없어 운영자 확인만';
+  try {
+    const r = UrlFetchApp.fetch('https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=' + dpKeyParam(key), { method: 'post', contentType: 'application/json', muteHttpExceptions: true, payload: JSON.stringify({ b_no: [a.biz.replace(/-/g, '')] }) });
+    const j = parseJ(r.getContentText(), {}), d = j && Array.isArray(j.data) ? j.data[0] : null;
+    out.push(r.getResponseCode() !== 200 || !d ? '사업자 상태: 확인 못 함(국세청 API 활용 신청 필요할 수 있음)' : '사업자 상태: ' + (d.b_stt || d.tax_type || '확인 못 함'));
+  } catch (e) { out.push('사업자 상태: 연결 못 함'); }
+  try {
+    const j = dpGetJson('https://api.data.go.kr/openapi/tn_pubr_public_freight_car_api?serviceKey=' + dpKeyParam(key) + '&pageNo=1&numOfRows=100&type=json&' + encodeURIComponent(P.getProperty('MV_FREIGHT_PARAM') || 'bzentyNm') + '=' + encodeURIComponent(a.name));
+    const body = j && j.response && j.response.body, it = body && body.items;
+    const items = Array.isArray(it) ? it : it && Array.isArray(it.item) ? it.item : it && it.item ? [it.item] : [];
+    if (!(j && j.response)) out.push('화물 운수사업자 자료: 응답을 읽지 못함(운영자 확인)');
+    else {
+      const want = dpNorm(a.name), hit = items.filter(x => Object.keys(x).some(k => /nm$/i.test(k) && dpNorm(x[k]) && (dpNorm(x[k]) === want || dpNorm(x[k]).indexOf(want) >= 0 || want.indexOf(dpNorm(x[k])) >= 0)));
+      out.push(!hit.length ? '화물 운수사업자 자료: 같은 이름 없음(이름이 다르거나 새로 연 곳일 수 있음)'
+        : '화물 운수사업자 자료: 같은 이름 ' + hit.length + '곳 — ' + hit.slice(0, 2).map(x => Object.keys(x).filter(k => /(nm|yn)$/i.test(k)).map(k => String(x[k])).join('/')).join(' · ').slice(0, 160));
+    }
+  } catch (e) { out.push('화물 운수사업자 자료: 연결 못 함'); }
+  return out.join(' · ');
+}
+function mvApply(b) {
+  mvGate(b);
+  const u = sessionUser(b.s), uh = mvUid(u.k);
+  mvAgreeOk(b);
+  const a = mvClean(b);
+  const chk = mvVerify(a);                                             // 잠금 밖(네트워크)
+  const file = mvSaveFile(b.insImg);
+  return withLock(() => {
+    const all = mvAll();
+    if (mvMe(u, all)) throw new Error('이미 신청했어요. 업체 화면에서 확인해 주세요.');
+    if (all.some(p => (p.st === MV_ST.wait || p.st === MV_ST.on || p.st === MV_ST.stop) && p.biz === a.biz)) throw new Error('이 사업자등록번호로 이미 신청된 업체가 있어요. 확인이 필요하면 카카오톡 상담으로 알려 주세요.');
+    const banned = all.some(p => p.biz === a.biz && /^중대 위반/.test(p.memo));
+    const id = 'V' + Utilities.getUuid().replace(/-/g, '').slice(0, 9).toUpperCase(), r = [];
+    r[MVPC['id']] = id; r[MVPC['회원']] = uh; r[MVPC['상태']] = MV_ST.wait; r[MVPC['업체명']] = cellSafe(a.name); r[MVPC['대표자']] = cellSafe(a.ceo); r[MVPC['사업자번호']] = a.biz;
+    r[MVPC['허가종류']] = a.permitKind; r[MVPC['허가번호']] = cellSafe(a.permit); r[MVPC['보험번호']] = cellSafe(a.insNo); r[MVPC['보험파일']] = file; r[MVPC['보험만기']] = a.insUntil;
+    r[MVPC['구목록']] = JSON.stringify(a.gus); r[MVPC['전화']] = cellSafe(a.tel); r[MVPC['이메일']] = cellSafe(a.mail); r[MVPC['소개']] = cellSafe(a.intro);
+    r[MVPC['확인결과']] = cellSafe((banned ? '예전에 중대 위반으로 해지된 사업자번호 — ' : '') + chk); r[MVPC['신청일']] = new Date(); r[MVPC['무료남은']] = 0; r[MVPC['경고']] = 0; r[MVPC['수정일']] = new Date();
+    mvSheet(SH_MVP).appendRow(MVPH.map((h, i) => r[i] === undefined ? '' : r[i]));
+    const now = new Date(); Object.keys(MV_AGREE).forEach(k => mvSheet(SH_MVA).appendRow([now, id, MV_AGREE[k], MV_TERMS_V, hashOf('mvpag|' + id + '|' + k + '|' + now.getTime()).slice(0, 17)]));
+    mvMail(a.mail, `[${SITE_NAME}] 이사업체 제휴 신청을 받았어요`, `${bEsc(a.name)} 제휴 신청을 받았어요. 허가·보험 증빙을 확인한 뒤 2영업일 안에 결과를 알려 드려요.<br>승인되면 첫 달 무료 연락처 열람 ${MV_RULE.freeLeads}건을 드려요.<br><a href="${WEB_ROOT}move/partner/">업체 화면 열기</a>`);
+    mvNotify('apply', '이사업체 제휴 검토 대기');
+    return { ok: true, id: id, st: MV_ST.wait };
+  });
+}
+
+/* ---------- 업체 화면 ---------- */
+function mvMeNeed(b) { mvGate(b); const u = sessionUser(b.s), me = mvMe(u); if (!me) { const e = new Error('제휴 업체 정보를 찾지 못했어요. 먼저 제휴 신청을 해 주세요.'); e.code = 'none'; throw e; } return me; }
+function mvPartnerPub(p, t, stats) {
+  const s = mvStats(stats || {});
+  return { id: p.id, st: p.st, name: p.name, ceo: p.ceo, biz: p.biz, permitKind: MV_PERMIT[p.permitKind] || '', permit: p.permit, insNo: p.insNo, insFile: !!p.insFile, insUntil: p.insUntil,
+    gus: p.gus.map(g => ({ g: g, n: mvGuName(g) })), tel: p.tel, mail: p.mail, intro: p.intro, applied: p.applied, approved: p.approved, warn: p.warn, stopUntil: p.stopUntil, live: mvLive(p, t),
+    free: mvFreeLeft(p.freeLeft, p.freeUntil, t), freeUntil: p.freeUntil, rating: s.rating, rn: s.rn, resp: s.resp, contract: s.contract };
+}
+function mvPartner(b) {
+  mvGate(b);
+  const u = sessionUser(b.s), me = mvMe(u), cfg = mvConfig(b);
+  if (!me) return { ok: true, me: null, cfg: cfg };
+  const t = ymd(new Date()), leads = mvLeadsAll(), st = mvStatsMap(leads, t)[me.id] || {};
+  const led = mvRows(SH_MVT).filter(o => dpTxt(o.r[1]) === me.id).slice(-30).reverse().map(o => ({ at: Utilities.formatDate(new Date(o.r[0]), 'Asia/Seoul', 'yyyy-MM-dd HH:mm'), kind: MV_LEDGER_NM[dpTxt(o.r[2])] || dpTxt(o.r[2]), pts: Number(o.r[3]) || 0, free: Number(o.r[4]) || 0, memo: dpTxt(o.r[7]) }));
+  const reviews = leads.filter(L => L.review && L.review.pick === me.id && L.review.star).slice(-20).reverse().map(L => ({ star: L.review.star, text: L.review.text || '', date: L.date, size: (mvSize(L.size) || {}).t || '' }));
+  return { ok: true, cfg: cfg, me: mvPartnerPub(me, t, st), points: mvBalance(me.id), ledger: led, reviews: reviews };
+}
+/** 받은 요청: 나에게 보이는 진행 중 요청 + 내가 연 요청. 연락처는 연 요청만 풀어서 */
+function mvLeads(b) {
+  const me = mvMeNeed(b), t = ymd(new Date()), now = Date.now();
+  const opens = {}; mvRows(SH_MVO).forEach(o => { if (dpTxt(o.r[MVOC['업체']]) === me.id) opens[dpTxt(o.r[MVOC['요청']])] = { at: new Date(o.r[MVOC['시각']]).getTime(), rep: dpTxt(o.r[MVOC['신고']]), done: dpTxt(o.r[MVOC['처리']]), how: dpTxt(o.r[MVOC['결제']]), amt: Number(o.r[MVOC['금액']]) || 0 }; });
+  const out = [];
+  mvLeadsAll().reverse().forEach(L => {
+    const mine = L.opened.some(o => o.p === me.id);
+    if (!mine && (L.st !== MV_LST.on || !mvLive(me, t) || L.date < t || mvVisible(L.ranked, L.at, now, L.opened.map(o => o.p)).indexOf(me.id) < 0)) return;
+    if (out.length >= 60) return;
+    const o = opens[L.id] || {}, gone = L.st === MV_LST.cancel || L.st === MV_LST.gone;
+    out.push({ id: L.id, at: Utilities.formatDate(new Date(L.at), 'Asia/Seoul', 'MM-dd HH:mm'), from: mvPlace(L.fg, L.fd), to: mvPlace(L.tg, L.td), date: L.date, size: L.size, elev: L.elev, memo: mine && !gone ? L.memo : '',
+      price: mvPrice(L.size), openN: L.opened.length, mine: mine,
+      name: mine && !gone ? openText(L.nameSeal) : L.nameMask, tel: mine && !gone ? openText(L.telSeal) : L.telMask, gone: mine && gone,
+      openedAt: mine && o.at ? Utilities.formatDate(new Date(o.at), 'Asia/Seoul', 'MM-dd HH:mm') : '', paidBy: o.how || '', rep: o.rep || '', repDone: o.done || '', canReport: mine && !o.rep && mvRefundOk(o.at, now) });
+  });
+  return { ok: true, leads: out, points: mvBalance(me.id), free: mvFreeLeft(me.freeLeft, me.freeUntil, t), live: mvLive(me, t) };
+}
+/** [이 고객 연락처 보기]: 1건 차감(무료 열람 먼저) + 연락처 공개 + 기록. 3곳이 열면 다른 업체에게는 사라짐 */
+function mvOpen(b) {
+  const me = mvMeNeed(b), t = ymd(new Date()), now = Date.now();
+  if (!mvLive(me, t)) throw new Error(me.st === MV_ST.wait ? '승인된 뒤에 연락처를 볼 수 있어요.' : '지금은 노출이 멈춰 있어 새 요청을 열 수 없어요.');
+  const L = mvLeadsAll().find(x => x.id === String(b.id || '')); if (!L) throw new Error('요청을 찾지 못했어요.');
+  if (L.opened.some(o => o.p === me.id)) return { ok: true, again: true, name: openText(L.nameSeal), tel: openText(L.telSeal), memo: L.memo };
+  if (L.st !== MV_LST.on) throw new Error(L.st === MV_LST.full ? `이미 ${MV_RULE.maxOpen}곳이 연락처를 열어 마감됐어요. 차감되지 않았어요.` : '고객이 요청을 취소했어요. 차감되지 않았어요.');
+  if (L.opened.length >= MV_RULE.maxOpen) throw new Error(`이미 ${MV_RULE.maxOpen}곳이 연락처를 열어 마감됐어요. 차감되지 않았어요.`);
+  if (mvVisible(L.ranked, L.at, now, L.opened.map(o => o.p)).indexOf(me.id) < 0) throw new Error('이 요청은 지금 열 수 없어요.');
+  const price = mvPrice(L.size), free = mvFreeLeft(me.freeLeft, me.freeUntil, t);
+  let how = '';
+  if (free > 0) { how = '무료'; mvSetP(me.row, '무료남은', free - 1); mvLedger(me.id, 'free', 0, -1, L.id, '', (mvSize(L.size) || {}).t || ''); }
+  else {
+    const bal = mvBalance(me.id);
+    if (bal < price) { const e = new Error(`포인트가 모자라요. 이 요청은 ${price.toLocaleString()}포인트, 남은 포인트는 ${bal.toLocaleString()}포인트예요.`); e.code = 'points'; throw e; }
+    how = '포인트'; mvLedger(me.id, 'open', -price, 0, L.id, '', (mvSize(L.size) || {}).t || '');
+  }
+  const opened = L.opened.concat([{ p: me.id, at: now }]);
+  mvSetL(L.row, '열람', JSON.stringify(opened));
+  if (opened.length >= MV_RULE.maxOpen) mvSetL(L.row, '상태', MV_LST.full);
+  mvSheet(SH_MVO).appendRow([new Date(now), me.id, L.id, L.size, how, how === '무료' ? 0 : price, '', '', '', '', '']);
+  return { ok: true, name: openText(L.nameSeal), tel: openText(L.telSeal), memo: L.memo, paidBy: how, price: how === '무료' ? 0 : price, points: mvBalance(me.id), free: how === '무료' ? free - 1 : free };
+}
+/** 잘못된 요청 신고(열람 뒤 72시간 안): 운영자가 확인하면 돌려 드림 */
+function mvReport(b) {
+  const me = mvMeNeed(b), why = MV_REPORT[b.why] ? String(b.why) : '';
+  if (!why) throw new Error('신고 이유를 골라 주세요.');
+  const rows = mvRows(SH_MVO), o = rows.find(x => dpTxt(x.r[MVOC['업체']]) === me.id && dpTxt(x.r[MVOC['요청']]) === String(b.id || ''));
+  if (!o) throw new Error('연락처를 연 요청만 신고할 수 있어요.');
+  if (dpTxt(o.r[MVOC['신고']])) throw new Error('이미 신고했어요. 운영자가 확인하고 있어요.');
+  if (!mvRefundOk(new Date(o.r[MVOC['시각']]).getTime(), Date.now())) throw new Error(`신고는 연락처를 연 뒤 ${MV_RULE.refundHours}시간 안에만 할 수 있어요.`);
+  const sh = mvSheet(SH_MVO);
+  sh.getRange(o.row, MVOC['신고'] + 1).setValue('대기'); sh.getRange(o.row, MVOC['신고이유'] + 1).setValue(why + (b.memo ? ' ' + uText(b.memo, 100) : '')); sh.getRange(o.row, MVOC['신고시각'] + 1).setValue(new Date());
+  mvNotify('report', '이사 견적 잘못된 요청 신고');
+  return { ok: true };
+}
+/** 업체 정보 고치기: 소개·전화·이메일·일하는 구·보험(증권번호·만기) */
+function mvProfile(b) {
+  const me = mvMeNeed(b);
+  const intro = uText(b.intro, 60).replace(/\s+/g, ' '), mail = uText(b.mail, 80).toLowerCase(), ph = uText(b.tel, 20).replace(/[^0-9]/g, '');
+  if (mail && !/^[a-z0-9._%+-]{1,64}@[a-z0-9.-]+\.[a-z]{2,}$/.test(mail)) throw new Error('이메일 주소를 다시 확인해 주세요.');
+  if (ph && !/^0\d{8,10}$/.test(ph) && !/^1[5-9]\d{6}$/.test(ph)) throw new Error('전화번호를 다시 확인해 주세요.');
+  const gus = Array.isArray(b.gus) ? b.gus.map(String).filter((g, i, x) => /^\d{5}$/.test(g) && x.indexOf(g) === i) : null;
+  if (gus && !gus.length) throw new Error('일하는 지역(구)을 1곳 이상 골라 주세요.');
+  if (gus && gus.length > MV_RULE.maxGu) throw new Error(`일하는 지역은 ${MV_RULE.maxGu}곳까지 고를 수 있어요.`);
+  if ('intro' in b) mvSetP(me.row, '소개', intro);
+  if (mail) mvSetP(me.row, '이메일', mail);
+  if (ph) mvSetP(me.row, '전화', ph.length === 8 ? ph.slice(0, 4) + '-' + ph.slice(4) : ph.replace(/^(02)(\d{3,4})(\d{4})$/, '$1-$2-$3').replace(/^(0\d{2})(\d{3,4})(\d{4})$/, '$1-$2-$3'));
+  if (gus) mvSetP(me.row, '구목록', JSON.stringify(gus));
+  if (b.insNo) mvSetP(me.row, '보험번호', uText(b.insNo, 40));
+  if (/^\d{4}-\d{2}-\d{2}$/.test(String(b.insUntil || ''))) mvSetP(me.row, '보험만기', String(b.insUntil));
+  mvSetP(me.row, '수정일', new Date());
+  return { ok: true };
+}
+
+/* ---------- 포인트 충전(토스 한 번 결제 — PAID_OPEN 잠금) ---------- */
+function mvChargeOrder(b) {
+  if (!mvPayOn()) { const e = new Error('포인트 충전은 아직 열리지 않았어요. 지금은 무료 열람만 쓸 수 있어요.'); e.code = 'paid_closed'; throw e; }
+  const me = mvMeNeed(b), tp = mvTopup(b.amt);
+  if (me.st !== MV_ST.on && me.st !== MV_ST.stop) throw new Error('승인된 뒤에 충전할 수 있어요.');
+  if (!tp) throw new Error('충전 금액을 골라 주세요.');
+  const oid = 'MV' + Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyMMdd') + '-' + Utilities.getUuid().replace(/-/g, '').slice(0, 10).toUpperCase();
+  mvSheet(SH_MVC).appendRow([oid, new Date(), me.id, tp.amt, tp.bonus, '결제대기', '', '']);
+  return { ok: true, orderId: oid, amount: tp.amt, bonus: tp.bonus, orderName: `${SITE_NAME} 이사 견적 포인트 ${tp.pts.toLocaleString()}`, customer: me.name };
+}
+function mvChargeConfirm(b) {
+  if (!mvPayOn()) { const e = new Error('포인트 충전은 아직 열리지 않았어요.'); e.code = 'paid_closed'; throw e; }
+  const me = mvMeNeed(b), key = str(b.paymentKey, 200), amount = Number(b.amount), oid = str(b.orderId, 40);
+  if (!key || !/^[A-Za-z0-9_\-=.]+$/.test(key) || !/^MV\d{6}-[0-9A-F]{10}$/.test(oid)) throw new Error('결제 정보가 올바르지 않아요.');
+  const find = () => mvRows(SH_MVC).find(o => dpTxt(o.r[MVCC['주문번호']]) === oid);
+  const o = find(); if (!o || dpTxt(o.r[MVCC['업체']]) !== me.id) throw new Error('주문을 찾지 못했어요.');
+  if (dpTxt(o.r[MVCC['상태']]) === '결제완료') { if (!safeEq(dpTxt(o.r[MVCC['결제키']]), key)) throw new Error('이미 처리된 주문이에요.'); return { ok: true, again: true, points: mvBalance(me.id) }; }
+  if (amount !== Number(o.r[MVCC['금액']]) || !mvTopup(amount)) { mvSheet(SH_MVC).getRange(o.row, MVCC['상태'] + 1).setValue('금액불일치'); throw new Error('결제 금액이 주문 금액과 달라 승인하지 않았어요. 결제는 진행되지 않았어요.'); }
+  let res = tossCall('confirm', { paymentKey: key, orderId: oid, amount: amount }, 'confirm-' + oid);
+  if (res.code !== 200 && res.j && res.j.code === 'ALREADY_PROCESSED_PAYMENT') res = tossCall(encodeURIComponent(key));
+  const j = res.j || {};
+  return withLock(() => {
+    const o2 = find(), sh = mvSheet(SH_MVC);
+    if (dpTxt(o2.r[MVCC['상태']]) === '결제완료') return { ok: true, again: true, points: mvBalance(me.id) };
+    if (res.code !== 200 || j.status !== 'DONE' || String(j.orderId) !== oid || Number(j.totalAmount) !== amount) {
+      sh.getRange(o2.row, MVCC['상태'] + 1).setValue('승인실패'); sh.getRange(o2.row, MVCC['메모'] + 1).setValue(cellSafe(str((j.code || '') + ' ' + (j.message || j.status || ''), 200)));
+      return { ok: false, err: str(j.message, 200) || '결제가 완료되지 않았어요.', code: str(j.code, 60) };
+    }
+    const tp = mvTopup(amount);
+    sh.getRange(o2.row, MVCC['상태'] + 1).setValue('결제완료'); sh.getRange(o2.row, MVCC['결제키'] + 1).setValue(key);
+    mvLedger(me.id, 'charge', tp.amt, 0, '', oid, '토스 결제');
+    if (tp.bonus) mvLedger(me.id, 'bonus', tp.bonus, 0, '', oid, '10만 원 충전 10% 더');
+    mvMail(me.mail, `[${SITE_NAME}] 포인트 ${tp.pts.toLocaleString()}을 충전했어요`, `결제 ${tp.amt.toLocaleString()}원${tp.bonus ? ` + 더 드림 ${tp.bonus.toLocaleString()}포인트` : ''}. 남은 포인트는 ${mvBalance(me.id).toLocaleString()}포인트예요.<br>쓰지 않은 충전 포인트의 환불은 약관을 따라요: <a href="${WEB_ROOT}move/terms/">${WEB_ROOT}move/terms/</a>`);
+    return { ok: true, points: mvBalance(me.id), added: tp.pts };
+  });
+}
+
+/* ---------- 운영자 ---------- */
+function mvAdminQueue(b) {
+  mvAdminNeed(b);
+  const rl = mvRuleLoad(), all = mvAll(), t = ymd(new Date()), leads = mvLeadsAll(), stats = mvStatsMap(leads, t), name = id => (all.find(p => p.id === id) || {}).name || id;
+  const apps = all.filter(p => p.st === MV_ST.wait).slice(0, 50).map(p => Object.assign(mvPartnerPub(p, t, stats[p.id]), { chk: p.chk, img: p.insFile ? dpPhotoData(p.insFile) : '', mail: p.mail }));
+  const reps = mvRows(SH_MVO).filter(o => dpTxt(o.r[MVOC['신고']]) === '대기').slice(0, 100).map(o => {
+    const L = leads.find(x => x.id === dpTxt(o.r[MVOC['요청']])) || {};
+    return { pid: dpTxt(o.r[MVOC['업체']]), name: name(dpTxt(o.r[MVOC['업체']])), lid: dpTxt(o.r[MVOC['요청']]), why: dpTxt(o.r[MVOC['신고이유']]), at: Utilities.formatDate(new Date(o.r[MVOC['신고시각']]), 'Asia/Seoul', 'yyyy-MM-dd HH:mm'),
+      paidBy: dpTxt(o.r[MVOC['결제']]), amt: Number(o.r[MVOC['금액']]) || 0, mask: L.telMask || '', others: (L.opened || []).length, otherReps: mvRows(SH_MVO).filter(x => dpTxt(x.r[MVOC['요청']]) === L.id && dpTxt(x.r[MVOC['신고']])).length };
+  });
+  const live = all.filter(p => p.st === MV_ST.on || p.st === MV_ST.stop).slice(0, 300).map(p => Object.assign(mvPartnerPub(p, t, stats[p.id]), { points: mvBalance(p.id) }));
+  const low = live.filter(p => p.rating != null && p.rn >= MV_RULE.lowRatingN && p.rating < MV_RULE.lowRating);
+  const d7 = Date.now() - 7 * 86400000, recent = leads.filter(L => L.at >= d7);
+  const P = PropertiesService.getScriptProperties();
+  return { ok: true, open: MOVE_ENABLED, paid: mvPayOn(), keyReady: !!P.getProperty('DATA_GO_KR_KEY'), reviewTpl: !!P.getProperty('SOLAPI_TPL_MOVE_REVIEW'),
+    settings: { rule: MV_RULE, bad: rl.bad }, tpl: { ban: Object.keys(MV_BAN).map(k => ({ k: k, name: MV_BAN[k].name, body: MV_BAN[k].body })), strike: Object.keys(MV_STRIKE).map(k => ({ k: k, name: MV_STRIKE[k].name, body: MV_STRIKE[k].body })) },
+    week: { leads: recent.length, opened: recent.reduce((a, L) => a + L.opened.length, 0), full: recent.filter(L => L.st === MV_LST.full).length, none: recent.filter(L => !L.opened.length).length },
+    apps: apps, reports: reps, live: live, low: low };
+}
+const MV_ADMIN_OPS = ['approve', 'reject', 'refundOk', 'refundNo', 'strike', 'ban', 'end', 'unstop', 'adjust', 'freeGrant'];
+function mvAdminAct(b) {
+  mvAdminNeed(b);
+  const op = String(b.op || ''); if (MV_ADMIN_OPS.indexOf(op) < 0) throw new Error('할 일을 다시 골라 주세요.');
+  const why = uText(b.why, 200), t = ymd(new Date()), terms = `<br>약관: <a href="${WEB_ROOT}move/terms/">${WEB_ROOT}move/terms/</a>`;
+  if (op === 'refundOk' || op === 'refundNo') {
+    const o = mvRows(SH_MVO).find(x => dpTxt(x.r[MVOC['업체']]) === String(b.id || '') && dpTxt(x.r[MVOC['요청']]) === String(b.lid || '') && dpTxt(x.r[MVOC['신고']]) === '대기');
+    if (!o) throw new Error('신고를 찾지 못했어요.');
+    const p = mvAll().find(x => x.id === String(b.id)), sh = mvSheet(SH_MVO);
+    if (op === 'refundNo' && !why) throw new Error('돌려 드리지 않는 이유를 적어 주세요. 업체에게 메일로 가요.');
+    sh.getRange(o.row, MVOC['신고'] + 1).setValue(op === 'refundOk' ? '승인' : '거절'); sh.getRange(o.row, MVOC['처리'] + 1).setValue(cellSafe((op === 'refundOk' ? '돌려 드림' : '거절: ' + why))); sh.getRange(o.row, MVOC['처리시각'] + 1).setValue(new Date());
+    if (op === 'refundOk') {
+      if (dpTxt(o.r[MVOC['결제']]) === '무료') { mvLedger(p.id, 'refund', 0, 1, dpTxt(o.r[MVOC['요청']]), '', '무료 열람 1건 돌려 드림'); const f = mvFreeLeft(p.freeLeft, p.freeUntil, t); mvSetP(p.row, '무료남은', f + 1); if (!(p.freeUntil && t <= p.freeUntil)) mvSetP(p.row, '무료만료', mvAddDays(t, 30)); }
+      else mvLedger(p.id, 'refund', Number(o.r[MVOC['금액']]) || 0, 0, dpTxt(o.r[MVOC['요청']]), '', '잘못된 요청 신고 확인');
+    }
+    if (p) mvMail(p.mail, `[${SITE_NAME}] 잘못된 요청 신고 결과`, op === 'refundOk' ? `신고하신 요청(${bEsc(dpTxt(o.r[MVOC['요청']]))})을 확인하고 ${dpTxt(o.r[MVOC['결제']]) === '무료' ? '무료 열람 1건' : (Number(o.r[MVOC['금액']]) || 0).toLocaleString() + '포인트'}를 돌려 드렸어요.` : `신고하신 요청(${bEsc(dpTxt(o.r[MVOC['요청']]))})은 확인 결과 돌려 드리지 못해요.<br>이유: ${bEsc(why)}${terms}`);
+    return { ok: true };
+  }
+  const p = mvAll().find(x => x.id === String(b.id || '')); if (!p) throw new Error('업체를 찾지 못했어요.');
+  const res = { ok: true };
+  if (op === 'approve') {
+    if (p.st !== MV_ST.wait) throw new Error('검토 대기인 업체만 승인할 수 있어요.');
+    mvSetP(p.row, '상태', MV_ST.on); mvSetP(p.row, '승인일', new Date()); mvSetP(p.row, '확인결과', p.chk + ' → 운영자 승인 ' + t + (why ? ' · ' + why : ''));
+    const until = mvAddDays(t, MV_RULE.freeDays - 1);
+    mvSetP(p.row, '무료남은', MV_RULE.freeLeads); mvSetP(p.row, '무료만료', until); mvLedger(p.id, 'freeGrant', 0, MV_RULE.freeLeads, '', '', `첫 달 무료 열람(${until}까지)`);
+    mvMail(p.mail, `[${SITE_NAME}] 이사업체 제휴가 승인됐어요`, `${bEsc(p.name)} 제휴를 확인하고 승인했어요. 이제 일하는 지역의 이사 견적 요청을 받을 수 있어요.<br>첫 달 무료 연락처 열람 ${MV_RULE.freeLeads}건(${until}까지)을 드렸어요.<br><a href="${WEB_ROOT}move/partner/">업체 화면 열기</a>`);
+  } else if (op === 'reject') {
+    if (!why) throw new Error('거절 이유를 적어 주세요. 신청한 업체에게 메일로 가요.');
+    mvSetP(p.row, '상태', MV_ST.no); mvSetP(p.row, '메모', '거절: ' + why);
+    if (p.insFile) { cmTrash(p.insFile); mvSetP(p.row, '보험파일', ''); }
+    mvMail(p.mail, `[${SITE_NAME}] 이사업체 제휴 신청 결과`, `${bEsc(p.name)} 제휴 신청을 이번에는 받지 못했어요.<br>이유: ${bEsc(why)}<br>고쳐서 다시 신청할 수 있어요: <a href="${WEB_ROOT}move/partner/">${WEB_ROOT}move/partner/</a>`);
+  } else if (op === 'strike') {
+    const cat = MV_STRIKE[b.cat] ? String(b.cat) : ''; if (!cat) throw new Error('제재 사유를 골라 주세요.');
+    const step = mvStrikeStep(p.warn).n;
+    mvSetP(p.row, '경고', step); mvSetP(p.row, '메모', `${step}차 제재(${MV_STRIKE[cat].name}) ${t}${why ? ': ' + why : ''}`);
+    if (step === 2) { mvSetP(p.row, '상태', MV_ST.stop); mvSetP(p.row, '노출중지', mvAddDays(t, MV_RULE.stopDays)); }
+    if (step === 3) mvEnd(p, `3차 제재 해지(${MV_STRIKE[cat].name})`);
+    const head = step === 1 ? `경고 1회를 드려요. 한 번 더 받으면 ${MV_RULE.stopDays}일 동안 새 요청이 가지 않아요.` : step === 2 ? `${MV_RULE.stopDays}일 동안 새 요청이 가지 않아요. 한 번 더 받으면 해지돼요.` : '세 번째 제재라 해지했어요. 남은 충전 포인트는 약관에 따라 처리해 드려요.';
+    mvMail(p.mail, `[${SITE_NAME}] 이사업체 제휴 ${step === 1 ? '경고' : step === 2 ? '노출 중지' : '해지'} 안내 (${step}차)`, `${bEsc(p.name)} · 사유: ${bEsc(MV_STRIKE[cat].name)} — ${bEsc(MV_STRIKE[cat].body)}${why ? '<br>운영자 메모: ' + bEsc(why) : ''}<br>${head}${terms}`);
+    res.step = step;
+  } else if (op === 'ban') {
+    const cat = MV_BAN[b.cat] ? String(b.cat) : ''; if (!cat) throw new Error('해지 사유를 골라 주세요.');
+    mvEnd(p, '중대 위반 해지(' + MV_BAN[cat].name + ')' + (why ? ' · ' + why : ''));
+    mvSetP(p.row, '메모', '중대 위반 ' + t + ' · ' + MV_BAN[cat].name + (why ? ' · ' + why : ''));
+    mvMail(p.mail, `[${SITE_NAME}] 이사업체 제휴가 바로 해지됐어요`, `${bEsc(p.name)} 제휴를 약관에 따라 바로 해지했어요.<br>사유: ${bEsc(MV_BAN[cat].name)} — ${bEsc(MV_BAN[cat].body)}${why ? '<br>운영자 메모: ' + bEsc(why) : ''}<br>사실과 다르면 이 메일에 답장으로 알려 주세요.${terms}`);
+    res.step = 'ban';
+  } else if (op === 'end') {
+    if (!why) throw new Error('해지 이유를 적어 주세요. 업체에게 메일로 가요.');
+    mvEnd(p, '운영자 해지: ' + why);
+    mvMail(p.mail, `[${SITE_NAME}] 이사업체 제휴가 해지됐어요`, `${bEsc(p.name)} 제휴를 해지했어요.<br>이유: ${bEsc(why)}<br>남은 충전 포인트는 약관에 따라 처리해 드려요.${terms}`);
+  } else if (op === 'unstop') { mvSetP(p.row, '상태', MV_ST.on); mvSetP(p.row, '노출중지', ''); }
+  else if (op === 'adjust') {                                          // 운영자 조정(계좌 입금 확인·보상 등) — 메모 필수
+    const n = Math.round(Number(b.pts)); if (!n || Math.abs(n) > 5000000) throw new Error('조정할 포인트를 적어 주세요(빼려면 -).');
+    if (!why) throw new Error('조정 이유를 적어 주세요(기록에 남아요).');
+    if (n < 0 && mvBalance(p.id) + n < 0) throw new Error('남은 포인트보다 많이 뺄 수 없어요.');
+    mvLedger(p.id, 'adjust', n, 0, '', '', why); res.points = mvBalance(p.id);
+  } else if (op === 'freeGrant') {
+    const n = Math.round(Number(b.n)); if (!(n >= 1 && n <= 50)) throw new Error('무료 열람 수(1~50)를 적어 주세요.');
+    const f = mvFreeLeft(p.freeLeft, p.freeUntil, t), until = p.freeUntil && t <= p.freeUntil ? p.freeUntil : mvAddDays(t, 29);
+    mvSetP(p.row, '무료남은', f + n); mvSetP(p.row, '무료만료', until); mvLedger(p.id, 'freeGrant', 0, n, '', '', why || '운영자 지급');
+  }
+  return res;
+}
+function mvEnd(p, why) {
+  mvSetP(p.row, '상태', MV_ST.end); mvSetP(p.row, '메모', why + ' ' + ymd(new Date())); mvSetP(p.row, '수정일', new Date());
+  if (p.insFile) { cmTrash(p.insFile); mvSetP(p.row, '보험파일', ''); }
+}
+function mvNotify(kind, title) {
+  if (!NOTIFY) return;
+  const c = CacheService.getScriptCache(); if (c.get('mvN|' + kind)) return;
+  c.put('mvN|' + kind, '1', 3600);
+  try { MailApp.sendEmail(Session.getEffectiveUser().getEmail(), `[${SITE_NAME} 이사 견적] ${title}`, `운영자 화면에서 확인해 주세요: ${WEB_ROOT}move/admin/\n(모닝 브리핑 운영자 모드를 켠 계정으로 카카오 간편 로그인을 해야 열려요)\n시트: ${book().getUrl()}`); } catch (e) {}
+}
+function mvMail(to, subject, html) { return dpMailTo(to, subject, html); }
+
+/* ---------- 매일 할 일(briefDaily 끝에서, MOVE_ENABLED 일 때만) ----------
+   ① 이사 다음 날: '어느 업체와 이사하셨나요?' 알림톡 한 번(스크립트 속성 SOLAPI_TPL_MOVE_REVIEW 템플릿이 있을 때만 — 변수 #{날짜}·#{링크})
+   ② 보관 기간(이사 날짜 + 90일)이 지난 요청의 이름·연락처·메모 지우기 ③ 노출 중지 기간이 끝난 업체 다시 켜기 ④ 지난 이사 날짜의 진행 중 요청은 마감 */
+function mvDaily(now) {
+  if (!MOVE_ENABLED || !book().getSheetByName(SH_MVL)) return 0;
+  const P = PropertiesService.getScriptProperties(), t = ymd(now || new Date());
+  if (P.getProperty('MV_DAILY') === t) return 0;
+  P.setProperty('MV_DAILY', t);
+  mvRuleLoad();
+  let n = 0;
+  const tpl = !!P.getProperty('SOLAPI_TPL_MOVE_REVIEW');
+  mvLeadsAll().forEach(L => {
+    if (L.st === MV_LST.on && L.date < t) mvSetL(L.row, '상태', MV_LST.full);
+    if (L.until && t > L.until && L.st !== MV_LST.gone) { ['이름암호', '연락처암호', '메모'].forEach(h => mvSetL(L.row, h, '')); mvSetL(L.row, '상태', MV_LST.gone); n++; return; }
+    if (tpl && !L.asked && !L.review && L.opened.length && L.st !== MV_LST.cancel && L.st !== MV_LST.gone && mvReviewOpen(L.date, t)) {
+      const ph = openText(L.telSeal); if (!ph) return;
+      const url = `${WEB_ROOT}move/?r=${L.id}&t=${mvTok(L.id)}`;
+      try { const r = solapiSend(ph, 'SOLAPI_TPL_MOVE_REVIEW', { '#{날짜}': L.date, '#{링크}': url }, url); if (r && r.ok) { mvSetL(L.row, '후기요청', t); n++; } } catch (e) {}
+    }
+  });
+  mvAll().forEach(p => { if (p.st === MV_ST.stop && p.stopUntil && t > p.stopUntil) { mvSetP(p.row, '상태', MV_ST.on); mvSetP(p.row, '노출중지', ''); } });
+  return n;
+}
+/** 회원 탈퇴: 그 회원이 보낸 요청의 연락처 지우기 + 업체였다면 해지·연락처 지우기 */
+function mvUserGone(k) {
+  if (!book().getSheetByName(SH_MVL) && !book().getSheetByName(SH_MVP)) return;
+  const uh = mvUid(k);
+  if (book().getSheetByName(SH_MVL)) mvLeadsAll().filter(L => L.uh === uh).forEach(L => { ['이름암호', '연락처암호', '메모'].forEach(h => mvSetL(L.row, h, '')); if (L.st === MV_LST.on) mvSetL(L.row, '상태', MV_LST.cancel); });
+  if (book().getSheetByName(SH_MVP)) mvAll().filter(p => p.uh === uh).forEach(p => { if (p.st !== MV_ST.end && p.st !== MV_ST.no) mvEnd(p, '탈퇴'); ['전화', '이메일', '대표자'].forEach(h => mvSetP(p.row, h, '')); });
+}
+/** 전세 만기 알림 메일 속 '이사 견적 받기' 한 줄(MOVE_ENABLED 일 때만) */
+function mvMailCta(h, ce) {
+  if (!MOVE_ENABLED || !h || !ce) return '';
+  const u = `${WEB_ROOT}move/?fg=${encodeURIComponent(h.code || '')}&fd=${encodeURIComponent(h.dong || '')}&date=${encodeURIComponent(ce)}&src=mail`;
+  return `<p style="margin:8px 0 0;font-size:14px">이사하기로 하셨다면 <a href="${u}">이사 견적 받기 ›</a> (제휴 이사업체 최대 3곳이 연락드려요)</p>`;
+}
+
+
 /* ---------- 토스 자동결제(빌링) 공용 — 동네 파트너(DP)·모닝 브리핑(BR)이 함께 써요. BILLING_OPEN·PAID_OPEN 이 모두 켜져야 돌아요 ----------
    ① 화면: 토스 SDK v2 TossPayments(클라이언트 키).payment({ customerKey }).requestBillingAuth({ method: 'CARD', successUrl, failUrl, customerEmail, customerName }) — 0원 카드 인증
    ② 돌아온 주소의 authKey·customerKey → 서버 POST https://api.tosspayments.com/v1/billing/authorizations/issue { authKey, customerKey } → billingKey
@@ -8000,7 +8738,7 @@ function calTaExtra(s, items, ctx) {
     const areas = c.ta.areas.length ? c.ta.areas : [{ g: h.code, d: h.dong }], files = {};
     areas.forEach(a => { files[a.g] = rent(c.ta.ty, a.g); });
     const scan = calTaScan(files, areas, c.ta.band || h.band, ctx.date, 0), own = calTaOwn(rent('a', h.code), h, ctx.date);
-    return calTaMailHtml(h.apt + ' ' + h.band, scan, own, { gname: ctx.gname, web: WEB_ROOT });
+    return calTaMailHtml(h.apt + ' ' + h.band, scan, own, { gname: ctx.gname, web: WEB_ROOT }) + mvMailCta(h, c.ce);   // v57 이사 견적 받기 한 줄(MOVE_ENABLED 일 때만)
   }).join('');
 }
 /** 보낸 뒤 기록(단계마다 한 줄 + 주간 표시). setLast = 이 메일이 그날 첫 메일이면 최근발송일도 */
@@ -8134,7 +8872,7 @@ function pqResultLine(q, k) {
    순위 = 그 시즌 포인트(같은 점수는 같은 등수). 등급은 위에서부터: 부동산 달인 → 고수 → 분석가 → 임장러 → 새싹. */
 const PQ_TIER_CFG = {
   tiers: [
-    { id: 'master', t: '부동산 달인', n: 50, topN: 10, topPct: 1 },
+    { id: 'master', t: '부동산 달인', n: 50, topN: 10, topPct: 1, minN: 100 },   // minN: 그 시즌 참여자가 100명 이상일 때만 뽑음(아니면 고수까지만) — 대표 승인 2026-11-25
     { id: 'pro', t: '고수', n: 50, acc: 60, topPct: 10 },
     { id: 'analyst', t: '분석가', n: 30, acc: 55 },
     { id: 'field', t: '임장러', n: 10 },
@@ -8146,7 +8884,7 @@ const PQ_REWARD_NM = { report: '프리미엄 리포트 이용권', brief: '모�
 function pqCfg(over) {
   const c = JSON.parse(JSON.stringify(PQ_TIER_CFG));
   if (over && typeof over === 'object') {
-    (Array.isArray(over.tiers) ? over.tiers : []).forEach(o => { const t = c.tiers.find(x => x.id === o.id); if (t) ['n', 'acc', 'topN', 'topPct'].forEach(k => { if (typeof o[k] === 'number' && o[k] >= 0) t[k] = o[k]; }); });
+    (Array.isArray(over.tiers) ? over.tiers : []).forEach(o => { const t = c.tiers.find(x => x.id === o.id); if (t) ['n', 'acc', 'topN', 'topPct', 'minN'].forEach(k => { if (typeof o[k] === 'number' && o[k] >= 0) t[k] = o[k]; }); });
     if (over.rewards && typeof over.rewards === 'object') Object.keys(c.rewards).forEach(k => { if (Array.isArray(over.rewards[k])) c.rewards[k] = over.rewards[k].filter(r => r && PQ_REWARD_NM[r.k] && r.n > 0 && r.n <= 12).map(r => ({ k: r.k, n: Math.round(r.n) })); });
   }
   return c;
@@ -8175,6 +8913,7 @@ function pqTierOf(r, N, cfg) {
   cfg = cfg || PQ_TIER_CFG;
   for (const t of cfg.tiers) {
     if ((r.n || 0) < (t.n || 0)) continue;
+    if (t.minN && (N || 0) < t.minN) continue;                       // 참여자가 적은 시즌에는 이 등급을 뽑지 않음
     if (t.acc != null && (r.acc || 0) < t.acc) continue;
     if (t.topN != null || t.topPct != null) {
       const lim = Math.max(t.topN || 0, t.topPct ? Math.ceil(N * t.topPct / 100) : 0);
@@ -8194,6 +8933,7 @@ function pqNext(r, cfg) {
   if ((r.n || 0) < (nx.n || 0)) need.push(`예측 ${nx.n - (r.n || 0)}번 더`);
   if (nx.acc != null && (r.acc || 0) < nx.acc) need.push(`정확도 ${nx.acc}% 이상`);
   if (nx.topPct != null || nx.topN != null) need.push(nx.topN ? `시즌 상위 ${nx.topPct}% 또는 ${nx.topN}위 안` : `시즌 상위 ${nx.topPct}%`);
+  if (nx.minN) need.push(`시즌 참여자 ${nx.minN}명 이상일 때 뽑아요`);
   return { id: nx.id, t: nx.t, need: need };
 }
 /** 시즌 끝 보상: tier → [{k, n, t}] (현금 없음, 서비스 안 이용권만) */

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<title>이사업체 제휴 운영자</title>
+<!-- 이사업체 제휴 운영자 화면 — 어디에도 링크하지 않음. 열쇠: 모닝 브리핑 운영자 모드(BRIEF_ADMIN_IDS)에 들어 있는 카카오 계정으로 카카오 간편 로그인.
+     이 화면에서 [이 기기에서 미리 보기 켜기]를 누른 기기만 MOVE_ENABLED=false 일 때도 ?preview=move 로 화면을 미리 볼 수 있어요. 검색 제외 -->
+<script src="../../assets/agents.js"></script>
+<script src="../../assets/config.js?v=11"></script>
+<script src="../../assets/auth.js?v=10"></script>
+<script src="../../assets/savefb.js?v=1"></script>
+<script src="../../assets/move-core.js?v=1"></script>
+<script src="../../assets/move.js?v=1"></script>
+<link rel="stylesheet" href="../../assets/aplus.css?v=46">
+<link rel="stylesheet" href="../move.css?v=1">
+<script src="../../assets/back.js?v=1" defer></script>
+</head>
+<body>
+<header class="top" data-noacct>
+  <a class="brand" href="../../" aria-label="홈"><span data-site-name></span></a>
+  <div class="badge plain">이사업체 제휴 운영자</div>
+</header>
+<main class="wrap wide" id="app"><p class="lead">불러오고 있어요…</p></main>
+<script>
+(function () {
+  'use strict';
+  var MV = window.JDJ_MOVE, A = window.JDJ_AUTH, F = window.JDJ_SAVEFB, C = window.JDJ_MVCORE, app = document.getElementById('app');
+  var esc = MV.esc, Q = null;
+  var won = function (n) { return Number(n || 0).toLocaleString('ko-KR') + '원'; };
+  function head() {
+    var pv = localStorage.getItem(MV.LS_PV) === '1', R = (Q.settings || {}).rule || C.MV_RULE, w = Q.week || {};
+    return '<h1>이사업체 제휴 운영자</h1><p class="lead">신청 승인·잘못된 요청 신고(돌려 드리기)·제재를 여기서 해요. 버튼을 누르면 결과 메일이 업체에게 바로 가요.</p>'
+      + '<section class="card"><h2>지금 상태</h2><div class="stt"><span>문 열림: <b class="' + (Q.open ? 'on">열림' : 'off">닫힘(미리 보기만)') + '</b></span>'
+      + '<span>포인트 충전: <b class="' + (Q.paid ? 'on">열림' : 'off">잠김(PAID_OPEN)') + '</b></span>'
+      + '<span>공공 자료 키: <b class="' + (Q.keyReady ? 'on">있음(참고 확인)' : 'off">없음 — 운영자 확인만') + '</b></span>'
+      + '<span>이사 다음 날 후기 알림톡: <b class="' + (Q.reviewTpl ? 'on">템플릿 있음' : 'off">템플릿 없음(화면에서만 받음)') + '</b></span></div>'
+      + '<div class="stt" style="margin-top:6px"><span>최근 7일 요청 <b>' + (w.leads || 0) + '</b></span><span>연락처 열람 <b>' + (w.opened || 0) + '</b></span><span>마감(3곳) <b>' + (w.full || 0) + '</b></span><span>아무도 안 연 요청 <b>' + (w.none || 0) + '</b></span></div>'
+      + '<details style="margin-top:8px"><summary class="b" style="display:inline-flex;align-items:center">설정값 보기(MOVE_SETTINGS)</summary><div class="stt" style="margin-top:6px">'
+      + '<span>열람 1건: ' + R.sizes.map(function (s) { return esc(s.t) + ' ' + won(s.price); }).join(' · ') + '</span><span>충전: ' + R.topups.map(function (t) { return won(t.amt) + (t.bonusPct ? '(+' + t.bonusPct + '%)' : ''); }).join(' · ') + '</span>'
+      + '<span>최대 열람 ' + R.maxOpen + '곳 · 처음 ' + R.firstShow + '곳 · ' + R.waveHours + '시간마다 ' + R.waveAdd + '곳 더(최대 ' + R.maxShow + ')</span><span>첫 달 무료 ' + R.freeLeads + '건(' + R.freeDays + '일)</span><span>신고 ' + R.refundHours + '시간 안</span>'
+      + '<span>구 우선 노출 구독: ' + (R.guTop && R.guTop.enabled ? '켜짐 · 월 ' + won(R.guTop.price) : '꺼짐(나중에)') + '</span>'
+      + (((Q.settings || {}).bad || []).length ? '<span style="color:#C2410C">받아들이지 않은 설정: ' + esc(Q.settings.bad.join(', ')) + '</span>' : '') + '</div></details>'
+      + '<div class="acts"><button type="button" class="b ' + (pv ? '' : 'main') + '" id="pv">' + (pv ? '이 기기 미리 보기 끄기' : '이 기기에서 미리 보기 켜기') + '</button>'
+      + (pv ? '<a class="b" style="display:inline-flex;align-items:center;text-decoration:none" href="../?preview=move">이용자 화면 미리 보기</a><a class="b" style="display:inline-flex;align-items:center;text-decoration:none" href="../partner/?preview=move">업체 화면 미리 보기</a>' : '') + '</div></section>';
+  }
+  function sec(title, n, body, hot) { return '<section class="card"><h2>' + title + ' <span class="n' + (hot && n ? ' hot' : '') + '">' + n + '</span></h2>' + (n ? body : '<p class="empty">없어요.</p>') + '</section>'; }
+  function catSel(list, id) { return '<select data-cat="' + id + '" aria-label="사유">' + list.map(function (t) { return '<option value="' + t.k + '">' + esc(t.name) + '</option>'; }).join('') + '</select>'; }
+  function pHd(p) { return '<div class="hd"><b>' + esc(p.name) + '</b><span>대표 ' + esc(p.ceo) + '</span><span>사업자 ' + esc(p.biz) + '</span><span>' + esc(p.permitKind) + ' ' + esc(p.permit) + '</span><span>' + esc(p.tel) + '</span><span>' + esc(p.gus.map(function (x) { return x.n || x.g; }).join(', ')) + '</span></div>'; }
+  function sanction(p) {
+    var step = C.mvStrikeStep(p.warn);
+    return '<div class="acts">' + catSel(Q.tpl.strike, 's' + p.id) + '<button type="button" class="b no" data-op="strike" data-id="' + esc(p.id) + '" data-c="s' + esc(p.id) + '">단계 제재(' + esc(step.t) + ')</button></div>'
+      + '<div class="acts">' + catSel(Q.tpl.ban, 'b' + p.id) + '<button type="button" class="b no" data-op="ban" data-id="' + esc(p.id) + '" data-c="b' + esc(p.id) + '">중대 위반 바로 해지</button></div>'
+      + '<div class="acts"><input type="text" maxlength="200" placeholder="메모(해지·조정은 필수, 업체 메일에 덧붙여요)" data-why="' + esc(p.id) + '" aria-label="메모">'
+      + (p.st === '노출중지' ? '<button type="button" class="b ok2" data-op="unstop" data-id="' + esc(p.id) + '">노출 다시 켜기</button>' : '')
+      + '<button type="button" class="b" data-op="end" data-id="' + esc(p.id) + '">일반 해지</button></div>'
+      + '<div class="acts"><input type="number" inputmode="numeric" placeholder="포인트 ±(예: 50000)" data-pts="' + esc(p.id) + '" aria-label="조정 포인트" style="flex:0 1 180px"><button type="button" class="b" data-op="adjust" data-id="' + esc(p.id) + '">포인트 조정</button>'
+      + '<input type="number" inputmode="numeric" placeholder="무료 열람 수" data-n="' + esc(p.id) + '" aria-label="무료 열람 수" style="flex:0 1 140px"><button type="button" class="b" data-op="freeGrant" data-id="' + esc(p.id) + '">무료 열람 주기</button></div>';
+  }
+  function draw() {
+    var h = head();
+    h += sec('검토 대기 신청', Q.apps.length, Q.apps.map(function (p) {
+      return '<div class="it">' + pHd(p) + '<p class="why">' + esc(p.chk) + '</p><div class="hd"><span>신청 ' + esc(p.applied) + '</span><span>보험 ' + esc(p.insNo || (p.img ? '증권 사진' : '없음')) + (p.insUntil ? ' · 만기 ' + esc(p.insUntil) : '') + '</span><span>' + esc(p.mail) + '</span></div>'
+        + (p.img ? '<img class="img" src="' + esc(p.img) + '" alt="적재물배상보험 증빙 사진">' : '')
+        + '<p class="tpl">확인할 곳: ① 허가 — 관할 시·군·구청 교통(행정)과에 허가번호·상호 확인 또는 허가증 사본 요청(공공 자료에는 허가번호가 없어 이름·지역·영업 여부만 참고) ② 사업자 — 국세청 홈택스 사업자 상태 조회 ③ 보험 — 증권의 피보험자·보장 기간·적재물배상 항목.</p>'
+        + '<div class="acts"><button type="button" class="b ok2" data-op="approve" data-id="' + esc(p.id) + '">승인(무료 열람 ' + ((Q.settings || {}).rule || C.MV_RULE).freeLeads + '건)</button><input type="text" maxlength="200" placeholder="거절 이유(업체에게 메일로 가요)" data-why="' + esc(p.id) + '" aria-label="거절 이유"><button type="button" class="b no" data-op="reject" data-id="' + esc(p.id) + '">거절</button></div></div>';
+    }).join(''), true);
+    h += sec('잘못된 요청 신고(돌려 드리기)', Q.reports.length, '<p class="hint">같은 요청을 다른 업체도 신고했는지 함께 보세요. 승인하면 차감한 포인트(또는 무료 열람 1건)를 돌려 드려요.</p>' + Q.reports.map(function (r) {
+      return '<div class="it"><div class="hd"><b>' + esc(r.name) + '</b><span>요청 ' + esc(r.lid) + '</span><span>' + esc((C.MV_REPORT[String(r.why).split(' ')[0]] || '') + String(r.why).replace(/^\S+/, '') || r.why) + '</span><span>' + esc(r.at) + '</span><span>' + (r.paidBy === '무료' ? '무료 열람' : won(r.amt)) + '</span><span>번호 ' + esc(r.mask) + '</span><span>이 요청 신고 ' + r.otherReps + '/' + r.others + '곳</span></div>'
+        + '<div class="acts"><button type="button" class="b ok2" data-op="refundOk" data-id="' + esc(r.pid) + '" data-lid="' + esc(r.lid) + '">돌려 드리기</button><input type="text" maxlength="200" placeholder="거절 이유(업체에게 메일)" data-why="' + esc(r.pid + r.lid) + '" aria-label="거절 이유"><button type="button" class="b no" data-op="refundNo" data-id="' + esc(r.pid) + '" data-lid="' + esc(r.lid) + '" data-w="' + esc(r.pid + r.lid) + '">거절</button></div></div>';
+    }).join(''), true);
+    h += sec('평점이 낮은 업체(후기 ' + ((Q.settings || {}).rule || C.MV_RULE).lowRatingN + '개 이상 · 3.0 아래)', Q.low.length, Q.low.map(function (p) { return '<div class="it">' + pHd(p) + '<div class="hd"><span>★ ' + p.rating + ' (' + p.rn + '개)</span><span>응답률 ' + (p.resp == null ? '-' : p.resp + '%') + '</span><span>계약률 ' + (p.contract == null ? '-' : p.contract + '%') + '</span></div>' + sanction(p) + '</div>'; }).join(''), true);
+    h += sec('제휴 중인 업체', Q.live.length, '<p class="hint">단계 제재: 1차 경고 메일 → 2차 ' + ((Q.settings || {}).rule || C.MV_RULE).stopDays + '일 노출 중지 → 3차 해지. 중대 위반(허가 취소·폐업, 부당 요금·사기, 허위 가입, 연락처 목적 외 사용)은 바로 해지해요.</p>'
+      + '<details><summary class="b" style="display:inline-flex;align-items:center">사유 메일 문구 보기</summary>' + Q.tpl.strike.concat(Q.tpl.ban).map(function (t) { return '<p class="tpl"><b>' + esc(t.name) + '</b> — ' + esc(t.body) + '</p>'; }).join('') + '</details>'
+      + Q.live.map(function (p) { return '<div class="it">' + pHd(p) + '<div class="hd"><span>' + esc(p.st) + (p.stopUntil ? ' ~' + esc(p.stopUntil) : '') + '</span><span>포인트 ' + Number(p.points || 0).toLocaleString('ko-KR') + '</span><span>무료 ' + p.free + '건</span><span>★ ' + (p.rating == null ? '-' : p.rating) + ' (' + (p.rn || 0) + ')</span><span>응답률 ' + (p.resp == null ? '-' : p.resp + '%') + '</span><span>계약률 ' + (p.contract == null ? '-' : p.contract + '%') + '</span><span>제재 ' + (p.warn || 0) + '차</span></div>' + sanction(p) + '</div>'; }).join(''));
+    app.innerHTML = h; bind();
+  }
+  function bind() {
+    document.getElementById('pv').onclick = function () { if (localStorage.getItem(MV.LS_PV) === '1') localStorage.removeItem(MV.LS_PV); else localStorage.setItem(MV.LS_PV, '1'); draw(); };
+    app.querySelectorAll('[data-op]').forEach(function (b) {
+      b.onclick = function () {
+        var op = b.getAttribute('data-op'), id = b.getAttribute('data-id'), it = b.closest('.it'), wk = b.getAttribute('data-w') || id;
+        var wi = it && it.querySelector('[data-why="' + wk + '"]'), pi = it && it.querySelector('[data-pts="' + id + '"]'), ni = it && it.querySelector('[data-n="' + id + '"]');
+        var body = { action: 'mvAdminAct', op: op, id: id, lid: b.getAttribute('data-lid') || '', why: wi ? wi.value : '', pts: pi ? pi.value : '', n: ni ? ni.value : '' };
+        if (b.getAttribute('data-c')) body.cat = app.querySelector('[data-cat="' + b.getAttribute('data-c') + '"]').value;
+        if ((op === 'ban' || op === 'end') && !confirm(op === 'ban' ? '중대 위반으로 바로 해지할까요? 새 요청이 더는 가지 않아요.' : '이 업체를 해지할까요?')) return;
+        F.busy(b, '처리 중…');
+        MV.post(body).then(function (j) { F.ok(b, j.step === 'ban' ? '해지했어요. 사유 메일을 보냈어요.' : j.step ? j.step + '차 제재를 했어요. 사유 메일을 보냈어요.' : '처리했어요.'); setTimeout(load, 1200); }).catch(function (e) { F.err(b, e.message); });
+      };
+    });
+  }
+  function gate(msg) { app.innerHTML = '<h1>이사업체 제휴 운영자</h1><p class="lead">' + esc(msg) + '</p>' + (A && A.on() ? A.gate('운영자 계정으로 로그인해 주세요.', '카카오 간편 로그인', 'move_admin') : ''); }
+  function load() {
+    return MV.post({ action: 'mvAdminQueue' }).then(function (q) { Q = q; draw(); }).catch(function (e) {
+      if (e.code === 'admin' || e.raw === 'auth' || e.code === 'auth') { gate('모닝 브리핑 운영자 모드를 켠 계정으로 카카오 간편 로그인을 해야 열려요.'); localStorage.removeItem(MV.LS_PV); return; }
+      app.innerHTML = '<h1>이사업체 제휴 운영자</h1><p class="lead">' + esc(e.message) + '</p>';
+    });
+  }
+  if (!A || !A.user()) { gate('모닝 브리핑 운영자 모드를 켠 계정으로 카카오 간편 로그인을 해 주세요.'); return; }
+  load();
+})();
+</script>
+</body>
+</html>

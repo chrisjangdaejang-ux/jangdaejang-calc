@@ -22,7 +22,7 @@ const PAGES = ['', 'about/', 'terms/', 'privacy/', 'refund/', 'rank/', 'loan/', 
   'map/', 'mine/', 'villa/', 'villa/zone/', 'comm/', 'jeonse/', 'jeonse/checklist/', 'brief/', 'brief/subscribe/', 'brief/manage/', 'brief/c/', 'brief/paid/',
   'my/alerts/', 'my/report/', 'my/watch/', 'track/', 'track/detail/', 'ad/', 'ad/plan/', 'agent/', 'agent/my/', 'agent/listing/', 'agent/content/',
   'agent/sheet/', 'login/', 'mine/calendar/', 'bunyang/', 'bunyang/agency/', 'bunyang/apply/', 'partner/', 'premium/', 'premium/pro/', 'quiz/', 'quiz/hall/', 'ask/', 'switch/', 'switch/rent/',
-  'buy/', 'buy/report/', 'press/', 'guide/method/', 'guide/terms/', 'weekly/', 'pro/developer/', 'community/', 'dongne/', 'dongne/my/', 'dongne/terms/', 'dongne/office/'];
+  'buy/', 'buy/report/', 'press/', 'guide/method/', 'guide/terms/', 'weekly/', 'pro/developer/', 'community/', 'dongne/', 'dongne/my/', 'dongne/terms/', 'dongne/office/', 'move/', 'move/partner/', 'move/terms/'];
 /* 법률 문서(약관·개인정보·환불)는 ~습니다 문장이 정상 */
 const LEGAL = /^(terms|privacy|refund|guide\/terms)\//;
 /* 문장 속 용어 풀이 단추(jp-tip)·지도 핀(mpin)·지도 저작권 표시는 글자 링크와 같게 봄 */
@@ -709,6 +709,9 @@ JOURNEYS.hall = async function (page, v, mock) {
   mock.set('quizHall', { ok: true, seasons: [], all: [] }); await page.reload(); await sleep(1500);
   ok(/아직 명예의 전당에 오른 분이 없어요/.test(await txt(page, 'main')), '아직 없으면 빈 안내');
 };
+
+/* v57 이사 견적 받기(숨김) — 여정은 tools/e2e/move-journey.js */
+JOURNEYS.move = require('./move-journey')({ open, txt, ok: (c, m) => ok(c, m), feedbackNear, sleep, fs, path, loginAs, SHOTS: () => SHOTS });
 
 /* ---------- 실행 ---------- */
 (async () => {

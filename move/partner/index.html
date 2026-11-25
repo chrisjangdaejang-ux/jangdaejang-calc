@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<title>이사업체 제휴</title>
+<!-- 이사업체 제휴(업체 화면) — 신청 · 받은 견적 요청(연락처 가림) · [이 고객 연락처 보기](1건 차감) · 포인트·충전 · 잘못된 요청 신고 · 후기.
+     assets/config.js MOVE_ENABLED 가 true 가 아니면 '준비 중'만 보여요(운영자 미리 보기 제외). 검색 제외(noindex) -->
+<script>window.JDJ_CONFIG = { tool:'move_partner', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../assets/track.js?v=2"></script>
+<script src="../../assets/agents.js"></script>
+<script src="../../assets/config.js?v=11"></script>
+<script src="../../assets/auth.js?v=10"></script>
+<script src="../../assets/savefb.js?v=1"></script>
+<script src="../../assets/region-pick.js?v=2"></script>
+<script src="../../assets/move-core.js?v=1"></script>
+<script src="../../assets/move.js?v=1"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/aplus.css?v=46">
+<link rel="stylesheet" href="../move.css?v=1">
+<script src="../../assets/back.js?v=1" defer></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../../" aria-label="홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name></span></a>
+  <div class="badge plain">이사업체 제휴</div>
+</header>
+<main class="wrap wide" id="app"><p class="lead">불러오고 있어요…</p></main>
+<footer class="foot">★ <span data-site-name></span> · <a href="../../">홈</a> · <a href="../terms/">이사업체 제휴 약관</a> · <a href="../../privacy/#move">개인정보처리방침</a></footer>
+<script>
+(function () {
+  'use strict';
+  var MV = window.JDJ_MOVE, C = window.JDJ_MVCORE, F = window.JDJ_SAVEFB, A = window.JDJ_AUTH, app = document.getElementById('app');
+  var esc = MV ? MV.esc : function (s) { return String(s); };
+  var SITE = (MV && MV.site()) || '';
+  document.title = '이사업체 제휴' + (SITE ? ' — ' + SITE : '');
+  function soon() { app.innerHTML = '<div class="soon"><h1>준비 중이에요</h1><p>이 화면은 아직 열지 않았어요. 조금만 기다려 주세요.</p><a href="../../">홈으로 가기</a></div>'; }
+  if (!MV || !MV.enabled()) return soon();
+  var Q = new URLSearchParams(location.search), CFG = null, ME = null, D = null, gus = [], insImg = '', topup = 0;
+  var won = function (n) { return Number(n || 0).toLocaleString('ko-KR') + '원'; }, pt = function (n) { return Number(n || 0).toLocaleString('ko-KR') + '포인트'; };
+  var telF = function (t) { var d = String(t || '').replace(/[^0-9]/g, ''); return d.length === 11 ? d.replace(/^(\d{3})(\d{4})(\d{4})$/, '$1-$2-$3') : d.length === 10 ? d.replace(/^(\d{3})(\d{3})(\d{4})$/, '$1-$2-$3') : String(t || ''); };
+  var koDay = function (d) { var p = String(d).split('-'); return p.length === 3 ? (+p[1]) + '월 ' + (+p[2]) + '일' : d; };
+
+  function intro() {
+    var R = C.MV_RULE;
+    return (CFG.preview ? '<span class="pv">운영자 미리 보기 · 아직 아무에게도 보이지 않아요</span>' : '')
+      + '<h1>이사가 정해진 고객을 바로 만나 보세요</h1>'
+      + '<p class="lead">' + esc(SITE) + '에서 전세 만기·이사 날짜를 관리하는 고객이 견적을 요청하면, 일하는 지역(구)에 맞춰 요청이 도착해요. 마음에 드는 요청만 골라 연락처를 열어 보세요. <b>한 요청은 최대 ' + R.maxOpen + '곳만</b> 열 수 있어요.</p>'
+      + '<section class="card" aria-label="요금"><h2>연락처 열람 요금</h2><table class="tbl"><tbody>'
+      + R.sizes.map(function (s) { return '<tr><td><b>' + esc(s.t) + '</b> · ' + esc(s.d) + '</td><td class="r">1건 ' + won(s.price) + '</td></tr>'; }).join('')
+      + '<tr><td>승인 첫 달(' + R.freeDays + '일)</td><td class="r">무료 열람 ' + R.freeLeads + '건</td></tr>'
+      + '<tr><td>포인트 충전</td><td class="r">' + R.topups.map(function (t) { return won(t.amt) + (t.bonusPct ? '(' + t.bonusPct + '% 더)' : ''); }).join(' · ') + '</td></tr></tbody></table>'
+      + '<p class="hint">월 회비나 가입비는 없어요. 연락처를 연 요청만 차감되고, 없는 번호·장난 요청은 연 뒤 ' + R.refundHours + '시간 안에 신고하면 확인 뒤 돌려 드려요.' + (CFG.paid ? '' : ' 포인트 충전은 정식 결제가 열리면 할 수 있어요. 지금은 무료 열람으로 시작해요.') + '</p></section>';
+  }
+
+  /* ---------- 신청 ---------- */
+  function formHtml() {
+    return '<section class="form" id="formBox" aria-labelledby="fh"><h2 id="fh">제휴 신청</h2><p class="hint">허가·보험 증빙을 확인한 뒤 2영업일 안에 결과를 메일로 알려 드려요.</p>'
+      + '<div class="fg"><div><label class="l" for="nm">업체 이름</label><input type="text" id="nm" maxlength="40" autocomplete="organization" placeholder="예: 바른이사"></div>'
+      + '<div><label class="l" for="ceo">대표자 성명</label><input type="text" id="ceo" maxlength="20"></div>'
+      + '<div><label class="l" for="biz">사업자등록번호</label><input type="text" id="biz" maxlength="12" inputmode="numeric" placeholder="123-45-67890"></div>'
+      + '<div><label class="l" for="tel">업체 전화번호 <small>(고객에게 보여요)</small></label><input type="tel" id="tel" maxlength="20" placeholder="예: 02-1234-5678"></div>'
+      + '<div class="full"><label class="l">허가 종류 <small>(포장이사는 허가가 꼭 있어야 해요)</small></label><div class="seg2" id="pk" role="group" aria-label="허가 종류"><button type="button" data-p="trans">화물자동차 운송사업</button><button type="button" data-p="broker">운송주선사업</button></div></div>'
+      + '<div class="full"><label class="l" for="permit">허가번호 <small>(허가증에 적힌 번호)</small></label><input type="text" id="permit" maxlength="40" placeholder="예: 서울강남-주선-2021-0001"></div>'
+      + '<div class="full"><label class="l">적재물배상보험 가입 증빙 <small>(증권 사진 또는 증권번호 — 하나는 꼭)</small></label><div class="file"><input type="file" id="insImg" accept="image/*" aria-label="보험 증권 사진"><span class="hint" id="insName"></span></div></div>'
+      + '<div><label class="l" for="insNo">보험 증권번호 <small>(선택)</small></label><input type="text" id="insNo" maxlength="40"></div>'
+      + '<div><label class="l" for="insUntil">보험 만기일 <small>(선택)</small></label><input type="date" id="insUntil"></div>'
+      + '<div class="full"><label class="l">일하는 지역(구) <small>(최대 ' + C.MV_RULE.maxGu + '곳 · 출발지 기준으로 요청이 와요)</small></label><select id="gsd" aria-label="시·도"><option value="">시·도 고르기</option></select><div class="gus" id="gus"></div><p class="hint" id="gusN"></p></div>'
+      + '<div><label class="l" for="mail">알림 받을 이메일 <small>(보이지 않아요)</small></label><input type="email" id="mail" maxlength="80" autocomplete="email"></div>'
+      + '<div><label class="l" for="intro">한 줄 소개 <small>(선택 · 60자)</small></label><input type="text" id="intro" maxlength="60" placeholder="예: 강남·서초 포장이사 12년"></div></div>'
+      + '<div class="agree"><label class="ag"><input type="checkbox" id="agAll"><span><b>모두 동의</b></span></label>'
+      + Object.keys(CFG.agree).map(function (k) { return '<label class="ag"><input type="checkbox" data-ag="' + k + '"><span>' + esc(CFG.agree[k]) + ' (필수) <a href="' + (k === 'privacy' ? '../../privacy/#move' : '../terms/#' + k) + '">보기</a></span></label>'; }).join('') + '</div>'
+      + '<p class="legal">고객 연락처는 견적 상담에만 쓸 수 있어요. 광고·판매 등 다른 목적으로 쓰면 바로 해지돼요(약관).</p>'
+      + '<button type="button" class="btn primary go" id="go">제휴 신청하기</button><p class="msg" id="msg" role="status"></p></section>';
+  }
+  var permitKind = '';
+  function drawGus(sido, SG) {
+    var list = Object.keys(SG).filter(function (g) { return SG[g].sido === sido; }).sort(function (a, b) { return String(SG[a].name).localeCompare(String(SG[b].name), 'ko'); });
+    document.getElementById('gus').innerHTML = list.map(function (g) { var on = gus.indexOf(g) >= 0; return '<label class="' + (on ? 'on' : '') + '"><input type="checkbox" data-g="' + g + '"' + (on ? ' checked' : '') + '> ' + esc(SG[g].name) + '</label>'; }).join('');
+    document.querySelectorAll('#gus input').forEach(function (c) { c.onchange = function () {
+      var g = c.getAttribute('data-g');
+      if (c.checked && gus.length >= C.MV_RULE.maxGu) { c.checked = false; F.err(c.closest('label'), '일하는 지역은 ' + C.MV_RULE.maxGu + '곳까지 고를 수 있어요.', { after: document.getElementById('gus') }); return; }
+      gus = gus.filter(function (x) { return x !== g; }); if (c.checked) gus.push(g);
+      c.closest('label').classList.toggle('on', c.checked); gusN(SG);
+    }; });
+    gusN(SG);
+  }
+  function gusN(SG) { document.getElementById('gusN').textContent = gus.length ? '고른 지역 ' + gus.length + '곳: ' + gus.map(function (g) { return (SG[g] || {}).name || g; }).join(', ') : '시·도를 고르고 구를 눌러 주세요. 다른 시·도도 이어서 고를 수 있어요.'; }
+  function bindForm() {
+    document.querySelectorAll('#pk button').forEach(function (b) { b.onclick = function () { permitKind = b.getAttribute('data-p'); document.querySelectorAll('#pk button').forEach(function (x) { x.classList.toggle('on', x === b); }); }; });
+    MV.sgg().then(function (SG) {
+      var sds = Array.from(new Set(Object.keys(SG).map(function (g) { return SG[g].sido; })));
+      sds = window.JDJ_KO && JDJ_KO.sortSido ? JDJ_KO.sortSido(sds) : sds.sort();
+      var sel = document.getElementById('gsd'); sel.innerHTML = '<option value="">시·도 고르기</option>' + sds.map(function (x) { return '<option>' + esc(x) + '</option>'; }).join('');
+      sel.onchange = function () { drawGus(sel.value, SG); };
+      gusN(SG);
+    });
+    document.getElementById('insImg').onchange = function () { var f = this.files && this.files[0], me = this; MV.shrink(f).then(function (d) { insImg = d; document.getElementById('insName').textContent = d ? '사진 1장 골랐어요' : ''; }).catch(function (e) { me.value = ''; insImg = ''; document.getElementById('insName').textContent = e.message; }); };
+    var all = document.getElementById('agAll'), items = document.querySelectorAll('[data-ag]');
+    all.onchange = function () { items.forEach(function (c) { c.checked = all.checked; }); };
+    items.forEach(function (c) { c.onchange = function () { all.checked = Array.from(items).every(function (x) { return x.checked; }); }; });
+    var go = document.getElementById('go');
+    go.onclick = function () {
+      var v = function (id) { return document.getElementById(id).value.trim(); };
+      var need = [['nm', '업체 이름'], ['ceo', '대표자 성명'], ['biz', '사업자등록번호'], ['tel', '업체 전화번호'], ['permit', '허가번호'], ['mail', '이메일']].filter(function (x) { return !v(x[0]); });
+      var ag = {}; items.forEach(function (c) { ag[c.getAttribute('data-ag')] = c.checked; });
+      var err = need.length ? need.map(function (x) { return x[1]; }).join('·') + '을 적어 주세요.' : !permitKind ? '허가 종류를 골라 주세요.' : !insImg && !v('insNo') ? '적재물배상보험 증권 사진이나 증권번호를 넣어 주세요.' : !gus.length ? '일하는 지역(구)을 1곳 이상 골라 주세요.' : Object.keys(ag).some(function (k) { return !ag[k]; }) ? '필수 동의 세 가지에 모두 체크해 주세요.' : '';
+      if (err) { F.err(go, err, { msg: 'msg' }); return; }
+      F.busy(go, '보내는 중…');
+      MV.post({ action: 'mvApply', name: v('nm'), ceo: v('ceo'), biz: v('biz'), tel: v('tel'), permitKind: permitKind, permit: v('permit'), insNo: v('insNo'), insUntil: v('insUntil'), insImg: insImg, gus: gus, mail: v('mail'), intro: v('intro'), agree: ag, v: CFG.terms }).then(function () {
+        document.getElementById('formBox').outerHTML = '<div class="ok" role="status"><b>제휴 신청을 받았어요</b><br>허가·보험 증빙을 확인한 뒤 2영업일 안에 결과를 메일로 알려 드려요. 승인되면 첫 달 무료 열람 ' + C.MV_RULE.freeLeads + '건을 드려요.</div>';
+      }).catch(function (e) { F.err(go, e.message, { msg: 'msg' }); });
+    };
+  }
+
+  /* ---------- 내 업체 화면 ---------- */
+  var ST_T = { '검토대기': '확인 중이에요(2영업일 안에 알려 드려요)', '승인': '요청을 받고 있어요', '노출중지': '잠시 새 요청이 가지 않아요', '거절': '이번에는 받지 못했어요', '해지': '해지됐어요' };
+  function head() {
+    var me = D.me, R = C.MV_RULE;
+    return (CFG.preview ? '<span class="pv">운영자 미리 보기 · 아직 아무에게도 보이지 않아요</span>' : '')
+      + '<h1>' + esc(me.name) + '</h1><p class="lead">' + esc(ST_T[me.st] || me.st) + (me.stopUntil && me.st === '노출중지' ? ' (' + esc(koDay(me.stopUntil)) + '까지)' : '') + ' · 일하는 지역 ' + esc(me.gus.map(function (x) { return x.n || x.g; }).join(', ')) + '</p>'
+      + '<div class="kpi"><div><small>남은 포인트</small><b id="kPts">' + pt(D.points) + '</b></div><div><small>무료 열람</small><b id="kFree">' + me.free + '건</b>' + (me.free && me.freeUntil ? '<small>' + esc(koDay(me.freeUntil)) + '까지</small>' : '') + '</div>'
+      + '<div><small>평점</small><b>' + (me.rating == null ? '후기 없음' : '★ ' + me.rating.toFixed(1)) + '</b><small>후기 ' + (me.rn || 0) + '개</small></div>'
+      + '<div><small>응답률 · 계약률</small><b>' + (me.resp == null ? '-' : me.resp + '%') + ' · ' + (me.contract == null ? '-' : me.contract + '%') + '</b><small>최근 ' + R.statDays + '일</small></div></div>';
+  }
+  function leadHtml(L) {
+    var sz = C.mvSize(L.size) || {};
+    var who = L.mine ? (L.gone ? '<p class="who">고객이 요청을 취소해 연락처를 지웠어요.</p>' : '<p class="who">' + esc(L.name) + ' · <a href="tel:' + esc(String(L.tel).replace(/[^0-9]/g, '')) + '">' + esc(telF(L.tel)) + '</a></p>' + (L.memo ? '<p class="op">남긴 말: ' + esc(L.memo) + '</p>' : ''))
+      : '<p class="who">' + esc(L.name) + ' · ' + esc(L.tel) + '</p>';
+    var act = L.mine ? '<p class="hint">' + esc(L.openedAt) + ' 열람 · ' + (L.paidBy === '무료' ? '무료 열람' : won(L.price) + ' 차감') + (L.rep ? ' · 신고 ' + esc(L.rep === '대기' ? '확인 중' : L.rep === '승인' ? '돌려 드림' : '거절') : '') + '</p>'
+        + (L.canReport ? '<div class="acts"><select data-why="' + L.id + '" aria-label="신고 이유"><option value="">잘못된 요청 신고(' + C.MV_RULE.refundHours + '시간 안)</option>' + Object.keys(C.MV_REPORT).map(function (k) { return '<option value="' + k + '">' + esc(C.MV_REPORT[k]) + '</option>'; }).join('') + '</select><button type="button" class="b no" data-rep="' + L.id + '">신고하기</button></div>' : '')
+      : '<button type="button" class="btn primary reveal" data-open="' + L.id + '">이 고객 연락처 보기 · ' + (D.me.free > 0 ? '무료 열람 1건' : won(L.price)) + '</button>';
+    return '<div class="lead-it' + (L.mine ? ' mine' : '') + '"><div class="top2"><b>' + esc(koDay(L.date)) + '</b><span class="tag ' + esc(L.size) + '">' + esc(sz.t || '') + ' · ' + esc(sz.d || '') + '</span><span class="hint" style="margin:0">' + L.openN + '/' + C.MV_RULE.maxOpen + '곳 열람 · 요청 ' + esc(L.at) + '</span></div>'
+      + '<p class="op">' + esc(L.from) + ' → ' + esc(L.to) + ' · 엘리베이터 ' + esc(C.MV_ELEV[L.elev] || '모름') + '</p>' + who + act + '</div>';
+  }
+  function chargeHtml() {
+    var R = C.MV_RULE;
+    if (!CFG.paid) return '<section class="card"><h2>포인트 충전</h2><p class="hint">포인트 충전은 정식 결제가 열리면 할 수 있어요. 그때 미리 알려 드릴게요. 지금은 무료 열람을 써 주세요.</p></section>';
+    return '<section class="card"><h2>포인트 충전</h2><div class="topups">' + R.topups.map(function (t) { var tp = C.mvTopup(t.amt); return '<button type="button" data-amt="' + t.amt + '"><b>' + won(t.amt) + '</b><span>' + pt(tp.pts) + (tp.bonus ? ' (' + pt(tp.bonus) + ' 더)' : '') + '</span></button>'; }).join('') + '</div>'
+      + '<button type="button" class="btn primary go" id="charge">충전하기</button><p class="hint">카드로 한 번 결제해요(자동 결제 아님). 쓰지 않은 충전 포인트는 약관에 따라 환불받을 수 있어요(더 드린 포인트 제외).</p><p class="msg" id="cmsg" role="status"></p></section>';
+  }
+  function profileHtml() {
+    return '<section class="card"><h2>업체 정보</h2><div class="stt"><span>대표 ' + esc(D.me.ceo) + '</span><span>사업자 ' + esc(D.me.biz) + '</span><span>' + esc(D.me.permitKind) + ' ' + esc(D.me.permit) + '</span><span>보험 ' + (D.me.insNo ? esc(D.me.insNo) : D.me.insFile ? '증권 사진 제출' : '없음') + (D.me.insUntil ? ' · 만기 ' + esc(D.me.insUntil) : '') + '</span><span>전화 ' + esc(D.me.tel) + '</span></div>'
+      + '<div class="fg"><div><label class="l" for="pTel">업체 전화번호</label><input type="tel" id="pTel" maxlength="20" value="' + esc(D.me.tel) + '"></div><div><label class="l" for="pMail">알림 이메일</label><input type="email" id="pMail" maxlength="80" value="' + esc(D.me.mail) + '"></div>'
+      + '<div><label class="l" for="pIns">보험 증권번호</label><input type="text" id="pIns" maxlength="40" value="' + esc(D.me.insNo) + '"></div><div><label class="l" for="pInsU">보험 만기일</label><input type="date" id="pInsU" value="' + esc(D.me.insUntil) + '"></div>'
+      + '<div class="full"><label class="l" for="pIntro">한 줄 소개</label><input type="text" id="pIntro" maxlength="60" value="' + esc(D.me.intro) + '"></div></div>'
+      + '<button type="button" class="btn" id="pSave">저장하기</button><p class="hint">일하는 지역을 바꾸려면 카카오톡 상담으로 알려 주세요.</p></section>';
+  }
+  function drawMe() {
+    var h = head(), me = D.me;
+    if (me.st === '검토대기' || me.st === '거절' || me.st === '해지') { app.innerHTML = h + profileHtml(); bindMe(); return; }
+    h += '<section class="card"><h2>받은 견적 요청 <span class="n hot" id="lN"></span></h2><p class="hint">고객 이름·번호는 가려져 있어요. [이 고객 연락처 보기]를 누르면 1건 차감되고 바로 보여요. ' + C.MV_RULE.maxOpen + '곳이 열면 요청이 사라져요.</p><div id="leads"><p class="hint">불러오고 있어요…</p></div></section>';
+    h += chargeHtml();
+    h += '<section class="card"><h2>포인트 기록</h2>' + (D.ledger.length ? '<table class="tbl"><tbody>' + D.ledger.map(function (x) { return '<tr><td>' + esc(x.at) + '</td><td>' + esc(x.kind) + (x.memo ? ' · ' + esc(x.memo) : '') + '</td><td class="r">' + (x.pts ? (x.pts > 0 ? '+' : '') + Number(x.pts).toLocaleString('ko-KR') + 'P' : '') + (x.free ? ' 무료 ' + (x.free > 0 ? '+' : '') + x.free + '건' : '') + '</td></tr>'; }).join('') + '</tbody></table>' : '<p class="empty">아직 기록이 없어요.</p>') + '</section>';
+    h += '<section class="card"><h2>받은 후기</h2>' + (D.reviews.length ? D.reviews.map(function (r) { return '<div class="it"><div class="hd"><b>' + '★'.repeat(r.star) + '</b><span>' + esc(koDay(r.date)) + ' · ' + esc(r.size) + '</span></div>' + (r.text ? '<p class="op">' + esc(r.text) + '</p>' : '') + '</div>'; }).join('') : '<p class="empty">아직 후기가 없어요. 이사 다음 날 고객에게 후기를 여쭤봐요.</p>') + '</section>';
+    h += profileHtml();
+    app.innerHTML = h; bindMe(); loadLeads();
+  }
+  function loadLeads() {
+    MV.post({ action: 'mvLeads' }).then(function (j) {
+      D.me.free = j.free; D.points = j.points;
+      var box = document.getElementById('leads'), fresh = j.leads.filter(function (L) { return !L.mine; }).length;
+      document.getElementById('lN').textContent = fresh ? '새 요청 ' + fresh : '';
+      box.innerHTML = j.leads.length ? j.leads.map(leadHtml).join('') : '<p class="empty">아직 받은 요청이 없어요. 일하는 지역에서 요청이 오면 메일로도 알려 드려요.</p>';
+      bindLeads();
+    }).catch(function (e) { document.getElementById('leads').innerHTML = '<p class="empty">' + esc(e.message) + '</p>'; });
+  }
+  function bindLeads() {
+    document.querySelectorAll('[data-open]').forEach(function (b) { b.onclick = function () {
+      var id = b.getAttribute('data-open');
+      F.busy(b, '여는 중…');
+      MV.post({ action: 'mvOpen', id: id }).then(function (j) {
+        document.getElementById('kPts').textContent = pt(j.points); document.getElementById('kFree').textContent = j.free + '건';
+        F.ok(b, j.paidBy === '무료' ? '무료 열람 1건을 썼어요.' : won(j.price) + ' 차감했어요.');
+        setTimeout(loadLeads, 700);
+      }).catch(function (e) { F.err(b, e.message); if (/마감|취소/.test(e.message)) setTimeout(loadLeads, 1500); });
+    }; });
+    document.querySelectorAll('[data-rep]').forEach(function (b) { b.onclick = function () {
+      var id = b.getAttribute('data-rep'), why = document.querySelector('[data-why="' + id + '"]').value;
+      if (!why) { F.err(b, '신고 이유를 골라 주세요.'); return; }
+      F.busy(b, '보내는 중…');
+      MV.post({ action: 'mvReport', id: id, why: why }).then(function () { F.ok(b, '신고했어요. 확인 뒤 메일로 알려 드려요.'); setTimeout(loadLeads, 1200); }).catch(function (e) { F.err(b, e.message); });
+    }; });
+  }
+  function bindMe() {
+    var ps = document.getElementById('pSave');
+    if (ps) ps.onclick = function () {
+      F.busy(ps, '저장하는 중…');
+      MV.post({ action: 'mvProfile', tel: document.getElementById('pTel').value, mail: document.getElementById('pMail').value, insNo: document.getElementById('pIns').value, insUntil: document.getElementById('pInsU').value, intro: document.getElementById('pIntro').value })
+        .then(function () { F.ok(ps, '저장했어요.'); }).catch(function (e) { F.err(ps, e.message); });
+    };
+    document.querySelectorAll('[data-amt]').forEach(function (b) { b.onclick = function () { topup = +b.getAttribute('data-amt'); document.querySelectorAll('[data-amt]').forEach(function (x) { x.classList.toggle('on', x === b); }); }; });
+    var ch = document.getElementById('charge');
+    if (ch) ch.onclick = function () {
+      if (!topup) { F.err(ch, '충전할 금액을 골라 주세요.', { msg: 'cmsg' }); return; }
+      F.busy(ch, '결제창을 여는 중…');
+      MV.post({ action: 'mvChargeOrder', amt: topup }).then(function (o) { return tossPay(o); }).catch(function (e) { F.err(ch, e.message, { msg: 'cmsg' }); });
+    };
+  }
+  /* 토스 결제창(한 번 결제). 돌아오면 ?pay=ok&paymentKey&orderId&amount → 서버 승인 */
+  function loadJs(src) { return new Promise(function (ok, no) { var s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = function () { no(new Error('결제창을 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.')); }; document.head.appendChild(s); }); }
+  function tossPay(o) {   /* 결제 설정(assets/pay.js — 클라이언트 키)은 충전할 때만 불러와요(화면 위 시험 결제 띠가 늘 보이지 않게) */
+    return (window.JDJ_PAY ? Promise.resolve() : loadJs('../../assets/pay.js?v=7')).then(function () { return tossPay2(o, window.JDJ_PAY); });
+  }
+  function tossPay2(o, PAY) {
+    var key = PAY && PAY.CLIENT_KEY, back = location.origin + location.pathname;
+    if (!key) return Promise.reject(new Error('결제 설정이 아직 끝나지 않았어요.'));
+    var load = window.TossPayments ? Promise.resolve() : loadJs(PAY.SDK);
+    return load.then(function () {
+      var tp = window.TossPayments(key).payment({ customerKey: window.TossPayments.ANONYMOUS });
+      return tp.requestPayment({ method: 'CARD', amount: { currency: 'KRW', value: o.amount }, orderId: o.orderId, orderName: o.orderName, customerName: o.customer || undefined, successUrl: back + '?pay=ok', failUrl: back + '?pay=fail' });
+    });
+  }
+  function payReturn() {
+    if (Q.get('pay') === 'fail') { app.insertAdjacentHTML('afterbegin', '<div class="ok" style="background:#FFF4E0;border-color:#F5D9A8">결제를 마치지 않았어요. ' + esc(Q.get('message') || '') + '</div>'); history.replaceState(null, '', location.pathname); return Promise.resolve(); }
+    if (Q.get('pay') !== 'ok' || !Q.get('paymentKey')) return Promise.resolve();
+    return MV.post({ action: 'mvChargeConfirm', paymentKey: Q.get('paymentKey'), orderId: Q.get('orderId'), amount: Number(Q.get('amount')) }).then(function (j) {
+      history.replaceState(null, '', location.pathname);
+      return '<div class="ok" role="status"><b>' + (j.added ? pt(j.added) + '을 충전했어요' : '충전을 확인했어요') + '</b><br>남은 포인트 ' + pt(j.points) + '</div>';
+    }).catch(function (e) { history.replaceState(null, '', location.pathname); return '<div class="ok" style="background:#FDECE4;border-color:#F3C1A8">' + esc(e.message) + '</div>'; });
+  }
+
+  function start() {
+    MV.post({ action: 'mvConfig' }).then(function (cfg) {
+      if (!cfg.open && !cfg.preview) return soon();
+      CFG = cfg; if (cfg.rule) Object.assign(C.MV_RULE, cfg.rule);
+      if (!A || !A.user()) {
+        app.innerHTML = intro() + '<section class="form"><h2>제휴 신청 · 업체 화면</h2>' + (A && A.on() ? A.gate('신청과 업체 화면은 카카오 간편 로그인 뒤에 쓸 수 있어요.', '카카오 간편 로그인', 'move_partner') : '<p class="hint">로그인 기능을 준비 중이에요.</p>') + '</section>';
+        return;
+      }
+      return Promise.all([MV.post({ action: 'mvPartner' }), payReturn()]).then(function (r) {
+        D = r[0];
+        if (!D.me) { app.innerHTML = intro() + formHtml(); bindForm(); return; }
+        drawMe();
+        if (r[1]) app.insertAdjacentHTML('afterbegin', r[1]);
+      });
+    }).catch(function (e) {
+      if (e.code === 'closed' || e.code === 'unknown') return soon();
+      app.innerHTML = '<div class="soon"><h1>잠시 뒤 다시 열어 주세요</h1><p>' + esc(e.message) + '</p><a href="../../">홈으로 가기</a></div>';
+    });
+  }
+  start();
+})();
+</script>
+</body>
+</html>

@@ -31,7 +31,10 @@ const users = [{ uid: 'qa', nick: '가', answers: qs.slice(0, 55).map((q, j) => 
   { uid: 'qb', nick: '나', answers: qs.slice(0, 35).map((q, j) => ({ id: q.id, k: j % 10 < 6 ? 'up' : 'dn' })) },
   { uid: 'qc', nick: '다', answers: qs.slice(0, 12).map(q => ({ id: q.id, k: 'dn' })) }];
 const TB = P.seasonTable(users, qs, '2026-Q4');
-check('시즌표: 포인트 순·등급(달인·분석가·임장러)', TB.map(r => r.nick + ':' + r.tier).join() === '가:master,나:analyst,다:field', TB);
+check('시즌표: 참여자 3명(100명 미만)이면 달인은 뽑지 않고 고수까지만', TB.map(r => r.nick + ':' + r.tier).join() === '가:pro,나:analyst,다:field', TB);
+check('시즌표: 달인 최소 참여자 기준을 0으로 바꾸면(QZ_TIER_CFG) 달인', P.seasonTable(users, qs, '2026-Q4', P.cfg({ tiers: [{ id: 'master', minN: 0 }] })).map(r => r.nick + ':' + r.tier).join() === '가:master,나:analyst,다:field');
+check('부동산 달인: 기본은 시즌 참여자 100명 이상일 때만(99명이면 고수까지)', P.TIER_CFG.tiers[0].minN === 100 && T(50, 90, 1, 99) === 'pro' && T(50, 90, 1, 100) === 'master');
+check('다음 등급 안내: 달인은 참여자 100명 이상일 때 뽑는다고 알려 줌', (P.next({ tier: 'pro', n: 60, acc: 70 }).need || []).some(x => /참여자 100명 이상/.test(x)));
 check('다음 등급 안내', JSON.stringify(P.next(TB[2]).need) === JSON.stringify(['예측 18번 더', '정확도 55% 이상']));
 
 /* ---------- ② 서버 ---------- */
@@ -50,7 +53,8 @@ function seedDirect(E) {
   users.forEach((u, i) => u.answers.forEach(a => E.sheets['예측답'].appendRow([new Date(E.now), a.id, uid(i), a.k, '2026-W44'])));
   return ss;
 }
-let E = mk(false), ss = seedDirect(E);
+let E = mk(false); E.props.QZ_TIER_CFG = JSON.stringify({ tiers: [{ id: 'master', minN: 0 }] });   // 아래 시나리오는 참여자 3명이라 달인 최소 참여자 기준을 끈 설정으로(기본 100명 규칙은 위에서 따로 확인)
+let ss = seedDirect(E);
 E.post({ action: 'quizNick', s: ss[0], nick: '집 박사' }); E.post({ action: 'quizNick', s: ss[1], nick: '분석왕' });
 E.post({ action: 'quizPrefs', s: ss[0], hall: true, meet: true });
 E.post({ action: 'quizPrefs', s: ss[1], hide: true, hall: false });
@@ -101,7 +105,7 @@ check('명예의 전당 화면: 서버 quizHall·별명만 안내·재미용 문
 check('결제 화면: [이용권으로 열기](로그인·유료 열림·단지/청약 리포트만)', /id="vcBtn"/.test(co) && /'quizVoucherUse'/.test(co) && /\['single', 'cy'\]/.test(co) && /if \(!PAID \|\| REVIEW/.test(co));
 check('내 계정: 등급 줄(숨기기 켜면 안 보임)', /id="qzTier"/.test(lg) && /j\.prefs && j\.prefs\.hide/.test(lg));
 check('이용약관: 예측 맞히기 절(초안·변호사 검토 필요, 현금 없음, 회수)', /id="quiz"/.test(tm) && /초안 · 변호사 검토 필요/.test(tm.slice(tm.indexOf('id="quiz"'))) && /현금·상품·다른 포인트로 바꾸거나/.test(tm) && /취소하거나 회수/.test(tm));
-check('서비스 워커: 명예의 전당·계산 파일 v2', /'\.\/quiz\/hall\/'/.test(sw) && /predict-core\.js\?v=2/.test(sw));
+check('서비스 워커: 명예의 전당·계산 파일 v3', /'\.\/quiz\/hall\/'/.test(sw) && /predict-core\.js\?v=3/.test(sw));
 
 console.log(`\n예측 맞히기 등급·보상 확인: ${pass}개 통과, ${fail}개 실패`);
 process.exit(fail ? 1 : 0);

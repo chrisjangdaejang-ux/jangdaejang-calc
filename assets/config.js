@@ -32,6 +32,9 @@
      켜는 날은 서버 tools/agent-backend.gs 의 COUNSEL_OPEN 도 함께 true 로. 대표 확인 전에는 켜지 않아요.
    HEART_ENABLED: 하트(돈을 내고 충전해 고민 상담에서 쓰는 것 — counsel/heart/) 켜기. false 면 하트 칸·충전 화면이 보이지 않아요.
      켜는 날은 서버 HEART_OPEN 도 함께 true. 결제 버튼은 PAID_OPEN 도 true 여야 나와요(서버도 PAID_OPEN 이 false 면 충전 주문을 거절해요).
+   MOVE_ENABLED: 이사 견적 받기(move/ — 이사업체 제휴, 견적 요청 하나를 업체 최대 3곳에 연결) 켜기. true 가 아니면 화면 어디에도 [이사 견적 받기] 버튼·칸이 없고
+     move/ 는 '준비 중'만 보여요(검색 제외). 운영자 미리 보기: move/admin/ 에서 [이 기기에서 미리 보기 켜기]. 켜는 날은 서버 tools/agent-backend.gs 의 MOVE_ENABLED 도 함께 true 로.
+     포인트 충전은 PAID_OPEN 도 열려야 돼요. 대표 확인 전에는 켜지 않아요.
    SITE_VERIFY_DAUM: 다음 웹마스터도구 PIN 코드 줄 전체('#DaumWebMasterTool:…'). 넣으면 robots.txt 맨 아래에 붙어요. */
 window.JDJ_SITE = {
   SITE_URL: 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc',
@@ -46,6 +49,7 @@ window.JDJ_SITE = {
   PARTNER_ENABLED: false,
   COUNSEL_ENABLED: false,
   HEART_ENABLED: false,
+  MOVE_ENABLED: false,
   BILLING_OPEN: false,
   PAID_OPEN: false,
   PAY_REVIEW: true

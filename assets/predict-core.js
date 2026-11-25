@@ -105,7 +105,7 @@ function pqResultLine(q, k) {
    순위 = 그 시즌 포인트(같은 점수는 같은 등수). 등급은 위에서부터: 부동산 달인 → 고수 → 분석가 → 임장러 → 새싹. */
 const PQ_TIER_CFG = {
   tiers: [
-    { id: 'master', t: '부동산 달인', n: 50, topN: 10, topPct: 1 },
+    { id: 'master', t: '부동산 달인', n: 50, topN: 10, topPct: 1, minN: 100 },   // minN: 그 시즌 참여자가 100명 이상일 때만 뽑음(아니면 고수까지만) — 대표 승인 2026-11-25
     { id: 'pro', t: '고수', n: 50, acc: 60, topPct: 10 },
     { id: 'analyst', t: '분석가', n: 30, acc: 55 },
     { id: 'field', t: '임장러', n: 10 },
@@ -117,7 +117,7 @@ const PQ_REWARD_NM = { report: '프리미엄 리포트 이용권', brief: '모�
 function pqCfg(over) {
   const c = JSON.parse(JSON.stringify(PQ_TIER_CFG));
   if (over && typeof over === 'object') {
-    (Array.isArray(over.tiers) ? over.tiers : []).forEach(o => { const t = c.tiers.find(x => x.id === o.id); if (t) ['n', 'acc', 'topN', 'topPct'].forEach(k => { if (typeof o[k] === 'number' && o[k] >= 0) t[k] = o[k]; }); });
+    (Array.isArray(over.tiers) ? over.tiers : []).forEach(o => { const t = c.tiers.find(x => x.id === o.id); if (t) ['n', 'acc', 'topN', 'topPct', 'minN'].forEach(k => { if (typeof o[k] === 'number' && o[k] >= 0) t[k] = o[k]; }); });
     if (over.rewards && typeof over.rewards === 'object') Object.keys(c.rewards).forEach(k => { if (Array.isArray(over.rewards[k])) c.rewards[k] = over.rewards[k].filter(r => r && PQ_REWARD_NM[r.k] && r.n > 0 && r.n <= 12).map(r => ({ k: r.k, n: Math.round(r.n) })); });
   }
   return c;
@@ -146,6 +146,7 @@ function pqTierOf(r, N, cfg) {
   cfg = cfg || PQ_TIER_CFG;
   for (const t of cfg.tiers) {
     if ((r.n || 0) < (t.n || 0)) continue;
+    if (t.minN && (N || 0) < t.minN) continue;                       // 참여자가 적은 시즌에는 이 등급을 뽑지 않음
     if (t.acc != null && (r.acc || 0) < t.acc) continue;
     if (t.topN != null || t.topPct != null) {
       const lim = Math.max(t.topN || 0, t.topPct ? Math.ceil(N * t.topPct / 100) : 0);
@@ -165,6 +166,7 @@ function pqNext(r, cfg) {
   if ((r.n || 0) < (nx.n || 0)) need.push(`예측 ${nx.n - (r.n || 0)}번 더`);
   if (nx.acc != null && (r.acc || 0) < nx.acc) need.push(`정확도 ${nx.acc}% 이상`);
   if (nx.topPct != null || nx.topN != null) need.push(nx.topN ? `시즌 상위 ${nx.topPct}% 또는 ${nx.topN}위 안` : `시즌 상위 ${nx.topPct}%`);
+  if (nx.minN) need.push(`시즌 참여자 ${nx.minN}명 이상일 때 뽑아요`);
   return { id: nx.id, t: nx.t, need: need };
 }
 /** 시즌 끝 보상: tier → [{k, n, t}] (현금 없음, 서비스 안 이용권만) */

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../assets/icons/apple-180.png">
+<title>이사 견적 받기</title>
+<meta name="description" content="출발·도착 동과 이사 날짜만 알려 주시면 제휴 이사업체 최대 3곳이 견적 전화를 드려요.">
+<!-- 이사 견적 받기(이용자) — assets/config.js MOVE_ENABLED 가 true 가 아니면 '준비 중'만 보여요(운영자 미리 보기 제외). 검색 제외(noindex) -->
+<script>window.JDJ_CONFIG = { tool:'move', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../assets/pwa.js?v=2" defer></script>
+<script src="../assets/biz.js?v=3" defer></script>
+<script src="../assets/track.js?v=2"></script>
+<script src="../assets/agents.js"></script>
+<script src="../assets/config.js?v=11"></script>
+<script src="../assets/auth.js?v=10"></script>
+<script src="../assets/savefb.js?v=1"></script>
+<script src="../assets/region-pick.js?v=2"></script>
+<script src="../assets/move-core.js?v=1"></script>
+<script src="../assets/move.js?v=1"></script>
+<script src="../assets/tabbar.js?v=5" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/aplus.css?v=46">
+<link rel="stylesheet" href="move.css?v=1">
+<script src="../assets/back.js?v=1" defer></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../" aria-label="홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name></span></a>
+  <div class="badge plain">이사 견적</div>
+</header>
+<main class="wrap" id="app"><p class="lead">불러오고 있어요…</p></main>
+<footer class="foot">★ <span data-site-name></span> · <a href="../">홈</a> · <a href="terms/">이사 견적 약관</a> · <a href="../privacy/#move">개인정보처리방침</a></footer>
+<script>
+(function () {
+  'use strict';
+  var MV = window.JDJ_MOVE, C = window.JDJ_MVCORE, F = window.JDJ_SAVEFB, app = document.getElementById('app');
+  var esc = MV ? MV.esc : function (s) { return String(s); };
+  var SITE = (MV && MV.site()) || '';
+  document.title = '이사 견적 받기' + (SITE ? ' — ' + SITE : '');
+  function soon() { app.innerHTML = '<div class="soon"><h1>준비 중이에요</h1><p>이 화면은 아직 열지 않았어요. 조금만 기다려 주세요.</p><a href="../">홈으로 가기</a></div>'; }
+  if (!MV || !MV.enabled()) return soon();
+  var Q = new URLSearchParams(location.search), CFG = null, size = '', elev = 'u', star = 0;
+  var won = function (n) { return Number(n || 0).toLocaleString('ko-KR') + '원'; };
+  var today = function () { return new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10); };
+  var koDay = function (d) { var p = String(d).split('-'); return p.length === 3 ? (+p[1]) + '월 ' + (+p[2]) + '일' : d; };
+  /* 알림톡 링크(?r=요청&t=열쇠)로 오면 이 기기에 저장해 후기를 바로 남길 수 있게 */
+  if (/^M[0-9A-F]{9}$/.test(Q.get('r') || '') && /^[0-9a-f]{32}$/.test(Q.get('t') || '')) MV.mineAdd({ id: Q.get('r'), t: Q.get('t') });
+
+  function intro() {
+    var R = C.MV_RULE;
+    return (CFG.preview ? '<span class="pv">운영자 미리 보기 · 아직 아무에게도 보이지 않아요</span>' : '')
+      + '<h1>이사 견적, 한 번에 받아 보세요</h1>'
+      + '<p class="lead">출발·도착 동과 이사 날짜만 알려 주시면, 그 지역에서 일하는 제휴 이사업체 <b>최대 ' + R.maxOpen + '곳</b>이 직접 견적 전화를 드려요. 견적을 받아 보는 데는 돈이 들지 않아요.</p>'
+      + '<ol class="how"><li><b>날짜와 동 알려 주기</b><span>짐이 얼마나 되는지(규모)와 연락받을 번호만 있으면 돼요. 1분이면 끝나요.</span></li>'
+      + '<li><b>업체 최대 ' + R.maxOpen + '곳이 연락</b><span>허가와 적재물배상보험을 확인한 제휴 업체만 연락드려요. ' + R.maxOpen + '곳이 연락처를 받으면 요청은 마감돼요.</span></li>'
+      + '<li><b>비교하고 직접 계약</b><span>견적을 비교해 마음에 드는 곳과 직접 계약하세요. 이사 다음 날 짧은 후기를 여쭤볼게요.</span></li></ol>';
+  }
+  function formHtml() {
+    var d0 = /^\d{4}-\d{2}-\d{2}$/.test(Q.get('date') || '') && Q.get('date') >= today() ? Q.get('date') : '';
+    return '<section class="form" id="formBox" aria-labelledby="fh"><h2 id="fh">견적 요청서</h2>'
+      + '<div class="fg"><div class="full"><label class="l">출발지 <small>(지금 사는 곳)</small></label>' + MV.pickerHtml('fr', '출발지') + '</div>'
+      + '<div class="full"><label class="l">도착지 <small>(이사 갈 곳)</small></label>' + MV.pickerHtml('to', '도착지') + '<p class="hint">도착지가 아직 정확하지 않으면 가장 가까운 동을 골라 주세요.</p></div>'
+      + '<div><label class="l" for="date">이사 날짜</label><input type="date" id="date" min="' + today() + '" max="' + C.mvAddDays(today(), C.MV_RULE.dateMaxDays) + '" value="' + esc(d0) + '"></div>'
+      + '<div><label class="l">엘리베이터 <small>(선택)</small></label><div class="seg2" id="elev" role="group" aria-label="엘리베이터">' + ['y', 'n', 'u'].map(function (k) { return '<button type="button" data-e="' + k + '"' + (k === elev ? ' class="on"' : '') + '>' + esc(C.MV_ELEV[k]) + '</button>'; }).join('') + '</div></div>'
+      + '<div class="full"><label class="l">이사 규모</label><div class="sizes" id="sizes" role="radiogroup" aria-label="이사 규모">' + C.MV_RULE.sizes.map(function (s) { return '<button type="button" role="radio" aria-checked="false" data-s="' + s.id + '"><b>' + esc(s.t) + '</b><span>' + esc(s.d) + '</span></button>'; }).join('') + '</div></div>'
+      + '<div><label class="l" for="nm">이름 <small>(성만 적어도 돼요)</small></label><input type="text" id="nm" maxlength="12" autocomplete="name" placeholder="예: 김"></div>'
+      + '<div><label class="l" for="ph">휴대폰 번호</label><input type="tel" id="ph" maxlength="13" inputmode="numeric" autocomplete="tel" placeholder="010-1234-5678"></div>'
+      + '<div class="full"><label class="l" for="memo">남길 말 <small>(선택 · 100자)</small></label><input type="text" id="memo" maxlength="100" placeholder="예: 피아노 1대, 오후 통화가 편해요"></div></div>'
+      + '<div class="consent"><label class="ag"><input type="checkbox" id="agree"><span><b>' + esc(CFG.consent) + '</b> (필수). 전달하는 정보: 이름, 휴대폰 번호, 출발·도착 동, 이사 날짜·규모, 남길 말. 받는 곳: 이 요청을 연 제휴 이사업체(최대 ' + C.MV_RULE.maxOpen + '곳, 업체 이름은 내 요청에서 볼 수 있어요). 목적: 이사 견적 상담. 보관: 이사 날짜 뒤 ' + C.MV_RULE.keepDays + '일(취소하면 바로 지워요). 동의하지 않으면 견적 요청을 보낼 수 없어요. <a href="../privacy/#move">개인정보처리방침</a></span></label></div>'
+      + '<p class="legal">' + esc(SITE) + '은 이사업체를 연결만 해요. 견적·계약·요금·파손 보상은 이용자와 업체가 직접 정해요. 업체는 화물자동차 운송(주선)사업 허가와 적재물배상보험 증빙을 확인하고 받아요. <a href="terms/">이사 견적 약관</a></p>'
+      + '<button type="button" class="btn primary go" id="go">견적 받기</button><p class="msg" id="msg" role="status"></p></section>';
+  }
+  var pickF = null, pickT = null;
+  function bindForm() {
+    pickF = MV.pickerBind('fr', { g: Q.get('fg') || '', d: Q.get('fd') || '' });
+    pickT = MV.pickerBind('to', null);
+    document.querySelectorAll('#elev button').forEach(function (b) { b.onclick = function () { elev = b.getAttribute('data-e'); document.querySelectorAll('#elev button').forEach(function (x) { x.classList.toggle('on', x === b); }); }; });
+    document.querySelectorAll('#sizes button').forEach(function (b) { b.onclick = function () { size = b.getAttribute('data-s'); document.querySelectorAll('#sizes button').forEach(function (x) { x.classList.toggle('on', x === b); x.setAttribute('aria-checked', x === b ? 'true' : 'false'); }); }; });
+    var go = document.getElementById('go');
+    go.onclick = function () {
+      var f = pickF.get(), t = pickT.get(), v = function (id) { return document.getElementById(id).value.trim(); };
+      var err = !f.d ? '출발지 동까지 골라 주세요.' : !t.d ? '도착지 동까지 골라 주세요.' : C.mvDateErr(v('date'), today()) || (!size ? '이사 규모를 골라 주세요.' : !v('nm') ? '이름을 적어 주세요. 성만 적어도 돼요.' : !C.mvPhone(v('ph')) ? '휴대폰 번호를 다시 확인해 주세요. 예: 010-1234-5678' : !document.getElementById('agree').checked ? '연락처 전달 동의에 체크해 주세요.' : '');
+      if (err) { F.err(go, err, { msg: 'msg' }); return; }
+      F.busy(go, '보내는 중…');
+      MV.post({ action: 'mvLead', fg: f.g, fd: f.d, tg: t.g, td: t.d, date: v('date'), size: size, elev: elev, name: v('nm'), phone: v('ph'), memo: v('memo'), agree: true, cv: CFG.consentV, src: Q.get('src') || 'move' }).then(function (j) {
+        MV.mineAdd({ id: j.id, t: j.t, date: j.date });
+        document.getElementById('formBox').outerHTML = '<div class="ok" role="status"><b>견적 요청을 보냈어요</b><br>' + esc(f.gn + ' ' + f.d) + ' → ' + esc(t.gn + ' ' + t.d) + ' · ' + esc(koDay(j.date)) + '<br>제휴 이사업체 최대 ' + j.n + '곳이 곧 연락드려요. 보통 하루 안에 전화가 와요.<br>연락처를 받은 업체 이름은 아래 \'내 견적 요청\'에서 볼 수 있고, 언제든 요청을 취소하면 연락처를 바로 지워요.</div>';
+        drawMine();
+      }).catch(function (e) { F.err(go, e.message, { msg: 'msg' }); });
+    };
+  }
+
+  /* ---------- 내 견적 요청 · 후기 ---------- */
+  var ST_T = { '진행': '업체 연락 기다리는 중', '마감': '마감(업체 연락 완료)', '취소': '취소함(연락처 지움)', '삭제': '보관 기간이 지나 지웠어요' };
+  function reviewHtml(it) {
+    return '<div class="rv" data-rv="' + it.id + '"><h4>어느 업체와 이사하셨나요?</h4><div class="picks">'
+      + it.opened.map(function (o) { return '<label class="pk"><input type="radio" name="pk' + it.id + '" value="' + esc(o.id) + '"> ' + esc(o.name) + '</label>'; }).join('')
+      + '<label class="pk"><input type="radio" name="pk' + it.id + '" value="other"> 다른 업체와 했어요</label><label class="pk"><input type="radio" name="pk' + it.id + '" value="none"> 이사하지 않았어요</label></div>'
+      + '<div class="stars" role="radiogroup" aria-label="별점">' + [1, 2, 3, 4, 5].map(function (n) { return '<button type="button" role="radio" aria-checked="false" data-star="' + n + '" aria-label="별 ' + n + '개">★</button>'; }).join('') + '</div>'
+      + '<input type="text" class="rvt" maxlength="300" placeholder="좋았던 점·아쉬운 점(선택 · 300자)" aria-label="후기">'
+      + '<button type="button" class="btn primary" data-rvgo="' + it.id + '">후기 남기기</button><p class="hint">후기는 업체 평점·계약률에만 쓰고, 이름·연락처는 함께 보여 주지 않아요.</p></div>';
+  }
+  function drawMine() {
+    var box = document.getElementById('mine'), list = MV.mine();
+    if (!box) return;
+    if (!list.length) { box.hidden = true; return; }
+    box.hidden = false; box.innerHTML = '<h2>내 견적 요청</h2><p class="hint">불러오고 있어요…</p>';
+    MV.post({ action: 'mvMine', mine: list }).then(function (j) {
+      if (!j.items.length) { box.hidden = true; return; }
+      box.innerHTML = '<h2>내 견적 요청</h2>' + j.items.map(function (it) {
+        var sz = C.mvSize(it.size) || {};
+        return '<div class="it"><div class="hd"><b>' + esc(koDay(it.date)) + ' · ' + esc(sz.t || '') + '</b><span>' + esc(it.from) + ' → ' + esc(it.to) + '</span><span class="st">' + esc(ST_T[it.st] || it.st) + '</span></div>'
+          + (it.opened.length ? '<p class="op">연락처를 받은 업체: ' + it.opened.map(function (o) { return '<b>' + esc(o.name) + '</b>' + (o.tel ? ' <a href="tel:' + esc(o.tel.replace(/[^0-9]/g, '')) + '">' + esc(o.tel) + '</a>' : ''); }).join(' · ') + '</p>' : (it.st === '진행' ? '<p class="op">아직 연락처를 받은 업체가 없어요.</p>' : ''))
+          + (it.review ? '<p class="op">후기를 남겨 주셔서 고마워요.</p>' : it.reviewOpen ? reviewHtml(it) : '')
+          + (it.st === '진행' || it.st === '마감' ? '<div class="acts"><button type="button" class="b" data-cancel="' + it.id + '">요청 취소하고 연락처 지우기</button></div>' : '') + '</div>';
+      }).join('');
+      bindMine();
+    }).catch(function (e) { box.innerHTML = '<h2>내 견적 요청</h2><p class="hint">' + esc(e.message) + '</p>'; });
+  }
+  function tokOf(id) { var x = MV.mine().find(function (y) { return y.id === id; }); return x ? x.t : ''; }
+  function bindMine() {
+    document.querySelectorAll('[data-cancel]').forEach(function (b) { b.onclick = function () {
+      var id = b.getAttribute('data-cancel');
+      if (!confirm('요청을 취소할까요? 연락처를 바로 지우고, 아직 연락하지 않은 업체에게도 더는 보이지 않아요.')) return;
+      F.busy(b, '취소하는 중…');
+      MV.post({ action: 'mvCancel', id: id, t: tokOf(id) }).then(function () { F.ok(b, '취소했어요. 연락처를 지웠어요.'); setTimeout(drawMine, 900); }).catch(function (e) { F.err(b, e.message); });
+    }; });
+    document.querySelectorAll('[data-rv]').forEach(function (box) {
+      var st = 0;
+      box.querySelectorAll('[data-star]').forEach(function (s) { s.onclick = function () { st = +s.getAttribute('data-star'); box.querySelectorAll('[data-star]').forEach(function (x) { var on = +x.getAttribute('data-star') <= st; x.classList.toggle('on', on); x.setAttribute('aria-checked', +x.getAttribute('data-star') === st ? 'true' : 'false'); }); }; });
+      var go = box.querySelector('[data-rvgo]');
+      go.onclick = function () {
+        var id = box.getAttribute('data-rv'), pk = box.querySelector('input[type=radio]:checked');
+        if (!pk) { F.err(go, '어느 업체와 이사했는지 골라 주세요.'); return; }
+        var named = pk.value !== 'other' && pk.value !== 'none';
+        if (named && !st) { F.err(go, '별점을 골라 주세요.'); return; }
+        F.busy(go, '남기는 중…');
+        MV.post({ action: 'mvReview', id: id, t: tokOf(id), pick: pk.value, star: named ? st : 0, text: named ? box.querySelector('.rvt').value : '' }).then(function () { F.ok(go, '고마워요! 후기를 남겼어요.'); setTimeout(drawMine, 1000); }).catch(function (e) { F.err(go, e.message); });
+      };
+    });
+  }
+
+  function start() {
+    MV.post({ action: 'mvConfig' }).then(function (cfg) {
+      if (!cfg.open && !cfg.preview) return soon();
+      CFG = cfg; if (cfg.rule) Object.assign(C.MV_RULE, cfg.rule);
+      app.innerHTML = intro() + '<section class="mine" id="mine" hidden></section>' + formHtml();
+      bindForm(); drawMine();
+      if (Q.get('r') && document.getElementById('mine')) setTimeout(function () { var m = document.getElementById('mine'); if (m && !m.hidden) m.scrollIntoView(); }, 1200);
+    }).catch(function (e) {
+      if (e.code === 'closed' || e.code === 'unknown') return soon();
+      app.innerHTML = '<div class="soon"><h1>잠시 뒤 다시 열어 주세요</h1><p>' + esc(e.message) + '</p><a href="../">홈으로 가기</a></div>';
+    });
+  }
+  start();
+})();
+</script>
+</body>
+</html>

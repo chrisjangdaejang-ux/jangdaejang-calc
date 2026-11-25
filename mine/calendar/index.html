@@ -37,6 +37,8 @@
 <script src="../../assets/alerts-core.js?v=3"></script>
 <script src="../../assets/watch-core.js?v=2"></script>
 <script src="../../assets/watch.js?v=8"></script>
+<script src="../../assets/move-core.js?v=1"></script>
+<script src="../../assets/move.js?v=1"></script>
 <script src="../../assets/tabbar.js?v=5" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -238,6 +240,12 @@ function srcHtml(e){
   const L = (e.src || []).map(k => C.SRC[k]).filter(Boolean);
   return L.length ? `<span class="sr">출처: ${L.map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.nm)}</a>`).join(' · ')}</span>` : '';
 }
+/* v57 이사 견적 받기(숨김 — assets/config.js MOVE_ENABLED 가 켜져야 보여요): 전월세 만기일·이사하는 날이 앞으로 있으면 그 칸 안에 버튼 */
+function moveCta(e, t){
+  const MV = window.JDJ_MOVE; if (!MV || !MV.enabled() || e.sample || (e.k !== 'end' && e.k !== 'move') || e.d < t) return '';
+  const p = String(e.home || '').split('|');
+  return MV.cta({ g: p[0], d: p[1], date: e.d, src: 'cal' });
+}
 function drawEvents(){
   const ev = events(), t = today();
   const shown = ev.filter(e => FLT === 'all' || kindOf(e.k) === FLT);
@@ -259,7 +267,7 @@ function drawEvents(){
       <span class="tg dd">${esc(dd)}</span><span class="tg">${esc(KINDS[kindOf(e.k)])}</span>${span ? `<span class="tg">${esc(span)}</span>` : ''}
       <span class="tt">${esc(e.t)}</span>${e.name && e.k !== 'cy' ? `<span class="nm">${esc(e.name)}</span>` : ''}${e.sample ? '<span class="nm">집을 가진 분 모두에게 해당하는 날짜예요</span>' : ''}
       <span class="ss">${esc(e.s)}</span>${e.p ? `<span class="pp">${esc(e.p)}</span>` : ''}${estHtml(e)}
-      ${e.u ? `<a class="go" href="${esc(e.u)}" target="_blank" rel="noopener">청약홈 공고 보기 ›</a>` : ''}${srcHtml(e)}</div></div>`;
+      ${e.u ? `<a class="go" href="${esc(e.u)}" target="_blank" rel="noopener">청약홈 공고 보기 ›</a>` : ''}${srcHtml(e)}${moveCta(e, t)}</div></div>`;
   });
   $('evs').innerHTML = h;
 }
@@ -435,6 +443,7 @@ async function drawTa(){
       }
     }
     if (T.down && !(own && dep && own.mr < dep)) x += `<p class="ref">보증금을 낮추고 싶으시면 ①의 '내린 곳'과 '갈 수 있는 단지'를 먼저 살펴보세요.</p>`;
+    if (window.JDJ_MOVE && left >= 0) x += JDJ_MOVE.cta({ g: h.code, d: h.dong, date: c.ce, src: 'ta' });   // v57 이사 견적 받기(숨김 기능 — 켜져 있을 때만)
     html.push(x + `</div>`);
   }
   box.innerHTML = html.join('');

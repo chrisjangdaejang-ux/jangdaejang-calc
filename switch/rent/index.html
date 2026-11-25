@@ -39,6 +39,7 @@
 <script src="../../assets/loan-core.js?v=5"></script>
 <script src="../../assets/plain-words.js?v=17"></script>
 <script src="../../assets/tswitch-core.js?v=2"></script>
+<script src="../../assets/move.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../assets/aplus.css?v=46">
@@ -550,6 +551,7 @@ function draw(){
     : `<div class="empty">${S.tab === 'better' ? '고른 점이 모두 나아진 곳이 없어요. 걸러 보기 단추를 줄여 보세요.' : '조건에 맞는 더 싼 곳이 없어요.'}</div>`;
   else x += `<div class="cards">${list.slice(0, S.show).map(r => card(r, cur, S.tab === 'cheap')).join('')}</div>` + (list.length > S.show ? `<button type="button" class="more" id="moreBtn">${(list.length - S.show).toLocaleString()}곳 더 보기</button>` : '');
   x += `</div>`;
+  if (window.JDJ_MOVE && S.home) x += JDJ_MOVE.cta({ g: S.home.code, d: S.home.dong, date: $('moveAt').value, src: 'switch' });   // v57 이사 견적 받기(숨김 — MOVE_ENABLED 일 때만)
   box.innerHTML = x;
   box.querySelectorAll('#rtabs [data-t]').forEach(b => b.onclick = () => { S.tab = b.dataset.t; S.show = 8; draw(); });
   box.querySelectorAll('[data-n]').forEach(b => b.onclick = () => { const k = b.dataset.n; S.need = S.need.includes(k) ? S.need.filter(z => z !== k) : S.need.concat([k]); S.show = 8; draw(); });
