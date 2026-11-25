@@ -1,6 +1,13 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v52 변경 요약 (v51 위에 다시 배포. 따로 실행할 함수 없음 — 시트 변경 없음. 스크립트 속성 CAP_MAIL 은 첫 아침 발송 때 저절로 생김)
+ *  - 서비스 이름을 집예보로: SITE_NAME 한 줄(메일 제목 '[집예보] … 집예보 모닝 브리핑'·보내는 이름·안내 문구가 모두 따라 바뀜). 주소(WEB_ROOT)는 그대로.
+ *  - 모닝 브리핑 메일 '상승 전환 신호': 엔진이 만든 한 줄(r.t — 평형 ㎡·평, 3개월 구간 실제 거래 중간값, 근거 거래 수)을 그대로(bRiseLine). 예전 자료는 변화율만.
+ *  - 용량 점검: briefAreas 응답에 cap(메일 하루 한도 MailApp.getRemainingDailyQuota · 지난 아침 발송 뒤 남은 수 · 구독자 수) — 엔진 brief.py 가
+ *    대표 09:07 보고 줄(자료 원천 상태 capacity)로 남기고 80% 넘게 쓰면 경고. 하루 한도 기본 100통(회사 구글 계정이면 스크립트 속성 MAIL_DAILY_MAX).
+ *  - 검증: node tools/brief-test.js </dev/null · node tools/rival-name-test.js
+ *
  * v51 변경 요약 (v50 위에 다시 배포. 따로 실행할 함수 없음 — '동네파트너' 시트 맨 뒤 [고정가]·[묶음]·[등록종류] 칸은 첫 사용 때 머리 줄만 채움)
  *  - 동네 파트너에 중개사 플러스 포함: 파트너가 이어지는 동안(첫 무료 달·시범 파트너 포함) 모닝 브리핑 중개사 플러스 한도(지역 20·단지 30·손님 10·급매 기준·주간 리포트·
  *    매물 설명서 150·주간 글 5)를 '덧씌워' 줌(결제 행을 만들지 않음 — briefState·tuBest·bpLimit). 브리핑 이용권이 없는 파트너는 파트너 이메일로 매일 아침 보냄.
@@ -3104,7 +3111,23 @@ function briefAreas(p) {
     bpRows(SH_BPC).forEach(o => { const x = on[String(o.r[BPCC['카카오id']])]; if (x) parseJ(o.r[BPCC['단지']], []).slice(0, x.lim.apts).forEach(a => { if (/^\d{5}$/.test(String(a.g))) cnt[a.g] = cnt[a.g] || 0; }); });
   } catch (e) {}
   try { axAreaCodes().forEach(g => { if (/^\d{5}$/.test(g)) cnt[g] = cnt[g] || 0; }); } catch (e) {}   // v44 알림 구독자 관심 단지 동네(구독자 수에는 넣지 않음)
-  return { ok: true, at: ymd(now), areas: Object.keys(cnt).sort().map(g => ({ g: g, n: cnt[g] })) };
+  let cap = null; try { cap = capStatus(now); } catch (e) { cap = null; }   // v52 용량 점검(메일 하루 한도·구독자 수) — 엔진 brief.py 가 09:07 보고 줄로
+  return { ok: true, at: ymd(now), areas: Object.keys(cnt).sort().map(g => ({ g: g, n: cnt[g] })), cap: cap };
+}
+/* v52 용량 점검: MailApp 하루 한도(개인 구글 계정 100통 — 회사 계정이면 스크립트 속성 MAIL_DAILY_MAX 로 1500 등) 중 남은 수,
+   지난 아침 발송이 끝난 뒤 남은 수(CAP_MAIL — briefDaily 가 적음), 지금 받는 구독자 수(이메일·전체). 개인정보 없음(수만). */
+const MAIL_DAILY_MAX_DEF = 100;
+function mailLeft() { try { return MailApp.getRemainingDailyQuota ? MailApp.getRemainingDailyQuota() : null; } catch (e) { return null; } }
+function capStatus(now) {
+  const P = PropertiesService.getScriptProperties();
+  const max = Number(P.getProperty('MAIL_DAILY_MAX')) || MAIL_DAILY_MAX_DEF;
+  let subs = 0, email = 0;
+  bRows().forEach(o => { const st = briefState(o, now); if (!st.active || st.adm) return; subs++; if (st.channel === 'email') email++; });
+  const last = parseJ(P.getProperty('CAP_MAIL'), null);
+  return { mailMax: max, mailLeft: mailLeft(), last: last && last.d ? { d: last.d, left: last.left, sent: last.sent } : null, subs: subs, subsEmail: email };
+}
+function capRecord(date, sent) {
+  try { PropertiesService.getScriptProperties().setProperty('CAP_MAIL', JSON.stringify({ d: date, left: mailLeft(), sent: sent })); } catch (e) {}
 }
 /* 최근 7일 vs 그 전 7일, 단지별 서로 다른 방문자 수(추천·내 집·비교 화면에 단지가 보인 기록 'rec') — 5명 이상만 */
 function briefInterest(p) {
@@ -3445,6 +3468,7 @@ function briefDaily() {
   });
   try { if (!admStop) sent += dpPlusBriefs(date, um, brief, M, ix); } catch (e) {}   // v51 이용권이 없는 동네 파트너(중개사 플러스 포함)에게 파트너 이메일로
   try { dpImpFlush(date, dpImp); } catch (e) {}
+  capRecord(date, sent);                                 // v52 용량 점검: 아침 발송 뒤 메일 하루 한도가 얼마나 남았는지
   if (admStop) { bLog([date, '', 'email', '운영자 계정: 시간·메일 한도 때문에 멈춤 — 다음 실행에서 이어서', 0]); return sent; }   // BRIEF_SENT 를 적지 않아 9시 실행이 이어 보냄
   briefExpiry(now);
   try { baTrialEnded(now); } catch (e) {}                // v50 체험 끝·카드 없음 → 딱 한 번 안내(자동결제가 열려 있을 때만)

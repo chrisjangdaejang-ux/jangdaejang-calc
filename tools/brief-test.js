@@ -222,6 +222,15 @@ let ag = get({ action: 'briefAreas', k: 'wrong' });
 check('집계: 토큰 틀리면 거절', !ag.ok);
 ag = get({ action: 'briefAreas', k: 'pull-FAKE-123' });
 check('집계: 동네 코드·수만(개인정보 없음)', ag.ok && JSON.stringify(ag.areas) === JSON.stringify([{ g: '11320', n: 1 }, { g: '11710', n: 1 }]) && !/@|010|k111/.test(JSON.stringify(ag)), ag);
+check('v52 용량 점검: 메일 한도 함수가 없으면 남은 수 null, 구독자 수는 숫자만', ag.cap && ag.cap.mailMax === 100 && ag.cap.mailLeft === null && typeof ag.cap.subs === 'number' && ag.cap.subs >= 1 && ag.cap.subsEmail <= ag.cap.subs, ag.cap);
+ctx.MailApp.getRemainingDailyQuota = () => 18;
+T.briefDaily();   // 이미 보낸 날이어도 발송 뒤 남은 수는 다음 아침 발송 때 적힘 — 직접 적어 봄
+props.CAP_MAIL = JSON.stringify({ d: '2026-11-25', left: 18, sent: 2 });
+ag = get({ action: 'briefAreas', k: 'pull-FAKE-123' });
+check('v52 용량 점검: 남은 수·지난 발송 뒤 남은 수·개인정보 없음', ag.cap.mailLeft === 18 && ag.cap.last.left === 18 && ag.cap.last.d === '2026-11-25' && !/@|010|k111/.test(JSON.stringify(ag.cap)), ag.cap);
+props.MAIL_DAILY_MAX = '1500';
+check('v52 용량 점검: 회사 계정 한도는 스크립트 속성으로', get({ action: 'briefAreas', k: 'pull-FAKE-123' }).cap.mailMax === 1500);
+delete props.MAIL_DAILY_MAX; delete ctx.MailApp.getRemainingDailyQuota;
 const lg = sheets['로그']; lg.appendRow(['시각', '유형', '중개사id', '구코드', '단지', '방문자']);
 for (let i = 0; i < 6; i++) lg.appendRow([new FakeDate(NOW - 3600000), 'rec', 'A0000001', '11710', '11710|잠실동|리센츠', 'v' + i]);
 for (let i = 0; i < 3; i++) lg.appendRow([new FakeDate(NOW - 3600000), 'rec', 'A0000001', '11710', '11710|잠실동|엘스', 'w' + i]);
