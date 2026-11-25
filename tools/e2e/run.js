@@ -647,15 +647,22 @@ JOURNEYS.tswitch = async function (page, v, mock) {
   await page.locator('#goBtn').click(); await sleep(9000);
   let r = await txt(page, '#res');
   ok(/내 예산 12억 5,000만 원/.test(r), '예산 = 보증금 + 현금 + 전세대출(12억 5,000만 원)');
-  ok(/조건에 맞는 곳 \d+곳/.test(r) && /지금 단지 최근 전세/.test(r), '결과: 조건에 맞는 곳 수 · 지금 단지 최근 전세');
+  ok(/예산 근처 더 나은 집 \d+곳/.test(r) && /지금 단지 최근 전세/.test(r), '결과: 예산 근처 더 나은 집 수 · 지금 단지 최근 전세');
+  ok(/보증금만으로 찾아요/.test(r) && await page.locator('#costSeg [data-cost="dep"][aria-pressed="true"]').count() === 1, "예산 계산 기본 = '보증금만으로 찾기', 내 예산 칸에 한 줄 표시");
+  const near = await page.locator('#res .cand').evaluateAll(cs => cs.filter(c => !/반전세로 가능해요/.test(c.innerText)).map(c => (c.querySelector('.pr b') || {}).innerText || ''));
+  ok(near.map(won).every(v => v != null && v >= 125000 * 0.85 - 1 && v <= 125000) && /예산 근처\(10억 6,250만 원 이상/.test(r), "더 나은 집(전세)은 예산의 85~100%인 곳만 · 기준 금액 안내");
+  ok(!(await page.locator('#res .cand h3').allInnerTexts()).some(t => /^건영1/.test(t)), "6억짜리(건영1)처럼 예산보다 많이 싼 곳은 '더 나은 집'에 안 나옴");
+  await page.locator('#costSeg [data-cost="all"]').click(); await sleep(400);
+  ok(/중개보수·이사비를 뺀 금액으로 찾아요/.test(await txt(page, '#res')), "'이사 비용까지 포함해서 찾기' → 내 예산 칸 문구가 바뀜");
+  await page.locator('#costSeg [data-cost="dep"]').click(); await sleep(300);
   ok(/중개보수\(상한\) [\d억만 ,원]+/.test(r) && /이사비 300만 원/.test(r) && /(이사에 새로 드는 돈|이사하고 남는 돈)/.test(r), '카드마다 이사에 드는 돈(보증금 차액·중개보수·이사비)');
   ok(/주차 대수 자료가 아직 없어/.test(r) && /반려동물 허용 여부는 공개 자료가 없어요/.test(r), '주차·반려동물: 자료 없음 안내(걸러 내는 척하지 않음)');
   ok(/대중교통: 역 거리 두 배/.test(r) && /자녀 중·고: 학군 두 배/.test(r), '통근수단·가구 형태에 맞춘 무게 안내');
   ok(await page.locator('#res .cand').count() > 0, '더 나은 집 카드가 하나 이상');
-  ok(/나아지는 점 \d가지/.test(r) && /최근 6개월 신규 계약 \d+건/.test(r), '카드: 나아지는 점 수 · 최근 6개월 신규 계약 건수');
+  ok(/나아지는 점 \d가지/.test(r) && /최근 \d+개월 신규 계약 \d+건/.test(r), '카드: 나아지는 점 수 · 실제로 쓴 기간·계약 건수');
   ok(/출퇴근지까지 직선/.test(r) && /걸어서 약 \d+분\(어림\)/.test(r), '카드: 출퇴근 직선 거리 · 역까지 걷는 시간(어림) 표시');
   ok(/HUG 전세보증\(추정\)/.test(r) && /깡통전세 확률/.test(r) && /참고/.test(r), '카드: HUG 기준(추정) · 깡통전세 확률(참고)');
-  ok(/국토교통부 전월세 실거래 최근 6개월 신규 전세 \d+건 중간값/.test(r) && /중개보수: 공인중개사법 시행규칙/.test(r), '카드마다 출처 줄(중개보수 요율 포함)');
+  ok(/국토교통부 전월세 실거래 최근 \d+개월 신규 전세 \d+건 중간값/.test(r) && /중개보수: 공인중개사법 시행규칙/.test(r), '카드마다 출처 줄(중개보수 요율 포함)');
   ok(!/NaN|undefined|Infinity/.test(r), '결과에 NaN·undefined 없음');
   /* 보증보험 가입 가능한 곳만 */
   await page.locator('#safeOnly').check(); await page.locator('#goBtn').click(); await sleep(8000);

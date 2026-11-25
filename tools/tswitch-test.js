@@ -54,7 +54,7 @@ check('넓이 차이(평)', T.gains(a, cur).find(x => x.k === 'area').v, Math.ro
 const small = { key: 'k2', commute: 5.7, st: { m: 450 }, by: 2018, area: 85.5, sc: ['x', -0.2], med: 90000 };
 check('기준보다 작은 차이는 세지 않음(0.3km·60m·0년·0.2평·0.3%p)', T.gains(small, cur).length, 0);
 check('자료가 한쪽에만 있으면 비교하지 않음', T.gains({ key: 'k3', commute: 1, by: 2025 }, { key: 'k0' }).length, 0);
-const list = T.pick([a, small, Object.assign({}, a, { key: 'k4', med: 200000 }), Object.assign({}, a, { key: 'k0' })], cur, { dep: 120000, loan: 5000 });
+const list = T.pick([a, small, Object.assign({}, a, { key: 'k4', med: 200000 }), Object.assign({}, a, { key: 'k0' })], cur, { dep: 120000, loan: 5000, near: 0 });
 check('예산(보증금 12억 + 대출 5천, 중개보수 포함) 넘는 곳·지금 집은 빼요', list.map(r => r.key), ['k1', 'k2']);
 check('나아진 점 많은 순', list[0].key, 'k1');
 check('여유 = 예산 − 중간값', list[0].room, 25000);
@@ -76,26 +76,41 @@ check('중개보수: 전세 15억 → 0.6% = 900만', T.brokerFee(150000).fee, 9
 check('월세 거래금액 = 보증금 + 월세 × 100', T.brokerFee(10000, 100).base, 20000);
 check('그 값이 5천 미만이면 보증금 + 월세 × 70', T.brokerFee(1000, 30).base, 3100);
 check('중개보수 출처(공식 요율표·확인 날짜)', [/공인중개사법 시행규칙/.test(T.FEE_SRC.nm), T.FEE_SRC.checked], [true, '2026-11-25']);
-const pj = T.plan({ med: 50000 }, { dep: 45000, cash: 6000, move: 300 });
-check('이사 계획(전세): 차액 5천 + 중개보수 150 + 이사비 300', [pj.mode, pj.diff, pj.fee, pj.out], ['j', 5000, 150, 5450]);
-check('예산(보증금+현금+대출)에서 보수·이사비까지 모자라면 전세로는 안 됨', T.plan({ med: 50000 }, { dep: 45000, cash: 5000, move: 300 }), null);
-const ph = T.plan({ med: 100000, cv: { r: 0.05, n: 9 } }, { dep: 80000, cash: 5000, move: 200, rentMax: 100 });
+const pj = T.plan({ med: 50000 }, { dep: 45000, cash: 6000, move: 300, cost: 'all' });
+check('이사 계획(전세, 이사 비용 포함): 차액 5천 + 중개보수 150 + 이사비 300', [pj.mode, pj.diff, pj.fee, pj.out], ['j', 5000, 150, 5450]);
+check("'이사 비용까지 포함'이면 보수·이사비까지 모자랄 때 전세로는 안 됨", T.plan({ med: 50000 }, { dep: 45000, cash: 5000, move: 300, cost: 'all' }), null);
+check("'보증금만으로'(기본)는 보증금이 예산 안이면 됨(이사에 드는 돈은 그대로 보여 줌)", [T.plan({ med: 50000 }, { dep: 45000, cash: 5000, move: 300 }).mode, T.plan({ med: 50000 }, { dep: 45000, cash: 5000, move: 300 }).out], ['j', 5450]);
+const ph = T.plan({ med: 100000, cv: { r: 0.05, n: 9 } }, { dep: 80000, cash: 5000, move: 200, rentMax: 100, cost: 'all' });
 check('반전세: 월세 = (전세 − 낼 보증금) × 전환율 ÷ 12', ph.rent, Math.ceil((100000 - ph.dep2) * 0.05 / 12));
 check('반전세: 낼 보증금 = 예산 − 중개보수 − 이사비', ph.dep2, Math.floor(85000 - ph.fee - 200));
-check('반전세: 월세 감당액을 넘으면 안 됨', T.plan({ med: 100000, cv: { r: 0.05, n: 9 } }, { dep: 80000, cash: 5000, move: 200, rentMax: 50 }), null);
+check('반전세: 월세 감당액을 넘으면 안 됨', T.plan({ med: 100000, cv: { r: 0.05, n: 9 } }, { dep: 80000, cash: 5000, move: 200, rentMax: 50, cost: 'all' }), null);
 check('반전세: 전환율 자료가 없으면 안 함', T.plan({ med: 100000 }, { dep: 80000, cash: 5000, rentMax: 500 }), null);
 const base = { key: 'kk', commute: 6, st: { m: 600 }, by: 2005, area: 84, med: 50000 };
 const pr = [Object.assign({}, base, { key: 'p1', st: { m: 300 }, med: 40000 }), Object.assign({}, base, { key: 'p2', by: 2020, med: 40000 }), Object.assign({}, base, { key: 'p3', by: 2021, med: 45000, safe: true })];
-check('대중교통이면 역 거리 무게 두 배 → 역 가까운 곳 먼저', T.pick(pr.slice(0, 2), base, { dep: 50000, mode: 'transit' })[0].key, 'p1');
-check('최대 연식 10년: 2015년 전 준공은 빠짐', T.pick(pr, base, { dep: 50000, ageMax: 10, year: 2026 }).map(r => r.key).sort(), ['p2', 'p3']);
-check('보증금 줄이기: 지금 보증금보다 낮은 곳만', T.pick(pr.concat([Object.assign({}, base, { key: 'p4', med: 50000 })]), base, { dep: 50000, cash: 9000, reduce: true }).every(r => r.med < 50000), true);
-check('원하는 보증금 범위(최소 4억 2천)', T.pick(pr, base, { dep: 50000, lo: 42000 }).map(r => r.key), ['p3']);
-check('보증보험 가입 가능한 곳만', T.pick(pr, base, { dep: 50000, safeOnly: true }).map(r => r.key), ['p3']);
-check('최대 통근 거리(직선 5km) 넘는 곳 빠짐', T.pick([Object.assign({}, pr[0], { commute: 7 })], base, { dep: 50000, cmax: 5 }).length, 0);
+check('대중교통이면 역 거리 무게 두 배 → 역 가까운 곳 먼저', T.pick(pr.slice(0, 2), base, { near: 0, dep: 50000, mode: 'transit' })[0].key, 'p1');
+check('최대 연식 10년: 2015년 전 준공은 빠짐', T.pick(pr, base, { near: 0, dep: 50000, ageMax: 10, year: 2026 }).map(r => r.key).sort(), ['p2', 'p3']);
+check('보증금 줄이기: 지금 보증금보다 낮은 곳만', T.pick(pr.concat([Object.assign({}, base, { key: 'p4', med: 50000 })]), base, { near: 0, dep: 50000, cash: 9000, reduce: true }).every(r => r.med < 50000), true);
+check('원하는 보증금 범위(최소 4억 2천)', T.pick(pr, base, { near: 0, dep: 50000, lo: 42000 }).map(r => r.key), ['p3']);
+check('보증보험 가입 가능한 곳만', T.pick(pr, base, { near: 0, dep: 50000, safeOnly: true }).map(r => r.key), ['p3']);
+check('최대 통근 거리(직선 5km) 넘는 곳 빠짐', T.pick([Object.assign({}, pr[0], { commute: 7 })], base, { near: 0, dep: 50000, cmax: 5 }).length, 0);
 check('맞벌이: 두 번째 출퇴근지도 나아진 점으로 셈', T.gains({ commute2: 3 }, { commute2: 5 }).map(g => g.k), ['commute2']);
 check('자녀 중·고: 학군 무게 2', T.weights({ hh: 'high' }).sch, 2);
-check('후보마다 이사 계획(보증금 차액·중개보수·이사비)', !!T.pick(pr, base, { dep: 50000, move: 100 })[0].plan, true);
+check('후보마다 이사 계획(보증금 차액·중개보수·이사비)', !!T.pick(pr, base, { near: 0, dep: 50000, move: 100 })[0].plan, true);
 
+
+/* ---------- 예산 근처·기간 넓히기(대표 사용 후 고침 2026-11-25) ---------- */
+const nb = [{ key: 'n1', med: 120000 }, { key: 'n2', med: 160000 }, { key: 'n3', med: 179000 }, { key: 'n4', med: 152000 }].map(x => Object.assign({ by: 2010, area: 114 }, x));
+check("더 나은 집은 예산 근처(85~100%)만 — 18억이면 15억 3천 이상, 12억은 빠짐", T.pick(nb, null, { dep: 180000 }).map(r => r.key).sort(), ['n2', 'n3']);
+check('예산 근처 비율은 설정값(near)', T.pick(nb, null, { dep: 180000, near: 0.6 }).length, 4);
+check("12억은 '더 싼 집'에는 나옴", T.cheaper(nb.map(r => Object.assign({ p: [127, 37.5], b: '114㎡대' }, r)), { key: 'c', b: '114㎡대', p: [127.001, 37.5] }, 180000, { band: '114㎡대' }).some(r => r.key === 'n1'), true);
+check("이사 비용 포함이면 아래 끝도 보수·이사비를 뺀 금액 기준", T.nearLo({ dep: 180000, move: 300, cost: 'all' }), Math.round((180000 - 300 - T.brokerFee(180000).fee) * 0.85));
+check('보증금 줄이기·직접 넣은 최소값이 있으면 예산 근처 조건은 쓰지 않음', [T.pick(nb, null, { dep: 180000, reduce: true }).length, T.pick(nb, null, { dep: 180000, lo: 100000 }).length], [4, 4]);
+const dl = [[20261020, 114, 5, 170000, 0, 0], [20260210, 114, 5, 166000, 0, 0]];
+const ua = ['삼성동', 'x', '114㎡대', '1', 114, 0, 0, [0], [], [], dl, {}];
+const ra = T.recentAuto(ua, today, T.WIN.a);
+check('아파트: 6개월 3건이 안 되면 12개월 2건으로 넓힘', [ra.w, ra.n, ra.med], [12, 2, 168000]);
+check('기간 늘리기: 24개월 2건', T.WIN.long, [[24, 2]]);
+check('평형 넓히기: 114㎡대 → 99·114·135㎡대', T.bandsNear('114㎡대'), ['99㎡대', '114㎡대', '135㎡대']);
 /* ---------- ④ HUG·갱신·매수 ---------- */
 const h1 = T.hugEst(HG, 60000, 107000, true, 'a');
 check('HUG: 공시가격 × 140% × 90% = 기준', h1.limit, Math.round(107000 * 1.4 * 0.9));

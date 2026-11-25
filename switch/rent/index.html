@@ -38,7 +38,7 @@
 <script src="../../assets/loan-rules.js?v=3"></script>
 <script src="../../assets/loan-core.js?v=5"></script>
 <script src="../../assets/plain-words.js?v=17"></script>
-<script src="../../assets/tswitch-core.js?v=1"></script>
+<script src="../../assets/tswitch-core.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../assets/aplus.css?v=46">
@@ -266,7 +266,7 @@ const calAll = () => { try { return C.cleanAll(JSON.parse(ls.get('jdj_cal') || '
 const hid = h => M.homeId(h);
 
 /* ---------- 상태 ---------- */
-const S = { home: null, kind: 'a', band: '', mode: 'areas', areas: [], work: null, work2: null, cmode: '', ce: '', tab: 'better', need: [], show: 8, from: '' };
+const S = { cost: 'dep', wide: false, long: false, home: null, kind: 'a', band: '', mode: 'areas', areas: [], work: null, work2: null, cmode: '', ce: '', tab: 'better', need: [], show: 8, from: '' };
 let LAST = null;   // 마지막 결과
 
 /* ---------- 지금 사는 집 ---------- */
@@ -358,11 +358,11 @@ function drawMode(){
   $('areaW').hidden = S.mode !== 'areas';
 }
 async function drawAreas(){
-  $('areaN').textContent = `(${S.areas.length}/3)`;
+  $('areaN').textContent = `(${S.areas.length}/5)`;
   $('areas').innerHTML = S.areas.map((a, i) => `<button type="button" data-rm="${i}" aria-label="${esc(gname(a.g) + ' ' + (a.d || '전체'))} 빼기">${esc(gname(a.g) + ' ' + (a.d || '전체'))}<span aria-hidden="true">×</span></button>`).join('');
   $('areas').querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { S.areas.splice(+b.dataset.rm, 1); drawAreas(); });
   const h = S.home, sel = $('areaAdd');
-  if (!h || S.areas.length >= 3){ sel.hidden = true; return; }
+  if (!h || S.areas.length >= 5){ sel.hidden = true; return; }
   const dn = await dongOf(h.code), L = T.nearHome(dn, h.code, h.dong, 40).filter(o => !S.areas.some(a => a.g === o.g && a.d === o.d));
   sel.hidden = false;
   sel.innerHTML = '<option value="">+ 동 더하기(가까운 순)</option>' + L.map(o => `<option value="${esc(o.g + '|' + o.d)}">${esc(gname(o.g) + ' ' + o.d)} (약 ${o.km.toFixed(1)}km)</option>`).join('');
@@ -393,6 +393,7 @@ async function scope(){
   return { list: S.areas.slice(), how: '희망 지역 ' + S.areas.map(a => gname(a.g) + ' ' + (a.d || '전체')).join(', ') };
 }
 async function run(scroll){
+  if (scroll) { S.wide = false; S.long = false; }
   const msg = $('goMsg'), h = S.home, dep = num($('dep').value), useLoan = $('useLoan').checked, jl = useLoan ? num($('jl').value) : 0;
   const O = { dep, cash: num($('cash2').value), loan: jl, move: num($('mv').value), rentMax: num($('rentMax').value), lo: num($('lo').value), hi: num($('hi').value), reduce: $('reduce').checked,
     ageMax: num($('ageMax').value), cmax: numF($('cmax').value), safeOnly: $('safeOnly').checked, hh: $('hh').value, mode: S.cmode, work2: !!S.work2, year: +today().slice(0, 4), park: $('park').checked, pet: $('pet').checked, moveAt: $('moveAt').value };
@@ -414,7 +415,7 @@ async function run(scroll){
   }));
   const fxOf = kind === 'a' ? (g, d, j, a, b) => { const sd = sidoOf(g), m = sd && FXM[sd.id]; return m ? m.get([g, d, j, a, b].join('|')) || null : null; } : null;
   const fxReady = kind !== 'a' || gs.concat([h.code]).every(g => { const sd = sidoOf(g); return !sd || FXM[sd.id]; });
-  const ctxOf = (g, k, meta) => ({ g, kind: k, today: t, meta, xy: per[g].xy, dong: per[g].dn, st: per[g].st, work, work2, fxOf: k === 'a' ? fxOf : null });
+  const ctxOf = (g, k, meta) => ({ g, kind: k, today: t, meta, xy: per[g].xy, dong: per[g].dn, st: per[g].st, work, work2, long: S.long, fxOf: k === 'a' ? fxOf : null });
   /* 지금 집 */
   let cur = null;
   const cu = curRent && curRent.units ? (curRent.units.find(x => x[0] === h.dong && x[1] === h.apt && x[2] === h.band) || curRent.units.find(x => x[0] === h.dong && String(x[3]) === String(h.jibun) && x[2] === h.band)) : null;
@@ -422,11 +423,11 @@ async function run(scroll){
   else { const lc = T.locate(h.code, h.dong, h.jibun, per[h.code].xy, per[h.code].dn); cur = { key: [h.code, h.dong, h.jibun, h.apt, h.band].join('|'), g: h.code, d: h.dong, a: h.apt, b: h.band, j: h.jibun, area: 0, by: 0, med: 0, n: 0, loc: lc ? lc.by : '', p: lc ? lc.p : null, st: lc && lc.by === 'apt' ? T.nearSt(lc.p, per[h.code].st, 3000) : null, commute: null, sc: null };
     if (work && cur.p) cur.commute = Math.round(T.km(cur.p, work) * 10) / 10; if (work2 && cur.p) cur.commute2 = Math.round(T.km(cur.p, work2) * 10) / 10; }
   /* 후보 */
-  const rows = [];
+  const rows = [], bandSet = S.band ? T.bandsNear(S.band) : [];
   for (const g of gs) {
     const R = per[g].R; if (!R || !R.units) continue;
     const ctx = ctxOf(g, kind, R);
-    for (const u of R.units) { if (!T.inAreas(sc.list, g, u[0]) || !T.sameBand(u, S.band)) continue; rows.push(T.row(u, ctx)); }
+    for (const u of R.units) { if (!T.inAreas(sc.list, g, u[0]) || (S.band && !bandSet.includes(u[2]))) continue; const r = T.row(u, ctx); r.wb = !!S.band && u[2] !== S.band; rows.push(r); }
   }
   /* 전세 안전 점검(추정): 후보 보증금 = 최근 신규 전세 중간값 */
   const metro = HG && HG.isMetro(sgg(h.code).sido);
@@ -503,7 +504,7 @@ function costHtml(pl){
 function card(r, cur, cheap){
   const gl = (r.gains || []).map(g => `<li class="${g.k === 'safe' ? 'sf' : ''}">${esc(T.GAIN_T[g.k](g))}</li>`).join('');
   return `<article class="cand"><h3>${esc(nm(r))}${!cheap && cur ? `<span class="cnt">나아지는 점 ${(r.gains || []).length}가지</span>` : ''}${r.plan && r.plan.mode === 'h' ? '<span class="cnt hf">반전세</span>' : ''}</h3>
-    <div class="loc">${esc(gname(r.g))} ${esc(r.d)} · ${esc(r.b)}${cheap && r.near != null ? ` · 지금 집에서 직선 ${kmT(r.near)}` : ''}</div>
+    <div class="loc">${esc(gname(r.g))} ${esc(r.d)} · ${esc(r.b)}${r.wb ? ' (넓힌 평형)' : ''}${cheap && r.near != null ? ` · 지금 집에서 직선 ${kmT(r.near)}` : ''}</div>
     ${cheap ? `<div class="pr"><span class="save">${esc(won(r.save))} 덜 들어요</span><small>최근 전세 ${esc(won(r.med))} (최근 ${r.w}개월 신규 ${r.n}건 · ${esc(won(r.lo))}~${esc(won(r.hi))}) · 비교 기준 ${LAST.refBy === 'cur' ? '지금 단지 최근 전세' : '내 보증금'} ${esc(won(LAST.ref))}</small></div>`
       : `<div class="pr">최근 전세 <b>${esc(won(r.med))}</b><small>최근 ${r.w}개월 신규 계약 ${r.n}건 · ${esc(won(r.lo))}~${esc(won(r.hi))}${r.room >= 0 ? ` · 예산보다 ${esc(won(r.room))} 여유` : ''}</small></div>`}
     ${gl ? `<ul class="gains">${gl}</ul>` : ''}
@@ -515,15 +516,21 @@ function card(r, cur, cheap){
 function draw(){
   const L = LAST, box = $('res'); if (!L) return;
   box.hidden = false;
-  const cur = L.cur, better = T.pick(L.rows, cur, L.O), cheap = T.cheaper(L.rows, cur, L.ref, { band: L.band || (cur && cur.b) || '', work: !!L.work });
+  L.O.cost = S.cost;
+  const cur = L.cur, exact = L.rows.filter(r => !r.wb), MINC = 5;
+  let better = T.pick(S.wide ? L.rows : exact, cur, L.O), autoWide = false;
+  /* 후보가 적으면(5곳 미만) 한 단계 위아래 평형까지 자동으로 넓혀요 */
+  if (!S.wide && L.band && better.length < MINC) { const bw = T.pick(L.rows, cur, L.O); if (bw.length > better.length) { better = bw; autoWide = true; } }
+  const cheap = T.cheaper(S.wide ? L.rows : exact, cur, L.ref, { band: S.wide ? '' : (L.band || (cur && cur.b) || ''), work: !!L.work });
+  const nb = L.band ? T.bandsNear(L.band).join('·') : '', nearLo = T.nearLo(L.O);
   const list = S.tab === 'better' ? T.filt(better, S.need) : (L.O.safeOnly ? cheap.filter(r => r.safe === true) : cheap);
   const curTxt = cur && cur.med > 0 ? `${won(cur.med)}` : '자료 부족';
   let x = `<div class="panel"><h2>결과<small>${esc(L.sc.how)} · ${esc(T.KIND[L.kind].label)} ${esc(L.band || '모든 평형')}</small></h2>
-    <div class="stats"><div class="st key"><div class="k">내 예산</div><div class="v">${esc(won(L.budget))}</div><div class="d">보증금 ${esc(won(L.dep))}${L.O.cash ? ' + 현금 ' + esc(won(L.O.cash)) : ''}${L.jl ? ' + 전세대출 ' + esc(won(L.jl)) : ''} · 중개보수·이사비는 집마다 빼요</div></div>
-    <div class="st"><div class="k">지금 단지 최근 전세</div><div class="v">${esc(curTxt)}</div><div class="d">${cur && cur.med > 0 ? `최근 6개월 신규 ${cur.n}건 중간값` : '최근 6개월 신규 계약이 3건보다 적어요'}</div></div>
-    <div class="st"><div class="k">조건에 맞는 곳</div><div class="v">${better.length.toLocaleString()}곳</div><div class="d">더 싼 곳 ${cheap.length.toLocaleString()}곳</div></div></div>`;
+    <div class="stats"><div class="st key"><div class="k">내 예산</div><div class="v">${esc(won(L.budget))}</div><div class="d">보증금 ${esc(won(L.dep))}${L.O.cash ? ' + 현금 ' + esc(won(L.O.cash)) : ''}${L.jl ? ' + 전세대출 ' + esc(won(L.jl)) : ''} </div><div class="d"><b>${S.cost === 'all' ? '중개보수·이사비를 뺀 금액으로 찾아요' : '보증금만으로 찾아요(이사 비용은 카드마다 따로 보여 드려요)'}</b></div></div>
+    <div class="st"><div class="k">지금 단지 최근 전세</div><div class="v">${esc(curTxt)}</div><div class="d">${cur && cur.med > 0 ? `최근 ${cur.w}개월 신규 ${cur.n}건 중간값${cur.w > 6 ? '(6개월 계약이 적어 기간을 넓혔어요)' : ''}` : `최근 ${S.long ? 24 : 12}개월 신규 계약도 2건보다 적어요`}</div></div>
+    <div class="st"><div class="k">예산 근처 더 나은 집</div><div class="v">${better.length.toLocaleString()}곳</div><div class="d">더 싼 곳 ${cheap.length.toLocaleString()}곳</div></div></div>`;
   /* 만기 타이밍 */
-  if (cur && T.renewHint(cur.med, L.dep)) x += `<p class="nt"><b>갱신 협상도 생각해 보세요.</b> 지금 단지 최근 6개월 신규 전세 중간값(${esc(won(cur.med))})이 내 보증금(${esc(won(L.dep))})보다 낮아요. 만기 6개월 전부터 2개월 전 사이에 계약갱신요구권을 쓰면서, 낮아진 시세를 근거로 보증금 감액을 집주인과 협의해 볼 수 있어요. 정보 안내이고, 결과는 협의에 따라 달라요. <a href="${esc(T.SRC.renew.url)}" target="_blank" rel="noopener">${esc(T.SRC.renew.nm)} 보기 ↗</a></p>`;
+  if (cur && T.renewHint(cur.med, L.dep)) x += `<p class="nt"><b>갱신 협상도 생각해 보세요.</b> 지금 단지 최근 ${cur.w}개월 신규 전세 중간값(${esc(won(cur.med))})이 내 보증금(${esc(won(L.dep))})보다 낮아요. 만기 6개월 전부터 2개월 전 사이에 계약갱신요구권을 쓰면서, 낮아진 시세를 근거로 보증금 감액을 집주인과 협의해 볼 수 있어요. 정보 안내이고, 결과는 협의에 따라 달라요. <a href="${esc(T.SRC.renew.url)}" target="_blank" rel="noopener">${esc(T.SRC.renew.nm)} 보기 ↗</a></p>`;
   const info = [];
   if (L.O.moveAt) info.push(`이사 희망 ${L.O.moveAt.replace(/-/g, '.')}${S.ce && L.O.moveAt === S.ce ? '(전세 만기일)' : ''} — HUG 전세보증은 새 계약 기간의 절반이 지나기 전에 신청해야 해요.`);
   if (L.O.park) info.push('주차 대수 자료가 아직 없어 걸러 드리지 못해요. 계약 전 관리사무소에 세대당 주차 대수를 확인해 주세요.');
@@ -531,19 +538,28 @@ function draw(){
   if (L.O.pet) info.push('반려동물 허용 여부는 공개 자료가 없어요. 집주인·관리 규약을 계약 전에 꼭 확인해 주세요.');
   if (L.O.hh === 'elem') info.push('초등학교는 학구도로 배정돼 거리만으로 알 수 없어요. 관할 교육지원청 학구도 안내에서 확인해 주세요.');
   if (info.length) x += `<ul class="note" style="margin:8px 0;padding-left:18px">${info.map(t => `<li>${esc(t)}</li>`).join('')}</ul>`;
+  x += `<span class="lb" id="costL" style="margin-top:10px">예산 계산</span><div class="seg2 c2" id="costSeg" role="group" aria-labelledby="costL"><button type="button" data-cost="dep" aria-pressed="${S.cost === 'dep'}">보증금만으로 찾기</button><button type="button" data-cost="all" aria-pressed="${S.cost === 'all'}">이사 비용까지 포함해서 찾기</button></div>`;
   x += `<div class="seg2 c2 rtabs" id="rtabs" role="group" aria-label="결과 보기"><button type="button" data-t="better" aria-pressed="${S.tab === 'better'}">더 나은 집<small>같은 보증금으로</small></button><button type="button" data-t="cheap" aria-pressed="${S.tab === 'cheap'}">더 싼 집<small>같은 조건으로</small></button></div>`;
   if (S.tab === 'better') {
     const keys = ['commute', 'commute2', 'st', 'by', 'area', 'sch', 'safe'].filter(k => (k !== 'commute' || L.work) && (k !== 'commute2' || L.work2) && (k !== 'sch' || L.kind === 'a') && (k !== 'safe' || !L.O.safeOnly));
     x += `<div class="fl" role="group" aria-label="걸러 보기">${keys.map(k => `<button type="button" data-n="${k}" aria-pressed="${S.need.includes(k)}">${esc(T.GAIN_NAME[k])}</button>`).join('')}</div>`;
-    x += `<p class="note">넣은 조건에 맞는 곳을, 조건에 맞춰 무게를 준 '나아지는 점'이 많은 순서로 보여 드려요${L.O.mode === 'transit' ? '(대중교통: 역 거리 두 배)' : ''}${L.O.hh === 'mid' || L.O.hh === 'high' ? '(자녀 중·고: 학군 두 배)' : ''}. 단추를 누르면 그 점이 나아진 곳만 보여 드려요.${cur && cur.loc !== 'apt' ? ' 지금 집 정확한 위치 자료가 없어 역까지 거리는 비교하지 않았어요.' : ''}${!L.fx && L.kind === 'a' ? ' 학군 지표는 불러오는 중이에요.' : ''}</p>`;
+    x += `<p class="note">보증금이 예산 근처(${esc(won(nearLo))} 이상${L.O.rentMax ? ', 반전세 포함' : ''})인 곳 가운데${autoWide ? ` 후보가 적어 평형을 ${esc(nb)}까지 넓혀서` : S.wide ? ` 평형 ${esc(nb)}에서` : ''}, 넣은 조건에 맞는 곳을 조건에 맞춰 무게를 준 '나아지는 점'이 많은 순서로 보여 드려요${L.O.mode === 'transit' ? '(대중교통: 역 거리 두 배)' : ''}${L.O.hh === 'mid' || L.O.hh === 'high' ? '(자녀 중·고: 학군 두 배)' : ''}. 단추를 누르면 그 점이 나아진 곳만 보여 드려요.${cur && cur.loc !== 'apt' ? ' 지금 집 정확한 위치 자료가 없어 역까지 거리는 비교하지 않았어요.' : ''}${!L.fx && L.kind === 'a' ? ' 학군 지표는 불러오는 중이에요.' : ''} 이보다 많이 싼 곳은 '더 싼 집'에 있어요.</p>`;
   } else x += `<p class="note">같은 평형(${esc(L.band || (cur && cur.b) || '')})에서 ${L.work ? '출퇴근 거리가 지금보다 1km 넘게 멀어지지 않는' : '지금 집에서 직선 2km 안에 있는'} 곳 가운데, 최근 전세가 ${L.refBy === 'cur' ? '지금 단지 최근 전세' : '내 보증금'}(${esc(won(L.ref))})보다 낮은 곳을 아끼는 금액 순으로 보여 드려요.</p>`;
-  if (!list.length) x += `<div class="empty">${S.tab === 'better' ? (S.need.length ? '고른 점이 모두 나아진 곳이 없어요. 걸러 보기 단추를 줄여 보세요.' : (L.kind === 'a' ? '조건에 맞으면서 최근 6개월 신규 전세 계약이 3건 이상인 곳이 없어요.' : '조건에 맞으면서 최근 12개월 신규 전세 계약이 2건 이상인 건물이 없어요.') + ' 희망 지역을 넓히거나 조건 더 넣기의 범위를 풀어 보세요.') : '조건에 맞는 더 싼 곳이 없어요.'}</div>`;
+  if (!list.length) x += S.tab === 'better' && !S.need.length
+    ? `<div class="empty"><b>예산 근처에 맞는 곳이 없어요.</b><br>조건을 넓혀 볼까요?<div class="acts" style="justify-content:center">${L.band && !S.wide ? '<button type="button" data-x="wide">평형 범위 넓히기</button>' : ''}${S.mode === 'areas' && S.areas.length < 5 ? '<button type="button" data-x="dong">인근 동 추가</button>' : ''}${!S.long ? '<button type="button" data-x="long">기간 늘리기(24개월)</button>' : ''}</div></div>`
+    : `<div class="empty">${S.tab === 'better' ? '고른 점이 모두 나아진 곳이 없어요. 걸러 보기 단추를 줄여 보세요.' : '조건에 맞는 더 싼 곳이 없어요.'}</div>`;
   else x += `<div class="cards">${list.slice(0, S.show).map(r => card(r, cur, S.tab === 'cheap')).join('')}</div>` + (list.length > S.show ? `<button type="button" class="more" id="moreBtn">${(list.length - S.show).toLocaleString()}곳 더 보기</button>` : '');
   x += `</div>`;
   box.innerHTML = x;
   box.querySelectorAll('#rtabs [data-t]').forEach(b => b.onclick = () => { S.tab = b.dataset.t; S.show = 8; draw(); });
   box.querySelectorAll('[data-n]').forEach(b => b.onclick = () => { const k = b.dataset.n; S.need = S.need.includes(k) ? S.need.filter(z => z !== k) : S.need.concat([k]); S.show = 8; draw(); });
   if ($('moreBtn')) $('moreBtn').onclick = () => { S.show += 8; draw(); };
+  box.querySelectorAll('[data-cost]').forEach(b => b.onclick = () => { S.cost = b.dataset.cost; S.show = 8; draw(); });
+  box.querySelectorAll('[data-x]').forEach(b => b.onclick = async () => { const k = b.dataset.x;
+    if (k === 'wide') { S.wide = true; draw(); return; }
+    if (k === 'long') { S.long = true; await run(false); return; }
+    if (k === 'dong' && S.home) { const dn = await dongOf(S.home.code), add = T.nearHome(dn, S.home.code, S.home.dong, 40).filter(o => !S.areas.some(a => a.g === o.g && a.d === o.d)).slice(0, Math.max(0, 5 - S.areas.length)).slice(0, 2);
+      add.forEach(o => S.areas.push({ g: o.g, d: o.d })); await drawAreas(); await run(false); } });
 }
 
 /* ---------- 매수 전환(전세 만기 알림 '매수로 바꾸면'과 같은 규칙) ---------- */

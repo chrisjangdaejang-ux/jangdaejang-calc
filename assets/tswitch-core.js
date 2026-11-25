@@ -38,7 +38,22 @@
   function med(a) { const v = a.slice().sort((x, y) => x - y), n = v.length; return n ? (n % 2 ? v[(n - 1) / 2] : Math.round((v[n / 2 - 1] + v[n / 2]) / 2)) : 0; }
 
   /** 빌라·오피스텔은 한 건물·평형 계약이 드물어 최근 12개월 · 2건 이상으로 봐요(카드에 기간·건수를 그대로 적어요) */
-  const WIN = { a: [6, MIN_N], v: [12, 2], o: [12, 2] };
+  /* 기간·건수 단계: 앞 단계로 시세가 안 잡히면 다음 단계로 넓혀요(카드에 실제로 쓴 기간·건수를 적어요).
+     아파트: 최근 6개월 3건 → 안 되면 최근 12개월 2건. 빌라·오피스텔: 최근 12개월 2건. '기간 늘리기'를 누르면 최근 24개월 2건까지.
+     (2026-11-25 실제 자료 점검: 강남구 청담·삼성·논현 114㎡대 84개 평형 중 6개월·3건으로 시세가 잡히는 곳은 1곳, 12개월·2건이면 20곳) */
+  const WIN = { a: [[6, MIN_N], [12, 2]], v: [[12, 2]], o: [[12, 2]], long: [[24, 2]] };
+  /** 예산 근처: '더 나은 집'은 보증금이 예산의 이 비율 이상인 곳만(그보다 싼 곳은 '더 싼 집'에) */
+  const NEAR = 0.85;
+  /** 평형 순서(넓히기용) */
+  const BANDS = ['40㎡ 이하', '49㎡대', '59㎡대', '74㎡대', '84㎡대', '99㎡대', '114㎡대', '135㎡대', '150㎡ 이상'];
+  /** 한 단계 위아래 평형까지 */
+  function bandsNear(b) { const i = BANDS.indexOf(b); return i < 0 ? [b] : BANDS.slice(Math.max(0, i - 1), i + 2); }
+  /** 단계대로 시세 찾기 */
+  function recentAuto(u, today, steps) {
+    let last = null;
+    for (const st of steps) { const r = recentNew(u, today, st[0], st[1]); if (r.med > 0) return r; last = r; }
+    return last || recentNew(u, today);
+  }
   /** 최근 w개월(기본 6) 신규 순수 전세 보증금 중간값 {med, n, lo, hi, w} — min건(기본 3) 미만이면 med 0 */
   function recentNew(u, today, w, min) {
     w = w || 6; min = min || MIN_N;
@@ -91,7 +106,7 @@
   /** u(전월세 행) → 비교에 쓰는 값. ctx = {g, kind, today, meta, xy, dong, st, work([경도, 위도]|null), fxOf(g,d,j,a,b)→fx|null} */
   function row(u, ctx) {
     const x = (u && u[11]) || {}, g = ctx.g, kind = ctx.kind || 'a';
-    const wn = WIN[kind] || WIN.a, rn = recentNew(u, ctx.today, wn[0], wn[1]), loc = locate(g, u[0], u[3], ctx.xy, ctx.dong);
+    const steps = ctx.long ? WIN.long : (WIN[kind] || WIN.a), rn = recentAuto(u, ctx.today, steps), loc = locate(g, u[0], u[3], ctx.xy, ctx.dong);
     const r = { g, kind, d: u[0], a: u[1], b: u[2], j: String(u[3]), area: +u[4] || 0, by: +x.by || 0, med: rn.med, n: rn.n, lo: rn.lo, hi: rn.hi, w: rn.w,
       loc: loc ? loc.by : '', p: loc ? loc.p : null, tr: trend1(u, ctx.meta) };
     r.commute = ctx.work && r.p ? Math.round(km(r.p, ctx.work) * 10) / 10 : null;
@@ -188,11 +203,12 @@
   function plan(r, o) {
     if (!r || !(r.med > 0)) return null;
     const dep = +o.dep || 0, avail = dep + (+o.cash || 0) + (+o.loan || 0), mv = +o.move || 0;
-    const f = brokerFee(r.med, 0).fee;
-    if (r.med + f + mv <= avail) return { mode: 'j', dep2: r.med, rent: 0, diff: r.med - dep, fee: f, move: mv, out: r.med - dep + f + mv };
+    const f = brokerFee(r.med, 0).fee, all = o.cost === 'all';
+    /* 예산 계산: 'dep'(기본) 보증금만으로 거름 · 'all' 중개보수·이사비까지 뺀 금액으로 거름 — 어느 쪽이든 카드에는 이사에 드는 돈을 보여 줘요 */
+    if (r.med + (all ? f + mv : 0) <= avail) return { mode: 'j', dep2: r.med, rent: 0, diff: r.med - dep, fee: f, move: mv, out: r.med - dep + f + mv };
     if (!(o.rentMax > 0) || !r.cv) return null;
     let fee = f, dep2 = 0, rent = 0;
-    for (let i = 0; i < 4; i++) { dep2 = Math.max(0, Math.floor(avail - fee - mv)); rent = Math.ceil((r.med - dep2) * r.cv.r / 12); fee = brokerFee(dep2, rent).fee; }
+    for (let i = 0; i < 4; i++) { dep2 = Math.max(0, Math.floor(avail - (all ? fee + mv : 0))); rent = Math.ceil((r.med - dep2) * r.cv.r / 12); fee = brokerFee(dep2, rent).fee; }
     if (!(dep2 > 0) || rent > o.rentMax) return null;
     return { mode: 'h', dep2, rent, rate: r.cv.r, n: r.cv.n, diff: dep2 - dep, fee, move: mv, out: dep2 - dep + fee + mv };
   }
@@ -207,13 +223,19 @@
     if (o.work2) { w.commute = 1.5; w.commute2 = 1.5; }
     return w;
   }
+  /** 예산 근처 아래 끝: (보증금 + 현금 + 대출 − [이사 비용 포함이면 중개보수·이사비]) × NEAR */
+  function nearLo(o) {
+    const avail = (+o.dep || 0) + (+o.cash || 0) + (+o.loan || 0), cut = o.cost === 'all' ? (+o.move || 0) + brokerFee(avail).fee : 0;
+    return Math.round(Math.max(0, avail - cut) * (o.near > 0 ? o.near : NEAR));
+  }
   const scoreOf = (gs, w) => Math.round(gs.reduce((a, g) => a + (w[g.k] || 1), 0) * 10) / 10;
   /** 조건 넣어 고르기 — o = plan 값 + {lo, hi 원하는 보증금 범위, reduce 보증금 줄이기, ageMax 최대 연식, year 올해, cmax 최대 통근 직선 km, safeOnly, need, hh, mode, work2}
       돌려줌: 조건에 맞는 후보(나아진 점·이사 계획·맞춤 점수), 맞춤 점수 → 나아진 점 수 → 이사에 드는 현금 순 */
   function pick(rows, cur, o) {
     o = o || {};
     const w = weights(o), need = o.need || [], out = [];
-    const hi = o.reduce ? Math.min(o.hi > 0 ? o.hi : Infinity, (+o.dep || 0) - 1) : (o.hi > 0 ? o.hi : Infinity), lo = o.lo > 0 ? o.lo : 0;
+    const hi = o.reduce ? Math.min(o.hi > 0 ? o.hi : Infinity, (+o.dep || 0) - 1) : (o.hi > 0 ? o.hi : Infinity);
+    const lo = o.lo > 0 ? o.lo : (o.reduce || o.near === 0) ? 0 : nearLo(o);
     for (const r of rows) {
       if (!(r.med > 0) || (cur && r.key === cur.key)) continue;
       if (r.med < lo || r.med > hi) continue;
@@ -284,7 +306,7 @@
   const pyeong = a => Math.round(a / PY * 10) / 10;
   const pct = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v * 100).toFixed(1) + '%';
 
-  const API = { PY, WALK, MIN_N, WIN, TH, SRC, FEE, FEE_SRC, brokerFee, plan, weights, scoreOf, pick, KIND, rentPath, addM, med, recentNew, trend1, km, nearSt, locate, row, sameBand, gains, GAIN_T, GAIN_NAME, better, cheaper, filt,
+  const API = { PY, WALK, MIN_N, WIN, NEAR, BANDS, bandsNear, recentAuto, nearLo, TH, SRC, FEE, FEE_SRC, brokerFee, plan, weights, scoreOf, pick, KIND, rentPath, addM, med, recentNew, trend1, km, nearSt, locate, row, sameBand, gains, GAIN_T, GAIN_NAME, better, cheaper, filt,
     hugEst, kkEst, renewHint, buyFit, buySort, nearWork, nearHome, inAreas, won, pyeong, pct };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_TSW = API;
