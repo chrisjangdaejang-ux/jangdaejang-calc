@@ -626,7 +626,8 @@
     out.sidoShort = SD;
     out.regionOk = !!regionUsed;
     out.headH = (ok2 ? [2] : []).concat(sL != null ? [L] : []);
-    out.dim = [1, 2, 3, 5, 7].filter(h => (h === 2 ? f.fv : fh[h]) != null && MV(h) && !VR(MV(h))).map(h => `${h}년 ${topPct(h === 2 ? f.fv : fh[h])}`);
+    out.dim = [1, 2, 3, 5, 7].filter(h => (h === 2 ? f.fv : fh[h]) != null && !VR(MV(h))).map(   // 성적이 없거나(과거 자료가 더 필요) 기준 미달인 기간은 '참고로만'(흐린 글씨)
+      h => `${h}년 ${topPct(h === 2 ? f.fv : fh[h])}`);
 
     /* ② 이유 줄 */
     const reasons = [];

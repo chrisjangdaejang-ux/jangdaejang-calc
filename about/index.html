@@ -535,7 +535,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
     const VOK = m => !!(m && (m.oos_all || []).length >= 2 && m.oos_avg > 0 && 2 * (m.oos_hit != null ? m.oos_hit : (m.oos_all || []).filter(o => (o.top20 || 0) > 0).length) >= (m.oos_all || []).length);
     const rows = [1, 2, 3, 5, 7].filter(h => MH[h]).map(h => {
       const m = MH[h], T = m.oos_all || [], n = T.length, hit = T.filter(o => o.top20 > 0).length;
-      const tag = h === 2 ? '<span class="tag main">기본 점수</span>' : VOK(m) ? '<span class="tag use">잘 맞아 예측에 씀</span>' : `<span class="tag ref">${n < 2 ? '써 본 횟수 적음' : '맞은 횟수 적음'} · 참고만</span>`;
+      const tag = h === 2 ? '<span class="tag main">기본 점수</span>' : VOK(m) ? '<span class="tag use">잘 맞아 예측에 씀</span>' : `<span class="tag ref">${n < 2 ? '써 본 횟수 적음' : 2 * hit < n ? '맞은 횟수 적음' : '평균으로는 덜 오름'} · 참고만</span>`;
       const head = n ? `과거에 그대로 써 봤더니 ${n}번 중 <span style="color:${hit === n ? 'var(--blue)' : hit * 2 < n ? 'var(--neg)' : 'var(--text)'}">${hit}번${hit * 2 < n ? '만' : ''} 맞았어요</span>` : '아직 써 볼 만큼 과거 자료가 쌓이지 않았어요';
       const sub = n ? `점수 상위 20% 단지가 같은 구 평균보다 평균 ${sg(m.oos_avg)}` : '과거 자료가 더 쌓이면 써 보기 시작해요';
       const dots = runs(Object.assign({}, m, { data_from: m.data_from || (M && M.data_from) }), h);
