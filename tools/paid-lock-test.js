@@ -81,7 +81,7 @@ const suc = read('premium/success/index.html');
 check('심사 모드: 완료 화면은 REVIEW- 주문이면 승인 요청 없이 끝냄', suc.indexOf('P.REVIEW_PREFIX') > 0 && suc.indexOf('P.REVIEW_PREFIX') < suc.indexOf("P.post('confirmPayment'"));
 check('서버는 그대로: PAID_OPEN=false 면 createOrder 거절', !!T.PAID_ACTIONS.createOrder && T.PAID_OPEN === false);
 const biz = read('assets/biz.js');
-check('바닥글: 통신판매업 신고번호 자리(신고 진행 중)·정보 제공 안내·약관 링크', /mailOrderNo: '신고 진행 중'/.test(biz) && biz.includes('특정 부동산의 매수·매도를 권유하지 않아요') && /terms\/[\s\S]*privacy\/[\s\S]*refund\//.test(biz));
+check('바닥글: 통신판매업 신고번호(제2026-서울강남-06774호)·정보 제공 안내·약관 링크', /mailOrderNo: '제2026-서울강남-06774호'/.test(biz) && biz.includes('특정 부동산의 매수·매도를 권유하지 않아요') && /terms\/[\s\S]*privacy\/[\s\S]*refund\//.test(biz));
 ['premium/index.html', 'premium/checkout/index.html', 'terms/index.html', 'about/index.html', 'brief/index.html', 'brief/subscribe/index.html'].forEach(f => check(`정보 제공 안내 문구: ${f}`, /특정 부동산의 매수·매도를 권유하지 않(아요|습니다)/.test(read(f))));
 ['premium/index.html', 'about/index.html', 'index.html', 'terms/index.html', 'refund/index.html', 'buy/index.html', 'assets/premium-report.js'].forEach(f => check(`권유처럼 읽히는 표현 없음: ${f}`, !/매수 리포트|매도 타이밍|사세요|파세요|유망|추천 단지/.test(read(f))));
 const FB = '잠시 뒤 다시 시도해 주세요. 계속되면 카카오톡 상담으로 알려 주세요.';
