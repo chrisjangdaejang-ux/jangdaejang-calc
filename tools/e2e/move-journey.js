@@ -52,7 +52,7 @@ module.exports = function (H) {
     ok(/잘못된 요청 신고/.test(pm), '업체: 연 요청은 72시간 안 신고');
     ok(/포인트 충전은 정식 결제가 열리면/.test(pm), '업체: 유료 잠금 동안 충전은 안내만');
     await shot(page, 'partner', v);
-    const rv = page.locator('[data-open="M0000000A1"]'); await rv.click(); await sleep(700);
+    const rv = page.locator('[data-open="M0000000A1"]'); await rv.click(); await sleep(350);
     ok(mock.last('mvOpen') && mock.last('mvOpen').body.id === 'M0000000A1', '업체: [이 고객 연락처 보기] → 서버 열람');
     ok(await feedbackNear(page, rv, '무료 열람 1건을 썼어요'), '업체: 차감 안내가 단추 가까이');
 

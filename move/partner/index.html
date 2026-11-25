@@ -176,7 +176,7 @@
       MV.post({ action: 'mvOpen', id: id }).then(function (j) {
         document.getElementById('kPts').textContent = pt(j.points); document.getElementById('kFree').textContent = j.free + '건';
         F.ok(b, j.paidBy === '무료' ? '무료 열람 1건을 썼어요.' : won(j.price) + ' 차감했어요.');
-        setTimeout(loadLeads, 700);
+        setTimeout(loadLeads, 1600);
       }).catch(function (e) { F.err(b, e.message); if (/마감|취소/.test(e.message)) setTimeout(loadLeads, 1500); });
     }; });
     document.querySelectorAll('[data-rep]').forEach(function (b) { b.onclick = function () {
