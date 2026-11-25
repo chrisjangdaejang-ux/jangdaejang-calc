@@ -29,9 +29,10 @@
     tax:       { easy: '부동산 세금 계산이 쉬워지는 집예보', label: '부동산 세금 계산', path: 'tax/', try: '내 세금도 계산해 보기' },
     villa:     { easy: '재개발 빌라 확인이 쉬워지는 집예보', label: '재개발·빌라 체크', path: 'villa/', try: '관심 빌라도 확인해 보기' },
     ask:       { easy: '단지 비교가 쉬워지는 집예보', label: '단지 이름으로 물어보기', path: 'ask/', try: '궁금한 단지도 물어보기' },
-    rank:      { easy: '우리 동네 순위 확인이 쉬워지는 집예보', label: '구별 시세·미래가치 순위', path: 'rank/', try: '우리 구 순위도 확인해 보기' }
+    rank:      { easy: '우리 동네 순위 확인이 쉬워지는 집예보', label: '구별 시세·미래가치 순위', path: 'rank/', try: '우리 구 순위도 확인해 보기' },
+    home:      { easy: '집값의 내일 보기가 쉬워지는 집예보', label: '무료 부동산 데이터', path: '', try: '우리 동네 집값의 내일 보기' }   // 첫 화면 소개 카드(assets/share-head.js)
   };
-  var PLACES = ['top', 'mid', 'bottom'];
+  var PLACES = ['top', 'mid', 'bottom', 'header'];   // header = 모든 화면 머리줄 '공유' 단추(assets/share-head.js)
 
   /* ---------- 개인값 보관 (예전 기능 그대로) ---------- */
   var FIN_KEYS = ['i', 'c', 'd', 'n', 'e'];
@@ -244,6 +245,8 @@
   function topBtn() {
     var d = root.document, h = d.querySelector('header.top');
     if (!h) return null;
+    /* 모든 화면 머리줄 '공유' 단추(assets/share-head.js)가 있으면 따로 만들지 않음 — 그 단추가 결과 요약 공유(headerRun)를 부름 */
+    if (root.JDJ_SHEAD || h.querySelector('.jsh-btn')) return null;
     var b = h.querySelector('.jshare-top');
     if (!b) {
       b = d.createElement('button'); b.type = 'button'; b.className = 'jshare-top'; b.setAttribute('data-jshare', 'top');
@@ -593,8 +596,15 @@
     ch.querySelector('input:checked').focus();
   }
 
+  /* 머리줄 '공유' 단추(assets/share-head.js): 결과가 나와 있으면 결과 요약 공유로 처리하고 true */
+  function headerRun(btn) {
+    if (!ST.tool || !ST.sum || ST.tool === 'home') return false;
+    if (detailPayload()) chooser(btn, 'header'); else run('header', 'summary');
+    return true;
+  }
+
   var api = {
-    saveFin: saveFin, loadFin: loadFin, hasPersonal: hasPersonal, stripPersonal: stripPersonal, share: share, bind: bind, PERSONAL: PERSONAL,
+    headerRun: headerRun, saveFin: saveFin, loadFin: loadFin, hasPersonal: hasPersonal, stripPersonal: stripPersonal, share: share, bind: bind, PERSONAL: PERSONAL,
     TOOLS: TOOLS, setup: setup, update: update, clear: clear, link: link, pick: pick, safeSummary: safeSummary, safeLine: safeLine,
     shareText: shareText, drawCard: drawCard, cardBlob: cardBlob, run: run, saveImage: saveImage, state: function () { return ST; },
     encodeDetail: encodeDetail, decodeDetail: decodeDetail, cleanDetail: cleanDetail, detailLink: detailLink, detailPayload: detailPayload, capture: capture, viewing: viewing,

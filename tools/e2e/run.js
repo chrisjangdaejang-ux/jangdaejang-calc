@@ -432,6 +432,71 @@ JOURNEYS.back = async function (page, v) {
   ok(await page.locator('.jbk-btn').count() === 1 && await page.locator('.jbk-bc').count() === 0 && await page.locator('nav.bc').count() >= 1, '단지 검색용 페이지: 단추 + 원래 위치 표시만');
 };
 
+/* 공유(assets/share-head.js): 첫 화면 머리줄 [공유]·'집예보를 친구에게 알려 주세요' [공유하기]가 보이고, 누르면 utm_source=share 링크 복사 + '복사했어요' 알림
+   + 다른 화면 머리줄에도 [공유] · 뒤로 가기·하단 탭과 겹치지 않음 · 결과가 나온 화면에서는 결과 요약 공유로 이어짐 · 개인 화면에는 없음 */
+JOURNEYS.share = async function (page, v) {
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']).catch(() => {});
+  /* 휴대폰 공유창은 시험 브라우저에 없으니, 있으면 링크 복사 길로 가게 막음 */
+  await page.addInitScript(() => { try { Object.defineProperty(navigator, 'share', { value: undefined, configurable: true }); } catch (e) {} });
+  await open(page, '');
+  const hb = page.locator('header.top .jsh-btn');
+  ok(await hb.isVisible(), '첫 화면 머리줄에 [공유] 단추가 보임');
+  ok(/공유/.test(await hb.innerText()), '머리줄 단추에 "공유" 글자');
+  const box = await hb.boundingBox(), vw = v.width;
+  ok(box && box.height >= 43.5 && box.x + box.width <= vw + 1, '머리줄 [공유]: 44px 이상 · 화면 안');
+  /* 겹침: 머리줄 안의 다른 칸(로고·뒤로 가기·로그인·PC 탭)과 [공유]가 겹치지 않음 */
+  const clash = await page.evaluate(() => {
+    const b = document.querySelector('header.top .jsh-btn').getBoundingClientRect(), out = [];
+    const hit = r => r.width && r.height && !(r.right <= b.left + 1 || r.left >= b.right - 1 || r.bottom <= b.top + 1 || r.top >= b.bottom - 1);
+    document.querySelectorAll('header.top a, header.top button, .jtab a, .jbk a, .jbk-btn, [class*="back"]').forEach(el => {
+      if (el.classList.contains('jsh-btn') || el.closest('.jsh-btn')) return;
+      const s = getComputedStyle(el); if (s.display === 'none' || s.visibility === 'hidden') return;
+      if (hit(el.getBoundingClientRect())) out.push((el.className || el.tagName) + ' ' + (el.innerText || '').trim().slice(0, 12));
+    });
+    return out;
+  });
+  ok(!clash.length, '머리줄 [공유]가 로고·뒤로 가기·로그인·탭과 겹치지 않음' + (clash.length ? ': ' + clash.join(' / ') : ''));
+  const go = page.locator('#homeShare button[data-jsh="home_cta"]');
+  await go.scrollIntoViewIfNeeded();
+  ok(await go.isVisible() && /집예보를 친구에게 알려 주세요/.test(await txt(page, '#homeShare')), "첫 화면 '집예보를 친구에게 알려 주세요' [공유하기] 보임");
+  await go.click(); await sleep(700);
+  const clip = await page.evaluate(() => navigator.clipboard.readText().catch(() => ''));
+  ok(/utm_source=share/.test(clip) && /utm_campaign=home/.test(clip), '[공유하기] → utm_source=share 첫 화면 링크 복사: ' + clip.slice(0, 120));
+  ok(await feedbackNear(page, go, '복사했어요'), "[공유하기] → '복사했어요' 알림");
+  ok(/카카오톡으로 보내기/.test(await txt(page, '#jshToast')) && /카드 이미지 저장/.test(await txt(page, '#jshToast')), '알림에 [카카오톡으로 보내기]·[카드 이미지 저장]');
+  await page.locator('#jshToast button', { hasText: '카카오톡으로 보내기' }).click(); await sleep(500);
+  const ks = await page.evaluate(() => window.__kakaoShare || null);
+  ok(ks && ks.content && /utm_source=share/.test(ks.content.link.webUrl), '[카카오톡으로 보내기] → 카카오 공유(링크에 utm_source=share)');
+  const log = await page.evaluate(() => (window.JDJ_STAT_LOG || []).filter(x => x[0] === 'share_click').map(x => x[1].place + ':' + x[1].method));
+  ok(log.includes('home_cta:copy') && log.includes('home_cta:kakao'), '통계 share_click place=home_cta: ' + log.join(','));
+  const card = await page.evaluate(async () => { const b = await JDJ_SHARE.cardBlob('home', JDJ_SHEAD.HOME_CARD, JDJ_SHEAD.pageLink(location)); const i = await createImageBitmap(b); return i.width + 'x' + i.height; });
+  ok(card === '1080x1080', '첫 화면 소개 카드 이미지 1080×1080');
+  await page.evaluate(() => scrollTo(0, 0)); await sleep(300);
+  await hb.click(); await sleep(600);
+  const log2 = await page.evaluate(() => (window.JDJ_STAT_LOG || []).filter(x => x[0] === 'share_click').map(x => x[1].place));
+  ok(log2.includes('header'), '머리줄 [공유] → share_click place=header');
+  /* 다른 화면: 머리줄 [공유] 하나씩(결과 화면 공용 아이콘과 겹쳐 두 개가 되지 않음) */
+  for (const u of ['mine/', 'rank/', 'apt/11110/', 'weekly/']) {
+    await open(page, u);
+    const n = await page.locator('header.top .jsh-btn').count(), old = await page.locator('header.top .jshare-top').count();
+    ok(n === 1 && old === 0 && await page.locator('header.top .jsh-btn').isVisible(), `${u} 머리줄 [공유] 하나만 보임`);
+    const hs = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    ok(hs <= 0, `${u} 가로 넘침 없음`);
+  }
+  await open(page, 'login/');
+  ok(await page.locator('.jsh-btn').count() === 0, '개인 화면(login/)에는 [공유] 없음');
+  /* 결과가 나온 화면: 머리줄 [공유] → 결과 요약 공유(share.js)로 */
+  await open(page, 'mine/');
+  await page.fill('#q', '헬리오시티'); await sleep(1500);
+  await page.locator('#sres button, #sres li, #sres a').first().click(); await sleep(3000);
+  await page.evaluate(() => scrollTo(0, 0));
+  await page.locator('header.top .jsh-btn').click(); await sleep(600);
+  const chooser = await page.locator('.jshare-ch').count();
+  if (chooser) { await page.locator('.jshare-ch .go').click(); await sleep(700); }
+  const clip2 = await page.evaluate(() => navigator.clipboard.readText().catch(() => ''));
+  ok(/utm_campaign=mine/.test(clip2) && !/[?&](bp|bd)=/.test(clip2), '결과 화면 머리줄 [공유] → 결과 요약 링크(개인값 없음): ' + clip2.replace(/\s+/g, ' ').slice(0, 120));
+};
+
 /* ---------- 실행 ---------- */
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });

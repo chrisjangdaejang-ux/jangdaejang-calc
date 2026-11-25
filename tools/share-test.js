@@ -19,7 +19,7 @@ check('개인값 없음', ['i', 'c', 'd', 'n', 'e', 'bp', 'bd'].filter(k => u.se
 check('공개 값은 남김', u.searchParams.get('sd'), '서울특별시');
 check('유입 집계 utm', [u.searchParams.get('utm_source'), u.searchParams.get('utm_medium'), u.searchParams.get('utm_campaign')], ['share', 'user_share', 'report']);
 check('세금 해시', new URL(SH.link('tax', { hash: 'cgt' })).hash, '#cgt');
-check('10개 화면 이름', Object.keys(SH.TOOLS).sort(), ['ask', 'checklist', 'chungyak', 'jeonse', 'mine', 'rank', 'report', 'switch', 'tax', 'villa']);
+check('10개 화면 + 첫 화면 소개 카드 이름', Object.keys(SH.TOOLS).sort(), ['ask', 'checklist', 'chungyak', 'home', 'jeonse', 'mine', 'rank', 'report', 'switch', 'tax', 'villa']);
 Object.entries(SH.TOOLS).forEach(([k, t]) => check(k + ' 중간 카드 문구', /쉬워지는 집예보$/.test(t.easy) && !!t.try && !!t.label, true));
 
 /* 요약 문장 거르기 */
@@ -97,7 +97,7 @@ Object.entries(pages).forEach(([tool, p]) => {
 /* 통계 */
 const stat = fs.readFileSync(path.join(root, 'assets', 'stat.js'), 'utf8');
 check('통계 이벤트', /share_click:\d+/.test(stat) && /share_visit:\d+/.test(stat), true);
-check('통계 위치·방법', /\['top','mid','bottom'\]/.test(stat) && /'image'/.test(stat), true);
+check('통계 위치·방법', /\['top','mid','bottom','header','home_cta'/.test(stat) && /'image','link','kakao'/.test(stat), true);
 check('통계 공유 방식(mode)', /mode:\s+v => \['summary','detail'\]/.test(stat), true);
 check('공유 유입 감지', /utm_source'\) === 'share'/.test(stat), true);
 /* 캐시 */

@@ -97,3 +97,12 @@
     if (e.target.closest('.seg')) interacted();
   });
 })();
+/* 머리줄 '공유' 단추(assets/share-head.js): 이 파일을 쓰는 모든 화면(자동으로 만든 단지·지역 화면 포함)에 한 번만 붙임.
+   화면에 직접 <script src=".../share-head.js"> 가 있으면 그것을 씀. 주소는 이 파일(track.js) 위치 기준. */
+(function(){ try{
+  if (window.JDJ_SHEAD || document.querySelector('script[src*="share-head.js"]')) return;
+  const me = document.currentScript && document.currentScript.src;
+  if (!me || !/\/assets\/track\.js/.test(me)) return;
+  const s = document.createElement('script'); s.src = me.replace(/track\.js(\?[^#]*)?$/, 'share-head.js?v=1'); s.async = true;
+  (document.head || document.documentElement).appendChild(s);
+}catch(_){} })();

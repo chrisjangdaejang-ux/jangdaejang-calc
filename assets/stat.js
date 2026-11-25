@@ -49,7 +49,7 @@
   const FEATURES = ['buy','report','switch','redev','villa','chungyak','tax','compare','consult','premium','mine','bunyang','ad_apply','price_sheet','agent_chat','jeonse','ad_inquiry','jeonse_checklist','ask'];
   const SPOTS = ['report_top','report_rank','report_near','report_compare','report_leader','switch_top','switch_compare','switch_pick','bunyang_deal','premium','mine'];
   const PAGES = ['home','buy','report','switch','villa','chungyak','tax','agent','calc','mine','bunyang','bunyang_apply','jeonse','ad','ask'];
-  const SHARE_TOOLS = ['chungyak','report','mine','switch','jeonse','checklist','tax','villa','ask'];
+  const SHARE_TOOLS = ['chungyak','report','mine','switch','jeonse','checklist','tax','villa','ask','rank','home','page','brief_card'];   // home·page = 머리줄 '공유' 단추·첫 화면 소개 칸(assets/share-head.js)
   const P = {
     feature:     v => FEATURES.includes(v),
     page:        v => PAGES.includes(v),
@@ -61,9 +61,9 @@
     hold_band:   v => ['2년 이하','3~5년','6~9년','10년 이상'].includes(v),
     home_own:    v => Object.values(OWN).includes(v),
     score_band:  v => /^(80~84점|[0-7]0~[0-7]9점|0~9점)$/.test(v),
-    method:      v => ['share','copy','image'].includes(v),
+    method:      v => ['share','copy','image','link','kakao'].includes(v),                                // link = 휴대폰 공유창으로 링크 · kakao = 카카오톡으로 보내기
     tool:        v => SHARE_TOOLS.includes(v),                                                      // 공유한 결과 화면(assets/share.js)
-    place:       v => ['top','mid','bottom'].includes(v),                                           // 공유 단추 위치: 상단 아이콘·중간 카드·아래 단추
+    place:       v => ['top','mid','bottom','header','home_cta','card'].includes(v),               // 공유 단추 위치: 상단 아이콘·중간 카드·아래 단추·모든 화면 머리줄·첫 화면 소개 칸·중개사 손님 카드
     mode:        v => ['summary','detail'].includes(v),                                             // 공유 방식: 요약(개인 숫자 없음)·가족과 자세히(값 자체는 보내지 않음)
     n:           v => Number.isInteger(v) && v >= 0 && v <= 10,
     danji:       v => /^\d{5}\|[^|]{1,20}\|[^|]{1,60}$/.test(v),                                    // '단지 이름으로 물어보기'로 찾은 공개 단지(구코드|동|단지명)만 — 내 집·주소·금액은 보내지 않음
