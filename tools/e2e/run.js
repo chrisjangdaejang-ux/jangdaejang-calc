@@ -21,7 +21,7 @@ const VIEWS = [{ name: '휴대폰', width: 390, height: 844, mobile: true }, { n
 const PAGES = ['', 'about/', 'terms/', 'privacy/', 'refund/', 'rank/', 'loan/', 'tax/', 'tax/transfer/', 'chungyak/', 'chungyak/price/',
   'map/', 'mine/', 'villa/', 'villa/zone/', 'comm/', 'jeonse/', 'jeonse/checklist/', 'brief/', 'brief/subscribe/', 'brief/manage/', 'brief/c/', 'brief/paid/',
   'my/alerts/', 'my/report/', 'my/watch/', 'track/', 'track/detail/', 'ad/', 'ad/plan/', 'agent/', 'agent/my/', 'agent/listing/', 'agent/content/',
-  'agent/sheet/', 'login/', 'bunyang/', 'bunyang/agency/', 'bunyang/apply/', 'partner/', 'premium/', 'premium/pro/', 'quiz/', 'ask/', 'switch/',
+  'agent/sheet/', 'login/', 'mine/calendar/', 'bunyang/', 'bunyang/agency/', 'bunyang/apply/', 'partner/', 'premium/', 'premium/pro/', 'quiz/', 'ask/', 'switch/',
   'buy/', 'buy/report/', 'press/', 'guide/method/', 'guide/terms/', 'weekly/', 'pro/developer/', 'community/', 'dongne/', 'dongne/my/', 'dongne/terms/', 'dongne/office/'];
 /* 법률 문서(약관·개인정보·환불)는 ~습니다 문장이 정상 */
 const LEGAL = /^(terms|privacy|refund|guide\/terms)\//;
@@ -495,6 +495,80 @@ JOURNEYS.share = async function (page, v) {
   if (chooser) { await page.locator('.jshare-ch .go').click(); await sleep(700); }
   const clip2 = await page.evaluate(() => navigator.clipboard.readText().catch(() => ''));
   ok(/utm_campaign=mine/.test(clip2) && !/[?&](bp|bd)=/.test(clip2), '결과 화면 머리줄 [공유] → 결과 요약 링크(개인값 없음): ' + clip2.replace(/\s+/g, ' ').slice(0, 120));
+};
+
+/* ---------- v54 내 부동산 달력: 로그인 → 내 집에 자가·취득일·주택 수 → 날짜(취득세 기한·재산세 예상)·출처 → 저장(단추 옆 반응·계정 저장 요청) ---------- */
+const E2E_HOME = { sd: 's00', code: '11710', dong: '가락동', jibun: '913', apt: '헬리오시티', band: '84㎡대', bp: null, bd: '', t: '2026-11-20' };
+async function loginAs(page, mock, data) {
+  await page.addInitScript(([h]) => {
+    try { localStorage.setItem('jdj_auth', JSON.stringify({ s: 'e2e0'.repeat(16), nick: '시험회원', exp: '2099-12-31' })); localStorage.setItem('jdj_myhome', JSON.stringify({ v: 1, list: [h] })); } catch (e) {}
+  }, [E2E_HOME]);
+  let saved = Object.assign({ homes: [E2E_HOME] }, data || {});
+  mock.set('userLoad', () => ({ ok: true, nick: '시험회원', data: saved }));
+  mock.set('userSave', b => { saved = b.data; return { ok: true, data: b.data }; });
+}
+const SHOTS = process.env.E2E_SHOT_DIR || '';
+async function shot(page, name, v) { if (!SHOTS) return; fs.mkdirSync(SHOTS, { recursive: true }); await page.evaluate(() => scrollTo(0, 0)); await sleep(300); await page.screenshot({ path: path.join(SHOTS, `${name}_${v.width}.png`), fullPage: false }); }
+JOURNEYS.calendar = async function (page, v, mock) {
+  await loginAs(page, mock, {});
+  await open(page, 'mine/calendar/'); await sleep(2500);
+  ok(/헬리오시티/.test(await txt(page, '#homes')), '달력: 등록한 내 집(헬리오시티)이 보임');
+  ok(/과세기준일|재산세/.test(await txt(page, '#evs')), '달력: 정보를 넣기 전에도 집을 가진 분 모두의 세금 날짜가 보임');
+  await page.locator('#homes .seg button', { hasText: '자가' }).first().click(); await sleep(800);
+  const acq = new Date(Date.now() + 9 * 3600000 - 10 * 864e5).toISOString().slice(0, 10);
+  await page.locator('#homes input[data-f="acq"]').fill(acq); await page.locator('#homes input[data-f="acq"]').dispatchEvent('change'); await sleep(800);
+  await page.locator('#homes button[data-n="1"]').click(); await sleep(3000);
+  const evs = await txt(page, '#evs');
+  ok(/취득세 신고·납부 기한/.test(evs) && /50일 남음/.test(evs), '달력: 취득일을 넣으면 취득세 기한(60일 → 진행 중 · 50일 남음)이 생김');
+  ok(/종합부동산세|재산세/.test(evs) && /출처/.test(evs), '달력: 세금 날짜마다 출처 링크');
+  await page.locator('#flt button', { hasText: '세금' }).click(); await sleep(500);
+  ok(!/계약갱신/.test(await txt(page, '#evs')), "달력: [세금]을 누르면 계약 날짜는 숨김");
+  await page.locator('#flt button', { hasText: '전체' }).click(); await sleep(500);
+  const est = await page.locator('#evs .est').count();
+  ok(est === 0 || /예상 재산세\(참고\)/.test(await txt(page, '#evs .est')), '달력: 예상 재산세는 "참고"로만 표시' + (est ? '' : '(공시가격 자료 없음 — 표시 안 함)'));
+  ok(!/NaN|undefined|null/.test(await txt(page, 'main')), '달력: NaN·undefined 없음');
+  await shot(page, 'calendar', v);
+  const sv = page.locator('#calSave'); await sv.click(); await sleep(1500);
+  ok(await feedbackNear(page, sv, '저장했어요'), '[이대로 저장하기] → 단추 가까이 "저장했어요"');
+  const last = mock.last('userSave');
+  ok(last && last.body.data && last.body.data.cal && Object.values(last.body.data.cal.h)[0].t === 'own' && !JSON.stringify(last.body.data.cal).match(/"(bp|price|amt)"/), '계정 저장 요청에 달력 칸(cal) — 금액 없이');
+  ok(/알림 센터/.test(await txt(page, '#mail')), '메일로 받기: 알림 센터로 가는 길');
+  await open(page, 'my/alerts/'); await sleep(1500);
+  ok(/내 부동산 달력 메일/.test(await txt(page, 'main')), '알림 센터: [내 부동산 달력 메일] 켜기 칸');
+};
+
+/* ---------- v54 예측 맞히기: 첫 화면 카드 → quiz/ 문제(고른 비율·마감) → 로그인 전 안내 → 로그인 뒤 고르기 → 순위·배지·재미용 안내 ---------- */
+JOURNEYS.predict = async function (page, v, mock) {
+  const fb = JSON.parse(fs.readFileSync(path.join(__dirname, 'fallback', 'data', 'quiz', 'week.json'), 'utf8'));
+  const later = new Date(Date.now() + 9 * 3600000 + 3 * 864e5).toISOString().slice(0, 10) + 'T23:59+09:00';
+  const W = Object.assign({}, fb, { open: fb.open.map(q => Object.assign({}, q, { close: later })) });
+  await page.addInitScript(() => { try { if (navigator.serviceWorker) navigator.serviceWorker.register = () => Promise.resolve({}); } catch (e) {} });   // 서비스 워커가 받아 가면 page.route 가 못 바꿈
+  await page.route(/jangdaejang-data\/data\/quiz\/week\.json/, r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(W) }));
+  const q0 = W.open[0];
+  mock.set('quizBoard', { ok: true, v: 1, counts: { [q0.id]: { [q0.opts[0].k]: 12, [q0.opts[1].k]: 8 } }, board: { week: '2026-W48', label: '11/23~11/29 정답이 나온 문제', rows: [{ rank: 1, nick: '집 박사', pts: 25, ok: 2, n: 2 }, { rank: 2, nick: '예측러 E2E0', pts: 10, ok: 1, n: 2 }] }, n: 20 });
+  await open(page, ''); await sleep(2500);
+  ok(await page.locator('#pqCard').isVisible() && /이번 주 예측 맞히기/.test(await txt(page, '#pqCard')), '첫 화면: 작은 카드 "이번 주 예측 맞히기"');
+  await open(page, 'quiz/'); await sleep(2500);
+  ok(/카카오 간편 로그인하고 예측하기/.test(await txt(page, '#pqMe')), '로그인 전: 예측은 로그인 뒤에 남긴다는 안내·단추');
+  ok(await page.locator('#pqOpen .pc').count() === W.open.length, `받는 문제 ${W.open.length}개가 보임`);
+  ok(/60%/.test(await txt(page, '#pqOpen .pc')) && /40%/.test(await txt(page, '#pqOpen .pc')), '고른 사람 비율(12:8 → 60%·40%)');
+  ok(/마감/.test(await txt(page, '#pqOpen .pc .kd')), '문제마다 마감 시각');
+  ok(/포인트는 재미용이며 현금이나 상품으로 바꿀 수 없어요/.test(await txt(page, '#predict')), "'포인트는 재미용이며 현금이나 상품으로 바꿀 수 없어요' 문구");
+  ok(/집 박사/.test(await txt(page, '#pqBoard')), '이번 주 순위(별명만)');
+  ok(await page.locator('#pqDone .pc').count() >= 1 && /정답은/.test(await txt(page, '#pqDone')), '지난 결과: 정답과 근거');
+  /* 로그인 뒤 */
+  await loginAs(page, mock, {});
+  mock.set('quizAnswer', b => ({ ok: true, answers: [{ id: b.id, k: b.k }], counts: { [b.k]: 13 } }));
+  await open(page, 'quiz/'); await sleep(2500);
+  ok(/내 포인트/.test(await txt(page, '#pqMe')) && /별명/.test(await txt(page, '#pqMe')), '로그인 뒤: 내 포인트·연속 적중·별명');
+  const b0 = page.locator('#pqOpen .pc').first().locator('.ops button').first();
+  await b0.click(); await sleep(1200);
+  const la = mock.last('quizAnswer');
+  ok(la && la.body.id === q0.id && la.body.k === q0.opts[0].k, '보기를 누르면 서버에 그 문제·보기로 답함');
+  ok(/✓/.test(await page.locator('#pqOpen .pc').first().locator('.ops button').first().innerText()) && /다시 고를 수 있어요/.test(await txt(page, '#pqOpen .pc')), '고른 보기에 ✓ · 마감 전 다시 고를 수 있다는 안내');
+  ok(await page.locator('#pqBadges .bgs span').count() === 7, '배지 7개가 보임(아직 못 받은 것은 흐리게)');
+  ok(!/NaN|undefined/.test(await txt(page, 'main')), '예측 화면: NaN·undefined 없음');
+  await shot(page, 'quiz', v);
 };
 
 /* ---------- 실행 ---------- */

@@ -23,7 +23,7 @@
     'bunyang/': ['분양'], 'bunyang/agency/': ['분양대행 의뢰', 'bunyang/'], 'bunyang/apply/': ['분양 광고 신청', 'bunyang/'], 'partner/': ['분양 판매 파트너', 'bunyang/'],
     'tax/': ['세금'], 'tax/transfer/': ['넘기는 방법 비교', 'tax/'],
     'loan/': ['대출 한도'],
-    'mine/': ['내 집 시세'], 'map/': ['지도'], 'ask/': ['단지 비교'], 'rank/': ['주간 순위'],
+    'mine/': ['내 집 시세'], 'mine/calendar/': ['내 부동산 달력', 'mine/'], 'map/': ['지도'], 'ask/': ['단지 비교'], 'rank/': ['주간 순위'],
     'jeonse/': ['전월세'], 'jeonse/checklist/': ['전세사기 예방 체크리스트', 'jeonse/'], 'jeonse/safety/draft/': ['전셋집 안전 진단', 'jeonse/'],
     'quiz/': ['집값 맞혀 보기'],
     'track/': ['예측 적중 기록'], 'track/detail/': ['성적표', 'track/'],

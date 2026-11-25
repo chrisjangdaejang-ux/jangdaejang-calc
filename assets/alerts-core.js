@@ -53,7 +53,7 @@ function axCleanPrefs(x) {
   if (lo != null && hi != null && lo > hi) { const t = lo; lo = hi; hi = t; }
   const ck = c.kinds && typeof c.kinds === 'object' ? c.kinds : {}, cyk = {};
   Object.keys(AX_CY_KINDS).forEach(q => { cyk[q] = ck[q] !== false; });
-  return { kinds: kinds, mute: mute, cy: { on: c.on === true && regions.length > 0, regions: regions, nohome: c.nohome === true ? true : c.nohome === false ? false : null, lo: lo, hi: hi, kinds: cyk }, rp: x.rp === true };
+  return { kinds: kinds, mute: mute, cy: { on: c.on === true && regions.length > 0, regions: regions, nohome: c.nohome === true ? true : c.nohome === false ? false : null, lo: lo, hi: hi, kinds: cyk }, rp: x.rp === true, cal: x.cal === true };
 }
 
 /* ---------- 관심 단지 한 곳의 알림 ----------

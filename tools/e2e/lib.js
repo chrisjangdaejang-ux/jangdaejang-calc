@@ -31,7 +31,11 @@ function defaultReplies() {
     briefUpdate: { ok: true },
     adList: { ok: true, ads: [] },
     leadCreate: { ok: true, id: 'L-E2E' },
-    log: { ok: true }
+    log: { ok: true },
+    quizBoard: { ok: true, v: 1, counts: {}, board: { week: '', label: '', rows: [] }, n: 0 },
+    quizMine: { ok: true, nick: '예측러 E2E0', answers: [], score: { pts: 0, n: 0, ok: 0, streak: 0, best: 0, hist: [], badges: [] } },
+    quizAnswer: { ok: true, answers: [], counts: {} },
+    quizNick: { ok: true, nick: '집 박사' }
   };
 }
 function makeMock() {

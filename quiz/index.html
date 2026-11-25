@@ -12,9 +12,9 @@
 <meta name="apple-mobile-web-app-title" content="집예보">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="../assets/pwa.js?v=2" defer></script>
-<title>집값 맞혀 보기 — 하루 한 문제 | 집예보</title>
+<title>집값 맞혀 보기 — 이번 주 예측 · 하루 한 문제 | 집예보</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/quiz/">
-<meta name="description" content="최근 실제로 거래된 아파트 한 곳, 얼마에 거래됐을까요? 하루 한 문제를 맞혀 보고 같은 단지 다른 거래와 비교한 쉬운 설명까지 확인해 보세요.">
+<meta name="description" content="이번 주 서울 아파트값은 오를까요? 공개 자료로 결과가 나오는 주간 예측 문제와, 실제 거래 금액을 맞히는 하루 한 문제를 풀어 보세요. 포인트는 재미용이에요.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="집예보">
 <meta property="og:title" content="집값 맞혀 보기 — 하루 한 문제">
@@ -31,7 +31,8 @@
 <script src="../assets/auth.js?v=10"></script>
 <script src="../assets/share.js?v=13"></script>
 <script src="../assets/quiz-core.js?v=1"></script>
-<script src="../assets/alerts-core.js?v=2"></script>
+<script src="../assets/predict-core.js?v=1"></script>
+<script src="../assets/alerts-core.js?v=3"></script>
 <script src="../assets/watch-core.js?v=2"></script>
 <script src="../assets/watch.js?v=8"></script>
 <script src="../assets/tabbar.js?v=5" defer></script>
@@ -77,6 +78,51 @@ h1{font-size:clamp(26px,6.6vw,32px);margin:2px 0 6px;letter-spacing:-.6px}
 .next{margin:10px 0 0;font-size:14px;color:var(--sub2);text-align:center}
 .note{margin:16px 0 0;font-size:13px;color:var(--sub2);line-height:1.6}
 .empty{padding:22px 18px;border-radius:18px;border:1px dashed var(--line);text-align:center;color:var(--sub);line-height:1.65}
+.pq{margin:0 0 26px}
+.pq h2{font-size:clamp(21px,5.4vw,24px);font-weight:900;letter-spacing:-.5px;margin:0 0 4px}
+.pq .sub{margin:0 0 12px;font-size:14.5px;color:var(--sub2);line-height:1.6;word-break:keep-all}
+.me{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 10px}
+.me div{border-radius:14px;background:var(--creamc);border:1px solid var(--creamb);padding:10px 6px;text-align:center}
+.me b{display:block;font-size:22px;font-weight:900;color:#8A6A12;font-variant-numeric:tabular-nums}
+.me small{font-size:12.5px;color:var(--sub2)}
+.nk{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:0 0 12px;font-size:14.5px;color:var(--sub)}
+.nk button,.lnkb{font:inherit;font-size:14px;font-weight:800;color:var(--blue);background:none;border:0;min-height:44px;padding:0 4px;cursor:pointer;text-decoration:underline}
+.nkf{display:flex;gap:8px;margin:0 0 12px}
+.nkf input{flex:1;min-width:0;min-height:48px;border:1px solid var(--line);border-radius:12px;padding:0 12px;font:inherit;font-size:16px}
+.nkf button{flex:none;min-height:48px;padding:0 16px;border:0;border-radius:12px;background:var(--blue);color:#fff;font:inherit;font-weight:900;cursor:pointer}
+.pc{border:1px solid var(--line);border-radius:18px;padding:16px;margin:0 0 12px;background:#fff;box-shadow:0 2px 8px rgba(25,31,40,.04)}
+.pc .kd{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:800;color:#8A6A12;margin:0 0 4px}
+.pc .kd span:last-child{color:var(--sub2);font-weight:700}
+.pc h3{margin:0 0 6px;font-size:18.5px;font-weight:900;line-height:1.4;word-break:keep-all}
+.pc .ex{margin:0 0 10px;font-size:14px;color:var(--sub2);line-height:1.6;word-break:keep-all}
+.pc .ops{display:grid;gap:8px}
+.pc .ops.two{grid-template-columns:1fr 1fr}
+.pc .ops button{position:relative;overflow:hidden;min-height:56px;border-radius:14px;border:2px solid var(--line);background:#fff;font:inherit;font-size:16.5px;font-weight:900;color:var(--text);cursor:pointer;padding:6px 12px;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:6px}
+.pc .ops button:disabled{cursor:default}
+.pc .ops button .bar{position:absolute;left:0;top:0;bottom:0;background:var(--blue-l);z-index:0;transition:width .3s}
+.pc .ops button>span{position:relative;z-index:1}
+.pc .ops button small{position:relative;z-index:1;font-size:13px;font-weight:800;color:var(--sub2);white-space:nowrap}
+.pc .ops button[aria-pressed=true]{border-color:var(--blue)}
+.pc .ops button.ok{border-color:#0E7A4F}.pc .ops button.ok .bar{background:#E6F5EE}
+.pc .ops button.no{border-color:#C2410C}
+.pc .ai{margin:10px 0 0;padding:8px 10px;border-radius:10px;background:var(--gray2);font-size:14px;color:var(--sub)}
+.pc .rs{margin:10px 0 0;font-size:14.5px;line-height:1.6;color:var(--sub)}
+.pc .rs b{color:var(--text)}
+.pc .sr{margin:8px 0 0;font-size:12.5px;color:var(--sub2);line-height:1.55;overflow-wrap:anywhere}
+.pc .sr a{color:var(--sub2)}
+.pc .pm{margin:8px 0 0;font-size:14px;font-weight:700;color:#0E7A4F}
+.pq .h3{font-size:16.5px;font-weight:900;margin:18px 0 8px}
+.bd{width:100%;border-collapse:collapse;font-size:15px;font-variant-numeric:tabular-nums}
+.bd th,.bd td{padding:9px 6px;border-bottom:1px solid var(--line2);text-align:right}
+.bd th:nth-child(2),.bd td:nth-child(2){text-align:left}
+.bd th{font-size:13px;color:var(--sub2);font-weight:700}
+.bd tr.mine td{background:var(--creamc);font-weight:800}
+.bgs{display:flex;flex-wrap:wrap;gap:6px}
+.bgs span{display:inline-flex;align-items:center;min-height:36px;padding:0 12px;border-radius:999px;font-size:13.5px;font-weight:800;border:1px solid var(--line);color:var(--sub2);background:#fff}
+.bgs span.on{border-color:#E4CF8F;background:#FBF3DC;color:#8A6A12}
+.fun{margin:12px 0 0;padding:10px 12px;border-radius:12px;background:var(--gray2);font-size:14px;font-weight:700;color:var(--sub);line-height:1.55}
+.qhd{font-size:clamp(21px,5.4vw,24px);font-weight:900;letter-spacing:-.5px;margin:0 0 4px}
+@media(min-width:900px){.wrap{max-width:1040px}.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,440px);gap:28px;align-items:start}}
 </style>
 <script src="../assets/back.js?v=1" defer></script>
 </head>
@@ -86,11 +132,30 @@ h1{font-size:clamp(26px,6.6vw,32px);margin:2px 0 6px;letter-spacing:-.6px}
   <div class="badge plain">집값 맞혀 보기</div>
 </header>
 <main class="wrap">
-  <p class="eye">하루 한 문제</p>
+  <p class="eye">이번 주 예측 · 하루 한 문제</p>
   <h1>집값 맞혀 보기</h1>
-  <p class="lead">최근 실제로 거래된 아파트 한 곳이에요. 얼마에 거래됐을지 보기에서 골라 보세요.</p>
+  <p class="lead">공개 자료로 결과가 나오는 이번 주 예측 문제와, 실제 거래 금액을 맞히는 하루 한 문제가 있어요.</p>
+  <div class="cols">
+  <section class="pq" id="predict" aria-labelledby="pqT">
+    <h2 id="pqT">이번 주 예측 맞히기</h2>
+    <p class="sub">한국부동산원 주간 아파트값, 인기 단지 실거래, 청약 경쟁률처럼 곧 발표되는 공개 숫자를 미리 골라 보세요. 결과가 나오면 맞혔는지 바로 알려 드려요.</p>
+    <div id="pqMe"></div>
+    <div id="pqOpen" aria-live="polite"><p class="note">문제를 불러오고 있어요…</p></div>
+    <div id="pqWait"></div>
+    <div id="pqDone"></div>
+    <div id="pqBoard"></div>
+    <div id="pqBadges"></div>
+    <p class="fun">포인트는 재미용이며 현금이나 상품으로 바꿀 수 없어요.</p>
+    <p class="note">문제와 정답은 공개 자료로만 정해요. 한국부동산원 주간 아파트 매매가격지수(목요일 발표), 국토교통부 아파트 매매 실거래가(계약 뒤 30일 신고 기한이 지난 뒤), 청약홈 청약접수 경쟁률을 써요. 보합·같은 값·거래 없음처럼 정답을 정할 수 없으면 무효로 하고, 포인트와 연속 기록에는 영향이 없어요. 맞히면 10점, 세 번 연속 맞힐 때부터 한 번마다 5점을 더해요. 순위에는 직접 정한 별명만 보여요. 만든 문제와 정한 정답은 아래 '문제·정답 기록'에 그대로 남겨요.</p>
+    <details class="note" id="pqAudit"><summary style="min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:800;color:var(--sub)">문제·정답 기록 보기</summary><div id="pqAuditBody"></div></details>
+  </section>
+  <section aria-labelledby="dqT">
+  <h2 class="qhd" id="dqT">하루 한 문제</h2>
+  <p class="lead" style="margin-bottom:12px">최근 실제로 거래된 아파트 한 곳이에요. 얼마에 거래됐을지 보기에서 골라 보세요.</p>
   <div id="app" aria-live="polite"><p class="note">문제를 불러오고 있어요…</p></div>
-  <p class="note">문제는 국토교통부 아파트 매매 실거래가 공개 자료에서 최근 두 달 안 실제 거래로 하루 한 번 골라요(직거래·같은 단지 주변 거래와 12% 넘게 다른 거래는 뺌). 맞힌 기록은 이 기기에만 남고 서버로 보내지 않아요. 상품이나 혜택은 없어요.</p>
+  <p class="note">문제는 국토교통부 아파트 매매 실거래가 공개 자료에서 최근 두 달 안 실제 거래로 하루 한 번 골라요(직거래·같은 단지 주변 거래와 12% 넘게 다른 거래는 뺌). 하루 한 문제 기록은 이 기기에만 남고 서버로 보내지 않아요. 상품이나 혜택은 없어요.</p>
+  </section>
+  </div>
 </main>
 <footer class="foot">과거 데이터 기반 정보예요. 자세한 분석 방법은 <a href="../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ <span data-site-name>집예보</span> · <a href="../">홈</a></footer>
 <script>
@@ -156,6 +221,108 @@ fetch(DATA + 'today/quiz.json', {cache: 'no-cache'}).then(r => r.ok ? r.json() :
   if (!j || !j.q || j.date !== today){ $('app').innerHTML = `<div class="empty"><b>오늘 문제를 준비하고 있어요.</b><br>새 실거래 자료가 올라오면 문제가 나와요. 잠시 뒤에 다시 들러 주세요.</div>`; return; }
   Q = j; draw();
 });
+})();
+</script>
+<script>
+/* 이번 주 예측 맞히기(v54) — 문제·정답: 공개 data/quiz/week.json(엔진 predict_quiz.py) · 답·포인트·순위: 서버(agent-backend.gs quiz*) · 계산: assets/predict-core.js */
+(function(){
+'use strict';
+const P = window.JDJ_PRED_CORE, AU = window.JDJ_AUTH || null, W = window.JDJ_WATCH || null, $ = id => document.getElementById(id);
+if (!P) return;
+const DATA = JB.DATA + 'data/', esc = P.esc, SITE = ((window.JDJ_SITE || {}).SITE_NAME || '').trim() || '집예보';
+const stat = (n, p) => { try { if (window.jdjStat) jdjStat(n, p || {}); } catch (e) {} };
+const nowK = () => new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 16) + '+09:00';
+const loggedIn = () => !!(AU && AU.on() && AU.user());
+let WK = null, PUB = null, ME = null, BUSY = false;
+function call(action, body){
+  const api = W && W.apiUrl ? W.apiUrl() : '', s = loggedIn() && W && W.tok ? W.tok() : '';
+  if (!api) return Promise.reject(new Error('잠시 뒤 다시 시도해 주세요.'));
+  return fetch(api, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify(Object.assign({action, s}, body || {}))})
+    .then(r => r.json()).then(j => { if (j && j.err === 'unknown') { const e = new Error('곧 열려요'); e.wait = true; throw e; } if (!j || !j.ok) throw new Error(/[가-힣]/.test((j && j.err) || '') ? j.err : '잠시 뒤 다시 시도해 주세요.'); return j; });
+}
+const md = s => { s = String(s || ''); return s.length >= 10 ? `${+s.slice(5, 7)}월 ${+s.slice(8, 10)}일` : ''; };
+const closeTxt = c => { const d = String(c || ''); const hm = d.slice(11, 16); return `${md(d)} ${hm === '23:59' ? '밤 12시' : hm}`; };
+const pick = id => ME && ME.answers ? (ME.answers.find(a => a.id === id) || {}).k : undefined;
+const cnt = id => (PUB && PUB.counts && PUB.counts[id]) || {};
+function opsHtml(q, mode){
+  const mine = pick(q.id), sh = P.share(q.opts, cnt(q.id)), tot = sh.reduce((a, r) => a + r.n, 0);
+  return `<div class="ops${q.opts.length === 2 ? ' two' : ''}" role="group" aria-label="보기">${sh.map(o => {
+    const cls = mode === 'done' && q.st === 'done' ? (o.k === q.ans ? ' ok' : mine === o.k ? ' no' : '') : '';
+    return `<button type="button" data-q="${esc(q.id)}" data-k="${esc(o.k)}" aria-pressed="${mine === o.k}" class="${cls.trim()}"${mode !== 'open' ? ' disabled' : ''}><i class="bar" style="width:${tot ? o.pct : 0}%"></i><span>${esc(o.t)}${mine === o.k ? ' ✓' : ''}</span><small>${tot ? o.pct + '%' : ''}</small></button>`; }).join('')}</div>
+    <p class="sr">${tot ? `참여 ${tot.toLocaleString('ko-KR')}명이 고른 비율이에요.` : '아직 고른 분이 없어요. 첫 예측을 남겨 보세요.'}${mine != null && mode === 'open' ? ' 마감 전까지 다시 고를 수 있어요.' : ''}</p>`;
+}
+function srcHtml(q){ return q.src ? `<p class="sr">출처: ${q.src.url ? `<a href="${esc(q.src.url)}" target="_blank" rel="noopener">${esc(q.src.nm)}</a>` : esc(q.src.nm)}${q.u ? ` · <a href="${esc(q.u)}" target="_blank" rel="noopener">청약홈 공고</a>` : ''}</p>` : ''; }
+function card(q, mode){
+  const mine = pick(q.id), H = ME && ME.score ? (ME.score.hist || []).find(x => x.id === q.id) : null;
+  return `<article class="pc" aria-label="${esc(q.t)}"><div class="kd"><span>${esc(P.KIND[q.kind] || '예측')}</span><span>${mode === 'open' ? esc(closeTxt(q.close)) + ' 마감' : mode === 'wait' ? '마감 · 발표 기다리는 중' : '결과 ' + esc(md(q.rat))}</span></div>
+    <h3>${esc(q.t)}</h3><p class="ex">${esc(q.s)}</p>${opsHtml(q, mode)}
+    ${q.ai ? `<p class="ai"><b>${esc(SITE)} 예측</b> ${esc(q.ai)}</p>` : ''}
+    ${mode === 'wait' ? `<p class="rs">${mine != null ? `내 예측: <b>${esc((q.opts.find(o => o.k === mine) || {}).t || '')}</b>. ` : ''}결과가 나오면 맞혔는지 바로 알려 드려요.</p>` : ''}
+    ${mode === 'done' ? `<p class="rs">${esc(P.resultLine(q, mine))}</p>${H && H.pts ? `<p class="pm">+${H.pts}점 받았어요</p>` : ''}` : ''}
+    ${srcHtml(q)}</article>`;
+}
+function drawMe(){
+  const el = $('pqMe');
+  if (!loggedIn()) {
+    el.innerHTML = AU && AU.gate ? AU.gate('예측은 카카오 간편 로그인 뒤에 남길 수 있어요. 포인트·연속 적중·배지가 내 계정에 쌓여요.', '카카오 간편 로그인하고 예측하기', 'quiz_predict') : '';
+    return;
+  }
+  if (!ME) { el.innerHTML = ''; return; }
+  const S = ME.score || { pts: 0, ok: 0, n: 0, streak: 0 };
+  el.innerHTML = `<div class="me"><div><b>${S.pts.toLocaleString('ko-KR')}</b><small>내 포인트</small></div><div><b>${S.streak}</b><small>연속 적중</small></div><div><b>${S.ok}/${S.n}</b><small>맞힌 예측</small></div></div>
+    <div class="nk"><span>순위에 보이는 별명: <b>${esc(ME.nick || '')}</b></span><button type="button" id="nkEdit">별명 바꾸기</button></div><div id="nkBox"></div>`;
+  $('nkEdit').onclick = () => {
+    $('nkBox').innerHTML = `<div class="nkf"><input id="nkIn" maxlength="10" value="${esc(ME.nick || '')}" aria-label="새 별명(2~10자)"><button type="button" id="nkSave">저장</button></div><p class="sr" id="nkMsg" role="status">한글·영문·숫자 2~10자. 실명이나 연락처는 넣지 말아 주세요.</p>`;
+    $('nkSave').onclick = () => {
+      const v = P.nick($('nkIn').value); if (!v) { $('nkMsg').textContent = '한글·영문·숫자 2~10자로 적어 주세요(네 자리 넘는 숫자·운영자처럼 보이는 이름은 쓸 수 없어요).'; return; }
+      call('quizNick', { nick: v }).then(j => { ME.nick = j.nick; drawMe(); drawBoard(); }).catch(e => { $('nkMsg').textContent = e.message; });
+    };
+  };
+}
+function drawQs(){
+  const now = nowK(), open = (WK.open || []).filter(q => P.isOpen(q, now)), wait = (WK.wait || []).concat((WK.open || []).filter(q => !P.isOpen(q, now)));
+  $('pqOpen').innerHTML = open.length ? open.map(q => card(q, 'open')).join('') : `<div class="empty"><b>지금 받는 문제가 없어요.</b><br>새 문제는 매주 금요일 아침(한국부동산원 발표 다음 날)에 나와요.</div>`;
+  $('pqWait').innerHTML = wait.length ? `<p class="h3">발표를 기다리는 문제</p>` + wait.map(q => card(q, 'wait')).join('') : '';
+  const done = (WK.done || []).slice(0, 6);
+  $('pqDone').innerHTML = done.length ? `<p class="h3">지난 결과</p>` + done.map(q => card(q, 'done')).join('') : '';
+  document.querySelectorAll('#pqOpen .ops button').forEach(b => { b.onclick = () => answer(b.dataset.q, b.dataset.k, b); });
+}
+function answer(id, k, btn){
+  if (!loggedIn()) { if (AU && AU.login) AU.login('quiz_predict'); return; }
+  if (BUSY) return; BUSY = true;
+  call('quizAnswer', { id, k }).then(j => {
+    ME = Object.assign(ME || {}, { answers: j.answers || [] }); if (j.counts) { PUB = PUB || { counts: {} }; PUB.counts[id] = j.counts; }
+    stat('feature_use', { feature: 'predict_answer', kind: (id.split('-')[0]) });
+    drawQs();
+  }).catch(e => { const p = btn.closest('.pc'); let m = p.querySelector('.err'); if (!m) { m = document.createElement('p'); m.className = 'rs err'; m.setAttribute('role', 'alert'); p.appendChild(m); } m.textContent = e.wait ? '예측 맞히기는 곧 열려요. 조금만 기다려 주세요.' : e.message; })
+    .finally(() => { BUSY = false; });
+}
+function drawBoard(){
+  const B = PUB && PUB.board;
+  if (!B || !B.rows) { $('pqBoard').innerHTML = ''; return; }
+  const myNick = ME && ME.nick;
+  $('pqBoard').innerHTML = `<p class="h3">이번 주 순위 <span style="font-size:13px;font-weight:500;color:var(--sub2)">${esc(B.label || '')}</span></p>` + (B.rows.length
+    ? `<table class="bd"><thead><tr><th>순위</th><th>별명</th><th>맞힘</th><th>포인트</th></tr></thead><tbody>${B.rows.map(r => `<tr${r.nick === myNick ? ' class="mine"' : ''}><td>${r.rank}</td><td>${esc(r.nick)}</td><td>${r.ok}/${r.n}</td><td>${r.pts}</td></tr>`).join('')}</tbody></table>`
+    : `<p class="sr">이번 주에 결과가 나온 예측이 아직 없어요. 결과가 나오면 순위가 생겨요.</p>`);
+}
+function drawBadges(){
+  const got = (ME && ME.score && ME.score.badges) || [];
+  $('pqBadges').innerHTML = `<p class="h3">배지</p><div class="bgs">${P.BADGES.map(b => `<span class="${got.indexOf(b.id) >= 0 ? 'on' : ''}" title="${esc(b.s)}">${got.indexOf(b.id) >= 0 ? '★ ' : ''}${esc(b.t)}</span>`).join('')}</div>`;
+}
+function drawAudit(rows){
+  const ev = { create: '문제 만듦', resolve: '정답 정함', void: '무효' };
+  $('pqAuditBody').innerHTML = rows && rows.length ? `<ul style="padding-left:18px;margin:6px 0 0">${rows.slice(-20).reverse().map(r => `<li>${esc(String(r.at || '').slice(0, 16).replace('T', ' '))} · ${esc(ev[r.ev] || r.ev)} · ${esc(r.t || r.id)}${r.why ? ' — ' + esc(r.why) : ''}</li>`).join('')}</ul>` : '<p>아직 기록이 없어요.</p>';
+}
+async function load(){
+  WK = await fetch(DATA + 'quiz/week.json', {cache: 'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null);
+  if (!WK) { $('pqOpen').innerHTML = `<div class="empty"><b>이번 주 문제를 준비하고 있어요.</b><br>새 문제는 매주 금요일 아침에 나와요. 잠시 뒤 다시 들러 주세요.</div>`; drawMe(); drawBadges(); return; }
+  const [pub, me] = await Promise.all([call('quizBoard').catch(() => null), loggedIn() ? call('quizMine').catch(() => null) : null]);
+  PUB = pub; ME = me;
+  drawMe(); drawQs(); drawBoard(); drawBadges();
+  $('pqAudit').addEventListener('toggle', () => { if ($('pqAudit').open && !$('pqAuditBody').dataset.ok) { $('pqAuditBody').dataset.ok = 1; fetch(DATA + 'quiz/log.json', {cache: 'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null).then(j => drawAudit(j && j.rows)); } });
+}
+if (AU && AU.onChange) AU.onChange(() => { load(); });
+load();
 })();
 </script>
 </body>

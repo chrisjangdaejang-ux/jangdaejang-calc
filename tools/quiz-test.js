@@ -68,7 +68,7 @@ const page = fs.readFileSync(path.join(__dirname, '..', 'quiz', 'index.html'), '
 const vis = page.replace(/<script[\s\S]*?<\/script>/g, '').replace(/<style[\s\S]*?<\/style>/g, '').replace(/<[^>]+>/g, ' ');
 check('화면 금지어(시험·검증·채점) 없음', ['시험', '검증', '채점'].filter(w => page.includes(w)), [], '');
 check('화면에 직접 써 넣은 금액 없음', /\d+억|\d+만 원/.test(vis), false, '숫자는 자료에서만');
-check('상품·포인트 없음', /포인트|경품|상금|적립/.test(page), false, '');
+check('상품·경품 없음(예측 맞히기 포인트는 재미용 안내와 함께만)', /경품|상금|적립/.test(page) || (/포인트/.test(page) && !page.includes('포인트는 재미용이며 현금이나 상품으로 바꿀 수 없어요')), false, '');
 check('공유는 링크 먼저(JDJ_SHARE.sendLink)', /sendLink\(/.test(page), true, '');
 check('공유 글에 정답 금액 없음', /text:[^\n]*won\(/.test(page), false, '');
 check('서비스 이름은 SITE_NAME 에서', /SITE_NAME/.test(page), true, '');

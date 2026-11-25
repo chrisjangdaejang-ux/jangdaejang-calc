@@ -45,8 +45,16 @@ function rpCard(p, R) {
     rank: u[1] ? { r: u[1], n: u[4], same: u[5] === 1, r0: q && q[1] ? q[1] : null } : null,
     fv: u[2] != null ? { v: cap(u[2]), v0: q && q[2] != null ? cap(q[2]) : null, sr: u[7] || null } : null,
     jr: u[3] != null ? { v: u[3], v0: q && q[3] != null ? q[3] : null, line: RP_JR_LINES.find(L => u[3] >= L) || 0 } : null,
-    trades: (u[8] || []).map(rpTrade), wk: wk, near: near
+    trades: (u[8] || []).map(rpTrade), wk: wk, near: near,
+    hit: rpHit((R.lw || {})[rpKey(p)], (R.ht || {})[rpKey(p)], R.hitp, q && q[0] ? q[0] : null)
   };
+}
+/** v54 지난번 예측 → 실제: lw = [[계약일, 층, 금액, 비교 값, 차이 %, 적중 1/0], …], ht = [비교한 거래 수, 적중 수], pv = 지난 성적표 시세. 둘 다 없으면 null */
+function rpHit(lw, ht, pct, pv) {
+  const rows = (Array.isArray(lw) ? lw : []).filter(r => Array.isArray(r) && r[2] > 0 && r[3] > 0).map(r => ({ dt: r[0], f: r[1], p: r[2], est: r[3], e: Number(r[4]), ok: r[5] === 1 }));
+  const n = Array.isArray(ht) ? Math.max(0, Number(ht[0]) || 0) : 0, k = Array.isArray(ht) ? Math.max(0, Number(ht[1]) || 0) : 0;
+  if (!rows.length && !n) return null;
+  return { rows: rows, n: n, k: k, pct: Number(pct) || 5, pv: pv };
 }
 /** 차이 글자: 지난 성적표 값이 있을 때만 */
 function rpDiff(v, v0, unit) {
@@ -79,6 +87,14 @@ function rpLines(c, gname) {
     s: `${rpYm(c.price.at)}까지 3개월 동안 이 단지·이 평형의 ${c.price.ar ? `전용 ${c.price.ar}㎡(내가 고른 면적)` : '같은 전용면적'} 실거래 3.3㎡당 값 중간값으로 계산했어요(같은 면적 거래가 모자라면 다른 면적 거래를 이 면적 값으로 맞춰 함께 써요).` });
   const tr = c.trades.slice(0, 3).map(t => `${rpMd(t.dt)} ${t.f != null ? t.f + '층 ' : ''}${rpWon(t.p)}${t.hi ? '(신고가)' : ''}${t.x ? '(직거래)' : ''}`);
   out.push({ k: 'trade', h: '최근 실거래', t: tr.length ? tr.join(' · ') : '최근 3년 거래가 없어요', s: '계약일 · 층 · 금액이에요. 국토교통부 실거래 신고 자료 그대로예요.' });
+  if (c.hit) {
+    const H = c.hit, sg = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(1) + '%';
+    const t = H.rows.length ? `지난번 시세 ${rpWon(H.pv || H.rows[0].est)} → 실제 거래 ${H.rows.slice(0, 3).map(r => `${rpWon(r.p)}(${sg(r.e)})`).join(' · ')}`
+      : '지난 성적표 뒤 이 평형에 새로 신고된 거래가 없어요';
+    out.push({ k: 'hit', h: '지난번 예측 → 실제', t: t,
+      s: (H.n ? `차이가 ±${H.pct}% 안이면 적중으로 셌어요. 지금까지 ${H.n.toLocaleString('en-US')}건 중 ${H.k.toLocaleString('en-US')}건 적중(${Math.round(H.k / H.n * 100)}%). ` : '')
+        + '지난 성적표의 시세를 거래된 집의 전용면적에 맞춰 비교했어요. 층·향·수리 상태에 따라 실제 값은 달라요(직거래는 뺐어요).' });
+  }
   if (c.rank) out.push({ k: 'rank', h: '동네 순위', t: `${c.p.dong} ${c.rank.same ? '같은 평형대 ' : ''}아파트 ${c.rank.n}곳 중 ${c.rank.r}위` + (c.rank.r0 ? ` · ${rpDiff(c.rank.r, c.rank.r0, '위')}` : ''),
     s: '최근 3.3㎡당 실거래 값이 높은 순서예요.' });
   if (c.fv) out.push({ k: 'fv', h: '미래가치 점수', t: `${c.fv.v}점` + (c.fv.v0 != null ? ` · ${rpDiff(c.fv.v, c.fv.v0, '점')}` : '') + (c.fv.sr ? ` · 시·도 안 ${Number(c.fv.sr).toLocaleString('en-US')}위` : ''),

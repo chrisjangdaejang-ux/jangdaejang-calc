@@ -48,7 +48,7 @@
 <script src="assets/brief-core.js?v=12" defer></script>
 <script src="assets/today-core.js?v=1" defer></script>
 <script src="assets/quiz-core.js?v=1" defer></script>
-<script src="assets/alerts-core.js?v=2" defer></script>
+<script src="assets/alerts-core.js?v=3" defer></script>
 <script src="assets/watch-core.js?v=2" defer></script>
 <script src="assets/watch.js?v=8" defer></script>
 <script src="assets/dongne-core.js?v=2" defer></script>
@@ -243,6 +243,7 @@
 .wrow b,.qz b{display:block;font-size:16px;font-weight:900;line-height:1.35}.wrow small,.qz small{display:block;font-size:13.5px;color:var(--sub2);line-height:1.5;word-break:keep-all}
 .wrow .nw{color:#C2410C}.wrow .go,.qz .go{margin-left:auto;flex:none;font-size:22px;font-weight:800;color:var(--blue)}
 .qz{border:1.5px solid var(--blue);background:#fff}
+.qz.pqc{border-color:var(--creamb);background:var(--creamc)}.qz.pqc .ic{background:#fff;color:#8A6A12}
 @media(max-width:380px){.pl-hd{padding:14px 12px 8px}.pl-body{padding:6px 12px 12px}.pl-sz{padding:10px 12px 2px}.pl-tabs{margin:0 8px}.pl-tabs button{font-size:13.5px}.pl-v svg{width:40px}.pl-list a{grid-template-columns:22px minmax(0,1fr) auto;gap:2px 8px}.pl-num b{font-size:16px}.pl-rg select{max-width:120px;font-size:14px}}
 </style>
 <script src="assets/back.js?v=1" defer></script>
@@ -279,6 +280,7 @@
   </section>
   <a class="wrow" id="wRow" href="my/watch/" data-track="home_to_watch" hidden></a>
   <a class="qz" id="qzCard" href="quiz/" data-track="home_to_quiz" hidden></a>
+  <a class="qz pqc" id="pqCard" href="quiz/#predict" data-track="home_to_predict" hidden></a>
   <div data-dp-best hidden aria-label="이번 주 우수 동네 소식(제휴)" style="margin:0 0 16px"></div>
 
   <section class="pulse" id="pulse" hidden aria-labelledby="plTitle">
@@ -549,9 +551,21 @@ addEventListener('DOMContentLoaded', () => {
     el.hidden = false;
   }
 
+  /* 이번 주 예측 맞히기(v54) 작은 카드 — 공개 data/quiz/week.json 에 받는 중인 문제가 있을 때만 */
+  function predictCard(){
+    const el = $('pqCard'), now = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 16) + '+09:00';
+    J(DATA + 'quiz/week.json').then(Wk => {
+      const open = ((Wk && Wk.open) || []).filter(q => q && q.close > now);
+      if (!open.length){ el.hidden = true; return; }
+      const q = open[0], c = String(q.close);
+      el.innerHTML = `<span class="ic" aria-hidden="true">%</span><span><b>이번 주 예측 맞히기</b><small>${esc(q.t)} · 문제 ${open.length}개 · ${+c.slice(5, 7)}월 ${+c.slice(8, 10)}일 마감</small></span><span class="go" aria-hidden="true">›</span>`;
+      el.hidden = false;
+    });
+  }
+
   (async () => {
     [M, T, Q, IX] = await Promise.all([J(DATA + 'brief/market.json'), J(DATA + 'today/index.json'), J(DATA + 'today/quiz.json'), J(DATA + 'index.json')]);
-    watchRow(); quizCard();
+    watchRow(); quizCard(); predictCard();
     if (window.JDJ_WATCH) JDJ_WATCH.onChange(watchRow);
     if (!M && !T) return;
     P = TD.pick(M, T, new Date(), '', Q);

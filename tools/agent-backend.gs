@@ -1,6 +1,19 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v54 변경 요약 (v53 위에 다시 배포. 따로 실행할 함수 없음 — 시트 '예측답'·'예측별명'·'예측채점'은 첫 사용 때 저절로 생김. 트리거 추가 없음)
+ *  - 내 부동산 달력(화면 mine/calendar/): 회원 저장 자료에 cal 칸(집마다 자가·전세·월세, 취득일·파는 집 잔금일 또는 전월세 계약 시작·만기일, 세대 보유 주택 수 — 금액 없음)을 받아 둠(calCleanAll).
+ *    날짜 규칙은 맨 아래 CAL-CORE(웹 assets/cal-core.js 와 같은 글자): 6월 1일 과세기준일, 재산세 7.16~7.31·9.16~9.30, 종부세 고지(11월 26일까지)·납부 12.1~12.15,
+ *    취득세 60일, 양도세 예정신고(양도일이 속한 달 말일부터 2개월), 계약갱신요구권(만기 6개월 전~2개월 전), 전입신고·확정일자·전월세 신고(30일), 내 지역 청약 접수·발표.
+ *    공식 원문을 확인하지 못한 규칙(일시적 2주택 처분 기한)은 계산·표시하지 않음(CAL_RULES ok:false).
+ *  - 달력 메일: 알림 센터에서 '내 부동산 달력 메일'(prefs.cal)을 켠 알림 구독자만. 모닝 브리핑을 메일로 받으면 브리핑 안에 함께(기한 30일·7일·1일 전, 단계마다 한 번),
+ *    아니면 일주일에 한 번까지(alertsDaily 그 주 첫 실행 — 그날 관심 단지 알림이 있으면 같은 메일 안에). 광고 없음. 끄기: 메일의 '달력 알림만 끄기'(alertOff &cal=1).
+ *  - 내 집 성적표(REPORT-CORE): '지난번 예측 → 실제' 줄 — 지난 성적표 시세와 그 뒤 새로 신고된 같은 단지·평형 거래(엔진 home_report.py lw·ht)를 나란히, ±5% 안이면 적중, 지금까지 적중 수.
+ *  - 예측 맞히기(화면 quiz/ · 첫 화면 '이번 주 예측 맞히기' 카드): quizBoard(공개 — 보기별 고른 수·주간 순위 별명만) · quizMine · quizAnswer · quizNick(로그인).
+ *    문제·정답은 공개 data/quiz/week.json(엔진 predict_quiz.py, 공개 자료로만). 정답을 '예측채점' 시트에 처음 본 시각과 함께 옮겨 적고(감사 기록) 그 기록으로 채점(PRED-CORE).
+ *    포인트는 재미용 — 현금·상품으로 바꾸는 기능 없음. 회원 탈퇴 때 답·별명 지움(qzUserGone).
+ *  - 검증: node tools/cal-test.js </dev/null · node tools/predict-test.js </dev/null · node tools/report-test.js </dev/null · node tools/alerts-test.js </dev/null
+ *
  * v53 변경 요약 (v52 위에 다시 배포. 따로 실행할 함수 없음 — 시트 변경 없음. 스위치를 켜기 전까지는 지금과 100% 같음: 지메일(MailApp)로 보냄)
  *  - 메일 보내는 곳 바꾸기(숨김 스위치): 스크립트 속성 MAIL_PROVIDER = 'gmail'(기본) · 'ses'(Amazon SES 서울 리전, HTTP API + AWS 서명).
  *    'ses' 는 MAIL_API_KEY·MAIL_API_SECRET·MAIL_FROM 이 모두 있어야 켜짐(선택 MAIL_FROM_NAME·MAIL_REPLY_TO·MAIL_SES_REGION·MAIL_SES_CONFIG_SET·MAIL_RATE). 키는 코드에 없음.
@@ -506,6 +519,7 @@ function doPost(e) {
   if (AGT_ACTIONS[b.action]) return out(agtDispatch(b));
   if (BRIEF_ACTIONS[b.action]) return out(briefDispatch(b));
   if (AX_ACTIONS[b.action]) return out(axDispatch(b));             // v44 관심 단지·청약 알림 메일
+  if (QZ_ACTIONS[b.action]) return out(qzDispatch(b));             // v54 예측 맞히기(답·채점·순위)
   if (CM_ACTIONS[b.action]) return out(cmDispatch(b));             // v46 살아보니(건물별 후기·이야기, 숨김)
   if (DP_ACTIONS[b.action]) return out(dpDispatch(b));             // v50 동네 중개사 파트너(숨김)
   if (BR_BILL_ACTIONS[b.action]) return out(baBillDispatch(b));    // v50 모닝 브리핑 자동결제(BILLING_OPEN 잠금)
@@ -2019,7 +2033,8 @@ function cleanUserData(d, blim) {
     reports: uniq((Array.isArray(d.reports) ? d.reports : []).slice(0, 20).map(cleanReport).filter(Boolean), x => x.id || x.t).slice(0, 10),
     areas: cleanAreas(d.areas),
     brief: cleanBrief(d.brief, blim),
-    rp: cleanRp(d.rp)                                                    // v49 내 집 정보 보정·대출 잔액·순자산 기록(그 사람만 읽음)
+    rp: cleanRp(d.rp),                                                   // v49 내 집 정보 보정·대출 잔액·순자산 기록(그 사람만 읽음)
+    cal: calCleanAll(d.cal)                                              // v54 내 부동산 달력(자가·전세·월세, 날짜, 보유 주택 수 — 금액 없음)
   };
   const json = JSON.stringify(out);
   if (json.length > USER_DATA_MAX) throw new Error('저장할 자료가 너무 많아요. 리포트나 관심 단지를 조금 지운 뒤 다시 저장해 주세요.');
@@ -2052,7 +2067,7 @@ function userAlerts(k) {
 function userLoad(b) {
   const u = sessionUser(b.s);
   const d = u.data && typeof u.data === 'object' ? u.data : {};
-  return { ok: true, nick: u.nick, data: { v: 1, homes: d.homes || [], favs: d.favs || [], reports: d.reports || [], areas: d.areas || { list: [], kinds: { notice: true, mu: true }, t: '' }, brief: cleanBrief(d.brief, bLim(bIsAdmin(u.k))), rp: cleanRp(d.rp) }, alerts: userAlerts(u.k) };
+  return { ok: true, nick: u.nick, data: { v: 1, homes: d.homes || [], favs: d.favs || [], reports: d.reports || [], areas: d.areas || { list: [], kinds: { notice: true, mu: true }, t: '' }, brief: cleanBrief(d.brief, bLim(bIsAdmin(u.k))), rp: cleanRp(d.rp), cal: calCleanAll(d.cal) }, alerts: userAlerts(u.k) };
 }
 function userSave(b) {
   const u = sessionUser(b.s);
@@ -2113,6 +2128,7 @@ function userDelete(b) {
   try { cmUserGone(u.k); } catch (e) {}   // v46 살아보니: 그 사람 글·인증 기록 지우기
   try { dpUserGone(u.k); } catch (e) {}   // v50 동네 파트너: 해지·연락처 지우기·글 지우기
   try { baStopAll(u.k); } catch (e) {}    // v50 자동결제 멈춤·빌링키 지우기
+  try { qzUserGone(u.k); } catch (e) {}   // v54 예측 맞히기: 답·별명 지우기
   del('플러스중개사', 0); del('내손님', 1);   // v27 중개사 플러스: 표시 정보·손님 이름표·단지(시트 이름은 아래 SH_BPP·SH_BPC 와 같음)
   let unlinked = false;
   const admin = PropertiesService.getScriptProperties().getProperty('KAKAO_ADMIN_KEY');
@@ -4911,7 +4927,7 @@ function axCleanPrefs(x) {
   if (lo != null && hi != null && lo > hi) { const t = lo; lo = hi; hi = t; }
   const ck = c.kinds && typeof c.kinds === 'object' ? c.kinds : {}, cyk = {};
   Object.keys(AX_CY_KINDS).forEach(q => { cyk[q] = ck[q] !== false; });
-  return { kinds: kinds, mute: mute, cy: { on: c.on === true && regions.length > 0, regions: regions, nohome: c.nohome === true ? true : c.nohome === false ? false : null, lo: lo, hi: hi, kinds: cyk }, rp: x.rp === true };
+  return { kinds: kinds, mute: mute, cy: { on: c.on === true && regions.length > 0, regions: regions, nohome: c.nohome === true ? true : c.nohome === false ? false : null, lo: lo, hi: hi, kinds: cyk }, rp: x.rp === true, cal: x.cal === true };
 }
 
 /* ---------- 관심 단지 한 곳의 알림 ----------
@@ -5173,7 +5189,7 @@ function axDispatch(b) {
 }
 function alertMine(b) {
   const u = sessionUser(b.s), bm = axBriefMail(u.k);
-  return { ok: true, v: AX_V, sub: axPublic(axMine(u.k)), brief: bm ? { mask: String(bm.r[BC['연락처가림']] || '') } : null, favs: axFavs(u.k).length, homes: axHomes(u.k).length, rp: 1 };
+  return { ok: true, v: AX_V, sub: axPublic(axMine(u.k)), brief: bm ? { mask: String(bm.r[BC['연락처가림']] || '') } : null, favs: axFavs(u.k).length, homes: axHomes(u.k).length, rp: 1, cal: 1 };
 }
 /** 알림 메일 신청(동의 필수) — 이미 있으면 같은 행을 다시 켬 */
 function alertJoin(b) {
@@ -5184,7 +5200,7 @@ function alertJoin(b) {
   if (b.useBrief === true) { const bm = axBriefMail(u.k, now); if (!bm) throw new Error('모닝 브리핑을 이메일로 받고 있지 않아요. 받을 이메일을 적어 주세요.'); email = String(bm.r[BC['연락처']]).replace(/^'/, ''); }
   else { const ct = parseContact(b.email); if (!ct || ct.kind !== 'email') throw new Error('알림을 받을 이메일 주소를 정확히 적어 주세요.'); email = ct.norm; }
   const ct = parseContact(email), prefs = axCleanPrefs(b.prefs);
-  if (!axFavs(u.k).length && !prefs.cy.on && !(prefs.rp && axHomes(u.k).length)) throw new Error('관심 목록에 단지를 넣거나, 청약 알림 지역을 고르거나, 내 집을 등록해야 알림을 보낼 수 있어요.');
+  if (!axFavs(u.k).length && !prefs.cy.on && !((prefs.rp || prefs.cal) && axHomes(u.k).length)) throw new Error('관심 목록에 단지를 넣거나, 청약 알림 지역을 고르거나, 내 집을 등록해야 알림을 보낼 수 있어요.');
   const at = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(String(b.at || '')) ? String(b.at).slice(0, 25) : '';
   const cur = axRows().filter(x => String(x.r[AXC['카카오id']]) === u.k).pop();
   let row;
@@ -5241,6 +5257,7 @@ function alertOff(p) {
     if (p.all) { axStop(o, '메일의 끄기 링크'); msg = '관심 단지·청약 알림 메일을 모두 껐어요. 다시 받으시려면 알림 센터에서 신청해 주세요.'; return; }
     const prefs = s.prefs;
     if (p.rp) { prefs.rp = false; msg = '내 집 성적표 메일을 껐어요. 관심 단지·청약 알림은 그대로 받아요.'; }
+    else if (p.cal) { prefs.cal = false; msg = '내 부동산 달력 메일을 껐어요. 다른 알림은 그대로 받아요. 달력은 화면에서 계속 볼 수 있어요.'; }
     else if (p.cy) { prefs.cy.on = false; msg = '청약 알림을 껐어요. 관심 단지 알림은 그대로 받아요.'; }
     else if (p.p) {
       const f = axFavs(s.k).find(x => safeEq(axPh(axPid(x)), String(p.p)));
@@ -5331,12 +5348,19 @@ function axSendAlone(s, D, ctx) {
 /** 모닝 브리핑(briefDaily)이 부르는 창구: forUser(k) → {s, D, html} | null · done(x) · alone(x) */
 function axMorning(now) {
   const ctx = axCtx(now), sent = axSentAll(now), subs = {};
+  let um = null; const calMap = () => um || (um = calUserMap());               // v54 달력: 켠 분이 있을 때만 회원 자료를 한 번 읽음
   axRows().forEach(o => { const s = axSubOf(o); if (s.state === AX_ST.on) subs[s.k] = s; });
   return {
     ctx: ctx,
-    forUser(k) { const s = subs[k]; if (!s) return null; const D = axBuild(s, ctx, sent); return D ? { s: s, D: D, html: axMsg(s, D, ctx, true).html } : null; },
-    done(x) { axDone(x.s, x.D, ctx, '모닝 브리핑에 함께'); x.s.last = ctx.date; },
-    alone(x) { const r = axSendAlone(x.s, x.D, ctx); if (r.ok) x.s.last = ctx.date; return r; }
+    forUser(k) {
+      const s = subs[k]; if (!s) return null;
+      const D = axBuild(s, ctx, sent);
+      let CI = []; if (s.prefs.cal && axCanSend(s) && s.last !== ctx.date) try { CI = calItemsFor(s, ctx, sent, calMap(), 'daily'); } catch (e) { CI = []; }
+      if (!D && !CI.length) return null;
+      return { s: s, D: D, CI: CI, html: (D ? axMsg(s, D, ctx, true).html : '') + (CI.length ? calMsgFor(s, CI, ctx, true).html : '') };
+    },
+    done(x) { if (x.D) axDone(x.s, x.D, ctx, '모닝 브리핑에 함께'); if (x.CI && x.CI.length) calDone(x.s, x.CI, ctx, '모닝 브리핑에 함께', !x.D, false); x.s.last = ctx.date; },
+    alone(x) { const r = axSendWithCal(x.s, x.D, x.CI || [], ctx); if (r.ok) x.s.last = ctx.date; return r; }
   };
 }
 /* ---------- 매일 오전 7시대(늦으면 9시대) — alertsInstall 이 트리거를 만듦 ----------
@@ -5350,17 +5374,21 @@ function alertsInstall() {
 }
 function alertsDaily() {
   const now = new Date(), ctx = axCtx(now), sent = axSentAll(now);
-  let n = 0, stop = false;
+  let n = 0, stop = false, um = null;
   axRows().forEach(o => {
     if (stop) return;
     const s = axSubOf(o);
     if (s.state !== AX_ST.on || s.last === ctx.date || !axCanSend(s)) return;
     if (axBriefMail(s.k, now)) return;                         // 모닝 브리핑 메일에 함께 들어감
     if (mailLeftNow() <= AX_RESERVE) { stop = true; uSheet(SH_AXS, AXSH).appendRow([ctx.date, '', '이메일', '하루 한도에 닿아 멈춤 — 남은 분은 다음 실행에', 0]); return; }
-    const D = axBuild(s, ctx, sent); if (!D) return;
-    if (axSendAlone(s, D, ctx).ok) n++;
+    const D = axBuild(s, ctx, sent);
+    let CI = [];                                                // v54 달력: 브리핑을 받지 않는 분은 한 주에 한 번(그 주 첫 실행)
+    if (s.prefs.cal && !calWeekDone(s, ctx, sent)) try { CI = calItemsFor(s, ctx, sent, um || (um = calUserMap()), 'weekly'); } catch (e) { CI = []; }
+    if (!D && !CI.length) return;
+    if (axSendWithCal(s, D, CI, ctx).ok) n++;
   });
   axCleanup(now);
+  try { qzSettle(qzWeek(true)); } catch (e) {}                 // v54 예측 맞히기: 새로 나온 정답을 채점 기록에
   return n;
 }
 /* 오래된 기록 지우기 + 끈 지 30일 지난 이메일 원문 지우기(모닝 브리핑 연락처 보관 기간과 같음) */
@@ -5433,8 +5461,16 @@ function rpCard(p, R) {
     rank: u[1] ? { r: u[1], n: u[4], same: u[5] === 1, r0: q && q[1] ? q[1] : null } : null,
     fv: u[2] != null ? { v: cap(u[2]), v0: q && q[2] != null ? cap(q[2]) : null, sr: u[7] || null } : null,
     jr: u[3] != null ? { v: u[3], v0: q && q[3] != null ? q[3] : null, line: RP_JR_LINES.find(L => u[3] >= L) || 0 } : null,
-    trades: (u[8] || []).map(rpTrade), wk: wk, near: near
+    trades: (u[8] || []).map(rpTrade), wk: wk, near: near,
+    hit: rpHit((R.lw || {})[rpKey(p)], (R.ht || {})[rpKey(p)], R.hitp, q && q[0] ? q[0] : null)
   };
+}
+/** v54 지난번 예측 → 실제: lw = [[계약일, 층, 금액, 비교 값, 차이 %, 적중 1/0], …], ht = [비교한 거래 수, 적중 수], pv = 지난 성적표 시세. 둘 다 없으면 null */
+function rpHit(lw, ht, pct, pv) {
+  const rows = (Array.isArray(lw) ? lw : []).filter(r => Array.isArray(r) && r[2] > 0 && r[3] > 0).map(r => ({ dt: r[0], f: r[1], p: r[2], est: r[3], e: Number(r[4]), ok: r[5] === 1 }));
+  const n = Array.isArray(ht) ? Math.max(0, Number(ht[0]) || 0) : 0, k = Array.isArray(ht) ? Math.max(0, Number(ht[1]) || 0) : 0;
+  if (!rows.length && !n) return null;
+  return { rows: rows, n: n, k: k, pct: Number(pct) || 5, pv: pv };
 }
 /** 차이 글자: 지난 성적표 값이 있을 때만 */
 function rpDiff(v, v0, unit) {
@@ -5467,6 +5503,14 @@ function rpLines(c, gname) {
     s: `${rpYm(c.price.at)}까지 3개월 동안 이 단지·이 평형의 ${c.price.ar ? `전용 ${c.price.ar}㎡(내가 고른 면적)` : '같은 전용면적'} 실거래 3.3㎡당 값 중간값으로 계산했어요(같은 면적 거래가 모자라면 다른 면적 거래를 이 면적 값으로 맞춰 함께 써요).` });
   const tr = c.trades.slice(0, 3).map(t => `${rpMd(t.dt)} ${t.f != null ? t.f + '층 ' : ''}${rpWon(t.p)}${t.hi ? '(신고가)' : ''}${t.x ? '(직거래)' : ''}`);
   out.push({ k: 'trade', h: '최근 실거래', t: tr.length ? tr.join(' · ') : '최근 3년 거래가 없어요', s: '계약일 · 층 · 금액이에요. 국토교통부 실거래 신고 자료 그대로예요.' });
+  if (c.hit) {
+    const H = c.hit, sg = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(1) + '%';
+    const t = H.rows.length ? `지난번 시세 ${rpWon(H.pv || H.rows[0].est)} → 실제 거래 ${H.rows.slice(0, 3).map(r => `${rpWon(r.p)}(${sg(r.e)})`).join(' · ')}`
+      : '지난 성적표 뒤 이 평형에 새로 신고된 거래가 없어요';
+    out.push({ k: 'hit', h: '지난번 예측 → 실제', t: t,
+      s: (H.n ? `차이가 ±${H.pct}% 안이면 적중으로 셌어요. 지금까지 ${H.n.toLocaleString('en-US')}건 중 ${H.k.toLocaleString('en-US')}건 적중(${Math.round(H.k / H.n * 100)}%). ` : '')
+        + '지난 성적표의 시세를 거래된 집의 전용면적에 맞춰 비교했어요. 층·향·수리 상태에 따라 실제 값은 달라요(직거래는 뺐어요).' });
+  }
   if (c.rank) out.push({ k: 'rank', h: '동네 순위', t: `${c.p.dong} ${c.rank.same ? '같은 평형대 ' : ''}아파트 ${c.rank.n}곳 중 ${c.rank.r}위` + (c.rank.r0 ? ` · ${rpDiff(c.rank.r, c.rank.r0, '위')}` : ''),
     s: '최근 3.3㎡당 실거래 값이 높은 순서예요.' });
   if (c.fv) out.push({ k: 'fv', h: '미래가치 점수', t: `${c.fv.v}점` + (c.fv.v0 != null ? ` · ${rpDiff(c.fv.v, c.fv.v0, '점')}` : '') + (c.fv.sr ? ` · 시·도 안 ${Number(c.fv.sr).toLocaleString('en-US')}위` : ''),
@@ -7593,4 +7637,465 @@ function dpPlusBriefs(date, um, brief, M, ix) {
   });
   P.setProperty('DP_PLUS_SENT', JSON.stringify({ d: date, ids: done }));
   return n;
+}
+
+
+/* =====================================================================
+   v54 내 부동산 달력 메일 + 예측 맞히기 (맨 위 'v54 변경 요약' · 따로 실행할 함수 없음)
+   ① 달력: 회원 저장 자료 cal(자가·전세·월세, 날짜, 보유 주택 수 — 금액 없음) + 내 집(homes)으로 아래 CAL-CORE 가 날짜를 만든다.
+      - 알림 센터에서 '내 부동산 달력 메일'(prefs.cal)을 켠 알림 구독자에게만. 정보 메일이라 광고를 넣지 않는다.
+      - 모닝 브리핑을 메일로 받는 분: 브리핑 메일 안에 함께(axMorning) — 기한 30일·7일·1일 전 단계마다 한 번.
+      - 받지 않는 분: 일주일에 한 번까지(alertsDaily — 그 주 첫 실행, 보통 월요일 7시대). 그날 관심 단지 알림이 있으면 그 메일 안에 함께(하루 한 통).
+      - 같은 단계는 다시 안 보냄('알림기록' 시트 종류 cal), 한 주 한 번은 calwk 기록. 청약 맞춤 알림을 켠 분은 청약 날짜를 그쪽 알림으로만.
+      - 끄기: 메일의 '달력 알림만 끄기'(GET alertOff &cal=1) · 알림 센터.
+   ② 예측 맞히기: 문제·정답은 공개 data/quiz/week.json(엔진 predict_quiz.py — 공개 자료로만). 여기서는 답 받기·채점·주간 순위만.
+      - 로그인(카카오) 회원만 답함. 시트 '예측답'(회원 확인값·문제·고른 보기 — 카카오 회원번호·닉네임은 넣지 않음), '예측별명'(순위에 보일 별명),
+        '예측채점'(감사 기록: 정답을 처음 본 시각·정답·근거·참여·맞힌 수 — 한 번 적은 줄은 고치지 않음).
+      - 채점은 화면이 순위·내 기록을 부를 때(quizBoard·quizMine)와 매일 알림 실행 때 week.json 의 새 결과를 '예측채점'에 옮겨 적으며 함(트리거 추가 없음).
+      - 포인트는 재미용 — 현금·상품·혜택으로 바꾸는 기능이 없다(PQ_NOTE).
+   ===================================================================== */
+/* CAL-CORE BEGIN — 이 블록은 tools/agent-backend.gs 에 그대로 복사돼 있어요. 고칠 때는 두 곳을 똑같이 고쳐 주세요(node tools/cal-test.js 가 비교). */
+const CAL_V = 'cal-2026-11-25';
+const CAL_TEN = { own: '자가', jeonse: '전세', wolse: '월세' };
+/* 공식 출처(2026-11-25 직접 열어 확인) */
+const CAL_SRC = {
+  prop: { nm: '서울특별시 「세목별 안내 — 재산세」', url: 'https://news.seoul.go.kr/gov/archives/200106' },
+  acq: { nm: '서울특별시 「세목별 안내 — 취득세」', url: 'https://news.seoul.go.kr/gov/archives/200082' },
+  comp: { nm: '종합부동산세법 제3조·제16조(국가법령정보센터)', url: 'https://www.law.go.kr/LSW/lsPdfPrint.do?ancYnChk=0&lsiSeq=249983&efYd=20230418&efGubun=Y&joAllCheck=Y&joEfOutPutYn=on&mokChaChk=N&bylChaChk=N' },
+  cgt: { nm: '법제처 찾기쉬운 생활법령 「양도소득세」', url: 'https://easylaw.go.kr/CSP/CnpClsMain.laf?popMenu=ov&csmSeq=1259&ccfNo=4&cciNo=2&cnpClsNo=2' },
+  renew: { nm: '주택임대차보호법 제6조의3(국가법령정보센터)', url: 'https://law.go.kr/lsLawLinkInfo.do?lsJoLnkSeq=1007847519&chrClsCd=010202&ancYnChk=0' },
+  renew2: { nm: '대한민국 정책브리핑 「계약갱신청구권, 언제부터 집주인에게 요구할 수 있어요?」', url: 'https://www.korea.kr/news/visualNewsView.do?newsId=148875466' },
+  move: { nm: '주택임대차보호법 제3조(국가법령정보센터)', url: 'https://www.law.go.kr/lsLinkCommonInfo.do?lsJoLnkSeq=1018577211&chrClsCd=010202&ancYnChk=' },
+  rent: { nm: '서울특별시 내 손안에 서울 「전·월세 계약 꼭 신고하세요」', url: 'https://mediahub.seoul.go.kr/archives/2001807' },
+  cy: { nm: '한국부동산원 청약홈 분양 공고', url: 'https://www.applyhome.co.kr/' }
+};
+/* ok:false = 공식 원문을 확인하지 못함 → 계산·표시하지 않음 */
+const CAL_RULES = {
+  base: { ok: true, src: ['prop', 'comp'] }, prop1: { ok: true, src: ['prop'] }, prop2: { ok: true, src: ['prop'] },
+  compN: { ok: true, src: ['comp'] }, compP: { ok: true, src: ['comp'] }, acq: { ok: true, src: ['acq'] }, cgt: { ok: true, src: ['cgt'] },
+  renewO: { ok: true, src: ['renew', 'renew2'] }, renewC: { ok: true, src: ['renew', 'renew2'] }, end: { ok: true, src: ['renew'] },
+  move: { ok: true, src: ['move'] }, rent: { ok: true, src: ['rent'] }, cy: { ok: true, src: ['cy'] },
+  tmp2: { ok: false, src: [], why: '일시적 2주택 처분 기한은 2026년 10월에 바뀐 규정이라, 공식 사이트에서 법령 원문을 확인한 뒤 보여 드릴게요.' }
+};
+const CAL_AHEAD = 400, CAL_PAST = 0, CAL_MAX = 60;
+const calOkDate = v => /^(19[9]\d|20\d\d|2100)-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(String(v || '')) && calIso(calT(String(v))) === String(v);
+function calT(iso) { return Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)); }
+function calIso(t) { const d = new Date(t); return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`; }
+function calAdd(iso, n) { return calIso(calT(iso) + n * 864e5); }
+function calDiff(a, b) { return Math.round((calT(b) - calT(a)) / 864e5); }
+/** 달 더하기(같은 날, 그 달에 그날이 없으면 말일) */
+function calAddM(iso, n) {
+  let y = +iso.slice(0, 4), m = +iso.slice(5, 7) - 1 + n; y += Math.floor(m / 12); m = ((m % 12) + 12) % 12;
+  const last = new Date(Date.UTC(y, m + 1, 0)).getUTCDate(), d = Math.min(+iso.slice(8, 10), last);
+  return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+}
+function calMonthEnd(iso) { const y = +iso.slice(0, 4), m = +iso.slice(5, 7); return calIso(Date.UTC(y, m, 0)); }
+function calKo(iso) { return iso ? `${+iso.slice(5, 7)}월 ${+iso.slice(8, 10)}일` : ''; }
+function calKoY(iso) { return iso ? `${+iso.slice(0, 4)}년 ${calKo(iso)}` : ''; }
+function calDow(iso) { return '일월화수목금토'[new Date(calT(iso)).getUTCDay()]; }
+
+/** 사용자가 넣은 값 정리(서버·화면 같은 규칙). 금액 칸은 받지 않는다 */
+function calClean(x) {
+  x = x && typeof x === 'object' ? x : {};
+  const t = CAL_TEN[x.t] ? x.t : '', d = v => calOkDate(v) ? String(v) : '';
+  const o = { t: t };
+  if (t === 'own') { o.acq = d(x.acq); o.sell = d(x.sell); }
+  if (t === 'jeonse' || t === 'wolse') { o.cs = d(x.cs); o.ce = d(x.ce); if (o.cs && o.ce && o.ce <= o.cs) o.ce = ''; }
+  return o;
+}
+/** 회원 저장 자료의 달력 칸: { h: {집키: calClean}, n: 우리 세대 보유 주택 수 1·2·3(3채 이상)|null, t: 마지막 저장 날짜, ms: 마지막 수정 시각(기기끼리 맞출 때) } */
+const CAL_KEY = /^\d{5}\|[^|<>\u0000-\u001F]{1,30}\|[^|<>\u0000-\u001F]{0,30}\|[^|<>\u0000-\u001F]{1,60}\|[^|<>\u0000-\u001F]{1,20}$/;
+function calCleanAll(x) {
+  x = x && typeof x === 'object' ? x : {};
+  const h = {}, src = x.h && typeof x.h === 'object' ? x.h : {};
+  Object.keys(src).filter(k => CAL_KEY.test(k)).slice(0, 10).forEach(k => { const c = calClean(src[k]); if (c.t) h[k] = c; });
+  const n = Math.round(Number(x.n)), ms = Math.round(Number(x.ms));
+  return { h: h, n: n >= 1 && n <= 3 ? n : null, t: calOkDate(x.t) ? String(x.t) : '', ms: isFinite(ms) && ms > 0 ? ms : 0 };
+}
+
+function calEv(k, d, o) { return Object.assign({ id: `${k}|${o.home || ''}|${d}`, k: k, d: d, home: '', name: '', end: '', src: CAL_RULES[k].src }, o); }
+/** 한 해 정기 일정(자가가 하나라도 있을 때). y = 연도 */
+function calYear(y, owns) {
+  const nm = owns.map(h => h.name).filter(Boolean).slice(0, 3).join(', '), out = [];
+  const near = owns.filter(h => [h.cal.acq, h.cal.sell].some(v => v && Math.abs(calDiff(`${y}-06-01`, v)) <= 45));
+  out.push(calEv('base', `${y}-06-01`, { t: '재산세·종부세 과세기준일',
+    s: '이날 집을 가진 사람이 그해 재산세와 종합부동산세를 내요. 사고팔 때 소유는 보통 잔금을 치른 날부터 따져서, 잔금일이 6월 1일이거나 그 전이면 산 사람이, 6월 2일부터면 판 사람이 그해 세금을 내요(잔금 전에 등기를 먼저 하면 등기일).',
+    p: near.length ? `등록하신 ${near.map(h => `${h.name}(${h.cal.sell && Math.abs(calDiff(`${y}-06-01`, h.cal.sell)) <= 45 ? '파는 잔금 ' + calKo(h.cal.sell) : '잔금 ' + calKo(h.cal.acq)})`).join(', ')} — 잔금일이 6월 1일 앞뒤예요. 그해 세금을 누가 낼지 한 번 더 살펴보세요.` : '' }));
+  out.push(calEv('prop1', `${y}-07-31`, { start: `${y}-07-16`, t: '재산세 1기분 납부(주택 절반)', s: `7월 16일부터 31일까지 주택 재산세의 절반을 내요. 한 해 세액이 20만 원 이하면 지자체 조례에 따라 7월에 한꺼번에 낼 수 있어요.${nm ? ' 대상: ' + nm : ''}` }));
+  out.push(calEv('prop2', `${y}-09-30`, { start: `${y}-09-16`, t: '재산세 2기분 납부(주택 나머지 절반·토지)', s: `9월 16일부터 30일까지 주택 재산세 나머지 절반과 토지분 재산세를 내요.${nm ? ' 대상: ' + nm : ''}` }));
+  out.push(calEv('compN', `${y}-11-26`, { t: '종합부동산세 고지서가 오는 때', s: '종부세는 공시가격 합계가 공제 금액을 넘는 분만 내요. 세무서는 납부 시작 5일 전(11월 26일)까지 고지서를 보내요.' }));
+  out.push(calEv('compP', `${y}-12-15`, { start: `${y}-12-01`, t: '종합부동산세 납부', s: '12월 1일부터 15일까지 고지된 종부세를 내요. 고지 대신 직접 신고해서 낼 수도 있고, 기간은 같아요.' }));
+  return out;
+}
+/** 한 집의 일정. h = { key, name, cal } */
+function calHome(h) {
+  const c = h.cal, out = [], o = () => ({ home: h.key, name: h.name });
+  if (c.t === 'own') {
+    if (c.acq) { const dl = calAdd(c.acq, 60);
+      out.push(calEv('acq', dl, Object.assign(o(), { start: c.acq, t: '취득세 신고·납부 기한', s: `취득일(잔금일 ${calKoY(c.acq)})부터 60일 안에 취득세를 신고하고 내요. 잔금 전에 등기를 먼저 했다면 등기일부터 세요. 상속은 기한이 달라요(상속 개시일이 속한 달 말일부터 6개월).` }))); }
+    if (c.sell) { const dl = calMonthEnd(calAddM(calMonthEnd(c.sell).slice(0, 8) + '01', 2));
+      out.push(calEv('cgt', dl, Object.assign(o(), { start: c.sell, t: '양도소득세 예정신고 기한', s: `파는 집 잔금일(${calKoY(c.sell)})이 속한 달의 말일부터 2개월 안에 예정신고를 해요. 비과세라도 신고가 필요한지 세무서나 세무사에게 확인해 두세요.` }))); }
+  }
+  if (c.t === 'jeonse' || c.t === 'wolse') {
+    if (c.ce) {
+      const a = calAddM(c.ce, -6), b = calAddM(c.ce, -2);
+      out.push(calEv('renewO', a, Object.assign(o(), { end: b, t: '계약갱신요구권을 쓸 수 있는 기간 시작', s: `만기 6개월 전(${calKoY(a)})부터 2개월 전(${calKoY(b)})까지 집주인에게 계약을 한 번 더 이어 가고 싶다고 알리면 2년 더 살 수 있어요. 한 번만 쓸 수 있고, 2020년 12월 10일 이후 맺거나 갱신한 계약 기준이에요.` })));
+      out.push(calEv('renewC', b, Object.assign(o(), { start: a, t: '계약갱신요구권 요청 마감', s: `만기 2개월 전인 ${calKoY(b)}까지 알려야 해요. 문자·내용증명처럼 날짜가 남는 방법이 안전해요. 이사할 계획이면 집주인과 날짜를 미리 맞춰 두세요.` })));
+      out.push(calEv('end', c.ce, Object.assign(o(), { t: `${CAL_TEN[c.t]} 계약 만기`, s: '이 날 계약이 끝나요. 갱신이나 이사 일정이 정해졌는지 다시 확인해 보세요.' })));
+    }
+    if (c.cs) {
+      out.push(calEv('move', c.cs, Object.assign(o(), { t: '이사하는 날 — 전입신고·확정일자', s: '이사한 날 바로 전입신고를 하고 계약서에 확정일자를 받아 두세요. 집에 들어가 전입신고까지 마친 다음 날부터 대항력(새 집주인·은행에도 내 권리를 주장할 힘)이 생겨요.' })));
+      out.push(calEv('rent', c.cs, Object.assign(o(), { end: calAdd(c.cs, 30), t: '전월세 계약 신고(계약일부터 30일 안)', s: '보증금 6,000만 원 초과 또는 월세 30만 원 초과 계약은 계약한 날부터 30일 안에 신고해야 해요. 신고하면 확정일자가 저절로 붙고, 전입신고 때 계약서를 함께 내면 신고한 것으로 봐요.' })));
+    }
+  }
+  return out;
+}
+/** 청약 공고 일정(사용자 지역). notices = chungyak/notices.json rows, areas = [{sd, gn}] */
+function calCy(notices, areas, today) {
+  const out = [], seen = {}, i8 = s => /^\d{8}$/.test(String(s || '')) ? `${String(s).slice(0, 4)}-${String(s).slice(4, 6)}-${String(s).slice(6, 8)}` : '';
+  (notices || []).forEach(n => {
+    if (!n || !n.no || seen[n.no]) return;
+    const a = (areas || []).find(r => r && r.sd === n.sd && (!r.gn || r.gn === n.g)); if (!a) return;
+    seen[n.no] = 1;
+    const nm = String(n.n || '청약 공고').slice(0, 60), where = [n.sd, n.g].filter(Boolean).join(' '), pb = i8(n.pb), r1 = i8((n.r1 || [])[0]), r1e = i8((n.r1 || [])[1]), pw = i8(n.pw);
+    const base = { home: '', name: nm, u: /^https:\/\/www\.applyhome\.co\.kr\//.test(String(n.u || '')) ? String(n.u) : '', no: String(n.no) };
+    if (pb && calDiff(pb, today) <= 7) out.push(calEv('cy', pb, Object.assign({}, base, { id: `cy|${n.no}|pb`, sub: 'new', end: calAdd(pb, 7), t: `새 청약 공고 — ${nm}`, s: `${where}에 새 공고가 나왔어요${n.hh ? `(공급 ${Number(n.hh).toLocaleString('en-US')}세대)` : ''}. 내 지역이라 알려 드려요.` })));
+    if (r1) out.push(calEv('cy', r1, Object.assign({}, base, { id: `cy|${n.no}|r1`, sub: 'r1', end: r1e && r1e !== r1 ? r1e : '', t: `1순위 청약 접수 — ${nm}`, s: `${where} · ${calKo(r1)}${r1e && r1e !== r1 ? `~${calKo(r1e)}` : ''} 1순위 접수예요. 청약홈에서 신청해요.` })));
+    if (pw) out.push(calEv('cy', pw, Object.assign({}, base, { id: `cy|${n.no}|pw`, sub: 'pw', t: `당첨자 발표 — ${nm}`, s: `${where} · ${calKo(pw)}에 당첨자를 발표해요.` })));
+  });
+  return out;
+}
+/** 전체 일정: homes = [{key, name, cal}], today 'YYYY-MM-DD', opt = { ahead 일, notices, areas } → 날짜 순 [{id, k, d, start?, end?, t, s, p?, home, name, src, dd}] */
+function calEvents(homes, today, opt) {
+  opt = opt || {};
+  const ahead = opt.ahead || CAL_AHEAD, lo = calAdd(today, -(opt.past || CAL_PAST)), hi = calAdd(today, ahead);
+  const hs = (homes || []).map(h => h && h.key ? { key: h.key, name: String(h.name || ''), cal: calClean(h.cal) } : null).filter(h => h && h.cal.t);
+  let ev = [];
+  const owns = hs.filter(h => h.cal.t === 'own');
+  const y = +today.slice(0, 4);
+  if (owns.length) for (let yy = y; yy <= y + 1; yy++) ev = ev.concat(calYear(yy, owns));
+  hs.forEach(h => { ev = ev.concat(calHome(h)); });
+  if (opt.notices && opt.areas) ev = ev.concat(calCy(opt.notices, opt.areas, today));
+  ev = ev.filter(e => CAL_RULES[e.k] && CAL_RULES[e.k].ok && (e.end > e.d ? e.end : e.d) >= lo && (e.start || e.d) <= hi);
+  ev.forEach(e => { e.dd = calDiff(today, e.d); });
+  ev.sort((a, b) => a.d < b.d ? -1 : a.d > b.d ? 1 : a.id < b.id ? -1 : 1);
+  return ev.slice(0, CAL_MAX);
+}
+/** 메일로 알릴 단계: daily(모닝 브리핑에 함께) = 30일·7일·1일 전, weekly(따로 보내는 주 1회) = 5주·1주 안. 새 청약 공고는 나온 뒤 7일 안 한 번. 이미 보낸 단계(sent[id|단계])는 뺌 */
+function calStage(dd, mode) {
+  if (dd < 0) return '';
+  if (mode === 'weekly') return dd <= 8 ? 'd7' : dd <= 37 ? 'd30' : '';
+  return dd <= 1 ? 'd1' : dd <= 7 ? 'd7' : dd <= 30 ? 'd30' : '';
+}
+function calDue(ev, mode, sent) {
+  sent = sent || {};
+  return (ev || []).map(e => Object.assign({}, e, { stage: e.sub === 'new' ? (e.dd <= 0 && e.dd >= -7 ? 'd1' : '') : calStage(e.dd, mode) })).filter(e => e.stage && !sent[e.id + '|' + e.stage] && !(e.stage === 'd30' && sent[e.id + '|d7']) && !(e.stage !== 'd1' && sent[e.id + '|d1']));
+}
+function calEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function calWhen(e) {
+  const d = e.dd === 0 ? '오늘' : e.dd === 1 ? '내일' : `${e.dd}일 뒤`;
+  return `${calKo(e.d)}(${calDow(e.d)}) · ${d}`;
+}
+/* 메일 칸: items = calDue 결과, o = { site, web(끝 /), off(달력 메일만 끄기 링크), merged(모닝 브리핑·알림 메일 안에 넣을 때), sender, date }
+   → { subject, html, text }. 광고 없음. 금액·개인 입력값(날짜 말고)은 싣지 않는다 */
+function calMailHtml(items, o) {
+  o = o || {};
+  const site = o.site || '집예보', web = o.web || '', text = [];
+  const li = items.map(e => { text.push(`${calKo(e.d)} ${e.t}${e.name ? ' (' + e.name + ')' : ''}`);
+    return `<li style="margin:0 0 9px;line-height:1.55"><span style="display:inline-block;font-size:11.5px;font-weight:800;color:#8A6A12;background:#FBF3DC;border-radius:6px;padding:1px 6px;margin-right:4px">${calEsc(calWhen(e))}</span><b style="color:#191F28">${calEsc(e.t)}</b>${e.name ? ` <span style="font-size:12.5px;color:#4E5968">${calEsc(e.name)}</span>` : ''}<br><span style="font-size:13.5px;color:#4E5968">${calEsc(e.s)}</span>${e.p ? `<br><span style="font-size:13.5px;color:#8A6A12">${calEsc(e.p)}</span>` : ''}</li>`; }).join('');
+  const links = `${web ? `<a href="${calEsc(web)}mine/calendar/" style="color:#2F6BFF">내 부동산 달력 전체 보기</a>` : ''}${o.off ? ` · <a href="${calEsc(o.off)}" style="color:#4E5968">달력 알림만 끄기(한 번 누르면 끝)</a>` : ''}`;
+  const body = `<div style="font-size:17px;font-weight:900;margin:0 0 4px">내 부동산 달력 <span style="font-size:13px;font-weight:700;color:#B8942A">다가오는 날짜 ${items.length}개</span></div>
+    <p style="margin:0 0 10px;font-size:13.5px;color:#4E5968;line-height:1.55">등록하신 집과 지역 기준으로 놓치기 쉬운 세금·계약 날짜를 모았어요. 날짜 규칙은 공식 안내를 확인한 것만 넣었고, 주말·공휴일이면 기한이 다음 평일로 미뤄질 수 있어요.</p>
+    <ul style="list-style:none;margin:0 0 6px;padding:0">${li}</ul><p style="font-size:12.5px;color:#4E5968;margin:4px 0 0">${links}</p>`;
+  const subject = `[${site}] ${o.date ? calKo(o.date) + ' ' : ''}내 부동산 달력 — ${items[0] ? items[0].t : ''}${items.length > 1 ? ` 외 ${items.length - 1}개` : ''}`.slice(0, 120);
+  const html = o.merged ? `<div style="border:2px solid #B8942A;border-radius:12px;padding:14px 16px;margin:0 0 14px">${body}</div>`
+    : `<div style="font-family:'Noto Sans KR',sans-serif;max-width:600px;margin:auto;color:#191F28"><div style="font-weight:900;font-size:19px;margin:6px 0 12px">${calEsc(site)} <span style="color:#B8942A">달력 알림</span></div>${body}
+      <p style="font-size:12px;color:#4E5968;line-height:1.65;margin:12px 0 0;border-top:1px solid #E5E8EB;padding-top:10px">이 메일은 ${calEsc(site)} 알림 센터에서 '내 부동산 달력 메일'을 켜신 분께 일주일에 한 번까지 보내는 정보 메일이에요. 광고가 아니에요.<br>
+      ${o.off ? `<a href="${calEsc(o.off)}" style="color:#4E5968">달력 알림만 끄기</a> · ` : ''}${web ? `<a href="${calEsc(web)}my/alerts/" style="color:#4E5968">알림 설정 바꾸기</a>` : ''}<br>보낸 사람: ${calEsc(site)}${o.sender ? `(${calEsc(o.sender.name)}) · 전화 ${calEsc(o.sender.tel)} · 답장은 ${calEsc(o.sender.email)}로 가요` : ''}</p></div>`;
+  return { subject: subject, html: html, text: text.join('\n') };
+}
+/* CAL-CORE END */
+
+/** 회원 저장 자료 → {카카오id: {homes, cal}} (하루 발송 때 한 번 읽음) */
+function calUserMap() {
+  const sh = book().getSheetByName(SH_U), m = {}; if (!sh) return m;
+  sh.getDataRange().getValues().slice(1).forEach(x => {
+    const d = parseJ(x[UC['저장자료']], {}) || {};
+    m[String(x[UC['카카오id']])] = { homes: (Array.isArray(d.homes) ? d.homes : []).map(y => cleanPlace(y, false)).filter(Boolean).slice(0, 5), cal: calCleanAll(d.cal) };
+  });
+  return m;
+}
+/** 한 사람의 달력 날짜(오늘 기준). 청약 맞춤 알림을 켠 분은 청약 날짜를 빼서 같은 공고가 두 번 가지 않게 */
+function calEventsFor(s, ctx, um) {
+  const u = (um || {})[s.k]; if (!u || !Object.keys(u.cal.h).length) return [];
+  const items = u.homes.map(h => { const key = [h.code, h.dong, h.jibun || '', h.apt, h.band].join('|'); return { key: key, name: h.apt + ' ' + h.band, cal: u.cal.h[key] || {} }; }).filter(x => x.cal.t);
+  if (!items.length) return [];
+  const seen = {}, areas = [];
+  u.homes.forEach(h => { const g = ctx.sg(h.code); if (g && !seen[g.sido + g.name]) { seen[g.sido + g.name] = 1; areas.push({ sd: g.sido, gn: g.name }); } });
+  let ev = calEvents(items, ctx.date, { notices: ctx.notices, areas: areas });
+  if (s.prefs.cy && s.prefs.cy.on) ev = ev.filter(e => e.k !== 'cy');
+  return ev;
+}
+const calSid = (id, stage) => 'c' + axKeyId('cal|' + id + '|' + stage).slice(1);
+/** 보낼 날짜(단계별 한 번) — mode 'daily'(브리핑에 함께) · 'weekly'(따로) */
+function calItemsFor(s, ctx, sent, um, mode) {
+  if (!s.prefs.cal) return [];
+  const ev = calEventsFor(s, ctx, um), mine = (sent || {})[s.id] || {}, done = {};
+  ev.forEach(e => ['d30', 'd7', 'd1'].forEach(st => { if (mine[calSid(e.id, st)]) done[e.id + '|' + st] = 1; }));
+  return calDue(ev, mode, done);
+}
+function calWeekKey(date) { return 'w' + axKeyId('calwk|' + pqWeek(date)).slice(1); }
+function calWeekDone(s, ctx, sent) { return !!(((sent || {})[s.id] || {})[calWeekKey(ctx.date)]); }
+function calMsgFor(s, items, ctx, merged) {
+  const L = axLinks(bApi(), s.id, axTok, axPh);
+  return calMailHtml(items, { site: SITE_NAME, web: WEB_ROOT, off: L.all.replace(/&all=1$/, '&cal=1'), merged: !!merged, sender: BRIEF_SENDER, date: ctx.date });
+}
+/** 보낸 뒤 기록(단계마다 한 줄 + 주간 표시). setLast = 이 메일이 그날 첫 메일이면 최근발송일도 */
+function calDone(s, items, ctx, how, setLast, weekly) {
+  const sh = uSheet(SH_AXL, AXLH);
+  items.forEach(e => sh.appendRow([ctx.date, s.id, calSid(e.id, e.stage), 'cal']));
+  if (weekly) sh.appendRow([ctx.date, s.id, calWeekKey(ctx.date), 'calwk']);
+  if (setLast) { setAX(s.row, '최근발송일', ctx.date); setAX(s.row, '발송수', s.sent + 1); }
+  uSheet(SH_AXS, AXSH).appendRow([ctx.date, s.id, how, '달력 보냄', items.length]);
+}
+/** 알림 메일(따로)에 달력 칸 넣기: 맨 아래 안내 줄 바로 앞 */
+function calInto(html, cal) {
+  const mark = '<p style="font-size:12px;color:#4E5968;line-height:1.65;margin:12px 0 0;border-top:1px solid #E5E8EB;padding-top:10px">', i = html.lastIndexOf(mark);
+  return i >= 0 ? html.slice(0, i) + cal + html.slice(i) : html.replace(/<\/div>$/, cal + '</div>');
+}
+/** 모닝 브리핑을 받지 않는 분: 관심 단지 알림(D, 없으면 null) + 이번 주 달력(CI)을 한 통으로 */
+function axSendWithCal(s, D, CI, ctx) {
+  if (D && !CI.length) return axSendAlone(s, D, ctx);
+  if (!D) {
+    const m = calMsgFor(s, CI, ctx, false), r = axSend('email', s, m);
+    if (r.ok) { calDone(s, CI, ctx, '이메일(달력)', true, true); s.last = ctx.date; }
+    else uSheet(SH_AXS, AXSH).appendRow([ctx.date, s.id, '이메일(달력)', '못 보냄: ' + r.why, CI.length]);
+    return r;
+  }
+  const m = axMsg(s, D, ctx, false), AD = briefAdToday(ctx.now), c = bConsentOf(s.k);
+  let subject = m.subject, html = calInto(m.html, calMsgFor(s, CI, ctx, true).html);
+  if (AD && axAdOk(c)) { const last = myBriefs(s.k).pop(); if (last) { subject = ('(광고) ' + subject).slice(0, 120); html = html.replace(/<\/div>$/, briefAdMailHtml(AD, String(last.r[BC['id']])) + '</div>'); } }
+  const r = axSend('email', s, { subject: subject, html: html, text: m.text });
+  if (r.ok) { axDone(s, D, ctx, '이메일'); calDone(s, CI, ctx, '이메일(알림과 함께)', false, true); }
+  else uSheet(SH_AXS, AXSH).appendRow([ctx.date, s.id, '이메일', '못 보냄: ' + r.why, D.n]);
+  return r;
+}
+
+/* PRED-CORE BEGIN — 이 블록은 tools/agent-backend.gs 에 그대로 복사돼 있어요. 고칠 때는 두 곳을 똑같이 고쳐 주세요(node tools/predict-test.js 가 비교). */
+const PQ_NOTE = '포인트는 재미용이며 현금이나 상품으로 바꿀 수 없어요.';
+const PQ_PTS = 10, PQ_BONUS = 5, PQ_BONUS_FROM = 3;      // 맞히면 10점, 3번 연속 맞힐 때부터 한 번마다 5점 더
+const PQ_KIND = { rs: '서울 아파트값', rg: '구 대결', pm: '단지 대결', cy: '청약 경쟁률' };
+const PQ_BADGES = [
+  { id: 'first', t: '첫 예측', s: '처음으로 예측을 남겼어요' },
+  { id: 's3', t: '3연속 적중', s: '세 번 연속으로 맞혔어요' },
+  { id: 's5', t: '5연속 적중', s: '다섯 번 연속으로 맞혔어요' },
+  { id: 'n10', t: '예측 10번', s: '결과가 나온 예측이 10번이 됐어요' },
+  { id: 'wk4', t: '4주 연속 참여', s: '네 주 연속으로 예측했어요' },
+  { id: 'pm1', t: '단지 대결 승리', s: '단지 대결을 맞혔어요' },
+  { id: 'cy3', t: '청약 감별사', s: '청약 경쟁률을 세 번 맞혔어요' }
+];
+function pqEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+/** 'YYYY-MM-DD' → ISO 주 'YYYY-Www' */
+function pqWeek(iso) {
+  const d = new Date(Date.UTC(+String(iso).slice(0, 4), +String(iso).slice(5, 7) - 1, +String(iso).slice(8, 10)));
+  d.setUTCDate(d.getUTCDate() - (d.getUTCDay() + 6) % 7 + 3);                       // 그 주 목요일
+  const y = d.getUTCFullYear(), j4 = new Date(Date.UTC(y, 0, 4));
+  const w = 1 + Math.round(((d.getTime() - j4.getTime()) / 864e5 - 3 + (j4.getUTCDay() + 6) % 7) / 7);
+  return `${y}-W${String(w).padStart(2, '0')}`;
+}
+/** 지금 답할 수 있는 문제인지(마감 전). now = 'YYYY-MM-DDTHH:MM+09:00' 꼴 한국 시각 글자 */
+function pqIsOpen(q, now) { return !!(q && q.close && String(q.close) > String(now)); }
+/** 별명 정리: 2~10자, 한글·영문·숫자·띄어쓰기·밑줄만. 전화번호·주소처럼 보이면 버림 */
+function pqNick(s) {
+  s = String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
+  if (s.length < 2 || s.length > 10 || !/^[0-9A-Za-z가-힣 _]+$/.test(s) || /\d{4,}/.test(s) || /(관리자|운영자|집예보|admin)/i.test(s)) return '';
+  return s;
+}
+function pqDefaultNick(uh) { return '예측러 ' + String(uh || '').replace(/[^0-9a-f]/gi, '').slice(0, 4).toUpperCase(); }
+/** 고른 사람 비율: counts {보기키: 명} → [{k, t, n, pct}] (반올림 합이 100이 되게) */
+function pqShare(opts, counts) {
+  counts = counts || {};
+  const rows = (opts || []).map(o => ({ k: o.k, t: o.t, n: Math.max(0, Math.round(Number(counts[o.k]) || 0)) })), tot = rows.reduce((a, r) => a + r.n, 0);
+  if (!tot) return rows.map(r => Object.assign(r, { pct: 0 }));
+  const raw = rows.map(r => r.n * 100 / tot), fl = raw.map(Math.floor);
+  let left = 100 - fl.reduce((a, b) => a + b, 0);
+  raw.map((v, i) => [v - fl[i], i]).sort((a, b) => b[0] - a[0] || a[1] - b[1]).forEach(x => { if (left > 0) { fl[x[1]]++; left--; } });
+  return rows.map((r, i) => Object.assign(r, { pct: fl[i] }));
+}
+/** 한 사람 점수: answers = [{id, k}] · qs = 정답이 정해진 문제 [{id, kind, st('done'|'void'), ans, rat, wk}]
+    → { pts, n(채점된 수), ok, streak(지금 연속 적중), best, hist[{id, kind, k, ans, ok, pts, rat}], badges[id] } — 정답 정한 순서(rat)대로 */
+function pqScore(answers, qs) {
+  const mine = {}; (answers || []).forEach(a => { if (a && a.id) mine[a.id] = a.k; });
+  const done = (qs || []).filter(q => q && mine[q.id] != null && (q.st === 'done' || q.st === 'void'))
+    .sort((a, b) => String(a.rat || '') < String(b.rat || '') ? -1 : String(a.rat || '') > String(b.rat || '') ? 1 : a.id < b.id ? -1 : 1);
+  let pts = 0, n = 0, ok = 0, streak = 0, best = 0, cy = 0, pm = 0;
+  const hist = done.map(q => {
+    if (q.st === 'void') return { id: q.id, kind: q.kind, k: mine[q.id], ans: null, ok: null, pts: 0, rat: q.rat || '', void: true };
+    n++;
+    const hit = mine[q.id] === q.ans;
+    let p = 0;
+    if (hit) { ok++; streak++; best = Math.max(best, streak); p = PQ_PTS + (streak >= PQ_BONUS_FROM ? PQ_BONUS : 0); if (q.kind === 'cy') cy++; if (q.kind === 'pm') pm++; }
+    else streak = 0;
+    pts += p;
+    return { id: q.id, kind: q.kind, k: mine[q.id], ans: q.ans, ok: hit, pts: p, rat: q.rat || '' };
+  });
+  const wks = Object.keys((answers || []).reduce((m, a) => { if (a && a.wk) m[a.wk] = 1; return m; }, {})).sort();
+  let run = 0, runBest = 0, prev = '';
+  wks.forEach(w => { run = prev && pqNextWeek(prev) === w ? run + 1 : 1; runBest = Math.max(runBest, run); prev = w; });
+  const b = [];
+  if ((answers || []).length) b.push('first');
+  if (best >= 3) b.push('s3');
+  if (best >= 5) b.push('s5');
+  if (n >= 10) b.push('n10');
+  if (runBest >= 4) b.push('wk4');
+  if (pm >= 1) b.push('pm1');
+  if (cy >= 3) b.push('cy3');
+  return { pts: pts, n: n, ok: ok, streak: streak, best: best, hist: hist, badges: b };
+}
+/** 'YYYY-Www' 다음 주 */
+function pqNextWeek(w) {
+  const y = +w.slice(0, 4), n = +w.slice(6), jan4 = Date.UTC(y, 0, 4), dow = (new Date(jan4).getUTCDay() + 6) % 7, mon = jan4 - dow * 864e5 + (n - 1) * 7 * 864e5;
+  return pqWeek(new Date(mon + 7 * 864e5).toISOString().slice(0, 10));
+}
+/** 주간 순위: users = [{nick, answers}], qs = 정답 정한 문제, week = 'YYYY-Www'(정답을 정한 날 기준) → [{rank, nick, pts, ok, n}] 위에서 max 명. 0점은 뺌, 같은 점수는 같은 등수 */
+function pqBoard(users, qs, week, max) {
+  const wq = (qs || []).filter(q => q && q.rat && pqWeek(String(q.rat).slice(0, 10)) === week);
+  const rows = (users || []).map(u => { const S = pqScore(u.answers, qs), ids = {}; wq.forEach(q => { ids[q.id] = 1; });
+    const h = S.hist.filter(x => ids[x.id]); return { nick: u.nick, pts: h.reduce((a, x) => a + x.pts, 0), ok: h.filter(x => x.ok).length, n: h.filter(x => !x.void).length }; })
+    .filter(r => r.pts > 0).sort((a, b) => b.pts - a.pts || b.ok - a.ok || (a.nick < b.nick ? -1 : 1));
+  let rank = 0, last = null;
+  rows.forEach((r, i) => { if (last === null || r.pts !== last) { rank = i + 1; last = r.pts; } r.rank = rank; });
+  return rows.slice(0, max || 10);
+}
+/** 결과 문장: 문제 q(정답 정함) + 내 보기 k */
+function pqResultLine(q, k) {
+  if (!q) return '';
+  const t = o => ((q.opts || []).find(x => x.k === o) || {}).t || '';
+  if (q.st === 'void') return `무효예요 — ${q.why || '정답을 정할 수 없었어요'}. 포인트와 연속 기록에는 영향이 없어요.`;
+  if (q.st !== 'done') return '결과 발표를 기다리고 있어요.';
+  const head = k == null ? `정답은 '${t(q.ans)}'였어요.` : k === q.ans ? `맞혔어요! 정답은 '${t(q.ans)}'였어요.` : `아쉬워요. 정답은 '${t(q.ans)}'였어요.`;
+  return head + (q.why ? ` (${q.why})` : '');
+}
+/* PRED-CORE END */
+
+const QZ_ACTIONS = { quizBoard: 1, quizMine: 1, quizAnswer: 1, quizNick: 1 };
+const SH_QA = '예측답', QAH = ['시각', '문제id', '회원', '보기', '주'];
+const SH_QN = '예측별명', QNH = ['회원', '별명', '수정시각'];
+const SH_QS = '예측채점', QSH = ['채점시각', '문제id', '종류', '상태', '정답', '근거', '참여', '맞힘', '정한시각', '문제'];
+const QZ_DATA = AX_DATA + 'quiz/week.json';
+const QZ_BOARD_MAX = 10;
+function qzUid(k) { return 'q' + hashOf('qz|' + k).slice(1, 13); }
+function qzNow() { return Utilities.formatDate(new Date(), 'Asia/Seoul', "yyyy-MM-dd'T'HH:mm") + '+09:00'; }
+/** 공개 문제 파일(5분 캐시) */
+function qzWeek(fresh) {
+  const c = CacheService.getScriptCache(), hit = fresh ? null : c.get('qzweek');
+  if (hit) { try { return JSON.parse(hit); } catch (e) {} }
+  const j = bFetchJson(QZ_DATA);
+  if (j) try { c.put('qzweek', JSON.stringify(j), 300); } catch (e) {}
+  return j;
+}
+function qzDispatch(b) {
+  try {
+    if (b.action === 'quizBoard') return quizBoard(b);
+    return withLock(() => {
+      if (b.action === 'quizMine') return quizMine(b);
+      if (b.action === 'quizAnswer') return quizAnswer(b);
+      if (b.action === 'quizNick') return quizNick(b);
+      return { ok: false, err: 'unknown' };
+    });
+  } catch (x) { return { ok: false, err: String(x.message || x), code: x.code || '' }; }
+}
+/** 공개 결과(week.json done)에서 아직 적지 않은 정답을 '예측채점'에 옮겨 적음(감사 기록). 돌려줌: 정답이 정해진 문제 전체 [{id, kind, st, ans, rat}] */
+function qzSettle(W) {
+  const sh = uSheet(SH_QS, QSH), v = sh.getLastRow() > 1 ? sh.getRange(2, 1, sh.getLastRow() - 1, QSH.length).getValues() : [];
+  const have = {}, out = [];
+  v.forEach(r => { const id = String(r[1]); if (!id || have[id]) return; have[id] = 1; out.push({ id: id, kind: String(r[2]), st: String(r[3]), ans: String(r[4]) || null, rat: String(r[8]) }); });
+  const todo = ((W && W.done) || []).filter(q => q && q.id && !have[q.id] && (q.st === 'done' || q.st === 'void'));
+  if (todo.length) {
+    const ans = qzAnswers(), now = new Date();
+    todo.forEach(q => {
+      let n = 0, ok = 0;
+      Object.keys(ans).forEach(uid => { const a = ans[uid].find(x => x.id === q.id); if (a) { n++; if (q.st === 'done' && a.k === q.ans) ok++; } });
+      sh.appendRow([now, q.id, q.kind || '', q.st, q.ans || '', cellSafe(String(q.why || '').slice(0, 200)), n, ok, String(q.rat || ''), cellSafe(String(q.t || '').slice(0, 120))]);
+      out.push({ id: q.id, kind: q.kind || '', st: q.st, ans: q.ans || null, rat: String(q.rat || '') });
+    });
+    try { CacheService.getScriptCache().remove('qzboard'); } catch (e) {}
+  }
+  return out;
+}
+/** 모든 답 → {회원: [{id, k, wk}]} */
+function qzAnswers() {
+  const sh = book().getSheetByName(SH_QA), m = {}; if (!sh || sh.getLastRow() < 2) return m;
+  sh.getRange(2, 1, sh.getLastRow() - 1, QAH.length).getValues().forEach(r => { const u = String(r[2]); if (!u) return; (m[u] = m[u] || []).push({ id: String(r[1]), k: String(r[3]), wk: String(r[4]) }); });
+  return m;
+}
+function qzNicks() {
+  const sh = book().getSheetByName(SH_QN), m = {}; if (!sh || sh.getLastRow() < 2) return m;
+  sh.getRange(2, 1, sh.getLastRow() - 1, QNH.length).getValues().forEach(r => { if (r[0]) m[String(r[0])] = String(r[1]).replace(/^'/, ''); });
+  return m;
+}
+function qzNickOf(uid, nm) { return (nm || qzNicks())[uid] || pqDefaultNick(uid.slice(1)); }
+function qzCounts(ans) {
+  const c = {};
+  Object.keys(ans).forEach(uid => ans[uid].forEach(a => { const x = c[a.id] = c[a.id] || {}; x[a.k] = (x[a.k] || 0) + 1; }));
+  return c;
+}
+/** 순위 주: 가장 최근 정답이 나온 주(없으면 이번 주) */
+function qzBoardWeek(res) {
+  const last = res.map(q => String(q.rat || '').slice(0, 10)).filter(Boolean).sort().pop();
+  return pqWeek(last || ymd(new Date()));
+}
+function qzWeekLabel(w) {
+  const y = +w.slice(0, 4), n = +w.slice(6), j4 = Date.UTC(y, 0, 4), mon = j4 - ((new Date(j4).getUTCDay() + 6) % 7) * 864e5 + (n - 1) * 7 * 864e5;
+  const f = t => { const d = new Date(t); return `${d.getUTCMonth() + 1}/${d.getUTCDate()}`; };
+  return `${f(mon)}~${f(mon + 6 * 864e5)} 정답이 나온 문제`;
+}
+/** 공개: 보기별 고른 사람 수 + 주간 순위(별명만). 2분 캐시 */
+function quizBoard(b) {
+  const c = CacheService.getScriptCache(), hit = c.get('qzboard');
+  if (hit) { try { return JSON.parse(hit); } catch (e) {} }
+  const W = qzWeek(), res = withLock(() => qzSettle(W)), ans = qzAnswers(), nm = qzNicks(), week = qzBoardWeek(res);
+  const rows = pqBoard(Object.keys(ans).map(uid => ({ nick: qzNickOf(uid, nm), answers: ans[uid] })), res, week, QZ_BOARD_MAX);
+  const r = { ok: true, v: 1, counts: qzCounts(ans), board: { week: week, label: qzWeekLabel(week), rows: rows }, n: Object.keys(ans).length, note: PQ_NOTE };
+  try { c.put('qzboard', JSON.stringify(r), 120); } catch (e) {}
+  return r;
+}
+function quizMine(b) {
+  const u = sessionUser(b.s), uid = qzUid(u.k), W = qzWeek(), res = qzSettle(W), all = qzAnswers(), mine = all[uid] || [];
+  return { ok: true, nick: qzNickOf(uid), answers: mine.map(a => ({ id: a.id, k: a.k })), score: pqScore(mine, res), note: PQ_NOTE };
+}
+/** 답하기: 공개 파일의 받는 중 문제 · 마감 전 · 있는 보기만. 마감 전에는 다시 고를 수 있음(같은 줄을 고침) */
+function quizAnswer(b) {
+  const u = sessionUser(b.s), uid = qzUid(u.k), id = String(b.id || ''), k = String(b.k || ''), now = qzNow();
+  let W = qzWeek(), q = ((W && W.open) || []).find(x => x.id === id);
+  if (!q) { W = qzWeek(true); q = ((W && W.open) || []).find(x => x.id === id); }
+  if (!q) throw new Error('지금 받는 문제가 아니에요. 화면을 새로 고쳐 주세요.');
+  if (!pqIsOpen(q, now)) throw new Error('마감된 문제예요. 결과가 나오면 자동으로 채점해 드려요.');
+  if (!(q.opts || []).some(o => o.k === k)) throw new Error('보기를 다시 골라 주세요.');
+  const sh = uSheet(SH_QA, QAH), last = sh.getLastRow(), v = last > 1 ? sh.getRange(2, 1, last - 1, QAH.length).getValues() : [];
+  let row = 0;
+  for (let i = 0; i < v.length; i++) if (String(v[i][2]) === uid && String(v[i][1]) === id) { row = i + 2; break; }
+  const wk = pqWeek(now.slice(0, 10));
+  if (row) sh.getRange(row, 1, 1, QAH.length).setValues([[new Date(), id, uid, k, wk]]);
+  else sh.appendRow([new Date(), id, uid, k, wk]);
+  try { CacheService.getScriptCache().remove('qzboard'); } catch (e) {}
+  const all = qzAnswers(), cnt = qzCounts(all);
+  return { ok: true, answers: (all[uid] || []).map(a => ({ id: a.id, k: a.k })), counts: cnt[id] || {} };
+}
+function quizNick(b) {
+  const u = sessionUser(b.s), uid = qzUid(u.k), nick = pqNick(b.nick);
+  if (!nick) throw new Error('별명은 한글·영문·숫자 2~10자로 적어 주세요.');
+  const nm = qzNicks();
+  if (Object.keys(nm).some(x => x !== uid && nm[x] === nick)) throw new Error('이미 다른 분이 쓰는 별명이에요. 다른 별명을 골라 주세요.');
+  const sh = uSheet(SH_QN, QNH), v = sh.getDataRange().getValues();
+  let row = 0; for (let i = 1; i < v.length; i++) if (String(v[i][0]) === uid) { row = i + 1; break; }
+  if (row) sh.getRange(row, 2, 1, 2).setValues([[cellSafe(nick), new Date()]]); else sh.appendRow([uid, cellSafe(nick), new Date()]);
+  try { CacheService.getScriptCache().remove('qzboard'); } catch (e) {}
+  return { ok: true, nick: nick };
+}
+/** 회원 탈퇴: 그 사람 답·별명 지우기(채점 기록은 문제별 합계만이라 그대로) */
+function qzUserGone(k) {
+  const uid = qzUid(k);
+  [[SH_QA, 2], [SH_QN, 0]].forEach(([n, col]) => { const sh = book().getSheetByName(n); if (!sh) return; const v = sh.getDataRange().getValues(); for (let i = v.length - 1; i >= 1; i--) if (String(v[i][col]) === uid) sh.deleteRow(i + 1); });
+  try { CacheService.getScriptCache().remove('qzboard'); } catch (e) {}
 }
