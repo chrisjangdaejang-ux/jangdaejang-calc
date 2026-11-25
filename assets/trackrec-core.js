@@ -25,7 +25,7 @@
     const t = x.b.top, b = x.b.bot;
     return {
       title: `점수 상위 20% ${a.name}, ${HL[h]} 뒤 같은 구 평균보다 더 오른 비율 ${f1(t.hit)}%`,
-      sub: `점수 하위 20%는 ${f1(b.hit)}%였어요. ${ym(x.from)}부터 ${ym(x.to)}까지 매달, 그달 점수만 보고 나눈 ${a.name} ${x.months}개월치 결과예요.`
+      sub: `점수 하위 20%는 ${f1(b.hit)}%였어요. ${ym(x.from)}부터 ${ym(x.to)}까지 매달 그달 점수로 단지를 나눈 ${a.name} ${x.months}개월치 결과예요.`
     };
   }
 
@@ -66,12 +66,12 @@
       for (const [sc, hh] of Object.entries(a.scopes)) {
         for (const h of T.h || [6, 12, 24]) {
           const x = hh[String(h)], where = `${a.name} · ${sc} · ${HL[h]}`;
-          if (!x) { if (sc === '전국') L.push({ lv: 'none', asset: a.name, t: `${where}: 아직 결과가 없어요(그만큼 시간이 지나지 않았어요).` }); continue; }
+          if (!x) { if (sc === '전국') L.push({ lv: 'none', asset: a.name, t: `${where}: 아직 결과가 없어요. 결과를 확인할 만큼 시간이 지나지 않았어요.` }); continue; }
           const j = judge(x), w = `상위 20%가 하위 20%보다 나았던 달 ${x.months}개월 중 ${x.win}개월`;
           if (j.includes('rev')) L.push({ lv: 'rev', asset: a.name, sc, h, t: `${where}: 반대로 나왔어요. 같은 구 평균과 견줘 상위 20%가 하위 20%보다 ${f1(Math.abs(x.gap))}%p 뒤졌어요(${w}).` });
-          else if (j.includes('weak')) L.push({ lv: 'weak', asset: a.name, sc, h, t: `${where}: 차이가 작아요. 상위 20%와 하위 20%의 차이 ${sg(x.gap)}%p(${w}).` });
+          else if (j.includes('weak')) L.push({ lv: 'weak', asset: a.name, sc, h, t: `${where}: 차이가 작아요. 상위 20%와 하위 20%의 차이가 ${sg(x.gap)}%p에 그쳤어요(${w}).` });
           if (j.includes('price') && !j.includes('rev')) L.push({ lv: 'price', asset: a.name, sc, h, t: `${where}: 같은 구 평균과 견주면 상위 20%가 앞섰지만, 실제 가격 변화는 하위 20%가 더 컸어요(${sg(x.b.top.avg)}% vs ${sg(x.b.bot.avg)}%). 오른 동네에 하위 단지가 더 많았기 때문이에요.` });
-          if (j.includes('short') && sc === '전국') L.push({ lv: 'short', asset: a.name, sc, h, t: `${where}: 아직 ${x.months}개월치뿐이라 우연의 영향이 커요.` });
+          if (j.includes('short') && sc === '전국') L.push({ lv: 'short', asset: a.name, sc, h, t: `${where}: 아직 ${x.months}개월치 결과뿐이라 우연의 영향이 클 수 있어요.` });
         }
       }
     }

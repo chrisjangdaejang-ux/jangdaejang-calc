@@ -28,7 +28,7 @@ check('헤드라인 둘째 줄: 2년 평균 상승률', H.sub, '2년 평균 상�
 check('규모 줄(자료 값 그대로, 천 단위 쉼표)', H.size, '전국 49,142개 단지·평형 · 기준 월 85개 · 2,013,842건');
 check('전국 기준 탭: 비교 기준 이름', T.head(BT.scopes['전국'], { base: '전국 평균' }).title.includes('전국 평균보다'), true);
 const P = T.period(BT, BT.scopes['전국']);
-check('기간: 시작월(data_from)·기준 월 범위·개수', P.text, '2010년 1월부터 쌓인 공공 통계로, 2017년 10월부터 2024년 10월까지 85개 달마다 그때까지 나온 자료만으로 점수를 매겨 보고, 2년 뒤 실제 시세와 맞춰 봤어요.');
+check('기간: 시작월(data_from)·기준 월 범위·개수', P.text, '2010년 1월부터 쌓인 공공 통계로 2017년 10월부터 2024년 10월까지 85개월 동안 매달 그때까지 나온 자료만으로 점수를 매기고, 2년 뒤 실제 시세와 비교했어요.');
 check('기간: data_from 없으면 model_h 의 값', T.period({}, BT.scopes['전국'], { data_from: '2006-01' }).from, '2006년 1월');
 check('기간: 둘 다 없으면 시작월 생략', T.period({}, BT.scopes['전국']).text.startsWith('2017년 10월부터'), true);
 const C = T.cards(BT.scopes['전국']);

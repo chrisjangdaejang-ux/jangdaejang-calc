@@ -182,10 +182,10 @@ const JOURNEYS = {
     ok(Wy && Wy.n === 5, '"집값에 영향을 준다는데 왜 안 쓰나요?" 다섯 가지 이유가 보임');
     if (Wy) {
       ok(Wy.top, '"왜 안 쓰나요?"가 뺀 항목 목록보다 위에 있음');
-      ok(Wy.text.includes(`새 후보 ${Wy.rec.tried}개`) && Wy.text.includes(`새로 쓰기로 한 것 ${Wy.rec.adopted}개`), `후보 ${Wy.rec.tried}개 · 채택 ${Wy.rec.adopted}개가 재학습 기록과 같음`);
+      ok(Wy.text.includes(`새 후보 ${Wy.rec.tried}개`) && Wy.text.includes(`새로 채택한 항목 ${Wy.rec.adopted}개`), `후보 ${Wy.rec.tried}개 · 채택 ${Wy.rec.adopted}개가 재학습 기록과 같음`);
       ok(/인구 증가/.test(Wy.text) && /향후 2년 입주 물량/.test(Wy.text), '① 구 점수에 쓰는 인구 증가·입주 물량 이름이 보임');
-      ok(Wy.rows.length >= 10 && Wy.rows.every(r => r.length === 3 && /^(쓴다|구 점수에만|뺐다)/.test(r[1]) && r[2]), '표: 후보·결과(쓴다/구 점수에만/뺐다)·한 줄 이유');
-      const c = (Wy.cnt.match(/쓴다 (\d+) · 구 점수에만 (\d+) · 뺐다 (\d+)/) || []).slice(1).map(Number), all = c.reduce((a, b) => a + b, 0);
+      ok(Wy.rows.length >= 10 && Wy.rows.every(r => r.length === 3 && /^(사용|구 점수에 사용|제외)/.test(r[1]) && r[2]), '표: 후보·결과(사용/구 점수에 사용/제외)·한 줄 이유');
+      const c = (Wy.cnt.match(/사용 (\d+) · 구 점수에 사용 (\d+) · 제외 (\d+)/) || []).slice(1).map(Number), all = c.reduce((a, b) => a + b, 0);
       ok(all === Wy.rows.length, `표 위 개수 합(${all})이 표 줄 수(${Wy.rows.length})와 같음`);
       ok(!/undefined|NaN|null/.test(Wy.text) && !/\d+(\.\d+)?\s*%/.test(Wy.text), '"왜 안 쓰나요?"에 undefined·퍼센트 기준값 없음');
     }

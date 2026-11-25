@@ -143,7 +143,7 @@ h1 em{font-style:normal;color:var(--blue)}
   </div>
 
   <details class="how" id="how">
-    <summary>착공까지 기간은 이렇게 셌어요</summary>
+    <summary>착공까지 걸리는 기간은 이렇게 계산했어요</summary>
     <div id="howBody"></div>
   </details>
 
@@ -234,7 +234,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
     const zs = current();
     const est = zs.filter(z => z.sp && z.sp.y && !R.started(z)), ok = est.filter(z => z.sp.ok).length;
     $('sum').innerHTML = zs.length ? `구역 <b>${zs.length.toLocaleString('ko-KR')}곳</b> · 착공 예상이 있는 곳 ${est.length}곳(맞힌 기록 있음 ${ok}곳)` : '';
-    if (!zs.length) { $('list').innerHTML = '<div class="empty">조건에 맞는 구역이 없어요. 위에서 고른 칸을 바꿔 보세요.</div>'; return; }
+    if (!zs.length) { $('list').innerHTML = '<div class="empty">조건에 맞는 구역이 없어요. 위에서 고른 조건을 바꿔 보세요.</div>'; return; }
     $('list').innerHTML = zs.slice(0, S.shown).map(card).join('') + (zs.length > S.shown ? `<button class="morebtn" id="moreList">더 보기 (${(zs.length - S.shown).toLocaleString('ko-KR')}곳 남음)</button>` : '');
   }
 
@@ -280,16 +280,16 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
   function legend() {
     $('legend').innerHTML = Object.keys(R.TYPES).filter(k => k !== 'nt').map(k => `<span><i style="background:${R.COLOR[k]}"></i>${esc(R.TYPES[k])}</span>`).join('') + '<span><i class="dash"></i>신속통합기획(점선)</span>';
     const nP = D.z.filter(z => z.poly).length, nPt = D.z.filter(z => z.pt && !z.poly).length, nNo = D.z.filter(z => !z.pt && z.t !== 'nt').length;
-    $('mapNote').textContent = `면 ${nP}곳은 서울시가 공개한 정비구역 경계(법적 효력 없는 참고자료)예요. 점 ${nPt}곳은 경계가 작아 약 100m 단위로 줄이면 모양이 무너지거나 경계 자료가 없어, 경계 가운데나 구역 대표 지번 위치에 찍었어요. 위치 자료가 없는 ${nNo}곳과 1기 신도시는 목록에만 있어요.`;
+    $('mapNote').textContent = `면으로 표시한 ${nP}곳은 서울시가 공개한 정비구역 경계(법적 효력 없는 참고자료)예요. 점으로 표시한 ${nPt}곳은 경계가 너무 작아 약 100m 단위로 단순화하면 모양이 무너지거나 경계 자료가 없는 곳이라, 경계 가운데나 구역 대표 지번 위치에 표시했어요. 위치 자료가 없는 ${nNo}곳과 1기 신도시는 목록에만 있어요.`;
   }
   function how() {
     const rows = R.holdRows(D), a = D.hold_all || {};
-    $('howBody').innerHTML = `<p>① <b>자료</b>: 서울시 정비사업 추진현황(${esc(R.ym(D.asof))} 기준)의 단계별 첫 인가 날짜예요. 이 자료에는 지금 진행 중인 구역만 있고 이미 다 지어진 구역은 빠져 있어서, ${esc(R.ym(D.obs_from))}부터의 착공만 셌어요(그 뒤 착공한 구역은 아직 다 지어지지 않아 자료에 모두 남아 있어요).</p>
-      <p>② <b>보통 몇 년</b>: 조합설립인가·사업시행인가·관리처분인가 가운데 그 구역이 마지막으로 받은 인가부터 착공까지 걸린 기간을, 같은 사업 종류·같은 권역(도심·동북·서북·서남·동남) 구역끼리 모았어요. 착공까지 간 곳이 ${D.min_ev}곳보다 적으면 서울 전체, 그래도 적으면 모든 종류를 함께 봤어요. 아직 착공 전인 구역도 "그때까지는 착공 안 함"으로 함께 셌어요. "보통"은 10곳 중 가운데 6곳(20%~80%)이 들어가는 범위예요.</p>
-      <p>③ <b>이 구역 착공 예상</b>: 이 구역이 이미 기다린 기간보다 오래 걸린 구역들만 모아, 그 구역들의 20%~80%가 착공한 시기로 계산했어요.</p>
+    $('howBody').innerHTML = `<p>① <b>자료</b>: 서울시 정비사업 추진현황(${esc(R.ym(D.asof))} 기준)의 단계별 첫 인가 날짜예요. 이 자료에는 지금 진행 중인 구역만 있고 이미 다 지어진 구역은 빠져 있어서, ${esc(R.ym(D.obs_from))}부터의 착공만 셌어요. 그 뒤에 착공한 구역은 아직 공사 중이라 자료에 모두 남아 있어요.</p>
+      <p>② <b>보통 몇 년</b>: 조합설립인가·사업시행인가·관리처분인가 가운데 그 구역이 마지막으로 받은 인가부터 착공까지 걸린 기간을, 같은 사업 종류·같은 권역(도심·동북·서북·서남·동남) 구역끼리 모았어요. 착공한 구역이 ${D.min_ev}곳보다 적으면 서울 전체로 넓히고, 그래도 적으면 모든 사업 종류를 함께 봤어요. 아직 착공 전인 구역도 "그때까지 착공하지 않음"으로 함께 셌어요. "보통"은 10곳 중 가운데 6곳(20%~80%)이 들어가는 범위예요.</p>
+      <p>③ <b>이 구역 착공 예상</b>: 이 구역이 지금까지 기다린 기간보다 더 오래 걸린 구역들만 모아, 그중 20%~80%가 착공한 시기로 계산했어요.</p>
       <p>④ <b>과거로 돌아가 맞혀 보기</b>: ${(D.cuts || []).map(R.ym).join('·')} 시점으로 돌아가 그때까지의 날짜만으로 다시 계산한 뒤, ${esc(R.ym(D.asof))}까지 실제로 착공했는지 맞혀 봤어요. 기준: ${D.nmin_ok}번 이상 맞혀 본 결과가 있고, 절반 이상 맞고, "모두 착공 안 함"이라고 했을 때보다 더 잘 맞힌 경우만 <span class="bd ok">맞힌 기록 있음</span>, 나머지는 <span class="bd ref">참고</span>예요. 전체로는 ${a.n || 0}번 중 ${a.hit || 0}번 맞았어요(${a.rate != null ? Math.round(a.rate * 100) : '-'}%, "모두 착공 안 함"이면 ${a.brate != null ? Math.round(a.brate * 100) : '-'}%).</p>
       <div style="overflow-x:auto"><table><thead><tr><th>기준 단계</th><th>사업 종류</th><th class="num">맞힘</th><th class="num">모두 '안 함'</th><th>표시</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc(r.stage)}</td><td>${esc(r.typ)}</td><td class="num">${r.hit}/${r.n} (${Math.round(r.rate * 100)}%)</td><td class="num">${Math.round(r.brate * 100)}%</td><td>${r.ok ? '<span class="bd ok">맞힌 기록 있음</span>' : '<span class="bd ref">참고</span>'}</td></tr>`).join('')}</tbody></table></div>
-      <p class="note">자료가 쌓이면(매주 새 추진현황) 다시 계산해요. 관찰 기간이 짧아 착공 예상 연도 범위 전체가 끝난 사례는 아직 없어서, 연도 범위 자체를 맞혔는지는 다음 자료부터 확인할 수 있어요. 착공 예상은 과거 흐름일 뿐이고, 조합 분쟁·소송·인허가 지연으로 크게 달라질 수 있어요.</p>`;
+      <p class="note">새 추진현황 자료가 매주 쌓일 때마다 다시 계산해요. 관찰 기간이 짧아 착공 예상 연도 범위가 모두 지난 사례는 아직 없어요. 그래서 연도 범위까지 맞혔는지는 다음 자료부터 확인할 수 있어요. 착공 예상은 과거 흐름을 바탕으로 한 값이라, 조합 분쟁·소송·인허가 지연에 따라 크게 달라질 수 있어요.</p>`;
   }
   function src() {
     const S2 = D.src || {};

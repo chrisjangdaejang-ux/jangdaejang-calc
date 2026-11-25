@@ -378,7 +378,7 @@
     return { up, k, np: per.length, same, from: per.length ? per.map(p => String(p[0])).sort()[0] : null, to: per.length ? per.map(p => String(p[0])).sort().slice(-1)[0] : null };
   }
   const recOne = (e, r, who, base) => `과거 ${who} ${n0(e.n)}건 중 ${n0(r.k)}건이 2년 뒤 ${base}보다 ${r.up ? '더' : '덜'} 올랐어요(평균 ${r.up ? '+' : '−'}${r1(e.ex)}%p).`;
-  const recPer = r => r.np ? ` 시점을 바꿔 ${ymKo(r.from)}~${ymKo(r.to)} 사이 ${r.np}번 그대로 대입해 봤더니 ${r.np}번 중 ${r.same}번 같은 방향이었어요.` : '';
+  const recPer = r => r.np ? ` 기준 시점을 ${ymKo(r.from)}~${ymKo(r.to)} 사이로 바꿔 ${r.np}번 다시 확인해 보니, ${r.np}번 중 ${r.same}번 같은 방향이었어요.` : '';
   /* 정책 대상 지역(policy-view.js applies 와 같은 규칙, 동 단위 지정은 동이 맞을 때만) */
   function polHit(p, sgg, dong) {
     const tok = t => t === 'all' || (t === 'metro' ? ['11', '28', '41'].includes(sgg.slice(0, 2)) : t === 'nonmetro' ? !['11', '28', '41'].includes(sgg.slice(0, 2))
@@ -439,7 +439,7 @@
       const mean = F.mean[r.up ? 0 : 1];
       xs.push({ side: r.up ? 'up' : 'dn', k, grp: /^tv/.test(k) ? 'tv' : k, sc: Math.abs(e.ex) * (r.k / e.n), t: F.t, o: recOne(e, r, who, unitBase),
         d: [F.fact, `과거 ${F.cond} 단지 ${n0(e.n)}건을 2년 뒤와 비교해 봤더니 ${n0(r.k)}건이 ${unitBase}보다 ${r.up ? '더' : '덜'} 올랐고, 평균 차이는 ${r.up ? '+' : '−'}${r1(e.ex)}%p였어요.` + recPer(r)
-          + (against ? ' 흔히 생각하는 것과 반대지만 과거 사례는 이랬어요.' : ''),
+          + (against ? ' 통념과는 반대되는 결과예요.' : ''),
           `그래서 ${mean.replace(/많았어요$/, '많았던 만큼')}, ${AG} 앞으로 2년 ${SG} 평균보다 ${r.up ? '더 오를 쪽이에요' : '덜 오를 수 있어요'}.`],
         ev: e, evBase: '자기 구 평균 대비' });
     }
@@ -1340,7 +1340,7 @@
     const miss = [W.up.length ? '' : '오를 이유', W.dn.length ? '' : '조심할 점'].filter(Boolean);
     return `<div class="w3${pro ? ' w3x' : ''}" id="${E(id)}">`
       + `<h3 class="w3-h">${[W.up.length ? `오를 이유 ${W.up.length}` : '', W.dn.length ? `조심할 점 ${W.dn.length}` : '', W.watch.length ? '지켜볼 것' : ''].filter(Boolean).join(' · ')}</h3>`
-      + `<p class="w3-lead">공공 통계를 과거 시점에 그대로 대입해 2년 뒤 실제로 어땠는지 확인된 것만 이유로 적었어요.</p>`
+      + `<p class="w3-lead">공공 통계를 과거 시점에 적용해, 2년 뒤 실제 결과로 확인된 내용만 이유로 적었어요.</p>`
       + `<div class="w3-grid">${col(W.up, 'w3-up', '오를 이유')}${col(W.dn, 'w3-dn', '조심할 점')}`
       + (W.watch.length || alert ? `<div class="w3-col w3-wt"><h4 class="w3-k">지켜볼 것</h4>${W.watch.length ? `<ol class="w3-ol">${W.watch.map(x => li(x, 'w3-wt')).join('')}</ol>` : ''}`
         + (alert ? `<button type="button" class="w3-alert" data-w3-alert="${E(W.key)}" data-w3-name="${E(W.apt)}"${W.place ? ` data-w3-place="${E(JSON.stringify(W.place))}"` : ''}>이 단지 알림 받기</button><span class="w3-msg" role="status"></span>` : '') + '</div>' : '')

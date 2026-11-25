@@ -68,7 +68,7 @@ const IX = { sido: [{ name: '서울특별시', short: '서울' }], sgg: {} };
 const G = P.gloss();
 const rg = P.regionText({ gs: 14, pg: -0.0094, un: 0.0, jb: -0.003, sup: 0.01 }, IX, '11710', G);
 eq(rg.fact, '송파구는 앞으로 2년 지역 흐름 점수가 서울 5개 구 중 약 5위예요(하위권).', '지역 흐름 사실: 주어 먼저 + 비교 대상(곳 수를 목록에서 세면 약)');
-has(rg.mean, '송파구가 나쁜 동네라는 뜻이 아니라', '지역 흐름 해석(주어)');
+has(rg.mean, '하위권은 송파구 앞으로 2년 오름폭이', '지역 흐름 해석(주어)');
 not(rg.why.join(' '), '재고 대비', '내부 기준 표현 없음');
 has(rg.why.join(' '), '송파구 인구가 최근 1년 0.9% 줄었어요', '인구 동사형 + 주어');
 
@@ -86,7 +86,7 @@ eq(P.hzLabel({ oos_all: [1, 2, 3, 4], oos_hit: 4, oos_avg: 1.09 }), '과거 4번
 eq(P.hzLabel({ oos_all: [1, 2, 3, 4, 5, 6, 7, 8], oos_hit: 2, oos_avg: 0.25 }), '과거 8번 중 2번만 맞음 · 참고만', '평균 +여도 절반 미만 적중이면 참고만');
 eq(P.hzLabel({ oos_all: [1, 2, 3, 4], oos_hit: 2, oos_avg: 0.5 }), '과거 4번 중 2번 맞음', '절반 맞으면 사용');
 eq(P.hzLabel({ oos_all: [1, 2, 3, 4], oos_hit: 1, oos_avg: -0.39 }), '과거 4번 중 1번만 맞음 · 참고만', '미달 참고만');
-eq(P.hzLabel({ oos_all: [1], oos_hit: 1, oos_avg: 4.9 }), '과거 1번만 써 봄 · 참고만', '1번뿐');
+eq(P.hzLabel({ oos_all: [1], oos_hit: 1, oos_avg: 4.9 }), '과거 결과 1번뿐 · 참고만', '1번뿐');
 /* 과거 성적 문구(대표 확정 11/20): 시작월은 data_from, 없으면 생략 */
 {
   const m = { data_from: '2010-01', oos_all: [{ t0: '201710', top20: 3.1 }, { t0: '201810', top20: -0.4 }, { t0: '201910', top20: 1.2 }], oos_hit: 2, oos_avg: 1.3 };
@@ -124,7 +124,7 @@ has(rg2.mean, '최근 많이 오른 만큼', '해석 한 줄(많이 오른 구)'
 has(rg2.other, '반대로 송파구 점수를 받쳐 준 쪽: 송파구 인구가 최근 1년 0.2% 늘었어요', '올린 항목은 뒤에');
 eq(rg2.ref.join(' '), '송파구 새 아파트 입주 물량은 앞으로 2년 거의 없어요. 송파구 일자리가 1년 새 1% 줄었어요.', 'up/down 에 없는 지표만 참고 지표');
 const line2 = P.regionLine(rg2, '');
-eq(line2.indexOf('이미 많이 올랐어요') < line2.indexOf('나쁜 동네라는') && line2.indexOf('나쁜 동네라는') < line2.indexOf('참고 지표:'), true, '순서: 이유 → 해석 → 참고 지표');
+eq(line2.indexOf('이미 많이 올랐어요') < line2.indexOf('살기 좋은 정도와는') && line2.indexOf('살기 좋은 정도와는') < line2.indexOf('참고 지표:'), true, '순서: 이유 → 해석 → 참고 지표');
 not(line2, '중간값(여러 값을', '괄호 안 이중 풀이 없음');
 const line1 = P.regionLine(P.regionText(f2, IX, '11710', P.gloss()), '');
 has(line1, '참고 지표: 송파구 새 아파트 입주 물량은 앞으로 2년 거의 없어요.', 'r 없을 때(배포 전) 예전 동작');

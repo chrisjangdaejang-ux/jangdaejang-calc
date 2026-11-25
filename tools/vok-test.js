@@ -31,8 +31,8 @@ for (const [nm, m, want] of CASES.filter(c => c[1] && c[1].oos_all.length)) {
   check(`순위 화면 판정 ${nm}`, !!(RK.vcheck && RK.vcheck({ 2: m }, null) || {}).ok, want);
   check(`갈아타기 판정 ${nm}`, !!((SW.validity({ 5: m }, null) || {})[5] || {}).ok, want);
 }
-check('짧은 표기: 성적 없는 기간은 "참고만"', PL.hzLabel({ oos_all: [], oos_hit: 0, oos_avg: null }), '아직 써 본 적 없음 · 참고만');
-check('짧은 표기: 모델이 없어도 "참고만"(멈추지 않음)', PL.hzLabel(undefined), '아직 써 본 적 없음 · 참고만');
+check('짧은 표기: 성적 없는 기간은 "참고만"', PL.hzLabel({ oos_all: [], oos_hit: 0, oos_avg: null }), '과거 결과 없음 · 참고만');
+check('짧은 표기: 모델이 없어도 "참고만"(멈추지 않음)', PL.hzLabel(undefined), '과거 결과 없음 · 참고만');
 check('짧은 표기: 5년 3번 중 3번', PL.hzLabel(run(3, 3, 2.1)), '과거 3번 중 3번 맞음');
 
 /* 단지 문장(narrative): 7년 성적이 없으면 7년은 '참고로만 보여 드리는 기간'(흐린 글씨 nar-dim)으로, 결론 문장에는 안 씀 */

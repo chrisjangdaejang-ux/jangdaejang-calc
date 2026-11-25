@@ -154,7 +154,7 @@
     if (f.gs != null && ri.n >= 3) {
       const rp = regionPlace(IX, code, f.gs); pos = rp.pos;
       out.fact = `${J(NM, '은', '는')} 앞으로 2년 지역 흐름 점수가 ${rp.text}예요(${pos}).`;
-      out.mean = pos === '하위권' ? `${J(NM, '이', '가')} 나쁜 동네라는 뜻이 아니라, ${NM} 앞으로 2년 오름폭이 ${ri.short} 다른 ${ri.unit}보다 작을 수 있다는 뜻이에요.`
+      out.mean = pos === '하위권' ? `하위권은 ${NM} 앞으로 2년 오름폭이 ${ri.short} 다른 ${ri.unit}보다 작을 수 있다는 뜻이에요. 살기 좋은 정도와는 별개의 기준이에요.`
         : pos === '상위권' ? `${NM} 전체 흐름이 이 단지 가격을 받쳐 줄 수 있다는 뜻이에요.` : '';
       out.pos = pos;
     }
@@ -216,7 +216,7 @@
     for (const nm of main) { if (seen.has(nm)) continue; seen.add(nm); const t = line(nm); if (t) { (isDn(nm) ? D : U).push(t); out.items.push({ nm, up: !isDn(nm), t }); } }
     for (const k of ['sup', 'pg', 'un', 'jb']) if (!used.has(k)) { const t = T[k](); if (t) out.ref.push(t); }
     for (const k of PK) if (!used.has(k) && PP[k]) out.ref.push(PP[k]);
-    if (pos === '하위권' && momHigh) out.mean = `${J(NM, '이', '가')} 나쁜 동네라는 뜻이 아니라, ${J(NM, '이', '가')} 최근 많이 오른 만큼 앞으로 2년 오름폭은 ${ri.short} 다른 ${ri.unit}보다 작을 수 있다는 뜻이에요.`;
+    if (pos === '하위권' && momHigh) out.mean = `${J(NM, '이', '가')} 최근 많이 오른 만큼, 앞으로 2년 오름폭은 ${ri.short} 다른 ${ri.unit}보다 작을 수 있다는 뜻이에요. 살기 좋은 정도와는 별개의 기준이에요.`;
     const S = `${NM} 점수를`;
     if (pos === '하위권') { out.why = D; out.other = U.length ? `반대로 ${S} 받쳐 준 쪽: ` + U.join(' ') : ''; }
     else if (pos === '상위권') { out.why = U; out.other = D.length ? `다만 ${S} 낮춘 쪽: ` + D.join(' ') : ''; }
@@ -390,8 +390,8 @@
   function hzLabel(m) {
     const n = ((m && m.oos_all) || []).length, hit = trackHit(m) || 0;
     if (VOK(m)) return `과거 ${n}번 중 ${hit}번 맞음`;
-    if (n === 0) return '아직 써 본 적 없음 · 참고만';
-    if (n === 1) return '과거 1번만 써 봄 · 참고만';
+    if (n === 0) return '과거 결과 없음 · 참고만';
+    if (n === 1) return '과거 결과 1번뿐 · 참고만';
     return `과거 ${n}번 중 ${hit}번${2 * hit < n ? '만' : ''} 맞음 · 참고만`;
   }
   /* 접는 상자 '이 점수 방식을 믿을 수 있나요?' 본문 */

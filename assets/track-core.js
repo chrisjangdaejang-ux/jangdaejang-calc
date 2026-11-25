@@ -43,7 +43,7 @@
     const from = ymNorm((BT && BT.data_from) || (MH && MH.data_from) || '');
     const a = ymKo(sc.from), b = ymKo(sc.to);
     return { from: from ? ymKo(from) : '', span: `${a}~${b}`, months: sc.months,
-      text: `${from ? `${ymKo(from)}부터 쌓인 공공 통계로, ` : ''}${a}부터 ${b}까지 ${sc.months}개 달마다 그때까지 나온 자료만으로 점수를 매겨 보고, 2년 뒤 실제 시세와 맞춰 봤어요.` };
+      text: `${from ? `${ymKo(from)}부터 쌓인 공공 통계로 ` : ''}${a}부터 ${b}까지 ${sc.months}개월 동안 매달 그때까지 나온 자료만으로 점수를 매기고, 2년 뒤 실제 시세와 비교했어요.` };
   }
   /* 헤드라인: 상위·하위 10%의 같은 구 평균 대비 + 2년 평균 상승률. base = 비교 기준 이름 */
   function head(sc, o) {
@@ -72,7 +72,7 @@
       : s.down_x >= 1 ? { big: `${s.down_x}배`, label: '2년 뒤 내린 비율, 하위 10%가 상위 10%보다', note: `하위 10%는 ${s.down_bot}%, 상위 10%는 ${s.down_top}%가 2년 뒤 내렸어요.` }
       : { big: `${s.down_x}배`, label: '2년 뒤 내린 비율, 하위 10%가 상위 10%보다', note: `오히려 상위 10%(${s.down_top}%)가 하위 10%(${s.down_bot}%)보다 더 자주 내렸어요.` };
     return [
-      { big: `${s.top_beat}%`, label: `점수 상위 10% 중 ${base}보다 더 오른 비율`, note: '아무 단지나 고르면 50% 안팎이에요.' },
+      { big: `${s.top_beat}%`, label: `점수 상위 10% 중 ${base}보다 더 오른 비율`, note: '무작위로 고르면 50% 안팎이에요.' },
       c2,
       { big: `${s.win_months}/${s.months}`, label: '상위 10%가 하위 10%보다 더 오른 기준 월', note: `과거에 그대로 써 봤더니 ${s.months}번 중 ${s.win_months}번 상위 10%가 더 올랐어요.` }
     ];
@@ -251,13 +251,13 @@
   function reasonOf(name, code, cases, plain) {
     const A = J(name, '은', '는'), ok = (cases || []).filter(c => c.ok);
     if (code === 'unstable' || code === 'no_gain') {
-      if (ok.length) return { why: 'combo', text: `${A} 이 항목만 따로 떼어 본 과거 사례에서는 같은 방향이 뚜렷했어요(아래 과거 사례). 하지만 다른 항목과 함께 점수에 넣어 과거에 그대로 써 보니 같은 구 안에서 더 오를 단지를 더 잘 맞히지 못해 뺐어요.` };
+      if (ok.length) return { why: 'combo', text: `${A} 따로 떼어 본 과거 사례에서는 같은 방향이 뚜렷했어요(아래 과거 사례). 하지만 다른 항목과 함께 점수에 넣어 과거에 적용해 보니, 같은 구 평균보다 더 오를 단지를 가려내는 힘이 나아지지 않아 뺐어요.` };
       if ((cases || []).length) return { why: code === 'unstable' ? 'flip_mixed' : 'gain_mixed', text: code === 'unstable'
-        ? `${A} 점수에 넣어 과거에 그대로 써 보니 시기마다 집값에 주는 방향이 바뀌었고(어떤 때는 오르는 쪽, 어떤 때는 내리는 쪽), 따로 떼어 본 과거 사례도 구간마다 더 오른 단지와 덜 오른 단지가 비슷해서 뺐어요.`
-        : `${A} 점수에 넣어 과거에 그대로 써 보니 더 잘 맞히지 못했고, 따로 떼어 본 과거 사례도 구간마다 더 오른 단지와 덜 오른 단지가 비슷해서 뺐어요.` };
+        ? `${A} 점수에 넣어 과거에 적용해 보니 시기에 따라 집값에 주는 방향이 바뀌었어요(어떤 때는 오르는 쪽, 어떤 때는 내리는 쪽). 따로 떼어 본 과거 사례에서도 구간마다 더 오른 단지와 덜 오른 단지가 비슷해 뺐어요.`
+        : `${A} 점수에 넣어 과거에 적용해 보니 예측이 나아지지 않았어요. 따로 떼어 본 과거 사례에서도 구간마다 더 오른 단지와 덜 오른 단지가 비슷해 뺐어요.` };
       return { why: code === 'unstable' ? 'flip' : 'gain', text: code === 'unstable'
-        ? `${A} 점수에 넣어 과거에 그대로 써 보니 시기마다 집값에 주는 방향이 바뀌어(어떤 때는 오르는 쪽, 어떤 때는 내리는 쪽) 맞히지 못해 뺐어요.`
-        : `${A} 점수에 넣어 과거에 그대로 써 보니 더 잘 맞히지 못해 뺐어요.` };
+        ? `${A} 점수에 넣어 과거에 적용해 보니 시기에 따라 집값에 주는 방향이 바뀌어(어떤 때는 오르는 쪽, 어떤 때는 내리는 쪽) 예측에 도움이 되지 않아 뺐어요.`
+        : `${A} 점수에 넣어 과거에 적용해 보니 예측이 나아지지 않아 뺐어요.` };
     }
     return { why: code || '', text: plain || '' };
   }
@@ -318,14 +318,14 @@
   const RETRAIN = { day: '2026-11-25', tried: 28, adopted: 0, next: '',
     drop: [['ob6', '외지인 매수 비중']],
     extra: [
-      ['region', 'x_reg', '규제지역(투기과열·조정대상) 여부', 'out', '구 점수에 넣어 봐도 더 잘 맞히지 못했어요'],
-      ['region', 'x_regc', '최근 1년 새로 규제·해제된 곳', 'out', '넣었을 때와 뺐을 때 차이가 없었어요'],
-      ['region', 'x_thp', '토지거래허가·분양가상한제', 'out', '넣었을 때와 뺐을 때 차이가 없었어요'],
-      ['region', 'x_turn', '거래 회전율(1년 거래 ÷ 세대수)', 'out', '구 점수에 넣어 봐도 더 잘 맞히지 못했어요'],
-      ['unit', 'x_ride', '가까운 역 승하차 인원 1년 변화(서울)', 'out', '시기마다 집값에 주는 방향이 바뀌었어요'],
-      ['unit', 'x_dreg', '동 단위 규제(일부 동만 묶인 규제)', 'out', '넣었을 때와 뺐을 때 차이가 없었어요'],
-      ['all', 'x_rate', '주택담보대출·기준금리', 'out', '전국이 같은 값이라 단지·구 순위를 가를 수 없어요'],
-      ['unit', 'x_acad', '학원 수·증감', 'out', '개설·폐원 날짜 기록이 없어 과거에 써 볼 수 없었어요']] };
+      ['region', 'x_reg', '규제지역(투기과열·조정대상) 여부', 'out', '구 점수에 넣어도 예측이 나아지지 않았어요'],
+      ['region', 'x_regc', '최근 1년 새로 규제·해제된 곳', 'out', '넣었을 때와 뺐을 때 결과에 차이가 없었어요'],
+      ['region', 'x_thp', '토지거래허가·분양가상한제', 'out', '넣었을 때와 뺐을 때 결과에 차이가 없었어요'],
+      ['region', 'x_turn', '거래 회전율(1년 거래 ÷ 세대수)', 'out', '구 점수에 넣어도 예측이 나아지지 않았어요'],
+      ['unit', 'x_ride', '가까운 역 승하차 인원 1년 변화(서울)', 'out', '시기에 따라 집값에 주는 방향이 바뀌었어요'],
+      ['unit', 'x_dreg', '동 단위 규제(일부 동만 묶인 규제)', 'out', '넣었을 때와 뺐을 때 결과에 차이가 없었어요'],
+      ['all', 'x_rate', '주택담보대출·기준금리', 'out', '전국이 같은 값이어서 단지·구 사이의 순위를 가를 수 없어요'],
+      ['unit', 'x_acad', '학원 수·증감', 'out', '개설·폐원 날짜 기록이 없어 과거 결과를 확인할 수 없었어요']] };
   /* 표에 넣을 단지 항목(흔히 집값과 연결해 생각하는 것) — 쓰는지·뺐는지는 excluded.json 이 정함 */
   const WHY_UNIT = ['sub', 'sch', 'rlp', 'rls', 'rlo', 'stg', 'new', 'old', 'mom', 'liq', 'jr', 'dd', 'size'];
   /* '바뀌는 것'(아직 값에 다 들어가지 않은 변화) — 지금 쓰는 단지 항목 중 이것만 ②에 이름으로 */
@@ -334,14 +334,14 @@
   const WHY_TOP = ['pop', 'hhg', 'ob6', 'uns', 'unc', 'x_reg', 'x_turn', 'x_ride', 'job', 'sup', 'sub', 'sch', 'x_rate', 'rlp', 'new', 'jr'];
   /* ①에 먼저 이름을 드는 '구 전체를 움직이는 것'(인구·세대·일자리·입주 물량) — 지금 구 점수에 쓰는 것만 */
   const WHY_BIG = ['pop', 'hhg', 'job', 'jbr', 'sup'];
-  const RES = { use: '쓴다', region: '구 점수에만', out: '뺐다' };
+  const RES = { use: '사용', region: '구 점수에 사용', out: '제외' };
   /** 한 줄 이유(뺀 항목): method() 의 why 를 짧게 */
   function whyLine(x) {
-    if (x.code === 'no_data' || x.code === 'short') return '자료가 모자라 아직 과거에 써 보지 못했어요';
-    if (x.kind === 'region') return '구 점수에 넣어 봐도 더 잘 맞히지 못했어요';
-    if (x.why === 'combo') return '따로 보면 같은 방향이 뚜렷했지만, 다른 항목과 함께 넣으니 더 잘 맞히지 못했어요';
-    if (x.why === 'flip' || x.why === 'flip_mixed') return '시기마다 집값에 주는 방향이 바뀌었어요';
-    return '넣어 봐도 더 잘 맞히지 못했어요';
+    if (x.code === 'no_data' || x.code === 'short') return '자료가 모자라 아직 과거 결과를 확인하지 못했어요';
+    if (x.kind === 'region') return '구 점수에 넣어도 예측이 나아지지 않았어요';
+    if (x.why === 'combo') return '따로 보면 방향이 뚜렷했지만, 다른 항목과 함께 넣으면 예측이 나아지지 않았어요';
+    if (x.why === 'flip' || x.why === 'flip_mixed') return '시기에 따라 집값에 주는 방향이 바뀌었어요';
+    return '넣어도 예측이 나아지지 않았어요';
   }
   /** I = method(EX, h, xcs). → { rec(이번 재학습 기록), regionUsed[이름], change[이름](지금 쓰는 '바뀌는 것'), combo[이름], drop[{name, pending}],
       rows[{ key, name, res('use'|'region'|'out'), label, why, kind }](WHY_TOP 순서 먼저), counts{use, region, out} } */
@@ -358,15 +358,15 @@
     const outR = (EX.region || []).map(([k, name, code]) => ({ key: k, name, code, kind: 'region' }));
     const merged = new Set();                                   // 단지 줄에 합친 구 항목(같은 key: 전세가율·하락기 방어력…)
     for (const k of WHY_UNIT) {
-      if (u2.has(k)) { push({ key: k, name: u2.get(k), kind: 'unit', res: 'use', why: '같은 구 안에서 더 오를 단지를 가려내는 데 과거에 맞아서 써요' }); continue; }
+      if (u2.has(k)) { push({ key: k, name: u2.get(k), kind: 'unit', res: 'use', why: '같은 구 평균보다 더 오를 단지를 가려내는 데 과거에 효과가 있었어요' }); continue; }
       const x = outU.get(k); if (!x) continue;
-      if (reg.has(k)) { merged.add(k); push({ key: k, name: x.name, kind: 'unit', res: 'region', why: `단지끼리 가르는 데는 안 맞았지만 구 전체 흐름에는 맞아서 구 점수(‘${reg.get(k)}’)에 써요` }); continue; }
+      if (reg.has(k)) { merged.add(k); push({ key: k, name: x.name, kind: 'unit', res: 'region', why: `단지 사이의 차이는 설명하지 못했지만, 구 전체 흐름에는 맞아 구 점수(‘${reg.get(k)}’)에 써요` }); continue; }
       push({ key: k, name: x.name, kind: 'unit', res: 'out', why: whyLine(x) });
     }
     for (const [k, n] of reg) {
       if (merged.has(k)) continue;
       push({ key: k, name: n, kind: 'region', res: 'region', pending: dropK.has(k),
-        why: dropK.has(k) ? '더 엄격한 기준에서는 우연과 구별되지 않아 다음 정기 업데이트부터 빠져요' : '구 전체가 같은 시·도 안에서 더 오를지 맞히는 데 과거에 맞아서 써요' });
+        why: dropK.has(k) ? '더 엄격한 기준으로 다시 보니 우연과 구별되지 않아 다음 정기 업데이트부터 빠져요' : '구 전체가 같은 시·도의 다른 구·시보다 더 오를지 가려내는 데 과거에 효과가 있었어요' });
     }
     for (const x of outR) push({ key: x.key, name: x.name, kind: 'region', res: 'out', why: whyLine(x) });
     for (const [kind, k, n, res, w] of (rec.extra || [])) push({ key: k, name: n, kind, res, why: w });
