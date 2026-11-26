@@ -287,6 +287,8 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
   })();</script>
   <section id="villaSec" hidden></section>
   <section id="offiSec" hidden></section>
+  <p class="bmapl" id="bmapL"><a href="../map/?k=bld" data-track="mine_comm_to_bmap" onclick="var q=new URLSearchParams(location.search),g=q.get('cg');if(/^\d{5}$/.test(g||''))this.href='../map/?k=bld&amp;g='+g">상가·건물 거래를 지도에서 보기 ›</a></p>
+  <style>#bmapL{display:none;margin:6px 0 0;font-size:15px;font-weight:800}#bmapL a{display:inline-flex;align-items:center;min-height:44px;color:#4338CA;text-decoration:none}main:has(#commSec:not([hidden])) #bmapL{display:block}</style>
   <section id="commSec" hidden></section>
 
   <section class="sec" id="homesSec" hidden aria-labelledby="homesT">

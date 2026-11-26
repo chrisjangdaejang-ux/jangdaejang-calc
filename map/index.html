@@ -39,6 +39,8 @@
 <script src="../assets/watch.js?v=9"></script>
 <script src="../assets/region-core.js?v=3"></script>
 <script src="../assets/map-engine.js?v=3"></script>
+<script src="../assets/bldmap-core.js?v=1"></script>
+<script src="../assets/bldmap.js?v=1"></script>
 <script src="../assets/sale-status.js?v=1"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/ads.js?v=6"></script>
@@ -358,12 +360,21 @@ body.mtop-nobar .mtop .jas-top{display:none!important}
 @media(max-width:768px){.mtop .jas.jas-top,.mtop .jas-bar{height:38px}.mtop .jas-bar{gap:8px;border-radius:9px}.mtop .jas-bar .jas-t b{font-size:13.5px}.mtop .jas-bar .jas-go{font-size:13px}.mtop .jas-bar .jas-tag{font-size:11.5px}
   body.jm-full .jbk{padding-top:4px;padding-bottom:2px}}
 @media(max-width:380px){.seg button{padding:0 10px;font-size:14px}.chip{padding:0 11px}}
+/* 머리줄 지도 종류 전환: 아파트 | 상가·건물 | 땅(땅은 열렸을 때만 — assets/bldmap.js) */
+.kseg{display:flex;background:var(--gray);border-radius:11px;padding:3px;gap:2px;margin-left:auto;flex:none}
+.kseg a{display:inline-flex;align-items:center;min-height:38px;padding:0 11px;border-radius:8px;font-size:14px;font-weight:800;color:var(--sub2);text-decoration:none;white-space:nowrap;position:relative}
+.kseg a::before{content:'';position:absolute;left:0;right:0;top:-3px;bottom:-3px}
+.kseg a.on{background:#fff;color:var(--blue);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.top .kseg+.hback{margin-left:8px}
+@media(max-width:520px){.top:has(.kseg) h1.badge{display:none}.kseg a{padding:0 9px;font-size:13.5px}}
+@media(max-width:600px){.top:has(.hback:not([hidden])) .kseg{display:none}}
 </style>
 <script src="../assets/back.js?v=1" defer></script>
 </head>
 <body class="jm-full lay-split">
 <header class="top">
   <a class="brand" href="../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a>
+  <nav class="kseg" id="kseg" aria-label="지도 종류"><a href="./" data-k="" data-track="map_kind_apt">아파트</a><a href="./?k=bld" data-k="bld" data-track="map_kind_bld">상가·건물</a></nav>
   <a class="hback" id="hback" href="#" hidden data-track="map_back">← 결과로 돌아가기</a><h1 class="badge plain">지도</h1>
 </header>
 <div class="mwrap" id="mwrap">
@@ -404,6 +415,8 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const J = (u, o) => fetch(u, Object.assign({cache:'no-cache'}, o || {})).then(r => r.ok ? r.json() : null).catch(() => null);
 const Q = new URLSearchParams(location.search);
+/* 상가·건물·땅 실거래 지도(?k=bld · ?k=land): 같은 화면을 assets/bldmap.js 가 넘겨받음 — 아래 아파트 지도 코드는 돌리지 않음 */
+if (window.JDJ_BMAP && JDJ_BMAP.isOn()) { JDJ_BMAP.start(); return; }
 const S = { mode: ['price','fv','jr','reg'].includes(Q.get('m')) ? Q.get('m') : 'price', size: ['s','m','l'].includes(Q.get('sz')) ? Q.get('sz') : '',
   price: (C.priceOf(Q.get('pr')) || {}).id || '', age: [5,10].includes(+Q.get('ag')) ? +Q.get('ag') : 0, stn: Q.get('sn') === '1', fut: Q.get('fu') !== '0', bun: Q.get('ly') === 'bun' || Q.get('ly') === 'all', nb: Q.get('nb') === '1' };
 /* '지도에서 보기'(assets/mapjump.js): 결과 화면에서 오면 그 집에 맞춰 열고, 표시 핀·카드·돌아가기, 주변 역·학교를 켬 */
