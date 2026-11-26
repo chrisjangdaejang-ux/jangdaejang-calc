@@ -141,6 +141,7 @@ table.bt td:last-child,table.bt th:last-child{text-align:right;white-space:nowra
 .disc ul{margin:6px 0 0;padding-left:18px}
 .disc a{color:#4338CA}
 </style>
+<link rel="stylesheet" href="../../assets/result.css?v=1">
 <script src="../../assets/back.js?v=1" defer></script>
 </head>
 <body>
@@ -528,9 +529,12 @@ function draw(){
   const list = S.tab === 'better' ? T.filt(better, S.need) : (L.O.safeOnly ? cheap.filter(r => r.safe === true) : cheap);
   const curTxt = cur && cur.med > 0 ? `${won(cur.med)}` : '자료 부족';
   let x = `<div class="panel"><h2>결과<small>${esc(L.sc.how)} · ${esc(T.KIND[L.kind].label)} ${esc(L.band || '모든 평형')}</small></h2>
-    <div class="stats"><div class="st key"><div class="k">내 예산</div><div class="v">${esc(won(L.budget))}</div><div class="d">보증금 ${esc(won(L.dep))}${L.O.cash ? ' + 현금 ' + esc(won(L.O.cash)) : ''}${L.jl ? ' + 전세대출 ' + esc(won(L.jl)) : ''} </div><div class="d"><b>${S.cost === 'all' ? '중개보수·이사비를 뺀 금액으로 찾아요' : '보증금만으로 찾아요(이사 비용은 카드마다 따로 보여 드려요)'}</b></div></div>
+    <section class="rf-v" aria-label="결론"><div class="rf-k">내 예산 ${esc(won(L.budget))}으로 찾은 곳</div>
+      <div class="rf-big"><b class="num">${better.length.toLocaleString()}곳</b><span class="rf-chg">예산 근처 더 나은 집</span></div>
+      <p class="rf-one">같은 보증금으로 더 나은 집 ${better.length.toLocaleString()}곳, 같은 조건에 더 싼 집 ${cheap.length.toLocaleString()}곳이 있어요.</p></section>
+    <div class="stats rf-keys"><div class="st key"><div class="k">내 예산</div><div class="v">${esc(won(L.budget))}</div><div class="d">보증금 ${esc(won(L.dep))}${L.O.cash ? ' + 현금 ' + esc(won(L.O.cash)) : ''}${L.jl ? ' + 전세대출 ' + esc(won(L.jl)) : ''} </div><div class="d"><b>${S.cost === 'all' ? '중개보수·이사비를 뺀 금액으로 찾아요' : '보증금만으로 찾아요(이사 비용은 카드마다 따로 보여 드려요)'}</b></div></div>
     <div class="st"><div class="k">지금 단지 최근 전세</div><div class="v">${esc(curTxt)}</div><div class="d">${cur && cur.med > 0 ? `최근 ${cur.w}개월 신규 ${cur.n}건 중간값${cur.w > 6 ? '(6개월 계약이 적어 기간을 넓혔어요)' : ''}` : `최근 ${S.long ? 24 : 12}개월 신규 계약도 2건보다 적어요`}</div></div>
-    <div class="st"><div class="k">예산 근처 더 나은 집</div><div class="v">${better.length.toLocaleString()}곳</div><div class="d">더 싼 곳 ${cheap.length.toLocaleString()}곳</div></div></div>`;
+</div>`;
   /* 만기 타이밍 */
   if (cur && T.renewHint(cur.med, L.dep)) x += `<p class="nt"><b>갱신 협상도 생각해 보세요.</b> 지금 단지 최근 ${cur.w}개월 신규 전세 중간값(${esc(won(cur.med))})이 내 보증금(${esc(won(L.dep))})보다 낮아요. 만기 6개월 전부터 2개월 전 사이에 계약갱신요구권을 쓰면서, 낮아진 시세를 근거로 보증금 감액을 집주인과 협의해 볼 수 있어요. 정보 안내이고, 결과는 협의에 따라 달라요. <a href="${esc(T.SRC.renew.url)}" target="_blank" rel="noopener">${esc(T.SRC.renew.nm)} 보기 ↗</a></p>`;
   const info = [];

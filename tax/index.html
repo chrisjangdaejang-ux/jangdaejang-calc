@@ -172,6 +172,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
 
 .backbar button{font:inherit;font-size:15px;color:var(--sub2);background:none;border:0;min-height:44px;cursor:pointer;padding:0}
 </style>
+<link rel="stylesheet" href="../assets/result.css?v=1">
 <script src="../assets/back.js?v=1" defer></script>
 </head>
 <body>
@@ -282,7 +283,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
   </form>
 
   <div id="cgtOut" hidden>
-    <div class="sec result" id="cgtRes"></div>
+    <div class="sec result rf-v rf-in" id="cgtRes"></div>
     <div class="panel" id="tlPanel">
       <h2>언제 팔면 세금이 줄어들까요?</h2>
       <p class="desc">오늘부터 5년 동안 매달 같은 날 판다고 가정한 예상 세금(지방소득세 포함)이에요. 막대를 밀어 날짜를 골라 보세요.</p>
@@ -334,7 +335,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
     <div class="err" id="aErr" role="alert"></div>
     <button type="button" class="btn primary big" id="aRun">취득세 계산하기</button>
   </div>
-  <div class="sec result" id="aRes" hidden></div>
+  <div class="sec result rf-v rf-in" id="aRes" hidden></div>
   <p class="notice" style="margin-top:12px">공시가격 1억 원 이하 주택 중과 제외, 출산·양육 가구 감면, 증여·분양권 취득은 반영하지 않았어요(오피스텔은 아래 따로 안내). 일시적 2주택으로 1~3% 세율을 받고 기한(종전·새 집 모두 조정대상지역이면 2년, 아니면 3년) 안에 종전 집을 팔지 못하면 중과세율과의 차액과 가산세가 추징돼요.</p>
   <div class="panel" id="offi" style="margin-top:16px">
     <h2 style="font-size:19px">오피스텔을 사면 취득세는?</h2>
@@ -384,7 +385,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
     <div class="nav"><button type="button" class="btn prev wprev">이전</button><button type="submit" class="btn primary next wnext">다음</button></div>
   </form>
   <div id="pOut" hidden>
-    <div class="sec result" id="pRes"></div>
+    <div class="sec result rf-v rf-in" id="pRes"></div>
     <div class="btns sec"><button type="button" class="btn ghost redo" data-wiz="pWiz">입력 고치기</button><button type="button" class="btn ghost" data-go="cpt">종합부동산세</button></div>
   </div>
 </section>
@@ -433,7 +434,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
     <div class="nav"><button type="button" class="btn prev wprev">이전</button><button type="submit" class="btn primary next wnext">다음</button></div>
   </form>
   <div id="cOut" hidden>
-    <div class="sec result" id="cRes"></div>
+    <div class="sec result rf-v rf-in" id="cRes"></div>
     <div class="btns sec"><button type="button" class="btn ghost redo" data-wiz="cWiz">입력 고치기</button><button type="button" class="btn ghost" data-go="prop">재산세</button></div>
   </div>
 </section>
@@ -502,7 +503,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
     <div class="nav"><button type="button" class="btn prev wprev">이전</button><button type="submit" class="btn primary next wnext">다음</button></div>
   </form>
   <div id="gOut" hidden>
-    <div class="sec result" id="gRes"></div>
+    <div class="sec result rf-v rf-in" id="gRes"></div>
     <div class="btns sec"><button type="button" class="btn ghost redo" data-wiz="gWiz">입력 고치기</button><button type="button" class="btn ghost" data-go="cgt">양도세 계산기</button><a class="btn ghost" href="transfer/">증여 · 저가 양도 · 상속 비교</a></div>
   </div>
 </section>

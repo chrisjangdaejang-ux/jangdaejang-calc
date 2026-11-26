@@ -48,6 +48,7 @@
 <script src="../assets/narrative.js?v=25"></script>
 <script src="../assets/strength.js?v=5"></script>
 <script src="../assets/conf.js?v=4"></script>
+<script src="../assets/result.js?v=1"></script>
 <script src="../assets/life-view.js?v=3"></script>
 <script src="../assets/fac-view.js?v=1"></script>
 <script src="../assets/mine-core.js?v=23"></script>
@@ -158,6 +159,7 @@ td small{color:#4E5968;font-size:13.5px}
 .hib{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 6px}
 @media(max-width:400px){.hib{grid-template-columns:1fr}}
 .hib>div{border:1px solid var(--line);border-radius:14px;padding:10px 12px;min-width:0}
+.hib{margin-top:8px}.rf-keys~.hib>div{border:0;background:#F4F5F9;padding:14px}
 .hib .k{font-size:13.5px;color:#4E5968;font-weight:700}.hib .v{font-size:18px;font-weight:900;word-break:keep-all}.hib .d{font-size:13.5px;color:#4E5968;line-height:1.5;overflow-wrap:anywhere}
 .jps-new{display:inline-block;font-size:11.5px;font-weight:800;line-height:17px;padding:0 5px;border-radius:5px;background:#FDECEC;color:#C81E1E;vertical-align:1px;white-space:nowrap}
 .pos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -245,6 +247,7 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
 .alr .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
 .alr .msg{font-size:14px;font-weight:700}
 </style>
+<link rel="stylesheet" href="../assets/result.css?v=1">
 <script src="../assets/back.js?v=1" defer></script>
 </head>
 <body data-lay="side" data-lay-key=".stats" data-lay-toc="h2,.chead:first-child>h3" data-lay-fold="#polSec>.panel,#taxSec" data-lay-jump="#res,#ofRes,#vlRes,#cmRes">
@@ -529,25 +532,38 @@ function render(d, map, units){
   const posBar = p => { if (!p) return ''; const lo = Math.min(p.me, p.ref) * 0.85, hi = Math.max(p.me, p.ref) * 1.15, x = v => ((v - lo) / (hi - lo) * 100).toFixed(1);
     return `<div class="bar" aria-hidden="true"><em style="left:${x(p.ref)}%"></em><i style="left:${x(p.me)}%"></i></div>`; };
 
+  /* 결과 공통 틀(assets/result.js): 결론 카드 = 위 맨 앞 숫자 칸과 같은 값(새로 계산하지 않음) */
+  const RF = window.JDJ_RF || null;
+  const KS = few && last ? [`최근 거래${arTxt}`, M.won(last.price), `${arD}${ym(last.at)} 거래 ${last.n}건 · 최근 3년 ${u[5]}건`]
+    : !sm.price && last ? [`마지막 실거래${arTxt}`, M.won(last.price), `${arD}${ym(last.at)} · 최근 3개월 거래 없음`]
+    : [`최근 시세${arTxt}`, sm.price ? M.won(sm.price) : '거래 없음', `${arD}${sm.at ? ym(sm.at) + ' 기준' + (sm.stale ? ' · 이후 거래 없음' : '') : '최근 3개월 거래 없음'}`];
+  const CF = f.fv != null && window.JDJ_CONF ? JDJ_CONF.build(f, {MH, sido: sidoName(d.code), cnt: c}) : null;
   $('res').innerHTML = `
   <div class="panel">
     <div class="dhead"><div><h2>${esc(d.apt)}</h2><div class="loc">${esc(sidoName(d.code))} ${esc(sggName(d.code))} ${esc(d.dong)} ${esc(d.jibun)}${meta ? ' · ' + esc(meta) : ''}</div>${window.JDJ_WATCH ? JDJ_WATCH.star(favPlace(d), {label: true}) : ''}${MAPJ ? `<div class="mapj-row">${MAPJ.btn(MAPJ_O, 'top', '', 'mine_to_map')}</div>` : ''}</div>
-      ${f.fv != null ? `<div class="fvbadge" title="미래가치 점수(2년 기준)"><small>미래가치 점수</small><b>${f.fv}점</b><small>100점 만점</small></div>` : ''}</div>
+      ${f.fv != null && !RF ? `<div class="fvbadge" title="미래가치 점수(2년 기준)"><small>미래가치 점수</small><b>${f.fv}점</b><small>100점 만점</small></div>` : ''}</div>
     <div class="bands" role="group" aria-label="평형 선택">${d.bands.map(x => `<button type="button" data-b="${esc(x[3])}" class="${x[3] === S.band ? 'on' : ''}" aria-pressed="${x[3] === S.band}">${esc(x[3])}</button>`).join('')}</div>
     ${AT.length ? `<div class="areas" role="group" aria-label="우리 집 전용면적 고르기"><span class="al">우리 집 전용면적</span>${AT.map(t => `<button type="button" data-ar="${t.a}" class="${t === AP ? 'on' : ''}" aria-pressed="${t === AP}">${t.a}㎡<small>3년 ${t.n}건</small></button>`).join('')}</div>
     <p class="basis">같은 ${esc(S.band)} 안에도 전용면적이 ${AT.length}가지예요. 우리 집 면적을 누르면 그 면적 시세로 바꿔 보여 드려요.${mine ? ' 내 집에 저장한 면적도 함께 바뀌어요.' : ''} <span id="arMsg" role="status"></span></p>` : ''}
     ${JO.length ? RJ.bandTop(JO, '../jeonse/checklist/') : ''}
-    <div class="stats">
-      ${few && last ? `<div class="st key"><div class="k">최근 거래${arTxt}</div><div class="v">${M.won(last.price)}</div><div class="d">${arD}${ym(last.at)} 거래 ${last.n}건 · 최근 3년 ${u[5]}건</div></div>`
-        : !sm.price && last ? `<div class="st key"><div class="k">마지막 실거래${arTxt}</div><div class="v">${M.won(last.price)}</div><div class="d">${arD}${ym(last.at)} · 최근 3개월 거래 없음</div></div>`
-        : `<div class="st key"><div class="k">최근 시세${arTxt}</div><div class="v">${sm.price ? M.won(sm.price) : '거래 없음'}</div><div class="d">${arD}${sm.at ? ym(sm.at) + ' 기준' + (sm.stale ? ' · 이후 거래 없음' : '') : '최근 3개월 거래 없음'}</div></div>`}
+    ${RF ? `<section class="rf-v" aria-label="결론">
+      <div class="rf-k">${KS[0]} · ${KS[2]}</div>
+      <div class="rf-big"><b class="num">${KS[1]}</b>${sm.ch1 || sm.ch3 ? `<span class="rf-chg num">${sm.ch1 ? `1년 ${chTxt(sm.ch1)}` : ''}${sm.ch1 && sm.ch3 ? ' · ' : ''}${sm.ch3 ? `3년 ${chTxt(sm.ch3)}` : ''}</span>` : ''}</div>
+      ${sm.ch1 || sm.ch3 ? `<p class="rf-one">${esc(RF.trend([['1년 전', sm.ch1 && sm.ch1.pct], ['3년 전', sm.ch3 && sm.ch3.pct]]))}</p>` : ''}
+      ${f.fv != null ? RF.fc(f.fv, {note: `${RF.lean(f.fv)}. ${sidoName(d.code)} 아파트와 비교한 2년 점수예요.`, trust: CF}) : ''}
+    </section>` : ''}
+    <div class="stats${RF ? ' rf-keys' : ''}">
+      ${RF ? '' : `<div class="st key"><div class="k">${KS[0]}</div><div class="v">${KS[1]}</div><div class="d">${KS[2]}</div></div>`}
       <div class="st"><div class="k">최근 3개월 거래</div><div class="v">${sm.recent3}건</div><div class="d">${ym(IX.months[IX.months.length - 3])}~${ym(IX.dataTo)}</div></div>
       <div class="st"><div class="k">1년 변동</div><div class="v">${chTxt(sm.ch1)}</div><div class="d">평당가 기준</div></div>
       <div class="st"><div class="k">3년 변동</div><div class="v">${chTxt(sm.ch3)}</div><div class="d">평당가 기준</div></div>
+      ${RF && gp ? `<div class="st"><div class="k">${esc(sggName(d.code))} 중간값 대비</div><div class="v"><span class="${updown(gp.diff)}">${M.pctTxt(gp.diff)}</span></div><div class="d">평당가 · ${ym(gp.at)} 기준</div></div>` : ''}
     </div>
     ${HI ? P.highsHtml(HI, 'hib') : ''}
     ${!has ? `<p class="basis lowc">최근 3년 거래 <b>${u[5]}건</b> 기준이에요. 거래가 적어 한두 건 가격에 따라 시세가 크게 달라질 수 있으니 아래 실거래 목록을 함께 봐 주세요.</p>` : ''}
+    ${RF ? '<details class="rf-src"><summary>계산 근거</summary>' : ''}
     <p class="basis"><b>계산 근거</b> · ${(few || !sm.price) && last ? `${few ? '최근 거래' : '마지막 실거래'} = ${ym(last.at)} 실거래 평당가 ${last.own ? '' : '(3개월) '}중간값 ${last.ppy.toLocaleString()}만원 × 전용 ${u[4]}㎡ ÷ 3.3058 · ` : ''}${sm.ppy ? `최근 시세 = 최근 3개월 실거래 평당가 중간값 ${sm.ppy.toLocaleString()}만원 × ` : '환산 금액 = 평당가 × '}전용 ${u[4]}㎡ ÷ 3.3058 (100만 원 단위 반올림, ${ALT ? '고른 전용면적 기준' : '이 평형에서 가장 많이 거래된 전용면적 기준'} — 이 면적 거래를 먼저 쓰고, 최근 거래가 모자라면 같은 단지 다른 면적 거래를 이 면적 값으로 맞춰 함께 써요) · 1년 변동: ${chBasis(sm.ch1)} · 3년 변동: ${chBasis(sm.ch3)}.${HT ? '' : ' 5년 추이는 공개 자료 기간(최근 3년)을 넘어 아직 보여 드리지 못해요.'}${HI && HI.hi ? ` · 최고가 = 수집한 실거래 중 직거래를 뺀 가장 높은 거래(이 평형 안 모든 전용면적).` : ''}</p>
+    ${RF ? '</details>' : ''}
 
     <div class="save" id="saveBox">
       <b style="font-size:16px">${mine ? '내 집으로 저장되어 있어요' : '이 집이 내 집인가요?'}</b>
@@ -644,7 +660,7 @@ function render(d, map, units){
 
   <div class="panel">
     <h2>이 집으로 이어서 계산하기</h2>
-    <div class="links">
+    <div class="links rf-next">
       <a class="main" href="../switch/?src=mine&amp;sd=${encodeURIComponent(S.sd)}&amp;d=${encodeURIComponent(d.key)}&amp;b=${encodeURIComponent(S.band)}"><b>이 집 팔고 갈아타기 계산 →</b><small>양도세·매도 후 남는 돈·새 대출 (이 단지·평형을 지금 집으로 넣어 드려요)</small></a>
       ${(sm.price || (last && last.price)) && window.JDJ_PRICE ? `<a href="${esc(JDJ_PRICE.loanHref({src:'mine', price: sm.price || last.price, code: d.code, apt: d.apt, band: S.band, area: u[4]}))}" data-track="mine_to_loan"><b>이 집 대출 한도 계산하기 →</b><small>최근 시세·지역을 채워 LTV·DSR 한도와 매달 갚을 돈을 보여 드려요</small></a>` : ''}
       <a href="../tax/"><b>이 집 세금 계산 →</b><small>양도세·취득세·보유세</small></a>

@@ -31,6 +31,7 @@
 <script src="../assets/mine-core.js?v=23"></script>
 <script src="../assets/price-sheet.js?v=24"></script>
 <script src="../assets/rent-core.js?v=6"></script>
+<script src="../assets/result.js?v=1"></script>
 <script src="../assets/hug-core.js?v=1"></script>
 <script src="../assets/kk-core.js?v=1"></script>
 <script src="../assets/gongsi.js?v=4"></script>
@@ -212,9 +213,10 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
 .ks .kdisc{font-size:13.5px;color:#4E5968;line-height:1.65;margin:12px 0 0}
 [hidden]{display:none!important}
 </style>
+<link rel="stylesheet" href="../assets/result.css?v=1">
 <script src="../assets/back.js?v=1" defer></script>
 </head>
-<body data-lay="side" data-lay-key=".stats" data-lay-keyfirst="#res>.panel:first-child>.stats" data-lay-fold="#polSec>.panel,#areaBox>.panel" data-lay-jump="#res">
+<body data-lay="side" data-lay-key=".stats" data-lay-keyfirst="#res>.panel:first-child>.rf-v" data-lay-fold="#polSec>.panel,#areaBox>.panel" data-lay-jump="#res">
 <header class="top">
   <a class="brand" href="../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a>
   <div class="badge plain">전세사기 예방</div>
@@ -444,18 +446,26 @@ function render(){
   const chB = x => x ? `${ym(x.fromAt)} ${won(x.from)} → ${ym(x.toAt)} ${won(x.to)}` : '비교할 달의 계약이 없어요';
   const meta = [sm.by ? `${sm.by}년 준공` : '', sm.type].filter(Boolean).join(' · ');
   const dl = R.deals(u);
+  /* 결과 공통 틀(assets/result.js): 결론 카드 = 맨 앞 숫자 칸과 같은 값 · 전세가율은 아래 '전세 위험 신호'와 같은 R.risk 값 */
+  const RF = window.JDJ_RF || null, RK0 = sm.jr ? R.risk(sm.jr.r) : null, RK = RK0 && kind === 'v' ? Object.assign({}, RK0, { pct: Math.round(sm.jr.r * 100) }) : RK0;
   $('res').innerHTML = `
   <div class="panel">
     <div class="dhead"><h2>${esc(c.d.name)}</h2><div class="loc">${esc(k.full || k.label)} · ${esc(sidoName(c.code))} ${esc(sggName(c.code))} ${esc(c.d.dong)} ${esc(c.d.jibun)}${meta ? ' · ' + esc(meta) : ''}</div></div>
     <div class="bands" role="group" aria-label="평형 선택">${c.units.map(x => `<button type="button" data-b="${esc(x[2])}" class="${x[2] === S.band ? 'on' : ''}" aria-pressed="${x[2] === S.band}">${esc(x[2])}</button>`).join('')}</div>
-    <div id="narJ"></div>
-    <div class="stats">
-      <div class="st key"><div class="k">최근 전세 시세</div><div class="v">${sm.j ? won(sm.j.v) : '계약 없음'}</div><div class="d">${sm.j ? ym(sm.j.at) + ' 기준' + (sm.j.stale ? ' · 이후 계약 없음' : '') : '최근 3개월 순수 전세 계약 없음'}</div></div>
+    ${RF ? `<section class="rf-v" aria-label="결론">
+      <div class="rf-k">최근 전세 시세 (${esc(S.band)}) · ${sm.j ? ym(sm.j.at) + ' 기준' + (sm.j.stale ? ' · 이후 계약 없음' : '') : '최근 3개월 순수 전세 계약 없음'}</div>
+      <div class="rf-big"><b class="num">${sm.j ? won(sm.j.v) : '계약 없음'}</b>${sm.ch1 || sm.ch3 ? `<span class="rf-chg num">${sm.ch1 ? `1년 ${chT(sm.ch1)}` : ''}${sm.ch1 && sm.ch3 ? ' · ' : ''}${sm.ch3 ? `3년 ${chT(sm.ch3)}` : ''}</span>` : ''}</div>
+      ${sm.ch1 || sm.ch3 ? `<p class="rf-one">전세 보증금이 ${esc(RF.trend([['1년 전', sm.ch1 && sm.ch1.pct], ['3년 전', sm.ch3 && sm.ch3.pct]]))}</p>` : ''}
+      ${RK ? `<p class="rf-fcn">전세가율 <b>${RK.pct}%</b> · ${RK.over ? 'HUG 보증 가입 기준(90%) 이상이라 보증금 회수 위험을 꼭 확인하세요.' : 'HUG 보증 가입 기준 90%보다 낮아요. 아래 전세 위험 신호에서 자세히 볼 수 있어요.'}</p>` : ''}
+    </section>` : ''}
+    <div class="stats${RF ? ' rf-keys' : ''}">
+      ${RF ? '' : `<div class="st key"><div class="k">최근 전세 시세</div><div class="v">${sm.j ? won(sm.j.v) : '계약 없음'}</div><div class="d">${sm.j ? ym(sm.j.at) + ' 기준' + (sm.j.stale ? ' · 이후 계약 없음' : '') : '최근 3개월 순수 전세 계약 없음'}</div></div>`}
       <div class="st"><div class="k">최근 월세 시세</div><div class="v">${sm.wr ? `<span class="nw">${won(sm.wd ? sm.wd.v : 0)}</span> <span class="nw">/ 월 ${sm.wr.v.toLocaleString()}만</span>` : '계약 없음'}</div><div class="d">${sm.wr ? '보증금 / 월세 · ' + ym(sm.wr.at) + ' 기준' : '최근 3개월 월세 계약 없음'}</div></div>
       <div class="st"><div class="k">전세 1년 변동</div><div class="v">${chT(sm.ch1)}</div><div class="d">전세 보증금 기준</div></div>
       <div class="st"><div class="k">전세 3년 변동</div><div class="v">${chT(sm.ch3)}</div><div class="d">최근 3년 계약 전세 ${sm.nj.toLocaleString()} · 월세 ${sm.nw.toLocaleString()}건</div></div>
     </div>
-    <p class="basis"><b>계산 근거</b> · 최근 전세 시세 = 그 달까지 3개월 순수 전세 계약 보증금의 중간값(이 평형, 전용 ${u[4]}㎡ 안팎) · 최근 월세 시세 = 같은 기간 월세 계약의 보증금 중간값과 월세 중간값(각각 따로 구해 실제 한 계약과 다를 수 있어요) · 1년 변동: ${chB(sm.ch1)} · 3년 변동: ${chB(sm.ch3)}.</p>
+    <div id="narJ"></div>
+    ${RF ? '<details class="rf-src"><summary>계산 근거</summary>' : ''}<p class="basis"><b>계산 근거</b> · 최근 전세 시세 = 그 달까지 3개월 순수 전세 계약 보증금의 중간값(이 평형, 전용 ${u[4]}㎡ 안팎) · 최근 월세 시세 = 같은 기간 월세 계약의 보증금 중간값과 월세 중간값(각각 따로 구해 실제 한 계약과 다를 수 있어요) · 1년 변동: ${chB(sm.ch1)} · 3년 변동: ${chB(sm.ch3)}.</p>${RF ? '</details>' : ''}
   </div>
 
   <div class="panel">
@@ -482,7 +492,7 @@ function render(){
 
   <div class="panel">
     <h2>이어서 알아보기</h2>
-    <div class="links">
+    <div class="links rf-next">
       <a class="main" href="../buy/?src=jeonse" data-track="jeonse_to_buy"><b>집을 사면 얼마가 필요할까? →</b><small>내 예산·대출로 살 수 있는 집과 필요한 돈</small></a>
       ${kind === 'v' ? `<a href="../mine/?t=v&amp;vg=${encodeURIComponent(c.code)}&amp;vb=${encodeURIComponent([c.d.dong, c.d.jibun, c.d.name || ''].join('|'))}" data-track="jeonse_to_villa_price"><b>이 빌라 매매 시세 →</b><small>매매 시세 추이, 최근 거래, 대지권, 같은 동 빌라 숫자</small></a>` : ''}
       ${kind === 'o' ? `<a href="../mine/?t=o&amp;og=${encodeURIComponent(c.code)}&amp;ob=${encodeURIComponent(c.d.dong + '|' + (c.d.jibun || '#' + c.d.name))}" data-track="jeonse_to_offi"><b>이 오피스텔 매매 시세·임대수익률 →</b><small>실제 월세 계약으로 계산한 수익률, 임대수요·공급</small></a>` : ''}
@@ -534,7 +544,7 @@ function riskPanel(c, u, sm){
   const oth = (c.units || []).filter(x => x !== u && ((x[11] || {}).jr || {}).r > 0).map(x => ({ bd: x[2], r: x[11].jr.r, at: x[11].jr.at }));
   const href = V ? 'checklist/?k=v' : 'checklist/';
   const othTop = R.bandTop(oth, href), othRow = oth.length ? `<p class="basis">다른 평형 · ${oth.map(x => `${esc(x.bd)} ${Math.round(x.r * 100)}%${R.bandTag(x.r)}`).join(' · ')}</p>` : '';
-  return `<div class="panel"><h2>전세 위험 신호<small>전세가율 = 전셋값 ÷ 매맷값 · 기준: ${srcA('hug')}</small></h2>
+  return `<div class="panel rf-warn"><h2>전세 위험 신호<small>전세가율 = 전셋값 ÷ 매맷값 · 기준: ${srcA('hug')}</small></h2>
     ${othTop}${rk ? `<div class="rbig ${rk.over ? 'hi' : ''}">${rk.pct}%</div>${gauge}` : ''}${msg}${othRow}
     ${basis ? `<p class="basis"><b>계산 근거</b> · ${basis}. 실제 보증 심사의 주택가격은 HUG 가 정해요(${esc(hugPrice)}).</p>` : ''}
     ${V ? vDongBox(c) + `<div class="vwhy"><b>빌라 전세가율을 따로 보는 이유</b><p>${esc(R.VJ_WHY)}</p></div>` : ''}
@@ -630,7 +640,7 @@ async function showD(g, dong){
   <div id="areaBox"></div>
   <div id="polSec" hidden></div>
   ${checkPanel('d')}
-  <div class="panel"><h2>이어서 알아보기</h2><div class="links"><a class="main" href="../buy/?src=jeonse" data-track="jeonse_to_buy"><b>집을 사면 얼마가 필요할까? →</b><small>내 예산·대출로 살 수 있는 집과 필요한 돈</small></a></div></div>
+  <div class="panel"><h2>이어서 알아보기</h2><div class="links rf-next"><a class="main" href="../buy/?src=jeonse" data-track="jeonse_to_buy"><b>집을 사면 얼마가 필요할까? →</b><small>내 예산·대출로 살 수 있는 집과 필요한 돈</small></a></div></div>
   <div id="agentSec"></div>`;
   $('res').hidden = false;
   CUR.dser = { months, J: x.J };

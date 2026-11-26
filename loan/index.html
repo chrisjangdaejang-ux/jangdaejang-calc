@@ -174,6 +174,7 @@ tr.fin td{font-weight:900;border-top:2px solid var(--text);border-bottom:0}
 @media(min-width:881px){.mini{display:none}}
 @media(max-width:1023px){body.jtab-pad .mini{bottom:calc(70px + env(safe-area-inset-bottom))}}   /* 아래 탭 메뉴 위로 */
 </style>
+<link rel="stylesheet" href="../assets/result.css?v=1">
 <script src="../assets/back.js?v=1" defer></script>
 </head>
 <body>
@@ -292,7 +293,7 @@ tr.fin td{font-weight:900;border-top:2px solid var(--text);border-bottom:0}
       <div id="res" aria-live="polite"><div class="empty">지역·집값·연소득·예상 금리를 넣으면 바로 계산해요.</div></div>
       <div data-ad-slot="loan_end" data-ad-cat="loan" data-ad-after="#res .result" hidden></div>
       <a class="alert" href="../brief/?cta=loan" data-track="loan_to_brief"><span><b>규제가 바뀌면 알려 드려요</b><small><span data-brief-name>집예보 모닝 브리핑</span>에서 대출·세금 규칙이 바뀌는 날과 새 발표를 매일 아침 정리해 드려요. 7일 무료.</small></span><span class="go">받아 보기 ›</span></a>
-      <div class="xl">
+      <div class="xl rf-next">
         <a href="../buy/" data-track="loan_to_buy"><span><b>내 예산으로 살 수 있는 집</b><small>현금까지 넣어 최대 매수 가능 금액과 추천 단지 보기</small></span><span class="go" aria-hidden="true">›</span></a>
         <a href="../switch/" data-track="loan_to_switch"><span><b>이미 집이 있다면</b><small>팔고 사는 갈아타기 계산(양도세 포함)</small></span><span class="go" aria-hidden="true">›</span></a>
       </div>
@@ -462,13 +463,13 @@ function calc(){
   const dsrTxt = r.dsrOff ? '다른 대출이 없고 이 대출이 1억 원 이하라 DSR을 따지지 않아요' : `(연소득 ${won(o.income)} × ${pct(r.c.dsrRatio)} − 다른 대출 ${won(o.debt)}) 안에서 ${r.term}년 동안 ${r.dsrRate}%로 갚을 수 있는 금액`;
   const sOne = r.stress === 0 ? '더하지 않음' : r.stress + '%p';
   box.innerHTML = `
-  <div class="result${r.by === 'BAN' ? ' ban' : ''}">
+  <div class="result rf-v${r.by === 'BAN' ? ' ban' : ''}">
     <div class="lbl">최대 대출 예상</div>
     <div class="big">${won(r.L)}</div>
     <p class="why">${esc(w1)}</p>
     ${w2 ? `<p class="why2">${esc(w2)}</p>` : ''}
   </div>
-  <div class="stats">
+  <div class="stats rf-keys">
     <div class="stat"><div class="k">매달 갚을 돈</div><div class="v">${r.L > 0 ? wonM(L.monthly(r.L, o.rate, r.term)) : '-'}</div><div class="d">${o.rate}% · ${r.term}년 · 원리금 균등</div></div>
     <div class="stat"><div class="k">내 돈으로 낼 금액</div><div class="v">${won(r.cashNeed)}</div><div class="d">집값 − 대출 · 취득세·중개보수(부가세 포함 최대) 약 ${won(cd.total)} 별도</div></div>
     <div class="stat"><div class="k">${r.incomeNeed != null ? '한도를 다 받으려면' : '소득 기준'}</div><div class="v">${r.incomeNeed != null ? '연소득 +' + wonUp(r.incomeMore) : r.dsrOff && !isFinite(r.dti) ? '해당 없음' : '여유 있어요'}</div><div class="d">${r.incomeNeed != null ? `연소득이 ${wonUp(r.incomeNeed)}이면 ${won(ab)}까지` : r.dsrOff && !isFinite(r.dti) ? '1억 원 이하 대출' : `소득으로는 ${won(Math.min(r.dsrOff ? Infinity : r.d, r.dti))}까지 가능`}</div></div>
@@ -513,7 +514,7 @@ function calc(){
     ${$('hhBox').open ? '' : '<p class="hint">신혼·출산·자녀 조건은 입력 칸 맨 아래 "정책 대출 자격도 확인하기"에서 넣을 수 있어요.</p>'}
   </div>
 
-  ${R.notesFor(S.g).length ? `<div class="panel sec">
+  ${R.notesFor(S.g).length ? `<div class="panel sec rf-warn">
     <h2>꼭 알아 두세요</h2>
     <ul class="notes">${R.notesFor(S.g).map(n => `<li>${esc(n.t)}</li>`).join('')}</ul>
   </div>` : ''}

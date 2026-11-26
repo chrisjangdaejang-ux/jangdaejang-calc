@@ -205,6 +205,7 @@ body.wiz .wiznav{display:flex;gap:8px;margin-top:4px}
 .premlink a{color:var(--sub2);text-decoration:none;font-weight:700;display:inline-flex;align-items:center;min-height:44px}
 .premlink a:hover{color:var(--blue)}
 </style>
+<link rel="stylesheet" href="../assets/result.css?v=1">
 <script src="../assets/back.js?v=1" defer></script>
 </head>
 <body>
@@ -307,14 +308,14 @@ body.wiz .wiznav{display:flex;gap:8px;margin-top:4px}
 
     <!-- 결과 -->
     <div>
-      <div class="result">
+      <div class="result rf-v">
         <div class="lbl">최대 매수 가능 금액</div>
         <div class="big" id="maxP">-</div>
         <div class="sub" id="maxSub"></div>
         <div class="binding" id="binding"></div>
       </div>
 
-      <div class="stats">
+      <div class="stats rf-keys">
         <div class="stat"><div class="k">대출 가능액</div><div class="v" id="sLoan">-</div><div class="d" id="sLoanD"></div></div>
         <div class="stat"><div class="k">월 상환액</div><div class="v" id="sPay">-</div><div class="d" id="sPayD"></div></div>
         <div class="stat"><div class="k">부대비용</div><div class="v" id="sCost">-</div><div class="d">세금+중개보수+기타 (아래 상세)</div></div>
@@ -326,9 +327,6 @@ body.wiz .wiznav{display:flex;gap:8px;margin-top:4px}
       </div>
       <p class="premlink"><a href="../premium/" data-track="buy_to_premium">단지 심층 분석(유료) · 프리미엄 리포트 안내 ›</a></p>
 
-      <a class="xlink" id="cmpLink" data-track="buy_to_compare" href="report/?mode=cmp" target="_blank" rel="noopener"><span><b>마음에 둔 단지가 있다면</b><small>후보 단지 2~3곳 비교하기 · 내 조건으로 대출·필요 현금까지</small></span><span class="go" aria-hidden="true">›</span></a>
-      <a class="xlink" id="loanLink" data-track="buy_to_loan" href="../loan/"><span><b>이 집 대출 한도 계산하기</b><small>최대 매수 금액을 집값으로 넣어 LTV·DSR 한도와 매달 갚을 돈을 자세히 봐요</small></span><span class="go" aria-hidden="true">›</span></a>
-      <a class="xlink" data-track="cross_link_switch" href="../switch/"><span><b>이미 집이 있다면</b><small>집예보 갈아타기 계산기 · 양도세 포함</small></span><span class="go" aria-hidden="true">›</span></a>
 
       <div class="panel section">
         <h2>대출 한도, 무엇이 막고 있나</h2>
@@ -369,9 +367,15 @@ body.wiz .wiznav{display:flex;gap:8px;margin-top:4px}
         </details>
       </div>
 
-      <div class="section">
+      <div class="panel section rf-warn">
+        <h2>조심할 점 · 알아 두세요</h2>
         <div class="tips" id="tips"></div>
       </div>
+      <nav class="rf-next" aria-label="이어서 하면 좋은 것">
+        <a class="xlink" id="cmpLink" data-track="buy_to_compare" href="report/?mode=cmp" target="_blank" rel="noopener"><span><b>마음에 둔 단지가 있다면</b><small>후보 단지 2~3곳 비교하기 · 내 조건으로 대출·필요 현금까지</small></span><span class="go" aria-hidden="true">›</span></a>
+        <a class="xlink" id="loanLink" data-track="buy_to_loan" href="../loan/"><span><b>이 집 대출 한도 계산하기</b><small>최대 매수 금액을 집값으로 넣어 LTV·DSR 한도와 매달 갚을 돈을 자세히 봐요</small></span><span class="go" aria-hidden="true">›</span></a>
+        <a class="xlink" data-track="cross_link_switch" href="../switch/"><span><b>이미 집이 있다면</b><small>집예보 갈아타기 계산기 · 양도세 포함</small></span><span class="go" aria-hidden="true">›</span></a>
+      </nav>
 
       <div class="cta">
         <p>내 상황에 맞는 매수 전략이 궁금하다면<small>1차 진단은 무료 · 심층 컨설팅은 유료로 별도 안내 · 계산 결과는 신청서에 자동 입력돼요</small></p>

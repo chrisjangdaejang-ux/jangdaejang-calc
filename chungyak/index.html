@@ -243,6 +243,7 @@ td{border-bottom:1px solid var(--line2)}
 .qnote{font-size:14px;color:var(--sub);background:var(--gray);border-radius:12px;padding:10px 12px;margin-top:12px;line-height:1.5}
 .cyp-my{color:var(--text)!important;margin-top:4px}
 </style>
+<link rel="stylesheet" href="../assets/result.css?v=1">
 <script src="../assets/back.js?v=1" defer></script>
 </head>
 <body data-lay="side">
@@ -279,8 +280,10 @@ td{border-bottom:1px solid var(--line2)}
 
   <div id="result" hidden>
     <div class="box" style="margin-top:14px">
+      <div class="rf-v rf-cy">
       <div class="qn">내 청약 가점 (기준일 <span id="refShow"></span>)</div>
       <div class="total"><div class="big"><span id="tot">0</span><small> / 84점</small></div><span class="tbtns"><a class="btn ghost" href="#gen" id="toGen" style="padding:8px 12px;font-size:14px;min-height:44px;align-items:center;text-decoration:none">단지별 진단 보기</a><button class="btn ghost" id="redo" type="button" style="padding:8px 12px;font-size:14px">다시 입력</button></span></div>
+      </div>
       <div id="narCy"></div>
       <div class="bars" id="bars"></div>
       <div class="caution">무주택 인정 예외(소형·저가주택 등), 부양가족 인정 여부는 청약 신청 전 청약홈 가점 계산기와 입주자모집공고문으로 꼭 확인하세요. 가점을 잘못 입력해 당첨되면 부적격 처리될 수 있어요.</div>

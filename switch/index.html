@@ -347,6 +347,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .premium .btn{background:var(--blue);color:#fff}
 .xlink{color:var(--text)}
 </style>
+<link rel="stylesheet" href="../assets/result.css?v=1">
 <script src="../assets/back.js?v=1" defer></script>
 </head>
 <body>
@@ -525,20 +526,20 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 
     <!-- 결과 -->
     <div>
-      <div class="result">
+      <div class="result rf-v">
         <div class="lbl">갈아탈 수 있는 최대 집값</div>
         <div class="big" id="maxP">-</div>
         <div class="sub" id="maxSub"></div>
         <div class="binding" id="binding"></div>
       </div>
-      <div id="narSw"></div>
 
-      <div class="flow">
+      <div class="flow rf-keys">
         <div class="stat"><div class="k">매도가</div><div class="v" id="fSale">-</div><div class="d">지금 집</div></div>
         <div class="stat neg"><div class="k">빠져나가는 돈</div><div class="v" id="fOut">-</div><div class="d">대출상환+양도세+중개</div></div>
         <div class="stat key"><div class="k">손에 남는 돈</div><div class="v" id="fNet">-</div><div class="d" id="fNetD"></div></div>
         <div class="stat"><div class="k">새 대출 가능액</div><div class="v" id="fLoan">-</div><div class="d" id="fLoanD"></div></div>
       </div>
+      <div id="narSw"></div>
 
       <div class="panel section" id="routeBox">
         <h2>갈아타기 루트 — 언제, 어디로</h2>
@@ -633,7 +634,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
       </div>
 
 
-      <div class="section"><div class="tips" id="tips"></div></div>
+      <div class="panel section rf-warn"><h2>조심할 점 · 알아 두세요</h2><div class="tips" id="tips"></div></div>
 
       <div class="toReport">
         <div><b>그 돈으로 <em>갈아탈 단지</em>를 골라 드려요</b><span>손에 남는 돈 기준 실거래 추천 단지 1~10위 · 단지마다 제휴 중개사 연결 · PDF 저장</span></div>
@@ -664,8 +665,10 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
           <button class="btn ghost" id="copyBtn" data-track="copy_result">결과 복사</button>
         </div>
       </div>
-      <a class="xlink" data-track="cross_link_timing" href="https://claude.ai/artifact/MPDhYTNGfXkiiFg6sDxvdM" target="_blank" rel="noopener"><span><b>지금이 갈아탈 타이밍인지 궁금하다면</b><small>갈아타기 타이밍 · 실거래가 분석</small></span><span class="go" aria-hidden="true">›</span></a>
-      <a class="xlink" data-track="cross_link_buy" href="../buy/"><span><b>무주택자라면</b><small>집예보 내 집 마련 계산기</small></span><span class="go" aria-hidden="true">›</span></a>
+      <nav class="rf-next" aria-label="이어서 하면 좋은 것">
+        <a class="xlink" data-track="cross_link_timing" href="https://claude.ai/artifact/MPDhYTNGfXkiiFg6sDxvdM" target="_blank" rel="noopener"><span><b>지금이 갈아탈 타이밍인지 궁금하다면</b><small>갈아타기 타이밍 · 실거래가 분석</small></span><span class="go" aria-hidden="true">›</span></a>
+        <a class="xlink" data-track="cross_link_buy" href="../buy/"><span><b>무주택자라면</b><small>집예보 내 집 마련 계산기</small></span><span class="go" aria-hidden="true">›</span></a>
+      </nav>
     </div>
   </div>
 
