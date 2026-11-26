@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="집예보">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="../../assets/region-pick.js?v=2"></script>
-<script src="../../assets/pwa.js?v=2" defer></script>
+<script src="../../assets/pwa.js?v=3" defer></script>
 <script src="../../assets/biz.js?v=3" defer></script>
 <title>집예보 맞춤 분석 리포트</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/buy/report/">
@@ -37,25 +37,25 @@
 <script src="../../assets/loan-rules.js?v=3"></script>
 <script src="../../assets/rec-core.js?v=5"></script>
 <script src="../../assets/mine-core.js?v=22"></script>
-<script src="../../assets/price-sheet.js?v=23"></script>
+<script src="../../assets/price-sheet.js?v=24"></script>
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/lead.js?v=3"></script>
+<script src="../../assets/lead.js?v=4"></script>
 <script src="../../assets/config.js?v=12"></script>
-<script src="../../assets/auth.js?v=10"></script>
+<script src="../../assets/auth.js?v=11"></script>
 <script src="../../assets/alerts-core.js?v=5"></script>
 <script src="../../assets/watch-core.js?v=2"></script>
 <script src="../../assets/watch.js?v=9"></script>
-<script src="../../assets/share.js?v=13"></script>
+<script src="../../assets/share.js?v=14"></script>
 <script src="../../tax/tax-engine.js?v=4"></script>
 <script src="../../assets/loan-core.js?v=6"></script>
-<script src="../../assets/kchat.js?v=3"></script>
+<script src="../../assets/kchat.js?v=4"></script>
 <script src="../../assets/plain-words.js?v=19"></script>
 <script src="../../assets/narrative.js?v=25"></script>
 <script src="../../assets/strength.js?v=5"></script>
 <script src="../../assets/policy-view.js?v=3"></script>
 <script src="../../assets/devproj-view.js?v=4"></script>
 <script src="../../assets/src-box.js?v=3"></script>
-<script src="../../assets/tax-box.js?v=7"></script>
+<script src="../../assets/tax-box.js?v=8"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -319,10 +319,10 @@ tr.hl td{background:rgba(184,148,42,.12);font-weight:700}
 .vbadge{display:inline-block;font-size:13.5px;font-weight:700;color:#0E7A4F;background:#E6F5EE;border-radius:999px;padding:2px 10px}
 .rkbasis.vall{color:#0E7A4F}
 </style>
-<link rel="stylesheet" href="../../assets/aplus.css?v=46">
+<link rel="stylesheet" href="../../assets/aplus.css?v=48">
 <script src="../../assets/nw.js?v=1" defer></script>
 <style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
-:root{--gold:#2560E8}
+:root{--gold:#4338CA}
 .premium .pt{color:var(--blue)}
 .mpinw.on .mpin{background:var(--blue)}.mpinw.on .mpin:after{border-top-color:var(--blue)}
 .st.pre{background:var(--blue-l);color:var(--blue)}
@@ -410,7 +410,7 @@ tr.total td{border-top:1px solid var(--text)}
 .rkmap.leaflet-touch .leaflet-bar,.rkmap .leaflet-bar{border:0;box-shadow:0 2px 8px rgba(0,0,0,.12);border-radius:10px;overflow:hidden}
 /* 단지 카드 */
 .card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:14px;scroll-margin-top:72px}
-.card.flash{box-shadow:0 0 0 3px rgba(47,107,255,.35)}
+.card.flash{box-shadow:0 0 0 3px rgba(67,56,202,.35)}
 .chead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .chead .chr{display:flex;flex-direction:column;align-items:center;gap:6px;flex:none}
 .near .jw-star{vertical-align:middle}@media print{.jw-star{display:none!important}}
@@ -449,7 +449,7 @@ tr.total td{border-top:1px solid var(--text)}
 .verdict .sc b{color:var(--blue)}
 .verdict small{color:var(--sub2)}
 .ctbl thead th{background:var(--blue);color:#fff}
-.ctbl thead th small{color:#E8F0FF}
+.ctbl thead th small{color:#EEEDFB}
 .ctbl thead th:first-child{background:var(--blue)}
 .ctbl td.win{background:var(--blue-l)}
 .ctbl tr.grp td{background:var(--gray)}
@@ -457,7 +457,7 @@ tr.total td{border-top:1px solid var(--text)}
 .cres .bands button{min-height:44px}
 /* 제휴 공인중개사 */
 .agopen{border:0;border-radius:14px;min-height:48px;color:#fff}
-.agopen i{color:#E8F0FF}
+.agopen i{color:#EEEDFB}
 .agcta{background:var(--blue-l);color:var(--text);border:0;border-radius:20px}
 .agcta b em{color:var(--blue)}
 .agcta span{color:var(--sub)}
@@ -1698,8 +1698,8 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ const bg=$('agm'
   }
 })();
 </script>
-<script src="../../assets/ad-slot.js?v=6" defer></script>
+<script src="../../assets/ad-slot.js?v=7" defer></script>
 <div data-gnext="report" hidden></div>
-<script src="../../assets/guide-next.js?v=1" defer></script>
+<script src="../../assets/guide-next.js?v=2" defer></script>
 </body>
 </html>

@@ -9,7 +9,7 @@
 <title>[시안] 이 전셋집, 계약해도 될까요? — 전셋집 안전 진단 | 집예보</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../../assets/aplus.css?v=46">
+<link rel="stylesheet" href="../../../assets/aplus.css?v=48">
 <script src="../../../assets/nw.js?v=1" defer></script>
 <style>
 .wrap{max-width:860px;margin:0 auto;padding:22px 16px 60px}
@@ -21,8 +21,8 @@ h1{font-size:clamp(27px,6.4vw,40px);margin:6px 0 8px}
 .kinds{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;background:#F2F4F6;border-radius:14px;padding:5px;margin-bottom:12px}
 @media(max-width:520px){.kinds{grid-template-columns:repeat(2,1fr)}}
 .kinds button{font:inherit;font-size:15.5px;font-weight:700;border:0;background:transparent;color:#4E5968;min-height:48px;border-radius:10px;cursor:pointer;word-break:keep-all}
-.kinds button.on{background:#fff;color:#2560E8;box-shadow:0 1px 3px rgba(0,0,0,.08)}
-.form{border:1px solid #C9D8FF;background:#F5F8FF;border-radius:16px;padding:14px}
+.kinds button.on{background:#fff;color:#4338CA;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.form{border:1px solid #D4D1F5;background:#F5F8FF;border-radius:16px;padding:14px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:640px){.grid2{grid-template-columns:1fr}}
 .form label{display:block;font-size:14px;font-weight:700;margin:0 0 4px}
@@ -30,8 +30,8 @@ h1{font-size:clamp(27px,6.4vw,40px);margin:6px 0 8px}
 .form .hint{font-size:13px;color:#4E5968;margin:3px 0 10px;line-height:1.5}
 .form .auto{font-size:12px;font-weight:700;color:#0E7A4F;background:#E6F5EE;border-radius:5px;padding:1px 6px;margin-left:4px}
 .form .manual{font-size:12px;font-weight:700;color:#7A4A00;background:#FFF4E5;border-radius:5px;padding:1px 6px;margin-left:4px}
-.form fieldset{border:0;border-top:1px dashed #C9D8FF;margin:6px 0 0;padding:10px 0 0}
-.form legend{font-size:14.5px;font-weight:800;color:#2560E8;padding:0 6px 0 0}
+.form fieldset{border:0;border-top:1px dashed #D4D1F5;margin:6px 0 0;padding:10px 0 0}
+.form legend{font-size:14.5px;font-weight:800;color:#4338CA;padding:0 6px 0 0}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
 .row .btn{min-height:48px;font-size:15.5px}
 .sig{border:1px solid #E5E8EB;border-radius:14px;padding:12px 14px;margin:8px 0;background:#fff}
@@ -40,28 +40,28 @@ h1{font-size:clamp(27px,6.4vw,40px);margin:6px 0 8px}
 .sig .sub{font-size:13.5px;color:#4E5968}
 .sig ul{margin:6px 0 0;padding-left:20px}.sig li{font-size:15px;line-height:1.7}
 .lv{font-size:12.5px;font-weight:800;border-radius:999px;padding:2px 10px}
-.lv.r{background:#FDECEC;color:#C81E1E}.lv.y{background:#FFF4E5;color:#9A5B00}.lv.g{background:#E6F5EE;color:#0E7A4F}.lv.n{background:#F2F4F6;color:#4E5968}.lv.m{background:#EEF3FF;color:#2560E8}.lv.i{background:#F2F4F6;color:#3E4754}
+.lv.r{background:#FDECEC;color:#C81E1E}.lv.y{background:#FFF4E5;color:#9A5B00}.lv.g{background:#E6F5EE;color:#0E7A4F}.lv.n{background:#F2F4F6;color:#4E5968}.lv.m{background:#EEF3FF;color:#4338CA}.lv.i{background:#F2F4F6;color:#3E4754}
 .sig.r{border-color:#F3B4B4;box-shadow:inset 3px 0 0 #E03131}
 .sig.y{border-color:#F5D59E;box-shadow:inset 3px 0 0 #F08C00}
-.sig.m{border-color:#C9D8FF;box-shadow:inset 3px 0 0 #2560E8}
+.sig.m{border-color:#D4D1F5;box-shadow:inset 3px 0 0 #4338CA}
 .big{font-size:24px;font-weight:900;letter-spacing:-.4px;font-variant-numeric:tabular-nums}
 .sum{background:#191F28;color:#fff;border-radius:16px;padding:16px;margin:12px 0}
 .sum b{font-size:20px}.sum p{margin:6px 0 0;font-size:15px;line-height:1.65;color:#D1D6DB}
 .sum .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 .sum .chips span{font-size:13px;font-weight:700;border-radius:999px;padding:3px 10px;background:#2B3440;color:#fff}
 .bar{position:relative;height:14px;border-radius:999px;background:#F2F4F6;margin:10px 0 4px;overflow:hidden}
-.bar i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:#2560E8}
+.bar i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:#4338CA}
 .bar i.r{background:#E03131}
 .bar em{position:absolute;top:-2px;bottom:-2px;width:2px;background:#191F28}
 .barl{position:relative;height:18px;font-size:12.5px;color:#4E5968}.barl span{position:absolute;top:0;white-space:nowrap}.barl span:last-child{right:0}.barl .mk{transform:translateX(-50%);font-weight:700;color:#191F28}
-.ph{border:2px dashed #C9D8FF;border-radius:14px;padding:16px;text-align:center;color:#4E5968;font-size:14.5px;line-height:1.6;background:#FAFBFF}
+.ph{border:2px dashed #D4D1F5;border-radius:14px;padding:16px;text-align:center;color:#4E5968;font-size:14.5px;line-height:1.6;background:#FAFBFF}
 .mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
 @media(max-width:520px){.mini{grid-template-columns:1fr}}
 .mini div{background:#F7F8FA;border-radius:12px;padding:10px 12px}
 .mini .k{font-size:13px;color:#4E5968}.mini .v{font-size:18px;font-weight:800;margin-top:2px}
 .go{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.go a{display:inline-flex;align-items:center;min-height:40px;padding:0 12px;border:1px solid #E5E8EB;border-radius:10px;font-size:14px;font-weight:700;color:#2560E8;text-decoration:none;background:#fff}
-.paid{border:2px solid #2560E8;border-radius:18px;padding:16px;background:#fff}
+.go a{display:inline-flex;align-items:center;min-height:40px;padding:0 12px;border:1px solid #E5E8EB;border-radius:10px;font-size:14px;font-weight:700;color:#4338CA;text-decoration:none;background:#fff}
+.paid{border:2px solid #4338CA;border-radius:18px;padding:16px;background:#fff}
 .paid h3{margin:0 0 6px;font-size:19px}
 .paid .price{font-size:15px;font-weight:800;color:#7A4A00;background:#FFF4E5;border:1px dashed #F5C77E;border-radius:10px;padding:6px 10px;display:inline-block;margin:4px 0 8px}
 .paid ol{margin:6px 0 0;padding-left:20px}.paid li{font-size:15.5px;line-height:1.7;margin:4px 0}

@@ -66,7 +66,7 @@
   const CSS = `.cm-box{--cm-star:#E8A317}
 .cm-box h2{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .cm-box h2 small{flex-basis:100%;display:block;font-size:13.5px;font-weight:500;color:var(--sub2,#4E5968);margin-top:2px;letter-spacing:0;line-height:1.5}
-.cm-tag{display:inline-flex;align-items:center;font-size:12px;font-weight:800;border-radius:999px;padding:2px 8px;background:var(--blue-l,#E8F0FF);color:var(--blue,#2560E8);white-space:nowrap}
+.cm-tag{display:inline-flex;align-items:center;font-size:12px;font-weight:800;border-radius:999px;padding:2px 8px;background:var(--blue-l,#EEEDFB);color:var(--blue,#4338CA);white-space:nowrap}
 .cm-tag.pv{background:#FFF4E0;color:#9A5B00}
 .cm-sum{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;margin:12px 0 4px}
 @media(min-width:700px){.cm-sum{grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}}
@@ -92,8 +92,8 @@
 .cm-lnk{flex:none;font:inherit;font-size:13px;font-weight:700;color:var(--sub2,#4E5968);background:#fff;border:1px solid var(--line,#E5E8EB);border-radius:999px;min-height:32px;padding:0 11px;cursor:pointer}
 .cm-lnk:hover{border-color:var(--sub2,#4E5968)}
 .cm-acts{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}
-.cm-btn{display:inline-flex;align-items:center;justify-content:center;font:inherit;font-size:15px;font-weight:800;min-height:46px;padding:0 16px;border-radius:14px;border:1px solid var(--blue,#2560E8);background:var(--blue,#2560E8);color:#fff;cursor:pointer;text-decoration:none}
-.cm-btn.sub{background:#fff;color:var(--blue,#2560E8)}
+.cm-btn{display:inline-flex;align-items:center;justify-content:center;font:inherit;font-size:15px;font-weight:800;min-height:46px;padding:0 16px;border-radius:14px;border:1px solid var(--blue,#4338CA);background:var(--blue,#4338CA);color:#fff;cursor:pointer;text-decoration:none}
+.cm-btn.sub{background:#fff;color:var(--blue,#4338CA)}
 .cm-btn[disabled]{opacity:.55;cursor:default}
 .cm-form{margin:12px 0 0;border:1px solid var(--line,#E5E8EB);border-radius:16px;padding:14px;background:var(--gray2,#F9FAFB)}
 .cm-form h3{margin:0 0 8px;font-size:16px;font-weight:900}
@@ -106,7 +106,7 @@
 .cm-rate .cm-rst button:focus-visible{outline:3px solid #9CC0FF}
 @media(max-width:360px){.cm-rate .cm-rst button{width:34px;font-size:22px}}
 .cm-inp{width:100%;font:inherit;font-size:16px;border:1px solid var(--line,#E5E8EB);border-radius:12px;padding:12px;background:#fff;color:var(--text,#191F28);resize:vertical;min-height:52px;margin-top:10px}
-.cm-inp:focus{outline:0;border-color:var(--blue,#2560E8);box-shadow:0 0 0 3px rgba(47,107,255,.15)}
+.cm-inp:focus{outline:0;border-color:var(--blue,#4338CA);box-shadow:0 0 0 3px rgba(67,56,202,.15)}
 .cm-cnt{font-size:12.5px;color:var(--sub2,#4E5968);text-align:right;margin-top:3px;font-variant-numeric:tabular-nums}
 .cm-rules{margin:8px 0 0;font-size:13.5px;color:var(--sub2,#4E5968);line-height:1.6}
 .cm-rules summary{cursor:pointer;min-height:34px;display:flex;align-items:center;font-weight:700;color:var(--sub,#3E4754)}

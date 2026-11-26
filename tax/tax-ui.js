@@ -194,10 +194,10 @@
     // 선 (계단형: 세금은 날짜가 지나는 순간 바뀜)
     let dPath = '';
     pts.forEach((p, i) => { dPath += (i ? 'H' + x(p.m).toFixed(1) + 'V' : 'M' + x(p.m).toFixed(1) + ' ') + y(p.total).toFixed(1); });
-    g += '<path d="' + dPath + '" fill="none" stroke="#2560E8" stroke-width="2" stroke-linejoin="round"/>';
+    g += '<path d="' + dPath + '" fill="none" stroke="#4338CA" stroke-width="2" stroke-linejoin="round"/>';
     // 세금이 바뀌는 날 표시
     TL.events.forEach(ev => { const m = T.fullMonths(TODAY, ev.date) + 0.5; g += '<circle cx="' + x(Math.min(60, m)).toFixed(1) + '" cy="' + y(ev.after).toFixed(1) + '" r="4" fill="#fff" stroke="' + (ev.good ? '#0E7A4F' : '#C2410C') + '" stroke-width="2"/>'; });
-    g += '<line id="tlCross" x1="0" x2="0" y1="' + Tp + '" y2="' + (H - B) + '" stroke="#191F28" stroke-width="1" stroke-dasharray="3 3"/><circle id="tlDot" r="5" fill="#2560E8" stroke="#fff" stroke-width="2"/>';
+    g += '<line id="tlCross" x1="0" x2="0" y1="' + Tp + '" y2="' + (H - B) + '" stroke="#191F28" stroke-width="1" stroke-dasharray="3 3"/><circle id="tlDot" r="5" fill="#4338CA" stroke="#fff" stroke-width="2"/>';
     svg.innerHTML = g;
     svg._x = x; svg._y = y; svg._L = L; svg._W = W - L - R;
     // 가장 유리한 시점

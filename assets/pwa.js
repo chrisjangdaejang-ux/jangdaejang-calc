@@ -46,12 +46,12 @@
     box-shadow:0 8px 28px rgba(0,0,0,.28);padding:12px 12px 12px 14px;display:flex;align-items:center;gap:10px;font:14px/1.45 'Noto Sans KR',sans-serif;max-width:560px;margin:0 auto}
     .jdjpwa img{width:42px;height:42px;border-radius:10px;flex:none}
     .jdjpwa .tx{flex:1;min-width:0}.jdjpwa .tx b{display:block;font-weight:900;font-size:15.5px}.jdjpwa .tx small{opacity:.8;font-size:13.5px}
-    .jdjpwa .go{flex:none;background:#2560E8;color:#FFFFFF;min-height:44px;border:0;border-radius:9px;padding:9px 13px;font:inherit;font-weight:900;cursor:pointer}
+    .jdjpwa .go{flex:none;background:#4338CA;color:#FFFFFF;min-height:44px;border:0;border-radius:9px;padding:9px 13px;font:inherit;font-weight:900;cursor:pointer}
     .jdjpwa .x{flex:none;background:none;border:0;color:#FFFFFF;min-width:44px;min-height:44px;opacity:.7;font-size:20px;cursor:pointer;padding:0 2px}
     .jdjpwa-how{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center}
     .jdjpwa-how .bx{background:#FFFFFF;color:#191F28;border-radius:16px 16px 0 0;padding:20px 20px 28px;max-width:560px;width:100%;font:15px/1.6 'Noto Sans KR',sans-serif}
     .jdjpwa-how h3{margin:0 0 10px;font-size:18px;font-weight:900}.jdjpwa-how ol{margin:0;padding-left:20px;display:grid;gap:6px}
-    .jdjpwa-how .ok{margin-top:16px;width:100%;background:#2560E8;color:#FFFFFF;border:0;border-radius:14px;padding:12px;min-height:52px;font:inherit;font-weight:900;cursor:pointer}
+    .jdjpwa-how .ok{margin-top:16px;width:100%;background:#4338CA;color:#FFFFFF;border:0;border-radius:14px;padding:12px;min-height:52px;font:inherit;font-weight:900;cursor:pointer}
     .jdjpwa-how .k{display:inline-block;border:1.5px solid #191F28;border-radius:5px;padding:0 6px;font-weight:900}`;
 
   function addCss() { if (!document.getElementById('jdjpwa-css')) { const s = document.createElement('style'); s.id = 'jdjpwa-css'; s.textContent = css; document.head.appendChild(s); } }
@@ -82,7 +82,7 @@
     m.innerHTML = `<div class="bx"><h3>홈 화면에 추가하기</h3>
       <p style="margin:0 0 12px">삼성 인터넷에서는 설치가 안 되는 경우가 있어요. <b>크롬으로 열면 한 번에 설치</b>됩니다.</p>
       <button class="ok" data-a="chrome">크롬으로 열어서 설치하기 (추천)</button>
-      <button class="ok" data-a="here" style="background:#fff;color:#2560E8;border:1px solid #E5E8EB;margin-top:8px">삼성 인터넷에서 바로 추가</button>
+      <button class="ok" data-a="here" style="background:#fff;color:#4338CA;border:1px solid #E5E8EB;margin-top:8px">삼성 인터넷에서 바로 추가</button>
       <p style="margin:12px 0 0;font-size:13.5px;color:#4E5968">삼성 인터넷에서 '설치할 수 없음'이 뜨면: 아래 메뉴 <span class="k">≡</span> → <b>현재 페이지 추가</b> → <b>홈 화면</b></p></div>`;
     m.onclick = async e => {
       const a = e.target.getAttribute && e.target.getAttribute('data-a');

@@ -73,7 +73,7 @@
   var CSS = ''
     + '.jsh-grp{display:flex;align-items:center;gap:8px;min-width:0}.jdj-right>.jsh-grp{order:-1}'
     + '.jsh-btn{font:inherit;display:inline-flex;align-items:center;justify-content:center;gap:5px;flex:none;min-width:44px;min-height:44px;padding:0 12px;border:1px solid #C9D8FB;border-radius:999px;background:#EEF3FF;color:#1E4FCC;font-size:14.5px;font-weight:800;letter-spacing:-.2px;cursor:pointer;white-space:nowrap;line-height:1}'
-    + '.jsh-btn svg{width:18px;height:18px;flex:none}.jsh-btn:hover{background:#E1EAFF}.jsh-btn:focus-visible{outline:3px solid #2560E8;outline-offset:2px}'
+    + '.jsh-btn svg{width:18px;height:18px;flex:none}.jsh-btn:hover{background:#E1EAFF}.jsh-btn:focus-visible{outline:3px solid #4338CA;outline-offset:2px}'
     + 'header.top>.jsh-btn{margin-left:auto}'
     + '@media(max-width:359px){.jsh-btn{padding:0 10px}.jsh-btn span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}}'
     + '.jsh-toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:1001;width:max-content;max-width:min(92vw,480px);background:#191F28;color:#fff;border-radius:14px;padding:12px 48px 12px 14px;font-size:15px;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,.22);display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}'

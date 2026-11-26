@@ -74,27 +74,28 @@ function check(name, cond, info) { if (cond) { ok++; console.log('  ok   ' + nam
 /* ⑤ 화면 연결 */
 {
   const H = read('index.html');
-  check('첫 화면: 상단 배너 바로 아래 브리핑 카드', /data-ad-slot="home_top"[^\n]*\n\s*<section class="bcta-home" id="bctaHome" data-bcta-home/.test(H), '');
-  check('첫 화면: 지도 링크보다 위(첫 스크롤 안)', H.indexOf('data-bcta-home') < H.indexOf('class="maplink"'), '');
+  /* 첫 화면 개편(대표 승인 시안 2026-11-26): 질문 칸 → 광고 → 내 집·할 일 → 브리핑 카드(오른쪽 칸 안, 첫 스크롤 안) */
+  check('첫 화면: 내 집·할 일 바로 아래 브리핑 카드', /<\/section>\n\s*<section class="bcta-home" id="bctaHome" data-bcta-home/.test(H) && H.indexOf('class="myh"') < H.indexOf('data-bcta-home'), '');
+  check('첫 화면: 오늘 소식·상황별로 찾기보다 위(첫 스크롤 안)', H.indexOf('data-bcta-home') < H.indexOf('id="t3"') && H.indexOf('data-bcta-home') < H.indexOf('class="svc"'), '');
   check('첫 화면: 옛 brieflink 정리(중복 없음)', !/class="brieflink"/.test(H) && !/\.brieflink\{/.test(H), '');
-  check('첫 화면: brief-cta.js 실림', /<script src="\.\/assets\/brief-cta\.js\?v=1" defer><\/script>/.test(H), '');
+  check('첫 화면: brief-cta.js 실림', /<script src="\.\/assets\/brief-cta\.js\?v=2" defer><\/script>/.test(H), '');
   const mine = read('mine/index.html'), buy = read('buy/index.html'), cal = read('mine/calendar/index.html'), w = read('assets/watch.js');
   check('단지 시세 결과: 그 단지 동네를 채운 자리', /<div data-bcta="mine_res" data-g="\$\{esc\(d\.code\)\}" data-dn="\$\{esc\(d\.dong \|\| ''\)\}" hidden><\/div>/.test(mine), '');
   check('내 집 마련 계산 결과 하단 자리', /<div data-bcta="buy_res" hidden><\/div>\s*<div data-ad-slot="buy_end"/.test(buy), '');
   check('전세 만기 알림 켠 뒤(신청 완료) 자리: 희망 지역 첫 동', /data-bcta="ta_done" data-g="\$\{esc\(\(T\.areas\[0\] \|\| \{\}\)\.g/.test(cal), '');
-  check('관심 단지 ★ 직후 한 줄(watch.js → starLine)', /JDJ_BRIEFCTA\.starLine\(/.test(w) && /brief-cta\.js\?v=1/.test(w), '');
-  check('광고 칸 화면도 함께 불러옴(ad-slot.js)', /assets\/brief-cta\.js\?v=1/.test(read('assets/ad-slot.js')), '');
+  check('관심 단지 ★ 직후 한 줄(watch.js → starLine)', /JDJ_BRIEFCTA\.starLine\(/.test(w) && /brief-cta\.js\?v=2/.test(w), '');
+  check('광고 칸 화면도 함께 불러옴(ad-slot.js)', /assets\/brief-cta\.js\?v=2/.test(read('assets/ad-slot.js')), '');
   const st = read('assets/stat.js');
   check('jdjStat 허용: brief_cta · cta_at · act', /brief_cta:12/.test(st) && /cta_at: +v =>/.test(st) && /act: +v => \['view','click','close','sub'\]/.test(st), '');
   check('jdjStat cta_at 목록 = brief-cta 자리 목록', C.AT.every(a => st.includes("'" + a + "'")), C.AT);
   check('누름 기록 data-track 자리별(bcta_자리)', /data-track="bcta_' \+ esc\(at\)/.test(read('assets/brief-cta.js')) && /data-track="bcta_home_card"/.test(read('assets/brief-cta.js')) && /data-track="bcta_strip"/.test(read('assets/brief-cta.js')), '');
   /* 서비스 대표 문구(2026-11-26 대표 확정) */
   const TG = '집값도, 할 일도 미리 알려 드려요';
-  check('대표 문구: 첫 화면 맨 위(소개 글 첫 줄)', /<div class="hero">\s*<p class="tagline">집값도, 할 일도 미리 알려 드려요<\/p>/.test(H), '');
+  check('대표 문구: 첫 화면 맨 위(질문 칸 첫 줄)', /<section class="qh" id="q"[^>]*>\s*<p class="tagline">집값도, 할 일도 미리 알려 드려요<\/p>/.test(H), '');
   check('대표 문구: description·og·twitter 첫머리', ['<meta name="description" content="', '<meta property="og:description" content="', '<meta name="twitter:description" content="'].every(m => H.includes(m + TG + '.')), '');
   check('대표 문구: manifest 설명 첫머리', JSON.parse(read('manifest.webmanifest')).description.indexOf(TG) === 0, '');
   const sw = read('sw.js');
-  check('sw.js 미리 받기 목록에 brief-cta.js', sw.includes("'./assets/brief-cta.js?v=1'"), '');
+  check('sw.js 미리 받기 목록에 brief-cta.js', sw.includes("'./assets/brief-cta.js?v=2'"), '');
 }
 
 console.log(`\n${ok}/${ok + bad} 통과`);

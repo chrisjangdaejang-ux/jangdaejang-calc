@@ -26,11 +26,11 @@
     st.textContent = `.vl-chart{width:100%;min-height:140px}
 .vl-chart svg{display:block;width:100%;height:auto}
 .vl-lg{display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;color:#4E5968;margin-top:4px}
-.vl-lg i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px;background:#2560E8}
+.vl-lg i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px;background:#4338CA}
 .vl-lg i.j{background:#14A06B}
 .vl-lg i.r{background:#0E7A4F;height:2px}
 .vl-lg i.g{background:repeating-linear-gradient(90deg,#8B95A1 0 5px,transparent 5px 8px)}
-.vl-lg i.gap{background:repeating-linear-gradient(90deg,#2560E8 0 3px,transparent 3px 7px);opacity:.55}
+.vl-lg i.gap{background:repeating-linear-gradient(90deg,#4338CA 0 3px,transparent 3px 7px);opacity:.55}
 .vl-fill{font-size:13.5px;color:#6B7684;margin:8px 0 0}
 .vl-jr{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:10px}
 .vl-jr .t{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px}
@@ -41,8 +41,8 @@
 .vl-jr p{font-size:14px;line-height:1.6;color:#4E5968;margin:6px 0 0;word-break:keep-all}
 .vl-jr .jps-jrc{margin:10px 0 2px}
 .jps-jrc.jrm{border-color:#D5DCE6;background:#F7F9FC}.jps-jrc.jrm b{color:#3E4754}
-.vl-few{background:#F5F8FF;border:1px solid #C9D8FF;border-radius:14px;padding:12px 14px;font-size:15px;line-height:1.65;margin:10px 0}
-.vl-prep{border:1px dashed #C9D8FF;background:#F8FAFF;border-radius:16px;padding:14px 16px;font-size:15px;line-height:1.7}
+.vl-few{background:#F5F8FF;border:1px solid #D4D1F5;border-radius:14px;padding:12px 14px;font-size:15px;line-height:1.65;margin:10px 0}
+.vl-prep{border:1px dashed #D4D1F5;background:#F8FAFF;border-radius:16px;padding:14px 16px;font-size:15px;line-height:1.7}
 .vl-road{font-size:13.5px;color:#4E5968;margin-top:2px}
 .vl-land{font-size:13.5px;color:#4E5968}
 .vl-sub{font-size:16px;margin:14px 0 6px}

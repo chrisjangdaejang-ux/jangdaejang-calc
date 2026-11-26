@@ -50,21 +50,23 @@
   }
 
   /* ---------- 화면 ---------- */
-  const CSS = '.jask{margin:0 0 14px;padding:18px;border-radius:18px;background:#F4F7FF;border:1.5px solid #C9D8FF}'
+  const CSS = '.jask{margin:0 0 14px;padding:18px;border-radius:18px;background:#F5F4FD;border:1.5px solid #D4D1F5}'
     + '.jask h2{margin:0;font-size:19px;font-weight:900;letter-spacing:-.4px}.jask h2 small{display:block;font-size:14px;font-weight:500;color:#4E5968;margin-top:3px;letter-spacing:0}'
-    + '.jask form{display:flex;gap:8px;margin-top:12px}.jask input{flex:1;min-width:0;font:inherit;font-size:16px;min-height:50px;padding:0 14px;border:1.5px solid #C9D8FF;border-radius:14px;background:#fff;color:#191F28}'
-    + '.jask input:focus{outline:0;border-color:#2560E8;box-shadow:0 0 0 3px rgba(47,107,255,.15)}'
-    + '.jask form button{flex:none;font:inherit;font-size:16px;font-weight:800;min-height:50px;padding:0 18px;border:0;border-radius:14px;background:#2560E8;color:#fff;cursor:pointer}'
+    + '.jask form{display:flex;gap:8px;margin-top:12px}.jask input{flex:1;min-width:0;font:inherit;font-size:16px;min-height:50px;padding:0 14px;border:1.5px solid #D4D1F5;border-radius:14px;background:#fff;color:#191F28}'
+    + '.jask input:focus{outline:0;border-color:#4338CA;box-shadow:0 0 0 3px rgba(67,56,202,.15)}'
+    /* 첫 화면 맨 위(bare): 바탕 상자 없이 굵은 테두리 입력칸 하나 */
+    + '.jask.jask-bare{padding:0;background:none;border:0;border-radius:0}.jask-bare form{margin-top:0;gap:0;padding:5px;border:2px solid #191F28;border-radius:16px;background:#fff}.jask-bare form:focus-within{border-color:#4338CA;box-shadow:0 0 0 4px #EEEDFB}.jask-bare input{border:0!important;box-shadow:none!important;min-height:46px;font-size:16.5px;padding:0 10px}.jask-bare form button{min-height:46px;border-radius:12px}.jask-bare .note{display:none}.jask.jask-bare .pop{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-top:10px;padding-bottom:2px;-webkit-overflow-scrolling:touch}.jask-bare .pop::-webkit-scrollbar{display:none}.jask-bare .pop>*{flex:none}.jask.jask-bare .pop .chip{white-space:nowrap}'
+    + '.jask form button{flex:none;font:inherit;font-size:16px;font-weight:800;min-height:50px;padding:0 18px;border:0;border-radius:14px;background:#4338CA;color:#fff;cursor:pointer}'
     + '.jask .msg{font-size:14.5px;line-height:1.55;color:#3E4754;margin-top:10px}.jask .msg:empty{display:none}.jask .msg.err{color:#C2410C;font-weight:700}'
     + '.jask .cands{display:grid;gap:10px;margin-top:10px}.jask .cands:empty{display:none}'
     + '.jask .cg b{display:block;font-size:15px;margin-bottom:6px}.jask .cg .row{display:flex;flex-wrap:wrap;gap:6px}'
     + '.jask .chip{font:inherit;font-size:14.5px;font-weight:700;min-height:44px;padding:4px 14px;border:1px solid #D1D6DB;border-radius:999px;background:#fff;color:#3E4754;cursor:pointer;text-align:left;line-height:1.3}'
-    + '.jask .chip small{display:block;font-size:12.5px;font-weight:500;color:#4E5968}.jask .chip.on{border-color:#2560E8;background:#E8F0FF;color:#1F56E0}.jask .chip:hover{border-color:#2560E8}'
+    + '.jask .chip small{display:block;font-size:12.5px;font-weight:500;color:#4E5968}.jask .chip.on{border-color:#4338CA;background:#EEEDFB;color:#3730A3}.jask .chip:hover{border-color:#4338CA}'
     + '.jask .pop{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:12px}.jask .pop>span{font-size:13.5px;font-weight:700;color:#4E5968;margin-right:2px}'
     + '.jask .pop .ex{display:inline-block;font-size:11.5px;font-weight:800;color:#8A6D17;background:#FBF5E3;border:1px solid #EFE2B8;border-radius:5px;padding:0 5px;margin-left:4px;vertical-align:1px}'
     + '.jask .pop .chip{min-height:44px;font-size:14px;font-weight:600}'
-    + '.jask .tp{display:flex;flex-direction:column;gap:4px;margin-top:10px;padding:14px;border-radius:14px;background:#fff;border:1.5px solid #2560E8;text-decoration:none;color:#191F28}'
-    + '.jask .tp b{font-size:16px;font-weight:800;color:#1F56E0}.jask .tp small{font-size:13.5px;color:#4E5968;line-height:1.5}.jask .tp:hover{background:#F4F7FF}'
+    + '.jask .tp{display:flex;flex-direction:column;gap:4px;margin-top:10px;padding:14px;border-radius:14px;background:#fff;border:1.5px solid #4338CA;text-decoration:none;color:#191F28}'
+    + '.jask .tp b{font-size:16px;font-weight:800;color:#3730A3}.jask .tp small{font-size:13.5px;color:#4E5968;line-height:1.5}.jask .tp:hover{background:#F5F4FD}'
     + '.jask .note{font-size:13px;color:#4E5968;margin:10px 0 0;line-height:1.5}'
     + '@media(max-width:420px){.jask{padding:16px 14px}.jask form button{padding:0 14px}}';
   function css() { if (document.getElementById('jaskCss')) return; const s = document.createElement('style'); s.id = 'jaskCss'; s.textContent = CSS; document.head.appendChild(s); }
@@ -73,10 +75,12 @@
     if (!el) return; opt = opt || {}; css();
     const from = opt.from || 'home';
     el.classList.add('jask');
-    el.innerHTML = `<h2>단지 이름으로 물어보기<small>통계로 답해요 · 단지 1곳은 시세와 전망, 2~3곳은 나란히 비교해 드려요</small></h2>
-      <form role="search" novalidate><label class="sr" for="jaskQ" style="position:absolute;left:-9999px">단지 이름으로 물어보기</label>
-        <input id="jaskQ" type="search" enterkeyhint="search" autocomplete="off" placeholder="예: 잠실엘스 헬리오시티" value="${esc(opt.value || '')}">
-        <button type="submit">물어보기</button></form>
+    /* opt.bare: 위에 화면 제목이 따로 있을 때(첫 화면 "무엇이 고민이세요?") 칸 제목 없이 · opt.ph·opt.btn: 입력 예시·단추 글자 */
+    if (opt.bare) el.classList.add('jask-bare');
+    el.innerHTML = `${opt.bare ? '' : '<h2>단지 이름으로 물어보기<small>통계로 답해요 · 단지 1곳은 시세와 전망, 2~3곳은 나란히 비교해 드려요</small></h2>'}
+      <form role="search" novalidate><label class="sr" for="jaskQ" style="position:absolute;left:-9999px">${opt.bare ? '단지 이름이나 고민' : '단지 이름으로 물어보기'}</label>
+        <input id="jaskQ" type="search" enterkeyhint="search" autocomplete="off" placeholder="${esc(opt.ph || '예: 잠실엘스 헬리오시티')}" value="${esc(opt.value || '')}">
+        <button type="submit">${esc(opt.btn || '물어보기')}</button></form>
       <div class="msg" role="status" aria-live="polite"></div>
       <div class="cands"></div>
       <div class="pop" aria-label="많이 찾는 단지"></div>

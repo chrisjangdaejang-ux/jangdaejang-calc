@@ -49,8 +49,9 @@ check('짧은 금액', [TD.eok(300000), TD.eok(93000), TD.eok(9850)], ['30억', 
 
 /* ---------- 첫 화면 ---------- */
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-const iAd = html.indexOf('data-ad-slot="home_top"'), iMap = html.indexOf('class="maplink"'), iT3 = html.indexOf('id="t3"'), iHero = html.indexOf('class="hero"');
-check('첫 휴대폰 화면 순서: 소개 글 → 광고 배너 → 지도 버튼 → (그 아래) 오늘 카드', iHero < iAd && iAd < iMap && iMap < iT3, true, '');
+const iQ = html.indexOf('<section class="qh"'), iAd = html.indexOf('data-ad-slot="home_top"'), iMy = html.indexOf('class="myh"'), iT3 = html.indexOf('id="t3"'), iHero = html.indexOf('class="hero"');
+/* 첫 화면 개편(대표 승인 시안 2026-11-26): 질문 칸 → 광고 배너 → 내 집·할 일 → 오늘 카드 → (아래) 이렇게 계산해요(소개 글) */
+check('첫 휴대폰 화면 순서: 무엇이 고민이세요 → 광고 배너 → 내 집·할 일 → 오늘 카드 → 소개 글', iQ < iAd && iAd < iMy && iMy < iT3 && iT3 < iHero, true, '');
 check('오늘 카드·관심 한 줄·문제 카드는 처음에 숨김(자료가 있을 때만 보임)', [/id="t3" hidden/.test(html), /id="wRow"[^>]*hidden/.test(html), /id="qzCard"[^>]*hidden/.test(html)], [true, true, true], '');
 check('카드마다 기준 시각', /t3At/.test(html) && /TD\.asOf\(/.test(html), true, '');
 check('금지어 없음', ['시험', '검증', '채점'].filter(w => html.slice(html.indexOf('id="t3"')).includes(w)), [], '');

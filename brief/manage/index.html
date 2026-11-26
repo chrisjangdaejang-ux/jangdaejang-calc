@@ -15,18 +15,18 @@
 <script src="../../assets/stat.js?v=8"></script>
 <script src="../../assets/config.js?v=11"></script>
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/auth.js?v=10"></script>
+<script src="../../assets/auth.js?v=11"></script>
 <script src="../../assets/pay.js?v=7"></script>
 <script src="../../assets/savefb.js?v=1"></script>
 <script src="../../assets/brief-core.js?v=12"></script>
-<script src="../../assets/share.js?v=13"></script>
+<script src="../../assets/share.js?v=14"></script>
 <script src="../../assets/pro-report.js?v=7"></script>
-<script src="../../assets/client-brief.js?v=6"></script>
+<script src="../../assets/client-brief.js?v=7"></script>
 <script src="../../assets/billing.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/aplus.css?v=46">
-<link rel="stylesheet" href="../../assets/pay.css?v=4">
+<link rel="stylesheet" href="../../assets/aplus.css?v=48">
+<link rel="stylesheet" href="../../assets/pay.css?v=5">
 <script src="../../assets/nw.js?v=1" defer></script>
 <style>
 .pick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -35,7 +35,7 @@
 .repBox{margin:10px 0 4px;padding:10px;border:1px dashed var(--line);border-radius:12px;background:#FBF8EF}
 .repBox .btn{width:100%}
 .al{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
-.al li{display:inline-flex;align-items:center;gap:4px;border:1px solid #D6E2FF;background:#F4F7FF;border-radius:999px;padding:0 4px 0 12px;min-height:40px;font-weight:700;font-size:15px}
+.al li{display:inline-flex;align-items:center;gap:4px;border:1px solid #D4D1F5;background:#F5F4FD;border-radius:999px;padding:0 4px 0 12px;min-height:40px;font-weight:700;font-size:15px}
 .al button{border:0;background:none;font-size:20px;min-width:44px;min-height:44px;cursor:pointer;color:var(--sub2)}
 .al small{font-weight:500;color:var(--sub2)}
 .fl{display:block;font-size:14.5px;font-weight:700;margin:12px 0 4px}
@@ -47,24 +47,24 @@ h1{font-size:clamp(24px,6vw,32px);margin:4px 0 8px}
 .sb h2{font-size:18px;font-weight:900;margin:0 0 6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .sb dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0 0 10px;font-size:15px}
 .sb dt{color:var(--sub2)}.sb dd{margin:0;font-weight:700}
-.tg{font-size:12.5px;font-weight:800;border-radius:6px;padding:1px 7px;background:#E8F0FF;color:#1F4FD1}
+.tg{font-size:12.5px;font-weight:800;border-radius:6px;padding:1px 7px;background:#EEEDFB;color:#3730A3}
 .tg.off{background:#F2F4F6;color:#4E5968}
 .row2{display:flex;flex-wrap:wrap;gap:8px}
 .inp,select.inp{font:inherit;font-size:16px;min-height:46px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:#fff;width:100%;box-sizing:border-box;margin:6px 0}
 .note{font-size:13.5px;color:var(--sub2);line-height:1.65;margin:12px 0 0}
 details{margin:8px 0 0}summary{cursor:pointer;font-weight:700;min-height:40px;display:flex;align-items:center}
-.chg{margin:10px 0 0;border:1px solid #D6E2FF;background:#F8FAFF;border-radius:14px;padding:12px 14px}
+.chg{margin:10px 0 0;border:1px solid #D4D1F5;background:#F8FAFF;border-radius:14px;padding:12px 14px}
 .chg h3{margin:0 0 8px;font-size:16px;font-weight:900}
 .chg .opt{display:grid;gap:6px}
 .chg .opt label{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff;cursor:pointer;line-height:1.45}
-.chg .opt label:has(input:checked){border-color:var(--blue);background:#F4F7FF}
+.chg .opt label:has(input:checked){border-color:var(--blue);background:#F5F4FD}
 .chg .opt input{margin-top:3px;width:18px;height:18px;flex:none}
 .chg .opt b{display:block;font-size:15.5px}.chg .opt small{display:block;font-size:13px;color:var(--sub2)}
 .q{margin:10px 0 0;border-radius:12px;background:#fff;border:1px solid var(--line);padding:12px 14px;font-size:15px;line-height:1.6}
 .q .amt{display:block;font-size:24px;font-weight:900;color:var(--blue);margin:2px 0}
 .q small{display:block;color:var(--sub2);font-size:13.5px}
 .nx{font-size:14px;margin:8px 0 0;background:#FBF4E2;border:1px solid #EAD9A8;color:#6B5310;border-radius:10px;padding:8px 12px;display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-.nx button{font:inherit;font-size:13.5px;border:0;background:none;color:#1F4FD1;text-decoration:underline;cursor:pointer;min-height:44px}
+.nx button{font:inherit;font-size:13.5px;border:0;background:none;color:#3730A3;text-decoration:underline;cursor:pointer;min-height:44px}
 .amc{display:flex;gap:10px;align-items:flex-start;font-size:15.5px;font-weight:700;line-height:1.5;cursor:pointer}
 .amc input{margin-top:3px;width:18px;height:18px;flex:none}
 .amc.dis{opacity:.55;cursor:not-allowed}

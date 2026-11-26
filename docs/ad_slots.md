@@ -1,6 +1,6 @@
 # 집예보 광고 칸 위치 계획
 
-- 작성: 2026-11-21 · 코드: `assets/ad-slot.js?v=3`(칸 그리기·업종 확인·기록) · `assets/aplus.css?v=45`(칸 모양) · `data/ads.json`(광고 자료) · 시험: `node tools/ad-slot-test.js </dev/null`
+- 작성: 2026-11-21 · 코드: `assets/ad-slot.js?v=7`(칸 그리기·업종 확인·기록) · `assets/aplus.css?v=48`(칸 모양) · `data/ads.json`(광고 자료) · 시험: `node tools/ad-slot-test.js </dev/null`
 - 화면 안내: `/ad/#slots` '광고 위치 안내'
 - 가격은 2026-11-21 대표 승인 가격이에요. 모두 VAT 별도. 모든 광고는 1주(7일)부터 팔아요(하루 단위 판매 없음).
 

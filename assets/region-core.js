@@ -21,7 +21,7 @@
   ];
   const PERIODS = [{ id: '1y', t: '1년', m: 12 }, { id: '3y', t: '3년', m: 36 }, { id: '5y', t: '5년', m: 60 }, { id: '10y', t: '10년', m: 120 }, { id: 'all', t: '전체', m: 0 }];
   const FEW = 20;           // 최근 3개월 거래가 이보다 적으면 '거래 적음'(중간값이 몇 건에 흔들림) — 화면 표시 기준
-  const COL = { up: '#E5484D', dn: '#2560E8', flat: '#6B7684', few: '#B0B8C1', seq: '#6D4AFF', na: '#B0B8C1', sale: '#6D4AFF', jeon: '#0E8A7A' };
+  const COL = { up: '#E5484D', dn: '#4338CA', flat: '#6B7684', few: '#B0B8C1', seq: '#6D4AFF', na: '#B0B8C1', sale: '#6D4AFF', jeon: '#0E8A7A' };
 
   /* ---------- 연월 ---------- */
   function ymAdd(ym, n) { let y = +String(ym).slice(0, 4), m = +String(ym).slice(4, 6) + n; while (m > 12) { y++; m -= 12; } while (m < 1) { y--; m += 12; } return y + String(m).padStart(2, '0'); }

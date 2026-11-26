@@ -27,9 +27,9 @@
     const st = document.createElement('style'); st.id = 'commCss';
     st.textContent = `.cm-seg{display:inline-grid;grid-template-columns:1fr 1fr;gap:4px;background:#F2F4F6;border-radius:12px;padding:4px;margin:4px 0 2px;width:100%;max-width:420px}
 .cm-seg button{font:inherit;font-size:15px;font-weight:700;border:0;background:transparent;color:#4E5968;min-height:44px;border-radius:9px;cursor:pointer;padding:0 6px;word-break:keep-all}
-.cm-seg button.on{background:#fff;color:#2560E8;box-shadow:0 1px 3px rgba(0,0,0,.08)}
-.cm-def{background:#F5F8FF;border:1px solid #C9D8FF;border-radius:14px;padding:12px 14px;font-size:15px;line-height:1.65;margin:10px 0}
-.cm-def b{color:#1F56E0}
+.cm-seg button.on{background:#fff;color:#4338CA;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.cm-def{background:#F5F8FF;border:1px solid #D4D1F5;border-radius:14px;padding:12px 14px;font-size:15px;line-height:1.65;margin:10px 0}
+.cm-def b{color:#3730A3}
 .cm-rows{display:grid;gap:8px;margin-top:8px}
 .cm-row{border:1px solid var(--line);border-radius:14px;padding:10px 12px;min-width:0}
 .cm-row .k{font-size:14px;font-weight:700;color:#3E4754}
@@ -38,8 +38,8 @@
 .cm-row.no{background:#FAFAFB}
 .cm-row.no .v{font-size:15px;color:#8B95A1}
 .cm-src{font-size:12.5px;color:#8B95A1;margin-top:2px}
-.cm-prep{border:1px dashed #C9D8FF;background:#F8FAFF;border-radius:16px;padding:14px 16px;font-size:15px;line-height:1.7}
-.cm-prep b{color:#1F56E0}
+.cm-prep{border:1px dashed #D4D1F5;background:#F8FAFF;border-radius:16px;padding:14px 16px;font-size:15px;line-height:1.7}
+.cm-prep b{color:#3730A3}
 .cm-wait{border:2px dashed #D9C27A;background:#FFFBEF;border-radius:14px;padding:12px 14px;font-size:15.5px;font-weight:800;line-height:1.6;color:#6B5310}
 .cm-chart{width:100%;min-height:150px}
 .cm-chart svg{display:block;width:100%;height:auto}
@@ -54,7 +54,7 @@
 .cm-tbl td small{display:block;color:#6B7684;font-size:12.5px;line-height:1.4}
 .cm-tbl td{vertical-align:top}
 .cm-tbl table{font-size:14px}
-.cm-mapl{display:inline-flex;align-items:center;min-height:32px;padding:0 8px;margin-left:4px;border:1px solid #C9D8FF;border-radius:999px;font-size:12.5px;font-weight:700;color:#2560E8;text-decoration:none}
+.cm-mapl{display:inline-flex;align-items:center;min-height:32px;padding:0 8px;margin-left:4px;border:1px solid #D4D1F5;border-radius:999px;font-size:12.5px;font-weight:700;color:#4338CA;text-decoration:none}
 .cm-trs{margin-top:6px}
 .cm-tr{border-bottom:1px solid var(--line);padding:9px 2px}
 .cm-tr .a{display:flex;justify-content:space-between;gap:10px;align-items:baseline;font-size:15px}
@@ -69,21 +69,21 @@
 .cm-det>summary::-webkit-details-marker{display:none}
 .cm-det>summary .t{font-size:16px;font-weight:800;color:#191F28}
 .cm-det>summary .s{grid-column:1;font-size:14px;color:#4E5968;line-height:1.5;word-break:keep-all;overflow-wrap:anywhere}
-.cm-det>summary .m{grid-column:2;grid-row:1/span 2;font-size:13.5px;font-weight:700;color:#2560E8;white-space:nowrap}
+.cm-det>summary .m{grid-column:2;grid-row:1/span 2;font-size:13.5px;font-weight:700;color:#4338CA;white-space:nowrap}
 .cm-det[open]>summary .m::after{content:' 접기'}
 .cm-det[open]>summary .m span{display:none}
 .cm-det>.cm-db{padding:0 0 12px}
-.cm-more{font:inherit;font-size:14.5px;font-weight:700;color:#2560E8;background:#F5F8FF;border:1px solid #C9D8FF;border-radius:10px;min-height:44px;width:100%;margin-top:8px;cursor:pointer}
+.cm-more{font:inherit;font-size:14.5px;font-weight:700;color:#4338CA;background:#F5F8FF;border:1px solid #D4D1F5;border-radius:10px;min-height:44px;width:100%;margin-top:8px;cursor:pointer}
 .cm-x{display:none}
 .cm-open .cm-x{display:revert}
-.cm-q>summary{cursor:pointer;font-size:14.5px;font-weight:700;color:#2560E8;padding:10px 0 4px}
+.cm-q>summary{cursor:pointer;font-size:14.5px;font-weight:700;color:#4338CA;padding:10px 0 4px}
 .cm-sum{margin:0;padding-left:18px;font-size:15px;line-height:1.65}
 .cm-sum li{margin:2px 0;word-break:keep-all}
 .cm-pick{grid-template-columns:1fr 1fr!important;gap:8px 10px}
 .cm-pick select{min-width:0;width:100%}
 .cm-links{display:flex;flex-wrap:wrap;gap:8px}
 .cm-links a{flex:1 1 100px;border:1px solid var(--line);border-radius:12px;padding:10px 6px;font-size:13.5px;word-break:keep-all;font-weight:700;text-decoration:none;color:#191F28;text-align:center}
-.cm-links a.main{border-color:#C9D8FF;background:#F5F8FF;color:#1F56E0}
+.cm-links a.main{border-color:#D4D1F5;background:#F5F8FF;color:#3730A3}
 .cm-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
 .cm-stats .st{padding:10px 12px}
 @media(min-width:720px){.cm-stats{grid-template-columns:repeat(4,1fr)}}
@@ -239,7 +239,7 @@
     P().mount(el, { months, fs: 13.5, h: h || 220, L: 44, min: 2, pad: 0.12, noFill: true, fmtY: m2fmt, aria, empty: '차트로 보여 드릴 값이 적어요.',
       lines, tip: P().tipFn({ months, rows, cnt, cntK: '매매', noFill: true }) });
   }
-  const COL = { all: '#2560E8', com: '#B8942A', res: '#0E9F6E', etc: '#8B95A1' };
+  const COL = { all: '#4338CA', com: '#B8942A', res: '#0E9F6E', etc: '#8B95A1' };
   const spans = (n, cur) => `<div class="seg2" role="group" aria-label="기간">${[12, 36].filter(m => m < n).map(m => ({ s: m, l: m / 12 + '년' })).concat([{ s: 0, l: '전체' }]).map(b => `<button type="button" data-cmspan="${b.s}" class="${b.s === cur || (!b.s && (!cur || cur >= n)) ? 'on' : ''}" aria-pressed="${b.s === cur}">${b.l}</button>`).join('')}</div>`;
   const cut = (a, months, span) => { if (!span || span >= months.length) return { a, months }; const k = months.length - span; return { a: a.map(x => x.slice(k)), months: months.slice(k) }; };
   const m2fmt = v => Math.round(v).toLocaleString() + '만';
@@ -258,7 +258,7 @@
       const us = K.unitSeries(u, DOC), w = cut([us.s], us.months, S.span), from = M.ymAdd(DOC.to, -35), c = {};
       (u.t || []).forEach(t => { const ym = String(t[0]).slice(0, 6); c[ym] = (c[ym] || 0) + 1; });
       const cnt = new Map(w.months.filter(ym => ym >= from).map(ym => [ym, c[ym] || 0]));   // 거래 목록은 최근 3년만 있어서 그 3년만 셈
-      chart(eu, [{ a: w.a[0], c: '#2560E8', w: 2.6 }], w.months, [{ k: '이 건물', a: w.a[0], c: '#2560E8', fmt: perM2 }], cnt, '이 건물 전용 ㎡당 가격 추이', 200);
+      chart(eu, [{ a: w.a[0], c: '#4338CA', w: 2.6 }], w.months, [{ k: '이 건물', a: w.a[0], c: '#4338CA', fmt: perM2 }], cnt, '이 건물 전용 ㎡당 가격 추이', 200);
     }
   }
 

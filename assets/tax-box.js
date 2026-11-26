@@ -30,7 +30,7 @@
     if (loading) return loading;
     const add = src => new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
     loading = (window.JDJ_ADJ ? Promise.resolve() : add(BASE + 'tax/adjusted-areas.js')).then(() => window.JDJ_TAX ? null : add(BASE + 'tax/tax-engine.js?v=4'))
-      .then(() => window.JDJ_GONGSI ? null : add(BASE + 'assets/gongsi.js?v=3').catch(() => null));     // 공시가격 자료는 없어도 세금 칸은 그대로
+      .then(() => window.JDJ_GONGSI ? null : add(BASE + 'assets/gongsi.js?v=4').catch(() => null));     // 공시가격 자료는 없어도 세금 칸은 그대로
     return loading;
   }
 
@@ -58,25 +58,25 @@
 .txb .tsec:first-of-type{border-top:0;padding-top:0}
 .txb .seg{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 8px}
 .txb .seg button{font:inherit;font-size:14px;font-weight:700;min-height:44px;padding:0 12px;border-radius:999px;background:var(--gray,#F2F4F6);color:var(--sub,#3E4754);border:1px solid transparent;cursor:pointer}
-.txb .seg button.on{border-color:var(--blue,#2560E8);color:var(--blue,#2560E8);background:var(--blue-l,#E8F0FF)}
+.txb .seg button.on{border-color:var(--blue,#4338CA);color:var(--blue,#4338CA);background:var(--blue-l,#EEEDFB)}
 .txb .f2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 8px}
 .txb .f2>*{min-width:0}
 .txb label.l{display:block;font-size:13.5px;font-weight:700;color:var(--sub,#3E4754);margin-bottom:4px}
 .txb .in{display:flex;align-items:center;gap:6px;background:var(--gray,#F2F4F6);border-radius:12px;padding:4px 12px;border:2px solid transparent;min-height:48px}
-.txb .in:focus-within{border-color:var(--blue,#2560E8)}
+.txb .in:focus-within{border-color:var(--blue,#4338CA)}
 .txb .in input,.txb .in select{border:0;outline:none;background:transparent;font:inherit;font-size:16px;font-weight:700;flex:1;min-width:0;color:var(--text,#191F28);padding:0;min-height:44px;box-shadow:none}
 .txb .in input[type=date]{font-size:14.5px;letter-spacing:-.3px}
 .txb .in span{font-size:14px;font-weight:700;color:var(--sub2,#4E5968);white-space:nowrap}
 .txb .out{background:var(--gray2,#F9FAFB);border:1px solid var(--line,#E5E8EB);border-radius:14px;padding:12px 14px;margin-top:4px}
 .txb .out .big{font-size:22px;font-weight:900;letter-spacing:-.4px;font-variant-numeric:tabular-nums}
 .txb .out small{display:block;font-size:13.5px;color:var(--sub2,#4E5968);line-height:1.55;margin-top:2px}
-.txb .out .pl{display:inline-block;font-size:13px;font-weight:700;border-radius:999px;padding:2px 10px;margin-left:6px;vertical-align:3px;background:var(--blue-l,#E8F0FF);color:var(--blue,#2560E8)}
+.txb .out .pl{display:inline-block;font-size:13px;font-weight:700;border-radius:999px;padding:2px 10px;margin-left:6px;vertical-align:3px;background:var(--blue-l,#EEEDFB);color:var(--blue,#4338CA)}
 .txb .out .pl.ok{background:var(--pos-l,#E6F5EE);color:var(--pos,#0E7A4F)}.txb .out .pl.no{background:var(--neg-l,#FDECE4);color:var(--neg,#C2410C)}
 .txb .tog{display:flex;align-items:center;gap:8px;font-size:14.5px;font-weight:700;margin:0 0 8px;min-height:44px;cursor:pointer}
 .txb .tog input{width:20px;height:20px;flex:none}
 .txb .hint{font-size:13.5px;color:var(--sub2,#4E5968);line-height:1.55;margin:0 0 8px}
-.txb .hint a{color:var(--blue,#2560E8)}
-.txb a.more{display:inline-flex;align-items:center;min-height:44px;font-size:14.5px;font-weight:700;color:var(--blue,#2560E8);text-decoration:none}
+.txb .hint a{color:var(--blue,#4338CA)}
+.txb a.more{display:inline-flex;align-items:center;min-height:44px;font-size:14.5px;font-weight:700;color:var(--blue,#4338CA);text-decoration:none}
 .txb .gos{display:grid;gap:8px;margin-top:6px}
 .txb .gos .btn{width:100%}
 .txb .note1{font-size:13px;color:var(--sub2,#4E5968);margin:12px 0 0;line-height:1.55}

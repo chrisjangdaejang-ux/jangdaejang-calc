@@ -397,8 +397,8 @@
     return C.slice(0, 6).map(c => Object.assign(c, { ad: ad && !ad.err ? ad.one : '' }));
   }
 
-  /* ---------- 카드 그리기(브라우저) — A+ 테마: 흰 바탕·파랑 #2560E8·금색 점 ---------- */
-  const TH = { bg: '#FFFFFF', ink: '#191F28', sub: '#4E5968', blue: '#2560E8', blue2: '#E8F0FF', gold: '#B8942A', line: '#E5E8EB', soft: '#F2F6FF' };
+  /* ---------- 카드 그리기(브라우저) — A+ 테마: 흰 바탕·파랑 #4338CA·금색 점 ---------- */
+  const TH = { bg: '#FFFFFF', ink: '#191F28', sub: '#4E5968', blue: '#4338CA', blue2: '#EEEDFB', gold: '#B8942A', line: '#E5E8EB', soft: '#F2F6FF' };
   /* 줄 바꿈: 띄어쓰기에서 먼저 끊고, 한 낱말이 한 줄보다 길 때만 글자 단위로 */
   function wrap(ctx, text, w) {
     const out = []; let cur = '';
@@ -490,7 +490,7 @@
       <ul class="bt-e" id="btErr" role="alert"></ul>`;
     if (root.document && !root.document.getElementById('bt-css')) {
       const st = root.document.createElement('style'); st.id = 'bt-css';
-      st.textContent = '.bt-why{font-size:12.5px;color:#5F6B7A;margin:3px 0 4px}.bt-cn{grid-column:1/-1;font-size:13.5px;font-weight:700;color:#191F28;margin:12px 0 0}.bt-more{font:inherit;font-size:14px;font-weight:700;color:#2560E8;background:none;border:0;padding:8px 0;min-height:44px;cursor:pointer}.bt-e{list-style:none;padding:0;margin:6px 0 0;color:#8A6A12!important;font-weight:500!important}.tried .bt-e{color:#C2410C!important;font-weight:700!important}.bt-e li{margin:2px 0}.bt-e li:before{content:"· "}.bt-l .opt{font-weight:500;color:#5F6B7A}';
+      st.textContent = '.bt-why{font-size:12.5px;color:#5F6B7A;margin:3px 0 4px}.bt-cn{grid-column:1/-1;font-size:13.5px;font-weight:700;color:#191F28;margin:12px 0 0}.bt-more{font:inherit;font-size:14px;font-weight:700;color:#4338CA;background:none;border:0;padding:8px 0;min-height:44px;cursor:pointer}.bt-e{list-style:none;padding:0;margin:6px 0 0;color:#8A6A12!important;font-weight:500!important}.tried .bt-e{color:#C2410C!important;font-weight:700!important}.bt-e li{margin:2px 0}.bt-e li:before{content:"· "}.bt-l .opt{font-weight:500;color:#5F6B7A}';
       (root.document.head || root.document.documentElement).appendChild(st);
     }
     const $ = id => box.querySelector('#' + id);

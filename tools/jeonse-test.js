@@ -62,10 +62,8 @@ check('전세 안전 점검 코드 자리 찾음', safeA > 0 && safeB > safeA, t
 check('확인 안 된 기준 안 씀(80%·126% 등) — 안전 점검 카드 밖', /80%|126%|70%/.test((html.slice(0, safeA) + html.slice(safeB)).replace(/<style[\s\S]*?<\/style>/, '')), false);
 check('안전 점검 카드의 HUG 기준은 확인한 출처·날짜를 화면에 표시', /HG\.SRC\.checked/.test(html.slice(safeA, safeB)) && /HG\.SRC\.url/.test(html.slice(safeA, safeB)), true);
 check('권유 표현 없음', /추천합니다|사세요|계약하세요|하셔야/.test(html), false);
-/* QA 2026-11-21: 홈 서비스 수 = 메뉴 칸 + 내 집 시세 띠(화면에 보이는 서비스 수와 같게) */
-{ const nav = (home.match(/<nav class="menu"[\s\S]*?<\/nav>/) || [''])[0], nMenu = (nav.match(/<a /g) || []).length, nMine = /class="minelink"/.test(home) ? 1 : 0, m = home.match(/<b>(\d+)가지 서비스<\/b>/);
-  check('홈: n가지 서비스 = 보이는 서비스 칸 수', m && +m[1], nMenu + nMine); }
-check('홈: 9가지 서비스(대출 한도 포함) + 전월세 카드', [home.includes('<b>9가지 서비스</b>'), home.includes('href="jeonse/"'), home.includes('전월세 전망 &amp; 전세사기 예방 체크')], [true, true, true]);
+/* 첫 화면 개편(대표 승인 시안 2026-11-26): 'n가지 서비스' 칸 대신 상황 단추 + 상황별로 찾기 + 전체 기능(all/) */
+check('홈: 상황 단추·상황별로 찾기에 전월세 + 전체 기능 링크', [/<nav class="sit"[\s\S]*?href="jeonse\/"[\s\S]*?<\/nav>/.test(home), home.includes('전월세 전망 &amp; 전세사기 예방 체크'), home.includes('href="all/"'), fs.readFileSync(path.join(__dirname, '..', 'all', 'index.html'), 'utf8').includes('href="../jeonse/"')], [true, true, true, true]);
 const sw = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
 check('서비스 워커에 새 페이지 등록', sw.includes("'./jeonse/'") && sw.includes('rent-core.js'), true);
 const stat = fs.readFileSync(path.join(__dirname, '..', 'assets', 'stat.js'), 'utf8');

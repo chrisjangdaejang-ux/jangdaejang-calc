@@ -181,16 +181,16 @@
         <p class="cc-who"><b>${esc(p.office)}</b> ${esc(p.nm)}${p.sub ? ' · ' + esc(p.sub) : ''}${p.phone ? ` · <span class="nw">전화 ${esc(p.phone)}</span>` : ''}</p></footer>
     </article>`;
   }
-  const CSS = '.ccard{border:1px solid #D6E2FF;border-radius:18px;background:#fff;padding:16px 16px 12px;box-shadow:0 1px 0 rgba(0,0,0,.02)}'
-    + '.cc-h{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;border-bottom:2px solid #2560E8;padding-bottom:8px;margin-bottom:8px}'
-    + '.cc-of{font-weight:900;font-size:17px;color:#191F28;display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}.cc-of span{font-size:12px;font-weight:800;color:#fff;background:#2560E8;border-radius:5px;padding:1px 6px}'
+  const CSS = '.ccard{border:1px solid #D4D1F5;border-radius:18px;background:#fff;padding:16px 16px 12px;box-shadow:0 1px 0 rgba(0,0,0,.02)}'
+    + '.cc-h{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;border-bottom:2px solid #4338CA;padding-bottom:8px;margin-bottom:8px}'
+    + '.cc-of{font-weight:900;font-size:17px;color:#191F28;display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}.cc-of span{font-size:12px;font-weight:800;color:#fff;background:#4338CA;border-radius:5px;padding:1px 6px}'
     + '.cc-dt{font-size:13.5px;color:#4E5968;white-space:nowrap}'
     + '.cc-lb{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-weight:800;color:#8A6D1C;background:#FBF8EF;border:1px dashed #EFE6CC;border-radius:10px;padding:6px 10px;margin:0 0 8px}.cc-lb small{font-weight:500;color:#6B7684;font-size:12.5px}'
     + '.cc-t{font-size:19px;font-weight:900;margin:2px 0 8px;letter-spacing:-.3px}'
     + '.cc-l{list-style:none;margin:0;padding:0}.cc-l li{border-top:1px solid #EEF1F4;padding:9px 0}.cc-l li:first-child{border-top:0}'
     + '.cc-n{font-weight:800;font-size:16px;display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 3px}'
-    + '.cc-tg{font-style:normal;font-size:12px;font-weight:800;border-radius:6px;padding:1px 7px;background:#EEF1F4;color:#4E5968}.cc-tg.hi{background:#FDECEC;color:#C8333A}.cc-tg.dn{background:#E8F0FF;color:#1F4FD1}'
-    + '.cc-l p{margin:2px 0;font-size:14.5px;line-height:1.55;color:#333D4B}.cc-l p.cc-new{color:#191F28;font-weight:700}.cc-l p.cc-urg{color:#8A6D1C}.cc-l p.cc-rk{color:#1F4FD1}'
+    + '.cc-tg{font-style:normal;font-size:12px;font-weight:800;border-radius:6px;padding:1px 7px;background:#EEF1F4;color:#4E5968}.cc-tg.hi{background:#FDECEC;color:#C8333A}.cc-tg.dn{background:#E8F0FD;color:#1D63D8}'
+    + '.cc-l p{margin:2px 0;font-size:14.5px;line-height:1.55;color:#333D4B}.cc-l p.cc-new{color:#191F28;font-weight:700}.cc-l p.cc-urg{color:#8A6D1C}.cc-l p.cc-rk{color:#3730A3}'
     + '.cc-f{border-top:1px solid #E5E8EB;margin-top:6px;padding-top:8px}.cc-f p{margin:0 0 4px;font-size:12.5px;line-height:1.55;color:#4E5968}.cc-who b{color:#191F28}.cc-f .nw{white-space:nowrap}';
 
   /* ---------- 카드 이미지(1080×1080, canvas) — 보내기 화면에서 '사진으로 보내기'를 고를 때만 ---------- */
@@ -219,7 +219,7 @@
     const cv = doc.createElement('canvas'); cv.width = 1080; cv.height = 1080;
     const ctx = cv.getContext('2d'), F = "'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif", p = m.profile;
     ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 1080, 1080);
-    ctx.fillStyle = '#2560E8'; ctx.fillRect(0, 0, 1080, 128);
+    ctx.fillStyle = '#4338CA'; ctx.fillRect(0, 0, 1080, 128);
     ctx.fillStyle = '#EFE6CC'; ctx.fillRect(0, 128, 1080, 8);
     ctx.fillStyle = '#fff'; ctx.font = `900 44px ${F}`; ctx.textBaseline = 'middle';
     ctx.fillText(wrapText(ctx, p.office, 700, 1)[0] || '', 56, 66);
@@ -234,20 +234,20 @@
       const nm = wrapText(ctx, it.name, 620, 1)[0] || ''; ctx.fillText(nm, 80, y + 37);
       let x = 80 + ctx.measureText(nm).width + 14;
       it.tags.slice(0, 1).forEach(t => { ctx.font = `800 24px ${F}`; const w = ctx.measureText(t.t).width + 22;
-        if (x + w < 1024) { ctx.fillStyle = t.c === 'hi' ? '#FDECEC' : '#E8F0FF'; ctx.fillRect(x, y + 8, w, 38); ctx.fillStyle = t.c === 'hi' ? '#C8333A' : '#1F4FD1'; ctx.fillText(t.t, x + 11, y + 35); } });
+        if (x + w < 1024) { ctx.fillStyle = t.c === 'hi' ? '#FDECEC' : '#EEEDFB'; ctx.fillRect(x, y + 8, w, 38); ctx.fillStyle = t.c === 'hi' ? '#C8333A' : '#3730A3'; ctx.fillText(t.t, x + 11, y + 35); } });
       y += 58;
       const maxL = Math.max(1, Math.floor((per - 74) / LH));
       let used = 0;
       it.lines.forEach(l => {
         if (used >= maxL) return;
-        ctx.font = `${l.k === 'new' ? 700 : 500} ${FS}px ${F}`; ctx.fillStyle = l.k === 'urg' ? '#8A6D1C' : l.k === 'rk' ? '#1F4FD1' : l.k === 'new' ? '#191F28' : '#333D4B';
+        ctx.font = `${l.k === 'new' ? 700 : 500} ${FS}px ${F}`; ctx.fillStyle = l.k === 'urg' ? '#8A6D1C' : l.k === 'rk' ? '#3730A3' : l.k === 'new' ? '#191F28' : '#333D4B';
         wrapText(ctx, l.t, 944, Math.min(2, maxL - used)).forEach(t2 => { ctx.fillText(t2, 80, y + FS); y += LH; used++; });
       });
       y = Math.min(Math.max(y + 18, y0 + 80), 950);
       ctx.fillStyle = '#EEF1F4'; ctx.fillRect(56, y - 10, 968, 2);
       y += 6;
     });
-    ctx.fillStyle = '#F4F7FF'; ctx.fillRect(0, 962, 1080, 118);
+    ctx.fillStyle = '#F5F4FD'; ctx.fillRect(0, 962, 1080, 118);
     ctx.fillStyle = '#4E5968'; ctx.font = `500 22px ${F}`;
     ctx.fillText(wrapText(ctx, (m.period ? `${m.period} · ` : '') + '국토교통부 실거래가(공공자료)', 968, 1)[0], 56, 998);
     ctx.fillStyle = '#191F28'; ctx.font = `700 23px ${F}`;
@@ -276,7 +276,7 @@
     await Promise.all((gs || []).map(g => fetch(DATA + 'cx/' + g + '.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null).then(j => { out[g] = j; })));
     return out;
   }
-  const ACT_CSS = '.ccw{margin:0 0 14px;scroll-margin-top:72px}.ccw.focus .ccard{border-color:#2560E8;box-shadow:0 0 0 3px rgba(47,107,255,.18)}'
+  const ACT_CSS = '.ccw{margin:0 0 14px;scroll-margin-top:72px}.ccw.focus .ccard{border-color:#4338CA;box-shadow:0 0 0 3px rgba(67,56,202,.18)}'
     + '.cc-act{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.cc-act .btn{flex:1 1 auto;min-width:140px}';
   function css(doc) {
     if (doc.getElementById('ccCss')) return;

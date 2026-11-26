@@ -10,27 +10,27 @@
 <link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
 <link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
 <script src="../../assets/region-pick.js?v=2"></script>
-<script src="../../assets/pwa.js?v=2" defer data-nobar></script>
+<script src="../../assets/pwa.js?v=3" defer data-nobar></script>
 <title>매물 설명서 | 집예보</title>
 <meta name="description" content="단지·평형을 고르면 최근 실거래, 주변 단지 거래, 가격 흐름, 학교·역 거리, 미래가치 점수, 취득세 예상을 공개 자료로 한 장에 정리해요. A4 인쇄·PDF·링크 공유.">
 <script>window.JDJ_CONFIG = { tool:'agent_listing', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../../assets/config.js?v=11"></script>
 <script src="../../assets/track.js?v=2"></script>
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/auth.js?v=10"></script>
+<script src="../../assets/auth.js?v=11"></script>
 <script src="../../assets/mine-core.js?v=23"></script>
-<script src="../../assets/price-sheet.js?v=23"></script>
+<script src="../../assets/price-sheet.js?v=24"></script>
 <script src="../../assets/rank-core.js?v=8"></script>
 <script src="../../tax/tax-engine.js?v=4"></script>
 <script src="../../tax/adjusted-areas.js?v=2"></script>
 <script src="../../assets/pro-report.js?v=7"></script>
-<script src="../../assets/broker-tools.js?v=6"></script>
-<script src="../../assets/conf.js?v=3"></script>
+<script src="../../assets/broker-tools.js?v=7"></script>
+<script src="../../assets/conf.js?v=4"></script>
 <script src="../../assets/life-view.js?v=3"></script>
 <script src="../../assets/fac-view.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/aplus.css?v=46">
+<link rel="stylesheet" href="../../assets/aplus.css?v=48">
 <style>
 [hidden]{display:none!important}
 .wrap{max-width:900px;margin:0 auto;padding:20px 16px 60px}
@@ -60,8 +60,8 @@ h1{font-size:clamp(22px,5.4vw,30px);margin:4px 0 6px;line-height:1.3;letter-spac
 
 /* ===== 설명서 한 장 ===== */
 .ls{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;margin:14px 0;color:#191F28;font-size:14px;line-height:1.5}
-.ls-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;border-bottom:3px solid #2560E8;padding-bottom:10px}
-.ls-top .k{font-size:13px;font-weight:700;color:#2560E8}
+.ls-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;border-bottom:3px solid #4338CA;padding-bottom:10px}
+.ls-top .k{font-size:13px;font-weight:700;color:#4338CA}
 .ls-top h2{margin:2px 0 0;font-size:23px;letter-spacing:-.03em;line-height:1.3}
 .ls-top small{display:block;font-size:13.5px;color:#4E5968;margin-top:3px}
 .ls-logo{font-weight:900;font-size:15px;white-space:nowrap;display:flex;align-items:center;gap:6px;flex:none}
@@ -75,19 +75,19 @@ h1{font-size:clamp(22px,5.4vw,30px);margin:4px 0 6px;line-height:1.3;letter-spac
 .ls-key .ask .k{color:#8A6A12}
 .ls-key .pv{background:#F2F6FF}
 @media(max-width:620px){.ls-key{grid-template-columns:1fr 1fr}.ls{padding:16px 14px}.ls-top h2{font-size:20px}}
-.up{color:#C2410C}.dn{color:#1F56E0}
+.up{color:#C2410C}.dn{color:#1D63D8}
 .ls-memo{font-size:14px;background:#F2F6FF;border-radius:10px;padding:8px 12px;margin:0 0 6px}
 .ls-cols{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px}
 @media(max-width:700px){.ls-cols{grid-template-columns:1fr}}
 .ls-sec{min-width:0}
 .ls-col{min-width:0}
 .ls h3{font-size:15px;margin:12px 0 4px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
-.ls h3 .n{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#2560E8;color:#fff;font-size:12px;flex:none}
+.ls h3 .n{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#4338CA;color:#fff;font-size:12px;flex:none}
 .ls .src{font-size:11.5px;color:#5F6B7A;line-height:1.45;margin:3px 0 0}
 .ls .miss{font-size:13px;color:#3E4754;background:#F9FAFB;border:1px dashed var(--line);border-radius:10px;padding:7px 10px;margin:4px 0}
 .ls table{width:100%;border-collapse:collapse;font-size:13px}
 .ls th,.ls td{border-bottom:1px solid var(--line2);padding:5px 4px;text-align:left;vertical-align:top}
-.ls th{font-size:12px;color:#1B3C8F;background:#E8F0FF;font-weight:700}
+.ls th{font-size:12px;color:#1B3C8F;background:#EEEDFB;font-weight:700}
 .ls td.n,.ls th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .ls .hi{display:inline-block;font-size:11px;font-weight:700;background:#FDECE4;color:#C2410C;border-radius:5px;padding:0 5px;margin-left:3px;white-space:nowrap}
 .ls .chart{display:block;width:100%;height:auto;margin:4px 0 0}
@@ -314,8 +314,8 @@ function chart(t){
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="최근 3년 평당가 흐름">
     <line x1="${L}" x2="${W - Rr}" y1="${Y(hi).toFixed(1)}" y2="${Y(hi).toFixed(1)}" stroke="#E5E8EB" stroke-dasharray="3 3"/><line x1="${L}" x2="${W - Rr}" y1="${Y(lo).toFixed(1)}" y2="${Y(lo).toFixed(1)}" stroke="#E5E8EB" stroke-dasharray="3 3"/>
     <text x="${W - Rr + 4}" y="${(Y(hi) + 4).toFixed(1)}" font-size="10" fill="#5F6B7A">${hi.toLocaleString('ko-KR')}</text><text x="${W - Rr + 4}" y="${(Y(lo) + 4).toFixed(1)}" font-size="10" fill="#5F6B7A">${lo.toLocaleString('ko-KR')}</text>
-    <path d="${d}" fill="none" stroke="#2560E8" stroke-width="2.2" stroke-linejoin="round"/>
-    <circle cx="${X(last[0]).toFixed(1)}" cy="${Y(last[1]).toFixed(1)}" r="3.5" fill="#2560E8"/>
+    <path d="${d}" fill="none" stroke="#4338CA" stroke-width="2.2" stroke-linejoin="round"/>
+    <circle cx="${X(last[0]).toFixed(1)}" cy="${Y(last[1]).toFixed(1)}" r="3.5" fill="#4338CA"/>
     <text x="${L}" y="${H - 6}" font-size="10" fill="#5F6B7A">${ymL(t.ser[0].ym)}</text><text x="${W - Rr}" y="${H - 6}" font-size="10" fill="#5F6B7A" text-anchor="end">${ymL(t.ser[n - 1].ym)}</text>
   </svg>`;
 }

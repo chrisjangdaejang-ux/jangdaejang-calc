@@ -63,7 +63,7 @@
 .cs-grid{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
 .cs-grid>*{min-width:0}
 @media(min-width:920px){.cs-grid{grid-template-columns:minmax(0,1fr) 300px;align-items:start}.cs-side{position:sticky;top:76px}}
-.cs-tag{display:inline-flex;align-items:center;font-size:12.5px;font-weight:800;border-radius:999px;padding:2px 9px;background:var(--blue-l,#E8F0FF);color:var(--blue,#2560E8);white-space:nowrap;letter-spacing:0}
+.cs-tag{display:inline-flex;align-items:center;font-size:12.5px;font-weight:800;border-radius:999px;padding:2px 9px;background:var(--blue-l,#EEEDFB);color:var(--blue,#4338CA);white-space:nowrap;letter-spacing:0}
 .cs-tag.pv{background:#FFF4E0;color:#9A5B00}
 .cs-tag.ok{background:#E6F5EE;color:#0E7A4F}
 .cs-tag.team{background:#EEF0FF;color:#4338CA}
@@ -76,19 +76,19 @@
 .cs-chip[aria-pressed="true"]{background:var(--text,#191F28);border-color:var(--text,#191F28);color:#fff}
 .cs-list{display:grid;gap:10px}
 .cs-item{display:block;border:1px solid var(--line,#E5E8EB);border-radius:16px;padding:14px 16px;background:#fff;text-decoration:none;color:inherit;min-width:0;transition:border-color .15s}
-.cs-item:hover{border-color:var(--blue,#2560E8)}
+.cs-item:hover{border-color:var(--blue,#4338CA)}
 .cs-item .cs-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:13px;color:var(--sub2,#4E5968)}
 .cs-item h3{margin:6px 0 4px;font-size:17px;font-weight:800;line-height:1.45;word-break:keep-all;overflow-wrap:anywhere}
 .cs-item p{margin:0;font-size:14.5px;color:var(--sub2,#4E5968);line-height:1.55;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.cs-item .cs-n{margin-left:auto;font-weight:800;color:var(--blue,#2560E8);white-space:nowrap}
+.cs-item .cs-n{margin-left:auto;font-weight:800;color:var(--blue,#4338CA);white-space:nowrap}
 .cs-panel{border:1px solid var(--line,#E5E8EB);border-radius:18px;padding:16px;background:#fff;min-width:0}
 .cs-panel+.cs-panel{margin-top:12px}
 .cs-panel h2{font-size:17px;font-weight:900;margin:0 0 6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .cs-panel p,.cs-panel li{font-size:14.5px;color:var(--sub,#3E4754);line-height:1.6;word-break:keep-all}
 .cs-panel ul{margin:6px 0 0;padding-left:18px}
 .cs-cream{background:var(--creamc,#FBF8EF);border-color:var(--creamb,#EFE6CC)}
-.cs-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font:inherit;font-size:15.5px;font-weight:800;min-height:48px;padding:0 18px;border-radius:14px;border:1px solid var(--blue,#2560E8);background:var(--blue,#2560E8);color:#fff;cursor:pointer;text-decoration:none;white-space:nowrap}
-.cs-btn.sub{background:#fff;color:var(--blue,#2560E8)}
+.cs-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font:inherit;font-size:15.5px;font-weight:800;min-height:48px;padding:0 18px;border-radius:14px;border:1px solid var(--blue,#4338CA);background:var(--blue,#4338CA);color:#fff;cursor:pointer;text-decoration:none;white-space:nowrap}
+.cs-btn.sub{background:#fff;color:var(--blue,#4338CA)}
 .cs-btn.ghost{background:#fff;border-color:var(--line,#E5E8EB);color:var(--sub,#3E4754)}
 .cs-btn.full{width:100%}
 .cs-btn[disabled]{opacity:.55;cursor:default}
@@ -109,13 +109,13 @@
 .cs-form label,.cs-lab{font-size:14.5px;font-weight:800;color:var(--text,#191F28)}
 .cs-inp{width:100%;font:inherit;font-size:16px;border:1px solid var(--line,#E5E8EB);border-radius:12px;padding:12px;background:#fff;color:var(--text,#191F28);box-sizing:border-box}
 textarea.cs-inp{min-height:150px;resize:vertical;line-height:1.6}
-.cs-inp:focus{outline:0;border-color:var(--blue,#2560E8);box-shadow:0 0 0 3px rgba(47,107,255,.15)}
+.cs-inp:focus{outline:0;border-color:var(--blue,#4338CA);box-shadow:0 0 0 3px rgba(67,56,202,.15)}
 .cs-cnt{font-size:12.5px;color:var(--sub2,#4E5968);text-align:right;margin-top:3px;font-variant-numeric:tabular-nums}
 .cs-help{font-size:13.5px;color:var(--sub2,#4E5968);line-height:1.55;margin:4px 0 0}
 .cs-opt{display:grid;gap:8px}
 @media(min-width:700px){.cs-opt{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .cs-opt label{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line,#E5E8EB);border-radius:14px;padding:12px;cursor:pointer;font-weight:700;background:#fff}
-.cs-opt label:has(input:checked){border-color:var(--blue,#2560E8);background:var(--blue-l,#E8F0FF)}
+.cs-opt label:has(input:checked){border-color:var(--blue,#4338CA);background:var(--blue-l,#EEEDFB)}
 .cs-opt input{margin-top:3px;width:18px;height:18px;flex:none}
 .cs-opt small{display:block;font-weight:500;color:var(--sub2,#4E5968);font-size:13px;margin-top:2px;line-height:1.45}
 .cs-check{display:flex;gap:10px;align-items:flex-start;font-size:14.5px;line-height:1.55;color:var(--sub,#3E4754);font-weight:500}
@@ -127,12 +127,12 @@ textarea.cs-inp{min-height:150px;resize:vertical;line-height:1.6}
 .cs-soon{margin:18px 0;padding:28px 18px;border-radius:18px;border:1px dashed var(--line,#E5E8EB);text-align:center;line-height:1.7}
 .cs-soon h1{font-size:24px;margin:0 0 6px;display:block}
 .cs-soon p{margin:0 0 14px;color:var(--sub,#3E4754);font-size:15.5px}
-.cs-soon a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 16px;border-radius:12px;background:var(--blue-l,#E8F0FF);color:var(--blue,#2560E8);font-weight:800;text-decoration:none}
+.cs-soon a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 16px;border-radius:12px;background:var(--blue-l,#EEEDFB);color:var(--blue,#4338CA);font-weight:800;text-decoration:none}
 .cs-heart{display:inline-flex;align-items:center;gap:4px;font-weight:900;color:#D6336C;white-space:nowrap}
 .cs-heart::before{content:'♥'}
 .cs-pros{display:grid;gap:8px;margin-top:6px}
 .cs-pro{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line,#E5E8EB);border-radius:14px;padding:10px 12px;cursor:pointer;background:#fff}
-.cs-pro:has(input:checked){border-color:var(--blue,#2560E8);background:var(--blue-l,#E8F0FF)}
+.cs-pro:has(input:checked){border-color:var(--blue,#4338CA);background:var(--blue-l,#EEEDFB)}
 .cs-pro b{font-size:15px}.cs-pro small{display:block;color:var(--sub2,#4E5968);font-size:13px;line-height:1.45}
 .cs-rep{display:flex;flex-wrap:wrap;align-items:flex-start;gap:6px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line,#E5E8EB)}
 .cs-rep>span,.cs-acts>span{display:inline-flex;flex-direction:column;max-width:100%}

@@ -23,8 +23,8 @@
   function css() {
     if ($('offiCss')) return;
     const st = document.createElement('style'); st.id = 'offiCss';
-    st.textContent = `.of-def{background:#F5F8FF;border:1px solid #C9D8FF;border-radius:14px;padding:12px 14px;font-size:15px;line-height:1.65;margin:10px 0}
-.of-def b{color:#1F56E0}
+    st.textContent = `.of-def{background:#F5F8FF;border:1px solid #D4D1F5;border-radius:14px;padding:12px 14px;font-size:15px;line-height:1.65;margin:10px 0}
+.of-def b{color:#3730A3}
 .of-rows{display:grid;gap:8px;margin-top:8px}
 .of-row{border:1px solid var(--line);border-radius:14px;padding:10px 12px;min-width:0}
 .of-row .k{font-size:14px;font-weight:700;color:#3E4754}
@@ -38,17 +38,17 @@
 .of-score div{border:2px solid #B8942A;border-radius:14px;padding:6px 12px;text-align:center;min-width:84px}
 .of-score b{display:block;font-size:24px;font-weight:900}
 .of-score small{font-size:13px;color:#4E5968;font-weight:700}
-.of-prep{border:1px dashed #C9D8FF;background:#F8FAFF;border-radius:16px;padding:14px 16px;font-size:15px;line-height:1.7}
-.of-prep b{color:#1F56E0}
+.of-prep{border:1px dashed #D4D1F5;background:#F8FAFF;border-radius:16px;padding:14px 16px;font-size:15px;line-height:1.7}
+.of-prep b{color:#3730A3}
 .of-chart{width:100%;min-height:140px}
 .of-chart svg{display:block;width:100%;height:auto}
 .of-lg{display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;color:#4E5968;margin-top:4px}
-.of-lg i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px;background:#2560E8}
+.of-lg i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px;background:#4338CA}
 .of-lg i.y{background:#B8942A}
 .of-lg i.g{background:repeating-linear-gradient(90deg,#8B95A1 0 5px,transparent 5px 8px)}
 .of-lg i.j{background:#14A06B}
 .of-lg i.r{background:#0E7A4F;height:2px}
-.of-lg i.gap{background:repeating-linear-gradient(90deg,#2560E8 0 3px,transparent 3px 7px);opacity:.55}
+.of-lg i.gap{background:repeating-linear-gradient(90deg,#4338CA 0 3px,transparent 3px 7px);opacity:.55}
 .of-lg i.gap.y2{background:repeating-linear-gradient(90deg,#B8942A 0 3px,transparent 3px 7px)}
 .of-fill{font-size:13px;color:#6B7684;margin:8px 0 0}`;
     document.head.appendChild(st);

@@ -58,8 +58,8 @@
     if (typeof document === 'undefined' || document.getElementById('gsCss')) return;
     var st = document.createElement('style'); st.id = 'gsCss';
     st.textContent = '.gsn{font-size:13.5px;color:var(--sub2,#4E5968);line-height:1.55;margin:6px 0 8px;overflow-wrap:anywhere}' +
-      '.gsn span{display:block}.gsn .gsh{color:var(--sub,#3E4754)}.gsn a{color:var(--blue,#2560E8)}.gsn .gsx{font-weight:700;margin-top:2px}' +
-      '.gsn .gsr{font:inherit;font-size:13.5px;font-weight:700;color:var(--blue,#2560E8);background:none;border:0;padding:0 2px;min-height:44px;cursor:pointer;text-decoration:underline}';
+      '.gsn span{display:block}.gsn .gsh{color:var(--sub,#3E4754)}.gsn a{color:var(--blue,#4338CA)}.gsn .gsx{font-weight:700;margin-top:2px}' +
+      '.gsn .gsr{font:inherit;font-size:13.5px;font-weight:700;color:var(--blue,#4338CA);background:none;border:0;padding:0 2px;min-height:44px;cursor:pointer;text-decoration:underline}';
     document.head.appendChild(st);
   }
 

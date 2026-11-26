@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="내 집 성적표">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="robots" content="noindex">
-<script src="../../assets/pwa.js?v=2" defer></script>
+<script src="../../assets/pwa.js?v=3" defer></script>
 <title>내 집 성적표</title>
 <meta name="description" content="내 집과 관심 단지의 한 주: 이번 주 가격 흐름, 최근 시세와 실거래, 동네 순위, 미래가치 점수, 전세가율, 우리 동네 새 거래를 한 장으로 봐요.">
 <meta property="og:type" content="website">
@@ -26,17 +26,17 @@
 <script src="../../assets/stat.js?v=8"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/config.js?v=11"></script>
-<script src="../../assets/auth.js?v=10"></script>
+<script src="../../assets/auth.js?v=11"></script>
 <script src="../../assets/savefb.js?v=1"></script>
 <script src="../../assets/mine-core.js?v=23"></script>
 <script src="../../assets/report-core.js?v=5"></script>
 <script src="../../assets/alerts-core.js?v=5"></script>
 <script src="../../assets/watch-core.js?v=2"></script>
 <script src="../../assets/watch.js?v=9"></script>
-<script src="../../assets/tabbar.js?v=5" defer></script>
+<script src="../../assets/tabbar.js?v=7" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/aplus.css?v=46">
+<link rel="stylesheet" href="../../assets/aplus.css?v=48">
 <style>
 .wrap{max-width:1040px;margin:0 auto;padding:22px 16px 40px}
 h1{font-size:clamp(26px,6.4vw,32px);margin:4px 0 8px;letter-spacing:-.6px}
@@ -62,7 +62,7 @@ h1{font-size:clamp(26px,6.4vw,32px);margin:4px 0 8px;letter-spacing:-.6px}
 .rc .kp b{display:block;font-size:21px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-.4px;line-height:1.3;margin-top:2px;word-break:keep-all}
 .rc .kp b em{font-style:normal;font-size:14px;font-weight:700;color:var(--sub2)}
 .rc .kp i{display:block;font-style:normal;font-size:12.5px;line-height:1.45;color:var(--sub2);margin-top:3px}
-.rc .kp i.up{color:#C2410C;font-weight:800}.rc .kp i.dn{color:#1F56E0;font-weight:800}
+.rc .kp i.up{color:#C2410C;font-weight:800}.rc .kp i.dn{color:#1D63D8;font-weight:800}
 .rc .kp div.warn{background:#FFF7F2}
 .rc .rw{padding:13px 18px;border-top:1px solid var(--line2)}
 .rc .rw h3{margin:0 0 3px;font-size:13.5px;font-weight:800;color:var(--sub2)}
@@ -304,8 +304,8 @@ function drawNet(c){
   if (H.length >= 2) {
     const w = 320, h = 120, pad = 26, xs = H.map((x, i) => pad + i * (w - pad * 2) / (H.length - 1)), vs = H.map(x => x[2] - x[3]);
     const lo = Math.min(...vs), hi = Math.max(...vs), sp = hi - lo || 1, ys = vs.map(v => h - 24 - (v - lo) / sp * (h - 48));
-    chart = `<svg class="ch" viewBox="0 0 ${w} ${h}" role="img" aria-label="순자산 흐름 ${H.length}번 기록"><polyline fill="none" stroke="#2560E8" stroke-width="2.5" points="${xs.map((x, i) => x.toFixed(1) + ',' + ys[i].toFixed(1)).join(' ')}"/>
-      ${xs.map((x, i) => `<circle cx="${x.toFixed(1)}" cy="${ys[i].toFixed(1)}" r="3.5" fill="#2560E8"/>`).join('')}
+    chart = `<svg class="ch" viewBox="0 0 ${w} ${h}" role="img" aria-label="순자산 흐름 ${H.length}번 기록"><polyline fill="none" stroke="#4338CA" stroke-width="2.5" points="${xs.map((x, i) => x.toFixed(1) + ',' + ys[i].toFixed(1)).join(' ')}"/>
+      ${xs.map((x, i) => `<circle cx="${x.toFixed(1)}" cy="${ys[i].toFixed(1)}" r="3.5" fill="#4338CA"/>`).join('')}
       <text x="${pad}" y="${h - 4}" font-size="11" fill="#4E5968">${esc(RC.md(H[0][0]))}</text><text x="${w - pad}" y="${h - 4}" font-size="11" fill="#4E5968" text-anchor="end">${esc(RC.md(H[H.length - 1][0]))}</text></svg>`;
   }
   out.innerHTML = `<div class="nw"><span>최근 시세(공식 숫자)</span><b>${esc(RC.won(c.price.v))}</b><span>대출 잔액(내가 적은 값)</span><b>− ${esc(RC.won(loan))}</b><span class="tot">순자산</span><b>${esc(RC.won(n.net))}</b></div>

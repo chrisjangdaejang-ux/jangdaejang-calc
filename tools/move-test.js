@@ -38,8 +38,8 @@ check('화면 글: 서비스 이름 하드코딩 없음(move/·move.js·move-cor
 const RIVAL = /짐싸|이사몰|위매치|다방|직방|호갱노노|아실|네이버 ?부동산|당근/;
 check('화면 글: 다른 회사 이름 없음', pages.concat(['assets/move.js']).every(p => !RIVAL.test(read(p))));
 const cal = read('mine/calendar/index.html');
-check('내 부동산 달력: 만기일·이사하는 날·전세 만기 준비에 버튼(move.js 가 켜졌을 때만)', /assets\/move\.js\?v=1/.test(cal) && /function moveCta/.test(cal) && /src: 'ta'/.test(cal) && /e\.k !== 'end' && e\.k !== 'move'/.test(cal));
-check('세입자 갈아타기 결과: [이사 견적 받기](move.js 가 켜졌을 때만, 지금 집 동·이사 희망 시기)', /assets\/move\.js\?v=1/.test(read('switch/rent/index.html')) && /JDJ_MOVE\.cta\(\{ g: S\.home\.code, d: S\.home\.dong, date: \$\('moveAt'\)\.value, src: 'switch' \}\)/.test(read('switch/rent/index.html')));
+check('내 부동산 달력: 만기일·이사하는 날·전세 만기 준비에 버튼(move.js 가 켜졌을 때만)', /assets\/move\.js\?v=2/.test(cal) && /function moveCta/.test(cal) && /src: 'ta'/.test(cal) && /e\.k !== 'end' && e\.k !== 'move'/.test(cal));
+check('세입자 갈아타기 결과: [이사 견적 받기](move.js 가 켜졌을 때만, 지금 집 동·이사 희망 시기)', /assets\/move\.js\?v=2/.test(read('switch/rent/index.html')) && /JDJ_MOVE\.cta\(\{ g: S\.home\.code, d: S\.home\.dong, date: \$\('moveAt'\)\.value, src: 'switch' \}\)/.test(read('switch/rent/index.html')));
 check('전세 만기 알림 메일: 켜져 있을 때만 이사 견적 한 줄', /\+ mvMailCta\(h, c\.ce\)/.test(GS) && /function mvMailCta\(h, ce\) \{\n  if \(!MOVE_ENABLED/.test(GS));
 check('유료 잠금: 충전 요청은 PAID_ACTIONS', /mvChargeOrder: 1, mvChargeConfirm: 1 \}/.test(GS));
 check('구 우선 노출 구독: 설정 자리만(꺼짐)', /guTop: \{ enabled: false/.test(read('assets/move-core.js')));

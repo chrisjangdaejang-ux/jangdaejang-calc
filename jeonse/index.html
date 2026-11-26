@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집예보">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script src="../assets/pwa.js?v=2" defer></script>
+<script src="../assets/pwa.js?v=3" defer></script>
 <script src="../assets/biz.js?v=3" defer></script>
 <title>집예보 전월세 전망 & 전세사기 예방 체크 — 실거래 시세, 깡통전세 위험, 우리 동네 전세 흐름</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/jeonse/">
@@ -23,25 +23,25 @@
 <script>window.JDJ_CONFIG = { tool:'jeonse', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=8"></script>
-<script src="../assets/share.js?v=13"></script>
+<script src="../assets/share.js?v=14"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/config.js?v=11"></script>
-<script src="../assets/auth.js?v=10"></script>
-<script src="../assets/kchat.js?v=3"></script>
+<script src="../assets/auth.js?v=11"></script>
+<script src="../assets/kchat.js?v=4"></script>
 <script src="../assets/mine-core.js?v=23"></script>
-<script src="../assets/price-sheet.js?v=23"></script>
+<script src="../assets/price-sheet.js?v=24"></script>
 <script src="../assets/rent-core.js?v=6"></script>
 <script src="../assets/hug-core.js?v=1"></script>
 <script src="../assets/kk-core.js?v=1"></script>
-<script src="../assets/gongsi.js?v=3"></script>
+<script src="../assets/gongsi.js?v=4"></script>
 <script src="../assets/policy-view.js?v=3"></script>
 <script src="../assets/plain-words.js?v=19"></script>
 <script src="../assets/narrative.js?v=25"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/aplus.css?v=46">
-<script src="../assets/tabbar.js?v=5" defer></script>
-<link rel="stylesheet" href="../assets/layout.css?v=2">
+<link rel="stylesheet" href="../assets/aplus.css?v=48">
+<script src="../assets/tabbar.js?v=7" defer></script>
+<link rel="stylesheet" href="../assets/layout.css?v=4">
 <script src="../assets/layout.js?v=1" defer></script>
 <script src="../assets/nw.js?v=1" defer></script>
 <style>
@@ -51,24 +51,24 @@ h1{font-size:clamp(26px,6vw,38px);margin:6px 0 8px}
 .tacta{display:flex;align-items:center;gap:12px;margin:-6px 0 18px;padding:14px 16px;border-radius:16px;border:1.5px solid #EFE6CC;background:#FBF8EF;text-decoration:none;color:#191F28;min-height:64px}
 .tacta .ic{flex:none;width:40px;height:40px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:20px}
 .tacta b{display:block;font-size:16px;font-weight:900}.tacta small{display:block;font-size:13.5px;color:#4E5968;line-height:1.5;word-break:keep-all}
-.tacta .go{margin-left:auto;flex:none;font-size:22px;font-weight:800;color:#2560E8}
-.tsw{display:flex;align-items:center;gap:12px;margin:0 0 18px;padding:16px;border-radius:16px;background:#2560E8;text-decoration:none;color:#fff;min-height:68px;box-shadow:0 2px 8px rgba(37,96,232,.25)}
+.tacta .go{margin-left:auto;flex:none;font-size:22px;font-weight:800;color:#4338CA}
+.tsw{display:flex;align-items:center;gap:12px;margin:0 0 18px;padding:16px;border-radius:16px;background:#4338CA;text-decoration:none;color:#fff;min-height:68px;box-shadow:0 2px 8px rgba(67,56,202,.25)}
 .tsw .ic{flex:none;width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center}
 .tsw .ic svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.tsw b{display:block;font-size:17px;font-weight:900}.tsw small{display:block;font-size:13.5px;color:#E8F0FF;line-height:1.5;word-break:keep-all}
+.tsw b{display:block;font-size:17px;font-weight:900}.tsw small{display:block;font-size:13.5px;color:#EEEDFB;line-height:1.5;word-break:keep-all}
 .tsw .go{margin-left:auto;flex:none;font-size:24px;font-weight:800;color:#fff}
 .panel{margin:14px 0}
 .panel h2 small{display:block;font-size:13.5px;font-weight:500;color:#4E5968;margin-top:4px;letter-spacing:0}
 .ktabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;background:#F2F4F6;border-radius:14px;padding:5px;margin:0 0 12px}
 .ktabs button{font:inherit;font-size:15px;font-weight:700;border:0;background:transparent;color:#4E5968;min-height:46px;padding:0 6px;border-radius:10px;cursor:pointer;word-break:keep-all;line-height:1.25}
-.ktabs button.on{background:#fff;color:#2560E8;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.ktabs button.on{background:#fff;color:#4338CA;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .ktabs button small{display:block;font-size:11.5px;font-weight:500;color:#8B95A1}
 @media(max-width:400px){.ktabs button{font-size:14px;padding:0 2px}}
 .pick{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .pick .full{grid-column:1/-1}
 .pick label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
 .pick select,.pick input{width:100%;font:inherit;font-size:16px;padding:0 12px;min-height:48px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--text);min-width:0}
-.pick input:focus{outline:0;border-color:#2560E8;box-shadow:0 0 0 3px rgba(47,107,255,.15)}
+.pick input:focus{outline:0;border-color:#4338CA;box-shadow:0 0 0 3px rgba(67,56,202,.15)}
 @media(max-width:520px){.pick{grid-template-columns:1fr}}
 .or{font-size:13.5px;color:#4E5968;margin:12px 0 6px;font-weight:700}
 .sres{display:grid;gap:6px;margin-top:8px}
@@ -78,7 +78,7 @@ h1{font-size:clamp(26px,6vw,38px);margin:6px 0 8px}
 .sres .none{font-size:14px;color:#4E5968;padding:6px 2px}
 .bands{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 4px}
 .bands button{font:inherit;font-size:15px;font-weight:700;min-height:44px;padding:0 14px;border:1px solid var(--line);background:#fff;color:#3E4754;border-radius:999px;cursor:pointer}
-.bands button.on{background:#E8F0FF;border-color:#2560E8;color:#2560E8}
+.bands button.on{background:#EEEDFB;border-color:#4338CA;color:#4338CA}
 .dhead h2{font-size:22px;margin:0;font-weight:900;letter-spacing:-.5px;line-height:1.3;overflow-wrap:anywhere}
 .dhead .loc{font-size:14px;color:#4E5968;margin-top:2px}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0 6px}
@@ -90,19 +90,19 @@ h1{font-size:clamp(26px,6vw,38px);margin:6px 0 8px}
 .st .v{font-size:19px;font-weight:900;letter-spacing:-.4px;line-height:1.3;word-break:keep-all;font-variant-numeric:tabular-nums}
 @media(max-width:400px){.st .v{font-size:17px}}
 .st .d{font-size:13.5px;color:#4E5968;line-height:1.4}
-.up{color:#C2410C}.dn{color:#1F56E0}
+.up{color:#C2410C}.dn{color:#1D63D8}
 .basis{font-size:13.5px;color:#4E5968;line-height:1.6;margin:6px 0 0}
 .basis b{color:#3E4754}
 .seg2{display:inline-flex;gap:4px;background:#F2F4F6;border-radius:12px;padding:4px}
 .seg2 button{font:inherit;font-size:14px;font-weight:700;border:0;background:transparent;color:#4E5968;min-height:44px;min-width:56px;padding:0 12px;border-radius:9px;cursor:pointer}
-.seg2 button.on{background:#fff;color:#2560E8;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.seg2 button.on{background:#fff;color:#4338CA;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .chead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
 .chead h3{margin:0;font-size:17px;font-weight:900}
 .chart{width:100%;min-height:150px}
 .chart svg{display:block;width:100%;height:auto}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;color:#4E5968;margin-top:4px}
 .legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px;background:#14A06B}
-.legend i.w{background:#B8942A}.legend i.g{background:#2560E8}
+.legend i.w{background:#B8942A}.legend i.g{background:#4338CA}
 .gauge{position:relative;height:12px;border-radius:6px;background:linear-gradient(90deg,#E7F6EF 0,#E7F6EF 90%,#FDECEC 90%,#FDECEC 100%);margin:28px 0 22px}
 .gauge i{position:absolute;top:-6px;width:4px;height:24px;border-radius:2px;background:#191F28;transform:translateX(-2px)}
 .gauge em{position:absolute;top:-22px;font-size:12.5px;font-style:normal;font-weight:700;color:#C81E1E;transform:translateX(-85%);white-space:nowrap}
@@ -114,7 +114,7 @@ h1{font-size:clamp(26px,6vw,38px);margin:6px 0 8px}
 .jps-jrc.jrm{border-color:#D5DCE6;background:#F7F9FC}.jps-jrc.jrm b{color:#3E4754}
 .rmsg{border-radius:12px;padding:10px 12px;font-size:15px;line-height:1.6;margin:8px 0 0}
 .rmsg.hi{background:#FDECEC;color:#7F1D1D}.rmsg.ok{background:#F2F4F6;color:#191F28}
-.calc{border:1px solid #C9D8FF;background:#F5F8FF;border-radius:16px;padding:14px}
+.calc{border:1px solid #D4D1F5;background:#F5F8FF;border-radius:16px;padding:14px}
 .calc .row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 @media(max-width:700px){.calc .row{grid-template-columns:1fr 1fr}}
 @media(max-width:360px){.calc .row{grid-template-columns:1fr}}
@@ -135,7 +135,7 @@ td.num,th.num{text-align:right;white-space:nowrap}
 td small{color:#4E5968;font-size:13.5px}
 tr.on td{background:#F5F8FF;font-weight:700}
 .ctag{display:inline-block;font-size:12px;font-weight:800;line-height:18px;padding:0 6px;border-radius:5px;white-space:nowrap}
-.ctag.n{background:#E8F0FF;color:#1F56E0}.ctag.r{background:#FFF3D6;color:#8A5A00}
+.ctag.n{background:#EEEDFB;color:#3730A3}.ctag.r{background:#FFF3D6;color:#8A5A00}
 .morebtn{font:inherit;font-size:14px;font-weight:700;width:100%;min-height:44px;margin-top:8px;border:1px solid var(--line);border-radius:12px;background:#fff;color:#3E4754;cursor:pointer}
 .facts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:560px){.facts{grid-template-columns:1fr}}
@@ -151,22 +151,22 @@ tr.on td{background:#F5F8FF;font-weight:700}
 .chk li.key{border-color:#B8942A;background:#FFFBEF}
 .chk li small{display:block;color:#4E5968;font-size:13.5px}
 .srcl{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:14px}
-.srcl a{color:#2560E8;font-weight:700;text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
+.srcl a{color:#4338CA;font-weight:700;text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
 .links{display:grid;gap:8px;grid-template-columns:repeat(2,1fr)}
 @media(max-width:640px){.links{grid-template-columns:1fr}}
 .links a,.links button{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;min-height:64px;padding:10px 14px;border:1px solid var(--line);border-radius:14px;text-decoration:none;color:var(--text);background:#fff;font:inherit;text-align:left;cursor:pointer}
 .links b{font-size:16px}
 .links small{font-size:13.5px;color:#4E5968}
-.links .main{background:#E8F0FF;border-color:#2560E8}
+.links .main{background:#EEEDFB;border-color:#4338CA}
 .aglist{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px;margin-top:10px}
 .agc{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:#fff;min-width:0}
 .agc b{font-size:16px}
 .agc .tag2{font-size:12px;font-weight:700;border:1px solid #B8942A;color:#8A6D17;padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:2px}
 .agc small{display:block;color:#4E5968;font-size:13.5px}
-.agc .hl{display:inline-block;font-size:13.5px;font-weight:700;color:#2560E8;margin-top:4px}
+.agc .hl{display:inline-block;font-size:13.5px;font-weight:700;color:#4338CA;margin-top:4px}
 .agc .acts{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
 .agc .acts a{flex:1;min-height:44px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;font-weight:700;font-size:14px;border-radius:12px}
-.agc .acts a.tel{background:#2560E8;color:#fff}
+.agc .acts a.tel{background:#4338CA;color:#fff}
 .note{font-size:13.5px;color:#4E5968;line-height:1.6}
 .loading,.empty{padding:26px 16px;text-align:center;color:#4E5968;border:1px dashed var(--line);border-radius:14px;background:#fff;font-size:15px}
 .disc{font-size:13.5px;color:#4E5968;line-height:1.7;margin-top:22px;border-top:1px solid var(--line2);padding-top:14px}
@@ -194,7 +194,7 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
 .ksb .pbar.refb i{background:#8B95A1}
 .ksb .ev{background:#F7F8FA;border-radius:12px;padding:10px 12px;margin-top:10px;font-size:15px;line-height:1.6;word-break:keep-all}
 .ksb .ev b.n{font-size:18px}
-.ksb .st{display:inline-block;font-size:13px;font-weight:800;padding:2px 8px;border-radius:6px;background:#E8F0FF;color:#1F56E0;margin-right:4px}
+.ksb .st{display:inline-block;font-size:13px;font-weight:800;padding:2px 8px;border-radius:6px;background:#EEEDFB;color:#3730A3;margin-right:4px}
 .ksb .st.l0{background:#F2F4F6;color:#4E5968}.ksb .st.l2{background:#E7F6EF;color:#0E7A4F}
 .ksb ul.hc{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
 .ksb ul.hc li{position:relative;padding:9px 10px 9px 36px;border:1px solid var(--line);border-radius:12px;font-size:15px;line-height:1.55;word-break:keep-all}
@@ -207,8 +207,8 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
 .ksb .fee b.big{font-size:22px}
 .ksb .acts2{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}
 @media(min-width:560px){.ksb .acts2{grid-template-columns:1fr 1fr}}
-.ksb .acts2 a{display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:12px;font-weight:800;font-size:15px;text-decoration:none;border:1px solid #2560E8;color:#2560E8;background:#fff;text-align:center;padding:0 10px}
-.ksb .acts2 a.main{background:#2560E8;color:#fff}
+.ksb .acts2 a{display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:12px;font-weight:800;font-size:15px;text-decoration:none;border:1px solid #4338CA;color:#4338CA;background:#fff;text-align:center;padding:0 10px}
+.ksb .acts2 a.main{background:#4338CA;color:#fff}
 .ks .kdisc{font-size:13.5px;color:#4E5968;line-height:1.65;margin:12px 0 0}
 [hidden]{display:none!important}
 </style>
@@ -575,7 +575,7 @@ function checkPanel(kind){
     <li><b>전세보증금 반환보증 가입</b> — 집주인이 보증금을 돌려주지 못하면 보증기관이 대신 돌려줘요. 보증금 + 선순위채권이 주택가격의 90% 이내여야 가입할 수 있어요.</li>
   </ul>
   <div class="srcl">${srcA('chk')}${srcA('portal')}${srcA('reg')}${srcA('hug')}${kind === 'o' ? srcA('law') : ''}</div>
-  <a class="morebtn" style="display:flex;align-items:center;justify-content:center;text-decoration:none;color:#2560E8" href="checklist/?k=${kind}" data-track="jeonse_to_checklist">전체 체크리스트 보기 →</a></div>`;
+  <a class="morebtn" style="display:flex;align-items:center;justify-content:center;text-decoration:none;color:#4338CA" href="checklist/?k=${kind}" data-track="jeonse_to_checklist">전체 체크리스트 보기 →</a></div>`;
 }
 
 /* ---------- 우리 동네 전세 흐름(구 사실 정보) ---------- */
@@ -600,7 +600,7 @@ function areaPanel(code, box){
         <p class="basis">이주가 시작되면 살던 가구가 주변에서 집을 구해 전세 수요가 늘 수 있어요. 출처: ${srcM ? `서울시 정비사업 추진현황(20${srcM[1]}년 ${srcM[2]}월 기준)` : '정비사업 추진현황'}, 서울 밖은 국토교통부 도시정비사업 현황(현재 단계만).</p></div>` : ''}
     </div>
     <div class="outlook">전세 전망은 과거 자료와 맞춰 보는 중이에요 — 과거에 그대로 써 봐서 잘 맞으면 이 자리에 보여 드려요.</div></div>`;
-  if (gs) chartInto($('cG'), [{ a: gs.s, c: '#2560E8', w: 2.4 }], gs.months, v => Math.round(v).toLocaleString(), 170, [{ k: '3.3㎡당 전세', a: gs.s, c: '#2560E8', fmt: v => Math.round(v).toLocaleString() + '만' }], { aria: nm + ' 아파트 전세 추이' });
+  if (gs) chartInto($('cG'), [{ a: gs.s, c: '#4338CA', w: 2.4 }], gs.months, v => Math.round(v).toLocaleString(), 170, [{ k: '3.3㎡당 전세', a: gs.s, c: '#4338CA', fmt: v => Math.round(v).toLocaleString() + '만' }], { aria: nm + ' 아파트 전세 추이' });
 }
 
 /* ---------- 단독·다가구: 동 × 면적대 ---------- */
@@ -619,7 +619,7 @@ async function showD(g, dong){
   $('res').innerHTML = `<div class="panel">
     <div class="dhead"><h2>${esc(dong)} 단독·다가구</h2><div class="loc">${esc(sidoName(g))} ${esc(sggName(g))} ${esc(dong)} · 동·계약면적대 단위 시세(건물 정보 없음)</div></div>
     <div class="tbl"><table><thead><tr><th>계약면적</th><th class="num">최근 전세</th><th class="num">최근 월세</th><th class="num">3년 계약</th></tr></thead><tbody>${rows.map(r => { const y = one(r);
-      return `<tr class="${r[1] === S.band ? 'on' : ''}"><td><button type="button" data-b="${esc(r[1])}" style="font:inherit;font-weight:700;border:0;background:none;color:#2560E8;cursor:pointer;min-height:44px;padding:0">${esc(r[1])}</button></td><td class="num">${y.j ? won(y.j.v) + `<br><small>${ym(y.j.at)}</small>` : '-'}</td><td class="num">${y.wr ? `${won(y.wd ? y.wd.v : 0)} / ${y.wr.v.toLocaleString()}만<br><small>${ym(y.wr.at)}</small>` : '-'}</td><td class="num">전세 ${r[2]}<br><small>월세 ${r[3]}</small></td></tr>`; }).join('')}</tbody></table></div>
+      return `<tr class="${r[1] === S.band ? 'on' : ''}"><td><button type="button" data-b="${esc(r[1])}" style="font:inherit;font-weight:700;border:0;background:none;color:#4338CA;cursor:pointer;min-height:44px;padding:0">${esc(r[1])}</button></td><td class="num">${y.j ? won(y.j.v) + `<br><small>${ym(y.j.at)}</small>` : '-'}</td><td class="num">${y.wr ? `${won(y.wd ? y.wd.v : 0)} / ${y.wr.v.toLocaleString()}만<br><small>${ym(y.wr.at)}</small>` : '-'}</td><td class="num">전세 ${r[2]}<br><small>월세 ${r[3]}</small></td></tr>`; }).join('')}</tbody></table></div>
     <p class="basis">각 값 = 그 달까지 3개월 계약의 중간값(월세는 보증금·월세 각각). 단독·다가구는 원자료에 지번·건물 정보가 없어(개인정보 보호) 같은 동 같은 계약면적대끼리 묶었어요. 같은 묶음 안에서도 집마다 차이가 커요.</p>
     <div class="chead" style="margin-top:14px"><h3>${esc(S.band)} 전세 추이</h3><div class="seg2" role="group" aria-label="기간">${[[12, '1년'], [36, '3년'], [0, '전체']].map(([n, l]) => `<button type="button" data-span="${n}" class="${S.span === n ? 'on' : ''}" aria-pressed="${S.span === n}">${l}</button>`).join('')}</div></div>
     <div class="chart" id="cJ"></div>
@@ -883,7 +883,7 @@ async function init(){
 init();
 })();
 </script>
-<script src="../assets/ad-slot.js?v=6" defer></script>
-<script src="../assets/guide-next.js?v=1" defer></script>
+<script src="../assets/ad-slot.js?v=7" defer></script>
+<script src="../assets/guide-next.js?v=2" defer></script>
 </body>
 </html>

@@ -80,14 +80,14 @@
   function css() {
     if (typeof document === 'undefined' || document.getElementById('mapjCss')) return;
     var st = document.createElement('style'); st.id = 'mapjCss';
-    st.textContent = '.mapj{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border-radius:999px;border:1.5px solid #2560E8;background:#fff;color:#2560E8;font:inherit;font-size:15px;font-weight:800;text-decoration:none;white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent}'
+    st.textContent = '.mapj{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border-radius:999px;border:1.5px solid #4338CA;background:#fff;color:#4338CA;font:inherit;font-size:15px;font-weight:800;text-decoration:none;white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent}'
       + '.mapj svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linejoin:round}'
-      + '.mapj:hover{background:#F0F5FF}.mapj:focus-visible{outline:3px solid rgba(37,96,232,.35);outline-offset:2px}'
+      + '.mapj:hover{background:#F0F5FF}.mapj:focus-visible{outline:3px solid rgba(67,56,202,.35);outline-offset:2px}'
       + '.mapj-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 0}'
       + '.mapj-b{display:flex;flex-direction:column;align-items:stretch;gap:8px;margin:16px 0;padding:14px 16px;border:1px solid #DCE5F7;border-radius:16px;background:#F5F8FF}'
       + '.mapj-b p{margin:0;font-size:15px;font-weight:700;color:#191F28;line-height:1.5;word-break:keep-all}'
-      + '.mapj-b .mapj{justify-content:center;min-height:50px;border-radius:14px;background:#2560E8;color:#fff;border-color:#2560E8;font-size:16px}'
-      + '.mapj-b .mapj:hover{background:#1F4FD1}';
+      + '.mapj-b .mapj{justify-content:center;min-height:50px;border-radius:14px;background:#4338CA;color:#fff;border-color:#4338CA;font-size:16px}'
+      + '.mapj-b .mapj:hover{background:#3730A3}';
     document.head.appendChild(st);
   }
   /** 버튼 HTML. where = 'top'(결과 위쪽, 작은 버튼) | 'bottom'(맨 아래, 화면 폭 버튼 + 한 줄) · line = 아래 버튼 위 한 줄 */

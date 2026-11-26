@@ -127,13 +127,13 @@
       '.bcta-home .bc-st b{display:block;font-size:16.5px;font-weight:900;letter-spacing:-.3px;font-variant-numeric:tabular-nums;line-height:1.25}' +
       '.bcta-home .bc-st small{display:block;font-size:12px;color:#4E5968;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
       '.bcta-home .bc-ln{display:flex;flex-wrap:wrap;gap:2px 12px;margin:7px 0 0;font-size:13.5px;line-height:1.45;color:#191F28;word-break:keep-all}' +
-      '.bcta-home .bc-ln b{font-size:12.5px;font-weight:800;color:#2560E8;margin-right:2px}' +
+      '.bcta-home .bc-ln b{font-size:12.5px;font-weight:800;color:#4338CA;margin-right:2px}' +
       '.bcta-home .bc-wait .bc-ln{color:#5F6B7A}' +
-      '.bcta-home .bc-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:58px;margin:14px 0 0;border-radius:14px;background:#2560E8;color:#fff;font-size:17.5px;font-weight:900;text-decoration:none;letter-spacing:-.3px;box-shadow:0 4px 14px rgba(37,96,232,.28)}' +
-      '.bcta-home .bc-btn:hover{background:#1F56E0}' +
+      '.bcta-home .bc-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:58px;margin:14px 0 0;border-radius:14px;background:#4338CA;color:#fff;font-size:17.5px;font-weight:900;text-decoration:none;letter-spacing:-.3px;box-shadow:0 4px 14px rgba(67,56,202,.28)}' +
+      '.bcta-home .bc-btn:hover{background:#3730A3}' +
       '.bcta-home .bc-btn small{display:block;margin-top:1px;font-size:12.5px;font-weight:600;opacity:.92;letter-spacing:0}' +
       '.bcta-home .bc-n{margin:8px 0 0;font-size:13px;color:#4E5968;text-align:center;line-height:1.5;word-break:keep-all}' +
-      '.bcta-home .bc-n a{color:#2560E8;font-weight:700;text-decoration:none}' +
+      '.bcta-home .bc-n a{color:#4338CA;font-weight:700;text-decoration:none}' +
       '@media(max-width:420px){.bcta-home{margin-top:8px;padding:11px 14px 10px}.bcta-home .bc-top{margin-bottom:3px}.bcta-home .bc-ic{width:26px;height:26px}.bcta-home .bc-h{font-size:18px}.bcta-home .bc-s{font-size:13px;margin-top:2px;letter-spacing:-.2px}'
         + '.bcta-home .bc-pv{margin-top:7px;padding:6px 10px 7px;min-height:0}.bcta-home .bc-pvh{margin-bottom:4px}.bcta-home .bc-st div{padding:3px 2px}.bcta-home .bc-st b{font-size:15.5px}.bcta-home .bc-ln{margin-top:5px;font-size:13px}.bcta-home .bc-btn{margin-top:9px;min-height:54px;font-size:17px}}' +
       /* 맞춤 권유 한 줄 */
@@ -146,7 +146,7 @@
       '.bcta-n .bn-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}' +
       '.bcta-n .bn-t b{font-size:15px;font-weight:800;line-height:1.4;word-break:keep-all}' +
       '.bcta-n .bn-t small{font-size:12.5px;color:#4E5968;line-height:1.45;word-break:keep-all}' +
-      '.bcta-n .bn-go{flex:none;font-size:13.5px;font-weight:800;color:#2560E8;white-space:nowrap}' +
+      '.bcta-n .bn-go{flex:none;font-size:13.5px;font-weight:800;color:#4338CA;white-space:nowrap}' +
       '.bcta-n .bn-x{position:absolute;top:6px;right:6px;width:30px;height:30px;border:0;background:none;color:#5F6B7A;font-size:20px;line-height:1;border-radius:8px;cursor:pointer}' +
       '.bcta-n .bn-x:hover{background:rgba(0,0,0,.05)}' +
       '@media(max-width:420px){.bcta-n .bn-go{display:none}}' +

@@ -9,20 +9,20 @@
 <link rel="icon" type="image/png" href="../assets/icons/favicon-48.png">
 <title>첫 화면 시안</title>
 <script src="../assets/region-pick.js?v=2"></script>
-<script src="../assets/pwa.js?v=2" defer></script>
+<script src="../assets/pwa.js?v=3" defer></script>
 <script src="../assets/biz.js?v=3" defer></script>
-<script src="../assets/kchat.js?v=3" defer></script>
+<script src="../assets/kchat.js?v=4" defer></script>
 <script>window.JDJ_CONFIG = { tool:'home_draft', GA4_ID:'', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=8"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/config.js?v=11"></script>
-<script src="../assets/auth.js?v=10"></script>
+<script src="../assets/auth.js?v=11"></script>
 <script src="../assets/sale-status.js?v=1" defer></script>
-<script src="../assets/area-watch.js?v=8" defer></script>
+<script src="../assets/area-watch.js?v=9" defer></script>
 <script src="../assets/mine-core.js?v=23" defer></script>
 <script src="../assets/ask-core.js?v=8" defer></script>
-<script src="../assets/ask.js?v=5" defer></script>
+<script src="../assets/ask.js?v=6" defer></script>
 <script src="../assets/rank-core.js?v=8" defer></script>
 <script src="../assets/home-core.js?v=6" defer></script>
 <script src="../assets/brief-core.js?v=12" defer></script>
@@ -33,11 +33,11 @@
 <script src="../assets/watch.js?v=9" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/aplus.css?v=46">
-<link rel="stylesheet" href="../assets/layout.css?v=2">
+<link rel="stylesheet" href="../assets/aplus.css?v=48">
+<link rel="stylesheet" href="../assets/layout.css?v=4">
 <script src="../assets/nw.js?v=1" defer></script>
-<script src="../assets/tabbar.js?v=5" defer></script>
-<script src="../assets/chiprow.js?v=1"></script>
+<script src="../assets/tabbar.js?v=7" defer></script>
+<script src="../assets/chiprow.js?v=2"></script>
 <style>
 /* ===== 첫 화면 시안: 여백 넉넉히 · 큰 타일 · 강조는 검색 하나 · 이번 주 변화 칸 ===== */
 :root{--hd-w:1080px;--teal:#0F766E;--teal-l:#E3F5F2;--ind:#4338CA;--ind-l:#EEF0FF}
@@ -60,12 +60,12 @@ main.hd{display:block}
 .hb h1 em{font-style:normal;color:var(--blue)}
 .hs.jask{margin:0;padding:0;background:none;border:0;border-radius:0}
 .hs.jask>h2,.hs.jask>.note{display:none}
-.hs.jask form{position:relative;margin:0;gap:6px;padding:6px;background:#fff;border:2px solid var(--blue);border-radius:18px;box-shadow:0 8px 24px rgba(37,96,232,.14)}
+.hs.jask form{position:relative;margin:0;gap:6px;padding:6px;background:#fff;border:2px solid var(--blue);border-radius:18px;box-shadow:0 8px 24px rgba(67,56,202,.14)}
 .hs.jask form::before{content:'';position:absolute;left:18px;top:50%;width:22px;height:22px;margin-top:-11px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232560E8' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-4-4'/%3E%3C/svg%3E") no-repeat center/contain;pointer-events:none}
 .hs.jask input{min-height:54px;border:0;padding:0 8px 0 46px;font-size:17px;font-weight:700;border-radius:12px;background:transparent}
 .hs.jask input::placeholder{color:#6B7684;font-weight:500}
 .hs.jask input:focus{box-shadow:none}
-.hs.jask form:focus-within{box-shadow:0 0 0 4px rgba(37,96,232,.18),0 8px 24px rgba(37,96,232,.14)}
+.hs.jask form:focus-within{box-shadow:0 0 0 4px rgba(67,56,202,.18),0 8px 24px rgba(67,56,202,.14)}
 .hs.jask form button{min-height:54px;padding:0 20px;font-size:17px;border-radius:13px}
 .hs.jask .msg{margin-top:12px}
 .hs.jask .cands .chip{background:#fff}
@@ -80,7 +80,7 @@ main.hd{display:block}
 /* 2. 큰 카드 2개(내 집 시세·미래가치 / 전세 안전 체크) */
 .feat{display:grid;gap:12px;margin-top:20px}
 .fc{display:grid;grid-template-columns:52px minmax(0,1fr) 20px;gap:14px;align-items:center;padding:20px 18px;border-radius:20px;background:#fff;border:1px solid var(--line);box-shadow:0 6px 20px rgba(25,31,40,.06);color:var(--text);text-decoration:none;min-height:104px}
-.fc:hover{border-color:#B9CCFF}
+.fc:hover{border-color:#C9C6F2}
 .fc-ic{width:52px;height:52px;border-radius:16px;background:var(--blue-l);color:var(--blue);display:flex;align-items:center;justify-content:center;padding:13px}
 .fc.t2 .fc-ic{background:var(--teal-l);color:var(--teal)}
 .fc-tx{min-width:0}
@@ -97,7 +97,7 @@ main.hd{display:block}
 /* 3. 이번 주 부동산 변화 */
 .wk-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
 .wc{display:grid;grid-template-columns:minmax(0,1fr) 20px;gap:10px;align-items:center;padding:16px 16px 16px 18px;border-radius:16px;background:var(--gray2);border:1px solid var(--line);color:var(--text);text-decoration:none;min-height:96px}
-.wc:hover{border-color:#B9CCFF;background:#fff}
+.wc:hover{border-color:#C9C6F2;background:#fff}
 .wc-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;color:var(--sub2);line-height:1.4}
 .wc-tag{font-size:12px;font-weight:800;padding:3px 8px;border-radius:999px;background:#fff;border:1px solid var(--line);color:var(--sub)}
 .wc-t{display:block;margin-top:6px;font-size:16.5px;font-weight:700;line-height:1.5;letter-spacing:-.3px;word-break:keep-all}
@@ -116,7 +116,7 @@ main.hd{display:block}
 /* 4. 큰 타일(종류·화면) */
 .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .tile{display:flex;flex-direction:column;justify-content:space-between;gap:14px;min-height:112px;padding:18px;border-radius:20px;background:#fff;border:1px solid var(--line);color:var(--text);text-decoration:none}
-.tile:hover{border-color:#B9CCFF;box-shadow:0 4px 14px rgba(25,31,40,.06)}
+.tile:hover{border-color:#C9C6F2;box-shadow:0 4px 14px rgba(25,31,40,.06)}
 .tile-ic{width:48px;height:48px;border-radius:14px;background:var(--ind-l);color:var(--ind);padding:12px}
 .tile b{font-size:18px;font-weight:900;letter-spacing:-.4px;line-height:1.3}
 
@@ -131,7 +131,7 @@ main.hd{display:block}
 
 /* 7. 구독 · 적중 기록 · 상담 */
 .end{display:grid;gap:12px}
-.sub{display:flex;flex-direction:column;gap:12px;padding:22px 20px;border-radius:20px;background:#F4F7FF;border:1px solid #C9D8FF}
+.sub{display:flex;flex-direction:column;gap:12px;padding:22px 20px;border-radius:20px;background:#F5F4FD;border:1px solid #D4D1F5}
 .sub .free{align-self:flex-start;font-size:12.5px;font-weight:800;color:#7A5C0E;background:var(--creamc);border:1px solid var(--creamb);border-radius:999px;padding:3px 10px}
 .sub b{display:block;font-size:20px;font-weight:900;letter-spacing:-.5px;line-height:1.35}
 .sub p{margin:0;font-size:14.5px;line-height:1.6;color:var(--sub2)}
@@ -184,7 +184,7 @@ main.hd{display:block}
 .pl-num b{display:block;font-size:17px;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}
 .pl-num small{display:block;font-size:12.5px;color:var(--sub2);white-space:nowrap;font-variant-numeric:tabular-nums}
 .pl-sc b{font-size:19px;color:var(--blue)}
-.pl-up{color:#C2410C}.pl-dn{color:#1F56E0}
+.pl-up{color:#C2410C}.pl-dn{color:#1D63D8}
 .pl-rule{margin:10px 0 0;font-size:13px;color:var(--sub2);line-height:1.55}
 .pl-rule b{color:var(--sub)}
 .pl-why{margin:8px 0 0;font-size:13px;color:var(--sub2);line-height:1.55}
@@ -217,8 +217,8 @@ main.hd{display:block}
 .t3-l .nm b{display:block;font-size:15.5px;font-weight:800;line-height:1.35;word-break:break-all}
 .t3-l .nm small{display:block;font-size:13px;color:var(--sub2);line-height:1.45}
 .t3-l .v{text-align:right}.t3-l .v b{display:block;font-size:16.5px;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}.t3-l .v small{display:block;font-size:12.5px;white-space:nowrap}
-.t3-l .tg{display:inline-block;font-size:11.5px;font-weight:800;border-radius:6px;padding:0 5px;margin-left:4px;vertical-align:1px;background:var(--gray);color:var(--sub2)}.t3-l .tg.hi{background:#FDECE4;color:#C2410C}.t3-l .tg.dn{background:#E8F0FF;color:#1F56E0}
-.t3-up{color:#C2410C}.t3-dn{color:#1F56E0}
+.t3-l .tg{display:inline-block;font-size:11.5px;font-weight:800;border-radius:6px;padding:0 5px;margin-left:4px;vertical-align:1px;background:var(--gray);color:var(--sub2)}.t3-l .tg.hi{background:#FDECE4;color:#C2410C}.t3-l .tg.dn{background:#E8F0FD;color:#1D63D8}
+.t3-up{color:#C2410C}.t3-dn{color:#1D63D8}
 .t3-line{margin:6px 0 0;font-size:14.5px;line-height:1.55;color:var(--sub)}
 .t3-more{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;margin-top:8px;border-radius:12px;background:var(--blue-l);color:var(--blue);font-size:14.5px;font-weight:800;text-decoration:none}
 .t3-src{margin:8px 0 0;font-size:12.5px;color:var(--sub2);line-height:1.5}
@@ -676,13 +676,13 @@ addEventListener('DOMContentLoaded', () => {
     const L = Object.values(byG), top = []; for (let i = 0; top.length < 6 && i < 6; i++) L.forEach(a => { if (a[i] && top.length < 6) top.push(a[i]); });   /* 같은 이름 동이 여러 구에 있으면 구마다 고르게 */
     const d0 = top[0], k = d => [d.code, d.dong, d.jibun, d.apt].join('|');
     msg.textContent = `${t} 아파트 ${all.length.toLocaleString('ko-KR')}곳 중 최근 3년 거래가 많은 곳이에요${L.length > 1 ? `(같은 이름 동이 ${L.length}개 구에 있어요)` : ''}. 단지를 고르거나 지도에서 보세요.`;
-    cbox.innerHTML = `<div class="cg"><div class="row">${top.map(d => `<a class="chip" style="text-decoration:none;display:inline-flex;flex-direction:column;justify-content:center" href="${esc(JDJ_RANK.mineUrl(d.sd, k(d), ''))}" data-track="home_search_dong">${esc(d.apt)}<small>${esc(gn(d.code))} ${esc(d.dong)} · 거래 ${Number(d.n || 0).toLocaleString('ko-KR')}건</small></a>`).join('')}<a class="chip" style="text-decoration:none;display:inline-flex;align-items:center;border-color:#2560E8;color:#1F56E0" href="${esc(JB.SITE + 'map/?sd=' + encodeURIComponent(d0.sd) + '&d=' + encodeURIComponent(k(d0)))}" data-track="home_search_dong_map">지도에서 ${esc(t)} 보기 ›</a></div></div>`;
+    cbox.innerHTML = `<div class="cg"><div class="row">${top.map(d => `<a class="chip" style="text-decoration:none;display:inline-flex;flex-direction:column;justify-content:center" href="${esc(JDJ_RANK.mineUrl(d.sd, k(d), ''))}" data-track="home_search_dong">${esc(d.apt)}<small>${esc(gn(d.code))} ${esc(d.dong)} · 거래 ${Number(d.n || 0).toLocaleString('ko-KR')}건</small></a>`).join('')}<a class="chip" style="text-decoration:none;display:inline-flex;align-items:center;border-color:#4338CA;color:#3730A3" href="${esc(JB.SITE + 'map/?sd=' + encodeURIComponent(d0.sd) + '&d=' + encodeURIComponent(k(d0)))}" data-track="home_search_dong_map">지도에서 ${esc(t)} 보기 ›</a></div></div>`;
     if (window.jdjStat) try { jdjStat('feature_use', { feature: 'home_search_dong' }); } catch (er) {}
   }
 });
 </script>
 <footer class="foot notice">국토교통부 실거래가 등 공공기관 공식 자료 기준 · 2026년 11월 대출 규제 반영<br>★ <span data-site-name></span> · <a href="../agent/" data-track="agent_join_click">공인중개사 제휴</a> · <a href="#" onclick="window.JDJ_PWA&&JDJ_PWA.install();return false">홈 화면에 추가</a></footer>
 <script>/* 관심 지역 새 공고 배지(분양) */ addEventListener('DOMContentLoaded', () => { if (window.JDJ_AREA) JDJ_AREA.badge(document.querySelector('a[data-track="home_to_bunyang"]')); });</script>
-<script src="../assets/ad-slot.js?v=6" defer></script>
+<script src="../assets/ad-slot.js?v=7" defer></script>
 </body>
 </html>

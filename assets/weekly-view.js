@@ -148,7 +148,7 @@
       if (li) g += `<text x="${X(li[1]) + 8}" y="${Y(li[0][key].chg) + (si ? 14 : -6)}" style="font-size:12px;font-weight:700;fill:#191F28">${esc(nm)}</text>`;
     });
     $('trend').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="전국·서울 주별 변동률">${g}</svg>
-      <div class="leg"><span><i style="background:#191F28"></i>전국</span><span><i style="background:#2560E8"></i>서울</span><span>○ 잠정 · ● 확정</span></div>`;
+      <div class="leg"><span><i style="background:#191F28"></i>전국</span><span><i style="background:#4338CA"></i>서울</span><span>○ 잠정 · ● 확정</span></div>`;
   }
 
   function vers(cur) {

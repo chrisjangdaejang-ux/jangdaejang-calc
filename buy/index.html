@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집예보">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script src="../assets/pwa.js?v=2" defer></script>
+<script src="../assets/pwa.js?v=3" defer></script>
 <script src="../assets/biz.js?v=3" defer></script>
 <script src="../assets/region-pick.js?v=2" defer></script>
 <title>집예보 내 집 마련 계산기</title>
@@ -33,7 +33,7 @@
 <script>window.JDJ_CONFIG = { tool:'buy', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=8"></script>
-<script src="../assets/share.js?v=13"></script>
+<script src="../assets/share.js?v=14"></script>
 <script src="../tax/tax-engine.js?v=4"></script>
 <script src="../assets/loan-rules.js?v=3"></script>
 <script src="../assets/loan-core.js?v=6"></script>
@@ -133,10 +133,10 @@ tr.cliff td{background:rgba(162,59,42,.06)}
 #wNext:disabled{opacity:.45;cursor:not-allowed}
 .wizhint{font-size:14px;color:#4E5968;margin:6px 0 0;min-height:0}
 </style>
-<link rel="stylesheet" href="../assets/aplus.css?v=46">
+<link rel="stylesheet" href="../assets/aplus.css?v=48">
 <script src="../assets/nw.js?v=1" defer></script>
 <style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
-:root{--gold:#2560E8}
+:root{--gold:#4338CA}
 .premium .pt{color:var(--blue)}
 .mpinw.on .mpin{background:var(--blue)}.mpinw.on .mpin:after{border-top-color:var(--blue)}
 .st.pre{background:var(--blue-l);color:var(--blue)}
@@ -180,7 +180,7 @@ body.wiz .wiznav{display:flex;gap:8px;margin-top:4px}
 .wizerr:empty{display:none}
 .wizskip{text-align:center;font-size:15px}
 .cmpgo{display:flex;align-items:center;gap:12px;margin-top:16px;padding:14px 16px;min-height:56px;border:1px solid var(--line,#E5E8EB);border-radius:14px;background:#fff;color:inherit;text-decoration:none}
-.cmpgo b{display:block;font-size:16px;color:var(--blue,#2560E8)}
+.cmpgo b{display:block;font-size:16px;color:var(--blue,#4338CA)}
 .cmpgo small{display:block;font-size:14px;color:#4E5968;margin-top:2px;line-height:1.5}
 .cmpgo .go{margin-left:auto;color:#B0B8C1;font-size:22px}
 .wizskip button{font:inherit;font-size:15.5px;font-weight:700;width:100%;background:#fff;border:1.5px solid var(--blue);color:var(--blue);border-radius:14px;min-height:52px;padding:0 16px;cursor:pointer}
@@ -727,8 +727,8 @@ render();
   show(want>=1 && want<=N ? (want>=2 && !num($('income').value) ? 1 : want) : 1);
 })();
 </script>
-<script src="../assets/ad-slot.js?v=6" defer></script>
+<script src="../assets/ad-slot.js?v=7" defer></script>
 <div data-gnext="buy" hidden></div>
-<script src="../assets/guide-next.js?v=1" defer></script>
+<script src="../assets/guide-next.js?v=2" defer></script>
 </body>
 </html>

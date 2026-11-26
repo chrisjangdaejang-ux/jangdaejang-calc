@@ -12,9 +12,9 @@
 <meta name="apple-mobile-web-app-title" content="집예보">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="assets/region-pick.js?v=2"></script>
-<script src="./assets/pwa.js?v=2" defer></script>
+<script src="./assets/pwa.js?v=3" defer></script>
 <script src="./assets/biz.js?v=3" defer></script>
-<script src="./assets/kchat.js?v=3" defer></script>
+<script src="./assets/kchat.js?v=4" defer></script>
 <!-- site-verify -->
 <!-- /site-verify -->
 <title>집예보 — 공공데이터로 내 집값의 내일을 풉니다</title>
@@ -38,14 +38,14 @@
 <script src="assets/stat.js?v=8"></script>
 <script src="assets/agents.js"></script>
 <script src="assets/config.js?v=12"></script>
-<script src="assets/auth.js?v=10"></script>
+<script src="assets/auth.js?v=11"></script>
 <script src="assets/sale-status.js?v=1" defer></script>
-<script src="assets/area-watch.js?v=8" defer></script>
+<script src="assets/area-watch.js?v=9" defer></script>
 <script src="assets/mine-core.js?v=23" defer></script>
 <script src="assets/ask-core.js?v=8" defer></script>
-<script src="assets/ask.js?v=5" defer></script>
+<script src="assets/ask.js?v=6" defer></script>
 <script src="assets/guide-core.js?v=6" defer></script>
-<script src="assets/guide.js?v=5" defer></script>
+<script src="assets/guide.js?v=6" defer></script>
 <script src="assets/rank-core.js?v=8" defer></script>
 <script src="assets/home-core.js?v=6" defer></script>
 <script src="assets/brief-core.js?v=12" defer></script>
@@ -58,13 +58,13 @@
 <script src="assets/dongne.js?v=2" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./assets/aplus.css?v=46">
-<link rel="stylesheet" href="./assets/layout.css?v=2">
+<link rel="stylesheet" href="./assets/aplus.css?v=48">
+<link rel="stylesheet" href="./assets/layout.css?v=4">
 <script src="./assets/nw.js?v=1" defer></script>
-<script src="./assets/tabbar.js?v=5" defer></script>
-<script src="./assets/share.js?v=13" defer></script>
-<script src="./assets/share-head.js?v=1" defer></script>
-<script src="./assets/chiprow.js?v=1"></script>
+<script src="./assets/tabbar.js?v=7" defer></script>
+<script src="./assets/share.js?v=14" defer></script>
+<script src="./assets/share-head.js?v=2" defer></script>
+<script src="./assets/chiprow.js?v=2"></script>
 <script src="./assets/switch-pick.js?v=1" defer></script>
 <style>
 .wrap{max-width:560px;margin:0 auto}
@@ -95,31 +95,6 @@
 .exc{margin:12px 20px 0;padding:16px 18px;border-radius:20px;border:1px solid var(--line);display:flex;gap:14px;align-items:center}
 .exc .t{font-size:17px;font-weight:700}
 .exc .s{font-size:14px;color:var(--sub2);margin-top:3px}
-.menu{padding:20px 20px 0;display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.menu a,.menu div{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:16px;border-radius:16px;background:#fff;border:1.5px solid #B9CCFF;box-shadow:0 2px 8px rgba(47,107,255,.08);color:var(--text);text-decoration:none;min-height:96px}
-.menu a:hover{border-color:var(--blue);box-shadow:0 3px 12px rgba(47,107,255,.14)}
-.menu .ic{width:40px;height:40px;border-radius:12px;background:var(--blue-l);color:var(--blue);display:flex;align-items:center;justify-content:center;margin-bottom:8px;flex:none}
-.menu .ic svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.menu .wide{flex-direction:row;align-items:center;gap:14px}
-.menu .wide .ic{margin-bottom:0}
-.mlabel{padding:24px 24px 0;margin:0;font-size:15px;font-weight:700;color:var(--sub)}
-.mlabel b{color:var(--blue)}
-.menu .wide{grid-column:1/-1;min-height:80px}
-.menu>a:last-child:nth-of-type(even){grid-column:1/-1;flex-direction:row;align-items:center;gap:14px;min-height:80px}
-.menu>a:last-child:nth-of-type(even) .ic{margin-bottom:0}
-/* '이사 갈 집 구하기' 칸을 누르면 바로 아래 펼치는 두 단추(assets/switch-pick.js) — 칸 하나 너비 전체, 단추 높이 64px(터치 44px 이상) */
-.menu a.swpick-on{border-color:var(--blue);box-shadow:0 3px 12px rgba(47,107,255,.14)}
-.menu div.swpick{grid-column:1/-1;min-height:0;padding:14px;gap:10px;background:#F4F7FF;border:1.5px solid var(--blue);box-shadow:none;align-items:stretch}
-.menu div.swpick[hidden]{display:none}
-.swpick-q{margin:0;font-size:15px;font-weight:700;color:var(--text)}
-.menu div.swpick-row{display:grid;grid-template-columns:1fr 1fr;align-items:stretch;gap:8px;padding:0;border:0;border-radius:0;background:none;box-shadow:none;min-height:0}
-.menu .swpick-row a{min-height:64px;padding:12px 14px;justify-content:center;border-radius:12px}
-.menu .swpick-row small{margin-top:2px;font-size:13.5px}
-.swpick-n{margin:0;font-size:13px;line-height:1.5;color:var(--sub2)}
-.menu b{display:block;font-size:17px}
-.menu small{display:block;font-size:14px;color:var(--sub2);margin-top:4px;line-height:1.5}
-.menu .new{display:inline-block;margin-left:4px;font-size:10px;font-weight:700;color:var(--blue);background:var(--blue-l);border-radius:4px;padding:1px 5px;vertical-align:2px}
-.menu .soon{color:var(--sub3)}
 .rows{margin:12px 20px 0;display:flex;flex-direction:column;gap:10px}
 .row{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;border:1px solid var(--line);background:#fff;text-decoration:none;color:var(--text);font:inherit;text-align:left;cursor:pointer;width:100%;min-height:64px}
 .row img{width:40px;height:40px;border-radius:10px}
@@ -128,7 +103,7 @@
 .row .go{margin-left:auto;color:#B0B8C1;font-size:20px}
 .notice{margin-top:32px}
 @media(max-width:420px){.hero{gap:10px;padding-top:22px}.hero p{font-size:16px;line-height:1.55}}   /* 휴대폰 첫 화면에 소개 글·광고 배너·지도 버튼이 함께 들어오게 */
-.hero a.kw{color:var(--blue);font-weight:700;text-decoration:none;border-bottom:1.5px solid rgba(47,107,255,.35)}.hero b.own{font-weight:700;color:var(--text)}
+.hero a.kw{color:var(--blue);font-weight:700;text-decoration:none;border-bottom:1.5px solid rgba(67,56,202,.35)}.hero b.own{font-weight:700;color:var(--text)}
 .h-morebtn{display:none}
 @media(max-width:767px){.hero p.h-more:not(.open){display:none}.h-morebtn{display:inline-flex;align-items:center;align-self:flex-start;min-height:44px;margin:-6px 0 -4px;padding:0;border:0;background:none;font:inherit;font-size:15px;font-weight:700;color:var(--blue);cursor:pointer}}   /* 휴대폰: 소개 둘째 문단은 더 보기로 — 오늘 숫자가 먼저 보이게 */
 .hero p.dline{font-size:13.5px;line-height:1.6;color:var(--sub2)}   /* 숫자·갱신·분석 방법 작은 글씨 한 줄 */
@@ -141,7 +116,7 @@
 .agband b{display:block;font-size:15.5px}
 .agband small{display:block;font-size:14px;color:var(--sub2);margin-top:2px;line-height:1.5}
 .agband .go{margin-left:auto;flex:none;font-size:14.5px;font-weight:700;color:var(--blue);white-space:nowrap}
-.cs{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 12px;padding:16px 18px;border:1.5px solid #2560E8;border-radius:16px;background:#F4F7FF}.cs b{display:block;font-size:17px;font-weight:800}.cs small{display:block;font-size:14px;color:#4E5968;margin-top:2px}.csbtn{display:flex;gap:8px;flex-wrap:wrap}.cstel{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border-radius:12px;border:1.5px solid #2560E8;color:#2560E8;font-weight:800;font-size:14px;text-decoration:none;background:#fff}
+.cs{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 12px;padding:16px 18px;border:1.5px solid #4338CA;border-radius:16px;background:#F5F4FD}.cs b{display:block;font-size:17px;font-weight:800}.cs small{display:block;font-size:14px;color:#4E5968;margin-top:2px}.csbtn{display:flex;gap:8px;flex-wrap:wrap}.cstel{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border-radius:12px;border:1.5px solid #4338CA;color:#4338CA;font-weight:800;font-size:14px;text-decoration:none;background:#fff}
 .askwrap.jask{margin:18px 20px 0}
 /* 집예보를 친구에게 알려 주세요(assets/share-head.js · place=home_cta) */
 .hshare{display:flex;align-items:center;gap:14px;margin:18px 0 12px;padding:18px;border-radius:16px;background:#FBF5E3;border:1.5px solid #EFE2B8}
@@ -150,10 +125,6 @@
 .hshare p{margin:0;font-size:14.5px;line-height:1.55;color:#3E4754;word-break:keep-all}.hshare .ref{margin-top:6px;font-weight:700;color:#7A5C0F}.hshare .ref a{color:inherit}
 .hshare .go{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:48px;padding:0 20px;border:0;border-radius:12px;background:#191F28;color:#fff;font:inherit;font-size:16px;font-weight:800;cursor:pointer;white-space:nowrap}.hshare .go svg{width:20px;height:20px}
 @media(max-width:560px){.hshare{flex-wrap:wrap}.hshare .tx{flex-basis:calc(100% - 58px)}.hshare .go{width:100%;min-height:52px}}
-.minelink{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0 0;padding:16px 18px;border:2.5px solid #2560E8;border-radius:16px;background:#fff;color:inherit;text-decoration:none}.minelink b{display:block;font-size:18px;font-weight:800}.minelink small{display:block;font-size:14px;color:#4E5968;margin-top:3px}.minelink .new{display:inline-block;margin-left:6px;font-size:11px;font-weight:700;color:var(--blue);background:var(--blue-l);border-radius:4px;padding:1px 6px;vertical-align:3px}.minelink .go{font-size:24px;color:#2560E8;font-weight:800}
-.loanlink{border-width:1.5px;border-color:#B9CCFF;margin-top:10px}
-.maplink{display:flex;align-items:center;gap:14px;margin:18px 20px 0;padding:16px 18px;border-radius:16px;background:var(--blue);color:#fff;text-decoration:none;box-shadow:0 3px 12px rgba(47,107,255,.25)}.maplink .ic{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:none}.maplink .ic svg{width:26px;height:26px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.maplink b{display:block;font-size:18px;font-weight:800}.maplink small{display:block;font-size:14px;opacity:.92;margin-top:2px;line-height:1.5}.maplink .go{margin-left:auto;font-size:24px;font-weight:800;flex:none}
-.ranklink{display:flex;align-items:center;gap:14px;margin:10px 20px 0;padding:14px 18px;border-radius:16px;background:#fff;border:1.5px solid var(--blue);color:var(--text);text-decoration:none}.ranklink .ic{width:40px;height:40px;border-radius:12px;background:var(--blue-l);display:flex;align-items:center;justify-content:center;flex:none}.ranklink .ic svg{width:24px;height:24px;stroke:var(--blue);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.ranklink b{display:block;font-size:17px;font-weight:800}.ranklink small{display:block;font-size:14px;color:var(--sub2);margin-top:2px;line-height:1.5}.ranklink .go{margin-left:auto;font-size:22px;font-weight:800;color:var(--blue);flex:none}
 /* 첫 화면 호기심 카드(우리 지역 지금): 탭 하나에 '더 오를 단지 · 하락 레이스 · 신고가 레이스' */
 .pulse{margin:22px 20px 0;border:1px solid var(--line);border-radius:20px;background:#fff;box-shadow:0 2px 10px rgba(25,31,40,.05);overflow:hidden}
 .pulse[hidden]{display:none}
@@ -187,7 +158,7 @@
 .pl-num b{display:block;font-size:17px;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}
 .pl-num small{display:block;font-size:12.5px;color:var(--sub2);white-space:nowrap;font-variant-numeric:tabular-nums}
 .pl-sc b{font-size:19px;color:var(--blue)}
-.pl-up{color:#C2410C}.pl-dn{color:#1F56E0}
+.pl-up{color:#C2410C}.pl-dn{color:#1D63D8}
 .pl-rule{margin:10px 0 0;font-size:13px;color:var(--sub2);line-height:1.55}
 .pl-rule b{color:var(--sub)}
 .pl-why{margin:8px 0 0;font-size:13px;color:var(--sub2);line-height:1.55}
@@ -234,8 +205,8 @@
 .t3-l .nm b{display:block;font-size:15.5px;font-weight:800;line-height:1.35;word-break:break-all}
 .t3-l .nm small{display:block;font-size:13px;color:var(--sub2);line-height:1.45}
 .t3-l .v{text-align:right}.t3-l .v b{display:block;font-size:16.5px;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}.t3-l .v small{display:block;font-size:12.5px;white-space:nowrap}
-.t3-l .tg{display:inline-block;font-size:11.5px;font-weight:800;border-radius:6px;padding:0 5px;margin-left:4px;vertical-align:1px;background:var(--gray);color:var(--sub2)}.t3-l .tg.hi{background:#FDECE4;color:#C2410C}.t3-l .tg.dn{background:#E8F0FF;color:#1F56E0}
-.t3-up{color:#C2410C}.t3-dn{color:#1F56E0}
+.t3-l .tg{display:inline-block;font-size:11.5px;font-weight:800;border-radius:6px;padding:0 5px;margin-left:4px;vertical-align:1px;background:var(--gray);color:var(--sub2)}.t3-l .tg.hi{background:#FDECE4;color:#C2410C}.t3-l .tg.dn{background:#E8F0FD;color:#1D63D8}
+.t3-up{color:#C2410C}.t3-dn{color:#1D63D8}
 .t3-line{margin:6px 0 0;font-size:14.5px;line-height:1.55;color:var(--sub)}
 .t3-more{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;margin-top:8px;border-radius:12px;background:var(--blue-l);color:var(--blue);font-size:14.5px;font-weight:800;text-decoration:none}
 .t3-src{margin:8px 0 0;font-size:12.5px;color:var(--sub2);line-height:1.5}
@@ -255,6 +226,50 @@
 @media(max-width:340px){.hero .tagline{font-size:15.5px}}
 /* 모닝 브리핑 카드(assets/brief-cta.js)가 오른쪽 칸에 들어가 오른쪽이 길어져서, PC 에서는 소개 글을 위쪽에 맞춤(가운데 맞춤이면 위가 비어 보임) */
 @media(min-width:1024px){body.lay-home .h-top{align-items:start}body.lay-home .h-top .hero{padding-top:56px}}
+/* ===== 첫 화면 개편(대표 승인 시안 2026-11-26, docs/design_guide.md '첫 화면'): 맨 위 "무엇이 고민이세요?" → 상황 단추 → 내 집·할 일 → 오늘 소식 → 상황별로 찾기 → 이렇게 계산해요 ===== */
+.qh{padding:22px 20px 0}
+.qh .tagline{margin:0 0 4px;font-size:15.5px;font-weight:800;letter-spacing:-.3px;line-height:1.4;color:#4338CA}
+.qh h1{margin:0;font-size:30px;font-weight:900;letter-spacing:-1px;line-height:1.25}
+.qh.g-on .qh-t{position:absolute;left:-9999px}.qh.g-on .sit,.qh.g-on>.tagline{display:none}
+.qh #guideTop{margin-top:0}
+.qh .askwrap.jask{margin:14px 0 0}
+.sit{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:14px}
+.sit>a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:72px;padding:8px 2px;border-radius:14px;background:var(--gray);color:var(--text);text-decoration:none;font-size:14px;font-weight:700;line-height:1.3;text-align:center;word-break:keep-all}
+.sit>a .ic{display:flex;color:var(--blue)}.sit>a .ic svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.sit>a:hover,.sit>a.swpick-on{background:var(--blue-l);color:var(--blue)}
+@media(max-width:350px){.sit>a{font-size:13px}}
+/* '이사 갈 집' 단추를 누르면 바로 아래 펼치는 두 단추(assets/switch-pick.js) — 한 줄 전체, 단추 높이 64px */
+.sit div.swpick{grid-column:1/-1;display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:14px;background:#F5F4FD;border:1.5px solid var(--blue)}
+.sit div.swpick[hidden]{display:none}
+.swpick-q{margin:0;font-size:15px;font-weight:700;color:var(--text)}
+.swpick-n{margin:0;font-size:13px;line-height:1.5;color:var(--sub2)}
+.sit .swpick-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sit .swpick-row a{display:flex;flex-direction:column;justify-content:center;min-height:64px;padding:12px 14px;border-radius:12px;background:#fff;border:1.5px solid #C9C6F2;color:var(--text);text-decoration:none}
+.sit .swpick-row b{font-size:16px}.sit .swpick-row small{display:block;margin-top:2px;font-size:13.5px;color:var(--sub2)}
+.myh{margin:22px 20px 0;padding:14px 14px 4px;border-radius:20px;background:var(--gray2);border:1px solid var(--line)}
+.myh-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 2px 4px}
+.myh-hd h2{margin:0;font-size:18px;font-weight:800;letter-spacing:-.4px}
+.myh-hd a{display:inline-flex;align-items:center;min-height:40px;font-size:14px;font-weight:700;color:var(--blue);text-decoration:none;white-space:nowrap}
+.myh .wrow,.myh .qz{margin:0 0 10px}.myh #proCard{margin:0 0 10px}
+.qz .ic svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.svc{margin:36px 20px 0}
+.svc-hd{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-bottom:12px}
+.svc-hd h2{margin:0;font-size:21px;font-weight:800;letter-spacing:-.5px}
+.svc-hd a{display:inline-flex;align-items:center;min-height:44px;font-size:15px;font-weight:700;color:var(--blue);text-decoration:none;white-space:nowrap}
+.svc-g{display:grid;gap:12px}
+.sg{padding:14px 16px 4px;border:1px solid var(--line);border-radius:16px;background:#fff}
+.sg h3{display:flex;align-items:center;gap:8px;margin:0 0 2px;font-size:17px;font-weight:800}
+.sg h3 .ic{display:flex;color:var(--blue)}.sg h3 svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.srow{display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 0;border-bottom:1px solid var(--line2);color:var(--text);text-decoration:none}
+.srow:last-child{border-bottom:0}
+.srow .ic{display:none}
+.srow .tx{flex:1;min-width:0}.srow b{display:block;font-size:16px;line-height:1.4}.srow small{display:block;font-size:14px;color:var(--sub2);line-height:1.45}
+.srow .go{flex:none;color:#8B95A1;font-size:20px}.srow:hover b{color:var(--blue)}
+.hcalc{margin:36px 0 0}
+.hcalc .hero{padding-top:0}
+.hero h2.h1{margin:0;font-size:24px;font-weight:900;letter-spacing:-.6px;line-height:1.35}
+@media(max-width:420px){.qh{padding-top:16px}.qh h1{font-size:28px}}
+@media(min-width:768px){.svc-g{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 <script src="assets/back.js?v=1" defer></script>
 </head>
@@ -263,24 +278,32 @@
   <a class="brand" href="./" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a>
 </header>
 <main class="wrap">
-  <section id="guideTop" hidden aria-label="고민 해결 길잡이"></section>
   <div class="h-top">
-  <div class="hero">
+  <section class="qh" id="q" aria-labelledby="qhT">
     <p class="tagline">집값도, 할 일도 미리 알려 드려요</p>
-    <div class="eyebrow" id="heroEy">공공 통계로 푸는 부동산의 내일</div>
-    <h1>공공데이터로<br>내 집값의 내일을 풉니다</h1>
-    <p>국토교통부 실거래<span id="heroN"> 자료를</span> 바탕으로, 우리 동네와 단지가 앞으로 다른 곳보다 더 오를 가능성이 높은지 미리 보여 드려요.</p>
-    <p class="h-more" id="hMore">역세권·학군·입주량 같은 기본 통계는 물론, 집값이 떨어질 때 얼마나 덜 빠졌는지 보는 <a class="kw" href="guide/terms/#drop-defense" data-track="home_term_drop">‘하락기 방어력’</a>, 새 역이 계획에서 개통까지 어느 단계인지 보는 <a class="kw" href="guide/terms/#new-station" data-track="home_term_station">‘신설역 단계’</a>처럼 <b class="own">집예보만 쓰는 지표</b>까지 과거에 그대로 대입해 보고, 실제로 맞았던 것만 골라 썼어요. 확정된 값이 아니라 가능성이니, 결정할 때 참고 자료로 써 주세요.</p>
-    <button type="button" class="h-morebtn" aria-expanded="false" aria-controls="hMore" onclick="var p=document.getElementById('hMore');p.classList.add('open');this.remove()">더 보기 ▾</button>
-    <p class="dline"><span id="dsTxt">공공 실거래·통계 기반 · 하루 4번 갱신</span> · <span class="nw">회원가입 없이 바로 쓸 수 있어요 · <a href="about/" data-track="home_to_about">분석 방법 보기 ›</a></span></p>
-  </div>
+    <h1 class="qh-t" id="qhT">무엇이 고민이세요?</h1>
+    <section id="guideTop" hidden aria-label="고민 해결 길잡이"></section>
+    <section class="askwrap" id="askBox" aria-label="단지·기능 찾기"></section>
+    <nav class="sit" id="sit" aria-label="상황별로 시작하기">
+    <a href="buy/" data-track="home_to_buy"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M12 12.5v4M10 14.5h4"/></svg></span>집 사려고요</a>
+    <a href="switch/" data-track="home_to_switch"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h13l-3-3M20 16H7l3 3"/></svg></span>이사 갈 집</a>
+    <a href="jeonse/" data-track="home_to_jeonse"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></span>전세·월세</a>
+    <a href="chungyak/" data-track="home_to_chungyak"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5 14.6 9l5.9.6-4.4 4 1.3 5.9L12 16.5l-5.4 3 1.3-5.9-4.4-4L9.4 9z"/></svg></span>청약·분양</a>
+    <a href="tax/" data-track="home_to_tax"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M8 8h8M8 12h2M12 12h2M8 16h2M12 16h2"/></svg></span>세금</a>
+    <a href="loan/" data-track="home_to_loan"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg></span>대출</a>
+    <a href="villa/" data-track="home_to_villa"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V10l5-4 5 4v10"/><path d="M14 20v-7h6v7M2.5 20h19"/></svg></span>재개발·빌라</a>
+    <a href="all/" data-track="home_to_all"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/></svg></span>전체 기능</a>
+    </nav>
+  </section>
   <div class="h-act">
   <div class="jas jas-top jas-in" data-ad-slot="home_top" data-ad-cat="home" data-ad-top></div>
+  <section class="myh" aria-labelledby="myhT">
+    <div class="myh-hd"><h2 id="myhT">내 집 · 할 일</h2><a href="mine/" data-track="home_my_mine">내 집 시세 보기 ›</a></div>
+  <a class="wrow" id="wRow" href="my/watch/" data-track="home_to_watch" hidden></a>
+  <div id="proCard" hidden aria-label="집예보가 먼저 챙겨 드려요"></div>
+  <a class="qz pqc" id="taCard" href="mine/calendar/#ta" data-track="home_to_tenant_alert"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5h4"/></svg></span><span><b>전세 만기 알림 받기</b><small>세입자라면 만기 6·4·2개월 전에 보증금이 내린 동네와 갱신 협상 정보를 알려 드려요</small></span><span class="go" aria-hidden="true">›</span></a>
+  </section>
   <section class="bcta-home" id="bctaHome" data-bcta-home aria-label="집예보 모닝 브리핑 안내"></section>
-
-  <a class="maplink" href="map/" data-track="home_to_map"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg></span><span><b>지도로 단지 찾기<span class="new" style="margin-left:6px;font-size:11px;font-weight:700;color:#2560E8;background:#fff;border-radius:4px;padding:1px 6px;vertical-align:3px">NEW</span></b><small>단지 시세·미래가치 점수·전세가율을 지도에서 한눈에</small></span><span class="go">›</span></a>
-  <a class="ranklink" href="rank/" data-track="home_to_rank"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M9 20V8h6v12"/><path d="M3 20v-7h6M15 11h6v9"/></svg></span><span><b>우리 구는 몇 위?</b><small>구별 시세 상승·하락 순위와 미래가치 순위</small></span><span class="go">›</span></a>
-
   </div>
   </div>
   <div class="h-mid">
@@ -291,11 +314,8 @@
     <div class="t3-rg" id="t3Rg" role="group" aria-label="지역" hidden></div>
     <div class="t3-body" id="t3Body" role="tabpanel" aria-live="polite"></div>
   </section>
-  <a class="wrow" id="wRow" href="my/watch/" data-track="home_to_watch" hidden></a>
   <a class="qz" id="qzCard" href="quiz/" data-track="home_to_quiz" hidden></a>
   <a class="qz pqc" id="pqCard" href="quiz/#predict" data-track="home_to_predict" hidden></a>
-  <a class="qz pqc" id="taCard" href="mine/calendar/#ta" data-track="home_to_tenant_alert"><span class="ic" aria-hidden="true">⏰</span><span><b>전세 만기 알림 받기</b><small>세입자라면 만기 6·4·2개월 전에 보증금이 내린 동네와 갱신 협상 정보를 알려 드려요</small></span><span class="go" aria-hidden="true">›</span></a>
-  <div id="proCard" hidden aria-label="집예보가 먼저 챙겨 드려요"></div>
   <div data-dp-best hidden aria-label="이번 주 우수 동네 소식(제휴)" style="margin:0 0 16px"></div>
 
   <section class="pulse" id="pulse" hidden aria-labelledby="plTitle">
@@ -307,26 +327,46 @@
   </div>
   <div class="h-side">
   <details class="accl" id="accl" hidden></details>
-
-  <section class="askwrap" id="askBox" aria-label="단지 이름으로 물어보기"></section>
-
+  <section class="hcalc" aria-label="집예보는 이렇게 계산해요">
+  <div class="hero">
+    <div class="eyebrow" id="heroEy">공공 통계로 푸는 부동산의 내일</div>
+    <h2 class="h1">공공데이터로<br>내 집값의 내일을 풉니다</h2>
+    <p>국토교통부 실거래<span id="heroN"> 자료를</span> 바탕으로, 우리 동네와 단지가 앞으로 다른 곳보다 더 오를 가능성이 높은지 미리 보여 드려요.</p>
+    <p class="h-more" id="hMore">역세권·학군·입주량 같은 기본 통계는 물론, 집값이 떨어질 때 얼마나 덜 빠졌는지 보는 <a class="kw" href="guide/terms/#drop-defense" data-track="home_term_drop">‘하락기 방어력’</a>, 새 역이 계획에서 개통까지 어느 단계인지 보는 <a class="kw" href="guide/terms/#new-station" data-track="home_term_station">‘신설역 단계’</a>처럼 <b class="own">집예보만 쓰는 지표</b>까지 과거에 그대로 대입해 보고, 실제로 맞았던 것만 골라 썼어요. 확정된 값이 아니라 가능성이니, 결정할 때 참고 자료로 써 주세요.</p>
+    <button type="button" class="h-morebtn" aria-expanded="false" aria-controls="hMore" onclick="var p=document.getElementById('hMore');p.classList.add('open');this.remove()">더 보기 ▾</button>
+    <p class="dline"><span id="dsTxt">공공 실거래·통계 기반 · 하루 4번 갱신</span> · <span class="nw">회원가입 없이 바로 쓸 수 있어요 · <a href="about/" data-track="home_to_about">분석 방법 보기 ›</a></span></p>
+  </div>
+  </section>
   </div>
   </div>
-  <p class="mlabel">필요한 서비스를 골라 주세요 · <b>9가지 서비스</b></p>
-  <nav class="menu" aria-label="서비스 메뉴">
-    <a class="wide" href="buy/" data-track="home_to_buy"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></span><span><b>내 집 마련</b><small>예산·대출·맞춤 단지·단지 비교</small></span></a>
-    <a href="loan/" data-track="home_to_loan"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M7 15h4"/></svg></span><b>대출 한도<span class="new">NEW</span></b><small>LTV·DSR 중 무엇이 막는지</small></a>
-    <a href="switch/" data-track="home_to_switch"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h13l-3-3"/><path d="M20 16H7l3 3"/></svg></span><b>이사 갈 집 구하기</b><small>집주인·세입자 모두 · 갈아타기 비교</small></a>
-    <a href="villa/" data-track="home_to_villa"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 21V8l6-4v17"/><path d="M10 21h10V11l-5-3"/><path d="M14 14h2M14 17h2M6 11h2M6 15h2"/></svg></span><b>재개발·빌라<span class="new">NEW</span></b><small>구역 단계·입주권</small></a>
-    <a href="chungyak/" data-track="home_to_chungyak"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><b>청약<span class="new">NEW</span></b><small>가점·자격·당첨 가점 비교</small></a>
-    <a href="tax/" data-track="home_to_tax"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8"/><path d="M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h2M12 18h4"/></svg></span><b>세금<span class="new">NEW</span></b><small>비과세 시점·매도 순서</small></a>
-    <a href="bunyang/" data-track="home_to_bunyang"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V9l7-5 7 5v12"/><path d="M9 21v-5h6v5"/><path d="M12 4V2"/><path d="M9 11h.01M15 11h.01"/></svg></span><span><b>분양<span class="new">NEW</span></b><small>분양예정·청약중·입주예정 · 실거래 비교</small></span></a>
-    <a href="jeonse/" data-track="home_to_jeonse"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9"/><path d="M16 7l3 3"/><path d="M14 9l2 2"/></svg></span><span><b>전월세 전망 &amp; 전세사기 예방 체크<span class="new">NEW</span></b><small>실거래 시세와 우리 동네 전세 흐름, 깡통전세 위험 신호까지 계약 전에 한 번에 확인해요</small></span></a>
-  </nav>
+  <section class="svc" aria-labelledby="svcT">
+    <div class="svc-hd"><h2 id="svcT">상황별로 찾기</h2><a href="all/" data-track="home_svc_all">전체 기능 보기 ›</a></div>
+    <div class="svc-g">
+    <div class="sg"><h3><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></span>시세·지도</h3>
+      <a class="srow" href="mine/" data-track="home_to_mine"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></span><span class="tx"><b>내 집 시세 &amp; 미래가치</b><small>실거래 시세부터 보유 기간별 전망까지</small></span><span class="go" aria-hidden="true">›</span></a>
+      <a class="srow" href="map/" data-track="home_to_map"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg></span><span class="tx"><b>지도로 단지 찾기</b><small>단지 시세·미래가치 점수·전세가율을 지도에서</small></span><span class="go" aria-hidden="true">›</span></a>
+      <a class="srow" href="rank/" data-track="home_to_rank"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M9 20V8h6v12"/><path d="M3 20v-7h6M15 11h6v9"/></svg></span><span class="tx"><b>우리 구는 몇 위?</b><small>구별 시세 상승·하락 순위와 미래가치 순위</small></span><span class="go" aria-hidden="true">›</span></a>
+      <a class="srow" href="ask/" data-track="home_to_ask"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="7" height="14" rx="1.5"/><rect x="14" y="5" width="7" height="14" rx="1.5"/></svg></span><span class="tx"><b>단지 비교</b><small>두세 단지 흐름과 점수를 나란히</small></span><span class="go" aria-hidden="true">›</span></a>
+    </div>
+    <div class="sg"><h3><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M12 12.5v4M10 14.5h4"/></svg></span>집을 사기 전</h3>
+      <a class="srow" href="buy/" data-track="home_svc_buy"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M12 12.5v4M10 14.5h4"/></svg></span><span class="tx"><b>내 집 마련</b><small>예산·대출·맞춤 단지·단지 비교</small></span><span class="go" aria-hidden="true">›</span></a>
+      <a class="srow" href="loan/" data-track="home_card_loan"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg></span><span class="tx"><b>내 대출 한도는 얼마?</b><small>LTV·DSR 중 무엇이 한도를 막는지, 매달 갚을 돈까지</small></span><span class="go" aria-hidden="true">›</span></a>
+      <a class="srow" href="chungyak/" data-track="home_svc_chungyak"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5 14.6 9l5.9.6-4.4 4 1.3 5.9L12 16.5l-5.4 3 1.3-5.9-4.4-4L9.4 9z"/></svg></span><span class="tx"><b>청약</b><small>가점·자격·과거 당첨 가점 비교</small></span><span class="go" aria-hidden="true">›</span></a>
+      <a class="srow" href="bunyang/" data-track="home_to_bunyang"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V8l8-4 8 4v12"/><path d="M9 20v-6h6v6"/></svg></span><span class="tx"><b>분양</b><small>분양예정·청약중·입주예정 · 실거래 비교</small></span><span class="go" aria-hidden="true">›</span></a>
+    </div>
+    <div class="sg"><h3><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h13l-3-3M20 16H7l3 3"/></svg></span>팔고 옮길 때</h3>
+      <a class="srow" href="switch/" data-track="home_svc_switch"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h13l-3-3M20 16H7l3 3"/></svg></span><span class="tx"><b>이사 갈 집 구하기</b><small>집주인·세입자 모두 · 갈아타기 비교</small></span><span class="go" aria-hidden="true">›</span></a>
+      <a class="srow" href="tax/" data-track="home_svc_tax"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M8 8h8M8 12h2M12 12h2M8 16h2M12 16h2"/></svg></span><span class="tx"><b>세금</b><small>비과세 시점·매도 순서·취득세·보유세</small></span><span class="go" aria-hidden="true">›</span></a>
+      <a class="srow" href="villa/" data-track="home_svc_villa"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V10l5-4 5 4v10"/><path d="M14 20v-7h6v7M2.5 20h19"/></svg></span><span class="tx"><b>재개발·빌라</b><small>구역 단계·입주권·빌라 위험 신호</small></span><span class="go" aria-hidden="true">›</span></a>
+    </div>
+    <div class="sg"><h3><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></span>전세·월세</h3>
+      <a class="srow" href="jeonse/" data-track="home_svc_jeonse"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5 4.5 6.5v5.5c0 4.4 3.2 7.6 7.5 8.5 4.3-.9 7.5-4.1 7.5-8.5V6.5z"/><path d="m9 12 2 2 4-4"/></svg></span><span class="tx"><b>전월세 전망 &amp; 전세사기 예방 체크</b><small>실거래 시세와 우리 동네 전세 흐름, 깡통전세 위험 신호까지</small></span><span class="go" aria-hidden="true">›</span></a>
+      <a class="srow" href="mine/calendar/#ta" data-track="home_svc_ta"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5h4"/></svg></span><span class="tx"><b>전세 만기 알림</b><small>만기 6·4·2개월 전에 할 일을 알려 드려요</small></span><span class="go" aria-hidden="true">›</span></a>
+    </div>
+    </div>
+  </section>
   <div class="h-end">
-  <a class="minelink" href="mine/" data-track="home_to_mine"><span><b>내 집 시세 &amp; 미래가치<span class="new">NEW</span></b><small>실거래 시세부터 보유 기간별 전망까지 한 번에 확인해요</small></span><span class="go">›</span></a>
   <p class="premlink pl-comm"><a href="mine/?t=v" data-track="home_to_villa_price">빌라(연립·다세대) 실거래 시세 보기 ›</a> · <a href="mine/?t=c" data-track="home_to_comm">상가·통건물 실거래 시세와 상권 흐름 보기 ›</a></p>
-  <a class="minelink loanlink" href="loan/" data-track="home_card_loan"><span><b>내 대출 한도는 얼마?<span class="new">NEW</span></b><small>집값·지역·연소득만 넣으면 최대 대출과 매달 갚을 돈, 정책 대출 자격까지 바로 알려 드려요</small></span><span class="go">›</span></a>
   <p class="premlink pl-prem"><a href="premium/" data-track="home_to_premium">단지 심층 분석이 필요하다면 · 프리미엄 리포트 안내 ›</a></p>
   <div class="jas-in" data-ad-slot="home_end" data-ad-cat="home" hidden></div>
   <section class="hshare" id="homeShare" aria-labelledby="hshareT">
@@ -590,13 +630,13 @@ addEventListener('DOMContentLoaded', () => {
 });
 </script>
 <footer class="foot notice">국토교통부 실거래가 등 공공기관 공식 자료 기준 · 2026년 11월 대출 규제 반영<br>★ 집예보 · <a href="agent/" data-track="agent_join_click">공인중개사 제휴</a> · <a href="#" onclick="window.JDJ_PWA&&JDJ_PWA.install();return false">홈 화면에 추가</a></footer>
-<script>/* 단지 이름으로 물어보기(assets/ask.js): 1곳 → 내 집 시세, 2~3곳 → 단지 비교 */ addEventListener('DOMContentLoaded', () => { if (window.JDJ_ASK) JDJ_ASK.mount(document.getElementById('askBox'), {from:'home'}); });</script>
+<script>/* 맨 위 찾기 칸(assets/ask.js, 길잡이가 꺼진 동안): 단지 1곳 → 내 집 시세, 2~3곳 → 단지 비교, 단지가 아닌 질문(청약·세금·전월세 등) → 맞는 화면. 하단 탭 '고민 찾기'(#q)로 오면 칸에 바로 손이 가게 */ addEventListener('DOMContentLoaded', () => { if (window.JDJ_ASK) JDJ_ASK.mount(document.getElementById('askBox'), {from:'home', bare:true, ph:'예: 헬리오시티 · 전세 만기', btn:'찾기'}); if (location.hash === '#q') { var i = document.getElementById('jaskQ'); if (i) setTimeout(function () { i.focus(); }, 60); } });</script>
 <script>/* 관심 지역 새 공고 배지(관심 지역을 정한 사람만 공고 자료를 받음). 상태는 분양 화면과 같은 공용 함수(sale-status.js)로 */ addEventListener('DOMContentLoaded', () => { if (window.JDJ_AREA) JDJ_AREA.badge(document.querySelector('a[data-track="home_to_bunyang"]')); });</script>
-<script src="./assets/brief-cta.js?v=1" defer></script>
+<script src="./assets/brief-cta.js?v=2" defer></script>
 <script src="./assets/proactive.js?v=2" defer></script>
 <script>/* 집예보가 먼저 챙겨 드려요(assets/config.js PROACTIVE_ENABLED 가 꺼져 있으면 칸이 생기지 않음) */ addEventListener('DOMContentLoaded', () => { if (window.JDJ_PRO) JDJ_PRO.mount(document.getElementById('proCard'), 'home'); });</script>
-<script src="./assets/ad-slot.js?v=6" defer></script>
+<script src="./assets/ad-slot.js?v=7" defer></script>
 <script>/* 고민 해결 길잡이(assets/guide.js): GUIDE_ENABLED 이거나 ?preview=guide 일 때만 맨 위 입력창 + 상황 단추(단지 이름 물어보기 칸과 하나로) */
-addEventListener('DOMContentLoaded', function () { if (window.JDJ_GUIDE && JDJ_GUIDE.on()) JDJ_GUIDE.mountTop(document.getElementById('guideTop')); });</script>
+addEventListener('DOMContentLoaded', function () { if (window.JDJ_GUIDE && JDJ_GUIDE.on() && JDJ_GUIDE.mountTop(document.getElementById('guideTop')) !== false) document.getElementById('q').classList.add('g-on'); });</script>
 </body>
 </html>

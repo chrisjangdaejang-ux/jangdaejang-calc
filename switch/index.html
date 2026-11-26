@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집예보">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script src="../assets/pwa.js?v=2" defer></script>
+<script src="../assets/pwa.js?v=3" defer></script>
 <script src="../assets/biz.js?v=3" defer></script>
 <script src="../assets/region-pick.js?v=2" defer></script>
 <title>집예보 갈아타기 계산기</title>
@@ -33,11 +33,11 @@
 <script>window.JDJ_CONFIG = { tool:'switch', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=8"></script>
-<script src="../assets/share.js?v=13"></script>
+<script src="../assets/share.js?v=14"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/config.js?v=12"></script>
-<script src="../assets/auth.js?v=10"></script>
-<script src="../assets/kchat.js?v=3"></script>
+<script src="../assets/auth.js?v=11"></script>
+<script src="../assets/kchat.js?v=4"></script>
 <script src="../assets/region-notes.js"></script>
 <script src="../tax/adjusted-areas.js?v=2"></script>
 <script src="../tax/tax-engine.js?v=4"></script>
@@ -45,7 +45,7 @@
 <script src="../assets/loan-core.js?v=6"></script>
 <script src="../assets/rec-core.js?v=5"></script>
 <script src="../assets/mine-core.js?v=22"></script>
-<script src="../assets/price-sheet.js?v=23"></script>
+<script src="../assets/price-sheet.js?v=24"></script>
 <script src="switch-core.js?v=8"></script>
 <script src="../assets/narrative.js?v=25"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -56,7 +56,7 @@
 .swtabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#F2F4F6;border-radius:14px;padding:5px;margin:0 0 18px}
 .swtabs a{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:52px;border-radius:10px;text-decoration:none;color:#4E5968;font-weight:800;font-size:16px;line-height:1.25}
 .swtabs a small{font-size:12.5px;font-weight:500;color:#6B7684}
-.swtabs a[aria-current]{background:#fff;color:#2560E8;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.swtabs a[aria-current]{background:#fff;color:#4338CA;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .tag{display:inline-block;background:var(--ink);color:var(--gold2);font-size:13.5px;font-weight:700;letter-spacing:.14em;padding:4px 9px;border-radius:2px}
 h1{font-size:clamp(28px,5vw,44px);font-weight:900;letter-spacing:-.04em;line-height:1.15;margin:12px 0 10px}
 h1 em{font-style:normal;color:var(--gold)}
@@ -153,17 +153,17 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .agc b{font-size:16px}
 .agc small{display:block;color:#4E5968;font-size:13.5px}
 .agc .acts{display:flex;gap:6px;margin-top:8px}
-.agc .acts a{flex:1;text-align:center;text-decoration:none;font-weight:900;font-size:14px;padding:8px;border-radius:12px;background:#2560E8;color:#fff}
+.agc .acts a{flex:1;text-align:center;text-decoration:none;font-weight:900;font-size:14px;padding:8px;border-radius:12px;background:#4338CA;color:#fff}
 .agc .acts a{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
 .agc .acts a.kchat{font-size:14px;font-weight:900;border-radius:7px;padding:8px}
 .agc .tag{font-size:13.5px;font-weight:700;border:1px solid #B8942A;color:#B8942A;padding:1px 5px;border-radius:3px;margin-left:5px}
 .agnone{margin-top:12px;font-size:15px;font-weight:700}
 .agnone a{color:#A23B2A}
-.toReport{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;background:#E8F0FF;color:#191F28;border:1px solid #C9D8FF;border-radius:16px;padding:18px 20px;margin:16px 0}
+.toReport{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;background:#EEEDFB;color:#191F28;border:1px solid #D4D1F5;border-radius:16px;padding:18px 20px;margin:16px 0}
 .toReport b{font-size:18px;display:block}
-.toReport b em{font-style:normal;color:#2560E8}
+.toReport b em{font-style:normal;color:#4338CA}
 .toReport span{font-size:14px;color:#3E4754}
-.toReport a{background:#2560E8;color:#fff;font-weight:900;font-size:17px;padding:12px 20px;border-radius:14px;text-decoration:none;white-space:nowrap}
+.toReport a{background:#4338CA;color:#fff;font-weight:900;font-size:17px;padding:12px 20px;border-radius:14px;text-decoration:none;white-space:nowrap}
 .gap .pick{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:640px){.gap .pick{grid-template-columns:1fr}}
 .gap .pk{border:1.5px solid #DCCFA8;border-radius:10px;padding:12px;background:#fff}
@@ -174,8 +174,8 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .gap .res div{padding:7px 10px;border-bottom:1px solid #F3EDD9;cursor:pointer;font-size:14.5px}
 .gap .res div:hover{background:#F2F4F6}
 .gap .bands{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
-.gap .bands button{font:inherit;font-size:13.5px;font-weight:700;border:1.5px solid #2560E8;background:#fff;color:#2560E8;border-radius:999px;padding:5px 10px;cursor:pointer}
-.gap .bands button.on{background:#2560E8;color:#fff}
+.gap .bands button{font:inherit;font-size:13.5px;font-weight:700;border:1.5px solid #4338CA;background:#fff;color:#4338CA;border-radius:999px;padding:5px 10px;cursor:pointer}
+.gap .bands button.on{background:#4338CA;color:#fff}
 .gap .sel{font-weight:900;font-size:16px;margin-top:6px}
 .gap .sel small{display:block;font-weight:500;color:#4E5968;font-size:13.5px}
 .gap .gapres{margin-top:14px;background:#F2F4F6;border-radius:10px;padding:14px 16px}
@@ -189,11 +189,11 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .gap .af .btnA{background:#A23B2A;color:#fff;border:0;font:inherit;font-weight:900;font-size:16px;padding:11px 18px;border-radius:8px;cursor:pointer}
 .gap .mini{font-size:13.5px;color:#4E5968}
 .homepk .pk{border:1.5px solid #DCCFA8;border-radius:10px;padding:12px;background:#fff}
-.field .hint.auto{color:#1F56E0;font-weight:700}
+.field .hint.auto{color:#3730A3;font-weight:700}
 .field .hint.ask{color:#C2410C;font-weight:700}
 .recs{display:grid;gap:12px}
 .rc{border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;background:#fff}
-.rc.on{border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,107,255,.12)}
+.rc.on{border-color:var(--blue);box-shadow:0 0 0 3px rgba(67,56,202,.12)}
 .rc .hd{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .rc .rk{font-size:13.5px;font-weight:900;color:var(--blue)}
 .rc h3{margin:2px 0 2px;font-size:17px;font-weight:900;letter-spacing:-.02em;word-break:keep-all}
@@ -211,7 +211,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .rc li.c{color:#A23B2A}
 .rc .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .rc .acts button,.rc .acts a{font:inherit;font-size:15px;font-weight:700;min-height:44px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--text);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
-.rc .acts .jps-btn{border:1.5px solid #2560E8;color:#2560E8}
+.rc .acts .jps-btn{border:1.5px solid #4338CA;color:#4338CA}
 /* 추천 카드 단추 3개: 한 줄에 하나씩 길게 늘어서지 않게 — '지금 집과 비교하기'는 한 줄 전체, 나머지 둘은 반씩 */
 .rc .acts{display:grid;grid-template-columns:1fr 1fr}
 .rc .acts > *{justify-content:center;text-align:center;width:100%;margin:0}
@@ -257,7 +257,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .bticks{display:flex;justify-content:space-between;font-size:13px;color:#4E5968}
 .burden .hint{font-size:13.5px;color:#4E5968;margin-top:6px}
 .rs .whyx{margin:10px 0 0;font-size:14.5px;font-weight:700;word-break:keep-all}
-.rs .whyx span{display:inline-block;font-size:12.5px;font-weight:900;background:var(--olive,#2560E8);color:#fff;border-radius:4px;padding:1px 6px;margin-right:5px;vertical-align:1px}
+.rs .whyx span{display:inline-block;font-size:12.5px;font-weight:900;background:var(--olive,#4338CA);color:#fff;border-radius:4px;padding:1px 6px;margin-right:5px;vertical-align:1px}
 .rs .tm{margin-top:10px;border:1.5px solid var(--line);border-radius:9px;padding:10px 12px;font-size:14.5px;word-break:keep-all}
 .rs .tm b{font-weight:900}
 .rs .tm .v{display:block;font-size:15.5px;font-weight:900;margin-bottom:2px}
@@ -329,11 +329,11 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
 .taxf a small{font-size:12.5px;font-weight:500;color:#4E5968}
 @media(max-width:1023px){body.jtab-pad .toast{bottom:calc(82px + env(safe-area-inset-bottom))}}   /* 아래 탭 메뉴 위로 */
 </style>
-<link rel="stylesheet" href="../assets/aplus.css?v=46">
-<script src="../assets/tabbar.js?v=5" defer></script>
+<link rel="stylesheet" href="../assets/aplus.css?v=48">
+<script src="../assets/tabbar.js?v=7" defer></script>
 <script src="../assets/nw.js?v=1" defer></script>
 <style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
-:root{--gold:#2560E8}
+:root{--gold:#4338CA}
 .premium .pt{color:var(--blue)}
 .mpinw.on .mpin{background:var(--blue)}.mpinw.on .mpin:after{border-top-color:var(--blue)}
 .st.pre{background:var(--blue-l);color:var(--blue)}
@@ -1485,8 +1485,8 @@ setTermOptions(); autoAdj(); render();
 </script>
 <script src="../assets/plain-words.js?v=19"></script>
 <script>document.addEventListener("DOMContentLoaded",()=>{ if(window.JDJ_PLAIN) JDJ_PLAIN.autoGloss(document.querySelector(".wrap")); });</script>
-<script src="../assets/ad-slot.js?v=6" defer></script>
+<script src="../assets/ad-slot.js?v=7" defer></script>
 <div data-gnext="switch" hidden></div>
-<script src="../assets/guide-next.js?v=1" defer></script>
+<script src="../assets/guide-next.js?v=2" defer></script>
 </body>
 </html>

@@ -197,7 +197,7 @@
     return `<div class="jdj-gate"><p>${text}</p>${btn(label, from)}</div>`;
   }
   const CSS = `.jdj-kbtn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:inherit;font-size:15px;font-weight:700;min-height:48px;padding:0 18px;border:0;border-radius:12px;background:#FEE500;color:rgba(0,0,0,.85);cursor:pointer;text-decoration:none}
-.jdj-kbtn:hover{filter:brightness(.97)}.jdj-kbtn:focus-visible{outline:3px solid #2560E8;outline-offset:2px}
+.jdj-kbtn:hover{filter:brightness(.97)}.jdj-kbtn:focus-visible{outline:3px solid #4338CA;outline-offset:2px}
 .jdj-kbtn.full{width:100%}
 .jdj-gate{margin-top:10px;border:1px solid #E5E8EB;border-radius:14px;padding:14px;background:#FAFBFC;text-align:center}
 .jdj-gate p{margin:0 0 10px;font-size:14.5px;color:#3E4754;line-height:1.55;word-break:keep-all}

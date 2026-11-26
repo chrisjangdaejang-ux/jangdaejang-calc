@@ -13,19 +13,19 @@
 <!-- 전문가 하트 충전·사용 내역·환불 요청(하트는 확인된 전문가만 충전·사용 — 일반 이용자는 모두 무료) — HEART_ENABLED 가 false 면 '준비 중'(운영자 미리 보기 제외). 결제 버튼은 PAID_OPEN 도 켜져야 나와요.
      토스 결제가 끝나면 이 화면(?paymentKey=…&orderId=…&amount=…)으로 돌아와 서버가 승인을 확인한 뒤에만 하트를 드려요. 검색 제외(noindex) -->
 <script>window.JDJ_CONFIG = { tool:'counsel', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
-<script src="../../assets/pwa.js?v=2" defer></script>
+<script src="../../assets/pwa.js?v=3" defer></script>
 <script src="../../assets/biz.js?v=3" defer></script>
 <script src="../../assets/track.js?v=2"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/config.js?v=11"></script>
-<script src="../../assets/auth.js?v=10"></script>
+<script src="../../assets/auth.js?v=11"></script>
 <script src="../../assets/savefb.js?v=1"></script>
 <script src="../../assets/counsel-core.js?v=5"></script>
-<script src="../../assets/counsel.js?v=5"></script>
-<script src="../../assets/tabbar.js?v=5" defer></script>
+<script src="../../assets/counsel.js?v=6"></script>
+<script src="../../assets/tabbar.js?v=7" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/aplus.css?v=46">
+<link rel="stylesheet" href="../../assets/aplus.css?v=48">
 <style>
 .ht-bal{display:flex;align-items:baseline;gap:8px;font-size:15px;color:var(--sub2)}
 .ht-bal b{font-size:40px;font-weight:900;color:#D6336C;letter-spacing:-1px;font-variant-numeric:tabular-nums}
@@ -33,7 +33,7 @@
 @media(min-width:640px){.ht-packs{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(min-width:1000px){.ht-packs{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .ht-pack{display:flex;flex-direction:column;gap:4px;border:1px solid var(--line);border-radius:16px;padding:14px;background:#fff;cursor:pointer;text-align:left;font:inherit;color:inherit;min-width:0}
-.ht-pack[aria-pressed="true"]{border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,107,255,.15)}
+.ht-pack[aria-pressed="true"]{border-color:var(--blue);box-shadow:0 0 0 3px rgba(67,56,202,.15)}
 .ht-pack .n{font-size:22px;font-weight:900}
 .ht-pack .w{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
 .ht-pack .per{font-size:13px;color:var(--sub2)}

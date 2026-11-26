@@ -167,8 +167,10 @@ check('소개 글: 연수 계산 문구 없음', /년간 공공 통계|\$\{yrs\}
   check('소개 글: 숫자를 직접 써 넣지 않음(838·2010·1.6만 없음)', /838|2010|1\.6만|16년/.test(hero), false, '');
   check('소개 글: 노란 상자(data-jdj-str) 없음', /data-jdj-str|class="strl"/.test(hero), false, '');
   check('소개 글: 금지어 없음', ['시험', '검증', '채점'].filter(w => hero.includes(w)), [], '');
-  const iAd = html.indexOf('data-ad-slot="home_top"'), iHeroEnd = html.indexOf('\n  </div>', a), iMap = html.indexOf('class="maplink"');
-  check('홈 상단 광고: 소개 글 바로 다음, 지도 버튼 앞', iAd > iHeroEnd && iAd < iMap && !/<a |<section/.test(html.slice(iHeroEnd + 9, iAd)), true, '');
+  /* 첫 화면 개편(대표 승인 시안 2026-11-26): 소개 글은 아래 '이렇게 계산해요' 칸으로 — 상단 광고는 맨 위 질문 칸(무엇이 고민이세요?) 바로 다음, 내 집·할 일 앞 */
+  const iAd = html.indexOf('data-ad-slot="home_top"'), iQEnd = html.indexOf('\n  </section>', html.indexOf('<section class="qh"')), iMy = html.indexOf('class="myh"');
+  check('홈 상단 광고: 질문 칸 바로 다음, 내 집·할 일 앞', iAd > iQEnd && iAd < iMy && !/<a |<section/.test(html.slice(iQEnd + 13, iAd)), true, '');
+  check('홈: 화면 제목(h1)은 "무엇이 고민이세요?" 하나', (html.match(/<h1[ >]/g) || []).length === 1 && /<h1 class="qh-t" id="qhT">무엇이 고민이세요\?<\/h1>/.test(html), true, '');
 }
 
 const fail = rows.filter(r => !r.ok);

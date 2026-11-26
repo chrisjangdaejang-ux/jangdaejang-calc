@@ -67,8 +67,9 @@ check('저장소 막힌 기기도 펼침은 동작', [pg.a.click().prevented, pg
 const home = read('index.html'), lay = read('assets/layout.css'), sw = read('sw.js');
 check('첫 화면 칸: href="switch/" 유지 + 집계 이름', /<a href="switch\/" data-track="home_to_switch">/.test(home), true, '점진적 향상');
 check('첫 화면에 스크립트 연결', /<script src="\.\/assets\/switch-pick\.js\?v=1" defer><\/script>/.test(home), true);
-check('마지막 칸 전체 너비는 a 개수로(nth-of-type) — 펼친 칸이 끼어도 안 깨짐', [/\.menu>a:last-child:nth-child\(even\)/.test(home + lay), /\.menu>a:last-child:nth-of-type\(even\)\{grid-column:1\/-1/.test(home), /body\.lay-home \.menu>a:last-child:nth-of-type\(even\)\{grid-column:1\/-1\}/.test(lay)], [false, true, true]);
-check('펼친 칸은 한 줄 전체·단추 높이 44px 이상', /\.menu div\.swpick\{grid-column:1\/-1/.test(home) && /\.menu \.swpick-row a\{min-height:(\d+)px/.test(home) && +home.match(/\.menu \.swpick-row a\{min-height:(\d+)px/)[1] >= 44, true);
+/* 첫 화면 개편(대표 승인 시안 2026-11-26): '이사 갈 집' 단추는 맨 위 상황 단추 4칸 격자(.sit) 안 */
+check('상황 단추 격자 안에서 펼침', /<nav class="sit" id="sit"[\s\S]*?<a href="switch\/" data-track="home_to_switch">[\s\S]*?<\/nav>/.test(home), true);
+check('펼친 칸은 한 줄 전체·단추 높이 44px 이상', /\.sit div\.swpick\{grid-column:1\/-1/.test(home) && /\.sit \.swpick-row a\{[^}]*min-height:(\d+)px/.test(home) && +home.match(/\.sit \.swpick-row a\{[^}]*min-height:(\d+)px/)[1] >= 44, true);
 check('서비스 워커에 등록', sw.includes("'./assets/switch-pick.js?v=1'"), true);
 
 let pass = 0;

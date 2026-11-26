@@ -1,7 +1,7 @@
 /* 집예보 공용 광고 칸 (assets/ad-slot.js) — 위치 계획: docs/ad_slots.md · 광고 상품: /ad/
    페이지에 넣는 법
      <div data-ad-slot="mine_end" data-ad-cat="mine" data-ad-after="#res" hidden></div>
-     <script src="assets/ad-slot.js?v=6" defer></script>
+     <script src="assets/ad-slot.js?v=7" defer></script>
    - data-ad-slot  : 칸 이름(docs/ad_slots.md 표의 slot id)
    - data-ad-cat   : 화면 종류(아래 CATS) — 받을 수 있는 업종과 집예보 안내 광고를 정함
    - data-ad-skip-if : 이 선택자가 보이면 칸을 숨김(예: 모닝 브리핑 전용 광고 자리가 그날 광고로 채워졌을 때)
@@ -195,14 +195,14 @@
     if (document.getElementById('jasOwnCss')) return;
     var st = document.createElement('style'); st.id = 'jasOwnCss';
     st.textContent = '.jas.jas-house{background:#F3F7FF;border-color:#D6E3FF}.jas.jas-top.jas-house{background:none;border:0}'
-      + '.jas-house .jas-c{border-color:#C9D8FF;box-shadow:0 1px 6px rgba(37,96,232,.06)}.jas-house .jas-c:hover{border-color:#2560E8}'
-      + '.jas-tag.jas-own{background:#2560E8;border-color:#2560E8;color:#fff}'
+      + '.jas-house .jas-c{border-color:#D4D1F5;box-shadow:0 1px 6px rgba(67,56,202,.06)}.jas-house .jas-c:hover{border-color:#4338CA}'
+      + '.jas-tag.jas-own{background:#4338CA;border-color:#4338CA;color:#fff}'
       + '.jas-house [data-ad-id="house_brief"]{background:#FFF9EA;border-color:#EED9A4}.jas-house [data-ad-id="house_brief"]:hover{border-color:#D9B95C}'
       + '.jas-house [data-ad-id="house_brief"] .jas-ic{background:#FFE7A8}.jas-house [data-ad-id="house_brief"] .jas-ic svg{stroke:#9A6B00}';
     document.head.appendChild(st);
   })();
   /* 모닝 브리핑 권유(assets/brief-cta.js): 광고 칸이 있는 화면이면 함께 불러옴(맞춤 권유·바닥 띠·누름 기록) */
-  if (!document.querySelector('script[src*="brief-cta.js"]')) { var bs = document.createElement('script'); bs.src = B + 'assets/brief-cta.js?v=1'; bs.defer = true; document.head.appendChild(bs); }
+  if (!document.querySelector('script[src*="brief-cta.js"]')) { var bs = document.createElement('script'); bs.src = B + 'assets/brief-cta.js?v=2'; bs.defer = true; document.head.appendChild(bs); }
   /* 휴대폰 한 화면(화면 높이만큼) 안에 이 칸 말고 광고가 이미 2개면 true — 상단 배너가 먼저 자리를 잡고, 나머지 칸이 비켜 감 */
   function crowded(el) {
     if (!mobile()) return false;

@@ -39,9 +39,9 @@
   function style() {
     if (css || typeof document === 'undefined') return; css = true;
     const s = document.createElement('style');
-    s.textContent = `.ldcta{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between;background:#F2F6FF;border:1px solid #D6E2FF;border-radius:16px;padding:14px 16px;margin:10px 0}
+    s.textContent = `.ldcta{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between;background:#F2F6FF;border:1px solid #D4D1F5;border-radius:16px;padding:14px 16px;margin:10px 0}
 .ldcta b{font-size:15.5px;color:#191F28}.ldcta span{display:block;font-size:13.5px;color:#4E5968;margin-top:2px}
-.ldcta button,.ldf .go{font:inherit;font-weight:700;font-size:15px;border:0;border-radius:14px;background:#2560E8;color:#fff;padding:11px 16px;cursor:pointer;min-height:44px}
+.ldcta button,.ldf .go{font:inherit;font-weight:700;font-size:15px;border:0;border-radius:14px;background:#4338CA;color:#fff;padding:11px 16px;cursor:pointer;min-height:44px}
 .ldbg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:flex;align-items:flex-end;justify-content:center}
 @media(min-width:641px){.ldbg{align-items:center}}
 .ldm{background:#fff;width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:20px 18px 24px;box-sizing:border-box;color:#191F28;font-family:inherit}
@@ -50,7 +50,7 @@
 .ldm .x{float:right;border:0;background:none;font-size:26px;line-height:1;cursor:pointer;color:#4E5968;min-width:44px;min-height:44px}
 .ldf h4{font-size:15px;margin:16px 0 6px}.ldf .row{display:flex;flex-wrap:wrap;gap:6px}
 .ldf .ch{font:inherit;font-size:14px;font-weight:700;border:1px solid #E5E8EB;background:#fff;color:#4E5968;border-radius:999px;padding:9px 13px;cursor:pointer;min-height:40px}
-.ldf .ch.on{background:#2560E8;border-color:#2560E8;color:#fff}
+.ldf .ch.on{background:#4338CA;border-color:#4338CA;color:#fff}
 .ldf .ag{display:flex;gap:10px;align-items:flex-start;border:1px solid #E5E8EB;border-radius:14px;padding:10px 12px;margin:6px 0;cursor:pointer}
 .ldf .ag input{margin-top:4px;width:18px;height:18px}.ldf .ag b{font-size:15px}.ldf .ag small{display:block;color:#4E5968;font-size:13px;margin-top:2px}
 .ldf .tag{display:inline-block;font-size:12px;font-weight:700;color:#4E5968;background:#F2F4F6;border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:1px}
@@ -61,7 +61,7 @@
 .ldf .agree{display:flex;gap:8px;align-items:flex-start;font-size:14.5px;font-weight:700;margin:10px 0}.ldf .agree input{width:20px;height:20px;margin-top:1px}
 .ldf .msg{font-size:14px;font-weight:700;color:#C2410C;margin:8px 0 0;min-height:1em}.ldf .go{width:100%;margin-top:10px}
 .ldf .disc{font-size:12.5px;color:#6B7684;margin:10px 0 0;line-height:1.5}
-.lddone{background:#F2F6FF;border-radius:14px;padding:14px;margin-top:8px;font-size:14.5px;line-height:1.6}.lddone a{color:#2560E8;font-weight:700}`;
+.lddone{background:#F2F6FF;border-radius:14px;padding:14px;margin-top:8px;font-size:14.5px;line-height:1.6}.lddone a{color:#4338CA;font-weight:700}`;
     document.head.appendChild(s);
   }
   const nm = a => a.t === 'm' ? a.nm + ' 공인중개사' : a.n;

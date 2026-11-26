@@ -184,18 +184,18 @@
     var X = function (x) { return 12 + (x - lo) / (hi - lo) * (W - 24); };
     /* 분양가 글자는 위, 주변 중간값 글자는 아래 — 두 값이 가까워도 겹치지 않게 */
     return '<svg class="cyp-bar" viewBox="0 0 ' + W + ' 62" role="img" aria-label="주변 거래 분포와 분양가"><line x1="6" y1="30" x2="' + (W - 6) + '" y2="30" stroke="#E5E8EB" stroke-width="2"/>'
-      + '<rect x="' + X(q[0]).toFixed(1) + '" y="23" width="' + (X(q[2]) - X(q[0])).toFixed(1) + '" height="14" rx="4" fill="#E8F0FF" stroke="#9DB5F5"/>'
+      + '<rect x="' + X(q[0]).toFixed(1) + '" y="23" width="' + (X(q[2]) - X(q[0])).toFixed(1) + '" height="14" rx="4" fill="#EEEDFB" stroke="#9DB5F5"/>'
       + '<line x1="' + X(q[1]).toFixed(1) + '" y1="19" x2="' + X(q[1]).toFixed(1) + '" y2="41" stroke="#4E5968" stroke-width="2"/>'
       + '<text x="' + Math.min(W - 40, Math.max(40, X(q[1]))).toFixed(1) + '" y="56" font-size="10" text-anchor="middle" fill="#4E5968">주변 중앙 ' + fmt(q[1]) + '</text>'
-      + '<circle cx="' + X(b.ppy).toFixed(1) + '" cy="30" r="6.5" fill="#2560E8" stroke="#fff" stroke-width="2"/>'
-      + '<text x="' + Math.min(W - 40, Math.max(40, X(b.ppy))).toFixed(1) + '" y="13" font-size="10" font-weight="700" text-anchor="middle" fill="#2560E8">분양가 ' + fmt(b.ppy) + '</text></svg>';
+      + '<circle cx="' + X(b.ppy).toFixed(1) + '" cy="30" r="6.5" fill="#4338CA" stroke="#fff" stroke-width="2"/>'
+      + '<text x="' + Math.min(W - 40, Math.max(40, X(b.ppy))).toFixed(1) + '" y="13" font-size="10" font-weight="700" text-anchor="middle" fill="#4338CA">분양가 ' + fmt(b.ppy) + '</text></svg>';
   }
   function unsBars(s) {
     var pts = s.filter(function (x) { return x[1] != null; }); if (!pts.length) return '';
     var mx = Math.max.apply(null, pts.map(function (x) { return x[1]; })) || 1, W = 340, H = 90, bw = (W - 10) / s.length;
     return '<svg class="cyp-bar" viewBox="0 0 ' + W + ' ' + (H + 14) + '" role="img" aria-label="최근 24개월 미분양">' + s.map(function (x, i) {
       if (x[1] == null) return ''; var h = Math.max(1, (H - 14) * x[1] / mx);
-      return '<rect x="' + (5 + i * bw + 1).toFixed(1) + '" y="' + (H - h).toFixed(1) + '" width="' + (bw - 2).toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + (i === s.length - 1 ? '#2560E8' : '#C9D7FB') + '"><title>' + ym(x[0]) + ' ' + fmt(x[1]) + '호</title></rect>'
+      return '<rect x="' + (5 + i * bw + 1).toFixed(1) + '" y="' + (H - h).toFixed(1) + '" width="' + (bw - 2).toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + (i === s.length - 1 ? '#4338CA' : '#C9D7FB') + '"><title>' + ym(x[0]) + ' ' + fmt(x[1]) + '호</title></rect>'
         + (i % 6 === 0 ? '<text x="' + (5 + i * bw).toFixed(1) + '" y="' + (H + 12) + '" font-size="9" fill="#6B7684">' + x[0].slice(2, 4) + '.' + (+x[0].slice(4, 6)) + '</text>' : '');
     }).join('') + '</svg><div class="cyp-s">최근 24개월 미분양(호, 마지막 달 진한 막대)</div>';
   }

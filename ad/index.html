@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#FFFFFF">
 <link rel="icon" type="image/png" href="../assets/icons/favicon-48.png">
 <link rel="apple-touch-icon" href="../assets/icons/apple-180.png">
-<script src="../assets/pwa.js?v=2" defer data-nobar></script>
+<script src="../assets/pwa.js?v=3" defer data-nobar></script>
 <script src="../assets/biz.js?v=3" defer></script>
 <title>광고·제휴 상품 안내 — 집예보</title>
 <meta name="description" content="내 집 마련·갈아타기·청약·전월세 계약을 앞둔 실수요자에게 닿는 집예보 광고 상품. 분양 단지 광고, 지역 제휴 중개사, 결과 아래 카드, 전세사기 예방 체크리스트 스폰서와 집행 기준·문의.">
@@ -31,7 +31,7 @@
 <script src="../assets/savefb.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/aplus.css?v=46">
+<link rel="stylesheet" href="../assets/aplus.css?v=48">
 <script src="../assets/nw.js?v=1" defer></script>
 <style>
 .wrap{max-width:960px;margin:0 auto;padding:28px 20px 60px}
@@ -55,7 +55,7 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
 .card p{font-size:15px;color:var(--sub);margin:0;line-height:1.7}
 .card .k{font-size:13.5px;font-weight:700;color:var(--blue);margin-bottom:4px}
 .why .card{background:var(--gray2)}
-.why .card.key{background:var(--blue-l);border-color:#C9D8FF}
+.why .card.key{background:var(--blue-l);border-color:#D4D1F5}
 .svc{display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
 @media(max-width:560px){.svc{grid-template-columns:1fr}}
 .svc div{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:#fff}
@@ -111,7 +111,7 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
 .pbar{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}
 .pbar button{min-height:44px;padding:0 16px;border:1px solid var(--line);border-radius:999px;background:#fff;font:inherit;font-size:16px;font-weight:700;color:var(--sub);cursor:pointer}
 .pbar button[aria-pressed=true]{background:var(--blue);border-color:var(--blue);color:#fff}
-.pbar button:focus-visible{outline:3px solid rgba(47,107,255,.35);outline-offset:2px}
+.pbar button:focus-visible{outline:3px solid rgba(67,56,202,.35);outline-offset:2px}
 .phint{font-size:14px;color:var(--sub2);margin:0 0 14px;line-height:1.65}
 .pcw{min-width:0}
 .pc .ln{display:block;font-size:16px;line-height:1.5;color:var(--text)}
@@ -124,7 +124,7 @@ h2.t{font-size:clamp(22px,4.6vw,28px);font-weight:900;letter-spacing:-.6px;line-
 .dtab th,.dtab td{border-bottom:1px solid var(--line);padding:10px 8px;text-align:left;vertical-align:top;line-height:1.55}
 .dtab thead th{background:var(--gray2);font-size:13.5px;color:var(--sub2);font-weight:700;border-top:1px solid var(--line)}
 .dtab td small{display:block;font-size:13.5px;color:var(--sub2)}
-.ex{margin-top:12px;background:var(--blue-l);border:1px solid #C9D8FF;border-radius:16px;padding:14px 16px;font-size:16px;line-height:1.7}
+.ex{margin-top:12px;background:var(--blue-l);border:1px solid #D4D1F5;border-radius:16px;padding:14px 16px;font-size:16px;line-height:1.7}
 .ex b.h{display:block;font-size:16px;margin-bottom:4px}
 .ex ol{margin:4px 0 0;padding-left:20px}
 .ex small{display:block;font-size:13.5px;color:var(--sub2);margin-top:6px}
@@ -152,7 +152,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
 .f small{display:block;font-size:13.5px;color:var(--sub2);margin-top:4px}
 .f input:not([type=checkbox]),.f select,.f textarea{width:100%;min-height:48px;padding:0 12px;border:1px solid var(--line);border-radius:12px;font:inherit;font-size:16px;background:#fff;color:var(--text)}
 .f textarea{padding:10px 12px;min-height:110px;resize:vertical;line-height:1.6}
-.f input:focus,.f select:focus,.f textarea:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,107,255,.15)}
+.f input:focus,.f select:focus,.f textarea:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px rgba(67,56,202,.15)}
 .f [aria-invalid=true]{border-color:var(--neg)!important}
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:560px){.fg{grid-template-columns:1fr}}
@@ -183,14 +183,14 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
 .tierbox select{font:inherit;font-size:16px;min-height:44px;border:1px solid var(--line);border-radius:10px;padding:0 10px;margin:6px 0 10px;background:#fff}
 .tierbox .tg{margin:6px 0}.tierbox .tg b{display:inline-block;min-width:64px}
 .tierbox .tg span{color:var(--sub)}
-.bstat{margin:8px 0 10px;padding:12px 14px;border:1px solid #D6E2FF;background:#F4F7FF;border-radius:14px;font-size:15px;line-height:1.6}
+.bstat{margin:8px 0 10px;padding:12px 14px;border:1px solid #D4D1F5;background:#F5F4FD;border-radius:14px;font-size:15px;line-height:1.6}
 .bstat small{display:block;font-size:13px;color:var(--sub2);margin-top:4px}
 
 /* 광고 위치 안내(#slots) — 작은 화면 그림 */
 .sl-grid{display:grid;grid-template-columns:1fr;gap:10px}
 @media(min-width:720px){.sl-grid{grid-template-columns:1fr 1fr}}
 .sl{display:flex;gap:14px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;min-width:0}
-.sl.prem{border-color:#C9D8FF;background:var(--blue-l)}
+.sl.prem{border-color:#D4D1F5;background:var(--blue-l)}
 .sl-ph{flex:none;width:58px;height:100px;border:2px solid #C5CCD6;border-radius:10px;background:#fff;padding:6px 5px;display:flex;flex-direction:column;gap:3px;overflow:hidden}
 .sl-ph i{display:block;height:5px;border-radius:2px;background:#E5E8EB;flex:none}
 .sl-ph i.h{height:7px;width:70%;background:#C5CCD6}
@@ -206,11 +206,11 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
 .sl-tx .ind{display:block;font-size:13.5px;color:var(--sub2);line-height:1.6;margin-top:4px}
 .sl-tx .pr{display:inline-block;margin-top:6px;font-size:14px;font-weight:700;color:var(--text)}
 .sl-tx .pr small{font-weight:500;color:var(--sub2);margin-left:4px}
-.sl-tag{display:inline-block;font-size:12px;font-weight:700;color:var(--blue);background:#fff;border:1px solid #C9D8FF;border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:2px}
+.sl-tag{display:inline-block;font-size:12px;font-weight:700;color:var(--blue);background:#fff;border:1px solid #D4D1F5;border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:2px}
 .sl-rules{margin:14px 0 0;padding:0 0 0 20px}
 .sl-rules li{font-size:15px;color:var(--sub);line-height:1.7;margin-bottom:2px}
 #prod small.pp{display:block;font-size:13px;font-weight:500;color:var(--sub2);line-height:1.5}
-.planbox{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:6px 14px;margin:18px 0 0;padding:16px 18px;border-radius:18px;background:var(--blue-l);border:1px solid #C9D8FF;text-decoration:none;color:var(--text)}
+.planbox{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:6px 14px;margin:18px 0 0;padding:16px 18px;border-radius:18px;background:var(--blue-l);border:1px solid #D4D1F5;text-decoration:none;color:var(--text)}
 .planbox .pi{flex:none;width:44px;height:44px;border-radius:12px;background:var(--blue);display:inline-flex;align-items:center;justify-content:center}
 .planbox .pi svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round}
 .planbox b{display:block;font-size:17px;font-weight:900;letter-spacing:-.3px}

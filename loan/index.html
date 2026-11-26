@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="집예보">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script src="../assets/pwa.js?v=2" defer></script>
+<script src="../assets/pwa.js?v=3" defer></script>
 <script src="../assets/biz.js?v=3" defer></script>
 <title>대출 한도 계산기 — 내 주택담보대출 한도는 얼마? | 집예보</title>
 <meta name="description" content="집값·지역·연소득만 넣으면 LTV·가격대별 최대 금액·스트레스 DSR 중 무엇이 한도를 막는지 쉬운 말로 알려 드려요. 보금자리론·디딤돌·신생아 특례 자격까지. 금융위원회 공식 발표 기준, 무료.">
@@ -37,11 +37,11 @@
 <script src="../assets/loan-rules.js?v=3"></script>
 <script src="../assets/loan-core.js?v=6"></script>
 <script src="../assets/mine-core.js?v=22"></script>
-<script src="../assets/price-sheet.js?v=23"></script>
+<script src="../assets/price-sheet.js?v=24"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/aplus.css?v=46">
-<script src="../assets/tabbar.js?v=5" defer></script>
+<link rel="stylesheet" href="../assets/aplus.css?v=48">
+<script src="../assets/tabbar.js?v=7" defer></script>
 <script src="../assets/nw.js?v=1" defer></script>
 <style>
 .wrap{max-width:1080px;margin:0 auto;padding:22px 16px 60px}
@@ -59,7 +59,7 @@
 .hint{font-size:13.5px;color:var(--sub2);margin-top:6px;line-height:1.55}
 .hint:empty{display:none}
 .inp{display:flex;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;min-height:50px}
-.inp:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,107,255,.15)}
+.inp:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(67,56,202,.15)}
 .inp input{flex:1;border:0;outline:0;padding:0 12px;font:inherit;font-size:18px;font-weight:700;background:transparent;min-width:0;color:var(--text);min-height:48px}
 .inp input::placeholder{color:#8B95A1;font-weight:500}
 .inp .unit{padding:0 12px;color:var(--sub2);font-size:14.5px;white-space:nowrap}
@@ -151,7 +151,7 @@ tr.fin td{font-weight:900;border-top:2px solid var(--text);border-bottom:0}
 .upc{display:grid;gap:8px}
 .upc div{display:flex;gap:10px;font-size:14.5px;line-height:1.55;background:var(--gray2);border-radius:12px;padding:10px 12px}
 .upc b{white-space:nowrap;color:var(--blue)}
-.alert{display:flex;align-items:center;gap:12px;margin-top:16px;padding:16px;border-radius:16px;background:#fff;border:1.5px solid #B9CCFF;text-decoration:none;color:inherit;min-height:56px}
+.alert{display:flex;align-items:center;gap:12px;margin-top:16px;padding:16px;border-radius:16px;background:#fff;border:1.5px solid #C9C6F2;text-decoration:none;color:inherit;min-height:56px}
 .alert b{display:block;font-size:16.5px;color:var(--text)}
 .alert small{display:block;font-size:14px;color:var(--sub2);margin-top:3px;line-height:1.5}
 .alert .go{margin-left:auto;color:var(--blue);font-weight:900;font-size:15px;white-space:nowrap}
@@ -167,7 +167,7 @@ tr.fin td{font-weight:900;border-top:2px solid var(--text);border-bottom:0}
 .xl b{display:block;font-size:15.5px;color:var(--blue)}
 .xl small{display:block;font-size:13.5px;color:var(--sub2);margin-top:2px}
 .xl .go{margin-left:auto;color:#B0B8C1;font-size:22px}
-.mini{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:50;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:56px;padding:0 18px;border-radius:16px;background:var(--blue);color:#fff;text-decoration:none;font-size:15px;box-shadow:0 6px 20px rgba(47,107,255,.3)}
+.mini{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:50;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:56px;padding:0 18px;border-radius:16px;background:var(--blue);color:#fff;text-decoration:none;font-size:15px;box-shadow:0 6px 20px rgba(67,56,202,.3)}
 .mini b{font-size:18px;margin-left:4px}
 .mini .go{font-weight:700;white-space:nowrap}
 .mini[hidden]{display:none}
@@ -602,7 +602,7 @@ fetch(DATA + 'index.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : Pr
 }).catch(() => { fallbackRegion(); if (qg) { const v = R.regulated(qg) ? (qg.slice(0, 2) === '11' ? '11000' : qg) : R.metro(qg) ? '28000' : '99000'; $('sido').value = v; setRegion(v); } });
 })();
 </script>
-<script src="../assets/ad-slot.js?v=6" defer></script>
-<script src="../assets/guide-next.js?v=1" defer></script>
+<script src="../assets/ad-slot.js?v=7" defer></script>
+<script src="../assets/guide-next.js?v=2" defer></script>
 </body>
 </html>

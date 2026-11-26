@@ -223,7 +223,7 @@ const DAY = { v: 1, g: '11710', name: '송파구', sd: '서울', date: '2026-11-
   const sm = rd('sitemap.xml');
   yes('sitemap 에 없음', !/agent\/pro/.test(sm));
   const sw = rd('sw.js');
-  yes('sw: 새 화면·파일 저장 목록', ['./agent/pro/', './agent/pro/report/', './agent/pro/post/', './assets/pro-tools-core.js?v=3', './assets/pro-tools.css?v=2'].every(x => sw.includes(`'${x}'`)));
+  yes('sw: 새 화면·파일 저장 목록', ['./agent/pro/', './agent/pro/report/', './agent/pro/post/', './assets/pro-tools-core.js?v=3', './assets/pro-tools.css?v=3'].every(x => sw.includes(`'${x}'`)));
   /* 다른 화면 어디에도 링크 없음(꺼져 있는 동안) */
   const linked = ['index.html', 'agent/index.html', 'agent/my/index.html', 'dongne/index.html'].filter(f => fs.existsSync(path.join(ROOT, f)) && /agent\/pro\//.test(rd(f)));
   check('다른 화면에 링크 없음', linked, []);

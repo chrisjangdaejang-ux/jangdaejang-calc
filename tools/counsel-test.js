@@ -128,7 +128,7 @@ check('환불 정책 숫자 = 규칙 파일(7일 · 1,950원)', /7일 안에 하
 const SH = require('../assets/share-head.js');
 check('머리줄 공유: 운영자·하트·전문가·채팅 화면에는 단추 없음, 고민 상담 목록에는 있음', ['counsel/admin/', 'counsel/heart/', 'counsel/expert/', 'counsel/chat/'].every(p => SH.isPrivate('/jangdaejang-calc/' + p)) && !SH.isPrivate('/jangdaejang-calc/counsel/'));
 const sw = read('sw.js');
-check('서비스 워커: 하트 결제키가 담긴 주소는 저장 안 함 · 공용 파일', /counsel\/heart\/'\) && u\.search\) return;/.test(sw) && /counsel-core\.js\?v=5/.test(sw) && /counsel\.js\?v=5/.test(sw));
+check('서비스 워커: 하트 결제키가 담긴 주소는 저장 안 함 · 공용 파일', /counsel\/heart\/'\) && u\.search\) return;/.test(sw) && /counsel-core\.js\?v=5/.test(sw) && /counsel\.js\?v=6/.test(sw));
 /* 시드 글 */
 const seed = JSON.parse(read('counsel/seed.json'));
 check('시드: 21개(대표 상담 고민 6개 s16~s21 포함) · 모두 draft:true · 분류가 맞음 · 영상 칸(videoUrl) 있음', seed.items.length === 21 && seed.items.every(x => x.draft === true && C.catName(x.cat) && x.videoUrl === '' && /^s\d{2}$/.test(x.sid)) && new Set(seed.items.map(x => x.sid)).size === 21);

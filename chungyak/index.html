@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="집예보">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="../assets/region-pick.js?v=2"></script>
-<script src="../assets/pwa.js?v=2" defer></script>
+<script src="../assets/pwa.js?v=3" defer></script>
 <script src="../assets/biz.js?v=3" defer></script>
 <title>집예보 청약 가점 계산기 — 가점·1순위·특별공급·과거 당첨 가점 비교</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/chungyak/">
@@ -33,16 +33,16 @@
 <script>window.JDJ_CONFIG = { tool:'chungyak', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=8"></script>
-<script src="../assets/share.js?v=13"></script>
+<script src="../assets/share.js?v=14"></script>
 <script src="../assets/sale-status.js?v=1"></script>
-<script src="../assets/area-watch.js?v=8"></script>
+<script src="../assets/area-watch.js?v=9"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
 :root{
   /* 예전 이름 그대로, 값은 A+ 테마(assets/aplus.css)와 같게 — aplus.css 가 뒤에서 다시 덮어씀 */
-  --cream:#FFFFFF; --cream2:#F2F4F6; --olive:#2560E8; --olive2:#2560E8;
-  --gold:#B8942A; --gold2:#E8F0FF; --ink:#191F28; --muted:#4E5968;
+  --cream:#FFFFFF; --cream2:#F2F4F6; --olive:#4338CA; --olive2:#4338CA;
+  --gold:#B8942A; --gold2:#EEEDFB; --ink:#191F28; --muted:#4E5968;
   --red:#C2410C; --green:#0E7A4F; --amber:#9A5B00; --card:#FFFFFF; --line:#E5E8EB;
 }
 *{box-sizing:border-box}
@@ -160,14 +160,14 @@ th.num{white-space:normal;word-break:keep-all}
 .tyl ul{list-style:none;margin:0;padding:0}.tyl li{display:flex;justify-content:space-between;gap:10px;padding:2px 0;font-variant-numeric:tabular-nums}
 .tyl li b{color:#191F28;font-weight:700;white-space:nowrap}
 </style>
-<link rel="stylesheet" href="../assets/aplus.css?v=46">
-<script src="../assets/tabbar.js?v=5" defer></script>
-<link rel="stylesheet" href="../assets/layout.css?v=2">
+<link rel="stylesheet" href="../assets/aplus.css?v=48">
+<script src="../assets/tabbar.js?v=7" defer></script>
+<link rel="stylesheet" href="../assets/layout.css?v=4">
 <script src="../assets/layout.js?v=1" defer></script>
 <script src="../assets/nw.js?v=1" defer></script>
-<link rel="stylesheet" href="../assets/cy-price.css?v=3">
+<link rel="stylesheet" href="../assets/cy-price.css?v=4">
 <style id="tone">/* 색 규칙: 금색은 로고 별·헤더 배지·점수 링에만, 나머지 강조는 파랑. 버튼 모서리 14px·알약 999px */
-:root{--gold:#2560E8}
+:root{--gold:#4338CA}
 .premium .pt{color:var(--blue)}
 .mpinw.on .mpin{background:var(--blue)}.mpinw.on .mpin:after{border-top-color:var(--blue)}
 .st.pre{background:var(--blue-l);color:var(--blue)}
@@ -192,7 +192,7 @@ h2.sec small{color:var(--sub2);font-size:14px}
 .opt:hover{border-color:var(--blue);background:#fff}
 .opt.on{border-color:var(--blue);background:var(--blue-l);color:var(--blue)}
 input[type=date],input[type=number],select{border:1px solid var(--line);border-radius:12px;min-height:48px;color:var(--text)}
-input[type=date]:focus,input[type=number]:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,107,255,.15)}
+input[type=date]:focus,input[type=number]:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px rgba(67,56,202,.15)}
 .btn{background:var(--blue);color:#fff;min-height:48px;border-radius:14px;font-weight:700;display:inline-flex}
 .btn.olive{background:var(--blue);color:#fff}
 .btn.ghost{background:var(--gray);color:var(--text);border:0}
@@ -362,7 +362,7 @@ td{border-bottom:1px solid var(--line2)}
 <div class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집예보 · <a href="../">홈</a></div>
 
 <script src="cy-engine.js?v=4"></script>
-<script src="../assets/cy-price.js?v=6"></script>
+<script src="../assets/cy-price.js?v=7"></script>
 <script src="../assets/narrative.js?v=25"></script>
 <script>
 var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
@@ -574,7 +574,7 @@ async function renderHist() {
   const bins = Array(17).fill(0); mins.forEach(v => bins[Math.min(16, Math.floor(v / 5))]++);
   const mx = Math.max(...bins), W = 340, H = 120, bw = W / 17;
   const svg = `<svg class="hist" viewBox="0 0 ${W} ${H + 18}" role="img" aria-label="최저 당첨 가점 분포">${bins.map((c, i) => { const h = c ? Math.max(2, c / mx * H) : 0; const on = i * 5 + 4 < my || (my >= i * 5 && my < i * 5 + 5);
-      return `<rect x="${i * bw + 1}" y="${H - h}" width="${bw - 2}" height="${h}" rx="2" fill="${on ? '#2560E8' : '#D1D6DB'}"><title>${i * 5}~${i * 5 + 4}점: ${c}개</title></rect>`; }).join('')}
+      return `<rect x="${i * bw + 1}" y="${H - h}" width="${bw - 2}" height="${h}" rx="2" fill="${on ? '#4338CA' : '#D1D6DB'}"><title>${i * 5}~${i * 5 + 4}점: ${c}개</title></rect>`; }).join('')}
     <line x1="${my / 85 * W}" x2="${my / 85 * W}" y1="0" y2="${H}" stroke="#C2410C" stroke-width="2"/><text x="${Math.min(W - 30, Math.max(2, my / 85 * W + 3))}" y="12" font-size="11" font-weight="700" fill="#C2410C">내 ${my}점</text>
     ${[0, 20, 40, 60, 80].map(v => `<text x="${v / 85 * W}" y="${H + 14}" font-size="10" fill="#6B7684">${v}</text>`).join('')}</svg>`;
   const sorted = rows.slice().sort((a, b) => b[2].localeCompare(a[2]) || a[6] - b[6]);
@@ -818,8 +818,8 @@ init();
 </script>
 <script src="../assets/plain-words.js?v=19"></script>
 <script>document.addEventListener("DOMContentLoaded",()=>{ if(window.JDJ_PLAIN) JDJ_PLAIN.autoGloss(document.querySelector(".wrap")); });</script>
-<script src="../assets/ad-slot.js?v=6" defer></script>
+<script src="../assets/ad-slot.js?v=7" defer></script>
 <div data-gnext="chungyak" hidden></div>
-<script src="../assets/guide-next.js?v=1" defer></script>
+<script src="../assets/guide-next.js?v=2" defer></script>
 </body>
 </html>

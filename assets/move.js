@@ -112,7 +112,7 @@
   }
 
   /* ---------- [이사 견적 받기] 버튼 ---------- */
-  var CSS = '.mv-cta{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid #D8E3FF;background:#F4F7FF;border-radius:14px;padding:12px 14px;margin:10px 0}'
+  var CSS = '.mv-cta{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid #D8E3FF;background:#F5F4FD;border-radius:14px;padding:12px 14px;margin:10px 0}'
     + '.mv-cta p{margin:0;flex:1 1 200px;font-size:14.5px;line-height:1.55;color:#333D4B;word-break:keep-all}.mv-cta p b{display:block;font-size:15.5px;color:#191F28}'
     + '.mv-cta a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;border-radius:12px;background:#2F6BFF;color:#fff;font-weight:800;text-decoration:none;white-space:nowrap}';
   function css() { if (typeof document === 'undefined' || document.getElementById('mvCss')) return; var s = document.createElement('style'); s.id = 'mvCss'; s.textContent = CSS; document.head.appendChild(s); }

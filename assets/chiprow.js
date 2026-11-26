@@ -16,7 +16,7 @@
 .cr-fade{position:absolute;top:0;bottom:0;right:0;width:64px;pointer-events:none;background:linear-gradient(to right,rgba(255,255,255,0),var(--cr-bg,#fff) 70%);opacity:0;transition:opacity .15s}
 .cr-fade.l{right:auto;left:0;width:28px;background:linear-gradient(to left,rgba(255,255,255,0),var(--cr-bg,#fff))}
 .cr-nx{position:absolute;right:0;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:1px solid #C5CCD6;background:#fff;color:#191F28;font:inherit;font-size:24px;font-weight:700;line-height:1;padding:0 0 3px 2px;cursor:pointer;box-shadow:0 1px 6px rgba(0,0,0,.14);display:none;align-items:center;justify-content:center}
-.cr-nx:focus-visible,.cr-more:focus-visible{outline:3px solid #2560E8;outline-offset:2px}
+.cr-nx:focus-visible,.cr-more:focus-visible{outline:3px solid #4338CA;outline-offset:2px}
 .cr-box.cr-ov:not(.cr-end) .cr-fade:not(.l){opacity:1}
 .cr-box.cr-ov:not(.cr-st) .cr-fade.l{opacity:1}
 .cr-box.cr-ov:not(.cr-end) .cr-nx{display:flex}

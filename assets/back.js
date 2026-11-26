@@ -23,7 +23,7 @@
     'bunyang/': ['분양'], 'bunyang/agency/': ['분양대행 의뢰', 'bunyang/'], 'bunyang/apply/': ['분양 광고 신청', 'bunyang/'], 'partner/': ['분양 판매 파트너', 'bunyang/'],
     'tax/': ['세금'], 'tax/transfer/': ['넘기는 방법 비교', 'tax/'],
     'loan/': ['대출 한도'],
-    'mine/': ['내 집 시세'], 'mine/calendar/': ['내 부동산 달력', 'mine/'], 'map/': ['지도'], 'ask/': ['단지 비교'], 'rank/': ['주간 순위'],
+    'mine/': ['내 집 시세'], 'mine/calendar/': ['내 부동산 달력', 'mine/'], 'map/': ['지도'], 'all/': ['전체 기능'], 'ask/': ['단지 비교'], 'rank/': ['주간 순위'],
     'jeonse/': ['전월세'], 'jeonse/checklist/': ['전세사기 예방 체크리스트', 'jeonse/'], 'jeonse/safety/draft/': ['전셋집 안전 진단', 'jeonse/'],
     'quiz/': ['집값 맞혀 보기'], 'quiz/hall/': ['명예의 전당', 'quiz/'],
     'track/': ['예측 적중 기록'], 'track/detail/': ['성적표', 'track/'],
@@ -182,12 +182,12 @@
     var st = document.createElement('style'); st.id = 'jbk-css';
     st.textContent =
       '.jbk{box-sizing:border-box;width:100%;margin:0 auto;padding-top:8px;padding-bottom:0;display:flex;flex-wrap:wrap;align-items:center;column-gap:12px;row-gap:2px;font-family:inherit}' +
-      '.jbk-btn{display:inline-flex;align-items:center;gap:2px;min-height:44px;padding:0 14px 0 12px;border:1px solid #D5DEEC;border-radius:12px;background:#fff;color:#2560E8;font-size:15px;font-weight:700;line-height:1.2;text-decoration:none;white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:0 1px 2px rgba(15,23,42,.04)}' +
+      '.jbk-btn{display:inline-flex;align-items:center;gap:2px;min-height:44px;padding:0 14px 0 12px;border:1px solid #D5DEEC;border-radius:12px;background:#fff;color:#4338CA;font-size:15px;font-weight:700;line-height:1.2;text-decoration:none;white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:0 1px 2px rgba(15,23,42,.04)}' +
       '.jbk-btn:hover{background:#F3F7FF;border-color:#B9CBF3}' +
-      '.jbk-btn:focus-visible{outline:3px solid rgba(37,96,232,.35);outline-offset:2px}' +
+      '.jbk-btn:focus-visible{outline:3px solid rgba(67,56,202,.35);outline-offset:2px}' +
       '.jbk-bc{display:flex;flex-wrap:wrap;align-items:center;min-width:0;font-size:13.5px;color:#6B7684;line-height:1.3}' +
       '.jbk-bc a{display:inline-flex;align-items:center;min-height:44px;color:#4E5968;text-decoration:none;padding:0 2px}' +
-      '.jbk-bc a:hover{color:#2560E8;text-decoration:underline}' +
+      '.jbk-bc a:hover{color:#4338CA;text-decoration:underline}' +
       '.jbk-bc i{font-style:normal;color:#B0B8C1;padding:0 5px}' +
       '.jbk-bc b{font-weight:700;color:#333D4B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60vw;display:inline-block;vertical-align:middle}' +
       '.jbk-solo{flex:none;padding-left:12px;padding-right:12px;padding-bottom:6px}' +

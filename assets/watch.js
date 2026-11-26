@@ -21,7 +21,7 @@
   let MEM = null;                                          // 저장이 막힌 브라우저용(이번 화면에서만)
   const subs = [];
   /* 관심 단지 ★ 직후 모닝 브리핑 한 줄(assets/brief-cta.js) — 이 화면에 없으면 불러옴 */
-  if (!document.querySelector('script[src*="brief-cta.js"]')) { const bs = document.createElement('script'); bs.src = BASE + 'assets/brief-cta.js?v=1'; bs.defer = true; document.head.appendChild(bs); }
+  if (!document.querySelector('script[src*="brief-cta.js"]')) { const bs = document.createElement('script'); bs.src = BASE + 'assets/brief-cta.js?v=2'; bs.defer = true; document.head.appendChild(bs); }
 
   function list() { if (MEM) return MEM.slice(); return C.parse(ls.get(C.KEY)); }
   function save(l) { if (!ls.set(C.KEY, C.dump(l))) MEM = l.slice(); else MEM = null; subs.forEach(f => { try { f(l); } catch (e) {} }); paintStars(); badge(); }

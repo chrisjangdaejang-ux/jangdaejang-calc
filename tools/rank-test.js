@@ -75,7 +75,8 @@ check('스파크라인 값 2개 미만이면 없음', R.spark([0, 5], 56, 24), '
   const m = html.match(/rank-core\.js\?v=(\d+)/);
   check('화면·sw 의 rank-core 버전 같음', m && sw.includes('rank-core.js?v=' + m[1]), true, '');
   const tabs = (tab.match(/^\s*\['[^']*', '[^']+', '/gm) || []).length;
-  check('하단 탭 5개 이하, 순위 포함', [tabs <= 5, tab.includes("'rank/', '순위'")], [true, true], 'assets/tabbar.js');
+  /* 대표 결정 2026-11-26: 하단 탭 = 홈·고민 찾기·지도·내 집·전체 — 순위는 '전체'(all/)·첫 화면에서 */
+  check('하단 탭 5개 이하, 순위는 전체 기능에서', [tabs <= 5, tab.includes("'all/', '전체'"), fs.readFileSync(path.join(root, 'all', 'index.html'), 'utf8').includes('href="../rank/"')], [true, true, true], 'assets/tabbar.js · all/');
   check('홈에 순위 진입', fs.readFileSync(path.join(root, 'index.html'), 'utf8').includes('href="rank/"'), true, '');
   check('방어적 면책 문구 없음', /투자 권유가 아니|책임지지 않|참고용으로만/.test(html), false, '');
 }

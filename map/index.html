@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="집예보">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="../assets/region-pick.js?v=2"></script>
-<script src="../assets/pwa.js?v=2" defer></script>
+<script src="../assets/pwa.js?v=3" defer></script>
 <title>집예보 지도 — 지도에서 단지 시세·미래가치 점수·전세가율 한눈에</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/map/">
 <meta name="description" content="지도에서 아파트 단지를 골라 최근 실거래 시세, 미래가치 점수, 전세가율을 한눈에 비교해 보세요. 구·동 평균 평당가와 평형·가격대 필터도 있어요.">
@@ -28,27 +28,27 @@
 <script src="../assets/config.js?v=11"></script>
 <script src="../assets/plain-words.js?v=19"></script>
 <script src="../assets/narrative.js?v=25"></script>
-<script src="../assets/conf.js?v=3"></script>
+<script src="../assets/conf.js?v=4"></script>
 <script src="../assets/life-view.js?v=3"></script>
 <script src="../assets/fac-view.js?v=1"></script>
 <script src="../assets/mine-core.js?v=23"></script>
 <script src="../assets/map-core.js?v=5"></script>
-<script src="../assets/mapjump.js?v=3"></script>
+<script src="../assets/mapjump.js?v=4"></script>
 <script src="../assets/alerts-core.js?v=5"></script>
 <script src="../assets/watch-core.js?v=2"></script>
 <script src="../assets/watch.js?v=9"></script>
-<script src="../assets/region-core.js?v=2"></script>
+<script src="../assets/region-core.js?v=3"></script>
 <script src="../assets/map-engine.js?v=3"></script>
 <script src="../assets/sale-status.js?v=1"></script>
 <script src="../assets/agents.js"></script>
-<script src="../assets/ads.js?v=5"></script>
+<script src="../assets/ads.js?v=6"></script>
 <script src="../assets/devmap-view.js?v=3"></script>
-<script src="../assets/tabbar.js?v=5" defer></script>
-<script src="../assets/chiprow.js?v=1"></script>
+<script src="../assets/tabbar.js?v=7" defer></script>
+<script src="../assets/chiprow.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/aplus.css?v=46">
-<link rel="stylesheet" href="../assets/layout.css?v=2">
+<link rel="stylesheet" href="../assets/aplus.css?v=48">
+<link rel="stylesheet" href="../assets/layout.css?v=4">
 <script src="../assets/nw.js?v=1" defer></script>
 <style>
 html,body{height:100%}
@@ -77,9 +77,9 @@ body.jm-full>.top{position:relative;flex:none}
 .sres small{font-size:13.5px;color:var(--sub2)}
 .sres .msg{padding:10px 12px;font-size:14px;color:var(--sub2);line-height:1.5}
 .sres .msg b{color:var(--text)}
-.sres small.via{color:#2560E8;font-size:12.5px}
+.sres small.via{color:#4338CA;font-size:12.5px}
 .obands{margin:-2px 0 10px;font-size:14px;color:var(--sub2);line-height:1.6}
-.obands a{color:#2560E8;font-weight:700;text-decoration:none;white-space:nowrap}
+.obands a{color:#4338CA;font-weight:700;text-decoration:none;white-space:nowrap}
 .obands small{display:block;font-size:12.5px}
 .row1{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;max-width:560px;width:100%;margin:0 auto}
 .seg{display:flex;background:#F2F4F6;border-radius:12px;padding:3px;flex:none}
@@ -207,7 +207,7 @@ body.reg .cmpbar{display:none}
 .jm-b.rg b{font-size:11.5px;font-weight:800}
 .jm-b.rg span{font-size:13px;font-weight:800}
 .jm-b.rg small{font-size:10.5px;opacity:.95}
-.jm-b.rg.up{background:#E5484D}.jm-b.rg.dn{background:#2560E8}.jm-b.rg.fl{background:#6B7684}.jm-b.rg.fw{background:#8B95A1}.jm-b.rg.sq{background:#6D4AFF}
+.jm-b.rg.up{background:#E5484D}.jm-b.rg.dn{background:#1D63D8}.jm-b.rg.fl{background:#6B7684}.jm-b.rg.fw{background:#8B95A1}.jm-b.rg.sq{background:#6D4AFF}
 .jm-b.rg small{white-space:nowrap}
 .jm-b.rg.sel{outline:3px solid rgba(25,31,40,.85);outline-offset:1px}
 .legend i.dot,.legend .scl i.dot{width:11px;height:11px;border-radius:50%}
@@ -235,8 +235,8 @@ body.reg .cmpbar{display:none}
 .jm-b.gp span{font-size:12.5px;font-weight:700;opacity:.95}
 .jm-b.gp small{font-size:11px;opacity:.85}
 .jm-b.gp.sd{background:#191F28}
-.jm-b.gp.t5{background:#1F4FD1}.jm-b.gp.t3{background:#6B7684}.jm-b.gp.t1{background:#C2410C}
-.jm-b.cl{transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;background:rgba(47,107,255,.92);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 0 0 5px rgba(47,107,255,.22);line-height:1.1}
+.jm-b.gp.t5{background:#3730A3}.jm-b.gp.t3{background:#6B7684}.jm-b.gp.t1{background:#C2410C}
+.jm-b.cl{transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;background:rgba(67,56,202,.92);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 0 0 5px rgba(67,56,202,.22);line-height:1.1}
 .jm-b.cl b{font-size:15px;font-weight:800}
 .jm-b.cl small{font-size:10.5px}
 .jm-b.ly{transform:translate(-50%,calc(-100% - 6px));background:#5B3BE0;color:#fff;border-radius:8px;padding:3px 7px;font-size:12px;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.2);max-width:150px;overflow:hidden;text-overflow:ellipsis}
@@ -285,10 +285,10 @@ i.lg-dot{display:inline-block;width:13px;height:13px;border-radius:50%;backgroun
 .jm-b.ly.ad::after{border-top-color:#B8942A;bottom:-7px}
 .jm-b.ly.ad i{font-style:normal;display:inline-block;background:#B8942A;color:#fff;font-size:11px;font-weight:800;border-radius:5px;padding:0 4px;margin-right:5px;vertical-align:1px}
 .jm-b.ly.ad.sel{outline:3px solid rgba(184,148,42,.35)}
-.jm-b.me{transform:translate(-50%,-50%);width:18px;height:18px;border-radius:50%;background:#2560E8;border:3px solid #fff;box-shadow:0 0 0 6px rgba(47,107,255,.25);pointer-events:none}
-.t5{background:#1F4FD1}.t4{background:#3D72F5}.t3{background:#6B7684}.t2{background:#C26A00}.t1{background:#C2410C}.na{background:#B0B8C1}
-.jm-b.dj.solid.t5{border-color:#1F4FD1;background:#1F4FD1}.jm-b.dj.solid.t5::after{border-top-color:#1F4FD1}
-.jm-b.dj.solid.t4{border-color:#3D72F5;background:#3D72F5}.jm-b.dj.solid.t4::after{border-top-color:#3D72F5}
+.jm-b.me{transform:translate(-50%,-50%);width:18px;height:18px;border-radius:50%;background:#4338CA;border:3px solid #fff;box-shadow:0 0 0 6px rgba(67,56,202,.25);pointer-events:none}
+.t5{background:#3730A3}.t4{background:#6B63DD}.t3{background:#6B7684}.t2{background:#C26A00}.t1{background:#C2410C}.na{background:#B0B8C1}
+.jm-b.dj.solid.t5{border-color:#3730A3;background:#3730A3}.jm-b.dj.solid.t5::after{border-top-color:#3730A3}
+.jm-b.dj.solid.t4{border-color:#6B63DD;background:#6B63DD}.jm-b.dj.solid.t4::after{border-top-color:#6B63DD}
 .jm-b.dj.solid.t3{border-color:#6B7684;background:#6B7684}.jm-b.dj.solid.t3::after{border-top-color:#6B7684}
 .jm-b.dj.solid.t2{border-color:#C26A00;background:#C26A00}.jm-b.dj.solid.t2::after{border-top-color:#C26A00}
 .jm-b.dj.solid.t1{border-color:#C2410C;background:#C2410C}.jm-b.dj.solid.t1::after{border-top-color:#C2410C}
@@ -975,7 +975,7 @@ function regPanel(focus){
   if (focus && (REG.open || wide)) { const h = el.querySelector('.rp-gu'); if (h) el.scrollTop = Math.max(0, h.offsetTop - 8); }
   syncPanel();
 }
-const sgnB = v => `<em style="color:${v >= 0.5 ? '#D62F35' : v <= -0.5 ? '#1F56E0' : 'var(--sub2)'}">${esc(RC.sgn(v))}</em>`;
+const sgnB = v => `<em style="color:${v >= 0.5 ? '#D62F35' : v <= -0.5 ? '#1D63D8' : 'var(--sub2)'}">${esc(RC.sgn(v))}</em>`;
 function regGu(r, sd, R, ind){
   const g = r.g, x = r.x, st = r.st, nm = esc(r.name);
   let h = '', kv = '', more = '';
@@ -1505,6 +1505,6 @@ async function init(){
 init();
 })();
 </script>
-<script src="../assets/ad-slot.js?v=6" defer></script>
+<script src="../assets/ad-slot.js?v=7" defer></script>
 </body>
 </html>

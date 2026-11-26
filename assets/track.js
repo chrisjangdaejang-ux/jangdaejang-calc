@@ -113,7 +113,7 @@
   if (window.JDJ_SHEAD || document.querySelector('script[src*="share-head.js"]')) return;
   const me = document.currentScript && document.currentScript.src;
   if (!me || !/\/assets\/track\.js/.test(me)) return;
-  const s = document.createElement('script'); s.src = me.replace(/track\.js(\?[^#]*)?$/, 'share-head.js?v=1'); s.async = true;
+  const s = document.createElement('script'); s.src = me.replace(/track\.js(\?[^#]*)?$/, 'share-head.js?v=2'); s.async = true;
   (document.head || document.documentElement).appendChild(s);
 }catch(_){} })();
 /* 새 주소로 저장값 옮기기(assets/store-move.js): 새 도메인(맨 앞 / 기준 https 주소)에서만, 이 탭에서 한 번만 붙임.

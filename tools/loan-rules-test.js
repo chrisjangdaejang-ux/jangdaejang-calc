@@ -205,7 +205,7 @@ const isDate = d => /^\d{4}-\d{2}-\d{2}$/.test(String(d || ''));
   check('화면: 주소로 받은 값(p·g·n·b·a·o)만 채우고 연소득은 주소에 없음', h.includes("Q.get('p')") && !/Q\.get\('(i|income)'\)/.test(h), true);
   const home = read('index.html');
   check('홈: 메뉴 대출 한도 · 카드 "내 대출 한도는 얼마?"', home.includes('href="loan/" data-track="home_to_loan"') && home.includes('내 대출 한도는 얼마?'), true);
-  check('홈: 첫 화면 순서(소개 → 광고 배너 → 지도 버튼) 앞에 대출 카드 없음', home.indexOf('data-ad-slot="home_top"') < home.indexOf('class="maplink"') && home.indexOf('class="maplink"') < home.indexOf('home_card_loan'), true);
+  check('홈: 첫 화면 순서(광고 배너 → 상황별로 찾기 지도 줄 → 대출 줄)', home.indexOf('data-ad-slot="home_top"') < home.indexOf('data-track="home_to_map"') && home.indexOf('data-track="home_to_map"') < home.indexOf('home_card_loan'), true);
   check('단지 시세 시트·내 집 시세·리포트·갈아타기·내 집 마련 → 대출 한도', [read('assets/price-sheet.js').includes('이 집 대출 한도 계산하기'), read('mine/index.html').includes('mine_to_loan'), read('assets/premium-report.js').includes('premium_to_loan'), read('switch/index.html').includes('switch_to_loan'), read('buy/index.html').includes('buy_to_loan'), read('buy/report/index.html').includes('report_to_loan')], [true, true, true, true, true, true]);
   const PS = require('../assets/price-sheet.js');
   check('대출 한도 주소: 집값·지역·단지만', PS.loanHref({ src: 'mine', price: 100000, code: '11710', apt: '헬리오시티', band: '84㎡대', area: 84.9 }), '/jangdaejang-calc/loan/?src=mine&p=100000&g=11710&n=%ED%97%AC%EB%A6%AC%EC%98%A4%EC%8B%9C%ED%8B%B0&b=84%E3%8E%A1%EB%8C%80&a=84.9');
