@@ -58,6 +58,17 @@
 .free .btn{background:var(--blue);color:#fff}
 .principle{border-left:4px solid var(--brand);background:var(--creamc);padding:14px 16px;border-radius:0 12px 12px 0;margin:10px 0}
 .principle p{margin:0;color:var(--text);font-weight:700;font-size:15px}
+.fp{margin:26px 0 8px;scroll-margin-top:70px}
+.fp h2{margin:0 0 6px}
+.fp-lead{margin:0 0 12px;color:var(--sub);font-size:15px}
+.fp-g{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:700px){.fp-g{grid-template-columns:1fr}}
+.fp-c{border:1px solid var(--line);border-radius:16px;padding:16px 16px 12px;background:#fff}
+.fp-c h3{margin:0 0 8px;font-size:17px}
+.fp-free h3{color:#1B7F4B}.fp-paid h3{color:var(--blue)}
+.fp-c ul{margin:0;padding-left:20px}.fp-c li{font-size:14.5px;line-height:1.6;margin:2px 0;word-break:keep-all}
+.fp-c li small{color:var(--sub2)}
+.fp-note{font-size:13.5px;color:var(--sub2);line-height:1.6;margin:10px 0 0;word-break:keep-all}
 .notice-pay{font-size:14px}
 .notice-pay li{font-size:14px}
 </style>
@@ -137,6 +148,38 @@
     <p><b>결제 전에 무료로 미리 보세요.</b><br>무료 맞춤 분석 리포트는 내 예산 안의 단지를 공공 통계로 계산한 미래가치 점수 순서로 정리하고, 대출·필요 현금과 미래가치 점수를 먼저 보여 드려요.</p>
     <a class="btn" href="../buy/report/" data-track="premium_to_free">무료 리포트 보기</a>
   </div>
+
+  <section class="fp" id="freepaid" aria-labelledby="fpH">
+    <h2 id="fpH">무료로 쓰는 기능 / 유료 기능</h2>
+    <p class="fp-lead">집을 알아보는 데 꼭 필요한 정보는 모두 무료예요. 유료는 더 깊은 분석이 필요한 분을 위한 핵심 몇 가지뿐이에요.</p>
+    <div class="fp-g">
+      <div class="fp-c fp-free">
+        <h3>무료로 쓰는 기능</h3>
+        <ul>
+          <li>실거래 지도·목록 (총액·단가, 조건 골라 보기)</li>
+          <li>땅·건물 기본 공공 정보 (지목, 용도지역, 토지이용계획, 공시지가 추이, 건축물대장 요약, 업종 현황)</li>
+          <li>비슷한 거래 분포, 주변 거래 사례, 개발·교통 정보</li>
+          <li>대출·세금 계산기</li>
+          <li>기획부동산 위험 신호</li>
+          <li>미래가치 점수 요약과 성적표(과거 적중 기록)</li>
+          <li>전세 안전 점검, 청약 진단, 퀴즈</li>
+        </ul>
+        <p class="fp-note">긴 목록 일부(예: 최근 실거래 6건째부터)는 카카오 <b>무료 로그인</b>만 하면 전부 볼 수 있어요. 결제는 필요 없어요.</p>
+      </div>
+      <div class="fp-c fp-paid">
+        <h3>유료 기능</h3>
+        <ul>
+          <li><b>미래가치 상세 리포트</b> — 보유 기간별 근거, 오를 이유·조심할 점 상세, 적중 기록 상세</li>
+          <li><b>중개사 플러스</b> — 중개사·전문가용 내 이름 리포트·블로그 글·손님 브리핑</li>
+          <li><b>모닝 브리핑·카톡 예보 구독</b></li>
+          <li>건축 가능 규모·수익 계산 상세 <small>(준비 중)</small></li>
+          <li>AI 비서 고급 기능 <small>(준비 중)</small></li>
+        </ul>
+        <p class="fp-note">유료 기능은 화면에서 실제 자료 한 줄을 먼저 미리 보여 드리고, ‘자세히 보기 (유료)’를 누를 때만 결제 안내로 이어져요.</p>
+      </div>
+    </div>
+    <p class="fp-note">등기부등본처럼 발급 수수료가 있는 서류는 <a href="https://www.iros.go.kr/" target="_blank" rel="noopener noreferrer">인터넷등기소</a> 같은 발급 기관 공식 사이트로 바로 연결해 드려요. 모든 정보는 참고용이며 특정 부동산의 매수·매도를 권하지 않아요.</p>
+  </section>
 
   <h2><span data-site-name>집예보</span> 리포트의 원칙</h2>
   <div class="principle"><p>미래가치 점수와 순위는 공공 데이터로만 계산하며, 제휴 중개사의 광고비나 매물 보유 여부는 점수에 반영되지 않아요.</p></div>

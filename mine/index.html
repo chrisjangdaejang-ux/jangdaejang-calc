@@ -45,7 +45,8 @@
 <script src="../assets/watch.js?v=9"></script>
 <script src="../assets/kchat.js?v=4"></script>
 <script src="../assets/plain-words.js?v=20"></script>
-<script src="../assets/narrative.js?v=27"></script>
+<script src="../assets/premium-teaser.js?v=1"></script>
+<script src="../assets/narrative.js?v=28"></script>
 <script src="../assets/strength.js?v=5"></script>
 <script src="../assets/conf.js?v=4"></script>
 <script src="../assets/result.js?v=1"></script>
@@ -54,7 +55,7 @@
 <script src="../assets/mine-core.js?v=25"></script>
 <script src="../assets/ask-core.js?v=9"></script>
 <script src="../assets/ask.js?v=6"></script>
-<script src="../assets/price-sheet.js?v=26"></script>
+<script src="../assets/price-sheet.js?v=27"></script>
 <script src="../assets/mapjump.js?v=4"></script>
 <script src="../assets/offi-core.js?v=6"></script>
 <script src="../assets/offi-view.js?v=17"></script>
@@ -653,7 +654,7 @@ function render(d, map, units){
   <div class="panel">
     <h2>미래가치 점수와 근거<small>공개 자료에 있는 점수를 그대로 보여 드려요 (2년 보유 기준, 같은 시·도 단지 비교)</small></h2>
     ${f.fv != null && window.JDJ_CONF ? JDJ_CONF.html(JDJ_CONF.build(f, {MH, sido: sidoName(d.code), cnt: c}), {more: '../guide/method/#conf'}) : ''}
-    ${f.fv != null ? (NARON ? JDJ_NAR.html(JDJ_NAR.build(f, {apt:d.apt, dong:d.dong, code:d.code, band:S.band, area:u0[4], IX, EV:EVD, MH, SP:SUP, PL, year:new Date().getFullYear(), s:u0[6], regionUsed:MREG, jibun:d.jibun, pol:POL, dev: DEVP ? {data:DEVP, u:{code:d.code, dong:d.dong, jibun:d.jibun}, o:{apt:d.apt, sggName}} : null}), {id:'narM'})
+    ${f.fv != null ? (NARON ? JDJ_NAR.html(JDJ_NAR.build(f, {apt:d.apt, dong:d.dong, code:d.code, band:S.band, area:u0[4], IX, EV:EVD, MH, SP:SUP, PL, year:new Date().getFullYear(), s:u0[6], regionUsed:MREG, jibun:d.jibun, pol:POL, dev: DEVP ? {data:DEVP, u:{code:d.code, dong:d.dong, jibun:d.jibun}, o:{apt:d.apt, sggName}} : null}), {id:'narM', premKey: pk, premTrack:'mine_to_premium'})
       + `<details class="msum"><summary>자세한 자료 보기</summary><ul class="why">${rs.map(rli).join('')}</ul></details>` : `<ul class="why">${rs.map(rli).join('')}</ul>`) + `
       <p class="basis">미래가치 점수는 과거 여러 때에 그때까지의 자료만으로 예측한 뒤 실제 시세와 맞춰 본 방법으로 매긴 점수예요. 같은 지역 평균 대비 순위라, 시장 전체가 내리면 점수가 높은 단지도 내릴 수 있어요.</p>`
       : !has ? `<p class="note" style="font-size:15px">거래가 적어 미래가치 점수는 아직 매기지 않아요(최근 3년 ${u0[5]}건). 시세·추이·거래량과 실거래 목록은 위에서 확인할 수 있어요.</p>`
@@ -688,7 +689,7 @@ function render(d, map, units){
       <a class="main" href="../switch/?src=mine&amp;sd=${encodeURIComponent(S.sd)}&amp;d=${encodeURIComponent(d.key)}&amp;b=${encodeURIComponent(S.band)}"><b>이 집 팔고 갈아타기 계산 →</b><small>양도세·매도 후 남는 돈·새 대출 (이 단지·평형을 지금 집으로 넣어 드려요)</small></a>
       ${(sm.price || (last && last.price)) && window.JDJ_PRICE ? `<a href="${esc(JDJ_PRICE.loanHref({src:'mine', price: sm.price || last.price, code: d.code, apt: d.apt, band: S.band, area: u[4]}))}" data-track="mine_to_loan"><b>이 집 대출 한도 계산하기 →</b><small>최근 시세·지역을 채워 LTV·DSR 한도와 매달 갚을 돈을 보여 드려요</small></a>` : ''}
       <a href="../tax/"><b>이 집 세금 계산 →</b><small>양도세·취득세·보유세</small></a>
-      ${has ? `<a href="../premium/?p=single&amp;k=${encodeURIComponent(pk)}"><b>이 단지 프리미엄 리포트 →</b><small>단지 심층 분석 · 유료</small></a>` : ''}
+      ${has ? `<a href="../premium/?p=single&amp;k=${encodeURIComponent(pk)}"><b>이 단지 미래가치 상세 리포트 (유료) →</b><small>보유 기간별 근거·오를/내릴 이유·적중 기록 상세</small></a>` : ''}
     </div>
   </div>
 

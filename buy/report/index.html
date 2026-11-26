@@ -37,7 +37,7 @@
 <script src="../../assets/loan-rules.js?v=3"></script>
 <script src="../../assets/rec-core.js?v=8"></script>
 <script src="../../assets/mine-core.js?v=25"></script>
-<script src="../../assets/price-sheet.js?v=26"></script>
+<script src="../../assets/price-sheet.js?v=27"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/lead.js?v=4"></script>
 <script src="../../assets/config.js?v=12"></script>
@@ -50,7 +50,8 @@
 <script src="../../assets/loan-core.js?v=6"></script>
 <script src="../../assets/kchat.js?v=4"></script>
 <script src="../../assets/plain-words.js?v=20"></script>
-<script src="../../assets/narrative.js?v=27"></script>
+<script src="../../assets/premium-teaser.js?v=1"></script>
+<script src="../../assets/narrative.js?v=28"></script>
 <script src="../../assets/strength.js?v=5"></script>
 <script src="../../assets/policy-view.js?v=3"></script>
 <script src="../../assets/devproj-view.js?v=4"></script>
@@ -640,11 +641,11 @@ const liR=r=>`<li class="${r[0]}">${esc(r[1])}${r[2]?PL.evHtml(r[2],false,esc):'
 let DEVP=null, POLD=null;
 /* 새 분석 설명(한 줄 결론 → 핵심 요약 → 줄별 자세히 보기, assets/narrative.js) — 대표 승인(11/20)으로 기본 적용, ?nar=0 이면 예전 설명 */
 const NARON = !/[?&]nar=0(&|$)/.test(location.search) && !!window.JDJ_NAR;
-function narFor(x, i){
+function narFor(x, i, k){
   if (!NARON || !x.fx || x.fx.fv==null) return '';
   const N = JDJ_NAR.build(x.fx, {apt:x.apt, dong:x.dong, code:x.code, band:x.band, area:x.area, IX, EV:EVD, MH, SP:SUPPLY, PL, year:new Date().getFullYear(), s:x.series,
     regionUsed:!!(MODEL&&MODEL.region&&MODEL.region.used), jibun:x.jb, pol:POLD, dev: DEVP ? {data:DEVP, u:{code:x.code, dong:x.dong, jibun:x.jb}, o:{apt:x.apt, sggName}} : null});
-  return JDJ_NAR.html(N, {id:'nar'+i});
+  return JDJ_NAR.html(N, {id:'nar'+i, premKey:k, premTrack:'report_to_premium_nar'});
 }
 let HZ=2;
 try{ HZ = parseInt(new URLSearchParams(location.search).get('hz') || localStorage.getItem('jdj_hz') || '2',10); }catch(e){}
@@ -1328,7 +1329,7 @@ async function render(){
       const rs = reasons(x), rg = ringOf(x), hasFv = !!(x.fx && x.fx.fv!=null);
       const gh = S.sort==='rec' && (i===0 || picked[i-1].grp!==x.grp) ? grpHead(x.grp, i, PC, M, groups.length>1 || S.sido.any) : '';
       const k = cmpKey({sd:sdIdOf(x.code),code:x.code,dong:x.dong,apt:x.apt,band:x.band});
-      const li = liR;
+      const li = liR, nar = narFor(x,i,k), tz = nar.includes('class="jpt"');
       return gh + `<div class="card ${i<3?'best':''}" id="pk${i}">
         <div class="chead">
           <div><div class="crk"><b>${S.sort==='rec'?`추천 ${i+1}위`:`${i+1}번째`}</b> · ${esc(sidoOfCode(x.code))} ${esc(sggName(x.code))} ${esc(x.dong)}</div>
@@ -1336,7 +1337,7 @@ async function render(){
             <div class="loc">${x.band} (전용 ${x.area}㎡) · 추정 시세 ${fmtS(x.P)}${isReg(x.code)?' · 규제지역':''}</div>${keyChips(x)}</div>
           <div class="chr"><div class="ring" aria-label="${rg.k} ${rg.v}점"><b>${rg.v}</b><small>${rg.k}</small></div>${WS(x)}</div>
         </div>
-        ${narFor(x,i) || `<ul class="reasons">${rs.slice(0,3).map(li).join('')}</ul>`}
+        ${nar || `<ul class="reasons">${rs.slice(0,3).map(li).join('')}</ul>`}
         <div class="cps noprint">${PB(x,'report_top')}${window.JDJ_PRICE&&x.P>0?` <a class="loanx" href="${esc(JDJ_PRICE.loanHref({src:'report', price:x.P, code:x.code, apt:x.apt, band:x.band, area:x.area, own:S.own}))}" data-track="report_to_loan">이 집 대출 한도 계산하기 ›</a>`:''}</div>
         <div class="cmore" id="pm${i}" hidden>
           <div class="row">
@@ -1348,11 +1349,11 @@ async function render(){
           ${NARON && x.fx && x.fx.fv!=null ? `<h4 class="narx">자세한 자료</h4><ul class="reasons">${rs.map(li).join('')}</ul>` : rs.length>3?`<ul class="reasons">${rs.slice(3).map(li).join('')}</ul>`:''}
           ${window.JDJ_SRC ? JDJ_SRC.html(JDJ_SRC.rows({IX, f:x.fx})) : ''}
           <div class="noprint" data-txb="${i}" hidden></div>
-          <a class="premlink noprint" href="${JB.SITE}premium/?p=single&k=${encodeURIComponent(k)}" data-track="report_to_premium">이 단지 프리미엄 리포트 (9,900원) · 시나리오·세금 시뮬레이션 순차 제공 ›</a>
+          ${tz ? '' : window.JDJ_TEASER ? JDJ_TEASER.html({key:k, desc:'보유 기간별 근거·오를/내릴 이유·적중 기록 상세를 담아요.', track:'report_to_premium', cls:'noprint'}) : `<a class="premlink noprint" href="${JB.SITE}premium/?p=single&k=${encodeURIComponent(k)}" data-track="report_to_premium">미래가치 상세 리포트 · 자세히 보기 (유료) ›</a>`}
         </div>
         <div class="cgate" id="pg${i}" hidden></div>
         <div class="vnote">${hasFv ? '<span class="vbadge" title="'+esc(vTxt)+'">✓ 검증된 점수</span>' : '미래가치 점수가 아직 없는 단지예요(거래 자료 부족). 예산·거래량을 보고 순서를 정했어요.'}</div>
-        <div class="cacts noprint"><button type="button" class="btn primary" data-more="pm${i}" aria-expanded="false" aria-controls="pm${i}">자세한 리포트</button><button type="button" class="btn cmpbtn-add ${cmpHas(k)?'on':''}" data-cp="${esc(k)}">${cmpHas(k)?'비교함에 담김':'비교에 담기'}</button><button type="button" class="btn" data-mine="${i}">내 집으로 저장</button><a class="btn" href="${JB.SITE}premium/?p=single&amp;k=${encodeURIComponent(k)}" data-track="report_to_premium_card" aria-label="심층 리포트(프리미엄)">프리미엄 리포트</a></div>
+        <div class="cacts noprint"><button type="button" class="btn primary" data-more="pm${i}" aria-expanded="false" aria-controls="pm${i}">자세한 리포트</button><button type="button" class="btn cmpbtn-add ${cmpHas(k)?'on':''}" data-cp="${esc(k)}">${cmpHas(k)?'비교함에 담김':'비교에 담기'}</button><button type="button" class="btn" data-mine="${i}">내 집으로 저장</button>${tz ? '' : `<a class="btn" href="${JB.SITE}premium/?p=single&amp;k=${encodeURIComponent(k)}" data-track="report_to_premium_card">상세 리포트 (유료)</a>`}</div>
         <div class="agt" data-g="${x.code}" data-k="${esc(x.code+'|'+x.dong+'|'+x.apt)}"></div>
       </div>`;
     }).join('') + `</div>` +
@@ -1419,7 +1420,7 @@ async function render(){
   q.set('entry.658364183', `[맞춤 리포트] 최대 ${fmtW(M)} · 추천 1순위 ${picked[0]?picked[0].apt:'-'} | ${JDJ.label()}`);
   h += `<div class="cta noprint"><p>이 리포트를 바탕으로 1:1 전략을 받아보세요<small>1차 진단은 무료 · 심층 컨설팅은 유료로 별도 안내 · 리포트 내용이 신청서에 자동 입력돼요</small></p>
     <a class="btn primary" data-track="report_consult" href="${FORM}?${q.toString().replace(/\+/g,'%20')}" target="_blank" rel="noopener">상담 신청</a></div>
-  <p class="premlink noprint" style="text-align:center"><a href="${JB.SITE}premium/" data-track="report_to_premium">프리미엄 리포트 안내 (단지 심층 분석 · 비교 패키지) ›</a></p>
+  <p class="premlink noprint" style="text-align:center"><a href="${JB.SITE}premium/#freepaid" data-track="report_to_premium">무료로 쓰는 기능 · 유료 기능(미래가치 상세 리포트) 안내 ›</a></p>
   </div>`;
 
   $('report').innerHTML = h;
@@ -1430,7 +1431,7 @@ async function render(){
     head:`<h2><span class="no">06</span> 이 지역에 영향을 주는 정책</h2><p class="sub">추천 지역(${polCodes.length}곳)에 적용 중이거나 국회에서 논의 중인 부동산 정책이에요. 단계와 대상은 공식 원문 그대로예요.</p>`}).catch(e=>console.warn('policy',e));
   document.querySelectorAll('[data-cp]').forEach(b=>b.onclick=()=>{ const p=cmpParse(b.dataset.cp); if(!p || !cmpToggle(p)) return; const on=cmpHas(b.dataset.cp); b.classList.toggle('on',on); b.textContent=on?'비교함에 담김':'비교에 담기'; });
   document.querySelectorAll('[data-more]').forEach(b=>b.onclick=()=>{ const m=$(b.dataset.more); if(!m) return;
-    if (repLocked()){ const g=$(b.dataset.more.replace('pm','pg')); if(!g) return; g.hidden=!g.hidden; if(!g.innerHTML) g.innerHTML=JDJ_AUTH.gate('대출·필요 현금·월 상환과 추천 이유 전체는 로그인하면 볼 수 있어요. 요약과 점수는 지금처럼 그대로 보여 드려요.', '카카오 간편 로그인하고 상세 보기', 'report_detail'); b.setAttribute('aria-expanded', String(!g.hidden)); b.textContent=g.hidden?'자세한 리포트':'간단히 보기'; if(!g.hidden) JDJ.track('report_detail_gate'); return; } m.hidden=!m.hidden; b.setAttribute('aria-expanded', String(!m.hidden)); b.textContent=m.hidden?'자세한 리포트':'간단히 보기'; if(!m.hidden) JDJ.track('report_card_more'); });
+    if (repLocked()){ const g=$(b.dataset.more.replace('pm','pg')); if(!g) return; g.hidden=!g.hidden; if(!g.innerHTML) g.innerHTML=JDJ_AUTH.gate('대출·필요 현금·월 상환과 추천 이유 전체는 <b>무료 로그인하면 전부 볼 수 있어요</b>. 결제는 필요 없어요. 요약과 점수는 지금처럼 그대로 보여 드려요.', '카카오 간편 로그인(무료)하고 전부 보기', 'report_detail'); b.setAttribute('aria-expanded', String(!g.hidden)); b.textContent=g.hidden?'자세한 리포트':'간단히 보기'; if(!g.hidden) JDJ.track('report_detail_gate'); return; } m.hidden=!m.hidden; b.setAttribute('aria-expanded', String(!m.hidden)); b.textContent=m.hidden?'자세한 리포트':'간단히 보기'; if(!m.hidden) JDJ.track('report_card_more'); });
   document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>goCard(+b.dataset.i||0, b.dataset.go));
   if (window.JDJ_TAXBOX) document.querySelectorAll('[data-txb]').forEach(el=>{ const x=picked[+el.dataset.txb]; if(x) { el.hidden=false; JDJ_TAXBOX.lazy(el, {price:x.P, area:x.area, sido:sidoOfCode(x.code), gu:sggName(x.code), apt:x.apt, band:x.band, code:x.code, dong:x.dong, jibun:x.jb, mode:'buy'}); } });
   if (NARON) document.querySelectorAll('#report .nar').forEach(el=>JDJ_NAR.bind(el));

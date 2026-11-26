@@ -1327,6 +1327,21 @@
     const s = u.length === 1 ? `${u[0]} 써 본 결과예요` : u.map(w => `${T.filter((t, i) => ws[i] === w).map(t => t.h != null ? t.h + '년' : '').filter(Boolean).join('·')}은 ${w}`).join(', ') + ' 써 본 결과예요';
     return pre != null ? `${pre}${s.replace(/결과예요$/, '결과')}${post}` : s + '.';
   }
+  /* 유료 미리 보기(assets/premium-teaser.js, 무료·유료 기준 2026-11-26): 첫 항목의 상세 근거 중 실제 문장 한 줄 + 자세히 보기(유료).
+     무료 한 줄(x.o)과 겹치지 않게 ① 기준 시점을 바꿔 다시 확인한 결과(recPer) ② 없으면 '이 단지 숫자' 첫 문장 ③ 없으면 과거 사례 첫 문장.
+     문장이 없으면 미리 보기 줄 없이 단추만. premium-teaser.js 가 없는 화면은 안내 한 줄 */
+  function w3pick(x, T) {
+    const d1 = String(x.d[1] || ''), f1 = T.first(d1), rest = d1.slice(f1.length).trim();
+    return T.first(rest) || T.first(x.d[0]) || f1;
+  }
+  function w3teaser(W, o) {
+    const T = root.JDJ_TEASER;
+    if (!T) return `<p class="w3-pro">항목별 숫자와 과거 시기별 결과는 미래가치 상세 리포트(유료)에서 볼 수 있어요.</p>`;
+    const x = [...W.up, ...W.dn, ...W.watch].find(v => v && v.d && (v.d[0] || v.d[1]));
+    const pv = x ? w3pick(x, T) : '';
+    return T.html({ name: '미래가치 상세 리포트', preview: pv ? `${x.t} — ${pv}` : '', desc: '항목마다 이 단지 숫자·과거 사례·보유 기간별 결과와 적중 기록 상세를 담아요.',
+      key: o.premKey, track: o.premTrack || 'nar_to_premium' });
+  }
   /* 오를 이유·조심할 점·지켜볼 것 칸. 무료: 제목 + 한 줄. 프리미엄(o.premium): 항목마다 사실·과거 사례·그래서 + 시기별 표 */
   function w3html(W, o) {
     o = o || {};
@@ -1348,7 +1363,7 @@
         + (alert ? `<button type="button" class="w3-alert" data-w3-alert="${E(W.key)}" data-w3-name="${E(W.apt)}"${W.place ? ` data-w3-place="${E(JSON.stringify(W.place))}"` : ''}>이 단지 알림 받기</button><span class="w3-msg" role="status"></span>` : '') + '</div>' : '')
       + `</div>`
       + (miss.length ? `<p class="w3-miss">${E(miss.join('·'))}: 과거 사례에서 같은 방향이 확인된 항목이 없어 적지 않았어요.</p>` : '')
-      + (pro ? '' : `<p class="w3-pro">항목별 숫자와 과거 시기별 결과는 프리미엄 리포트에서 펼쳐 볼 수 있어요.</p>`)
+      + (pro || o.teaser === false ? '' : w3teaser(W, o))
       + `</div>`;
   }
   function html(N, o) {

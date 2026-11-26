@@ -200,7 +200,7 @@ check('REST 키가 없으면 로그인 안 됨(안내 문구)', [N.ok, /설정/.
   check('잠금: 카카오 키가 없으면 예전 그대로(10건 + 더보기)', [/jdj-gate/.test(h), /data-jps-more/.test(h), rowsOf(h)], [false, true, 23]);
   st = { on: true, user: null };
   h = PS.tradesHtml(u, [], { show: 10 });
-  check('잠금: 로그인 전엔 5건 + 로그인 단추(더보기 없음)', [/jdj-gate/.test(h), /data-jps-more/.test(h), rowsOf(h), /나머지 <b>18건/.test(h), /카카오 간편 로그인하고 전체 보기/.test(h)], [true, false, 5, true, true]);
+  check('잠금: 로그인 전엔 5건 + 로그인 단추(더보기 없음)', [/jdj-gate/.test(h), /data-jps-more/.test(h), rowsOf(h), /나머지 <b>18건/.test(h), /카카오 간편 로그인\(무료\)하고 전부 보기/.test(h) && /무료 로그인하면 전부 볼 수 있어요/.test(h)], [true, false, 5, true, true]);
   check('잠금: 거래가 5건 이하면 잠금 없음', /jdj-gate/.test(PS.tradesHtml(Object.assign([], u, { 11: tr.slice(0, 4) }), [], { show: 10 })), false);
   const t = { months: ['202001', '202002', '202101', '202312'], s: [100000, 110000, 120000, 130000], j: [50000, 0, 60000, 70000] };
   check('3년 이전 시세: 로그인 전엔 안 보임', PS.pastYearsHtml(t, '202311'), '');

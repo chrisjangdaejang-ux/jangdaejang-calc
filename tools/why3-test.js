@@ -85,7 +85,23 @@ eq(N.build(f, Object.assign({}, C, { why3: false })).why3, undefined, 'why3:fals
 const free = N.html(R, { id: 't' }), pro = N.html(R, { id: 't', premium: true });
 has(free, '<h3 class="w3-h">오를 이유 2 · 조심할 점 2 · 지켜볼 것</h3>', '칸 제목: 실제 개수');
 not(free, 'class="w3-d"', '무료: 근거 상세 없음');
-has(free, '프리미엄 리포트에서 펼쳐 볼 수 있어요', '무료: 유료 안내');
+has(free, '미래가치 상세 리포트(유료)에서 볼 수 있어요', '무료: 유료 안내(미리 보기 칸이 없는 화면)');
+/* 유료 미리 보기(assets/premium-teaser.js): 실제 과거 사례 문장 한 줄 + 자세히 보기(유료), 자물쇠 없음 */
+globalThis.JDJ_SITE = { PAID_OPEN: false, PAY_REVIEW: true };
+require('../assets/premium-teaser.js');
+const tz = N.html(R, { id: 't', premKey: 'a|b' });
+has(tz, 'class="jpt"', '미리 보기 칸');
+has(tz, '자세히 보기 (유료)', '미리 보기: 단추 문구');
+has(tz, 'premium/?p=single&amp;k=a%7Cb', '미리 보기: 단지 키로 상품 안내');
+const pv = (tz.match(/<span class="jpt-k">미리 보기<\/span>([^<]*)/) || [])[1] || '';
+eq(!!pv && R.why3.up.concat(R.why3.dn, R.why3.watch).some(x => pv.startsWith(x.t + ' — ') && x.d.some(d => d && d.includes(pv.slice(x.t.length + 3)))), true, '미리 보기 = 실제 상세 근거 문장: ' + pv);
+eq(R.why3.up.concat(R.why3.dn).some(x => pv.includes(x.o)), false, '미리 보기는 무료 한 줄과 겹치지 않음');
+not(tz, '🔒', '자물쇠 없음');
+not(tz, '곧 열려요', '심사용 결제 중에는 곧 열려요 없음');
+globalThis.JDJ_SITE = { PAID_OPEN: false, PAY_REVIEW: false };
+has(N.html(R, { id: 't' }), '결제는 곧 열려요', '결제가 닫혀 있으면 곧 열려요');
+not(N.html(R, { id: 't', premium: true }), 'class="jpt"', '프리미엄 화면에는 미리 보기 칸 없음');
+delete globalThis.JDJ_TEASER; delete globalThis.JDJ_SITE;
 has(pro, 'class="w3-d"', '프리미엄: 근거 상세');
 has(pro, '시기별 과거 사례', '프리미엄: 시기별 표');
 for (const w of ['시험', '통과', '가중치', '임계']) not(free + pro, w, '금지 표현');
