@@ -1122,7 +1122,93 @@
     catch (e) { return { err: String(e && e.message || e) }; }
   }
 
-  const API = { linkFill, taxRegion, chatStart, chatNext, chatAnswer, chatHint, narrowInit, narrowNext, narrowSet, findHomes, guPreview, BUCKETS, quick, regionExample, norm, extract, apply, findFeatures, moneys, classify, pending, solve, mask, won, wonW, pct, ko, addM, addY, addD, diffD, fill, nextFor, brokerFee, wolseAmt, SMALL, BAD, MIN, SOLVERS: Object.keys(S) };
+
+  /* ---------- AI 상담(대화창 해석기) — 서버 guideAI 와 주고받는 값 다듬기 ----------
+     AI 는 고민 종류·문장 속 값·되물을 질문만 돌려주고, 숫자는 늘 이 파일의 계산(quick/solve)에서만 나와요.
+     아래 aiMask·aiNoNum 은 서버 tools/agent-backend.gs 와 글자까지 같은 규칙(tools/guide-ai-test.js 가 같은 예문으로 확인). */
+  const AI_UNIT = '(?![\\d.]*\\s*(억|만|천|년|개월|달|평|%|채|점|명|층|분|㎡|번째|순위))';
+  function aiMask(text, n) {
+    const t = String(text == null ? '' : text).replace(/\s+/g, ' ').trim().slice(0, n || 1000);
+    return t.replace(/https?:\/\/\S+/gi, '[링크]')
+      .replace(/[\w.+-]+@[\w-]+\.[\w.]+/g, '[메일]')
+      .replace(/\d{6}\s*-\s*[1-8]\d{6}/g, '[주민번호]')
+      .replace(/(01[016789]|0\d{1,2})[-.\s]?\d{3,4}[-.\s]?\d{4}/g, '[전화]')
+      .replace(/\d{10,}/g, '[번호]')
+      .replace(new RegExp('([가-힣]{2,}(로|길))\\s*\\d+(-\\d+)?(번길\\s*\\d+(-\\d+)?)?' + AI_UNIT, 'g'), (m, a, b) => /으로$/.test(a) ? m : b + ' ○')
+      .replace(/\d+\s*-\s*\d+\s*번지/g, '○번지')
+      .replace(new RegExp('([가-힣](동|리|가))\\s*\\d+\\s*-\\s*\\d+' + AI_UNIT, 'g'), '$1 ○번지')
+      .replace(/\d+\s*번지/g, '○번지')
+      .replace(/\d+\s*동\s*\d+\s*호/g, '○동 ○호')
+      .replace(/\d{3,4}\s*호(?!선)/g, '○호')
+      .replace(/(제\s*이름은|이름은|성함은)\s*[가-힣]{2,4}/g, '$1 ○○')
+      .trim();
+  }
+  /** AI 안내 문장에서 숫자·금액·비율이 들어간 문장을 통째로 빼요. 투자 권유 말이 있는 문장도 뺌(화면 guide-core aiNoNum 과 같은 규칙) */
+  const AI_NUM_RX = /[0-9０-９]|억|천만|만\s*원|퍼센트|%|프로(?![그젝필])|[일이삼사오육칠팔구십백천](억|만\s*원|개월|퍼센트|평)/;
+  const AI_BAD_RX = /(사세요|파세요|사셔야|파셔야|매수하세요|매도하세요|추천\s*(단지|드려|해\s*드)|무조건|오를\s*거|떨어질\s*거|오릅니다|내립니다|확실히\s*올|반드시\s*올)/;
+  function aiNoNum(s, lim) {
+    const parts = String(s == null ? '' : s).replace(/\s+/g, ' ').trim().replace(/([.!?。…]|요|다)\s+/g, '$1\u0001').split('\u0001');
+    return parts.filter(p => p && !AI_NUM_RX.test(p) && !AI_BAD_RX.test(p)).join(' ').replace(/[<>]/g, '').slice(0, lim || 160).trim();
+  }
+  const AI_KNOWN_SKIP = { danji: 1, houses: 1 };
+  /** 서버로 보낼 것: 최근 대화(가린 뒤), 지금 고민·물은 칸, 이미 아는 칸 이름(값은 보내지 않음), 새 문장(가린 뒤) */
+  function aiReq(st, log, text, D) {
+    const known = [];
+    if (st && st.a) Object.keys(st.a).forEach(k => { if (k[0] !== '_' && st.a[k] != null && st.a[k] !== '' && D.q[k] && !AI_KNOWN_SKIP[D.q[k].type]) known.push(k); });
+    const turns = (log || []).filter(m => m && m.t && !m.card && !m.typing).slice(-6).map(m => ({ r: m.who === 'me' ? 'u' : 'b', t: aiMask(m.t, 200) }));
+    return { cur: st && st.id && !st.done ? st.id : '', asked: st && st.asked && !st.asked.nf ? st.asked.key : '', known, turns, text: aiMask(text, 1000) };
+  }
+  /** AI 가 준 칸 값 하나를 그 사람이 '이번 문장'에 쓴 값인지 확인해 화면 값으로 · 못 믿으면 undefined */
+  function aiSlot(k, v, q, text, ctx) {
+    if (!q || v == null || v === '' || AI_KNOWN_SKIP[q.type]) return undefined;
+    const t = String(text || ''), flat = t.replace(/\s/g, ''), digits = (t.match(/\d+/g) || []);
+    if (q.type === 'money') {
+      const n = Math.round(+v); if (!(n > 0 && n < 10000000)) return undefined;
+      const ex = extract(t, ctx), seen = moneys(t).map(m => m.v).concat(Object.keys(ex.money || {}).map(r => ex.money[r]));
+      return seen.indexOf(n) >= 0 ? n : undefined;
+    }
+    if (q.type === 'num') { const n = Math.round(+v); return isFinite(n) && n >= 0 && n <= 999 && (digits.indexOf(String(n)) >= 0 || (n === 0 && /(없|0)/.test(flat))) ? n : undefined; }
+    if (q.type === 'date') {
+      const s = String(v), ex = extract(t, ctx);
+      const y0 = +String((ctx && ctx.today) || todayKst()).slice(0, 4), y = +s.slice(0, 4);
+      const yOk = digits.some(d => +d === y || (d.length === 2 && 2000 + +d === y)) || (/내년/.test(flat) ? y === y0 + 1 : /(올해|올\s*해)/.test(flat) ? y === y0 : !digits.some(d => /^20\d\d$/.test(d)) && (y === y0 || y === y0 + 1));
+      if (okDate(s)) return ex.date === s || (yOk && digits.some(d => +d === +s.slice(5, 7)) && digits.some(d => +d === +s.slice(8, 10))) ? s : undefined;
+      if (/^20\d\d-(0[1-9]|1[0-2])$/.test(s) && k === 'end') return ex.endMonth === s ? { endMonth: s } : undefined;
+      return undefined;
+    }
+    if (q.type === 'yesno' || q.type === 'yesno3') return v === 'y' || v === 'n' ? v : (q.type === 'yesno3' && v === '?' ? '?' : undefined);
+    if (q.type === 'choice') return (q.opts || []).some(o => String(o[0]) === String(v)) ? (/^\d+$/.test(String(v)) && typeof (q.opts.find(o => String(o[0]) === String(v)) || [])[0] === 'number' ? +v : String(v)) : undefined;
+    if (q.type === 'region') {
+      const r = extract(String(v), ctx).region; if (!r) return undefined;
+      const last = r.name.split(' ').pop(), bare = last.replace(/(구|시|군)$/, '');
+      return flat.indexOf(bare.length >= 2 ? bare : last) >= 0 ? r : undefined;
+    }
+    if (q.type === 'sido') { const sd = ((ctx && ctx.sido) || []).find(s => s.name === v || s.short === v); return sd && (flat.indexOf(sd.short) >= 0 || flat.indexOf(sd.name) >= 0) ? sd.name : undefined; }
+    return undefined;
+  }
+  /** 서버 답 r → 무엇을 할지. {kind:'off'|'ask'|'start'|'fill'|'none', id, a(믿을 수 있는 칸 값만), say, ask, quick}
+      규칙 엔진이 이미 아는 값(st.a)은 AI 값으로 덮지 않아요. */
+  function aiPlan(r, st, D, ctx, text) {
+    if (!r || typeof r !== 'object') return { kind: 'none' };
+    const say = r.say ? aiNoNum(r.say, 160) : '', ask = r.ask ? aiNoNum(r.ask, 120) : '';
+    const quick = (Array.isArray(r.quick) ? r.quick : []).map(x => String(x || '').trim()).filter(x => x && x.length <= 24 && !AI_NUM_RX.test(x) && !AI_BAD_RX.test(x)).slice(0, 6);
+    if (r.offTopic === true) return { kind: 'off', say };
+    const sc = D.sc.find(x => x.id === r.scenario) || null, cur = st && st.id && !st.done ? D.sc.find(x => x.id === st.id) : null, target = sc || cur;
+    const a = {};
+    if (target && r.slots && typeof r.slots === 'object') Object.keys(r.slots).forEach(k => {
+      if ((target.ask || []).indexOf(k) < 0 || !D.q[k]) return;
+      if (cur && target === cur && st.a && st.a[k] != null && st.a[k] !== '') return;
+      const v = aiSlot(k, r.slots[k], D.q[k], text, ctx);
+      if (v && typeof v === 'object' && v.endMonth) a.endMonth = v.endMonth; else if (v !== undefined) a[k] = v;
+    });
+    if (sc && (!cur || sc.id !== cur.id)) return { kind: 'start', id: sc.id, a, say, ask, quick };
+    if (cur && Object.keys(a).length) return { kind: 'fill', id: cur.id, a, say };
+    if (ask && quick.length >= 2) return { kind: 'ask', say, ask, quick };
+    if (ask) return { kind: 'ask', say, ask, quick: [] };
+    return { kind: 'none', say };
+  }
+
+  const API = { aiMask, aiNoNum, aiReq, aiSlot, aiPlan, AI_NUM_RX, AI_BAD_RX, linkFill, taxRegion, chatStart, chatNext, chatAnswer, chatHint, narrowInit, narrowNext, narrowSet, findHomes, guPreview, BUCKETS, quick, regionExample, norm, extract, apply, findFeatures, moneys, classify, pending, solve, mask, won, wonW, pct, ko, addM, addY, addD, diffD, fill, nextFor, brokerFee, wolseAmt, SMALL, BAD, MIN, SOLVERS: Object.keys(S) };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_GUIDE_CORE = API;
 })(typeof window !== 'undefined' ? window : globalThis);

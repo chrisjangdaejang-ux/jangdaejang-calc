@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
-<title>길잡이 운영자 — 못 알아들은 고민 · 집예보</title>
+<title>길잡이 운영자 — AI 사용량 · 못 알아들은 고민 · 집예보</title>
 <!-- 고민 해결 길잡이 운영자 화면: 서버 gdAdmin(모닝 브리핑 운영자 카카오 계정만). 못 알아들은 문장(개인정보 가린 뒤)을 빈도순으로 보고,
      자주 나오는 고민은 assets/guide/scenarios.json 에 시나리오를, 다른 말·오타는 assets/guide/lexicon.json 에 더해요(코드 수정 없음). -->
 <script src="../../assets/agents.js"></script>
@@ -36,7 +36,7 @@ table{width:100%;border-collapse:collapse;font-size:14.5px}th,td{text-align:left
   <div id="out" aria-live="polite"><p class="empty">불러오는 중이에요…</p></div>
   <div class="how"><b>이렇게 써요</b><br>① 같은 고민이 여러 번 나오면 새 시나리오로 더해요(assets/guide/scenarios.json — 낱말·질문·계산·출처). ② 이미 있는 고민인데 말만 다르면 낱말 사전(assets/guide/lexicon.json)에 더해요.
   ③ 계산할 자료가 없어 답하지 못하는 고민은 ‘다음에 모을 통계’ 후보로 적어 두어요. 매주 월요일 운영 메일에 지난주 한 줄 요약이 함께 와요.<br>
-  <a class="pv" href="../?preview=guide">이 기기에서 길잡이 미리 보기</a><a class="pv" href="../../?preview=guide" style="background:#191F28">첫 화면 미리 보기</a></div>
+  <a class="pv" href="../?preview=guide">이 기기에서 길잡이 미리 보기</a><a class="pv" href="../../?preview=guide" style="background:#191F28">첫 화면 미리 보기</a><a class="pv" href="../?chat=1&amp;preview=ai" style="background:#5B3FB0">AI 상담 미리 보기(대화창)</a></div>
 </main>
 <script>
 (function () {
@@ -60,7 +60,17 @@ table{width:100%;border-collapse:collapse;font-size:14.5px}th,td{text-align:left
         }).join('') + '</tbody></table>' : '<p class="empty">이 기간에 못 알아들은 고민이 없어요.</p>';
         var fb = j.fb || [], fbh = '<h2 style="font-size:19px;margin:24px 0 6px">답 만족도(시나리오별)</h2><p class="sd">답 화면의 ‘이 답이 도움이 됐나요? 👍👎’를 누른 결과예요. 만족도가 낮은 고민부터 질문·계산·문구를 다듬어요.</p>';
         fbh += fb.length ? '<table><thead><tr><th scope="col">고민</th><th scope="col">👍</th><th scope="col">👎</th><th scope="col">도움 됐다</th></tr></thead><tbody>' + fb.map(function (x) { return '<tr><td>' + esc(NM[x.s] || x.s) + '</td><td>' + x.up + '</td><td>' + x.down + '</td><td class="n">' + x.rate + '%</td></tr>'; }).join('') + '</tbody></table>' : '<p class="empty">이 기간에 누른 의견이 없어요.</p>';
-        out.innerHTML = fbh + '<h2 style="font-size:19px;margin:24px 0 6px">못 알아들은 고민</h2>' + h;
+        var ai = j.ai, aih = '';
+        if (ai) {
+          var won = function (v) { return Math.round(+v || 0).toLocaleString('ko-KR') + '원'; };
+          aih = '<h2 style="font-size:19px;margin:24px 0 6px">AI 상담 사용량</h2><p class="sd">대화창에서 규칙이 못 알아들은 문장만 AI가 읽어요(숫자는 집예보 계산). 대화 내용은 저장하지 않고 날짜별 숫자만 남겨요. 비용은 토큰 수로 계산한 추정값이에요.</p>'
+            + '<div class="stt"><span>상태 <b>' + (ai.enabled ? '켜짐' : '꺼짐(운영자 미리 보기 ?preview=ai 만)') + '</b></span><span>키 <b>' + (ai.key ? '넣음' : '없음 — 스크립트 속성 ANTHROPIC_API_KEY') + '</b></span>'
+            + '<span>오늘 <b>' + ai.today.n + '회 · ' + won(ai.today.krw) + '</b></span><span>하루 한도 <b>' + Number(ai.cap).toLocaleString('ko-KR') + '회 · ' + won(ai.krwCap) + '</b></span><span>기기당 하루 <b>' + ai.userCap + '회</b></span></div>';
+          aih += ai.days && ai.days.length ? '<table><thead><tr><th scope="col">날짜</th><th scope="col">호출</th><th scope="col">실패</th><th scope="col">한도로 규칙 전환</th><th scope="col">토큰(입력·캐시 읽기·출력)</th><th scope="col">추정 비용</th></tr></thead><tbody>' + ai.days.map(function (x) {
+            return '<tr><td>' + esc(x.d) + '</td><td class="n">' + x.n + '</td><td>' + x.fail + '</td><td>' + x.cap + '</td><td>' + (x.it + x.cw).toLocaleString('ko-KR') + ' · ' + x.cr.toLocaleString('ko-KR') + ' · ' + x.ot.toLocaleString('ko-KR') + '</td><td>' + won(x.krw) + '</td></tr>';
+          }).join('') + '</tbody></table>' : '<p class="empty">아직 기록이 없어요.</p>';
+        }
+        out.innerHTML = aih + fbh + '<h2 style="font-size:19px;margin:24px 0 6px">못 알아들은 고민</h2>' + h;
       }).catch(function () { out.innerHTML = '<p class="err">서버에 연결하지 못했어요. 잠시 뒤 다시 열어 주세요.</p>'; });
   }
   document.querySelector('.seg').addEventListener('click', function (e) { var b = e.target.closest('[data-d]'); if (!b) return; D = +b.dataset.d; document.querySelectorAll('.seg button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); }); go(); });

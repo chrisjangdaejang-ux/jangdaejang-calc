@@ -44,6 +44,9 @@
    GUIDE_ENABLED: '고민 해결 길잡이'(solve/ — 고민을 적거나 상황 단추를 고르면 짧은 질문 → 내 조건으로 계산한 해법 카드 → 다음 단계, 결과 화면 끝 '이어서 하면 좋은 것') 켜기.
      false 면 첫 화면은 예전 '단지 이름으로 물어보기' 그대로이고 solve/ 는 '준비 중'(검색 제외). 대표 미리 보기: 주소 끝 ?preview=guide (끄기 ?preview=off).
      켜는 날은 서버 tools/agent-backend.gs 의 GUIDE_ENABLED 도 함께 true 로. 운영자 화면: solve/admin/(못 알아들은 고민 빈도순).
+   AI_ENABLED: 길잡이 대화창(solve/?chat=1)의 AI 상담 — 규칙이 못 알아들은 문장만 서버(guideAI)가 AI 로 '어느 고민인지·문장 속 값·되물을 질문'을 읽어 줘요.
+     숫자는 늘 집예보 계산기 결과(AI 가 만들지 않음). false 면 AI 를 부르지 않아요. 운영자 미리 보기: 주소 끝 ?preview=ai(운영자 카카오 간편 로그인 기기만 서버가 받음, 끄기 ?preview=off).
+     켜는 날은 서버 tools/agent-backend.gs 의 AI_ENABLED 도 함께 true 로 + 스크립트 속성 ANTHROPIC_API_KEY 필요(없으면 서버가 AI 를 끈 채 규칙 방식으로). 사용량: solve/admin/.
    SITE_VERIFY_DAUM: 다음 웹마스터도구 PIN 코드 줄 전체('#DaumWebMasterTool:…'). 넣으면 robots.txt 맨 아래에 붙어요. */
 window.JDJ_SITE = {
   SITE_URL: 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc',
@@ -62,6 +65,7 @@ window.JDJ_SITE = {
   PROACTIVE_ENABLED: false,
   PRO_TOOLS_ENABLED: false,
   GUIDE_ENABLED: false,
+  AI_ENABLED: false,
   BILLING_OPEN: false,
   PAID_OPEN: false,
   PAY_REVIEW: true

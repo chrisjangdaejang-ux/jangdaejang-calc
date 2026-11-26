@@ -49,7 +49,8 @@ module.exports = function makeEnv(o) {
       computeHmacSha256Signature: (v, k) => Array.from(crypto.createHmac('sha256', k).update(v).digest()).map(b => b > 127 ? b - 256 : b),
       base64Encode: s => Buffer.from(s).toString('base64'), sleep() {}, DigestAlgorithm: { SHA_256: 'sha256' }, Charset: { UTF_8: 'utf8' }
     },
-    UrlFetchApp: { fetch(url) {
+    UrlFetchApp: { fetch(url, opt) {
+      if (o.fetch) { const r = o.fetch(url, opt || {}, E); if (r) return r; }   // 시험용 가짜 외부 응답(예: AI 서버) — 없으면 아래 공개 자료
       const send = (code, j) => ({ getResponseCode: () => code, getContentText: () => JSON.stringify(j) });
       const u = url.replace(/[?&]v=\d+$/, ''), m = u.match(/jangdaejang-data\/data\/(.+)$/);
       if (m && E.data[m[1]] !== undefined) { const v = typeof E.data[m[1]] === 'function' ? E.data[m[1]]() : E.data[m[1]]; return v ? send(200, v) : send(404, {}); }

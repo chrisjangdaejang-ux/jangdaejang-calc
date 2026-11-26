@@ -5,6 +5,9 @@
    - 기억: 이미 넣어 둔 값(내 집 마련 계산 jdj_fin · 지역 jdj_region · 달력 jdj_cal · 청약 jdj_cy · 내 집 jdj_myhome · 길잡이 jdj_guide)은 다시 묻지 않아요.
      진행 상태·금액은 이 기기(localStorage jdj_guide)에만 저장해요.
    - 서버로 보내는 것: 고민 종류를 못 알아들은 문장만 — 화면에서 개인정보를 가리고(guide-core mask) 서버에서 한 번 더 가려 익명 집계(gdMiss). 금액·답은 보내지 않아요.
+   - AI 상담(대화창만): assets/config.js AI_ENABLED === true(서버 tools/agent-backend.gs AI_ENABLED 도 함께), 또는 운영자 미리 보기(?preview=ai — 서버가 운영자 카카오 계정만 받아요).
+     규칙이 못 알아들었거나 애매할 때만 서버 guideAI 를 불러 '어느 고민인지·문장 속 값·되물을 질문'만 받아요. 숫자는 늘 이 화면의 계산 엔진 결과예요.
+     보내는 것: 가린 문장(guide-core aiMask)·최근 대화 몇 줄·지금 고민·이미 아는 칸 이름(값은 안 보냄)·익명 기기 번호. 실패·한도·9초 넘으면 규칙 방식 그대로.
    window.JDJ_GUIDE = { on, load, mountTop, mountFlow } */
 (function (root) {
   'use strict';
@@ -12,7 +15,8 @@
   const BASE = JB.SITE, DATA = JB.DATA + 'data/', PV = 'jdj_guide_preview', KEY = 'jdj_guide', IN = 'jdj_guide_in';
   const ls = { get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }, del: k => { try { localStorage.removeItem(k); } catch (e) {} } };
   const jget = k => { try { return JSON.parse(ls.get(k) || 'null'); } catch (e) { return null; } };
-  (function () { try { const q = new URLSearchParams(location.search).get('preview'); if (q === 'guide') ls.set(PV, '1'); else if (q === 'off') ls.del(PV); } catch (e) {} })();
+  const PVAI = 'jdj_guide_ai', DEVK = 'jdj_gd_dev', AIOFF = 'jdj_gd_ai_off';
+  (function () { try { const q = new URLSearchParams(location.search).get('preview'); if (q === 'guide') ls.set(PV, '1'); else if (q === 'ai') { ls.set(PV, '1'); ls.set(PVAI, '1'); ls.del(AIOFF); } else if (q === 'off') { ls.del(PV); ls.del(PVAI); } } catch (e) {} })();
   function on() { return !!(root.JDJ_SITE && root.JDJ_SITE.GUIDE_ENABLED === true) || ls.get(PV) === '1'; }
   const preview = () => !(root.JDJ_SITE && root.JDJ_SITE.GUIDE_ENABLED === true) && ls.get(PV) === '1';
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -88,6 +92,33 @@
     const api = (root.JDJ_AGENTS && root.JDJ_AGENTS.api) || ''; if (!api) return;
     try { fetch(api, { method: 'POST', mode: 'no-cors', keepalive: true, headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'gdMiss', k, g: String(where || '').replace(/[^\w]/g, '').slice(0, 12), pv: preview() ? 1 : 0 }) }).catch(() => {}); } catch (e) {}
   }
+
+  /* ---------- AI 상담(대화창 해석기 — 서버 guideAI) ---------- */
+  const aiApi = () => (root.JDJ_AGENTS && root.JDJ_AGENTS.api) || '';
+  const aiLive = () => !!(root.JDJ_SITE && root.JDJ_SITE.AI_ENABLED === true);
+  /** AI 를 불러도 되는지: 켜짐(또는 운영자 미리 보기) + 서버 주소 + 오늘 한도로 멈추지 않음 */
+  function aiOn() { return !!aiApi() && (aiLive() || ls.get(PVAI) === '1') && ls.get(AIOFF) !== todayKst(); }
+  function devId() {
+    let d = ls.get(DEVK); if (d && /^[a-z0-9]{12,40}$/.test(d)) return d;
+    try { const b = new Uint8Array(12); root.crypto.getRandomValues(b); d = Array.from(b, x => x.toString(16).padStart(2, '0')).join(''); } catch (e) { d = (Date.now().toString(36) + Math.random().toString(36).slice(2)).replace(/[^a-z0-9]/g, '').slice(0, 24).padEnd(12, '0'); }
+    ls.set(DEVK, d); return d;
+  }
+  /** 서버에 한 번 묻기 → 해석 결과 r 또는 null(실패·한도·시간 초과 — 화면은 규칙 방식 그대로) */
+  async function aiAsk(st, log, text, D) {
+    if (!aiOn()) return null;
+    const body = Object.assign({ action: 'guideAI', dev: devId() }, C().aiReq(st, log, text, D));
+    if (!aiLive()) { try { const j = JSON.parse(ls.get('jdj_auth') || 'null'); if (j && /^[0-9a-f]{64}$/.test(String(j.s || ''))) body.s = j.s; } catch (e) {} }   // 미리 보기 동안만 운영자 확인용
+    const ctl = typeof AbortController !== 'undefined' ? new AbortController() : null, tm = setTimeout(() => { if (ctl) ctl.abort(); }, 9000);
+    try {
+      const res = await fetch(aiApi(), { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body), signal: ctl ? ctl.signal : undefined });
+      const j = await res.json();
+      if (j && j.ok && j.r) { stat('guide_ai', { r: 'ok' }); return j.r; }
+      if (j && /^(cap|user|off)$/.test(String(j.code || ''))) ls.set(AIOFF, todayKst());   // 오늘은 더 부르지 않음
+      stat('guide_ai', { r: String((j && j.code) || 'err').slice(0, 12) });
+      return null;
+    } catch (e) { stat('guide_ai', { r: 'timeout' }); return null; } finally { clearTimeout(tm); }
+  }
+  const AI_OFF_MSG = '죄송해요, 길잡이는 집·부동산 고민(사기·팔기·전월세·청약·세금·대출·재개발·이사)만 도와드려요.';
 
   /* ---------- 모양 ---------- */
   const CSS = `
@@ -761,6 +792,7 @@
 .gch-in{position:sticky;bottom:0;background:#fff;padding:10px 0 calc(10px + env(safe-area-inset-bottom));border-top:1px solid #EEF1F5;display:flex;gap:8px;z-index:5}
 .gch-in input{flex:1;min-width:0;font:inherit;font-size:16px;min-height:50px;padding:0 14px;border:1.5px solid #D4D1F5;border-radius:14px}.gch-in button{font:inherit;font-weight:800;min-height:50px;padding:0 18px;border:0;border-radius:14px;background:#4338CA;color:#fff;cursor:pointer}
 .gtyping{align-self:flex-start;color:#6B7684;font-size:13px}
+.gch-ai{margin:-4px 0 10px;font-size:12.5px;line-height:1.5;color:#4E5968;background:#F5F4FD;border-radius:10px;padding:6px 10px}
 body.gchat-on .jtab{display:none!important}body.gchat-on .foot{display:none}
 @media(max-width:600px){.gchat{min-height:calc(100vh - 120px);padding:4px 12px 0}.gch-in{position:fixed;left:0;right:0;bottom:0;padding:8px 12px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -2px 10px rgba(0,0,0,.05)}.gch-log{padding-bottom:84px}}
 @media(min-width:900px){.gchat{border:1px solid #E5E8EB;border-radius:22px;margin-top:10px;padding:10px 20px 0;box-shadow:0 4px 20px rgba(25,31,40,.06)}}`;
@@ -779,7 +811,7 @@ body.gchat-on .jtab{display:none!important}body.gchat-on .foot{display:none}
     let ST = null, LOG = [];
     try { const sv = jget(CK); if (sv && sv.st && Date.now() - (sv.t || 0) < 30 * 864e5) { ST = sv.st; LOG = sv.log || []; } } catch (e) {}
     const save = () => ls.set(CK, JSON.stringify({ st: ST, log: LOG.slice(-60), t: Date.now() }));
-    el.innerHTML = `<div class="gchat"><div class="gch-hd"><b>${esc(site())} 길잡이</b><a href="#" data-form="1">양식으로 보기</a><button type="button" data-reset="1">처음부터</button></div>
+    el.innerHTML = `<div class="gchat"><div class="gch-hd"><b>${esc(site())} 길잡이</b><a href="#" data-form="1">양식으로 보기</a><button type="button" data-reset="1">처음부터</button></div>${aiOn() ? `<p class="gch-ai">AI가 질문을 이해하는 데 도움을 받아요. 숫자는 ${esc(site())} 계산이에요</p>` : ''}
       <div class="gch-log" aria-live="polite"></div><form class="gch-in" novalidate><label for="gcIn" style="position:absolute;left:-9999px">답 입력</label><input id="gcIn" type="text" autocomplete="off" enterkeyhint="send" placeholder="자유롭게 적어 주세요"><button type="submit">보내기</button></form></div>`;
     el.hidden = false;
     const log = el.querySelector('.gch-log'), inp = el.querySelector('input');
@@ -831,13 +863,44 @@ body.gchat-on .jtab{display:none!important}body.gchat-on .foot{display:none}
         bot(card ? (sc.expert ? '말씀하신 조건으로 계산했어요. 세금·법률 판단은 자격 있는 전문가와 한 번 더 확인해 주세요. 다른 고민도 편하게 적어 주세요.' : '말씀하신 조건으로 계산했어요. 더 궁금한 점이나 다른 고민도 편하게 적어 주세요.') : '이 고민은 양식으로 넣으시면 정확히 계산해 드려요.');
       }
     }
+    /** AI 가 고른 고민으로 새로 시작: 기억한 값 → 이번 문장 규칙 값 → (비어 있는 칸만) AI 가 문장에서 찾은 값 */
+    function aiStart(P, t, D, ctx, mem) {
+      const sc = D.sc.find(x => x.id === P.id), st = C().chatStart('', D, ctx, mem);
+      st.id = sc.id; st.a = {}; st.from = {}; st.skip = []; st.tries = 0; st.ai = 1;
+      (sc.ask || []).forEach(k => { if (mem.m[k] != null) { st.a[k] = mem.m[k]; st.from[k] = mem.from[k]; } });
+      const sl = C().extract(t, ctx), ap = C().apply(sc, sl, st.a); st.a = ap.a; Object.assign(st.from, ap.from);
+      Object.keys(P.a || {}).forEach(k => { if (st.a[k] == null || st.a[k] === '') { st.a[k] = P.a[k]; st.from[k] = '적어 주신 문장'; } });
+      if (sc.id === 'find_home') st.nf = C().narrowInit(sl, D, '');
+      if (st.a.region && st.a.region.code) st.a.region = regionOf(DD.IX, st.a.region.code) || st.a.region;
+      return st;
+    }
+    const pri4 = D => D.sc.filter(x => x.pri).slice(0, 4).map(x => ['@' + x.id, x.t]);
+    /** AI 가 되묻는 질문 · 단추는 누르면 그 글자를 문장으로 보냄(~) */
+    const aiQuestion = P => bot((P.say ? P.say + ' ' : '') + P.ask, { quick: P.quick.length ? P.quick.map(x => ['~' + x, x]) : null });
     async function send(text, qv, qlabel) {
+      if (qv !== undefined && String(qv)[0] === '~') { text = String(qv).slice(1); qv = undefined; }
       const t = String(text || '').trim(); if (!t && qv === undefined) return;
-      const W = await warm(); const D = W.D, IX = W.IX, ctx = Object.assign(ctxOf(IX), { today: todayKst() });
+      const W = await warm(); const D = W.D, IX = W.IX, ctx = Object.assign(ctxOf(IX), { today: todayKst() }); DD.D = D; DD.IX = IX;
+      const prev = LOG.slice();
       LOG.push({ who: 'me', t: qlabel || t }); paint();
       const mem = memory(IX);
       if (!ST || !ST.id || ST.done && qv === undefined) {
         const s0 = C().chatStart(t, D, ctx, mem);
+        /* 규칙이 못 알아들었거나(고민 없음) 비슷한 고민이 여럿이라 애매할 때만 AI */
+        const weak = s0.id && s0.r && s0.r.top && s0.r.top.score < 5 && (s0.r.alts || []).length > 0;
+        if ((!s0.id || weak) && t && aiOn()) {
+          LOG.push({ who: 'bot', t: '…', typing: 1 }); paint();
+          const rr = await aiAsk(null, prev, t, D); LOG.pop();
+          const P = rr ? C().aiPlan(rr, null, D, ctx, t) : null;
+          if (P && P.kind === 'off') { bot(P.say || AI_OFF_MSG, { quick: pri4(D) }); ST = null; save(); paint(); return; }
+          if (P && P.kind === 'start') {
+            ST = aiStart(P, t, D, ctx, mem); const sc = D.sc.find(x => x.id === ST.id);
+            bot((P.say ? P.say + ' ' : '') + `‘${sc.t}’ 기준으로 계산해 볼게요.`);
+            LOG.push({ who: 'bot', t: '…', typing: 1 }); paint(); LOG.pop();
+            await think(D, IX); save(); paint(); return;
+          }
+          if (P && P.kind === 'ask' && !s0.id) { aiQuestion(P); ST = null; save(); paint(); return; }
+        }
         if (!s0.id) {
           const F = await feats().catch(() => null), fl = F ? C().findFeatures(t, F, D.lex).filter(featOn) : [];
           if (fl.length) bot('이 화면이 도움이 될 것 같아요.', { card: { head: fl[0].t, nums: [], ex: fl[0].d }, links: fl.slice(0, 3).map(f => ({ t: f.t, href: BASE + f.url })) });
@@ -855,7 +918,18 @@ body.gchat-on .jtab{display:none!important}body.gchat-on .foot{display:none}
           const r = C().chatAnswer(ST, t, D, ctx, qv);
           if (ST.a.region && ST.a.region.code && !ST.a.region.sd) ST.a.region = regionOf(IX, ST.a.region.code) || ST.a.region;
           if (r.switched) { ST = C().chatStart(t, D, ctx, mem); const sc = D.sc.find(x => x.id === ST.id); bot(`다른 고민이네요. ‘${sc.t}’ 기준으로 볼게요.`); }
-          else if (!r.ok) {
+          else if (!r.ok && t && aiOn()) {
+            LOG.push({ who: 'bot', t: '…', typing: 1 }); paint();
+            const rr = await aiAsk(ST, prev, t, D); LOG.pop();
+            const P = rr ? C().aiPlan(rr, ST, D, ctx, t) : null;
+            if (P && P.kind === 'fill') { Object.keys(P.a).forEach(k => { ST.a[k] = P.a[k]; ST.from[k] = '대화'; }); if (P.a.region && P.a.region.code) ST.a.region = regionOf(IX, P.a.region.code) || P.a.region; if (P.say) bot(P.say); }
+            else if (P && P.kind === 'start') { ST = aiStart(P, t, D, ctx, mem); const sc = D.sc.find(x => x.id === ST.id); bot(`다른 고민이네요. ‘${sc.t}’ 기준으로 볼게요.`); }
+            else if (P && P.kind === 'off') { bot(P.say || AI_OFF_MSG); save(); paint(); return; }
+            else if (P && P.kind === 'ask') { aiQuestion(P); save(); paint(); return; }
+            else r.ai = 0;
+            if (r.ai !== 0) { LOG.push({ who: 'bot', t: '…', typing: 1 }); paint(); LOG.pop(); await think(D, IX); save(); paint(); return; }
+          }
+          if (!r.ok && !r.switched) {
             const nx = ST.asked ? (ST.asked.nf ? { key: ST.asked.key, nf: 1, q: D.narrow.q[ST.asked.key] } : { key: ST.asked.key, q: D.q[ST.asked.key] }) : null;
             if (!nx) { ST.done = true; save(); return send(t); }
             bot('제가 잘 못 알아들었어요. ' + C().chatHint(nx), { quick: (C().chatNext(Object.assign({}, ST, { asked: null }), D, null) || { quick: [] }).quick.map(x => [String(x[0]), x[1]]) });
