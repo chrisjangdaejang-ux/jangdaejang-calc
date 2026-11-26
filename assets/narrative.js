@@ -27,6 +27,8 @@
   const pctAbs = v => r1(v * 100) + '%';                                  // 0.268 → '26.8%'
   const pctSg = v => (v > 0.0005 ? '+' : v < -0.0005 ? '−' : '') + r1(v * 100) + '%';
   const n0 = v => Math.round(v).toLocaleString('ko-KR');
+  /* 만원 → '1억 2,973만'(뒤에 ' 원'을 붙여 씀) — 평당가·㎡당 값이 1억을 넘으면 억 단위로(assets/mine-core.js manS 와 같은 규칙) */
+  const manS = v => { v = Math.round(v); const e = Math.floor(Math.abs(v) / 10000), r = Math.abs(v) % 10000; return (v < 0 ? '-' : '') + (e ? e.toLocaleString('ko-KR') + '억' + (r ? ' ' + n0(r) + '만' : '') : n0(r) + '만'); };
   /* 신설역 이름·거리 — 개통 전 예정 위치(엔진 rail.py pl=1, 거리 50m 단위)면 '○○역(개통 예정) · 예정 위치 기준 약 ○m'.
      개통해서 서울시 역사마스터 정보(공공 좌표)에 들어오면 엔진이 pl 을 빼서 자동으로 보통 표시 */
   const rlNm = R => R.pl ? `${/역$/.test(R.st || '') ? R.st : (R.st || '') + '역'}(개통 예정)` : R.st;
@@ -890,7 +892,7 @@
       const ch = sm.ch1, gc = c.gch1;
       const t = `전셋값이 최근 1년 ${Math.abs(ch.pct) < 0.01 ? `${pctSg(ch.pct)}로 비슷해요` : `${P1(Math.abs(ch.pct))} ${ch.pct > 0 ? '올랐어요' : '내렸어요'}`}` + (gc ? `(${SG} 아파트 전체 ${pctSg(gc.pct)}).` : '.');
       const fact = `${nm}${bandTxt} 전세 시세는 ${ymKo(ch.fromAt)} ${won(ch.from)}에서 ${ymKo(ch.toAt)} ${J(won(ch.to), '으로', '로')}${Math.abs(ch.pct) < 0.01 ? ' 비슷해요.' : ` ${P1(Math.abs(ch.pct))} ${ch.pct > 0 ? '올랐어요' : '내렸어요'}.`}`;
-      const cmp = gc && c.gLast ? `같은 기간 ${SG} 아파트 전체 전셋값(3.3㎡당 ${n0(c.gLast.v)}만 원)은 ${pctSg(gc.pct)}예요.` : '';
+      const cmp = gc && c.gLast ? `같은 기간 ${SG} 아파트 전체 전셋값(3.3㎡당 ${manS(c.gLast.v)} 원)은 ${pctSg(gc.pct)}예요.` : '';
       const past = sm.ch3 ? `3년 전(${ymKo(sm.ch3.fromAt)}) 전세 시세는 ${J(won(sm.ch3.from), '으로', '로')}, 지금은 그때보다 ${Math.abs(sm.ch3.pct) < 0.01 ? '비슷해요' : `${P1(Math.abs(sm.ch3.pct))} ${sm.ch3.pct > 0 ? '높아요' : '낮아요'}`}.` : '';
       const dv = ch.to - ch.from;
       const so = Math.abs(ch.pct) < 0.01 ? `그래서 같은 집을 1년 전과 비슷한 ${won(ch.to)} 안팎에 구할 수 있어요.` : `그래서 같은 집을 구하려면 1년 전보다 ${won(Math.abs(dv))} ${dv > 0 ? '더 줘야' : '덜 줘도'} 돼요.`;
@@ -950,17 +952,17 @@
     /* 같은 구 아파트 평균과 3.3㎡당 전셋값 비교(다른 줄이 모자랄 때 채움) */
     if (apt && j && c.area > 0 && c.gLast && c.gLast.v > 0) {
       const per = j / c.area * 3.3058, gv = c.gLast.v, dv = per / gv - 1, same = Math.abs(dv) < 0.02;
-      const t = `3.3㎡당 전셋값 ${n0(per)}만 원 — ${SG} 아파트 평균(${n0(gv)}만 원)${same ? '과 비슷해요.' : `보다 ${Math.round(Math.abs(dv) * 100)}% ${dv > 0 ? '높아요' : '낮아요'}.`}`;
-      const fact = `${nm}${bandTxt} 전세 시세 ${J(won(j), '을', '를')} 전용 ${r1(c.area)}㎡로 나눠 3.3㎡당 값으로 바꾸면 ${n0(per)}만 원이에요.`;
-      const cmp = `${SG} 아파트 전체 전셋값은 ${ymKo(c.gLast.at)} 기준 3.3㎡당 ${n0(gv)}만 원이에요.`;
+      const t = `3.3㎡당 전셋값 ${manS(per)} 원 — ${SG} 아파트 평균(${manS(gv)} 원)${same ? '과 비슷해요.' : `보다 ${Math.round(Math.abs(dv) * 100)}% ${dv > 0 ? '높아요' : '낮아요'}.`}`;
+      const fact = `${nm}${bandTxt} 전세 시세 ${J(won(j), '을', '를')} 전용 ${r1(c.area)}㎡로 나눠 3.3㎡당 값으로 바꾸면 ${manS(per)} 원이에요.`;
+      const cmp = `${SG} 아파트 전체 전셋값은 ${ymKo(c.gLast.at)} 기준 3.3㎡당 ${manS(gv)} 원이에요.`;
       const so = `그래서 같은 넓이를 ${SG} 평균 값으로 빌리면 약 ${won(gv * c.area / 3.3058)}이에요.`;
       L.push({ k: 'jgu', t, d: [fact, cmp, '', so] });
     }
     /* 전세 vs 월세(전환율): 다른 줄이 모자랄 때 채움 */
     if (j && sm.wr && sm.wr.v > 0 && sm.wd && j > sm.wd.v) {
       const cv = sm.wr.v * 12 / (j - sm.wd.v), cvT = `${(Math.round(cv * 1000) / 10).toFixed(1)}%`;
-      const t = `월세는 보증금 ${won(sm.wd.v) || '0원'}에 월 ${n0(sm.wr.v)}만 원 — 전세와 견준 전환율은 연 ${cvT}예요.`;
-      const fact = `${nm}${bandTxt} 최근 월세 시세는 ${ymKo(sm.wr.at)} 기준 보증금 ${won(sm.wd.v) || '0원'}, 월 ${n0(sm.wr.v)}만 원이에요.`;
+      const t = `월세는 보증금 ${won(sm.wd.v) || '0원'}에 월 ${manS(sm.wr.v)} 원 — 전세와 견준 전환율은 연 ${cvT}예요.`;
+      const fact = `${nm}${bandTxt} 최근 월세 시세는 ${ymKo(sm.wr.at)} 기준 보증금 ${won(sm.wd.v) || '0원'}, 월 ${manS(sm.wr.v)} 원이에요.`;
       const cmp = `전세 ${J(won(j), '과', '와')} 월세 보증금의 차이 ${won(j - sm.wd.v)}에 대해 1년 월세 ${won(sm.wr.v * 12)}을 내는 셈이라 연 ${cvT}예요.`;
       const so = `그래서 전세대출 금리가 연 ${cvT}보다 낮으면 전세가, 높으면 월세가 매달 덜 들어요.`;
       L.push({ k: 'jw', t, d: [fact, cmp, '', so] });
@@ -994,7 +996,7 @@
     else if (allOut) head = `${A} 같은 동 정비구역 ${(b.z || []).length}곳의 공식 경계 밖이에요.`;
     else head = `${A} 같은 동에 연결된 재개발 정비구역이 0곳이에요.`;
     let land = null;
-    if (ppOk && dmm && dmm.m > 0) { const dv = b.pp / dmm.m - 1; land = [`대지지분 평당가 ${n0(b.pp)}만 원은 ${D} 빌라 중간값` + (Math.abs(dv) < 0.02 ? '과 비슷하' : `보다 ${Math.round(Math.abs(dv) * 100)}% ${dv > 0 ? '비싸' : '싸'}`), Math.abs(dv) < 0.02 ? '비슷해요' : dv > 0 ? '비싸요' : '싸요']; }
+    if (ppOk && dmm && dmm.m > 0) { const dv = b.pp / dmm.m - 1; land = [`대지지분 평당가 ${manS(b.pp)} 원은 ${D} 빌라 중간값` + (Math.abs(dv) < 0.02 ? '과 비슷하' : `보다 ${Math.round(Math.abs(dv) * 100)}% ${dv > 0 ? '비싸' : '싸'}`), Math.abs(dv) < 0.02 ? '비슷해요' : dv > 0 ? '비싸요' : '싸요']; }
     if (land && age != null) head += ` ${land[0]}고, ${b.y}년에 지은 ${age}년 된 건물이에요.`;
     else if (land) head += ' ' + land[0].replace(/(비슷하|비싸|싸)$/, land[1]) + '.';
     else if (age != null) head += ` ${b.y}년에 지은 ${age}년 된 건물이에요.`;
@@ -1012,11 +1014,11 @@
     if (ppOk && dmm && dmm.m > 0) {
       const dv = b.pp / dmm.m - 1, same = Math.abs(dv) < 0.02;
       const all = (c.allB || []).filter(x => x.pp > 0 && x.l > 0 && !(x.l > x.a * 4)).map(x => x.pp), gm = all.length >= 5 ? median(all) : null;
-      const t = `대지지분 평당가 ${n0(b.pp)}만 원 — ${D} 빌라 중간값(${n0(dmm.m)}만 원, ${n0(dmm.c)}건)${same ? '과 비슷해요.' : `보다 ${Math.round(Math.abs(dv) * 100)}% ${dv > 0 ? '비싸요' : '싸요'}.`}`;
-      const fact = `${A} 최근 거래가 ${won(b.p)}, 대지권 ${r1(b.l)}㎡(${r1(b.l / 3.3058)}평)라 대지지분 평당가가 ${n0(b.pp)}만 원이에요.`;
+      const t = `대지지분 평당가 ${manS(b.pp)} 원 — ${D} 빌라 중간값(${manS(dmm.m)} 원, ${n0(dmm.c)}건)${same ? '과 비슷해요.' : `보다 ${Math.round(Math.abs(dv) * 100)}% ${dv > 0 ? '비싸요' : '싸요'}.`}`;
+      const fact = `${A} 최근 거래가 ${won(b.p)}, 대지권 ${r1(b.l)}㎡(${r1(b.l / 3.3058)}평)라 대지지분 평당가가 ${manS(b.pp)} 원이에요.`;
       const zi = z0 && z0.pin && z0.pout && z0.pin[0] && z0.pout[0] ? z0 : null;
-      const cmp = [`${D} 빌라 최근 12개월 ${n0(dmm.c)}건의 대지지분 평당가 중간값은 ${n0(dmm.m)}만 원이에요.`, gm ? `${SG} 빌라 ${n0(all.length)}곳 중간값은 ${n0(gm)}만 원이에요.` : '',
-        zi ? `${zi.n} 구역 안 거래는 ${n0(zi.pin[0])}만 원(${zi.pin[1]}건), 같은 동 구역 밖은 ${n0(zi.pout[0])}만 원(${zi.pout[1]}건)이에요.` : ''].filter(Boolean).join(' ');
+      const cmp = [`${D} 빌라 최근 12개월 ${n0(dmm.c)}건의 대지지분 평당가 중간값은 ${manS(dmm.m)} 원이에요.`, gm ? `${SG} 빌라 ${n0(all.length)}곳 중간값은 ${manS(gm)} 원이에요.` : '',
+        zi ? `${zi.n} 구역 안 거래는 ${manS(zi.pin[0])} 원(${zi.pin[1]}건), 같은 동 구역 밖은 ${manS(zi.pout[0])} 원(${zi.pout[1]}건)이에요.` : ''].filter(Boolean).join(' ');
       const so = same ? `그래서 같은 돈으로 ${D} 중간 수준과 비슷한 대지지분을 사는 셈이에요(차이 ${Math.round(Math.abs(dv) * 100)}%).`
         : `그래서 같은 돈으로 ${D} 중간 수준보다 대지지분을 ${Math.round(Math.abs(dmm.m / b.pp - 1) * 100)}% ${dv < 0 ? '더 많이' : '덜'} 사는 셈이에요.`;
       L.push({ k: 'land', t, d: [fact, cmp, '', so] });
@@ -1045,10 +1047,10 @@
       const per = b.p / b.a, at = ymKo(String(b.dt).slice(0, 6));
       const ps = (c.dongB || []).filter(x => x !== b && x.p > 0 && x.a > 0).map(x => x.p / x.a), md = ps.length >= 5 ? median(ps) : null;
       const dv = md ? per / md - 1 : 0, same = Math.abs(dv) < 0.02;
-      const t = `최근 거래 ${won(b.p)}(${at}, 전용 ${r1(b.a)}㎡)` + (md ? ` — 전용 ㎡당 ${n0(per)}만 원으로 ${D} 빌라 중간값(${n0(md)}만 원)${same ? '과 비슷해요.' : `보다 ${Math.round(Math.abs(dv) * 100)}% ${dv > 0 ? '비싸요' : '싸요'}.`}` : '예요.');
-      const fact = `${A} ${at}에 전용 ${r1(b.a)}㎡가 ${won(b.p)}에 거래됐어요(전용 ㎡당 ${n0(per)}만 원).`;
-      const cmp = md ? `최근 거래가 있는 ${D} 빌라 ${ps.length}곳의 전용 ㎡당 거래가 중간값은 ${n0(md)}만 원이에요.` : '';
-      const so = md ? `그래서 같은 넓이(전용 ${r1(b.a)}㎡)를 ${D} 중간 수준 값으로 사면 약 ${won(md * b.a)}이에요.` : `그래서 전용 3.3㎡(1평)당 ${n0(per * 3.3058)}만 원에 거래된 셈이에요.`;
+      const t = `최근 거래 ${won(b.p)}(${at}, 전용 ${r1(b.a)}㎡)` + (md ? ` — 전용 ㎡당 ${manS(per)} 원으로 ${D} 빌라 중간값(${manS(md)} 원)${same ? '과 비슷해요.' : `보다 ${Math.round(Math.abs(dv) * 100)}% ${dv > 0 ? '비싸요' : '싸요'}.`}` : '예요.');
+      const fact = `${A} ${at}에 전용 ${r1(b.a)}㎡가 ${won(b.p)}에 거래됐어요(전용 ㎡당 ${manS(per)} 원).`;
+      const cmp = md ? `최근 거래가 있는 ${D} 빌라 ${ps.length}곳의 전용 ㎡당 거래가 중간값은 ${manS(md)} 원이에요.` : '';
+      const so = md ? `그래서 같은 넓이(전용 ${r1(b.a)}㎡)를 ${D} 중간 수준 값으로 사면 약 ${won(md * b.a)}이에요.` : `그래서 전용 3.3㎡(1평)당 ${manS(per * 3.3058)} 원에 거래된 셈이에요.`;
       L.push({ k: 'deal', t, d: [fact, cmp, '', so] });
     }
     return mk('villa', head, L, { names: [nm, D, SG, z0 && z0.n, b.n].filter(Boolean) });
@@ -1068,7 +1070,7 @@
         + (mort ? `, 주택담보대출 금리(${mort.v}%)보다 ${r1(Math.abs(y.r * 100 - mort.v))}%p ${y.r * 100 >= mort.v ? '높아요' : '낮아요'}.` : '.');
       if (mort && y.r * 100 < mort.v) head += ' 대출을 끼고 사면 월세로 이자를 다 못 내요.';
       const t = `수익률 ${P1(y.r)}` + (g ? ` — ${SG} 오피스텔 ${g[2]}곳 중 ${RT(g)}` : '') + (u.rk && u.rk.d ? `, 같은 동 ${u.rk.d[2]}곳 중 ${RT(u.rk.d)}` : '') + '.';
-      const fact = `${A} 최근 1년 월세 계약 ${n0(y.nw || 0)}건과 매매 ${n0(y.ns || 0)}건으로 계산한 표면 수익률이 ${P1(y.r)}예요(${ymKo(y.at)} 기준, 보증금 ${won(y.dep)} · 월세 ${n0(y.mr)}만 원 예시).`;
+      const fact = `${A} 최근 1년 월세 계약 ${n0(y.nw || 0)}건과 매매 ${n0(y.ns || 0)}건으로 계산한 표면 수익률이 ${P1(y.r)}예요(${ymKo(y.at)} 기준, 보증금 ${won(y.dep)} · 월세 ${manS(y.mr)} 원 예시).`;
       const cmp = gm ? `${SG}에서 수익률을 계산할 수 있는 오피스텔 ${gm[1]}곳의 중간값은 ${P1(gm[0])}예요.` : '';
       const ys = (u.ys || []).filter(v => v > 0), y1 = ys.length > 12 ? ys[ys.length - 13] / 1000 : null;
       const past = y1 ? `1년 전 수익률은 ${P1(y1)}였어요 — ${Math.abs(y.r - y1) < 0.001 ? '비슷해요' : `${r1(Math.abs(y.r - y1) * 100)}%p ${y.r > y1 ? '올랐어요' : '내렸어요'}`}.` : '';
@@ -1149,13 +1151,13 @@
       const t = `한 번에 나가는 비용 ${W(c.oneOff)}` + (be != null ? ` — 두 집이 같이 ${P1(be)} 넘게 올라야 메워져요.` : ` — 더 싼 집으로 옮겨 집값 차이 ${J(W(c.sale - c.P2), '으로', '로')} 채워요.`);
       const fact = `양도세 ${cg}, 매도 중개보수 ${W(c.fee)}, 새 집 취득세·중개 ${W(c.buyCost2)}, 기타 ${W(c.etc) || '0원'}을 더한 값이에요.`;
       const cmp = c.n3 != null && c.pickName ? `비교 단지 ${c.pickName}의 약 3년 평당가 변동은 ${pctSg(c.n3)}예요.` : '';
-      const mon = c.keepMonthly != null ? `매달 대출 상환은 ${n0(c.newMonthly)}만 원으로 지금보다 ${n0(Math.abs(c.newMonthly - c.keepMonthly))}만 원 ${c.newMonthly >= c.keepMonthly ? '늘어요' : '줄어요'}.` : `매달 대출 상환은 ${n0(c.newMonthly)}만 원이에요.`;
+      const mon = c.keepMonthly != null ? `매달 대출 상환은 ${manS(c.newMonthly)} 원으로 지금보다 ${manS(Math.abs(c.newMonthly - c.keepMonthly))} 원 ${c.newMonthly >= c.keepMonthly ? '늘어요' : '줄어요'}.` : `매달 대출 상환은 ${manS(c.newMonthly)} 원이에요.`;
       const so = be != null ? `그래서 갈아탄 뒤 집값이 ${P1(be)} 넘게 오르지 않으면 지금 집에 남는 쪽이 순자산이 더 커요. ${mon}` : `그래서 갈아타면 순자산은 비용만큼 줄지만 대출은 ${W(c.L) || '0원'}으로 맞춰져요. ${mon}`;
       L.push({ k: 'cost', t, d: [fact, cmp, '', so] });
     }
     if (c.pick && c.pick.fv != null) {
       const p = c.pick;
-      const t = `예산 안 미래가치 1위: ${p.apt} ${p.band}(${p.fv}점, ${p.rank}) — 추정 시세 ${W(p.P)}, 매달 상환 ${n0(p.mon)}만 원.`;
+      const t = `예산 안 미래가치 1위: ${p.apt} ${p.band}(${p.fv}점, ${p.rank}) — 추정 시세 ${W(p.P)}, 매달 상환 ${manS(p.mon)} 원.`;
       const fact = `${p.apt} ${p.band}는 ${p.sido} ${p.sgg} ${p.dong} 단지예요(추정 시세 ${W(p.P)}).`;
       const cmp = `예산 안에 드는 단지 ${n0(p.total)}곳 중 미래가치 점수가 가장 높아요.` + (p.ch3 != null ? ` 약 3년 평당가 변동은 ${pctSg(p.ch3)}예요.` : '');
       const so = `그래서 대출·취득세를 다 내고도 ${W(p.left) || '0원'}이 남는 단지 중 가장 먼저 볼 곳이에요.`;

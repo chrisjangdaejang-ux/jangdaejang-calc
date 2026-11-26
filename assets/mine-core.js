@@ -727,11 +727,18 @@
     try { Object.defineProperty(f, '_c', { value: 1, enumerable: false }); } catch (e) {}
     return f;
   }
+  /** 만원 → 억 단위 짧은 표기(뒤에 '원' 없음): 12973 → '1억 2,973만', 10000 → '1억', 9500 → '9,500만'.
+      ㎡당·3.3㎡당 값처럼 1억을 넘을 수 있는 단가에 쓴다(예전 '12,973만' 표기는 자릿수를 세야 읽혔음). 뒤에 ' 원'·'원'을 붙여 씀 */
+  function manS(man) {
+    man = Math.round(+man || 0); const neg = man < 0; man = Math.abs(man);
+    const e = Math.floor(man / 10000), r = man % 10000;
+    return (neg ? '-' : '') + (e ? e.toLocaleString('ko-KR') + '억' + (r ? ' ' + r.toLocaleString('ko-KR') + '만' : '') : r.toLocaleString('ko-KR') + '만');
+  }
   const pctTxt = (v, d) => v == null ? '-' : (v > 0 ? '+' : '') + (v * 100).toFixed(d == null ? 1 : d) + '%';
 
   const API = { PY, r100, STORE_KEY, MAX_HOMES, FEW, NICK, counts, lastIdx, median, toPrice, ymLabel, xTicks, danjiKey, agentKey, premiumKey, groupDanji, searchDanji,
     normName, normLight, splitNum, matchName, matchDanji, matchedAlias, suggestDanji, missRows, MISS_WHY, logMiss, dice, listRow, unitKey, hasScore, scoreOf, monthDeals, trades, lastDeal, isFew,
-    bandSummary, changeBack, dongPosition, sggPosition, trend, volume, volumeCounts, cleanHome, homeId, parseStore, dumpStore, addHome, removeHome, findUnit, areaTypes, areaPick, areaUnit, vsBuy, heldMonths, reasons, reasonItems, won, pctTxt, cleanFx,
+    bandSummary, changeBack, dongPosition, sggPosition, trend, volume, volumeCounts, cleanHome, homeId, parseStore, dumpStore, addHome, removeHome, findUnit, areaTypes, areaPick, areaUnit, vsBuy, heldMonths, reasons, reasonItems, won, manS, pctTxt, cleanFx,
     ymAdd, ymDiff, ymKo, decodeSeries, histRow, histSeries, jrNow, histJrMap, JR_BASIS, histWindow, histSpans, sggLine, vsSgg, highs, isNewHigh, lineParts, isSparse, valAt, gapOf, monthPoint, defaultBand, dealSeries };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_MINE = API;

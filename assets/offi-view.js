@@ -55,7 +55,7 @@
   }
 
   /* ---------- 탭 ---------- */
-  const HIDE = ['homesSec', 'findSec', 'res', 'src'];
+  const HIDE = ['homesSec', 'favSec', 'findSec', 'res', 'src'];   /* favSec '관심 단지'는 아파트 목록이라 다른 탭에선 숨김 */
   /* 숨김 기록은 상가·건물 탭(comm-view.js)과 같이 씀 — 아파트 탭으로 돌아올 때만 되살림 */
   function setTab(t, push) {
     const tabs = $('mtabs'); if (!tabs) return;
@@ -261,7 +261,7 @@
       ${ar ? `<p class="basis">대신 ${esc(nm)} 오피스텔의 최근 1년 계약을 정리했어요.${far((ar.j || ar.w || {}).area) ? ` 이 계약들의 전용면적 중간값은 ${(ar.j || ar.w).area}㎡라서, 전용 ${u.a}㎡인 이 건물과 크기가 많이 달라요. 참고로만 봐 주세요.` : ''}</p>
       <div class="stats">
         ${ar.j ? `<div class="st"><div class="k">전세 보증금 중간값</div><div class="v">${won(ar.j.dep)}</div><div class="d">전세 ${ar.j.n.toLocaleString()}건 · 전용 중간값 ${ar.j.area}㎡</div></div>
-        <div class="st"><div class="k">전세 ㎡당 보증금</div><div class="v">${Math.round(ar.j.ppm).toLocaleString()}만 원</div><div class="d">전용 1㎡당 중간값</div></div>` : ''}
+        <div class="st"><div class="k">전세 ㎡당 보증금</div><div class="v">${M.manS(ar.j.ppm)} 원</div><div class="d">전용 1㎡당 중간값</div></div>` : ''}
         ${ar.w ? `<div class="st"><div class="k">월세 중간값</div><div class="v">${won(ar.w.dep)} / 월 ${ar.w.rent.toLocaleString()}만</div><div class="d">월세 ${ar.w.n.toLocaleString()}건 · 전용 중간값 ${ar.w.area}㎡</div></div>` : ''}
       </div>` : `<p class="basis">${esc(sggName(S.g))} 오피스텔 전월세 요약은 다음 자료 갱신 때 함께 보여 드려요.</p>`}
       ${filling() ? FILL_NOTE : ''}</div>`;
@@ -333,7 +333,7 @@ ${rentPanel(u, j)}
         <div class="st"><div class="k">월세 계약</div><div class="v">${y.nw}건</div><div class="d">최근 1년 · 매매 ${y.ns}건 기준</div></div>
       </div>
       <p class="basis"><b>예시(전용 ${u.a}㎡)</b> · 매매가 약 ${won(ex.price)} − 보증금 ${won(ex.dep)} = 들어가는 돈 ${won(ex.cash)} · 월세 ${ex.rent.toLocaleString()}만 원 × 12 = 1년 ${won(ex.year)} → 약 ${O.pct(ex.r)} (보증금·월세는 최근 1년 월세 계약의 중간값)</p>
-      <p class="basis"><b>계산 근거</b> · 매매가 = 이 건물 최근 매매 실거래 ㎡당 가격 중간값(${Math.round(y.p).toLocaleString()}만 원/㎡) × 각 월세 계약의 전용면적. 최근 1년 월세 계약 하나하나의 수익률을 구한 뒤 가운데 값(중간값)을 써요. 전세(월세 0) 계약은 빼요.</p>`
+      <p class="basis"><b>계산 근거</b> · 매매가 = 이 건물 최근 매매 실거래 ㎡당 가격 중간값(${M.manS(y.p)} 원/㎡) × 각 월세 계약의 전용면적. 최근 1년 월세 계약 하나하나의 수익률을 구한 뒤 가운데 값(중간값)을 써요. 전세(월세 0) 계약은 빼요.</p>`
       : `<p class="note" style="font-size:15px">이 건물은 최근 매매나 월세 계약이 적어 수익률을 계산하지 않았어요(확인 불가). 계약 몇 건으로 계산하면 실제와 크게 다를 수 있어서예요.</p>`}
       ${u.ys ? `<div class="chead" style="margin-top:12px"><h3>수익률 추이 (최근 5년)</h3></div><div class="of-chart" id="ofCY"></div>
       <div class="of-lg"><span><i class="y"></i>이 건물</span>${s.ys ? `<span><i class="g"></i>${esc(sggName(S.g))} 오피스텔 중간값</span>` : ''}<span><i class="gap y2"></i>값이 없던 기간</span></div>

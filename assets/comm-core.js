@@ -18,10 +18,10 @@
     return out;
   }
   function monthsFrom(a, b) { const m = M(), out = []; if (!a || !b) return out; for (let ym = a; ym <= b; ym = m.ymAdd(ym, 1)) out.push(ym); return out; }
-  /** 1366.1 → '1,366만 원' (㎡당) */
-  const perM2 = v => v == null || !isFinite(v) ? '-' : Math.round(v).toLocaleString() + '만 원';
+  /** 1366.1 → '1,366만 원', 12973 → '1억 2,973만 원' (㎡당, 억 단위는 mine-core manS) */
+  const perM2 = v => v == null || !isFinite(v) ? '-' : M().manS(v) + ' 원';
   /** ㎡당 → 3.3㎡(1평)당 */
-  const perPy = v => v == null || !isFinite(v) ? '-' : Math.round(v * PY).toLocaleString() + '만 원';
+  const perPy = v => v == null || !isFinite(v) ? '-' : M().manS(v * PY) + ' 원';
   /** 마지막 값(최근 3개월 안) */
   function latest(a, months) {
     for (let i = a.length - 1; i >= Math.max(0, a.length - 3); i--) if (a[i] > 0) return { v: a[i], at: months[i], stale: i < a.length - 1 };
@@ -80,6 +80,15 @@
     const months = monthsFrom(doc.hm, doc.to), n = months.length;
     return { months, s: arr(u.s, n) };
   }
+  /** 모든 칸이 같은 거래 행 묶기 → [[행, 건수]…](처음 나온 순서). 국토교통부 원자료에는 거래 번호가 없어, 같은 날 같은 건물에서
+      같은 면적·같은 값으로 여러 칸을 산 거래가 똑같은 행으로 여러 번 온다. 따로 신고된 거래일 수 있어 지우지 않고 건수로 보여 준다.
+      한 칸이라도 다르면(층·면적·금액·직거래 표시 등) 다른 거래로 둔다. 검색용 페이지(엔진 seo_pages.comm_group)와 같은 규칙 */
+  function sameGroup(rows) {
+    const out = [], at = new Map();
+    (rows || []).forEach(t => { const k = JSON.stringify(t); if (at.has(k)) out[at.get(k)][1]++; else { at.set(k, out.length); out.push([t, 1]); } });
+    return out;
+  }
+  const sameTxt = n => n > 1 ? `같은 날 같은 조건 ${n}건` : '';
   function unitTrades(u) { return (u.t || []).map(t => ({ date: ymd(t[0]), area: t[1], floor: t[2], amt: t[3], hi: t[4] === 1, direct: !!(t[5] & 1), share: !!(t[5] & 2) })); }
 
   /** 점수 상태: 'ready'(통과 기간 있음) | 'filling'(과거 자료 채우는 중) | 'short'(자료 짧음) | 'fail' | 'nodata' */
@@ -138,9 +147,18 @@
       area: String(r[0]).split('>').map(s => s.trim()).filter(Boolean).join(' › '), how: r[1],
       items: Object.entries(r[2] || {}).map(([k, x]) => {
         const [typ, met] = k.split('|');
-        return { typ, met, label: `${typ} ${RMET[met] || met}`, v: x[0], unit: x[2] || (met === 'rent' ? '' : '%'), at: x[3] || x[1] };
+        return { typ, met, label: `${typ} ${RMET[met] || met}`, v: x[0], unit: x[2] || (met === 'rent' ? '' : '%'), at: x[3] || x[1], y: x[4] != null && isFinite(x[4]) ? +x[4] : null };
       }).sort((a, b) => a.label.localeCompare(b.label, 'ko'))
     }));
+  }
+  /** 부동산원 값 표기: 공실률 소수 첫째 자리, 임대료(천원/㎡) → '㎡당 6만 5,776원', 소득·투자수익률은 발표 단위가 '분기(3개월)'라
+      '분기 0.11%' + 엔진이 낸 최근 4개 분기 합(x[4])이 있으면 '최근 1년 1.04%'. 기간 없이 '0.112%'만 쓰면 1년 수익률로 오해할 수 있어서 */
+  function roneVal(i) {
+    const v = +i.v; if (!isFinite(v)) return '-';
+    if (i.met === 'vac') return v.toFixed(1) + '%';
+    if (i.met === 'rent') return i.unit === '천원/㎡' ? `㎡당 ${Math.round(v * 1000).toLocaleString('ko-KR')}원` : `${Math.round(v * 10) / 10}${i.unit}`;
+    if (i.met === 'inc' || i.met === 'inv') return `분기 ${v.toFixed(2)}%` + (i.y != null ? ` · 최근 1년 ${i.y.toFixed(2)}%` : '');
+    return `${v}${i.unit}`;
   }
   const HOW = { sgg: '이 시·군·구 이름이 들어간 상권', dong: '이 시·군·구 안 동 이름과 같은 상권', sido: '시·도 전체 평균' };
 
@@ -190,7 +208,7 @@
   }
 
   const API = { PY, TYPES, LU, RMET, HOW, arr, monthsFrom, perM2, perPy, latest, lastAny, regionSeries, yearText, trades, estOf, estFacts, estSrc, EST_LABEL, tradePpm, keyOf, nameOf, dongs, inDong,
-    findJibun, unitSeries, unitTrades, passed, scoreState, etaText, scoreHead, btText, btLines, scoreRank, roneRows, skRows, qLabel, eokWon, skSummary, demandRows, supplyRow };
+    findJibun, unitSeries, unitTrades, passed, scoreState, etaText, scoreHead, btText, btLines, scoreRank, roneRows, roneVal, sameGroup, sameTxt, skRows, qLabel, eokWon, skSummary, demandRows, supplyRow };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_COMM = API;
 })(typeof self !== 'undefined' ? self : this);

@@ -45,24 +45,24 @@
 <script src="../assets/watch.js?v=9"></script>
 <script src="../assets/kchat.js?v=4"></script>
 <script src="../assets/plain-words.js?v=20"></script>
-<script src="../assets/narrative.js?v=26"></script>
+<script src="../assets/narrative.js?v=27"></script>
 <script src="../assets/strength.js?v=5"></script>
 <script src="../assets/conf.js?v=4"></script>
 <script src="../assets/result.js?v=1"></script>
 <script src="../assets/life-view.js?v=3"></script>
 <script src="../assets/fac-view.js?v=1"></script>
-<script src="../assets/mine-core.js?v=24"></script>
+<script src="../assets/mine-core.js?v=25"></script>
 <script src="../assets/ask-core.js?v=9"></script>
 <script src="../assets/ask.js?v=6"></script>
 <script src="../assets/price-sheet.js?v=26"></script>
 <script src="../assets/mapjump.js?v=4"></script>
 <script src="../assets/offi-core.js?v=6"></script>
-<script src="../assets/offi-view.js?v=16"></script>
-<script src="../assets/comm-core.js?v=5"></script>
-<script src="../assets/comm-view.js?v=11"></script>
+<script src="../assets/offi-view.js?v=17"></script>
+<script src="../assets/comm-core.js?v=6"></script>
+<script src="../assets/comm-view.js?v=12"></script>
 <script src="../assets/rent-core.js?v=6"></script>
 <script src="../assets/villa-core.js?v=1"></script>
-<script src="../assets/villa-view.js?v=7"></script>
+<script src="../assets/villa-view.js?v=8"></script>
 <script src="../assets/community.js?v=5"></script>
 <script src="../assets/counsel-core.js?v=5"></script>
 <script src="../assets/counsel.js?v=6"></script>
@@ -254,17 +254,37 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
 <body data-lay="side" data-lay-key=".stats" data-lay-toc="h2,.chead:first-child>h3" data-lay-fold="#polSec>.panel,#taxSec" data-lay-jump="#res,#ofRes,#vlRes,#cmRes">
 <header class="top">
   <a class="brand" href="../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a>
-  <div class="badge plain">내 집 시세</div>
+  <div class="badge plain" id="mineBadge">내 집 시세</div>
 </header>
 
 <main class="wrap">
-  <span class="tag">내 집 시세</span>
-  <h1>우리 집, <em>지금 얼마</em>일까요?<br>앞으로는 어떨까요?</h1>
-  <p class="lead">국토교통부 아파트 실거래가로 평형별 최근 시세, 1·3년 가격 추이, 거래량, 같은 동·구 대비 위치와 미래가치 점수를 보여 드려요. 내 집으로 저장하면 다음에 들어왔을 때 바로 확인할 수 있어요. 빌라(연립·다세대)·오피스텔·상가·건물 시세는 아래 탭에서 볼 수 있어요.</p>
+  <span class="tag" id="mineTag">내 집 시세</span>
+  <h1 id="mineH1">우리 집, <em>지금 얼마</em>일까요?<br>앞으로는 어떨까요?</h1>
+  <p class="lead" id="mineLead">국토교통부 아파트 실거래가로 평형별 최근 시세, 1·3년 가격 추이, 거래량, 같은 동·구 대비 위치와 미래가치 점수를 보여 드려요. 내 집으로 저장하면 다음에 들어왔을 때 바로 확인할 수 있어요. 빌라(연립·다세대)·오피스텔·상가·건물 시세는 아래 탭에서 볼 수 있어요.</p>
 
   <section id="askBox" aria-label="단지 이름으로 물어보기"></section>
 
   <div class="mtabs" role="tablist" aria-label="부동산 종류" id="mtabs"><button type="button" role="tab" data-t="a" class="on" aria-selected="true">아파트</button><button type="button" role="tab" data-t="v" aria-selected="false">빌라</button><button type="button" role="tab" data-t="o" aria-selected="false">오피스텔</button><button type="button" role="tab" data-t="c" aria-selected="false">상가·건물</button></div>
+  <script>/* 탭마다 맨 위 제목·안내 바꾸기 — 상가·건물·오피스텔 탭에서 '우리 집'(내 집) 문구가 그대로 보이던 문제. 탭 단추의 on 표시(각 탭 스크립트가 바꿈)를 지켜봄 */
+  (function () {
+    var tabs = document.getElementById('mtabs'); if (!tabs || !window.MutationObserver) return;
+    var H = { a: null,
+      v: ['빌라 시세', '이 빌라, <em>지금 얼마</em>일까요?<br>앞으로는 어떨까요?', '국토교통부 연립·다세대 실거래가로 건물별 최근 시세와 가격 흐름, 전세·월세 시세를 보여 드려요.', '빌라 시세 — 연립·다세대 실거래 시세·추이'],
+      o: ['오피스텔 시세', '이 오피스텔, <em>지금 얼마</em>일까요?<br>월세 수익은 어떨까요?', '국토교통부 오피스텔 매매·전월세 실거래가로 건물별 최근 시세와 임대수익률을 보여 드려요.', '오피스텔 시세 — 매매·전월세 실거래 시세·임대수익률'],
+      c: ['상가·건물 시세', '이 상가·건물, <em>지금 얼마</em>일까요?<br>앞으로는 어떨까요?', '국토교통부 상업업무용 부동산 실거래가로 구분상가·사무실과 통건물의 지역 시세, 가격 흐름, 상권·임대 통계, 앞으로의 가격 점수를 보여 드려요.', '상가·건물 시세 — 상가·사무실·통건물 실거래 시세·추이'] };
+    var el = function (id) { return document.getElementById(id); };
+    var A = { tag: el('mineTag').textContent, h1: el('mineH1').innerHTML, lead: el('mineLead').innerHTML, badge: el('mineBadge').textContent, title: document.title };
+    var cur = '';
+    function apply() {
+      var on = tabs.querySelector('.on'), t = on ? on.dataset.t : 'a'; if (t === cur) return; cur = t;
+      var h = H[t];
+      el('mineTag').textContent = h ? h[0] : A.tag; el('mineBadge').textContent = h ? h[0] : A.badge;
+      el('mineH1').innerHTML = h ? h[1] : A.h1; el('mineLead').innerHTML = h ? h[2] : A.lead;
+      document.title = h ? '집예보 ' + h[3] : A.title;
+    }
+    new MutationObserver(apply).observe(tabs, { subtree: true, attributes: true, attributeFilter: ['class'] });
+    apply();
+  })();</script>
   <section id="villaSec" hidden></section>
   <section id="offiSec" hidden></section>
   <section id="commSec" hidden></section>
@@ -516,10 +536,10 @@ function render(d, map, units){
   if (HI && AT.length) ['hi', 'hi1'].forEach(k => { const x = HI[k]; if (x && M.areaPick(AT, x.area) !== AP) x.vs = null; });
   const meta = [f.by ? PL.ageText(f.by, null, '준공') : '', f.hh ? `${f.hh.toLocaleString()}세대` : ''].filter(Boolean).join(' · ');
   const chTxt = c => c ? `<span class="${updown(c.pct)}">${M.pctTxt(c.pct)}</span>` : '-';
-  const chBasis = c => c ? `${ym(c.fromAt)} ${c.from.toLocaleString()}만 → ${ym(c.toAt)} ${c.to.toLocaleString()}만` : '비교할 달의 거래가 없어요';
+  const chBasis = c => c ? `${ym(c.fromAt)} ${M.manS(c.from)} → ${ym(c.toAt)} ${M.manS(c.to)}` : '비교할 달의 거래가 없어요';
   const sumRows = d.bands.map(x => { const b = M.bandSummary(x, IX.months); return `<tr class="${x[3] === S.band ? 'on' : ''}"><td class="sh">${esc(x[3])}${x[3] === S.band ? ' <span class="nowb">지금 보는 평형</span>' : ''}<br><small>전용 ${x[4]}㎡</small></td>
-    <td class="num" data-l="최근 시세"><span class="sv">${b.price && !M.isFew(x) ? `${M.won(b.price)}<br><small>${b.ppy.toLocaleString()}만/3.3㎡</small>` : (() => { const l = M.lastDeal(x, IX.months); return l ? `${M.won(l.price)}<br><small>${ym(l.at)} ${M.isFew(x) ? '최근 거래' : '마지막 거래'}</small>` : '-'; })()}</span></td>
-    <td class="num" data-l="${M.isFew(x) ? '거래 달·평당가' : '최근 1년 범위'}"><span class="sv">${M.isFew(x) ? `<span class="fewl">${M.monthDeals(x, IX.months).map(m => `${ym(m.at)} ${m.ppy.toLocaleString()}만`).join('<br>')}</span>`
+    <td class="num" data-l="최근 시세"><span class="sv">${b.price && !M.isFew(x) ? `${M.won(b.price)}<br><small>${M.manS(b.ppy)}/3.3㎡</small>` : (() => { const l = M.lastDeal(x, IX.months); return l ? `${M.won(l.price)}<br><small>${ym(l.at)} ${M.isFew(x) ? '최근 거래' : '마지막 거래'}</small>` : '-'; })()}</span></td>
+    <td class="num" data-l="${M.isFew(x) ? '거래 달·평당가' : '최근 1년 범위'}"><span class="sv">${M.isFew(x) ? `<span class="fewl">${M.monthDeals(x, IX.months).map(m => `${ym(m.at)} ${M.manS(m.ppy)}`).join('<br>')}</span>`
       : b.range.months ? (b.range.lo === b.range.hi ? M.won(b.range.lo) : `${M.won(b.range.lo)}<br>~ ${M.won(b.range.hi)}`) : '-'}</span></td>
     <td class="num" data-l="1년 거래"><span class="sv">${b.cnt12}건</span></td></tr>`; }).join('');
   const c = M.counts(u[7]);
@@ -563,7 +583,7 @@ function render(d, map, units){
     ${HI ? P.highsHtml(HI, 'hib') : ''}
     ${!has ? `<p class="basis lowc">최근 3년 거래 <b>${u[5]}건</b> 기준이에요. 거래가 적어 한두 건 가격에 따라 시세가 크게 달라질 수 있으니 아래 실거래 목록을 함께 봐 주세요.</p>` : ''}
     ${RF ? '<details class="rf-src"><summary>계산 근거</summary>' : ''}
-    <p class="basis"><b>계산 근거</b> · ${(few || !sm.price) && last ? (last.real ? `${few ? '최근 거래' : '마지막 실거래'} = ${ym(last.at)} 실제 거래 금액${last.n > 1 ? ' 중간값' : ''}(전용 ${u[4]}㎡, 직거래 제외) · ` : `${few ? '최근 거래' : '마지막 실거래'} = ${ym(last.at)} 실거래 평당가 ${last.own ? '' : '(3개월) '}중간값 ${last.ppy.toLocaleString()}만원 × 전용 ${u[4]}㎡ ÷ 3.3058 · `) : ''}${sm.ppy ? `최근 시세 = 최근 3개월 실거래 평당가 중간값 ${sm.ppy.toLocaleString()}만원 × ` : '환산 금액 = 평당가 × '}전용 ${u[4]}㎡ ÷ 3.3058 (100만 원 단위 반올림, ${ALT ? '고른 전용면적 기준' : '이 평형에서 가장 많이 거래된 전용면적 기준'} — 이 면적 거래를 먼저 쓰고, 최근 거래가 모자라면 같은 단지 다른 면적 거래를 이 면적 값으로 맞춰 함께 써요) · 1년 변동: ${chBasis(sm.ch1)} · 3년 변동: ${chBasis(sm.ch3)}.${HT ? '' : ' 5년 추이는 공개 자료 기간(최근 3년)을 넘어 아직 보여 드리지 못해요.'}${HI && HI.hi ? ` · 최고가 = 수집한 실거래 중 직거래를 뺀 가장 높은 거래(이 평형 안 모든 전용면적).` : ''}</p>
+    <p class="basis"><b>계산 근거</b> · ${(few || !sm.price) && last ? (last.real ? `${few ? '최근 거래' : '마지막 실거래'} = ${ym(last.at)} 실제 거래 금액${last.n > 1 ? ' 중간값' : ''}(전용 ${u[4]}㎡, 직거래 제외) · ` : `${few ? '최근 거래' : '마지막 실거래'} = ${ym(last.at)} 실거래 평당가 ${last.own ? '' : '(3개월) '}중간값 ${M.manS(last.ppy)}원 × 전용 ${u[4]}㎡ ÷ 3.3058 · `) : ''}${sm.ppy ? `최근 시세 = 최근 3개월 실거래 평당가 중간값 ${M.manS(sm.ppy)}원 × ` : '환산 금액 = 평당가 × '}전용 ${u[4]}㎡ ÷ 3.3058 (100만 원 단위 반올림, ${ALT ? '고른 전용면적 기준' : '이 평형에서 가장 많이 거래된 전용면적 기준'} — 이 면적 거래를 먼저 쓰고, 최근 거래가 모자라면 같은 단지 다른 면적 거래를 이 면적 값으로 맞춰 함께 써요) · 1년 변동: ${chBasis(sm.ch1)} · 3년 변동: ${chBasis(sm.ch3)}.${HT ? '' : ' 5년 추이는 공개 자료 기간(최근 3년)을 넘어 아직 보여 드리지 못해요.'}${HI && HI.hi ? ` · 최고가 = 수집한 실거래 중 직거래를 뺀 가장 높은 거래(이 평형 안 모든 전용면적).` : ''}</p>
     ${RF ? '</details>' : ''}
 
     <div class="save" id="saveBox">
@@ -607,12 +627,12 @@ function render(d, map, units){
       <div class="pbox"><div class="k">${esc(d.dong)} 안에서</div>
         ${dp ? `<div class="v">이 집은 동 중간값보다 <span class="${updown(dp.diff)}">${M.pctTxt(dp.diff)}</span></div>
         ${posBar({me:dp.me, ref:dp.med})}
-        <p class="basis">이 집 평당가는 ${esc(d.dong)} ${dp.n}개 ${dp.sameBand ? esc(S.band) + ' 평형' : '단지·평형'}(${dp.danji}개 단지) 중 ${dp.rank === 1 ? '가장 높아요' : dp.rank + '번째로 높아요'} · 이 집 ${dp.me.toLocaleString()}만 / 동 중간값 ${dp.med.toLocaleString()}만 (각 단지·평형 최근 3개월 중앙 평당가의 중간값)</p>`
+        <p class="basis">이 집 평당가는 ${esc(d.dong)} ${dp.n}개 ${dp.sameBand ? esc(S.band) + ' 평형' : '단지·평형'}(${dp.danji}개 단지) 중 ${dp.rank === 1 ? '가장 높아요' : dp.rank + '번째로 높아요'} · 이 집 ${M.manS(dp.me)} / 동 중간값 ${M.manS(dp.med)} (각 단지·평형 최근 3개월 중앙 평당가의 중간값)</p>`
         : '<p class="basis">같은 동에 비교할 단지·평형 자료가 부족해요.</p>'}</div>
       <div class="pbox"><div class="k">${esc(sggName(d.code))} 전체 아파트 대비</div>
         ${gp ? `<div class="v">이 집은 구 중간값보다 <span class="${updown(gp.diff)}">${M.pctTxt(gp.diff)}</span></div>
         ${posBar({me:gp.me, ref:gp.sggPpy})}
-        <p class="basis">${ym(gp.at)} 기준 이 집 ${gp.me.toLocaleString()}만 / ${esc(sggName(d.code))} 전체 ${gp.sggPpy.toLocaleString()}만 (구 안 모든 아파트 3개월 실거래 평당가 중간값)</p>`
+        <p class="basis">${ym(gp.at)} 기준 이 집 ${M.manS(gp.me)} / ${esc(sggName(d.code))} 전체 ${M.manS(gp.sggPpy)} (구 안 모든 아파트 3개월 실거래 평당가 중간값)</p>`
         : '<p class="basis">같은 달 구 자료가 없어 비교하지 못했어요.</p>'}</div>
     </div>
     ${f.lg != null ? `<p class="basis" style="margin-top:10px">${esc((M.reasons({lg:f.lg, ln:f.ln}, {apt:d.apt, dong:d.dong})[0]) || '')}</p>` : ''}

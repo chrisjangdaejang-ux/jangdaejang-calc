@@ -52,7 +52,7 @@
   }
 
   /* ---------- 탭 (오피스텔·상가·건물 탭과 같은 숨김 기록 window.JDJ_TABWAS, 설명·질문 칸은 상가·건물 탭과 같은 data-cm-hid 표시) ---------- */
-  const HIDE = ['homesSec', 'findSec', 'res', 'src'];
+  const HIDE = ['homesSec', 'favSec', 'findSec', 'res', 'src'];   /* favSec '관심 단지'는 아파트 목록이라 다른 탭에선 숨김 */
   function setTab(t, push) {
     const tabs = $('mtabs'), sec = $('villaSec'); if (!tabs || !sec) return;
     const was = (window.JDJ_TABWAS = window.JDJ_TABWAS || {});
@@ -265,8 +265,8 @@
     const rows = [];
     if (s && s.n != null) rows.push(`<div class="st"><div class="k">${esc(nm)} 최근 1년 매매</div><div class="v">${fmt(s.n)}건</div><div class="d">거래된 건물 ${fmt(s.nb)}곳 · 직거래 제외</div></div>`,
       `<div class="st"><div class="k">${esc(nm)} 거래가 중간값</div><div class="v">${won(s.price)}</div><div class="d">최근 1년</div></div>`,
-      `<div class="st"><div class="k">${esc(nm)} 전용 ㎡당 가격</div><div class="v">${fmt(Math.round(s.ppm))}만 원</div><div class="d">이 건물 전용 ${CUR.area}㎡로 환산하면 약 ${won(Math.round(s.ppm * CUR.area / 100) * 100)}</div></div>`);
-    if (s && s.landPy) rows.push(`<div class="st"><div class="k">${esc(nm)} 대지지분 평당가</div><div class="v">${fmt(s.landPy.m)}만 원</div><div class="d">최근 1년 중간값 · ${fmt(s.landPy.c)}건</div></div>`);
+      `<div class="st"><div class="k">${esc(nm)} 전용 ㎡당 가격</div><div class="v">${M.manS(s.ppm)} 원</div><div class="d">이 건물 전용 ${CUR.area}㎡로 환산하면 약 ${won(Math.round(s.ppm * CUR.area / 100) * 100)}</div></div>`);
+    if (s && s.landPy) rows.push(`<div class="st"><div class="k">${esc(nm)} 대지지분 평당가</div><div class="v">${M.manS(s.landPy.m)} 원</div><div class="d">최근 1년 중간값 · ${fmt(s.landPy.c)}건</div></div>`);
     if (s && s.jr) rows.push(`<div class="st"><div class="k">${esc(nm)} 전체 전세가율</div><div class="v">${Math.round(s.jr.r * 100)}%</div><div class="d">${ymL(s.jr.at)} 기준 · 전세 ${fmt(s.jr.nj)}건, 매매 ${fmt(s.jr.ns)}건</div></div>`);
     const lead = few ? `<div class="vl-few">이 건물은 최근 1년 매매가 ${few.n}건${few.n ? '뿐' : '도 없'}이라 이 건물 숫자만으로는 시세를 판단하기 어려워요. 그래서 같은 동 빌라 전체 숫자를 함께 보여 드려요.</div>` : '';
     return `<div class="panel" id="vlDong"><h2>${esc(b.d)} 빌라 전체<small>같은 동 연립·다세대 실거래를 모두 모은 숫자예요. 같은 건물끼리 맞춘 값이 아니라 동네 흐름을 보는 참고값이에요.</small></h2>${lead}
@@ -297,7 +297,7 @@
       <div class="stats">
         <div class="st key"><div class="k">최근 거래가</div><div class="v">${lt ? won(lt.amt) : '-'}</div><div class="d">${lt ? `${esc(lt.date)} · 전용 ${lt.area}㎡${lt.floor != null ? ` · ${lt.floor}층` : ''}${lt.direct ? ' · 직거래' : ''}` : '최근 매매가 없어요'}</div></div>
         <div class="st"><div class="k">${last ? '최근 시세' : '마지막 시세'} (전용 ${area}㎡)</div><div class="v">${last ? won(last.v) : any ? won(any.v) : '확인 불가'}</div><div class="d">${last ? ymL(last.at) + ' 기준 · 3개월 거래 중간값' : any ? ymL(any.at) + ' · 최근 3개월 거래 없음' : '거래가 적어요'}</div></div>
-        <div class="st"><div class="k">대지권(대지지분)</div><div class="v">${b.l ? `${b.l}㎡` : '확인 불가'}</div><div class="d">${b.l ? `약 ${py(b.l)}평${b.pp ? ` · 대지지분 평당가 ${fmt(b.pp)}만 원` : ''}` : '최근 거래 신고에 대지권 면적이 없어요'}</div></div>
+        <div class="st"><div class="k">대지권(대지지분)</div><div class="v">${b.l ? `${b.l}㎡` : '확인 불가'}</div><div class="d">${b.l ? `약 ${py(b.l)}평${b.pp ? ` · 대지지분 평당가 ${M.manS(b.pp)} 원` : ''}` : '최근 거래 신고에 대지권 면적이 없어요'}</div></div>
         <div class="st"><div class="k">최근 1년 매매</div><div class="v">${n1}건</div><div class="d">1년 변동 ${chTxt(c1)} · 3년 ${chTxt(c3)}</div></div>
       </div>
       ${hi.hi ? `<div class="hib">${hiBox(`최고가 (${ymK(hiFrom)} 이후)`, hi.hi)}${hiBox('최근 1년 최고가', hi.hi1)}</div>` : ''}
