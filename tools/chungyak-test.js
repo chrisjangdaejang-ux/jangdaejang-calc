@@ -1,5 +1,6 @@
 /* 청약 엔진 자동 검증 — 실행: node tools/chungyak-test.js
-   기대값은 「주택공급에 관한 규칙」(2026. 6. 15. 시행) 별표 1(가점 산정)·제28조(가점제·추첨제 비율)를 보고 손으로 계산한 값이다.
+   기대값은 「주택공급에 관한 규칙」(국토교통부령 제1635호, 2026. 11. 24. 시행) 제28조(가점제·추첨제 비율)·제46조(노부모 부양)와
+   별표 1(가점 산정, 2024. 12. 18. 개정 기준)을 보고 손으로 계산한 값이다.
    예상 당첨 가점 범위는 데이터 갱신 때 미리 계산되어 notices.json 의 cut 으로 들어오며, 여기서는 그 값을 읽어 진단하는 부분만 확인한다. */
 const E = require('../chungyak/cy-engine.js');
 const { CY } = E;
@@ -94,6 +95,8 @@ check('자녀 3명 → 다자녀 해당 가능', el.find(x => x.id === 'multi').
 check('자녀 3명이면 다자녀가 먼저', E.bestSpecial(el, a, Object.assign({}, e0, { kids: '3' }), 30)[0].id, 'multi', '');
 el = E.eligibility(base({ birth: '1975-01-01', deps: 4, accDate: '2005-01-01' }), Object.assign({}, e0, { kids: '0', baby: 'n', old: 'y', ever: 'n' }), CY.d8(REF));
 check('노부모 부양 3년·세대주·무주택 → 가능성 있음', el.find(x => x.id === 'old').g, 'ok', '제46조');
+check('노부모 부양: 실제로 함께 살아야 함을 안내(2026. 11. 24. 개정 제46조 제1항)', /실제로 함께 살면서/.test(E.eligibility(base({ birth: '1975-01-01', accDate: '2005-01-01' }), e0, CY.d8(REF)).find(x => x.id === 'old').items.join(' ')), true, '제46조 제1항');
+check('신생아 특별공급 근거 조문 = 제35조의3', el.find(x => x.id === 'baby').law, '규칙 제35조의3', '제35조의3');
 check('과거 주택 소유 이력 → 생애최초 어려움', el.find(x => x.id === 'first').g, 'no', '제43조');
 check('유주택 세대 → 신혼부부 어려움', E.eligibility(base({ own: true, birth: '1993-01-01', married: true, marDate: '2024-01-01', accDate: '2020-01-01' }), Object.assign({}, e0, { house: '1' }), CY.d8(REF)).find(x => x.id === 'new').g, 'no', '무주택세대구성원');
 
