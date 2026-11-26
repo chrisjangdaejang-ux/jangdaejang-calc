@@ -23,7 +23,7 @@
 <script src="../assets/mine-core.js?v=22" defer></script>
 <script src="../assets/ask-core.js?v=5" defer></script>
 <script src="../assets/ask.js?v=3" defer></script>
-<script src="../assets/rank-core.js?v=7" defer></script>
+<script src="../assets/rank-core.js?v=8" defer></script>
 <script src="../assets/home-core.js?v=5" defer></script>
 <script src="../assets/brief-core.js?v=12" defer></script>
 <script src="../assets/today-core.js?v=1" defer></script>
@@ -417,7 +417,7 @@ addEventListener('DOMContentLoaded', () => {
     if (!o || !o.rows.length) { $('plBody').innerHTML = `<p class="pl-empty">${esc(place())}에는 점수를 비교할 단지가 아직 없어요.</p>`; return; }
     const vk = `과거에 써 봤더니 ${v.n}번 중 ${v.hit}번 맞음`;
     const st = x => window.JDJ_WATCH ? JDJ_WATCH.star({sd: S.sd, code: x.code, dong: x.dong, jibun: x.jibun, apt: x.apt, band: x.band}, {small: true}) : '';
-    $('plBody').innerHTML = `<p class="pl-cnt">${esc(place())} 단지 ${o.n.toLocaleString()}곳을 미래가치 점수(2년 보유 기준)로 줄 세웠어요</p>
+    $('plBody').innerHTML = `<p class="pl-cnt">${esc(place())} 단지 ${o.n.toLocaleString()}곳을 미래가치 점수(2년 보유 기준)로 평가했어요 · 점수가 높은 순서예요</p>
       <ol class="pl-list">${o.rows.map(x => `<li><a href="${esc(mine(x))}" data-track="home_pulse_top">
         <span class="pl-rk">${x.r}<small>${x.tie ? '공동' : '위'}</small></span>
         <span class="pl-nm"><b>${esc(x.apt)}</b><small>${esc(gName(x.code))} ${esc(x.dong)} · ${esc(x.band)}</small><span class="vk">✓ ${esc(vk)}</span></span>

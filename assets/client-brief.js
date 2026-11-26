@@ -177,7 +177,7 @@
       <h3 class="cc-t">${esc(m.title)}</h3>
       <ol class="cc-l">${m.items.map(it => `<li><div class="cc-n">${esc(it.name)}${it.tags.map(t => `<em class="cc-tg ${t.c}">${esc(t.t)}</em>`).join('')}</div>
         ${it.lines.map(l => `<p class="cc-${l.k}">${esc(l.t)}</p>`).join('')}</li>`).join('')}</ol>
-      <footer class="cc-f"><p>${m.period ? `기간: ${esc(m.period)} · ` : ''}${esc(m.src)}. 숫자는 공공자료를 그대로 옮겼어요. ‘가운데 값’은 거래 값을 줄 세웠을 때 한가운데 값이에요.</p>
+      <footer class="cc-f"><p>${m.period ? `기간: ${esc(m.period)} · ` : ''}${esc(m.src)}. 숫자는 공공자료를 그대로 옮겼어요. ‘가운데 값’은 거래 값을 크기순으로 늘어놓았을 때 한가운데 값이에요.</p>
         <p class="cc-who"><b>${esc(p.office)}</b> ${esc(p.nm)}${p.sub ? ' · ' + esc(p.sub) : ''}${p.phone ? ` · <span class="nw">전화 ${esc(p.phone)}</span>` : ''}</p></footer>
     </article>`;
   }

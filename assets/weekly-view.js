@@ -18,7 +18,7 @@
     document.title = `주간 실거래 동향 ${V.w} (${K.period(V)}) | ${SITE()}`;
     $('hd').innerHTML = k.chg == null ? esc(K.headline(V)) :
       `${esc(K.period(V))} 전국 아파트,<br>같은 집 직전 거래보다 <em class="${cls(k.chg)}">${esc(K.pct(k.chg))}</em>`;
-    $('hdSub').textContent = (m.m || 1) >= 2 ? `${K.weekName(V)}에 계약된 아파트 매매 ${K.num(k.n)}건 가운데, 같은 단지·같은 면적의 직전 거래(${m.lookback || 90}일 안)와 비교할 수 있는 ${K.num(k.np)}건의 변화율을 줄 세워, 가장 많이 오른 4분의 1과 가장 많이 내린 4분의 1을 빼고 평균한 값(가운데 50% 평균)이에요.${k.med != null ? ` 중간값은 ${K.pct(k.med)}예요.` : ''}` :
+    $('hdSub').textContent = (m.m || 1) >= 2 ? `${K.weekName(V)}에 계약된 아파트 매매 ${K.num(k.n)}건 가운데, 같은 단지·같은 면적의 직전 거래(${m.lookback || 90}일 안)와 비교할 수 있는 ${K.num(k.np)}건의 변화율을 크기순으로 늘어놓고, 가장 많이 오른 4분의 1과 가장 많이 내린 4분의 1을 빼고 평균한 값(가운데 50% 평균)이에요.${k.med != null ? ` 중간값은 ${K.pct(k.med)}예요.` : ''}` :
       `${K.weekName(V)}에 계약된 아파트 매매 ${K.num(k.n)}건 가운데, 같은 단지·같은 면적의 직전 거래(${m.lookback || 90}일 안)와 비교할 수 있는 ${K.num(k.np)}건의 변화율 중간값이에요. 이 판은 예전 계산 방법(방법 판 1, 중간값)으로 만든 그대로 보관한 판이에요.`;
     $('stl').innerHTML = `<span class="pill ${V.status === 'final' ? 'final' : 'prov'}">${esc(K.statusText(V))}</span><span class="pill ver">제${V.ver}판 · ${esc(K.dot(V.asof))} 자료 기준</span>
       <span class="fn">${esc(K.finalNote(V))}</span><span class="fn"><b>${esc(K.scheduleText(V))}</b>${V.release ? ` 이 판 발표: ${esc(K.whenText(V.release))}.` : ''}</span>`;

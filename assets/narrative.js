@@ -1106,7 +1106,7 @@
     if (u && u.sc && (c.pass || []).length) {
       const h = c.pass[0], sc = u.sc[h];
       if (sc != null) L.push({ k: 'score', t: `${h}년 보유 종합 점수 ${sc}점 — ${SD} 오피스텔 중 ${(c.scoreRank || (v => v))(sc)}.`,
-        d: [`${A} 수익률과 가격 흐름을 합친 ${h}년 점수가 ${sc}점이에요(100점 만점, 50점이 가운데).`, '', '', `그래서 ${SD} 오피스텔 100곳을 줄 세우면 ${100 - sc}등 안팎이에요.`] });
+        d: [`${A} 수익률과 가격 흐름을 합친 ${h}년 점수가 ${sc}점이에요(100점 만점, 50점이 가운데).`, '', '', `그래서 ${SD} 오피스텔 100곳을 점수 순으로 순위를 매기면 ${100 - sc}등 안팎이에요.`] });
     }
     /* 검증 카드: 오피스텔 점수(bt) 중 시험 기록이 있는 기간 */
     const trust = Object.keys(c.bt || {}).filter(h => (c.bt[h].oos_all || []).filter(o => o && o.top20 != null).length).map(h => {

@@ -15,7 +15,7 @@ const H = { v: 1, top: { min: 10, n: { all: 4, g1: 2 }, cols: [], rows: [
 const t = R.danji(H, 'all', 3);
 check('TOP 3 = 파일 순서·등수 그대로', t.rows.map(x => x.apt + x.r), ['가아파트1', '나아파트1', '다아파트3'], 'home_pulse.py 가 매긴 등수');
 check('같은 등수가 있으면 공동 표시(예전 파일)', t.rows.map(x => x.tie), [true, true, false], '');
-check('기준 한 줄(새 기준)', R.danjiRule({ min: { y1: 3, hh: 100, danji3y: 30 }, order: 'rank' }), '100세대 이상(세대수 자료가 없으면 단지 전체 최근 3년 거래 30건 이상), 그 평형 최근 1년 거래 3건 이상인 단지만, 단지마다 순위가 가장 높은 평형으로 줄 세웠어요. 같은 점수는 엔진이 매긴 실제 등수 순이에요.', 'home_pulse.py min·order');
+check('기준 한 줄(새 기준)', R.danjiRule({ min: { y1: 3, hh: 100, danji3y: 30 }, order: 'rank' }), '100세대 이상(세대수 자료가 없으면 단지 전체 최근 3년 거래 30건 이상), 그 평형 최근 1년 거래 3건 이상인 단지만, 단지마다 점수가 가장 높은 평형을 골라 점수 순으로 순위를 매겼어요. 같은 점수는 엔진이 매긴 실제 등수 순이에요.', 'home_pulse.py min·order');
 check('기준 한 줄(예전 자료 순서)', /구 안 점수·최근 1년 거래가 많은 순/.test(R.danjiRule({ min: { y1: 3, hh: 100, danji3y: 30 }, order: 'score' })), true, '');
 check('기준값 없으면 빈 문장', R.danjiRule({}), '', '');
 check('비교한 단지 수', [t.n, t.min], [4, 10], 'top.n·min');
