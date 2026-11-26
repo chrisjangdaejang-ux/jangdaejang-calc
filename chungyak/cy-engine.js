@@ -6,8 +6,55 @@
      · 2026. 11. 24. 개정 중 이 엔진에 닿는 것: 제46조 제1항(노부모 부양 — 같은 등본에 올라 있고 실제로 같이 사는 경우로 한정).
        같은 개정의 제23조 제2항(신청 서류)·제52조(자격 전산검색)·제64조(규제 재검토 기한)는 계산·판정과 무관
      · 가점 산정: 별표 1(가점제 적용기준, 2024. 12. 18. 개정 기준 — 별표 본문은 제1635호와 대조 못 함, 확인 필요)
-     · 민영주택 신생아 특별공급(제35조의3 제3항): 2026. 6. 15. 시행 개정(국토교통부령 제1592호)으로 신설 */
+     · 민영주택 신생아 특별공급(제35조의3 제3항): 2026. 6. 15. 시행 개정(국토교통부령 제1592호)으로 신설
+     · 시행일(제1635호 부칙 제1조·제2조, 행정기본법 제7조 — https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=292055):
+       ① 제46조 제1항(노부모 부양 실거주)은 부칙 제1조 단서(시행 유예) 대상이 아니라 공포한 날 2026. 11. 24.부터 시행
+          → 원칙적으로 2026. 11. 24. 이후 입주자모집공고 단지부터 적용(그 전 공고는 공고문 기준) — oldParentRule()
+       ② 일반공급 가점제 부양가족 인정 기준(별표 1 일부)·실거주 증빙서류(제23조 제2항) 개정은 부칙 제1조 단서에 따라
+          공포 후 1년이 경과한 날 = 2027. 11. 25.(행정기본법 제7조) 시행, 부칙 제2조에 따라 그 전에 모집공고한 경우 종전 규정
+          → depRule(). 개정된 별표 1 본문은 국가법령정보센터에서 대조하지 못해 지금 계산(dependents)은 현행 기준 그대로.
+          TODO(2027-11-25 이후 계산 기준 확인 필요): 개정 별표 1 원문을 확인하면 DEP_RULE.verified=true 로 바꾸고
+          dependents()에 새 인정 기준을 넣을 것. 그 전까지 공고일이 2027. 11. 25. 이후면 needCheck 경고만 붙인다 */
 (function (root) {
+/* ===== 2026. 11. 24. 공포 개정(국토교통부령 제1635호)의 시행일 분기 =====
+   날짜는 입주자모집공고일 기준. 공고일을 모르면(null) 두 경우를 함께 안내한다. */
+const RULE_SRC = 'https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=292055';
+const OLD_LIVE_FROM = '2026-11-24';   // 제46조 제1항 실거주 요건 — 부칙 제1조 본문(공포한 날부터 시행)
+const DEP_RULE = {
+  from: '2027-11-25',                 // 부칙 제1조 단서: 공포(2026. 11. 24.) 후 1년이 경과한 날(행정기본법 제7조)
+  verified: false,                    // 개정 별표 1 본문을 국가법령정보센터에서 대조했는가 — false 면 계산은 현행 기준, 이후 공고는 확인 필요 경고
+  law: '주택공급에 관한 규칙(국토교통부령 제1635호) 부칙 제1조 단서·제2조, 행정기본법 제7조',
+  src: RULE_SRC
+};
+/* 'YYYYMMDD' · 'YYYY-MM-DD' · Date → 'YYYY-MM-DD' (모르면 null) */
+function ymd(x) {
+  if (!x) return null;
+  if (x instanceof Date) return isNaN(x) ? null : `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`;
+  const t = String(x).replace(/\D/g, '');
+  return t.length >= 8 ? `${t.slice(0, 4)}-${t.slice(4, 6)}-${t.slice(6, 8)}` : null;
+}
+const dotK = d => { const [y, m, dd] = d.split('-'); return `${y}. ${+m}. ${+dd}.`; };
+/* 노부모 부양 특별공급 실거주 요건: 공고일이 2026. 11. 24. 이후인가 */
+function oldParentRule(pb) {
+  const d = ymd(pb);
+  const base = '2026. 11. 24. 이후 모집공고 단지부터 실제 함께 살아야 해요(그 전 공고는 공고문 기준)';
+  if (!d) return { st: 'unk', txt: base, law: '규칙 제46조 제1항(2026. 11. 24. 개정), 부칙(제1635호) 제1조', src: RULE_SRC };
+  if (d >= OLD_LIVE_FROM) return { st: 'new', date: d, txt: `${dotK(d)} 모집공고 단지예요 — 2026. 11. 24. 이후 공고라 부모님과 같은 등본에 올라 있고 실제로 함께 살아야 해요`, law: '규칙 제46조 제1항(2026. 11. 24. 개정), 부칙(제1635호) 제1조', src: RULE_SRC };
+  return { st: 'old', date: d, txt: `${dotK(d)} 모집공고 단지예요 — 2026. 11. 24. 전 공고라 실제 함께 사는지까지 따지는지는 입주자모집공고문 기준이에요`, law: '규칙 제46조 제1항(2026. 11. 24. 개정 전 공고), 부칙(제1635호) 제1조', src: RULE_SRC };
+}
+/* 일반공급 가점제 부양가족 인정 기준·증빙 개정(2027. 11. 25. 시행): 공고일 기준 안내 */
+function depRule(pb) {
+  const d = ymd(pb);
+  const after = !!d && d >= DEP_RULE.from;
+  if (!after) return { st: 'pre', from: DEP_RULE.from, needCheck: false,
+    txt: '2027. 11. 25. 이후 모집공고분부터 부양가족 인정 기준·증빙이 바뀌어요(그 전 공고는 지금 기준)', law: DEP_RULE.law, src: DEP_RULE.src };
+  if (DEP_RULE.verified) return { st: 'post', from: DEP_RULE.from, needCheck: false,
+    txt: '2027. 11. 25. 이후 모집공고분이라 바뀐 부양가족 인정 기준·증빙으로 계산했어요', law: DEP_RULE.law, src: DEP_RULE.src };
+  // TODO(2027-11-25 이후 계산 기준 확인 필요): 개정 별표 1 원문 확인 전 — 계산은 현행 기준, 경고만
+  return { st: 'post', from: DEP_RULE.from, needCheck: true,
+    txt: '2027. 11. 25. 이후 모집공고분은 바뀐 부양가족 인정 기준·증빙이 적용돼요. 이 화면의 부양가족 점수는 아직 바뀌기 전 기준이라, 청약홈과 입주자모집공고문으로 꼭 다시 확인하세요(확인 필요)', law: DEP_RULE.law, src: DEP_RULE.src };
+}
+
 /* ===== 청약 가점 계산 (주택공급에 관한 규칙 별표 1, 2024.12.18 개정 — law.go.kr) ===== */
 const CY = (() => {
   const d8 = s => { if (!s) return null; const d = new Date(s + 'T00:00:00'); return isNaN(d) ? null : d; };
@@ -56,6 +103,7 @@ const CY = (() => {
   function total(a, refStr) {
     const ref = d8(refStr) || new Date(new Date().toDateString());
     const h = homeless(a, ref), d = dependents(a.deps), c = account(a, ref);
+    d.rule = depRule(ref);   // 부양가족 인정 기준 바뀌는 날(2027. 11. 25.) 안내 — 계산은 현행 기준
     return { h, d, c, sum: h.pts + d.pts + c.pts };
   }
   return { homeless, dependents, account, accScore, spouseScore, total, months, d8 };
@@ -159,11 +207,12 @@ function eligibility(a, e, ref) {
     out.push({ k: '특별공급', id: 'multi', how: '자녀 수·영유아 자녀 수·세대 구성·무주택기간·해당 시·도 거주기간·청약통장 가입기간 배점을 더해 높은 순으로 뽑아요.', t: '다자녀가구 특별공급', g: grade(bad, unk), items: [...bad, ...unk], law: '규칙 제40조' }); }
   // 노부모 부양 (제46조 — 제1항 2026. 11. 24. 개정: 같은 세대별 주민등록표에 올라 있고 같이 거주하는 경우로 한정)
   { const bad = [], unk = [];
-    if (e.old !== 'y') bad.push('만 65세 이상 직계존속(배우자 직계존속 포함)을 같은 등본에 올리고 실제로 함께 살면서 3년 이상 계속 부양해야 해요');   // 질문(eOld)에서 '실제로 함께 사는 경우'로 물어 '예'면 충족으로 본다
+    const orule = oldParentRule(e.pb || ref);   // 공고일(e.pb)이 없으면 기준일(입주자모집공고일)로 판단
+    if (e.old !== 'y') bad.push(orule.st === 'old' ? '만 65세 이상 직계존속(배우자 직계존속 포함)을 같은 등본에 올리고 3년 이상 계속 부양해야 해요(실제로 함께 살아야 하는지는 공고문 기준)' : '만 65세 이상 직계존속(배우자 직계존속 포함)을 같은 등본에 올리고 실제로 함께 살면서 3년 이상 계속 부양해야 해요');   // 질문(eOld)에서 '실제로 함께 사는 경우'로 물어 '예'면 충족으로 본다
     if (e.head === 'n') bad.push('세대주여야 해요'); else if (e.head === 'u') unk.push('세대주인지 확인하세요');
     if (!noHouse) bad.push('무주택세대구성원이어야 해요(피부양자의 배우자도 무주택)');
     if (!first1) unk.push('1순위에 해당해야 해요(위 1순위 결과 확인)');
-    out.push({ k: '특별공급', id: 'old', how: e.kind === 'p' ? '일반공급처럼 청약 가점이 높은 순으로 뽑아요(민영주택). 위에서 계산한 내 가점이 그대로 쓰여요.' : '국민주택은 일반공급처럼 납입 인정 금액·횟수 순(순차제)이 기본이에요. 입주자모집공고문을 확인하세요.', t: '노부모 부양 특별공급', g: grade(bad, unk), items: [...bad, ...unk], law: '규칙 제46조 제1항·제2항' }); }
+    out.push({ k: '특별공급', id: 'old', how: e.kind === 'p' ? '일반공급처럼 청약 가점이 높은 순으로 뽑아요(민영주택). 위에서 계산한 내 가점이 그대로 쓰여요.' : '국민주택은 일반공급처럼 납입 인정 금액·횟수 순(순차제)이 기본이에요. 입주자모집공고문을 확인하세요.', t: '노부모 부양 특별공급', g: grade(bad, unk), items: [...bad, ...unk], rule: orule, law: '규칙 제46조 제1항·제2항, 부칙(국토교통부령 제1635호) 제1조, 행정기본법 제7조' }); }
   // 신생아
   { const bad = [], unk = [];
     if (e.baby !== 'y') bad.push('기준일 현재 2세 미만(태아·입양 포함) 자녀가 있어야 해요');
@@ -275,7 +324,7 @@ function sidoFrom(q) {
 /* 시·군·구 이름 맞추기: '고양시 덕양구'와 '고양덕양구'를 같게 */
 const sggKey = s => String(s || '').replace(/\s/g, '').replace(/시(?=[^시]+구$)/, '');
 
-const API = { quickTotal, sidoFrom, sggKey, CY, SIDO, CAPITAL, SIDO_OLD, SIDO_ALIAS, sidoNorm, sidoLbl, DEPOSIT, depGroup, eligibility, bestSpecial, lottery, cutOf, diag, yearsTo, bandOf, noticeSido, INCOME_TXT };
+const API = { oldParentRule, depRule, DEP_RULE, OLD_LIVE_FROM, RULE_SRC, ymd, quickTotal, sidoFrom, sggKey, CY, SIDO, CAPITAL, SIDO_OLD, SIDO_ALIAS, sidoNorm, sidoLbl, DEPOSIT, depGroup, eligibility, bestSpecial, lottery, cutOf, diag, yearsTo, bandOf, noticeSido, INCOME_TXT };
 if (typeof module !== 'undefined' && module.exports) module.exports = API;
 else root.JDJ_CYE = API;
 })(typeof self !== 'undefined' ? self : this);

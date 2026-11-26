@@ -194,7 +194,9 @@ check('시스템 지침에 노하우 기준값(가중치·점수식·비율 숫�
 const pv = read('privacy/index.html');
 check('개인정보처리방침: AI 처리 위탁·국외 이전 초안(Anthropic·미국·항목·거부 방법) · 켜질 때만 보임', /id="ai" data-ai-only hidden/.test(pv) && /Anthropic, PBC\(미국\)/.test(pv) && /거부 방법/.test(pv) && /AI_ENABLED===true/.test(pv));
 check('운영자 화면: AI 사용량 표', /AI 상담 사용량/.test(read('solve/admin/index.html')) && /preview=ai/.test(read('solve/admin/index.html')));
-check('서비스 워커: guide-core·guide 새 번호', /guide-core\.js\?v=7/.test(read('sw.js')) && /assets\/guide\.js\?v=8/.test(read('sw.js')));
+{ const vOf = (t, re) => { const m = re.exec(t); return m ? +m[1] : 0; }, home = read('index.html'), swt = read('sw.js');
+  const gc = vOf(home, /guide-core\.js\?v=(\d+)/), gj = vOf(home, /assets\/guide\.js\?v=(\d+)/);
+  check('서비스 워커: guide-core·guide 새 번호(첫 화면과 같고 AI 상담 반영 v7·v8 이상)', gc >= 7 && gj >= 8 && vOf(swt, /guide-core\.js\?v=(\d+)/) === gc && vOf(swt, /assets\/guide\.js\?v=(\d+)/) === gj, [gc, gj]); }
 
 console.log(`\n길잡이 AI 상담: ${pass} 통과 · ${fail} 실패`);
 process.exit(fail ? 1 : 0);

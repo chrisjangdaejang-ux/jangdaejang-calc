@@ -95,7 +95,29 @@ check('자녀 3명 → 다자녀 해당 가능', el.find(x => x.id === 'multi').
 check('자녀 3명이면 다자녀가 먼저', E.bestSpecial(el, a, Object.assign({}, e0, { kids: '3' }), 30)[0].id, 'multi', '');
 el = E.eligibility(base({ birth: '1975-01-01', deps: 4, accDate: '2005-01-01' }), Object.assign({}, e0, { kids: '0', baby: 'n', old: 'y', ever: 'n' }), CY.d8(REF));
 check('노부모 부양 3년·세대주·무주택 → 가능성 있음', el.find(x => x.id === 'old').g, 'ok', '제46조');
-check('노부모 부양: 실제로 함께 살아야 함을 안내(2026. 11. 24. 개정 제46조 제1항)', /실제로 함께 살면서/.test(E.eligibility(base({ birth: '1975-01-01', accDate: '2005-01-01' }), e0, CY.d8(REF)).find(x => x.id === 'old').items.join(' ')), true, '제46조 제1항');
+check('노부모 부양: 실제로 함께 살아야 함을 안내(2026. 11. 24. 개정 제46조 제1항 — 2026. 12. 1. 공고)', /실제로 함께 살면서/.test(E.eligibility(base({ birth: '1975-01-01', accDate: '2005-01-01' }), { ...e0, pb: '20261201' }, CY.d8(REF)).find(x => x.id === 'old').items.join(' ')), true, '제46조 제1항');
+/* 국토교통부령 제1635호 시행일 분기: 부칙 제1조(본문·단서)·제2조, 행정기본법 제7조 */
+{ const o1 = E.oldParentRule('20261120'), o2 = E.oldParentRule('2026-12-01'), o0 = E.oldParentRule(null), oD = E.oldParentRule('2026-11-24');
+  check('노부모 안내: 공고일 2026-11-20 → 그 전 공고(공고문 기준)', [o1.st, /2026\. 11\. 24\. 전 공고/.test(o1.txt) && /공고문 기준/.test(o1.txt)], ['old', true], '부칙 제1조 본문 — 공포일 시행');
+  check('노부모 안내: 공고일 2026-12-01 → 실제로 함께 살아야 함', [o2.st, /실제로 함께 살아야/.test(o2.txt), /2026\. 12\. 1\./.test(o2.txt)], ['new', true, true], '제46조 제1항');
+  check('노부모 안내: 2026-11-20 과 2026-12-01 문구가 다름', o1.txt !== o2.txt, true, '');
+  check('노부모 안내: 시행일 당일(2026-11-24) 공고도 새 기준', oD.st, 'new', '공포한 날부터 시행');
+  check('노부모 안내: 공고일 모르면 두 경우를 함께', [o0.st, o0.txt], ['unk', '2026. 11. 24. 이후 모집공고 단지부터 실제 함께 살아야 해요(그 전 공고는 공고문 기준)'], '');
+  const el1 = E.eligibility(base({ birth: '1975-01-01', accDate: '2005-01-01' }), { ...e0, pb: '20261120' }, CY.d8(REF)).find(x => x.id === 'old');
+  const el2 = E.eligibility(base({ birth: '1975-01-01', accDate: '2005-01-01' }), { ...e0, pb: '20261201' }, CY.d8(REF)).find(x => x.id === 'old');
+  check('노부모 판정: 공고일 2026-11-20 / 2026-12-01 에서 안내(rule)·문구가 달라짐', [el1.rule.st, el2.rule.st, el1.items.join() !== el2.items.join()], ['old', 'new', true], '');
+  check('노부모 판정: 공고일이 없으면 기준일(입주자모집공고일)로', E.eligibility(base({ birth: '1975-01-01', accDate: '2005-01-01' }), e0, CY.d8('2026-12-01')).find(x => x.id === 'old').rule.st, 'new', '');
+  check('노부모 근거: 부칙 제1조·행정기본법 제7조', /부칙.*제1조/.test(el2.law) && /행정기본법 제7조/.test(el2.law), true, '');
+  const p1 = E.depRule('2027-11-24'), p2 = E.depRule('20271125'), p3 = E.depRule('2026-11-26');
+  check('부양가족 안내: 2027-11-24 공고 → 지금 기준(바뀌기 전 안내)', [p1.st, p1.txt], ['pre', '2027. 11. 25. 이후 모집공고분부터 부양가족 인정 기준·증빙이 바뀌어요(그 전 공고는 지금 기준)'], '부칙 제2조');
+  check('부양가족 안내: 2027-11-25 공고부터 새 기준 안내로 자동 전환', [p2.st, p2.from], ['post', '2027-11-25'], '부칙 제1조 단서 — 공포 후 1년 경과한 날(행정기본법 제7조)');
+  check('부양가족 안내: 오늘(2026-11-26)은 바뀌기 전', p3.st, 'pre', '');
+  check('부양가족 근거: 부칙 제1조 단서·제2조, 행정기본법 제7조, 출처 주소', /부칙 제1조 단서·제2조/.test(p2.law) && /행정기본법 제7조/.test(p2.law) && p2.src === 'https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=292055', true, '');
+  /* TODO: 개정 별표 1 원문 대조 전 — 2027-11-25 이후 공고도 계산은 현행 기준, '확인 필요' 경고 */
+  check('경고: 2027-11-25 이후 계산 기준 확인 필요(개정 별표 1 미대조 → needCheck)', E.DEP_RULE.verified ? true : (p2.needCheck === true && /확인 필요/.test(p2.txt)), true, 'TODO 2027-11-25 이후 계산 기준 확인 필요');
+  if (!E.DEP_RULE.verified) console.log('WARN  2027-11-25 이후 계산 기준 확인 필요 — 개정 별표 1(부양가족 인정 기준) 원문 대조 전, 지금은 현행 기준으로 계산');
+  check('부양가족 점수 계산은 공고일과 관계없이 현행 기준(3명 20점)', [CY.total(base({ deps: 3 }), '2027-11-24').d.pts, CY.total(base({ deps: 3 }), '2027-11-25').d.pts], [20, 20], '현행 별표 1');
+  check('가점 결과에 부양가족 기준 안내가 붙음(기준일로 분기)', [CY.total(base({}), '2027-11-24').d.rule.st, CY.total(base({}), '2027-11-25').d.rule.st], ['pre', 'post'], ''); }
 check('신생아 특별공급 근거 조문 = 제35조의3', el.find(x => x.id === 'baby').law, '규칙 제35조의3', '제35조의3');
 check('과거 주택 소유 이력 → 생애최초 어려움', el.find(x => x.id === 'first').g, 'no', '제43조');
 check('유주택 세대 → 신혼부부 어려움', E.eligibility(base({ own: true, birth: '1993-01-01', married: true, marDate: '2024-01-01', accDate: '2020-01-01' }), Object.assign({}, e0, { house: '1' }), CY.d8(REF)).find(x => x.id === 'new').g, 'no', '무주택세대구성원');
@@ -123,6 +145,10 @@ check('시·군·구 이름 맞추기(고양시 덕양구 = 고양덕양구)', [
   check('청약 화면: 가점 바로 넣기 칸·주소 ?score 처리', /id="qScore"/.test(html) && /UP\.get\('score'\)/.test(html), true, '');
   check('청약 화면: 가점만 넣으면(칸·?score) 단지별 진단을 맨 위로, 질문으로 계산하면 원래 순서', /function placeGen\(top\)/.test(html) && /placeGen\(!!r\.quick\)/.test(html) && /id="genH"/.test(html) && /id="eligH"/.test(html), true, '2026-11-26 결정');
   check('청약 화면: 공고 전 분양 예정에도 내 가점 비교', /planGuTxt\(x\)/.test(html), true, '');
+  check('청약 화면: 공고 카드마다 공고일(pb)로 노부모·부양가족 기준 안내', /function ruleLine\(n\)/.test(html) && /oldParentRule\(n\.pb\)/.test(html) && /depRule\(n\.pb\)/.test(html) && /\$\{ruleLine\(n\)\}/.test(html), true, '');
+  check('청약 화면: 부양가족 점수 옆 안내 + 시행 예정 접힌 칸(날짜·출처, 내용 미확인이면 지어내지 않음)', /function depNote\(ref\)/.test(html) && /시행 예정 · 2027\. 11\. 25\./.test(html) && /아직 대조하지 못해/.test(html) && /lsiSeq=292055/.test(html), true, '');
+  check('청약 화면: 근거에 부칙 제1조·제2조·행정기본법 제7조', /부칙 제1조 단서/.test(html) && /부칙 제2조/.test(html) && /행정기본법 제7조/.test(html), true, '');
+  check('청약 화면: cy-engine 최신 번호(v6)', /cy-engine\.js\?v=6/.test(html), true, '');
   check('청약 화면: 공공분양 개수는 진단 범위(내 시·도)만 셈', /n\.k !== '민영' && \(scope === 'all' \|\| noticeSido\(n\) === mine\)/.test(html), true, ''); }
 { const N = require('../assets/narrative.js');
   const nar = (N.cat ? N : (global.JDJ_NAR || {})).cat;

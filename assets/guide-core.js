@@ -614,8 +614,12 @@
     if (rows.length) nums.push({ k: `최근 1년 ${sdT} 당첨 결과와 비교(보조)`, v: `${rows.length.toLocaleString()}개 중 ${rows.filter(r => my >= +r[6]).length.toLocaleString()}개`, s: '내 가점이 최저 당첨 가점 이상이었던 주택형' });
     const dg = E.CY.DEPOSIT[E.CY.depGroup(sido || '서울특별시')];
     nums.push({ k: '민영 1순위 예치금(85㎡ 이하)', v: won(dg[0]), s: sido || '서울 기준' });
-    return { head, nums, tables, warn: ['예상 커트라인은 과거 당첨 결과로 만든 추정·참고 범위예요. 실제 당첨을 약속하지 않아요.', '가점이 모자라도 85㎡ 초과·추첨제 물량과 특별공급(신혼·생애최초·신생아 등)은 가점이 아니라 자격·추첨으로 뽑아요.'],
-      note: `기준일 ${ko(E.today)} · 청약홈 공고·당첨 가점 · ${sido ? sido : '지역 미선택(전국)'}${band != null ? ' · ' + CY_BAND[band] : ''}`, src: ['cy', 'cy_rule'] };
+    /* 국토교통부령 제1635호 시행일 분기(부칙 제1조·제2조): 노부모 실거주 2026. 11. 24.~ · 가점 부양가족 기준 2027. 11. 25.~ — 기준일로 자동 */
+    const ruleW = [];
+    if (E.CY.oldParentRule) ruleW.push('노부모 부양 특별공급: ' + E.CY.oldParentRule(null).txt);
+    if (E.CY.depRule) ruleW.push('가점 부양가족: ' + E.CY.depRule(E.today).txt);
+    return { head, nums, tables, warn: ['예상 커트라인은 과거 당첨 결과로 만든 추정·참고 범위예요. 실제 당첨을 약속하지 않아요.', '가점이 모자라도 85㎡ 초과·추첨제 물량과 특별공급(신혼·생애최초·신생아 등)은 가점이 아니라 자격·추첨으로 뽑아요.'].concat(ruleW),
+      note: `기준일 ${ko(E.today)} · 청약홈 공고·당첨 가점 · ${sido ? sido : '지역 미선택(전국)'}${band != null ? ' · ' + CY_BAND[band] : ''}`, src: ['cy', 'cy_rule', 'cy_1635', 'admin7'] };
   }
   /* ③ 청약 — 내 가점으로 어디에 */
   S.cyWhere = (a, E) => {

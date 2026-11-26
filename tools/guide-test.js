@@ -159,6 +159,7 @@ good('cy_where', r);
   check('청약: 공고별 표(단지·지역·일정·면적대·커트라인·판정·근거) — 커트라인은 cut 값 그대로', r.tables[0].head.length === 7 && r.tables[0].rows.some(x => x[4] === '60~69점') && r.tables[0].rows.every(x => /같은 시·도 과거/.test(x[6])), r.tables[0]);
   check('청약: 최근 끝난 단지 실제 당첨 가점 표(해당지역·1년 안)', r.tables[1] && r.tables[1].rows.length === 2, r.tables[1]);
   check('청약: 보조 통계·예치금 300만 원', r.nums.some(n => /보조/.test(n.k)) && r.nums.some(n => n.v === '300만 원'));
+  check('청약 카드: 노부모 실거주(2026. 11. 24. 이후 공고)·부양가족 기준 변경(2027. 11. 25.) 안내 · 부칙·행정기본법 출처', r.warn.some(w => /노부모 부양 특별공급: 2026\. 11\. 24\. 이후 모집공고 단지부터 실제 함께 살아야/.test(w)) && r.warn.some(w => /가점 부양가족: 2027\. 11\. 25\. 이후 모집공고분부터/.test(w)) && ['cy_1635', 'admin7'].every(k => r.src.includes(k) && SC.src[k]) && SC.src.cy_1635.url === 'https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=292055', r.warn);
 }
 {
   const q = '내 청약가점이 64점인데 서울에서 분양 예정인 단지중 당첨 가능한 단지는?';
