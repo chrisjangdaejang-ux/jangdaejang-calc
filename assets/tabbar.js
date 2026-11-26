@@ -1,6 +1,6 @@
 /* 집예보 하단 탭(휴대폰·PC 공통): 홈 · 고민 찾기 · 지도 · 내 집 · 전체 (5개를 넘기지 않음 — 대표 결정 2026-11-26, 순위·단지 비교는 '전체'·첫 화면에서)
    '고민 찾기' = 고민 해결 길잡이(solve/)가 켜져 있으면 solve/, 꺼져 있는 동안은 첫 화면 맨 위 검색 칸(./#q, 단지·기능 찾기)으로.
-   <script src="assets/tabbar.js?v=7" defer></script> 만 넣으면 휴대폰은 화면 맨 아래, PC(1024px 이상)는 머리줄 로고 오른쪽에 붙는다(지금 화면 탭은 파랑).
+   <script src="assets/tabbar.js?v=8" defer></script> 만 넣으면 휴대폰은 화면 맨 아래, PC(1024px 이상)는 머리줄 로고 오른쪽에 붙는다(지금 화면 탭은 파랑).
    본문이 탭에 가리지 않게 body 아래 여백을 탭 높이만큼 더한다. 지도 화면은 body.jm-full 로 여백 대신 지도 높이에서 뺀다. */
 (function () {
   'use strict';
@@ -35,7 +35,7 @@
       '.jtab nav{max-width:none;gap:2px;align-items:center}.jtab a{flex:none;flex-direction:row;gap:6px;min-height:44px;padding:0 12px;border-radius:10px;font-size:15px}' +
       '.jtab a svg{width:18px;height:18px}.jtab a:hover{background:#F2F4F6}.jtab a.on{background:#EEEDFB}' +
       'body.jtab-pad{padding-bottom:0}.jdjpwa{bottom:16px!important}}' +
-      '@media(min-width:1024px) and (max-width:1279px){.jtab a svg{display:none}.jtab a{padding:0 10px}}';
+      '@media(min-width:1024px) and (max-width:1279px){.jtab a svg{display:none}.jtab a{padding:0 10px}}@media print{.jtab{display:none}body.jtab-pad{padding-bottom:0}}';
     document.head.appendChild(st);
     var w = document.createElement('div'); w.className = 'jtab';
     w.innerHTML = '<nav aria-label="주요 화면">' + T.map(function (t) {
@@ -46,4 +46,15 @@
     if (!document.body.classList.contains('jm-full')) document.body.classList.add('jtab-pad');
   }
   if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+})();
+/* 'NEW'·'새로' 배지 14일 자동 만료(docs/design_guide.md 16): <span class="newb" data-new="2026-11-19">새로</span>
+   출시일 + 14일이 지나면 배지를 숨긴다(날짜 없는 배지는 그대로). 나중에 그려지는 배지는 window.JDJ_NEW.fresh('2026-11-19') 로 그릴지 정한다. */
+(function () {
+  'use strict';
+  if (typeof document === 'undefined') return;
+  var DAYS = 14;
+  function fresh(d) { var t = Date.parse(String(d || '') + 'T00:00:00+09:00'); return !isNaN(t) && Date.now() < t + DAYS * 864e5; }
+  function sweep() { Array.prototype.forEach.call(document.querySelectorAll('[data-new]'), function (el) { if (!fresh(el.getAttribute('data-new'))) el.hidden = true, el.style.display = 'none'; }); }
+  window.JDJ_NEW = { fresh: fresh, sweep: sweep, DAYS: DAYS };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', sweep); else sweep();
 })();

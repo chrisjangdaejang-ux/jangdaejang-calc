@@ -26,7 +26,7 @@ a{color:var(--blue)}
 .brand .star{color:var(--brand)}
 .brand .acc,.brand span:not(.star){color:var(--blue)}
 .brand span[data-site-name]{color:inherit}
-.badge{font-size:10.5px;font-weight:700;letter-spacing:1.2px;border:1px solid var(--brand);color:var(--brand);background:transparent;padding:3px 7px;border-radius:4px;white-space:nowrap}
+.badge{font-size:12.5px;font-weight:700;letter-spacing:1.2px;border:1px solid var(--brand);color:var(--brand);background:transparent;padding:3px 7px;border-radius:4px;white-space:nowrap}
 .badge.plain{border-color:var(--line);color:var(--sub2);letter-spacing:0;font-size:13.5px;padding:4px 9px;border-radius:999px}
 .topbtn{font:inherit;font-size:15px;font-weight:700;color:var(--sub);background:var(--gray);border:0;border-radius:10px;min-height:44px;padding:0 14px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
 @media(max-width:420px){.top{padding:10px 16px}.brand{font-size:17px}.brand .bi{width:22px;height:22px}}
@@ -126,7 +126,7 @@ table td{border-bottom:1px solid var(--line2)}
 /* 점수 링 (금색 장식) */
 .ring{flex:none;width:64px;height:64px;border-radius:50%;border:5px solid var(--brand);display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff}
 .ring b{font-size:22px;font-weight:900;line-height:1;color:var(--text)}
-.ring small{font-size:10px;color:var(--sub2);margin-top:2px}
+.ring small{font-size:12.5px;color:var(--sub2);margin-top:2px}
 .ring.sm{width:52px;height:52px;border-width:4px}
 .ring.sm b{font-size:18px}
 .ring.dim{border-color:var(--line)}
@@ -198,7 +198,7 @@ table td{border-bottom:1px solid var(--line2)}
 li.jas-li{border-bottom:1px solid var(--line)}
 .jas-h{display:flex;align-items:center;gap:8px;min-height:22px;margin:0 0 8px;min-width:0}
 .jas-h small{font-size:12.5px;color:var(--sub2);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.jas-tag{flex:none;display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:5px;background:#fff;border:1px solid #C5CCD6;color:var(--sub);font-size:12px;font-weight:700;letter-spacing:0;line-height:1}
+.jas-tag{flex:none;display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:5px;background:#fff;border:1px solid #C5CCD6;color:var(--sub);font-size:12.5px;font-weight:700;letter-spacing:0;line-height:1}
 .jas-c{display:flex;align-items:center;gap:12px;height:76px;padding:0 12px;background:#fff;border:1px solid var(--line);border-radius:12px;color:var(--text);text-decoration:none;min-width:0}
 .jas-c:hover{border-color:#D4D1F5}
 .jas-img{flex:none;width:48px;height:48px;border-radius:10px;object-fit:cover;background:var(--gray)}

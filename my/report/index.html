@@ -33,10 +33,10 @@
 <script src="../../assets/alerts-core.js?v=5"></script>
 <script src="../../assets/watch-core.js?v=2"></script>
 <script src="../../assets/watch.js?v=9"></script>
-<script src="../../assets/tabbar.js?v=7" defer></script>
+<script src="../../assets/tabbar.js?v=8" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/aplus.css?v=48">
+<link rel="stylesheet" href="../../assets/aplus.css?v=49">
 <style>
 .wrap{max-width:1040px;margin:0 auto;padding:22px 16px 40px}
 h1{font-size:clamp(26px,6.4vw,32px);margin:4px 0 8px;letter-spacing:-.6px}
@@ -62,7 +62,7 @@ h1{font-size:clamp(26px,6.4vw,32px);margin:4px 0 8px;letter-spacing:-.6px}
 .rc .kp b{display:block;font-size:21px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-.4px;line-height:1.3;margin-top:2px;word-break:keep-all}
 .rc .kp b em{font-style:normal;font-size:14px;font-weight:700;color:var(--sub2)}
 .rc .kp i{display:block;font-style:normal;font-size:12.5px;line-height:1.45;color:var(--sub2);margin-top:3px}
-.rc .kp i.up{color:#C2410C;font-weight:800}.rc .kp i.dn{color:#1D63D8;font-weight:800}
+.rc .kp i.up{color:var(--neg);font-weight:800}.rc .kp i.dn{color:var(--down);font-weight:800}
 .rc .kp div.warn{background:#FFF7F2}
 .rc .rw{padding:13px 18px;border-top:1px solid var(--line2)}
 .rc .rw h3{margin:0 0 3px;font-size:13.5px;font-weight:800;color:var(--sub2)}
@@ -73,9 +73,9 @@ h1{font-size:clamp(26px,6.4vw,32px);margin:4px 0 8px;letter-spacing:-.6px}
 .rc .rw li:first-child{border-top:0}
 .rc .rw li span{min-width:0;word-break:keep-all}
 .rc .rw li b{flex:none;font-variant-numeric:tabular-nums}
-.tg{display:inline-block;font-size:11.5px;font-weight:800;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px;white-space:nowrap}
-.tg.hi{background:#FDECE4;color:#C2410C}.tg.x{background:var(--gray);color:var(--sub2)}
-.rc .ft{padding:11px 18px 13px;background:var(--gray2);border-top:1px solid var(--line2);font-size:12px;color:var(--sub2);line-height:1.55}
+.tg{display:inline-block;font-size:12.5px;font-weight:800;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px;white-space:nowrap}
+.tg.hi{background:var(--neg-l);color:var(--neg)}.tg.x{background:var(--gray);color:var(--sub2)}
+.rc .ft{padding:11px 18px 13px;background:var(--gray2);border-top:1px solid var(--line2);font-size:12.5px;color:var(--sub2);line-height:1.55}
 .acts{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 0;max-width:560px}
 .acts .btn{flex:1 1 150px}
 .side>section{margin:0 0 16px}
@@ -88,7 +88,7 @@ h1{font-size:clamp(26px,6.4vw,32px);margin:4px 0 8px;letter-spacing:-.6px}
 .fr input,.fr select,.ln input{min-height:48px;border:1px solid var(--line);border-radius:12px;padding:0 10px;font:inherit;font-size:16px;background:#fff;width:100%;box-sizing:border-box}
 .mine{margin:12px 0 0;padding:12px 14px;border-radius:14px;background:var(--gray2);border:1px dashed var(--line);font-size:14.5px;line-height:1.6}
 .mine b{font-variant-numeric:tabular-nums}
-.mine .tgm{display:inline-block;font-size:11.5px;font-weight:800;color:#8A6A12;background:var(--creamc);border:1px solid var(--creamb);border-radius:6px;padding:0 6px;margin-right:4px}
+.mine .tgm{display:inline-block;font-size:12.5px;font-weight:800;color:#8A6A12;background:var(--creamc);border:1px solid var(--creamb);border-radius:6px;padding:0 6px;margin-right:4px}
 .ln{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .ln input{flex:1 1 160px;min-width:0}
 .ln span{font-size:15px;font-weight:700}
@@ -100,7 +100,7 @@ svg.ch{display:block;width:100%;height:auto;margin:10px 0 0}
 .hl{list-style:none;margin:8px 0 0;padding:0;font-size:13.5px;color:var(--sub2)}
 .hl li{display:flex;justify-content:space-between;padding:3px 0;border-top:1px dashed var(--line2);font-variant-numeric:tabular-nums}
 .saved{margin:8px 0 0;font-size:13px;color:var(--sub2);line-height:1.5}
-.saved.ok{color:#0E7A4F}
+.saved.ok{color:var(--pos)}
 .cta{padding:16px;border-radius:18px;background:var(--creamc);border:1px solid var(--creamb)}
 .cta h2{margin:0 0 4px;font-size:17px;font-weight:900}
 .cta p{margin:0 0 10px;font-size:14.5px;color:var(--sub);line-height:1.6}

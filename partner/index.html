@@ -27,7 +27,7 @@
 <script src="../assets/agents.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/aplus.css?v=48">
+<link rel="stylesheet" href="../assets/aplus.css?v=49">
 <style>
 [hidden]{display:none!important}
 .wrap{max-width:900px;margin:0 auto;padding:24px 18px 60px}
@@ -40,7 +40,7 @@ h2.t{font-size:clamp(21px,4.6vw,26px);font-weight:900;letter-spacing:-.5px;line-
 @media(max-width:760px){.grid{grid-template-columns:1fr 1fr}}
 .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;min-width:0}
 .card b{display:block;font-size:16px;margin-bottom:4px}.card p{margin:0;font-size:14.5px;color:var(--sub);line-height:1.6}
-.card .ic{display:inline-block;width:8px;height:8px;border-radius:50%;background:#B8942A;margin-right:6px;vertical-align:middle}
+.card .ic{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gold);margin-right:6px;vertical-align:middle}
 .flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;counter-reset:f;padding:0;margin:0;list-style:none}
 @media(max-width:760px){.flow{grid-template-columns:1fr 1fr}}
 .flow li{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff;min-width:0}
@@ -51,7 +51,7 @@ h2.t{font-size:clamp(21px,4.6vw,26px);font-weight:900;letter-spacing:-.5px;line-
 .rule b{color:var(--text)}
 .tabs{display:flex;gap:6px;margin:0 0 12px}
 .tab{flex:none;font:inherit;font-weight:700;font-size:15px;border:1px solid var(--line);background:#fff;color:var(--sub);border-radius:999px;padding:0 16px;min-height:44px;cursor:pointer}
-.tab.on{background:#191F28;border-color:#191F28;color:#fff}
+.tab.on{background:var(--text);border-color:var(--text);color:#fff}
 .box{border:1px solid var(--line);border-radius:18px;padding:18px;background:#fff;margin:12px 0}
 .box h3{font-size:17px;margin:0 0 10px}
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -75,18 +75,18 @@ label.l i{font-style:normal;color:var(--neg)}
 .msg{margin-top:10px;font-size:15px;font-weight:700;min-height:1em}
 .msg.err{color:var(--neg)}.msg.ok{color:var(--pos)}
 .done{background:var(--pos-l);border-radius:16px;padding:16px;font-size:15.5px;line-height:1.7}
-.code{display:inline-block;font-size:22px;font-weight:900;letter-spacing:.08em;background:#fff;border:1px dashed #B8942A;border-radius:10px;padding:4px 12px;margin:4px 0}
+.code{display:inline-block;font-size:22px;font-weight:900;letter-spacing:.08em;background:#fff;border:1px dashed var(--gold);border-radius:10px;padding:4px 12px;margin:4px 0}
 .who{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .who b{font-size:18px}.who small{display:block;color:var(--sub2);font-size:13.5px}
 .note{background:#FBF3DF;color:#7A5200;border-radius:12px;padding:10px 12px;font-size:14.5px;line-height:1.6;margin-top:10px}
 .site{border:1px solid var(--line);border-radius:16px;padding:14px;margin:10px 0;background:#fff}
-.site.mine{border-color:#9DB8FF;box-shadow:0 0 0 2px #EEEDFB}
+.site.mine{border-color:#9DB8FF;box-shadow:0 0 0 2px var(--blue-l)}
 .site .h{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:flex-start}
 .site .h b{font-size:16.5px}.site .h small{display:block;font-size:13px;color:var(--sub2);margin-top:2px}
 .site dl{display:grid;grid-template-columns:96px 1fr;gap:4px 10px;margin:10px 0 0;font-size:14.5px}
 .site dt{color:var(--sub2);font-weight:700}.site dd{margin:0;min-width:0;overflow-wrap:anywhere}
-.pill{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:3px 9px;background:#F2F4F6;color:var(--sub);white-space:nowrap}
-.pill.on{background:#4338CA;color:#fff}.pill.wait{background:#FBF3DF;color:#9A5B00}
+.pill{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:3px 9px;background:var(--gray);color:var(--sub);white-space:nowrap}
+.pill.on{background:var(--blue);color:#fff}.pill.wait{background:#FBF3DF;color:#9A5B00}
 .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .acts .btn{min-height:44px;font-size:15px;padding:0 14px}
 .empty{padding:20px 14px;text-align:center;border:1px dashed var(--line);border-radius:14px;font-size:15px;color:var(--sub);line-height:1.6}

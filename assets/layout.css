@@ -115,7 +115,7 @@
   .mlist .nm b{display:block;font-size:15.5px;font-weight:800;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .mlist .nm small{display:block;font-size:13px;color:var(--sub2);line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .mlist .v{font-size:15.5px;font-weight:900;color:var(--blue);white-space:nowrap;font-variant-numeric:tabular-nums;text-align:right}
-  .mlist .v small{display:block;font-size:12px;font-weight:700;color:var(--sub2)}
+  .mlist .v small{display:block;font-size:12.5px;font-weight:700;color:var(--sub2)}
   .mlist .empty{padding:28px 16px;text-align:center;font-size:14.5px;color:var(--sub);line-height:1.6}
   /* 단지 카드는 목록 칸 자리에 붙여서(겹쳐 뜨는 작은 창 대신) */
   body.lay-split .sheet{left:0!important;top:var(--mt);bottom:0!important;width:400px!important;max-width:none;max-height:none!important;border-radius:0!important;box-shadow:2px 0 10px rgba(0,0,0,.08);border-right:1px solid var(--line);margin:0}

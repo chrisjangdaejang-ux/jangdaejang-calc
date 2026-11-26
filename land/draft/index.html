@@ -9,41 +9,41 @@
 <title>[시안] 이 땅, 사도 될까요? — 기획부동산 피해 예방 체크 | 집예보</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/aplus.css?v=48">
+<link rel="stylesheet" href="../../assets/aplus.css?v=49">
 <script src="../../assets/nw.js?v=1" defer></script>
 <style>
 .wrap{max-width:860px;margin:0 auto;padding:22px 16px 60px}
 h1{font-size:clamp(27px,6.4vw,40px);margin:6px 0 8px}
-.lead{margin:0 0 14px;font-size:16px;color:#4E5968;line-height:1.65}
+.lead{margin:0 0 14px;font-size:16px;color:var(--sub2);line-height:1.65}
 .draftbar{background:#FFF4E5;border:1px solid #F5C77E;color:#7A4A00;border-radius:12px;padding:10px 14px;font-size:14px;line-height:1.6;margin:0 0 14px}
 .panel{margin:14px 0}
-.panel h2 small{display:block;font-size:13.5px;font-weight:500;color:#4E5968;margin-top:4px;letter-spacing:0}
-.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#F2F4F6;border-radius:14px;padding:5px}
-.tabs button{font:inherit;font-size:16px;font-weight:700;border:0;background:transparent;color:#4E5968;min-height:50px;border-radius:10px;cursor:pointer;word-break:keep-all}
-.tabs button.on{background:#fff;color:#4338CA;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.panel h2 small{display:block;font-size:13.5px;font-weight:500;color:var(--sub2);margin-top:4px;letter-spacing:0}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--gray);border-radius:14px;padding:5px}
+.tabs button{font:inherit;font-size:16px;font-weight:700;border:0;background:transparent;color:var(--sub2);min-height:50px;border-radius:10px;cursor:pointer;word-break:keep-all}
+.tabs button.on{background:#fff;color:var(--blue);box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .form{border:1px solid #D4D1F5;background:#F5F8FF;border-radius:16px;padding:14px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:640px){.grid2{grid-template-columns:1fr}}
 .form label{display:block;font-size:14px;font-weight:700;margin:0 0 4px}
-.form input,.form select{width:100%;font:inherit;font-size:16px;min-height:48px;padding:0 12px;border:1px solid #E5E8EB;border-radius:12px;background:#fff;color:#191F28;min-width:0;box-sizing:border-box}
-.form .hint{font-size:13px;color:#4E5968;margin:3px 0 10px;line-height:1.5}
-.form .auto{font-size:12px;font-weight:700;color:#0E7A4F;background:#E6F5EE;border-radius:5px;padding:1px 6px;margin-left:4px}
-.form .manual{font-size:12px;font-weight:700;color:#7A4A00;background:#FFF4E5;border-radius:5px;padding:1px 6px;margin-left:4px}
+.form input,.form select{width:100%;font:inherit;font-size:16px;min-height:48px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--text);min-width:0;box-sizing:border-box}
+.form .hint{font-size:13px;color:var(--sub2);margin:3px 0 10px;line-height:1.5}
+.form .auto{font-size:12.5px;font-weight:700;color:var(--pos);background:var(--pos-l);border-radius:5px;padding:1px 6px;margin-left:4px}
+.form .manual{font-size:12.5px;font-weight:700;color:#7A4A00;background:#FFF4E5;border-radius:5px;padding:1px 6px;margin-left:4px}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
 .row .btn{min-height:48px;font-size:15.5px}
 .res[hidden]{display:none}
-.sig{border:1px solid #E5E8EB;border-radius:14px;padding:12px 14px;margin:8px 0;background:#fff}
+.sig{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:8px 0;background:#fff}
 .sig h3{margin:0 0 4px;font-size:16.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.sig p{margin:4px 0 0;font-size:15.5px;line-height:1.7;color:#191F28}
-.sig .sub{font-size:13.5px;color:#4E5968}
+.sig p{margin:4px 0 0;font-size:15.5px;line-height:1.7;color:var(--text)}
+.sig .sub{font-size:13.5px;color:var(--sub2)}
 .lv{font-size:12.5px;font-weight:800;border-radius:999px;padding:2px 10px}
-.lv.r{background:#FDECEC;color:#C81E1E}.lv.y{background:#FFF4E5;color:#9A5B00}.lv.g{background:#E6F5EE;color:#0E7A4F}.lv.n{background:#F2F4F6;color:#4E5968}
+.lv.r{background:#FDECEC;color:#C81E1E}.lv.y{background:#FFF4E5;color:#9A5B00}.lv.g{background:var(--pos-l);color:var(--pos)}.lv.n{background:var(--gray);color:var(--sub2)}
 .sig.r{border-color:#F3B4B4;box-shadow:inset 3px 0 0 #E03131}
 .sig.y{border-color:#F5D59E;box-shadow:inset 3px 0 0 #F08C00}
 .big{font-size:24px;font-weight:900;letter-spacing:-.4px;font-variant-numeric:tabular-nums}
-.sum{background:#191F28;color:#fff;border-radius:16px;padding:16px;margin:12px 0}
+.sum{background:var(--text);color:#fff;border-radius:16px;padding:16px;margin:12px 0}
 .sum b{font-size:20px}.sum p{margin:6px 0 0;font-size:15px;line-height:1.65;color:#D1D6DB}
-.ph{border:2px dashed #D4D1F5;border-radius:14px;padding:16px;text-align:center;color:#4E5968;font-size:14.5px;line-height:1.6;background:#FAFBFF}
+.ph{border:2px dashed #D4D1F5;border-radius:14px;padding:16px;text-align:center;color:var(--sub2);font-size:14.5px;line-height:1.6;background:#FAFBFF}
 .steps{margin:0;padding-left:20px}
 .steps li{font-size:15.5px;line-height:1.7;margin:6px 0}
 .warn{background:#FDECEC;border:1px solid #F3B4B4;border-radius:14px;padding:12px 14px}
@@ -51,11 +51,11 @@ h1{font-size:clamp(27px,6.4vw,40px);margin:6px 0 8px}
 .warn ul{margin:6px 0 0;padding-left:20px}.warn li{font-size:15.5px;line-height:1.7}
 .links{display:grid;gap:8px;grid-template-columns:repeat(2,1fr)}
 @media(max-width:640px){.links{grid-template-columns:1fr}}
-.links a{display:flex;flex-direction:column;justify-content:center;gap:2px;min-height:64px;padding:10px 14px;border:1px solid #E5E8EB;border-radius:14px;text-decoration:none;color:#191F28;background:#fff}
-.links b{font-size:16px}.links small{font-size:13.5px;color:#4E5968}
+.links a{display:flex;flex-direction:column;justify-content:center;gap:2px;min-height:64px;padding:10px 14px;border:1px solid var(--line);border-radius:14px;text-decoration:none;color:var(--text);background:#fff}
+.links b{font-size:16px}.links small{font-size:13.5px;color:var(--sub2)}
 .zones{display:grid;gap:6px}
-.zones div{font-size:15px;line-height:1.6;border-bottom:1px solid #F2F4F6;padding:6px 0}
-.disc{font-size:13.5px;color:#4E5968;line-height:1.7;margin-top:18px}
+.zones div{font-size:15px;line-height:1.6;border-bottom:1px solid var(--gray);padding:6px 0}
+.disc{font-size:13.5px;color:var(--sub2);line-height:1.7;margin-top:18px}
 [hidden]{display:none!important}
 </style>
 <script src="../../assets/back.js?v=1" defer></script>

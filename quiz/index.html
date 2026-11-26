@@ -35,10 +35,10 @@
 <script src="../assets/alerts-core.js?v=5"></script>
 <script src="../assets/watch-core.js?v=2"></script>
 <script src="../assets/watch.js?v=9"></script>
-<script src="../assets/tabbar.js?v=7" defer></script>
+<script src="../assets/tabbar.js?v=8" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/aplus.css?v=48">
+<link rel="stylesheet" href="../assets/aplus.css?v=49">
 <style>
 .wrap{max-width:560px;margin:0 auto;padding:22px 16px 40px}
 .eye{font-size:14px;font-weight:800;color:#7D6210;margin:0}
@@ -54,8 +54,8 @@ h1{font-size:clamp(26px,6.6vw,32px);margin:2px 0 6px;letter-spacing:-.6px}
 .opts button{font:inherit;font-size:19px;font-weight:900;min-height:58px;border-radius:14px;border:2px solid var(--line);background:#fff;color:var(--text);cursor:pointer;font-variant-numeric:tabular-nums;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 18px;text-align:left}
 .opts button:hover:not(:disabled){border-color:var(--blue)}
 .opts button:disabled{cursor:default;opacity:1}
-.opts button.ok{border-color:#0E7A4F;background:#E6F5EE;color:#0E7A4F}
-.opts button.no{border-color:#C2410C;background:#FDECE4;color:#C2410C}
+.opts button.ok{border-color:var(--pos);background:var(--pos-l);color:var(--pos)}
+.opts button.no{border-color:var(--neg);background:var(--neg-l);color:var(--neg)}
 .opts button small{font-size:13.5px;font-weight:800;white-space:nowrap}
 .res{margin:16px 0 0;border:1px solid var(--line);border-radius:18px;padding:16px}
 .res h2{margin:0 0 4px;font-size:20px;font-weight:900}
@@ -103,14 +103,14 @@ h1{font-size:clamp(26px,6.6vw,32px);margin:2px 0 6px;letter-spacing:-.6px}
 .pc .ops button>span{position:relative;z-index:1}
 .pc .ops button small{position:relative;z-index:1;font-size:13px;font-weight:800;color:var(--sub2);white-space:nowrap}
 .pc .ops button[aria-pressed=true]{border-color:var(--blue)}
-.pc .ops button.ok{border-color:#0E7A4F}.pc .ops button.ok .bar{background:#E6F5EE}
-.pc .ops button.no{border-color:#C2410C}
+.pc .ops button.ok{border-color:var(--pos)}.pc .ops button.ok .bar{background:var(--pos-l)}
+.pc .ops button.no{border-color:var(--neg)}
 .pc .ai{margin:10px 0 0;padding:8px 10px;border-radius:10px;background:var(--gray2);font-size:14px;color:var(--sub)}
 .pc .rs{margin:10px 0 0;font-size:14.5px;line-height:1.6;color:var(--sub)}
 .pc .rs b{color:var(--text)}
 .pc .sr{margin:8px 0 0;font-size:12.5px;color:var(--sub2);line-height:1.55;overflow-wrap:anywhere}
 .pc .sr a{color:var(--sub2)}
-.pc .pm{margin:8px 0 0;font-size:14px;font-weight:700;color:#0E7A4F}
+.pc .pm{margin:8px 0 0;font-size:14px;font-weight:700;color:var(--pos)}
 .pq .h3{font-size:16.5px;font-weight:900;margin:18px 0 8px}
 .bd{width:100%;border-collapse:collapse;font-size:15px;font-variant-numeric:tabular-nums}
 .bd th,.bd td{padding:9px 6px;border-bottom:1px solid var(--line2);text-align:right}
@@ -122,7 +122,7 @@ h1{font-size:clamp(26px,6.6vw,32px);margin:2px 0 6px;letter-spacing:-.6px}
 .bgs span.on{border-color:#E4CF8F;background:#FBF3DC;color:#8A6A12}
 .fun{margin:12px 0 0;padding:10px 12px;border-radius:12px;background:var(--gray2);font-size:14px;font-weight:700;color:var(--sub);line-height:1.55}
 .qhd{font-size:clamp(21px,5.4vw,24px);font-weight:900;letter-spacing:-.5px;margin:0 0 4px}
-.tb{display:inline-block;font-size:12px;font-weight:800;border-radius:999px;padding:1px 8px;margin-left:4px;background:#FBF3DC;color:#8A6A12;vertical-align:1px;white-space:nowrap}
+.tb{display:inline-block;font-size:12.5px;font-weight:800;border-radius:999px;padding:1px 8px;margin-left:4px;background:#FBF3DC;color:#8A6A12;vertical-align:1px;white-space:nowrap}
 .tierbox{border:1px solid var(--creamb);background:var(--creamc);border-radius:16px;padding:12px 14px;margin:0 0 12px;font-size:14.5px;line-height:1.6;color:var(--sub)}
 .tierbox b.tt{font-size:17px;color:var(--text)}
 .tierbox .gr{margin:8px 0 0;padding:8px 0 0;border-top:1px dashed var(--creamb)}

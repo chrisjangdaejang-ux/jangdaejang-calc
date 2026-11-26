@@ -34,8 +34,8 @@
 <script src="../../assets/proactive.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/aplus.css?v=48">
-<script src="../../assets/tabbar.js?v=7" defer></script>
+<link rel="stylesheet" href="../../assets/aplus.css?v=49">
+<script src="../../assets/tabbar.js?v=8" defer></script>
 <style>
 .wrap{max-width:1160px;margin:0 auto;padding:18px 16px 60px}
 h1{font-size:clamp(24px,6vw,34px);font-weight:900;letter-spacing:-.04em;line-height:1.25;margin:4px 0 8px;word-break:keep-all}
@@ -46,7 +46,7 @@ h1 em{font-style:normal;color:var(--blue)}
 .fl .k{font-size:13.5px;font-weight:700;color:var(--muted)}
 .chips{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
-.chip{flex:none;font:inherit;font-size:14.5px;font-weight:700;border:1px solid var(--line);background:#fff;color:#4E5968;padding:0 14px;border-radius:999px;min-height:44px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.chip{flex:none;font:inherit;font-size:14.5px;font-weight:700;border:1px solid var(--line);background:#fff;color:var(--sub2);padding:0 14px;border-radius:999px;min-height:44px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
 .chip .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -56,12 +56,12 @@ h1 em{font-style:normal;color:var(--blue)}
 #map{height:min(56vh,440px);border-radius:16px;border:1px solid var(--line);background:#EEF2F7;overflow:hidden}
 @media(min-width:960px){#map{height:calc(100vh - 150px);max-height:720px}}
 .mapnote{font-size:13.5px;color:var(--muted);margin:6px 2px 0;line-height:1.5}
-.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13.5px;color:#4E5968;margin:6px 2px 0}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13.5px;color:var(--sub2);margin:6px 2px 0}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:4px;vertical-align:-1px}
-.legend i.dash{background:#fff!important;border:2px dashed #4E5968;border-radius:3px}
+.legend i.dash{background:#fff!important;border:2px dashed var(--sub2);border-radius:3px}
 .jm-pin .zp{pointer-events:auto;position:absolute;transform:translate(-50%,-50%);border:0;padding:0;background:none;cursor:pointer;width:44px;height:44px;display:flex;align-items:center;justify-content:center}
 .jm-pin .zp i{display:block;width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.25)}
-.jm-pin .zl{pointer-events:none;position:absolute;transform:translate(-50%,8px);white-space:nowrap;font-size:12.5px;font-weight:900;background:rgba(255,255,255,.92);border-radius:6px;padding:1px 5px;color:#191F28;box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.jm-pin .zl{pointer-events:none;position:absolute;transform:translate(-50%,8px);white-space:nowrap;font-size:12.5px;font-weight:900;background:rgba(255,255,255,.92);border-radius:6px;padding:1px 5px;color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.15)}
 .sum{font-size:14.5px;color:var(--muted);margin:2px 0 8px}
 .sum b{color:var(--ink)}
 .zc{border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px 16px;margin-bottom:10px}
@@ -70,9 +70,9 @@ h1 em{font-style:normal;color:var(--blue)}
 .zc .nm{font-size:17px;font-weight:900;letter-spacing:-.02em;line-height:1.35;word-break:keep-all}
 .zc .loc{font-size:13.5px;color:var(--muted)}
 .tb{display:inline-block;font-size:13px;font-weight:900;border-radius:6px;padding:2px 7px;color:#fff;margin-right:4px;vertical-align:1px}
-.tb.sh{background:#fff;color:#4E5968;border:1px dashed #4E5968}
+.tb.sh{background:#fff;color:var(--sub2);border:1px dashed var(--sub2)}
 .lvbar{display:grid;grid-template-columns:repeat(10,1fr);gap:2px;margin:10px 0 2px}
-.lvbar i{height:6px;border-radius:2px;background:#E5E8EB}
+.lvbar i{height:6px;border-radius:2px;background:var(--line)}
 .lvbar i.on{background:var(--blue)}
 .stg{font-size:14.5px;font-weight:700;margin-top:4px}
 .stg small{font-weight:500;color:var(--muted)}

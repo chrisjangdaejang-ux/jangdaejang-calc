@@ -54,10 +54,10 @@
 .br .w:before,.br .w:after{content:'';position:absolute;top:-4px;width:1.5px;height:10px;background:rgba(25,31,40,.55)}
 .br .w:before{left:0}.br .w:after{right:0}
 .br .v{font-size:14px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.br .v small{display:block;font-size:11.5px;font-weight:500;color:var(--sub3);line-height:1.2}
+.br .v small{display:block;font-size:12.5px;font-weight:500;color:var(--sub3);line-height:1.2}
 .br.na .tr{background:repeating-linear-gradient(135deg,#F2F4F6 0 6px,#fff 6px 10px);border-radius:4px}
 .br.na .v{color:var(--sub3);font-weight:500;font-size:13px}
-.bax{display:grid;grid-template-columns:70px minmax(0,1fr) 78px;gap:8px;font-size:11.5px;color:var(--sub3);margin-top:2px}
+.bax{display:grid;grid-template-columns:70px minmax(0,1fr) 78px;gap:8px;font-size:12.5px;color:var(--sub3);margin-top:2px}
 .bax .ax{display:flex;justify-content:space-between;font-variant-numeric:tabular-nums}
 .leg{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:var(--sub2);margin:8px 0 0}
 .leg i{display:inline-block;width:12px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
@@ -83,7 +83,7 @@ table.tt{width:100%;border-collapse:collapse;font-size:14.5px;font-variant-numer
 .tt thead th{border-top:0;background:var(--gray2);font-size:12.5px;font-weight:700;color:var(--sub2);white-space:normal;line-height:1.35;vertical-align:bottom;min-width:56px}
 .tt th:first-child,.tt td:first-child{text-align:left;position:sticky;left:0;background:#fff;z-index:1}
 .tt thead th:first-child{background:var(--gray2)}
-.tt td small{display:block;font-size:11.5px;color:var(--sub3);font-weight:500;line-height:1.3}
+.tt td small{display:block;font-size:12.5px;color:var(--sub3);font-weight:500;line-height:1.3}
 .tt td.c b{font-weight:900}
 .tt tr.na td.c b{font-weight:500}
 .tt tr.tot td{background:#F7F9FF;font-weight:700}
@@ -96,8 +96,8 @@ table.tt{width:100%;border-collapse:collapse;font-size:14.5px;font-variant-numer
 .trend{border:1px solid var(--line);border-radius:16px;padding:12px 12px 6px;background:#fff;margin:10px 0 0;position:relative}
 .trend svg{display:block;width:100%;height:auto}
 .trend .gl{stroke:#EEF0F3;stroke-width:1}.trend .zl{stroke:#C9CED6;stroke-width:1}
-.trend .yl{font-size:11px;fill:#5F6B7A;font-variant-numeric:tabular-nums}
-.trend .xl{font-size:11px;fill:#5F6B7A;text-anchor:middle}
+.trend .yl{font-size:12.5px;fill:#5F6B7A;font-variant-numeric:tabular-nums}
+.trend .xl{font-size:12.5px;fill:#5F6B7A;text-anchor:middle}
 .trend .s0{stroke:#191F28}.trend .s1{stroke:#4338CA}
 .trend .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
 .trend .pt{stroke-width:2;r:4.5}
