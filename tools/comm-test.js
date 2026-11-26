@@ -51,6 +51,9 @@ const bl = K.btLines(filling.bt);
 check('세 기간 문장이 같으면 한 줄로', bl.length, 1);
 check('짧은 기간 문장: 언제부터 쌓였는지·언제까지 채우는지', /2024년 7월부터.*2011년 1월 자료까지/.test(bl[0]), true);
 check('미통과 문장: 몇 번 중 몇 번', K.btText({ status: 'fail', oos_all: [{ top20: 1 }, { top20: -1 }, { top20: 2 }], oos_hit: 1 }, '2'), '2년 보유: 이 예측 방법을 과거에 그대로 써 봤더니 3번 중 1번만 맞아 점수를 보여 드리지 않아요.');
+check('미통과지만 절반 넘게 맞음: 참고로만(\'번만 맞아\' 아님)', K.btText({ status: 'fail', why: ['sig'], oos_all: [{ top20: 2 }, { top20: 5 }, { top20: 4 }], oos_hit: 3 }, '3'), '3년 보유: 과거에 그대로 써 봤더니 3번 중 3번 맞았지만, 맞춰 본 횟수가 적거나 차이가 우연일 수 있을 만큼 작아 점수는 보여 드리지 않고 참고로만 알려 드려요.');
+check('통과 문장: 같은 종류 거래끼리 비교 표시', /용도·크기가 비슷한 거래끼리 비교\)\.$/.test(K.btText({ status: 'pass', mix: 1, oos_all: [{ top20: 3 }, { top20: 1 }], oos_hit: 2 }, '1')), true);
+check('미통과 머리 문장', K.scoreHead({ bt: { 1: { status: 'fail' }, 2: { status: 'fail' } } }), '이 예측 방법은 과거에 써 봤을 때 성적이 기준에 못 미쳐 점수를 보여 드리지 않아요');
 check('점수 순위 문구', [K.scoreRank(92), K.scoreRank(2), K.scoreRank(50)], ['상위 8%', '하위 3%', '중간쯤']);
 
 // 임대동향·상권
