@@ -165,6 +165,167 @@
     return { a, from };
   }
 
+  /* ---------- 넓은 질문 좁히기(집 찾기) ----------
+     상태 st = {sido, gus:[구 이름]|null, gname, area(전용 ㎡)|null, budget:[lo, hi]|null, age(년 이내)|null, station(도보 분)|null} — 값 0 = '상관없어요'(물었음) */
+  function narrowInit(sl, D, ctxSido) {
+    const st = { sido: sl.sido || ctxSido || '', gus: null, gname: '', area: sl.area || null, budget: null, age: null, station: null };
+    const flat = sl.raw || '', G0 = (D.narrow && D.narrow.groups) || {};
+    for (const g of Object.keys(G0)) if (flat.indexOf(g) >= 0) { st.gus = G0[g].slice(); st.gname = /^강남(쪽|권)$/.test(g) ? '강남3구' : g; break; }
+    if (!st.gus && sl.region) { st.gus = [sl.region.name]; st.gname = sl.region.name; if (!st.sido) st.sido = sl.region.sido; }
+    if (st.gus && !st.sido) st.sido = '서울특별시';
+    const M = sl.money || {}, v = M.price || M.cash || M.salep;
+    if (v) st.budget = /(이상|넘는|넘게|초과)/.test(flat) ? [v, null] : [0, v];
+    if (/(신축|새아파트|새집|새로지은)/.test(flat)) st.age = 5; else if (/준신축/.test(flat)) st.age = 10;
+    if (/(역세권|역근처|역가까|지하철가까|역앞)/.test(flat)) st.station = 10;
+    return st;
+  }
+  /** 다음에 물을 좁히는 질문 id(이미 아는 값은 건너뜀) · 없으면 '' */
+  function narrowNext(D, id, st) {
+    const ord = ((D.narrow || {}).order || {})[id] || [];
+    const has = { budget: st.budget != null, gu: st.gus != null, age: st.age != null, station: st.station != null };
+    return ord.find(k => !has[k] && (st._skip || []).indexOf(k) < 0) || '';
+  }
+  /** 답 하나 넣기: key, 값(단추 값 또는 직접 입력) */
+  function narrowSet(D, st, key, val) {
+    const o = Object.assign({}, st);
+    if (key === 'budget') { if (Array.isArray(val)) o.budget = val; else { const m = String(val).split('-'); o.budget = [+m[0] || 0, m[1] === '' || m[1] == null ? null : +m[1]]; } }
+    if (key === 'gu') { const G0 = (D.narrow && D.narrow.groups) || {}; if (G0[val]) { o.gus = G0[val].slice(); o.gname = val; } else if (val) { o.gus = [val]; o.gname = val; } else { o.gus = []; o.gname = ''; } }
+    if (key === 'age') o.age = +val || 0;
+    if (key === 'station') o.station = +val || 0;
+    return o;
+  }
+  const BUCKETS = [[0, 50000, '5억 이하'], [50000, 100000, '5~10억'], [100000, 150000, '10~15억'], [150000, 200000, '15~20억'], [200000, Infinity, '20억 넘게']];
+  /** units(점수 자료 sNN.json — 시세 계산은 내 집 시세와 같은 mine-core bandSummary) → 조건에 맞는 단지·가격대 분포·예시(거래 많은 순) */
+  function findHomes(units, IX, st, MC, year) {
+    const sgg = (IX && IX.sgg) || {}, nameOf = c => (sgg[c] || {}).name || '', Y = year || +todayKst().slice(0, 4);
+    const rows = [];
+    for (const u of units || []) {
+      if (st.gus && st.gus.length && st.gus.indexOf(nameOf(u[0])) < 0) continue;
+      if (st.area && !(Math.abs((+u[4] || 0) - st.area) <= 6)) continue;
+      const f = u[9] && typeof u[9] === 'object' ? u[9] : {};
+      if (st.age && !(f.by && Y - f.by <= st.age)) continue;
+      if (st.station && !(f.sub != null && f.sub <= st.station)) continue;
+      if (!u[6]) continue;
+      const sm = MC.bandSummary(u, IX.months); if (!(sm.price > 0) || sm.stale && !(sm.recent3 > 0) && !(sm.cnt12 > 0)) continue;
+      rows.push({ u, code: u[0], gu: nameOf(u[0]), dong: u[1], apt: u[2], band: u[3], price: sm.price, at: sm.at, n12: sm.cnt12, by: f.by || null, sub: f.sub != null ? f.sub : null, subs: f.subs || '' });
+    }
+    const inB = r => !st.budget || ((!st.budget[0] || r.price > st.budget[0]) && (st.budget[1] == null || r.price <= st.budget[1]));
+    const dist = BUCKETS.map(b => ({ t: b[2], lo: b[0], hi: b[1], n: rows.filter(r => r.price > b[0] && r.price <= b[1]).length }));
+    const hit = rows.filter(inB).sort((a, b) => b.n12 - a.n12 || a.price - b.price);
+    const ps = hit.map(r => r.price).sort((a, b) => a - b), med = ps.length ? ps[Math.floor(ps.length / 2)] : null;
+    return { all: rows.length, n: hit.length, dist, ex: hit.slice(0, 5), lo: ps[0] || null, hi: ps[ps.length - 1] || null, med };
+  }
+  /** 데이터를 받기 전, 공개 구 평당가(index.json)로 바로 보여 줄 수 있는 구별 예시 가격 */
+  function guPreview(IX, st) {
+    const out = [], area = st.area || 84;
+    for (const c of Object.keys((IX && IX.sgg) || {})) {
+      const g = IX.sgg[c]; if (st.sido && g.sido !== st.sido) continue; if (st.gus && st.gus.length && st.gus.indexOf(g.name) < 0) continue;
+      const ppy = Array.isArray(g.s) && g.s.length ? g.s[g.s.length - 1] : 0; if (!(ppy > 0)) continue;
+      out.push({ code: c, name: g.name, price: Math.round(ppy * area / 3.305785 / 100) * 100, ppy });
+    }
+    return out.sort((a, b) => b.price - a.price);
+  }
+
+  /* ---------- 대화(채팅)로 묻고 답하기 — 규칙 기반(AI 없음) ----------
+     st = {id, a(답), from, nf(집 찾기 좁히기 상태), asked(지금 물은 칸), skip:[칸], tries(못 알아들은 횟수), done}
+     흐름: chatStart(첫 문장) → [UI: 카드 계산 quick / findHome] → chatNext(다음 질문 하나) → 사용자 답 → chatAnswer → … */
+  const SKIP_RX = /(몰라|모르겠|상관\s*없|아무거나|패스|건너|넘어가|글쎄|생각\s*안\s*해|없어요\s*$|잘\s*모름)/;
+  const YES_RX = /^(네|예|응|어|맞아|맞아요|그래|그렇|있어|있어요|받을|받아야|필요|좋아|원해)/, NO_RX = /^(아니|아뇨|없어|없어요|안\s|안해|필요\s*없|싫어|괜찮아)/;
+  const PRICE_K = ['price', 'cash', 'salep', 'acqp', 'value', 'amt', 'newprice', 'dep', 'pub', 'kb', 'wdep'];
+  function chatStart(text, D, ctx, mem) {
+    const r = classify(text, D, ctx);
+    if (!r.top) return { id: '', a: {}, from: {}, r, skip: [], tries: 0 };
+    const sc = D.sc.find(x => x.id === r.top.id);
+    const st = { id: sc.id, a: {}, from: {}, skip: [], tries: 0, alts: r.alts.map(x => x.id) };
+    (sc.ask || []).forEach(k => { if (mem && mem.m && mem.m[k] != null) { st.a[k] = mem.m[k]; st.from[k] = mem.from[k]; } });
+    const ap = apply(sc, r.slots, st.a); st.a = ap.a; Object.assign(st.from, ap.from);
+    if (sc.id === 'find_home') st.nf = narrowInit(r.slots, D, '');
+    return st;
+  }
+  const condOk = (sc, a, k) => { const c = (sc.cond || {})[k]; return !c || c.slice(1).indexOf(String(a[c[0]])) >= 0; };
+  /** 다음에 물을 것 하나: {key, q, quick:[[값, 글자]]} · 더 물을 게 없으면 null. card = 지금 카드(quick 결과)로 '정확히 계산됐으면' 그만 묻기 */
+  function chatNext(st, D, Q) {
+    const sc = D.sc.find(x => x.id === st.id); if (!sc) return null;
+    if (sc.id === 'find_home') { const k = narrowNext(D, sc.id, st.nf || {}); if (!k) return null; const q = D.narrow.q[k]; return { key: k, nf: 1, q, quick: q.opts.slice() }; }
+    if (Q && Q.exact) return null;
+    const known = k => st.a[k] != null && st.a[k] !== '';
+    const CYF = ['birth', 'married', 'homeown', 'deps', 'accd'];
+    const cand = ((Q && Q.need) || []).concat(sc.ask || []).filter((k, i, arr) => arr.indexOf(k) === i && D.q[k] && !known(k) && st.skip.indexOf(k) < 0 && condOk(sc, st.a, k)
+      && !(k === 'adj' && st.a.region) && !(st.a.myscore != null && CYF.indexOf(k) >= 0) && D.q[k].type !== 'houses');
+    const k = cand[0]; if (!k) return null;
+    const q = D.q[k], skipB = [['?', q.type === 'yesno3' ? '잘 모르겠어요' : '몰라요·건너뛰기']];
+    let quick = [];
+    if (q.type === 'choice') quick = q.opts.slice();
+    else if (q.type === 'yesno') quick = [['y', '네'], ['n', '아니요']];
+    else if (q.type === 'yesno3') quick = [['y', '네'], ['n', '아니요']];
+    else if (q.type === 'money') quick = (k === 'income' ? [[5000, '5천만 원'], [7000, '7천만 원'], [10000, '1억 원']] : k === 'wrent' ? [[50, '50만 원'], [100, '100만 원'], [150, '150만 원']] : k === 'debt' || k === 'senior' || k === 'gdebt' || k === 'prior' ? [[0, '없어요']] : [[30000, '3억'], [50000, '5억'], [100000, '10억'], [150000, '15억']]);
+    else if (q.type === 'sido') quick = [['서울특별시', '서울'], ['경기도', '경기'], ['인천광역시', '인천']];
+    return { key: k, q, quick: quick.concat(q.opt || q.def != null || q.type === 'yesno3' ? skipB : []) };
+  }
+  /** 답 문장 하나 읽기 → {ok(알아들음), switched(새 고민으로 바뀜)} · st 를 고침 */
+  function chatAnswer(st, text, D, ctx, quickVal) {
+    const t = String(text || '').trim(), flat = t.replace(/\s/g, ''), sc = D.sc.find(x => x.id === st.id);
+    const nx = st.asked ? (st.asked.nf ? { key: st.asked.key, nf: 1, q: D.narrow.q[st.asked.key] } : { key: st.asked.key, q: D.q[st.asked.key] }) : null;
+    /* 단추로 고른 값 */
+    if (quickVal !== undefined && nx) {
+      if (quickVal === '?') { if (nx.q.type === 'yesno3') st.a[nx.key] = '?'; else if (nx.q.def != null) st.a[nx.key] = nx.q.def; else st.skip.push(nx.key); return { ok: true }; }
+      if (nx.nf) { st.nf = narrowSet(D, st.nf, nx.key, quickVal); return { ok: true }; }
+      st.a[nx.key] = nx.q.type === 'money' || nx.q.type === 'num' ? +quickVal : quickVal; st.from[nx.key] = ''; return { ok: true };
+    }
+    /* 새 고민으로 바뀌었는지: 지금 질문에 대한 답으로 못 읽고, 다른 고민이 뚜렷하면 */
+    const sl = extract(t, ctx);
+    let got = false;
+    if (nx && SKIP_RX.test(flat)) {
+      if (nx.nf) st.nf._skip = (st.nf._skip || []).concat([nx.key]);
+      else if (nx.q.type === 'yesno3') st.a[nx.key] = '?'; else if (nx.q.def != null) st.a[nx.key] = nx.q.def; else st.skip.push(nx.key);
+      return { ok: true };
+    }
+    if (sc && sc.id === 'find_home') {
+      const b = narrowInit(sl, D, st.nf.sido), range = /(\d+(?:\.\d+)?)\s*(?:억)?\s*[~\-–에서]\s*(\d+(?:\.\d+)?)\s*억/.exec(t);
+      if (range) { st.nf.budget = [Math.round(+range[1] * 10000), Math.round(+range[2] * 10000)]; got = true; }
+      else if (b.budget) { st.nf.budget = b.budget; got = true; }
+      else if (nx && nx.key === 'budget' && /^\d+(\.\d+)?$/.test(flat.replace(/(정도|쯤|이하|까지|억)$/, ''))) { const v = +flat.replace(/[^\d.]/g, ''); if (v > 0 && v <= 100) { st.nf.budget = [0, Math.round(v * 10000)]; got = true; } }
+      if (b.gus && b.gname) { st.nf.gus = b.gus; st.nf.gname = b.gname; if (b.sido) st.nf.sido = b.sido; got = true; }
+      if (b.age) { st.nf.age = b.age; got = true; } if (b.station) { st.nf.station = b.station; got = true; }
+      if (b.area) { st.nf.area = b.area; got = true; }
+      if (/(구축|오래돼도|상관없)/.test(flat) && nx && nx.key === 'age') { st.nf.age = 0; got = true; }
+      if (/(대출)/.test(flat)) { st.nf.loan = YES_RX.test(flat) || /(받아야|필요|받을)/.test(flat) ? 'y' : 'n'; got = true; }
+      if (got) return { ok: true };
+    } else if (sc) {
+      const sig = o => JSON.stringify(Object.keys(o).filter(k => k[0] !== '_').sort().map(k => [k, o[k]]));
+      const before = sig(st.a), ap = apply(sc, sl, st.a); st.a = ap.a; Object.assign(st.from, Object.keys(ap.from).reduce((o, k) => (o[k] = '대화', o), {}));
+      if (nx) {
+        const k = nx.key, q = nx.q;
+        if (st.a[k] == null || st.a[k] === '') {
+          if (q.type === 'money') { const ms = moneys(t + (/^\s*\d+(\.\d+)?\s*$/.test(t) ? '' : '')); if (ms.length) st.a[k] = ms[0].v; else if (/^\d+(\.\d+)?$/.test(flat.replace(/(정도|쯤|원|만원)$/, ''))) { const v = +flat.replace(/[^\d.]/g, ''); st.a[k] = PRICE_K.indexOf(k) >= 0 && v <= 100 ? Math.round(v * 10000) : v; } }
+          else if (q.type === 'num') { const m = /(\d+(\.\d+)?)/.exec(t); if (m) st.a[k] = +m[1]; else if (/(없|0)/.test(flat)) st.a[k] = 0; }
+          else if (q.type === 'date') { if (sl.date) st.a[k] = sl.date; else if (sl.endMonth && k === 'end') { st.a.endMonth = sl.endMonth; } else { const ym = /(20\d\d)\s*[.년\-/]\s*(\d{1,2})/.exec(t); if (ym) st.a[k] = `${ym[1]}-${String(ym[2]).padStart(2, '0')}-01`; } }
+          else if (q.type === 'yesno' || q.type === 'yesno3') { if (YES_RX.test(flat)) st.a[k] = 'y'; else if (NO_RX.test(flat)) st.a[k] = 'n'; }
+          else if (q.type === 'choice') {
+            const hit = q.opts.find(o => flat.indexOf(String(o[1]).replace(/\s|\(.*\)/g, '')) >= 0) || q.opts.find(o => String(o[1]).split(/[\s(),·]/).filter(w => w.length >= 2).some(w => flat.indexOf(w) >= 0)) || q.opts.find(o => /^\d+$/.test(o[0]) && new RegExp('^' + o[0] + '(명|채|개)?').test(flat));
+            if (hit) st.a[k] = hit[0];
+          }
+          else if (q.type === 'region' || q.type === 'sido') { if (q.type === 'sido' && sl.sido) st.a[k] = sl.sido; else if (sl.region) st.a[k] = sl.region; }
+        }
+      }
+      if (sig(st.a) !== before) return { ok: true };
+    }
+    const r = classify(t, D, ctx);
+    if (r.top && r.top.score >= 5 && (!sc || r.top.id !== sc.id)) return { ok: false, switched: r.top.id };
+    st.tries = (st.tries || 0) + 1;
+    return { ok: false };
+  }
+  /** 못 알아들었을 때 예시 */
+  function chatHint(nx) {
+    if (!nx) return '고민을 한 문장으로 말씀해 주세요. 예: ‘전세 만기 2월인데 재계약할까요?’';
+    const q = nx.q, T = q.type || (nx.nf ? (nx.key === 'budget' ? 'money' : 'choice') : '');
+    if (nx.key === 'budget' || T === 'money') return '예를 들어 ‘10억’, ‘5~7억’, ‘3억 5천’처럼 말씀해 주세요. 모르시면 ‘몰라요’라고 하셔도 돼요.';
+    if (T === 'date') return '예를 들어 ‘2024년 3월 2일’이나 ‘2024.3.2’처럼 말씀해 주세요.';
+    if (T === 'yesno' || T === 'yesno3') return '‘네’ 또는 ‘아니요’로 답해 주세요.';
+    if (T === 'region' || nx.key === 'gu') return '예를 들어 ‘송파구’, ‘강남3구’, ‘마용성’처럼 말씀해 주세요.';
+    return '아래 단추에서 골라 주시거나, 모르시면 ‘몰라요’라고 하셔도 돼요.';
+  }
+
   /* ---------- 사이트 전체 기능 찾기(assets/guide/features.json) ---------- */
   /** 문장 → 맞는 기능 최대 3개 [{id, t, d, url, score}] (점수 3 이상) */
   function findFeatures(text, F, lex) {
@@ -340,6 +501,19 @@
     };
   };
 
+  /* 집 찾기(solve 화면·즉답 공통): 넓으면 좁히는 질문은 화면이 함께 보여 줌 */
+  S.findHome = (a, E) => {
+    const st = a._nf || narrowInit({ sido: a.region ? a.region.sido : '', region: a.region || null, area: a.area, money: {}, raw: a._raw || '' }, E.D || {}, '');
+    if (!E.units) { const pv = guPreview(E.IX, st); if (!pv.length) return { need: ['region'] };
+      return { head: `${st.gname || (st.sido || '').replace(/특별시|광역시/, '')} ${st.area ? st.area + '㎡대' : '84㎡대(예시)'} 구별 예상 가격(구 실거래 중간값 기준)`, nums: pv.slice(0, 3).map(x => ({ k: x.name, v: won(x.price), s: '구 3.3㎡당 실거래 중간값 × 면적' })), ex: '단지별 시세를 불러오는 중이라 구 평균으로 먼저 보여 드려요', src: ['molit_rt'], warn: [] }; }
+    const R = findHomes(E.units, E.IX, st, E.MC);
+    const area = st.area ? `${st.area}㎡대` : '모든 평형';
+    return { head: `${st.gname || (st.sido || '').replace(/특별시|광역시/, '')} ${area}${st.budget ? ` · ${st.budget[1] ? won(st.budget[1]) + ' 이하' : won(st.budget[0]) + ' 넘게'}` : ''}${st.age ? ` · ${st.age}년 이내` : ''}${st.station ? ' · 역 도보 10분' : ''} 아파트 ${R.n.toLocaleString()}곳이에요`,
+      nums: [{ k: '조건에 맞는 단지·평형', v: `${R.n.toLocaleString()}곳`, s: `가격을 빼면 ${R.all.toLocaleString()}곳` }].concat(R.n ? [{ k: '가격 범위', v: `${won(R.lo)} ~ ${won(R.hi)}`, s: `가운데 값 ${won(R.med)} · 최근 3개월 실거래 중간값` }] : []),
+      dist: R.dist, tables: R.ex.length ? [{ title: '예시 단지(최근 1년 거래 많은 순)', note: '조건에 맞는 단지 중 거래가 많은 곳을 예로 보여 드려요. 순서는 추천이 아니에요.', head: ['단지', '구·동', '평형', '최근 시세', '준공', '역까지'],
+        rows: R.ex.map(r => [{ t: r.apt, href: (E.mineUrl ? E.mineUrl(r) : '') }, `${r.gu} ${r.dong}`, r.band, won(r.price), r.by ? `${r.by}년` : '-', r.sub != null ? `${r.subs ? r.subs.split(' ')[0] + ' ' : ''}도보 ${r.sub}분` : '-']) }] : [],
+      warn: ['시세는 최근 3개월 실거래 중간값이에요. 층·향·수리 상태에 따라 실제 가격은 달라요.'], src: ['molit_rt'] };
+  };
   /* ③ 청약 — 내 가점으로 어디에 */
   /* 청약: chungyak/ 화면과 같은 계산(chungyak/cy-engine.js — noticeSido·bandOf·lottery·cutOf·diag, 상태는 assets/sale-status.js)을 그대로 씀.
      예상 커트라인(lo~hi)은 데이터 갱신 때 미리 계산된 notices.json 의 cut 값이고, 여기서는 새로 추정하지 않아요. */
@@ -909,7 +1083,7 @@
     catch (e) { return { err: String(e && e.message || e) }; }
   }
 
-  const API = { quick, regionExample, norm, extract, apply, findFeatures, moneys, classify, pending, solve, mask, won, wonW, pct, ko, addM, addY, addD, diffD, fill, nextFor, brokerFee, wolseAmt, SMALL, FEE, BAD, MIN, SOLVERS: Object.keys(S) };
+  const API = { chatStart, chatNext, chatAnswer, chatHint, narrowInit, narrowNext, narrowSet, findHomes, guPreview, BUCKETS, quick, regionExample, norm, extract, apply, findFeatures, moneys, classify, pending, solve, mask, won, wonW, pct, ko, addM, addY, addD, diffD, fill, nextFor, brokerFee, wolseAmt, SMALL, FEE, BAD, MIN, SOLVERS: Object.keys(S) };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_GUIDE_CORE = API;
 })(typeof window !== 'undefined' ? window : globalThis);

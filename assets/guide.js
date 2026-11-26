@@ -25,7 +25,7 @@
   const cache = {};
   const getJ = (k, url) => cache[k] || (cache[k] = fetch(url, { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(url); return r.json(); }).catch(e => { delete cache[k]; throw e; }));
   function load() {
-    return Promise.all([getJ('sc', BASE + 'assets/guide/scenarios.json?v=2'), getJ('lex', BASE + 'assets/guide/lexicon.json?v=1')])
+    return Promise.all([getJ('sc', BASE + 'assets/guide/scenarios.json?v=3'), getJ('lex', BASE + 'assets/guide/lexicon.json?v=1')])
       .then(([sc, lex]) => Object.assign({}, sc, { lex }));
   }
   const ix = () => getJ('ix', DATA + 'index.json');
@@ -128,6 +128,9 @@
 .gfeat{margin:12px 0 0;display:grid;gap:6px}.gfeat .ft{margin:0;font-size:14px;font-weight:800;color:#191F28}.gfeat a{display:flex;align-items:center;gap:10px;min-height:54px;padding:8px 14px;border-radius:14px;border:1.5px solid #D6E2FF;background:#fff;color:#191F28;text-decoration:none}.gfeat a b{display:block;font-size:15px}.gfeat a small{display:block;font-size:13px;color:#4E5968}.gfeat a .go{margin-left:auto;color:#2560E8;font-weight:800;font-size:20px}
 .gtw{margin:12px 0 0}.gtt{margin:0 0 4px;font-size:15px;font-weight:900}.gtn{margin:0 0 6px;font-size:12.5px;color:#6B7684;line-height:1.5}.gts{overflow-x:auto;-webkit-overflow-scrolling:touch}.gtbl2{min-width:560px;font-size:13.5px}.gtbl.gtbl2 tr:first-child td{font-weight:400;color:inherit}.gtbl2 a{color:#1F56E0;font-weight:800}.gg{font-weight:800;white-space:nowrap}.gg.hi{color:#0F7B4F}.gg.mid{color:#B4540A}.gg.lo{color:#C2410C}
 @media(max-width:600px){.gtbl2{min-width:0}.gtbl2 thead{display:none}.gtbl2,.gtbl2 tbody,.gtbl2 tr,.gtbl2 td{display:block;width:100%;box-sizing:border-box}.gtbl2 tr{border:1px solid #E5E8EB;border-radius:12px;padding:8px 12px;margin:0 0 8px}.gtbl.gtbl2 td{display:flex;justify-content:space-between;gap:10px;border:0;padding:3px 0;text-align:right}.gtbl2 td::before{content:attr(data-l);flex:none;color:#6B7684;font-size:12.5px;text-align:left}.gtbl.gtbl2 td:first-child{display:block;text-align:left;font-size:15px;font-weight:800;padding-bottom:4px}.gtbl2 td:first-child::before{content:none}}
+.gdist{display:grid;gap:4px;margin:10px 0 0}.gdist div{display:grid;grid-template-columns:78px 1fr 64px;align-items:center;gap:8px;font-size:13.5px}.gdist i{display:block;height:10px;border-radius:99px;background:#C9D8FF;min-width:2px}.gdist div.on i{background:#2560E8}.gdist div.on span,.gdist div.on b{color:#1F56E0;font-weight:800}.gdist b{text-align:right;font-variant-numeric:tabular-nums}
+.gex{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}.gex li a,.gex li{display:flex;align-items:center;gap:10px}.gex li a{flex:1;min-height:52px;padding:8px 12px;border-radius:12px;border:1px solid #E5E8EB;color:#191F28;text-decoration:none}.gex li>span.nm{flex:1;padding:6px 12px}.gex b{display:block;font-size:15px}.gex small{display:block;font-size:12.5px;color:#4E5968}.gex .v{margin-left:auto;font-weight:900;white-space:nowrap;font-variant-numeric:tabular-nums}
+.gnq{margin:12px 0 0;padding:12px;border-radius:14px;background:#F4F7FF;border:1.5px solid #C9D8FF}.gnq .t{margin:0 0 8px;font-size:15.5px;font-weight:900}.gnq .o{display:flex;flex-wrap:wrap;gap:6px}.gnq .o button,.gnq .sk{font:inherit;font-size:14px;font-weight:800;min-height:44px;padding:0 14px;border-radius:999px;border:1.5px solid #B9CCFF;background:#fff;color:#1F56E0;cursor:pointer}.gnq .fr{display:inline-flex;gap:4px}.gnq .fr input{width:110px;font:inherit;min-height:44px;padding:0 10px;border:1.5px solid #B9CCFF;border-radius:12px}.gnq select{font:inherit;min-height:44px;border:1.5px solid #B9CCFF;border-radius:12px;padding:0 8px;background:#fff}.gnq .sk{margin-top:8px;border-color:transparent;background:none;color:#4E5968;text-decoration:underline}
 .galts .al{font-size:13.5px;font-weight:700;color:#4E5968;align-self:center}
 @media(max-width:560px){.gsits{grid-template-columns:repeat(2,minmax(0,1fr))}.gsits button{min-height:48px;justify-content:center}.gsits button small{display:none}.gsits button:last-child:nth-child(odd){grid-column:1/-1}.gpri .gchips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin-right:-14px;padding-right:14px}.gpri .gchip{flex:none;white-space:nowrap}.gtop{margin:12px 16px 0;padding:18px 14px 16px}.gtop h2{font-size:20px}.gtop form button{padding:0 16px}}
 @media(min-width:1024px){.gtop{margin:20px 0 0}}
@@ -187,8 +190,8 @@
   const solveUrl = (id, extra) => BASE + 'solve/?s=' + encodeURIComponent(id) + (extra || '');
 
   /* ---------- 미리 불러오기(첫 카드를 1초 안에) ---------- */
-  const ENGINES = ['assets/sale-status.js?v=1', 'assets/loan-rules.js', 'tax/tax-engine.js?v=4', 'tax/adjusted-areas.js?v=2', 'assets/loan-core.js', 'assets/hug-core.js', 'chungyak/cy-engine.js', 'assets/redev-core.js'];
-  const ENG_OK = { 'assets/sale-status.js?v=1': 'JDJ_SALE', 'assets/loan-rules.js': 'JDJ_LOAN_RULES', 'tax/tax-engine.js?v=4': 'JDJ_TAX', 'tax/adjusted-areas.js?v=2': 'JDJ_ADJ', 'assets/loan-core.js': 'JDJ_LOAN', 'assets/hug-core.js': 'JDJ_HUG', 'chungyak/cy-engine.js': 'JDJ_CYE', 'assets/redev-core.js': 'JDJ_REDEV' };
+  const ENGINES = ['assets/sale-status.js?v=1', 'assets/loan-rules.js', 'tax/tax-engine.js?v=4', 'tax/adjusted-areas.js?v=2', 'assets/loan-core.js', 'assets/hug-core.js', 'chungyak/cy-engine.js?v=4', 'assets/redev-core.js'];
+  const ENG_OK = { 'assets/sale-status.js?v=1': 'JDJ_SALE', 'assets/loan-rules.js': 'JDJ_LOAN_RULES', 'tax/tax-engine.js?v=4': 'JDJ_TAX', 'tax/adjusted-areas.js?v=2': 'JDJ_ADJ', 'assets/loan-core.js': 'JDJ_LOAN', 'assets/hug-core.js': 'JDJ_HUG', 'chungyak/cy-engine.js?v=4': 'JDJ_CYE', 'assets/redev-core.js': 'JDJ_REDEV' };
   function script(src) { return new Promise(res => { const x = document.createElement('script'); x.src = BASE + src; x.onload = res; x.onerror = res; document.head.appendChild(x); }); }
   let WARM = null;
   /** 계산 엔진·고민 자료·지역 자료·청약 당첨 가점(기억한 시·도 또는 서울)·서울 단지 목록을 쉬는 동안 미리 */
@@ -286,6 +289,7 @@
         alts.innerHTML = ''; ans._h = null;
         const fl = F ? C().findFeatures(text, F, D.lex).filter(featOn) : [];
         const short = text.split(/\s+/).length <= 4;
+        if (r.top && r.top.id === 'find_home') { say(''); return narrow(D.sc.find(s => s.id === 'find_home'), C().narrowInit(r.slots, D, ''), IX, t0, my); }
         if (r.top) {
           const sc = D.sc.find(s => s.id === r.top.id), mem = memory(IX);
           let a = {}, from = {};
@@ -344,13 +348,58 @@
         say(`‘${text.length > 30 ? text.slice(0, 30) + '…' : text}’는 아직 잘 모르겠어요. 위의 ‘지금 어떤 상황이세요?’에서 가장 가까운 것을 골라 주세요. 남겨 주신 고민은 길잡이를 늘리는 데 써요(개인정보는 가리고 저장해요).`, true);
         if (r.alts.length) alts.innerHTML = r.alts.map(x => { const s2 = D.sc.find(y => y.id === x.id); return `<a class="gchip" href="${esc(solveUrl(s2.id, '&from=weak'))}">혹시 ‘${esc(s2.t)}’인가요?</a>`; }).join('');
       }
+      /* 넓은 질문 좁히기: 넓은 조건으로 먼저 보여 주고, 결과를 가장 크게 바꾸는 질문 하나씩(단추) */
+      async function narrow(sc, st, IX, t0, my) {
+        if (!st.sido) { const m = memory(IX).m; st.sido = (m.region && m.region.sido) || m.csido || '서울특별시'; st._sidoGuess = true; }
+        const sd = ((IX && IX.sido) || []).find(x => x.name === st.sido) || {};
+        const MC = root.JDJ_MINE, R0 = root.JDJ_RANK;
+        let units = cache['u' + sd.id] && cache['u' + sd.id].done ? cache['u' + sd.id].done : null;
+        const draw = () => {
+          if (my !== RUN) return;
+          const nk = C().narrowNext(D, sc.id, st), NQ = nk ? D.narrow.q[nk] : null;
+          const chips = [st.gname || st.sido.replace(/특별시|광역시|특별자치시|특별자치도/, ''), st.area ? `${st.area}㎡대${st.area === 84 ? '(34평)' : ''}` : '', st.budget ? (st.budget[1] != null ? `${C().won(st.budget[1])} 이하${st.budget[0] ? `(${C().won(st.budget[0])} 넘게)` : ''}` : `${C().won(st.budget[0])} 넘게`) : '', st.age ? `${st.age}년 이내` : '', st.station ? `역 도보 ${st.station}분` : ''].filter(Boolean);
+          let body = '';
+          if (units && MC) {
+            const R = C().findHomes(units, IX, st, MC);
+            const mx = Math.max(1, ...R.dist.map(d => d.n));
+            const inB = d => st.budget && d.lo >= (st.budget[0] || 0) && (st.budget[1] == null || d.hi <= st.budget[1]);
+            body = `<h3>${esc(chips.join(' · '))} 아파트 ${R.n.toLocaleString()}곳이에요</h3>
+              <p class="exn">${st._sidoGuess ? '지역을 말씀하지 않아 ' + esc(st.sido) + '로 먼저 보여 드려요. ' : ''}시세는 최근 3개월 실거래 중간값(내 집 시세와 같은 계산)이고, 예시는 거래가 많은 순이에요(추천 아님).</p>
+              <div class="gdist">${R.dist.map(d => `<div class="${inB(d) ? 'on' : ''}"><span>${esc(d.t)}</span><i style="width:${Math.round(d.n / mx * 100)}%"></i><b>${d.n.toLocaleString()}곳</b></div>`).join('')}</div>
+              ${R.ex.length ? `<ul class="gex">${R.ex.slice(0, 5).map(r => `<li><a href="${esc(R0 ? R0.mineUrl(sd.id, [r.code, r.dong, r.u[8] || '', r.apt].join('|'), r.band) : BASE + 'mine/')}"><b>${esc(r.apt)}</b><small>${esc(r.gu)} ${esc(r.dong)} · ${esc(r.band)}${r.by ? ` · ${r.by}년 준공` : ''}${r.sub != null ? ` · 역 도보 ${r.sub}분` : ''}</small><span class="v">${esc(C().won(r.price))}</span></a></li>`).join('')}</ul><p class="gtn">예시 ${R.ex.length}곳 · 조건에 맞는 전체 ${R.n.toLocaleString()}곳은 지도에서 볼 수 있어요.</p>` : '<p class="gtn">조건에 맞는 단지가 없어요. 조건을 하나 풀어 보세요.</p>'}`;
+          } else {
+            const pv = C().guPreview(IX, st);
+            body = `<h3>${esc(chips.join(' · '))} — 구별 예상 가격부터 보여 드릴게요</h3><p class="exn">단지별 시세를 불러오는 중이에요. 먼저 구 실거래 중간값(3.3㎡당) × ${st.area || 84}㎡로 계산한 예시예요.</p>
+              <ul class="gex">${pv.slice(0, 6).map(x => `<li><span class="nm"><b>${esc(x.name)}</b><small>3.3㎡당 ${esc(C().won(x.ppy))}</small></span><span class="v">${esc(C().won(x.price))}</span></li>`).join('')}</ul>${pv.length > 6 ? `<p class="gtn">외 ${pv.length - 6}개 구</p>` : ''}`;
+          }
+          const nq = NQ ? `<div class="gnq" data-nk="${esc(nk)}"><p class="t">${esc(NQ.t)}</p><div class="o">${NQ.opts.map(o => `<button type="button" data-nv="${esc(o[0])}">${esc(o[1])}</button>`).join('')}${NQ.free === 'money' ? '<span class="fr"><input type="text" inputmode="numeric" placeholder="직접: 예 8억" aria-label="예산 직접 입력"><button type="button" data-nfree="1">적용</button></span>' : ''}${NQ.free === 'gu' ? `<select aria-label="구 고르기" data-ngu="1"><option value="">다른 구 고르기</option>${Object.keys(IX.sgg).filter(c => IX.sgg[c].sido === st.sido).map(c => IX.sgg[c].name).sort((x, y) => x.localeCompare(y, 'ko')).map(n => `<option>${esc(n)}</option>`).join('')}</select>` : ''}</div><button type="button" class="sk" data-nskip="1">이대로 보기</button></div>` : '';
+          ans.innerHTML = `<section class="ginst"><div class="gi-hd"><span class="bd ${units ? 'ok' : 'ex'}">${units ? '바로 답' : '예시로 먼저'}</span><span class="tt">${esc(sc.t)}</span></div>${body}${nq}
+            <div class="gbtn"><a class="p" href="${esc(BASE + 'map/')}" data-track="guide_find_map">지도에서 전체 보기 ›</a><a href="${esc(BASE + 'buy/report/')}">내 예산 맞춤 단지 ›</a></div>${fbHtml(sc.id, 'top')}</section>`;
+          fbWire(ans); ans.dataset.ms = String(Math.round(performance.now() - t0));
+          const box = ans.querySelector('.gnq'); if (!box) return;
+          const set = v => { st = C().narrowSet(D, st, nk, v); stat('guide_narrow', { k: nk }); draw(); };
+          box.querySelectorAll('[data-nv]').forEach(b => b.addEventListener('click', () => set(b.dataset.nv)));
+          const fb2 = box.querySelector('[data-nfree]'); if (fb2) fb2.addEventListener('click', () => { const v = moneyIn(box.querySelector('input').value); if (v) set([0, v]); });
+          const gs = box.querySelector('[data-ngu]'); if (gs) gs.addEventListener('change', () => { if (gs.value) set(gs.value); });
+          box.querySelector('[data-nskip]').addEventListener('click', () => { st._skip = (st._skip || []).concat([nk]); draw(); });
+        };
+        draw();
+        if (!units && sd.id) {
+          const pr = cache['u' + sd.id] || (cache['u' + sd.id] = fetch(DATA + sd.id + '.json', { cache: 'no-cache' }).then(r => r.json()).then(j => { pr.done = (j.units || []).map(u => { if (u[9] && typeof u[9] === 'object' && MC.cleanFx) MC.cleanFx(u[9]); return u; }); return pr.done; }));
+          try { units = await pr; } catch (e) { delete cache['u' + sd.id]; return; }
+          draw();
+        }
+      }
       let tm = null;
       q.addEventListener('input', () => { clearTimeout(tm); const t = q.value.trim(); if (t.replace(/\s/g, '').length < 4) { ans.innerHTML = ''; alts.innerHTML = ''; return; } tm = setTimeout(() => instant(t, false), 450); });
       f.addEventListener('submit', e => {
         e.preventDefault(); clearTimeout(tm);
         const text = q.value.trim();
         if (text.replace(/\s/g, '').length < 2) { say('고민을 두 글자 이상 적어 주세요. 예: ' + EXAMPLES[1], true); return; }
-        instant(text, true);
+        if (opt.chat === false) { instant(text, true); return; }
+        /* 대화창으로: 첫 문장을 넘기고 길잡이 대화 화면을 열어요(입력하는 동안 보인 즉답 카드는 대화 첫 답으로 그대로 나와요) */
+        try { sessionStorage.setItem(CIN, text); } catch (x) {}
+        stat('guide_ask', { to: 'chat' }); location.href = BASE + 'solve/?chat=1';
       });
     }).catch(() => { el.hidden = true; if (ask) ask.hidden = false; });
     return true;
@@ -535,7 +584,7 @@
     autoFill(S);
     const sc = S.sc, total = S.steps.length;
     while (S.si < total && S.steps[S.si].every(k => S.a[k] != null && S.a[k] !== '' && S.from[k] && /공고|시세|지역/.test(S.from[k]))) S.si++;   // 자동으로 채운 칸만 남은 단계는 건너뜀
-    const head = `<div class="ghd"><span class="k">${esc((D.cats.find(c => c.id === sc.cat) || {}).t || '')}</span>${sc.pri ? '<span class="k" style="background:#FBF5E3;color:#7A5C0F">자주 받는 고민</span>' : ''}</div><h1>${esc(sc.t)}</h1><p class="gsub">${esc(sc.sub || '')}</p>`;
+    const head = `<a class="gtochat" href="${esc(BASE + 'solve/?chat=1')}" style="float:right;font-size:13.5px;font-weight:800;color:#1F56E0;text-decoration:none;min-height:40px;display:inline-flex;align-items:center">대화로 보기 ›</a><div class="ghd"><span class="k">${esc((D.cats.find(c => c.id === sc.cat) || {}).t || '')}</span>${sc.pri ? '<span class="k" style="background:#FBF5E3;color:#7A5C0F">자주 받는 고민</span>' : ''}</div><h1>${esc(sc.t)}</h1><p class="gsub">${esc(sc.sub || '')}</p>`;
     const condOk = k => { const c = (sc.cond || {})[k]; return !c || c.slice(1).indexOf(String(S.a[c[0]])) >= 0; };   // 앞 답에 따라 필요 없는 질문은 건너뜀(예: 월세가 아니면 월세 금액)
     while (S.si < total && !S.steps[S.si].some(condOk)) S.si++;
     if (S.si < total) {
@@ -696,5 +745,154 @@
     return `<section class="gnx" style="padding:0;margin:22px 0 0"><h2 style="margin:0 0 8px;font-size:17px;font-weight:900">이어서 하면 좋은 것</h2><ol style="list-style:none;margin:0;padding:0;display:grid;gap:8px">${ids.map((s, i) => `<li><a class="gchip" style="display:flex;width:100%;box-sizing:border-box;border-radius:14px;min-height:52px" href="${esc(solveUrl(s.id, '&from=after'))}">${i + 1}. ${esc(s.t)}</a></li>`).join('')}</ol></section>`;
   }
 
-  root.JDJ_GUIDE = { on, load, mountTop, mountFlow, logMiss, memory, warm };
+
+  /* ---------- 대화로 묻고 답하기(solve/?chat=1) ----------
+     집예보 상담사처럼 말풍선으로 하나씩 되묻고, 답할 때마다 결과 미니 카드를 새로 보여 줘요. 규칙 기반(guide-core chatStart·chatAnswer·chatNext).
+     대화 기록(금액 포함)은 이 기기(localStorage jdj_guide_chat)에만 — 새로 고침해도 이어져요. [처음부터] · [양식으로 보기] */
+  const CK = 'jdj_guide_chat', CIN = 'jdj_guide_chat_in';
+  const CHAT_CSS = `
+.gchat{max-width:680px;margin:0 auto;padding:6px 16px 0;display:flex;flex-direction:column;min-height:calc(100vh - 140px)}
+.gch-hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 10px}.gch-hd b{font-size:18px;font-weight:900;margin-right:auto}
+.gch-hd button,.gch-hd a{font:inherit;font-size:13.5px;font-weight:800;min-height:40px;padding:0 12px;border-radius:999px;border:1.5px solid #D6E2FF;background:#fff;color:#1F56E0;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.gch-log{flex:1;display:flex;flex-direction:column;gap:10px;padding-bottom:12px}
+.gb{max-width:88%;padding:11px 14px;border-radius:18px;font-size:15.5px;line-height:1.55;word-break:keep-all;white-space:pre-line}
+.gb.me{align-self:flex-end;background:#2560E8;color:#fff;border-bottom-right-radius:6px}
+.gb.bot{align-self:flex-start;background:#F2F4F6;color:#191F28;border-bottom-left-radius:6px}
+.gb.bot .who{display:block;font-size:12px;font-weight:800;color:#5B3FB0;margin-bottom:2px}
+.gb.card{background:#fff;border:2px solid #2560E8;max-width:96%;white-space:normal}
+.gb.card h3{margin:0 0 6px;font-size:16.5px;font-weight:900;line-height:1.45}.gb.card .exn{margin:0 0 6px;font-size:12.5px;color:#7A5C0F;background:#FBF8EF;border-radius:8px;padding:5px 8px}
+.gb.card .mn{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0}.gb.card .mn div{background:#F4F7FF;border-radius:10px;padding:8px}.gb.card .mn small{display:block;font-size:12px;color:#4E5968}.gb.card .mn b{display:block;font-size:15.5px;font-weight:900}
+.gb.card ul{list-style:none;margin:6px 0 0;padding:0;font-size:13.5px}.gb.card li{padding:5px 0;border-bottom:1px solid #EEF1F5;display:flex;gap:8px}.gb.card li span{margin-left:auto;font-weight:800;white-space:nowrap}
+.gb.card .ac{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.gb.card .ac a{font-size:13.5px;font-weight:800;min-height:40px;padding:0 12px;border-radius:10px;border:1.5px solid #D6E2FF;color:#1F56E0;text-decoration:none;display:inline-flex;align-items:center}.gb.card .ac a.p{background:#2560E8;color:#fff;border-color:#2560E8}
+.gqk{display:flex;flex-wrap:wrap;gap:6px;align-self:flex-start;max-width:96%}.gqk button{font:inherit;font-size:14px;font-weight:800;min-height:42px;padding:0 14px;border-radius:999px;border:1.5px solid #B9CCFF;background:#fff;color:#1F56E0;cursor:pointer}
+.gch-in{position:sticky;bottom:0;background:#fff;padding:10px 0 calc(10px + env(safe-area-inset-bottom));border-top:1px solid #EEF1F5;display:flex;gap:8px;z-index:5}
+.gch-in input{flex:1;min-width:0;font:inherit;font-size:16px;min-height:50px;padding:0 14px;border:1.5px solid #C9D8FF;border-radius:14px}.gch-in button{font:inherit;font-weight:800;min-height:50px;padding:0 18px;border:0;border-radius:14px;background:#2560E8;color:#fff;cursor:pointer}
+.gtyping{align-self:flex-start;color:#6B7684;font-size:13px}
+body.gchat-on .jtab{display:none!important}body.gchat-on .foot{display:none}
+@media(max-width:600px){.gchat{min-height:calc(100vh - 120px);padding:4px 12px 0}.gch-in{position:fixed;left:0;right:0;bottom:0;padding:8px 12px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -2px 10px rgba(0,0,0,.05)}.gch-log{padding-bottom:84px}}
+@media(min-width:900px){.gchat{border:1px solid #E5E8EB;border-radius:22px;margin-top:10px;padding:10px 20px 0;box-shadow:0 4px 20px rgba(25,31,40,.06)}}`;
+  function chatCss() { css(); if (document.getElementById('gdChatCss')) return; const x = document.createElement('style'); x.id = 'gdChatCss'; x.textContent = CHAT_CSS; document.head.appendChild(x); }
+  function miniCard(c, links) {
+    if (!c) return '';
+    const nums = (c.nums || []).slice(0, 4).map(n => `<div><small>${esc(n.k)}</small><b>${esc(n.v)}</b></div>`).join('');
+    const tb = (c.tables || [])[0], ki = tb ? (tb.head.indexOf('판정') >= 0 ? tb.head.indexOf('판정') : tb.head.length - 1) : 0, cv = x => x && typeof x === 'object' ? x.t : (x == null ? '' : x);
+    const rows = tb ? tb.rows.slice(0, 4).map(r => `<li>${esc(cv(r[0]))}<span>${esc(cv(r[ki]))}</span></li>`).join('') : '';
+    const ex = (c.ex2 || []).slice(0, 4).map(r => `<li>${esc(r[0])}<span>${esc(r[1])}</span></li>`).join('');
+    return `<h3>${esc(c.head)}</h3>${c.ex ? `<p class="exn">${esc(c.ex)}</p>` : ''}${nums ? `<div class="mn">${nums}</div>` : ''}${rows || ex ? `<ul>${rows || ex}</ul>` : ''}<div class="ac">${(links || []).map((l, i) => `<a class="${i === 0 ? 'p' : ''}" href="${esc(l.href)}"${l.ext ? ' target="_blank" rel="noopener"' : ''}>${esc(l.t)} ›</a>`).join('')}</div>`;
+  }
+  function mountChat(el) {
+    if (!el || !on()) return false;
+    chatCss(); document.body.classList.add('gchat-on');   // 대화 중에는 아래 탭 줄을 숨겨 입력창이 가려지지 않게
+    let ST = null, LOG = [];
+    try { const sv = jget(CK); if (sv && sv.st && Date.now() - (sv.t || 0) < 30 * 864e5) { ST = sv.st; LOG = sv.log || []; } } catch (e) {}
+    const save = () => ls.set(CK, JSON.stringify({ st: ST, log: LOG.slice(-60), t: Date.now() }));
+    el.innerHTML = `<div class="gchat"><div class="gch-hd"><b>${esc(site())} 길잡이</b><a href="#" data-form="1">양식으로 보기</a><button type="button" data-reset="1">처음부터</button></div>
+      <div class="gch-log" aria-live="polite"></div><form class="gch-in" novalidate><label for="gcIn" style="position:absolute;left:-9999px">답 입력</label><input id="gcIn" type="text" autocomplete="off" enterkeyhint="send" placeholder="자유롭게 적어 주세요"><button type="submit">보내기</button></form></div>`;
+    el.hidden = false;
+    const log = el.querySelector('.gch-log'), inp = el.querySelector('input');
+    const DD = { D: null, IX: null };
+    function paint() {
+      log.innerHTML = LOG.map((m, i) => m.who === 'me' ? `<div class="gb me">${esc(m.t)}</div>`
+        : m.card ? `<div class="gb bot card">${miniCard(m.card, m.links)}${i === LOG.length - 1 || LOG.slice(i + 1).every(x => x.who === 'bot') ? fbHtml(m.sid || 'chat', 'top') : ''}</div>`
+        : `<div class="gb bot"><span class="who">${esc(site())}</span>${esc(m.t)}</div>${m.quick && i === LOG.length - 1 ? `<div class="gqk">${m.quick.map(qv => `<button type="button" data-qv="${esc(qv[0])}">${esc(qv[1])}</button>`).join('')}</div>` : ''}`).join('');
+      fbWire(log);
+      const last = log.lastElementChild; if (last && last.scrollIntoView) last.scrollIntoView({ block: 'end', behavior: 'smooth' });
+    }
+    const bot = (t, extra) => LOG.push(Object.assign({ who: 'bot', t }, extra || {}));
+    async function think(D, IX) {
+      const sc = D.sc.find(x => x.id === ST.id); if (!sc) return;
+      let card = null, Q = null;
+      const a = Object.assign({}, ST.a); ['adj', 'oa', 'na'].forEach(k => { if (a[k] === '?') a[k] = null; });
+      if (sc.id === 'find_home') {
+        const sd = (IX.sido || []).find(x => x.name === (ST.nf.sido || '서울특별시')) || {};
+        if (!ST.nf.sido) ST.nf.sido = sd.name || '서울특별시';
+        let units = cache['u' + sd.id] && cache['u' + sd.id].done;
+        if (!units) {
+          const pv = C().guPreview(IX, ST.nf);
+          bot('', { card: { head: `${ST.nf.gname || ST.nf.sido} ${ST.nf.area || 84}㎡대 구별 예상 가격부터 보여 드릴게요`, ex: '단지별 시세를 불러오는 중이라 구 실거래 중간값으로 먼저 계산했어요', ex2: pv.slice(0, 4).map(x => [x.name, C().won(x.price)]) }, sid: sc.id }); paint();
+          const MC = root.JDJ_MINE;
+          const pr = cache['u' + sd.id] || (cache['u' + sd.id] = fetch(DATA + sd.id + '.json', { cache: 'no-cache' }).then(r => r.json()).then(j => { pr.done = (j.units || []).map(u => { if (u[9] && typeof u[9] === 'object' && MC.cleanFx) MC.cleanFx(u[9]); return u; }); return pr.done; }));
+          try { units = await pr; } catch (e) { units = null; }
+          LOG.pop();
+        }
+        if (units) {
+          const R = C().findHomes(units, IX, ST.nf, root.JDJ_MINE), R0 = root.JDJ_RANK;
+          const chips = [ST.nf.gname || ST.nf.sido.replace(/특별시|광역시|특별자치시|특별자치도/, ''), ST.nf.area ? `${ST.nf.area}㎡대${ST.nf.area === 84 ? '(34평)' : ''}` : '', ST.nf.budget ? (ST.nf.budget[1] != null ? (ST.nf.budget[0] ? `${C().won(ST.nf.budget[0]).replace(/ 원$/, '')}~${C().won(ST.nf.budget[1])}` : `${C().won(ST.nf.budget[1])} 이하`) : `${C().won(ST.nf.budget[0])} 넘게`) : '', ST.nf.age ? `${ST.nf.age}년 이내` : '', ST.nf.station ? `역 도보 ${ST.nf.station}분` : ''].filter(Boolean).join(' · ');
+          card = { head: `${chips} 아파트는 ${R.n.toLocaleString()}곳이에요`, nums: R.n ? [{ k: '가격 범위', v: `${C().won(R.lo)} ~ ${C().won(R.hi)}` }, { k: '가운데 값', v: C().won(R.med) }] : [], ex2: R.ex.slice(0, 4).map(r => [`${r.apt} (${r.gu})`, C().won(r.price)]), ex: '예시는 거래가 많은 순이에요(추천 아님). 시세는 최근 3개월 실거래 중간값이에요.' };
+          ST._n = R.n;
+        }
+      } else {
+        const E = await env(sc, a, IX);
+        if (a.danji && !a.facts) a.facts = await danjiFacts(a.danji, IX, { fast: true });
+        Q = C().quick(sc, a, E); card = Q && Q.card;
+      }
+      const nx = C().chatNext(ST, D, Q);
+      const links = [{ t: '자세히 보기', href: solveUrl(sc.id, '&from=chat'), hand: 1 }];
+      if (card) { const n0 = (sc.next || []).find(n => n.k === 'calc'); if (n0) links.push({ t: n0.t, href: hrefOf(n0, a, sc.id) }); bot('', { card, links, sid: sc.id }); }
+      if (nx) {
+        ST.asked = { key: nx.key, nf: nx.nf ? 1 : 0 };
+        const pre = card && Q && !Q.exact && card.ex ? '지금은 예시로 계산했어요. ' : sc.id === 'find_home' && ST._n ? '조금 더 좁혀 볼게요. ' : '';
+        bot(pre + nx.q.t, { quick: nx.quick.map(x => [String(x[0]), x[1]]) });
+      } else {
+        ST.asked = null; ST.done = true;
+        bot(card ? (sc.expert ? '말씀하신 조건으로 계산했어요. 세금·법률 판단은 자격 있는 전문가와 한 번 더 확인해 주세요. 다른 고민도 편하게 적어 주세요.' : '말씀하신 조건으로 계산했어요. 더 궁금한 점이나 다른 고민도 편하게 적어 주세요.') : '이 고민은 양식으로 넣으시면 정확히 계산해 드려요.');
+      }
+    }
+    async function send(text, qv, qlabel) {
+      const t = String(text || '').trim(); if (!t && qv === undefined) return;
+      const W = await warm(); const D = W.D, IX = W.IX, ctx = Object.assign(ctxOf(IX), { today: todayKst() });
+      LOG.push({ who: 'me', t: qlabel || t }); paint();
+      const mem = memory(IX);
+      if (!ST || !ST.id || ST.done && qv === undefined) {
+        const s0 = C().chatStart(t, D, ctx, mem);
+        if (!s0.id) {
+          const F = await feats().catch(() => null), fl = F ? C().findFeatures(t, F, D.lex).filter(featOn) : [];
+          if (fl.length) bot('이 화면이 도움이 될 것 같아요.', { card: { head: fl[0].t, nums: [], ex: fl[0].d }, links: fl.slice(0, 3).map(f => ({ t: f.t, href: BASE + f.url })) });
+          else { logMiss(t, 'solve'); bot('아직 이 고민은 잘 모르겠어요. 아래에서 가까운 것을 골라 주시거나, 예를 들어 ‘전세 만기 2월인데 재계약할까요?’처럼 말씀해 주세요.', { quick: D.sc.filter(x => x.pri).slice(0, 4).map(x => ['@' + x.id, x.t]) }); }
+          ST = null; save(); paint(); return;
+        }
+        if (s0.r && s0.r.slots && s0.r.slots.region) s0.r.slots.region = regionOf(IX, s0.r.slots.region.code);
+        ST = s0; delete ST.r;
+        if (ST.a.region && ST.a.region.code) ST.a.region = regionOf(IX, ST.a.region.code) || ST.a.region;
+        const sc = D.sc.find(x => x.id === ST.id);
+        bot(`알겠어요. ‘${sc.t}’ 기준으로 바로 계산해 볼게요.`);
+      } else {
+        if (qv !== undefined && String(qv)[0] === '@') { ST = C().chatStart('', D, ctx, mem); ST.id = String(qv).slice(1); ST.a = {}; ST.from = {}; ST.skip = []; const sc = D.sc.find(x => x.id === ST.id); (sc.ask || []).forEach(k => { if (mem.m[k] != null) ST.a[k] = mem.m[k]; }); if (sc.id === 'find_home') ST.nf = C().narrowInit({}, D, ''); bot(`알겠어요. ‘${sc.t}’ 기준으로 볼게요.`); }
+        else {
+          const r = C().chatAnswer(ST, t, D, ctx, qv);
+          if (ST.a.region && ST.a.region.code && !ST.a.region.sd) ST.a.region = regionOf(IX, ST.a.region.code) || ST.a.region;
+          if (r.switched) { ST = C().chatStart(t, D, ctx, mem); const sc = D.sc.find(x => x.id === ST.id); bot(`다른 고민이네요. ‘${sc.t}’ 기준으로 볼게요.`); }
+          else if (!r.ok) {
+            const nx = ST.asked ? (ST.asked.nf ? { key: ST.asked.key, nf: 1, q: D.narrow.q[ST.asked.key] } : { key: ST.asked.key, q: D.q[ST.asked.key] }) : null;
+            if (!nx) { ST.done = true; save(); return send(t); }
+            bot('제가 잘 못 알아들었어요. ' + C().chatHint(nx), { quick: (C().chatNext(Object.assign({}, ST, { asked: null }), D, null) || { quick: [] }).quick.map(x => [String(x[0]), x[1]]) });
+            save(); paint(); return;
+          }
+        }
+      }
+      LOG.push({ who: 'bot', t: '…', typing: 1 }); paint();
+      LOG.pop();
+      await think(D, IX); save(); paint();
+    }
+    el.querySelector('form').addEventListener('submit', e => { e.preventDefault(); const v = inp.value; inp.value = ''; send(v); });
+    log.addEventListener('click', e => {
+      const b = e.target.closest('[data-qv]'); if (b) { send('', b.dataset.qv, b.textContent); return; }
+      const a = e.target.closest('a'); if (a && ST && ST.id && /solve\/\?s=/.test(a.getAttribute('href') || '')) { try { sessionStorage.setItem(IN, JSON.stringify({ a: stripA(ST.a), from: ST.from, t: Date.now() })); } catch (x) {} }
+    });
+    el.querySelector('[data-reset]').addEventListener('click', () => { ST = null; LOG = []; ls.del(CK); start0(); });
+    el.querySelector('[data-form]').addEventListener('click', e => { e.preventDefault(); if (ST && ST.id) { try { sessionStorage.setItem(IN, JSON.stringify({ a: stripA(ST.a), from: ST.from, t: Date.now() })); } catch (x) {} location.href = solveUrl(ST.id, '&from=chat'); } else location.href = BASE + 'solve/'; });
+    /* 휴대폰 키보드가 열리면 입력창을 키보드 위로 */
+    if (root.visualViewport) { const vv = root.visualViewport, bar = el.querySelector('.gch-in'); const fit = () => { if (matchMedia('(max-width:600px)').matches) bar.style.bottom = Math.max(0, innerHeight - vv.height - vv.offsetTop) + 'px'; }; vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit); }
+    function start0() {
+      let first = null; try { first = sessionStorage.getItem(CIN); sessionStorage.removeItem(CIN); } catch (e) {}
+      if (first) { ST = null; LOG = []; send(first); return; }
+      if (!LOG.length) { bot(`안녕하세요, ${site()} 길잡이예요. 어떤 고민이 있으세요? 문장 그대로 적어 주시면 바로 계산해 드리고, 필요한 것만 하나씩 여쭤볼게요.`, { quick: [['@buy_when', '내 집 마련, 언제 살까'], ['@find_home', '조건에 맞는 아파트 찾기'], ['@jeonse_renew', '전세 만기 재계약'], ['@cy_where', '청약 당첨 가능성']] }); save(); }
+      paint();
+    }
+    start0();
+    warm();
+    return true;
+  }
+
+  root.JDJ_GUIDE = { on, load, mountTop, mountFlow, mountChat, logMiss, memory, warm };
 })(typeof window !== 'undefined' ? window : this);

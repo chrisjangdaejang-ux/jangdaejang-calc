@@ -68,6 +68,7 @@ const Q = {
   school_move: ['학군 보고 이사하려는데', '초품아 아파트 찾고 싶어요', '아이 중학교 때문에 이사', '학원가 근처로 가고 싶어요', '학군지 전세 얼마나 해요', '전학 시키려고 이사 고민', '학군 좋은 동네로 이사', '초등학교 가까운 아파트', '학군지로 이사 고민', '중학교 배정 때문에 이사'],
   commute: ['출퇴근 편한 곳으로 집 찾고 싶어요', '회사 근처로 이사 가려면', '직장 근처 전세 시세', '통근 시간 줄이고 싶어요', '강남 출근하기 좋은 동네', '출퇴근하기 좋은 아파트', '회사 가까운 곳 전세', '출퇴근 30분 이내 동네', '출퇴근 편한 동네', '직장 근처 집'],
   redev_stage: ['재개발 구역 지금 단계에서 뭘 봐야 해요', '재건축 관리처분 뒤 입주권', '입주권이랑 분양권 차이', '조합설립인가 났는데 사도 되나요', '정비구역 지정 다음은 뭐예요', '모아타운 재개발 단계', '재개발 투자 단계별 체크', '재건축 조합원 입주권 사도 되나', '재개발 진행 단계', '관리처분 이후 입주권'],
+  find_home: ['서울 34평 아파트 찾아줘', '강남권 신축 아파트 보여줘', '10억 이하 아파트 찾아 주세요', '역세권 아파트 리스트', '마용성 84㎡ 아파트 골라줘', '송파구 아파트 목록'],
   switch_order: ['갈아타기 먼저 팔까요 먼저 살까요', '팔고 사는 게 나아요 사고 파는 게 나아요', '선매도 선매수 뭐가 유리', '갈아타기 순서 알려주세요', '매수먼저 하면 대출 얼마', '먼저 살까 먼저 팔까 고민', '기존 집 먼저 팔고 새 집 사야 할까', '갈아타기 할 때 순서', '선매도 후매수', '먼저 사고 나중에 팔기']
 };
 let tot = 0, ok = 0; const perSc = {};
@@ -383,6 +384,7 @@ check('운영자 화면 solve/admin/', fs.existsSync(path.join(ROOT, 'solve/admi
     school_move: [['송파 학군 보고 이사', /원/], ['송파 초품아 전세 4억', /원|평/], ['학군지 이사 고민', null]],
     commute: [['송파 출퇴근 편한 곳', /원/], ['회사 근처 송파 전세 3억', /원|평/], ['출퇴근 편한 집', null]],
     redev_stage: [['관리처분 받은 재개발 구역', /단계/], ['조합설립인가 재건축 다음은', /단계/], ['사업시행인가 났어요 입주권', /단계/]],
+    find_home: [['서울 34평 아파트 찾아줘', null], ['강남권 신축 아파트 보여줘', null], ['10억 이하 아파트 찾아 줘', null]],
     switch_order: [['갈아타기 송파 12억 집 연봉 1억 먼저 팔까', /원/], ['선매도 선매수 10억 집 연봉 8천', /원/], ['사고팔 순서 고민', null]]
   };
   let nAns = 0, nQ = 0; const miss = [];
@@ -428,6 +430,82 @@ check('운영자 화면 solve/admin/', fs.existsSync(path.join(ROOT, 'solve/admi
   check('링크: 양도세 계산기에 거주 개월(rm)·취득세에 주택 수(n)·생애최초(fh)까지', /P\.push\('rm='/.test(read('assets/guide.js')) && /P\.push\('n='/.test(read('assets/guide.js')) && /first_home'\) P\.push\('fh=1'\)/.test(read('assets/guide.js')));
   check('질문: 월세가 아니면 월세 금액은 안 물음(cond)', scOf('broker_fee').cond.wrent[0] === 'deal' && /condOk/.test(read('assets/guide.js')));
   check('즉답 링크도 같은 주소 규칙(hrefOf)', /hrefOf\(nx, a, sc\.id\)/.test(read('assets/guide.js')));
+}
+
+/* ---------- ⑧ 넓은 질문 좁히기 · 대화로 묻고 답하기 ---------- */
+{
+  const MC = require('../assets/mine-core.js');
+  const DN = { sc: SC.sc, lex: LEX, narrow: SC.narrow, q: SC.q };
+  const CTXn = { today: '2026-11-26', sgg: CTX.sgg.concat([{ code: '11650', name: '서초구', sido: '서울특별시', short: '서울' }, { code: '11680', name: '강남구', sido: '서울특별시', short: '서울' }, { code: '11170', name: '용산구', sido: '서울특별시', short: '서울' }]), sido: CTX.sido };
+  /* 시험용 단지(점수 자료 sNN.json 모양: [구, 동, 단지, 평형, 전용, 거래 수, 평당가 36달, 거래 수 글자, 지번, fx]) */
+  const U = (code, apt, band, area, ppy, by, sub) => [code, '동', apt, band, area, 100, Array(36).fill(ppy), String.fromCharCode(...Array(36).fill(50)), '1', { by, sub, fv: 50 }];
+  const units = [U('11680', '강남A', '84㎡대', 84, 9000, 2022, 5), U('11650', '서초B', '84㎡대', 84, 7000, 2010, 15), U('11710', '송파C', '84㎡대', 84, 5000, 2023, 8), U('11440', '마포D', '84㎡대', 84, 4000, 2005, 4), U('11710', '송파E', '59㎡대', 59, 5200, 2015, 3), U('11140', '중구F', '84㎡대', 84, 2500, 1998, 20)];
+  const IXn = { months: Array(36).fill(0).map((_, i) => String(202311 + i)), sgg: { '11680': { name: '강남구', sido: '서울특별시', s: [9000] }, '11650': { name: '서초구', sido: '서울특별시', s: [7000] }, '11710': { name: '송파구', sido: '서울특별시', s: [5000] }, '11440': { name: '마포구', sido: '서울특별시', s: [4000] }, '11140': { name: '중구', sido: '서울특별시', s: [2500] } }, sido: [{ id: 's00', name: '서울특별시', short: '서울' }] };
+  const BROAD = [['서울 34평 아파트 찾아줘', 'budget'], ['강남권 신축 아파트 보여줘', 'budget'], ['10억 이하 34평 아파트 찾아 줘', 'gu'], ['송파구 아파트 찾아주세요', 'budget'], ['역세권 신축 아파트 리스트', 'budget'], ['마용성 84㎡ 아파트 골라줘', 'budget'], ['15억 이하 강남3구 아파트 찾아줘', 'age'], ['서울 59㎡ 아파트 목록', 'budget'], ['20억 넘게 신축 아파트 찾아 줘', 'gu'], ['노도강 5억 이하 역세권 신축 아파트 찾아줘', '']];
+  let nb = 0;
+  BROAD.forEach(([q, want]) => {
+    const r = G.classify(q, DN, CTXn); const ok = r.top && r.top.id === 'find_home';
+    const st = G.narrowInit(r.slots, DN, ''), nk = G.narrowNext(DN, 'find_home', st);
+    if (ok && nk === want) nb++; else console.log(`    좁히기 빗나감 "${q}" → ${r.top && r.top.id} · ${nk} ${JSON.stringify(st)}`);
+  });
+  console.log(`  넓은 질문 좁히기: ${nb}/${BROAD.length} (집 찾기로 가고, 모르는 것 중 결과를 가장 크게 바꾸는 질문부터)`);
+  check('넓은 질문 10개: 집 찾기 + 첫 좁히는 질문이 맞음(예산 → 지역 → 신축 → 역)', nb === BROAD.length, nb);
+  let st0 = G.narrowInit(G.extract('서울 34평 아파트 찾아줘', CTXn), DN, '');
+  check('34평 → 84㎡대', st0.area === 84 && st0.sido === '서울특별시');
+  let R = G.findHomes(units, IXn, st0, MC, 2026);
+  check('좁히기 전: 서울 84㎡대 5곳 · 가격대 분포 5칸', R.n === 5 && R.dist.length === 5 && R.dist.reduce((x, d) => x + d.n, 0) === 5, R);
+  st0 = G.narrowSet(DN, st0, 'budget', '50000-100000'); R = G.findHomes(units, IXn, st0, MC, 2026);
+  check('예산 5~10억 단추 → 바로 갱신(같은 시세 계산 mine-core bandSummary)', R.n === 1 && R.ex.every(r => r.price > 50000 && r.price <= 100000) && R.ex[0].price === MC.bandSummary(R.ex[0].u, IXn.months).price, R.ex.map(r => [r.apt, r.price]));
+  st0 = G.narrowSet(DN, st0, 'gu', '강남3구'); check('강남3구 단추 → 강남·서초·송파', G.findHomes(units, IXn, st0, MC, 2026).ex.every(r => ['강남구', '서초구', '송파구'].indexOf(r.gu) >= 0));
+  st0 = G.narrowSet(DN, st0, 'age', '5'); check('신축 5년 → 2021년 이후 준공만', G.findHomes(units, IXn, st0, MC, 2026).ex.every(r => r.by >= 2021));
+  st0._skip = ['station']; check('[이대로 보기]로 건너뛰면 더 묻지 않음', G.narrowNext(DN, 'find_home', st0) === '');
+  check('좁히는 질문 순서는 데이터(JSON)', Array.isArray(SC.narrow.order.find_home) && SC.narrow.q.budget.opts.length === 5);
+  const pv = G.guPreview(IXn, G.narrowInit(G.extract('서울 34평 아파트', CTXn), DN, ''));
+  check('자료 받기 전 구별 예시 가격(구 평당가 × 84㎡) 먼저', pv[0].name === '강남구' && pv[0].price === Math.round(9000 * 84 / 3.305785 / 100) * 100);
+
+  /* 대화 10개 — UI 와 같은 순서(chatStart → 카드 → chatNext → chatAnswer …) */
+  const MEM = { m: {}, from: {} };
+  function converse(msgs, extraE) {
+    const E9 = Object.assign({ L, T, H, CY, ADJ, RD, SALE, today: '2026-11-26', IX: IXa2, cyNotices: NOTI, cyRows: rows }, extraE || {});
+    let st = G.chatStart(msgs[0], DN, CTXn, MEM), last = null, asked = [], cards = [];
+    const step = () => {
+      const sc = DN.sc.find(x => x.id === st.id); if (!sc) return null;
+      let Q = null;
+      if (sc.id === 'find_home') { const RR = G.findHomes(units, IXn, st.nf, MC, 2026); last = { head: `${RR.n}곳`, R: RR }; }
+      else { const a = Object.assign({}, st.a); ['adj', 'oa', 'na'].forEach(k => { if (a[k] === '?') a[k] = null; }); Q = G.quick(sc, a, E9); last = Q && Q.card; }
+      if (last) cards.push(last);
+      const nx = G.chatNext(st, DN, Q); st.asked = nx ? { key: nx.key, nf: nx.nf ? 1 : 0 } : null; if (nx) asked.push(nx.key); return nx;
+    };
+    if (!st.id) return { st, cards, asked, last: null };
+    step();
+    for (const m of msgs.slice(1)) {
+      const isQ = Array.isArray(m), r = G.chatAnswer(st, isQ ? '' : m, DN, CTXn, isQ ? m[0] : undefined);
+      if (r.switched) { st = G.chatStart(m, DN, CTXn, MEM); }
+      else if (!r.ok) { asked.push('?hint'); continue; }
+      step();
+    }
+    return { st, cards, asked, last };
+  }
+  const IXa2 = { months: ['202610'], sgg: { '11710': { name: '송파구', sido: '서울특별시', s: Array(24).fill(5000).concat(Array(12).fill(6000)), c: Array(36).fill(10), r: { jr: 50.2 } } } };
+  const CONV = [
+    ['집 찾기: 넓게 → 예산 말 → 강남 쪽 → 몰라요 → 끝', ['서울 34평 아파트 찾아줘', '10억 정도', '강남3구면 좋겠어', '몰라요', '상관없어요'], c => c.st.nf.budget[1] === 100000 && c.st.nf.gname === '강남3구' && c.asked.join(',') === 'budget,gu,age,station' && c.last.R.n >= 0 && !c.st.asked],
+    ['집 찾기: "5~7억" 범위 · 단추 신축', ['서울 34평 아파트 보여줘', '5~7억', '상관없어요', ['5'], '상관없어'], c => c.st.nf.budget[0] === 50000 && c.st.nf.budget[1] === 70000 && c.st.nf.age === 5],
+    ['전세 만기: 달만 → 보증금 물음 → "3억이요" → 5% 계산', ['전세 만기 2월인데 재계약할까요'], c => /2026년 8월 1일/.test(c.cards[0].head)],
+    ['대출: 집값·소득 없이 → 묻고 답하기', ['대출 얼마까지 받을 수 있어요', '10억', '연봉 8천이요', '무주택이에요'], c => c.st.a.price === 100000 && c.st.a.income === 8000 && /빌릴 수 있어요/.test(c.last.head)],
+    ['청약: 가점 64점 서울 → 바로 공고별', ['내 청약가점이 64점인데 서울에서 분양 예정인 단지중 당첨 가능한 단지는?'], c => /2곳 중 내 가점 64점/.test(c.cards[0].head) && !c.st.asked],
+    ['증여: 받는 분 모름 → 예시 → "딸이요" → 정확히', ['3억 아파트 증여하면 세금', '딸에게 줄 거예요'], c => c.st.a.rel === 'child' && /증여세/.test(c.last.head)],
+    ['양도세: 산 값·팔 값 → 산 날 물음 → 날짜 답', ['15억에 산 송파 집 29억 되면 언제 팔아야', '2019년 6월 20일'], c => c.st.a.acq === '2019-06-20' && /세금이|팔아도/.test(c.last.head)],
+    ['못 알아들으면 예시 안내 후 다시', ['대출 얼마까지 받을 수 있어요', '음…', '8억이요'], c => c.asked.indexOf('?hint') >= 0 && c.st.a.price === 80000],
+    ['중간에 다른 고민으로 바뀜', ['대출 얼마까지 받을 수 있어요', '취득세는 얼마 나와요'], c => c.st.id === 'acq_tax'],
+    ['복비: 거래 종류 단추 → 금액', ['중개보수 얼마예요', ['jeonse'], '3억'], c => c.st.a.deal === 'jeonse' && c.st.a.amt === 30000 && /90만/.test(c.last.head)]
+  ];
+  let nc = 0;
+  CONV.forEach(([name, msgs, ok]) => { let c; try { c = converse(msgs); } catch (e) { c = { err: String(e.stack || e) }; } const pass2 = !c.err && ok(c); if (pass2) nc++; else console.log(`    대화 빗나감 ${name}: ${c.err || JSON.stringify({ id: c.st.id, a: c.st.a, nf: c.st.nf, asked: c.asked, head: c.last && c.last.head })}`); });
+  console.log(`  대화 시나리오: ${nc}/${CONV.length} 끝까지 맞게`);
+  check('대화 시나리오 10개 끝까지', nc === CONV.length, nc);
+  const gj = read('assets/guide.js');
+  check('대화 화면: 기기 저장(jdj_guide_chat)·처음부터·양식으로 보기·대화로 보기·빠른 답 단추·입력창 아래 고정', /jdj_guide_chat/.test(gj) && /처음부터/.test(gj) && /양식으로 보기/.test(gj) && /대화로 보기/.test(gj) && /data-qv/.test(gj) && /position:fixed;left:0;right:0;bottom:0/.test(gj) && /visualViewport/.test(gj));
+  check('첫 화면 입력 → 대화창(solve/?chat=1)', /solve\/\?chat=1/.test(gj) && /mountChat/.test(read('solve/index.html')));
 }
 /* 서버 만족도 */
 {
