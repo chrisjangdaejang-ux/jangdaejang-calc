@@ -21,11 +21,11 @@
 <script src="../../../assets/price-sheet.js?v=23"></script>
 <script src="../../../assets/pro-report.js?v=7"></script>
 <script src="../../../assets/broker-tools.js?v=5"></script>
-<script src="../../../assets/pro-tools-core.js?v=1"></script>
+<script src="../../../assets/pro-tools-core.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../../assets/aplus.css?v=46">
-<link rel="stylesheet" href="../../../assets/pro-tools.css?v=1">
+<link rel="stylesheet" href="../../../assets/pro-tools.css?v=2">
 <style>
 .post{white-space:pre-wrap;font-size:15px;line-height:1.75;background:#F9FAFB;border-radius:12px;padding:14px 16px;max-height:560px;overflow:auto;word-break:keep-all}
 .post b.t{display:block;font-size:17px;margin:0 0 8px}
@@ -64,7 +64,7 @@
     <p class="hint">담당 동네는 이 기기에 저장돼 다음에 열면 그대로 있어요.</p>
     <h2 style="margin-top:18px">2. 얼마나 자주</h2>
     <div class="seg" id="mode"><button type="button" data-m="day" class="on">매일<small>어제·오늘 새로 공개된 거래</small></button><button type="button" data-m="week">매주<small>지난주 공개된 거래 TOP</small></button></div>
-    <h2 style="margin-top:18px">3. 내 사무소 정보</h2>
+    <h2 style="margin-top:18px">3. 내 이름·사무소 정보</h2>
     <div id="me"></div>
     <div class="err" id="err" role="alert"></div>
     <div class="acts"><button class="btn primary" id="make" type="button">글 만들기</button></div>
@@ -110,16 +110,17 @@ try { B = PT.bundle(JSON.parse(ls.get(LSB) || '{}')); } catch (e) {}
 const save = () => ls.set(LSB, JSON.stringify(B));
 const areaName = () => { const a = ((IDX && IDX.areas) || []).find(x => x.g === B.g); const nm = a ? a.name : (IX && IX.sgg[B.g] || {}).name || ''; const sub = B.dongs.length ? B.dongs.join('·') : ''; return sub && B.dongs.length <= 2 && !B.apts.length ? nm + ' ' + sub : nm; };
 
+function showMe(r){
+  ME = r; const box = $('me');
+  if (ME.verified && ME.card) PT.mountMe(box, ME, showMe, PR.shrinkLogo);
+  else box.innerHTML = '<p class="warn">글·카드에 사무소 이름·로고·연락처를 넣으려면 등록번호 확인(공인중개사) 또는 전문가 확인(분양상담사·컨설턴트)을 마쳐야 해요. 지금은 이름 없이 만들어져요.' + (PT.dongneLink() ? ' <a href="' + PT.dongneLink() + '">동네 파트너 알아보기</a>' : '') + '</p>';
+  if (ME.admin && ME.price){ $('op').hidden = false; $('opT').textContent = ME.price.plan + ' — ' + ME.price.note + '.'; }
+  if (OUT) draw();
+}
 async function loadMe(){
   const box = $('me');
-  if (!A || !A.user()){ ME = null; box.innerHTML = '<p class="warn">로그인하지 않아도 글을 만들 수 있어요. 글 끝에 사무소 정보를 넣으려면 카카오 간편 로그인 뒤 동네 파트너 확인을 마쳐야 해요.</p>' + (A ? A.btn('카카오 간편 로그인', 'agent_pro_post') : ''); return; }
-  try {
-    ME = await PT.post({ action: 'ptMe' });
-    box.innerHTML = ME.verified && ME.card ? '<div class="me"><div><b>' + esc(ME.card.office) + '</b><span class="vf">확인된 중개사</span><br>글·카드 끝에 사무소 이름·대표·등록번호·소재지·전화가 들어가요.</div></div>'
-      : '<p class="warn">사무소 정보는 동네 파트너 확인을 마친 공인중개사만 넣을 수 있어요. 지금은 이름 없이 만들어져요.' + (PT.dongneLink() ? ' <a href="' + PT.dongneLink() + '">동네 파트너 알아보기</a>' : '') + '</p>';
-    if (ME.admin && ME.price){ $('op').hidden = false; $('opT').textContent = ME.price.plan + ' — ' + ME.price.note + '.'; }
-  } catch (e) { ME = null; box.innerHTML = '<p class="warn">' + esc(e.message) + '</p>'; }
-  if (OUT) draw();
+  if (!A || !A.user()){ ME = null; box.innerHTML = '<p class="warn">로그인하지 않아도 글을 만들 수 있어요. 글·카드에 내 이름·사무소·로고를 넣으려면 카카오 간편 로그인 뒤 확인을 마쳐야 해요.</p>' + (A ? A.btn('카카오 간편 로그인', 'agent_pro_post') : ''); return; }
+  try { showMe(await PT.post({ action: 'ptMe' })); } catch (e) { ME = null; box.innerHTML = '<p class="warn">' + esc(e.message) + '</p>'; }
 }
 async function dongList(g){
   const rows = await fetch(JB.SITE + 'assets/dong/' + g.slice(0, 2) + '.json').then(r => r.ok ? r.json() : null).catch(() => null);
@@ -161,7 +162,7 @@ async function make(){
   } finally { $('make').disabled = false; }
 }
 async function draw(){
-  OUT = PT.compose({ src: SRC, bundle: B, areaName: areaName(), card: ME && ME.verified ? ME.card : null, seed: SEED });
+  OUT = PT.compose({ src: SRC, bundle: B, areaName: areaName(), card: ME && ME.ready ? ME.card : null, seed: SEED });
   const pr = OUT.probs;
   $('chk').className = 'chk' + (pr.length ? ' bad' : '');
   $('chk').innerHTML = '자체 검사: 숫자가 들어간 문장을 원자료로 다시 계산해 맞춰 봤어요. ' + (pr.length ? '맞지 않거나 과장된 문장 ' + pr.length + '개는 빼고 만들었어요.<details><summary>뺀 문장 보기</summary><ul>' + pr.map(p => '<li>' + esc(p.text) + ' — ' + esc(p.why) + '</li>').join('') + '</ul></details>' : '모든 문장이 통과했어요.');
@@ -172,7 +173,8 @@ async function draw(){
   const spec = OUT.cards;
   $('cMeta').textContent = '1080×1080 · ' + spec.length + '장';
   $('cards').innerHTML = spec.map((c, i) => '<figure><canvas id="cv' + i + '" width="1080" height="1080" aria-label="' + esc(c.title) + '"></canvas><figcaption><span>' + (i + 1) + '. ' + esc(c.kicker) + '</span><button type="button" data-dl="' + i + '">받기</button></figcaption></figure>').join('');
-  CARDS = spec.map((c, i) => { const cv = $('cv' + i); T.drawCard(cv, c, i, spec.length); return cv; });
+  CARDS = spec.map((c, i) => $('cv' + i));
+  await Promise.all(spec.map((c, i) => PT.drawBrandCard(CARDS[i], c, i, spec.length, ME && ME.ready ? ME.logo : '')));
   $('out').hidden = false;
 }
 const fname = ext => areaName().replace(/\s/g, '_') + '_' + (SRC.asof || '').replace(/-/g, '') + '_' + ext;

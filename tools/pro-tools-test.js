@@ -1,4 +1,5 @@
 /* 중개사 프로 도구(agent/pro/ — 손님용 단지 리포트 · 동네 블로그·인스타 글) 검사 — 실행: node tools/pro-tools-test.js </dev/null
+   ⑨ v67 이름 넣기 대상 확대·빈 칸 채우기·꾸미기·화이트라벨, 표지·카드 브랜딩
    ① 거래 판정(엔진 brief.py·brief_plus.py 와 같은 기준) ② 전세가율·입주 물량 ③ 리포트 화면(확인된 중개사만 이름·Powered by·안내 문장·세 장)
    ④ 문장 자체 검사(엔진 claim_check.py 와 같은 규칙 + 최상급 숫자 문장 빼기) ⑤ 과장·개인정보 거르기 ⑥ 동네 글(묶음·직거래·매물 광고 아님·카드 2~4장)
    ⑦ 숨김 플래그·화면 ⑧ 서버 v66(확인된 중개사만 이름·손님 링크·로고) */
@@ -80,8 +81,20 @@ const S = PT.report({ L, list: M.trades(U), hist, region, g: '11710', vc: { n: 4
   check('출처 5가지', S.src.length, 5);
   const CARD = { role: 'agent', office: '가락한빛공인중개사사무소', ceo: '홍길동', reg: '11710-2020-00123', addr: '서울 송파구 송파대로 000', phone: '02-000-0000' };
   const H = PT.reportHtml(S, { card: CARD, logo: 'data:image/png;base64,AAAA', shared: true });
-  check('세 장', (H.match(/class="pt-page"/g) || []).length, 3);
-  check('머리글 세 장 모두 사무소 이름', (H.match(/<b>가락한빛공인중개사사무소<\/b>/g) || []).length, 3);
+  check('세 장', (H.match(/class="pt-page/g) || []).length, 3);
+  check('표지 + 머리글 두 장 모두 사무소 이름', (H.match(/<b>가락한빛공인중개사사무소<\/b>/g) || []).length, 3);
+  yes('표지: 로고 크게·사무소 색상', /class="pt-cv" style="--pc:#2560E8"/.test(H) && /<img class="pt-cv-lg" src="data:image\/png;base64,AAAA"/.test(H));
+  const HC = PT.reportHtml(S, { card: Object.assign({}, CARD, { color: '#0E7A4F', mobile: '010-0000-0000', kakao: 'https://pf.kakao.com/_x' }), logo: '', shared: true, pw: false });
+  yes('고른 색상·휴대폰·카카오톡', /--pc:#0E7A4F/.test(HC) && /휴대폰 010-0000-0000/.test(HC) && /카카오톡 https:\/\/pf\.kakao\.com\/_x/.test(HC));
+  yes('정해 둔 색이 아니면 기본색', /--pc:#2560E8/.test(PT.reportHtml(S, { card: Object.assign({}, CARD, { color: 'red' }) })));
+  yes('로고 없으면 표지에 사무소 첫 글자', /pt-cv-ini/.test(HC));
+  yes('화이트라벨(pw:false): Powered by 없음 · 공공데이터 출처는 그대로', !/Powered by/.test(HC) && /국토교통부 아파트 매매 실거래가 공개 자료/.test(HC) && /class="srct"/.test(HC));
+  const noSrc = h => h.replace(/<table class="srct">[\s\S]*?<\/table>/, '').replace(/<p class="pt-pw">[^<]*<\/p>/g, '');
+  yes('집예보 표시는 출처표와 Powered by 뿐', !/집예보/.test(noSrc(H)), (noSrc(H).match(/.{30}집예보.{30}/) || [])[0]);
+  const SELL = { role: 'seller', broker: false, kind: '분양상담사', office: '한빛분양', name: '이영희', phone: '010-1111-2222' };
+  const HS = PT.reportHtml(S, { card: SELL, shared: true });
+  yes('비중개사: 이름·소속·연락처 + 중개 아님 안내(세 장 모두)', /분양상담사 이영희/.test(HS) && /소속 한빛분양/.test(HS) && (HS.match(/중개\(거래 연결·계약 대행\)를 하지 않아요/g) || []).length === 3 && !/등록번호/.test(HS.replace(/<table class="srct">[\s\S]*?<\/table>/, '')));
+  check('공인중개사 표시 항목 순서', PT.officeLines(CARD).map(x => x[0]), ['중개사무소', '대표 공인중개사', '등록번호', '소재지', '전화']);
   yes('꼬리말: 법정 표시 항목(등록번호·대표·소재지·전화)', /중개사무소 가락한빛/.test(H) && /등록번호 11710-2020-00123/.test(H) && /대표 공인중개사 홍길동/.test(H) && /소재지 서울 송파구/.test(H) && /전화 02-000-0000/.test(H));
   yes('공유 화면: Powered by 집예보(작게)', /class="pt-pw">Powered by 집예보</.test(H));
   yes('편집 화면에는 Powered by 없음', !/Powered by/.test(PT.reportHtml(S, { card: CARD })));
@@ -168,6 +181,11 @@ const DAY = { v: 1, g: '11710', name: '송파구', sd: '서울', date: '2026-11-
   const o2 = PT.compose({ src, bundle: { g: '11710' }, areaName: '송파구', card: CARD, seed: 1 });
   yes('확인된 중개사: 법정 표시 항목 모두', ['중개사무소: 가락한빛공인중개사사무소', '대표 공인중개사: 홍길동', '소속공인중개사: 김민수', '등록번호: 11710-2020-00123', '소재지: 서울 송파구 송파대로 000', '전화: 02-000-0000'].every(s => o2.blog.text.includes(s)));
   yes('카드 끝장: 사무소 이름', o2.cards[o2.cards.length - 1].title === '가락한빛공인중개사사무소');
+  yes('카드 모든 장: 사무소 띠(이름·연락처·색상)', o2.cards.every(c => c.brand && c.brand.title === '가락한빛공인중개사사무소' && c.brand.tel === '02-000-0000' && c.brand.color === '#2560E8' && !c.ad));
+  yes('설명글 첫 줄: 사무소 이름·연락처', o2.caption.text.split('\n')[0] === '가락한빛공인중개사사무소 · 02-000-0000');
+  const o3 = PT.compose({ src, bundle: { g: '11710' }, areaName: '송파구', card: { role: 'consult', broker: false, kind: '부동산 컨설턴트', name: '박컨설', office: '박컨설팅', mobile: '010-2222-3333' }, seed: 1 });
+  yes('비중개사 글: 작성자 정보 + 중개 아님(블로그·카드)', /\[작성자 정보\]/.test(o3.blog.text) && o3.blog.text.includes(PT.NOT_BROKER_DA) && o3.cards[o3.cards.length - 1].lines.includes(PT.NOT_BROKER) && o3.cards[0].brand.note === '공인중개사 아님 · 중개하지 않음');
+  yes('비중개사 글: 중개사무소 정보 칸 없음', !/중개사무소 정보/.test(o3.blog.text) && !/등록번호/.test(o3.blog.text));
   /* 묶음: 동·단지 */
   const ob = PT.compose({ src, bundle: { g: '11710', dongs: ['문정동'] }, areaName: '송파구 문정동', seed: 1 });
   yes('동 묶음: 문정동 2건만', /매매는 2건이다/.test(ob.blog.body) && /그중 신고가가 0건이다/.test(ob.blog.body) && !/헬리오시티/.test(ob.blog.body), ob.blog.body);
@@ -198,14 +216,14 @@ const DAY = { v: 1, g: '11710', name: '송파구', sd: '서울', date: '2026-11-
     const h = rd(f);
     yes(f + ': 검색 제외', h.includes('<meta name="robots" content="noindex">'));
     yes(f + ': 꺼져 있으면 준비 중', /id="closed"/.test(h) && /PT\.on\(\)/.test(h));
-    yes(f + ': pro-tools-core 불러옴', /assets\/pro-tools-core\.js\?v=1/.test(h));
+    yes(f + ': pro-tools-core 불러옴', /assets\/pro-tools-core\.js\?v=2/.test(h));
     yes(f + ': 이전으로 줄', /assets\/back\.js/.test(h));
     yes(f + ': 무료 체험 문구 없음', !/무료 체험/.test(h));
   });
   const sm = rd('sitemap.xml');
   yes('sitemap 에 없음', !/agent\/pro/.test(sm));
   const sw = rd('sw.js');
-  yes('sw: 새 화면·파일 저장 목록', ['./agent/pro/', './agent/pro/report/', './agent/pro/post/', './assets/pro-tools-core.js?v=1', './assets/pro-tools.css?v=1'].every(x => sw.includes(`'${x}'`)));
+  yes('sw: 새 화면·파일 저장 목록', ['./agent/pro/', './agent/pro/report/', './agent/pro/post/', './assets/pro-tools-core.js?v=2', './assets/pro-tools.css?v=2'].every(x => sw.includes(`'${x}'`)));
   /* 다른 화면 어디에도 링크 없음(꺼져 있는 동안) */
   const linked = ['index.html', 'agent/index.html', 'agent/my/index.html', 'dongne/index.html'].filter(f => fs.existsSync(path.join(ROOT, f)) && /agent\/pro\//.test(rd(f)));
   check('다른 화면에 링크 없음', linked, []);
@@ -242,9 +260,9 @@ const DAY = { v: 1, g: '11710', name: '송파구', sd: '서울', date: '2026-11-
   let r = E.post({ action: 'ptMe', s: s1 });
   check('확인된 중개사: 시트 값 그대로', [r.ok, r.verified, r.card && r.card.office, r.card && r.card.reg, r.card && r.card.phone, r.price === undefined], [true, true, '가락한빛공인중개사사무소', '11710-2020-00123', '02-000-0000', true]);
   r = E.post({ action: 'ptMe', s: s2 }); check('검토대기: 이름 못 넣음', [r.verified, r.why, r.card], [false, 'wait', null]);
-  r = E.post({ action: 'ptMe', s: s3 }); check('노출 중지: 이름 못 넣음', [r.verified, r.why], [false, 'stop']);
+  r = E.post({ action: 'ptMe', s: s3 }); check('노출 중지: 이름 못 넣음', [r.verified, r.why], [false, 'none']);
   r = E.post({ action: 'ptMe', s: E.member(4) }); check('파트너 아님', [r.verified, r.why], [false, 'none']);
-  r = E.post({ action: 'ptShare', s: s2, unit: UNIT }); yes('확인 전: 손님 링크(이름) 거절', !r.ok && /동네 파트너 확인/.test(r.err), r);
+  r = E.post({ action: 'ptShare', s: s2, unit: UNIT }); yes('확인 전: 손님 링크(이름) 거절', !r.ok && /확인/.test(r.err), r);
   r = E.post({ action: 'ptShare', s: s1, unit: Object.assign({}, UNIT, { sd: 'x' }) }); yes('단지 키 검사', !r.ok && /단지와 평형/.test(r.err), r);
   r = E.post({ action: 'ptLogo', s: s1, logo: 'data:image/svg+xml;base64,AAAA' }); yes('로고: 그림 형식만', !r.ok, r);
   r = E.post({ action: 'ptLogo', s: s1, logo: 'data:image/png;base64,' + 'A'.repeat(50000) }); yes('로고: 너무 크면 거절', !r.ok, r);
@@ -267,6 +285,52 @@ const DAY = { v: 1, g: '11710', name: '송파구', sd: '서울', date: '2026-11-
   r = E.post({ action: 'ptOpen', id: sh.id, tk: sh.token }); check('보낸 분 노출 중지 → 이름·로고 없이', [r.ok, r.card, r.logo], [true, null, '']);
   E.now = Date.parse('2027-03-01T10:00:00+09:00'); P.rows[1][hi] = '';
   r = E.post({ action: 'ptOpen', id: sh.id, tk: sh.token }); yes('기간 지난 링크 거절', !r.ok);
+}
+
+/* ---------- ⑨ 서버 v67: 이름 넣기 대상 확대 · 빈 칸 채우기 · 꾸미기 · 화이트라벨 ---------- */
+{
+  const vm = require('vm');
+  const E = require('./gs-harness')({ now: '2026-11-26T10:00:00+09:00', patch: g => g.replace('const PRO_TOOLS_ENABLED = false;', 'const PRO_TOOLS_ENABLED = true;') });
+  E.props.BRIEF_ADMIN_IDS = JSON.stringify(['k99']);
+  const UNIT = { sd: 's00', g: '11710', d: '가락동', j: '913', a: '헬리오시티', b: '84㎡대' };
+  /* ② 모닝 브리핑 중개사용 등록번호 확인자 */
+  const sb = E.member(11), BH = E.T.BH, BC = E.T.BC;
+  const bsh = E.ctx.uSheet('브리핑구독', BH), br = []; br[BC['id']] = 'B1'; br[BC['카카오id']] = 'k11'; br[BC['중개사번호']] = '11680-2019-00077'; br[BC['중개사확인']] = '확인됨';
+  bsh.appendRow(BH.map((h, i) => br[i] === undefined ? '' : br[i]));
+  let r = E.post({ action: 'ptMe', s: sb });
+  check('브리핑 중개사용 확인자: 확인됨·빈 칸 안내', [r.verified, r.ready, r.why, r.card && r.card.reg, r.card && r.card.missing], [true, false, 'fill', '11680-2019-00077', ['office', 'ceo', 'addr', 'phone']]);
+  r = E.post({ action: 'ptShare', s: sb, unit: UNIT }); yes('법정 표시 칸이 비면 링크 거절', !r.ok && /공인중개사법/.test(r.err), r);
+  r = E.post({ action: 'ptProfile', s: sb, office: '대치좋은공인중개사사무소', ceo: '김대표', addr: '서울 강남구 대치동 000', phone: '02-555-0000', reg: '99999', color: '#0E7A4F', mobile: '010-1234-5678' });
+  check('빈 칸 채우면 이름 들어감 · 등록번호는 못 바꿈', [r.ok, r.ready, r.card && r.card.office, r.card && r.card.reg, r.card && r.card.color, r.card && r.card.mobile], [true, true, '대치좋은공인중개사사무소', '11680-2019-00077', '#0E7A4F', '010-1234-5678']);
+  r = E.post({ action: 'ptProfile', s: sb, color: 'red' }); yes('색상은 보기 중에서만', !r.ok, r);
+  r = E.post({ action: 'ptProfile', s: sb, office: '중개보조원 김' }); yes('중개보조원 이름 거절', !r.ok, r);
+  r = E.post({ action: 'ptProfile', s: sb, white: true }); yes('화이트라벨: 일반 회원 거절(프로 회원만)', !r.ok && /프로 회원/.test(r.err), r);
+  r = E.post({ action: 'ptMe', s: sb }); yes('일반 회원: 화이트라벨 칸 없음', r.whiteOk === false);
+  const sh = E.post({ action: 'ptShare', s: sb, unit: UNIT });
+  r = E.post({ action: 'ptOpen', id: sh.id, tk: sh.token });
+  check('손님 열기: 채운 정보·색상 · Powered by 보임', [r.card && r.card.office, r.card && r.card.ceo, r.card && r.card.reg, r.card && r.card.color, r.pw], ['대치좋은공인중개사사무소', '김대표', '11680-2019-00077', '#0E7A4F', true]);
+  yes('손님 열기: 편집용 칸(locked·missing) 안 보냄', r.card && r.card.locked === undefined && r.card.missing === undefined);
+  /* 운영자(프로 회원 자리)만 화이트라벨 */
+  const sa = E.member(99); const ar = []; ar[BC['id']] = 'B9'; ar[BC['카카오id']] = 'k99'; ar[BC['중개사번호']] = '11650-2018-00001'; ar[BC['중개사확인']] = '확인됨';
+  bsh.appendRow(BH.map((h, i) => ar[i] === undefined ? '' : ar[i]));
+  E.post({ action: 'ptProfile', s: sa, office: '운영자사무소', ceo: '장대표', addr: '서울 강남구', phone: '02-3444-0000' });
+  r = E.post({ action: 'ptProfile', s: sa, white: true }); yes('운영자: 화이트라벨 켜기', r.ok && r.card.white === true && r.whiteOk === true, r);
+  const sh2 = E.post({ action: 'ptShare', s: sa, unit: UNIT });
+  r = E.post({ action: 'ptOpen', id: sh2.id, tk: sh2.token }); yes('화이트라벨 링크: pw false', r.ok && r.pw === false && r.card.office === '운영자사무소');
+  /* ③ 고민 상담 확인된 전문가: 분양상담사(비중개사) · 공인중개사 */
+  const CSPH = JSON.parse(vm.runInContext('JSON.stringify(CSPH)', E.ctx)), csh = E.ctx.uSheet('상담전문가', CSPH);
+  const pro = (k, o) => { const row = []; Object.keys(o).forEach(h => { row[CSPH.indexOf(h)] = o[h]; }); row[CSPH.indexOf('회원')] = E.ctx.csUid('k' + k); csh.appendRow(CSPH.map((h, i) => row[i] === undefined ? '' : row[i])); };
+  const ss = E.member(21), sc = E.member(22), sw = E.member(23);
+  pro(21, { id: 'E1', 종류: 'sales', 이름: '이영희', 소속: '한빛분양', 연락처: '010-1111-2222', 상태: '승인' });
+  pro(22, { id: 'E2', 종류: 'broker', 이름: '최중개', 번호: '11710-2021-00009', 소속: '잠실바른공인중개사사무소', 주소: '서울 송파구 잠실동 000', 사무실전화: '02-412-0000', 상태: '승인' });
+  pro(23, { id: 'E3', 종류: 'consult', 이름: '박컨설', 소속: '박컨설팅', 상태: '확인 대기' });
+  r = E.post({ action: 'ptMe', s: ss });
+  check('분양상담사: 확인됨·바로 사용(비중개사)', [r.verified, r.ready, r.card && r.card.broker, r.card && r.card.kind, r.card && r.card.office, r.card && r.card.phone], [true, true, false, '분양상담사', '한빛분양', '010-1111-2222']);
+  r = E.post({ action: 'ptProfile', s: ss, name: '공인중개사 이영희' }); yes('비중개사: 공인중개사 명칭 금지(확인된 이름은 그대로라 무시)', r.ok && r.card.name === '이영희', r);
+  r = E.post({ action: 'ptProfile', s: ss, mobile: '010-9999-8888', kakao: 'https://pf.kakao.com/_abc' }); check('비중개사: 휴대폰·카카오톡 넣기', [r.card.mobile, r.card.kakao], ['010-9999-8888', 'https://pf.kakao.com/_abc']);
+  r = E.post({ action: 'ptMe', s: sc });
+  check('상담 공인중개사: 확인 자료로 바로(대표 이름만 채우기)', [r.verified, r.ready, r.card && r.card.reg, r.card && r.card.missing], [true, false, '11710-2021-00009', ['ceo']]);
+  r = E.post({ action: 'ptMe', s: sw }); check('확인 대기 전문가', [r.verified, r.why], [false, 'wait']);
 }
 
 console.log(`pro-tools-test: ${ok} 통과, ${bad} 실패`);

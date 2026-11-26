@@ -1,6 +1,13 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v68 변경 요약 (v67 위에 다시 배포. 따로 실행할 함수 없음 — 새 시트 '프로도구프로필'은 처음 쓸 때 저절로 생김. PRO_TOOLS_ENABLED=false 라 지금 서비스에는 영향 없음)
+ *  - 프로 도구 이름 넣기 대상 확대(맨 아래 'v66~v68' 칸): 동네 파트너 + 모닝 브리핑 중개사용 등록번호 확인자 + 고민 상담 확인된 전문가(공인중개사·분양상담사·컨설턴트 등).
+ *    공인중개사는 법정 표시 항목(사무소 명칭·소재지·연락처·등록번호·대표자)이 다 있어야 이름이 들어가고, 확인 자료에 있는 값은 바꿀 수 없음(빈 칸만 본인이 채움).
+ *  - ptProfile(로고·사무소 색상·휴대폰·카카오톡·빈 칸 채우기) · 화이트라벨 자리(Powered by 끄기 — 프로 회원(아직 없음)·운영자만) · ptOpen 이 pw(표시 여부)를 돌려줌.
+ *  - 손님 링크 시트 '파트너' 칸: 회원 해시|카카오 회원번호(손님이 열 때 지금 확인 상태로 다시 계산하려고 — '브리핑구독' 시트와 같은 수준의 정보).
+ *  - 검증: node tools/pro-tools-test.js </dev/null
+ *
  * v67 변경 요약 (v66 위에 다시 배포. 따로 실행할 함수 없음 — 시트 '길잡이미매칭'은 첫 기록 때 저절로 생김. GUIDE_ENABLED=false 라 지금 서비스에는 영향 없음)
  *  - 고민 해결 길잡이(solve/, 숨김): 고민 종류를 못 알아들은 문장을 익명으로 모음(gdMiss). 화면이 개인정보(전화·이메일·주민번호·번지·호수·이름)를 가린 뒤 보내고,
  *    서버가 같은 규칙(gdMask = 화면 assets/guide-core.js mask)으로 한 번 더 가려 '길잡이미매칭' 시트에 [시각, 문장, 화면, 미리보기]만 적음. 방문자 번호·금액·답은 받지 않음.
@@ -10742,30 +10749,41 @@ function csCheckText(kind, s) {
 /* COUNSEL-CORE END */
 
 /* =====================================================================
-   v66 중개사 프로 도구(숨김) — 손님용 단지 리포트(agent/pro/report/) · 동네 글 자동 만들기(agent/pro/post/)
+   v66~v68 중개사·전문가 프로 도구(숨김) — 손님용 단지 리포트(agent/pro/report/) · 동네 글 자동 만들기(agent/pro/post/)
    · 켜기: 이 파일 PRO_TOOLS_ENABLED + 화면 assets/config.js PRO_TOOLS_ENABLED 를 함께 true 로. 꺼져 있는 동안은 운영자 계정(모닝 브리핑 운영자 모드 —
      스크립트 속성 BRIEF_ADMIN_IDS)만 써 볼 수 있어요. 대표 확인 전에는 켜지 않아요.
-   · 이름 넣기는 '확인된 중개사'만: 동네 중개사 파트너(v50 '동네파트너' 시트)에서 승인돼 지금 노출 중인 사람(dpLive).
-     표시 정보(사무소 이름·대표·등록번호·소재지·전화)는 화면이 보낸 값이 아니라 그 시트 값을 그대로 씀 → 손님 화면에서 바꿀 수 없음.
-   · 숫자(시세·판정·점수)는 저장하지 않음: 손님 화면이 공개 자료로 다시 계산. 링크에는 단지 키·고객 이름(선택)·사무소 로고만.
-   · 시트: '프로도구링크'(링크 한 줄씩, 토큰은 해시만) · '프로도구로고'(파트너마다 로고 한 칸). 따로 실행할 함수 없음 — 처음 쓸 때 시트가 생겨요.
-   · 요금(나중에 '프로 회원' 구독): 자리만 — PX_PRICE(운영자 화면에만 보임). 지금은 무료 체험 표시 없이 운영자만.
+   · v68 이름 넣기 대상(대표 지시 11/26): '확인을 마친' 사람이면 누구나 자기 이름·사무소(회사)·로고·연락처로 리포트·글을 만들어요.
+       ① 동네 중개사 파트너(승인·노출 중)  ② 모닝 브리핑 중개사용 등록번호 확인('중개사확인' = 확인됨)
+       ③ 고민 상담 확인된 전문가(상담전문가 '승인') — 공인중개사·분양상담사·부동산 컨설턴트(사업자 확인)·세무사 등
+     공인중개사는 공인중개사법 제18조의2·시행령 제17조의2 표시 항목(사무소 명칭·소재지·연락처·등록번호·대표자 성명)이 모두 있어야 이름이 들어가고,
+     확인 자료에 있는 값(등록번호·사무소 이름 등)은 바꿀 수 없어요(빈 칸만 본인이 채움). 공인중개사가 아니면 '중개(거래 연결·계약 대행)를 하지 않아요' 안내가 늘 붙어요.
+   · 꾸미기: 로고·사무소 색상(정해 둔 색 중 하나)·휴대폰·카카오톡 채널. 시트 '프로도구프로필'(회원 해시마다 한 줄).
+   · 화이트라벨(자리만): 'Powered by 집예보'를 끄는 설정은 프로 회원(유료, 아직 없음) 또는 운영자만. 공공데이터 출처 표기는 늘 남음(화면이 지움 불가).
+   · 숫자(시세·판정·점수)는 저장하지 않음: 손님 화면이 공개 자료로 다시 계산. 링크에는 단지 키·고객 이름(선택)만. 토큰은 해시만.
+   · 시트: '프로도구링크'·'프로도구프로필'(v66 '프로도구로고' 칸은 읽기만). 따로 실행할 함수 없음 — 처음 쓸 때 시트가 생겨요.
+   · 요금(나중에 '프로 회원' 구독): 자리만 — PX_PRICE(운영자 화면에만 보임).
    ===================================================================== */
 const PRO_TOOLS_ENABLED = false;
-const PT_ACTIONS = { ptMe: 1, ptLogo: 1, ptShare: 1, ptLinks: 1, ptOff: 1, ptOpen: 1 };
-const SH_PX = '프로도구링크', SH_PXL = '프로도구로고';
+const PT_ACTIONS = { ptMe: 1, ptProfile: 1, ptLogo: 1, ptShare: 1, ptLinks: 1, ptOff: 1, ptOpen: 1 };
+const SH_PX = '프로도구링크', SH_PXL = '프로도구로고', SH_PXP = '프로도구프로필';
 const PXH = ['id', '만든시각', '파트너', '토큰해시', '상태', '단지', '고객이름', '만료일', '열람횟수', '최근열람'];
 const PXC = Object.fromEntries(PXH.map((h, i) => [h, i]));
 const PXLH = ['파트너', '로고', '고친시각'];
+const PXPH = ['회원', '로고', '색상', '사무소명', '대표', '이름', '소재지', '전화', '휴대폰', '카카오', '화이트', '고친시각', '화이트설정'];
+const PXPC = Object.fromEntries(PXPH.map((h, i) => [h, i]));
 const PX_ST = { on: '보냄', off: '멈춤' }, PX_DAYS = [30, 90], PX_MAX = 300, PX_LOGO_MAX = 45000, PX_ID = /^T[0-9A-F]{11}$/;
-const PX_PRICE = { plan: '프로 회원(구독)', month: 0, note: '요금은 대표 확인 뒤 정해요 — 지금은 운영자만 보이는 자리' };
+/* 사무소 색상: 글자(흰색)가 잘 읽히는 진한 색만(화면 assets/pro-tools-core.js COLORS 와 같은 값) */
+const PX_COLORS = ['#2560E8', '#1B3C8F', '#0E7A4F', '#0F766E', '#7C3AED', '#B42318', '#B45309', '#8A6A12', '#374151', '#BE185D'];
+const PX_PRICE = { plan: '프로 회원(구독)', month: 0, note: '요금은 대표 확인 뒤 정해요 — 지금은 운영자만 보이는 자리. 프로 회원은 손님 화면 맨 아래 Powered by 표시를 끌 수 있어요(공공데이터 출처는 늘 남음)' };
+const PX_KIND = { broker: '공인중개사', sales: '분양상담사', consult: '부동산 컨설턴트', tax: '세무사', judicial: '법무사', loan: '대출상담사', prof: '교수·연구자', appraiser: '감정평가사' };
 
 function ptDispatch(b) {
   try {
     if (b.action === 'ptOpen') return ptOpen(b);
     return withLock(() => {
       if (b.action === 'ptMe') return ptMe(b);
-      if (b.action === 'ptLogo') return ptLogo(b);
+      if (b.action === 'ptProfile') return ptProfile(b);
+      if (b.action === 'ptLogo') return ptProfile({ s: b.s, logo: b.logo == null ? '' : b.logo, only: 'logo' });
       if (b.action === 'ptShare') return ptShare(b);
       if (b.action === 'ptLinks') return ptLinks(b);
       if (b.action === 'ptOff') return ptOff(b);
@@ -10780,38 +10798,118 @@ function ptGate(b) {
   const e = new Error('아직 문을 열지 않은 기능이에요.'); e.code = 'closed'; throw e;
 }
 function ptRows(n) { const sh = book().getSheetByName(n); if (!sh) return []; const v = sh.getDataRange().getValues(), out = []; for (let i = 1; i < v.length; i++) if (v[i][0] !== '' && v[i][0] != null) out.push({ row: i + 1, r: v[i] }); return out; }
-/** 확인된 중개사 표시 정보(시트 값 그대로) — 동네 파트너 승인 + 지금 노출 중일 때만 */
-function ptCardOf(p) {
-  return { role: p.kind === 'member' ? 'member' : 'agent', office: p.office, ceo: p.ceo, name: p.kind === 'member' ? p.name : '', reg: p.reg, addr: p.addr, phone: p.tel };
+function ptUid(k) { return 'x' + hashOf('ptU|' + k).slice(1, 25); }
+const ptT = v => String(v == null ? '' : v).replace(/^'/, '').trim();
+/** 프로 회원(유료 구독) — 요금제가 정해지기 전이라 아무도 없음(자리만) */
+function ptProMember(k) { return false; }
+
+/** 확인 출처 목록(회원 k) → [{src, role, broker, kind, office, ceo, name, reg, addr, phone}] — 값이 있는 칸은 '확인된 값'(바꿀 수 없음) */
+function ptSources(k) {
+  const out = [], u = { k: k };
+  try {
+    const p = dpMeOf(u);
+    if (p && p.st === DP_ST.on && dpLive(p)) out.push({ src: 'dongne', role: p.kind === 'member' ? 'member' : 'agent', broker: true, kind: '공인중개사',
+      office: p.office, ceo: p.ceo, name: p.kind === 'member' ? p.name : '', reg: p.reg, addr: p.addr, phone: p.tel });
+  } catch (e) {}
+  try {
+    if (book().getSheetByName(SH_CSP)) {
+      const me = csUid(k), o = csPros().filter(x => String(x.r[CSPC['회원']]) === me && String(x.r[CSPC['상태']]) === CS_PRO_ST.ok).pop();
+      if (o) {
+        const r = o.r, kd = csTxt(r[CSPC['종류']]), br = kd === 'broker';
+        out.push({ src: 'counsel', role: br ? 'agent' : kd === 'sales' ? 'seller' : kd === 'consult' ? 'consult' : 'licensed', broker: br, kind: PX_KIND[kd] || '전문가',
+          office: csTxt(r[CSPC['소속']]), ceo: '', name: csTxt(r[CSPC['이름']]), reg: br ? csTxt(r[CSPC['번호']]) : '', addr: csTxt(r[CSPC['주소']]),
+          phone: csTxt(r[CSPC['사무실전화']]) || (br ? '' : csTxt(r[CSPC['연락처']])) });
+      }
+    }
+  } catch (e) {}
+  try {
+    if (book().getSheetByName(SH_B)) {
+      const o = myBriefs(String(k)).filter(x => String(x.r[BC['중개사확인']] || '') === BROKER_REVIEW.ok && ptT(x.r[BC['중개사번호']])).pop();
+      if (o) out.push({ src: 'brief', role: 'agent', broker: true, kind: '공인중개사', office: '', ceo: '', name: '', reg: ptT(o.r[BC['중개사번호']]), addr: '', phone: '' });
+    }
+  } catch (e) {}
+  return out;
 }
-function ptVerified(u) {
-  const p = dpMeOf(u); if (!p) return { p: null, why: 'none' };
-  if (p.st !== DP_ST.on) return { p: p, why: p.st === DP_ST.wait ? 'wait' : 'stop' };
-  if (!dpLive(p)) return { p: p, why: 'stop' };
-  return { p: p, why: '' };
+function ptProfRow(uid) { return ptRows(SH_PXP).filter(o => String(o.r[PXPC['회원']]) === uid).pop() || null; }
+function ptOldLogo(k) { try { const p = dpMeOf({ k: k }); if (!p) return ''; const x = ptRows(SH_PXL).filter(o => String(o.r[0]) === p.id).pop(); return x ? String(x.r[1] || '') : ''; } catch (e) { return ''; } }
+/** 표시 정보(확인된 값 + 본인이 채운 빈 칸) → { ok, card, missing:[칸], src } */
+function ptCard(k) {
+  const S = ptSources(k); if (!S.length) return { ok: false, why: ptWhy(k), card: null };
+  const s = S[0], row = ptProfRow(ptUid(k)), P = f => row ? ptT(row.r[PXPC[f]]) : '';
+  const pick = (v, f) => v || P(f);
+  const c = { role: s.role, broker: s.broker, kind: s.kind, src: s.src, office: pick(s.office, '사무소명'), ceo: s.broker ? pick(s.ceo, '대표') : '', name: pick(s.name, '이름'),
+    reg: s.reg, addr: pick(s.addr, '소재지'), phone: pick(s.phone, '전화'), mobile: P('휴대폰'), kakao: P('카카오'),
+    color: PX_COLORS.indexOf(P('색상')) >= 0 ? P('색상') : PX_COLORS[0], logo: row ? String(row.r[PXPC['로고']] || '') : '' };
+  if (!c.logo) c.logo = ptOldLogo(k);
+  if (s.role === 'agent' && s.src === 'dongne') c.name = '';
+  c.locked = ['office', 'ceo', 'name', 'reg', 'addr', 'phone'].filter(f => s[f]);
+  const miss = s.broker ? [['office', '중개사무소 이름'], ['ceo', '대표 공인중개사 이름'], ['addr', '중개사무소 소재지'], ['phone', '중개사무소 전화']].filter(x => !c[x[0]]).map(x => x[0])
+    : (!c.name && !c.office ? ['name'] : []).concat(!c.phone && !c.mobile && !c.kakao ? ['phone'] : []);
+  c.white = !!row && row.r[PXPC['화이트']] === true || (!!row && ptT(row.r[PXPC['화이트']]) === 'Y');
+  return { ok: !miss.length, card: c, missing: miss, src: s.src };
 }
-function ptLogoOf(pid) { const x = ptRows(SH_PXL).filter(o => String(o.r[0]) === pid).pop(); return x ? String(x.r[1] || '') : ''; }
+function ptWhy(k) {
+  try { const p = dpMeOf({ k: k }); if (p && p.st === DP_ST.wait) return 'wait'; } catch (e) {}
+  try { if (book().getSheetByName(SH_CSP)) { const me = csUid(k); if (csPros().some(x => String(x.r[CSPC['회원']]) === me && String(x.r[CSPC['상태']]) === CS_PRO_ST.wait)) return 'wait'; } } catch (e) {}
+  try { if (book().getSheetByName(SH_B) && myBriefs(String(k)).some(x => String(x.r[BC['중개사확인']] || '') === BROKER_REVIEW.wait && ptT(x.r[BC['중개사번호']]))) return 'wait'; } catch (e) {}
+  return 'none';
+}
+/** 손님에게 보이는 모양(편집용 칸 locked 등은 뺌) */
+function ptPub(c) {
+  if (!c) return null;
+  return { role: c.role, broker: c.broker, kind: c.kind, office: c.office, ceo: c.ceo, name: c.name, reg: c.reg, addr: c.addr, phone: c.phone, mobile: c.mobile, kakao: c.kakao, color: c.color, logo: c.logo };
+}
 function ptMe(b) {
   ptGate(b);
-  const u = sessionUser(b.s), v = ptVerified(u), admin = dpIsAdmin(b);
-  const out = { ok: true, open: PRO_TOOLS_ENABLED, admin: admin, verified: !v.why, why: v.why, card: null, logo: '' };
+  const u = sessionUser(b.s), admin = dpIsAdmin(b), C = ptCard(u.k);
+  const out = { ok: true, open: PRO_TOOLS_ENABLED, admin: admin, verified: !!C.card, ready: C.ok, why: C.card ? (C.ok ? '' : 'fill') : C.why, src: C.src || '',
+    card: C.card ? Object.assign(ptPub(C.card), { locked: C.card.locked, missing: C.missing, white: C.card.white }) : null, logo: C.card ? C.card.logo : '',
+    colors: PX_COLORS, whiteOk: admin || ptProMember(u.k) };
   if (admin) out.price = PX_PRICE;
-  if (!v.why) { out.card = ptCardOf(v.p); out.logo = ptLogoOf(v.p.id); }
   return out;
+}
+/** 꾸미기·빈 칸 저장. 확인된 값은 바꿀 수 없음(보낸 값은 무시) */
+function ptProfile(b) {
+  ptGate(b);
+  const u = sessionUser(b.s), C = ptCard(u.k);
+  if (!C.card) throw new Error('등록번호 확인(또는 전문가 확인)을 마친 분만 리포트·글에 이름을 넣을 수 있어요.');
+  const uid = ptUid(u.k), sh = uSheet(SH_PXP, PXPH), x = ptProfRow(uid);
+  const row = x ? x.r.slice() : PXPH.map(() => ''); row[PXPC['회원']] = uid;
+  const put = (h, v) => { row[PXPC[h]] = v; };
+  if (b.logo != null) {
+    const logo = String(b.logo || '');
+    if (logo && (logo.length > PX_LOGO_MAX || !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(logo))) throw new Error('로고 이미지가 너무 크거나 형식이 맞지 않아요. 다시 올려 주세요.');
+    put('로고', logo);
+  }
+  if (b.only !== 'logo') {
+    const L = C.card.locked, tx = (v, n) => cellSafe(uText(v, n));
+    if (b.color != null) { if (PX_COLORS.indexOf(String(b.color)) < 0) throw new Error('색상은 보기 중에서 골라 주세요.'); put('색상', String(b.color)); }
+    const f = (key, h, n) => { if (b[key] != null && L.indexOf(key) < 0) put(h, tx(b[key], n)); };
+    f('office', '사무소명', 40); f('ceo', '대표', 20); f('name', '이름', 20); f('addr', '소재지', 80);
+    const ph = v => { const d = String(v || '').replace(/[^0-9]/g, ''); if (d && !(/^0\d{8,10}$/.test(d) || /^1[5-9]\d{6}$/.test(d))) throw new Error('전화번호를 다시 확인해 주세요. 숫자 9~11자리예요.'); return d ? String(v).replace(/[^0-9-]/g, '') : ''; };
+    if (b.phone != null && L.indexOf('phone') < 0) put('전화', ph(b.phone));
+    if (b.mobile != null) put('휴대폰', ph(b.mobile));
+    if (b.kakao != null) put('카카오', kakaoUrl(b.kakao));
+    const names = [row[PXPC['사무소명']], row[PXPC['대표']], row[PXPC['이름']]].map(ptT);
+    if (names.some(v => PRO_ASSIST.test(v))) throw new Error('중개보조원은 이름을 넣어 보낼 수 없어요.');
+    if (!C.card.broker && names.some(v => PRO_BROKER_WORD.test(v))) throw new Error("공인중개사가 아니면 '공인중개사'·'중개사무소' 같은 이름을 쓸 수 없어요(공인중개사법 제18조).");
+    if (names.some(v => PRO_FAKE.test(v))) throw new Error('이름·사무소에는 집예보가 쓴 것처럼 보이는 말을 넣을 수 없어요.');
+    if (b.white != null) {
+      if (b.white && !(dpIsAdmin(b) || ptProMember(u.k))) throw new Error('Powered by 표시 끄기는 프로 회원만 쓸 수 있어요.');
+      put('화이트', b.white ? 'Y' : ''); put('화이트설정', b.white ? (dpIsAdmin(b) ? '운영자' : '프로 회원') : '');
+    }
+  }
+  put('고친시각', new Date());
+  if (x) sh.getRange(x.row, 1, 1, PXPH.length).setValues([PXPH.map((h, i) => row[i] === undefined ? '' : row[i])]);
+  else sh.appendRow(PXPH.map((h, i) => row[i] === undefined ? '' : row[i]));
+  return Object.assign(ptMe(b), { saved: true });
 }
 function ptNeed(b) {
   ptGate(b);
-  const u = sessionUser(b.s), v = ptVerified(u);
-  if (v.why) throw new Error('동네 파트너 확인을 마친 공인중개사만 리포트에 이름을 넣을 수 있어요.');
-  return v.p;
-}
-function ptLogo(b) {
-  const p = ptNeed(b), logo = String(b.logo || '');
-  if (logo && (logo.length > PX_LOGO_MAX || !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(logo))) throw new Error('로고 이미지가 너무 크거나 형식이 맞지 않아요. 다시 올려 주세요.');
-  const sh = uSheet(SH_PXL, PXLH), x = ptRows(SH_PXL).filter(o => String(o.r[0]) === p.id).pop();
-  if (x) sh.getRange(x.row, 1, 1, PXLH.length).setValues([[p.id, logo, new Date()]]);
-  else sh.appendRow([p.id, logo, new Date()]);
-  return { ok: true, logo: logo };
+  const u = sessionUser(b.s), C = ptCard(u.k);
+  if (!C.card) throw new Error('등록번호 확인(또는 전문가 확인)을 마친 분만 리포트에 이름을 넣을 수 있어요.');
+  if (!C.ok) throw new Error(C.card.broker ? '공인중개사법상 꼭 표시해야 하는 칸(사무소 이름·대표·소재지·전화)을 먼저 채워 주세요.' : '이름과 연락처를 먼저 채워 주세요.');
+  return { u: u, uid: ptUid(u.k) };
 }
 /** 단지 키 검사 — 화면 assets/pro-tools-core.js encodeUnit 과 같은 칸 */
 function ptUnit(o) {
@@ -10822,31 +10920,32 @@ function ptUnit(o) {
   return u;
 }
 function ptShare(b) {
-  const p = ptNeed(b), unit = ptUnit(b.unit), client = cellSafe(uText(b.client, 20).replace(/[0-9@:/]/g, ''));
+  const me = ptNeed(b), unit = ptUnit(b.unit), client = cellSafe(uText(b.client, 20).replace(/[0-9@:/]/g, ''));
   const days = PX_DAYS.indexOf(Number(b.days)) >= 0 ? Number(b.days) : PX_DAYS[1];
-  const mine = ptRows(SH_PX).filter(o => String(o.r[PXC['파트너']]) === p.id && String(o.r[PXC['상태']]) === PX_ST.on);
+  const mine = ptRows(SH_PX).filter(o => String(o.r[PXC['파트너']]) === me.uid && String(o.r[PXC['상태']]) === PX_ST.on);
   if (mine.length >= PX_MAX) throw new Error(`보내는 중인 링크는 ${PX_MAX}개까지예요. 안 쓰는 링크를 멈춘 뒤 다시 만들어 주세요.`);
   const id = 'T' + Utilities.getUuid().replace(/-/g, '').slice(0, 11).toUpperCase(), tk = newToken(), now = new Date(), exp = new Date(now.getTime() + days * 86400000);
   const row = []; const put = (h, v) => { row[PXC[h]] = v; };
-  put('id', id); put('만든시각', now); put('파트너', p.id); put('토큰해시', hashOf('pt|' + tk)); put('상태', PX_ST.on); put('단지', JSON.stringify(unit));
+  put('id', id); put('만든시각', now); put('파트너', me.uid + '|' + me.u.k); put('토큰해시', hashOf('pt|' + tk)); put('상태', PX_ST.on); put('단지', JSON.stringify(unit));
   put('고객이름', client); put('만료일', exp); put('열람횟수', 0); put('최근열람', '');
   uSheet(SH_PX, PXH).appendRow(PXH.map((h, i) => row[i] === undefined ? '' : row[i]));
   return { ok: true, id: id, token: tk, expires: ymd(exp) };
 }
+const ptOwner = o => String(o.r[PXC['파트너']]).split('|');
 function ptLinks(b) {
-  const p = ptNeed(b);
-  return { ok: true, links: ptRows(SH_PX).filter(o => String(o.r[PXC['파트너']]) === p.id).slice(-50).reverse().map(o => ({
-    id: String(o.r[PXC['id']]), unit: parseJ(o.r[PXC['단지']], {}), client: String(o.r[PXC['고객이름']] || '').replace(/^'/, ''), status: String(o.r[PXC['상태']]),
+  const me = ptNeed(b);
+  return { ok: true, links: ptRows(SH_PX).filter(o => ptOwner(o)[0] === me.uid).slice(-50).reverse().map(o => ({
+    id: String(o.r[PXC['id']]), unit: parseJ(o.r[PXC['단지']], {}), client: ptT(o.r[PXC['고객이름']]), status: String(o.r[PXC['상태']]),
     expires: o.r[PXC['만료일']] instanceof Date ? ymd(o.r[PXC['만료일']]) : String(o.r[PXC['만료일']]).slice(0, 10), views: Number(o.r[PXC['열람횟수']]) || 0 })) };
 }
 function ptOff(b) {
-  const p = ptNeed(b), x = ptRows(SH_PX).find(o => String(o.r[PXC['id']]) === String(b.id || ''));
-  if (!x || String(x.r[PXC['파트너']]) !== p.id) throw new Error('링크를 찾지 못했어요.');
+  const me = ptNeed(b), x = ptRows(SH_PX).find(o => String(o.r[PXC['id']]) === String(b.id || ''));
+  if (!x || ptOwner(x)[0] !== me.uid) throw new Error('링크를 찾지 못했어요.');
   const st = b.on ? PX_ST.on : PX_ST.off;
   uSheet(SH_PX, PXH).getRange(x.row, PXC['상태'] + 1).setValue(st);
   return { ok: true, id: String(x.r[PXC['id']]), status: st };
 }
-/** 손님 열기(로그인 없음). 실패 이유는 구분하지 않음(링크 맞히기 막기). 보낸 중개사가 지금 확인된 상태가 아니면 이름 없이 단지만 */
+/** 손님 열기(로그인 없음). 실패 이유는 구분하지 않음(링크 맞히기 막기). 보낸 분이 지금 확인된 상태가 아니면 이름 없이 단지만 */
 function ptOpen(b) {
   const id = String(b.id || ''), tk = String(b.tk || '');
   const cache = CacheService.getScriptCache(), ck = 'pt:' + id.slice(0, 12), tries = Number(cache.get(ck) || 0);
@@ -10857,9 +10956,11 @@ function ptOpen(b) {
   if (!x || !safeEq(String(x.r[PXC['토큰해시']]), hashOf('pt|' + tk)) || String(x.r[PXC['상태']]) !== PX_ST.on) throw bad();
   const exp = x.r[PXC['만료일']] instanceof Date ? x.r[PXC['만료일']] : new Date(x.r[PXC['만료일']]);
   if (!(exp > new Date())) throw bad();
-  const pid = String(x.r[PXC['파트너']]), p = dpAll().find(o => o.id === pid) || null, live = !!p && p.st === DP_ST.on && dpLive(p);
+  const k = ptOwner(x)[1] || '', C = k ? ptCard(k) : { ok: false, card: null };
   withLock(() => { const sh = uSheet(SH_PX, PXH); sh.getRange(x.row, PXC['열람횟수'] + 1).setValue((Number(x.r[PXC['열람횟수']]) || 0) + 1); sh.getRange(x.row, PXC['최근열람'] + 1).setValue(new Date()); });
-  return { ok: true, unit: parseJ(x.r[PXC['단지']], {}), client: String(x.r[PXC['고객이름']] || '').replace(/^'/, ''), card: live ? ptCardOf(p) : null, logo: live ? ptLogoOf(pid) : '', expires: ymd(exp) };
+  const live = C.ok && C.card;
+  return { ok: true, unit: parseJ(x.r[PXC['단지']], {}), client: ptT(x.r[PXC['고객이름']]), card: live ? ptPub(C.card) : null, logo: live ? C.card.logo : '',
+    pw: !(live && C.card.white), expires: ymd(exp) };
 }
 
 /* =====================================================================

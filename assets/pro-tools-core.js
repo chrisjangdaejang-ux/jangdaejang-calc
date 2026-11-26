@@ -155,22 +155,50 @@
   const cls = v => v == null ? '' : v > 0 ? 'up' : v < 0 ? 'dn' : '';
   const pc = v => v == null ? '–' : BT().pct(v);
   /** 사무소 표시(확인된 중개사만) — card = 서버 ptMe/ptOpen 결과 {role, office, ceo, name, reg, addr, phone} */
+  /* 사무소 색상(서버 PX_COLORS 와 같은 값 — 흰 글자가 잘 읽히는 진한 색만) */
+  const COLORS = ['#2560E8', '#1B3C8F', '#0E7A4F', '#0F766E', '#7C3AED', '#B42318', '#B45309', '#8A6A12', '#374151', '#BE185D'];
+  const colorOf = c => c && COLORS.indexOf(c.color) >= 0 ? c.color : COLORS[0];
+  const logoOk = v => /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(String(v || ''));
+  /** 공인중개사가 아닌 분(분양상담사·컨설턴트 등)의 자료에 늘 붙는 안내 */
+  const NOT_BROKER = '작성자는 공인중개사가 아니며, 중개(거래 연결·계약 대행)를 하지 않아요.';
+  const isBroker = c => !!c && (c.broker === true || (c.broker == null && (c.role === 'agent' || c.role === 'member')));
+  const titleOf = c => !c ? '' : isBroker(c) ? c.office : (c.office || c.name);
+  /** 표시 정보(확인된 분만) — card = 서버 ptMe/ptOpen 결과 {role, broker, kind, office, ceo, name, reg, addr, phone, mobile, kakao}
+      공인중개사: 공인중개사법 제18조의2·시행령 제17조의2 표시 항목(명칭·소재지·연락처·등록번호·대표자 성명)이 모두 들어가요. */
   function officeLines(card) {
-    if (!card || !card.office) return [];
-    const L = [['중개사무소', card.office], ['대표 공인중개사', card.ceo]];
-    if (card.role === 'member' && card.name) L.push(['소속공인중개사', card.name]);
-    L.push(['등록번호', card.reg], ['소재지', card.addr], ['전화', card.phone]);
+    if (!card || !titleOf(card)) return [];
+    let L;
+    if (isBroker(card)) {
+      L = [['중개사무소', card.office], ['대표 공인중개사', card.ceo]];
+      if (card.role === 'member' && card.name) L.push(['소속공인중개사', card.name]);
+      L.push(['등록번호', card.reg], ['소재지', card.addr], ['전화', card.phone], ['휴대폰', card.mobile], ['카카오톡', card.kakao]);
+    } else {
+      L = [[card.kind || '이름', card.name || card.office]];
+      if (card.name && card.office) L.push(['소속', card.office]);
+      L.push(['소재지', card.addr], ['전화', card.phone], ['휴대폰', card.mobile], ['카카오톡', card.kakao]);
+    }
     return L.filter(x => x[1]);
   }
+  const contactOf = c => [c.phone, c.mobile].filter(Boolean).join(' · ');
+  /** 첫 장 표지(사무소 중심) — 로고 크게, 사무소 색상 띠 */
+  function coverHtml(card, logo, S, P) {
+    const col = colorOf(card), ok = !!titleOf(card);
+    const lg = ok && logoOk(logo) ? `<img class="pt-cv-lg" src="${logo}" alt="${esc(titleOf(card))} 로고">` : ok ? `<div class="pt-cv-lg pt-cv-ini" aria-hidden="true">${esc(titleOf(card).slice(0, 2))}</div>` : '';
+    const sub = !ok ? '' : isBroker(card) ? `대표 공인중개사 ${esc(card.ceo || '')}${card.role === 'member' && card.name ? ` · 담당 ${esc(card.name)}` : ''} · 등록번호 ${esc(card.reg || '')}`
+      : `${esc(card.kind || '')}${card.name && card.office ? ` · ${esc(card.name)}` : ''}`;
+    return `<div class="pt-cv" style="--pc:${col}">${ok ? `<div class="pt-cv-top">${lg}<div class="pt-cv-of"><b>${esc(titleOf(card))}</b><span>${sub}</span>${contactOf(card) ? `<span class="pt-cv-tel">${esc(contactOf(card))}</span>` : ''}</div></div>`
+      : `<div class="pt-cv-top"><div class="pt-cv-of"><b>단지 리포트</b><span>공개 실거래 자료로 정리했어요</span></div></div>`}<div class="pt-cv-pg">${esc(S.date)} · 1/${P}</div></div>`;
+  }
   function headHtml(card, logo, S, page, pages) {
-    const ok = card && card.office;
-    const lg = ok && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(String(logo || '')) ? `<img class="pt-lg" src="${logo}" alt="${esc(card.office)} 로고">` : '';
-    return `<div class="pt-hd">${ok ? `${lg}<div class="pt-of"><b>${esc(card.office)}</b><span>대표 ${esc(card.ceo || '')}${card.role === 'member' && card.name ? ` · 담당 ${esc(card.name)}` : ''} · 등록번호 ${esc(card.reg || '')} · ${esc(card.phone || '')}</span></div>`
+    const ok = !!titleOf(card), col = colorOf(card);
+    const lg = ok && logoOk(logo) ? `<img class="pt-lg" src="${logo}" alt="${esc(titleOf(card))} 로고">` : '';
+    return `<div class="pt-hd" style="--pc:${col}">${ok ? `${lg}<div class="pt-of"><b>${esc(titleOf(card))}</b><span>${isBroker(card) ? `대표 ${esc(card.ceo || '')} · 등록번호 ${esc(card.reg || '')} · ` : ''}${esc(contactOf(card))}</span></div>`
       : `<div class="pt-of"><b>단지 리포트</b><span>공개 실거래 자료로 정리했어요</span></div>`}<div class="pt-pg">${esc(S.date)}${pages ? ` · ${page}/${pages}` : ''}</div></div>`;
   }
-  function footHtml(card, shared) {
+  /** 꼬리말: 표시 정보 + 안내 문장(+ 공인중개사가 아니면 '중개 아님') + 맨 아래 아주 작은 Powered by(pw 일 때만) */
+  function footHtml(card, pw) {
     const L = officeLines(card);
-    return `<div class="pt-ft">${L.length ? `<p class="pt-ad">${L.map(x => `<span>${esc(x[0])} ${esc(x[1])}</span>`).join('')}</p>` : ''}<p class="pt-dis">${esc(DISCLAIM)}</p>${shared ? `<p class="pt-pw">Powered by ${esc(SITE)}</p>` : ''}</div>`;
+    return `<div class="pt-ft">${L.length ? `<p class="pt-ad">${L.map(x => `<span>${esc(x[0])} ${esc(x[1])}</span>`).join('')}</p>` : ''}${L.length && !isBroker(card) ? `<p class="pt-dis"><b>${esc(NOT_BROKER)}</b></p>` : ''}<p class="pt-dis">${esc(DISCLAIM)}</p>${pw ? `<p class="pt-pw">Powered by ${esc(SITE)}</p>` : ''}</div>`;
   }
   function chart(S) {
     const H0 = S.hist, t = S.trend;
@@ -194,11 +222,11 @@
   /** 리포트 세 장(인쇄 A4 기준). o = { card(확인된 중개사 표시 — 없으면 이름 없이), logo, shared } */
   function reportHtml(S, o) {
     o = o || {};
-    const card = o.card && o.card.office ? o.card : null, P = 3, tr = S.trend;
+    const card = o.card && titleOf(o.card) ? o.card : null, P = 3, tr = S.trend;
     const head = p => headHtml(card, o.logo, S, p, P);
     const sub = [S.sido, S.gu, S.dong].filter(Boolean).join(' ') + ` · 전용 ${S.area}㎡`;
     const key = `<div class="pt-key">
-      <div class="pv"><div class="k">${esc(SITE)} 시세</div><div class="v">${tr.price ? wonS(tr.price) : '거래 없음'}</div><small>${tr.kind === 'last' ? `${ymK(tr.priceAt)} 마지막 거래` : `최근 3개월 실거래 중간값`}</small></div>
+      <div class="pv"><div class="k">시세(실거래)</div><div class="v">${tr.price ? wonS(tr.price) : '거래 없음'}</div><small>${tr.kind === 'last' ? `${ymK(tr.priceAt)} 마지막 거래` : `최근 3개월 실거래 중간값`}</small></div>
       <div><div class="k">1년 변동</div><div class="v ${cls(tr.ch1)}">${pc(tr.ch1)}</div><small>평당가 기준</small></div>
       <div><div class="k">전세가율</div><div class="v">${S.jr.pct != null ? S.jr.pct + '%' : '–'}</div><small>${S.jr.at ? `${ymK(S.jr.at)} 기준` : '자료 없음'}</small></div>
       <div><div class="k">최근 1년 거래</div><div class="v">${S.y1.n}건</div><small>직거래 제외 · 신고가 ${S.y1.hi}건</small></div></div>`;
@@ -214,16 +242,16 @@
     const po = S.poi, pl = (a, miss, unit) => a.length ? `<ul class="lst">${a.map(x => `<li><b>${esc(x.nm)}${unit}</b><span>직선 ${BT().mText(x.m)} · 걸어서 약 ${BT().walkMin(x.m)}분</span></li>`).join('')}</ul>` : `<p class="miss">${esc(miss)}</p>`;
     const t4 = `<div class="lab">지하철역</div>${pl(po.st, po.stMiss, '역')}<div class="lab">중학교</div>${pl(po.sc, po.scMiss, '')}<p class="src">${esc(po.elem)} 걷는 시간은 직선 거리로 어림한 값이라 실제로는 더 걸려요.</p>`;
     const f = S.fv;
-    const t5 = f.show ? `<div class="pt-fv"><div class="ring">${esc((f.head.match(/\d+/) || [''])[0])}</div><div><p><b>${esc(f.head)}</b> <span class="ref">참고</span></p><p>${esc(f.what)}</p><p>${esc(f.past)}</p></div></div>${srcP(f.src, f.to ? ymK(f.to) + ' 자료' : '')}`
+    const t5 = f.show ? `<div class="pt-fv"><div class="ring">${esc((f.head.match(/\d+/) || [''])[0])}</div><div><p><b>${esc(f.head)}</b> <span class="ref">참고</span></p><p>${esc(f.what)}</p><p>${esc(f.past)}</p></div></div>${srcP('공공 자료로 계산한 미래가치 점수(맨 뒤 자료 출처 표)', f.to ? ymK(f.to) + ' 자료' : '')}`
       : `<p class="miss">${esc(f.why)}</p>`;
     const jr = S.jr;
     const t6 = jr.pct != null ? `<p class="sm">${ymK(jr.at)} 기준 전세 ${wonS(jr.j)} ÷ 매매 ${wonS(jr.s)} = <b>${jr.pct}%</b>(두 값 모두 그 달까지 3개월 실거래 중간값). 매매가와 전세가 차이는 약 ${wonS(jr.s - jr.j)}이에요.</p>` : `<p class="miss">${esc(jr.miss)}</p>`;
     const gl = `<div class="gl">${GLOSS.map(g => `<p><b>${esc(g[0])}</b> ${esc(g[1])}</p>`).join('')}</div>`;
     const srcT = `<table class="srct"><thead><tr><th>항목</th><th>출처</th><th>기준</th></tr></thead><tbody>${S.src.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('')}</tbody></table>`;
     const title = `<div class="pt-tt"><div class="k">${S.client ? `${esc(S.client)} 님께 드리는 ` : ''}단지 리포트</div><h2>${esc(S.apt)} · ${esc(S.band)}</h2><small>${esc(sub)}</small></div>`;
-    const ft = footHtml(card, o.shared);
+    const ft = footHtml(card, o.shared && o.pw !== false);
     return `<article class="pt-rp" id="sheet">
-      <section class="pt-page">${head(1)}${title}${key}
+      <section class="pt-page pt-p1">${coverHtml(card, o.logo, S, P)}${title}${key}
         <h3><span class="n">1</span>시세 흐름 <small>매매 실거래 · ${S.hist ? String(S.hist.from).slice(0, 4) + '년부터' : '최근 3년'} · 오른쪽 숫자는 최고·최저</small></h3>${chart(S)}${srcP('국토교통부 아파트 매매 실거래가 공개 자료(직거래 제외) · 월별 3개월 실거래 중간값', `${ymK((S.asOf || {}).to)} 계약분까지`)}
         <h3><span class="n">2</span>최근 1년 거래와 판정 <small>신고가·급매·특수 거래 의심</small></h3>${sum}${t1}${hiLine}${srcP('국토교통부 아파트 매매 실거래가 공개 자료', '판정 기준은 아래 말 풀이')}
         ${ft}</section>
@@ -237,7 +265,7 @@
       <section class="pt-page">${head(3)}
         <h3>처음 보는 말 풀이</h3>${gl}
         <h3>자료 출처</h3>${srcT}
-        <p class="sm">모든 숫자는 공공 자료를 ${esc(SITE)}가 정리한 값이에요. 실제 가격은 동·층·향·수리 상태에 따라 달라요. ${esc(SITE)}는 중개하지 않아요.</p>
+        <p class="sm">모든 숫자는 공공 자료를 그대로 정리한 값이에요. 실제 가격은 동·층·향·수리 상태에 따라 달라요.</p>
         ${ft}</section>
     </article>`;
   }
@@ -395,6 +423,7 @@
   }
   const NOT_AD = '이 글은 국토교통부에 신고된 아파트 실거래 정보를 정리한 글로, 특정 매물을 소개하는 광고가 아니다.';
   const NOT_AD_CARD = '실거래 정보 글 · 매물 광고 아님';
+  const NOT_BROKER_DA = '작성자는 공인중개사가 아니며, 중개(거래 연결·계약 대행)를 하지 않는다.';
 
   /** 글 재료 → { title, blog:{text, md, body, len}, caption:{text, tags}, cards:[카드 설계], probs, st, empty }
       o = { src(source 결과), bundle, areaName, card(확인된 중개사 표시|null), seed } */
@@ -449,8 +478,8 @@
     const c1 = claimCheck(L, ctx, 'blog'), g1 = guard(c1.kept, 'blog');
     const body = g1.kept.join('\n\n');
     const srcLine = `자료: 국토교통부 아파트 매매 실거래가 공개 자료(${P.short}${src.asof ? `, ${BT().mdS(src.asof)} 수집분` : ''}). 신고가·급매 판단에서 직거래는 뺐고, 특수 거래 의심 거래는 순위에서 뺐다.`;
-    const card = o.card && o.card.office ? o.card : null;
-    const ofL = officeLines(card), ofT = ofL.length ? '[중개사무소 정보]\n' + ofL.map(x => `${x[0]}: ${x[1]}`).join('\n') : '';
+    const card = o.card && titleOf(o.card) ? o.card : null;
+    const ofL = officeLines(card), ofT = ofL.length ? (isBroker(card) ? '[중개사무소 정보]\n' : '[작성자 정보]\n') + ofL.map(x => `${x[0]}: ${x[1]}`).join('\n') + (isBroker(card) ? '' : '\n' + NOT_BROKER_DA) : '';
     const tail = [srcLine, NOT_AD, ofT].filter(Boolean).join('\n\n');
     const text = `${title}\n\n${body}\n\n${tail}\n`;
     const md = `# ${title}\n\n${body}\n\n---\n\n${tail.replace(/\n/g, '  \n')}\n`;
@@ -464,10 +493,12 @@
     const gName = (o.areaName || '').split(' ').pop() || N;
     const tagsA = [tag(gName), tag(gName + '아파트')].concat(B.dongs.slice(0, 3).map(d => tag(d + '아파트'))).concat(B.apts.slice(0, 2).map(a => tag(a)))
       .concat(['#아파트실거래가', '#실거래가', st.nhi ? '#신고가' : '', '#부동산시장', '#내집마련']).filter(Boolean).filter((t, i, s) => s.indexOf(t) === i && t.length > 1);
-    const capText = g2.kept.join('\n').replace('카드를 넘겨', '\n카드를 넘겨') + (ofT ? '\n\n' + ofT : '') + '\n\n' + tagsA.join(' ');
+    const capTop = card ? `${titleOf(card)}${contactOf(card) ? ' · ' + contactOf(card) : ''}` : '';
+    const capText = (capTop ? capTop + '\n' : '') + g2.kept.join('\n').replace('카드를 넘겨', '\n카드를 넘겨') + (ofT ? '\n\n' + ofT : '') + '\n\n' + tagsA.join(' ');
     /* 카드 2~4장(JDJ_BT.drawCard 모양) */
     const foot = `자료: 국토교통부 실거래가 공개 자료 · ${P.short} · ${NOT_AD_CARD}`;
     const adOne = ofL.map(x => `${x[0]} ${x[1]}`).join(' · ');
+    const brand = card ? { color: colorOf(card), title: titleOf(card), sub: isBroker(card) ? `등록번호 ${card.reg || ''} · 대표 ${card.ceo || ''}` : (card.kind || ''), tel: contactOf(card), note: isBroker(card) ? '' : '공인중개사 아님 · 중개하지 않음' } : null;
     const C = [{ k: 'cover', kicker: `${N} 아파트`, title: P.word === '오늘' ? '오늘 새로 공개된 실거래' : `${P.word} 실거래 TOP`, sub: P.short,
       stats: [['매매', `${st.n}건`], ['신고가', `${st.nhi}건`], ['급매로 볼 만한 거래', `${st.nurg}건`]],
       lines: [st.nx ? `직거래 ${st.nx}건은 신고가·급매 판단에서 뺐어요` : '', st.nsus ? `특수 거래 의심 ${st.nsus}건은 순위에서 뺐어요` : '', '급매: 같은 단지 최근 3개월 중간값보다 10% 넘게 싼 거래'].filter(Boolean), foot }];
@@ -478,8 +509,8 @@
       : st.n ? { k: 'list', kicker: '새 거래', title: '금액이 큰 거래 TOP', sub: P.long.length > 40 ? P.short : P.long,
         rows: st.top.slice(0, 4).map(t => [tName(t), wonS(t.p), `${t.d} · ${ymd(t.dt)}${t.f ? ` · ${t.f}층` : ''}${t.x ? ' · 직거래' : ''}${t.hi ? ' · 신고가' : ''}`]), foot } : null;
     if (tops) C.push(tops);
-    C.push({ k: 'end', kicker: card ? '중개사무소 정보' : SITE, title: card ? card.office : '숫자로 보는 우리 동네', lines: card ? ofL.map(x => `${x[0]} ${x[1]}`) : ['공개 실거래 자료로 정리했어요'], sub: NOT_AD_CARD, foot });
-    const cards = C.slice(0, 4).map(x => Object.assign(x, { ad: adOne }));
+    C.push({ k: 'end', kicker: card ? (isBroker(card) ? '중개사무소 정보' : '작성자 정보') : '우리 동네 실거래', title: card ? titleOf(card) : '숫자로 보는 우리 동네', lines: card ? ofL.map(x => `${x[0]} ${x[1]}`).concat(isBroker(card) ? [] : [NOT_BROKER]) : ['공개 실거래 자료로 정리했어요'], sub: NOT_AD_CARD, foot });
+    const cards = C.slice(0, 4).map(x => Object.assign(x, { ad: brand ? '' : adOne, brand }));
     /* 카드 글자도 거르기 */
     const cprobs = [];
     cards.forEach((x, i) => { [x.title, x.sub].concat(x.lines || []).forEach(t => { const h = hypeHit(t); if (h) cprobs.push({ where: 'card' + (i + 1), kind: 'hype', text: t, why: h }); }); });
@@ -487,7 +518,50 @@
       probs: c1.probs.concat(g1.probs, c2.probs, g2.probs, cprobs), lines: { all: L.length, kept: g1.kept.length } };
   }
 
-  const API = { SITE, LS_PV, on, preview, dongneLink, sess, post, esc, med, RULE, judge, tags, jeonse, supply, report, GLOSS, DISCLAIM, officeLines, headHtml, footHtml, reportHtml,
+  /* ---------- 카드 그리기(브라우저): JDJ_BT.drawCard 위에 사무소 색 띠·로고·연락처 ---------- */
+  function loadImg(src) { return new Promise(ok => { if (!logoOk(src)) return ok(null); const im = new root.Image(); im.onload = () => ok(im); im.onerror = () => ok(null); im.src = src; }); }
+  async function drawBrandCard(cv, c, i, n, logo) {
+    BT().drawCard(cv, c, i, n);
+    const B = c.brand; if (!B) return;
+    const W = 1080, x = cv.getContext('2d'), y0 = W - 160, F = (sz, w) => { x.font = `${w} ${sz}px 'Noto Sans KR', sans-serif`; };
+    x.fillStyle = B.color; x.fillRect(0, 0, W, 14);
+    x.fillStyle = '#FFFFFF'; x.fillRect(0, W - 162, W, 162);
+    x.fillStyle = B.color; x.fillRect(0, y0, W, 160);
+    const im = await loadImg(logo); let tx = 64;
+    if (im) { const s = 104, r = Math.min(s / im.width, s / im.height), w = im.width * r, h = im.height * r; x.fillStyle = '#FFFFFF'; x.beginPath(); x.arc(64 + s / 2, y0 + 80, s / 2 + 8, 0, Math.PI * 2); x.fill(); x.drawImage(im, 64 + (s - w) / 2, y0 + 80 - h / 2, w, h); tx = 64 + s + 32; }
+    x.fillStyle = '#FFFFFF'; x.textBaseline = 'alphabetic'; x.textAlign = 'left';
+    F(40, 900); let t = B.title; while (x.measureText(t).width > W - tx - 60 && t.length > 2) t = t.slice(0, -1); x.fillText(t, tx, y0 + 58);
+    F(26, 700); x.fillText([B.tel, B.note].filter(Boolean).join(' · ').slice(0, 60), tx, y0 + 98);
+    F(20, 500); x.globalAlpha = 0.85; x.fillText(String(c.foot || '').slice(0, 70), tx, y0 + 134); x.globalAlpha = 1;
+  }
+
+  /* ---------- 내 표시 정보 칸(브라우저) — 확인된 값은 글자로만, 빈 칸·꾸미기만 고침 ---------- */
+  const FIELD = { office: ['사무소(회사) 이름', 40], ceo: ['대표 공인중개사 이름', 20], name: ['이름', 20], addr: ['소재지', 80], phone: ['사무소 전화', 20] };
+  function mountMe(box, ME, done, shrink) {
+    const c = ME.card, br = isBroker(c), L = c.locked || [], miss = c.missing || [];
+    const lk = L.map(f => FIELD[f] && c[f] ? `<li><b>${esc(f === 'reg' ? '등록번호' : FIELD[f][0])}</b> ${esc(c[f])}</li>` : f === 'reg' && c.reg ? `<li><b>등록번호</b> ${esc(c.reg)}</li>` : '').join('');
+    const editable = (br ? ['office', 'ceo', 'addr', 'phone'].concat(c.role === 'member' ? ['name'] : []) : ['name', 'office', 'addr', 'phone']).filter(f => L.indexOf(f) < 0);
+    box.innerHTML = `<div class="me" style="border-left:6px solid ${colorOf(c)}">${logoOk(ME.logo) ? `<img src="${ME.logo}" alt="">` : ''}<div><b>${esc(titleOf(c) || '이름을 채워 주세요')}</b><span class="vf">확인된 ${esc(c.kind || '전문가')}</span>
+      ${lk ? `<ul class="lk">${lk}</ul><small>확인 자료에 있는 값이라 바꿀 수 없어요.</small>` : ''}</div></div>
+      ${miss.length ? `<p class="warn">${br ? '공인중개사법상 손님 자료에 꼭 들어가야 하는 칸이 비어 있어요. 채우고 [저장]을 눌러 주세요.' : '이름과 연락처 하나를 채우고 [저장]을 눌러 주세요.'}</p>` : ''}
+      <div class="two">${editable.map(f => `<div><label for="pf_${f}">${esc(FIELD[f][0])}${miss.indexOf(f) >= 0 ? ' (꼭 필요)' : ''}</label><input id="pf_${f}" maxlength="${FIELD[f][1]}" value="${esc(c[f] || '')}"></div>`).join('')}
+        <div><label for="pf_mobile">휴대폰 (선택)</label><input id="pf_mobile" maxlength="20" inputmode="tel" value="${esc(c.mobile || '')}"></div>
+        <div><label for="pf_kakao">카카오톡 채널 주소 (선택)</label><input id="pf_kakao" maxlength="200" placeholder="https://pf.kakao.com/…" value="${esc(c.kakao || '')}"></div></div>
+      <label>사무소 색상 <small>(표지·머리글·카드 띠)</small></label><div class="sw">${(ME.colors || COLORS).map(k => `<button type="button" data-c="${k}" class="${k === colorOf(c) ? 'on' : ''}" style="background:${k}" aria-label="색상 ${k}"></button>`).join('')}</div>
+      <label for="pf_logo">로고 (PNG·JPG)</label><input id="pf_logo" type="file" accept="image/png,image/jpeg,image/webp">
+      ${logoOk(ME.logo) ? '<p class="hint"><button type="button" class="btn ghost" id="pf_nologo" style="min-height:36px;font-size:13px;padding:4px 10px">로고 빼기</button></p>' : ''}
+      ${ME.whiteOk ? `<label class="wl"><input type="checkbox" id="pf_white" ${c.white ? 'checked' : ''}> 손님 화면 맨 아래 'Powered by ${esc(SITE)}' 끄기 <small>(프로 회원 기능 · 지금은 운영자만 · 공공데이터 출처 표기는 늘 남아요)</small></label>` : ''}
+      ${!br ? `<p class="hint">${esc(NOT_BROKER)} 이 문장은 손님 자료에 늘 함께 들어가요.</p>` : ''}
+      <div class="acts"><button class="btn" id="pf_save" type="button">내 정보 저장</button></div><p class="err" id="pf_err" role="alert"></p>`;
+    let color = colorOf(c);
+    box.querySelector('.sw').onclick = e => { const b = e.target.closest('[data-c]'); if (!b) return; color = b.dataset.c; box.querySelectorAll('.sw button').forEach(x => x.classList.toggle('on', x === b)); };
+    const send = async body => { try { const r = await post(Object.assign({ action: 'ptProfile' }, body)); done(r); } catch (e) { box.querySelector('#pf_err').textContent = e.message; } };
+    box.querySelector('#pf_save').onclick = () => { const b = { color, mobile: box.querySelector('#pf_mobile').value, kakao: box.querySelector('#pf_kakao').value }; editable.forEach(f => { b[f] = box.querySelector('#pf_' + f).value; }); const w = box.querySelector('#pf_white'); if (w) b.white = w.checked; send(b); };
+    box.querySelector('#pf_logo').onchange = async e => { const f = e.target.files[0]; if (!f) return; try { send({ logo: await shrink(f) }); } catch (x) { box.querySelector('#pf_err').textContent = x.message || '로고를 읽지 못했어요.'; } };
+    const nl = box.querySelector('#pf_nologo'); if (nl) nl.onclick = () => send({ logo: '' });
+  }
+
+  const API = { SITE, LS_PV, on, preview, dongneLink, sess, post, COLORS, colorOf, NOT_BROKER, NOT_BROKER_DA, isBroker, titleOf, coverHtml, drawBrandCard, mountMe, esc, med, RULE, judge, tags, jeonse, supply, report, GLOSS, DISCLAIM, officeLines, headHtml, footHtml, reportHtml,
     encodeUnit, decodeUnit, parseShare, bundle, source, pick, stats, parseWon, claimCheck, splitS, HYPE, hypeHit, PRIV, guard, NOT_AD, NOT_AD_CARD, compose };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_PT = API;

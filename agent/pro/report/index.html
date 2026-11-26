@@ -23,11 +23,11 @@
 <script src="../../../assets/rank-core.js?v=7"></script>
 <script src="../../../assets/pro-report.js?v=7"></script>
 <script src="../../../assets/broker-tools.js?v=5"></script>
-<script src="../../../assets/pro-tools-core.js?v=1"></script>
+<script src="../../../assets/pro-tools-core.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../../assets/aplus.css?v=46">
-<link rel="stylesheet" href="../../../assets/pro-tools.css?v=1">
+<link rel="stylesheet" href="../../../assets/pro-tools.css?v=2">
 <script src="../../../assets/back.js?v=1" defer></script>
 </head>
 <body>
@@ -45,12 +45,8 @@
     </div>
     <div class="res" id="res"></div>
     <div id="bandBox" hidden><label>평형 (전용면적)</label><div class="chips" id="bands"></div></div>
-    <h2 style="margin-top:18px">2. 내 사무소 정보</h2>
+    <h2 style="margin-top:18px">2. 내 이름·사무소 정보</h2>
     <div id="me"></div>
-    <div id="logoBox" hidden>
-      <label for="logo">사무소 로고 (선택 · PNG·JPG)</label><input id="logo" type="file" accept="image/png,image/jpeg,image/webp">
-      <p class="hint">머리글 왼쪽에 작게 들어가요. 올리면 다음부터 자동으로 들어가요. <button type="button" class="btn ghost" id="logoDel" style="min-height:36px;font-size:13px;padding:4px 10px" hidden>로고 빼기</button></p>
-    </div>
     <label for="client">손님 이름 (선택)</label><input id="client" maxlength="20" placeholder="예: 김OO">
     <p class="hint">넣으면 첫 장에 'OO 님께 드리는 단지 리포트'로 보여요. 연락처는 넣지 말아 주세요.</p>
     <div class="err" id="err" role="alert"></div>
@@ -88,26 +84,18 @@ async function loadSido(id){
 }
 const sggName = c => (IX.sgg[c] || {}).name || c;
 
-/* ---------- 내 사무소 정보(확인된 중개사만 이름) ---------- */
+/* ---------- 내 표시 정보(확인된 분만 이름 — 서버가 확인 자료로 채움) ---------- */
+function showMe(r){
+  ME = r; const box = $('me');
+  if (ME.verified && ME.card) PT.mountMe(box, ME, showMe, PR.shrinkLogo);
+  else box.innerHTML = '<p class="warn">' + (ME.why === 'wait' ? '등록번호(또는 전문가) 확인을 하고 있어요. 확인이 끝나면 사무소 이름·로고를 넣을 수 있어요.' : '사무소 이름·로고는 등록번호 확인을 마친 공인중개사와 확인된 분양상담사·컨설턴트만 넣을 수 있어요(모닝 브리핑 중개사용·동네 파트너·고민 상담 전문가 확인).') + ' 지금은 이름 없이 만들어져요.' + (PT.dongneLink() ? ' <a href="' + PT.dongneLink() + '">동네 파트너 알아보기</a>' : '') + '</p>';
+  if (ME.admin && ME.price){ $('op').hidden = false; $('opT').textContent = ME.price.plan + ' — ' + ME.price.note + '.'; }
+  if (LAST) draw();
+}
 async function loadMe(){
   const box = $('me');
-  if (!A || !A.user()){ ME = null; box.innerHTML = '<p class="warn">카카오 간편 로그인을 하면 확인된 중개사는 리포트에 사무소 이름·로고를 넣을 수 있어요. 로그인하지 않아도 이름 없이 만들 수 있어요.</p>' + (A ? A.btn('카카오 간편 로그인', 'agent_pro_report') : ''); $('logoBox').hidden = true; return; }
-  try {
-    ME = await PT.post({ action: 'ptMe' });
-    if (ME.verified && ME.card){
-      const c = ME.card;
-      box.innerHTML = '<div class="me">' + (ME.logo ? '<img src="' + ME.logo + '" alt="">' : '') + '<div><b>' + esc(c.office) + '</b><span class="vf">확인된 중개사</span><br>대표 ' + esc(c.ceo) + (c.role === 'member' && c.name ? ' · 소속 ' + esc(c.name) : '') + ' · 등록번호 ' + esc(c.reg) + '<br>' + esc(c.addr) + ' · ' + esc(c.phone) + '<br><small>동네 파트너 확인 때 등록한 정보예요. 바꾸려면 동네 파트너 내 화면에서 고쳐 주세요.</small></div></div>';
-      $('logoBox').hidden = false; $('logoDel').hidden = !ME.logo;
-    } else {
-      box.innerHTML = '<p class="warn">' + (ME.why === 'wait' ? '동네 파트너 확인을 하고 있어요. 확인이 끝나면 사무소 이름을 넣을 수 있어요.' : '사무소 이름은 동네 파트너 확인(중개사무소 등록번호 확인)을 마친 공인중개사만 넣을 수 있어요.') + ' 지금은 이름 없이 만들어져요.' + (PT.dongneLink() ? ' <a href="' + PT.dongneLink() + '">동네 파트너 알아보기</a>' : '') + '</p>';
-      $('logoBox').hidden = true;
-    }
-    if (ME.admin && ME.price){ $('op').hidden = false; $('opT').textContent = ME.price.plan + ' — ' + ME.price.note + '.'; }
-  } catch (e) { ME = null; box.innerHTML = '<p class="warn">' + esc(e.message) + '</p>'; }
-}
-async function setLogo(data){
-  try { const r = await PT.post({ action: 'ptLogo', logo: data }); ME.logo = r.logo; $('logoDel').hidden = !ME.logo; await loadMe(); if (LAST) draw(); }
-  catch (e) { $('err').textContent = e.message; }
+  if (!A || !A.user()){ ME = null; box.innerHTML = '<p class="warn">카카오 간편 로그인을 하면 확인된 분은 리포트에 사무소 이름·로고·연락처를 넣을 수 있어요. 로그인하지 않아도 이름 없이 만들 수 있어요.</p>' + (A ? A.btn('카카오 간편 로그인', 'agent_pro_report') : ''); return; }
+  try { showMe(await PT.post({ action: 'ptMe' })); } catch (e) { ME = null; box.innerHTML = '<p class="warn">' + esc(e.message) + '</p>'; }
 }
 
 /* ---------- 편집 ---------- */
@@ -119,8 +107,6 @@ function setupEditor(){
   $('q').oninput = () => { clearTimeout(t); t = setTimeout(search, 200); };
   $('sd').onchange = () => { $('res').innerHTML = ''; PICK = null; $('bandBox').hidden = true; if ($('q').value.trim()) search(); };
   $('make').onclick = make;
-  $('logo').onchange = async e => { const f = e.target.files[0]; if (!f) return; try { setLogo(await PR.shrinkLogo(f)); } catch (x) { $('err').textContent = x.message || '로고를 읽지 못했어요.'; } };
-  $('logoDel').onclick = () => setLogo('');
   loadMe(); if (A && A.onChange) A.onChange(loadMe);
 }
 async function search(){
@@ -145,7 +131,7 @@ async function make(){
   if (!base){ $('err').textContent = '단지를 먼저 골라 주세요.'; return; }
   ST = Object.assign({}, base); LINK = '';
   history.replaceState(null, '', '?' + PT.encodeUnit(ST) + (PT.preview() ? '&preview=pro-tools' : ''));
-  JDJ.track && JDJ.track('agent_pro_report_make', { sgg: ST.g, named: ME && ME.verified ? 1 : 0 });
+  JDJ.track && JDJ.track('agent_pro_report_make', { sgg: ST.g, named: ME && ME.ready ? 1 : 0 });
   $('make').disabled = true;
   try { await render(); } finally { $('make').disabled = false; }
 }
@@ -170,8 +156,8 @@ async function render(){
 }
 let SHARED = null;
 function draw(){
-  const card = SHARED ? SHARED.card : (ME && ME.verified ? ME.card : null), logo = SHARED ? SHARED.logo : (ME && ME.verified ? ME.logo : '');
-  $('out').innerHTML = PT.reportHtml(LAST, { card, logo, shared: !!(SHARED || PLAIN) });
+  const card = SHARED ? SHARED.card : (ME && ME.ready ? ME.card : null), logo = SHARED ? SHARED.logo : (ME && ME.ready ? ME.logo : '');
+  $('out').innerHTML = PT.reportHtml(LAST, { card, logo, shared: !!(SHARED || PLAIN), pw: SHARED ? SHARED.pw !== false : true });
   $('acts').hidden = false;
   document.title = LAST.apt + ' ' + LAST.band + ' 단지 리포트 | ' + SITE;
 }
@@ -182,7 +168,7 @@ async function link(){
   if (PLAIN) return location.href;
   if (LINK) return LINK;
   const base = location.origin + location.pathname;
-  if (ME && ME.verified){
+  if (ME && ME.ready){
     const r = await PT.post({ action: 'ptShare', unit: ST, client: $('client').value.trim(), days: 90 });
     LINK = base + '#v=' + r.id + '.' + r.token;
     $('shareH').textContent = '링크는 ' + r.expires + '까지 열려요.';
@@ -194,8 +180,8 @@ $('copy').onclick = async () => { try { const u = await link(); const ok = await
 $('share').onclick = async () => {
   JDJ.track && JDJ.track('agent_pro_report_share', {});
   try {
-    const u = await link(), card = SHARED ? SHARED.card : (ME && ME.verified ? ME.card : null);
-    const r = await PR.share({ title: LAST.apt + ' ' + LAST.band + ' 단지 리포트' + (card ? ' · ' + card.office : ''), desc: '시세 흐름·최근 거래·전세가율·주변 단지·입주 물량을 한 번에', url: u });
+    const u = await link(), card = SHARED ? SHARED.card : (ME && ME.ready ? ME.card : null);
+    const r = await PR.share({ title: LAST.apt + ' ' + LAST.band + ' 단지 리포트' + (card ? ' · ' + PT.titleOf(card) : ''), desc: '시세 흐름·최근 거래·전세가율·주변 단지·입주 물량을 한 번에', url: u });
     $('shareH').textContent = r === 'copy' ? '링크를 복사했어요. 카카오톡 대화방에 붙여 넣으세요.' : r === 'fail' ? u : $('shareH').textContent;
   } catch (e) { $('shareH').textContent = e.message; }
 };
