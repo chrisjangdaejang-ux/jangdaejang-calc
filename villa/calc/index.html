@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="../../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
+<title>재개발·재건축 분담금·수익 계산기 — 권리가액·분담금·총 투입금 | 집예보</title>
+<link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/villa/calc/">
+<meta name="description" content="감정평가액·비례율·조합원 분양가·매수가를 넣으면 권리가액, 분담금, 총 투입금, 처음 필요한 현금을 계산식과 함께 보여 드려요. 가까운 새 아파트 실거래로 완공 뒤 비교 기준도 함께 볼 수 있어요.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="재개발·재건축 분담금·수익 계산기 | 집예보">
+<meta property="og:description" content="권리가액 = 감정평가액 × 비례율, 분담금 = 조합원 분양가 − 권리가액 — 계산식을 그대로 보여 드려요.">
+<meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/villa/calc/">
+<meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/villa.png">
+<meta property="og:locale" content="ko_KR">
+<script>window.JDJ_CONFIG = { tool:'redev-calc', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../assets/track.js?v=3"></script>
+<script src="../../assets/config.js?v=11"></script>
+<script src="../../assets/redev-core.js?v=3"></script>
+<script src="../../assets/redev-calc.js?v=1"></script>
+<link rel="stylesheet" href="../../assets/aplus.css?v=50">
+<link rel="stylesheet" href="../../assets/redev-zone.css?v=1">
+<script src="../../assets/tabbar.js?v=8" defer></script>
+<script src="../../assets/back.js?v=1" defer></script>
+<style>
+.cf{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin:12px 0}
+.cf h2{font-size:18px;font-weight:900;margin:0 0 10px}
+.fld{margin:0 0 12px}
+.fld label{display:flex;justify-content:space-between;font-size:15px;font-weight:900;margin-bottom:6px}
+.fld label small{font-weight:700;color:var(--muted)}
+.inp{display:flex;align-items:center;border:1px solid var(--line);border-radius:12px;background:#fff;min-height:50px;padding:0 12px}
+.inp:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(67,56,202,.15)}
+.inp input{flex:1;min-width:0;border:0;outline:0;font:inherit;font-size:17px;font-weight:700;background:none;color:var(--ink)}
+.inp span{color:var(--muted);font-weight:700;font-size:15px;flex:none;margin-left:6px}
+.fld p{font-size:13.5px;color:var(--muted);line-height:1.55;margin:6px 0 0;word-break:keep-all}
+.fld .eok{color:var(--blue);font-weight:700}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.two>.fld,.inp{min-width:0}
+.inp input{width:100%}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.seg button{min-height:46px;border:1px solid var(--line);border-radius:12px;background:#fff;font:inherit;font-size:15px;font-weight:900;color:var(--sub2);cursor:pointer}
+.seg button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.res{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.res div{background:#F7F8FA;border-radius:14px;padding:10px 12px}
+.res div.big{grid-column:1/-1;background:var(--blue-l)}
+.res span{display:block;font-size:13.5px;color:var(--muted);font-weight:700}
+.res b{display:block;font-size:19px;font-weight:900;letter-spacing:-.02em;margin-top:2px}
+.res .big b{font-size:24px;color:var(--blue)}
+.miss{background:#FFF7ED;color:#7C2D12;border-radius:12px;padding:12px;font-size:14.5px;line-height:1.6}
+details.how{margin-top:10px;border-top:1px dashed var(--line);padding-top:6px}
+details.how summary{cursor:pointer;font-weight:900;color:var(--blue);min-height:44px;display:flex;align-items:center}
+.stp{list-style:none;margin:0;padding:0}
+.stp li{padding:8px 0;border-bottom:1px solid var(--line2);font-size:14.5px;line-height:1.55}
+.stp li b{display:block}
+.stp li code{font-family:inherit;color:var(--muted)}
+.rng{position:relative;height:44px;margin:14px 0 4px}
+.rng .bar{position:absolute;top:16px;height:12px;border-radius:6px;background:#C7D2FE}
+.rng .tick{position:absolute;top:8px;width:3px;height:28px;background:#C2410C;border-radius:2px}
+.rng .lab{position:absolute;top:-8px;font-size:12.5px;font-weight:900;white-space:nowrap;transform:translateX(-50%)}
+.zpick{display:flex;gap:6px}
+.zpick input{flex:1;min-height:46px;border:1px solid var(--line);border-radius:12px;padding:0 12px;font:inherit;font-size:16px}
+@media(min-width:960px){.cgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 20px;align-items:start}.cgrid .side{position:sticky;top:70px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a>
+  <div class="badge plain">재개발·재건축</div>
+</header>
+<main class="wrap">
+  <span class="tag">분담금·수익 계산기</span>
+  <h1 class="zh1">내 돈이 얼마나 들어갈까요?</h1>
+  <p class="lead">조합 자료의 숫자를 넣으면 권리가액·분담금·총 투입금을 계산해 드려요. 집예보가 미리 넣어 둔 가정값은 없어요. 계산식은 아래 '계산식 보기'에 그대로 있어요.</p>
+  <div class="cf" id="zbox">
+    <h2>어느 구역인가요? <small style="font-size:13.5px;color:var(--muted)">(선택)</small></h2>
+    <div id="zinfo"></div>
+    <div class="zpick"><input id="zq" list="zlist" placeholder="구역 이름 넣기 (예: 한남3)" autocomplete="off" aria-label="구역 이름"><datalist id="zlist"></datalist></div>
+    <p class="note">구역을 고르면 그 구역의 단계·판정과, 가까운 새 아파트 실거래로 본 완공 뒤 비교 기준을 함께 보여 드려요.</p>
+  </div>
+  <div class="cgrid">
+  <div>
+  <div class="cf">
+    <h2>① 조합 자료</h2>
+    <div class="fld"><label for="appr">감정평가액(종전자산) <small>만 원</small></label><div class="inp"><input id="appr" inputmode="numeric" placeholder="예: 30000 또는 3억"><span>만 원</span></div>
+      <p>조합이 보낸 감정평가 통지서의 금액이에요. 아직 감정평가 전이면 비슷한 구역 사례를 참고해 직접 넣어 보세요(집예보는 추정하지 않아요). <span class="eok" data-for="appr"></span></p></div>
+    <div class="fld"><label for="ratio">비례율 <small>%</small></label><div class="inp"><input id="ratio" inputmode="decimal" placeholder="예: 100"><span>%</span></div>
+      <p>관리처분계획(또는 사업시행계획)에 나온 비율이에요. 100%보다 크면 감정평가액보다 권리가액이 커져요.</p></div>
+    <div class="two">
+      <div class="fld"><label for="mem">조합원 분양가 <small>만 원</small></label><div class="inp"><input id="mem" inputmode="numeric" placeholder="예: 80000"><span>만 원</span></div><p><span class="eok" data-for="mem"></span></p></div>
+      <div class="fld"><label for="area">받을 집 전용면적</label><div class="inp"><input id="area" inputmode="decimal" placeholder="예: 84"><span>㎡</span></div></div>
+    </div>
+  </div>
+  <div class="cf">
+    <h2>② 내 거래</h2>
+    <div class="seg" role="group" aria-label="넣는 방식"><button type="button" id="mBuy" class="on">매수가로 넣기</button><button type="button" id="mPrem">프리미엄으로 넣기</button></div>
+    <div class="fld" id="fBuy"><label for="buy">매수가 <small>만 원</small></label><div class="inp"><input id="buy" inputmode="numeric" placeholder="예: 60000"><span>만 원</span></div><p>프리미엄(P) = 매수가 − 권리가액으로 계산해요. <span class="eok" data-for="buy"></span></p></div>
+    <div class="fld" id="fPrem" hidden><label for="prem">프리미엄(P) <small>만 원</small></label><div class="inp"><input id="prem" inputmode="numeric" placeholder="예: 30000"><span>만 원</span></div><p>매수가 = 권리가액 + 프리미엄으로 계산해요. <span class="eok" data-for="prem"></span></p></div>
+    <div class="two">
+      <div class="fld"><label for="dep">끼고 사는 전세 <small>만 원</small></label><div class="inp"><input id="dep" inputmode="numeric" placeholder="없으면 0"><span>만 원</span></div></div>
+      <div class="fld"><label for="tax">취득세 등 <small>만 원</small></label><div class="inp"><input id="tax" inputmode="numeric" placeholder="없으면 0"><span>만 원</span></div><p><a href="../../tax/">취득세 계산기에서 구하기 ›</a></p></div>
+    </div>
+  </div>
+  <div class="cf">
+    <h2>③ 기간·대출</h2>
+    <div class="two">
+      <div class="fld"><label for="loan">대출 <small>만 원</small></label><div class="inp"><input id="loan" inputmode="numeric" placeholder="없으면 0"><span>만 원</span></div><p><a href="../../loan/">대출 한도 계산 ›</a></p></div>
+      <div class="fld"><label for="rate">대출 이자율 <small>연 %</small></label><div class="inp"><input id="rate" inputmode="decimal" placeholder="예: 4.2"><span>%</span></div></div>
+    </div>
+    <div class="fld"><label for="months">입주까지 기간 <small>개월</small></label><div class="inp"><input id="months" inputmode="numeric" placeholder="예: 72"><span>개월</span></div><p id="mHint">입주까지 걸리는 기간이에요. 기간 이자를 계산하는 데만 써요.</p></div>
+  </div>
+  </div>
+  <div class="side">
+  <div class="cf" id="out" aria-live="polite"></div>
+  <div class="cf" id="after" hidden></div>
+  <div class="cf" id="rules" hidden></div>
+  </div>
+  </div>
+  <p class="note">넣은 숫자로 계산한 참고값이에요. 실제 분담금은 관리처분계획과 총회에서 정해지고 공사비·사업비 변동에 따라 달라져요. 집예보는 매수를 권하지 않아요. 넣은 숫자는 이 기기에만 남고 어디에도 보내지 않아요.</p>
+</main>
+<div class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="../../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집예보 · <a href="../../">홈</a></div>
+<script src="../../assets/redev-calc-page.js?v=1"></script>
+</body>
+</html>

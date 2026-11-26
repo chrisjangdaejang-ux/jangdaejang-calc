@@ -693,7 +693,7 @@ function hzUi(){ const r=$('hzr'); if(r){ r.value=HZ; rangeP(r); } const v=$('hz
       : esc(PL.trackRef(mm, main, { label: main+'년 점수' })); }
   const used=mix.map(x=>x[0]+'년'), sel=hzLbl(HZ);
   let t;
-  if (HZ>=10) t=`10년 이상은 과거 자료로 맞춰 볼 수 있는 범위를 넘어 <b>장기 전망</b>으로 봐 주세요. 과거에 써 봤을 때 잘 맞은 가장 긴 ${used.join('·')} 예측에 재건축 완료 시 기대 차익·예상 준공, 신설역 개통 계획을 함께 보여 드려요.`;
+  if (HZ>=10) t=`10년 이상은 과거 자료로 맞춰 볼 수 있는 범위를 넘어 <b>장기 전망</b>으로 봐 주세요. 과거에 써 봤을 때 잘 맞은 가장 긴 ${used.join('·')} 예측에 재건축 뒤 비교 기준(같은 구 새 아파트 시세), 신설역 개통 계획을 함께 보여 드려요.`;
   else if (mix.length>1) t=`${sel} 기준 점수는 과거에 써 봤을 때 잘 맞은 ${used.join('·')} 예측을 기간 비율대로 섞어 계산했어요.`;
   else if (main===HZ) t=`${sel} 동안 같은 구 안에서 더 오를 단지를 따로 학습한 점수예요. 과거 여러 때에 그때까지의 자료만으로 예측한 뒤 실제 ${sel} 뒤 시세와 맞춰 봤어요.`;
   else if (MH&&MH[HZ]) t=`${esc(PL.trackRef(MH[HZ], HZ))} 대신 가장 가까운 잘 맞은 <b>${main}년 예측</b>을 보여 드려요.`;
@@ -857,8 +857,8 @@ function futureReasons(x){
   if (f.sub!=null){
     r.push(['f', f.sub>=30 ? '지하철역이 걸어가기엔 먼 편(도보 20분 이상) — 버스·자차 위주 생활권'
       : `${f.subs?f.subs.replace(/\s+/g,' '):'지하철역'}까지 도보 ${f.sub<=5?'5분 이내':f.sub+'분 이내'}` + (f.sub<=10?' — 역세권':'')]); }
-  if (f.eg){
-    const g=f.eg.v-f.eg.b-f.eg.p, ln=['f', `재건축 완료 시${f.eg.done?`(예상 준공 ${f.eg.done}년 전후)`:''} 기대 차익 약 ${g>=0?'+':'−'}${fmtS(Math.abs(g))} — 지역 신축 시세로 본 같은 평형 가치 ${fmtS(f.eg.v)}, 예상 분담금 ${f.eg.b>=0?fmtS(f.eg.b):'환급 '+fmtS(-f.eg.b)}, 현재가 ${fmtS(f.eg.p)} (간이 추정 — 기부채납·임대주택·사업비에 따라 달라질 수 있어요)`];
+  if (f.eg && f.eg.v>0 && f.eg.p>0){
+    const ln=['f', `재건축 뒤 비교 기준: 같은 구 지은 지 5년 안 된 아파트 시세(3.3㎡당 중간값) × 이 평형 전용면적 = ${fmtS(f.eg.v)} · 지금 시세 ${fmtS(f.eg.p)} (국토교통부 실거래 기준). 분담금은 조합 자료가 있어야 알 수 있어 빼고 보여 드려요 — 분담금·수익 계산기에서 직접 넣어 볼 수 있어요.`];
     if (HZ<=2) r.push(ln); else r.unshift(ln);
   }
   if (f.rz && !(f.by && PL.ageOf(f.by)>=25 && (f.land || f.vl || f.landavg))) r.unshift(['f', rzText(f.rz), EVK(x,'stg')]);
@@ -1088,8 +1088,8 @@ async function renderCompare(){
       items.map(x=>x.fx&&x.fx.rz?x.fx.rz.lv:(x.code.startsWith('11')&&x.fx&&x.fx.by&&PL.ageOf(x.fx.by,Y)>=25?0:null)), true);
   }
   if (items.some(x=>x.fx&&x.fx.eg)){
-    add('재건축 완료 시 기대 차익', items.map(x=>{ const e=x.fx&&x.fx.eg; if(!e) return '-'; const g=e.v-e.b-e.p; return `${g>=0?'+':'−'}${fmtS(Math.abs(g))}<small>${e.done?`예상 준공 ${e.done}년 전후 · `:''}완공 가치 ${fmtS(e.v)} · 분담금 ${e.b>=0?fmtS(e.b):'환급'}</small>`; }),
-      items.map(x=>x.fx&&x.fx.eg?(x.fx.eg.v-x.fx.eg.b-x.fx.eg.p)/x.fx.eg.p:null), true);
+    add('재건축 뒤 비교 기준', items.map(x=>{ const e=x.fx&&x.fx.eg; if(!e||!(e.v>0)) return '-'; return `${fmtS(e.v)}<small>같은 구 5년 안 새 아파트 시세 중간값 × 전용 · 지금 시세 ${fmtS(e.p)} · 분담금 빼고</small>`; }),
+      null);
   }
   if (items.some(x=>x.fx&&x.fx.by&&PL.ageOf(x.fx.by,Y)>=25)){
     add('재건축 사업성', items.map(x=>{ const f=x.fx||{}; if(!f.by||!(PL.ageOf(f.by,Y)>=25)) return '-<small>해당 없음</small>'; const gr=f.rbp==null?'':(f.rbp>=70?'좋은 편':f.rbp>=30?'보통':'낮은 편');
@@ -1312,7 +1312,7 @@ async function render(){
         <li><b>가격의 체력</b> — 하락기에 얼마나 버텼는지, 직전 고점을 얼마나 회복했는지, 최근 흐름이 완만한지 가파른지를 실거래로 확인해요.</li>
         <li><b>교통</b> — 기존 역까지의 거리와, 국토교통부·지자체가 공식 발표한 신설 노선의 진행 단계(계획·착공·개통 등)를 반영해요. 같은 호재라도 단계에 따라 가격에 반영되는 시점이 다르다는 점을 과거 사례로 확인했어요.</li>
         <li><b>공급</b> — 주변에 발표된 신도시·공공택지와 지역 입주 물량, 미분양을 봐요. 대규모 입주는 일정 기간 매물과 전세 공급을 늘리기 때문에, 선택하신 보유 기간과 입주 일정이 겹치는지 함께 알려 드려요.</li>
-        <li><b>재건축·재개발</b> — 서울시·국토교통부·부산시 공식 자료로 정비사업이 어느 단계까지 왔는지, 대지지분과 용적률로 본 사업성, 완공 후 예상 가치와 분담금을 반영한 기대 차익을 봐요.</li>
+        <li><b>재건축·재개발</b> — 서울시·국토교통부·부산시 공식 자료로 정비사업이 어느 단계까지 왔는지, 대지지분과 용적률로 본 사업성, 같은 구 새 아파트 시세로 본 완공 뒤 비교 기준을 봐요(분담금은 조합 자료가 있어야 알 수 있어 분담금·수익 계산기에서 직접 넣어요).</li>
         <li><b>생활 수요</b> — 학군을 찾아 실제로 이사 오는 수요(교육부 학교알리미 공시), 단지 규모와 연식, 전세가율로 본 실거주 수요, 거래가 꾸준한지를 봐요.</li>
         <li><b>지역 전망</b> — 통계청·국토교통부 자료로 인구·세대, 일자리, 공급 부담을 봐서 어느 지역이 더 유리한지 함께 판단해요.</li>
         <li><b>예상 보유 기간</b> — 1년·2년·3년·5년·7년 예측을 각각 따로 학습해, 선택하신 기간에 맞는 점수를 보여 드려요. 기간이 길수록 중요한 요인이 달라지기 때문이에요. 과거에 그대로 써 봤을 때 잘 맞은 기간만 사용하고, 10년 이상은 과거 자료로 맞춰 볼 수 있는 범위를 넘는 장기 전망으로 따로 안내해요.</li>

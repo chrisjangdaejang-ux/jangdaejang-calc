@@ -84,7 +84,7 @@
         regionUsed: !!(ctx.MODEL && ctx.MODEL.region && ctx.MODEL.region.used), IX, code: x.code, hzOk: hz });
       if (hg) r.push(['f', '보유 기간별 차이: ' + hg]); }
     if (f.rz) r.push(['f', PL.rzText(f.rz, G, ym), EV('stg')]);
-    if (f.eg) { const g = f.eg.v - f.eg.b - f.eg.p; r.push(['f', `재건축이 끝나면${f.eg.done ? `(예상 준공 ${f.eg.done}년 전후)` : ''} 기대 차익은 약 ${g >= 0 ? '+' : '−'}${PL.eokR(Math.abs(g))}이에요 — 지역 새 아파트 시세로 본 같은 평형 가치 ${PL.eokR(f.eg.v)}, 예상 분담금 ${f.eg.b >= 0 ? PL.eokR(f.eg.b) : '환급 ' + PL.eokR(-f.eg.b)}, 지금 시세 ${PL.eokR(f.eg.p)} (간이 추정)`]); }
+    if (f.eg && f.eg.v > 0 && f.eg.p > 0) r.push(['f', `재건축 뒤 비교 기준: 같은 구에서 지은 지 5년 안 된 아파트 시세(3.3㎡당 중간값)로 본 같은 평형 가치 ${PL.eokR(f.eg.v)} · 지금 시세 ${PL.eokR(f.eg.p)} — 계산식: 같은 구 새 아파트 3.3㎡당 시세 중간값 × 이 평형 전용면적(국토교통부 실거래 기준). 분담금은 조합 자료(감정평가액·비례율·조합원 분양가)가 있어야 알 수 있어 빼고 보여 드려요. 직접 넣어 계산하려면 집예보 '분담금·수익 계산기'(재개발·재건축 메뉴)를 써 보세요.`]);
     if (f.landavg || f.vl) r.push(['f', '재건축 사업성(단지): ' + [f.landavg ? `세대당 평균 대지지분 ${f.landavg}평` : '', f.vl ? `용적률 ${Math.round(f.vl)}%` : ''].filter(Boolean).join(' · ') + (f.land ? ` · 이 평형 대지지분 약 ${f.land}평` : '')]);
     const rg = PL.regionText(f, IX, x.code, G, ctx.EV);
     if (rg.fact || rg.why.length || rg.ref.length) r.push(['f', PL.regionLine(rg, `${sgg} 지역 흐름:`)]);

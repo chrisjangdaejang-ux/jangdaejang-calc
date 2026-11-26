@@ -18,7 +18,7 @@
     '': ['홈'],
     'buy/': ['내 집 마련 계산기'], 'buy/report/': ['맞춤 분석 리포트', 'buy/'],
     'switch/': ['갈아타기'], 'switch/rent/': ['전세 갈아타기', 'switch/'],
-    'villa/': ['재개발·빌라'], 'villa/zone/': ['재개발 구역 지도', 'villa/'],
+    'villa/': ['재개발·빌라'], 'villa/zone/': ['재개발 구역 지도', 'villa/'], 'villa/z/': ['재개발 구역 목록', 'villa/zone/'], 'villa/calc/': ['분담금 계산기', 'villa/zone/'],
     'chungyak/': ['청약'], 'chungyak/price/': ['분양가·입지 분석', 'chungyak/'], 'cy/': ['청약 공고', 'chungyak/'],
     'bunyang/': ['분양'], 'bunyang/agency/': ['분양대행 의뢰', 'bunyang/'], 'bunyang/apply/': ['분양 광고 신청', 'bunyang/'], 'partner/': ['분양 판매 파트너', 'bunyang/'],
     'tax/': ['세금'], 'tax/transfer/': ['넘기는 방법 비교', 'tax/'], 'tax/count/': ['주택 수 판정', 'tax/'], 'tax/cost/': ['살 때·팔 때 드는 돈', 'tax/'], 'tax/changes/': ['세법 바뀌는 날', 'tax/'],
@@ -68,6 +68,7 @@
     if ((m = /^apt\/(\d{5})\/(\d+\/)?$/.exec(rel))) return { name: '지역 아파트 목록', parent: 'apt/' };
     if ((m = /^apt\/(\d{5})\/[^/]+\/$/.exec(rel))) return { name: '단지 정보', parent: 'apt/' + m[1] + '/' };
     if (/^comm\/\d{5}\/$/.test(rel)) return { name: '지역 상가·건물', parent: 'comm/' };
+    if (/^villa\/z\/[^/]+\/$/.test(rel)) return { name: '구역 페이지', parent: 'villa/z/' };
     if (/^cy\/\d+\/$/.test(rel)) return { name: '청약 공고 상세', parent: 'cy/' };
     if (/^weekly\/\d{4}-\d{2}\/$/.test(rel)) return { name: '지난 주간 동향', parent: 'weekly/' };
     return { name: '', parent: null };

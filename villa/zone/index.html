@@ -30,6 +30,7 @@
 <script src="../../assets/counsel.js?v=6"></script>
 <script src="../../assets/map-engine.js?v=3"></script>
 <script src="../../assets/redev-core.js?v=3"></script>
+<script src="../../assets/redev-calc.js?v=1"></script>
 <script src="../../assets/alerts-core.js?v=5"></script>
 <script src="../../assets/proactive.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -44,7 +45,7 @@ h1 em{font-style:normal;color:var(--blue)}
 .tag{display:block;color:var(--blue);font-size:13.5px;font-weight:900;letter-spacing:.08em}
 .fl{display:grid;gap:8px;margin:0 0 10px}
 .fl .k{font-size:13.5px;font-weight:700;color:var(--muted)}
-.chips{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;scrollbar-width:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
 .chips::-webkit-scrollbar{display:none}
 .chip{flex:none;font:inherit;font-size:14.5px;font-weight:700;border:1px solid var(--line);background:#fff;color:var(--sub2);padding:0 14px;border-radius:999px;min-height:44px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
@@ -109,6 +110,28 @@ h1 em{font-style:normal;color:var(--blue)}
 .src{font-size:13.5px;color:var(--muted);margin-top:16px;line-height:1.6;word-break:keep-all}
 .src a{color:inherit}
 .back{display:inline-flex;align-items:center;min-height:44px;font-weight:700;color:var(--blue);text-decoration:none;font-size:14.5px}
+/* 휴대폰: 거르기는 아래에서 올라오는 시트로 접고 지도를 첫 화면 안에(2026-11-27 벤치마크 1-2) */
+.ftool{display:none}
+.fsum{font-size:13.5px;color:var(--muted);margin:0 0 8px;word-break:keep-all}
+.zlink{display:inline-flex;align-items:center;min-height:44px;font-size:14.5px;font-weight:900;color:var(--blue);text-decoration:none;margin-right:8px}
+@media(max-width:959px){
+  .wrap{padding-top:10px}
+  h1{font-size:22px;margin:2px 0 8px}
+  .lead,.wrap>.tag{display:none}
+  .ftool{display:grid;grid-template-columns:auto 1fr;gap:8px;margin:0 0 8px}
+  .ftool button{min-height:46px;padding:0 16px;border-radius:12px;border:1px solid var(--blue);background:var(--blue-l);color:var(--blue);font:inherit;font-size:15px;font-weight:900;cursor:pointer;white-space:nowrap}
+  .ftool input{min-height:46px;border:1px solid var(--line);border-radius:12px;padding:0 12px;font:inherit;font-size:16px;min-width:0}
+  .fl{position:fixed;left:0;right:0;bottom:0;z-index:1100;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.18);padding:8px 16px 18px;max-height:78vh;overflow-y:auto;transform:translateY(105%);transition:transform .22s ease;margin:0}
+  .fl.open{transform:none}
+  .fl .grab{display:block;width:44px;height:5px;border-radius:3px;background:#D1D6DB;margin:2px auto 8px}
+  .fl .fhead{display:flex;justify-content:space-between;align-items:center;font-weight:900;font-size:17px}
+  .fl .fdone{min-height:48px;width:100%;border:0;border-radius:14px;background:var(--blue);color:#fff;font:inherit;font-size:16px;font-weight:900;margin-top:6px;cursor:pointer}
+  .fl .row2 input{display:none}
+  .fl .row2{grid-template-columns:1fr}
+  .fdim{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:1090}
+  #map{height:52vh}
+}
+@media(min-width:960px){.fl .grab,.fl .fhead,.fl .fdone,.fdim{display:none!important}}
 </style>
 <script src="../../assets/back.js?v=1" defer></script>
 </head>
@@ -122,7 +145,11 @@ h1 em{font-style:normal;color:var(--blue)}
   <h1>이 구역, <em>착공</em>까지 얼마나 남았을까요?</h1>
   <p class="lead">서울 재개발·재건축 구역의 지금 단계와 단계별 실제 날짜를 보여 드려요. 과거 비슷한 구역이 착공까지 몇 년 걸렸는지 모아, 구역마다 착공 예상 시기도 함께 보여 드려요.</p>
 
-  <div class="fl">
+  <div class="ftool"><button type="button" id="fOpen" aria-controls="fSheet" aria-expanded="false">거르기</button><input id="fQm" placeholder="구역·동 이름 찾기" autocomplete="off" aria-label="구역·동 이름 찾기"></div>
+  <p class="fsum" id="fSum"></p>
+  <div class="fl" id="fSheet" role="dialog" aria-label="구역 거르기">
+    <span class="grab" aria-hidden="true"></span>
+    <div class="fhead">거르기<button type="button" class="more" id="fReset">처음으로</button></div>
     <span class="k">사업 종류</span>
     <div class="chips" id="fType" role="group" aria-label="사업 종류"></div>
     <span class="k">진행 단계</span>
@@ -133,6 +160,7 @@ h1 em{font-style:normal;color:var(--blue)}
       <select id="fGu" aria-label="구 고르기"><option value="">서울 전체</option></select>
       <input id="fQ" placeholder="구역·동 이름 찾기" autocomplete="off" aria-label="구역·동 이름 찾기">
     </div>
+    <button type="button" class="fdone" id="fDone">구역 보기</button>
   </div>
 
   <div class="lay">
@@ -140,6 +168,7 @@ h1 em{font-style:normal;color:var(--blue)}
       <div id="map" role="region" aria-label="구역 지도"></div>
       <div class="legend" id="legend"></div>
       <p class="mapnote" id="mapNote"></p>
+      <p><a class="zlink" href="../z/">서울 밖·소규모 정비까지 전국 구역 목록 ›</a><a class="zlink" href="../calc/">분담금·수익 계산기 ›</a></p>
     </div>
     <div>
       <div class="sum" id="sum"></div>
@@ -161,7 +190,7 @@ h1 em{font-style:normal;color:var(--blue)}
 var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 (function () {
   'use strict';
-  const R = window.JDJ_REDEV, esc = R.esc, $ = id => document.getElementById(id);
+  const R = window.JDJ_REDEV, RC = window.JDJ_RCALC, esc = R.esc, $ = id => document.getElementById(id);
   const S = { type: '', stage: '', gu: '', q: '', mv: false, ok: false, sort: 'soon', shown: 20, sel: null };
   let D = null, MAP = null, SH = [], PINS = [];
   const track = (n, p) => { try { if (window.JDJ_TRACK) JDJ_TRACK.event(n, p || {}); } catch (e) {} };
@@ -182,7 +211,16 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
       S.shown = 20; track('redev_filter', { f: k }); draw();
     };
     $('fGu').onchange = () => { S.gu = $('fGu').value; S.shown = 20; draw(true); };
-    let tq; $('fQ').oninput = () => { clearTimeout(tq); tq = setTimeout(() => { S.q = $('fQ').value.trim(); S.shown = 20; draw(true); }, 250); };
+    let tq; const onQ = el => () => { clearTimeout(tq); tq = setTimeout(() => { S.q = el.value.trim(); $('fQ').value = $('fQm').value = S.q; S.shown = 20; draw(true); }, 250); };
+    $('fQ').oninput = onQ($('fQ')); $('fQm').oninput = onQ($('fQm'));
+    /* 휴대폰 거르기 시트 */
+    const sheet = $('fSheet');
+    const openSheet = on => { sheet.classList.toggle('open', on); $('fOpen').setAttribute('aria-expanded', on); let d = document.querySelector('.fdim');
+      if (on && !d) { d = document.createElement('div'); d.className = 'fdim'; d.onclick = () => openSheet(false); document.body.appendChild(d); } else if (!on && d) d.remove();
+      if (on) track('redev_filter_sheet', {}); };
+    $('fOpen').onclick = () => openSheet(!sheet.classList.contains('open'));
+    $('fDone').onclick = () => { openSheet(false); $('map').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+    $('fReset').onclick = () => { Object.assign(S, { type: '', stage: '', gu: '', mv: false, ok: false, sort: 'soon', shown: 20 }); $('fGu').value = ''; draw(true); };
     $('list').onclick = e => {
       const m = e.target.closest('[data-more]'); if (m) { const z = byId(m.dataset.more); const box = m.parentElement.querySelector('.det'); if (box) { box.remove(); m.textContent = '단계 이력·자세히 보기'; } else { m.insertAdjacentHTML('afterend', detail(z)); m.textContent = '접기'; track('redev_detail', { id: z.id }); } return; }
       const fw = e.target.closest('[data-follow]'); if (fw && PRO) { const z = byId(fw.dataset.follow), r = PRO.toggleZone(z); track('redev_follow', { id: z.id, on: r.on ? 1 : 0 });
@@ -197,7 +235,18 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
   const byId = id => D.z.find(z => z.id === id);
 
   function current() { return R.sort(R.filter(D.z, S), S.sort); }
-  function draw(fit) { chips(); list(); shapes(fit); }
+  function draw(fit) { chips(); list(); shapes(fit); fsum(); }
+  /* 고른 조건 요약(휴대폰 첫 화면) — 단추에는 고른 조건 수 */
+  function fsum() {
+    const on = [];
+    if (S.type) on.push(S.type === 'sh' ? '신속통합기획' : R.TYPES[S.type]);
+    if (S.stage) on.push((R.SG.find(g => g[0] === S.stage) || [])[1]);
+    if (S.gu) on.push($('fGu').selectedOptions[0] ? $('fGu').selectedOptions[0].textContent : '');
+    if (S.ok) on.push('맞힌 기록 있는 예상만'); if (S.mv) on.push('이주 앞둔 구역 주변 전세');
+    $('fOpen').textContent = on.length ? `거르기 ${on.length}` : '거르기';
+    const n = D ? current().length : 0;
+    $('fSum').textContent = D ? `${on.length ? on.join(' · ') : '서울 전체'} · ${S.sort === 'stage' ? '단계 높은 순' : '착공 예상 빠른 순'} · ${n.toLocaleString('ko-KR')}곳` : '';
+  }
 
   function stageLine(z) {
     const on = z.t === 'nt' ? 0 : (z.st || 0);
@@ -217,7 +266,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
     const fly = z.pt ? `<button class="more" data-fly="${esc(z.id)}">지도에서 보기</button>` : '';
     return `<div class="zc${S.sel === z.id ? ' sel' : ''}" id="z-${esc(z.id)}"><div class="hd"><div><div>${tb}</div><div class="nm">${esc(z.n)}</div><div class="loc">${esc(loc)}${z.new ? ` · 새로 지을 집 ${z.new.toLocaleString('ko-KR')}세대` : ''}</div></div></div>
       ${stageLine(z)}${spBox(z)}
-      <button class="more" data-more="${esc(z.id)}">단계 이력·자세히 보기</button> ${fly}${followBtn(z)}</div>`;
+      <button class="more" data-more="${esc(z.id)}">단계 이력·자세히 보기</button> ${fly}${followBtn(z)}<br><a class="zlink" href="${JB.SITE}villa/z/${encodeURIComponent(RC.slug(z.id))}/" data-track="redev_to_zone_page">구역 페이지(고시·사업 정보·판정) ›</a></div>`;
   }
   /* 먼저 챙겨 드려요: 구역 따라보기(assets/proactive.js — 기능이 꺼져 있으면 버튼이 없음). 구역 id·단계 번호·이름만 저장 */
   const PRO = window.JDJ_PRO || null;
@@ -327,7 +376,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
     }
     const gus = {}; D.z.forEach(z => { if (z.g) gus[z.g] = z.gn; });
     $('fGu').innerHTML = '<option value="">서울 전체</option>' + Object.keys(gus).sort((a, b) => gus[a].localeCompare(gus[b], 'ko')).map(g => `<option value="${g}">${esc(gus[g])}</option>`).join('') + '<option value="" disabled>1기 신도시는 사업 종류에서 골라요</option>';
-    legend(); how(); src(); list();
+    legend(); how(); src(); list(); fsum();
     try { const q = new URLSearchParams(location.search).get('z'); const zq = q && byId(q); if (zq) setTimeout(() => pick(zq), 0); } catch (e) {}   // 알림 메일의 '구역 지도에서 보기'
     try {
       MAP = await window.JDJ_MAPE.create($('map'), { lat: 37.555, lng: 126.99, zoom: 11 });
