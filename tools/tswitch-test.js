@@ -158,6 +158,12 @@ const xy = JSON.parse(read('assets/xy/11.json'));
 check('위치 표: 서울 공동주택 1만 곳 넘음', Object.keys(xy.rows).length > 10000, true);
 check('위치 표: 헬리오시티(송파구 가락동 913) 좌표', Array.isArray(xy.rows['11710|가락동|913']), true);
 
+/* 2026-11-26 품질 점검: 음수 보증금·조사·문구 */
+{ const h = read('switch/rent/index.html');
+  check('전세 갈아타기: 음수 보증금(-5)을 5로 읽지 않음', /const num = v => \{ if \(\/\^\\s\*-\/\.test/.test(h), true);
+  check("전세 갈아타기: '집예보은(는)' 대신 받침에 맞는 조사", /\$\{esc\(SITE\)\}은\(는\)/.test(h), false);
+  check('전세 갈아타기: 남는 돈 설명이 더하기로 보이지 않음', h.includes('(보증금 차액 + 중개보수 + 이사비)'), false); }
+
 const bad = rows.filter(r => !r.ok);
 rows.forEach(r => console.log((r.ok ? 'ok   ' : 'FAIL ') + r.name + (r.ok ? '' : `  got=${JSON.stringify(r.got)} want=${JSON.stringify(r.want)}`)));
 console.log(`${rows.length - bad.length}/${rows.length} 통과`);

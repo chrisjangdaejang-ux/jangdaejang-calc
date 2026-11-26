@@ -386,11 +386,15 @@
       if (r.sd) q.set('sd', r.sd);
     } else if (hit.id === 'villa') {
       if (r.g) q.set('g', r.g);
+    } else if (hit.id === 'cy') {
+      /* '가점 64점' 처럼 점수가 있으면 질문을 건너뛰고 바로 단지별 진단(chungyak ?score=·sido=) */
+      const m = /(\d{1,2})\s*점/.exec(t); if (m && +m[1] <= 84) q.set('score', m[1]);
+      if (r.sdName) q.set('sido', r.sdName);
     }
     const qs = q.toString();
     if (qs) url += (url.indexOf('?') >= 0 ? '&' : '?') + qs;
     /* 화면 주소에 실제로 넣은 지역만 글자로(넣지 못한 지역을 넣은 것처럼 쓰지 않게) */
-    const gIn = q.has('g'), sdIn = q.has('sd') || gIn;
+    const gIn = q.has('g'), sdIn = q.has('sd') || q.has('sido') || gIn;
     const where = gIn ? (r.sdShort && r.gName.indexOf(r.sdShort) < 0 ? r.sdShort + ' ' : '') + r.gName : sdIn ? r.sdShort : '';
     return { id: hit.id, title: hit.title, desc: hit.desc, url, region: r, where, danjiOk: !!hit.danjiOk };
   }

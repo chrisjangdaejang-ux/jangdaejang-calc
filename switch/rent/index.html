@@ -236,7 +236,7 @@ const DATA = JB.DATA + 'data/', BASE = JB.SITE, $ = id => document.getElementByI
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ls = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
 const stat = (n, p) => { try { if (window.jdjStat) jdjStat(n, p || {}); } catch (e) {} };
-const num = v => { const n = parseInt(String(v || '').replace(/[^0-9]/g, ''), 10); return n > 0 && n < 10000000 ? n : 0; };
+const num = v => { if (/^\s*-/.test(String(v || ''))) return 0; const n = parseInt(String(v || '').replace(/[^0-9]/g, ''), 10); return n > 0 && n < 10000000 ? n : 0; };   // 음수(-5)를 5로 읽지 않게
 const today = () => new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
 const wa = w => { const c = String(w).charCodeAt(String(w).length - 1) - 0xAC00; return c >= 0 && c < 11172 && c % 28 ? '과' : '와'; };
 const won = T.won, ymDot = ym => ym ? `${String(ym).slice(0, 4)}.${String(ym).slice(4, 6)}` : '';
@@ -501,7 +501,7 @@ function costHtml(pl){
   const feeT = `중개보수(상한) ${won(pl.fee)}`;
   return `<div class="mc">${pl.mode === 'h' ? `<b>반전세로 가능해요</b> — 보증금 ${esc(won(pl.dep2))} + 월세 <b>${pl.rent.toLocaleString()}만 원</b> (이 단지 최근 1년 전월세 전환율 ${(pl.rate * 100).toFixed(1)}%, 월세 계약 ${pl.n}건 기준)<br>` : ''}
     보증금 차액 ${esc(sgn(pl.diff))} · ${esc(feeT)} · 이사비 ${pl.move ? esc(won(pl.move)) : '미입력'}<br>
-    <span class="tot">${pl.out >= 0 ? `이사에 새로 드는 돈 ${esc(won(Math.round(pl.out)))}` : `이사하고 남는 돈 ${esc(won(Math.round(-pl.out)))}`}</span> <small>(보증금 차액 + 중개보수 + 이사비)</small></div>`;
+    <span class="tot">${pl.out >= 0 ? `이사에 새로 드는 돈 ${esc(won(Math.round(pl.out)))}` : `이사하고 남는 돈 ${esc(won(Math.round(-pl.out)))}`}</span> <small>(보증금 차액·중개보수·이사비를 모두 따진 금액)</small></div>`;
 }
 function card(r, cur, cheap){
   const gl = (r.gains || []).map(g => `<li class="${g.k === 'safe' ? 'sf' : ''}">${esc(T.GAIN_T[g.k](g))}</li>`).join('');
@@ -545,7 +545,7 @@ function draw(){
   if (S.tab === 'better') {
     const keys = ['commute', 'commute2', 'st', 'by', 'area', 'sch', 'safe'].filter(k => (k !== 'commute' || L.work) && (k !== 'commute2' || L.work2) && (k !== 'sch' || L.kind === 'a') && (k !== 'safe' || !L.O.safeOnly));
     x += `<div class="fl" role="group" aria-label="걸러 보기">${keys.map(k => `<button type="button" data-n="${k}" aria-pressed="${S.need.includes(k)}">${esc(T.GAIN_NAME[k])}</button>`).join('')}</div>`;
-    x += `<p class="note">보증금이 예산 근처(${esc(won(nearLo))} 이상${L.O.rentMax ? ', 반전세 포함' : ''})인 곳 가운데${autoWide ? ` 후보가 적어 평형을 ${esc(nb)}까지 넓혀서` : S.wide ? ` 평형 ${esc(nb)}에서` : ''}, 넣은 조건에 맞는 곳을 조건에 맞춰 무게를 준 '나아지는 점'이 많은 순서로 보여 드려요${L.O.mode === 'transit' ? '(대중교통: 역 거리 두 배)' : ''}${L.O.hh === 'mid' || L.O.hh === 'high' ? '(자녀 중·고: 학군 두 배)' : ''}. 단추를 누르면 그 점이 나아진 곳만 보여 드려요.${cur && cur.loc !== 'apt' ? ' 지금 집 정확한 위치 자료가 없어 역까지 거리는 비교하지 않았어요.' : ''}${!L.fx && L.kind === 'a' ? ' 학군 지표는 불러오는 중이에요.' : ''} 이보다 많이 싼 곳은 '더 싼 집'에 있어요.</p>`;
+    x += `<p class="note">보증금이 예산 근처(${esc(won(nearLo))} 이상${L.O.rentMax ? ', 반전세 포함' : ''})인 곳 가운데${autoWide ? ` 후보가 적어 평형을 ${esc(nb)}까지 넓혀서` : S.wide ? ` 평형 ${esc(nb)}에서` : ''}, 넣은 조건에 무게를 더 둔 '나아지는 점'이 많은 순서로 보여 드려요${L.O.mode === 'transit' ? '(대중교통: 역 거리 두 배)' : ''}${L.O.hh === 'mid' || L.O.hh === 'high' ? '(자녀 중·고: 학군 두 배)' : ''}. 단추를 누르면 그 점이 나아진 곳만 보여 드려요.${cur && cur.loc !== 'apt' ? ' 지금 집 정확한 위치 자료가 없어 역까지 거리는 비교하지 않았어요.' : ''}${!L.fx && L.kind === 'a' ? ' 학군 지표는 불러오는 중이에요.' : ''} 이보다 많이 싼 곳은 '더 싼 집'에 있어요.</p>`;
   } else x += `<p class="note">같은 평형(${esc(L.band || (cur && cur.b) || '')})에서 ${L.work ? '출퇴근 거리가 지금보다 1km 넘게 멀어지지 않는' : '지금 집에서 직선 2km 안에 있는'} 곳 가운데, 최근 전세가 ${L.refBy === 'cur' ? '지금 단지 최근 전세' : '내 보증금'}(${esc(won(L.ref))})보다 낮은 곳을 아끼는 금액 순으로 보여 드려요.</p>`;
   if (!list.length) x += S.tab === 'better' && !S.need.length
     ? `<div class="empty"><b>예산 근처에 맞는 곳이 없어요.</b><br>조건을 넓혀 볼까요?<div class="acts" style="justify-content:center">${L.band && !S.wide ? '<button type="button" data-x="wide">평형 범위 넓히기</button>' : ''}${S.mode === 'areas' && S.areas.length < 5 ? '<button type="button" data-x="dong">인근 동 추가</button>' : ''}${!S.long ? '<button type="button" data-x="long">기간 늘리기(24개월)</button>' : ''}</div></div>`
