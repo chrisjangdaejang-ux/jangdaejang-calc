@@ -14,7 +14,7 @@
   var on = ENABLED || /[?&]preview=rates(&|$)/.test(location.search);
   var box = document.getElementById('rateTable');
   if (!on || !box) return;
-  var JB = window.JDJ_BASE || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0; return { DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; })(location.pathname);
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
   var pct = function (v) { return v == null || !isFinite(+v) ? '-' : (+v).toFixed(2) + '%'; };
   var tab = 'mortgage', D = null;
