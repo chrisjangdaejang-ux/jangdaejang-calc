@@ -105,8 +105,21 @@ select.chip.on{background-color:var(--blue-l)}
 .fab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .fab.busy{color:var(--blue)}
 /* 아래쪽 안내·범례 */
-.mstat{position:absolute;left:calc(var(--ml) + (100% - var(--ml)) / 2);top:calc(var(--mt) + 8px);transform:translateX(-50%);z-index:25;width:max-content;max-width:min(calc(100% - 24px),520px);box-sizing:border-box;background:var(--text);color:#fff;font-size:13px;font-weight:500;line-height:1.45;padding:6px 12px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.18);text-align:center;pointer-events:none}   /* 안내는 지도 위쪽 가운데 — 아래 왼쪽 카카오 로고·축척을 가리지 않게 */
+/* 지도 위 안내: 왼쪽 위 작은 칩('평당가 기준 ⓘ') — 누르면 설명 카드. 처음 한 번만 3초 동안 한 줄 요약을 보여 주고 칩으로 줄어듦.
+   불러오는 중·자료 없음 같은 알림은 같은 자리의 작은 반투명 한 줄 */
+.mstat{position:absolute;left:calc(var(--ml) + 12px);top:calc(var(--mt) + 8px);z-index:27;max-width:calc(100% - var(--ml) - 76px);display:flex;pointer-events:none}
 .mstat:empty{display:none}
+.mstat .mnote{background:rgba(25,31,40,.78);color:#fff;font-size:12.5px;font-weight:500;line-height:1.45;padding:5px 11px;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.15);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.mstat .mchip{pointer-events:auto;position:relative;display:inline-flex;align-items:center;gap:5px;max-width:100%;min-height:30px;padding:0 10px 0 11px;border:0;border-radius:999px;background:rgba(25,31,40,.72);color:#fff;font:inherit;font-size:12.5px;font-weight:700;line-height:1;white-space:nowrap;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.15);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);transition:background .2s;-webkit-tap-highlight-color:transparent}
+.mstat .mchip::before{content:'';position:absolute;left:0;right:0;top:-7px;bottom:-7px}   /* 누르는 자리는 44px 높이 */
+.mstat .mchip .t{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.mstat .mchip .i{flex:none;font-size:13px;opacity:.9}
+.mstat .mchip.tst{font-weight:500;background:rgba(25,31,40,.84)}
+.mstat .mchip[aria-expanded="true"]{background:var(--blue)}
+.mpop{position:absolute;left:calc(var(--ml) + 12px);top:calc(var(--mt) + 46px);z-index:33;box-sizing:border-box;width:max-content;max-width:min(340px,calc(100% - var(--ml) - 24px));background:#fff;color:var(--text);border-radius:14px;box-shadow:0 6px 22px rgba(0,0,0,.2);padding:11px 40px 12px 14px;font-size:14px;line-height:1.6}
+.mpop[hidden]{display:none}
+.mpop b{display:block;font-size:13px;font-weight:800;color:var(--blue);margin-bottom:2px}
+.mpop .x{position:absolute;right:0;top:0;width:44px;height:44px;border:0;background:none;font:inherit;font-size:17px;color:var(--sub2);cursor:pointer}
 .legend{position:absolute;left:calc(var(--ml) + 12px);bottom:calc(var(--mb) + 40px);z-index:25;background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.14);padding:8px 10px;font-size:12.5px;color:var(--sub);display:flex;flex-direction:column;gap:3px;max-width:calc(100% - 84px)}
 .legend:empty{display:none}
 .legend span{display:flex;align-items:center;gap:6px;white-space:nowrap}
@@ -115,6 +128,16 @@ select.chip.on{background-color:var(--blue-l)}
 .legend .scl{display:flex;align-items:center;gap:3px;flex-wrap:wrap}
 .legend .scl i{width:10px;height:10px;border-radius:3px}
 .legend .sm{font-size:12px;color:var(--sub3);white-space:normal}
+/* 범례: 휴대폰(768px 이하)은 왼쪽 아래 작은 '범례' 단추로 접어 두고, 누르면 펼침(✕·바깥을 누르면 다시 접힘) */
+.legend.mob.fold{padding:0;background:none;box-shadow:none;border-radius:999px}
+.legend .lgpill{display:inline-flex;align-items:center;gap:5px;min-height:34px;padding:0 13px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.95);box-shadow:0 2px 8px rgba(0,0,0,.14);font:inherit;font-size:13px;font-weight:700;color:var(--sub);cursor:pointer;position:relative;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.legend .lgpill::before{content:'';position:absolute;left:0;right:0;top:-5px;bottom:-5px}
+.legend .lgpill i.lg-line{width:16px!important}
+.legend .lgpill em{font-style:normal;font-size:11.5px;font-weight:800;color:#5B3BE0;background:#F1EDFF;border-radius:999px;padding:1px 6px}
+.legend .lghd{display:flex;align-items:center;justify-content:space-between;margin:-4px -6px 0 0}
+.legend .lghd b{font-size:13px;font-weight:800;color:var(--text)}
+.legend .lgx{border:0;background:none;font:inherit;font-size:16px;color:var(--sub2);width:40px;height:36px;cursor:pointer;margin:-2px -4px -4px 0}
+.legend.mob .fib,.legend.mob .lgb{min-height:36px}
 .cmpbar{position:absolute;left:12px;right:70px;top:auto;bottom:40px;z-index:26;background:#fff;border:2px solid var(--blue);border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.14);padding:6px 6px 6px 12px;display:flex;align-items:center;gap:8px;font-size:14px}
 .cmpbar[hidden]{display:none}
 .cmpbar .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--sub)}
@@ -212,7 +235,7 @@ body.reg .cmpbar{display:none}
 .jm-b.rg.sel{outline:3px solid rgba(25,31,40,.85);outline-offset:1px}
 .legend i.dot,.legend .scl i.dot{width:11px;height:11px;border-radius:50%}
 .rp-hd .persel{max-width:none;flex:none}
-.mwrap.rp-open .mside,.mwrap.rp-open .legend{display:none}
+.mwrap.rp-open .mside,.mwrap.rp-open .legend,.mwrap.rp-open .mpop{display:none}
 @media(max-width:599px){.rp-per{display:none}.rp-hd .ttl{visibility:hidden}.jm-b.rg.s1{width:52px;height:52px}.jm-b.rg.s2{width:58px;height:58px}.jm-b.rg.s3{width:64px;height:64px}.jm-b.rg b{font-size:10.5px}.jm-b.rg span{font-size:12px}.jm-b.rg small{font-size:9.5px}}
 @media(min-width:600px){.rp-hd .persel{display:none}}
 /* 지도 위 말풍선 */
@@ -267,6 +290,7 @@ i.lg-dot{display:inline-block;width:13px;height:13px;border-radius:50%;backgroun
 .legend .fnr b{font-weight:800}
 .legend .fnr small{display:block;font-size:11.5px;color:var(--sub3)}
 .legend .lgb+.fut-lg{border-top:1px solid var(--line2);padding-top:2px;margin-top:2px}
+@media(min-width:769px){.legend{padding:4px 12px;gap:0}.legend .fib,.legend .lgb{min-height:34px}.legend .fnr{min-height:36px}}   /* PC: 범례는 펼친 채로, 낮게 */
 .sheet .kv dd b.due{display:block;font-size:17px;color:#5B3BE0;white-space:normal;line-height:1.4}
 .sheet .kv dd b.due+small{margin-bottom:6px}
 .sheet .kv dd b.stg{font-size:16px}
@@ -319,7 +343,14 @@ i.lg-dot{display:inline-block;width:13px;height:13px;border-radius:50%;backgroun
 .sheet .fxl b{font-size:15.5px}.sheet .fxl span{font-size:15px;font-weight:800;white-space:nowrap}.sheet .fxl small{display:block;font-size:12.5px;color:var(--sub2);font-weight:500}
 @media(min-width:720px){.srch,.row1{max-width:860px}}
 @media(min-width:768px){.row1{flex-wrap:nowrap;align-items:flex-start}.row1>.cr-box{flex:1 1 auto}.lgrp{display:flex;flex-wrap:wrap;align-items:center;gap:6px;flex:1 1 100%}.lgl{padding-left:2px}}
-@media(min-width:900px){.cmpbar{left:432px;right:84px}body.has-cmp .legend{transform:none}body.has-sheet .legend{left:432px}.mtop{padding:10px 16px}.sheet{left:16px;right:auto;bottom:40px;width:400px;max-height:calc(100% - var(--mt) - 56px);border-radius:20px}}
+@media(min-width:900px){.cmpbar{left:432px;right:84px}body.has-cmp .legend{transform:none}body.has-sheet .legend,body.has-sheet .mstat,body.has-sheet .mpop{left:432px}.mtop{padding:10px 16px}.sheet{left:16px;right:auto;bottom:40px;width:400px;max-height:calc(100% - var(--mt) - 56px);border-radius:20px}}
+/* 휴대폰: 지도를 더 넓게 — 위 소식 한 줄은 낮게(닫기 ✕ 가능, 이 화면에서만), 이전으로 줄 여백 줄임 */
+.mtop .jas.jas-top{position:relative}
+.mtop .jas-x{position:absolute;right:0;top:0;bottom:0;width:40px;border:0;background:none;font:inherit;font-size:15px;color:var(--sub2);cursor:pointer;z-index:1}
+.mtop .jas-top:has(.jas-x) .jas-bar{padding-right:40px}.mtop .jas-top:has(.jas-x) .jas-bar::after{display:none}
+body.mtop-nobar .mtop .jas-top{display:none!important}
+@media(max-width:768px){.mtop .jas.jas-top,.mtop .jas-bar{height:38px}.mtop .jas-bar{gap:8px;border-radius:9px}.mtop .jas-bar .jas-t b{font-size:13.5px}.mtop .jas-bar .jas-go{font-size:13px}.mtop .jas-bar .jas-tag{font-size:11.5px}
+  body.jm-full .jbk{padding-top:4px;padding-bottom:2px}}
 @media(max-width:380px){.seg button{padding:0 10px;font-size:14px}.chip{padding:0 11px}}
 </style>
 <script src="../assets/back.js?v=1" defer></script>
@@ -350,7 +381,8 @@ i.lg-dot{display:inline-block;width:13px;height:13px;border-radius:50%;backgroun
     <button type="button" class="fab" id="me" aria-label="내 위치로"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button>
   </div>
   <div class="legend" id="legend"></div>
-  <div class="mstat" id="mstat">지도를 준비하고 있어요…</div>
+  <div class="mstat" id="mstat"><span class="mnote">지도를 준비하고 있어요…</span></div>
+  <div class="mpop" id="mpop" role="dialog" aria-label="지도 보는 법" hidden></div>
   <div class="cmpbar" id="cmpbar" hidden></div>
   <section class="mlist" id="mlist" aria-label="지도에 보이는 곳 목록"></section>
   <section class="sheet" id="sheet" hidden aria-live="polite"></section>
@@ -418,7 +450,7 @@ function after(){
   if (window.jdjStat) jdjStat('feature_use', {feature: S.mode === 'reg' ? 'map_region' : 'map_filter'});
 }
 
-let LEGOPEN = false, LASTLV = '';
+let LEGOPEN = false, LASTLV = '', LGM = false;   // LGM: 휴대폰에서 범례를 펼쳤는지
 /* 개발·교통 예정 범례: 점선 = 개통 예정 노선, 칠한 면 = 개발 구역, 글자의 연도 = 공식 발표 그대로(ⓘ 보는 법·못 그린 목록) */
 /* 지도에 위치를 못 찍은 예정 사업 중 지금 화면 안 시·군·구(행정 코드)에 있는 것 — 범례 한 줄로 알려 주고 누르면 카드 */
 function futNear(){
@@ -436,14 +468,37 @@ function futLegend(lv){
 }
 function legend(){
   const el = $('legend'), lv = MAP && IX ? C.level(MAP.zoom()) : '';
-  if (S.mode === 'reg') { el.innerHTML = lv && lv !== 'sido' ? regLegend() : ''; el.onclick = e => { if (e.target.closest('#rlgb') || (RLEG && innerWidth < 900)) { RLEG = !RLEG; legend(); render(); } }; return; }
+  if (S.mode === 'reg') { el.innerHTML = lv && lv !== 'sido' ? regLegend() : ''; el.onclick = e => { if (innerWidth <= 768) return; if (e.target.closest('#rlgb') || (RLEG && innerWidth < 900)) { RLEG = !RLEG; legend(); render(); } }; return legFold(); }
   el.onclick = e => { if (e.target.closest('.fib')) futInfo(); const fo = e.target.closest('[data-fo]'); if (fo) { const it = ((LAY.fut && LAY.fut.d.omitted) || []).find(x => x.id === fo.dataset.fo); if (it) futCard(it); } };
   const fu = futLegend(lv);
-  if (lv !== 'danji') { el.innerHTML = fu; return; }
+  if (lv !== 'danji') { el.innerHTML = fu; return legFold(); }
   const scale = `<span class="scl">${S.mode === 'fv' ? '' : '배지 = '}미래가치 점수 낮음 <i class="t1"></i><i class="t2"></i><i class="t3"></i><i class="t4"></i><i class="t5"></i> 높음 ⓘ</span>`;
   el.innerHTML = `<button type="button" class="lgb" aria-expanded="${LEGOPEN}">${scale}</button>` + (LEGOPEN ? C.TONES.map(t => `<span><i class="${t[0]}"></i>${t[2]} · ${t[1]}</span>`).join('') + '<span class="sm">앞으로 2년, 같은 시·도 아파트와 비교한 점수(100점 만점)</span>' : '') + fu;
   el.querySelector('.lgb').onclick = () => { LEGOPEN = !LEGOPEN; legend(); render(); };
+  legFold();
 }
+/* 휴대폰(768px 이하): 범례를 '범례' 단추로 접어 둠 — 누르면 펼치고, ✕ 나 지도 등 바깥을 누르면 다시 접음 */
+function legFold(){
+  const el = $('legend'), mob = innerWidth <= 768, has = !!el.childNodes.length;
+  el.classList.toggle('mob', mob && has);
+  el.classList.toggle('fold', mob && has && !LGM);
+  if (!mob || !has) return;
+  if (!LGM) {
+    const n = el.querySelectorAll('.fnr').length, fut = !!el.querySelector('.fut-lg');
+    el.innerHTML = `<button type="button" class="lgpill" aria-expanded="false" aria-label="범례 펼치기">${fut ? '<i class="lg-line" aria-hidden="true"></i>' : ''}범례${n ? ` <em>근처 예정 ${n}</em>` : ''}</button>`;
+    return;
+  }
+  el.insertAdjacentHTML('afterbegin', '<div class="lghd"><b>범례</b><button type="button" class="lgx" aria-label="범례 접기">✕</button></div>');
+}
+$('legend').addEventListener('click', e => {   // 접기·펼치기 단추는 범례 안 다른 동작보다 먼저
+  const op = e.target.closest('.lgpill'), x = e.target.closest('.lgx');
+  if (!op && !x) return;
+  e.stopPropagation();
+  LGM = !!op; if (S.mode === 'reg') RLEG = LGM || innerWidth >= 900;
+  legend(); render();
+}, true);
+let LGW = innerWidth <= 768;
+addEventListener('resize', () => { const w = innerWidth <= 768; if (w !== LGW) { LGW = w; LGM = false; legend(); } });
 
 /* ---------- 자료 불러오기 (보이는 시·도만) ---------- */
 /* ---------- 전세가율: 내 집 시세 화면과 같은 기준(assets/mine-core.js jrNow · price/h/{구}.json) ----------
@@ -507,7 +562,45 @@ function put(next){
   }
 }
 const pin = (m, k, o) => m.set(k, Object.assign({ sig: o.cls + '|' + o.html + '|' + (o.st || '') }, o));
-function status(t){ $('mstat').textContent = t || ''; }
+/* 지도 위 안내 — status('알림 글') 은 작은 한 줄, status(INFO(설명, 칩 이름, 한 줄 요약)) 은 'ⓘ 칩'(누르면 설명 카드).
+   설명마다 이번 방문(세션)에서 처음 볼 때만 3초 동안 한 줄 요약을 펼쳐 보여 주고 칩으로 줄어듦 */
+const INFO = (t, c, l) => ({ t, c, l: l || t });
+const msgText = m => m && typeof m === 'object' ? m.t : (m || '');
+let ST_K = '', ST_I = null, ST_T = 0;
+function firstTip(k){
+  try { const a = JSON.parse(sessionStorage.getItem('jdj_map_tips') || '[]'); if (a.includes(k)) return false; a.push(k); sessionStorage.setItem('jdj_map_tips', JSON.stringify(a.slice(-40))); return true; }
+  catch (e) { return false; }
+}
+const chipHtml = (i, long) => `<button type="button" class="mchip${long ? ' tst' : ''}" aria-expanded="false" aria-controls="mpop" aria-label="${esc(i.c)} — 설명 보기"><span class="t">${esc(long ? i.l : i.c)}</span><span class="i" aria-hidden="true">ⓘ</span></button>`;
+function status(m){
+  const el = $('mstat'), info = m && typeof m === 'object' ? m : null, t = msgText(m), k = info ? 'i|' + info.c + '|' + info.t : 't|' + t;
+  if (k === ST_K) return;
+  ST_K = k; ST_I = info; clearTimeout(ST_T); popClose();
+  if (!t) { el.innerHTML = ''; return; }
+  if (!info) { el.innerHTML = `<span class="mnote" role="status">${esc(t)}</span>`; return; }
+  const long = firstTip(S.mode + '|' + info.t);
+  el.innerHTML = chipHtml(info, long);
+  if (long) ST_T = setTimeout(() => { if (ST_I === info) { el.innerHTML = chipHtml(info, false); render(); } }, 3200);   // 줄어든 뒤 말풍선 자리 다시 정리
+}
+function popOpen(){
+  if (!ST_I) return;
+  clearTimeout(ST_T);
+  const p = $('mpop'), i = ST_I;
+  $('mstat').innerHTML = chipHtml(i, false);
+  p.innerHTML = `<b>${esc(i.c)}</b>${esc(i.t)}<button type="button" class="x" aria-label="설명 닫기">✕</button>`;
+  p.hidden = false;
+  const b = $('mstat').querySelector('.mchip'); if (b) b.setAttribute('aria-expanded', 'true');
+}
+function popClose(){
+  const p = $('mpop'); if (p.hidden) return;
+  p.hidden = true; const b = $('mstat').querySelector('.mchip'); if (b) b.setAttribute('aria-expanded', 'false');
+}
+$('mstat').addEventListener('click', e => { if (!e.target.closest('.mchip')) return; if ($('mpop').hidden) popOpen(); else popClose(); });
+$('mpop').addEventListener('click', e => { if (e.target.closest('.x')) popClose(); });
+document.addEventListener('pointerdown', e => {   // 바깥을 누르면 설명 카드·펼친 범례를 닫음
+  if (!$('mpop').hidden && !e.target.closest('#mpop,#mstat')) popClose();
+  if (LGM && !e.target.closest('#legend')) { LGM = false; legend(); }
+}, true);
 /* 말풍선을 두면 안 되는 칸(지도 좌표 px): 지도 위쪽 바깥, 위 안내, 범례, 오른쪽 버튼, 비교함, 지도 로고·축척·출처 */
 function walls(){
   const mr = $('map').getBoundingClientRect(), H = mr.height, X = mr.width;   // 지도 네 가장자리 바깥(반쯤 잘린 말풍선 없게)
@@ -572,7 +665,7 @@ function render(){
       gl.push({ k: 'S' + s.id, lat: g.c[1], lng: g.c[0], cls: 'gp sd', name: s.short, v, p: (s.units || 0) * (s.id === 's00' ? 100 : 1),   // 겹치면 서울을 먼저(경기 가운데와 가까움)
       tap: () => MAP.setView(g.c[1], g.c[0], C.LV.sido + 2) });
     }
-    msg = S.mode === 'price' ? '시·도별 최근 1년 아파트 시세 변동이에요. 지역을 누르면 가까이 볼 수 있어요.' : S.mode === 'jr' ? '시·도별 아파트 전세가율이에요. 지역을 누르면 가까이 볼 수 있어요.' : '미래가치 점수는 구·동·단지로 확대하면 보여요. 지역을 눌러 주세요.';
+    msg = S.mode === 'price' ? INFO('시·도별 최근 1년 아파트 시세 변동이에요. 지역을 누르면 가까이 볼 수 있어요.', '1년 시세 변동', '시·도별 1년 시세 변동이에요') : S.mode === 'jr' ? INFO('시·도별 아파트 전세가율(집값 대비 전셋값)이에요. 지역을 누르면 가까이 볼 수 있어요.', '전세가율 기준', '시·도별 전세가율이에요') : INFO('미래가치 점수는 구·동·단지로 확대하면 보여요. 지역을 눌러 주세요.', '점수 보는 법', '확대하면 미래가치 점수가 보여요');
   } else if (lv === 'sgg') {
     const ids = viewIds(bb);
     let wait = S.mode === 'fv' ? ensure(ids) : 0;   // 구 순위(미래가치)는 단지 자료에 들어 있어 그때만 불러옴
@@ -590,7 +683,7 @@ function render(){
       gl.push({ k: 'G' + code, lat: c[1], lng: c[0], cls, name: g.name, v, p: (g.c || []).reduce((a, x) => a + x, 0),
         tap: gsv != null ? () => openGuCard(code, gsv) : () => MAP.setView(c[1], c[0], C.LV.sgg + 1) });
     }
-    msg = wait ? '구별 미래가치 순위 자료를 불러오는 중이에요…' : S.mode === 'price' ? '구 전체 아파트 평당가(전용 3.3㎡당, 최근 3개월 실거래 중간값)예요.' : S.mode === 'jr' ? '구 전체 아파트 전세가율(집값 대비 전셋값)이에요.' : '구별 미래가치 순위(같은 시·도 안 지역 흐름 점수)예요. 구를 누르면 이유가 보여요. 파랑 상위권 · 회색 중위권 · 주황 하위권';
+    msg = wait ? '구별 미래가치 순위 자료를 불러오는 중이에요…' : S.mode === 'price' ? INFO('구 전체 아파트 평당가(전용 3.3㎡당, 최근 3개월 실거래 중간값)예요.', '평당가 기준', '구별 평당가 · 최근 3개월 실거래') : S.mode === 'jr' ? INFO('구 전체 아파트 전세가율(집값 대비 전셋값)이에요.', '전세가율 기준', '구별 전세가율(집값 대비 전셋값)') : INFO('구별 미래가치 순위(같은 시·도 안 지역 흐름 점수)예요. 구를 누르면 이유가 보여요. 파랑 상위권 · 회색 중위권 · 주황 하위권', '순위 기준', '구별 미래가치 순위 · 누르면 이유');
   } else {
     const ids = viewIds(bb), wait = ensure(ids);   // (djc·showName 은 아래 겹침 정리 뒤 말풍선으로)
     const items = [];
@@ -609,7 +702,7 @@ function render(){
         const v = C.groupText(S.mode, g);
         gl.push({ k: 'D' + g.k, lat: g.lat, lng: g.lng, cls: 'gp', name: g.dong, v, sub: `단지 ${g.n}`, p: g.n, tap: () => MAP.setView(g.lat, g.lng, C.LV.dong + 1) });
       }
-      msg = S.mode === 'price' ? '동별 단지 평균 평당가예요. 동을 누르면 단지가 보여요.' : S.mode === 'fv' ? '동별 단지 미래가치 점수 평균이에요. 동을 누르면 단지가 보여요.' : '동별 단지 전세가율 평균이에요. 동을 누르면 단지가 보여요.';
+      msg = S.mode === 'price' ? INFO('동별 단지 평균 평당가예요. 동을 누르면 단지가 보여요.', '평당가 기준', '동별 평균 평당가 · 누르면 단지') : S.mode === 'fv' ? INFO('동별 단지 미래가치 점수 평균이에요. 동을 누르면 단지가 보여요.', '점수 기준', '동별 평균 점수 · 누르면 단지') : INFO('동별 단지 전세가율 평균이에요. 동을 누르면 단지가 보여요.', '전세가율 기준', '동별 평균 전세가율 · 누르면 단지');
     } else {
       const sz = MAP.size(), pts = [];
       for (const it of items) { const p = MAP.project(it.d.lat, it.d.lng); if (p.x < -60 || p.y < -60 || p.x > sz.w + 60 || p.y > sz.h + 60) continue; pts.push({ x: p.x, y: p.y, w: it.d.n + (isFoc(it.d) || (SEL && SEL.d && SEL.d.key === it.d.key) ? 1e9 : 0), it }); }
@@ -626,7 +719,7 @@ function render(){
         djc.push({ d, b, main, list: c.list, p: (sel ? 1e7 : 0) + (d.n || 0), box: djBox(c.list[0].x, c.list[0].y, main || '최근 거래 없음', badge, showName ? d.apt : '', c.list.length > 1) });
       }
       LROWS = items.map(({ d, b }) => ({ k: d.key, name: d.apt, sub: `${sggName(d.code)} ${d.dong} · ${b.band}`, v: C.mainText(S.mode, b) || (S.mode === 'price' ? '최근 거래 없음' : '자료 없음'), p: d.n || 0, num: S.mode === 'fv' ? b.fv : S.mode === 'jr' ? b.jr : b.price, tap: () => openCard(d) }));
-      msg = items.length ? (S.mode === 'jr' ? '단지 전세가율 = 같은 평형 최근 3개월 전세 중간값 ÷ 매매 중간값이에요(내 집 시세와 같은 기준).' : '') : (wait ? '' : (S.size || S.price || S.age || S.stn) ? '이 화면에 고른 조건(평형·가격대·준공·역 거리)에 맞는 단지가 없어요.' : '이 화면에는 표시할 단지가 없어요.');
+      msg = items.length ? (S.mode === 'jr' ? INFO('단지 전세가율 = 같은 평형 최근 3개월 전세 중간값 ÷ 매매 중간값이에요(내 집 시세와 같은 기준).', '전세가율 기준', '전세가율 = 전세 ÷ 매매(최근 3개월)') : '') : (wait ? '' : (S.size || S.price || S.age || S.stn) ? '이 화면에 고른 조건(평형·가격대·준공·역 거리)에 맞는 단지가 없어요.' : '이 화면에는 표시할 단지가 없어요.');
     }
     if (wait) msg = '단지 자료를 불러오는 중이에요…';
     else if (jrWait) msg = '전세가율 자료를 불러오는 중이에요…';
@@ -637,7 +730,7 @@ function render(){
   else if (!msg && S.bun && z < 12 && lv !== 'sido') msg = '분양 단지는 조금 더 확대하면 보여요.';
   else if (!msg && S.nb && z < 13 && lv !== 'sido') msg = '신축 공사 중 현장은 조금 더 확대하면 보여요.';
   if (lv !== 'danji') LROWS = gl.map(o => ({ k: o.k, name: o.name, sub: o.sub || '', v: o.v, p: o.p || 0, num: null, tap: o.tap }));
-  drawList(lv, msg);
+  drawList(lv, msgText(msg));
   const lk = lv + '|' + futNear().map(x => x.id).join(',');
   if (lk !== LASTLV) { LASTLV = lk; legend(); }
   if (FOC && FOC.got && FOC.got.length > 1 && lv !== 'danji') msg = '';   // 비교 단지를 넓게 볼 때는 구·동 안내 대신 강조 말풍선만
@@ -909,7 +1002,7 @@ function renderReg(z, lv, bb, next){
     for (const s of IX.sido) { const g = GEO && GEO.sido[s.id]; if (!g) continue;
       gl.push({ k: 'S' + s.id, lat: g.c[1], lng: g.c[0], cls: 'gp sd', name: s.short, v: '', p: (s.units || 0) * (s.id === 's00' ? 100 : 1),
         tap: () => { REG.sd = s.id; REG.gu = ''; drawControls(); regPanel(); MAP.setView(g.c[1], g.c[0], C.LV.sido + 2); } }); }
-    status('시·도를 누르면 구별 지역 분석이 보여요.');
+    status(INFO('시·도를 누르면 구별 지역 분석이 보여요.', '보는 법', '시·도를 누르면 지역 분석이 보여요'));
     const W = walls();
     for (const o of C.settle(gl.map(o => { const q = MAP.project(o.lat, o.lng); o.x = q.x; o.y = q.y; o.box = gpBox(o); return o; }), W, 3))
       pin(next, o.k, { lat: o.lat, lng: o.lng, cls: o.cls, z: 500, tap: o.tap, html: `<b>${esc(o.name)}</b>` });
@@ -1468,6 +1561,18 @@ function syncTop(){
   if (MAP) { MAP.relayout(); render(); }
 }
 if (window.ResizeObserver) new ResizeObserver(syncTop).observe(document.querySelector('.mtop'));
+/* 지도 위 소식 한 줄: 닫기(✕) — 이번 방문 동안 지도 화면에서만 숨김(다른 화면의 소식 칸은 그대로) */
+(function(){
+  const slot = document.querySelector('.mtop .jas-top'); if (!slot) return;
+  let off = false; try { off = sessionStorage.getItem('jdj_map_bar_x') === '1'; } catch (e) {}
+  if (off) { document.body.classList.add('mtop-nobar'); return; }
+  const addX = () => { if (!slot.querySelector('.jas-bar') || slot.querySelector('.jas-x')) return;
+    slot.insertAdjacentHTML('beforeend', '<button type="button" class="jas-x" aria-label="이 소식 닫기">✕</button>'); };
+  slot.addEventListener('click', e => { if (!e.target.closest('.jas-x')) return; e.preventDefault(); e.stopPropagation();
+    document.body.classList.add('mtop-nobar'); try { sessionStorage.setItem('jdj_map_bar_x', '1'); } catch (er) {} syncTop(); }, true);
+  if (window.MutationObserver) new MutationObserver(addX).observe(slot, { childList: true });
+  addX();
+})();
 /* 지역 분석 칸 크기 → 지도 비키기(모바일: 아래 --mb, PC: 왼쪽 --ml) */
 let MBL = '';
 function syncPanel(){
