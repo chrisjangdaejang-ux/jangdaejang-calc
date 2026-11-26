@@ -720,6 +720,8 @@
     'LTV': '집값 대비 대출 비율',
     'DSR': '연소득 대비 1년 원리금 상환액 비율'
   };
+  /** v 의 k 번째 글자가 아직 닫히지 않은 괄호 안에 있는지 */
+  function inParen(v, k) { let d = 0; for (let j = 0; j < k; j++) { const c = v.charAt(j); if (c === '(') d++; else if (c === ')' && d > 0) d--; } return d > 0; }
   function glossDom(el, terms) {
     if (!el || !root.document) return;
     const doc = root.document, T = terms || GL_PAGE;
@@ -737,7 +739,10 @@
       for (const t of [...left]) {
         let i = -1;
         if (t === '%p') { const m = /\d%p/.exec(v); if (m) i = m.index + 1; }
-        else i = v.indexOf(t);
+        else {
+          /* 이미 괄호 안에 있는 낱말(예: '입주권(현금청산) 위험')에는 풀이를 또 붙이지 않음 — '입주권(현금청산(…))'처럼 괄호가 겹쳐 보이던 문제. 괄호 밖 다음 등장을 찾음 */
+          for (let k = v.indexOf(t); k >= 0; k = v.indexOf(t, k + 1)) { if (!inParen(v, k)) { i = k; break; } }
+        }
         if (i < 0) continue;
         left.delete(t);
         const end = i + t.length;
@@ -834,5 +839,5 @@
     });
   }
 
-  root.JDJ_PLAIN = { TIP, tipDom, ageOf, ageLabel, ageText, scParts, scText, popLines, STAGE, GL_PAGE, glossDom, autoGloss, gloss, J, won, eokR, rank, more, regionInfo, rankBase, regionRank, regionPlace, topPct, regionText, regionLine, evid, evHtml, ddText, rcText, momText, schText, stageName, rzText, jrStats, jrText, VOK, hzLabel, checkText, trackRuns, trackRow, trackHead, trackRef, ymNorm, easy, ymKo, spanKo, delayText, unitsKo, supplyLines, renewalLine, whyItems, whyLine, whyTable, hzGapLine };
+  root.JDJ_PLAIN = { TIP, tipDom, inParen, ageOf, ageLabel, ageText, scParts, scText, popLines, STAGE, GL_PAGE, glossDom, autoGloss, gloss, J, won, eokR, rank, more, regionInfo, rankBase, regionRank, regionPlace, topPct, regionText, regionLine, evid, evHtml, ddText, rcText, momText, schText, stageName, rzText, jrStats, jrText, VOK, hzLabel, checkText, trackRuns, trackRow, trackHead, trackRef, ymNorm, easy, ymKo, spanKo, delayText, unitsKo, supplyLines, renewalLine, whyItems, whyLine, whyTable, hzGapLine };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -277,5 +277,21 @@ eq(P.renewalLine({}, RN, null, null), null, '선도지구 아님');
   eq(P.hzGapLine({ fv: 50, fh: { 3: 70 } }, oh), '', '차이가 작으면 생략');
 }
 
+/* 괄호 겹침 방지(2026-11-26): 이미 괄호 안에 있는 용어에는 풀이를 또 붙이지 않음 — 빌라 화면 '입주권(현금청산(…)) 위험' */
+{
+  const v = '입주권(현금청산) 위험 · 현금청산 기준';
+  eq(P.inParen(v, v.indexOf('현금청산')), true, '괄호 안 용어는 풀이 대상 아님');
+  eq(P.inParen(v, v.lastIndexOf('현금청산')), false, '괄호 밖 다음 등장에 풀이');
+}
+/* 어색한 순위 표현('줄 세워·줄 세웠어요') 화면 문구 재발 방지 — 화면 파일 글자(주석 제외)에 없어야 함 */
+{
+  const fs = require('fs'), path = require('path'), R = path.join(__dirname, '..');
+  const strip = s => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/<!--[\s\S]*?-->/g, '').replace(/^\s*\/\/.*$/gm, '');
+  ['rank/index.html', 'track/index.html', 'guide/terms/index.html', 'assets/broker-tools.js', 'map/index.html', 'index.html', 'mine/index.html', 'weekly/index.html'].forEach(f => {
+    const s = strip(fs.readFileSync(path.join(R, f), 'utf8'));
+    eq(/줄\s?세[워웠우]/.test(s), false, f + ' 화면 문구에 줄 세우기 표현 없음');
+  });
+}
+
 console.log(`쉬운 말 문구 검증: ${ok}개 통과, ${bad}개 실패`);
 process.exit(bad ? 1 : 0);

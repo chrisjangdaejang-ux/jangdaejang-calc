@@ -29,7 +29,7 @@
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=8"></script>
 <script src="../assets/share.js?v=13"></script>
-<script src="../assets/plain-words.js?v=18"></script>
+<script src="../assets/plain-words.js?v=19"></script>
 <script src="../assets/narrative.js?v=23"></script>
 <script src="../assets/rank-core.js?v=8"></script>
 <script src="../assets/agents.js"></script>
@@ -101,7 +101,7 @@ h1{font-size:clamp(26px,6vw,36px);margin:6px 0 8px}
 <main class="wrap">
   <span class="tag">주간 순위</span>
   <h1>우리 구, 지금 몇 위일까요?</h1>
-  <p class="lead">같은 시·도 안에서 시·군·구 아파트 평당가가 얼마나 올랐는지, 앞으로 2년 지역 흐름은 몇 위인지 줄 세워 보여 드려요. 줄을 누르면 지도에서 그 구를 볼 수 있어요.</p>
+  <p class="lead">같은 시·도 안에서 시·군·구 아파트 평당가가 얼마나 올랐는지, 앞으로 2년 지역 흐름은 몇 위인지 순위로 보여 드려요. 순위 줄을 누르면 지도에서 그 구를 볼 수 있어요.</p>
 
   <div class="jas jas-top" data-ad-slot="rank_top" data-ad-cat="rank" data-ad-top></div>
   <div class="tabs" role="tablist" aria-label="순위 종류">
@@ -224,9 +224,9 @@ function drawFv(){
   if (!gm || gm === 'wait') { loadGs(S.sd); $('pane').innerHTML = '<p class="note">구별 미래가치 자료를 불러오고 있어요…</p>'; return; }
   if (gm === 'err') { $('pane').innerHTML = '<div class="empty"><b>자료를 불러오지 못했어요</b>잠시 뒤 다시 열어 주세요.</div>'; GS[S.sd] = null; return; }
   const f = R.future(IX, sd.name, gm);
-  if (!f.rows.length) { $('pane').innerHTML = `<div class="empty"><b>${esc(sd.short)}은 순위를 매기지 않아요</b>점수가 있는 ${unit}가 ${f.n}곳뿐이라 줄 세워 비교하기 어려워요.</div>`; share(null); return; }
+  if (!f.rows.length) { $('pane').innerHTML = `<div class="empty"><b>${esc(sd.short)}은 순위를 매기지 않아요</b>점수가 있는 ${unit}가 ${f.n}곳뿐이라 순위를 매겨 비교하기 어려워요.</div>`; share(null); return; }
   const rows = S.all ? f.rows : f.rows.slice(0, SHOW);
-  const vb = `<div class="vbox">${esc(sd.short)} ${f.n}개 ${unit}를 <b>앞으로 2년 지역 흐름 점수</b>로 줄 세웠어요. 이 예측 방법을 과거에 그대로 써 봤더니 <b>${ck.n}번 중 ${ck.hit}번 맞았어요</b>.${ck.oos != null && ck.t0 ? ` (예: ~${ck.t0.slice(0, 4)}년 자료만으로 ${+ck.t0.slice(0, 4) + 2}년을 예측 → 실제로 점수 상위 20% ${unit}${ck.oos > 0 ? '가' : '는'} 같은 시·도 평균보다 ${sg(ck.oos)} ${ck.oos > 0 ? '더' : '덜'} 올랐어요)` : ''} <a href="${JB.SITE}about/">예측 방법 ›</a></div>`;
+  const vb = `<div class="vbox">${esc(sd.short)} ${f.n}개 ${unit}를 <b>앞으로 2년 지역 흐름 점수</b>로 평가했어요 · 점수가 높은 순서예요. 이 예측 방법을 과거에 그대로 써 봤더니 <b>${ck.n}번 중 ${ck.hit}번 맞았어요</b>.${ck.oos != null && ck.t0 ? ` (예: ~${ck.t0.slice(0, 4)}년 자료만으로 ${+ck.t0.slice(0, 4) + 2}년을 예측 → 실제로 점수 상위 20% ${unit}${ck.oos > 0 ? '가' : '는'} 같은 시·도 평균보다 ${sg(ck.oos)} ${ck.oos > 0 ? '더' : '덜'} 올랐어요)` : ''} <a href="${JB.SITE}about/">예측 방법 ›</a></div>`;
   const li = rows.map(x => {
     /* 구 이유: 공용 narrative.js guWhy(사실 → 비교 → 과거 사례 → 그래서) — 지도 구 카드·리포트 지역 흐름과 같은 문장 */
     const gw = NAR && NAR.guWhy ? NAR.guWhy({ IX, code: x.code, gs: x.gs, EV, PL }) : null, why = gw ? gw.line : '';
@@ -255,7 +255,7 @@ function drawApt(){
   const where = S.g === 'all' ? sd.short : gn(S.g), rows = S.all ? o.rows : o.rows.slice(0, SHOW);
   /* 과거 성적 첫 줄(plain-words.js trackHead): 시·도 성적이 있으면 그 회차, 없으면 전국 — 시작월은 model_h data_from */
   const vm = (() => { const m = MH['2'] || {}, r = v.where !== '전국' && m.reg ? m.reg[sd.name] : null; return r ? { oos_all: r.oos_all, oos_hit: r.hit, data_from: m.data_from } : m; })();
-  const vb = `<div class="vbox">${esc(where)} 단지 ${o.n.toLocaleString()}곳을 <b>미래가치 점수(2년 보유 기준)</b>로 줄 세웠어요. ${esc(PL.trackHead(vm, 2)).replace(/(\d+번 중 \d+번 맞았어요)/, '<b>$1</b>')}${v.where === '전국' ? ' 전국 단지로 써 본 결과예요.' : ''} <a href="${JB.SITE}about/">예측 방법 ›</a></div>`;
+  const vb = `<div class="vbox">${esc(where)} 단지 ${o.n.toLocaleString()}곳을 <b>미래가치 점수(2년 보유 기준)</b>로 평가했어요 · 점수가 높은 순서예요. ${esc(PL.trackHead(vm, 2)).replace(/(\d+번 중 \d+번 맞았어요)/, '<b>$1</b>')}${v.where === '전국' ? ' 전국 단지로 써 본 결과예요.' : ''} <a href="${JB.SITE}about/">예측 방법 ›</a></div>`;
   const li = rows.map(x => `<li class="ws"><a href="${esc(R.mineUrl(S.sd, x.key, x.band))}" data-track="rank_apt_to_mine"><span class="rk">${x.r}</span>
     <span class="nm"><b>${esc(x.apt)}</b><small>${esc(gn(x.code))} ${esc(x.dong)} · ${esc(x.band)}${x.tie ? ' · 공동 ' + x.r + '위' : ''}</small></span>
     <span class="vals"><span class="num"><b class="sc">${x.fv}점</b><small>100점 만점</small></span></span></a>${wstar(x)}</li>`).join('');
