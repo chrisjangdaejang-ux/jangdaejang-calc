@@ -218,3 +218,8 @@ li.jas-li{border-bottom:1px solid var(--line)}
 .jas-bar .jas-t small{-webkit-line-clamp:1;font-size:12.5px}
 @media(max-width:420px){.jas-bar{padding:0 12px}.jas-bar::after{content:'›';flex:none;color:var(--blue);font-weight:700;font-size:20px;line-height:1}}
 .jas.jas-in{margin-left:20px;margin-right:20px}   /* 본문 칸이 바깥 여백 없이 꽉 찬 화면(홈·세금)에서 옆 카드와 줄 맞춤 */
+
+/* 진한 꽉 찬 단추는 한 화면 묶음에 1개(docs/design_guide.md 13·18): 공유·상담·지도 이동 같은 보조 동작은 테두리 단추로 */
+.jshare-card.jshare-card .btn,.jshare-bottom.jshare-bottom .btn,.hshare.hshare .go,.mapj-b.mapj-b .mapj,
+a#consultBtn.btn,a#ctaBtn,.opt .btn.primary,.acts2 a.main{background:#fff!important;color:var(--blue)!important;border:1.5px solid #C9C6F2!important;box-shadow:none!important}
+.jshare-card.jshare-card .btn:hover,.jshare-bottom.jshare-bottom .btn:hover,.hshare.hshare .go:hover,.mapj-b.mapj-b .mapj:hover,a#consultBtn.btn:hover,a#ctaBtn:hover,.opt .btn.primary:hover,.acts2 a.main:hover{border-color:var(--blue)!important;background:var(--blue-l)!important}
