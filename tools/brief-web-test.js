@@ -114,6 +114,7 @@ check('광고주 통계: 메일 광고 동의자 수(있을 때만)', [/메일 �
   const mg = rd('brief/manage/index.html'), su2 = rd('brief/subscribe/index.html');
   check('대표 지역 버튼: 운영자 모드(서버 adm)일 때만 그림', [/\$\{r\.adm \? `<div class="repBox"/.test(mg), /\$\{st\.adm \? `<div class="repBox"/.test(su2), /시·도마다 대표 지역 1곳씩 한 번에 넣기/.test(mg)], [true, true, true]);
 }
+const pg0 = () => require('fs').readFileSync(require('path').join(__dirname, '..', 'brief/index.html'), 'utf8');
 /* 문장·이름표가 말하는 것 = 실제 자료(2026-11-26 '가장 비싼 신고가' 오류 뒤 점검) */
 {
   // 엔진이 목록을 40건으로 자른 동네(평택시 43건 → 목록 40건): 건수는 전체 수(S.ntr·S.nhi·동 칸)로
@@ -132,8 +133,12 @@ check('광고주 통계: 메일 광고 동의자 수(있을 때만)', [/메일 �
   check('카드 \'가장 큰 하락\' = 하락률 1위(특수 거래 의심 제외)', pk.drop.a, '큰하락');
   check('예측 성적: 틀린 해에 두 번 부정(−%p 덜) 안 함', [B.scoreText({ m: '2024-05', h: 2, diff: -1.23 }), B.scoreText({ m: '2024-05', h: 2, diff: 2.5 })],
     ['2024-05에 공개한 2년 예측을 실제 결과와 맞춰 보니, 미래가치 상위 20% 단지가 하위 20%보다 1.2%p 덜 올랐어요(틀림).', '2024-05에 공개한 2년 예측을 실제 결과와 맞춰 보니, 미래가치 상위 20% 단지가 하위 20%보다 2.5%p 더 올랐어요(맞음).']);
+  check('신고가 꼬리표: 특수 거래 의심·비교 거래 적음', [B.tags({ hi: 1, sus: 1 }).map(x => x.t), B.tags({ hi: 1, thin: 1 }).map(x => x.t)], [['신고가', '특수 거래 의심'], ['신고가', '비교 거래 적음']]);
+  const TD = require('../assets/today-core.js');
+  check('첫 화면 카드 꼬리표: 비교 거래 적음', TD.tags({ up: 292.2, thin: 1 }).map(x => x.t), ['신고가', '비교 거래 적음']);
+  check('브리핑 화면: 신고가 TOP 목록에 비교 거래 적음 꼬리표', pg0().includes("x.thin ? '비교 거래 적음'"), true);
   // 정렬 설명 이름표 = 실제 정렬(엔진 brief.market_trades: 신고가 TOP 은 1억 원 이상·이전 최고가 대비 상승률 순, 큰 하락은 하락률 순)
-  const pg = require('fs').readFileSync(require('path').join(__dirname, '..', 'brief/index.html'), 'utf8');
+  const pg = pg0();
   check('브리핑 화면: 신고가 TOP 을 \'금액 순\'으로 설명하지 않음', [/신고가[^<]{0,40}금액 순/.test(pg), pg.includes('이전 최고가보다 많이 오른 순')], [false, true]);
   check('브리핑 화면: 카드의 최상급 이름표는 marketPicks 값으로만(목록 [0] 아님)', [/k\.hi \|\| \[\]\)\[0\]/.test(pg), /\(k\.drop \|\| \[\]\)\[0\]/.test(pg), pg.includes('B.marketPicks(k)')], [false, false, true]);
 }

@@ -177,6 +177,9 @@ check('메일 ①: 새 정책·교통·공급 발표(원문 제목·부처·날�
 check('메일 ②: 그 동네 이름이 나온 발표는 동네 칸 맨 위(없는 동네는 생략)', !!m && /내 동네 관련 발표/.test(m[0].htmlBody)
   && m[0].htmlBody.indexOf('내 동네 관련 발표') > m[0].htmlBody.indexOf('도봉구') - 400 && (m[0].htmlBody.match(/내 동네 관련 발표/g) || []).length === 1
   && m[0].htmlBody.indexOf('도봉구 창동 재개발 정비구역 지정') < m[0].htmlBody.indexOf('도봉구 새 거래 없음'));
+check('메일: 신고가 TOP 에 비교 거래 적음 꼬리표', T.briefMarketHtml(Object.assign({}, MARKET, { kr: Object.assign({}, MARKET.kr || {}, { hi: [{ sd: '경기', gn: '수원시 팔달구', d: '우만동', a: '한효', b: '49㎡대', p: 40000, up: 292.2, pm: 10200, pmd: 20091128, thin: 1 }] }) }), {}).includes('한효 49㎡대 4억 원 (이전 최고') && T.briefMarketHtml(Object.assign({}, MARKET, { kr: Object.assign({}, MARKET.kr || {}, { hi: [{ a: '한효', b: '49㎡대', p: 40000, up: 292.2, pm: 10200, pmd: 20091128, thin: 1 }] }) }), {}).includes('비교 거래 적음'));
+{ const sc = d => T.briefMarketHtml(Object.assign({}, MARKET, { score: { m: '2024-05', h: 2, diff: d, hit: d > 0 } }), {});
+  check('메일: 지난 예측 성적이 틀린 해에 두 번 부정(−%p 덜) 없음', sc(-1.23).includes('하위 20%보다 1.2%p 덜 올랐어요') && !/−|-1\.2/.test(sc(-1.23).match(/하위 20%보다[^<]*/)[0]) && sc(2.5).includes('2.5%p 더 올랐어요')); }
 check('메일: 새 발표가 없으면 칸 자체가 없음(빈 상자 없음)', !/새로 발표된/.test(T.briefMarketHtml(Object.assign({}, MARKET, { pnews: undefined }), {})) && !/새로 발표된/.test(T.briefMarketHtml(Object.assign({}, MARKET, { pnews: { n: 0, items: [] } }), {})) && T.briefPnHtml(null, 3) === '');
 check('메일: 7시 공개된 주간 칸(그날 날짜만) — 내 지역 먼저, 전국 나중, 지난 날짜 문장은 안 씀', !!m && /지난주 우리 지역은\?/.test(m[0].htmlBody)
   && m[0].htmlBody.indexOf('송파구 주간 문장') < m[0].htmlBody.indexOf('전국 주간 문장') && !/묵은 문장/.test(m[0].htmlBody)

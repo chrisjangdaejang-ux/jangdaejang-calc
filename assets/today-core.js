@@ -69,6 +69,7 @@
     else if (x.dr != null && x.dr <= -10) out.push({ c: 'dn', t: `최근 2년 최고가보다 ${Math.abs(x.dr).toFixed(0)}% 낮음` });
     if (x.x) out.push({ c: 'x', t: '직거래' });
     if (x.sus) out.push({ c: 'x', t: '특수 거래 의심' });
+    if (x.thin) out.push({ c: 'x', t: '비교 거래 적음' });   // 신고가: 앞 1년 같은 평형 거래가 드물어 오래된 최고가와 비교한 상승률(엔진 brief.judge) — 맨 아래로
     return out;
   }
   const API = { SLOTS, kst, slot, dayOk, asOf, noQuiz, scope, pick, eok, md, tags };

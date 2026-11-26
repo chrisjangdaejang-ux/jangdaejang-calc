@@ -142,6 +142,8 @@
       if (t.hi) out.push({ c: 'hi', t: '신고가' });
       else if (t.dr != null && t.dr <= B.DROP) out.push({ c: 'dn', t: `최근 2년 최고가보다 ${Math.abs(t.dr).toFixed(0)}% 낮음` });
       if (t.x) out.push({ c: 'x', t: '직거래' });
+      if (t.sus) out.push({ c: 'x', t: '특수 거래 의심' });
+      if (t.thin) out.push({ c: 'x', t: '비교 거래 적음' });
       return out;
     },
     /** 동으로 거른 보기 */

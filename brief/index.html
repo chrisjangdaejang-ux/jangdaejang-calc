@@ -309,7 +309,7 @@ function marketCardHtml(M){
 let MKT_SCOPE = 'kr';
 function mktTopLi(x, i){
   const t = B.topText(x), mine = apts.includes(x.a);
-  const tg = [x.x ? '직거래' : '', x.sus ? '특수 거래 의심' : ''].filter(Boolean);
+  const tg = [x.x ? '직거래' : '', x.sus ? '특수 거래 의심' : '', x.thin ? '비교 거래 적음' : ''].filter(Boolean);
   return `<li class="${mine ? 'mine' : ''}"><div class="nm"><b><span class="rk">${i + 1}</span> ${esc(t.name)}</b><small>${esc(t.where)} · 전용 ${x.ar}㎡${x.f != null ? ' · ' + x.f + '층' : ''}</small>${tg.map(g => `<span class="tg x">${esc(g)}</span>`).join('')}${t.sub ? `<small>${esc(t.sub)}</small>` : ''}</div>
     <div class="pr"><b>${esc(t.price)}</b><small>${esc(t.when)}</small></div></li>`;
 }
@@ -330,7 +330,7 @@ function marketHtml(M){
       ${(K.hi || []).length ? fold(K.hi.map(mktTopLi), 3, 'mh') : '<div class="empty">이번에는 신고가가 없어요.</div>'}</div>
     <div class="sec" style="margin:0"><h2>큰 하락 거래 TOP <small>${K.ndrop || 0}건 중 하락률 순</small></h2>
       ${(K.drop || []).length ? fold(K.drop.map(mktTopLi), 3, 'md') : '<div class="empty">최근 2년 최고가보다 10% 넘게 낮은 1억 원 이상 거래가 없어요.</div>'}</div></div>
-    <p class="sub" style="margin-top:6px">큰 하락 = 같은 단지·같은 평형 최근 2년 최고가보다 10% 넘게 낮은 거래(1억 원 이상, 직거래·원룸형·튀는 최고가 제외). 급매 레이더와 같은 기준으로 최근 3개월 같은 평형 중간값보다 30% 넘게 싼 거래(지분·가족 간 거래 등일 수 있음)는 '특수 거래 의심'으로 표시하고 맨 아래로 내렸어요${K.nsus ? `(${K.nsus}건)` : ''}.</p>`;
+    <p class="sub" style="margin-top:6px">큰 하락 = 같은 단지·같은 평형 최근 2년 최고가보다 10% 넘게 낮은 거래(1억 원 이상, 직거래·원룸형·튀는 최고가 제외). 급매 레이더와 같은 기준으로 최근 3개월 같은 평형 중간값보다 30% 넘게 싼 거래(지분·가족 간 거래 등일 수 있음)는 '특수 거래 의심'으로 표시하고 맨 아래로 내렸어요${K.nsus ? `(${K.nsus}건)` : ''}. 신고가도 최근 1년 같은 평형 거래보다 지나치게 비싸면 '특수 거래 의심', 최근 1년 같은 평형 거래가 드물어 오래된 최고가와 비교한 경우는 '비교 거래 적음'으로 표시하고 맨 아래로 내렸어요.</p>`;
   /* 상승 전환 신호(전국) */
   if ((M.rise || []).length) h += `<div class="sec"><h2>상승 전환 신호 TOP <small>전국 · 300세대 이상</small></h2><p class="sub">최근 6개월 거래량 증가가 그 시·도 상위 20%이고, 같은 평형 실제 거래 중간값(3개월씩, 1~2층·직거래 빼고 구간마다 3건 이상)이 내리다가 최근 3개월 다시 오른 단지예요.</p>
     ${fold(M.rise.map((r, i) => { const x = B.riseText(r); return `<li><div class="nm"><b><span class="rk">${i + 1}</span> ${esc(x.name)}</b><small>${esc([r.sd, r.d].join(' '))}</small><small>${esc(x.line)}</small></div><div class="pr"><b>${esc(x.chg)}</b><small>최근 3개월</small></div></li>`; }), 3, 'mr')}

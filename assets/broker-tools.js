@@ -294,7 +294,7 @@
     }
     /* 신고가 */
     if (K.nhi > 0) {
-      const ex = uniq((K.hi || []).slice().sort((a, b) => b.p - a.p)).slice(0, 3);   // 예시는 금액이 큰 거래부터, 단지마다 한 번
+      const ex = uniq((K.hi || []).filter(t => !t.sus).slice().sort((a, b) => b.p - a.p)).slice(0, 3);   // 특수 거래 의심 신고가는 예시에서 뺌   // 예시는 금액이 큰 거래부터, 단지마다 한 번
       out.push(pick('hiHead', [`신고가는 ${K.nhi}건이다. 신고가는 같은 단지·같은 크기에서 그전까지 가장 높았던 가격을 넘은 거래를 말한다.`,
         `그전 최고 가격을 넘어선 신고가 거래가 ${K.nhi}건 나왔다(같은 단지·같은 크기 기준).`,
         `눈여겨볼 것은 신고가 ${K.nhi}건이다. 같은 단지·같은 크기에서 이전 최고 가격보다 높게 계약된 거래다.`])
@@ -382,7 +382,7 @@
       stats: [['매매', `${K.n}건`], ['신고가', `${K.nhi}건`], ['2년 최고가보다 10% 넘게 낮은 거래', `${K.ndrop}건`]],
       lines: [`급매로 볼 만한 거래 ${K.nurg}건 (같은 단지 최근 3개월 중간값보다 10% 넘게 쌈)`].concat(K.nx ? [`직거래 ${K.nx}건은 신고가·하락 판단에서 뺐어요`] : []).concat(P.lag ? ['신고 기한(30일)이 남아 숫자가 늘 수 있어요'] : []), foot }];
     if ((K.hi || []).length) C.push({ k: 'list', kicker: '신고가', title: `신고가 ${K.nhi}건`, sub: '같은 단지·같은 크기 이전 최고가를 넘은 거래',
-      rows: uniq(K.hi.slice().sort((a, b) => b.p - a.p)).slice(0, 4).map(t => [`${t.a} ${t.b}`, won(t.p).replace(' 원', ''), `${t.d} · ${tAt(t)}${t.f ? ` · ${t.f}층` : ''} · 이전 최고 ${won(t.pm).replace(' 원', '')}`]), foot });
+      rows: uniq(K.hi.filter(t => !t.sus).slice().sort((a, b) => b.p - a.p)).slice(0, 4).map(t => [`${t.a} ${t.b}`, won(t.p).replace(' 원', ''), `${t.d} · ${tAt(t)}${t.f ? ` · ${t.f}층` : ''} · 이전 최고 ${won(t.pm).replace(' 원', '')}`]), foot });
     if ((K.drop || []).length) C.push({ k: 'list', kicker: '하락', title: `최근 2년 최고가보다 10% 넘게 낮은 거래 ${K.ndrop}건`, sub: '층·향·수리 상태에 따라 가격 차이가 있어요',
       rows: uniq(K.drop).slice(0, 4).map(t => [`${t.a} ${t.b}`, won(t.p).replace(' 원', ''), `${t.d} · ${tAt(t)}${t.f ? ` · ${t.f}층` : ''} · 2년 최고 대비 ${pct(t.dr)}`]), foot });
     if ((K.dongs || []).length >= 2) C.push({ k: 'bars', kicker: '동별 거래', title: '어느 동에서 많이 거래됐을까', sub: P.short,
