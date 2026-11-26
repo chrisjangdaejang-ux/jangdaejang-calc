@@ -240,15 +240,19 @@
     (sc.ask || []).forEach(k => { if (mem && mem.m && mem.m[k] != null) { st.a[k] = mem.m[k]; st.from[k] = mem.from[k]; } });
     const ap = apply(sc, r.slots, st.a); st.a = ap.a; Object.assign(st.from, ap.from);
     if (sc.id === 'find_home') st.nf = narrowInit(r.slots, D, '');
-    else if (sc.ext && root.JDJ_GREDEV) st.nf = root.JDJ_GREDEV.init(sc.id, r.slots, D);   // 재개발 예산·재건축 몸테크(assets/guide-redev.js)
+    else if (XB(sc)) st.nf = root.JDJ_GBUDGET.init(sc.id, r.slots, D);   // 보유 현금 + 대출로 살 수 있는 서울 아파트(assets/guide-budget.js)
+    else if (sc.ext === 'redev' && root.JDJ_GREDEV) st.nf = root.JDJ_GREDEV.init(sc.id, r.slots, D);   // 재개발 예산·재건축 몸테크(assets/guide-redev.js)
     return st;
   }
+  /* ext 시나리오: 'budget' = assets/guide-budget.js(JDJ_GBUDGET), 'redev' = assets/guide-redev.js(JDJ_GREDEV) */
+  const XB = sc => sc && sc.ext === 'budget' ? root.JDJ_GBUDGET || null : null;
   const condOk = (sc, a, k) => { const c = (sc.cond || {})[k]; return !c || c.slice(1).indexOf(String(a[c[0]])) >= 0; };
   /** 다음에 물을 것 하나: {key, q, quick:[[값, 글자]]} · 더 물을 게 없으면 null. card = 지금 카드(quick 결과)로 '정확히 계산됐으면' 그만 묻기 */
   function chatNext(st, D, Q) {
     const sc = D.sc.find(x => x.id === st.id); if (!sc) return null;
     if (sc.id === 'find_home') { const k = narrowNext(D, sc.id, st.nf || {}); if (!k) return null; const q = D.narrow.q[k]; return { key: k, nf: 1, q, quick: q.opts.slice() }; }
-    if (sc.ext && root.JDJ_GREDEV) return root.JDJ_GREDEV.chatQ(sc.id, st.nf || {});
+    if (XB(sc)) return root.JDJ_GBUDGET.chatQ(sc.id, st.nf || {});
+    if (sc.ext === 'redev' && root.JDJ_GREDEV) return root.JDJ_GREDEV.chatQ(sc.id, st.nf || {});
     if (Q && Q.exact) return null;
     const known = k => st.a[k] != null && st.a[k] !== '';
     const CYF = ['birth', 'married', 'homeown', 'deps', 'accd'];
@@ -267,7 +271,7 @@
   /** 답 문장 하나 읽기 → {ok(알아들음), switched(새 고민으로 바뀜)} · st 를 고침 */
   function chatAnswer(st, text, D, ctx, quickVal) {
     const t = String(text || '').trim(), flat = t.replace(/\s/g, ''), sc = D.sc.find(x => x.id === st.id);
-    const GXc = st.asked && st.asked.ext ? root.JDJ_GREDEV : null;
+    const GXc = st.asked && st.asked.ext ? (XB(sc) || root.JDJ_GREDEV) : null;
     const nx = st.asked ? (st.asked.nf ? { key: st.asked.key, nf: 1, ext: GXc ? 1 : 0, q: GXc ? GXc.Q[st.asked.key] : D.narrow.q[st.asked.key] } : { key: st.asked.key, q: D.q[st.asked.key] }) : null;
     /* 단추로 고른 값 */
     if (quickVal !== undefined && nx) {
@@ -283,7 +287,9 @@
       else if (nx.q.type === 'yesno3') st.a[nx.key] = '?'; else if (nx.q.def != null) st.a[nx.key] = nx.q.def; else st.skip.push(nx.key);
       return { ok: true };
     }
-    if (sc && sc.ext && root.JDJ_GREDEV) {
+    if (sc && XB(sc)) {
+      if (root.JDJ_GBUDGET.answer(sc.id, st.nf || (st.nf = root.JDJ_GBUDGET.init(sc.id, {}, D)), t, sl, nx && nx.key)) return { ok: true };
+    } else if (sc && sc.ext === 'redev' && root.JDJ_GREDEV) {
       if (root.JDJ_GREDEV.answer(sc.id, st.nf || (st.nf = root.JDJ_GREDEV.init(sc.id, {}, D)), t, sl, nx && nx.key)) return { ok: true };
     } else if (sc && sc.id === 'find_home') {
       const b = narrowInit(sl, D, st.nf.sido), range = /(\d+(?:\.\d+)?)\s*(?:억)?\s*[~\-–에서]\s*(\d+(?:\.\d+)?)\s*억/.exec(t);
@@ -999,6 +1005,8 @@
   const GX = () => root.JDJ_GREDEV || null;
   S.redevBudget = (a, E) => GX() ? GX().solve('redev_budget', a, E) : { err: 'noext' };
   S.rebuildLive = (a, E) => GX() ? GX().solve('rebuild_live', a, E) : { err: 'noext' };
+  /* 보유 현금 + 담보대출로 살 수 있는 서울 아파트(대표 질문) — 계산은 assets/guide-budget.js(scenarios.json ext:"budget"). 단지 자료(E.BX)가 있어야 해요 */
+  S.budgetApts = (a, E) => root.JDJ_GBUDGET ? root.JDJ_GBUDGET.solve('budget_apts', a, E) : { err: 'noext' };
 
   S.switchOrder = (a, E) => {
     const miss = need(a, ['newprice', 'income']); if (miss.length) return { need: miss };

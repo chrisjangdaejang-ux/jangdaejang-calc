@@ -29,7 +29,7 @@
   const cache = {};
   const getJ = (k, url) => cache[k] || (cache[k] = fetch(url, { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(url); return r.json(); }).catch(e => { delete cache[k]; throw e; }));
   function load() {
-    return Promise.all([getJ('sc', BASE + 'assets/guide/scenarios.json?v=7'), getJ('lex', BASE + 'assets/guide/lexicon.json?v=2')])
+    return Promise.all([getJ('sc', BASE + 'assets/guide/scenarios.json?v=8'), getJ('lex', BASE + 'assets/guide/lexicon.json?v=3')])
       .then(([sc, lex]) => Object.assign({}, sc, { lex }));
   }
   const ix = () => getJ('ix', DATA + 'index.json');
@@ -221,8 +221,8 @@
   const solveUrl = (id, extra) => BASE + 'solve/?s=' + encodeURIComponent(id) + (extra || '');
 
   /* ---------- 미리 불러오기(첫 카드를 1초 안에) ---------- */
-  const ENGINES = ['assets/sale-status.js?v=1', 'assets/loan-rules.js?v=3', 'tax/tax-engine.js?v=4', 'tax/adjusted-areas.js?v=2', 'assets/loan-core.js?v=6', 'assets/hug-core.js?v=1', 'chungyak/cy-engine.js?v=7', 'assets/redev-core.js?v=3', 'assets/guide-redev.js?v=2'];
-  const ENG_OK = { 'assets/sale-status.js?v=1': 'JDJ_SALE', 'assets/loan-rules.js?v=3': 'JDJ_LOAN_RULES', 'tax/tax-engine.js?v=4': 'JDJ_TAX', 'tax/adjusted-areas.js?v=2': 'JDJ_ADJ', 'assets/loan-core.js?v=6': 'JDJ_LOAN', 'assets/hug-core.js?v=1': 'JDJ_HUG', 'chungyak/cy-engine.js?v=7': 'JDJ_CYE', 'assets/redev-core.js?v=3': 'JDJ_REDEV', 'assets/guide-redev.js?v=2': 'JDJ_GREDEV' };
+  const ENGINES = ['assets/sale-status.js?v=1', 'assets/loan-rules.js?v=3', 'tax/tax-engine.js?v=4', 'tax/adjusted-areas.js?v=2', 'assets/loan-core.js?v=6', 'assets/hug-core.js?v=1', 'chungyak/cy-engine.js?v=7', 'assets/redev-core.js?v=3', 'assets/guide-redev.js?v=2', 'assets/guide-budget.js?v=1'];
+  const ENG_OK = { 'assets/sale-status.js?v=1': 'JDJ_SALE', 'assets/loan-rules.js?v=3': 'JDJ_LOAN_RULES', 'tax/tax-engine.js?v=4': 'JDJ_TAX', 'tax/adjusted-areas.js?v=2': 'JDJ_ADJ', 'assets/loan-core.js?v=6': 'JDJ_LOAN', 'assets/hug-core.js?v=1': 'JDJ_HUG', 'chungyak/cy-engine.js?v=7': 'JDJ_CYE', 'assets/redev-core.js?v=3': 'JDJ_REDEV', 'assets/guide-redev.js?v=2': 'JDJ_GREDEV', 'assets/guide-budget.js?v=1': 'JDJ_GBUDGET' };
   function script(src) { return new Promise(res => { const x = document.createElement('script'); x.src = BASE + src; x.onload = res; x.onerror = res; document.head.appendChild(x); }); }
   let WARM = null;
   /** 계산 엔진·고민 자료·지역 자료·청약 당첨 가점(기억한 시·도 또는 서울)·서울 단지 목록을 쉬는 동안 미리 */
@@ -240,7 +240,10 @@
   const feats = () => getJ('feat', BASE + 'assets/guide/features.json?v=1');
   function idle(f) { (root.requestIdleCallback || (g => setTimeout(g, 300)))(f, { timeout: 1500 }); }
   /* 재개발 예산·재건축 몸테크(scenarios.json ext:"redev") — 화면·계산은 assets/guide-redev.js, 여기서는 쓰는 도구만 넘겨요 */
-  const GXon = sc => !!(sc && sc.ext && root.JDJ_GREDEV);
+  /* 보유 현금 + 대출로 살 수 있는 서울 아파트(대표 질문, scenarios.json ext:"budget") — 화면·계산은 assets/guide-budget.js */
+  const XM = sc => !sc || !sc.ext ? null : sc.ext === 'budget' ? root.JDJ_GBUDGET || null : root.JDJ_GREDEV || null;
+  const XSRC = { budget: 'assets/guide-budget.js?v=1', redev: 'assets/guide-redev.js?v=2' };
+  const GXon = sc => !!XM(sc);
   function unitsOf(sid) {
     const MC = root.JDJ_MINE;
     const pr = cache['u' + sid] || (cache['u' + sid] = fetch(DATA + sid + '.json', { cache: 'no-cache' }).then(r => r.json()).then(j => { pr.done = (j.units || []).map(u => { if (u[9] && typeof u[9] === 'object' && MC && MC.cleanFx) MC.cleanFx(u[9]); return u; }); return pr.done; }).catch(e => { delete cache['u' + sid]; throw e; }));
@@ -248,7 +251,7 @@
   }
   function gxH(o, D, IX) {
     const R0 = root.JDJ_RANK;
-    return Object.assign({ D, IX, BASE, DATA, getJ, MC: root.JDJ_MINE, L: root.JDJ_LOAN, unitsOf, stat, site, solveUrl, fbHtml, fbWire, tablesHtml, afterHtml, expertLink, live: () => true,
+    return Object.assign({ D, IX, BASE, DATA, getJ, MC: root.JDJ_MINE, L: root.JDJ_LOAN, unitsOf, script, stat, site, solveUrl, fbHtml, fbWire, tablesHtml, afterHtml, expertLink, live: () => true,
       hrefOf: (n, a) => hrefOf(n, a, o && o.sc && o.sc.id), regionOf: c => regionOf(IX, c),
       mineUrl: r => R0 ? R0.mineUrl('s00', [r.code, r.dong, r.u[8] || '', r.apt].join('|'), r.band) : BASE + 'mine/' }, o || {});
   }
@@ -307,7 +310,7 @@
         <p class="gsitq">지금 어떤 상황이세요?</p>
         <div class="gsits" role="group" aria-label="상황 고르기">${D.cats.map(c => `<button type="button" data-cat="${esc(c.id)}" aria-pressed="false"><b>${esc(c.t)}</b><small>${esc(c.d)}</small></button>`).join('')}</div>
         <div class="glist" aria-live="polite"></div>
-        <div class="gpri"><span>상담에서 가장 많이 받는 고민</span><div class="gchips">${D.sc.filter(s => s.pri).map(s => `<a class="gchip" href="${esc(solveUrl(s.id, '&from=top'))}" data-track="guide_pri_${esc(s.id)}">${esc(s.t)}</a>`).join('')}</div></div>`;
+        <div class="gpri"><span>상담에서 가장 많이 받는 고민</span><div class="gchips">${D.sc.filter(s => s.pri).sort((x, y) => (y.lead ? 1 : 0) - (x.lead ? 1 : 0)).map(s => `<a class="gchip" href="${esc(solveUrl(s.id, '&from=top'))}" data-track="guide_pri_${esc(s.id)}">${esc(s.t)}</a>`).join('')}</div></div>`;
       el.hidden = false;
       idle(() => { warm().then(() => { if (root.JDJ_ASK) idle(() => root.JDJ_ASK.ask('헬리오시티').catch(() => null)); }); });   // 서울 단지 목록까지 미리
       const f = el.querySelector('form'), q = el.querySelector('input'), msg = el.querySelector('.msg'), alts = el.querySelector('.galts'), list = el.querySelector('.glist'), ans = el.querySelector('.gans');
@@ -334,7 +337,7 @@
         const fl = F ? C().findFeatures(text, F, D.lex).filter(featOn) : [];
         const short = text.split(/\s+/).length <= 4;
         if (r.top && GXon(D.sc.find(s => s.id === r.top.id))) { say(''); const sc = D.sc.find(s => s.id === r.top.id); ans._h = null;
-          return root.JDJ_GREDEV.instant(ans, gxH({ sc, slots: r.slots, live: () => my === RUN, hand: nf => { try { sessionStorage.setItem(IN, JSON.stringify({ q: text, nf, t: Date.now() })); } catch (e) {} } }, D, IX)); }
+          return (sc.ext === 'budget' ? root.JDJ_GBUDGET.instant : root.JDJ_GREDEV.instant)(ans, gxH({ sc, slots: r.slots, live: () => my === RUN, hand: nf => { try { sessionStorage.setItem(IN, JSON.stringify({ q: text, nf, t: Date.now() })); } catch (e) {} } }, D, IX)); }
         if (r.top && r.top.id === 'find_home') { say(''); return narrow(D.sc.find(s => s.id === 'find_home'), C().narrowInit(r.slots, D, ''), IX, t0, my); }
         if (r.top) {
           const sc = D.sc.find(s => s.id === r.top.id), mem = memory(IX);
@@ -598,11 +601,13 @@
         if (inp.a) { Object.keys(inp.a).forEach(k => { if (asks.indexOf(k) >= 0 && inp.a[k] != null && inp.a[k] !== '') { S.a[k] = k === 'region' && inp.a.region && inp.a.region.code ? regionOf(IX, inp.a.region.code) : inp.a[k]; if (inp.from && inp.from[k]) S.from[k] = inp.from[k]; } }); }
         if (inp.danji && asks.indexOf('danji') >= 0) { S.a.danji = inp.danji; S.from.danji = '찾은 단지'; }
       }
-      if (sc.ext) {   // 재개발 예산·재건축 몸테크: 즉답 표 + 카드 안 좁히는 질문(assets/guide-redev.js)
+      if (sc.ext) {   // 재개발 예산·재건축 몸테크(assets/guide-redev.js) · 현금 + 대출 서울 아파트(assets/guide-budget.js): 즉답 + 카드 안 좁히는 질문
         if (!root.JDJ_GREDEV) await script('assets/guide-redev.js?v=2');
+        if (sc.ext === 'budget' && !root.JDJ_GBUDGET) await script(XSRC.budget);
         if (!root.JDJ_LOAN) await warm();
         stat('guide_open', { s: sc.id, from: qs.get('from') || '' });
-        if (root.JDJ_GREDEV) return root.JDJ_GREDEV.flow(el, gxH({ sc, head: headHtml(sc, D), slots: inp && inp.slots ? inp.slots : (inp && inp.q ? C().extract(inp.q, ctxOf(IX)) : null), inSt: inp && inp.nf, mem }, D, IX));
+        if (sc.ext === 'budget' && root.JDJ_GBUDGET) return root.JDJ_GBUDGET.flow(el, gxH({ sc, head: headHtml(sc, D), slots: inp && inp.slots ? inp.slots : (inp && inp.q ? C().extract(inp.q, ctxOf(IX)) : null), inSt: inp && inp.nf, mem }, D, IX));
+        if (sc.ext === 'redev' && root.JDJ_GREDEV) return root.JDJ_GREDEV.flow(el, gxH({ sc, head: headHtml(sc, D), slots: inp && inp.slots ? inp.slots : (inp && inp.q ? C().extract(inp.q, ctxOf(IX)) : null), inSt: inp && inp.nf, mem }, D, IX));
       }
       /* 3) 기억 */
       (sc.ask || []).forEach(k => { if ((S.a[k] == null || S.a[k] === '') && mem.m[k] != null) { S.a[k] = mem.m[k]; S.from[k] = mem.from[k]; } });
@@ -872,7 +877,9 @@ body.gchat-on .jtab{display:none!important}body.gchat-on .foot{display:none}
         }
       } else if (sc.ext) {
         if (!root.JDJ_GREDEV) await script('assets/guide-redev.js?v=2');
-        if (root.JDJ_GREDEV) { if (!ST.nf) ST.nf = root.JDJ_GREDEV.init(sc.id, {}, D); try { card = await root.JDJ_GREDEV.chatCard(ST, gxH({ sc }, D, IX)); } catch (e) { card = null; } ST._n = card ? card.n : 0; }
+        if (sc.ext === 'budget' && !root.JDJ_GBUDGET) await script(XSRC.budget);
+        if (sc.ext === 'budget' && root.JDJ_GBUDGET) { if (!ST.nf) ST.nf = root.JDJ_GBUDGET.init(sc.id, {}, D); try { card = await root.JDJ_GBUDGET.chatCard(ST, gxH({ sc }, D, IX)); } catch (e) { card = null; } ST._n = card ? card.n : 0; }
+        else if (root.JDJ_GREDEV) { if (!ST.nf) ST.nf = root.JDJ_GREDEV.init(sc.id, {}, D); try { card = await root.JDJ_GREDEV.chatCard(ST, gxH({ sc }, D, IX)); } catch (e) { card = null; } ST._n = card ? card.n : 0; }
       } else {
         const E = await env(sc, a, IX);
         if (a.danji && !a.facts) a.facts = await danjiFacts(a.danji, IX, { fast: true });
@@ -898,7 +905,7 @@ body.gchat-on .jtab{display:none!important}body.gchat-on .foot{display:none}
       const sl = C().extract(t, ctx), ap = C().apply(sc, sl, st.a); st.a = ap.a; Object.assign(st.from, ap.from);
       Object.keys(P.a || {}).forEach(k => { if (st.a[k] == null || st.a[k] === '') { st.a[k] = P.a[k]; st.from[k] = '적어 주신 문장'; } });
       if (sc.id === 'find_home') st.nf = C().narrowInit(sl, D, '');
-      else if (GXon(sc)) st.nf = root.JDJ_GREDEV.init(sc.id, sl, D);
+      else if (GXon(sc)) st.nf = XM(sc).init(sc.id, sl, D);
       if (st.a.region && st.a.region.code) st.a.region = regionOf(DD.IX, st.a.region.code) || st.a.region;
       return st;
     }
@@ -941,7 +948,7 @@ body.gchat-on .jtab{display:none!important}body.gchat-on .foot{display:none}
         const sc = D.sc.find(x => x.id === ST.id);
         bot(`알겠어요. ‘${sc.t}’ 기준으로 바로 계산해 볼게요.`);
       } else {
-        if (qv !== undefined && String(qv)[0] === '@') { ST = C().chatStart('', D, ctx, mem); ST.id = String(qv).slice(1); ST.a = {}; ST.from = {}; ST.skip = []; const sc = D.sc.find(x => x.id === ST.id); (sc.ask || []).forEach(k => { if (mem.m[k] != null) ST.a[k] = mem.m[k]; }); if (sc.id === 'find_home') ST.nf = C().narrowInit({}, D, ''); else if (GXon(sc)) ST.nf = root.JDJ_GREDEV.init(sc.id, {}, D); bot(`알겠어요. ‘${sc.t}’ 기준으로 볼게요.`); }
+        if (qv !== undefined && String(qv)[0] === '@') { ST = C().chatStart('', D, ctx, mem); ST.id = String(qv).slice(1); ST.a = {}; ST.from = {}; ST.skip = []; const sc = D.sc.find(x => x.id === ST.id); (sc.ask || []).forEach(k => { if (mem.m[k] != null) ST.a[k] = mem.m[k]; }); if (sc.id === 'find_home') ST.nf = C().narrowInit({}, D, ''); else if (GXon(sc)) ST.nf = XM(sc).init(sc.id, {}, D); bot(`알겠어요. ‘${sc.t}’ 기준으로 볼게요.`); }
         else {
           const r = C().chatAnswer(ST, t, D, ctx, qv);
           if (ST.a.region && ST.a.region.code && !ST.a.region.sd) ST.a.region = regionOf(IX, ST.a.region.code) || ST.a.region;
@@ -958,7 +965,7 @@ body.gchat-on .jtab{display:none!important}body.gchat-on .foot{display:none}
             if (r.ai !== 0) { LOG.push({ who: 'bot', t: '…', typing: 1 }); paint(); LOG.pop(); await think(D, IX); save(); paint(); return; }
           }
           if (!r.ok && !r.switched) {
-            const nx = ST.asked ? (ST.asked.nf ? { key: ST.asked.key, nf: 1, q: ST.asked.ext && root.JDJ_GREDEV ? root.JDJ_GREDEV.Q[ST.asked.key] : D.narrow.q[ST.asked.key] } : { key: ST.asked.key, q: D.q[ST.asked.key] }) : null;
+            const nx = ST.asked ? (ST.asked.nf ? { key: ST.asked.key, nf: 1, q: ST.asked.ext && XM(D.sc.find(x => x.id === ST.id)) ? XM(D.sc.find(x => x.id === ST.id)).Q[ST.asked.key] : D.narrow.q[ST.asked.key] } : { key: ST.asked.key, q: D.q[ST.asked.key] }) : null;
             if (!nx) { ST.done = true; save(); return send(t); }
             bot('제가 잘 못 알아들었어요. ' + C().chatHint(nx), { quick: (C().chatNext(Object.assign({}, ST, { asked: null }), D, null) || { quick: [] }).quick.map(x => [String(x[0]), x[1]]) });
             save(); paint(); return;
