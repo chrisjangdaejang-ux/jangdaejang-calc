@@ -24,7 +24,7 @@
     'tax/': ['세금'], 'tax/transfer/': ['넘기는 방법 비교', 'tax/'], 'tax/count/': ['주택 수 판정', 'tax/'], 'tax/cost/': ['살 때·팔 때 드는 돈', 'tax/'], 'tax/changes/': ['세법 바뀌는 날', 'tax/'],
     'loan/': ['대출 한도'], 'loan/checklist/': ['잔금일 체크리스트', 'loan/'],
     'mine/': ['내 집 시세'], 'mine/calendar/': ['내 부동산 달력', 'mine/'], 'map/': ['지도'], 'all/': ['전체 기능'], 'ask/': ['단지 비교'], 'rank/': ['주간 순위'],
-    'jeonse/': ['전월세'], 'jeonse/checklist/': ['전세사기 예방 체크리스트', 'jeonse/'], 'jeonse/safety/draft/': ['전셋집 안전 진단', 'jeonse/'],
+    'jeonse/': ['전월세'], 'jeonse/checklist/': ['전세사기 예방 체크리스트', 'jeonse/'], 'jeonse/safety/': ['전세 안전 점검', 'jeonse/'], 'jeonse/safety/draft/': ['전셋집 안전 진단', 'jeonse/'],
     'quiz/': ['집값 맞혀 보기'], 'quiz/hall/': ['명예의 전당', 'quiz/'],
     'track/': ['예측 적중 기록'], 'track/detail/': ['성적표', 'track/'],
     'weekly/': ['주간 실거래 동향'], 'press/': ['보도자료실'],

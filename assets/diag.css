@@ -1,0 +1,83 @@
+/* 진단 리포트 공용 틀(assets/diag.js) 모양 — 색은 디자인 가이드 0 토큰만(상태색 좋음 #0E7A4F · 주의 #A15C07 · 위험 #B42318, 남색은 누르는 것만).
+   페이지 <style> 뒤에 읽어요. 휴대폰 390px: 결론 + 신호 4개가 첫 화면 + 반 화면 · PC 1024px 이상: 카드 2칸. */
+.dg{--dg-g:#0E7A4F;--dg-gl:#E6F5EE;--dg-y:#A15C07;--dg-yl:#FFF6E5;--dg-r:#B42318;--dg-rl:#FDECEC;--dg-n:#5F6B7A;--dg-nl:#F2F4F6;--dg-ink:var(--rf-ink,#17202E)}
+.dg .dg-g{--c:var(--dg-g);--cl:var(--dg-gl)}.dg .dg-y{--c:var(--dg-y);--cl:var(--dg-yl)}.dg .dg-r{--c:var(--dg-r);--cl:var(--dg-rl)}.dg .dg-n{--c:var(--dg-n);--cl:var(--dg-nl)}
+/* ① 한 줄 결론 */
+.dg-head{position:relative;background:var(--dg-ink);color:#fff;border-radius:20px;padding:16px 18px 14px 22px;overflow:hidden}
+.dg-head::before{content:'';position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--c)}
+.dg-head.dg-n::before{background:#8B95A1}
+.dg-ht{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.dg-title{font-size:14.5px;font-weight:700;color:#B9BFCC}
+.dg-cnts{display:flex;gap:4px;flex-wrap:wrap}
+.dg-cnt{font-size:12.5px;font-weight:800;line-height:22px;padding:0 8px;border-radius:999px;border:1.5px solid var(--c);color:#fff;white-space:nowrap}
+.dg-cnt.dg-g{border-color:#4FBF8B}.dg-cnt.dg-y{border-color:#E0A23A}.dg-cnt.dg-r{border-color:#F07A6E}.dg-cnt.dg-n{border-color:#8B95A1}
+.dg-one{display:flex;gap:10px;align-items:flex-start;margin:8px 0 0;font-size:21px;font-weight:900;line-height:1.38;letter-spacing:-.4px;color:#fff;word-break:keep-all}
+.dg-ic{flex:none;width:30px;height:30px;border-radius:50%;background:var(--c);color:#fff;font-style:normal;font-size:16px;font-weight:900;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.dg-head.dg-n .dg-ic{background:#5F6B7A}
+.dg-sub{margin:8px 0 0;font-size:15px;line-height:1.55;color:#D5DAE3;word-break:keep-all}
+.dg-asof{margin:6px 0 0;font-size:13px;color:#B9BFCC}
+/* ② 신호등 카드 */
+.dg-cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 0}
+@media(min-width:760px){.dg-cards{gap:10px}}
+.dg-card{position:relative;background:#fff;border:1px solid var(--line,#E5E8EB);border-radius:16px;padding:12px 14px 12px 18px;min-width:0}
+.dg-card::before{content:'';position:absolute;left:0;top:10px;bottom:10px;width:4px;border-radius:0 3px 3px 0;background:var(--c)}
+.dg-card.dg-r{border-color:#F3C1BC}.dg-card.dg-y{border-color:#EFD3A3}
+.dg-ct{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.dg-ct h3{margin:0;font-size:15.5px;font-weight:800;color:var(--sub,#3E4754);line-height:1.4;word-break:keep-all}
+.dg-chip{flex:none;display:inline-flex;align-items:center;gap:4px;font-size:13.5px;font-weight:800;line-height:1;padding:5px 9px 5px 6px;border-radius:999px;background:var(--cl);color:var(--c);white-space:nowrap}
+.dg-chip i{font-style:normal;width:17px;height:17px;border-radius:50%;background:var(--c);color:#fff;font-size:12.5px;font-weight:900;display:inline-flex;align-items:center;justify-content:center}
+.dg-v{margin:4px 0 0;font-size:21px;font-weight:900;letter-spacing:-.4px;line-height:1.3;color:var(--text,#191F28);font-variant-numeric:tabular-nums;word-break:keep-all}
+.dg-card.dg-n .dg-v{color:var(--sub2,#4E5968);font-size:18px}
+.dg-s{margin:4px 0 0;font-size:14px;line-height:1.55;color:var(--sub2,#4E5968);word-break:keep-all;overflow-wrap:anywhere}
+.dg-cbtn{display:none;margin-top:2px}
+/* 휴대폰: 2칸 카드(결론 + 신호 4개가 첫 화면 안 ≤ 600px) — 판정 칩을 위로, 근거는 3줄까지(전문은 '왜'에) */
+@media(max-width:759px){
+  .dg-card{padding:10px 10px 10px 14px}
+  .dg-ct{flex-direction:column-reverse;align-items:flex-start;gap:6px}
+  .dg-ct h3{font-size:14px}
+  .dg-v{font-size:19px;margin-top:2px}.dg-card.dg-n .dg-v{font-size:16px}
+  .dg-s{font-size:13px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .dg-cbtn{display:block}.dg-pcw{display:none}
+  .dg-one{font-size:19px}.dg-head{padding:14px 14px 12px 18px}.dg-sub{font-size:14px;margin-top:6px}
+}
+.dg-ws{margin:6px 0 0;font-size:14.5px;line-height:1.6;color:var(--text,#191F28);font-weight:700}
+.dg-wb{font:inherit;font-size:14px;font-weight:700;color:var(--blue,#4338CA);background:none;border:0;padding:0;min-height:32px;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+/* ③ 왜 이런 결과인가요 */
+.dg-why{margin:12px 0 0;background:#fff;border:1px solid var(--line,#E5E8EB);border-radius:16px;padding:0 16px}
+.dg-why>summary{cursor:pointer;list-style:none;min-height:52px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:16.5px;font-weight:900;color:var(--text,#191F28)}
+.dg-why>summary::-webkit-details-marker{display:none}
+.dg-why>summary::after{content:'펼치기';font-size:13.5px;font-weight:700;color:var(--blue,#4338CA)}
+.dg-why[open]>summary::after{content:'접기'}
+.dg-why>summary small{font-size:13px;font-weight:500;color:var(--sub2,#4E5968);margin-left:6px;margin-right:auto}
+.dg-wi{border-top:1px solid var(--line2,#F0F1F3);padding:12px 0;outline:0}
+.dg-wi h3{margin:0;font-size:15.5px;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap;line-height:1.45}
+.dg-wi ul{margin:6px 0 0;padding-left:20px;font-size:14.5px;line-height:1.65;color:var(--sub,#3E4754)}
+.dg-wi li{margin:2px 0}
+.dg-src{margin:6px 0 0;font-size:13.5px;color:var(--sub2,#4E5968);line-height:1.6;overflow-wrap:anywhere}
+.dg-src a{color:var(--blue,#4338CA)}.dg-src small{font-size:12.5px}
+/* ④ 다음 할 일 */
+.dg-todo{margin:12px 0 0;background:var(--gray2,#F9FAFB);border:1px solid var(--line,#E5E8EB);border-radius:16px;padding:14px 16px}
+.dg-tt{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.dg-tt h2{margin:0;font-size:19px;font-weight:900}
+.dg-prog{font-size:14px;font-weight:700;color:var(--sub2,#4E5968)}
+.dg-bar{height:8px;border-radius:4px;background:var(--line,#E5E8EB);margin:8px 0 6px;overflow:hidden}
+.dg-bar i{display:block;height:100%;background:#0E7A4F;border-radius:4px;transition:width .2s}
+.dg-todo ul{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.dg-todo li{padding:8px 0;border-bottom:1px solid var(--line2,#F0F1F3)}
+.dg-todo li:last-child{border-bottom:0}
+.dg-todo label{display:flex;gap:10px;align-items:flex-start;cursor:pointer;min-height:44px}
+.dg-todo input{flex:none;width:22px;height:22px;margin:2px 0 0;accent-color:#0E7A4F}
+.dg-todo label b{display:block;font-size:15.5px;line-height:1.45;word-break:keep-all}
+.dg-todo label small{display:block;font-size:13.5px;line-height:1.5;color:var(--sub2,#4E5968);word-break:keep-all}
+.dg-todo li.on label b{color:var(--sub2,#4E5968);text-decoration:line-through}
+.dg-tl{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 0 32px}
+.dg-tl a{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;border:1px solid var(--line,#E5E8EB);border-radius:12px;background:#fff;font-size:14px;font-weight:700;color:var(--blue,#4338CA);text-decoration:none}
+/* ⑤ 공유·저장 */
+.dg-share{margin:12px 0 0}
+.dg-sb{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dg-btn{font:inherit;font-size:15px;font-weight:800;min-height:48px;border-radius:12px;border:1.5px solid var(--blue,#4338CA);background:#fff;color:var(--blue,#4338CA);cursor:pointer}
+.dg-sn,.dg-msg{margin:6px 0 0;font-size:13.5px;color:var(--sub2,#4E5968);line-height:1.5}
+.dg-msg:empty{display:none}
+.dg-note{margin:14px 0 0;font-size:13.5px;line-height:1.65;color:var(--sub2,#4E5968)}
+@media(min-width:1024px){.dg-one{font-size:24px}.dg-head{padding:20px 26px 18px 30px}}
+@media print{.dg-share,.dg-wb,.dg-tl{display:none!important}.dg-head{-webkit-print-color-adjust:exact;print-color-adjust:exact}.dg-card,.dg-why,.dg-todo{break-inside:avoid}}

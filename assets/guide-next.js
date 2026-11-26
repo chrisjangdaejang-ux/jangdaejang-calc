@@ -22,7 +22,7 @@
     '.gsd small{display:block;font-weight:500;color:#4E5968;font-size:13px}.gask{margin:0 0 12px;background:var(--blue-l,#F5F4FD);color:var(--blue-d,#3730A3)}';
   function css() { if (document.getElementById('gnxCss')) return; var s = document.createElement('style'); s.id = 'gnxCss'; s.textContent = CSS; document.head.appendChild(s); }
   var DATA = null;
-  function data() { return DATA || (DATA = fetch(BASE + 'assets/guide/scenarios.json?v=9', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { DATA = null; return null; })); }
+  function data() { return DATA || (DATA = fetch(BASE + 'assets/guide/scenarios.json?v=10', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { DATA = null; return null; })); }
   function link(id, from) { return BASE + 'solve/?s=' + encodeURIComponent(id) + (from ? '&from=' + encodeURIComponent(from) : ''); }
   function mount(el) {
     var key = el.getAttribute('data-gnext'); if (!key || el.getAttribute('data-done')) return;

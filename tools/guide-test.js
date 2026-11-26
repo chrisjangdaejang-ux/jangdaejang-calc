@@ -114,7 +114,8 @@ const NOTI = [
     ty: [['084.0000A', 84, 50, 10, 60000]], cut: [{ band: 1, lo: 40, hi: 50, avg: 45, scope: '같은 시·도', nCx: 30, nRows: 120, from: '202411', to: '202608' }] },
   { no: 'N4', n: '끝난단지', sd: '서울특별시', g: '중구', ad: '서울특별시 중구 4', k: '민영', pb: '20260901', sp: ['', ''], r1: ['20260910', '20260910'], rc: ['20260910', '20260912'], pw: '20260920', f: [], ty: [['084.0000A', 84, 10, 0, 1]], cut: [] }
 ];
-const E = { L, T, H, CY, ADJ, RD, SALE, today: '2026-11-26', cyNotices: NOTI };
+const JSF = require('../assets/jsafe-core.js');
+const E = { L, T, H, CY, ADJ, RD, SALE, JS: JSF, today: '2026-11-26', cyNotices: NOTI };
 const scOf = id => SC.sc.find(s => s.id === id);
 const SEOUL = { code: '11710', name: '송파구', short: '서울', sido: '서울특별시' }, LOCAL = { code: '26110', name: '중구', short: '부산', sido: '부산광역시' };
 function card(id, a, e) { const r = G.solve(scOf(id), a, Object.assign({}, E, e || {})); return r; }
@@ -224,7 +225,8 @@ check('갱신 기간 2026-11-30 ~ 2027-03-31, 5% 2,500만', /2026년 11월 30일
 r = card('rent_raise', { dep: 40000, wrent: 0 }, { base: { v: 2.5, at: '202610' } }); good('rent_raise', r);
 check('월세 전환 상한: 기준금리 2.5% + 2%p = 4.5%', r.nums.some(n => n.v === '4.5%'), r.nums);
 r = card('deposit_safe', { htype: 'villa', dep: 25000, pub: 20000, senior: 0, region: SEOUL }); good('deposit_safe', r);
-check('전세보증: 공시 2억 × 126% = 2억 5,200만 → 2억 5천 가능', /가능/.test(r.nums[0].v) && r.nums[1].v === '2억 5,200만 원', r.nums);
+{ const hn = (r.nums || []).find(n => /^HUG 전세보증 가입/.test(n.k)) || {};
+  check('전세보증: 공시 2억 × 126% = 2억 5,200만 → 2억 5천 기준 안(전세 안전 점검과 같은 계산 jsafe-core)', hn.v === '기준 안이에요' && /2억 5,200만원까지/.test(hn.s) && /괜찮아요$/.test(hn.k) && r.same && /^jeonse\/safety\/\?k=v&/.test(r.same.href) && !/25000|20000/.test(r.same.href), r.nums); }
 r = card('contract_check', { dep: 15000, szone: 'seoul' }); good('contract_check', r);
 check('최우선변제: 서울 1억 5천 → 5,500만', /5,500만/.test(r.head));
 r = card('wolse_conv', { dep: 30000, wdep: 5000, wrent: 100, jrate: 4 }); good('wolse_conv', r);
@@ -354,7 +356,7 @@ check('운영자 화면 solve/admin/', fs.existsSync(path.join(ROOT, 'solve/admi
   const RC = require('../assets/rent-core.js'), KK = require('../assets/kk-core.js'), CAL = require('../assets/cal-core.js');
   const KD = JSON.parse(read('data/kkang.json'));
   const IXa = { months: ['202610'], sgg: { '11710': { name: '송파구', sido: '서울특별시', s: Array(24).fill(5000).concat(Array(12).fill(6000)), c: Array(36).fill(10), r: { jr: 50.2 } } } };
-  const EA = { L, T, H, CY, ADJ, RD, SALE, RC, KK, kkData: KD, today: '2026-11-26', IX: IXa, cyNotices: NOTI, cyRows: rows };
+  const EA = { L, T, H, CY, ADJ, RD, SALE, RC, KK, JS: JSF, kkData: KD, today: '2026-11-26', IX: IXa, cyNotices: NOTI, cyRows: rows };
   const CTXa = Object.assign({}, CTX, { today: '2026-11-26' });
   const FACT = { apt: '헬리오시티', band: '84㎡대', price: 150000, at: '202610', range: { lo: 140000, hi: 160000, months: 12 } };
   const DJ = { sd: 's00', code: '11710', dong: '가락동', jibun: '913', apt: '헬리오시티' };
@@ -432,7 +434,9 @@ check('운영자 화면 solve/admin/', fs.existsSync(path.join(ROOT, 'solve/admi
   check('문구: 부가세 10% 포함(최대) · 간이과세 한 줄', /부가세 10% 포함\(최대\) · 간이과세 사무소는 더 적을 수 있어요/.test(read('assets/guide-core.js')));
   const ds = G.solve(scOf('deposit_safe'), { htype: 'apt', dep: 120000, kb: 150000, senior: 0, danji: DJ, facts: FACT }, EA);
   const kk = KK.estimate({ kk: KD, code: '11710', dep: 120000, senior: 0, price: 150000 });
-  check('같은 계산: 아파트 단지를 고르면 깡통전세 확률 = 전월세 화면(kk-core estimate)', ds.ref && ds.ref[0] && ds.ref[0].v === KK.pText(kk.p) && /참고/.test(ds.ref[0].k), ds.ref);
+  const ki = ((ds.jsafe || {}).items || []).find(i => i.id === 'kk') || {};
+  const kWant = kk.sim.n < 30 ? '비슷한 계약이 적어요' : KD.status === 'ok' ? KK.pText(kk.p) : `${kk.sim.n.toLocaleString()}건 중 ${kk.sim.k.toLocaleString()}건`;
+  check('같은 계산: 아파트 단지를 고르면 깡통전세 = 전월세 화면과 같은 kk-core estimate(검증 전이면 확률 대신 실제 횟수)', ki.v === kWant && (ds.nums || []).some(n => /^깡통전세 위험/.test(n.k) && n.v === kWant), [ki, kWant]);
   /* 다음 단계 링크 */
   const scj = SC.sc;
   check('링크: 정책 대출 — 없는 #policy 대신 값 채운 대출 계산기', !JSON.stringify(scj).includes('loan/#policy') && scOf('special_loan').next[0].href === 'loan/?p={price}&g={region}&o={own}');

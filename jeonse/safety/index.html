@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="../../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="집예보">
+<script src="../../assets/pwa.js?v=3" defer></script>
+<script src="../../assets/biz.js?v=3" defer></script>
+<title>전세 안전 점검 — 이 전셋집, 계약해도 될까요? | 집예보</title>
+<link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/jeonse/safety/">
+<meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/jeonse/safety/">
+<meta name="description" content="집과 보증금만 넣으면 전세가율, HUG 전세보증 가입 기준, 깡통전세 위험, 최근 1년 흐름, 같은 동 보증금 범위를 신호등 한 장으로 보여 드려요. 계약 전 할 일 체크리스트까지 함께 확인하세요.">
+<meta property="og:title" content="전세 안전 점검 — 계약 전 위험 신호를 한 장으로 | 집예보">
+<meta property="og:description" content="전세가율·HUG 전세보증 기준·깡통전세 위험·최근 1년 흐름을 신호등으로. 넣은 금액은 기기 안에서만 계산해요.">
+<meta property="og:type" content="website">
+<script>window.JDJ_CONFIG = { tool:'jsafe', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../assets/track.js?v=3"></script>
+<script src="../../assets/stat.js?v=8"></script>
+<script src="../../assets/mine-core.js?v=25"></script>
+<script src="../../assets/rent-core.js?v=6"></script>
+<script src="../../assets/hug-core.js?v=1"></script>
+<script src="../../assets/kk-core.js?v=1"></script>
+<script src="../../assets/gongsi.js?v=4"></script>
+<script src="../../assets/jsafe-core.js?v=1"></script>
+<script src="../../assets/diag.js?v=1"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/aplus.css?v=50">
+<script src="../../assets/tabbar.js?v=8" defer></script>
+<link rel="stylesheet" href="../../assets/layout.css?v=5">
+<script src="../../assets/nw.js?v=1" defer></script>
+<style>
+.wrap{max-width:860px;margin:0 auto;padding:22px 16px 60px}
+h1{font-size:clamp(26px,6vw,38px);margin:6px 0 8px}
+.lead{margin:0 0 14px;font-size:16px;color:var(--sub2);line-height:1.65;word-break:keep-all}
+.priv{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--sub);background:var(--gray);border-radius:12px;padding:10px 12px;margin:0 0 14px;line-height:1.55}
+.priv b{color:var(--pos)}
+.panel{margin:14px 0}
+.panel h2 small{display:block;font-size:13.5px;font-weight:500;color:var(--sub2);margin-top:4px;letter-spacing:0}
+.ktabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;background:var(--gray);border-radius:14px;padding:5px;margin:0 0 12px}
+.ktabs button{font:inherit;font-size:15px;font-weight:700;border:0;background:transparent;color:var(--sub2);min-height:46px;padding:0 4px;border-radius:10px;cursor:pointer;word-break:keep-all;line-height:1.25}
+.ktabs button.on{background:#fff;color:var(--blue);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+@media(max-width:400px){.ktabs button{font-size:14px}}
+.pick{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pick .full{grid-column:1/-1}
+.pick label,.money label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
+.pick select,.pick input,.money input{width:100%;font:inherit;font-size:16px;padding:0 12px;min-height:48px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--text);min-width:0;box-sizing:border-box}
+.pick input:focus,.money input:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px rgba(67,56,202,.15)}
+@media(max-width:520px){.pick{grid-template-columns:1fr}}
+.or{font-size:13.5px;color:var(--sub2);margin:12px 0 6px;font-weight:700}
+.sres{display:grid;gap:6px;margin-top:8px}
+.sres button{font:inherit;text-align:left;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-height:48px;cursor:pointer;color:var(--text)}
+.sres button b{font-size:16px}.sres button small{display:block;font-size:13.5px;color:var(--sub2)}
+.sres .none{font-size:14px;color:var(--sub2);padding:6px 2px}
+.bands{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+.bands button{font:inherit;font-size:15px;font-weight:700;min-height:44px;padding:0 14px;border:1px solid var(--line);background:#fff;color:var(--sub);border-radius:999px;cursor:pointer}
+.bands button.on{background:var(--blue-l);border-color:var(--blue);color:var(--blue)}
+.place{margin:12px 0 0;padding:10px 12px;border-radius:12px;background:#F5F8FF;border:1px solid #D4D1F5;font-size:15px;line-height:1.55;word-break:keep-all}
+.place b{font-size:16px}.place small{display:block;color:var(--sub2);font-size:13.5px}
+.money{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(min-width:760px){.money{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:360px){.money{grid-template-columns:1fr}}
+.money .hint{font-size:13px;color:var(--sub2);margin-top:3px;line-height:1.45;word-break:keep-all;overflow-wrap:anywhere}
+.money .req{color:var(--neg);font-weight:800}
+.run{display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;margin-top:12px;font:inherit;font-size:17px;font-weight:800;border:0;border-radius:14px;background:var(--blue);color:#fff;cursor:pointer}
+.run:disabled{background:#C9CCE8;cursor:default}
+.note{font-size:13.5px;color:var(--sub2);line-height:1.6}
+.loading,.empty{padding:22px 16px;text-align:center;color:var(--sub2);border:1px dashed var(--line);border-radius:14px;background:#fff;font-size:15px}
+#res{scroll-margin-top:72px;margin-top:18px}
+.disc{font-size:13.5px;color:var(--sub2);line-height:1.7;margin-top:22px;border-top:1px solid var(--line2);padding-top:14px}
+.gsn{font-size:13px}
+[hidden]{display:none!important}
+@media print{header.top,.tabbar,#findSec,#moneySec,.priv,.foot{display:none!important}}
+</style>
+<link rel="stylesheet" href="../../assets/diag.css?v=1">
+<script src="../../assets/back.js?v=1" defer></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a>
+  <div class="badge plain">전세 안전 점검</div>
+</header>
+
+<main class="wrap">
+  <span class="tag">전세 안전 점검</span>
+  <h1>이 전셋집,<br><em>계약해도 될까요?</em></h1>
+  <p class="lead">집과 보증금을 넣으면 전세가율, HUG 전세보증 가입 기준, 깡통전세 위험, 최근 1년 흐름을 신호등 한 장으로 보여 드려요. 빌라·오피스텔은 같은 동 보증금 범위도 함께 봐요.</p>
+  <p class="priv"><span aria-hidden="true">🔒</span><span><b>넣은 금액은 이 기기 안에서만 계산해요.</b> 주소·공유 링크·방문 집계 어디에도 들어가지 않아요.</span></p>
+
+  <section class="panel" id="findSec" aria-labelledby="findT">
+    <h2 id="findT">1. 집 고르기<small id="findHelp"></small></h2>
+    <div class="ktabs" role="tablist" aria-label="주택 종류" id="ktabs"></div>
+    <div class="pick">
+      <div><label for="sido">시·도</label><select id="sido"><option>불러오는 중…</option></select></div>
+      <div><label for="sgg">시·군·구</label><select id="sgg" disabled><option value="">시·군·구 선택</option></select></div>
+      <div id="dongW" hidden><label for="dong">동</label><select id="dong" disabled><option value="">동 선택</option></select></div>
+      <div id="bldW" hidden><label for="bld">건물 (선택)</label><select id="bld" disabled><option value="">건물 선택</option></select></div>
+    </div>
+    <div id="qW">
+      <p class="or" id="qL">단지 이름으로 찾기</p>
+      <div class="pick"><div class="full"><label for="q" style="position:absolute;left:-9999px">이름</label><input id="q" type="search" placeholder="예: 헬리오시티, 마포래미안푸르지오" autocomplete="off" enterkeyhint="search"></div></div>
+      <div class="sres" id="sres" aria-live="polite"></div>
+    </div>
+    <div class="bands" id="bands" role="group" aria-label="면적대"></div>
+    <div class="place" id="place" hidden></div>
+    <p class="note" id="loadMsg" aria-live="polite"></p>
+  </section>
+
+  <section class="panel" id="moneySec" aria-labelledby="moneyT">
+    <h2 id="moneyT">2. 보증금 넣기<small>금액은 만원 단위예요. 선순위 채권·시세는 몰라도 돼요.</small></h2>
+    <div class="money">
+      <div><label for="dep">전세 보증금 <span class="req">*</span></label><input id="dep" inputmode="numeric" placeholder="예: 30,000" autocomplete="off"><div class="hint" id="depH">만원</div></div>
+      <div><label for="sen">선순위 채권 (선택)</label><input id="sen" inputmode="numeric" placeholder="모르면 비워 두세요" autocomplete="off"><div class="hint" id="senH">등기부 을구의 근저당 채권최고액</div></div>
+      <div><label for="pub">공시가격</label><input id="pub" inputmode="numeric" placeholder="예: 20,000" autocomplete="off"><div class="hint" id="pubH"><a href="https://www.realtyprice.kr/" target="_blank" rel="noopener">부동산 공시가격 알리미 ↗</a>에서 확인해요</div><div class="gsn" id="pubN"></div></div>
+      <div id="kbW"><label for="kb">시세 (선택)</label><input id="kb" inputmode="numeric" placeholder="KB시세 등" autocomplete="off"><div class="hint">아파트·오피스텔은 HUG가 시세를 먼저 써요</div></div>
+    </div>
+    <button type="button" class="run" id="run" data-track="jsafe_run">위험 신호 점검하기</button>
+  </section>
+
+  <section id="res" aria-live="polite" hidden></section>
+
+  <p class="disc">자료: 국토교통부 아파트·연립다세대·오피스텔·단독다가구 매매·전월세 실거래가(공공데이터포털), 국토교통부 주택 공시가격, 주택도시보증공사(HUG) 전세보증금반환보증 상품 안내(2026-11-25 확인 · 2026-11-27 다시 확인). 매매·전세 시세는 그 달까지 3개월 실거래 중간값이에요. 실제 보증 가입 여부와 보증료는 HUG 심사로 정해지고, 이 결과는 정보 제공용이에요.</p>
+</main>
+<footer class="foot">과거 실거래와 공개 기준으로 만든 정보예요. 특정 계약을 권하지 않아요. 자세한 분석 방법은 <a href="../../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집예보 · <a href="../../">홈</a> · <a href="../">전월세 시세</a> · <a href="../checklist/">전세사기 예방 체크리스트</a></footer>
+
+<script>
+var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+(function(){
+'use strict';
+/* 전세 안전 점검 — 계산은 assets/jsafe-core.js(고민 찾기 길잡이 deposit_safe 와 같은 파일), 그림은 assets/diag.js(진단 리포트 공용 틀).
+   주소에는 고른 집(k·sd·g·d·b)만 남겨요. 보증금·선순위 채권·공시가격·시세는 이 화면 안 계산에만 쓰고 어디에도 보내지 않아요.
+   길잡이에서 넘어오면(?from=guide) 그 탭에 30분만 남긴 금액(sessionStorage jdj_jsafe)을 한 번 읽어 같은 결과를 바로 보여 드려요. */
+const M = window.JDJ_MINE, R = window.JDJ_RENT, JS = window.JDJ_JSAFE, H = window.JDJ_HUG, KK = window.JDJ_KK, DG = window.JDJ_DIAG, $ = id => document.getElementById(id);
+const DATA = JB.DATA + 'data/';
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = s => { const v = parseFloat(String(s == null ? '' : s).replace(/[^\d.]/g, '')); return isFinite(v) ? v : 0; };
+const C = {};
+const getJ = u => C[u] || (C[u] = fetch(DATA + u, {cache:'no-cache'}).then(r => { if (!r.ok) throw new Error(u); return r.json(); }).catch(e => { delete C[u]; throw e; }));
+let IX = null, RX = null, KKD = null, RAN = false;
+const q = new URLSearchParams(location.search);
+const S = { kind: ['a','v','o','d'].includes(q.get('k')) ? q.get('k') : 'a', sd: q.get('sd') || '', code: q.get('g') || '', key: q.get('d') || '', band: q.get('b') || '', dong: '' };
+const sggName = c => ((IX && IX.sgg[c]) || {}).name || '';
+const sidoName = c => ((IX && IX.sgg[c]) || {}).sido || '';
+const sdOfCode = c => { const nm = sidoName(c); const s = (IX.sido || []).find(x => x.name === nm); return s ? s.id : ''; };
+/* 구 매매 시세: price/{구}.json, 없으면 시·도 점수 자료에서 그 구만(내 집 시세·길잡이와 같은 순서) */
+const loadSgg = (code, sd) => getJ('price/' + code + '.json').then(j => j.units || []).catch(() => sd ? getJ(sd + '.json').then(j => (j.units || []).filter(u => u[0] === code)) : []);
+/* 깡통전세 공개 요약: 엔진이 월 1회 만드는 data/rent/kk.json, 못 받으면 이 저장소 data/kkang.json — 전월세 화면·길잡이와 같은 순서 */
+const kkOk = j => j && j.reg && Array.isArray(j.grid) && j.bt ? j : null;
+const kkData = () => KKD || (KKD = getJ('rent/kk.json').then(kkOk).catch(() => null).then(j => j || fetch(JB.SITE + 'data/kkang.json').then(r => r.ok ? r.json() : null).then(kkOk).catch(() => null)));
+
+/* ---------- 종류 ---------- */
+const KHELP = {
+  a: '시·도를 고른 뒤 단지 이름으로 찾아 주세요. 같은 평형 매매 시세와 비교해요.',
+  v: '시·군·구 → 동을 골라 주세요. 건물까지 고르면 같은 건물 매매가로 전세가율도 계산해요.',
+  o: '시·군·구 → 동을 골라 주세요. 건물까지 고르면 그 건물 전셋값 흐름도 봐요.',
+  d: '시·군·구 → 동을 골라 주세요. 단독·다가구는 원자료에 건물 정보가 없어 동·면적대 단위로 봐요.'
+};
+function drawTabs(){ $('ktabs').innerHTML = R.KINDS.map(k => `<button type="button" role="tab" data-kind="${k.id}" class="${S.kind === k.id ? 'on' : ''}" aria-selected="${S.kind === k.id}">${esc(k.label)}</button>`).join(''); }
+function setKind(id, keep){
+  S.kind = id; drawTabs(); clearRes();
+  if (!keep){ S.key = ''; S.band = ''; S.dong = ''; }
+  const apt = id === 'a';
+  $('dongW').hidden = apt; $('bldW').hidden = !(id === 'v' || id === 'o'); $('qW').hidden = !apt; $('kbW').hidden = !(id === 'a' || id === 'o');
+  $('findHelp').textContent = KHELP[id];
+  $('q').value = ''; $('sres').innerHTML = ''; $('bands').innerHTML = ''; $('place').hidden = true;
+  if (!keep){ $('pub').value = ''; $('pubN').innerHTML = ''; $('pubH').hidden = false; }
+  return S.sd ? pickSido(S.sd, keep ? S.code : '') : Promise.resolve();
+}
+/* ---------- 고르기 ---------- */
+function fillSido(){
+  const first = ['서울', '경기', '인천'];
+  const list = [...IX.sido].sort((a, b) => { const ia = first.indexOf(a.short), ib = first.indexOf(b.short); return (ia < 0 ? 9 : ia) - (ib < 0 ? 9 : ib) || a.name.localeCompare(b.name, 'ko'); });
+  $('sido').innerHTML = list.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+}
+function sggList(){
+  const nm = (IX.sido.find(s => s.id === S.sd) || {}).name;
+  return Object.keys(IX.sgg).filter(k => IX.sgg[k].sido === nm && (S.kind === 'a' || ((RX.sgg[k] || {}).k || {})[S.kind])).sort((a, b) => sggName(a).localeCompare(sggName(b), 'ko'));
+}
+async function pickSido(id, keepSgg){
+  S.sd = id; $('sido').value = id;
+  const list = sggList();
+  $('sgg').innerHTML = '<option value="">시·군·구 선택</option>' + list.map(k => `<option value="${k}">${esc(sggName(k))}</option>`).join('');
+  $('sgg').disabled = false; $('dong').disabled = true; $('bld').disabled = true;
+  if (keepSgg && list.includes(keepSgg)) $('sgg').value = keepSgg; else if (!keepSgg) S.code = '';
+  if (S.kind === 'a'){ aptList(id).then(() => { if ($('q').value.trim()) runSearch(); }).catch(() => {}); if (S.key) await pickApt(S.key, true); }
+  else if ($('sgg').value) await pickSgg(true);
+}
+const GA = {};
+async function aptList(sd){ if (GA[sd]) return GA[sd]; const j = await getJ('rent/' + sd + '.json'); return (GA[sd] = M.groupDanji((j.units || []).map(M.listRow))); }
+const kindFile = (k, g) => 'rent/' + R.kindOf(k).sub + g + '.json';
+async function pickSgg(keep){
+  const g = $('sgg').value; S.code = g; clearRes();
+  if (!keep){ S.key = ''; S.dong = ''; S.band = ''; }
+  if (S.kind === 'a'){ if ($('q').value.trim()) runSearch(); return; }
+  $('dong').disabled = true; $('bld').disabled = true; $('bands').innerHTML = '';
+  if (!g){ $('place').hidden = true; return; }
+  $('loadMsg').textContent = '자료를 불러오는 중이에요…';
+  let j; try { j = await getJ(kindFile(S.kind, g)); $('loadMsg').textContent = ''; } catch (e) { $('loadMsg').textContent = '이 시·군·구 자료가 아직 없어요.'; return; }
+  if (S.code !== g) return;
+  const dongs = [...new Set((j.units || []).map(u => u[0]))].sort((a, b) => a.localeCompare(b, 'ko'));
+  $('dong').innerHTML = '<option value="">동 선택</option>' + dongs.map(d => `<option>${esc(d)}</option>`).join('');
+  $('dong').disabled = !dongs.length;
+  const kd = keep ? (S.kind === 'd' ? S.key : String(S.key).split('|')[0]) : '';
+  if (kd && dongs.includes(kd)){ $('dong').value = kd; await pickDong(true); } else placeShow();
+}
+async function pickDong(keep){
+  const g = S.code, dg = $('dong').value; S.dong = dg; clearRes();
+  const j = await getJ(kindFile(S.kind, g));
+  if (S.kind === 'd'){ S.key = dg; const bs = (j.units || []).filter(u => u[0] === dg).map(u => u[1]); if (!keep || !bs.includes(S.band)) S.band = bs[0] || ''; drawBands(bs); placeShow(); return; }
+  const grp = C['grp' + S.kind + g] || (C['grp' + S.kind + g] = R.groupBld(j.units));
+  const list = [...grp.values()].filter(d => d.dong === dg).sort((a, b) => b.n - a.n);
+  $('bld').innerHTML = `<option value="">건물 고르지 않음 (동 전체로 보기)</option>` + list.map(d => `<option value="${esc(d.key)}">${esc(R.bldName(d))} · ${esc(d.jibun)}</option>`).join('');
+  $('bld').disabled = !list.length;
+  $('bld').value = keep && S.key && grp.has(S.key) ? S.key : '';
+  await pickBld(keep);
+}
+async function pickBld(keep){
+  const g = S.code, j = await getJ(kindFile(S.kind, g)), grp = C['grp' + S.kind + g];
+  S.key = $('bld').value || ''; clearRes();
+  const bs = S.key && grp.get(S.key) ? grp.get(S.key).bands.map(u => u[2]) : [...new Set((j.units || []).filter(u => u[0] === S.dong).map(u => u[2]))];
+  if (!keep || !bs.includes(S.band)) S.band = S.key && grp.get(S.key) ? grp.get(S.key).bands.slice().sort((a, b) => (b[5] + b[6]) - (a[5] + a[6]))[0][2] : (bs[0] || '');
+  drawBands(bs); placeShow(); pubFill();
+}
+let qt = null;
+function runSearch(){
+  const qq = $('q').value.trim(), box = $('sres');
+  if (!qq){ box.innerHTML = ''; return; }
+  const g = GA[S.sd]; if (!g){ box.innerHTML = '<div class="none">단지 목록을 불러오는 중이에요…</div>'; return; }
+  let hits = M.searchDanji(g, qq, 12); if ($('sgg').value) hits = hits.filter(d => d.code === $('sgg').value).concat(hits.filter(d => d.code !== $('sgg').value));
+  box.innerHTML = hits.length ? hits.slice(0, 10).map(d => `<button type="button" data-k="${esc(d.key)}"><b>${esc(d.apt)}</b><small>${esc(sggName(d.code))} ${esc(d.dong)} · 최근 3년 전월세 계약 ${d.n.toLocaleString()}건</small></button>`).join('')
+    : `<div class="none">'${esc(qq)}' 이름의 단지를 ${esc((IX.sido.find(s => s.id === S.sd) || {}).name || '')}에서 찾지 못했어요. 이름 일부만 넣어 보세요.</div>`;
+}
+let SALE_U = [];
+async function pickApt(key, keep){
+  const g = await aptList(S.sd).catch(() => null), d = g && g.get(key);
+  if (!d){ $('loadMsg').textContent = '이 단지를 찾지 못했어요. 이름으로 다시 찾아 주세요.'; return; }
+  S.key = key; S.code = d.code; if ($('sgg').value !== d.code) $('sgg').value = d.code;
+  $('sres').innerHTML = ''; $('q').value = ''; clearRes();
+  $('loadMsg').textContent = '매매 시세를 불러오는 중이에요…';
+  SALE_U = await loadSgg(d.code, S.sd); $('loadMsg').textContent = '';
+  if (S.key !== key) return;
+  const p = key.split('|'), bs = JS.bandsOf(SALE_U, { code: p[0], dong: p[1], apt: p[3] });
+  if (!keep || !bs.includes(S.band)){ const s0 = JS.saleOf(SALE_U, IX.months, { code: p[0], dong: p[1], apt: p[3], jibun: p[2], band: '' }, M); S.band = s0 ? s0.band : ''; }
+  drawBands(bs); placeShow(); pubFill();
+}
+function drawBands(bs){
+  $('bands').innerHTML = bs.length > 1 || (bs.length && S.kind !== 'a') ? bs.map(b => `<button type="button" data-b="${esc(b)}" class="${b === S.band ? 'on' : ''}" aria-pressed="${b === S.band}">${esc(b)}</button>`).join('') : '';
+}
+function placeName(){
+  if (S.kind === 'a'){ const p = S.key.split('|'); return S.key ? { nm: p[3], loc: `${sggName(p[0])} ${p[1]}` } : null; }
+  if (!S.dong) return null;
+  const grp = C['grp' + S.kind + S.code], b = S.key && grp && grp.get(S.key);
+  return { nm: b ? R.bldName(b) : `${S.dong} ${R.kindOf(S.kind).label}`, loc: `${sggName(S.code)} ${S.dong}${b ? ' ' + b.jibun : ' · 건물 고르지 않음'}` };
+}
+function placeShow(){
+  const p = placeName(), box = $('place');
+  if (!p && !S.code){ box.hidden = true; return; }
+  box.hidden = false;
+  box.innerHTML = p ? `<b>${esc(p.nm)}</b>${S.band ? ` · ${esc(S.band)}` : ''}<small>${esc(JS.KIND_NM[S.kind])} · ${esc(p.loc)}</small>` : `<b>${esc(sggName(S.code))}</b><small>${esc(JS.KIND_NM[S.kind])} · 집을 고르지 않았어요. HUG 기준만 먼저 볼 수 있어요.</small>`;
+  const url = new URL(location.href); url.search = ''; url.search = placeQs(); history.replaceState(null, '', url);
+}
+/** 주소에 남기는 값: 고른 집만(금액 없음) */
+function placeQs(){
+  const p = new URLSearchParams(); p.set('k', S.kind); if (S.sd) p.set('sd', S.sd); if (S.code) p.set('g', S.code);
+  if (S.key) p.set('d', S.key); if (S.band) p.set('b', S.band);
+  return p.toString();
+}
+/* 공시가격 미리 넣기: 우리 공개 자료(같은 평형 호별 중간값) — 길잡이에서 넘어온 값이 있으면 그대로 둠 */
+function pubFill(){
+  if (!window.JDJ_GONGSI || $('pub').dataset.user || $('pub').dataset.hand) return;
+  let o = null;
+  if (S.kind === 'a' && S.key){ const p = S.key.split('|'), u = SALE_U.find(x => x[0] === p[0] && x[1] === p[1] && x[2] === p[3] && x[3] === S.band); o = { code: p[0], dong: p[1], jibun: p[2], apt: p[3], band: S.band, area: u ? u[4] : 0 }; }
+  else if ((S.kind === 'v' || S.kind === 'o') && S.key){ const b = C['grp' + S.kind + S.code].get(S.key), u = b && b.bands.find(x => x[2] === S.band); o = b ? { code: S.code, dong: b.dong, jibun: String(b.jibun), apt: b.name, band: S.band, area: u ? u[4] : 0 } : null; }
+  $('pub').value = ''; $('pubN').innerHTML = ''; $('pubH').hidden = false;
+  if (!o) { if (RAN) run(); return; }
+  const want = placeQs();
+  JDJ_GONGSI.get(o).then(info => { if (!info || placeQs() !== want || $('pub').dataset.user) return; $('pub').value = (+info.v).toLocaleString(); $('pubH').hidden = true; JDJ_GONGSI.attach($('pub'), info, $('pubN')); if (RAN) run(); }).catch(() => {});
+}
+
+/* ---------- 계산 입력(길잡이 fromGuide 와 같은 규칙 — tools/jsafe-test.js ④⑧) ---------- */
+async function inputs(){
+  const rd = id => Math.round(num($(id).value)), senRaw = $('sen').value.trim() === '' ? null : rd('sen');
+  const x = { kind: S.kind, code: S.code, metro: JS.metroOf(S.code), dep: rd('dep'), senior: senRaw == null ? null : senRaw, pub: rd('pub'), kb: S.kind === 'a' || S.kind === 'o' ? rd('kb') : 0,
+    sale: null, rent: null, range: null, kk: null, place: { gu: sggName(S.code), band: '', dong: '' } };
+  if (S.kind === 'a'){
+    x.kk = await kkData();
+    if (S.key){ const p = S.key.split('|'), g = { units: SALE_U.length ? SALE_U : await loadSgg(p[0], S.sd) }; SALE_U = g.units;
+      x.sale = JS.saleOf(g.units, IX.months, { code: p[0], dong: p[1], apt: p[3], jibun: p[2], band: S.band }, M);
+      if (x.sale){ x.place.name = p[3]; x.place.dong = p[1]; x.place.band = x.sale.band; } }
+    return x;
+  }
+  if (!S.dong) return x;
+  const j = await getJ(kindFile(S.kind, S.code));
+  x.place.dong = S.dong; x.place.band = S.band;
+  if (S.kind === 'd'){
+    const row = (j.units || []).find(u => u[0] === S.dong && u[1] === S.band);
+    if (row){ const months = R.monthsFrom(j.rm, j.to), J = R.arr(row[4], months.length), l = R.latest(J, months), c = R.change(J, months, 12);
+      if (l) x.range = { med: l.v, at: l.at, dong: S.dong, band: S.band }; if (c) x.rent = { ch1: { pct: c.pct, fromAt: c.fromAt, toAt: c.toAt } }; }
+    return x;
+  }
+  x.range = JS.dongRange(j.units, S.dong, S.band, j.to);
+  const b = S.key && C['grp' + S.kind + S.code] && C['grp' + S.kind + S.code].get(S.key);
+  if (b){ x.place.name = R.bldName(b);
+    const u = b.bands.find(v => v[2] === S.band);
+    if (u){ const sm = R.summary(u, j); if (sm.ch1) x.rent = { ch1: { pct: sm.ch1.pct, fromAt: sm.ch1.fromAt, toAt: sm.ch1.toAt } };
+      const jr = (u[11] || {}).jr; if (S.kind === 'v' && jr && jr.b === 'b' && jr.s > 0) x.sale = { price: jr.s, at: jr.at, by: 'b' }; } }
+  return x;
+}
+function clearRes(){ RAN = false; $('res').hidden = true; $('res').innerHTML = ''; }
+let RUNNING = 0;
+async function run(){
+  const my = ++RUNNING;
+  if (!(num($('dep').value) > 0)){ $('depH').innerHTML = '<span class="req">보증금을 넣어 주세요</span>'; $('dep').focus(); return; }
+  const x = await inputs(); if (my !== RUNNING) return;
+  const rep = JS.build(x, { H, KK });
+  const p = placeName();
+  $('res').hidden = false;
+  DG.mount($('res'), rep, { base: JB.SITE, key: 'jsafe', track: 'jsafe', print: true,
+    share: { url: location.origin + location.pathname + '?' + placeQs(), title: '전세 안전 점검 | 집예보', text: p ? `${p.nm} 계약 전 위험 신호를 확인해 보세요` : '계약 전 위험 신호를 확인해 보세요' },
+    shareNote: '공유 주소에는 고른 집만 들어가고, 넣은 금액은 들어가지 않아요.' });
+  if (!RAN && !FIRST){ $('res').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  RAN = true; FIRST = false;
+  if (window.jdjStat) jdjStat('feature_use', { feature: 'jsafe' });
+}
+let FIRST = false;
+
+/* ---------- 연결 ---------- */
+const fmtIn = (id, hint, sub) => $(id).addEventListener('input', () => { const v = Math.round(num($(id).value)); $(id).value = v ? v.toLocaleString() : ''; if (hint) $(hint).textContent = v ? JS.won(v) : sub; if (RAN) later(); });
+let lt = 0; const later = () => { clearTimeout(lt); lt = setTimeout(run, 400); };
+fmtIn('dep', 'depH', '만원'); fmtIn('sen', 'senH', '등기부 을구의 근저당 채권최고액'); fmtIn('pub', null); fmtIn('kb', null);
+$('pub').addEventListener('input', () => { $('pub').dataset.user = '1'; });
+$('run').onclick = run;
+$('ktabs').onclick = e => { const b = e.target.closest('[data-kind]'); if (b && b.dataset.kind !== S.kind) setKind(b.dataset.kind).then(placeShow); };
+$('sido').onchange = () => { S.key = ''; S.band = ''; pickSido($('sido').value).then(placeShow); };
+$('sgg').onchange = () => pickSgg(false);
+$('dong').onchange = () => { S.key = ''; pickDong(false); };
+$('bld').onchange = () => pickBld(false);
+$('q').addEventListener('input', () => { clearTimeout(qt); qt = setTimeout(runSearch, 200); });
+$('sres').onclick = e => { const b = e.target.closest('[data-k]'); if (b){ $('pub').dataset.user = ''; pickApt(b.dataset.k, false); } };
+$('bands').onclick = e => { const b = e.target.closest('[data-b]'); if (!b) return; S.band = b.dataset.b; [...$('bands').children].forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); }); placeShow(); if (!$('pub').dataset.hand){ $('pub').dataset.user = ''; pubFill(); } if (RAN) later(); };
+
+(async function init(){
+  try { [IX, RX] = await Promise.all([getJ('index.json'), getJ('rent/index.json')]); } catch (e) { $('loadMsg').textContent = '자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.'; return; }
+  fillSido();
+  if (!S.sd && S.code) S.sd = sdOfCode(S.code);
+  if (!S.sd) S.sd = (IX.sido.find(s => s.short === '서울') || IX.sido[0]).id;
+  /* 길잡이에서 넘어온 금액(이 탭 30분) — ?from=guide 일 때만 한 번 읽고 지워요 */
+  let hand = null;
+  if (q.get('from') === 'guide'){ try { hand = JS.take(sessionStorage.getItem(JS.SS_KEY)); sessionStorage.removeItem(JS.SS_KEY); } catch (e) {} }
+  if (hand){
+    const put = (id, v) => { $(id).value = v ? Number(v).toLocaleString() : ''; };
+    put('dep', hand.dep); put('sen', hand.sen); if (hand.sen === 0) $('sen').value = '0'; put('pub', hand.pub); put('kb', hand.kb);
+    $('pub').dataset.hand = '1'; $('pubH').textContent = '고민 찾기에서 넣은 값이에요. 고쳐도 돼요.'; $('depH').textContent = JS.won(hand.dep);
+  }
+  await setKind(S.kind, true);
+  placeShow();
+  if (hand && hand.dep > 0){ FIRST = true; await run(); }
+})();
+})();
+</script>
+</body>
+</html>

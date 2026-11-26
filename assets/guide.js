@@ -29,7 +29,7 @@
   const cache = {};
   const getJ = (k, url) => cache[k] || (cache[k] = fetch(url, { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(url); return r.json(); }).catch(e => { delete cache[k]; throw e; }));
   function load() {
-    return Promise.all([getJ('sc', BASE + 'assets/guide/scenarios.json?v=9'), getJ('lex', BASE + 'assets/guide/lexicon.json?v=3')])
+    return Promise.all([getJ('sc', BASE + 'assets/guide/scenarios.json?v=10'), getJ('lex', BASE + 'assets/guide/lexicon.json?v=3')])
       .then(([sc, lex]) => Object.assign({}, sc, { lex }));
   }
   const ix = () => getJ('ix', DATA + 'index.json');
@@ -238,7 +238,7 @@
     })();
     return WARM;
   }
-  const feats = () => getJ('feat', BASE + 'assets/guide/features.json?v=1');
+  const feats = () => getJ('feat', BASE + 'assets/guide/features.json?v=2');
   function idle(f) { (root.requestIdleCallback || (g => setTimeout(g, 300)))(f, { timeout: 1500 }); }
   /* 재개발 예산·재건축 몸테크(scenarios.json ext:"redev") — 화면·계산은 assets/guide-redev.js, 여기서는 쓰는 도구만 넘겨요 */
   /* 보유 현금 + 대출로 살 수 있는 서울 아파트(대표 질문, scenarios.json ext:"budget") — 화면·계산은 assets/guide-budget.js */
@@ -476,7 +476,7 @@
   }
 
   /* ---------- 길잡이 화면(solve/) ---------- */
-  const ENG = () => ({ L: root.JDJ_LOAN, T: root.JDJ_TAX, H: root.JDJ_HUG, CY: root.JDJ_CYE, ADJ: root.JDJ_ADJ, RD: root.JDJ_REDEV, SALE: root.JDJ_SALE, RC: root.JDJ_RENT, KK: root.JDJ_KK });
+  const ENG = () => ({ L: root.JDJ_LOAN, T: root.JDJ_TAX, H: root.JDJ_HUG, CY: root.JDJ_CYE, ADJ: root.JDJ_ADJ, RD: root.JDJ_REDEV, SALE: root.JDJ_SALE, RC: root.JDJ_RENT, KK: root.JDJ_KK, JS: root.JDJ_JSAFE });
   const cyNotices = () => getJ('cyn', DATA + 'chungyak/notices.json').then(j => j.rows || []).catch(() => []);
   const TAXSD = ['서울', '경기', '인천'];
   function taxRegion(rg) {
@@ -503,7 +503,7 @@
       const sdo = (IX.sido || []).find(s => s.id === d.sd) || {};
       const MH = opt && opt.fast ? null : await getJ('mh', DATA + 'model_h.json').catch(() => null), tr = R && MH ? R.vcheck(MH, sdo.name) : null;
       const ok = !!(tr && tr.ok);
-      return { apt: d.apt, band, price: sm && sm.price || null, at: sm && sm.at, range: sm && sm.range && sm.range.hi ? { lo: sm.range.lo, hi: sm.range.hi, months: sm.range.months } : null,
+      return { apt: d.apt, band, price: sm && sm.price || null, at: sm && sm.at, ch1: sm && sm.ch1 ? { pct: sm.ch1.pct, fromAt: sm.ch1.fromAt, toAt: sm.ch1.toAt } : null, range: sm && sm.range && sm.range.hi ? { lo: sm.range.lo, hi: sm.range.hi, months: sm.range.months } : null,
         fv: ok && f && f.fv != null ? Math.min(99, f.fv) : null, fvBase: `${sdo.short || ''} 아파트`, track: ok ? { n: tr.n, hit: tr.hit } : null,
         n: u ? u[5] : null, hasScore: M.hasScore(u), mine: R ? R.mineUrl(d.sd, [d.code, d.dong, d.jibun || '', d.apt].join('|'), band) : BASE + 'mine/?sd=' + d.sd + '&d=' + encodeURIComponent([d.code, d.dong, d.jibun || '', d.apt].join('|')) };
     } catch (e) { return null; }
@@ -520,6 +520,7 @@
     const jobs = [];
     if (need.indexOf('cy') >= 0) { jobs.push(cyRows(a.csido || '서울특별시').then(r => { E.cyRows = r; })); jobs.push(cyNotices().then(r => { E.cyNotices = r; })); }
     if (need.indexOf('region') >= 0 && a.region && a.region.sd) jobs.push(getJ('rg' + a.region.sd, DATA + 'region/' + a.region.sd + '.json').then(j => { const g = j && j.gu && j.gu[a.region.code]; E.sup = g && g.sup ? { [a.region.code]: g.sup } : null; }).catch(() => {}));
+    if (need.indexOf('jsafe') >= 0) { if (!root.JDJ_JSAFE) await script('assets/jsafe-core.js?v=1'); E.JS = root.JDJ_JSAFE; }
     if (need.indexOf('kk') >= 0 && a.danji) { if (!root.JDJ_KK) await script('assets/kk-core.js?v=1'); E.KK = root.JDJ_KK; jobs.push(getJ('kk', DATA + 'rent/kk.json').catch(() => getJ('kk2', BASE + 'data/kkang.json')).then(j => { E.kkData = j; }).catch(() => {})); }
     if (need.indexOf('units') >= 0) {   // 조건에 맞는 아파트 찾기: 지도와 같은 단지 자료 + 좌표(지도에 올라가는 단지만)
       const sd = ((IX && IX.sido) || []).find(x => x.name === ((a.region && a.region.sido) || '서울특별시'));
@@ -759,7 +760,9 @@
         return `<td${l}>${esc(c)}</td>`; }).join('')}</tr>`).join('')}</tbody></table></div>${lim && tb.rows.length > lim ? `<p class="gtn">외 ${tb.rows.length - lim}줄은 ‘자세히’에서 볼 수 있어요.</p>` : ''}</div>`; }).join('');
   }
   /** '같은 조건으로 검색 화면에서 보기'(길잡이 = 조건 검색 화면의 지름길 — 같은 계산·같은 결과) r.same = {t, s, href} */
-  function sameHtml(x) { return x && x.href ? `<a class="gsame" href="${esc(/^https?:/.test(x.href) || x.href.indexOf(BASE) === 0 ? x.href : BASE + x.href)}" data-track="guide_same"><span><b>${esc(x.t)}</b><small>${esc(x.s || '')}</small></span><span class="go" aria-hidden="true">›</span></a>` : ''; }
+  /* x.ss = [이 탭 저장 이름, 값] — 금액처럼 주소에 넣지 않을 값은 누를 때 이 탭(sessionStorage)에만 남겨 화면이 한 번 읽어요(전세 안전 점검 jdj_jsafe) */
+  function sameHtml(x) { return x && x.href ? `<a class="gsame" href="${esc(/^https?:/.test(x.href) || x.href.indexOf(BASE) === 0 ? x.href : BASE + x.href)}"${x.ss ? ` data-ssk="${esc(x.ss[0])}" data-ssv="${esc(JSON.stringify(x.ss[1]))}"` : ''} data-track="guide_same"><span><b>${esc(x.t)}</b><small>${esc(x.s || '')}</small></span><span class="go" aria-hidden="true">›</span></a>` : ''; }
+  if (root.document) root.document.addEventListener('click', e => { const x = e.target && e.target.closest ? e.target.closest('a[data-ssk]') : null; if (x) { try { root.sessionStorage.setItem(x.dataset.ssk, x.dataset.ssv); } catch (e2) {} } }, true);
   function cardHtml(r, D, S) {
     const nums = (r.nums || []).map(n => `<div><small>${esc(n.k)}</small><b>${esc(n.v)}</b>${n.s ? `<span>${esc(n.s)}</span>` : ''}</div>`).join('');
     const tbl = r.table ? `<table class="gtbl"><thead><tr>${r.table.head.map(h => `<th scope="col">${esc(h)}</th>`).join('')}</tr></thead><tbody>${r.table.rows.map(row => `<tr>${row.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>` : '';

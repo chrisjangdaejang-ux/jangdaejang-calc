@@ -325,6 +325,7 @@
     { id: 'by', re: /분양|청약|모집\s*공고|입주\s*예정|무순위|줍줍|미분양|새\s*아파트|신축\s*아파트/, title: '분양 정보', desc: '공식 공고 기준 분양 예정·청약 중·입주 예정 단지를 지역별로 보여 드려요', path: 'bunyang/' },
     { id: 'zone', re: /재개발|재건축|정비\s*구역|구역|정비\s*사업|관리처분|사업시행|착공|이주|조합\s*설립|신속통합|입주권/, title: '재개발·재건축 구역 지도', desc: '구역마다 지금 단계와 착공까지 보통 몇 년 걸리는지 보여 드려요', path: 'villa/zone/' },
     { id: 'mapjr', re: /전세가율\s*(이|가)?\s*(높은|낮은|높|낮|순)|갭\s*(이|가)?\s*(작은|적은|큰)|갭\s*투자/, title: '지도에서 전세가율 보기', desc: '단지마다 전세가율(집값 대비 전셋값 비율)을 지도에 띄워, 높은 곳·낮은 곳을 한눈에 보여 드려요', path: 'map/?m=jr' },
+    { id: 'jsafe', re: /깡통|전세\s*사기|사기\s*(당|걱정|피하|예방)|보증\s*보험|반환\s*보증|보증금\s*(못\s*받|떼|돌려\s*받|안전|지키)|전세\s*(안전|위험)|계약해도\s*될/, title: '전세 안전 점검', desc: '집과 보증금만 넣으면 전세가율·HUG 전세보증 기준·깡통전세 위험을 신호등 한 장으로 보여 드려요', path: 'jeonse/safety/' },
     { id: 'jeonse', re: /전세|월세|전월세|보증금|깡통|전세\s*사기|역전세|세입자|임대차/, title: '전월세 전망·전세사기 예방', desc: '전세·월세 시세, 전세가율(집값 대비 전셋값 비율), 깡통전세 위험을 보여 드려요', path: 'jeonse/', danjiOk: true },
     { id: 'villa', re: /빌라|연립|다세대|대지\s*지분/, title: '재개발·빌라 체크', desc: '빌라 실거래와 대지지분 평당가, 같은 동 정비구역 단계를 보여 드려요', path: 'villa/' },
     { id: 'offi', re: /오피스텔/, title: '오피스텔 시세', desc: '오피스텔 실거래 시세와 흐름을 보여 드려요', path: 'mine/?t=o' },
@@ -381,6 +382,9 @@
       if (r.sd) q.set('sd', r.sd);
       if (/내린|내렸|떨어|하락/.test(t)) q.set('dir', 'down');
       if (/미래|앞으로|전망/.test(t)) q.set('t', 'fv');
+    } else if (hit.id === 'jsafe') {
+      if (/빌라|연립|다세대/.test(t)) q.set('k', 'v'); else if (/오피스텔/.test(t)) q.set('k', 'o'); else if (/다가구|단독/.test(t)) q.set('k', 'd');
+      if (r.sd) q.set('sd', r.sd); if (r.g) q.set('g', r.g);
     } else if (hit.id === 'jeonse') {
       if (r.sd) q.set('sd', r.sd); if (r.g) q.set('g', r.g);
       if (/빌라|연립|다세대/.test(t)) q.set('k', 'v'); else if (/오피스텔/.test(t)) q.set('k', 'o');

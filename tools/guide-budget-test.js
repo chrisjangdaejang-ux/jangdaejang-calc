@@ -156,7 +156,7 @@ const gjs = read('assets/guide.js'), gcore = read('assets/guide-core.js'), sw = 
 check('guide.js: 미리 불러오기·즉답·길잡이 화면·대화에서 이 파일로', /'assets\/guide-budget\.js\?v=4': 'JDJ_GBUDGET'/.test(gjs) && /JDJ_GBUDGET\.instant/.test(gjs) && /JDJ_GBUDGET\.flow/.test(gjs) && /JDJ_GBUDGET\.chatCard/.test(gjs));
 check('guide-core: 계산 함수·대화 좁히기 연결', /S\.budgetApts/.test(gcore) && /JDJ_GBUDGET\.chatQ/.test(gcore) && /JDJ_GBUDGET\.answer/.test(gcore));
 check('길잡이 화면·서비스 워커에 이 파일', /assets\/guide-budget\.js\?v=4/.test(solve) && /'\.\/assets\/guide-budget\.js\?v=4'/.test(sw));
-check("첫 화면 '많이 받는 고민': lead 고민을 맨 앞에", /\.filter\(s => s\.pri\)\.sort\(\(x, y\) => \(y\.lead/.test(gjs) && /guide\.js\?v=17/.test(home));
+check("첫 화면 '많이 받는 고민': lead 고민을 맨 앞에", /\.filter\(s => s\.pri\)\.sort\(\(x, y\) => \(y\.lead/.test(gjs) && /guide\.js\?v=18/.test(home));
 check('화면: 정렬 단추에 추천 순위 아님 · 즉답(바로 답) · 믿을 이유 접힌 칸', /추천 순위 아님/.test(gb) && /바로 답/.test(gb) && /details class="gbtr"><summary>이 답을 믿을 수 있는 이유/.test(gb));
 check('화면: 진한 꽉 찬 단추는 묶음마다 1개(즉답: 목록 보기 · 길잡이 화면: 고른 단지 비교)', (gb.match(/class="p"/g) || []).length === 1 && /\.gbcmp a\{[^}]*background:var\(--blue/.test(gb));
 check('화면: 색은 토큰(var(--…))으로', (gb.match(/var\(--/g) || []).length > 40);

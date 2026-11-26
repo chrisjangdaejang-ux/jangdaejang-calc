@@ -913,26 +913,17 @@
     return { head: `보증금은 최대 ${won(Math.floor(a.dep * 0.05))}까지만 올릴 수 있어요(5% 상한)`, nums, warn, note: `보증금 ${won(a.dep)}${a.wrent ? ` · 월세 ${won(a.wrent)}` : ''}`, src: ['lh7', 'lhd8', 'lhd9', 'bok'] };
   };
 
+  /* 보증금 걱정(deposit_safe) = 전세 안전 점검 화면(jeonse/safety/)과 같은 계산 파일 assets/jsafe-core.js(E.JS).
+     같은 입력이면 같은 신호·값·글자(tools/jsafe-test.js ④가 화면 입력 규칙과 대조) · '같은 조건으로 전세 안전 점검 보기' 주소에는 금액 없음(금액은 이 탭에 30분만) */
   S.depositSafe = (a, E) => {
     const miss = need(a, ['htype', 'dep']); if (miss.length) return { need: miss };
     if (!(a.pub > 0) && !(a.kb > 0)) return { need: ['pub'] };
-    const metro = a.region ? /^(11|28|41)/.test(a.region.code) : true;
-    const r = E.H.check({ dep: +a.dep, senior: +a.senior || 0, pub: +a.pub || 0, kb: +a.kb || 0, type: a.htype, metro, months: 24 });
-    const pr = r.price, ratio = pr ? (+a.dep + (+a.senior || 0)) / pr : null;
-    const nums = [
-      { k: '전세보증보험(HUG) 가입', v: r.ok ? '가능해 보여요' : r.ok === false ? '어려워요' : '정보 부족', s: r.ok ? `예상 보증료 2년 ${r.fee != null ? wonW(r.fee) : '-'}` : r.checks.filter(c => !c.ok).map(c => ({ cap: `보증금 한도 ${won(c.lim)} 초과`, limit: `보증금 + 선순위 채권이 ${won(Math.floor(c.lim))}를 넘어요`, senior: '선순위 채권이 집값의 60%를 넘어요' })[c.k]).join(' · ') },
-      { k: '이 조건에서 보험 되는 최대 보증금', v: won(r.maxDep), s: `주택가격 ${won(pr)}(${r.by === 'kb' ? '시세' : '공시가격 × 140%'}) × 90% − 선순위 채권` }
-    ];
-    if (ratio != null) nums.push({ k: '집값 대비 보증금 + 빚', v: pct(ratio), s: ratio >= 0.9 ? '90% 이상 — 깡통전세 위험 신호예요' : ratio >= 0.8 ? '80% 이상 — 조심해야 하는 수준이에요' : '80% 아래예요' });
-    const ref = [];
-    /* 아파트 단지를 골랐으면: 전월세 화면과 같은 깡통전세 확률(assets/kk-core.js estimate — 2년 뒤 시세가 보증금 + 선순위보다 낮을 확률, 과거 계약으로 확인) */
-    if (E.KK && E.kkData && a.danji && a.facts && a.facts.price && a.htype === 'apt') {
-      const k = E.KK.estimate({ kk: E.kkData, code: a.danji.code, dep: +a.dep, senior: +a.senior || 0, price: a.facts.price });
-      if (!k.miss) ref.push({ k: `깡통전세 확률(2년 뒤)${k.ref ? ' — 참고' : ' — 과거 결과로 확인됨'}`, v: E.KK.pText(k.p), s: `${a.facts.apt} ${a.facts.band} 시세 ${won(a.facts.price)} 기준 · 과거 비슷한 계약 ${k.sim.n.toLocaleString()}건 중 ${k.sim.k.toLocaleString()}건이 2년 뒤 시세가 보증금보다 낮아졌어요` });
-    }
-    return { head: r.ok ? `보증보험 가입이 가능해 보여요 — 예상 보증료 2년 ${r.fee != null ? wonW(r.fee) : ''}` : `지금 조건으로는 보증보험 가입이 어려워요 — 최대 보증금 ${won(r.maxDep)}`,
-      nums, ref, warn: ['계약 전 등기부등본(근저당·압류)과 집주인 세금 체납 여부를 꼭 확인하세요.', '잔금 날 전입신고·확정일자를 함께 하고, 그날 집주인이 대출을 더 받지 않는다는 특약을 넣어 두세요.', '가입 심사는 HUG가 해요. 이 결과는 공식 기준으로 미리 본 값이에요.'],
-      note: `${({ apt: '아파트', offi: '오피스텔', villa: '빌라', house: '단독·다가구' })[a.htype]} · 보증금 ${won(a.dep)}${a.senior ? ` · 선순위 ${won(a.senior)}` : ''}`, src: ['hug', 'lh3'] };
+    const JS = E.JS || (typeof root !== 'undefined' && root.JDJ_JSAFE) || null; if (!JS || !E.H) return { err: 'jsafe' };
+    const x = JS.fromGuide(a, E), rep = JS.build(x, { H: E.H, KK: E.KK });
+    return { head: rep.head, jsafe: rep, same: JS.sameOf(a, x),
+      nums: rep.items.map(i => ({ k: `${i.t} · ${i.lvT}`, v: i.v, s: i.s })),
+      warn: ['계약 전 등기부등본(근저당·압류)과 집주인 세금 체납 여부를 꼭 확인하세요.', '잔금 날 전입신고·확정일자를 함께 하고, 그날 집주인이 대출을 더 받지 않는다는 특약을 넣어 두세요.', '가입 심사는 HUG가 해요. 이 결과는 공식 기준으로 미리 본 값이에요.'],
+      note: `${({ apt: '아파트', offi: '오피스텔', villa: '빌라', house: '단독·다가구' })[a.htype]} · 보증금 ${won(a.dep)}${a.senior ? ` · 선순위 ${won(a.senior)}` : ''}`, src: ['hug', 'lh3', 'molit_rt'] };
   };
 
   S.contractCheck = (a, E) => {
