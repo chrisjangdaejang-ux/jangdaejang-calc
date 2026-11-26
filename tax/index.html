@@ -556,6 +556,6 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
 document.addEventListener('change', e => { const t = e.target; if (!t.matches || !t.matches('#rSido,#rGu,#nSido,#nGu,select.sido,select.gu')) return;
   const row = t.closest('.selrow'), sd = row && row.querySelector('select:first-child'), gu = row && row.querySelector('select:last-child');
   if (sd && gu && window.JDJ_ADSLOT && JDJ_ADSLOT.setRegion) JDJ_ADSLOT.setRegion({ sido: sd.value, gu: gu.value }); });</script>
-<script src="../assets/guide-next.js?v=4" defer></script>
+<script src="../assets/guide-next.js?v=5" defer></script>
 </body>
 </html>

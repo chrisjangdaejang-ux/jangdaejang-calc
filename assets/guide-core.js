@@ -240,6 +240,7 @@
     (sc.ask || []).forEach(k => { if (mem && mem.m && mem.m[k] != null) { st.a[k] = mem.m[k]; st.from[k] = mem.from[k]; } });
     const ap = apply(sc, r.slots, st.a); st.a = ap.a; Object.assign(st.from, ap.from);
     if (sc.id === 'find_home') st.nf = narrowInit(r.slots, D, '');
+    else if (sc.ext && root.JDJ_GREDEV) st.nf = root.JDJ_GREDEV.init(sc.id, r.slots, D);   // 재개발 예산·재건축 몸테크(assets/guide-redev.js)
     return st;
   }
   const condOk = (sc, a, k) => { const c = (sc.cond || {})[k]; return !c || c.slice(1).indexOf(String(a[c[0]])) >= 0; };
@@ -247,6 +248,7 @@
   function chatNext(st, D, Q) {
     const sc = D.sc.find(x => x.id === st.id); if (!sc) return null;
     if (sc.id === 'find_home') { const k = narrowNext(D, sc.id, st.nf || {}); if (!k) return null; const q = D.narrow.q[k]; return { key: k, nf: 1, q, quick: q.opts.slice() }; }
+    if (sc.ext && root.JDJ_GREDEV) return root.JDJ_GREDEV.chatQ(sc.id, st.nf || {});
     if (Q && Q.exact) return null;
     const known = k => st.a[k] != null && st.a[k] !== '';
     const CYF = ['birth', 'married', 'homeown', 'deps', 'accd'];
@@ -265,11 +267,12 @@
   /** 답 문장 하나 읽기 → {ok(알아들음), switched(새 고민으로 바뀜)} · st 를 고침 */
   function chatAnswer(st, text, D, ctx, quickVal) {
     const t = String(text || '').trim(), flat = t.replace(/\s/g, ''), sc = D.sc.find(x => x.id === st.id);
-    const nx = st.asked ? (st.asked.nf ? { key: st.asked.key, nf: 1, q: D.narrow.q[st.asked.key] } : { key: st.asked.key, q: D.q[st.asked.key] }) : null;
+    const GXc = st.asked && st.asked.ext ? root.JDJ_GREDEV : null;
+    const nx = st.asked ? (st.asked.nf ? { key: st.asked.key, nf: 1, ext: GXc ? 1 : 0, q: GXc ? GXc.Q[st.asked.key] : D.narrow.q[st.asked.key] } : { key: st.asked.key, q: D.q[st.asked.key] }) : null;
     /* 단추로 고른 값 */
     if (quickVal !== undefined && nx) {
       if (quickVal === '?') { if (nx.q.type === 'yesno3') st.a[nx.key] = '?'; else if (nx.q.def != null) st.a[nx.key] = nx.q.def; else st.skip.push(nx.key); return { ok: true }; }
-      if (nx.nf) { st.nf = narrowSet(D, st.nf, nx.key, quickVal); return { ok: true }; }
+      if (nx.nf) { st.nf = nx.ext ? GXc.set(st.id, st.nf, nx.key, quickVal) : narrowSet(D, st.nf, nx.key, quickVal); return { ok: true }; }
       st.a[nx.key] = nx.q.type === 'money' || nx.q.type === 'num' ? +quickVal : quickVal; st.from[nx.key] = ''; return { ok: true };
     }
     /* 새 고민으로 바뀌었는지: 지금 질문에 대한 답으로 못 읽고, 다른 고민이 뚜렷하면 */
@@ -280,7 +283,9 @@
       else if (nx.q.type === 'yesno3') st.a[nx.key] = '?'; else if (nx.q.def != null) st.a[nx.key] = nx.q.def; else st.skip.push(nx.key);
       return { ok: true };
     }
-    if (sc && sc.id === 'find_home') {
+    if (sc && sc.ext && root.JDJ_GREDEV) {
+      if (root.JDJ_GREDEV.answer(sc.id, st.nf || (st.nf = root.JDJ_GREDEV.init(sc.id, {}, D)), t, sl, nx && nx.key)) return { ok: true };
+    } else if (sc && sc.id === 'find_home') {
       const b = narrowInit(sl, D, st.nf.sido), range = /(\d+(?:\.\d+)?)\s*(?:억)?\s*[~\-–에서]\s*(\d+(?:\.\d+)?)\s*억/.exec(t);
       if (range) { st.nf.budget = [Math.round(+range[1] * 10000), Math.round(+range[2] * 10000)]; got = true; }
       else if (b.budget) { st.nf.budget = b.budget; got = true; }
@@ -989,6 +994,11 @@
       info: [{ t: '관리처분인가 뒤의 조합원입주권도 양도세 비과세 판정 때 주택 수에 들어가요.', ok: true, src: 'cgt89_2' }, { t: '2021년 1월 1일 이후 취득한 분양권도 주택 수에 들어가요.', ok: true, src: 'cgt89_2' }],
       warn: ['조합원 지위 양도 제한(투기과열지구 재건축 조합설립 뒤 등)이 있는지 구역마다 꼭 확인하세요.', '단계마다 걸리는 시간은 구역마다 크게 달라요. 구역 지도에서 비슷한 구역의 과거 기간을 보세요.'], note: '서울시 정비사업 단계 기준', src: ['redev_law', 'cgt89_2', 'cleanup'] };
   };
+
+  /* 재개발 예산(3~5억 재개발 투자)·재건축 몸테크 — 계산은 assets/guide-redev.js(scenarios.json ext:"redev"). 구역·실거래·정책 자료(E.RX)가 있어야 해요 */
+  const GX = () => root.JDJ_GREDEV || null;
+  S.redevBudget = (a, E) => GX() ? GX().solve('redev_budget', a, E) : { err: 'noext' };
+  S.rebuildLive = (a, E) => GX() ? GX().solve('rebuild_live', a, E) : { err: 'noext' };
 
   S.switchOrder = (a, E) => {
     const miss = need(a, ['newprice', 'income']); if (miss.length) return { need: miss };

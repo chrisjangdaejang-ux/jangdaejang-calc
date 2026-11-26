@@ -46,7 +46,7 @@ table{width:100%;border-collapse:collapse;font-size:14.5px}th,td{text-align:left
   function sess() { try { var j = JSON.parse(localStorage.getItem('jdj_auth') || 'null'); return j && /^[0-9a-f]{64}$/.test(String(j.s || '')) ? j.s : ''; } catch (e) { return ''; } }
   function api() { return (window.JDJ_AGENTS && JDJ_AGENTS.api) || ''; }
   var G = { home: '첫 화면', solve: '길잡이' }, NM = { danji: '단지 시세(단지 이름 검색)' };
-  fetch('../../assets/guide/scenarios.json?v=5').then(function (r) { return r.json(); }).then(function (d) { (d.sc || []).forEach(function (x) { NM[x.id] = x.t; }); }).catch(function () {});
+  fetch('../../assets/guide/scenarios.json?v=6').then(function (r) { return r.json(); }).then(function (d) { (d.sc || []).forEach(function (x) { NM[x.id] = x.t; }); }).catch(function () {});
   function go() {
     var s = sess();
     if (!s || !api()) { out.innerHTML = '<p class="err">운영자 계정으로 카카오 간편 로그인한 뒤 다시 열어 주세요(모닝 브리핑 운영자 모드 계정). <a href="../../login/">로그인</a></p>'; return; }
