@@ -663,9 +663,9 @@
             past = `과거 ${SD}에서 ${F.cond} 단지 ${n0(e.n)}건은 2년 뒤 같은 구 평균보다 ${ppMore(e.ex, G)} 올랐어요(${hitTxt(e, !up)}).`;
           } else e = null;
         }
-        const so = `그래서 ${J(WN[k] || '이 점', '은', '는')} ${c.apt}의 ${h}년 점수를 ${up ? '올렸어요' : '낮췄어요'}` + (h === 2 && regionUsed && reasons.length ? ` — ${SG} 전체 흐름과는 ${up === (regGap <= 0) ? '같은' : '반대'} 방향이에요.` : '.');
+        const so = `그래서 ${WN[k] || '이 점'} ${up ? '덕분에' : '때문에'} ${c.apt}의 ${h}년 보유 기준 점수가 ${up ? '올라갔어요' : '내려갔어요'}` + (h === 2 && regionUsed && reasons.length ? ` — ${SG} 전체 흐름과는 ${up === (regGap <= 0) ? '같은' : '반대'} 방향이에요.` : '.');
         const mean = e && MEAN[F.ev] ? MEAN[F.ev][up ? 'up' : 'dn'] + ' ' : '';
-        res.push({ k, t: `${F.sum} — ${mean ? mean : '그래서 '}${h}년 점수를 ${up ? '올렸어요' : '낮췄어요'}.`, d: [F.fact, F.cmp, past, so], ev: e, evBase: '같은 구 평균 대비', h });
+        res.push({ k, t: `${F.sum} — ${mean ? mean : '그래서 '}${h}년 보유 기준 점수가 ${up ? '올라갔어요' : '내려갔어요'}.`, d: [F.fact, F.cmp, past, so], ev: e, evBase: '같은 구 평균 대비', h });
       }
       return res;
     };
@@ -1106,7 +1106,7 @@
     if (u && u.sc && (c.pass || []).length) {
       const h = c.pass[0], sc = u.sc[h];
       if (sc != null) L.push({ k: 'score', t: `${h}년 보유 종합 점수 ${sc}점 — ${SD} 오피스텔 중 ${(c.scoreRank || (v => v))(sc)}.`,
-        d: [`${A} 수익률과 가격 흐름을 합친 ${h}년 점수가 ${sc}점이에요(100점 만점, 50점이 가운데).`, '', '', `그래서 ${SD} 오피스텔 100곳을 점수 순으로 순위를 매기면 ${100 - sc}등 안팎이에요.`] });
+        d: [`${A} 수익률과 가격 흐름을 합친 ${h}년 보유 기준 점수가 ${sc}점이에요(100점 만점, 50점이 가운데).`, '', '', `그래서 ${SD} 오피스텔 100곳을 점수 순으로 순위를 매기면 ${100 - sc}등 안팎이에요.`] });
     }
     /* 검증 카드: 오피스텔 점수(bt) 중 시험 기록이 있는 기간 */
     const trust = Object.keys(c.bt || {}).filter(h => (c.bt[h].oos_all || []).filter(o => o && o.top20 != null).length).map(h => {
