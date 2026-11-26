@@ -170,6 +170,12 @@ check('소개 글: 연수 계산 문구 없음', /년간 공공 통계|\$\{yrs\}
   /* 첫 화면 개편(대표 승인 시안 2026-11-26): 소개 글은 아래 '이렇게 계산해요' 칸으로 — 상단 광고는 맨 위 질문 칸(무엇이 고민이세요?) 바로 다음, 내 집·할 일 앞 */
   const iAd = html.indexOf('data-ad-slot="home_top"'), iQEnd = html.indexOf('\n  </section>', html.indexOf('<section class="qh"')), iMy = html.indexOf('class="myh"');
   check('홈 상단 광고: 질문 칸 바로 다음, 내 집·할 일 앞', iAd > iQEnd && iAd < iMy && !/<a |<section/.test(html.slice(iQEnd + 13, iAd)), true, '');
+  /* 상황 단추 9개(3칸 × 3줄): 상가·건물 단추가 다시 첫 화면에 — 전체 기능은 마지막, 혼자 남는 줄 없음 */
+  const sit = (html.match(/<nav class="sit" id="sit"[\s\S]*?<\/nav>/) || [''])[0], sitA = sit.match(/data-track="(home_to_[a-z]+)"/g) || [];
+  check('상황 단추: 상가·건물(mine/?t=c) 포함·전체 기능 마지막', [/href="mine\/\?t=c" data-track="home_to_comm">[\s\S]*?상가·건물<\/a>/.test(sit), sitA[sitA.length - 1]], [true, 'data-track="home_to_all"'], '');
+  const cols = +((html.match(/\.sit\{display:grid;grid-template-columns:repeat\((\d+),/) || [])[1] || 0);
+  check('상황 단추: 칸 수로 나누어 떨어짐(혼자 남는 단추 없음)', cols > 0 && sitA.length % cols === 0, true, '');
+  check('상황별로 찾기: 상가·건물 시세 줄', /class="srow" href="mine\/\?t=c" data-track="home_svc_comm"/.test(html), true, '');
   check('홈: 화면 제목(h1)은 "무엇이 고민이세요?" 하나', (html.match(/<h1[ >]/g) || []).length === 1 && /<h1 class="qh-t" id="qhT">무엇이 고민이세요\?<\/h1>/.test(html), true, '');
 }
 

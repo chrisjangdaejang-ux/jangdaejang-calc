@@ -234,11 +234,14 @@
 .qh.g-on .qh-t{position:absolute;left:-9999px}.qh.g-on .sit,.qh.g-on>.tagline{display:none}
 .qh #guideTop{margin-top:0}
 .qh .askwrap.jask{margin:14px 0 0}
-.sit{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:14px}
-.sit>a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:72px;padding:8px 2px;border-radius:14px;background:var(--gray);color:var(--text);text-decoration:none;font-size:14px;font-weight:700;line-height:1.3;text-align:center;word-break:keep-all}
+/* 상황 단추 9개 = 3칸 × 3줄(휴대폰·PC 같은 배치, 혼자 남는 칸 없음). dense: '이사 갈 집' 펼침 칸이 끼어도 같은 줄 빈칸이 생기지 않게 */
+.sit{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-flow:row dense;gap:8px;margin-top:14px}
+.sit>a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:68px;white-space:nowrap;padding:8px 2px;border-radius:14px;background:var(--gray);color:var(--text);text-decoration:none;font-size:14px;font-weight:700;line-height:1.3;text-align:center;word-break:keep-all}
 .sit>a .ic{display:flex;color:var(--blue)}.sit>a .ic svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .sit>a:hover,.sit>a.swpick-on{background:var(--blue-l);color:var(--blue)}
 @media(max-width:350px){.sit>a{font-size:13px}}
+/* PC: 3줄이 되었으니 단추 높이를 조금 낮춰 오른쪽 칸과 균형(공용 layout.css 의 84px 대신) */
+@media(min-width:1024px){body.lay-home .sit>a{min-height:76px;gap:6px}}
 /* '이사 갈 집' 단추를 누르면 바로 아래 펼치는 두 단추(assets/switch-pick.js) — 한 줄 전체, 단추 높이 64px */
 .sit div.swpick{grid-column:1/-1;display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:14px;background:#F5F4FD;border:1.5px solid var(--blue)}
 .sit div.swpick[hidden]{display:none}
@@ -293,6 +296,7 @@
     <a href="tax/" data-track="home_to_tax"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M8 8h8M8 12h2M12 12h2M8 16h2M12 16h2"/></svg></span>세금</a>
     <a href="loan/" data-track="home_to_loan"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg></span>대출</a>
     <a href="villa/" data-track="home_to_villa"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V10l5-4 5 4v10"/><path d="M14 20v-7h6v7M2.5 20h19"/></svg></span>재개발·빌라</a>
+    <a href="mine/?t=c" data-track="home_to_comm"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 9.5 5.5 4h13L20 9.5"/><path d="M5 9.5V20h14V9.5M4 9.5h16"/><path d="M10 20v-5h4v5"/></svg></span>상가·건물</a>
     <a href="all/" data-track="home_to_all"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/></svg></span>전체 기능</a>
     </nav>
   </section>
@@ -348,6 +352,7 @@
       <a class="srow" href="map/" data-track="home_to_map"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg></span><span class="tx"><b>지도로 단지 찾기</b><small>단지 시세·미래가치 점수·전세가율을 지도에서</small></span><span class="go" aria-hidden="true">›</span></a>
       <a class="srow" href="rank/" data-track="home_to_rank"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M9 20V8h6v12"/><path d="M3 20v-7h6M15 11h6v9"/></svg></span><span class="tx"><b>우리 구는 몇 위?</b><small>구별 시세 상승·하락 순위와 미래가치 순위</small></span><span class="go" aria-hidden="true">›</span></a>
       <a class="srow" href="ask/" data-track="home_to_ask"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="7" height="14" rx="1.5"/><rect x="14" y="5" width="7" height="14" rx="1.5"/></svg></span><span class="tx"><b>단지 비교</b><small>두세 단지 흐름과 점수를 나란히</small></span><span class="go" aria-hidden="true">›</span></a>
+      <a class="srow" href="mine/?t=c" data-track="home_svc_comm"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 9.5 5.5 4h13L20 9.5"/><path d="M5 9.5V20h14V9.5M4 9.5h16"/><path d="M10 20v-5h4v5"/></svg></span><span class="tx"><b>상가·건물 시세</b><small>상가·통건물 실거래와 상권 흐름</small></span><span class="go" aria-hidden="true">›</span></a>
     </div>
     <div class="sg"><h3><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M12 12.5v4M10 14.5h4"/></svg></span>집을 사기 전</h3>
       <a class="srow" href="buy/" data-track="home_svc_buy"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M12 12.5v4M10 14.5h4"/></svg></span><span class="tx"><b>내 집 마련</b><small>예산·대출·맞춤 단지·단지 비교</small></span><span class="go" aria-hidden="true">›</span></a>
@@ -367,7 +372,7 @@
     </div>
   </section>
   <div class="h-end">
-  <p class="premlink pl-comm"><a href="mine/?t=v" data-track="home_to_villa_price">빌라(연립·다세대) 실거래 시세 보기 ›</a> · <a href="mine/?t=c" data-track="home_to_comm">상가·통건물 실거래 시세와 상권 흐름 보기 ›</a></p>
+  <p class="premlink pl-comm"><a href="mine/?t=v" data-track="home_to_villa_price">빌라(연립·다세대) 실거래 시세 보기 ›</a> · <a href="mine/?t=c" data-track="home_end_comm">상가·통건물 실거래 시세와 상권 흐름 보기 ›</a></p>
   <p class="premlink pl-prem"><a href="premium/" data-track="home_to_premium">단지 심층 분석이 필요하다면 · 프리미엄 리포트 안내 ›</a></p>
   <div class="jas-in" data-ad-slot="home_end" data-ad-cat="home" hidden></div>
   <section class="hshare" id="homeShare" aria-labelledby="hshareT">
