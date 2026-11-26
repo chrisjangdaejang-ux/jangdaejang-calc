@@ -40,6 +40,15 @@ check('계산기→리포트 주소에 연소득 없음', /new URLSearchParams\(
 const swSrc = fs.readFileSync(path.join(__dirname, '../switch/index.html'), 'utf8');
 check('갈아타기→리포트 주소에 연소득 없음', /URLSearchParams\(\{i:/.test(swSrc), false, '');
 
+/* 2026-11-26 품질 점검: 대출 한도 → 내 집 마련으로 넘어갈 때 조건 채우기, 리포트에서 돌아올 때 지역 유지, 이상값 안내 */
+{ const loanSrc = fs.readFileSync(path.join(__dirname, '../loan/index.html'), 'utf8');
+  check('대출→내 집 마련 링크에 지역·보유·금리 채움', /function buyLink\(o\)/.test(loanSrc) && /q\.set\('o', S\.own\)/.test(loanSrc) && /q\.set\('sd', sdn\)/.test(loanSrc), true, '');
+  check('대출→내 집 마련 주소에 연소득·대출 없음(이 기기에만)', /q\.set\('i'|q\.set\('d'/.test(loanSrc), false, '개인값');
+  check('대출: 음수 입력을 양수로 읽지 않음', /if \(\/\^\\s\*-\/\.test/.test(loanSrc), true, '');
+  check('대출: 집값 1,000억·금리 20% 넘으면 안내', /o\.price > 10000000/.test(loanSrc) && /o\.rate > 20/.test(loanSrc), true, '');
+  check('내 집 마련: 주소 r(지역) 읽기', /QS\.get\('r'\) && \[\.\.\.\$\('region'\)\.options\]/.test(buySrc), true, '리포트 돌아가기');
+  check('내 집 마련: 대출 화면에서 온 연소득을 이 기기 저장값에서', /QS\.get\('src'\)==='loan'/.test(buySrc), true, ''); }
+
 let pass = 0;
 rows.forEach(r => { if (r.ok) pass++; console.log((r.ok ? 'PASS ' : 'FAIL ') + r.name.padEnd(30) + ' ' + String(r.got).slice(0, 14).padEnd(14) + ' ' + (r.ok ? '' : '기대 ' + r.want + ' ') + (r.basis || '')); });
 console.log('\n' + pass + '/' + rows.length + ' 통과');

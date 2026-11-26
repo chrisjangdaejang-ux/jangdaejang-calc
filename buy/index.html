@@ -666,8 +666,13 @@ if (QS.has('c')) fillNum('cash', QS.get('c'));
 if (QS.has('d')) fillNum('debt', QS.get('d'));
 /* 리포트에서 돌아올 때(full=1): 이 기기에 저장해 둔 내 금액으로 채움 */
 if (QS.get('full')==='1' && !QS.has('c') && window.JDJ_SHARE){ const F=JDJ_SHARE.loadFin(); if(F){ if(F.i!=null) fillNum('income',F.i); if(F.c!=null) fillNum('cash',F.c); if(F.d!=null) fillNum('debt',F.d); if(F.e!=null && !isNaN(+F.e)) ETC=+F.e; } }
+/* 대출 한도 화면에서 넘어올 때(src=loan): 거기서 넣은 연소득·다른 대출을 이 기기 저장값에서(주소엔 싣지 않음) */
+const FROM_LOAN = QS.get('src')==='loan' && !QS.has('i') && window.JDJ_SHARE ? JDJ_SHARE.loadFin() : null;
+if (FROM_LOAN){ if (FROM_LOAN.i!=null) fillNum('income', FROM_LOAN.i); if (FROM_LOAN.d!=null) fillNum('debt', FROM_LOAN.d); }
 if (QS.get('rt') && !isNaN(parseFloat(QS.get('rt')))) $('rate').value = parseFloat(QS.get('rt'));
 if (QS.get('tm')) { const t=parseInt(QS.get('tm'),10); if([...$('term').options].some(o=>+o.value===t)) $('term').value=t; }
+/* 매수 지역(r): 리포트에서 '돌아가기'·대출 한도 화면에서 넘어올 때 고른 지역을 그대로(예전엔 늘 서울로 돌아갔음) */
+if (QS.get('r') && [...$('region').options].some(o=>o.value===QS.get('r'))) { $('region').value = QS.get('r'); $('region').dispatchEvent(new Event('change')); }
 if (QS.get('o')) pickSeg('own', QS.get('o'));
 if (QS.get('t')) pickSeg('rtype', QS.get('t'));
 render();
@@ -677,10 +682,10 @@ render();
   const N=4; let step=1;
   const fullLink = QS.has('c') || QS.get('full')==='1';
   let doneBefore=false; try{ doneBefore = sessionStorage.getItem('jdj_buy_done')==='1'; }catch(e){}
-  const want = parseInt(QS.get('step'),10);
+  const want = parseInt(QS.get('step'),10) || (FROM_LOAN && FROM_LOAN.i!=null ? 2 : NaN);   // 연소득을 이미 넣고 왔으면 질문 2(현금)부터
   if (fullLink || (doneBefore && !want)) return;
   document.body.classList.add('wiz');
-  if (!QS.has('i')) { $('income').value=''; }
+  if (!QS.has('i') && !(FROM_LOAN && FROM_LOAN.i!=null)) { $('income').value=''; }
   $('cash').value='';
   render();
   const fields = [...document.querySelectorAll('#form .field[data-step]')];

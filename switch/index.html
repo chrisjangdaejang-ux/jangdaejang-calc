@@ -737,7 +737,7 @@ function autoAdj(){
   if (!HOME || !HOME.sido){ h.className='hint'; h.textContent='위에서 지금 집 위치(시·도, 시·군·구)를 고르면 자동으로 판정해요.'; sh.className='hint'; sh.textContent=''; return; }
   const a = ad ? SW.isAdj(HOME.sido, HOME.gu, ad) : 'ask';
   if (a===true || a===false){ adj = a?'y':'n'; setSeg('adj', adj); h.className='hint auto'; h.textContent=`자동 판정: ${HOME.label} · 산 날(${ad}) 기준 ${a?'조정대상지역':'조정대상지역 아님'} (국토교통부 지정·해제 공고 이력)`; }
-  else { h.className='hint ask'; h.textContent=`${HOME.label}은(는) 산 날 기준으로 일부 지역만 지정됐거나 동마다 달라 자동으로 판정하기 어려워요. 직접 골라 주세요.`; }
+  else { h.className='hint ask'; h.textContent=`${((w,a,b)=>{const c=String(w||'').slice(-1).charCodeAt(0);return w+(c>=44032&&c<=55203&&(c-44032)%28?a:b);})(HOME.label,'은','는')} 산 날 기준으로 일부 지역만 지정됐거나 동마다 달라 자동으로 판정하기 어려워요. 직접 골라 주세요.`; }
   const b = SW.isAdj(HOME.sido, HOME.gu, sd);
   if (b===true || b===false){ sadj = b?'y':'n'; setSeg('sadj', sadj); sh.className='hint auto'; sh.textContent=`자동 판정: 팔 날(${sd}) 기준 ${b?'조정대상지역':'조정대상지역 아님'}`; }
   else { sh.className='hint ask'; sh.textContent='팔 날 기준 지정 여부를 직접 골라 주세요.'; }
@@ -861,9 +861,17 @@ function render(){
     if (P2>P) tips.push(['',`<b>주기형 금리로 바꾸면 ${fmt(P2-P)}원 더 비싼 집</b>까지 계산돼요.`]);
   }
   if (houses===1){
-    const bothAdj = adj==='y' && c.regulated;
+    /* 2026.10.1 개정(시행령 제155조): 2년 기한은 '새 집을 살 때 지금 집이 조정대상지역에 있고' 새 집도 조정대상지역일 때.
+       지금 집을 '산 날' 기준(adj)이 아니라 오늘(새 집을 살 즈음) 기준으로 판정 — 예전엔 산 날 기준이라 2015년 비조정 때 산 서울 집이 3년으로 잘못 나왔음 */
+    const oldNow = HOME && HOME.sido ? SW.isAdj(HOME.sido, HOME.gu, TODAY) : 'ask';
+    const oldAdjNow = oldNow===true || oldNow===false ? oldNow : adj==='y';
+    const bothAdj = oldAdjNow && c.regulated;
     tips.push(['',`<b>새 집을 먼저 산다면 (일시적 2주택)</b> 종전 주택을 ${bothAdj?'<b>2년</b>':'<b>3년</b>'} 안에 팔아야 비과세가 유지돼요${bothAdj?' (두 집 모두 조정대상지역, 2026.8.4 이후 취득분)':''}. 새 집은 지금 집을 산 날부터 1년 이상 지난 뒤 취득해야 해요.`]);
     if (c.regulated) tips.push(['',`규제지역 처분조건부 주담대는 <b>기존 주택을 정해진 기간 안에 팔고 새 집에 전입</b>해야 해요. 대출 실행 전 은행에 처분 기한을 꼭 확인하세요.`]);
+  }
+  if (houses===2 && R.gain>0){
+    /* 새 집을 먼저 사서 2주택이 된 경우(일시적 2주택)는 기한 안에 팔면 1주택처럼 비과세 — 이 화면은 새 집 취득일을 받지 않아 일반·중과로 계산하므로 세금 화면으로 안내 */
+    tips.unshift(['warn',`<b>새 집을 먼저 사서 2주택이 됐나요?</b> 일시적 2주택이면 기한(새 집 취득일부터 3년, 두 집 모두 조정대상지역이면 2년) 안에 지금 집을 팔 때 1주택처럼 비과세를 받을 수 있어요. 위 양도세는 일시적 2주택을 넣지 않은 계산이에요. <a href="../tax/#cgt">세금 계산(양도세)</a>에서 새 집 취득일을 넣어 확인해 보세요.`]);
   }
   $('tips').innerHTML=tips.map(x=>`<div class="tip ${x[0]}">${x[1]}</div>`).join('');
 

@@ -246,6 +246,13 @@ check('예산 적합하면 남김', REC.tooCheap(0.9, 10000, 40000), false, '');
   check('제휴 세무사 분야 버튼', tf, '양도 전문,증여 전문,상속 전문', '대표 섭외 분야·제안서');
 }
 
+// 13. 일시적 2주택 기한 안내(2026.10.1 개정): 지금 집이 '오늘' 조정대상지역인지로 2년/3년 판정 — 산 날 기준이 아님 (2026-11-26 품질 점검)
+{
+  const html = require('fs').readFileSync(require('path').join(__dirname, '..', 'switch', 'index.html'), 'utf8');
+  check('일시적 2주택 2년 판정: 지금 집 오늘 기준', /const oldNow = HOME && HOME\.sido \? SW\.isAdj\(HOME\.sido, HOME\.gu, TODAY\)/.test(html) && /const bothAdj = oldAdjNow && c\.regulated/.test(html), true, '시행령 제155조 2026.10.1');
+  check('2015년 산 도봉구 집: 산 날 비조정·오늘 조정', [SW.isAdj('서울특별시', '도봉구', '2015-03-01'), SW.isAdj('서울특별시', '도봉구', '2026-11-26')].join(','), 'false,true', '2025.10.16 서울 전역 지정');
+}
+
 let pass = 0;
 rows.forEach(r => { if (r.ok) pass++; console.log((r.ok ? 'PASS ' : 'FAIL ') + r.name.padEnd(44) + ' ' + String(r.got).slice(0, 14).padEnd(14) + ' ' + (r.ok ? '' : '기대 ' + r.want + ' ') + (r.basis || '')); });
 console.log('\n' + pass + '/' + rows.length + ' 통과');

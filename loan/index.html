@@ -312,7 +312,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
 const $ = id => document.getElementById(id);
 const L = window.JDJ_LOAN, R = L.R, M = window.JDJ_MINE, PS = window.JDJ_PRICE;
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const num = v => { const n = parseFloat(String(v || '').replace(/[^0-9.]/g, '')); return isFinite(n) ? n : 0; };
+const num = v => { if (/^\s*-/.test(String(v || ''))) return 0; const n = parseFloat(String(v || '').replace(/[^0-9.]/g, '')); return isFinite(n) ? n : 0; };   // 음수(-500)를 500으로 읽지 않게
 const comma = n => Math.round(n).toLocaleString('ko-KR');
 /* 만원 → '4억 2,000만 원' (100만 원 아래 반올림) */
 const won = v => { v = Math.round((v || 0) / 100) * 100; if (v <= 0) return '0원'; const e = Math.floor(v / 10000), m = v % 10000; return (e ? e + '억' : '') + (m ? (e ? ' ' : '') + comma(m) + '만' : '') + ' 원'; };
@@ -446,6 +446,11 @@ function calc(){
   const miss = [!S.g && '지역', !o.price && '집값', !o.income && '연소득', o.rate == null && '예상 금리'].filter(Boolean);
   if (miss.length) { miniOn = false; miniUpd(); box.innerHTML = `<div class="empty">${esc(miss.join('·'))}${(c=>c>=44032&&c<=55203&&(c-44032)%28?'을':'를')(String(esc(miss.join('·'))).slice(-1).charCodeAt(0))} 넣으면 바로 계산해요.${o.rate == null && miss.length === 1 ? ' 은행 상담 때 안내받은 금리를 넣거나, 아래 4.0~5.5% 중에서 골라 보세요.' : ''}</div>`; rateHint(); return; }
   rateHint();
+  /* 이상한 값: 결과 대신 무엇을 고치면 되는지 (집값 1,000억 원 초과·연소득 100억 원 초과·금리 20% 초과) */
+  const odd = o.price > 10000000 ? '집값이 1,000억 원을 넘어요. 만원 단위로 넣었는지 확인해 주세요(10억 원 = 100,000).'
+    : o.income > 1000000 ? '연소득이 100억 원을 넘어요. 만원 단위로 넣었는지 확인해 주세요(7천만 원 = 7,000).'
+    : o.rate > 20 ? '예상 금리가 20%를 넘어요. 연 금리를 % 단위로 넣어 주세요(예: 4.5).' : '';
+  if (odd) { miniOn = false; miniUpd(); box.innerHTML = `<div class="empty">${esc(odd)}</div>`; return; }
   const r = L.limit({ price: o.price, g: S.g, own: S.own, income: o.income, debt: o.debt, rtype: S.rtype, band: o.band, term: o.term, rate: o.rate, lender: S.lender });
   const [w1, w2] = bindText(r, o), ab = Math.min(r.a, r.b);
   const cd = L.costDetail(o.price, { own: S.own, regulated: S.g === 'reg', large: $('small').value === '0' });
@@ -520,7 +525,23 @@ function calc(){
 
   <p class="basis"><b>실제 한도는 은행 심사·신용·다른 대출에 따라 달라질 수 있어요. 기준일: ${R.ASOF}</b><br>이 계산은 공개된 대출 규칙을 그대로 적용한 정보예요. 특정 금융회사나 상품을 권하거나 대출을 연결해 드리지 않아요.</p>`;
   $('miniV').textContent = won(r.L); miniOn = true; miniUpd();
+  buyLink(o);
   track(r);
+}
+/* '내 예산으로 살 수 있는 집'(buy/)으로 넘어갈 때 여기서 넣은 연소득·다른 대출·지역·보유·금리·기간을 채워서 */
+function buyLink(o){
+  const a = document.querySelector('a[data-track="loan_to_buy"]'); if (!a) return;
+  const q = new URLSearchParams({ src: 'loan' });   // 연소득·다른 대출은 주소에 싣지 않고(개인값) 이 기기(jdj_fin, assets/share.js 와 같은 칸)에만 — 누를 때 저장
+  a.onclick = () => { try { const k = 'jdj_fin', cur = JSON.parse(localStorage.getItem(k) || 'null') || {}; if (o.income > 0) cur.i = Math.round(o.income); cur.d = Math.round(o.debt || 0); cur.at = Date.now(); localStorage.setItem(k, JSON.stringify(cur)); } catch (e) {} };
+  q.set('o', S.own);
+  const r = S.g === 'reg' ? (String(S.code).slice(0, 2) === '11' ? 'seoul' : 'ggreg') : S.g;
+  if (r) q.set('r', r);
+  const sdn = S.IX && S.IX.sgg[S.code] ? S.IX.sgg[S.code].sido : '';   // 시·군·구까지 고른 경우 매수 지역 칸(assets/region-pick.js sd·g)도 같은 곳으로
+  if (sdn) { q.set('sd', sdn); q.set('g', S.code); }
+  if (o.rate != null) q.set('rt', String(o.rate));
+  if (o.term) q.set('tm', String(o.term));
+  if (S.rtype && S.rtype !== 'fixed') q.set('t', S.rtype);
+  a.href = '../buy/?' + q.toString();
 }
 /* 휴대폰: 입력하는 동안 아래에 결과 한 줄(결과가 화면에 보이면 숨김) */
 let miniOn = false;
