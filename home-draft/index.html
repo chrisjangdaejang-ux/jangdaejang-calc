@@ -524,7 +524,7 @@ addEventListener('DOMContentLoaded', () => {
     const c = sc();
     if (!c || !(c.hi.length || c.drop.length)) return `<p class="t3-line">${RG === 'all' ? '' : esc(shortOf(RG)) + '에는 '}오늘 새로 올라온 거래 중 신고가·큰 하락이 아직 없어요.</p>`;
     return `<div class="t3-st"><div><b>${c.n.toLocaleString('ko-KR')}건</b><small>오늘 새 거래</small></div><div><b class="t3-up">${c.nhi.toLocaleString('ko-KR')}건</b><small>신고가</small></div><div><b class="t3-dn">${c.ndrop.toLocaleString('ko-KR')}건</b><small>큰 하락</small></div></div>
-      ${c.hi.length ? `<p class="t3-h">신고가 TOP <small style="font-weight:500;color:var(--sub2)">비싼 순</small></p><ul class="t3-l">${c.hi.map(x => row(x, 'hi')).join('')}</ul>` : ''}
+      ${c.hi.length ? `<p class="t3-h">신고가 TOP <small style="font-weight:500;color:var(--sub2)">이전 최고가보다 많이 오른 순</small></p><ul class="t3-l">${c.hi.map(x => row(x, 'hi')).join('')}</ul>` : ''}
       ${c.drop.length ? `<p class="t3-h">큰 하락 TOP <small style="font-weight:500;color:var(--sub2)">많이 내린 순</small></p><ul class="t3-l">${c.drop.map(x => row(x, 'drop')).join('')}</ul>` : ''}
       <p class="t3-src">모닝 브리핑과 같은 기준이에요. 신고가 = 같은 단지·같은 전용면적의 그 전 최고가보다 비싼 거래, 큰 하락 = 최근 2년 최고가보다 10% 넘게 낮은 1억 원 이상 거래(직거래·특수 거래 의심은 아래로).</p>`;
   }
