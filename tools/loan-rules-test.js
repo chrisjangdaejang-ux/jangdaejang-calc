@@ -196,7 +196,7 @@ const isDate = d => /^\d{4}-\d{2}-\d{2}$/.test(String(d || ''));
   check('화면: 정보 제공·연결하지 않음 문구', h.includes('특정 금융회사나 상품을 권하거나 대출을 연결해 드리지 않아요'), true);
   check('화면: 규칙은 loan-rules.js 한 곳에서', h.includes('assets/loan-rules.js?v=') && !/0\.40|LTV\s*=\s*\{/.test(h.replace(/<style[\s\S]*?<\/style>/g, '')), true);
   check('화면: 광고 칸은 대출 상담 업종(loan) 하나', (h.match(/data-ad-slot=/g) || []).length === 1 && h.includes('data-ad-slot="loan_end" data-ad-cat="loan"'), true);
-  check('화면: 규제가 바뀌면 알려 드려요 → 모닝 브리핑', h.includes('규제가 바뀌면 알려 드려요') && h.includes('href="../brief/?src=loan"'), true);
+  check('화면: 규제가 바뀌면 알려 드려요 → 모닝 브리핑', h.includes('규제가 바뀌면 알려 드려요') && h.includes('href="../brief/?cta=loan"'), true);
   check('화면: 서비스 이름은 SITE_NAME 칸', h.includes('data-site-name') && !h.includes('장대장부동산그룹'), true);
   check('화면: DTI 막힘 문구·DTI 막대·용어 풀이', ['소득 기준(DTI)이 가장 먼저 막혀요', 'DTI란?', '④ 소득 기준(DTI)'].every(t => h.includes(t)), true);
   check('화면: 지방 2주택 이상 60%는 참고 문구(1주택 유지는 은행 확인)', h.includes('60%는 이미 집이 2채 이상인 경우예요'), true);
