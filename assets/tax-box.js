@@ -6,6 +6,12 @@
    - 상담: 기존 상담 신청서(구글 폼)를 그대로 씀. 연락처는 신청서에 직접 적고, 이 화면은 조건 요약만 미리 채움(금액은 동의할 때만). */
 (function () {
   'use strict';
+  /* 근거 문구: tax/tax-verified.js(테스트가 모두 통과할 때 만드는 파일)의 숫자만 씀. 파일이 없으면 확인 안내만 */
+  function verNote() {
+    const V = (typeof window !== 'undefined' && window.JDJ_TAX_VERIFIED) || null;
+    const tail = '신고 전에 홈택스·위택스나 세무사와 확인해 주세요.';
+    return V && V.ntsTotal > 0 ? `세금 계산 화면과 같은 계산 엔진이에요(국세청 공개 계산 사례 ${V.ntsTotal}건과 같은 결과). ${tail}` : tail;
+  }
   var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   const BASE = JB.SITE;
   const FORM = 'https://docs.google.com/forms/d/e/1FAIpQLScCG7wzIlY3FE6EHU5QWo92uW5NQe7aiP-GJ9jvh41Rx2E8Zw/viewform';
@@ -165,7 +171,7 @@
     <a class="more" data-a="cgt" href="#" data-track="taxbox_cgt_more">양도세 자세히 · 언제 팔면 줄어드는지 ›</a></div>` : ''}
   <div class="gos"><a class="btn ghost" data-a="xfer" href="#" data-track="taxbox_transfer">이 집 어떻게 넘기는 게 유리할까? (양도·저가 양도·증여·상속 비교) ›</a></div>
   ${consultHtml(id + 'c')}
-  <p class="note1">세무사 검수 전 계산이에요. 신고 전에 홈택스·위택스나 세무사와 확인해 주세요.</p>`;
+  <p class="note1">${verNote()}</p>`;
     const q = s => el.querySelector(s), $i = suf => document.getElementById(id + suf);
     const fmt = inp => { const v = num(inp.value); inp.value = v ? v.toLocaleString('ko-KR') : ''; };
     el.querySelectorAll('input[inputmode=numeric]').forEach(i => i.addEventListener('input', () => { if (i.id !== id + 'r') fmt(i); else i.value = i.value.replace(/[^0-9]/g, '').slice(0, 3); upd(); }));

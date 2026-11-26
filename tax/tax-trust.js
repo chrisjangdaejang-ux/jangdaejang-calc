@@ -3,9 +3,36 @@
    - 결과 칸(#cgtRes 등)이 다시 그려질 때마다 상자가 없으면 맨 끝에 다시 붙인다(tax-ui.js 는 건드리지 않음).
    - 다른 화면·새 결과 칸도 data-taxlaw="cgt|order|acq|prop|cpt|gift" 를 달면 같은 상자가 붙는다.
    - 오류 신고: 기존 상담 신청 구글 폼(buy·switch 와 같은 폼)에 '세금 계산 오류 신고 · 세금 종류'와 결과 금액·기준일만 미리 채움.
-     입력한 매도가·취득가 같은 숫자는 자동으로 담지 않는다(보내는 분이 폼에서 직접 적음). */
+     입력한 매도가·취득가 같은 숫자는 자동으로 담지 않는다(보내는 분이 폼에서 직접 적음).
+   - 2026-11-26: 맨 위에 근거 배지 — '국세청 공개 계산 사례 N건과 같은 결과'. N은 tax/tax-verified.js(테스트 tools/tax-official-test.js 가
+     모두 통과할 때 만드는 파일)에서만 읽는다. 그 계산기에 맞춰 본 국세청 사례가 없으면 중립 안내(조문 산식 확인 건수)만.
+     window.JDJ_TAX_BADGE(kind) → 배지 HTML(다른 화면에서도 씀) */
 (function () {
   'use strict';
+  const V = window.JDJ_TAX_VERIFIED || null;
+  const dKo0 = s => { const [y, m, d] = String(s).split('-').map(Number); return y + '년 ' + m + '월 ' + d + '일'; };
+  /** 근거 배지: kind(cgt|order|acq|prop|cpt|gift|xfer|all) → HTML. 숫자는 테스트 산출물에서만 */
+  function badge(kind) {
+    if (!V || !V.by) return '';
+    const e = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const b = kind === 'all' ? { nts: V.ntsTotal, seoul: Object.keys(V.by).reduce((n, k) => n + V.by[k].seoul, 0), ntsPages: [] } : V.by[kind];
+    if (!b) return '';
+    const base = dKo0(V.asOf) + ' 시행 법령 기준';
+    if (b.nts > 0) {
+      const pg = b.ntsPages && b.ntsPages.length ? ' (' + b.ntsPages.join('·') + '쪽)' : '';
+      return '<p class="tvb ok" data-tvb="' + e(kind) + '"><b>근거 확인</b><span>국세청 공개 계산 사례 ' + b.nts + '건과 같은 결과예요 · ' + e(base) +
+        '<small>' + e(V.books.NTS) + pg + ' 계산 예시를 이 계산기에 넣어 책자 숫자와 한 원까지 같은지 확인했어요' + (b.seoul ? ' · 서울시 지방세 책자 사례 ' + b.seoul + '건도 같아요' : '') + '.</small></span></p>';
+    }
+    return '<p class="tvb" data-tvb="' + e(kind) + '"><b>계산 근거</b><span>' + e(base) + ' 법 조문 산식으로 계산해요' +
+      '<small>' + (b.formula ? '조문 산식으로 만든 확인 사례 ' + b.formula + '건과 같은 결과예요. ' : '') + '이 계산에 바로 맞춰 볼 국세청 공개 계산 사례는 아직 없어요.</small></span></p>';
+  }
+  window.JDJ_TAX_BADGE = badge;
+  { const c0 = document.createElement('style');
+    c0.textContent = '.tvb{margin:10px 0 0;display:flex;gap:8px;align-items:flex-start;border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.55;background:var(--gray2,#f7f8fa);border:1px solid var(--line,#e5e8eb);color:var(--sub,#4e5968)}' +
+      '.tvb b{flex:none;font-size:13px;border-radius:6px;padding:2px 8px;margin-top:1px;background:#4E5968;color:#fff}.tvb.ok{background:#ECF8F2;border-color:#BFE5D1;color:#0B5C3B}.tvb.ok b{background:#0E7A4F}' +
+      '.tvb small{display:block;font-size:13px;color:inherit;opacity:.85;margin-top:2px}';
+    document.head.appendChild(c0); }
+  document.querySelectorAll('[data-tvb-slot]').forEach(el => { el.innerHTML = badge(el.getAttribute('data-tvb-slot')); });
   const T = window.JDJ_TAX; if (!T || !T.LAW) return;
   const FORM = 'https://docs.google.com/forms/d/e/1FAIpQLScCG7wzIlY3FE6EHU5QWo92uW5NQe7aiP-GJ9jvh41Rx2E8Zw/viewform';
   const SLOTS = { cgtRes: 'cgt', oOut: 'order', aRes: 'acq', pRes: 'prop', cRes: 'cpt', gRes: 'gift' };
@@ -32,7 +59,7 @@
     const L = T.LAW[kind], S = T.SCOPE[kind] || [];
     const el = document.createElement('div');
     el.className = 'taxlaw'; el.setAttribute('data-taxlaw-box', kind);
-    el.innerHTML = '<div class="tl-d">' + dKo(T.AS_OF) + ' 현행 법령 기준</div>' +
+    el.innerHTML = '<div class="tl-d">' + dKo(T.AS_OF) + ' 현행 법령 기준</div>' + badge(kind) +
       '<p class="tl-a">적용 조항: ' + esc(L.arts.join(', ')) + '</p>' +
       (S.length ? '<details><summary>이 계산이 다루지 않는 경우 (세무사 확인이 필요해요)</summary><ul>' +
         S.map(([k, why]) => '<li><b>' + esc(k) + '</b> — ' + esc(why) + '</li>').join('') + '</ul></details>' : '') +

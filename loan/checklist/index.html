@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="../../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="집예보">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="../../assets/pwa.js?v=3" defer></script>
+<script src="../../assets/biz.js?v=3" defer></script>
+<title>잔금일 체크리스트 — 잔금일에서 거꾸로 센 할 일과 기한(.ics 달력) | 집예보</title>
+<link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/loan/checklist/">
+<meta name="description" content="잔금일만 넣으면 대출 신청, 등기부 확인, 전입신고·확정일자, 취득세 신고(60일), 거래 신고(30일) 같은 할 일과 법정 기한을 날짜로 계산해 달력 파일로 드려요. 입력한 날짜는 이 기기 밖으로 보내지 않아요.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="잔금일 체크리스트 — 할 일과 기한을 날짜로">
+<meta property="og:description" content="잔금일만 넣으면 대출 신청, 등기부 확인, 전입신고·확정일자, 취득세 신고(60일), 거래 신고(30일) 같은 할 일과 법정 기한을 날짜로 계산해 달력 파일로 드려요. 입력한 날짜는 이 기기 밖으로 보내지 않아요.">
+<meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/loan/checklist/">
+<meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/tax.png">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script>window.JDJ_CONFIG = { tool:'loan', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../assets/track.js?v=2"></script>
+<script src="../../assets/stat.js?v=8"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/aplus.css?v=50">
+<script src="../../assets/nw.js?v=1" defer></script>
+<script src="../../assets/back.js?v=1" defer></script>
+<script src="../../assets/tabbar.js?v=8" defer></script>
+<style>
+.wrap{max-width:560px;margin:0 auto;padding:0 0 40px}
+[hidden]{display:none!important}
+.hero{padding:14px 20px 4px;display:flex;flex-direction:column;gap:8px}
+.hero h1{margin:0;font-size:26px;line-height:1.3}
+.hero p{margin:0;font-size:16px;color:var(--sub);line-height:1.6}
+.q{margin:16px 20px 0;padding:20px 18px;border-radius:20px;background:var(--gray);display:flex;flex-direction:column;gap:12px}
+.q .meta{display:flex;justify-content:space-between;font-size:14px;color:var(--sub2)}
+.q .meta b{color:var(--blue)}
+.q .ql{font-size:21px;font-weight:700;letter-spacing:-.4px;line-height:1.4;margin:0}
+.q .sl{font-size:15px;font-weight:700;color:var(--sub);margin:4px 0 -4px}
+.opts{display:grid;gap:8px}
+.opts.c2{grid-template-columns:1fr 1fr}
+.opt{display:block;width:100%;text-align:left;font:inherit;font-size:16px;font-weight:700;padding:12px 14px;border:2px solid #fff;background:#fff;border-radius:14px;cursor:pointer;color:var(--text);min-height:52px}
+.opt small{display:block;font-size:13.5px;font-weight:500;color:var(--sub2);line-height:1.45}
+.opt.on{border-color:var(--blue);background:var(--blue-l)}
+.opt.on small{color:var(--blue)}
+.help{font-size:14px;color:var(--sub2);line-height:1.6}
+.err{font-size:14px;color:var(--neg);font-weight:700}.err:empty{display:none}
+.nav{display:flex;gap:8px}
+.nav .btn{min-height:54px;border-radius:16px;font-size:17px}
+.nav .prev{flex:0 0 96px;background:#fff}.nav .next{flex:1}
+.box{display:flex;align-items:center;gap:8px;background:#fff;border-radius:14px;padding:6px 14px;border:2px solid transparent}
+.box:focus-within{border-color:var(--blue)}
+.box input,.box select{border:0;outline:none;font:inherit;font-size:19px;font-weight:700;flex:1;min-width:0;color:var(--text);background:transparent;min-height:44px;box-shadow:none;padding:0}
+.box span{font-size:16px;font-weight:700;color:var(--sub);white-space:nowrap}
+.conv{font-size:14px;color:var(--blue);font-weight:700;min-height:1em;margin-top:-4px}
+.tog{display:flex;align-items:center;gap:10px;font-size:15.5px;font-weight:700;background:#fff;border-radius:14px;padding:12px 14px;min-height:52px;cursor:pointer;line-height:1.45}
+.tog input{width:20px;height:20px;flex:none}
+.sec{margin:16px 20px 0}
+.card{border:1px solid var(--line);border-radius:18px;background:#fff;padding:16px}
+.card h2{margin:0 0 4px;font-size:18px}
+.law{font-size:13.5px;color:var(--sub3);line-height:1.6}
+.law a{color:var(--sub2)}
+.notice{margin:18px 20px 0;font-size:13.5px;color:var(--sub2);line-height:1.6;background:var(--gray2);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.backbar{margin:14px 20px 0}
+.backbar a{font-size:15px;color:var(--sub2);text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
+.chip{display:inline-flex;align-items:center;font-size:13px;font-weight:700;border-radius:999px;padding:2px 10px;white-space:nowrap}
+.chip.in{background:#E9ECF1;color:#191F28}.chip.out{background:var(--pos-l);color:var(--pos)}.chip.check{background:#FFF4E0;color:#A15C07}
+.foot2{margin:24px 0 0}
+.seg2{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#fff;border-radius:14px;padding:4px}
+.seg2 button{font:inherit;font-size:16px;font-weight:700;min-height:48px;border:0;border-radius:11px;background:transparent;color:var(--sub);cursor:pointer}
+.seg2 button.on{background:var(--blue);color:#fff}
+.fl label,.fl .lb{display:block;font-size:14.5px;font-weight:700;color:var(--sub);margin-bottom:4px}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.f2>*{min-width:0}
+.box input[type=date]{font-size:17px}
+.tl{list-style:none;margin:0;padding:0}
+.tl li{display:grid;grid-template-columns:92px 1fr;gap:12px;padding:14px 0;border-top:1px solid var(--line2)}
+.tl li:first-child{border-top:0}
+.tl .d{font-weight:900;font-size:15px;font-variant-numeric:tabular-nums;line-height:1.35}
+.tl .d small{display:block;font-size:13px;font-weight:700;color:var(--sub2)}
+.tl .d small.soon{color:#A15C07}
+.tl b{font-size:16px;line-height:1.45;display:block}
+.tl p{margin:4px 0 0;font-size:14.5px;line-height:1.6;color:var(--sub)}
+.tl .k{display:inline-flex;font-size:12.5px;font-weight:800;border-radius:999px;padding:2px 9px;margin-top:6px}
+.tl .k.law{background:#FDECEC;color:#B42318}.tl .k.tip{background:#E9ECF1;color:#3E4754}
+.tl li.past{opacity:.55}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.xl{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:16px;border:1px solid var(--line);background:#fff;text-decoration:none;color:var(--text);min-height:64px;margin-top:8px}
+.xl b{display:block;font-size:16px}.xl small{display:block;font-size:14px;color:var(--sub2);line-height:1.5}.xl .go{margin-left:auto;color:#B0B8C1;font-size:20px}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a>
+  <div class="badge plain">대출 한도</div>
+</header>
+<main class="wrap">
+  <div class="backbar"><a href="../">‹ 대출 한도로</a></div>
+  <div class="hero">
+    <div class="eyebrow">잔금일 체크리스트 · 법정 기한은 2026년 11월 26일 확인한 법령 기준</div>
+    <h1>잔금일만 넣으면<br><em>할 일과 기한</em>을 날짜로 알려 드려요</h1>
+    <p>잔금일에서 거꾸로 세어 대출 신청·등기부 확인·전입신고·취득세 신고 같은 일을 날짜순으로 정리해요. 법으로 정한 기한과 권장하는 일을 나눠 보여 드리고, 휴대폰 달력에 바로 넣을 수 있어요.</p>
+  </div>
+  <div class="q">
+    <div class="seg2" role="tablist" aria-label="어떤 잔금인가요"><button type="button" class="on" data-m="buy" role="tab" aria-selected="true">집을 사요</button><button type="button" data-m="rent" role="tab" aria-selected="false">전세·월세로 들어가요</button></div>
+    <div class="f2">
+      <div class="fl"><label for="bal">잔금일</label><div class="box"><input type="date" id="bal" min="2020-01-01" max="2035-12-31"></div></div>
+      <div class="fl"><label for="con">계약일 (선택)</label><div class="box"><input type="date" id="con" min="2020-01-01" max="2035-12-31"></div></div>
+    </div>
+    <label class="tog"><input type="checkbox" id="loan" checked> <span id="loanT">주택담보대출을 받아요</span></label>
+    <label class="tog" id="moveW"><input type="checkbox" id="move" checked> 산 집에 들어가 살아요 (전입신고)</label>
+    <div class="err" id="err" role="alert"></div>
+  </div>
+  <div id="out" hidden>
+    <div class="sec card"><h2 id="h2"></h2><p class="law" id="sub"></p><ol class="tl" id="tl"></ol></div>
+    <div class="sec btns"><button type="button" class="btn primary" id="ics" data-track="checklist_ics">휴대폰 달력에 넣기 (.ics)</button><button type="button" class="btn ghost" id="copy" data-track="checklist_copy">글로 복사</button></div>
+    <p class="sec help" style="margin-top:8px">달력 파일을 열면 아이폰·안드로이드 달력에 일정이 들어가고 하루 전에 알려 줘요. 파일은 이 기기에서 만들어져 어디로도 보내지 않아요.</p>
+    <div class="sec" id="next"></div>
+  </div>
+  <p class="notice">'법정 기한'은 법령에 적힌 기한이고, '권장'은 법정 기한이 아니라 미리 하면 좋은 일이에요. 은행·법무사·중개사마다 필요한 날짜가 다를 수 있으니 꼭 물어보세요. 주말·공휴일로 기한이 미뤄지는지는 계산하지 않았어요.</p>
+</main>
+<footer class="foot notice foot2" style="border-radius:0;border-left:0;border-right:0">근거: 지방세법 제20조, 부동산등기 특별조치법 제2조, 부동산 거래신고 등에 관한 법률 제3조·제6조의2, 주민등록법 제16조, 주택임대차보호법 제3조·제3조의2, 지방세법 제114조·종합부동산세법 제16조(6월 1일 과세기준일)<br>★ 집예보 · <a href="../">대출 한도 계산</a></footer>
+<script src="../../assets/closing-core.js?v=1"></script>
+<script>
+(function(){
+  'use strict';
+  const C = window.JDJ_CLOSING, $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const QS = new URLSearchParams(location.search);
+  const today = (() => { const q = QS.get('today'); if (q && C.okDate(q)) return q; const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); })();
+  const st = { m: QS.get('m') === 'rent' ? 'rent' : 'buy' };
+  if (C.okDate(QS.get('d'))) $('bal').value = QS.get('d');
+  if (C.okDate(QS.get('c'))) $('con').value = QS.get('c');
+  if (QS.get('loan') === '0') $('loan').checked = false;
+  const T = x => Date.UTC(+x.slice(0, 4), +x.slice(5, 7) - 1, +x.slice(8, 10));
+  const dd = d => { const n = Math.round((T(d) - T(today)) / 864e5); return n > 0 ? n + '일 남음' : n === 0 ? '오늘' : '지났어요'; };
+  const md = d => (+d.slice(5, 7)) + '월 ' + (+d.slice(8, 10)) + '일';
+  const dow = d => '일월화수목금토'[new Date(T(d)).getUTCDay()];
+  let LIST = [];
+  function mode() { document.querySelectorAll('.seg2 button').forEach(b => { const on = b.dataset.m === st.m; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); }); $('moveW').hidden = st.m !== 'buy'; $('loanT').textContent = st.m === 'buy' ? '주택담보대출을 받아요' : '전세대출을 받아요'; }
+  document.querySelector('.seg2').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; st.m = b.dataset.m; mode(); run(); });
+  ['bal', 'con', 'loan', 'move'].forEach(id => $(id).addEventListener('change', run));
+  function run() {
+    const B = $('bal').value, Cn = $('con').value;
+    $('err').textContent = '';
+    if (!C.okDate(B)) { $('out').hidden = true; return; }
+    if (Cn && C.okDate(Cn) && Cn > B) $('err').textContent = '계약일이 잔금일보다 늦어요. 계약일은 빼고 계산했어요.';
+    LIST = C.checklist({ mode: st.m, balance: B, contract: Cn, loan: $('loan').checked, moveIn: $('move').checked });
+    $('h2').textContent = (st.m === 'buy' ? '집 사는 잔금일 ' : '입주 잔금일 ') + C.ko(B) + '(' + dow(B) + ') 기준';
+    $('sub').textContent = '할 일 ' + LIST.length + '개 · 그중 법정 기한 ' + LIST.filter(x => x.kind === 'law').length + '개';
+    $('tl').innerHTML = LIST.map(x => '<li class="' + (x.d < today ? 'past' : '') + '"><div class="d">' + md(x.d) + '(' + dow(x.d) + ')<small class="' + (x.d >= today && Math.round((T(x.d) - T(today)) / 864e5) <= 14 ? 'soon' : '') + '">' + dd(x.d) + '</small></div><div><b>' + esc(x.t) + '</b><p>' + esc(x.s) + '</p>' +
+      '<span class="k ' + x.kind + '">' + (x.kind === 'law' ? '법정 기한' : '권장') + '</span>' + (x.src ? ' <span class="law">' + (x.src.url ? '<a href="' + esc(x.src.url) + '" target="_blank" rel="noopener">' + esc(x.src.nm) + ' ↗</a>' : esc(x.src.nm)) + '</span>' : '') + '</div></li>').join('');
+    $('next').innerHTML = st.m === 'buy'
+      ? '<a class="xl" href="../../tax/cost/" data-track="checklist_to_cost"><span><b>잔금 날 드는 돈 미리 보기</b><small>취득세·국민주택채권·인지세·등기 수수료·법무사 보수·중개보수</small></span><span class="go" aria-hidden="true">›</span></a>' +
+        '<a class="xl" href="../../mine/calendar/" data-track="checklist_to_calendar"><span><b>산 뒤에도 놓치지 않게</b><small>내 부동산 달력에 잔금일을 넣으면 비과세 2년·재산세·종부세 날짜를 계속 알려 드려요</small></span><span class="go" aria-hidden="true">›</span></a>'
+      : '<a class="xl" href="../../jeonse/checklist/" data-track="checklist_to_jeonse"><span><b>전세사기 예방 체크리스트</b><small>계약 전·잔금 전에 꼭 볼 것</small></span><span class="go" aria-hidden="true">›</span></a>' +
+        '<a class="xl" href="../../mine/calendar/" data-track="checklist_to_calendar"><span><b>만기까지 챙겨 드려요</b><small>내 부동산 달력에 계약 만기를 넣으면 계약갱신요구 기간을 알려 드려요</small></span><span class="go" aria-hidden="true">›</span></a>';
+    $('out').hidden = false;
+  }
+  function dl(name, text) { const b = new Blob([text], { type: 'text/calendar;charset=utf-8' }), u = URL.createObjectURL(b), a = document.createElement('a'); a.href = u; a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(u); a.remove(); }, 500); }
+  $('ics').addEventListener('click', () => { if (!LIST.length) return; dl('zipyebo-checklist-' + $('bal').value + '.ics', C.ics(LIST.map(x => ({ d: x.d, t: x.t, s: x.s + (x.kind === 'law' ? ' (법정 기한)' : ' (권장)'), url: x.src && x.src.url })), '집예보 잔금일 체크리스트')); });
+  $('copy').addEventListener('click', () => { const t = $('h2').textContent + '\n' + LIST.map(x => '· ' + md(x.d) + ' ' + x.t + (x.kind === 'law' ? ' [법정 기한]' : '')).join('\n'); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { $('copy').textContent = '복사됐어요'; setTimeout(() => $('copy').textContent = '글로 복사', 1500); }).catch(() => {}); });
+  mode(); run();
+  window.JDJ_CHECK_UI = { run, list: () => LIST };
+})();
+</script>
+</body>
+</html>

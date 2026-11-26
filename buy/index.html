@@ -37,6 +37,7 @@
 <script src="../tax/tax-engine.js?v=4"></script>
 <script src="../assets/loan-rules.js?v=3"></script>
 <script src="../assets/loan-core.js?v=6"></script>
+<script src="../assets/closing-core.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -346,6 +347,8 @@ body.wiz .wiznav{display:flex;gap:8px;margin-top:4px}
         <p class="muted" style="font-size:13.5px;margin:10px 0 0" id="costNote"></p>
       </div>
 
+      <div class="panel section" id="totalCard"></div>
+
       <div class="panel section">
         <h2>점 찍어둔 집, 살 수 있을까?</h2>
         <div class="field" style="margin-bottom:0">
@@ -532,6 +535,8 @@ function render(){
   updateConsult(c);
   updateReport(c);
   renderCost(c,P);
+  /* 매수 총비용 한 장(assets/buy-total.js)에 지금 조건을 넘김 — 금액은 이 기기 안에서만 */
+  { const T = num($('target').value); window.JDJ_BUY_LAST = {c, P, dsr, target:T||0, region:$('region').value}; window.dispatchEvent(new CustomEvent('jdj-buy', {detail:window.JDJ_BUY_LAST})); }
 }
 
 const FORM='https://docs.google.com/forms/d/e/1FAIpQLScCG7wzIlY3FE6EHU5QWo92uW5NQe7aiP-GJ9jvh41Rx2E8Zw/viewform';
@@ -733,6 +738,7 @@ render();
   show(want>=1 && want<=N ? (want>=2 && !num($('income').value) ? 1 : want) : 1);
 })();
 </script>
+<script src="../assets/buy-total.js?v=1"></script>
 <script src="../assets/ad-slot.js?v=8" defer></script>
 <div data-gnext="buy" hidden></div>
 <script src="../assets/guide-next.js?v=8" defer></script>

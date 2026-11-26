@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="../../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="집예보">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="../../assets/pwa.js?v=3" defer></script>
+<script src="../../assets/biz.js?v=3" defer></script>
+<title>집 살 때·팔 때 드는 돈 — 취득세·국민주택채권·인지세·등기 수수료·법무사 보수·중개보수 | 집예보</title>
+<link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/tax/cost/">
+<meta name="description" content="집을 살 때 취득세 말고도 국민주택채권, 인지세, 등기신청수수료, 법무사 보수, 중개보수가 들어요. 공식 표 그대로 계산하고, 법무사 보수처럼 곳마다 다른 것은 범위와 출처를 함께 보여 드려요.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="집 살 때·팔 때 드는 돈, 공식 표로 한 번에">
+<meta property="og:description" content="집을 살 때 취득세 말고도 국민주택채권, 인지세, 등기신청수수료, 법무사 보수, 중개보수가 들어요. 공식 표 그대로 계산하고, 법무사 보수처럼 곳마다 다른 것은 범위와 출처를 함께 보여 드려요.">
+<meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/tax/cost/">
+<meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/tax.png">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script>window.JDJ_CONFIG = { tool:'tax', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../assets/track.js?v=2"></script>
+<script src="../../assets/stat.js?v=8"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/aplus.css?v=50">
+<script src="../../assets/nw.js?v=1" defer></script>
+<script src="../../assets/back.js?v=1" defer></script>
+<script src="../../assets/tabbar.js?v=8" defer></script>
+<style>
+.wrap{max-width:560px;margin:0 auto;padding:0 0 40px}
+[hidden]{display:none!important}
+.hero{padding:14px 20px 4px;display:flex;flex-direction:column;gap:8px}
+.hero h1{margin:0;font-size:26px;line-height:1.3}
+.hero p{margin:0;font-size:16px;color:var(--sub);line-height:1.6}
+.q{margin:16px 20px 0;padding:20px 18px;border-radius:20px;background:var(--gray);display:flex;flex-direction:column;gap:12px}
+.q .meta{display:flex;justify-content:space-between;font-size:14px;color:var(--sub2)}
+.q .meta b{color:var(--blue)}
+.q .ql{font-size:21px;font-weight:700;letter-spacing:-.4px;line-height:1.4;margin:0}
+.q .sl{font-size:15px;font-weight:700;color:var(--sub);margin:4px 0 -4px}
+.opts{display:grid;gap:8px}
+.opts.c2{grid-template-columns:1fr 1fr}
+.opt{display:block;width:100%;text-align:left;font:inherit;font-size:16px;font-weight:700;padding:12px 14px;border:2px solid #fff;background:#fff;border-radius:14px;cursor:pointer;color:var(--text);min-height:52px}
+.opt small{display:block;font-size:13.5px;font-weight:500;color:var(--sub2);line-height:1.45}
+.opt.on{border-color:var(--blue);background:var(--blue-l)}
+.opt.on small{color:var(--blue)}
+.help{font-size:14px;color:var(--sub2);line-height:1.6}
+.err{font-size:14px;color:var(--neg);font-weight:700}.err:empty{display:none}
+.nav{display:flex;gap:8px}
+.nav .btn{min-height:54px;border-radius:16px;font-size:17px}
+.nav .prev{flex:0 0 96px;background:#fff}.nav .next{flex:1}
+.box{display:flex;align-items:center;gap:8px;background:#fff;border-radius:14px;padding:6px 14px;border:2px solid transparent}
+.box:focus-within{border-color:var(--blue)}
+.box input,.box select{border:0;outline:none;font:inherit;font-size:19px;font-weight:700;flex:1;min-width:0;color:var(--text);background:transparent;min-height:44px;box-shadow:none;padding:0}
+.box span{font-size:16px;font-weight:700;color:var(--sub);white-space:nowrap}
+.conv{font-size:14px;color:var(--blue);font-weight:700;min-height:1em;margin-top:-4px}
+.tog{display:flex;align-items:center;gap:10px;font-size:15.5px;font-weight:700;background:#fff;border-radius:14px;padding:12px 14px;min-height:52px;cursor:pointer;line-height:1.45}
+.tog input{width:20px;height:20px;flex:none}
+.sec{margin:16px 20px 0}
+.card{border:1px solid var(--line);border-radius:18px;background:#fff;padding:16px}
+.card h2{margin:0 0 4px;font-size:18px}
+.law{font-size:13.5px;color:var(--sub3);line-height:1.6}
+.law a{color:var(--sub2)}
+.notice{margin:18px 20px 0;font-size:13.5px;color:var(--sub2);line-height:1.6;background:var(--gray2);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.backbar{margin:14px 20px 0}
+.backbar a{font-size:15px;color:var(--sub2);text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
+.chip{display:inline-flex;align-items:center;font-size:13px;font-weight:700;border-radius:999px;padding:2px 10px;white-space:nowrap}
+.chip.in{background:#E9ECF1;color:#191F28}.chip.out{background:var(--pos-l);color:var(--pos)}.chip.check{background:#FFF4E0;color:#A15C07}
+.foot2{margin:24px 0 0}
+.seg2{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#fff;border-radius:14px;padding:4px}
+.seg2 button{font:inherit;font-size:16px;font-weight:700;min-height:48px;border:0;border-radius:11px;background:transparent;color:var(--sub);cursor:pointer}
+.seg2 button.on{background:var(--blue);color:#fff}
+.fl label,.fl .lb{display:block;font-size:14.5px;font-weight:700;color:var(--sub);margin-bottom:4px}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.f2>*{min-width:0}
+.quick{display:flex;gap:6px;flex-wrap:wrap}
+.quick button{font:inherit;font-size:14.5px;font-weight:700;min-height:44px;padding:0 14px;border-radius:999px;background:#fff;color:var(--sub);border:1px solid transparent;cursor:pointer}
+.quick button.on{border-color:var(--blue);color:var(--blue);background:var(--blue-l)}
+.result{padding:20px 18px;display:flex;flex-direction:column;gap:6px}
+.result .lbl{font-size:15px;color:var(--sub)}
+.result .big{font-size:34px;font-weight:900;letter-spacing:-1px;line-height:1.15}
+.result .sub{font-size:15px;color:var(--sub)}
+table.ct{width:100%;border-collapse:collapse;font-size:15px;margin-top:10px}
+table.ct td{padding:10px 2px;border-top:1px solid var(--line2);vertical-align:top}
+table.ct td:last-child{text-align:right;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums;padding-left:8px}
+table.ct td small{display:block;font-size:13px;color:var(--sub2);font-weight:500;line-height:1.5;margin-top:2px}
+table.ct td small a{color:var(--sub2)}
+table.ct tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:16px}
+table.ct td.na{color:var(--sub3);font-weight:700}
+.miss{margin-top:10px;font-size:14px;color:#7A4A00;background:#FFF4E0;border-radius:12px;padding:10px 12px;line-height:1.55}
+.xl{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:16px;border:1px solid var(--line);background:#fff;text-decoration:none;color:var(--text);min-height:64px;margin-top:8px}
+.xl b{display:block;font-size:16px}.xl small{display:block;font-size:14px;color:var(--sub2);line-height:1.5}.xl .go{margin-left:auto;color:#B0B8C1;font-size:20px}
+</style>
+<link rel="stylesheet" href="../../assets/result.css?v=3">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a>
+  <div class="badge plain">세금 계산</div>
+</header>
+<main class="wrap">
+  <div class="backbar"><a href="../">‹ 세금 계산 처음으로</a></div>
+  <div class="hero">
+    <div class="eyebrow">집 살 때·팔 때 드는 돈 · 공식 표 기준(2026년 11월 26일 확인)</div>
+    <h1>세금 말고도 <em>드는 돈</em>까지<br>한 번에 보여 드려요</h1>
+    <p>취득세에 국민주택채권, 인지세, 등기신청수수료, 법무사 보수, 중개보수까지 더해요. 곳마다 다른 금액은 범위로, 날마다 바뀌는 채권 할인율은 그날 값을 넣을 때만 계산해요.</p>
+  </div>
+  <div class="q">
+    <div class="seg2" role="tablist" aria-label="사는 쪽 · 파는 쪽"><button type="button" class="on" data-side="buy" role="tab" aria-selected="true">집을 사요</button><button type="button" data-side="sell" role="tab" aria-selected="false">집을 팔아요</button></div>
+    <div class="fl"><label for="price">매매가</label><div class="box"><input id="price" class="money" inputmode="numeric" autocomplete="off" placeholder="90,000"><span>만 원</span></div><div class="conv" id="priceC"></div></div>
+    <div id="buyOnly">
+      <div class="fl"><label for="std">공시가격 (국민주택채권 계산용, 모르면 비워 두세요)</label><div class="box"><input id="std" class="money" inputmode="numeric" autocomplete="off" placeholder="모르면 비워 두세요"><span>만 원</span></div><div class="conv" id="stdC"></div>
+        <div class="help">채권은 매매가가 아니라 공시가격(시가표준액)으로 정해요. 아직 공시되지 않은 새 아파트는 분양가를 넣어 주세요. 부동산공시가격알리미에서 볼 수 있어요.</div></div>
+      <div class="fl" style="margin-top:6px"><span class="lb">집이 있는 곳</span><div class="quick" id="metro"><button type="button" data-v="1" class="on">서울·광역시</button><button type="button" data-v="0">그 밖의 지역</button></div><div class="help">세종·제주를 포함해 특별시·광역시가 아닌 곳은 '그 밖의 지역'이에요(채권 비율이 낮아요).</div></div>
+      <div class="fl" style="margin-top:6px"><span class="lb">지금 집이 있으세요? (취득세)</span><div class="quick" id="own"><button type="button" data-v="none" class="on">무주택</button><button type="button" data-v="first">생애 첫 집</button><button type="button" data-v="one">1주택(이사용)</button><button type="button" data-v="multi">2주택 이상</button></div>
+        <a class="help" href="../count/?buy=1" style="display:inline-flex;min-height:44px;align-items:center;font-weight:700;color:var(--blue)">오피스텔·분양권이 있어 헷갈리면 — 주택 수 판정 도우미 ›</a></div>
+      <label class="tog" id="regW" hidden><input type="checkbox" id="reg" checked> 사려는 집이 조정대상지역이에요 (다주택 12%, 아니면 8%)</label>
+      <label class="tog"><input type="checkbox" id="large"> 전용면적 85㎡ 초과예요 (농어촌특별세)</label>
+      <div class="f2" style="margin-top:6px">
+        <div class="fl"><label for="disc">채권 할인율 (그날 값, 선택)</label><div class="box"><input id="disc" inputmode="decimal" autocomplete="off" placeholder="예: 3.5"><span>%</span></div></div>
+        <div class="fl"><label for="method">등기는 누가 하나요?</label><div class="box"><select id="method"><option value="pro">법무사에게 맡겨요</option><option value="e">직접 · 인터넷 전자신청</option><option value="paper">직접 · 등기소 방문</option></select></div></div>
+      </div>
+      <div class="help">채권 할인율은 매일 바뀌어요. 등기하는 날 은행이나 주택도시기금 누리집에서 그날 값을 확인해 넣어 주세요. 넣지 않으면 합계에서 빼고 따로 알려 드려요.</div>
+    </div>
+    <div class="err" id="err" role="alert"></div>
+  </div>
+  <div id="out" hidden>
+    <div class="sec result rf-v rf-in"><div class="lbl" id="lbl"></div><div class="big" id="big"></div><div class="sub" id="sub"></div></div>
+    <div class="sec card"><h2 id="tblH">항목별로 보기</h2><table class="ct"><tbody id="tbl"></tbody></table><div id="miss"></div></div>
+    <div class="sec" id="next"></div>
+  </div>
+  <p class="notice">국민주택채권 매입 비율·인지세·등기신청수수료는 법령 표 그대로, 법무사 보수는 대한법무사협회 보수기준의 기본보수표로 계산했어요(법무사마다 달라요). 중개보수는 법정 상한 요율에 부가세 10%를 더한 최대 금액이에요. 입력값은 이 기기 밖으로 보내지 않아요.</p>
+</main>
+<footer class="foot notice foot2" style="border-radius:0;border-left:0;border-right:0">근거: 주택도시기금법 시행령 [별표]·[부표] 15(2025.8.26 개정), 인지세법 제3조·제6조, 등기사항증명서 등 수수료규칙 제5조의2·제5조의5(2025.8.1 시행), 대한법무사협회 법무사보수기준 제7조·제9조, 공인중개사법 시행규칙 제20조, 지방세법 제11조·제13조의2·제20조<br>★ 집예보 · <a href="../">세금 계산 처음으로</a></footer>
+<script src="../tax-engine.js?v=4"></script>
+<script src="../../assets/loan-rules.js?v=3"></script>
+<script src="../../assets/loan-core.js?v=6"></script>
+<script src="../../assets/closing-core.js?v=1"></script>
+<script>
+(function(){
+  'use strict';
+  const C = window.JDJ_CLOSING, $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const num = s => { const v = parseFloat(String(s || '').replace(/[^0-9.]/g, '')); return isNaN(v) ? 0 : v; };
+  const won = C.won;
+  const st = { side: new URLSearchParams(location.search).get('side') === 'sell' ? 'sell' : 'buy', metro: '1', own: 'none' };
+  function seg(id, key) { $(id).addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; st[key] = b.dataset.v; $(id).querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); run(); }); }
+  seg('metro', 'metro'); seg('own', 'own');
+  document.querySelector('.seg2').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; st.side = b.dataset.side; side(); run(); });
+  function side() { document.querySelectorAll('.seg2 button').forEach(x => { const on = x.dataset.side === st.side; x.classList.toggle('on', on); x.setAttribute('aria-selected', on); }); $('buyOnly').hidden = st.side !== 'buy'; }
+  document.querySelectorAll('input.money').forEach(i => i.addEventListener('input', () => { const v = num(i.value); i.value = v ? Math.round(v).toLocaleString('ko-KR') : ''; $(i.id + 'C').textContent = v ? '= ' + won(v * 1e4) : ''; run(); }));
+  ['disc', 'method', 'reg', 'large'].forEach(id => $(id).addEventListener(id === 'disc' ? 'input' : 'change', run));
+  function srcLink(s) { return s ? (s.url ? '<a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.nm) + ' ↗</a>' : esc(s.nm)) : ''; }
+  function run() {
+    $('regW').hidden = st.side !== 'buy' || st.own !== 'multi';
+    const P = num($('price').value) * 1e4;
+    if (!P) { $('out').hidden = true; return; }
+    $('out').hidden = false;
+    if (st.side === 'sell') {
+      const r = C.sellCosts({ price: P });
+      $('lbl').textContent = '팔 때 드는 돈 (양도세 빼고)';
+      $('big').textContent = won(r.total);
+      $('sub').textContent = '중개보수 최대 금액 + 계약서 인지세 절반이에요. 양도세는 따로 계산해요.';
+      $('tblH').textContent = '항목별로 보기';
+      $('tbl').innerHTML = r.items.map(x => '<tr><td>' + esc(x.name) + '<small>' + esc(x.note) + '<br>' + srcLink(x.src) + '</small></td><td>' + won(x.v) + '</td></tr>').join('') + '<tr class="tot"><td>합계</td><td>' + won(r.total) + '</td></tr>';
+      $('miss').innerHTML = '';
+      $('next').innerHTML = '<a class="xl" href="../#cgt" data-track="cost_to_cgt"><span><b>양도세 · 언제 팔면 줄어드는지</b><small>비과세 2년·장기보유특별공제가 바뀌는 날까지 날짜로</small></span><span class="go" aria-hidden="true">›</span></a>';
+      return;
+    }
+    const sv = $('std').value.trim(), dv = $('disc').value.trim(), m = $('method').value;
+    const r = C.buyCosts({ price: P, std: sv ? num(sv) * 1e4 : null, metro: st.metro === '1', own: st.own, regulated: $('reg').checked, large: $('large').checked,
+      discount: dv === '' ? null : num(dv), method: m === 'paper' ? 'paper' : 'e', self: m !== 'pro' });
+    $('lbl').textContent = '집 살 때 드는 돈 (집값 빼고)';
+    $('big').textContent = won(r.total);
+    $('sub').innerHTML = '매매가의 ' + (r.total / P * 100).toFixed(2) + '%' + (m === 'pro' ? ' · 법무사 보수를 빼고 직접 등기하면 ' + won(r.total - r.items.find(x => x.k === 'scr').v) : '');
+    $('tblH').textContent = '항목별로 보기';
+    $('tbl').innerHTML = r.items.map(x => '<tr><td>' + esc(x.name) + '<small>' + esc(x.note) + '<br>' + srcLink(x.src) + '</small></td>' + (x.v == null ? '<td class="na">계산 전</td>' : '<td>' + won(x.v) + '</td>') + '</tr>').join('') +
+      '<tr class="tot"><td>합계' + (r.missing.length ? '<small>' + esc(r.missing.join('·')) + ' 빼고</small>' : '') + '</td><td>' + won(r.total) + '</td></tr>';
+    $('miss').innerHTML = r.missing.length ? '<div class="miss">' + (r.missing.indexOf('국민주택채권') >= 0 ? '공시가격을 넣으면 국민주택채권 금액이 나와요. ' : '') + (r.missing.indexOf('채권 할인 비용') >= 0 ? '사야 하는 채권은 등기할 때 은행에서 사서 보통 바로 팔아요. 바로 팔면 그날 할인율만큼만 내 돈이 들어요. 할인율을 넣으면 합계에 더해요. ' : '') +
+      '<a href="' + esc(C.SRC.bondRate.url) + '" target="_blank" rel="noopener">주택도시기금 매입대상금액 조회 ↗</a></div>' : '';
+    $('next').innerHTML = '<a class="xl" href="../../buy/" data-track="cost_to_buy"><span><b>대출까지 넣어 필요한 현금 한 장으로</b><small>내 집 마련 계산기 → 매수 총비용 한 장(집값 + 부대비용 + 이사비 − 대출)</small></span><span class="go" aria-hidden="true">›</span></a>' +
+      '<a class="xl" href="../../loan/checklist/" data-track="cost_to_checklist"><span><b>잔금일 체크리스트</b><small>잔금일에서 거꾸로 센 할 일과 기한, 달력에 넣기</small></span><span class="go" aria-hidden="true">›</span></a>';
+  }
+  side();
+  run();
+  window.JDJ_COST_UI = { run, st };
+})();
+</script>
+</body>
+</html>

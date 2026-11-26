@@ -344,14 +344,63 @@ const BOOKLET_SKIPPED = [
   [SEOUL, 80, '생애최초 감면 요약표 — 한도(소형 200만/소형 외 300만)·기한(2027.12.31)이 79쪽 본문·93쪽 감면표·법 조문(소형 300만/그 외 200만, 2028.12.31)과 달라 오기로 보고 대조에서 뺌(B-F02·B-F03이 본문·표 기준)']
 ];
 let explainedN = 0;
+const bookletRes = {};   // id → { ok(책자 숫자와 같음), explained }
 CASES_BOOKLET.forEach(x => {
   const got = x.got(), basis = (x.src === NTS ? '「2026 주택과 세금」 ' : '서울시 「2026 알기 쉬운 지방세」 ') + x.page + '쪽 · ' + x.kind;
-  if (x.explained && got !== x.want) { explainedN++; rows.push({ ok: true, id: x.id, name: x.name + ' [설명된 차이]', got, want: x.want, basis: basis + ' · 책자 ' + x.want.toLocaleString() + ' — ' + x.explained }); }
-  else check(x.id, x.name, got, x.want, basis);
+  if (x.explained && got !== x.want) { explainedN++; bookletRes[x.id] = { ok: false, explained: true }; rows.push({ ok: true, id: x.id, name: x.name + ' [설명된 차이]', got, want: x.want, basis: basis + ' · 책자 ' + x.want.toLocaleString() + ' — ' + x.explained }); }
+  else { check(x.id, x.name, got, x.want, basis); bookletRes[x.id] = { ok: got === x.want, explained: false }; }
 });
+
+/* ===== 신뢰 배지 숫자 만들기 (tax/tax-verified.js) — 2026-11-26 =====
+   화면의 '국세청 공개 계산 사례 N건과 같은 결과' 숫자는 여기서만 나온다(손으로 적지 않음).
+   - 한 '사례'는 책자의 한 계산 예시: 첫 줄 + 그 아래 '└' 줄들(같은 예시의 다른 숫자)을 한 건으로 묶는다.
+   - kind '사례'만 센다(세율표·규칙으로 만든 경계값은 '계산 사례'가 아니라서 빼고, 따로 checks 숫자로만).
+   - 한 줄이라도 책자와 다르면(설명된 차이 포함) 그 사례는 세지 않는다.
+   - 계산기 구분: 아래 CALC_OF(책자 사례가 어느 화면의 계산인지). 사례가 없는 계산기는 n=0 → 화면은 중립 안내.
+   - 전체 테스트가 모두 통과할 때만 파일을 새로 쓴다. 이미 같은 내용이면 건드리지 않는다. */
+const CALC_OF = id => {
+  if (/^B-A(14|15|18|21)$/.test(id) || /^B-C1[4-6]$/.test(id) || /^B-G1[01]$/.test(id) || /^B-I/.test(id)) return 'xfer';
+  if (/^B-A(1[6-9]|20)$/.test(id) || /^B-C0[4-6]$/.test(id) || /^B-G/.test(id)) return 'gift';
+  if (/^B-A|^B-F/.test(id)) return 'acq';
+  if (/^B-P/.test(id)) return 'prop';
+  if (/^B-K/.test(id)) return 'cpt';
+  if (/^B-C/.test(id)) return 'cgt';
+  return '';
+};
+function verifiedSummary() {
+  const groups = [];
+  CASES_BOOKLET.forEach(x => { if (/^\s*└/.test(x.name) && groups.length) groups[groups.length - 1].rows.push(x); else groups.push({ head: x, rows: [x] }); });
+  const by = {}, srcName = { NTS: '국세청·행정안전부 「2026 주택과 세금」', SEOUL: '서울특별시 「2026 알기 쉬운 지방세」' };
+  ['cgt', 'order', 'acq', 'prop', 'cpt', 'gift', 'xfer'].forEach(k => { by[k] = { nts: 0, seoul: 0, ntsPages: [], seoulPages: [], numbers: 0, formula: 0 }; });
+  groups.forEach(g => {
+    const k = CALC_OF(g.head.id); if (!k) return;
+    const allOk = g.rows.every(r => bookletRes[r.id] && bookletRes[r.id].ok);
+    if (g.head.kind !== '사례' || !allOk) return;
+    const b = by[k], key = g.head.src === NTS ? 'nts' : 'seoul';
+    b[key]++; b.numbers += g.rows.length;
+    const pg = b[key + 'Pages']; if (pg.indexOf(g.head.page) < 0) pg.push(g.head.page);
+  });
+  /* 조문 산식 사례(앞부분 C·A·P·K·G·F·I 줄)도 계산기별로 센다 — 중립 안내 문장에 씀 */
+  const pre = { C: 'cgt', A: 'acq', P: 'prop', K: 'cpt', G: 'gift', F: 'acq', I: 'xfer' };
+  rows.forEach(r => { const m = /^([CAPKGFI])\d/.exec(r.id); if (m && r.ok && !/^B-/.test(r.id)) by[pre[m[1]]].formula++; });
+  Object.keys(by).forEach(k => { by[k].ntsPages.sort((a, b) => a - b); by[k].seoulPages.sort((a, b) => a - b); });
+  const tot = Object.keys(by).reduce((s, k) => s + by[k].nts, 0);
+  return { asOf: T.AS_OF, books: srcName, ntsTotal: tot, by };
+}
 
 const pad = (s, n) => { s = String(s); let w = 0; for (const ch of s) w += ch.charCodeAt(0) > 255 ? 2 : 1; return s + ' '.repeat(Math.max(0, n - w)); };
 let fail = 0;
 rows.forEach(x => { if (!x.ok) fail++; console.log(pad(x.ok ? 'PASS' : 'FAIL', 5) + pad(x.id, 6) + pad(x.name, 50) + pad(typeof x.got === 'number' ? x.got.toLocaleString() : x.got, 14) + (x.ok ? '' : ' 기대 ' + x.want) + '  ' + x.basis); });
 console.log(`\n전체 ${rows.length}건 중 ${rows.length - fail}건 통과 (조문 산식 ${rows.length - CASES_BOOKLET.length}건 + 책자 원문 ${CASES_BOOKLET.length}건, 그중 설명된 차이 ${explainedN}건 · 엔진 범위 밖이라 뺀 책자 사례 ${BOOKLET_SKIPPED.length}곳)`);
+if (!fail) {
+  const fs = require('fs'), path = require('path'), out = path.join(__dirname, '..', 'tax', 'tax-verified.js');
+  const body = '/* 자동 생성 — 손으로 고치지 마세요. node tools/tax-official-test.js 가 모든 사례를 통과할 때만 새로 써요.\n' +
+    '   국세청·행정안전부 「2026 주택과 세금」·서울시 「2026 알기 쉬운 지방세」 책자의 계산 사례 중 엔진 결과가 책자 숫자와 모두 같은 사례 수(계산기별). */\n' +
+    '(function (root) { var V = ' + JSON.stringify(verifiedSummary()) + ';\n' +
+    '  root.JDJ_TAX_VERIFIED = V; if (typeof module !== \'undefined\' && module.exports) module.exports = V; })(typeof window !== \'undefined\' ? window : globalThis);\n';
+  let cur = ''; try { cur = fs.readFileSync(out, 'utf8'); } catch (e) {}
+  if (cur !== body) { fs.writeFileSync(out, body); console.log('tax/tax-verified.js 를 새로 썼어요 — 함께 커밋해 주세요.'); }
+  const V = verifiedSummary();
+  console.log('신뢰 배지: 국세청 공개 계산 사례 ' + V.ntsTotal + '건 · ' + Object.keys(V.by).map(k => k + ' ' + V.by[k].nts + '/' + V.by[k].seoul).join(', '));
+}
 process.exit(fail ? 1 : 0);
