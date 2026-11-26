@@ -36,7 +36,7 @@
 <script src="../assets/share.js?v=13"></script>
 <script src="../tax/tax-engine.js?v=4"></script>
 <script src="../assets/loan-rules.js?v=3"></script>
-<script src="../assets/loan-core.js?v=5"></script>
+<script src="../assets/loan-core.js?v=6"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -393,7 +393,7 @@ body.wiz .wiznav{display:flex;gap:8px;margin-top:4px}
       <li>수도권·규제지역 주택구입 주담대 한도: 시가 15억 이하 6억, 15억 초과~25억 4억, 25억 초과 2억</li>
       <li>DSR 40%(은행권). 스트레스 금리: 수도권·규제지역 3.0% × 금리유형 비율(변동 100%·혼합 80%·주기 40%), 지방 비규제 1.5% × 50% (2026.12.31까지)</li>
       <li>수도권·규제지역 주담대 만기 최대 30년, 원리금균등상환 기준</li>
-      <li>취득세: 1주택·일시적 2주택 1~3%(지방교육세 취득세의 10%), 보유 2주택 이상이 추가 취득 시 조정대상지역 12%·그 외 8%(지방교육세 0.4%). 85㎡ 초과는 농어촌특별세 추가. 생애최초(12억 이하) 200만원 한도 감면</li><li>중개보수: 매매 법정 상한요율 + 부가세 10%로 계산 (실제는 협의 가능)</li>
+      <li>취득세: 1주택·일시적 2주택 1~3%(지방교육세 취득세의 10%), 보유 2주택 이상이 추가 취득 시 조정대상지역 12%·그 외 8%(지방교육세 0.4%). 85㎡ 초과는 농어촌특별세 추가. 생애최초(12억 이하) 200만원 한도 감면</li><li>중개보수는 법정 상한 요율에 부가세 10%를 더한 최대 금액이에요. 간이과세 중개사무소는 더 적을 수 있어요. 실제 보수는 상한 안에서 협의해 정해요.</li>
       <li>이 계산은 추정치예요. 실제 한도는 신용·소득 인정 방식·감정가·방공제·은행별 심사에 따라 달라지므로 계약 전 반드시 은행에서 확인하세요. 1억 초과 신용대출 보유자는 대출일로부터 1년간 규제지역 주택 구입이 제한돼요.</li>
       <li>이용 통계: 서비스 개선을 위해 방문 횟수·유입 경로·사용한 기능을 익명으로 집계해요(Google 애널리틱스). 이름·연락처는 수집하지 않으며, 입력한 금액은 저장하지 않고 구간(예: 6~9억)으로만 집계해요.</li>
     </ul>
@@ -553,7 +553,7 @@ function renderCost(c,P){
   if (d.relief>0) html += `<tr class="minus"><td>생애최초 취득세 감면 <small>200만원 한도</small></td><td>−${fmtW(d.relief)}</td></tr>`;
   html += `<tr><td>지방교육세 <small>${d.heavy?'0.4%':'취득세의 10%'}</small></td><td>${fmtW(d.edu)}</td></tr>`;
   if (d.farm>0) html += `<tr><td>농어촌특별세 <small>85㎡ 초과</small></td><td>${fmtW(d.farm)}</td></tr>`;
-  html += `<tr><td>중개보수 <small>상한 ${d.br}% + VAT</small></td><td>${fmtW(d.broker)}</td></tr>`;
+  html += `<tr><td>중개보수 <small>상한 ${d.br}% · 부가세 포함(최대)</small></td><td>${fmtW(d.broker)}</td></tr>`;
   html += `<tr><td>기타 비용 <small>이사·등기·수리 가정</small></td><td>${fmtW(c.etc)}</td></tr>`;
   html += `<tr class="total"><td>부대비용 합계 <small>매매가의 ${((d.total+c.etc)/base*100).toFixed(2)}%</small></td><td>${fmtW(d.total+c.etc)}</td></tr>`;
   $('costTbl').innerHTML = html;

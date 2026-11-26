@@ -49,6 +49,23 @@ check('갈아타기→리포트 주소에 연소득 없음', /URLSearchParams\(\
   check('내 집 마련: 주소 r(지역) 읽기', /QS\.get\('r'\) && \[\.\.\.\$\('region'\)\.options\]/.test(buySrc), true, '리포트 돌아가기');
   check('내 집 마련: 대출 화면에서 온 연소득을 이 기기 저장값에서', /QS\.get\('src'\)==='loan'/.test(buySrc), true, ''); }
 
+/* 중개보수 공용 함수(2026-11-26 통일): 모든 화면 = 법정 상한 요율 + 부가세 10%(최대), 계산은 assets/loan-core.js 한 곳 */
+{ const L = require('../assets/loan-core.js');
+  const near = (a, b) => Math.abs(a - b) < 1e-6;
+  check('매매 중개보수: 13억 0.6% = 780만 + 부가세 = 858만', near(L.brokerSale(130000).broker, 858), true, '');
+  check('매매 중개보수: 1억 0.5% 50만(한도 80만) + 부가세 = 55만', near(L.brokerSale(10000).broker, 55), true, '');
+  check('매매 중개보수: 3천만 0.6% 18만(한도 25만) + 부가세', near(L.brokerSale(3000).broker, 19.8), true, '');
+  check('임대차 중개보수: 전세 9천만 0.4% 36만 → 한도 30만 + 부가세 = 33만', L.brokerLease(9000).fee, 33, '');
+  check('임대차 중개보수: 월세 거래금액 = 보증금 + 월세 × 100', L.brokerLease(10000, 100).base, 20000, '');
+  global.JDJ_LOAN = L; global.JDJ_TAX = require('../tax/tax-engine.js'); global.JDJ_ADJ = require('../tax/adjusted-areas.js');
+  const SWc = require('../switch/switch-core.js'), TSc = require('../assets/tswitch-core.js');
+  const same = [5000, 15000, 47100, 100000, 130000, 200000].every(P => near(SWc.brokerFee(P).fee, L.brokerSale(P).broker) && near(L.costDetail(P, L.ctx({ g: 'reg' })).broker, L.brokerSale(P).broker));
+  check('같은 집값이면 갈아타기·내 집 마련·대출 중개보수가 같음', same, true, '');
+  check('같은 보증금이면 전세 갈아타기 중개보수가 공용 함수와 같음', [4000, 30000, 130000].every(d => TSc.brokerFee(d).fee === L.brokerLease(d).fee), true, '');
+  const srcs = ['assets/premium-report.js', 'switch/switch-core.js', 'assets/tswitch-core.js', 'buy/index.html', 'loan/index.html', 'switch/index.html', 'buy/report/index.html'].map(f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8')).join('\n');
+  check('요율표를 따로 두지 않음(공용 함수 한 곳)', /br = \.6; cap = 25|\[5000, 0\.005, 20\]/.test(srcs), false, '');
+  check("화면 안내: '간이과세 중개사무소는 더 적을 수 있어요'", ['buy/index.html', 'buy/report/index.html', 'switch/index.html', 'switch/rent/index.html', 'loan/index.html'].every(f => /간이과세 중개사무소는 더 적을 수 있어요|FEE_NOTE/.test(fs.readFileSync(path.join(__dirname, '..', f), 'utf8'))), true, ''); }
+
 let pass = 0;
 rows.forEach(r => { if (r.ok) pass++; console.log((r.ok ? 'PASS ' : 'FAIL ') + r.name.padEnd(30) + ' ' + String(r.got).slice(0, 14).padEnd(14) + ' ' + (r.ok ? '' : '기대 ' + r.want + ' ') + (r.basis || '')); });
 console.log('\n' + pass + '/' + rows.length + ' 통과');

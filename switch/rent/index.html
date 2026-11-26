@@ -36,9 +36,9 @@
 <script src="../../assets/gongsi.js?v=3"></script>
 <script src="../../tax/tax-engine.js?v=4"></script>
 <script src="../../assets/loan-rules.js?v=3"></script>
-<script src="../../assets/loan-core.js?v=5"></script>
+<script src="../../assets/loan-core.js?v=6"></script>
 <script src="../../assets/plain-words.js?v=19"></script>
-<script src="../../assets/tswitch-core.js?v=2"></script>
+<script src="../../assets/tswitch-core.js?v=3"></script>
 <script src="../../assets/move.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -485,7 +485,7 @@ function srcLine(r){
   if (r.sc) s.push('학군: 학교알리미');
   if (r.pub) s.push(`공시가격: 국토교통부 ${esc(G.dayKo(r.pub.d) || '')} 같은 평형 ${r.pub.n}호 중간값`);
   if (r.hug && r.hug.need !== 'pub') s.push(`HUG 기준: 상품개요(${HG.SRC.checked.replace(/-/g, '.')} 확인)`);
-  if (r.plan) s.push(`중개보수: ${T.FEE_SRC.nm} 상한`);
+  if (r.plan) s.push(`중개보수: ${T.FEE_SRC.nm} 상한 + 부가세 10%(최대) — 간이과세 중개사무소는 더 적을 수 있어요`);
   if (r.plan && r.plan.mode === 'h') s.push('전환율: 이 단지 최근 1년 월세 실거래');
   if (r.kk) s.push(`매매 시세: 국토교통부 매매 실거래 ${ymDot(r.sale.at)} 기준 최근 3개월 중간값`);
   return `<p class="src">${s.join(' · ')}</p>`;
@@ -498,7 +498,7 @@ const nm = r => r.kind === 'v' && /^\(?[\d\-]+\)?$/.test(r.a) ? `${r.d} ${r.j} �
 function costHtml(pl){
   if (!pl) return '';
   const sgn = v => v >= 0 ? `${won(v)} 더 내요` : `${won(-v)} 돌려받아요`;
-  const feeT = `중개보수(상한) ${won(pl.fee)}`;
+  const feeT = `중개보수(상한·부가세 포함) ${won(pl.fee)}`;
   return `<div class="mc">${pl.mode === 'h' ? `<b>반전세로 가능해요</b> — 보증금 ${esc(won(pl.dep2))} + 월세 <b>${pl.rent.toLocaleString()}만 원</b> (이 단지 최근 1년 전월세 전환율 ${(pl.rate * 100).toFixed(1)}%, 월세 계약 ${pl.n}건 기준)<br>` : ''}
     보증금 차액 ${esc(sgn(pl.diff))} · ${esc(feeT)} · 이사비 ${pl.move ? esc(won(pl.move)) : '미입력'}<br>
     <span class="tot">${pl.out >= 0 ? `이사에 새로 드는 돈 ${esc(won(Math.round(pl.out)))}` : `이사하고 남는 돈 ${esc(won(Math.round(-pl.out)))}`}</span> <small>(보증금 차액·중개보수·이사비를 모두 따진 금액)</small></div>`;

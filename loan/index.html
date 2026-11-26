@@ -35,7 +35,7 @@
 <script src="../assets/config.js?v=11"></script>
 <script src="../tax/tax-engine.js?v=4"></script>
 <script src="../assets/loan-rules.js?v=3"></script>
-<script src="../assets/loan-core.js?v=5"></script>
+<script src="../assets/loan-core.js?v=6"></script>
 <script src="../assets/mine-core.js?v=22"></script>
 <script src="../assets/price-sheet.js?v=23"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -470,7 +470,7 @@ function calc(){
   </div>
   <div class="stats">
     <div class="stat"><div class="k">매달 갚을 돈</div><div class="v">${r.L > 0 ? wonM(L.monthly(r.L, o.rate, r.term)) : '-'}</div><div class="d">${o.rate}% · ${r.term}년 · 원리금 균등</div></div>
-    <div class="stat"><div class="k">내 돈으로 낼 금액</div><div class="v">${won(r.cashNeed)}</div><div class="d">집값 − 대출 · 취득세·중개보수 약 ${won(cd.total)} 별도</div></div>
+    <div class="stat"><div class="k">내 돈으로 낼 금액</div><div class="v">${won(r.cashNeed)}</div><div class="d">집값 − 대출 · 취득세·중개보수(부가세 포함 최대) 약 ${won(cd.total)} 별도</div></div>
     <div class="stat"><div class="k">${r.incomeNeed != null ? '한도를 다 받으려면' : '소득 기준'}</div><div class="v">${r.incomeNeed != null ? '연소득 +' + wonUp(r.incomeMore) : r.dsrOff && !isFinite(r.dti) ? '해당 없음' : '여유 있어요'}</div><div class="d">${r.incomeNeed != null ? `연소득이 ${wonUp(r.incomeNeed)}이면 ${won(ab)}까지` : r.dsrOff && !isFinite(r.dti) ? '1억 원 이하 대출' : `소득으로는 ${won(Math.min(r.dsrOff ? Infinity : r.d, r.dti))}까지 가능`}</div></div>
   </div>
 
@@ -523,7 +523,7 @@ function calc(){
     <div class="upc">${R.UPCOMING.map(u => `<div><b>${fd(u.d)}</b><span>${esc(u.t)}</span></div>`).join('')}</div>
   </div>
 
-  <p class="basis"><b>실제 한도는 은행 심사·신용·다른 대출에 따라 달라질 수 있어요. 기준일: ${R.ASOF}</b><br>이 계산은 공개된 대출 규칙을 그대로 적용한 정보예요. 특정 금융회사나 상품을 권하거나 대출을 연결해 드리지 않아요.</p>`;
+  <p class="basis"><b>실제 한도는 은행 심사·신용·다른 대출에 따라 달라질 수 있어요. 기준일: ${R.ASOF}</b><br>${esc(L.FEE_NOTE || '')}<br>이 계산은 공개된 대출 규칙을 그대로 적용한 정보예요. 특정 금융회사나 상품을 권하거나 대출을 연결해 드리지 않아요.</p>`;
   $('miniV').textContent = won(r.L); miniOn = true; miniUpd();
   buyLink(o);
   track(r);

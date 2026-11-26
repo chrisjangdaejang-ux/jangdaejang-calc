@@ -47,7 +47,7 @@
 <script src="../../assets/watch.js?v=9"></script>
 <script src="../../assets/share.js?v=13"></script>
 <script src="../../tax/tax-engine.js?v=4"></script>
-<script src="../../assets/loan-core.js?v=5"></script>
+<script src="../../assets/loan-core.js?v=6"></script>
 <script src="../../assets/kchat.js?v=3"></script>
 <script src="../../assets/plain-words.js?v=19"></script>
 <script src="../../assets/narrative.js?v=23"></script>
@@ -1232,7 +1232,7 @@ async function render(){
       <table><thead><tr><th>나가는 돈</th><th class="num">금액</th></tr></thead><tbody>
         <tr><td>매매가</td><td class="num">${fmtW(M)}</td></tr>
         <tr><td>취득세·지방교육세 <small>${cd.rate}%${cd.heavy?' 중과':''}</small></td><td class="num">${fmtW(cd.acq-cd.relief+cd.edu+cd.farm)}</td></tr>
-        <tr><td>중개보수 <small>상한 ${cd.br}%+VAT</small></td><td class="num">${fmtW(cd.broker)}</td></tr>
+        <tr><td>중개보수 <small>상한 ${cd.br}% · 부가세 포함(최대) · 간이과세 중개사무소는 더 적을 수 있어요</small></td><td class="num">${fmtW(cd.broker)}</td></tr>
         <tr><td>기타 (이사·등기·수리)</td><td class="num">${fmtW(S.etc)}</td></tr>
         <tr class="total"><td>합계</td><td class="num">${fmtW(M+cd.total+S.etc)}</td></tr>
       </tbody></table>

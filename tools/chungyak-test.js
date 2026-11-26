@@ -118,6 +118,7 @@ check('주소 시·도 표기 서울/서울시/충북/광주', ['서울', '서�
 check('시·군·구 이름 맞추기(고양시 덕양구 = 고양덕양구)', [E.sggKey('고양시 덕양구'), E.sggKey('고양덕양구'), E.sggKey('파주시')], ['고양덕양구', '고양덕양구', '파주시'], '');
 { const html = require('fs').readFileSync(require('path').join(__dirname, '../chungyak/index.html'), 'utf8');
   check('청약 화면: 가점 바로 넣기 칸·주소 ?score 처리', /id="qScore"/.test(html) && /UP\.get\('score'\)/.test(html), true, '');
+  check('청약 화면: 가점만 넣으면(칸·?score) 단지별 진단을 맨 위로, 질문으로 계산하면 원래 순서', /function placeGen\(top\)/.test(html) && /placeGen\(!!r\.quick\)/.test(html) && /id="genH"/.test(html) && /id="eligH"/.test(html), true, '2026-11-26 결정');
   check('청약 화면: 공고 전 분양 예정에도 내 가점 비교', /planGuTxt\(x\)/.test(html), true, '');
   check('청약 화면: 공공분양 개수는 진단 범위(내 시·도)만 셈', /n\.k !== '민영' && \(scope === 'all' \|\| noticeSido\(n\) === mine\)/.test(html), true, ''); }
 { const N = require('../assets/narrative.js');

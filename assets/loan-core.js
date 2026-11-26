@@ -43,13 +43,34 @@
      무주택 1~3%, 생애최초(12억 이하) 감면 200만 원 한도(지방세특례제한법 제36조의3, 85㎡ 초과는 감면분 농특세 20%),
      1주택(처분조건) 일시적 2주택 1~3%, 다주택(3주택째) 조정 12%·비조정 8%. 엔진 단위는 원 → 여기서 만원으로 바꿈 */
   var TAX = root.JDJ_TAX || (typeof require === 'function' ? require('../tax/tax-engine.js') : null);
+  /* ---------- 중개보수(공용) — 내 집 마련·리포트·대출·갈아타기·전세 갈아타기·프리미엄 리포트가 모두 이 두 함수만 써요 ----------
+     공인중개사법 시행규칙(2021.10.19 시행)·시·도 조례 주택 상한요율. 화면 값은 상한 요율 + 부가세 10%(최대 금액) — 간이과세 중개사무소는 더 적을 수 있어요.
+     표: [이 금액 미만(만원), 요율, 한도(만원)] */
+  var FEE_SALE = [[5000, 0.006, 25], [20000, 0.005, 80], [90000, 0.004, null], [120000, 0.005, null], [150000, 0.006, null], [Infinity, 0.007, null]];
+  var FEE_LEASE = [[5000, 0.005, 20], [10000, 0.004, 30], [60000, 0.003, null], [120000, 0.004, null], [150000, 0.005, null], [Infinity, 0.006, null]];
+  var FEE_VAT = 0.1;
+  var FEE_NOTE = '중개보수는 법정 상한 요율에 부가세 10%를 더한 최대 금액이에요. 간이과세 중개사무소는 더 적을 수 있어요.';
+  function feeOf(T, amt) {
+    var row = T.filter(function (f) { return amt < f[0]; })[0] || T[T.length - 1];
+    var base = amt * row[1]; if (row[2] != null) base = Math.min(base, row[2]);
+    return { rate: row[1], cap: row[2], base: base, fee: base * (1 + FEE_VAT) };
+  }
+  /** 매매 중개보수(만원): {br 요율(%), cap, brokerBase 부가세 전, broker 부가세 포함} */
+  function brokerSale(P) { P = Math.max(0, +P || 0); var f = feeOf(FEE_SALE, P); return { br: Math.round(f.rate * 1000) / 10, cap: f.cap, brokerBase: f.base, broker: f.fee }; }
+  /** 임대차 중개보수(만원): 거래금액 = 보증금 + 월세 × 100(5천만 원 미만이면 × 70). {base 거래금액, rate, cap, feeBase 부가세 전, fee 부가세 포함(만원 소수 1자리)} */
+  function brokerLease(dep, rent) {
+    dep = Math.max(0, +dep || 0); rent = Math.max(0, +rent || 0);
+    var base = dep + rent * 100; if (rent > 0 && base < 5000) base = dep + rent * 70;
+    if (!(base > 0)) return { base: 0, rate: 0, cap: null, feeBase: 0, fee: 0 };
+    var f = feeOf(FEE_LEASE, base);
+    return { base: base, rate: f.rate, cap: f.cap, feeBase: Math.round(f.base * 10) / 10, fee: Math.round(f.fee * 10) / 10 };
+  }
   function costDetail(P, c, large) {
     if (large == null) large = c.large;
     var t = TAX.buyerAcqTax(P * 10000, { own: c.own, regulated: c.regulated, large: !!large });
     var rate = Math.round(t.rate * 10000) / 100, heavy = t.heavy;
     var acq = t.acq / 10000, edu = t.edu / 10000, farm = t.farm / 10000, relief = t.relief / 10000;
-    var br, cap = Infinity; if (P < 5000) { br = .6; cap = 25; } else if (P < 20000) { br = .5; cap = 80; } else if (P < 90000) br = .4; else if (P < 120000) br = .5; else if (P < 150000) br = .6; else br = .7;
-    var brokerBase = Math.min(P * br / 100, cap), broker = brokerBase * 1.1;
+    var bf = brokerSale(P), br = bf.br, brokerBase = bf.brokerBase, broker = bf.broker;
     return { rate: rate, acq: acq, edu: edu, farm: farm, relief: relief, br: br, broker: broker, brokerBase: brokerBase, heavy: heavy, notes: t.notes, total: acq - relief + edu + farm + broker };
   }
   /* 부대비용(취득세·중개보수) + 기타 비용. 계산기에서 '부대비용 포함'을 끄면 0 */
@@ -136,7 +157,7 @@
   }
   function fmtMan(v) { var e = Math.floor(v / 10000), m = v % 10000; return (e ? e + '억' : '') + (m ? (e ? ' ' : '') + m.toLocaleString('ko-KR') + '만' : '') + ' 원'; }
 
-  var api = { R: R, LTV: LTV, TYPE_RATIO: TYPE_RATIO, TYPE_RATIO_LOCAL: TYPE_RATIO_LOCAL, ETC_DEFAULT: ETC_DEFAULT, ANY_GROUP: ANY_GROUP, ctx: ctx, capByPrice: capByPrice, annuity: annuity, dsrMax: dsrMax, dtiMax: dtiMax, monthly: monthly, costDetail: costDetail, extra: extra, loanAt: loanAt, need: need, maxPrice: maxPrice, limit: limit, policyLoans: policyLoans, fmtMan: fmtMan };
+  var api = { R: R, LTV: LTV, TYPE_RATIO: TYPE_RATIO, TYPE_RATIO_LOCAL: TYPE_RATIO_LOCAL, ETC_DEFAULT: ETC_DEFAULT, ANY_GROUP: ANY_GROUP, ctx: ctx, capByPrice: capByPrice, annuity: annuity, dsrMax: dsrMax, dtiMax: dtiMax, monthly: monthly, costDetail: costDetail, brokerSale: brokerSale, brokerLease: brokerLease, FEE_NOTE: FEE_NOTE, FEE_SALE: FEE_SALE, FEE_LEASE: FEE_LEASE, extra: extra, loanAt: loanAt, need: need, maxPrice: maxPrice, limit: limit, policyLoans: policyLoans, fmtMan: fmtMan };
   root.JDJ_LOAN = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

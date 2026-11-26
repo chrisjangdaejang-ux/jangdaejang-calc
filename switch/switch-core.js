@@ -14,12 +14,7 @@
   const RULES = LOAN.R;   // 대출 규칙(assets/loan-rules.js) — LTV·가격대 한도·스트레스 금리·DSR·만기를 여기서만 읽음
   const TYPE_RATIO = LOAN.TYPE_RATIO, TYPE_RATIO_LOCAL = LOAN.TYPE_RATIO_LOCAL;
 
-  function brokerFee(P) {
-    let br, cap = Infinity;
-    if (P < 5000) { br = .6; cap = 25; } else if (P < 20000) { br = .5; cap = 80; } else if (P < 90000) br = .4;
-    else if (P < 120000) br = .5; else if (P < 150000) br = .6; else br = .7;
-    return { rate: br, fee: Math.min(P * br / 100, cap) * 1.1 };
-  }
+  function brokerFee(P) { const b = LOAN.brokerSale(P); return { rate: b.br, fee: b.broker }; }   // 공용 함수(assets/loan-core.js, 부가세 포함 최대)
 
   /** 필요경비를 비워 두면: 산 가격 기준 1주택 취득세(현행 세율, tax-engine) + 살 때 중개보수 상한 */
   function expEstimate(acq) {

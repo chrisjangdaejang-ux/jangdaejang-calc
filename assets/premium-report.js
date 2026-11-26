@@ -33,8 +33,7 @@
   function costDetail(p, c, large) {
     const t = window.JDJ_TAX.buyerAcqTax(p * 10000, { own: S.own, regulated: c.regulated, large: !!large });
     const rate = Math.round(t.rate * 10000) / 100, acq = t.acq / 10000, edu = t.edu / 10000, farm = t.farm / 10000, relief = t.relief / 10000;
-    let br, cap = Infinity; if (p < 5000) { br = .6; cap = 25; } else if (p < 20000) { br = .5; cap = 80; } else if (p < 90000) br = .4; else if (p < 120000) br = .5; else if (p < 150000) br = .6; else br = .7;
-    const broker = Math.min(p * br / 100, cap) * 1.1;
+    const broker = LOAN().brokerSale(p).broker;   // 중개보수는 공용 함수(assets/loan-core.js brokerSale, 부가세 포함 최대)
     return { rate, tax: acq - relief + edu + farm, broker, total: acq - relief + edu + farm + broker };
   }
   function loanAt(p, c) { return LOAN().loanAt(p, c); }

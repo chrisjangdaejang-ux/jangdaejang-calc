@@ -42,11 +42,11 @@
 <script src="../tax/adjusted-areas.js?v=2"></script>
 <script src="../tax/tax-engine.js?v=4"></script>
 <script src="../assets/loan-rules.js?v=3"></script>
-<script src="../assets/loan-core.js?v=5"></script>
+<script src="../assets/loan-core.js?v=6"></script>
 <script src="../assets/rec-core.js?v=5"></script>
 <script src="../assets/mine-core.js?v=22"></script>
 <script src="../assets/price-sheet.js?v=23"></script>
-<script src="switch-core.js?v=7"></script>
+<script src="switch-core.js?v=8"></script>
 <script src="../assets/narrative.js?v=23"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -683,6 +683,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:900;font
       <li>미래가치 전망: 단지 점수(2년·1·3·5·7년)를 과거 여러 때에 그때까지 자료만으로 매긴 뒤 실제 시세와 맞춰 봤어요. 상위 20% 단지가 평균보다 더 오른 횟수가 절반 이상이고 평균으로도 더 오른 기간만 '더 오를 가능성'으로 말하고, 나머지는 '참고'로 보여 드려요.</li>
       <li>새 집 취득세: 세금 계산기와 같은 계산 방식(지방세법 기준). 1주택자는 일시적 2주택 일반세율 1~3% + 지방교육세, 85㎡ 초과 농특세. 2주택 이상은 이 집을 판 뒤 새 집을 사는 것으로 보고 취득 후 주택 수로 중과 여부를 판정. 중개보수는 법정 상한요율 + 부가세</li>
       <li>추천 단지: 내 집 마련 리포트와 같은 자료·점수 기준. 추정 시세는 최근 3개월 실거래 평당가 중간값 × 전용면적(최근 3개월 거래가 없으면 마지막 거래 기준)이며, 실제 호가·매물과 다를 수 있어요.</li>
+      <li>중개보수는 법정 상한 요율에 부가세 10%를 더한 최대 금액이에요. 간이과세 중개사무소는 더 적을 수 있어요.</li>
       <li>기존 주담대는 매도 대금으로 상환하고, 매도 대금이 새 집 잔금에 쓰인다고 가정했어요. 실제 세액·한도는 세무사·은행 확인이 필요해요.</li>
       <li>이용 통계: 서비스 개선을 위해 방문 횟수·유입 경로·사용한 기능을 익명으로 집계해요(Google 애널리틱스). 이름·연락처는 수집하지 않으며, 입력한 금액은 저장하지 않고 구간(예: 12~15억)으로만 집계해요.</li>
     </ul>
@@ -793,7 +794,7 @@ function render(){
   $('saleTbl').innerHTML=`<tr><td>매도가</td><td>${fmt(sale)}원</td></tr>
     <tr><td>기존 대출 상환</td><td>−${fmt(oldLoan)}원</td></tr>
     <tr><td>양도세 (지방세 포함)</td><td>−${fmt(S.cgt)}원</td></tr>
-    <tr><td>매도 중개보수 <small>상한 ${S.feeRate}% + VAT</small></td><td>−${fmt(S.fee)}원</td></tr>
+    <tr><td>매도 중개보수 <small>상한 ${S.feeRate}% · 부가세 포함(최대)</small></td><td>−${fmt(S.fee)}원</td></tr>
     <tr class="sub"><td>매도 후 손에 남는 돈</td><td>${fmt(net)}원</td></tr>
     <tr><td>추가로 보탤 현금</td><td>+${fmt(extra)}원</td></tr>
     <tr class="total"><td>새 집에 쓸 수 있는 자기자본</td><td>${fmt(cash)}원</td></tr>`;
@@ -832,7 +833,7 @@ function render(){
       <tr><td>취득세 <small>${(d.rate*100).toFixed(2).replace(/\.?0+$/,'')}% · ${escH(d.why)}</small></td><td>${fmt(d.acqT)}원</td></tr>
       <tr><td>지방교육세</td><td>${fmt(d.edu)}원</td></tr>`+
       (d.farm?`<tr><td>농어촌특별세 <small>85㎡ 초과</small></td><td>${fmt(d.farm)}원</td></tr>`:'')+
-      `<tr><td>중개보수 <small>상한 ${d.brRate}% + VAT</small></td><td>${fmt(d.broker)}원</td></tr>
+      `<tr><td>중개보수 <small>상한 ${d.brRate}% · 부가세 포함(최대)</small></td><td>${fmt(d.broker)}원</td></tr>
       <tr><td>이사·등기 등 기타 <small>STEP 2 입력값</small></td><td>${fmt(etc)}원</td></tr>
       <tr class="total"><td>취득비용 합계</td><td>${fmt(d.total+etc)}원</td></tr>`;
   } else $('buyTbl').innerHTML='<tr><td>계산할 금액이 없어요</td><td></td></tr>';

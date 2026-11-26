@@ -289,7 +289,7 @@ td{border-bottom:1px solid var(--line2)}
     </div>
 
     <!-- 2. 자격 간이 체크 -->
-    <h2 class="sec">1순위·특별공급 세부 진단<small>몇 가지만 더 고르시면 1순위와 특별공급 5가지(신혼부부·생애최초·다자녀·노부모 부양·신생아)의 해당 가능성과 선정 방식, 먼저 살펴볼 유형을 안내해 드려요</small></h2>
+    <h2 class="sec" id="eligH">1순위·특별공급 세부 진단<small>몇 가지만 더 고르시면 1순위와 특별공급 5가지(신혼부부·생애최초·다자녀·노부모 부양·신생아)의 해당 가능성과 선정 방식, 먼저 살펴볼 유형을 안내해 드려요</small></h2>
     <div class="box">
       <div class="grid2">
         <div><label for="eSido">청약하려는 지역</label><select id="eSido"></select></div>
@@ -310,8 +310,8 @@ td{border-bottom:1px solid var(--line2)}
       <div id="elig" style="margin-top:12px"></div>
     </div>
 
-    <!-- 2-1. 일반공급 진단 -->
-    <h2 class="sec">일반공급 진단 · 진행·예정 공고<small>내 가점을 각 공고의 예상 당첨 가점(커트라인) 범위와 비교해 ‘가능성 높음 / 경합 / 낮음’으로 보여 드려요</small></h2>
+    <!-- 2-1. 일반공급 진단 (가점만 바로 넣었으면 placeGen 이 점수 칸 바로 아래로 옮김) -->
+    <h2 class="sec" id="genH">일반공급 진단 · 진행·예정 공고<small>내 가점을 각 공고의 예상 당첨 가점(커트라인) 범위와 비교해 ‘가능성 높음 / 경합 / 낮음’으로 보여 드려요</small></h2>
     <div class="box" id="gen"><div class="loading">공고와 과거 당첨 가점 자료를 불러오는 중이에요…</div></div>
 
     <!-- 3. 과거 당첨 가점 비교 -->
@@ -439,6 +439,13 @@ function next() {
   A.quick = null;
   showResult(true); hpush({ cyr: 1 });
 }
+/* 단지별 진단 위치: 가점만 바로 넣었으면(칸·주소 ?score) 점수 칸 바로 아래 맨 위로, 질문으로 계산했으면 원래 순서(특별공급 진단 다음) */
+function placeGen(top) {
+  const gh = $('genH'), g = $('gen'), eh = $('eligH');
+  if (!gh || !g || !eh) return;
+  if (top) { eh.parentNode.insertBefore(gh, eh); eh.parentNode.insertBefore(g, eh); }
+  else { const hist = document.querySelector('#result > h2.sec:not(#genH):not(#eligH)'); if (hist) { hist.parentNode.insertBefore(gh, hist); hist.parentNode.insertBefore(g, hist); } }
+}
 /* 가점만 바로 넣기: 질문을 건너뛰고 결과(단지별 진단)로. 주소 ?score=64&sido=서울 로도 열림 */
 function quickGo(v, sido, fromUrl) {
   if (!quickTotal(v)) { $('qErr').textContent = '0~84 사이 정수로 넣어 주세요(청약 가점 만점은 84점이에요).'; return false; }
@@ -461,6 +468,7 @@ function showResult(scroll) {
   A.ref = $('refDate').value || A.ref || today();
   const r = (A.quick != null && quickTotal(A.quick)) || CY.total(A, A.ref); LAST = r;
   if (!r.quick) A.quick = null;
+  placeGen(!!r.quick);
   $('tot').textContent = r.sum; $('refShow').textContent = A.ref.replace(/-/g, '.');
   const bar = (t, max, x) => `<div class="bar"><div class="h"><span>${t}</span><span>${x.pts} / ${max}점</span></div><div class="t"><i style="width:${x.pts / max * 100}%"></i></div><div class="why">${esc(x.why)}</div></div>`;
   $('bars').innerHTML = r.quick ? `<div class="qnote">직접 넣은 점수(${r.sum}점)로 비교하고 있어요. 항목별 점수와 ‘몇 년 뒤 커트라인에 닿는지’는 <b>다시 입력</b>을 눌러 질문에 답하면 계산해 드려요.</div>`
@@ -763,7 +771,7 @@ function renderGen() {
     if (!items.length) h += `<div class="empty">${cnt.pend && !cnt.na && !cnt.lot ? '예상 커트라인을 준비하고 있어요. 데이터가 갱신되면 내 가점과 바로 비교해 드릴게요.' : '이 범위의 공고는 비교할 과거 자료가 부족하거나 추첨으로만 뽑아 가점 진단을 하지 않았어요.'}</div>`;
   }
   if (pubN) h += `<div class="pubnote">${scope === 'mine' ? esc(sidoLbl(mine)) : '전국'} 국민주택(공공분양) 공고 ${pubN}곳은 일반공급을 가점이 아니라 납입 인정 금액·횟수 등(순차제)으로 뽑아 진단에서 뺐어요.</div>`;
-  h += `<div class="caution">일반공급 가점제는 1순위 자격이 있어야 하고(위 ‘1순위·특별공급 세부 진단’의 1순위 결과 확인), 가점제로 뽑지 않는 나머지 물량은 추첨으로 뽑아 가점과 관계없이 기회가 있어요.${A.own ? ' 집이 있으면 무주택기간 점수가 0점이고, 지역·면적에 따라 가점제·추첨제 신청이 제한될 수 있어 공고문을 꼭 확인하세요.' : ''}</div>`;
+  h += `<div class="caution">일반공급 가점제는 1순위 자격이 있어야 하고(‘1순위·특별공급 세부 진단’의 1순위 결과 확인), 가점제로 뽑지 않는 나머지 물량은 추첨으로 뽑아 가점과 관계없이 기회가 있어요.${A.own ? ' 집이 있으면 무주택기간 점수가 0점이고, 지역·면적에 따라 가점제·추첨제 신청이 제한될 수 있어 공고문을 꼭 확인하세요.' : ''}</div>`;
   $('gen').innerHTML = h;
   $('genSeg').querySelectorAll('button').forEach(b => b.onclick = () => { GEN_SCOPE = b.dataset.s; renderGen(); });
   shareCy();

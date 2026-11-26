@@ -185,17 +185,11 @@
   /* ---------- 중개보수(주택 임대차 상한요율) ----------
      공인중개사법 시행규칙(2021.10.19 시행) · 시·도 조례 요율표 — 영등포구청 '부동산 중개보수 요율표'(2026-11-25 확인)·서울시 주택분야 누리집(2021.10.19 개편)으로 확인.
      거래금액: 전세 = 보증금, 월세 = 보증금 + 월세 × 100(이 값이 5천만 원 미만이면 보증금 + 월세 × 70). 실제 보수는 상한 안에서 협의해 정해요. */
-  const FEE = [[5000, 0.005, 20], [10000, 0.004, 30], [60000, 0.003, null], [120000, 0.004, null], [150000, 0.005, null], [Infinity, 0.006, null]];   // [미만(만원), 요율, 한도(만원)]
   const FEE_SRC = { nm: '공인중개사법 시행규칙(2021.10.19 시행) 주택 임대차 중개보수 상한요율', url: 'https://www.ydp.go.kr/www/contents.do?key=2725&', checked: '2026-11-25' };
   /** 상한 중개보수(만원, 원 단위 반올림 → 만원 소수 1자리) {base 거래금액, rate, cap, fee} */
-  function brokerFee(dep, rent) {
-    dep = Math.max(0, +dep || 0); rent = Math.max(0, +rent || 0);
-    let base = dep + rent * 100; if (rent > 0 && base < 5000) base = dep + rent * 70;
-    if (!(base > 0)) return { base: 0, rate: 0, cap: null, fee: 0 };
-    const row = FEE.find(f => base < f[0]) || FEE[FEE.length - 1];
-    let fee = base * row[1]; if (row[2] != null) fee = Math.min(fee, row[2]);
-    return { base, rate: row[1], cap: row[2], fee: Math.round(fee * 10) / 10 };
-  }
+  /* 요율표·계산은 공용 함수(assets/loan-core.js brokerLease) — fee 는 부가세 10% 포함 최대 금액, feeBase 는 부가세 전 */
+  const LOANC = () => root.JDJ_LOAN || (typeof require === 'function' ? require('./loan-core.js') : null);
+  function brokerFee(dep, rent) { return LOANC().brokerLease(dep, rent); }
   /** 이사 계획: 후보 r 에 들어가는 돈.
       o = {dep 지금 보증금, cash 추가 현금, loan 전세대출, move 이사비, rentMax 월세 감당액}
       전세로 되면 {mode:'j', diff 보증금 차액, fee, move, cash 새로 필요한 현금(차액+보수+이사비, 차액이 −면 돌려받는 돈만큼 줄어요)}
@@ -306,7 +300,7 @@
   const pyeong = a => Math.round(a / PY * 10) / 10;
   const pct = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v * 100).toFixed(1) + '%';
 
-  const API = { PY, WALK, MIN_N, WIN, NEAR, BANDS, bandsNear, recentAuto, nearLo, TH, SRC, FEE, FEE_SRC, brokerFee, plan, weights, scoreOf, pick, KIND, rentPath, addM, med, recentNew, trend1, km, nearSt, locate, row, sameBand, gains, GAIN_T, GAIN_NAME, better, cheaper, filt,
+  const API = { PY, WALK, MIN_N, WIN, NEAR, BANDS, bandsNear, recentAuto, nearLo, TH, SRC, FEE_SRC, brokerFee, plan, weights, scoreOf, pick, KIND, rentPath, addM, med, recentNew, trend1, km, nearSt, locate, row, sameBand, gains, GAIN_T, GAIN_NAME, better, cheaper, filt,
     hugEst, kkEst, renewHint, buyFit, buySort, nearWork, nearHome, inAreas, won, pyeong, pct };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_TSW = API;
