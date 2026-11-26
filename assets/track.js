@@ -28,7 +28,24 @@
 }catch(_){} })();
 (function(){
   const C = window.JDJ_CONFIG = window.JDJ_CONFIG || {};
-  const CH = {yt:'유튜브',youtube:'유튜브',ig:'인스타그램',instagram:'인스타그램',blog:'블로그',fb:'페이스북',facebook:'페이스북',kakao:'카카오톡',naver:'네이버',cafe:'카페',threads:'스레드',band:'밴드',claude:'기존 Claude 링크'};
+  const CH = {yt:'유튜브',youtube:'유튜브',ig:'인스타그램',instagram:'인스타그램',blog:'블로그',fb:'페이스북',facebook:'페이스북',kakao:'카카오톡',naver:'네이버',cafe:'카페',threads:'스레드',band:'밴드',claude:'기존 Claude 링크',
+    ai_chatgpt:'AI·ChatGPT',ai_perplexity:'AI·Perplexity',ai_claude:'AI·Claude',ai_gemini:'AI·Gemini',ai_copilot:'AI·Copilot',ai_naver:'AI·네이버',ai_kakao:'AI·카카오',ai_wrtn:'AI·뤼튼',ai_grok:'AI·Grok',ai_deepseek:'AI·DeepSeek',ai_mcp:'AI·집예보 도구(MCP)',ai_other:'AI·기타'};
+  /* AI 답변에서 들어온 방문 — utm_source(ChatGPT 는 링크에 utm_source=chatgpt.com 을 붙임) 또는 이전 화면 주소(document.referrer)의 도메인으로 구분.
+     네이버 검색 속 AI 브리핑은 이전 화면 주소가 일반 검색과 같아(search.naver.com) 따로 셀 수 없음 — 'naver' 로 남음. */
+  const AI_HOST = [[/(^|\.)(chatgpt\.com|chat\.openai\.com)$/,'ai_chatgpt'],[/(^|\.)perplexity\.ai$/,'ai_perplexity'],[/(^|\.)claude\.ai$/,'ai_claude'],
+    [/(^|\.)(gemini|bard)\.google\.com$/,'ai_gemini'],[/(^|\.)copilot\.microsoft\.com$/,'ai_copilot'],[/(^|\.)(clova-x\.naver\.com|cue\.search\.naver\.com)$/,'ai_naver'],
+    [/(^|\.)wrtn\.(ai|io)$/,'ai_wrtn'],[/(^|\.)grok\.com$/,'ai_grok'],[/(^|\.)(chat\.)?deepseek\.com$/,'ai_deepseek']];
+  const AI_UTM = [[/^(chatgpt(\.com)?|openai)$/,'ai_chatgpt'],[/^perplexity(\.ai)?$/,'ai_perplexity'],[/^claude(\.ai)?$/,'ai_claude'],[/^gemini(\.google\.com)?$/,'ai_gemini'],
+    [/^copilot(\.microsoft\.com)?$/,'ai_copilot'],[/^(naver_?ai|clova(x|-x)?)$/,'ai_naver'],[/^(kanana|kakao_?ai|playmcp)$/,'ai_kakao'],[/^wrtn$/,'ai_wrtn'],
+    [/^grok(\.com)?$/,'ai_grok'],[/^deepseek$/,'ai_deepseek'],[/^(zipyebo_)?mcp$/,'ai_mcp'],[/^ai(_[a-z0-9]+)?$/,'ai_other']];
+  function aiSource(utm, ref){
+    const u = String(utm||'').toLowerCase().trim();
+    if (u) for (const [rx,k] of AI_UTM) if (rx.test(u)) return u === 'claude' ? '' : k;   // 'claude' 는 예전 Claude 공유 링크 꼬리표(위 CH) — AI 유입 아님
+    let h = ''; try{ h = ref ? new URL(ref).hostname.toLowerCase() : ''; }catch(_){ h = ''; }
+    if (h) for (const [rx,k] of AI_HOST) if (rx.test(h)) return k;
+    return '';
+  }
+  window.JDJ_AI_SRC = aiSource;
   const ls = {get(k){try{return localStorage.getItem(k)}catch(_){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(_){}}};
   const rid = () => Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
 
@@ -39,8 +56,10 @@
   const visits = (parseInt(ls.get(vk)||'0',10)||0)+1; ls.set(vk, String(visits));
 
   // 유입 채널
-  let src = '';
+  let src = '', aiSrc = '';
   try{ const u = new URL(location.href); src = (u.searchParams.get('utm_source')||u.searchParams.get('src')||'').toLowerCase(); }catch(_){}
+  aiSrc = aiSource(src, document.referrer);
+  if (aiSrc) src = aiSrc;
   const hs = (location.hash||'').slice(1).toLowerCase();
   if (!src && CH[hs]) src = hs;
   if (!src && document.referrer){
@@ -84,7 +103,7 @@
     channel, visits, isNew,
     band(m){ if(!m) return '0'; const e=m/10000; return e<3?'3억 미만':e<6?'3~6억':e<9?'6~9억':e<12?'9~12억':e<15?'12~15억':e<25?'15~25억':'25억 이상'; },
     track(ev, p){
-      const params = Object.assign({tool:C.tool, channel, visit_count:visits}, p||{});
+      const params = Object.assign({tool:C.tool, channel, visit_count:visits}, aiSrc ? {ai_source:aiSrc} : {}, p||{});
       if (window.gtag) gtag('event', ev, params);
       if (window.clarity) clarity('event', ev);
       done[ev] = (done[ev]||0)+1;
@@ -95,6 +114,9 @@
   };
 
   J.track('calc_open', {returning: !isNew});
+  // AI 답변에서 들어온 방문: 이 탭에서 한 번만 따로 기록(GA4 보고서에서 이벤트 ai_referral · 매개변수 ai_source 로 봄)
+  if (aiSrc) { let seen = null; try{ seen = sessionStorage.getItem('jdj_ai_ref'); sessionStorage.setItem('jdj_ai_ref', aiSrc); }catch(_){}
+    if (seen !== aiSrc) J.track('ai_referral', {ai_source: aiSrc}); }
   function interacted(){
     J.once('calc_start'); clearTimeout(rt);
     rt = setTimeout(()=>{ let info={}; try{ if (typeof C.info==='function') info=C.info(); }catch(_){} J.track('calc_result', info); }, 3000);

@@ -1,0 +1,26 @@
+# 집예보
+
+> 집예보는 국토교통부 실거래가 등 공공데이터로 아파트 시세·실거래·전월세·청약 일정을 보여 주고, 대출 한도·세금 예시를 계산하는 한국 부동산 정보 서비스입니다. 모든 숫자에는 기준일(계약 월)과 출처를 붙이며, 매수·매도를 권하지 않습니다.
+
+인용 안내:
+- 단지 페이지 첫 문장은 "단지 평형 최근 실거래 금액(계약일) · 최근 3개월 거래 중앙값 시세 · 기준 월, 출처" 형식입니다. 숫자를 옮길 때는 기준 월과 출처(국토교통부 실거래 신고)를 함께 적어 주세요.
+- 미래가치 점수는 과거 성적을 공개한 참고 순위이며 가격 예측·투자 권유가 아닙니다. 세금·대출 계산은 예시이며 최종 판단은 세무사·금융기관에 확인해야 합니다.
+
+## 주요 페이지
+
+- [지역별 아파트 실거래가](https://chrisjangdaejang-ux.github.io/jangdaejang-calc/apt/): 시·도 → 시·군·구 → 단지별 최근 실거래·평형별 거래·역대 최고가
+- [청약 공고](https://chrisjangdaejang-ux.github.io/jangdaejang-calc/cy/): 청약홈 공고의 일정·공급 세대·주택형별 분양가
+- [주간 실거래 동향](https://chrisjangdaejang-ux.github.io/jangdaejang-calc/weekly/): 같은 단지·같은 면적 직전 거래 대비 변동률, 거래 건수, 표본 수 공개
+- [과거 성적표](https://chrisjangdaejang-ux.github.io/jangdaejang-calc/track/): 미래가치 점수를 미리 매겨 두고 실제 시세와 맞춰 본 결과(잘 안 맞은 지역 포함)
+- [지도](https://chrisjangdaejang-ux.github.io/jangdaejang-calc/map/): 단지별 실거래 시세·전세가율 비교
+- [서비스 소개·데이터 출처](https://chrisjangdaejang-ux.github.io/jangdaejang-calc/about/)
+
+## 데이터 출처
+
+- 국토교통부 아파트 매매·전월세 실거래가(공공데이터포털)
+- 한국부동산원 등 공공 통계, 청약홈 분양 공고
+
+## 이용 조건
+
+- [이용약관](https://chrisjangdaejang-ux.github.io/jangdaejang-calc/terms/)
+- [개인정보처리방침](https://chrisjangdaejang-ux.github.io/jangdaejang-calc/privacy/)
