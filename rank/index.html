@@ -107,7 +107,7 @@ h1{font-size:clamp(26px,6vw,36px);margin:6px 0 8px}
   <div class="tabs" role="tablist" aria-label="순위 종류">
     <button type="button" role="tab" id="tb-price" data-t="price" aria-controls="pane">구별 시세</button>
     <button type="button" role="tab" id="tb-fv" data-t="fv" aria-controls="pane">미래가치 순위</button>
-    <button type="button" role="tab" id="tb-move" data-t="move" aria-controls="pane">점수 많이 바뀐 단지</button>
+    <button type="button" role="tab" id="tb-move" data-t="move" aria-controls="pane" hidden>점수 많이 바뀐 단지</button>
   </div>
   <div class="ctl" id="ctl"></div>
   <section id="pane" role="tabpanel" aria-live="polite"><p class="note">순위 자료를 불러오고 있어요…</p></section>
@@ -170,11 +170,16 @@ $('ctl').addEventListener('click', e => {
 document.querySelector('.tabs').addEventListener('click', e => { const b = e.target.closest('button[data-t]'); if (!b || b.dataset.t === S.t) return; S.t = b.dataset.t; S.all = false; go('tab'); });
 document.querySelector('.tabs').addEventListener('keydown', e => {
   if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-  const T = ['price', 'fv', 'move'], i = (T.indexOf(S.t) + (e.key === 'ArrowRight' ? 1 : 2)) % 3;
+  const T = ['price', 'fv'].concat(moveOk() ? ['move'] : []), i = (T.indexOf(S.t) + (e.key === 'ArrowRight' ? 1 : T.length - 1)) % T.length;
   S.t = T[i]; go('tab'); $('tb-' + S.t).focus();
 });
 
+/* '점수 많이 바뀐 단지' 탭: 비교할 두 달치 자료(rank.json)가 이 시·도에 생길 때까지 탭 자체를 숨김 — 자료가 생기면 자동으로 보여요(2026-11-26 결정) */
+function moveOk(){ return !!(RK && R.moves(RK, S.sd)); }
+function syncMove(){ const t = $('tb-move'); if (t) t.hidden = !moveOk(); if (S.t === 'move' && RK !== undefined && !moveOk()) S.t = 'price'; }
+if (!RKload) RKload = J(DATA + 'rank.json').then(j => { RK = j || null; const was = S.t; syncMove(); if (IX && (was === 'move' || S.t !== was)) go(); });
 function go(why){
+  syncMove();
   saveUrl(); drawTabs(); drawCtl();
   if (S.t === 'price') drawPrice(); else if (S.t === 'fv') drawFv(); else drawMove();
   if (why && window.jdjStat) jdjStat('feature_use', {feature: 'rank_' + S.t});

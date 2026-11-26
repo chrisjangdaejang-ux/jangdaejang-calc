@@ -84,14 +84,14 @@
   }
 
   /* 첫 화면 소개 글 숫자: 공개 index.json 값만 읽음(직접 쓴 숫자 없음). 없는 값은 null·빈 목록 → 화면은 숫자 없는 문장으로
-     → { trades: '838만'|null, eyebrow: '2010년부터 쌓은 공공 통계로 푸는 부동산의 내일'|null, facts: ['아파트 1.6만 단지', '하루 4번 갱신'] } — 시작 연도는 eyebrow 에만(겹치지 않게) */
+     → { trades: '838만'|null, eyebrow: '2010년부터 쌓은 공공 통계로 푸는 부동산의 내일'|null, facts: ['점수가 있는 아파트 1.6만 단지', '하루 4번 갱신'] } — 시작 연도는 eyebrow 에만(겹치지 않게) */
   function heroFacts(IX) {
     const S = (IX && IX.stats) || {}, facts = [];
     const man = n => n >= 1e4 ? `${(n / 1e4).toFixed(n >= 1e6 ? 0 : 1).replace(/\.0$/, '')}만` : n.toLocaleString('ko-KR');
     let trades = null, eyebrow = null;
     if (S.trades > 0) trades = man(S.trades);
     else if (IX && IX.total > 0) trades = man(IX.total);
-    if (S.apts > 0) facts.push(`아파트 ${man(S.apts)} 단지`);
+    if (S.apts > 0) facts.push(`점수가 있는 아파트 ${man(S.apts)} 단지`);   // 지역별 아파트 페이지 '최근 3년 거래가 있는 단지 1.9만 곳'과 기준이 달라 기준을 붙임(2026-11-26)
     else { const nu = ((IX && IX.sido) || []).reduce((a, x) => a + (x.units || 0), 0); if (nu) facts.push(`단지·평형 ${man(nu)} 개`); }
     /* 시작 연도 = 공개 시세 자료(index.json price.from — 그래프·과거 기록, 2006~)가 있으면 그것, 없으면 stats.from(모델 자료 시작).
        건수(trades)는 그대로 stats.trades(예측에 쓰는 자료) — '○○만 건을 바탕으로 … 미리 보여 드려요' 문장이 예측 근거라서 */

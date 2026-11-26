@@ -407,6 +407,22 @@ if (DIR && fs.existsSync(path.join(DIR, 'index.json'))) {
   check('이름에 동 이름이 든 단지는 그대로', f('잠실엘스'), ['잠실동 잠실엘스'], '이름 그대로 맞음');
 }
 
+/* 2026-11-26 전세가율 화면 통일: 내 집 시세·지도·관심 목록·성적표가 같은 규칙(jrNow) — 예전 지도·관심 목록은 모델 칸(41%), 내 집 시세는 43% */
+{
+  const z = n => new Array(n).fill(0);
+  const H = { hm: '202601', rm: '202601', to: '202610', units: [
+    ['가락동', '헬리오시티', '84㎡대', '913', [0].concat(z(9), [11280]), [0].concat(z(9), [4863])],
+    ['가락동', '헬리오시티', '59㎡대', '913', [0].concat(z(8), [9000, 0]), [0].concat(z(8), [3600, 0])],
+    ['가락동', '오래된', '84㎡대', '1', [0, 5000].concat(z(9)), [0, 2000].concat(z(9))]] };
+  const J = M.histJrMap(H);
+  check('전세가율: 자료 끝 달 전세 ÷ 매매', Math.round(J.get('가락동|913|헬리오시티|84㎡대') * 1000) / 10, 43.1, 'mine-core jrNow');
+  check('전세가율: 끝 달에 없으면 3개월 안 가장 최근 달', J.get('가락동|913|헬리오시티|59㎡대'), 0.4, 'jrNow 3개월');
+  check('전세가율: 3개월보다 오래된 값은 쓰지 않음', J.has('가락동|1|오래된|84㎡대'), false, 'jrNow 3개월');
+  const fs = require('fs'), path = require('path'), rd = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
+  check('화면이 같은 함수: 내 집 시세·지도', [/M\.jrNow\(t\)/.test(rd('mine/index.html')), /M\.histJrMap\(h\)/.test(rd('map/index.html'))], [true, true], 'mine/·map/');
+  check('관심 목록·성적표에 전세가율 기준 한 줄', [rd('my/watch/index.html'), rd('my/report/index.html')].map(s => s.includes('내 집 시세·지도와 같은 기준')), [true, true], 'my/watch·my/report');
+}
+
 let bad = 0;
 for (const r of rows) { if (!r.ok) bad++; console.log((r.ok ? 'OK  ' : 'FAIL') + ' ' + r.name + (r.ok ? '' : `\n     got ${JSON.stringify(r.got)}\n    want ${JSON.stringify(r.want)}  (${r.basis})`)); }
 console.log(`\n${rows.length - bad}/${rows.length} 통과`);

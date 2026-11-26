@@ -592,6 +592,16 @@
     const jr = months.map(ym => { const a = sm.get(ym), b = jm.get(ym); return a > 0 && b > 0 ? b / a : 0; });
     return { months, s, j, jr, from: sm.size ? [...sm.keys()].sort()[0] : '', rfrom: jm.size ? [...jm.keys()].sort()[0] : '' };
   }
+  /** 가장 최근 전세가율 [0~1, 연월] — 자료 끝 3개월 안에서 매매·전세가 모두 있는 달(없으면 [0, '']).
+      t = histSeries 결과. 집예보 전세가율의 기준 함수: 내 집 시세·지도(전세가율)·관심 목록·성적표·알림이 모두 이 규칙(엔진 today_feed.hist_jr 도 같은 규칙) */
+  function jrNow(t) { if (!t || !t.jr) return [0, '']; for (let i = t.jr.length - 1; i >= Math.max(0, t.jr.length - 3); i--) if (t.jr[i] > 0) return [t.jr[i], t.months[i]]; return [0, '']; }
+  /** price/h/{구}.json 전체 → Map('동|지번|단지|평형' → 전세가율 0~1) (jrNow 기준, 값 없는 평형은 빠짐) */
+  function histJrMap(h) {
+    const out = new Map(); if (!h || !Array.isArray(h.units)) return out;
+    for (const r of h.units) { const t = histSeries(h, r, 1); const v = t ? jrNow(t)[0] : 0; if (v > 0) out.set([r[0], r[3] || '', r[1], r[2]].join('|'), v); }
+    return out;
+  }
+  const JR_BASIS = '전세가율 = 같은 단지·같은 평형의 최근 3개월 순수 전세 거래 평당가 중간값 ÷ 매매 거래 평당가 중간값(자료 끝 3개월 안에서 둘 다 있는 가장 최근 달)';
   /** 차트 선 나누기 — 값 있는 달(>0)끼리 붙은 실선 조각(solid: 인덱스 배열들)과,
       그 사이 거래 없는 구간을 앞뒤 실제 값끼리 잇는 점선 조각(gaps: [앞 인덱스, 뒤 인덱스]).
       사이 달의 값은 만들지 않는다(시각적 연결만). 맨 앞·맨 뒤의 빈 달은 잇지 않음 */
@@ -701,7 +711,7 @@
   const API = { PY, r100, STORE_KEY, MAX_HOMES, FEW, NICK, counts, lastIdx, median, toPrice, ymLabel, xTicks, danjiKey, agentKey, premiumKey, groupDanji, searchDanji,
     normName, normLight, splitNum, matchName, matchDanji, matchedAlias, suggestDanji, missRows, MISS_WHY, logMiss, dice, listRow, unitKey, hasScore, scoreOf, monthDeals, trades, lastDeal, isFew,
     bandSummary, changeBack, dongPosition, sggPosition, trend, volume, volumeCounts, cleanHome, homeId, parseStore, dumpStore, addHome, removeHome, findUnit, areaTypes, areaPick, areaUnit, vsBuy, heldMonths, reasons, reasonItems, won, pctTxt, cleanFx,
-    ymAdd, ymDiff, ymKo, decodeSeries, histRow, histSeries, histWindow, histSpans, sggLine, vsSgg, highs, isNewHigh, lineParts, isSparse, valAt, gapOf, monthPoint };
+    ymAdd, ymDiff, ymKo, decodeSeries, histRow, histSeries, jrNow, histJrMap, JR_BASIS, histWindow, histSpans, sggLine, vsSgg, highs, isNewHigh, lineParts, isSparse, valAt, gapOf, monthPoint };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_MINE = API;
 })(typeof self !== 'undefined' ? self : this);

@@ -137,6 +137,13 @@ if (dir && fs.existsSync(path.join(dir, 'index.json'))) {
   if (fs.existsSync(mj)) { const M = JSON.parse(fs.readFileSync(mj, 'utf8')); check('실제 자료: 검증 결과 읽기', !!R.check(M) === !!(M.region && M.region.used), true, 'model.json region'); }
 }
 
+/* 2026-11-26 결정: '점수 많이 바뀐 단지' 탭은 rank.json 자료가 그 시·도에 생길 때까지 숨김(빈 '다음 달부터 공개해요' 탭을 보이지 않게) */
+{
+  const RP = require('fs').readFileSync(require('path').join(__dirname, '..', 'rank', 'index.html'), 'utf8');
+  check('순위: 점수 변화 탭은 처음엔 숨김', /id="tb-move"[^>]*hidden/.test(RP), true, 'rank/index.html');
+  check('순위: 자료가 생기면 자동으로 보이고, 없으면 시세 탭으로', [/function moveOk\(\)\{ return !!\(RK && R\.moves\(RK, S\.sd\)\); \}/.test(RP), /if \(S\.t === 'move' && RK !== undefined && !moveOk\(\)\) S\.t = 'price'/.test(RP)], [true, true], 'rank/index.html syncMove');
+}
+
 const fail = rows.filter(r => !r.ok);
 for (const r of rows) console.log((r.ok ? 'ok   ' : 'FAIL ') + r.name + (r.ok ? '' : `\n      got ${JSON.stringify(r.got)}\n      want ${JSON.stringify(r.want)}  (${r.basis})`));
 console.log(`\n${rows.length - fail.length}/${rows.length} 통과`);

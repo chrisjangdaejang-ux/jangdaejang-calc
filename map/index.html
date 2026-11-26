@@ -31,7 +31,7 @@
 <script src="../assets/conf.js?v=3"></script>
 <script src="../assets/life-view.js?v=3"></script>
 <script src="../assets/fac-view.js?v=1"></script>
-<script src="../assets/mine-core.js?v=22"></script>
+<script src="../assets/mine-core.js?v=23"></script>
 <script src="../assets/map-core.js?v=5"></script>
 <script src="../assets/mapjump.js?v=3"></script>
 <script src="../assets/alerts-core.js?v=5"></script>
@@ -440,6 +440,29 @@ function legend(){
 }
 
 /* ---------- 자료 불러오기 (보이는 시·도만) ---------- */
+/* ---------- 전세가율: 내 집 시세 화면과 같은 기준(assets/mine-core.js jrNow · price/h/{구}.json) ----------
+   예전에는 sNN.json 모델 칸(fx.jr = 12개월 전세 ÷ 지금 시세)을 그대로 써서 같은 단지가 지도·관심 목록 41%, 내 집 시세 43%처럼 달라 보였어요(2026-11-26 통일).
+   구 파일은 전세가율 보기(동·단지 단계)나 단지 카드를 열 때만 받아요. 받기 전·값이 없으면 숫자를 쓰지 않아요. */
+const HJ = {};
+function ensureHJ(codes){
+  let want = 0;
+  for (const g of codes) {
+    if (HJ[g]) { if (HJ[g] === 'wait') want++; continue; }
+    HJ[g] = 'wait'; want++;
+    J(DATA + 'price/h/' + g + '.json').then(h => { HJ[g] = h ? M.histJrMap(h) : 'err'; render(); if (SEL && SEL.d && SEL.d.code === g) { const u = SEL.d.bands.find(x => x[3] === SEL.band); if (u) cardJr(SEL.d, { band: SEL.band, u }); } })
+      .catch(() => { HJ[g] = 'err'; });
+  }
+  return want;
+}
+/** 단지·평형 전세가율(0~1): 받은 구면 값 또는 null, 아직 받는 중이면 undefined */
+function hjOf(d, band){ const H = HJ[d.code]; if (H === 'wait' || H == null) return undefined; if (H === 'err') return null; const v = H.get([d.dong, d.jibun || '', d.apt, band].join('|')); return v > 0 ? v : null; }
+function cardJr(d, b){
+  const el = $('jrV'); if (!el) return;
+  const show = v => { document.querySelectorAll('.jrr').forEach(x => { x.hidden = v === null; }); if (v != null) el.innerHTML = `<b>${esc(C.pct(v))}</b><small>최근 3개월 전세 ÷ 매매(내 집 시세와 같은 기준)</small>`; };
+  const v = hjOf(d, b.band);
+  if (v === undefined) { ensureHJ([d.code]); return; }
+  show(v);
+}
 function ensure(ids){
   let want = 0;
   for (const id of ids) {
@@ -569,6 +592,12 @@ function render(){
       const s = SD[id]; if (!s || s.st !== 'ok') continue;
       for (const d of s.list) { if (!C.inBox(bb, d.lat, d.lng, 0.15)) continue; const b = C.pick(d, IX.months, { size: S.size, price: S.price }); if (b) items.push({ d, b }); }
     }
+    /* 전세가율 보기: 내 집 시세와 같은 기준 값으로 바꿔 씀(구 파일을 받는 중이면 잠시 '불러오는 중') */
+    let jrWait = 0;
+    if (S.mode === 'jr') {
+      jrWait = ensureHJ([...new Set(items.map(x => x.d.code))]);
+      for (const x of items) { const v = hjOf(x.d, x.b.band); x.b = Object.assign({}, x.b, { jr: v == null ? null : v }); }
+    }
     if (lv === 'dong') {
       for (const g of C.groups(items, 'dong')) {
         const v = C.groupText(S.mode, g);
@@ -591,9 +620,10 @@ function render(){
         djc.push({ d, b, main, list: c.list, p: (sel ? 1e7 : 0) + (d.n || 0), box: djBox(c.list[0].x, c.list[0].y, main || '최근 거래 없음', badge, showName ? d.apt : '', c.list.length > 1) });
       }
       LROWS = items.map(({ d, b }) => ({ k: d.key, name: d.apt, sub: `${sggName(d.code)} ${d.dong} · ${b.band}`, v: C.mainText(S.mode, b) || (S.mode === 'price' ? '최근 거래 없음' : '자료 없음'), p: d.n || 0, num: S.mode === 'fv' ? b.fv : S.mode === 'jr' ? b.jr : b.price, tap: () => openCard(d) }));
-      msg = items.length ? '' : (wait ? '' : (S.size || S.price) ? '이 화면에 고른 평형·가격대에 맞는 단지가 없어요.' : '이 화면에는 표시할 단지가 없어요.');
+      msg = items.length ? (S.mode === 'jr' ? '단지 전세가율 = 같은 평형 최근 3개월 전세 중간값 ÷ 매매 중간값이에요(내 집 시세와 같은 기준).' : '') : (wait ? '' : (S.size || S.price) ? '이 화면에 고른 평형·가격대에 맞는 단지가 없어요.' : '이 화면에는 표시할 단지가 없어요.');
     }
     if (wait) msg = '단지 자료를 불러오는 중이에요…';
+    else if (jrWait) msg = '전세가율 자료를 불러오는 중이에요…';
     else if (ids.some(id => SD[id] && SD[id].st === 'err')) msg = '일부 지역 자료를 불러오지 못했어요. 잠시 뒤 지도를 다시 움직여 주세요.';
   }
   if (!msg && S.bun && LAY.bun && LAY.bun.st === 'err') msg = '분양 단지 자료는 아직 준비 중이에요. 잠시 뒤 다시 열어 주세요.';
@@ -1104,6 +1134,7 @@ function openCard(d, band, keep){
   const b = (band && d.bands.find(u => u[3] === band) ? C.bandInfo(d.bands.find(u => u[3] === band), IX.months) : null) || C.pick(d, IX.months, { size: S.size, price: S.price }) || C.bandInfo(d.bands[0], IX.months);
   SEL = { d, band: b.band };
   if (!keep) render();
+  setTimeout(() => cardJr(d, b), 0);
   const f = (b.u[9] && typeof b.u[9] === 'object') ? b.u[9] : null;
   let head = '';
   if (f && f.fv != null && NAR) { try { head = NAR.build(f, { apt: d.apt, dong: d.dong, code: d.code, band: b.band, area: b.area, IX, MH, PL, year: new Date().getFullYear(), s: b.u[6], regionUsed: MREG }).head || ''; } catch (e) { head = ''; } }
@@ -1118,7 +1149,7 @@ function openCard(d, band, keep){
       <dt>미래가치</dt><dd>${b.fv != null ? `<div class="fvrow"><span class="fvb ${C.tone(b.fv)}">${b.fv}점</span><span class="head">${esc(head || '100점 만점, 앞으로 2년 같은 시·도 아파트와 비교한 점수예요.')}</span></div>${cfo ? `<small class="cfl cf-${cfo.lv}">${esc(window.JDJ_CONF.line(cfo))}</small>` : ''}` : '이 평형은 미래가치 점수 자료가 없어요'}</dd>
       <dt class="lfr" hidden id="lfrK">학군·생활</dt><dd class="lfr" hidden id="lfrV"></dd>
       <dt class="fcr" hidden>단지 시설</dt><dd class="fcr" hidden id="fcrV"></dd>
-      ${b.jr != null ? `<dt>전세가율</dt><dd><b>${esc(C.pct(b.jr))}</b><small>집값 대비 전셋값 비율</small></dd>` : ''}
+      <dt class="jrr">전세가율</dt><dd class="jrr" id="jrV"><small>불러오는 중이에요…</small></dd>
     </dl>
     ${isFoc(d) && f && f.rl && MJ && MJ.railText(f.rl) ? `<p class="note">가까운 신설역: ${esc(MJ.railText(f.rl))}${f.rl.pl ? ' — 아직 문을 열지 않은 역이라 지도에는 위치를 찍지 않았어요' : ''}</p>` : ''}
     ${isFoc(d) && FOC.keys.size > 1 ? `<p class="note"><button type="button" class="linkb" id="fxAll" style="font:inherit;font-weight:700;color:var(--blue);background:none;border:0;padding:0;min-height:40px;cursor:pointer">비교한 ${FOC.keys.size}곳 함께 보기 ›</button></p>` : ''}

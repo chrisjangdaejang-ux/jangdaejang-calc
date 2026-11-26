@@ -50,7 +50,7 @@
 <script src="../assets/conf.js?v=3"></script>
 <script src="../assets/life-view.js?v=3"></script>
 <script src="../assets/fac-view.js?v=1"></script>
-<script src="../assets/mine-core.js?v=22"></script>
+<script src="../assets/mine-core.js?v=23"></script>
 <script src="../assets/ask-core.js?v=8"></script>
 <script src="../assets/ask.js?v=5"></script>
 <script src="../assets/price-sheet.js?v=23"></script>
@@ -574,7 +574,7 @@ function render(d, map, units){
     <p class="basis">${esc(P.histNote(hist, HT))}</p>
     ${HT.jr.some(v => v > 0) ? (RJ && RJ.vjNote ? RJ.vjNote(...jrNow(HT), '../jeonse/checklist/') : P.jrChip(...jrNow(HT), '../jeonse/checklist/')) : ''}
     ${JO.length ? `<p class="basis">다른 평형 전세가율 · ${JO.map(x => `${esc(x.bd)} ${Math.round(x.r * 100)}%${RJ.bandTag(x.r)}`).join(' · ')}</p>` : ''}
-    ${HT.jr.some(v => v > 0) ? `<p class="basis">아래 띠 = 전세가율(전셋값 ÷ 매맷값, 매매·전세 시세가 모두 있는 달만, 점선 = 그 기간 평균). 차트 위를 움직이거나 누르면 그 달 매매·전세·갭(매매 − 전세)·전세가율을 보여 드려요.</p>` : ''}`
+    ${HT.jr.some(v => v > 0) ? `<p class="basis">아래 띠 = 전세가율(전셋값 ÷ 매맷값, 매매·전세 시세가 모두 있는 달만, 점선 = 그 기간 평균). 차트 위를 움직이거나 누르면 그 달 매매·전세·갭(매매 − 전세)·전세가율을 보여 드려요. ${esc(M.JR_BASIS)}이에요(지도·관심 목록·성적표도 같은 기준).</p>` : ''}`
     : `<div class="chead"><h3>가격 추이 (평당가)</h3><div class="seg2" role="group" aria-label="기간">${[12, 36].map(n => `<button type="button" data-span="${n}" class="${S.span === n ? 'on' : ''}" aria-pressed="${S.span === n}">${n / 12}년</button>`).join('')}</div></div>
     <div class="chart" id="cPrice"></div>
     <div class="legend"><span><i></i>${esc(d.apt)} ${esc(S.band)}</span><span><i class="g"></i>${esc(sggName(d.code))} 아파트 전체</span></div>
@@ -714,7 +714,7 @@ function fillLife(d){
 /** 구 전체 비교선 자료(price/h 의 sgg 전체 기간, 없으면 index.json sgg[].s·months 최근 3년) → 이 평형 전용면적으로 환산해 매매·전세 차트에 회색 점선 */
 function guOf(u, sgg){ return P.guOf(CUR && CUR.hf, sgg, IX.months, u[4], (sgg && sgg.name) || sggName(u[0])); }
 /** 가장 최근 전세가율 [0~1, 연월] — 자료 끝 3개월 안에서 매매·전세가 모두 있는 달(없으면 [0, '']) */
-function jrNow(t){ for (let i = t.jr.length - 1; i >= Math.max(0, t.jr.length - 3); i--) if (t.jr[i] > 0) return [t.jr[i], t.months[i]]; return [0, '']; }
+function jrNow(t){ return M.jrNow(t); }   // 공용 기준 함수(assets/mine-core.js) — 지도·관심 목록·성적표와 같은 값
 function drawCharts(u, sgg){
   const HT = CUR && CUR.ht;
   if (HT){
