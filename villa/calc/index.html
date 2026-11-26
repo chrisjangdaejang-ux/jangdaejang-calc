@@ -40,6 +40,7 @@
 .fld .eok{color:var(--blue);font-weight:700}
 .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
 .two>.fld,.inp{min-width:0}
+@media(max-width:419px){.two{grid-template-columns:minmax(0,1fr)}}   /* 좁은 휴대폰: 금액 칸이 잘리지 않게 한 줄에 하나 */
 .inp input{width:100%}
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
 .seg button{min-height:46px;border:1px solid var(--line);border-radius:12px;background:#fff;font:inherit;font-size:15px;font-weight:900;color:var(--sub2);cursor:pointer}
