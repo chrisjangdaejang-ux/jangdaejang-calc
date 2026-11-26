@@ -11,7 +11,7 @@ const fs = require('fs'), path = require('path');
 const ROOT = path.join(__dirname, '..'), read = p => { try { return fs.readFileSync(path.join(ROOT, p), 'utf8'); } catch (e) { return ''; } };
 const G = require('../assets/guide-core.js');
 const L = require('../assets/loan-core.js'), T = require('../tax/tax-engine.js'), H = require('../assets/hug-core.js'), CY = require('../chungyak/cy-engine.js'), ADJ = require('../tax/adjusted-areas.js');
-const RD = require('../assets/redev-core.js');
+const RD = require('../assets/redev-core.js'), SALE = require('../assets/sale-status.js');
 const SC = JSON.parse(read('assets/guide/scenarios.json')), LEX = JSON.parse(read('assets/guide/lexicon.json'));
 const DATA = { sc: SC.sc, lex: LEX };
 let pass = 0, fail = 0;
@@ -100,7 +100,17 @@ check('주택 수: 세 채', X('집이 세 채').houses === 3);
 check('날짜: 2024.3.15', X('2024.3.15에 샀어요').date === '2024-03-15');
 
 /* ---------- ③ 계산 ---------- */
-const E = { L, T, H, CY, ADJ, RD, today: '2026-11-26' };
+/* 청약 공고 예시(청약홈 notices.json 모양 · cut 은 데이터 갱신 때 미리 계산된 값) */
+const NOTI = [
+  { no: 'N1', n: '서울가단지', sd: '서울특별시', g: '중랑구', ad: '서울특별시 중랑구 1', k: '민영', pb: '20261120', sp: ['', ''], r1: ['20261201', '20261201'], rc: ['20261201', '20261203'], pw: '20261210', f: ['투기과열지구', '조정대상지역'], u: 'https://www.applyhome.co.kr/x1',
+    ty: [['059.0000A', 59, 40, 20, 50000], ['084.0000A', 84, 30, 10, 80000]], cut: [{ band: 0, lo: 60, hi: 69, avg: 66, scope: '같은 시·도', nCx: 44, nRows: 182, from: '202411', to: '202608' }, { band: 1, lo: 56, hi: 62, avg: 60, scope: '같은 시·도', nCx: 34, nRows: 130, from: '202411', to: '202608' }] },
+  { no: 'N2', n: '서울나단지', sd: '서울특별시', g: '강서구', ad: '서울특별시 강서구 2', k: '민영', pb: '20261125', sp: ['', ''], r1: ['20261208', '20261208'], rc: ['20261208', '20261210'], pw: '20261217', f: ['투기과열지구'], u: 'https://www.applyhome.co.kr/x2',
+    ty: [['084.0000A', 84, 50, 10, 90000]], cut: [{ band: 1, lo: 66, hi: 72, avg: 69, scope: '같은 시·도', nCx: 30, nRows: 120, from: '202411', to: '202608' }] },
+  { no: 'N3', n: '경기다단지', sd: '경기도', g: '수원시', ad: '경기도 수원시 3', k: '민영', pb: '20261125', sp: ['', ''], r1: ['20261208', '20261208'], rc: ['20261208', '20261210'], pw: '20261217', f: [], u: '',
+    ty: [['084.0000A', 84, 50, 10, 60000]], cut: [{ band: 1, lo: 40, hi: 50, avg: 45, scope: '같은 시·도', nCx: 30, nRows: 120, from: '202411', to: '202608' }] },
+  { no: 'N4', n: '끝난단지', sd: '서울특별시', g: '중구', ad: '서울특별시 중구 4', k: '민영', pb: '20260901', sp: ['', ''], r1: ['20260910', '20260910'], rc: ['20260910', '20260912'], pw: '20260920', f: [], ty: [['084.0000A', 84, 10, 0, 1]], cut: [] }
+];
+const E = { L, T, H, CY, ADJ, RD, SALE, today: '2026-11-26', cyNotices: NOTI };
 const scOf = id => SC.sc.find(s => s.id === id);
 const SEOUL = { code: '11710', name: '송파구', short: '서울', sido: '서울특별시' }, LOCAL = { code: '26110', name: '중구', short: '부산', sido: '부산광역시' };
 function card(id, a, e) { const r = G.solve(scOf(id), a, Object.assign({}, E, e || {})); return r; }
@@ -144,8 +154,23 @@ good('cy_where', r);
 {
   const my = CY.CY.total({ own: false, birth: '1985-01-01', married: true, marDate: '', deps: 3, accDate: '2012-01-01', noAcc: false }, '2026-11-26').sum;
   check('청약: 가점 = 청약 엔진 값', r.nums[0].v === `${my}점 / 84점`, [r.nums[0].v, my]);
-  check('청약: 최근 1년·해당지역만 비교(2개)', /2개 주택형 중/.test(r.nums[1].v), r.nums[1]);
-  check('청약: 서울 85㎡ 이하 예치금 300만 원', r.nums[2].v === '300만 원');
+  check('청약: 결론 = 진행·예정 공고 수와 높음·경합·낮음(끝난 공고 빼고)', /서울특별시 진행·예정 민영 공고 2곳 중/.test(r.head), r.head);
+  check('청약: 공고별 표(단지·지역·일정·면적대·커트라인·판정·근거) — 커트라인은 cut 값 그대로', r.tables[0].head.length === 7 && r.tables[0].rows.some(x => x[4] === '60~69점') && r.tables[0].rows.every(x => /같은 시·도 과거/.test(x[6])), r.tables[0]);
+  check('청약: 최근 끝난 단지 실제 당첨 가점 표(해당지역·1년 안)', r.tables[1] && r.tables[1].rows.length === 2, r.tables[1]);
+  check('청약: 보조 통계·예치금 300만 원', r.nums.some(n => /보조/.test(n.k)) && r.nums.some(n => n.v === '300만 원'));
+}
+{
+  const q = '내 청약가점이 64점인데 서울에서 분양 예정인 단지중 당첨 가능한 단지는?';
+  const cr = G.classify(q, DATA, Object.assign({}, CTX, { today: '2026-11-26' })), sc = scOf(cr.top && cr.top.id), ap = G.apply(sc, cr.slots, {});
+  check('청약 대표 질문 → 청약 시나리오 · 64점 · 서울', sc && sc.id === 'cy_where' && ap.a.myscore === 64 && ap.a.csido === '서울특별시', [cr.top, ap.a]);
+  const Q = G.quick(sc, ap.a, Object.assign({}, E, { cyRows: rows }));
+  const C0 = Q.card, d = (lo, hi) => CY.diag(64, CY.cutOf({ cut: [{ band: 0, lo, hi }] }, 0)).g;
+  check('청약 대표 질문: 바로 답(질문 없이) · 공고별 판정 = cy-engine diag', Q.exact && /2곳 중 내 가점 64점으로 당첨 가능성 높음 1곳 · 경합 0곳 · 낮음 1곳/.test(C0.head) && d(60, 69) === 'mid' && d(56, 62) === 'hi', C0.head);
+  check('청약 대표 질문: 가능성 높은 순(60~85㎡ 56~62점 높음이 맨 위) · 단지 누르면 공고', C0.tables[0].rows[0][5].g === 'hi' && C0.tables[0].rows[0][0].href === 'https://www.applyhome.co.kr/x1', C0.tables[0].rows[0]);
+  const Q2 = G.quick(sc, Object.assign({}, ap.a, { area: 84 }), Object.assign({}, E, { cyRows: rows }));
+  check('청약: 면적(84㎡)을 말하면 60~85㎡만', Q2.card.tables[0].rows.every(x => x[3] === '60~85㎡'), Q2.card.tables[0].rows.map(x => x[3]));
+  const Q3 = G.quick(sc, Object.assign({}, ap.a, { csido: '부산광역시' }), Object.assign({}, E, { cyRows: [] }));
+  check('청약: 그 지역 공고가 0곳이면 그렇게 말하고 가까운 지역·다음 접수일', /공고가 없어요/.test(Q3.card.head) && Q3.card.nums.some(n => /서울 2곳/.test(n.v)) && Q3.card.nums.some(n => n.v === '12월 1일'), Q3.card);
 }
 /* 4 임대사업자 */
 r = card('rental_biz', { rtype: 'l8', regd: '2019-03-01', rkind: 'y', rstate: 'auto' });
@@ -242,7 +267,7 @@ check('첫 화면: 길잡이가 켜지면 단지 물어보기 칸과 통합(숨�
 const solve = read('solve/index.html');
 check('solve/ 화면: 꺼져 있으면 준비 중·검색 제외', /noindex/.test(solve) && /준비 중/.test(solve));
 check('solve/ OG·제목에 집예보', /<title>[^<]*집예보/.test(solve));
-check('금액은 기기에만: 서버로 보내는 건 못 알아들은 문장(gdMiss)뿐', (gjs.match(/action:\s*'gd\w+'/g) || []).every(x => /gdMiss/.test(x)) && /mask\(/.test(gjs));
+check('금액은 기기에만: 서버로 보내는 건 못 알아들은 문장(gdMiss)뿐', (gjs.match(/action:\s*'gd\w+'/g) || []).every(x => /gdMiss|gdFb/.test(x)) && !/action: 'gdFb'[^}]*(cash|income|price|dep)/.test(gjs) && /mask\(/.test(gjs));
 check('이어서 하기 상태는 기기(localStorage jdj_guide)', /jdj_guide/.test(gjs));
 for (const [p, k] of [['loan/index.html', 'loan'], ['buy/index.html', 'buy'], ['buy/report/index.html', 'report'], ['switch/index.html', 'switch'], ['switch/rent/index.html', 'rentsw'], ['tax/index.html', 'tax'], ['tax/transfer/index.html', 'transfer'], ['chungyak/index.html', 'chungyak'], ['jeonse/index.html', 'jeonse'], ['mine/index.html', 'mine'], ['villa/zone/index.html', 'zone'], ['mine/calendar/index.html', 'calendar']]) {
   const h = read(p); check(`결과 화면 끝 '이어서 하면 좋은 것': ${p}`, new RegExp(`data-gnext="${k}"`).test(h) && /guide-next\.js/.test(h));
@@ -273,8 +298,65 @@ check('운영자 화면 solve/admin/', fs.existsSync(path.join(ROOT, 'solve/admi
   SV.ctx.gdWeekLine(new Date());
   check('서버: 같은 주에는 다시 안 보냄', SV.mails.length === before + 1);
 }
+
+/* ---------- ⑥ 즉답(입력하자마자 첫 카드) ---------- */
+{
+  const CTX2 = Object.assign({}, CTX, { today: '2026-11-26' });
+  const IXq = { months: ['202610'], sgg: { '11710': { name: '송파구', sido: '서울특별시', s: Array(24).fill(5000).concat(Array(12).fill(6000)), c: Array(36).fill(10), r: { jr: 50.2 } } } };
+  const E2 = { L, T, H, CY, ADJ, RD, SALE, today: '2026-11-26', IX: IXq, cyNotices: NOTI };
+  const inst = (q, extra) => { const r = G.classify(q, DATA, CTX2); if (!r.top) return { r }; const sc = scOf(r.top.id); const ap = G.apply(sc, r.slots, {}); return Object.assign({ r, sc, a: ap.a, from: ap.from }, G.quick(sc, ap.a, Object.assign({}, E2, extra || {})) || {}); };
+  let x = inst('15억에 산 송파 집 29억 되면 언제 팔아야');
+  check('즉답: "15억에 산 송파 집 29억 되면 언제 팔아야" → 산 값·팔 값·지역 뽑음', x.a.acqp === 150000 && x.a.salep === 290000 && x.a.region && x.a.region.code === '11710', x.a);
+  check('즉답: 산 날이 없으면 보유·거주 2·5·10년 예시(세금 엔진 값) + 예시 표시', x.card && !x.exact && /예시/.test(x.card.ex) && x.card.nums.length === 3 && x.card.nums[2].v === G.wonW(T.calcCGT({ acqDate: '2016-11-26', acqPrice: 15e8, saleDate: '2026-11-26', salePrice: 29e8, expenses: 0, residMonths: 120, houses: 1, acqAdj: false, saleAdj: false }).total), x.card && x.card.nums);
+  x = inst('연봉 7천 신혼 대출 얼마');
+  check('즉답: "연봉 7천 신혼 대출 얼마" → 정책 대출 소득 조건 바로', x.sc.id === 'special_loan' && x.a.income === 7000 && x.a.newly === 'y' && x.card && /소득 조건/.test(JSON.stringify(x.card.nums)), x.card);
+  x = inst('청약 가점 59점 당첨될까', { cyRows: [['송파구', 'X', '202606', 59, 0, 'h', 50, 60, 70, '10', '1'], ['송파구', 'Y', '202607', 84, 1, 'h', 65, 68, 72, '20', '2']] });
+  check('즉답: "청약 가점 59점" → 공고별 판정 바로', x.exact && /진행·예정 민영 공고/.test(x.card.head), x.card && x.card.head);
+  x = inst('전세 만기 2월인데 재계약');
+  check('즉답: "전세 만기 2월" → 갱신 요구 기간 날짜(2026-08-01 ~ 2026-12-28)', x.card && /2026년 8월 1일 ~ 2026년 12월 28일/.test(x.card.head), x.card && x.card.head);
+  x = inst('3억 아파트 아들에게 증여하면');
+  check('즉답: 증여 — 시가·받는 분 뽑아 바로 증여세', x.exact && x.a.value === 30000 && x.a.rel === 'child' && x.card.nums[0].v === G.wonW(T.giftTax({ value: 3e8, debt: 0, rel: 'child', prior: 0, filed: true }).tax), x.card && x.card.nums);
+  x = inst('전세 3억 복비 얼마');
+  check('즉답: "전세 3억 복비" → 90만 원', x.exact && /90만/.test(x.card.head), x.card && x.card.head);
+  x = inst('공시가 15억 종부세 얼마');
+  check('즉답: 공시가 15억 → 1주택 예시 보유세', x.card && /1세대 1주택으로 가정/.test(x.card.ex), x.card);
+  x = inst('송파 아파트 대출 얼마까지');
+  check('즉답: 집값 없으면 구 실거래 중간값 예시(84㎡) · 담보 기준', x.card && /예시 집값: 송파구/.test(x.card.ex) && /담보/.test(x.card.head), x.card);
+  check('즉답: 예시 집값 = 평당가 6,000만 × 84 ÷ 3.3058', G.regionExample(E2, { code: '11710', name: '송파구' }).price === Math.round(6000 * 84 / 3.305785 / 100) * 100);
+  x = inst('보증금 2억 깡통전세 걱정');
+  check('즉답: 보증금만 있으면 보험에 필요한 공시가격 계산(2억 ÷ 126%)', x.card && x.card.nums[0].v === G.won(Math.ceil(20000 / 1.26)) + ' 이상', x.card && x.card.nums);
+  x = inst('집 세 채 매도 순서');
+  check('즉답: 다주택 규칙(법령) 먼저', x.card && /20%p/.test(JSON.stringify(x.card.nums)));
+  x = inst('6억 아파트 취득세 2주택');
+  check('즉답: 취득세 — 주택 수(2채) 뽑음', x.a.houses === '2' && x.exact, x.a);
+  const t0 = Date.now(); for (let i = 0; i < 50; i++) inst('15억에 산 송파 집 29억 되면 언제 팔아야'); 
+  const ms = (Date.now() - t0) / 50; console.log(`  즉답 계산 시간: 평균 ${ms.toFixed(1)}ms(분류+값 뽑기+계산)`);
+  check('즉답 계산은 문장 하나에 100ms 안(화면은 자료를 미리 불러 1초 안)', ms < 100, ms);
+  /* 사이트 전체 기능 찾기 */
+  const FT = JSON.parse(read('assets/guide/features.json'));
+  check('기능 색인 35개 이상 · 주소가 실제 화면', FT.items.length >= 35 && FT.items.every(f => fs.existsSync(path.join(ROOT, f.url.replace(/[?#].*$/, ''), 'index.html'))), FT.items.filter(f => !fs.existsSync(path.join(ROOT, f.url.replace(/[?#].*$/, ''), 'index.html'))).map(f => f.url));
+  const FQ = [['구별 집값 순위 보고 싶어요', 'rank'], ['지도로 아파트 보기', 'map'], ['오피스텔 수익률', 'offi'], ['꼬마빌딩 시세', 'comm'], ['모닝 브리핑 구독', 'brief'], ['지난주 집값 동향', 'weekly'], ['예측 정확도 어때요', 'track'], ['분양 일정 보고 싶어요', 'bunyang'], ['분양가 비싼지', 'cyprice'], ['관심단지 모아보기', 'watch'], ['전세사기 체크리스트', 'check'], ['상속하면 세금 비교', 'transfer'], ['빌라 대지지분', 'villa'], ['광고 문의', 'ad'], ['회원가입 어떻게', 'login'], ['용어 무슨 뜻', 'terms']];
+  let fo = 0; FQ.forEach(([q, id]) => { const f = G.findFeatures(q, FT, LEX); if (f[0] && f[0].id === id) fo++; else console.log(`    기능 빗나감 "${q}" → ${f[0] ? f[0].id : '없음'}`); });
+  console.log(`  기능 찾기: ${fo}/${FQ.length}`);
+  check('사이트 기능 찾기 15/16 이상', fo >= 15, fo);
+  check('기능 찾기: 관계없는 말은 없음', !G.findFeatures('오늘 점심 뭐 먹지', FT, LEX).length);
+  check('화면: 즉답 카드·예시 표시·내 조건으로 정확히 보기·만족도', /instHtml/.test(read('assets/guide.js')) && /예시로 먼저/.test(read('assets/guide.js')) && /내 조건으로 정확히 보기/.test(read('assets/guide.js')) && /gdFb/.test(read('assets/guide.js')));
+  check('화면: 미리 불러오기(엔진·자료·서울 단지 목록)', /function warm\(\)/.test(read('assets/guide.js')) && /requestIdleCallback/.test(read('assets/guide.js')));
+}
+/* 서버 만족도 */
+{
+  const SV = require('./gs-harness')({ now: '2026-11-30T07:10:00+09:00' });
+  check('서버: 꺼져 있으면 만족도 안 적음', SV.post({ action: 'gdFb', s: 'budget', v: 1, w: 'top', pv: 0 }).n === 0 && !SV.sheets['길잡이만족도']);
+  SV.post({ action: 'gdFb', s: 'budget', v: 1, w: 'top', pv: 1 }); SV.post({ action: 'gdFb', s: 'budget', v: -1, w: 'solve', pv: 1 }); SV.post({ action: 'gdFb', s: 'cy_where', v: 1, w: 'top', pv: 1 });
+  check('서버: 이상한 값은 거절', SV.post({ action: 'gdFb', s: 'x<y', v: 5, pv: 1 }).ok === false);
+  const fs2 = SV.ctx.gdFbSum(7);
+  check('서버: 시나리오별 👍·👎·비율', fs2.length === 2 && fs2[0].s === 'budget' && fs2[0].up === 1 && fs2[0].down === 1 && fs2[0].rate === 50, fs2);
+  SV.ctx.gdWeekLine(new Date());
+  check('서버: 주간 한 줄에 만족도', /만족도 👍2 👎1/.test((SV.mails[SV.mails.length - 1] || {}).body || ''), SV.mails[SV.mails.length - 1]);
+  check('운영자 화면: 만족도 표', /답 만족도/.test(read('solve/admin/index.html')));
+}
 const sw = read('sw.js');
-check('서비스 워커: guide 파일 저장 목록', /guide-core\.js/.test(sw) && /guide\.js/.test(sw) && /scenarios\.json/.test(sw));
+check('서비스 워커: guide 파일 저장 목록', /guide-core\.js/.test(sw) && /guide\.js/.test(sw) && /scenarios\.json/.test(sw) && /features\.json/.test(sw));
 const seed = JSON.parse(read('counsel/seed.json'));
 check('고민 상담 시드: 대표 고민 6개 질문이 있고 길잡이로 이어짐', PRI.every(id => seed.items.some(x => x.guide === id)), seed.items.map(x => x.guide));
 check('고민 상담 시드: guide 값이 모두 있는 시나리오', seed.items.filter(x => x.guide).every(x => SC.sc.some(s => s.id === x.guide)));

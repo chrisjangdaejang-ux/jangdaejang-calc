@@ -66,27 +66,55 @@
     }
     return out;
   }
-  /** 금액 앞뒤 말로 어떤 금액인지: 연소득·보증금·월세·현금·집값 */
+  /** 금액 앞뒤 말로 어떤 금액인지: 연소득·보증금·월세·현금·공시가격·산 값·팔 값·집값 */
   function moneyRole(raw, m) {
     const before = raw.slice(Math.max(0, m.i - 14), m.i).replace(/\s/g, ''), after = raw.slice(m.i + m.s.length, m.i + m.s.length + 8).replace(/\s/g, '');
     if (/(연봉|연소득|소득|월급|버는|벌어|수입)/.test(before) || /^(연봉|소득|벌)/.test(after)) return 'income';
-    if (/월세/.test(before) && /월세\S{0,3}$/.test(before)) return 'wrent';
-    if (/(보증금|전세금|전세|보증)/.test(before)) return 'dep';
-    if (/(현금|모은|가진|예산|자금|모아|저축|예금)/.test(before) || /^(있|모았|가지|정도있|모아)/.test(after)) return 'cash';
+    if (/월세\S{0,3}$/.test(before) && !/보증금\S{0,2}$/.test(before)) return 'wrent';
     if (/(공시)/.test(before)) return 'pub';
-    if (/(취득|샀|매수가|분양가)/.test(before) || /^(에샀|에산|주고샀)/.test(after)) return 'acqp';
+    if (/(취득가|샀|산값|매수가|분양가|분양받)/.test(before) || /^(에샀|에산|주고샀|주고산|에매수|에분양|에사서|에구입)/.test(after)) return 'acqp';
+    if (/^(되면|될때|에팔|팔면|에매도|면팔|이면팔|까지오르|으로오르|로오르)/.test(after) || /(팔면|매도가|팔값|팔때)\S{0,2}$/.test(before)) return 'salep';
+    if (/(보증금|전세금|전세|보증)/.test(before)) return 'dep';
+    if (/(현금|모은|가진|예산|자금|모아|저축|예금)/.test(before) || /^(있|모았|가지|정도있|모아|으로|로집|로아파트|가지고)/.test(after)) return 'cash';
     return 'price';
   }
-  /** 문장 → {money:{role:만원}, date, houses, kids, region:{code,name}, sido} — ctx.sgg: [{code, name, sido, short}] */
+  /* 재개발 단계 낱말 → 단계 번호(redev-core STAGES) */
+  const STAGE_W = [['관리처분', '8'], ['사업시행', '7'], ['조합설립', '5'], ['추진위', '4'], ['구역지정', '3'], ['정비구역', '3'], ['이주', '9'], ['착공', '10']];
+  /** 문장 → {money:{role:만원}, moneys:[{v, role}], date, endMonth, houses, kids, newly, own, rel, deal, area, myscore, stage, region:{code,name}, sido}
+      ctx.sgg: [{code, name, sido, short}] · ctx.today 'YYYY-MM-DD'(달만 쓴 날짜를 다가오는 달로) */
   function extract(text, ctx) {
-    const raw = String(text || '').replace(/\s+/g, ' ').trim(), flat = raw.replace(/\s/g, ''), out = { money: {} };
-    for (const m of moneys(raw)) { const r = moneyRole(raw, m); if (out.money[r] == null) out.money[r] = m.v; }
+    const raw = String(text || '').replace(/\s+/g, ' ').trim(), flat = raw.replace(/\s/g, ''), out = { money: {}, moneys: [] };
+    for (const m of moneys(raw)) { const r = moneyRole(raw, m); out.moneys.push({ v: m.v, role: r }); if (out.money[r] == null) out.money[r] = m.v; else if (r === 'price' && out.money.salep == null && out.money.acqp != null) out.money.salep = m.v; }
+    /* '15억 집이 29억 되면' 처럼 집값이 둘이면 앞은 산 값, 뒤는 팔 값 */
+    const pr = out.moneys.filter(x => x.role === 'price');
+    if (pr.length >= 2 && out.money.acqp == null && out.money.salep == null && /(팔|매도|되면|오르)/.test(flat)) { out.money.acqp = pr[0].v; out.money.salep = pr[1].v; delete out.money.price; }
     let d = /(20\d\d)\s*[.년\-/]\s*(\d{1,2})\s*[.월\-/]\s*(\d{1,2})\s*일?/.exec(raw);
     if (d) out.date = `${d[1]}-${String(d[2]).padStart(2, '0')}-${String(d[3]).padStart(2, '0')}`;
+    else {
+      const ym = /(20\d\d)\s*[.년\-/]\s*(\d{1,2})\s*월?(?!\s*\d)/.exec(raw), mo = /(내년|올해|다음\s*달)?\s*(\d{1,2})\s*월/.exec(raw);
+      const today = (ctx && ctx.today) || todayKst();
+      if (ym && +ym[2] >= 1 && +ym[2] <= 12) out.endMonth = `${ym[1]}-${String(ym[2]).padStart(2, '0')}`;
+      else if (mo && +mo[2] >= 1 && +mo[2] <= 12) {
+        let y = +today.slice(0, 4); const cm = +today.slice(5, 7), mm = +mo[2];
+        if (mo[1] === '내년') y++; else if (!mo[1] && mm < cm) y++;
+        out.endMonth = `${y}-${String(mm).padStart(2, '0')}`;
+      }
+    }
     const h = /(\d)\s*(채|주택)/.exec(raw) || (/(두|세|네)\s*채/.exec(raw) ? { 1: { 두: 2, 세: 3, 네: 4 }[/(두|세|네)\s*채/.exec(raw)[1]] } : null);
     if (h) out.houses = Math.min(4, +h[1]);
+    if (/무주택/.test(flat)) out.own = 'none'; else if (/(생애최초|첫집|생초|처음집)/.test(flat)) out.own = 'first'; else if (/(1주택|한채|집한채)/.test(flat)) out.own = 'one'; else if (out.houses >= 2) out.own = 'multi';
     const k = /(아이|자녀|애)\s*(\d)/.exec(raw); if (k) out.kids = +k[2];
     if (/신혼/.test(flat)) out.newly = 'y';
+    if (/(신생아|출산|아이낳|애낳)/.test(flat)) out.baby = 'y';
+    if (/맞벌이/.test(flat)) out.dual = 'y';
+    if (/(배우자|아내|남편|와이프|부인)/.test(flat)) out.rel = 'spouse'; else if (/(미성년|어린)/.test(flat)) out.rel = 'minor'; else if (/(아들|딸|자녀|자식|손주|손자|손녀)/.test(flat)) out.rel = 'child'; else if (/(부모님께|부모에게|어머니께|아버지께)/.test(flat)) out.rel = 'parent';
+    if (/월세/.test(flat) && !/전세/.test(flat)) out.deal = 'wolse'; else if (/전세/.test(flat)) out.deal = 'jeonse'; else if (/(매매|매수|매도|사고|살때|팔때|집값)/.test(flat)) out.deal = 'sale';
+    let ar = /(\d{2,3})\s*평/.exec(raw); if (ar && +ar[1] >= 8 && +ar[1] <= 120) out.area = Math.round(+ar[1] * 2.48);
+    ar = /(\d{2,3})\s*(㎡|m2|제곱|타입)/i.exec(raw); if (ar && +ar[1] >= 20 && +ar[1] <= 300) out.area = +ar[1];
+    const sc = /(가점|점수)\D{0,4}(\d{1,2})\s*점/.exec(raw) || (/청약/.test(flat) ? /(\d{1,2})\s*점/.exec(raw) : null);
+    if (sc) { const v = +sc[sc.length - 1]; if (v >= 0 && v <= 84) out.myscore = v; }
+    for (const [w, n] of STAGE_W) if (flat.indexOf(w) >= 0) { out.stage = n; break; }
+    if (/장기일반/.test(flat)) out.rtype = 'l'; else if (/단기/.test(flat) && /임대/.test(flat)) out.rtype = 's';
     const sgg = (ctx && ctx.sgg) || [];
     let best = null;
     for (const g of sgg) {
@@ -96,14 +124,53 @@
       for (const c of cand) {
         if (c.length < 2 || flat.indexOf(c) < 0) continue;
         /* 시·도 이름을 함께 썼으면 그 시·도를 먼저(예: '부산 중구') */
-        const sdHit = g.short && flat.indexOf(g.short) >= 0 ? 1 : 0, sc = c.length * 2 + sdHit * 3 + (c === nm.replace(/\s/g, '') ? 1 : 0);
-        if (!best || sc > best.sc) best = { sc, code: g.code, name: nm, sido: g.sido, short: g.short };
+        const sdHit = g.short && flat.indexOf(g.short) >= 0 ? 1 : 0, s2 = c.length * 2 + sdHit * 3 + (c === nm.replace(/\s/g, '') ? 1 : 0);
+        if (!best || s2 > best.sc) best = { sc: s2, code: g.code, name: nm, sido: g.sido, short: g.short };
       }
     }
     if (best) out.region = { code: best.code, name: best.name, sido: best.sido, short: best.short };
     const sd = ((ctx && ctx.sido) || []).find(s => flat.indexOf(s.short) >= 0 || flat.indexOf(String(s.name).replace(/\s/g, '')) >= 0);
-    if (sd) out.sido = sd.name;
+    if (sd) out.sido = sd.name; else if (best) out.sido = best.sido;
+    out.raw = flat;
     return out;
+  }
+
+  /** 뽑은 값 → 그 시나리오가 묻는 칸에 넣기. 반환 {a, from} (from 값 '적어 주신 문장') */
+  function apply(sc, sl, a0) {
+    const a = Object.assign({}, a0 || {}), from = {}, asks = sc.ask || [], has = k => asks.indexOf(k) >= 0, F = '적어 주신 문장';
+    const put = (k, v) => { if (v == null || v === '' || !has(k)) return false; a[k] = v; from[k] = F; return true; };
+    const M = sl.money || {};
+    put('income', M.income); put('wrent', M.wrent); put('pub', M.pub); put('acqp', M.acqp);
+    if (M.salep != null && !put('salep', M.salep)) put('price', M.salep);
+    if (M.cash != null && !put('cash', M.cash)) put('price', M.cash) || put('amt', M.cash);
+    if (M.dep != null && !put('dep', M.dep)) put('amt', M.dep) || put('cash', M.dep);
+    if (M.price != null) put('price', M.price) || put('salep', M.price) || put('value', M.price) || put('amt', M.price) || put('newprice', M.price) || put('pub', M.price) || put('dep', M.price) || put('cash', M.price);
+    if (sl.region) put('region', sl.region) || put('work', sl.region);
+    if (sl.sido) put('csido', sl.sido);
+    if (sl.date) ['acq', 'end', 'mdate', 'newd', 'regd'].some(k => put(k, sl.date));
+    if (sl.endMonth && has('end') && !a.end) { a.endMonth = sl.endMonth; from.endMonth = F; }
+    if (sl.myscore != null && sc.id === 'cy_where') { a.myscore = sl.myscore; from.myscore = F; }
+    put('rel', sl.rel); put('deal', sl.deal); put('stage', sl.stage);
+    put('own', sl.own); put('kids', sl.kids != null ? String(Math.min(3, sl.kids)) : null); put('newly', sl.newly); put('baby', sl.baby); put('dual', sl.dual);
+    if (sl.area) put('over85', sl.area > 85 ? 'y' : 'n');
+    if (sl.houses && has('houses')) put('houses', sl.houses >= 3 ? '3' : sl.houses === 2 ? (/일시적/.test(sl.raw || '') ? '2t' : '2') : '1');
+    if (sl.rtype && has('rtype')) { if (sl.rtype === 's') put('rtype', 's4'); else if (a.regd) put('rtype', a.regd >= '2020-08-18' ? 'l10' : 'l8'); }
+    if (sl.area) { a.area = sl.area; }
+    a._raw = sl.raw || ''; if (sl.houses) a._houses = sl.houses;
+    return { a, from };
+  }
+
+  /* ---------- 사이트 전체 기능 찾기(assets/guide/features.json) ---------- */
+  /** 문장 → 맞는 기능 최대 3개 [{id, t, d, url, score}] (점수 3 이상) */
+  function findFeatures(text, F, lex) {
+    const N = norm(text, lex), list = [];
+    for (const f of (F && F.items) || []) {
+      let s = 0; const hit = [];
+      for (const [w, wt] of f.kw) { const k = String(w).toLowerCase().replace(/\s/g, ''); if (k && N.hay.indexOf(k) >= 0) { s += wt; hit.push(k); } }
+      for (const x of hit) for (const y of hit) if (x !== y && y.indexOf(x) >= 0) { const w = f.kw.find(z => String(z[0]).toLowerCase() === x); if (w) { s -= w[1]; break; } }
+      if (s >= 3) list.push(Object.assign({ score: s }, f));
+    }
+    return list.sort((a, b) => b.score - a.score).slice(0, 3);
   }
 
   /* ---------- 고민 종류 고르기 ---------- */
@@ -269,29 +336,78 @@
   };
 
   /* ③ 청약 — 내 가점으로 어디에 */
+  /* 청약: chungyak/ 화면과 같은 계산(chungyak/cy-engine.js — noticeSido·bandOf·lottery·cutOf·diag, 상태는 assets/sale-status.js)을 그대로 씀.
+     예상 커트라인(lo~hi)은 데이터 갱신 때 미리 계산된 notices.json 의 cut 값이고, 여기서는 새로 추정하지 않아요. */
+  const CY_BAND = ['60㎡ 이하', '60~85㎡', '85㎡ 초과'], CY_G = { hi: '가능성 높음', mid: '경합', lo: '낮음' };
+  const d8k = v => { const t = String(v || ''); return /^\d{8}$/.test(t) ? `${+t.slice(4, 6)}월 ${+t.slice(6, 8)}일` : ''; };
+  const ymK = v => { const t = String(v || ''); return /^\d{6}/.test(t) ? `${t.slice(0, 4)}.${t.slice(4, 6)}` : ''; };
+  /** my 가점 · opt {sido, band(0·1·2), gu} → {list:[{n, o, d}], cnt, nLive, nEval, lot, pend, others:[{sido, n}], next} */
+  function cyPlan(my, E, opt) {
+    const C0 = E.CY, SALE = E.SALE, t = E.today.replace(/-/g, ''), rows = E.cyNotices || [];
+    const live = rows.filter(n => n.k === '민영' && (SALE ? SALE.isLive(n, t) : true));
+    const inSd = opt.sido ? live.filter(n => C0.noticeSido(n) === C0.sidoNorm(opt.sido)) : live;
+    const list = [], best = {}, cnt = { hi: 0, mid: 0, lo: 0 }; let lot = 0, pend = 0;
+    inSd.forEach(n => {
+      const sd = C0.noticeSido(n), bands = {};
+      (n.ty || []).filter(x => x[1]).forEach(x => { const b = C0.bandOf(x[1]); bands[b] = bands[b] || { band: b, gen: 0 }; bands[b].gen += +x[2] || 0; });
+      Object.keys(bands).map(k => bands[k]).filter(o => opt.band == null || o.band === opt.band).forEach(o => {
+        const lt = C0.lottery(n.f, o.band, sd); if (lt.noGajum) { lot++; return; }
+        const p = C0.cutOf(n, o.band); if (!p || !p.ok) { pend++; return; }
+        const d = C0.diag(my, p); list.push({ n, o, p, d, lt });
+        const r = { hi: 0, mid: 1, lo: 2 }; if (best[n.no] == null || r[d.g] < r[best[n.no]]) best[n.no] = d.g;
+      });
+    });
+    Object.keys(best).forEach(k => cnt[best[k]]++);
+    const ord = { hi: 0, mid: 1, lo: 2 };
+    list.sort((x, y) => ord[x.d.g] - ord[y.d.g] || x.d.need - y.d.need || String(x.n.rc && x.n.rc[0]).localeCompare(String(y.n.rc && y.n.rc[0])));
+    const by = {}; live.forEach(n => { const s = C0.noticeSido(n); by[s] = (by[s] || 0) + 1; });
+    const others = Object.keys(by).filter(s => !opt.sido || s !== C0.sidoNorm(opt.sido)).map(s => ({ sido: s, n: by[s] })).sort((x, y) => (C0.CAPITAL.indexOf(y.sido) >= 0) - (C0.CAPITAL.indexOf(x.sido) >= 0) || y.n - x.n).slice(0, 3);
+    const nx = live.map(n => (n.rc && n.rc[0]) || (n.r1 && n.r1[0]) || '').filter(v => v >= t).sort()[0] || '';
+    return { list, cnt, nLive: inSd.length, nEval: Object.keys(best).length, lot, pend, others, next: nx };
+  }
+  /** 최근 끝난 청약의 실제 당첨 가점(청약홈) — 같은 구 먼저, 최근 순 */
+  function cyHist(my, E, opt) {
+    const from = addM(E.today, -12).replace(/-/g, '').slice(0, 6);
+    return (E.cyRows || []).filter(r => r[5] === 'h' && String(r[2]) >= from && +r[6] > 0 && (opt.band == null || +r[4] === opt.band))
+      .sort((x, y) => ((opt.gu && y[0] === opt.gu) - (opt.gu && x[0] === opt.gu)) || String(y[2]).localeCompare(String(x[2])) || (+y[3]) - (+x[3])).slice(0, 10)
+      .map(r => [String(r[1]), `${r[0]} · ${ymK(r[2])}`, `${Math.round(+r[3])}㎡`, `${+r[6]}점`, `${Math.round(+r[7] * 10) / 10}점`, my >= +r[6] ? `+${my - +r[6]}점(최저 이상)` : `${my - +r[6]}점`]);
+  }
+  function cyCard(my, a, E, sub) {
+    const sido = a.csido || '', band = a.area ? E.CY.bandOf(a.area) : null, gu = a.region && a.region.name || '';
+    const P = cyPlan(my, E, { sido, band }), sdT = sido || '전국', bT = band != null ? ` ${CY_BAND[band]}` : '';
+    const tables = [];
+    if (P.list.length) tables.push({ title: `${sdT}${bT} 진행·예정 민영 공고 — 내 가점 ${my}점 판정`, note: '예상 커트라인은 같은 시·도 과거 당첨 결과로 미리 계산한 범위예요(추정·참고). 단지 이름을 누르면 청약홈 공고가 열려요.',
+      head: ['단지', '지역', '청약 일정', '면적대', '예상 커트라인', '판정', '근거'],
+      rows: P.list.slice(0, 20).map(({ n, o, p, d }) => [{ t: n.n, href: n.u || '' }, `${n.sd ? String(n.sd).replace(/(특별시|광역시|특별자치시|특별자치도|도)$/, '') : ''} ${n.g || ''}`.trim(),
+        n.rc && n.rc[0] ? `접수 ${d8k(n.rc[0])}${n.pw ? ` · 발표 ${d8k(n.pw)}` : ''}` : (n.pb ? `공고 ${d8k(n.pb)}` : ''), CY_BAND[o.band], p.lo === p.hi ? `${p.lo}점` : `${p.lo}~${p.hi}점`,
+        { t: CY_G[d.g] + (d.g === 'hi' ? '' : ` (${d.need}점 부족${d.g === 'mid' ? ' — 최고치 기준' : ''})`), g: d.g }, `${p.scope} 과거 ${p.nCx}개 단지·${p.nRows}개 주택형(${ymK(p.from)}~${ymK(p.to)})`]) });
+    const H = cyHist(my, E, { band, gu });
+    if (H.length) tables.push({ title: `최근 청약이 끝난 단지의 실제 당첨 가점(${sdT}${bT} · 해당지역 1순위)`, note: '청약홈에 공개된 결과예요. 그때의 경쟁 결과라 앞으로의 당첨을 약속하지 않아요.', head: ['단지', '지역·공고', '면적', '최저', '평균', '내 가점과 차이'], rows: H });
+    let head;
+    if (P.nEval) head = `${sdT}${bT} 진행·예정 민영 공고 ${P.nEval}곳 중 내 가점 ${my}점으로 당첨 가능성 높음 ${P.cnt.hi}곳 · 경합 ${P.cnt.mid}곳 · 낮음 ${P.cnt.lo}곳이에요`;
+    else if (P.nLive) head = `${sdT}${bT} 진행·예정 민영 공고 ${P.nLive}곳은 예상 커트라인을 낼 수 없어요(추첨제 물량·과거 자료 부족)`;
+    else head = `지금 ${sdT}${bT}에는 진행·예정인 민영주택 공고가 없어요(청약홈 기준)`;
+    const nums = [{ k: '내 청약 가점', v: `${my}점 / 84점`, s: sub || '적어 주신 점수' }];
+    if (!P.nLive && P.others.length) nums.push({ k: '공고가 있는 가까운 지역', v: P.others.map(o => `${o.sido.replace(/(특별시|광역시|특별자치시|특별자치도|도)$/, '')} ${o.n}곳`).join(' · '), s: '진행·예정 민영 공고 수' });
+    if (P.next && !P.nLive) nums.push({ k: '다음 청약 접수', v: d8k(P.next), s: '전국 진행·예정 공고 중 가장 가까운 날' });
+    if (P.lot || P.pend) nums.push({ k: '가점 판정에서 뺀 것', v: `추첨제만 ${P.lot}개 · 자료 준비 ${P.pend}개`, s: '면적대 기준' });
+    /* 보조: 지금까지의 통계 요약 */
+    const rows = (E.cyRows || []).filter(r => r[5] === 'h' && String(r[2]) >= addM(E.today, -12).replace(/-/g, '').slice(0, 6) && +r[6] > 0 && (band == null || +r[4] === band));
+    if (rows.length) nums.push({ k: `최근 1년 ${sdT} 당첨 결과와 비교(보조)`, v: `${rows.length.toLocaleString()}개 중 ${rows.filter(r => my >= +r[6]).length.toLocaleString()}개`, s: '내 가점이 최저 당첨 가점 이상이었던 주택형' });
+    const dg = E.CY.DEPOSIT[E.CY.depGroup(sido || '서울특별시')];
+    nums.push({ k: '민영 1순위 예치금(85㎡ 이하)', v: won(dg[0]), s: sido || '서울 기준' });
+    return { head, nums, tables, warn: ['예상 커트라인은 과거 당첨 결과로 만든 추정·참고 범위예요. 실제 당첨을 약속하지 않아요.', '가점이 모자라도 85㎡ 초과·추첨제 물량과 특별공급(신혼·생애최초·신생아 등)은 가점이 아니라 자격·추첨으로 뽑아요.'],
+      note: `기준일 ${ko(E.today)} · 청약홈 공고·당첨 가점 · ${sido ? sido : '지역 미선택(전국)'}${band != null ? ' · ' + CY_BAND[band] : ''}`, src: ['cy', 'cy_rule'] };
+  }
+  /* ③ 청약 — 내 가점으로 어디에 */
   S.cyWhere = (a, E) => {
-    const miss = need(a, ['birth', 'married', 'homeown', 'deps', 'accd', 'csido']); if (miss.length) return { need: miss };
+    if (a.myscore != null && a.myscore !== '') return cyCard(+a.myscore, a, E, '적어 주신 점수');
+    const miss = need(a, ['birth', 'married', 'homeown', 'deps', 'accd']); if (miss.length) return { need: miss };
     const CY = E.CY.CY, A = { own: a.homeown === 'y', birth: a.birth, married: a.married === 'y', marDate: a.marDate || '', deps: +a.deps || 0, accDate: a.accd, noAcc: false };
-    const t = CY.total(A, E.today), my = t.sum;
-    const rows = (E.cyRows || []).filter(r => r[5] === 'h' && String(r[2]) >= addM(E.today, -12).replace(/-/g, '').slice(0, 6) && +r[6] > 0);
-    const reach = rows.filter(r => my >= +r[6]).length, avgOk = rows.filter(r => my >= +r[7]).length;
-    const by = [0, 1, 2].map(b => { const rs = rows.filter(r => +r[4] === b); return [['60㎡ 이하', '60~85㎡', '85㎡ 초과'][b], rs.length, rs.filter(r => my >= +r[6]).length]; }).filter(x => x[1] > 0);
-    const dg = E.CY.DEPOSIT[E.CY.depGroup(a.csido)];
-    const nums = [
-      { k: '내 청약 가점', v: `${my}점 / 84점`, s: `무주택 ${t.h.pts}점 · 부양가족 ${t.d.pts}점 · 통장 가입 ${t.c.pts}점` },
-      { k: `최근 1년 ${a.csido} 당첨 가점과 비교`, v: rows.length ? `${rows.length.toLocaleString()}개 주택형 중 ${reach.toLocaleString()}개` : '자료 없음', s: rows.length ? `내 가점이 그 주택형의 최저 당첨 가점 이상이었던 곳(평균 가점 이상은 ${avgOk.toLocaleString()}개) · 해당지역 1순위 기준` : '그 지역 최근 1년 당첨 가점 자료가 아직 없어요' },
-      { k: '민영주택 1순위 예치금(85㎡ 이하)', v: won(dg[0]), s: `102㎡ 이하 ${won(dg[1])} · 135㎡ 이하 ${won(dg[2])} · 모든 면적 ${won(dg[3])}` }
-    ];
-    return {
-      head: rows.length ? `내 가점 ${my}점이면 최근 1년 ${a.csido} 주택형 ${rows.length.toLocaleString()}개 중 ${reach.toLocaleString()}개에서 최저 당첨 가점을 넘었어요` : `내 청약 가점은 ${my}점이에요`,
-      nums, table: by.length ? { head: ['면적', '주택형 수', '내 가점이 최저 이상'], rows: by.map(x => [x[0], x[1].toLocaleString(), x[2].toLocaleString()]) } : null,
-      warn: ['가점이 모자라도 85㎡ 초과·추첨제 물량과 특별공급(신혼·생애최초·신생아 등)은 가점이 아니라 자격·추첨으로 뽑아요. 자격을 먼저 확인해 보세요.',
-        '과거 당첨 가점은 그때의 경쟁 결과예요. 앞으로의 당첨을 약속하지 않아요.', t.h.why],
-      note: `기준일 ${ko(E.today)} · 청약홈 당첨 가점 공개 자료`,
-      src: ['cy_rule', 'cy']
-    };
+    const t = CY.total(A, E.today);
+    const c = cyCard(t.sum, a, E, `무주택 ${t.h.pts}점 · 부양가족 ${t.d.pts}점 · 통장 가입 ${t.c.pts}점`);
+    c.warn.push(t.h.why); return c;
   };
-
   /* ④ 등록 임대사업자 */
   const RT = { s4: { t: '단기민간임대', y: 4, ok: true }, l8: { t: '장기일반민간임대', y: 8, ok: true }, l10: { t: '장기일반민간임대', y: 10, ok: true }, s6: { t: '단기민간임대(6년)', y: 6, ok: false } };
   S.rentalBiz = (a, E) => {
@@ -658,15 +774,128 @@
       note: `새 집 ${won(+a.newprice)} · 연 소득 ${won(+a.income)}`, src: ['loan', 'own1', 'tmp26'] };
   };
 
+  /* ---------- 즉답(입력하자마자 첫 카드) ----------
+     1) 문장·기억 값만으로 정확히 계산되면 그 카드(exact)
+     2) 값이 모자라면 공개 자료·법령으로 먼저 보여 줄 수 있는 카드(ex: '예시' 또는 '일부' 표시) + 더 필요한 칸(need)
+     예시 값은 공개 실거래(구 아파트 평당가 중간값)·법령 숫자에서만 만들고, 무엇을 가정했는지 ex 글자에 적어요. */
+  const PY_M2 = 3.305785;
+  /** 구 아파트 전용 84㎡ 예시 가격(만원): index.json 구 평당가(3.3㎡, 최근 실거래 중간값) × 84 ÷ 3.3058 */
+  function regionExample(E, rg) {
+    const g = rg && E.IX && E.IX.sgg && E.IX.sgg[rg.code]; if (!g || !Array.isArray(g.s) || !g.s.length) return null;
+    const ppy = g.s[g.s.length - 1]; if (!(ppy > 0)) return null;
+    const mo = E.IX.months ? E.IX.months[E.IX.months.length - 1] : '';
+    return { price: Math.round(ppy * 84 / PY_M2 / 100) * 100, ppy, at: mo, txt: `${rg.name} 아파트 3.3㎡당 실거래 중간값 ${won(ppy)}${mo ? `(${mo.slice(0, 4)}년 ${+mo.slice(4)}월)` : ''} × 전용 84㎡` };
+  }
+  const Q = {};
+  Q.sellWhen = (a, E) => {
+    if (!(a.acqp > 0 && a.salep > 0)) return null;
+    const T = E.T, today = E.today;
+    const rows = [2, 5, 10].map(y => { const r = T.calcCGT({ acqDate: addY(today, -y), acqPrice: a.acqp * 1e4, saleDate: today, salePrice: a.salep * 1e4, expenses: 0, residMonths: y * 12, houses: 1, acqAdj: false, saleAdj: false }); return { y, r }; });
+    return { ex: '산 날을 모르셔서, 1세대 1주택으로 보유·거주 2·5·10년을 가정한 예시예요', need: ['acq'],
+      head: `${won(a.acqp)}에 산 집을 ${won(a.salep)}에 팔면, 1주택 양도세는 보유·거주 기간에 따라 ${wonW(rows[2].r.total)} ~ ${wonW(rows[0].r.total)}예요`,
+      nums: rows.map(x => ({ k: `보유·거주 ${x.y}년이면`, v: wonW(x.r.total), s: `장기보유특별공제 ${Math.round((x.r.ltdRate || 0) * 100)}%${x.r.exempt === 'partial' ? ' · 12억 원 넘는 부분만 과세' : x.r.exempt === 'full' ? ' · 비과세' : ''}` })),
+      warn: ['산 날을 넣으면 세금이 줄어드는 정확한 날짜까지 계산해 드려요.'], src: ['cgt_law', 'cgt_easy'] };
+  };
+  Q.transferTax = Q.sellWhen;
+  function priceOrExample(a, E) {
+    if (a.price > 0) return { price: +a.price, ex: '' };
+    const x = regionExample(E, a.region); return x ? { price: x.price, ex: `예시 집값: ${x.txt}` } : null;
+  }
+  Q.loanLimit = (a, E) => {
+    const P = priceOrExample(a, E); if (!P) return null;
+    const own = a.own === 'first' ? 'first' : a.own || 'none', inc = a.income > 0 ? +a.income : 1e7;
+    const r = E.L.limit({ price: P.price, code: a.region && a.region.code, g: a.region && a.region.code ? undefined : E.L.ANY_GROUP, own, income: inc, debt: +a.debt || 0, rate: 4 });
+    const noInc = !(a.income > 0);
+    return { ex: [P.ex, noInc ? '소득 기준(DSR)은 연 소득을 넣어야 계산돼요 — 지금은 담보·가격대 기준 최대예요' : '', own === 'none' && !a.own ? '무주택으로 가정' : ''].filter(Boolean).join(' · '), need: [noInc ? 'income' : '', a.price > 0 ? '' : 'price'].filter(Boolean),
+      head: `${won(P.price)} 집이면 ${noInc ? '담보 기준으로 ' : ''}최대 ${won(Math.floor(r.L))}까지 빌릴 수 있어요`,
+      nums: [{ k: noInc ? '담보·가격대 기준 최대' : '최대 대출', v: won(Math.floor(r.L)), s: `담보 비율 ${pct(r.ltv)} · ${GNAME[r.g]}` }, { k: '필요한 내 돈(집값 − 대출)', v: won(Math.ceil(r.cashNeed)), s: '취득세·중개보수는 따로예요' }, { k: '매달 갚을 돈', v: won(Math.round(r.pay)), s: `${r.term}년 · 금리 연 4%(가정)` }],
+      warn: ['연 소득을 넣으면 소득 기준(DSR)까지 따져 정확한 한도를 알려 드려요.'], src: ['fsc_dsr', 'loan'] };
+  };
+  Q.budget = (a, E) => {
+    if (!(a.cash > 0)) { const P = priceOrExample(a, E); return P ? Q.loanLimit(a, E) : null; }
+    const noInc = !(a.income > 0), B = budgetCalc(Object.assign({}, a, { own: a.own || 'none', income: noInc ? 1e7 : a.income }), E, +a.cash);
+    if (!B.P) return null;
+    return { ex: [noInc ? '연 소득을 넣기 전이라 소득 기준(DSR)을 빼고 계산한 최대예요' : '', a.region ? '' : '지역을 고르기 전이라 수도권 비규제지역 기준이에요', a.own ? '' : '무주택으로 가정'].filter(Boolean).join(' · '), need: [noInc ? 'income' : '', a.region ? '' : 'region'].filter(Boolean),
+      head: `가진 돈 ${won(+a.cash)}이면 ${noInc ? '대출 규칙상 ' : ''}최대 ${won(B.P)}짜리 집까지 볼 수 있어요`,
+      nums: [{ k: '최대 집값', v: won(B.P), s: '가진 돈 + 대출 − 취득세·중개보수·기타 비용' }, { k: '그때 대출', v: won(Math.floor(B.n.loan.L)), s: `담보 비율 ${pct(B.c.ltv)} · ${GNAME[B.g]}` }],
+      warn: ['연 소득을 넣으면 매달 갚을 수 있는 범위(DSR)까지 따져 다시 계산해 드려요.'], src: ['fsc_dsr', 'loan'] };
+  };
+  Q.buyWhen = (a, E) => {
+    const base = Q.budget(a, E) || null, ref = [];
+    const g = a.region && E.IX && E.IX.sgg && E.IX.sgg[a.region.code];
+    if (g && Array.isArray(g.s) && g.s.length >= 13) { const s0 = g.s, last = s0[s0.length - 1], y1 = s0[s0.length - 13]; if (y1 > 0) ref.push({ k: `${a.region.name} 아파트 평당가 1년 변화`, v: (last >= y1 ? '+' : '') + pct(last / y1 - 1, 1), s: `3.3㎡당 ${won(y1)} → ${won(last)}(실거래 중간값)` }); if (g.r && g.r.jr) ref.push({ k: '전세가율', v: `${g.r.jr}%`, s: '구 전체 매매 대비 전세' }); }
+    if (a.facts && a.facts.price) ref.push({ k: `${a.facts.apt} ${a.facts.band} 최근 시세`, v: won(a.facts.price), s: '국토교통부 실거래 기준' });
+    if (a.facts && a.facts.fv != null) ref.push({ k: '미래가치 점수(참고)', v: `${a.facts.fv}점`, s: `${a.facts.fvBase} 중 순위${a.facts.track ? ` · 과거 성적 ${a.facts.track.n}번 중 ${a.facts.track.hit}번 맞음` : ''}` });
+    if (!base && !ref.length) return null;
+    const ex = regionExample(E, a.region);
+    return Object.assign({ head: ref.length ? `${a.region ? a.region.name : a.facts.apt} 최근 흐름부터 보여 드릴게요` : base.head, nums: [], warn: ['언제가 바닥인지는 아무도 확정할 수 없어요. 지난 실거래 흐름이고, 앞으로의 가격을 약속하지 않아요.'], src: ['molit_rt', 'loan'], need: ['cash', 'income'] },
+      base ? { head: base.head, nums: base.nums, ex: base.ex, need: base.need } : (ex ? { nums: [{ k: '예시: 전용 84㎡', v: won(ex.price), s: ex.txt }], ex: '예시 집값은 공개 실거래 중간값으로 만든 값이에요' } : {}), { ref });
+  };
+  Q.specialLoan = (a, E) => {
+    if (!(a.income > 0)) return null;
+    const P = priceOrExample(a, E), list = E.L.policyLoans({ price: P ? P.price : 1, g: groupOf(E, a.region && a.region.code), own: a.own === 'first' ? 'first' : (a.own || 'none'), income: +a.income, kids: +a.kids || 0, newly: a.newly === 'y', baby: a.baby === 'y', dual: a.dual === 'y', small: true });
+    return { ex: P && P.ex ? P.ex : '집값을 넣기 전이라 소득 조건만 먼저 봤어요', need: ['price', 'own'],
+      head: `연 소득 ${won(+a.income)}${a.newly === 'y' ? ' 신혼' : ''}이면 소득 조건이 맞는 정책 대출은 ${list.filter(x => x.conds.some(c => /소득/.test(c.t) && c.ok)).map(x => x.name).join(' · ') || '없어요'}`,
+      nums: list.map(x => { const c = x.conds.find(c => /소득/.test(c.t)); return { k: x.name, v: c && c.ok ? '소득 조건 맞음' : '소득 조건 안 맞음', s: c ? c.t : '' }; }),
+      warn: ['집값·주택 수·전용면적·순자산 조건까지 넣으면 예상 한도를 계산해 드려요.'], src: ['nhuf', 'hf'] };
+  };
+  Q.jeonseRenew = (a, E) => {
+    if (!a.endMonth) return null;
+    const first = a.endMonth + '-01', last = isoOf(Date.UTC(+a.endMonth.slice(0, 4), +a.endMonth.slice(5, 7), 0));
+    const from = addM(first, -6), to = addM(last, -2), t = E.today;
+    return { ex: `만기 날짜를 모르셔서 ${+a.endMonth.slice(0, 4)}년 ${+a.endMonth.slice(5)}월 1일~말일 만기로 계산했어요`, need: ['end'],
+      head: `${+a.endMonth.slice(5)}월 만기면 계약갱신은 ${ko(from)} ~ ${ko(to)} 사이에 요구해요`,
+      nums: [{ k: '요구할 수 있는 기간', v: `${ko(from)} ~ ${ko(to)}`, s: t < from ? `${diffD(t, from)}일 뒤부터` : t <= to ? '지금 요구할 수 있어요' : '기간이 지났어요' }, a.dep > 0 ? { k: '올릴 수 있는 최대', v: won(Math.floor(a.dep * 0.05)), s: '보증금의 5%' } : { k: '올릴 수 있는 최대', v: '보증금의 5%', s: '주택임대차보호법 제7조' }],
+      warn: ['만기일을 넣으면 정확한 마감일과 알림까지 맞춰 드려요.'], src: ['renew', 'lh7'] };
+  };
+  Q.giftWhen = (a, E) => (a.value > 0 && !a.rel) ? Object.assign(S.giftWhen(Object.assign({}, a, { rel: 'child' }), E), { ex: '받는 분을 모르셔서 성년 자녀 예시로 계산했어요', need: ['rel'] }) : null;
+  Q.acqTax = (a, E) => (a.price > 0 && !a.houses) ? Object.assign(S.acqTax(Object.assign({}, a, { houses: '1' }), E), { ex: '주택 수를 모르셔서 1주택 예시로 계산했어요', need: ['houses'] }) : null;
+  Q.propTax = (a, E) => (a.pub > 0 && !a.one) ? Object.assign(S.propTax(Object.assign({}, a, { one: 'y' }), E), { ex: '1세대 1주택으로 가정한 예시예요', need: ['one'] }) : null;
+  Q.brokerFee = (a, E) => {
+    if (!(a.amt > 0) || a.deal) return null;
+    const s = brokerFee('sale', +a.amt), l = brokerFee('lease', +a.amt);
+    return { ex: '매매인지 전세인지 몰라서 둘 다 보여 드려요', need: ['deal'], head: `${won(+a.amt)} 거래면 중개보수 상한은 매매 ${won(s.fee)} · 전세 ${won(l.fee)}예요(부가세 별도)`,
+      nums: [{ k: '매매', v: won(s.fee), s: `상한 ${pct(s.rate, 1)}${s.cap ? ` · 한도 ${won(s.cap)}` : ''}` }, { k: '전세', v: won(l.fee), s: `상한 ${pct(l.rate, 1)}${l.cap ? ` · 한도 ${won(l.cap)}` : ''}` }], warn: ['상한 요율 안에서 중개사와 협의해 정해요.'], src: ['broker20', 'brokerSeoul'] };
+  };
+  Q.depositSafe = (a, E) => {
+    if (!(a.dep > 0)) return null;
+    const need = Math.ceil(+a.dep / (E.H.PRICE_PUB * E.H.RATIO));
+    return { ex: '공시가격·시세를 넣기 전이라 기준만 먼저 계산했어요', need: ['htype', 'pub'], head: `보증금 ${won(+a.dep)}이면 보증보험 가입에 공시가격이 ${won(need)} 이상이어야 해요(빌라·단독 기준)`,
+      nums: [{ k: '필요한 공시가격(빌라·단독)', v: `${won(need)} 이상`, s: `보증금 ÷ (공시가격 × ${Math.round(E.H.PRICE_PUB * 100)}% × ${Math.round(E.H.RATIO * 100)}%) — 선순위 채권이 없을 때` }, { k: '보증금 한도', v: `수도권 ${won(E.H.CAP.metro)} · 그 밖 ${won(E.H.CAP.other)}`, s: '주택도시보증공사 기준' }],
+      warn: ['등기부등본의 근저당(선순위 채권)이 있으면 그만큼 더 높아야 해요.'], src: ['hug'] };
+  };
+  Q.contractCheck = (a, E) => {
+    if (!(a.dep > 0) || a.szone) return null;
+    return { ex: '지역을 모르셔서 네 지역 기준을 모두 보여 드려요', need: ['szone'], head: `보증금 ${won(+a.dep)}이 최우선변제를 받는 지역: ${Object.keys(SMALL).filter(k => a.dep <= SMALL[k][0]).map(k => SMALL[k][2].split('(')[0].split('·')[0]).join(', ') || '없어요'}`,
+      nums: Object.keys(SMALL).map(k => ({ k: SMALL[k][2], v: a.dep <= SMALL[k][0] ? `대상 · ${won(SMALL[k][1])}까지` : '대상 아님', s: `보증금 ${won(SMALL[k][0])} 이하` })), warn: ['전입신고와 확정일자는 잔금 날 같은 날 하세요.'], src: ['lhd11', 'lh3'] };
+  };
+  Q.multiOrder = (a, E) => (a._houses >= 2 || /다주택|여러채/.test(a._raw || '')) ? { ex: '집별 취득일·가격을 넣기 전이라 규칙만 먼저 보여 드려요', need: ['mlist'],
+    head: '조정대상지역 집을 다주택 상태에서 팔면 양도세가 무거워져요 — 파는 순서가 세금을 바꿔요',
+    nums: [{ k: '2주택 중과', v: '기본세율 + 20%p', s: '조정대상지역 주택 · 장기보유특별공제 없음' }, { k: '3주택 이상 중과', v: '기본세율 + 30%p', s: '2022.5.10~2026.5.9 한시 배제는 끝났어요' }, { k: '마지막 한 채', v: '1세대 1주택 비과세 가능', s: '보유·거주 2년 · 12억 원 넘는 부분만 과세' }],
+    warn: ['집마다 취득일·산 값·지금 시세를 넣으면 순서별 세금 비교표를 만들어 드려요.'], src: ['cgt104', 'cgt_law'] } : null;
+
+  /** 금액 뒤 조사 다듬기('3억 원로' → '3억 원으로', '원예요' → '원이에요') — 카드 글자 전체 */
+  const JOSA = s0 => String(s0).replace(/원예요/g, '원이에요').replace(/원로(?=[\s,.)]|$)/g, '원으로').replace(/원가 /g, '원이 ').replace(/원는 /g, '원은 ').replace(/원를 /g, '원을 ');
+  function polish(c) { if (!c || typeof c !== 'object') return c; ['head', 'ex', 'note'].forEach(k => { if (typeof c[k] === 'string') c[k] = JOSA(c[k]); }); ['nums', 'ref'].forEach(k => (c[k] || []).forEach(n => { n.v = JOSA(n.v); if (n.s) n.s = JOSA(n.s); })); if (c.warn) c.warn = c.warn.map(JOSA); return c; }
+  /** 즉답 카드: {card, exact} · 못 만들면 null */
+  function quick(sc, a, E) {
+    E = Object.assign({ today: todayKst() }, E || {});
+    const r = solve(sc, a, E);
+    if (r && !r.need && !r.err) return { card: polish(r), exact: true };
+    const f = Q[sc.solve];
+    if (!f) return r && r.need ? { need: r.need } : null;
+    try { const c = f(a || {}, E); if (c) { c.id = sc.id; c.src = c.src || sc.src; return { card: polish(c), exact: false, need: c.need || (r && r.need) || [] }; } } catch (e) {}
+    return r && r.need ? { need: r.need } : null;
+  }
   /** 해법 카드 계산: id → 카드 또는 {need:[칸]} · E 에 엔진·자료가 없으면 {err} */
   function solve(sc, a, E) {
     const f = S[sc.solve]; if (!f) return { err: 'nosolver' };
     E = Object.assign({ today: todayKst() }, E || {});
-    try { const r = f(a || {}, E); if (r && !r.need) { r.id = sc.id; r.src = r.src || sc.src || []; } return r; }
+    try { const r = f(a || {}, E); if (r && !r.need) { r.id = sc.id; r.src = r.src || sc.src || []; polish(r); } return r; }
     catch (e) { return { err: String(e && e.message || e) }; }
   }
 
-  const API = { norm, extract, moneys, classify, pending, solve, mask, won, wonW, pct, ko, addM, addY, addD, diffD, fill, nextFor, brokerFee, wolseAmt, SMALL, FEE, BAD, MIN, SOLVERS: Object.keys(S) };
+  const API = { quick, regionExample, norm, extract, apply, findFeatures, moneys, classify, pending, solve, mask, won, wonW, pct, ko, addM, addY, addD, diffD, fill, nextFor, brokerFee, wolseAmt, SMALL, FEE, BAD, MIN, SOLVERS: Object.keys(S) };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_GUIDE_CORE = API;
 })(typeof window !== 'undefined' ? window : globalThis);

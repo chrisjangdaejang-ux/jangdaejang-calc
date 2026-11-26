@@ -1,6 +1,11 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v70 변경 요약 (v69 위에 다시 배포. 따로 실행할 함수 없음 — 시트 '길잡이만족도'는 첫 기록 때 저절로 생김. GUIDE_ENABLED=false 라 지금 서비스에는 영향 없음)
+ *  - 고민 해결 길잡이 답 화면의 '이 답이 도움이 됐나요? 👍👎'(gdFb): [시각, 시나리오 id, 1/−1, 화면(top 첫 화면 즉답 · solve 길잡이), 미리보기]만 적음.
+ *    방문자 번호·문장·금액은 받지 않음. 1분에 60건까지. GUIDE_ENABLED=false 동안은 미리 보기에서 누른 것만.
+ *  - 운영자 화면 solve/admin/(gdAdmin)에 시나리오별 만족도(👍·👎 수, 도움 됐다는 비율) 함께. 주간 한 줄 메일에 지난주 만족도 한 줄 더.
+ *  - 검증: node tools/guide-test.js </dev/null
  * v69 변경 요약 (v68 위에 다시 배포. 따로 실행할 함수 없음 — 시트 변경 없음. PRO_TOOLS_ENABLED·BILLING_OPEN=false 라 판매·서비스 영향 없음)
  *  - 프로 회원 요금 설정값: 월 14,900원 · 연 149,000원 · 출시 기념 첫 3개월 월 9,900원(PX_PRICE0). 운영자 화면 agent/pro/ 에서 바꿈(ptPrice → 스크립트 속성 PT_PRICE).
  *  - 판매는 BILLING_OPEN·PAID_OPEN 둘 다 true 일 때만(onSale). 지금은 운영자 화면에만 보임.
@@ -11003,12 +11008,14 @@ function ptOpen(b) {
    ===================================================================== */
 const GUIDE_ENABLED = false;
 const SH_GD = '길잡이미매칭', GDH = ['시각', '문장', '화면', '미리보기'];
-const GD_ACTIONS = { gdMiss: 1, gdAdmin: 1 };
+const GD_ACTIONS = { gdMiss: 1, gdAdmin: 1, gdFb: 1 };
+const SH_GDF = '길잡이만족도', GDFH = ['시각', '시나리오', '값', '화면', '미리보기'];
 const GD_RATE = 60;                                    // 1분에 받는 최대 건수(넘으면 버림)
 function gdDispatch(b) {
   try {
     if (b.action === 'gdMiss') return gdMiss(b);
     if (b.action === 'gdAdmin') return gdAdmin(b);
+    if (b.action === 'gdFb') return gdFb(b);
     return { ok: false, err: 'unknown' };
   } catch (x) { return { ok: false, err: String(x.message || x), code: x.code || '' }; }
 }
@@ -11062,19 +11069,44 @@ function gdTop(days, lim, now) {
   const top = Object.keys(by).map(k => by[k]).sort((a, b) => b.n - a.n || (a.last < b.last ? 1 : -1)).slice(0, lim || 100).map(o => ({ k: o.k, n: o.n, last: o.last, g: Object.keys(o.g).join(','), pv: o.pv }));
   return { total: total, top: top, rows: n };
 }
+/** v70 답 만족도 한 번(👍 1 · 👎 −1) */
+function gdFb(b) {
+  const pv = Number(b.pv) === 1;
+  if (!GUIDE_ENABLED && !pv) return { ok: true, n: 0 };
+  const id = String(b.s || ''), v = Number(b.v), w = /^(top|solve)$/.test(String(b.w || '')) ? String(b.w) : '';
+  if (!/^[a-z0-9_]{2,24}$/.test(id) || (v !== 1 && v !== -1)) return { ok: false, err: 'bad' };
+  const c = CacheService.getScriptCache(), mk = 'gdf' + Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyyMMddHHmm'), n = Number(c.get(mk) || 0);
+  if (n >= GD_RATE) return { ok: true, n: 0 };
+  c.put(mk, String(n + 1), 120);
+  withLock(() => { const ss = book(); let sh = ss.getSheetByName(SH_GDF); if (!sh) { sh = ss.insertSheet(SH_GDF); sh.appendRow(GDFH); }
+    sh.getRange(sh.getLastRow() + 1, 1, 1, 5).setValues([[new Date(), id, v, w, pv ? 'y' : '']]); });
+  return { ok: true, n: 1 };
+}
+/** 최근 days 일 시나리오별 만족도 [{s, up, down, rate}] (많이 누른 순) */
+function gdFbSum(days, now) {
+  const sh = book().getSheetByName(SH_GDF); if (!sh || sh.getLastRow() < 2) return [];
+  const from = (now || new Date()).getTime() - days * 864e5, start = Math.max(2, sh.getLastRow() - 5000 + 1), by = {};
+  sh.getRange(start, 1, sh.getLastRow() - start + 1, 3).getValues().forEach(r => {
+    if (!(r[0] instanceof Date) || r[0].getTime() < from) return;
+    const o = by[r[1]] || (by[r[1]] = { s: String(r[1]), up: 0, down: 0 }); if (Number(r[2]) === 1) o.up++; else o.down++;
+  });
+  return Object.keys(by).map(k => by[k]).map(o => Object.assign(o, { rate: Math.round(o.up / (o.up + o.down) * 100) })).sort((a, b) => (b.up + b.down) - (a.up + a.down));
+}
 function gdAdmin(b) {
   const u = dpOptUser(b);
   if (!u || !bIsAdmin(u.k)) { const e = new Error('운영자 계정으로 카카오 간편 로그인해 주세요(모닝 브리핑 운영자 모드).'); e.code = 'admin'; throw e; }
   const d = Number(b.days) === 30 ? 30 : 7;
-  return Object.assign({ ok: true, days: d, enabled: GUIDE_ENABLED }, gdTop(d, 100));
+  return Object.assign({ ok: true, days: d, enabled: GUIDE_ENABLED, fb: gdFbSum(d) }, gdTop(d, 100));
 }
 /** 주간 운영 메일 한 줄(한 주에 한 번, 0건이면 안 보냄) — 대표가 시나리오 추가를 판단하는 근거 */
 function gdWeekLine(now) {
   const P = PropertiesService.getScriptProperties(), wk = Utilities.formatDate(now, 'Asia/Seoul', "YYYY-'W'ww");
   if (P.getProperty('GD_WEEK') === wk) return { ok: true, already: true };
   P.setProperty('GD_WEEK', wk);
-  const t = gdTop(7, 3, now); if (!t.total) return { ok: true, n: 0 };
-  const line = `지난 7일 길잡이가 못 알아들은 고민 ${t.total}건 · 많이 나온 말: ${t.top.map(x => `‘${x.k}’ ${x.n}건`).join(', ')}`;
+  const t = gdTop(7, 3, now), fb = gdFbSum(7, now); if (!t.total && !fb.length) return { ok: true, n: 0 };
+  const up = fb.reduce((x, o) => x + o.up, 0), dn = fb.reduce((x, o) => x + o.down, 0), low = fb.filter(o => o.up + o.down >= 3).sort((a, b) => a.rate - b.rate)[0];
+  const line = (t.total ? `지난 7일 길잡이가 못 알아들은 고민 ${t.total}건 · 많이 나온 말: ${t.top.map(x => `‘${x.k}’ ${x.n}건`).join(', ')}` : '지난 7일 못 알아들은 고민 0건')
+    + (up + dn ? ` · 답 만족도 👍${up} 👎${dn}(${Math.round(up / (up + dn) * 100)}%)${low ? ` · 가장 낮은 고민 ${low.s} ${low.rate}%` : ''}` : '');
   try { MailApp.sendEmail({ to: Session.getEffectiveUser().getEmail(), subject: `[${SITE_NAME} 운영] 고민 해결 길잡이 주간 한 줄`, name: SITE_NAME, body: line + `\n\n전체 목록(빈도순): ${WEB_ROOT}solve/admin/\n시트: ${book().getUrl()}` }); } catch (e) {}
   return { ok: true, n: t.total, line: line };
 }

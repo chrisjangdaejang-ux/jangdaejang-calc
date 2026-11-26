@@ -17,6 +17,7 @@
   const preview = () => !(root.JDJ_SITE && root.JDJ_SITE.GUIDE_ENABLED === true) && ls.get(PV) === '1';
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const C = () => root.JDJ_GUIDE_CORE;
+  const todayKst = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
   const site = () => ((root.JDJ_SITE || {}).SITE_NAME || '').trim() || '집예보';
   const stat = (n, p) => { try { if (root.jdjStat) root.jdjStat('feature_use', Object.assign({ feature: n }, p || {})); } catch (e) {} };
 
@@ -114,6 +115,20 @@
 .gres{display:flex;align-items:center;gap:10px;margin-top:12px;padding:12px 14px;border-radius:14px;background:#FFF8E6;border:1.5px solid #F2D98B;color:#191F28;text-decoration:none;min-height:52px}
 .gres b{font-size:15px}.gres small{display:block;font-size:13px;color:#6B5A1E}.gres .go{margin-left:auto;font-weight:800;color:#8A6D17}
 .gpri{margin-top:14px}.gpri>span{display:block;font-size:13.5px;font-weight:800;color:#4E5968;margin-bottom:2px}
+
+.ginst{margin:12px 0 0;padding:16px 16px 14px;border-radius:18px;background:#fff;border:2px solid #2560E8;box-shadow:0 4px 16px rgba(37,96,232,.10)}
+.ginst .gi-hd{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 6px}.ginst .bd{font-size:12px;font-weight:800;border-radius:999px;padding:3px 10px}.ginst .bd.ok{background:#2560E8;color:#fff}.ginst .bd.ex{background:#FBF5E3;color:#7A5C0F}
+.ginst .tt{font-size:13px;font-weight:700;color:#4E5968}
+.ginst h3{margin:0;font-size:18.5px;font-weight:900;line-height:1.45;letter-spacing:-.3px;word-break:keep-all;color:#191F28}
+.ginst .exn{margin:6px 0 0;font-size:13px;line-height:1.5;color:#7A5C0F;background:#FBF8EF;border-radius:10px;padding:6px 10px}
+.ginst .gnums{margin-top:10px}.ginst .giref{list-style:none;margin:10px 0 0;padding:10px 12px;border-radius:12px;background:#FBF8EF;font-size:13.5px;line-height:1.5}.ginst .giref small{color:#6B5A1E}.ginst .giref .nt{font-size:12px;color:#6B5A1E;margin-top:4px}
+.ginst .gw1{margin:8px 0 0;font-size:13.5px;color:#3E4754;line-height:1.5}.ginst .gsr{margin:6px 0 0;font-size:12.5px;color:#6B7684}.ginst .gsr a{color:#4E5968}
+.gbtn{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.gbtn a{display:inline-flex;align-items:center;min-height:46px;padding:0 14px;border-radius:12px;border:1.5px solid #D6E2FF;background:#fff;color:#1F56E0;font-weight:800;font-size:14.5px;text-decoration:none}.gbtn a.p{background:#2560E8;border-color:#2560E8;color:#fff}
+.gfb{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13.5px;color:#4E5968}.gfb button{font-size:18px;min-width:44px;min-height:44px;border:1.5px solid #E5E8EB;border-radius:12px;background:#fff;cursor:pointer}.gfb button:hover{border-color:#2560E8}
+.gfeat{margin:12px 0 0;display:grid;gap:6px}.gfeat .ft{margin:0;font-size:14px;font-weight:800;color:#191F28}.gfeat a{display:flex;align-items:center;gap:10px;min-height:54px;padding:8px 14px;border-radius:14px;border:1.5px solid #D6E2FF;background:#fff;color:#191F28;text-decoration:none}.gfeat a b{display:block;font-size:15px}.gfeat a small{display:block;font-size:13px;color:#4E5968}.gfeat a .go{margin-left:auto;color:#2560E8;font-weight:800;font-size:20px}
+.gtw{margin:12px 0 0}.gtt{margin:0 0 4px;font-size:15px;font-weight:900}.gtn{margin:0 0 6px;font-size:12.5px;color:#6B7684;line-height:1.5}.gts{overflow-x:auto;-webkit-overflow-scrolling:touch}.gtbl2{min-width:560px;font-size:13.5px}.gtbl.gtbl2 tr:first-child td{font-weight:400;color:inherit}.gtbl2 a{color:#1F56E0;font-weight:800}.gg{font-weight:800;white-space:nowrap}.gg.hi{color:#0F7B4F}.gg.mid{color:#B4540A}.gg.lo{color:#C2410C}
+@media(max-width:600px){.gtbl2{min-width:0}.gtbl2 thead{display:none}.gtbl2,.gtbl2 tbody,.gtbl2 tr,.gtbl2 td{display:block;width:100%;box-sizing:border-box}.gtbl2 tr{border:1px solid #E5E8EB;border-radius:12px;padding:8px 12px;margin:0 0 8px}.gtbl.gtbl2 td{display:flex;justify-content:space-between;gap:10px;border:0;padding:3px 0;text-align:right}.gtbl2 td::before{content:attr(data-l);flex:none;color:#6B7684;font-size:12.5px;text-align:left}.gtbl.gtbl2 td:first-child{display:block;text-align:left;font-size:15px;font-weight:800;padding-bottom:4px}.gtbl2 td:first-child::before{content:none}}
+.galts .al{font-size:13.5px;font-weight:700;color:#4E5968;align-self:center}
 @media(max-width:560px){.gsits{grid-template-columns:repeat(2,minmax(0,1fr))}.gsits button{min-height:48px;justify-content:center}.gsits button small{display:none}.gsits button:last-child:nth-child(odd){grid-column:1/-1}.gpri .gchips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin-right:-14px;padding-right:14px}.gpri .gchip{flex:none;white-space:nowrap}.gtop{margin:12px 16px 0;padding:18px 14px 16px}.gtop h2{font-size:20px}.gtop form button{padding:0 16px}}
 @media(min-width:1024px){.gtop{margin:20px 0 0}}
 
@@ -171,6 +186,62 @@
 
   const solveUrl = (id, extra) => BASE + 'solve/?s=' + encodeURIComponent(id) + (extra || '');
 
+  /* ---------- 미리 불러오기(첫 카드를 1초 안에) ---------- */
+  const ENGINES = ['assets/sale-status.js?v=1', 'assets/loan-rules.js', 'tax/tax-engine.js?v=4', 'tax/adjusted-areas.js?v=2', 'assets/loan-core.js', 'assets/hug-core.js', 'chungyak/cy-engine.js', 'assets/redev-core.js'];
+  const ENG_OK = { 'assets/sale-status.js?v=1': 'JDJ_SALE', 'assets/loan-rules.js': 'JDJ_LOAN_RULES', 'tax/tax-engine.js?v=4': 'JDJ_TAX', 'tax/adjusted-areas.js?v=2': 'JDJ_ADJ', 'assets/loan-core.js': 'JDJ_LOAN', 'assets/hug-core.js': 'JDJ_HUG', 'chungyak/cy-engine.js': 'JDJ_CYE', 'assets/redev-core.js': 'JDJ_REDEV' };
+  function script(src) { return new Promise(res => { const x = document.createElement('script'); x.src = BASE + src; x.onload = res; x.onerror = res; document.head.appendChild(x); }); }
+  let WARM = null;
+  /** 계산 엔진·고민 자료·지역 자료·청약 당첨 가점(기억한 시·도 또는 서울)·서울 단지 목록을 쉬는 동안 미리 */
+  function warm() {
+    if (WARM) return WARM;
+    WARM = (async () => {
+      for (const e of ENGINES) if (!root[ENG_OK[e]]) await script(e);   // 차례가 중요(대출 계산이 세금·규칙 파일을 먼저 읽음)
+      const [D, IX] = await Promise.all([load(), ix().catch(() => null), feats().catch(() => null)]);
+      const mem = memory(IX).m;
+      cyRows(mem.csido || '서울특별시').catch(() => null); cyNotices();
+      return { D, IX };
+    })();
+    return WARM;
+  }
+  const feats = () => getJ('feat', BASE + 'assets/guide/features.json?v=1');
+  function idle(f) { (root.requestIdleCallback || (g => setTimeout(g, 300)))(f, { timeout: 1500 }); }
+
+  /* ---------- 즉답 카드 ---------- */
+  const FB = 'jdj_guide_fb';
+  function fbHtml(id, where) {
+    const g = jget(FB) || {}, done = g[id];
+    return `<div class="gfb" data-fb="${esc(id)}" data-w="${esc(where)}">${done ? '<span>의견 고마워요. 길잡이를 다듬는 데 쓸게요.</span>' : '<span>이 답이 도움이 됐나요?</span><button type="button" data-v="1" aria-label="도움이 됐어요">👍</button><button type="button" data-v="-1" aria-label="도움이 안 됐어요">👎</button>'}</div>`;
+  }
+  function fbWire(el) {
+    el.querySelectorAll('.gfb').forEach(box => box.addEventListener('click', e => {
+      const b = e.target.closest('[data-v]'); if (!b) return;
+      const id = box.dataset.fb, v = +b.dataset.v, g = jget(FB) || {}; if (g[id]) return;
+      g[id] = v; ls.set(FB, JSON.stringify(g));
+      box.innerHTML = '<span>의견 고마워요. 길잡이를 다듬는 데 쓸게요.</span>';
+      stat('guide_fb', { s: id, v });
+      const api = (root.JDJ_AGENTS && root.JDJ_AGENTS.api) || ''; if (!api) return;
+      try { fetch(api, { method: 'POST', mode: 'no-cors', keepalive: true, headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'gdFb', s: id, v, w: box.dataset.w, pv: preview() ? 1 : 0 }) }).catch(() => {}); } catch (x) {}
+    }));
+  }
+  function instHtml(c, D, o) {
+    const exact = !!o.exact, ex = c.ex || '';
+    const nums = (c.nums || []).slice(0, 3).map(n => `<div><small>${esc(n.k)}</small><b>${esc(n.v)}</b>${n.s ? `<span>${esc(n.s)}</span>` : ''}</div>`).join('');
+    const ref = (c.ref || []).slice(0, 3).map(x => `<li><b>${esc(x.k)}: ${esc(x.v)}</b> <small>${esc(x.s || '')}</small></li>`).join('');
+    const src = (c.src || []).map(k => D.src[k]).filter(Boolean)[0];
+    const btns = (o.btns || []).map((b, i) => `<a class="${i === 0 ? 'p' : ''}" href="${esc(b.href)}"${b.ext ? ' target="_blank" rel="noopener"' : ''}${b.go ? ` data-go="${esc(b.go)}"` : ''} data-track="${esc(b.tr || 'guide_inst')}">${esc(b.t)} ›</a>`).join('');
+    return `<section class="ginst" aria-live="polite"><div class="gi-hd"><span class="bd ${exact ? 'ok' : 'ex'}">${exact ? '바로 답' : ex ? '예시로 먼저' : '먼저 보는 답'}</span>${o.title ? `<span class="tt">${esc(o.title)}</span>` : ''}</div>
+      <h3>${esc(c.head)}</h3>${ex ? `<p class="exn">${esc(ex)}</p>` : ''}
+      ${tablesHtml(c.tables, 3)}${nums ? `<div class="gnums">${nums}</div>` : ''}${ref ? `<ul class="giref">${ref}<li class="nt">지난 자료로 계산한 참고 값이에요. 앞으로의 가격을 약속하지 않아요.</li></ul>` : ''}
+      ${c.warn && c.warn[0] ? `<p class="gw1">${esc(c.warn[0])}</p>` : ''}
+      ${src ? `<p class="gsr">출처: <a href="${esc(/^https?:/.test(src.url) ? src.url : BASE + src.url)}" target="_blank" rel="noopener">${esc(src.nm)}</a>${(c.src || []).length > 1 ? ` 외 ${(c.src || []).length - 1}개` : ''}</p>` : ''}
+      <div class="gbtn">${btns}</div>${o.fb ? fbHtml(o.fb, 'top') : ''}</section>`;
+  }
+  function featHtml(list, title) {
+    if (!list.length) return '';
+    return `<section class="gfeat"><p class="ft">${esc(title || '이 기능을 바로 열어 드릴게요')}</p>${list.map(f => `<a href="${esc(BASE + f.url)}" data-track="guide_feat_${esc(f.id)}"><span><b>${esc(f.t)}</b><small>${esc(f.d)}</small></span><span class="go">›</span></a>`).join('')}</section>`;
+  }
+  const featOn = f => !f.flag || (root.JDJ_SITE && root.JDJ_SITE[f.flag] === true) || preview();
+
   /* ---------- 첫 화면 맨 위 ---------- */
   const EXAMPLES = ['전세 만기 어떡하죠?', '3억 있는데 얼마짜리 집 살 수 있어요?', '일시적 2주택 언제까지 팔아야 해요?'];
   function mountTop(el, opt) {
@@ -181,17 +252,18 @@
       const R = resumeInfo(D);
       el.classList.add('gtop');
       el.innerHTML = `<span class="ey">고민 해결 길잡이</span><h2>무엇이 고민이세요?</h2>
-        <p class="s">문장 그대로 적으면 ${esc(site())}가 내 조건으로 계산해 해법과 다음 단계까지 안내해 드려요. 단지 이름을 넣으면 시세와 점수를 보여 드려요.</p>
+        <p class="s">문장 그대로 적으면 ${esc(site())}가 바로 계산해 답하고, 내 조건으로 더 정확히 보는 길까지 안내해 드려요. 단지 이름을 넣으면 시세와 점수를 보여 드려요.</p>
         <form role="search" novalidate><label for="gdQ" style="position:absolute;left:-9999px">고민 입력</label>
           <input id="gdQ" type="search" enterkeyhint="search" autocomplete="off" placeholder="예: ${esc(EXAMPLES[0])}"><button type="submit">찾아보기</button></form>
-        <div class="msg" role="status" aria-live="polite"></div><div class="gchips galts"></div>
+        <div class="msg" role="status" aria-live="polite"></div><div class="gans"></div><div class="gchips galts"></div>
         ${R ? `<a class="gres" href="${esc(solveUrl(R.sc.id, '&resume=1'))}" data-track="guide_resume"><span><b>이어서 하기: ${esc(R.sc.t)}</b><small>지난번 답이 이 기기에 남아 있어요</small></span><span class="go">›</span></a>` : ''}
         <p class="gsitq">지금 어떤 상황이세요?</p>
         <div class="gsits" role="group" aria-label="상황 고르기">${D.cats.map(c => `<button type="button" data-cat="${esc(c.id)}" aria-pressed="false"><b>${esc(c.t)}</b><small>${esc(c.d)}</small></button>`).join('')}</div>
         <div class="glist" aria-live="polite"></div>
         <div class="gpri"><span>상담에서 가장 많이 받는 고민</span><div class="gchips">${D.sc.filter(s => s.pri).map(s => `<a class="gchip" href="${esc(solveUrl(s.id, '&from=top'))}" data-track="guide_pri_${esc(s.id)}">${esc(s.t)}</a>`).join('')}</div></div>`;
       el.hidden = false;
-      const f = el.querySelector('form'), q = el.querySelector('input'), msg = el.querySelector('.msg'), alts = el.querySelector('.galts'), list = el.querySelector('.glist');
+      idle(() => { warm().then(() => { if (root.JDJ_ASK) idle(() => root.JDJ_ASK.ask('헬리오시티').catch(() => null)); }); });   // 서울 단지 목록까지 미리
+      const f = el.querySelector('form'), q = el.querySelector('input'), msg = el.querySelector('.msg'), alts = el.querySelector('.galts'), list = el.querySelector('.glist'), ans = el.querySelector('.gans');
       const say = (t, err) => { msg.textContent = t || ''; msg.classList.toggle('err', !!err); };
       el.querySelector('.gsits').addEventListener('click', e => {
         const b = e.target.closest('[data-cat]'); if (!b) return;
@@ -203,49 +275,107 @@
         list.innerHTML = D.sc.filter(s => s.cat === cat).map(s => `<a href="${esc(solveUrl(s.id, '&from=sit'))}" data-track="guide_sit_${esc(s.id)}"><span><b>${esc(s.t)}</b><small>${esc(s.sub || '')}</small></span><span class="go">›</span></a>`).join('');
         stat('guide_sit', { cat });
       });
-      const go = (id, text, slots) => { try { sessionStorage.setItem(IN, JSON.stringify({ q: text, slots: slots || null, t: Date.now() })); } catch (e) {} location.href = solveUrl(id, '&from=q'); };
-      f.addEventListener('submit', async e => {
-        e.preventDefault();
-        const text = q.value.trim(); alts.innerHTML = '';
-        if (text.replace(/\s/g, '').length < 2) { say('고민을 두 글자 이상 적어 주세요. 예: ' + EXAMPLES[1], true); return; }
-        const IX = await ix().catch(() => null);
-        const r = C().classify(text, D, ctxOf(IX));
-        stat('guide_ask', { hit: r.top ? r.top.id : 'none' });
-        if (r.top && !r.alts.length) { say(`‘${D.sc.find(s => s.id === r.top.id).t}’ 길잡이로 갈게요…`); go(r.top.id, text, r.slots); return; }
+      /* 길잡이로 넘길 값: 문장에서 뽑은 값 + 이미 채운 답(금액은 이 탭에만) */
+      const hand = (id, text, a, from, slots) => { try { sessionStorage.setItem(IN, JSON.stringify({ q: text, a: a ? stripA(a) : null, from: from || null, slots: slots || null, t: Date.now() })); } catch (e) {} };
+      ans.addEventListener('click', e => { const a = e.target.closest('a[data-go]'); if (a && ans._h) hand(a.dataset.go, ans._h.text, ans._h.a, ans._h.from, ans._h.slots); });
+      let RUN = 0;
+      async function instant(text, final) {
+        const my = ++RUN, t0 = performance.now();
+        const W = await warm(); if (my !== RUN) return;
+        const IX = W.IX, ctx = Object.assign(ctxOf(IX), { today: todayKst() }), r = C().classify(text, D, ctx), F = await feats().catch(() => null);
+        alts.innerHTML = ''; ans._h = null;
+        const fl = F ? C().findFeatures(text, F, D.lex).filter(featOn) : [];
+        const short = text.split(/\s+/).length <= 4;
         if (r.top) {
-          say('이 중에서 가장 가까운 고민을 골라 주세요.');
-          alts.innerHTML = [r.top].concat(r.alts).map(x => { const s = D.sc.find(y => y.id === x.id); return `<button type="button" class="gchip" data-go="${esc(s.id)}">${esc(s.t)}</button>`; }).join('');
-          alts.onclick = ev => { const b = ev.target.closest('[data-go]'); if (b) go(b.dataset.go, text, r.slots); };
+          const sc = D.sc.find(s => s.id === r.top.id), mem = memory(IX);
+          let a = {}, from = {};
+          (sc.ask || []).forEach(k => { if (mem.m[k] != null) { a[k] = mem.m[k]; from[k] = mem.from[k]; } });
+          if (r.slots.region) r.slots.region = regionOf(IX, r.slots.region.code) || r.slots.region;
+          const ap = C().apply(sc, r.slots, a); a = ap.a; Object.assign(from, ap.from);
+          if (a.region && !a.region.sd && IX) a.region = regionOf(IX, a.region.code) || a.region;
+          /* 단지가 필요한 고민이면 문장 속 단지 이름을 먼저(서울 목록은 미리 불러 둠) */
+          if ((sc.ask || []).indexOf('danji') >= 0 && root.JDJ_ASK && !a.danji && text.split(/\s+/).length <= 5) {   // 긴 문장은 단지 이름 찾기를 건너뜀(빠르게)
+            const d = await danjiOf(text); if (my !== RUN) return;
+            if (d) { a.danji = d; from.danji = '찾은 단지'; if (!a.region) a.region = regionOf(IX, d.code); }
+          }
+          if (a.danji) { a.facts = await danjiFacts(a.danji, IX, { fast: true }); if (my !== RUN) return; ['salep', 'kb', 'value'].forEach(k => { if ((sc.ask || []).indexOf(k) >= 0 && a[k] == null && a.facts && a.facts.price) { a[k] = a.facts.price; from[k] = `${a.facts.apt} 최근 실거래 시세`; } }); }
+          const E = Object.assign(ENG(), { IX, today: todayKst() });
+          if (sc.id === 'cy_where') { const [cr, cn] = await Promise.all([cyRows(a.csido || '서울특별시').catch(() => []), cyNotices()]); E.cyRows = cr; E.cyNotices = cn; }
+          if (my !== RUN) return;
+          const Q = C().quick(sc, a, E);
+          ans._h = { text, a, from, slots: r.slots };
+          const go = { t: Q && Q.exact ? '자세히 보고 다음 단계로' : '내 조건으로 정확히 보기', href: solveUrl(sc.id, '&from=inst'), go: sc.id, tr: 'guide_inst_go' };
+          const nx = (sc.next || []).find(n => n.k === 'calc');
+          const btns = [go].concat(nx ? [{ t: nx.t, href: BASE + C().fill(nx.href, a).replace(/#.*$/, nx.href.indexOf('#') >= 0 ? nx.href.slice(nx.href.indexOf('#')) : ''), tr: 'guide_inst_calc' }] : []);
+          if (Q && Q.card) {
+            ans.innerHTML = instHtml(Q.card, D, { exact: Q.exact, title: sc.t, btns, fb: sc.id }) + featHtml(fl.slice(0, 2), '관련 화면');
+            say(''); fbWire(ans);
+          } else {
+            const nd = ((Q && Q.need) || C().pending(sc, a)).map(k => D.q[k] && (LBL[k] || D.q[k].t)).filter(Boolean).slice(0, 4);
+            ans.innerHTML = `<section class="ginst"><div class="gi-hd"><span class="bd ex">${esc(sc.t)}</span></div><h3>${nd.length ? `${esc(nd.join(' · '))}만 알려 주시면 바로 계산해 드려요` : '바로 계산해 드릴게요'}</h3><div class="gbtn"><a class="p" href="${esc(go.href)}" data-go="${esc(sc.id)}">${esc(go.t)} ›</a></div></section>` + featHtml(fl.slice(0, 2), '관련 화면');
+            say('');
+          }
+          if (r.alts.length) alts.innerHTML = '<span class="al">혹시 이 고민인가요?</span>' + r.alts.map(x => { const s2 = D.sc.find(y => y.id === x.id); return `<a class="gchip" href="${esc(solveUrl(s2.id, '&from=alt'))}">${esc(s2.t)}</a>`; }).join('');
+          ans.dataset.ms = String(Math.round(performance.now() - t0));
+          if (final) stat('guide_ask', { hit: sc.id, ms: ans.dataset.ms });
           return;
         }
-        /* 고민 종류를 못 찾으면: 단지 이름인지 먼저(예전 '단지 이름으로 물어보기'와 같은 길) */
-        /* 단지 이름 질문은 보통 짧아요(예: '헬리오시티', '은마 래미안대치팰리스 비교'). 긴 문장까지 전국 단지 목록을 뒤지면 느리고 엉뚱한 단지가 걸려요 */
-        if (root.JDJ_ASK && root.JDJ_ASK_CORE && root.JDJ_MINE && text.split(/\s+/).length <= 4) {
-          say('단지 이름인지 찾아보는 중이에요…');
-          let a = null; try { a = await root.JDJ_ASK.ask(text); } catch (x) { a = null; }
-          const picks = a && a.segs && (a.skipped || []).length <= 1 ? a.segs.filter(s => s.pick).map(s => s.pick) : [];   // 거의 모든 낱말이 단지 이름으로 풀릴 때만
+        /* 고민 종류를 못 찾으면: 단지 이름(짧은 문장) → 사이트 기능 → 기록 */
+        if (short && root.JDJ_ASK && root.JDJ_MINE) {
+          if (final) say('단지 이름인지 찾아보는 중이에요…');
+          const res = await root.JDJ_ASK.ask(text).catch(() => null); if (my !== RUN) return;
+          const picks = res && res.segs && (res.skipped || []).length <= 1 ? res.segs.filter(x => x.pick).map(x => x.pick) : [];
           if (picks.length) {
-            const url = root.JDJ_ASK_CORE.target(picks.map(d => ({ d, band: '' })), a.hint, 'home');
-            const nmz = picks.map(d => d.apt).join(', '), lc = nmz.charCodeAt(nmz.length - 1), jo = lc >= 0xAC00 && lc <= 0xD7A3 ? ((lc - 0xAC00) % 28 ? '을' : '를') : '을(를)';
-            say(`${nmz}${jo} 찾았어요. 무엇을 볼까요?`);
-            const dj = picks[0];
-            try { sessionStorage.setItem(IN, JSON.stringify({ q: text, danji: { sd: dj.sd, code: dj.code, dong: dj.dong, jibun: dj.jibun, apt: dj.apt }, t: Date.now() })); } catch (x) {}
-            alts.innerHTML = `<a class="gchip" href="${esc(url)}" data-track="guide_danji_view">${picks.length > 1 ? '나란히 비교하기' : '시세·점수 보기'}</a>`
-              + ['buy_when', 'high_bargain', 'sell_when'].map(id => { const s = D.sc.find(y => y.id === id); return `<a class="gchip" href="${esc(solveUrl(id, '&from=danji'))}">${esc(s.t)}</a>`; }).join('');
+            const d0 = picks[0], dj = { sd: d0.sd, code: d0.code, dong: d0.dong, jibun: d0.jibun, apt: d0.apt, band: res.hint ? root.JDJ_ASK_CORE.pickBand(d0, res.hint) : '' };
+            const F0 = await danjiFacts(dj, IX, { fast: true }); if (my !== RUN) return;
+            const url = root.JDJ_ASK_CORE.target(picks.map(d => ({ d, band: dj.band })), res.hint, 'home');
+            ans._h = { text, a: { danji: dj }, from: { danji: '찾은 단지' } };
+            const card = danjiCard(F0, picks);
+            ans.innerHTML = instHtml(card, D, { exact: true, title: picks.length > 1 ? '단지 비교' : '단지 시세', fb: 'danji', btns: [{ t: picks.length > 1 ? '나란히 비교하기' : '시세·점수 자세히 보기', href: url, tr: 'guide_danji_view' }, { t: '이 가격, 급매인지 보기', href: solveUrl('high_bargain', '&from=danji'), go: 'high_bargain' }, { t: '새 거래 알림 켜기', href: BASE + 'my/watch/', tr: 'guide_danji_watch' }] });
+            say(''); fbWire(ans); ans.dataset.ms = String(Math.round(performance.now() - t0));
+            if (F0 && F0.hasScore && !F0.fv) danjiFacts(dj, IX).then(F1 => { if (my !== RUN || !F1 || F1.fv == null) return; ans.innerHTML = instHtml(danjiCard(F1, picks), D, { exact: true, title: picks.length > 1 ? '단지 비교' : '단지 시세', fb: 'danji', btns: [{ t: picks.length > 1 ? '나란히 비교하기' : '시세·점수 자세히 보기', href: url }, { t: '이 가격, 급매인지 보기', href: solveUrl('high_bargain', '&from=danji'), go: 'high_bargain' }, { t: '새 거래 알림 켜기', href: BASE + 'my/watch/' }] }); fbWire(ans); });
             return;
           }
-          if (a && a.segs && (a.skipped || []).length <= 1 && a.segs.some(s => s.cands && s.cands.length)) { say('단지 후보가 여러 곳이에요. 아래 단지 이름으로 물어보기 칸에서 골라 주세요.'); const ab = document.getElementById('askBox'); if (ab) { ab.hidden = false; if (root.JDJ_ASK && ab.querySelector('input')) { ab.querySelector('input').value = text; ab.querySelector('form').requestSubmit && ab.querySelector('form').requestSubmit(); } } return; }
         }
+        if (fl.length) { ans.innerHTML = featHtml(fl); say(''); ans.dataset.ms = String(Math.round(performance.now() - t0)); if (final) stat('guide_feat', { f: fl[0].id }); return; }
+        ans.innerHTML = '';
+        if (!final) { say(''); return; }
         logMiss(text, 'home');
         say(`‘${text.length > 30 ? text.slice(0, 30) + '…' : text}’는 아직 잘 모르겠어요. 위의 ‘지금 어떤 상황이세요?’에서 가장 가까운 것을 골라 주세요. 남겨 주신 고민은 길잡이를 늘리는 데 써요(개인정보는 가리고 저장해요).`, true);
-        if (r.alts.length) alts.innerHTML = r.alts.map(x => { const s = D.sc.find(y => y.id === x.id); return `<a class="gchip" href="${esc(solveUrl(s.id, '&from=weak'))}">혹시 ‘${esc(s.t)}’인가요?</a>`; }).join('');
+        if (r.alts.length) alts.innerHTML = r.alts.map(x => { const s2 = D.sc.find(y => y.id === x.id); return `<a class="gchip" href="${esc(solveUrl(s2.id, '&from=weak'))}">혹시 ‘${esc(s2.t)}’인가요?</a>`; }).join('');
+      }
+      let tm = null;
+      q.addEventListener('input', () => { clearTimeout(tm); const t = q.value.trim(); if (t.replace(/\s/g, '').length < 4) { ans.innerHTML = ''; alts.innerHTML = ''; return; } tm = setTimeout(() => instant(t, false), 450); });
+      f.addEventListener('submit', e => {
+        e.preventDefault(); clearTimeout(tm);
+        const text = q.value.trim();
+        if (text.replace(/\s/g, '').length < 2) { say('고민을 두 글자 이상 적어 주세요. 예: ' + EXAMPLES[1], true); return; }
+        instant(text, true);
       });
     }).catch(() => { el.hidden = true; if (ask) ask.hidden = false; });
     return true;
   }
+  const stripA = a => { const o = {}; Object.keys(a).forEach(k => { if (k !== 'facts' && k[0] !== '_') o[k] = a[k]; }); return o; };
+  /** 문장 속 단지 이름(거의 모든 낱말이 단지 이름으로 풀릴 때만 · 서울 → 경기·인천 → 나머지) */
+  async function danjiOf(text) {
+    if (!root.JDJ_ASK || text.split(/\s+/).length > 8) return null;
+    const r = await root.JDJ_ASK.ask(text).catch(() => null);
+    const s0 = r && r.segs ? r.segs.find(x => x.pick) : null;
+    return s0 ? { sd: s0.pick.sd, code: s0.pick.code, dong: s0.pick.dong, jibun: s0.pick.jibun, apt: s0.pick.apt, band: r.hint ? root.JDJ_ASK_CORE.pickBand(s0.pick, r.hint) : '' } : null;
+  }
+  function danjiCard(F, picks) {
+    const W = C().won;
+    if (!F || !F.price) return { head: `${picks.map(d => d.apt).join(', ')}을 찾았어요`, nums: [{ k: '최근 3년 거래', v: `${Number(picks[0].n || 0).toLocaleString()}건`, s: '국토교통부 실거래' }], src: ['molit_rt'] };
+    const at = F.at ? `${F.at.slice(0, 4)}년 ${+F.at.slice(4, 6)}월` : '';
+    return { head: `${F.apt} ${F.band} 최근 실거래 시세는 ${W(F.price)}이에요`,
+      nums: [{ k: '최근 시세', v: W(F.price), s: `${at}까지 3개월 실거래 중간값` }].concat(F.range ? [{ k: '최근 1년 거래 범위', v: `${W(F.range.lo)} ~ ${W(F.range.hi)}`, s: `거래 있던 ${F.range.months}개월 기준` }] : []).concat(picks.length > 1 ? [{ k: '함께 찾은 단지', v: picks.slice(1).map(d => d.apt).join(', '), s: '나란히 비교할 수 있어요' }] : []),
+      ref: F.fv != null ? [{ k: '미래가치 점수', v: `${F.fv}점`, s: `${F.fvBase} 중 순위${F.track ? ` · 과거 성적 ${F.track.n}번 중 ${F.track.hit}번 맞음` : ''}` }] : [],
+      src: ['molit_rt'] };
+  }
 
   /* ---------- 길잡이 화면(solve/) ---------- */
-  const ENG = () => ({ L: root.JDJ_LOAN, T: root.JDJ_TAX, H: root.JDJ_HUG, CY: root.JDJ_CYE, ADJ: root.JDJ_ADJ, RD: root.JDJ_REDEV });
+  const ENG = () => ({ L: root.JDJ_LOAN, T: root.JDJ_TAX, H: root.JDJ_HUG, CY: root.JDJ_CYE, ADJ: root.JDJ_ADJ, RD: root.JDJ_REDEV, SALE: root.JDJ_SALE });
+  const cyNotices = () => getJ('cyn', DATA + 'chungyak/notices.json').then(j => j.rows || []).catch(() => []);
   const TAXSD = ['서울', '경기', '인천'];
   function taxRegion(rg) {
     if (!rg) return {};
@@ -254,9 +384,11 @@
     if (sd === '경기' && root.JDJ_ADJ && root.JDJ_ADJ.guList('경기').indexOf(gu) < 0) gu = '그 밖의 시·군';
     return { sd, gu: sd === '그 밖의 지역' || sd === '인천' ? '' : gu };
   }
-  async function danjiFacts(d, IX) {
-    const M = root.JDJ_MINE, P = root.JDJ_PRICE, A = root.JDJ_ASK_CORE, R = root.JDJ_RANK; if (!M || !P || !d) return null;
+  async function danjiFacts(d, IX, opt) {
+    const M = root.JDJ_MINE, A = root.JDJ_ASK_CORE, R = root.JDJ_RANK; if (!M || !d) return null;
+    const P = root.JDJ_PRICE || { loadSgg: (c) => getJ('pg' + c, DATA + 'price/' + c + '.json').then(j => ({ units: j.units || [] })), scoreUnits: sd => getJ('sc' + sd, DATA + sd + '.json').then(j => j.units || []) };
     try {
+      if (!IX) IX = await ix();
       const sg = await P.loadSgg(d.code, d.sd);
       const same = x => x[0] === d.code && x[1] === d.dong && x[2] === d.apt;
       const bands = sg.units.filter(same);
@@ -265,13 +397,13 @@
       const u = bands.find(x => x[3] === band && String(x[8]) === String(d.jibun || x[8])) || bands.find(x => x[3] === band);
       const sm = u && u[6] ? M.bandSummary(u, IX.months) : null;
       let f = null;
-      if (M.hasScore(u)) { if (u[9] && typeof u[9] === 'object') f = u[9]; else { const us = await P.scoreUnits(d.sd).catch(() => []); const v = us.find(x => M.unitKey(x) === M.unitKey(u)); f = v && v[9] && typeof v[9] === 'object' ? M.cleanFx(v[9]) : null; } }
+      if (M.hasScore(u)) { if (u[9] && typeof u[9] === 'object') f = u[9]; else if (opt && opt.fast) f = null; else { const us = await P.scoreUnits(d.sd).catch(() => []); const v = us.find(x => M.unitKey(x) === M.unitKey(u)); f = v && v[9] && typeof v[9] === 'object' ? M.cleanFx(v[9]) : null; } }
       const sdo = (IX.sido || []).find(s => s.id === d.sd) || {};
-      const MH = await getJ('mh', DATA + 'model_h.json').catch(() => null), tr = R && MH ? R.vcheck(MH, sdo.name) : null;
+      const MH = opt && opt.fast ? null : await getJ('mh', DATA + 'model_h.json').catch(() => null), tr = R && MH ? R.vcheck(MH, sdo.name) : null;
       const ok = !!(tr && tr.ok);
       return { apt: d.apt, band, price: sm && sm.price || null, at: sm && sm.at, range: sm && sm.range && sm.range.hi ? { lo: sm.range.lo, hi: sm.range.hi, months: sm.range.months } : null,
         fv: ok && f && f.fv != null ? Math.min(99, f.fv) : null, fvBase: `${sdo.short || ''} 아파트`, track: ok ? { n: tr.n, hit: tr.hit } : null,
-        mine: R ? R.mineUrl(d.sd, [d.code, d.dong, d.jibun || '', d.apt].join('|'), band) : BASE + 'mine/' };
+        n: u ? u[5] : null, hasScore: M.hasScore(u), mine: R ? R.mineUrl(d.sd, [d.code, d.dong, d.jibun || '', d.apt].join('|'), band) : BASE + 'mine/?sd=' + d.sd + '&d=' + encodeURIComponent([d.code, d.dong, d.jibun || '', d.apt].join('|')) };
     } catch (e) { return null; }
   }
   async function cyRows(sidoName) {
@@ -284,7 +416,7 @@
     const E = Object.assign(ENG(), { IX });
     const need = sc.need || [];
     const jobs = [];
-    if (need.indexOf('cy') >= 0 && a.csido) jobs.push(cyRows(a.csido).then(r => { E.cyRows = r; }));
+    if (need.indexOf('cy') >= 0) { jobs.push(cyRows(a.csido || '서울특별시').then(r => { E.cyRows = r; })); jobs.push(cyNotices().then(r => { E.cyNotices = r; })); }
     if (need.indexOf('region') >= 0 && a.region && a.region.sd) jobs.push(getJ('rg' + a.region.sd, DATA + 'region/' + a.region.sd + '.json').then(j => { const g = j && j.gu && j.gu[a.region.code]; E.sup = g && g.sup ? { [a.region.code]: g.sup } : null; }).catch(() => {}));
     if (need.indexOf('base') >= 0) jobs.push(getJ('offi', DATA + 'offi/index.json').then(j => { const s = j && j.rate && j.rate.base; if (s) { const ks = Object.keys(s).filter(k => /^\d{6}$/.test(k)).sort(); if (ks.length) E.base = { v: +s[ks[ks.length - 1]], at: ks[ks.length - 1] }; } }).catch(() => {}));
     await Promise.all(jobs);
@@ -316,7 +448,7 @@
         <select aria-label="시·군·구" data-r="g">${guOpts(IX, sdName, val && val.code)}</select></div>${memNote}</div>`;
     }
     if (q.type === 'danji') {
-      const nm = val && val.apt ? val.apt : (S.q0 || '');
+      const nm = val && val.apt ? val.apt : (S.q0 && S.q0.split(/\s+/).length <= 5 ? S.q0 : '');
       return `<div class="gq" data-q="${id}"><label class="t" for="${lid}">${esc(q.t)}</label>${hint}<div class="dj"><input id="${lid}" type="text" autocomplete="off" placeholder="예: 헬리오시티" value="${esc(nm)}"><button type="button" data-dj="find">찾기</button></div>
         <div class="djc" aria-live="polite">${val && val.apt ? `<button type="button" aria-pressed="true">${esc(val.apt)}<small>골랐어요${S.facts && S.facts.price ? ` · 최근 시세 ${esc(C().won(S.facts.price))}` : ''}</small></button>` : ''}</div>${memNote}</div>`;
     }
@@ -364,19 +496,17 @@
       let inp = null; try { inp = JSON.parse(sessionStorage.getItem(IN) || 'null'); sessionStorage.removeItem(IN); } catch (e) {}
       if (inp && Date.now() - (inp.t || 0) < 10 * 60e3) {
         S.q0 = inp.q || '';
-        const sl = inp.slots || {}, asks = sc.ask || [];
-        Object.keys(sl.money || {}).forEach(k => { const tgt = k === 'price' && asks.indexOf('price') < 0 ? (asks.indexOf('salep') >= 0 ? 'salep' : asks.indexOf('value') >= 0 ? 'value' : asks.indexOf('amt') >= 0 ? 'amt' : asks.indexOf('newprice') >= 0 ? 'newprice' : null) : k; if (tgt && asks.indexOf(tgt) >= 0) { S.a[tgt] = sl.money[k]; S.from[tgt] = '적어 주신 문장'; } });
-        if (sl.region) { const tgt = asks.indexOf('region') >= 0 ? 'region' : asks.indexOf('work') >= 0 ? 'work' : null; if (tgt) { S.a[tgt] = regionOf(IX, sl.region.code); S.from[tgt] = '적어 주신 문장'; } }
-        if (sl.sido && asks.indexOf('csido') >= 0) { S.a.csido = sl.sido; S.from.csido = '적어 주신 문장'; }
-        if (sl.date) { const tgt = ['acq', 'end', 'mdate', 'newd', 'regd'].find(k => asks.indexOf(k) >= 0); if (tgt) { S.a[tgt] = sl.date; S.from[tgt] = '적어 주신 문장'; } }
-        if (sl.kids != null && asks.indexOf('kids') >= 0) { S.a.kids = String(Math.min(3, sl.kids)); S.from.kids = '적어 주신 문장'; }
-        if (sl.newly && asks.indexOf('newly') >= 0) { S.a.newly = 'y'; S.from.newly = '적어 주신 문장'; }
+        const asks = sc.ask || [];
+        if (inp.slots) { if (inp.slots.region && IX) inp.slots.region = regionOf(IX, inp.slots.region.code) || inp.slots.region; const ap = C().apply(sc, inp.slots, S.a); S.a = ap.a; Object.assign(S.from, ap.from); }
+        if (inp.a) ['myscore', 'area', 'endMonth'].forEach(k => { if (inp.a[k] != null) S.a[k] = inp.a[k]; });
+        if (inp.a) { Object.keys(inp.a).forEach(k => { if (asks.indexOf(k) >= 0 && inp.a[k] != null && inp.a[k] !== '') { S.a[k] = k === 'region' && inp.a.region && inp.a.region.code ? regionOf(IX, inp.a.region.code) : inp.a[k]; if (inp.from && inp.from[k]) S.from[k] = inp.from[k]; } }); }
         if (inp.danji && asks.indexOf('danji') >= 0) { S.a.danji = inp.danji; S.from.danji = '찾은 단지'; }
       }
       /* 3) 기억 */
       (sc.ask || []).forEach(k => { if ((S.a[k] == null || S.a[k] === '') && mem.m[k] != null) { S.a[k] = mem.m[k]; S.from[k] = mem.from[k]; } });
       /* 묻는 칸: 기억·문장으로 채운 칸은 건너뛰고(결과에서 고칠 수 있음), 나머지를 최대 4단계로 */
-      const todo = (sc.ask || []).filter(k => S.a[k] == null || S.a[k] === '');
+      const CYF = ['birth', 'married', 'homeown', 'deps', 'accd'];
+      const todo = (sc.ask || []).filter(k => (S.a[k] == null || S.a[k] === '') && !(k === 'adj' && S.a.region && S.a.region.code) && !(S.a.myscore != null && CYF.indexOf(k) >= 0));   // 가점을 적어 주셨으면 가점 계산 질문은 건너뜀   // 조정대상지역은 지역 + 날짜로 자동(공고 이력)
       const per = Math.max(1, Math.ceil(todo.length / 4));
       S.steps = []; for (let i = 0; i < todo.length; i += per) S.steps.push(todo.slice(i, i + per));
       if (S.si > S.steps.length) S.si = S.steps.length;
@@ -448,7 +578,7 @@
           S.facts = await danjiFacts(S.a.danji, IX);
           b.querySelector('small').textContent = S.facts && S.facts.price ? `골랐어요 · 최근 시세 ${C().won(S.facts.price)}` : '골랐어요';
         });
-        if (S.q0 && !S.a.danji && root.JDJ_ASK) find();
+        if (S.q0 && S.q0.split(/\s+/).length <= 5 && !S.a.danji && root.JDJ_ASK) find();
       }
       if (q.type === 'houses') {
         box.addEventListener('change', e => { const s = e.target.closest('[data-hf="sd"]'); if (s) s.parentNode.querySelector('[data-hf="g"]').innerHTML = guOpts(IX, s.value, ''); });
@@ -494,10 +624,19 @@
     S.done = true; saveProgress(S);
     stat('guide_solve', { s: sc.id });
     el.innerHTML = `<div class="gflow">${head}<div class="gprog"><div class="bar"><i style="width:100%"></i></div><b>해법</b></div>
-      ${cardHtml(r, D, S)}${next3Html(sc, a, D, r)}${afterHtml(sc, D)}
+      ${cardHtml(r, D, S)}${fbHtml(sc.id, 'solve')}${next3Html(sc, a, D, r)}${afterHtml(sc, D)}
       <p class="gdis">${esc(site())}는 공공데이터와 법령을 정해진 규칙으로 계산해 보여 드리는 정보 제공 서비스이며, 특정 부동산의 매수·매도를 권유하지 않아요. 세금·법률·대출의 최종 판단은 자격 있는 전문가와 확인해 주세요.</p></div>`;
     el.querySelector('[data-edit]') && el.querySelector('[data-edit]').addEventListener('click', () => { S.si = 0; S.done = false; S.steps = [(sc.ask || []).slice()].reduce((acc, all) => { const per = Math.max(1, Math.ceil(all.length / 4)); for (let i = 0; i < all.length; i += per) acc.push(all.slice(i, i + per)); return acc; }, []); render(el, S, D, IX); window.scrollTo(0, 0); });
     el.querySelectorAll('[data-save]').forEach(x => x.addEventListener('click', () => saveFor(x.dataset.save, S.a)));
+    fbWire(el);
+  }
+  /** 표(여러 개) — 칸 값이 {t, href} 면 링크, {t, g} 면 판정 색 */
+  function tablesHtml(T, lim) {
+    return (T || []).map(tb => { const rows = lim ? tb.rows.slice(0, lim) : tb.rows;
+      return `<div class="gtw"><h3 class="gtt">${esc(tb.title)}</h3>${tb.note ? `<p class="gtn">${esc(tb.note)}</p>` : ''}<div class="gts"><table class="gtbl gtbl2"><thead><tr>${tb.head.map(h => `<th scope="col">${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(row => `<tr>${row.map((c, ci) => {
+        const l = ` data-l="${esc(tb.head[ci] || '')}"`;
+        if (c && typeof c === 'object') return c.href ? `<td${l}><a href="${esc(c.href)}" target="_blank" rel="noopener">${esc(c.t)}</a></td>` : `<td${l}><span class="gg ${esc(c.g || '')}">${esc(c.t)}</span></td>`;
+        return `<td${l}>${esc(c)}</td>`; }).join('')}</tr>`).join('')}</tbody></table></div>${lim && tb.rows.length > lim ? `<p class="gtn">외 ${tb.rows.length - lim}줄은 ‘자세히’에서 볼 수 있어요.</p>` : ''}</div>`; }).join('');
   }
   function cardHtml(r, D, S) {
     const nums = (r.nums || []).map(n => `<div><small>${esc(n.k)}</small><b>${esc(n.v)}</b>${n.s ? `<span>${esc(n.s)}</span>` : ''}</div>`).join('');
@@ -506,7 +645,7 @@
     const info = r.info && r.info.length ? `<ul class="ginfo">${r.info.map(x => { const s = D.src[x.src] || {}; return `<li><span class="bd ${x.ok ? 'ok' : 'no'}">${x.ok ? '법령 확인' : '확인 필요'}</span>${esc(x.t)} ${s.url ? `<a href="${esc(srcUrl(s.url))}" target="_blank" rel="noopener">근거 ›</a>` : ''}</li>`; }).join('')}</ul>` : '';
     const memo = Object.keys(S.from).filter(k => S.from[k] && (S.sc.ask || []).indexOf(k) >= 0).map(k => `${LBL[k] || D.q[k].t.replace(/[?？]$/, '').slice(0, 18)} ← ${S.from[k]}`);
     return `<section class="gcard" aria-labelledby="gHead"><span class="gk">해법</span><h2 id="gHead">${esc(r.head)}</h2>
-      ${nums ? `<div class="gnums">${nums}</div>` : ''}${tbl}${ref}${info}
+      ${tablesHtml(r.tables)}${nums ? `<div class="gnums">${nums}</div>` : ''}${tbl}${ref}${info}
       ${r.warn && r.warn.length ? `<div class="gwarn"><h3>손해 피하는 주의점</h3><ul>${r.warn.map(w => `<li>${esc(w)}</li>`).join('')}</ul></div>` : ''}
       <p class="gnote">계산에 넣은 값: ${esc(r.note || '')}${memo.length ? `<br>미리 채운 값: ${esc(memo.join(' · '))}` : ''} <button type="button" data-edit="1">값 고치기</button></p>
       <details class="gsrc"><summary>출처 ${(r.src || []).length}개 보기</summary><ul>${(r.src || []).map(k => D.src[k]).filter(Boolean).map(s => `<li><a href="${esc(srcUrl(s.url))}" target="_blank" rel="noopener">${esc(s.nm)}</a></li>`).join('')}</ul></details></section>`;
@@ -553,5 +692,5 @@
     return `<section class="gnx" style="padding:0;margin:22px 0 0"><h2 style="margin:0 0 8px;font-size:17px;font-weight:900">이어서 하면 좋은 것</h2><ol style="list-style:none;margin:0;padding:0;display:grid;gap:8px">${ids.map((s, i) => `<li><a class="gchip" style="display:flex;width:100%;box-sizing:border-box;border-radius:14px;min-height:52px" href="${esc(solveUrl(s.id, '&from=after'))}">${i + 1}. ${esc(s.t)}</a></li>`).join('')}</ol></section>`;
   }
 
-  root.JDJ_GUIDE = { on, load, mountTop, mountFlow, logMiss, memory };
+  root.JDJ_GUIDE = { on, load, mountTop, mountFlow, logMiss, memory, warm };
 })(typeof window !== 'undefined' ? window : this);
