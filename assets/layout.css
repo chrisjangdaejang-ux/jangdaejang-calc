@@ -79,7 +79,7 @@
   body.lay-home .mlabel{padding:36px 0 0}
   body.lay-home .menu{padding:16px 0 0;grid-template-columns:repeat(4,minmax(0,1fr))}
   body.lay-home .menu .wide{grid-column:span 2}
-  body.lay-home .menu>a:last-child:nth-child(even){grid-column:1/-1}
+  body.lay-home .menu>a:last-child:nth-of-type(even){grid-column:1/-1}
   body.lay-home .h-end{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"m l" "c p" "ad ad" "cs ag";gap:0 24px;align-items:stretch;margin-top:16px}
   body.lay-home .h-end>.minelink:not(.loanlink){grid-area:m}body.lay-home .h-end>.loanlink{grid-area:l;border-width:2.5px}
   body.lay-home .h-end>.pl-comm{grid-area:c}body.lay-home .h-end>.pl-prem{grid-area:p}

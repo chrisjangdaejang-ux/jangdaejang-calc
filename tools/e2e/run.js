@@ -713,6 +713,30 @@ JOURNEYS.hall = async function (page, v, mock) {
 /* v57 이사 견적 받기(숨김) — 여정은 tools/e2e/move-journey.js */
 JOURNEYS.move = require('./move-journey')({ open, txt, ok: (c, m) => ok(c, m), feedbackNear, sleep, fs, path, loginAs, SHOTS: () => SHOTS });
 
+/* ---------- 첫 화면 '이사 갈 집 구하기' → [집이 있어요]·[전월세 살아요] 펼침(assets/switch-pick.js) ---------- */
+JOURNEYS.swpick = async function (page, v) {
+  await open(page, '');
+  const a = page.locator('a[data-track="home_to_switch"]');
+  await a.focus(); await page.keyboard.press('Enter'); await sleep(300);
+  const st = await page.evaluate(() => { const a = document.querySelector('a[data-track="home_to_switch"]'), b = document.getElementById('swPick');
+    const hs = b ? [...b.querySelectorAll('a[data-pick]')].map(x => x.getBoundingClientRect().height) : [];
+    const last = document.querySelector('nav.menu>a:last-of-type').getBoundingClientRect().width;
+    return { path: location.pathname, exp: a.getAttribute('aria-expanded'), pick: document.activeElement.dataset.pick, hs, full: !!b && Math.abs(b.getBoundingClientRect().width - last) < 2, over: document.documentElement.scrollWidth > innerWidth }; });
+  ok(/\/$/.test(st.path) && st.exp === 'true' && st.pick === 'own', '이사 갈 집 칸: Enter 로 두 단추 펼침·첫 단추로 포커스(이동 안 함)');
+  ok(st.hs.length === 2 && st.hs.every(h => h >= 44), '펼친 두 단추 높이 44px 이상');
+  ok(st.full && !st.over, '펼친 칸이 한 줄 전체·마지막 메뉴 칸도 한 줄 전체(격자 안 깨짐)');
+  if (SHOTS) { fs.mkdirSync(SHOTS, { recursive: true }); await page.evaluate(() => document.getElementById('swPick').scrollIntoView({ block: 'center' })); await sleep(300); await page.screenshot({ path: path.join(SHOTS, `home_switch_pick_${v.width}.png`) }); }
+  await page.keyboard.press('Escape'); await sleep(100);
+  ok(await page.evaluate(() => document.activeElement.dataset.track === 'home_to_switch' && document.activeElement.getAttribute('aria-expanded') === 'false'), 'Escape 로 접고 칸으로 포커스');
+  await a.focus(); await page.keyboard.press(' '); await sleep(200);
+  await Promise.all([page.waitForNavigation(), page.locator('#swPick a[data-pick="rent"]').click()]);
+  ok(/\/switch\/rent\/$/.test(new URL(page.url()).pathname), '[전월세 살아요] → 전월세 갈아타기 화면');
+  await open(page, '');
+  await Promise.all([page.waitForNavigation(), page.locator('a[data-track="home_to_switch"]').click()]);
+  ok(/\/switch\/rent\/$/.test(new URL(page.url()).pathname), '고른 값 기억 → 다음부터 칸을 누르면 바로 전월세 화면');
+  ok(/자가/.test(await txt(page, '.swtabs')), '이동한 화면에 자가 | 전월세 탭 그대로');
+};
+
 /* ---------- 실행 ---------- */
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });
