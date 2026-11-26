@@ -47,8 +47,8 @@ check('청약: 새 공고는 나온 뒤 7일 안에 한 번 메일 단계', C.du
 check('청약: 청약홈 주소만 링크로', cy.every(e => e.u === 'https://www.applyhome.co.kr/x'));
 
 /* ---------- ② 확인 못 한 규칙·금액·메일 단계 ---------- */
-check('일시적 2주택은 확인 전이라 꺼 둠(ok:false·이유 적음)', C.RULES.tmp2.ok === false && /확인/.test(C.RULES.tmp2.why));
-check('확인 전 규칙은 어떤 경우에도 일정이 안 생김', !ev.concat(lease, mv, cy).some(e => e.k === 'tmp2'));
+check('일시적 2주택(2026-11-26 법령 원문 확인)은 \'먼저 챙겨 드려요\'(pro) 규칙 — 기능이 꺼져 있으면 일정이 안 생김(자세한 확인은 tools/proactive-test.js)', C.RULES.tmp2.ok === true && C.RULES.tmp2.pro === 1 && !ev.concat(lease, mv, cy).some(e => e.k === 'tmp2' || e.k === 'hold2'));
+check('확인 전 규칙(ok:false)은 어떤 경우에도 일정이 안 생김', Object.keys(C.RULES).filter(k => !C.RULES[k].ok).every(k => !ev.concat(lease, mv, cy).some(e => e.k === k)));
 check('보여 주는 규칙은 모두 출처가 있음', Object.keys(C.RULES).filter(k => C.RULES[k].ok).every(k => C.RULES[k].src.length && C.RULES[k].src.every(s => C.SRC[s] && /^https:\/\//.test(C.SRC[s].url))));
 const cl = C.cleanAll({ h: { [HOME.key]: { t: 'own', acq: '2026-11-10', price: 150000, bp: 1, loan: 3 }, 'bad<key': { t: 'own' }, '11680|대치동|316|은마|59㎡대': { t: 'zz' } }, n: 2, ms: 5, x: 1 });
 check('저장 정리: 금액·모르는 칸은 버리고 날짜만', JSON.stringify(cl) === JSON.stringify({ h: { [HOME.key]: { t: 'own', acq: '2026-11-10', sell: '' } }, n: 2, t: '', ms: 5 }), cl);
@@ -104,7 +104,7 @@ check('보낸 기록에 연락처·날짜 원문 없음', !JSON.stringify(E.shee
 
 /* ---------- ④ 화면 ---------- */
 const page = read('mine/calendar/index.html'), center = read('my/alerts/index.html'), sw = read('sw.js'), mine = read('mine/index.html');
-check('달력 화면: 계산·세금 엔진·공시가격·로그인 부품', /cal-core\.js\?v=2/.test(page) && /tax-engine\.js/.test(page) && /gongsi\.js/.test(page) && /auth\.js/.test(page) && /back\.js\?v=1/.test(page));
+check('달력 화면: 계산·세금 엔진·공시가격·로그인 부품', /cal-core\.js\?v=3/.test(page) && /tax-engine\.js/.test(page) && /gongsi\.js/.test(page) && /auth\.js/.test(page) && /back\.js\?v=1/.test(page));
 check('달력 화면: 예상 재산세는 "참고" 표시 + 계산 근거', /예상 재산세\(참고\)/.test(page) && /공시가격 중간값/.test(page));
 check('달력 화면: 금액(보증금·현금·소득)은 이 기기(jdj_ta_me)에만 — 계정 저장(d.cal)에는 달력 칸만', /const TK = 'jdj_ta_me'/.test(page) && /d\.cal = Object\.assign\(\{\}, CAL/.test(page) && !/d\.cal[^;]*ME\./.test(page) && !/(dep|cash|inc)=/.test(page.replace(/data-ta-(dep|cash|inc)/g, '')));
 check('달력 화면: 로그인해야 날짜를 넣음', /AU\.gate\(/.test(page) && /loggedIn\(\)/.test(page));
@@ -112,7 +112,7 @@ check('달력 화면: 서비스 이름은 설정에서, 회사 이름·경쟁 �
 check('알림 센터: 달력 메일 켜기(prefs.cal)·서버 새 판 확인', /id="calBox"/.test(center) && /P\.cal = \$\('calOn'\)\.checked/.test(center) && /MINE\.cal === 1/.test(center));
 check('알림 계산: cal 설정은 직접 켠 경우에만', A.cleanPrefs({}).cal === false && A.cleanPrefs({ cal: true }).cal === true && A.cleanPrefs({ cal: 'y' }).cal === false);
 check('내 집 시세 화면에서 달력으로 가는 길', /href="calendar\/"/.test(mine));
-check('서비스 워커: 달력 화면·계산 파일', /'\.\/mine\/calendar\/'/.test(sw) && /cal-core\.js\?v=2/.test(sw));
+check('서비스 워커: 달력 화면·계산 파일', /'\.\/mine\/calendar\/'/.test(sw) && /cal-core\.js\?v=3/.test(sw));
 check('공식 출처 주소가 계산 파일에 그대로', ['news.seoul.go.kr/gov/archives/200106', 'news.seoul.go.kr/gov/archives/200082', 'easylaw.go.kr', 'lsJoLnkSeq=1007847519', 'lsJoLnkSeq=1018577211', 'mediahub.seoul.go.kr/archives/2001807', 'lsiSeq=249983'].every(u => read('assets/cal-core.js').includes(u)));
 const txt = Object.values(C.RULES).map(x => x.why || '').join(' ') + ev.concat(lease, mv2, cy).map(e => e.t + ' ' + e.s + ' ' + (e.p || '')).join(' ');
 check('문구: ~요 말투, 딱딱한 말투·보장 표현 없음', !/습니다|십시오|보장|무조건/.test(txt));

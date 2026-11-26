@@ -29,16 +29,18 @@
 <script src="../../assets/auth.js?v=10"></script>
 <script src="../../assets/savefb.js?v=1"></script>
 <script src="../../assets/mine-core.js?v=21"></script>
-<script src="../../assets/cal-core.js?v=2"></script>
+<script src="../../assets/cal-core.js?v=3"></script>
 <script src="../../assets/gongsi.js?v=3"></script>
 <script src="../../tax/tax-engine.js?v=4"></script>
 <script src="../../assets/loan-rules.js?v=3"></script>
 <script src="../../assets/loan-core.js?v=5"></script>
-<script src="../../assets/alerts-core.js?v=3"></script>
+<script src="../../assets/alerts-core.js?v=4"></script>
 <script src="../../assets/watch-core.js?v=2"></script>
 <script src="../../assets/watch.js?v=9"></script>
 <script src="../../assets/move-core.js?v=1"></script>
 <script src="../../assets/move.js?v=1"></script>
+<script src="../../tax/adjusted-areas.js"></script>
+<script src="../../assets/proactive.js?v=1"></script>
 <script src="../../assets/tabbar.js?v=5" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -126,6 +128,12 @@ h1{font-size:clamp(26px,6.4vw,32px);margin:2px 0 8px;letter-spacing:-.6px}
 .tr .ref{font-size:12.5px;color:var(--sub2);line-height:1.55;margin:6px 0 0}
 
 .note a{color:var(--sub2)}
+.pvf{margin:10px 0 0;padding:12px;border-radius:14px;background:#F7F4FF;border:1px solid #E4DCFA}
+.pvf h4{margin:0 0 4px;font-size:15.5px;font-weight:900}
+.pvf .sm{font-size:13px;color:var(--sub2);line-height:1.55;margin:2px 0 8px}
+.pvf .seg{grid-template-columns:repeat(3,1fr);margin:0 0 6px}
+.pvf .seg button{font-size:14px;min-height:44px}
+.pvf .auto{display:block;font-size:12.5px;color:#5B3FB0;font-weight:700;margin:0 0 8px}
 </style>
 <script src="../../assets/back.js?v=1" defer></script>
 </head>
@@ -138,6 +146,7 @@ h1{font-size:clamp(26px,6.4vw,32px);margin:2px 0 8px;letter-spacing:-.6px}
   <p class="eye">세금 · 계약 · 청약</p>
   <h1>내 부동산 달력</h1>
   <p class="lead" id="lead">놓치기 쉬운 세금 기한과 계약 날짜를 내 집 기준으로 모아 드려요. 날짜마다 무엇을 해야 하는지 쉬운 말로 함께 적었어요.</p>
+  <div id="proCard" hidden></div>
   <div class="lay" id="lay">
     <div>
       <section class="sec" id="ta" aria-labelledby="taT" hidden><h2 id="taT">전세 만기 준비 <small>세입자용 · 참고 정보</small></h2><div id="taBox"></div></section>
@@ -158,6 +167,7 @@ h1{font-size:clamp(26px,6.4vw,32px);margin:2px 0 8px;letter-spacing:-.6px}
 var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 (function(){
 'use strict';
+const PRO = window.JDJ_PRO || null, ADJ = window.JDJ_ADJ || null;
 const C = window.JDJ_CAL_CORE, M = window.JDJ_MINE, AU = window.JDJ_AUTH || null, W = window.JDJ_WATCH || null, G = window.JDJ_GONGSI || null, TX = window.JDJ_TAX || null;
 const SITE = ((window.JDJ_SITE || {}).SITE_NAME || '').trim() || '집예보';
 const DATA = JB.DATA + 'data/', BASE = JB.SITE, $ = id => document.getElementById(id);
@@ -210,10 +220,21 @@ async function estimates(list){
     const R = TX.propertyTax({ price: info.v * 10000, one: CAL.n === 1 });
     EST[hkey(h)] = { v: info.v, n: info.n, total: R.total, july: R.july, sept: R.sept, lump: R.lump, one: CAL.n === 1 };
   }
+  /* 예상 종부세(참고, 먼저 챙겨 드려요): 등록한 자가의 같은 평형 공시가격 중간값 합계로 기존 세금 계산기(compTax) — 이 기기에서만, 서버로 보내지 않음 */
+  EST._comp = null;
+  const ks = Object.keys(EST).filter(k => k[0] !== '_');
+  if (PRO && PRO.on() && TX.compTax && ks.length) {
+    const R = TX.compTax({ prices: ks.map(k => EST[k].v * 10000), one: CAL.n === 1 && ks.length === 1 });
+    EST._comp = { total: R.total, n: ks.length, one: R.one, sum: R.sum };
+  }
 }
 const wonR = v => { v = Math.round(v / 1000) * 1000; return v >= 10000 ? `${Math.floor(v / 10000).toLocaleString('ko-KR')}만${v % 10000 ? ' ' + (v % 10000).toLocaleString('ko-KR') : ''} 원` : `${v.toLocaleString('ko-KR')}원`; };
 function estHtml(e){
   const owns = homes().filter(h => (CAL.h[hkey(h)] || {}).t === 'own' && EST[hkey(h)]);
+  if (owns.length && (e.k === 'compN' || e.k === 'compP') && EST._comp) {
+    const x = EST._comp;
+    return `<span class="est"><b>예상 종합부동산세(참고) ${x.total > 0 ? '약 ' + esc(wonR(x.total)) : '내지 않을 가능성이 커요'}</b><br>등록한 자가 ${x.n}곳의 같은 평형 공시가격 중간값 합계 ${esc(G.man(Math.round(x.sum / 10000)))}로 ${x.one ? '1세대 1주택(공제 12억 원)' : '공제 9억 원'} 기준 계산했어요. 나이·보유 기간 공제와 작년 세액 상한은 넣지 않아 실제 고지서와 다를 수 있어요. 이 금액은 이 기기에서만 계산해요.</span>`;
+  }
   if (!owns.length || (e.k !== 'prop1' && e.k !== 'prop2')) return '';
   return owns.map(h => { const x = EST[hkey(h)], amt = e.k === 'prop1' ? x.july : x.sept;
     return `<span class="est"><b>예상 재산세(참고) ${esc(h.apt)} 약 ${esc(wonR(amt))}</b>${e.k === 'prop1' && x.lump ? ' — 한 해 세액이 적어 7월에 한꺼번에 낼 수 있어요' : ''}<br>같은 평형 공시가격 중간값 ${esc(G.man(x.v))}(${esc(x.n.toLocaleString('ko-KR'))}호)으로 ${x.one ? '1세대 1주택 특례를 넣어' : '일반 세율로'} 계산했어요. 지방교육세·도시지역분 포함, 우리 집 공시가격·작년 세액에 따라 달라져요.</span>`; }).join('');
@@ -221,7 +242,7 @@ function estHtml(e){
 
 /* ---------- 달력 ---------- */
 const KINDS = { all: '전체', tax: '세금', lease: '계약', cy: '청약' };
-const kindOf = k => ({ base: 'tax', prop1: 'tax', prop2: 'tax', compN: 'tax', compP: 'tax', acq: 'tax', cgt: 'tax', renewO: 'lease', renewC: 'lease', end: 'lease', move: 'lease', rent: 'lease', ta: 'lease', cy: 'cy' })[k] || 'tax';
+const kindOf = k => ({ hold2: 'tax', live2: 'tax', tmp2: 'tax', base: 'tax', prop1: 'tax', prop2: 'tax', compN: 'tax', compP: 'tax', acq: 'tax', cgt: 'tax', renewO: 'lease', renewC: 'lease', end: 'lease', move: 'lease', rent: 'lease', ta: 'lease', cy: 'cy' })[k] || 'tax';
 function areas(list){
   const out = [], seen = {};
   list.forEach(h => { const sd = gsido(h.code), gn = gname(h.code); const k = sd + '|' + gn; if (sd && gn && !seen[k]) { seen[k] = 1; out.push({ sd, gn }); } });
@@ -231,7 +252,7 @@ function events(){
   const list = homes(), items = list.map(h => ({ key: hkey(h), name: hname(h), cal: CAL.h[hkey(h)] || {} }));
   const hasOwn = items.some(x => x.cal.t === 'own');
   const t = today();
-  let ev = C.events(items, t, { notices: NOTICES, areas: areas(list) });
+  let ev = C.events(items, t, { notices: NOTICES, areas: areas(list), pro: !!(PRO && PRO.on()), n: CAL.n });   // pro: 비과세 2년·일시적 2주택(먼저 챙겨 드려요가 켜졌을 때만)
   if (!hasOwn && !items.some(x => x.cal.t)) ev = ev.concat(C.events([{ key: '00000|x||샘플|x', name: '', cal: { t: 'own' } }], t, {}).filter(e => ['base', 'prop1', 'prop2', 'compN', 'compP'].includes(e.k)).map(e => Object.assign(e, { sample: true })));
   ev.sort((a, b) => a.d < b.d ? -1 : a.d > b.d ? 1 : 0);
   return ev;
@@ -273,6 +294,46 @@ function drawEvents(){
 }
 
 /* ---------- 내 집 정보(자가·전세·월세, 날짜, 보유 주택 수) ---------- */
+/* ---------- 먼저 챙겨 드려요: 비과세 2년·일시적 2주택에 필요한 날짜(금액 없음) ---------- */
+function adjRegion(code){
+  const sd = gsido(code), gu = gname(code);
+  if (/^서울/.test(sd)) return { sido: '서울', gu };
+  if (/^경기/.test(sd)) { const L = ADJ && ADJ.guList ? ADJ.guList('경기') : []; return { sido: '경기', gu: L.indexOf(gu) >= 0 ? gu : /^화성시/.test(gu) ? '화성시 그 밖의 구' : '그 밖의 시·군' }; }
+  if (/^인천/.test(sd)) return { sido: '인천', gu: '' };
+  return { sido: '그 밖의 지역', gu: '' };
+}
+/** 그 날짜에 이 집 지역이 조정대상지역이었는지(tax/adjusted-areas.js): 'y' · 'n' · ''(직접 확인) */
+function adjAt(code, date){
+  if (!ADJ || !ADJ.isAdjusted || !date) return '';
+  try { const R = adjRegion(code), v = ADJ.isAdjusted(R.sido, R.gu, date); return v === true ? 'y' : v === false ? 'n' : ''; } catch (e) { return ''; }
+}
+function ynSeg(i, f, v, labels){ return `<div class="seg" role="group">${[['y', labels[0]], ['n', labels[1]], ['', labels[2]]].map(([k, t]) => `<button type="button" data-i="${i}" data-pv="${f}" data-v="${k}" aria-pressed="${(v || '') === k}">${t}</button>`).join('')}</div>`; }
+function proForm(x, i, c, dateF){
+  if (!PRO || !PRO.on()) return '';
+  const auto = adjAt(x.code, c.acq), t2 = c.t2 || {}, autoO = adjAt(x.code, t2.d);
+  const autoTxt = v => v === 'y' ? '자동 확인: 조정대상지역이었어요' : v === 'n' ? '자동 확인: 조정대상지역이 아니었어요' : '이 지역은 직접 확인이 필요해요(경계·일부 지정)';
+  return `<div class="pvf"><h4>먼저 챙겨 드려요 — 비과세 날짜</h4><p class="sm">팔 때 세금을 아끼려면 '2년'을 채워야 하는 날이 있어요. 아래를 넣으면 그날이 가까워질 때 먼저 알려 드려요. 날짜만 저장하고 금액은 받지 않아요.</p>
+    <span class="fl" style="margin:0 0 4px"><span>이 집을 살 때(취득일) 조정대상지역이었나요?</span></span>${ynSeg(i, 'adj', c.adj, ['네', '아니요', '모르겠어요'])}${c.acq ? `<span class="auto">${esc(autoTxt(auto))}</span>` : ''}
+    ${dateF('rs', '이 집에 전입한 날(거주 시작)', c.rs, '조정대상지역에서 산 집은 2년 이상 살아야 비과세예요. 거주 2년이 차는 날을 알려 드려요.')}
+    <label class="ck"><input type="checkbox" data-i="${i}" data-pv="t2on" ${t2.d || T2OPEN[hkey(x)] ? 'checked' : ''}> 새 집을 사서 잠시 두 채가 됐어요(일시적 2주택)</label>
+    ${t2.d || T2OPEN[hkey(x)] ? dateF('t2d', '새 집 잔금일', t2.d, '이 날부터 2년 또는 3년 안에 이 집을 팔아야 비과세를 받을 수 있어요.') +
+      `<span class="fl" style="margin:0 0 4px"><span>새 집 잔금일에 이 집이 조정대상지역이었나요?</span></span>${ynSeg(i, 'oa', t2.oa, ['네', '아니요', '모르겠어요'])}${t2.d ? `<span class="auto">${esc(autoTxt(autoO))}</span>` : ''}
+       <span class="fl" style="margin:0 0 4px"><span>새 집도 조정대상지역에 있나요?</span></span>${ynSeg(i, 'na', t2.na, ['네', '아니요', '모르겠어요'])}
+       <label class="ck"><input type="checkbox" data-i="${i}" data-pv="pre" ${t2.pre ? 'checked' : ''}> 2026년 8월 3일 전에 새 집 계약금을 냈어요</label>` : ''}</div>`;
+}
+const T2OPEN = {};      // '일시적 2주택' 칸을 펼친 집(새 집 잔금일을 넣기 전까지 이 화면에서만)
+function bindPro(list){
+  const el = $('homes'), upd = (i, fn) => { const x = list[+i], k = hkey(x), c = Object.assign({}, CAL.h[k] || {}); fn(c, x); CAL.h[k] = C.clean(c); touch(); drawHomes(); };
+  el.querySelectorAll('button[data-pv]').forEach(b => { b.onclick = () => upd(b.dataset.i, c => {
+    const f = b.dataset.pv, v = b.dataset.v;
+    if (f === 'adj') c.adj = v; else { c.t2 = Object.assign({}, c.t2 || {}); c.t2[f] = v; }
+  }); });
+  el.querySelectorAll('input[data-pv]').forEach(inp => { inp.onchange = () => upd(inp.dataset.i, (c, x) => {
+    const f = inp.dataset.pv;
+    if (f === 't2on') { if (inp.checked) T2OPEN[hkey(x)] = 1; else { delete c.t2; delete T2OPEN[hkey(x)]; } }
+    else if (f === 'pre') { c.t2 = Object.assign({}, c.t2 || {}, { pre: inp.checked }); }
+  }); });
+}
 function drawHomes(){
   const list = homes(), el = $('homes');
   $('lay').classList.toggle('need', !Object.keys(CAL.h).length);          // 휴대폰: 아직 아무것도 안 넣었으면 '내 집 정보'를 먼저
@@ -293,16 +354,19 @@ function drawHomes(){
     const dateF = (k, label, v, hint) => `<label class="fl"><span>${label}</span><input type="date" data-i="${i}" data-f="${k}" value="${esc(v || '')}" min="1990-01-01" max="2100-12-31">${hint ? `<small>${hint}</small>` : ''}</label>`;
     return `<div class="hm" id="${id}"><h3>${esc(x.apt)}</h3><p class="lc">${esc([gname(x.code), x.dong, x.band].filter(Boolean).join(' · '))}</p>
       <div class="seg" role="group" aria-label="${esc(x.apt)} 사는 방식">${Object.keys(C.TEN).map(t => `<button type="button" data-i="${i}" data-t="${t}" aria-pressed="${c.t === t}">${C.TEN[t]}</button>`).join('')}</div>
-      ${c.t === 'own' ? dateF('acq', '취득일(잔금일)', c.acq, '최근에 샀다면 취득세 신고 기한(60일)을 알려 드려요.') + dateF('sell', '파는 집 잔금일(팔 계획이 있을 때만)', c.sell, '양도소득세 예정신고 기한을 계산해 드려요.') : ''}
+      ${c.t === 'own' ? dateF('acq', '취득일(잔금일)', c.acq, '최근에 샀다면 취득세 신고 기한(60일)을 알려 드려요.') + dateF('sell', '파는 집 잔금일(팔 계획이 있을 때만)', c.sell, '양도소득세 예정신고 기한을 계산해 드려요.') + proForm(x, i, c, dateF) : ''}
       ${c.t === 'jeonse' || c.t === 'wolse' ? dateF('cs', '계약 시작일(이사한 날)', c.cs, '') + dateF('ce', '계약 만기일', c.ce, '계약갱신요구권을 쓸 수 있는 기간(만기 6개월 전~2개월 전)을 알려 드려요.') + (c.ce ? taForm(x, i, c) : '<p class="msg" style="margin:0">만기일을 넣으면 \'전세 만기 알림\'을 켤 수 있어요.</p>') : ''}</div>`;
   }).join('');
   h += `<button type="button" class="save" id="calSave">이대로 저장하기</button><div class="msg" id="calMsg" role="status"></div>`;
   el.innerHTML = h;
   el.querySelectorAll('button[data-n]').forEach(b => { b.onclick = () => { CAL.n = CAL.n === +b.dataset.n ? null : +b.dataset.n; touch(); drawHomes(); }; });
   el.querySelectorAll('button[data-t]').forEach(b => { b.onclick = () => { const x = list[+b.dataset.i], k = hkey(x), c = CAL.h[k] || {}; CAL.h[k] = C.clean(Object.assign({}, c, { t: c.t === b.dataset.t ? '' : b.dataset.t })); if (!CAL.h[k].t) delete CAL.h[k]; touch(); drawHomes(); }; });
-  el.querySelectorAll('input[data-f]').forEach(inp => { inp.onchange = () => { const x = list[+inp.dataset.i], k = hkey(x); CAL.h[k] = C.clean(Object.assign({}, CAL.h[k] || {}, { [inp.dataset.f]: inp.value })); if (inp.value && !CAL.h[k][inp.dataset.f]) { $('calMsg').className = 'msg err'; $('calMsg').textContent = '날짜를 다시 확인해 주세요. 만기일은 시작일보다 뒤여야 해요.'; } touch(); }; });
+  el.querySelectorAll('input[data-f]').forEach(inp => { inp.onchange = () => { const x = list[+inp.dataset.i], k = hkey(x), f = inp.dataset.f, c0 = Object.assign({}, CAL.h[k] || {});
+    if (f === 't2d') { const T = Object.assign({}, c0.t2 || {}, { d: inp.value }); if (!T.oa) T.oa = adjAt(x.code, inp.value); c0.t2 = T; CAL.h[k] = C.clean(c0); touch(); drawHomes(); return; }
+    if (f === 'acq' && !c0.adj && PRO && PRO.on()) c0.adj = adjAt(x.code, inp.value);   // 취득일을 넣으면 그날 조정대상지역이었는지 자동으로 채움(고칠 수 있음)
+    CAL.h[k] = C.clean(Object.assign(c0, { [f]: inp.value })); if (f === 'rs' || f === 'acq') { touch(); drawHomes(); return; } if (inp.value && !CAL.h[k][inp.dataset.f]) { $('calMsg').className = 'msg err'; $('calMsg').textContent = '날짜를 다시 확인해 주세요. 만기일은 시작일보다 뒤여야 해요.'; } touch(); }; });
   $('calSave').onclick = save;
-  bindTa(list);
+  bindTa(list); bindPro(list);
 }
 let tmr = 0;
 /* 고칠 때마다 이 기기에 바로 저장하고, 로그인 중이면 잠시 뒤 내 계정에도(단추를 누르면 바로) */
@@ -455,7 +519,7 @@ function drawMail(){
   const P = W && W.aprefs ? W.aprefs() : null, on = !!(P && P.cal);
   $('mail').innerHTML = `<p>${on ? '<b>달력 메일을 켜 두셨어요.</b> ' : ''}알림 센터에서 <b>'내 부동산 달력 메일'</b>을 켜면 기한 30일·7일·1일 전에 알려 드려요.</p>
     <p style="font-size:14px;color:var(--sub2)">모닝 브리핑을 메일로 받으시면 브리핑 메일 안에 함께 넣어 하루 한 통만 가요. 브리핑을 받지 않으시면 일주일에 한 번까지만 따로 보내요. 광고는 넣지 않아요.</p>
-    <a class="btn2" href="${BASE}my/alerts/#cal" data-track="calendar_to_alerts">${on ? '알림 센터에서 설정 보기' : '알림 센터에서 켜기'} ›</a>`;
+    <a class="btn2" href="${BASE}my/alerts/#cal" data-track="calendar_to_alerts">${on ? '알림 센터에서 설정 보기' : '알림 센터에서 켜기'} ›</a>${PRO && PRO.on() ? `<p style="font-size:14px;margin:10px 0 0"><a href="${BASE}my/memory/" data-track="calendar_to_memory">집예보가 기억하는 것 보기·지우기 ›</a></p>` : ''}`;
 }
 
 async function main(){
@@ -463,6 +527,7 @@ async function main(){
   const N = await jget('chungyak/notices.json'); NOTICES = (N && N.rows) || [];
   if (loggedIn()) await Promise.all([acctSync(), AU.syncHomes ? AU.syncHomes() : null, W && W.sync ? W.sync() : null]);
   await Promise.all([...new Set(homes().map(h => h.sd))].map(async sd => { DP[sd] = await dongPts(sd); }));
+  if (PRO) PRO.mount($('proCard'), 'calendar');
   drawHomes(); drawMail(); await refresh();
   if (location.hash === '#ta' && $('ta') && !$('ta').hidden) $('ta').scrollIntoView();
   stat('feature_use', { feature: 'calendar_view', homes: homes().length });

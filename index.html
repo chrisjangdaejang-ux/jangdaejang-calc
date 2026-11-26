@@ -49,7 +49,7 @@
 <script src="assets/brief-core.js?v=12" defer></script>
 <script src="assets/today-core.js?v=1" defer></script>
 <script src="assets/quiz-core.js?v=1" defer></script>
-<script src="assets/alerts-core.js?v=3" defer></script>
+<script src="assets/alerts-core.js?v=4" defer></script>
 <script src="assets/watch-core.js?v=2" defer></script>
 <script src="assets/watch.js?v=9" defer></script>
 <script src="assets/dongne-core.js?v=2" defer></script>
@@ -292,6 +292,7 @@
   <a class="qz" id="qzCard" href="quiz/" data-track="home_to_quiz" hidden></a>
   <a class="qz pqc" id="pqCard" href="quiz/#predict" data-track="home_to_predict" hidden></a>
   <a class="qz pqc" id="taCard" href="mine/calendar/#ta" data-track="home_to_tenant_alert"><span class="ic" aria-hidden="true">⏰</span><span><b>전세 만기 알림 받기</b><small>세입자라면 만기 6·4·2개월 전에 보증금이 내린 동네와 갱신 협상 정보를 알려 드려요</small></span><span class="go" aria-hidden="true">›</span></a>
+  <div id="proCard" hidden aria-label="집예보가 먼저 챙겨 드려요"></div>
   <div data-dp-best hidden aria-label="이번 주 우수 동네 소식(제휴)" style="margin:0 0 16px"></div>
 
   <section class="pulse" id="pulse" hidden aria-labelledby="plTitle">
@@ -589,6 +590,8 @@ addEventListener('DOMContentLoaded', () => {
 <script>/* 단지 이름으로 물어보기(assets/ask.js): 1곳 → 내 집 시세, 2~3곳 → 단지 비교 */ addEventListener('DOMContentLoaded', () => { if (window.JDJ_ASK) JDJ_ASK.mount(document.getElementById('askBox'), {from:'home'}); });</script>
 <script>/* 관심 지역 새 공고 배지(관심 지역을 정한 사람만 공고 자료를 받음). 상태는 분양 화면과 같은 공용 함수(sale-status.js)로 */ addEventListener('DOMContentLoaded', () => { if (window.JDJ_AREA) JDJ_AREA.badge(document.querySelector('a[data-track="home_to_bunyang"]')); });</script>
 <script src="./assets/brief-cta.js?v=1" defer></script>
+<script src="./assets/proactive.js?v=1" defer></script>
+<script>/* 집예보가 먼저 챙겨 드려요(assets/config.js PROACTIVE_ENABLED 가 꺼져 있으면 칸이 생기지 않음) */ addEventListener('DOMContentLoaded', () => { if (window.JDJ_PRO) JDJ_PRO.mount(document.getElementById('proCard'), 'home'); });</script>
 <script src="./assets/ad-slot.js?v=6" defer></script>
 </body>
 </html>

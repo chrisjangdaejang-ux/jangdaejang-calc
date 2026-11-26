@@ -7,7 +7,7 @@
 (function (root) {
 'use strict';
 /* CAL-CORE BEGIN — 이 블록은 tools/agent-backend.gs 에 그대로 복사돼 있어요. 고칠 때는 두 곳을 똑같이 고쳐 주세요(node tools/cal-test.js 가 비교). */
-const CAL_V = 'cal-2026-11-25';
+const CAL_V = 'cal-2026-11-26';
 const CAL_TEN = { own: '자가', jeonse: '전세', wolse: '월세' };
 /* 공식 출처(2026-11-25 직접 열어 확인) */
 const CAL_SRC = {
@@ -20,7 +20,10 @@ const CAL_SRC = {
   move: { nm: '주택임대차보호법 제3조(국가법령정보센터)', url: 'https://www.law.go.kr/lsLinkCommonInfo.do?lsJoLnkSeq=1018577211&chrClsCd=010202&ancYnChk=' },
   rent: { nm: '서울특별시 내 손안에 서울 「전·월세 계약 꼭 신고하세요」', url: 'https://mediahub.seoul.go.kr/archives/2001807' },
   cy: { nm: '한국부동산원 청약홈 분양 공고', url: 'https://www.applyhome.co.kr/' },
-  rentdata: { nm: '국토교통부 아파트·연립다세대·오피스텔 전월세 실거래가 공개 자료', url: 'https://rt.molit.go.kr/' }
+  rentdata: { nm: '국토교통부 아파트·연립다세대·오피스텔 전월세 실거래가 공개 자료', url: 'https://rt.molit.go.kr/' },
+  /* 집예보가 먼저 챙겨 드려요(PROACTIVE, 2026-11-26 직접 열어 확인) */
+  own1: { nm: '법제처 법령해석례 23-0932 — 소득세법 시행령 제154조 제1항(보유 2년·조정대상지역 거주 2년)·제155조 제1항(일시적 2주택) 원문 인용(국가법령정보센터)', url: 'https://www.law.go.kr/LSW/expcInfoP.do?expcSeq=338247' },
+  tmp26: { nm: '소득세법 시행령 일부개정령(대통령령 제36737호, 2026.9.30 공포·10.1 시행) 제155조 제1항·부칙 제2조(국가법령정보센터)', url: 'https://www.law.go.kr/LSW/lsRvsDocInfoR.do?lsiSeq=290841' }
 };
 /* ok:false = 공식 원문을 확인하지 못함 → 계산·표시하지 않음 */
 const CAL_RULES = {
@@ -28,8 +31,13 @@ const CAL_RULES = {
   compN: { ok: true, src: ['comp'] }, compP: { ok: true, src: ['comp'] }, acq: { ok: true, src: ['acq'] }, cgt: { ok: true, src: ['cgt'] },
   renewO: { ok: true, src: ['renew', 'renew2'] }, renewC: { ok: true, src: ['renew', 'renew2'] }, end: { ok: true, src: ['renew'] },
   move: { ok: true, src: ['move'] }, rent: { ok: true, src: ['rent'] }, cy: { ok: true, src: ['cy'] }, ta: { ok: true, src: ['renew', 'rentdata'] },
-  tmp2: { ok: false, src: [], why: '일시적 2주택 처분 기한은 2026년 10월에 바뀐 규정이라, 공식 사이트에서 법령 원문을 확인한 뒤 보여 드릴게요.' }
+  /* pro:1 = '집예보가 먼저 챙겨 드려요' 기능(PROACTIVE_ENABLED) 켜졌을 때만 계산·표시 */
+  hold2: { ok: true, src: ['own1'], pro: 1 }, live2: { ok: true, src: ['own1'], pro: 1 },
+  tmp2: { ok: true, src: ['own1', 'tmp26'], pro: 1 }
 };
+/* 기한이 길어 미리 알아야 하는 것(일시적 2주택 처분)은 180일·90일 전부터 알림 */
+const CAL_LONG = { tmp2: 1 };
+const CAL_STAGES = ['d180', 'd90', 'd30', 'd7', 'd1'];
 const CAL_AHEAD = 400, CAL_PAST = 0, CAL_MAX = 60;
 const calOkDate = v => /^(19[9]\d|20\d\d|2100)-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(String(v || '')) && calIso(calT(String(v))) === String(v);
 function calT(iso) { return Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)); }
@@ -52,7 +60,12 @@ function calClean(x) {
   x = x && typeof x === 'object' ? x : {};
   const t = CAL_TEN[x.t] ? x.t : '', d = v => calOkDate(v) ? String(v) : '';
   const o = { t: t };
-  if (t === 'own') { o.acq = d(x.acq); o.sell = d(x.sell); }
+  if (t === 'own') { o.acq = d(x.acq); o.sell = d(x.sell);
+    /* PROACTIVE: 전입일(거주 시작) · 취득 당시 조정대상지역(y/n/'' 모름) · 일시적 2주택(새 집 잔금일, 새 집 잔금일에 이 집·새 집이 조정대상지역인지, 2026.8.3 전에 새 집 계약금을 냈는지) — 금액 없음 */
+    const yn = v => v === 'y' || v === 'n' ? v : '';
+    if (d(x.rs)) o.rs = d(x.rs); if (yn(x.adj)) o.adj = yn(x.adj);
+    const t2 = x.t2 && typeof x.t2 === 'object' ? x.t2 : null;
+    if (t2 && d(t2.d)) o.t2 = { d: d(t2.d), oa: yn(t2.oa), na: yn(t2.na), pre: t2.pre === true }; }
   if (t === 'jeonse' || t === 'wolse') { o.cs = d(x.cs); o.ce = d(x.ce); if (o.cs && o.ce && o.ce <= o.cs) o.ce = ''; if (x.ta && typeof x.ta === 'object') o.ta = calCleanTa(x.ta); }
   return o;
 }
@@ -96,6 +109,22 @@ function calHome(h) {
   if (c.t === 'own') {
     if (c.acq) { const dl = calAdd(c.acq, 60);
       out.push(calEv('acq', dl, Object.assign(o(), { start: c.acq, t: '취득세 신고·납부 기한', s: `취득일(잔금일 ${calKoY(c.acq)})부터 60일 안에 취득세를 신고하고 내요. 잔금 전에 등기를 먼저 했다면 등기일부터 세요. 상속은 기한이 달라요(상속 개시일이 속한 달 말일부터 6개월).` }))); }
+    if (c.acq && h.n !== 3) {                 // 1세대 1주택 비과세 보유 2년(3채 이상이면 뺌)
+      const h2 = calAddM(c.acq, 24), law = c.acq >= '2017-08-03';
+      const pn = c.adj === 'y' && law ? `취득 당시 조정대상지역이라 2년 이상 살기도 해야 해요.${c.rs ? '' : ' 내 집 정보에 전입한 날을 넣으면 거주 2년이 차는 날도 알려 드려요.'}`
+        : c.adj === 'n' || !law ? '취득 당시 조정대상지역이 아니어서 살아야 하는 기간(거주 요건)은 없어요.' : '취득 당시 조정대상지역이었다면 2년 이상 살기도 해야 해요. 내 집 정보에서 골라 주시면 정확해져요.';
+      out.push(calEv('hold2', h2, Object.assign(o(), { t: '1세대 1주택 비과세 — 보유 2년이 차는 날', s: `취득일(잔금일 ${calKoY(c.acq)})부터 2년이 ${calKoY(h2)}에 차요. 1세대 1주택은 2년 이상 가진 뒤 팔아야 양도소득세 비과세를 받을 수 있어요(파는 값 12억 원을 넘는 부분은 과세). 하루 차이로 결과가 갈릴 수 있으니 파는 잔금일은 여유 있게 잡고, 계약 전에 세무서나 세무사에게 한 번 더 확인해 두세요.`, p: pn })));
+      if (c.rs && c.adj !== 'n' && law) {
+        const st = c.rs > c.acq ? c.rs : c.acq, l2 = calAddM(st, 24);
+        out.push(calEv('live2', l2, Object.assign(o(), { start: st, t: '1세대 1주택 비과세 — 거주 2년이 차는 날', s: `${calKoY(st)}부터 살기 시작했다면 거주 2년은 ${calKoY(l2)}에 차요. 취득 당시 조정대상지역인 집은 가지고 있는 동안 2년 이상 살아야 비과세를 받아요. 거주 기간은 보통 전입신고한 날부터 세고, 중간에 나갔다 들어왔다면 기간을 합쳐 다시 확인해 주세요.`, p: c.adj === 'y' ? '' : '취득 당시 조정대상지역이 아니었다면 이 날짜는 필요 없어요.' })));
+      }
+    }
+    if (c.acq && c.t2 && c.t2.d) {            // 일시적 2주택: 새 집 잔금일부터 2년(조정→조정, 2026.8.4 이후 취득) 또는 3년 안에 이 집을 팖
+      const T = c.t2, after = T.d >= '2026-08-04' && !T.pre, short = after && T.oa === 'y' && T.na === 'y', unk = after && !short && T.oa !== 'n' && T.na !== 'n';
+      const yrs = short || unk ? 2 : 3, dl = calAddM(T.d, yrs * 12), b1 = T.d < calAddM(c.acq, 12);
+      out.push(calEv('tmp2', dl, Object.assign(o(), { start: T.d, t: '일시적 2주택 — 이 집을 팔아야 하는 기한', s: `새 집 잔금일(${calKoY(T.d)})부터 ${yrs}년 안, ${calKoY(dl)}까지 이 집(먼저 가진 집)을 팔아야 1세대 1주택처럼 비과세를 받을 수 있어요. ${short ? '새 집 잔금일에 두 집이 모두 조정대상지역이라, 2026년 10월 1일부터 바뀐 규정에 따라 2년이에요.' : unk ? '새 집 잔금일에 두 집이 모두 조정대상지역이면 2년, 아니면 3년이에요. 아직 고르지 않으셔서 더 이른 2년 기준으로 알려 드려요.' : !after ? '2026년 8월 3일 전에 새 집을 샀거나 계약금을 내서, 예전 규정대로 3년이에요.' : '새 집 잔금일에 두 집이 모두 조정대상지역인 경우가 아니어서 3년이에요.'} 이 집의 보유 2년(조정대상지역에서 산 집이면 거주 2년)도 함께 채워야 해요.`,
+        p: b1 ? '이 집을 산 날부터 1년이 지나기 전에 새 집을 사면 이 특례를 받을 수 없어요. 세무사에게 꼭 확인해 주세요.' : '' })));
+    }
     if (c.sell) { const dl = calMonthEnd(calAddM(calMonthEnd(c.sell).slice(0, 8) + '01', 2));
       out.push(calEv('cgt', dl, Object.assign(o(), { start: c.sell, t: '양도소득세 예정신고 기한', s: `파는 집 잔금일(${calKoY(c.sell)})이 속한 달의 말일부터 2개월 안에 예정신고를 해요. 비과세라도 신고가 필요한지 세무서나 세무사에게 확인해 두세요.` }))); }
   }
@@ -136,27 +165,29 @@ function calCy(notices, areas, today) {
 function calEvents(homes, today, opt) {
   opt = opt || {};
   const ahead = opt.ahead || CAL_AHEAD, lo = calAdd(today, -(opt.past || CAL_PAST)), hi = calAdd(today, ahead);
-  const hs = (homes || []).map(h => h && h.key ? { key: h.key, name: String(h.name || ''), cal: calClean(h.cal) } : null).filter(h => h && h.cal.t);
+  const hs = (homes || []).map(h => h && h.key ? { key: h.key, name: String(h.name || ''), cal: calClean(h.cal), n: opt.n || null } : null).filter(h => h && h.cal.t);
   let ev = [];
   const owns = hs.filter(h => h.cal.t === 'own');
   const y = +today.slice(0, 4);
   if (owns.length) for (let yy = y; yy <= y + 1; yy++) ev = ev.concat(calYear(yy, owns));
   hs.forEach(h => { ev = ev.concat(calHome(h)); });
   if (opt.notices && opt.areas) ev = ev.concat(calCy(opt.notices, opt.areas, today));
-  ev = ev.filter(e => CAL_RULES[e.k] && CAL_RULES[e.k].ok && (e.end > e.d ? e.end : e.d) >= lo && (e.start || e.d) <= hi);
+  ev = ev.filter(e => CAL_RULES[e.k] && CAL_RULES[e.k].ok && (!CAL_RULES[e.k].pro || opt.pro === true) && (e.end > e.d ? e.end : e.d) >= lo && (e.start || e.d) <= hi);
   ev.forEach(e => { e.dd = calDiff(today, e.d); });
   ev.sort((a, b) => a.d < b.d ? -1 : a.d > b.d ? 1 : a.id < b.id ? -1 : 1);
   return ev.slice(0, CAL_MAX);
 }
-/** 메일로 알릴 단계: daily(모닝 브리핑에 함께) = 30일·7일·1일 전, weekly(따로 보내는 주 1회) = 5주·1주 안. 새 청약 공고는 나온 뒤 7일 안 한 번. 이미 보낸 단계(sent[id|단계])는 뺌 */
-function calStage(dd, mode) {
+/** 메일로 알릴 단계: daily(모닝 브리핑에 함께) = 30일·7일·1일 전, weekly(따로 보내는 주 1회) = 5주·1주 안. 새 청약 공고는 나온 뒤 7일 안 한 번. 이미 보낸 단계(sent[id|단계])는 뺌.
+    long(CAL_LONG — 일시적 2주택 처분 기한)은 180일·90일 전 단계가 더 있음. 늦은 단계를 이미 보냈으면 그보다 이른 단계는 보내지 않음 */
+function calStage(dd, mode, long) {
   if (dd < 0) return '';
-  if (mode === 'weekly') return dd <= 8 ? 'd7' : dd <= 37 ? 'd30' : '';
-  return dd <= 1 ? 'd1' : dd <= 7 ? 'd7' : dd <= 30 ? 'd30' : '';
+  if (mode === 'weekly') return dd <= 8 ? 'd7' : dd <= 37 ? 'd30' : long && dd <= 97 ? 'd90' : long && dd <= 187 ? 'd180' : '';
+  return dd <= 1 ? 'd1' : dd <= 7 ? 'd7' : dd <= 30 ? 'd30' : long && dd <= 90 ? 'd90' : long && dd <= 180 ? 'd180' : '';
 }
 function calDue(ev, mode, sent) {
   sent = sent || {};
-  return (ev || []).map(e => Object.assign({}, e, { stage: e.sub === 'new' ? (e.dd <= 0 && e.dd >= -7 ? 'd1' : '') : e.sub === 'ta' ? (e.dd <= 0 && e.dd >= -14 ? 'ta' : '') : calStage(e.dd, mode) })).filter(e => e.stage && !sent[e.id + '|' + e.stage] && !(e.stage === 'd30' && sent[e.id + '|d7']) && !(e.stage !== 'd1' && sent[e.id + '|d1']));
+  const later = (id, st) => { const i = CAL_STAGES.indexOf(st); return i >= 0 && CAL_STAGES.slice(i).some(x => sent[id + '|' + x]); };
+  return (ev || []).map(e => Object.assign({}, e, { stage: e.sub === 'new' ? (e.dd <= 0 && e.dd >= -7 ? 'd1' : '') : e.sub === 'ta' ? (e.dd <= 0 && e.dd >= -14 ? 'ta' : '') : calStage(e.dd, mode, !!CAL_LONG[e.k]) })).filter(e => e.stage && !sent[e.id + '|' + e.stage] && !later(e.id, e.stage));
 }
 function calEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 function calWhen(e) {
@@ -244,7 +275,7 @@ function calTaMailHtml(name, scan, own, o) {
 /* CAL-CORE END */
 
 const API = { V: CAL_V, TEN: CAL_TEN, SRC: CAL_SRC, RULES: CAL_RULES, AHEAD: CAL_AHEAD, okDate: calOkDate, add: calAdd, addM: calAddM, diff: calDiff, monthEnd: calMonthEnd, ko: calKo, koY: calKoY, dow: calDow,
-  clean: calClean, cleanAll: calCleanAll, cleanTa: calCleanTa, TA_TY: CAL_TA_TY, taScan: calTaScan, taOwn: calTaOwn, taMailHtml: calTaMailHtml, won: calWon, med: calMed, KEY: CAL_KEY, year: calYear, home: calHome, cy: calCy, events: calEvents, stage: calStage, due: calDue, when: calWhen, mailHtml: calMailHtml, esc: calEsc };
+  STAGES: CAL_STAGES, LONG: CAL_LONG, clean: calClean, cleanAll: calCleanAll, cleanTa: calCleanTa, TA_TY: CAL_TA_TY, taScan: calTaScan, taOwn: calTaOwn, taMailHtml: calTaMailHtml, won: calWon, med: calMed, KEY: CAL_KEY, year: calYear, home: calHome, cy: calCy, events: calEvents, stage: calStage, due: calDue, when: calWhen, mailHtml: calMailHtml, esc: calEsc };
 root.JDJ_CAL_CORE = API;
 if (typeof module !== 'undefined' && module.exports) module.exports = API;
 })(typeof window !== 'undefined' ? window : globalThis);

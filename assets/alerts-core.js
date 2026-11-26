@@ -19,7 +19,7 @@ const AX_JR_LINES = [80, 90];                     // 전세가율이 이 선을 
 const AX_NB_M = 500, AX_NB_MONTHS = 3, AX_NEAR_DAYS = 14;   // 신축 허가: 관심 단지에서 이 거리(m) 안·최근 이 달 수 안 허가 · 근처 청약: 공고 뒤 이 날 수 안
 const AX_CY_KINDS = { cy_new: '새 청약 공고', cy_eve: '청약 접수 하루 전', cy_win: '당첨자 발표일' };
 const AX_URG = 10, AX_DROP = -10, AX_JR = 5;       // 급매(%) · 큰 하락(%) · 전세가율 변화(%p) — 위 설명의 기존 기준
-const AX_MAX_PLACES = 30, AX_MAX_REGIONS = 10, AX_MAX_LINES = 40;
+const AX_MAX_PLACES = 30, AX_MAX_REGIONS = 10, AX_MAX_LINES = 40, AX_MAX_ZONES = 20;
 const AX_BN = ['60㎡ 이하', '60~85㎡', '85㎡ 초과'];
 const AX_SIDO_OLD = { '광주광역시': '전남광주통합특별시', '전라남도': '전남광주통합특별시', '강원도': '강원특별자치도', '전라북도': '전북특별자치도', '제주도': '제주특별자치도' };
 function axEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
@@ -39,7 +39,19 @@ function axKeyId(s) {
 }
 function axSido(s) { s = String(s || ''); return AX_SIDO_OLD[s] || s; }
 
-/** 알림 설정 정리(서버·화면 같은 규칙). kinds = 관심 단지 알림 종류, mute = 알림을 끈 단지(키), cy = 청약 맞춤 알림 */
+/** '집예보가 먼저 챙겨 드려요'(PROACTIVE) 설정 — 모두 사용자가 직접 켠 경우만(기본 꺼짐).
+    home = 내 집 단지도 관심 단지처럼 새 실거래·신고가·급매 알림 · reg = 내 동네 규제지역·토지거래허가구역 지정/해제 · zone = 따라보는 재개발·재건축 구역 단계 변화
+    zones = 따라보는 구역 [{id, st 따라보기 시작했을 때(또는 마지막으로 알린) 단계 번호, n 이름}] — 금액 없음 */
+function axCleanPv(x) {
+  x = x && typeof x === 'object' ? x : {};
+  const seen = {}, zones = (Array.isArray(x.zones) ? x.zones : []).map(z => {
+    if (!z || typeof z !== 'object') return null;
+    const id = axTxt(z.id, 60), st = Math.round(Number(z.st));
+    return /^\d{5}[^|]{1,50}$/.test(id) ? { id: id, st: isFinite(st) && st >= 0 && st <= 20 ? st : 0, n: axTxt(z.n, 40) } : null;
+  }).filter(z => z && !seen[z.id] && (seen[z.id] = 1)).slice(0, AX_MAX_ZONES);
+  return { home: x.home === true, reg: x.reg === true, zone: x.zone === true, zones: zones };
+}
+/** 알림 설정 정리(서버·화면 같은 규칙). kinds = 관심 단지 알림 종류, mute = 알림을 끈 단지(키), cy = 청약 맞춤 알림, pv = 먼저 챙겨 드려요 */
 function axCleanPrefs(x) {
   x = x && typeof x === 'object' ? x : {};
   const k = x.kinds && typeof x.kinds === 'object' ? x.kinds : {}, kinds = {};
@@ -53,7 +65,7 @@ function axCleanPrefs(x) {
   if (lo != null && hi != null && lo > hi) { const t = lo; lo = hi; hi = t; }
   const ck = c.kinds && typeof c.kinds === 'object' ? c.kinds : {}, cyk = {};
   Object.keys(AX_CY_KINDS).forEach(q => { cyk[q] = ck[q] !== false; });
-  return { kinds: kinds, mute: mute, cy: { on: c.on === true && regions.length > 0, regions: regions, nohome: c.nohome === true ? true : c.nohome === false ? false : null, lo: lo, hi: hi, kinds: cyk }, rp: x.rp === true, cal: x.cal === true };
+  return { kinds: kinds, mute: mute, cy: { on: c.on === true && regions.length > 0, regions: regions, nohome: c.nohome === true ? true : c.nohome === false ? false : null, lo: lo, hi: hi, kinds: cyk }, rp: x.rp === true, cal: x.cal === true, pv: axCleanPv(x.pv) };
 }
 
 /* ---------- 관심 단지 한 곳의 알림 ----------
@@ -255,7 +267,7 @@ function axMailHtml(D, o) {
 /* ALERTS-CORE END */
 
 const API = { V: AX_V, KINDS: AX_KINDS, OPTIN: AX_OPTIN, JR_LINES: AX_JR_LINES, NB_M: AX_NB_M, CY_KINDS: AX_CY_KINDS, URG: AX_URG, DROP: AX_DROP, JR: AX_JR, MAX_PLACES: AX_MAX_PLACES, BN: AX_BN,
-  esc: axEsc, won: axWon, pid: axPid, iso: axIso, addDay: axAddDay, md: axMd, keyId: axKeyId, sido: axSido, cleanPrefs: axCleanPrefs, placeEvents: axPlaceEvents,
+  esc: axEsc, won: axWon, pid: axPid, iso: axIso, addDay: axAddDay, md: axMd, keyId: axKeyId, sido: axSido, cleanPrefs: axCleanPrefs, cleanPv: axCleanPv, MAX_ZONES: AX_MAX_ZONES, placeEvents: axPlaceEvents,
   nbEvents: axNbEvents, cyNear: axCyNear, dist: axDist, ym: axYm, cyMatch: axCyMatch, cyStages: axCyStages, cyEvents: axCyEvents, digest: axDigest, unread: axUnread, canSend: axCanSend, adOk: axAdOk, links: axLinks, mailHtml: axMailHtml };
 root.JDJ_ALERTS_CORE = API;
 if (typeof module !== 'undefined' && module.exports) module.exports = API;

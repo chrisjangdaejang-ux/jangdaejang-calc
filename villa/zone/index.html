@@ -30,6 +30,8 @@
 <script src="../../assets/counsel.js?v=5"></script>
 <script src="../../assets/map-engine.js?v=3"></script>
 <script src="../../assets/redev-core.js?v=1"></script>
+<script src="../../assets/alerts-core.js?v=4"></script>
+<script src="../../assets/proactive.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../assets/aplus.css?v=46">
@@ -182,6 +184,11 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
     let tq; $('fQ').oninput = () => { clearTimeout(tq); tq = setTimeout(() => { S.q = $('fQ').value.trim(); S.shown = 20; draw(true); }, 250); };
     $('list').onclick = e => {
       const m = e.target.closest('[data-more]'); if (m) { const z = byId(m.dataset.more); const box = m.parentElement.querySelector('.det'); if (box) { box.remove(); m.textContent = '단계 이력·자세히 보기'; } else { m.insertAdjacentHTML('afterend', detail(z)); m.textContent = '접기'; track('redev_detail', { id: z.id }); } return; }
+      const fw = e.target.closest('[data-follow]'); if (fw && PRO) { const z = byId(fw.dataset.follow), r = PRO.toggleZone(z); track('redev_follow', { id: z.id, on: r.on ? 1 : 0 });
+        if (r.full) { fw.textContent = '따라보기는 20곳까지예요'; return; }
+        fw.outerHTML = followBtn(z).trim();
+        const msg = document.getElementById('z-' + z.id); if (msg && r.on) { const p = document.createElement('p'); p.className = 'note'; p.setAttribute('role', 'status'); p.innerHTML = `다음 단계로 넘어가면 알려 드려요. 메일로 받으려면 <a href="${JB.SITE}my/alerts/#pv">알림 센터</a>에서 '따라보는 구역 단계 변화'를 켜 주세요.`; msg.appendChild(p); }
+        return; }
       const f = e.target.closest('[data-fly]'); if (f) { fly(byId(f.dataset.fly)); return; }
       if (e.target.closest('#moreList')) { S.shown += 20; list(); }
     };
@@ -209,7 +216,14 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
     const fly = z.pt ? `<button class="more" data-fly="${esc(z.id)}">지도에서 보기</button>` : '';
     return `<div class="zc${S.sel === z.id ? ' sel' : ''}" id="z-${esc(z.id)}"><div class="hd"><div><div>${tb}</div><div class="nm">${esc(z.n)}</div><div class="loc">${esc(loc)}${z.new ? ` · 새로 지을 집 ${z.new.toLocaleString('ko-KR')}세대` : ''}</div></div></div>
       ${stageLine(z)}${spBox(z)}
-      <button class="more" data-more="${esc(z.id)}">단계 이력·자세히 보기</button> ${fly}</div>`;
+      <button class="more" data-more="${esc(z.id)}">단계 이력·자세히 보기</button> ${fly}${followBtn(z)}</div>`;
+  }
+  /* 먼저 챙겨 드려요: 구역 따라보기(assets/proactive.js — 기능이 꺼져 있으면 버튼이 없음). 구역 id·단계 번호·이름만 저장 */
+  const PRO = window.JDJ_PRO || null;
+  function followBtn(z) {
+    if (!PRO || !PRO.on() || z.t === 'nt') return '';
+    const on = PRO.followed(z.id);
+    return ` <button class="more" data-follow="${esc(z.id)}" aria-pressed="${on}" style="${on ? 'color:#5B3FB0;border-color:#B9A8EE;background:#F7F4FF' : ''}">${on ? '★ 단계 알림 받는 중' : '☆ 단계 바뀌면 알림'}</button>`;
   }
   function detail(z) {
     const tl = R.timeline(z, D).map(r => `<li class="${r.est ? 'est' : ''}"><b>${esc(r.name)}</b> ${esc(r.at)}${r.est ? (r.ok ? ' <span class="bd ok">맞힌 기록 있음</span>' : ' <span class="bd ref">참고</span>') : ''}${r.plain ? `<small>${esc(r.plain)}</small>` : ''}</li>`).join('');
@@ -313,6 +327,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
     const gus = {}; D.z.forEach(z => { if (z.g) gus[z.g] = z.gn; });
     $('fGu').innerHTML = '<option value="">서울 전체</option>' + Object.keys(gus).sort((a, b) => gus[a].localeCompare(gus[b], 'ko')).map(g => `<option value="${g}">${esc(gus[g])}</option>`).join('') + '<option value="" disabled>1기 신도시는 사업 종류에서 골라요</option>';
     legend(); how(); src(); list();
+    try { const q = new URLSearchParams(location.search).get('z'); const zq = q && byId(q); if (zq) setTimeout(() => pick(zq), 0); } catch (e) {}   // 알림 메일의 '구역 지도에서 보기'
     try {
       MAP = await window.JDJ_MAPE.create($('map'), { lat: 37.555, lng: 126.99, zoom: 11 });
       MAP.onIdle(() => shapes());

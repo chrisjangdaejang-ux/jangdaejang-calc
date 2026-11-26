@@ -39,7 +39,8 @@
 <script src="../assets/config.js?v=11"></script>
 <script src="../assets/auth.js?v=10"></script>
 <script src="../assets/savefb.js?v=1"></script>
-<script src="../assets/alerts-core.js?v=3"></script>
+<script src="../assets/alerts-core.js?v=4"></script>
+<script src="../assets/proactive.js?v=1"></script>
 <script src="../assets/watch-core.js?v=2"></script>
 <script src="../assets/watch.js?v=9"></script>
 <script src="../assets/kchat.js?v=3"></script>
@@ -269,6 +270,7 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
     <div class="homes" id="homes"></div>
     <a class="btn ghost" href="../my/report/" data-track="mine_to_report" style="margin:10px 0 0;width:100%;box-sizing:border-box">이번 주 내 집 성적표 보기 ›</a>
     <a class="btn ghost" href="calendar/" data-track="mine_to_calendar" style="margin:10px 0 0;width:100%;box-sizing:border-box">내 부동산 달력 — 세금·계약 날짜 보기 ›</a>
+    <div id="proCard" hidden></div><script>/* 먼저 챙겨 드려요(꺼져 있으면 칸 없음) */ (function () { function go() { if (window.JDJ_PRO) JDJ_PRO.mount(document.getElementById('proCard'), 'mine'); } if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go(); })();</script>
     <p class="note" style="margin:8px 0 0" id="homesNote">내 집 정보는 이 기기 브라우저에만 저장돼요. 서버로 보내지 않아요. 최대 5개까지 저장할 수 있어요.</p>
   </section>
 

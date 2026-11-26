@@ -1,6 +1,15 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v64 변경 요약 (v63 위에 다시 배포. 따로 실행할 함수 없음 — 시트 변경 없음. PROACTIVE_ENABLED=false 라 지금 서비스에는 영향 없음)
+ *  - '집예보가 먼저 챙겨 드려요'(PROACTIVE) 서버 쪽: 출시 때 PROACTIVE_ENABLED 를 true 로(화면 assets/config.js 도 함께).
+ *    1단계 기한(CAL-CORE, 달력 메일 길 그대로): 1세대 1주택 비과세 보유 2년·거주 2년이 차는 날(hold2·live2), 일시적 2주택 처분 기한(tmp2 — 2026.10.1 시행
+ *    소득세법 시행령 제155조 제1항: 조정→조정·2026.8.4 이후 취득 2년, 그 밖 3년 · 180·90·30·7·1일 전 단계). 저장 칸 cal 에 전입일·취득 당시 조정대상지역·새 집 잔금일(날짜만).
+ *    2단계(알림 설정 pv — 사용자가 켠 것만): 내 집 단지도 관심 단지처럼 새 실거래·신고가·급매 · 내 동네 규제지역·토지거래허가구역 지정/해제(공개 policy.json) ·
+ *    따라보는 재개발 구역 단계 변화(공개 redev/zones.json, 알린 단계를 설정에 적어 다시 안 보냄). 모두 하루 한 통 안에(모닝 브리핑·알림·달력 메일과 합침).
+ *  - 끄기 링크 alertOff &pv=1(이 알림만) · alertMine 이 pv:1 을 알려 줌(화면이 서버 준비 여부 확인) · 알림톡은 템플릿 자리(PV_ALIMTALK)만.
+ *  - 검증: node tools/proactive-test.js </dev/null · tools/cal-test.js · tools/alerts-test.js
+ *
  * v63 변경 요약 (v62 위에 다시 배포. 따로 실행할 함수 없음 — 시트 변경 없음. 지금 서비스 동작은 그대로)
  *  - 새 도메인 zipyebo.com 준비: 카카오 로그인 돌아올 주소(KAKAO_REDIRECTS)에 https://zipyebo.com/login/ 을 미리 허용(예전 github.io 주소도 계속 허용).
  *    전에 미리 넣어 둔 https://zipcode.works/login/ 은 뺌(쓰지 않는 주소).
@@ -467,6 +476,9 @@ const NOTIFY = true;       // 새 신청 시 시트 주인에게 메일 알림
 /* v47 유료 판매 잠금 — 통신판매업 신고번호가 나오기 전까지 false. false 면 결제(토스) 주문·승인·요금제 올리기를 모두 거절(무료 체험·문의·알림 신청은 그대로).
    신고번호를 받은 날: 이 값을 true 로 + 화면 assets/config.js PAID_OPEN 도 true 로 바꾸고 다시 배포(배포 관리 → 수정 → 새 버전). */
 const PAID_OPEN = false;
+/* v63 '집예보가 먼저 챙겨 드려요'(PROACTIVE) — 출시 전 false. false 면 새 기한 알림(비과세 2년·일시적 2주택)·내 집 단지 알림·동네 규제·구역 단계 알림을 만들지도 보내지도 않음.
+   켜는 날: 이 값을 true 로 + 화면 assets/config.js PROACTIVE_ENABLED 도 true 로 바꾸고 다시 배포(배포 관리 → 수정 → 새 버전). 따로 실행할 함수 없음. */
+const PROACTIVE_ENABLED = false;
 const PAID_CLOSED_MSG = '유료 이용권은 곧 열려요. 지금은 7일 무료 체험만 할 수 있어요.';
 /* 돈을 받는(토스 주문·승인) 요청 전부 — 리포트 결제(createOrder·confirmPayment)·모닝 브리핑 이용권(briefOrder·briefConfirm)·요금제 바꾸기(briefChangeQuote·briefChange).
    이미 산 주문 보기·환불 요청(openReport·findOrder·refundRequest·briefRefund·briefStop)은 막지 않음. 새 결제 요청을 만들면 여기에도 꼭 넣기(tools/paid-lock-test.js 가 확인). */
@@ -4987,7 +4999,7 @@ const AX_JR_LINES = [80, 90];                     // 전세가율이 이 선을 
 const AX_NB_M = 500, AX_NB_MONTHS = 3, AX_NEAR_DAYS = 14;   // 신축 허가: 관심 단지에서 이 거리(m) 안·최근 이 달 수 안 허가 · 근처 청약: 공고 뒤 이 날 수 안
 const AX_CY_KINDS = { cy_new: '새 청약 공고', cy_eve: '청약 접수 하루 전', cy_win: '당첨자 발표일' };
 const AX_URG = 10, AX_DROP = -10, AX_JR = 5;       // 급매(%) · 큰 하락(%) · 전세가율 변화(%p) — 위 설명의 기존 기준
-const AX_MAX_PLACES = 30, AX_MAX_REGIONS = 10, AX_MAX_LINES = 40;
+const AX_MAX_PLACES = 30, AX_MAX_REGIONS = 10, AX_MAX_LINES = 40, AX_MAX_ZONES = 20;
 const AX_BN = ['60㎡ 이하', '60~85㎡', '85㎡ 초과'];
 const AX_SIDO_OLD = { '광주광역시': '전남광주통합특별시', '전라남도': '전남광주통합특별시', '강원도': '강원특별자치도', '전라북도': '전북특별자치도', '제주도': '제주특별자치도' };
 function axEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
@@ -5007,7 +5019,19 @@ function axKeyId(s) {
 }
 function axSido(s) { s = String(s || ''); return AX_SIDO_OLD[s] || s; }
 
-/** 알림 설정 정리(서버·화면 같은 규칙). kinds = 관심 단지 알림 종류, mute = 알림을 끈 단지(키), cy = 청약 맞춤 알림 */
+/** '집예보가 먼저 챙겨 드려요'(PROACTIVE) 설정 — 모두 사용자가 직접 켠 경우만(기본 꺼짐).
+    home = 내 집 단지도 관심 단지처럼 새 실거래·신고가·급매 알림 · reg = 내 동네 규제지역·토지거래허가구역 지정/해제 · zone = 따라보는 재개발·재건축 구역 단계 변화
+    zones = 따라보는 구역 [{id, st 따라보기 시작했을 때(또는 마지막으로 알린) 단계 번호, n 이름}] — 금액 없음 */
+function axCleanPv(x) {
+  x = x && typeof x === 'object' ? x : {};
+  const seen = {}, zones = (Array.isArray(x.zones) ? x.zones : []).map(z => {
+    if (!z || typeof z !== 'object') return null;
+    const id = axTxt(z.id, 60), st = Math.round(Number(z.st));
+    return /^\d{5}[^|]{1,50}$/.test(id) ? { id: id, st: isFinite(st) && st >= 0 && st <= 20 ? st : 0, n: axTxt(z.n, 40) } : null;
+  }).filter(z => z && !seen[z.id] && (seen[z.id] = 1)).slice(0, AX_MAX_ZONES);
+  return { home: x.home === true, reg: x.reg === true, zone: x.zone === true, zones: zones };
+}
+/** 알림 설정 정리(서버·화면 같은 규칙). kinds = 관심 단지 알림 종류, mute = 알림을 끈 단지(키), cy = 청약 맞춤 알림, pv = 먼저 챙겨 드려요 */
 function axCleanPrefs(x) {
   x = x && typeof x === 'object' ? x : {};
   const k = x.kinds && typeof x.kinds === 'object' ? x.kinds : {}, kinds = {};
@@ -5021,7 +5045,7 @@ function axCleanPrefs(x) {
   if (lo != null && hi != null && lo > hi) { const t = lo; lo = hi; hi = t; }
   const ck = c.kinds && typeof c.kinds === 'object' ? c.kinds : {}, cyk = {};
   Object.keys(AX_CY_KINDS).forEach(q => { cyk[q] = ck[q] !== false; });
-  return { kinds: kinds, mute: mute, cy: { on: c.on === true && regions.length > 0, regions: regions, nohome: c.nohome === true ? true : c.nohome === false ? false : null, lo: lo, hi: hi, kinds: cyk }, rp: x.rp === true, cal: x.cal === true };
+  return { kinds: kinds, mute: mute, cy: { on: c.on === true && regions.length > 0, regions: regions, nohome: c.nohome === true ? true : c.nohome === false ? false : null, lo: lo, hi: hi, kinds: cyk }, rp: x.rp === true, cal: x.cal === true, pv: axCleanPv(x.pv) };
 }
 
 /* ---------- 관심 단지 한 곳의 알림 ----------
@@ -5283,7 +5307,7 @@ function axDispatch(b) {
 }
 function alertMine(b) {
   const u = sessionUser(b.s), bm = axBriefMail(u.k);
-  return { ok: true, v: AX_V, sub: axPublic(axMine(u.k)), brief: bm ? { mask: String(bm.r[BC['연락처가림']] || '') } : null, favs: axFavs(u.k).length, homes: axHomes(u.k).length, rp: 1, cal: 1, ta: 1 };
+  return { ok: true, v: AX_V, sub: axPublic(axMine(u.k)), brief: bm ? { mask: String(bm.r[BC['연락처가림']] || '') } : null, favs: axFavs(u.k).length, homes: axHomes(u.k).length, rp: 1, cal: 1, ta: 1, pv: PROACTIVE_ENABLED ? 1 : 0 };
 }
 /** 알림 메일 신청(동의 필수) — 이미 있으면 같은 행을 다시 켬 */
 function alertJoin(b) {
@@ -5295,7 +5319,8 @@ function alertJoin(b) {
   else { const ct = parseContact(b.email); if (!ct || ct.kind !== 'email') throw new Error('알림을 받을 이메일 주소를 정확히 적어 주세요.'); email = ct.norm; }
   const ct = parseContact(email), prefs = axCleanPrefs(b.prefs);
   const taOn = Object.keys(calCleanAll((u.data || {}).cal).h).some(k => { const c = calCleanAll((u.data || {}).cal).h[k]; return c.ta && c.ta.on; });   // v55 세입자 만기 알림만 켜도 신청 가능
-  if (!axFavs(u.k).length && !prefs.cy.on && !taOn && !((prefs.rp || prefs.cal) && axHomes(u.k).length)) throw new Error('관심 목록에 단지를 넣거나, 청약 알림 지역을 고르거나, 내 집을 등록해야 알림을 보낼 수 있어요.');
+  const pvOk = PROACTIVE_ENABLED && (prefs.pv.zones.length > 0 || ((prefs.pv.reg || prefs.pv.home) && axHomes(u.k).length > 0));   // v63 먼저 챙겨 드려요만 켜도 신청 가능
+  if (!axFavs(u.k).length && !prefs.cy.on && !taOn && !pvOk && !((prefs.rp || prefs.cal) && axHomes(u.k).length)) throw new Error('관심 목록에 단지를 넣거나, 청약 알림 지역을 고르거나, 내 집을 등록해야 알림을 보낼 수 있어요.');
   const at = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(String(b.at || '')) ? String(b.at).slice(0, 25) : '';
   const cur = axRows().filter(x => String(x.r[AXC['카카오id']]) === u.k).pop();
   let row;
@@ -5353,9 +5378,10 @@ function alertOff(p) {
     const prefs = s.prefs;
     if (p.rp) { prefs.rp = false; msg = '내 집 성적표 메일을 껐어요. 관심 단지·청약 알림은 그대로 받아요.'; }
     else if (p.cal) { prefs.cal = false; msg = '내 부동산 달력 메일을 껐어요. 다른 알림은 그대로 받아요. 달력은 화면에서 계속 볼 수 있어요.'; }
+    else if (p.pv) { prefs.pv.home = false; prefs.pv.reg = false; prefs.pv.zone = false; msg = '내 집 단지·내 동네·따라보는 구역 알림을 껐어요. 다른 알림은 그대로 받아요.'; }
     else if (p.cy) { prefs.cy.on = false; msg = '청약 알림을 껐어요. 관심 단지 알림은 그대로 받아요.'; }
     else if (p.p) {
-      const f = axFavs(s.k).find(x => safeEq(axPh(axPid(x)), String(p.p)));
+      const f = axFavs(s.k).concat(axHomes(s.k)).find(x => safeEq(axPh(axPid(x)), String(p.p)));   // v63 내 집 단지 알림도 같은 끄기 링크
       if (f) { if (prefs.mute.indexOf(axPid(f)) < 0) prefs.mute.push(axPid(f)); msg = `${f.apt} ${f.band} 알림을 껐어요. 다른 알림은 그대로 받아요.`; }
     }
     if (msg) { setAX(o.row, '설정', JSON.stringify(axCleanPrefs(prefs))); setAX(o.row, '수정시각', new Date()); }
@@ -5410,7 +5436,7 @@ function axSentAll(now) {
 /** 한 사람의 오늘 묶음. 보낼 것이 없으면 null */
 function axBuild(s, ctx, sent) {
   if (!axCanSend(s) || s.last === ctx.date) return null;
-  const places = axFavs(s.k, ctx.favs), g = {}, sx = {};
+  const places = pvPlaces(s, ctx), g = {}, sx = {};   // v63 먼저 챙겨 드려요 '내 집 단지'를 켠 분은 내 집도 관심 단지처럼
   places.forEach(p => { if (!(p.code in g)) { g[p.code] = ctx.g(p.code); sx[p.code] = ctx.s(p.code); } });
   const nb = s.prefs.kinds.nb ? ctx.nb() : null;
   const D = axDigest({ places: places, g: g, s: sx, notices: ctx.notices, prefs: s.prefs, today: ctx.date, since: s.since, sent: (sent || {})[s.id] || {},
@@ -5460,15 +5486,17 @@ function axMorning(now) {
       }
       const D = axBuild(s, ctx, sent);
       let CI = []; if (axCanSend(s) && s.last !== ctx.date) try { CI = calItemsFor(s, ctx, sent, calMap(), 'daily'); } catch (e) { CI = []; }
-      if (!D && !CI.length && !RP) return null;
-      return { s: s, D: D, CI: CI, RP: RP, html: (RP ? RP.html : '') + (D ? axMsg(s, D, ctx, true).html : '') + (CI.length ? calMsgFor(s, CI, ctx, true).html : '') };
+      let PVI = []; if (axCanSend(s) && s.last !== ctx.date) try { PVI = pvItemsFor(s, ctx, sent); } catch (e) { PVI = []; }   // v63 먼저 챙겨 드려요
+      if (!D && !CI.length && !RP && !PVI.length) return null;
+      return { s: s, D: D, CI: CI, RP: RP, PVI: PVI, html: (RP ? RP.html : '') + (D ? axMsg(s, D, ctx, true).html : '') + (CI.length ? calMsgFor(s, CI, ctx, true).html : '') + (PVI.length ? pvMsgFor(s, PVI, ctx) : '') };
     },
     done(x) {
       if (x.RP) rpMark(x.s, ctx.date, '모닝 브리핑에 함께', x.RP.n);
       if (x.D) axDone(x.s, x.D, ctx, '모닝 브리핑에 함께'); else if (!(x.CI && x.CI.length)) { setAX(x.s.row, '최근발송일', ctx.date); setAX(x.s.row, '발송수', x.s.sent + 1); }
-      if (x.CI && x.CI.length) calDone(x.s, x.CI, ctx, '모닝 브리핑에 함께', !x.D, false); x.s.last = ctx.date;
+      if (x.CI && x.CI.length) calDone(x.s, x.CI, ctx, '모닝 브리핑에 함께', !x.D, false);
+      if (x.PVI && x.PVI.length) pvDone(x.s, x.PVI, ctx, '모닝 브리핑에 함께', false); x.s.last = ctx.date;
     },
-    alone(x) { const r = axSendWithCal(x.s, x.D, x.CI || [], ctx); if (r.ok) x.s.last = ctx.date; return r; }
+    alone(x) { const r = axSendWithCal(x.s, x.D, x.CI || [], ctx, x.PVI || []); if (r.ok) x.s.last = ctx.date; return r; }
   };
 }
 /* ---------- 매일 오전 7시대(늦으면 9시대) — alertsInstall 이 트리거를 만듦 ----------
@@ -5494,8 +5522,9 @@ function alertsDaily() {
     const D = axBuild(s, ctx, sent);
     let CI = [];                                                // v55 달력: 브리핑을 받지 않는 분은 한 주에 한 번(그 주 첫 실행)
     if (!calWeekDone(s, ctx, sent)) try { CI = calItemsFor(s, ctx, sent, um || (um = calUserMap()), 'weekly'); } catch (e) { CI = []; }
-    if (!D && !CI.length) return;
-    if (axSendWithCal(s, D, CI, ctx).ok) n++;
+    let PVI = []; try { PVI = pvItemsFor(s, ctx, sent); } catch (e) { PVI = []; }   // v63 먼저 챙겨 드려요(내 동네 규제·구역 단계) — 매일, 하루 한 통 안에
+    if (!D && !CI.length && !PVI.length) return;
+    if (axSendWithCal(s, D, CI, ctx, PVI).ok) n++;
   });
   axCleanup(now);
   try { qzSeasonClose(qzSettle(qzWeek(true)), now); } catch (e) {}   // v55 예측 맞히기: 새로 나온 정답을 채점 기록에 · 지난 시즌 마감(등급·보상)
@@ -5515,7 +5544,9 @@ function axCleanup(now) {
 /** 모닝 브리핑 자료를 만들 동네에 알림 구독자의 관심 단지 동네를 더함(급매·전세가율 급변 칸) — 구독자 수에는 넣지 않음 */
 function axAreaCodes() {
   const out = {}, fm = axFavsMap();
-  axRows().forEach(o => { const s = axSubOf(o); if (s.state !== AX_ST.on) return; axFavs(s.k, fm).forEach(p => { out[p.code] = 1; }); });
+  let hm = null;
+  axRows().forEach(o => { const s = axSubOf(o); if (s.state !== AX_ST.on) return; axFavs(s.k, fm).forEach(p => { out[p.code] = 1; });
+    if (PROACTIVE_ENABLED && s.prefs.pv && s.prefs.pv.home) axHomes(s.k, hm || (hm = axHomesMap())).forEach(p => { out[p.code] = 1; }); });   // v63 내 집 단지 급매 칸
   return Object.keys(out);
 }
 
@@ -8513,7 +8544,7 @@ function dpPlusBriefs(date, um, brief, M, ix) {
       - 포인트는 재미용 — 현금·상품·혜택으로 바꾸는 기능이 없다(PQ_NOTE).
    ===================================================================== */
 /* CAL-CORE BEGIN — 이 블록은 tools/agent-backend.gs 에 그대로 복사돼 있어요. 고칠 때는 두 곳을 똑같이 고쳐 주세요(node tools/cal-test.js 가 비교). */
-const CAL_V = 'cal-2026-11-25';
+const CAL_V = 'cal-2026-11-26';
 const CAL_TEN = { own: '자가', jeonse: '전세', wolse: '월세' };
 /* 공식 출처(2026-11-25 직접 열어 확인) */
 const CAL_SRC = {
@@ -8526,7 +8557,10 @@ const CAL_SRC = {
   move: { nm: '주택임대차보호법 제3조(국가법령정보센터)', url: 'https://www.law.go.kr/lsLinkCommonInfo.do?lsJoLnkSeq=1018577211&chrClsCd=010202&ancYnChk=' },
   rent: { nm: '서울특별시 내 손안에 서울 「전·월세 계약 꼭 신고하세요」', url: 'https://mediahub.seoul.go.kr/archives/2001807' },
   cy: { nm: '한국부동산원 청약홈 분양 공고', url: 'https://www.applyhome.co.kr/' },
-  rentdata: { nm: '국토교통부 아파트·연립다세대·오피스텔 전월세 실거래가 공개 자료', url: 'https://rt.molit.go.kr/' }
+  rentdata: { nm: '국토교통부 아파트·연립다세대·오피스텔 전월세 실거래가 공개 자료', url: 'https://rt.molit.go.kr/' },
+  /* 집예보가 먼저 챙겨 드려요(PROACTIVE, 2026-11-26 직접 열어 확인) */
+  own1: { nm: '법제처 법령해석례 23-0932 — 소득세법 시행령 제154조 제1항(보유 2년·조정대상지역 거주 2년)·제155조 제1항(일시적 2주택) 원문 인용(국가법령정보센터)', url: 'https://www.law.go.kr/LSW/expcInfoP.do?expcSeq=338247' },
+  tmp26: { nm: '소득세법 시행령 일부개정령(대통령령 제36737호, 2026.9.30 공포·10.1 시행) 제155조 제1항·부칙 제2조(국가법령정보센터)', url: 'https://www.law.go.kr/LSW/lsRvsDocInfoR.do?lsiSeq=290841' }
 };
 /* ok:false = 공식 원문을 확인하지 못함 → 계산·표시하지 않음 */
 const CAL_RULES = {
@@ -8534,8 +8568,13 @@ const CAL_RULES = {
   compN: { ok: true, src: ['comp'] }, compP: { ok: true, src: ['comp'] }, acq: { ok: true, src: ['acq'] }, cgt: { ok: true, src: ['cgt'] },
   renewO: { ok: true, src: ['renew', 'renew2'] }, renewC: { ok: true, src: ['renew', 'renew2'] }, end: { ok: true, src: ['renew'] },
   move: { ok: true, src: ['move'] }, rent: { ok: true, src: ['rent'] }, cy: { ok: true, src: ['cy'] }, ta: { ok: true, src: ['renew', 'rentdata'] },
-  tmp2: { ok: false, src: [], why: '일시적 2주택 처분 기한은 2026년 10월에 바뀐 규정이라, 공식 사이트에서 법령 원문을 확인한 뒤 보여 드릴게요.' }
+  /* pro:1 = '집예보가 먼저 챙겨 드려요' 기능(PROACTIVE_ENABLED) 켜졌을 때만 계산·표시 */
+  hold2: { ok: true, src: ['own1'], pro: 1 }, live2: { ok: true, src: ['own1'], pro: 1 },
+  tmp2: { ok: true, src: ['own1', 'tmp26'], pro: 1 }
 };
+/* 기한이 길어 미리 알아야 하는 것(일시적 2주택 처분)은 180일·90일 전부터 알림 */
+const CAL_LONG = { tmp2: 1 };
+const CAL_STAGES = ['d180', 'd90', 'd30', 'd7', 'd1'];
 const CAL_AHEAD = 400, CAL_PAST = 0, CAL_MAX = 60;
 const calOkDate = v => /^(19[9]\d|20\d\d|2100)-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(String(v || '')) && calIso(calT(String(v))) === String(v);
 function calT(iso) { return Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)); }
@@ -8558,7 +8597,12 @@ function calClean(x) {
   x = x && typeof x === 'object' ? x : {};
   const t = CAL_TEN[x.t] ? x.t : '', d = v => calOkDate(v) ? String(v) : '';
   const o = { t: t };
-  if (t === 'own') { o.acq = d(x.acq); o.sell = d(x.sell); }
+  if (t === 'own') { o.acq = d(x.acq); o.sell = d(x.sell);
+    /* PROACTIVE: 전입일(거주 시작) · 취득 당시 조정대상지역(y/n/'' 모름) · 일시적 2주택(새 집 잔금일, 새 집 잔금일에 이 집·새 집이 조정대상지역인지, 2026.8.3 전에 새 집 계약금을 냈는지) — 금액 없음 */
+    const yn = v => v === 'y' || v === 'n' ? v : '';
+    if (d(x.rs)) o.rs = d(x.rs); if (yn(x.adj)) o.adj = yn(x.adj);
+    const t2 = x.t2 && typeof x.t2 === 'object' ? x.t2 : null;
+    if (t2 && d(t2.d)) o.t2 = { d: d(t2.d), oa: yn(t2.oa), na: yn(t2.na), pre: t2.pre === true }; }
   if (t === 'jeonse' || t === 'wolse') { o.cs = d(x.cs); o.ce = d(x.ce); if (o.cs && o.ce && o.ce <= o.cs) o.ce = ''; if (x.ta && typeof x.ta === 'object') o.ta = calCleanTa(x.ta); }
   return o;
 }
@@ -8602,6 +8646,22 @@ function calHome(h) {
   if (c.t === 'own') {
     if (c.acq) { const dl = calAdd(c.acq, 60);
       out.push(calEv('acq', dl, Object.assign(o(), { start: c.acq, t: '취득세 신고·납부 기한', s: `취득일(잔금일 ${calKoY(c.acq)})부터 60일 안에 취득세를 신고하고 내요. 잔금 전에 등기를 먼저 했다면 등기일부터 세요. 상속은 기한이 달라요(상속 개시일이 속한 달 말일부터 6개월).` }))); }
+    if (c.acq && h.n !== 3) {                 // 1세대 1주택 비과세 보유 2년(3채 이상이면 뺌)
+      const h2 = calAddM(c.acq, 24), law = c.acq >= '2017-08-03';
+      const pn = c.adj === 'y' && law ? `취득 당시 조정대상지역이라 2년 이상 살기도 해야 해요.${c.rs ? '' : ' 내 집 정보에 전입한 날을 넣으면 거주 2년이 차는 날도 알려 드려요.'}`
+        : c.adj === 'n' || !law ? '취득 당시 조정대상지역이 아니어서 살아야 하는 기간(거주 요건)은 없어요.' : '취득 당시 조정대상지역이었다면 2년 이상 살기도 해야 해요. 내 집 정보에서 골라 주시면 정확해져요.';
+      out.push(calEv('hold2', h2, Object.assign(o(), { t: '1세대 1주택 비과세 — 보유 2년이 차는 날', s: `취득일(잔금일 ${calKoY(c.acq)})부터 2년이 ${calKoY(h2)}에 차요. 1세대 1주택은 2년 이상 가진 뒤 팔아야 양도소득세 비과세를 받을 수 있어요(파는 값 12억 원을 넘는 부분은 과세). 하루 차이로 결과가 갈릴 수 있으니 파는 잔금일은 여유 있게 잡고, 계약 전에 세무서나 세무사에게 한 번 더 확인해 두세요.`, p: pn })));
+      if (c.rs && c.adj !== 'n' && law) {
+        const st = c.rs > c.acq ? c.rs : c.acq, l2 = calAddM(st, 24);
+        out.push(calEv('live2', l2, Object.assign(o(), { start: st, t: '1세대 1주택 비과세 — 거주 2년이 차는 날', s: `${calKoY(st)}부터 살기 시작했다면 거주 2년은 ${calKoY(l2)}에 차요. 취득 당시 조정대상지역인 집은 가지고 있는 동안 2년 이상 살아야 비과세를 받아요. 거주 기간은 보통 전입신고한 날부터 세고, 중간에 나갔다 들어왔다면 기간을 합쳐 다시 확인해 주세요.`, p: c.adj === 'y' ? '' : '취득 당시 조정대상지역이 아니었다면 이 날짜는 필요 없어요.' })));
+      }
+    }
+    if (c.acq && c.t2 && c.t2.d) {            // 일시적 2주택: 새 집 잔금일부터 2년(조정→조정, 2026.8.4 이후 취득) 또는 3년 안에 이 집을 팖
+      const T = c.t2, after = T.d >= '2026-08-04' && !T.pre, short = after && T.oa === 'y' && T.na === 'y', unk = after && !short && T.oa !== 'n' && T.na !== 'n';
+      const yrs = short || unk ? 2 : 3, dl = calAddM(T.d, yrs * 12), b1 = T.d < calAddM(c.acq, 12);
+      out.push(calEv('tmp2', dl, Object.assign(o(), { start: T.d, t: '일시적 2주택 — 이 집을 팔아야 하는 기한', s: `새 집 잔금일(${calKoY(T.d)})부터 ${yrs}년 안, ${calKoY(dl)}까지 이 집(먼저 가진 집)을 팔아야 1세대 1주택처럼 비과세를 받을 수 있어요. ${short ? '새 집 잔금일에 두 집이 모두 조정대상지역이라, 2026년 10월 1일부터 바뀐 규정에 따라 2년이에요.' : unk ? '새 집 잔금일에 두 집이 모두 조정대상지역이면 2년, 아니면 3년이에요. 아직 고르지 않으셔서 더 이른 2년 기준으로 알려 드려요.' : !after ? '2026년 8월 3일 전에 새 집을 샀거나 계약금을 내서, 예전 규정대로 3년이에요.' : '새 집 잔금일에 두 집이 모두 조정대상지역인 경우가 아니어서 3년이에요.'} 이 집의 보유 2년(조정대상지역에서 산 집이면 거주 2년)도 함께 채워야 해요.`,
+        p: b1 ? '이 집을 산 날부터 1년이 지나기 전에 새 집을 사면 이 특례를 받을 수 없어요. 세무사에게 꼭 확인해 주세요.' : '' })));
+    }
     if (c.sell) { const dl = calMonthEnd(calAddM(calMonthEnd(c.sell).slice(0, 8) + '01', 2));
       out.push(calEv('cgt', dl, Object.assign(o(), { start: c.sell, t: '양도소득세 예정신고 기한', s: `파는 집 잔금일(${calKoY(c.sell)})이 속한 달의 말일부터 2개월 안에 예정신고를 해요. 비과세라도 신고가 필요한지 세무서나 세무사에게 확인해 두세요.` }))); }
   }
@@ -8642,27 +8702,29 @@ function calCy(notices, areas, today) {
 function calEvents(homes, today, opt) {
   opt = opt || {};
   const ahead = opt.ahead || CAL_AHEAD, lo = calAdd(today, -(opt.past || CAL_PAST)), hi = calAdd(today, ahead);
-  const hs = (homes || []).map(h => h && h.key ? { key: h.key, name: String(h.name || ''), cal: calClean(h.cal) } : null).filter(h => h && h.cal.t);
+  const hs = (homes || []).map(h => h && h.key ? { key: h.key, name: String(h.name || ''), cal: calClean(h.cal), n: opt.n || null } : null).filter(h => h && h.cal.t);
   let ev = [];
   const owns = hs.filter(h => h.cal.t === 'own');
   const y = +today.slice(0, 4);
   if (owns.length) for (let yy = y; yy <= y + 1; yy++) ev = ev.concat(calYear(yy, owns));
   hs.forEach(h => { ev = ev.concat(calHome(h)); });
   if (opt.notices && opt.areas) ev = ev.concat(calCy(opt.notices, opt.areas, today));
-  ev = ev.filter(e => CAL_RULES[e.k] && CAL_RULES[e.k].ok && (e.end > e.d ? e.end : e.d) >= lo && (e.start || e.d) <= hi);
+  ev = ev.filter(e => CAL_RULES[e.k] && CAL_RULES[e.k].ok && (!CAL_RULES[e.k].pro || opt.pro === true) && (e.end > e.d ? e.end : e.d) >= lo && (e.start || e.d) <= hi);
   ev.forEach(e => { e.dd = calDiff(today, e.d); });
   ev.sort((a, b) => a.d < b.d ? -1 : a.d > b.d ? 1 : a.id < b.id ? -1 : 1);
   return ev.slice(0, CAL_MAX);
 }
-/** 메일로 알릴 단계: daily(모닝 브리핑에 함께) = 30일·7일·1일 전, weekly(따로 보내는 주 1회) = 5주·1주 안. 새 청약 공고는 나온 뒤 7일 안 한 번. 이미 보낸 단계(sent[id|단계])는 뺌 */
-function calStage(dd, mode) {
+/** 메일로 알릴 단계: daily(모닝 브리핑에 함께) = 30일·7일·1일 전, weekly(따로 보내는 주 1회) = 5주·1주 안. 새 청약 공고는 나온 뒤 7일 안 한 번. 이미 보낸 단계(sent[id|단계])는 뺌.
+    long(CAL_LONG — 일시적 2주택 처분 기한)은 180일·90일 전 단계가 더 있음. 늦은 단계를 이미 보냈으면 그보다 이른 단계는 보내지 않음 */
+function calStage(dd, mode, long) {
   if (dd < 0) return '';
-  if (mode === 'weekly') return dd <= 8 ? 'd7' : dd <= 37 ? 'd30' : '';
-  return dd <= 1 ? 'd1' : dd <= 7 ? 'd7' : dd <= 30 ? 'd30' : '';
+  if (mode === 'weekly') return dd <= 8 ? 'd7' : dd <= 37 ? 'd30' : long && dd <= 97 ? 'd90' : long && dd <= 187 ? 'd180' : '';
+  return dd <= 1 ? 'd1' : dd <= 7 ? 'd7' : dd <= 30 ? 'd30' : long && dd <= 90 ? 'd90' : long && dd <= 180 ? 'd180' : '';
 }
 function calDue(ev, mode, sent) {
   sent = sent || {};
-  return (ev || []).map(e => Object.assign({}, e, { stage: e.sub === 'new' ? (e.dd <= 0 && e.dd >= -7 ? 'd1' : '') : e.sub === 'ta' ? (e.dd <= 0 && e.dd >= -14 ? 'ta' : '') : calStage(e.dd, mode) })).filter(e => e.stage && !sent[e.id + '|' + e.stage] && !(e.stage === 'd30' && sent[e.id + '|d7']) && !(e.stage !== 'd1' && sent[e.id + '|d1']));
+  const later = (id, st) => { const i = CAL_STAGES.indexOf(st); return i >= 0 && CAL_STAGES.slice(i).some(x => sent[id + '|' + x]); };
+  return (ev || []).map(e => Object.assign({}, e, { stage: e.sub === 'new' ? (e.dd <= 0 && e.dd >= -7 ? 'd1' : '') : e.sub === 'ta' ? (e.dd <= 0 && e.dd >= -14 ? 'ta' : '') : calStage(e.dd, mode, !!CAL_LONG[e.k]) })).filter(e => e.stage && !sent[e.id + '|' + e.stage] && !later(e.id, e.stage));
 }
 function calEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 function calWhen(e) {
@@ -8765,7 +8827,7 @@ function calEventsFor(s, ctx, um) {
   if (!items.length) return [];
   const seen = {}, areas = [];
   u.homes.forEach(h => { const g = ctx.sg(h.code); if (g && !seen[g.sido + g.name]) { seen[g.sido + g.name] = 1; areas.push({ sd: g.sido, gn: g.name }); } });
-  let ev = calEvents(items, ctx.date, { notices: ctx.notices, areas: areas });
+  let ev = calEvents(items, ctx.date, { notices: ctx.notices, areas: areas, pro: PROACTIVE_ENABLED, n: u.cal.n });   // v63 pro: 비과세 2년·일시적 2주택(켰을 때만)
   if (s.prefs.cy && s.prefs.cy.on) ev = ev.filter(e => e.k !== 'cy');
   return ev;
 }
@@ -8776,7 +8838,7 @@ function calItemsFor(s, ctx, sent, um, mode) {
   const ev0 = calEventsFor(s, ctx, um), ev = s.prefs.cal ? ev0 : ev0.filter(e => e.sub === 'ta');   // 달력 메일을 안 켰어도 세입자 만기 알림(켠 집)은 보냄
   if (!ev.length) return [];
   const mine = (sent || {})[s.id] || {}, done = {};
-  ev.forEach(e => ['d30', 'd7', 'd1', 'ta'].forEach(st => { if (mine[calSid(e.id, st)]) done[e.id + '|' + st] = 1; }));
+  ev.forEach(e => CAL_STAGES.concat(['ta']).forEach(st => { if (mine[calSid(e.id, st)]) done[e.id + '|' + st] = 1; }));   // v63 180일·90일 단계(일시적 2주택)
   return calDue(ev, mode, done);
 }
 function calWeekKey(date) { return 'w' + axKeyId('calwk|' + pqWeek(date)).slice(1); }
@@ -8814,8 +8876,21 @@ function calInto(html, cal) {
   return i >= 0 ? html.slice(0, i) + cal + html.slice(i) : html.replace(/<\/div>$/, cal + '</div>');
 }
 /** 모닝 브리핑을 받지 않는 분: 관심 단지 알림(D, 없으면 null) + 이번 주 달력(CI)을 한 통으로 */
-function axSendWithCal(s, D, CI, ctx) {
-  if (D && !CI.length) return axSendAlone(s, D, ctx);
+function axSendWithCal(s, D, CI, ctx, PVI) {
+  PVI = PVI || [];
+  if (PVI.length && !D && !CI.length) {                                   // v63 먼저 챙겨 드려요 소식만 있는 날
+    const r = axSend('email', s, pvAloneMsg(s, PVI, ctx));
+    if (r.ok) { pvDone(s, PVI, ctx, '이메일(먼저 챙겨 드려요)', true); s.last = ctx.date; }
+    else uSheet(SH_AXS, AXSH).appendRow([ctx.date, s.id, '이메일(먼저 챙겨 드려요)', '못 보냄: ' + r.why, PVI.length]);
+    return r;
+  }
+  if (PVI.length && !D) {                                                  // 달력 메일 안에 함께
+    const m = calMsgFor(s, CI, ctx, false), r = axSend('email', s, { subject: m.subject, html: calInto(m.html, pvMsgFor(s, PVI, ctx)), text: m.text });
+    if (r.ok) { calDone(s, CI, ctx, '이메일(달력)', true, true); pvDone(s, PVI, ctx, '이메일(달력과 함께)', false); s.last = ctx.date; }
+    else uSheet(SH_AXS, AXSH).appendRow([ctx.date, s.id, '이메일(달력)', '못 보냄: ' + r.why, CI.length]);
+    return r;
+  }
+  if (D && !CI.length && !PVI.length) return axSendAlone(s, D, ctx);
   if (!D) {
     const m = calMsgFor(s, CI, ctx, false), r = axSend('email', s, m);
     if (r.ok) { calDone(s, CI, ctx, '이메일(달력)', true, true); s.last = ctx.date; }
@@ -8823,12 +8898,160 @@ function axSendWithCal(s, D, CI, ctx) {
     return r;
   }
   const m = axMsg(s, D, ctx, false), AD = briefAdToday(ctx.now), c = bConsentOf(s.k);
-  let subject = m.subject, html = calInto(m.html, calMsgFor(s, CI, ctx, true).html);
+  let subject = m.subject, html = calInto(m.html, (CI.length ? calMsgFor(s, CI, ctx, true).html : '') + (PVI.length ? pvMsgFor(s, PVI, ctx) : ''));
   if (AD && axAdOk(c)) { const last = myBriefs(s.k).pop(); if (last) { subject = ('(광고) ' + subject).slice(0, 120); html = html.replace(/<\/div>$/, briefAdMailHtml(AD, String(last.r[BC['id']])) + '</div>'); } }
   const r = axSend('email', s, { subject: subject, html: html, text: m.text });
-  if (r.ok) { axDone(s, D, ctx, '이메일'); calDone(s, CI, ctx, '이메일(알림과 함께)', false, true); }
+  if (r.ok) { axDone(s, D, ctx, '이메일'); if (CI.length) calDone(s, CI, ctx, '이메일(알림과 함께)', false, true); if (PVI.length) pvDone(s, PVI, ctx, '이메일(알림과 함께)', false); }
   else uSheet(SH_AXS, AXSH).appendRow([ctx.date, s.id, '이메일', '못 보냄: ' + r.why, D.n]);
   return r;
+}
+
+/* =====================================================================
+   v63 집예보가 먼저 챙겨 드려요(PROACTIVE) — 맨 위 'v63 변경 요약' · 따로 실행할 함수 없음 · PROACTIVE_ENABLED=false 동안은 아무것도 만들지 않음
+   - 1단계 기한 알림은 위 CAL-CORE(달력 메일 길 그대로): 비과세 보유 2년·거주 2년(hold2·live2), 일시적 2주택 처분 기한(tmp2, 180·90·30·7·1일 전).
+     계약갱신요구 기간·취득세 60일·재산세·종부세는 v55 달력 그대로. 예상 세액은 메일에 넣지 않고 화면(이 기기)에서만 계산.
+   - 2단계 내 단지·내 동네 변화(알림 설정 pv — 사용자가 켠 것만):
+       home = 내 집(회원 저장 자료 homes)도 관심 단지처럼 ALERTS-CORE 새 실거래·신고가·급매(axBuild 의 places 에 더함, 끈 단지 mute 그대로)
+       reg  = 내 집·관심 단지 동네의 규제지역·토지거래허가구역 단계(발표·시행·연장·해제·철회)가 최근 14일 안·신청한 날 이후(공개 data/policy.json)
+       zone = 따라보는 재개발·재건축 구역(pv.zones — 구역 id·단계 번호·이름만)이 다음 단계로 넘어감(공개 data/redev/zones.json). 알린 뒤 그 단계를 설정에 적어 다시 안 보냄
+   - 한 사람에게 하루 한 통: 모닝 브리핑 메일 안(axMorning) 또는 알림·달력 메일 안(axSendWithCal), 그 소식만 있으면 따로 한 통. 기록은 '알림기록' 종류 pv.
+   - 카카오 알림톡: 템플릿 자리만(PV_ALIMTALK). AX_SENDERS.kakao 가 준비되기 전까지 메일만.
+   ===================================================================== */
+const PV_ALIMTALK = { prop: 'SOLAPI_TPL_PROACTIVE', ready: false,
+  text: '[#{서비스}] 먼저 챙겨 드려요\n#{제목}\n#{날짜}\n자세히 보기: #{링크}\n이 알림은 알림 센터에서 직접 켜신 분께만 보내요.' };   // 심사받을 정보성 템플릿 초안(금액 없음)
+/* PRO-CORE BEGIN — 이 블록은 tools/agent-backend.gs 에 그대로 복사돼 있어요. 고칠 때는 두 곳을 똑같이 고쳐 주세요(node tools/proactive-test.js 가 비교). */
+const PV_V = 'pro-2026-11-26';
+const PV_KINDS = { home: '내 집 단지 새 거래', reg: '내 동네 규제 변화', zone: '따라보는 구역 단계 변화' };
+const PV_REG_TYPES = { '규제지역': '규제지역(투기과열지구·조정대상지역)', '토허': '토지거래허가구역' };
+const PV_REG_STAGES = { '발표': '발표됐어요', '시행': '효력이 생겼어요', '연장': '기간이 연장됐어요', '해제': '해제됐어요', '철회': '철회됐어요' };
+const PV_REG_DAYS = 14;                              // 단계 날짜가 오늘부터 이 날 수 안(지난 쪽)일 때만 알림(늦게 켠 분께 오래된 소식이 가지 않게)
+const PV_METRO = ['11', '28', '41'];
+function pvEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function pvT(iso) { return Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)); }
+function pvDiff(a, b) { return Math.round((pvT(b) - pvT(a)) / 864e5); }
+/** 정책 단계 날짜: 'YYYY-MM-DD' 그대로, 'YYYY-MM'(날짜 없이 달만 확인된 것)은 그 달 1일 */
+function pvDay(d) { d = String(d || ''); return /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : /^\d{4}-\d{2}$/.test(d) ? d + '-01' : ''; }
+function pvKo(iso) { return iso ? `${+iso.slice(0, 4)}년 ${+iso.slice(5, 7)}월 ${+iso.slice(8, 10)}일` : ''; }
+/* 적용 지역 판정 — assets/policy-view.js applies() 와 같은 규칙(all · metro · nonmetro · 시·도 2자리 · 시·군·구 5자리 · '코드:동') */
+function pvTok(t, g, d) {
+  if (t === 'all') return true;
+  if (t === 'metro') return PV_METRO.indexOf(g.slice(0, 2)) >= 0;
+  if (t === 'nonmetro') return PV_METRO.indexOf(g.slice(0, 2)) < 0;
+  const i = t.indexOf(':');
+  if (i > 0) return t.slice(0, i) === g && !!d && (d === t.slice(i + 1) || d.split(' ').pop() === t.slice(i + 1));
+  if (t.length === 2) return g.slice(0, 2) === t;
+  return t === g;
+}
+function pvApplies(p, g, d) {
+  if (!(p.in || []).some(t => pvTok(t, g, d))) return false;
+  return !(p.not || []).some(t => pvTok(t, g, d));
+}
+/** 내 동네 목록: 내 집·관심 단지(cleanPlace 꼴 {code, dong}) → [{g, d}] (같은 동은 한 번, 최대 15곳) */
+function pvAreas(places) {
+  const seen = {}, out = [];
+  (places || []).forEach(p => { if (!p || !/^\d{5}$/.test(String(p.code || '')) || !p.dong) return; const k = p.code + '|' + p.dong; if (!seen[k]) { seen[k] = 1; out.push({ g: String(p.code), d: String(p.dong) }); } });
+  return out.slice(0, 15);
+}
+/** 규제지역·토지거래허가구역 지정·해제 알림. pol = policy.json, areas = pvAreas, today·since 'YYYY-MM-DD', gname(코드) → 구 이름
+    → [{k:'reg', key, pid, stage, d, t, s, u, src, where}] — 정책·단계 하나에 알림 하나(내 동네 여러 곳이면 이름을 모아 적음) */
+function pvRegEvents(pol, areas, today, since, gname) {
+  const out = [], gn = gname || (() => '');
+  if (!pol || !Array.isArray(pol.policies) || !today) return out;
+  const lo = pvDiff('2000-01-01', today) - PV_REG_DAYS;
+  pol.policies.forEach(p => {
+    if (!p || !p.id || !(p.types || []).some(t => PV_REG_TYPES[t])) return;
+    const hit = (areas || []).filter(a => pvApplies(p, a.g, a.d));
+    if (!hit.length) return;
+    const where = hit.slice(0, 3).map(a => `${gn(a.g)} ${a.d}`.trim()).join(', ') + (hit.length > 3 ? ` 외 ${hit.length - 3}곳` : '');
+    (p.stages || []).forEach(st => {
+      const day = pvDay(st && st.d), lab = st && PV_REG_STAGES[st.s];
+      if (!day || !lab || day > today || pvDiff('2000-01-01', day) < lo || (since && day < since)) return;
+      const kinds = (p.types || []).filter(t => PV_REG_TYPES[t]).map(t => PV_REG_TYPES[t]).join('·');
+      const src = Array.isArray(p.src) && Array.isArray(p.src[0]) && /^https:\/\//.test(String(p.src[0][1] || '')) ? { nm: String(p.src[0][0] || '공식 발표').slice(0, 80), url: String(p.src[0][1]) } : null;
+      const key = `r|${p.id}|${st.s}|${day}`;
+      out.push({ k: 'reg', key: key, pid: p.id, stage: st.s, d: day, where: where,
+        t: `내 동네(${where}) ${kinds} 소식: ${String(p.name || '').slice(0, 60)} — ${lab}`,
+        s: `${/^\d{4}-\d{2}$/.test(String(st.d)) ? `${+day.slice(0, 4)}년 ${+day.slice(5, 7)}월` : pvKo(day)} ${st.s}${st.note ? ` · ${String(st.note).slice(0, 60)}` : ''}. ${p.dir === 'ease' ? '규제가 풀리면 대출 한도·세금·실거주 의무가 달라질 수 있어요.' : '규제지역·토지거래허가구역이 되면 대출 한도가 줄고, 집을 살 때 허가를 받아 직접 살아야 할 수 있어요.'} 내 조건에 맞는 영향은 대출·세금 계산기에서 확인해 보세요.`,
+        u: src ? src.url : '', src: src });
+    });
+  });
+  return out.sort((a, b) => a.d < b.d ? 1 : a.d > b.d ? -1 : a.key < b.key ? -1 : 1);
+}
+/** 따라보는 재개발·재건축 구역 단계 변화. Z = zones.json, follows = pv.zones [{id, st, n}]
+    → [{k:'zone', key, id, st(새 단계), st0, t, s}] — 따라보기 시작할 때(또는 마지막 알림 때) 단계보다 올라간 구역만. 단계가 내려간 자료 고침은 알리지 않음 */
+function pvZoneEvents(Z, follows) {
+  const out = []; if (!Z || !Array.isArray(Z.z)) return out;
+  const byId = {}; Z.z.forEach(z => { if (z && z.id) byId[z.id] = z; });
+  const names = Z.stages || {};
+  (follows || []).forEach(f => {
+    const z = byId[f.id]; if (!z || !(z.st > f.st)) return;
+    const h = (z.h || []).filter(x => Array.isArray(x) && x[0] === z.st).map(x => String(x[1] || '')).pop() || '';
+    const ym = /^\d{6}$/.test(h) ? `${h.slice(0, 4)}년 ${+h.slice(4)}월` : '';
+    out.push({ k: 'zone', key: `z|${z.id}|${z.st}`, id: z.id, st: z.st, st0: f.st,
+      t: `따라보는 구역 ${String(z.n || f.n || '').slice(0, 30)}${z.gn ? `(${z.gn}${z.umd ? ' ' + z.umd : ''})` : ''}이 다음 단계로 넘어갔어요: ${z.sn || names[z.st] || ''}`,
+      s: `${f.st && names[f.st] ? `'${names[f.st]}'에서 ` : ''}'${z.sn || names[z.st] || ''}' 단계가 됐어요${ym ? `(${ym}, 서울시 정비사업 추진현황 기준)` : ''}. 단계가 바뀌면 이주·분담금·입주 시기가 달라질 수 있어요. 구역 지도에서 착공까지 예상 기간을 다시 확인해 보세요.` });
+  });
+  return out;
+}
+/** 메일 칸: items = pvRegEvents·pvZoneEvents, o = { site, web(끝 /), off(이 알림만 끄기 링크) } → html. 광고 없음 */
+function pvMailHtml(items, o) {
+  o = o || {};
+  const site = o.site || '집예보', web = o.web || '';
+  const lab = { reg: '내 동네 규제', zone: '구역 단계' };
+  const li = items.map(e => `<li style="margin:0 0 9px;line-height:1.55"><span style="display:inline-block;font-size:11.5px;font-weight:800;color:#5B3FB0;background:#F1EDFB;border-radius:6px;padding:1px 6px;margin-right:4px">${pvEsc(lab[e.k] || '')}</span><b style="color:#191F28">${pvEsc(e.t)}</b><br><span style="font-size:13.5px;color:#4E5968">${pvEsc(e.s)}</span>${e.src ? `<br><a href="${pvEsc(e.src.url)}" style="font-size:12.5px;color:#2F6BFF">출처: ${pvEsc(e.src.nm)}</a>` : ''}${e.k === 'zone' && web ? `<br><a href="${pvEsc(web)}villa/zone/?z=${encodeURIComponent(e.id)}" style="font-size:12.5px;color:#2F6BFF">구역 지도에서 보기</a>` : ''}</li>`).join('');
+  const links = `${web ? `<a href="${pvEsc(web)}my/alerts/#pv" style="color:#2F6BFF">먼저 챙겨 드려요 설정</a> · <a href="${pvEsc(web)}my/memory/" style="color:#4E5968">집예보가 기억하는 것</a>` : ''}${o.off ? ` · <a href="${pvEsc(o.off)}" style="color:#4E5968">이 알림만 끄기(한 번 누르면 끝)</a>` : ''}`;
+  return `<div style="border:2px solid #7C5CD6;border-radius:12px;padding:14px 16px;margin:0 0 14px"><div style="font-size:17px;font-weight:900;margin:0 0 4px">${pvEsc(site)}가 먼저 챙겨 드려요 <span style="font-size:13px;font-weight:700;color:#7C5CD6">내 동네·구역 소식 ${items.length}개</span></div>
+    <p style="margin:0 0 10px;font-size:13.5px;color:#4E5968;line-height:1.55">켜 두신 알림에 맞는 소식만 모았어요. 공식 발표와 공개 자료에 나온 날짜·단계 그대로예요.</p>
+    <ul style="list-style:none;margin:0 0 6px;padding:0">${li}</ul><p style="font-size:12.5px;color:#4E5968;margin:4px 0 0">${links}</p></div>`;
+}
+/* PRO-CORE END */
+function pvHM(ctx) { return ctx.hm || (ctx.hm = axHomesMap()); }
+/** 알림을 만들 단지: 관심 단지 + (내 집 단지를 켠 분은) 내 집. 같은 단지는 한 번 */
+function pvPlaces(s, ctx) {
+  const favs = axFavs(s.k, ctx.favs);
+  if (!PROACTIVE_ENABLED || !(s.prefs.pv && s.prefs.pv.home)) return favs;
+  const seen = {}; favs.forEach(p => { seen[axPid(p)] = 1; });
+  return favs.concat(axHomes(s.k, pvHM(ctx)).filter(p => !seen[axPid(p)]));
+}
+const pvSid = key => 'v' + axKeyId('pv|' + key).slice(1);
+/** 오늘 보낼 내 동네 규제·구역 단계 소식(보낸 것 뺌, 최대 10개) */
+function pvItemsFor(s, ctx, sent) {
+  if (!PROACTIVE_ENABLED) return [];
+  const pv = s.prefs.pv || {}, out = [];
+  if (!pv.reg && !(pv.zone && (pv.zones || []).length)) return [];
+  if (pv.reg) {
+    if (ctx.pol === undefined) ctx.pol = bFetchJson(AX_DATA + 'policy.json') || null;
+    pvRegEvents(ctx.pol, pvAreas(axHomes(s.k, pvHM(ctx)).concat(axFavs(s.k, ctx.favs))), ctx.date, s.since, ctx.gname).forEach(e => out.push(e));
+  }
+  if (pv.zone && pv.zones.length) {
+    if (ctx.zones === undefined) ctx.zones = bFetchJson(AX_DATA + 'redev/zones.json') || null;
+    pvZoneEvents(ctx.zones, pv.zones).forEach(e => out.push(e));
+  }
+  const mine = (sent || {})[s.id] || {};
+  return out.filter(e => !mine[pvSid(e.key)]).slice(0, 10);
+}
+function pvOff(s) { return axLinks(bApi(), s.id, axTok, axPh).all.replace(/&all=1$/, '&pv=1'); }
+function pvMsgFor(s, items, ctx) { return pvMailHtml(items, { site: SITE_NAME, web: WEB_ROOT, off: pvOff(s) }); }
+/** 그 소식만 있는 날 따로 보내는 한 통(광고 없음) */
+function pvAloneMsg(s, items, ctx) {
+  const L = axLinks(bApi(), s.id, axTok, axPh);
+  const subject = `[${SITE_NAME}] ${calKo(ctx.date)} 먼저 챙겨 드려요 — ${items[0].t}${items.length > 1 ? ` 외 ${items.length - 1}개` : ''}`.slice(0, 120);
+  const html = `<div style="font-family:'Noto Sans KR',sans-serif;max-width:600px;margin:auto;color:#191F28"><div style="font-weight:900;font-size:19px;margin:6px 0 12px">${bEsc(SITE_NAME)} <span style="color:#7C5CD6">먼저 챙겨 드려요</span></div>${pvMsgFor(s, items, ctx)}
+    <p style="font-size:12px;color:#4E5968;line-height:1.65;margin:12px 0 0;border-top:1px solid #E5E8EB;padding-top:10px">이 메일은 ${bEsc(SITE_NAME)} 알림 센터에서 '먼저 챙겨 드려요' 알림을 직접 켜신 분께 하루 한 통까지 보내는 정보 메일이에요. 광고가 아니에요.<br>
+    <a href="${pvOff(s)}" style="color:#4E5968">이 알림만 끄기</a> · <a href="${L.all}" style="color:#4E5968">모든 알림 끄기</a> · <a href="${AX_WEB}" style="color:#4E5968">알림 설정 바꾸기</a><br>보낸 사람: ${bEsc(SITE_NAME)}(${bEsc(BRIEF_SENDER.name)}) · 전화 ${bEsc(BRIEF_SENDER.tel)} · 답장은 ${bEsc(BRIEF_SENDER.email)}로 가요</p></div>`;
+  return { subject: subject, html: html, text: items.map(e => e.t).join('\n') };
+}
+/** 보낸 뒤: 기록(종류 pv) + 구역은 알린 단계를 설정에 적음(다시 안 보내게) */
+function pvDone(s, items, ctx, how, setLast) {
+  const sh = uSheet(SH_AXL, AXLH);
+  items.forEach(e => sh.appendRow([ctx.date, s.id, pvSid(e.key), 'pv']));
+  const zs = items.filter(e => e.k === 'zone');
+  if (zs.length) {
+    const P = s.prefs; (P.pv.zones || []).forEach(z => { const e = zs.find(x => x.id === z.id); if (e && e.st > z.st) z.st = e.st; });
+    setAX(s.row, '설정', JSON.stringify(axCleanPrefs(P))); setAX(s.row, '수정시각', new Date());
+  }
+  if (setLast) { setAX(s.row, '최근발송일', ctx.date); setAX(s.row, '발송수', s.sent + 1); }
+  uSheet(SH_AXS, AXSH).appendRow([ctx.date, s.id, how, '먼저 챙겨 드려요 보냄', items.length]);
 }
 
 /* PRED-CORE BEGIN — 이 블록은 tools/agent-backend.gs 에 그대로 복사돼 있어요. 고칠 때는 두 곳을 똑같이 고쳐 주세요(node tools/predict-test.js 가 비교). */

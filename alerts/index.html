@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../assets/icons/apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="집예보">
+<!-- 집예보가 먼저 챙겨 드려요 소개(홍보용 주소 alerts/) — assets/config.js PROACTIVE_ENABLED 가 false 면 '준비 중'만 보여요(?preview=pro 로 미리 보기).
+     출시하는 날: config.js·서버 PROACTIVE_ENABLED 를 true 로 + 아래 robots 줄을 지우고 sitemap.xml 에 alerts/ 를 넣어요(tools/proactive-test.js 가 출시 전 상태를 확인). -->
+<meta name="robots" content="noindex">
+<script src="../assets/pwa.js?v=2" defer></script>
+<title>집값도, 할 일도 미리 알려 드려요 — 집예보가 먼저 챙겨 드려요</title>
+<link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/alerts/">
+<meta name="description" content="날씨 예보처럼, 집예보가 집값 변화와 놓치면 손해 보는 날짜를 먼저 알려 드려요. 계약갱신요구 기간, 1세대 1주택 비과세 2년, 일시적 2주택 처분 기한, 취득세 60일, 재산세·종부세, 내 단지 새 거래와 동네 규제 변화까지 — 켠 알림만 하루 한 통으로.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="집값도, 할 일도 미리 알려 드려요 | 집예보">
+<meta property="og:description" content="세금 기한·계약갱신 마감·내 단지 새 거래·동네 규제 변화, 묻기 전에 먼저 챙겨 드려요. 켠 알림만 하루 한 통.">
+<meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/alerts/">
+<meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/alerts.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="집값도, 할 일도 미리 알려 드려요 | 집예보">
+<meta name="twitter:description" content="세금 기한·계약갱신 마감·내 단지 새 거래·동네 규제 변화, 묻기 전에 먼저 챙겨 드려요.">
+<meta name="twitter:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/alerts.png">
+<script>window.JDJ_CONFIG = { tool:'alerts_intro', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../assets/track.js?v=2"></script>
+<script src="../assets/stat.js?v=8"></script>
+<script src="../assets/config.js?v=11"></script>
+<script src="../assets/proactive.js?v=1"></script>
+<script src="../assets/tabbar.js?v=5" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/aplus.css?v=46">
+<style>
+.wrap{max-width:1040px;margin:0 auto;padding:22px 16px 48px}
+.hero{border-radius:24px;padding:28px 22px 24px;background:linear-gradient(140deg,#F4F0FF 0%,#FBF8EF 70%);border:1px solid #E9E2FA;margin:0 0 22px}
+.hero .k{display:inline-block;font-size:13px;font-weight:800;color:#5B3FB0;background:#fff;border-radius:999px;padding:3px 11px;margin:0 0 10px}
+.hero h1{font-size:clamp(28px,7vw,42px);line-height:1.22;letter-spacing:-1px;margin:0 0 12px;word-break:keep-all}
+.hero p{font-size:16.5px;line-height:1.65;color:var(--sub);margin:0 0 6px;max-width:680px;word-break:keep-all}
+.hero .acts{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0}
+.hero .acts a{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:0 18px;border-radius:14px;font-weight:900;font-size:16px;text-decoration:none}
+.hero .acts a.p{background:#5B3FB0;color:#fff}.hero .acts a.g{background:#fff;color:#5B3FB0;border:1.5px solid #CFC2F5}
+.fc{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0 0;max-width:620px}
+.fc div{background:#fff;border-radius:16px;padding:12px 14px;border:1px solid #ECE7F8}
+.fc b{display:block;font-size:15.5px;font-weight:900;margin:0 0 2px}.fc span{font-size:13.5px;color:var(--sub2);line-height:1.5;display:block}
+h2.st{font-size:22px;font-weight:900;letter-spacing:-.5px;margin:26px 0 4px}
+p.sd{font-size:15px;color:var(--sub2);margin:0 0 12px;line-height:1.6;word-break:keep-all}
+.grid{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:760px){.grid{grid-template-columns:1fr 1fr}}
+@media(min-width:1000px){.grid.g3{grid-template-columns:1fr 1fr 1fr}}
+.ex{border:1px solid var(--line);border-radius:18px;padding:16px;background:#fff;box-shadow:0 2px 8px rgba(25,31,40,.04);display:flex;flex-direction:column}
+.ex .when{display:inline-block;align-self:flex-start;font-size:12.5px;font-weight:800;color:#8A6A12;background:#FBF3DC;border-radius:8px;padding:2px 8px;margin:0 0 8px}
+.ex.pv .when{color:#5B3FB0;background:#F1EDFB}
+.ex h3{font-size:17px;font-weight:900;margin:0 0 6px;line-height:1.4;word-break:keep-all}
+.ex .mail{font-size:14px;line-height:1.6;color:var(--sub);background:var(--gray2);border-radius:12px;padding:10px 12px;margin:0 0 8px;word-break:keep-all}
+.ex .mail b{color:var(--text)}
+.ex .law{font-size:12.5px;color:var(--sub2);line-height:1.55;margin-top:auto;overflow-wrap:anywhere}
+.ex .law a{color:var(--sub2)}
+.ex.soon{background:var(--gray2);border-style:dashed}
+.ex.soon .when{color:var(--sub2);background:#fff}
+.steps{counter-reset:s;list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.steps li{position:relative;border:1px solid var(--line);border-radius:16px;padding:14px 14px 14px 56px;background:#fff;font-size:15px;line-height:1.6;word-break:keep-all}
+.steps li:before{counter-increment:s;content:counter(s);position:absolute;left:14px;top:14px;width:30px;height:30px;border-radius:50%;background:#5B3FB0;color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center}
+.steps li>b:first-child{display:block;font-size:16px}
+.steps a{font-weight:800;color:#5B3FB0;overflow-wrap:anywhere}
+.trust{border-radius:18px;padding:16px;background:var(--creamc);border:1px solid var(--creamb);font-size:15px;line-height:1.65;color:var(--sub);margin:12px 0 0}
+.trust b{color:var(--text)}
+.soonbox{max-width:560px;margin:60px auto;text-align:center;line-height:1.7;color:var(--sub)}
+.soonbox h1{font-size:26px;margin:0 0 8px;color:var(--text)}
+.note{margin:16px 0 0;font-size:13px;color:var(--sub2);line-height:1.65}
+</style>
+<script src="../assets/back.js?v=1" defer></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name>집예보</span></a>
+  <div class="badge plain">먼저 챙겨 드려요</div>
+</header>
+<main class="wrap" id="app">
+  <div class="soonbox" id="soon"><h1>준비 중이에요</h1><p>집값 변화와 놓치기 쉬운 날짜를 먼저 알려 드리는 기능을 준비하고 있어요. 지금은 <a href="../mine/calendar/">내 부동산 달력</a>과 <a href="../my/alerts/">알림 센터</a>를 쓸 수 있어요.</p></div>
+  <div id="page" hidden>
+  <section class="hero">
+    <span class="k"><span data-site-name>집예보</span>가 먼저 챙겨 드려요</span>
+    <h1>집값도, 할 일도<br>미리 알려 드려요</h1>
+    <p>내일 비가 온다는 걸 미리 알면 우산을 챙기듯, 집도 미리 알면 손해를 피할 수 있어요. <span data-site-name>집예보</span>는 한 번 넣어 둔 내 집·관심 단지·계약 날짜를 기억했다가, 묻기 전에 먼저 알려 드려요.</p>
+    <div class="fc"><div><b>집값 예보</b><span>내 집·관심 단지의 새 거래, 신고가·급매, 동네 규제 변화</span></div><div><b>할 일 예보</b><span>세금 기한, 계약갱신 마감, 비과세 2년 같은 놓치면 손해 보는 날짜</span></div></div>
+    <div class="acts"><a class="p" href="../my/alerts/#pv" data-track="pro_intro_to_alerts">알림 켜러 가기</a><a class="g" href="../mine/calendar/" data-track="pro_intro_to_calendar">내 날짜 넣으러 가기</a></div>
+  </section>
+
+  <h2 class="st">할 일 예보 — 놓치면 손해 보는 날짜</h2>
+  <p class="sd">내 부동산 달력에 넣은 날짜로 계산해요. 기한 30일·7일·1일 전에 알려 드리고, 시간이 많이 필요한 일시적 2주택은 180일 전부터 알려 드려요. 날짜 규칙은 법령·공식 안내를 직접 확인한 것만 넣었어요.</p>
+  <div class="grid g3">
+    <div class="ex"><span class="when">만기 6개월 전 · 2개월 전 마감 임박</span><h3>세입자 계약갱신요구 기간</h3>
+      <div class="mail"><b>계약갱신요구권 요청 마감까지 7일 남았어요.</b> 만기 2개월 전까지 집주인에게 알려야 2년 더 살 수 있어요. 문자·내용증명처럼 날짜가 남는 방법이 안전해요.</div>
+      <p class="law">근거: <a href="https://law.go.kr/lsLawLinkInfo.do?lsJoLnkSeq=1007847519&chrClsCd=010202&ancYnChk=0" target="_blank" rel="noopener">주택임대차보호법 제6조의3</a></p></div>
+    <div class="ex"><span class="when">2년이 차기 30일·7일·1일 전</span><h3>1세대 1주택 비과세 — 보유·거주 2년</h3>
+      <div class="mail"><b>보유 2년이 차는 날이 다가와요.</b> 이날 이후에 팔아야 비과세를 받을 수 있어요. 산 때 조정대상지역이었다면 2년 이상 살기도 해야 해요.</div>
+      <p class="law">근거: <a href="https://www.law.go.kr/LSW/expcInfoP.do?expcSeq=338247" target="_blank" rel="noopener">소득세법 시행령 제154조 제1항</a></p></div>
+    <div class="ex"><span class="when">처분 기한 180일·90일·30일·7일·1일 전</span><h3>일시적 2주택 — 먼저 가진 집 처분 기한</h3>
+      <div class="mail"><b>먼저 가진 집을 팔아야 하는 기한까지 90일 남았어요.</b> 두 집이 모두 조정대상지역이면 2년, 아니면 3년 안이에요(2026년 10월 1일부터 바뀐 규정).</div>
+      <p class="law">근거: <a href="https://www.law.go.kr/LSW/lsRvsDocInfoR.do?lsiSeq=290841" target="_blank" rel="noopener">소득세법 시행령 제155조 제1항(2026.10.1 시행 개정)</a></p></div>
+    <div class="ex"><span class="when">잔금일부터 60일, 마감 30일·7일·1일 전</span><h3>취득세 신고·납부</h3>
+      <div class="mail"><b>취득세 신고 기한까지 7일 남았어요.</b> 취득일(잔금일)부터 60일 안에 신고하고 내야 가산세를 피할 수 있어요.</div>
+      <p class="law">근거: <a href="https://news.seoul.go.kr/gov/archives/200082" target="_blank" rel="noopener">서울특별시 세목별 안내 — 취득세</a></p></div>
+    <div class="ex"><span class="when">7월·9월 납부 전 · 11월 종부세 고지 전</span><h3>재산세·종합부동산세 미리 보기</h3>
+      <div class="mail"><b>재산세 1기분 납부가 다가와요.</b> 7월 16일부터 31일까지예요. 예상 세액은 알림을 눌러 들어온 내 기기에서만 계산해 보여 드려요.</div>
+      <p class="law">근거: <a href="https://news.seoul.go.kr/gov/archives/200106" target="_blank" rel="noopener">서울시 재산세 안내</a> · <a href="https://www.law.go.kr/LSW/lsPdfPrint.do?ancYnChk=0&lsiSeq=249983&efYd=20230418&efGubun=Y&joAllCheck=Y&joEfOutPutYn=on&mokChaChk=N&bylChaChk=N" target="_blank" rel="noopener">종합부동산세법</a></p></div>
+    <div class="ex"><span class="when">계약일부터 30일 · 이사하는 날</span><h3>전월세 신고·전입신고·확정일자</h3>
+      <div class="mail"><b>오늘 이사하시나요?</b> 전입신고와 확정일자를 받아 두면 다음 날부터 내 보증금을 지킬 힘(대항력)이 생겨요.</div>
+      <p class="law">근거: <a href="https://www.law.go.kr/lsLinkCommonInfo.do?lsJoLnkSeq=1018577211&chrClsCd=010202&ancYnChk=" target="_blank" rel="noopener">주택임대차보호법 제3조</a> · <a href="https://mediahub.seoul.go.kr/archives/2001807" target="_blank" rel="noopener">전·월세 신고 안내</a></p></div>
+  </div>
+
+  <h2 class="st">집값 예보 — 내 단지·내 동네 변화</h2>
+  <p class="sd">공개 실거래·정책·정비사업 자료에 새 소식이 생긴 날만 알려 드려요. 판정 기준은 모닝 브리핑과 같아요.</p>
+  <div class="grid g3">
+    <div class="ex pv"><span class="when">새 거래가 보인 다음 날 아침</span><h3>내 집·관심 단지 새 거래</h3>
+      <div class="mail"><b>신고가 거래가 나왔어요: 11/21 계약 20층.</b> 같은 단지·같은 면적의 그 전 최고가보다 높아요. 급매(최근 3개월 중간값보다 10% 이상 낮음)도 알려 드려요.</div>
+      <p class="law">자료: 국토교통부 아파트 매매 실거래가 공개 자료</p></div>
+    <div class="ex pv"><span class="when">발표·시행·해제된 날부터 14일 안</span><h3>내 동네 규제지역·토지거래허가구역</h3>
+      <div class="mail"><b>내 동네(송파구 잠실동) 토지거래허가구역 소식 — 효력이 생겼어요.</b> 집을 살 때 허가를 받아 직접 살아야 할 수 있어요.</div>
+      <p class="law">자료: 대한민국 정책브리핑·서울시 등 공식 발표 원문을 확인한 정책만</p></div>
+    <div class="ex pv"><span class="when">단계가 바뀐 자료가 나온 다음 날 아침</span><h3>따라보는 재개발·재건축 구역 단계</h3>
+      <div class="mail"><b>따라보는 구역이 다음 단계로 넘어갔어요: 사업시행인가.</b> 단계가 바뀌면 이주·분담금·입주 시기가 달라질 수 있어요.</div>
+      <p class="law">자료: 서울 열린데이터광장 「서울시 정비사업 추진현황」</p></div>
+    <div class="ex soon"><span class="when">곧 나와요</span><h3>카카오톡 알림톡으로 받기</h3><div class="mail">지금은 메일로 보내 드려요. 카카오톡 알림은 심사를 마치는 대로 열어요.</div></div>
+    <div class="ex soon"><span class="when">곧 나와요</span><h3>휴대폰 앱 알림(푸시)</h3><div class="mail">홈 화면에 추가한 집예보에서 바로 알림을 받는 기능을 준비하고 있어요.</div></div>
+  </div>
+
+  <h2 class="st">켜는 방법</h2>
+  <ol class="steps">
+    <li><b>내 집과 관심 단지를 넣어요</b>내 집 시세(<a href="../mine/">mine/</a>)에서 사는 집을 등록하고, 단지 화면에서 <b>☆ 관심</b>을 눌러요. 재개발·재건축 구역은 구역 지도(<a href="../villa/zone/">villa/zone/</a>)에서 <b>☆ 단계 바뀌면 알림</b>을 눌러요.</li>
+    <li><b>날짜를 넣어요</b>내 부동산 달력(<a href="../mine/calendar/">mine/calendar/</a>)에서 자가·전세·월세를 고르고 취득일·전입한 날·계약 만기일을 넣어요. 금액은 넣지 않아요.</li>
+    <li><b>알림을 골라 켜요</b>알림 센터(<a href="../my/alerts/">my/alerts/</a>)에서 <b>메일 알림 신청</b>을 누르고, <b>내 부동산 달력 메일</b>과 <b>먼저 챙겨 드려요</b>에서 받고 싶은 것만 켜요. 여러 소식은 하루 한 통으로 묶여요.</li>
+  </ol>
+  <div class="trust"><b>집예보가 기억하는 것은 언제든 보고 지울 수 있어요.</b> 집예보가 기억하는 것(<a href="../my/memory/">my/memory/</a>)에서 무엇을 어디에 저장했는지 보여 드려요. 보증금·현금·소득 같은 금액은 이 기기에만 두고 서버로 보내지 않아요. 서버에는 날짜·단지·구역처럼 금액이 아닌 정보만 있어요. 켜지 않은 알림은 보내지 않아요.</div>
+  <p class="note">날짜와 규칙은 법령과 공공기관 안내를 기준으로 알려 드리는 참고 정보예요. 기한이 주말·공휴일이면 다음 평일로 미뤄질 수 있고, 내 상황에 따라 달라질 수 있으니 세금은 세무서나 세무사에게 한 번 더 확인해 주세요.</p>
+  </div>
+</main>
+<footer class="foot">★ <span data-site-name>집예보</span> · <a href="../">홈</a> · <a href="../my/alerts/">알림 센터</a> · <a href="../mine/calendar/">내 부동산 달력</a> · <a href="../privacy/#alerts">개인정보처리방침</a></footer>
+<script>
+(function () {
+  'use strict';
+  var on = !!(window.JDJ_PRO && JDJ_PRO.on());
+  document.getElementById('soon').hidden = on;
+  document.getElementById('page').hidden = !on;
+  var S = ((window.JDJ_SITE || {}).SITE_NAME || '').trim() || '집예보';
+  document.querySelectorAll('[data-site-name]').forEach(function (el) { el.textContent = S; });
+})();
+</script>
+</body>
+</html>
