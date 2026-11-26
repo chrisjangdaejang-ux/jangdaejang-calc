@@ -40,7 +40,7 @@ const pro = (id, kind) => ({ id, kind, ok: true });
 check('답변: 확인 전 전문가는 불가', C.canAnswer({ id: 'E1', kind: 'broker', ok: false }, { cat: 'buy' }, []).why === 'unverified');
 check('분야별 자격(확정): 세금=세무사 · 등기·법률=법무사 · 대출=대출상담사 · 나머지=다섯 직군', C.canAnswer(pro('E1', 'broker'), { cat: 'loan' }, []).why === 'kind' && C.canAnswer(pro('E2', 'loan'), { cat: 'loan' }, []).ok
   && C.canAnswer(pro('E1', 'broker'), { cat: 'tax' }, []).why === 'kind' && C.canAnswer(pro('E3', 'judicial'), { cat: 'legal' }, []).ok && C.canAnswer(pro('E4', 'tax'), { cat: 'legal' }, []).why === 'kind'
-  && ['buy', 'rent', 'sub', 'redev', 'etc'].every(c => C.kindsFor(c).length === 5));
+  && ['buy', 'rent', 'sub', 'redev', 'etc'].every(c => C.kindsFor(c).length === 8) && ['consult', 'prof', 'appraiser'].every(k => ['tax', 'legal', 'loan'].every(c => C.kindsFor(c).indexOf(k) < 0)));
 check('게시판 가림: 링크·카톡 아이디·이메일·전화', !/example|myid|a@b|5678/.test(C.hideContact('https://example.com 카톡 아이디 myid 메일 a@b.kr 010-1234-5678').text));
 check('전문가 순서 점수: 무게가 없으면 0 · 평점·응답률·답변 수가 높을수록 위', C.rankScore({ rating: 5, resp: 1, answers: 50 }, {}, 0.5) === 0
   && C.rankScore({ rating: 5, resp: 1, answers: 50 }, { r: 1, p: 1, a: 1 }, 0) > C.rankScore({ rating: 2, resp: 0.2, answers: 1 }, { r: 1, p: 1, a: 1 }, 0));
@@ -89,6 +89,9 @@ check('켜는 날: 결제 버튼은 HEART_ENABLED + PAID_OPEN 둘 다', !clientC
 check('빌라·오피스텔·상가 결과와 재개발 구역 지도 상세에도 같은 칸(재개발은 분야 redev)', /JDJ_CS \? JDJ_CS\.slot\(\{ gu: /.test(read('assets/villa-view.js')) && /JDJ_CS \? JDJ_CS\.slot\(\{ gu: sggName\(S\.g\) \}\)/.test(read('assets/offi-view.js'))
   && /JDJ_CS \? JDJ_CS\.slot\(\{ gu: sggName\(g\) \}\)/.test(read('assets/comm-view.js')) && /JDJ_CS\.slot\(\{ gu: z\.gn, cat: 'redev' \}\)/.test(read('villa/zone/index.html'))
   && /assets\/counsel\.js\?v=\d+/.test(read('villa/zone/index.html')) && /assets\/agents\.js/.test(read('villa/zone/index.html')) && /data-cs-cat="redev"/.test(pvc.slot({ gu: '성북구', cat: 'redev' })) && clientCtx().slot({ gu: '성북구', cat: 'redev' }) === '');
+check('전문가 신청 화면: 직군 8개(설명·직위·활동 링크·증빙 사진·기관 이메일 칸) · 컨설턴트 중개 안내', /C\.PROS\[k\]\.desc/.test(read('counsel/expert/index.html')) && ['id="tt"', 'data-lk', 'id="pv"', 'id="im"'].every(x => read('counsel/expert/index.html').includes(x))
+  && /C\.KIND_NOTE\[MYK\]/.test(read('counsel/index.html')) && /C\.KIND_NOTE\[R\.selfKind\]/.test(read('counsel/chat/index.html')) && C.KIND_NOTE.consult === '중개(거래 연결·계약 대행)는 공인중개사만 할 수 있어요.');
+check('운영자 승인 화면: 직군별 확인 순서·증빙 사진·링크 열어 보기', /P\.check/.test(read('counsel/admin/index.html')) && /proofImg/.test(read('counsel/admin/index.html')) && /링크 열어 보기/.test(read('counsel/admin/index.html')) && ['consult', 'prof', 'appraiser'].every(k => C.PROS[k].check.length >= 2));
 check("단지 화면 '이 동네 확인된 전문가' 칸: 꺼져 있으면 빈 글자, 미리 보기면 칸", clientCtx().slot({ gu: '강남구' }) === '' && /data-cs-near="강남구"/.test(pvc.slot({ gu: '강남구' })) && /JDJ_CS\.slot\(\{gu: sggName\(d\.code\)\}\)/.test(read('mine/index.html')));
 check('안내 문구: 전문가 글쓰기 칸(늘 회색 한 줄 + 걸러질 때 잠깐) · 고객 [채팅하기] 아래 · 채팅 열릴 때 전체 프로필 알림', pvc.MASK_NOTE === '사무소 이름과 연락처는 가려져요. 고객과 채팅이 열리면 그 고객에게 모두 공개돼요.' && pvc.CHAT_NOTE === '채팅을 시작하면 사무소 이름과 연락처를 볼 수 있어요.'
   && /CS\.maskLine\(\)/.test(read('counsel/index.html')) && /CS\.watchMask\(/.test(read('counsel/index.html')) && /CS\.maskLine\(\)/.test(read('counsel/expert/index.html')) && /setTimeout\(\(\) => \{ box\.hidden = true; \}, 3800\)/.test(read('assets/counsel.js'))
@@ -125,7 +128,7 @@ check('환불 정책 숫자 = 규칙 파일(7일 · 1,950원)', /7일 안에 하
 const SH = require('../assets/share-head.js');
 check('머리줄 공유: 운영자·하트·전문가·채팅 화면에는 단추 없음, 고민 상담 목록에는 있음', ['counsel/admin/', 'counsel/heart/', 'counsel/expert/', 'counsel/chat/'].every(p => SH.isPrivate('/jangdaejang-calc/' + p)) && !SH.isPrivate('/jangdaejang-calc/counsel/'));
 const sw = read('sw.js');
-check('서비스 워커: 하트 결제키가 담긴 주소는 저장 안 함 · 공용 파일', /counsel\/heart\/'\) && u\.search\) return;/.test(sw) && /counsel-core\.js\?v=4/.test(sw) && /counsel\.js\?v=4/.test(sw));
+check('서비스 워커: 하트 결제키가 담긴 주소는 저장 안 함 · 공용 파일', /counsel\/heart\/'\) && u\.search\) return;/.test(sw) && /counsel-core\.js\?v=5/.test(sw) && /counsel\.js\?v=5/.test(sw));
 /* 시드 글 */
 const seed = JSON.parse(read('counsel/seed.json'));
 check('시드: 15개 · 모두 draft:true · 분류가 맞음 · 영상 칸(videoUrl) 있음', seed.items.length === 15 && seed.items.every(x => x.draft === true && C.catName(x.cat) && x.videoUrl === '' && /^s\d{2}$/.test(x.sid)) && new Set(seed.items.map(x => x.sid)).size === 15);
@@ -145,7 +148,11 @@ function env(o) {
   Object.assign(E.ctx.Utilities, {
     base64EncodeWebSafe: a => us(a).toString('base64').replace(/\+/g, '-').replace(/\//g, '_'),
     base64DecodeWebSafe: s => sg(Buffer.from(String(s).replace(/-/g, '+').replace(/_/g, '/'), 'base64')),
-    newBlob: x => typeof x === 'string' ? { getBytes: () => sg(Buffer.from(x, 'utf8')) } : { getDataAsString: () => us(x).toString('utf8') } });
+    newBlob: (x, type) => type ? { getBytes: () => x, getContentType: () => type } : typeof x === 'string' ? { getBytes: () => sg(Buffer.from(x, 'utf8')) } : { getDataAsString: () => us(x).toString('utf8') },
+    base64Decode: b64 => sg(Buffer.from(String(b64), 'base64')), base64Encode: a => Buffer.from(Array.isArray(a) ? us(a) : a).toString('base64') });
+  E.drive = { files: {}, trashed: {} };
+  E.ctx.DriveApp = { getFolderById: () => { throw new Error('none'); }, getFileById: id => ({ setTrashed: () => { E.drive.trashed[id] = 1; delete E.drive.files[id]; }, getBlob: () => { const f = E.drive.files[id]; if (!f) throw new Error('gone'); return f; } }),
+    createFolder: () => ({ getId: () => 'FOLDER', createFile: blob => { const id = 'F' + Object.keys(E.drive.files).length + Math.random().toString(36).slice(2, 6); E.drive.files[id] = blob; return { getId: () => id }; } }) };
   const base = E.ctx.UrlFetchApp.fetch;
   E.ctx.UrlFetchApp.fetch = (url, opt) => {
     const send = (code, j) => ({ getResponseCode: () => code, getContentText: () => JSON.stringify(j) });
@@ -157,6 +164,7 @@ function env(o) {
   E.props.BRIEF_ADMIN_IDS = JSON.stringify(['k900']);
   return E;
 }
+const CSP_PROOF_COL = ['id', '신청일', '회원', '종류', '이름', '번호', '소속', '지역', '소개', '연락처', '이메일', '상태', '처리일', '메모', '동의판', '경력', '주소', '사무실전화', '사진', '직위', '증빙링크', '증빙사진'].indexOf('증빙사진');
 const sheetRows = (E, n) => (E.sheets[n] ? E.sheets[n].rows : []);
 let E = env();
 const u1 = E.member(101), adm = E.member(900);
@@ -464,6 +472,46 @@ check('질문 상세: 같은 구·분야 전문가 추천 3명(이미 답한 분
 r = E.post({ action: 'csGet', s: h, id: qP });
 check('세금 질문 추천은 세무사만', r.rec.every(x => x.kind === 'tax'));
 
+
+/* 직군 3개 추가(컨설턴트·교수·연구자·감정평가사) */
+const img = 'data:image/jpeg;base64,' + Buffer.alloc(3000, 7).toString('base64');
+const cs1 = E.member(101), pf1 = E.member(102), ap1 = E.member(103), cs2 = E.member(104);
+r = E.post({ action: 'csProApply', s: cs1, kind: 'consult', name: '한컨설', org: '한부동산연구소', area: '서울 강남구', years: 20, phone: '010-5151-5151', email: 'c@example.com', links: ['https://youtube.com/watch?v=abc'], agree: true });
+check('컨설턴트: 사업자등록증 사진 없으면 막음', !r.ok && /사업자등록증/.test(r.err), r);
+r = E.post({ action: 'csProApply', s: cs1, kind: 'consult', name: '한컨설', org: '한부동산연구소', area: '서울 강남구', years: 20, phone: '010-5151-5151', email: 'c@example.com', proof: img, agree: true });
+check('컨설턴트: 활동 링크 1개 이상', !r.ok && /활동 링크/.test(r.err), r);
+check('링크는 https 주소만', !E.post({ action: 'csProApply', s: cs1, kind: 'consult', name: '한컨설', org: '한부동산연구소', area: '서울 강남구', years: 20, phone: '010-5151-5151', email: 'c@example.com', proof: img, links: ['javascript:alert(1)'], agree: true }).ok);
+const eC = E.post({ action: 'csProApply', s: cs1, kind: 'consult', name: '한컨설', org: '한부동산연구소', area: '서울 강남구', years: 20, intro: '방송·강의로 부동산 흐름을 쉽게 풀어 드려요', phone: '010-5151-5151', email: 'c@example.com', proof: img, links: ['https://youtube.com/watch?v=abc', 'https://book.example.com/1'], agree: true }).id;
+check('컨설턴트 신청: 증빙 사진은 드라이브(시트에는 파일 번호만)', !!eC && Object.keys(E.drive.files).length === 1 && !JSON.stringify(sheetRows(E, '상담전문가')).includes('base64'));
+r = E.post({ action: 'csProApply', s: pf1, kind: 'prof', name: '윤교수', org: '○○대학교 도시공학과', area: '서울 성북구', years: 15, phone: '010-6161-6161', email: 'p@example.com', agree: true });
+check('교수·연구자: 직위 필요', !r.ok && /직위/.test(r.err), r);
+r = E.post({ action: 'csProApply', s: pf1, kind: 'prof', name: '윤교수', org: '○○대학교 도시공학과', title: '부교수', area: '서울 성북구', years: 15, phone: '010-6161-6161', email: 'p@example.com', agree: true });
+check('교수·연구자: 소개 페이지 주소나 재직증명서 사진 가운데 하나는 필요', !r.ok && /재직증명서/.test(r.err), r);
+const eP = E.post({ action: 'csProApply', s: pf1, kind: 'prof', name: '윤교수', org: '○○대학교 도시공학과', title: '부교수', area: '서울 성북구', years: 15, intro: '인구 구조와 집값을 연구해요', links: ['https://univ.example.ac.kr/faculty/yoon'], instMail: 'yoon@univ.ac.kr', phone: '010-6161-6161', email: 'p@example.com', agree: true }).id;
+check('교수·연구자 신청: 소개 페이지 주소로(사진 없이)', !!eP);
+r = E.post({ action: 'csProApply', s: ap1, kind: 'appraiser', name: '서감정', area: '서울 강남구', years: 8, phone: '010-7171-7171', email: 'a@example.com', agree: true });
+check('감정평가사: 등록번호 필요', !r.ok && /감정평가사 등록번호/.test(r.err), r);
+const eA = E.post({ action: 'csProApply', s: ap1, kind: 'appraiser', name: '서감정', no: '1234', org: '○○감정평가법인', area: '서울 강남구', years: 8, phone: '010-7171-7171', email: 'a@example.com', agree: true }).id;
+r = E.post({ action: 'csAdminQueue', s: boss2 });
+const qC = r.pros.find(x => x.id === eC), qP2 = r.pros.find(x => x.id === eP);
+check('운영자 화면: 컨설턴트 증빙 사진·활동 링크가 보임', qC && /^data:image\/jpeg;base64,/.test(qC.proofImg) && qC.links.length === 2, qC);
+check('운영자 화면: 교수·연구자 소개 페이지·기관 메일·직위', qP2 && qP2.links[0] === 'https://univ.example.ac.kr/faculty/yoon' && qP2.instMail === 'yoon@univ.ac.kr' && qP2.title === '부교수', qP2);
+[eC, eP, eA].forEach(id => E.post({ action: 'csAdminPro', s: boss2, id, op: 'ok' }));
+check('승인하면 증빙 사진은 바로 삭제(드라이브 휴지통·시트 칸 비움)', Object.keys(E.drive.files).length === 0 && Object.keys(E.drive.trashed).length === 1 && !sheetRows(E, '상담전문가').find(x => x[0] === eC)[CSP_PROOF_COL]);
+r = E.post({ action: 'csProPage', id: eC });
+check("컨설턴트 배지 '확인된 컨설턴트' · 신원 숨김", r.ok && r.pro.badge === '확인된 컨설턴트' && r.pro.name === '한○○' && r.pro.org === undefined && !/한부동산연구소|한컨설|5151/.test(JSON.stringify(r)), r.pro);
+r = E.post({ action: 'csProPage', id: eP });
+check("교수·연구자: 배지 · 소속·직위는 채팅 전에도 보임 · 실명·연락처는 숨김", r.pro.badge === '확인된 교수·연구자' && r.pro.org === '○○대학교 도시공학과' && r.pro.title === '부교수' && r.pro.name === '윤○○' && !/윤교수|6161|yoon@|p@example/.test(JSON.stringify(r)), r.pro);
+check("감정평가사 배지 '확인된 감정평가사'", E.post({ action: 'csProPage', id: eA }).pro.badge === '확인된 감정평가사');
+check('전문가 찾기: 새 직군으로 거르기', E.post({ action: 'csProList', kind: 'prof' }).items.length === 1 && E.post({ action: 'csProList', kind: 'consult' }).items[0].id === eC);
+r = E.post({ action: 'csAnswer', s: cs1, id: qP, text: '양도세 비과세 기한은 취득일 기준으로 따져 보셔야 해요.' });
+check('새 직군은 세금 분야 답변 불가', !r.ok, r);
+check('새 직군은 세금 분야 상담 제안도 불가', !E.post({ action: 'csOffer', s: ap1, id: qP, text: '감정평가 쪽에서 도와드릴 수 있어요. 말씀 주세요.' }).ok);
+const qBuy = E.post({ action: 'csAsk', s: cs2, cat: 'buy', title: '매수 시점 고민입니다', body: '내년 상반기에 사는 게 나을지 지금 사는 게 나을지 고민이에요.' }).id;
+check('나머지 분야는 답변 가능(교수·연구자)', E.post({ action: 'csAnswer', s: pf1, id: qBuy, text: '인구 구조와 공급 물량을 함께 보면 흐름을 가늠하는 데 도움이 돼요.' }).ok);
+r = E.post({ action: 'csOffer', s: cs1, id: qBuy, text: '매수 시점 판단 기준을 정리해 드릴 수 있어요. 편하게 말씀해 주세요.' });
+check('나머지 분야는 상담 제안 가능(컨설턴트) · 하트 규칙 같음(무료 5 → 3)', r.ok && r.hearts === 3, r);
+check('컨설턴트 채팅방: 전문가 쪽에 자기 직군(중개 안내 줄용)', E.post({ action: 'csRoom', s: cs1, id: r.room, n: 0, full: true }).room.selfKind === 'consult');
 /* 환불 */
 const o5 = E.post({ action: 'htOrder', s: tx, pack: 'h13', agree: true });
 E.post({ action: 'htConfirm', s: tx, orderId: o5.orderId, paymentKey: 'pk_test_5', amount: 19900 });

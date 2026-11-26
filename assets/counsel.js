@@ -171,15 +171,16 @@ textarea.cs-inp{min-height:150px;resize:vertical;line-height:1.6}
   function whoHtml(w, stat) {
     if (!w) return '';
     if (w.kind === 'team') return `<span class="cs-tag team">공식 답변</span><b>${esc(w.name || (site() + ' 상담팀'))}</b>`;
-    const nm = w.full && w.realName ? w.realName : w.name, sub = [w.kn, w.gu, w.years ? '경력 ' + w.years + '년' : '', w.full ? w.org : ''].filter(Boolean).join(' · ');
+    const nm = w.full && w.realName ? w.realName : w.name, sub = [w.kn, w.org && w.title ? w.org + ' ' + w.title : w.org, w.gu, w.years ? '경력 ' + w.years + '년' : ''].filter((x, i, a) => x && a.indexOf(x) === i).join(' · ');
+    const badge = w.badge || (root.JDJ_CSCORE && w.pk ? root.JDJ_CSCORE.badge(w.pk) : '확인된 전문가');
     const st = stat || w.stat || (('answers' in w) ? w : null);
-    return `<span class="cs-tag ok">✓ 확인된 전문가</span>${w.id ? `<a href="${esc(link('counsel/pro/?id=' + w.id))}" style="color:inherit"><b>${esc(nm || '')}</b></a>` : `<b>${esc(nm || '')}</b>`}<small>${esc(sub)}</small>${st ? `<small>${esc(statTxt(st))}</small>` : ''}`;
+    return `<span class="cs-tag ok">✓ ${esc(badge)}</span>${w.id ? `<a href="${esc(link('counsel/pro/?id=' + w.id))}" style="color:inherit"><b>${esc(nm || '')}</b></a>` : `<b>${esc(nm || '')}</b>`}<small>${esc(sub)}</small>${st ? `<small>${esc(statTxt(st))}</small>` : ''}`;
   }
   function statTxt(st) { return [st.rating != null ? '평점 ★' + Number(st.rating).toFixed(1) : '평점 없음', '답변 ' + (st.answers || 0), st.resp != null ? '응답률 ' + Math.round(st.resp * 100) + '%' : ''].filter(Boolean).join(' · '); }
   /** 전문가 카드(찾기·추천·동네 칸) — 채팅 전 공개 정보만 */
   function proCard(p, btn) {
     const ph = p.photo ? `<img class="cs-ph" src="${esc(p.photo)}" alt="" width="56" height="56">` : `<span class="cs-ph cs-ph0" aria-hidden="true">${esc((p.name || '전').slice(0, 1))}</span>`;
-    return `<div class="cs-pc">${ph}<div class="cs-pcb"><div class="cs-who" style="margin:0">${whoHtml(Object.assign({}, p, { kind: 'pro', stat: undefined }), p.stat)}</div>${p.intro ? `<p class="cs-help" style="margin:4px 0 0">${esc(p.intro)}</p>` : ''}
+    return `<div class="cs-pc">${ph}<div class="cs-pcb"><div class="cs-who" style="margin:0">${whoHtml(Object.assign({}, p, { kind: 'pro', pk: p.pk || p.kind, stat: undefined }), p.stat)}</div>${p.intro ? `<p class="cs-help" style="margin:4px 0 0">${esc(p.intro)}</p>` : ''}
       <div class="cs-acts" style="margin-top:8px"><a class="cs-btn ghost" style="min-height:40px;font-size:14px" href="${esc(link('counsel/pro/?id=' + p.id))}">프로필 보기</a>${btn || ''}</div></div></div>`;
   }
   /** 전체 프로필(채팅이 열린 고객에게만 서버가 보내 줘요) */

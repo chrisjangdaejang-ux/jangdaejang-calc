@@ -12,8 +12,8 @@
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/config.js?v=11"></script>
 <script src="../../assets/auth.js?v=10"></script>
-<script src="../../assets/counsel-core.js?v=4"></script>
-<script src="../../assets/counsel.js?v=4"></script>
+<script src="../../assets/counsel-core.js?v=5"></script>
+<script src="../../assets/counsel.js?v=5"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../assets/aplus.css?v=46">
@@ -97,9 +97,16 @@ details.sd summary{cursor:pointer;font-size:14px;font-weight:700;color:var(--blu
     return '<div class="it"><div class="hd"><b>' + esc(x.who.name || '') + '</b><span>' + esc(x.who.kn || '상담팀') + '</span><span>' + esc(x.at) + '</span><a href="' + esc(L('counsel/?id=' + x.qid)) + '" target="_blank" rel="noopener">질문 보기</a></div><p class="tx">' + esc(x.text) + '</p>' + why(x) + modBtns(x) + '</div>';
   }
   function proItem(x) {
-    return '<div class="it"><div class="hd"><b>' + esc(x.name) + '</b><span>' + esc(x.kn) + '</span><span>신청 ' + esc(x.day) + '</span></div>'
-      + '<div class="tt" style="font-size:15px">' + (x.no ? '번호 ' + esc(x.no) + ' · ' : '') + esc(x.org || '소속 없음') + (x.area ? ' · ' + esc(x.area) : '') + '</div>'
-      + (x.intro ? '<p class="tx">' + esc(x.intro) + '</p>' : '') + '<div class="hint">확인할 곳: ' + esc(x.where) + '<br>연락처 ' + esc(x.phone || '-') + ' · ' + esc(x.mail || '-') + '</div>'
+    var P = C.PROS[x.kind] || {}, chk = P.check || ['확인할 곳(' + (P.where || '') + ')에서 이름·' + (P.no || '소속') + '이(가) 신청 내용과 같은지', '소속 ' + (P.org || '') + '이(가) 맞는지'];
+    return '<div class="it"><div class="hd"><b>' + esc(x.realName || x.name) + '</b><span>' + esc(x.kn) + '</span><span>신청 ' + esc(x.day) + '</span>' + (x.years ? '<span>경력 ' + x.years + '년</span>' : '') + '</div>'
+      + '<div class="tt" style="font-size:15px">' + (x.no ? '번호 ' + esc(x.no) + ' · ' : '') + esc(x.org || '소속 없음') + (x.title ? ' ' + esc(x.title) : '') + (x.area ? ' · ' + esc(x.area) : '') + '</div>'
+      + (x.intro ? '<p class="tx">' + esc(x.intro) + '</p>' : '')
+      + '<div class="hint"><b>확인 순서 — ' + esc(C.badge(x.kind)) + '</b><ol style="margin:4px 0 0;padding-left:18px">' + chk.map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ol></div>'
+      + (x.proofImg ? '<p class="hint" style="margin-bottom:0"><b>증빙 사진</b> (승인·반려하면 바로 지워져요)</p><a href="' + esc(x.proofImg) + '" target="_blank" rel="noopener noreferrer"><img src="' + esc(x.proofImg) + '" alt="증빙 사진" style="display:block;max-width:100%;max-height:420px;border-radius:12px;border:1px solid var(--line);margin:6px 0;object-fit:contain;background:var(--gray2)"></a>' : '')
+      + (x.links && x.links.length ? '<div class="hint"><b>링크 열어 보기</b><br>' + x.links.map(function (u, i) { return /^https:\/\//.test(u) ? '<a href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">' + (i + 1) + '. ' + esc(u) + ' ↗</a>' : ''; }).join('<br>') + '</div>' : '')
+      + (x.instMail ? '<div class="hint">기관 이메일: ' + esc(x.instMail) + '</div>' : '')
+      + (x.photo ? '<div class="hint"><b>프로필 사진</b> — 간판·명함·글자가 들어간 사진이면 반려해 주세요.<br><img src="' + esc(x.photo) + '" alt="프로필 사진" width="72" height="72" style="border-radius:50%;object-fit:cover;margin-top:6px"></div>' : '')
+      + '<div class="hint">연락처 ' + esc(x.phone || '-') + ' · ' + esc(x.mail || '-') + '</div>'
       + '<div class="acts"><button type="button" class="b ok" data-pro="ok" data-id="' + esc(x.id) + '">승인</button><input type="text" maxlength="200" data-memo="' + esc(x.id) + '" placeholder="반려 이유(신청한 분께 메일로 가요)"><button type="button" class="b no" data-pro="no" data-id="' + esc(x.id) + '">반려</button></div></div>';
   }
   function proOk(x) {

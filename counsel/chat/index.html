@@ -20,8 +20,8 @@
 <script src="../../assets/config.js?v=11"></script>
 <script src="../../assets/auth.js?v=10"></script>
 <script src="../../assets/savefb.js?v=1"></script>
-<script src="../../assets/counsel-core.js?v=4"></script>
-<script src="../../assets/counsel.js?v=4"></script>
+<script src="../../assets/counsel-core.js?v=5"></script>
+<script src="../../assets/counsel.js?v=5"></script>
 <script src="../../assets/tabbar.js?v=5" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -118,7 +118,7 @@
       ch.innerHTML = '<div class="ch-hd">' + (R.side === 'q' ? CS.whoHtml(R.other) + (R.other.full ? '<button type="button" class="cs-lnk" id="fullB">전문가 전체 프로필</button>' : '') : '<b class="nm">' + esc(R.other.name) + '</b><span class="cs-tag gray">질문한 분</span>') + CS.pvTag()
         + (on ? '' : '<span class="cs-tag ' + (R.st === '요청' ? 'pv">수락 기다리는 중' : R.st === '제안' ? 'pv">상담 제안' : 'gray">' + esc({ '끝남': '끝난 상담', '거절': '이번엔 어려워요', '만료': '기간 지남', '사양': '괜찮다고 함' }[R.st] || R.st)) + '</span>') + '<span class="sub">질문: <a href="' + esc(CS.link('counsel/?id=' + R.qid)) + '">' + esc(R.title) + '</a></span></div>'
         + (R.side === 'q' && R.other.full && !openSeen() ? '<p class="cs-open" id="openBar">이제 전문가의 전체 프로필을 볼 수 있어요 <button type="button" class="cs-lnk" id="fullB2">전체 프로필</button><button type="button" class="cs-lnk" id="openX" aria-label="알림 닫기">닫기</button></p>' : '')
-        + '<p class="ch-note">' + esc(note()) + '</p><div id="fullBox"></div><div class="ch-list" id="list" aria-live="polite"></div>'
+        + '<p class="ch-note">' + esc(note()) + (R.side === 'p' && C.KIND_NOTE[R.selfKind] ? ' ' + esc(C.KIND_NOTE[R.selfKind]) : '') + '</p><div id="fullBox"></div><div class="ch-list" id="list" aria-live="polite"></div>'
         + (on ? '<form class="ch-in" id="f"><label for="tx" class="sr-only" style="position:absolute;left:-9999px">메시지</label><textarea id="tx" rows="1" maxlength="' + C.CHAT.len[1] + '" placeholder="메시지를 적어 주세요"></textarea><button type="submit" class="cs-btn" id="go">보내기</button></form>'
           + '<div class="ch-tools">' + (!R.sent ? '<button type="button" class="cs-lnk" id="ct">내 연락처 보내기</button>' : '') + (R.side === 'q' ? '<button type="button" class="cs-lnk" id="ml">' + (R.mail ? '알림 메일 바꾸기' : '새 메시지 알림 메일 받기') + '</button>' : '')
           + (R.side === 'q' ? '<button type="button" class="cs-lnk" id="bk">' + (R.blocked ? '차단 풀기' : '이 전문가 차단') + '</button>' : '')

@@ -14,14 +14,26 @@
 const CS_V = 'counsel-2026-11-25';
 /* 질문 분류 */
 const CS_CATS = [['buy', '매수·매도'], ['rent', '전월세'], ['tax', '세금'], ['loan', '대출'], ['sub', '청약·분양'], ['redev', '재개발·재건축'], ['legal', '등기·법률'], ['etc', '기타']];
-/* 답변하는 전문가 5종 — no: 확인할 번호 칸 이름(없으면 null) · org: 소속 칸 이름 · orgNeed: 소속 필수 · where: 운영자가 확인할 곳 */
+/* 답변하는 전문가 8종 — no: 확인할 번호 칸 이름(없으면 null) · org: 소속 칸 이름 · orgNeed: 소속 필수 · where: 운영자가 확인할 곳
+   desc: 신청 화면 설명 · badge: 확인 뒤 표시 · proof: 받을 증빙(biz 사업자등록증 사진 필수 + links 활동 링크 1~3개 / work 재직 증빙 = 소개 페이지 주소 또는 재직증명서 사진)
+   check: 운영자 승인 화면의 확인 순서 · showOrg: 채팅 전에도 소속·직위를 보여도 되는 직군(사무소 정보가 아님) */
 const CS_PROS = {
   broker: { name: '공인중개사', no: '중개사무소 개설등록번호', org: '중개사무소 이름', orgNeed: true, where: '국가공간정보포털 부동산중개업 조회(등록·영업 상태)' },
   tax: { name: '세무사', no: '세무사 등록번호', org: '세무사무소 이름', orgNeed: false, where: '한국세무사회 세무사 찾기' },
   sales: { name: '분양상담사', no: null, org: '소속 분양대행사', orgNeed: true, where: '소속 분양대행사 확인(재직 확인서 또는 명함·사업자등록증)' },
   judicial: { name: '법무사', no: '법무사 등록번호', org: '법무사사무소 이름', orgNeed: false, where: '대한법무사협회 법무사 찾기' },
-  loan: { name: '대출상담사', no: '금융위원회 대출모집인 등록번호', org: '소속 금융회사(위탁사)', orgNeed: true, where: '대출모집인 등록 조회(금융소비자 정보포털 파인 또는 대출모집인 통합조회)' }
+  loan: { name: '대출상담사', no: '금융위원회 대출모집인 등록번호', org: '소속 금융회사(위탁사)', orgNeed: true, where: '대출모집인 등록 조회(금융소비자 정보포털 파인 또는 대출모집인 통합조회)' },
+  consult: { name: '부동산 컨설턴트', no: null, org: '상호(사업자 이름)', orgNeed: true, where: '사업자등록증 사진과 활동 링크', badge: '확인된 컨설턴트', desc: '부동산 컨설팅 사업자 · 방송·강의 활동 확인', proof: 'biz',
+    check: ['사업자등록증 사진: 업종(종목)에 부동산 컨설팅·자문이 들어 있는지', '사업자등록증의 상호·대표자 이름이 신청 내용과 같은지', '활동 링크를 열어 방송 출연·강의·저서·칼럼이 본인 것인지', '국세청 홈택스 사업자 상태 조회로 휴업·폐업이 아닌지'] },
+  prof: { name: '교수·연구자', no: null, org: '소속 대학·연구기관', orgNeed: true, title: '직위(예: 부교수·책임연구원)', where: '소속 기관 소개 페이지 또는 재직증명서', badge: '확인된 교수·연구자', desc: '대학·연구기관 재직 확인', proof: 'work', showOrg: true,
+    check: ['기관 소개 페이지(교원·연구원 목록)를 열어 이름·소속·직위가 같은지', '또는 재직증명서 사진의 기관·이름·직위·발급일(3개월 안)을 확인', '기관 이메일을 적었다면 기관 도메인인지'] },
+  appraiser: { name: '감정평가사', no: '감정평가사 등록번호', org: '감정평가법인·사무소 이름', orgNeed: false, where: '한국감정평가사협회 감정평가사 찾기', badge: '확인된 감정평가사', desc: '감정평가사 등록번호 확인',
+    check: ['한국감정평가사협회 감정평가사 찾기에서 이름·등록번호가 같은지', '소속 법인·사무소가 신청 내용과 같은지'] }
 };
+/** 직군별 확인 배지 글자 */
+function csBadge(kind) { return (CS_PROS[kind] && CS_PROS[kind].badge) || '확인된 전문가'; }
+/** 직군별 안내 한 줄(답변·채팅 화면) — 컨설턴트는 중개를 할 수 없어요 */
+const CS_KIND_NOTE = { consult: '중개(거래 연결·계약 대행)는 공인중개사만 할 수 있어요.' };
 const CS_PRO_MAX = 5;                                 // 질문 하나에 전문가 답변 최대 수(상담팀 공식 답변은 따로)
 /* 분류마다 답·상담 제안할 수 있는 전문가(대표 확정 2026-11-25): 세금 = 세무사, 등기·법률 = 법무사, 대출 = 대출상담사(등록된 대출모집인), 나머지 분류 = 다섯 직군 모두 */
 const CS_CAT_ONLY = { tax: ['tax'], legal: ['judicial'], loan: ['loan'] };
@@ -161,7 +173,7 @@ function csCheckText(kind, s) {
 /* COUNSEL-CORE END */
 
 const API = { V: CS_V, REPORT_HIDE: CS_REPORT_HIDE, FREE_HEARTS: CS_FREE_HEARTS, expireAt: csExpireAt, CHAT: CS_CHAT, CHAT_WHY: CS_CHAT_WHY, hideContact: csHideContact, CATS: CS_CATS, PROS: CS_PROS, PRO_MAX: CS_PRO_MAX, CAT_ONLY: CS_CAT_ONLY, LEN: CS_LEN, PACKS: CS_PACKS, USES: CS_USES, REFUND: CS_REFUND,
-  catName: csCatName, kindsFor: csKindsFor, kindMsg: csKindMsg, guOf: csGuOf, noMask: csNoMask, rankScore: csRankScore, pack: csPack, unit: csUnit, packInfo: csPackInfo, refund: csRefund, alloc: csAlloc, mask: csMask, bad: csBad, canAnswer: csCanAnswer, order: csOrder, checkText: csCheckText };
+  catName: csCatName, badge: csBadge, KIND_NOTE: CS_KIND_NOTE, kindsFor: csKindsFor, kindMsg: csKindMsg, guOf: csGuOf, noMask: csNoMask, rankScore: csRankScore, pack: csPack, unit: csUnit, packInfo: csPackInfo, refund: csRefund, alloc: csAlloc, mask: csMask, bad: csBad, canAnswer: csCanAnswer, order: csOrder, checkText: csCheckText };
 root.JDJ_CSCORE = API;
 if (typeof module !== 'undefined' && module.exports) module.exports = API;
 })(typeof window !== 'undefined' ? window : globalThis);

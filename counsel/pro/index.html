@@ -18,8 +18,8 @@
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/config.js?v=11"></script>
 <script src="../../assets/auth.js?v=10"></script>
-<script src="../../assets/counsel-core.js?v=4"></script>
-<script src="../../assets/counsel.js?v=4"></script>
+<script src="../../assets/counsel-core.js?v=5"></script>
+<script src="../../assets/counsel.js?v=5"></script>
 <script src="../../assets/tabbar.js?v=5" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -63,8 +63,8 @@
     document.title = p.name + ' ' + p.kn + ' — 전문가 프로필' + (SITE ? ' · ' + SITE : '');
     var ph = p.photo ? '<img class="pf-ph" src="' + esc(p.photo) + '" alt="' + esc(p.name) + ' 프로필 사진">' : '<span class="pf-ph pf-ph0" aria-hidden="true">' + esc(p.name.slice(0, 1)) + '</span>';
     app.innerHTML = '<div class="cs-grid"><div>'
-      + '<section class="cs-panel pf-top">' + ph + '<div class="pf-t"><div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center"><span class="cs-tag ok">✓ 확인된 전문가</span><span class="cs-tag gray">' + esc(p.kn) + '</span>' + CS.pvTag() + '</div>'
-      + '<h1>' + esc(p.name) + '</h1><p class="cs-lead" style="margin:0">' + esc([p.gu, p.years ? '경력 ' + p.years + '년' : ''].filter(Boolean).join(' · ')) + '</p>' + (p.intro ? '<p class="pf-intro">' + esc(p.intro) + '</p>' : '') + '</div></section>'
+      + '<section class="cs-panel pf-top">' + ph + '<div class="pf-t"><div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center"><span class="cs-tag ok">✓ ' + esc(p.badge || C.badge(p.kind)) + '</span><span class="cs-tag gray">' + esc(p.kn) + '</span>' + CS.pvTag() + '</div>'
+      + '<h1>' + esc(p.name) + '</h1><p class="cs-lead" style="margin:0">' + esc([p.org && p.title ? p.org + ' ' + p.title : p.org, p.gu, p.years ? '경력 ' + p.years + '년' : ''].filter(Boolean).join(' · ')) + '</p>' + (p.intro ? '<p class="pf-intro">' + esc(p.intro) + '</p>' : '') + '</div></section>'
       + '<div class="pf-stats"><div><b>' + (st.rating != null ? '★ ' + Number(st.rating).toFixed(1) : '—') + '</b><span>평점' + (st.ratings ? ' (' + st.ratings + '명)' : '') + '</span><small>채팅을 실제로 한 고객만</small></div>'
       + '<div><b>' + (st.resp != null ? Math.round(st.resp * 100) + '%' : '—') + '</b><span>응답률</span><small>채팅 요청 중 ' + C.CHAT.reqDays + '일 안 수락</small></div>'
       + '<div><b>' + (st.answers || 0) + '</b><span>공개 답변</span><small>' + esc(p.since ? p.since + ' 자격 확인' : '') + '</small></div></div>'

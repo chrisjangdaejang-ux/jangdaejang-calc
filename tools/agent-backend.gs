@@ -1,6 +1,12 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v61 변경 요약 (v60 위에 다시 배포. 따로 실행할 함수 없음 — 증빙 드라이브 폴더는 첫 신청 때 저절로 생김. 고민 상담은 아직 숨김)
+ *  - 고민 상담 전문가 직군 3개 추가: 부동산 컨설턴트(사업자등록증 사진 + 활동 링크 1~3개, '확인된 컨설턴트') · 교수·연구자(기관 소개 페이지 또는 재직증명서 사진,
+ *    기관 이메일 선택, '확인된 교수·연구자', 소속·직위는 채팅 전에도 공개) · 감정평가사(등록번호, '확인된 감정평가사'). 세금·등기·법률·대출 분야는 기존 자격자만.
+ *  - 증빙 사진은 운영자만 보는 드라이브 폴더(CS_PROOF_FOLDER)에 두고 승인·반려 즉시 삭제. 운영자 화면에 직군별 확인 순서와 증빙(사진·링크).
+ *  - 검증: node tools/counsel-test.js </dev/null
+ *
  * v60 변경 요약 (v59 위에 다시 배포. 따로 실행할 함수 없음 — 시트 변경 없음. MOVE_ENABLED=false 라 지금 서비스에는 영향 없음)
  *  - 이사 견적 보이는 업체 고침(mvViewer): 요청을 만들 때 정한 순서(처음 3곳·12시간마다 3곳씩 더)를 그대로 쓰던 것을, 볼 때마다 '지금 열 수 있는 업체'
  *    (승인·노출 중 + 무료 열람이 남았거나 그 요청 값만큼 포인트가 있음)만 남겨 다시 셈. 예전에는 요청 뒤 무료 열람·포인트가 떨어진 업체가 보이는 3자리 중 하나를
@@ -9257,7 +9263,7 @@ const CS_ACTIONS = { csList: 1, csGet: 1, csAsk: 1, csAnswer: 1, csReport: 1, cs
 const SH_CSQ = '상담질문', SH_CSA = '상담답변', SH_CSP = '상담전문가', SH_CSR = '상담신고', SH_HT = '하트내역';
 const CSQH = ['id', '시각', '회원', '별명', '분류', '제목', '내용', '상태', '신고', '이유', '지정', '비공개', '올림까지', '올린시각', '시드', '영상', '수정일', '제안끔', '지역'];   // 지역: 질문한 분이 고른 구(선택) — 같은 구 전문가 추천용   // 제안끔: 질문한 분이 '전문가 상담 제안 받기'를 끈 질문(기본은 받음)
 const CSAH = ['id', '시각', '질문id', '종류', '전문가id', '회원', '내용', '상태', '신고', '이유', '연락처', '연락처시각', '수정일'];   // 연락처·연락처시각: v56 칸(v58부터 쓰지 않음 — 채팅방으로)
-const CSPH = ['id', '신청일', '회원', '종류', '이름', '번호', '소속', '지역', '소개', '연락처', '이메일', '상태', '처리일', '메모', '동의판', '경력', '주소', '사무실전화', '사진'];   // 소속·주소·번호·사무실전화·실명은 채팅이 열린 고객에게만
+const CSPH = ['id', '신청일', '회원', '종류', '이름', '번호', '소속', '지역', '소개', '연락처', '이메일', '상태', '처리일', '메모', '동의판', '경력', '주소', '사무실전화', '사진', '직위', '증빙링크', '증빙사진', '기관메일'];   // v61 직위·증빙(컨설턴트 사업자등록증·활동 링크 / 교수·연구자 재직 증빙) — 증빙 사진은 운영자만 보는 드라이브, 승인·반려 즉시 삭제   // 소속·주소·번호·사무실전화·실명은 채팅이 열린 고객에게만
 const CSRH = ['시각', '대상id', '신고자', '사유'];
 const HTH = ['id', '시각', '회원', '종류', '하트', '금액', '주문번호', '내용', '상태', '처리일', '메모', '환불액'];
 const CSQC = Object.fromEntries(CSQH.map((h, i) => [h, i])), CSAC = Object.fromEntries(CSAH.map((h, i) => [h, i])), CSPC = Object.fromEntries(CSPH.map((h, i) => [h, i])),
@@ -9348,12 +9354,13 @@ function csProById(id) { return csPros().find(o => String(o.r[CSPC['id']]) === S
 function csProPub(o) {                                                                // 채팅 전(누구나 보는 곳): 성+○○ · 직군 · 확인된 자격 · 활동 구 · 경력 · 소개 · 사진 — 사무소·주소·번호·전화는 숨김
   const r = o.r, P = CS_PROS[String(r[CSPC['종류']])] || {};
   return { id: String(r[CSPC['id']]), kind: String(r[CSPC['종류']]), kn: P.name || '', name: csNameMask(csTxt(r[CSPC['이름']])), gu: csGuOf(csTxt(r[CSPC['지역']])),
-    years: Number(r[CSPC['경력']]) || 0, intro: csProText(csTxt(r[CSPC['소개']]), o), photo: /^data:image\/jpeg;base64,/.test(String(r[CSPC['사진']] || '')) ? String(r[CSPC['사진']]) : '' };
+    years: Number(r[CSPC['경력']]) || 0, intro: (P.showOrg ? csHideContact(csTxt(r[CSPC['소개']])).text : csProText(csTxt(r[CSPC['소개']]), o)), badge: csBadge(String(r[CSPC['종류']])),
+    org: P.showOrg ? csTxt(r[CSPC['소속']]) : undefined, title: P.showOrg ? csTxt(r[CSPC['직위']]) : undefined, photo: /^data:image\/jpeg;base64,/.test(String(r[CSPC['사진']] || '')) ? String(r[CSPC['사진']]) : '' };
 }
 /** 채팅이 열린 고객(전문가가 하트를 쓴 방)과 운영자·본인에게만: 실명·사무소·주소·등록번호(공식 조회용)·사무실 전화 */
 function csProFull(o) {
   const r = o.r;
-  return Object.assign(csProPub(o), { full: true, realName: csTxt(r[CSPC['이름']]), org: csTxt(r[CSPC['소속']]), addr: csTxt(r[CSPC['주소']]), no: csTxt(r[CSPC['번호']]), tel: csTxt(r[CSPC['사무실전화']]),
+  return Object.assign(csProPub(o), { full: true, realName: csTxt(r[CSPC['이름']]), org: csTxt(r[CSPC['소속']]), title: csTxt(r[CSPC['직위']]), addr: csTxt(r[CSPC['주소']]), no: csTxt(r[CSPC['번호']]), tel: csTxt(r[CSPC['사무실전화']]),
     area: csTxt(r[CSPC['지역']]), where: (CS_PROS[String(r[CSPC['종류']])] || {}).where || '' });
 }
 function csNameMask(n) { n = String(n || '').trim(); return n ? n.slice(0, 1) + '○○' : '전문가'; }
@@ -9489,7 +9496,7 @@ function csAnswer(b) {
   }
   const ck = csCheckText('answer', b.text); if (!ck.ok) throw csErr(ck.err, 'field');
   const t = csScreen(b.text); if (t.act === 'block') throw csErr(t.msg, 'filter');
-  if (pro) { const h = csHideOrg(t.text, csTxt(pro.r[CSPC['소속']])); if (h.hit) { t.text = h.text; t.why = t.why || 'masked'; } }   // 공개 답변에 내 사무소 이름 → 가림
+  if (pro && !(CS_PROS[String(pro.r[CSPC['종류']])] || {}).showOrg) { const h = csHideOrg(t.text, csTxt(pro.r[CSPC['소속']])); if (h.hit) { t.text = h.text; t.why = t.why || 'masked'; } }   // 공개 답변에 내 사무소 이름 → 가림
   csLimit(me, 'answer');
   const id = csNewId('A'), r = [];
   r[CSAC['id']] = id; r[CSAC['시각']] = new Date(); r[CSAC['질문id']] = String(o.r[CSQC['id']]); r[CSAC['종류']] = team ? 'team' : 'pro';
@@ -9542,6 +9549,7 @@ function csUserGone(k) {
   try { csRoomsGone(me); } catch (e) {}
   try { const sh = book().getSheetByName(SH_CSB); if (sh) { const v = sh.getDataRange().getValues(); for (let i = v.length - 1; i >= 1; i--) if (String(v[i][1]) === me) sh.deleteRow(i + 1); } } catch (e) {}                                          // 상담 채팅: 그 사람이 들어 있는 방·메시지 모두 지움
   [SH_CSQ, SH_CSA].forEach(n => { const C = n === SH_CSQ ? CSQC : CSAC; csRows(n).forEach(o => { if (String(o.r[C['회원']]) === me && String(o.r[C['상태']]) !== CS_ST.del) csErase(n, o, '탈퇴'); }); });
+  csPros().forEach(o => { if (String(o.r[CSPC['회원']]) === me && o.r[CSPC['증빙사진']]) cmTrash(o.r[CSPC['증빙사진']]); });
   csPros().forEach(o => { if (String(o.r[CSPC['회원']]) === me) { const sh = csSheet(SH_CSP); sh.getRange(o.row, CSPC['연락처'] + 1).setValue(''); sh.getRange(o.row, CSPC['이메일'] + 1).setValue(''); sh.getRange(o.row, CSPC['상태'] + 1).setValue(CS_PRO_ST.stop); sh.getRange(o.row, CSPC['메모'] + 1).setValue('탈퇴 ' + ymd(new Date())); } });
 }
 
@@ -9563,17 +9571,28 @@ function csProApply(b) {
   if (!csGuOf(area)) throw csErr('활동 지역을 구·군·시까지 적어 주세요(예: 서울 강남구).', 'field');
   const addr = uText(b.addr, 80), tel = String(b.tel || '').replace(/[^0-9]/g, '');
   if (tel && !/^0\d{8,10}$/.test(tel)) throw csErr('사무실 전화번호를 정확히 적어 주세요.', 'field');
+  const title = uText(b.title, 30); if (P.title && title.length < 2) throw csErr(P.title.replace(/\(.*\)/, '') + '를 적어 주세요.', 'field');
+  const urlOk = v => /^https:\/\/[^\s<>"']{4,300}$/.test(v);
+  const links = (Array.isArray(b.links) ? b.links : []).map(v => String(v || '').trim()).filter(Boolean).slice(0, 3);
+  if (links.some(v => !urlOk(v))) throw csErr('링크는 https:// 로 시작하는 주소로 적어 주세요.', 'field');
+  const proofImg = String(b.proof || ''), pm = /^data:image\/(jpeg|png);base64,([A-Za-z0-9+/=]+)$/.exec(proofImg);
+  if (proofImg && !pm) throw csErr('증빙 사진(JPG·PNG)을 다시 골라 주세요.', 'field');
+  if (P.proof === 'biz' && !pm) throw csErr('사업자등록증 사진을 올려 주세요(업종에 부동산 컨설팅·자문이 보이게).', 'field');
+  if (P.proof === 'biz' && !links.length) throw csErr('방송 출연·강의·저서·칼럼 같은 활동 링크를 1개 이상 적어 주세요.', 'field');
+  if (P.proof === 'work' && !pm && !links.length) throw csErr('기관 소개 페이지 주소나 재직증명서 사진 가운데 하나는 꼭 있어야 해요.', 'field');
+  const instMail = String(b.instMail || '').trim() ? adMail(b.instMail) : ''; if (String(b.instMail || '').trim() && !instMail) throw csErr('기관 이메일 주소를 정확히 적어 주세요.', 'field');
   const photo = String(b.photo || '');
   if (photo && (!/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(photo) || photo.length > 45000)) throw csErr('사진을 다시 골라 주세요(작게 줄여서 올려요).', 'field');
   if ([name, org, area, intro].some(csBad)) throw csErr('쓸 수 없는 표현이 있어요.', 'field');
-  if (CM_GEN.some(g => g.re.test(intro)) || csHideOrg(intro, org).hit) throw csErr('소개에는 사무소 이름·연락처·인터넷 주소를 쓸 수 없어요. 고객과 채팅이 열리면 전체 프로필로 보여 드려요.', 'field');
+  if (CM_GEN.some(g => g.re.test(intro)) || (!P.showOrg && csHideOrg(intro, org).hit)) throw csErr('소개에는 사무소 이름·연락처·인터넷 주소를 쓸 수 없어요. 고객과 채팅이 열리면 전체 프로필로 보여 드려요.', 'field');
   const ph = csPhone(b.phone); if (!ph) throw csErr('운영자가 확인 연락을 드릴 휴대폰 번호를 적어 주세요.', 'field');
   const mail = adMail(b.email); if (!mail) throw csErr('새 질문 알림을 받을 이메일을 적어 주세요.', 'field');
   if (b.agree !== true) throw csErr('자격 확인과 개인정보 수집·이용에 동의해 주세요.', 'field');
   csLimit(me, 'apply');
   const id = csNewId('E'), r = [];
   r[CSPC['id']] = id; r[CSPC['신청일']] = new Date(); r[CSPC['회원']] = me; r[CSPC['종류']] = kind; r[CSPC['이름']] = cellSafe(name); r[CSPC['번호']] = cellSafe(no); r[CSPC['소속']] = cellSafe(org);
-  r[CSPC['지역']] = cellSafe(area); r[CSPC['소개']] = cellSafe(intro); r[CSPC['연락처']] = sealText(ph); r[CSPC['이메일']] = mail; r[CSPC['상태']] = CS_PRO_ST.wait; r[CSPC['동의판']] = CS_PRO_CONSENT_V; r[CSPC['경력']] = years; r[CSPC['주소']] = cellSafe(addr); r[CSPC['사무실전화']] = tel ? "'" + tel : ''; r[CSPC['사진']] = photo;
+  r[CSPC['지역']] = cellSafe(area); r[CSPC['소개']] = cellSafe(intro); r[CSPC['연락처']] = sealText(ph); r[CSPC['이메일']] = mail; r[CSPC['상태']] = CS_PRO_ST.wait; r[CSPC['동의판']] = CS_PRO_CONSENT_V; r[CSPC['경력']] = years; r[CSPC['주소']] = cellSafe(addr); r[CSPC['사무실전화']] = tel ? "'" + tel : ''; r[CSPC['사진']] = photo; r[CSPC['직위']] = cellSafe(title); r[CSPC['증빙링크']] = links.length ? JSON.stringify(links) : ''; r[CSPC['기관메일']] = instMail;
+  if (pm) r[CSPC['증빙사진']] = csProofSave(pm[1], pm[2], id);
   csSheet(SH_CSP).appendRow(CSPH.map((h, i) => r[i] === undefined ? '' : r[i]));
   csNotify('pro', '전문가 신청이 들어왔어요');
   return { ok: true, id: id, st: CS_PRO_ST.wait };
@@ -9726,7 +9745,7 @@ function csAdminQueue(b) {
   const holdA = A.filter(o => [CS_ST.hold, CS_ST.tmp].indexOf(String(o.r[CSAC['상태']])) >= 0).reverse().slice(0, 50).map(ax);
   const repQ = Q.filter(o => String(o.r[CSQC['상태']]) === CS_ST.on && Number(o.r[CSQC['신고']]) > 0).reverse().slice(0, 30).map(qx);
   const repA = A.filter(o => String(o.r[CSAC['상태']]) === CS_ST.on && Number(o.r[CSAC['신고']]) > 0).reverse().slice(0, 30).map(ax);
-  const pros = csPros().filter(o => String(o.r[CSPC['상태']]) === CS_PRO_ST.wait).map(o => Object.assign(csProFull(o), { no: csTxt(o.r[CSPC['번호']]), day: csDay(o.r[CSPC['신청일']]),
+  const pros = csPros().filter(o => String(o.r[CSPC['상태']]) === CS_PRO_ST.wait).map(o => Object.assign(csProFull(o), { links: parseJ(csTxt(o.r[CSPC['증빙링크']]), []), instMail: csTxt(o.r[CSPC['기관메일']]), proofImg: csProofImg(o.r[CSPC['증빙사진']]),  no: csTxt(o.r[CSPC['번호']]), day: csDay(o.r[CSPC['신청일']]),
     phone: (() => { const p = openText(String(o.r[CSPC['연락처']] || '')); return p ? p.replace(/^(\d{3})(\d{3,4})(\d{4})$/, '$1-$2-$3') : ''; })(), mail: csTxt(o.r[CSPC['이메일']]), where: (CS_PROS[String(o.r[CSPC['종류']])] || {}).where || '' }));
   const prosOk = csPros().filter(o => String(o.r[CSPC['상태']]) === CS_PRO_ST.ok).map(o => Object.assign(csProFull(o), { no: csTxt(o.r[CSPC['번호']]), day: csDay(o.r[CSPC['처리일']]) }));
   const refunds = csRows(SH_HT).filter(o => String(o.r[HTC['상태']]) === HT_ST.req).map(o => {
@@ -9766,6 +9785,7 @@ function csAdminPro(b) {
   if (op !== 'ok' && !memo) throw csErr('반려·중지 이유를 적어 주세요(신청한 분께 보여요).');
   csSet(SH_CSP, o.row, CSPC, '상태', st); csSet(SH_CSP, o.row, CSPC, '처리일', new Date()); csSet(SH_CSP, o.row, CSPC, '메모', cellSafe(memo));
   if (op === 'no') csSet(SH_CSP, o.row, CSPC, '연락처', '');                     // 반려한 신청의 연락처는 바로 지움
+  if (op !== 'stop' && o.r[CSPC['증빙사진']]) { cmTrash(o.r[CSPC['증빙사진']]); csSet(SH_CSP, o.row, CSPC, '증빙사진', ''); }   // 증빙 사진은 승인·반려 즉시 삭제(확인 결과만 남김)
   if (op === 'ok') htGrant(String(o.r[CSPC['회원']]), CS_FREE_HEARTS, 'approve', '승인 무료 하트');
   const mail = csTxt(o.r[CSPC['이메일']]);
   if (mail && NOTIFY) { try { MailApp.sendEmail({ to: mail, name: SITE_NAME, subject: `[${SITE_NAME} 고민 상담] 전문가 신청 ${op === 'ok' ? '확인이 끝났어요' : op === 'no' ? '결과를 알려 드려요' : '답변이 멈췄어요'}`,
@@ -9885,7 +9905,7 @@ function csRoomPub(x, me, side, Q) {
   const last = csMs(x.r[CSRMC['최근']]), read = csMs(x.r[CSRMC[side === 'q' ? '질문자읽음' : '전문가읽음']]);
   return { id: String(x.r[CSRMC['id']]), qid: String(x.r[CSRMC['질문id']]), title: q ? csTxt(q.r[CSQC['제목']]) || '(지운 질문)' : '(지운 질문)', side: side, st: String(x.r[CSRMC['상태']]),
     other: side === 'q' ? (pro ? Object.assign({ kind: 'pro' }, x.r[CSRMC['사용id']] ? csProFull(pro) : csProPub(pro), csProStats(String(x.r[CSRMC['전문가id']])), { kind: 'pro', pk: String(pro.r[CSPC['종류']]) }) : { kind: 'pro', name: '전문가' }) : { kind: 'user', name: q ? (csTxt(q.r[CSQC['별명']]) || csAlias(String(q.r[CSQC['회원']]), String(q.r[CSQC['id']]))) : '질문한 분' },
-    acc: csDay(x.r[CSRMC['수락일']]), kind: String(x.r[CSRMC['종류']] || 'req'), cost: CS_USES.accept.n, refund: csTxt(x.r[CSRMC['자동환불']]), rated: Number(x.r[CSRMC['평점']]) || 0,
+    acc: csDay(x.r[CSRMC['수락일']]), kind: String(x.r[CSRMC['종류']] || 'req'), selfKind: side === 'p' && pro ? String(pro.r[CSPC['종류']]) : undefined, cost: CS_USES.accept.n, refund: csTxt(x.r[CSRMC['자동환불']]), rated: Number(x.r[CSRMC['평점']]) || 0,
     blocked: side === 'q' ? csBlocked(String(x.r[CSRMC['회원']]), String(x.r[CSRMC['전문가id']])) : undefined,
     sent: String(x.r[CSRMC['연락처보냄']] || '').indexOf(side) >= 0, gotContact: String(x.r[CSRMC['연락처보냄']] || '').indexOf(side === 'q' ? 'p' : 'q') >= 0, mail: side === 'q' ? !!x.r[CSRMC['알림메일']] : undefined, last: last, day: csDay(x.r[CSRMC['최근']]), unread: last > read && Number(x.r[CSRMC['수']]) > 0 };
 }
@@ -10260,18 +10280,46 @@ function csRecommend(o, answered) {
   return csRanked(list, 'rec|' + String(o.r[CSQC['id']])).slice(0, 3).map(csProCard);
 }
 
+/* ---------- 전문가 증빙 사진(v61) — 운영자만 보는 드라이브 폴더(공유 없음), 승인·반려 즉시 휴지통 ---------- */
+const CS_PROOF_MAX = 3000000;
+function csProofFolder() {
+  const P = PropertiesService.getScriptProperties(); let f = null; const id = P.getProperty('CS_PROOF_FOLDER');
+  try { f = id ? DriveApp.getFolderById(id) : null; } catch (e) { f = null; }
+  if (!f) { f = DriveApp.createFolder(SITE_NAME + ' 전문가 증빙(확인 뒤 자동 삭제)'); P.setProperty('CS_PROOF_FOLDER', f.getId()); }
+  return f;
+}
+function csProofSave(type, b64, id) {
+  const bytes = Utilities.base64Decode(b64);
+  if (bytes.length > CS_PROOF_MAX) throw csErr('증빙 사진이 너무 커요. 조금 작게 찍어서 올려 주세요.', 'field');
+  if (bytes.length < 2000) throw csErr('증빙 사진을 읽지 못했어요. 다시 골라 주세요.', 'field');
+  return csProofFolder().createFile(Utilities.newBlob(bytes, 'image/' + type, id + '-proof.' + (type === 'png' ? 'png' : 'jpg'))).getId();   // 파일 이름에 사람 정보 없음
+}
+function csProofImg(fid) { fid = String(fid || ''); if (!fid) return ''; try { const bl = DriveApp.getFileById(fid).getBlob(); return 'data:' + bl.getContentType() + ';base64,' + Utilities.base64Encode(bl.getBytes()); } catch (e) { return ''; } }
+
 /* COUNSEL-CORE BEGIN — 이 블록은 tools/agent-backend.gs 에 그대로 복사돼 있어요. 고칠 때는 두 곳을 똑같이 고쳐 주세요(node tools/counsel-test.js 가 비교). */
 const CS_V = 'counsel-2026-11-25';
 /* 질문 분류 */
 const CS_CATS = [['buy', '매수·매도'], ['rent', '전월세'], ['tax', '세금'], ['loan', '대출'], ['sub', '청약·분양'], ['redev', '재개발·재건축'], ['legal', '등기·법률'], ['etc', '기타']];
-/* 답변하는 전문가 5종 — no: 확인할 번호 칸 이름(없으면 null) · org: 소속 칸 이름 · orgNeed: 소속 필수 · where: 운영자가 확인할 곳 */
+/* 답변하는 전문가 8종 — no: 확인할 번호 칸 이름(없으면 null) · org: 소속 칸 이름 · orgNeed: 소속 필수 · where: 운영자가 확인할 곳
+   desc: 신청 화면 설명 · badge: 확인 뒤 표시 · proof: 받을 증빙(biz 사업자등록증 사진 필수 + links 활동 링크 1~3개 / work 재직 증빙 = 소개 페이지 주소 또는 재직증명서 사진)
+   check: 운영자 승인 화면의 확인 순서 · showOrg: 채팅 전에도 소속·직위를 보여도 되는 직군(사무소 정보가 아님) */
 const CS_PROS = {
   broker: { name: '공인중개사', no: '중개사무소 개설등록번호', org: '중개사무소 이름', orgNeed: true, where: '국가공간정보포털 부동산중개업 조회(등록·영업 상태)' },
   tax: { name: '세무사', no: '세무사 등록번호', org: '세무사무소 이름', orgNeed: false, where: '한국세무사회 세무사 찾기' },
   sales: { name: '분양상담사', no: null, org: '소속 분양대행사', orgNeed: true, where: '소속 분양대행사 확인(재직 확인서 또는 명함·사업자등록증)' },
   judicial: { name: '법무사', no: '법무사 등록번호', org: '법무사사무소 이름', orgNeed: false, where: '대한법무사협회 법무사 찾기' },
-  loan: { name: '대출상담사', no: '금융위원회 대출모집인 등록번호', org: '소속 금융회사(위탁사)', orgNeed: true, where: '대출모집인 등록 조회(금융소비자 정보포털 파인 또는 대출모집인 통합조회)' }
+  loan: { name: '대출상담사', no: '금융위원회 대출모집인 등록번호', org: '소속 금융회사(위탁사)', orgNeed: true, where: '대출모집인 등록 조회(금융소비자 정보포털 파인 또는 대출모집인 통합조회)' },
+  consult: { name: '부동산 컨설턴트', no: null, org: '상호(사업자 이름)', orgNeed: true, where: '사업자등록증 사진과 활동 링크', badge: '확인된 컨설턴트', desc: '부동산 컨설팅 사업자 · 방송·강의 활동 확인', proof: 'biz',
+    check: ['사업자등록증 사진: 업종(종목)에 부동산 컨설팅·자문이 들어 있는지', '사업자등록증의 상호·대표자 이름이 신청 내용과 같은지', '활동 링크를 열어 방송 출연·강의·저서·칼럼이 본인 것인지', '국세청 홈택스 사업자 상태 조회로 휴업·폐업이 아닌지'] },
+  prof: { name: '교수·연구자', no: null, org: '소속 대학·연구기관', orgNeed: true, title: '직위(예: 부교수·책임연구원)', where: '소속 기관 소개 페이지 또는 재직증명서', badge: '확인된 교수·연구자', desc: '대학·연구기관 재직 확인', proof: 'work', showOrg: true,
+    check: ['기관 소개 페이지(교원·연구원 목록)를 열어 이름·소속·직위가 같은지', '또는 재직증명서 사진의 기관·이름·직위·발급일(3개월 안)을 확인', '기관 이메일을 적었다면 기관 도메인인지'] },
+  appraiser: { name: '감정평가사', no: '감정평가사 등록번호', org: '감정평가법인·사무소 이름', orgNeed: false, where: '한국감정평가사협회 감정평가사 찾기', badge: '확인된 감정평가사', desc: '감정평가사 등록번호 확인',
+    check: ['한국감정평가사협회 감정평가사 찾기에서 이름·등록번호가 같은지', '소속 법인·사무소가 신청 내용과 같은지'] }
 };
+/** 직군별 확인 배지 글자 */
+function csBadge(kind) { return (CS_PROS[kind] && CS_PROS[kind].badge) || '확인된 전문가'; }
+/** 직군별 안내 한 줄(답변·채팅 화면) — 컨설턴트는 중개를 할 수 없어요 */
+const CS_KIND_NOTE = { consult: '중개(거래 연결·계약 대행)는 공인중개사만 할 수 있어요.' };
 const CS_PRO_MAX = 5;                                 // 질문 하나에 전문가 답변 최대 수(상담팀 공식 답변은 따로)
 /* 분류마다 답·상담 제안할 수 있는 전문가(대표 확정 2026-11-25): 세금 = 세무사, 등기·법률 = 법무사, 대출 = 대출상담사(등록된 대출모집인), 나머지 분류 = 다섯 직군 모두 */
 const CS_CAT_ONLY = { tax: ['tax'], legal: ['judicial'], loan: ['loan'] };
