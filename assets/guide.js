@@ -221,8 +221,8 @@
   const solveUrl = (id, extra) => BASE + 'solve/?s=' + encodeURIComponent(id) + (extra || '');
 
   /* ---------- 미리 불러오기(첫 카드를 1초 안에) ---------- */
-  const ENGINES = ['assets/sale-status.js?v=1', 'assets/loan-rules.js?v=3', 'tax/tax-engine.js?v=4', 'tax/adjusted-areas.js?v=2', 'assets/loan-core.js?v=6', 'assets/hug-core.js?v=1', 'chungyak/cy-engine.js?v=7', 'assets/redev-core.js?v=3', 'assets/guide-redev.js?v=1'];
-  const ENG_OK = { 'assets/sale-status.js?v=1': 'JDJ_SALE', 'assets/loan-rules.js?v=3': 'JDJ_LOAN_RULES', 'tax/tax-engine.js?v=4': 'JDJ_TAX', 'tax/adjusted-areas.js?v=2': 'JDJ_ADJ', 'assets/loan-core.js?v=6': 'JDJ_LOAN', 'assets/hug-core.js?v=1': 'JDJ_HUG', 'chungyak/cy-engine.js?v=7': 'JDJ_CYE', 'assets/redev-core.js?v=3': 'JDJ_REDEV', 'assets/guide-redev.js?v=1': 'JDJ_GREDEV' };
+  const ENGINES = ['assets/sale-status.js?v=1', 'assets/loan-rules.js?v=3', 'tax/tax-engine.js?v=4', 'tax/adjusted-areas.js?v=2', 'assets/loan-core.js?v=6', 'assets/hug-core.js?v=1', 'chungyak/cy-engine.js?v=7', 'assets/redev-core.js?v=3', 'assets/guide-redev.js?v=2'];
+  const ENG_OK = { 'assets/sale-status.js?v=1': 'JDJ_SALE', 'assets/loan-rules.js?v=3': 'JDJ_LOAN_RULES', 'tax/tax-engine.js?v=4': 'JDJ_TAX', 'tax/adjusted-areas.js?v=2': 'JDJ_ADJ', 'assets/loan-core.js?v=6': 'JDJ_LOAN', 'assets/hug-core.js?v=1': 'JDJ_HUG', 'chungyak/cy-engine.js?v=7': 'JDJ_CYE', 'assets/redev-core.js?v=3': 'JDJ_REDEV', 'assets/guide-redev.js?v=2': 'JDJ_GREDEV' };
   function script(src) { return new Promise(res => { const x = document.createElement('script'); x.src = BASE + src; x.onload = res; x.onerror = res; document.head.appendChild(x); }); }
   let WARM = null;
   /** 계산 엔진·고민 자료·지역 자료·청약 당첨 가점(기억한 시·도 또는 서울)·서울 단지 목록을 쉬는 동안 미리 */
@@ -599,7 +599,7 @@
         if (inp.danji && asks.indexOf('danji') >= 0) { S.a.danji = inp.danji; S.from.danji = '찾은 단지'; }
       }
       if (sc.ext) {   // 재개발 예산·재건축 몸테크: 즉답 표 + 카드 안 좁히는 질문(assets/guide-redev.js)
-        if (!root.JDJ_GREDEV) await script('assets/guide-redev.js?v=1');
+        if (!root.JDJ_GREDEV) await script('assets/guide-redev.js?v=2');
         if (!root.JDJ_LOAN) await warm();
         stat('guide_open', { s: sc.id, from: qs.get('from') || '' });
         if (root.JDJ_GREDEV) return root.JDJ_GREDEV.flow(el, gxH({ sc, head: headHtml(sc, D), slots: inp && inp.slots ? inp.slots : (inp && inp.q ? C().extract(inp.q, ctxOf(IX)) : null), inSt: inp && inp.nf, mem }, D, IX));
@@ -871,7 +871,7 @@ body.gchat-on .jtab{display:none!important}body.gchat-on .foot{display:none}
           ST._n = R.n;
         }
       } else if (sc.ext) {
-        if (!root.JDJ_GREDEV) await script('assets/guide-redev.js?v=1');
+        if (!root.JDJ_GREDEV) await script('assets/guide-redev.js?v=2');
         if (root.JDJ_GREDEV) { if (!ST.nf) ST.nf = root.JDJ_GREDEV.init(sc.id, {}, D); try { card = await root.JDJ_GREDEV.chatCard(ST, gxH({ sc }, D, IX)); } catch (e) { card = null; } ST._n = card ? card.n : 0; }
       } else {
         const E = await env(sc, a, IX);
