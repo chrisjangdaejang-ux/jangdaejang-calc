@@ -12,8 +12,12 @@
 (function (root) {
 'use strict';
 /* ALERTS-CORE BEGIN — 이 블록은 tools/agent-backend.gs 에 그대로 복사돼 있어요. 고칠 때는 두 곳을 똑같이 고쳐 주세요(node tools/alerts-test.js 가 비교). */
-const AX_V = 'alerts-2026-11-21';                 // 메일 알림 동의 문구 판(화면 문구를 바꾸면 날짜를 바꿈)
+const AX_V = 'alerts-2026-11-26';                 // 메일 알림 동의 문구 판(화면 문구를 바꾸면 날짜를 바꿈)
 const AX_KINDS = { high: '신고가', trade: '새 실거래', drop: '급매·큰 하락', jeonse: '전세가율', nb: '근처 신축 허가', cynear: '근처 청약 공고' };
+/* '먼저 챙겨 드려요' 메일 동의(따로 받음) — 문구를 바꾸면 판(AX_PV_V) 날짜를 바꿈. 서버는 이 판에 동의한 기록(pv.cv)이 있을 때만 새 알림을 보냄.
+   기존 구독자는 새 알림을 켤 때 이 문구로 다시 동의(알림 센터), 새로 신청하는 분은 신청 동의 칸에 함께 적힌 문구로 동의 */
+const AX_PV_V = 'pv-2026-11-26';
+const AX_PV_TEXT = "[필수] 제가 켠 '먼저 챙겨 드려요' 알림 — 세금·계약 기한 알림(계약갱신 기간, 비과세 2년, 일시적 2주택 처분 기한, 취득세 신고, 재산세·종부세), 내 집 단지 새 거래, 내 동네 규제지역·토지거래허가구역 지정·해제, 따라보는 재개발·재건축 구역 단계 변화 — 를 집예보가 하루 한 통 이메일로 알려 주는 것에 동의해요.";
 const AX_OPTIN = { nb: 1, cynear: 1 };            // 나중에 생긴 종류 — 사용자가 직접 켠 경우에만 보냄(먼저 신청한 분께 묻지 않은 알림이 가지 않게)
 const AX_JR_LINES = [80, 90];                     // 전세가율이 이 선을 넘거나 내려오면 알림(%)
 const AX_NB_M = 500, AX_NB_MONTHS = 3, AX_NEAR_DAYS = 14;   // 신축 허가: 관심 단지에서 이 거리(m) 안·최근 이 달 수 안 허가 · 근처 청약: 공고 뒤 이 날 수 안
@@ -49,8 +53,11 @@ function axCleanPv(x) {
     const id = axTxt(z.id, 60), st = Math.round(Number(z.st));
     return /^\d{5}[^|]{1,50}$/.test(id) ? { id: id, st: isFinite(st) && st >= 0 && st <= 20 ? st : 0, n: axTxt(z.n, 40) } : null;
   }).filter(z => z && !seen[z.id] && (seen[z.id] = 1)).slice(0, AX_MAX_ZONES);
-  return { home: x.home === true, reg: x.reg === true, zone: x.zone === true, zones: zones };
+  return { home: x.home === true, reg: x.reg === true, zone: x.zone === true, zones: zones,
+    cv: x.cv === AX_PV_V ? AX_PV_V : '', at: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(String(x.at || '')) ? String(x.at).slice(0, 25) : '' };
 }
+/** '먼저 챙겨 드려요' 메일 동의가 지금 문구 판으로 되어 있는지 */
+function axPvOk(pv) { return !!(pv && pv.cv === AX_PV_V); }
 /** 알림 설정 정리(서버·화면 같은 규칙). kinds = 관심 단지 알림 종류, mute = 알림을 끈 단지(키), cy = 청약 맞춤 알림, pv = 먼저 챙겨 드려요 */
 function axCleanPrefs(x) {
   x = x && typeof x === 'object' ? x : {};
@@ -267,7 +274,7 @@ function axMailHtml(D, o) {
 /* ALERTS-CORE END */
 
 const API = { V: AX_V, KINDS: AX_KINDS, OPTIN: AX_OPTIN, JR_LINES: AX_JR_LINES, NB_M: AX_NB_M, CY_KINDS: AX_CY_KINDS, URG: AX_URG, DROP: AX_DROP, JR: AX_JR, MAX_PLACES: AX_MAX_PLACES, BN: AX_BN,
-  esc: axEsc, won: axWon, pid: axPid, iso: axIso, addDay: axAddDay, md: axMd, keyId: axKeyId, sido: axSido, cleanPrefs: axCleanPrefs, cleanPv: axCleanPv, MAX_ZONES: AX_MAX_ZONES, placeEvents: axPlaceEvents,
+  esc: axEsc, won: axWon, pid: axPid, iso: axIso, addDay: axAddDay, md: axMd, keyId: axKeyId, sido: axSido, cleanPrefs: axCleanPrefs, cleanPv: axCleanPv, pvOk: axPvOk, PV_V: AX_PV_V, PV_TEXT: AX_PV_TEXT, MAX_ZONES: AX_MAX_ZONES, placeEvents: axPlaceEvents,
   nbEvents: axNbEvents, cyNear: axCyNear, dist: axDist, ym: axYm, cyMatch: axCyMatch, cyStages: axCyStages, cyEvents: axCyEvents, digest: axDigest, unread: axUnread, canSend: axCanSend, adOk: axAdOk, links: axLinks, mailHtml: axMailHtml };
 root.JDJ_ALERTS_CORE = API;
 if (typeof module !== 'undefined' && module.exports) module.exports = API;

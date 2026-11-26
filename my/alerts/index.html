@@ -25,7 +25,7 @@
 <script src="../../assets/auth.js?v=10"></script>
 <script src="../../assets/savefb.js?v=1"></script>
 <script src="../../chungyak/cy-engine.js?v=3"></script>
-<script src="../../assets/alerts-core.js?v=4"></script>
+<script src="../../assets/alerts-core.js?v=5"></script>
 <script src="../../assets/proactive.js?v=1"></script>
 <script src="../../assets/watch-core.js?v=2"></script>
 <script src="../../assets/watch.js?v=9"></script>
@@ -233,6 +233,7 @@ function drawMail(){
     ${brief ? `<div class="rad" role="radiogroup" aria-label="받을 이메일"><label><input type="radio" name="em" value="brief" checked> 모닝 브리핑 받는 이메일(${esc(brief.mask)})로 받기</label><label><input type="radio" name="em" value="new"> 다른 이메일 적기</label></div>` : ''}
     <input class="inp2" id="email" type="email" inputmode="email" autocomplete="email" placeholder="알림 받을 이메일 주소" aria-label="알림 받을 이메일 주소" ${brief ? 'hidden' : ''}>
     <label class="chk"><input type="checkbox" id="agree"><span>[필수] 관심 목록 단지와 제가 고른 청약 조건에 새 소식이 생기면, 집예보가 하루 한 번 오전 7시대에 이메일로 알려 주는 것에 동의해요.</span></label>
+    ${PRO && PRO.on() ? `<label class="chk"><input type="checkbox" id="agreePv"><span>${esc(AC.PV_TEXT)}</span></label><p class="hint" style="margin:0 0 6px 32px">먼저 챙겨 드려요 알림을 받지 않으시려면 이 칸은 비워 두셔도 돼요. 나중에 아래 '먼저 챙겨 드려요'에서 켤 때 다시 여쭤볼게요.</p>` : ''}
     <details class="why"><summary>집예보가 받는 것과 지우는 때</summary>집예보가 받는 것: 이메일 주소 1개, 동의한 때, 알림 설정(끈 단지·청약 지역·무주택 여부·가점 범위). 집예보는 이 이메일을 알림을 보내는 데만 써요. 알림을 모두 끄면 집예보는 30일 뒤 이메일을 지우고, 탈퇴하면 바로 지워요. 동의하지 않으면 메일은 가지 않고, 이 화면의 알림은 그대로 볼 수 있어요.</details>
     <button type="button" class="btn primary big" id="join">메일 알림 신청</button><div id="mailMsg" class="msg" role="status"></div>`;
   const em = () => { const r = el.querySelector('input[name=em]:checked'); return r ? r.value : 'new'; };
@@ -244,9 +245,11 @@ function drawMail(){
     if (!useBrief && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return bad('알림을 받을 이메일 주소를 정확히 적어 주세요.');
     if (!$('agree').checked) return bad('메일 알림을 받으려면 동의 칸에 체크해 주세요.');
     const P = W.aprefs();
-    const pvOk = !!(PRO && PRO.on()) && (P.pv.zones.length > 0 || ((P.pv.home || P.pv.reg) && homesN() > 0));
+    const pvOk = !!(PRO && PRO.on()) && !!($('agreePv') && $('agreePv').checked) && (P.pv.zones.length > 0 || ((P.pv.home || P.pv.reg) && homesN() > 0));
     if (!W.list().length && !P.cy.on && !pvOk && !((P.rp || P.cal) && homesN())) return bad('관심 목록에 단지를 넣거나, 청약 맞춤 알림 지역을 고르거나, 내 집 성적표·달력 메일을 켠 뒤 신청해 주세요.');
-    const body = { consent: true, v: AC.V, at: new Date().toISOString(), useBrief, email: useBrief ? '' : email };
+    const pvC = !!($('agreePv') && $('agreePv').checked);
+    if (!pvC && (P.pv.home || P.pv.reg || P.pv.zone) && $('agreePv')) { P.pv.home = false; P.pv.reg = false; P.pv.zone = false; W.setAprefs(P); }   // 따로 동의하지 않으면 먼저 챙겨 드려요 알림은 꺼서 신청
+    const body = { consent: true, v: AC.V, at: new Date().toISOString(), useBrief, email: useBrief ? '' : email, pvConsent: pvC, pvv: pvC ? AC.PV_V : '' };
     SF.busy('join', '신청하는 중…'); msg.className = 'msg'; msg.textContent = '신청하는 중이에요…';
     call('alertJoin', Object.assign({prefs: P}, body)).then(j => { MINE = j; SERVER = 'ok'; stat('alert_join', {from:'center'}); drawMail(); if ($('mailMsg')) SF.ok(null, '신청했어요. 확인 메일을 보내 드렸어요.', { msg: 'mailMsg' }); })
       .catch(e => {
@@ -300,11 +303,24 @@ function drawPv(){
   sec.hidden = false;
   const P = W.aprefs(), pv = P.pv, hn = homesN(), zs = pv.zones;
   const later = P && !pvSrv() && (pv.home || pv.reg || pv.zone) ? '<p class="hint">메일 발송은 서버에서 이 기능을 켠 뒤부터 시작해요. 그 전에는 설정만 저장돼요.</p>' : '';
+  /* 메일 알림을 받는 중인데 먼저 챙겨 드려요 동의(지금 문구 판)가 없으면: 켤 때 새 문구로 다시 동의 */
+  const sub = MINE && MINE.sub && MINE.sub.state === '활성', agreed = !!(sub && AC.pvOk(MINE.sub.prefs && MINE.sub.prefs.pv));
+  const ask = sub && pvSrv() && !agreed ? `<div class="pvAsk" style="margin:10px 0 0;padding:12px;border-radius:14px;background:#F7F4FF;border:1px solid #E4DCFA">
+      <p class="hint" style="margin:0 0 6px"><b>메일로 받으려면 한 번 더 동의해 주세요.</b> 먼저 챙겨 드려요는 새로 생긴 알림이라, 예전에 하신 알림 메일 동의와 따로 여쭤봐요. 동의 전에는 켜 두셔도 메일을 보내지 않아요.</p>
+      <label class="chk"><input type="checkbox" id="pvAgree"><span>${esc(AC.PV_TEXT)}</span></label>
+      <button type="button" class="btn primary" id="pvAgreeBtn">동의하고 메일로 받기</button><div id="pvMsg" class="msg" role="status"></div></div>`
+    : sub && agreed ? `<p class="hint">먼저 챙겨 드려요 메일 동의: ${esc(String(MINE.sub.prefs.pv.at || '').slice(0, 16).replace('T', ' '))}</p>` : '';
   $('pvBox').innerHTML = sw('pvHome', pv.home, '<b>내 집 단지 새 거래</b>', `내 집 ${hn}곳에 새 실거래·신고가·급매가 나오면 관심 단지처럼 알려 드려요`) +
     sw('pvReg', pv.reg, '<b>내 동네 규제 변화</b>', '내 집·관심 단지 동네가 규제지역(투기과열지구·조정대상지역)이나 토지거래허가구역으로 지정·해제되면 알려 드려요') +
     sw('pvZone', pv.zone, '<b>따라보는 재개발·재건축 구역 단계 변화</b>', zs.length ? `따라보는 구역 ${zs.length}곳: ${esc(zs.slice(0, 4).map(z => z.n || z.id).join(', '))}${zs.length > 4 ? ' 외' : ''}` : '구역 지도에서 ☆ 단계 알림을 누른 구역이 다음 단계로 넘어가면 알려 드려요') +
     `<p class="hint">세금·계약 기한(계약갱신 기간, 비과세 2년, 일시적 2주택 처분 기한, 취득세 60일, 재산세·종부세)은 위 '내 부동산 달력 메일'을 켜면 함께 받아요. 모든 소식은 하루 한 통으로 묶어 보내요.</p>${later}
-    <a class="lnk" href="${BASE}villa/zone/" data-track="alerts_to_zone">재개발·재건축 구역 지도에서 따라볼 구역 고르기 ›</a><br><a class="lnk" href="${BASE}my/memory/" data-track="alerts_to_memory">집예보가 기억하는 것 보기·지우기 ›</a>`;
+    <a class="lnk" href="${BASE}villa/zone/" data-track="alerts_to_zone">재개발·재건축 구역 지도에서 따라볼 구역 고르기 ›</a><br><a class="lnk" href="${BASE}my/memory/" data-track="alerts_to_memory">집예보가 기억하는 것 보기·지우기 ›</a>${ask}`;
+  if ($('pvAgreeBtn')) $('pvAgreeBtn').onclick = () => {
+    if (!$('pvAgree').checked) return SF.err('pvAgreeBtn', '동의 칸에 체크해 주세요.', { msg: 'pvMsg' });
+    SF.busy('pvAgreeBtn', '저장하는 중…');
+    call('alertPrefs', { prefs: W.aprefs(), pvConsent: true, pvv: AC.PV_V }).then(j => { if (j.sub) MINE.sub = j.sub; stat('alert_pv_consent'); drawPv(); SF.toast('동의했어요. 켠 알림을 메일로 보내 드려요.', false, true); })
+      .catch(e => SF.err('pvAgreeBtn', e.message, { msg: 'pvMsg' }));
+  };
   const bind = (id, k) => { $(id).onchange = () => { setPrefs(P => { P.pv[k] = $(id).checked; }); stat('feature_use', { feature: 'pro_' + k, on: $(id).checked ? 1 : 0 }); drawPv(); }; };
   bind('pvHome', 'home'); bind('pvReg', 'reg'); bind('pvZone', 'zone');
 }

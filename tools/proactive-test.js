@@ -63,8 +63,9 @@ const ze = P.zoneEvents(Z, [{ id: '11710가락1', st: 5, n: '가락1' }, { id: '
 check('구역 단계: 올라간 구역만(5→7), 같은 단계·없는 구역은 안 알림', ze.length === 1 && ze[0].key === 'z|11710가락1|7' && /사업시행인가/.test(ze[0].t) && /2026년 5월/.test(ze[0].s), ze);
 check('구역 단계가 자료 고침으로 내려가도 안 알림', P.zoneEvents(Z, [{ id: '11710가락1', st: 8 }]).length === 0);
 const pvc = A.cleanPv({ home: true, reg: 'y', zone: true, zones: [{ id: '11710가락1', st: 5, n: '<b>가락1</b>', price: 9 }, { id: 'bad', st: 1 }, { id: '11710가락1', st: 7 }], amt: 1 });
-check('설정 정리: 직접 켠 것만 true, 구역은 id·단계·이름만, 잘못된 id·겹침 버림', JSON.stringify(pvc) === JSON.stringify({ home: true, reg: false, zone: true, zones: [{ id: '11710가락1', st: 5, n: 'b 가락1 /b' }] }), pvc);
-check('기본 설정은 모두 꺼짐', JSON.stringify(A.cleanPrefs({}).pv) === JSON.stringify({ home: false, reg: false, zone: false, zones: [] }));
+check('설정 정리: 직접 켠 것만 true, 구역은 id·단계·이름만, 잘못된 id·겹침 버림', JSON.stringify(pvc) === JSON.stringify({ home: true, reg: false, zone: true, zones: [{ id: '11710가락1', st: 5, n: 'b 가락1 /b' }], cv: '', at: '' }), pvc);
+check('기본 설정은 모두 꺼짐·동의 없음', JSON.stringify(A.cleanPrefs({}).pv) === JSON.stringify({ home: false, reg: false, zone: false, zones: [], cv: '', at: '' }) && !A.pvOk(A.cleanPrefs({}).pv));
+check('동의 문구: 새 알림 종류(기한·내 집 단지 거래·규제·재개발 단계)를 따로 적고 판 번호가 있음', /세금·계약 기한 알림/.test(A.PV_TEXT) && /내 집 단지 새 거래/.test(A.PV_TEXT) && /규제지역/.test(A.PV_TEXT) && /재개발·재건축 구역 단계/.test(A.PV_TEXT) && /^pv-\d{4}-\d{2}-\d{2}$/.test(A.PV_V) && A.V === 'alerts-2026-11-26');
 const mh = P.mailHtml(ze.concat(P.regEvents(POL, AR, '2026-11-26', '', () => '송파구')), { web: 'https://x/', off: 'https://api?pv=1' });
 check('메일 칸: 구역 지도 링크·끄기 링크·설정·기억하는 것 링크, 광고 없음', /villa\/zone\/\?z=/.test(mh) && /pv=1/.test(mh) && /my\/memory\//.test(mh) && !/광고/.test(mh));
 
@@ -72,18 +73,28 @@ check('메일 칸: 구역 지도 링크·끄기 링크·설정·기억하는 것
 const gs = read('tools/agent-backend.gs');
 const blk = (s, n) => { const a = s.indexOf(`/* ${n}-CORE BEGIN`), b = s.indexOf(`/* ${n}-CORE END */`); return a >= 0 && b > a ? s.slice(a, b) : null; };
 check('서버 PRO-CORE·CAL-CORE·ALERTS-CORE = 화면 파일(글자 그대로)', blk(gs, 'PRO') && blk(gs, 'PRO') === blk(read('assets/proactive-core.js'), 'PRO') && blk(gs, 'CAL') === blk(read('assets/cal-core.js'), 'CAL') && blk(gs, 'ALERTS') === blk(read('assets/alerts-core.js'), 'ALERTS'));
-check('출시 전: 서버·화면 기능 플래그 모두 꺼짐', /^const PROACTIVE_ENABLED = false;/m.test(gs) && /PROACTIVE_ENABLED: false,/.test(read('assets/config.js')));
-check('서버 v64 변경 요약(맨 위, 따로 실행할 함수 없음)', gs.indexOf('v64 변경 요약') > 0 && gs.indexOf('v64 변경 요약') < gs.indexOf('v63 변경 요약') && /v64 변경 요약 \([^)]*따로 실행할 함수 없음/.test(gs));
+const LAUNCHED = /PROACTIVE_ENABLED: true,/.test(read('assets/config.js'));
+check(LAUNCHED ? '출시 뒤: 서버·화면 기능 플래그 모두 켜짐' : '출시 전: 서버·화면 기능 플래그 모두 꺼짐', LAUNCHED ? /^const PROACTIVE_ENABLED = true;/m.test(gs) : /^const PROACTIVE_ENABLED = false;/m.test(gs) && /PROACTIVE_ENABLED: false,/.test(read('assets/config.js')));
+check('서버 v64·v65 변경 요약(맨 위, 따로 실행할 함수 없음)', gs.indexOf('v65 변경 요약') > 0 && gs.indexOf('v65 변경 요약') < gs.indexOf('v64 변경 요약') && gs.indexOf('v64 변경 요약') < gs.indexOf('v63 변경 요약') && /v65 변경 요약 \([^)]*따로 실행할 함수 없음/.test(gs));
+/* 출시 스크립트: 미리 보기만(파일은 안 바꿈) */
+const LP = require('./proactive-launch.js').plan();
+if (!LAUNCHED) {
+  const g2 = LP.out.get('tools/agent-backend.gs') || '', top = (gs.slice(0, 40000).match(/\* v(\d+) 변경 요약/g) || []).map(x => +x.match(/\d+/)[0]), nx = Math.max.apply(null, top) + 1;
+  check('출시 스크립트: 화면·서버 플래그 켜기 + 서버 새 판(가장 큰 판+1) + alerts/ 검색 열기 + 사이트맵 + 서비스 워커', /PROACTIVE_ENABLED: true,/.test(LP.out.get('assets/config.js') || '') && /^const PROACTIVE_ENABLED = true;/m.test(g2) && g2.indexOf(` * v${nx} 변경 요약`) > 0 && g2.indexOf(` * v${nx} 변경 요약`) < g2.indexOf(` * v${nx - 1} 변경 요약`) && !/noindex/.test(LP.out.get('alerts/index.html') || 'noindex') && /\/alerts\/<\/loc>/.test(LP.out.get('sitemaps/pages.xml') || '') && /jdj-v\d+/.test(LP.out.get('sw.js') || ''), LP.notes);
+  check('출시 스크립트: 사이트맵에는 한 번만, 다른 주소는 그대로', (() => { const x = LP.out.get('sitemaps/pages.xml'); return x.split('/alerts/</loc>').length === 2 && x.split('<url>').length === read('sitemaps/pages.xml').split('<url>').length + 1; })());
+} else check('출시 뒤: 스크립트를 다시 돌려도 바꿀 것이 없음(서비스 워커 제외)', !LP.out.has('assets/config.js') && !LP.out.has('tools/agent-backend.gs') && !LP.out.has('alerts/index.html'));
+check('출시 체크리스트 문서', /proactive-launch\.js --apply/.test(read('docs/launch_checklist.md')) && /noindex/.test(read('docs/launch_checklist.md')) && /pages\.xml/.test(read('docs/launch_checklist.md')));
 check('알림톡은 템플릿 자리만(준비 전엔 메일만)', /PV_ALIMTALK = \{ prop: 'SOLAPI_TPL_PROACTIVE', ready: false/.test(gs) && /kakao: \{ ready: \(\) => false/.test(gs));
 const HOMEP = { sd: 's00', code: '11710', dong: '잠실동', jibun: '35', apt: '잠실엘스', band: '84㎡대', t: '2026-11-01' };
 const ZON = { stages: Z.stages, z: Z.z };
-function world(on) {
-  const E = require('./gs-harness')({ now: '2026-11-10T07:10:00+09:00', patch: on ? g => g.replace(/^const PROACTIVE_ENABLED = false;/m, 'const PROACTIVE_ENABLED = true;') : null,
+function world(on, consent) {
+  consent = consent === undefined ? true : consent;
+  const E = require('./gs-harness')({ now: '2026-11-10T07:10:00+09:00', patch: g => g.replace(/^const PROACTIVE_ENABLED = (true|false);/m, `const PROACTIVE_ENABLED = ${!!on};`),
     data: { 'index.json': { sgg: { '11710': { name: '송파구', sido: '서울특별시' } }, sido: [] }, 'chungyak/notices.json': { rows: [] }, 'policy.json': POL, 'redev/zones.json': ZON,
       'today/g/11710.json': { g: '11710', date: '2026-11-26', d0: '2026-11-25', rows: [{ d: '잠실동', j: '35', a: '잠실엘스', b: '84㎡대', dt: 20261124, ar: 84.8, f: 12, p: 300000, day: '2026-11-26', s: '06:01' }] } } });
   const cal = { h: { [K]: { t: 'own', acq: '2024-12-20', adj: 'y', rs: '2025-01-10', t2: { d: '2024-05-20', oa: 'y', na: 'y' } } }, n: 1, ms: 1 };
   const s1 = E.member(1, { homes: [HOMEP], cal: cal });
-  const r = E.post({ action: 'alertJoin', s: s1, consent: true, email: 'a@example.com', v: A.V, prefs: { cal: true, pv: { home: true, reg: true, zone: true, zones: [{ id: '11710가락1', st: 5, n: '가락1' }] } } });
+  const r = E.post({ action: 'alertJoin', s: s1, consent: true, email: 'a@example.com', v: A.V, prefs: { cal: true, pv: { home: true, reg: true, zone: true, zones: [{ id: '11710가락1', st: 5, n: '가락1' }], cv: consent ? '' : A.PV_V } }, pvConsent: consent, pvv: consent ? A.PV_V : '' });
   return { E, s1, r };
 }
 let W = world(true);
@@ -108,6 +119,21 @@ const M = W.E.T.axMorning(new Date(W.E.now)), xb = M.forUser('k1');
 check('모닝 브리핑 안에 넣을 칸에 먼저 챙겨 드려요 소식', xb && xb.PVI.length === 3 && /먼저 챙겨 드려요/.test(xb.html), xb && xb.PVI.map(e => e.key));
 M.done(xb);
 check('브리핑에 넣은 뒤 기록 → 같은 날 다시 안 넣음', W.E.T.axMorning(new Date(W.E.now)).forUser('k1') === null);
+/* 기존 구독자(먼저 챙겨 드려요 동의 없음): 켜 두어도 안 감 → 새 문구로 다시 동의하면 감 */
+W = world(true, false);
+check('동의 없이 신청(화면이 cv 를 지어 보내도 무시) → 동의 기록 없음', W.r.ok && !A.pvOk(W.r.sub.prefs.pv) && W.r.pvv === A.PV_V, W.r.sub && W.r.sub.prefs.pv);
+W.E.now = Date.parse('2026-11-26T07:10:00+09:00'); n0 = W.E.mails.length; W.E.T.alertsDaily();
+mm = W.E.mails.slice(n0).filter(m => m.to === 'a@example.com');
+check('동의 없음: 새 기한·내 집 단지·규제·구역 소식이 메일에 없음', mm.every(m => !/토지거래허가구역|사업시행인가|보유 2년|일시적 2주택|먼저 챙겨 드려요|신고가 거래/.test(m.htmlBody)), mm.map(m => m.subject));
+let rp = W.E.post({ action: 'alertPrefs', s: W.s1, prefs: Object.assign({}, W.r.sub.prefs, { pv: Object.assign({}, W.r.sub.prefs.pv, { cv: A.PV_V }) }) });
+check('설정 저장으로 동의를 지어 보내도 무시', rp.ok && !A.pvOk(rp.sub.prefs.pv));
+rp = W.E.post({ action: 'alertPrefs', s: W.s1, prefs: rp.sub.prefs, pvConsent: true, pvv: A.PV_V });
+check('알림 센터에서 새 문구로 다시 동의 → 동의 판·시각 기록', rp.ok && A.pvOk(rp.sub.prefs.pv) && /^2026-11-26T07:10/.test(rp.sub.prefs.pv.at), rp.sub && rp.sub.prefs.pv);
+rp = W.E.post({ action: 'alertPrefs', s: W.s1, prefs: Object.assign({}, rp.sub.prefs, { pv: Object.assign({}, rp.sub.prefs.pv, { cv: '' }) }) });
+check('동의 뒤 다른 설정을 저장해도 동의는 그대로', A.pvOk(rp.sub.prefs.pv));
+W.E.now += 86400000; n0 = W.E.mails.length;
+const M3 = W.E.T.axMorning(new Date(W.E.now)), x3 = M3.forUser('k1');
+check('다시 동의한 뒤에는 먼저 챙겨 드려요 소식이 들어감', x3 && x3.PVI.length === 3);
 /* 꺼짐 */
 W = world(false);
 check('꺼짐: alertMine pv:0', W.r.ok && W.r.pv === 0);
@@ -119,10 +145,11 @@ check('꺼짐: 규제·구역·내 집 단지·비과세·처분 기한 소식�
 const cfg = read('assets/config.js'), proj = read('assets/proactive.js'), intro = read('alerts/index.html'), mem = read('my/memory/index.html'), home = read('index.html'), cal = read('mine/calendar/index.html'), center = read('my/alerts/index.html'), zone = read('villa/zone/index.html'), sw = read('sw.js');
 check('화면 부품: 플래그가 꺼지면 칸을 만들지 않음 + 미리 보기(?preview=pro)', /PROACTIVE_ENABLED === true/.test(proj) && /if \(!on\(\)\) return '';/.test(proj) && /preview/.test(proj));
 check('대표 문구 "집값도, 할 일도 미리 알려 드려요" — 소개 페이지 제목·OG·첫 화면 칸', /<title>집값도, 할 일도 미리 알려 드려요/.test(intro) && /og:title" content="집값도, 할 일도 미리 알려 드려요/.test(intro) && /SLOGAN = '집값도, 할 일도 미리 알려 드려요'/.test(proj) && /집예보가 먼저 챙겨 드려요|가 먼저 챙겨 드려요/.test(proj));
-check('소개 페이지: OG 이미지(1200×630)·설명·출시 전 검색 제외·꺼지면 준비 중', /og:image" content="[^"]+assets\/og\/alerts\.png/.test(intro) && fs.existsSync(path.join(ROOT, 'assets/og/alerts.png')) && /og:description/.test(intro) && /name="robots" content="noindex"/.test(intro) && /준비 중이에요/.test(intro) && !/alerts\//.test(read('sitemap.xml')));
+check('소개 페이지: OG 이미지(1200×630)·설명·출시 전 검색 제외·꺼지면 준비 중', /og:image" content="[^"]+assets\/og\/alerts\.png/.test(intro) && fs.existsSync(path.join(ROOT, 'assets/og/alerts.png')) && /og:description/.test(intro) && (LAUNCHED ? !/name="robots" content="noindex"/.test(intro) : /name="robots" content="noindex"/.test(intro) && !/\/alerts\/<\/loc>/.test(read('sitemaps/pages.xml'))) && /준비 중이에요/.test(intro));
 check('소개 페이지: 법령 근거 링크와 "곧 나와요"(없는 기능)', ['lsJoLnkSeq=1007847519', 'expcSeq=338247', 'lsiSeq=290841', 'archives/200082'].every(u => intro.includes(u)) && /곧 나와요/.test(intro) && /알림톡/.test(intro));
 check('첫 화면·달력·알림 센터·내 집 시세에 칸 자리', /id="proCard"/.test(home) && /JDJ_PRO\.mount\(document\.getElementById\('proCard'\), 'home'\)/.test(home) && /PRO\.mount\(\$\('proCard'\), 'calendar'\)/.test(cal) && /PRO\.mount\(\$\('proCard'\), 'alerts'\)/.test(center) && /'mine'\)/.test(read('mine/index.html')));
 check('달력: 전입일·조정대상지역(자동 확인)·일시적 2주택 칸, pro 로 계산, 예상 종부세는 기기에서', /data-f="\$\{k\}"|dateF\('rs'/.test(cal) && /adjusted-areas\.js/.test(cal) && /pro: !!\(PRO && PRO\.on\(\)\)/.test(cal) && /TX\.compTax/.test(cal) && /이 기기에서만 계산/.test(cal));
+check('알림 센터: 신청 때 따로 동의 칸(새 알림 종류 문구), 기존 구독자는 켤 때 다시 동의', /id="agreePv"/.test(center) && /AC\.PV_TEXT/.test(center) && /pvConsent: pvC/.test(center) && /id="pvAgreeBtn"/.test(center) && /동의하고 메일로 받기/.test(center) && /pvConsent: true, pvv: AC\.PV_V/.test(center));
 check('알림 센터: 먼저 챙겨 드려요 세 가지 스위치(직접 켜기)·구역 합치기·서버 준비 확인', /id="pvHome"|sw\('pvHome'/.test(center) && /sw\('pvReg'/.test(center) && /sw\('pvZone'/.test(center) && /pvMergeLocal/.test(center) && /MINE\.pv === 1/.test(center));
 check('기억하는 것: 저장 위치(이 기기·내 계정)·금액은 기기에만·지우기·플래그', /금액은 이 기기에만/.test(mem) && /data-del/.test(mem) && /이 기기 \+ 내 계정/.test(mem) && /PRO\.on\(\)/.test(mem) && /noindex/.test(mem));
 check('기억하는 것 목록: 금액 칸(보증금·계산기)은 이 기기에만으로 표시', (() => { global.localStorage = { getItem: () => null, setItem() {}, removeItem() {} }; global.location = { pathname: '/jangdaejang-calc/', search: '' }; global.window = global; require('../assets/proactive.js'); const I = global.JDJ_PRO.INV; return I.filter(x => x.money && x.id !== 'rp').every(x => x.where === 'device') && ['homes', 'favs', 'cal', 'ta', 'cy', 'alerts', 'zones'].every(id => I.some(x => x.id === id)); })());

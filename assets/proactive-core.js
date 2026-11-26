@@ -9,7 +9,6 @@
 (function (root) {
 'use strict';
 /* PRO-CORE BEGIN — 이 블록은 tools/agent-backend.gs 에 그대로 복사돼 있어요. 고칠 때는 두 곳을 똑같이 고쳐 주세요(node tools/proactive-test.js 가 비교). */
-const PV_V = 'pro-2026-11-26';
 const PV_KINDS = { home: '내 집 단지 새 거래', reg: '내 동네 규제 변화', zone: '따라보는 구역 단계 변화' };
 const PV_REG_TYPES = { '규제지역': '규제지역(투기과열지구·조정대상지역)', '토허': '토지거래허가구역' };
 const PV_REG_STAGES = { '발표': '발표됐어요', '시행': '효력이 생겼어요', '연장': '기간이 연장됐어요', '해제': '해제됐어요', '철회': '철회됐어요' };
@@ -95,7 +94,7 @@ function pvMailHtml(items, o) {
 }
 /* PRO-CORE END */
 
-const API = { V: PV_V, KINDS: PV_KINDS, REG_TYPES: PV_REG_TYPES, REG_STAGES: PV_REG_STAGES, REG_DAYS: PV_REG_DAYS, esc: pvEsc, day: pvDay, applies: pvApplies, areas: pvAreas,
+const API = { KINDS: PV_KINDS, REG_TYPES: PV_REG_TYPES, REG_STAGES: PV_REG_STAGES, REG_DAYS: PV_REG_DAYS, esc: pvEsc, day: pvDay, applies: pvApplies, areas: pvAreas,
   regEvents: pvRegEvents, zoneEvents: pvZoneEvents, mailHtml: pvMailHtml };
 root.JDJ_PRO_CORE = API;
 if (typeof module !== 'undefined' && module.exports) module.exports = API;
