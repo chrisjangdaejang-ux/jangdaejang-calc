@@ -28,10 +28,29 @@
   function ruralStat(d, emd, w, b) {
     w = w || 6; b = b || 36; var e = d.e[emd]; if (!e || !e.a || !d.s.a) return null;
     var L0 = e.a.n.length, i0 = L0 - w, p0 = Math.max(0, i0 - b), pm = i0 - p0, M = months(d);
-    var n = sum(e.a.n, i0, L0), h = sum(e.a.h, i0, L0), pn = sum(e.a.n, p0, i0), ph = sum(e.a.h, p0, i0), sn = sum(d.s.a.n, p0, i0), sh = sum(d.s.a.h, p0, i0);
+    var n = sum(e.a.n, i0, L0), h = sum(e.a.h, i0, L0), pn = sum(e.a.n, p0, i0), ph = sum(e.a.h, p0, i0), sn = sum(d.s.a.n, i0, L0), sh = sum(d.s.a.h, i0, L0);
+    // 같은 곳 시간 비교: 이 읍·면·동 최근 w개월(n·h·r·avgNow) vs 그 전 pm개월(pn·ph·pr·avgPrev)
+    // 같은 기간 지역 비교: 최근 w개월 이 읍·면·동 vs 같은 시·군·구 전체(sn·sh·sr)
     return { w: w, n: n, h: h, r: n ? h / n : null, pm: pm, pn: pn, ph: ph, pr: pn ? ph / pn : null, avgNow: h / w, avgPrev: pm ? ph / pm : null,
-      sn: sn, sh: sh, sr: sn ? sh / sn : null, enough: n >= MIN_N && sn >= MIN_N && pm >= 12,
+      sn: sn, sh: sh, sr: sn ? sh / sn : null, tg: e.tg === undefined ? null : e.tg, enough: n + pn >= MIN_N && pm >= 12,
       from: M[i0], to: M[L0 - 1], pfrom: M[p0], pto: M[i0 - 1] };
+  }
+
+  /** 변화 단계(엔진 tg — 기준은 비공개, 단계만 옴) → 화면 말·색. 급증 신호(fz)가 켜졌으면 색은 신호 쪽 */
+  var TG = { '2': ['많이 늘었어요', 'y'], '1': ['조금 늘었어요', 'n'], '0': ['비슷해요', 'g'], '-1': ['줄었어요', 'g'], '9': ['건수와 비율이 엇갈려요', 'n'] };
+  function trend(tg, fz) {
+    var t = tg == null ? ['자료가 부족해요', 'n'] : TG[String(tg)] || ['자료가 부족해요', 'n'];
+    return { t: t[0], lv: fz === 2 ? 'r' : fz === 1 ? 'y' : t[1] };
+  }
+  /** 같은 곳 시간 비교 한 문장(숫자 그대로): 건수·비율이 각각 늘었는지 줄었는지 */
+  function trendLine(ru) {
+    var one = function (x) { return (Math.round(x * 10) / 10).toLocaleString('ko-KR'); };
+    var dc = ru.avgNow - ru.avgPrev, dr = (ru.r || 0) - (ru.pr || 0), tg = ru.tg;
+    var cnt = '한 달 평균 지분거래는 ' + one(ru.avgPrev) + '건 → ' + one(ru.avgNow) + '건', rat = '지분 비율은 ' + pct(ru.pr) + ' → ' + pct(ru.r);
+    if (tg === 0) return cnt + ', ' + rat + '로 큰 차이가 없어요.';
+    if ((tg === 1 && dc <= 0) || (tg === -1 && dc >= 0)) return cnt + '으로 비슷하지만, ' + rat + '로 ' + (dr > 0 ? '올랐어요.' : '내렸어요.');
+    var cw = Math.abs(dc) < 0.05 ? '그대로였고' : dc > 0 ? '늘었고' : '줄었고', rw = Math.abs(dr) < 0.005 ? '그대로예요' : dr > 0 ? '올랐어요' : '내렸어요';
+    return cnt + '으로 ' + cw + ', ' + rat + '로 ' + rw + '.';
   }
 
   /** 급증 신호: 단계(0·1·2)와 최근 3년 안 신호가 켜졌던 달 묶음 [[시작, 끝], …] */
@@ -125,7 +144,7 @@
   function span(a, b) { return a === b ? label(a) : label(a) + '~' + (a.slice(0, 4) === b.slice(0, 4) ? (+b.slice(4)) + '월' : label(b)); }
   function num(v) { v = String(v == null ? '' : v).replace(/[^0-9.]/g, ''); return v ? Number(v) : 0; }
 
-  var API = { MIN_N: MIN_N, PY: PY, ymAdd: ymAdd, months: months, shareStat: shareStat, ruralStat: ruralStat, RURAL: RURAL, flags: flags, monthBars: monthBars, yearBars: yearBars,
+  var API = { MIN_N: MIN_N, PY: PY, ymAdd: ymAdd, months: months, shareStat: shareStat, ruralStat: ruralStat, trend: trend, trendLine: trendLine, RURAL: RURAL, flags: flags, monthBars: monthBars, yearBars: yearBars,
     pickStats: pickStats, compare: compare, findPlace: findPlace, barsSvg: barsSvg, label: label, esc: esc, won: won, perM2: perM2, pct: pct, times: times, span: span, num: num };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   if (root) root.JDJ_LAND = API;

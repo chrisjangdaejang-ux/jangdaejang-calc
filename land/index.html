@@ -16,7 +16,7 @@
 <script src="../assets/pwa.js?v=3" defer></script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/config.js?v=13"></script>
-<script src="../assets/land-core.js?v=1"></script>
+<script src="../assets/land-core.js?v=2"></script>
 <script src="../assets/tabbar.js?v=8" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -67,6 +67,7 @@ h1{font-size:clamp(27px,6.4vw,40px);margin:6px 0 8px}
 .sum{background:var(--text);color:#fff;border-radius:16px;padding:16px;margin:12px 0}
 .sum b{font-size:20px}.sum p{margin:6px 0 0;font-size:15px;line-height:1.65;color:#D1D6DB}
 .where{font-size:14px;color:var(--sub2);margin:0 0 4px}
+.vt{font-size:14px;font-weight:800;margin:12px 0 0!important;color:var(--text)}
 .chart{margin:10px 0 2px}
 .chart svg{width:100%;height:190px;display:block}
 .chart .gl{stroke:#E5E8EB;stroke-width:1}.chart .ax{font-size:11px;fill:#6B7684}
@@ -310,33 +311,35 @@ table.jt tr.me td{background:var(--blue-l);font-weight:700}
     document.querySelectorAll('#sigShare [data-v]').forEach(function (b) { b.addEventListener('click', function () { view = b.getAttribute('data-v'); renderShare(d, emd); }); });
   }
   function renderShare(d, emd) {
-    var st = L.shareStat(d, emd, 12), fl = L.flags(d, emd), el = $('sigShare');
-    var lv = fl.lv === 2 ? 'r' : fl.lv === 1 ? 'y' : st.enough ? 'g' : 'n';
-    var head = '', body = '';
-    if (fl.lv) {
-      head = '이 동네 지분거래가 갑자기 늘었어요';
-      body += '<p><b>' + esc(emd) + '</b>에서 최근 임야·밭·논 같은 땅의 <b>지분거래</b>가 같은 ' + esc(d.n) + ' 평소보다 갑자기 많아졌어요'
-        + (fl.runs.length ? '(' + fl.runs.map(function (r) { return L.span(r[0], r[1]); }).join(', ') + ')' : '') + '. '
-        + '한 땅을 여러 사람에게 지분으로 쪼개 파는 기획부동산 판매 방식과 겹치는 신호예요. 상속이나 여럿이 함께 사는 경우처럼 다른 이유일 수도 있어서, 등기부에서 공유자 수를 꼭 확인하세요.</p>';
-    } else head = '이 동네 지분거래 흐름';
-    var ru = L.ruralStat(d, emd), one = function (x) { return (Math.round(x * 10) / 10).toLocaleString('ko-KR'); };
+    var st = L.shareStat(d, emd, 12), fl = L.flags(d, emd), ru = L.ruralStat(d, emd), el = $('sigShare');
+    var fz = fl.lv, tg = ru ? ru.tg : null, T = L.trend(ru && ru.enough ? tg : null, fz), body = '', head;
+    var one = function (x) { return (Math.round(x * 10) / 10).toLocaleString('ko-KR'); }, cnt = function (x) { return x.toLocaleString('ko-KR'); };
+    var HEAD = { '2': '이 동네 지분거래가 많이 늘었어요', '1': '이 동네 지분거래가 조금 늘었어요', '0': '이 동네 지분거래는 평소와 비슷해요', '-1': '이 동네 지분거래는 줄었어요', '9': '이 동네 지분거래 — 건수와 비율이 엇갈려요' };
+    head = fz ? '이 동네 지분거래가 갑자기 늘었어요' : (ru && ru.enough && HEAD[String(tg)]) || '이 동네 지분거래 흐름';
+    if (fz) body += '<p><b>' + esc(emd) + '</b>에서 최근 6개월 임야·밭·논 같은 땅의 <b>지분거래</b>가 예전보다, 그리고 같은 ' + esc(d.n) + ' 다른 곳보다 갑자기 많아졌어요. '
+      + '한 땅을 여러 사람에게 지분으로 쪼개 파는 기획부동산 판매 방식과 겹치는 신호예요. 상속이나 여럿이 함께 사는 경우처럼 다른 이유일 수도 있어서, 등기부에서 공유자 수를 꼭 확인하세요.</p>';
     if (ru && ru.enough) {
       body += '<p class="sub" style="margin-top:8px"><b>임야·밭·논 같은 땅</b>만 봤어요(기획부동산이 주로 파는 땅 종류 · 아파트 재건축 대지·도로 제외).</p>'
-        + '<div class="vs"><div class="me"><small>' + esc(emd) + ' · 최근 6개월</small><b>' + L.pct(ru.r) + '</b><span>거래 ' + ru.n.toLocaleString('ko-KR') + '건 중 지분 ' + ru.h.toLocaleString('ko-KR') + '건</span></div>'
-        + '<div><small>' + esc(d.n) + ' 전체 · 그 전 ' + Math.round(ru.pm / 12) + '년</small><b>' + L.pct(ru.sr) + '</b><span>거래 ' + ru.sn.toLocaleString('ko-KR') + '건 중 지분 ' + ru.sh.toLocaleString('ko-KR') + '건</span></div></div>'
-        + '<p class="sub">' + esc(emd) + ' 지분거래: 그 전(' + L.span(ru.pfrom, ru.pto) + ') 한 달 평균 ' + one(ru.avgPrev) + '건 → 최근 6개월(' + L.span(ru.from, ru.to) + ') 한 달 평균 ' + one(ru.avgNow) + '건.</p>';
-    }
-    if (st.enough) {
-      body += (ru && ru.enough ? '<p class="sub" style="margin-top:10px"><b>모든 종류의 땅</b>(아파트 재건축 대지·도로 포함) · 최근 1년</p>' : '') + '<div class="vs"><div class="me"><small>' + esc(emd) + '</small><b>' + L.pct(st.r) + '</b><span>거래 ' + st.n.toLocaleString('ko-KR') + '건 중 지분 ' + st.h.toLocaleString('ko-KR') + '건</span></div>'
-        + '<div><small>' + esc(d.n) + ' 전체</small><b>' + L.pct(st.sr) + '</b><span>거래 ' + st.sn.toLocaleString('ko-KR') + '건 중 지분 ' + st.sh.toLocaleString('ko-KR') + '건</span></div></div>'
-        + '<p class="sub">최근 1년(' + L.span(st.from, st.to) + ') 토지 거래 중 지분거래가 차지하는 비율이에요.' + (fl.lv ? '' : ' 최근 6개월 동안 지분거래가 갑자기 몰린 달은 없었어요.') + '</p>';
+        + '<p class="vt">① ' + esc(emd) + ' — 예전과 지금</p>'
+        + '<div class="vs"><div><small>그 전 ' + Math.round(ru.pm / 12) + '년(' + L.span(ru.pfrom, ru.pto) + ')</small><b>' + L.pct(ru.pr) + '</b><span>한 달 평균 지분 ' + one(ru.avgPrev) + '건 · 거래 ' + cnt(ru.pn) + '건 중 ' + cnt(ru.ph) + '건</span></div>'
+        + '<div class="me"><small>최근 6개월(' + L.span(ru.from, ru.to) + ')</small><b>' + L.pct(ru.r) + '</b><span>한 달 평균 지분 ' + one(ru.avgNow) + '건 · 거래 ' + cnt(ru.n) + '건 중 ' + cnt(ru.h) + '건</span></div></div>'
+        + '<p class="sub">' + L.trendLine(ru) + '</p>'
+        + (ru.n && ru.sn ? '<p class="vt">② 최근 6개월 — ' + esc(emd) + ' vs ' + esc(d.n) + ' 전체</p>'
+          + '<div class="vs"><div class="me"><small>' + esc(emd) + '</small><b>' + L.pct(ru.r) + '</b><span>거래 ' + cnt(ru.n) + '건 중 지분 ' + cnt(ru.h) + '건</span></div>'
+          + '<div><small>' + esc(d.n) + ' 전체</small><b>' + L.pct(ru.sr) + '</b><span>거래 ' + cnt(ru.sn) + '건 중 지분 ' + cnt(ru.sh) + '건</span></div></div>' : '');
     } else {
-      body += '<p>자료가 부족해요. ' + esc(emd) + '의 최근 1년 토지 거래가 ' + st.n + '건뿐이라 비율을 믿고 보기 어려워요.</p>';
+      body += '<p>자료가 부족해요. ' + esc(emd) + '는 임야·밭·논 거래가 적어서 지분거래가 늘었는지 줄었는지 판단하기 어려워요.</p>';
+    }
+    if (!fz && fl.runs.length) body += '<p class="sub">최근 3년 중 지분거래가 갑자기 몰렸던 때: ' + fl.runs.map(function (r) { return L.span(r[0], r[1]); }).join(', ') + '</p>';
+    if (st.enough) {
+      body += '<p class="vt">' + (ru && ru.enough ? '③ ' : '') + '모든 종류의 땅(아파트 재건축 대지·도로 포함) · 최근 1년(' + L.span(st.from, st.to) + ')</p>'
+        + '<div class="vs"><div class="me"><small>' + esc(emd) + '</small><b>' + L.pct(st.r) + '</b><span>거래 ' + cnt(st.n) + '건 중 지분 ' + cnt(st.h) + '건</span></div>'
+        + '<div><small>' + esc(d.n) + ' 전체</small><b>' + L.pct(st.sr) + '</b><span>거래 ' + cnt(st.sn) + '건 중 지분 ' + cnt(st.sh) + '건</span></div></div>';
     }
     body += chartHtml(d, emd);
-    card(el, lv, head, body, { badge: fl.lv ? LV[lv] : st.enough ? '갑자기 늘지 않았어요' : '자료가 부족해요' });
+    card(el, T.lv, head, body, { badge: T.t + (fz ? '</span> <span class="lv ' + T.lv + '">' + (fz === 2 ? '위험 신호' : '주의') : '') });
     bindChart(d, emd);
-    return fl.lv;
+    return T.lv;
   }
   function jimokTable(d, emd, me) {
     var e = d.e[emd], pj = (e && e.pj) || {}, ks = Object.keys(pj).filter(function (k) { return pj[k][0] + pj[k][5] >= 3; }).slice(0, 8);
@@ -403,7 +406,7 @@ table.jt tr.me td{background:var(--blue-l);font-weight:700}
       CUR = { d: d, emd: emd };
       $('where').textContent = d.sd + ' ' + d.n + ' ' + emd;
       var f = renderShare(d, emd), p = renderPrice(d, emd), o = renderOwn(); renderZone(d, emd);
-      var reds = (f === 2 ? 1 : 0) + (p === 'r' ? 1 : 0) + (o === 'r' ? 1 : 0), ys = (f === 1 ? 1 : 0) + (p === 'y' ? 1 : 0);
+      var reds = (f === 'r' ? 1 : 0) + (p === 'r' ? 1 : 0) + (o === 'r' ? 1 : 0), ys = (f === 'y' ? 1 : 0) + (p === 'y' ? 1 : 0);
       var head = reds ? '위험 신호 ' + reds + '개' + (ys ? ' · 주의 ' + ys + '개' : '') + '가 보여요' : ys ? '주의할 신호 ' + ys + '개가 보여요' : '이 자료에서는 큰 위험 신호가 보이지 않아요';
       $('sum').innerHTML = '<b>' + head + '</b><p>공공 자료의 숫자만 비교한 결과예요. 거래가 불법이라는 판단이 아니라 계약 전에 더 확인해야 할 신호예요. 용도지역·도로·공시지가는 아래 공식 사이트에서 꼭 직접 확인하세요.</p>';
       $('srcLine').textContent = '자료: ' + d.src + ' · ' + L.span(d.from, d.to) + ' · ' + d.v + ' 갱신';
