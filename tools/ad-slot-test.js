@@ -17,7 +17,7 @@ const PAGES = {
   'chungyak/index.html': ['chungyak_top', 'chungyak_end'], 'bunyang/index.html': ['bunyang_top', 'bunyang_list'],
   'villa/index.html': ['villa_top', 'villa_end'], 'jeonse/index.html': ['jeonse_top', 'jeonse_end'], 'jeonse/checklist/index.html': ['jeonse_check_end'],
   'switch/index.html': ['switch_top', 'switch_end'], 'brief/index.html': ['brief_end'], 'buy/index.html': ['buy_end'],
-  'buy/report/index.html': ['report_end'], 'land/draft/index.html': ['land_end'], 'agent/index.html': ['agent_end'],
+  'buy/report/index.html': ['report_end'], 'land/index.html': ['land_end'], 'agent/index.html': ['agent_end'],
   'loan/index.html': ['loan_end']
 };
 const slotsOf = html => [...html.matchAll(/<div\b[^>]*data-ad-slot="([^"]+)"[^>]*>/g)].map(m => ({ id: m[1], tag: m[0], at: m.index }));

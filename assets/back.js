@@ -42,7 +42,7 @@
     'dongne/': ['동네 파트너'], 'dongne/my/': ['내 파트너 화면', 'dongne/'], 'dongne/office/': ['사무소 보기', 'dongne/'], 'dongne/terms/': ['동네 파트너 약관', 'dongne/'], 'dongne/admin/': ['운영자 검토', 'dongne/'],
     'move/': ['이사 견적 받기'], 'move/partner/': ['이사업체 제휴', 'move/'], 'move/terms/': ['이사 견적 약관', 'move/'], 'move/admin/': ['이사업체 운영자', 'move/'], 'solve/': ['고민 해결 길잡이'], 'solve/admin/': ['길잡이 운영자', 'solve/'],
     'apt/': ['지역별 아파트'], 'comm/': ['지역별 상가·건물'],
-    'land/draft/': ['땅 체크'], 'sell/draft/': ['집 내놓기'], 'home-draft/': ['첫 화면 시안']
+    'land/': ['땅 위험 신호 체크'], 'land/draft/': ['땅 체크'], 'sell/draft/': ['집 내놓기'], 'home-draft/': ['첫 화면 시안']
   };
   var MINE_T = { v: '빌라 시세', o: '오피스텔 시세', c: '상가·건물 시세' };
   var MAXN = 14;          // 이 글자 수보다 긴 이름은 '이전 화면'으로(단추가 두 줄이 되지 않게)

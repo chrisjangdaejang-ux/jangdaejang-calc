@@ -174,7 +174,8 @@ check('소개 글: 연수 계산 문구 없음', /년간 공공 통계|\$\{yrs\}
   const sit = (html.match(/<nav class="sit" id="sit"[\s\S]*?<\/nav>/) || [''])[0], sitA = sit.match(/data-track="(home_to_[a-z]+)"/g) || [];
   check('상황 단추: 상가·건물(mine/?t=c) 포함·전체 기능 마지막', [/href="mine\/\?t=c" data-track="home_to_comm">[\s\S]*?상가·건물<\/a>/.test(sit), sitA[sitA.length - 1]], [true, 'data-track="home_to_all"'], '');
   const cols = +((html.match(/\.sit\{display:grid;grid-template-columns:repeat\((\d+),/) || [])[1] || 0);
-  check('상황 단추: 칸 수로 나누어 떨어짐(혼자 남는 단추 없음)', cols > 0 && sitA.length % cols === 0, true, '');
+  const sitGrid = sitA.length - (sit.match(/<a class="sit-all"/g) || []).length;   // 전체 기능을 한 줄 전체 너비(sit-all)로 빼면 칸 수에서 뺌(토지 출시 — tools/land-launch.js)
+  check('상황 단추: 칸 수로 나누어 떨어짐(혼자 남는 단추 없음)', cols > 0 && sitGrid % cols === 0 && (!/class="sit-all"/.test(sit) || /\.sit>a\.sit-all\{grid-column:1\/-1/.test(html)), true, '');
   check('상황별로 찾기: 상가·건물 시세 줄', /class="srow" href="mine\/\?t=c" data-track="home_svc_comm"/.test(html), true, '');
   check('홈: 화면 제목(h1)은 "무엇이 고민이세요?" 하나', (html.match(/<h1[ >]/g) || []).length === 1 && /<h1 class="qh-t" id="qhT">무엇이 고민이세요\?<\/h1>/.test(html), true, '');
 }

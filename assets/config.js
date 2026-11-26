@@ -47,6 +47,9 @@
    AI_ENABLED: 길잡이 대화창(solve/?chat=1)의 AI 상담 — 규칙이 못 알아들은 문장만 서버(guideAI)가 AI 로 '어느 고민인지·문장 속 값·되물을 질문'을 읽어 줘요.
      숫자는 늘 집예보 계산기 결과(AI 가 만들지 않음). false 면 AI 를 부르지 않아요. 운영자 미리 보기: 주소 끝 ?preview=ai(운영자 카카오 간편 로그인 기기만 서버가 받음, 끄기 ?preview=off).
      켜는 날은 서버 tools/agent-backend.gs 의 AI_ENABLED 도 함께 true 로 + 스크립트 속성 ANTHROPIC_API_KEY 필요(없으면 서버가 AI 를 끈 채 규칙 방식으로). 사용량: solve/admin/.
+   LAND_ENABLED: 땅 위험 신호 체크(land/ — 기획부동산 피해 예방: 읍·면·동 지분거래 급증 신호·주변 같은 지목 실거래 비교) 켜기. false 면 land/ 는 '준비 중'만 보이고(검색 제외)
+     첫 화면·전체 기능·사이트맵 어디에도 링크가 없어요. 대표 미리 보기: land/ 주소 끝에 ?preview=land 를 붙여 한 번 열면 그 기기에서만 보여요(끄기 ?preview=off).
+     켜는 날: node tools/land-launch.js --apply (이 값 + 검색 제외 해제 + 첫 화면 단추·전체 기능 줄·사이트맵, docs/launch_checklist.md). 서버 쪽 설정은 없어요.
    SITE_VERIFY_DAUM: 다음 웹마스터도구 PIN 코드 줄 전체('#DaumWebMasterTool:…'). 넣으면 robots.txt 맨 아래에 붙어요. */
 window.JDJ_SITE = {
   SITE_URL: 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc',
@@ -66,6 +69,7 @@ window.JDJ_SITE = {
   PRO_TOOLS_ENABLED: false,
   GUIDE_ENABLED: false,
   AI_ENABLED: false,
+  LAND_ENABLED: false,
   BILLING_OPEN: false,
   PAID_OPEN: false,
   PAY_REVIEW: true
