@@ -137,6 +137,13 @@ if (dir && fs.existsSync(path.join(dir, 'index.json'))) {
   }
 }
 
+/* 2026-11-26: PC 목록 정렬 이름 '큰 곳 먼저'가 무엇이 큰지 알 수 없던 문제 → 실제 기준 이름 + 구·동도 말풍선 값(평당가·순위)으로 정렬 */
+{
+  const MP = fs.readFileSync(path.join(__dirname, '..', 'map', 'index.html'), 'utf8');
+  check('지도 목록: 큰 곳 먼저 대신 실제 기준 이름', [MP.includes("'큰 곳 먼저'"), MP.includes("'거래 많은 순'"), MP.includes("'평당가 높은 순'")], [false, true, true], 'map/index.html drawList');
+  check('지도 목록: 구 목록도 값 정렬(숫자 없는 줄은 맨 뒤)', [/const numOf = t =>/.test(MP), /-Infinity/.test(MP)], [true, true], 'map/index.html drawList');
+}
+
 const fail = rows.filter(r => !r.ok);
 for (const r of rows) console.log((r.ok ? 'ok   ' : 'FAIL ') + r.name + (r.ok ? '' : `\n      got ${JSON.stringify(r.got)}\n      want ${JSON.stringify(r.want)}  (${r.basis})`));
 console.log(`\n${rows.length - fail.length}/${rows.length} 통과`);

@@ -506,10 +506,17 @@ const LV_T = { sido: '시·도', sgg: '시·군·구', dong: '동', danji: '단�
 function drawList(lv, msg){
   const el = $('mlist'); if (!el || innerWidth < 1024) return;
   const danji = lv === 'danji';
-  if (LSORT === 'v' && !danji) LSORT = 'p';
-  const rows = LROWS.slice().sort(LSORT === 'n' ? (a, b) => a.name.localeCompare(b.name, 'ko') : LSORT === 'v' ? (a, b) => (b.num || -1) - (a.num || -1) : (a, b) => b.p - a.p).slice(0, 200);
+  /* 구·동·시·도 목록도 말풍선 값으로 정렬(예: 지도에 보이는 구 중 평당가 높은 순) — 말풍선 글자의 숫자만 씀 */
+  const numOf = t => { const s = String(t || ''), r = /(\d+)위/.exec(s); if (r) return -(+r[1]); const m = /[−+-]?\d[\d,]*(\.\d+)?/.exec(s); return m ? +m[0].replace(/,/g, '').replace('−', '-') : null; };
+  if (!danji) LROWS.forEach(r => { if (r.num == null) r.num = numOf(r.v); });
+  const hasV = danji || LROWS.some(r => r.num != null);
+  if (LSORT === 'v' && !hasV) LSORT = 'p';
+  const rows = LROWS.slice().sort(LSORT === 'n' ? (a, b) => a.name.localeCompare(b.name, 'ko') : LSORT === 'v' ? (a, b) => { const x = a.num == null ? -Infinity : a.num, y = b.num == null ? -Infinity : b.num; return x === y ? 0 : y > x ? 1 : -1; } : (a, b) => b.p - a.p).slice(0, 200);
   const mode = (C.MODES.find(m => m.id === S.mode) || {}).t || '';
-  const sorts = [['p', danji ? '거래 많은 순' : '큰 곳 먼저'], ...(danji ? [['v', mode + ' 높은 순']] : []), ['n', '가나다 순']];
+  /* 예전 이름(큰 곳 먼저)은 무엇이 큰지 알 수 없어, 실제 기준(시·군·구 = 최근 거래 건수, 시·도·동 = 단지 수)을 이름으로 */
+  const pName = danji || lv === 'sgg' ? '거래 많은 순' : '단지 많은 순';
+  const vName = danji ? mode + ' 높은 순' : S.mode === 'fv' ? '순위 높은 순' : S.mode === 'price' ? (lv === 'sido' ? '많이 오른 순' : '평당가 높은 순') : mode + ' 높은 순';
+  const sorts = [['p', pName], ...(hasV ? [['v', vName]] : []), ['n', '가나다 순']];
   el.innerHTML = `<div class="mlist-hd"><b>지도에 보이는 ${LV_T[lv] || ''} ${rows.length ? rows.length.toLocaleString() + (LROWS.length > rows.length ? '+' : '') + '곳' : ''}</b><small>${danji ? '줄을 누르면 단지 카드가 열려요' : '줄을 누르면 지도가 그곳으로 가까이 가요'} · 지도를 움직이면 목록도 바뀌어요</small>
     <div class="mlist-sort" role="group" aria-label="목록 순서">${sorts.map(([k, t]) => `<button type="button" data-ls="${k}" aria-pressed="${LSORT === k}">${esc(t)}</button>`).join('')}</div></div>`
     + (rows.length ? `<ol>${rows.map((r, i) => `<li><button type="button" data-li="${i}"${SEL && SEL.d && SEL.d.key === r.k ? ' class="sel"' : ''}><span class="nm"><b>${esc(r.name)}</b>${r.sub ? `<small>${esc(r.sub)}</small>` : ''}</span><span class="v">${esc(r.v || '')}</span></button></li>`).join('')}</ol>`
