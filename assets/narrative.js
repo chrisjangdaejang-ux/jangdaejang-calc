@@ -902,7 +902,7 @@
       const withS = peers.filter(p => p.sup > 0).sort((a, b) => b.sup - a.sup), rk = sup ? withS.findIndex(p => p.code === c.code) + 1 : 0;
       if (sup && n >= 3 && rk > 0) {
         const rows = sup.rows || [], mvs = rows.map(r => r[2]).filter(Boolean).sort();
-        const t = `앞으로 2년 ${SG} 아파트 입주 예정 ${n0(sup.n)}세대 — ${SD} ${n}개 ${UNIT} 중 ${rk}번째로 많아요.`;
+        const t = `앞으로 2년 ${SG} 아파트 입주 예정 ${n0(sup.n)}세대 — ${SD} ${n}개 ${UNIT} 중 ${rk === 1 ? '가장 많아요' : rk + '번째로 많아요'}.`;
         const fact = `${SG}에 입주 예정인 단지는 ${rows.length}곳이에요: ` + rows.slice(0, 3).map(r => `${r[0]} ${n0(r[1])}세대(${ymKo(r[2])})`).join(', ') + (rows.length > 3 ? ` 외 ${rows.length - 3}곳.` : '.');
         const md = medianOf(peers.map(p => p.sup || 0).concat(peers.some(p => p.code === c.code) ? [] : [sup.n]));
         const cmp = `${SD} ${n}개 ${UNIT} 중 입주 예정이 있는 곳은 ${withS.length}곳이고, ${UNIT}별 중간값은 ${n0(md || 0)}세대예요.`;

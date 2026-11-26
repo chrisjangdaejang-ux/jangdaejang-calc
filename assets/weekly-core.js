@@ -197,7 +197,26 @@
     return out;
   }
 
-  const API = { DATA, PAGE, ORIGIN, SITE_URL, weekFrom, verFrom, num, pct, share, md, dot, period, weekName, statusText, verText, pick, chgCell, volCell,
+  /** 주 이름(YYYY-WW, ISO 주) → 그 주 월·일요일(YYYY-MM-DD)과 발표 시각(다음 월요일 오전 7시, 한국 시각) */
+  function weekDates(w) {
+    if (!WRE.test(String(w || ''))) return null;
+    const y = +w.slice(0, 4), n = +w.slice(5), j4 = new Date(Date.UTC(y, 0, 4)), d = (j4.getUTCDay() + 6) % 7;
+    const mon = new Date(Date.UTC(y, 0, 4 - d + (n - 1) * 7)), sun = new Date(+mon + 6 * 864e5), rel = new Date(+mon + 7 * 864e5);
+    const iso = t => t.toISOString().slice(0, 10);
+    return { from: iso(mon), to: iso(sun), release: iso(rel) + 'T07:00:00+09:00' };
+  }
+  /** 자료가 없는 주를 열었을 때 문구 — 진행 중·발표 전인 주는 발표 시각을, 그 밖은 사실대로(2026-11-26: 이번 주 주소에서 '통계를 찾지 못했어요'만 나오던 문제) */
+  function missingText(w, latest, now) {
+    const D = weekDates(w); now = +(now || Date.now());
+    if (!D) return '주 이름을 알아보지 못했어요. 아래 가장 최근 주를 봐 주세요.';
+    const range = `${md(D.from)}~${md(D.to)}`, end = Date.parse(D.to + 'T23:59:59+09:00'), rel = Date.parse(D.release);
+    if (latest && w <= latest) return `${w} 주(${range}) 통계를 찾지 못했어요. 아래 가장 최근 주를 봐 주세요.`;
+    if (now < Date.parse(D.from + 'T00:00:00+09:00')) return `${w} 주(${range})는 아직 오지 않은 주예요. 이 주 통계는 ${whenText(D.release) || '그다음 월요일 오전 7시'}에 발표해요.`;
+    if (now <= end) return `${w} 주(${range})는 아직 진행 중이에요. 이 주 통계는 ${whenText(D.release) || '다음 주 월요일 오전 7시'}에 발표해요.`;
+    if (now < rel) return `${w} 주(${range}) 통계는 ${whenText(D.release) || '월요일 오전 7시'}에 발표해요.`;
+    return `${w} 주(${range}) 통계를 아직 받지 못했어요. 잠시 뒤 다시 확인해 주세요.`;
+  }
+  const API = { weekDates, missingText, DATA, PAGE, ORIGIN, SITE_URL, weekFrom, verFrom, num, pct, share, md, dot, period, weekName, statusText, verText, pick, chgCell, volCell,
     roneCell, levelRows, row, sidos, cite, urls, headline, scaleMax, days, finalNote, RELEASE, released, whenText, scheduleText, ymText, obCell, usCell, segRows, cmpSummary, zeroText, methodName, pressTitles, pressKeys, pressLines, pressPeriod };
   root.JDJ_WEEKLY = API;
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

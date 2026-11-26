@@ -30,7 +30,7 @@
 <script src="../assets/stat.js?v=8"></script>
 <script src="../assets/share.js?v=13"></script>
 <script src="../assets/plain-words.js?v=19"></script>
-<script src="../assets/narrative.js?v=23"></script>
+<script src="../assets/narrative.js?v=25"></script>
 <script src="../assets/rank-core.js?v=8"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/alerts-core.js?v=5"></script>
@@ -261,7 +261,7 @@ function drawApt(){
     <span class="vals"><span class="num"><b class="sc">${x.fv}점</b><small>100점 만점</small></span></span></a>${wstar(x)}</li>`).join('');
   $('pane').innerHTML = vb + `<ol class="list">${li}</ol>`
     + (o.rows.length > SHOW ? `<button type="button" class="more" id="more" aria-expanded="${S.all}">${S.all ? '접기' : `상위 ${o.rows.length}곳 모두 보기`}</button>` : '')
-    + `<p class="note">점수는 같은 ${esc(sd.short)} 단지 중 앞으로 2년 동안 평균보다 더 오를 가능성 순위예요(100점 만점, 가격 예측이 아니에요). <b>기준</b> ${esc(R.danjiRule(o))} 시·도 전체는 상위 50곳, 시·군·구은 상위 10곳까지 보여 드려요.</p>`;
+    + `<p class="note">점수는 같은 ${esc(sd.short)} 단지 중 앞으로 2년 동안 평균보다 더 오를 가능성 순위예요(100점 만점, 가격 예측이 아니에요). <b>기준</b> ${esc(R.danjiRule(o))} 시·도 전체는 상위 50곳, 시·군·구는 상위 10곳까지 보여 드려요.</p>`;
   const m = $('more'); if (m) m.onclick = () => { S.all = !S.all; drawApt(); };
   share({ head: `${where} 2년 뒤 더 오를 단지 순위(미래가치 점수)`,
     lines: [o.rows.slice(0, 3).map(x => `${x.r}위 ${x.apt}`).join(', '), `${where} 단지 ${o.n.toLocaleString()}곳 비교`, `과거에 그대로 써 봤더니 ${v.n}번 중 ${v.hit}번 맞음`] });

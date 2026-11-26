@@ -45,7 +45,7 @@
 <script src="../assets/watch.js?v=9"></script>
 <script src="../assets/kchat.js?v=3"></script>
 <script src="../assets/plain-words.js?v=19"></script>
-<script src="../assets/narrative.js?v=23"></script>
+<script src="../assets/narrative.js?v=25"></script>
 <script src="../assets/strength.js?v=5"></script>
 <script src="../assets/conf.js?v=3"></script>
 <script src="../assets/life-view.js?v=3"></script>
@@ -590,7 +590,7 @@ function render(d, map, units){
       <div class="pbox"><div class="k">${esc(d.dong)} 안에서</div>
         ${dp ? `<div class="v">이 집은 동 중간값보다 <span class="${updown(dp.diff)}">${M.pctTxt(dp.diff)}</span></div>
         ${posBar({me:dp.me, ref:dp.med})}
-        <p class="basis">이 집 평당가는 ${esc(d.dong)} ${dp.n}개 ${dp.sameBand ? esc(S.band) + ' 평형' : '단지·평형'}(${dp.danji}개 단지) 중 ${dp.rank}번째로 높아요 · 이 집 ${dp.me.toLocaleString()}만 / 동 중간값 ${dp.med.toLocaleString()}만 (각 단지·평형 최근 3개월 중앙 평당가의 중간값)</p>`
+        <p class="basis">이 집 평당가는 ${esc(d.dong)} ${dp.n}개 ${dp.sameBand ? esc(S.band) + ' 평형' : '단지·평형'}(${dp.danji}개 단지) 중 ${dp.rank === 1 ? '가장 높아요' : dp.rank + '번째로 높아요'} · 이 집 ${dp.me.toLocaleString()}만 / 동 중간값 ${dp.med.toLocaleString()}만 (각 단지·평형 최근 3개월 중앙 평당가의 중간값)</p>`
         : '<p class="basis">같은 동에 비교할 단지·평형 자료가 부족해요.</p>'}</div>
       <div class="pbox"><div class="k">${esc(sggName(d.code))} 전체 아파트 대비</div>
         ${gp ? `<div class="v">이 집은 구 중간값보다 <span class="${updown(gp.diff)}">${M.pctTxt(gp.diff)}</span></div>

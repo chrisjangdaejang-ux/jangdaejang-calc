@@ -204,7 +204,9 @@
     const w = w0 || (IX && IX.weeks && IX.weeks[0] && IX.weeks[0].w);
     if (!w) return fail('아직 공개한 주간 통계가 없어요. 매주 월요일 새벽에 새로 계산해요.');
     const L = await J(K.DATA + w + '.json');
-    if (!L) return fail(`${w} 주 통계를 찾지 못했어요. 아래 통계 설명을 참고해 주세요.`);
+    if (!L) { fail(K.missingText(w, IX && IX.weeks && IX.weeks[0] && IX.weeks[0].w));
+      if (IX && IX.weeks && IX.weeks[0]) $('hdSub').insertAdjacentHTML('beforeend', `<a href="${esc(K.PAGE)}" style="display:inline-block;margin-top:8px;font-weight:800">가장 최근 주(${esc(IX.weeks[0].w)}) 보기 ›</a>`);
+      return; }
     const relV = (L.versions || []).filter(x => K.released(x));
     if (!relV.length) return fail(`${w} 주는 ${K.whenText((L.versions || [{}])[0].release) || '월요일 오전 7시'}에 발표해요.`);
     L.versions = relV;

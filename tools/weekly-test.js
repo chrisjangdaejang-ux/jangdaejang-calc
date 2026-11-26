@@ -86,6 +86,17 @@ check('보도자료실: 광고 독립 문구·문의처 칸·발표 시각·CSV�
 check('보도자료실: 금지 낱말·다른 회사 이름 없음', ['시험', '검증', '채점', '리치고', '호갱', '직방', '아실', '네이버', 'KB'].filter(w => press.includes(w)), []);
 check('통계 설명: 공식 지수와 방향이 같았던 비율·발표 시각', ['공식 주간 지수와 방향이 같았던 비율', '매주 월요일 오전 7시'].every(w => main.includes(w)), true);
 
+/* 2026-11-26: 자료 없는 주(이번 주·앞으로 올 주) 주소에서 '통계를 찾지 못했어요'만 나오던 문제 → 진행 중·발표 시각 안내 + 가장 최근 주 링크 */
+{
+  const KK = require('../assets/weekly-core.js'), at = s => Date.parse(s);
+  check('주 날짜: 2026-48 = 11/23~11/29, 발표 11/30 오전 7시', KK.weekDates('2026-48'), { from: '2026-11-23', to: '2026-11-29', release: '2026-11-30T07:00:00+09:00' });
+  check('진행 중인 주', KK.missingText('2026-48', '2026-47', at('2026-11-26T12:00:00+09:00')), '2026-48 주(11/23~11/29)는 아직 진행 중이에요. 이 주 통계는 11월 30일(월) 오전 7시에 발표해요.');
+  check('아직 오지 않은 주는 진행 중이라고 하지 않음', /아직 오지 않은 주예요/.test(KK.missingText('2027-10', '2026-47', at('2026-11-26T12:00:00+09:00'))), true);
+  check('끝났지만 발표 전', /오전 7시에 발표해요/.test(KK.missingText('2026-48', '2026-47', at('2026-11-30T03:00:00+09:00'))), true);
+  const VW = fs.readFileSync(path.join(__dirname, '..', 'assets/weekly-view.js'), 'utf8');
+  check('화면: 자료 없는 주에 안내 문구 + 가장 최근 주 링크', [/K\.missingText\(/.test(VW), /가장 최근 주\(/.test(VW)], [true, true]);
+}
+
 const bad = rows.filter(r => !r.ok);
 rows.forEach(r => console.log(r.ok ? 'PASS' : 'FAIL', r.name, r.ok ? '' : `→ ${JSON.stringify(r.got)} (기대 ${JSON.stringify(r.want)})`));
 console.log(`${rows.length - bad.length}/${rows.length} 통과`);

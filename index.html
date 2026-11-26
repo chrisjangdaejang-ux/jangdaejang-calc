@@ -425,7 +425,7 @@ addEventListener('DOMContentLoaded', () => {
         <span class="pl-rk">${x.r}<small>${x.tie ? '공동' : '위'}</small></span>
         <span class="pl-nm"><b>${esc(x.apt)}</b><small>${esc(gName(x.code))} ${esc(x.dong)} · ${esc(x.band)}</small><span class="vk">✓ ${esc(vk)}</span></span>
         <span class="pl-v"><span class="pl-num pl-sc"><b>${x.fv}점</b><small>100점 만점</small></span></span></a>${st(x)}</li>`).join('')}</ol>
-      <p class="pl-rule"><b>점수</b> 같은 ${esc(sd.short)} 단지 중 앞으로 2년 동안 평균보다 더 오를 가능성 순위예요(가격 예측이 아니에요). <b>맞음</b> 이 예측 방법을 과거에 그대로 써 봤을 때 점수 상위 20% 단지가 실제로 같은 구 평균보다 더 오른 경우${v.where === '전국' ? '(전국 성적)' : ''}. <a href="track/" data-track="home_pulse_to_track">성적표 보기</a></p>
+      <p class="pl-rule"><b>점수</b>는 같은 ${esc(sd.short)} 단지 중 앞으로 2년 동안 평균보다 더 오를 가능성 순위예요(가격 예측이 아니에요). <b>맞음</b>은 이 예측 방법을 과거에 그대로 써 봤을 때 점수 상위 20% 단지가 실제로 같은 구 평균보다 더 오른 경우예요${v.where === '전국' ? '(전국 성적)' : ''}. <a href="track/" data-track="home_pulse_to_track">성적표 보기</a></p>
       <p class="pl-rule"><b>기준</b> ${esc(R.danjiRule(o))}</p>
       <div class="pl-foot"><span></span><a class="pl-more" href="rank/?t=fv&amp;v=apt${S.sd !== 's00' ? '&amp;sd=' + S.sd : ''}${S.g !== 'all' ? '&amp;g=' + S.g : ''}" data-track="home_pulse_to_rank">전체 순위 보기 ›</a></div>`;
   }
