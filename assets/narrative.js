@@ -1180,7 +1180,7 @@
     } else if (c.hist && c.hist.n) head = `내 가점 ${my}점이면 ${c.hist.sido} ${c.hist.span} 주택형 ${n0(c.hist.n)}개 중 ${c.hist.pct}%에서 당첨될 점수였어요.`;
     else head = `내 가점은 84점 만점 중 ${my}점이에요.`;
     const L = [];
-    {
+    if (c.h != null && c.d != null && c.cc != null) {   // 가점만 바로 넣은 경우(quick)엔 항목별 점수가 없어 이 줄을 뺌
       const P = [['무주택기간', c.h, 32], ['부양가족', c.d, 35], ['통장 가입기간', c.cc, 17]].filter(x => x[1] != null);
       const gap = P.slice().sort((a, b) => (b[2] - b[1]) - (a[2] - a[1]))[0];
       L.push({ k: 'pick', t: `가점 ${my}점 = 무주택기간 ${c.h}점 + 부양가족 ${c.d}점 + 통장 ${c.cc}점(84점 만점의 ${Math.round(my / 84 * 100)}%).`,

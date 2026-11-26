@@ -79,12 +79,16 @@ function eligibility(a, e, ref) {
   const noHouse = !a.own && e.house === '0';
   const homelessTxt = noHouse ? null : '무주택세대구성원 요건을 확인하세요(세대 주택 수 ' + (e.house === '2' ? '2채 이상' : e.house + '채') + ')';
   const grade = (bad, unk) => bad.length ? 'no' : unk.length ? 'chk2' : 'ok';
+  /* 가점만 바로 넣은 경우(a.quick): 통장 가입일·혼인 여부를 묻지 않았으니 '없음'이 아니라 '확인 필요'로 */
+  const quick = a.quick != null;
+  const accUnknown = quick && !a.accDate && !a.noAcc;
 
   // 민영주택 1순위 (제28조 제1항 제1호)
   function priv(reg) {
     const bad = [], unk = [], ok = [];
     const need = reg === 'y' ? 24 : cap ? 12 : 6;
-    if (a.noAcc || !a.accDate) bad.push('청약통장이 없어요');
+    if (accUnknown) unk.push(`청약통장 가입기간 ${need}개월 이상인지 확인하세요`);
+    else if (a.noAcc || !a.accDate) bad.push('청약통장이 없어요');
     else if (acc < need) bad.push(`가입 ${acc}개월 — ${need}개월 이상 필요`);
     else ok.push(`가입 ${acc}개월(필요 ${need}개월)`);
     if (reg !== 'y' && cap) unk.push('시·도지사가 가입기간을 최대 24개월까지 늘려 공고할 수 있어요');
@@ -103,7 +107,8 @@ function eligibility(a, e, ref) {
   function pub(reg) {
     const bad = [], unk = [], ok = [];
     const need = reg === 'y' ? 24 : cap ? 12 : 6;
-    if (a.noAcc || !a.accDate) bad.push('청약통장이 없어요');
+    if (accUnknown) unk.push(`청약통장 가입기간 ${need}개월 이상인지 확인하세요`);
+    else if (a.noAcc || !a.accDate) bad.push('청약통장이 없어요');
     else if (acc < need) bad.push(`가입 ${acc}개월 — ${need}개월 이상 필요`);
     else ok.push(`가입 ${acc}개월(필요 ${need}개월)`);
     if (e.cnt === '') unk.push(`월납입금 ${need}회 이상 납입 여부를 확인하세요`);
@@ -128,7 +133,8 @@ function eligibility(a, e, ref) {
   // 신혼부부 (제41조)
   { const bad = [], unk = [];
     const mar = a.married ? CY.d8(a.marDate) : null;
-    if (!mar) bad.push('혼인 중인 경우에 해당해요(예비 신혼부부·한부모 가족 등은 공고문 확인)');
+    if (!mar && quick && a.married == null) unk.push('혼인신고 7년 이내 부부(예비 신혼부부·한부모 가족 포함)인지 확인하세요');
+    else if (!mar) bad.push('혼인 중인 경우에 해당해요(예비 신혼부부·한부모 가족 등은 공고문 확인)');
     else { const m = CY.months(mar, ref); if (m >= 84) bad.push(`혼인기간 ${Math.floor(m / 12)}년 — 7년 이내여야 해요`); }
     if (!noHouse) bad.push('무주택세대구성원이어야 해요');
     unk.push(INCOME_TXT);
@@ -138,7 +144,7 @@ function eligibility(a, e, ref) {
     if (!noHouse || e.ever === 'n') bad.push('세대원 모두 과거에 주택을 가진 적이 없어야 해요'); else if (e.ever === 'u') unk.push('세대원 모두 과거 주택 소유 이력이 없는지 확인하세요');
     if (!first1) unk.push('1순위에 해당해야 해요(위 1순위 결과 확인)');
     if (e.tax === 'n') bad.push('근로자·자영업자로 소득세를 5년 이상 납부해야 해요'); else if (e.tax === 'u') unk.push('소득세 5년 이상 납부 여부를 확인하세요');
-    if (e.kind === 'p' && !a.married && +e.kids === 0) unk.push('민영주택은 혼인 중이거나 자녀가 있는 경우가 기본이에요. 1인 가구 등 다른 기준은 공고문을 확인하세요');
+    if (e.kind === 'p' && !a.married && !(quick && a.married == null) && +e.kids === 0) unk.push('민영주택은 혼인 중이거나 자녀가 있는 경우가 기본이에요. 1인 가구 등 다른 기준은 공고문을 확인하세요');
     if (e.kind === 'g') unk.push('국민주택은 저축액이 선납금 포함 600만원 이상이어야 해요');
     unk.push(INCOME_TXT);
     out.push({ k: '특별공급', id: 'first', how: e.kind === 'p' ? '소득 구간별 단계 안에서 추첨으로 뽑아요. 청약 가점과는 관계없어요(민영주택).' : '추첨 방식이 기본이에요. 소득 단계 등 세부 방식은 입주자모집공고문을 확인하세요.', t: '생애최초 특별공급', g: grade(bad, unk), items: [...bad, ...unk], law: '규칙 제43조' }); }
@@ -236,6 +242,7 @@ function diag(my, p) {
 }
 /* 지금 조건이 그대로 이어질 때 몇 년 뒤 목표 점수에 닿는지(무주택기간·통장 가입기간만 늘어남, 부양가족은 그대로) */
 function yearsTo(a, refStr, target, maxY) {
+  if (a && a.quick != null) return undefined;   // 가점만 넣은 경우: 항목별 점수를 몰라 몇 년 뒤인지 계산하지 않음
   maxY = maxY || 15;
   const ref = CY.d8(refStr) || new Date(new Date().toDateString());
   for (let y = 0; y <= maxY; y++) {
@@ -246,7 +253,26 @@ function yearsTo(a, refStr, target, maxY) {
   return null;
 }
 
-const API = { CY, SIDO, CAPITAL, SIDO_OLD, SIDO_ALIAS, sidoNorm, sidoLbl, DEPOSIT, depGroup, eligibility, bestSpecial, lottery, cutOf, diag, yearsTo, bandOf, noticeSido, INCOME_TXT };
+/* 가점만 바로 넣기(질문을 건너뜀): 0~84 정수만. 항목별 점수는 모름(null) */
+function quickTotal(v) {
+  const s = String(v == null ? '' : v).trim();
+  if (!/^\d{1,2}$/.test(s)) return null;
+  const n = +s; if (n > 84) return null;
+  const u = { pts: null, why: '' };
+  return { quick: true, sum: n, h: u, d: u, c: u };
+}
+/* 주소의 시·도 표기(서울·서울시·서울특별시 등) → 엔진 시·도 이름 */
+function sidoFrom(q) {
+  let t = String(q || '').replace(/\s/g, ''); if (!t) return '';
+  t = ({ 충북: '충청북도', 충남: '충청남도', 경북: '경상북도', 경남: '경상남도', 전북: '전북특별자치도' })[t] || t;
+  const all = SIDO.concat(Object.keys(SIDO_OLD));
+  const hit = all.find(s => s === t) || all.find(s => s.startsWith(t.replace(/(특별|광역)?시$|도$/, '')) && t.length >= 2);
+  return hit ? sidoNorm(hit) : '';
+}
+/* 시·군·구 이름 맞추기: '고양시 덕양구'와 '고양덕양구'를 같게 */
+const sggKey = s => String(s || '').replace(/\s/g, '').replace(/시(?=[^시]+구$)/, '');
+
+const API = { quickTotal, sidoFrom, sggKey, CY, SIDO, CAPITAL, SIDO_OLD, SIDO_ALIAS, sidoNorm, sidoLbl, DEPOSIT, depGroup, eligibility, bestSpecial, lottery, cutOf, diag, yearsTo, bandOf, noticeSido, INCOME_TXT };
 if (typeof module !== 'undefined' && module.exports) module.exports = API;
 else root.JDJ_CYE = API;
 })(typeof self !== 'undefined' ? self : this);

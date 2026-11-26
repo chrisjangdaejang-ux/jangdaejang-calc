@@ -102,6 +102,29 @@ check('공고 시·도 칸이 주소와 다르면 주소 우선(논산 → 충�
 check('옛 이름 광주광역시 → 전남광주통합특별시', E.noticeSido({ sd: '광주광역시', ad: '광주광역시 북구' }), '전남광주통합특별시', '');
 check('전국 16개 시·도 목록', E.SIDO.length, 16, '');
 
+/* ---------- 7. 가점만 바로 넣기(?score=64) — 2026-11-26 품질 점검: '가점 64점인데 서울 분양 단지 중 당첨 가능한 곳?'에 질문 7개를 다 답해야만 단지별 진단이 나오던 문제 ---------- */
+check('가점 64 바로 넣기', E.quickTotal('64').sum, 64, '');
+check('가점 84 바로 넣기(만점)', E.quickTotal(84).sum, 84, '');
+check('85점은 거절(만점 84)', E.quickTotal('85'), null, '');
+check('음수·소수·빈칸·글자 거절', [E.quickTotal('-1'), E.quickTotal('6.5'), E.quickTotal(''), E.quickTotal('abc')], [null, null, null, null], '');
+check('항목별 점수는 모름(null)', E.quickTotal('64').h.pts, null, '');
+const qa = Object.assign(base({ married: null, own: null }), { quick: 64 });
+check('가점만 넣으면 몇 년 뒤 계산 안 함(undefined)', E.yearsTo(qa, REF, 70), undefined, '');
+{ const q = E.eligibility(qa, Object.assign({}, e0, { sido: '서울특별시', reg: 'y' }), CY.d8(REF));
+  check('가점만 넣으면 통장 없음(어려움)이 아니라 확인 필요', q.find(x => x.id === 'rank1').g, 'chk2', '');
+  check('가점만 넣으면 신혼부부도 확인 필요(미혼 단정 안 함)', q.find(x => x.id === 'new').g, 'chk2', ''); }
+check('질문으로 계산한 경우는 그대로 통장 없음 = 어려움', E.eligibility(base({ birth: '1980-01-01', noAcc: true }), Object.assign({}, e0, { reg: 'y' }), CY.d8(REF)).find(x => x.id === 'rank1').g, 'no', '');
+check('주소 시·도 표기 서울/서울시/충북/광주', ['서울', '서울시', '충북', '광주', '없는곳'].map(E.sidoFrom), ['서울특별시', '서울특별시', '충청북도', '전남광주통합특별시', ''], '');
+check('시·군·구 이름 맞추기(고양시 덕양구 = 고양덕양구)', [E.sggKey('고양시 덕양구'), E.sggKey('고양덕양구'), E.sggKey('파주시')], ['고양덕양구', '고양덕양구', '파주시'], '');
+{ const html = require('fs').readFileSync(require('path').join(__dirname, '../chungyak/index.html'), 'utf8');
+  check('청약 화면: 가점 바로 넣기 칸·주소 ?score 처리', /id="qScore"/.test(html) && /UP\.get\('score'\)/.test(html), true, '');
+  check('청약 화면: 공고 전 분양 예정에도 내 가점 비교', /planGuTxt\(x\)/.test(html), true, '');
+  check('청약 화면: 공공분양 개수는 진단 범위(내 시·도)만 셈', /n\.k !== '민영' && \(scope === 'all' \|\| noticeSido\(n\) === mine\)/.test(html), true, ''); }
+{ const N = require('../assets/narrative.js');
+  const nar = (N.cat ? N : (global.JDJ_NAR || {})).cat;
+  if (nar && nar.cy) { const o = nar.cy({ my: 64, h: null, d: null, cc: null, items: [], cnt: { hi: 0, mid: 0, lo: 0 } });
+    check('가점만 넣으면 분석 설명에 null 점수 줄이 없음', JSON.stringify(o).includes('null점'), false, ''); } }
+
 const bad = rows.filter(x => !x.ok);
 rows.forEach(x => console.log(`${x.ok ? 'PASS' : 'FAIL'}  ${x.name}${x.ok ? '' : `  → 결과 ${JSON.stringify(x.got)} / 기대 ${JSON.stringify(x.want)} (${x.basis})`}`));
 console.log(`\n${rows.length - bad.length}/${rows.length} 통과`);
