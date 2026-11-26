@@ -32,6 +32,7 @@
 <script src="../assets/brief-core.js?v=12"></script>
 <script src="../assets/pro-report.js?v=7"></script>
 <script src="../assets/share.js?v=15"></script>
+<script src="../assets/quiz-pick.js?v=1" defer></script>
 <script src="../assets/client-brief.js?v=7"></script>
 <script src="../assets/brief-ad.js?v=1"></script>
 <script src="../assets/dongne-core.js?v=2"></script>
@@ -257,6 +258,7 @@ body.cardmode>header.top,body.cardmode>.foot,body.cardmode>.wrap,body.cardmode .
   <a class="brand" href="../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a>
   <div class="badge plain" data-brief-name>집예보 모닝 브리핑</div>
 </header>
+<div class="wrap" id="pqBrief" hidden style="padding-bottom:0"></div>
 <main class="wrap" id="main"><p class="note">브리핑을 불러오고 있어요…</p></main>
 <div class="wrap" style="padding-top:0;padding-bottom:24px"><div data-ad-slot="brief_end" data-ad-cat="brief" data-ad-after="#main section" data-ad-skip-if="[data-brief-ad]:not([hidden])" hidden></div></div>
 <div id="cardRoot"></div>
@@ -715,5 +717,28 @@ async function chooser(){
 })();
 </script>
 <script src="../assets/ad-slot.js?v=8" defer></script>
+<script>
+/* 내 예측 결과(이 기기): '이번 주 예측 맞히기'에서 고른 내 답(assets/quiz-pick.js jdj_pq_local — 로그인 답도 퀴즈 화면에서 합쳐 둠) 중 결과가 나온 것.
+   서버로 아무것도 보내지 않고 공개 quiz/week.json 만 읽어요. 남긴 답이 없으면 칸을 숨겨요. 새 결과는 여기서 보면 '본 결과'로 표시해요. */
+addEventListener('DOMContentLoaded', function () {
+  var K = window.JDJ_QPICK, el = document.getElementById('pqBrief'); if (!K || !el) return;
+  var W = K.wLoad((function () { try { return localStorage.getItem(K.WKEY); } catch (e) { return null; } })());
+  if (!Object.keys(W.p).length) return;
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+  var D = JB.DATA + 'data/';
+  fetch(D + 'quiz/week.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (wk) {
+    if (!wk) return;
+    var res = K.wResults(W, wk), fresh = res.filter(function (x) { return x.fresh; }), show = (fresh.length ? fresh : res).slice(0, 3);
+    var wait = Object.keys(W.p).filter(function (id) { return [].concat(wk.open || [], wk.wait || []).some(function (q) { return q.id === id; }); }).length;
+    if (!show.length && !wait) return;
+    el.innerHTML = '<section class="sec" aria-labelledby="pqbT" style="margin:0"><h2 id="pqbT">' + (fresh.length ? '내 예측 결과가 나왔어요' : '내 예측') + ' <small>이번 주 예측 맞히기 · 이 기기 기록</small></h2>'
+      + show.map(function (x) { return '<div class="box"><b>' + esc(x.q.t) + '</b><br>' + (x.ok === null ? '정답을 정할 수 없어 무효예요.' : x.ok ? '맞혔어요 ✓' : '아쉽게 틀렸어요.') + '</div>'; }).join('')
+      + (wait ? '<div class="box">결과를 기다리는 내 예측 ' + wait + '개가 있어요. 결과가 나오면 여기서 알려 드려요.</div>' : '')
+      + '<p class="sub"><a href="../quiz/#predict" data-track="brief_to_predict">이번 주 예측 맞히기 ›</a></p></section>';
+    el.hidden = false;
+    if (fresh.length) try { localStorage.setItem(K.WKEY, JSON.stringify(K.wSeen(W, fresh.map(function (x) { return x.q.id; })))); } catch (e) {}
+  });
+});
+</script>
 </body>
 </html>

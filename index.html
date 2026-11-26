@@ -52,6 +52,7 @@
 <script src="assets/brief-core.js?v=12" defer></script>
 <script src="assets/today-core.js?v=1" defer></script>
 <script src="assets/quiz-core.js?v=1" defer></script>
+<script src="assets/quiz-pick.js?v=1" defer></script>
 <script src="assets/alerts-core.js?v=5" defer></script>
 <script src="assets/watch-core.js?v=2" defer></script>
 <script src="assets/watch.js?v=9" defer></script>
@@ -609,12 +610,21 @@ addEventListener('DOMContentLoaded', () => {
       el.hidden = false;
     });
   }
-  function quizCard(){
-    const Z = window.JDJ_QUIZ, el = $('qzCard');
-    if (!Q || !Q.q || Q.date !== today() || !Z){ el.hidden = true; return; }
-    const q = Q.q, S = Z.load((() => { try { return localStorage.getItem(Z.KEY); } catch (e) { return null; } })());
-    const done = Z.answered(S, Q, today()), n = Z.streakNow(S, today());
-    el.innerHTML = `<span class="ic" aria-hidden="true">?</span><span><b>오늘의 집값 맞혀 보기</b><small>${done ? `오늘 문제 풀었어요${n ? ` · 연속 ${n}일째` : ''} · 설명 다시 보기` : `${esc(q.gn)} ${esc(q.a)} ${esc(q.b)}${q.f != null ? ` ${esc(q.f)}층` : ''}, 얼마에 거래됐을까요?`}</small></span><span class="go" aria-hidden="true">›</span>`;
+  /* 오늘의 집값 맞혀 보기(assets/quiz-pick.js): 관심 단지 → 내 집 → 내 지역 → 그날 눈에 띄는 거래 순서로 이 기기 안에서 고른 '직전 거래보다 올랐을까' 문제. 퀴즈 화면과 같은 문제(그날 고정) */
+  async function quizCard(){
+    const K = window.JDJ_QPICK, el = $('qzCard'), W = window.JDJ_WATCH; if (!K){ el.hidden = true; return; }
+    const td = today(), S = K.load((() => { try { return localStorage.getItem(K.KEY); } catch (e) { return null; } })());
+    let r = K.lockGet((() => { try { return localStorage.getItem(K.LOCK); } catch (e) { return null; } })(), td);
+    if (!r){
+      const hm = ld('jdj_myhome'), ctx = { watch: W && W.list ? W.list() : [], homes: hm && Array.isArray(hm.list) ? hm.list.slice(0, 5) : [], region: ld('jdj_home_region') || {}, Q: Q && Q.date === td ? Q : null, today: td, done: Object.assign({}, S.a), gf: {} };
+      const codes = K.needG(ctx), files = await Promise.all(codes.map(c => W && W.gfile ? W.gfile(c) : J(DATA + 'today/g/' + c + '.json')));
+      codes.forEach((c, i) => { ctx.gf[c] = files[i]; });
+      r = K.pick(ctx);
+      if (r) try { localStorage.setItem(K.LOCK, K.lockSet(r, td)); } catch (e) {}
+    }
+    if (!r){ el.hidden = true; return; }
+    const c = r.c, m = K.mine(S, c), st = K.stats(S, td);
+    el.innerHTML = `<span class="ic" aria-hidden="true">?</span><span><b>오늘의 집값 맞혀 보기</b><small>${m ? `오늘 문제 ${m.ok ? '맞혔어요' : '풀었어요'}${st.cs > 1 ? ` · 연속 ${st.cs}번 정답` : ''} · 결과 다시 보기` : `${esc(K.WHY[r.why] || '')} · ${esc(c.a)} ${esc(c.b)}, 직전 거래 ${esc(K.won(c.pp))} → 이번엔 올랐을까요, 내렸을까요?`}</small></span><span class="go" aria-hidden="true">›</span>`;
     el.hidden = false;
   }
 
@@ -622,10 +632,11 @@ addEventListener('DOMContentLoaded', () => {
   function predictCard(){
     const el = $('pqCard'), now = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 16) + '+09:00';
     J(DATA + 'quiz/week.json').then(Wk => {
-      const open = ((Wk && Wk.open) || []).filter(q => q && q.close > now);
-      if (!open.length){ el.hidden = true; return; }
-      const q = open[0], c = String(q.close);
-      el.innerHTML = `<span class="ic" aria-hidden="true">%</span><span><b>이번 주 예측 맞히기</b><small>${esc(q.t)} · 문제 ${open.length}개 · ${+c.slice(5, 7)}월 ${+c.slice(8, 10)}일 마감</small></span><span class="go" aria-hidden="true">›</span>`;
+      const open = ((Wk && Wk.open) || []).filter(q => q && q.close > now), K = window.JDJ_QPICK;
+      const fresh = K ? K.wResults(K.wLoad((() => { try { return localStorage.getItem(K.WKEY); } catch (e) { return null; } })()), Wk).filter(x => x.fresh) : [];   // 이 기기에 남긴 내 예측 중 결과가 새로 나온 것
+      if (!open.length && !fresh.length){ el.hidden = true; return; }
+      const q = open[0], c = String((q || {}).close || '');
+      el.innerHTML = `<span class="ic" aria-hidden="true">%</span><span><b>${fresh.length ? '지난번 예측 결과가 나왔어요' : '이번 주 예측 맞히기'}</b><small>${fresh.length ? `${esc(fresh[0].q.t)}${fresh.length > 1 ? ` 외 ${fresh.length - 1}개` : ''} · 맞혔는지 확인하기` : `${esc(q.t)} · 문제 ${open.length}개 · ${+c.slice(5, 7)}월 ${+c.slice(8, 10)}일 마감`}</small></span><span class="go" aria-hidden="true">›</span>`;
       el.hidden = false;
     });
   }

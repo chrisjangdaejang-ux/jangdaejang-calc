@@ -12,13 +12,13 @@
 <meta name="apple-mobile-web-app-title" content="집예보">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="../assets/pwa.js?v=3" defer></script>
-<title>집값 맞혀 보기 — 이번 주 예측 · 하루 한 문제 | 집예보</title>
+<title>집값 맞혀 보기 — 오늘의 문제 · 이번 주 예측 | 집예보</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/quiz/">
-<meta name="description" content="이번 주 서울 아파트값은 오를까요? 공개 자료로 결과가 나오는 주간 예측 문제와, 실제 거래 금액을 맞히는 하루 한 문제를 풀어 보세요. 포인트는 재미용이에요.">
+<meta name="description" content="최근 실제 거래 한 건, 직전 거래보다 올랐을까요 내렸을까요? 한 번만 눌러 맞혀 보세요. 공개 자료로 결과가 나오는 이번 주 예측 문제도 있어요. 포인트는 재미용이에요.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="집예보">
-<meta property="og:title" content="집값 맞혀 보기 — 하루 한 문제">
-<meta property="og:description" content="최근 실제 거래 한 건, 얼마였을까요? 보기 4개 중에서 골라 보세요.">
+<meta property="og:title" content="오늘의 집값 맞혀 보기 — 올랐을까, 내렸을까">
+<meta property="og:description" content="직전 거래보다 올랐을까요, 내렸을까요? 한 번만 눌러 보세요.">
 <meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/quiz/">
 <meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/default.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -31,6 +31,7 @@
 <script src="../assets/auth.js?v=11"></script>
 <script src="../assets/share.js?v=15"></script>
 <script src="../assets/quiz-core.js?v=1"></script>
+<script src="../assets/quiz-pick.js?v=1"></script>
 <script src="../assets/predict-core.js?v=3"></script>
 <script src="../assets/alerts-core.js?v=5"></script>
 <script src="../assets/watch-core.js?v=2"></script>
@@ -131,6 +132,28 @@ h1{font-size:clamp(26px,6.6vw,32px);margin:2px 0 6px;letter-spacing:-.6px}
 .tierbox .sw2 input{width:22px;height:22px;accent-color:var(--blue);flex:none;margin:0}
 .hall{display:flex;align-items:center;justify-content:center;min-height:48px;margin:10px 0 0;border-radius:14px;border:1.5px solid var(--creamb);background:#fff;color:#8A6A12;font-weight:900;text-decoration:none}
 
+.wtag{display:inline-block;margin:0 0 6px;padding:2px 10px;border-radius:999px;background:#fff;border:1px solid var(--creamb);font-size:13px;font-weight:800;color:#8A6A12}
+.qc .prev{margin:0 0 10px;padding:10px 12px;border-radius:12px;background:#fff;font-size:16px;color:var(--sub);display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px}
+.qc .prev b{font-size:21px;color:var(--text);font-variant-numeric:tabular-nums}
+.qc .prev small{font-size:13.5px;color:var(--sub2)}
+.ud{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 0}
+.ud button{font:inherit;font-size:20px;font-weight:900;min-height:72px;border-radius:16px;border:2px solid var(--line);background:#fff;color:var(--text);cursor:pointer}
+.ud button[data-ud=up]{border-color:#F3C1B3;color:#C2410C}.ud button[data-ud=dn]{border-color:#C7D2FE;color:#3730A3}
+.ud button:hover{filter:brightness(.97)}
+.step2{margin:14px 0 0;padding:14px;border-radius:16px;border:1px solid var(--line)}
+.s2t{margin:0;font-size:17px;font-weight:900}.s2s{margin:2px 0 0;font-size:14px;color:var(--sub2)}
+.skip{display:block;margin:6px auto 0}
+.vs{margin:12px 0;display:grid;gap:6px}
+.vs div{padding:9px 12px;border-radius:12px;background:var(--gray2);border:1.5px solid transparent}
+.vs div.ok{border-color:var(--pos);background:var(--pos-l)}.vs div.no{border-color:var(--line)}.vs div.ans{background:var(--creamc);border-color:var(--creamb)}
+.vs dt{font-size:13px;font-weight:800;color:var(--sub2)}.vs dd{margin:2px 0 0;font-size:16px;font-weight:800;word-break:keep-all;line-height:1.5}
+.res .h3{font-size:16.5px;font-weight:900;margin:18px 0 0}.res .h3 small{font-size:12.5px;font-weight:500;color:var(--sub2)}
+.rcard{margin:14px 0 0;padding:18px 16px;border-radius:18px;background:linear-gradient(135deg,#4338CA,#3730A3);color:#fff;display:flex;flex-direction:column;gap:4px}
+.rcard .rk{font-size:13px;font-weight:700;opacity:.85}.rcard b{font-size:22px;font-weight:900}.rcard span{font-size:14.5px}.rcard .rs2{font-weight:800;color:#5EEAD4}
+.pqnews{border:1.5px solid var(--pos);background:var(--pos-l);border-radius:16px;padding:12px 14px;margin:0 0 12px;font-size:15px;line-height:1.6}
+.pqnews b.t{display:block;font-size:16px}
+.pc details.how{margin:0 0 10px}.pc details.how summary{min-height:36px;display:flex;align-items:center;cursor:pointer;font-size:13.5px;font-weight:800;color:var(--sub2)}
+.pc.hl{outline:3px solid var(--blue);outline-offset:2px}
 @media(min-width:900px){.wrap{max-width:1040px}.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,440px);gap:28px;align-items:start}}
 </style>
 <script src="../assets/back.js?v=1" defer></script>
@@ -141,17 +164,24 @@ h1{font-size:clamp(26px,6.6vw,32px);margin:2px 0 6px;letter-spacing:-.6px}
   <div class="badge plain">집값 맞혀 보기</div>
 </header>
 <main class="wrap">
-  <p class="eye">이번 주 예측 · 하루 한 문제</p>
+  <p class="eye">오늘의 문제 · 이번 주 예측</p>
   <h1>집값 맞혀 보기</h1>
-  <p class="lead">공개 자료로 결과가 나오는 이번 주 예측 문제와, 실제 거래 금액을 맞히는 하루 한 문제가 있어요.</p>
+  <p class="lead">실제 거래가 직전보다 올랐는지 맞히는 오늘의 문제와, 공개 자료로 결과가 나오는 이번 주 예측 문제가 있어요.</p>
   <div class="cols">
+  <section aria-labelledby="dqT" id="daily">
+  <h2 class="qhd" id="dqT">오늘의 집값 맞혀 보기</h2>
+  <div id="app" aria-live="polite"><p class="note">문제를 불러오고 있어요…</p></div>
+  <p class="note">문제는 국토교통부 아파트 매매 실거래가 공개 자료에서 최근 두 달 안 실제 거래로 골라요. 직거래, 같은 단지 주변 거래와 12% 넘게 다른 거래(특수 거래 의심·비교 거래 적음), 직전 거래와 금액이 같은 거래는 빼요. 내 관심 단지 → 내 집 근처 → 내 지역 → 그날 눈에 띄는 거래 순서로 이 기기 안에서 골라요. 기록은 이 기기에만 남고 서버로 보내지 않아요. 상품이나 혜택은 없어요.</p>
+  </section>
   <section class="pq" id="predict" aria-labelledby="pqT">
     <h2 id="pqT">이번 주 예측 맞히기</h2>
-    <p class="sub">한국부동산원 주간 아파트값, 인기 단지 실거래, 청약 경쟁률처럼 곧 발표되는 공개 숫자를 미리 골라 보세요. 결과가 나오면 맞혔는지 바로 알려 드려요.</p>
+    <p class="sub">곧 발표되는 공개 숫자를 보기 중에서 하나만 골라 보세요. 결과가 나오면 다음에 들렀을 때와 모닝 브리핑 화면에서 맞혔는지 알려 드려요.</p>
+    <div id="pqNews" aria-live="polite"></div>
     <div id="pqMe"></div>
     <div id="pqOpen" aria-live="polite"><p class="note">문제를 불러오고 있어요…</p></div>
     <div id="pqWait"></div>
     <div id="pqDone"></div>
+    <div id="pqShare"></div>
     <div id="pqBoard"></div>
     <div id="pqBadges"></div>
     <a class="hall" href="hall/" data-track="quiz_to_hall">명예의 전당 보기 ›</a>
@@ -159,86 +189,126 @@ h1{font-size:clamp(26px,6.6vw,32px);margin:2px 0 6px;letter-spacing:-.6px}
     <p class="note">문제와 정답은 공개 자료로만 정해요. 한국부동산원 주간 아파트 매매가격지수(목요일 발표), 국토교통부 아파트 매매 실거래가(계약 뒤 30일 신고 기한이 지난 뒤), 청약홈 청약접수 경쟁률을 써요. 보합·같은 값·거래 없음처럼 정답을 정할 수 없으면 무효로 하고, 포인트와 연속 기록에는 영향이 없어요. 맞히면 10점, 세 번 연속 맞힐 때부터 한 번마다 5점을 더해요. 순위에는 직접 정한 별명과 등급(숨길 수 있어요)만 보여요. 등급·보상 기준은 <a href="../terms/#quiz">이용약관</a>에 적었어요. 만든 문제와 정한 정답은 아래 '문제·정답 기록'에 그대로 남겨요.</p>
     <details class="note" id="pqAudit"><summary style="min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:800;color:var(--sub)">문제·정답 기록 보기</summary><div id="pqAuditBody"></div></details>
   </section>
-  <section aria-labelledby="dqT">
-  <h2 class="qhd" id="dqT">하루 한 문제</h2>
-  <p class="lead" style="margin-bottom:12px">최근 실제로 거래된 아파트 한 곳이에요. 얼마에 거래됐을지 보기에서 골라 보세요.</p>
-  <div id="app" aria-live="polite"><p class="note">문제를 불러오고 있어요…</p></div>
-  <p class="note">문제는 국토교통부 아파트 매매 실거래가 공개 자료에서 최근 두 달 안 실제 거래로 하루 한 번 골라요(직거래·같은 단지 주변 거래와 12% 넘게 다른 거래는 뺌). 하루 한 문제 기록은 이 기기에만 남고 서버로 보내지 않아요. 상품이나 혜택은 없어요.</p>
-  </section>
   </div>
 </main>
 <footer class="foot">과거 데이터 기반 정보예요. 자세한 분석 방법은 <a href="../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ <span data-site-name>집예보</span> · <a href="../">홈</a></footer>
 <script>
 var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+/* 오늘의 집값 맞혀 보기(2026-11-26 쉬운 문제): "직전 거래 ○○억이었어요. 이번 거래는?" → [올랐어요] [내렸어요] 한 번 누르기 → (원하면) 금액 보기 3개 → 정답·집예보 예측·내 기록.
+   문제 고르기·보기·기록 계산: assets/quiz-pick.js(JDJ_QPICK). 관심 단지·내 집·내 지역으로 이 기기 안에서만 고르고, 기록도 이 기기에만 남겨요(서버로 보내지 않음).
+   하루 한 문제 참여자 비율은 서버가 모으지 않아 보여 주지 않아요(지어내지 않음). */
 (function(){
 'use strict';
-const Z = window.JDJ_QUIZ, $ = id => document.getElementById(id);
+const K = window.JDJ_QPICK, $ = id => document.getElementById(id);
+if (!K) return;
 const SITE = ((window.JDJ_SITE || {}).SITE_NAME || '').trim() || '집예보';
+const SITE_URL = (String((window.JDJ_SITE || {}).SITE_URL || '').trim().replace(/\/+$/, '')) || 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc';
 const BASE = JB.SITE, DATA = JB.DATA + 'data/';
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
 const ls = { get(k){ try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v){ try { localStorage.setItem(k, v); } catch (e) {} } };
-const dKo = d => { const s = String(d); return `${s.slice(0, 4)}년 ${+s.slice(4, 6)}월 ${+s.slice(6, 8)}일`; };
+const ld = k => { try { return JSON.parse(ls.get(k) || 'null'); } catch (e) { return null; } };
+const J = u => fetch(u, {cache: 'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null);
 const stat = (n, p) => { try { if (window.jdjStat) jdjStat(n, p || {}); } catch (e) {} };
+const CFG = window.JDJ_SITE || {};
+const REWARD_ON = !!(CFG.QUIZ_REWARD_ENABLED && CFG.PAID_OPEN);     // 연속 정답 보상(브리핑 무료 기간 연장) — 결제가 열리기 전에는 꺼져 있어요
 document.querySelectorAll('[data-site-name]').forEach(el => { el.textContent = SITE; });
-let Q = null, S = Z.load(ls.get(Z.KEY));
+let S = K.load(ls.get(K.KEY)), C = null, WHY = '', NOTE = '';
+const UD = { up: '올랐어요 ⬆', dn: '내렸어요 ⬇' };
+const save = () => ls.set(K.KEY, JSON.stringify(S));
 
-function head(q){
-  return `<div class="qc"><p class="where">${esc([q.sd, q.gn, q.d].filter(Boolean).join(' '))}</p><p class="apt">${esc(q.a)}</p>
-    <ul class="facts"><li>전용 ${esc(q.ar)}㎡ (${esc(q.b)})</li>${q.f != null ? `<li>${esc(q.f)}층</li>` : ''}<li>${dKo(q.dt)} 계약</li></ul>
-    <p class="ask">얼마에 거래됐을까요?</p></div>`;
+function head(c){
+  return `<div class="qc"><p class="wtag">${esc(K.WHY[WHY] || K.WHY.news)}</p><p class="where">${esc([c.sd, c.gn, c.d].filter(Boolean).join(' '))}</p><p class="apt">${esc(c.a)}</p>
+    <ul class="facts"><li>전용 ${esc(c.ar)}㎡ (${esc(c.b)})</li>${c.f != null ? `<li>${esc(c.f)}층</li>` : ''}<li>${esc(K.md(c.dt))} 계약</li></ul>
+    <p class="prev">직전 거래 <b>${esc(K.won(c.pp))}</b>${c.ppd ? `<small>${esc(K.md(c.ppd))} 계약</small>` : ''}</p>
+    <p class="ask">한 번만 눌러 보세요. 이번 거래는 직전보다 올랐을까요, 내렸을까요?</p></div>`;
 }
 function draw(){
-  const q = Q.q, opts = Z.options(Q), done = Z.answered(S, Q, today), mine = done ? S.h[today].pick : null;
-  const ob = opts.map((o, i) => {
-    let cls = '', tag = '';
-    if (done){ if (o.ok){ cls = 'ok'; tag = '<small>실제 거래 금액</small>'; } else if (o.v === mine){ cls = 'no'; tag = '<small>내가 고른 금액</small>'; } }
-    return `<button type="button" data-i="${i}" class="${cls}"${done ? ' disabled' : ''}>${esc(Z.won(o.v))}${tag}</button>`;
-  }).join('');
-  let html = head(q) + `<div class="opts" role="group" aria-label="보기">${ob}</div>`;
-  if (done) html += result(mine === q.p);
-  $('app').innerHTML = html;
-  if (!done) $('app').querySelectorAll('.opts button').forEach(b => b.onclick = () => {
-    const o = opts[+b.dataset.i];
-    S = Z.record(S, Q, o.v, today); ls.set(Z.KEY, JSON.stringify(S));
-    stat('feature_use', {feature: 'quiz_answer', ok: o.ok ? 1 : 0});
-    draw();
-    const r = $('app').querySelector('.res'); if (r && r.scrollIntoView) r.scrollIntoView({behavior: 'smooth', block: 'start'});
-  });
+  const c = C, m = K.mine(S, c);
+  if (!m){
+    $('app').innerHTML = (NOTE ? `<p class="fun">${esc(NOTE)}</p>` : '') + head(c) + `<div class="ud" role="group" aria-label="오름·내림 고르기"><button type="button" data-ud="up">${UD.up}</button><button type="button" data-ud="dn">${UD.dn}</button></div>
+      <p class="next">한 번만 누르면 돼요. 정답은 바로 알려 드려요.</p>`;
+    $('app').querySelectorAll('[data-ud]').forEach(b => b.onclick = () => {
+      S = K.answer(S, c, b.dataset.ud, today); save();
+      stat('feature_use', {feature: 'quiz_answer', ok: S.a[c.id] && S.a[c.id].ok ? 1 : 0, why: WHY});
+      draw();
+    });
+    return;
+  }
+  if (m.v == null && !m.sk){
+    const opts = K.choices(c);
+    $('app').innerHTML = head(c) + `<div class="step2"><p class="s2t">한 번 더 해 볼까요? 실제 거래 금액은 얼마였을까요?</p><p class="s2s">맞히면 '시세 감각'(금액 오차)이 기록돼요. 건너뛰어도 괜찮아요.</p>
+      <div class="opts" role="group" aria-label="금액 보기">${opts.map(o => `<button type="button" data-v="${o.v}">${esc(K.won(o.v))}</button>`).join('')}</div>
+      <button type="button" class="lnkb skip" id="skipBtn">건너뛰고 정답 보기</button></div>`;
+    $('app').querySelectorAll('[data-v]').forEach(b => b.onclick = () => { S = K.answerPrice(S, c, +b.dataset.v); save(); stat('feature_use', {feature: 'quiz_price'}); draw(); scrollRes(); });
+    $('skipBtn').onclick = () => { S = K.answerPrice(S, c, 0, true); save(); draw(); scrollRes(); };
+    return;
+  }
+  $('app').innerHTML = head(c) + result(c, m);
   const sb = $('shareBtn');
   if (sb) sb.onclick = () => {
-    const url = 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/quiz/?utm_source=share&utm_medium=user_share&utm_campaign=quiz';
-    const n = Z.streakNow(S, today);
-    const text = `${SITE} 집값 맞혀 보기 — 오늘 문제: ${q.gn} ${q.a} ${q.b}, 얼마에 거래됐을까요?${n > 1 ? ` (나는 ${n}일째 푸는 중)` : ''}`;
+    const st = K.stats(S, today), url = `${SITE_URL}/quiz/?q=${encodeURIComponent(K.shareRef(c))}&utm_source=share&utm_medium=user_share&utm_campaign=quiz`;
+    const text = `${SITE} 집값 맞혀 보기 — ${c.gn} ${c.a} ${c.b}, 직전 거래보다 올랐을까요 내렸을까요? 나는 ${m.ok ? '맞혔어요' : '아쉽게 틀렸어요'}${st.cs > 1 ? ` (연속 ${st.cs}번 정답)` : ''}. 같은 문제 풀어 보세요.`;
     if (window.JDJ_SHARE && JDJ_SHARE.sendLink) JDJ_SHARE.sendLink({ title: `${SITE} 집값 맞혀 보기`, text, url, tool: 'quiz', place: 'result' });
   };
 }
-function result(ok){
-  const q = Q.q, E = Z.explain(Q), n = Z.streakNow(S, today);
-  const mineUrl = `${BASE}mine/?sd=${encodeURIComponent(q.sid)}&d=${encodeURIComponent([q.g, q.d, q.j, q.a].join('|'))}&b=${encodeURIComponent(q.b)}`;
-  const near = (Q.near || []).slice(0, 8);
-  return `<section class="res" aria-labelledby="resT"><h2 id="resT">${ok ? '맞았어요!' : '아쉬워요, 다음엔 맞혀 봐요'}</h2>
-    <p class="real">실제 거래 금액은 <b>${esc(Z.won(q.p))}</b>이에요.${q.hi ? ' 이 평형 신고가였어요.' : ''}</p>
-    <ul class="why">${E.lines.map(l => `<li>${esc(l)}</li>`).join('')}</ul>
-    ${near.length ? `<table class="near"><caption>같은 단지·같은 평형 앞뒤 1년 거래 (최근 ${near.length}건)</caption><thead><tr><th>계약일</th><th>층</th><th>금액</th></tr></thead><tbody>${near.map(x => `<tr><td>${esc(Z.ymd(x[0]))}</td><td>${x[2] != null ? esc(x[2]) + '층' : '-'}</td><td>${esc(Z.won(x[3]))}</td></tr>`).join('')}</tbody></table>` : ''}
-    <p class="src">출처: ${esc(Q.src || '국토교통부 아파트 매매 실거래가 공개 자료')} · ${esc(q.gn)} ${esc(q.d)} ${esc(q.a)} · 전용 ${esc(q.ar)}㎡ · ${q.f != null ? esc(q.f) + '층 · ' : ''}${esc(Z.ymd(q.dt))} 계약. 직거래는 비교에서 뺐어요. 층·향·수리 상태에 따라 실제 가격은 달라요.</p>
+function scrollRes(){ const r = $('app').querySelector('.res'); if (r && r.scrollIntoView) r.scrollIntoView({behavior: 'smooth', block: 'start'}); }
+function result(c, m){
+  const right = K.dir(c), st = K.stats(S, today), opts = K.choices(c), AI = K.ai(c, opts);
+  const mineUrl = `${BASE}mine/?sd=${encodeURIComponent(c.sid)}&d=${encodeURIComponent([c.g, c.d, c.j, c.a].join('|'))}&b=${encodeURIComponent(c.b)}`;
+  const aiTxt = AI ? (AI.dir ? `${AI.dir === 'up' ? '올랐을' : '내렸을'} 거라 봤어요` : '직전 거래와 비슷할 거라 봤어요') + ` · 집예보 시세 ${K.won(AI.v)}${AI.em ? `(${K.ym(AI.em)} 기준)` : ''}` : '';
+  const aiOk = AI && AI.dir ? AI.dir === right : null;
+  const rw = K.reward(S, REWARD_ON);
+  return `<section class="res" aria-labelledby="resT"><h2 id="resT">${m.ok ? '맞았어요!' : '아쉬워요, 이번엔 반대였어요'}</h2>
+    <p class="real">실제 거래 금액은 <b>${esc(K.won(c.p))}</b>이에요. ${esc(K.diffLine(c))}.${c.hi ? ' 이 평형 신고가였어요.' : ''}</p>
+    <dl class="vs">
+      <div class="${m.ok ? 'ok' : 'no'}"><dt>내 답</dt><dd>${UD[m.ud]}${m.v ? ` · ${esc(K.won(m.v))}${m.pk ? ' (금액도 정답)' : ` (차이 ${m.er}%)`}` : ''}</dd></div>
+      ${AI ? `<div class="${aiOk === true ? 'ok' : aiOk === false ? 'no' : ''}"><dt>${esc(SITE)} 예측</dt><dd>${esc(aiTxt)}</dd></div>` : ''}
+      <div class="ans"><dt>정답</dt><dd>${UD[right]} · ${esc(K.won(c.p))}</dd></div>
+    </dl>
+    ${AI ? `<p class="src">${esc(SITE)} 시세는 내 집 시세 화면과 같은 값이에요. 같은 단지·같은 평형의 최근 3개월 실제 거래 가운데 값을 이 집 넓이로 바꾼 값으로, 이 거래가 있기 전 달 기준이에요.</p>` : ''}
+    ${c.nr.length ? `<table class="near"><caption>같은 단지·같은 평형 다른 거래 (최근 ${c.nr.length}건)</caption><thead><tr><th>계약일</th><th>층</th><th>금액</th></tr></thead><tbody>${c.nr.map(x => `<tr><td>${esc(String(x[0]).replace(/(\d{4})(\d\d)(\d\d)/, '$1.$2.$3'))}</td><td>${x[1] != null ? esc(x[1]) + '층' : '-'}</td><td>${esc(K.won(x[2]))}</td></tr>`).join('')}</tbody></table>` : ''}
+    <p class="src">출처: 국토교통부 아파트 매매 실거래가 공개 자료 · ${esc(c.gn)} ${esc(c.d)} ${esc(c.a)} · 전용 ${esc(c.ar)}㎡. 직거래·튀는 거래는 문제로 내지 않아요. 층·향·수리 상태에 따라 실제 가격은 달라요.</p>
     <a class="go" href="${esc(mineUrl)}" data-track="quiz_to_mine">이 단지 시세·미래가치 보기 ›</a>
-    <div class="stk"><div><b>${n}일</b><small>연속 참여</small></div><div><b>${S.best}일</b><small>최고 기록</small></div><div><b>${S.ok}/${S.n}</b><small>맞힌 문제</small></div></div>
-    <button type="button" class="share" id="shareBtn">친구에게 오늘 문제 보내기</button>
+    <p class="h3">내 시세 감각 <small>이 기기에만 남아요</small></p>
+    <div class="stk"><div><b>${st.cs}번</b><small>연속 정답</small></div><div><b>${st.avg == null ? '-' : st.avg + '%'}</b><small>${st.m ? `최근 ${st.m}문제 금액 오차` : '금액 오차(보기 풀면)'}</small></div><div><b>${st.ok}/${st.n}</b><small>맞힌 문제</small></div></div>
+    ${rw ? `<p class="fun">연속 ${rw.need}번 맞힐 때마다 모닝 브리핑 무료 기간이 ${rw.days}일 늘어나요. 지금 ${rw.have}/${rw.need}번.</p>` : ''}
+    <div class="rcard" aria-label="공유 카드"><span class="rk">${esc(SITE)} · 오늘의 집값 맞혀 보기</span><b>${m.ok ? '오늘 문제 맞혔어요 ✓' : '오늘 문제 풀었어요'}</b><span>${esc(c.a)} ${esc(c.b)} · 직전 거래보다 올랐을까 내렸을까</span>${st.cs > 1 ? `<span class="rs2">연속 ${st.cs}번 정답</span>` : ''}</div>
+    <button type="button" class="share" id="shareBtn">친구에게 같은 문제 보내기</button>
+    ${WHY === 'share' ? `<a class="hall" href="./" data-track="quiz_shared_to_mine">내 맞춤 문제 풀기 ›</a>` : ''}
     <p class="next">내일 아침 새 문제가 나와요.</p></section>`;
 }
-fetch(DATA + 'today/quiz.json', {cache: 'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null).then(j => {
-  if (!j || !j.q || j.date !== today){ $('app').innerHTML = `<div class="empty"><b>오늘 문제를 준비하고 있어요.</b><br>새 실거래 자료가 올라오면 문제가 나와요. 잠시 뒤에 다시 들러 주세요.</div>`; return; }
-  Q = j; draw();
-});
+(async () => {
+  const qs = new URLSearchParams(location.search), sp = qs.get('q') || '';
+  let Q = await J(DATA + 'today/quiz.json'); if (Q && Q.date !== today) Q = null;
+  const W = window.JDJ_WATCH, watch = W && W.list ? W.list() : [];
+  const hm = ld('jdj_myhome'), homes = hm && Array.isArray(hm.list) ? hm.list.filter(x => x && x.code && x.apt).slice(0, 5) : [];
+  const ctx = { watch, homes, region: ld('jdj_home_region') || {}, Q, today, done: S.a, gf: {} };
+  const codes = K.needG(ctx), m = /^(\d{5})-/.exec(sp); if (m && codes.indexOf(m[1]) < 0) codes.push(m[1]);
+  const gfile = code => W && W.gfile ? W.gfile(code) : J(DATA + 'today/g/' + code + '.json');
+  const files = await Promise.all(codes.map(gfile)); codes.forEach((g, i) => { ctx.gf[g] = files[i]; });
+  if (sp){ const c = K.findShared(sp, ctx.gf, Q); if (c){ C = c; WHY = 'share'; } else NOTE = '공유받은 문제는 기간이 지나 오늘 문제를 보여 드려요.'; }
+  if (!C){
+    const lk = K.lockGet(ls.get(K.LOCK), today), r = lk || K.pick(Object.assign({}, ctx, { done: Object.assign({}, S.a) }));
+    if (r){ C = r.c; WHY = r.why; if (!lk) ls.set(K.LOCK, K.lockSet(r, today)); }
+  }
+  if (!C){ $('app').innerHTML = `<div class="empty"><b>오늘 문제를 준비하고 있어요.</b><br>새 실거래 자료가 올라오면 문제가 나와요. 잠시 뒤에 다시 들러 주세요.</div>`; return; }
+  draw();
+})();
 })();
 </script>
 <script>
 /* 이번 주 예측 맞히기(v55) — 문제·정답: 공개 data/quiz/week.json(엔진 predict_quiz.py) · 답·포인트·순위: 서버(agent-backend.gs quiz*) · 계산: assets/predict-core.js */
 (function(){
 'use strict';
-const P = window.JDJ_PRED_CORE, AU = window.JDJ_AUTH || null, W = window.JDJ_WATCH || null, $ = id => document.getElementById(id);
+const P = window.JDJ_PRED_CORE, AU = window.JDJ_AUTH || null, W = window.JDJ_WATCH || null, K = window.JDJ_QPICK || null, $ = id => document.getElementById(id);
 if (!P) return;
+/* 2026-11-26: 로그인하지 않아도 고를 수 있어요 — 내 답은 이 기기(jdj_pq_local)에 남기고, 결과가 나오면 다음 방문·모닝 브리핑 화면에서 알려 드려요. 로그인하면 지금처럼 서버에도 남아 포인트·순위에 올라가요. */
+const lsW = { get(){ try { return localStorage.getItem(K ? K.WKEY : 'jdj_pq_local'); } catch (e) { return null; } }, set(v){ try { localStorage.setItem(K ? K.WKEY : 'jdj_pq_local', JSON.stringify(v)); } catch (e) {} } };
+let LW = K ? K.wLoad(lsW.get()) : { p: {}, s: {} };
+const SHARED = new URLSearchParams(location.search).get('p') || '';
+const TODAY = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
+const SITE_URL = (String((window.JDJ_SITE || {}).SITE_URL || '').trim().replace(/\/+$/, '')) || 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc';
 const DATA = JB.DATA + 'data/', esc = P.esc, SITE = ((window.JDJ_SITE || {}).SITE_NAME || '').trim() || '집예보';
 const stat = (n, p) => { try { if (window.jdjStat) jdjStat(n, p || {}); } catch (e) {} };
 const nowK = () => new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 16) + '+09:00';
@@ -252,7 +322,7 @@ function call(action, body){
 }
 const md = s => { s = String(s || ''); return s.length >= 10 ? `${+s.slice(5, 7)}월 ${+s.slice(8, 10)}일` : ''; };
 const closeTxt = c => { const d = String(c || ''); const hm = d.slice(11, 16); return `${md(d)} ${hm === '23:59' ? '밤 12시' : hm}`; };
-const pick = id => ME && ME.answers ? (ME.answers.find(a => a.id === id) || {}).k : undefined;
+const pick = id => { const s = ME && ME.answers ? (ME.answers.find(a => a.id === id) || {}).k : undefined; return s !== undefined ? s : (LW.p[id] || {}).k; };
 const cnt = id => (PUB && PUB.counts && PUB.counts[id]) || {};
 function opsHtml(q, mode){
   const mine = pick(q.id), sh = P.share(q.opts, cnt(q.id)), tot = sh.reduce((a, r) => a + r.n, 0);
@@ -264,8 +334,8 @@ function opsHtml(q, mode){
 function srcHtml(q){ return q.src ? `<p class="sr">출처: ${q.src.url ? `<a href="${esc(q.src.url)}" target="_blank" rel="noopener">${esc(q.src.nm)}</a>` : esc(q.src.nm)}${q.u ? ` · <a href="${esc(q.u)}" target="_blank" rel="noopener">청약홈 공고</a>` : ''}</p>` : ''; }
 function card(q, mode){
   const mine = pick(q.id), H = ME && ME.score ? (ME.score.hist || []).find(x => x.id === q.id) : null;
-  return `<article class="pc" aria-label="${esc(q.t)}"><div class="kd"><span>${esc(P.KIND[q.kind] || '예측')}</span><span>${mode === 'open' ? esc(closeTxt(q.close)) + ' 마감' : mode === 'wait' ? '마감 · 발표 기다리는 중' : '결과 ' + esc(md(q.rat))}</span></div>
-    <h3>${esc(q.t)}</h3><p class="ex">${esc(q.s)}</p>${opsHtml(q, mode)}
+  return `<article class="pc${SHARED === q.id ? ' hl' : ''}" id="pq-${esc(q.id)}" aria-label="${esc(q.t)}"><div class="kd"><span>${esc(P.KIND[q.kind] || '예측')}</span><span>${mode === 'open' ? esc(closeTxt(q.close)) + ' 마감' : mode === 'wait' ? '마감 · 발표 기다리는 중' : '결과 ' + esc(md(q.rat))}</span></div>
+    <h3>${esc(q.t)}</h3>${opsHtml(q, mode)}<details class="how"><summary>정답은 이렇게 정해요</summary><p class="ex">${esc(q.s)}</p></details>
     ${q.ai ? `<p class="ai"><b>${esc(SITE)} 예측</b> ${esc(q.ai)}</p>` : ''}
     ${mode === 'wait' ? `<p class="rs">${mine != null ? `내 예측: <b>${esc((q.opts.find(o => o.k === mine) || {}).t || '')}</b>. ` : ''}결과가 나오면 맞혔는지 바로 알려 드려요.</p>` : ''}
     ${mode === 'done' ? `<p class="rs">${esc(P.resultLine(q, mine))}</p>${H && H.pts ? `<p class="pm">+${H.pts}점 받았어요</p>` : ''}` : ''}
@@ -274,7 +344,7 @@ function card(q, mode){
 function drawMe(){
   const el = $('pqMe');
   if (!loggedIn()) {
-    el.innerHTML = AU && AU.gate ? AU.gate('예측은 카카오 간편 로그인 뒤에 남길 수 있어요. 포인트·연속 적중·배지가 내 계정에 쌓여요.', '카카오 간편 로그인하고 예측하기', 'quiz_predict') : '';
+    el.innerHTML = AU && AU.gate ? AU.gate('로그인 없이도 고를 수 있어요(이 기기에만 남아요). 카카오 간편 로그인하면 포인트·연속 적중·배지가 내 계정에 쌓이고 순위에 올라가요.', '카카오 간편 로그인하고 포인트 받기', 'quiz_predict') : '';
     return;
   }
   if (!ME) { el.innerHTML = ''; return; }
@@ -318,15 +388,42 @@ function drawQs(){
   $('pqDone').innerHTML = done.length ? `<p class="h3">지난 결과</p>` + done.map(q => card(q, 'done')).join('') : '';
   document.querySelectorAll('#pqOpen .ops button').forEach(b => { b.onclick = () => answer(b.dataset.q, b.dataset.k, b); });
 }
+function keepLocal(id, k){
+  const q = (WK.open || []).find(x => x.id === id); if (!q || !K) return;
+  LW = K.wSet(LW, q, k, nowK()); lsW.set(LW);
+}
 function answer(id, k, btn){
-  if (!loggedIn()) { if (AU && AU.login) AU.login('quiz_predict'); return; }
+  if (!loggedIn()) { keepLocal(id, k); stat('feature_use', { feature: 'predict_answer_local', kind: (id.split('-')[0]) }); drawQs(); drawShare(); return; }
   if (BUSY) return; BUSY = true;
+  keepLocal(id, k);
   call('quizAnswer', { id, k }).then(j => {
     ME = Object.assign(ME || {}, { answers: j.answers || [] }); if (j.counts) { PUB = PUB || { counts: {} }; PUB.counts[id] = j.counts; }
     stat('feature_use', { feature: 'predict_answer', kind: (id.split('-')[0]) });
     drawQs();
   }).catch(e => { const p = btn.closest('.pc'); let m = p.querySelector('.err'); if (!m) { m = document.createElement('p'); m.className = 'rs err'; m.setAttribute('role', 'alert'); p.appendChild(m); } m.textContent = e.wait ? '예측 맞히기는 곧 열려요. 조금만 기다려 주세요.' : e.message; })
     .finally(() => { BUSY = false; });
+}
+/* 결과가 나온 내 답(이 기기 + 로그인 답) — 새 결과는 맨 위에 한 번 알려 드리고 '본 결과'로 표시 */
+function drawNews(){
+  if (!K || !WK) return;
+  const fr = K.wResults(LW, WK).filter(x => x.fresh);
+  if (!fr.length) { $('pqNews').innerHTML = ''; return; }
+  $('pqNews').innerHTML = `<div class="pqnews"><b class="t">지난번 예측 결과가 나왔어요</b>${fr.slice(0, 4).map(x => `${esc(x.q.t)} — ${x.ok === null ? '정답을 정할 수 없어 무효예요' : x.ok ? '<b>맞혔어요 ✓</b>' : '아쉽게 틀렸어요'}`).join('<br>')}</div>`;
+  LW = K.wSeen(LW, fr.map(x => x.q.id)); lsW.set(LW);
+  stat('feature_use', { feature: 'predict_result_seen', n: fr.length });
+}
+function drawShare(){
+  if (!K || !WK) { return; }
+  const sm = K.wSummary(LW, WK, TODAY), open = (WK.open || []).filter(q => P.isOpen(q, nowK()));
+  const ref = (open[0] || (WK.done || [])[0] || {}).id || '';
+  const head = sm.n ? `${sm.week ? '이번 주' : '최근'} ${sm.n}문제 중 ${sm.ok}개 맞혔어요` : Object.keys(LW.p).length ? '이번 주 예측을 남겼어요' : '';
+  if (!head) { $('pqShare').innerHTML = ''; return; }
+  $('pqShare').innerHTML = `<div class="rcard" aria-label="공유 카드"><span class="rk">${esc(SITE)} · 이번 주 예측 맞히기</span><b>${esc(head)}</b><span>${open.length ? `지금 받는 문제 ${open.length}개 · 같이 맞혀 봐요` : '다음 문제는 금요일 아침에 나와요'}</span></div>
+    <button type="button" class="share" id="pqShareBtn">친구에게 결과 보내기</button>`;
+  $('pqShareBtn').onclick = () => {
+    const url = `${SITE_URL}/quiz/?p=${encodeURIComponent(ref)}&utm_source=share&utm_medium=user_share&utm_campaign=predict#predict`;
+    if (window.JDJ_SHARE && JDJ_SHARE.sendLink) JDJ_SHARE.sendLink({ title: `${SITE} 이번 주 예측 맞히기`, text: `${head} — ${SITE}. 같은 문제 맞혀 보세요.`, url, tool: 'quiz', place: 'predict_result' });
+  };
 }
 function drawBoard(){
   const B = PUB && PUB.board;
@@ -349,7 +446,9 @@ async function load(){
   if (!WK) { $('pqOpen').innerHTML = `<div class="empty"><b>이번 주 문제를 준비하고 있어요.</b><br>새 문제는 매주 금요일 아침에 나와요. 잠시 뒤 다시 들러 주세요.</div>`; drawMe(); drawBadges(); return; }
   const [pub, me] = await Promise.all([call('quizBoard').catch(() => null), loggedIn() ? call('quizMine').catch(() => null) : null]);
   PUB = pub; ME = me;
-  drawMe(); drawQs(); drawBoard(); drawBadges();
+  if (K && ME && ME.answers) { LW = K.wMerge(LW, ME.answers, WK); lsW.set(LW); }
+  drawMe(); drawQs(); drawNews(); drawShare(); drawBoard(); drawBadges();
+  if (SHARED) { const el = document.getElementById('pq-' + SHARED); if (el && el.scrollIntoView) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 200); }
   $('pqAudit').addEventListener('toggle', () => { if ($('pqAudit').open && !$('pqAuditBody').dataset.ok) { $('pqAuditBody').dataset.ok = 1; fetch(DATA + 'quiz/log.json', {cache: 'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null).then(j => drawAudit(j && j.rows)); } });
 }
 if (AU && AU.onChange) AU.onChange(() => { load(); });
