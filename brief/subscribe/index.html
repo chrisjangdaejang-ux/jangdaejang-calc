@@ -12,7 +12,7 @@
 <title>집예보 모닝 브리핑 받기</title>
 <script>window.JDJ_CONFIG = { tool:'brief', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../../assets/track.js?v=2"></script>
-<script src="../../assets/stat.js?v=7"></script>
+<script src="../../assets/stat.js?v=8"></script>
 <script src="../../assets/config.js?v=11"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/auth.js?v=10"></script>
@@ -111,10 +111,16 @@ const sess = () => { try { return (JSON.parse(localStorage.getItem('jdj_auth') |
 const call = (action, body) => P.post(action, Object.assign({ s: sess() }, body || {}));
 const st = { adOn: false, amAd: false, areas: [], apts: [], plan: (B.PRICE[Q.get('p')] || {}).show ? Q.get('p') : 'brief', channel: 'email', trialUsed: false, active: false, kakao: false };
 const won = n => Number(n).toLocaleString('ko-KR');
+/* 어느 권유 자리에서 왔는지(cta= — assets/brief-cta.js 첫 화면 카드·맞춤 권유·바닥 띠, assets/ad-slot.js 의 집예보 소식 칸 slot_칸이름).
+   카카오 간편 로그인으로 화면을 다녀와도 이 탭 안에서는 기억해서, 체험을 시작하면 그 자리 이름으로 'sub' 를 남김(주소 이름 src 는 유입 채널이라 안 씀) */
+const CTA = (() => { const v = Q.get('cta') || '', ok = /^[a-z][a-z_]{2,40}$/.test(v); try { if (ok) sessionStorage.setItem('jdj_bcta_src', v); return ok ? v : (sessionStorage.getItem('jdj_bcta_src') || ''); } catch(e){ return ok ? v : ''; } })();
+const ctaStat = act => { if (!CTA) return; try { if (window.jdjStat) jdjStat('brief_cta', { cta_at: CTA, act }); } catch(e){} };
 
 async function boot(){
   if (!A || !A.on() || !A.user()) {
+    const pd = B.parseD(Q.get('d'));
     $('main').innerHTML = `<span class="tag">${esc(B.NAME)} 받기</span><h1>카카오 간편 로그인하고<br>동네를 골라 주세요</h1>
+      ${pd && pd.dn ? `<p class="lead"><b>${esc(pd.dn)}</b>을(를) 받을 동네로 미리 골라 둘게요. 로그인 뒤 바꿀 수도 있어요.</p>` : ''}
       <p class="lead">구독은 카카오 간편 로그인 회원만 할 수 있어요. 받을 동네는 내 계정에 저장돼서 언제든 바꿀 수 있어요. 카카오에서 받는 정보는 회원번호와 닉네임뿐이에요.</p>
       ${A && A.on() ? A.btn('카카오 간편 로그인하고 계속하기', 'brief_sub') : '<div class="msg err">로그인 기능을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</div>'}
       <p class="note">처음 ${B.TRIAL_DAYS}일은 무료예요. 결제 수단을 미리 등록하지 않고, 자동으로 결제되지도 않아요.</p>`;
@@ -238,7 +244,8 @@ async function boot(){
       if ($('trialBox')) $('trialBox').querySelector('.ts').innerHTML = ok;
       ($('trialBox') || $('msg')).scrollIntoView({ behavior: 'smooth', block: 'start' });
       try { localStorage.setItem('jdj_brief_sub', '1'); } catch(e){}
-      if (window.JDJ && JDJ.track) JDJ.track('brief_trial_start', { n: st.areas.length });
+      if (window.JDJ && JDJ.track) JDJ.track('brief_trial_start', { n: st.areas.length, cta: CTA || '' });
+      ctaStat('sub'); try { sessionStorage.removeItem('jdj_bcta_src'); } catch(e){}
     } catch(e){ tBtns().forEach(b => busy(b, false, trialLbl)); if (fieldErr(e)) return;
       msg(esc(e.message), 1);
       /* 누른 버튼 바로 아래에도 빨간 안내(아래 고정 버튼이면 안내 칸으로 스크롤) — assets/savefb.js */

@@ -20,6 +20,8 @@
   const stat = (n, p) => { try { if (root.jdjStat) root.jdjStat(n, p || {}); } catch (e) {} };
   let MEM = null;                                          // 저장이 막힌 브라우저용(이번 화면에서만)
   const subs = [];
+  /* 관심 단지 ★ 직후 모닝 브리핑 한 줄(assets/brief-cta.js) — 이 화면에 없으면 불러옴 */
+  if (!document.querySelector('script[src*="brief-cta.js"]')) { const bs = document.createElement('script'); bs.src = BASE + 'assets/brief-cta.js?v=1'; bs.defer = true; document.head.appendChild(bs); }
 
   function list() { if (MEM) return MEM.slice(); return C.parse(ls.get(C.KEY)); }
   function save(l) { if (!ls.set(C.KEY, C.dump(l))) MEM = l.slice(); else MEM = null; subs.forEach(f => { try { f(l); } catch (e) {} }); paintStars(); badge(); }
@@ -98,7 +100,9 @@
     save(r.list);
     setOps(C.addOp(ops(), r.added ? 'add' : 'del', p, Date.now()));
     stat(r.added ? 'watch_add' : 'watch_remove');
-    toast(r.added ? `관심 목록에 넣었어요. <a href="${BASE}my/watch/">관심 목록 보기 ›</a>` : '관심 목록에서 뺐어요.');
+    /* 넣은 직후 한 번: 이 동네 새 거래를 모닝 브리핑으로(assets/brief-cta.js — 구독 중이거나 이 화면에서 이미 권유했으면 빈 줄) */
+    const bl = r.added && root.JDJ_BRIEFCTA && root.JDJ_BRIEFCTA.starLine ? root.JDJ_BRIEFCTA.starLine(C.clean(p) || p) : '';
+    toast(r.added ? `관심 목록에 넣었어요. <a href="${BASE}my/watch/">관심 목록 보기 ›</a>${bl}` : '관심 목록에서 뺐어요.', bl ? 7000 : 0);
     return push().then(() => r);
   }
   const LB0 = '관심 목록에 넣기', LB1 = '관심 목록에 있어요';
@@ -128,11 +132,11 @@
 
   /* ---------- 알림 줄 ---------- */
   let toastT = 0;
-  function toast(html) {
+  function toast(html, ms) {
     let el = document.getElementById('jwToast');
     if (!el) { el = document.createElement('div'); el.id = 'jwToast'; el.className = 'jw-toast'; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite'); document.body.appendChild(el); }
     el.innerHTML = html; el.hidden = false;
-    clearTimeout(toastT); toastT = setTimeout(() => { el.hidden = true; }, 4000);
+    clearTimeout(toastT); toastT = setTimeout(() => { el.hidden = true; }, ms || 4000);
   }
 
   /* ---------- 어제·오늘 새 거래(today/g) ---------- */

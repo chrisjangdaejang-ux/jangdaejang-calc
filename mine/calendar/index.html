@@ -23,7 +23,7 @@
 <script>window.JDJ_CONFIG = { tool:'calendar', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../../assets/biz.js?v=3" defer></script>
 <script src="../../assets/track.js?v=2"></script>
-<script src="../../assets/stat.js?v=7"></script>
+<script src="../../assets/stat.js?v=8"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/config.js?v=11"></script>
 <script src="../../assets/auth.js?v=10"></script>
@@ -36,7 +36,7 @@
 <script src="../../assets/loan-core.js?v=5"></script>
 <script src="../../assets/alerts-core.js?v=3"></script>
 <script src="../../assets/watch-core.js?v=2"></script>
-<script src="../../assets/watch.js?v=8"></script>
+<script src="../../assets/watch.js?v=9"></script>
 <script src="../../assets/move-core.js?v=1"></script>
 <script src="../../assets/move.js?v=1"></script>
 <script src="../../assets/tabbar.js?v=5" defer></script>
@@ -350,7 +350,8 @@ function taForm(x, i, c){
       <div class="dv"><label class="fl" style="margin:0"><span>지금 내 보증금(만원, 선택)</span><input type="text" inputmode="numeric" data-ta-dep value="${esc(dep)}" placeholder="예: 60000"></label>
       ${T.buy ? `<label class="fl" style="margin:6px 0 0"><span>보유 현금(만원, 선택)</span><input type="text" inputmode="numeric" data-ta-cash value="${esc(ME.cash || '')}" placeholder="예: 10000"></label><label class="fl" style="margin:6px 0 0"><span>연소득(만원, 선택)</span><input type="text" inputmode="numeric" data-ta-inc value="${esc(ME.inc || '')}" placeholder="예: 7000"></label>` : ''}
       <small>보증금·현금·소득은 이 기기에만 저장해요. 서버·주소·공유 링크로 보내지 않아요.</small></div>
-      <p class="sm" style="margin:8px 0 0">메일은 <a href="${BASE}my/alerts/">알림 센터</a>에서 메일 받기를 신청(동의)한 분께 보내요. 이미 신청하셨다면 따로 할 일은 없어요.</p></div>` : ''}</div>`;
+      <p class="sm" style="margin:8px 0 0">메일은 <a href="${BASE}my/alerts/">알림 센터</a>에서 메일 받기를 신청(동의)한 분께 보내요. 이미 신청하셨다면 따로 할 일은 없어요.</p></div>
+      <div data-bcta="ta_done" data-g="${esc((T.areas[0] || {}).g || x.code || '')}" data-dn="${esc((T.areas[0] || {}).d || x.dong || '')}" hidden></div>` : ''}</div>`;
 }
 const num = v => { const n = parseInt(String(v || '').replace(/[^0-9]/g, ''), 10); return n > 0 && n < 10000000 ? n : 0; };
 function setTa(k, fn){ const c = CAL.h[k]; if (!c) return; const T = C.cleanTa(c.ta || {}); fn(T); c.ta = C.cleanTa(T); touch(); drawHomes(); }

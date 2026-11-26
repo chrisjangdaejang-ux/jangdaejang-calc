@@ -1,6 +1,6 @@
 /* 광고 칸(assets/ad-slot.js) 자동 확인 — 실행: node tools/ad-slot-test.js </dev/null
    ① 세금 계산 결과 안에는 칸이 없다  ② 휴대폰 한 화면 광고 최대 2개  ③ 유료 광고가 없으면 자체 광고(빈 칸 없음)
-   ④ 어떤 칸이든 '광고' 표시  ⑤ 화면별 업종 규칙(세무사 정액만·심사 거절 업종 차단·기간)  ⑥ 페이지마다 스크립트·칸 이름·문서 표가 맞음 */
+   ④ 외부(유료) 광고 칸은 언제나 '광고' 표시 · 집예보 자체 안내는 '집예보 소식'  ⑤ 화면별 업종 규칙(세무사 정액만·심사 거절 업종 차단·기간)  ⑥ 페이지마다 스크립트·칸 이름·문서 표가 맞음 */
 const fs = require('fs'), path = require('path');
 const A = require('../assets/ad-slot.js');
 const ROOT = path.join(__dirname, '..');
@@ -39,7 +39,8 @@ const doc = read('docs/ad_slots.md');
   const last = Math.max(...secs.map(x => x.b)), end = ss.find(s => s.id === 'tax_end');
   check('세금: 끝 칸은 마지막 계산 화면이 끝난 뒤', end && end.at > last, end && end.at - last);
   check('세금: 업종은 세무사만', JSON.stringify(A.CATS.tax.ind) === '["세무사"]', A.CATS.tax.ind);
-  check('세금: 칸 안 문구에 "세금 계산 결과와 관계없는 광고"', A.html(A.houseAd('brief'), 'tax_end', 'tax').includes('세금 계산 결과와 관계없는 광고예요'), '');
+  check('세금: 유료 광고 칸 안 문구에 "세금 계산 결과와 관계없는 광고"', A.html(ad({ cat: 'tax', industry: '세무사' }), 'tax_end', 'tax').includes('세금 계산 결과와 관계없는 광고예요'), '');
+  check('세금: 집예보 소식(자체 안내)에는 광고 문구 없음', !A.html(A.houseAd('brief'), 'tax_end', 'tax').includes('광고'), A.html(A.houseAd('brief'), 'tax_end', 'tax'));
   check('결과 칸 금지 목록에 #res·#result·.result·[aria-live]', ['#res', '#result', '.result', '[aria-live]'].every(x => A.BAN.split(',').includes(x)), A.BAN);
 }
 
@@ -73,13 +74,16 @@ const doc = read('docs/ad_slots.md');
   check('https 가 아닌 링크 → 자체 광고', A.pick([ad({ cat: 'mine', industry: '이사', link: 'http://x.com' })], 'mine_end', 'mine', TODAY).house, '');
 }
 
-/* ④ '광고' 표시 */
+/* ④ '광고' 표시(외부 광고) · '집예보 소식'(자체 안내) */
 {
   const paid = ad({ cat: 'jeonse', industry: '보증보험', image: 'https://example.com/a.png' });
   for (const c of Object.keys(A.CATS)) for (const top of [false, true]) for (const a of [A.houseAd(A.CATS[c].house[0]), paid]) {
     const h = A.html(a, c + '_x', c, top);
-    check(`${c}${top ? ' 상단' : ''} ${a.house ? '자체' : '유료'}: '광고' 표시`, /<span class="jas-tag">광고<\/span>/.test(h), '');
+    if (a.house) check(`${c}${top ? ' 상단' : ''} 자체: '광고' 대신 '집예보 소식' 표시`, /<span class="jas-tag jas-own">집예보 소식<\/span>/.test(h) && !/<span class="jas-tag">광고<\/span>/.test(h) && !h.includes('sponsored'), h);
+    else check(`${c}${top ? ' 상단' : ''} 유료: '광고' 표시`, /<span class="jas-tag">광고<\/span>/.test(h) && !h.includes('jas-own'), '');
   }
+  check('자체 브리핑 안내 → 구독 화면, 어느 칸에서 왔는지(cta=slot_칸)', /href="[^"]*brief\/subscribe\/\?cta=slot_home_end"/.test(A.html(A.houseAd('brief'), 'home_end', 'home')) && /data-bcta-at="slot_home_end"/.test(A.html(A.houseAd('brief'), 'home_end', 'home')), A.html(A.houseAd('brief'), 'home_end', 'home'));
+  check('유료 광고 링크에는 cta 를 붙이지 않음', !A.html(paid, 'jeonse_end', 'jeonse').includes('cta='), '');
   check('유료 광고 링크는 sponsored·새 창', /rel="sponsored noopener nofollow"/.test(A.html(paid, 'x', 'jeonse')), '');
   check('누름 기록용 data-track·data-ad-id', /data-track="adslot_jeonse_end" data-ad-id="a1"/.test(A.html(paid, 'jeonse_end', 'jeonse')), '');
   check('광고 문구는 이스케이프', !A.html(ad({ title: '<b>x</b>' }), 'x', 'home').includes('<b>x</b>'), '');
@@ -138,7 +142,7 @@ const doc = read('docs/ad_slots.md');
   const j = JSON.parse(read('data/ads.json'));
   check('data/ads.json: ads 배열', Array.isArray(j.ads), typeof j.ads);
   const sw = read('sw.js');
-  check('sw.js: ad-slot.js v5·aplus v46 미리 저장', sw.includes('/assets/ad-slot.js?v=5') && sw.includes('/assets/aplus.css?v=46'), '');
+  check('sw.js: ad-slot.js v5·aplus v46 미리 저장', sw.includes('/assets/ad-slot.js?v=6') && sw.includes('/assets/aplus.css?v=46'), '');
   const adp = read('ad/index.html');
   check('/ad/: 광고 위치 안내 칸', adp.includes('id="slots"') && adp.includes('광고 위치 안내'), '');
   const slotSec = adp.slice(adp.indexOf('id="slots"'), adp.indexOf('id="target"'));

@@ -1,14 +1,16 @@
 /* 집예보 공용 광고 칸 (assets/ad-slot.js) — 위치 계획: docs/ad_slots.md · 광고 상품: /ad/
    페이지에 넣는 법
      <div data-ad-slot="mine_end" data-ad-cat="mine" data-ad-after="#res" hidden></div>
-     <script src="assets/ad-slot.js?v=5" defer></script>
+     <script src="assets/ad-slot.js?v=6" defer></script>
    - data-ad-slot  : 칸 이름(docs/ad_slots.md 표의 slot id)
    - data-ad-cat   : 화면 종류(아래 CATS) — 받을 수 있는 업종과 집예보 안내 광고를 정함
    - data-ad-skip-if : 이 선택자가 보이면 칸을 숨김(예: 모닝 브리핑 전용 광고 자리가 그날 광고로 채워졌을 때)
    - data-ad-after : 이 칸보다 먼저 이용자가 봐야 하는 결과(선택자). 결과가 보일 때만 칸을 보여 줌
    - data-ad-list + data-ad-every : 긴 목록 사이 칸. 목록(선택자)의 N번째 항목 뒤에 한 번만 끼움(목록을 다시 그리면 다시 끼움)
    원칙
-   - 모든 칸에 '광고' 표시. 유료 광고가 없으면 빈 칸 대신 그 화면에 맞는 집예보 안내 광고를 보여 줌
+   - 외부(유료) 광고 칸에는 언제나 '광고' 표시. 유료 광고가 없으면 빈 칸 대신 그 화면에 맞는 집예보 자체 서비스 안내를 보여 주는데,
+     이건 광고가 아니라 집예보 서비스라 '광고' 대신 '집예보 소식' 꼬리표와 서비스 카드 모양으로 그림(사람들이 광고로 보고 건너뛰지 않게).
+     칸 자리·높이·휴대폰 한 화면 개수 규칙은 그대로라, 그 자리에 유료 광고가 들어오면 '광고' 표시로 바로 바뀜
    - 결과·계산 칸([aria-live]·.result·#res·#result·#report 안)에는 절대 그리지 않음 — 특히 세금 계산 결과
    - data-ad-top : 화면 위쪽 한 줄 배너(제목·검색 바로 아래). 높이를 처음부터 잡아 두어 그려져도 아래 내용이 튀지 않음
    - 휴대폰(폭 720px 미만)에서는 한 화면(스크롤 한 번 분량)에 광고 최대 2개(분양 목록 상단 광고 .jad 포함). 상단 배너가 먼저 자리를 잡고,
@@ -56,7 +58,7 @@
   function houseAd(kind) {
     var S = site();
     var H = {
-      brief: { title: S + ' 모닝 브리핑 7일 무료', text: '매일 아침 관심 동네의 새 실거래·급매·청약 소식을 받아 보세요. 자동 결제는 없어요.', link: B + 'brief/', cta: '7일 무료로 받아 보기' },
+      brief: { title: S + ' 모닝 브리핑 7일 무료', text: '매일 아침 7시, 관심 동네의 새 실거래·신고가·급매·청약 소식을 받아 보세요. 자동 결제는 없어요.', link: B + 'brief/subscribe/', cta: '7일 무료로 받아 보기' },
       agent: { title: S + ' 중개사 플러스', text: '손님에게 보낼 아침 브리핑 카드, 매물 설명서, 주간 블로그·인스타 글을 한 번에 준비해 드려요.', link: B + 'brief/subscribe/?p=brief_pro_plus', cta: '중개사 플러스 보기' },
       dev:   { title: S + ' 분양가 비교 리포트', text: '시행사·분양대행사용 — 예정 분양가가 주변 시세와 비교해 어디쯤인지 숫자로 보여 드려요.', link: B + 'pro/developer/', cta: '리포트 보기' },
       loan:  { title: '내 대출 한도는 얼마?', text: '집값·지역·연소득만 넣으면 LTV·DSR 중 무엇이 한도를 막는지 바로 알려 드려요. 회원가입 없이 무료.', link: B + 'loan/', cta: '대출 한도 계산' },
@@ -141,24 +143,35 @@
 
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var cut = function (s, n) { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
-  /** 칸 안쪽 HTML — 어떤 경우에도 '광고' 표시가 들어감 */
+  var OWN_TAG = '<span class="jas-tag jas-own">' + '집예보 소식' + '</span>';
+  /* 집예보 모닝 브리핑 안내는 구독 화면으로 바로 — 어느 칸에서 왔는지(cta=slot_칸이름)를 붙여 구독까지 이어졌는지 셈(brief/subscribe · assets/brief-cta.js) */
+  function houseLink(ad, slot) {
+    var l = String(ad.link || '');
+    if (ad.id !== 'house_brief' || !/^[a-z][a-z_]{2,30}$/.test(String(slot || ''))) return l;
+    return l + (l.indexOf('?') < 0 ? '?' : '&') + 'cta=slot_' + slot;
+  }
+  /** 칸 안쪽 HTML — 외부 광고는 어떤 경우에도 '광고' 표시, 집예보 자체 서비스 안내는 '집예보 소식' 표시 */
   function html(ad, slot, cat, top) {
     var c = CATS[cat] || {}, house = !!ad.house;
     var reg = !house && String(ad.industry || '') === LOAN_IND && okRegno(ad.regno) ? REGNO_LABEL + ' ' + String(ad.regno).trim() : '';
-    if (top) {   /* 상단 한 줄 배너: [광고] 제목 · 설명 … 보기 › — 높이 고정 */
-      return '<a class="jas-c jas-bar" href="' + esc(ad.link) + '"' + (house ? '' : ' target="_blank" rel="sponsored noopener nofollow"') + ' data-track="adslot_' + esc(slot) + '" data-ad-id="' + esc(ad.id) + '">'
-        + '<span class="jas-tag">광고</span><span class="jas-t"><b>' + esc(cut(ad.title, 24)) + '</b><small>' + esc(reg || cut(ad.text, 60)) + '</small></span>'
+    var tag = house ? OWN_TAG.replace('집예보', esc(site())) : '<span class="jas-tag">광고</span>';
+    var link = house ? houseLink(ad, slot) : ad.link;
+    var bc = house && ad.id === 'house_brief' ? ' data-bcta-at="slot_' + esc(slot) + '"' : '';
+    if (top) {   /* 상단 한 줄 배너: [광고]/[집예보 소식] 제목 · 설명 … 보기 › — 높이 고정 */
+      return '<a class="jas-c jas-bar" href="' + esc(link) + '"' + (house ? '' : ' target="_blank" rel="sponsored noopener nofollow"') + ' data-track="adslot_' + esc(slot) + '" data-ad-id="' + esc(ad.id) + '"' + bc + '>'
+        + tag + '<span class="jas-t"><b>' + esc(cut(ad.title, 24)) + '</b><small>' + esc(reg || cut(ad.text, 60)) + '</small></span>'
         + '<span class="jas-go">' + esc(cut(ad.cta || '자세히', 12)) + ' ›</span></a>';
     }
+    var sun = '<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="4"/><path d="M12 3v2M4.9 6.9l1.4 1.4M19.1 6.9l-1.4 1.4M3 13h2M19 13h2M4 20h16"/></svg>';
     var img = !house && okLink(ad.image) ? '<img class="jas-img" src="' + esc(ad.image) + '" alt="" width="56" height="56" loading="lazy">'
-      : '<span class="jas-img jas-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg></span>';
+      : '<span class="jas-img jas-ic" aria-hidden="true">' + (ad.id === 'house_brief' ? sun : '<svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>') + '</span>';
     var rel = house ? '' : ' target="_blank" rel="sponsored noopener nofollow"';
-    return '<div class="jas-h"><span class="jas-tag">광고</span><small>' + (house ? esc(site()) + ' 서비스 안내' : esc(cut(ad.advertiser, 24)) + ' · 광고주가 비용을 내고 싣는 광고예요') + '</small></div>'
-      + '<a class="jas-c" href="' + esc(ad.link) + '"' + rel + ' data-track="adslot_' + esc(slot) + '" data-ad-id="' + esc(ad.id) + '">'
+    return '<div class="jas-h">' + tag + '<small>' + (house ? esc(site()) + '가 직접 만든 서비스예요' : esc(cut(ad.advertiser, 24)) + ' · 광고주가 비용을 내고 싣는 광고예요') + '</small></div>'
+      + '<a class="jas-c" href="' + esc(link) + '"' + rel + ' data-track="adslot_' + esc(slot) + '" data-ad-id="' + esc(ad.id) + '"' + bc + '>'
       + img + '<span class="jas-t"><b>' + esc(cut(ad.title, 24)) + '</b><small>' + esc(cut(ad.text, 60)) + '</small></span>'
       + '<span class="jas-go">' + esc(cut(ad.cta || '자세히', 12)) + ' ›</span></a>'
       + (reg ? '<p class="jas-n jas-reg">' + esc(cut(ad.advertiser, 24)) + ' · ' + esc(reg) + '</p>' : '')
-      + (c.note ? '<p class="jas-n">' + esc(c.note) + '</p>' : '');
+      + (c.note && !house ? '<p class="jas-n">' + esc(c.note) + '</p>' : '');
   }
 
   var api = { CATS: CATS, BLOCK: BLOCK, LOAN_IND: LOAN_IND, REGNO_LABEL: REGNO_LABEL, okRegno: okRegno, allowed: allowed, pick: pick, regionScore: regionScore, normRegion: normRegion, conflicts: conflicts, html: html, houseAd: houseAd, kstToday: kstToday, tooMany: tooMany, MOBILE_MAX: MOBILE_MAX, BAN: '[aria-live],.result,#res,#result,#report,#gRes,output' };
@@ -177,6 +190,19 @@
   var agLog = function (t, id) { try { var A = root.JDJ_AGENTS; if (A && A.log && id) A.log(t, id, ''); } catch (e) {} };
   var mobile = function () { return (root.innerWidth || 9999) < MOBILE_W; };
   var BAN = api.BAN;
+  /* 집예보 소식(자체 서비스 안내) 카드 모양 — 외부 광고(회색 칸·'광고' 표시)와 한눈에 구분되게 */
+  (function () {
+    if (document.getElementById('jasOwnCss')) return;
+    var st = document.createElement('style'); st.id = 'jasOwnCss';
+    st.textContent = '.jas.jas-house{background:#F3F7FF;border-color:#D6E3FF}.jas.jas-top.jas-house{background:none;border:0}'
+      + '.jas-house .jas-c{border-color:#C9D8FF;box-shadow:0 1px 6px rgba(37,96,232,.06)}.jas-house .jas-c:hover{border-color:#2560E8}'
+      + '.jas-tag.jas-own{background:#2560E8;border-color:#2560E8;color:#fff}'
+      + '.jas-house [data-ad-id="house_brief"]{background:#FFF9EA;border-color:#EED9A4}.jas-house [data-ad-id="house_brief"]:hover{border-color:#D9B95C}'
+      + '.jas-house [data-ad-id="house_brief"] .jas-ic{background:#FFE7A8}.jas-house [data-ad-id="house_brief"] .jas-ic svg{stroke:#9A6B00}';
+    document.head.appendChild(st);
+  })();
+  /* 모닝 브리핑 권유(assets/brief-cta.js): 광고 칸이 있는 화면이면 함께 불러옴(맞춤 권유·바닥 띠·누름 기록) */
+  if (!document.querySelector('script[src*="brief-cta.js"]')) { var bs = document.createElement('script'); bs.src = B + 'assets/brief-cta.js?v=1'; bs.defer = true; document.head.appendChild(bs); }
   /* 휴대폰 한 화면(화면 높이만큼) 안에 이 칸 말고 광고가 이미 2개면 true — 상단 배너가 먼저 자리를 잡고, 나머지 칸이 비켜 감 */
   function crowded(el) {
     if (!mobile()) return false;
@@ -238,6 +264,7 @@
           var k = el.dataset.adSlot + '|' + a.getAttribute('data-ad-id'); if (SEEN[k]) return; SEEN[k] = 1;
           var house = /^house_/.test(a.getAttribute('data-ad-id'));
           track('ad_slot_view', { slot_id: el.dataset.adSlot, ad_id: a.getAttribute('data-ad-id'), house: house ? 1 : 0, cat: el.dataset.adCat, region: el._rgv || '전국' });
+          if (a.getAttribute('data-ad-id') === 'house_brief') try { if (root.jdjStat) root.jdjStat('brief_cta', { cta_at: 'slot_' + el.dataset.adSlot, act: 'view' }); } catch (x) {}
           if (!house) agLog('adv', a.getAttribute('data-ad-id'));
         }, 1000);
       });
@@ -252,7 +279,11 @@
     var top = el.hasAttribute('data-ad-top');
     el.classList.add('jas'); if (top) el.classList.add('jas-top');
     el.setAttribute('role', 'complementary'); el.setAttribute('aria-label', '광고');
-    var put = function (ad) { el.innerHTML = html(ad, slot, cat, top); el.hidden = false; watch(el); };
+    var put = function (ad) {
+      el.innerHTML = html(ad, slot, cat, top); el.hidden = false;
+      el.classList.toggle('jas-house', !!ad.house); el.setAttribute('aria-label', ad.house ? site() + ' 소식' : '광고');
+      watch(el);
+    };
     if (!el.firstChild) put(pick([], slot, cat, '', used(el))); else el.hidden = false;
     if (!top && crowded(el)) { el.hidden = true; return; }
     el._put = put; fill(el);

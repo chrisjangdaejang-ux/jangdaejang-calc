@@ -204,7 +204,7 @@ check('알림톡은 꺼진 자리만(RP_ALIMTALK=false)', /const RP_ALIMTALK = f
 
 /* ---------- ④ 화면 ---------- */
 const page = read('my/report/index.html'), center = read('my/alerts/index.html'), sw = read('sw.js');
-check('성적표 화면: 계산 블록·내 집·관심 부품을 싣고 서비스 이름은 설정에서', /report-core\.js\?v=5/.test(page) && /mine-core\.js/.test(page) && /watch\.js\?v=8/.test(page) && /SITE_NAME/.test(page) && !/집예보/.test(page.replace("|| '집예보'", '')) && !/장대장부동산그룹/.test(page));
+check('성적표 화면: 계산 블록·내 집·관심 부품을 싣고 서비스 이름은 설정에서', /report-core\.js\?v=5/.test(page) && /mine-core\.js/.test(page) && /watch\.js\?v=9/.test(page) && /SITE_NAME/.test(page) && !/집예보/.test(page.replace("|| '집예보'", '')) && !/장대장부동산그룹/.test(page));
 check('성적표 화면: 경쟁 앱 이름·보장 문구 없음', !/호갱|직방|리치고|아실|다방|네이버 부동산|KB부동산/.test(page) && !/보장|무조건|확실히 오/.test(page));
 check('성적표 화면: 대출·보정은 이 기기(jdj_report_me)와 내 계정에만, 공유 주소에는 공개 칸만', /jdj_report_me/.test(page) && /d\.rp = ME/.test(page) && /shareUrl = p => `\$\{location\.origin\}\$\{BASE\}my\/report\/\?sd=/.test(page) && !/shareUrl[^\n]*loan/.test(page));
 check('성적표 화면: 보정 값은 공식 숫자와 따로("내가 적은 정보")', (page.match(/내가 적은 정보/g) || []).length >= 2 && /공식 숫자와 점수는 바뀌지 않아요/.test(page));

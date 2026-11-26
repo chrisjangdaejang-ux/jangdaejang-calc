@@ -45,7 +45,7 @@
   const regionGroup = v => RG[v] || '';
 
   /* ---------- 허용 목록 ---------- */
-  const EV = {feature_use:6, interest_profile:15, chungyak_result:3, report_share:5, compare_use:3, ad_view:6, ad_click:10, share_click:10, share_visit:1, ask_use:8, nar_open:12}; // 이벤트별 페이지당 상한
+  const EV = {feature_use:6, interest_profile:15, chungyak_result:3, report_share:5, compare_use:3, ad_view:6, ad_click:10, share_click:10, share_visit:1, ask_use:8, nar_open:12, brief_cta:12}; // 이벤트별 페이지당 상한
   const FEATURES = ['buy','report','switch','redev','villa','chungyak','tax','compare','consult','premium','mine','bunyang','ad_apply','price_sheet','agent_chat','jeonse','ad_inquiry','jeonse_checklist','ask'];
   const SPOTS = ['report_top','report_rank','report_near','report_compare','report_leader','switch_top','switch_compare','switch_pick','bunyang_deal','premium','mine'];
   const PAGES = ['home','buy','report','switch','villa','chungyak','tax','agent','calc','mine','bunyang','bunyang_apply','jeonse','ad','ask'];
@@ -70,6 +70,8 @@
     spot:        v => SPOTS.includes(v),                                                            // 시세 흐름 보기 단추 위치
     slot:        v => ['bunyang','buy','switch','villa','chungyak','tax'].includes(v),              // 분양 광고 노출 위치
     line:        v => ['r1','r2','r3','price','watch','fit','all','trust','term','jr','jflow','hug','jw','jgu','jsup','jmig','jpol','zone','land','age','right','deal','yield','rate','dem','osup','score','cgt','loan','cost','top','cut','pick','past','time'].includes(v),                     // 분석 설명 '자세히 보기'를 연 줄 종류(assets/narrative.js) — 단지·금액 없음
+    cta_at:      v => ['home_card','mine_res','buy_res','ta_done','watch_star','strip'].includes(v) || /^slot_[a-z][a-z_]{2,30}$/.test(v),   // 모닝 브리핑 권유 자리(assets/brief-cta.js · 광고 칸의 집예보 소식 slot_칸이름)
+    act:         v => ['view','click','close','sub'].includes(v),                                     // 권유: 보임·누름·닫기·체험 시작(구독 화면)
     ad_kind:     v => ['아파트','오피스텔','도시형생활주택','민간임대','무순위·잔여세대','기타'].includes(v)
   };
   function clean(params){
