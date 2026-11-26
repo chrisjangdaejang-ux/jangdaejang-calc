@@ -48,6 +48,16 @@ h2.sec small{display:block;font-size:14px;font-weight:500;color:var(--sub2);lett
 .flt{background:var(--gray);border-radius:20px;padding:16px;display:grid;gap:12px;margin-top:16px}
 .flt .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:520px){.flt .two{grid-template-columns:1fr}}
+.fold{border:1px solid var(--line);border-radius:14px;background:#fff}
+.fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px;padding:6px 14px;font-weight:800;font-size:15px}
+.fold>summary::-webkit-details-marker{display:none}
+.fold>summary::after{content:'▾';color:var(--sub);flex:none}.fold[open]>summary::after{content:'▴'}
+.fold>summary small{flex:1;text-align:right;font-size:13.5px;font-weight:600;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.fold .fin{display:grid;gap:12px;padding:4px 14px 14px}
+#areaDet{margin-top:10px}#areaDet>#areaBox{padding:0 10px 10px}
+@media(max-width:520px){.lead .lm{display:none}#areaDet>summary small{display:none}#fSt{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -4px;padding:0 4px}#fSt button{flex:none}.flt{padding:12px;gap:10px}.flt>div>label{display:none}}
+.cheap{display:inline-block;margin-top:4px;font-size:13.5px;font-weight:800;color:#0E7A4F;background:#E3F4EA;border-radius:6px;padding:1px 7px}
+.cheap.hi{color:#8A5A00;background:#FFF4E0}
 .flt label{display:block;font-size:14px;font-weight:700;color:var(--sub);margin-bottom:4px}
 .flt select{width:100%;min-height:48px;padding:0 12px;border:1px solid var(--line);border-radius:12px;font:inherit;font-size:16px;font-weight:700;background:#fff;color:var(--text)}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
@@ -139,26 +149,28 @@ body.lock{overflow:hidden}
 <main class="wrap">
   <span class="tag">분양 · 전국 신축 분양 정보</span>
   <h1>지금 분양하는 단지,<br><em>공식 공고</em>로 확인하세요</h1>
-  <p class="lead">한국부동산원 청약홈 공고로 아파트·오피스텔·도시형생활주택·민간임대·무순위/잔여세대의 일정과 분양가를 보여 드려요. 분양가가 공개된 아파트는 같은 동네 최근 실거래가와 나란히 비교해 드려요.</p>
+  <p class="lead">한국부동산원 청약홈 공고로 아파트·오피스텔·도시형생활주택·민간임대·무순위/잔여세대의 일정과 분양가를 보여 드려요. <span class="lm">분양가가 공개된 아파트는 같은 동네 최근 실거래가와 나란히 비교해 드려요.</span></p>
 
   <div class="jas jas-top" data-ad-slot="bunyang_top" data-ad-cat="bunyang" data-ad-top></div>
-  <div id="areaBox"></div>
-
+  <!-- 휴대폰에서 단지 목록이 바로 보이게: 상태만 위에, 지역·유형·분양가·정렬과 관심 지역 알림은 접힌 칸(PC는 지역 칸을 펼친 채로) — 2026-11-26 -->
   <section class="flt" aria-label="분양 단지 찾기">
+    <div><label>상태</label><div class="chips" id="fSt" role="group" aria-label="상태">
+      <button type="button" data-v="" class="on">전체</button><button type="button" data-v="pre">분양예정</button><button type="button" data-v="on">청약중</button><button type="button" data-v="wait">발표 대기</button><button type="button" data-v="mv">입주예정</button></div></div>
+    <details class="fold" id="fltDet"><summary><span>지역·유형·분양가·정렬</span><small id="fltNow">전국 · 모든 유형</small></summary><div class="fin">
     <div class="two">
       <div><label for="fSido">시·도</label><select id="fSido"><option value="">전국 전체</option></select></div>
       <div><label for="fSgg">시·군·구</label><select id="fSgg"><option value="">전체</option></select></div>
     </div>
-    <div><label>상태</label><div class="chips" id="fSt" role="group" aria-label="상태">
-      <button type="button" data-v="" class="on">전체</button><button type="button" data-v="pre">분양예정</button><button type="button" data-v="on">청약중</button><button type="button" data-v="wait">발표 대기</button><button type="button" data-v="mv">입주예정</button></div></div>
     <div><label>유형</label><div class="chips" id="fKind" role="group" aria-label="유형">
       <button type="button" data-v="" class="on">전체</button><button type="button" data-v="아파트">아파트</button><button type="button" data-v="오피스텔">오피스텔</button><button type="button" data-v="도시형생활주택">도시형생활주택</button><button type="button" data-v="민간임대">민간임대</button><button type="button" data-v="무순위·잔여세대">무순위·잔여세대</button><button type="button" data-v="정비사업">정비사업(분양예정)</button></div></div>
     <div class="two">
       <div><label for="fPrice">분양가(주택형 최고가 기준)</label><select id="fPrice">
         <option value="">전체</option><option value="0-30000">3억 이하</option><option value="30000-60000">3억~6억</option><option value="60000-90000">6억~9억</option><option value="90000-150000">9억~15억</option><option value="150000-">15억 초과</option></select></div>
-      <div><label for="fSort">정렬</label><select id="fSort"><option value="date">일정 가까운 순</option><option value="hh">세대수 많은 순</option><option value="name">이름 순</option></select></div>
+      <div><label for="fSort">정렬</label><select id="fSort"><option value="date">일정 가까운 순</option><option value="cheap">주변 시세보다 싼 순(참고)</option><option value="hh">세대수 많은 순</option><option value="name">이름 순</option></select></div>
     </div>
+    </div></details>
   </section>
+  <details class="fold" id="areaDet"><summary><span id="areaSum">관심 지역 새 공고 알림 받기</span><small>새 분양 공고·무순위 일정을 가장 먼저</small></summary><div id="areaBox"></div></details>
 
   <div class="bar"><div class="sum" id="sum">불러오는 중…</div>
     <div class="vt" role="tablist" aria-label="보기 방식"><button type="button" id="vList" class="on" role="tab" aria-selected="true">목록</button><button type="button" id="vMap" role="tab" aria-selected="false">지도</button></div></div>
@@ -239,12 +251,21 @@ function lineOf(x) {
 }
 function loc(x) { return [x.sd && sidoShort(sidoNorm(x.sd)), x.gn, x.dg].filter(Boolean).join(' '); }
 
+/** 주변 실거래 대비 분양가 차이(참고): 상세의 '같은 동네 실거래가와 비교'와 같은 자료(x.cmp — 면적대별 [면적대, 분양가 평당, 실거래 중간 평당, …])의
+    면적대별 (분양가 ÷ 실거래 − 1) 평균. 비교 자료가 없으면 null(숫자를 만들지 않음) */
+function gapOf(x) {
+  if (!x || /토지임대부/.test(x.n || '')) return null;   // 토지임대부는 땅값이 빠진 건물값만이라 실거래와 같은 줄에 세우지 않음
+  const c = (x.cmp || []).filter(r => r && r[1] > 0 && r[2] > 0);
+  return c.length ? c.reduce((a, r) => a + (r[1] / r[2] - 1), 0) / c.length : null;
+}
 function filtered() {
   const [pl, ph] = F.price ? F.price.split('-').map(v => v === '' ? Infinity : +v) : [0, Infinity];
   let r = ROWS.filter(x => (!F.sido || sidoNorm(x.sd) === F.sido) && (!F.sgg || x.gn === F.sgg)
     && (!F.st || x.st === F.st || (F.st === 'pre' && x.st === 'plan')) && (!F.kind || x.k === F.kind));
   if (F.price) r = r.filter(x => { const p = topPrice(x); return p && p[1] > pl && p[1] <= ph; });
-  const so = { date: (a, b) => keyDate(a).localeCompare(keyDate(b)) || a.n.localeCompare(b.n, 'ko'),
+  if (F.sort === 'cheap') r = r.filter(x => gapOf(x) != null);   // 주변 실거래 비교 자료가 있는 단지만
+  const so = { cheap: (a, b) => gapOf(a) - gapOf(b) || keyDate(a).localeCompare(keyDate(b)),
+    date: (a, b) => keyDate(a).localeCompare(keyDate(b)) || a.n.localeCompare(b.n, 'ko'),
     hh: (a, b) => (b.hh || 0) - (a.hh || 0), name: (a, b) => a.n.localeCompare(b.n, 'ko') }[F.sort];
   return r.sort(so);
 }
@@ -252,7 +273,7 @@ function cardHtml(x, i) {
   const s = ST[x.st] || ST.pre, p = topPrice(x);
   return `<button type="button" class="card" data-i="${i}"><div class="nm"><span class="st ${s[0]}">${s[1]}</span><span class="kd">${esc(x.k === '정비사업' ? (x.k2 || '정비사업') : x.k)}</span>${esc(x.n)}</div>
     <div class="loc">${esc(loc(x))}${x.hh ? ` · ${x.st === 'plan' ? '공급 예정 ' : '공급 '}${fmt(x.hh)}세대` : ''}</div>
-    <div class="ln">${lineOf(x)}</div>${p ? `<div class="ln">분양가 <b>${p[0] === p[1] ? won(p[1]) : won(p[0]) + ' ~ ' + won(p[1])}</b> <span style="font-size:13.5px">(주택형별 최고가)</span></div>` : ''}</button>`;
+    <div class="ln">${lineOf(x)}</div>${F.sort === 'cheap' && gapOf(x) != null ? (g => `<span class="cheap${g >= 0 ? ' hi' : ''}">참고 · 같은 동네 실거래 중간값보다 ${Math.abs(Math.round(g * 100))}% ${g >= 0 ? '높은' : '낮은'} 분양가</span>`)(gapOf(x)) : ''}${p ? `<div class="ln">분양가 <b>${p[0] === p[1] ? won(p[1]) : won(p[0]) + ' ~ ' + won(p[1])}</b> <span style="font-size:13.5px">(주택형별 최고가)</span></div>` : ''}</button>`;
 }
 let CUR = [];
 /* 목록 상단 광고(assets/ads.js): 고른 시·도·시·군·구 광고만 최대 3칸, 없으면 칸을 숨김. 목록 순서·분석과는 섞지 않음 */
@@ -262,8 +283,14 @@ function renderAd() {
   const k = F.sido + '|' + F.sgg; if (k === AD_KEY) return; AD_KEY = k;
   JDJ_ADS.render($('adTop'), { sido: F.sido, sgg: F.sgg, open: id => detail(ROWS.find(y => y.id === id)) });
 }
+const PRICE_T = { '0-30000': '3억 이하', '30000-60000': '3억~6억', '60000-90000': '6억~9억', '90000-150000': '9억~15억' };
+const SORT_T = { date: '일정 가까운 순', cheap: '주변 시세보다 싼 순', hh: '세대수 많은 순', name: '이름 순' };
+function fltNow() {
+  const el = $('fltNow'); if (!el) return;
+  el.textContent = [F.sido ? sidoShort(F.sido) + (F.sgg ? ' ' + F.sgg : '') : '전국', F.kind || '모든 유형', F.price ? (PRICE_T[F.price] || ($('fPrice').selectedOptions[0] || {}).textContent || '') : '', SORT_T[F.sort] || ''].filter(Boolean).join(' · ');
+}
 function render() {
-  CUR = filtered();
+  CUR = filtered(); fltNow();
   renderAd();
   const hasData = IDX && (ROWS.length > 0);
   const n = c => CUR.filter(x => x.st === c).length;
@@ -274,7 +301,8 @@ function render() {
     if (VIEW === 'map') drawMap();
     return;
   }
-  if (!CUR.length) $('list').innerHTML = `<div class="empty">조건에 맞는 단지가 없어요. ${F.price ? '분양가 조건은 주택형 분양가가 공개된 공고만 해당돼요. ' : ''}조건을 넓혀 보세요.</div>`;
+  if (F.sort === 'cheap') $('sum').insertAdjacentHTML('beforeend', `<small style="display:block;font-size:13.5px;color:var(--sub);margin-top:2px">주변 시세보다 싼 순은 분양가가 공개되고 같은 동네 같은 면적대 실거래 단지가 3곳 이상이라 비교할 수 있는 공고만 보여 드려요(참고 — 연식·입지·옵션 차이는 빠져 있어요).</small>`);
+  if (!CUR.length) $('list').innerHTML = `<div class="empty">조건에 맞는 단지가 없어요. ${F.sort === 'cheap' ? '주변 실거래와 비교할 수 있는 공고가 이 조건에는 없어요. 정렬을 \'일정 가까운 순\'으로 바꿔 보세요. ' : ''}${F.price ? '분양가 조건은 주택형 분양가가 공개된 공고만 해당돼요. ' : ''}조건을 넓혀 보세요.</div>`;
   else $('list').innerHTML = `<div class="cards">${CUR.slice(0, SHOWN).map(cardHtml).join('')}</div>${CUR.length > SHOWN ? `<button type="button" class="more" id="more">${fmt(CUR.length - SHOWN)}곳 더 보기</button>` : ''}`;
   const m = $('more'); if (m) m.onclick = () => { SHOWN += 30; render(); };
   if (VIEW === 'map') drawMap();
@@ -287,8 +315,9 @@ function cmpHtml(x) {
     if (x.k === '아파트' || x.k === '무순위·잔여세대') return (x.st === 'pre' || x.st === 'on') ? `<p class="caution">주택형 분양가가 아직 없거나, 같은 동네·같은 면적대 실거래 단지가 3곳 미만이라 실거래 비교를 표시하지 않았어요.</p>` : '';
     return x.st === 'pre' || x.st === 'on' ? `<p class="caution">${esc(x.k)}은(는) 아파트와 거래 구조가 달라 아파트 실거래가와 비교하지 않았어요.</p>` : '';
   }
+  const lease = /토지임대부/.test(x.n || '') ? `<p class="caution">토지임대부 주택은 땅을 빌려 쓰고 건물만 분양해요(땅 임대료는 따로 매달 내요). 그래서 분양가가 땅값까지 포함된 주변 실거래보다 낮게 보이는 게 당연해요 — 아래 비교는 참고로만 보세요.</p>` : '';
   const per = IDX && IDX.cmp ? `${ym(IDX.cmp.from)}~${ym(IDX.cmp.to)}` : '최근 6개월';
-  return `<h4>같은 동네 실거래가와 비교</h4><div class="cmp">${x.cmp.map(c => {
+  return `<h4>같은 동네 실거래가와 비교</h4>${lease}<div class="cmp">${x.cmp.map(c => {
     const [b, my, nb, nu, nt, sc, nw, nn] = c, d = Math.round((my / nb - 1) * 100);
     return `<div class="row"><b>${BAND[b]}</b>
       <div class="vs"><div><small>분양가 (3.3㎡당)</small><strong>${fmt(my)}만원</strong></div><div><small>${esc(sc)} 실거래 중간값 (3.3㎡당)</small><strong>${fmt(nb)}만원</strong></div></div>
@@ -445,9 +474,11 @@ function fromUrl() {
   const pick = (id, key, v) => { if (v == null) return; const b = [...$(id).querySelectorAll('button')].find(x => x.dataset.v === v); if (!b) return;
     F[key] = v; $(id).querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); };
   pick('fSt', 'st', q.get('st')); pick('fKind', 'kind', q.get('k'));
+  const so = q.get('sort'); if (so && [...$('fSort').options].some(o => o.value === so)) { F.sort = so; $('fSort').value = so; }
 }
 async function getJ(f) { try { const r = await fetch(DATA + f); return r.ok ? await r.json() : null; } catch (e) { return null; } }
 async function init() {
+  if (window.matchMedia && matchMedia('(min-width: 900px)').matches) $('fltDet').open = true;   // PC 는 펼친 채로, 휴대폰은 접어서 목록이 먼저 보이게
   fillSido(); fillSgg();
   const [i, n, p, ex] = await Promise.all([getJ('index.json'), getJ('notices.json'), getJ('plan.json'), getJ('extra.json')]);
   IDX = i;
@@ -464,7 +495,9 @@ async function init() {
   fillSido(); fillSgg(); if (F.sgg) $('fSgg').value = F.sgg; render();
   /* 관심 지역(assets/area-watch.js): 공고 목록 위 상자 — 설정·새 공고 표시·알림 신청 */
   if (window.JDJ_AREA) { JDJ_AREA.mountPanel($('areaBox'), { rows: ROWS, onOpen: id => { const x = ROWS.find(y => y.id === id); if (x) detail(x); } });
-    if (location.hash === '#area') setTimeout(() => { const a = $('area'); if (a) a.scrollIntoView({ block: 'start' }); }, 50); }
+    /* 관심 지역을 이미 정한 분은 펼친 채로(새 공고를 바로 보게), 처음이면 접어 둠 */
+    try { const L = (JDJ_AREA.get().list || []); if (L.length) { $('areaDet').open = true; $('areaSum').textContent = '관심 지역 공고 · ' + L.map(JDJ_AREA.label).join(', '); } } catch (e) {}
+    if (location.hash === '#area') { $('areaDet').open = true; setTimeout(() => { const a = $('area'); if (a) a.scrollIntoView({ block: 'start' }); }, 50); } }
   if (window.jdjStat) jdjStat('feature_use', { feature: 'bunyang' });
 }
 init();

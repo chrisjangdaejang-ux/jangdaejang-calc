@@ -162,6 +162,13 @@ check('서비스 워커: 새 화면·파일 버전', [sw.includes("'./ask/'"), s
   check('지역 낱말·주제 낱말은 단지 이름으로 쓰지 않음', [A.regionWord('서울', IX), A.regionWord('송파', IX), A.regionWord('헬리오시티', IX), A.topicWord('재건축'), A.topicWord('10억'), A.topicWord('은마')], [true, true, false, true, true, false]);
   const AJ = fs.readFileSync(path.join(root, 'assets/ask.js'), 'utf8'), BY = fs.readFileSync(path.join(root, 'bunyang/index.html'), 'utf8');
   check('입력창이 주제 질문을 화면 연결로(지역 낱말 후보 안 띄움)', [/A\.topic\(text, IX\)/.test(AJ), /regionWord\(sg\.q, IX\)/.test(AJ), /showTopic\(/.test(AJ)], [true, true, true]);
+  /* 2026-11-26 결정: 휴대폰은 목록 먼저(지역·유형·분양가·정렬·관심 지역은 접힌 칸), '주변 시세보다 싼 순'(비교 자료 있는 공고만·참고·토지임대부 제외) */
+  {
+    const fx = /function gapOf\(x\) \{[\s\S]*?\n\}/.exec(BY)[0], gapOf = new Function(fx + '; return gapOf;')();
+    check('싼 순: 면적대별 (분양가÷실거래−1) 평균, 자료 없으면 null, 토지임대부 제외',
+      [Math.round(gapOf({ n: 'A', cmp: [[0, 3000, 4000], [1, 3300, 3000]] }) * 1000) / 1000, gapOf({ n: 'B', cmp: [] }), gapOf({ n: 'C 토지임대부', cmp: [[0, 1000, 4000]] })], [-0.075, null, null]);
+    check('분양 화면: 접힌 칸·정렬 선택지·참고 표시', [/<details class="fold" id="fltDet">/.test(BY), /<details class="fold" id="areaDet">/.test(BY), /value="cheap">주변 시세보다 싼 순\(참고\)/.test(BY), /참고 · 같은 동네 실거래 중간값보다/.test(BY)], [true, true, true, true]);
+  }
   check('분양 화면이 주소 조건(sd·g·st·k)을 읽음', [/function fromUrl\(\)/.test(BY), /q\.get\('st'\)/.test(BY), /q\.get\('k'\)/.test(BY), /fromUrl\(\);/.test(BY)], [true, true, true, true]);
 }
 
