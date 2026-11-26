@@ -190,8 +190,8 @@
   const solveUrl = (id, extra) => BASE + 'solve/?s=' + encodeURIComponent(id) + (extra || '');
 
   /* ---------- 미리 불러오기(첫 카드를 1초 안에) ---------- */
-  const ENGINES = ['assets/sale-status.js?v=1', 'assets/loan-rules.js', 'tax/tax-engine.js?v=4', 'tax/adjusted-areas.js?v=2', 'assets/loan-core.js', 'assets/hug-core.js', 'chungyak/cy-engine.js?v=4', 'assets/redev-core.js'];
-  const ENG_OK = { 'assets/sale-status.js?v=1': 'JDJ_SALE', 'assets/loan-rules.js': 'JDJ_LOAN_RULES', 'tax/tax-engine.js?v=4': 'JDJ_TAX', 'tax/adjusted-areas.js?v=2': 'JDJ_ADJ', 'assets/loan-core.js': 'JDJ_LOAN', 'assets/hug-core.js': 'JDJ_HUG', 'chungyak/cy-engine.js?v=4': 'JDJ_CYE', 'assets/redev-core.js': 'JDJ_REDEV' };
+  const ENGINES = ['assets/sale-status.js?v=1', 'assets/loan-rules.js?v=3', 'tax/tax-engine.js?v=4', 'tax/adjusted-areas.js?v=2', 'assets/loan-core.js?v=5', 'assets/hug-core.js?v=1', 'chungyak/cy-engine.js?v=4', 'assets/redev-core.js?v=2'];
+  const ENG_OK = { 'assets/sale-status.js?v=1': 'JDJ_SALE', 'assets/loan-rules.js?v=3': 'JDJ_LOAN_RULES', 'tax/tax-engine.js?v=4': 'JDJ_TAX', 'tax/adjusted-areas.js?v=2': 'JDJ_ADJ', 'assets/loan-core.js?v=5': 'JDJ_LOAN', 'assets/hug-core.js?v=1': 'JDJ_HUG', 'chungyak/cy-engine.js?v=4': 'JDJ_CYE', 'assets/redev-core.js?v=2': 'JDJ_REDEV' };
   function script(src) { return new Promise(res => { const x = document.createElement('script'); x.src = BASE + src; x.onload = res; x.onerror = res; document.head.appendChild(x); }); }
   let WARM = null;
   /** 계산 엔진·고민 자료·지역 자료·청약 당첨 가점(기억한 시·도 또는 서울)·서울 단지 목록을 쉬는 동안 미리 */
@@ -467,7 +467,7 @@
     const jobs = [];
     if (need.indexOf('cy') >= 0) { jobs.push(cyRows(a.csido || '서울특별시').then(r => { E.cyRows = r; })); jobs.push(cyNotices().then(r => { E.cyNotices = r; })); }
     if (need.indexOf('region') >= 0 && a.region && a.region.sd) jobs.push(getJ('rg' + a.region.sd, DATA + 'region/' + a.region.sd + '.json').then(j => { const g = j && j.gu && j.gu[a.region.code]; E.sup = g && g.sup ? { [a.region.code]: g.sup } : null; }).catch(() => {}));
-    if (need.indexOf('kk') >= 0 && a.danji) { if (!root.JDJ_KK) await script('assets/kk-core.js'); E.KK = root.JDJ_KK; jobs.push(getJ('kk', DATA + 'rent/kk.json').catch(() => getJ('kk2', BASE + 'data/kkang.json')).then(j => { E.kkData = j; }).catch(() => {})); }
+    if (need.indexOf('kk') >= 0 && a.danji) { if (!root.JDJ_KK) await script('assets/kk-core.js?v=1'); E.KK = root.JDJ_KK; jobs.push(getJ('kk', DATA + 'rent/kk.json').catch(() => getJ('kk2', BASE + 'data/kkang.json')).then(j => { E.kkData = j; }).catch(() => {})); }
     if (need.indexOf('base') >= 0) jobs.push(getJ('offi', DATA + 'offi/index.json').then(j => { const s = j && j.rate && j.rate.base; if (s) { const ks = Object.keys(s).filter(k => /^\d{6}$/.test(k)).sort(); if (ks.length) E.base = { v: +s[ks[ks.length - 1]], at: ks[ks.length - 1] }; } }).catch(() => {}));
     await Promise.all(jobs);
     return E;
@@ -714,14 +714,7 @@
   function hrefOf(n, a, sc0) {
     if (n.href === '{mine}') return a.facts && a.facts.mine ? a.facts.mine : BASE + 'mine/';
     if (n.href === '{switch}') { const d = a.danji; return BASE + 'switch/' + (d && d.sd ? `?sd=${encodeURIComponent(d.sd)}&d=${encodeURIComponent([d.code, d.dong, d.jibun || '', d.apt].join('|'))}${a.facts && a.facts.band ? '&b=' + encodeURIComponent(a.facts.band) : ''}` : ''); }
-    let h = C().fill(n.href, Object.assign({}, a, { price: a.price || a.newprice || '' }));
-    if (n.tax) {
-      const tr = taxRegion(a.region), P = [];
-      if (n.tax === 'cgt') { if (tr.sd) P.push('sd=' + encodeURIComponent(tr.sd)); if (tr.gu) P.push('gu=' + encodeURIComponent(tr.gu)); if (a.acq) P.push('ad=' + a.acq); if (a.acqp) P.push('ap=' + a.acqp); if (a.salep) P.push('sp=' + a.salep); if (a.rs && /^\d{4}-\d{2}-\d{2}$/.test(a.rs)) P.push('rm=' + Math.min(999, Math.max(0, Math.floor(C().diffD(a.rs < (a.acq || a.rs) ? a.acq : a.rs, todayKst()) / 30.4375)))); P.push('hs=1'); if (a.adj === 'y' || a.adj === 'n') P.push('ask=' + a.adj); }
-      if (n.tax === 'acq') { if (a.price) P.push('pr=' + a.price); if (tr.sd) P.push('sd=' + encodeURIComponent(tr.sd)); if (tr.gu) P.push('gu=' + encodeURIComponent(tr.gu)); if (a.over85 === 'y') P.push('o85=1'); if (a.own === 'first' || sc0 === 'first_home') P.push('fh=1'); if (a.houses) P.push('n=' + ({ '1': 1, '2t': 2, '2': 2, '3': 3 })[a.houses]); }
-      if (n.tax === 'prop') { if (a.pub) P.push('std=' + a.pub); if (a.one) P.push('one=' + a.one); }
-      if (P.length) h = h.replace(/#.*$/, '') + '#' + n.tax + ';' + P.join(';');   // 주소 # 뒤에만(서버·통계로 가지 않고 세금 화면이 읽은 뒤 바로 지움)
-    }
+    const h = C().linkFill(n, a, Object.assign(ENG(), { today: todayKst() }), sc0);   // 세금·청약 화면이 읽는 값까지 채움(assets/guide-core.js linkFill)
     return /^https?:/.test(h) ? h : BASE + h;
   }
   function next3Html(sc, a, D, r) {

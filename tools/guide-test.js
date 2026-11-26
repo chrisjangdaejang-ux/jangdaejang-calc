@@ -427,7 +427,7 @@ check('운영자 화면 solve/admin/', fs.existsSync(path.join(ROOT, 'solve/admi
   check('링크: 정책 대출 — 없는 #policy 대신 값 채운 대출 계산기', !JSON.stringify(scj).includes('loan/#policy') && scOf('special_loan').next[0].href === 'loan/?p={price}&g={region}&o={own}');
   check('링크: 증여 → 넘기는 방법 4가지 비교(tax/transfer)', scOf('gift_when').next.some(n => n.href === 'tax/transfer/'));
   check('링크: 갈아타기 계산기는 고른 단지로 채워서({switch})', scOf('sell_when').next[0].href === '{switch}' && /\{switch\}/.test(read('assets/guide.js')) && /switch\/' \+ \(d && d\.sd \? `\?sd=/.test(read('assets/guide.js')));
-  check('링크: 양도세 계산기에 거주 개월(rm)·취득세에 주택 수(n)·생애최초(fh)까지', /P\.push\('rm='/.test(read('assets/guide.js')) && /P\.push\('n='/.test(read('assets/guide.js')) && /first_home'\) P\.push\('fh=1'\)/.test(read('assets/guide.js')));
+  check('링크: 양도세 계산기에 거주 개월(rm)·취득세에 주택 수(n)·생애최초(fh)까지', /kv\('rm'/.test(read('assets/guide-core.js')) && /kv\('n'/.test(read('assets/guide-core.js')) && /'fh=1'/.test(read('assets/guide-core.js')));
   check('질문: 월세가 아니면 월세 금액은 안 물음(cond)', scOf('broker_fee').cond.wrent[0] === 'deal' && /condOk/.test(read('assets/guide.js')));
   check('즉답 링크도 같은 주소 규칙(hrefOf)', /hrefOf\(nx, a, sc\.id\)/.test(read('assets/guide.js')));
 }
@@ -506,6 +506,43 @@ check('운영자 화면 solve/admin/', fs.existsSync(path.join(ROOT, 'solve/admi
   const gj = read('assets/guide.js');
   check('대화 화면: 기기 저장(jdj_guide_chat)·처음부터·양식으로 보기·대화로 보기·빠른 답 단추·입력창 아래 고정', /jdj_guide_chat/.test(gj) && /처음부터/.test(gj) && /양식으로 보기/.test(gj) && /대화로 보기/.test(gj) && /data-qv/.test(gj) && /position:fixed;left:0;right:0;bottom:0/.test(gj) && /visualViewport/.test(gj));
   check('첫 화면 입력 → 대화창(solve/?chat=1)', /solve\/\?chat=1/.test(gj) && /mountChat/.test(read('solve/index.html')));
+}
+
+/* ---------- ⑨ 다음 단계 링크: 세금·청약 화면이 읽는 값까지 채워 여는지(화면 읽기 규칙 그대로 풀어 확인) ---------- */
+{
+  const EL = { ADJ, CY, today: '2026-11-26' }, SE = { code: '11710', name: '송파구', short: '서울', sido: '서울특별시' }, BD = { code: '41135', name: '성남시 분당구', short: '경기', sido: '경기도' }, BS = { code: '26110', name: '중구', short: '부산', sido: '부산광역시' };
+  /* tax-ui prefill 과 같은 풀이: #보기;키=값;… */
+  const hashP = u => { const raw = u.slice(u.indexOf('#') + 1), parts = raw.split(/[;&]/), P = {}; parts.slice(1).forEach(x => { const i = x.indexOf('='); if (i > 0) P[x.slice(0, i)] = decodeURIComponent(x.slice(i + 1)); }); return { v: parts[0], P }; };
+  let u = G.linkFill({ href: 'tax/#order' }, { mlist: [{ region: SE, acq: '2015-05-01', acqp: 50000, price: 120000 }, { region: BD, acq: '2020-05-01', acqp: 70000, price: 90000, adj: 'y' }, { region: BS, acq: '2019-01-01', acqp: 30000, price: 35000 }] }, EL, 'multi_order');
+  let x = hashP(u);
+  check('링크: 매도 순서 #order;h1~h3(시·도|시·군·구|취득일|취득가|시세|거주개월|거주중|산때조정|필요경비);st;iv', x.v === 'order' && x.P.h1 === '서울|송파구|2015-05-01|50000|120000|0|0||0' && x.P.h2 === '경기|성남시 분당구|2020-05-01|70000|90000|0|0|y|0' && x.P.h3.indexOf('그 밖의 지역||2019-01-01|30000|35000') === 0 && x.P.st === '2026-12-26' && x.P.iv === '12', u);
+  check('링크: 매도 순서 칸 수 9개 · tax-ui 읽기 조건(취득일·금액 숫자) 통과', [x.P.h1, x.P.h2, x.P.h3].every(h => { const f = h.split('|'); return f.length === 9 && /^\d{4}-\d{2}-\d{2}$/.test(f[2]) && /^\d{1,7}$/.test(f[3]) && /^\d{1,7}$/.test(f[4]); }));
+  u = G.linkFill({ href: 'tax/#gift' }, { rel: 'child', value: 100000, pub: 70000, gdebt: 20000, prior: 3000, region: SE, donorone: 'y' }, EL, 'gift_when'); x = hashP(u);
+  check('링크: 증여세 #gift;rel;gv;std;gd;pr;sd;gu;one', x.v === 'gift' && x.P.rel === 'child' && x.P.gv === '100000' && x.P.std === '70000' && x.P.gd === '20000' && x.P.pr === '3000' && x.P.sd === '서울' && x.P.gu === '송파구' && x.P.one === '1', u);
+  u = G.linkFill({ href: 'tax/transfer/' }, { rel: 'minor', value: 100000, pub: 70000, prior: 3000, gdebt: 20000, region: SE, acqp: 40000, acq: '2015-01-01', rs: '2015-01-01' }, EL, 'gift_when');
+  const tp = {}; u.slice(u.indexOf('#') + 1).split(/[&;]/).forEach(y => { const i = y.indexOf('='); if (i > 0) tp[y.slice(0, i)] = decodeURIComponent(y.slice(i + 1)); });
+  check('링크: 넘기는 방법 비교 tax/transfer/#mk=;std=;ap=;ad=;sd=;gu=;rm=;mn=1;pr=;db= (transfer-ui 가 mk= 로 알아봄)', /^tax\/transfer\/#mk=100000;/.test(u) && tp.std === '70000' && tp.ap === '40000' && tp.ad === '2015-01-01' && tp.sd === '서울' && tp.gu === '송파구' && /^\d{1,3}$/.test(tp.rm) && tp.mn === '1' && tp.pr === '3000' && tp.db === '20000', u);
+  check('링크: 넘기는 방법 — 시세가 없으면 값 없이 그냥 열기', G.linkFill({ href: 'tax/transfer/' }, { rel: 'child' }, EL, 'gift_when') === 'tax/transfer/');
+  u = G.linkFill({ href: 'chungyak/', k: 'calc' }, { myscore: 64, csido: '서울특별시' }, EL, 'cy_where');
+  check('링크: 청약 chungyak/?score=64&sido=서울', u === 'chungyak/?score=64&sido=' + encodeURIComponent('서울'), u);
+  const my = CY.CY.total({ own: false, birth: '1985-01-01', married: true, marDate: '', deps: 3, accDate: '2012-01-01', noAcc: false }, '2026-11-26').sum;
+  check('링크: 청약 — 가점을 계산했으면 그 점수로', G.linkFill({ href: 'chungyak/' }, { birth: '1985-01-01', married: 'y', homeown: 'n', deps: 3, accd: '2012-01-01', csido: '경기도' }, EL, 'cy_where') === `chungyak/?score=${my}&sido=` + encodeURIComponent('경기'));
+  u = G.linkFill({ href: 'tax/#cgt', tax: 'cgt' }, { region: SE, acq: '2019-06-20', acqp: 150000, salep: 290000, rs: '2019-06-20', adj: 'y' }, EL, 'sell_when'); x = hashP(u);
+  check('링크: 양도세 #cgt;sd;gu;ad;ap;sp;rm;hs;ask', x.v === 'cgt' && x.P.sd === '서울' && x.P.ad === '2019-06-20' && x.P.ap === '150000' && x.P.sp === '290000' && x.P.rm === '89' && x.P.hs === '1' && x.P.ask === 'y', u);
+  u = G.linkFill({ href: 'tax/#acq', tax: 'acq' }, { price: 60000, region: BD, over85: 'y', houses: '2t' }, EL, 'first_home'); x = hashP(u);
+  check('링크: 취득세 #acq;pr;sd;gu;o85;fh;n', x.P.pr === '60000' && x.P.sd === '경기' && x.P.gu === '성남시 분당구' && x.P.o85 === '1' && x.P.fh === '1' && x.P.n === '2', u);
+  check('링크: 세금 화면 금액은 # 뒤에만(? 로 서버·통계에 가지 않음)', ['tax/#order', 'tax/#gift', 'tax/transfer/'].every(h => { const v = G.linkFill({ href: h }, { mlist: [{ region: SE, acq: '2015-05-01', acqp: 1, price: 2 }], rel: 'child', value: 100000 }, EL, ''); return v.indexOf('?') < 0; }));
+  const tu = read('tax/tax-ui.js'), tru = read('tax/transfer/transfer-ui.js'), cyh = read('chungyak/index.html');
+  check('받는 화면이 같은 이름으로 읽음(tax-ui order·gift · transfer-ui · chungyak ?score)', /v === 'order'/.test(tu) && /P\['h' \+ i\]/.test(tu) && /P\.st/.test(tu) && /P\.iv/.test(tu) && /v === 'gift'/.test(tu) && /P\.gv/.test(tu) && /P\.one === '1'/.test(tu) && /mk=/.test(tru) && /P\.mn/.test(tru) && /P\.db/.test(tru) && /get\('score'\)/.test(cyh) && /get\('sido'\)/.test(cyh));
+  check('길잡이 화면 주소 만들기는 linkFill 하나로', /C\(\)\.linkFill\(n, a/.test(read('assets/guide.js')));
+  { /* solve/ 화면이 쓰는 공용 엔진 ?v= 번호 = 다른 화면들의 최고 번호(캐시가 옛 파일을 주지 않게) */
+    const mx = {}, walk = d => fs.readdirSync(d, { withFileTypes: true }).forEach(f => { if (f.name[0] === '.' || f.name === 'tools' || f.name === 'node_modules') return; const pth = path.join(d, f.name); if (f.isDirectory()) walk(pth); else if (/\.html$|^sw\.js$/.test(f.name)) { const t = fs.readFileSync(pth, 'utf8'); let m; const re = /((?:assets|tax|chungyak)\/[\w\-/]+\.js)\?v=(\d+)/g; while ((m = re.exec(t))) mx[m[1]] = Math.max(mx[m[1]] || 0, +m[2]); } });
+    walk(ROOT);
+    const sv = read('solve/index.html'), bad = []; let m; const re = /\.\.\/((?:assets|tax|chungyak)\/[\w\-/]+\.js)(?:\?v=(\d+))?"/g;
+    while ((m = re.exec(sv))) if (mx[m[1]] && +(m[2] || 0) !== mx[m[1]]) bad.push(`${m[1]} ${m[2]}→${mx[m[1]]}`);
+    const gj = read('assets/guide.js'); const re2 = /'((?:assets|tax|chungyak)\/[\w\-/]+\.js)\?v=(\d+)'/g; while ((m = re2.exec(gj))) if (mx[m[1]] && +m[2] !== mx[m[1]]) bad.push(`guide.js ${m[1]} ${m[2]}→${mx[m[1]]}`);
+    check('solve/·guide.js 공용 엔진 번호 = 원격 최고 번호(ask-core·redev-core 등)', !bad.length, bad);
+  }
 }
 /* 서버 만족도 */
 {

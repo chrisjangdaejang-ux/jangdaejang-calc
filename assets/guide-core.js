@@ -326,6 +326,47 @@
     return '아래 단추에서 골라 주시거나, 모르시면 ‘몰라요’라고 하셔도 돼요.';
   }
 
+  /* ---------- 다음 단계 링크에 값 채우기(세금·청약 화면이 주소 # 또는 ? 로 읽음) ----------
+     금액은 만 원 정수, 값은 encodeURIComponent, 세금 화면 금액은 # 뒤로만(서버·통계로 가지 않고 화면이 읽은 뒤 바로 지움). */
+  const TAXSD = ['서울', '경기', '인천'];
+  function taxRegion(rg, ADJ) {
+    if (!rg || !rg.name) return {};
+    const short = rg.short || (/^11/.test(rg.code || '') ? '서울' : /^41/.test(rg.code || '') ? '경기' : /^28/.test(rg.code || '') ? '인천' : '');
+    const sd = TAXSD.indexOf(short) >= 0 ? short : '그 밖의 지역';
+    let gu = rg.name;
+    if (sd === '경기' && ADJ && ADJ.guList('경기').indexOf(gu) < 0) gu = '그 밖의 시·군';
+    return { sd, gu: sd === '그 밖의 지역' || sd === '인천' ? '' : gu };
+  }
+  const mInt = v => (v != null && v !== '' && isFinite(+v) && +v >= 0) ? String(Math.round(+v)) : '';
+  const kv = (k, v) => v === '' || v == null ? '' : `${k}=${encodeURIComponent(String(v))}`;
+  const residM = (rs, acq, today) => rs && okDate(rs) ? String(Math.min(999, Math.max(0, Math.floor(diffD(acq && rs < acq ? acq : rs, today) / 30.4375)))) : '';
+  /** href(scenarios.json next) + 답 → 값을 채운 상대 주소. kind: n.tax('cgt'|'acq'|'prop') 또는 주소로 판단(tax/#order · tax/#gift · tax/transfer/ · chungyak/) */
+  function linkFill(n, a, E, scId) {
+    E = E || {}; const today = E.today || todayKst(), href = String(n.href || ''), tr = taxRegion(a.region, E.ADJ);
+    let h = fill(href, Object.assign({}, a, { price: a.price || a.newprice || '' }));
+    const base = h.replace(/#.*$/, ''), join = (head, P) => { P = P.filter(Boolean); return P.length ? base + '#' + head + P.join(';') : h; };
+    const kind = n.tax || (/^tax\/#order/.test(href) ? 'order' : /^tax\/#gift/.test(href) ? 'gift' : /^tax\/transfer\//.test(href) ? 'transfer' : /^chungyak\/(\?|$)/.test(href) ? 'cy' : '');
+    if (kind === 'cgt') return join('cgt;', [kv('sd', tr.sd), kv('gu', tr.gu), okDate(a.acq) ? kv('ad', a.acq) : '', kv('ap', mInt(a.acqp)), kv('sp', mInt(a.salep)), kv('rm', residM(a.rs, a.acq, today)), 'hs=1', a.adj === 'y' || a.adj === 'n' ? kv('ask', a.adj) : '']);
+    if (kind === 'acq') return join('acq;', [kv('pr', mInt(a.price)), kv('sd', tr.sd), kv('gu', tr.gu), a.over85 === 'y' ? 'o85=1' : '', a.own === 'first' || scId === 'first_home' ? 'fh=1' : '', a.houses ? kv('n', ({ '1': 1, '2t': 2, '2': 2, '3': 3 })[a.houses]) : '']);
+    if (kind === 'prop') return join('prop;', [kv('std', mInt(a.pub)), a.one === 'y' || a.one === 'n' ? kv('one', a.one) : '']);
+    if (kind === 'order') {
+      const L = (a.mlist || []).filter(x => x && okDate(x.acq) && x.acqp > 0 && x.price > 0).slice(0, 5);
+      const hs = L.map((x, i) => { const r2 = taxRegion(x.region, E.ADJ); return kv('h' + (i + 1), [r2.sd || '', r2.gu || '', x.acq, mInt(x.acqp), mInt(x.price), mInt(x.rm) || '0', x.live ? '1' : '0', x.adj === 'y' || x.adj === 'n' ? x.adj : '', mInt(x.ex) || '0'].join('|')); });
+      return join('order;', hs.concat(hs.length ? [kv('st', addM(today, 1)), 'iv=12'] : []));
+    }
+    if (kind === 'gift') return join('gift;', [kv('rel', a.rel), kv('gv', mInt(a.value)), kv('std', mInt(a.pub)), kv('gd', mInt(a.gdebt)), kv('pr', mInt(a.prior)), kv('sd', tr.sd), kv('gu', tr.gu), a.donorone === 'y' ? 'one=1' : '']);
+    if (kind === 'transfer') { const P = [kv('mk', mInt(a.value || a.salep)), kv('std', mInt(a.pub)), kv('ap', mInt(a.acqp)), okDate(a.acq) ? kv('ad', a.acq) : '', kv('sd', tr.sd), kv('gu', tr.gu), kv('rm', residM(a.rs, a.acq, today)),
+        a.rel === 'minor' ? 'mn=1' : a.rel === 'child' ? 'mn=0' : '', kv('pr', mInt(a.prior)), kv('db', mInt(a.gdebt))].filter(Boolean); return P.length && P[0].indexOf('mk=') === 0 ? base + '#' + P.join(';') : h; }
+    if (kind === 'cy') {
+      let sc = a.myscore != null && a.myscore !== '' ? +a.myscore : null;
+      if (sc == null && E.CY && a.birth && a.accd) { try { sc = E.CY.CY.total({ own: a.homeown === 'y', birth: a.birth, married: a.married === 'y', marDate: '', deps: +a.deps || 0, accDate: a.accd, noAcc: false }, today).sum; } catch (e) { sc = null; } }
+      const sdo = a.csido ? String(a.csido).replace(/특별시|광역시|특별자치시|특별자치도|통합특별시|도$/g, '') : '';
+      const q = [sc != null ? kv('score', sc) : '', sdo ? kv('sido', sdo) : ''].filter(Boolean);
+      return q.length ? base.replace(/\?.*$/, '') + '?' + q.join('&') : h;
+    }
+    return h;
+  }
+
   /* ---------- 사이트 전체 기능 찾기(assets/guide/features.json) ---------- */
   /** 문장 → 맞는 기능 최대 3개 [{id, t, d, url, score}] (점수 3 이상) */
   function findFeatures(text, F, lex) {
@@ -1083,7 +1124,7 @@
     catch (e) { return { err: String(e && e.message || e) }; }
   }
 
-  const API = { chatStart, chatNext, chatAnswer, chatHint, narrowInit, narrowNext, narrowSet, findHomes, guPreview, BUCKETS, quick, regionExample, norm, extract, apply, findFeatures, moneys, classify, pending, solve, mask, won, wonW, pct, ko, addM, addY, addD, diffD, fill, nextFor, brokerFee, wolseAmt, SMALL, FEE, BAD, MIN, SOLVERS: Object.keys(S) };
+  const API = { linkFill, taxRegion, chatStart, chatNext, chatAnswer, chatHint, narrowInit, narrowNext, narrowSet, findHomes, guPreview, BUCKETS, quick, regionExample, norm, extract, apply, findFeatures, moneys, classify, pending, solve, mask, won, wonW, pct, ko, addM, addY, addD, diffD, fill, nextFor, brokerFee, wolseAmt, SMALL, FEE, BAD, MIN, SOLVERS: Object.keys(S) };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_GUIDE_CORE = API;
 })(typeof window !== 'undefined' ? window : globalThis);
