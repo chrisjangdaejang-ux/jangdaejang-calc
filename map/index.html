@@ -485,10 +485,10 @@ function legFold(){
   if (!mob || !has) return;
   if (!LGM) {
     const n = el.querySelectorAll('.fnr').length, fut = !!el.querySelector('.fut-lg');
-    el.innerHTML = `<button type="button" class="lgpill" aria-expanded="false" aria-label="범례 펼치기">${fut ? '<i class="lg-line" aria-hidden="true"></i>' : ''}범례${n ? ` <em>근처 예정 ${n}</em>` : ''}</button>`;
+    el.innerHTML = `<button type="button" class="lgpill" aria-expanded="false" aria-label="지도 기호 설명 펼치기">${fut ? '<i class="lg-line" aria-hidden="true"></i>' : ''}기호 설명${n ? ` <em>근처 예정 ${n}</em>` : ''}</button>`;
     return;
   }
-  el.insertAdjacentHTML('afterbegin', '<div class="lghd"><b>범례</b><button type="button" class="lgx" aria-label="범례 접기">✕</button></div>');
+  el.insertAdjacentHTML('afterbegin', '<div class="lghd"><b>지도 기호 설명</b><button type="button" class="lgx" aria-label="기호 설명 접기">✕</button></div>');
 }
 $('legend').addEventListener('click', e => {   // 접기·펼치기 단추는 범례 안 다른 동작보다 먼저
   const op = e.target.closest('.lgpill'), x = e.target.closest('.lgx');
