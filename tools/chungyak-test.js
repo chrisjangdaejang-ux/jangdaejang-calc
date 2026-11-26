@@ -163,12 +163,67 @@ check('시·군·구 이름 맞추기(고양시 덕양구 = 고양덕양구)', [
   check('청약 화면: 부양가족 합계는 가족 칸만(빠지는 인원 칸 제외)', /const depSum = \(\) => DEPS\.reduce/.test(html), true, '');
   check('청약 화면: 근거에 제23조·별표 1·개정 연혁·이유·조문 링크', /lsRvsDocListP/.test(html) && /lsRvsRsnListP/.test(html) && /lsJoLnkSeq=1033568277/.test(html) && /제23조/.test(html), true, '');
   check('청약 화면: 근거에 부칙 제1조·제2조·행정기본법 제7조', /부칙 제1조 단서/.test(html) && /부칙 제2조/.test(html) && /행정기본법 제7조/.test(html), true, '');
-  check('청약 화면: cy-engine 최신 번호(v7)', /cy-engine\.js\?v=7/.test(html), true, '');
+  check('청약 화면: cy-engine 최신 번호(v8)', /cy-engine\.js\?v=8/.test(html), true, '');
   check('청약 화면: 공공분양 개수는 진단 범위(내 시·도)만 셈', /n\.k !== '민영' && \(scope === 'all' \|\| noticeSido\(n\) === mine\)/.test(html), true, ''); }
 { const N = require('../assets/narrative.js');
   const nar = (N.cat ? N : (global.JDJ_NAR || {})).cat;
   if (nar && nar.cy) { const o = nar.cy({ my: 64, h: null, d: null, cc: null, items: [], cnt: { hi: 0, mid: 0, lo: 0 } });
     check('가점만 넣으면 분석 설명에 null 점수 줄이 없음', JSON.stringify(o).includes('null점'), false, ''); } }
+
+/* ---------- 8. v8 특별공급 전체 목록(제1635호 제3장 제4절 제35조~제49조) — 손으로 따진 예 ---------- */
+{ const R0 = '2026-11-26', d0 = CY.d8(R0);
+  const e1 = Object.assign({}, e0, { kind: 'g', cnt: '30', ever: 'y', house: '0', head: 'y', win: 'n' });
+  const youth = base({ birth: '1997-05-01', married: false, accDate: '2023-01-01' });   // 만 29세 미혼, 통장 3년 10개월, 30회
+  const el8 = E.eligibility(youth, e1, d0);
+  check('특별공급 8가지 + 1순위', el8.filter(x => x.k === '특별공급').map(x => x.id), ['new', 'first', 'multi', 'old', 'baby', 'inst', 'youth', 'reloc'], '제35조·제35조의2·제35조의3·제40조·제41조·제43조·제46조·제47조');
+  check('청년(국민): 만 29세 미혼·통장 6개월·6회 이상 → 확인 필요(소득·자산은 공공주택 특별법 시행규칙)', el8.find(x => x.id === 'youth').g, 'chk2', '제35조의2·제48조');
+  check('청년: 민영주택은 어려움', E.eligibility(youth, Object.assign({}, e1, { kind: 'p' }), d0).find(x => x.id === 'youth').g, 'no', '제35조의2(공공주택사업자 국민주택)');
+  check('청년: 만 40세(1986-01-01생) → 어려움', E.eligibility(base({ birth: '1986-01-01', accDate: '2020-01-01' }), e1, d0).find(x => x.id === 'youth').items[0], '만 40세 — 만 19세 이상 39세 이하여야 해요', '19~39세');
+  check('청년: 기혼 → 어려움', E.eligibility(base({ birth: '1997-05-01', married: true, marDate: '2025-01-01', accDate: '2023-01-01' }), e1, d0).find(x => x.id === 'youth').g, 'no', '혼인 중이 아니어야');
+  check('청년: 납입 5회 → 어려움', E.eligibility(youth, Object.assign({}, e1, { cnt: '5' }), d0).find(x => x.id === 'youth').items.includes('납입 5회 — 6회 이상 필요'), true, '제48조 6회');
+  check('기관추천: 고르지 않으면(예전 화면·길잡이) 어려움 = 예전 결과 그대로', el8.find(x => x.id === 'inst').g, 'no', '');
+  const inst = E.eligibility(youth, Object.assign({}, e1, { inst: 'sme' }), d0).find(x => x.id === 'inst');
+  check('기관추천 중소기업 근로자 → 확인 필요 + 추천 기관 안내', [inst.g, /중소벤처기업부/.test(inst.items.join(' '))], ['chk2', true], '제35조 제1항');
+  check('기관추천 근거: 국민 제35조 제1항·제45조', /제35조 제1항.*제45조/.test(inst.law), true, '');
+  check('기관추천 근거: 민영 제36조', /제36조/.test(E.eligibility(youth, Object.assign({}, e1, { kind: 'p', inst: 'dis' }), d0).find(x => x.id === 'inst').law), true, '');
+  check('기관추천: 유주택이면 어려움', E.eligibility(base({ own: true, birth: '1980-01-01', accDate: '2010-01-01' }), Object.assign({}, e1, { inst: 'merit', house: '1' }), d0).find(x => x.id === 'inst').g, 'no', '무주택세대구성원');
+  check('이전기관: 확인 받음 → 확인 필요(그 지역 공고에만)', E.eligibility(youth, Object.assign({}, e1, { reloc: 'y' }), d0).find(x => x.id === 'reloc').g, 'chk2', '제47조');
+  check('이전기관: 2주택 이상 세대 → 어려움', E.eligibility(base({ own: true, birth: '1980-01-01', accDate: '2010-01-01' }), Object.assign({}, e1, { reloc: 'y', house: '2' }), d0).find(x => x.id === 'reloc').g, 'no', '제47조 제3항');
+  check('모든 유형에 이유 한 줄·서류', el8.every(x => x.why && x.docs.length), true, '');
+  check('노부모 서류에 요양급여 내역·자격득실확인서(2026. 11. 24.~)', /자격득실확인서/.test(E.DOCS.old.join(' ')), true, '제23조');
+  check('신생아 소득 비율: 민영 160% · 우선 50%는 130% 이하', /160% 이하 — 물량의 50%는 130% 이하/.test(E.INCOME_PCT.baby('p')), true, '제35조의3 제3항');
+  check('신생아 소득 비율: 국민 130% · 우선 50%는 100% 이하', /130% 이하 — 물량의 50%는 100% 이하/.test(E.INCOME_PCT.baby('g')), true, '제35조의3 제1항');
+  check('생애최초: 국민 130%·민영 160%', [/130%/.test(E.INCOME_PCT.first('g')), /160%/.test(E.INCOME_PCT.first('p'))], [true, true], '제43조');
+  check('그 밖의 특별공급 6가지 목록(제37·38·39·42·44·47조의3)', E.SPECIAL_OTHER.map(o => o.law.replace('규칙 ', '')), ['제37조', '제38조', '제39조', '제42조', '제44조', '제47조의3'], '');
+  check('외국인: 일반 특별공급 유형 없음 안내', /외국인만을 위한 일반 특별공급 유형은 없어요/.test(E.FOREIGN_TXT), true, '제38조·제42조·제47조 제5항');
+  check('먼저 살펴볼 유형에 기관추천이 들어감(추천 대상이면)', E.bestSpecial(E.eligibility(youth, Object.assign({}, e1, { inst: 'sme' }), d0), youth, e1, 20).map(b => b.id).includes('inst'), true, ''); }
+
+/* ---------- 9. 제출 전 3대 실수 점검 — 손으로 따진 예 ---------- */
+{ const d0 = CY.d8('2026-11-26');
+  const p = base({ birth: '1988-03-01', married: true, marDate: '2020-05-01', accDate: '2012-01-01' });   // 만 30세 2018-03-01부터 8년 8개월 → 18점
+  const ok = E.mistakes(p, { spSold: 'n', right: 'n', spHouse: 'n', mySido: '서울특별시', mySgg: '강동구', nSido: '서울특별시', nSgg: '종로구', pick: 'here', stay: 'y' }, d0);
+  check('모두 좋음: 서울은 구가 달라도 해당지역(시 전체)', [ok.rows.map(r => r.g), ok.cnt], [['ok', 'ok', 'ok'], { risk: 0, warn: 0 }], '제4조');
+  check('무주택기간 문장 = 가점 계산과 같은 값(18점)', /무주택기간 18점/.test(ok.rows[0].head), true, '2 + 2×8');
+  const sold = E.mistakes(p, { spSold: 'y', right: 'n', spHouse: 'n' }, d0).rows[0];
+  check('배우자가 집을 팔았는데 처분일을 안 넣음 → 위험', sold.g, 'risk', '별표 1 무주택기간');
+  check('처분일을 넣었으면 위험 아님', E.mistakes(Object.assign({}, p, { soldDate: '2023-01-01' }), { spSold: 'y', right: 'n', spHouse: 'n' }, d0).rows[0].g, 'ok', '');
+  const hs = E.mistakes(p, { spSold: 'n', right: 'y', spHouse: 'n' }, d0).rows[1];
+  check('무주택이라 했는데 세대원 분양권 있음 → 위험', [hs.g, /분양권·입주권도 주택/.test(hs.items.join(' '))], ['risk', true], '제53조');
+  check('배우자 등본 따로 + 집 있음 → 위험', E.mistakes(p, { right: 'n', spHouse: 'y' }, d0).rows[1].g, 'risk', '제2조 세대');
+  check('모르면 주의', E.mistakes(p, {}, d0).rows[1].g, 'warn', '');
+  const gg = m => E.mistakes(p, Object.assign({ mySido: '경기도', nSido: '경기도' }, m), d0).rows[2];
+  check('경기 고양시 덕양구 ↔ 고양시 일산동구: 같은 시 → 해당지역', gg({ mySgg: '고양시 덕양구', nSgg: '고양시 일산동구', pick: 'here', stay: 'y' }).g, 'ok', '시·군 단위');
+  check('경기 수원시 ↔ 화성시에 해당지역 선택 → 주의(공고문이 넓힐 수 있어 단정 안 함)', gg({ mySgg: '수원시 영통구', nSgg: '화성시', pick: 'here', stay: 'y' }).g, 'warn', '');
+  check('다른 시·도인데 해당지역 선택 → 위험', E.mistakes(p, { mySido: '경기도', nSido: '서울특별시', pick: 'here' }, d0).rows[2].g, 'risk', '제4조');
+  check('해당지역이지만 거주기간 못 채움 → 위험', E.mistakes(p, { mySido: '서울특별시', nSido: '서울특별시', pick: 'here', stay: 'n' }, d0).rows[2].g, 'risk', '제4조 제5항');
+  check('해당지역인데 기타지역 선택 → 주의', E.mistakes(p, { mySido: '부산광역시', nSido: '부산광역시', pick: 'etc', stay: 'y' }, d0).rows[2].g, 'warn', '');
+  check('광주·전남 통합특별시는 시 전체로 단정하지 않음', E.mistakes(p, { mySido: '전남광주통합특별시', nSido: '전남광주통합특별시', pick: 'here', stay: 'y' }, d0).rows[2].g, 'warn', '');
+  check('가점만 넣은 경우 무주택기간은 주의(질문 필요)', E.mistakes(Object.assign(base({}), { quick: 60 }), {}, d0).rows[0].g, 'warn', '');
+  check('근거 출처: 국토교통부·청약홈 부적격 주요 사유', /무주택기간 산정 오류·세대원 주택 소유·거주지역 선택 오류/.test(E.MISTAKE_SRC.t), true, ''); }
+{ const html = require('fs').readFileSync(require('path').join(__dirname, '../chungyak/index.html'), 'utf8');
+  { const js = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]); let okJs = true; js.forEach(c => { try { new Function(c); } catch (err) { okJs = String(err); } });
+    check('청약 화면: 페이지 안 스크립트 문법 오류 없음', okJs, true, ''); }
+  check('청약 화면: 특별공급 8가지·기관추천·이전기관 칸·3대 실수 점검·서류', [/특별공급 8가지/.test(html), /id="eInst"/.test(html), /id="eReloc"/.test(html), /id="mkBox"/.test(html), /당첨 뒤 내는 서류/.test(html), !/특별공급 5가지/.test(html)], [true, true, true, true, true, true], ''); }
 
 const bad = rows.filter(x => !x.ok);
 rows.forEach(x => console.log(`${x.ok ? 'PASS' : 'FAIL'}  ${x.name}${x.ok ? '' : `  → 결과 ${JSON.stringify(x.got)} / 기대 ${JSON.stringify(x.want)} (${x.basis})`}`));

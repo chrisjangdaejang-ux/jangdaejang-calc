@@ -2,6 +2,9 @@
    브라우저 안에서만 계산해요(입력값을 서버로 보내지 않음). node 테스트: node tools/chungyak-test.js
    근거: 「주택공급에 관한 규칙」(국토교통부령 제1635호, 2026. 11. 24. 시행) — 국가법령정보센터(law.go.kr)에서 조문 대조
      · 1순위: 제27조(국민)·제28조 제1항(민영) / 특별공급: 제35조의3(신생아)·제40조(다자녀)·제41조(신혼부부)·제43조(생애최초)·제46조(노부모 부양)
+       v8(2026. 11. 26. 제3장 제4절 제35조~제49조 대조): 기관추천 제35조 제1항(국민)·제36조(민영)·제45조(국가유공자 등), 청년 제35조의2(공공분양만),
+       이전기관 종사자 등 제47조, 저축 요건 제48조 + 지역·사업 한정 유형 목록(제37·38·39·42·44·47조의3), 서류·소득 비율 안내
+     · 제출 전 3대 실수 점검 mistakes(): 별표 1 제1호 가목·제27조 제3항(무주택기간), 제2조·제53조(세대원 주택), 제4조(거주지역·거주기간)
      · 가점제·추첨제 비율: 제28조 제2항(85㎡ 이하)·제4항(85㎡ 초과), 추첨 물량 무주택 우선: 제28조 제8항
      · 2026. 11. 24. 개정 중 이 엔진에 닿는 것: 제46조 제1항(노부모 부양 — 같은 등본에 올라 있고 실제로 같이 사는 경우로 한정).
        같은 개정의 제23조 제2항(신청 서류)·제52조(자격 전산검색)·제64조(규제 재검토 기한)는 계산·판정과 무관
@@ -263,8 +266,161 @@ function eligibility(a, e, ref) {
     if (!first1) unk.push('1순위에 해당해야 해요(위 1순위 결과 확인)');
     unk.push(INCOME_TXT);
     out.push({ k: '특별공급', id: 'baby', how: e.kind === 'p' ? '2026년 6월 15일 시행 규칙 개정으로 민영주택에도 생긴 유형이에요(혼인 여부와 무관). 소득 단계·추첨 등 세부 선정 방식은 입주자모집공고문을 확인하세요.' : '공공분양(국민주택)에서 운영해 온 유형이에요. 세부 선정 방식은 입주자모집공고문을 확인하세요.', t: '신생아 특별공급', g: grade(bad, unk), items: [...bad, ...unk], law: '규칙 제35조의3' }); }
+  /* ===== v8: 공식 특별공급 전체 목록으로 넓힘(국토교통부령 제1635호, 2026. 11. 24. 시행 — 제3장 제4절 제35조~제49조 대조, 2026. 11. 26.) =====
+     e.inst(기관추천 대상 분류)·e.reloc(이전기관 등 종사자 확인) 값이 없으면 '해당 없음'으로 봐서 예전 화면·길잡이 결과는 그대로예요. */
+  // 기관추천 (국민주택 제35조 제1항 · 민영주택 제36조 · 국가유공자 등 제45조)
+  { const bad = [], unk = [], inst = e.inst || 'n';
+    if (inst === 'n') bad.push('국가유공자·장애인·장기복무 군인·중소기업 근로자·북한이탈주민·다문화가족 등 규칙이 정한 대상이고, 해당 기관의 추천을 받아야 해요');
+    else {
+      const T = INST_TYPES[inst];
+      if (inst === 'u') unk.push('규칙이 정한 기관추천 대상(국가유공자·장애인·장기복무 군인·중소기업 근로자 등)인지 확인하세요');
+      else unk.push(`${T.t} — ${T.org}에 먼저 신청해 추천을 받아야 해요(추천 명단에 올라야 신청할 수 있어요)`);
+      if (inst === 'etc' && e.kind === 'p') unk.push('다문화가족·한부모가족 등 일부 대상은 국민주택(공공분양)에서만 추천 대상이에요(제35조 제1항, 제36조 제4호)');
+    }
+    if (!noHouse) bad.push('무주택세대구성원이어야 해요');
+    if (inst !== 'n') unk.push(e.kind === 'p' ? '청약통장 가입 6개월이 지나고 예치기준금액을 넣었어야 해요(제48조 — 일부 대상은 통장이 필요 없어요)' : '청약통장 가입 6개월이 지나고 월납입금을 6회 이상 냈어야 해요(제48조 — 일부 대상은 통장이 필요 없어요)');
+    out.push({ k: '특별공급', id: 'inst', t: '기관추천 특별공급', g: grade(bad, unk), items: [...bad, ...unk],
+      how: '추천 기관이 정한 순서로 대상자를 정하고, 사업주체는 그 명단으로 공급해요. 일반 청약자와 경쟁하지 않아요.',
+      law: e.kind === 'p' ? '규칙 제36조(85㎡ 이하 민영주택, 건설량 10% 범위)·제45조(국가유공자 등, 5% 범위)·제48조' : '규칙 제35조 제1항(국민주택, 건설량 10% 범위)·제45조(국가유공자 등, 5% 범위)·제48조' }); }
+  // 청년 (제35조의2 — 공공주택사업자가 짓는 국민주택만)
+  { const bad = [], unk = [];
+    if (e.kind === 'p') bad.push('민영주택에는 청년 특별공급이 없어요(공공주택사업자가 짓는 국민주택·공공분양만)');
+    const b = CY.d8(a.birth);
+    if (b) { const age = Math.floor(CY.months(b, ref) / 12); if (age < 19 || age > 39) bad.push(`만 ${age}세 — 만 19세 이상 39세 이하여야 해요`); }
+    else unk.push('만 19세 이상 39세 이하인지 확인하세요');
+    if (a.married) bad.push('혼인 중이 아니어야 해요(미혼 청년 대상)');
+    else if (a.married == null) unk.push('혼인 중이 아닌지 확인하세요');
+    if (e.ever !== 'y') unk.push('본인이 과거에 집을 가진 적이 없어야 해요(부모 등 다른 세대원이 집이 있어도 청년 본인은 무주택으로 봐요)');
+    if (accUnknown) unk.push('청약통장 가입 6개월·월납입금 6회 이상인지 확인하세요');
+    else if (a.noAcc || !a.accDate) bad.push('청약통장이 없어요(가입 6개월·6회 이상 납입 필요)');
+    else if (acc < 6) bad.push(`가입 ${acc}개월 — 6개월 이상 필요`);
+    if (e.cnt !== '' && e.cnt != null && +e.cnt < 6) bad.push(`납입 ${e.cnt}회 — 6회 이상 필요`);
+    unk.push('소득·자산 기준과 공급 비율은 「공공주택 특별법 시행규칙」과 입주자모집공고문을 따라요');
+    out.push({ k: '특별공급', id: 'youth', t: '청년 특별공급(공공분양)', g: grade(bad, unk), items: [...bad, ...unk],
+      how: '공공분양에서 미혼 청년에게 따로 떼어 둔 물량이에요. 선정 방식은 「공공주택 특별법 시행규칙」과 공고문을 따라요.',
+      law: '규칙 제35조의2·제48조, 공공주택 특별법 시행규칙' }); }
+  // 이전기관 종사자 등 (제47조)
+  { const bad = [], unk = [], rl = e.reloc || 'n';
+    if (rl === 'n') bad.push('세종시·혁신도시·산업단지·기업도시 등으로 옮겨 온 기관·학교·기업의 종사자로 확인을 받은 경우만이에요');
+    else {
+      unk.push(rl === 'u' ? '세종시·혁신도시·산업단지·기업도시 등으로 옮겨 온 기관·기업의 종사자인지 확인하세요' : '소속 기관이 시·도에서 특별공급 대상 확인을 받았는지 확인하세요');
+      unk.push('그 지역(이전한 도시·산업단지 등)에 짓는 주택 공고에만 있어요');
+      if (e.house === '2') bad.push('2주택 이상 세대에 속하면 안 돼요(혁신도시 등)');
+      else if (e.house === '1') unk.push('1세대 1주택 기준이라 이미 집이 있는 세대는 공고문 조건을 확인하세요');
+    }
+    out.push({ k: '특별공급', id: 'reloc', t: '이전기관 종사자 등 특별공급', g: grade(bad, unk), items: [...bad, ...unk],
+      how: '기관·시·도가 확인한 대상자에게 한 번만 공급해요. 일반 청약자와 경쟁하지 않아요.',
+      law: '규칙 제47조' }); }
+  out.forEach(r => { r.docs = DOCS[r.id] || []; r.why = whyOf(r); if (INCOME_PCT[r.id]) r.inc = INCOME_PCT[r.id](e.kind); });
   return out;
 }
+/* 기관추천 대상 분류(화면 고르기) — 규칙 제35조 제1항 각 호·제36조·제45조 */
+const INST_TYPES = {
+  merit: { t: '국가유공자·보훈보상대상자·5·18·특수임무·참전 유공자와 유족', org: '국가보훈부(지방 보훈관서)' },
+  dis: { t: '장애인(등록 장애인)', org: '시·도(장애인 담당 부서)' },
+  mil: { t: '10년 이상 복무 군인·장기복무 제대군인', org: '국군복지단·국가보훈부' },
+  sme: { t: '중소기업 근로자', org: '중소벤처기업부(지방 중소벤처기업청)' },
+  etc: { t: '북한이탈주민·납북피해자·다문화가족·우수선수·우수기능인·국외 근무 귀국자 등', org: '해당 법률의 담당 기관' },
+  u: { t: '잘 모르겠음', org: '입주자모집공고문의 기관추천 안내' }
+};
+/* 소득 기준(전년도 도시근로자 가구당 월평균소득 대비 비율) — 금액은 해마다 바뀌어 공고문 기준 */
+const INCOME_PCT = {
+  new: () => '소득 기준: 140% 이하(맞벌이 160%) — 물량의 50%는 100%(맞벌이 120%) 이하, 20%는 140%(160%) 이하에 먼저, 나머지는 자산 기준을 채우면 추첨(규칙 제41조)',
+  first: k => k === 'p' ? '소득 기준(민영): 160% 이하 — 물량의 50%는 130% 이하, 20%는 160% 이하에 먼저, 나머지는 추첨(규칙 제43조)' : '소득 기준(국민): 130% 이하 — 물량의 50%는 100% 이하, 20%는 130% 이하에 먼저, 나머지는 추첨(규칙 제43조)',
+  baby: k => k === 'p' ? '소득 기준(민영): 160% 이하 — 물량의 50%는 130% 이하(우선), 20%는 160% 이하에 먼저, 나머지 30%는 자산 기준을 채운 모든 신청자 추첨(규칙 제35조의3 제3항)' : '소득 기준(국민): 130% 이하 — 물량의 50%는 100% 이하(우선), 20%는 130% 이하에 먼저, 나머지 30%는 자산 기준을 채운 모든 신청자 추첨(규칙 제35조의3 제1항)',
+  multi: k => k === 'p' ? '' : '공공(규칙 제18조 사업주체)이 짓는 85㎡ 이하는 소득 120% 이하(규칙 제40조)',
+  old: k => k === 'p' ? '' : '공공(규칙 제18조 사업주체)이 짓는 85㎡ 이하 별도 물량은 소득 120% 이하(규칙 제46조 제2항)'
+};
+/* 당첨 뒤 흔히 내는 서류 — 최종 목록·양식은 입주자모집공고문 기준 */
+const DOCS_NOTE = '흔히 내는 서류예요. 정확한 목록·발급 기준일은 입주자모집공고문을 따르세요.';
+const DOCS = {
+  rank1: ['청약통장 순위(가입)확인서', '주민등록표등본·초본(거주지역·거주기간 확인)'],
+  new: ['혼인관계증명서(상세)', '가족관계증명서(자녀 확인)', '임신진단서 또는 입양관계증명서(태아·입양 자녀가 있으면)', '소득 확인 서류(건강보험자격득실확인서·소득금액증명 등)'],
+  first: ['소득세 5년 이상 납부 증빙(소득금액증명·납세사실증명 등)', '혼인관계증명서 또는 자녀가 나오는 가족관계증명서', '소득 확인 서류(건강보험자격득실확인서 등)'],
+  multi: ['가족관계증명서(미성년 자녀 확인)', '주민등록표등본·초본(해당 시·도 거주기간)', '다자녀 배점표(공고문 양식)', '임신진단서·입양관계증명서·한부모가족증명서(해당하면)'],
+  old: ['부양하는 부모님의 주민등록표초본(3년 이상 같은 등본 확인)', '가족관계증명서', '건강보험 요양급여 내역·건강보험자격득실확인서(실제로 함께 사는지 확인, 2026. 11. 24. 이후 공고)'],
+  baby: ['가족관계증명서 또는 출생증명서(2세 미만 자녀)', '임신진단서 또는 입양관계증명서(태아·입양이면)', '소득·자산 확인 서류'],
+  inst: ['추천 기관에서 받은 추천(기관이 사업주체에 명단을 보내요)', '자격 증명 서류(국가유공자증·장애인증명서·재직증명서 등 기관이 정한 것)'],
+  youth: ['가족관계증명서·혼인관계증명서(미혼 확인)', '본인 주택 소유 이력 확인', '소득·자산 확인 서류(「공공주택 특별법 시행규칙」 기준)'],
+  reloc: ['소속 기관·시·도가 발급한 특별공급 대상자 확인서', '재직증명서']
+};
+/* 판정 한 줄 이유 */
+function whyOf(r) {
+  const lead = r.items[0] || '';
+  if (r.g === 'no') return lead;
+  if (r.g === 'ok') return '이 화면에서 확인한 조건은 모두 채웠어요';
+  const n = r.items.length;
+  return n > 1 ? `확인할 것 ${n}가지 · ${lead}` : lead;
+}
+/* 공식 특별공급 중 일반 신청자가 고르는 유형이 아닌 것(지역·사업 한정) — 화면에는 목록으로만 안내 */
+const SPECIAL_OTHER = [
+  { t: '개발제한구역 해제 택지 등 철거민', law: '규칙 제37조' },
+  { t: '경제자유구역 안 민영주택(외국인 투자기업 종사자 등)', law: '규칙 제38조' },
+  { t: '비수도권 민영주택(시·도지사 시책 대상)', law: '규칙 제39조' },
+  { t: '지역균형발전(외국인 투자 촉진 대상 외국인 포함)', law: '규칙 제42조' },
+  { t: '도시개발사업 철거주택 소유자', law: '규칙 제44조' },
+  { t: '불법전매 등으로 계약 취소된 주택의 재공급', law: '규칙 제47조의3' }
+];
+const FOREIGN_TXT = '외국인만을 위한 일반 특별공급 유형은 없어요. 경제자유구역(제38조)·지역균형발전 시책(제42조)·제주 영어교육도시(제47조 제5항)처럼 정해진 지역·사업에서만 외국인이 대상이 될 수 있어요.';
+const SPECIAL_LAW = { name: '주택공급에 관한 규칙(국토교통부령 제1635호)', from: '2026-11-24', checked: '2026-11-26', part: '제3장 제4절 특별공급(제35조~제49조)', src: RULE_SRC };
+
+/* ===== 제출 전 3대 실수 점검 — 부적격 당첨 주요 사유(국토교통부·청약홈 자료, 2022~2026. 8.):
+   ① 본인·배우자 무주택기간 산정 오류 ② 세대원 주택·분양권 소유 ③ 거주지역 선택 오류
+   m: { spSold, right, spHouse: 'y'|'n'|'u', mySido, mySgg, nSido, nSgg, pick: 'here'|'etc'|'', stay: 'y'|'n'|'u' }
+   결과 g: ok(좋음) · warn(주의) · risk(위험) */
+const SIDO_WIDE = s => s !== '전남광주통합특별시' && /특별시$|광역시$|특별자치시$/.test(s);   // 특별시·광역시·세종은 시 전체가 해당 주택건설지역(제4조) — 통합특별시·도는 시·군 단위
+function mistakes(a, m, ref) {
+  m = m || {}; ref = ref || new Date(new Date().toDateString());
+  const out = [];
+  // ① 무주택기간
+  { let g = 'ok', head, items = [];
+    if (a.quick != null || !a.birth) { g = 'warn'; head = '질문에 답해 가점을 계산해야 무주택기간을 점검할 수 있어요'; }
+    else if (a.own) { head = '세대에 집이 있어 무주택기간은 0점이에요 — 청약홈에도 0점(유주택)으로 넣으세요'; }
+    else {
+      const h = CY.homeless(a, ref);
+      head = `무주택기간 ${h.pts}점 — ${h.why}`;
+      if (m.spSold === 'y' && !a.soldDate) { g = 'risk'; items.push('배우자(또는 본인)가 집을 가졌다가 판 적이 있으면 마지막으로 판 날부터 다시 세야 해요. 질문의 ‘처분한 적’에 그 날짜를 넣어 다시 계산하세요'); }
+      else if (m.spSold === 'u' || m.spSold == null) { g = 'warn'; items.push('배우자가 혼인 전후로 집을 가졌다가 판 적이 있는지 확인하세요 — 무주택기간은 본인과 배우자가 모두 집이 없던 기간이에요'); }
+      if (a.married && a.marDate && CY.d8(a.marDate) < new Date(CY.d8(a.birth).getFullYear() + 30, CY.d8(a.birth).getMonth(), CY.d8(a.birth).getDate())) items.push('만 30세 전에 혼인신고를 해서 혼인신고일부터 세었어요(혼인관계증명서의 신고일 기준)');
+      else items.push('만 30세 전 미혼 기간은 무주택기간에 들어가지 않아요');
+    }
+    out.push({ id: 'home', t: '무주택기간 계산', g, head, items, law: '규칙 별표 1 제1호 가목(무주택기간)·제27조 제3항' }); }
+  // ② 세대원 주택·분양권
+  { let g = 'ok', head, items = [];
+    const yes = m.right === 'y' || m.spHouse === 'y', unk = m.right !== 'n' || m.spHouse !== 'n';
+    if (a.own) head = '세대에 집이 있다고 답했어요 — 무주택 조건이 필요한 특별공급·우선공급은 신청할 수 없어요';
+    else if (yes) { g = 'risk'; head = '무주택으로 신청하면 부적격이 될 수 있어요';
+      if (m.right === 'y') items.push('세대원의 분양권·입주권도 주택으로 봐요(2018. 12. 11. 이후 계약·취득분). 무주택이 아니라 유주택으로 답하고 다시 계산하세요');
+      if (m.spHouse === 'y') items.push('배우자는 주민등록이 따로여도 같은 세대로 봐요. 배우자 집이 있으면 무주택이 아니에요'); }
+    else if (unk) { g = 'warn'; head = '세대원 전원의 주택·분양권을 확인하세요'; items.push('세대원 = 본인·배우자(등본이 달라도)·같은 등본의 부모·조부모·자녀·손자녀예요'); }
+    else head = '세대원 모두 집·분양권·입주권이 없다고 답했어요';
+    items.push('예외(무주택으로 봄): 60세 이상 부모·조부모의 집, 20㎡ 이하 1채, 소형·저가주택 1채(공고문 기준) 등');
+    out.push({ id: 'house', t: '세대원 주택 보유', g, head, items, law: '규칙 제2조 제2호의3·제4호, 제53조(주택소유 여부 판정기준)' }); }
+  // ③ 거주지역
+  { let g = 'ok', head, items = [];
+    const ns = m.nSido ? sidoNorm(m.nSido) : '', ms = m.mySido ? sidoNorm(m.mySido) : '';
+    let here = null, sure = true;
+    if (ns && ms) {
+      if (ms !== ns) here = false;
+      else if (SIDO_WIDE(ns)) here = true;
+      else if (m.nSgg && m.mySgg) { here = sggCity(m.nSgg) === sggCity(m.mySgg); sure = here; }   // 도: 시·군이 다르면 보통 기타지역(공고문이 넓게 정할 수 있어 단정 안 함)
+    }
+    if (here == null) { g = 'warn'; head = ns && ms ? '같은 시·도예요 — 시·군까지 같아야 해당지역이에요' : '내 주민등록 주소와 공고 지역을 고르면 해당지역인지 알려 드려요'; }
+    else {
+      head = here ? `해당지역이에요(${ns === ms && SIDO_WIDE(ns) ? ns + ' 전체가 같은 지역' : '같은 시·군'})` : '해당지역이 아니에요 — 기타지역(또는 공고문이 정한 인근 지역)으로 신청해요';
+      if (!sure) head = '시·군이 달라 보통 기타지역이에요 — 공고문이 해당지역을 시·도 전체 등으로 넓혔는지 확인하세요';
+      if (m.pick === 'here' && !here) { g = sure ? 'risk' : 'warn'; items.push(sure ? '해당지역이 아닌데 해당지역으로 신청하면 부적격이에요' : '공고문이 해당지역을 넓히지 않았다면 해당지역으로 신청하면 부적격이에요'); }
+      else if (m.pick === 'etc' && here) { g = 'warn'; items.push('해당지역 주민이라 해당지역으로 신청할 수 있어요. 해당지역이 먼저 뽑혀 기타지역으로 넣으면 불리할 수 있어요'); }
+      if (here && m.stay === 'n') { g = 'risk'; items.push('공고문이 정한 거주기간(예: 수도권 투기과열지구 2년 이상)을 못 채웠으면 해당지역 우선공급이 아니라 기타지역으로 신청해야 해요'); }
+      else if (here && m.stay !== 'y') { if (g === 'ok') g = 'warn'; items.push('공고문의 ‘거주기간’ 요건(입주자모집공고일 현재 계속 거주)을 채웠는지 확인하세요'); }
+    }
+    items.push('기준은 입주자모집공고일 현재 주민등록표상 주소예요. 공고일 뒤에 전입하면 인정되지 않아요');
+    out.push({ id: 'area', t: '거주지역 선택', g, head, items, law: '규칙 제4조(주택의 공급대상, 제5항 거주기간)' }); }
+  const cnt = { risk: out.filter(x => x.g === 'risk').length, warn: out.filter(x => x.g === 'warn').length };
+  return { rows: out, cnt, src: MISTAKE_SRC };
+}
+const sggCity = s => { const t = String(s || '').replace(/\s/g, ''); const m = t.match(/^(.+?시)(?=.+구$)/); return m ? m[1] : t; };   // '고양시 덕양구' → 고양시(시 단위)
+const MISTAKE_SRC = { t: '부적격 당첨 주요 사유: 무주택기간 산정 오류·세대원 주택 소유·거주지역 선택 오류 순(국토교통부 자료, 청약홈 2022~2026. 8. 집계, 2026. 9. 25. 보도)', url: 'https://www.applyhome.co.kr/' };
 
 
 /* ===== 특별공급: 내 조건에 맞는 유형 고르기 =====
@@ -278,6 +434,9 @@ function bestSpecial(rows, a, e, sum) {
     else if (r.id === 'new') { w += kids >= 1 ? 5 : 2; why = kids >= 1 ? `자녀(태아 포함) ${kids >= 4 ? '4명 이상' : kids + '명'}이 있어 자녀 수 순 선정에서 앞설 수 있어요.` : '자녀가 없으면 자녀 수 순 선정에서 뒤로 밀리고 추첨에 기대게 돼요.'; }
     else if (r.id === 'first') { w += sum < 50 ? 5 : 3; why = '추첨으로 뽑는 유형이라 청약 가점이 낮아도 같은 기회예요.'; }
     else if (r.id === 'old') { w += sum >= 60 ? 5 : 1; why = `가점 순 선정이라 내 가점(${sum}점)이 높을수록 유리해요.`; }
+    else if (r.id === 'inst') { w += 4; why = '추천 기관이 대상자를 정해 일반 청약자와 경쟁하지 않아요. 기관에 먼저 신청해야 해요.'; }
+    else if (r.id === 'youth') { w += 2; why = '공공분양에서 미혼 청년 몫으로 따로 떼어 둔 물량이에요.'; }
+    else if (r.id === 'reloc') { w += 2; why = '이전한 도시·산업단지 공고에서 종사자 몫으로 따로 떼어 둔 물량이에요.'; }
     out.push({ id: r.id, t: r.t, g: r.g, why, w });
   });
   return out.sort((x, y) => y.w - x.w).map(({ w, ...x }) => x);
@@ -367,7 +526,7 @@ function sidoFrom(q) {
 /* 시·군·구 이름 맞추기: '고양시 덕양구'와 '고양덕양구'를 같게 */
 const sggKey = s => String(s || '').replace(/\s/g, '').replace(/시(?=[^시]+구$)/, '');
 
-const API = { oldParentRule, depRule, DEP_RULE, OLD_LIVE_FROM, RULE_SRC, RULE_LINKS, ymd, quickTotal, sidoFrom, sggKey, CY, SIDO, CAPITAL, SIDO_OLD, SIDO_ALIAS, sidoNorm, sidoLbl, DEPOSIT, depGroup, eligibility, bestSpecial, lottery, cutOf, diag, yearsTo, bandOf, noticeSido, INCOME_TXT };
+const API = { INST_TYPES, INCOME_PCT, DOCS, DOCS_NOTE, SPECIAL_OTHER, FOREIGN_TXT, SPECIAL_LAW, mistakes, MISTAKE_SRC, sggCity, oldParentRule, depRule, DEP_RULE, OLD_LIVE_FROM, RULE_SRC, RULE_LINKS, ymd, quickTotal, sidoFrom, sggKey, CY, SIDO, CAPITAL, SIDO_OLD, SIDO_ALIAS, sidoNorm, sidoLbl, DEPOSIT, depGroup, eligibility, bestSpecial, lottery, cutOf, diag, yearsTo, bandOf, noticeSido, INCOME_TXT };
 if (typeof module !== 'undefined' && module.exports) module.exports = API;
 else root.JDJ_CYE = API;
 })(typeof self !== 'undefined' ? self : this);
