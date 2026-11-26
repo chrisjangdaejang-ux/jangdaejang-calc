@@ -152,13 +152,16 @@
       const pro = (S.pro || {})[dn] || (dn ? [] : (S.pro || {})['']) || [];
       const m30 = dn ? ((S.m30_dong || {})[dn] || null) : S.m30;
       const dong = (S.dongs || []).find(x => x[0] === dn);
+      /* 건수는 엔진이 목록을 40건으로 자르기 전 전체 수(S.ntr·S.nhi, 동은 dongs 칸) — 잘린 목록 길이로 세면 '오늘의 한 줄'(전체 수)과 어긋남(평택시 43건 → 40건) */
+      const n = dn ? (dong ? dong[1] : trades.length) : (S.ntr != null ? S.ntr : trades.length);
+      const nhi = dn ? (dong ? dong[2] : trades.filter(t => t.hi).length) : (S.nhi != null ? S.nhi : trades.filter(t => t.hi).length);
       return {
         trades, rents, lines, pro, m30,
         his: trades.filter(t => t.hi), drops: trades.filter(t => !t.hi && t.dr != null && t.dr <= B.DROP).sort((a, b) => a.dr - b.dr),
         jeonse: rents.filter(r => !r.mo),
-        n: trades.length, nhi: trades.filter(t => t.hi).length,
+        n, nhi,
         monthly: dn ? null : S.monthly,                    // 월세 건수는 구 전체만(동별 목록에는 전세만 싣음)
-        more: dn ? 0 : (S.more || 0),
+        more: Math.max(0, n - trades.length),
         rentN: dn ? (dong ? dong[3] : 0) : S.nrent,
         notices: (S.notices || []).filter(n => !dn || !n.d || n.d === dn).concat(dn ? (S.notices || []).filter(n => n.d && n.d !== dn).map(n => Object.assign({ near: true }, n)) : []),
         interest: S.interest ? Object.assign({}, S.interest, { rows: (S.interest.rows || []).filter(r => !dn || r.d === dn) }) : null
@@ -186,6 +189,22 @@
       const sub = x.up != null ? `이전 최고 ${B.won(x.pm)}(${B.ymI(x.pmd)})보다 ${B.pct(x.up)}`
         : x.dr != null ? `최근 2년 최고 ${B.won(x.m2)}(${B.ymI(x.m2d)})보다 ${B.pct(x.dr)}` : '';
       return { name: `${x.a} ${x.b}`, where, price: B.won(x.p), when: `${B.md(x.dt)} 계약`, sub };
+    },
+    /** ① 오늘의 부동산 시장 카드에 쓰는 두 거래 — 최상급 이름표는 반드시 그 기준으로 고른 값에서만:
+        pricey = '가장 비싼 신고가'(금액 1위, 특수 거래 의심·직거래 제외 — 엔진 himax, 예전 자료는 목록에서 금액 1위)
+        drop = '가장 큰 하락'(하락률 1위, 특수 거래 의심·직거래 제외). 신고가 TOP 목록(K.hi)은 상승률 순이라 첫 줄이 가장 비싼 거래가 아님 */
+    marketPicks(K) {
+      K = K || {};
+      const clean = x => x && !x.sus && !x.x;
+      const pricey = K.himax || (K.hi || []).filter(clean).slice().sort((a, b) => b.p - a.p)[0] || null;
+      const drop = (K.drop || []).filter(x => clean(x) && x.dr != null).slice().sort((a, b) => a.dr - b.dr)[0] || null;
+      return { pricey, drop };
+    },
+    /** 지난 예측 성적 한 줄: diff = 상위 20% − 하위 20%(%p). 틀린 해(음수)에 '−1.2%p 덜 올랐어요'처럼 두 번 부정하지 않게 크기만 씀 */
+    scoreText(sc) {
+      if (!sc || sc.diff == null) return '';
+      const d = Math.abs(Number(sc.diff)).toFixed(1);
+      return `${sc.m}에 공개한 ${sc.h}년 예측을 실제 결과와 맞춰 보니, 미래가치 상위 20% 단지가 하위 20%보다 ${d}%p ${sc.diff > 0 ? '더 올랐어요(맞음)' : sc.diff < 0 ? '덜 올랐어요(틀림)' : '같게 올랐어요'}.`;
     },
     /** 금리(한국은행 기준금리·주담대 신규 금리) 문구 — 자료가 있을 때만 */
     rateText(r) {

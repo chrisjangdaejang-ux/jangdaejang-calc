@@ -293,13 +293,13 @@ function cardHtml(S, dn, pro){
 }
 /* 전국 공통 카드(1080×1080): 오늘의 부동산 시장 */
 function marketCardHtml(M){
-  const k = M.kr || {}, h = (k.hi || [])[0], d = (k.drop || [])[0];
+  const k = M.kr || {}, pk = B.marketPicks(k), h = pk.pricey, d = pk.drop;   // 이름표('최고'·'가장 큰')와 같은 기준으로 고름 — 목록 첫 줄(상승률 순)을 쓰지 않음
   const box = (x, tag, dn) => { const t = B.topText(x); return `<div><em class="${dn ? 'dn' : ''}">${esc(tag)}</em><b>${esc(t.where)} ${esc(t.name)}</b><span>${esc(t.price)} · ${esc(t.sub)}</span></div>`; };
   return `<div class="bc" id="bcard" role="img" aria-label="${esc(B.NAME)} 오늘의 부동산 시장 카드">
     <div class="bh"><div class="logo">${LOGO}${esc(B.SITE)} <span>모닝 브리핑</span></div><div class="dt">${esc(B.dateLabel(M.date))}</div></div>
     <div class="ar"><small>${esc(B.windowText(M.win) || '새로 올라온')} 실거래 · 전국</small>오늘의 부동산 시장</div>
     <div class="st"><div><b>${Number(k.n || 0).toLocaleString('ko-KR')}건</b><small>새 매매</small></div><div class="hi"><b>${k.nhi || 0}건</b><small>그중 신고가</small></div><div><b>${(M.cy || {}).n || 0}곳</b><small>이번 주 청약 접수</small></div></div>
-    <div class="mk">${h ? box(h, '전국 최고 신고가') : ''}${d ? box(d, '최근 2년 최고가 대비 가장 큰 하락', true) : ''}</div>
+    <div class="mk">${h ? box(h, '전국 가장 비싼 신고가') : ''}${d ? box(d, '최근 2년 최고가 대비 가장 큰 하락', true) : ''}</div>
     <div class="ln" style="-webkit-line-clamp:2;font-size:27px;margin-top:20px">${esc((M.lines || [])[1] || '')}</div>
     <div class="ft"><span>국토교통부 실거래 공개 자료 · 청약홈 공고 기준<br>신고가 = 같은 단지·같은 평형 이전 최고가를 넘은 거래</span><span><b>${esc(B.SITE)}</b></span></div>
   </div>`;
@@ -326,7 +326,7 @@ function marketHtml(M){
     <div class="one"><h2>오늘의 한 줄</h2>${(M.lines || []).map((x, i) => `<p class="${i ? 'c' : ''}">${esc(x)}</p>`).join('')}</div>
     ${pnewsHtml(M.pnews)}
     <div class="seg" role="group" aria-label="지역"><button type="button" data-ms="kr" aria-pressed="${MKT_SCOPE === 'kr'}">전국</button><button type="button" data-ms="seoul" aria-pressed="${MKT_SCOPE === 'seoul'}">서울</button></div>
-    <div class="mk2"><div class="sec" style="margin:0"><h2>${esc(wt)} 신고가 TOP <small>${K.nhi || 0}건 중 금액 순</small></h2>
+    <div class="mk2"><div class="sec" style="margin:0"><h2>${esc(wt)} 신고가 TOP <small>${K.nhi || 0}건 중 1억 원 이상 · 이전 최고가보다 많이 오른 순</small></h2>
       ${(K.hi || []).length ? fold(K.hi.map(mktTopLi), 3, 'mh') : '<div class="empty">이번에는 신고가가 없어요.</div>'}</div>
     <div class="sec" style="margin:0"><h2>큰 하락 거래 TOP <small>${K.ndrop || 0}건 중 하락률 순</small></h2>
       ${(K.drop || []).length ? fold(K.drop.map(mktTopLi), 3, 'md') : '<div class="empty">최근 2년 최고가보다 10% 넘게 낮은 1억 원 이상 거래가 없어요.</div>'}</div></div>
@@ -343,7 +343,7 @@ function marketHtml(M){
   h += `<div class="sec"><h2>청약 기회</h2><p class="sub">접수가 끝나지 않은 공고 중 분양가가 주변 신축·준신축 시세 대비 '하위 구간에 가까운' 면적대예요(${esc(B.SITE)} 청약 분양가 분석).</p>
     ${cyo.length ? cyo.slice(0, 5).map(n => `<div class="box"><b>${esc(n.n)}</b> <span class="tg x">${esc([n.sd, n.g].filter(Boolean).join(' '))}</span><br>${n.low.map(b => `${['60㎡ 이하', '60~85㎡', '85㎡ 초과'][b.b]} 분양가 3.3㎡당 ${Number(b.ppy).toLocaleString('ko-KR')}만 원 · 주변(${esc(b.scope)} ${b.n}건) 하위 구간에 가까워요`).map(esc).join('<br>')}<br><small>접수 ${esc(B.ds(n.rc[0]))}${n.rc[1] && n.rc[1] !== n.rc[0] ? '~' + esc(B.ds(n.rc[1])) : ''}</small>${n.u ? ` · <a href="${esc(n.u)}" target="_blank" rel="noopener">청약홈 공고</a>` : ''}</div>`).join('') : '<div class="empty">지금 주변 시세 대비 하위 구간에 가까운 공고는 없어요.</div>'}
     ${MYCY ? `<h3 style="font-size:16px;margin:12px 0 6px">내 가점 ${esc(MYCY.score)}점으로 넣어 볼 만한 단지</h3>${mm.length ? mm.slice(0, 6).map(x => `<div class="box"><b>${esc(x.n.n)}</b> <span class="tg ${x.g === 'hi' ? 'hi' : 'x'}">${esc(x.label)}</span><br>${esc(x.band)} 예상 최저 당첨 가점 ${x.lo}~${x.hi}점</div>`).join('') : '<div class="empty">지금 공고 중 내 가점이 예상 범위에 드는 곳이 없어요.</div>'}<p class="sub">예상 당첨 가점은 청약 화면과 같은 값(과거 당첨 결과로 만든 범위)이에요. 가점은 <a href="manage/">구독 관리</a>에서 바꿀 수 있어요.</p>` : '<p class="sub">구독 관리에서 청약 가점을 넣어 두면 넣어 볼 만한 단지를 골라 드려요.</p>'}</div>`;
-  if (M.score) h += `<div class="sec"><h2>지난 예측 성적</h2><div class="box">${esc(M.score.m)}에 공개한 ${M.score.h}년 예측을 실제 결과와 맞춰 보니, 미래가치 상위 20% 단지가 하위 20%보다 ${esc(B.pct(M.score.diff))}p ${M.score.hit ? '더 올랐어요(맞음)' : '덜 올랐어요(틀림)'}.</div></div>`;
+  if (M.score) h += `<div class="sec"><h2>지난 예측 성적</h2><div class="box">${esc(B.scoreText(M.score))}</div></div>`;
   const rt = B.rateText(M.rate);
   h += `<div class="sec"><h2>금리·대출·세금</h2><p class="sub">${esc(B.SITE)} 정책 목록(공식 발표·국회·법제처로 확인한 것)에서 최근 ${M.policy_days || 14}일 안에 단계가 바뀌었거나 앞으로 ${M.policy_days || 14}일 안에 시행·종료되는 것을 보여 드려요.</p>
     ${rt.length ? `<div class="box">${rt.map(esc).join('<br>')}<br><small>한국은행 통계(KOSIS) 월 자료예요.</small></div>` : ''}
@@ -458,7 +458,7 @@ function render(S, M){
       <div class="row2"><button type="button" class="btn primary" id="saveCard">카드 이미지 저장</button><a class="btn" href="${url(S.g, dn, true)}&card=1" target="_blank" rel="noopener">카드만 크게 보기</a></div></section>`;
   }
   /* 새 매매 */
-  h += `<section class="sec" aria-labelledby="h-t"><h2 id="h-t">${esc(B.windowText(w) || '새로 올라온')} 매매 <small>${v.n}건${v.more ? ` · 목록은 ${S.trades.length}건만` : ''}</small></h2>
+  h += `<section class="sec" aria-labelledby="h-t"><h2 id="h-t">${esc(B.windowText(w) || '새로 올라온')} 매매 <small>${v.n}건${v.more ? ` · 목록은 ${v.trades.length}건만` : ''}</small></h2>
     <p class="sub">국토교통부 실거래 공개 자료에 새로 보인 거래예요. 계약일은 그보다 앞설 수 있어요(신고 기한 30일).${S.cancels && !dn ? ` 같은 기간 해제(취소) 신고 ${S.cancels}건은 빼고 셌어요.` : ''}</p>
     ${v.n ? list(B.sortMine(v.trades, apts), tradeLi, 8, 'lt') : `<div class="empty">${w.none ? '오늘은 국토부 자료를 새로 확인하지 못했어요. 내일 다시 알려 드려요.' : w.first ? '오늘부터 새로 올라오는 거래를 모아요.' : '새로 올라온 아파트 매매가 없어요.'}</div>`}</section>`;
   /* 최고가 대비 하락 */
@@ -514,7 +514,7 @@ function render(S, M){
     <p><b>새로 올라온 거래</b> — 국토교통부 실거래 공개 자료에는 신고한 날짜가 없어요. 그래서 ${esc(B.SITE)}가 동네마다 이미 본 거래 목록을 갖고, 새로 받은 자료에 처음 보이는 거래만 골라요. 매일 확인하면 '어제 새로 올라온', 며칠 만에 확인했으면 그 기간을 그대로 밝혀요.</p>
     <p><b>신고가</b> — 같은 단지·같은 전용면적(㎡ 반올림)에서 그 계약일 전까지의 최고가(직거래·해제 제외)를 넘은 거래예요. <b>최근 2년 최고가보다 많이 내린 거래</b>는 같은 타입의 최근 2년 거래가 3건 이상이고, 최고가가 튀는 한 건이 아닐 때만 보여 드려요.</p>
     <p><b>같은 단지 비교</b> — 최근 30일 계약을 같은 단지·같은 평형의 직전 3개월 중간값과 하나씩 비교해, 비싼 단지가 많이 팔려서 생기는 착시를 뺐어요.</p>
-    <p><b>오늘의 부동산 시장</b> — 전국 모든 시·군·구의 국토부 매매 자료를 같은 방법(이미 본 거래 목록)으로 비교해, 새로 보인 거래 중 신고가는 금액 순, 큰 하락은 하락률 순으로 5건씩 골라요. 시·군·구마다 자료를 다시 받는 날이 달라 확인 기간을 함께 밝혀요. 금리는 한국은행 통계가 들어왔을 때만, 정책은 승인된 정책 목록의 단계 변화만, 청약은 청약홈 공고 중 이번 주(월~일)에 접수하는 것만 보여 드려요. 이 칸은 하루 1번 만들어 모든 구독자에게 똑같이 보내요.</p>
+    <p><b>오늘의 부동산 시장</b> — 전국 모든 시·군·구의 국토부 매매 자료를 같은 방법(이미 본 거래 목록)으로 비교해, 새로 보인 거래 중 신고가는 이전 최고가보다 많이 오른 순(1억 원 이상), 큰 하락은 하락률 순으로 5건씩 골라요. 시·군·구마다 자료를 다시 받는 날이 달라 확인 기간을 함께 밝혀요. 금리는 한국은행 통계가 들어왔을 때만, 정책은 승인된 정책 목록의 단계 변화만, 청약은 청약홈 공고 중 이번 주(월~일)에 접수하는 것만 보여 드려요. 이 칸은 하루 1번 만들어 모든 구독자에게 똑같이 보내요.</p>
     <p><b>새로 발표된 정책·교통·공급 소식</b> — 매일 새벽 국토교통부·금융위원회 보도자료, 대한민국 정책브리핑의 부처 보도자료(재정경제부·행정안전부 등), 서울시·인천시 보도자료 목록을 확인해요. 제목에 대출·세금·청약·규제, 철도·도로·역, 주택 공급·신도시·정비사업 관련 낱말이 있는 것만 골라 최근 이틀 치를 보여 드려요. 행사·인사·현장 방문 소식은 빼고, 같은 발표가 여러 곳에 올라와도 한 번만 보여 드려요. 제목은 원문 그대로 두고, 어려운 낱말은 정해 둔 쉬운 풀이를 붙여요. 집값 영향을 숫자로 예측하지 않아요.</p>
     <p><b>'그래서' 문장</b> — 과거 같은 구에서 비슷한 상황(최근 두 달 신고가 비율이 지금만큼 높거나 낮았던 달)이 6번 이상 있었을 때만, 그 뒤 3개월이 어땠는지 횟수로 알려 드려요. 근거가 없으면 쓰지 않아요.</p>
     <p>자료: 국토교통부 아파트 매매·전월세 실거래(공공데이터포털), 청약홈 분양 공고, ${esc(B.SITE)} 정책 목록${S.rone ? ', 한국부동산원 주간 가격지수' : ''}. 데이터 기준일 ${esc(S.ref || '')}.</p></details>`;

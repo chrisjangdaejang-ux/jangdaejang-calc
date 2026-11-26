@@ -114,5 +114,28 @@ check('광고주 통계: 메일 광고 동의자 수(있을 때만)', [/메일 �
   const mg = rd('brief/manage/index.html'), su2 = rd('brief/subscribe/index.html');
   check('대표 지역 버튼: 운영자 모드(서버 adm)일 때만 그림', [/\$\{r\.adm \? `<div class="repBox"/.test(mg), /\$\{st\.adm \? `<div class="repBox"/.test(su2), /시·도마다 대표 지역 1곳씩 한 번에 넣기/.test(mg)], [true, true, true]);
 }
+/* 문장·이름표가 말하는 것 = 실제 자료(2026-11-26 '가장 비싼 신고가' 오류 뒤 점검) */
+{
+  // 엔진이 목록을 40건으로 자른 동네(평택시 43건 → 목록 40건): 건수는 전체 수(S.ntr·S.nhi·동 칸)로
+  const T = Array.from({ length: 40 }, (_, i) => ({ d: i < 39 ? '비전동' : '서정동', a: 'x' + i, b: '84㎡대', p: 30000 + i, dt: 20261120, hi: i < 2 ? 1 : 0 }));
+  const S2 = { name: '평택시', trades: T, ntr: 43, nhi: 2, more: 3, dongs: [['비전동', 40, 2, 0], ['서정동', 3, 0, 0]], rents: [], lines: { '': { fact: '평택시에서 어제 새로 올라온 매매 거래는 43건이에요.' } }, pro: {} };
+  const a = B.scope(S2, ''), b = B.scope(S2, '서정동');
+  check('잘린 목록: 구 전체 건수 = 엔진 전체 수(오늘의 한 줄과 같음)', [a.n, a.nhi, a.more, a.trades.length], [43, 2, 3, 40]);
+  check('잘린 목록: 동 건수 = 동 칸 전체 수, 목록 밖 건수 표시', [b.n, b.more, b.trades.length], [3, 2, 1]);
+  check('카드 숫자 = 전체 수', B.card(S2, '', false).stats.slice(0, 2).map(x => x.v), ['43건', '2건']);
+  // 신고가 TOP(상승률 순) 첫 줄 ≠ 가장 비싼 신고가
+  const K = { hi: [{ a: '한효', p: 40000, up: 292.2 }, { a: '더샵', p: 342000, up: 5.2 }, { a: '직거래', p: 900000, up: 1, x: 1 }],
+              drop: [{ a: '보통', p: 90000, dr: -12 }, { a: '의심', p: 50000, dr: -45, sus: 1 }, { a: '큰하락', p: 80000, dr: -25 }] };
+  const pk = B.marketPicks(K);
+  check('카드 \'가장 비싼 신고가\' = 금액 1위(직거래·특수 거래 의심 제외), 목록 첫 줄 아님', pk.pricey.a, '더샵');
+  check('엔진 himax 가 있으면 그것을 씀', B.marketPicks(Object.assign({ himax: { a: '엔진' } }, K)).pricey.a, '엔진');
+  check('카드 \'가장 큰 하락\' = 하락률 1위(특수 거래 의심 제외)', pk.drop.a, '큰하락');
+  check('예측 성적: 틀린 해에 두 번 부정(−%p 덜) 안 함', [B.scoreText({ m: '2024-05', h: 2, diff: -1.23 }), B.scoreText({ m: '2024-05', h: 2, diff: 2.5 })],
+    ['2024-05에 공개한 2년 예측을 실제 결과와 맞춰 보니, 미래가치 상위 20% 단지가 하위 20%보다 1.2%p 덜 올랐어요(틀림).', '2024-05에 공개한 2년 예측을 실제 결과와 맞춰 보니, 미래가치 상위 20% 단지가 하위 20%보다 2.5%p 더 올랐어요(맞음).']);
+  // 정렬 설명 이름표 = 실제 정렬(엔진 brief.market_trades: 신고가 TOP 은 1억 원 이상·이전 최고가 대비 상승률 순, 큰 하락은 하락률 순)
+  const pg = require('fs').readFileSync(require('path').join(__dirname, '..', 'brief/index.html'), 'utf8');
+  check('브리핑 화면: 신고가 TOP 을 \'금액 순\'으로 설명하지 않음', [/신고가[^<]{0,40}금액 순/.test(pg), pg.includes('이전 최고가보다 많이 오른 순')], [false, true]);
+  check('브리핑 화면: 카드의 최상급 이름표는 marketPicks 값으로만(목록 [0] 아님)', [/k\.hi \|\| \[\]\)\[0\]/.test(pg), /\(k\.drop \|\| \[\]\)\[0\]/.test(pg), pg.includes('B.marketPicks(k)')], [false, false, true]);
+}
 console.log(`모닝 브리핑 화면 계산 검증: ${pass}개 통과, ${fail}개 실패`);
 process.exit(fail ? 1 : 0);

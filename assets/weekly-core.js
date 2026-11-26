@@ -160,12 +160,14 @@
   function josa(w, a, b) { const c = String(w).slice(-1); if (/[가-힣]/.test(c)) return (c.charCodeAt(0) - 0xAC00) % 28 ? a : b; return /[013678]/.test(c) ? a : b; }
   function korDate(iso) { const p = String(iso).split('-'); return `${+p[1]}월 ${+p[2]}일`; }
   function pressPeriod(V) { const a = String(V.from).split('-'), b = String(V.to).split('-'); return a[1] === b[1] ? `${+a[1]}월 ${+a[2]}~${+b[2]}일` : `${korDate(V.from)}~${korDate(V.to)}`; }
+  /** 순위 범위 문구: 엔진 top5 는 비교 거래가 표본 기준(method.min, 지금 30건) 이상인 시·군·구만 줄 세움 — '가장 많이 오른'은 그 안에서 1위라는 뜻 */
+  function minText(V) { const m = ((V && V.method) || {}).min; return m ? `비교 거래 ${num(m)}건 이상인` : '표본 기준을 넘은'; }
   /** 제목 후보(최대 3개) */
   function pressTitles(V) {
     const k = row(V, '00') || {}, s = row(V, '11') || {}, t = (((V.top || {}).m || {}).up || [])[0], out = [];
     if (s.chg != null) out.push(`지난주 서울 아파트, 같은 집 직전 거래보다 ${pct(s.chg)}`);
     if (k.chg != null) out.push(`지난주 전국 아파트 실거래 ${pct(k.chg)}…비교 거래 ${num(k.np)}건`);
-    if (t) out.push(`최근 4주 아파트값 가장 많이 오른 곳은 ${t.sd} ${t.nm}(${pct(t.chg)})`);
+    if (t) out.push(`최근 4주 아파트값 가장 많이 오른 곳은 ${t.sd} ${t.nm}(${pct(t.chg)}, ${minText(V)} 시·군·구 중)`);
     if (k.hs != null && out.length < 3) out.push(`지난주 아파트 거래 ${share(k.hs)}가 신고가`);
     return out.slice(0, 3);
   }
@@ -187,8 +189,8 @@
     if (k.up != null) out.push(`직전 거래보다 비싸게 팔린 거래는 ${share(k.up)}, 싸게 팔린 거래는 ${share(k.dn)}였다.`);
     if (s.chg != null) out.push(`서울은 ${pct(s.chg)}였다(비교 ${num(s.np)}건).`);
     const t = (((V.top || {}).m || {}).up || [])[0], d = (((V.top || {}).m || {}).down || [])[0];
-    if (t) out.push(`최근 4주 기준 가장 많이 오른 시·군·구는 ${t.sd} ${t.nm}${josa(t.nm, '으로', '로')} ${pct(t.chg)}였다(비교 ${num(t.np)}건).`);
-    if (d) out.push(`가장 많이 내린 곳은 ${d.sd} ${d.nm}(${pct(d.chg)}, 비교 ${num(d.np)}건)이다.`);
+    if (t) out.push(`${minText(V)} 시·군·구 중 최근 4주 기준 가장 많이 오른 곳은 ${t.sd} ${t.nm}${josa(t.nm, '으로', '로')} ${pct(t.chg)}였다(비교 ${num(t.np)}건).`);
+    if (d) out.push(`같은 기준에서 가장 많이 내린 곳은 ${d.sd} ${d.nm}(${pct(d.chg)}, 비교 ${num(d.np)}건)이다.`);
     if (k.hs != null) out.push(`전국 신고가 비율은 ${share(k.hs)}였다.`);
     out.push(prov ? `이 수치는 계약 후 30일인 신고 기한이 끝나지 않은 잠정치다. 늦게 신고된 거래가 반영되면 매주 월요일 새 판으로 바뀐다.` : `신고 기한이 지난 자료로 확정한 수치다.`);
     out.push(`이 통계는 국토교통부 실거래가를 분석한 것으로, 조사 기반인 한국부동산원 주간 아파트 가격동향과 계산 방식이 다르다.`);
