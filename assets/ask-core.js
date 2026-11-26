@@ -135,12 +135,13 @@
     }
     return { segs: segs.slice(0, MAX), more: segs.length > MAX, skipped: sg.skipped, hint: c.hint, tokens: c.tokens.map(x => x.t) };
   }
-  /** 평형 고르기: 힌트(전용㎡)에 가장 가까운 평형, 없으면 84㎡대, 그것도 없으면 거래 가장 많은 평형 */
+  /** 평형 고르기: 힌트(전용㎡)에 가장 가까운 평형, 없으면 84㎡대(거래가 충분할 때), 아니면 거래 가장 많은 평형 */
   function pickBand(d, hint) {
     const bs = (d && d.bands) || []; if (!bs.length) return '';
     if (hint && hint.area) return bs.slice().sort((a, b) => Math.abs(a[4] - hint.area) - Math.abs(b[4] - hint.area) || b[5] - a[5])[0][3];
-    const b84 = bs.find(u => u[3] === '84㎡대'); if (b84) return b84[3];
-    return bs.slice().sort((a, b) => b[5] - a[5])[0][3];
+    const top = bs.slice().sort((a, b) => b[5] - a[5])[0], b84 = bs.find(u => u[3] === '84㎡대');
+    if (b84 && (b84[5] >= 12 || b84[5] * 4 >= top[5])) return b84[3];       // 거래가 드문 84㎡대(예: 1층 전용 타입)면 가장 많이 거래된 평형 — mine-core defaultBand 와 같은 규칙
+    return top[3];
   }
 
   /* ---------- 주소 ---------- */

@@ -51,10 +51,10 @@
 <script src="../assets/result.js?v=1"></script>
 <script src="../assets/life-view.js?v=3"></script>
 <script src="../assets/fac-view.js?v=1"></script>
-<script src="../assets/mine-core.js?v=23"></script>
-<script src="../assets/ask-core.js?v=8"></script>
+<script src="../assets/mine-core.js?v=24"></script>
+<script src="../assets/ask-core.js?v=9"></script>
 <script src="../assets/ask.js?v=6"></script>
-<script src="../assets/price-sheet.js?v=24"></script>
+<script src="../assets/price-sheet.js?v=25"></script>
 <script src="../assets/mapjump.js?v=4"></script>
 <script src="../assets/offi-core.js?v=6"></script>
 <script src="../assets/offi-view.js?v=16"></script>
@@ -461,7 +461,7 @@ async function showDanji(key, band, opt){
   const d0 = g.get(key); if (!d0) return;
   const same = S.dkey === key && S.band === band;
   S.dkey = key; S.code = d0.code;
-  if (!band || !d0.bands.some(u => u[3] === band)) { const b84 = d0.bands.find(u => u[3] === '84㎡대'); band = (b84 || d0.bands.slice().sort((a, b) => b[5] - a[5])[0])[3]; }
+  if (!band || !d0.bands.some(u => u[3] === band)) band = M.defaultBand(d0.bands);   // 84㎡대 우선, 단 거래가 드문 84㎡대(예: 1층 전용 타입)면 가장 많이 거래된 평형
   if (!same) S.ar = opt && +opt.ar > 0 ? +opt.ar : 0;                 // 다른 단지·평형으로 바꾸면 고른 전용면적을 비움(저장한 내 집이면 render 가 저장값으로)
   S.band = band;
   if ($('sgg').value !== d0.code){ $('sgg').value = d0.code; fillDanji(key); }
@@ -562,7 +562,7 @@ function render(d, map, units){
     ${HI ? P.highsHtml(HI, 'hib') : ''}
     ${!has ? `<p class="basis lowc">최근 3년 거래 <b>${u[5]}건</b> 기준이에요. 거래가 적어 한두 건 가격에 따라 시세가 크게 달라질 수 있으니 아래 실거래 목록을 함께 봐 주세요.</p>` : ''}
     ${RF ? '<details class="rf-src"><summary>계산 근거</summary>' : ''}
-    <p class="basis"><b>계산 근거</b> · ${(few || !sm.price) && last ? `${few ? '최근 거래' : '마지막 실거래'} = ${ym(last.at)} 실거래 평당가 ${last.own ? '' : '(3개월) '}중간값 ${last.ppy.toLocaleString()}만원 × 전용 ${u[4]}㎡ ÷ 3.3058 · ` : ''}${sm.ppy ? `최근 시세 = 최근 3개월 실거래 평당가 중간값 ${sm.ppy.toLocaleString()}만원 × ` : '환산 금액 = 평당가 × '}전용 ${u[4]}㎡ ÷ 3.3058 (100만 원 단위 반올림, ${ALT ? '고른 전용면적 기준' : '이 평형에서 가장 많이 거래된 전용면적 기준'} — 이 면적 거래를 먼저 쓰고, 최근 거래가 모자라면 같은 단지 다른 면적 거래를 이 면적 값으로 맞춰 함께 써요) · 1년 변동: ${chBasis(sm.ch1)} · 3년 변동: ${chBasis(sm.ch3)}.${HT ? '' : ' 5년 추이는 공개 자료 기간(최근 3년)을 넘어 아직 보여 드리지 못해요.'}${HI && HI.hi ? ` · 최고가 = 수집한 실거래 중 직거래를 뺀 가장 높은 거래(이 평형 안 모든 전용면적).` : ''}</p>
+    <p class="basis"><b>계산 근거</b> · ${(few || !sm.price) && last ? (last.real ? `${few ? '최근 거래' : '마지막 실거래'} = ${ym(last.at)} 실제 거래 금액${last.n > 1 ? ' 중간값' : ''}(전용 ${u[4]}㎡, 직거래 제외) · ` : `${few ? '최근 거래' : '마지막 실거래'} = ${ym(last.at)} 실거래 평당가 ${last.own ? '' : '(3개월) '}중간값 ${last.ppy.toLocaleString()}만원 × 전용 ${u[4]}㎡ ÷ 3.3058 · `) : ''}${sm.ppy ? `최근 시세 = 최근 3개월 실거래 평당가 중간값 ${sm.ppy.toLocaleString()}만원 × ` : '환산 금액 = 평당가 × '}전용 ${u[4]}㎡ ÷ 3.3058 (100만 원 단위 반올림, ${ALT ? '고른 전용면적 기준' : '이 평형에서 가장 많이 거래된 전용면적 기준'} — 이 면적 거래를 먼저 쓰고, 최근 거래가 모자라면 같은 단지 다른 면적 거래를 이 면적 값으로 맞춰 함께 써요) · 1년 변동: ${chBasis(sm.ch1)} · 3년 변동: ${chBasis(sm.ch3)}.${HT ? '' : ' 5년 추이는 공개 자료 기간(최근 3년)을 넘어 아직 보여 드리지 못해요.'}${HI && HI.hi ? ` · 최고가 = 수집한 실거래 중 직거래를 뺀 가장 높은 거래(이 평형 안 모든 전용면적).` : ''}</p>
     ${RF ? '</details>' : ''}
 
     <div class="save" id="saveBox">
@@ -584,7 +584,7 @@ function render(d, map, units){
   <div class="panel">
     ${HT ? `<div class="chead"><h3>가격 추이 (매매·전세)</h3>${P.spanBtns(HT, S.hspan, 'seg2')}</div>
     <div class="chart" id="cPrice"></div>
-    <div class="legend"><span><i></i>매매 시세</span>${HT.j.some(v => v > 0) ? '<span><i class="j"></i>전세 시세</span>' : ''}${GU ? `<span><i class="g"></i>${esc(GU.name)} 아파트 같은 면적 환산</span>` : ''}<span>${esc(S.band)} · 전용 ${u0[4]}㎡ 환산</span></div>
+    <div class="legend"><span><i></i>${M.isSparse(HT.s) ? '매매 실거래(점)' : '매매 시세'}</span>${HT.j.some(v => v > 0) ? '<span><i class="j"></i>전세 시세</span>' : ''}${GU ? `<span><i class="g"></i>${esc(GU.name)} 아파트 같은 면적 환산</span>` : ''}<span>${esc(S.band)} · 전용 ${u0[4]}㎡ 환산</span></div>
     ${ALT ? `<p class="basis">가격 추이와 아래 실거래 목록은 ${esc(S.band)} 전체 기준이에요(가장 많이 거래된 전용 ${u0[4]}㎡로 환산). 위 최근 시세·변동은 고른 전용 ${u[4]}㎡ 기준이에요.</p>` : ''}
     ${GU ? `<p class="basis" id="guNote">${esc(P.guNote(GU, M.histWindow(HT, S.hspan).months[0]))}</p>` : ''}
     <p class="basis">${esc(P.histNote(hist, HT))}</p>
@@ -736,7 +736,8 @@ function drawCharts(u, sgg){
   if (HT){
     const w = M.histWindow(HT, S.hspan);
     const gu = guOf(u, sgg);
-    P.mountHist($('cPrice'), w, {h: 240, fs: 13.5, sparse: M.isSparse(HT.s), sub: true, cnt: P.cntMap(u, IX.months), gu, ref: CUR.g && CUR.g.hist && CUR.g.hist.mf});
+    const sps = M.isSparse(HT.s);
+    P.mountHist($('cPrice'), w, {h: 240, fs: 13.5, sparse: sps, deals: sps ? M.dealSeries(w, u, IX.months) : null, sub: true, cnt: P.cntMap(u, IX.months), gu, ref: CUR.g && CUR.g.hist && CUR.g.hist.mf});
     const gn = $('guNote'); if (gn && gu) gn.textContent = P.guNote(gu, w.months[0]);
   }
   const t = M.trend(u, sgg, IX.months, HT ? (S.hspan && S.hspan < 36 ? S.hspan : 36) : S.span);

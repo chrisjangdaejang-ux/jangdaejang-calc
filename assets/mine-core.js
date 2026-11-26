@@ -340,15 +340,36 @@
     if (u[9] === 1 && map) return map.get(unitKey(u)) || null;
     return null;
   }
-  /** 거래 있는 달 목록(최신순): {at, n, ppy(그 달 중앙 평당가, 없으면 3개월 중간값), price} */
+  /** 거래 있는 달 목록(최신순): {at, n, ppy(그 달 중앙 평당가, 없으면 3개월 중간값), price, real}
+      price: 그 달 거래(직거래 제외)가 모두 이 평형 대표 전용㎡(칸 4, ±0.5㎡) 거래이고 개별 거래(칸 11)로 건수가 맞으면 실제 거래 금액의 중앙값(real = true),
+      아니면 평당가 × 칸 4 ÷ 3.3058 환산(100만 원 반올림) — 1건뿐인 달이 '30억 5,000만' 대신 '30억 4,800만'처럼 환산 오차로 보이지 않게 */
   function monthDeals(u, months) {
-    const c = counts(u[7]), mm = Array.isArray(u[10]) ? u[10] : null, out = [];
+    const c = counts(u[7]), mm = Array.isArray(u[10]) ? u[10] : null, out = [], tr = Array.isArray(u[11]) ? u[11] : [];
     let k = 0;
     for (let i = 0; i < c.length; i++) if (c[i] > 0) {
       const p = mm ? (mm[k] || 0) : (u[6] ? u[6][i] || 0 : 0); k++;
-      out.push({ at: months[i], n: c[i], ppy: p, price: toPrice(p, u[4]), own: !!mm });
+      const ym = String(months[i]), mt = tr.filter(x => x[4] !== 1 && String(Math.floor(x[0] / 100)) === ym);
+      const real = mt.length === c[i] && mt.every(x => Math.abs(x[1] - u[4]) <= 0.5);
+      out.push({ at: months[i], n: c[i], ppy: p, price: real ? Math.round(median(mt.map(x => x[3]))) : toPrice(p, u[4]), own: !!mm, real });
     }
     return out.reverse();
+  }
+  /** 처음 보여 줄 평형: 84㎡대가 있고 거래가 충분하면(최근 3년 12건 이상, 또는 가장 많이 거래된 평형의 1/4 이상) 84㎡대,
+      아니면 가장 많이 거래된 평형 — 목동신시가지7 84㎡대(전용 89㎡, 1층 전용 타입, 3년 2건)처럼 드문 평형이 먼저 뜨지 않게 */
+  function defaultBand(bands) {
+    const bs = bands || []; if (!bs.length) return '';
+    const top = bs.slice().sort((a, b) => (b[5] || 0) - (a[5] || 0))[0], b84 = bs.find(x => x[3] === '84㎡대');
+    return (b84 && ((b84[5] || 0) >= 12 || (b84[5] || 0) * 4 >= (top[5] || 0)) ? b84 : top)[3];
+  }
+  /** 거래가 드문 평형의 매매 점 자료: t(histSeries·histWindow) 달 칸에 맞춰, 실제 거래가 있었던 달만 값(나머지 0).
+      · months(index.json 최근 3년) 안: monthDeals 그대로(그 달 실제 금액 또는 환산)
+      · 그 이전: 앞 3개월 거래가 없다가 값이 생긴 달(= 그 달 거래만으로 낸 값)만 — 3개월 이동 중간값이 거래 뒤 두 달 더 이어지는 것을 거래로 보이지 않게 */
+  function dealSeries(t, u, months) {
+    if (!t || !t.months) return [];
+    const ix = new Map(t.months.map((m, i) => [String(m), i])), out = t.months.map(() => 0), m0 = String((months || [])[0] || '999999');
+    t.months.forEach((ym, i) => { if (String(ym) < m0 && t.s[i] > 0 && !(t.s[i - 1] > 0)) out[i] = t.s[i]; });
+    if (u && months) monthDeals(u, months).forEach(d => { const i = ix.get(String(d.at)); if (i != null && d.price > 0) out[i] = d.price; });
+    return out;
   }
   /** 개별 거래(최신순): {ymd, date 'YYYY.MM.DD', area, floor, amt, type '중개'·'직거래'·'', ppy} */
   const TYPE = ['중개', '직거래', ''];
@@ -711,7 +732,7 @@
   const API = { PY, r100, STORE_KEY, MAX_HOMES, FEW, NICK, counts, lastIdx, median, toPrice, ymLabel, xTicks, danjiKey, agentKey, premiumKey, groupDanji, searchDanji,
     normName, normLight, splitNum, matchName, matchDanji, matchedAlias, suggestDanji, missRows, MISS_WHY, logMiss, dice, listRow, unitKey, hasScore, scoreOf, monthDeals, trades, lastDeal, isFew,
     bandSummary, changeBack, dongPosition, sggPosition, trend, volume, volumeCounts, cleanHome, homeId, parseStore, dumpStore, addHome, removeHome, findUnit, areaTypes, areaPick, areaUnit, vsBuy, heldMonths, reasons, reasonItems, won, pctTxt, cleanFx,
-    ymAdd, ymDiff, ymKo, decodeSeries, histRow, histSeries, jrNow, histJrMap, JR_BASIS, histWindow, histSpans, sggLine, vsSgg, highs, isNewHigh, lineParts, isSparse, valAt, gapOf, monthPoint };
+    ymAdd, ymDiff, ymKo, decodeSeries, histRow, histSeries, jrNow, histJrMap, JR_BASIS, histWindow, histSpans, sggLine, vsSgg, highs, isNewHigh, lineParts, isSparse, valAt, gapOf, monthPoint, defaultBand, dealSeries };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_MINE = API;
 })(typeof self !== 'undefined' ? self : this);

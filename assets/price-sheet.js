@@ -122,14 +122,18 @@
   /* ---------- 작은 차트 ---------- */
   /** 값 선 그리기: 실제 값이 있는 달끼리는 실선, 거래 없는 구간은 앞뒤 실제 값을 옅은 점선으로 잇기만(사이 달 값·툴팁 없음).
       a = 값 배열(0 = 거래 없음), x·y = 좌표 함수, c = 색, w = 굵기 */
-  function linePaths(a, x, y, c, w) {
+  function linePaths(a, x, y, c, w, maxGap) {
     const p = M().lineParts(a), pt = i => x(i).toFixed(1) + ' ' + y(a[i]).toFixed(1);
     const sd = p.solid.map(g => g.map((i, k) => (k ? 'L' : 'M') + pt(i)).join('')).join('');
-    const gd = p.gaps.map(g => 'M' + pt(g[0]) + 'L' + pt(g[1])).join('');
+    /* maxGap(개월): 이보다 긴 거래 공백은 점선으로 잇지 않음(1년 넘게 거래가 없었는데 이어진 선처럼 보이지 않게) */
+    const gd = p.gaps.filter(g => !(maxGap > 0) || g[1] - g[0] <= maxGap).map(g => 'M' + pt(g[0]) + 'L' + pt(g[1])).join('');
     return (gd ? `<path d="${gd}" fill="none" stroke="${c}" stroke-opacity=".45" stroke-width="${Math.max(1.4, w - 0.8)}" stroke-dasharray="3 4" stroke-linecap="round" class="gap"/>` : '')
       + (sd ? `<path d="${sd}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linejoin="round"/>` : '');
   }
   const SPARSE = '<p class="jps-note jps-sp">거래가 드문 단지라 추이는 참고로 봐 주세요</p>';
+  /* 거래가 드문 평형(전체 기간 차트): 매매는 선 대신 실제 거래가 있었던 달만 점으로 */
+  const SPARSE_PTS = '<p class="jps-note jps-sp">거래가 드문 평형이에요. 매매는 실제 거래가 있었던 달만 점으로 찍었어요. 점과 점 사이 빈 기간엔 거래가 없었어요.</p>';
+  const GAP_MIN = 12;   // 매매 점 사이가 이 개월 수 이상 비면 '이 기간엔 매매 거래가 없었어요' 글씨(드문 평형만 — 이때 전세 선도 공백을 점선으로 잇지 않음)
   function miniChart(u, sgg, months, W) {
     const m = M(), n = months.length, me = u[6] || [], gs = (sgg && sgg.s) || [];
     W = Math.max(260, Math.round(W || 480)); const H = 170, L = 48, R = 10, T = 12, B = 22;
@@ -179,7 +183,7 @@
     /* 실제 값이 있는 달의 작은 점: 기간이 짧으면(5년 이하) 모든 달, 길면 거래 공백 앞뒤·외딴 달만 */
     const dots = (a, c, yy) => a.map((v, i) => v > 0 && (n <= 60 || !(a[i - 1] > 0) || !(a[i + 1] > 0)) ? `<circle cx="${x(i).toFixed(1)}" cy="${yy(v).toFixed(1)}" r="${n <= 60 ? 2 : 2.2}" fill="${c}"/>` : '').join('');
     const last = (a, c) => { for (let i = a.length - 1; i >= 0; i--) if (a[i] > 0) return `<circle cx="${x(i).toFixed(1)}" cy="${y(a[i]).toFixed(1)}" r="4" fill="${c}">${live ? '' : `<title>${m.ymLabel(months[i])} ${fmtY(a[i])}</title>`}</circle>`; return ''; };
-    const pts = sp.lines.map(l => ({ a: l.a, c: l.c, y, raw: !!sp.noFill }));
+    const pts = sp.lines.map(l => ({ a: l.a, c: l.c, y, raw: !!sp.noFill || !!l.pts }));
     let subSvg = '';
     if (sub) {
       let a = Math.min(...sv), b = Math.max(...sv); const p2 = (b - a) * 0.15 || 2; a -= p2; b += p2;
@@ -189,7 +193,7 @@
         + `<text x="${W - R - 4}" y="${(s0 + 12).toFixed(1)}" font-size="${fs - 1}" fill="#4E5968" text-anchor="end">평균 ${f2(avg)}</text>`
         + `<text x="${L - 5}" y="${(s0 + SH / 2 - 2).toFixed(1)}" font-size="${fs - 1}" fill="#4E5968" text-anchor="end">${esc(sub.label || '')}</text>`
         + `<text x="${L - 5}" y="${(s0 + SH / 2 + fs - 1).toFixed(1)}" font-size="${fs - 1}" fill="#4E5968" text-anchor="end">${f2(sv[sv.length - 1])}</text>`
-        + linePaths(sub.a, x, y2, sub.c, 1.8);
+        + linePaths(sub.a, x, y2, sub.c, 1.8, sp.maxGap);
       pts.push({ a: sub.a, c: sub.c, y: y2, raw: !!sp.noFill });
     }
     const xLab = sp.xLab || ((ym, short) => n > 36 ? (short ? "'" + String(ym).slice(2, 4) + '년' : String(ym).slice(0, 4) + '년') : short ? "'" + String(ym).slice(2, 4) + '.' + String(ym).slice(4, 6) : m.ymLabel(ym));
@@ -201,7 +205,20 @@
     /* 참고 구간(sp.ref = {n: 앞쪽 달 수, label}): 예측에 쓰지 않는 옛 기록(2010년 이전 매매)을 연한 회색 칸 + '참고' 글씨로 */
     const rn = sp.ref && sp.ref.n > 0 && n > 1 ? Math.min(sp.ref.n, n - 1) : 0;
     const refSvg = rn ? `<rect class="ref" x="${L}" y="${T}" width="${(x(rn) - L).toFixed(1)}" height="${PH}" fill="#F2F4F6"/><text x="${L + 4}" y="${T + fs}" font-size="${fs - 1}" fill="#6B7684">${esc(sp.ref.label || '참고')}</text>` : '';
-    const svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(sp.aria || '추이 그래프')}">${refSvg}${grid}${sp.lines.map(l => l.dash ? dashP(l) : `${linePaths(l.a, x, y, l.c, l.w)}${dots(l.a, l.c, y)}${last(l.a, l.c)}`).join('')}${subSvg}${xl}${over}</svg>`;
+    /* pts = 점만(거래가 드문 평형의 매매 — 실제 거래가 있었던 달), 선·점선 없음 */
+    const ptsP = l => l.a.map((v, i) => v > 0 ? `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="4.5" fill="${l.c}" stroke="#fff" stroke-width="1.5" class="deal">${live ? '' : `<title>${m.ymLabel(months[i])} ${fmtY(v)}</title>`}</circle>` : '').join('');
+    /* 점 자료(pts)의 긴 공백(GAP_MIN 개월 이상, 차트 처음·끝 포함)에 '이 기간엔 거래가 없었어요' — 가장 긴 곳 한 군데, 글자가 들어갈 폭일 때만 */
+    let gapSvg = '';
+    const pl = sp.lines.find(l => l.pts);
+    if (pl && n > 1) {
+      const idx = pl.a.map((v, i) => v > 0 ? i : -1).filter(i => i >= 0), edges = [-1].concat(idx, [n]);
+      let best = null;
+      for (let k = 1; k < edges.length; k++) { const a0 = edges[k - 1], b0 = edges[k], len = b0 - a0 - 1; if (len >= GAP_MIN && (!best || len > best.len)) best = { a0, b0, len }; }
+      if (best) { const xa = best.a0 < 0 ? L : x(best.a0), xb = best.b0 >= n ? W - R : x(best.b0);
+        const tx = ['이 기간엔 매매 거래가 없었어요', '매매 거래 없음'].find(t => xb - xa > textW(t, fs - 1) + 16);   // 좁으면 짧게
+        if (tx) gapSvg = `<text class="nogap" x="${((xa + xb) / 2).toFixed(1)}" y="${(T + PH / 2).toFixed(1)}" font-size="${fs - 1}" fill="#6B7684" text-anchor="middle" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">${tx}</text>`; }
+    }
+    const svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(sp.aria || '추이 그래프')}">${refSvg}${grid}${gapSvg}${sp.lines.map(l => l.dash ? dashP(l) : l.pts ? ptsP(l) : `${linePaths(l.a, x, y, l.c, l.w, sp.maxGap)}${dots(l.a, l.c, y)}${last(l.a, l.c)}`).join('')}${subSvg}${xl}${over}</svg>`;
     return { html: svg, model: { W, H, L, R, n, x, pts, top: T, months } };
   }
   /** 말풍선 내용 만들기(공용). o = {months, rows:[{k, sk(요약 줄용 짧은 이름), a, c, fmt, ex}], gap:[매매 a, 전세 a] (선택), cnt: Map(연월 → 건수, 선택), cntK: '매매',
@@ -348,11 +365,16 @@
     opts = opts || {};
     if (opts.jr && t) { const k = t.jr.findIndex(v => v > 0); if (k > 0) t = Object.assign({}, t, { months: t.months.slice(k), jr: t.jr.slice(k), s: t.s.slice(k), j: t.j.slice(k) }); }   // 전세가율은 전세 자료가 있는 달부터
     const jr = t.jr.map(v => v * 100);
-    const sp = { months: t.months, fs: opts.fs || 12.5, h: opts.h || 190, L: opts.jr ? 44 : 54, min: 2,
-      lines: opts.jr ? [{ a: jr, c: '#0E7A4F', w: 2.4 }] : [{ a: t.j, c: '#14A06B', w: 2.2 }, { a: t.s, c: '#4338CA', w: 2.6 }],
-      fmtY: opts.jr ? (v => Math.round(v) + '%') : eok, aria: opts.jr ? '전세가율 추이' : '매매·전세 시세 추이',
-      empty: opts.jr ? '전세가율을 계산할 달(매매·전세 거래가 모두 있는 달)이 적어요.' : '차트로 보여 드릴 거래가 없어요.',
-      pre: opts.sparse ? SPARSE : '' };
+    /* opts.deals(거래가 드문 평형, t.months 와 같은 칸 — JDJ_MINE.dealSeries): 매매는 실제 거래가 있었던 달만 점, 말풍선도 그 달만 값(나머지 '거래 없음'),
+       공백은 점선으로 잇지 않음(전세 선도), 매매 점 사이 1년 넘는 공백엔 '이 기간엔 매매 거래가 없었어요' 글씨 */
+    const pts = !opts.jr && Array.isArray(opts.deals) && opts.deals.length === t.months.length;
+    if (pts) t = Object.assign({}, t, { s: opts.deals });
+    const sp = { months: t.months, fs: opts.fs || 12.5, h: opts.h || 190, L: opts.jr ? 44 : 54, min: pts ? 1 : 2,
+      lines: opts.jr ? [{ a: jr, c: '#0E7A4F', w: 2.4 }] : [{ a: t.j, c: '#14A06B', w: 2.2 }, { a: t.s, c: '#4338CA', w: 2.6, pts }],
+      fmtY: opts.jr ? (v => Math.round(v) + '%') : eok, aria: opts.jr ? '전세가율 추이' : pts ? '매매 실거래(점)·전세 시세 추이' : '매매·전세 시세 추이',
+      empty: opts.jr ? '전세가율을 계산할 달(매매·전세 거래가 모두 있는 달)이 적어요.' : pts ? '이 기간엔 거래가 없었어요. 기간 단추에서 더 긴 기간을 눌러 보세요.' : '차트로 보여 드릴 거래가 없어요.',
+      pre: pts ? SPARSE_PTS : opts.sparse ? SPARSE : '' };
+    if (pts) { sp.noFill = true; sp.maxGap = 1; opts = Object.assign({}, opts, { noFill: true }); }
     let gu = null;
     if (opts.gu && !opts.jr) { const a = M().sggLine(opts.gu.s, opts.gu.months, t.months, opts.gu.area); if (a.some(v => v > 0)) { gu = { name: opts.gu.name || '구', a, me: opts.gu.me || '' }; sp.lines.unshift({ a, c: GRAY, w: 1.8, dash: true }); } }
     if (opts.sub && !opts.jr && jr.some(v => v > 0)) sp.sub = { a: jr, c: '#0E7A4F', label: '전세가율' };
@@ -582,11 +604,11 @@
         let span = 36;
         const cnt = cntMap(u, ix.months), gu = guOf(h, sgg, ix.months, u[4]);
         const draw = () => {
-          const w = M().histWindow(t, span), W = Math.min(520, (sec.clientWidth || 480));
+          const w = M().histWindow(t, span), W = Math.min(520, (sec.clientWidth || 480)), sps = M().isSparse(t.s);
           sec.innerHTML = `<div class="jps-ch"><h4>가격 추이 (매매·전세)</h4>${spanBtns(t, span)}</div><div class="jps-hc" style="max-width:${W}px"></div>
-            <div class="jps-lg"><span><i></i>매매 시세</span>${t.j.some(v => v > 0) ? '<span><i class="j"></i>전세 시세</span>' : ''}${gu ? `<span><i class="g"></i>${esc(gu.name)} 아파트 같은 면적 환산</span>` : ''}<span>${esc(u[3])} · 전용 ${u[4]}㎡ 환산</span>${w.jr.some(v => v > 0) ? '<span>아래 띠 = 전세가율(점선 = 평균)</span>' : ''}</div>
+            <div class="jps-lg"><span><i></i>${sps ? '매매 실거래(점)' : '매매 시세'}</span>${t.j.some(v => v > 0) ? '<span><i class="j"></i>전세 시세</span>' : ''}${gu ? `<span><i class="g"></i>${esc(gu.name)} 아파트 같은 면적 환산</span>` : ''}<span>${esc(u[3])} · 전용 ${u[4]}㎡ 환산</span>${w.jr.some(v => v > 0) ? '<span>아래 띠 = 전세가율(점선 = 평균)</span>' : ''}</div>
             ${gu ? `<p class="jps-note">${esc(guNote(gu, w.months[0]))}</p>` : ''}<p class="jps-note">${esc(histNote(g.hist, t))}</p>`;
-          mountHist(sec.querySelector('.jps-hc'), w, { sparse: M().isSparse(t.s), sub: true, cnt, gu, ref: g.hist && g.hist.mf });
+          mountHist(sec.querySelector('.jps-hc'), w, { sparse: sps, deals: sps ? M().dealSeries(w, u, ix.months) : null, sub: true, cnt, gu, ref: g.hist && g.hist.mf });
           sec.querySelectorAll('[data-hspan]').forEach(b => b.onclick = () => { span = +b.dataset.hspan; draw(); });
         };
         draw();
@@ -654,7 +676,7 @@
       + `<p>전셋값이 집값에 가까우면 집값이 조금만 내려도 집을 팔아 보증금을 다 돌려받기 어려울 수 있어요(깡통전세). 주택도시보증공사(HUG) 전세보증금반환보증은 보증금과 선순위채권(근저당 등)을 더한 금액이 주택가격의 ${lim}% 이내여야 가입할 수 있어요. 이 값은 실거래 시세로 계산한 것이라, 실제 계약하는 집의 가격·근저당은 따로 확인해야 해요.</p>`
       + `<a href="${esc(href || '../jeonse/checklist/')}" data-track="jr_chip_to_checklist">전세 계약 전 체크리스트 보기 →</a></div>`;
   }
-  const API = { jrChip, jrLimit, niceTicks, eokAxis, open, close, btn, loanHref, loadSgg, loadHist, histOf, scoreUnits, findUnit, tradesHtml, pastYearsHtml, wireMore, miniChart, histChart, histNote, linePaths, mountBars, SPARSE, highsHtml, spanBtns, baseName, plot, mount, tipFn, histTip, histSpec, refCut, mountHist, cntMap, eok, guOf, guNote, ppySpec, mountPpy };
+  const API = { jrChip, jrLimit, niceTicks, eokAxis, open, close, btn, loanHref, loadSgg, loadHist, histOf, scoreUnits, findUnit, tradesHtml, pastYearsHtml, wireMore, miniChart, histChart, histNote, linePaths, mountBars, SPARSE, SPARSE_PTS, GAP_MIN, highsHtml, spanBtns, baseName, plot, mount, tipFn, histTip, histSpec, refCut, mountHist, cntMap, eok, guOf, guNote, ppySpec, mountPpy };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_PRICE = API;
 })(typeof self !== 'undefined' ? self : this);

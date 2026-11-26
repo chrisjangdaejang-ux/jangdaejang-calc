@@ -143,7 +143,21 @@ const lowU = ['11680', '청담동', '청담4차이-편한세상', '135㎡대', 1
   [[Number(months[33] + '15'), 136.4, 9, 345000, 0], [Number(months[33] + '02'), 136.4, 4, 343000, 1], [Number(months[20] + '07'), 136.4, 12, 316000, 0]]];
 check('저거래 판정: 3건 → 범위 표시(3건 미만만 목록 요약)', [M.isFew(lowU), M.isFew(Object.assign(lowU.slice(), { 5: 2 }))], [false, true], 'FEW = 3');
 check('거래 있는 달(최신순, 그 달 중앙 평당가)', M.monthDeals(lowU, months).map(x => [x.at, x.n, x.ppy]), [[months[33], 2, 8361], [months[20], 1, 7658]], 'u[10] 은 오래된 달부터');
-check('마지막 거래 환산', M.lastDeal(lowU, months).price, M.toPrice(8361, 136.4), '');
+check('마지막 거래 환산', M.lastDeal(lowU, months).price, M.toPrice(8361, 136.4), '그 달 개별 거래(직거래 제외 1건)와 건수(2)가 안 맞으면 환산 그대로');
+{ // 목동신시가지7 84㎡대(전용 89.05㎡, 1층 전용 타입) — 국토교통부 원자료: 2026.05.20 1층 27억 5,000만, 2026.10.02 1층 30억 5,000만
+  const cm = months.map(() => 0); cm[30] = 1; cm[35] = 1;
+  const p7 = a => Math.round(a / 89.05 * 3.3058);
+  const m7 = ['11470', '목동', '목동신시가지7', '84㎡대', 89.0, 2, months.map((_, i) => i >= 30 && i <= 32 ? p7(275000) : i === 35 ? p7(305000) : 0), cstr(cm), '925', 0, [p7(275000), p7(305000)],
+    [[Number(months[35] + '02'), 89.05, 1, 305000, 0], [Number(months[30] + '20'), 89.05, 1, 275000, 0]]];
+  const ld = M.lastDeal(m7, months);
+  check('1건뿐인 달: 환산(30억 4,800만) 대신 실제 거래 금액', [ld.price, ld.real, M.won(ld.price)], [305000, true, '30억 5,000만원'], '평당가 × 반올림 전용(89.0㎡) 환산 오차 없앰');
+  check('드문 평형 점 자료: 실제 거래 달만(3개월 이동값이 이어진 달은 0)', M.dealSeries({ months, s: m7[6].map(v => M.toPrice(v, 89.0)) }, m7, months).map((v, i) => v ? [i, v] : null).filter(Boolean), [[30, 275000], [35, 305000]], '');
+  const hm = ['201705', '201706', '201707', '201708', '201709', '201710', '201711'].concat(months);
+  check('드문 평형 점 자료: 3년 이전은 앞 3개월 공백 뒤 첫 달만', M.dealSeries({ months: hm, s: [11750, 11750, 11800, 11800, 0, 0, 0].concat(months.map(() => 0)) }, null, months).slice(0, 7), [11750, 0, 0, 0, 0, 0, 0], '');
+  const b = (bd, n) => ['11470', '목동', '목동신시가지7', bd, 0, n];
+  check('처음 평형: 드문 84㎡대(2건)보다 가장 많이 거래된 평형', M.defaultBand([b('74㎡대', 83), b('49㎡대', 61), b('84㎡대', 2)]), '74㎡대', '');
+  check('처음 평형: 84㎡대 거래가 충분하면 84㎡대', [M.defaultBand([b('59㎡대', 40), b('84㎡대', 12)]), M.defaultBand([b('59㎡대', 20), b('84㎡대', 5)]), M.defaultBand([b('59㎡대', 9)])], ['84㎡대', '84㎡대', '59㎡대'], '12건 이상 또는 최다 평형의 1/4 이상');
+}
 const tr = M.trades(lowU);
 check('개별 거래 해독', [tr[0].date, tr[0].floor, tr[0].amt, tr[0].type, tr[1].type], [`${months[33].slice(0, 4)}.${months[33].slice(4)}.15`, 9, 345000, '중개', '직거래'], '유형 0 중개·1 직거래');
 check('개별 거래 평당가', tr[0].ppy, Math.round(345000 / 136.4 * 3.3058), '');
@@ -421,6 +435,19 @@ if (DIR && fs.existsSync(path.join(DIR, 'index.json'))) {
   const fs = require('fs'), path = require('path'), rd = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
   check('화면이 같은 함수: 내 집 시세·지도', [/M\.jrNow\(t\)/.test(rd('mine/index.html')), /M\.histJrMap\(h\)/.test(rd('map/index.html'))], [true, true], 'mine/·map/');
   check('관심 목록·성적표에 전세가율 기준 한 줄', [rd('my/watch/index.html'), rd('my/report/index.html')].map(s => s.includes('내 집 시세·지도와 같은 기준')), [true, true], 'my/watch·my/report');
+}
+
+{ // 드문 평형 차트: 매매는 실제 거래 달만 점, 1년 넘는 공백은 점선 없이 '이 기간엔 거래가 없었어요'
+  const PS2 = require('../assets/price-sheet.js');
+  const ms = months, n = ms.length, z = () => ms.map(() => 0);
+  const s = z(), j = z(), d = z(); s[30] = s[31] = s[32] = 274800; s[35] = 304800; d[30] = 275000; d[35] = 305000; j[0] = j[1] = 90000; j[20] = j[21] = 93000;
+  const sp = PS2.histSpec({ months: ms, s, j, jr: z() }, { deals: d, sparse: true });
+  const svg = PS2.plot(sp, 390).html;
+  check('드문 평형 차트: 매매 점 2개(실제 거래 달)·매매 선 없음', [(svg.match(/class="deal"/g) || []).length, /stroke="#4338CA" stroke-width="2.6"/.test(svg)], [2, false], '');
+  check('드문 평형 차트: 긴 공백 글씨 + 1년 넘는 전세 공백은 점선 없음', [/이 기간엔 매매 거래가 없었어요/.test(svg), /stroke="#14A06B"[^>]*class="gap"/.test(svg) || /class="gap"/.test(svg)], [true, false], 'j 1→20 공백 19개월 > 12');
+  check('드문 평형 차트: 안내 문구·말풍선 실제 값만', [sp.pre === PS2.SPARSE_PTS, sp.noFill, sp.tip ? 1 : 0], [true, true, 0], 'tip 은 mountHist 에서만');
+  const sp2 = PS2.histSpec({ months: ms, s, j, jr: z() }, { sparse: true });
+  check('deals 없으면 예전 그대로(선)', [sp2.pre === PS2.SPARSE, !!sp2.lines[1].pts], [true, false], '');
 }
 
 let bad = 0;
