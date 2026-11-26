@@ -435,6 +435,17 @@ $('fSgg').onchange = () => { F.sgg = $('fSgg').value; SHOWN = 30; render(); };
 $('fPrice').onchange = () => { F.price = $('fPrice').value; SHOWN = 30; render(); };
 $('fSort').onchange = () => { F.sort = $('fSort').value; render(); };
 
+/* 주소로 조건 열기(다른 화면·'물어보기'에서 바로 연결): ?sd=서울(시·도 이름·줄임말) &g=강동구 &st=pre|on|wait|mv &k=아파트 */
+function fromUrl() {
+  let q; try { q = new URLSearchParams(location.search); } catch (e) { return; }
+  const sd = String(q.get('sd') || '').trim();
+  if (sd) { const n = sidoNorm(sd), hit = SIDO.find(s => s === n || sidoShort(s) === sd) || SIDO.find(s => s.indexOf(sd) === 0 || sidoShort(s).indexOf(sd) === 0); if (hit) F.sido = hit; }
+  const g = String(q.get('g') || '').trim();
+  if (F.sido && g && ROWS.some(x => sidoNorm(x.sd) === F.sido && x.gn === g)) F.sgg = g;
+  const pick = (id, key, v) => { if (v == null) return; const b = [...$(id).querySelectorAll('button')].find(x => x.dataset.v === v); if (!b) return;
+    F[key] = v; $(id).querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); };
+  pick('fSt', 'st', q.get('st')); pick('fKind', 'kind', q.get('k'));
+}
 async function getJ(f) { try { const r = await fetch(DATA + f); return r.ok ? await r.json() : null; } catch (e) { return null; } }
 async function init() {
   fillSido(); fillSgg();
@@ -449,7 +460,8 @@ async function init() {
   if (IDX && IDX.updated) $('upd').textContent = `갱신 ${IDX.updated}.`;
   if (ex && ex.status === 'ok' && ((ex.unsold || []).length || (ex.permits || []).length)) $('extraBox').hidden = false;   // 활용신청 승인 후 활성화
   if (window.JDJ_ADS) JDJ_ADS.setRows(ROWS);
-  fillSido(); fillSgg(); render();
+  fromUrl();
+  fillSido(); fillSgg(); if (F.sgg) $('fSgg').value = F.sgg; render();
   /* 관심 지역(assets/area-watch.js): 공고 목록 위 상자 — 설정·새 공고 표시·알림 신청 */
   if (window.JDJ_AREA) { JDJ_AREA.mountPanel($('areaBox'), { rows: ROWS, onOpen: id => { const x = ROWS.find(y => y.id === id); if (x) detail(x); } });
     if (location.hash === '#area') setTimeout(() => { const a = $('area'); if (a) a.scrollIntoView({ block: 'start' }); }, 50); }

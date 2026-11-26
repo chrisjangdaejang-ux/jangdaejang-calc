@@ -315,7 +315,100 @@
     return { line, dots };
   }
 
-  const API = { MAX, ymText, ageText, pctDiff, turnover, winner, monthsBetween, offSeries, chartData, STOP, ALIAS, clean, bandHint, exact, search, segment, resolve, parse, pickBand, keyOf, parseKey, packList, unpackList, target, avgDeal, jeonseOf, summary, shareHead, pctTop };
+  /* ---------- 단지 이름이 아닌 질문 → 이미 있는 화면으로 바로 연결 ----------
+     '서울 분양 예정 단지', '송파구 집값 올랐어?', '우리 동네 재개발 구역'처럼 단지 이름이 아닌 질문은 낱말(예: '서울')을 단지 이름으로 잘못 찾지 않고,
+     그 질문에 답하는 집예보 화면(분양·순위·재개발 구역·전월세·빌라 등)을 지역 조건을 채워 열어 줘요. 숫자를 새로 만들지 않아요.
+     topic(text, IX) → null | { id, title, desc, url, region:{sd, sdName, g, gName}, danjiOk } (danjiOk: 단지 이름이 함께 있으면 단지 화면이 더 맞는 주제) */
+  const TOPICS = [
+    { id: 'cy', re: /가점|청약\s*점수|당첨\s*(가능|확률|될|되)|특별공급|특공|1순위/, title: '내 청약 진단', desc: '내 가점·자격으로 지금 공고 중 어디를 노려 볼 만한지 보여 드려요', path: 'chungyak/' },
+    { id: 'by', re: /분양|청약|모집\s*공고|입주\s*예정|무순위|줍줍|미분양|새\s*아파트|신축\s*아파트/, title: '분양 정보', desc: '공식 공고 기준 분양 예정·청약 중·입주 예정 단지를 지역별로 보여 드려요', path: 'bunyang/' },
+    { id: 'zone', re: /재개발|재건축|정비\s*구역|구역|정비\s*사업|관리처분|사업시행|착공|이주|조합\s*설립|신속통합|입주권/, title: '재개발·재건축 구역 지도', desc: '구역마다 지금 단계와 착공까지 보통 몇 년 걸리는지 보여 드려요', path: 'villa/zone/' },
+    { id: 'jeonse', re: /전세|월세|전월세|보증금|깡통|전세\s*사기|역전세|세입자|임대차/, title: '전월세 전망·전세사기 예방', desc: '전세·월세 시세, 전세가율(집값 대비 전셋값 비율), 깡통전세 위험을 보여 드려요', path: 'jeonse/', danjiOk: true },
+    { id: 'villa', re: /빌라|연립|다세대|대지\s*지분/, title: '재개발·빌라 체크', desc: '빌라 실거래와 대지지분 평당가, 같은 동 정비구역 단계를 보여 드려요', path: 'villa/' },
+    { id: 'offi', re: /오피스텔/, title: '오피스텔 시세', desc: '오피스텔 실거래 시세와 흐름을 보여 드려요', path: 'mine/?t=o' },
+    { id: 'shop', re: /상가|통건물|꼬마\s*빌딩|건물\s*시세/, title: '상가·건물 시세', desc: '상가·건물 실거래를 보여 드려요', path: 'mine/?t=c' },
+    { id: 'week', re: /지난\s*주|이번\s*주|주간/, title: '주간 실거래 동향', desc: '지난주 계약된 아파트가 같은 집 직전 거래보다 얼마나 올랐는지 보여 드려요', path: 'weekly/' },
+    { id: 'rank', re: /순위|몇\s*위|몇\s*등|가장\s*많이|제일\s*많이|많이\s*(오른|내린|올랐|떨어진)|올랐|내렸|떨어졌|상승률|하락률|오른\s*(곳|구|동네|지역)|내린\s*(곳|구|동네|지역)|집값\s*(흐름|동향|추이)|어디가\s*(올|좋)/, title: '지역 순위', desc: '같은 시·도 안에서 구별 시세가 얼마나 올랐는지, 앞으로 2년 지역 흐름은 몇 위인지 보여 드려요', path: 'rank/' },
+    { id: 'map', re: /지도|근처|주변|역세권|가까운|이하\s*(아파트|단지)|억\s*(이하|미만|대)|추천/, title: '지도로 단지 찾기', desc: '지역·가격·평형 조건으로 단지 시세와 미래가치 점수를 지도에서 한눈에 보여 드려요', path: 'map/' }
+  ];
+  /** 문장 속 지역(시·도, 시·군·구) — index.json 의 이름만 씀 */
+  /* 옛 이름·흔한 줄임말 → index.json 시·도 줄임 이름 */
+  const SIDO_ALIAS = [[/광주|전남|전라남도/, '전남광주'], [/충청북도/, '충북'], [/충청남도/, '충남'], [/경상북도/, '경북'], [/경상남도/, '경남'], [/전라북도/, '전북'], [/강원도/, '강원']];
+  function regionOf(text, IX) {
+    let t = String(text || '');
+    for (const [re, sh] of SIDO_ALIAS) if (re.test(t) && t.indexOf(sh) < 0 && !(sh === '전남광주' && /경기/.test(t))) t += ' ' + sh;   // '경기 광주'는 경기도 광주시
+    const out = { sd: '', sdName: '', sdShort: '', g: '', gName: '' };
+    if (!IX || !IX.sido) return out;
+    /* 시·군·구 먼저(글자가 가장 길게 맞는 곳 — '강남구'가 '포항시 남구'의 '남구'로, '해운대구'가 '대구'로 잘못 잡히지 않게) */
+    const cand = [];
+    for (const [code, v] of Object.entries(IX.sgg || {})) {
+      const n = v && v.name; if (!n || n.length < 2) continue;
+      const short = n.split(' ').pop(), hitLen = t.indexOf(n) >= 0 ? n.length : (short.length >= 2 && t.indexOf(short) >= 0 ? short.length : 0);
+      if (!hitLen) continue;
+      const at = t.indexOf(n) >= 0 ? t.indexOf(n) : t.indexOf(short), word = t.indexOf(n) >= 0 ? n : short;
+      /* 더 긴 이름의 일부인 경우(앞 글자가 한글) 빼기 — '강남구' 안의 '남구' */
+      if (at > 0 && /[가-힣]/.test(t.charAt(at - 1)) && !(t.indexOf(n) >= 0 && n.indexOf(' ') > 0)) continue;
+      cand.push({ code, v, len: hitLen, word });
+    }
+    const sidoIn = s => s && (t.indexOf(s.name) >= 0 || (s.short && t.split(/\s+/).some(w => w.indexOf(s.short) === 0 && !cand.some(c => w.indexOf(c.word) >= 0 && c.word.indexOf(s.short) >= 0))));
+    const sido = IX.sido.find(x => t.indexOf(x.name) >= 0) || IX.sido.find(sidoIn);
+    if (sido) { out.sd = sido.id; out.sdName = sido.name; out.sdShort = sido.short; }
+    if (cand.length) {
+      const inSd = cand.filter(c => !out.sdName || c.v.sido === out.sdName);
+      const pool = (inSd.length ? inSd : cand).sort((a, b) => b.len - a.len || (a.code.startsWith('11') ? -1 : b.code.startsWith('11') ? 1 : 0));
+      const c = pool[0];
+      out.g = c.code; out.gName = c.v.name;
+      if (!out.sd || c.v.sido !== out.sdName) { const s = IX.sido.find(x => x.name === c.v.sido); if (s) { out.sd = s.id; out.sdName = s.name; out.sdShort = s.short; } }
+    }
+    return out;
+  }
+  function topic(text, IX) {
+    const t = String(text || '');
+    const hit = TOPICS.find(x => x.re.test(t)); if (!hit) return null;
+    const r = regionOf(t, IX), base = JB.SITE;
+    let url = base + hit.path;
+    const q = new URLSearchParams();
+    if (hit.id === 'by') {
+      if (r.sdShort) q.set('sd', r.sdShort);
+      if (r.g && r.gName) q.set('g', r.gName.split(' ').pop());
+      if (/분양\s*예정|예정/.test(t) && !/입주\s*예정/.test(t)) q.set('st', 'pre');
+      else if (/청약\s*중|접수|넣을\s*수|지금\s*청약/.test(t)) q.set('st', 'on');
+      else if (/입주\s*예정/.test(t)) q.set('st', 'mv');
+      if (/아파트/.test(t)) q.set('k', '아파트');
+    } else if (hit.id === 'rank') {
+      if (r.sd) q.set('sd', r.sd);
+      if (/내린|내렸|떨어|하락/.test(t)) q.set('dir', 'down');
+      if (/미래|앞으로|전망/.test(t)) q.set('t', 'fv');
+    } else if (hit.id === 'jeonse') {
+      if (r.sd) q.set('sd', r.sd); if (r.g) q.set('g', r.g);
+      if (/빌라|연립|다세대/.test(t)) q.set('k', 'v'); else if (/오피스텔/.test(t)) q.set('k', 'o');
+    } else if (hit.id === 'map') {
+      if (r.sd) q.set('sd', r.sd);
+    } else if (hit.id === 'villa') {
+      if (r.g) q.set('g', r.g);
+    }
+    const qs = q.toString();
+    if (qs) url += (url.indexOf('?') >= 0 ? '&' : '?') + qs;
+    /* 화면 주소에 실제로 넣은 지역만 글자로(넣지 못한 지역을 넣은 것처럼 쓰지 않게) */
+    const gIn = q.has('g'), sdIn = q.has('sd') || gIn;
+    const where = gIn ? (r.sdShort && r.gName.indexOf(r.sdShort) < 0 ? r.sdShort + ' ' : '') + r.gName : sdIn ? r.sdShort : '';
+    return { id: hit.id, title: hit.title, desc: hit.desc, url, region: r, where, danjiOk: !!hit.danjiOk };
+  }
+  /** 주제 낱말(분양·재건축·구역·추천·10억 등)로 찾은 단지 덩어리인가 — 주제 질문에서 '재건축' → '낙원연립재건축조합아파트'처럼 잘못 고르지 않게 */
+  function topicWord(q) {
+    const w = String(q || '');
+    return TOPICS.some(x => x.re.test(w)) || /^\d+(억|만|평)/.test(w) || /^(언제|어디|이하|이상|미만|정도|높은|낮은|싼|비싼|많은|좋은|구|동네|지역|단지|아파트)$/.test(w.replace(/\s/g, ''));
+  }
+  /** 낱말이 지역 이름(시·도·시·군·구·'○○동')뿐인가 — 주제 질문에서 '서울' 같은 낱말을 단지 이름으로 찾지 않게 */
+  function regionWord(q, IX) {
+    const w = String(q || '').replace(/\s/g, ''); if (!w) return false;
+    if (/^(우리|내)?(동네|지역|근처|주변)$/.test(w)) return true;
+    if (!IX) return false;
+    if ((IX.sido || []).some(s => s.short === w || s.name === w || s.short + '시' === w)) return true;
+    return Object.values(IX.sgg || {}).some(v => v && v.name && (v.name === w || v.name.split(' ').pop() === w || v.name.replace(/\s/g, '') === w || v.name.split(' ').pop() === w + '구'));
+  }
+
+  const API = { TOPICS, topic, topicWord, regionOf, regionWord, MAX, ymText, ageText, pctDiff, turnover, winner, monthsBetween, offSeries, chartData, STOP, ALIAS, clean, bandHint, exact, search, segment, resolve, parse, pickBand, keyOf, parseKey, packList, unpackList, target, avgDeal, jeonseOf, summary, shareHead, pctTop };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_ASK_CORE = API;
 })(typeof self !== 'undefined' ? self : this);

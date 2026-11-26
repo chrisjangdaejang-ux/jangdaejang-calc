@@ -36,11 +36,11 @@
     return [hit].concat(TIERS.map(t => t.filter(x => hit.indexOf(x) < 0)).filter(t => t.length));
   }
   /** 문장 → 결과. 앞 단계 시·도에서 모든 낱말이 단지로 풀리면 거기서 멈춤 */
-  async function ask(text, onStep) {
+  async function ask(text, onStep, maxTiers) {
     const A = root.JDJ_ASK_CORE;
     await index();
     let res = null;
-    for (const tier of tiersFor(text)) {
+    for (const tier of tiersFor(text).slice(0, maxTiers || 99)) {
       if (onStep) onStep(tier);
       await Promise.all(tier.map(sd => loadSido(sd).catch(() => null)));
       res = A.parse(text, GROUPS);
@@ -63,6 +63,8 @@
     + '.jask .pop{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:12px}.jask .pop>span{font-size:13.5px;font-weight:700;color:#4E5968;margin-right:2px}'
     + '.jask .pop .ex{display:inline-block;font-size:11.5px;font-weight:800;color:#8A6D17;background:#FBF5E3;border:1px solid #EFE2B8;border-radius:5px;padding:0 5px;margin-left:4px;vertical-align:1px}'
     + '.jask .pop .chip{min-height:44px;font-size:14px;font-weight:600}'
+    + '.jask .tp{display:flex;flex-direction:column;gap:4px;margin-top:10px;padding:14px;border-radius:14px;background:#fff;border:1.5px solid #2560E8;text-decoration:none;color:#191F28}'
+    + '.jask .tp b{font-size:16px;font-weight:800;color:#1F56E0}.jask .tp small{font-size:13.5px;color:#4E5968;line-height:1.5}.jask .tp:hover{background:#F4F7FF}'
     + '.jask .note{font-size:13px;color:#4E5968;margin:10px 0 0;line-height:1.5}'
     + '@media(max-width:420px){.jask{padding:16px 14px}.jask form button{padding:0 14px}}';
   function css() { if (document.getElementById('jaskCss')) return; const s = document.createElement('style'); s.id = 'jaskCss'; s.textContent = CSS; document.head.appendChild(s); }
@@ -104,7 +106,17 @@
       say(`${open.length === r.segs.length && r.segs.length === 1 ? '' : '찾은 단지: ' + r.segs.filter(s => s.chosen).map(s => s.chosen.apt).join(', ') + '. '}아래에서 어느 단지인지 골라 주세요.`);
       cbox.innerHTML = open.map(([s, i]) => `<div class="cg"><b>‘${esc(s.q)}’ — 어느 단지인가요?</b><div class="row">${s.cands.map((d, k) => `<button type="button" class="chip" data-s="${i}" data-k="${k}">${label(d)}</button>`).join('')}</div></div>`).join('');
     }
+    function showTopic(tp, picks) {
+      const where = tp.where ? tp.where + ' ' : '';
+      say(tp.msg || `이 질문은 ‘${tp.title}’ 화면에서 바로 확인할 수 있어요.${where ? ` ${where.trim()} 조건을 넣어 열어 드려요.` : ''}`);
+      cbox.innerHTML = `<a class="tp" href="${esc(tp.url)}" data-track="ask_topic_${esc(tp.id)}"><b>${esc(where)}${esc(tp.title)} 바로 보기 ›</b><small>${esc(tp.desc)}</small></a>`
+        + ((picks || []).length ? `<div class="cg"><b>문장 속 단지 시세를 보려면</b><div class="row">${picks.slice(0, 3).map((d, k) => `<button type="button" class="chip" data-pk="${k}">${label(d)}</button>`).join('')}</div></div>` : '');
+      CUR = null; TP_PICKS = picks || [];
+      if (root.jdjStat) try { root.jdjStat('feature_use', { feature: 'ask_topic', from, topic: tp.id }); } catch (e) {}
+    }
+    let TP_PICKS = [];
     cbox.addEventListener('click', e => {
+      const pk = e.target.closest('[data-pk]'); if (pk) { const d = TP_PICKS[+pk.dataset.pk]; if (d) go([d], null); return; }
       const b = e.target.closest('[data-s]'); if (!b || !CUR) return;
       const s = CUR.segs[+b.dataset.s]; s.chosen = s.cands[+b.dataset.k]; paint();
     });
@@ -114,9 +126,42 @@
       if (!root.JDJ_ASK_CORE || !root.JDJ_MINE) { say('잠시 뒤 다시 눌러 주세요. 화면을 불러오는 중이에요.', true); return; }
       say('단지를 찾는 중이에요…');
       let r;
-      try { r = await ask(text, t => { if (my === RUN && t[0] !== 's00') say('다른 지역에서도 찾는 중이에요…'); }); }
+      /* 주제 질문(분양·순위 등)이면 단지 이름은 첫 지역 묶음에서만 찾아요(모든 시·도 자료를 받지 않게) */
+      let pre = null; try { await index(); pre = root.JDJ_ASK_CORE.topic ? root.JDJ_ASK_CORE.topic(text, IX) : null; } catch (e) {}
+      try { r = await ask(text, t => { if (my === RUN && t[0] !== 's00') say('다른 지역에서도 찾는 중이에요…'); }, pre && !pre.danjiOk ? 1 : 0); }
       catch (e) { if (my === RUN) say('자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.', true); return; }
       if (my !== RUN) return;
+      /* 단지 이름이 아닌 질문(분양·순위·재개발·전월세 등)은 그 질문에 답하는 화면으로 — '서울'을 단지 이름으로 찾던 문제(2026-11-26) */
+      const A = root.JDJ_ASK_CORE;
+      if (r && A.regionWord) r.segs = r.segs.filter(sg => !(sg.pick || sg.cands.length) || !A.regionWord(sg.q, IX));
+      if (r && pre && A.topicWord) r.segs = r.segs.filter(sg => !A.topicWord(sg.q));
+      let tp = A.topic ? A.topic(text, IX) : null;
+      if (!tp && A.topic && r && !r.segs.length && A.regionOf(text, IX).sd) tp = A.topic(text + ' 순위', IX);   // '송파구'처럼 지역 이름만 → 지역 순위
+      if (tp) {
+        const one = r && r.segs.length === 1 ? (r.segs[0].pick || (r.segs[0].cands.length === 1 ? r.segs[0].cands[0] : null)) : null;
+        if (tp.danjiOk && one) {   // '헬리오시티 전세' → 그 단지의 전월세 화면
+          const band = A.pickBand(one, r.hint), q2 = new URLSearchParams({ sd: one.sd, d: one.key }); if (band) q2.set('b', band);
+          say(`${one.apt} ${tp.title} 화면으로 이동해요…`);
+          if (root.jdjStat) try { root.jdjStat('feature_use', { feature: 'ask_topic', from, topic: tp.id }); } catch (e) {}
+          const u = tp.url.split('?')[0] + '?' + q2.toString();
+          if (opt.onGo) opt.onGo(u, []); else root.location.href = u;
+          return;
+        }
+        /* 재개발·재건축 질문에 구역 이름(예: '은마 재건축')이 있으면 그 구역을 바로 열기 */
+        if (tp.id === 'zone' && r) {
+          try {
+            const Z = await get('zones', DATA + 'redev/zones.json'), nz = x => String(x || '').replace(/\s|아파트|재건축|재개발|정비구역|구역/g, '');
+            const words = (r.tokens || []).map(nz).filter(w => w.length >= 2 && !A.topicWord(w) && !A.regionWord(w, IX));
+            const pickN = r.segs.filter(sg => sg.pick).map(sg => nz(sg.pick.apt));
+            let hit = null;
+            for (const w of pickN.concat(words)) { const hs = (Z.z || []).filter(z => nz(z.n) === w || (w.length >= 2 && nz(z.n).indexOf(w) === 0)); if (hs.length === 1) { hit = hs[0]; break; } }
+            if (my !== RUN) return;
+            if (hit) tp = Object.assign({}, tp, { url: tp.url.split('?')[0] + '?z=' + encodeURIComponent(hit.id), where: '', msg: `‘${hit.n}’ 구역의 지금 단계와 착공 예상 시기는 재개발·재건축 구역 지도에서 바로 볼 수 있어요.`, title: `${hit.n} 구역 단계·착공 예상`, desc: `${hit.gn || ''} ${hit.umd || ''} · 지금 단계${hit.sn ? ' ' + hit.sn : ''}와 단계별 실제 날짜, 착공까지 보통 몇 년 걸리는지 보여 드려요`.trim() });
+          } catch (e) {}
+        }
+        showTopic(tp, r && r.segs.filter(sg => sg.pick).map(sg => sg.pick));
+        return;
+      }
       if (!r || !r.segs.length) {
         say(`‘${text}’에서 단지 이름을 찾지 못했어요. 단지 이름을 실거래 신고 이름처럼 넣어 보세요(예: 헬리오시티, 목동신시가지7). 최근 3년 동안 거래가 있었던 아파트만 찾을 수 있어요.`, true);
         return;

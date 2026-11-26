@@ -135,6 +135,32 @@ check('노하우 수치(가중치·근거 코드) 화면에 안 씀', /\b(f|fx)\
 const sw = rd('sw.js'), v = f => ((ask.match(new RegExp(f.replace('.', '\\.') + '\\?v=(\\d+)')) || [])[1]);
 check('서비스 워커: 새 화면·파일 버전', [sw.includes("'./ask/'"), sw.includes(`ask-core.js?v=${v('ask-core.js')}'`), sw.includes(`ask.js?v=${v('ask.js')}'`), sw.includes(`mine-core.js?v=${v('mine-core.js')}'`), sw.includes(`stat.js?v=${v('stat.js')}'`)], [true, true, true, true, true]);
 
+/* ---------- 단지 이름이 아닌 질문 → 이미 있는 화면으로 (2026-11-26: '서울 분양 예정 단지'가 '서울'이라는 이름의 단지 후보로 가던 문제) ---------- */
+{
+  const IX = { sido: [{ id: 's00', name: '서울특별시', short: '서울' }, { id: 's01', name: '부산광역시', short: '부산' }, { id: 's02', name: '대구광역시', short: '대구' },
+    { id: 's04', name: '전남광주통합특별시', short: '전남광주' }, { id: 's08', name: '경기도', short: '경기' }, { id: 's13', name: '경상북도', short: '경북' }],
+    sgg: { '11680': { sido: '서울특별시', name: '강남구' }, '11710': { sido: '서울특별시', name: '송파구' }, '11740': { sido: '서울특별시', name: '강동구' }, '11380': { sido: '서울특별시', name: '은평구' },
+      '11500': { sido: '서울특별시', name: '강서구' }, '26440': { sido: '부산광역시', name: '강서구' }, '26350': { sido: '부산광역시', name: '해운대구' }, '26290': { sido: '부산광역시', name: '남구' },
+      '47111': { sido: '경상북도', name: '포항시 남구' }, '41115': { sido: '경기도', name: '수원시 팔달구' }, '27200': { sido: '대구광역시', name: '수성구' } } };
+  const T = q => { const t = A.topic(q, IX); return t ? [t.id, decodeURIComponent(t.url.replace(/^\/(jangdaejang-calc\/)?/, '')), t.where] : null; };
+  check('대표 질문: 청약 가점 + 서울 분양 예정 → 내 청약 진단', T('내 청약가점이 64점인데 서울에서 분양 예정인 단지중 당첨 가능한 단지는?'), ['cy', 'chungyak/', '']);
+  check('서울 분양 예정 → 분양 화면(서울·분양예정 조건)', T('서울에서 분양 예정인 단지'), ['by', 'bunyang/?sd=서울&st=pre', '서울']);
+  check('강동구 청약 중 아파트 → 분양(구·청약중·아파트)', T('강동구 청약 중인 아파트'), ['by', 'bunyang/?sd=서울&g=강동구&st=on&k=아파트', '서울 강동구']);
+  check("'강남구'가 '포항시 남구'로 잡히지 않음", T('강남구 전세가율 높은 아파트'), ['jeonse', 'jeonse/?sd=s00&g=11680', '서울 강남구']);
+  check("'해운대구'가 '대구'로 잡히지 않음", T('해운대구 집값 순위'), ['rank', 'rank/?sd=s01', '부산']);
+  check('부산 많이 떨어진 구 → 순위(하락)', T('부산에서 제일 많이 떨어진 구'), ['rank', 'rank/?sd=s01&dir=down', '부산']);
+  check('부산 강서구 → 부산(같은 이름 구)', A.regionOf('부산 강서구 순위', IX).g, '26440');
+  check('광주 → 전남광주, 경기 광주 → 경기', [A.regionOf('광주 분양', IX).sd, A.regionOf('경기 광주 분양', IX).sd], ['s04', 's08']);
+  check('재개발 구역 → 구역 지도', T('우리 동네 재개발 구역'), ['zone', 'villa/zone/', '']);
+  check('은평구 빌라 → 빌라 화면(구 코드)', T('은평구 빌라 시세'), ['villa', 'villa/?g=11380', '서울 은평구']);
+  check('단지 이름만이면 주제 없음(단지 화면)', [A.topic('잠실엘스 헬리오시티 비교', IX), A.topic('헬리오시티', IX)], [null, null]);
+  check('전세 + 단지 이름 → 단지 전월세로 갈 수 있는 주제', A.topic('헬리오시티 전세', IX).danjiOk, true);
+  check('지역 낱말·주제 낱말은 단지 이름으로 쓰지 않음', [A.regionWord('서울', IX), A.regionWord('송파', IX), A.regionWord('헬리오시티', IX), A.topicWord('재건축'), A.topicWord('10억'), A.topicWord('은마')], [true, true, false, true, true, false]);
+  const AJ = fs.readFileSync(path.join(root, 'assets/ask.js'), 'utf8'), BY = fs.readFileSync(path.join(root, 'bunyang/index.html'), 'utf8');
+  check('입력창이 주제 질문을 화면 연결로(지역 낱말 후보 안 띄움)', [/A\.topic\(text, IX\)/.test(AJ), /regionWord\(sg\.q, IX\)/.test(AJ), /showTopic\(/.test(AJ)], [true, true, true]);
+  check('분양 화면이 주소 조건(sd·g·st·k)을 읽음', [/function fromUrl\(\)/.test(BY), /q\.get\('st'\)/.test(BY), /q\.get\('k'\)/.test(BY), /fromUrl\(\);/.test(BY)], [true, true, true, true]);
+}
+
 /* ---------- 실제 자료(있으면) ---------- */
 const DD = path.join(root, '..', 'jangdaejang-data', 'data', 'price', 's00.json');
 if (fs.existsSync(DD)) {
