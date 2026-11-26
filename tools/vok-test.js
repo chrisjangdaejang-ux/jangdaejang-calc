@@ -39,7 +39,8 @@ check('짧은 표기: 5년 3번 중 3번', PL.hzLabel(run(3, 3, 2.1)), '과거 3
 const NAR = require('../assets/narrative.js');
 const nsrc = fs.readFileSync(path.join(ROOT, 'assets', 'narrative.js'), 'utf8');
 check('단지 문장: 성적이 없는 기간도 참고(흐림)로 — 모델 유무와 상관없이', /out\.dim = \[1, 2, 3, 5, 7\]\.filter\(h => \(h === 2 \? f\.fv : fh\[h\]\) != null && !VR\(MV\(h\)\)\)/.test(nsrc), true);
-check('흐린 글씨 칸 모양(nar-dim)', /\.nar-dim\{[^}]*color:#9A9A9A/.test(nsrc), true);
+/* 2026-11-26 개편 3차: 흐린 글씨도 색 토큰으로(#9A9A9A 는 글자 대비 4.5:1 미달 → 보조 회색 --sub3) */
+check('흐린 글씨 칸 모양(nar-dim)', /\.nar-dim\{[^}]*color:var\(--sub3,#5F6B7A\)/.test(nsrc), true);
 check('narrative 불러오기', typeof NAR.build, 'function');
 /* 프리미엄 리포트 표: 기준 미달·성적 없는 기간 줄은 jp-ref(흐린 글씨) + '참고만' */
 const PR = fs.readFileSync(path.join(ROOT, 'assets', 'premium-report.js'), 'utf8');

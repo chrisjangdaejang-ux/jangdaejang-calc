@@ -790,8 +790,8 @@
     o = o || {}; const doc = root.document, T = Object.assign({}, TIP, o.terms || {});
     if (!doc.getElementById('jp-tip-css')) {
       const st = doc.createElement('style'); st.id = 'jp-tip-css';
-      st.textContent = '.jp-tip{all:unset;cursor:pointer;border-bottom:1.5px dotted #7D6210;color:inherit;font:inherit;line-height:inherit}.jp-tip:focus-visible{outline:2px solid #B8942A;outline-offset:1px}.jp-tip[aria-expanded="true"]{background:#F3E7C2}'
-        + '.jp-tipbox{margin:6px 0 4px;padding:8px 10px;background:#FFF8E1;border:1px solid #E6D9A8;border-radius:8px;font-size:13px;line-height:1.6;color:#4A3F1E;font-weight:500;word-break:keep-all}.jp-tipbox b{color:#7D6210;margin-right:4px}';
+      st.textContent = '.jp-tip{all:unset;cursor:pointer;border-bottom:1.5px dotted #8A84E0;color:inherit;font:inherit;line-height:inherit}.jp-tip:focus-visible{outline:2px solid #4338CA;outline-offset:1px}.jp-tip[aria-expanded="true"]{background:#F3E7C2}'
+        + '.jp-tipbox{margin:6px 0 4px;padding:8px 10px;background:#F5F4FD;border:1px solid #D4D1F5;border-radius:8px;font-size:13px;line-height:1.6;color:#3E4754;font-weight:500;word-break:keep-all}.jp-tipbox b{color:#3730A3;margin-right:4px}';
       (doc.head || doc.documentElement).appendChild(st);
     }
     const blocks = o.blockSel ? el.querySelectorAll(o.blockSel) : [el];

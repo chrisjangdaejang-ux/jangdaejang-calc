@@ -33,7 +33,7 @@
 <script>window.JDJ_CONFIG = { tool:'mine', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../assets/track.js?v=2"></script>
 <script src="../assets/stat.js?v=8"></script>
-<script src="../assets/share.js?v=14"></script>
+<script src="../assets/share.js?v=15"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/lead.js?v=4"></script>
 <script src="../assets/config.js?v=11"></script>
@@ -44,8 +44,8 @@
 <script src="../assets/watch-core.js?v=2"></script>
 <script src="../assets/watch.js?v=9"></script>
 <script src="../assets/kchat.js?v=4"></script>
-<script src="../assets/plain-words.js?v=19"></script>
-<script src="../assets/narrative.js?v=25"></script>
+<script src="../assets/plain-words.js?v=20"></script>
+<script src="../assets/narrative.js?v=26"></script>
 <script src="../assets/strength.js?v=5"></script>
 <script src="../assets/conf.js?v=4"></script>
 <script src="../assets/result.js?v=1"></script>
@@ -247,7 +247,7 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
 .alr .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
 .alr .msg{font-size:14px;font-weight:700}
 </style>
-<link rel="stylesheet" href="../assets/result.css?v=2">
+<link rel="stylesheet" href="../assets/result.css?v=3">
 <script src="../assets/back.js?v=1" defer></script>
 </head>
 <body data-lay="side" data-lay-key=".stats" data-lay-toc="h2,.chead:first-child>h3" data-lay-fold="#polSec>.panel,#taxSec" data-lay-jump="#res,#ofRes,#vlRes,#cmRes">
@@ -553,7 +553,7 @@ function render(d, map, units){
       ${f.fv != null ? RF.fc(f.fv, {note: `${RF.lean(f.fv)}. ${sidoName(d.code)} 아파트와 비교한 2년 점수예요.`, trust: CF}) : ''}
     </section>` : ''}
     <div class="stats${RF ? ' rf-keys' : ''}">
-      ${RF ? '' : `<div class="st key"><div class="k">${KS[0]}</div><div class="v">${KS[1]}</div><div class="d">${KS[2]}</div></div>`}
+      ${RF ? `<div class="st key rf-aside-only"><div class="k">${KS[0]}</div><div class="v">${KS[1]}</div><div class="d">${sm.range && sm.range.months && sm.range.lo !== sm.range.hi ? `최근 1년 범위 ${M.won(sm.range.lo)} ~ ${M.won(sm.range.hi)}` : KS[2]}</div></div>` : `<div class="st key"><div class="k">${KS[0]}</div><div class="v">${KS[1]}</div><div class="d">${KS[2]}</div></div>`}
       <div class="st"><div class="k">최근 3개월 거래</div><div class="v">${sm.recent3}건</div><div class="d">${ym(IX.months[IX.months.length - 3])}~${ym(IX.dataTo)}</div></div>
       <div class="st"><div class="k">1년 변동</div><div class="v">${chTxt(sm.ch1)}</div><div class="d">평당가 기준</div></div>
       <div class="st"><div class="k">3년 변동</div><div class="v">${chTxt(sm.ch3)}</div><div class="d">평당가 기준</div></div>

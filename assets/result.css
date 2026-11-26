@@ -135,3 +135,8 @@ nav.rf-next{margin-top:16px}
 .gcard.gcard details.gsrc>summary::after{content:'펼치기';font-size:14px;color:var(--blue,#4338CA)}
 .gcard.gcard details.gsrc[open]>summary::after{content:'접기'}
 @media(min-width:768px){.gcard.gcard .gnums{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}.gcard.gcard .gnums>div:last-child:nth-child(odd){grid-column:auto}}
+/* PC 오른쪽 요약 칸(assets/layout.js 가 핵심 숫자 줄을 복사)에만 보이는 칸 — 본문에서는 결론 카드가 같은 값을 보여 주므로 숨김 */
+.rf-keys.rf-keys>.rf-aside-only{display:none}
+.lay-sum .lay-kv>.rf-aside-only{display:block}
+.rf-keys.rf-keys:has(>.rf-aside-only)>:last-child:nth-child(odd){grid-column:auto}
+@media(max-width:767px){.rf-keys.rf-keys:has(>.rf-aside-only)>:last-child:nth-child(even){grid-column:1/-1}}

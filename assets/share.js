@@ -177,17 +177,17 @@
     var t = TOOLS[tool] || { label: '집예보', try: '나도 해 보기' };
     var c = root.document.createElement('canvas'); c.width = 1080; c.height = 1080;
     var ctx = c.getContext('2d'), F = fontFam();
-    ctx.fillStyle = '#F7F4EC'; ctx.fillRect(0, 0, 1080, 1080);
+    ctx.fillStyle = '#F4F5F9'; ctx.fillRect(0, 0, 1080, 1080);
     ctx.fillStyle = '#FFFFFF'; rrect(ctx, 60, 60, 960, 960, 44); ctx.fill();
     /* 머리: 로고 + 집예보 + 화면 이름 */
     logo(ctx, 112, 112, 3.4);
     ctx.textBaseline = 'middle'; ctx.fillStyle = '#191F28'; ctx.font = '900 60px ' + F; ctx.fillText('집예보', 214, 154);
     ctx.font = '700 30px ' + F; var lw = ctx.measureText(t.label).width + 44;
-    ctx.fillStyle = '#FBF5E3'; rrect(ctx, 968 - lw, 126, lw, 58, 29); ctx.fill();
-    ctx.fillStyle = '#8A6D16'; ctx.textAlign = 'center'; ctx.fillText(t.label, 968 - lw / 2, 156); ctx.textAlign = 'left';
+    ctx.fillStyle = '#EEEDFB'; rrect(ctx, 968 - lw, 126, lw, 58, 29); ctx.fill();
+    ctx.fillStyle = '#3730A3'; ctx.textAlign = 'center'; ctx.fillText(t.label, 968 - lw / 2, 156); ctx.textAlign = 'left';
     /* 한 줄 요약 */
     ctx.textBaseline = 'alphabetic';
-    ctx.fillStyle = '#B8942A'; ctx.fillRect(112, 262, 72, 8);
+    ctx.fillStyle = '#4338CA'; ctx.fillRect(112, 262, 72, 8);
     ctx.fillStyle = '#191F28'; ctx.font = '900 66px ' + F;
     var y = 362;
     wrap(ctx, sum.head || t.label, 856, 4).forEach(function (l) { ctx.fillText(l, 112, y); y += 86; });
@@ -197,14 +197,14 @@
       var ls = wrap(ctx, l, 770, 2), h = 40 + ls.length * 46;
       if (y + h > 846) return;
       ctx.fillStyle = '#F2F4F6'; rrect(ctx, 112, y, 856, h, 22); ctx.fill();
-      ctx.fillStyle = '#B8942A'; ctx.beginPath(); ctx.arc(148, y + 43, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#4338CA'; ctx.beginPath(); ctx.arc(148, y + 43, 7, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = '#333D4B'; ls.forEach(function (s, i) { ctx.fillText(s, 174, y + 55 + i * 46); });
       y += h + 16;
     });
     /* 바닥: 나도 해 보기 + 주소 */
     ctx.fillStyle = '#191F28'; rrect(ctx, 60, 870, 960, 150, 44); ctx.fill(); ctx.fillRect(60, 870, 960, 50);
     ctx.fillStyle = '#FFFFFF'; ctx.font = '900 40px ' + F; ctx.fillText(t.try + ' →', 112, 940);
-    ctx.fillStyle = '#E8D9A8'; ctx.font = '500 26px ' + F;
+    ctx.fillStyle = '#C9C6F2'; ctx.font = '500 26px ' + F;
     ctx.fillText(String(url || '').replace(/^https?:\/\//, '').replace(/[?#].*$/, ''), 112, 984);
     return c;
   }
@@ -218,8 +218,8 @@
   var ST = { tool: '', sum: null, blob: null, blobKey: '', url: '', bound: false, detail: null, keep: [] };
   var CSS = '.jshare-top{font:inherit;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;padding:0 12px;border:0;border-radius:10px;background:var(--gray,#F2F4F6);color:var(--sub,#3E4754);font-size:15px;font-weight:700;cursor:pointer}'
     + '.jshare-top svg{width:20px;height:20px;flex:none}.jshare-top[hidden]{display:none!important}.jshare-tg{display:flex;align-items:center;gap:8px}'
-    + '.jshare-card{display:flex;align-items:center;gap:14px;margin:16px 0;padding:16px 18px;border-radius:16px;background:#FBF5E3;border:1px solid #EFE2B8;text-align:left}'
-    + '.jshare-card .ic{flex:none;width:40px;height:40px;border-radius:12px;background:#B8942A;color:#fff;display:flex;align-items:center;justify-content:center}'
+    + '.jshare-card{display:flex;align-items:center;gap:14px;margin:16px 0;padding:16px 18px;border-radius:16px;background:var(--blue-l,#EEEDFB);border:1px solid #D4D1F5;text-align:left}'
+    + '.jshare-card .ic{flex:none;width:40px;height:40px;border-radius:12px;background:var(--blue,#4338CA);color:#fff;display:flex;align-items:center;justify-content:center}'
     + '.jshare-card .ic svg{width:22px;height:22px}'
     + '.jshare-card .tx{flex:1;min-width:0;font-size:14.5px;line-height:1.5;color:#3E4754}.jshare-card .tx b{display:block;font-size:16px;color:#191F28;margin-bottom:2px}'
     + '.jshare-card .btn{flex:none;min-height:44px;padding:0 18px;font-size:15px;background:#191F28;color:#fff}'
@@ -228,7 +228,7 @@
     + '.jshare-bottom .btn{width:100%;min-height:52px;font-size:16px;background:var(--blue,#4338CA);color:#fff}.jshare-bottom .btn svg{width:20px;height:20px}'
     + '.jshare-bottom small{text-align:center;color:var(--sub2,#4E5968);font-size:13.5px}'
     + '.jshare-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:1000;width:max-content;max-width:min(92vw,460px);background:#191F28;color:#fff;border-radius:14px;padding:14px 16px;font-size:15px;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,.2);display:flex;gap:12px;align-items:center}'
-    + '.jshare-toast[hidden]{display:none}.jshare-toast a{color:#E8D9A8;font-weight:700;white-space:nowrap}'
+    + '.jshare-toast[hidden]{display:none}.jshare-toast a{color:#C9C6F2;font-weight:700;white-space:nowrap}'
     + '@media print{.jshare-top,.jshare-card,.jshare-bottom,.jshare-toast{display:none!important}}';
   var ICON = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>';
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -555,15 +555,15 @@
     + '.jshare-ch h3{margin:0 0 12px;font-size:18px;font-weight:800}'
     + '.jshare-ch .x{position:absolute;right:10px;top:10px;min-width:44px;min-height:44px;border:0;background:none;font-size:22px;color:#4E5968;cursor:pointer}'
     + '.jshare-ch label{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1.5px solid #E5E8EB;border-radius:14px;margin:0 0 10px;cursor:pointer}'
-    + '.jshare-ch label.on{border-color:#B8942A;background:#FBF5E3}'
-    + '.jshare-ch input{margin:3px 0 0;width:20px;height:20px;accent-color:#B8942A;flex:none}'
-    + '.jshare-ch b{display:block;font-size:16px}.jshare-ch b em{font-style:normal;font-size:12.5px;font-weight:800;color:#fff;background:#B8942A;border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:2px}'
+    + '.jshare-ch label.on{border-color:var(--blue,#4338CA);background:var(--blue-l,#EEEDFB)}'
+    + '.jshare-ch input{margin:3px 0 0;width:20px;height:20px;accent-color:var(--blue,#4338CA);flex:none}'
+    + '.jshare-ch b{display:block;font-size:16px}.jshare-ch b em{font-style:normal;font-size:12.5px;font-weight:800;color:#fff;background:var(--blue,#4338CA);border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:2px}'
     + '.jshare-ch small{display:block;color:#4E5968;font-size:14px}'
     + '.jshare-ch .warn{display:inline-block;margin-top:6px;color:#C2410C;font-weight:700;font-size:14px}'
     + '.jshare-ch .go{width:100%;min-height:52px;border:0;border-radius:12px;background:#191F28;color:#fff;font:inherit;font-size:16px;font-weight:800;cursor:pointer;margin-top:4px}'
     + '.jshare-ch.sheet{left:0;right:0;bottom:0;border-radius:20px 20px 0 0;padding-bottom:calc(18px + env(safe-area-inset-bottom))}'
     + '.jshare-ch.pop{width:380px;max-width:calc(100vw - 24px);border-radius:16px}'
-    + '.jshare-sv{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px 12px;padding:10px 14px;background:#FBF5E3;border-bottom:1px solid #EFE2B8;color:#3E4754;font-size:14.5px;text-align:center}'
+    + '.jshare-sv{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px 12px;padding:10px 14px;background:var(--blue-l,#EEEDFB);border-bottom:1px solid var(--line,#E5E8EB);color:#3E4754;font-size:14.5px;text-align:center}'
     + '.jshare-sv b{color:#191F28}.jshare-sv button{min-height:44px;padding:0 14px;border:0;border-radius:10px;background:#191F28;color:#fff;font:inherit;font-size:14.5px;font-weight:700;cursor:pointer}'
     + '@media print{.jshare-sv,.jshare-ch,.jshare-bk{display:none!important}}';
   function chClose() { [].slice.call(root.document.querySelectorAll('.jshare-ch,.jshare-bk')).forEach(function (n) { n.remove(); }); root.document.removeEventListener('keydown', chKey); }
