@@ -290,6 +290,12 @@ i.lg-dot{display:inline-block;width:13px;height:13px;border-radius:50%;backgroun
 .legend .fnr b{font-weight:800}
 .legend .fnr small{display:block;font-size:11.5px;color:var(--sub3)}
 .legend .lgb+.fut-lg{border-top:1px solid var(--line2);padding-top:2px;margin-top:2px}
+.legend .gu-lg{display:flex;flex-wrap:wrap;align-items:center;gap:2px 10px;min-height:30px}   /* 미래가치 · 구 단계: 구 말풍선 색 뜻 */
+.legend .gu-lg span{gap:5px}
+.legend .gu-lg .sm{flex-basis:100%}
+.legend .gu-lg+.fut-lg{border-top:1px solid var(--line2);padding-top:2px;margin-top:2px}
+.legend .lgpill .lgdots{display:inline-flex;gap:2px}
+.legend .lgpill .lgdots i{width:7px;height:7px;border-radius:50%}
 @media(min-width:769px){.legend{padding:4px 12px;gap:0}.legend .fib,.legend .lgb{min-height:34px}.legend .fnr{min-height:36px}}   /* PC: 범례는 펼친 채로, 낮게 */
 .sheet .kv dd b.due{display:block;font-size:17px;color:#5B3BE0;white-space:normal;line-height:1.4}
 .sheet .kv dd b.due+small{margin-bottom:6px}
@@ -471,6 +477,8 @@ function legend(){
   if (S.mode === 'reg') { el.innerHTML = lv && lv !== 'sido' ? regLegend() : ''; el.onclick = e => { if (innerWidth <= 768) return; if (e.target.closest('#rlgb') || (RLEG && innerWidth < 900)) { RLEG = !RLEG; legend(); render(); } }; return legFold(); }
   el.onclick = e => { if (e.target.closest('.fib')) futInfo(); const fo = e.target.closest('[data-fo]'); if (fo) { const it = ((LAY.fut && LAY.fut.d.omitted) || []).find(x => x.id === fo.dataset.fo); if (it) futCard(it); } };
   const fu = futLegend(lv);
+  /* 미래가치 · 구 단계: 구 말풍선 색(파랑·회색·주황)의 뜻 — ⓘ 칩과 같은 내용을 기호 설명에도 */
+  if (lv === 'sgg' && S.mode === 'fv') { el.innerHTML = `<div class="gu-lg"><span><i class="dot t5" aria-hidden="true"></i>파랑 상위권</span><span><i class="dot t3" aria-hidden="true"></i>회색 중위권</span><span><i class="dot t1" aria-hidden="true"></i>주황 하위권</span><span class="sm">같은 시·도 안에서 매긴 구별 미래가치 순위예요</span></div>` + fu; return legFold(); }
   if (lv !== 'danji') { el.innerHTML = fu; return legFold(); }
   const scale = `<span class="scl">${S.mode === 'fv' ? '' : '배지 = '}미래가치 점수 낮음 <i class="t1"></i><i class="t2"></i><i class="t3"></i><i class="t4"></i><i class="t5"></i> 높음 ⓘ</span>`;
   el.innerHTML = `<button type="button" class="lgb" aria-expanded="${LEGOPEN}">${scale}</button>` + (LEGOPEN ? C.TONES.map(t => `<span><i class="${t[0]}"></i>${t[2]} · ${t[1]}</span>`).join('') + '<span class="sm">앞으로 2년, 같은 시·도 아파트와 비교한 점수(100점 만점)</span>' : '') + fu;
@@ -485,7 +493,11 @@ function legFold(){
   if (!mob || !has) return;
   if (!LGM) {
     const n = el.querySelectorAll('.fnr').length, fut = !!el.querySelector('.fut-lg');
-    el.innerHTML = `<button type="button" class="lgpill" aria-expanded="false" aria-label="지도 기호 설명 펼치기">${fut ? '<i class="lg-line" aria-hidden="true"></i>' : ''}기호 설명${n ? ` <em>근처 예정 ${n}</em>` : ''}</button>`;
+    /* 미래가치: 단추에도 지금 지도에 쓰인 색을 작은 점으로(구 = 3색, 단지 = 5색) */
+    const tc = S.mode === 'fv' ? [...new Set([...el.querySelectorAll('i.t1,i.t2,i.t3,i.t4,i.t5')].map(i => (i.className.match(/\bt[1-5]\b/) || [])[0]))] : [];
+    if (tc.length && tc[0] === 't1') tc.reverse();   // 높은 쪽(파랑)부터
+    const dots = tc.length ? `<span class="lgdots" aria-hidden="true">${tc.map(t => `<i class="${t}"></i>`).join('')}</span>` : '';
+    el.innerHTML = `<button type="button" class="lgpill" aria-expanded="false" aria-label="지도 기호 설명 펼치기">${dots}${fut ? '<i class="lg-line" aria-hidden="true"></i>' : ''}기호 설명${n ? ` <em>근처 예정 ${n}</em>` : ''}</button>`;
     return;
   }
   el.insertAdjacentHTML('afterbegin', '<div class="lghd"><b>지도 기호 설명</b><button type="button" class="lgx" aria-label="기호 설명 접기">✕</button></div>');
