@@ -131,7 +131,7 @@ const sw = read('sw.js');
 check('서비스 워커: 하트 결제키가 담긴 주소는 저장 안 함 · 공용 파일', /counsel\/heart\/'\) && u\.search\) return;/.test(sw) && /counsel-core\.js\?v=5/.test(sw) && /counsel\.js\?v=5/.test(sw));
 /* 시드 글 */
 const seed = JSON.parse(read('counsel/seed.json'));
-check('시드: 15개 · 모두 draft:true · 분류가 맞음 · 영상 칸(videoUrl) 있음', seed.items.length === 15 && seed.items.every(x => x.draft === true && C.catName(x.cat) && x.videoUrl === '' && /^s\d{2}$/.test(x.sid)) && new Set(seed.items.map(x => x.sid)).size === 15);
+check('시드: 21개(대표 상담 고민 6개 s16~s21 포함) · 모두 draft:true · 분류가 맞음 · 영상 칸(videoUrl) 있음', seed.items.length === 21 && seed.items.every(x => x.draft === true && C.catName(x.cat) && x.videoUrl === '' && /^s\d{2}$/.test(x.sid)) && new Set(seed.items.map(x => x.sid)).size === 21);
 check('시드: 제목·질문·답변 길이가 규칙 안', seed.items.every(x => C.checkText('title', x.title).ok && C.checkText('body', x.q).ok && C.checkText('answer', x.a).ok), seed.items.filter(x => !C.checkText('answer', x.a).ok).map(x => x.sid));
 check('시드: 답변은 ~요 말투 · 확인할 곳 안내 · 회사 이름 없음', seed.items.every(x => /요\./.test(x.a) && /확인/.test(x.a) && !/장대장/.test(x.q + x.a)));
 check('시드: 분류가 고루(매수·매도·전월세·세금·대출·청약·재개발·등기)', ['buy', 'rent', 'tax', 'loan', 'sub', 'redev', 'legal'].every(c => seed.items.some(x => x.cat === c)));

@@ -154,7 +154,7 @@ check('알림 센터: 먼저 챙겨 드려요 세 가지 스위치(직접 켜기
 check('기억하는 것: 저장 위치(이 기기·내 계정)·금액은 기기에만·지우기·플래그', /금액은 이 기기에만/.test(mem) && /data-del/.test(mem) && /이 기기 \+ 내 계정/.test(mem) && /PRO\.on\(\)/.test(mem) && /noindex/.test(mem));
 check('기억하는 것 목록: 금액 칸(보증금·계산기)은 이 기기에만으로 표시', (() => { global.localStorage = { getItem: () => null, setItem() {}, removeItem() {} }; global.location = { pathname: '/jangdaejang-calc/', search: '' }; global.window = global; require('../assets/proactive.js'); const I = global.JDJ_PRO.INV; return I.filter(x => x.money && x.id !== 'rp').every(x => x.where === 'device') && ['homes', 'favs', 'cal', 'ta', 'cy', 'alerts', 'zones'].every(id => I.some(x => x.id === id)); })());
 check('구역 지도: 따라보기 버튼(플래그)·알림 메일 링크(?z=)', /data-follow/.test(zone) && /PRO\.on\(\)/.test(zone) && /get\('z'\)/.test(zone) && /proactive\.js/.test(zone));
-check('서비스 워커: 소개·기억하는 것·화면 부품', /'\.\/alerts\/'/.test(sw) && /'\.\/my\/memory\/'/.test(sw) && /proactive\.js\?v=1/.test(sw));
+check('서비스 워커: 소개·기억하는 것·화면 부품', /'\.\/alerts\/'/.test(sw) && /'\.\/my\/memory\/'/.test(sw) && /proactive\.js\?v=2/.test(sw));
 const words = [intro, mem, proj, cal, center].join('\n');
 check('경쟁 앱 이름·회사 이름 없음', !/호갱|직방|아실|리치고|다방|네이버\s?부동산|부동산\s?플래닛|장대장부동산그룹/.test(words));
 const say = [proj.match(/sub = \{[\s\S]*?\}\[where\]/)[0], intro.replace(/<[^>]+>/g, ' '), mem.replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, ' ')].join(' ') + C.events(H({ t: 'own', acq: '2024-12-20', adj: 'y', rs: '2025-01-10', t2: { d: '2026-09-01' } }), '2026-12-01', ON).map(e => e.t + e.s + (e.p || '')).join(' ') + mh;

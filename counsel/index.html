@@ -181,6 +181,7 @@
         + (x.to ? '<p class="cs-help" style="margin-top:10px">지정한 전문가: <b>' + esc(x.to.name) + '</b> · ' + esc(x.to.kn) + '</p>' : '')
         + (x.room ? '<div class="cs-acts"><a class="cs-btn" href="' + esc(CS.link('counsel/chat/?id=' + x.room)) + '">상담 채팅방 열기</a></div>' : '')
         + (x.video ? '<a class="cs-video" href="' + esc(x.video) + '" target="_blank" rel="noopener">이 고민, 영상으로 답했어요</a>' : '')
+        + (x.sid ? '<div data-gseed="' + esc(x.sid) + '"></div>' : '')   /* 시드 글 → 고민 해결 길잡이(assets/guide-next.js, 켜졌을 때만) */
         + (x.st && x.st !== '공개' ? '<p class="cs-note warn">' + esc(x.st === '검토대기' ? '운영자가 확인한 뒤 모두에게 보여요.' : x.st === '임시조치' ? '신고가 들어와 잠시 가려 두었어요. 운영자가 확인하고 있어요.' : '지금은 나만 볼 수 있어요.') + '</p>' : '')
         + (flash === '#masked' ? '<p class="cs-note">연락처·주민등록번호·인터넷 주소처럼 보이는 내용을 가려서 올렸어요.</p>' : '')
         + (x.cat === 'loan' ? '<p class="cs-note warn">' + esc(CS.LOAN_NOTE) + '</p>' : '')
@@ -316,5 +317,6 @@
   }
 })();
 </script>
+<script src="../assets/guide-next.js?v=1" defer></script>
 </body>
 </html>

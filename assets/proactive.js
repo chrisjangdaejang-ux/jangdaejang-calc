@@ -96,6 +96,7 @@
     { id: 'cy', keys: ['jdj_cy', 'jdj_areas', 'jdj_areas_seen'], t: '청약 가점 입력·관심 지역', from: '청약 가점 계산', url: 'chungyak/', where: 'device', what: '가점 계산에 넣은 무주택 기간·부양가족·통장 가입 기간과 청약 관심 지역. 가점 범위는 청약 알림을 켤 때만 알림 설정에 들어가요.' },
     { id: 'rp', keys: ['jdj_report_me'], t: '내 집 성적표 보정·대출 잔액', from: '내 집 성적표', url: 'my/report/', where: 'both', acct: 'rp', money: true, what: '층·확장·리모델링 보정과 대출 잔액. 로그인하면 다른 기기에서도 보이도록 내 계정에 저장되고, 본인만 볼 수 있어요. 메일에는 넣지 않아요.' },
     { id: 'alerts', keys: ['jdj_alert_prefs', 'jdj_alert_seen', 'jdj_alert_log'], t: '알림 설정·본 알림', from: '알림 센터', url: 'my/alerts/', where: 'both', what: '켠 알림 종류, 끈 단지, 청약 지역·가점 범위, 먼저 챙겨 드려요 설정, 이 기기에서 본 알림. 메일 알림을 신청했다면 이메일 주소(가린 모양으로만 보여 드려요)도 서버에 있어요.' },
+    { id: 'guide', keys: ['jdj_guide'], t: '고민 해결 길잡이 답·진행', from: '고민 해결 길잡이', url: 'solve/', where: 'device', money: true, what: '길잡이에서 답한 값(가진 돈·소득·날짜 등)과 이어서 하기 위치. 다음 고민에서 같은 질문을 다시 묻지 않으려고 이 기기에만 둬요.' },
     { id: 'zones', keys: ['jdj_zone_follow'], t: '따라보는 재개발·재건축 구역', from: '재개발·재건축 구역 지도', url: 'villa/zone/', where: 'both', what: '구역 이름과 따라보기 시작할 때의 단계. 다음 단계로 넘어가면 알려 드려요.' }
   ];
   function has(k) { var v = ls.get(k); return v != null && v !== '' && v !== '[]' && v !== '{}' && v !== 'null'; }

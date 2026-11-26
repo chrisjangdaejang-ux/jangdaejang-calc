@@ -509,6 +509,7 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
 
 <p class="notice">최종 신고·납부 금액은 국세청 홈택스(양도세·종부세·증여세), 위택스(취득세·재산세)나 세무 전문가와 확인해 주세요. 세율·공제·비과세 요건은 2026년 11월 20일 현재 시행 중인 소득세법·시행령, 지방세법·시행령, 종합부동산세법·시행령, 상속세 및 증여세법과 국토교통부 조정대상지역 공고(서울 25개 구 전역, 경기 15곳)를 기준으로 했어요. 입력값은 서버로 보내지 않아요. 각 결과 아래에 기준일·적용 조항과 이 계산이 다루지 않는 경우(세무사 확인 필요)를 함께 보여 드려요.</p>
 <div class="jas-in" data-ad-slot="tax_end" data-ad-cat="tax" hidden></div>
+<div data-gnext="tax" hidden></div>
 </main>
 <footer class="foot notice" style="margin:24px 0 0;border-radius:0;border-left:0;border-right:0">근거: 소득세법 제55조·제89조·제95조·제103조·제104조, 같은 법 시행령 제154조·제155조·제159조의4·제167조의10·제167조의11, 지방세법 제11조·제13조의2·제103조의3·제110조·제111조·제111조의2·제112조·제115조·제122조·제151조, 종합부동산세법 제8조·제9조·제10조, 상속세 및 증여세법 제47조·제53조·제53조의2·제56조·제57조·제69조, 국토교통부공고 제2023-2호·제2025-1223호·제2026-882호<br>★ 집예보 · <a href="../">계산기 처음으로</a></footer>
 
@@ -555,5 +556,6 @@ table.calc tr.tot td{border-top:2px solid var(--text);font-weight:900;font-size:
 document.addEventListener('change', e => { const t = e.target; if (!t.matches || !t.matches('#rSido,#rGu,#nSido,#nGu,select.sido,select.gu')) return;
   const row = t.closest('.selrow'), sd = row && row.querySelector('select:first-child'), gu = row && row.querySelector('select:last-child');
   if (sd && gu && window.JDJ_ADSLOT && JDJ_ADSLOT.setRegion) JDJ_ADSLOT.setRegion({ sido: sd.value, gu: gu.value }); });</script>
+<script src="../assets/guide-next.js?v=1" defer></script>
 </body>
 </html>

@@ -40,7 +40,7 @@
 <script src="../../assets/move-core.js?v=1"></script>
 <script src="../../assets/move.js?v=1"></script>
 <script src="../../tax/adjusted-areas.js"></script>
-<script src="../../assets/proactive.js?v=1"></script>
+<script src="../../assets/proactive.js?v=2"></script>
 <script src="../../assets/tabbar.js?v=5" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -161,6 +161,7 @@ h1{font-size:clamp(26px,6.4vw,32px);margin:2px 0 8px;letter-spacing:-.6px}
     </div>
   </div>
   <p class="note" id="src">날짜 규칙은 공식 안내를 직접 확인한 것만 넣었어요. 기한이 주말이나 공휴일이면 다음 평일로 미뤄질 수 있으니 고지서와 위택스·홈택스에서 한 번 더 확인해 주세요. 세금 신고·납부는 내 상황에 따라 달라질 수 있어 참고용으로 봐 주세요.</p>
+<div data-gnext="calendar" hidden></div>
 </main>
 <footer class="foot">과거 데이터 기반 정보예요. 자세한 분석 방법은 <a href="../../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ <span data-site-name>집예보</span> · <a href="../../">홈</a> · <a href="../">내 집 시세</a> · <a href="../../my/alerts/">알림 센터</a> · <a href="../../my/report/">내 집 성적표</a></footer>
 <script>
@@ -536,5 +537,6 @@ if (AU && AU.onChange) AU.onChange(() => { main(); });
 main();
 })();
 </script>
+<script src="../../assets/guide-next.js?v=1" defer></script>
 </body>
 </html>

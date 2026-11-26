@@ -41,6 +41,9 @@
    PRO_TOOLS_ENABLED: 중개사 프로 도구(agent/pro/ — 손님용 단지 리포트·동네 블로그/인스타 글 자동 만들기) 켜기. false 면 agent/pro/ 는 '준비 중'만 보이고(검색 제외)
      다른 화면 어디에도 링크가 없어요. 운영자 미리 보기: 주소 끝에 ?preview=pro-tools 를 붙여 한 번 열면 그 기기에서만 보여요(?preview=off 로 끔).
      이름·로고 넣기와 손님 링크는 서버가 확인된 중개사(동네 파트너 승인)·운영자 계정에만 열어 줘요. 켜는 날은 서버 tools/agent-backend.gs 의 PRO_TOOLS_ENABLED 도 함께 true 로.
+   GUIDE_ENABLED: '고민 해결 길잡이'(solve/ — 고민을 적거나 상황 단추를 고르면 짧은 질문 → 내 조건으로 계산한 해법 카드 → 다음 단계, 결과 화면 끝 '이어서 하면 좋은 것') 켜기.
+     false 면 첫 화면은 예전 '단지 이름으로 물어보기' 그대로이고 solve/ 는 '준비 중'(검색 제외). 대표 미리 보기: 주소 끝 ?preview=guide (끄기 ?preview=off).
+     켜는 날은 서버 tools/agent-backend.gs 의 GUIDE_ENABLED 도 함께 true 로. 운영자 화면: solve/admin/(못 알아들은 고민 빈도순).
    SITE_VERIFY_DAUM: 다음 웹마스터도구 PIN 코드 줄 전체('#DaumWebMasterTool:…'). 넣으면 robots.txt 맨 아래에 붙어요. */
 window.JDJ_SITE = {
   SITE_URL: 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc',
@@ -58,6 +61,7 @@ window.JDJ_SITE = {
   MOVE_ENABLED: false,
   PROACTIVE_ENABLED: false,
   PRO_TOOLS_ENABLED: false,
+  GUIDE_ENABLED: false,
   BILLING_OPEN: false,
   PAID_OPEN: false,
   PAY_REVIEW: true

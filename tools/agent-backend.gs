@@ -1,12 +1,21 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v67 변경 요약 (v66 위에 다시 배포. 따로 실행할 함수 없음 — 시트 '길잡이미매칭'은 첫 기록 때 저절로 생김. GUIDE_ENABLED=false 라 지금 서비스에는 영향 없음)
+ *  - 고민 해결 길잡이(solve/, 숨김): 고민 종류를 못 알아들은 문장을 익명으로 모음(gdMiss). 화면이 개인정보(전화·이메일·주민번호·번지·호수·이름)를 가린 뒤 보내고,
+ *    서버가 같은 규칙(gdMask = 화면 assets/guide-core.js mask)으로 한 번 더 가려 '길잡이미매칭' 시트에 [시각, 문장, 화면, 미리보기]만 적음. 방문자 번호·금액·답은 받지 않음.
+ *    GUIDE_ENABLED=false 동안은 대표 미리 보기(?preview=guide)에서 보낸 것만 적음. 1분에 60건까지(넘으면 버림).
+ *  - 운영자 화면 solve/admin/(모닝 브리핑 운영자 카카오 계정만, gdAdmin): 최근 7일·30일 못 알아들은 문장 빈도순 — 새 시나리오·낱말 사전·'다음에 모을 통계'를 정하는 근거.
+ *  - 주간 운영 메일 한 줄: 월요일 성적표 실행(reportWeekly) 맨 앞에서 gdWeekLine 이 한 주에 한 번 대표에게 '지난주 못 알아들은 고민 N건 · 많이 나온 말 3개' 한 줄 메일(0건이면 안 보냄).
+ *  - 고민 상담 질문 공개 응답에 시드 번호(sid)를 함께(화면이 counsel/seed.json 의 guide 값으로 길잡이 링크를 붙임 — 개인정보 아님).
+ *  - 출시하는 날: 이 파일의 GUIDE_ENABLED 와 assets/config.js 의 GUIDE_ENABLED 를 함께 true 로.
+ *  - 검증: node tools/guide-test.js </dev/null
+ *
  * v66 변경 요약 (v65 위에 다시 배포. 따로 실행할 함수 없음 — 새 시트 '프로도구링크'·'프로도구로고'는 처음 쓸 때 저절로 생김. PRO_TOOLS_ENABLED=false 라 지금 서비스에는 영향 없음)
  *  - 중개사 프로 도구(맨 아래 'v66' 칸): 손님용 단지 리포트에 '확인된 중개사'(동네 파트너 승인·노출 중)만 이름·로고를 넣고 손님에게 링크로 보냄.
  *    ptMe(내 확인 상태·표시 정보) · ptLogo(로고 저장) · ptShare(손님 링크 만들기 — 토큰은 해시만) · ptLinks · ptOff · ptOpen(손님 열기 — 로그인 없음).
  *    표시 정보는 동네파트너 시트 값 그대로(화면이 보낸 이름은 쓰지 않음). 꺼져 있는 동안은 운영자 계정만.
  *  - 검증: node tools/pro-tools-test.js </dev/null
- *
  * v65 변경 요약 (v64 위에 다시 배포. 따로 실행할 함수 없음 — 시트 변경 없음. PROACTIVE_ENABLED=false 라 지금 서비스에는 영향 없음)
  *  - 알림 메일 동의 문구 판을 alerts-2026-11-26 으로(먼저 챙겨 드려요가 켜진 화면에서는 신청 동의 칸에 새 알림 종류 — 세금·계약 기한, 내 집 단지 거래,
  *    규제 변화, 재개발 단계 — 를 따로 적음). 예전 판으로 동의한 구독자는 지금 받던 알림을 그대로 받음.
@@ -621,6 +630,7 @@ function doPost(e) {
   if (!PAID_OPEN && PAID_ACTIONS[b && b.action]) return out({ ok: false, err: PAID_CLOSED_MSG, code: 'paid_closed' });   // v47 유료 판매 잠금
   if (b.action === 'log') return out(logEvents(b));
   if (b.action === 'ytKitPut') return out(ytKitPut(b));            // v30 장대장TV 주간 유튜브 키트(엔진 → 시트)
+  if (GD_ACTIONS[b.action]) return out(gdDispatch(b));             // v67 고민 해결 길잡이(숨김)
   if (CS_ACTIONS[b.action]) return out(csDispatch(b));             // v56 고민 상담·하트(숨김)
   if (PAY_ACTIONS[b.action]) return out(payDispatch(b));
   if (b.action === 'adApply' || b.action === 'adInquiry' || b.action === 'adLead') return out(adDispatch(b));
@@ -5771,6 +5781,7 @@ function rpMark(s, date, how, n) { uSheet(SH_AXL, AXLH).appendRow([date, s.id, a
 /** 월요일 성적표 메일 — 모닝 브리핑을 메일로 받는 분은 브리핑 안에 함께(axMorning)라 여기서는 건너뜀.
     그 밖의 분: 성적표 + 그날 관심 단지 알림 + 이번 주 달력을 한 통으로(하루 한 통). 반환: 보낸 수(자료가 그날 것이 아니면 -1) */
 function reportWeekly() {
+  try { gdWeekLine(new Date()); } catch (e) {}                                             // v67 길잡이 주간 한 줄(한 주에 한 번)
   const now = new Date(), date = ymd(now), last = Number(Utilities.formatDate(now, 'Asia/Seoul', 'HH')) >= 8;
   const ready = rpReady(date);
   if (!ready && !last) { uSheet(SH_AXS, AXSH).appendRow([date, '', '성적표', '자료가 아직 없어 8시대 실행에', 0]); return -1; }
@@ -9668,7 +9679,7 @@ function csQPub(o, now, me, nAns) {
   const r = o.r, id = String(r[CSQC['id']]), uh = String(r[CSQC['회원']]), body = csTxt(r[CSQC['내용']]), up = csMs(r[CSQC['올림까지']]);
   return { id: id, cat: String(r[CSQC['분류']]), cn: csCatName(String(r[CSQC['분류']])), area: csTxt(r[CSQC['지역']]), title: csTxt(r[CSQC['제목']]), snip: body.slice(0, 90), at: csMs(r[CSQC['시각']]), day: csDay(r[CSQC['시각']]),
     who: csTxt(r[CSQC['별명']]) || (r[CSQC['시드']] ? '자주 묻는 고민' : csAlias(uh, id)), up: up, upAt: csMs(r[CSQC['올린시각']]), upOn: up > now, pick: !!r[CSQC['지정']] && r[CSQC['비공개']] !== true,
-    priv: r[CSQC['비공개']] === true, seed: !!r[CSQC['시드']], video: csTxt(r[CSQC['영상']]), mine: !!me && me === uh, n: nAns || 0 };
+    priv: r[CSQC['비공개']] === true, seed: !!r[CSQC['시드']], sid: /^s\d{2}$/.test(csTxt(r[CSQC['시드']])) ? csTxt(r[CSQC['시드']]) : '', video: csTxt(r[CSQC['영상']]), mine: !!me && me === uh, n: nAns || 0 };
 }
 function csList(b) {
   if (!(COUNSEL_OPEN || csIsAdmin(b))) return { ok: true, open: false };
@@ -10849,4 +10860,87 @@ function ptOpen(b) {
   const pid = String(x.r[PXC['파트너']]), p = dpAll().find(o => o.id === pid) || null, live = !!p && p.st === DP_ST.on && dpLive(p);
   withLock(() => { const sh = uSheet(SH_PX, PXH); sh.getRange(x.row, PXC['열람횟수'] + 1).setValue((Number(x.r[PXC['열람횟수']]) || 0) + 1); sh.getRange(x.row, PXC['최근열람'] + 1).setValue(new Date()); });
   return { ok: true, unit: parseJ(x.r[PXC['단지']], {}), client: String(x.r[PXC['고객이름']] || '').replace(/^'/, ''), card: live ? ptCardOf(p) : null, logo: live ? ptLogoOf(pid) : '', expires: ymd(exp) };
+}
+
+/* =====================================================================
+   v67 고민 해결 길잡이(solve/) — 못 알아들은 문장 익명 집계 · 운영자 빈도 · 주간 한 줄
+   - 받는 것: 가린 문장(k, 60자까지)·화면 이름(g)·미리 보기 여부(pv). 방문자 번호·금액·답·연락처는 받지 않음.
+   - gdMask 는 assets/guide-core.js 의 mask 와 같은 규칙(tools/guide-test.js 가 같은 예문으로 둘 다 확인).
+   ===================================================================== */
+const GUIDE_ENABLED = false;
+const SH_GD = '길잡이미매칭', GDH = ['시각', '문장', '화면', '미리보기'];
+const GD_ACTIONS = { gdMiss: 1, gdAdmin: 1 };
+const GD_RATE = 60;                                    // 1분에 받는 최대 건수(넘으면 버림)
+function gdDispatch(b) {
+  try {
+    if (b.action === 'gdMiss') return gdMiss(b);
+    if (b.action === 'gdAdmin') return gdAdmin(b);
+    return { ok: false, err: 'unknown' };
+  } catch (x) { return { ok: false, err: String(x.message || x), code: x.code || '' }; }
+}
+function gdMask(text) {
+  let t = String(text == null ? '' : text).replace(/\s+/g, ' ').trim().slice(0, 80);
+  t = t.replace(/https?:\/\/\S+/gi, '[주소]')
+    .replace(/[\w.+-]+@[\w-]+\.[\w.]+/g, '[메일]')
+    .replace(/\d{6}\s*-\s*\d{7}/g, '[번호]')
+    .replace(/(01[016789]|0\d{1,2})[-.\s]?\d{3,4}[-.\s]?\d{4}/g, '[전화]')
+    .replace(/\d{7,}/g, '[번호]')
+    .replace(/(\S+(로|길))\s*\d+(-\d+)?(번길\s*\d+)?/g, '$2 ○')
+    .replace(/\d+\s*-\s*\d+\s*(번지)?/g, '○번지')
+    .replace(/\d+\s*번지/g, '○번지')
+    .replace(/\d+\s*동\s*\d+\s*호/g, '○동 ○호')
+    .replace(/\d{3,4}\s*호/g, '○호')
+    .replace(/(제\s*이름은|이름은|저는|전|성함은)\s*[가-힣]{2,4}(입니다|이에요|예요|이고|인데|라고|고)?/g, '$1 ○○')
+    .replace(/[가-힣]{2,4}\s*(씨|님)(?=[이가은는을를께에도의\s]|$)/g, '○○$1')
+    .replace(/[<>=+]/g, '');
+  t = t.trim().slice(0, 60);
+  return t.replace(/\[(주소|메일|번호|전화)\]|[\s○]/g, '').length < 2 ? '' : t;
+}
+function gdSheet() {
+  const ss = book(); let sh = ss.getSheetByName(SH_GD);
+  if (!sh) { sh = ss.insertSheet(SH_GD); sh.appendRow(GDH); sh.getRange(1, 1, 1, GDH.length).setFontWeight('bold'); }
+  return sh;
+}
+function gdMiss(b) {
+  const pv = Number(b.pv) === 1;
+  if (!GUIDE_ENABLED && !pv) return { ok: true, n: 0 };
+  const k = gdMask(b.k); if (!k) return { ok: true, n: 0 };
+  const c = CacheService.getScriptCache(), mk = 'gdr' + Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyyMMddHHmm'), n = Number(c.get(mk) || 0);
+  if (n >= GD_RATE) return { ok: true, n: 0 };
+  c.put(mk, String(n + 1), 120);
+  const g = /^[a-z]{1,12}$/.test(String(b.g || '')) ? String(b.g) : '';
+  withLock(() => { const sh = gdSheet(); sh.getRange(sh.getLastRow() + 1, 1, 1, 4).setValues([[new Date(), cellSafe(k), g, pv ? 'y' : '']]); });
+  return { ok: true, n: 1 };
+}
+/** 최근 days 일 문장 빈도: 띄어쓰기·문장부호를 뺀 글자가 같으면 한 문장으로 */
+function gdTop(days, lim, now) {
+  const sh = book().getSheetByName(SH_GD); if (!sh || sh.getLastRow() < 2) return { total: 0, top: [] };
+  const from = (now || new Date()).getTime() - days * 864e5, n = sh.getLastRow() - 1, start = Math.max(2, sh.getLastRow() - 5000 + 1);
+  const rows = sh.getRange(start, 1, sh.getLastRow() - start + 1, 4).getValues();
+  const by = {}; let total = 0;
+  rows.forEach(r => {
+    if (!(r[0] instanceof Date) || r[0].getTime() < from) return;
+    const t = String(r[1] || ''); const key = t.toLowerCase().replace(/[\s?!.,~·]/g, ''); if (!key) return;
+    total++;
+    const o = by[key] || (by[key] = { k: t, n: 0, last: '', g: {}, pv: 0 });
+    o.n++; o.last = Utilities.formatDate(r[0], 'Asia/Seoul', 'yyyy-MM-dd'); if (r[2]) o.g[r[2]] = 1; if (r[3] === 'y') o.pv++;
+  });
+  const top = Object.keys(by).map(k => by[k]).sort((a, b) => b.n - a.n || (a.last < b.last ? 1 : -1)).slice(0, lim || 100).map(o => ({ k: o.k, n: o.n, last: o.last, g: Object.keys(o.g).join(','), pv: o.pv }));
+  return { total: total, top: top, rows: n };
+}
+function gdAdmin(b) {
+  const u = dpOptUser(b);
+  if (!u || !bIsAdmin(u.k)) { const e = new Error('운영자 계정으로 카카오 간편 로그인해 주세요(모닝 브리핑 운영자 모드).'); e.code = 'admin'; throw e; }
+  const d = Number(b.days) === 30 ? 30 : 7;
+  return Object.assign({ ok: true, days: d, enabled: GUIDE_ENABLED }, gdTop(d, 100));
+}
+/** 주간 운영 메일 한 줄(한 주에 한 번, 0건이면 안 보냄) — 대표가 시나리오 추가를 판단하는 근거 */
+function gdWeekLine(now) {
+  const P = PropertiesService.getScriptProperties(), wk = Utilities.formatDate(now, 'Asia/Seoul', "YYYY-'W'ww");
+  if (P.getProperty('GD_WEEK') === wk) return { ok: true, already: true };
+  P.setProperty('GD_WEEK', wk);
+  const t = gdTop(7, 3, now); if (!t.total) return { ok: true, n: 0 };
+  const line = `지난 7일 길잡이가 못 알아들은 고민 ${t.total}건 · 많이 나온 말: ${t.top.map(x => `‘${x.k}’ ${x.n}건`).join(', ')}`;
+  try { MailApp.sendEmail({ to: Session.getEffectiveUser().getEmail(), subject: `[${SITE_NAME} 운영] 고민 해결 길잡이 주간 한 줄`, name: SITE_NAME, body: line + `\n\n전체 목록(빈도순): ${WEB_ROOT}solve/admin/\n시트: ${book().getUrl()}` }); } catch (e) {}
+  return { ok: true, n: t.total, line: line };
 }

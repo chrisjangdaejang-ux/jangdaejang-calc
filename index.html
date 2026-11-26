@@ -37,13 +37,15 @@
 <script src="assets/track.js?v=2"></script>
 <script src="assets/stat.js?v=8"></script>
 <script src="assets/agents.js"></script>
-<script src="assets/config.js?v=11"></script>
+<script src="assets/config.js?v=12"></script>
 <script src="assets/auth.js?v=10"></script>
 <script src="assets/sale-status.js?v=1" defer></script>
 <script src="assets/area-watch.js?v=8" defer></script>
 <script src="assets/mine-core.js?v=22" defer></script>
 <script src="assets/ask-core.js?v=5" defer></script>
 <script src="assets/ask.js?v=3" defer></script>
+<script src="assets/guide-core.js?v=1" defer></script>
+<script src="assets/guide.js?v=1" defer></script>
 <script src="assets/rank-core.js?v=8" defer></script>
 <script src="assets/home-core.js?v=5" defer></script>
 <script src="assets/brief-core.js?v=12" defer></script>
@@ -261,6 +263,7 @@
   <a class="brand" href="./" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a>
 </header>
 <main class="wrap">
+  <section id="guideTop" hidden aria-label="고민 해결 길잡이"></section>
   <div class="h-top">
   <div class="hero">
     <p class="tagline">집값도, 할 일도 미리 알려 드려요</p>
@@ -590,8 +593,10 @@ addEventListener('DOMContentLoaded', () => {
 <script>/* 단지 이름으로 물어보기(assets/ask.js): 1곳 → 내 집 시세, 2~3곳 → 단지 비교 */ addEventListener('DOMContentLoaded', () => { if (window.JDJ_ASK) JDJ_ASK.mount(document.getElementById('askBox'), {from:'home'}); });</script>
 <script>/* 관심 지역 새 공고 배지(관심 지역을 정한 사람만 공고 자료를 받음). 상태는 분양 화면과 같은 공용 함수(sale-status.js)로 */ addEventListener('DOMContentLoaded', () => { if (window.JDJ_AREA) JDJ_AREA.badge(document.querySelector('a[data-track="home_to_bunyang"]')); });</script>
 <script src="./assets/brief-cta.js?v=1" defer></script>
-<script src="./assets/proactive.js?v=1" defer></script>
+<script src="./assets/proactive.js?v=2" defer></script>
 <script>/* 집예보가 먼저 챙겨 드려요(assets/config.js PROACTIVE_ENABLED 가 꺼져 있으면 칸이 생기지 않음) */ addEventListener('DOMContentLoaded', () => { if (window.JDJ_PRO) JDJ_PRO.mount(document.getElementById('proCard'), 'home'); });</script>
 <script src="./assets/ad-slot.js?v=6" defer></script>
+<script>/* 고민 해결 길잡이(assets/guide.js): GUIDE_ENABLED 이거나 ?preview=guide 일 때만 맨 위 입력창 + 상황 단추(단지 이름 물어보기 칸과 하나로) */
+addEventListener('DOMContentLoaded', function () { if (window.JDJ_GUIDE && JDJ_GUIDE.on()) JDJ_GUIDE.mountTop(document.getElementById('guideTop')); });</script>
 </body>
 </html>
