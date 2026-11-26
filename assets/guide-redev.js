@@ -1,6 +1,7 @@
 /* 고민 해결 길잡이 — 재개발·재건축 예산 고민 2개(assets/guide.js·guide-core.js 가 scenarios.json 의 ext:"redev" 시나리오를 이 파일로 넘겨요)
    ① redev_budget  "3~5억 원으로 재개발 투자한다면 어디가 좋을까요?"
    ② rebuild_live  "재건축 실거주하면서 몸테크 하기에, 보유 금액에 맞는 단지는?"
+      → 목록은 내 집 마련 맞춤 단지(buy/report)에서 '재건축 단지만 보기' + '재건축 단계 순'을 고른 것과 똑같아요(같은 함수 rec-core search · tools/guide-same-test.js)
    원칙: 투자 권유·'여기 사세요' 없음. 예산 조건에 맞는 구역·단지를 공개 자료로 정리(참고)하고, 정렬은 고른 기준일 뿐 추천 순위가 아니에요.
    숫자는 모두 공개 자료·기존 엔진 그대로:
      - 구역·단계·착공까지 기간 통계: data/redev/zones.json(서울시 정비사업 추진현황) + assets/redev-core.js speed()
@@ -15,6 +16,8 @@
   const RDc = () => root.JDJ_REDEV || (typeof require === 'function' ? require('./redev-core.js') : null);
   /* 재건축 단지 판정(rebuildOf)은 내 집 마련 맞춤 단지 '재건축 단지만 보기'와 같은 함수(assets/rec-core.js) */
   const RCc = () => root.JDJ_REC || (typeof require === 'function' ? require('./rec-core.js') : null);
+  /* 재건축 몸테크 목록 = 내 집 마련 맞춤 단지 조건 검색(rec-core search)에 '재건축 단지만 보기' + '재건축 단계 순' — 검색 조건은 guide-budget searchQ(검색 화면 ctxFor 와 같은 대출 조건)로 만들어요 */
+  const GBc = () => root.JDJ_GBUDGET || (typeof require === 'function' ? require('./guide-budget.js') : null);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   function won(man) {
     if (man == null || !isFinite(man)) return '';
@@ -42,9 +45,12 @@
     rinc: { type: 'money', t: '부부 합산 연 소득(세전)은 얼마인가요?', opts: [['5000', '5천만 원'], ['7000', '7천만 원'], ['10000', '1억 원'], ['15000', '1억 5천만 원']], free: 'money', hint: '대출 한도(DSR)를 계산할 때만 써요. 이 기기에만 저장돼요' },
     rsize: { type: 'choice', t: '함께 살 가족은 몇 명인가요?', opts: [['s', '1~2명(전용 60㎡ 이하도 괜찮아요)'], ['m', '3~4명(전용 60~85㎡)'], ['l', '5명 이상(전용 85㎡ 넘게)'], ['0', '상관없어요']], hint: '오래된 단지는 평형이 작은 곳이 많아요' }
   };
-  const ORDER = { redev_budget: ['rbud', 'rgu', 'rlive', 'rwait', 'rloan'], rebuild_live: ['rcash', 'rinc', 'rgu', 'rsize', 'rwait'] };
-  /* 재개발 구역 순서 = 재개발·재건축 구역 화면(villa/zone/)과 같은 정렬 함수(redev-core sort)·같은 기본값(착공 예상 빠른 순)·같은 이름 */
-  const SORTS = { redev_budget: [['soon', '착공 예상 빠른 순'], ['stage', '단계 높은 순']], rebuild_live: [['stage', '단계 높은 순'], ['old', '오래된 순'], ['cheap', '시세 낮은 순']] };
+  /* 재건축 몸테크는 검색 화면과 같은 목록이라 검색 화면에 없는 조건(착공까지 기다릴 기간)은 묻지 않아요 — 착공 예상은 목록에 참고로 보여 드려요 */
+  const ORDER = { redev_budget: ['rbud', 'rgu', 'rlive', 'rwait', 'rloan'], rebuild_live: ['rcash', 'rinc', 'rgu', 'rsize'] };
+  /* 재개발 구역 순서 = 재개발·재건축 구역 화면(villa/zone/)과 같은 정렬 함수(redev-core sort)·같은 기본값(착공 예상 빠른 순)·같은 이름
+     재건축 몸테크 순서 = 검색 화면 정렬 단추(rec-core sortsFor(true)) — 기본 '재건축 단계 순' */
+  const SORTS = { redev_budget: [['soon', '착공 예상 빠른 순'], ['stage', '단계 높은 순']], rebuild_live: [['rec', '추천 순'], ['stn', '역 가까운 순'], ['new', '신축 순'], ['deal', '거래 많은 순'], ['stage', '재건축 단계 순']] };
+  const sortsOf = id => id === 'rebuild_live' && RCc() ? RCc().sortsFor(true) : SORTS[id];
   const has = (st, k) => ({ rbud: st.bud != null, rgu: st.gus != null, rlive: st.live != null, rwait: st.wait != null, rloan: st.loan != null, rcash: st.cash != null, rinc: st.inc != null, rsize: st.size != null })[k];
 
   /** 문장에서 읽기: 금액 범위·지역·실거주·기다릴 기간·대출·가족 수 */
@@ -222,8 +228,7 @@
   }
   /** 괄호 없는 이름 목록(같은 동에 '한강맨숀'처럼 괄호 없이 같은 이름이 있는지) */
   function plainSet(units) { const o = {}; for (const u of units || []) if (!/\(.*?\)/.test(u[2])) o[u[0] + '|' + u[1] + '|' + nm(u[2])] = 1; return o; }
-  const SIZE = { s: a => a <= 60, m: a => a > 60 && a <= 85.5, l: a => a > 85.5 };
-  /** 보유 금액 + 대출로 살 수 있는 최대 집값(loan-core 그대로). 소득을 모르면 소득 기준(DSR)을 빼고 계산한 예시(ex=true) */
+  /** 보유 금액 + 대출로 살 수 있는 최대 집값(loan-core 그대로). 소득을 모르면 소득 기준(DSR)을 빼고 계산한 예시(ex=true) — 예전 호출용(목록·숫자 칸은 searchCap) */
   function maxPrice(L, g, st) {
     if (!L || !(st.cash > 0)) return null;
     const noInc = !(st.inc > 0);
@@ -231,56 +236,60 @@
     const P = L.maxPrice(c), n = P ? L.need(P, c) : null;
     return { P, loan: n ? Math.floor(n.loan.L) : 0, by: n ? n.loan.by : '', ltv: c.ltv, ex: noInc, rate: c.rate, term: c.term };
   }
+  /* 가족 수 → 평형대(검색 화면 평형 칸과 같은 이름) — 길잡이 목록과 검색 화면 주소(ar)가 같은 묶음을 써요
+     1~2명: 59㎡대 이하 · 3~4명: 74㎡대·84㎡대 · 5명 이상: 99㎡대 이상 · 상관없음: 모든 평형 */
+  const SIZE_BANDS = { s: ['40㎡ 이하', '49㎡대', '59㎡대'], m: ['74㎡대', '84㎡대'], l: ['99㎡대', '114㎡대', '135㎡대', '150㎡ 이상'] };
+  const ALL_BANDS = ['40㎡ 이하', '49㎡대', '59㎡대', '74㎡대', '84㎡대', '99㎡대', '114㎡대', '135㎡대', '150㎡ 이상'];
+  const bandsOf = st => (SIZE_BANDS[st.size] || ALL_BANDS).slice();
+  /** 길잡이 조건 → 검색 화면 조건(guide-budget searchQ 형식): 재건축 단지만 켬 · 정렬(기본 재건축 단계 순) */
+  function searchSt(st, cash) {
+    return { cash: cash != null ? cash : +st.cash || 0, inc: st.inc, own: st.own, gus: st.gus || [], areas: bandsOf(st), rb: 1, sort: RCc().sortEff(st.sort || 'stage', true), newb: 0, pcap: 0 };
+  }
+  /** 숫자 칸 '대출 포함 최대 집값' = 검색 화면이 쓰는 최대 집값(서울 규제지역 조건) */
+  function searchCap(q, st, L) {
+    const c = q.ctxBy.reg, P = q.maxBy.reg; if (!P) return null;
+    const n = L.need(P, c, q.dsrBy.reg);
+    return { P, loan: Math.floor(n.loan.L), by: n.loan.by, ltv: c.ltv, ex: !(st.inc > 0), rate: c.rate, term: c.term };
+  }
   function rebuildRows(st, X, E) {
-    const ZD = X.zones || {}, pol = X.pol, MC = E && E.MC, L = E && E.L, months = (X.IX && X.IX.months) || [], sgg = (X.IX && X.IX.sgg) || {};
-    const Y = +(String((X.IX && X.IX.updated) || '').slice(0, 4)) || todayY(), IXZ = X._zi || (X._zi = zoneIndex(ZD)), PL = X._pl || (X._pl = plainSet(X.units)), RC = RCc();
-    const mp = {}, cap = g => mp[g] || (mp[g] = maxPrice(L, g, st));
-    const by = {}; let gone = 0, over = 0, sizeOut = 0, waitOut = 0, all = 0;
-    for (const u of X.units || []) {
-      const gu = (sgg[u[0]] || {}).name || ''; if (!/^11/.test(String(u[0]))) continue;
-      if (st.gus && st.gus.length && st.gus.indexOf(gu) < 0) continue;
-      const f = u[9] && typeof u[9] === 'object' ? u[9] : {}, z = zoneOf(IXZ, u, PL), age = f.by ? Y - f.by : null;
-      /* 맞춤 단지 '재건축 단지만 보기'와 같은 판정: 구역(구역 자료 이름 연결 → 없으면 자료 fx.rz)이 있으면 착공 전만, 없으면 준공 30년 이상 */
-      const rb = RC.rebuildOf(u, Y, z);
-      if (!rb.ok) { if (rb.gone) gone++; continue; }
-      const rzOnly = !z && rb.zone;
-      if (!u[6] || !MC) continue;
-      const sm = MC.bandSummary(u, months); if (!(sm.price > 0) || sm.stale && !(sm.recent3 > 0) && !(sm.cnt12 > 0)) continue;
-      const key = u[0] + '|' + u[1] + '|' + u[2]; all++;
-      const area = +u[4] || 0;
-      if (st.size && st.size !== '0' && SIZE[st.size] && !SIZE[st.size](area)) { (by[key] = by[key] || { skip: 's' }); continue; }
-      const g = L && L.R ? L.R.groupOf(u[0]) : 'reg', M = cap(g);
-      if (M && !(sm.price <= M.P)) { (by[key] = by[key] || { skip: 'p' }); continue; }
-      const lf = z ? left(z, ZD) : rzOnly ? { t: '착공 예상 없음', s: `준공 ${age != null ? age + '년' : '정보 없음'}`, y: null } : { t: '추진 단계 정보 없음', s: `준공 ${age}년`, y: null };
-      if (st.wait && !(lf.y != null && lf.y <= st.wait)) { (by[key] = by[key] || { skip: 'w' }); continue; }
-      const row = { key, u, code: u[0], gu, dong: u[1], apt: u[2], band: u[3], area, price: sm.price, at: sm.at, n12: sm.cnt12, by: f.by || null, age, z, rzOnly, st: rb.zone ? rb.lv : 0,
-        stn: rb.zone ? stName(rb.lv) : '추진 단계 정보 없음', lf, th: toh(pol, u[0], u[1], 'apt'), lim: z ? limit(pol, z) : (overheat(pol, u[0]) ? { v: 'pre', t: '단계 모름 · 조합설립 뒤 제한' } : { v: 'none', t: '투기과열지구 아님' }) };
-      const cur = by[key];
-      if (!cur || cur.skip || row.area > cur.area) by[key] = row;   // 한 단지는 조건에 맞는 가장 넓은 평형 하나로
-    }
-    const keys = Object.keys(by), rows = keys.map(k => by[k]).filter(r => !r.skip);
-    keys.forEach(k => { const r = by[k]; if (r.skip === 's') sizeOut++; else if (r.skip === 'p') over++; else if (r.skip === 'w') waitOut++; });
-    sortRows(rows, st.sort, 'rebuild_live');
+    E = E || {};
+    const ZD = X.zones || {}, pol = X.pol, MC = E.MC, L = E.L, months = (X.IX && X.IX.months) || [], sgg = (X.IX && X.IX.sgg) || {};
+    const Y = +(String((X.IX && X.IX.updated) || '').slice(0, 4)) || todayY(), IXZ = X._zi || (X._zi = zoneIndex(ZD)), PL = X._pl || (X._pl = plainSet(X.units)), RC = RCc(), GB = GBc();
+    /* 이주·착공 단계라 뺀 단지(참고 숫자) */
+    const goneK = new Set(), sg = new Set(GB.sggsOf(st, X.IX)), bands = new Set(bandsOf(st));
+    for (const u of X.units || []) if (sg.has(u[0]) && bands.has(u[3]) && RC.rebuildOf(u, Y).gone) goneK.add(u[0] + '|' + u[1] + '|' + u[2]);
+    /* 같은 조건에서 돈 조건만 뺀 재건축 단지 수 — 금액을 모를 때 첫 카드, 금액을 알면 '살 수 없어 뺀 단지' 수 */
+    const qAll = Object.assign(GB.searchQ(searchSt(st, 1e7), X, E), { cash: Infinity }), all = RC.search(qAll);
+    const has = st.cash > 0, q = has ? GB.searchQ(searchSt(st), X, E) : null, S0 = has ? RC.search(q) : null;
+    const list = has ? S0.list : all.list;
+    const rows = list.map(x => {
+      const u = x.u, f = u[9] && typeof u[9] === 'object' ? u[9] : {}, rb = RC.rebuildOf(u, Y), zz = rb.zone ? zoneOf(IXZ, u, PL) : null;
+      const sm = MC ? MC.bandSummary(u, months) : {}, age = rb.age;
+      const lf = zz ? left(zz, ZD) : rb.zone ? { t: '착공 예상 없음', s: `준공 ${age != null ? age + '년' : '정보 없음'}`, y: null } : { t: '추진 단계 정보 없음', s: `준공 ${age}년`, y: null };
+      return { key: x.code + '|' + x.dong + '|' + x.apt, u, code: x.code, gu: (sgg[x.code] || {}).name || '', dong: x.dong, apt: x.apt, band: x.band, area: +x.area || 0, price: x.P, at: sm.at, n12: sm.cnt12,
+        by: f.by || null, age, z: zz, rzOnly: rb.zone && !zz, st: rb.zone ? rb.lv : 0, stn: rb.zone ? stName(rb.lv) : '추진 단계 정보 없음', lf, grp: x.grp,
+        loan: x.nd ? Math.floor(x.nd.loan.L) : null, need: x.nd ? Math.round(x.nd.need) : null, th: toh(pol, u[0], u[1], 'apt'),
+        lim: rb.zone ? limit(pol, { t: 'rb', g: u[0], st: rb.lv }) : (overheat(pol, u[0]) ? { v: 'pre', t: '단계 모름 · 조합설립 뒤 제한' } : { v: 'none', t: '투기과열지구 아님' }) };
+    });
     const RD = RDc();
     const zd = r => r.z || r.rzOnly;
     const dist = [{ k: 'none', t: '추진 단계 정보 없음', n: rows.filter(r => !zd(r)).length }].concat(RD.SG.filter(g => g[0] !== 'start').map(g => ({ k: g[0], t: g[1], n: rows.filter(r => zd(r) && g[2].indexOf(r.st) >= 0).length }))).filter(d => d.n || d.k !== 'mgmt');
     const ps = rows.map(r => r.price);
-    const anyG = rows[0] ? (L && L.R ? L.R.groupOf(rows[0].code) : 'reg') : (L && L.R ? L.R.groupOf('11680') : 'reg');
-    return { rows, n: rows.length, dist, gone, over, sizeOut, waitOut, cap: cap(anyG), lo: ps.length ? Math.min(...ps) : null, hi: ps.length ? Math.max(...ps) : null, zoned: rows.filter(zd).length };
+    return { rows, n: rows.length, total: has ? S0.total : all.total, sort: has ? S0.sort : all.sort, nA: has ? S0.nA : 0, nB: has ? S0.nB : 0, dist, gone: goneK.size, over: has ? Math.max(0, all.list.length - rows.length) : 0, sizeOut: 0, waitOut: 0,
+      cap: has && L ? searchCap(q, st, L) : null, lo: ps.length ? Math.min(...ps) : null, hi: ps.length ? Math.max(...ps) : null, zoned: rows.filter(zd).length, q };
   }
 
   /* ---------- '같은 조건으로 검색 화면에서 보기' — 내 집 마련 맞춤 단지(buy/report)를 '재건축 단지만 보기'를 켠 채로 ----------
-     같은 재건축 판정(rec-core rebuildOf)·같은 현금·소득·지역. 평형은 가족 수 → 가까운 평형대. 연소득·현금은 주소가 아니라 이 탭에만(sessionStorage jdj_gfin, 30분) */
-  const SIZE_BANDS = { s: ['40㎡ 이하', '49㎡대', '59㎡대'], m: ['74㎡대', '84㎡대'], l: ['99㎡대', '114㎡대', '135㎡대', '150㎡ 이상'] };
-  const ALL_BANDS = ['40㎡ 이하', '49㎡대', '59㎡대', '74㎡대', '84㎡대', '99㎡대', '114㎡대', '135㎡대', '150㎡ 이상'];
+     같은 조건(현금·소득·보유·지역·평형대) + 재건축 단지만 보기 + 지금 고른 정렬(기본 재건축 단계 순) → 길잡이 목록과 같은 단지·같은 순서. 연소득·현금은 주소가 아니라 이 탭에만(sessionStorage jdj_gfin, 30분) */
   function sameUrl(st, IX, base) {
     if (!(st.cash > 0) || !(st.inc > 0)) return null;
     const p = new URLSearchParams(), sgg = (IX && IX.sgg) || {};
     p.set('sd', '서울특별시');
     const all = Object.keys(sgg).filter(c => /^11/.test(c)).sort(), gs = all.filter(c => !(st.gus && st.gus.length) || st.gus.indexOf(sgg[c].name) >= 0);
     if (gs.length && gs.length < all.length) p.set('gs', gs.join(','));
-    p.set('ar', (SIZE_BANDS[st.size] || ALL_BANDS).join(','));
+    p.set('ar', bandsOf(st).join(','));
     p.set('o', ['first', 'one'].indexOf(st.own) >= 0 ? st.own : 'none');
+    const so = RCc().sortEff(st.sort || 'stage', true); if (so !== 'rec') p.set('so', so);
     p.set('rb', '1');
     p.set('from', 'guide');
     return (base || '') + 'buy/report/?' + p.toString();
@@ -289,7 +298,7 @@
   function sameHtml(id, st, H) {
     if (id !== 'rebuild_live' || !(st.cash > 0)) return '';
     const u = sameUrl(st, H.IX, H.BASE || '');
-    return u ? `<a class="grsame" href="${esc(u)}" data-rsame="1" data-track="guide_rebuild_live_same"><span><b>같은 조건으로 검색 화면에서 보기</b><small>내 집 마련 맞춤 단지 화면을 지금 조건(현금·소득·지역·평형)에 ‘재건축 단지만 보기’를 켜서 열어요 — 재건축 단지를 고르는 기준이 같아요</small></span><span class="go" aria-hidden="true">›</span></a>`
+    return u ? `<a class="grsame" href="${esc(u)}" data-rsame="1" data-track="guide_rebuild_live_same"><span><b>같은 조건으로 검색 화면에서 보기</b><small>내 집 마련 맞춤 단지 화면을 지금 조건(현금·소득·지역·평형)에 ‘재건축 단지만 보기’와 지금 순서를 켜서 열어요 — 같은 단지가 같은 순서로 나와요</small></span><span class="go" aria-hidden="true">›</span></a>`
       : '<p class="gtn">연 소득을 고르면 이 조건으로 내 집 마련 맞춤 단지 화면(재건축 단지만 보기)도 열 수 있어요.</p>';
   }
 
@@ -297,7 +306,7 @@
   function chipsOf(st, id) {
     const c = [st.gname || '서울'];
     if (id === 'redev_budget') { if (st.bud) c.push(st.bud[1] != null ? (st.bud[0] ? `${wonS(st.bud[0])}~${wonS(st.bud[1])}` : `${wonS(st.bud[1])} 이하`) : `${wonS(st.bud[0])} 넘게`); if (st.live) c.push(st.live === 'y' ? '실거주 가능' : '세입자 두고 매수'); if (st.wait) c.push(`착공 ${st.wait}년 안쪽`); if (st.loan) c.push(st.loan === 'y' ? '대출 필요' : '대출 없이'); }
-    else { if (st.cash != null) c.push(`현금 ${wonS(st.cash)}`); if (st.inc != null) c.push(st.inc ? `연 소득 ${wonS(st.inc)}` : '소득 미입력'); if (st.size && st.size !== '0') c.push({ s: '60㎡ 이하', m: '60~85㎡', l: '85㎡ 넘게' }[st.size]); if (st.wait) c.push(`착공 ${st.wait}년 안쪽`); }
+    else { if (st.cash != null) c.push(`현금 ${wonS(st.cash)}`); if (st.inc != null) c.push(st.inc ? `연 소득 ${wonS(st.inc)}` : '소득 미입력'); if (st.size && st.size !== '0') c.push({ s: '59㎡대 이하', m: '74·84㎡대', l: '99㎡대 이상' }[st.size]); }
     return c;
   }
   function headOf(id, st, R) {
@@ -312,7 +321,7 @@
       return `구역 안(공식 경계·구역 대표 지번) 빌라(연립·다세대) 매매 실거래 ${ymK(b.from)}~${ymK(b.to)} 기준이에요. 구역·단계는 서울시 정비사업 추진현황(${ymK(z.asof)} 기준)이에요. 정렬은 고른 기준일 뿐 추천 순위가 아니에요.`;
     }
     const m = (X.IX && X.IX.months) || [];
-    return `시세는 최근 3개월 실거래 중간값(내 집 시세와 같은 계산, ${ymK(m[m.length - 1])}까지)이에요. 재건축 단계는 서울시 정비사업 추진현황의 단지 이름으로 연결했어요(참고). 정렬은 고른 기준일 뿐 추천 순위가 아니에요.`;
+    return `내 집 마련 맞춤 단지에서 ‘재건축 단지만 보기’를 켜고 같은 조건으로 찾은 목록과 똑같아요(시세 = 최근 3개월 실거래 평당가 중간값 × 면적, ${ymK(m[m.length - 1])}까지). 재건축 단계는 서울시 정비사업 추진현황 기준이고, 오래된 단지는 값이 싼 곳이 많아 예산보다 많이 싼 단지도 빼지 않았어요. 정렬은 고른 기준일 뿐 추천 순위가 아니에요.`;
   }
   /** 표: {head, rows} — 칸 값 {t, href} 는 링크, {t, g} 는 색 */
   function tableOf(id, R, H, lim) {
@@ -419,14 +428,16 @@
       H.getJ('rxp', H.DATA + 'policy.json').catch(() => null)
     ]).then(([zones, pol]) => ({ zones, pol, IX: H.IX })).catch(e => { XP = null; throw e; }));
     if (id === 'redev_budget') return base.then(X => X.bud ? X : H.getJ('rxb', H.DATA + 'redev/budget.json').catch(() => H.getJ('rxb2', H.BASE + 'data/redev-budget.json')).then(b => { X.bud = b; return X; }));
-    const rc = root.JDJ_REC || !H.script ? Promise.resolve() : H.script('assets/rec-core.js?v=7');
-    return Promise.all([base, rc]).then(([X]) => X.units ? X : H.unitsOf('s00').then(u => { X.units = u; return X; }));
+    /* 재건축 몸테크: 검색 화면과 같은 조건 검색(rec-core)·같은 조건 만들기(guide-budget searchQ)·같은 자료(단지·보유 기간 모델·지역 메모) */
+    const rc = root.JDJ_REC || !H.script ? Promise.resolve() : H.script('assets/rec-core.js?v=8');
+    const gb = root.JDJ_GBUDGET || !H.script ? Promise.resolve() : H.script('assets/guide-budget.js?v=4');
+    return Promise.all([base, rc, gb]).then(([X]) => X.units && X._gb ? X : GBc().load(H).then(B => Object.assign(X, { units: B.units, MH: B.MH, MODEL: B.MODEL, notes: B.notes, _gb: 1 })));
   }
   function distHtml(R) {
     const mx = Math.max(1, ...R.dist.map(d => d.n));
     return `<div class="gdist">${R.dist.map(d => `<div class="${d.n ? 'on' : ''}"><span>${esc(d.t)}</span><i style="width:${Math.round(d.n / mx * 100)}%"></i><b>${d.n.toLocaleString()}곳</b></div>`).join('')}</div>`;
   }
-  function sortHtml(id, st) { return `<div class="gsort" role="group" aria-label="정렬"><span>정렬</span>${SORTS[id].map(s => `<button type="button" data-rsort="${s[0]}" aria-pressed="${st.sort === s[0]}">${esc(s[1])}</button>`).join('')}<em>추천 순위 아님</em></div>`; }
+  function sortHtml(id, st) { const cur = id === 'rebuild_live' ? RCc().sortEff(st.sort || 'stage', true) : st.sort; return `<div class="gsort" role="group" aria-label="정렬"><span>정렬</span>${sortsOf(id).map(s => `<button type="button" data-rsort="${s[0]}" aria-pressed="${cur === s[0]}">${esc(s[1])}</button>`).join('')}${id === 'rebuild_live' && cur === 'rec' ? '' : '<em>추천 순위 아님</em>'}</div>`; }
   function nqHtml(id, st, H) {
     const k = next(id, st); if (!k) return '';
     const q = Q[k], gus = H.IX && H.IX.sgg ? Object.keys(H.IX.sgg).filter(c => /^11/.test(c)).map(c => H.IX.sgg[c].name).sort((x, y) => x.localeCompare(y, 'ko')) : [];
@@ -472,7 +483,7 @@
     const chips = chipsOf(st, id).map(c => `<span class="gchip2">${esc(c)}</span>`).join('');
     let extra = [];
     if (id === 'redev_budget') { if (R.started) extra.push(`이미 착공한 구역 ${R.started}곳은 뺐어요(빌라가 아니라 입주권으로 거래돼요)`); if (R.waitOut) extra.push(`착공 예상이 ${st.wait}년 안쪽이 아니거나 예상이 없는 구역 ${R.waitOut}곳은 뺐어요`); if (R.livOut) extra.push(`동 단위 토지거래허가 지정이 있는 구역 ${R.livOut}곳은 뺐어요`); }
-    else { if (R.gone) extra.push(`이주·착공 단계라 지금 들어가 살 수 없는 단지 ${R.gone}곳은 뺐어요`); if (R.over) extra.push(`최대 집값보다 비싼 단지 ${R.over}곳은 뺐어요`); if (R.sizeOut) extra.push(`평형이 맞지 않는 단지 ${R.sizeOut}곳은 뺐어요`); if (R.waitOut) extra.push(`착공 예상이 ${st.wait}년 안쪽이 아니거나 예상이 없는 단지 ${R.waitOut}곳은 뺐어요`); }
+    else { if (R.gone) extra.push(`이주·착공 단계라 지금 들어가 살 수 없는 단지 ${R.gone}곳은 뺐어요`); if (R.over) extra.push(`가진 돈과 대출로 살 수 없는 재건축 단지 ${R.over.toLocaleString()}곳은 뺐어요`); if (R.sizeOut) extra.push(`평형이 맞지 않는 단지 ${R.sizeOut}곳은 뺐어요`); if (R.waitOut) extra.push(`착공 예상이 ${st.wait}년 안쪽이 아니거나 예상이 없는 단지 ${R.waitOut}곳은 뺐어요`); }
     const nums = numsOf(id, st, R, X).slice(0, 3).map(n => `<div><small>${esc(n.k)}</small><b>${esc(n.v)}</b>${n.s ? `<span>${esc(n.s)}</span>` : ''}</div>`).join('');
     const tb = id === 'rebuild_live' && st.cash == null ? `<p class="gtn" style="margin-top:12px">실거주가 전제라, 가진 돈(현금)을 알려 주시면 대출까지 더해 살 수 있는 단지만 목록으로 보여 드려요.</p>` : R.n ? `<h3 class="gtt" style="margin-top:14px">${esc(tableOf(id, { rows: [] }, H).title)} · ${R.n.toLocaleString()}곳</h3>` + rowsHtml(id, R, H, lim) + (!full && R.n > lim ? `<p class="gtn">외 ${R.n - lim}곳은 ‘전체 목록과 주의점 보기’에서 볼 수 있어요.</p>` : full && R.n > lim ? `<button type="button" class="gmore" data-rall="1">${Math.min(10, R.n - lim)}곳 더 보기(남은 ${R.n - lim}곳)</button>` : '') : `<p class="gtn">조건에 맞는 곳이 없어요. 조건을 하나 풀어 보세요.</p>`;
     return { R, html: `<div>${chips}</div><h3>${esc(headOf(id, st, R))}</h3><p class="exn">${esc(basisOf(id, st, R, X))}${id === 'redev_budget' ? ' 단독·다가구 실거래는 아직 들어 있지 않아요.' : ''}</p>
@@ -542,12 +553,13 @@
     const R = id === 'redev_budget' ? redevRows(st, X) : rebuildRows(st, X, { MC: H.MC, L: H.L });
     const nums = numsOf(id, st, R, X).slice(0, 2).map(n => ({ k: n.k, v: n.v }));
     const ex2 = id === 'rebuild_live' && st.cash == null ? [] : R.rows.slice(0, 4).map(r => id === 'redev_budget' ? [`${r.n} (${r.gu}) ${r.st}단계`, r.lo === r.hi ? wonS(r.lo) : `${wonS(r.lo)}~${wonS(r.hi)}`] : [`${r.apt} (${r.gu}) ${r.z || r.rzOnly ? r.st + '단계' : r.by + '년'}`, wonS(r.price)]);
-    return { head: headOf(id, st, R), nums, ex2, ex: `단계 높은 순(추천 순위 아님) · ${id === 'redev_budget' ? '구역 안 빌라 최근 3년 실거래' : '최근 3개월 실거래 중간값'} 기준이에요.` , n: R.n };
+    const sn = id === 'redev_budget' ? '단계 높은 순' : ((RCc().sortsFor(true).find(s => s[0] === R.sort) || [0, '재건축 단계 순'])[1]);
+    return { head: headOf(id, st, R), nums, ex2, ex: `${sn}(추천 순위 아님) · ${id === 'redev_budget' ? '구역 안 빌라 최근 3년 실거래' : '최근 3개월 실거래 평당가 중간값'} 기준이에요.` , n: R.n };
   }
   /** 대화창 질문 꼴(guide-core chatNext 가 씀) */
   function chatQ(id, st) { const k = next(id, st); if (!k) return null; const q = Q[k]; return { key: k, nf: 1, ext: 1, q, quick: q.opts.slice() }; }
 
-  const API = { IDS, is, Q, ORDER, SORTS, GROUPS, init, next, set, answer, read, toh, overheat, limit, left, redevRows, rebuildRows, zoneIndex, zoneOf, plainSet, maxPrice, tableOf, rowsHtml, warnOf, infoOf, numsOf, headOf, chipsOf, sameUrl, sameFin, solve, chatQ, chatCard, instant, flow, load, moneyIn, nm };
+  const API = { IDS, is, Q, ORDER, SORTS, GROUPS, init, next, set, answer, read, toh, overheat, limit, left, redevRows, rebuildRows, zoneIndex, zoneOf, plainSet, maxPrice, tableOf, rowsHtml, warnOf, infoOf, numsOf, headOf, chipsOf, sameUrl, sameFin, bandsOf, searchSt, solve, chatQ, chatCard, instant, flow, load, moneyIn, nm };
   root.JDJ_GREDEV = API;
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
 })(typeof window !== 'undefined' ? window : globalThis);

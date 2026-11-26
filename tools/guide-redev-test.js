@@ -62,8 +62,8 @@ check('몸테크 넓은 질문: 현금부터', X1.next('rebuild_live', X1.init('
   check('대화 몸테크: 소득 → "7천만 원"', nx.key === 'rinc' && G.chatAnswer(T, '7천만 원', DATA, CTX).ok && T.nf.inc === 7000, T.nf);
   nx = G.chatNext(T, DATA, null); T.asked = { key: nx.key, nf: 1, ext: 1 }; G.chatAnswer(T, '노도강', DATA, CTX);
   nx = G.chatNext(T, DATA, null); T.asked = { key: nx.key, nf: 1, ext: 1 }; G.chatAnswer(T, '4명이에요', DATA, CTX);
-  nx = G.chatNext(T, DATA, null); T.asked = { key: nx.key, nf: 1, ext: 1 }; G.chatAnswer(T, '10년', DATA, CTX);
-  check('대화 몸테크: 지역·가족·기간까지 읽고 끝', T.nf.gname === '노도강' && T.nf.size === 'm' && T.nf.wait === 10 && G.chatNext(T, DATA, null) === null, T.nf);
+  /* 몸테크는 검색 화면(재건축 단지만 보기)과 같은 목록이라 검색 화면에 없는 '착공까지 기다릴 기간'은 묻지 않아요 */
+  check('대화 몸테크: 지역·가족까지 읽고 끝(기다릴 기간은 묻지 않음)', T.nf.gname === '노도강' && T.nf.size === 'm' && G.chatNext(T, DATA, null) === null && X1.ORDER.rebuild_live.indexOf('rwait') < 0, T.nf);
   check('대화: 못 알아들으면 힌트(금액 예시)', /억/.test(G.chatHint({ key: 'rcash', nf: 1, q: X1.Q.rcash })));
 }
 
@@ -104,20 +104,23 @@ check('실거주 못 하면 동 단위 토허 구역은 뺌', Rl.rows.every(r =>
 /* ---------- 몸테크: 시세·대출·연결 ---------- */
 const sb = X1.init('rebuild_live', G.extract('몸테크 현금 5억 연봉 1억', CTX));
 const B = X1.rebuildRows(sb, X, { MC, L });
-const c0 = L.ctx({ g: L.R.groupOf('11470'), own: 'none', income: 10000, cash: 50000, debt: 0, rate: 4 }), P0 = L.maxPrice(c0);
-check('몸테크: 최대 집값 = loan-core maxPrice(대출 한도 계산기와 같은 함수)', B.cap && B.cap.P === P0 && !B.cap.ex, [B.cap, P0]);
-check('몸테크: 단지 시세 = mine-core bandSummary · 최대 집값 이하', B.n > 0 && B.rows.every(r => r.price === MC.bandSummary(r.u, IX.months).price && r.price <= P0), B.n);
-check('몸테크: 재건축 단계 연결이거나 준공 30년 넘은 단지만, 이주·착공 단계는 뺌', B.rows.every(r => (r.z && r.z.st < 9) || r.age >= 30));
+const GBt = require('../assets/guide-budget.js'), RCt = require('../assets/rec-core.js');
+const q0 = GBt.searchQ({ cash: 50000, inc: 10000, own: 'none', gus: [], rb: 1, sort: 'stage' }, X, { L, MC, hz: 2 }), P0 = q0.maxBy.reg;
+check('몸테크: 최대 집값 = 검색 화면 조건(guide-budget searchQ → loan-core maxPrice)', B.cap && B.cap.P === P0 && !B.cap.ex, [B.cap, P0]);
+check('몸테크: 단지 시세 = 검색 화면 시세(rec-core unitPrice) · 내 돈으로 살 수 있음', B.n > 0 && B.rows.every(r => r.price === RCt.unitPrice(r.u) && r.need <= 50000), B.n);
+const Yd = +String(X.IX.updated || '').slice(0, 4) || Y;
+check('몸테크: 재건축 단계 연결(착공 전)이거나 준공 30년 넘은 단지만(rec-core rebuildOf)', B.rows.every(r => RCt.rebuildOf(r.u, Yd).ok));
+check('몸테크: 기본 순서 = 재건축 단계 순(단계 높은 단지 먼저 · 단계 정보 없는 단지는 맨 뒤)', B.sort === 'stage' && B.rows.every((r, i) => !i || (B.rows[i - 1].z || B.rows[i - 1].rzOnly ? B.rows[i - 1].st : -1) >= (r.z || r.rzOnly ? r.st : -1)));
 const ZI = X1.zoneIndex(FX.zones), PL = X1.plainSet(FX.units), uOf = n => FX.units.find(u => u[2] === n);
 const zn = n => { const z = X1.zoneOf(ZI, uOf(n), PL); return z ? z.n : ''; };
 check('이름 연결: 목동신시가지10 → 목동10단지(목동1단지 아님)', zn('목동신시가지10') === '목동10단지', zn('목동신시가지10'));
 check('이름 연결: 목동신시가지1 → 목동1단지', zn('목동신시가지1') === '목동1단지');
 check('이름 연결: 한강맨숀 → 한강맨션아파트, 한강(대우)는 연결 안 함', zn('한강맨숀') === '한강맨션아파트' && zn('한강(대우)') === '');
 check('이름 연결: 은마 → 은마아파트 · 헬리오시티는 없음', zn('은마') === '은마아파트' && zn('헬리오시티') === '');
-const Bm = X1.rebuildRows(Object.assign({}, sb, { size: 'm' }), X, { MC, L });
-check('몸테크: 3~4명(60~85㎡)만', Bm.rows.every(r => r.area > 60 && r.area <= 85.5));
-const Bc = X1.rebuildRows(Object.assign({}, sb, { sort: 'cheap' }), X, { MC, L }), Bo = X1.rebuildRows(Object.assign({}, sb, { sort: 'old' }), X, { MC, L });
-check('몸테크 정렬: 시세 낮은 순 · 오래된 순', Bc.rows.every((r, i) => !i || Bc.rows[i - 1].price <= r.price) && Bo.rows.every((r, i) => !i || (Bo.rows[i - 1].by || 9999) <= (r.by || 9999)));
+const Bm = X1.rebuildRows(Object.assign({}, sb, { size: 'm', cash: 300000 }), X, { MC, L });
+check('몸테크: 3~4명 = 74㎡대·84㎡대(검색 화면 평형 칸)', Bm.n > 0 && Bm.rows.every(r => r.band === '74㎡대' || r.band === '84㎡대'));
+const Bc = X1.rebuildRows(Object.assign({}, sb, { sort: 'deal' }), X, { MC, L }), Bo = X1.rebuildRows(Object.assign({}, sb, { sort: 'new' }), X, { MC, L });
+check('몸테크 정렬: 검색 화면 정렬 단추와 같음(거래 많은 순 · 신축 순)', Bc.sort === 'deal' && Bo.sort === 'new' && Bc.rows.every((r, i) => !i || RCt.cnt12(Bc.rows[i - 1].u) >= RCt.cnt12(r.u)) && JSON.stringify(X1.SORTS.rebuild_live) === JSON.stringify(RCt.sortsFor(true)));
 const Bn = X1.rebuildRows(X1.init('rebuild_live', G.extract('몸테크 현금 5억', CTX)), X, { MC, L });
 check('몸테크: 소득을 모르면 소득 기준을 뺀 예시로 표시', Bn.cap && Bn.cap.ex === true && /소득 기준\(DSR\)을 빼고/.test(X1.warnOf('rebuild_live', {}, Bn, X)[0]));
 check('몸테크: 금액 전 첫 카드 = 단지 수·단계 분포(가격 거르기 없음)', X1.rebuildRows(X1.init('rebuild_live', { raw: '몸테크' }), X, { MC, L }).n >= B.n);
@@ -141,9 +144,9 @@ check('법령 근거: 재초환·비과세 기간 합산은 확인 필요', X1.i
 
 /* ---------- 화면 연결 ---------- */
 const gjs = read('assets/guide.js'), gcore = read('assets/guide-core.js'), sw = read('sw.js'), solve = read('solve/index.html'), gx = read('assets/guide-redev.js');
-check('guide.js: 즉답·양식·대화에서 이 파일로 넘김', /JDJ_GREDEV\.instant/.test(gjs) && /JDJ_GREDEV\.flow/.test(gjs) && /JDJ_GREDEV\.chatCard/.test(gjs) && /'assets\/guide-redev\.js\?v=4'/.test(gjs));
+check('guide.js: 즉답·양식·대화에서 이 파일로 넘김', /JDJ_GREDEV\.instant/.test(gjs) && /JDJ_GREDEV\.flow/.test(gjs) && /JDJ_GREDEV\.chatCard/.test(gjs) && /'assets\/guide-redev\.js\?v=5'/.test(gjs));
 check('guide-core: 계산 함수·대화 좁히기 연결', /S\.redevBudget/.test(gcore) && /S\.rebuildLive/.test(gcore) && /JDJ_GREDEV\.chatQ/.test(gcore) && G.SOLVERS.indexOf('redevBudget') >= 0 && G.SOLVERS.indexOf('rebuildLive') >= 0);
-check('길잡이 화면이 이 파일을 읽음 · 서비스 워커 목록에 있음', /assets\/guide-redev\.js\?v=4/.test(solve) && /assets\/guide-redev\.js\?v=4/.test(sw) && /data\/redev-budget\.json/.test(sw));
+check('길잡이 화면이 이 파일을 읽음 · 서비스 워커 목록에 있음', /assets\/guide-redev\.js\?v=5/.test(solve) && /assets\/guide-redev\.js\?v=5/.test(sw) && /data\/redev-budget\.json/.test(sw));
 check('화면 문구에 경쟁 서비스·AI 이름 없음', !/(호갱노노|직방|아실|리치고|네이버\s*부동산|부동산\s*지인|ChatGPT|GPT|Gemini|Claude|클로드)/i.test(gx));
 check('화면: 정렬 단추에 추천 순위 아님 · 즉답 먼저(바로 답)', /추천 순위 아님/.test(gx) && /바로 답/.test(gx));
 check('자료 파일: 기간·출처가 있음', BUD.from && BUD.to && /국토교통부/.test(BUD.src) && Object.keys(BUD.z).length > 100);

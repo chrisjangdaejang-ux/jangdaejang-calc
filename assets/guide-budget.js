@@ -196,18 +196,21 @@
     const sgg = (IX && IX.sgg) || {};
     return Object.keys(sgg).filter(c => /^11/.test(c) && (!(st.gus && st.gus.length) || st.gus.indexOf(sgg[c].name) >= 0)).sort();
   }
-  /** 검색 화면(buy/report) ctxFor 와 같은 대출 조건 — 소득을 모르면 소득 기준(DSR)을 빼고(ctxOf 와 같음) */
+  /** 주택 보유: 검색 화면 주소 o 와 같은 값(무주택·생애 첫 집·1주택) */
+  const ownOf = st => st.own === 'first' || st.own === 'one' ? st.own : 'none';
+  /** 검색 화면(buy/report) ctxFor 와 같은 대출 조건 — 소득을 모르면 소득 기준(DSR)을 빼고(ctxOf 와 같음)
+      st.areas(평형대 배열)가 있으면 그 평형대로(길잡이 재건축 몸테크가 가족 수 → 평형대로 넘김) — 재건축 몸테크도 이 함수로 같은 조건을 만들어요 */
   function searchQ(st, X, E) {
     E = E || {};
     const L = E.L || LC(), RC = RCc(), IX = X.IX || {}, ex = !(st.inc > 0);
     const ctxBy = {}, dsrBy = {}, maxBy = {};
-    for (const g of ['reg', 'capfree', 'local']) { const c = L.ctx({ g, own: st.own === 'first' ? 'first' : 'none', rtype: 'cyc', income: ex ? 1e7 : +st.inc, cash: +st.cash || 0, debt: 0, rate: RATE, term: 30, etc: L.ETC_DEFAULT }); ctxBy[g] = c; dsrBy[g] = L.dsrMax(c); maxBy[g] = L.maxPrice(c, dsrBy[g], false); }
+    for (const g of ['reg', 'capfree', 'local']) { const c = L.ctx({ g, own: ownOf(st), rtype: 'cyc', income: ex ? 1e7 : +st.inc, cash: +st.cash || 0, debt: 0, rate: RATE, term: 30, etc: L.ETC_DEFAULT }); ctxBy[g] = c; dsrBy[g] = L.dsrMax(c); maxBy[g] = L.maxPrice(c, dsrBy[g], false); }
     const NOTES = X.notes || root.JDJ_REGION_NOTES || null, sggs = sggsOf(st, IX), sggPpy = {};
     sggs.forEach(c => { const g = (IX.sgg || {})[c]; sggPpy[c] = g ? RC.lastNZ(g.s || []) : 0; });
-    return { units: hzUnits(X, E.hz || hzNow()), sggs, areas: SIZE_BANDS(st), cash: +st.cash || 0, ctxBy, dsrBy, maxBy,
+    return { units: hzUnits(X, E.hz || hzNow()), sggs, areas: st.areas || SIZE_BANDS(st), cash: +st.cash || 0, ctxBy, dsrBy, maxBy,
       need: (P, c, d, large) => L.need(P, c, d, !!large), groupOf: c => RC.isReg(c) ? 'reg' : (RC.isCap(c) ? 'capfree' : 'local'),
       noteOf: c => !!(NOTES && NOTES.notes && NOTES.notes[RC.noteKey(NOTES, IX, c)]), sggPpy,
-      newb: +st.newb || 0, pmax: +st.pcap || 0, year: yearOf(IX), any: false, max: RC.PAGE, sort: RC.sortId(st.sort), rebuild: !!st.rb };
+      newb: +st.newb || 0, pmax: +st.pcap || 0, year: yearOf(IX), any: false, max: RC.PAGE, sort: RC.sortEff(st.sort, st.rb), rebuild: !!st.rb };
   }
   function rowsOf(st, X, E) {
     E = E || {};
@@ -238,11 +241,11 @@
     p.set('sd', '서울특별시');
     const all = sggsOf({}, IX), gs = sggsOf(st, IX);
     if (gs.length && gs.length < all.length) p.set('gs', gs.join(','));
-    p.set('ar', SIZE_BANDS(st).join(','));
-    p.set('o', st.own === 'first' ? 'first' : 'none');
+    p.set('ar', (st.areas || SIZE_BANDS(st)).join(','));
+    p.set('o', ownOf(st));
     if (st.newb) p.set('nb', String(st.newb));
     if (st.pcap) p.set('pm', String(st.pcap));
-    if (RCc().sortId(st.sort) !== 'rec') p.set('so', RCc().sortId(st.sort));
+    const so = RCc().sortEff(st.sort, st.rb); if (so !== 'rec') p.set('so', so);
     if (st.rb) p.set('rb', '1');
     p.set('from', 'guide');
     return (base || '') + 'buy/report/?' + p.toString();
@@ -310,7 +313,7 @@
   /* 목록 순서 설명 — 내 집 마련 맞춤 단지 화면과 같은 기준(그 화면 '순위 기준' 문장과 같은 뜻) */
   const ORDER_LINE = '단지와 순서는 내 집 마련 맞춤 단지(조건 검색) 화면과 같은 계산이에요: 기본(추천 순)은 예산에 맞는 단지(살 수 있는 최대 집값의 85% 이상)를 먼저, 그다음 예산보다 싼 단지를 미래가치 점수 순으로 보여 드리고, 10곳마다 한 구에서 3곳까지예요. 점수가 같으면 예산에 가까운 단지, 그다음 이름 가나다순이에요. 예산에 비해 너무 싼 단지(최대 집값의 55% 미만)는 빼요.';
   /* 정렬 단추 설명(검색 화면과 같은 뜻) */
-  const SORT_LINE = { rec: '예산에 맞는 단지를 먼저, 미래가치 점수 순', stn: '지하철역까지 걸어서 가까운 순 · 역 정보가 없는 단지는 맨 뒤', new: '최근에 지은 순 · 준공 정보가 없는 단지는 맨 뒤', deal: '최근 1년 실거래가 많은 순' };
+  const SORT_LINE = { rec: '예산에 맞는 단지를 먼저, 미래가치 점수 순', stn: '지하철역까지 걸어서 가까운 순 · 역 정보가 없는 단지는 맨 뒤', new: '최근에 지은 순 · 준공 정보가 없는 단지는 맨 뒤', deal: '최근 1년 실거래가 많은 순', stage: '재건축이 많이 진행된 단계 순 · 구역 지정 없이 30년만 넘은 단지는 맨 뒤' };
   function basisOf(R, X) {
     const IX = X.IX || {}, m = IX.months || [];
     return `시세는 국토교통부 실거래 최근 3개월 중간값(호가 아님 · ${ymK(m[m.length - 1])} 계약분까지 · 자료 갱신 ${dDot(IX.updated)})이에요. ${ORDER_LINE}`;
@@ -407,7 +410,7 @@
       H.getJ('mdl', H.DATA + 'model.json').catch(() => null),
       root.JDJ_RANK || !H.script ? null : H.script('assets/rank-core.js?v=8'),
       /* 조건 검색 엔진(내 집 마련 맞춤 단지와 같은 파일)·지역 메모 */
-      root.JDJ_REC || !H.script ? null : H.script('assets/rec-core.js?v=7'),
+      root.JDJ_REC || !H.script ? null : H.script('assets/rec-core.js?v=8'),
       root.JDJ_REGION_NOTES || !H.script ? null : H.script('assets/region-notes.js').catch(() => null)
     ]).then(([units, MH, pol, MODEL]) => ({ units, MH, pol, MODEL, IX: H.IX, notes: root.JDJ_REGION_NOTES || null, sus: {} })).catch(e => { XP = null; throw e; }));
   }
@@ -453,7 +456,7 @@
   }
   /** 지금 정렬 기준 값(검색 화면 카드와 같은 내용) */
   function keyChip(r, R) {
-    const t = R.sort === 'stn' ? stationT(r) : R.sort === 'new' ? (r.by ? `${r.by}년 준공` : '준공 정보 없음') : R.sort === 'deal' ? `최근 1년 거래 ${r.n12u}건` : '';
+    const t = R.sort === 'stn' ? stationT(r) : R.sort === 'new' ? (r.by ? `${r.by}년 준공` : '준공 정보 없음') : R.sort === 'deal' ? `최근 1년 거래 ${r.n12u}건` : R.sort === 'stage' && r.rb ? (r.rb.zone ? `재건축 ${r.rb.lv}단계` : `준공 ${r.rb.age}년 · 구역 지정 정보 없음`) : '';
     return t ? `<p class="gbkey">${esc(t)}</p>` : '';
   }
   function cardHtml(r, i, H, R, picks) {
@@ -490,8 +493,8 @@
   }
   /** 정렬 단추 4가지·재건축 단지만 보기 — 검색 화면(buy/report)과 같은 이름·같은 순서 함수(rec-core search) */
   function sortBarHtml(st, R) {
-    const RC = RCc(), cur = RC.sortId(st.sort);
-    return `<div class="gbsort"><div class="b" role="group" aria-label="단지 순서">${RC.SORTS.map(s => `<button type="button" data-bsort="${s[0]}" aria-pressed="${cur === s[0]}"${cur === s[0] ? ' class="on"' : ''}>${esc(s[1])}</button>`).join('')}</div>
+    const RC = RCc(), cur = RC.sortEff(st.sort, st.rb);
+    return `<div class="gbsort"><div class="b" role="group" aria-label="단지 순서">${RC.sortsFor(st.rb).map(s => `<button type="button" data-bsort="${s[0]}" aria-pressed="${cur === s[0]}"${cur === s[0] ? ' class="on"' : ''}>${esc(s[1])}</button>`).join('')}</div>
       <label class="rb${st.rb ? ' on' : ''}"><input type="checkbox" data-brb="1"${st.rb ? ' checked' : ''}><span>재건축 단지만 보기</span></label></div>
       <p class="gtn">${esc(SORT_LINE[cur])}${st.rb ? ` · 재건축 단지만: 정비사업 공식 자료에 재건축 구역으로 올라 있고 착공 전인 단지, 또는 지은 지 ${RC.REBUILD_AGE}년이 넘은 단지` : ''}</p>`;
   }
@@ -537,7 +540,7 @@
   }
   function wireBox(box, getSt, setSt, redraw, R) {
     box.querySelectorAll('[data-gsame]').forEach(a => a.addEventListener('click', () => handSame(getSt())));
-    box.querySelectorAll('[data-bsort]').forEach(b => b.addEventListener('click', () => { const st = getSt(); if (RCc().sortId(st.sort) === b.dataset.bsort) return; st.sort = b.dataset.bsort; st._lim = 10; setSt(st); redraw(true); }));
+    box.querySelectorAll('[data-bsort]').forEach(b => b.addEventListener('click', () => { const st = getSt(); if (RCc().sortEff(st.sort, st.rb) === b.dataset.bsort) return; st.sort = b.dataset.bsort; st._lim = 10; setSt(st); redraw(true); }));
     box.querySelectorAll('[data-brb]').forEach(cb => cb.addEventListener('change', () => { const st = getSt(); st.rb = cb.checked ? 1 : 0; st._lim = 10; setSt(st); redraw(true); }));
     box.querySelectorAll('[data-bmore]').forEach(b => b.addEventListener('click', () => { const st = getSt(); st._lim = Math.max(10, st._lim || 10) + 10; setSt(st); redraw(true); }));
     box.querySelectorAll('[data-bpick]').forEach(cb => cb.addEventListener('change', () => {
@@ -624,7 +627,7 @@
   /** 대화창 질문 꼴(guide-core chatNext 가 씀) */
   function chatQ(id, st) { const k = next(id, st); if (!k) return null; const q = Q[k]; return { key: k, nf: 1, ext: 1, q, quick: q.opts.slice() }; }
 
-  const API = { ID, IDS, is, Q, ORDER, RATE, SEOUL, init, next, set, answer, read, ctxOf, capOf, cliffs, mainCliff, cliffLine, rowsOf, searchQ, hzUnits, hzNow, sameUrl, sameFin, ORDER_LINE, SORT_LINE, sortBarHtml, listHtml, risks, susCount, span3, trackOf,
+  const API = { ID, IDS, is, Q, ORDER, RATE, SEOUL, ownOf, sggsOf, init, next, set, answer, read, ctxOf, capOf, cliffs, mainCliff, cliffLine, rowsOf, searchQ, hzUnits, hzNow, sameUrl, sameFin, ORDER_LINE, SORT_LINE, sortBarHtml, listHtml, risks, susCount, span3, trackOf,
     chipsOf, headOf, keysOf, incomeLine, warnOf, trustOf, basisOf, REC_LINE, SRC, solve, chatQ, chatCard, instant, flow, load, moneyIn, nextLinks, cmpUrl, stationT };
   root.JDJ_GBUDGET = API;
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

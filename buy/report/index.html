@@ -35,7 +35,7 @@
 <script src="../../assets/stat.js?v=8"></script>
 <script src="../../assets/region-notes.js"></script>
 <script src="../../assets/loan-rules.js?v=3"></script>
-<script src="../../assets/rec-core.js?v=7"></script>
+<script src="../../assets/rec-core.js?v=8"></script>
 <script src="../../assets/mine-core.js?v=24"></script>
 <script src="../../assets/price-sheet.js?v=26"></script>
 <script src="../../assets/agents.js"></script>
@@ -472,14 +472,14 @@ tr.total td{border-top:1px solid var(--text)}
 p.premlink{display:block;margin:10px 0 0}
 /* 맞춤 단지 정렬 단추·재건축 단지만·묶음 제목·더 보기 */
 .sortbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:12px 0 4px}
-.sbtns{display:grid;grid-template-columns:repeat(4,auto);gap:6px}
+.sbtns{display:flex;flex-wrap:wrap;gap:6px}
 .sbtn{min-height:44px;padding:0 14px;border:1.5px solid var(--line);border-radius:999px;background:#fff;font:inherit;font-size:14.5px;font-weight:800;color:var(--sub);cursor:pointer;white-space:nowrap}
 .sbtn.on{border-color:var(--blue);background:var(--blue-l);color:var(--blue-d,#3730A3)}
 .sbtn:focus-visible,.rbchk input:focus-visible,.morebtn:focus-visible{outline:3px solid rgba(67,56,202,.35);outline-offset:2px}
 .rbchk{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border:1.5px dashed var(--line);border-radius:999px;font-size:14.5px;font-weight:800;color:var(--sub);cursor:pointer;white-space:nowrap}
 .rbchk input{width:18px;height:18px;margin:0;accent-color:var(--blue)}
 .rbchk:has(input:checked){border-style:solid;border-color:var(--blue);background:var(--blue-l);color:var(--blue-d,#3730A3)}
-@media(max-width:560px){.sortbar{display:grid;grid-template-columns:1fr}.sbtns{grid-template-columns:repeat(2,minmax(0,1fr))}.sbtn{padding:0 8px}.rbchk{justify-content:center}}
+@media(max-width:560px){.sortbar{display:grid;grid-template-columns:1fr}.sbtns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.sbtns .sbtn:nth-child(5):last-child{grid-column:1/-1}.sbtn{padding:0 8px}.rbchk{justify-content:center}}
 .rkbasis.rbnote{background:var(--blue-l);border-color:transparent;color:var(--sub)}
 .cards>.grph{grid-column:1/-1}
 .grph{margin:10px 0 0;padding:12px 2px 6px;border-top:2px solid var(--text,#191F28)}
@@ -611,8 +611,8 @@ const S = {
   sido: null, sggs: new Set(), areas: new Set(['59㎡대','74㎡대','84㎡대']),
   /* 신축(준공 N년 이내)·집값 상한(만원) — 0 = 상관없음. 주소 nb·pm(개인값 아님) */
   newb: [5,10].includes(parseInt(Q.get('nb'),10)) ? parseInt(Q.get('nb'),10) : 0, pmax: Math.max(0, parseInt(Q.get('pm'),10)||0),
-  /* 맞춤 단지 정렬(추천 순·역 가까운 순·신축 순·거래 많은 순)·재건축 단지만 보기 — 주소 so·rb(개인값 아님) · shown: '더 보기'로 펼친 곳 수 */
-  sort: REC.sortId(Q.get('so')), rb: Q.get('rb')==='1', shown: REC.PAGE
+  /* 맞춤 단지 정렬(추천 순·역 가까운 순·신축 순·거래 많은 순 + 재건축 단지만 볼 때 재건축 단계 순)·재건축 단지만 보기 — 주소 so·rb(개인값 아님) · shown: '더 보기'로 펼친 곳 수 */
+  sort: REC.sortEff(Q.get('so'), Q.get('rb')==='1'), rb: Q.get('rb')==='1', shown: REC.PAGE
 };
 /* 평형: 주소 ar(쉼표로 여러 개, 길잡이에서 올 때) */
 { const ar=(Q.get('ar')||'').split(',').filter(b=>BANDS.includes(b)); if (ar.length) S.areas=new Set(ar); }
@@ -1440,19 +1440,20 @@ async function render(){
   shareReport(all, selNames);
 }
 /* ---------- 맞춤 단지 정렬 단추·재건축 단지만 보기·더 보기 (순서 계산은 assets/rec-core.js search — 길잡이와 같은 함수) ---------- */
-const sortName = id => (REC.SORTS.find(s=>s[0]===id)||REC.SORTS[0])[1];
+const sortName = id => (REC.sortsFor(true).find(s=>s[0]===id)||REC.SORTS[0])[1];
 const SORT_LINE = {
   rec: '살 수 있는 최대 집값에 가까운 단지(85% 이상)를 먼저, 미래가치 점수가 높은 순서로 보여 드려요. 점수가 같으면 예산에 더 가까운 단지가 앞이에요.',
   stn: '지하철역까지 걸어서 가까운 단지부터 보여 드려요. 역 정보가 없는 단지는 맨 뒤에 있어요.',
   new: '최근에 지은 단지(준공 연도가 늦은 단지)부터 보여 드려요. 준공 정보가 없는 단지는 맨 뒤에 있어요.',
-  deal: '최근 1년 실거래가 많은 단지부터 보여 드려요. 거래가 많을수록 시세를 믿기 쉬워요.'
+  deal: '최근 1년 실거래가 많은 단지부터 보여 드려요. 거래가 많을수록 시세를 믿기 쉬워요.',
+  stage: '재건축이 많이 진행된 단지(정비사업 10단계 중 높은 단계)부터 보여 드려요. 구역으로 지정되지 않고 지은 지 30년만 넘은 단지는 맨 뒤에 있어요. 길잡이 ‘재건축 몸테크’와 같은 목록이에요.'
 };
 const sortLine = id => SORT_LINE[id] || SORT_LINE.rec;
 function sortBarHtml(M, mixed){
-  return `<div class="sortbar noprint"><div class="sbtns" role="group" aria-label="단지 순서">${REC.SORTS.map(([id,t])=>`<button type="button" class="sbtn${S.sort===id?' on':''}" data-sort="${id}" aria-pressed="${S.sort===id}">${t}</button>`).join('')}</div>
+  return `<div class="sortbar noprint"><div class="sbtns" role="group" aria-label="단지 순서">${REC.sortsFor(S.rb).map(([id,t])=>`<button type="button" class="sbtn${S.sort===id?' on':''}" data-sort="${id}" aria-pressed="${S.sort===id}">${t}</button>`).join('')}</div>
     <label class="rbchk"><input type="checkbox" id="rbOnly"${S.rb?' checked':''}><span>재건축 단지만 보기</span></label></div>
     <p class="rkbasis">${esc(sortLine(S.sort))}</p>
-    ${S.rb?`<p class="rkbasis rbnote"><b>재건축 단지만 보는 중</b> — 정비사업 공식 자료에 재건축 구역으로 이름이 올라 있고 아직 착공 전인 단지, 그리고 지은 지 ${REC.REBUILD_AGE}년이 넘은 단지예요. 실제 추진 여부·속도는 조합과 구청에서 꼭 확인해 주세요.</p>`:''}`;
+    ${S.rb?`<p class="rkbasis rbnote"><b>재건축 단지만 보는 중</b> — 정비사업 공식 자료에 재건축 구역으로 이름이 올라 있고 아직 착공 전인 단지, 그리고 지은 지 ${REC.REBUILD_AGE}년이 넘은 단지예요. 오래된 단지는 값이 싼 곳이 많아, 이때는 예산보다 많이 싼 단지도 빼지 않고 모두 보여 드려요. 실제 추진 여부·속도는 조합과 구청에서 꼭 확인해 주세요.</p>`:''}`;
 }
 function grpHead(g, i, PC, M, mixed){
   if (g==='a') return `<div class="grph"><h3>예산에 맞는 단지 <span>${PC.nA}곳</span></h3><p>살 수 있는 최대 집값의 85~100%인 단지예요${M&&!mixed?`(${fmtS(Math.round(M*REC.FIT_A/100)*100)}~${fmtS(M)})`:''}.</p></div>`;
@@ -1470,7 +1471,7 @@ function keyChips(x){
 function keepY(fn){ const y=window.scrollY; return Promise.resolve(fn()).then(()=>window.scrollTo(0,y)); }
 function wireSortBar(){
   document.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{ if(S.sort===b.dataset.sort) return; S.sort=b.dataset.sort; S.shown=REC.PAGE; cqSave(); JDJ.track('report_sort',{sort:S.sort}); keepY(render); });
-  const rb=$('rbOnly'); if(rb) rb.onchange=()=>{ S.rb=rb.checked; S.shown=REC.PAGE; cqSave(); JDJ.track('report_rebuild',{on:S.rb?1:0}); keepY(render); };
+  const rb=$('rbOnly'); if(rb) rb.onchange=()=>{ S.rb=rb.checked; if(!S.rb && S.sort==='stage') S.sort='rec'; S.shown=REC.PAGE; cqSave(); JDJ.track('report_rebuild',{on:S.rb?1:0}); keepY(render); };
   const mb=$('moreBtn'); if(mb) mb.onclick=()=>{ S.shown+=REC.PAGE; JDJ.track('report_more',{n:S.shown}); keepY(render); };
 }
 /* 공유(assets/share.js): 연소득·현금·대출·이름·추천 단지 이름은 담지 않고 '몇 곳을 찾았는지'와 지역만. 받는 분은 계산기 첫 화면(같은 시·도)으로 */
