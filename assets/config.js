@@ -38,6 +38,9 @@
    PROACTIVE_ENABLED: '집예보가 먼저 챙겨 드려요'(놓치면 손해 보는 기한·내 단지·내 동네 변화를 묻기 전에 알려 주는 기능) 켜기. false 면 첫 화면·달력·알림 센터의
      '집예보가 먼저 챙겨 드려요' 칸, 비과세 2년·일시적 2주택 날짜, 구역 단계 알림 버튼, '집예보가 기억하는 것'(my/memory/) 링크가 보이지 않고 alerts/ 소개 페이지는 '준비 중'(검색 제외).
      운영자 미리 보기: 주소 끝에 ?preview=pro 를 붙여 한 번 열면 그 기기에서만 보여요(?preview=off 로 끔). 켜는 날은 서버 tools/agent-backend.gs 의 PROACTIVE_ENABLED 도 함께 true 로.
+   PRO_TOOLS_ENABLED: 중개사 프로 도구(agent/pro/ — 손님용 단지 리포트·동네 블로그/인스타 글 자동 만들기) 켜기. false 면 agent/pro/ 는 '준비 중'만 보이고(검색 제외)
+     다른 화면 어디에도 링크가 없어요. 운영자 미리 보기: 주소 끝에 ?preview=pro-tools 를 붙여 한 번 열면 그 기기에서만 보여요(?preview=off 로 끔).
+     이름·로고 넣기와 손님 링크는 서버가 확인된 중개사(동네 파트너 승인)·운영자 계정에만 열어 줘요. 켜는 날은 서버 tools/agent-backend.gs 의 PRO_TOOLS_ENABLED 도 함께 true 로.
    SITE_VERIFY_DAUM: 다음 웹마스터도구 PIN 코드 줄 전체('#DaumWebMasterTool:…'). 넣으면 robots.txt 맨 아래에 붙어요. */
 window.JDJ_SITE = {
   SITE_URL: 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc',
@@ -54,6 +57,7 @@ window.JDJ_SITE = {
   HEART_ENABLED: false,
   MOVE_ENABLED: false,
   PROACTIVE_ENABLED: false,
+  PRO_TOOLS_ENABLED: false,
   BILLING_OPEN: false,
   PAID_OPEN: false,
   PAY_REVIEW: true

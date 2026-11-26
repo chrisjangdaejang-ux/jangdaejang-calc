@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="../../../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" type="image/png" href="../../../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../../../assets/icons/apple-180.png">
+<script src="../../../assets/region-pick.js?v=2"></script>
+<script src="../../../assets/pwa.js?v=2" defer data-nobar></script>
+<title>손님용 단지 리포트 | 집예보</title>
+<meta name="description" content="단지와 평형을 고르면 시세 흐름, 최근 거래와 신고가·급매 판정, 전세가율, 주변 비교 단지, 입주 예정 물량, 학교·역 거리, 미래가치 점수(참고)를 한 장~세 장으로 정리해요.">
+<script>window.JDJ_CONFIG = { tool:'agent_pro_report', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../../assets/config.js?v=11"></script>
+<script src="../../../assets/track.js?v=2"></script>
+<script src="../../../assets/agents.js"></script>
+<script src="../../../assets/auth.js?v=10"></script>
+<script src="../../../assets/mine-core.js?v=22"></script>
+<script src="../../../assets/price-sheet.js?v=23"></script>
+<script src="../../../assets/rank-core.js?v=7"></script>
+<script src="../../../assets/pro-report.js?v=7"></script>
+<script src="../../../assets/broker-tools.js?v=5"></script>
+<script src="../../../assets/pro-tools-core.js?v=1"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/aplus.css?v=46">
+<link rel="stylesheet" href="../../../assets/pro-tools.css?v=1">
+<script src="../../../assets/back.js?v=1" defer></script>
+</head>
+<body>
+<header class="top"><a class="brand" href="../../../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name>집예보</span></a><a class="badge plain noprint" href="../../my/" style="text-decoration:none">중개사 대시보드</a></header>
+<div class="wrap">
+  <div id="closed" class="st0" hidden>중개사 프로 도구는 준비 중이에요. 문을 열면 이 화면에서 바로 쓸 수 있어요.</div>
+  <h1 id="h1" class="noprint" hidden>손님용 단지 리포트</h1>
+  <p class="lead noprint" id="lead" hidden>단지와 평형을 고르면 시세 흐름, 최근 거래와 신고가·급매 판정, 전세가율, 주변 비교 단지, 입주 예정 물량, 학교·역 거리, 미래가치 점수(참고)를 한 장~세 장으로 정리해요. 손님께 카카오톡 링크로 보내거나 A4로 인쇄하세요.</p>
+
+  <div class="ed noprint" id="ed" hidden>
+    <h2>1. 단지 고르기</h2>
+    <div class="two">
+      <div><label for="sd">시·도</label><select id="sd"></select></div>
+      <div><label for="q">단지 이름</label><input id="q" placeholder="예: 헬리오시티, 잠실엘스" autocomplete="off"></div>
+    </div>
+    <div class="res" id="res"></div>
+    <div id="bandBox" hidden><label>평형 (전용면적)</label><div class="chips" id="bands"></div></div>
+    <h2 style="margin-top:18px">2. 내 사무소 정보</h2>
+    <div id="me"></div>
+    <div id="logoBox" hidden>
+      <label for="logo">사무소 로고 (선택 · PNG·JPG)</label><input id="logo" type="file" accept="image/png,image/jpeg,image/webp">
+      <p class="hint">머리글 왼쪽에 작게 들어가요. 올리면 다음부터 자동으로 들어가요. <button type="button" class="btn ghost" id="logoDel" style="min-height:36px;font-size:13px;padding:4px 10px" hidden>로고 빼기</button></p>
+    </div>
+    <label for="client">손님 이름 (선택)</label><input id="client" maxlength="20" placeholder="예: 김OO">
+    <p class="hint">넣으면 첫 장에 'OO 님께 드리는 단지 리포트'로 보여요. 연락처는 넣지 말아 주세요.</p>
+    <div class="err" id="err" role="alert"></div>
+    <div class="acts"><button class="btn primary" id="make" type="button">리포트 만들기</button></div>
+  </div>
+
+  <div id="out"></div>
+  <div class="acts noprint" id="acts" hidden>
+    <button class="btn primary" id="share" type="button">손님께 카카오톡으로 보내기</button>
+    <button class="btn" id="print" type="button">A4로 인쇄 · PDF 저장</button>
+    <button class="btn ghost" id="copy" type="button">링크 복사</button>
+    <button class="btn ghost" id="edit" type="button">다른 단지로</button>
+  </div>
+  <p class="hint noprint" id="shareH"></p>
+  <div class="op noprint" id="op" hidden><b>운영자만 보여요 · 요금 자리</b><br><span id="opT"></span></div>
+</div>
+<script>
+var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+(function(){
+'use strict';
+const $ = id => document.getElementById(id);
+const DATA = JB.DATA + 'data/';
+const M = window.JDJ_MINE, P = window.JDJ_PRICE, R = window.JDJ_RANK, T = window.JDJ_BT, PR = window.JDJ_PRO, PT = window.JDJ_PT;
+const SITE = PT.SITE, esc = PT.esc, A = window.JDJ_AUTH;
+const j = u => fetch(DATA + u, {cache:'no-cache'}).then(r => { if (!r.ok) throw new Error(u); return r.json(); });
+let IX = null, MH = null, GROUPS = {}, PICK = null, ME = null, LINK = '', LAST = null;
+const SH = PT.parseShare(location.hash.slice(1));
+let ST = PT.decodeUnit(location.search);
+const PLAIN = !SH && new URLSearchParams(location.search).get('s') === '1' && ST.g && ST.a;   // 이름 없는 공유 링크
+
+async function loadSido(id){
+  if (GROUPS[id]) return GROUPS[id];
+  const us = await j('price/' + id + '.json').then(x => (x.units || []).map(M.listRow)).catch(() => P.scoreUnits(id));
+  return (GROUPS[id] = M.groupDanji(us));
+}
+const sggName = c => (IX.sgg[c] || {}).name || c;
+
+/* ---------- 내 사무소 정보(확인된 중개사만 이름) ---------- */
+async function loadMe(){
+  const box = $('me');
+  if (!A || !A.user()){ ME = null; box.innerHTML = '<p class="warn">카카오 간편 로그인을 하면 확인된 중개사는 리포트에 사무소 이름·로고를 넣을 수 있어요. 로그인하지 않아도 이름 없이 만들 수 있어요.</p>' + (A ? A.btn('카카오 간편 로그인', 'agent_pro_report') : ''); $('logoBox').hidden = true; return; }
+  try {
+    ME = await PT.post({ action: 'ptMe' });
+    if (ME.verified && ME.card){
+      const c = ME.card;
+      box.innerHTML = '<div class="me">' + (ME.logo ? '<img src="' + ME.logo + '" alt="">' : '') + '<div><b>' + esc(c.office) + '</b><span class="vf">확인된 중개사</span><br>대표 ' + esc(c.ceo) + (c.role === 'member' && c.name ? ' · 소속 ' + esc(c.name) : '') + ' · 등록번호 ' + esc(c.reg) + '<br>' + esc(c.addr) + ' · ' + esc(c.phone) + '<br><small>동네 파트너 확인 때 등록한 정보예요. 바꾸려면 동네 파트너 내 화면에서 고쳐 주세요.</small></div></div>';
+      $('logoBox').hidden = false; $('logoDel').hidden = !ME.logo;
+    } else {
+      box.innerHTML = '<p class="warn">' + (ME.why === 'wait' ? '동네 파트너 확인을 하고 있어요. 확인이 끝나면 사무소 이름을 넣을 수 있어요.' : '사무소 이름은 동네 파트너 확인(중개사무소 등록번호 확인)을 마친 공인중개사만 넣을 수 있어요.') + ' 지금은 이름 없이 만들어져요.' + (PT.dongneLink() ? ' <a href="' + PT.dongneLink() + '">동네 파트너 알아보기</a>' : '') + '</p>';
+      $('logoBox').hidden = true;
+    }
+    if (ME.admin && ME.price){ $('op').hidden = false; $('opT').textContent = ME.price.plan + ' — ' + ME.price.note + '.'; }
+  } catch (e) { ME = null; box.innerHTML = '<p class="warn">' + esc(e.message) + '</p>'; }
+}
+async function setLogo(data){
+  try { const r = await PT.post({ action: 'ptLogo', logo: data }); ME.logo = r.logo; $('logoDel').hidden = !ME.logo; await loadMe(); if (LAST) draw(); }
+  catch (e) { $('err').textContent = e.message; }
+}
+
+/* ---------- 편집 ---------- */
+function setupEditor(){
+  $('h1').hidden = $('lead').hidden = $('ed').hidden = false;
+  $('sd').innerHTML = JDJ_KO.sortSido(IX.sido, s => s.name).map(s => '<option value="' + s.id + '">' + esc(s.name) + '</option>').join('');
+  if (ST.sd) $('sd').value = ST.sd;
+  let t = null;
+  $('q').oninput = () => { clearTimeout(t); t = setTimeout(search, 200); };
+  $('sd').onchange = () => { $('res').innerHTML = ''; PICK = null; $('bandBox').hidden = true; if ($('q').value.trim()) search(); };
+  $('make').onclick = make;
+  $('logo').onchange = async e => { const f = e.target.files[0]; if (!f) return; try { setLogo(await PR.shrinkLogo(f)); } catch (x) { $('err').textContent = x.message || '로고를 읽지 못했어요.'; } };
+  $('logoDel').onclick = () => setLogo('');
+  loadMe(); if (A && A.onChange) A.onChange(loadMe);
+}
+async function search(){
+  const q = $('q').value.trim(), sd = $('sd').value; if (!q){ $('res').innerHTML = ''; return; }
+  const gs = await loadSido(sd); if ($('q').value.trim() !== q) return;
+  const hits = M.searchDanji(gs, q, 15);
+  $('res').innerHTML = hits.map((d, i) => '<button type="button" data-i="' + i + '"><span><b>' + esc(d.apt) + '</b> <small>' + esc(sggName(d.code)) + ' ' + esc(d.dong) + '</small></span><small>거래 ' + d.n + '건</small></button>').join('') || '<div class="hint" style="padding:10px 12px">찾지 못했어요. 이름 일부만 넣어 보세요.</div>';
+  $('res').querySelectorAll('button').forEach(b => b.onclick = () => pickDanji(hits[+b.dataset.i]));
+}
+function pickDanji(d){
+  PICK = { sd: $('sd').value, g: d.code, d: d.dong, j: d.jibun, a: d.apt, b: '' };
+  $('res').innerHTML = ''; $('q').value = d.apt;
+  const bands = d.bands.slice().sort((a, b) => (b[5] || 0) - (a[5] || 0));
+  PICK.b = bands[0][3];
+  $('bands').innerHTML = d.bands.map(u => '<button type="button" data-b="' + esc(u[3]) + '" class="' + (u[3] === PICK.b ? 'on' : '') + '">' + esc(u[3]) + ' <small>' + (u[5] || 0) + '건</small></button>').join('');
+  $('bands').onclick = e => { const b = e.target.closest('[data-b]'); if (!b) return; PICK.b = b.dataset.b; $('bands').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); };
+  $('bandBox').hidden = false;
+}
+async function make(){
+  $('err').textContent = '';
+  const base = PICK || (ST.a ? ST : null);
+  if (!base){ $('err').textContent = '단지를 먼저 골라 주세요.'; return; }
+  ST = Object.assign({}, base); LINK = '';
+  history.replaceState(null, '', '?' + PT.encodeUnit(ST) + (PT.preview() ? '&preview=pro-tools' : ''));
+  JDJ.track && JDJ.track('agent_pro_report_make', { sgg: ST.g, named: ME && ME.verified ? 1 : 0 });
+  $('make').disabled = true;
+  try { await render(); } finally { $('make').disabled = false; }
+}
+
+/* ---------- 리포트 ---------- */
+async function render(){
+  const out = $('out');
+  out.innerHTML = '<div class="st0">자료를 불러오는 중이에요…</div>';
+  let g, u;
+  try { g = await P.loadSgg(ST.g, ST.sd); u = P.findUnit(g.units, { sgg: ST.g, dong: ST.d, apt: ST.a, band: ST.b, jibun: ST.j }); } catch (e) {}
+  if (!u){ out.innerHTML = '<div class="st0">이 단지·평형의 실거래 자료를 찾지 못했어요. 다른 평형을 골라 보세요.</div>'; $('acts').hidden = true; return; }
+  let fx = null;
+  try { const us = await P.scoreUnits(ST.sd), key = M.unitKey(u); const hit = us.find(x => M.unitKey(x) === key); fx = hit && hit[9] && typeof hit[9] === 'object' ? M.cleanFx(hit[9]) : null; } catch (e) {}
+  if (!MH) MH = await j('model_h.json').catch(() => null);
+  const [xy, poi, region, h] = await Promise.all([j(ST.sd + '_xy.json').then(x => x.xy || null).catch(() => null), j('poi/' + ST.sd + '.json').catch(() => null),
+    j('region/' + ST.sd + '.json').catch(() => null), P.loadHist(g).catch(() => null)]);
+  const sido = (IX.sgg[ST.g] || {}).sido || '', vc = R.vcheck(MH, sido);
+  const L = T.listing({ u, IX, M, fx, vc, units: g.units, xy, poi, TAX: null, ADJ: null, kind: 'danji' });
+  const hist = h ? P.histOf(g, h, u) : null;
+  LAST = PT.report({ L, list: M.trades(u), hist, region, g: ST.g, vc, client: SH ? (SHARED.client || '') : $('client') ? $('client').value.trim() : '' });
+  draw();
+}
+let SHARED = null;
+function draw(){
+  const card = SHARED ? SHARED.card : (ME && ME.verified ? ME.card : null), logo = SHARED ? SHARED.logo : (ME && ME.verified ? ME.logo : '');
+  $('out').innerHTML = PT.reportHtml(LAST, { card, logo, shared: !!(SHARED || PLAIN) });
+  $('acts').hidden = false;
+  document.title = LAST.apt + ' ' + LAST.band + ' 단지 리포트 | ' + SITE;
+}
+
+/* ---------- 공유·인쇄 ---------- */
+async function link(){
+  if (SH) return location.href;
+  if (PLAIN) return location.href;
+  if (LINK) return LINK;
+  const base = location.origin + location.pathname;
+  if (ME && ME.verified){
+    const r = await PT.post({ action: 'ptShare', unit: ST, client: $('client').value.trim(), days: 90 });
+    LINK = base + '#v=' + r.id + '.' + r.token;
+    $('shareH').textContent = '링크는 ' + r.expires + '까지 열려요.';
+  } else LINK = base + '?' + PT.encodeUnit(ST) + '&s=1';
+  return LINK;
+}
+$('print').onclick = () => { JDJ.track && JDJ.track('agent_pro_report_print', {}); window.print(); };
+$('copy').onclick = async () => { try { const u = await link(); const ok = await PR.copy(u); $('shareH').textContent = ok ? '링크를 복사했어요. 카카오톡 대화방에 붙여 넣으세요.' : u; } catch (e) { $('shareH').textContent = e.message; } };
+$('share').onclick = async () => {
+  JDJ.track && JDJ.track('agent_pro_report_share', {});
+  try {
+    const u = await link(), card = SHARED ? SHARED.card : (ME && ME.verified ? ME.card : null);
+    const r = await PR.share({ title: LAST.apt + ' ' + LAST.band + ' 단지 리포트' + (card ? ' · ' + card.office : ''), desc: '시세 흐름·최근 거래·전세가율·주변 단지·입주 물량을 한 번에', url: u });
+    $('shareH').textContent = r === 'copy' ? '링크를 복사했어요. 카카오톡 대화방에 붙여 넣으세요.' : r === 'fail' ? u : $('shareH').textContent;
+  } catch (e) { $('shareH').textContent = e.message; }
+};
+$('edit').onclick = () => { $('ed').hidden = false; $('ed').scrollIntoView({behavior:'smooth'}); };
+
+(async function init(){
+  try { IX = await j('index.json'); } catch (e) { $('out').innerHTML = '<div class="st0">자료를 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</div>'; return; }
+  if (SH || PLAIN){
+    if (SH){
+      try { SHARED = await PT.post({ action: 'ptOpen', id: SH.id, tk: SH.tk }); ST = Object.assign({}, SHARED.unit); }
+      catch (e) { $('out').innerHTML = '<div class="st0">' + esc(e.message) + '</div>'; return; }
+    }
+    await render();
+    $('edit').hidden = true; $('share').textContent = '이 리포트 링크 보내기';
+    return;
+  }
+  if (!PT.on()){ $('closed').hidden = false; return; }
+  setupEditor();
+  if (ST.sd && ST.g && ST.d && ST.a && ST.b){ $('q').value = ST.a; PICK = { sd: ST.sd, g: ST.g, d: ST.d, j: ST.j, a: ST.a, b: ST.b }; }
+})();
+})();
+</script>
+</body>
+</html>

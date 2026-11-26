@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="../../../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" type="image/png" href="../../../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../../../assets/icons/apple-180.png">
+<script src="../../../assets/pwa.js?v=2" defer data-nobar></script>
+<title>우리 동네 블로그·인스타 글 | 집예보</title>
+<meta name="description" content="담당 동네(구·동·단지)를 정하면 매일·매주 신고가·급매·새 거래 TOP 글 초안과 인스타 카드 이미지를 공개 실거래 자료로 만들어요.">
+<script>window.JDJ_CONFIG = { tool:'agent_pro_post', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../../assets/config.js?v=11"></script>
+<script src="../../../assets/track.js?v=2"></script>
+<script src="../../../assets/agents.js"></script>
+<script src="../../../assets/auth.js?v=10"></script>
+<script src="../../../assets/mine-core.js?v=22"></script>
+<script src="../../../assets/price-sheet.js?v=23"></script>
+<script src="../../../assets/pro-report.js?v=7"></script>
+<script src="../../../assets/broker-tools.js?v=5"></script>
+<script src="../../../assets/pro-tools-core.js?v=1"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/aplus.css?v=46">
+<link rel="stylesheet" href="../../../assets/pro-tools.css?v=1">
+<style>
+.post{white-space:pre-wrap;font-size:15px;line-height:1.75;background:#F9FAFB;border-radius:12px;padding:14px 16px;max-height:560px;overflow:auto;word-break:keep-all}
+.post b.t{display:block;font-size:17px;margin:0 0 8px}
+.cap{white-space:pre-wrap;font-size:14.5px;line-height:1.7;background:#F9FAFB;border-radius:12px;padding:12px 14px;word-break:keep-all}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:760px){.cards{grid-template-columns:repeat(4,1fr)}}
+.cards figure{margin:0}
+.cards canvas{width:100%;height:auto;border:1px solid var(--line);border-radius:10px;display:block}
+.cards figcaption{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:#4E5968;margin-top:4px}
+.cards figcaption button{font:inherit;font-size:13px;font-weight:700;color:var(--blue);background:none;border:0;cursor:pointer;min-height:44px;padding:0 4px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{font:inherit;font-size:15px;font-weight:700;border:1px solid var(--line);background:#fff;color:#4E5968;border-radius:12px;padding:10px 14px;cursor:pointer;min-height:46px;flex:1;min-width:140px;text-align:left}
+.seg button small{display:block;font-weight:500;font-size:12.5px}
+.seg button.on{border-color:var(--blue);background:#F2F6FF;color:#1B3C8F}
+.chk{font-size:14px;line-height:1.6;background:#E7F6EE;border-radius:12px;padding:10px 12px;margin:0 0 10px;color:#0B5C3B}
+.chk.bad{background:#FBF8EF;color:#6B5310}
+.chk details{margin-top:4px}.chk li{font-size:13px}
+.apts .x{margin-left:4px;font-weight:900}
+</style>
+<script src="../../../assets/back.js?v=1" defer></script>
+</head>
+<body>
+<header class="top"><a class="brand" href="../../../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name>집예보</span></a><a class="badge plain noprint" href="../../my/" style="text-decoration:none">중개사 대시보드</a></header>
+<div class="wrap">
+  <div id="closed" class="st0" hidden>중개사 프로 도구는 준비 중이에요. 문을 열면 이 화면에서 바로 쓸 수 있어요.</div>
+  <div id="main" hidden>
+  <h1>우리 동네 블로그·인스타 글</h1>
+  <p class="lead">담당 동네를 정해 두면 매일·매주 신고가·급매·새 거래 TOP 글 초안과 인스타 카드 이미지를 만들어 드려요. 모든 문장은 공개 실거래 자료로 다시 계산해 맞는 것만 남겨요.</p>
+  <div class="ed" id="ed">
+    <h2>1. 담당 동네</h2>
+    <label for="area">시·군·구</label><select id="area"></select>
+    <label>동 (여러 개 고를 수 있어요 · 안 고르면 구 전체)</label><div class="chips" id="dongs"></div>
+    <label for="aq">단지 묶음 (선택 · 고른 동 밖의 단지도 넣을 수 있어요)</label><input id="aq" placeholder="예: 헬리오시티" autocomplete="off">
+    <div class="res" id="ares"></div>
+    <div class="chips apts" id="apts" style="margin-top:8px"></div>
+    <p class="hint">담당 동네는 이 기기에 저장돼 다음에 열면 그대로 있어요.</p>
+    <h2 style="margin-top:18px">2. 얼마나 자주</h2>
+    <div class="seg" id="mode"><button type="button" data-m="day" class="on">매일<small>어제·오늘 새로 공개된 거래</small></button><button type="button" data-m="week">매주<small>지난주 공개된 거래 TOP</small></button></div>
+    <h2 style="margin-top:18px">3. 내 사무소 정보</h2>
+    <div id="me"></div>
+    <div class="err" id="err" role="alert"></div>
+    <div class="acts"><button class="btn primary" id="make" type="button">글 만들기</button></div>
+  </div>
+  <div id="out" hidden>
+    <div class="chk" id="chk"></div>
+    <section class="box">
+      <h2>블로그 본문 <span><button class="btn ghost" id="again" type="button" style="min-height:40px;font-size:14px">다른 문장으로 바꾸기</button></span></h2>
+      <p class="hint" id="bMeta" style="margin:0 0 8px"></p>
+      <div class="post" id="post"></div>
+      <div class="acts"><button class="btn primary" id="cpBlog" type="button">본문 복사</button><button class="btn" id="dlTxt" type="button">txt로 받기</button></div>
+      <p class="ok" id="bOk" aria-live="polite"></p>
+    </section>
+    <section class="box">
+      <h2>인스타 카드 이미지 <small style="font-weight:500;color:#4E5968;font-size:13px" id="cMeta"></small></h2>
+      <div class="cards" id="cards"></div>
+      <div class="acts"><button class="btn primary" id="dlZip" type="button">카드 전부 받기 (zip)</button></div>
+      <p class="ok" id="cOk" aria-live="polite"></p>
+    </section>
+    <section class="box">
+      <h2>인스타 설명글 · 해시태그</h2>
+      <div class="cap" id="cap"></div>
+      <div class="acts"><button class="btn primary" id="cpCap" type="button">설명글 복사</button></div>
+      <p class="ok" id="pOk" aria-live="polite"></p>
+    </section>
+    <p class="hint">이 글은 매물 광고가 아니라 실거래 정보 글이에요. 고쳐 쓸 때도 숫자·기간·출처는 그대로 두고, '무조건·폭등·지금이 기회' 같은 과장 표현이나 동·호수는 넣지 말아 주세요(표시·광고 규정). 특정 매물을 함께 올리면 매물 광고가 되어 중개대상물 표시·광고 규정을 따로 지켜야 해요.</p>
+  </div>
+  <div class="op" id="op" hidden><b>운영자만 보여요 · 요금 자리</b><br><span id="opT"></span></div>
+  </div>
+</div>
+<script>
+var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+(function(){
+'use strict';
+const $ = id => document.getElementById(id);
+const PT = window.JDJ_PT, T = window.JDJ_BT, PR = window.JDJ_PRO, P = window.JDJ_PRICE, M = window.JDJ_MINE, A = window.JDJ_AUTH, esc = PT.esc;
+const DATA = JB.DATA + 'data/', KIT = DATA + 'brief/kit/', LSB = 'jdj_pt_bundle';
+if (!PT.on()){ $('closed').hidden = false; return; }
+$('main').hidden = false;
+let IDX = null, IX = null, ME = null, B = { g: '', dongs: [], apts: [] }, MODE = 'day', SRC = null, OUT = null, SEED = 0, CARDS = [], NAMES = [];
+const ls = { get(k){ try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v){ try { localStorage.setItem(k, v); } catch (e) {} } };
+try { B = PT.bundle(JSON.parse(ls.get(LSB) || '{}')); } catch (e) {}
+const save = () => ls.set(LSB, JSON.stringify(B));
+const areaName = () => { const a = ((IDX && IDX.areas) || []).find(x => x.g === B.g); const nm = a ? a.name : (IX && IX.sgg[B.g] || {}).name || ''; const sub = B.dongs.length ? B.dongs.join('·') : ''; return sub && B.dongs.length <= 2 && !B.apts.length ? nm + ' ' + sub : nm; };
+
+async function loadMe(){
+  const box = $('me');
+  if (!A || !A.user()){ ME = null; box.innerHTML = '<p class="warn">로그인하지 않아도 글을 만들 수 있어요. 글 끝에 사무소 정보를 넣으려면 카카오 간편 로그인 뒤 동네 파트너 확인을 마쳐야 해요.</p>' + (A ? A.btn('카카오 간편 로그인', 'agent_pro_post') : ''); return; }
+  try {
+    ME = await PT.post({ action: 'ptMe' });
+    box.innerHTML = ME.verified && ME.card ? '<div class="me"><div><b>' + esc(ME.card.office) + '</b><span class="vf">확인된 중개사</span><br>글·카드 끝에 사무소 이름·대표·등록번호·소재지·전화가 들어가요.</div></div>'
+      : '<p class="warn">사무소 정보는 동네 파트너 확인을 마친 공인중개사만 넣을 수 있어요. 지금은 이름 없이 만들어져요.' + (PT.dongneLink() ? ' <a href="' + PT.dongneLink() + '">동네 파트너 알아보기</a>' : '') + '</p>';
+    if (ME.admin && ME.price){ $('op').hidden = false; $('opT').textContent = ME.price.plan + ' — ' + ME.price.note + '.'; }
+  } catch (e) { ME = null; box.innerHTML = '<p class="warn">' + esc(e.message) + '</p>'; }
+  if (OUT) draw();
+}
+async function dongList(g){
+  const rows = await fetch(JB.SITE + 'assets/dong/' + g.slice(0, 2) + '.json').then(r => r.ok ? r.json() : null).catch(() => null);
+  return rows && rows.rows ? Object.keys(rows.rows).filter(k => k.slice(0, 6) === g + '|').map(k => k.slice(6)).sort((a, b) => a.localeCompare(b, 'ko')) : [];
+}
+async function pickArea(){
+  B.g = $('area').value;
+  const ds = await dongList(B.g);
+  B.dongs = B.dongs.filter(d => ds.indexOf(d) >= 0);
+  $('dongs').innerHTML = ds.map(d => '<button type="button" data-d="' + esc(d) + '" class="' + (B.dongs.indexOf(d) >= 0 ? 'on' : '') + '">' + esc(d) + '</button>').join('') || '<span class="hint">동 목록을 불러오지 못했어요. 구 전체로 만들어요.</span>';
+  drawApts(); save();
+  NAMES = [];
+  const sid = ((IX.sido || []).find(s => s.name === (IX.sgg[B.g] || {}).sido) || {}).id;
+  if (sid) P.loadSgg(B.g, sid).then(x => { NAMES = [...new Set((x.units || []).map(u => u[2]))].sort((a, b) => a.localeCompare(b, 'ko')); }).catch(() => {});
+}
+function drawApts(){ $('apts').innerHTML = B.apts.map((a, i) => '<button type="button" class="on" data-i="' + i + '">' + esc(a) + '<span class="x" aria-label="빼기">×</span></button>').join(''); }
+$('dongs').onclick = e => { const b = e.target.closest('[data-d]'); if (!b) return; const d = b.dataset.d, i = B.dongs.indexOf(d); if (i >= 0) B.dongs.splice(i, 1); else if (B.dongs.length < 10) B.dongs.push(d); b.classList.toggle('on', B.dongs.indexOf(d) >= 0); save(); };
+$('apts').onclick = e => { const b = e.target.closest('[data-i]'); if (!b) return; B.apts.splice(+b.dataset.i, 1); drawApts(); save(); };
+$('aq').oninput = () => {
+  const q = $('aq').value.trim().replace(/\s/g, ''); if (!q){ $('ares').innerHTML = ''; return; }
+  const hits = NAMES.filter(n => n.replace(/\s/g, '').indexOf(q) >= 0).slice(0, 12);
+  $('ares').innerHTML = hits.map(n => '<button type="button" data-n="' + esc(n) + '"><span><b>' + esc(n) + '</b></span><small>넣기</small></button>').join('') || '<div class="hint" style="padding:10px 12px">찾지 못했어요. 이름 일부만 넣어 보세요.</div>';
+};
+$('ares').onclick = e => { const b = e.target.closest('[data-n]'); if (!b) return; if (B.apts.indexOf(b.dataset.n) < 0 && B.apts.length < 20) B.apts.push(b.dataset.n); $('aq').value = ''; $('ares').innerHTML = ''; drawApts(); save(); };
+$('mode').onclick = e => { const b = e.target.closest('[data-m]'); if (!b) return; MODE = b.dataset.m; $('mode').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); };
+
+async function make(){
+  $('err').textContent = '';
+  if (!B.g){ $('err').textContent = '지역을 골라 주세요.'; return; }
+  $('make').disabled = true;
+  try {
+    const D = await fetch((MODE === 'week' ? KIT : DATA + 'brief/') + B.g + '.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null);
+    SRC = PT.source(D, MODE);
+    if (!SRC.rows){ $('err').textContent = SRC.miss; return; }
+    SEED = SRC.seed >>> 0;
+    JDJ.track && JDJ.track('agent_pro_post_make', { sgg: B.g, m: MODE, nd: B.dongs.length, na: B.apts.length });
+    await draw();
+    $('out').scrollIntoView({ behavior: 'smooth' });
+  } finally { $('make').disabled = false; }
+}
+async function draw(){
+  OUT = PT.compose({ src: SRC, bundle: B, areaName: areaName(), card: ME && ME.verified ? ME.card : null, seed: SEED });
+  const pr = OUT.probs;
+  $('chk').className = 'chk' + (pr.length ? ' bad' : '');
+  $('chk').innerHTML = '자체 검사: 숫자가 들어간 문장을 원자료로 다시 계산해 맞춰 봤어요. ' + (pr.length ? '맞지 않거나 과장된 문장 ' + pr.length + '개는 빼고 만들었어요.<details><summary>뺀 문장 보기</summary><ul>' + pr.map(p => '<li>' + esc(p.text) + ' — ' + esc(p.why) + '</li>').join('') + '</ul></details>' : '모든 문장이 통과했어요.');
+  $('bMeta').textContent = areaName() + ' · ' + SRC.period.long + ' · ' + OUT.blog.len.toLocaleString('ko-KR') + '자';
+  $('post').innerHTML = '<b class="t">' + esc(OUT.title) + '</b>' + esc(OUT.blog.text.slice(OUT.title.length + 2));
+  $('cap').textContent = OUT.caption.text;
+  try { await document.fonts.load("900 40px 'Noto Sans KR'"); await document.fonts.load("500 30px 'Noto Sans KR'"); } catch (e) {}
+  const spec = OUT.cards;
+  $('cMeta').textContent = '1080×1080 · ' + spec.length + '장';
+  $('cards').innerHTML = spec.map((c, i) => '<figure><canvas id="cv' + i + '" width="1080" height="1080" aria-label="' + esc(c.title) + '"></canvas><figcaption><span>' + (i + 1) + '. ' + esc(c.kicker) + '</span><button type="button" data-dl="' + i + '">받기</button></figcaption></figure>').join('');
+  CARDS = spec.map((c, i) => { const cv = $('cv' + i); T.drawCard(cv, c, i, spec.length); return cv; });
+  $('out').hidden = false;
+}
+const fname = ext => areaName().replace(/\s/g, '_') + '_' + (SRC.asof || '').replace(/-/g, '') + '_' + ext;
+function dl(blob, name){ const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500); }
+const pngBytes = cv => new Promise(ok => cv.toBlob(b => b.arrayBuffer().then(x => ok(new Uint8Array(x))), 'image/png'));
+$('make').onclick = make;
+$('again').onclick = () => { SEED = (SEED + 0x9E3779B1) >>> 0; draw(); };
+$('cpBlog').onclick = async () => { $('bOk').textContent = (await PR.copy(OUT.blog.text)) ? '복사했어요. 블로그 글쓰기 화면에 붙여 넣으세요.' : '복사하지 못했어요. txt로 받아 주세요.'; JDJ.track && JDJ.track('agent_pro_post_copy', { k: 'blog' }); };
+$('cpCap').onclick = async () => { $('pOk').textContent = (await PR.copy(OUT.caption.text)) ? '복사했어요.' : '복사하지 못했어요.'; JDJ.track && JDJ.track('agent_pro_post_copy', { k: 'cap' }); };
+$('dlTxt').onclick = () => dl(new Blob([OUT.blog.text], { type: 'text/plain;charset=utf-8' }), fname('블로그.txt'));
+$('cards').onclick = e => { const b = e.target.closest('[data-dl]'); if (!b) return; CARDS[+b.dataset.dl].toBlob(x => dl(x, fname('카드' + (+b.dataset.dl + 1) + '.png')), 'image/png'); };
+$('dlZip').onclick = async () => {
+  const files = [];
+  for (let i = 0; i < CARDS.length; i++) files.push({ name: '카드' + (i + 1) + '.png', data: await pngBytes(CARDS[i]) });
+  files.push({ name: '설명글.txt', data: new TextEncoder().encode(OUT.caption.text) });
+  dl(new Blob([T.zip(files)], { type: 'application/zip' }), fname('카드.zip'));
+  $('cOk').textContent = '카드 ' + CARDS.length + '장과 설명글을 묶어 받았어요.';
+  JDJ.track && JDJ.track('agent_pro_post_zip', {});
+};
+(async function init(){
+  [IDX, IX] = await Promise.all([fetch(KIT + 'index.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null), fetch(DATA + 'index.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null)]);
+  const as = (IDX && IDX.areas) || [];
+  if (!as.length || !IX){ $('ed').insertAdjacentHTML('beforebegin', '<div class="st0">재료를 준비하고 있어요. 매일 새벽에 새로 만들어요 — 내일 아침에 다시 열어 주세요.</div>'); $('make').disabled = true; return; }
+  $('area').innerHTML = as.map(a => '<option value="' + esc(a.g) + '">' + esc(a.sd) + ' ' + esc(a.name) + '</option>').join('');
+  if (B.g && as.some(a => a.g === B.g)) $('area').value = B.g;
+  $('area').onchange = () => { B.dongs = []; B.apts = []; pickArea(); };
+  await pickArea();
+  loadMe(); if (A && A.onChange) A.onChange(loadMe);
+})();
+})();
+</script>
+</body>
+</html>

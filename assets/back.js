@@ -35,7 +35,7 @@
     'about/': ['서비스 소개'], 'terms/': ['이용약관'], 'privacy/': ['개인정보처리방침'], 'refund/': ['환불 정책'],
     'guide/method/': ['점수 읽는 법'], 'guide/terms/': ['용어 모아 보기'],
     'ad/': ['광고·제휴'], 'ad/plan/': ['광고 설계 도우미', 'ad/'],
-    'agent/': ['중개사 제휴'], 'agent/my/': ['중개사 대시보드', 'agent/'], 'agent/listing/': ['매물 설명서', 'agent/'], 'agent/content/': ['블로그·인스타 글', 'agent/'], 'agent/sheet/': ['적정 가격 근거표', 'agent/'],
+    'agent/': ['중개사 제휴'], 'agent/my/': ['중개사 대시보드', 'agent/'], 'agent/listing/': ['매물 설명서', 'agent/'], 'agent/content/': ['블로그·인스타 글', 'agent/'], 'agent/pro/': ['중개사 프로 도구', 'agent/'], 'agent/pro/report/': ['손님용 단지 리포트', 'agent/pro/'], 'agent/pro/post/': ['우리 동네 블로그·인스타 글', 'agent/pro/'], 'agent/sheet/': ['적정 가격 근거표', 'agent/'],
     'pro/developer/': ['시행사 데이터 리포트'],
     'community/': ['살아보니'], 'community/admin/': ['운영자 검토', 'community/'],
     'counsel/': ['고민 상담'], 'counsel/expert/': ['전문가로 답하기', 'counsel/'], 'counsel/heart/': ['전문가 하트', 'counsel/'], 'counsel/chat/': ['상담 채팅', 'counsel/'], 'counsel/pro/': ['전문가 프로필', 'counsel/pros/'], 'counsel/pros/': ['전문가 찾기', 'counsel/'], 'counsel/admin/': ['운영자 답변', 'counsel/'],
