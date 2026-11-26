@@ -6,7 +6,7 @@
    이 파일은 숫자를 만들지 않아요. 계산은 assets/redev-calc.js(판정·개월 수·주소 조각)와 assets/redev-core.js(착공 예상 문장) 함수만 써요. */
 (function () {
   'use strict';
-  var JB = window.JDJ_BASE || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; window.JDJ_BASE = b; return b; })(location.pathname);
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   var R = window.JDJ_REDEV, C = window.JDJ_RCALC, esc = R.esc;
   var $ = function (i) { return document.getElementById(i); };
   var DATA = JB.DATA + 'data/';

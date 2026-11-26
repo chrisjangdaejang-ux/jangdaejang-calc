@@ -2,7 +2,7 @@
    ?z=구역 id 가 있으면: 구역 상세(data/redev/zone/{id}.json)·재개발 지도(zones.json)·정책 표(policy.json)·가까운 새 아파트 실거래(price/{구}.json) */
 (function () {
   'use strict';
-  var JB = window.JDJ_BASE || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; window.JDJ_BASE = b; return b; })(location.pathname);
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   var C = window.JDJ_RCALC, R = window.JDJ_REDEV, esc = R.esc, $ = function (i) { return document.getElementById(i); };
   var DATA = JB.DATA + 'data/', TODAY = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
   var get = function (u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(String(r.status)); return r.json(); }); };
