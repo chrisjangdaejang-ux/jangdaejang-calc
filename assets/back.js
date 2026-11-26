@@ -27,7 +27,7 @@
     'jeonse/': ['전월세'], 'jeonse/checklist/': ['전세사기 예방 체크리스트', 'jeonse/'], 'jeonse/safety/': ['전세 안전 점검', 'jeonse/'], 'jeonse/safety/draft/': ['전셋집 안전 진단', 'jeonse/'],
     'quiz/': ['집값 맞혀 보기'], 'quiz/hall/': ['명예의 전당', 'quiz/'],
     'track/': ['예측 적중 기록'], 'track/detail/': ['성적표', 'track/'],
-    'weekly/': ['주간 실거래 동향'], 'press/': ['보도자료실'],
+    'weekly/': ['주간 실거래 동향'], 'temp/': ['시장 온도'], 'press/': ['보도자료실'],
     'brief/': ['모닝 브리핑'], 'brief/subscribe/': ['브리핑 받기', 'brief/'], 'brief/manage/': ['내 구독 관리', 'brief/'], 'brief/paid/': ['결제 확인', 'brief/'], 'brief/c/': ['관심 단지 소식', 'brief/'],
     'premium/': ['프리미엄 리포트'], 'premium/pro/': ['고객에게 보내기', 'premium/'], 'premium/checkout/': ['결제하기', 'premium/'], 'premium/success/': ['결제 확인', 'premium/'],
     'premium/fail/': ['결제 실패·취소', 'premium/'], 'premium/r/': ['전문가 리포트', 'premium/'], 'premium/view/': ['리포트 보기', 'premium/'],

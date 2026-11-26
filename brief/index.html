@@ -251,7 +251,7 @@ body.cardmode>header.top,body.cardmode>.foot,body.cardmode>.wrap,body.cardmode .
 .bad-d{margin:0;font-size:14.5px;color:var(--sub);line-height:1.55}
 .bad-n{margin:6px 0 0;font-size:12.5px;color:var(--sub2)}
 </style>
-<script src="../assets/back.js?v=1" defer></script>
+<script src="../assets/back.js?v=2" defer></script>
 </head>
 <body data-lay-fold=".sl .cards3">
 <header class="top">
@@ -427,6 +427,15 @@ function weeklyHtml(S, M){
     <p class="sub">${esc(B.SITE)} 주간 실거래 동향(국토교통부 실거래가 분석, ${esc(w.asof.replace(/-/g, '.'))} 기준, 제${w.ver}판)이에요. 같은 단지·같은 면적의 직전 거래와 비교한 값이라 조사 기반 공식 주간 지수와 다를 수 있어요. 늦게 신고되는 거래가 들어오면 매주 새 판으로 다시 계산해요.</p>
     <div class="row2"><a class="btn" href="${esc(w.url)}" data-track="brief_weekly_click">지역별 표·계산 방법 보기</a></div></section>`;
 }
+/* 이번 주 시장 온도(엔진 brief.temp_area·temp_market — 공개 temp/index.json 과 같은 숫자). 한 줄 + 링크(전국 문장은 ① 시장 줄에 이미 있음) */
+function tempHtml(S, M){
+  const a = S && S.temp, m = M && M.temp;
+  if (!a && !m) return '';
+  const C = ['#1D5FD1', '#4A8BE0', '#6B7684', '#C25E14', '#C0272D'], ym = x => x ? `${String(x).slice(0, 4)}.${+String(x).slice(4, 6)}` : '';
+  const u = (a && a.url) || (m && m.url) || '../temp/', rel = String(u).replace(/^https?:\/\/[^/]+\/(jangdaejang-calc\/)?/, '../');
+  const head = a ? `<b style="color:${C[a.l] || '#4E5968'}">● ${esc(a.nm)} 시장 온도 '${esc(a.t)}'</b> <small>${esc(a.why)}</small>` : `<b style="color:${C[m.l] || '#4E5968'}">● 전국 시장 온도 '${esc(['얼어붙음', '쌀쌀함', '보통', '따뜻함', '뜨거움'][m.l] || '')}'</b>`;
+  return `<div class="box" id="tmp">${head} <small>(${esc(ym((a || m).lm))} 계약까지 실거래 기준)</small> <a href="${esc(rel)}" data-track="brief_temp_click">자세히 ›</a></div>`;
+}
 function render(S, M){
   const dn = D.dn, v = B.scope(S, dn), area = S.name + (dn ? ' ' + dn : '');
   if (/^\d{5}$/.test(String(S.g || ''))) document.body.setAttribute('data-ad-region', String(S.g));   /* 광고 칸(assets/ad-slot.js): 이 관심 지역 광고를 먼저 */
@@ -438,6 +447,7 @@ function render(S, M){
   <h1>${esc(B.dateLabel(S.date))} 아침</h1>
   <p class="meta">① 오늘의 부동산 시장 · ② 내 관심 지역 ${esc(area)} · ③ 내 관심 단지</p>
   ${weeklyHtml(S, M)}
+  ${tempHtml(S, M)}
   ${marketHtml(M)}
   <section class="part" aria-labelledby="h-area"><h2 id="h-area"><span class="no">2</span>내 관심 지역 <small>${esc(area)}</small></h2>
   <p class="sub">${esc(B.windowDetail(w))}</p>

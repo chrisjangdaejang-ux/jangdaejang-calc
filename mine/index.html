@@ -47,6 +47,8 @@
 <script src="../assets/plain-words.js?v=20"></script>
 <script src="../assets/premium-teaser.js?v=1"></script>
 <script src="../assets/narrative.js?v=28"></script>
+<script src="../assets/temp-core.js?v=1"></script>
+<script src="../assets/temp-view.js?v=1"></script>
 <script src="../assets/strength.js?v=5"></script>
 <script src="../assets/conf.js?v=4"></script>
 <script src="../assets/result.js?v=1"></script>
@@ -251,7 +253,7 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
 .alr .msg{font-size:14px;font-weight:700}
 </style>
 <link rel="stylesheet" href="../assets/result.css?v=3">
-<script src="../assets/back.js?v=1" defer></script>
+<script src="../assets/back.js?v=2" defer></script>
 </head>
 <body data-lay="side" data-lay-key=".stats" data-lay-toc="h2,.chead:first-child>h3" data-lay-fold="#polSec>.panel,#taxSec" data-lay-jump="#res,#ofRes,#vlRes,#cmRes">
 <header class="top">
@@ -667,6 +669,8 @@ function render(d, map, units){
 
   <div id="alertSec"></div>
 
+  <div id="tmpMine" hidden></div>
+
   ${window.JDJ_CM ? JDJ_CM.slot({t: 'a', g: d.code, d: d.dong, k: [d.jibun, d.apt].join('|'), n: d.apt}) : ''}
 
   ${window.JDJ_CS ? JDJ_CS.slot({gu: sggName(d.code)}) : ''}
@@ -696,6 +700,7 @@ function render(d, map, units){
   <div id="agentSec"></div>`;
 
   $('res').hidden = false;
+  if (window.JDJ_TEMPV) JDJ_TEMPV.mini($('tmpMine'), d.code, { track: 'temp_mine' });   /* 이 구 이번 주 시장 온도(다른 화면과 같은 temp/index.json) */
   if (window.JDJ_CONF) JDJ_CONF.css();
   fillLife(d);
   fillFac(d);

@@ -32,7 +32,7 @@
 <script src="../assets/layout.js?v=1" defer></script>
 <link rel="stylesheet" href="../assets/weekly.css?v=5">
 <script src="../assets/nw.js?v=1" defer></script>
-<script src="../assets/back.js?v=1" defer></script>
+<script src="../assets/back.js?v=2" defer></script>
 </head>
 <body data-lay="side">
 <header class="top">
@@ -49,6 +49,10 @@
   <div id="body" hidden>
     <div class="cards" id="cards"></div>
     <div class="ro" id="ro"></div>
+
+    <h2>지금 시장 온도 <small>지역별 아파트 시장 분위기 5단계</small></h2>
+    <p class="lead2">거래량·직전 거래보다 오른 거래·신고가 비율을 그 지역의 지난 기록과 비교한 단계예요. 매주 월요일 새로 계산하고, 누르면 자세한 숫자와 2006년부터의 기록을 볼 수 있어요.</p>
+    <div id="tmpOv" hidden></div>
 
     <h2>시·도별 <small id="sdSmall"></small></h2>
     <div class="seg" id="basis" role="group" aria-label="기간 고르기"><button type="button" data-b="w" aria-pressed="true">지난주</button><button type="button" data-b="m" aria-pressed="false">최근 4주</button></div>
@@ -146,5 +150,8 @@
 <footer class="foot">★ <span data-site-name>집예보</span> · <a href="../">홈</a> · <a href="../about/">서비스 소개</a> · <a href="../brief/">모닝 브리핑</a></footer>
 <script src="../assets/weekly-core.js?v=6"></script>
 <script src="../assets/weekly-view.js?v=9"></script>
+<script src="../assets/temp-core.js?v=1"></script>
+<script src="../assets/temp-view.js?v=1"></script>
+<script>window.JDJ_TEMPV && window.JDJ_TEMPV.overview(document.getElementById('tmpOv'));</script>
 </body>
 </html>

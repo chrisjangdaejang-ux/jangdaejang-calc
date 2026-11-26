@@ -100,7 +100,7 @@ const pages = ['counsel/index.html', 'counsel/expert/index.html', 'counsel/heart
 pages.forEach(f => {
   const h = read(f);
   check(`${f}: 검색 제외(noindex)`, /<meta name="robots" content="noindex, nofollow">/.test(h));
-  check(`${f}: 공통 파일(config·counsel-core·counsel·back)`, /assets\/config\.js\?v=\d+/.test(h) && /assets\/counsel-core\.js\?v=\d+/.test(h) && /assets\/counsel\.js\?v=\d+/.test(h) && /assets\/back\.js\?v=1" defer/.test(h));
+  check(`${f}: 공통 파일(config·counsel-core·counsel·back)`, /assets\/config\.js\?v=\d+/.test(h) && /assets\/counsel-core\.js\?v=\d+/.test(h) && /assets\/counsel\.js\?v=\d+/.test(h) && /assets\/back\.js\?v=2" defer/.test(h));
   check(`${f}: 화면 글에 회사 이름·서비스 이름을 직접 쓰지 않음(설정 SITE_NAME 을 씀)`, !/장대장|집예보/.test(h));
 });
 ['counsel/index.html', 'counsel/expert/index.html', 'counsel/heart/index.html'].forEach(f => {

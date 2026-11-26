@@ -747,6 +747,7 @@
     }
     if (E.sup && E.sup[a.region.code]) { const sp = E.sup[a.region.code]; ref.push({ k: '앞으로 1년 안 입주 예정', v: `${(+sp[0] || 0).toLocaleString()}세대`, s: `1~2년 ${(+sp[1] || 0).toLocaleString()}세대 · 2~3년 ${(+sp[2] || 0).toLocaleString()}세대(공공 입주 예정 자료)` }); }
     if (a.facts && a.facts.fv != null) ref.push({ k: `${a.facts.apt || '고른 단지'} 미래가치 점수`, v: `${a.facts.fv}점`, s: `${a.facts.fvBase || ''} 중 순위 점수${a.facts.track ? ` · 과거 성적 ${a.facts.track.n}번 중 ${a.facts.track.hit}번 맞음` : ''}` });
+    if (E.tempRef) ref.unshift(E.tempRef);   // 이번 주 시장 온도(맨 앞 — 지금 분위기 질문의 첫 답)
     return {
       head: B.P ? `지금 조건이면 ${regTxt(a)}에서 ${won(B.P)}까지 살 수 있어요` : '지금 조건으로는 대출 한도가 나오지 않아요',
       nums, ref,
@@ -1089,6 +1090,7 @@
     if (g && Array.isArray(g.s) && g.s.length >= 13) { const s0 = g.s, last = s0[s0.length - 1], y1 = s0[s0.length - 13]; if (y1 > 0) ref.push({ k: `${a.region.name} 아파트 평당가 1년 변화`, v: (last >= y1 ? '+' : '') + pct(last / y1 - 1, 1), s: `3.3㎡당 ${won(y1)} → ${won(last)}(실거래 중간값)` }); if (g.r && g.r.jr) ref.push({ k: '전세가율', v: `${g.r.jr}%`, s: '구 전체 매매 대비 전세' }); }
     if (a.facts && a.facts.price) ref.push({ k: `${a.facts.apt} ${a.facts.band} 최근 시세`, v: won(a.facts.price), s: '국토교통부 실거래 기준' });
     if (a.facts && a.facts.fv != null) ref.push({ k: '미래가치 점수(참고)', v: `${a.facts.fv}점`, s: `${a.facts.fvBase} 중 순위${a.facts.track ? ` · 과거 성적 ${a.facts.track.n}번 중 ${a.facts.track.hit}번 맞음` : ''}` });
+    if (E.tempRef) ref.unshift(E.tempRef);
     if (!base && !ref.length) return null;
     const ex = regionExample(E, a.region);
     return Object.assign({ head: ref.length ? `${a.region ? a.region.name : a.facts.apt} 최근 흐름부터 보여 드릴게요` : base.head, nums: [], warn: ['언제가 바닥인지는 아무도 확정할 수 없어요. 지난 실거래 흐름이고, 앞으로의 가격을 약속하지 않아요.'], src: ['molit_rt', 'loan'], need: ['cash', 'income'] },

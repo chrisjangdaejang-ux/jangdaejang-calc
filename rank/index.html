@@ -32,6 +32,8 @@
 <script src="../assets/plain-words.js?v=20"></script>
 <script src="../assets/narrative.js?v=28"></script>
 <script src="../assets/rank-core.js?v=8"></script>
+<script src="../assets/temp-core.js?v=1"></script>
+<script src="../assets/temp-view.js?v=1"></script>
 <script src="../assets/agents.js"></script>
 <script src="../assets/alerts-core.js?v=5"></script>
 <script src="../assets/watch-core.js?v=2"></script>
@@ -90,7 +92,7 @@ h1{font-size:clamp(26px,6vw,36px);margin:6px 0 8px}
 .mv h3{font-size:17px;font-weight:900;margin:18px 0 0}
 @media(max-width:380px){.list a{grid-template-columns:24px minmax(0,1fr) auto;gap:4px 8px}.vals{gap:8px}.vals svg{width:44px}.num b{font-size:16px}.pills button{padding:0 9px;font-size:14.5px}.tabs button{font-size:14px}}
 </style>
-<script src="../assets/back.js?v=1" defer></script>
+<script src="../assets/back.js?v=2" defer></script>
 </head>
 <body>
 <header class="top">
@@ -110,6 +112,7 @@ h1{font-size:clamp(26px,6vw,36px);margin:6px 0 8px}
     <button type="button" role="tab" id="tb-move" data-t="move" aria-controls="pane" hidden>점수 많이 바뀐 단지</button>
   </div>
   <div class="ctl" id="ctl"></div>
+  <div id="tmpRank" hidden></div>
   <section id="pane" role="tabpanel" aria-live="polite"><p class="note">순위 자료를 불러오고 있어요…</p></section>
   <div data-ad-slot="rank_list" data-ad-cat="rank" data-ad-list="#pane ol.list" data-ad-list-host="#pane" data-ad-every="10" hidden></div>
   <div data-ad-slot="rank_end" data-ad-cat="rank" data-ad-after="#pane ol.list" hidden></div>
@@ -181,12 +184,16 @@ if (!RKload) RKload = J(DATA + 'rank.json').then(j => { RK = j || null; const wa
 function go(why){
   syncMove();
   saveUrl(); drawTabs(); drawCtl();
+  if (window.JDJ_TEMPV) JDJ_TEMPV.mini($('tmpRank'), S.sd, { track: 'temp_rank' });
   if (S.t === 'price') drawPrice(); else if (S.t === 'fv') drawFv(); else drawMove();
   if (why && window.jdjStat) jdjStat('feature_use', {feature: 'rank_' + S.t});
 }
 
 /* ---------- 구별 시세 ---------- */
 const SHOW = 10;
+/* 이번 주 시장 온도(공개 temp/index.json — 지도·내 집·브리핑과 같은 숫자): 구 이름 아래 작은 글자 */
+let TI = null;
+const tmpTxt = code => { const T = window.JDJ_TEMP, r = TI && T ? T.region(TI, code) : null; return r && r.l != null ? `시장 온도 ${esc(T.LABELS[r.l])} · ` : ''; };
 function sparkSvg(vals, cls){
   const d = R.spark(vals, 56, 24);
   return d ? `<svg viewBox="0 0 56 24" aria-hidden="true"><path d="${d}" stroke="currentColor" class="${cls}"/></svg>` : '<svg viewBox="0 0 56 24" aria-hidden="true"></svg>';
@@ -200,7 +207,7 @@ function drawPrice(){
   const li = rows.map(x => {
     const cls = x.ch > 0 ? 'up' : x.ch < 0 ? 'dn' : 'fl';
     return `<li><a href="${esc(R.mapUrl(GEO, x.code, 'price'))}" data-track="rank_to_map"><span class="rk">${x.r}</span>
-      <span class="nm"><b>${esc(x.name)}</b><small>지도에서 보기 ›</small></span>
+      <span class="nm"><b>${esc(x.name)}</b><small>${tmpTxt(x.code)}지도에서 보기 ›</small></span>
       <span class="vals">${sparkSvg(x.spark, cls)}<span class="num"><b class="${cls}">${R.pct(x.ch)}</b><small>평당 ${esc(R.won(x.p))}</small></span></span></a></li>`;
   }).join('');
   $('pane').innerHTML = head + `<ol class="list">${li}</ol>`
@@ -305,6 +312,7 @@ async function init(){
   IX = ix; MJ = mj; GEO = geo; EV = ev;
   if (!IX.sido.some(s => s.id === S.sd)) S.sd = 's00';
   go();
+  if (window.JDJ_TEMPV) JDJ_TEMPV.load().then(j => { TI = j; if (TI && S.t === 'price') drawPrice(); });
   if (window.jdjStat) jdjStat('feature_use', {feature: 'rank'});
 }
 init();

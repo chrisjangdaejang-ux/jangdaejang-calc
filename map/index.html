@@ -38,6 +38,8 @@
 <script src="../assets/watch-core.js?v=2"></script>
 <script src="../assets/watch.js?v=9"></script>
 <script src="../assets/region-core.js?v=3"></script>
+<script src="../assets/temp-core.js?v=1"></script>
+<script src="../assets/temp-view.js?v=1"></script>
 <script src="../assets/map-engine.js?v=3"></script>
 <script src="../assets/bldmap-core.js?v=1"></script>
 <script src="../assets/bldmap.js?v=1"></script>
@@ -369,7 +371,7 @@ body.mtop-nobar .mtop .jas-top{display:none!important}
 @media(max-width:520px){.top:has(.kseg) h1.badge{display:none}.kseg a{padding:0 9px;font-size:13.5px}}
 @media(max-width:600px){.top:has(.hback:not([hidden])) .kseg{display:none}}
 </style>
-<script src="../assets/back.js?v=1" defer></script>
+<script src="../assets/back.js?v=2" defer></script>
 </head>
 <body class="jm-full lay-split">
 <header class="top">
@@ -1087,6 +1089,7 @@ function regPanel(focus){
     <p class="rp-past">${tag}${pastTxt}</p>
     ${loading}
     ${cur ? regGu(cur, sd, R, ind) : ''}
+    <div id="rpTemp" hidden></div>
     <div class="rp-more">${regRank(rows, ind)}<p class="rp-src">${regSrc(ind, R, cur)}</p></div>`;
   el.hidden = false; el.classList.toggle('open', REG.open || wide); $('mwrap').classList.toggle('rp-open', REG.open && !wide);
   $('rpSd').onchange = e => { REG.sd = e.target.value; REG.gu = ''; const g = GEO && GEO.sido[REG.sd]; drawControls(); regPanel(); if (g) MAP.setView(g.c[1], g.c[0], C.LV.sido + 2); };
@@ -1096,6 +1099,7 @@ function regPanel(focus){
   el.querySelectorAll('[data-fq]').forEach(b => b.onclick = () => { REG.freq = b.dataset.fq; if (REG.freq === 'w' && !['1y', '3y'].includes(REG.per)) REG.per = '1y'; regPanel(); legend(); render(); });
   el.querySelectorAll('[data-gu]').forEach(b => b.onclick = () => { REG.gu = b.dataset.gu; regPanel(true); render(); const c = GEO && GEO.sgg[REG.gu]; if (c && MAP && !C.inBox(MAP.bounds(), c[1], c[0], -0.1)) MAP.setView(c[1], c[0]); });
   if (cur && (REG.open || wide)) regCharts(cur, ind);
+  if (cur && window.JDJ_TEMPV) JDJ_TEMPV.mini($('rpTemp'), cur.code, { track: 'temp_map' });   /* 이번 주 시장 온도(공개 temp/index.json — 다른 화면과 같은 숫자) */
   if (focus && (REG.open || wide)) { const h = el.querySelector('.rp-gu'); if (h) el.scrollTop = Math.max(0, h.offsetTop - 8); }
   syncPanel();
 }

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 시장 온도(temp/) — 지역별 아파트 매매 시장 분위기 5단계. 자료: 공개 data/temp/(엔진 market_temp.py, 주 1회). 계산·문장 assets/temp-core.js, 그리기 assets/temp-view.js.
+     주소 ?g=시군구 5자리 | sNN(시·도) | 없음(전국). 숫자는 모닝 브리핑·주간 동향·지도·내 집·고민 해결 길잡이와 같은 파일. -->
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../assets/icons/apple-180.png">
+<script src="../assets/pwa.js?v=3" defer data-nobar></script>
+<title>시장 온도 · 우리 지역 아파트 시장 분위기 | 집예보</title>
+<meta name="description" content="국토교통부 실거래로 매주 계산하는 지역별 아파트 시장 분위기 5단계(얼어붙음·쌀쌀함·보통·따뜻함·뜨거움). 거래량·오른 거래 비율·신고가 비율을 그 지역의 지난 기록과 비교하고, 한국부동산원 수급지수와 나란히 보여 드려요.">
+<link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/temp/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="시장 온도 · 우리 지역 아파트 시장 분위기 | 집예보">
+<meta property="og:description" content="실거래 거래량·오른 거래·신고가로 매주 계산하는 지역별 시장 분위기 5단계. 출처·기준일·계산 방법 공개.">
+<meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/temp/">
+<meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/default.png">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script>window.JDJ_CONFIG = { tool:'temp', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../assets/track.js?v=3"></script>
+<script src="../assets/config.js?v=13"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/aplus.css?v=50">
+<script src="../assets/tabbar.js?v=8" defer></script>
+<link rel="stylesheet" href="../assets/layout.css?v=5">
+<script src="../assets/layout.js?v=1" defer></script>
+<script src="../assets/nw.js?v=1" defer></script>
+<script src="../assets/back.js?v=2" defer></script>
+<style>
+.tp{max-width:880px;margin:0 auto;padding:22px 20px 44px}
+.tp h1{font-size:clamp(24px,5.4vw,33px);margin:8px 0 8px;word-break:keep-all;letter-spacing:-.6px}
+.tp .sub1{font-size:16px;color:var(--sub);margin:0 0 4px;line-height:1.7;word-break:keep-all}
+.tp h2{font-size:20px;font-weight:900;letter-spacing:-.4px;margin:36px 0 6px}
+.tp h2 small{font-size:13.5px;font-weight:500;color:var(--sub2);margin-left:6px}
+.tp .lead2{font-size:15px;color:var(--sub2);margin:0 0 10px;line-height:1.7;word-break:keep-all}
+.tp .eyebrow{font-size:13.5px;font-weight:700;color:var(--blue)}
+.pick{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0 0}
+.pick label{display:block;font-size:12.5px;font-weight:700;color:var(--sub2);margin:0 0 4px}
+.pick select{width:100%;min-height:46px;border:1px solid var(--line);border-radius:12px;padding:0 12px;font:inherit;font-size:15.5px;background:#fff;color:var(--text)}
+.mean{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:8px}
+.mean li{display:grid;grid-template-columns:96px 1fr;gap:10px;align-items:start;font-size:14.5px;line-height:1.6}
+.how{margin:8px 0 0;padding:0 0 0 18px;font-size:14.5px;line-height:1.75;color:var(--sub)}
+.how b{color:var(--text)}
+.foot{text-align:center;font-size:13px;color:var(--sub2);padding:24px 16px 40px}.foot a{color:inherit}
+</style>
+</head>
+<body data-lay="side">
+<header class="top">
+  <a class="brand" href="../" aria-label="홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name>집예보</span></a>
+  <div class="badge plain">시장 온도</div>
+</header>
+<main class="tp">
+  <div class="eyebrow"><span data-site-name>집예보</span> 시장 온도 · 공공 실거래로 매주 계산</div>
+  <h1>지금 우리 지역 아파트 시장, 얼마나 뜨거울까요?</h1>
+  <p class="sub1">거래가 얼마나 많은지, 직전 거래보다 오른 값에 팔린 집과 신고가가 얼마나 자주 나오는지를 그 지역의 지난 기록과 비교해 다섯 단계로 알려 드려요.</p>
+  <div class="pick">
+    <div><label for="sdSel">시·도</label><select id="sdSel"><option value="kr">전국</option></select></div>
+    <div><label for="guSel">시·군·구</label><select id="guSel" disabled><option value="">시·도 전체</option></select></div>
+  </div>
+  <div class="lay2">
+    <div id="card"><div class="tmp-card"><p>불러오는 중이에요</p></div></div>
+    <aside class="side">
+      <h2>전국 한눈에</h2>
+      <div id="ov"></div>
+    </aside>
+  </div>
+
+  <h2>단계 보는 법</h2>
+  <ul class="mean" id="mean"></ul>
+
+  <h2>어떻게 정하나요</h2>
+  <ol class="how">
+    <li><b>재료</b>: 국토교통부 아파트 매매 실거래(2006년부터)로 최근 석 달 <b>거래량</b>, 같은 집 1년 안 직전 거래보다 <b>오른 값에 팔린 비율</b>, 그 집의 이전 최고가를 넘은 <b>신고가 비율</b>을 계산해요. 포털 매물 수는 쓰지 않아요.</li>
+    <li><b>비교</b>: 지역마다 그때까지의 지난 기록 안에서 지금 숫자가 어디쯤인지 봐요. 강남구는 강남구의 지난 기록과, 의성군은 의성군의 지난 기록과 비교하므로 같은 단계라도 거래 건수는 지역마다 달라요.</li>
+    <li><b>단계</b>: 세 숫자의 자리를 모아 다섯 단계로 나눠요. 거래가 너무 적거나 지난 기록이 짧으면 단계를 매기지 않아요.</li>
+    <li><b>신고 지연</b>: 계약 뒤 30일 안에 신고하므로 가장 최근 달은 아직 덜 모였어요. 지난 신고 속도로 예상 건수를 계산해 '신고 진행 중'과 예상 범위로 따로 보여 드려요.</li>
+    <li><b>함께 보는 공식 통계</b>: 한국부동산원 매매수급지수·주간 아파트값 변동, 전세가율·미분양은 나란히 보여 드리되 단계 계산에는 넣지 않아요. 계약 해제 비율은 값이 뛸 때 오히려 늘기도 해서 참고로만 보여요.</li>
+    <li><b>갱신</b>: 매주 월요일에 새로 계산해요.</li>
+  </ol>
+
+  <h2>지난 자료로 본 성적 <small>과장 없이</small></h2>
+  <p class="lead2">그때까지의 자료로만 매긴 온도가 그 뒤 실제 가격과 어떤 관계였는지 지난 기록으로 확인했어요.</p>
+  <div id="bt"></div>
+
+  <p class="lead2" style="margin-top:28px">시장 온도는 지금 분위기를 쉽게 보여 드리는 참고 정보예요. 사거나 팔기를 권하는 정보가 아니며, 앞으로의 가격을 약속하지 않아요.</p>
+</main>
+<footer class="foot">★ <span data-site-name>집예보</span> · <a href="../">홈</a> · <a href="../weekly/">주간 실거래 동향</a> · <a href="../map/">지도 지역 분석</a> · <a href="../about/">서비스 소개</a></footer>
+<script src="../assets/temp-core.js?v=1"></script>
+<script src="../assets/temp-view.js?v=1"></script>
+<script>
+(function () {
+  'use strict';
+  var T = window.JDJ_TEMP, V = window.JDJ_TEMPV, $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+  $('mean').innerHTML = T.LABELS.map(function (x, i) { return '<li><span class="tmp-chip" style="--tc:' + T.COLORS[i] + ';--tf:' + T.FG[i] + '"><i aria-hidden="true"></i>' + esc(x) + '</span><span>' + esc(T.MEANING[i]) + '</span></li>'; }).join('');
+  var Q = new URLSearchParams(location.search), code = Q.get('g') || 'kr';
+  V.load().then(function (I) {
+    if (!I) { $('card').innerHTML = '<div class="tmp-card"><p>시장 온도 자료를 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</p></div>'; return; }
+    if (!T.region(I, code)) code = 'kr';
+    var sd = $('sdSel'), gu = $('guSel');
+    sd.innerHTML = '<option value="kr">전국</option>' + T.sidoList(I).map(function (x) { return '<option value="' + esc(x.id) + '">' + esc(x.nm) + '</option>'; }).join('');
+    function fillGu(sid, g) {
+      var L = sid && sid !== 'kr' ? T.guList(I, sid) : [];
+      gu.innerHTML = '<option value="">' + (sid === 'kr' ? '전국' : '시·도 전체') + '</option>' + L.map(function (x) { return '<option value="' + esc(x.g) + '"' + (x.g === g ? ' selected' : '') + '>' + esc(x.nm) + (x.l != null ? ' · ' + esc(T.LABELS[x.l]) : '') + '</option>'; }).join('');
+      gu.disabled = !L.length;
+    }
+    function show(c, push) {
+      code = c;
+      var sid = /^\d{5}$/.test(c) ? T.sidoOf(I, c) : c;
+      sd.value = sid || 'kr'; fillGu(sid || 'kr', /^\d{5}$/.test(c) ? c : '');
+      V.full($('card'), c);
+      var r = T.region(I, c);
+      document.title = (r && c !== 'kr' ? r.nm + ' ' : '') + '시장 온도 · 우리 지역 아파트 시장 분위기 | ' + ((window.JDJ_SITE && window.JDJ_SITE.SITE_NAME) || '집예보');
+      if (push) { try { history.replaceState(null, '', c === 'kr' ? location.pathname : '?g=' + encodeURIComponent(c)); } catch (e) {} }
+    }
+    sd.addEventListener('change', function () { show(sd.value, true); });
+    gu.addEventListener('change', function () { show(gu.value || sd.value, true); });
+    V.overview($('ov'), { onPick: function (c) { show(c, true); scrollTo({ top: 0, behavior: 'smooth' }); } });
+    V.backtest($('bt'));
+    show(code, false);
+  });
+})();
+</script>
+</body>
+</html>

@@ -526,6 +526,11 @@
       const sd = ((IX && IX.sido) || []).find(x => x.name === ((a.region && a.region.sido) || '서울특별시'));
       if (sd) jobs.push(Promise.all([unitsOf(sd.id), xyOf(sd)]).then(([u, x]) => { E.units = u; E.xy = x; E.sd = sd.id; E.MC = root.JDJ_MINE; }).catch(() => {}));
     }
+    if (need.indexOf('temp') >= 0) jobs.push((async () => {   // 이번 주 시장 온도(공개 temp/index.json — 지도·브리핑·내 집과 같은 숫자·문장)
+      if (!root.JDJ_TEMP) await script('assets/temp-core.js?v=1');
+      const j = await getJ('temp', DATA + 'temp/index.json').catch(() => null);
+      if (j && root.JDJ_TEMP) E.tempRef = root.JDJ_TEMP.refItem(j, a.region && a.region.code ? a.region.code : 'kr');
+    })().catch(() => {}));
     if (need.indexOf('base') >= 0) jobs.push(getJ('offi', DATA + 'offi/index.json').then(j => { const s = j && j.rate && j.rate.base; if (s) { const ks = Object.keys(s).filter(k => /^\d{6}$/.test(k)).sort(); if (ks.length) E.base = { v: +s[ks[ks.length - 1]], at: ks[ks.length - 1] }; } }).catch(() => {}));
     await Promise.all(jobs);
     return E;
