@@ -227,12 +227,12 @@ r = card('wolse_conv', { dep: 30000, wdep: 5000, wrent: 100, jrate: 4 }); good('
 check('전환율 4.8%(100×12÷25,000) · 4% 이자 83.3만 → 전세가 16.7만 덜', r.nums[0].v === '연 4.8%' && /전세/.test(r.head), r);
 good('rent_to_buy', card('rent_to_buy', { dep: 30000, cash: 10000, income: 7000, region: SEOUL }));
 r = card('move_time', { deal: 'jeonse', amt: 30000, mdate: '2027-02-27', size: 'h' }); good('move_time', r);
-check('전세 3억 중개보수 상한 0.3% = 90만, 전입신고 2027-03-13', r.nums[0].v === '90만 원' && /2027년 3월 13일/.test(r.nums[1].v), r.nums);
+check('전세 3억 중개보수 0.3% 90만 + 부가세 = 최대 99만, 전입신고 2027-03-13', r.nums[0].v === '99만 원' && /2027년 3월 13일/.test(r.nums[1].v), r.nums);
 r = card('broker_fee', { deal: 'sale', amt: 100000 }); good('broker_fee', r);
-check('매매 10억 중개보수 상한 0.5% = 500만', r.nums.some(n => n.v === '0.5%') && /500만/.test(r.head));
+check('매매 10억 중개보수 0.5% 500만 + 부가세 = 최대 550만', /0\.5%/.test(r.nums[1].s) && r.nums[1].v === '500만 원' && /550만/.test(r.head));
 check('월세 거래금액: 보증금 1,000 + 월세 30 → 5천 미만이면 ×70 = 3,100', G.wolseAmt(1000, 30) === 3100 && G.wolseAmt(3000, 50) === 8000);
-check('매매 1억 → 0.5% 50만(한도 80만)', G.brokerFee('sale', 10000).fee === 50);
-check('매매 4천 → 0.6% 24만', G.brokerFee('sale', 4000).fee === 24);
+check('매매 1억 → 0.5% 부가세 전 50만 · 포함 55만(한도 80만)', G.brokerFee('sale', 10000).feeBase === 50 && G.brokerFee('sale', 10000).fee === 55);
+check('매매 4천 → 0.6% 부가세 전 24만', G.brokerFee('sale', 4000).feeBase === 24);
 r = card('high_bargain', { price: 135000, facts: { apt: '헬리오시티', band: '84㎡대', price: 150000, range: { lo: 140000, hi: 160000, months: 12 }, fv: 60, fvBase: '서울 아파트' } }); good('high_bargain', r);
 check('급매: 13.5억 vs 15억 → −10% 급매 기준', /급매 기준/.test(r.head), r.head);
 good('school_move', card('school_move', { region: SEOUL, btype: 'jeonse', cash: 40000 }, { IX }));
@@ -318,7 +318,7 @@ check('운영자 화면 solve/admin/', fs.existsSync(path.join(ROOT, 'solve/admi
   x = inst('3억 아파트 아들에게 증여하면');
   check('즉답: 증여 — 시가·받는 분 뽑아 바로 증여세', x.exact && x.a.value === 30000 && x.a.rel === 'child' && x.card.nums[0].v === G.wonW(T.giftTax({ value: 3e8, debt: 0, rel: 'child', prior: 0, filed: true }).tax), x.card && x.card.nums);
   x = inst('전세 3억 복비 얼마');
-  check('즉답: "전세 3억 복비" → 90만 원', x.exact && /90만/.test(x.card.head), x.card && x.card.head);
+  check('즉답: "전세 3억 복비" → 최대 99만 원(부가세 포함)', x.exact && /99만/.test(x.card.head), x.card && x.card.head);
   x = inst('공시가 15억 종부세 얼마');
   check('즉답: 공시가 15억 → 1주택 예시 보유세', x.card && /1세대 1주택으로 가정/.test(x.card.ex), x.card);
   x = inst('송파 아파트 대출 얼마까지');
@@ -417,8 +417,12 @@ check('운영자 화면 solve/admin/', fs.existsSync(path.join(ROOT, 'solve/admi
   check('같은 계산: 갱신 요구 기간 = 내 부동산 달력(cal-core renewO·renewC)', jr.nums[0].v === `${G.ko(cj.find(e => e.k === 'renewO').d)} ~ ${G.ko(cj.find(e => e.k === 'renewC').d)}`, [jr.nums[0].v, cj.filter(e => /renew/.test(e.k)).map(e => e.d)]);
   const wc = G.solve(scOf('wolse_conv'), { dep: 30000, wdep: 5000, wrent: 100, jrate: 4 }, EA), rc = RC.compare({ jeon: 30000, wDep: 5000, wRent: 100, rate: 4 });
   check('같은 계산: 전세 vs 월세 = 전월세 화면(rent-core compare)', wc.nums[1].v === G.won(Math.round(rc.jCost * 10) / 10) && Math.abs(rc.be - 4.8) < 1e-9, [wc.nums, rc]);
-  const bf = G.brokerFee('sale', 80000), cd = L.costDetail(80000, L.ctx({ g: 'reg', own: 'none' }), false);
-  check('같은 계산: 매매 중개보수 = 대출·내 집 마련 계산(loan-core costDetail)', Math.abs(bf.fee - cd.brokerBase) < 1e-9, [bf, cd.brokerBase]);
+  const SW = require('../switch/switch-core.js');
+  const sameFee = [3000, 4000, 10000, 30000, 80000, 100000, 130000, 200000].every(P => { const g2 = G.brokerFee('sale', P), cd = L.costDetail(P, L.ctx({ g: 'reg', own: 'none' }), false), sw = SW.brokerFee(P); return Math.abs(g2.fee - Math.round(cd.broker * 10) / 10) < 1e-9 && Math.abs(g2.feeBase - Math.round(cd.brokerBase * 10) / 10) < 1e-9 && Math.abs(g2.fee - Math.round(sw.fee * 10) / 10) < 1e-9; });
+  check('같은 계산: 매매 중개보수 = 대출·내 집 마련(loan-core costDetail)·갈아타기(switch-core) — 부가세 포함·전 모두', sameFee);
+  const ls2 = L.brokerLease(30000, 0), lw = L.brokerLease(1000, 30);
+  check('같은 계산: 전월세 중개보수 = loan-core brokerLease(보증금·월세, ×70 규칙 포함)', G.brokerFee('lease', 30000).fee === ls2.fee && G.brokerFee('lease', 1000, 30).feeBase === lw.feeBase && G.wolseAmt(1000, 30) === 3100);
+  check('문구: 부가세 10% 포함(최대) · 간이과세 한 줄', /부가세 10% 포함\(최대\) · 간이과세 사무소는 더 적을 수 있어요/.test(read('assets/guide-core.js')));
   const ds = G.solve(scOf('deposit_safe'), { htype: 'apt', dep: 120000, kb: 150000, senior: 0, danji: DJ, facts: FACT }, EA);
   const kk = KK.estimate({ kk: KD, code: '11710', dep: 120000, senior: 0, price: 150000 });
   check('같은 계산: 아파트 단지를 고르면 깡통전세 확률 = 전월세 화면(kk-core estimate)', ds.ref && ds.ref[0] && ds.ref[0].v === KK.pText(kk.p) && /참고/.test(ds.ref[0].k), ds.ref);
@@ -497,7 +501,7 @@ check('운영자 화면 solve/admin/', fs.existsSync(path.join(ROOT, 'solve/admi
     ['양도세: 산 값·팔 값 → 산 날 물음 → 날짜 답', ['15억에 산 송파 집 29억 되면 언제 팔아야', '2019년 6월 20일'], c => c.st.a.acq === '2019-06-20' && /세금이|팔아도/.test(c.last.head)],
     ['못 알아들으면 예시 안내 후 다시', ['대출 얼마까지 받을 수 있어요', '음…', '8억이요'], c => c.asked.indexOf('?hint') >= 0 && c.st.a.price === 80000],
     ['중간에 다른 고민으로 바뀜', ['대출 얼마까지 받을 수 있어요', '취득세는 얼마 나와요'], c => c.st.id === 'acq_tax'],
-    ['복비: 거래 종류 단추 → 금액', ['중개보수 얼마예요', ['jeonse'], '3억'], c => c.st.a.deal === 'jeonse' && c.st.a.amt === 30000 && /90만/.test(c.last.head)]
+    ['복비: 거래 종류 단추 → 금액', ['중개보수 얼마예요', ['jeonse'], '3억'], c => c.st.a.deal === 'jeonse' && c.st.a.amt === 30000 && /99만/.test(c.last.head)]
   ];
   let nc = 0;
   CONV.forEach(([name, msgs, ok]) => { let c; try { c = converse(msgs); } catch (e) { c = { err: String(e.stack || e) }; } const pass2 = !c.err && ok(c); if (pass2) nc++; else console.log(`    대화 빗나감 ${name}: ${c.err || JSON.stringify({ id: c.st.id, a: c.st.a, nf: c.st.nf, asked: c.asked, head: c.last && c.last.head })}`); });

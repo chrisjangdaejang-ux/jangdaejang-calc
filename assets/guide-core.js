@@ -457,20 +457,18 @@
   const yn = v => v === 'y' ? true : v === 'n' ? false : null;
   const need = (a, ids) => ids.filter(k => a[k] == null || a[k] === '');
 
-  /* 법정 중개보수 상한(공인중개사법 시행규칙 제20조 · 서울특별시 주택 중개보수 등에 관한 조례, 2021.10.19 시행 요율표)
-     [미만 상한(만원), 요율, 한도(만원)] — 마지막 줄은 그 이상 */
-  const FEE = {
-    sale: [[5000, 0.006, 25], [20000, 0.005, 80], [90000, 0.004, null], [120000, 0.005, null], [150000, 0.006, null], [Infinity, 0.007, null]],
-    lease: [[5000, 0.005, 20], [10000, 0.004, 30], [60000, 0.003, null], [120000, 0.004, null], [150000, 0.005, null], [Infinity, 0.006, null]]
-  };
-  /** kind 'sale'|'lease', 거래금액(만원) → {base, rate, cap, fee(만원, 부가세 별도)} */
-  function brokerFee(kind, amt) {
-    const row = FEE[kind].find(r => amt < r[0]);
-    const raw = amt * row[1], fee = row[2] != null ? Math.min(raw, row[2]) : raw;
-    return { amt, rate: row[1], cap: row[2], fee: Math.round(fee * 10) / 10 };
+  /* 중개보수: 대출·내 집 마련·갈아타기 화면과 같은 공용 함수(assets/loan-core.js brokerSale·brokerLease — 공인중개사법 시행규칙 제20조·서울시 조례 상한 요율).
+     fee = 부가세 10% 포함 최대, feeBase = 부가세 전 (만원) */
+  const LOANC = E0 => (E0 && E0.L) || root.JDJ_LOAN || (typeof require === 'function' ? require('./loan-core.js') : null);
+  const VAT_LINE = '부가세 10% 포함(최대) · 간이과세 사무소는 더 적을 수 있어요';
+  /** kind 'sale'|'lease', 금액(만원 — 임대차는 보증금), 월세(만원) → {amt 거래금액, rate(0~1), cap, fee(부가세 포함), feeBase(부가세 전)} */
+  function brokerFee(kind, amt, rent, E0) {
+    const L0 = LOANC(E0);
+    if (kind === 'sale') { const b = L0.brokerSale(+amt || 0); return { amt: +amt || 0, rate: b.br / 100, cap: b.cap, fee: Math.round(b.broker * 10) / 10, feeBase: Math.round(b.brokerBase * 10) / 10 }; }
+    const b = L0.brokerLease(+amt || 0, +rent || 0); return { amt: b.base, rate: b.rate, cap: b.cap, fee: b.fee, feeBase: b.feeBase };
   }
-  /** 월세 거래금액: 보증금 + 월세 × 100, 그 값이 5천만 원 미만이면 보증금 + 월세 × 70 (공인중개사법 시행규칙 제20조 제5항) */
-  const wolseAmt = (dep, w) => { const a = dep + w * 100; return a < 5000 ? dep + w * 70 : a; };
+  /** 월세 거래금액: 보증금 + 월세 × 100, 그 값이 5천만 원 미만이면 보증금 + 월세 × 70 (공인중개사법 시행규칙 제20조 제5항) — brokerLease 와 같은 값 */
+  const wolseAmt = (dep, w) => brokerFee('lease', dep, w).amt;
   /* 소액임차인 최우선변제(주택임대차보호법 시행령 제10조·제11조, 2023.2.21 시행): [보증금 기준(이하), 우선변제 금액] */
   const SMALL = { seoul: [16500, 5500, '서울'], over: [14500, 4800, '수도권 과밀억제권역(서울 밖)·세종·용인·화성·김포'], metro: [8500, 2800, '광역시·안산·광주·파주·이천·평택'], etc: [7500, 2500, '그 밖의 지역'] };
 
@@ -936,8 +934,8 @@
 
   S.moveTime = (a, E) => {
     const miss = need(a, ['deal', 'amt', 'mdate']); if (miss.length) return { need: miss };
-    const f = brokerFee(a.deal === 'sale' ? 'sale' : 'lease', +a.amt);
-    const nums = [{ k: '중개보수 상한(부가세 별도)', v: won(f.fee), s: `${pct(f.rate, 1)}${f.cap ? ` · 한도 ${won(f.cap)}` : ''}` }, { k: '전입신고', v: `${ko(addD(a.mdate, 14))}까지`, s: '이사한 날부터 14일 안' }];
+    const f = brokerFee(a.deal === 'sale' ? 'sale' : 'lease', +a.amt, 0, E);
+    const nums = [{ k: '중개보수(최대)', v: won(f.fee), s: `${VAT_LINE} · 상한 ${pct(f.rate, 1)}${f.cap ? ` · 한도 ${won(f.cap)}(부가세 전)` : ''}` }, { k: '전입신고', v: `${ko(addD(a.mdate, 14))}까지`, s: '이사한 날부터 14일 안' }];
     if (a.deal === 'sale') nums.push({ k: '취득세 납부', v: `${ko(addD(a.mdate, 60))}까지`, s: '잔금일부터 60일 안' });
     else nums.push({ k: '확정일자·전월세 신고', v: `${ko(addD(a.mdate, 30))}까지`, s: '계약한 날부터 30일 안 신고(보증금 6천만 원 초과 또는 월세 30만 원 초과)' });
     return { head: `${ko(a.mdate)} 이사면 전입신고는 ${ko(addD(a.mdate, 14))}까지예요`, nums,
@@ -947,10 +945,10 @@
 
   S.brokerFee = (a, E) => {
     const miss = need(a, ['deal', 'amt']); if (miss.length) return { need: miss };
-    const amt = a.deal === 'wolse' ? wolseAmt(+a.amt, +a.wrent || 0) : +a.amt, f = brokerFee(a.deal === 'sale' ? 'sale' : 'lease', amt);
-    return { head: `중개보수 상한은 ${won(f.fee)}이에요(부가세 별도)`,
-      nums: [{ k: '거래 금액', v: won(amt), s: a.deal === 'wolse' ? `보증금 + 월세 × ${amt === +a.amt + (+a.wrent || 0) * 70 ? 70 : 100}` : '' }, { k: '상한 요율', v: pct(f.rate, 1), s: f.cap ? `한도 ${won(f.cap)}` : '' },
-        { k: '부가세 포함(일반과세자)', v: won(Math.round(f.fee * 1.1 * 10) / 10), s: '간이과세자는 더 적어요' }],
+    const f = a.deal === 'sale' ? brokerFee('sale', +a.amt, 0, E) : brokerFee('lease', +a.amt, a.deal === 'wolse' ? +a.wrent || 0 : 0, E);
+    return { head: `중개보수는 최대 ${won(f.fee)}이에요(부가세 10% 포함)`,
+      nums: [{ k: '중개보수(최대)', v: won(f.fee), s: VAT_LINE }, { k: '부가세 전', v: won(f.feeBase), s: `상한 요율 ${pct(f.rate, 1)}${f.cap ? ` · 한도 ${won(f.cap)}` : ''}` },
+        { k: '거래 금액', v: won(f.amt), s: a.deal === 'wolse' ? `보증금 + 월세 × ${f.amt === +a.amt + (+a.wrent || 0) * 70 ? 70 : 100}` : '' }],
       warn: ['상한 요율 안에서 중개사와 협의해 정해요. 계약 전에 금액을 미리 정해 두세요.', '시·도 조례마다 요율이 조금 다를 수 있어요. 서울 기준이에요.'],
       note: `${({ sale: '매매', jeonse: '전세', wolse: '월세' })[a.deal]} ${won(+a.amt)}${a.deal === 'wolse' ? ` · 월세 ${won(+a.wrent || 0)}` : ''}`, src: ['broker20', 'brokerSeoul'] };
   };
@@ -1082,9 +1080,9 @@
   Q.propTax = (a, E) => (a.pub > 0 && !a.one) ? Object.assign(S.propTax(Object.assign({}, a, { one: 'y' }), E), { ex: '1세대 1주택으로 가정한 예시예요', need: ['one'] }) : null;
   Q.brokerFee = (a, E) => {
     if (!(a.amt > 0) || a.deal) return null;
-    const s = brokerFee('sale', +a.amt), l = brokerFee('lease', +a.amt);
-    return { ex: '매매인지 전세인지 몰라서 둘 다 보여 드려요', need: ['deal'], head: `${won(+a.amt)} 거래면 중개보수 상한은 매매 ${won(s.fee)} · 전세 ${won(l.fee)}예요(부가세 별도)`,
-      nums: [{ k: '매매', v: won(s.fee), s: `상한 ${pct(s.rate, 1)}${s.cap ? ` · 한도 ${won(s.cap)}` : ''}` }, { k: '전세', v: won(l.fee), s: `상한 ${pct(l.rate, 1)}${l.cap ? ` · 한도 ${won(l.cap)}` : ''}` }], warn: ['상한 요율 안에서 중개사와 협의해 정해요.'], src: ['broker20', 'brokerSeoul'] };
+    const sl = brokerFee('sale', +a.amt, 0, E), l = brokerFee('lease', +a.amt, 0, E);
+    return { ex: '매매인지 전세인지 몰라서 둘 다 보여 드려요', need: ['deal'], head: `${won(+a.amt)} 거래면 중개보수는 최대 매매 ${won(sl.fee)} · 전세 ${won(l.fee)}예요(부가세 10% 포함)`,
+      nums: [{ k: '매매', v: won(sl.fee), s: `상한 ${pct(sl.rate, 1)}${sl.cap ? ` · 한도 ${won(sl.cap)}(부가세 전)` : ''}` }, { k: '전세', v: won(l.fee), s: `상한 ${pct(l.rate, 1)}${l.cap ? ` · 한도 ${won(l.cap)}(부가세 전)` : ''}` }], warn: [VAT_LINE, '상한 요율 안에서 중개사와 협의해 정해요.'], src: ['broker20', 'brokerSeoul'] };
   };
   Q.depositSafe = (a, E) => {
     if (!(a.dep > 0)) return null;
@@ -1124,7 +1122,7 @@
     catch (e) { return { err: String(e && e.message || e) }; }
   }
 
-  const API = { linkFill, taxRegion, chatStart, chatNext, chatAnswer, chatHint, narrowInit, narrowNext, narrowSet, findHomes, guPreview, BUCKETS, quick, regionExample, norm, extract, apply, findFeatures, moneys, classify, pending, solve, mask, won, wonW, pct, ko, addM, addY, addD, diffD, fill, nextFor, brokerFee, wolseAmt, SMALL, FEE, BAD, MIN, SOLVERS: Object.keys(S) };
+  const API = { linkFill, taxRegion, chatStart, chatNext, chatAnswer, chatHint, narrowInit, narrowNext, narrowSet, findHomes, guPreview, BUCKETS, quick, regionExample, norm, extract, apply, findFeatures, moneys, classify, pending, solve, mask, won, wonW, pct, ko, addM, addY, addD, diffD, fill, nextFor, brokerFee, wolseAmt, SMALL, BAD, MIN, SOLVERS: Object.keys(S) };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_GUIDE_CORE = API;
 })(typeof window !== 'undefined' ? window : globalThis);
