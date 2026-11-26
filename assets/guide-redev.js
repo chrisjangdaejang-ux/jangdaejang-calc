@@ -274,7 +274,7 @@
     const ch = chipsOf(st, id).join(' · ');
     if (id === 'redev_budget') return R.n ? `${ch} — 구역 안 빌라 실거래가 예산 안에 있는 재개발 구역 ${R.n}곳이에요` : `${ch} — 예산 안 빌라 실거래가 있는 재개발 구역을 찾지 못했어요`;
     if (st.cash == null) return `${ch} — 재건축 단계이거나 준공 30년이 넘은 아파트 ${R.n.toLocaleString()}곳이에요`;
-    return R.n ? `${ch}으로 살 수 있는 재건축 단계·준공 30년 넘은 아파트 ${R.n.toLocaleString()}곳이에요` : `${ch}으로 살 수 있는 재건축 단계·준공 30년 넘은 아파트를 찾지 못했어요`;
+    return R.n ? `${ch} 조건으로 살 수 있는 재건축 단계·준공 30년 넘은 아파트 ${R.n.toLocaleString()}곳이에요` : `${ch} 조건으로 살 수 있는 재건축 단계·준공 30년 넘은 아파트를 찾지 못했어요`;
   }
   function basisOf(id, st, R, X) {
     if (id === 'redev_budget') {
@@ -292,6 +292,15 @@
       rows: rows.map(r => [{ t: r.n, href: BASE + 'villa/zone/?z=' + encodeURIComponent(r.id) }, `${r.gu}${r.dong ? ' ' + r.dong : ''}`, `${r.st}단계 ${r.stn}`, r.lf.t + (r.lf.s && r.lf.y != null ? ` · ${r.lf.s}` : ''), `${r.lo === r.hi ? wonS(r.lo) : wonS(r.lo) + '~' + wonS(r.hi)} · ${r.n1}건(전체 ${r.nAll}건 · 최근 ${ymK(r.at)}) · ${r.how}`, { t: r.th.t, g: r.th.v === 'dong' ? 'lo' : 'mid' }, { t: r.lim.t, g: r.lim.v === 'on' ? 'lo' : r.lim.v === 'pre' ? 'mid' : 'hi' }]) };
     return { title: '살 수 있는 재건축 단계·노후 단지', head: ['단지', '구·동', '준공', '평형', '최근 실거래 시세', '재건축 단계', '착공까지(과거 통계)', '토지거래허가', '조합원 지위 양도'],
       rows: rows.map(r => [{ t: r.apt, href: H && H.mineUrl ? H.mineUrl(r) : BASE + 'mine/' }, `${r.gu} ${r.dong}`, r.by ? `${r.by}년(${r.age}년)` : '-', r.band, `${wonS(r.price)}${r.at ? ` · ${ymK(r.at)}` : ''}`, r.z ? `${r.st}단계 ${r.stn}` : '추진 단계 정보 없음', r.lf.t, { t: r.th.t, g: r.th.v === 'apt' ? 'mid' : 'hi' }, { t: r.lim.t, g: r.lim.v === 'on' ? 'lo' : r.lim.v === 'pre' ? 'mid' : 'hi' }]) };
+  }
+  /** 화면용 목록(표 대신 카드 줄 — 휴대폰·PC 모두 칸이 잘리지 않게) */
+  function rowsHtml(id, R, H, lim) {
+    const T = tableOf(id, R, H, lim), g = c => c && typeof c === 'object' ? c : { t: c };
+    return `<ul class="grl">${T.rows.map(row => { const c = row.map(g), h = T.head;
+      const kv = (i, cls) => `<div><dt>${esc(h[i])}</dt><dd${cls ? ` class="gg ${esc(cls)}"` : ''}>${esc(c[i].t)}</dd></div>`;
+      if (id === 'redev_budget') return `<li><div class="t"><a href="${esc(c[0].href)}">${esc(c[0].t)}</a><span class="sb">${esc(c[2].t)}</span></div><small>${esc(c[1].t)}</small><dl>${kv(4)}${kv(3)}${kv(5, c[5].g)}${kv(6, c[6].g)}</dl></li>`;
+      return `<li><div class="t"><a href="${esc(c[0].href)}">${esc(c[0].t)}</a><span class="sb">${esc(c[5].t)}</span></div><small>${esc(c[1].t)} · 준공 ${esc(c[2].t)} · ${esc(c[3].t)}</small><dl>${kv(4)}${kv(6)}${kv(7, c[7].g)}${kv(8, c[8].g)}</dl></li>`;
+    }).join('')}</ul>`;
   }
   /** 손해 피하는 주의점(법령 이름만, 숫자는 법령·정책 표에 있는 것만) */
   function warnOf(id, st, R, X) {
@@ -340,8 +349,8 @@
   function numsOf(id, st, R, X) {
     if (id === 'redev_budget') {
       const n = [{ k: '예산 안 실거래가 있는 구역', v: `${R.n}곳`, s: `구역 안 빌라 거래 ${R.trN.toLocaleString()}건` }];
-      const top = R.dist.filter(d => d.n).map(d => `${d.t} ${d.n}`).join(' · ');
-      n.push({ k: '단계 분포', v: top || '없음', s: '서울시 정비사업 추진현황 단계' });
+      const lo = R.rows.length ? Math.min(...R.rows.map(r => r.lo)) : null, hi = R.rows.length ? Math.max(...R.rows.map(r => r.hi)) : null;
+      if (lo != null) n.push({ k: '예산 안 거래 가격대', v: lo === hi ? wonS(lo) : `${wonS(lo)} ~ ${wonS(hi)}`, s: '구역 안 빌라 매매 실거래(최근 3년)' });
       if (R.refOnly) n.push({ k: '경계 자료 없이 같은 동 거래만 있는 구역', v: `${R.refOnly}곳`, s: '구역 안인지 알 수 없어 표에서 뺐어요(참고)' });
       return n;
     }
@@ -367,6 +376,8 @@
   /* ================= 화면(브라우저) ================= */
   const CSS = '.grx .gsort{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0 0}.grx .gsort span{font-size:12.5px;color:#6B7684;font-weight:700}.grx .gsort button{font:inherit;font-size:13px;font-weight:800;min-height:38px;padding:0 12px;border-radius:999px;border:1.5px solid #D4D1F5;background:#fff;color:#3730A3;cursor:pointer}.grx .gsort button[aria-pressed="true"]{background:#4338CA;border-color:#4338CA;color:#fff}' +
     '.grx .gsort em{font-style:normal;font-size:12px;color:#7A5C0F;background:#FBF5E3;border-radius:6px;padding:2px 6px}.grx .gchip2{display:inline-flex;align-items:center;font-size:12.5px;font-weight:800;color:#3730A3;background:#EEEDFB;border-radius:999px;padding:3px 10px;margin:0 4px 4px 0}.grx .gmore{font:inherit;font-weight:800;font-size:14px;min-height:44px;width:100%;margin-top:8px;border-radius:12px;border:1.5px dashed #C9C6F2;background:#fff;color:#3730A3;cursor:pointer}' +
+    '.grx .grl{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}.grx .grl li{border:1px solid #E5E8EB;border-radius:14px;padding:10px 12px;background:#fff}.grx .grl .t{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.grx .grl .t a{font-size:16px;font-weight:900;color:#3730A3}.grx .grl .sb{font-size:12px;font-weight:800;color:#4338CA;background:#EEEDFB;border-radius:999px;padding:2px 8px}.grx .grl small{display:block;font-size:12.5px;color:#4E5968;margin-top:2px}' +
+    '.grx .grl dl{margin:6px 0 0;display:grid;gap:3px}.grx .grl dl div{display:grid;grid-template-columns:132px 1fr;gap:8px;font-size:13.5px;line-height:1.45}.grx .grl dt{color:#6B7684}.grx .grl dd{margin:0;color:#191F28;white-space:normal}.grx .grl dd.gg{font-weight:800}@media(max-width:400px){.grx .grl dl div{grid-template-columns:104px 1fr}}' +
     '.grx .gdist div{grid-template-columns:120px 1fr 52px}.grx .gnq .h{margin:-4px 0 8px;font-size:12.5px;color:#4E5968}.grx .gload{margin:8px 0 0;font-size:13px;color:#6B7684}@media(max-width:560px){.grx .gdist div{grid-template-columns:96px 1fr 44px}}';
   function css() { if (typeof document === 'undefined' || document.getElementById('grxCss')) return; const s = document.createElement('style'); s.id = 'grxCss'; s.textContent = CSS; document.head.appendChild(s); }
   /* 자료 불러오기(한 번만) — H: guide.js 가 넘기는 도구 {BASE, DATA, getJ, IX, MC, L, unitsOf(sd)} */
@@ -425,19 +436,19 @@
   function body(id, st, X, H, full) {
     const E = { MC: H.MC, L: H.L };
     const R = id === 'redev_budget' ? redevRows(st, X) : rebuildRows(st, X, E);
-    const T = tableOf(id, R, H, full ? (st._all ? 0 : 20) : 6);
+    const lim = full ? (st._lim || 10) : 5;
     const chips = chipsOf(st, id).map(c => `<span class="gchip2">${esc(c)}</span>`).join('');
     let extra = [];
     if (id === 'redev_budget') { if (R.started) extra.push(`이미 착공한 구역 ${R.started}곳은 뺐어요(빌라가 아니라 입주권으로 거래돼요)`); if (R.waitOut) extra.push(`착공 예상이 ${st.wait}년 안쪽이 아니거나 예상이 없는 구역 ${R.waitOut}곳은 뺐어요`); if (R.livOut) extra.push(`동 단위 토지거래허가 지정이 있는 구역 ${R.livOut}곳은 뺐어요`); }
     else { if (R.gone) extra.push(`이주·착공 단계라 지금 들어가 살 수 없는 단지 ${R.gone}곳은 뺐어요`); if (R.over) extra.push(`최대 집값보다 비싼 단지 ${R.over}곳은 뺐어요`); if (R.sizeOut) extra.push(`평형이 맞지 않는 단지 ${R.sizeOut}곳은 뺐어요`); if (R.waitOut) extra.push(`착공 예상이 ${st.wait}년 안쪽이 아니거나 예상이 없는 단지 ${R.waitOut}곳은 뺐어요`); }
     const nums = numsOf(id, st, R, X).slice(0, 3).map(n => `<div><small>${esc(n.k)}</small><b>${esc(n.v)}</b>${n.s ? `<span>${esc(n.s)}</span>` : ''}</div>`).join('');
-    const tb = R.n ? H.tablesHtml([Object.assign(T, { note: '' })]) + (!full && R.n > 6 ? `<p class="gtn">외 ${R.n - 6}곳은 ‘전체 표와 주의점 보기’에서 볼 수 있어요.</p>` : full && !st._all && R.n > 20 ? `<button type="button" class="gmore" data-rall="1">${R.n - 20}곳 더 보기</button>` : '') : `<p class="gtn">조건에 맞는 곳이 없어요. 조건을 하나 풀어 보세요.</p>`;
+    const tb = id === 'rebuild_live' && st.cash == null ? `<p class="gtn" style="margin-top:12px">실거주가 전제라, 가진 돈(현금)을 알려 주시면 대출까지 더해 살 수 있는 단지만 목록으로 보여 드려요.</p>` : R.n ? `<h3 class="gtt" style="margin-top:14px">${esc(tableOf(id, { rows: [] }, H).title)} · ${R.n.toLocaleString()}곳</h3>` + rowsHtml(id, R, H, lim) + (!full && R.n > lim ? `<p class="gtn">외 ${R.n - lim}곳은 ‘전체 목록과 주의점 보기’에서 볼 수 있어요.</p>` : full && R.n > lim ? `<button type="button" class="gmore" data-rall="1">${Math.min(10, R.n - lim)}곳 더 보기(남은 ${R.n - lim}곳)</button>` : '') : `<p class="gtn">조건에 맞는 곳이 없어요. 조건을 하나 풀어 보세요.</p>`;
     return { R, html: `<div>${chips}</div><h3>${esc(headOf(id, st, R))}</h3><p class="exn">${esc(basisOf(id, st, R, X))}${id === 'redev_budget' ? ' 단독·다가구 실거래는 아직 들어 있지 않아요.' : ''}</p>
-      <div class="gnums">${nums}</div>${distHtml(R)}${R.n > 1 ? sortHtml(id, st) : ''}${tb}${extra.length ? `<p class="gtn">${esc(extra.join(' · '))}</p>` : ''}` };
+      <div class="gnums">${nums}</div>${distHtml(R)}${nqHtml(id, st, H)}${R.n > 1 && !(id === 'rebuild_live' && st.cash == null) ? sortHtml(id, st) : ''}${tb}${extra.length ? `<p class="gtn">${esc(extra.join(' · '))}</p>` : ''}` };
   }
   function wireBox(box, id, getSt, setSt, redraw) {
     box.querySelectorAll('[data-rsort]').forEach(b => b.addEventListener('click', () => { const st = getSt(); st.sort = b.dataset.rsort; setSt(st); redraw(); }));
-    const all = box.querySelector('[data-rall]'); if (all) all.addEventListener('click', () => { const st = getSt(); st._all = 1; setSt(st); redraw(); });
+    const all = box.querySelector('[data-rall]'); if (all) all.addEventListener('click', () => { const st = getSt(); st._lim = (st._lim || 10) + 10; setSt(st); redraw(); });
     const q = box.querySelector('.gnq'); if (!q) return;
     const k = q.dataset.rk, put = v => { setSt(set(id, getSt(), k, v)); redraw(); };
     q.querySelectorAll('[data-rv]').forEach(b => b.addEventListener('click', () => put(b.dataset.rv)));
@@ -454,8 +465,8 @@
     const draw = () => {
       if (!H.live()) return;
       const B = body(id, st, X, H, false);
-      ans.innerHTML = `<section class="ginst grx"><div class="gi-hd"><span class="bd ok">바로 답</span><span class="tt">${esc(H.sc.t)}</span></div>${B.html}${nqHtml(id, st, H)}
-        <div class="gbtn"><a class="p" href="${esc(H.solveUrl(id, '&from=inst'))}" data-rgo="1" data-track="guide_inst_go">전체 표와 주의점 보기 ›</a><a href="${esc(H.BASE + 'villa/zone/')}" data-track="guide_inst_calc">구역 지도 ›</a></div>${H.fbHtml(id, 'top')}</section>`;
+      ans.innerHTML = `<section class="ginst grx"><div class="gi-hd"><span class="bd ok">바로 답</span><span class="tt">${esc(H.sc.t)}</span></div>${B.html}
+        <div class="gbtn"><a class="p" href="${esc(H.solveUrl(id, '&from=inst'))}" data-rgo="1" data-track="guide_inst_go">전체 목록과 주의점 보기 ›</a><a href="${esc(H.BASE + 'villa/zone/')}" data-track="guide_inst_calc">구역 지도 ›</a></div>${H.fbHtml(id, 'top')}</section>`;
       H.fbWire(ans);
       wireBox(ans, id, () => st, s => { st = s; H.stat('guide_narrow', { k: id }); }, draw);
       const go = ans.querySelector('[data-rgo]'); if (go) go.addEventListener('click', () => H.hand(st));
@@ -478,7 +489,7 @@
     const draw = () => {
       const B = body(id, st, X, H, true), L = nextLinks(id, st, B.R, H);
       el.innerHTML = `<div class="gflow">${H.head}
-        <section class="gcard grx" aria-labelledby="gHead"><span class="gk">바로 답 · 참고</span>${B.html.replace('<h3>', '<h2 id="gHead" style="font-size:20px">').replace('</h3>', '</h2>')}${nqHtml(id, st, H)}
+        <section class="gcard grx" aria-labelledby="gHead"><span class="gk">바로 답 · 참고</span>${B.html.replace('<h3>', '<h2 id="gHead" style="font-size:20px">').replace('</h3>', '</h2>')}
           <div class="gwarn"><h3>손해 피하는 주의점</h3><ul>${warnOf(id, st, B.R, X).map(w => `<li>${esc(w)}</li>`).join('')}</ul></div>
           ${infoHtml(H.D, id)}
           <p class="gnote">조건: ${esc(chipsOf(st, id).join(' · '))}${st._mc ? ' · 가진 돈·소득은 이 기기에 저장된 값으로 채웠어요' : ''} <button type="button" data-redit="1">조건 처음부터</button></p>
@@ -497,13 +508,13 @@
     const id = ST.id, X = await load(H, id), st = ST.nf;
     const R = id === 'redev_budget' ? redevRows(st, X) : rebuildRows(st, X, { MC: H.MC, L: H.L });
     const nums = numsOf(id, st, R, X).slice(0, 2).map(n => ({ k: n.k, v: n.v }));
-    const ex2 = R.rows.slice(0, 4).map(r => id === 'redev_budget' ? [`${r.n} (${r.gu}) ${r.st}단계`, r.lo === r.hi ? wonS(r.lo) : `${wonS(r.lo)}~${wonS(r.hi)}`] : [`${r.apt} (${r.gu}) ${r.z ? r.st + '단계' : r.by + '년'}`, wonS(r.price)]);
+    const ex2 = id === 'rebuild_live' && st.cash == null ? [] : R.rows.slice(0, 4).map(r => id === 'redev_budget' ? [`${r.n} (${r.gu}) ${r.st}단계`, r.lo === r.hi ? wonS(r.lo) : `${wonS(r.lo)}~${wonS(r.hi)}`] : [`${r.apt} (${r.gu}) ${r.z ? r.st + '단계' : r.by + '년'}`, wonS(r.price)]);
     return { head: headOf(id, st, R), nums, ex2, ex: `단계 높은 순(추천 순위 아님) · ${id === 'redev_budget' ? '구역 안 빌라 최근 3년 실거래' : '최근 3개월 실거래 중간값'} 기준이에요.` , n: R.n };
   }
   /** 대화창 질문 꼴(guide-core chatNext 가 씀) */
   function chatQ(id, st) { const k = next(id, st); if (!k) return null; const q = Q[k]; return { key: k, nf: 1, ext: 1, q, quick: q.opts.slice() }; }
 
-  const API = { IDS, is, Q, ORDER, SORTS, GROUPS, init, next, set, answer, read, toh, overheat, limit, left, redevRows, rebuildRows, zoneIndex, zoneOf, plainSet, maxPrice, tableOf, warnOf, infoOf, numsOf, headOf, chipsOf, solve, chatQ, chatCard, instant, flow, load, moneyIn, nm };
+  const API = { IDS, is, Q, ORDER, SORTS, GROUPS, init, next, set, answer, read, toh, overheat, limit, left, redevRows, rebuildRows, zoneIndex, zoneOf, plainSet, maxPrice, tableOf, rowsHtml, warnOf, infoOf, numsOf, headOf, chipsOf, solve, chatQ, chatCard, instant, flow, load, moneyIn, nm };
   root.JDJ_GREDEV = API;
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
 })(typeof window !== 'undefined' ? window : globalThis);
