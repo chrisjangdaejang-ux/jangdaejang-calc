@@ -376,7 +376,7 @@
       pre: pts ? SPARSE_PTS : opts.sparse ? SPARSE : '' };
     if (pts) { sp.noFill = true; sp.maxGap = 1; opts = Object.assign({}, opts, { noFill: true }); }
     let gu = null;
-    if (opts.gu && !opts.jr) { const a = M().sggLine(opts.gu.s, opts.gu.months, t.months, opts.gu.area); if (a.some(v => v > 0)) { gu = { name: opts.gu.name || '구', a, me: opts.gu.me || '' }; sp.lines.unshift({ a, c: GRAY, w: 1.8, dash: true }); } }
+    if (opts.gu && !opts.jr) { const a = M().sggLine(opts.gu.s, opts.gu.months, t.months, opts.gu.area); if (a.some(v => v > 0)) { gu = { name: opts.gu.name || '구', a, me: opts.gu.me || (pts ? '같은 면적이면 이 단지 실거래' : '') }; /* 드문 평형: 실거래 값과 구 전체 3개월 중간값을 같은 전용면적 금액(= 평당가)으로 비교한다는 것을 말로 */ sp.lines.unshift({ a, c: GRAY, w: 1.8, dash: true }); } }
     if (opts.sub && !opts.jr && jr.some(v => v > 0)) sp.sub = { a: jr, c: '#0E7A4F', label: '전세가율' };
     if (opts.noFill) sp.noFill = true;
     if (opts.aria) sp.aria = opts.aria;

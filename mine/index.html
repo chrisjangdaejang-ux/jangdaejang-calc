@@ -54,7 +54,7 @@
 <script src="../assets/mine-core.js?v=24"></script>
 <script src="../assets/ask-core.js?v=9"></script>
 <script src="../assets/ask.js?v=6"></script>
-<script src="../assets/price-sheet.js?v=25"></script>
+<script src="../assets/price-sheet.js?v=26"></script>
 <script src="../assets/mapjump.js?v=4"></script>
 <script src="../assets/offi-core.js?v=6"></script>
 <script src="../assets/offi-view.js?v=16"></script>
@@ -142,6 +142,7 @@ th{text-align:left;font-size:13.5px;color:var(--sub2);font-weight:700;padding:8p
 td{padding:9px 6px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
 td.num,th.num{text-align:right;white-space:nowrap}
 tr.on td{background:#F5F8FF;font-weight:700}
+.nowb{display:inline-block;font-size:12.5px;font-weight:700;color:#fff;background:#3B5BDB;border-radius:999px;padding:1px 8px;vertical-align:2px;white-space:nowrap}
 @media(max-width:520px){table.stk tr.on{background:#F5F8FF;border-radius:10px;padding-left:8px;padding-right:8px}}
 td small{color:var(--sub2);font-size:13.5px}
 .seg2{display:inline-flex;gap:4px;background:var(--gray);border-radius:12px;padding:4px}
@@ -516,8 +517,8 @@ function render(d, map, units){
   const meta = [f.by ? PL.ageText(f.by, null, '준공') : '', f.hh ? `${f.hh.toLocaleString()}세대` : ''].filter(Boolean).join(' · ');
   const chTxt = c => c ? `<span class="${updown(c.pct)}">${M.pctTxt(c.pct)}</span>` : '-';
   const chBasis = c => c ? `${ym(c.fromAt)} ${c.from.toLocaleString()}만 → ${ym(c.toAt)} ${c.to.toLocaleString()}만` : '비교할 달의 거래가 없어요';
-  const sumRows = d.bands.map(x => { const b = M.bandSummary(x, IX.months); return `<tr class="${x[3] === S.band ? 'on' : ''}"><td class="sh">${esc(x[3])}<br><small>전용 ${x[4]}㎡</small></td>
-    <td class="num" data-l="최근 시세"><span class="sv">${b.price ? `${M.won(b.price)}<br><small>${b.ppy.toLocaleString()}만/3.3㎡</small>` : (() => { const l = M.lastDeal(x, IX.months); return l ? `${M.won(l.price)}<br><small>${ym(l.at)} 마지막 거래</small>` : '-'; })()}</span></td>
+  const sumRows = d.bands.map(x => { const b = M.bandSummary(x, IX.months); return `<tr class="${x[3] === S.band ? 'on' : ''}"><td class="sh">${esc(x[3])}${x[3] === S.band ? ' <span class="nowb">지금 보는 평형</span>' : ''}<br><small>전용 ${x[4]}㎡</small></td>
+    <td class="num" data-l="최근 시세"><span class="sv">${b.price && !M.isFew(x) ? `${M.won(b.price)}<br><small>${b.ppy.toLocaleString()}만/3.3㎡</small>` : (() => { const l = M.lastDeal(x, IX.months); return l ? `${M.won(l.price)}<br><small>${ym(l.at)} ${M.isFew(x) ? '최근 거래' : '마지막 거래'}</small>` : '-'; })()}</span></td>
     <td class="num" data-l="${M.isFew(x) ? '거래 달·평당가' : '최근 1년 범위'}"><span class="sv">${M.isFew(x) ? `<span class="fewl">${M.monthDeals(x, IX.months).map(m => `${ym(m.at)} ${m.ppy.toLocaleString()}만`).join('<br>')}</span>`
       : b.range.months ? (b.range.lo === b.range.hi ? M.won(b.range.lo) : `${M.won(b.range.lo)}<br>~ ${M.won(b.range.hi)}`) : '-'}</span></td>
     <td class="num" data-l="1년 거래"><span class="sv">${b.cnt12}건</span></td></tr>`; }).join('');
@@ -577,12 +578,12 @@ function render(d, map, units){
   </div>
 
   <div class="panel">
-    <h2>평형별 시세 범위<small>최근 1년 범위 = 월별 3개월 중앙 평당가의 최저~최고 × 전용면적 ÷ 3.3058 (평형 안 개별 거래의 최저·최고가 아니에요). 최근 3년 거래가 ${M.FEW}건이 안 되는 평형은 범위 대신 거래 달·평당가만 보여 드려요.</small></h2>
+    <h2>평형별 시세 범위 (이 단지 모든 평형)<small>이 단지의 평형을 한눈에 비교하는 표예요. 지금 보는 평형(${esc(S.band)})은 파란 칸이에요. 최근 1년 범위 = 월별 3개월 중앙 평당가의 최저~최고 × 전용면적 ÷ 3.3058 (평형 안 개별 거래의 최저·최고가 아니에요). 최근 3년 거래가 ${M.FEW}건이 안 되는 평형은 범위 대신 거래 달·평당가만 보여 드려요.</small></h2>
     <div class="tbl"><table class="stk"><thead><tr><th>평형</th><th class="num">최근 시세</th><th class="num">최근 1년 범위</th><th class="num">1년 거래</th></tr></thead><tbody>${sumRows}</tbody></table></div>
   </div>
 
   <div class="panel">
-    ${HT ? `<div class="chead"><h3>가격 추이 (매매·전세)</h3>${P.spanBtns(HT, S.hspan, 'seg2')}</div>
+    ${HT ? `<div class="chead"><h3>가격 추이 (매매·전세) · ${esc(S.band)} 기준</h3>${P.spanBtns(HT, S.hspan, 'seg2')}</div>
     <div class="chart" id="cPrice"></div>
     <div class="legend"><span><i></i>${M.isSparse(HT.s) ? '매매 실거래(점)' : '매매 시세'}</span>${HT.j.some(v => v > 0) ? '<span><i class="j"></i>전세 시세</span>' : ''}${GU ? `<span><i class="g"></i>${esc(GU.name)} 아파트 같은 면적 환산</span>` : ''}<span>${esc(S.band)} · 전용 ${u0[4]}㎡ 환산</span></div>
     ${ALT ? `<p class="basis">가격 추이와 아래 실거래 목록은 ${esc(S.band)} 전체 기준이에요(가장 많이 거래된 전용 ${u0[4]}㎡로 환산). 위 최근 시세·변동은 고른 전용 ${u[4]}㎡ 기준이에요.</p>` : ''}
