@@ -488,7 +488,7 @@ addEventListener('DOMContentLoaded', () => {
   const shortOf = sid => ((IX && IX.sido || []).find(s => s.id === sid) || {}).short || '';
   const myRg = () => { const h = ld('jdj_home_region'); return h && h.sd ? h.sd : 's00'; };
   const mineOf = x => R ? R.mineUrl(sidOf(x.g), [x.g, x.d, x.j || '', x.a].join('|'), x.b) : '#';
-  const TABS = [['am', '아침', '브리핑'], ['day', '낮', '새로 신고된 거래'], ['pm', '저녁', '신고가·큰 하락']];
+  const TABS = [['am', '모닝 브리핑', '오늘 아침 요약'], ['day', '새 거래', '방금 신고된 거래'], ['pm', '신고가·큰 하락', '오늘 TOP']];   // 탭 이름은 내용 기준(시간대 이름이면 아무 때나 눌러도 보여 헷갈림). 처음 열리는 탭만 시간대로 고름(today-core.js)
 
   function row(x, kind){
     const sid = sidOf(x.g), tg = TD.tags(x).filter(t => kind === 'new' || t.c === 'x');
