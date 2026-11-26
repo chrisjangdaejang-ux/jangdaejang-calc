@@ -57,8 +57,8 @@
 
   /* 단지 화면 '세금' 칸에서 넘어온 값 (#mk=..&std=.. — 주소 # 뒤에만, 읽고 바로 지움) */
   (function prefill() {
-    const h = (location.hash || '').slice(1); if (!/mk=/.test(h)) return;
-    const P = {}; h.split('&').forEach(x => { const i = x.indexOf('='); if (i > 0) { try { P[x.slice(0, i)] = decodeURIComponent(x.slice(i + 1)); } catch (e) {} } });
+    const h = (location.hash || '').slice(1); if (!/(^|[&;])mk=/.test(h)) return;
+    const P = {}; h.split(/[&;]/).forEach(x => { const i = x.indexOf('='); if (i > 0) { try { P[x.slice(0, i)] = decodeURIComponent(x.slice(i + 1)); } catch (e) {} } });
     try { history.replaceState(null, '', location.pathname); } catch (e) {}
     const money = (id, v) => { if (v && /^\d{1,7}$/.test(v)) { $(id).value = (+v).toLocaleString('ko-KR'); $(id).dispatchEvent(new Event('input')); } };
     money('mk', P.mk); money('std', P.std); money('ap', P.ap);
@@ -70,8 +70,18 @@
     if (/^\d{1,3}$/.test(P.rm || '')) $('rm').value = P.rm;
     if (+P.ar > 85) $('o85').checked = true;
     if (P.hs === '1' || P.hs === '2' || P.hs === '3') { st.hs = +P.hs; $('hs').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === P.hs)); }
-    if (num($('mk'))) { $('lp').value = Math.round(num($('mk')) * 0.8).toLocaleString('ko-KR'); $('lp').dispatchEvent(new Event('input')); }
+    /* 길잡이(solve/) 등에서 넘어온 증여 조건: mn=1 미성년 자녀 · ch=받기 전 자녀 세대 주택 수(0~2) · pr=10년 안 받은 증여 · db=함께 넘길 채무 · lp=싸게 팔 값 · ex=필요경비 · kids=자녀 수 · sp=1 배우자 있음 · co=1 동거 10년 (금액은 만 원) */
+    const seg = (id, k, v) => { const b = $(id).querySelector('button[data-v="' + v + '"]'); if (b) { st[k] = +v; $(id).querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); } };
+    if (P.mn === '1' || P.mn === '0') seg('minor', 'minor', P.mn);
+    if (/^\d$/.test(P.ch || '')) seg('ch', 'ch', P.ch);
+    if (/^\d$/.test(P.kids || '')) { seg('kids', 'kids', P.kids); $('paW').hidden = st.kids !== 0; }
+    money('pr', P.pr); money('db', P.db); money('ex', P.ex);
+    if (P.sp === '1') { $('sp').checked = true; $('sgW').hidden = false; }
+    if (P.co === '1') $('co').checked = true;
+    if (/^\d{1,7}$/.test(P.lp || '')) money('lp', P.lp);
+    else if (num($('mk'))) { $('lp').value = Math.round(num($('mk')) * 0.8).toLocaleString('ko-KR'); $('lp').dispatchEvent(new Event('input')); }
     updAdj();
+    if (!validate()) setTimeout(run, 0);   // 필요한 값(시세·산 날·산 가격)이 다 왔으면 바로 비교 결과까지
   })();
 
   function validate() {

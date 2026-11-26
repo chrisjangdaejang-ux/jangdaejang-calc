@@ -636,6 +636,46 @@
         if (P.ask === 'y' || P.ask === 'n') { S.acqAdjAns = P.ask; $('oAcqAdj').querySelectorAll('.opt').forEach(o => o.classList.toggle('on', o.dataset.v === P.ask)); }
         const ready = S.houses && date(P.ad) && P.ap && P.sp && (acqAdjAuto() !== 'ask' || S.acqAdjAns);
         if (ready) runCgt(false); else render();
+      } else if (v === 'order') {
+        /* 다주택 매도 순서: #order;h1=시·도|시·군·구|취득일|취득가|지금 시세|거주 개월|지금 거주(1)|산 때 조정(y/n)|필요경비;h2=…(최대 5채);st=첫 매도일;iv=간격(개월 6·12·24) */
+        const hs = [];
+        for (let i = 1; i <= MAXH; i++) {
+          const f = String(P['h' + i] || '').split('|'); if (f.length < 5) continue;
+          const [sd, gu, ad, ap, pp, rm, lv, ask, ex] = f;
+          if (!date(ad) || !/^\d{1,7}$/.test(ap || '') || !/^\d{1,7}$/.test(pp || '') || !(+ap > 0) || !(+pp > 0)) continue;
+          hs.push({ rg: sd && A.SIDO.indexOf(sd) >= 0 ? { sido: sd, gu: gu || '' } : null, acq: ad, ap: +ap, p: +pp, r: /^\d{1,3}$/.test(rm || '') ? +rm : 0, l: lv === '1', ask, ex: /^\d{1,7}$/.test(ex || '') ? +ex : 0 });
+        }
+        if (hs.length) {
+          HL.slice().forEach(h => h.el.remove()); HL.length = 0;
+          hs.forEach(h => {
+            addHouse({ rg: h.rg || { sido: '서울', gu: '강남구' }, acq: h.acq, ap: h.ap, p: h.p, r: h.r, l: h.l });
+            const el = HL[HL.length - 1].el;
+            if (h.rg && h.rg.gu) { const g = el.querySelector('.gu'); if ([...g.options].some(o => o.value === h.rg.gu)) { g.value = h.rg.gu; g.dispatchEvent(new Event('change')); } }
+            if (h.ask === 'y' || h.ask === 'n') el.querySelector('.ask').value = h.ask;
+            if (h.ex) el.querySelector('.exp').value = h.ex.toLocaleString('ko-KR');
+          });
+          if (HL.length < 2) addHouse();
+        }
+        if (date(P.st) && P.st >= TODAY) $('oStart').value = P.st;
+        if (P.iv) { const b = $('oInt').querySelector('button[data-v="' + P.iv + '"]'); if (b) b.click(); }
+        if (hs.length >= 2) runOrder();
+      } else if (v === 'gift') {
+        /* 증여세: #gift;rel=child;gv=시가;std=공시가격;gd=넘길 채무;da=주는 분 취득가;pr=10년 안 이전 증여;prt=그때 낸 증여세;sd=;gu=;one=1;o85=1;mar=1;skip=1;nf=1(기한 안 신고 안 함) — 금액은 만 원 */
+        const G = WZ.gWiz;
+        if (P.rel && $('gWiz').querySelector('.opts[data-key="rel"] .opt[data-v="' + P.rel + '"]')) { G.st.rel = P.rel; $('gWiz').querySelectorAll('.opts[data-key="rel"] .opt').forEach(o => o.classList.toggle('on', o.dataset.v === P.rel)); }
+        money($('gValue'), P.gv); money($('gStd'), P.std); money($('gDebt'), P.gd); money($('gDonorAcq'), P.da); money($('gPrior'), P.pr); money($('gPriorTax'), P.prt);
+        region($('gSido'), $('gGu'), P.sd, P.gu);
+        if (P.one === '1') $('gOne').checked = true;
+        if (P.o85 === '1') $('gOver').checked = true;
+        if (P.mar === '1') $('gMar').checked = true;
+        if (P.skip === '1') $('gSkip').checked = true;
+        if (P.nf === '1') $('gFiled').checked = false;
+        if (G.st.rel && num($('gValue')) && num($('gStd')) && num($('gDebt')) < num($('gValue'))) {
+          const close = { spouse: 1, child: 1, minor: 1, parent: 1 }, down = G.st.rel === 'child' || G.st.rel === 'minor';
+          if (!down) { $('gSkip').checked = false; $('gMar').checked = false; }
+          if (!close[G.st.rel]) $('gOne').checked = false;
+          G.finish();
+        } else G.render();
       }
     } catch (e) {}
     return true;

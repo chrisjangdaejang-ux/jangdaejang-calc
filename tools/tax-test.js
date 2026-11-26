@@ -167,6 +167,17 @@ const o5 = c5.results.find(x => x.order.join('') === '01234');
 check('  └ 순서 A→B→C→D→E 총세액 손계산 일치', o5.total, tl.reduce((s, t) => s + t + Math.floor(t * 0.1), 0), '4채 과세 + 마지막 비과세');
 check('  └ 가장 유리한 순서의 마지막은 차익 큰 E', c5.best.sales[4].name, 'E', '마지막 1주택 비과세');
 
+// 주소 # 미리 채우기(2026-11-26): 길잡이 등에서 넘어올 때 '다주택 매도 순서'·'증여세'·'넘기는 방법 비교'가 빈 화면으로 열리던 문제
+{ const fs = require('fs'), path = require('path');
+  const ui = fs.readFileSync(path.join(__dirname, '../tax/tax-ui.js'), 'utf8'), tu = fs.readFileSync(path.join(__dirname, '../tax/transfer/transfer-ui.js'), 'utf8');
+  check('미리 채우기: 매도 순서(#order;h1=…;h2=…)', /v === 'order'/.test(ui) && /P\['h' \+ i\]/.test(ui) && /runOrder\(\)/.test(ui), true, '집별 취득일·취득가·시세·지역·거주');
+  check('미리 채우기: 증여세(#gift;rel=;gv=;std=…)', /v === 'gift'/.test(ui) && /money\(\$\('gValue'\), P\.gv\)/.test(ui) && /G\.finish\(\)/.test(ui), true, '받는 사람·금액·공시가격');
+  check('미리 채우기: 넘기는 방법 비교(; 구분도, 증여 조건)', /split\(\/\[&;\]\/\)/.test(tu) && /P\.mn/.test(tu) && /money\('db', P\.db\)/.test(tu) && /setTimeout\(run, 0\)/.test(tu), true, '');
+  check('미리 채우기 금액은 주소 # 뒤에만 읽음(? 아님)', /location\.search/.test(ui + tu), false, '서버 기록 안 되게');
+  const sw = fs.readFileSync(path.join(__dirname, '../sw.js'), 'utf8'), ti = fs.readFileSync(path.join(__dirname, '../tax/index.html'), 'utf8'), tt = fs.readFileSync(path.join(__dirname, '../tax/transfer/index.html'), 'utf8');
+  const v1 = (ti.match(/tax-ui\.js\?v=(\d+)/) || [])[1], v2 = (tt.match(/transfer-ui\.js\?v=(\d+)/) || [])[1];
+  check('서비스 워커 캐시 목록 버전 = 화면 버전(tax-ui·transfer-ui)', sw.includes('tax-ui.js?v=' + v1 + "'") && sw.includes('transfer-ui.js?v=' + v2 + "'"), true, ''); }
+
 // 출력
 const pad = (s, n) => { s = String(s); let w = 0; for (const ch of s) w += ch.charCodeAt(0) > 255 ? 2 : 1; return s + ' '.repeat(Math.max(0, n - w)); };
 let fail = 0;
