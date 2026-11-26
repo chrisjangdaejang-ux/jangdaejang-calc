@@ -191,8 +191,8 @@
 .t3-tabs button{flex:1;font:inherit;font-size:14.5px;font-weight:800;min-height:44px;border:0;border-radius:9px;background:none;color:var(--sub2);cursor:pointer;line-height:1.25;padding:2px 4px}
 .t3-tabs button[aria-selected="true"]{background:#fff;color:var(--blue);box-shadow:0 1px 4px rgba(0,0,0,.1)}
 .t3-tabs button small{display:block;font-size:12.5px;font-weight:700;color:var(--sub3)}
-.t3-rg{display:flex;gap:6px;padding:10px 16px 0}.t3-rg[hidden]{display:none}
-.t3-rg button{font:inherit;font-size:14px;font-weight:700;min-height:44px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--sub2);cursor:pointer}
+.t3-rg{display:flex;gap:6px;padding:10px 16px 2px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.t3-rg::-webkit-scrollbar{display:none}.t3-rg[hidden]{display:none}
+.t3-rg button{flex:none;white-space:nowrap;font:inherit;font-size:14px;font-weight:700;min-height:44px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--sub2);cursor:pointer}
 .t3-rg button[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-l);color:var(--blue)}
 .t3-body{padding:8px 16px 14px;min-height:120px}
 .t3-why{margin:4px 0 6px;font-size:13.5px;color:var(--sub2);line-height:1.5;background:var(--gray2);border-radius:10px;padding:8px 10px}
@@ -576,10 +576,17 @@ addEventListener('DOMContentLoaded', () => {
     K = k;
     $('t3Tabs').innerHTML = TABS.map(([id, t, s]) => `<button type="button" role="tab" id="t3-${id}" aria-selected="${id === k}" tabindex="${id === k ? 0 : -1}">${t}<small>${s}</small></button>`).join('');
     $('t3Body').setAttribute('aria-labelledby', 't3-' + k);
-    const sid = myRg(), showRg = k !== 'am' && T && T.by && T.by[sid];
+    /* 지역 단추: 전국 → 홈에서 고른 내 지역 → 오늘 거래가 있는 나머지 시·도(거래 많은 순). 가로로 밀어서 봐요 */
+    const by = (T && T.by) || {}, mine = myRg();
+    const rgs = Object.keys(by).filter(s => s !== 'all' && /^s\d{2}$/.test(s) && shortOf(s) && (by[s].n || 0) > 0)
+      .sort((a, b) => (a === mine ? -1 : b === mine ? 1 : 0) || (by[b].n || 0) - (by[a].n || 0) || shortOf(a).localeCompare(shortOf(b), 'ko'));
+    const showRg = k !== 'am' && rgs.length > 0;
     $('t3Rg').hidden = !showRg;
-    if (showRg) $('t3Rg').innerHTML = [['all', '전국'], [sid, shortOf(sid)]].map(([v, t]) => `<button type="button" data-rg="${v}" aria-pressed="${RG === v}">${esc(t)}</button>`).join('');
-    else RG = 'all';
+    if (showRg){
+      if (RG !== 'all' && !rgs.includes(RG)) RG = 'all';
+      $('t3Rg').innerHTML = [['all', '전국']].concat(rgs.map(s => [s, shortOf(s) + ' ' + (by[s].n || 0) + '건'])).map(([v, t]) => `<button type="button" data-rg="${v}" aria-pressed="${RG === v}">${esc(t)}</button>`).join('');
+      const on = $('t3Rg').querySelector('[aria-pressed="true"]'); if (on && on.scrollIntoView && RG !== 'all') on.scrollIntoView({block: 'nearest', inline: 'center'});
+    } else RG = 'all';
     const td = today();
     $('t3At').textContent = k === 'am' ? (M ? TD.asOf(M.at || M.date, td) : '') : (T ? TD.asOf(T.at, td) : '');
     const msg = why && P.why === 'empty' && k === P.show ? `<p class="t3-why">${{day: '오늘 새로 올라온 거래가 아직 없어서', pm: '오늘 신고가·큰 하락이 아직 없어서', am: '아침 브리핑 자료가 아직 없어서'}[P.want]} ${{am: '아침 브리핑', day: '오늘 새로 신고된 거래', pm: '신고가·큰 하락 TOP'}[P.show]}을 먼저 보여 드려요.</p>` : '';
