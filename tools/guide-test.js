@@ -343,6 +343,92 @@ check('운영자 화면 solve/admin/', fs.existsSync(path.join(ROOT, 'solve/admi
   check('화면: 즉답 카드·예시 표시·내 조건으로 정확히 보기·만족도', /instHtml/.test(read('assets/guide.js')) && /예시로 먼저/.test(read('assets/guide.js')) && /내 조건으로 정확히 보기/.test(read('assets/guide.js')) && /gdFb/.test(read('assets/guide.js')));
   check('화면: 미리 불러오기(엔진·자료·서울 단지 목록)', /function warm\(\)/.test(read('assets/guide.js')) && /requestIdleCallback/.test(read('assets/guide.js')));
 }
+
+/* ---------- ⑦ 시나리오 전수 점검(질문 3개씩: 바로 답하는가 · 답 모양 · 화면과 같은 계산 · 다음 단계 링크) ---------- */
+{
+  const RC = require('../assets/rent-core.js'), KK = require('../assets/kk-core.js'), CAL = require('../assets/cal-core.js');
+  const KD = JSON.parse(read('data/kkang.json'));
+  const IXa = { months: ['202610'], sgg: { '11710': { name: '송파구', sido: '서울특별시', s: Array(24).fill(5000).concat(Array(12).fill(6000)), c: Array(36).fill(10), r: { jr: 50.2 } } } };
+  const EA = { L, T, H, CY, ADJ, RD, SALE, RC, KK, kkData: KD, today: '2026-11-26', IX: IXa, cyNotices: NOTI, cyRows: rows };
+  const CTXa = Object.assign({}, CTX, { today: '2026-11-26' });
+  const FACT = { apt: '헬리오시티', band: '84㎡대', price: 150000, at: '202610', range: { lo: 140000, hi: 160000, months: 12 } };
+  const DJ = { sd: 's00', code: '11710', dong: '가락동', jibun: '913', apt: '헬리오시티' };
+  /* 원 = 금액, 일 = 날짜, 곳 = 목록, 점 = 점수 · 마지막 칸: 기억·단지 값(문장 밖에서 아는 값) */
+  const AUD = {
+    sell_when: [['15억에 산 송파 집 29억 되면 언제 팔아야', /원/], ['2019.6.20에 15억에 산 송파 집 29억 되면 언제 팔까', /일부터|오늘/, { rs: '2019-06-20' }], ['우리집 언제 팔아야 해요', /원/, { danji: DJ, facts: FACT, acq: '2020-01-10', acqp: 90000, region: { code: '11710', name: '송파구', short: '서울' } }]],
+    multi_order: ['집 세 채 매도 순서', '다주택 어느 집부터 팔아요', '2주택 양도세 순서'].map(q => [q, /20%p|→/]),
+    cy_where: [['청약 가점 64점 서울 당첨 가능한 단지', /곳/], ['가점 50점인데 청약 어디 넣죠', /곳/], ['서울 84㎡ 청약 가점 70점 당첨될까', /곳/]],
+    rental_biz: [['장기일반 임대사업자 2019.3.1 등록 자동말소', /일/, { rkind: 'y', rstate: 'auto' }], ['단기 임대사업자 2018.5.1 등록 말소되면', /일/, { rkind: 'n', rstate: 'auto' }], ['임대사업자 자진말소 고민', null]],
+    gift_when: [['3억 아파트 아들에게 증여하면', /원/], ['배우자에게 10억 집 증여 세금', /원/], ['딸에게 5억 증여 언제', /원/]],
+    buy_when: [['송파 집 지금 사도 될까', /흐름|원/], ['현금 5억 연봉 1억 송파 집 언제 사', /원/], ['무주택인데 매수 시기', null]],
+    budget: [['3억 있는데 얼마짜리 집 살 수 있어요', /원/], ['현금 5억 연봉 8천 송파 살 수 있는 집', /원/], ['모은 돈 2억으로 살 수 있을까', /원/]],
+    loan_limit: [['10억 집 연봉 8천 대출 얼마', /원/], ['송파 아파트 대출 얼마까지', /원/], ['12억 집 주담대 한도', /원/]],
+    special_loan: [['연봉 7천 신혼 대출 얼마', /소득/], ['신생아 특례 연봉 1억 3천 5억 집', /원|맞아요|없어요/], ['디딤돌 연봉 5천 3억 집', /원|맞아요|없어요/]],
+    first_home: [['생애최초 5억 집 혜택', /원/], ['첫 집 9억 취득세 감면', /원/], ['생애 첫 주택 12억 넘으면', null]],
+    buy_cost: [['8억 집 살 때 부대비용', /원/], ['6억 아파트 총비용', /원/], ['10억 집값 말고 드는 돈', /원/]],
+    acq_tax: [['6억 아파트 취득세', /원/], ['9억 집 취득세 2주택', /원/], ['15억 취득세 3주택', /원/]],
+    exempt: [['2024.3.2에 산 송파 집 비과세 언제', /일/], ['비과세 요건 2023.1.5 취득', /일/], ['비과세 언제 돼요', /일/, { acq: '2025-05-01' }]],
+    temp2: [['일시적 2주택 새 집 2026.9.1 잔금 언제까지 팔아야', /일/, { acq: '2020-01-01' }], ['종전주택 처분기한 2025.3.1 새집', /일/, { acq: '2019-01-01' }], ['일시적 2주택 기한', /일/, { acq: '2020-01-01', newd: '2026-02-01' }]],
+    prop_tax: [['공시가 15억 종부세 얼마', /원/], ['공시가격 6억 재산세', /원/], ['보유세 공시가 20억', /원/]],
+    transfer_tax: [['10억에 산 집 15억에 팔면 양도세', /원/], ['양도세 얼마 5억에 사서 9억', /원/], ['양도소득세 계산 2018.1.1 취득', null]],
+    jeonse_renew: [['전세 만기 2월인데 재계약', /일/], ['전세 만기 2027.5.31 갱신 언제', /일/], ['계약갱신 요구 내년 3월 만기', /일/]],
+    rent_raise: [['보증금 3억인데 집주인이 올려 달래요', /원/], ['전세금 인상 5억 보증금 얼마까지', /원/], ['월세 올린다는데 보증금 1억', /원/]],
+    deposit_safe: [['보증금 2억 깡통전세 걱정', /원/], ['전세보증보험 가입 보증금 3억', /원/], ['헬리오시티 보증금 12억 깡통전세', /원|%/, { htype: 'apt', danji: DJ, facts: FACT }]],
+    contract_check: [['보증금 1억 5천 최우선변제', /원|대상/], ['서울 보증금 2억 소액임차인', /원|대상/], ['전입신고 확정일자 보증금 8천', /원|대상/]],
+    wolse_conv: [['전세 3억 월세 보증금 5천 월세 100 비교', /%|원/, { jrate: 4 }], ['반전세 전세 4억 vs 보증금 1억 월세 120', /%|원/], ['전세와 월세 뭐가 나아요', null]],
+    rent_to_buy: [['전세 보증금 3억 연봉 7천 집 사려면', /원/], ['보증금 2억 빼서 매수 연봉 6천', /원/], ['전세 대신 매수 고민 보증금 4억 연봉 9천', /원/]],
+    move_time: [['전세 3억 이사 날짜 2027.2.27 준비', /일/], ['매매 9억 이사 2027.3.1 할 일', /일/], ['이사 준비 체크리스트', null]],
+    broker_fee: [['전세 3억 복비 얼마', /원/], ['10억 매매 중개보수', /원/], ['월세 복비 보증금 1천 월세 50', /원/]],
+    high_bargain: [['헬리오시티 13억 5천 급매인가요', /%|급매|원/, { danji: DJ, facts: FACT }], ['신고가 맞나요 17억', /원|최고가/, { danji: DJ, facts: FACT }], ['이 가격 시세보다 싼가요', /원/, { danji: DJ, facts: FACT }]],
+    school_move: [['송파 학군 보고 이사', /원/], ['송파 초품아 전세 4억', /원|평/], ['학군지 이사 고민', null]],
+    commute: [['송파 출퇴근 편한 곳', /원/], ['회사 근처 송파 전세 3억', /원|평/], ['출퇴근 편한 집', null]],
+    redev_stage: [['관리처분 받은 재개발 구역', /단계/], ['조합설립인가 재건축 다음은', /단계/], ['사업시행인가 났어요 입주권', /단계/]],
+    switch_order: [['갈아타기 송파 12억 집 연봉 1억 먼저 팔까', /원/], ['선매도 선매수 10억 집 연봉 8천', /원/], ['사고팔 순서 고민', null]]
+  };
+  let nAns = 0, nQ = 0; const miss = [];
+  for (const sc0 of SC.sc) {
+    const L0 = AUD[sc0.id]; check(`점검표: ${sc0.id} 질문 3개 이상`, L0 && L0.length >= 3);
+    for (const [q, want, mem] of L0 || []) {
+      nQ++;
+      const r = G.classify(q, DATA, CTXa);
+      const ok1 = r.top && r.top.id === sc0.id; if (!ok1) { miss.push(`${sc0.id} 분류 "${q}" → ${r.top && r.top.id}`); continue; }
+      if (r.slots.region) r.slots.region = Object.assign({ short: '서울' }, r.slots.region);
+      const ap = G.apply(sc0, r.slots, mem || {});
+      if (mem && mem.facts) ap.a.facts = mem.facts;
+      if (ap.a.facts && ['salep', 'kb', 'value'].some(k => (sc0.ask || []).indexOf(k) >= 0)) ['salep', 'kb', 'value'].forEach(k => { if ((sc0.ask || []).indexOf(k) >= 0 && ap.a[k] == null) ap.a[k] = ap.a.facts.price; });
+      const Q = G.quick(sc0, ap.a, EA);
+      if (!want) { check(`점검: ${sc0.id} "${q}" — 값이 없으면 되묻기(지어낸 숫자 없음)`, !Q || !Q.card || Q.card.ex || Q.exact, Q); continue; }
+      const txt = Q && Q.card ? Q.card.head + ' ' + JSON.stringify(Q.card.nums || []) + JSON.stringify(Q.card.tables || []) : '';
+      if (Q && Q.card && want.test(txt)) nAns++; else miss.push(`${sc0.id} 답 "${q}" → ${Q && Q.card ? Q.card.head : JSON.stringify(Q)}`);
+      if (Q && Q.card) check(`점검: ${sc0.id} 권유 문구·NaN 없음 "${q}"`, !G.BAD.test(txt) && !/NaN|undefined/.test(txt), txt.slice(0, 200));
+    }
+  }
+  miss.forEach(m => console.log('    점검 빗나감', m));
+  console.log(`  시나리오 전수 점검: 숫자 답이 필요한 질문 ${nAns}개 바로 답 · 빗나감 ${miss.length}개 · 전체 질문 ${nQ}개`);
+  check('전수 점검: 빗나감 없음', miss.length === 0, miss);
+  /* 화면과 같은 계산 */
+  const ex = card('exempt', { region: { code: '11710', name: '송파구', short: '서울' }, acq: '2025-10-20', rs: '2025-11-01' });
+  const ce = CAL.events([{ key: '11710|가락동|913|헬리오시티|84㎡대', name: 'x', cal: { t: 'own', acq: '2025-10-20', adj: 'y', rs: '2025-11-01' } }], '2026-11-26', { pro: true, n: 1 });
+  check('같은 계산: 비과세 보유·거주 2년 = 내 부동산 달력(cal-core hold2·live2)', ce.find(e => e.k === 'hold2').d === '2027-10-20' && ce.find(e => e.k === 'live2').d === '2027-11-01' && /2027년 10월 20일/.test(ex.nums[0].v) && /2027년 11월 1일/.test(ex.nums[1].v), [ex.nums, ce.filter(e => /2$/.test(e.k)).map(e => e.d)]);
+  const jr = card('jeonse_renew', { end: '2027-05-31', dep: 50000 });
+  const cj = CAL.events([{ key: '11710|가락동|913|헬리오시티|84㎡대', name: 'x', cal: { t: 'jeonse', cs: '2025-05-31', ce: '2027-05-31' } }], '2026-11-26', { n: 1 });
+  check('같은 계산: 갱신 요구 기간 = 내 부동산 달력(cal-core renewO·renewC)', jr.nums[0].v === `${G.ko(cj.find(e => e.k === 'renewO').d)} ~ ${G.ko(cj.find(e => e.k === 'renewC').d)}`, [jr.nums[0].v, cj.filter(e => /renew/.test(e.k)).map(e => e.d)]);
+  const wc = G.solve(scOf('wolse_conv'), { dep: 30000, wdep: 5000, wrent: 100, jrate: 4 }, EA), rc = RC.compare({ jeon: 30000, wDep: 5000, wRent: 100, rate: 4 });
+  check('같은 계산: 전세 vs 월세 = 전월세 화면(rent-core compare)', wc.nums[1].v === G.won(Math.round(rc.jCost * 10) / 10) && Math.abs(rc.be - 4.8) < 1e-9, [wc.nums, rc]);
+  const bf = G.brokerFee('sale', 80000), cd = L.costDetail(80000, L.ctx({ g: 'reg', own: 'none' }), false);
+  check('같은 계산: 매매 중개보수 = 대출·내 집 마련 계산(loan-core costDetail)', Math.abs(bf.fee - cd.brokerBase) < 1e-9, [bf, cd.brokerBase]);
+  const ds = G.solve(scOf('deposit_safe'), { htype: 'apt', dep: 120000, kb: 150000, senior: 0, danji: DJ, facts: FACT }, EA);
+  const kk = KK.estimate({ kk: KD, code: '11710', dep: 120000, senior: 0, price: 150000 });
+  check('같은 계산: 아파트 단지를 고르면 깡통전세 확률 = 전월세 화면(kk-core estimate)', ds.ref && ds.ref[0] && ds.ref[0].v === KK.pText(kk.p) && /참고/.test(ds.ref[0].k), ds.ref);
+  /* 다음 단계 링크 */
+  const scj = SC.sc;
+  check('링크: 정책 대출 — 없는 #policy 대신 값 채운 대출 계산기', !JSON.stringify(scj).includes('loan/#policy') && scOf('special_loan').next[0].href === 'loan/?p={price}&g={region}&o={own}');
+  check('링크: 증여 → 넘기는 방법 4가지 비교(tax/transfer)', scOf('gift_when').next.some(n => n.href === 'tax/transfer/'));
+  check('링크: 갈아타기 계산기는 고른 단지로 채워서({switch})', scOf('sell_when').next[0].href === '{switch}' && /\{switch\}/.test(read('assets/guide.js')) && /switch\/' \+ \(d && d\.sd \? `\?sd=/.test(read('assets/guide.js')));
+  check('링크: 양도세 계산기에 거주 개월(rm)·취득세에 주택 수(n)·생애최초(fh)까지', /P\.push\('rm='/.test(read('assets/guide.js')) && /P\.push\('n='/.test(read('assets/guide.js')) && /first_home'\) P\.push\('fh=1'\)/.test(read('assets/guide.js')));
+  check('질문: 월세가 아니면 월세 금액은 안 물음(cond)', scOf('broker_fee').cond.wrent[0] === 'deal' && /condOk/.test(read('assets/guide.js')));
+  check('즉답 링크도 같은 주소 규칙(hrefOf)', /hrefOf\(nx, a, sc\.id\)/.test(read('assets/guide.js')));
+}
 /* 서버 만족도 */
 {
   const SV = require('./gs-harness')({ now: '2026-11-30T07:10:00+09:00' });

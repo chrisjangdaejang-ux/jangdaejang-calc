@@ -69,7 +69,10 @@
   /** 금액 앞뒤 말로 어떤 금액인지: 연소득·보증금·월세·현금·공시가격·산 값·팔 값·집값 */
   function moneyRole(raw, m) {
     const before = raw.slice(Math.max(0, m.i - 14), m.i).replace(/\s/g, ''), after = raw.slice(m.i + m.s.length, m.i + m.s.length + 8).replace(/\s/g, '');
-    if (/(연봉|연소득|소득|월급|버는|벌어|수입)/.test(before) || /^(연봉|소득|벌)/.test(after)) return 'income';
+    if (/월세보증금\S{0,2}$/.test(before) || /(반전세|월세)\S{0,3}보증금\S{0,2}$/.test(before)) return 'wdep';
+    if (/(보증금|전세금|전세)\S{0,2}$/.test(before)) return 'dep';                  // 바로 앞 말이 먼저('보증금 4억 연봉 9천' 의 4억은 보증금)
+    if (/(연봉|연소득|소득|월급|버는|벌어|수입)\S{0,3}$/.test(before) || /^(연봉|소득|벌)/.test(after) && !/(보증금|전세|월세)/.test(before.slice(-4))) return 'income';
+    if (/(연봉|연소득|소득|월급|수입)/.test(before)) return 'income';
     if (/월세\S{0,3}$/.test(before) && !/보증금\S{0,2}$/.test(before)) return 'wrent';
     if (/(공시)/.test(before)) return 'pub';
     if (/(취득가|샀|산값|매수가|분양가|분양받)/.test(before) || /^(에샀|에산|주고샀|주고산|에매수|에분양|에사서|에구입)/.test(after)) return 'acqp';
@@ -84,7 +87,8 @@
       ctx.sgg: [{code, name, sido, short}] · ctx.today 'YYYY-MM-DD'(달만 쓴 날짜를 다가오는 달로) */
   function extract(text, ctx) {
     const raw = String(text || '').replace(/\s+/g, ' ').trim(), flat = raw.replace(/\s/g, ''), out = { money: {}, moneys: [] };
-    for (const m of moneys(raw)) { const r = moneyRole(raw, m); out.moneys.push({ v: m.v, role: r }); if (out.money[r] == null) out.money[r] = m.v; else if (r === 'price' && out.money.salep == null && out.money.acqp != null) out.money.salep = m.v; }
+    for (const m of moneys(raw)) { let r = moneyRole(raw, m); if (r === 'dep' && out.money.dep != null && out.money.wdep == null) r = 'wdep'; out.moneys.push({ v: m.v, role: r }); if (out.money[r] == null) out.money[r] = m.v; else if (r === 'price' && out.money.salep == null && out.money.acqp != null) out.money.salep = m.v; }
+    const wr = /월세\s*(\d{2,4})(?!\s*(억|천|만|%|평|㎡|\d))/.exec(raw); if (wr && out.money.wrent == null) out.money.wrent = +wr[1];   // '월세 100' = 100만 원
     /* '15억 집이 29억 되면' 처럼 집값이 둘이면 앞은 산 값, 뒤는 팔 값 */
     const pr = out.moneys.filter(x => x.role === 'price');
     if (pr.length >= 2 && out.money.acqp == null && out.money.salep == null && /(팔|매도|되면|오르)/.test(flat)) { out.money.acqp = pr[0].v; out.money.salep = pr[1].v; delete out.money.price; }
@@ -140,14 +144,15 @@
     const a = Object.assign({}, a0 || {}), from = {}, asks = sc.ask || [], has = k => asks.indexOf(k) >= 0, F = '적어 주신 문장';
     const put = (k, v) => { if (v == null || v === '' || !has(k)) return false; a[k] = v; from[k] = F; return true; };
     const M = sl.money || {};
-    put('income', M.income); put('wrent', M.wrent); put('pub', M.pub); put('acqp', M.acqp);
+    put('income', M.income); put('wrent', M.wrent);
+    if (M.wdep != null && !put('wdep', M.wdep)) { if (M.dep == null) M.dep = M.wdep; } put('pub', M.pub); put('acqp', M.acqp);
     if (M.salep != null && !put('salep', M.salep)) put('price', M.salep);
     if (M.cash != null && !put('cash', M.cash)) put('price', M.cash) || put('amt', M.cash);
     if (M.dep != null && !put('dep', M.dep)) put('amt', M.dep) || put('cash', M.dep);
     if (M.price != null) put('price', M.price) || put('salep', M.price) || put('value', M.price) || put('amt', M.price) || put('newprice', M.price) || put('pub', M.price) || put('dep', M.price) || put('cash', M.price);
     if (sl.region) put('region', sl.region) || put('work', sl.region);
     if (sl.sido) put('csido', sl.sido);
-    if (sl.date) ['acq', 'end', 'mdate', 'newd', 'regd'].some(k => put(k, sl.date));
+    if (sl.date) (/(새집|신규|잔금|새아파트)/.test(sl.raw || '') ? ['newd', 'mdate', 'acq', 'end', 'regd'] : ['acq', 'end', 'mdate', 'newd', 'regd']).some(k => put(k, sl.date));
     if (sl.endMonth && has('end') && !a.end) { a.endMonth = sl.endMonth; from.endMonth = F; }
     if (sl.myscore != null && sc.id === 'cy_where') { a.myscore = sl.myscore; from.myscore = F; }
     put('rel', sl.rel); put('deal', sl.deal); put('stage', sl.stage);
@@ -667,8 +672,14 @@
       { k: '이 조건에서 보험 되는 최대 보증금', v: won(r.maxDep), s: `주택가격 ${won(pr)}(${r.by === 'kb' ? '시세' : '공시가격 × 140%'}) × 90% − 선순위 채권` }
     ];
     if (ratio != null) nums.push({ k: '집값 대비 보증금 + 빚', v: pct(ratio), s: ratio >= 0.9 ? '90% 이상 — 깡통전세 위험 신호예요' : ratio >= 0.8 ? '80% 이상 — 조심해야 하는 수준이에요' : '80% 아래예요' });
+    const ref = [];
+    /* 아파트 단지를 골랐으면: 전월세 화면과 같은 깡통전세 확률(assets/kk-core.js estimate — 2년 뒤 시세가 보증금 + 선순위보다 낮을 확률, 과거 계약으로 확인) */
+    if (E.KK && E.kkData && a.danji && a.facts && a.facts.price && a.htype === 'apt') {
+      const k = E.KK.estimate({ kk: E.kkData, code: a.danji.code, dep: +a.dep, senior: +a.senior || 0, price: a.facts.price });
+      if (!k.miss) ref.push({ k: `깡통전세 확률(2년 뒤)${k.ref ? ' — 참고' : ' — 과거 결과로 확인됨'}`, v: E.KK.pText(k.p), s: `${a.facts.apt} ${a.facts.band} 시세 ${won(a.facts.price)} 기준 · 과거 비슷한 계약 ${k.sim.n.toLocaleString()}건 중 ${k.sim.k.toLocaleString()}건이 2년 뒤 시세가 보증금보다 낮아졌어요` });
+    }
     return { head: r.ok ? `보증보험 가입이 가능해 보여요 — 예상 보증료 2년 ${r.fee != null ? wonW(r.fee) : ''}` : `지금 조건으로는 보증보험 가입이 어려워요 — 최대 보증금 ${won(r.maxDep)}`,
-      nums, warn: ['계약 전 등기부등본(근저당·압류)과 집주인 세금 체납 여부를 꼭 확인하세요.', '잔금 날 전입신고·확정일자를 함께 하고, 그날 집주인이 대출을 더 받지 않는다는 특약을 넣어 두세요.', '가입 심사는 HUG가 해요. 이 결과는 공식 기준으로 미리 본 값이에요.'],
+      nums, ref, warn: ['계약 전 등기부등본(근저당·압류)과 집주인 세금 체납 여부를 꼭 확인하세요.', '잔금 날 전입신고·확정일자를 함께 하고, 그날 집주인이 대출을 더 받지 않는다는 특약을 넣어 두세요.', '가입 심사는 HUG가 해요. 이 결과는 공식 기준으로 미리 본 값이에요.'],
       note: `${({ apt: '아파트', offi: '오피스텔', villa: '빌라', house: '단독·다가구' })[a.htype]} · 보증금 ${won(a.dep)}${a.senior ? ` · 선순위 ${won(a.senior)}` : ''}`, src: ['hug', 'lh3'] };
   };
 
@@ -684,11 +695,13 @@
   S.wolseConv = (a, E) => {
     const miss = need(a, ['dep', 'wdep', 'wrent']); if (miss.length) return { need: miss };
     const J = +a.dep, D = +a.wdep, W = +a.wrent; if (!(J > D)) return { need: ['wdep'] };
-    const gap = J - D, be = W * 12 / gap * 100, rate = a.jrate > 0 ? +a.jrate : null;
+    const rate = a.jrate > 0 ? +a.jrate : null;
+    const RC = E.RC && E.RC.compare ? E.RC.compare({ jeon: J, wDep: D, wRent: W, rate: rate == null ? '' : rate }) : null;   // 전월세 화면(jeonse/)과 같은 계산(assets/rent-core.js compare)
+    const gap = RC ? RC.gap : J - D, be = RC ? RC.be : W * 12 / gap * 100;
     const nums = [{ k: '손익이 같아지는 금리(전환율)', v: `연 ${Math.round(be * 100) / 100}%`, s: `월세 ${won(W)} × 12 ÷ (전세 ${won(J)} − 월세 보증금 ${won(D)})` }];
     let head = `전세대출 금리가 연 ${Math.round(be * 100) / 100}%보다 낮으면 전세가 덜 들어요`;
     if (rate != null) {
-      const jc = gap * rate / 100 / 12, diff = W - jc;
+      const jc = RC && RC.jCost != null ? RC.jCost : gap * rate / 100 / 12, diff = RC && RC.diff != null ? RC.diff : W - jc;
       nums.push({ k: '전세로 갈 때 매달 이자', v: won(Math.round(jc * 10) / 10), s: `더 내는 보증금 ${won(gap)} × 연 ${rate}% ÷ 12` });
       nums.push({ k: '매달 차이', v: won(Math.round(Math.abs(diff) * 10) / 10), s: diff > 0 ? '전세가 덜 들어요' : diff < 0 ? '월세가 덜 들어요' : '같아요' });
       head = Math.abs(diff) < 0.5 ? '두 방법의 매달 비용이 거의 같아요' : `${diff > 0 ? '전세' : '월세'}가 한 달에 ${won(Math.round(Math.abs(diff) * 10) / 10)} 덜 들어요`;
@@ -848,6 +861,7 @@
       nums: [{ k: '요구할 수 있는 기간', v: `${ko(from)} ~ ${ko(to)}`, s: t < from ? `${diffD(t, from)}일 뒤부터` : t <= to ? '지금 요구할 수 있어요' : '기간이 지났어요' }, a.dep > 0 ? { k: '올릴 수 있는 최대', v: won(Math.floor(a.dep * 0.05)), s: '보증금의 5%' } : { k: '올릴 수 있는 최대', v: '보증금의 5%', s: '주택임대차보호법 제7조' }],
       warn: ['만기일을 넣으면 정확한 마감일과 알림까지 맞춰 드려요.'], src: ['renew', 'lh7'] };
   };
+  Q.buyCost = (a, E) => (a.price > 0 && !a.own) ? Object.assign(S.buyCost(Object.assign({}, a, { own: 'none' }), E), { ex: '보유 주택 수를 모르셔서 무주택 예시로 계산했어요', need: ['own'] }) : null;
   Q.giftWhen = (a, E) => (a.value > 0 && !a.rel) ? Object.assign(S.giftWhen(Object.assign({}, a, { rel: 'child' }), E), { ex: '받는 분을 모르셔서 성년 자녀 예시로 계산했어요', need: ['rel'] }) : null;
   Q.acqTax = (a, E) => (a.price > 0 && !a.houses) ? Object.assign(S.acqTax(Object.assign({}, a, { houses: '1' }), E), { ex: '주택 수를 모르셔서 1주택 예시로 계산했어요', need: ['houses'] }) : null;
   Q.propTax = (a, E) => (a.pub > 0 && !a.one) ? Object.assign(S.propTax(Object.assign({}, a, { one: 'y' }), E), { ex: '1세대 1주택으로 가정한 예시예요', need: ['one'] }) : null;
