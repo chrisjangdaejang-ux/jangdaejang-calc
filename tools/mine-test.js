@@ -204,6 +204,22 @@ check('시트: 최고가 상자(금액·연월·지금 시세 대비)', [/35억�
 const hc = PS.histChart(hs, 400);
 check('시트: 전체 기간 차트 두 선(매매만 있으면 전세 선 비어 있음)', (hc.match(/<path /g) || []).length, 2, '');
 check('시트: 자료 기간 문구는 실제 수집 시작 달', PS.histNote({ hm: '200601', cover: '200601', rcover: '201101' }).startsWith('매매 2006년 1월부터 · 전세 2011년 1월부터'), true, '"2006년 1월부터"');
+/* 2010년 이전 참고 구간(엔진 hist.mf = 예측 모델 자료 시작 달, 2026-11-26) */
+const HN = PS.histNote({ hm: '200601', cover: '200601', rcover: '201101', mf: '201001' });
+check('참고: 자료가 mf 보다 이르면 참고 기록 문장', HN.endsWith('2010년 이전 시세는 지난 흐름을 보여 드리는 참고 기록이에요(그래프에서 회색 칸). 미래가치 점수는 2010년 1월 이후 자료로만 계산해요.'), true, HN);
+check('참고: 이 평형 첫 시세가 mf 이후면 참고 문장 없음', /참고 기록/.test(PS.histNote({ hm: '200601', cover: '200601', mf: '201001' }, { from: '201205' })), false, '');
+check('참고: mf 없으면(배포 전 자료) 참고 문장 없음', /참고 기록/.test(PS.histNote({ hm: '200601', cover: '200601' })), false, '');
+check('참고 칸 길이 = mf 앞 달 수', [PS.refCut(['200911', '200912', '201001', '201002'], '201001'), PS.refCut(['201001'], '201001'), PS.refCut(['200912'], ''), PS.refCut(['200912'], 'x')], [2, 0, 0, 0], '');
+const ht6 = { months: ['200911', '200912', '201001', '201002'], s: [30000, 31000, 32000, 33000], j: [0, 0, 0, 0], jr: [0, 0, 0, 0] };
+const c6 = PS.histChart(ht6, 400, { ref: '201001' }), c6n = PS.histChart(ht6, 400, {});
+check('참고: 그래프 회색 칸 + "참고" 글씨(mf 있을 때만)', [/<rect class="ref"[^>]*fill="#F2F4F6"\/><text[^>]*>참고<\/text>/.test(c6), /class="ref"/.test(c6n)], [true, false], '');
+check('참고: 2010년 이후만 보이는 기간이면 회색 칸 없음', /class="ref"/.test(PS.histChart(M.histWindow(ht6, 2), 400, { ref: '201001' })), false, '');
+const tip6 = PS.histSpec(ht6, { ref: '201001', tip: true }).tip;
+check('참고: 말풍선 날짜에 "참고 기록"(2010년 이전 달만)', [tip6(0).head, tip6(2).head], ['2009.11 · 참고 기록', '2010.01'], '');
+const hR = M.highs(Object.assign(hu4.slice(), { 12: { f: '200603', hi: [350000, 20070415, 84.6] } }), { hm: '200601', cover: '200601', mf: '201001' }, 0);
+check('참고: 역대 최고가가 2010년 이전 기록이면 참고 안내', [hR.ref, hR.note], [true, '첫 거래(2006년 3월) 이후 수집 자료 기준 · 2010년 이전 기록이라 참고로 보여 드려요'], '');
+check('참고: 최고가 상자에 안내 표시', /2010년 이전 기록이라 참고로 보여 드려요/.test(PS.highsHtml(hR)), true, '');
+check('참고: 2010년 이후 최고가는 안내 없음', M.highs(hu4, { hm: '200601', cover: '200601', mf: '201001' }, 315000).ref, false, '');
 
 // 프리미엄 리포트 단지 키 = assets/pay.js JDJ_PAY.keyOf
 const ctx = { window: {}, localStorage: { getItem: () => null, setItem() {} }, document: { readyState: 'loading', addEventListener() {} }, console };

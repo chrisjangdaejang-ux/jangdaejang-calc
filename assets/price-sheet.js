@@ -198,7 +198,10 @@
     /* dash = 비교선(구 전체 등): 회색 점선 한 줄, 점·끝점 없음 */
     const dashP = l => { let d = '', on = false; l.a.forEach((v, i) => { if (v > 0) { d += (on ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1); on = true; } else on = false; });
       return d ? `<path d="${d}" fill="none" stroke="${l.c}" stroke-width="${l.w || 1.8}" stroke-dasharray="5 3" class="cmp"/>` : ''; };
-    const svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(sp.aria || '추이 그래프')}">${grid}${sp.lines.map(l => l.dash ? dashP(l) : `${linePaths(l.a, x, y, l.c, l.w)}${dots(l.a, l.c, y)}${last(l.a, l.c)}`).join('')}${subSvg}${xl}${over}</svg>`;
+    /* 참고 구간(sp.ref = {n: 앞쪽 달 수, label}): 예측에 쓰지 않는 옛 기록(2010년 이전 매매)을 연한 회색 칸 + '참고' 글씨로 */
+    const rn = sp.ref && sp.ref.n > 0 && n > 1 ? Math.min(sp.ref.n, n - 1) : 0;
+    const refSvg = rn ? `<rect class="ref" x="${L}" y="${T}" width="${(x(rn) - L).toFixed(1)}" height="${PH}" fill="#F2F4F6"/><text x="${L + 4}" y="${T + fs}" font-size="${fs - 1}" fill="#6B7684">${esc(sp.ref.label || '참고')}</text>` : '';
+    const svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(sp.aria || '추이 그래프')}">${refSvg}${grid}${sp.lines.map(l => l.dash ? dashP(l) : `${linePaths(l.a, x, y, l.c, l.w)}${dots(l.a, l.c, y)}${last(l.a, l.c)}`).join('')}${subSvg}${xl}${over}</svg>`;
     return { html: svg, model: { W, H, L, R, n, x, pts, top: T, months } };
   }
   /** 말풍선 내용 만들기(공용). o = {months, rows:[{k, sk(요약 줄용 짧은 이름), a, c, fmt, ex}], gap:[매매 a, 전세 a] (선택), cnt: Map(연월 → 건수, 선택), cntK: '매매',
@@ -207,7 +210,7 @@
   function tipFn(o) {
     const m = M(), fm = o.fmt || m.won;
     return i => {
-      const ym = o.months[i], out = { head: m.ymLabel(ym), rows: [], extra: [], gapOn: !!o.gap, vsOn: !!o.vs, cntOn: !!o.cnt, cntK: o.cntK || '' }, say = [out.head];
+      const ym = o.months[i], out = { head: m.ymLabel(ym) + (o.ref && String(ym) < String(o.ref) ? ' · 참고 기록' : ''), rows: [], extra: [], gapOn: !!o.gap, vsOn: !!o.vs, cntOn: !!o.cnt, cntK: o.cntK || '' }, say = [out.head];
       o.rows.forEach(r => {
         let p = m.valAt(r.a, i); const f = r.fmt || fm, mid = p && !p.real;
         if (o.noFill && mid) p = null;                       // noFill: 거래 없는 달은 이은 값('약 …')을 보여 주지 않고 '거래 없음'
@@ -239,11 +242,11 @@
     };
   }
   /** 전체 기간 매매·전세(histSeries 결과)용 말풍선. cnt = Map(연월 → 매매 건수) 선택 */
-  function histTip(t, cnt, gu, noFill) {
+  function histTip(t, cnt, gu, noFill, ref) {
     const rows = [{ k: '매매', a: t.s, c: '#2560E8' }], two = t.j.some(v => v > 0);
     if (two) rows.push({ k: '전세', a: t.j, c: '#14A06B' });
     if (gu) rows.push({ k: `${gu.name} 전체(같은 면적 환산)`, sk: `${gu.name} 전체`, a: gu.a, c: GRAY });
-    return tipFn({ months: t.months, rows, gap: two ? [t.s, t.j] : null, cnt, vs: gu ? { a: t.s, b: gu.a, me: gu.me } : null, noFill });
+    return tipFn({ months: t.months, rows, gap: two ? [t.s, t.j] : null, cnt, vs: gu ? { a: t.s, b: gu.a, me: gu.me } : null, noFill, ref });
   }
   /** 최근 3년 월별 매매 건수(u[7]) → Map(연월 → 건수) */
   function cntMap(u, months) {
@@ -335,6 +338,12 @@
       opts.sub = 아래에 전세가율 보조 그래프, opts.tip = 안내선 연결(mountHist), opts.cnt = Map(연월 → 매매 건수),
       opts.sparse = 거래가 드문 단지 안내 한 줄(기간 단추와 무관하게 전체 자료로 판단해 넘겨 줌),
       opts.gu = {name, s, months, area} 구 전체 비교선(guOf: price/h sgg 전체 기간, 없으면 index.json sgg[].s·months 를 이 평형 전용면적으로 환산, 회색 점선 — t 의 달에 맞춰 자르므로 기간 단추와 함께 움직임) */
+  /** 참고 구간 길이: months 중 ref(YYYYMM, 공개 자료 hist.mf — 예측 모델 자료 시작 달)보다 앞선 달 수. ref 없으면 0 */
+  function refCut(months, ref) {
+    if (!/^\d{6}$/.test(String(ref || '')) || !months || !months.length) return 0;
+    let k = 0; while (k < months.length && String(months[k]) < String(ref)) k++;
+    return k;
+  }
   function histSpec(t, opts) {
     opts = opts || {};
     if (opts.jr && t) { const k = t.jr.findIndex(v => v > 0); if (k > 0) t = Object.assign({}, t, { months: t.months.slice(k), jr: t.jr.slice(k), s: t.s.slice(k), j: t.j.slice(k) }); }   // 전세가율은 전세 자료가 있는 달부터
@@ -349,7 +358,9 @@
     if (opts.sub && !opts.jr && jr.some(v => v > 0)) sp.sub = { a: jr, c: '#0E7A4F', label: '전세가율' };
     if (opts.noFill) sp.noFill = true;
     if (opts.aria) sp.aria = opts.aria;
-    if (opts.tip) sp.tip = opts.jr ? tipFn({ months: t.months, rows: [{ k: '전세가율', a: jr, c: '#0E7A4F', fmt: v => Math.round(v) + '%' }], noFill: opts.noFill }) : histTip(t, opts.cnt, gu, opts.noFill);
+    const ref = refCut(t.months, opts.ref);
+    if (ref) sp.ref = { n: ref, label: '참고' };
+    if (opts.tip) sp.tip = opts.jr ? tipFn({ months: t.months, rows: [{ k: '전세가율', a: jr, c: '#0E7A4F', fmt: v => Math.round(v) + '%' }], noFill: opts.noFill }) : histTip(t, opts.cnt, gu, opts.noFill, ref ? opts.ref : '');
     return sp;
   }
   /** 구 전체 비교선 자료 {name, s, months, area}: price/h/{구}.json 의 sgg(전체 기간, 기준 달 hm)가 있으면 그것,
@@ -420,7 +431,10 @@
   /** 차트 아래 자료 기간 문구: 수집 시작 달(cover)을 실제 값으로 */
   function histNote(hist, t) {
     const m = M(), a = hist && (hist.cover || hist.hm), b = hist && (hist.rcover || hist.rm);
-    return `${a ? `매매 ${m.ymKo(a)}부터` : ''}${b ? ` · 전세 ${m.ymKo(b)}부터` : ''} 국토교통부 실거래 자료${t && t.from && a && t.from > a ? ` · 이 평형 첫 매매 시세 ${m.ymKo(t.from)}` : ''}. 각 달 값 = 그 달까지 3개월 실거래 평당가 중간값 × 전용면적 ÷ 3.3058(전세는 월세 없는 순수 전세만). 거래가 없던 기간은 점선으로 이어 표시해요.`;
+    const mf = hist && /^\d{6}$/.test(String(hist.mf || '')) ? String(hist.mf) : '', first = (t && t.from) || a;
+    const refY = mf.slice(4) === '01' ? `${mf.slice(0, 4)}년` : m.ymKo(mf);
+    const ref = mf && first && String(first) < mf ? ` ${refY} 이전 시세는 지난 흐름을 보여 드리는 참고 기록이에요(그래프에서 회색 칸). 미래가치 점수는 ${m.ymKo(mf)} 이후 자료로만 계산해요.` : '';
+    return `${a ? `매매 ${m.ymKo(a)}부터` : ''}${b ? ` · 전세 ${m.ymKo(b)}부터` : ''} 국토교통부 실거래 자료${t && t.from && a && t.from > a ? ` · 이 평형 첫 매매 시세 ${m.ymKo(t.from)}` : ''}. 각 달 값 = 그 달까지 3개월 실거래 평당가 중간값 × 전용면적 ÷ 3.3058(전세는 월세 없는 순수 전세만). 거래가 없던 기간은 점선으로 이어 표시해요.${ref}`;
   }
   /** 최고가 요약 상자 HTML (역대·최근 1년). h = M().highs 결과 */
   function highsHtml(h, cls) {
@@ -572,7 +586,7 @@
           sec.innerHTML = `<div class="jps-ch"><h4>가격 추이 (매매·전세)</h4>${spanBtns(t, span)}</div><div class="jps-hc" style="max-width:${W}px"></div>
             <div class="jps-lg"><span><i></i>매매 시세</span>${t.j.some(v => v > 0) ? '<span><i class="j"></i>전세 시세</span>' : ''}${gu ? `<span><i class="g"></i>${esc(gu.name)} 아파트 같은 면적 환산</span>` : ''}<span>${esc(u[3])} · 전용 ${u[4]}㎡ 환산</span>${w.jr.some(v => v > 0) ? '<span>아래 띠 = 전세가율(점선 = 평균)</span>' : ''}</div>
             ${gu ? `<p class="jps-note">${esc(guNote(gu, w.months[0]))}</p>` : ''}<p class="jps-note">${esc(histNote(g.hist, t))}</p>`;
-          mountHist(sec.querySelector('.jps-hc'), w, { sparse: M().isSparse(t.s), sub: true, cnt, gu });
+          mountHist(sec.querySelector('.jps-hc'), w, { sparse: M().isSparse(t.s), sub: true, cnt, gu, ref: g.hist && g.hist.mf });
           sec.querySelectorAll('[data-hspan]').forEach(b => b.onclick = () => { span = +b.dataset.hspan; draw(); });
         };
         draw();
@@ -640,7 +654,7 @@
       + `<p>전셋값이 집값에 가까우면 집값이 조금만 내려도 집을 팔아 보증금을 다 돌려받기 어려울 수 있어요(깡통전세). 주택도시보증공사(HUG) 전세보증금반환보증은 보증금과 선순위채권(근저당 등)을 더한 금액이 주택가격의 ${lim}% 이내여야 가입할 수 있어요. 이 값은 실거래 시세로 계산한 것이라, 실제 계약하는 집의 가격·근저당은 따로 확인해야 해요.</p>`
       + `<a href="${esc(href || '../jeonse/checklist/')}" data-track="jr_chip_to_checklist">전세 계약 전 체크리스트 보기 →</a></div>`;
   }
-  const API = { jrChip, jrLimit, niceTicks, eokAxis, open, close, btn, loanHref, loadSgg, loadHist, histOf, scoreUnits, findUnit, tradesHtml, pastYearsHtml, wireMore, miniChart, histChart, histNote, linePaths, mountBars, SPARSE, highsHtml, spanBtns, baseName, plot, mount, tipFn, histTip, histSpec, mountHist, cntMap, eok, guOf, guNote, ppySpec, mountPpy };
+  const API = { jrChip, jrLimit, niceTicks, eokAxis, open, close, btn, loanHref, loadSgg, loadHist, histOf, scoreUnits, findUnit, tradesHtml, pastYearsHtml, wireMore, miniChart, histChart, histNote, linePaths, mountBars, SPARSE, highsHtml, spanBtns, baseName, plot, mount, tipFn, histTip, histSpec, refCut, mountHist, cntMap, eok, guOf, guNote, ppySpec, mountPpy };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_PRICE = API;
 })(typeof self !== 'undefined' ? self : this);

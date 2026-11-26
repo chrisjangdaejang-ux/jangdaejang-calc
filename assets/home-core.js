@@ -93,8 +93,12 @@
     else if (IX && IX.total > 0) trades = man(IX.total);
     if (S.apts > 0) facts.push(`아파트 ${man(S.apts)} 단지`);
     else { const nu = ((IX && IX.sido) || []).reduce((a, x) => a + (x.units || 0), 0); if (nu) facts.push(`단지·평형 ${man(nu)} 개`); }
-    if (/^\d{6}$/.test(S.from || '')) {
-      const y0 = +S.from.slice(0, 4);   // 연수(○년간)는 반올림 혼란이 있어 쓰지 않고 시작 연도만
+    /* 시작 연도 = 공개 시세 자료(index.json price.from — 그래프·과거 기록, 2006~)가 있으면 그것, 없으면 stats.from(모델 자료 시작).
+       건수(trades)는 그대로 stats.trades(예측에 쓰는 자료) — '○○만 건을 바탕으로 … 미리 보여 드려요' 문장이 예측 근거라서 */
+    const P0 = IX && IX.price && /^\d{6}$/.test(IX.price.from || '') ? IX.price.from : '';
+    const from = P0 && (!/^\d{6}$/.test(S.from || '') || P0 < S.from) ? P0 : S.from;
+    if (/^\d{6}$/.test(from || '')) {
+      const y0 = +from.slice(0, 4);   // 연수(○년간)는 반올림 혼란이 있어 쓰지 않고 시작 연도만
       eyebrow = `${y0}년부터 쌓은 공공 통계로 푸는 부동산의 내일`;
     }
     facts.push('하루 4번 갱신');

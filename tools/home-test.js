@@ -148,6 +148,9 @@ check('소개 글: 연수 계산 문구 없음', /년간 공공 통계|\$\{yrs\}
   check('소개 글: 작은 글씨 한 줄 = 단지 수·갱신(연도는 위에만)', F.facts, ['아파트 1.6만 단지', '하루 4번 갱신'], '');
   const F6 = HC.heroFacts({ dataTo: '202610', stats: { trades: 9512345, from: '200601', apts: 17000 } });
   check('소개 글: 2006년 자료가 들어오면 자동으로 2006년부터', [F6.trades, F6.eyebrow], ['951만', '2006년부터 쌓은 공공 통계로 푸는 부동산의 내일'], '200601~202610');
+  const FP = HC.heroFacts({ dataTo: '202610', stats: { trades: 8909361, from: '201001', apts: 16416 }, price: { from: '200601', trades: 11273895, mf: '201001' } });
+  check('소개 글: 시작 연도는 공개 시세 자료(price.from 2006~), 건수는 예측 자료(stats.trades) 그대로', [FP.eyebrow, FP.trades], ['2006년부터 쌓은 공공 통계로 푸는 부동산의 내일', '891만'], '그래프·과거 기록 2006~, 점수 2010~');
+  check('소개 글: price.from 이 더 늦거나 없으면 stats.from', [HC.heroFacts({ stats: { from: '201001' }, price: { from: '201410' } }).eyebrow, HC.heroFacts({ stats: { from: '201001' }, price: {} }).eyebrow], ['2010년부터 쌓은 공공 통계로 푸는 부동산의 내일', '2010년부터 쌓은 공공 통계로 푸는 부동산의 내일'], '');
   const F0 = HC.heroFacts(null);
   check('소개 글: 자료 없으면 숫자 없이(지어내지 않음)', [F0.trades, F0.eyebrow, F0.facts], [null, null, ['하루 4번 갱신']], '');
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');

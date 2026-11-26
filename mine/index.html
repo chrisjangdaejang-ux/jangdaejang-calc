@@ -50,10 +50,10 @@
 <script src="../assets/conf.js?v=3"></script>
 <script src="../assets/life-view.js?v=3"></script>
 <script src="../assets/fac-view.js?v=1"></script>
-<script src="../assets/mine-core.js?v=21"></script>
+<script src="../assets/mine-core.js?v=22"></script>
 <script src="../assets/ask-core.js?v=5"></script>
 <script src="../assets/ask.js?v=3"></script>
-<script src="../assets/price-sheet.js?v=22"></script>
+<script src="../assets/price-sheet.js?v=23"></script>
 <script src="../assets/mapjump.js?v=3"></script>
 <script src="../assets/offi-core.js?v=6"></script>
 <script src="../assets/offi-view.js?v=15"></script>
@@ -719,7 +719,7 @@ function drawCharts(u, sgg){
   if (HT){
     const w = M.histWindow(HT, S.hspan);
     const gu = guOf(u, sgg);
-    P.mountHist($('cPrice'), w, {h: 240, fs: 13.5, sparse: M.isSparse(HT.s), sub: true, cnt: P.cntMap(u, IX.months), gu});
+    P.mountHist($('cPrice'), w, {h: 240, fs: 13.5, sparse: M.isSparse(HT.s), sub: true, cnt: P.cntMap(u, IX.months), gu, ref: CUR.g && CUR.g.hist && CUR.g.hist.mf});
     const gn = $('guNote'); if (gn && gu) gn.textContent = P.guNote(gu, w.months[0]);
   }
   const t = M.trend(u, sgg, IX.months, HT ? (S.hspan && S.hspan < 36 ? S.hspan : 36) : S.span);

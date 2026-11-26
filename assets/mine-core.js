@@ -664,9 +664,12 @@
     const one = a => a && a[0] > 0 ? { amt: a[0], ymd: a[1], at: String(a[1]).slice(0, 6), area: a[2], vs: price > 0 ? (price - a[0]) / a[0] : null } : null;
     const start = (hist && (hist.cover || hist.hm)) || '';
     const allTime = !!(x.f && start && x.f > start);                       // 수집 시작보다 늦게 첫 거래 → 그 단지 역대
-    return { hi: one(x.hi), hi1: one(x.hi1), f: x.f || '', start,
+    const hi = one(x.hi), mf = hist && /^\d{6}$/.test(String(hist.mf || '')) ? String(hist.mf) : '';
+    const ref = !!(hi && mf && hi.at < mf);                                // 예측 모델 자료 시작(hist.mf) 전 기록 → '참고'
+    const notes = [allTime ? `첫 거래(${ymKo(x.f)}) 이후 수집 자료 기준` : '', ref ? `${mf.slice(4) === '01' ? mf.slice(0, 4) + '년' : ymKo(mf)} 이전 기록이라 참고로 보여 드려요` : ''].filter(Boolean);
+    return { hi, hi1: one(x.hi1), f: x.f || '', start, ref,
       label: allTime || !start ? '역대 최고가' : `${ymKo(start)} 이후 최고가`,
-      note: allTime ? `첫 거래(${ymKo(x.f)}) 이후 수집 자료 기준` : '' };
+      note: notes.join(' · ') };
   }
   /** 개별 거래 6번째 칸: 신고가 1 */
   const isNewHigh = t => !!(t && t[5] === 1);

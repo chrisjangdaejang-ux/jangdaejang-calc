@@ -27,6 +27,9 @@ eq(S.text('share', F), '공공 통계 52가지 중 과거 자료로 효과가 �
 eq(S.facts({ '2': Object.assign({ n_tested: 44, n_used: 25 }, MH['2']) }, IX, MT).nu, 22, '예전 model_h 개수 무시');
 eq(S.facts({ '2': Object.assign({ n_tested: 44, n_used: 25 }, MH['2']) }, IX, null).nt, 0, 'meta 없으면 개수 없음');
 
+/* 2006~ 시세 자료(index.json price.from)가 공개돼도 점수 근거 문장은 모델 자료 기간(data_from·stats.from) 그대로 — 2026-11-26 */
+eq(S.facts(MH, Object.assign({ price: { from: '200601', trades: 11273895, mf: '201001' } }, IX), MT).y0, 2010, '그래프용 2006~ 자료는 점수 근거 연도에 안 섞임');
+eq(S.facts(MH, Object.assign({ price: { from: '200601', trades: 11273895 } }, IX), MT).trades, 8380311, '그래프용 건수는 점수 근거 건수에 안 섞임');
 /* 재학습 뒤 시작월이 바뀌면 화면도 따라감(하드코딩 없음) */
 eq(S.facts({ '2': Object.assign({}, MH['2'], { data_from: '2006-01' }) }, IX, MT).y0, 2006, 'data_from 우선');
 eq(S.facts({ '2': { oos_all: [] } }, IX, MT).y0, 2010, 'data_from 없으면 index stats.from');
