@@ -216,14 +216,14 @@ const DAY = { v: 1, g: '11710', name: '송파구', sd: '서울', date: '2026-11-
     const h = rd(f);
     yes(f + ': 검색 제외', h.includes('<meta name="robots" content="noindex">'));
     yes(f + ': 꺼져 있으면 준비 중', /id="closed"/.test(h) && /PT\.on\(\)/.test(h));
-    yes(f + ': pro-tools-core 불러옴', /assets\/pro-tools-core\.js\?v=2/.test(h));
+    yes(f + ': pro-tools-core 불러옴', /assets\/pro-tools-core\.js\?v=3/.test(h));
     yes(f + ': 이전으로 줄', /assets\/back\.js/.test(h));
     yes(f + ': 무료 체험 문구 없음', !/무료 체험/.test(h));
   });
   const sm = rd('sitemap.xml');
   yes('sitemap 에 없음', !/agent\/pro/.test(sm));
   const sw = rd('sw.js');
-  yes('sw: 새 화면·파일 저장 목록', ['./agent/pro/', './agent/pro/report/', './agent/pro/post/', './assets/pro-tools-core.js?v=2', './assets/pro-tools.css?v=2'].every(x => sw.includes(`'${x}'`)));
+  yes('sw: 새 화면·파일 저장 목록', ['./agent/pro/', './agent/pro/report/', './agent/pro/post/', './assets/pro-tools-core.js?v=3', './assets/pro-tools.css?v=2'].every(x => sw.includes(`'${x}'`)));
   /* 다른 화면 어디에도 링크 없음(꺼져 있는 동안) */
   const linked = ['index.html', 'agent/index.html', 'agent/my/index.html', 'dongne/index.html'].filter(f => fs.existsSync(path.join(ROOT, f)) && /agent\/pro\//.test(rd(f)));
   check('다른 화면에 링크 없음', linked, []);
@@ -331,6 +331,26 @@ const DAY = { v: 1, g: '11710', name: '송파구', sd: '서울', date: '2026-11-
   r = E.post({ action: 'ptMe', s: sc });
   check('상담 공인중개사: 확인 자료로 바로(대표 이름만 채우기)', [r.verified, r.ready, r.card && r.card.reg, r.card && r.card.missing], [true, false, '11710-2021-00009', ['ceo']]);
   r = E.post({ action: 'ptMe', s: sw }); check('확인 대기 전문가', [r.verified, r.why], [false, 'wait']);
+}
+
+/* ---------- ⑩ 서버 v69: 프로 회원 요금 설정값(운영자만 보고 바꿈 · 판매 안 함) ---------- */
+{
+  const E = require('./gs-harness')({ now: '2026-11-26T10:00:00+09:00' });
+  E.props.BRIEF_ADMIN_IDS = JSON.stringify(['k99']);
+  const a = E.member(99), u = E.member(5);
+  let r = E.post({ action: 'ptMe', s: a });
+  check('기본 요금: 월 14,900 · 연 149,000 · 출시 기념 첫 3개월 9,900 · 판매 안 함', [r.price.month, r.price.year, r.price.launchMonth, r.price.launchMonths, r.price.onSale], [14900, 149000, 9900, 3, false]);
+  check('요금 한 줄', PT.priceLine(r.price).split(' — ')[0], '프로 회원(구독) 월 14,900원 · 연 149,000원(2개월 무료 효과) · 출시 기념 첫 3개월 월 9,900원');
+  r = E.post({ action: 'ptPrice', s: u, month: 1000 }); yes('요금 바꾸기: 일반 회원 거절', !r.ok, r);
+  r = E.post({ action: 'ptPrice', s: a, month: 0 }); yes('요금 바꾸기: 범위 밖 거절', !r.ok, r);
+  r = E.post({ action: 'ptPrice', s: a, launchMonth: 20000 }); yes('출시 기념 요금이 월 요금보다 비싸면 거절', !r.ok, r);
+  r = E.post({ action: 'ptPrice', s: a, month: 19900, launchMonths: 0 });
+  check('운영자: 요금 바꾸기(나머지 값 그대로)', [r.ok, r.price.month, r.price.year, r.price.launchMonths], [true, 19900, 149000, 0]);
+  r = E.post({ action: 'ptMe', s: a }); check('바꾼 값 유지', r.price.month, 19900);
+  r = E.post({ action: 'ptMe', s: E.member(6) }); yes('닫힘: 일반 회원에게 요금 안 보임', !r.ok || !r.price);
+  yes('서버: 판매는 BILLING_OPEN·PAID_OPEN 둘 다일 때만', /P\.onSale = !!\(BILLING_OPEN && PAID_OPEN\)/.test(rd('tools/agent-backend.gs')) && /const BILLING_OPEN = false;/.test(rd('tools/agent-backend.gs')));
+  const hub = rd('agent/pro/index.html');
+  yes('운영자 화면: 요금 저장 칸', /id="pSave"/.test(hub) && /ptPrice/.test(hub) && /id="op" hidden/.test(hub));
 }
 
 console.log(`pro-tools-test: ${ok} 통과, ${bad} 실패`);

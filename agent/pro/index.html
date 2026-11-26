@@ -17,7 +17,7 @@
 <script src="../../assets/track.js?v=2"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/auth.js?v=10"></script>
-<script src="../../assets/pro-tools-core.js?v=2"></script>
+<script src="../../assets/pro-tools-core.js?v=3"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../assets/aplus.css?v=46">
@@ -46,7 +46,13 @@
       </a>
     </div>
     <div class="box" id="who"><h2>이름 넣기 확인</h2><p class="hint" id="whoT">리포트와 글에 내 이름·사무소·로고·연락처를 넣으려면 카카오 간편 로그인 뒤 확인을 마쳐야 해요. 공인중개사는 등록번호 확인(모닝 브리핑 중개사용·동네 파트너·고민 상담 전문가), 분양상담사·컨설턴트는 고민 상담 전문가 확인이면 돼요.</p><div id="whoB"></div></div>
-    <div class="op" id="op" hidden><b>운영자만 보여요 · 요금 자리</b><br><span id="opT"></span></div>
+    <div class="op" id="op" hidden><b>운영자만 보여요 · 프로 회원 요금</b><br><span id="opT"></span>
+      <div class="ed" style="margin:10px 0 0;padding:12px"><div class="two">
+        <div><label for="pMonth">월 요금(원)</label><input id="pMonth" inputmode="numeric"></div>
+        <div><label for="pYear">연 요금(원)</label><input id="pYear" inputmode="numeric"></div>
+        <div><label for="pLm">출시 기념 월 요금(원)</label><input id="pLm" inputmode="numeric"></div>
+        <div><label for="pLn">출시 기념 기간(개월, 0이면 없음)</label><input id="pLn" inputmode="numeric"></div></div>
+        <div class="acts"><button class="btn" id="pSave" type="button">요금 저장</button></div><p class="err" id="pErr" role="alert"></p></div></div>
   </div>
 </div>
 <script>
@@ -58,13 +64,22 @@ $('main').hidden = false;
 const pv = PT.preview() ? '?preview=pro-tools' : '';
 $('toReport').href = 'report/' + pv; $('toPost').href = 'post/' + pv;
 const A = window.JDJ_AUTH;
+function showPrice(P){
+  $('op').hidden = false; $('opT').textContent = PT.priceLine(P) + '.';
+  $('pMonth').value = P.month; $('pYear').value = P.year; $('pLm').value = P.launchMonth; $('pLn').value = P.launchMonths;
+}
+$('pSave') && ($('pSave').onclick = async () => {
+  $('pErr').textContent = '';
+  try { const r = await PT.post({ action: 'ptPrice', month: $('pMonth').value, year: $('pYear').value, launchMonth: $('pLm').value, launchMonths: $('pLn').value }); showPrice(r.price); $('pErr').textContent = ''; }
+  catch (e) { $('pErr').textContent = e.message; }
+});
 async function who(){
   if (!A || !A.user()){ $('whoB').innerHTML = A ? A.btn('카카오 간편 로그인', 'agent_pro') : ''; return; }
   try {
     const r = await PT.post({ action: 'ptMe' });
     if (r.verified && r.card) $('whoB').innerHTML = '<div class="me"><div><b>' + PT.esc(PT.titleOf(r.card) || '이름을 채워 주세요') + '</b><span class="vf">확인된 ' + PT.esc(r.card.kind || '전문가') + '</span><br>' + (r.ready ? '리포트·글·카드에 내 이름·사무소·로고·연락처가 들어가요.' : '리포트 화면에서 빈 칸을 채우면 이름이 들어가요.') + '</div></div>';
     else $('whoB').innerHTML = '<p class="warn">' + (r.why === 'wait' ? '확인을 하고 있어요. 확인이 끝나면 이름을 넣을 수 있어요.' : '아직 확인 전이에요. 확인 전에도 리포트와 글은 이름 없이 만들 수 있어요.') + (PT.dongneLink() ? ' <a href="' + PT.dongneLink() + '">동네 파트너 알아보기</a>' : ' 동네 파트너 모집이 시작되면 신청할 수 있어요.') + '</p>';
-    if (r.admin && r.price){ $('op').hidden = false; $('opT').textContent = r.price.plan + ' — ' + r.price.note + '. 요금 안내는 운영자 화면에만 보여요.'; }
+    if (r.admin && r.price) showPrice(r.price);
   } catch (e) { $('whoB').innerHTML = '<p class="warn">' + PT.esc(e.message) + '</p>'; }
 }
 who();

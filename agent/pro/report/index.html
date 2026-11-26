@@ -23,7 +23,7 @@
 <script src="../../../assets/rank-core.js?v=7"></script>
 <script src="../../../assets/pro-report.js?v=7"></script>
 <script src="../../../assets/broker-tools.js?v=5"></script>
-<script src="../../../assets/pro-tools-core.js?v=2"></script>
+<script src="../../../assets/pro-tools-core.js?v=3"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../../assets/aplus.css?v=46">
@@ -89,7 +89,7 @@ function showMe(r){
   ME = r; const box = $('me');
   if (ME.verified && ME.card) PT.mountMe(box, ME, showMe, PR.shrinkLogo);
   else box.innerHTML = '<p class="warn">' + (ME.why === 'wait' ? '등록번호(또는 전문가) 확인을 하고 있어요. 확인이 끝나면 사무소 이름·로고를 넣을 수 있어요.' : '사무소 이름·로고는 등록번호 확인을 마친 공인중개사와 확인된 분양상담사·컨설턴트만 넣을 수 있어요(모닝 브리핑 중개사용·동네 파트너·고민 상담 전문가 확인).') + ' 지금은 이름 없이 만들어져요.' + (PT.dongneLink() ? ' <a href="' + PT.dongneLink() + '">동네 파트너 알아보기</a>' : '') + '</p>';
-  if (ME.admin && ME.price){ $('op').hidden = false; $('opT').textContent = ME.price.plan + ' — ' + ME.price.note + '.'; }
+  if (ME.admin && ME.price){ $('op').hidden = false; $('opT').textContent = PT.priceLine(ME.price) + '. 요금은 모음 화면(중개사 프로 도구)에서 바꿀 수 있어요.'; }
   if (LAST) draw();
 }
 async function loadMe(){

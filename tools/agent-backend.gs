@@ -1,6 +1,11 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v69 변경 요약 (v68 위에 다시 배포. 따로 실행할 함수 없음 — 시트 변경 없음. PRO_TOOLS_ENABLED·BILLING_OPEN=false 라 판매·서비스 영향 없음)
+ *  - 프로 회원 요금 설정값: 월 14,900원 · 연 149,000원 · 출시 기념 첫 3개월 월 9,900원(PX_PRICE0). 운영자 화면 agent/pro/ 에서 바꿈(ptPrice → 스크립트 속성 PT_PRICE).
+ *  - 판매는 BILLING_OPEN·PAID_OPEN 둘 다 true 일 때만(onSale). 지금은 운영자 화면에만 보임.
+ *  - 검증: node tools/pro-tools-test.js </dev/null
+ *
  * v68 변경 요약 (v67 위에 다시 배포. 따로 실행할 함수 없음 — 새 시트 '프로도구프로필'은 처음 쓸 때 저절로 생김. PRO_TOOLS_ENABLED=false 라 지금 서비스에는 영향 없음)
  *  - 프로 도구 이름 넣기 대상 확대(맨 아래 'v66~v68' 칸): 동네 파트너 + 모닝 브리핑 중개사용 등록번호 확인자 + 고민 상담 확인된 전문가(공인중개사·분양상담사·컨설턴트 등).
  *    공인중개사는 법정 표시 항목(사무소 명칭·소재지·연락처·등록번호·대표자)이 다 있어야 이름이 들어가고, 확인 자료에 있는 값은 바꿀 수 없음(빈 칸만 본인이 채움).
@@ -10761,10 +10766,11 @@ function csCheckText(kind, s) {
    · 화이트라벨(자리만): 'Powered by 집예보'를 끄는 설정은 프로 회원(유료, 아직 없음) 또는 운영자만. 공공데이터 출처 표기는 늘 남음(화면이 지움 불가).
    · 숫자(시세·판정·점수)는 저장하지 않음: 손님 화면이 공개 자료로 다시 계산. 링크에는 단지 키·고객 이름(선택)만. 토큰은 해시만.
    · 시트: '프로도구링크'·'프로도구프로필'(v66 '프로도구로고' 칸은 읽기만). 따로 실행할 함수 없음 — 처음 쓸 때 시트가 생겨요.
-   · 요금(나중에 '프로 회원' 구독): 자리만 — PX_PRICE(운영자 화면에만 보임).
+   · v69 프로 회원 요금(대표 동의 11/26 — 범위 월 9,900~19,900원): 기본 월 14,900원 · 연 149,000원(2개월 무료 효과) · 출시 기념 첫 3개월 월 9,900원.
+     운영자 화면(agent/pro/)에서 바꿀 수 있음(ptPrice → 스크립트 속성 PT_PRICE). 판매는 BILLING_OPEN·PAID_OPEN 이 둘 다 true 일 때만(지금 false — 판매 안 함).
    ===================================================================== */
 const PRO_TOOLS_ENABLED = false;
-const PT_ACTIONS = { ptMe: 1, ptProfile: 1, ptLogo: 1, ptShare: 1, ptLinks: 1, ptOff: 1, ptOpen: 1 };
+const PT_ACTIONS = { ptPrice: 1, ptMe: 1, ptProfile: 1, ptLogo: 1, ptShare: 1, ptLinks: 1, ptOff: 1, ptOpen: 1 };
 const SH_PX = '프로도구링크', SH_PXL = '프로도구로고', SH_PXP = '프로도구프로필';
 const PXH = ['id', '만든시각', '파트너', '토큰해시', '상태', '단지', '고객이름', '만료일', '열람횟수', '최근열람'];
 const PXC = Object.fromEntries(PXH.map((h, i) => [h, i]));
@@ -10774,7 +10780,33 @@ const PXPC = Object.fromEntries(PXPH.map((h, i) => [h, i]));
 const PX_ST = { on: '보냄', off: '멈춤' }, PX_DAYS = [30, 90], PX_MAX = 300, PX_LOGO_MAX = 45000, PX_ID = /^T[0-9A-F]{11}$/;
 /* 사무소 색상: 글자(흰색)가 잘 읽히는 진한 색만(화면 assets/pro-tools-core.js COLORS 와 같은 값) */
 const PX_COLORS = ['#2560E8', '#1B3C8F', '#0E7A4F', '#0F766E', '#7C3AED', '#B42318', '#B45309', '#8A6A12', '#374151', '#BE185D'];
-const PX_PRICE = { plan: '프로 회원(구독)', month: 0, note: '요금은 대표 확인 뒤 정해요 — 지금은 운영자만 보이는 자리. 프로 회원은 손님 화면 맨 아래 Powered by 표시를 끌 수 있어요(공공데이터 출처는 늘 남음)' };
+const PX_PRICE0 = { plan: '프로 회원(구독)', month: 14900, year: 149000, launchMonth: 9900, launchMonths: 3, min: 9900, max: 19900 };
+const PX_PRICE_RULE = { month: [1000, 100000], year: [10000, 1000000], launchMonth: [0, 100000], launchMonths: [0, 12] };
+/** 지금 요금(기본값 위에 스크립트 속성 PT_PRICE 덮어쓰기) + 판매 여부 */
+function ptPriceNow() {
+  const P = Object.assign({}, PX_PRICE0);
+  try { const o = JSON.parse(PropertiesService.getScriptProperties().getProperty('PT_PRICE') || '{}') || {}; Object.keys(PX_PRICE_RULE).forEach(k => { if (o[k] != null) P[k] = Number(o[k]); }); } catch (e) {}
+  P.onSale = !!(BILLING_OPEN && PAID_OPEN);
+  P.note = P.onSale ? '판매 중' : '아직 판매하지 않아요(자동결제 계약 전 — BILLING_OPEN=false). 운영자 화면에만 보여요';
+  return P;
+}
+/** 운영자만: 요금 바꾸기 */
+function ptPrice(b) {
+  ptGate(b);
+  if (!dpIsAdmin(b)) { const e = new Error('운영자 계정으로 카카오 간편 로그인해 주세요.'); e.code = 'admin'; throw e; }
+  const o = {};
+  Object.keys(PX_PRICE_RULE).forEach(k => {
+    if (b[k] == null || b[k] === '') return;
+    const v = Math.round(Number(b[k])), R = PX_PRICE_RULE[k];
+    if (!isFinite(v) || v < R[0] || v > R[1]) throw new Error('요금 값을 다시 확인해 주세요(' + k + ').');
+    o[k] = v;
+  });
+  const cur = ptPriceNow(), nx = Object.assign({}, cur, o);
+  if (nx.launchMonths > 0 && nx.launchMonth > nx.month) throw new Error('출시 기념 요금은 기본 월 요금보다 낮거나 같아야 해요.');
+  const P = PropertiesService.getScriptProperties(), old = JSON.parse(P.getProperty('PT_PRICE') || '{}') || {};
+  P.setProperty('PT_PRICE', JSON.stringify(Object.assign(old, o)));
+  return { ok: true, price: ptPriceNow() };
+}
 const PX_KIND = { broker: '공인중개사', sales: '분양상담사', consult: '부동산 컨설턴트', tax: '세무사', judicial: '법무사', loan: '대출상담사', prof: '교수·연구자', appraiser: '감정평가사' };
 
 function ptDispatch(b) {
@@ -10782,6 +10814,7 @@ function ptDispatch(b) {
     if (b.action === 'ptOpen') return ptOpen(b);
     return withLock(() => {
       if (b.action === 'ptMe') return ptMe(b);
+      if (b.action === 'ptPrice') return ptPrice(b);
       if (b.action === 'ptProfile') return ptProfile(b);
       if (b.action === 'ptLogo') return ptProfile({ s: b.s, logo: b.logo == null ? '' : b.logo, only: 'logo' });
       if (b.action === 'ptShare') return ptShare(b);
@@ -10865,7 +10898,7 @@ function ptMe(b) {
   const out = { ok: true, open: PRO_TOOLS_ENABLED, admin: admin, verified: !!C.card, ready: C.ok, why: C.card ? (C.ok ? '' : 'fill') : C.why, src: C.src || '',
     card: C.card ? Object.assign(ptPub(C.card), { locked: C.card.locked, missing: C.missing, white: C.card.white }) : null, logo: C.card ? C.card.logo : '',
     colors: PX_COLORS, whiteOk: admin || ptProMember(u.k) };
-  if (admin) out.price = PX_PRICE;
+  if (admin) out.price = ptPriceNow();
   return out;
 }
 /** 꾸미기·빈 칸 저장. 확인된 값은 바꿀 수 없음(보낸 값은 무시) */

@@ -561,7 +561,13 @@
     const nl = box.querySelector('#pf_nologo'); if (nl) nl.onclick = () => send({ logo: '' });
   }
 
-  const API = { SITE, LS_PV, on, preview, dongneLink, sess, post, COLORS, colorOf, NOT_BROKER, NOT_BROKER_DA, isBroker, titleOf, coverHtml, drawBrandCard, mountMe, esc, med, RULE, judge, tags, jeonse, supply, report, GLOSS, DISCLAIM, officeLines, headHtml, footHtml, reportHtml,
+  /** 운영자 화면 요금 한 줄: '프로 회원(구독) 월 14,900원 · 연 149,000원(2개월 무료 효과) · 출시 기념 첫 3개월 월 9,900원' */
+  function priceLine(P) {
+    if (!P) return '';
+    const n = v => Number(v || 0).toLocaleString('ko-KR') + '원', free = P.month > 0 && P.year > 0 ? Math.round((P.month * 12 - P.year) / P.month) : 0;
+    return `${P.plan || '프로 회원'} 월 ${n(P.month)} · 연 ${n(P.year)}${free > 0 ? `(${free}개월 무료 효과)` : ''}${P.launchMonths > 0 ? ` · 출시 기념 첫 ${P.launchMonths}개월 월 ${n(P.launchMonth)}` : ''} — ${P.note || ''}`;
+  }
+  const API = { SITE, LS_PV, priceLine, on, preview, dongneLink, sess, post, COLORS, colorOf, NOT_BROKER, NOT_BROKER_DA, isBroker, titleOf, coverHtml, drawBrandCard, mountMe, esc, med, RULE, judge, tags, jeonse, supply, report, GLOSS, DISCLAIM, officeLines, headHtml, footHtml, reportHtml,
     encodeUnit, decodeUnit, parseShare, bundle, source, pick, stats, parseWon, claimCheck, splitS, HYPE, hypeHit, PRIV, guard, NOT_AD, NOT_AD_CARD, compose };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_PT = API;
