@@ -97,10 +97,11 @@ check('생애최초는 LTV 70% — 15억 집 대출은 상한 6억 그대로', B
 
 /* ---------- ③ 단지 목록 ---------- */
 const R = B.rowsOf(s10, X, E);
-check('목록: 검색 화면처럼 10곳(조건 충족 평형 수는 따로)', R.n === 10 && R.total >= R.n, [R.n, R.total]);
 const SQ = REC.search(B.searchQ(s10, X, E));
-check('목록: 단지·순서 = rec-core search(내 집 마련 맞춤 단지와 같은 엔진)', JSON.stringify(R.rows.map(r => [r.code, r.apt, r.band, r.price])) === JSON.stringify(SQ.picked.map(x => [x.code, x.apt, x.band, x.P])) && R.total === SQ.total);
-check('목록: 한 구에서 3곳까지(검색 화면과 같은 고르기)', Object.values(R.rows.reduce((o, r) => { o[r.code] = (o[r.code] || 0) + 1; return o; }, {})).every(n => n <= 3));
+check('목록: 검색 화면처럼 조건에 맞는 단지 전부(10곳씩 더 보기 · 조건 충족 평형 수는 따로)', R.n === SQ.list.length && R.n > 10 && SQ.picked.length === 10 && R.total >= R.n, [R.n, R.total]);
+check('목록: 단지·순서 = rec-core search(내 집 마련 맞춤 단지와 같은 엔진)', JSON.stringify(R.rows.map(r => [r.code, r.apt, r.band, r.price])) === JSON.stringify(SQ.list.map(x => [x.code, x.apt, x.band, x.P])) && R.total === SQ.total);
+check('목록: 첫 10곳은 묶음마다 한 구에서 3곳까지(검색 화면과 같은 고르기)', ['a', 'b'].every(g => Object.values(R.rows.slice(0, 10).filter(r => r.grp === g).reduce((o, r) => { o[r.code] = (o[r.code] || 0) + 1; return o; }, {})).every(n => n <= 3)));
+check('목록: 추천 순 = 예산에 맞는 단지(최대 집값의 85% 이상) 먼저 → 예산보다 싼 단지', R.sort === 'rec' && R.rows.every((r, i, a) => !i || !(a[i - 1].grp === 'b' && r.grp === 'a')) && R.rows.every(r => r.grp === (r.price >= REC.FIT_A * C10.P ? 'a' : 'b')) && R.nA + R.nB === R.n, [R.nA, R.nB]);
 check('목록: 예산에 비해 너무 싼 단지(최대 집값의 55% 미만)는 빠짐', R.rows.every(r => r.price >= 0.55 * C10.P));
 check('목록: 서울·84㎡대/59㎡대만 · 한 단지 한 줄', R.rows.every(r => /^11/.test(r.code) && (r.band === '84㎡대' || r.band === '59㎡대')) && new Set(R.rows.map(r => r.key)).size === R.n);
 check('목록: 시세 = mine-core bandSummary(내 집 시세와 같은 계산)', R.rows.every(r => r.price === MC.bandSummary(r.u, IX.months).price));
@@ -108,11 +109,12 @@ check('목록: 내 돈으로 살 수 있는 단지만(need ≤ 현금) · 대출
 check('목록: 건수·기간 = 시세가 쓴 3개월의 거래 수(자료 그대로)', R.rows.every(r => { const c = MC.counts(r.u[7]), i = IX.months.indexOf(r.at); return r.p3 && r.p3.to === r.at && r.p3.from === IX.months[i - 2] && r.n3 === c[i - 2] + c[i - 1] + c[i]; }));
 check('목록: 준공·세대수·역 = 자료 값', R.rows.every(r => r.by === (r.u[9].by || null) && r.hh === (r.u[9].hh || null) && r.sub === (r.u[9].sub != null ? r.u[9].sub : null)));
 check('목록: 15억 넘는 단지는 없음(10억 현금 기준)', R.rows.every(r => r.price <= 150000));
-check('점수: 서울 과거 성적(vcheck)이 기준을 넘어 점수 표시 · 순서는 미래가치 점수 순(검색 화면과 같음)', R.fvOk && R.track.ok && R.track.n === RK.vcheck(FX.mh, '서울특별시').n && R.rows.some(r => r.fv != null) && R.rows.filter(r => r.fv != null).every((r, i, a) => !i || a[i - 1].fv >= r.fv));
+check('점수: 서울 과거 성적(vcheck)이 기준을 넘어 점수 표시 · 순서는 미래가치 점수 순(검색 화면과 같음)', R.fvOk && R.track.ok && R.track.n === RK.vcheck(FX.mh, '서울특별시').n && R.rows.some(r => r.fv != null) && ['a', 'b'].every(g => { const rs = R.rows.filter(r => r.grp === g && r.fv != null); return !rs.length || rs[0].fv === Math.max(...rs.map(r => r.fv)); }));
 const Rbad = B.rowsOf(s10, Object.assign({}, X, { MH: { 2: { oos_all: [{ t0: '202010', top20: -1 }, { t0: '202110', top20: -2 }], oos_avg: -1.5 } } }), E);
 const sig = rs => JSON.stringify(rs.map(r => [r.key, r.band, r.price, r.loan]));
 check('점수: 과거 성적이 기준 미달이면 점수를 싣지 않음(단지·순서는 검색 화면과 같은 그대로)', !Rbad.fvOk && Rbad.rows.every(r => r.fv == null) && sig(Rbad.rows) === sig(R.rows));
-check('길잡이만의 정렬 단추 없음(정렬 기준을 바꿔도 같은 목록)', sig(B.rowsOf(Object.assign({}, s10, { sort: 'deal' }), X, E).rows) === sig(R.rows) && !/data-bsort/.test(read('assets/guide-budget.js')));
+{ const Rd = B.rowsOf(Object.assign({}, s10, { sort: 'deal' }), X, E), Sd = REC.search(Object.assign(B.searchQ(s10, X, E), { sort: 'deal' }));
+  check('정렬 단추(거래 많은 순) = 검색 화면과 같은 rec-core 정렬 · 거래 많은 순', Rd.sort === 'deal' && sig(Rd.rows) === JSON.stringify(Sd.list.map(x => [[x.code, x.dong, x.jb, x.apt].join('|'), x.band, x.P, Math.floor(x.nd.loan.L)])) && Rd.rows.every((r, i, a) => !i || a[i - 1].n12u >= r.n12u) && /data-bsort/.test(read('assets/guide-budget.js'))); }
 check('같은 입력 같은 결과: 두 번 계산 · 원본 자료는 그대로(보유 기간 점수는 복사본에)', sig(B.rowsOf(s10, X, E).rows) === sig(R.rows) && FX.units.every(u => !u[9] || u[9].fvSort === undefined));
 check('같은 입력 같은 결과: 대출 계산도 같음', JSON.stringify(B.capOf(s10, L)) === JSON.stringify(B.capOf(st0('현금 10억 서울 아파트 추천'), L)));
 check('평형 84㎡대만', B.rowsOf(Object.assign({}, s10, { size: '84' }), X, E).rows.every(r => r.band === '84㎡대'));
@@ -151,10 +153,10 @@ delete globalThis.JDJ_ASK_CORE;
 
 /* ---------- 화면 연결 ---------- */
 const gjs = read('assets/guide.js'), gcore = read('assets/guide-core.js'), sw = read('sw.js'), solve = read('solve/index.html'), home = read('index.html'), gb = read('assets/guide-budget.js');
-check('guide.js: 미리 불러오기·즉답·길잡이 화면·대화에서 이 파일로', /'assets\/guide-budget\.js\?v=2': 'JDJ_GBUDGET'/.test(gjs) && /JDJ_GBUDGET\.instant/.test(gjs) && /JDJ_GBUDGET\.flow/.test(gjs) && /JDJ_GBUDGET\.chatCard/.test(gjs));
+check('guide.js: 미리 불러오기·즉답·길잡이 화면·대화에서 이 파일로', /'assets\/guide-budget\.js\?v=3': 'JDJ_GBUDGET'/.test(gjs) && /JDJ_GBUDGET\.instant/.test(gjs) && /JDJ_GBUDGET\.flow/.test(gjs) && /JDJ_GBUDGET\.chatCard/.test(gjs));
 check('guide-core: 계산 함수·대화 좁히기 연결', /S\.budgetApts/.test(gcore) && /JDJ_GBUDGET\.chatQ/.test(gcore) && /JDJ_GBUDGET\.answer/.test(gcore));
-check('길잡이 화면·서비스 워커에 이 파일', /assets\/guide-budget\.js\?v=2/.test(solve) && /'\.\/assets\/guide-budget\.js\?v=2'/.test(sw));
-check("첫 화면 '많이 받는 고민': lead 고민을 맨 앞에", /\.filter\(s => s\.pri\)\.sort\(\(x, y\) => \(y\.lead/.test(gjs) && /guide\.js\?v=14/.test(home));
+check('길잡이 화면·서비스 워커에 이 파일', /assets\/guide-budget\.js\?v=3/.test(solve) && /'\.\/assets\/guide-budget\.js\?v=3'/.test(sw));
+check("첫 화면 '많이 받는 고민': lead 고민을 맨 앞에", /\.filter\(s => s\.pri\)\.sort\(\(x, y\) => \(y\.lead/.test(gjs) && /guide\.js\?v=15/.test(home));
 check('화면: 정렬 단추에 추천 순위 아님 · 즉답(바로 답) · 믿을 이유 접힌 칸', /추천 순위 아님/.test(gb) && /바로 답/.test(gb) && /details class="gbtr"><summary>이 답을 믿을 수 있는 이유/.test(gb));
 check('화면: 진한 꽉 찬 단추는 묶음마다 1개(즉답: 목록 보기 · 길잡이 화면: 고른 단지 비교)', (gb.match(/class="p"/g) || []).length === 1 && /\.gbcmp a\{[^}]*background:var\(--blue/.test(gb));
 check('화면: 색은 토큰(var(--…))으로', (gb.match(/var\(--/g) || []).length > 40);

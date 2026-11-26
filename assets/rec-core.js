@@ -101,12 +101,76 @@
     return (s && NOTES.byName && NOTES.byName[s.sido + '|' + s.name]) || code;
   }
 
+  /* ---------- 재건축 단지(몸테크) 판정 — 맞춤 단지 '재건축 단지만 보기'와 길잡이 재건축 몸테크(rebuild_live)가 같은 함수를 써요 ----------
+     기준(기존 화면 기준 그대로): 서울시 정비사업 추진현황에 재건축 구역으로 이름이 연결된 단지(자료 fx.rz · 길잡이는 구역 자료 z를 먼저)는 착공 전(10단계 중 8단계까지)만,
+     연결된 구역이 없으면 준공 30년 이상(재건축 연한). z: 길잡이가 구역 자료(zones.json)에서 이름으로 찾은 구역 {st} — 없으면 자료의 fx.rz */
+  const REBUILD_AGE = 30, REBUILD_GONE = 9;
+  function rebuildOf(u, year, z) {
+    const f = u && u[9] && typeof u[9] === 'object' ? u[9] : {};
+    const zone = z || (f.rz && f.rz.lv != null ? { st: f.rz.lv } : null);
+    const age = f.by ? (year || 0) - f.by : null;
+    if (zone) return { ok: (+zone.st || 0) < REBUILD_GONE, zone: true, lv: +zone.st || 0, age, gone: (+zone.st || 0) >= REBUILD_GONE };
+    return { ok: age != null && age >= REBUILD_AGE, zone: false, lv: 0, age, gone: false };
+  }
+
+  /* ---------- 맞춤 단지 순서(정렬 단추 4가지) — 내 집 마련 맞춤 단지와 길잡이가 같은 함수 ----------
+     rec(추천 순, 기본): ① 예산에 맞는 단지(최대 매수 가능액의 85~100%) ② 예산보다 싼 단지(85% 미만) 두 묶음, 묶음 안은 점수 순 · 한 구 3곳(쪽마다)
+     stn(역 가까운 순: 역까지 걸어서 분 fx.sub) · new(신축 순: 준공 연도 fx.by) · deal(거래 많은 순: 최근 12개월 실거래 수) — 값이 없는 단지는 맨 뒤
+     같은 값이면: 점수 높은 순 → 집값 높은 순(예산에 더 가까운 쪽) → 단지 이름 가나다순 → 동·평형·구 코드 — 자료 파일 순서와 상관없이 늘 같은 순서 */
+  const FIT_A = 0.85, PAGE = 10;
+  const SORTS = [['rec', '추천 순'], ['stn', '역 가까운 순'], ['new', '신축 순'], ['deal', '거래 많은 순']];
+  const sortId = v => SORTS.some(s => s[0] === v) ? v : 'rec';
+  function cnt12(u) { let s = 0; for (const ch of String((u && u[7]) || '').slice(-12)) s += ch.charCodeAt(0) - 48; return s; }
+  const fxOf = x => (x.fx && typeof x.fx === 'object') ? x.fx : {};
+  const ko = (a, b) => String(a || '').localeCompare(String(b || ''), 'ko');
+  /** 점수 → 집값 → 이름 → 동·평형·구 코드 */
+  const tieCmp = (a, b) => rankCmp(a, b) || (b.P - a.P) || ko(a.apt, b.apt) || ko(a.dong, b.dong) || ko(a.band, b.band) || ko(a.code, b.code);
+  /** 값이 없는(null) 단지는 뒤로: dir 1 = 작은 값 먼저, −1 = 큰 값 먼저 */
+  const keyCmp = (va, vb, dir) => (va == null) - (vb == null) || (va == null ? 0 : dir * (va - vb));
+  const SORT_KEY = {
+    stn: x => { const v = fxOf(x).sub; return v != null && isFinite(v) ? +v : null; },
+    new: x => { const v = fxOf(x).by; return v > 0 ? +v : null; },
+    deal: x => cnt12(x.u)
+  };
+  function sortCmp(id) {
+    if (id === 'stn') return (a, b) => keyCmp(SORT_KEY.stn(a), SORT_KEY.stn(b), 1) || tieCmp(a, b);
+    if (id === 'new') return (a, b) => keyCmp(SORT_KEY.new(a), SORT_KEY.new(b), -1) || tieCmp(a, b);
+    if (id === 'deal') return (a, b) => keyCmp(SORT_KEY.deal(a), SORT_KEY.deal(b), -1) || tieCmp(a, b);
+    return (a, b) => (a.grp === 'b') - (b.grp === 'b') || tieCmp(a, b);
+  }
+  /** 한 단지는 한 번만(같은 정렬에서 가장 앞선 평형) */
+  function uniq(sorted) { const seen = new Set(), out = []; for (const x of sorted) { const k = x.code + '|' + x.apt; if (seen.has(k)) continue; seen.add(k); out.push(x); } return out; }
+  /** 쪽(10곳)마다 한 구 3곳·시·도 3곳까지 — 칸이 남으면(고른 구가 적을 때) 다음 순서 단지로 채워요 */
+  function pageDiversify(list, opt) {
+    const size = opt.page || PAGE, perSgg = opt.perSgg || 3, perSido = opt.perSido || 0, rest = list.slice(), out = [];
+    while (rest.length) {
+      const page = [], bySgg = {}, bySd = {}, used = new Set();
+      for (let i = 0; i < rest.length && page.length < size; i++) {
+        const x = rest[i], sd = perSido && opt.sidoOf ? opt.sidoOf(x.code) : '';
+        if ((bySgg[x.code] || 0) >= perSgg || (sd && (bySd[sd] || 0) >= perSido)) continue;
+        page.push(x); used.add(i); bySgg[x.code] = (bySgg[x.code] || 0) + 1; if (sd) bySd[sd] = (bySd[sd] || 0) + 1;
+      }
+      for (let i = 0; i < rest.length && page.length < size; i++) if (!used.has(i)) { page.push(rest[i]); used.add(i); }
+      out.push(...page);
+      for (let i = rest.length - 1; i >= 0; i--) if (used.has(i)) rest.splice(i, 1);
+    }
+    return out;
+  }
+  /** 조건에 맞는 평형들(out) → 화면 순서 목록 */
+  function arrange(out, q) {
+    const id = sortId(q.sort), sorted = out.slice().sort(sortCmp(id)), list = uniq(sorted);
+    if (id !== 'rec') return list;
+    const dv = { page: PAGE, perSgg: 3, perSido: q.any ? 3 : 0, sidoOf: q.sidoOf };
+    return pageDiversify(list.filter(x => x.grp === 'a'), dv).concat(pageDiversify(list.filter(x => x.grp === 'b'), dv));
+  }
+
   /* ---------- 조건 검색(맞춤 단지) — 내 집 마련 리포트(buy/report)와 길잡이(solve/ budget_apts)가 같은 함수를 써요 ----------
      q = { units, sggs:Set|배열(구 코드), areas:Set|배열(평형대 — 비면 전체), cash(만원), ctxBy·dsrBy·maxBy:{reg,capfree,local}(loan-core ctx·dsrMax·maxPrice),
            need(P, c, dsr, large)(loan-core need), groupOf(code), noteOf(code)→참/거짓, sggPpy:{코드: 구 평당가},
-           newb(준공 N년 이내 — 0·없음 = 상관없음), pmax(집값 상한 만원 — 0·없음 = 상관없음), year(준공 연수 기준 해 = 자료 갱신 해), any(지역 상관없음), sidoOf(code), max(기본 10) }
-     조건: 고른 구 → 고른 평형 → 최근 시세 있음 → 최근 3개월 거래 1건 이상 → 신축 → 집값 상한 → 내 돈으로 살 수 있음(need ≤ cash) → 최대 매수 가능액의 55% 미만 제외(MIN_FIT)
-     순서: rankCmp(미래가치 점수 → 추천 점수) · 고르기: diversify(10곳 · 한 구 3곳 · 지역 상관없음이면 시·도당 3곳) */
+           newb(준공 N년 이내 — 0·없음 = 상관없음), pmax(집값 상한 만원 — 0·없음 = 상관없음), year(준공 연수 기준 해 = 자료 갱신 해), any(지역 상관없음), sidoOf(code), max(첫 쪽 곳 수, 기본 10),
+           sort(rec·stn·new·deal — 기본 rec), rebuild(참 = 재건축 단지만, rebuildOf) }
+     조건: 고른 구 → 고른 평형 → 최근 시세 있음 → 최근 3개월 거래 1건 이상 → 신축 → 집값 상한 → 재건축 단지만 → 내 돈으로 살 수 있음(need ≤ cash) → 최대 매수 가능액의 55% 미만 제외(MIN_FIT)
+     순서: arrange(정렬 단추 — 위 설명) · 돌려주는 값: list(전체 순서, '더 보기'로 10곳씩), picked(첫 쪽), total(조건 충족 평형 수), nA·nB(예산에 맞는·예산보다 싼 단지 수), sort */
   const asSet = v => v instanceof Set ? v : new Set(v || []);
   function passBase(u, q, sggs, areas) {
     const f = u[9] && typeof u[9] === 'object' ? u[9] : {};
@@ -116,6 +180,7 @@
     if (recentCnt(u[7] || '') < 1) return false;
     if (q.newb > 0 && !(f.by && (q.year || 0) - f.by <= q.newb)) return false;
     if (q.pmax > 0 && unitPrice(u) > q.pmax) return false;
+    if (q.rebuild && !rebuildOf(u, q.year || 0).ok) return false;
     return true;
   }
   function search(q) {
@@ -129,11 +194,10 @@
       if (nd.need > q.cash) continue;
       const sc = scoreUnit(u, P, M, (q.sggPpy || {})[code], q.noteOf ? !!q.noteOf(code) : false);
       if (sc.fit < MIN_FIT) continue;
-      out.push(Object.assign({ code, dong, apt, band, area, n, series, P, g, c, nd, large, jb: u[8], u }, sc));
+      out.push(Object.assign({ code, dong, apt, band, area, n, series, P, g, c, nd, large, jb: u[8], u, grp: sc.fit >= FIT_A ? 'a' : 'b' }, sc));
     }
-    out.sort(rankCmp);
-    const picked = diversify(out, { max: q.max || 10, perSgg: 3, perSido: q.any ? 3 : 0, sidoOf: q.sidoOf });
-    return { picked, total: out.length };
+    const list = arrange(out, q);
+    return { list, picked: list.slice(0, q.max || PAGE), total: out.length, nA: list.filter(x => x.grp === 'a').length, nB: list.filter(x => x.grp === 'b').length, sort: sortId(q.sort) };
   }
   /** 조금만 더 준비하면 살 수 있는 단지(맞는 단지가 없을 때) — 같은 조건에서 부족한 돈이 적은 순 10곳(최근 1년 거래 20건 이상) */
   function nearMiss(q) {
@@ -144,13 +208,13 @@
       if (nd.need <= q.cash) continue;
       out.push({ code: u[0], dong: u[1], apt: u[2], band: u[3], P, nd, jb: u[8] });
     }
-    out.sort((a, b) => a.nd.need - b.nd.need);
+    out.sort((a, b) => a.nd.need - b.nd.need || (b.P - a.P) || ko(a.apt, b.apt) || ko(a.dong, b.dong) || ko(a.band, b.band) || ko(a.code, b.code));
     for (const x of out) { const k = x.code + x.apt; if (seen.has(k)) continue; seen.add(k); res.push(x); if (res.length >= 10) break; }
     return res;
   }
 
   const API = { PY, REG_GG, isReg, isCap, groupOf, LTV, r100, lastNZ, firstNZ, recentCnt, change6, change3y, unitPrice, MIN_FIT, tooCheap, scoreOf, scoreUnit, rankCmp, diversify,
-    VOK, hzList, hzMix, applyHz, noteKey, search, nearMiss };
+    VOK, hzList, hzMix, applyHz, noteKey, search, nearMiss, REBUILD_AGE, rebuildOf, FIT_A, PAGE, SORTS, sortId, sortCmp, tieCmp, cnt12, arrange, pageDiversify };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_REC = API;
 })(typeof self !== 'undefined' ? self : this);

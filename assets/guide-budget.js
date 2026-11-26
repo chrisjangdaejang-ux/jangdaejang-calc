@@ -83,7 +83,7 @@
     return got;
   }
   function init(id, sl) {
-    const st = { id: id || ID, cash: null, inc: null, size: null, gus: null, gname: '', newb: null, own: null, pcap: null, sort: null, rec: 0, _skip: [] };
+    const st = { id: id || ID, cash: null, inc: null, size: null, gus: null, gname: '', newb: null, own: null, pcap: null, sort: null, rb: 0, rec: 0, _skip: [] };
     read(st, sl);
     return st;
   }
@@ -207,7 +207,7 @@
     return { units: hzUnits(X, E.hz || hzNow()), sggs, areas: SIZE_BANDS(st), cash: +st.cash || 0, ctxBy, dsrBy, maxBy,
       need: (P, c, d, large) => L.need(P, c, d, !!large), groupOf: c => RC.isReg(c) ? 'reg' : (RC.isCap(c) ? 'capfree' : 'local'),
       noteOf: c => !!(NOTES && NOTES.notes && NOTES.notes[RC.noteKey(NOTES, IX, c)]), sggPpy,
-      newb: +st.newb || 0, pmax: +st.pcap || 0, year: yearOf(IX), any: false, max: 10 };
+      newb: +st.newb || 0, pmax: +st.pcap || 0, year: yearOf(IX), any: false, max: RC.PAGE, sort: RC.sortId(st.sort), rebuild: !!st.rb };
   }
   function rowsOf(st, X, E) {
     E = E || {};
@@ -216,7 +216,7 @@
     const pol = X.pol, GX = GXc(), th = GX && pol ? GX.toh(pol, SEOUL, '', 'apt') : null;
     if (!(st.cash > 0)) return { rows: [], n: 0, total: 0, near: [], fvOk, track: TR, th, ctx: K };
     const q = searchQ(st, X, E), S0 = RC.search(q);
-    const rows = S0.picked.map(x => {
+    const rows = S0.list.map(x => {
       const u = x.u, f = obj(x.fx), sm = MC.bandSummary(u, months), sp = span3(u, sm, months, MC), age = f.by ? Y - f.by : null;
       const capB = L.R.CAP.v.filter(r => r.upTo != null).map(r => r.upTo).find(b => x.P <= b && sm.range && sm.range.hi > b) || null;
       return { key: [x.code, x.dong, x.jb, x.apt].join('|'), u, code: x.code, gu: (sgg[x.code] || {}).name || '', dong: x.dong, apt: x.apt, jibun: x.jb, band: x.band, area: +x.area || 0,
@@ -224,10 +224,11 @@
         range: sm.range && sm.range.months ? { lo: sm.range.lo, hi: sm.range.hi, months: sm.range.months } : null,
         by: f.by || null, age, hh: f.hh || null, fvr: fvOk && f.fvr != null ? f.fvr : null, sub: f.sub != null ? f.sub : null, subs: f.subs || '', fv: fvOk && f.fv != null ? f.fv : null,
         jr: f.jr != null && f.jr > 0 ? f.jr : null, rz: f.rz && f.rz.lv ? f.rz : null,
-        loan: Math.floor(x.nd.loan.L), lby: x.nd.loan.by, pay: L.monthly(x.nd.loan.L, x.c.rate, x.c.term), need: x.nd.need, capB, thin: (sm.cnt12 || 0) < MC.FEW, th, sus: null };
+        loan: Math.floor(x.nd.loan.L), lby: x.nd.loan.by, pay: L.monthly(x.nd.loan.L, x.c.rate, x.c.term), need: x.nd.need, capB, thin: (sm.cnt12 || 0) < MC.FEW, th, sus: null,
+        grp: x.grp, n12u: RC.cnt12(u), rb: st.rb ? RC.rebuildOf(u, Y) : null };
     });
     const near = rows.length ? [] : RC.nearMiss(q).slice(0, 3).map(x => ({ apt: x.apt, gu: (sgg[x.code] || {}).name || '', band: x.band, P: x.P, short: x.nd.need - q.cash }));
-    return { rows, n: rows.length, total: S0.total, near, fvOk, track: TR, th, ctx: K, hz: E.hz || hzNow() };
+    return { rows, n: rows.length, total: S0.total, nA: S0.nA, nB: S0.nB, sort: S0.sort, near, fvOk, track: TR, th, ctx: K, hz: E.hz || hzNow() };
   }
   /** '같은 조건으로 검색 화면에서 보기' — 내 집 마련 맞춤 단지(buy/report) 주소. 연소득·현금은 주소가 아니라 이 탭에만(sessionStorage jdj_gfin) 넘겨요.
       연 소득을 모르면 검색 화면이 소득 기준까지 넣어 계산하므로 null(소득을 고른 뒤 열 수 있음) */
@@ -241,6 +242,8 @@
     p.set('o', st.own === 'first' ? 'first' : 'none');
     if (st.newb) p.set('nb', String(st.newb));
     if (st.pcap) p.set('pm', String(st.pcap));
+    if (RCc().sortId(st.sort) !== 'rec') p.set('so', RCc().sortId(st.sort));
+    if (st.rb) p.set('rb', '1');
     p.set('from', 'guide');
     return (base || '') + 'buy/report/?' + p.toString();
   }
@@ -277,6 +280,7 @@
     c.push(st.size === '84' ? '84㎡대' : st.size === '59' ? '59㎡대' : '84㎡대·59㎡대');
     if (st.newb) c.push(`${st.newb}년 이내 신축`);
     if (st.pcap) c.push(`집값 ${wonS(st.pcap)} 이하`);
+    if (st.rb) c.push('재건축 단지만');
     c.push(st.own === 'first' ? '생애최초' : '무주택');
     return c;
   }
@@ -304,7 +308,9 @@
   }
   const REC_LINE = '조건에 맞는 단지를 근거와 함께 정리해 드려요(추천 순위 아님).';
   /* 목록 순서 설명 — 내 집 마련 맞춤 단지 화면과 같은 기준(그 화면 '순위 기준' 문장과 같은 뜻) */
-  const ORDER_LINE = '단지와 순서는 내 집 마련 맞춤 단지(조건 검색) 화면과 같은 계산이에요: 미래가치 점수 순, 같으면 예산·거래량을 보고, 한 구에서 3곳까지 10곳을 골라요. 예산에 비해 너무 싼 단지(살 수 있는 최대 집값의 55% 미만)는 빼요.';
+  const ORDER_LINE = '단지와 순서는 내 집 마련 맞춤 단지(조건 검색) 화면과 같은 계산이에요: 기본(추천 순)은 예산에 맞는 단지(살 수 있는 최대 집값의 85% 이상)를 먼저, 그다음 예산보다 싼 단지를 미래가치 점수 순으로 보여 드리고, 10곳마다 한 구에서 3곳까지예요. 점수가 같으면 예산에 가까운 단지, 그다음 이름 가나다순이에요. 예산에 비해 너무 싼 단지(최대 집값의 55% 미만)는 빼요.';
+  /* 정렬 단추 설명(검색 화면과 같은 뜻) */
+  const SORT_LINE = { rec: '예산에 맞는 단지를 먼저, 미래가치 점수 순', stn: '지하철역까지 걸어서 가까운 순 · 역 정보가 없는 단지는 맨 뒤', new: '최근에 지은 순 · 준공 정보가 없는 단지는 맨 뒤', deal: '최근 1년 실거래가 많은 순' };
   function basisOf(R, X) {
     const IX = X.IX || {}, m = IX.months || [];
     return `시세는 국토교통부 실거래 최근 3개월 중간값(호가 아님 · ${ymK(m[m.length - 1])} 계약분까지 · 자료 갱신 ${dDot(IX.updated)})이에요. ${ORDER_LINE}`;
@@ -378,6 +384,12 @@
     '.gbx .gbwarn{margin:16px 0 0;padding:12px 14px;border:1.5px solid var(--rf-warn-b,#F1D19A);background:var(--rf-warn-l,#FFFBF2);border-radius:14px}.gbx .gbwarn h3{margin:0 0 6px;font-size:16px;color:var(--rf-warn,#A15C07)}.gbx .gbwarn ul{margin:0;padding-left:18px;font-size:14px;line-height:1.6;color:var(--sub,#3E4754)}',
     '.gbx .gbsame{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0 0;min-height:52px;padding:10px 14px;border-radius:14px;border:1.5px solid var(--blue,#4338CA);background:#fff;color:var(--blue-d,#3730A3);text-decoration:none}.gbx .gbsame b{font-size:15.5px;font-weight:800}.gbx .gbsame small{display:block;font-size:13px;font-weight:500;color:var(--sub2,#4E5968);margin-top:2px}.gbx .gbsame .go{flex:none;font-size:20px;font-weight:800}',
     '.gbx p.gbsame0{margin:12px 0 0;font-size:13.5px;color:var(--sub2,#4E5968)}',
+    '.gbx .gbsort{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:12px 0 0}.gbx .gbsort .b{display:grid;grid-template-columns:repeat(4,auto);gap:6px}.gbx .gbsort button{min-height:44px;padding:0 14px;border:1.5px solid var(--line,#E5E8EB);border-radius:999px;background:#fff;font:inherit;font-size:14.5px;font-weight:800;color:var(--sub,#3E4754);cursor:pointer;white-space:nowrap}.gbx .gbsort button.on{border-color:var(--blue,#4338CA);background:var(--blue-l,#EEEDFB);color:var(--blue-d,#3730A3)}',
+    '.gbx .gbsort .rb{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border:1.5px dashed var(--line,#E5E8EB);border-radius:999px;font-size:14.5px;font-weight:800;color:var(--sub,#3E4754);cursor:pointer;white-space:nowrap}.gbx .gbsort .rb input{width:18px;height:18px;margin:0;accent-color:var(--blue,#4338CA)}.gbx .gbsort .rb.on{border-style:solid;border-color:var(--blue,#4338CA);background:var(--blue-l,#EEEDFB);color:var(--blue-d,#3730A3)}',
+    '@media(max-width:560px){.gbx .gbsort{display:grid;grid-template-columns:1fr}.gbx .gbsort .b{grid-template-columns:repeat(2,minmax(0,1fr))}.gbx .gbsort button{padding:0 8px}.gbx .gbsort .rb{justify-content:center}}',
+    '.gbx h4.gbg{margin:16px 0 0;padding:12px 0 0;border-top:2px solid var(--text,#191F28);font-size:17px;font-weight:900;color:var(--text,#191F28)}.gbx h4.gbg.b{margin-top:22px;border-top-color:var(--line,#E5E8EB)}.gbx h4.gbg span{margin-left:6px;font-size:14px;color:var(--blue,#4338CA)}.gbx h4.gbg+p.gtn{margin:4px 0 0}',
+    '.gbx .gbkey{display:inline-block;margin:8px 0 0;font-size:13px;font-weight:800;padding:3px 8px;border-radius:8px;background:var(--gray,#F2F4F6);color:var(--sub,#3E4754)}',
+    '.gbx .gbmore{display:block;width:100%;min-height:52px;margin:12px 0 0;border:1.5px solid var(--blue,#4338CA);border-radius:14px;background:#fff;color:var(--blue-d,#3730A3);font:inherit;font-size:16px;font-weight:900;cursor:pointer}.gbx .gbmore small{font-size:13.5px;font-weight:700;color:var(--sub2,#4E5968);margin-left:4px}',
     '.gbx .gbload{margin:10px 0 0;min-height:48px;font-size:14px;color:var(--sub2,#4E5968)}',
     '.gflow.gbflow{max-width:960px}'
   ].join('');
@@ -395,7 +407,7 @@
       H.getJ('mdl', H.DATA + 'model.json').catch(() => null),
       root.JDJ_RANK || !H.script ? null : H.script('assets/rank-core.js?v=8'),
       /* 조건 검색 엔진(내 집 마련 맞춤 단지와 같은 파일)·지역 메모 */
-      root.JDJ_REC || !H.script ? null : H.script('assets/rec-core.js?v=6'),
+      root.JDJ_REC || !H.script ? null : H.script('assets/rec-core.js?v=7'),
       root.JDJ_REGION_NOTES || !H.script ? null : H.script('assets/region-notes.js').catch(() => null)
     ]).then(([units, MH, pol, MODEL]) => ({ units, MH, pol, MODEL, IX: H.IX, notes: root.JDJ_REGION_NOTES || null, sus: {} })).catch(e => { XP = null; throw e; }));
   }
@@ -439,6 +451,11 @@
     if (r.fv == null || !T || !T.ok) return '';
     return `<div class="gbfc"><div class="h"><span>미래가치 점수 · 참고</span><b>${esc(r.fv)}<small style="font-size:12.5px;font-weight:700">/100</small></b></div><div class="bar" role="img" aria-label="100점 중 ${esc(r.fv)}점"><i></i><i></i><i></i><i></i><i></i><span class="pin" style="left:${Math.max(0, Math.min(100, r.fv))}%"></span></div><p class="s">과거 ${esc(T.n)}번 중 ${esc(T.hit)}번 맞음(${esc(T.where)} 단지) · 앞날을 약속하지 않아요</p></div>`;
   }
+  /** 지금 정렬 기준 값(검색 화면 카드와 같은 내용) */
+  function keyChip(r, R) {
+    const t = R.sort === 'stn' ? stationT(r) : R.sort === 'new' ? (r.by ? `${r.by}년 준공` : '준공 정보 없음') : R.sort === 'deal' ? `최근 1년 거래 ${r.n12u}건` : '';
+    return t ? `<p class="gbkey">${esc(t)}</p>` : '';
+  }
   function cardHtml(r, i, H, R, picks) {
     const href = H.mineUrl ? H.mineUrl(r) : (H.BASE || '') + 'mine/';
     const rk = risks(r, (LC() && LC().R.CAP.v) || []), on = picks && picks.indexOf(r.key) >= 0;
@@ -448,7 +465,7 @@
       <div class="pr"><b>${esc(won(r.price))}</b><span>최근 실거래 중간값</span></div>
       <p class="ev">${r.p3 ? `${esc(ymDot(r.p3.from))}~${esc(ymDot(r.p3.to))} 거래 ${esc(r.n3)}건` : '거래 기간 정보 없음'} · 국토교통부 실거래 · 자료 갱신 ${esc(dDot((H.IX || {}).updated))}</p>
       <dl>${r.range ? `<div><dt>최근 1년 범위</dt><dd>${esc(wonS(r.range.lo))} ~ ${esc(wonS(r.range.hi))}(거래 있던 ${esc(r.range.months)}개월 시세)</dd></div>` : ''}<div><dt>이 가격이면</dt><dd>대출 ${esc(wonS(r.loan))} · 매달 ${esc(wonS(Math.round(r.pay)))}(연 ${RATE}% 가정) · 내 돈 ${esc(wonS(Math.round(r.need)))}</dd></div></dl>
-      ${fcHtml(r, R.track)}${rk.length ? `<ul class="gbr">${rk.map(x => `<li class="${x.lv}">${esc(x.t)}</li>`).join('')}</ul>` : ''}</li>`;
+      ${keyChip(r, R)}${fcHtml(r, R.track)}${rk.length ? `<ul class="gbr">${rk.map(x => `<li class="${x.lv}">${esc(x.t)}</li>`).join('')}</ul>` : ''}</li>`;
   }
   function trustHtml(R, X, H) {
     const B = H.BASE || '';
@@ -471,31 +488,58 @@
     if (!A || !A.target || sel.length < 2) return '';
     return A.target(sel.map(r => ({ d: { sd: 's00', code: r.code, dong: r.dong, jibun: r.jibun, apt: r.apt, key: ['s00', r.code, r.dong, r.jibun, r.apt].join('|') }, band: r.band })), null, 'guide');
   }
+  /** 정렬 단추 4가지·재건축 단지만 보기 — 검색 화면(buy/report)과 같은 이름·같은 순서 함수(rec-core search) */
+  function sortBarHtml(st, R) {
+    const RC = RCc(), cur = RC.sortId(st.sort);
+    return `<div class="gbsort"><div class="b" role="group" aria-label="단지 순서">${RC.SORTS.map(s => `<button type="button" data-bsort="${s[0]}" aria-pressed="${cur === s[0]}"${cur === s[0] ? ' class="on"' : ''}>${esc(s[1])}</button>`).join('')}</div>
+      <label class="rb${st.rb ? ' on' : ''}"><input type="checkbox" data-brb="1"${st.rb ? ' checked' : ''}><span>재건축 단지만 보기</span></label></div>
+      <p class="gtn">${esc(SORT_LINE[cur])}${st.rb ? ` · 재건축 단지만: 정비사업 공식 자료에 재건축 구역으로 올라 있고 착공 전인 단지, 또는 지은 지 ${RC.REBUILD_AGE}년이 넘은 단지` : ''}</p>`;
+  }
+  /** 목록: 추천 순이면 '예산에 맞는 단지'·'예산보다 싼 단지' 두 묶음 */
+  function listHtml(show, H, R, picks) {
+    const grouped = R.sort === 'rec';
+    let h = '', open = false;
+    show.forEach((r, i) => {
+      if (grouped && (i === 0 || show[i - 1].grp !== r.grp)) {
+        if (open) h += '</ul>';
+        h += r.grp === 'a' ? `<h4 class="gbg">예산에 맞는 단지 <span>${esc(R.nA)}곳</span></h4><p class="gtn">살 수 있는 최대 집값의 85~100%인 단지예요.</p>`
+          : `<h4 class="gbg b">예산보다 싼 단지 <span>${esc(R.nB)}곳</span></h4><p class="gtn">${R.nA ? '예산을 다 쓰지 않아도 되는 단지예요.' : '예산에 꼭 맞는(최대 집값의 85% 이상) 단지가 없어, 예산보다 싼 단지를 보여 드려요.'}</p>`;
+        h += '<ul class="gbl">'; open = true;
+      } else if (!open) { h += '<ul class="gbl">'; open = true; }
+      h += cardHtml(r, i, H, R, picks);
+    });
+    return h + (open ? '</ul>' : '');
+  }
   /** 카드 본문(즉답·길잡이 화면 공통) */
   function body(st, X, H, full) {
     const L = H.L || LC(), C = capOf(st, L), CL = cliffs(st, L);
     const R = X && X.units ? rowsOf(st, X, { L, MC: H.MC }) : null;
     if (R && X.sus) R.rows.forEach(r => { if (X.sus[r.key] != null) r.sus = X.sus[r.key]; });
-    const lim = full ? 10 : 3, show = R ? R.rows.slice(0, lim) : [];
+    const lim = full ? Math.max(10, st._lim || 10) : 3, show = R ? R.rows.slice(0, lim) : [];
     let list = '';
     if (!(st.cash > 0)) list = '';
     else if (!R) list = '<p class="gbload">서울 단지 시세를 불러오고 있어요…</p>';
-    else if (!R.n) list = `<p class="gtn" style="margin-top:12px">지금 조건으로 바로 살 수 있는 단지를 찾지 못했어요. 평형·지역·신축 조건을 하나 풀어 보세요.${R.near && R.near.length ? ` 조금만 더 준비하면 되는 곳: ${R.near.map(x => `${x.apt}(${x.gu} ${x.band} · 내 돈 ${wonS(Math.round(x.short))} 부족)`).join(', ')}.` : ''}</p>`;
+    else if (!R.n) list = (full ? sortBarHtml(st, R) : '') + `<p class="gtn" style="margin-top:12px">지금 조건으로 바로 살 수 있는 ${st.rb ? '재건축 ' : ''}단지를 찾지 못했어요. ${st.rb ? '‘재건축 단지만 보기’를 끄거나 ' : ''}평형·지역·신축 조건을 하나 풀어 보세요.${R.near && R.near.length ? ` 조금만 더 준비하면 되는 곳: ${R.near.map(x => `${x.apt}(${x.gu} ${x.band} · 내 돈 ${wonS(Math.round(x.short))} 부족)`).join(', ')}.` : ''}</p>`;
     else {
       const ttl = `조건에 맞는 서울 ${sizeT(st)} 단지 ${R.n.toLocaleString()}곳${st.gname && st.gname !== '서울 전체' ? `(${st.gname})` : ''}`;
       list = `<h3 class="gtt" style="margin-top:16px;font-size:18px">${esc(ttl)}</h3><p class="gtn">조건에 맞는 ${esc(R.total.toLocaleString())}개 평형 중 골랐어요. ${esc(basisOf(R, X))}</p>
         ${R.th && R.th.v === 'apt' ? '<p class="gtn">토지거래허가: 정책 표 기준 서울 아파트 전역 지정 — 허가를 받아 산 뒤 직접 살아야 해요(모든 단지 공통).</p>' : ''}
-        <ul class="gbl">${show.map((r, i) => cardHtml(r, i, H, R, full ? (st._pick || []) : null)).join('')}</ul>
+        ${full ? sortBarHtml(st, R) : ''}
+        ${listHtml(show, H, R, full ? (st._pick || []) : null)}
+        ${full && R.n > lim ? `<button type="button" class="gbmore" data-bmore="1">${Math.min(10, R.n - lim)}곳 더 보기 <small>(${lim} / ${R.n.toLocaleString()}곳)</small></button>` : ''}
         ${!full && R.n > lim ? `<p class="gtn">나머지 ${(R.n - lim).toLocaleString()}곳은 ‘단지 목록 전체와 근거 보기’에서 볼 수 있어요.</p>` : ''}`;
     }
     const su = R ? sameUrl(st, H.IX || (X && X.IX), H.BASE || '') : null;
-    if (R) list += su ? `<a class="gbsame" href="${esc(su)}" data-gsame="1" data-track="guide_${ID}_same"><span><b>같은 조건으로 검색 화면에서 보기</b><small>내 집 마련 맞춤 단지 화면을 지금 조건(현금·소득·지역·평형·신축·생애최초)으로 채워 열어요 — 같은 계산이라 같은 단지가 나와요</small></span><span class="go" aria-hidden="true">›</span></a>`
+    if (R) list += su ? `<a class="gbsame" href="${esc(su)}" data-gsame="1" data-track="guide_${ID}_same"><span><b>같은 조건으로 검색 화면에서 보기</b><small>내 집 마련 맞춤 단지 화면을 지금 조건(현금·소득·지역·평형·신축·생애최초·정렬)으로 채워 열어요 — 같은 계산이라 같은 단지가 나와요</small></span><span class="go" aria-hidden="true">›</span></a>`
       : st.cash > 0 ? '<p class="gbsame0">연 소득을 고르면 이 목록을 내 집 마련 맞춤 단지(조건 검색) 화면에서 같은 조건으로 열 수 있어요. 그 화면은 소득 기준(DSR)까지 넣어 계산해요.</p>' : '';
     const cl = st.cash > 0 && C && C.P ? `<details class="gsrc" style="margin-top:10px"${full ? ' open' : ''}><summary>15억 문턱 숫자로 보기</summary>${cliffHtml(CL)}</details>` : '';
     return { R, C, CL, show, html: `${st.rec ? `<p class="gbrec">${esc(REC_LINE)}</p>` : ''}${verdictHtml(st, C, CL, full ? 'h2' : 'span')}${cl}${nqHtml(st, H)}${list}` };
   }
   function wireBox(box, getSt, setSt, redraw, R) {
     box.querySelectorAll('[data-gsame]').forEach(a => a.addEventListener('click', () => handSame(getSt())));
+    box.querySelectorAll('[data-bsort]').forEach(b => b.addEventListener('click', () => { const st = getSt(); if (RCc().sortId(st.sort) === b.dataset.bsort) return; st.sort = b.dataset.bsort; st._lim = 10; setSt(st); redraw(true); }));
+    box.querySelectorAll('[data-brb]').forEach(cb => cb.addEventListener('change', () => { const st = getSt(); st.rb = cb.checked ? 1 : 0; st._lim = 10; setSt(st); redraw(true); }));
+    box.querySelectorAll('[data-bmore]').forEach(b => b.addEventListener('click', () => { const st = getSt(); st._lim = Math.max(10, st._lim || 10) + 10; setSt(st); redraw(true); }));
     box.querySelectorAll('[data-bpick]').forEach(cb => cb.addEventListener('change', () => {
       const st = getSt(); let p = (st._pick || []).slice(); const k = cb.dataset.bpick;
       if (cb.checked) { if (p.length >= 3) { cb.checked = false; return; } p.push(k); } else p = p.filter(x => x !== k);
@@ -575,12 +619,12 @@
     const X = await load(H), R = rowsOf(st, X, { L, MC: H.MC }), mc = mainCliff(cliffs(st, L), C && C.P);
     return { head: headOf(st, C), nums: C && C.P ? [{ k: '그때 대출', v: won(C.loan) }, { k: '살 수 있는 단지', v: `${R.n.toLocaleString()}곳` }] : [],
       ex2: R.rows.slice(0, 4).map(r => [`${r.apt} (${r.gu}) ${r.band}`, wonS(r.price)]),
-      ex: [st.rec ? REC_LINE : '', cliffLine(mc), incomeLine(st, C), `내 집 마련 맞춤 단지와 같은 순서(미래가치 점수 순) · 최근 3개월 실거래 중간값 · 자료 갱신 ${dDot((X.IX || {}).updated)}`].filter(Boolean).join(' '), n: R.n };
+      ex: [st.rec ? REC_LINE : '', cliffLine(mc), incomeLine(st, C), `내 집 마련 맞춤 단지와 같은 순서(예산에 맞는 단지 먼저, 미래가치 점수 순) · 최근 3개월 실거래 중간값 · 자료 갱신 ${dDot((X.IX || {}).updated)}`].filter(Boolean).join(' '), n: R.n };
   }
   /** 대화창 질문 꼴(guide-core chatNext 가 씀) */
   function chatQ(id, st) { const k = next(id, st); if (!k) return null; const q = Q[k]; return { key: k, nf: 1, ext: 1, q, quick: q.opts.slice() }; }
 
-  const API = { ID, IDS, is, Q, ORDER, RATE, SEOUL, init, next, set, answer, read, ctxOf, capOf, cliffs, mainCliff, cliffLine, rowsOf, searchQ, hzUnits, hzNow, sameUrl, sameFin, ORDER_LINE, risks, susCount, span3, trackOf,
+  const API = { ID, IDS, is, Q, ORDER, RATE, SEOUL, init, next, set, answer, read, ctxOf, capOf, cliffs, mainCliff, cliffLine, rowsOf, searchQ, hzUnits, hzNow, sameUrl, sameFin, ORDER_LINE, SORT_LINE, sortBarHtml, listHtml, risks, susCount, span3, trackOf,
     chipsOf, headOf, keysOf, incomeLine, warnOf, trustOf, basisOf, REC_LINE, SRC, solve, chatQ, chatCard, instant, flow, load, moneyIn, nextLinks, cmpUrl, stationT };
   root.JDJ_GBUDGET = API;
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

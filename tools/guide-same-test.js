@@ -4,6 +4,7 @@
       길잡이의 '같은 조건으로 검색 화면에서 보기' 주소·넘긴 값으로 연 화면과 길잡이 목록의 단지·순서·숫자(시세·대출·필요한 내 돈)·조건 충족 수가 같은지
    ② 조건에 맞는 아파트 찾기(find_home) ↔ 지도(map/): 지도 화면 코드(필터 FOPT·주소 읽기)로 '같은 조건으로 지도에서 보기' 주소를 열었을 때 같은 필터·같은 대표 평형·같은 순서인지
    ③ 다른 시나리오: 대응 화면과 같은 계산 함수·같은 기본값을 쓰는지(정적 점검) · 대응 화면이 없는 시나리오 목록
+   ①-2 맞춤 단지 순서: 예산에 맞는 단지(85~100%) 먼저 · 같은 점수면 집값 → 이름 · 정렬 4가지 · 재건축 단지만 · 자료 순서를 섞어도 같은 결과 · 재건축 몸테크와 같은 재건축 판정
    ④ 오가기: 길잡이 결과 아래 '같은 조건으로 … 보기', 조건 검색 화면 위쪽 '말로 물어보기'(길잡이가 꺼져 있으면 숨김)
    자료: tools/guide-budget-fixture.json(공개 자료 일부). 환경변수 JDJ_DATA=공개 자료 data 폴더(index.json·s00.json·model.json·model_h.json·s00_xy.json)가 있으면 실제 자료로도 대조해요. */
 'use strict';
@@ -78,7 +79,7 @@ const CASES = [
   ['현금 3억 · 연 소득 5천(살 수 있는 단지가 거의 없음)', { cash: 30000, inc: 5000, size: '84', gus: [], own: 'none' }]
 ];
 const sigG = R => R.rows.map(r => [r.code, r.dong, r.apt, r.band, r.price, r.loan, Math.round(r.need)]);
-const sigS = P => P.picked.map(x => [x.code, x.dong, x.apt, x.band, x.P, Math.floor(x.nd.loan.L), Math.round(x.nd.need)]);
+const sigS = P => P.list.map(x => [x.code, x.dong, x.apt, x.band, x.P, Math.floor(x.nd.loan.L), Math.round(x.nd.need)]);
 for (const D of SETS) {
   const X = { units: D.units, IX: D.IX, MH: D.MH, MODEL: D.MODEL, pol: D.pol, notes: NOTES };
   for (const [nm, o] of CASES) {
@@ -94,6 +95,7 @@ for (const D of SETS) {
       && JSON.stringify([...pg.S.sggs].sort()) === JSON.stringify(Object.keys(D.IX.sgg).filter(c => /^11/.test(c) && (!st.gus.length || st.gus.indexOf(D.IX.sgg[c].name) >= 0)).sort()) && pg.HZ === 2,
       { S: Object.assign({}, pg.S, { sggs: [...pg.S.sggs].length, areas: [...pg.S.areas] }) });
     check(`[${D.nm}] ${nm}: 최대 집값 같음`, pg.maxBy.reg === B.capOf(st, L).P, [pg.maxBy.reg, B.capOf(st, L).P]);
+    check(`[${D.nm}] ${nm}: 검색 화면 첫 10곳 = 길잡이 첫 10곳`, JSON.stringify(sigG(R).slice(0, 10)) === JSON.stringify(pg.r.picked.map(x => [x.code, x.dong, x.apt, x.band, x.P, Math.floor(x.nd.loan.L), Math.round(x.nd.need)])));
     check(`[${D.nm}] ${nm}: 단지·순서·시세·대출·필요한 내 돈 같음(${R.n}곳)`, JSON.stringify(sigG(R)) === JSON.stringify(sigS(pg.r)), { guide: sigG(R).slice(0, 3), page: sigS(pg.r).slice(0, 3) });
     check(`[${D.nm}] ${nm}: 조건 충족 평형 수 같음(${R.total})`, R.total === pg.r.total, [R.total, pg.r.total]);
     check(`[${D.nm}] ${nm}: 맞는 단지가 없을 때 '조금만 더 준비하면' 단지도 같음`, R.n || JSON.stringify(R.near.map(x => x.apt)) === JSON.stringify(pg.near.slice(0, 3).map(x => x.apt)));
@@ -106,6 +108,100 @@ for (const D of SETS) {
 check('소득을 모르면 길잡이는 소득 기준(DSR)을 빼고 계산하고, 검색 화면 주소는 만들지 않음(소득을 고르라고 안내)', B.sameUrl(Object.assign(B.init(B.ID, {}), { cash: 100000 }), SETS[0].IX, '/') === null);
 check('개인값(연소득·현금)은 주소에 없음 — 이 탭 저장값(sessionStorage)으로만', SETS.every(D => CASES.every(([, o]) => { const u = B.sameUrl(Object.assign(B.init(B.ID, {}), o), D.IX, '/'); return !/[?&](i|c|d|n|e)=/.test(u); })));
 check('검색 화면은 from=guide 가 아니면 이 탭 저장값을 쓰지 않음', (() => { const pg = reportRun('?sd=' + encodeURIComponent('서울특별시'), { jdj_gfin: JSON.stringify(B.sameFin({ cash: 100000, inc: 10000 })) }, Object.assign({ notes: NOTES }, SETS[0])); return pg.S.cash === 40000 && pg.S.income === 7000; })());
+
+/* ---------- ①-2 맞춤 단지 순서(대표 승인 2026-11-26): 예산에 맞는 단지 먼저 · 같은 점수 순서 고정 · 정렬 단추 4가지 · 재건축 단지만 ----------
+   예산(현금 3억·5억·10억·20억) × 연 소득 × 정렬 × 재건축 단지만 — 길잡이 목록과 검색 화면(주소 so·rb 로 연 화면)이 같은지, 각 정렬 규칙이 지켜지는지, 자료 순서를 섞어도 같은지 */
+const rnd = seed => () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+function shuffled(arr, seed) { const r = rnd(seed), a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const BUDS = [['현금 3억 · 연 소득 5천', 30000, 5000], ['현금 3억 · 연 소득 1억', 30000, 10000], ['현금 5억 · 연 소득 7천', 50000, 7000], ['현금 5억 · 연 소득 1억 5천', 50000, 15000],
+  ['현금 10억 · 연 소득 1억', 100000, 10000], ['현금 10억 · 연 소득 2억', 100000, 20000], ['현금 20억 · 연 소득 1억', 200000, 10000], ['현금 20억 · 연 소득 3억', 200000, 30000]];
+const SORT_IDS = REC.SORTS.map(x => x[0]);
+const kSub = x => (x.fx && x.fx.sub != null) ? x.fx.sub : null, kBy = x => (x.fx && x.fx.by > 0) ? x.fx.by : null, kDeal = x => REC.cnt12(x.u);
+/** 정렬 규칙 확인: 값 순서(값 없는 단지는 뒤) · 같은 값이면 점수 → 집값 → 이름(tieCmp) */
+function sortOk(list, id) {
+  const K = { stn: [kSub, 1], new: [kBy, -1], deal: [kDeal, -1] }[id];
+  if (!K) return true;
+  for (let i = 1; i < list.length; i++) {
+    const a = K[0](list[i - 1]), b = K[0](list[i]);
+    if (a == null && b != null) return false;
+    if (a != null && b != null && K[1] * (b - a) < 0) return false;
+    if (a === b && REC.tieCmp(list[i - 1], list[i]) > 0) return false;
+  }
+  return true;
+}
+/** 추천 순 확인: 예산에 맞는 단지(85% 이상) 먼저 · 묶음 표시가 맞음 · 묶음 첫 단지가 묶음에서 가장 앞선 단지(점수 → 집값 → 이름) */
+function recOk(list, maxBy) {
+  if (list.some((x, i) => i && list[i - 1].grp === 'b' && x.grp === 'a')) return 'A·B 순서';
+  if (list.some(x => x.grp !== (x.P / maxBy[x.g] >= REC.FIT_A ? 'a' : 'b'))) return '묶음 표시';
+  for (const g of ['a', 'b']) { const L0 = list.filter(x => x.grp === g); if (L0.length && L0.some(x => REC.tieCmp(x, L0[0]) < 0)) return '묶음 첫 단지'; }
+  return '';
+}
+const uniqOk = list => new Set(list.map(x => x.code + '|' + x.apt)).size === list.length;
+for (const D of SETS) {
+  const X = { units: D.units, IX: D.IX, MH: D.MH, MODEL: D.MODEL, pol: D.pol, notes: NOTES };
+  let nOk = 0, nCase = 0, nRb = 0, aEmpty = 0;
+  for (const [nm, cash, inc] of BUDS) for (const so of SORT_IDS) for (const rb of [0, 1]) {
+    const st = Object.assign(B.init(B.ID, {}), { cash, inc, size: '0', gus: [], own: 'none', sort: so, rb });
+    const url = B.sameUrl(st, D.IX, '/'), R = B.rowsOf(st, X, { L, MC, hz: 2 });
+    const pg = reportRun(url.slice(url.indexOf('?')), { jdj_gfin: JSON.stringify(B.sameFin(st)) }, Object.assign({ notes: NOTES }, D));
+    const tag = `[${D.nm}] ${nm} · ${REC.SORTS.find(x => x[0] === so)[1]}${rb ? ' · 재건축 단지만' : ''}`;
+    nCase++;
+    const same = pg.S.sort === so && pg.S.rb === !!rb && JSON.stringify(sigG(R)) === JSON.stringify(sigS(pg.r)) && R.total === pg.r.total;
+    check(`${tag}: 검색 화면(주소 so·rb)과 길잡이 목록 같음(${R.n}곳)`, same, { S: [pg.S.sort, pg.S.rb], g: sigG(R).slice(0, 2), p: sigS(pg.r).slice(0, 2) });
+    const list = pg.r.list;
+    check(`${tag}: 한 단지 한 번`, uniqOk(list));
+    if (so === 'rec') { const e = recOk(list, pg.maxBy); check(`${tag}: 추천 순 = 예산에 맞는 단지 먼저 · 묶음마다 점수 → 집값 → 이름`, !e, e); if (list.length && !pg.r.nA) aEmpty++; }
+    else check(`${tag}: 정렬 규칙(값 없는 단지는 맨 뒤 · 같은 값이면 점수 → 집값 → 이름)`, sortOk(list, so));
+    if (rb) { nRb += list.length; check(`${tag}: 재건축 단지만(구역 착공 전 또는 준공 ${REC.REBUILD_AGE}년 이상)`, list.every(x => REC.rebuildOf(x.u, +String(D.IX.updated).slice(0, 4)).ok)); }
+    /* 순서 고정: 자료 파일 순서를 섞어도 같은 목록 */
+    if (so === 'rec' || rb === 0) {
+      const sh = Object.assign({}, D, { units: shuffled(D.units, 7 + cash / 1000 + inc) });
+      const pg2 = reportRun(url.slice(url.indexOf('?')), { jdj_gfin: JSON.stringify(B.sameFin(st)) }, Object.assign({ notes: NOTES }, sh));
+      const R2 = B.rowsOf(st, Object.assign({}, X, { units: sh.units }), { L, MC, hz: 2 });
+      check(`${tag}: 자료 순서를 섞어도 같은 순서(검색 화면·길잡이)`, JSON.stringify(sigS(pg2.r)) === JSON.stringify(sigS(pg.r)) && JSON.stringify(sigG(R2)) === JSON.stringify(sigG(R)));
+    }
+    if (same) nOk++;
+  }
+  check(`[${D.nm}] 예산 ${BUDS.length}가지 × 정렬 4가지 × 재건축 켜고 끄기: 모두 같은 결과(${nOk}/${nCase})`, nOk === nCase);
+  check(`[${D.nm}] 재건축 단지만 보기에서 단지가 실제로 나옴(${nRb}곳)`, nRb > 0);
+}
+/* 같은 점수일 때 순서: 점수 → 집값 높은 순(예산에 가까운 쪽) → 이름 가나다순 — 넣는 순서와 상관없이 */
+{
+  const mk = (apt, P, sv, grp, code) => ({ code: code || '11110', dong: '동', apt, band: '84㎡대', P, hasFv: true, sortv: sv, disp: 99, score: 0.5, grp, fx: { sub: null, by: null }, u: [] });
+  const items = [mk('나단지', 120000, 99, 'a'), mk('가단지', 120000, 99, 'a'), mk('다단지', 140000, 99, 'a'), mk('라단지', 130000, 99.5, 'a'), mk('마단지', 90000, 99, 'b'), mk('바단지', 95000, 99, 'b')];
+  const want = ['라단지', '다단지', '가단지', '나단지', '바단지', '마단지'];
+  const ok = [1, 2, 3, 4, 5, 6, 7, 8].every(seed => JSON.stringify(REC.arrange(shuffled(items, seed), { sort: 'rec' }).map(x => x.apt)) === JSON.stringify(want));
+  check('같은 점수면 집값이 예산에 가까운(높은) 단지 → 이름 가나다순 · 넣는 순서를 바꿔도 같음', ok, REC.arrange(items, { sort: 'rec' }).map(x => x.apt));
+  const many = []; for (let i = 0; i < 14; i++) many.push(mk('단지' + String.fromCharCode(44032 + i), 120000 - i, 99, 'a', i < 8 ? '11110' : '11140'));
+  const ar = REC.arrange(many, { sort: 'rec' }), p1 = ar.slice(0, 10);
+  check('추천 순 첫 10곳: 한 구 3곳까지 고르고, 고른 구가 적어 칸이 남으면 다음 순서 단지로 채움', p1.length === 10 && p1.slice(0, 6).filter(x => x.code === '11110').length === 3 && ar.length === 14);
+  const miss = [Object.assign(mk('역없음', 100000, 99, 'a'), { fx: { sub: null, by: null } }), Object.assign(mk('역5분', 100000, 50, 'a'), { fx: { sub: 5, by: 2001 } }), Object.assign(mk('역10분', 100000, 99, 'a'), { fx: { sub: 10, by: 2020 } })];
+  check("역 가까운 순·신축 순: 값이 없는 단지는 맨 뒤", REC.arrange(miss, { sort: 'stn' }).map(x => x.apt).join() === '역5분,역10분,역없음' && REC.arrange(miss, { sort: 'new' }).map(x => x.apt).join() === '역10분,역5분,역없음');
+}
+/* 재건축 몸테크(rebuild_live) ↔ 맞춤 단지 '재건축 단지만 보기': 같은 판정 함수 · '같은 조건으로 검색 화면에서 보기' */
+{
+  const GX = require('../assets/guide-redev.js'), GXS = read('assets/guide-redev.js');
+  check('재건축 몸테크가 맞춤 단지와 같은 재건축 판정(rec-core rebuildOf)을 씀', /RC\.rebuildOf\(u, Y, z\)/.test(GXS) && !/age >= OLD/.test(GXS) && /if \(q\.rebuild && !rebuildOf\(u, q\.year \|\| 0\)\.ok\) return false;/.test(read('assets/rec-core.js')));
+  for (const D of SETS) {
+    const Y = +String(D.IX.updated).slice(0, 4);
+    for (const [cash, inc, size, gus] of [[50000, 8000, '0', []], [100000, 10000, 'm', []], [70000, 7000, '0', ['노원구', '도봉구', '강북구']]]) {
+      const st = Object.assign(GX.init('rebuild_live', {}), { cash, inc, size, gus, wait: 0 });
+      const XR = { zones: {}, pol: null, IX: D.IX, units: D.units }, RR = GX.rebuildRows(st, XR, { MC, L });
+      const url = GX.sameUrl(st, D.IX, '/'), tag = `[${D.nm}] 재건축 몸테크 현금 ${cash / 10000}억 · 소득 ${inc}만 · ${size === '0' ? '평형 상관없음' : '60~85㎡'}${gus.length ? ' · 노도강' : ''}`;
+      check(`${tag}: '같은 조건으로 검색 화면에서 보기' 주소(재건축 단지만 켬)`, /^\/buy\/report\/\?/.test(url || '') && /[?&]rb=1/.test(url) && /from=guide/.test(url) && !/[?&](i|c)=/.test(url), url);
+      const pg = reportRun(url.slice(url.indexOf('?')), { jdj_gfin: JSON.stringify(GX.sameFin(st)) }, Object.assign({ notes: NOTES }, D));
+      check(`${tag}: 검색 화면이 같은 현금·소득·지역·재건축 단지만으로 열림`, pg.S.rb === true && pg.S.cash === cash && pg.S.income === inc && JSON.stringify([...pg.S.sggs].sort()) === JSON.stringify(Object.keys(D.IX.sgg).filter(c => /^11/.test(c) && (!gus.length || gus.indexOf(D.IX.sgg[c].name) >= 0)).sort()));
+      check(`${tag}: 두 화면 모두 같은 재건축 판정을 통과한 단지만`, RR.rows.every(r => REC.rebuildOf(r.u, Y, r.z).ok) && pg.r.list.every(x => REC.rebuildOf(x.u, Y).ok));
+      const keys = new Set(RR.rows.map(r => r.code + '|' + r.dong + '|' + r.apt));
+      check(`${tag}: 검색 화면 단지(${pg.r.list.length}곳)는 모두 길잡이 재건축 목록(${RR.n}곳) 안에 있음`, size !== '0' || pg.r.list.every(x => keys.has(x.code + '|' + x.dong + '|' + x.apt)), pg.r.list.filter(x => !keys.has(x.code + '|' + x.dong + '|' + x.apt)).map(x => x.apt).slice(0, 5));
+    }
+  }
+  check("재건축 몸테크 결과 아래 '같은 조건으로 검색 화면에서 보기'(소득을 모르면 안내만)", /같은 조건으로 검색 화면에서 보기/.test(GXS) && /data-rsame/.test(GXS) && /jdj_gfin/.test(GXS) && GX.sameUrl(Object.assign(GX.init('rebuild_live', {}), { cash: 50000 }), SETS[0].IX, '/') === null);
+}
+/* 맞춤 단지 화면: 정렬 단추 4가지·재건축 단지만 보기·더 보기·묶음 제목 */
+check("맞춤 단지 화면: 정렬 단추(추천 순·역 가까운 순·신축 순·거래 많은 순)·'재건축 단지만 보기'·'더 보기'·묶음 제목", JSON.stringify(REC.SORTS.map(x => x[1])) === JSON.stringify(['추천 순', '역 가까운 순', '신축 순', '거래 많은 순'])
+  && /data-sort="\$\{id\}"/.test(RPT) && /id="rbOnly"/.test(RPT) && /재건축 단지만 보기/.test(RPT) && /id="moreBtn"/.test(RPT) && /예산에 맞는 단지/.test(RPT) && /예산보다 싼 단지/.test(RPT)
+  && /data-bsort/.test(read('assets/guide-budget.js')) && /data-brb/.test(read('assets/guide-budget.js')) && /data-bmore/.test(read('assets/guide-budget.js')));
 
 /* ---------- ② 조건에 맞는 아파트 찾기 ↔ 지도 ---------- */
 function mapState(search, IX) {
@@ -161,8 +257,9 @@ check("길잡이 결과 아래 '같은 조건으로 검색 화면에서 보기'(
 check("조건 검색 화면 위쪽 '말로 물어보기' 자리(내 집 마련 맞춤 단지·내 집 마련 계산기)", /<div class="noprint" data-gask="report" hidden><\/div>/.test(RPT) && /data-gask="buy" hidden/.test(BUY) && RPT.indexOf('data-gask') < RPT.indexOf('id="settings"'));
 check("'말로 물어보기'는 길잡이가 켜졌을 때만 채움(꺼져 있으면 hidden 그대로)", /function scan\(\) \{ if \(!on\(\)\) return;[^\n]*data-gask[^\n]*askMount/.test(GN) && /말로 물어보기/.test(GN) && /solve\/\?chat=1&from=/.test(GN));
 check('진한 꽉 찬 단추를 늘리지 않음(오가기 링크는 테두리 칸)', /\.gbx \.gbsame\{[^}]*background:#fff/.test(GB) && /\.gsame\{[^}]*background:#fff/.test(GJ) && !/\.gask\{[^}]*background:var\(--blue\)/.test(GN));
-check('화면 파일 번호: rec-core v6 · guide-budget v2 · guide-core v12 · guide v14 · guide-next v8 · map-core v6 · scenarios v9', /rec-core\.js\?v=6/.test(RPT) && /rec-core\.js\?v=6/.test(read('switch/index.html')) && /rec-core\.js\?v=6/.test(read('solve/index.html')) && /map-core\.js\?v=6/.test(MAP) && /map-core\.js\?v=6/.test(read('solve/index.html')) && /map-core\.js\?v=6/.test(read('index.html'))
-  && /guide-next\.js\?v=8/.test(RPT) && /guide-budget\.js\?v=2/.test(read('solve/index.html')) && /guide\.js\?v=14/.test(read('index.html')) && /scenarios\.json\?v=9/.test(GN) && /'\.\/assets\/rec-core\.js\?v=6'/.test(read('sw.js')));
+check('화면 파일 번호: rec-core v7 · guide-budget v3 · guide-redev v4 · guide-core v12 · guide v15 · guide-next v8 · map-core v6 · scenarios v9', /rec-core\.js\?v=7/.test(RPT) && /rec-core\.js\?v=7/.test(read('switch/index.html')) && /rec-core\.js\?v=7/.test(read('solve/index.html')) && /rec-core\.js\?v=7/.test(read('assets/guide-budget.js')) && /rec-core\.js\?v=7/.test(read('assets/guide-redev.js'))
+  && /guide-redev\.js\?v=4/.test(read('solve/index.html')) && /guide-redev\.js\?v=4/.test(read('assets/guide.js')) && /guide-budget\.js\?v=3/.test(read('assets/guide.js')) && /map-core\.js\?v=6/.test(MAP) && /map-core\.js\?v=6/.test(read('solve/index.html')) && /map-core\.js\?v=6/.test(read('index.html'))
+  && /guide-next\.js\?v=8/.test(RPT) && /guide-budget\.js\?v=3/.test(read('solve/index.html')) && /guide\.js\?v=15/.test(read('index.html')) && /scenarios\.json\?v=9/.test(GN) && /'\.\/assets\/rec-core\.js\?v=7'/.test(read('sw.js')) && /'\.\/assets\/guide-budget\.js\?v=3'/.test(read('sw.js')) && /'\.\/assets\/guide-redev\.js\?v=4'/.test(read('sw.js')));
 
 console.log(`\n길잡이 ↔ 조건 검색 화면 같은 결과 대조(${SETS.map(s => s.nm).join(' · ')}): ${pass} 통과 · ${fail} 실패`);
 process.exit(fail ? 1 : 0);

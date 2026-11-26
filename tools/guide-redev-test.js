@@ -141,9 +141,9 @@ check('법령 근거: 재초환·비과세 기간 합산은 확인 필요', X1.i
 
 /* ---------- 화면 연결 ---------- */
 const gjs = read('assets/guide.js'), gcore = read('assets/guide-core.js'), sw = read('sw.js'), solve = read('solve/index.html'), gx = read('assets/guide-redev.js');
-check('guide.js: 즉답·양식·대화에서 이 파일로 넘김', /JDJ_GREDEV\.instant/.test(gjs) && /JDJ_GREDEV\.flow/.test(gjs) && /JDJ_GREDEV\.chatCard/.test(gjs) && /'assets\/guide-redev\.js\?v=3'/.test(gjs));
+check('guide.js: 즉답·양식·대화에서 이 파일로 넘김', /JDJ_GREDEV\.instant/.test(gjs) && /JDJ_GREDEV\.flow/.test(gjs) && /JDJ_GREDEV\.chatCard/.test(gjs) && /'assets\/guide-redev\.js\?v=4'/.test(gjs));
 check('guide-core: 계산 함수·대화 좁히기 연결', /S\.redevBudget/.test(gcore) && /S\.rebuildLive/.test(gcore) && /JDJ_GREDEV\.chatQ/.test(gcore) && G.SOLVERS.indexOf('redevBudget') >= 0 && G.SOLVERS.indexOf('rebuildLive') >= 0);
-check('길잡이 화면이 이 파일을 읽음 · 서비스 워커 목록에 있음', /assets\/guide-redev\.js\?v=3/.test(solve) && /assets\/guide-redev\.js\?v=3/.test(sw) && /data\/redev-budget\.json/.test(sw));
+check('길잡이 화면이 이 파일을 읽음 · 서비스 워커 목록에 있음', /assets\/guide-redev\.js\?v=4/.test(solve) && /assets\/guide-redev\.js\?v=4/.test(sw) && /data\/redev-budget\.json/.test(sw));
 check('화면 문구에 경쟁 서비스·AI 이름 없음', !/(호갱노노|직방|아실|리치고|네이버\s*부동산|부동산\s*지인|ChatGPT|GPT|Gemini|Claude|클로드)/i.test(gx));
 check('화면: 정렬 단추에 추천 순위 아님 · 즉답 먼저(바로 답)', /추천 순위 아님/.test(gx) && /바로 답/.test(gx));
 check('자료 파일: 기간·출처가 있음', BUD.from && BUD.to && /국토교통부/.test(BUD.src) && Object.keys(BUD.z).length > 100);
