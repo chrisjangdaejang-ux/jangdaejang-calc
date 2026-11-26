@@ -17,10 +17,12 @@ const CASES = [['3번 중 3번·평균 +(5년, 누수 고친 뒤)', run(3, 3, 2.
   ['성적 없음(과거 자료가 더 필요 — 7년)', { oos_all: [], oos_hit: 0, oos_avg: null }, false], ['모델 자체가 없음', undefined, false], ['5번 중 2번·평균 +', run(5, 2, 0.8), false]];
 
 /* 화면에 복사된 VOK 정의 — 모두 같은 글자여야 함 */
-const SRC = ['assets/plain-words.js', 'assets/strength.js', 'assets/narrative.js', 'about/index.html', 'buy/report/index.html'];
+/* 내 집 마련 리포트(buy/report)는 2026-11-27부터 길잡이와 같은 공통 모듈(assets/rec-core.js VOK·hzList)을 불러 써요 */
+const SRC = ['assets/plain-words.js', 'assets/strength.js', 'assets/narrative.js', 'about/index.html', 'assets/rec-core.js'];
 const defs = SRC.map(f => { const t = fs.readFileSync(path.join(ROOT, f), 'utf8'); const m = t.match(/const VOK\s*=\s*(m\s*=>[^\n;]*\);?)/); return [f, m ? m[1].replace(/\s+/g, '').replace(/;$/, '') : null]; });
 check('VOK 정의가 다섯 곳 모두 있음', defs.filter(d => !d[1]).map(d => d[0]), []);
 check('VOK 정의가 모두 같은 글자', [...new Set(defs.map(d => d[1]))].length, 1);
+check('내 집 마련 리포트는 공통 모듈 VOK 를 씀', /const VOK=m=>REC\.VOK\(m\);/.test(fs.readFileSync(path.join(ROOT, 'buy/report/index.html'), 'utf8')), true);
 const VOK = eval('(' + defs[0][1] + ')');
 check('VOK 에 "절반 이상 맞음" 조건이 있음', /2\*\(/.test(defs[0][1]) && />=\(m\.oos_all\|\|\[\]\)\.length/.test(defs[0][1]), true);
 for (const [nm, m, want] of CASES) check(`판정 ${nm}: 엔진과 같음(${want ? '씀' : '참고'})`, [VOK(m), ENGINE(m)], [want, want]);

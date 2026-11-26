@@ -29,7 +29,7 @@
   const cache = {};
   const getJ = (k, url) => cache[k] || (cache[k] = fetch(url, { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(url); return r.json(); }).catch(e => { delete cache[k]; throw e; }));
   function load() {
-    return Promise.all([getJ('sc', BASE + 'assets/guide/scenarios.json?v=8'), getJ('lex', BASE + 'assets/guide/lexicon.json?v=3')])
+    return Promise.all([getJ('sc', BASE + 'assets/guide/scenarios.json?v=9'), getJ('lex', BASE + 'assets/guide/lexicon.json?v=3')])
       .then(([sc, lex]) => Object.assign({}, sc, { lex }));
   }
   const ix = () => getJ('ix', DATA + 'index.json');
@@ -206,6 +206,7 @@
 .gwarn{margin:14px 0 0}.gwarn h3{margin:0 0 6px;font-size:15px;font-weight:900}.gwarn ul{margin:0;padding-left:20px}.gwarn li{font-size:14.5px;line-height:1.6;color:#3E4754;margin:2px 0}
 .gnote{margin:12px 0 0;font-size:13px;color:#4E5968;line-height:1.55}.gnote button{font:inherit;font-size:13px;font-weight:800;color:#4338CA;background:none;border:0;padding:0 2px;cursor:pointer;min-height:32px}
 .gsrc{margin:10px 0 0;font-size:13px;color:#4E5968}.gsrc summary{cursor:pointer;font-weight:800;min-height:40px;display:flex;align-items:center}.gsrc ul{margin:0;padding-left:18px}.gsrc li{margin:3px 0;line-height:1.5}.gsrc a{color:#3730A3}
+.gsame{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0 0;min-height:52px;padding:10px 14px;border-radius:14px;border:1.5px solid var(--blue,#4338CA);background:#fff;color:var(--blue-d,#3730A3);text-decoration:none}.gsame b{font-size:15.5px;font-weight:800}.gsame small{display:block;font-size:13px;font-weight:500;color:var(--sub2,#4E5968);margin-top:2px}.gsame .go{flex:none;font-size:20px;font-weight:800}
 .gn3{margin:18px 0 0}.gn3 h3{margin:0 0 8px;font-size:17px;font-weight:900}
 .gn3 ol{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .gn3 a{display:flex;align-items:center;gap:12px;min-height:62px;padding:12px 16px;border-radius:16px;border:1.5px solid #D4D1F5;background:#fff;color:#191F28;text-decoration:none}
@@ -221,8 +222,8 @@
   const solveUrl = (id, extra) => BASE + 'solve/?s=' + encodeURIComponent(id) + (extra || '');
 
   /* ---------- 미리 불러오기(첫 카드를 1초 안에) ---------- */
-  const ENGINES = ['assets/sale-status.js?v=1', 'assets/loan-rules.js?v=3', 'tax/tax-engine.js?v=4', 'tax/adjusted-areas.js?v=2', 'assets/loan-core.js?v=6', 'assets/hug-core.js?v=1', 'chungyak/cy-engine.js?v=7', 'assets/redev-core.js?v=3', 'assets/guide-redev.js?v=2', 'assets/guide-budget.js?v=1'];
-  const ENG_OK = { 'assets/sale-status.js?v=1': 'JDJ_SALE', 'assets/loan-rules.js?v=3': 'JDJ_LOAN_RULES', 'tax/tax-engine.js?v=4': 'JDJ_TAX', 'tax/adjusted-areas.js?v=2': 'JDJ_ADJ', 'assets/loan-core.js?v=6': 'JDJ_LOAN', 'assets/hug-core.js?v=1': 'JDJ_HUG', 'chungyak/cy-engine.js?v=7': 'JDJ_CYE', 'assets/redev-core.js?v=3': 'JDJ_REDEV', 'assets/guide-redev.js?v=2': 'JDJ_GREDEV', 'assets/guide-budget.js?v=1': 'JDJ_GBUDGET' };
+  const ENGINES = ['assets/sale-status.js?v=1', 'assets/loan-rules.js?v=3', 'tax/tax-engine.js?v=4', 'tax/adjusted-areas.js?v=2', 'assets/loan-core.js?v=6', 'assets/hug-core.js?v=1', 'chungyak/cy-engine.js?v=7', 'assets/redev-core.js?v=3', 'assets/guide-redev.js?v=3', 'assets/guide-budget.js?v=2'];
+  const ENG_OK = { 'assets/sale-status.js?v=1': 'JDJ_SALE', 'assets/loan-rules.js?v=3': 'JDJ_LOAN_RULES', 'tax/tax-engine.js?v=4': 'JDJ_TAX', 'tax/adjusted-areas.js?v=2': 'JDJ_ADJ', 'assets/loan-core.js?v=6': 'JDJ_LOAN', 'assets/hug-core.js?v=1': 'JDJ_HUG', 'chungyak/cy-engine.js?v=7': 'JDJ_CYE', 'assets/redev-core.js?v=3': 'JDJ_REDEV', 'assets/guide-redev.js?v=3': 'JDJ_GREDEV', 'assets/guide-budget.js?v=2': 'JDJ_GBUDGET' };
   function script(src) { return new Promise(res => { const x = document.createElement('script'); x.src = BASE + src; x.onload = res; x.onerror = res; document.head.appendChild(x); }); }
   let WARM = null;
   /** 계산 엔진·고민 자료·지역 자료·청약 당첨 가점(기억한 시·도 또는 서울)·서울 단지 목록을 쉬는 동안 미리 */
@@ -242,13 +243,15 @@
   /* 재개발 예산·재건축 몸테크(scenarios.json ext:"redev") — 화면·계산은 assets/guide-redev.js, 여기서는 쓰는 도구만 넘겨요 */
   /* 보유 현금 + 대출로 살 수 있는 서울 아파트(대표 질문, scenarios.json ext:"budget") — 화면·계산은 assets/guide-budget.js */
   const XM = sc => !sc || !sc.ext ? null : sc.ext === 'budget' ? root.JDJ_GBUDGET || null : root.JDJ_GREDEV || null;
-  const XSRC = { budget: 'assets/guide-budget.js?v=1', redev: 'assets/guide-redev.js?v=2' };
+  const XSRC = { budget: 'assets/guide-budget.js?v=2', redev: 'assets/guide-redev.js?v=3' };
   const GXon = sc => !!XM(sc);
   function unitsOf(sid) {
     const MC = root.JDJ_MINE;
     const pr = cache['u' + sid] || (cache['u' + sid] = fetch(DATA + sid + '.json', { cache: 'no-cache' }).then(r => r.json()).then(j => { pr.done = (j.units || []).map(u => { if (u[9] && typeof u[9] === 'object' && MC && MC.cleanFx) MC.cleanFx(u[9]); return u; }); return pr.done; }).catch(e => { delete cache['u' + sid]; throw e; }));
     return pr;
   }
+  /** 단지 좌표(sNN_xy.json — 지도 map/ 과 같은 파일) */
+  function xyOf(sd) { return getJ('xy' + sd.id, DATA + (sd.xy || sd.id + '_xy.json')).then(j => (j && j.xy) || null).catch(() => null); }
   function gxH(o, D, IX) {
     const R0 = root.JDJ_RANK;
     return Object.assign({ D, IX, BASE, DATA, getJ, MC: root.JDJ_MINE, L: root.JDJ_LOAN, unitsOf, script, stat, site, solveUrl, fbHtml, fbWire, tablesHtml, afterHtml, expertLink, live: () => true,
@@ -402,20 +405,20 @@
         if (!st.sido) { const m = memory(IX).m; st.sido = (m.region && m.region.sido) || m.csido || '서울특별시'; st._sidoGuess = true; }
         const sd = ((IX && IX.sido) || []).find(x => x.name === st.sido) || {};
         const MC = root.JDJ_MINE, R0 = root.JDJ_RANK;
-        let units = cache['u' + sd.id] && cache['u' + sd.id].done ? cache['u' + sd.id].done : null;
+        let units = cache['u' + sd.id] && cache['u' + sd.id].done ? cache['u' + sd.id].done : null, xy = null;
         const draw = () => {
           if (my !== RUN) return;
           const nk = C().narrowNext(D, sc.id, st), NQ = nk ? D.narrow.q[nk] : null;
-          const chips = [st.gname || st.sido.replace(/특별시|광역시|특별자치시|특별자치도/, ''), st.area ? `${st.area}㎡대${st.area === 84 ? '(34평)' : ''}` : '', st.budget ? (st.budget[1] != null ? `${C().won(st.budget[1])} 이하${st.budget[0] ? `(${C().won(st.budget[0])} 넘게)` : ''}` : `${C().won(st.budget[0])} 넘게`) : '', st.age ? `${st.age}년 이내` : '', st.station ? `역 도보 ${st.station}분` : ''].filter(Boolean);
-          let body = '';
+          const chips = C().findChips(st);   // 지도(map/) 필터 이름 그대로
+          let body = '', R = null;
           if (units && MC) {
-            const R = C().findHomes(units, IX, st, MC);
+            R = C().findHomes(units, IX, st, MC, null, xy, sd.id);
             const mx = Math.max(1, ...R.dist.map(d => d.n));
-            const inB = d => st.budget && d.lo >= (st.budget[0] || 0) && (st.budget[1] == null || d.hi <= st.budget[1]);
+            const inB = d => R.opt.price && d.id === R.opt.price;
             body = `<h3>${esc(chips.join(' · '))} 아파트 ${R.n.toLocaleString()}곳이에요</h3>
-              <p class="exn">${st._sidoGuess ? '지역을 말씀하지 않아 ' + esc(st.sido) + '로 먼저 보여 드려요. ' : ''}시세는 최근 3개월 실거래 중간값(내 집 시세와 같은 계산)이고, 예시는 거래가 많은 순이에요(추천 아님).</p>
+              <p class="exn">${st._sidoGuess ? '지역을 말씀하지 않아 ' + esc(st.sido) + '로 먼저 보여 드려요. ' : ''}지도와 같은 필터(평형·가격대·준공·역 거리)·같은 대표 평형이에요. 시세는 최근 3개월 실거래 중간값이고, 예시는 지도 목록처럼 거래가 많은 순이에요(추천 아님).</p>
               <div class="gdist">${R.dist.map(d => `<div class="${inB(d) ? 'on' : ''}"><span>${esc(d.t)}</span><i style="width:${Math.round(d.n / mx * 100)}%"></i><b>${d.n.toLocaleString()}곳</b></div>`).join('')}</div>
-              ${R.ex.length ? `<ul class="gex">${R.ex.slice(0, 5).map(r => `<li><a href="${esc(R0 ? R0.mineUrl(sd.id, [r.code, r.dong, r.u[8] || '', r.apt].join('|'), r.band) : BASE + 'mine/')}"><b>${esc(r.apt)}</b><small>${esc(r.gu)} ${esc(r.dong)} · ${esc(r.band)}${r.by ? ` · ${r.by}년 준공` : ''}${r.sub != null ? ` · 역 도보 ${r.sub}분` : ''}</small><span class="v">${esc(C().won(r.price))}</span></a></li>`).join('')}</ul><p class="gtn">예시 ${R.ex.length}곳 · 조건에 맞는 전체 ${R.n.toLocaleString()}곳은 지도에서 볼 수 있어요.</p>` : '<p class="gtn">조건에 맞는 단지가 없어요. 조건을 하나 풀어 보세요.</p>'}`;
+              ${R.ex.length ? `<ul class="gex">${R.ex.slice(0, 5).map(r => `<li><a href="${esc(R0 ? R0.mineUrl(sd.id, [r.code, r.dong, r.u[8] || '', r.apt].join('|'), r.band) : BASE + 'mine/')}"><b>${esc(r.apt)}</b><small>${esc(r.gu)} ${esc(r.dong)} · ${esc(r.band)}${r.by ? ` · ${r.by}년 준공` : ''}${r.sub != null ? ` · 역 도보 ${r.sub}분` : ''}</small><span class="v">${esc(r.price ? C().won(r.price) : '최근 거래 없음')}</span></a></li>`).join('')}</ul><p class="gtn">예시 ${R.ex.length}곳 · 조건에 맞는 전체 ${R.n.toLocaleString()}곳은 아래 ‘같은 조건으로 지도에서 보기’에서 볼 수 있어요.</p>` : '<p class="gtn">조건에 맞는 단지가 없어요. 조건을 하나 풀어 보세요.</p>'}`;
           } else {
             const pv = C().guPreview(IX, st);
             body = `<h3>${esc(chips.join(' · '))} — 구별 예상 가격부터 보여 드릴게요</h3><p class="exn">단지별 시세를 불러오는 중이에요. 먼저 구 실거래 중간값(3.3㎡당) × ${st.area || 84}㎡로 계산한 예시예요.</p>
@@ -423,7 +426,7 @@
           }
           const nq = NQ ? `<div class="gnq" data-nk="${esc(nk)}"><p class="t">${esc(NQ.t)}</p><div class="o">${NQ.opts.map(o => `<button type="button" data-nv="${esc(o[0])}">${esc(o[1])}</button>`).join('')}${NQ.free === 'money' ? '<span class="fr"><input type="text" inputmode="numeric" placeholder="직접: 예 8억" aria-label="예산 직접 입력"><button type="button" data-nfree="1">적용</button></span>' : ''}${NQ.free === 'gu' ? `<select aria-label="구 고르기" data-ngu="1"><option value="">다른 구 고르기</option>${Object.keys(IX.sgg).filter(c => IX.sgg[c].sido === st.sido).map(c => IX.sgg[c].name).sort((x, y) => x.localeCompare(y, 'ko')).map(n => `<option>${esc(n)}</option>`).join('')}</select>` : ''}</div><button type="button" class="sk" data-nskip="1">이대로 보기</button></div>` : '';
           ans.innerHTML = `<section class="ginst"><div class="gi-hd"><span class="bd ${units ? 'ok' : 'ex'}">${units ? '바로 답' : '예시로 먼저'}</span><span class="tt">${esc(sc.t)}</span></div>${body}${nq}
-            <div class="gbtn"><a class="p" href="${esc(BASE + 'map/')}" data-track="guide_find_map">지도에서 전체 보기 ›</a><a href="${esc(BASE + 'buy/report/')}">내 예산 맞춤 단지 ›</a></div>${fbHtml(sc.id, 'top')}</section>`;
+            <div class="gbtn"><a class="p" href="${esc(C().findMapUrl(st, R, BASE))}" data-track="guide_find_map">같은 조건으로 지도에서 보기 ›</a><a href="${esc(BASE + 'buy/report/')}">내 예산 맞춤 단지 ›</a></div>${fbHtml(sc.id, 'top')}</section>`;
           fbWire(ans); ans.dataset.ms = String(Math.round(performance.now() - t0));
           const box = ans.querySelector('.gnq'); if (!box) return;
           const set = v => { st = C().narrowSet(D, st, nk, v); stat('guide_narrow', { k: nk }); draw(); };
@@ -438,6 +441,7 @@
           try { units = await pr; } catch (e) { delete cache['u' + sd.id]; return; }
           draw();
         }
+        if (sd.id && !xy) { xy = await xyOf(sd); if (xy) draw(); }
       }
       let tm = null;
       q.addEventListener('input', () => { clearTimeout(tm); const t = q.value.trim(); if (t.replace(/\s/g, '').length < 4) { ans.innerHTML = ''; alts.innerHTML = ''; return; } tm = setTimeout(() => instant(t, false), 450); });
@@ -517,6 +521,10 @@
     if (need.indexOf('cy') >= 0) { jobs.push(cyRows(a.csido || '서울특별시').then(r => { E.cyRows = r; })); jobs.push(cyNotices().then(r => { E.cyNotices = r; })); }
     if (need.indexOf('region') >= 0 && a.region && a.region.sd) jobs.push(getJ('rg' + a.region.sd, DATA + 'region/' + a.region.sd + '.json').then(j => { const g = j && j.gu && j.gu[a.region.code]; E.sup = g && g.sup ? { [a.region.code]: g.sup } : null; }).catch(() => {}));
     if (need.indexOf('kk') >= 0 && a.danji) { if (!root.JDJ_KK) await script('assets/kk-core.js?v=1'); E.KK = root.JDJ_KK; jobs.push(getJ('kk', DATA + 'rent/kk.json').catch(() => getJ('kk2', BASE + 'data/kkang.json')).then(j => { E.kkData = j; }).catch(() => {})); }
+    if (need.indexOf('units') >= 0) {   // 조건에 맞는 아파트 찾기: 지도와 같은 단지 자료 + 좌표(지도에 올라가는 단지만)
+      const sd = ((IX && IX.sido) || []).find(x => x.name === ((a.region && a.region.sido) || '서울특별시'));
+      if (sd) jobs.push(Promise.all([unitsOf(sd.id), xyOf(sd)]).then(([u, x]) => { E.units = u; E.xy = x; E.sd = sd.id; E.MC = root.JDJ_MINE; }).catch(() => {}));
+    }
     if (need.indexOf('base') >= 0) jobs.push(getJ('offi', DATA + 'offi/index.json').then(j => { const s = j && j.rate && j.rate.base; if (s) { const ks = Object.keys(s).filter(k => /^\d{6}$/.test(k)).sort(); if (ks.length) E.base = { v: +s[ks[ks.length - 1]], at: ks[ks.length - 1] }; } }).catch(() => {}));
     await Promise.all(jobs);
     return E;
@@ -602,7 +610,7 @@
         if (inp.danji && asks.indexOf('danji') >= 0) { S.a.danji = inp.danji; S.from.danji = '찾은 단지'; }
       }
       if (sc.ext) {   // 재개발 예산·재건축 몸테크(assets/guide-redev.js) · 현금 + 대출 서울 아파트(assets/guide-budget.js): 즉답 + 카드 안 좁히는 질문
-        if (!root.JDJ_GREDEV) await script('assets/guide-redev.js?v=2');
+        if (!root.JDJ_GREDEV) await script('assets/guide-redev.js?v=3');
         if (sc.ext === 'budget' && !root.JDJ_GBUDGET) await script(XSRC.budget);
         if (!root.JDJ_LOAN) await warm();
         stat('guide_open', { s: sc.id, from: qs.get('from') || '' });
@@ -750,6 +758,8 @@
         if (c && typeof c === 'object') return c.href ? `<td${l}><a href="${esc(c.href)}" target="_blank" rel="noopener">${esc(c.t)}</a></td>` : `<td${l}><span class="gg ${esc(c.g || '')}">${esc(c.t)}</span></td>`;
         return `<td${l}>${esc(c)}</td>`; }).join('')}</tr>`).join('')}</tbody></table></div>${lim && tb.rows.length > lim ? `<p class="gtn">외 ${tb.rows.length - lim}줄은 ‘자세히’에서 볼 수 있어요.</p>` : ''}</div>`; }).join('');
   }
+  /** '같은 조건으로 검색 화면에서 보기'(길잡이 = 조건 검색 화면의 지름길 — 같은 계산·같은 결과) r.same = {t, s, href} */
+  function sameHtml(x) { return x && x.href ? `<a class="gsame" href="${esc(/^https?:/.test(x.href) || x.href.indexOf(BASE) === 0 ? x.href : BASE + x.href)}" data-track="guide_same"><span><b>${esc(x.t)}</b><small>${esc(x.s || '')}</small></span><span class="go" aria-hidden="true">›</span></a>` : ''; }
   function cardHtml(r, D, S) {
     const nums = (r.nums || []).map(n => `<div><small>${esc(n.k)}</small><b>${esc(n.v)}</b>${n.s ? `<span>${esc(n.s)}</span>` : ''}</div>`).join('');
     const tbl = r.table ? `<table class="gtbl"><thead><tr>${r.table.head.map(h => `<th scope="col">${esc(h)}</th>`).join('')}</tr></thead><tbody>${r.table.rows.map(row => `<tr>${row.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>` : '';
@@ -757,7 +767,7 @@
     const info = r.info && r.info.length ? `<ul class="ginfo">${r.info.map(x => { const s = D.src[x.src] || {}; return `<li><span class="bd ${x.ok ? 'ok' : 'no'}">${x.ok ? '법령 확인' : '확인 필요'}</span>${esc(x.t)} ${s.url ? `<a href="${esc(srcUrl(s.url))}" target="_blank" rel="noopener">근거 ›</a>` : ''}</li>`; }).join('')}</ul>` : '';
     const memo = Object.keys(S.from).filter(k => S.from[k] && (S.sc.ask || []).indexOf(k) >= 0).map(k => `${LBL[k] || D.q[k].t.replace(/[?？]$/, '').slice(0, 18)} ← ${S.from[k]}`);
     return `<section class="gcard" aria-labelledby="gHead"><span class="gk">해법</span><h2 id="gHead">${esc(r.head)}</h2>
-      ${tablesHtml(r.tables)}${nums ? `<div class="gnums">${nums}</div>` : ''}${tbl}${ref}${info}
+      ${tablesHtml(r.tables)}${sameHtml(r.same)}${nums ? `<div class="gnums">${nums}</div>` : ''}${tbl}${ref}${info}
       ${r.warn && r.warn.length ? `<div class="gwarn"><h3>손해 피하는 주의점</h3><ul>${r.warn.map(w => `<li>${esc(w)}</li>`).join('')}</ul></div>` : ''}
       <p class="gnote">계산에 넣은 값: ${esc(r.note || '')}${memo.length ? `<br>미리 채운 값: ${esc(memo.join(' · '))}` : ''} <button type="button" data-edit="1">값 고치기</button></p>
       <details class="gsrc"><summary>출처 ${(r.src || []).length}개 보기</summary><ul>${(r.src || []).map(k => D.src[k]).filter(Boolean).map(s => `<li><a href="${esc(srcUrl(s.url))}" target="_blank" rel="noopener">${esc(s.nm)}</a></li>`).join('')}</ul></details></section>`;
@@ -870,13 +880,14 @@ body.gchat-on .jtab{display:none!important}body.gchat-on .foot{display:none}
           LOG.pop();
         }
         if (units) {
-          const R = C().findHomes(units, IX, ST.nf, root.JDJ_MINE), R0 = root.JDJ_RANK;
-          const chips = [ST.nf.gname || ST.nf.sido.replace(/특별시|광역시|특별자치시|특별자치도/, ''), ST.nf.area ? `${ST.nf.area}㎡대${ST.nf.area === 84 ? '(34평)' : ''}` : '', ST.nf.budget ? (ST.nf.budget[1] != null ? (ST.nf.budget[0] ? `${C().won(ST.nf.budget[0]).replace(/ 원$/, '')}~${C().won(ST.nf.budget[1])}` : `${C().won(ST.nf.budget[1])} 이하`) : `${C().won(ST.nf.budget[0])} 넘게`) : '', ST.nf.age ? `${ST.nf.age}년 이내` : '', ST.nf.station ? `역 도보 ${ST.nf.station}분` : ''].filter(Boolean).join(' · ');
-          card = { head: `${chips} 아파트는 ${R.n.toLocaleString()}곳이에요`, nums: R.n ? [{ k: '가격 범위', v: `${C().won(R.lo)} ~ ${C().won(R.hi)}` }, { k: '가운데 값', v: C().won(R.med) }] : [], ex2: R.ex.slice(0, 4).map(r => [`${r.apt} (${r.gu})`, C().won(r.price)]), ex: '예시는 거래가 많은 순이에요(추천 아님). 시세는 최근 3개월 실거래 중간값이에요.' };
+          const xy = await xyOf(sd);
+          const R = C().findHomes(units, IX, ST.nf, root.JDJ_MINE, null, xy, sd.id), R0 = root.JDJ_RANK;
+          const chips = C().findChips(ST.nf).join(' · ');
+          card = { head: `${chips} 아파트는 ${R.n.toLocaleString()}곳이에요`, nums: R.n && R.lo ? [{ k: '가격 범위', v: `${C().won(R.lo)} ~ ${C().won(R.hi)}` }, { k: '가운데 값', v: C().won(R.med) }] : [], ex2: R.ex.slice(0, 4).map(r => [`${r.apt} (${r.gu})`, r.price ? C().won(r.price) : '최근 거래 없음']), ex: '지도와 같은 필터·같은 순서(거래 많은 순, 추천 아님)예요. 시세는 최근 3개월 실거래 중간값이에요.' };
           ST._n = R.n;
         }
       } else if (sc.ext) {
-        if (!root.JDJ_GREDEV) await script('assets/guide-redev.js?v=2');
+        if (!root.JDJ_GREDEV) await script('assets/guide-redev.js?v=3');
         if (sc.ext === 'budget' && !root.JDJ_GBUDGET) await script(XSRC.budget);
         if (sc.ext === 'budget' && root.JDJ_GBUDGET) { if (!ST.nf) ST.nf = root.JDJ_GBUDGET.init(sc.id, {}, D); try { card = await root.JDJ_GBUDGET.chatCard(ST, gxH({ sc }, D, IX)); } catch (e) { card = null; } ST._n = card ? card.n : 0; }
         else if (root.JDJ_GREDEV) { if (!ST.nf) ST.nf = root.JDJ_GREDEV.init(sc.id, {}, D); try { card = await root.JDJ_GREDEV.chatCard(ST, gxH({ sc }, D, IX)); } catch (e) { card = null; } ST._n = card ? card.n : 0; }

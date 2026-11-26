@@ -3,6 +3,7 @@
      꺼져 있으면 아무 칸도 만들지 않아요(자리 [data-gnext]·[data-gseed] 는 비어 있는 채로 숨김).
    - 자리: <div data-gnext="loan" hidden></div> — 값은 assets/guide/scenarios.json 의 after 표 키(loan·buy·report·switch·rentsw·tax·transfer·chungyak·jeonse·mine·zone·calendar).
      고민 상담 질문 화면(counsel/)은 시드 글에 <div data-gseed="s01"> 를 두고, counsel/seed.json 의 guide 값으로 이어지는 길잡이를 보여 줘요.
+   - 조건 검색 화면 위쪽 '말로 물어보기' 입구: <div data-gask="report" hidden></div>(report·buy) — 꺼져 있으면 숨김.
    - 개인 값은 다루지 않아요(링크만). window.JDJ_GNEXT = { on, mount } */
 (function (root) {
   'use strict';
@@ -18,10 +19,10 @@
     '.gnx a:hover{border-color:#4338CA}.gnx a b{display:block;font-size:15.5px;font-weight:800;line-height:1.4}.gnx a small{display:block;font-size:13.5px;color:#4E5968;margin-top:2px;line-height:1.45}' +
     '.gnx a .n{flex:none;width:28px;height:28px;border-radius:50%;background:#4338CA;color:#fff;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center}.gnx a .go{margin-left:auto;flex:none;color:#4338CA;font-size:20px;font-weight:800}' +
     '.gsd{display:flex;align-items:center;gap:10px;margin:12px 0 0;padding:12px 14px;border-radius:12px;background:#F5F4FD;border:1.5px solid #C9C6F2;color:#3730A3;text-decoration:none;font-weight:800;font-size:15px;min-height:48px}' +
-    '.gsd small{display:block;font-weight:500;color:#4E5968;font-size:13px}';
+    '.gsd small{display:block;font-weight:500;color:#4E5968;font-size:13px}.gask{margin:0 0 12px;background:var(--blue-l,#F5F4FD);color:var(--blue-d,#3730A3)}';
   function css() { if (document.getElementById('gnxCss')) return; var s = document.createElement('style'); s.id = 'gnxCss'; s.textContent = CSS; document.head.appendChild(s); }
   var DATA = null;
-  function data() { return DATA || (DATA = fetch(BASE + 'assets/guide/scenarios.json?v=8', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { DATA = null; return null; })); }
+  function data() { return DATA || (DATA = fetch(BASE + 'assets/guide/scenarios.json?v=9', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { DATA = null; return null; })); }
   function link(id, from) { return BASE + 'solve/?s=' + encodeURIComponent(id) + (from ? '&from=' + encodeURIComponent(from) : ''); }
   function mount(el) {
     var key = el.getAttribute('data-gnext'); if (!key || el.getAttribute('data-done')) return;
@@ -48,7 +49,16 @@
       el.innerHTML = '<a class="gsd" href="' + esc(link(it.guide, 'counsel')) + '" data-track="gseed_' + esc(it.guide) + '"><span>내 조건으로 바로 계산해 보기 ›<small>고민 해결 길잡이가 짧은 질문 몇 개로 숫자와 다음 단계를 찾아 드려요</small></span></a>';
     });
   }
-  function scan() { if (!on()) return; document.querySelectorAll('[data-gnext]').forEach(mount); document.querySelectorAll('[data-gseed]').forEach(seedMount); }
+  /* 조건 검색 화면 위쪽 '말로 물어보기' 입구: <div data-gask="report" hidden></div> — 길잡이가 꺼져 있으면 숨긴 채로 둬요.
+     길잡이는 같은 계산(조건 검색 엔진)을 쓰는 지름길이라, 한 문장으로 물어도 이 화면과 같은 결과가 나와요. */
+  var ASK = { report: '현금 10억 + 대출로 살 수 있는 서울 아파트', buy: '현금 3억, 연봉 7천이면 얼마짜리 집까지 살 수 있어요?' };
+  function askMount(el) {
+    var key = el.getAttribute('data-gask'); if (!key || el.getAttribute('data-done')) return;
+    el.setAttribute('data-done', '1'); css();
+    el.innerHTML = '<a class="gsd gask" href="' + esc(BASE + 'solve/?chat=1&from=' + encodeURIComponent(key)) + '" data-track="gask_' + esc(key) + '"><span>말로 물어보기 ›<small>조건을 하나씩 고르지 않고 ‘' + esc(ASK[key] || '내 조건으로 살 수 있는 집') + '’처럼 한 문장으로 물어도 이 화면과 같은 계산으로 답해 드려요</small></span></a>';
+    el.hidden = false;
+  }
+  function scan() { if (!on()) return; document.querySelectorAll('[data-gnext]').forEach(mount); document.querySelectorAll('[data-gseed]').forEach(seedMount); document.querySelectorAll('[data-gask]').forEach(askMount); }
   function start() {
     scan();
     if (!on() || typeof MutationObserver === 'undefined') return;

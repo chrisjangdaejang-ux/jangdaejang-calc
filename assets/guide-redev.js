@@ -41,7 +41,8 @@
     rsize: { type: 'choice', t: '함께 살 가족은 몇 명인가요?', opts: [['s', '1~2명(전용 60㎡ 이하도 괜찮아요)'], ['m', '3~4명(전용 60~85㎡)'], ['l', '5명 이상(전용 85㎡ 넘게)'], ['0', '상관없어요']], hint: '오래된 단지는 평형이 작은 곳이 많아요' }
   };
   const ORDER = { redev_budget: ['rbud', 'rgu', 'rlive', 'rwait', 'rloan'], rebuild_live: ['rcash', 'rinc', 'rgu', 'rsize', 'rwait'] };
-  const SORTS = { redev_budget: [['stage', '단계 높은 순'], ['soon', '착공 예상 이른 순']], rebuild_live: [['stage', '단계 높은 순'], ['old', '오래된 순'], ['cheap', '시세 낮은 순']] };
+  /* 재개발 구역 순서 = 재개발·재건축 구역 화면(villa/zone/)과 같은 정렬 함수(redev-core sort)·같은 기본값(착공 예상 빠른 순)·같은 이름 */
+  const SORTS = { redev_budget: [['soon', '착공 예상 빠른 순'], ['stage', '단계 높은 순']], rebuild_live: [['stage', '단계 높은 순'], ['old', '오래된 순'], ['cheap', '시세 낮은 순']] };
   const has = (st, k) => ({ rbud: st.bud != null, rgu: st.gus != null, rlive: st.live != null, rwait: st.wait != null, rloan: st.loan != null, rcash: st.cash != null, rinc: st.inc != null, rsize: st.size != null })[k];
 
   /** 문장에서 읽기: 금액 범위·지역·실거주·기다릴 기간·대출·가족 수 */
@@ -77,7 +78,7 @@
     return got;
   }
   function init(id, sl, D) {
-    const st = { id, bud: null, gus: null, gname: '', live: null, wait: null, loan: null, cash: null, inc: null, size: null, own: 'none', sort: 'stage', _skip: [] };
+    const st = { id, bud: null, gus: null, gname: '', live: null, wait: null, loan: null, cash: null, inc: null, size: null, own: 'none', sort: id === 'redev_budget' ? 'soon' : 'stage', _skip: [] };
     read(st, sl, id);
     return st;
   }
@@ -177,7 +178,8 @@
       out.push({ z, id: z.id, n: z.n, gu: z.gn, dong: z.umd || '', st: +z.st || 0, stn: stName(z.st), lf, th, lim: limit(pol, z),
         n1: tr.length, nAll: b.i.length, lo: Math.min(...ps), hi: Math.max(...ps), md: med(ps), at: tr.map(t => t[1]).sort().pop(), how: b.bd ? '구역 안(공식 경계)' : '구역 대표 지번', ib: b.ib });
     }
-    sortRows(out, st.sort, 'redev_budget');
+    const ord = RDc().sort(out.map(r => r.z), st.sort === 'stage' ? 'stage' : 'soon'), at = new Map(ord.map((z, i) => [z, i]));
+    out.sort((a, b) => at.get(a.z) - at.get(b.z));   // 구역 화면 current() = R.sort(R.filter(…), S.sort) 와 같은 순서
     const dist = RDc().SG.map(g => ({ k: g[0], t: g[1], n: out.filter(r => g[2].indexOf(r.st) >= 0).length })).filter(d => d.k !== 'start');
     return { rows: out, n: out.length, dist, refOnly: refOnly.length, noTr, started, waitOut, livOut, trN: out.reduce((s, r) => s + r.n1, 0) };
   }

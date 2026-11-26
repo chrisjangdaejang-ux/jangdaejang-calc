@@ -1,4 +1,5 @@
 /* 장대장 단지 추천 공통 로직 — 내 집 마련 리포트(buy/report)와 갈아타기(switch)가 함께 쓴다.
+   조건 검색 엔진 search()는 내 집 마련 리포트와 길잡이(solve/ '현금 + 대출로 살 수 있는 서울 아파트')가 같이 써서, 같은 조건이면 두 화면의 단지·순서·숫자가 같다(tools/guide-same-test.js).
    자료: jangdaejang-data data/sNN.json 의 units
      u = [시군구코드, 동, 단지, 평형대, 전용㎡, 최근1년 거래수, 월별 평당가(만원) 36개, 월별 거래수 문자열, 지역 일자리, 미래가치 등 fx]
    규제지역·LTV: assets/loan-rules.js(공식 출처·적용일 포함) 한 곳에서 읽음 — 이 파일보다 먼저 불러와야 함
@@ -71,7 +72,85 @@
     return { fit, ch, rel, fx, hasFv, score, disp, sortv: hasFv && fx.fvSort != null ? fx.fvSort : disp };
   }
 
-  const API = { PY, REG_GG, isReg, isCap, groupOf, LTV, r100, lastNZ, firstNZ, recentCnt, change6, change3y, unitPrice, MIN_FIT, tooCheap, scoreOf, scoreUnit, rankCmp, diversify };
+  /* ---------- 보유 기간별 미래가치 점수(내 집 마련 리포트의 '예상 보유 기간' 막대) ----------
+     2년은 기본 모델(model.json 이 있으면 늘 사용), 1·3·5·7년은 표본 외 검증을 2번 이상 했고 평균이 플러스이며 절반 이상 맞은 기간만 */
+  const VOK = m => !!(m && (m.oos_all || []).length >= 2 && m.oos_avg > 0 && 2 * (m.oos_hit != null ? m.oos_hit : (m.oos_all || []).filter(o => (o.top20 || 0) > 0).length) >= (m.oos_all || []).length);
+  function hzList(MODEL, MH) { return [1, 2, 3, 5, 7].filter(h => h === 2 ? !!MODEL : VOK(MH && MH[h])); }
+  /** 고른 연수 → [[모델 연수, 비율], …] 사이 기간은 양옆 검증 모델을 거리 비율로 섞고, 범위 밖은 가장 가까운 모델 */
+  function hzMix(y, MODEL, MH) {
+    const L = hzList(MODEL, MH); if (!L.length) return [[2, 1]]; const yy = Math.min(y, 9);
+    const lo = L.filter(h => h <= yy).pop(), hi = L.find(h => h >= yy);
+    if (lo == null) return [[hi, 1]]; if (hi == null || hi === lo) return [[lo, 1]];
+    const w = (yy - lo) / (hi - lo); return [[lo, 1 - w], [hi, w]].filter(x => x[1] > 0);
+  }
+  /** units 의 점수 칸(fx)에 보유 기간 점수를 넣음(fv = 화면 점수, fvSort = 정렬값). cleanFx: mine-core cleanFx(있으면) */
+  function applyHz(units, mix, cleanFx) {
+    for (const u of units || []) {
+      const f = u[9]; if (!f) continue; if (cleanFx) cleanFx(f);
+      if (f.fv2 === undefined) f.fv2 = (f.fv0 != null ? f.fv0 : f.fv); if (f.fv2 == null) { f.fv = null; continue; }
+      let s = 0; for (const [h, w] of mix) { const v = h === 2 ? f.fv2 : (f.fh && f.fh[h] != null ? f.fh[h] : f.fv2); s += w * v; }
+      f.fvSort = s; f.fv = Math.min(99, Math.round(s));
+    }
+    return units;
+  }
+  /** 지역 메모(assets/region-notes.js) 키 — 행정구역 개편으로 코드가 바뀐 곳(예: 전남광주통합특별시 12xxx)은 '시도|시군구 이름'으로 기존 메모를 찾음 */
+  function noteKey(NOTES, IX, code) {
+    if (!NOTES || !NOTES.notes) return code;
+    if (NOTES.notes[code]) return code;
+    const s = IX && IX.sgg ? IX.sgg[code] : null;
+    return (s && NOTES.byName && NOTES.byName[s.sido + '|' + s.name]) || code;
+  }
+
+  /* ---------- 조건 검색(맞춤 단지) — 내 집 마련 리포트(buy/report)와 길잡이(solve/ budget_apts)가 같은 함수를 써요 ----------
+     q = { units, sggs:Set|배열(구 코드), areas:Set|배열(평형대 — 비면 전체), cash(만원), ctxBy·dsrBy·maxBy:{reg,capfree,local}(loan-core ctx·dsrMax·maxPrice),
+           need(P, c, dsr, large)(loan-core need), groupOf(code), noteOf(code)→참/거짓, sggPpy:{코드: 구 평당가},
+           newb(준공 N년 이내 — 0·없음 = 상관없음), pmax(집값 상한 만원 — 0·없음 = 상관없음), year(준공 연수 기준 해 = 자료 갱신 해), any(지역 상관없음), sidoOf(code), max(기본 10) }
+     조건: 고른 구 → 고른 평형 → 최근 시세 있음 → 최근 3개월 거래 1건 이상 → 신축 → 집값 상한 → 내 돈으로 살 수 있음(need ≤ cash) → 최대 매수 가능액의 55% 미만 제외(MIN_FIT)
+     순서: rankCmp(미래가치 점수 → 추천 점수) · 고르기: diversify(10곳 · 한 구 3곳 · 지역 상관없음이면 시·도당 3곳) */
+  const asSet = v => v instanceof Set ? v : new Set(v || []);
+  function passBase(u, q, sggs, areas) {
+    const f = u[9] && typeof u[9] === 'object' ? u[9] : {};
+    if (!sggs.has(u[0])) return false;
+    if (areas.size && !areas.has(u[3])) return false;
+    if (!lastNZ(u[6] || [])) return false;
+    if (recentCnt(u[7] || '') < 1) return false;
+    if (q.newb > 0 && !(f.by && (q.year || 0) - f.by <= q.newb)) return false;
+    if (q.pmax > 0 && unitPrice(u) > q.pmax) return false;
+    return true;
+  }
+  function search(q) {
+    const sggs = asSet(q.sggs), areas = asSet(q.areas), gOf = q.groupOf || groupOf, out = [];
+    for (const u of q.units || []) {
+      if (!passBase(u, q, sggs, areas)) continue;
+      const [code, dong, apt, band, area, n, series] = u;
+      const g = gOf(code), c = q.ctxBy[g], M = q.maxBy[g]; if (!M) continue;
+      const P = unitPrice(u), large = area > 85;
+      const nd = q.need(P, c, q.dsrBy[g], large);
+      if (nd.need > q.cash) continue;
+      const sc = scoreUnit(u, P, M, (q.sggPpy || {})[code], q.noteOf ? !!q.noteOf(code) : false);
+      if (sc.fit < MIN_FIT) continue;
+      out.push(Object.assign({ code, dong, apt, band, area, n, series, P, g, c, nd, large, jb: u[8], u }, sc));
+    }
+    out.sort(rankCmp);
+    const picked = diversify(out, { max: q.max || 10, perSgg: 3, perSido: q.any ? 3 : 0, sidoOf: q.sidoOf });
+    return { picked, total: out.length };
+  }
+  /** 조금만 더 준비하면 살 수 있는 단지(맞는 단지가 없을 때) — 같은 조건에서 부족한 돈이 적은 순 10곳(최근 1년 거래 20건 이상) */
+  function nearMiss(q) {
+    const sggs = asSet(q.sggs), areas = asSet(q.areas), gOf = q.groupOf || groupOf, out = [], seen = new Set(), res = [];
+    for (const u of q.units || []) {
+      if (!passBase(u, q, sggs, areas) || u[5] < 20) continue;
+      const g = gOf(u[0]), P = unitPrice(u), nd = q.need(P, q.ctxBy[g], q.dsrBy[g], u[4] > 85);
+      if (nd.need <= q.cash) continue;
+      out.push({ code: u[0], dong: u[1], apt: u[2], band: u[3], P, nd, jb: u[8] });
+    }
+    out.sort((a, b) => a.nd.need - b.nd.need);
+    for (const x of out) { const k = x.code + x.apt; if (seen.has(k)) continue; seen.add(k); res.push(x); if (res.length >= 10) break; }
+    return res;
+  }
+
+  const API = { PY, REG_GG, isReg, isCap, groupOf, LTV, r100, lastNZ, firstNZ, recentCnt, change6, change3y, unitPrice, MIN_FIT, tooCheap, scoreOf, scoreUnit, rankCmp, diversify,
+    VOK, hzList, hzMix, applyHz, noteKey, search, nearMiss };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_REC = API;
 })(typeof self !== 'undefined' ? self : this);

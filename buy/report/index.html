@@ -35,8 +35,8 @@
 <script src="../../assets/stat.js?v=8"></script>
 <script src="../../assets/region-notes.js"></script>
 <script src="../../assets/loan-rules.js?v=3"></script>
-<script src="../../assets/rec-core.js?v=5"></script>
-<script src="../../assets/mine-core.js?v=22"></script>
+<script src="../../assets/rec-core.js?v=6"></script>
+<script src="../../assets/mine-core.js?v=23"></script>
 <script src="../../assets/price-sheet.js?v=24"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/lead.js?v=4"></script>
@@ -480,6 +480,7 @@ p.premlink{display:block;margin:10px 0 0}
 
 <div class="wrap">
   <div id="hero" class="noprint" aria-live="polite"></div>
+  <div class="noprint" data-gask="report" hidden></div>
   <div class="hzbar noprint" id="hzbar"><b>예상 보유 기간</b><span class="hzv" id="hzv">2년</span><input type="range" id="hzr" min="1" max="10" step="1" value="2" aria-label="예상 보유 기간(년)"><div class="hzticks"><span style="left:0">1년</span><span style="left:22.2%">3년</span><span style="left:44.4%">5년</span><span style="left:66.7%">7년</span><span style="left:100%">10년 이상</span></div><div class="hzrec" id="hzrec"></div><div class="hznote" id="hznote"></div></div>
   <div id="rkTop" class="noprint"></div>
   <div class="toolbar noprint">
@@ -506,6 +507,10 @@ p.premlink{display:block;margin:10px 0 0}
         <select id="s_term"><option>20</option><option>25</option><option>30</option><option>35</option><option>40</option></select></div>
       <div class="field"><label for="s_etc">기타 비용: 이사·등기·수리 (만원)</label><input id="s_etc" inputmode="numeric"></div>
       <div class="field"><label for="s_sido">시·도</label><select id="s_sido"></select></div>
+      <div class="field"><label for="s_newb">새 아파트(준공)</label>
+        <select id="s_newb"><option value="0">상관없어요</option><option value="5">5년 이내 신축</option><option value="10">10년 이내</option></select></div>
+      <div class="field"><label for="s_pmax">집값 상한</label>
+        <select id="s_pmax"><option value="0">상관없어요</option><option value="60000">6억 이하</option><option value="90000">9억 이하</option><option value="100000">10억 이하</option><option value="120000">12억 이하</option><option value="150000">15억 이하</option><option value="200000">20억 이하</option><option value="250000">25억 이하</option></select></div>
     </div>
     <div class="field" style="margin-top:12px">
       <label>희망 지역 (여러 곳 선택 가능)</label>
@@ -532,12 +537,8 @@ const DATA = JB.DATA + 'data/';
 const PL = window.JDJ_PLAIN; let GLS = PL.gloss();
 const FORM = 'https://docs.google.com/forms/d/e/1FAIpQLScCG7wzIlY3FE6EHU5QWo92uW5NQe7aiP-GJ9jvh41Rx2E8Zw/viewform';
 const NOTES = (window.JDJ_REGION_NOTES||{notes:{},sources:[],asOf:''});
-/* 행정구역 개편으로 코드가 바뀐 곳(예: 전남광주통합특별시 12xxx)은 '시도|시군구 이름'으로 기존 메모를 찾는다 */
-function noteKey(code){
-  if (NOTES.notes[code]) return code;
-  const s = (typeof IX!=='undefined' && IX && IX.sgg) ? IX.sgg[code] : null;
-  return (s && NOTES.byName && NOTES.byName[s.sido+'|'+s.name]) || code;
-}
+/* 행정구역 개편으로 코드가 바뀐 곳(예: 전남광주통합특별시 12xxx)은 '시도|시군구 이름'으로 기존 메모를 찾는다(assets/rec-core.js noteKey — 길잡이와 같은 함수) */
+function noteKey(code){ return window.JDJ_REC.noteKey(NOTES, (typeof IX!=='undefined' && IX) || null, code); }
 function noteOf(code){ return NOTES.notes[noteKey(code)]; }
 
 /* 규제지역 (2026.7.1 기준): 서울 전역 + 경기 15곳 */
@@ -565,7 +566,12 @@ function PB(x, at, cls, apt){ return window.JDJ_PRICE ? JDJ_PRICE.btn({sd:x.sd||
 /* 개인 금융값(연소득·현금·대출·이름·기타 비용)은 주소가 아니라 이 기기에만 보관(assets/share.js).
    예전 공유 링크처럼 주소에 개인값이 있으면: 주소에서 지우고, 이 기기에 저장된 내 값이 없으면 입력 화면으로 보냄 */
 /* 이 기기에 저장된 값이 비어 있으면(연소득·현금이 0이거나 없음) 없는 것으로 본다 — 공유 링크로 처음 연 사람에게 '연소득 0원·대출 불가' 리포트가 뜨지 않게 */
-const FIN = (function(){ const f = (window.JDJ_SHARE && JDJ_SHARE.loadFin()) || null; if(!f) return null;
+/* 길잡이(solve/)의 '같은 조건으로 검색 화면에서 보기'로 온 경우(?from=guide): 길잡이가 이 탭에만 넘긴 연소득·현금(sessionStorage jdj_gfin, 30분)으로 계산 — 주소에는 개인값을 싣지 않음.
+   이 기기에 저장된 값은 바꾸지 않아요(조건 수정에서 고치면 그때 저장). */
+const GFIN = (function(){ try{ if(new URLSearchParams(location.search).get('from')!=='guide') return null; const g=JSON.parse(sessionStorage.getItem('jdj_gfin')||'null'); return g && g.at && Date.now()-g.at < 1800e3 ? g : null; }catch(e){ return null; } })();
+const FIN = (function(){ const f = (window.JDJ_SHARE && JDJ_SHARE.loadFin()) || null;
+  if (GFIN) return Object.assign({}, f||{}, {i:GFIN.i, c:GFIN.c, d:GFIN.d||0, e:GFIN.e!=null?GFIN.e:1000});
+  if(!f) return null;
   const pos = v => parseFloat(String(v==null?'':v).replace(/[^0-9.]/g,''))>0; return (pos(f.i) || pos(f.c)) ? f : null; })();
 if (window.JDJ_SHARE && JDJ_SHARE.hasPersonal(location.search)) {
   const clean = JDJ_SHARE.stripPersonal(location.search);
@@ -579,8 +585,12 @@ const S = {
   income: num(FV('i',7000)), cash: num(FV('c',40000)), debt: num(FV('d',0)),
   own: Q.get('o')||'none', rtype: Q.get('t')||'cyc', rate: num(Q.get('rt')||4.0), term: parseInt(Q.get('tm')||30,10),
   etc: num(FV('e',1000)), region: Q.get('r')||'seoul',
-  sido: null, sggs: new Set(), areas: new Set(['59㎡대','74㎡대','84㎡대'])
+  sido: null, sggs: new Set(), areas: new Set(['59㎡대','74㎡대','84㎡대']),
+  /* 신축(준공 N년 이내)·집값 상한(만원) — 0 = 상관없음. 주소 nb·pm(개인값 아님) */
+  newb: [5,10].includes(parseInt(Q.get('nb'),10)) ? parseInt(Q.get('nb'),10) : 0, pmax: Math.max(0, parseInt(Q.get('pm'),10)||0)
 };
+/* 평형: 주소 ar(쉼표로 여러 개, 길잡이에서 올 때) */
+{ const ar=(Q.get('ar')||'').split(',').filter(b=>BANDS.includes(b)); if (ar.length) S.areas=new Set(ar); }
 let IX=null; const SIDO_CACHE={};
 /* 지역 상관없음: 자료가 있는 전 시·도를 한 번에 본다 */
 const ANY = {id:'all', name:'지역 상관없음', short:'상관없음', any:true};
@@ -615,14 +625,11 @@ try{ HZ = parseInt(new URLSearchParams(location.search).get('hz') || localStorag
 if(!(HZ>=1&&HZ<=10)) HZ=2;
 /* 보유 기간별 모델: 2년은 기본 모델(항상 사용), 1·3·5·7년은 여러 시기 검증(3개 시기 이상 + 표본 외 상위20% 플러스)을 통과했을 때만 사용 */
 /* 표본 외 검증(그 시기보다 과거만으로 학습 → 이후를 맞힘)을 2회 이상 했고 평균이 플러스인 기간만 사용 */
-const VOK=m=>!!(m&&(m.oos_all||[]).length>=2&&m.oos_avg>0&&2*(m.oos_hit!=null?m.oos_hit:(m.oos_all||[]).filter(o=>(o.top20||0)>0).length)>=(m.oos_all||[]).length);
-const HOK=h=>{ if(h===2) return !!MODEL; return VOK(MH&&MH[h]); };
-const HLIST=()=>[1,2,3,5,7].filter(HOK);
-/* 선택한 연수 → 쓸 모델과 섞는 비율. 사이 기간은 양옆 검증 모델을 거리 비율로 섞고, 범위 밖은 가장 가까운 모델 */
-function hzMix(y){ const L=HLIST(); if(!L.length) return [[2,1]]; const yy=Math.min(y,9);
-  const lo=L.filter(h=>h<=yy).pop(), hi=L.find(h=>h>=yy);
-  if(lo==null) return [[hi,1]]; if(hi==null||hi===lo) return [[lo,1]];
-  const w=(yy-lo)/(hi-lo); return [[lo,1-w],[hi,w]].filter(x=>x[1]>0); }
+/* 보유 기간 모델 고르기·섞기·점수 넣기는 길잡이와 같은 공통 함수(assets/rec-core.js hzList·hzMix·applyHz) */
+const VOK=m=>REC.VOK(m);
+const HOK=h=>REC.hzList(MODEL,MH).includes(h);
+const HLIST=()=>REC.hzList(MODEL,MH);
+function hzMix(y){ return REC.hzMix(y, MODEL, MH); }
 const MOD=h=>h===2?MODEL:(MH&&MH[h]);
 const RZ_LV={1:'신속통합기획 대상지 선정',2:'신속통합기획 완료',3:'정비구역 지정',4:'추진위원회 승인',5:'조합설립인가',6:'건축심의',7:'사업시행인가',8:'관리처분인가',9:'이주',10:'착공'};
 const rzYm=v=>v?`${v.slice(0,4)}.${v.slice(4)}`:'';
@@ -645,8 +652,7 @@ function loadAll(onStep){
 function sdIdOf(code){ const nm=sidoOfCode(code), s=IX.sido.find(x=>x.name===nm); return s ? s.id : (S.sido&&S.sido.id); }
 async function loadSido(id){ if(SIDO_CACHE[id]) return SIDO_CACHE[id]; const r=await fetch(DATA+id+'.json',{cache:'no-cache'}); if(!r.ok) throw new Error(id); const j=await r.json(); SIDO_CACHE[id]=j.units; applyHz(j.units); return j.units; }
 /* 보유 기간에 맞는 미래가치 점수: 5년·10년은 5년 모델이 여러 시기 검증을 통과했을 때만 사용, 아니면 2년 점수 */
-function applyHz(units){ const mix=hzMix(HZ); for(const u of units){ const f=u[9]; if(!f) continue; if(window.JDJ_MINE) JDJ_MINE.cleanFx(f); if(f.fv2===undefined) f.fv2=(f.fv0!=null?f.fv0:f.fv); if(f.fv2==null){ f.fv=null; continue; }
-  let s=0; for(const [h,w] of mix){ const v=h===2?f.fv2:(f.fh&&f.fh[h]!=null?f.fh[h]:f.fv2); s+=w*v; } f.fvSort=s; f.fv=Math.min(99,Math.round(s)); } }
+function applyHz(units){ REC.applyHz(units, hzMix(HZ), window.JDJ_MINE ? JDJ_MINE.cleanFx : null); }
 function setHz(h){ HZ=h; try{ localStorage.setItem('jdj_hz',String(h)); }catch(e){} const u=new URL(location.href); u.searchParams.set('hz',h); history.replaceState(null,'',u); Object.values(SIDO_CACHE).forEach(applyHz); hzUi(); render(); }
 const hzLbl=y=>y>=10?'10년 이상':y+'년';
 const rangeP=r=>r&&r.style.setProperty('--p', ((r.value-r.min)/((r.max-r.min)||1)*100)+'%');
@@ -694,6 +700,9 @@ function buildSettings(){
   $('s_own').value=S.own; $('s_rtype').value=S.rtype; $('s_rate').value=S.rate; $('s_term').value=String(S.term); $('s_etc').value=S.etc.toLocaleString();
   $('s_sido').innerHTML = `<option value="all">지역 상관없음 (전국)</option>` + JDJ_KO.sortSido(IX.sido, s=>s.name).map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
   $('s_sido').value = S.sido.id;
+  $('s_newb').value = String(S.newb);
+  if (S.pmax && ![...$('s_pmax').options].some(o=>+o.value===S.pmax)) $('s_pmax').insertAdjacentHTML('beforeend', `<option value="${S.pmax}">${fmt(S.pmax)} 이하</option>`);
+  $('s_pmax').value = String(S.pmax);
   renderSggChips();
   $('s_area').innerHTML = BANDS.map(b=>`<button class="chip ${S.areas.has(b)?'on':''}" data-v="${b}">${b}</button>`).join('');
 }
@@ -705,16 +714,19 @@ function renderSggChips(){
 }
 function readSettings(){
   S.name=$('s_name').value.trim(); S.income=num($('s_income').value); S.cash=num($('s_cash').value); S.debt=num($('s_debt').value);
+  S.newb=parseInt($('s_newb').value,10)||0; S.pmax=parseInt($('s_pmax').value,10)||0; cqSave();
   S.own=$('s_own').value; S.rtype=$('s_rtype').value; S.rate=num($('s_rate').value)||4; S.term=parseInt($('s_term').value,10); S.etc=num($('s_etc').value);
   if (window.JDJ_SHARE) JDJ_SHARE.saveFin({i:S.income, c:S.cash, d:S.debt, n:S.name, e:S.etc});
 }
+/* 신축·집값 상한·주택 보유는 주소에도 남겨 새로 고침·공유해도 같은 조건(개인값 아님) */
+function cqSave(){ try{ const u=new URL(location.href); S.newb?u.searchParams.set('nb',S.newb):u.searchParams.delete('nb'); S.pmax?u.searchParams.set('pm',S.pmax):u.searchParams.delete('pm'); history.replaceState(null,'',u); }catch(e){} }
 let rt=null; function rerender(){ clearTimeout(rt); rt=setTimeout(render,250); }
 function wireSettings(){
   ['s_name','s_income','s_cash','s_debt','s_rate','s_etc'].forEach(id=>$(id).addEventListener('input',e=>{
     if(['s_income','s_cash','s_debt','s_etc'].includes(id)){ const raw=e.target.value.replace(/[^0-9]/g,''); e.target.value = raw?parseInt(raw,10).toLocaleString():''; }
     readSettings(); rerender();
   }));
-  ['s_own','s_rtype','s_term'].forEach(id=>$(id).addEventListener('change',()=>{ readSettings(); rerender(); }));
+  ['s_own','s_rtype','s_term','s_newb','s_pmax'].forEach(id=>$(id).addEventListener('change',()=>{ readSettings(); rerender(); }));
   $('s_sido').addEventListener('change', async e=>{
     S.sido = e.target.value==='all' ? ANY : IX.sido.find(s=>s.id===e.target.value); S.sggs = new Set(sggsOfSido(S.sido)); renderSggChips(); render();
   });
@@ -729,46 +741,18 @@ function wireSettings(){
 }
 
 /* ---------- 추천 ---------- */
-function pickCandidates(units, maxBy, ctxBy, dsrBy){
+/* 조건 검색 엔진은 길잡이(solve/ '현금 + 대출로 살 수 있는 서울 아파트')와 같은 함수(assets/rec-core.js search·nearMiss) — 같은 조건이면 같은 단지·순서·숫자 */
+function searchQ(units, maxBy, ctxBy, dsrBy){
   const sggPpy = {}; for(const c of S.sggs){ const s=IX.sgg[c]; sggPpy[c] = s ? lastNZ(s.s) : 0; }
-  const out=[];
-  for(const u of units){
-    const [code, dong, apt, band, area, n, series, cnt] = u;
-    if(!S.sggs.has(code)) continue;
-    if(S.areas.size && !S.areas.has(band)) continue;
-    const ppy = lastNZ(series); if(!ppy) continue;
-    if(recentCnt(cnt) < 1) continue;
-    const g = groupOf(code), c = ctxBy[g], M = maxBy[g]; if(!M) continue;
-    const P = r100(ppy*area/PY);
-    const large = area>85;
-    const nd = need(P,c,dsrBy[g],large);
-    if (nd.need > S.cash) continue;
-    const sc = REC.scoreUnit(u, P, M, sggPpy[code], !!noteOf(code));
-    if (sc.fit < REC.MIN_FIT) continue;
-    const {fit, ch, rel, fx, hasFv, score, disp, sortv} = sc;
-    out.push({code,dong,apt,band,area,n,series,P,g,c,nd,fit,ch,rel,score,hasFv,disp,sortv,large,fx,jb:u[8],mon:monthly(nd.loan.L,c.rate,c.term)});
-  }
-  /* 순위: 미래가치 점수가 있는 단지 먼저 점수 높은 순 → 같으면 예산 적합도·거래량 → 미래가치 점수가 없는 단지는 그 뒤 */
-  out.sort(REC.rankCmp);
-  /* 지역 상관없음: 한 시·도에 몰리지 않게 시·도당 3곳까지 */
-  const picked = REC.diversify(out, {max:10, perSgg:3, perSido: S.sido.any ? 3 : 0, sidoOf: sidoOfCode});
-  return {picked, total: out.length};
+  return {units, sggs:S.sggs, areas:S.areas, cash:S.cash, ctxBy, dsrBy, maxBy, need, groupOf, noteOf:c=>!!noteOf(c), sggPpy,
+    newb:S.newb, pmax:S.pmax, year:+(String(IX.updated||'').slice(0,4))||new Date().getFullYear(), any:!!S.sido.any, sidoOf:sidoOfCode, max:10};
 }
-function nearMisses(units, ctxBy, dsrBy){
-  const out=[]; const seen=new Set();
-  for(const u of units){
-    const [code, dong, apt, band, area, n, series, cnt] = u;
-    if(!S.sggs.has(code)) continue;
-    if(S.areas.size && !S.areas.has(band)) continue;
-    const ppy=lastNZ(series); if(!ppy || recentCnt(cnt)<1 || n<20) continue;
-    const g=groupOf(code), P=r100(ppy*area/PY), nd=need(P,ctxBy[g],dsrBy[g],area>85);
-    if (nd.need<=S.cash) continue;
-    out.push({code,dong,apt,band,P,nd});
-  }
-  out.sort((a,b)=>a.nd.need-b.nd.need);
-  const res=[]; for(const x of out){ const k=x.code+x.apt; if(seen.has(k)) continue; seen.add(k); res.push(x); if(res.length>=10) break; }
-  return res;
+function pickCandidates(units, maxBy, ctxBy, dsrBy){
+  const r = REC.search(searchQ(units, maxBy, ctxBy, dsrBy));
+  r.picked.forEach(x=>{ x.mon = monthly(x.nd.loan.L, x.c.rate, x.c.term); });
+  return {picked:r.picked, total:r.total};
 }
+function nearMisses(units, ctxBy, dsrBy){ return REC.nearMiss(searchQ(units, {}, ctxBy, dsrBy)); }
 /* 순위 비교 기준: 미래가치(fv)=같은 시·도 아파트(옛 자료는 같은 구), 같은 구 안(fvg)='송파구 안에서는 아파트 N곳 중' */
 const fvBase=x=>{ const f=x.fx||{}; return (f.gs!=null||f.fvg!=null) ? PL.rankBase(IX,x.code,'fv') : {name:`${sggName(x.code)} 아파트`}; };
 const fvRank=(x,v)=>PL.rank(v==null?(x.fx||{}).fv:v, fvBase(x));
@@ -1193,7 +1177,7 @@ async function render(){
     <div class="meta rkscope">모든 순위는 같은 시·도 안에서 비교했어요.</div>
     <div class="conds">
       <span>연소득 ${fmt(S.income)}</span><span>보유 현금 ${fmt(S.cash)}</span><span>${OWN_NAME[S.own]}</span>
-      <span>${TYPE_NAME[S.rtype]} ${S.rate}% · ${c.term}년</span><span>희망 지역: ${esc(selTxt)}</span><span>평형: ${S.areas.size?[...S.areas].join(', '):'전체'}</span>
+      <span>${TYPE_NAME[S.rtype]} ${S.rate}% · ${c.term}년</span><span>희망 지역: ${esc(selTxt)}</span><span>평형: ${S.areas.size?[...S.areas].join(', '):'전체'}</span>${S.newb?`<span>준공 ${S.newb}년 이내</span>`:''}${S.pmax?`<span>집값 ${fmt(S.pmax)} 이하</span>`:''}
     </div>
     ${!FIN?`<div class="warn" style="margin-top:12px"><b>예시 조건으로 보여 드려요.</b> 이 기기에 입력한 연소득·현금이 없어 예시 값(연소득 ${fmtW(S.income)}·현금 ${fmtW(S.cash)})으로 계산했어요. <a href="../${location.search?'?'+['r','sd','g'].map(k=>Q.get(k)?k+'='+encodeURIComponent(Q.get(k)):'').filter(Boolean).join('&'):''}">내 조건 넣고 다시 보기 ›</a></div>`:''}
   </div>`;
@@ -1671,6 +1655,8 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ const bg=$('agm'
     IX = await loadIndex();
     S.sido = (Q.get('sd')==='all' || Q.get('sd')===ANY.name) ? ANY : (IX.sido.find(s=>s.name===Q.get('sd')) || defaultSido());
     S.sggs = (Q.get('g') && IX.sgg[Q.get('g')] && IX.sgg[Q.get('g')].sido===S.sido.name) ? new Set([Q.get('g')]) : new Set(defaultSggs(S.sido));
+    /* 여러 구(주소 gs, 쉼표 — 길잡이 '같은 조건으로 검색 화면에서 보기') */
+    { const gs=(Q.get('gs')||'').split(',').filter(g=>IX.sgg[g] && (S.sido.any || IX.sgg[g].sido===S.sido.name)); if (gs.length) S.sggs=new Set(gs); }
     /* 가족과 자세히 공유로 받은 경우: 보낸 분이 고른 구·시·군과 평형까지 그대로 (assets/share.js, 이 탭에서만) */
     { const SV = window.JDJ_SHARE && JDJ_SHARE.viewing(), x = (SV && SV.x) || null;
       if (x && Array.isArray(x.sg)){ const ok = x.sg.map(String).filter(g => IX.sgg[g] && (S.sido.any || IX.sgg[g].sido===S.sido.name)); if (ok.length) S.sggs = new Set(ok); }
@@ -1681,7 +1667,7 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ const bg=$('agm'
     setModeUi();
     $('backBtn').href = '../' + (location.search ? location.search+'&full=1' : '?full=1');
     /* 공유: 요약(개인 숫자 없음) 또는 가족과 자세히(연소득·현금·대출·이름·기타 비용과 고른 조건을 주소 # 뒤에만) */
-    if (window.JDJ_SHARE) JDJ_SHARE.setup({tool:'report', keep:['r','sd','g'], detail(){
+    if (window.JDJ_SHARE) JDJ_SHARE.setup({tool:'report', keep:['r','sd','g','gs','ar','nb','pm','o'], detail(){
       const f = JDJ_SHARE.loadFin(), pos = v => parseFloat(String(v==null?'':v).replace(/[^0-9.]/g,''))>0;
       if (!f || !(pos(f.i) || pos(f.c))) return null;   // 예시 조건으로 보고 있으면 자세히 공유할 내 값이 없음 → 요약만
       const q = Object.fromEntries(new URLSearchParams(location.search)); ['from','full','src'].forEach(k => delete q[k]); q.hz = HZ;
@@ -1700,6 +1686,6 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ const bg=$('agm'
 </script>
 <script src="../../assets/ad-slot.js?v=7" defer></script>
 <div data-gnext="report" hidden></div>
-<script src="../../assets/guide-next.js?v=7" defer></script>
+<script src="../../assets/guide-next.js?v=8" defer></script>
 </body>
 </html>

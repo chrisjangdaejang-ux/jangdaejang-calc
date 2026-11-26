@@ -32,7 +32,7 @@
 <script src="../assets/life-view.js?v=3"></script>
 <script src="../assets/fac-view.js?v=1"></script>
 <script src="../assets/mine-core.js?v=23"></script>
-<script src="../assets/map-core.js?v=5"></script>
+<script src="../assets/map-core.js?v=6"></script>
 <script src="../assets/mapjump.js?v=4"></script>
 <script src="../assets/alerts-core.js?v=5"></script>
 <script src="../assets/watch-core.js?v=2"></script>
@@ -367,7 +367,7 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp
 const J = (u, o) => fetch(u, Object.assign({cache:'no-cache'}, o || {})).then(r => r.ok ? r.json() : null).catch(() => null);
 const Q = new URLSearchParams(location.search);
 const S = { mode: ['price','fv','jr','reg'].includes(Q.get('m')) ? Q.get('m') : 'price', size: ['s','m','l'].includes(Q.get('sz')) ? Q.get('sz') : '',
-  price: C.PRICES.some(p => p.id && p.id === Q.get('pr')) ? Q.get('pr') : '', fut: Q.get('fu') !== '0', bun: Q.get('ly') === 'bun' || Q.get('ly') === 'all', nb: Q.get('nb') === '1' };
+  price: (C.priceOf(Q.get('pr')) || {}).id || '', age: [5,10].includes(+Q.get('ag')) ? +Q.get('ag') : 0, stn: Q.get('sn') === '1', fut: Q.get('fu') !== '0', bun: Q.get('ly') === 'bun' || Q.get('ly') === 'all', nb: Q.get('nb') === '1' };
 /* '지도에서 보기'(assets/mapjump.js): 결과 화면에서 오면 그 집에 맞춰 열고, 표시 핀·카드·돌아가기, 주변 역·학교를 켬 */
 const MJ = window.JDJ_MAPJ, F = MJ ? MJ.parse(Q) : { on: false, items: [] };
 S.poi = Q.get('po') ? Q.get('po') === '1' : F.on;
@@ -377,6 +377,8 @@ const SD = {};                       // 시·도 id → {st:'wait'|'ok'|'err', l
 const PINS = new Map();              // 지금 지도에 올린 말풍선 key → {h, html}
 let LAY = { fut: null, bun: null, nb: null }, NB_OK = false;   // fut: 개발·교통 예정(기본으로 켜짐, 확대 9 이상에서 보임)   // NB_OK: 신축 공사 중 자료가 공개돼 있을 때만 칩을 보여 줌(건축HUB 승인 전엔 파일이 없음)
 
+/* 단지 필터(평형·가격대·준공·역 거리) — 길잡이 '조건에 맞는 아파트 찾기'와 같은 함수(assets/map-core.js pick·danjiOk) */
+const FOPT = () => ({ size: S.size, price: S.price, age: S.age, station: S.stn ? C.STATION : 0, year: +(String((IX && IX.updated) || '').slice(0, 4)) || new Date().getFullYear() });
 /* ---------- 이름 ---------- */
 const sggOf = code => (IX && IX.sgg[code]) || {};
 const sidoOf = code => (IX && IX.sido.find(s => s.name === sggOf(code).sido)) || {};
@@ -388,7 +390,9 @@ function drawControls(){
   document.body.classList.toggle('reg', S.mode === 'reg');
   if (S.mode === 'reg') { $('fil').innerHTML = regChips(); return; }
   $('fil').innerHTML = C.SIZES.map(z => `<button type="button" class="chip${S.size === z.id ? ' on' : ''}" data-sz="${z.id}" aria-pressed="${S.size === z.id}"${z.d ? ` title="${z.d}"` : ''}>${z.t}</button>`).join('')
-    + `<select class="chip${S.price ? ' on' : ''}" id="fPrice" aria-label="가격대">${C.PRICES.map(p => `<option value="${p.id}"${S.price === p.id ? ' selected' : ''}>${p.t}</option>`).join('')}</select>`
+    + `<select class="chip${S.price ? ' on' : ''}" id="fPrice" aria-label="가격대">${C.PRICES.concat(C.PRICES.some(p => p.id === S.price) ? [] : [C.priceOf(S.price)]).filter(Boolean).map(p => `<option value="${p.id}"${S.price === p.id ? ' selected' : ''}>${p.t}</option>`).join('')}</select>`
+    + `<select class="chip${S.age ? ' on' : ''}" id="fAge" aria-label="준공">${C.AGES.map(a => `<option value="${a.id}"${S.age === a.id ? ' selected' : ''}>${a.t}</option>`).join('')}</select>`
+    + `<button type="button" class="chip${S.stn ? ' on' : ''}" data-sn="1" aria-pressed="${S.stn}" title="단지에서 가장 가까운 지하철역까지 걸어서 ${C.STATION}분 이내">역 ${C.STATION}분</button>`
     + `<span class="lgrp" role="group" aria-label="지도에 함께 보기"><span class="lgl">지도에 함께 보기</span>`
     + `<button type="button" class="chip lay fu${S.fut ? ' on' : ''}" data-ly="fut" aria-pressed="${S.fut}" title="공식 발표에 적힌 예정 연도만 보여 줘요">개발·교통 예정</button>`
     + `<button type="button" class="chip lay po${S.poi ? ' on' : ''}" data-ly="poi" aria-pressed="${S.poi}" title="운행 중인 지하철역과 중학교 위치(공공 자료)">역·학교</button>`
@@ -396,12 +400,14 @@ function drawControls(){
     + (NB_OK || S.nb ? `<button type="button" class="chip lay nb${S.nb ? ' on' : ''}" data-ly="nb" aria-pressed="${S.nb}" title="건축 허가·착공 기록으로 찾은 소규모 신축(빌라·도시형·오피스텔·상가). 분양 여부는 이 자료로 알 수 없어요">신축 공사 중</button>` : '')
     + `</span>`;
   $('fPrice').onchange = e => { S.price = e.target.value; after(); };
+  $('fAge').onchange = e => { S.age = +e.target.value || 0; after(); };
 }
 $('mode').addEventListener('click', e => { const b = e.target.closest('button[data-m]'); if (!b) return; S.mode = b.dataset.m; after(); });
 $('fil').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   if (b.dataset.ri) { REG.ind = b.dataset.ri; after(); return; }
   if (b.dataset.sz != null) S.size = b.dataset.sz;
+  else if (b.dataset.sn) S.stn = !S.stn;
   else if (b.dataset.ly) { S[b.dataset.ly] = !S[b.dataset.ly]; if (S[b.dataset.ly]) loadLayer(b.dataset.ly); }
   after();
 });
@@ -590,7 +596,7 @@ function render(){
     const items = [];
     for (const id of ids) {
       const s = SD[id]; if (!s || s.st !== 'ok') continue;
-      for (const d of s.list) { if (!C.inBox(bb, d.lat, d.lng, 0.15)) continue; const b = C.pick(d, IX.months, { size: S.size, price: S.price }); if (b) items.push({ d, b }); }
+      for (const d of s.list) { if (!C.inBox(bb, d.lat, d.lng, 0.15)) continue; const b = C.pick(d, IX.months, FOPT()); if (b) items.push({ d, b }); }
     }
     /* 전세가율 보기: 내 집 시세와 같은 기준 값으로 바꿔 씀(구 파일을 받는 중이면 잠시 '불러오는 중') */
     let jrWait = 0;
@@ -620,7 +626,7 @@ function render(){
         djc.push({ d, b, main, list: c.list, p: (sel ? 1e7 : 0) + (d.n || 0), box: djBox(c.list[0].x, c.list[0].y, main || '최근 거래 없음', badge, showName ? d.apt : '', c.list.length > 1) });
       }
       LROWS = items.map(({ d, b }) => ({ k: d.key, name: d.apt, sub: `${sggName(d.code)} ${d.dong} · ${b.band}`, v: C.mainText(S.mode, b) || (S.mode === 'price' ? '최근 거래 없음' : '자료 없음'), p: d.n || 0, num: S.mode === 'fv' ? b.fv : S.mode === 'jr' ? b.jr : b.price, tap: () => openCard(d) }));
-      msg = items.length ? (S.mode === 'jr' ? '단지 전세가율 = 같은 평형 최근 3개월 전세 중간값 ÷ 매매 중간값이에요(내 집 시세와 같은 기준).' : '') : (wait ? '' : (S.size || S.price) ? '이 화면에 고른 평형·가격대에 맞는 단지가 없어요.' : '이 화면에는 표시할 단지가 없어요.');
+      msg = items.length ? (S.mode === 'jr' ? '단지 전세가율 = 같은 평형 최근 3개월 전세 중간값 ÷ 매매 중간값이에요(내 집 시세와 같은 기준).' : '') : (wait ? '' : (S.size || S.price || S.age || S.stn) ? '이 화면에 고른 조건(평형·가격대·준공·역 거리)에 맞는 단지가 없어요.' : '이 화면에는 표시할 단지가 없어요.');
     }
     if (wait) msg = '단지 자료를 불러오는 중이에요…';
     else if (jrWait) msg = '전세가율 자료를 불러오는 중이에요…';
@@ -1443,6 +1449,7 @@ function saveUrl(z){
     const c = MAP.center(), u = new URL(location.href), p = u.searchParams;
     p.set('lat', c.lat.toFixed(5)); p.set('lng', c.lng.toFixed(5)); p.set('z', String(Math.round(z)));
     S.mode !== 'price' ? p.set('m', S.mode) : p.delete('m'); S.size ? p.set('sz', S.size) : p.delete('sz'); S.price ? p.set('pr', S.price) : p.delete('pr');
+    S.age ? p.set('ag', S.age) : p.delete('ag'); S.stn ? p.set('sn', '1') : p.delete('sn');
     S.bun ? p.set('ly', 'bun') : p.delete('ly'); S.fut ? p.delete('fu') : p.set('fu', '0');
     S.nb ? p.set('nb', '1') : p.delete('nb');
     S.poi === F.on ? p.delete('po') : p.set('po', S.poi ? '1' : '0');

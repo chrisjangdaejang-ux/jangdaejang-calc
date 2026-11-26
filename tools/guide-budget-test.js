@@ -2,7 +2,8 @@
    자료: tools/guide-budget-fixture.json(공개 자료 s00.json 서울 84㎡대·59㎡대 단지 일부, index.json months·구·갱신일, model_h.json 2년 성적, policy.json, price/구.json 개별 거래 일부)
    ① 자연스러운 질문 8개 이상 → 이 고민 · 문장에서 현금·소득·평형·지역·신축·생애최초·'추천' 읽기 · 좁히는 질문 하나씩(연소득 → 평형 → 출퇴근지 → 신축 → 생애최초)
    ② 대출 규칙 대조: loan-rules 가격대별 상한(15억 이하 6억 · 25억 이하 4억 · 초과 2억) · 15억 문턱(15억 1천만 원 집은 대출 4억 → 못 삼) · 소득을 넣으면 스트레스 DSR 로 한도가 줄어듦
-   ③ 단지 목록: 숫자 = 엔진·자료 그대로(bandSummary 시세·건수·기간, loan-core need·monthly, 점수는 과거 성적 기준을 넘을 때만) · 같은 입력 같은 결과 · 정렬 4가지 · 위험 신호
+   ③ 단지 목록: 조건 검색 엔진(rec-core search — 내 집 마련 맞춤 단지와 같은 함수) 그대로 · 숫자 = 엔진·자료 그대로(bandSummary 시세·건수·기간, loan-core need·monthly, 점수는 과거 성적 기준을 넘을 때만 표시) · 같은 입력 같은 결과 · 위험 신호
+      (두 화면 대조는 tools/guide-same-test.js)
    ④ 카드 문구: 권유 없음·추천 순위 아님·출처·믿을 이유 · 화면 연결(버전·서비스 워커·첫 화면 '많이 받는 고민') */
 'use strict';
 const fs = require('fs'), path = require('path');
@@ -12,11 +13,12 @@ globalThis.JDJ_GBUDGET = B;   // guide-core 가 대화·계산에서 이 파일�
 const SC = JSON.parse(read('assets/guide/scenarios.json')), LEX = JSON.parse(read('assets/guide/lexicon.json')), DATA = Object.assign({}, SC, { lex: LEX });
 const FX = JSON.parse(read('tools/guide-budget-fixture.json'));
 const IX = { months: FX.months, sgg: FX.sgg, updated: FX.updated };
-const X = { units: FX.units, IX, MH: FX.mh, pol: FX.policy };
+const X = { units: FX.units, IX, MH: FX.mh, pol: FX.policy, MODEL: { fixture: 1 } };   // MODEL: 2년 기본 모델이 있는 보통 때(내용은 보유 기간 섞기에서 '있음'만 봐요)
+const REC = require('../assets/rec-core.js');
 let pass = 0, fail = 0;
 function check(name, cond, extra) { if (cond) pass++; else { fail++; console.log('  실패:', name, extra !== undefined ? JSON.stringify(extra).slice(0, 500) : ''); } }
 const CTX = { sgg: Object.keys(FX.sgg).map(c => ({ code: c, name: FX.sgg[c].name, sido: '서울특별시', short: '서울' })), sido: [{ name: '서울특별시', short: '서울' }], today: '2026-11-26' };
-const E = { L, MC };
+const E = { L, MC, hz: 2 };
 const st0 = q => B.init(B.ID, G.extract(q, CTX));
 
 /* ---------- ① 질문 이해 ---------- */
@@ -95,33 +97,31 @@ check('생애최초는 LTV 70% — 15억 집 대출은 상한 6억 그대로', B
 
 /* ---------- ③ 단지 목록 ---------- */
 const R = B.rowsOf(s10, X, E);
-check('목록: 10곳 이상(서울 전체에서 걸러냄)', R.n >= 10, R.n);
+check('목록: 검색 화면처럼 10곳(조건 충족 평형 수는 따로)', R.n === 10 && R.total >= R.n, [R.n, R.total]);
+const SQ = REC.search(B.searchQ(s10, X, E));
+check('목록: 단지·순서 = rec-core search(내 집 마련 맞춤 단지와 같은 엔진)', JSON.stringify(R.rows.map(r => [r.code, r.apt, r.band, r.price])) === JSON.stringify(SQ.picked.map(x => [x.code, x.apt, x.band, x.P])) && R.total === SQ.total);
+check('목록: 한 구에서 3곳까지(검색 화면과 같은 고르기)', Object.values(R.rows.reduce((o, r) => { o[r.code] = (o[r.code] || 0) + 1; return o; }, {})).every(n => n <= 3));
+check('목록: 예산에 비해 너무 싼 단지(최대 집값의 55% 미만)는 빠짐', R.rows.every(r => r.price >= 0.55 * C10.P));
 check('목록: 서울·84㎡대/59㎡대만 · 한 단지 한 줄', R.rows.every(r => /^11/.test(r.code) && (r.band === '84㎡대' || r.band === '59㎡대')) && new Set(R.rows.map(r => r.key)).size === R.n);
 check('목록: 시세 = mine-core bandSummary(내 집 시세와 같은 계산)', R.rows.every(r => r.price === MC.bandSummary(r.u, IX.months).price));
 check('목록: 내 돈으로 살 수 있는 단지만(need ≤ 현금) · 대출·월 상환 = loan-core', R.rows.every(r => { const n = L.need(r.price, K.c, K.dsr); return n.need <= 100000 && r.loan === Math.floor(n.loan.L) && Math.abs(r.pay - L.monthly(n.loan.L, 4, 30)) < 1e-6; }));
 check('목록: 건수·기간 = 시세가 쓴 3개월의 거래 수(자료 그대로)', R.rows.every(r => { const c = MC.counts(r.u[7]), i = IX.months.indexOf(r.at); return r.p3 && r.p3.to === r.at && r.p3.from === IX.months[i - 2] && r.n3 === c[i - 2] + c[i - 1] + c[i]; }));
 check('목록: 준공·세대수·역 = 자료 값', R.rows.every(r => r.by === (r.u[9].by || null) && r.hh === (r.u[9].hh || null) && r.sub === (r.u[9].sub != null ? r.u[9].sub : null)));
-check('목록: 15억 넘는 단지는 없음(10억 현금 기준)', R.rows.every(r => r.price <= 150000) && R.over > 0);
-check('점수: 서울 과거 성적(vcheck)이 기준을 넘어 점수 표시 · 기본 정렬 점수 높은 순', R.fvOk && R.track.ok && R.track.n === RK.vcheck(FX.mh, '서울특별시').n && R.sort === 'score' && R.rows.some(r => r.fv != null));
+check('목록: 15억 넘는 단지는 없음(10억 현금 기준)', R.rows.every(r => r.price <= 150000));
+check('점수: 서울 과거 성적(vcheck)이 기준을 넘어 점수 표시 · 순서는 미래가치 점수 순(검색 화면과 같음)', R.fvOk && R.track.ok && R.track.n === RK.vcheck(FX.mh, '서울특별시').n && R.rows.some(r => r.fv != null) && R.rows.filter(r => r.fv != null).every((r, i, a) => !i || a[i - 1].fv >= r.fv));
 const Rbad = B.rowsOf(s10, Object.assign({}, X, { MH: { 2: { oos_all: [{ t0: '202010', top20: -1 }, { t0: '202110', top20: -2 }], oos_avg: -1.5 } } }), E);
-check('점수: 과거 성적이 기준 미달이면 점수를 싣지 않고 거래 많은 순', !Rbad.fvOk && Rbad.rows.every(r => r.fv == null) && Rbad.sort === 'deal');
-const ord = how => B.rowsOf(Object.assign({}, s10, { sort: how }), X, E).rows;
-const okSort = (rs, f) => rs.every((r, i) => !i || f(rs[i - 1], r) <= 0);
-check('정렬: 점수 높은 순', okSort(ord('score'), (a, b) => (b.fv == null ? -1 : b.fv) - (a.fv == null ? -1 : a.fv)));
-check('정렬: 역 가까운 순', okSort(ord('station'), (a, b) => (a.sub == null ? 999 : a.sub) - (b.sub == null ? 999 : b.sub)));
-check('정렬: 신축 순', okSort(ord('new'), (a, b) => (b.by || 0) - (a.by || 0)));
-check('정렬: 거래 많은 순', okSort(ord('deal'), (a, b) => (b.n12 || 0) - (a.n12 || 0)));
 const sig = rs => JSON.stringify(rs.map(r => [r.key, r.band, r.price, r.loan]));
-const shuffled = FX.units.slice().reverse();
-check('같은 입력 같은 결과: 두 번 계산 · 자료 순서가 달라도 같은 목록·같은 순서', sig(B.rowsOf(s10, X, E).rows) === sig(R.rows) && sig(B.rowsOf(s10, Object.assign({}, X, { units: shuffled }), E).rows) === sig(R.rows) && ['station', 'new', 'deal'].every(h => sig(ord(h)) === sig(B.rowsOf(Object.assign({}, s10, { sort: h }), Object.assign({}, X, { units: shuffled }), E).rows)));
+check('점수: 과거 성적이 기준 미달이면 점수를 싣지 않음(단지·순서는 검색 화면과 같은 그대로)', !Rbad.fvOk && Rbad.rows.every(r => r.fv == null) && sig(Rbad.rows) === sig(R.rows));
+check('길잡이만의 정렬 단추 없음(정렬 기준을 바꿔도 같은 목록)', sig(B.rowsOf(Object.assign({}, s10, { sort: 'deal' }), X, E).rows) === sig(R.rows) && !/data-bsort/.test(read('assets/guide-budget.js')));
+check('같은 입력 같은 결과: 두 번 계산 · 원본 자료는 그대로(보유 기간 점수는 복사본에)', sig(B.rowsOf(s10, X, E).rows) === sig(R.rows) && FX.units.every(u => !u[9] || u[9].fvSort === undefined));
 check('같은 입력 같은 결과: 대출 계산도 같음', JSON.stringify(B.capOf(s10, L)) === JSON.stringify(B.capOf(st0('현금 10억 서울 아파트 추천'), L)));
 check('평형 84㎡대만', B.rowsOf(Object.assign({}, s10, { size: '84' }), X, E).rows.every(r => r.band === '84㎡대'));
 check('지역(마용성)만', B.rowsOf(B.set(B.ID, s10, 'rwork', '마용성'), X, E).rows.every(r => ['마포구', '용산구', '성동구'].indexOf(r.gu) >= 0));
 check('신축 5년 이내만(자료 날짜 기준 연수)', B.rowsOf(Object.assign({}, s10, { newb: 5 }), X, E).rows.every(r => r.by && +FX.updated.slice(0, 4) - r.by <= 5));
-check('소득 7천이면 살 수 있는 단지가 줄어듦', B.rowsOf(sI7, X, E).n < R.n);
+check('소득 7천이면 조건에 맞는 단지가 줄어듦', B.rowsOf(sI7, X, E).total < R.total);
 /* 위험 신호 */
 const RK0 = r => B.risks(r, L.R.CAP.v).map(x => x.k);
-check('위험: 비교 거래 적음 = 최근 1년 3건 미만', R.rows.every(r => (RK0(r).indexOf('thin') >= 0) === ((r.n12 || 0) < MC.FEW)) && R.rows.some(r => r.thin));
+check('위험: 비교 거래 적음 = 최근 1년 3건 미만', R.rows.every(r => (RK0(r).indexOf('thin') >= 0) === ((r.n12 || 0) < MC.FEW)) && B.risks({ thin: true, n12: 1 }, L.R.CAP.v).some(x => x.k === 'thin'));
 check('위험: 15억 문턱 = 최근 1년 시세가 15억을 넘은 적이 있는 단지', R.rows.filter(r => r.capB).every(r => r.range.hi > 150000 && r.price <= 150000) && R.rows.some(r => r.capB));
 check('위험: 재건축 단계 = 자료 rz · 단계 이름(redev-core)', R.rows.filter(r => r.rz).every(r => B.risks(r, L.R.CAP.v).find(x => x.k === 'rz').t.indexOf(r.rz.lv + '단계') >= 0) && R.rows.some(r => r.rz));
 check('위험: 전세가율 40% 미만 낮은 편 · 60% 이상 높은 편(단지 화면과 같은 구간)', R.rows.filter(r => r.jr != null).every(r => { const t = B.risks(r, L.R.CAP.v).find(x => x.k === 'jr').t; return r.jr < 0.4 ? /낮은 편/.test(t) : r.jr >= 0.6 ? /높은 편/.test(t) : !/편/.test(t); }));
@@ -135,13 +135,13 @@ const txt = JSON.stringify(Object.assign({}, r1, { _R: 0, _C: 0, _CL: 0, _st: 0 
 check('카드 계산됨(guide-core solve → S.budgetApts)', r1 && !r1.err && !r1.need && /최대 15억 원짜리 집/.test(r1.head) && r1.nums.length >= 3 && r1.tables[0].rows.length === 10, r1 && (r1.err || r1.need || r1.head));
 check('카드: 권유 문구 없음 · 말투', !G.BAD.test(txt) && !/습니다|사세요|추천\s*단지|BEST|베스트\s*\d/.test(txt), (txt.match(G.BAD) || txt.match(/습니다|사세요/) || [])[0]);
 check('카드: 빈 값·NaN 없음', !/NaN|undefined|Infinity/.test(txt));
-check('카드: 추천 순위 아님 · 출처·기간·갱신일', /추천 순위가 아니에요/.test(r1.tables[0].note) && /국토교통부 실거래/.test(r1.tables[0].note) && /자료 갱신 2026\.11\.26/.test(r1.tables[0].note) && /호가 아님/.test(r1.tables[0].note));
+check('카드: 검색 화면과 같은 순서 설명 · 출처·기간·갱신일', /내 집 마련 맞춤 단지\(조건 검색\) 화면과 같은 계산/.test(r1.tables[0].note) && /국토교통부 실거래/.test(r1.tables[0].note) && /자료 갱신 2026\.11\.26/.test(r1.tables[0].note) && /호가 아님/.test(r1.tables[0].note));
 check("카드: '추천'이라는 말에는 '근거와 함께 정리(추천 순위 아님)'", r1.rec === B.REC_LINE && /추천 순위 아님/.test(B.REC_LINE));
 check('카드: 현금을 모르면 되묻기(숫자 지어내지 않음)', (G.solve(SCB, { _nf: st0('서울 아파트 TOP 10') }, Object.assign({ BX: X }, E)).need || [])[0] === 'cash');
 const W = B.warnOf(s10, C10, L).join(' ');
 check('주의점: 소득 미입력·토지거래허가 실거주·6개월 전입·신용대출·금리 가정·호가', ['소득 기준(DSR)', '토지거래허가', '6개월 안에', '신용대출', '가정', '호가'].every(k => W.indexOf(k) >= 0), W);
 const T = B.trustOf(R, X, L), TT = JSON.stringify(T);
-check('믿을 이유: 출처·갱신 주기·같은 답·과거 성적(guide/method)·위험 기준', T.length === 4 && /하루 4번/.test(TT) && /같은 숫자·같은 순서/.test(TT) && /guide\/method\/#trk/.test(TT) && /9번 중 7번/.test(TT) && /60% 넘게 비싸거나/.test(TT) && /loan\/#rules/.test(TT));
+check('믿을 이유: 출처·갱신 주기·같은 답·과거 성적(guide/method)·위험 기준', T.length === 4 && /하루 4번/.test(TT) && /같은 단지·순서·숫자/.test(TT) && /guide\/method\/#trk/.test(TT) && /9번 중 7번/.test(TT) && /60% 넘게 비싸거나/.test(TT) && /loan\/#rules/.test(TT));
 check('믿을 이유·화면 문구에 다른 서비스 이름 없음', !/(호갱노노|직방|아실|리치고|네이버\s*부동산|부동산\s*지인|챗GPT|ChatGPT|GPT|Gemini|제미나이|클로드|Claude|뤼튼|생성형)/i.test(read('assets/guide-budget.js').replace(/^\/\*[\s\S]*?\*\//, '') + TT));
 const NL = B.nextLinks(s10, R, C10, { BASE: '/', expertLink: k => ({ t: '확인된 대출상담사에게 물어보기', href: '/counsel/pros/?c=' + k, k: 'pro' }) });
 check('다음 단계: 대출 계산(값 채움)·관심 단지 알림·확인된 전문가', NL.length === 3 && /loan\/\?p=\d+&g=11\d{3}&o=none&n=/.test(NL[0].href) && /my\/watch\//.test(NL[1].href) && NL[2].k === 'pro');
@@ -151,14 +151,19 @@ delete globalThis.JDJ_ASK_CORE;
 
 /* ---------- 화면 연결 ---------- */
 const gjs = read('assets/guide.js'), gcore = read('assets/guide-core.js'), sw = read('sw.js'), solve = read('solve/index.html'), home = read('index.html'), gb = read('assets/guide-budget.js');
-check('guide.js: 미리 불러오기·즉답·길잡이 화면·대화에서 이 파일로', /'assets\/guide-budget\.js\?v=1': 'JDJ_GBUDGET'/.test(gjs) && /JDJ_GBUDGET\.instant/.test(gjs) && /JDJ_GBUDGET\.flow/.test(gjs) && /JDJ_GBUDGET\.chatCard/.test(gjs));
+check('guide.js: 미리 불러오기·즉답·길잡이 화면·대화에서 이 파일로', /'assets\/guide-budget\.js\?v=2': 'JDJ_GBUDGET'/.test(gjs) && /JDJ_GBUDGET\.instant/.test(gjs) && /JDJ_GBUDGET\.flow/.test(gjs) && /JDJ_GBUDGET\.chatCard/.test(gjs));
 check('guide-core: 계산 함수·대화 좁히기 연결', /S\.budgetApts/.test(gcore) && /JDJ_GBUDGET\.chatQ/.test(gcore) && /JDJ_GBUDGET\.answer/.test(gcore));
-check('길잡이 화면·서비스 워커에 이 파일', /assets\/guide-budget\.js\?v=1/.test(solve) && /'\.\/assets\/guide-budget\.js\?v=1'/.test(sw));
-check("첫 화면 '많이 받는 고민': lead 고민을 맨 앞에", /\.filter\(s => s\.pri\)\.sort\(\(x, y\) => \(y\.lead/.test(gjs) && /guide\.js\?v=13/.test(home));
+check('길잡이 화면·서비스 워커에 이 파일', /assets\/guide-budget\.js\?v=2/.test(solve) && /'\.\/assets\/guide-budget\.js\?v=2'/.test(sw));
+check("첫 화면 '많이 받는 고민': lead 고민을 맨 앞에", /\.filter\(s => s\.pri\)\.sort\(\(x, y\) => \(y\.lead/.test(gjs) && /guide\.js\?v=14/.test(home));
 check('화면: 정렬 단추에 추천 순위 아님 · 즉답(바로 답) · 믿을 이유 접힌 칸', /추천 순위 아님/.test(gb) && /바로 답/.test(gb) && /details class="gbtr"><summary>이 답을 믿을 수 있는 이유/.test(gb));
 check('화면: 진한 꽉 찬 단추는 묶음마다 1개(즉답: 목록 보기 · 길잡이 화면: 고른 단지 비교)', (gb.match(/class="p"/g) || []).length === 1 && /\.gbcmp a\{[^}]*background:var\(--blue/.test(gb));
 check('화면: 색은 토큰(var(--…))으로', (gb.match(/var\(--/g) || []).length > 40);
 check('화면이 불러오는 파일 번호 = 원격 최고 번호(pro-tools-core·watch·rank-core·result.css)', /pro-tools-core\.js\?v=3/.test(gb) && /watch\.js\?v=9/.test(gb) && /watch-core\.js\?v=2/.test(gb) && /rank-core\.js\?v=8/.test(gb) && /result\.css\?v=3/.test(gb) && /'\.\/assets\/pro-tools-core\.js\?v=3'/.test(sw) && /rank-core\.js\?v=8/.test(solve));
+/* 길잡이 ↔ 검색 화면 오가기 */
+const su = B.sameUrl(Object.assign({}, s10, { inc: 8000, size: '84', newb: 5, own: 'first' }), IX, '/');
+check("결과 아래 '같은 조건으로 검색 화면에서 보기': 내 집 마련 맞춤 단지 주소(서울·평형·생애최초·신축 — 개인값은 주소에 없음)", /^\/buy\/report\/\?sd=/.test(su) && /ar=84/.test(decodeURIComponent(su)) && /o=first/.test(su) && /nb=5/.test(su) && /from=guide/.test(su) && !/[?&](i|c|d|n|e)=/.test(su), su);
+check('소득을 모르면 검색 화면 주소를 만들지 않음(검색 화면은 소득 기준까지 계산)', B.sameUrl(s10, IX, '/') === null && /연 소득을 고르면/.test(gb));
+check('개인값은 이 탭에만(sessionStorage jdj_gfin) · 검색 화면이 from=guide 일 때 읽음', /jdj_gfin/.test(gb) && /jdj_gfin/.test(read('buy/report/index.html')) && B.sameFin({ inc: 8000, cash: 100000 }).c === 100000);
 check('자료 파일: 공개 자료에서 뽑은 일부(기간·갱신일)', FX.months.length === 36 && /^\d{4}-\d{2}-\d{2}$/.test(FX.updated) && FX.units.length >= 100);
 
 console.log(`\n보유 현금 + 대출 서울 아파트 길잡이: ${pass} 통과 · ${fail} 실패`);

@@ -73,10 +73,13 @@ check('재개발 3~5억: 구역이 나옴', R.n > 10, R.n);
 check('재개발: 구역마다 예산 안 실거래 건수·최저·최고 = 자료 파일', R.rows.every(r => { const tr = BUD.z[r.z.g + '|' + r.n].i.filter(t => t[0] >= 30000 && t[0] <= 50000).map(t => t[0]); return tr.length === r.n1 && Math.min(...tr) === r.lo && Math.max(...tr) === r.hi && r.nAll === BUD.z[r.z.g + '|' + r.n].i.length; }));
 check('재개발: 단계 = 서울시 추진현황 단계 · 착공한 구역은 뺌', R.rows.every(r => r.st === r.z.st && r.st < 10));
 check('재개발: 착공 예상 = redev-core speed 의 연도 그대로', R.rows.filter(r => r.z.sp && r.z.sp.y).every(r => r.lf.t.indexOf(String(r.z.sp.y[0])) >= 0 && RD.speed(r.z, FX.zones).state === 'est'));
-check('재개발: 단계 높은 순 정렬', R.rows.every((r, i) => !i || R.rows[i - 1].st >= r.st));
-const Rs = X1.redevRows(Object.assign(X1.init('redev_budget', G.extract('3~5억 재개발 투자', CTX)), { sort: 'soon' }), X);
-const yk = r => r.lf.y != null ? r.lf.y : 999;
-check('재개발: 착공 예상 이른 순 정렬', Rs.rows.every((r, i) => !i || yk(Rs.rows[i - 1]) <= yk(r)));
+/* 순서 = 재개발·재건축 구역 화면(villa/zone/)과 같은 redev-core sort · 기본값 '착공 예상 빠른 순'(구역 화면 S.sort 기본값) */
+const ZS = read('villa/zone/index.html'), zDef = (/const S = \{[^}]*sort: '(\w+)'/.exec(ZS) || [])[1];
+check('재개발: 기본 순서 = 구역 화면 기본값(착공 예상 빠른 순)', zDef === 'soon' && X1.init('redev_budget', {}).sort === zDef && X1.SORTS.redev_budget[0][0] === 'soon' && /착공 예상 빠른 순/.test(ZS) && X1.SORTS.redev_budget[0][1] === '착공 예상 빠른 순');
+const zOrd = (rows, how) => JSON.stringify(RD.sort(rows.map(r => r.z), how).map(z => z.id || z.n));
+check('재개발: 착공 예상 빠른 순 = 구역 화면과 같은 함수(redev-core sort soon)', JSON.stringify(R.rows.map(r => r.z.id || r.z.n)) === zOrd(R.rows, 'soon'));
+const Rs = X1.redevRows(Object.assign(X1.init('redev_budget', G.extract('3~5억 재개발 투자', CTX)), { sort: 'stage' }), X);
+check('재개발: 단계 높은 순 = 구역 화면과 같은 함수(redev-core sort stage)', JSON.stringify(Rs.rows.map(r => r.z.id || r.z.n)) === zOrd(Rs.rows, 'stage') && Rs.rows.every((r, i) => !i || Rs.rows[i - 1].st >= r.st));
 const Rw = X1.redevRows(Object.assign(X1.init('redev_budget', G.extract('3~5억 재개발 투자', CTX)), { wait: 5 }), X);
 check('재개발: 5년 안쪽만 → 착공 예상(연도 끝)이 5년 안쪽인 구역만, 뺀 수 안내', Rw.rows.every(r => r.lf.y != null && r.lf.y <= 5) && Rw.waitOut > 0 && Rw.n < R.n);
 const Rn = X1.redevRows(X1.set('redev_budget', X1.init('redev_budget', G.extract('3~5억 재개발 투자', CTX)), 'rgu', '노원구'), X);
@@ -138,9 +141,9 @@ check('법령 근거: 재초환·비과세 기간 합산은 확인 필요', X1.i
 
 /* ---------- 화면 연결 ---------- */
 const gjs = read('assets/guide.js'), gcore = read('assets/guide-core.js'), sw = read('sw.js'), solve = read('solve/index.html'), gx = read('assets/guide-redev.js');
-check('guide.js: 즉답·양식·대화에서 이 파일로 넘김', /JDJ_GREDEV\.instant/.test(gjs) && /JDJ_GREDEV\.flow/.test(gjs) && /JDJ_GREDEV\.chatCard/.test(gjs) && /'assets\/guide-redev\.js\?v=2'/.test(gjs));
+check('guide.js: 즉답·양식·대화에서 이 파일로 넘김', /JDJ_GREDEV\.instant/.test(gjs) && /JDJ_GREDEV\.flow/.test(gjs) && /JDJ_GREDEV\.chatCard/.test(gjs) && /'assets\/guide-redev\.js\?v=3'/.test(gjs));
 check('guide-core: 계산 함수·대화 좁히기 연결', /S\.redevBudget/.test(gcore) && /S\.rebuildLive/.test(gcore) && /JDJ_GREDEV\.chatQ/.test(gcore) && G.SOLVERS.indexOf('redevBudget') >= 0 && G.SOLVERS.indexOf('rebuildLive') >= 0);
-check('길잡이 화면이 이 파일을 읽음 · 서비스 워커 목록에 있음', /assets\/guide-redev\.js\?v=2/.test(solve) && /assets\/guide-redev\.js\?v=2/.test(sw) && /data\/redev-budget\.json/.test(sw));
+check('길잡이 화면이 이 파일을 읽음 · 서비스 워커 목록에 있음', /assets\/guide-redev\.js\?v=3/.test(solve) && /assets\/guide-redev\.js\?v=3/.test(sw) && /data\/redev-budget\.json/.test(sw));
 check('화면 문구에 경쟁 서비스·AI 이름 없음', !/(호갱노노|직방|아실|리치고|네이버\s*부동산|부동산\s*지인|ChatGPT|GPT|Gemini|Claude|클로드)/i.test(gx));
 check('화면: 정렬 단추에 추천 순위 아님 · 즉답 먼저(바로 답)', /추천 순위 아님/.test(gx) && /바로 답/.test(gx));
 check('자료 파일: 기간·출처가 있음', BUD.from && BUD.to && /국토교통부/.test(BUD.src) && Object.keys(BUD.z).length > 100);

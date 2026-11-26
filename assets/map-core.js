@@ -22,9 +22,31 @@
   /* 가격대(만원). 15억·25억은 주택담보대출 한도가 바뀌는 금액 */
   const PRICES = [{ id: '', t: '전체 가격' }, { id: 'p6', t: '6억 이하', lo: 0, hi: 60000 }, { id: 'p9', t: '6억~9억', lo: 60000, hi: 90000 },
     { id: 'p15', t: '9억~15억', lo: 90000, hi: 150000 }, { id: 'p25', t: '15억~25억', lo: 150000, hi: 250000 }, { id: 'p99', t: '25억 초과', lo: 250000, hi: Infinity }];
+  /* 직접 고른 범위: 'r{넘는 금액}-{이하 금액}'(만원, 비우면 끝없음) — 길잡이 '같은 조건으로 지도에서 보기'가 이 꼴로 넘겨요 */
+  const RANGE_RX = /^r(\d*)-(\d*)$/;
+  function priceOf(id) {
+    const p = PRICES.find(x => x.id === id); if (p) return p;
+    const m = RANGE_RX.exec(String(id || '')); if (!m || (!m[1] && !m[2])) return null;
+    const lo = +m[1] || 0, hi = m[2] ? +m[2] : Infinity, e = v => { const k = Math.floor(v / 10000), r = v % 10000; return (k ? k + '억' : '') + (r ? (k ? ' ' : '') + r.toLocaleString('ko-KR') + '만' : ''); };
+    return { id, lo, hi, t: !lo ? `${e(hi)} 이하` : hi === Infinity ? `${e(lo)} 넘게` : `${e(lo)}~${e(hi)}` };
+  }
+  /** [lo, hi](만원, hi 없음 = 끝없음) → 가격대 id: 고정 칸과 같으면 그 칸, 아니면 'r…-…' */
+  function priceId(lo, hi) {
+    lo = +lo || 0; const h = hi == null || !isFinite(hi) ? Infinity : +hi;
+    const p = PRICES.find(x => x.id && x.lo === lo && x.hi === h); if (p) return p.id;
+    return 'r' + (lo || '') + '-' + (h === Infinity ? '' : h);
+  }
   function priceOk(id, man) {
-    const p = PRICES.find(x => x.id === id); if (!p || !p.id) return true;
+    const p = priceOf(id); if (!p || !p.id) return true;
     return man > 0 && man > p.lo && man <= p.hi;     // 경계 금액은 아래 칸(예: 정확히 9억 → 6억~9억)
+  }
+  /* 신축(준공 N년 이내)·역 거리(도보 N분 이내) — 단지 단위 조건. year = 준공 연수 기준 해(자료 갱신 해) */
+  const AGES = [{ id: 0, t: '준공 전체' }, { id: 5, t: '5년 이내 신축' }, { id: 10, t: '10년 이내' }];
+  const STATION = 10;
+  function danjiOk(d, opt) {
+    if (opt.age > 0 && !(d.by && (opt.year || 0) - d.by <= opt.age)) return false;
+    if (opt.station > 0 && !(d.sub != null && d.sub <= opt.station)) return false;
+    return true;
   }
   const MODES = [{ id: 'price', t: '시세' }, { id: 'fv', t: '미래가치' }, { id: 'jr', t: '전세가율' }, { id: 'reg', t: '지역 분석' }];   // reg: 구별 지표(assets/region-core.js)
 
@@ -37,7 +59,7 @@
       if (!Array.isArray(p) || !isFinite(p[0]) || !isFinite(p[1])) continue;
       const f = (d.bands.find(u => u[9] && typeof u[9] === 'object') || [])[9] || {};
       out.push({ key: d.key, sd, code: d.code, dong: d.dong, apt: d.apt, jibun: d.jibun, lng: p[0], lat: p[1], bands: d.bands, n: d.n,
-        by: f.by || null, hh: f.hh || null });
+        by: f.by || null, hh: f.hh || null, sub: f.sub != null ? f.sub : null, subs: f.subs || '' });
     }
     return out;
   }
@@ -47,10 +69,11 @@
     return { u, band: u[3], area: u[4], ppy, price: M().toPrice(ppy, u[4]), at: li >= 0 && months ? months[li] : '',
       fv: f.fv != null ? f.fv : null, jr: f.jr != null ? f.jr : null, n: u[5] || 0 };
   }
-  /** 단지에서 지금 필터에 맞는 대표 평형 하나. opt = {size, price, band(이 평형을 먼저)} — 맞는 평형이 없으면 null
+  /** 단지에서 지금 필터에 맞는 대표 평형 하나. opt = {size, price, band(이 평형을 먼저), age·year(신축), station(역 도보 분)} — 맞는 평형(또는 단지 조건)이 없으면 null
       대표: 고른 평형 → (전체 평형이면) 최근 시세 있는 평형 중 전용 84㎡에 가장 가까운 것 → 거래 많은 것 */
   function pick(d, months, opt) {
     opt = opt || {};
+    if (!danjiOk(d, opt)) return null;
     let c = d.bands.map(u => bandInfo(u, months));
     if (opt.size) c = c.filter(b => sizeOf(b.area) === opt.size);
     if (opt.price) c = c.filter(b => priceOk(opt.price, b.price));
@@ -206,7 +229,7 @@
   /** 동그라미 안 구 이름: '수원시 장안구' → '장안구'(같은 시·도 안에서 보므로) */
   const shortGu = n => { const t = String(n || '').split(' '); return t.length > 1 ? t[t.length - 1] : t[0]; };
 
-  const API = { circleBox, shortGu, gather, declutter, settle, textW, boxSize, LV, level, kakaoToZoom, zoomToKakao, SIZES, sizeOf, PRICES, priceOk, MODES, danjiList, bandInfo, pick, groups, cluster, sidosIn, inBox,
+  const API = { circleBox, shortGu, gather, declutter, settle, textW, boxSize, LV, level, kakaoToZoom, zoomToKakao, SIZES, sizeOf, PRICES, priceOf, priceId, priceOk, AGES, STATION, danjiOk, MODES, danjiList, bandInfo, pick, groups, cluster, sidosIn, inBox,
     eokShort, ppyText, pct, tone, TONES, mainText, groupText, mineUrl, CMP_KEY, CMP_MAX, cmpId, cmpAdd, askUrl, mean };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_MAPC = API;

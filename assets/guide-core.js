@@ -194,26 +194,49 @@
     if (key === 'station') o.station = +val || 0;
     return o;
   }
-  const BUCKETS = [[0, 50000, '5억 이하'], [50000, 100000, '5~10억'], [100000, 150000, '10~15억'], [150000, 200000, '15~20억'], [200000, Infinity, '20억 넘게']];
-  /** units(점수 자료 sNN.json — 시세 계산은 내 집 시세와 같은 mine-core bandSummary) → 조건에 맞는 단지·가격대 분포·예시(거래 많은 순) */
-  function findHomes(units, IX, st, MC, year) {
-    const sgg = (IX && IX.sgg) || {}, nameOf = c => (sgg[c] || {}).name || '', Y = year || +todayKst().slice(0, 4);
-    const rows = [];
-    for (const u of units || []) {
-      if (st.gus && st.gus.length && st.gus.indexOf(nameOf(u[0])) < 0) continue;
-      if (st.area && !(Math.abs((+u[4] || 0) - st.area) <= 6)) continue;
-      const f = u[9] && typeof u[9] === 'object' ? u[9] : {};
-      if (st.age && !(f.by && Y - f.by <= st.age)) continue;
-      if (st.station && !(f.sub != null && f.sub <= st.station)) continue;
-      if (!u[6]) continue;
-      const sm = MC.bandSummary(u, IX.months); if (!(sm.price > 0) || sm.stale && !(sm.recent3 > 0) && !(sm.cnt12 > 0)) continue;
-      rows.push({ u, code: u[0], gu: nameOf(u[0]), dong: u[1], apt: u[2], band: u[3], price: sm.price, at: sm.at, n12: sm.cnt12, by: f.by || null, sub: f.sub != null ? f.sub : null, subs: f.subs || '' });
+  /* 조건에 맞는 아파트 찾기 = 지도(map/) 단지 필터 그대로(assets/map-core.js danjiList·pick·danjiOk):
+     같은 평형 구분(소형·중형·대형), 같은 가격대 칸, 같은 신축·역 거리 조건, 같은 대표 평형, 같은 기본 순서(지도 목록 '거래 많은 순').
+     지도는 화면에 보이는 영역의 단지만 줄 세우고, 길잡이는 고른 구(없으면 시·도 전체)를 줄 세워요 — 고르는 규칙은 같아요(tools/guide-same-test.js). */
+  const MAPC = () => root.JDJ_MAPC || (typeof require === 'function' ? require('./map-core.js') : null);
+  /** 가격 분포 칸 = 지도 가격대 칸 */
+  const BUCKETS = () => { const C = MAPC(); return C ? C.PRICES.filter(p => p.id).map(p => [p.lo, p.hi, p.t, p.id]) : []; };
+  const dataYear = (IX, year) => year || +(String((IX && IX.updated) || '').slice(0, 4)) || +todayKst().slice(0, 4);
+  /** 좁히기 상태 → 지도 필터 값 {size, price, age, station, year} */
+  function findOpt(st, IX, year) {
+    const C = MAPC();
+    return { size: st.area ? C.sizeOf(st.area) : '', price: st.budget ? C.priceId(st.budget[0], st.budget[1]) : '', age: +st.age || 0, station: st.station ? C.STATION : 0, year: dataYear(IX, year) };
+  }
+  /** 조건 글자(지도 필터 이름 그대로) */
+  function findChips(st) {
+    const C = MAPC(), z = st.area ? C.SIZES.find(x => x.id === C.sizeOf(st.area)) : null, p = st.budget ? C.priceOf(C.priceId(st.budget[0], st.budget[1])) : null;
+    return [st.gname || String(st.sido || '').replace(/특별시|광역시|특별자치시|특별자치도/, ''), z ? `${z.t}(${z.d})` : '', p ? p.t : '', st.age ? `${st.age}년 이내 신축` : '', st.station ? `역 도보 ${C.STATION}분` : ''].filter(Boolean);
+  }
+  /** '같은 조건으로 지도에서 보기' 주소: 고른 필터 + 결과 단지들 가운데(좌표 중간값) */
+  function findMapUrl(st, R, base) {
+    const o = R && R.opt ? R.opt : {}, p = new URLSearchParams();
+    if (o.size) p.set('sz', o.size); if (o.price) p.set('pr', o.price); if (o.age) p.set('ag', String(o.age)); if (o.station) p.set('sn', '1');
+    const pts = ((R && R.rows) || []).filter(r => isFinite(r.lat) && isFinite(r.lng));
+    if (pts.length) { const md = a => { const v = a.slice().sort((x, y) => x - y); return v[Math.floor(v.length / 2)]; }; p.set('lat', md(pts.map(r => r.lat)).toFixed(5)); p.set('lng', md(pts.map(r => r.lng)).toFixed(5)); p.set('z', '14'); }
+    return (base || '') + 'map/' + (p.toString() ? '?' + p.toString() : '');
+  }
+  /** units(점수 자료 sNN.json) + xy(sNN_xy.json 의 xy — 지도와 같이 좌표 있는 단지만) → 조건에 맞는 단지(대표 평형 하나씩) · 가격대 분포 · 예시(거래 많은 순) */
+  function findHomes(units, IX, st, MC, year, xy, sd) {
+    const C = MAPC(), sgg = (IX && IX.sgg) || {}, nameOf = c => (sgg[c] || {}).name || '', months = (IX && IX.months) || [];
+    const opt = findOpt(st, IX, year), o0 = Object.assign({}, opt, { price: '' });
+    const list = xy ? C.danjiList(units, xy, sd || '') : [...MC.groupDanji(units || []).values()].map(d => { const f = (d.bands.find(u => u[9] && typeof u[9] === 'object') || [])[9] || {}; return Object.assign({}, d, { by: f.by || null, hh: f.hh || null, sub: f.sub != null ? f.sub : null, subs: f.subs || '' }); });
+    const base = [], rows = [];
+    for (const d of list) {
+      if (st.sido && (sgg[d.code] || {}).sido && sgg[d.code].sido !== st.sido) continue;
+      if (st.gus && st.gus.length && st.gus.indexOf(nameOf(d.code)) < 0) continue;
+      const b0 = C.pick(d, months, o0); if (!b0) continue;
+      base.push(b0);
+      const b = opt.price ? C.pick(d, months, opt) : b0; if (!b) continue;
+      rows.push({ d, b, u: b.u, code: d.code, gu: nameOf(d.code), dong: d.dong, apt: d.apt, jibun: d.jibun, key: d.key, band: b.band, price: b.price, at: b.at, n: d.n, by: d.by, sub: d.sub, subs: d.subs || '', lat: d.lat, lng: d.lng });
     }
-    const inB = r => !st.budget || ((!st.budget[0] || r.price > st.budget[0]) && (st.budget[1] == null || r.price <= st.budget[1]));
-    const dist = BUCKETS.map(b => ({ t: b[2], lo: b[0], hi: b[1], n: rows.filter(r => r.price > b[0] && r.price <= b[1]).length }));
-    const hit = rows.filter(inB).sort((a, b) => b.n12 - a.n12 || a.price - b.price);
-    const ps = hit.map(r => r.price).sort((a, b) => a - b), med = ps.length ? ps[Math.floor(ps.length / 2)] : null;
-    return { all: rows.length, n: hit.length, dist, ex: hit.slice(0, 5), lo: ps[0] || null, hi: ps[ps.length - 1] || null, med };
+    rows.sort((a, b) => b.n - a.n);   // 지도 단지 목록 기본 순서('거래 많은 순')와 같음(같으면 자료 순서 그대로)
+    const dist = BUCKETS().map(x => ({ t: x[2], lo: x[0], hi: x[1], id: x[3], n: base.filter(b => C.priceOk(x[3], b.price)).length }));
+    const ps = rows.map(r => r.price).filter(v => v > 0).sort((a, b) => a - b), med = ps.length ? ps[Math.floor(ps.length / 2)] : null;
+    return { all: base.length, n: rows.length, rows, dist, ex: rows.slice(0, 5), lo: ps[0] || null, hi: ps[ps.length - 1] || null, med, opt, noXY: !xy };
   }
   /** 데이터를 받기 전, 공개 구 평당가(index.json)로 바로 보여 줄 수 있는 구별 예시 가격 */
   function guPreview(IX, st) {
@@ -556,12 +579,13 @@
     const st = a._nf || narrowInit({ sido: a.region ? a.region.sido : '', region: a.region || null, area: a.area, money: {}, raw: a._raw || '' }, E.D || {}, '');
     if (!E.units) { const pv = guPreview(E.IX, st); if (!pv.length) return { need: ['region'] };
       return { head: `${st.gname || (st.sido || '').replace(/특별시|광역시/, '')} ${st.area ? st.area + '㎡대' : '84㎡대(예시)'} 구별 예상 가격(구 실거래 중간값 기준)`, nums: pv.slice(0, 3).map(x => ({ k: x.name, v: won(x.price), s: '구 3.3㎡당 실거래 중간값 × 면적' })), ex: '단지별 시세를 불러오는 중이라 구 평균으로 먼저 보여 드려요', src: ['molit_rt'], warn: [] }; }
-    const R = findHomes(E.units, E.IX, st, E.MC);
-    const area = st.area ? `${st.area}㎡대` : '모든 평형';
-    return { head: `${st.gname || (st.sido || '').replace(/특별시|광역시/, '')} ${area}${st.budget ? ` · ${st.budget[1] ? won(st.budget[1]) + ' 이하' : won(st.budget[0]) + ' 넘게'}` : ''}${st.age ? ` · ${st.age}년 이내` : ''}${st.station ? ' · 역 도보 10분' : ''} 아파트 ${R.n.toLocaleString()}곳이에요`,
-      nums: [{ k: '조건에 맞는 단지·평형', v: `${R.n.toLocaleString()}곳`, s: `가격을 빼면 ${R.all.toLocaleString()}곳` }].concat(R.n ? [{ k: '가격 범위', v: `${won(R.lo)} ~ ${won(R.hi)}`, s: `가운데 값 ${won(R.med)} · 최근 3개월 실거래 중간값` }] : []),
-      dist: R.dist, tables: R.ex.length ? [{ title: '예시 단지(최근 1년 거래 많은 순)', note: '조건에 맞는 단지 중 거래가 많은 곳을 예로 보여 드려요. 순서는 추천이 아니에요.', head: ['단지', '구·동', '평형', '최근 시세', '준공', '역까지'],
-        rows: R.ex.map(r => [{ t: r.apt, href: (E.mineUrl ? E.mineUrl(r) : '') }, `${r.gu} ${r.dong}`, r.band, won(r.price), r.by ? `${r.by}년` : '-', r.sub != null ? `${r.subs ? r.subs.split(' ')[0] + ' ' : ''}도보 ${r.sub}분` : '-']) }] : [],
+    const R = findHomes(E.units, E.IX, st, E.MC || root.JDJ_MINE, null, E.xy || null, E.sd || '');
+    const ch = findChips(st).join(' · ');
+    return { head: `${ch} 아파트 ${R.n.toLocaleString()}곳이에요`,
+      nums: [{ k: '조건에 맞는 단지', v: `${R.n.toLocaleString()}곳`, s: `가격대를 빼면 ${R.all.toLocaleString()}곳` }].concat(R.n && R.lo ? [{ k: '가격 범위', v: `${won(R.lo)} ~ ${won(R.hi)}`, s: `가운데 값 ${won(R.med)} · 최근 3개월 실거래 중간값` }] : []),
+      dist: R.dist, tables: R.ex.length ? [{ title: '예시 단지(지도 목록과 같은 ‘거래 많은 순’)', note: '지도(map/)와 같은 필터·같은 대표 평형·같은 순서예요. 순서는 추천이 아니에요.', head: ['단지', '구·동', '평형', '최근 시세', '준공', '역까지'],
+        rows: R.ex.map(r => [{ t: r.apt, href: (E.mineUrl ? E.mineUrl(r) : '') }, `${r.gu} ${r.dong}`, r.band, r.price ? won(r.price) : '최근 거래 없음', r.by ? `${r.by}년` : '-', r.sub != null ? `${r.subs ? r.subs.split(' ')[0] + ' ' : ''}도보 ${r.sub}분` : '-']) }] : [],
+      same: { t: '같은 조건으로 지도에서 보기', s: '지도 화면을 이 조건(평형·가격대·준공·역 거리)으로 채워 열어요 — 지도는 화면에 보이는 곳만 줄 세워요', href: findMapUrl(st, R, '') },
       warn: ['시세는 최근 3개월 실거래 중간값이에요. 층·향·수리 상태에 따라 실제 가격은 달라요.'], src: ['molit_rt'] };
   };
   /* ③ 청약 — 내 가점으로 어디에 */
@@ -1230,7 +1254,7 @@
     return { kind: 'none', say };
   }
 
-  const API = { aiMask, aiNoNum, aiReq, aiSlot, aiPlan, AI_NUM_RX, AI_BAD_RX, linkFill, taxRegion, chatStart, chatNext, chatAnswer, chatHint, narrowInit, narrowNext, narrowSet, findHomes, guPreview, BUCKETS, quick, regionExample, norm, extract, apply, findFeatures, moneys, classify, pending, solve, mask, won, wonW, pct, ko, addM, addY, addD, diffD, fill, nextFor, brokerFee, wolseAmt, SMALL, BAD, MIN, SOLVERS: Object.keys(S) };
+  const API = { aiMask, aiNoNum, aiReq, aiSlot, aiPlan, AI_NUM_RX, AI_BAD_RX, linkFill, taxRegion, chatStart, chatNext, chatAnswer, chatHint, narrowInit, narrowNext, narrowSet, findHomes, findOpt, findChips, findMapUrl, guPreview, BUCKETS, quick, regionExample, norm, extract, apply, findFeatures, moneys, classify, pending, solve, mask, won, wonW, pct, ko, addM, addY, addD, diffD, fill, nextFor, brokerFee, wolseAmt, SMALL, BAD, MIN, SOLVERS: Object.keys(S) };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_GUIDE_CORE = API;
 })(typeof window !== 'undefined' ? window : globalThis);
