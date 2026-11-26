@@ -1,7 +1,7 @@
 /* 집예보 공용 광고 칸 (assets/ad-slot.js) — 위치 계획: docs/ad_slots.md · 광고 상품: /ad/
    페이지에 넣는 법
      <div data-ad-slot="mine_end" data-ad-cat="mine" data-ad-after="#res" hidden></div>
-     <script src="assets/ad-slot.js?v=7" defer></script>
+     <script src="assets/ad-slot.js?v=8" defer></script>
    - data-ad-slot  : 칸 이름(docs/ad_slots.md 표의 slot id)
    - data-ad-cat   : 화면 종류(아래 CATS) — 받을 수 있는 업종과 집예보 안내 광고를 정함
    - data-ad-skip-if : 이 선택자가 보이면 칸을 숨김(예: 모닝 브리핑 전용 광고 자리가 그날 광고로 채워졌을 때)
@@ -63,7 +63,7 @@
       dev:   { title: S + ' 분양가 비교 리포트', text: '시행사·분양대행사용 — 예정 분양가가 주변 시세와 비교해 어디쯤인지 숫자로 보여 드려요.', link: B + 'pro/developer/', cta: '리포트 보기' },
       loan:  { title: '내 대출 한도는 얼마?', text: '집값·지역·연소득만 넣으면 LTV·DSR 중 무엇이 한도를 막는지 바로 알려 드려요. 회원가입 없이 무료.', link: B + 'loan/', cta: '대출 한도 계산' },
       buy:   { title: '내 예산으로 살 수 있는 집', text: '소득·현금만 넣으면 대출 한도와 살 수 있는 단지를 바로 보여 드려요. 입력값은 이 기기에만 남아요.', link: B + 'buy/', cta: '계산해 보기' },
-      mine:  { title: '우리 집 시세, 한 번에 보기', text: '단지 이름만 넣으면 실거래 시세와 앞으로의 흐름을 쉬운 말로 보여 드려요.', link: B + 'mine/', cta: '내 집 시세 보기' }
+      mine:  { title: '우리 집 집값 예보 — 지금과 앞으로', text: '단지 이름만 넣으면 지금 시세에 앞으로 더 오를 가능성까지 알려 드려요.', link: B + 'mine/', cta: '우리 집 예보 보기' }
     };
     var h = H[kind] || H.brief;
     return { id: 'house_' + (H[kind] ? kind : 'brief'), house: true, advertiser: S, title: h.title, text: h.text, link: h.link, cta: h.cta };
