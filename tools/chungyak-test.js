@@ -113,10 +113,22 @@ check('노부모 부양: 실제로 함께 살아야 함을 안내(2026. 11. 24. 
   check('부양가족 안내: 2027-11-25 공고부터 새 기준 안내로 자동 전환', [p2.st, p2.from], ['post', '2027-11-25'], '부칙 제1조 단서 — 공포 후 1년 경과한 날(행정기본법 제7조)');
   check('부양가족 안내: 오늘(2026-11-26)은 바뀌기 전', p3.st, 'pre', '');
   check('부양가족 근거: 부칙 제1조 단서·제2조, 행정기본법 제7조, 출처 주소', /부칙 제1조 단서·제2조/.test(p2.law) && /행정기본법 제7조/.test(p2.law) && p2.src === 'https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=292055', true, '');
-  /* TODO: 개정 별표 1 원문 대조 전 — 2027-11-25 이후 공고도 계산은 현행 기준, '확인 필요' 경고 */
-  check('경고: 2027-11-25 이후 계산 기준 확인 필요(개정 별표 1 미대조 → needCheck)', E.DEP_RULE.verified ? true : (p2.needCheck === true && /확인 필요/.test(p2.txt)), true, 'TODO 2027-11-25 이후 계산 기준 확인 필요');
-  if (!E.DEP_RULE.verified) console.log('WARN  2027-11-25 이후 계산 기준 확인 필요 — 개정 별표 1(부양가족 인정 기준) 원문 대조 전, 지금은 현행 기준으로 계산');
-  check('부양가족 점수 계산은 공고일과 관계없이 현행 기준(3명 20점)', [CY.total(base({ deps: 3 }), '2027-11-24').d.pts, CY.total(base({ deps: 3 }), '2027-11-25').d.pts], [20, 20], '현행 별표 1');
+  /* 대표 확인(2026. 11. 26.): 2027. 11. 25. 이후 공고는 새 기준으로 계산 — TODO·경고 해제 */
+  check('새 기준 확인 완료(verified) · 2027-11-25 이후도 경고 없음', [E.DEP_RULE.verified, p2.needCheck, /계산했어요/.test(p2.txt)], [true, false, true], '부칙 제1조 단서');
+  check('2026-11-24 이후 공고: 실제 동거·건강보험자격득실확인서 안내', [!!E.depRule('2026-12-01').now && /실제로 함께 살아야/.test(E.depRule('2026-12-01').now) && /자격득실확인서/.test(E.depRule('2026-12-01').now), E.depRule('2026-11-20').now], [true, ''], '제23조·별표 1(공포일 시행)');
+  check('시행 예정 내용: 30세 이상 자녀 3년·해외 90일·요양급여 3년', E.DEP_RULE.changes.length === 3 && /3년 이상/.test(E.DEP_RULE.changes[0]) && /90일/.test(E.DEP_RULE.changes[1]) && /국내/.test(E.DEP_RULE.changes[1]) && /3년으로/.test(E.DEP_RULE.changes[2]), true, '');
+  check('출처 링크 4개(원문·연혁·개정 이유·조문)', E.RULE_LINKS.map(x => x[1]), ['https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=292055', 'https://law.go.kr/LSW/lsRvsDocListP.do?chrClsCd=010102&lsId=008243', 'https://www.law.go.kr/LSW/lsRvsRsnListP.do?chrClsCd=010102&lsId=008243', 'https://www.law.go.kr/LSW/lsLinkCommonInfo.do?lsJoLnkSeq=1033568277'], '');
+  /* 예시: 만 35세 미혼 자녀 2년 동거 → 2027-11-24 공고 인정 / 2027-11-25 공고 불인정 → 5점 낮아짐 */
+  { const kid35 = base({ deps: 1, dep: { sp: 0, par: 0, kid: 0, kid30: 1, gk: 0, kid30out: 1, parOut: 0, youngOut: 0 } });
+    const t1 = CY.total(kid35, '2027-11-24'), t2 = CY.total(kid35, '2027-11-25');
+    check('예시: 35세 미혼 자녀 2년 동거 — 2027-11-24 공고 인정(10점)', t1.d.pts, 10, '종전 규정(부칙 제2조): 30세 이상 자녀 1년 이상');
+    check('예시: 35세 미혼 자녀 2년 동거 — 2027-11-25 공고 불인정(5점)', t2.d.pts, 5, '별표 1 개정: 3년 이상');
+    check('예시: 가점 합계 5점 낮아짐 · 바뀌기 전 화면에 미리 안내', [t1.sum - t2.sum, /5점 낮아질 수 있어요/.test(t1.d.why)], [5, true], ''); }
+  { const fam = d => base({ deps: 4, dep: Object.assign({ sp: 1, par: 1, kid: 2, kid30: 0, gk: 0, kid30out: 0, parOut: 0, youngOut: 0 }, d) });
+    check('해외 체류: 부모 90일 초과 → 2027-11-25 공고에서 1명 빠짐', [CY.total(fam({ parOut: 1 }), '2027-11-24').d.pts, CY.total(fam({ parOut: 1 }), '2027-11-25').d.pts], [25, 20], '');
+    check('해외 체류 예외: 30세 미만 자녀가 국내에 있으면 인정(youngOut 0) / 지금 해외면 빠짐', [CY.total(fam({}), '2027-11-25').d.pts, CY.total(fam({ youngOut: 1 }), '2027-11-25').d.pts], [25, 20], '');
+    check('빠지는 인원은 해당 가족 수를 넘지 않음(배우자는 빠지지 않음)', CY.total(fam({ parOut: 5, youngOut: 9 }), '2027-11-25').d.pts, 10, '배우자 1명만 남음');
+    check('질문 답이 없는 예전 저장값도 그대로 계산', CY.total(base({ deps: 3 }), '2027-11-25').d.pts, 20, ''); }
   check('가점 결과에 부양가족 기준 안내가 붙음(기준일로 분기)', [CY.total(base({}), '2027-11-24').d.rule.st, CY.total(base({}), '2027-11-25').d.rule.st], ['pre', 'post'], ''); }
 check('신생아 특별공급 근거 조문 = 제35조의3', el.find(x => x.id === 'baby').law, '규칙 제35조의3', '제35조의3');
 check('과거 주택 소유 이력 → 생애최초 어려움', el.find(x => x.id === 'first').g, 'no', '제43조');
@@ -146,9 +158,12 @@ check('시·군·구 이름 맞추기(고양시 덕양구 = 고양덕양구)', [
   check('청약 화면: 가점만 넣으면(칸·?score) 단지별 진단을 맨 위로, 질문으로 계산하면 원래 순서', /function placeGen\(top\)/.test(html) && /placeGen\(!!r\.quick\)/.test(html) && /id="genH"/.test(html) && /id="eligH"/.test(html), true, '2026-11-26 결정');
   check('청약 화면: 공고 전 분양 예정에도 내 가점 비교', /planGuTxt\(x\)/.test(html), true, '');
   check('청약 화면: 공고 카드마다 공고일(pb)로 노부모·부양가족 기준 안내', /function ruleLine\(n\)/.test(html) && /oldParentRule\(n\.pb\)/.test(html) && /depRule\(n\.pb\)/.test(html) && /\$\{ruleLine\(n\)\}/.test(html), true, '');
-  check('청약 화면: 부양가족 점수 옆 안내 + 시행 예정 접힌 칸(날짜·출처, 내용 미확인이면 지어내지 않음)', /function depNote\(ref\)/.test(html) && /시행 예정 · 2027\. 11\. 25\./.test(html) && /아직 대조하지 못해/.test(html) && /lsiSeq=292055/.test(html), true, '');
+  check('청약 화면: 부양가족 점수 옆 안내 + 시행 예정 접힌 칸(확인된 바뀌는 내용·출처 링크) · 경고 문구 제거', /function depNote\(ref\)/.test(html) && /시행 예정 · 2027\. 11\. 25\./.test(html) && /DEP_RULE\.changes/.test(html) && /DEP_RULE\.links/.test(html) && !/아직 대조하지 못해/.test(html) && !/needCheck/.test(html), true, '');
+  check('청약 화면: 새 기준에서 빠지는 가족 질문은 해당 가족이 있을 때만(30세 이상 자녀·부모·30세 미만 자녀)', /const DEPX = \[/.test(html) && /kid30out/.test(html) && /parOut/.test(html) && /youngOut/.test(html) && /DEPX\.filter\(r => r\[3\]\(\) > 0\)/.test(html), true, '');
+  check('청약 화면: 부양가족 합계는 가족 칸만(빠지는 인원 칸 제외)', /const depSum = \(\) => DEPS\.reduce/.test(html), true, '');
+  check('청약 화면: 근거에 제23조·별표 1·개정 연혁·이유·조문 링크', /lsRvsDocListP/.test(html) && /lsRvsRsnListP/.test(html) && /lsJoLnkSeq=1033568277/.test(html) && /제23조/.test(html), true, '');
   check('청약 화면: 근거에 부칙 제1조·제2조·행정기본법 제7조', /부칙 제1조 단서/.test(html) && /부칙 제2조/.test(html) && /행정기본법 제7조/.test(html), true, '');
-  check('청약 화면: cy-engine 최신 번호(v6)', /cy-engine\.js\?v=6/.test(html), true, '');
+  check('청약 화면: cy-engine 최신 번호(v7)', /cy-engine\.js\?v=7/.test(html), true, '');
   check('청약 화면: 공공분양 개수는 진단 범위(내 시·도)만 셈', /n\.k !== '민영' && \(scope === 'all' \|\| noticeSido\(n\) === mine\)/.test(html), true, ''); }
 { const N = require('../assets/narrative.js');
   const nar = (N.cat ? N : (global.JDJ_NAR || {})).cat;

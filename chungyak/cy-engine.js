@@ -5,26 +5,51 @@
      · 가점제·추첨제 비율: 제28조 제2항(85㎡ 이하)·제4항(85㎡ 초과), 추첨 물량 무주택 우선: 제28조 제8항
      · 2026. 11. 24. 개정 중 이 엔진에 닿는 것: 제46조 제1항(노부모 부양 — 같은 등본에 올라 있고 실제로 같이 사는 경우로 한정).
        같은 개정의 제23조 제2항(신청 서류)·제52조(자격 전산검색)·제64조(규제 재검토 기한)는 계산·판정과 무관
-     · 가점 산정: 별표 1(가점제 적용기준, 2024. 12. 18. 개정 기준 — 별표 본문은 제1635호와 대조 못 함, 확인 필요)
+     · 가점 산정: 별표 1(가점제 적용기준) — 2026. 11. 24. 개정(제1635호) 반영: 부양가족 실제 동거(공포일 시행), 30세 이상 자녀 3년 동거·해외 체류 제외(2027. 11. 25. 이후 공고)
      · 민영주택 신생아 특별공급(제35조의3 제3항): 2026. 6. 15. 시행 개정(국토교통부령 제1592호)으로 신설
      · 시행일(제1635호 부칙 제1조·제2조, 행정기본법 제7조 — https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=292055):
        ① 제46조 제1항(노부모 부양 실거주)은 부칙 제1조 단서(시행 유예) 대상이 아니라 공포한 날 2026. 11. 24.부터 시행
           → 원칙적으로 2026. 11. 24. 이후 입주자모집공고 단지부터 적용(그 전 공고는 공고문 기준) — oldParentRule()
        ② 일반공급 가점제 부양가족 인정 기준(별표 1 일부)·실거주 증빙서류(제23조 제2항) 개정은 부칙 제1조 단서에 따라
           공포 후 1년이 경과한 날 = 2027. 11. 25.(행정기본법 제7조) 시행, 부칙 제2조에 따라 그 전에 모집공고한 경우 종전 규정
-          → depRule(). 개정된 별표 1 본문은 국가법령정보센터에서 대조하지 못해 지금 계산(dependents)은 현행 기준 그대로.
-          TODO(2027-11-25 이후 계산 기준 확인 필요): 개정 별표 1 원문을 확인하면 DEP_RULE.verified=true 로 바꾸고
-          dependents()에 새 인정 기준을 넣을 것. 그 전까지 공고일이 2027. 11. 25. 이후면 needCheck 경고만 붙인다 */
+          → depRule()·dependents(n, ref, det). 대표(부동산 전문가)가 공식 출처로 확인(2026. 11. 26.):
+            · 만 30세 이상 미혼 자녀(직계비속) 부양가족 인정: 같은 등본 동거 1년 이상 → 3년 이상(직계존속은 기존처럼 3년 이상)
+            · 직계존속·직계비속이 최근 3년 안에 연속 90일 넘게 해외 체류 → 원칙적으로 부양가족 제외
+              (예외: 만 30세 미만 자녀가 모집공고일 현재 국내에 있으면 인정)
+            · 증빙: 만 30세 이상 직계비속 실제 동거 확인용 건강보험 요양급여 내역 확인기간 과거 1년 → 3년
+       ③ 2026. 11. 24.부터 이미 시행: 일반공급 가점제 부양가족 실제 동거 요건 명문화(별표 1), 노부모 특별공급 실제 동거(제46조),
+          요양급여 내역 외 건강보험자격득실확인서 추가 제출(제23조)
+       출처: law.go.kr 연혁 https://law.go.kr/LSW/lsRvsDocListP.do?chrClsCd=010102&lsId=008243 ·
+             개정이유 https://www.law.go.kr/LSW/lsRvsRsnListP.do?chrClsCd=010102&lsId=008243 ·
+             조문 https://www.law.go.kr/LSW/lsLinkCommonInfo.do?lsJoLnkSeq=1033568277 */
 (function (root) {
 /* ===== 2026. 11. 24. 공포 개정(국토교통부령 제1635호)의 시행일 분기 =====
    날짜는 입주자모집공고일 기준. 공고일을 모르면(null) 두 경우를 함께 안내한다. */
 const RULE_SRC = 'https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=292055';
+const RULE_LINKS = [
+  ['국토교통부령 제1635호 원문', RULE_SRC],
+  ['개정 연혁', 'https://law.go.kr/LSW/lsRvsDocListP.do?chrClsCd=010102&lsId=008243'],
+  ['개정 이유', 'https://www.law.go.kr/LSW/lsRvsRsnListP.do?chrClsCd=010102&lsId=008243'],
+  ['관련 조문', 'https://www.law.go.kr/LSW/lsLinkCommonInfo.do?lsJoLnkSeq=1033568277']
+];
 const OLD_LIVE_FROM = '2026-11-24';   // 제46조 제1항 실거주 요건 — 부칙 제1조 본문(공포한 날부터 시행)
 const DEP_RULE = {
   from: '2027-11-25',                 // 부칙 제1조 단서: 공포(2026. 11. 24.) 후 1년이 경과한 날(행정기본법 제7조)
-  verified: false,                    // 개정 별표 1 본문을 국가법령정보센터에서 대조했는가 — false 면 계산은 현행 기준, 이후 공고는 확인 필요 경고
-  law: '주택공급에 관한 규칙(국토교통부령 제1635호) 부칙 제1조 단서·제2조, 행정기본법 제7조',
-  src: RULE_SRC
+  live: OLD_LIVE_FROM,                // 가점제 부양가족 실제 동거 명문화·건강보험자격득실확인서(제23조) — 공포한 날부터
+  verified: true,                     // 대표가 공식 출처로 개정 별표 1 내용 확인(2026. 11. 26.) → 2027. 11. 25. 이후 공고는 새 기준으로 계산
+  law: '주택공급에 관한 규칙(국토교통부령 제1635호) 제23조·별표 1, 부칙 제1조 단서·제2조, 행정기본법 제7조',
+  src: RULE_SRC, links: RULE_LINKS,
+  /* 2027. 11. 25. 이후 공고에 바뀌는 것(접힌 칸 '시행 예정'에 그대로) */
+  changes: [
+    '만 30세 이상 미혼 자녀는 최근 3년 이상 같은 등본에서 함께 살아야 부양가족으로 인정돼요(지금은 1년 이상). 부모·조부모는 지금처럼 3년 이상이에요',
+    '부모·조부모나 자녀·손자녀가 최근 3년 안에 연속 90일 넘게 해외에 머물렀다면 원칙적으로 부양가족에서 빠져요. 다만 만 30세 미만 자녀가 모집공고일 현재 국내에 있으면 인정돼요',
+    '만 30세 이상 자녀가 실제로 함께 살았는지 확인하는 건강보험 요양급여 내역의 확인 기간이 과거 1년에서 3년으로 늘어나요'
+  ],
+  /* 2026. 11. 24.부터 이미 시행 중인 것 */
+  now: [
+    '부양가족은 등본에 올라 있을 뿐 아니라 실제로 함께 살아야 인정돼요',
+    '당첨 뒤 건강보험 요양급여 내역과 함께 건강보험자격득실확인서도 내야 해요(제23조)'
+  ]
 };
 /* 'YYYYMMDD' · 'YYYY-MM-DD' · Date → 'YYYY-MM-DD' (모르면 null) */
 function ymd(x) {
@@ -42,17 +67,18 @@ function oldParentRule(pb) {
   if (d >= OLD_LIVE_FROM) return { st: 'new', date: d, txt: `${dotK(d)} 모집공고 단지예요 — 2026. 11. 24. 이후 공고라 부모님과 같은 등본에 올라 있고 실제로 함께 살아야 해요`, law: '규칙 제46조 제1항(2026. 11. 24. 개정), 부칙(제1635호) 제1조', src: RULE_SRC };
   return { st: 'old', date: d, txt: `${dotK(d)} 모집공고 단지예요 — 2026. 11. 24. 전 공고라 실제 함께 사는지까지 따지는지는 입주자모집공고문 기준이에요`, law: '규칙 제46조 제1항(2026. 11. 24. 개정 전 공고), 부칙(제1635호) 제1조', src: RULE_SRC };
 }
-/* 일반공급 가점제 부양가족 인정 기준·증빙 개정(2027. 11. 25. 시행): 공고일 기준 안내 */
+/* 일반공급 가점제 부양가족 인정 기준·증빙: 공고일 기준 안내
+   st: 'pre'(2027. 11. 25. 전 공고 — 지금 기준) · 'post'(2027. 11. 25. 이후 공고 — 새 기준으로 계산), live: 2026. 11. 24. 이후 공고(실제 동거·자격득실확인서) */
 function depRule(pb) {
   const d = ymd(pb);
-  const after = !!d && d >= DEP_RULE.from;
-  if (!after) return { st: 'pre', from: DEP_RULE.from, needCheck: false,
-    txt: '2027. 11. 25. 이후 모집공고분부터 부양가족 인정 기준·증빙이 바뀌어요(그 전 공고는 지금 기준)', law: DEP_RULE.law, src: DEP_RULE.src };
-  if (DEP_RULE.verified) return { st: 'post', from: DEP_RULE.from, needCheck: false,
-    txt: '2027. 11. 25. 이후 모집공고분이라 바뀐 부양가족 인정 기준·증빙으로 계산했어요', law: DEP_RULE.law, src: DEP_RULE.src };
-  // TODO(2027-11-25 이후 계산 기준 확인 필요): 개정 별표 1 원문 확인 전 — 계산은 현행 기준, 경고만
-  return { st: 'post', from: DEP_RULE.from, needCheck: true,
-    txt: '2027. 11. 25. 이후 모집공고분은 바뀐 부양가족 인정 기준·증빙이 적용돼요. 이 화면의 부양가족 점수는 아직 바뀌기 전 기준이라, 청약홈과 입주자모집공고문으로 꼭 다시 확인하세요(확인 필요)', law: DEP_RULE.law, src: DEP_RULE.src };
+  const after = !!d && d >= DEP_RULE.from, live = !d || d >= DEP_RULE.live;
+  const base = { from: DEP_RULE.from, live, needCheck: false, law: DEP_RULE.law, src: DEP_RULE.src };
+  if (!after) return Object.assign(base, { st: 'pre',
+    txt: '2027. 11. 25. 이후 모집공고분부터 부양가족 인정 기준·증빙이 바뀌어요(그 전 공고는 지금 기준)',
+    now: live ? '부양가족은 등본에 올라 있을 뿐 아니라 실제로 함께 살아야 인정되고, 당첨 뒤 요양급여 내역과 건강보험자격득실확인서로 확인해요' : '' });
+  return Object.assign(base, { st: 'post',
+    txt: '2027. 11. 25. 이후 모집공고분이라 바뀐 부양가족 인정 기준(30세 이상 자녀 3년 이상 동거·해외 체류 제외)으로 계산했어요',
+    now: '부양가족은 실제로 함께 살아야 인정되고, 당첨 뒤 요양급여 내역(30세 이상 자녀는 과거 3년)과 건강보험자격득실확인서로 확인해요' });
 }
 
 /* ===== 청약 가점 계산 (주택공급에 관한 규칙 별표 1, 2024.12.18 개정 — law.go.kr) ===== */
@@ -79,10 +105,27 @@ const CY = (() => {
     return { pts, months: m, why: `${basis}부터 ${ymTxt(m)} → ‘${band}’ 구간 ${pts}점` };
   }
   // 부양가족: 0명 5점, 1명마다 +5, 6명 이상 35점
-  function dependents(n) {
+  // det(선택, 화면의 A.dep): par·kid·kid30·gk 인원과 2027. 11. 25. 이후 공고에서 빠지는 인원
+  //   kid30out: 30세 이상 미혼 자녀 중 최근 3년 이상 함께 살지 않았거나 최근 3년 안에 연속 90일 넘게 해외에 머문 자녀
+  //   parOut: 부모·조부모 중 최근 3년 안에 연속 90일 넘게 해외에 머문 분
+  //   youngOut: 30세 미만 자녀·손자녀 중 모집공고일 현재 해외에 있고 최근 3년 안에 연속 90일 넘게 해외에 머문 사람
+  const ptsOf = n => Math.min(35, 5 + 5 * n);
+  function depOut(det) {
+    if (!det) return 0;
+    const c = (v, max) => Math.max(0, Math.min(+v || 0, +max || 0));
+    return c(det.kid30out, det.kid30) + c(det.parOut, det.par) + c(det.youngOut, (+det.kid || 0) + (+det.gk || 0));
+  }
+  function dependents(n, ref, det) {
     n = Math.max(0, n | 0);
-    const pts = Math.min(35, 5 + 5 * n);
-    return { pts, why: `본인 제외 ${n}명 → ${n >= 6 ? '6명 이상' : n + '명'} ${pts}점` };
+    const rule = depRule(ref), out = Math.min(n, depOut(det));
+    const cnt = rule.st === 'post' ? n - out : n, pts = ptsOf(cnt);
+    let why;
+    if (rule.st === 'post' && out) why = `본인 제외 ${n}명 중 2027. 11. 25. 이후 공고 기준에서 빠지는 ${out}명(30세 이상 자녀 3년 미만 동거·해외 체류)을 빼고 ${cnt >= 6 ? '6명 이상' : cnt + '명'} → ${pts}점`;
+    else why = `본인 제외 ${n}명 → ${n >= 6 ? '6명 이상' : n + '명'} ${pts}점`;
+    if (rule.st === 'pre' && out) why += ` · 2027. 11. 25. 이후 공고라면 ${out}명이 빠져 ${ptsOf(n - out)}점(${pts - ptsOf(n - out)}점 낮아질 수 있어요)`;
+    const r = { pts, why, cnt, out };
+    if (rule.st === 'post' && !det && n) r.why += ' · 30세 이상 자녀의 3년 동거·가족 해외 체류 여부는 질문으로 답하면 반영해 드려요';
+    return r;
   }
   // 청약통장: 6개월 미만 1점, 6개월~1년 미만 2점, 이후 1년마다 +1, 15년 이상 17점
   function accScore(m) { return m < 6 ? 1 : m < 12 ? 2 : Math.min(17, 2 + Math.floor(m / 12)); }
@@ -102,11 +145,11 @@ const CY = (() => {
   }
   function total(a, refStr) {
     const ref = d8(refStr) || new Date(new Date().toDateString());
-    const h = homeless(a, ref), d = dependents(a.deps), c = account(a, ref);
-    d.rule = depRule(ref);   // 부양가족 인정 기준 바뀌는 날(2027. 11. 25.) 안내 — 계산은 현행 기준
+    const h = homeless(a, ref), d = dependents(a.deps, ref, a.dep), c = account(a, ref);
+    d.rule = depRule(ref);   // 공고일(기준일)로 부양가족 인정 기준 분기 — 2027. 11. 25. 이후는 새 기준으로 계산
     return { h, d, c, sum: h.pts + d.pts + c.pts };
   }
-  return { homeless, dependents, account, accScore, spouseScore, total, months, d8 };
+  return { homeless, dependents, depOut, account, accScore, spouseScore, total, months, d8 };
 })();
 
 /* ===== 1순위·특별공급 간이 체크 (주택공급에 관한 규칙, 국토교통부령 제1635호 2026. 11. 24. 시행 — law.go.kr) ===== */
@@ -324,7 +367,7 @@ function sidoFrom(q) {
 /* 시·군·구 이름 맞추기: '고양시 덕양구'와 '고양덕양구'를 같게 */
 const sggKey = s => String(s || '').replace(/\s/g, '').replace(/시(?=[^시]+구$)/, '');
 
-const API = { oldParentRule, depRule, DEP_RULE, OLD_LIVE_FROM, RULE_SRC, ymd, quickTotal, sidoFrom, sggKey, CY, SIDO, CAPITAL, SIDO_OLD, SIDO_ALIAS, sidoNorm, sidoLbl, DEPOSIT, depGroup, eligibility, bestSpecial, lottery, cutOf, diag, yearsTo, bandOf, noticeSido, INCOME_TXT };
+const API = { oldParentRule, depRule, DEP_RULE, OLD_LIVE_FROM, RULE_SRC, RULE_LINKS, ymd, quickTotal, sidoFrom, sggKey, CY, SIDO, CAPITAL, SIDO_OLD, SIDO_ALIAS, sidoNorm, sidoLbl, DEPOSIT, depGroup, eligibility, bestSpecial, lottery, cutOf, diag, yearsTo, bandOf, noticeSido, INCOME_TXT };
 if (typeof module !== 'undefined' && module.exports) module.exports = API;
 else root.JDJ_CYE = API;
 })(typeof self !== 'undefined' ? self : this);

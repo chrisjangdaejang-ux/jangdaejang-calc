@@ -622,9 +622,9 @@
     /* 국토교통부령 제1635호 시행일 분기(부칙 제1조·제2조): 노부모 실거주 2026. 11. 24.~ · 가점 부양가족 기준 2027. 11. 25.~ — 기준일로 자동 */
     const ruleW = [];
     if (E.CY.oldParentRule) ruleW.push('노부모 부양 특별공급: ' + E.CY.oldParentRule(null).txt);
-    if (E.CY.depRule) ruleW.push('가점 부양가족: ' + E.CY.depRule(E.today).txt);
+    if (E.CY.depRule) { const dr = E.CY.depRule(E.today); ruleW.push('가점 부양가족: ' + dr.txt + (dr.now ? ` — ${dr.now}` : '') + (dr.st === 'pre' ? '. 2027. 11. 25. 이후 공고부터 30세 이상 미혼 자녀는 3년 이상 함께 살아야 하고, 최근 3년 안에 연속 90일 넘게 해외에 머문 가족은 빠져요(30세 미만 자녀가 공고일에 국내에 있으면 인정)' : '')); }
     return { head, nums, tables, warn: ['예상 커트라인은 과거 당첨 결과로 만든 추정·참고 범위예요. 실제 당첨을 약속하지 않아요.', '가점이 모자라도 85㎡ 초과·추첨제 물량과 특별공급(신혼·생애최초·신생아 등)은 가점이 아니라 자격·추첨으로 뽑아요.'].concat(ruleW),
-      note: `기준일 ${ko(E.today)} · 청약홈 공고·당첨 가점 · ${sido ? sido : '지역 미선택(전국)'}${band != null ? ' · ' + CY_BAND[band] : ''}`, src: ['cy', 'cy_rule', 'cy_1635', 'admin7'] };
+      note: `기준일 ${ko(E.today)} · 청약홈 공고·당첨 가점 · ${sido ? sido : '지역 미선택(전국)'}${band != null ? ' · ' + CY_BAND[band] : ''}`, src: ['cy', 'cy_rule', 'cy_1635', 'cy_1635_rsn', 'cy_1635_jo', 'admin7'] };
   }
   /* ③ 청약 — 내 가점으로 어디에 */
   S.cyWhere = (a, E) => {

@@ -29,7 +29,7 @@
   const cache = {};
   const getJ = (k, url) => cache[k] || (cache[k] = fetch(url, { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(url); return r.json(); }).catch(e => { delete cache[k]; throw e; }));
   function load() {
-    return Promise.all([getJ('sc', BASE + 'assets/guide/scenarios.json?v=6'), getJ('lex', BASE + 'assets/guide/lexicon.json?v=2')])
+    return Promise.all([getJ('sc', BASE + 'assets/guide/scenarios.json?v=7'), getJ('lex', BASE + 'assets/guide/lexicon.json?v=2')])
       .then(([sc, lex]) => Object.assign({}, sc, { lex }));
   }
   const ix = () => getJ('ix', DATA + 'index.json');
@@ -221,8 +221,8 @@
   const solveUrl = (id, extra) => BASE + 'solve/?s=' + encodeURIComponent(id) + (extra || '');
 
   /* ---------- 미리 불러오기(첫 카드를 1초 안에) ---------- */
-  const ENGINES = ['assets/sale-status.js?v=1', 'assets/loan-rules.js?v=3', 'tax/tax-engine.js?v=4', 'tax/adjusted-areas.js?v=2', 'assets/loan-core.js?v=6', 'assets/hug-core.js?v=1', 'chungyak/cy-engine.js?v=6', 'assets/redev-core.js?v=3', 'assets/guide-redev.js?v=1'];
-  const ENG_OK = { 'assets/sale-status.js?v=1': 'JDJ_SALE', 'assets/loan-rules.js?v=3': 'JDJ_LOAN_RULES', 'tax/tax-engine.js?v=4': 'JDJ_TAX', 'tax/adjusted-areas.js?v=2': 'JDJ_ADJ', 'assets/loan-core.js?v=6': 'JDJ_LOAN', 'assets/hug-core.js?v=1': 'JDJ_HUG', 'chungyak/cy-engine.js?v=6': 'JDJ_CYE', 'assets/redev-core.js?v=3': 'JDJ_REDEV', 'assets/guide-redev.js?v=1': 'JDJ_GREDEV' };
+  const ENGINES = ['assets/sale-status.js?v=1', 'assets/loan-rules.js?v=3', 'tax/tax-engine.js?v=4', 'tax/adjusted-areas.js?v=2', 'assets/loan-core.js?v=6', 'assets/hug-core.js?v=1', 'chungyak/cy-engine.js?v=7', 'assets/redev-core.js?v=3', 'assets/guide-redev.js?v=1'];
+  const ENG_OK = { 'assets/sale-status.js?v=1': 'JDJ_SALE', 'assets/loan-rules.js?v=3': 'JDJ_LOAN_RULES', 'tax/tax-engine.js?v=4': 'JDJ_TAX', 'tax/adjusted-areas.js?v=2': 'JDJ_ADJ', 'assets/loan-core.js?v=6': 'JDJ_LOAN', 'assets/hug-core.js?v=1': 'JDJ_HUG', 'chungyak/cy-engine.js?v=7': 'JDJ_CYE', 'assets/redev-core.js?v=3': 'JDJ_REDEV', 'assets/guide-redev.js?v=1': 'JDJ_GREDEV' };
   function script(src) { return new Promise(res => { const x = document.createElement('script'); x.src = BASE + src; x.onload = res; x.onerror = res; document.head.appendChild(x); }); }
   let WARM = null;
   /** 계산 엔진·고민 자료·지역 자료·청약 당첨 가점(기억한 시·도 또는 서울)·서울 단지 목록을 쉬는 동안 미리 */
