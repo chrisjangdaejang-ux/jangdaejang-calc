@@ -147,6 +147,17 @@
           if (opt.onGo) opt.onGo(u, []); else root.location.href = u;
           return;
         }
+        /* 지도는 지역 이름 대신 그 지역 가운데 좌표로 열어요(지도 주소는 시·도 이름을 읽지 않음) */
+        if ((tp.id === 'map' || tp.id === 'mapjr') && tp.region && tp.region.sd) {
+          let ok = false;
+          try {
+            const G = await get('geo', JB.SITE + 'assets/map-geo.json'), r = tp.region;
+            const c = r.g && G.sgg && G.sgg[r.g] ? G.sgg[r.g] : G.sido && G.sido[r.sd] ? G.sido[r.sd].c : null;
+            if (c) { const q2 = new URLSearchParams({ lat: (+c[1]).toFixed(5), lng: (+c[0]).toFixed(5), z: r.g && G.sgg[r.g] ? '13' : '11' }); if (tp.id === 'mapjr') q2.set('m', 'jr'); tp = Object.assign({}, tp, { url: tp.url.split('?')[0] + '?' + q2.toString(), where: r.g ? tp.where || r.gName : r.sdShort }); ok = true; }
+          } catch (e) {}
+          if (my !== RUN) return;
+          if (!ok) tp = Object.assign({}, tp, { url: tp.url.split('?')[0] + (tp.id === 'mapjr' ? '?m=jr' : ''), where: '' });
+        }
         /* 재개발·재건축 질문에 구역 이름(예: '은마 재건축')이 있으면 그 구역을 바로 열기 */
         if (tp.id === 'zone' && r) {
           try {
