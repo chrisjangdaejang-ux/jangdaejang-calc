@@ -30,7 +30,7 @@ const rep = new URL(H.pageLink(loc('/jangdaejang-calc/buy/report/', '?sd=서울&
 check('맞춤 리포트: d(대출)·i·c 버림', [...rep.searchParams.keys()].filter(k => !/^utm_/.test(k)), ['sd']);
 check('# 뒤 값은 싣지 않음', /#/.test(H.pageLink(Object.assign(loc('/jangdaejang-calc/tax/'), { hash: '#jv=abc' }))), false);
 check('너무 긴 값은 버림', new URL(H.pageLink(loc('/jangdaejang-calc/rank/', '?g=' + 'x'.repeat(200)))).searchParams.has('g'), false);
-check('새 도메인(맨 앞 /)도 같은 경로', new URL(H.pageLink(loc('/jangdaejang-calc/apt/11110/'), { base: 'https://zipcode.works/' })).pathname, '/apt/11110/');
+check('새 도메인(맨 앞 /)도 같은 경로', new URL(H.pageLink(loc('/jangdaejang-calc/apt/11110/'), { base: 'https://zipyebo.com/' })).pathname, '/apt/11110/');
 
 /* 2) 개인 화면 */
 const priv = ['login/', 'my/watch/', 'my/report/', 'premium/checkout/', 'premium/success/', 'premium/view/', 'premium/r/', 'brief/manage/', 'brief/paid/', 'brief/c/', 'brief/subscribe/', 'agent/my/', 'agent/sheet/', 'dongne/admin/', 'dongne/my/', 'community/admin/', 'sell/draft/', 'land/draft/', 'jeonse/safety/draft/'];

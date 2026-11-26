@@ -1,6 +1,6 @@
 /* 새 도메인 준비 검사 — 실행: node tools/domain-test.js </dev/null
    ① 화면·공용 JS·서비스 워커·앱 설치 정보에 사이트 절대 경로(/jangdaejang-calc/, /jangdaejang-data/)가 새로 생기지 않았는지
-      (쓰면 새 도메인 https://zipcode.works 에서 깨짐 — 상대 경로나 JB.SITE / JB.DATA 를 쓰세요)
+      (쓰면 새 도메인 https://zipyebo.com 에서 깨짐 — 상대 경로나 JB.SITE / JB.DATA 를 쓰세요)
    ② 경로 자동 감지 줄(JB)이 모든 파일에서 글자 하나 다르지 않고 같으며, 예전 주소·새 도메인에서 맞는 값을 주는지
    ③ JB 를 쓰는 파일·화면 스크립트는 JB 를 먼저 정의하는지
    ④ 상대 경로가 실제 파일을 가리키는지(예전 주소 /jangdaejang-calc/ 와 새 도메인 / 양쪽에서 같은 파일)
@@ -88,15 +88,15 @@ check('CNAME 은 아직 없음(바꾸는 날 tools/domain-switch.js 가 만듦)'
 
 /* ⑤ 도메인 바꾸기 미리 보기 */
 const S = require('./domain-switch.js');
-const P = S.plan({ domain: 'zipcode.works' });
-check('CNAME 내용', P.out.get('CNAME'), 'zipcode.works\n');
-check('config.js SITE_URL', /SITE_URL: 'https:\/\/zipcode\.works',/.test(P.out.get('assets/config.js') || ''), true);
+const P = S.plan({ domain: 'zipyebo.com' });
+check('CNAME 내용', P.out.get('CNAME'), 'zipyebo.com\n');
+check('config.js SITE_URL', /SITE_URL: 'https:\/\/zipyebo\.com',/.test(P.out.get('assets/config.js') || ''), true);
 const left = [...P.out].filter(([f, s]) => s.includes(S.OLD) && f !== 'tools/agent-backend.gs').map(([f]) => f);
 const untouched = served.filter(f => !P.out.has(f) && !/^(sitemaps)\//.test(f) && rd(f).includes(S.OLD));
 check('바꾼 뒤 화면에 예전 대표 주소 없음', left.concat(untouched), []);
 const rob = P.out.get('robots.txt') || '';
-check('robots: 경로가 / 기준·사이트맵 새 주소', [/^Allow: \/$/m.test(rob), /^Disallow: \/login\/$/m.test(rob), rob.includes('Sitemap: https://zipcode.works/sitemap.xml'), rob.includes('/jangdaejang-calc/')], [true, true, true, false]);
-check('서버 WEB_ROOT 새 주소', /^const WEB_ROOT = 'https:\/\/zipcode\.works\/';/m.test(P.out.get('tools/agent-backend.gs') || ''), true);
+check('robots: 경로가 / 기준·사이트맵 새 주소', [/^Allow: \/$/m.test(rob), /^Disallow: \/login\/$/m.test(rob), rob.includes('Sitemap: https://zipyebo.com/sitemap.xml'), rob.includes('/jangdaejang-calc/')], [true, true, true, false]);
+check('서버 WEB_ROOT 새 주소', /^const WEB_ROOT = 'https:\/\/zipyebo\.com\/';/m.test(P.out.get('tools/agent-backend.gs') || ''), true);
 const swNew = P.out.get('sw.js') || '', vNow = +(sw.match(/jdj-v(\d+)/) || [])[1], vNew = +(swNew.match(/jdj-v(\d+)/) || [])[1];
 check('sw 판 번호 +1', vNew, vNow + 1);
 const cfgV = s => (s.match(/assets\/config\.js\?v=(\d+)/) || [])[1];
@@ -107,7 +107,15 @@ check('이상한 도메인 거절', bad2, 'err');
 /* ⑥ 서버 */
 const gs = rd('tools/agent-backend.gs');
 check('서버: WEB_ROOT 한 줄(지금은 예전 주소)', (gs.match(/^const WEB_ROOT = '([^']*)';/m) || [])[1], S.OLD + '/');
-check('서버: 카카오 로그인 돌아올 주소 둘 다 허용', [gs.includes("'https://zipcode.works/login/'"), /KAKAO_REDIRECTS = \[WEB_ROOT \+ 'login\/'/.test(gs)], [true, true]);
+check('서버: 카카오 로그인 돌아올 주소 둘 다 허용', [gs.includes("'https://zipyebo.com/login/'"), /KAKAO_REDIRECTS = \[WEB_ROOT \+ 'login\/'/.test(gs)], [true, true]);
+check('서버: 쓰지 않는 예전 후보 주소(zipcode.works)는 로그인 허용에서 뺌', /KAKAO_REDIRECTS = \[[^\]]*zipcode\.works/.test(gs), false);
+check('서버: 브이월드 확인 도메인은 사이트 주소와 따로(VWORLD_DOMAIN)', [/^const VWORLD_DOMAIN = 'chrisjangdaejang-ux\.github\.io';/m.test(gs), /WEB_ROOT\.replace\(\/\^https/.test(gs)], [true, false]);
+const P2 = S.plan({ domain: 'zipyebo.com', storeMoveOn: true }), sm2 = P2.out.get('assets/store-move.js') || '';
+check('전환 도구 --store-move-on: 저장값 옮기기 켜고 track.js 가 붙이는 판 번호 +1', [/^\s*ON: true,/m.test(sm2), /store-move\.js\?v=2/.test(P2.out.get('assets/track.js') || '')], [true, true]);
+check('전환 도구 기본(켜기 없음): 저장값 옮기기는 그대로 꺼짐', P.out.has('assets/store-move.js'), false);
+const P3 = S.plan({ domain: 'example.org' });
+check('다른 도메인이면 저장값 옮기기 목적지도 같이', /^\s*DEST: 'https:\/\/example\.org'/m.test(P3.out.get('assets/store-move.js') || ''), true);
+check('지금 저장값 옮기기는 꺼짐·목적지 zipyebo.com', [/^\s*ON: false,/m.test(rd('assets/store-move.js')), /DEST: 'https:\/\/zipyebo\.com'/.test(rd('assets/store-move.js'))], [true, true]);
 check('서버: 메일 링크에 예전 사이트 주소를 직접 쓰지 않음(WEB_ROOT 만)', (gs.match(/https:\/\/chrisjangdaejang-ux\.github\.io\/jangdaejang-calc\//g) || []).length, 2);
 
 console.log(`도메인 준비 검사: ${ok}개 맞음, ${bad}개 틀림`);

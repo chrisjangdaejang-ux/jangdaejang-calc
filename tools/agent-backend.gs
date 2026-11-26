@@ -1,6 +1,13 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v63 변경 요약 (v62 위에 다시 배포. 따로 실행할 함수 없음 — 시트 변경 없음. 지금 서비스 동작은 그대로)
+ *  - 새 도메인 zipyebo.com 준비: 카카오 로그인 돌아올 주소(KAKAO_REDIRECTS)에 https://zipyebo.com/login/ 을 미리 허용(예전 github.io 주소도 계속 허용).
+ *    전에 미리 넣어 둔 https://zipcode.works/login/ 은 뺌(쓰지 않는 주소).
+ *  - 브이월드 중개업 휴업·폐업 확인에 보내는 도메인을 WEB_ROOT 에서 떼어 VWORLD_DOMAIN 한 줄로(브이월드 키에 등록한 주소 — 지금 github.io).
+ *    도메인을 바꿔 WEB_ROOT 가 zipyebo.com 이 돼도 확인이 끊기지 않음. 스크립트 속성 VWORLD_DOMAIN 이 있으면 그 값이 먼저.
+ *  - 검증: node tools/domain-test.js </dev/null
+ *
  * v62 변경 요약 (v61 위에 다시 배포. 따로 실행할 함수 없음 — 시트 변경 없음)
  *  - 모닝 브리핑 메일 '지난 예측 성적': 예측이 틀린 해에 '−1.2%p 덜 올랐어요'(두 번 부정)로 나가던 문장을 '1.2%p 덜 올랐어요'로(bScoreDiff, 화면과 같은 규칙).
  *  - 모닝 브리핑 메일 신고가 TOP: 엔진이 새로 붙이는 '비교 거래 적음'(최근 1년 같은 평형 거래가 드물어 오래된 최고가와 비교한 상승률) 꼬리표를 함께 표시.
@@ -497,10 +504,12 @@ function setup() {
 /* ---------- 공통 ---------- */
 /* 서비스 이름 — 여기 한 곳(웹 assets/config.js SITE_NAME · 엔진 scripts/brand.py 와 같은 값). 모닝 브리핑 이름은 이 값으로 조합 */
 const SITE_NAME = '집예보';
-/* 웹 사이트 주소(끝에 / 붙임) — 메일·알림 속 링크가 모두 이 값을 따름. 도메인을 바꾸면 이 한 줄만 'https://zipcode.works/' 로(docs/domain_switch.md).
+/* 웹 사이트 주소(끝에 / 붙임) — 메일·알림 속 링크가 모두 이 값을 따름. 도메인을 바꾸면 이 한 줄만 'https://zipyebo.com/' 로(docs/domain_switch.md, tools/domain-switch.js 가 바꿈).
    바꾸기 전이라도 예전 주소는 GitHub 가 새 도메인으로 넘겨 줘서 링크가 끊기지 않아요. */
 const WEB_ROOT = 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/';
 const BRIEF_NAME = SITE_NAME + ' 모닝 브리핑';
+/* v63 브이월드 인증키에 등록한 서비스 도메인(중개업 휴업·폐업 확인 API 의 domain 값) — 사이트 주소(WEB_ROOT)를 바꿔도 키 등록을 바꾸기 전까지 그대로 */
+const VWORLD_DOMAIN = 'chrisjangdaejang-ux.github.io';
 function out(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
 function today() { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }
 function ymd(d) { return Utilities.formatDate(d, 'Asia/Seoul', 'yyyy-MM-dd'); }
@@ -1931,7 +1940,7 @@ function adInquiry(b) {
    ===================================================================== */
 const USER_ACTIONS = { kakaoLogin: 1, userLoad: 1, userSave: 1, alertSubscribe: 1, userLogout: 1, userDelete: 1 };
 // 카카오 로그인 돌아올 주소: 예전 주소와 새 도메인 둘 다 허용(바꾸는 날 로그인이 끊기지 않게). 카카오 개발자 콘솔 [Redirect URI]에도 둘 다 등록.
-const KAKAO_REDIRECTS = [WEB_ROOT + 'login/', 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/login/', 'https://zipcode.works/login/'].filter((u, i, a) => a.indexOf(u) === i);
+const KAKAO_REDIRECTS = [WEB_ROOT + 'login/', 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc/login/', 'https://zipyebo.com/login/'].filter((u, i, a) => a.indexOf(u) === i);
 const SH_U = '회원', SH_S = '세션', SH_UA = '관심알림';
 const UH = ['카카오id', '닉네임', '가입일', '최근로그인', '저장자료', '수정일'];
 const SSH = ['세션해시', '카카오id', '만든날', '만료일'];
@@ -6619,7 +6628,7 @@ function dpVerify(a) {
   if (bad.length) return { st: 'mismatch', why: '공공 자료와 다른 칸: ' + bad.join(', '), src: 'std' };
   if (vw) {                                                           // 선택: 휴업·폐업 확인(브이월드 부동산중개업 API)
     try {
-      const host = WEB_ROOT.replace(/^https:\/\//, '').split('/')[0];
+      const host = String(P.getProperty('VWORLD_DOMAIN') || VWORLD_DOMAIN).trim();   // v63 브이월드 키에 등록한 주소(사이트 주소와 따로)
       const j = dpGetJson('https://api.vworld.kr/ned/data/getEBOfficeInfo?key=' + encodeURIComponent(vw) + '&domain=' + encodeURIComponent(host) + '&format=json&numOfRows=10&pageNo=1&jurirno=' + encodeURIComponent(a.reg));
       const f = j && (j.EDOffices || j.EBOffices || j.response) ? ((j.EDOffices || j.EBOffices || {}).field || []) : [];
       const row = (Array.isArray(f) ? f : [f]).find(y => y && dpRegNorm(y.jurirno) === want);

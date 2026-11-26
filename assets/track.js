@@ -16,6 +16,16 @@
   history.replaceState(history.state, '', location.pathname + (qs ? '?' + qs : '') + hh);
   window.JDJ_SHARED_IN = p;
 }catch(_){} })();
+/* 새 주소로 저장값 옮기기(assets/store-move.js, 기본 꺼 둠)에서 돌아온 #jdjmv=… : 분석 도구를 켜기 전에 주소에서 지우고 이 탭 저장소에만 둠.
+   그 화면 열기·옮긴 뒤 한 번 새로 고침은 같은 방문이라 페이지 보기 통계를 다시 보내지 않음 */
+(function(){ try{
+  const h = location.hash;
+  if (h.indexOf('#jdjmv=') === 0) {
+    try{ sessionStorage.setItem('jdj_mv_in', h.slice(7)); }catch(_){}
+    history.replaceState(history.state, '', location.pathname + location.search);
+    window.JDJ_MV_BACK = 1;
+  } else if (sessionStorage.getItem('jdj_mv_reload') === '1') { sessionStorage.removeItem('jdj_mv_reload'); window.JDJ_MV_BACK = 1; }
+}catch(_){} })();
 (function(){
   const C = window.JDJ_CONFIG = window.JDJ_CONFIG || {};
   const CH = {yt:'유튜브',youtube:'유튜브',ig:'인스타그램',instagram:'인스타그램',blog:'블로그',fb:'페이스북',facebook:'페이스북',kakao:'카카오톡',naver:'네이버',cafe:'카페',threads:'스레드',band:'밴드',claude:'기존 Claude 링크'};
@@ -60,7 +70,7 @@
     // 주소의 계산 입력값(연소득 i·현금 c·이름 n 등)이 GA로 가지 않도록 utm·mode만 남긴 주소로 보냄
     const loc = J0(location.href), ref = J0(document.referrer);
     gtag('set', {page_location: loc, page_referrer: ref});
-    gtag('config', C.GA4_ID, {page_location: loc, page_referrer: ref});
+    gtag('config', C.GA4_ID, window.JDJ_MV_BACK ? {page_location: loc, page_referrer: ref, send_page_view: false} : {page_location: loc, page_referrer: ref});
     gtag('set', 'user_properties', {visit_count: visits, first_channel: channel});
   }
   // Microsoft Clarity
@@ -104,5 +114,16 @@
   const me = document.currentScript && document.currentScript.src;
   if (!me || !/\/assets\/track\.js/.test(me)) return;
   const s = document.createElement('script'); s.src = me.replace(/track\.js(\?[^#]*)?$/, 'share-head.js?v=1'); s.async = true;
+  (document.head || document.documentElement).appendChild(s);
+}catch(_){} })();
+/* 새 주소로 저장값 옮기기(assets/store-move.js): 새 도메인(맨 앞 / 기준 https 주소)에서만, 이 탭에서 한 번만 붙임.
+   예전 주소(github.io)·내 컴퓨터 확인용(http)에서는 붙이지 않음 — 지금 사이트 동작은 그대로 */
+(function(){ try{
+  if (location.protocol !== 'https:' || /\.github\.io$/.test(location.hostname)) return;
+  const inc = sessionStorage.getItem('jdj_mv_in') != null;
+  if (!inc && (localStorage.getItem('jdj_moved') || sessionStorage.getItem('jdj_mv_chk'))) return;
+  const me = document.currentScript && document.currentScript.src;
+  if (!me || !/\/assets\/track\.js/.test(me)) return;
+  const s = document.createElement('script'); s.src = me.replace(/track\.js(\?[^#]*)?$/, 'store-move.js?v=1'); s.async = true;
   (document.head || document.documentElement).appendChild(s);
 }catch(_){} })();

@@ -1,7 +1,7 @@
 # 검색엔진 등록 순서 (도메인을 연결한 뒤에 하세요)
 
 지금 주소(chrisjangdaejang-ux.github.io/jangdaejang-calc)는 빌린 주소라, 등록은 **도메인을 산 뒤 새 주소로 한 번만** 하면 됩니다.
-아래에서 `https://새주소` 는 우리 도메인 **https://zipcode.works** 로 읽으세요.
+아래에서 `https://새주소` 는 우리 도메인 **https://zipyebo.com** 로 읽으세요.
 
 ---
 
@@ -10,7 +10,7 @@
 1. 도메인을 사이트에 연결합니다 — 순서와 버튼 이름은 **docs/domain_switch.md** 에 있습니다(가비아 설정 → GitHub 연결 → 주소 한 줄 바꾸기).
 2. 연결 다음 날 아침(07:37) 자동 작업이 단지 페이지·sitemap.xml·robots.txt·모든 화면의 대표 주소를 새 주소로 바꿉니다.
    기다리기 싫으면 https://github.com/chrisjangdaejang-ux/jangdaejang-timing/actions/workflows/seo.yml 에서 **Run workflow** → 초록색 **Run workflow** 를 누르세요.
-3. 확인: 브라우저에서 https://zipcode.works/robots.txt 와 https://zipcode.works/sitemap.xml 이 열리면 준비 끝.
+3. 확인: 브라우저에서 https://zipyebo.com/robots.txt 와 https://zipyebo.com/sitemap.xml 이 열리면 준비 끝.
 
 > 화면 안의 내부 경로(파일·데이터)는 이미 예전 주소와 새 도메인 양쪽에서 동작하게 바꿔 두었습니다(따로 할 일 없음).
 

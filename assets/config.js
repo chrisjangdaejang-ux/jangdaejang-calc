@@ -8,7 +8,7 @@
      VWORLD_KEY: 카카오맵을 쓰지 않을 때 Leaflet 배경지도로 쓸 브이월드 인증키(서비스 URL 로 제한된 공개 키).
      비워 두면 미리 보기용 OpenStreetMap 공식 타일(대량·상업 서비스용이 아니라 정식 오픈 전까지만). */
 /* SITE_URL: 사이트 첫 화면 주소(끝에 / 없이) — 대표 주소(canonical·공유 링크·검색용 페이지)에만 쓰여요.
-     새 도메인(https://zipcode.works)으로 바꾸는 날은 node tools/domain-switch.js --apply 가 이 줄과 CNAME 을 함께 바꿔요(docs/domain_switch.md).
+     새 도메인(https://zipyebo.com)으로 바꾸는 날은 node tools/domain-switch.js --apply 가 이 줄과 CNAME 을 함께 바꿔요(docs/domain_switch.md).
      화면 안의 내부 경로는 이 값과 상관없이 지금 열린 주소에서 자동으로 정해져요(각 파일의 JB 줄: 예전 주소면 jangdaejang-calc 폴더 기준, 새 도메인이면 맨 앞 / 기준,
      공개 데이터는 예전 주소면 같은 사이트의 jangdaejang-data 폴더, 새 도메인이면 https://chrisjangdaejang-ux.github.io/jangdaejang-data/).
      매일 도는 검색용 페이지 생성(jangdaejang-timing seo.yml)이 이 값을 읽어 단지 페이지·sitemap.xml·robots.txt·
