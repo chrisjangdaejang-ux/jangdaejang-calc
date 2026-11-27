@@ -31,10 +31,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/aplus.css?v=50">
 <script src="../assets/nw.js?v=1" defer></script>
-<script src="../assets/config.js?v=16"></script>
+<script src="../assets/config.js?v=17"></script>
 <script src="../assets/community.js?v=5" defer></script>
 <script src="../assets/move.js?v=2" defer></script>
-<script src="../assets/back.js?v=6" defer></script>
+<script src="../assets/back.js?v=7" defer></script>
 </head>
 <body>
 <header class="top">
@@ -160,6 +160,18 @@
   </ul>
   </section>
 
+  <!-- 분양 상담 연결(성과형) — 대표 승인 2026-11-27 · LEADS_ENABLED 를 켜는 날 보여요. 내부 메모: 변호사 검토 필요(엔진 docs/legal_review.md). 값은 assets/leads-core.js 와 같게. -->
+  <section id="leads2" data-leads-only hidden>
+  <h2>3-5. 분양 상담 연결(휴대폰 확인 · 제3자 제공) [기능을 여는 날부터]</h2>
+  <ul>
+    <li><b>모으는 것</b>: 이름, 휴대폰 번호(문자 인증번호로 확인 — 인증번호는 5분 뒤 사라지고 저장하지 않음), 카카오 간편 로그인 회원 구분값, 신청한 분양 현장·광고주, 상담 준비 정도 등급(A·B·C), 이용자가 고른 공유 항목(희망 상담 시간, 예산 구간·무주택 여부·청약 가점 구간·사는 시·군·구·매수 가능 금액 중 체크한 것, 남기는 말), 확인 메일(선택 — 광고주에게 주지 않음), 동의 일시·동의 문구 판·문구 지문, 동의 철회 일시.</li>
+    <li><b>등급</b>: 등급은 이용자의 기기에서 계산해요. 회사는 '예산이 분양가에 맞음/아님' 같은 꼬리표만 받아 같은 규칙으로 다시 계산하며, 예산·가점 같은 값 자체는 이용자가 그 항목을 체크한 때만 구간 이름으로 받아요.</li>
+    <li><b>제3자 제공</b>: 받는 자 — 이용자가 고른 현장의 광고주 한 곳(시행사 또는 분양대행사, 신청 화면과 '내 상담 신청'에 이름 표시). 목적 — 그 현장 분양 상담 연락(전화·문자). 항목 — 이름, 휴대폰 번호, 등급, 이용자가 체크한 항목. 받는 자의 보유 기간 — 받은 날부터 6개월 또는 상담이 끝나거나 동의를 거둘 때까지. 동의를 거부할 수 있으며, 거부하면 그 현장 상담 연결만 되지 않아요.</li>
+    <li><b>확인 연락</b>: 광고주가 연락이 닿지 않는다고 알리면, 회사가 신청 여부를 카카오 알림톡·문자(안 되면 확인 메일)로 한 번 여쭤봐요. 광고가 아닌 거래 확인 연락이에요.</li>
+    <li><b>보관·파기</b>: 휴대폰 번호·이름은 암호화해 보관하고 중복 확인에는 해시값만 써요. 6개월이 지나거나 이용자가 '내 상담 신청'에서 동의를 거두면 바로 지우고, 광고주에게도 지워 달라고 알려요. 과금·환불 기록(연락처 없이)은 전자상거래법에 따라 5년 보관해요.</li>
+  </ul>
+  </section>
+
   <section id="move" data-move-only hidden>
   <h2>이사 견적 받기(이사업체 제휴) <span style="display:inline-block;font-size:13px;font-weight:800;color:#9A5B00;background:#FFF4E0;border-radius:6px;padding:2px 8px;vertical-align:3px">초안 · 변호사 검토 필요 · 기능을 여는 날부터</span></h2>
   <ul>
@@ -211,6 +223,7 @@
 </main>
 <script>(function(){var S=window.JDJ_SITE||{};if(S.AI_ENABLED===true)document.querySelectorAll("[data-ai-only]").forEach(function(e){e.hidden=false;});})();</script>
 <script>(function(){var S=window.JDJ_SITE||{};if(S.COUNSEL_ENABLED!==true)return;document.querySelectorAll("[data-cs-only]").forEach(function(e){e.hidden=false;});if(S.HEART_ENABLED!==true)return;document.querySelectorAll("[data-heart-only]").forEach(function(e){e.hidden=false;});})();</script>
+<script>(function(){var S=window.JDJ_SITE||{};if(S.LEADS_ENABLED===true)document.querySelectorAll("[data-leads-only]").forEach(function(e){e.hidden=false;});})();</script>
 <footer class="foot">★ 집예보 · <a href="../">홈</a></footer>
 </body>
 </html>

@@ -30,7 +30,7 @@ check('서버: 지금은 판매 잠금(PAID_OPEN=false)', T.PAID_OPEN === false)
 check('서버: 안내 문구', T.PAID_CLOSED_MSG === MSG, T.PAID_CLOSED_MSG);
 
 /* 1) 돈을 받는 요청은 모두 거절(시트·토스에 닿기 전에) */
-const PAID = ['createOrder', 'confirmPayment', 'briefOrder', 'briefConfirm', 'briefChangeQuote', 'briefChange', 'quizVoucherUse', 'htOrder', 'htConfirm', 'mvChargeOrder', 'mvChargeConfirm', 'guardOrder', 'guardRegister', 'readRegistry'];   // v73 지킴이·등기 바로 확인   // v55 예측 맞히기 리포트 이용권 쓰기도 유료 잠금 · 고민 상담 하트 충전도 · v57 이사 견적 포인트 충전도
+const PAID = ['createOrder', 'confirmPayment', 'briefOrder', 'briefConfirm', 'briefChangeQuote', 'briefChange', 'quizVoucherUse', 'htOrder', 'htConfirm', 'mvChargeOrder', 'mvChargeConfirm', 'guardOrder', 'guardRegister', 'readRegistry', 'leadCreditOrder'];   // v77 분양 상담 연결 크레딧 충전 · v73 지킴이·등기 바로 확인   // v55 예측 맞히기 리포트 이용권 쓰기도 유료 잠금 · 고민 상담 하트 충전도 · v57 이사 견적 포인트 충전도
 check('잠금 목록 = 결제 요청 전부', JSON.stringify(Object.keys(T.PAID_ACTIONS).sort()) === JSON.stringify(PAID.slice().sort()), Object.keys(T.PAID_ACTIONS));
 PAID.forEach(a => {
   touched.length = 0;

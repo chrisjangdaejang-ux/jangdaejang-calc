@@ -59,6 +59,10 @@
      무료 안내('알림이 오면 이렇게 하세요'·내가 뗀 등기부 올리기)는 이 값과 상관없이 늘 보여요.
    ADS_PROTO: 분양 광고 시안(assets/ads-proto.js — 홈 피드 카드·지도 'AD' 핀·분양 목록 카드·계산 결과 아래 '예산에 맞는 분양', 모두 '예시 광고') 켜기.
      false 면 화면 어디에도 칸이 없어요. 대표 미리 보기: 주소 끝 ?preview=ads 를 붙여 한 번 열면 그 기기에서만 보여요(끄기 ?preview=off). 설계: 비공개 엔진 docs/ads/ads-plan.md.
+   LEADS_ENABLED: 분양 상담 연결(성과형 리드 — assets/leads.js · 광고 카드 [상담 받기] → 동의 화면·휴대폰 확인 · my/leads/ 내 상담 신청 · lead/confirm/ 손님 확인 ·
+     ad/console/ 광고주 관리 화면) 켜기. false 면 화면 어디에도 단추·링크가 없고 세 화면은 '준비 중'(검색 제외). 단가·등급·자동 환불 규칙은 assets/leads-core.js 한 곳.
+     대표 미리 보기: 주소 끝 ?preview=leads 로 한 번 열면 그 기기에서만 '예시 흐름'(서버로 보내지 않음)이 보여요(끄기 ?preview=off).
+     켜는 날은 서버 tools/agent-backend.gs 의 LEADS_ENABLED 도 함께 true + 함수 setupLeads 한 번 실행. 변호사 검토(엔진 docs/legal_review.md) 전에는 켜지 않아요.
    SITE_VERIFY_DAUM: 다음 웹마스터도구 PIN 코드 줄 전체('#DaumWebMasterTool:…'). 넣으면 robots.txt 맨 아래에 붙어요. */
 window.JDJ_SITE = {
   SITE_URL: 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc',
@@ -83,6 +87,7 @@ window.JDJ_SITE = {
   PAID_OPEN: false,
   PAY_REVIEW: true,
   ADS_PROTO: false,
+  LEADS_ENABLED: false,
   GUARD: { freeHomes: 1, freeHomesSubscriber: 3, extra: 900, read: 1500, maxMonths: 24 }
 };
 /* 서비스 이름 채우기: 화면의 [data-site-name] 칸은 SITE_NAME, [data-brief-name] 칸은 '{SITE_NAME} 모닝 브리핑'(값이 있으면 뒤에 붙임) */

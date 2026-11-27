@@ -99,6 +99,14 @@
       delivery: '결제 즉시 이 화면에서', validity: '한 번 열람', refund: '열람 결과를 받기 전에는 전액 환불돼요. 받은 뒤에는 디지털 콘텐츠라 청약철회가 제한되지만, 오류로 못 받았으면 전액 환불해 드려요.', refundHref: 'refund/',
       href: 'jeonse/safety/', cta: '전세 안전 점검에서 확인',
       sample: { title: '예시 · 예시빌라 302호', rows: [['소유자', '김○○(2019년부터)'], ['근저당', '1건 · 채권최고액 1억 2,000만 원 — 주의'], ['압류·경매·신탁', '없음']] } },
+    /* 분양 상담 연결(광고주용, 대표 승인 2026-11-27) — LEADS_ENABLED 가 true 가 아니면 표·예시 목록에 나오지 않음(gate). 금액은 assets/leads-core.js LD_PRICE 와 같게(tools/leads-test.js 대조) */
+    { id: 'lead_credit', group: 'ad', gate: 'LEADS_ENABLED', name: '분양 상담 연결 크레딧', sub: '시행사·분양대행사 · 상담 신청 1건부터', amount: 20000, from: true, unit: '건',
+      includes: ['휴대폰 확인을 마치고 이 회사에 연락처를 주는 데 따로 동의한 손님의 상담 신청만 받아요', '상담 준비 정도 등급(A·B·C)과 손님이 고른 항목(희망 시간·예산 구간 등)을 함께 받아요',
+        '상담 신청 B등급 2~3만 원 · A등급 5~8만 원(현장 지역 등급에 따라) · C등급은 받지 않아요', '방문 예약 확정 성과금 3~5만 원 추가 · 현장 채팅 문의는 하트 3개', '새 광고주는 처음 5건 무료'],
+      excludes: ['계약 성사를 보장하지 않아요(계약 성공보수는 없어요).', '손님이 체크하지 않은 값(금액·가점 등)은 받을 수 없어요.'],
+      delivery: '상담 신청이 들어오면 메일로 알리고 광고주 관리 화면에서 바로 확인', validity: '충전한 크레딧은 광고 계약 기간 동안', refund: '연락이 안 되거나 신청한 적 없다는 건은 손님 확인 뒤 자동으로 크레딧을 돌려 드려요(한 달 20%까지).', refundHref: 'refund/#lead',
+      href: 'ad/console/', cta: '광고주 관리',
+      sample: { title: '예시 · 예시 마곡 리버뷰(가상 현장)', rows: [['상담 신청', 'A등급 · 김예시 · 평일 저녁 희망'], ['값', '1등급 지역 A등급 8만 원'], ['방문 확정', '+5만 원']] } },
     { id: 'corp', group: 'pro', name: '법인등기 확인', sub: '법인 소유 상가·오피스 · 1건', amount: 1500, unit: '1회',
       includes: ['법인등록번호로 지금 법인등기를 바로 열어 확인', '대표·임원·본점·자본금 같은 기본 사항을 한눈에', '결과를 PDF로 저장(인쇄)'],
       excludes: ['결과는 한 번만 보여 드리고 저장하지 않아요. 공식 발급본은 인터넷등기소에서 따로 발급해요.', '법률 판단이 아니에요.'],
@@ -107,7 +115,9 @@
       sample: { title: '예시 · 예시상사 주식회사', rows: [['대표이사', '박○○'], ['본점', '서울특별시 예시구 예시로 1'], ['자본금', '5,000만 원']] } }
   ];
   var BY = {}; P.forEach(function (p) { BY[p.id] = p; });
-  function get(id) { return BY[id] || null; }
+  /* gate: 그 설정(assets/config.js)이 true 일 때만 보이는 상품(숨긴 기능의 상품) */
+  function shown(p) { return !!p && (!p.gate || (root.JDJ_SITE || {})[p.gate] === true); }
+  function get(id) { return shown(BY[id]) ? BY[id] : null; }
   function won(n) { return Number(n || 0).toLocaleString('ko-KR') + '원'; }
   function priceText(p) { return p ? won(p.amount) + (p.from ? '부터' : '') + (p.unit === '1개월' ? ' · 1개월' : p.unit === '1회' ? ' · 1회' : '') : ''; }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -171,7 +181,7 @@
   }
   /** 모든 유료 상품 표(상품 안내 premium/) */
   function table(ids) {
-    style(); ids = ids || P.map(function (p) { return p.id; });
+    style(); ids = ids || P.filter(shown).map(function (p) { return p.id; });
     return '<table class="jpc"><thead><tr><th>상품</th><th>가격</th><th>담긴 내용</th><th>들어 있지 않은 것</th><th>받는 방식 · 기간 · 환불</th></tr></thead><tbody>'
       + ids.map(get).filter(Boolean).map(function (p) {
         return '<tr data-product="' + esc(p.id) + '"><td data-k="상품"><div class="nm">' + esc(p.name) + (p.soon ? ' <small>(준비 중)</small>' : '') + '</div><small>' + esc(p.sub) + '</small></td>'
@@ -315,7 +325,7 @@
   /** 서버 상품 이름(결제 완료 응답 j.product) → 상품 키 */
   function idOfServerName(n) { n = String(n || ''); if (root.JDJ_PAY && root.JDJ_PAY.prodName) n = root.JDJ_PAY.prodName(n);   // 옛 이름(재배포 전 서버)은 pay.js 변환표로
     return ({ '단지 리포트': 'single', '비교 패키지': 'pack', '청약 당첨 플랜': 'cy' })[n] || ''; }
-  var api = { buyerTrialOn: buyerTrialOn, LIST: P, ctxFromKeys: ctxFromKeys, idOfServerName: idOfServerName, BRIEF_LINK: BRIEF_LINK, briefCard: briefCard, briefUrl: briefUrl, get: get, box: box, table: table, fill: fill, priceText: priceText, sampleHref: sampleHref, won: won, first: first, soon: soonOpen, style: style, CSS: CSS };
+  var api = { buyerTrialOn: buyerTrialOn, LIST: P.filter(shown), ALL: P, shown: shown, ctxFromKeys: ctxFromKeys, idOfServerName: idOfServerName, BRIEF_LINK: BRIEF_LINK, briefCard: briefCard, briefUrl: briefUrl, get: get, box: box, table: table, fill: fill, priceText: priceText, sampleHref: sampleHref, won: won, first: first, soon: soonOpen, style: style, CSS: CSS };
   root.JDJ_PRODUCTS = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

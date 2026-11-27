@@ -11,6 +11,13 @@
 (function(){
   var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   const APPLY = JB.SITE + 'bunyang/apply/', ALL = JB.SITE + 'ad/', PRIV = JB.SITE + 'privacy/#lead';
+  /* v76 분양 상담 연결(숨김): 켜졌거나 대표 미리 보기(?preview=leads·leads-live)일 때만 assets/leads-core.js·leads.js 를 불러옴 */
+  (function () {
+    if (typeof document === 'undefined' || typeof location === 'undefined') return;
+    let pv = null; try { if (/[?&]preview=leads(-live)?(&|$)/.test(location.search)) localStorage.setItem('jdj_leads_pv', /leads-live/.test(location.search) ? 'live' : 'demo'); pv = localStorage.getItem('jdj_leads_pv'); } catch (e) {}
+    if (!((window.JDJ_SITE && window.JDJ_SITE.LEADS_ENABLED === true) || pv) || window.JDJ_LEADS) return;
+    ['leads-core.js?v=1', 'leads.js?v=1'].forEach(f => { const sc = document.createElement('script'); sc.src = JB.SITE + 'assets/' + f; sc.async = false; document.head.appendChild(sc); });
+  })();
   const NOTICES = JB.DATA + 'data/bunyang/notices.json';
   const HOUSING = ['아파트', '도시형생활주택', '민간임대', '무순위·잔여세대'];
   const SIDO_OLD = { '광주광역시': '전남광주통합특별시', '전라남도': '전남광주통합특별시', '강원도': '강원특별자치도', '전라북도': '전북특별자치도', '제주도': '제주특별자치도' };
@@ -183,6 +190,9 @@
   async function leadOpen(id){
     css();
     const a = (await load()).find(x => x.id === id); if (!a || !a.lead) return;
+    /* v76 분양 상담 연결(assets/leads.js, 숨김 — LEADS_ENABLED 또는 운영자 ?preview=leads-live): 동의 화면·휴대폰 확인·등급 흐름으로 */
+    const LX = window.JDJ_LEADS;
+    if (LX && LX.on() && !LX.demo() && LX.open({ id: a.id, name: a.n, co: a.co, sido: a.sd, sgg: a.sg, code: a.g || '', pmin: a.pmin, pmax: a.pmax, cy: [] })) return;
     if (!DLG) { DLG = document.createElement('div'); DLG.className = 'jld'; DLG.hidden = true; DLG.setAttribute('role', 'dialog'); DLG.setAttribute('aria-modal', 'true'); DLG.setAttribute('aria-labelledby', 'jldT'); document.body.appendChild(DLG);
       DLG.addEventListener('click', e => { if (e.target === DLG || (e.target.dataset && e.target.dataset.x)) DLG.hidden = true; });
       addEventListener('keydown', e => { if (e.key === 'Escape' && DLG && !DLG.hidden) DLG.hidden = true; }); }

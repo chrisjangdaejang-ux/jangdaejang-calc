@@ -1,6 +1,16 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v77 변경 요약 (v76 위에 다시 배포 — 새 버전. LEADS_ENABLED=false·PAID_OPEN=false 라 지금 서비스에는 영향 없음. 새 시트 5개는 첫 사용 때 저절로 생김. 켜는 날 함수 setupLeads 한 번 실행)
+ *  - 분양 상담 연결(성과형 리드, 대표 승인 2026-11-27 · 맨 아래 'v77' 칸): leadOtp·leadVerify(문자 인증번호) · leadSubmit(이 광고주에게 연락처 제공 동의 + 등급 A/B/C × 지역 등급 단가) ·
+ *    leadMine·leadWithdraw(내 상담 신청·동의 거두기) · leadChat(① 대화 열기 — 고민 상담 1:1 채팅, 현장이 수락할 때 하트 LD_PRICE.chat.hearts 개) · leadAdv(광고주 관리 화면) ·
+ *    leadDispute([연락이 안 돼요]/[신청한 적 없대요] → 손님 확인 메시지) · leadConfirm(손님 답) · leadVisit(③ 방문 확정 성과금) · leadCreditOrder(결제 잠금) · leadAdminAdv·leadAdminExc(운영자).
+ *  - 규칙(LEADS-CORE, 화면 assets/leads-core.js 와 같은 글자): 30일 안 같은 사람+현장 합침·과금 없음 · 48시간 무응답·'아니요' 자동 환불 · 한 달 자동 환불 상한 20% · 이상한 비율 → 예외 목록 →
+ *    매월 1일 대표 요약 메일 [환불]/[유지] 한 번 누르기(doGet leadExc, 서명 링크). 트리거: leadDaily(매시간) · leadMonthly(매월 1일).
+ *  - 스크립트 속성(선택): SOLAPI_FROM(문자 인증·확인 문자 발신번호 — 없으면 인증이 '준비 중') · SOLAPI_TPL_LEAD_CONFIRM(알림톡 #{현장}·#{링크}).
+ *  - 고민 상담: 하트 사용처 'site'(분양 현장 채팅 수락 — 하트 수는 LD_PRICE.chat) · 로그 관심 저장 'ads'.
+ *  - 켜는 날: 이 파일 LEADS_ENABLED + assets/config.js LEADS_ENABLED 를 true(채팅은 COUNSEL_OPEN·HEART_OPEN 도) · 변호사 검토(엔진 docs/legal_review.md) 뒤.
+ *  - 검증: node tools/leads-test.js </dev/null
  * v76 변경 요약 (v75 위에 다시 배포 — 새 버전. KAKAO_BRAND_MSG_ENABLED=false·ADS_IN_BRIEF=false 라 지금 서비스에는 영향 없음. '브리핑구독' 뒤 4칸 머리 줄은 첫 사용 때 자동)
  *  - 모닝 브리핑 카카오톡 광고 '가안'(대표 결정 2026-11-27): 광고성 정보 받기 + 카톡 브랜드 메시지 받기 + 채널 친구 확인이 모두 있는 카카오톡 구독자는
  *    오전 8시 5분 브랜드 메시지(관심 지역 분양 소식 광고 1건까지, '(광고)'·보낸 사람·무료 수신 거부 표기), 나머지는 지금처럼 오전 7시대 알림톡(광고 없음).
@@ -566,7 +576,7 @@ const PROACTIVE_ENABLED = false;
 const PAID_CLOSED_MSG = '유료 이용권은 곧 열려요. 지금은 7일 무료 체험만 할 수 있어요.';
 /* 돈을 받는(토스 주문·승인) 요청 전부 — 리포트 결제(createOrder·confirmPayment)·모닝 브리핑 이용권(briefOrder·briefConfirm)·요금제 바꾸기(briefChangeQuote·briefChange).
    이미 산 주문 보기·환불 요청(openReport·findOrder·refundRequest·briefRefund·briefStop)은 막지 않음. 새 결제 요청을 만들면 여기에도 꼭 넣기(tools/paid-lock-test.js 가 확인). */
-const PAID_ACTIONS = { createOrder: 1, confirmPayment: 1, briefOrder: 1, briefConfirm: 1, briefChangeQuote: 1, briefChange: 1, quizVoucherUse: 1, htOrder: 1, htConfirm: 1, mvChargeOrder: 1, mvChargeConfirm: 1, guardOrder: 1, guardRegister: 1, readRegistry: 1 };   // v57 이사 견적 포인트 충전 · v73 지킴이·등기 바로 확인
+const PAID_ACTIONS = { createOrder: 1, confirmPayment: 1, briefOrder: 1, briefConfirm: 1, briefChangeQuote: 1, briefChange: 1, quizVoucherUse: 1, htOrder: 1, htConfirm: 1, mvChargeOrder: 1, mvChargeConfirm: 1, guardOrder: 1, guardRegister: 1, readRegistry: 1, leadCreditOrder: 1 };   // v57 이사 견적 포인트 충전 · v73 지킴이·등기 바로 확인
 /* 시트 메뉴에서 Apps Script를 열지 못해 script.google.com에서 따로 만든 경우에만,
    시트 주소의 /d/ 와 /edit 사이 문자열(시트 ID)을 아래 따옴표 안에 넣으세요. */
 const SHEET_ID = '';
@@ -672,6 +682,8 @@ function doGet(e) {
   if (act === 'briefStats') return out(briefStats(e.parameter));
   if (act === 'briefSeen') return out(briefSeen(e.parameter));
   if (act === 'bpPull') return out(bpPull(e.parameter));
+  if (act === 'leadExc') return ldExcLink(e.parameter);                            // v77 대표 요약 메일의 [환불]/[유지] 한 번 누르기
+  if (act === 'leadConfig') return out(ldDispatch({ action: 'leadConfig' }));      // v77 분양 상담 연결 열림 여부·단가
   if (act === 'guardConfig') return out(jgConfig());                                 // v73 지킴이 열림 여부·가격
   if (act === 'alertOff') return alertOff(e.parameter);                              // v44 알림 메일의 끄기 링크(원클릭)
   return out({ ok: false, err: 'unknown' });
@@ -694,6 +706,7 @@ function doPost(e) {
   if (b.action === 'ytKitPut') return out(ytKitPut(b));            // v30 장대장TV 주간 유튜브 키트(엔진 → 시트)
   if (JG_ACTIONS[b.action]) return out(jgDispatch(b));             // v73 내 전셋집 지킴이·등기 바로 확인
   if (GD_ACTIONS[b.action]) return out(gdDispatch(b));             // v67 고민 해결 길잡이(숨김)
+  if (LD_ACTIONS[b.action]) return out(ldDispatch(b));             // v77 분양 상담 연결(성과형 리드, 숨김)
   if (CS_ACTIONS[b.action]) return out(csDispatch(b));             // v56 고민 상담·하트(숨김)
   if (PAY_ACTIONS[b.action]) return out(payDispatch(b));
   if (b.action === 'adApply' || b.action === 'adInquiry' || b.action === 'adLead') return out(adDispatch(b));
@@ -882,7 +895,7 @@ function update(b) {
 /* 기록: rec = 추천 단지 카드에 표시(펼치기 전, 한 줄에 여러 중개사 id), imp = [공인중개사 연결하기]로 목록 펼침,
    view = 정보 창 열람, call = 전화 버튼, kakao = 카톡 버튼 */
 const TYPES = ['rec', 'imp', 'view', 'call', 'kakao'];
-const AD_LOG = ['adv', 'adm', 'adc'];   // 분양 광고: 목록·추천 노출 · 지도 마커 노출 · 클릭
+const AD_LOG = ['adv', 'adm', 'adc', 'ads'];   // 분양 광고: 목록·추천 노출 · 지도 마커 노출 · 클릭 · v77 관심 저장
 const ID_RE = /^A[0-9A-F]{7}$/;
 /* v45 단지 검색 결과 없음(t: 'sq'): 검색어 글자만 '검색실패' 시트에 — 새 별칭을 배우는 용도.
    방문자 번호(vid)·주소·이름 등은 남기지 않는다(같은 요청에 vid 가 와도 이 시트에는 쓰지 않음).
@@ -10366,7 +10379,7 @@ function htLots(me) {
 function htBalance(me) { return htLots(me).filter(l => !l.lock).reduce((s, l) => s + l.left, 0); }
 /** 하트 쓰기(잠금 안에서만 부름) — 모자라면 오류 */
 function htSpend(me, use, ref) {
-  const U = CS_USES[use]; if (!U) throw csErr('쓸 곳을 다시 골라 주세요.', 'field');
+  const U = use === 'site' ? { n: LD_PRICE.chat.hearts, name: '분양 현장 문의 답하기' } : CS_USES[use]; if (!U) throw csErr('쓸 곳을 다시 골라 주세요.', 'field');   // v77 분양 현장 채팅(하트 수는 LEADS-CORE LD_PRICE.chat)
   const al = csAlloc(htLots(me), U.n);
   if (!al.ok) throw csErr(`하트가 ${U.n}개 필요해요. 지금 ${htBalance(me)}개 있어요.`, 'heart');
   const id = csNewId('U'), r = []; r[HTC['id']] = id; r[HTC['시각']] = new Date(); r[HTC['회원']] = me; r[HTC['종류']] = HT_KIND.use; r[HTC['하트']] = U.n; r[HTC['금액']] = 0;
@@ -10382,7 +10395,7 @@ function htMine(b) {
   const u = sessionUser(b.s), me = csUid(u.k), now = Date.now();
   if (!htIsPro(me) && !bIsAdmin(u.k)) return { ok: true, pro: false };                // 하트는 확인된 전문가만
   const lots = htLots(me), rows = htRowsOf(me);
-  const uses = rows.filter(o => String(o.r[HTC['종류']]) === HT_KIND.use).reverse().slice(0, 50).map(o => { const j = parseJ(csTxt(o.r[HTC['내용']]), {}); return { day: csDay(o.r[HTC['시각']]), n: Number(o.r[HTC['하트']]), what: (CS_USES[j.use] || {}).name || '', ref: j.ref || '', back: String(o.r[HTC['상태']]) === HT_ST.back }; });
+  const uses = rows.filter(o => String(o.r[HTC['종류']]) === HT_KIND.use).reverse().slice(0, 50).map(o => { const j = parseJ(csTxt(o.r[HTC['내용']]), {}); return { day: csDay(o.r[HTC['시각']]), n: Number(o.r[HTC['하트']]), what: j.use === 'site' ? '분양 현장 문의 답하기' : (CS_USES[j.use] || {}).name || '', ref: j.ref || '', back: String(o.r[HTC['상태']]) === HT_ST.back }; });
   const done = rows.filter(o => String(o.r[HTC['상태']]) === HT_ST.done).reverse().map(o => ({ day: csDay(o.r[HTC['처리일']]), n: Number(o.r[HTC['하트']]), won: Number(o.r[HTC['환불액']]) || 0 }));
   return { ok: true, pro: true, balance: htBalance(me), lots: lots.slice().reverse().map(l => htLotPub(l, now)), uses: uses, refunds: done, pay: PAID_OPEN && (HEART_OPEN || csIsAdmin(b)) };
 }
@@ -10639,7 +10652,7 @@ function csRoomPub(x, me, side, Q) {
   const last = csMs(x.r[CSRMC['최근']]), read = csMs(x.r[CSRMC[side === 'q' ? '질문자읽음' : '전문가읽음']]);
   return { id: String(x.r[CSRMC['id']]), qid: String(x.r[CSRMC['질문id']]), title: q ? csTxt(q.r[CSQC['제목']]) || '(지운 질문)' : '(지운 질문)', side: side, st: String(x.r[CSRMC['상태']]),
     other: side === 'q' ? (pro ? Object.assign({ kind: 'pro' }, x.r[CSRMC['사용id']] ? csProFull(pro) : csProPub(pro), csProStats(String(x.r[CSRMC['전문가id']])), { kind: 'pro', pk: String(pro.r[CSPC['종류']]) }) : { kind: 'pro', name: '전문가' }) : { kind: 'user', name: q ? (csTxt(q.r[CSQC['별명']]) || csAlias(String(q.r[CSQC['회원']]), String(q.r[CSQC['id']]))) : '질문한 분' },
-    acc: csDay(x.r[CSRMC['수락일']]), kind: String(x.r[CSRMC['종류']] || 'req'), selfKind: side === 'p' && pro ? String(pro.r[CSPC['종류']]) : undefined, cost: CS_USES.accept.n, refund: csTxt(x.r[CSRMC['자동환불']]), rated: Number(x.r[CSRMC['평점']]) || 0,
+    acc: csDay(x.r[CSRMC['수락일']]), kind: String(x.r[CSRMC['종류']] || 'req'), selfKind: side === 'p' && pro ? String(pro.r[CSPC['종류']]) : undefined, cost: String(x.r[CSRMC['종류']]) === 'site' ? LD_PRICE.chat.hearts : CS_USES.accept.n, refund: csTxt(x.r[CSRMC['자동환불']]), rated: Number(x.r[CSRMC['평점']]) || 0,
     blocked: side === 'q' ? csBlocked(String(x.r[CSRMC['회원']]), String(x.r[CSRMC['전문가id']])) : undefined,
     sent: String(x.r[CSRMC['연락처보냄']] || '').indexOf(side) >= 0, gotContact: String(x.r[CSRMC['연락처보냄']] || '').indexOf(side === 'q' ? 'p' : 'q') >= 0, mail: side === 'q' ? !!x.r[CSRMC['알림메일']] : undefined, last: last, day: csDay(x.r[CSRMC['최근']]), unread: last > read && Number(x.r[CSRMC['수']]) > 0 };
 }
@@ -10676,7 +10689,7 @@ function csRoomAccept(b) {
   const st = String(x.r[CSRMC['상태']]);
   if (st === CS_ROOM_ST.on) return { ok: true, already: true };
   if (st !== CS_ROOM_ST.req) throw csErr(st === CS_ROOM_ST.exp ? '요청이 만료됐어요.' : '수락할 수 없는 요청이에요.', 'ended');
-  const uid = htSpend(ctx.me, 'accept', String(x.r[CSRMC['id']]));
+  const uid = htSpend(ctx.me, String(x.r[CSRMC['종류']]) === 'site' ? 'site' : 'accept', String(x.r[CSRMC['id']]));   // v77 분양 현장 채팅은 LD_PRICE.chat.hearts
   csRmSet(x, '상태', CS_ROOM_ST.on); csRmSet(x, '수락일', new Date()); csRmSet(x, '사용id', uid); x.r[CSRMC['상태']] = CS_ROOM_ST.on;
   csMsgAdd(x, 's', '전문가가 상담을 수락했어요. 이제 대화를 나눌 수 있어요.', false);
   csChatMail(x, 'q');
@@ -12387,4 +12400,556 @@ function guardWebhookOrPoll(e) {
   });
   jgLog('poll', C !== null, n, '');
   return C === null ? { ok: false, err: 'vendor', changed: 0 } : { ok: true, changed: n };
+}
+
+
+/* =====================================================================
+   v77 분양 상담 연결(성과형 리드 — 시행사·분양대행사, 대표 승인 2026-11-27) — 숨김(LEADS_ENABLED=false)
+   단계: ① 대화 열기(leadChat → 고민 상담 1:1 채팅방, 현장이 [채팅 수락]할 때 하트 LD_PRICE.chat.hearts 개)
+         ② 검증된 상담 신청(leadOtp·leadVerify 휴대폰 확인 → leadSubmit 이 광고주에게 연락처 제공 동의와 함께 저장, 등급 A/B/C × 지역 등급 단가)
+         ③ 방문 예약 확정(leadVisit — 광고주가 표시하면 성과금) ④ 계약 성사 성공보수(LD_PRICE.success.on=false, 설계만)
+   자동 처리(사람 손 없음): 같은 사람+현장 30일 안 → 합침·과금 없음 · 동의 기록(시각·문구 판·문구 지문) '분양리드동의' 시트 ·
+         광고주 [연락이 안 돼요]/[신청한 적 없대요](leadDispute) → 손님에게 알림톡(SOLAPI_TPL_LEAD_CONFIRM)·문자·메일로 '신청하셨나요?' →
+         [네] 확인됨 + 광고주 알림 · [아니요]·48시간 무응답 → 크레딧 자동 환불(leadDaily) · 한 달 자동 환불 상한 20% · 넘는 것·이상한 비율은 '분양리드예외' →
+         매월 1일 대표 요약 메일(leadMonthly)에 한 번 눌러 [환불]/[유지](doGet leadExc, 서명 링크).
+   개인정보: 이름·휴대폰은 LEAD_KEY 로 암호화 + 가린 값 + 지문만. 등급을 만든 값(예산·가점·금액)은 받지 않고 '맞음/아님' 꼬리표만 받아 서버가 등급을 다시 셈.
+           손님이 고른 공유 항목만 광고주 화면에 보임. 철회하면 바로 지우고 광고주에게 삭제 요청 메일. 6개월 뒤 자동 삭제.
+   ===================================================================== */
+const LEADS_ENABLED = false;          // 켜는 날: assets/config.js LEADS_ENABLED 와 함께 true(크레딧 결제는 PAID_OPEN·BILLING_OPEN 도 필요)
+/* LEADS-CORE 블록 — assets/leads-core.js 와 똑같아야 해요(node tools/leads-test.js 가 비교) */
+/* LEADS-CORE BEGIN — 이 블록은 tools/agent-backend.gs 에 그대로 복사돼 있어요. 고칠 때는 두 곳을 똑같이 고쳐 주세요(node tools/leads-test.js 가 비교). */
+const LD_V = 'leads-2026-11-27';
+const LD_CONSENT_V = 'ldc-2026-11-27';                 // 제3자 제공 동의 문구 판 — 문구를 바꾸면 판을 올려요(동의 기록에 판·문구 지문이 남아요)
+/* 단가(런칭가, 원 · VAT 별도) — 지역 등급 1·2·3 */
+const LD_PRICE = {
+  chat: { hearts: 3 },                                 // ① 대화 열기: 현장이 첫 답을 보낼 때 하트 3개(하트 1개 1,400~1,950원 → 약 4~6천 원). 2~3개 사이에서 고름
+  lead: { A: { 1: 80000, 2: 65000, 3: 50000 },         // ② 검증된 상담 신청 A 등급: 5~8만
+          B: { 1: 30000, 2: 25000, 3: 20000 },         //                     B 등급: 2~3만
+          C: { 1: 0, 2: 0, 3: 0 } },                   //   C 등급(신호가 약함): 받지 않음 — 광고주에게는 '관심 단계'로 무료 전달(대표 확인 필요)
+  visit: { 1: 50000, 2: 40000, 3: 30000 },             // ③ 방문 예약 확정 성과금(+3~5만)
+  success: { on: false, pct: 0, cap: 0 }               // ④ 계약 성사 성공보수 — 설계만(꺼짐). 공인중개사법·분양대행 검토 전에는 켜지 않음
+};
+/* 자동 처리 규칙 */
+const LD_RULES = {
+  trialFree: 5,          // 새 광고주 첫 N건 무료(상담 신청 ②만)
+  dupDays: 30,           // 같은 사람(휴대폰) + 같은 현장 30일 안 다시 신청 → 하나로 합침, 과금 없음
+  disputeDays: 7,        // 광고주가 [연락이 안 돼요]/[신청한 적 없대요]를 누를 수 있는 기간(전달한 날부터)
+  confirmHours: 48,      // 손님 확인 대기 — 이 안에 답이 없으면 자동 환불
+  capPct: 20,            // 한 광고주 한 달 자동 환불 상한(그달 과금한 상담 신청 수의 %) — 넘는 것은 예외 목록으로
+  keepDays: 183,         // 광고주에게 전달한 연락처 보관(6개월) 뒤 자동 삭제
+  otpMin: 5, otpTry: 5,  // 휴대폰 인증번호 유효 5분 · 5번 틀리면 다시 받기
+  anomaly: { advMin: 10, advRate: 40, custLeads30: 6, custNo: 2 }   // 광고주 이의 비율 40%↑(10건 이상일 때) · 손님 30일 6건↑ 또는 '아니요' 2번↑ → 예외 목록
+};
+/* 지역 등급(기간형 광고 지역 단가와 같은 표): 시·군·구별 최근 12개월 아파트 거래 금액 합계(건수 × 평균 거래가) 상위 20% = 1등급, 다음 30% = 2등급, 나머지 50% = 3등급.
+   현장 분양가(범위의 가운데 값)가 15억 이상이면 한 등급 위. 해마다 우리 자료로 다시 계산(node tools/ad-tiers-build.js). */
+const LD_REGION = { months: 12, top: 20, mid: 30, m2: 84, premiumMan: 150000 };
+/* 손님이 고를 수 있는 공유 항목 — need: 늘 보냄(동의 화면에 표시) · def: 처음에 체크돼 있는지 */
+const LD_FIELDS = [
+  { k: 'name', t: '이름', need: true },
+  { k: 'phone', t: '휴대폰 번호(확인된 번호)', need: true },
+  { k: 'grade', t: '상담 준비 정도(A·B·C 등급만 — 등급을 만든 값은 보내지 않아요)', need: true },
+  { k: 'time', t: '희망 상담 시간', def: true },
+  { k: 'budget', t: '예산 구간(예: 6~9억 — 금액이 아니라 구간)', def: false },
+  { k: 'noHome', t: '무주택 여부', def: false },
+  { k: 'cy', t: '청약 가점 구간(예: 50~64점)', def: false },
+  { k: 'live', t: '사는 곳(시·군·구 이름)', def: false },
+  { k: 'amount', t: '이 기기에서 계산한 매수 가능 금액(원 단위 그대로)', def: false },
+  { k: 'memo', t: '남기는 말', def: true }
+];
+const LD_TIMES = ['평일 오전', '평일 오후', '평일 저녁(6~9시)', '주말', '아무 때나'];
+const LD_WHY = { noreach: '연락이 안 돼요', deny: '신청한 적 없대요' };
+const LD_ST = { ok: '전달', ask: '확인 중', valid: '확인됨', refund: '환불', exc: '예외 검토', dup: '합침', gone: '철회', hold: '잔액 부족' };
+
+const ldArr = v => (Array.isArray(v) ? v : []);
+/** 시·군·구 거래 금액 합계로 등급 매기기. sgg = { code: { s: [월별 3.3㎡당 평균가(만원)], c: [월별 거래 건수] } } (공개 index.json 모양)
+    → { code: { g, amt(84㎡ 환산 거래 금액 합계, 만원), rank } } */
+function ldRegionGrades(sgg, months) {
+  months = months || LD_REGION.months;
+  const py = LD_REGION.m2 / 3.3058, rows = [];
+  Object.keys(sgg || {}).forEach(code => {
+    const o = sgg[code] || {}, s = ldArr(o.s), c = ldArr(o.c), n = Math.min(s.length, c.length);
+    let amt = 0; for (let i = Math.max(0, n - months); i < n; i++) amt += (+c[i] || 0) * (+s[i] || 0) * py;
+    rows.push({ code: code, amt: Math.round(amt) });
+  });
+  rows.sort((a, b) => (b.amt - a.amt) || a.code.localeCompare(b.code));
+  const N = rows.length, c1 = Math.ceil(N * LD_REGION.top / 100), c2 = Math.ceil(N * (LD_REGION.top + LD_REGION.mid) / 100), out = {};
+  rows.forEach((r, i) => { out[r.code] = { g: i < c1 ? 1 : i < c2 ? 2 : 3, amt: r.amt, rank: i + 1 }; });
+  return out;
+}
+/** 현장 지역 등급: 시·군·구 등급에서 분양가(범위 가운데 값, 만원) 15억 이상이면 한 등급 위. 등급을 모르면 3 */
+function ldSiteGrade(g, pmin, pmax) {
+  g = [1, 2, 3].indexOf(+g) >= 0 ? +g : 3;
+  const lo = +pmin || 0, hi = +pmax || lo, mid = lo && hi ? (lo + hi) / 2 : (lo || hi);
+  return mid >= LD_REGION.premiumMan ? Math.max(1, g - 1) : g;
+}
+/** 예산 구간(만원 [lo, hi)) 과 분양가 범위(만원) 비교 → 'fit' 겹침 · 'near' 20% 안쪽으로 모자람 · 'no' · '' 모름 */
+function ldBudgetFit(lo, hi, pmin, pmax) {
+  lo = +lo; hi = +hi; pmin = +pmin || 0; pmax = +pmax || pmin;
+  if (!(hi > 0) || !(pmin > 0)) return '';
+  if (hi > pmin && lo <= pmax) return 'fit';
+  if (hi <= pmin && hi >= pmin * 0.8) return 'near';
+  return 'no';
+}
+/** 상담 준비 정도 등급(이 기기에서 계산). sig = { verified, budget('fit'|'near'|'no'|''), noHome, cy('fit'|'no'|''), live('sgg'|'sido'|''), views, plan, time }
+    → { grade: 'A'|'B'|'C'|'', pts } — 휴대폰 확인 전이면 '' (상담 신청이 아님) */
+function ldGrade(sig) {
+  sig = sig || {};
+  if (sig.verified !== true) return { grade: '', pts: 0 };
+  let p = 0;
+  if (sig.budget === 'fit') p += 3; else if (sig.budget === 'near') p += 1;
+  if (sig.noHome === true) p += 1;
+  if (sig.cy === 'fit') p += 1;
+  if (sig.live === 'sgg') p += 2; else if (sig.live === 'sido') p += 1;
+  if ((+sig.views || 0) >= 3) p += 1;
+  if (sig.plan === true) p += 1;
+  if (sig.time === true) p += 1;
+  const grade = sig.budget === 'fit' && p >= 6 ? 'A' : (sig.budget !== 'no' && p >= 3) ? 'B' : 'C';
+  return { grade: grade, pts: p };
+}
+/** 단계별 값. step: 'chat'|'lead'|'visit'|'success' · o = { grade, rg(현장 지역 등급), trialLeft }
+    → { won, hearts, free, why } */
+function ldPrice(step, o) {
+  o = o || {}; const rg = [1, 2, 3].indexOf(+o.rg) >= 0 ? +o.rg : 3;
+  if (step === 'chat') return { won: 0, hearts: LD_PRICE.chat.hearts, free: false, why: 'chat' };
+  if (step === 'visit') return { won: LD_PRICE.visit[rg], hearts: 0, free: false, why: 'visit' };
+  if (step === 'success') return { won: 0, hearts: 0, free: true, why: LD_PRICE.success.on ? 'success' : 'off' };
+  if (step !== 'lead') return { won: 0, hearts: 0, free: true, why: 'none' };
+  const t = LD_PRICE.lead[o.grade] || LD_PRICE.lead.C, won = t[rg] || 0;
+  if (!won) return { won: 0, hearts: 0, free: true, why: 'grade' };
+  if ((+o.trialLeft || 0) > 0) return { won: 0, hearts: 0, free: true, why: 'trial' };
+  return { won: won, hearts: 0, free: false, why: 'lead' };
+}
+/** 같은 사람 + 같은 현장 30일 안 신청이 이미 있으면 그 신청(합침). list = [{ id, ph(휴대폰 지문), site, at(ms), st }] */
+function ldDup(list, ph, site, now) {
+  const lim = LD_RULES.dupDays * 86400000;
+  return ldArr(list).filter(x => x && x.ph === ph && x.site === site && x.st !== LD_ST.gone && x.st !== LD_ST.dup && now - (+x.at || 0) <= lim)
+    .sort((a, b) => b.at - a.at)[0] || null;
+}
+/** 광고주가 이의를 낼 수 있는지 */
+function ldCanDispute(lead, now) {
+  if (!lead || [LD_ST.ok, LD_ST.hold].indexOf(lead.st) < 0) return false;
+  return now - (+lead.at || 0) <= LD_RULES.disputeDays * 86400000 && !(+lead.free) && (+lead.won || 0) > 0;
+}
+/** 이의 처리 상태 바꾸기(사람 손 없음). ev = { t: 'ask', why } | { t: 'answer', yes } | { t: 'tick' }
+    → { st, act: 'send'(손님 확인 메시지) | 'notify'(광고주에게 확인됐다고) | 'refund' | 'exc'(상한 넘음 → 예외 목록) | '' , why }
+    cap = { billed(이번 달 과금 건수), refunded(이번 달 자동 환불 건수) } */
+function ldDispute(lead, ev, now, cap) {
+  lead = lead || {}; ev = ev || {};
+  if (ev.t === 'ask') {
+    if (!LD_WHY[ev.why] || !ldCanDispute(lead, now)) return { st: lead.st, act: '' };
+    return { st: LD_ST.ask, act: 'send', why: ev.why };
+  }
+  if (lead.st !== LD_ST.ask) return { st: lead.st, act: '' };
+  const late = now - (+lead.askAt || 0) >= LD_RULES.confirmHours * 3600000;
+  if (ev.t === 'answer' && ev.yes === true && !late) return { st: LD_ST.valid, act: 'notify' };
+  if ((ev.t === 'answer' && ev.yes === false) || (ev.t === 'tick' && late) || (ev.t === 'answer' && late)) {
+    return ldCapOk(cap) ? { st: LD_ST.refund, act: 'refund', why: ev.t === 'tick' || late ? 'noanswer' : 'no' } : { st: LD_ST.exc, act: 'exc', why: 'cap' };
+  }
+  return { st: lead.st, act: '' };
+}
+/** 이번 달 자동 환불을 하나 더 해도 되는지(상한 = 과금 건수의 capPct%, 올림) */
+function ldCapOk(cap) {
+  cap = cap || {}; const billed = +cap.billed || 0, done = +cap.refunded || 0;
+  return done + 1 <= Math.ceil(billed * LD_RULES.capPct / 100);
+}
+/** 이상한 비율 찾기 → 이유 목록. adv = { leads, disputes } · cust = { leads30, no } */
+function ldAnomaly(adv, cust) {
+  const A = LD_RULES.anomaly, out = [];
+  adv = adv || {}; cust = cust || {};
+  if ((+adv.leads || 0) >= A.advMin && (+adv.disputes || 0) * 100 / adv.leads >= A.advRate) out.push('adv_rate');
+  if ((+cust.leads30 || 0) >= A.custLeads30) out.push('cust_many');
+  if ((+cust.no || 0) >= A.custNo) out.push('cust_no');
+  return out;
+}
+/** 제3자 제공 동의 문구(화면에 보이는 글 = 서버가 기록하는 글). o = { co(받는 회사), site(현장), fields([k]), keep(일) } */
+function ldConsentText(o) {
+  o = o || {};
+  const F = LD_FIELDS.filter(f => f.need || ldArr(o.fields).indexOf(f.k) >= 0).map(f => f.t.replace(/\(.*\)$/, ''));
+  return `[개인정보 제3자 제공 동의 · ${LD_CONSENT_V}] 받는 곳: ${o.co || ''} · 현장: ${o.site || ''} · 목적: 이 현장 분양 상담 연락(전화·문자) · `
+    + `제공 항목: ${F.join(', ')} · 받는 곳의 보관 기간: 받은 날부터 ${Math.round((o.keep || LD_RULES.keepDays) / 30)}개월 또는 상담이 끝나거나 동의를 거두면 바로 삭제 · `
+    + `동의하지 않아도 집예보의 다른 기능은 그대로 쓸 수 있어요(이 현장 상담 연결만 안 돼요). 동의는 내 상담 신청(my/leads/)에서 언제든 거둘 수 있어요.`;
+}
+/* LEADS-CORE END */
+const SH_LDL = '분양리드', SH_LDA = '분양리드광고주', SH_LDG = '분양리드원장', SH_LDX = '분양리드예외', SH_LDK = '분양리드동의';
+const LDLH = ['id', '시각', '광고id', '현장', '광고주id', '회원', '폰지문', '연락처', '가린번호', '이름', '희망시간', '등급', '지역등급', '공유', '금액', '무료', '상태', '동의판', '동의지문',
+  '확인토큰', '확인요청', '확인답', '이의', '처리', '처리시각', '방문', '방문금액', '철회', '파기예정일', '합침수', '메일', '대화'];
+const LDAH = ['id', '시각', '회원', '회사명', '광고id', '전문가id', '크레딧', '무료남은', '알림메일', '상태', '메모'];
+const LDGH = ['시각', '광고주id', '종류', '금액', '리드id', '메모'];
+const LDXH = ['id', '시각', '종류', '광고주id', '리드id', '이유', '상태', '처리시각'];
+const LDKH = ['시각', '리드id', '회원', '광고주id', '현장', '동의판', '동의지문', '항목', '행동'];
+const LDLC = Object.fromEntries(LDLH.map((h, i) => [h, i])), LDAC = Object.fromEntries(LDAH.map((h, i) => [h, i])), LDXC = Object.fromEntries(LDXH.map((h, i) => [h, i]));
+const LD_ACTIONS = { leadConfig: 1, leadOtp: 1, leadVerify: 1, leadSubmit: 1, leadMine: 1, leadWithdraw: 1, leadChat: 1, leadConfirm: 1, leadAdv: 1, leadDispute: 1, leadVisit: 1,
+  leadCreditOrder: 1, leadAdminAdv: 1, leadAdminExc: 1 };
+const LD_EXC_WHY = { cap: '이번 달 자동 환불 상한(20%)을 넘음', adv_rate: '이 광고주의 이의 비율이 높음', cust_many: '이 손님의 신청이 30일 안에 많음', cust_no: "이 손님이 '아니요'를 여러 번 답함" };
+
+function ldErr(m, c) { const e = new Error(m); e.code = c || ''; return e; }
+function ldIsAdmin(b) { try { const u = b.s ? sessionUser(b.s) : null; return !!u && bIsAdmin(u.k); } catch (e) { return false; } }
+function ldGate(b) { if (LEADS_ENABLED || ldIsAdmin(b)) return true; throw ldErr('아직 문을 열지 않은 기능이에요.', 'closed'); }
+function ldRows(n, H) { const sh = uSheet(n, H), v = sh.getDataRange().getValues(), out = []; for (let i = 1; i < v.length; i++) if (v[i][0] !== '' && v[i][0] != null) out.push({ row: i + 1, r: v[i] }); return out; }
+function ldSet(n, H, C, row, h, v) { uSheet(n, H).getRange(row, C[h] + 1).setValue(v); }
+function ldL(x, h, v) { ldSet(SH_LDL, LDLH, LDLC, x.row, h, v); x.r[LDLC[h]] = v; }
+function ldA(x, h, v) { ldSet(SH_LDA, LDAH, LDAC, x.row, h, v); x.r[LDAC[h]] = v; }
+function ldMs(v) { return v instanceof Date ? v.getTime() : (v ? new Date(v).getTime() || 0 : 0); }
+function ldMonth(t) { return Utilities.formatDate(new Date(t), 'Asia/Seoul', 'yyyy-MM'); }
+function ldEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function ldPh(d) { return hashOf('ldph|' + d); }
+function ldOf(x) { return { id: String(x.r[LDLC['id']]), ph: String(x.r[LDLC['폰지문']]), site: String(x.r[LDLC['광고id']]), at: ldMs(x.r[LDLC['시각']]), st: String(x.r[LDLC['상태']]),
+  askAt: ldMs(x.r[LDLC['확인요청']]), won: Number(x.r[LDLC['금액']]) || 0, free: x.r[LDLC['무료']] === true ? 1 : 0 }; }
+function ldAdvs() { return ldRows(SH_LDA, LDAH); }
+function ldAdvById(id) { return ldAdvs().find(x => String(x.r[LDAC['id']]) === String(id || '')) || null; }
+function ldAdvOfAd(adId) { return ldAdvs().find(x => String(x.r[LDAC['상태']]) === '정상' && String(x.r[LDAC['광고id']] || '').split(',').map(s => s.trim()).indexOf(adId) >= 0) || null; }
+function ldAdvOfMe(me) { return ldAdvs().filter(x => String(x.r[LDAC['회원']]) === me && String(x.r[LDAC['상태']]) !== '해지'); }
+function ldLedger(advId, kind, won, lid, memo) { uSheet(SH_LDG, LDGH).appendRow([new Date(), advId, kind, won, lid || '', cellSafe(String(memo || '').slice(0, 200))]); }
+/** 현장 지역 등급 — 공개 등급표(assets/ad-tiers.json, 6시간 캐시)의 시·군·구 등급 + 분양가 15억↑ 한 등급 위 */
+function ldTiers() {
+  const c = CacheService.getScriptCache(), hit = c.get('ldTiers'); if (hit) return parseJ(hit, {});
+  let T = {};
+  try { const r = UrlFetchApp.fetch(WEB_ROOT + 'assets/ad-tiers.json', { muteHttpExceptions: true }); if (r.getResponseCode() === 200) (parseJ(r.getContentText(), {}).tiers || []).forEach(t => { T[t.sd + '|' + t.n] = t.t; }); } catch (e) { T = {}; }
+  try { c.put('ldTiers', JSON.stringify(T), 21600); } catch (e) {}
+  return T;
+}
+function ldRg(live) { return ldSiteGrade(ldTiers()[String(live.sd) + '|' + String(live.sg)] || 3, live.pmin, live.pmax); }
+function ldLive(adId) { const ad = adRowLive(adId); return ad && ad.live ? ad.live : null; }
+
+function ldDispatch(b) {
+  try {
+    if (b.action === 'leadConfig') return { ok: true, open: LEADS_ENABLED, v: LD_V, cv: LD_CONSENT_V, price: LD_PRICE, rules: LD_RULES, region: LD_REGION, sms: ldSmsReady(), kakao: !!PropertiesService.getScriptProperties().getProperty('SOLAPI_TPL_LEAD_CONFIRM') };
+    if (b.action === 'leadOtp') return ldOtp(b);                     // 문자 발송(네트워크)은 잠금 밖
+    if (b.action === 'leadCreditOrder') { ldGate(b); throw ldErr(PAID_OPEN && BILLING_OPEN ? '크레딧 충전은 준비 중이에요.' : '크레딧 충전(결제)은 곧 열려요. 지금은 운영자가 넣어 드린 크레딧과 무료 체험만 쓸 수 있어요.', 'paid_closed'); }
+    return withLock(() => {
+      const f = { leadVerify: ldVerify, leadSubmit: ldSubmit, leadMine: ldMine, leadWithdraw: ldWithdraw, leadChat: ldChat, leadConfirm: ldConfirm, leadAdv: ldAdvView,
+        leadDispute: ldDisputeAsk, leadVisit: ldVisit, leadAdminAdv: ldAdminAdv, leadAdminExc: ldAdminExc }[b.action];
+      return f ? f(b) : { ok: false, err: 'unknown' };
+    });
+  } catch (x) { return { ok: false, err: String(x.message || x), code: x.code || '' }; }
+}
+
+/* ---------- 휴대폰 확인(문자 인증번호) ---------- */
+function ldSmsReady() { const P = PropertiesService.getScriptProperties(); return !!(P.getProperty('SOLAPI_API_KEY') && P.getProperty('SOLAPI_API_SECRET') && P.getProperty('SOLAPI_FROM')); }
+/** 솔라피 문자(SMS) 한 통 — 키가 없으면 { ok:false, why:'nokey' } */
+function solapiSms(to, text) {
+  const P = PropertiesService.getScriptProperties(), key = P.getProperty('SOLAPI_API_KEY'), sec = P.getProperty('SOLAPI_API_SECRET'), from = P.getProperty('SOLAPI_FROM');
+  if (!key || !sec || !from) return { ok: false, why: 'nokey' };
+  const date = new Date().toISOString(), salt = Utilities.getUuid().replace(/-/g, '');
+  const sig = Utilities.computeHmacSha256Signature(date + salt, sec).map(b => ('0' + (b & 255).toString(16)).slice(-2)).join('');
+  const r = UrlFetchApp.fetch('https://api.solapi.com/messages/v4/send-many/detail', { method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+    headers: { Authorization: `HMAC-SHA256 apiKey=${key}, date=${date}, salt=${salt}, signature=${sig}` }, payload: JSON.stringify({ messages: [{ to: to, from: from, text: String(text).slice(0, 1000) }] }) });   // 90바이트가 넘으면 솔라피가 장문(LMS)으로 보냄
+  return { ok: r.getResponseCode() === 200, why: 'http ' + r.getResponseCode() };
+}
+function ldOtp(b) {
+  ldGate(b);
+  const u = sessionUser(b.s), me = csUid(u.k), d = leadPhone(b.phone);
+  if (!d) throw ldErr('휴대폰 번호를 확인해 주세요.', 'field');
+  if (!ldSmsReady()) throw ldErr('문자 인증이 아직 준비 중이에요. 조금만 기다려 주세요.', 'sms');
+  const c = CacheService.getScriptCache(), dk = 'ldotpN|' + me + '|' + ymd(new Date()), n = Number(c.get(dk) || 0);
+  if (n >= 5) throw ldErr('오늘은 인증번호를 더 받을 수 없어요. 내일 다시 해 주세요.', 'limit');
+  const code = String(parseInt(hashOf('otp|' + Utilities.getUuid()).slice(1, 9), 16) % 1000000).padStart(6, '0');
+  const r = solapiSms(d, `[${SITE_NAME}] 인증번호 ${code} — ${LD_RULES.otpMin}분 안에 넣어 주세요. 다른 사람에게 알려 주지 마세요.`);
+  if (!r.ok) throw ldErr('문자를 보내지 못했어요. 잠시 뒤 다시 해 주세요.', 'sms');
+  c.put('ldotp|' + me, JSON.stringify({ h: hashOf('otpc|' + me + '|' + d + '|' + code), d: ldPh(d), t: 0 }), LD_RULES.otpMin * 60);
+  c.put(dk, String(n + 1), 86400);
+  return { ok: true, sent: true, min: LD_RULES.otpMin };
+}
+function ldVerify(b) {
+  ldGate(b);
+  const u = sessionUser(b.s), me = csUid(u.k), d = leadPhone(b.phone), code = String(b.code || '').replace(/\D/g, '');
+  const c = CacheService.getScriptCache(), o = parseJ(c.get('ldotp|' + me), null);
+  if (!o || !d || o.d !== ldPh(d)) throw ldErr('인증번호를 다시 받아 주세요.', 'otp');
+  if (o.t >= LD_RULES.otpTry) { c.remove('ldotp|' + me); throw ldErr('여러 번 틀렸어요. 인증번호를 다시 받아 주세요.', 'otp'); }
+  if (!safeEq(o.h, hashOf('otpc|' + me + '|' + d + '|' + code))) { o.t++; c.put('ldotp|' + me, JSON.stringify(o), LD_RULES.otpMin * 60); throw ldErr('인증번호가 맞지 않아요.', 'otp'); }
+  c.remove('ldotp|' + me);
+  const vt = newToken(); c.put('ldvt|' + hashOf('vt|' + vt), JSON.stringify({ me: me, d: d }), 1200);   // 20분 안에 신청
+  return { ok: true, vt: vt };
+}
+
+/* ---------- ② 검증된 상담 신청 ---------- */
+function ldSubmit(b) {
+  ldGate(b);
+  const u = sessionUser(b.s), me = csUid(u.k), c = CacheService.getScriptCache(), vk = 'ldvt|' + hashOf('vt|' + String(b.vt || '')), V = parseJ(c.get(vk), null);
+  if (!V || V.me !== me) throw ldErr('휴대폰 확인을 다시 해 주세요.', 'otp');
+  if (b.agree !== true || String(b.cv || '') !== LD_CONSENT_V) throw ldErr('이 현장 광고주에게 연락처를 주는 데 동의해 주세요.', 'consent');
+  const live = ldLive(String(b.ad || '')), adv = live ? ldAdvOfAd(live.id) : null;
+  if (!live || !adv) throw ldErr('이 현장은 지금 상담 신청을 받지 않아요.', 'none');
+  const name = str(b.name, 20); if (!/^[가-힣A-Za-z ]{2,20}$/.test(name)) throw ldErr('이름은 한글 또는 영문으로 2~20자 넣어 주세요.', 'field');
+  const fields = (Array.isArray(b.fields) ? b.fields : []).map(String).filter(k => LD_FIELDS.some(f => f.k === k && !f.need));
+  const time = fields.indexOf('time') >= 0 && LD_TIMES.indexOf(String(b.time || '')) >= 0 ? String(b.time) : '';
+  const memo = fields.indexOf('memo') >= 0 ? str(b.memo, 200).replace(/[<>]/g, ' ') : '';
+  const mail = adMail(b.mail);
+  /* 등급: 화면이 보낸 '맞음/아님' 꼬리표로 서버가 다시 셈(값 자체는 받지 않음) · 휴대폰 확인은 서버가 아는 사실 */
+  const S = b.sig || {}, sig = { verified: true, budget: ['fit', 'near', 'no'].indexOf(S.budget) >= 0 ? S.budget : '', noHome: S.noHome === true, cy: ['fit', 'no'].indexOf(S.cy) >= 0 ? S.cy : '',
+    live: ['sgg', 'sido'].indexOf(S.live) >= 0 ? S.live : '', views: Math.min(50, Math.max(0, Number(S.views) || 0)), plan: S.plan === true, time: !!time };
+  const G = ldGrade(sig), rg = ldRg(live);
+  /* 공유: 손님이 고른 항목만(구간 이름·예/아니요 — 금액은 손님이 'amount' 를 고른 때만) */
+  const sh0 = b.share || {}, share = {};
+  if (fields.indexOf('budget') >= 0 && /^[~0-9억 ]{2,10}$/.test(String(sh0.budget || ''))) share.budget = String(sh0.budget);
+  if (fields.indexOf('noHome') >= 0 && typeof sh0.noHome === 'boolean') share.noHome = sh0.noHome;
+  if (fields.indexOf('cy') >= 0 && /^[~0-9점 ]{2,10}$/.test(String(sh0.cy || ''))) share.cy = String(sh0.cy);
+  if (fields.indexOf('live') >= 0 && /^[가-힣 ]{2,20}$/.test(String(sh0.live || ''))) share.live = String(sh0.live);
+  if (fields.indexOf('amount') >= 0 && Number(sh0.amount) > 0 && Number(sh0.amount) < 1e6) share.amount = Math.round(Number(sh0.amount));   // 만원
+  const now = new Date(), ph = ldPh(V.d), all = ldRows(SH_LDL, LDLH);
+  const dup = ldDup(all.map(ldOf), ph, live.id, now.getTime());
+  c.remove(vk);
+  if (dup) {                                                        // 30일 안 같은 현장: 하나로 합침 — 과금 없음
+    const x = all.find(o => String(o.r[LDLC['id']]) === dup.id); ldL(x, '합침수', (Number(x.r[LDLC['합침수']]) || 0) + 1);
+    if (time) ldL(x, '희망시간', time);
+    return { ok: true, id: dup.id, dup: true, grade: String(x.r[LDLC['등급']]) };
+  }
+  const trial = Number(adv.r[LDAC['무료남은']]) || 0, P = ldPrice('lead', { grade: G.grade, rg: rg, trialLeft: trial });
+  let st = LD_ST.ok, won = P.won;
+  const bal = Number(adv.r[LDAC['크레딧']]) || 0;
+  if (!P.free && bal < won) st = LD_ST.hold;                        // 잔액 부족: 연락처를 가린 채 보관 → 충전하면 열림(ldAdvView 가 처리)
+  const id = 'L' + Utilities.getUuid().replace(/-/g, '').slice(0, 10).toUpperCase(), text = ldConsentText({ co: live.co, site: live.n, fields: fields, keep: LD_RULES.keepDays });
+  const r = []; r[LDLC['id']] = id; r[LDLC['시각']] = now; r[LDLC['광고id']] = live.id; r[LDLC['현장']] = cellSafe(live.n); r[LDLC['광고주id']] = String(adv.r[LDAC['id']]); r[LDLC['회원']] = me;
+  r[LDLC['폰지문']] = ph; r[LDLC['연락처']] = sealText(V.d); r[LDLC['가린번호']] = maskPhone(V.d); r[LDLC['이름']] = sealText(name); r[LDLC['희망시간']] = time; r[LDLC['등급']] = G.grade || 'C';
+  r[LDLC['지역등급']] = rg; r[LDLC['공유']] = JSON.stringify({ f: fields, v: share, memo: memo }); r[LDLC['금액']] = P.free ? 0 : won; r[LDLC['무료']] = P.free; r[LDLC['상태']] = st;
+  r[LDLC['동의판']] = LD_CONSENT_V; r[LDLC['동의지문']] = hashOf('ldc|' + text).slice(0, 17); r[LDLC['파기예정일']] = ymd(new Date(now.getTime() + LD_RULES.keepDays * 86400000)); r[LDLC['합침수']] = 0;
+  r[LDLC['메일']] = mail ? sealText(mail) : '';
+  uSheet(SH_LDL, LDLH).appendRow(LDLH.map((h, i) => r[i] === undefined ? '' : r[i]));
+  uSheet(SH_LDK, LDKH).appendRow([now, id, me, String(adv.r[LDAC['id']]), cellSafe(live.n), LD_CONSENT_V, r[LDLC['동의지문']], fields.join(','), '동의']);
+  if (P.why === 'trial') ldA(adv, '무료남은', trial - 1);
+  if (!P.free && st === LD_ST.ok) { ldA(adv, '크레딧', bal - won); ldLedger(String(adv.r[LDAC['id']]), '차감', -won, id, `상담 신청 ${G.grade}등급 · 지역 ${rg}등급`); }
+  ldAdvMail(adv, `[${SITE_NAME} 상담 신청] ${live.n} · ${G.grade || 'C'}등급`, [`${live.n} 상담 신청이 들어왔어요(${G.grade || 'C'}등급${st === LD_ST.hold ? ' · 크레딧이 모자라 연락처가 가려져 있어요' : ''}).`,
+    '연락처는 메일에 넣지 않아요. 광고주 관리 화면에서 확인해 주세요: ' + WEB_ROOT + 'ad/console/', '빨리 연락할수록 상담으로 이어지기 쉬워요. 연락은 오전 8시~오후 9시에만 해 주세요.']);
+  try { ldAnomalyCheck(adv, ph, me); } catch (e) {}
+  return { ok: true, id: id, grade: G.grade || 'C', dup: false };
+}
+function ldAdvMail(adv, subject, lines) { const m = adMail(adv.r[LDAC['알림메일']]); if (!m) return; try { MailApp.sendEmail(m, subject, lines.join('\n') + `\n\n— ${SITE_NAME} ((주)장대장부동산그룹)`); } catch (e) {} }
+
+/* ---------- 손님: 내 상담 신청·동의 거두기 ---------- */
+function ldMine(b) {
+  ldGate(b);
+  const me = csUid(sessionUser(b.s).k);
+  const list = ldRows(SH_LDL, LDLH).filter(x => String(x.r[LDLC['회원']]) === me).map(x => {
+    const adv = ldAdvById(x.r[LDLC['광고주id']]), sh = parseJ(String(x.r[LDLC['공유']] || ''), {});
+    return { id: String(x.r[LDLC['id']]), site: String(x.r[LDLC['현장']]).replace(/^'/, ''), co: adv ? String(adv.r[LDAC['회사명']]) : '', day: ymd(new Date(ldMs(x.r[LDLC['시각']]))), st: String(x.r[LDLC['상태']]),
+      grade: String(x.r[LDLC['등급']]), fields: sh.f || [], cv: String(x.r[LDLC['동의판']]), until: String(x.r[LDLC['파기예정일']] || ''), gone: !!x.r[LDLC['철회']], ask: String(x.r[LDLC['상태']]) === LD_ST.ask };
+  }).reverse();
+  return { ok: true, list: list };
+}
+function ldWithdraw(b) {
+  ldGate(b);
+  const me = csUid(sessionUser(b.s).k), x = ldRows(SH_LDL, LDLH).find(o => String(o.r[LDLC['id']]) === String(b.id || '') && String(o.r[LDLC['회원']]) === me);
+  if (!x) throw ldErr('신청을 찾지 못했어요.', 'none');
+  if (x.r[LDLC['철회']]) return { ok: true, already: true };
+  const adv = ldAdvById(x.r[LDLC['광고주id']]), site = String(x.r[LDLC['현장']]).replace(/^'/, ''), masked = String(x.r[LDLC['가린번호']]);
+  ['연락처', '이름', '메일', '확인토큰'].forEach(h => ldL(x, h, ''));
+  ldL(x, '철회', new Date()); ldL(x, '상태', LD_ST.gone);
+  uSheet(SH_LDK, LDKH).appendRow([new Date(), String(x.r[LDLC['id']]), me, String(x.r[LDLC['광고주id']]), cellSafe(site), String(x.r[LDLC['동의판']]), String(x.r[LDLC['동의지문']]), '', '철회']);
+  if (adv) ldAdvMail(adv, `[${SITE_NAME}] 상담 신청 동의 철회 — 연락처를 지워 주세요`, [`${site} 상담 신청(${masked})을 손님이 거뒀어요.`, '이미 받은 이름·연락처가 있으면 지금 바로 지우고, 더는 연락하지 말아 주세요(개인정보 보호법 제37조).', '과금은 그대로예요(전달된 뒤 거둔 신청).']);
+  return { ok: true };
+}
+
+/* ---------- ① 대화 열기: 고민 상담 1:1 채팅으로 현장에 묻기(현장이 수락할 때 하트) ---------- */
+function ldChat(b) {
+  ldGate(b);
+  const live = ldLive(String(b.ad || '')), adv = live ? ldAdvOfAd(live.id) : null, pid = adv ? String(adv.r[LDAC['전문가id']] || '') : '';
+  if (!live || !adv || !pid) throw ldErr('이 현장은 아직 채팅 문의를 받지 않아요.', 'none');
+  const r = csAsk({ s: b.s, cat: 'sub', title: str(`[${live.n}] ${str(b.title, 40) || '분양 문의'}`, 60), body: b.body, use: 'private', to: pid, nick: b.nick, offers: false });
+  const x = csRoomById(r.room); if (x) csRmSet(x, '종류', 'site');
+  ldLedger(String(adv.r[LDAC['id']]), '대화', 0, r.room, live.id);
+  return { ok: true, room: r.room, q: r.id, hearts: LD_PRICE.chat.hearts };
+}
+
+/* ---------- 광고주 관리 화면 ---------- */
+function ldAdvNeed(b) {
+  const u = sessionUser(b.s), me = csUid(u.k), mine = ldAdvOfMe(me), admin = bIsAdmin(u.k);
+  let adv = b.adv ? (admin ? ldAdvById(b.adv) : mine.find(x => String(x.r[LDAC['id']]) === String(b.adv))) : mine[0];
+  if (!adv && admin) adv = ldAdvs()[0] || null;
+  if (!adv) throw ldErr('광고주 계정이 아직 없어요. 광고 문의로 신청해 주세요.', 'noadv');
+  return { u: u, me: me, adv: adv, admin: admin, mine: mine };
+}
+function ldAdvView(b) {
+  ldGate(b);
+  const ctx = ldAdvNeed(b), adv = ctx.adv, aid = String(adv.r[LDAC['id']]), now = Date.now();
+  let bal = Number(adv.r[LDAC['크레딧']]) || 0;
+  const rows = ldRows(SH_LDL, LDLH).filter(x => String(x.r[LDLC['광고주id']]) === aid);
+  rows.forEach(x => {                                                // 잔액 부족으로 가려 둔 신청: 크레딧이 생기면 오래된 것부터 열기
+    if (String(x.r[LDLC['상태']]) !== LD_ST.hold) return;
+    const won = Number(x.r[LDLC['금액']]) || 0; if (bal < won) return;
+    bal -= won; ldA(adv, '크레딧', bal); ldLedger(aid, '차감', -won, String(x.r[LDLC['id']]), '잔액 부족으로 미뤄 둔 상담 신청'); ldL(x, '상태', LD_ST.ok);
+  });
+  const leads = rows.map(x => {
+    const st = String(x.r[LDLC['상태']]), open = [LD_ST.ok, LD_ST.ask, LD_ST.valid].indexOf(st) >= 0, sh = parseJ(String(x.r[LDLC['공유']] || ''), {}), L = ldOf(x);
+    return { id: L.id, at: L.at, day: ymd(new Date(L.at)), site: String(x.r[LDLC['현장']]).replace(/^'/, ''), ad: L.site, grade: String(x.r[LDLC['등급']]), rg: Number(x.r[LDLC['지역등급']]) || 3,
+      st: st, won: L.won, free: !!L.free, name: open ? openText(x.r[LDLC['이름']]) : '', phone: open ? (d => d ? d.slice(0, 3) + '-' + d.slice(3, -4) + '-' + d.slice(-4) : '')(openText(x.r[LDLC['연락처']])) : String(x.r[LDLC['가린번호']] || ''),
+      time: String(x.r[LDLC['희망시간']] || ''), share: open ? (sh.v || {}) : {}, fields: sh.f || [], memo: open ? (sh.memo || '') : '', visit: !!x.r[LDLC['방문']], visitWon: Number(x.r[LDLC['방문금액']]) || 0,
+      canDispute: ldCanDispute(L, now), why: String(x.r[LDLC['이의']] || ''), res: String(x.r[LDLC['처리']] || ''), merged: Number(x.r[LDLC['합침수']]) || 0 };
+  }).reverse();
+  return { ok: true, adv: { id: aid, co: String(adv.r[LDAC['회사명']]), credit: bal, trial: Number(adv.r[LDAC['무료남은']]) || 0, ads: String(adv.r[LDAC['광고id']] || '').split(',').map(s => s.trim()).filter(Boolean), chat: !!adv.r[LDAC['전문가id']] },
+    list: ctx.admin ? ldAdvs().map(x => ({ id: String(x.r[LDAC['id']]), co: String(x.r[LDAC['회사명']]) })) : ctx.mine.map(x => ({ id: String(x.r[LDAC['id']]), co: String(x.r[LDAC['회사명']]) })),
+    leads: leads, report: ldReport(adv), price: LD_PRICE, rules: LD_RULES, pay: PAID_OPEN && BILLING_OPEN, admin: ctx.admin };
+}
+/** 성과 보고(숫자만): 노출·클릭·관심 저장(로그) · 대화(채팅 문의) · 상담 신청(등급별) · 방문 확정 — 이번 달·지난달·전체 */
+function ldReport(adv) {
+  const aid = String(adv.r[LDAC['id']]), ads = String(adv.r[LDAC['광고id']] || '').split(',').map(s => s.trim()).filter(Boolean), M = {};
+  const k = m => (M[m] = M[m] || { imp: 0, click: 0, save: 0, chat: 0, lead: 0, A: 0, B: 0, C: 0, visit: 0, won: 0 });
+  const lg = book().getSheetByName(SH_L);
+  if (lg && lg.getLastRow() > 1) lg.getDataRange().getValues().slice(1).forEach(r => {
+    if (!(r[0] instanceof Date) || ads.indexOf(String(r[2])) < 0) return; const t = String(r[1]), o = k(ldMonth(r[0].getTime()));
+    if (t === 'adv' || t === 'adm') o.imp++; else if (t === 'adc') o.click++; else if (t === 'ads') o.save++;
+  });
+  ldRows(SH_LDG, LDGH).filter(x => String(x.r[1]) === aid && String(x.r[2]) === '대화').forEach(x => { k(ldMonth(ldMs(x.r[0]))).chat++; });
+  ldRows(SH_LDL, LDLH).filter(x => String(x.r[LDLC['광고주id']]) === aid && String(x.r[LDLC['상태']]) !== LD_ST.dup).forEach(x => {
+    const o = k(ldMonth(ldMs(x.r[LDLC['시각']]))); o.lead++; o[String(x.r[LDLC['등급']])] = (o[String(x.r[LDLC['등급']])] || 0) + 1;
+    if (x.r[LDLC['방문']]) o.visit++; if (String(x.r[LDLC['상태']]) !== LD_ST.refund) o.won += (Number(x.r[LDLC['금액']]) || 0) + (Number(x.r[LDLC['방문금액']]) || 0);
+  });
+  return Object.keys(M).sort().reverse().map(m => Object.assign({ m: m }, M[m]));
+}
+/** 광고주 [연락이 안 돼요]/[신청한 적 없대요] → 손님에게 자동 확인 메시지 */
+function ldDisputeAsk(b) {
+  ldGate(b);
+  const ctx = ldAdvNeed(b), aid = String(ctx.adv.r[LDAC['id']]), x = ldRows(SH_LDL, LDLH).find(o => String(o.r[LDLC['id']]) === String(b.id || '') && String(o.r[LDLC['광고주id']]) === aid);
+  if (!x) throw ldErr('신청을 찾지 못했어요.', 'none');
+  const R = ldDispute(ldOf(x), { t: 'ask', why: String(b.why || '') }, Date.now());
+  if (R.act !== 'send') throw ldErr(ldOf(x).free ? '무료로 받은 신청은 이의 대상이 아니에요.' : `전달된 날부터 ${LD_RULES.disputeDays}일 안, 한 번만 이의를 낼 수 있어요.`, 'field');
+  const t = newToken(); ldL(x, '확인토큰', hashOf('ldt|' + t)); ldL(x, '확인요청', new Date()); ldL(x, '이의', R.why); ldL(x, '상태', R.st);
+  const sent = ldAskCustomer(x, t);
+  try { ldAnomalyCheck(ctx.adv, String(x.r[LDLC['폰지문']]), String(x.r[LDLC['회원']])); } catch (e) {}
+  return { ok: true, st: R.st, sent: sent, hours: LD_RULES.confirmHours };
+}
+/** 손님 확인 메시지: 알림톡(SOLAPI_TPL_LEAD_CONFIRM: #{현장}·#{링크}) → 문자 → 메일(손님이 적은 확인 메일) 순서로 하나라도 가면 끝 */
+function ldAskCustomer(x, t) {
+  const d = openText(x.r[LDLC['연락처']]), site = String(x.r[LDLC['현장']]).replace(/^'/, ''), url = WEB_ROOT + 'lead/confirm/#t=' + t;
+  if (d) { try { const r = solapiSend(d, 'SOLAPI_TPL_LEAD_CONFIRM', { '#{현장}': site.slice(0, 30), '#{링크}': url.replace(/^https:\/\//, '') }, url); if (r && r.ok) return 'kakao'; } catch (e) {} }
+  if (d) { try { const r = solapiSms(d, `[${SITE_NAME}] ${site.slice(0, 16)} 상담 신청하셨나요? ${url}`); if (r && r.ok) return 'sms'; } catch (e) {} }
+  const m = openText(x.r[LDLC['메일']]);
+  if (m) { try { MailApp.sendEmail(m, `[${SITE_NAME}] ${site} 현장에 상담을 신청하셨나요?`, `${site} 현장 광고주가 연락이 닿지 않는다고 알려 왔어요.\n신청하신 게 맞으면 아래에서 [네, 연락 받을게요]를, 아니면 [아니요]를 눌러 주세요(${LD_RULES.confirmHours}시간 안).\n${url}\n\n— ${SITE_NAME}`); return 'mail'; } catch (e) {} }
+  return '';
+}
+/** 손님 답(로그인 없이 링크의 토큰으로) */
+function ldConfirm(b) {
+  const t = String(b.t || ''); if (!/^[0-9a-f]{64}$/.test(t)) throw ldErr('링크가 맞지 않아요.', 'token');
+  const h = hashOf('ldt|' + t), x = ldRows(SH_LDL, LDLH).find(o => safeEq(String(o.r[LDLC['확인토큰']] || ''), h));
+  if (!x) throw ldErr('이미 답하셨거나 기간이 지난 링크예요.', 'token');
+  const site = String(x.r[LDLC['현장']]).replace(/^'/, '');
+  if (b.peek) return { ok: true, site: site, st: String(x.r[LDLC['상태']]) };
+  const res = ldResolve(x, { t: 'answer', yes: b.ans === 'yes' });
+  return { ok: true, site: site, res: res };
+}
+/** 확인 결과 적용(답·48시간 무응답 공통) → 'valid' | 'refund' | 'exc' | '' */
+function ldResolve(x, ev) {
+  const aid = String(x.r[LDLC['광고주id']]), adv = ldAdvById(aid), m = ldMonth(Date.now());
+  const mine = ldRows(SH_LDL, LDLH).filter(o => String(o.r[LDLC['광고주id']]) === aid);
+  const cap = { billed: mine.filter(o => !o.r[LDLC['무료']] && (Number(o.r[LDLC['금액']]) || 0) > 0 && ldMonth(ldMs(o.r[LDLC['시각']])) === m).length,
+    refunded: mine.filter(o => String(o.r[LDLC['처리']]) === '자동 환불' && ldMonth(ldMs(o.r[LDLC['처리시각']])) === m).length };
+  const R = ldDispute(ldOf(x), ev, Date.now(), cap);
+  if (!R.act) return '';
+  ldL(x, '확인토큰', ''); ldL(x, '처리시각', new Date()); ldL(x, '상태', R.st);
+  if (ev.t === 'answer') ldL(x, '확인답', ev.yes ? '네' : '아니요');
+  const site = String(x.r[LDLC['현장']]).replace(/^'/, '');
+  if (R.act === 'notify') { ldL(x, '처리', '확인됨'); if (adv) ldAdvMail(adv, `[${SITE_NAME}] 손님이 상담 신청을 확인했어요 — ${site}`, [`${site} 상담 신청(${String(x.r[LDLC['가린번호']])})을 손님이 '네, 연락 받을게요'로 확인했어요.`, '다시 연락해 주세요. 이 신청은 과금이 그대로예요.']); return 'valid'; }
+  if (R.act === 'refund') {
+    ldRefund(x, adv, R.why === 'no' ? "손님 답 '아니요'" : `${LD_RULES.confirmHours}시간 무응답`);
+    if (R.why === 'no') {                                            // 신청한 적 없다는 답: 연락처를 지우고 광고주에게도 지워 달라고
+      ['연락처', '이름', '메일'].forEach(h => ldL(x, h, ''));
+      if (adv) ldAdvMail(adv, `[${SITE_NAME}] 손님이 신청한 적 없다고 답했어요 — 연락처를 지워 주세요`, [`${site} 상담 신청(${String(x.r[LDLC['가린번호']])})은 손님이 신청한 적 없다고 답했어요.`, '받은 이름·연락처를 지금 바로 지우고, 더는 연락하지 말아 주세요.']);
+    }
+    return 'refund';
+  }
+  if (R.act === 'exc') { ldL(x, '처리', '예외'); ldExc('cap', aid, String(x.r[LDLC['id']]), LD_EXC_WHY.cap); return 'exc'; }
+  return '';
+}
+function ldRefund(x, adv, memo) {
+  const won = Number(x.r[LDLC['금액']]) || 0, aid = String(x.r[LDLC['광고주id']]);
+  ldL(x, '상태', LD_ST.refund); ldL(x, '처리', '자동 환불'); ldL(x, '처리시각', new Date());
+  if (adv && won > 0) { ldA(adv, '크레딧', (Number(adv.r[LDAC['크레딧']]) || 0) + won); ldLedger(aid, '환불', won, String(x.r[LDLC['id']]), memo); }
+  if (adv) ldAdvMail(adv, `[${SITE_NAME}] 상담 신청 크레딧을 돌려 드렸어요`, [`${String(x.r[LDLC['현장']]).replace(/^'/, '')} 상담 신청(${String(x.r[LDLC['가린번호']])}) — ${memo}.`, `${won.toLocaleString('ko-KR')}원을 크레딧으로 돌려 드렸어요.`]);
+}
+function ldExc(kind, aid, lid, why) {
+  const ex = ldRows(SH_LDX, LDXH).find(o => String(o.r[LDXC['종류']]) === kind && String(o.r[LDXC['광고주id']]) === aid && String(o.r[LDXC['리드id']]) === String(lid || '') && String(o.r[LDXC['상태']]) === '대기');
+  if (ex) return String(ex.r[LDXC['id']]);
+  const id = 'X' + Utilities.getUuid().replace(/-/g, '').slice(0, 9).toUpperCase();
+  uSheet(SH_LDX, LDXH).appendRow([id, new Date(), kind, aid, lid || '', why, '대기', '']);
+  return id;
+}
+/** 이상한 비율(광고주 이의 비율·같은 손님 신청 수·'아니요' 답) → 예외 목록 */
+function ldAnomalyCheck(adv, ph, me) {
+  const aid = String(adv.r[LDAC['id']]), now = Date.now(), all = ldRows(SH_LDL, LDLH);
+  const mine = all.filter(o => String(o.r[LDLC['광고주id']]) === aid), cust = all.filter(o => String(o.r[LDLC['폰지문']]) === ph);
+  const why = ldAnomaly({ leads: mine.length, disputes: mine.filter(o => String(o.r[LDLC['이의']] || '')).length },
+    { leads30: cust.filter(o => now - ldMs(o.r[LDLC['시각']]) <= 30 * 86400000).length, no: cust.filter(o => String(o.r[LDLC['확인답']]) === '아니요').length });
+  why.forEach(w => ldExc(w, aid, w === 'adv_rate' ? '' : String((cust[cust.length - 1] || { r: [] }).r[LDLC['id']] || ''), LD_EXC_WHY[w]));
+  return why;
+}
+/** ③ 방문 예약 확정 — 광고주가 표시하면 성과금(크레딧이 모자라면 표시만 하지 않음) */
+function ldVisit(b) {
+  ldGate(b);
+  const ctx = ldAdvNeed(b), adv = ctx.adv, aid = String(adv.r[LDAC['id']]), x = ldRows(SH_LDL, LDLH).find(o => String(o.r[LDLC['id']]) === String(b.id || '') && String(o.r[LDLC['광고주id']]) === aid);
+  if (!x) throw ldErr('신청을 찾지 못했어요.', 'none');
+  if (x.r[LDLC['방문']]) return { ok: true, already: true };
+  if ([LD_ST.ok, LD_ST.valid].indexOf(String(x.r[LDLC['상태']])) < 0) throw ldErr('연락처가 열린 신청만 방문 확정을 표시할 수 있어요.', 'field');
+  const P = ldPrice('visit', { rg: Number(x.r[LDLC['지역등급']]) || 3 }), bal = Number(adv.r[LDAC['크레딧']]) || 0;
+  if (bal < P.won) throw ldErr(`크레딧이 모자라요. 방문 확정 성과금은 ${P.won.toLocaleString('ko-KR')}원이에요.`, 'credit');
+  ldA(adv, '크레딧', bal - P.won); ldLedger(aid, '방문', -P.won, String(x.r[LDLC['id']]), '방문 예약 확정');
+  ldL(x, '방문', new Date()); ldL(x, '방문금액', P.won);
+  return { ok: true, won: P.won, credit: bal - P.won };
+}
+
+/* ---------- 운영자: 광고주 계정·크레딧 넣기·예외 처리 ---------- */
+function ldAdminNeed(b) { const u = sessionUser(b.s); if (!bIsAdmin(u.k)) throw ldErr('운영자 계정으로 카카오 간편 로그인해 주세요(모닝 브리핑 운영자 모드).', 'admin'); return u; }
+function ldAdminAdv(b) {
+  ldAdminNeed(b);
+  if (b.op === 'credit') {
+    const adv = ldAdvById(b.adv), n = Math.round(Number(b.won) || 0); if (!adv || !n || Math.abs(n) > 1e8) throw ldErr('광고주·금액을 확인해 주세요.', 'field');
+    ldA(adv, '크레딧', (Number(adv.r[LDAC['크레딧']]) || 0) + n); ldLedger(String(adv.r[LDAC['id']]), '운영자', n, '', str(b.memo, 100));
+    return { ok: true, credit: Number(adv.r[LDAC['크레딧']]) };
+  }
+  const co = str(b.co, 40), ads = String(b.ads || '').split(',').map(s => s.trim()).filter(s => /^AD[0-9A-F]{8}$/.test(s));
+  if (!co || !ads.length) throw ldErr('회사명과 광고 id(AD…)를 넣어 주세요.', 'field');
+  const member = String(b.member || ''); if (member && !/^u[0-9a-f]{24}$/.test(member)) throw ldErr('회원 번호를 확인해 주세요.', 'field');
+  const ex = b.adv ? ldAdvById(b.adv) : null;
+  if (ex) { ldA(ex, '회사명', cellSafe(co)); ldA(ex, '광고id', ads.join(',')); if (member) ldA(ex, '회원', member); ldA(ex, '전문가id', str(b.pro, 20)); ldA(ex, '알림메일', adMail(b.mail)); if (b.st) ldA(ex, '상태', ['정상', '중지', '해지'].indexOf(b.st) >= 0 ? b.st : '정상'); return { ok: true, id: String(ex.r[LDAC['id']]) }; }
+  const id = 'V' + Utilities.getUuid().replace(/-/g, '').slice(0, 9).toUpperCase();
+  uSheet(SH_LDA, LDAH).appendRow([id, new Date(), member, cellSafe(co), ads.join(','), str(b.pro, 20), 0, LD_RULES.trialFree, adMail(b.mail), '정상', '']);
+  return { ok: true, id: id };
+}
+function ldAdminExc(b) {
+  ldAdminNeed(b);
+  if (b.op === 'refund' || b.op === 'keep') return { ok: true, done: ldExcAct(String(b.id || ''), b.op) };
+  return { ok: true, list: ldRows(SH_LDX, LDXH).filter(o => String(o.r[LDXC['상태']]) === '대기').map(o => ({ id: String(o.r[LDXC['id']]), day: ymd(new Date(ldMs(o.r[1]))), kind: String(o.r[2]), adv: String(o.r[3]), lead: String(o.r[4]), why: String(o.r[5]) })) };
+}
+function ldExcAct(id, op) {
+  const e = ldRows(SH_LDX, LDXH).find(o => String(o.r[LDXC['id']]) === id); if (!e || String(e.r[LDXC['상태']]) !== '대기') return false;
+  if (op === 'refund' && e.r[LDXC['리드id']]) { const x = ldRows(SH_LDL, LDLH).find(o => String(o.r[LDLC['id']]) === String(e.r[LDXC['리드id']])); if (x && String(x.r[LDLC['상태']]) !== LD_ST.refund) ldRefund(x, ldAdvById(x.r[LDLC['광고주id']]), '운영자 확인 후 환불'); }
+  if (op === 'keep' && e.r[LDXC['리드id']]) { const x = ldRows(SH_LDL, LDLH).find(o => String(o.r[LDLC['id']]) === String(e.r[LDXC['리드id']])); if (x && String(x.r[LDLC['상태']]) === LD_ST.exc) { ldL(x, '상태', LD_ST.valid); ldL(x, '처리', '운영자 유지'); } }
+  ldSet(SH_LDX, LDXH, LDXC, e.row, '상태', op === 'refund' ? '환불' : '유지'); ldSet(SH_LDX, LDXH, LDXC, e.row, '처리시각', new Date());
+  return true;
+}
+function ldExcSig(id, op) { return hex(Utilities.computeHmacSha256Signature('ldx|' + id + '|' + op, leadKey())).slice(0, 32); }
+/** 대표 요약 메일의 한 번 누르기 링크(로그인 없음 · 서명 확인) */
+function ldExcLink(p) {
+  const id = String(p.id || ''), op = p.op === 'refund' ? 'refund' : p.op === 'keep' ? 'keep' : '';
+  const ok = /^X[0-9A-F]{9}$/.test(id) && op && safeEq(String(p.k || ''), ldExcSig(id, op)) && withLock(() => ldExcAct(id, op));
+  return HtmlService.createHtmlOutput(`<div style="font-family:sans-serif;padding:40px 20px;text-align:center;line-height:1.7"><h2>${ok ? (op === 'refund' ? '환불했어요' : '유지했어요') : '처리하지 못했어요'}</h2><p>${ok ? '광고주에게도 자동으로 알려요.' : '이미 처리했거나 링크가 맞지 않아요.'}</p></div>`);
+}
+
+/* ---------- 매일·매월(트리거: setupLeads 한 번 실행) ---------- */
+function leadDaily() {
+  if (!LEADS_ENABLED) return 0;
+  return withLock(() => {
+    const t0 = ymd(new Date()); let n = 0;
+    ldRows(SH_LDL, LDLH).forEach(x => {
+      if (String(x.r[LDLC['상태']]) === LD_ST.ask && ldResolve(x, { t: 'tick' })) n++;            // 48시간 무응답 → 자동 환불(상한 넘으면 예외)
+      const due = String(x.r[LDLC['파기예정일']] || '');
+      if (due && due < t0 && x.r[LDLC['연락처']]) { ['연락처', '이름', '메일', '확인토큰'].forEach(h => ldL(x, h, '')); }   // 6개월 지나면 연락처 삭제(숫자 기록만 남김)
+    });
+    return n;
+  });
+}
+function leadMonthly() {
+  if (!LEADS_ENABLED) return 0;
+  const ex = ldRows(SH_LDX, LDXH).filter(o => String(o.r[LDXC['상태']]) === '대기'), base = ScriptApp.getService().getUrl();
+  const m = ldMonth(Date.now() - 15 * 86400000), L = ldRows(SH_LDL, LDLH).filter(x => ldMonth(ldMs(x.r[LDLC['시각']])) === m);
+  const sum = `지난달(${m}) 상담 신청 ${L.length}건 · A ${L.filter(x => x.r[LDLC['등급']] === 'A').length} · B ${L.filter(x => x.r[LDLC['등급']] === 'B').length} · C ${L.filter(x => x.r[LDLC['등급']] === 'C').length} · 자동 환불 ${L.filter(x => x.r[LDLC['처리']] === '자동 환불').length} · 방문 확정 ${L.filter(x => x.r[LDLC['방문']]).length}`;
+  const rows = ex.map(o => { const id = String(o.r[LDXC['id']]), q = op => `${base}?action=leadExc&id=${id}&op=${op}&k=${ldExcSig(id, op)}`;
+    const adv = ldAdvById(o.r[LDXC['광고주id']]);
+    return `<tr><td>${ldEsc(ymd(new Date(ldMs(o.r[1]))))}</td><td>${ldEsc(adv ? adv.r[LDAC['회사명']] : o.r[3])}</td><td>${ldEsc(o.r[5])}</td><td>${o.r[4] ? `<a href="${q('refund')}">환불</a> · ` : ''}<a href="${q('keep')}">유지</a></td></tr>`; }).join('');
+  try { MailApp.sendEmail({ to: Session.getEffectiveUser().getEmail(), subject: `[${SITE_NAME}] 분양 상담 연결 월간 요약 · 예외 ${ex.length}건`,
+    htmlBody: `<p>${ldEsc(sum)}</p>` + (ex.length ? `<p>자동으로 처리하지 않고 남겨 둔 것이에요. 한 번 누르면 바로 처리돼요.</p><table border="1" cellpadding="6" style="border-collapse:collapse"><tr><th>날짜</th><th>광고주</th><th>이유</th><th>처리</th></tr>${rows}</table>` : '<p>예외는 없어요.</p>') }); } catch (e) {}
+  return ex.length;
+}
+function setupLeads() {
+  ScriptApp.getProjectTriggers().filter(t => ['leadDaily', 'leadMonthly'].indexOf(t.getHandlerFunction()) >= 0).forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('leadDaily').timeBased().everyHours(1).create();
+  ScriptApp.newTrigger('leadMonthly').timeBased().onMonthDay(1).atHour(9).create();
 }

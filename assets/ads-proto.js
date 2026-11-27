@@ -29,15 +29,15 @@
   /* 예시 광고 목록 — 실제 운영 때는 공개 파일(data/ad-catalog.json)로 같은 모양을 내려받아요. 개인 정보는 들어 있지 않음 */
   var EXAMPLES = [
     { id: 'ex_gangseo', example: true, advertiser: '예시 시행사(가상)', name: '예시 마곡 리버뷰(가상 현장)', kind: '아파트',
-      sido: '서울특별시', sgg: '강서구', code: '11500', units: 612, move: '2029년 3월', price: '분양가 6억 2천~8억 9천만 원(공고 기준·예시)',
+      sido: '서울특별시', sgg: '강서구', code: '11500', units: 612, move: '2029년 3월', price: '분양가 6억 2천~8억 9천만 원(공고 기준·예시)', pmin: 62000, pmax: 89000,
       line: '9호선 역까지 걸어서 8분 · 전용 59·84㎡', verified: true,
       target: { codes: ['11500', '11470', '11560', '41210'], sido: ['11'], budget: ['6~9억', '9~12억'], noHome: 'prefer', pages: ['home', 'map', 'bunyang', 'buy', 'brief'] } },
     { id: 'ex_hanam', example: true, advertiser: '예시 분양대행사(가상)', name: '예시 하남 그린시티(가상 현장)', kind: '아파트',
-      sido: '경기도', sgg: '하남시', code: '41450', units: 980, move: '2029년 9월', price: '분양가 5억 4천~7억 6천만 원(공고 기준·예시)',
+      sido: '경기도', sgg: '하남시', code: '41450', units: 980, move: '2029년 9월', price: '분양가 5억 4천~7억 6천만 원(공고 기준·예시)', pmin: 54000, pmax: 76000,
       line: '3기 신도시 생활권 · 전용 74·84㎡', verified: true,
       target: { codes: ['41450', '11740', '11710'], sido: ['41', '11'], budget: ['3~6억', '6~9억'], noHome: 'prefer', cy: ['30~49점', '50~64점', '65점~'], pages: ['home', 'map', 'bunyang', 'buy', 'brief'] } },
     { id: 'ex_small', example: true, advertiser: '예시 시행사(가상)', name: '예시 역세권 소형 오피스텔(가상 현장)', kind: '오피스텔',
-      sido: '서울특별시', sgg: '영등포구', code: '11560', units: 148, move: '2028년 6월', price: '분양가 2억 9천~3억 8천만 원(예시)',
+      sido: '서울특별시', sgg: '영등포구', code: '11560', units: 148, move: '2028년 6월', price: '분양가 2억 9천~3억 8천만 원(예시)', pmin: 29000, pmax: 38000,
       line: '전용 24~39㎡ · 1~2인 가구', verified: false,
       target: { codes: [], sido: [], budget: ['~3억', '3~6억'], pages: ['home', 'map', 'bunyang', 'buy'] } }
   ];
@@ -132,6 +132,13 @@
   var preview = ls.get(PREVIEW_KEY) === '1';
   function on() { return (root.JDJ_SITE && root.JDJ_SITE.ADS_PROTO === true) || preview; }
   if (!on()) { api.set = function () {}; return; }
+  /* 분양 상담 연결(assets/leads.js, 숨김): LEADS_ENABLED 또는 ?preview=leads 일 때만 불러옴 */
+  (function () {
+    if (/[?&]preview=leads(-live)?(&|$)/.test(location.search)) ls.set('jdj_leads_pv', /leads-live/.test(location.search) ? 'live' : 'demo');
+    if (!((root.JDJ_SITE && root.JDJ_SITE.LEADS_ENABLED === true) || ls.get('jdj_leads_pv')) || root.JDJ_LEADS) return;
+    var base = ((document.currentScript && document.currentScript.src) || '').replace(/ads-proto\.js.*$/, '');
+    ['leads-core.js?v=1', 'leads.js?v=1'].forEach(function (f) { var sc = document.createElement('script'); sc.src = base + f; sc.async = false; document.head.appendChild(sc); });
+  })();
 
   var me = document.currentScript, PAGE = (me && me.getAttribute('data-page')) || '';
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
@@ -191,7 +198,7 @@
   var HEAD = '<p class="adp-h"><span class="adp-tag">광고</span><span class="adp-tag adp-ex">예시</span><span>가상 광고주 · 대표 확인용 시안</span></p>';
   var badge = function (a) { return a.verified ? '<span class="adp-ok" title="집예보가 입주자 모집 공고와 광고 문구를 대조했어요">✓ 집예보 확인 — 공고와 대조한 분양 정보</span>' : '<span class="adp-no">공고 대조 전 · 광고주 제공 정보</span>'; };
   var why = function (hit) { return '<details class="adp-why"><summary>왜 이 광고가 보이나요?</summary><p>' + esc(whyText(hit, CTX)) + '</p></details>'; };
-  var acts = '<div class="adp-act"><button type="button" class="s" data-adp-act="save">관심 저장</button><button type="button" class="p" data-adp-act="lead">상담 신청</button></div>';
+  var acts = '<div class="adp-act"><button type="button" class="s" data-adp-act="save">관심 저장</button><button type="button" class="p" data-adp-act="lead">상담 받기</button></div>';
 
   function feedCard(hit, label) {
     var a = hit.a;
@@ -208,9 +215,12 @@
   function seen(id) { try { ls.set('jdj_adp_fc', JSON.stringify(bump(JSON.parse(ls.get('jdj_adp_fc') || 'null'), id, today()))); } catch (e) {} }
   var USED = [];
   function pickFor(page) { var h = choose(EXAMPLES, Object.assign({}, CTX, { page: page }), USED, fc(), preview); if (h) { USED.push(h.a.id); seen(h.a.id); } return h; }
-  function wire(el) {
+  function wire(el, hit) {
     el.addEventListener('click', function (e) {
       var b = e.target.closest && e.target.closest('[data-adp-act]'); if (!b) return;
+      var a = hit && hit.a;
+      if (a && b.getAttribute('data-adp-act') === 'lead' && root.JDJ_LEADS && root.JDJ_LEADS.on()
+        && root.JDJ_LEADS.open({ id: a.id, name: a.name, co: a.advertiser, sido: a.sido, sgg: a.sgg, code: a.code, pmin: a.pmin, pmax: a.pmax, cy: a.target.cy || [], example: true })) return;
       alert(b.getAttribute('data-adp-act') === 'save'
         ? '시안이에요. 실제로는 이 기기의 관심 목록에 저장되고, 광고주에게는 \'관심 저장 몇 건\' 숫자만 보여요.'
         : '시안이에요. 실제로는 집예보 상담 신청서가 열리고, 이름·연락처는 "이 광고주에게 제공" 동의를 따로 받은 뒤에만 광고주에게 전달돼요.');
@@ -229,7 +239,7 @@
     if (!after) return;
     var h = pickFor('home'); if (!h) return;
     var el = document.createElement('aside'); el.className = 'adp adp-home'; el.setAttribute('aria-label', '광고');
-    el.innerHTML = feedCard(h, '분양 소식'); after.after(el); wire(el);
+    el.innerHTML = feedCard(h, '분양 소식'); after.after(el); wire(el, h);
   }
   function map() {
     var m = document.getElementById('map'); if (!m) return;
@@ -241,7 +251,7 @@
     host.appendChild(pin);
     var sh = document.createElement('aside'); sh.className = 'adp-sheet'; sh.setAttribute('aria-label', '광고');
     sh.innerHTML = '<button type="button" class="adp-x" aria-label="광고 닫기">×</button>' + rowCard(h);
-    document.body.appendChild(sh); wire(sh);
+    document.body.appendChild(sh); wire(sh, h);
     /* 한 화면 유료 광고 1개: 분양 핀 카드가 떠 있는 동안 지도 위 한 줄 칸은 비켜 줌 */
     var top = document.querySelector('.mtop .jas-top'); if (top) top.style.display = 'none';
     sh.querySelector('.adp-x').addEventListener('click', function () { sh.hidden = true; });
@@ -255,7 +265,7 @@
       var h = pickFor('bunyang'); if (!h) return;
       var el = document.createElement('div'); el.className = 'adp'; el.style.margin = '0'; el.setAttribute('aria-label', '광고');
       el.innerHTML = rowCard(h, h.a.sgg + ' · ' + h.a.kind + ' ' + h.a.units.toLocaleString('ko-KR') + '세대 · ' + h.a.price) + why(h);
-      items[3].after(el); wire(el);
+      items[3].after(el); wire(el, h);
     };
     var host = document.getElementById('list'); if (!host) return;
     place(); new MutationObserver(place).observe(host, { childList: true, subtree: true });
@@ -270,13 +280,13 @@
     buyEl = document.createElement('aside'); buyEl.className = 'adp wrap'; buyEl.setAttribute('aria-label', '광고');
     buyEl.style.maxWidth = '720px'; buyEl.style.margin = '18px auto'; buyEl.style.padding = '0 20px';
     buyEl.innerHTML = '<p style="font-size:17px;font-weight:800;margin:0">예산 구간(' + esc(CTX.budget) + ')에 맞는 분양</p><p style="font-size:13px;color:#6B7280;margin:2px 0 10px">계산 결과와 관계없는 광고예요</p>' + feedCard(h, '예산에 맞는 분양');
-    anchor.before(buyEl); wire(buyEl);
+    anchor.before(buyEl); wire(buyEl, h);
     var end = document.querySelector('[data-ad-slot="buy_end"]'); if (end) end.style.display = 'none';   /* 한 화면 광고 1개 */
   }
   /** 계산기가 이 기기 안에서 구간을 알려 줌(값 그대로가 아니라 구간 이름으로 바꿔 이 탭에만 둠) */
   api.set = function (v) {
     v = v || {};
-    if (v.budget != null) CTX.budget = budgetBand(v.budget);
+    if (v.budget != null) { CTX.budget = budgetBand(v.budget); try { sessionStorage.setItem('jdj_ld_amt', JSON.stringify(+v.budget > 0 ? Math.round(+v.budget) : 0)); } catch (e) {} }   /* 금액은 이 탭에만 — 손님이 상담 신청에서 '매수 가능 금액'을 따로 고를 때만 보냄 */
     if (v.own != null) CTX.noHome = v.own === 'none' || v.own === 'first';
     if (v.cy != null) CTX.cy = cyBand(v.cy);
     ss.set('jdj_adp_ctx', JSON.stringify({ budget: CTX.budget || '', noHome: CTX.noHome, cy: CTX.cy || '' }));

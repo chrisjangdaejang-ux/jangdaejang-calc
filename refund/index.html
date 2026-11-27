@@ -31,8 +31,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/aplus.css?v=50">
 <script src="../assets/nw.js?v=1" defer></script>
-<script src="../assets/config.js?v=16"></script>
-<script src="../assets/back.js?v=6" defer></script>
+<script src="../assets/config.js?v=17"></script>
+<script src="../assets/back.js?v=7" defer></script>
 </head>
 <body>
 <header class="top">
@@ -126,10 +126,22 @@
   </ul>
   </section>
 
+  <!-- 분양 상담 연결 크레딧 환불(광고주용) — 대표 승인 2026-11-27. 내부 메모: 변호사 검토 필요. LEADS_ENABLED 를 켜는 날 함께 보여요. 숫자는 assets/leads-core.js LD_RULES 와 같게. -->
+  <section id="lead" data-leads-only hidden>
+  <h2>6-4. 분양 상담 연결 크레딧(광고주) <span style="display:inline-block;font-size:13px;font-weight:800;color:#9A5B00;background:#FFF4E0;border-radius:6px;padding:2px 8px;vertical-align:3px">기능을 여는 날부터 적용</span></h2>
+  <ul>
+    <li><b>자동 환불</b>: 광고주가 상담 신청을 받은 날부터 7일 안에 [연락이 안 돼요] 또는 [신청한 적 없대요]를 누르면, 회사가 손님에게 신청 여부를 자동으로 여쭤봅니다. 손님이 [아니요]라고 답하거나 48시간 안에 답이 없으면 그 신청 값을 크레딧으로 돌려 드립니다.</li>
+    <li><b>한 달 상한</b>: 자동 환불은 한 달에 과금한 상담 신청의 20%까지입니다. 넘는 건은 회사가 확인한 뒤 환불 또는 유지를 알려 드립니다.</li>
+    <li><b>합친 신청</b>: 같은 손님이 30일 안에 같은 현장에 다시 신청한 것은 하나로 합치며 다시 과금하지 않습니다.</li>
+    <li><b>무료 체험</b>: 새 광고주의 처음 5건은 무료이며 환불 대상이 아닙니다.</li>
+    <li><b>남은 크레딧</b>: 쓰지 않은 충전 크레딧은 고객문의로 요청하면 확인한 뒤 결제한 수단으로 돌려 드립니다. 자동 환불로 돌아온 크레딧은 현금이 아니라 크레딧으로 돌아옵니다.</li>
+  </ul>
+  </section>
+
   <h2>7. 기타</h2>
   <p>이 정책에서 정하지 않은 사항은 <a href="../terms/">이용약관</a>과 관련 법령, 「콘텐츠이용자보호지침」 등 공정거래위원회 고시에 따릅니다.</p>
 </main>
-<script>(function(){var S=window.JDJ_SITE||{};if(S.COUNSEL_ENABLED!==true)return;document.querySelectorAll("[data-cs-only]").forEach(function(e){e.hidden=false;});if(S.HEART_ENABLED!==true)return;document.querySelectorAll("[data-heart-only]").forEach(function(e){e.hidden=false;});})();</script>
+<script>(function(){var S=window.JDJ_SITE||{};if(S.COUNSEL_ENABLED!==true)return;document.querySelectorAll("[data-cs-only]").forEach(function(e){e.hidden=false;});if(S.HEART_ENABLED!==true)return;document.querySelectorAll("[data-heart-only]").forEach(function(e){e.hidden=false;});})();(function(){var S=window.JDJ_SITE||{};if(S.LEADS_ENABLED!==true)return;document.querySelectorAll("[data-leads-only]").forEach(function(e){e.hidden=false;});})();</script>
 <script>(function(){if(!(window.JDJ_SITE&&window.JDJ_SITE.BILLING_OPEN===true))return;document.querySelectorAll("[data-bill-only]").forEach(function(e){e.hidden=false;});})();</script>
 
 <footer class="foot">★ 집예보 · <a href="../">홈</a></footer>

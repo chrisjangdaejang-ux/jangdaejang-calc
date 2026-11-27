@@ -218,7 +218,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
 .planbox .go{font-size:14.5px;font-weight:700;color:var(--blue);white-space:nowrap}
 @media(max-width:560px){.planbox{grid-template-columns:44px minmax(0,1fr);align-items:start}.planbox .go{grid-column:2}}
 </style>
-<script src="../assets/back.js?v=6" defer></script>
+<script src="../assets/back.js?v=7" defer></script>
 </head>
 <body>
 <header class="top">
@@ -245,7 +245,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
     <h2 class="t">미래 예측, 결정 직전 단계, 그리고 신뢰</h2>
     <div class="grid g2">
       <div class="card key" style="grid-column:1/-1"><div class="k">미래 예측</div><h3>“앞으로 오를 집인가?”를 확인하는 사람</h3><p>지역·단지의 미래가치 점수와 보유 기간별 전망, 갈아타기 전후 비교, 청약 예상 당첨 가점처럼 ‘지금 얼마’를 넘어 ‘앞으로 어떨까’를 보는 이용자예요. 예측은 과거에 그대로 써 봐서 잘 맞은 기간만 보여 드리고, 근거를 함께 공개해요.</p></div>
-      <div class="card"><div class="k">공개된 단가 기준</div><h3>“왜 이 가격인가요?”에 데이터로 답해요</h3><p>시·군·구 광고 단가는 실거래 거래 금액 규모와 시세로 등급을 나눠 정하고, 그 기준을 이 페이지에 그대로 공개해요. 분기마다 다시 계산하고, 우리 구의 등급과 금액을 바로 확인할 수 있어요.</p></div>
+      <div class="card"><div class="k">공개된 단가 기준</div><h3>“왜 이 가격인가요?”에 데이터로 답해요</h3><p>시·군·구 광고 단가는 실거래 거래 금액 규모와 시세로 등급을 나눠 정하고, 그 기준을 이 페이지에 그대로 공개해요. 해마다 다시 계산하고, 우리 구의 등급과 금액을 바로 확인할 수 있어요.</p></div>
       <div class="card"><div class="k">결정 직전의 실수요자</div><h3>“얼마까지 살 수 있지?”를 계산하는 사람</h3><p>연소득·자금으로 최대 매수 가능 금액을 계산하고, 단지의 미래가치를 확인하고, 청약 가점을 따져 보고, 전세 계약 전에 위험 신호를 점검하는 단계의 이용자예요. 대출·이사·보증보험·법무 서비스가 곧 필요해지는 시점이에요.</p></div>
       <div class="card"><div class="k">공공 데이터 기반</div><h3>국토교통부 실거래·청약홈 공고로 계산</h3><p>시세·전월세·분양 정보는 국토교통부 실거래 신고, 청약홈 입주자모집공고 등 공개 자료를 출처와 함께 보여 줘요. 이용자가 숫자를 믿고 머무는 화면에 광고가 함께 실립니다.</p></div>
       <div class="card"><div class="k">광고와 분석의 분리</div><h3>광고는 점수·추천 순위에 절대 반영하지 않아요</h3><p>모든 광고에는 항상 ‘광고’ 또는 ‘제휴·광고’를 표시하고, 집예보의 미래가치 점수·추천 단지 순위·계산 결과에는 어떤 영향도 주지 않아요. 이 원칙 덕분에 이용자는 광고도 정보로 받아들여요.</p></div>
@@ -513,7 +513,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
     </table>
     <div class="tierbox" id="tierbox">
       <h3>광고 단가도 데이터로 정해요 — 우리 구는 몇 등급일까요?</h3>
-      <p class="note" id="tierBasis">등급은 실거래 자료로 정해요. 전국 시·군·구 중 <b>최근 1년 거래 금액 규모(거래 건수 × 평균 거래가) 상위 10%</b> 또는 <b>3.3㎡당 평균 시세 상위 10%</b>는 1등급, 거래 금액 규모 상위 10~40%는 2등급, 나머지는 3등급이에요. 분기마다 다시 계산해요.</p>
+      <p class="note" id="tierBasis">등급은 실거래 자료로 정해요. 전국 시·군·구를 <b>최근 12개월 아파트 거래 금액 합계(거래 건수 × 평균 거래가)</b> 순으로 줄 세워 <b>상위 20%는 1등급</b>, 다음 30%는 2등급, 나머지 50%는 3등급이에요. 분양가가 15억 원 이상인 분양 현장은 한 등급 위로 봐요. 해마다 다시 계산해요.</p>
       <label for="tierSd">시·도</label> <select id="tierSd"><option value="">시·도 선택</option></select>
       <div id="tierOut" aria-live="polite"></div>
     </div>
@@ -631,7 +631,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
 <footer class="foot">★ 집예보 · <a href="../">홈</a> · <a href="../bunyang/">분양</a></footer>
 
 <script src="../assets/agents.js"></script>
-<script src="../assets/config.js?v=16"></script>
+<script src="../assets/config.js?v=17"></script>
 <script src="../assets/brief-stat.js?v=3"></script>
 <script src="../assets/ad-prices.js?v=3"></script>
 <script>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="manifest" href="../../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
+<title>광고주 관리 — 분양 상담 연결</title>
+<!-- 분양 상담 연결 광고주 관리 화면(숨김) — LEADS_ENABLED 가 false 면 '준비 중'. 대표 미리 보기 ?preview=leads(예시 숫자, 서버로 보내지 않음) · ?preview=leads-live(운영자 카카오 계정으로 실제 서버).
+     크레딧 사기 · 등급·단계·지역·상태별 상담 신청 · [연락이 안 돼요]/[신청한 적 없대요] 자동 확인 · [방문 예약 확정] · 성과 보고(노출·클릭·관심 저장·대화·상담·방문). 규칙: assets/leads-core.js -->
+<script>window.JDJ_CONFIG = { tool:'ad_console', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../assets/track.js?v=3"></script>
+<script src="../../assets/agents.js"></script>
+<script src="../../assets/config.js?v=17"></script>
+<script src="../../assets/auth.js?v=11"></script>
+<script src="../../assets/leads-core.js?v=1"></script>
+<script src="../../assets/leads.js?v=1"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/aplus.css?v=50">
+<style>
+.wrap{max-width:1180px;margin:0 auto;padding:18px 16px 40px}
+h1{font-size:clamp(24px,6vw,30px);margin:4px 0 4px;letter-spacing:-.6px}
+.lead{margin:0 0 14px;font-size:15px;color:var(--sub2);line-height:1.6;word-break:keep-all}
+.pvbar{background:#111827;color:#fff;font-size:12.5px;text-align:center;padding:5px 8px}.pvbar a{color:#FCD34D}
+.grid{display:grid;grid-template-columns:1fr;gap:14px}
+@media(max-width:979px){.side{display:contents}.side .cr{order:-1}.side>.card{margin:0!important}}
+@media(min-width:980px){.grid{grid-template-columns:minmax(0,1fr) 360px;align-items:start}.side{position:sticky;top:12px}}
+.card{border:1px solid var(--line);border-radius:18px;padding:14px 16px;background:#fff}
+.card h2{font-size:17px;margin:0 0 8px;letter-spacing:-.3px}
+.bal{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:baseline}
+.bal b{font-size:30px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+.bal .k{font-size:13px;color:var(--sub2)}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;border-radius:12px;border:1px solid #1D4ED8;background:#1D4ED8;color:#fff;font:inherit;font-size:14.5px;font-weight:800;cursor:pointer;text-decoration:none}
+.btn.s{background:#fff;color:#111827;border-color:#D1D5DB}.btn[disabled]{background:#E5E7EB;border-color:#E5E7EB;color:#6B7280;cursor:not-allowed}
+.funnel{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media(min-width:640px){.funnel{grid-template-columns:repeat(6,minmax(0,1fr))}}
+.side .funnel{grid-template-columns:repeat(3,minmax(0,1fr))}
+.fn{background:#F9FAFB;border-radius:12px;padding:10px;min-width:0}
+.fn .n{display:block;font-size:20px;font-weight:900;font-variant-numeric:tabular-nums}.fn .t{font-size:12.5px;color:var(--sub2)}
+.fn .r{display:block;font-size:12px;color:#1D4ED8;font-weight:700}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+.filters select{min-height:44px;border:1px solid #D1D5DB;border-radius:10px;padding:0 10px;font:inherit;font-size:14.5px;background:#fff;max-width:100%}
+.ld{border:1px solid var(--line);border-radius:16px;padding:12px 14px;background:#fff;margin:0 0 10px}
+.ld .ldt{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.g{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;border-radius:9px;font-weight:900;background:#EAF1FF;color:#1D4ED8}
+.g.A{background:#1D4ED8;color:#fff}.g.C{background:#F3F4F6;color:#4B5563}
+.lchip{font-size:12.5px;font-weight:800;border-radius:999px;padding:2px 9px;background:#F3F4F6;color:#374151;white-space:nowrap}
+.lchip.ok{background:#E9F6EF;color:#0E7A4F}.lchip.ask{background:#FFF6E5;color:#A15C07}.lchip.ref{background:#FDECEA;color:#B42318}.lchip.free{background:#FFF1D6;color:#8A5A00}
+.ld .nm{font-size:17px;font-weight:900}.ld .ph{font-size:16px;font-weight:800;color:#111827;text-decoration:none;font-variant-numeric:tabular-nums}
+.ld .meta{font-size:13.5px;color:var(--sub2);margin:4px 0 0;word-break:keep-all}
+.ld .sh{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}.ld .sh span{font-size:13px;background:#F9FAFB;border:1px solid #EEF0F3;border-radius:8px;padding:3px 8px}
+.ld .acts{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}.ld .acts .btn{min-height:40px;font-size:14px;padding:0 12px}
+.ld .res{font-size:13.5px;margin:8px 0 0;color:#0E7A4F}
+.ptab{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+.ptab th,.ptab td{padding:7px 6px;border-bottom:1px solid #F2F4F6;text-align:right}.ptab th:first-child,.ptab td:first-child{text-align:left}
+.ptab thead th{font-size:12.5px;color:var(--sub2);font-weight:700}
+.rules{margin:0;padding-left:18px;font-size:13.5px;color:var(--sub);line-height:1.65;word-break:keep-all}
+.msg{font-size:13.5px;margin:6px 0 0;color:#B42318}.msg.ok{color:#0E7A4F}
+.adm label{display:block;font-size:13px;font-weight:700;margin-top:8px}.adm input{width:100%;min-height:44px;border:1px solid #D1D5DB;border-radius:10px;padding:0 10px;font:inherit;font-size:15px}
+.soonbox{max-width:560px;margin:60px auto;text-align:center;line-height:1.7;color:var(--sub)}
+.empty{font-size:14.5px;color:var(--sub2);background:#F9FAFB;border-radius:12px;padding:14px}
+</style>
+<script src="../../assets/back.js?v=7" defer></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name>집예보</span></a>
+  <div class="badge plain">광고주 관리</div>
+</header>
+<div id="pv"></div>
+<main class="wrap">
+  <div class="soonbox" id="soon"><h1>준비 중이에요</h1><p>분양 상담 연결 광고주 관리 화면은 곧 열려요. 광고 문의는 <a href="../">광고·제휴 안내</a>에서 해 주세요.</p></div>
+  <div id="page" hidden>
+    <h1 id="co">광고주 관리</h1>
+    <p class="lead">상담 신청을 받은 순서대로 보여 드려요. 빨리 연락할수록 상담으로 이어지기 쉬워요. 연락은 오전 8시~오후 9시에만 해 주세요.</p>
+    <div class="grid">
+      <section>
+        <div class="card" style="margin-bottom:14px"><h2>이번 달 성과</h2><div class="funnel" id="fun"></div><p class="lead" style="margin:8px 0 0;font-size:12.5px">노출·클릭·관심 저장은 횟수예요(사람 수가 아니에요). 상담 신청은 손님이 이 회사에 연락처를 주는 데 따로 동의한 것만 세요.</p></div>
+        <div class="card">
+          <h2>상담 신청</h2>
+          <div class="filters" role="group" aria-label="상담 신청 거르기">
+            <select id="fGrade" aria-label="등급"><option value="">등급 전체</option><option value="A">A 등급</option><option value="B">B 등급</option><option value="C">C 등급</option></select>
+            <select id="fStep" aria-label="단계"><option value="">단계 전체</option><option value="lead">상담 신청</option><option value="visit">방문 예약 확정</option></select>
+            <select id="fSite" aria-label="현장"><option value="">현장 전체</option></select>
+            <select id="fSt" aria-label="상태"><option value="">상태 전체</option></select>
+          </div>
+          <div id="list"></div>
+        </div>
+      </section>
+      <aside class="side">
+        <div class="card cr" style="margin-bottom:14px"><h2>크레딧</h2><div class="bal"><span><b id="bal">0원</b><br><span class="k">남은 크레딧</span></span><span><b id="trial">0건</b><br><span class="k">무료 체험 남은 상담 신청</span></span></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" class="btn" id="buy">크레딧 충전</button></div><p class="msg" id="buyMsg" role="status"></p></div>
+        <div class="card" style="margin-bottom:14px"><h2>단가(VAT 별도)</h2><div id="price"></div></div>
+        <div class="card" style="margin-bottom:14px"><h2>자동으로 처리돼요</h2><ul class="rules" id="rules"></ul></div>
+        <div class="card adm" id="adm" hidden><h2>운영자</h2><div id="admBody"></div></div>
+      </aside>
+    </div>
+  </div>
+</main>
+<footer class="foot">★ <span data-site-name>집예보</span> · <a href="../">광고·제휴 안내</a> · <a href="../../terms/">이용약관</a> · <a href="../../privacy/#lead">개인정보처리방침</a></footer>
+<script>
+(function () {
+  'use strict';
+  var L = window.JDJ_LEADS, C = window.JDJ_LDCORE, $ = function (id) { return document.getElementById(id); };
+  var on = !!(L && L.on());
+  $('soon').hidden = on; $('page').hidden = !on;
+  if (!on) return;
+  var esc = L.esc, demo = L.demo(), won = function (n) { return Number(n || 0).toLocaleString('ko-KR') + '원'; };
+  var man = function (n) { n = +n || 0; return n >= 10000 ? (Math.round(n / 1000) / 10) + '만' : n.toLocaleString('ko-KR'); };
+  if (demo) $('pv').innerHTML = '<div class="pvbar">분양 상담 연결 미리 보기 · 예시 숫자예요(가상 광고주·가상 손님) · 아무것도 보내지 않아요 · <a href="?preview=off">끄기</a></div>';
+  var ST = C.ST, D = null;
+  /* 미리 보기 예시(가상) */
+  function demoData() {
+    var t = Date.now(), d = function (h) { return t - h * 3600e3; }, day = function (ms) { return new Date(ms + 9 * 3600e3).toISOString().slice(0, 10); };
+    var L0 = [
+      { id: 'L1', at: d(2), site: '예시 마곡 리버뷰(가상 현장)', grade: 'A', rg: 1, st: ST.ok, won: 80000, free: false, name: '김예시', phone: '010-1234-5678', time: '평일 저녁(6~9시)', share: { budget: '6~9억', noHome: true, live: '강서구' }, memo: '84㎡ 남향 위주로 알고 싶어요', canDispute: true },
+      { id: 'L2', at: d(5), site: '예시 마곡 리버뷰(가상 현장)', grade: 'B', rg: 1, st: ST.ok, won: 30000, free: false, name: '이예시', phone: '010-2345-6789', time: '주말', share: { cy: '50~64점' }, memo: '', canDispute: true },
+      { id: 'L3', at: d(26), site: '예시 마곡 리버뷰(가상 현장)', grade: 'B', rg: 1, st: ST.ask, won: 30000, free: false, name: '박예시', phone: '010-3456-7890', time: '', share: {}, memo: '', canDispute: false, why: 'noreach' },
+      { id: 'L4', at: d(50), site: '예시 하남 그린시티(가상 현장)', grade: 'A', rg: 1, st: ST.valid, won: 80000, free: false, name: '최예시', phone: '010-4567-8901', time: '평일 오전', share: { budget: '6~9억', noHome: true }, memo: '', visit: true, visitWon: 50000, res: '손님이 확인했어요' },
+      { id: 'L5', at: d(80), site: '예시 하남 그린시티(가상 현장)', grade: 'C', rg: 1, st: ST.ok, won: 0, free: true, name: '정예시', phone: '010-5678-9012', time: '', share: {}, memo: '' },
+      { id: 'L6', at: d(120), site: '예시 마곡 리버뷰(가상 현장)', grade: 'B', rg: 1, st: ST.refund, won: 30000, free: false, name: '', phone: '010-****-0123', time: '', share: {}, memo: '', res: '48시간 답이 없어 크레딧을 돌려 드렸어요' },
+      { id: 'L7', at: d(170), site: '예시 하남 그린시티(가상 현장)', grade: 'B', rg: 1, st: ST.ok, won: 0, free: true, name: '한예시', phone: '010-6789-0123', time: '아무 때나', share: {}, memo: '' }
+    ];
+    L0.forEach(function (x) { x.day = day(x.at); });
+    return { adv: { id: 'V-EX', co: '예시 시행사(가상)', credit: 1450000, trial: 3, ads: ['ex_gangseo', 'ex_hanam'], chat: true }, list: [], leads: L0, price: C.PRICE, rules: C.RULES, pay: false, admin: false,
+      report: [{ m: day(t).slice(0, 7), imp: 18420, click: 612, save: 141, chat: 23, lead: 7, A: 2, B: 4, C: 1, visit: 1, won: 300000 }] };
+  }
+  function load() {
+    if (demo) { D = demoData(); return Promise.resolve(D); }
+    return L.post({ action: 'leadAdv', adv: $('co').getAttribute('data-adv') || '' }).then(function (j) { D = j; return j; });
+  }
+  function paintPrice() {
+    var P = D.price || C.PRICE, h = '<table class="ptab"><thead><tr><th>단계</th><th>1등급 지역</th><th>2등급</th><th>3등급</th></tr></thead><tbody>'
+      + '<tr><td>① 대화 열기<br><small>현장이 채팅을 수락할 때</small></td><td colspan="3" style="text-align:center">하트 ' + P.chat.hearts + '개</td></tr>'
+      + ['A', 'B'].map(function (g) { return '<tr><td>② 상담 신청 ' + g + '등급</td>' + [1, 2, 3].map(function (r) { return '<td>' + man(P.lead[g][r]) + '</td>'; }).join('') + '</tr>'; }).join('')
+      + '<tr><td>② 상담 신청 C등급<br><small>알아보는 단계</small></td><td colspan="3" style="text-align:center">받지 않아요</td></tr>'
+      + '<tr><td>③ 방문 예약 확정</td>' + [1, 2, 3].map(function (r) { return '<td>+' + man(P.visit[r]) + '</td>'; }).join('') + '</tr>'
+      + '<tr><td>④ 계약 성사 성공보수</td><td colspan="3" style="text-align:center">' + (P.success.on ? '' : '아직 없어요') + '</td></tr></tbody></table>'
+      + '<p class="lead" style="font-size:12.5px;margin:8px 0 0">지역 등급은 시·군·구의 최근 12개월 아파트 거래 금액 합계로 정해요(상위 20% 1등급 · 다음 30% 2등급 · 나머지 3등급). 분양가가 15억 원 이상인 현장은 한 등급 위예요. 우리 구 등급은 <a href="../#tierbox">광고·제휴 안내</a>에서 볼 수 있어요.</p>';
+    $('price').innerHTML = h;
+    var R = D.rules || C.RULES;
+    $('rules').innerHTML = [
+      '새 광고주는 처음 ' + R.trialFree + '건까지 상담 신청이 무료예요.',
+      '같은 손님이 ' + R.dupDays + '일 안에 같은 현장에 다시 신청하면 하나로 합치고 다시 받지 않아요.',
+      '[연락이 안 돼요]나 [신청한 적 없대요]를 누르면 손님에게 "상담을 신청하셨나요?"를 자동으로 여쭤봐요(전달한 날부터 ' + R.disputeDays + '일 안).',
+      '손님이 [아니요]라고 하거나 ' + R.confirmHours + '시간 안에 답이 없으면 크레딧을 자동으로 돌려 드려요. [네]라고 하면 바로 알려 드려요.',
+      '자동 환불은 한 달에 받은 상담 신청의 ' + R.capPct + '%까지예요. 그보다 많으면 따로 확인한 뒤 알려 드려요.',
+      '손님이 동의를 거두면 메일로 알려 드려요. 받은 연락처는 바로 지워 주세요. 연락처는 ' + Math.round(R.keepDays / 30) + '개월 뒤 이 화면에서도 자동으로 지워져요.'
+    ].map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
+  }
+  function paintTop() {
+    var a = D.adv; $('co').textContent = a.co + ' · 광고주 관리'; $('co').setAttribute('data-adv', a.id);
+    $('bal').textContent = won(a.credit); $('trial').textContent = a.trial + '건';
+    var r = (D.report || [])[0] || { imp: 0, click: 0, save: 0, chat: 0, lead: 0, visit: 0 };
+    var pct = function (x, y) { return y ? (Math.round(x / y * 1000) / 10) + '%' : ''; };
+    $('fun').innerHTML = [['노출', r.imp, ''], ['클릭', r.click, pct(r.click, r.imp)], ['관심 저장', r.save, ''], ['대화', r.chat, ''], ['상담 신청', r.lead, 'A ' + (r.A || 0) + ' · B ' + (r.B || 0)], ['방문 확정', r.visit, pct(r.visit, r.lead)]]
+      .map(function (x) { return '<div class="fn"><span class="n">' + Number(x[1] || 0).toLocaleString('ko-KR') + '</span><span class="t">' + x[0] + '</span>' + (x[2] ? '<span class="r">' + esc(x[2]) + '</span>' : '') + '</div>'; }).join('');
+    var sites = {}; D.leads.forEach(function (x) { sites[x.site] = 1; });
+    $('fSite').innerHTML = '<option value="">현장 전체</option>' + Object.keys(sites).map(function (s) { return '<option>' + esc(s) + '</option>'; }).join('');
+    $('fSt').innerHTML = '<option value="">상태 전체</option>' + [ST.ok, ST.ask, ST.valid, ST.refund, ST.exc, ST.hold, ST.gone].map(function (s) { return '<option>' + esc(s) + '</option>'; }).join('');
+  }
+  var STC = {}; STC[ST.ok] = 'ok'; STC[ST.valid] = 'ok'; STC[ST.ask] = 'ask'; STC[ST.refund] = 'ref'; STC[ST.gone] = 'ref';
+  function paintList() {
+    var g = $('fGrade').value, sp = $('fStep').value, si = $('fSite').value, s0 = $('fSt').value;
+    var rows = D.leads.filter(function (x) { return (!g || x.grade === g) && (!sp || (sp === 'visit' ? x.visit : !x.visit)) && (!si || x.site === si) && (!s0 || x.st === s0); });
+    if (!rows.length) { $('list').innerHTML = '<p class="empty">' + (D.leads.length ? '고른 조건에 맞는 상담 신청이 없어요.' : '아직 상담 신청이 없어요. 들어오면 메일로 바로 알려 드려요.') + '</p>'; return; }
+    var lab = { budget: '예산', noHome: '무주택', cy: '가점', live: '사는 곳', amount: '매수 가능 금액' };
+    $('list').innerHTML = rows.map(function (x) {
+      var sh = Object.keys(x.share || {}).map(function (k) { var v = x.share[k]; if (k === 'noHome') v = v ? '예' : '아니요'; if (k === 'amount') v = Number(v).toLocaleString('ko-KR') + '만 원'; return '<span>' + esc(lab[k] || k) + ' ' + esc(v) + '</span>'; });
+      if (x.time) sh.unshift('<span>희망 시간 ' + esc(x.time) + '</span>');
+      var open = [ST.ok, ST.ask, ST.valid].indexOf(x.st) >= 0;
+      return '<div class="ld" data-id="' + esc(x.id) + '"><div class="ldt"><span class="g ' + esc(x.grade) + '" title="상담 준비 정도">' + esc(x.grade) + '</span>'
+        + (open && x.name ? '<span class="nm">' + esc(x.name) + '</span><a class="ph" href="tel:' + esc(String(x.phone).replace(/\D/g, '')) + '">' + esc(x.phone) + '</a>' : '<span class="ph">' + esc(x.phone) + '</span>')
+        + '<span class="lchip ' + (STC[x.st] || '') + '">' + esc(x.st) + '</span>' + (x.free ? '<span class="lchip free">무료</span>' : '') + (x.visit ? '<span class="lchip ok">방문 확정</span>' : '') + '</div>'
+        + '<p class="meta">' + esc(x.site) + ' · ' + esc(x.day) + ' · 지역 ' + esc(x.rg) + '등급 · ' + (x.free ? '0원' : won(x.won)) + (x.visit ? ' + 방문 ' + won(x.visitWon) : '') + (x.merged ? ' · 다시 신청 ' + x.merged + '번(합침)' : '') + '</p>'
+        + (sh.length ? '<div class="sh">' + sh.join('') + '</div>' : '') + (x.memo ? '<p class="meta">남긴 말: ' + esc(x.memo) + '</p>' : '')
+        + (x.st === ST.hold ? '<p class="meta">크레딧이 모자라 연락처를 가려 두었어요. 충전하면 바로 열려요.</p>' : '')
+        + (x.st === ST.ask ? '<p class="res" style="color:#A15C07">손님에게 확인을 여쭤봤어요. ' + C.RULES.confirmHours + '시간 안에 답이 없으면 자동으로 돌려 드려요.</p>' : '')
+        + (x.res ? '<p class="res">' + esc(x.res) + '</p>' : '')
+        + '<div class="acts">' + (open && !x.visit && x.st !== ST.ask ? '<button type="button" class="btn" data-visit>방문 예약 확정</button>' : '')
+        + (x.canDispute ? '<button type="button" class="btn s" data-why="noreach">연락이 안 돼요</button><button type="button" class="btn s" data-why="deny">신청한 적 없대요</button>' : '') + '</div>'
+        + '<p class="msg" role="status"></p></div>';
+    }).join('');
+  }
+  function paintAdmin() {
+    if (!D.admin) return;
+    $('adm').hidden = false;
+    $('admBody').innerHTML = '<label for="aCo">회사명</label><input id="aCo"><label for="aAds">광고 id(쉼표로, AD…)</label><input id="aAds"><label for="aMem">광고주 회원 번호(u…)</label><input id="aMem"><label for="aPro">채팅용 전문가 id(선택)</label><input id="aPro"><label for="aMail">알림 메일</label><input id="aMail" type="email">'
+      + '<button type="button" class="btn" id="aGo" style="margin-top:10px">광고주 만들기</button><label for="aWon">이 광고주에 크레딧 넣기(원)</label><input id="aWon" inputmode="numeric"><button type="button" class="btn s" id="aCr" style="margin-top:8px">크레딧 넣기</button><p class="msg" id="aMsg"></p><div id="exc"></div>';
+    var m = function (t, ok) { $('aMsg').textContent = t; $('aMsg').className = 'msg' + (ok ? ' ok' : ''); };
+    $('aGo').onclick = function () { L.post({ action: 'leadAdminAdv', co: $('aCo').value, ads: $('aAds').value, member: $('aMem').value.trim(), pro: $('aPro').value.trim(), mail: $('aMail').value.trim() }).then(function (j) { m('만들었어요: ' + j.id, true); }).catch(function (e) { m(e.message); }); };
+    $('aCr').onclick = function () { L.post({ action: 'leadAdminAdv', op: 'credit', adv: D.adv.id, won: $('aWon').value }).then(function (j) { m('넣었어요. 잔액 ' + won(j.credit), true); return refresh(); }).catch(function (e) { m(e.message); }); };
+    L.post({ action: 'leadAdminExc' }).then(function (j) {
+      $('exc').innerHTML = '<h2 style="margin-top:14px">예외 목록 ' + j.list.length + '건</h2>' + j.list.map(function (x) { return '<p class="meta">' + esc(x.day + ' · ' + x.why) + ' <button type="button" class="btn s" data-exc="' + esc(x.id) + '" data-op="refund">환불</button> <button type="button" class="btn s" data-exc="' + esc(x.id) + '" data-op="keep">유지</button></p>'; }).join('');
+    }).catch(function () {});
+    $('exc').onclick = function (e) { var b = e.target.closest('[data-exc]'); if (!b) return; L.post({ action: 'leadAdminExc', id: b.getAttribute('data-exc'), op: b.getAttribute('data-op') }).then(function () { b.parentNode.remove(); }); };
+  }
+  function refresh() { return load().then(function () { paintTop(); paintPrice(); paintList(); paintAdmin(); }).catch(function (e) { $('list').innerHTML = '<p class="empty">' + esc(e.code === 'auth' || !(window.JDJ_AUTH && JDJ_AUTH.user()) ? '광고주 계정으로 카카오 간편 로그인해 주세요.' : e.message) + '</p>' + (window.JDJ_AUTH && JDJ_AUTH.btn ? JDJ_AUTH.btn('카카오 간편 로그인', location.pathname + location.search) : ''); }); }
+  ['fGrade', 'fStep', 'fSite', 'fSt'].forEach(function (k) { $(k).onchange = paintList; });
+  $('buy').onclick = function () {
+    if (demo) { $('buyMsg').textContent = '미리 보기예요. 실제로는 결제 화면이 열려요.'; return; }
+    L.post({ action: 'leadCreditOrder' }).catch(function (e) { $('buyMsg').textContent = e.message; });
+  };
+  if (!demo) $('buy').title = '결제는 곧 열려요';
+  $('list').onclick = function (e) {
+    var b = e.target.closest('button'), card = b && b.closest('.ld'); if (!card) return;
+    var id = card.getAttribute('data-id'), x = D.leads.find(function (o) { return o.id === id; }), msg = card.querySelector('.msg');
+    if (b.hasAttribute('data-why')) {
+      var why = b.getAttribute('data-why');
+      if (!confirm((why === 'deny' ? '손님이 신청한 적 없다고 했나요?' : '연락이 닿지 않았나요?') + ' 손님에게 "상담을 신청하셨나요?"를 자동으로 여쭤볼게요. 답이 [아니요]거나 ' + C.RULES.confirmHours + '시간 안에 없으면 크레딧을 돌려 드려요.')) return;
+      if (demo) { x.st = ST.ask; x.canDispute = false; paintList(); return; }
+      b.disabled = true;
+      L.post({ action: 'leadDispute', id: id, why: why, adv: D.adv.id }).then(function () { return refresh(); }).catch(function (er) { b.disabled = false; msg.textContent = er.message; });
+    } else if (b.hasAttribute('data-visit')) {
+      var P = (D.price || C.PRICE).visit[x.rg] || 0;
+      if (!confirm('견본주택 방문 날짜가 정해졌나요? 방문 예약 확정 성과금 ' + won(P) + '이 크레딧에서 빠져요.')) return;
+      if (demo) { x.visit = true; x.visitWon = P; D.adv.credit -= P; paintTop(); paintList(); return; }
+      b.disabled = true;
+      L.post({ action: 'leadVisit', id: id, adv: D.adv.id }).then(function () { return refresh(); }).catch(function (er) { b.disabled = false; msg.textContent = er.message; });
+    }
+  };
+  refresh();
+})();
+</script>
+</body>
+</html>
