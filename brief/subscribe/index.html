@@ -132,11 +132,14 @@ async function boot(){
   const [IX, cfg, mine, me] = await Promise.all([J(JB.DATA + 'data/index.json'), J((P.api() || '') + '?action=briefConfig'),
     call('briefMine').catch(() => null), A.load().catch(() => null)]);
   st.kakao = !!(cfg && cfg.channels && cfg.channels.kakao);
+  st.bm = st.kakao && !!(cfg && cfg.channels && cfg.channels.bm);   // 카톡 브랜드 메시지(오전 8시 5분·광고 포함) — 서버 스위치가 켜졌을 때만 칸이 보임
+  st.chUrl = (cfg && cfg.channels && /^https:\/\/pf\.kakao\.com\//.test(cfg.channels.chUrl || '')) ? cfg.channels.chUrl : '';
   const PAID = !!(window.JDJ_SITE && JDJ_SITE.PAID_OPEN) && !(cfg && cfg.paid === false);   // 통신판매업 신고 전에는 결제 잠금(assets/config.js PAID_OPEN · 서버 briefConfig.paid)
   st.trialUsed = !!(mine && mine.trialUsed);
   st.adm = !!(mine && mine.adm);   // 운영자(대표) 모드: 지역·관심 단지 제한 없음(요금제·결제는 그대로)
   st.amAd = !!(mine && mine.amAd && mine.amAd.on);   // 처음 신청이면 둘 다 꺼진 채로 시작
   st.adOn = !!(mine && mine.adc && mine.adc.on);
+  st.bmOn = !!(mine && mine.bm && mine.bm.on); st.fr = !!(mine && mine.fr);
   st.active = !!(mine && mine.subs.some(x => x.active || x.start > new Date().toISOString().slice(0, 10) && x.state !== '해지'));
   try { if (mine) localStorage.setItem('jdj_brief_sub', st.active ? '1' : '0'); } catch(e){}
   if (!Q.get('p') && mine && mine.next && (B.PRICE[mine.next] || {}).show) st.plan = mine.next;   // 구독 관리에서 '다음 이용권부터' 고른 요금제
@@ -190,6 +193,11 @@ async function boot(){
         <label id="amL" class="${st.adOn ? '' : 'dis'}"><input type="checkbox" id="amAd" ${st.adOn && st.amAd ? 'checked' : ''} ${st.adOn ? '' : 'disabled'}><span>이른 아침(오전 7시) 브리핑 메일 속 광고 받기 (선택)</span></label>
         <p class="amn" id="amLock" ${st.adOn ? 'hidden' : ''}>먼저 '광고성 정보 받기'에 동의해야 고를 수 있어요</p>
         <p class="amn">브리핑 메일이 오전 8시 전에 도착해서, 메일 안에 광고를 넣으려면 따로 동의가 필요해요. 동의하지 않아도 브리핑은 똑같이 받고, 광고는 웹 화면에서만 보여요. 언제든 끌 수 있어요.</p>
+        ${st.bm ? `<div id="bmBox" hidden style="display:grid;gap:8px;border-top:1px solid var(--line);padding-top:8px">
+          <label id="bmL" class="${st.adOn ? '' : 'dis'}"><input type="checkbox" id="bm" ${st.adOn && st.bmOn ? 'checked' : ''} ${st.adOn ? '' : 'disabled'}><span>[선택] 카카오톡 브랜드 메시지로 받기 — 오전 8시 5분, 관심 지역 분양 소식 광고 1건까지 포함</span></label>
+          <label><input type="checkbox" id="fr" ${st.fr ? 'checked' : ''}><span>${esc(B.SITE)} 카카오톡 채널을 친구로 추가했어요</span></label>
+          ${st.chUrl ? `<a class="btn" style="justify-self:start" href="${esc(st.chUrl)}" target="_blank" rel="noopener">채널 친구 추가</a>` : ''}
+          <p class="amn">고르지 않으면 지금처럼 오전 7시대 알림톡(광고 없음)으로 받아요. 브랜드 메시지는 채널 친구에게만 보낼 수 있고, 카카오 규칙에 따라 오전 8시 전·오후 8시 50분 뒤에는 보내지 않아요. 언제든 끌 수 있어요.</p></div>` : ''}
       </div></div></section>`;
   const foot = `<div id="msg" class="msg" role="status"></div>
     <p class="note">브리핑은 공공 자료(국토교통부 실거래·청약홈·${esc(B.SITE)} 정책 목록)로 만들고, 같은 내용을 웹에서도 볼 수 있어요. <a href="../?d=11710-${encodeURIComponent('잠실동')}">예시 보기</a></p>`;
@@ -224,14 +232,15 @@ async function boot(){
     msg(x.added ? `${x.added}곳을 더했어요. 지금 모두 ${st.areas.length}곳이에요.${x.missing.length ? ` (못 찾은 곳: ${esc(x.missing.join(', '))})` : ''}`
       : (x.missing.length ? `더할 곳이 없어요. 못 찾은 곳: ${esc(x.missing.join(', '))}` : '대표 지역이 이미 모두 들어 있어요.'), !x.added && x.missing.length); };
   document.querySelectorAll('input[name=plan]').forEach(r => r.onchange = () => { st.plan = r.value; drawA(); sync(); });
-  document.querySelectorAll('input[name=ch]').forEach(r => r.onchange = () => { st.channel = r.value; $('contact').placeholder = r.value === 'kakao' ? '받을 휴대폰 번호' : '받을 이메일 주소'; $('contact').autocomplete = r.value === 'kakao' ? 'tel' : 'email'; });
+  document.querySelectorAll('input[name=ch]').forEach(r => r.onchange = () => { st.channel = r.value; if ($('bmBox')) $('bmBox').hidden = r.value !== 'kakao'; $('contact').placeholder = r.value === 'kakao' ? '받을 휴대폰 번호' : '받을 이메일 주소'; $('contact').autocomplete = r.value === 'kakao' ? 'tel' : 'email'; });
   const sync = () => { const T = B.PRICE[st.plan];
     if (window.JDJ_PRODUCTS && $('paidInfo') && $('paidInfo').getAttribute('data-p') !== st.plan) { $('paidInfo').innerHTML = JDJ_PRODUCTS.box(st.plan, { mode: 'info' }); $('paidInfo').setAttribute('data-p', st.plan); }   // 고른 요금제에 담긴 것·환불(assets/products.js) $('pay').textContent = PAID ? `월 ${won(T.amount)}원 결제하고 받기` : '유료 이용권은 곧 열려요'; $('brokerBox').hidden = !T.broker;
     const n = aptList().length; $('aptN').textContent = `(${T.label} ${T.apts}개까지${n > T.apts ? ` · 지금 ${n}개라 앞의 ${T.apts}개만 보내요` : ''})`; };
   $('apts').oninput = sync;
   drawA(); sync();
   /* 이른 아침 광고는 '광고성 정보 받기'가 켜져 있을 때만 고를 수 있음(자동으로 켜지 않음) */
-  $('ad').onchange = () => { const on = $('ad').checked; $('amAd').disabled = !on; if (!on) $('amAd').checked = false; $('amL').className = on ? '' : 'dis'; $('amLock').hidden = on; };
+  $('ad').onchange = () => { const on = $('ad').checked; $('amAd').disabled = !on; if (!on) $('amAd').checked = false; $('amL').className = on ? '' : 'dis'; $('amLock').hidden = on;
+    if ($('bm')) { $('bm').disabled = !on; if (!on) $('bm').checked = false; $('bmL').className = on ? '' : 'dis'; } };
   const saveAreas = () => A.update(d => { d.brief = { ...(d.brief || {}), areas: st.areas, apts: aptList().slice(0, LIM.apts), v: B.PRICE[st.plan].pro ? 'pro' : '' }; })
     .then(() => { try { localStorage.setItem('jdj_brief_apts', JSON.stringify(aptList().slice(0, B.PRICE[st.plan].apts))); } catch(e){} });
   const base = () => { const ch = (document.querySelector('input[name=ch]:checked') || {}).value;
@@ -240,7 +249,10 @@ async function boot(){
     if (!ch) throw need('받는 방법을 골라 주세요.', 'contact');
     if (!$('contact').value.trim()) throw need(ch === 'kakao' ? '받을 휴대폰 번호를 적어 주세요.' : '받을 이메일 주소를 적어 주세요.', 'contact');
     if (!$('privacy').checked) throw need('발송용 연락처 수집·이용에 동의해 주세요.', 'privacy');
-    return { channel: ch, contact: $('contact').value.trim(), privacy: true, ad: $('ad').checked, amAd: $('ad').checked && $('amAd').checked, ref: B.myRef(), dp: window.JDJ_DP && JDJ_DP.enabled() ? JDJ_DP.inviteCode() : '' }; };
+    const bmw = !!($('bm') && ch === 'kakao' && $('ad').checked && $('bm').checked), fr = !!($('fr') && $('fr').checked);   // 카톡 브랜드 메시지(서버가 켰을 때만 칸이 있음)
+    if (bmw && !fr) throw need("카카오톡 브랜드 메시지로 받으려면 채널을 친구로 추가한 뒤 '채널 친구로 추가했어요'에 표시해 주세요.", 'fr');
+    return Object.assign({ channel: ch, contact: $('contact').value.trim(), privacy: true, ad: $('ad').checked, amAd: $('ad').checked && $('amAd').checked, ref: B.myRef(), dp: window.JDJ_DP && JDJ_DP.enabled() ? JDJ_DP.inviteCode() : '' },
+      $('bm') && ch === 'kakao' ? { bm: bmw, fr: fr } : {}); };
   function msg(t, bad){ $('msg').className = 'msg ' + (bad ? 'err' : 'info'); $('msg').innerHTML = t; }
   /* 빠진 칸이 있으면 그 칸이 있는 단계로 옮겨 가서 바로 위에 알려 줌(맨 위 버튼을 눌러도 무엇이 빠졌는지 보이게) */
   const fieldErr = e => { document.querySelectorAll('.fmsg').forEach(x => { x.hidden = true; });

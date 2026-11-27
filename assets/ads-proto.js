@@ -3,6 +3,7 @@
    - 켜짐: assets/config.js ADS_PROTO === true, 또는 대표 미리 보기(주소 끝 ?preview=ads 로 한 번 열면 이 기기에서만 · ?preview=off 로 끔).
      꺼져 있으면 아무것도 그리지 않아요(칸·링크·기록 없음).
    - 자리 4곳(스크립트 태그의 data-page): home(홈 섹션 사이 피드 카드) · map(지도 'AD' 핀 + 아래 카드) · bunyang(공고 목록 4번째 뒤 목록 카드) · buy(계산 결과 바깥 '예산에 맞는 분양').
+     + 'brief'(화면 자리 아님): 모닝 브리핑 카톡 브랜드 메시지 광고 1건 — 서버가 관심 지역만으로 고름(briefPick, 아래).
    - 맞춤(타깃팅)은 이 기기 안에서만: 공개 광고 목록(여기서는 EXAMPLES)을 받아 '지금 보는 지역·이 기기에서 계산한 예산 구간·무주택 여부·청약 가점 구간'과
      광고 조건을 이 브라우저가 직접 맞춰 봐요. 예산·가점·무주택 같은 값은 서버로 보내지 않고, 기록(시안은 기록 자체를 하지 않음)에도 칸·광고 id 만 남겨요.
    - 지키는 것: 언제나 '광고' 표시 · 핵심 숫자(계산 결과·점수) 안에는 넣지 않음 · 유료 리포트 안에는 넣지 않음 · 휴대폰 한 화면 최대 1칸 · 같은 광고 하루 3번까지(이 기기에서 셈).
@@ -30,11 +31,11 @@
     { id: 'ex_gangseo', example: true, advertiser: '예시 시행사(가상)', name: '예시 마곡 리버뷰(가상 현장)', kind: '아파트',
       sido: '서울특별시', sgg: '강서구', code: '11500', units: 612, move: '2029년 3월', price: '분양가 6억 2천~8억 9천만 원(공고 기준·예시)',
       line: '9호선 역까지 걸어서 8분 · 전용 59·84㎡', verified: true,
-      target: { codes: ['11500', '11470', '11560', '41210'], sido: ['11'], budget: ['6~9억', '9~12억'], noHome: 'prefer', pages: ['home', 'map', 'bunyang', 'buy'] } },
+      target: { codes: ['11500', '11470', '11560', '41210'], sido: ['11'], budget: ['6~9억', '9~12억'], noHome: 'prefer', pages: ['home', 'map', 'bunyang', 'buy', 'brief'] } },
     { id: 'ex_hanam', example: true, advertiser: '예시 분양대행사(가상)', name: '예시 하남 그린시티(가상 현장)', kind: '아파트',
       sido: '경기도', sgg: '하남시', code: '41450', units: 980, move: '2029년 9월', price: '분양가 5억 4천~7억 6천만 원(공고 기준·예시)',
       line: '3기 신도시 생활권 · 전용 74·84㎡', verified: true,
-      target: { codes: ['41450', '11740', '11710'], sido: ['41', '11'], budget: ['3~6억', '6~9억'], noHome: 'prefer', cy: ['30~49점', '50~64점', '65점~'], pages: ['home', 'map', 'bunyang', 'buy'] } },
+      target: { codes: ['41450', '11740', '11710'], sido: ['41', '11'], budget: ['3~6억', '6~9억'], noHome: 'prefer', cy: ['30~49점', '50~64점', '65점~'], pages: ['home', 'map', 'bunyang', 'buy', 'brief'] } },
     { id: 'ex_small', example: true, advertiser: '예시 시행사(가상)', name: '예시 역세권 소형 오피스텔(가상 현장)', kind: '오피스텔',
       sido: '서울특별시', sgg: '영등포구', code: '11560', units: 148, move: '2028년 6월', price: '분양가 2억 9천~3억 8천만 원(예시)',
       line: '전용 24~39㎡ · 1~2인 가구', verified: false,
@@ -94,7 +95,31 @@
     st.n[id] = (st.n[id] || 0) + 1; return st;
   }
 
-  var api = { EXAMPLES: EXAMPLES, FC_MAX: FC_MAX, budgetBand: budgetBand, cyBand: cyBand, score: score, choose: choose, whyText: whyText, bump: bump };
+  /** 모닝 브리핑 카톡 브랜드 메시지의 광고 1건 — 이 규칙은 서버(tools/agent-backend.gs bmAdPick)가 그대로 씀(tools/brief-bm-test.js 가 대조).
+      쓰는 값은 구독자가 고른 관심 지역(시·군·구 5자리 코드)뿐 — 예산·가점·무주택 같은 다른 개인 정보는 쓰지 않음.
+      싣는 광고: 예시가 아님 · verified(분양 현장 확인) · target.pages 에 'brief' · 게재 기간(start~end) 안 · 관심 지역(같은 시·군·구 3점, 같은 시·도 1점)이 맞음.
+      fc = { 광고id: 최근 BRIEF_FC.days일 노출 수 } — BRIEF_FC.max 이상이면 뺌. opt.examples = 시안 대조용(실제 발송은 안 씀) */
+  var BRIEF_FC = { days: 7, max: 2 };
+  function briefPick(list, codes, fc, day, opt) {
+    opt = opt || {}; fc = fc || {};
+    codes = arr(codes).map(String).filter(function (c) { return /^\d{5}$/.test(c); });
+    if (!codes.length) return null;
+    var sds = codes.map(function (c) { return c.slice(0, 2); });
+    var c = (list || []).map(function (a) {
+      if (!a || !a.id || !a.target || !a.name || !a.advertiser) return null;
+      if (a.example && !opt.examples) return null;
+      if (a.verified !== true) return null;
+      if (arr(a.target.pages).indexOf('brief') < 0) return null;
+      if (day && ((a.start && day < a.start) || (a.end && day > a.end))) return null;
+      if ((fc[a.id] || 0) >= BRIEF_FC.max) return null;
+      var tc = arr(a.target.codes), ts = arr(a.target.sido);
+      var s = tc.some(function (x) { return codes.indexOf(x) >= 0; }) || codes.indexOf(a.code) >= 0 ? 3 : ts.some(function (x) { return sds.indexOf(x) >= 0; }) ? 1 : 0;
+      return s ? { a: a, s: s } : null;
+    }).filter(Boolean).sort(function (x, y) { return (y.s - x.s) || String(x.a.id).localeCompare(String(y.a.id)); });
+    return c[0] ? c[0].a : null;
+  }
+
+  var api = { EXAMPLES: EXAMPLES, FC_MAX: FC_MAX, BRIEF_FC: BRIEF_FC, budgetBand: budgetBand, cyBand: cyBand, score: score, choose: choose, whyText: whyText, bump: bump, briefPick: briefPick };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (typeof document === 'undefined') return;
   root.JDJ_ADPROTO = api;

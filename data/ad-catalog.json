@@ -1,0 +1,5 @@
+{
+  "about": "집예보 분양 광고 목록(공개). 모양은 assets/ads-proto.js EXAMPLES 와 같음 — id·advertiser·name·sido·sgg·code·line·price·url(https)·verified·start·end·target{codes,sido,pages}. 개인 정보 없음. 모닝 브리핑 카톡 광고는 target.pages 에 'brief' 가 있고 verified=true 인 광고만(서버 bmAdPick). 승인·결제가 끝난 광고만 넣어요.",
+  "updated": "2026-11-27",
+  "ads": []
+}

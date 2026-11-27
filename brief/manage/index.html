@@ -243,6 +243,13 @@ async function draw(note){
       <p class="note" id="amLock" style="margin:2px 0 0 28px;color:#8A6A12;font-weight:700" ${r.adc && r.adc.on ? 'hidden' : ''}>먼저 '광고성 정보 받기'에 동의해야 고를 수 있어요</p>
       <p class="note" style="margin:4px 0 0 28px">브리핑 메일이 오전 8시 전에 도착해서, 메일 안에 광고를 넣으려면 따로 동의가 필요해요. 동의하지 않아도 브리핑은 똑같이 받고, 광고는 웹 화면에서만 보여요. 언제든 끌 수 있어요.</p>
       <p class="note" id="amWhen" style="margin:6px 0 0 28px">${amWhen(r.adc, r.amAd)}</p>
+      ${r.channels && r.channels.bm ? `<div id="bmBox" style="margin:12px 0 0;border-top:1px solid var(--line,#E5E8EB);padding-top:12px">
+      <label class="amc ${r.adc && r.adc.on ? '' : 'dis'}" id="bmL"><input type="checkbox" id="bmOn" ${r.adc && r.adc.on && r.bm && r.bm.on ? 'checked' : ''} ${r.adc && r.adc.on ? '' : 'disabled'}><span>카카오톡 브랜드 메시지로 받기 (선택)</span></label>
+      <p class="note" style="margin:2px 0 6px 28px">카카오톡으로 받는 분만 해당돼요. 고르면 오전 8시 5분에 받고, 관심 지역 분양 소식 광고가 1건까지 들어갈 수 있어요. 고르지 않으면 지금처럼 오전 7시대 알림톡(광고 없음)으로 받아요.</p>
+      <label class="amc" id="frL"><input type="checkbox" id="frOn" ${r.fr ? 'checked' : ''}><span>${esc(B.SITE)} 카카오톡 채널을 친구로 추가했어요</span></label>
+      ${r.channels.chUrl ? `<p style="margin:6px 0 0 28px"><a class="btn" href="${esc(r.channels.chUrl)}" target="_blank" rel="noopener">채널 친구 추가</a></p>` : ''}
+      <p class="note" style="margin:4px 0 0 28px">브랜드 메시지는 채널 친구에게만 보낼 수 있어요. 카카오 규칙에 따라 오전 8시 전·오후 8시 50분 뒤에는 보내지 않아요.</p>
+      <p class="note" id="bmWhen" style="margin:6px 0 0 28px">${r.bm && r.bm.on && r.bm.at ? `카카오톡 브랜드 메시지 ${esc(r.bm.at)} 동의` : r.bm && r.bm.off ? `카카오톡 브랜드 메시지 ${esc(r.bm.off)} 끔` : ''}</p></div>` : ''}
       <div class="row2" style="margin-top:8px"><button type="button" class="btn" id="amSave">저장하기</button></div><div id="amMsg" class="msg" role="status" hidden></div></section>` : ''}
     ${paidEver ? `<section class="inv" id="inv"><h2>친구 초대하고 1개월 무료</h2>
       <p>초대 링크로 온 친구가 이용권을 결제하면 두 분 모두 1개월(30일)을 무료로 더 받아요. 지금 이용권이 끝난 다음 날부터 무료 1개월이 이어져요.</p>
@@ -366,10 +373,15 @@ async function draw(note){
     });
   });
   main.querySelectorAll('[data-keep]').forEach(b => b.onclick = () => act(() => call('briefChange', { id: b.dataset.keep, product: b.dataset.tier }), '지금 요금제를 그대로 이어 가요.', b));
-  if ($('adOn')) $('adOn').onchange = () => { const on = $('adOn').checked; $('amAd').disabled = !on; if (!on) $('amAd').checked = false; $('amL').classList.toggle('dis', !on); $('amLock').hidden = on; };
+  if ($('adOn')) $('adOn').onchange = () => { const on = $('adOn').checked; $('amAd').disabled = !on; if (!on) $('amAd').checked = false; $('amL').classList.toggle('dis', !on); $('amLock').hidden = on;
+    if ($('bmOn')) { $('bmOn').disabled = !on; if (!on) $('bmOn').checked = false; $('bmL').classList.toggle('dis', !on); } };
   if ($('amSave')) $('amSave').onclick = async () => {
-    const m = $('amMsg'), ad = $('adOn').checked, on = ad && $('amAd').checked; SF.busy('amSave');
-    try { const j = await call('briefAdPref', { ad, on });
+    const m = $('amMsg'), ad = $('adOn').checked, on = ad && $('amAd').checked;
+    const bm = $('bmOn') ? ad && $('bmOn').checked : null, fr = $('frOn') ? $('frOn').checked : false;   // 카톡 브랜드 메시지 칸은 서버가 켜졌을 때만 있음
+    if (bm && !fr) { SF.err('amSave', "카카오톡 채널을 친구로 추가한 뒤 '채널 친구로 추가했어요'에 표시해 주세요.", { msg: m }); return; }
+    SF.busy('amSave');
+    try { const j = await call('briefAdPref', Object.assign({ ad, on }, $('bmOn') ? { bm, fr } : {}));
+      if ($('bmWhen')) $('bmWhen').textContent = j.bm && j.bm.on && j.bm.at ? `카카오톡 브랜드 메시지 ${j.bm.at} 동의` : j.bm && j.bm.off ? `카카오톡 브랜드 메시지 ${j.bm.off} 끔` : '';
       SF.ok('amSave', on ? '저장했어요. 광고가 있는 날은 메일 제목 맨 앞에 (광고)가 붙어요. 처리 결과를 메일로도 알려 드려요.' : '저장했어요. 브리핑 메일에는 광고가 들어가지 않아요. 처리 결과를 메일로도 알려 드려요.', { msg: m });
       $('amWhen').textContent = amWhen(j.adc, j.amAd);
     } catch(e){ SF.err('amSave', e.message, { msg: m }); }

@@ -1,6 +1,14 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v76 변경 요약 (v75 위에 다시 배포 — 새 버전. KAKAO_BRAND_MSG_ENABLED=false·ADS_IN_BRIEF=false 라 지금 서비스에는 영향 없음. '브리핑구독' 뒤 4칸 머리 줄은 첫 사용 때 자동)
+ *  - 모닝 브리핑 카카오톡 광고 '가안'(대표 결정 2026-11-27): 광고성 정보 받기 + 카톡 브랜드 메시지 받기 + 채널 친구 확인이 모두 있는 카카오톡 구독자는
+ *    오전 8시 5분 브랜드 메시지(관심 지역 분양 소식 광고 1건까지, '(광고)'·보낸 사람·무료 수신 거부 표기), 나머지는 지금처럼 오전 7시대 알림톡(광고 없음).
+ *  - 시간 잠금 bmSend: 08:00 전·20:50 이후에는 절대 보내지 않음. 실패하면 30분마다 다시(20:30까지), 그 뒤 그날은 건너뜀(발송기록·운영자 메일).
+ *  - '브리핑구독' 뒤 4칸: 브랜드메시지동의 · 브랜드메시지동의시각 · 브랜드메시지철회시각 · 채널친구확인시각. 시트 '브랜드광고노출'(날짜·회원 해시·광고 id, 7일 2번 제한).
+ *  - 카카오톡으로만 받는 분께 동의 처리 결과(SOLAPI_TPL_ADRES)·2년 확인 안내(SOLAPI_TPL_ADCHK)를 정보성 알림톡으로(템플릿을 넣으면 켜짐).
+ *  - 켜는 날: 두 스위치를 true 로 + 스크립트 속성 KAKAO_CHANNEL_URL(pf.kakao.com 주소)·BM_OPTOUT_080(080 무료 수신 거부 번호) + 함수 bmInstall 한 번 실행. 검증: node tools/brief-bm-test.js
+ *
  * v75 변경 요약 (v74 위에 다시 배포 — 새 버전. GUARD_ENABLED=false·PAID_OPEN=false 그대로라 지금 서비스에는 영향 없음. 시트 칸 변경 없음)
  *  - 내 전셋집 지킴이 개편(대표 승인 2026-11-27 10:59 · 값 확정 11:01): 자동 지킴이는 카카오 간편 로그인 회원 무료 — 회원 1곳 · 모닝 브리핑 구독자 3곳(JG_PRICE.freeHomes·freeHomesSubscriber),
  *    그보다 많은 집은 집 1곳마다 월 900원(JG_PRICE.extra) · 등기 바로 확인(쉽게 읽는 등기부) 1건 1,500원(JG_PRICE.read·corp). 새 요청 guardFree(회원 무료 시작) · guardQuota(남은 무료 자리) · guardMine(내 지킴이 목록).
@@ -2576,7 +2584,8 @@ const SH_B = '브리핑구독', SH_BL = '발송기록';
 const BH = ['id', '생성시각', '상품', '상태', '주문번호', '카카오id', '채널', '연락처', '연락처가림', '연락처확인값', '광고동의', '시작일', '만료일',
             '최근발송일', '발송수', '만료알림', '해지일', '환불상태', '환불요청시각', '메모',
             '결제액', '다음요금제', '중개사번호', '중개사확인',    // v26: 4칸 추가(기존 시트는 첫 사용 때 머리 줄만 채움)
-            '아침광고동의', '아침광고동의시각', '아침광고철회시각', '광고확인시각', '광고동의시각', '광고철회시각'];   // v29·v31: 메일 광고 동의 2가지(정보통신망법 제50조) 4칸
+            '아침광고동의', '아침광고동의시각', '아침광고철회시각', '광고확인시각', '광고동의시각', '광고철회시각',   // v29·v31: 메일 광고 동의 2가지(정보통신망법 제50조) 4칸
+            '브랜드메시지동의', '브랜드메시지동의시각', '브랜드메시지철회시각', '채널친구확인시각'];   // v76: 카톡 브랜드 메시지(오전 8시 5분, 광고 포함) 동의 + 채널 친구 확인
 const BC = Object.fromEntries(BH.map((h, i) => [h, i]));
 const BLH = ['날짜', '구독id', '채널', '결과', '동네수'];
 /* ★ 요금제 표(v26) — 서버는 이 표 한 곳만 봐요. 화면 assets/brief-core.js 의 TIERS 와 숫자가 같아야 해요(tools/brief-web-test.js 가 대조).
@@ -2703,7 +2712,8 @@ function addDays(d, n) { return new Date(d.getTime() + n * 86400000); }
 function kstToday() { return dOnly(ymd(new Date())); }
 function briefChannels() {
   const P = PropertiesService.getScriptProperties();
-  return { email: true, kakao: !!(P.getProperty('SOLAPI_API_KEY') && P.getProperty('SOLAPI_API_SECRET') && P.getProperty('SOLAPI_PFID') && P.getProperty('SOLAPI_TPL_BRIEF')), webpush: false };
+  return { email: true, kakao: !!(P.getProperty('SOLAPI_API_KEY') && P.getProperty('SOLAPI_API_SECRET') && P.getProperty('SOLAPI_PFID') && P.getProperty('SOLAPI_TPL_BRIEF')), webpush: false,
+    bm: bmOn(), chUrl: bmOn() ? kakaoUrl(P.getProperty('KAKAO_CHANNEL_URL')) : '' };   // v76 카톡 브랜드 메시지(스위치 KAKAO_BRAND_MSG_ENABLED + 솔라피 키) · 채널 친구 추가 주소
 }
 /* 채널별 연락처: kakao = 휴대폰, email = 이메일 */
 function briefContact(channel, c) {
@@ -2744,10 +2754,12 @@ function newBriefRow(u, P, st, channel, ct, ad, orderId) {
   r[BC['주문번호']] = orderId || ''; r[BC['카카오id']] = u.k; r[BC['채널']] = channel; r[BC['연락처']] = cellSafe(ct.norm); r[BC['연락처가림']] = ct.mask;
   r[BC['연락처확인값']] = hashOf(ct.norm); r[BC['광고동의']] = !!ad; r[BC['발송수']] = 0;
   ['시작일', '만료일', '최근발송일', '만료알림', '해지일', '환불상태', '환불요청시각', '메모', '결제액', '다음요금제', '중개사번호', '중개사확인',
-   '아침광고동의', '아침광고동의시각', '아침광고철회시각', '광고확인시각', '광고동의시각', '광고철회시각'].forEach(h => r[BC[h]] = '');
+   '아침광고동의', '아침광고동의시각', '아침광고철회시각', '광고확인시각', '광고동의시각', '광고철회시각',
+   '브랜드메시지동의', '브랜드메시지동의시각', '브랜드메시지철회시각', '채널친구확인시각'].forEach(h => r[BC[h]] = '');
   const cs = bConsentOf(u.k);                // 광고 동의 2가지는 사람 단위: 이미 동의했으면 새 행도 그대로 이어받음(바꾸기는 bConsentApply)
   r[BC['광고동의']] = cs.ad.on; r[BC['광고동의시각']] = cs.ad.at || ''; r[BC['광고철회시각']] = cs.ad.off || '';
   r[BC['아침광고동의']] = cs.am.on; r[BC['아침광고동의시각']] = cs.am.at || ''; r[BC['아침광고철회시각']] = cs.am.off || ''; r[BC['광고확인시각']] = cs.chk || '';
+  r[BC['브랜드메시지동의']] = cs.bm.on; r[BC['브랜드메시지동의시각']] = cs.bm.at || ''; r[BC['브랜드메시지철회시각']] = cs.bm.off || ''; r[BC['채널친구확인시각']] = cs.fr || '';   // v76
   bSheet().appendRow(BH.map((h, i) => r[i] === undefined ? '' : r[i]));
   return r[BC['id']];
 }
@@ -2762,7 +2774,12 @@ function briefCommon(b) {
   const br = cleanBrief(u.data && u.data.brief, bLim(bIsAdmin(u.k)));
   if (!br.areas.length) throw new Error('받을 동네를 먼저 하나 이상 골라 저장해 주세요.');
   const tri = v => v === true ? true : v === false ? false : null;
-  return { u: u, channel: channel, ct: ct, ad: tri(b.ad), br: br, amAd: tri(b.amAd) };
+  if (b.bm === true) {                                  // v76 카톡 브랜드 메시지: 광고성 정보 동의 + 채널 친구 확인이 있어야
+    if (!bmOn()) throw new Error('카카오톡 브랜드 메시지는 아직 준비 중이에요. 지금은 알림톡(오전 7시대)으로 받아 주세요.');
+    if (b.ad !== true) throw new Error("카카오톡 브랜드 메시지로 받으려면 '광고성 정보 받기'에도 동의해 주세요.");
+    if (b.fr !== true && !bConsentOf(u.k).fr) throw new Error("카카오톡 채널을 친구로 추가한 뒤 '채널 친구로 추가했어요'에 표시해 주세요.");
+  }
+  return { u: u, channel: channel, ct: ct, ad: tri(b.ad), br: br, amAd: tri(b.amAd), bm: tri(b.bm), fr: b.fr === true };   // v76 bm = 카톡 브랜드 메시지, fr = 채널 친구 추가했다고 확인
 }
 
 /* 7일 무료 체험 (카카오 계정당 1번) */
@@ -2773,7 +2790,7 @@ function briefTrial(b) {
   const ref = bRefNote(c.u.k, b.ref);
   const id = newBriefRow(c.u, BRIEF_TRIAL, BST.trial, c.channel, c.ct, c.ad, '');
   let dp = ''; if (b.dp && (DONGNE_ENABLED || bIsAdmin(c.u.k))) try { dp = dpAttrib(c.u.k, b.dp); } catch (e) { dp = ''; }   // v50 동네 파트너 초대 링크로 온 사람
-  bConsentApply(c.u.k, { ad: c.ad, am: c.amAd }, '구독 신청 화면');
+  bConsentApply(c.u.k, { ad: c.ad, am: c.amAd, bm: c.bm, fr: c.fr }, '구독 신청 화면');
   const o = bRows().find(x => String(x.r[BC['id']]) === id), t = kstToday();
   setB(o.row, '시작일', ymd(t)); setB(o.row, '만료일', ymd(addDays(t, BRIEF_TRIAL.days - 1)));
   return { ok: true, ref: ref, dp: dp, sub: briefState(bRows().find(x => String(x.r[BC['id']]) === id), new Date()) };
@@ -2803,7 +2820,7 @@ function briefOrder(b) {
   row[OC['열람횟수']] = 0;
   orderSheet().appendRow(row);
   const bid = newBriefRow(c.u, P, BST.wait, c.channel, c.ct, c.ad, id);
-  bConsentApply(c.u.k, { ad: c.ad, am: c.amAd }, '구독 신청 화면');
+  bConsentApply(c.u.k, { ad: c.ad, am: c.amAd, bm: c.bm, fr: c.fr }, '구독 신청 화면');
   if (bn) { const o = bRows().find(x => String(x.r[BC['id']]) === bid); setB(o.row, '중개사번호', cellSafe(bn.norm)); setB(o.row, '중개사확인', BROKER_REVIEW.wait); }
   return { ok: true, orderId: id, amount: P.amount, orderName: ('집예보 ' + P.name).slice(0, 100), ref: bRefNote(c.u.k, b.ref) };
 }
@@ -2900,7 +2917,7 @@ function briefMine(b) {
   const adm = bIsAdmin(u.k);
   let bbt = null; try { bbt = book().getSheetByName(SH_BBT) && bbtOf(u.k) ? bbtPub(bbtOf(u.k), u.k) : null; } catch (e) { bbt = null; }   // v74 구매 고객 30일 무료
   return { ok: true, bbt: bbt, subs: list, brief: cleanBrief(u.data && u.data.brief, bLim(adm)), channels: briefChannels(), adm: adm, admLim: adm ? BRIEF_ADMIN_LIM : null,
-    trialUsed: myBriefs(u.k).some(o => bIsTrial(o.r[BC['상품']])), next: (list.filter(x => x.next).pop() || {}).next || '', amAd: bConsentPublic(u.k).am, adc: bConsentPublic(u.k).ad,
+    trialUsed: myBriefs(u.k).some(o => bIsTrial(o.r[BC['상품']])), next: (list.filter(x => x.next).pop() || {}).next || '', amAd: bConsentPublic(u.k).am, adc: bConsentPublic(u.k).ad, bm: bConsentPublic(u.k).bm, fr: bConsentPublic(u.k).fr,
     bill: (() => { try { return baBillPub(u.k); } catch (e) { return { on: false, st: '' }; } })(),   // v50 자동결제 상태(빌링키 없음)
     plusBy: (() => { try { return dpPlusPub(u.k, list); } catch (e) { return null; } })() };   // v51 동네 파트너 플러스
 }
@@ -3199,86 +3216,119 @@ function briefAdMailHtml(ad, subId) {
     <p style="font-size:12px;color:#4E5968;line-height:1.6;margin:12px 0 0">보낸 사람: ${bEsc(BRIEF_SENDER.site)}(${bEsc(BRIEF_SENDER.name)}) · ${bEsc(BRIEF_SENDER.addr)} · 전화 ${bEsc(BRIEF_SENDER.tel)} · 이메일 ${bEsc(BRIEF_SENDER.email)}<br>
     이 광고는 '이른 아침(오전 7시) 브리핑 메일 속 광고 받기'에 동의하신 분께만 보내요. 더 받지 않으려면 <a href="${off}" style="color:#1F4FD1">광고 수신 거부(한 번 누르면 끝)</a>를 누르거나 <a href="${BRIEF_WEB}manage/" style="color:#1F4FD1">내 구독 관리</a>에서 끌 수 있어요. 수신 거부해도 브리핑은 똑같이 받아요.</p>`;
 }
-/* 사람 단위 동의 상태(그 사람의 행은 늘 같이 바뀜). ad = 광고성 정보 받기(제50조 ①항), am = 이른 아침 브리핑 메일 속 광고 받기(③항) */
+/* 사람 단위 동의 상태(그 사람의 행은 늘 같이 바뀜). ad = 광고성 정보 받기(제50조 ①항), am = 이른 아침 브리핑 메일 속 광고 받기(③항),
+   bm = 카카오톡 브랜드 메시지로 받기(v76: 오전 8시 5분 발송·관심 지역 분양 소식 광고 1건까지) · fr = 카카오톡 채널 친구 추가를 확인한 시각 */
 function bConsentOf(k) {
-  const c = { ad: { on: false, at: '', off: '' }, am: { on: false, at: '', off: '' }, chk: '' };
+  const c = { ad: { on: false, at: '', off: '' }, am: { on: false, at: '', off: '' }, bm: { on: false, at: '', off: '' }, fr: '', chk: '' };
   myBriefs(k).forEach(o => { const r = o.r;
     if (r[BC['광고동의']] === true) { c.ad.on = true; c.ad.at = r[BC['광고동의시각']] || c.ad.at || r[BC['생성시각']] || ''; }
     if (r[BC['광고철회시각']]) c.ad.off = r[BC['광고철회시각']];
     if (r[BC['아침광고동의']] === true) { c.am.on = true; c.am.at = r[BC['아침광고동의시각']] || c.am.at; }
     if (r[BC['아침광고철회시각']]) c.am.off = r[BC['아침광고철회시각']];
+    if (r[BC['브랜드메시지동의']] === true) { c.bm.on = true; c.bm.at = r[BC['브랜드메시지동의시각']] || c.bm.at; }
+    if (r[BC['브랜드메시지철회시각']]) c.bm.off = r[BC['브랜드메시지철회시각']];
+    if (r[BC['채널친구확인시각']]) c.fr = r[BC['채널친구확인시각']];
     if (r[BC['광고확인시각']]) c.chk = r[BC['광고확인시각']]; });
-  if (!c.ad.on) c.am.on = false;          // 이른 아침 동의는 광고성 정보 동의가 있을 때만 유효
+  if (!c.ad.on) { c.am.on = false; c.bm.on = false; }   // 이른 아침·브랜드 메시지 동의는 광고성 정보 동의가 있을 때만 유효
+  if (!c.fr) c.bm.on = false;                           // 브랜드 메시지는 채널 친구에게만 보낼 수 있음
   return c;
 }
 function bConsentPublic(k) {
   const c = bConsentOf(k), f = x => x instanceof Date ? Utilities.formatDate(x, 'Asia/Seoul', 'yyyy-MM-dd HH:mm') : String(x || '');
-  return { ad: { on: c.ad.on, at: f(c.ad.at), off: f(c.ad.off) }, am: { on: c.am.on, at: f(c.am.at), off: f(c.am.off) } };
+  return { ad: { on: c.ad.on, at: f(c.ad.at), off: f(c.ad.off) }, am: { on: c.am.on, at: f(c.am.at), off: f(c.am.off) },
+    bm: { on: c.bm.on, at: f(c.bm.at), off: f(c.bm.off) }, fr: f(c.fr) };
 }
-/* 동의·철회 적용(그 사람의 모든 행) + 처리 결과 메일(제50조 ⑦항). want = { ad, am }: true·false, null 이면 그대로.
-   이른 아침은 광고성 정보 동의가 있어야 켜지고, 광고성 정보를 끄면 함께 꺼짐. 바뀐 게 있으면 true */
+const BM_LABEL = '카카오톡 브랜드 메시지로 받기(오전 8시 5분, 관심 지역 분양 소식 광고 포함)';
+/* 동의·철회 적용(그 사람의 모든 행) + 처리 결과 알림(제50조 ⑦항·시행령 제62조의2). want = { ad, am, bm, fr }: true·false, null 이면 그대로.
+   이른 아침·브랜드 메시지는 광고성 정보 동의가 있어야 켜지고, 광고성 정보를 끄면 함께 꺼짐. 브랜드 메시지는 채널 친구 확인(fr)도 있어야 켜짐. 바뀐 게 있으면 true */
 function bConsentApply(k, want, how) {
   const rows = myBriefs(k), now = new Date(), cur = bConsentOf(k);
   if (!rows.length) return false;
   const ad = want.ad === true || want.ad === false ? want.ad : cur.ad.on;
   let am = want.am === true || want.am === false ? want.am : cur.am.on;
-  if (!ad) am = false;
+  let bm = want.bm === true || want.bm === false ? want.bm : cur.bm.on;
+  const frNew = want.fr === true && !cur.fr;
+  if (!ad) { am = false; bm = false; }
+  if (bm && !cur.fr && !frNew) bm = false;
+  if (frNew) rows.forEach(o => setB(o.row, '채널친구확인시각', now));
   const chg = [];
   if (ad !== cur.ad.on) chg.push(`광고성 정보 받기: ${ad ? '동의' : '수신 거부'}`);
   if (am !== cur.am.on) chg.push(`이른 아침(오전 7시) 브리핑 메일 속 광고 받기: ${am ? '동의' : '수신 거부'}`);
+  if (bm !== cur.bm.on) chg.push(`${BM_LABEL}: ${bm ? '동의' : '수신 거부'}`);
   if (!chg.length) return false;
   rows.forEach(o => {
     if (ad !== cur.ad.on) { setB(o.row, '광고동의', ad); setB(o.row, ad ? '광고동의시각' : '광고철회시각', now); }
     if (am !== cur.am.on) { setB(o.row, '아침광고동의', am); setB(o.row, am ? '아침광고동의시각' : '아침광고철회시각', now); }
-    if ((ad && !cur.ad.on) || (am && !cur.am.on)) setB(o.row, '광고확인시각', '');
+    if (bm !== cur.bm.on) { setB(o.row, '브랜드메시지동의', bm); setB(o.row, bm ? '브랜드메시지동의시각' : '브랜드메시지철회시각', now); }
+    if ((ad && !cur.ad.on) || (am && !cur.am.on) || (bm && !cur.bm.on)) setB(o.row, '광고확인시각', '');
   });
+  const when = Utilities.formatDate(now, 'Asia/Seoul', 'yyyy-MM-dd HH:mm');
   const em = rows.filter(o => String(o.r[BC['채널']]) === 'email' && String(o.r[BC['연락처']] || '')).pop();
-  if (em) try {
-    mailSend({ to: String(em.r[BC['연락처']]).replace(/^'/, ''), name: SITE_NAME, subject: `[${SITE_NAME}] 광고 수신 ${ad || am ? '동의' : '거부'} 처리 결과`,
-      htmlBody: `<div style="font-family:sans-serif;line-height:1.7">${Utilities.formatDate(now, 'Asia/Seoul', 'yyyy-MM-dd HH:mm')}에 ${bEsc(how || '')}에서 요청하신 대로 처리했어요.<br>${chg.map(bEsc).join('<br>')}<br>
-      ${ad && am ? '브리핑 메일에 광고가 있는 날은 제목 맨 앞에 (광고)가 붙어요. ' : '브리핑 메일에는 광고가 들어가지 않아요. 브리핑은 똑같이 받아요. '}언제든 메일 맨 아래 링크나 내 구독 관리에서 바꿀 수 있어요.<br>
+  if (em) { try {
+    mailSend({ to: String(em.r[BC['연락처']]).replace(/^'/, ''), name: SITE_NAME, subject: `[${SITE_NAME}] 광고 수신 ${ad || am || bm ? '동의' : '거부'} 처리 결과`,
+      htmlBody: `<div style="font-family:sans-serif;line-height:1.7">${when}에 ${bEsc(how || '')}에서 요청하신 대로 처리했어요.<br>${chg.map(bEsc).join('<br>')}<br>
+      ${ad && am ? '브리핑 메일에 광고가 있는 날은 제목 맨 앞에 (광고)가 붙어요. ' : '브리핑 메일에는 광고가 들어가지 않아요. 브리핑은 똑같이 받아요. '}${bm ? '카카오톡 브리핑은 오전 8시 5분에 브랜드 메시지로 보내고, 광고가 있는 날은 맨 앞에 (광고)가 붙어요. ' : ''}언제든 메일 맨 아래 링크나 내 구독 관리에서 바꿀 수 있어요.<br>
       보낸 사람: ${bEsc(BRIEF_SENDER.site)}(${bEsc(BRIEF_SENDER.name)}) · 전화 ${bEsc(BRIEF_SENDER.tel)} · <a href="${BRIEF_WEB}manage/">${BRIEF_WEB}manage/</a></div>` });
-  } catch (e) {}
+  } catch (e) {} }
+  else bmInfoTalk(rows, 'SOLAPI_TPL_ADRES', { '#{일시}': when, '#{내용}': chg.join(' / ').slice(0, 300), '#{링크}': (BRIEF_WEB + 'manage/').replace(/^https:\/\//, '') }, '광고 동의 처리 결과');
   return true;
 }
-/* 구독 관리 화면에서 켜고 끄기(로그인): { ad: 광고성 정보 받기, on: 이른 아침 광고 받기 } */
+/* v76 카카오톡으로만 받는 분께 동의 처리 결과·2년 확인 안내(정보성 알림톡, 광고 없음). 템플릿 키가 없으면 '발송기록'에만 남김(다음 날 다시 시도) */
+function bmInfoTalk(rows, tplKey, vars, what) {
+  const kk = rows.filter(o => String(o.r[BC['채널']]) === 'kakao' && String(o.r[BC['연락처']] || '')).pop();
+  if (!kk) return false;
+  let r = { ok: false, why: 'nokey' };
+  try { r = solapiSend(String(kk.r[BC['연락처']]).replace(/^'/, ''), tplKey, vars, BRIEF_WEB + 'manage/'); } catch (e) { r = { ok: false, why: String(e.message || e).slice(0, 60) }; }
+  try { bLog([ymd(new Date()), String(kk.r[BC['id']]), 'kakao', (r.ok ? '보냄: ' : '못 보냄: ') + what + (r.ok ? '' : ' (' + (r.why === 'nokey' ? tplKey + ' 템플릿 없음' : r.why) + ')'), 0]); } catch (e) {}
+  return r.ok;
+}
+/* 구독 관리 화면에서 켜고 끄기(로그인): { ad: 광고성 정보 받기, on: 이른 아침 광고 받기, bm: 카톡 브랜드 메시지로 받기, fr: 채널 친구 추가 확인 } */
 function briefAdPref(b) {
   const u = sessionUser(b.s);
   if (!myBriefs(u.k).length) throw new Error('구독 정보를 찾지 못했어요.');
-  const ad = b.ad === true ? true : b.ad === false ? false : null;
-  if (b.on === true && (ad === false || (ad === null && !bConsentOf(u.k).ad.on))) throw new Error("먼저 '광고성 정보 받기'에 동의해야 고를 수 있어요.");
-  bConsentApply(u.k, { ad: ad, am: b.on === true }, '내 구독 관리');
+  const ad = b.ad === true ? true : b.ad === false ? false : null, cur = bConsentOf(u.k), adOn = ad === true || (ad === null && cur.ad.on);
+  if (b.on === true && !adOn) throw new Error("먼저 '광고성 정보 받기'에 동의해야 고를 수 있어요.");
+  if (b.bm === true && !adOn) throw new Error("먼저 '광고성 정보 받기'에 동의해야 카카오톡 브랜드 메시지를 고를 수 있어요.");
+  if (b.bm === true && !bmOn()) throw new Error('카카오톡 브랜드 메시지는 아직 준비 중이에요.');
+  if (b.bm === true && !cur.fr && b.fr !== true) throw new Error("카카오톡 채널을 친구로 추가한 뒤 '채널 친구로 추가했어요'에 표시해 주세요.");
+  bConsentApply(u.k, { ad: ad, am: b.on === true, bm: b.bm === true ? true : b.bm === false ? false : null, fr: b.fr === true }, '내 구독 관리');
   const c = bConsentPublic(u.k);
-  return { ok: true, amAd: c.am, adc: c.ad };
+  return { ok: true, amAd: c.am, adc: c.ad, bm: c.bm, fr: c.fr };
 }
-/* 메일의 원클릭 수신 거부(로그인 없음, 행 id + 서버 비밀값으로 만든 토큰) — 광고성 정보 받기·이른 아침 광고 받기를 모두 끔 */
+/* 메일·카톡의 원클릭 수신 거부(로그인 없음, 행 id + 서버 비밀값으로 만든 토큰) — 광고성 정보 받기·이른 아침 광고·브랜드 메시지를 모두 끔 */
 function briefAdOff(p) {
   const id = String(p.id || ''), t = String(p.t || '');
   let done = false;
   if (/^B[0-9A-F]{9}$/.test(id) && safeEq(t, bAmToken(id))) withLock(() => {
     const o = bRows().find(x => String(x.r[BC['id']]) === id);
     if (!o) return;
-    bConsentApply(String(o.r[BC['카카오id']]), { ad: false, am: false }, '메일의 수신 거부 링크');
+    bConsentApply(String(o.r[BC['카카오id']]), { ad: false, am: false, bm: false }, String(o.r[BC['채널']]) === 'kakao' ? '카카오톡의 수신 거부 버튼' : '메일의 수신 거부 링크');
     done = true;
   });
   return HtmlService.createHtmlOutput(`<div style="font-family:sans-serif;padding:40px 20px;text-align:center;line-height:1.7">
     <h2>${done ? '광고 수신 거부를 처리했어요' : '처리하지 못했어요'}</h2>
-    <p>${done ? '앞으로 브리핑 메일에 광고를 넣지 않고, 광고성 안내도 보내지 않아요. 브리핑은 똑같이 받아요. 처리 결과는 메일로도 알려 드려요.' : '링크가 바뀌었거나 이미 끝난 구독이에요. 내 구독 관리에서 직접 끌 수 있어요.'}</p>
+    <p>${done ? '앞으로 브리핑에 광고를 넣지 않고, 광고성 안내도 보내지 않아요. 브리핑은 똑같이 받아요(카카오톡은 오전 7시대 알림톡으로). 처리 결과도 알려 드려요.' : '링크가 바뀌었거나 이미 끝난 구독이에요. 내 구독 관리에서 직접 끌 수 있어요.'}</p>
     <p><a href="${BRIEF_WEB}manage/">내 구독 관리로 가기</a></p></div>`);
 }
-/* 2년마다 동의 사실 다시 알림 — 두 동의 모두. 기준 = 지난 확인일, 없으면 켜져 있는 동의 중 가장 이른 동의일 */
+/* 2년마다 동의 사실 다시 알림(시행령 제62조의3) — 켜져 있는 동의 모두. 기준 = 지난 확인일, 없으면 켜져 있는 동의 중 가장 이른 동의일.
+   알릴 것: 보낸 사람 이름 · 동의한 날짜와 동의한 사실 · 계속 받거나 그만 받는 방법. 메일이 없으면 카카오톡 정보성 알림톡(SOLAPI_TPL_ADCHK) */
 function briefAmRecheck(now) {
   const seen = {}, d = x => x instanceof Date ? x : new Date(x);
   bRows().forEach(o => {
     const k = String(o.r[BC['카카오id']]); if (seen[k]) return; seen[k] = 1;
     const c = bConsentOf(k); if (!c.ad.on) return;
-    const ats = [c.ad.at, c.am.on ? c.am.at : ''].filter(Boolean).map(d).filter(x => !isNaN(x));
+    const ats = [c.ad.at, c.am.on ? c.am.at : '', c.bm.on ? c.bm.at : ''].filter(Boolean).map(d).filter(x => !isNaN(x));
     const base = c.chk ? d(c.chk) : (ats.length ? new Date(Math.min.apply(null, ats.map(Number))) : null);
     if (!base || isNaN(base) || now - base < BRIEF_AM_RECHECK * 86400000) return;
-    const em = myBriefs(k).filter(x => String(x.r[BC['채널']]) === 'email' && String(x.r[BC['연락처']] || '')).pop();
-    if (!em) return;
     const dt = x => x ? Utilities.formatDate(d(x), 'Asia/Seoul', 'yyyy-MM-dd') : '';
-    const lines = [`광고성 정보 받기: ${dt(c.ad.at)}에 동의`, c.am.on ? `이른 아침(오전 7시) 브리핑 메일 속 광고 받기: ${dt(c.am.at)}에 동의` : ''].filter(Boolean);
+    const lines = [`광고성 정보 받기: ${dt(c.ad.at)}에 동의`, c.am.on ? `이른 아침(오전 7시) 브리핑 메일 속 광고 받기: ${dt(c.am.at)}에 동의` : '',
+      c.bm.on ? `${BM_LABEL}: ${dt(c.bm.at)}에 동의` : ''].filter(Boolean);
+    const em = myBriefs(k).filter(x => String(x.r[BC['채널']]) === 'email' && String(x.r[BC['연락처']] || '')).pop();
+    if (!em) {
+      if (bmInfoTalk(myBriefs(k), 'SOLAPI_TPL_ADCHK', { '#{보낸곳}': `${BRIEF_SENDER.site}(${BRIEF_SENDER.name})`, '#{내용}': lines.join(' / ').slice(0, 300), '#{링크}': (BRIEF_WEB + 'manage/').replace(/^https:\/\//, '') }, '광고 수신 동의 2년 확인 안내'))
+        myBriefs(k).forEach(x => setB(x.row, '광고확인시각', now));
+      return;
+    }
     try {
       mailSend({ to: String(em.r[BC['연락처']]).replace(/^'/, ''), name: SITE_NAME, subject: `[${SITE_NAME}] 광고 수신 동의 확인 안내`,
         htmlBody: `<div style="font-family:sans-serif;line-height:1.7">법에 따라 2년마다 광고 수신 동의 상태를 알려 드려요.<br>${lines.map(bEsc).join('<br>')}<br>
@@ -3287,6 +3337,164 @@ function briefAmRecheck(now) {
       myBriefs(k).forEach(x => setB(x.row, '광고확인시각', now));
     } catch (e) {}
   });
+}
+
+/* ---------- v76 카카오톡 브랜드 메시지 모닝 브리핑 (대표 결정 2026-11-27 '가안') ----------
+   · 광고성 정보 받기 + 브랜드 메시지 받기 + 카카오톡 채널 친구 확인이 모두 있는 카카오톡 구독자 → 오전 8시 5분부터 브랜드 메시지(광고 포함 가능).
+     나머지 카카오톡 구독자 → 지금처럼 오전 7시대 알림톡(정보성, 광고 없음). 메일은 예전 규칙 그대로(이른 아침 광고 동의자에게만, 하루 한 통).
+   · 시간 잠금(바꾸지 마세요): 카카오 광고성 메시지는 20:50~다음 날 08:00 발송 불가 → bmSend 가 보내기 직전에 지금 시각을 다시 보고, 08:00 전·20:50 이후면 절대 보내지 않음.
+     08:05 첫 발송이 실패하면 30분마다 다시(20:30까지), 20:30이 지나면 그날은 건너뛰고 '발송기록'·운영자 메일에 남김.
+   · 광고 칸(ADS_IN_BRIEF): 공개 광고 목록 data/ad-catalog.json(모양은 assets/ads-proto.js 와 같음) 중 구독자 관심 지역(시·군·구 코드)만으로 서버가 1건 고름
+     (예산·가점·무주택 등 다른 개인 정보는 쓰지 않음). 예시 광고·확인 안 된 현장·'brief' 자리를 고르지 않은 광고는 싣지 않음. 같은 광고는 한 사람에게 7일에 2번까지.
+   · 표기(정보통신망법 제50조 ④항·시행령 제61조 [별표 6] '음성 외 전자적 전송매체'): 광고가 실린 날 맨 앞 '(광고)'+보낸 사람 이름·전화, 끝에 무료 수신 거부 방법.
+   · 스위치: KAKAO_BRAND_MSG_ENABLED · ADS_IN_BRIEF (둘 다 false — 카카오 브랜드 메시지 발송 업체 준비 전). 켠 뒤 함수 bmInstall 한 번 실행(5분마다 bmDaily).
+   · 시험: node tools/brief-bm-test.js </dev/null */
+const KAKAO_BRAND_MSG_ENABLED = false;
+const ADS_IN_BRIEF = false;
+const BM_WIN = { from: 8 * 60, to: 20 * 60 + 50 };      // 분(KST): 08:00 ≤ 보냄 < 20:50
+const BM_START = 8 * 60 + 5, BM_LAST = 20 * 60 + 30, BM_RETRY_MIN = 30, BM_DATA_WAIT = 9 * 60 + 30;
+const BM_FC = { days: 7, max: 2 };                       // 같은 광고 한 사람에게 7일에 2번까지 — assets/ads-proto.js BRIEF_FC 와 같게
+const BM_MAX_TEXT = 1000;
+const BM_AD_CATALOG = WEB_ROOT + 'data/ad-catalog.json';
+const SH_BMF = '브랜드광고노출', BMFH = ['날짜', '회원', '광고id'];   // 회원 = 해시(카카오id 원문 아님)
+function bmOn() {
+  if (!KAKAO_BRAND_MSG_ENABLED) return false;
+  const P = PropertiesService.getScriptProperties();
+  return !!(P.getProperty('SOLAPI_API_KEY') && P.getProperty('SOLAPI_API_SECRET') && P.getProperty('SOLAPI_PFID'));
+}
+function kstMin(now) { return Number(Utilities.formatDate(now, 'Asia/Seoul', 'HH')) * 60 + Number(Utilities.formatDate(now, 'Asia/Seoul', 'mm')); }
+function bmWindowAt(m) { return m >= BM_WIN.from && m < BM_WIN.to; }
+function bmWindowOk(now) { return bmWindowAt(kstMin(now)); }
+/* 이 행이 08:05 브랜드 메시지 대상인지(사람 단위 동의는 모든 행에 같게 적혀 있음) */
+function bmEligibleRow(r) {
+  return String(r[BC['채널']]) === 'kakao' && r[BC['광고동의']] === true && r[BC['브랜드메시지동의']] === true && !!r[BC['채널친구확인시각']];
+}
+/* 광고 1건 고르기 — assets/ads-proto.js briefPick 과 같은 규칙(tools/brief-bm-test.js 가 대조). codes = 관심 지역 시·군·구 5자리만 */
+function bmAdPick(list, codes, fc, day, opt) {
+  opt = opt || {}; fc = fc || {};
+  const arr = v => v == null || v === '' ? [] : Array.isArray(v) ? v : [v];
+  codes = arr(codes).map(String).filter(c => /^\d{5}$/.test(c));
+  if (!codes.length) return null;
+  const sds = codes.map(c => c.slice(0, 2));
+  const c = (list || []).map(a => {
+    if (!a || !a.id || !a.target || !a.name || !a.advertiser) return null;
+    if (a.example && !opt.examples) return null;
+    if (a.verified !== true) return null;
+    if (arr(a.target.pages).indexOf('brief') < 0) return null;
+    if (day && ((a.start && day < a.start) || (a.end && day > a.end))) return null;
+    if ((fc[a.id] || 0) >= BM_FC.max) return null;
+    const tc = arr(a.target.codes), ts = arr(a.target.sido);
+    const s = tc.some(x => codes.indexOf(x) >= 0) || codes.indexOf(a.code) >= 0 ? 3 : ts.some(x => sds.indexOf(x) >= 0) ? 1 : 0;
+    return s ? { a: a, s: s } : null;
+  }).filter(Boolean).sort((x, y) => (y.s - x.s) || String(x.a.id).localeCompare(String(y.a.id)));
+  return c[0] ? c[0].a : null;
+}
+function bmCatalog() {
+  const j = bFetchJson(BM_AD_CATALOG);
+  return j && Array.isArray(j.ads) ? j.ads : [];
+}
+/* 최근 7일 노출 수 { 회원해시: { 광고id: n } } */
+function bmFcMap(now) {
+  const sh = book().getSheetByName(SH_BMF); if (!sh) return {};
+  const from = ymd(addDays(now, -(BM_FC.days - 1))), out = {};
+  sh.getDataRange().getValues().slice(1).forEach(r => { const d = r[0] instanceof Date ? ymd(r[0]) : String(r[0]).slice(0, 10); if (d < from) return;
+    const h = String(r[1]), id = String(r[2]); (out[h] = out[h] || {})[id] = (out[h][id] || 0) + 1; });
+  return out;
+}
+function bmFcAdd(date, hk, id) { uSheet(SH_BMF, BMFH).appendRow([date, hk, id]); }
+function bmFcPrune(now) {
+  const sh = book().getSheetByName(SH_BMF); if (!sh) return;
+  const v = sh.getDataRange().getValues(), cut = ymd(addDays(now, -30));
+  let n = 0; for (let i = 1; i < v.length; i++) { const d = v[i][0] instanceof Date ? ymd(v[i][0]) : String(v[i][0]).slice(0, 10); if (d < cut) n++; else break; }
+  for (let i = 0; i < n; i++) sh.deleteRow(2);
+}
+/* 브랜드 메시지 글(텍스트형) + 버튼. 광고가 있으면 맨 앞 (광고)·보낸 사람, 끝에 무료 수신 거부 방법 */
+function bmCompose(date, pieces, s, ad) {
+  const md = date.slice(5).replace('-', '/'), off = `${bApi()}?action=briefAdOff&id=${encodeURIComponent(s.id)}&t=${bAmToken(s.id)}`;
+  const t = x => String(x == null ? '' : x).replace(/[\u0000-\u001f]/g, ' ').trim();
+  const head = ad ? `(광고) ${BRIEF_SENDER.site}(${BRIEF_SENDER.name}) ${BRIEF_SENDER.tel}\n\n` : '';
+  const body = `[${BRIEF_NAME}] ${md}\n` + pieces.slice(0, 3).map(p => `· ${p.nm} — 새 매매 ${p.n}건 · 신고가 ${p.hi}건${p.fact ? '\n  ' + t(p.fact).slice(0, 90) : ''}`).join('\n')
+    + (pieces.length > 3 ? `\n· 그 밖에 ${pieces.length - 3}곳은 [브리핑 전체 보기]에서` : '');
+  const adTxt = ad ? `\n\n[광고] 관심 지역 분양 소식\n${t(ad.name).slice(0, 40)}${ad.sgg ? ' · ' + t(ad.sido ? ad.sido.replace(/(특별자치시|특별자치도|특별시|광역시|도)$/, '') + ' ' : '') + t(ad.sgg) : ''}`
+    + (ad.line ? `\n${t(ad.line).slice(0, 60)}` : '') + (ad.price ? `\n${t(ad.price).slice(0, 60)}` : '') + `\n광고주: ${t(ad.advertiser).slice(0, 30)}\n브리핑의 숫자·순위는 광고와 관계없이 똑같이 계산해요.` : '';
+  const n080 = String(PropertiesService.getScriptProperties().getProperty('BM_OPTOUT_080') || '').trim();   // 080 무료 수신 거부 번호(발송 업체 안내상 광고 하단 표기 — 받으면 스크립트 속성에)
+  const foot = `\n\n무료 수신 거부: ${/^080-?\d{3,4}-?\d{4}$/.test(n080) ? n080 + ' · ' : ''}아래 [광고 수신 거부] 버튼 또는 ${BRIEF_WEB}manage/ (채널 홈에서 '채널 차단'도 가능)`;
+  const text = (head + body).slice(0, BM_MAX_TEXT - adTxt.length - foot.length) + adTxt + foot;
+  const btn = (name, url) => ({ name: name, linkType: 'WL', linkMobile: url, linkPc: url });
+  const buttons = [btn('브리핑 전체 보기', pieces[0].url)];
+  if (ad && /^https:\/\/[^\s<>"']{4,300}$/.test(String(ad.url || ''))) buttons.push(btn('분양 소식 보기', String(ad.url)));
+  buttons.push(btn('광고 수신 거부', off));
+  return { text: text, buttons: buttons, ad: !!ad };
+}
+/* 솔라피 브랜드 메시지(자유형·텍스트형, 채널 친구 대상 targeting 'I'). 문자 대체 발송은 끔(문자 광고는 080 수신 거부 번호 등 따로 필요).
+   ★ 시간 잠금: 보내기 직전 지금 시각(KST)이 08:00 전이거나 20:50 이후면 보내지 않음 — 부르는 쪽이 무엇을 넘기든 이 함수가 마지막 문 */
+function bmSend(to, text, buttons) {
+  if (!bmWindowOk(new Date())) return { ok: false, why: '시간 잠금(08:00~20:50만 보냄)', guard: true };
+  if (!bmOn()) return { ok: false, why: '브랜드 메시지 꺼짐' };
+  const P = PropertiesService.getScriptProperties();
+  const key = P.getProperty('SOLAPI_API_KEY'), sec = P.getProperty('SOLAPI_API_SECRET'), pf = P.getProperty('SOLAPI_PFID');
+  const date = new Date().toISOString(), salt = Utilities.getUuid().replace(/-/g, '');
+  const sig = Utilities.computeHmacSha256Signature(date + salt, sec).map(b => ('0' + (b & 255).toString(16)).slice(-2)).join('');
+  const msg = { to: to, type: 'BMS_FREE', text: text, kakaoOptions: { pfId: pf, disableSms: true, buttons: buttons, bms: { targeting: 'I', chatBubbleType: 'TEXT' } } };
+  const r = UrlFetchApp.fetch('https://api.solapi.com/messages/v4/send-many/detail', { method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+    headers: { Authorization: `HMAC-SHA256 apiKey=${key}, date=${date}, salt=${salt}, signature=${sig}` }, payload: JSON.stringify({ messages: [msg] }) });
+  let j = null; try { j = JSON.parse(r.getContentText()); } catch (e) { j = null; }
+  const failed = j && Array.isArray(j.failedMessageList) && j.failedMessageList.length ? j.failedMessageList[0] : null;
+  if (r.getResponseCode() !== 200) return { ok: false, why: 'http ' + r.getResponseCode() };
+  if (failed) return { ok: false, why: String(failed.statusMessage || failed.statusCode || '실패').slice(0, 60) };
+  return { ok: true };
+}
+/* 5분마다(트리거 bmInstall). 08:05 전·이미 끝난 날·꺼져 있으면 바로 끝. 실패한 분만 30분마다 다시, 20:30이 지나면 그날은 건너뜀 */
+function bmDaily() {
+  if (!bmOn()) return 'off';
+  const P = PropertiesService.getScriptProperties(), now = new Date(), m = kstMin(now), date = ymd(now);
+  if (m < BM_START) return 'early';
+  if (P.getProperty('BM_SENT') === date) return 'done';
+  const lk = LockService.getScriptLock();
+  if (typeof lk.tryLock === 'function' ? !lk.tryLock(5000) : (lk.waitLock(5000), false)) return 'busy';
+  try {
+    const todo = bRows().filter(o => { const s = briefState(o, now); return s.active && bmEligibleRow(o.r) && String(o.r[BC['최근발송일']]).slice(0, 10) !== date; });
+    if (m > BM_LAST) {
+      todo.forEach(o => bLog([date, String(o.r[BC['id']]), 'kakao-bm', '못 보냄: 20:30까지 실패 — 오늘은 건너뜀', 0]));
+      if (todo.length && NOTIFY) try { MailApp.sendEmail(Session.getEffectiveUser().getEmail(), `[${SITE_NAME}] 카카오톡 브랜드 메시지 ${todo.length}명 못 보냄(${date})`,
+        `오늘 오전 8시 5분 브랜드 메시지 브리핑을 20:30까지 다시 보내 봤지만 ${todo.length}명에게 보내지 못해 오늘은 건너뛰었어요(밤 시간 광고 발송 금지).\n'발송기록' 시트에서 이유를 확인해 주세요.\n\n${book().getUrl()}`); } catch (e) {}
+      P.setProperty('BM_SENT', date); return 'skip';
+    }
+    if (!todo.length) { P.setProperty('BM_SENT', date); return 'none'; }
+    const last = Number(P.getProperty('BM_TRY') || 0);
+    if (P.getProperty('BM_TRY_D') === date && Date.now() - last < BM_RETRY_MIN * 60000) return 'wait-retry';
+    const ix = bFetchJson(BRIEF_DATA + 'index.json');
+    if ((!ix || ix.date !== date) && m < BM_DATA_WAIT) return 'wait-data';   // 오늘 자료가 늦으면 9시 반까지 기다렸다가, 그 뒤에는 있는 자료로
+    P.setProperty('BM_TRY', String(Date.now())); P.setProperty('BM_TRY_D', date);
+    const um = userBriefMap(), cache = {}, brief = g => (g in cache) ? cache[g] : (cache[g] = bFetchJson(BRIEF_DATA + g + '.json'));
+    const cat = ADS_IN_BRIEF ? bmCatalog() : [], fcm = ADS_IN_BRIEF ? bmFcMap(now) : {};
+    let fails = 0, sent = 0;
+    for (let i = 0; i < todo.length; i++) {
+      const o = todo[i], s = briefState(o, now), k = String(o.r[BC['카카오id']]), ub = um[k] || { areas: [], apts: [] };
+      const myApts = (ub.apts || []).slice(0, s.apts), urg = s.urgPick && ub.urg ? ub.urg : BRIEF_URG.def, areas = (ub.areas || []).slice(0, s.areas);
+      const pieces = areas.map(a => { const S = brief(a.g); return S ? briefPiece(S, a, s.pro, myApts, urg) : null; }).filter(Boolean);
+      if (!pieces.length) { bLog([date, s.id, 'kakao-bm', '동네 자료 없음', 0]); setB(o.row, '최근발송일', date); continue; }
+      pieces.forEach(p => { p.url += `&src=kakao&k=${bKey(s.id)}&day=${date}`; });
+      const hk = hashOf('bmfc|' + k), ad = ADS_IN_BRIEF ? bmAdPick(cat, areas.map(a => a.g), fcm[hk] || {}, date) : null;
+      const msg = bmCompose(date, pieces, s, ad);
+      let r; try { r = bmSend(String(o.r[BC['연락처']]).replace(/^'/, ''), msg.text, msg.buttons); } catch (e) { r = { ok: false, why: String(e.message || e).slice(0, 60) }; }
+      if (r.ok) {
+        setB(o.row, '최근발송일', date); setB(o.row, '발송수', s.sent + 1); sent++;
+        if (ad) { bmFcAdd(date, hk, ad.id); (fcm[hk] = fcm[hk] || {})[ad.id] = ((fcm[hk] || {})[ad.id] || 0) + 1; }
+        bLog([date, s.id, 'kakao-bm', '보냄(브랜드 메시지' + (ad ? ' · 광고 ' + ad.id : '') + ')', pieces.length]);
+      } else {
+        fails++; bLog([date, s.id, 'kakao-bm', '못 보냄(브랜드 메시지): ' + r.why + (r.guard ? '' : ' — 20:30까지 다시'), pieces.length]);
+        if (r.guard) break;                               // 시간 잠금이 걸리면 나머지도 보내지 않음
+      }
+    }
+    if (!fails) { P.setProperty('BM_SENT', date); try { bmFcPrune(now); } catch (e) {} }
+    return { sent: sent, fails: fails };
+  } finally { try { lk.releaseLock(); } catch (e) {} }
+}
+/* 스위치를 켠 뒤 편집기에서 한 번 실행: 5분마다 bmDaily(08:05 전·20:30 뒤에는 바로 끝남) */
+function bmInstall() {
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'bmDaily').forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('bmDaily').timeBased().everyMinutes(5).create();
 }
 
 /* ---------- 공개 집계 (워크플로가 읽음, 개인정보 없음) ---------- */
@@ -3873,6 +4081,7 @@ function briefDaily() {
     if (admStop) return;
     const s = briefState(o, now);
     if (!s.active || String(o.r[BC['최근발송일']]).slice(0, 10) === date) return;
+    if (s.channel === 'kakao' && bmOn() && bmEligibleRow(o.r)) return;   // v76 브랜드 메시지 동의자는 08:05 bmDaily 가 보냄(광고 포함 가능 — 08:00 전에는 절대 안 보냄)
     if (s.adm && s.channel === 'email') {        // v48 운영자: 메일 한 통에 20곳씩 나눠 보내고, 시간·메일 한도가 모자라면 멈췄다가 다음 실행(9시)에서 이어서
       const r1 = bAdminSend(o, s, um, date, t0, brief, M, AD, ix, AXM, cxOf, dpTail);
       if (r1 === 'stop') { admStop = true; return; }
@@ -8588,7 +8797,7 @@ function bbtStart(b) {
   const t = kstToday(), first = ymd(addDays(t, BUYER_TRIAL.days));
   myBriefs(k).filter(x => String(x.r[BC['상품']]) === BUYER_TRIAL.name && String(x.r[BC['상태']]) === BST.wait).forEach(x => setB(x.row, '상태', BST.stop));   // 다시 누른 경우 앞 행 정리
   newBriefRow(c.u, BUYER_TRIAL, BST.wait, c.channel, c.ct, c.ad, String(o.r[OC['주문번호']]));
-  bConsentApply(k, { ad: c.ad, am: c.amAd }, '구매 고객 30일 무료');
+  bConsentApply(k, { ad: c.ad, am: c.amAd, bm: c.bm, fr: c.fr }, '구매 고객 30일 무료');
   const sh = uSheet(SH_BRA, BRAH), a = baOf(k), now = new Date();
   const vals = { '회원': uh, '상태': BRA_ST.card, '요금제': P === BRIEF_PRICE[b.product] ? String(b.product) : 'brief', '첫결제일': first, '다음결제일': first, '첫달반값': '', '등록일': now, '수정일': now, '중개사번호': bn, '메모': '구매 고객 30일 무료' };
   if (a) Object.keys(vals).forEach(h => baSet(a.row, h, vals[h])); else sh.appendRow(BRAH.map(h => h in vals ? vals[h] : ''));
