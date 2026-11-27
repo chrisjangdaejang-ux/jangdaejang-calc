@@ -1,6 +1,10 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v78 변경 요약 (v77 위에 — 카카오톡 브랜드 메시지가 꺼져 있어 지금 서비스에는 영향 없음)
+ *  - 아침 8시 5분 브랜드 메시지 브리핑이 실패하면 10분마다 다시, 첫 시도 25분 뒤(보통 08:30)에도 안 되면 광고 없는 알림톡 브리핑으로 바로 대신 보냄
+ *    (대표 결정 2026-11-27 '저녁까지 못 나가면 안 됨'). 알림톡도 12:00까지 안 되면 발송기록·운영자 메일. 시험: node tools/brief-bm-test.js </dev/null
+ *
  * v77 변경 요약 (v76 위에 다시 배포 — 새 버전. LEADS_ENABLED=false·PAID_OPEN=false 라 지금 서비스에는 영향 없음. 새 시트 5개는 첫 사용 때 저절로 생김. 켜는 날 함수 setupLeads 한 번 실행)
  *  - 분양 상담 연결(성과형 리드, 대표 승인 2026-11-27 · 맨 아래 'v77' 칸): leadOtp·leadVerify(문자 인증번호) · leadSubmit(이 광고주에게 연락처 제공 동의 + 등급 A/B/C × 지역 등급 단가) ·
  *    leadMine·leadWithdraw(내 상담 신청·동의 거두기) · leadChat(① 대화 열기 — 고민 상담 1:1 채팅, 현장이 수락할 때 하트 LD_PRICE.chat.hearts 개) · leadAdv(광고주 관리 화면) ·
@@ -14,7 +18,7 @@
  * v76 변경 요약 (v75 위에 다시 배포 — 새 버전. KAKAO_BRAND_MSG_ENABLED=false·ADS_IN_BRIEF=false 라 지금 서비스에는 영향 없음. '브리핑구독' 뒤 4칸 머리 줄은 첫 사용 때 자동)
  *  - 모닝 브리핑 카카오톡 광고 '가안'(대표 결정 2026-11-27): 광고성 정보 받기 + 카톡 브랜드 메시지 받기 + 채널 친구 확인이 모두 있는 카카오톡 구독자는
  *    오전 8시 5분 브랜드 메시지(관심 지역 분양 소식 광고 1건까지, '(광고)'·보낸 사람·무료 수신 거부 표기), 나머지는 지금처럼 오전 7시대 알림톡(광고 없음).
- *  - 시간 잠금 bmSend: 08:00 전·20:50 이후에는 절대 보내지 않음. 실패하면 30분마다 다시(20:30까지), 그 뒤 그날은 건너뜀(발송기록·운영자 메일).
+ *  - 시간 잠금 bmSend: 08:00 전·20:50 이후에는 절대 보내지 않음. v78 실패하면 10분마다 다시, 첫 시도 25분 뒤(보통 08:30)엔 광고 없는 알림톡으로 대신(12:00까지 안 되면 발송기록·운영자 메일).
  *  - '브리핑구독' 뒤 4칸: 브랜드메시지동의 · 브랜드메시지동의시각 · 브랜드메시지철회시각 · 채널친구확인시각. 시트 '브랜드광고노출'(날짜·회원 해시·광고 id, 7일 2번 제한).
  *  - 카카오톡으로만 받는 분께 동의 처리 결과(SOLAPI_TPL_ADRES)·2년 확인 안내(SOLAPI_TPL_ADCHK)를 정보성 알림톡으로(템플릿을 넣으면 켜짐).
  *  - 켜는 날: 두 스위치를 true 로 + 스크립트 속성 KAKAO_CHANNEL_URL(pf.kakao.com 주소)·BM_OPTOUT_080(080 무료 수신 거부 번호) + 함수 bmInstall 한 번 실행. 검증: node tools/brief-bm-test.js
@@ -3356,7 +3360,8 @@ function briefAmRecheck(now) {
    · 광고성 정보 받기 + 브랜드 메시지 받기 + 카카오톡 채널 친구 확인이 모두 있는 카카오톡 구독자 → 오전 8시 5분부터 브랜드 메시지(광고 포함 가능).
      나머지 카카오톡 구독자 → 지금처럼 오전 7시대 알림톡(정보성, 광고 없음). 메일은 예전 규칙 그대로(이른 아침 광고 동의자에게만, 하루 한 통).
    · 시간 잠금(바꾸지 마세요): 카카오 광고성 메시지는 20:50~다음 날 08:00 발송 불가 → bmSend 가 보내기 직전에 지금 시각을 다시 보고, 08:00 전·20:50 이후면 절대 보내지 않음.
-     08:05 첫 발송이 실패하면 30분마다 다시(20:30까지), 20:30이 지나면 그날은 건너뛰고 '발송기록'·운영자 메일에 남김.
+     v78(대표 결정 2026-11-27 '저녁까지 못 나가면 안 됨'): 08:05 첫 발송이 실패하면 10분마다 다시, 첫 시도 25분 뒤(보통 08:30)에도 못 보낸 분은
+     광고 없는 알림톡 브리핑(7시대와 같은 SOLAPI_TPL_BRIEF)으로 바로 대신 보냄. 알림톡도 실패하면 10분마다 다시, 12:00까지 안 되면 건너뛰고 '발송기록'·운영자 메일.
    · 광고 칸(ADS_IN_BRIEF): 공개 광고 목록 data/ad-catalog.json(모양은 assets/ads-proto.js 와 같음) 중 구독자 관심 지역(시·군·구 코드)만으로 서버가 1건 고름
      (예산·가점·무주택 등 다른 개인 정보는 쓰지 않음). 예시 광고·확인 안 된 현장·'brief' 자리를 고르지 않은 광고는 싣지 않음. 같은 광고는 한 사람에게 7일에 2번까지.
    · 표기(정보통신망법 제50조 ④항·시행령 제61조 [별표 6] '음성 외 전자적 전송매체'): 광고가 실린 날 맨 앞 '(광고)'+보낸 사람 이름·전화, 끝에 무료 수신 거부 방법.
@@ -3365,7 +3370,7 @@ function briefAmRecheck(now) {
 const KAKAO_BRAND_MSG_ENABLED = false;
 const ADS_IN_BRIEF = false;
 const BM_WIN = { from: 8 * 60, to: 20 * 60 + 50 };      // 분(KST): 08:00 ≤ 보냄 < 20:50
-const BM_START = 8 * 60 + 5, BM_LAST = 20 * 60 + 30, BM_RETRY_MIN = 30, BM_DATA_WAIT = 9 * 60 + 30;
+const BM_START = 8 * 60 + 5, BM_RETRY_MIN = 10, BM_SWITCH_MIN = 25, BM_GIVEUP = 12 * 60, BM_DATA_WAIT = 9 * 60 + 30;   // v78 늦어도 첫 시도 25분 뒤(보통 08:30)엔 알림톡으로 대신
 const BM_FC = { days: 7, max: 2 };                       // 같은 광고 한 사람에게 7일에 2번까지 — assets/ads-proto.js BRIEF_FC 와 같게
 const BM_MAX_TEXT = 1000;
 const BM_AD_CATALOG = WEB_ROOT + 'data/ad-catalog.json';
@@ -3457,7 +3462,14 @@ function bmSend(to, text, buttons) {
   if (failed) return { ok: false, why: String(failed.statusMessage || failed.statusCode || '실패').slice(0, 60) };
   return { ok: true };
 }
-/* 5분마다(트리거 bmInstall). 08:05 전·이미 끝난 날·꺼져 있으면 바로 끝. 실패한 분만 30분마다 다시, 20:30이 지나면 그날은 건너뜀 */
+/* 아침 브리핑 알림톡 변수(7시대 briefDaily 와 v78 대신 보내기가 함께 씀) */
+function briefKakaoVars(pieces, s, date) {
+  const p = pieces[0];
+  return { '#{날짜}': date.slice(5).replace('-', '/'), '#{동네}': pieces.map(x => x.nm).join(', ').slice(0, 40),
+    '#{건수}': String(pieces.reduce((n, x) => n + x.n, 0)), '#{신고가}': String(pieces.reduce((n, x) => n + x.hi, 0)), '#{한줄}': p.fact.slice(0, 120),
+    '#{만료일}': s.end, '#{링크}': p.url.replace(/^https:\/\//, '') };
+}
+/* 5분마다(트리거 bmInstall). 08:05 전·이미 끝난 날·꺼져 있으면 바로 끝. 실패한 분만 10분마다 다시, 첫 시도 25분 뒤엔 광고 없는 알림톡으로 대신, 12:00까지 안 되면 건너뜀 */
 function bmDaily() {
   if (!bmOn()) return 'off';
   const P = PropertiesService.getScriptProperties(), now = new Date(), m = kstMin(now), date = ymd(now);
@@ -3467,17 +3479,21 @@ function bmDaily() {
   if (typeof lk.tryLock === 'function' ? !lk.tryLock(5000) : (lk.waitLock(5000), false)) return 'busy';
   try {
     const todo = bRows().filter(o => { const s = briefState(o, now); return s.active && bmEligibleRow(o.r) && String(o.r[BC['최근발송일']]).slice(0, 10) !== date; });
-    if (m > BM_LAST) {
-      todo.forEach(o => bLog([date, String(o.r[BC['id']]), 'kakao-bm', '못 보냄: 20:30까지 실패 — 오늘은 건너뜀', 0]));
-      if (todo.length && NOTIFY) try { MailApp.sendEmail(Session.getEffectiveUser().getEmail(), `[${SITE_NAME}] 카카오톡 브랜드 메시지 ${todo.length}명 못 보냄(${date})`,
-        `오늘 오전 8시 5분 브랜드 메시지 브리핑을 20:30까지 다시 보내 봤지만 ${todo.length}명에게 보내지 못해 오늘은 건너뛰었어요(밤 시간 광고 발송 금지).\n'발송기록' 시트에서 이유를 확인해 주세요.\n\n${book().getUrl()}`); } catch (e) {}
+    if (m >= BM_GIVEUP) {
+      todo.forEach(o => bLog([date, String(o.r[BC['id']]), 'kakao-bm', '못 보냄: 12:00까지 브랜드 메시지·알림톡 모두 실패 — 오늘은 건너뜀', 0]));
+      if (todo.length && NOTIFY) try { MailApp.sendEmail(Session.getEffectiveUser().getEmail(), `[${SITE_NAME}] 카카오톡 아침 브리핑 ${todo.length}명 못 보냄(${date})`,
+        `오늘 오전 8시 5분 브랜드 메시지가 실패해 광고 없는 알림톡으로도 12:00까지 다시 보내 봤지만 ${todo.length}명에게 보내지 못했어요.\n'발송기록' 시트에서 이유를 확인해 주세요.\n\n${book().getUrl()}`); } catch (e) {}
       P.setProperty('BM_SENT', date); return 'skip';
     }
     if (!todo.length) { P.setProperty('BM_SENT', date); return 'none'; }
-    const last = Number(P.getProperty('BM_TRY') || 0);
-    if (P.getProperty('BM_TRY_D') === date && Date.now() - last < BM_RETRY_MIN * 60000) return 'wait-retry';
+    const last = Number(P.getProperty('BM_TRY') || 0), first = P.getProperty('BM_FIRST_D') === date ? Number(P.getProperty('BM_FIRST') || 0) : 0;
+    const swapDue = !!first && Date.now() - first >= BM_SWITCH_MIN * 60000 && P.getProperty('BM_SWAP_D') !== date;   // 대신 보내기 첫 차례는 기다리지 않음
+    if (!swapDue && P.getProperty('BM_TRY_D') === date && Date.now() - last < BM_RETRY_MIN * 60000) return 'wait-retry';
     const ix = bFetchJson(BRIEF_DATA + 'index.json');
     if ((!ix || ix.date !== date) && m < BM_DATA_WAIT) return 'wait-data';   // 오늘 자료가 늦으면 9시 반까지 기다렸다가, 그 뒤에는 있는 자료로
+    if (P.getProperty('BM_FIRST_D') !== date) { P.setProperty('BM_FIRST', String(Date.now())); P.setProperty('BM_FIRST_D', date); }
+    const swap = Date.now() - Number(P.getProperty('BM_FIRST') || Date.now()) >= BM_SWITCH_MIN * 60000;   // v78 첫 시도 25분 뒤 → 알림톡(광고 없음)으로 대신
+    if (swap) P.setProperty('BM_SWAP_D', date);
     P.setProperty('BM_TRY', String(Date.now())); P.setProperty('BM_TRY_D', date);
     const um = userBriefMap(), cache = {}, brief = g => (g in cache) ? cache[g] : (cache[g] = bFetchJson(BRIEF_DATA + g + '.json'));
     const cat = ADS_IN_BRIEF ? bmCatalog() : [], fcm = ADS_IN_BRIEF ? bmFcMap(now) : {};
@@ -3488,6 +3504,12 @@ function bmDaily() {
       const pieces = areas.map(a => { const S = brief(a.g); return S ? briefPiece(S, a, s.pro, myApts, urg) : null; }).filter(Boolean);
       if (!pieces.length) { bLog([date, s.id, 'kakao-bm', '동네 자료 없음', 0]); setB(o.row, '최근발송일', date); continue; }
       pieces.forEach(p => { p.url += `&src=kakao&k=${bKey(s.id)}&day=${date}`; });
+      if (swap) {                                          // v78 브랜드 메시지가 계속 실패 → 7시대와 같은 정보성 알림톡(광고 없음)
+        let r2; try { r2 = solapiSend(String(o.r[BC['연락처']]).replace(/^'/, ''), 'SOLAPI_TPL_BRIEF', briefKakaoVars(pieces, s, date)); } catch (e) { r2 = { ok: false, why: String(e.message || e).slice(0, 60) }; }
+        if (r2.ok) { setB(o.row, '최근발송일', date); setB(o.row, '발송수', s.sent + 1); sent++; bLog([date, s.id, 'kakao-bm', '보냄(알림톡으로 대신 — 브랜드 메시지 실패, 광고 없음)', pieces.length]); }
+        else { fails++; bLog([date, s.id, 'kakao-bm', '못 보냄(알림톡 대신 보내기): ' + r2.why + ' — 12:00까지 다시', pieces.length]); }
+        continue;
+      }
       const hk = hashOf('bmfc|' + k), ad = ADS_IN_BRIEF ? bmAdPick(cat, areas.map(a => a.g), fcm[hk] || {}, date) : null;
       const msg = bmCompose(date, pieces, s, ad);
       let r; try { r = bmSend(String(o.r[BC['연락처']]).replace(/^'/, ''), msg.text, msg.buttons); } catch (e) { r = { ok: false, why: String(e.message || e).slice(0, 60) }; }
@@ -3496,7 +3518,7 @@ function bmDaily() {
         if (ad) { bmFcAdd(date, hk, ad.id); (fcm[hk] = fcm[hk] || {})[ad.id] = ((fcm[hk] || {})[ad.id] || 0) + 1; }
         bLog([date, s.id, 'kakao-bm', '보냄(브랜드 메시지' + (ad ? ' · 광고 ' + ad.id : '') + ')', pieces.length]);
       } else {
-        fails++; bLog([date, s.id, 'kakao-bm', '못 보냄(브랜드 메시지): ' + r.why + (r.guard ? '' : ' — 20:30까지 다시'), pieces.length]);
+        fails++; bLog([date, s.id, 'kakao-bm', '못 보냄(브랜드 메시지): ' + r.why + (r.guard ? '' : ' — 10분 뒤 다시(25분 넘으면 알림톡으로)'), pieces.length]);
         if (r.guard) break;                               // 시간 잠금이 걸리면 나머지도 보내지 않음
       }
     }
@@ -3504,7 +3526,7 @@ function bmDaily() {
     return { sent: sent, fails: fails };
   } finally { try { lk.releaseLock(); } catch (e) {} }
 }
-/* 스위치를 켠 뒤 편집기에서 한 번 실행: 5분마다 bmDaily(08:05 전·20:30 뒤에는 바로 끝남) */
+/* 스위치를 켠 뒤 편집기에서 한 번 실행: 5분마다 bmDaily(08:05 전·보낸 뒤에는 바로 끝남) */
 function bmInstall() {
   ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'bmDaily').forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger('bmDaily').timeBased().everyMinutes(5).create();
@@ -4126,10 +4148,7 @@ function briefDaily() {
       else if (s.channel === 'kakao') {
         if (!ch.kakao) res = { ok: false, why: '알림톡 키 없음' };
         else {
-          const p = pieces[0];
-          res = solapiSend(to, 'SOLAPI_TPL_BRIEF', { '#{날짜}': date.slice(5).replace('-', '/'), '#{동네}': pieces.map(x => x.nm).join(', ').slice(0, 40),
-            '#{건수}': String(pieces.reduce((n, x) => n + x.n, 0)), '#{신고가}': String(pieces.reduce((n, x) => n + x.hi, 0)), '#{한줄}': p.fact.slice(0, 120),
-            '#{만료일}': s.end, '#{링크}': p.url.replace(/^https:\/\//, '') });
+          res = solapiSend(to, 'SOLAPI_TPL_BRIEF', briefKakaoVars(pieces, s, date));
         }
       } else res = { ok: false, why: '웹 알림 준비 중' };
     } catch (e) { res = { ok: false, why: String(e.message || e).slice(0, 60) }; later = false; }

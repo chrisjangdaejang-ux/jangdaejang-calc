@@ -1,7 +1,7 @@
 /* 모닝 브리핑 카카오톡 브랜드 메시지(v76, 대표 결정 2026-11-27 '가안') 검증 — 실행: node tools/brief-bm-test.js </dev/null
    가짜 구글 시트·솔라피·공개 데이터 위에서 확인합니다(실제 서버·카카오에는 접속하지 않음).
    ① 시간 잠금: 08:00 전·20:50 이후 광고 메시지 절대 안 보냄 ② 동의 나누기: 광고 동의 + 브랜드 메시지 동의 + 채널 친구 확인 → 08:05 브랜드 메시지,
-   나머지 → 7시대 알림톡(광고 없음) ③ 08:05 실패 → 30분마다 다시, 20:30 뒤 건너뜀 ④ 광고 1건·관심 지역만·7일 2번 제한·예시 광고 안 씀
+   나머지 → 7시대 알림톡(광고 없음) ③ 08:05 실패 → 10분마다 다시, 25분 뒤 광고 없는 알림톡으로 대신, 12:00 뒤 건너뜀 ④ 광고 1건·관심 지역만·7일 2번 제한·예시 광고 안 씀
    ⑤ 수신 거부·2년 확인 안내(카톡만 받는 분) ⑥ 스위치 꺼진 기본값 ⑦ 화면 시안 규칙(assets/ads-proto.js briefPick)과 서버 규칙 같음 */
 'use strict';
 const fs = require('fs'), vm = require('vm'), path = require('path'), crypto = require('crypto');
@@ -229,15 +229,15 @@ function boot(on) {
   S.at('2026-12-02T09:10:00+09:00'); T.briefDaily();
   check('9시 briefDaily 다시 돌아도 A 에게 알림톡 안 감', !S.solapi().some(x => x.to === '01011111111' && x.kakaoOptions.templateId === 'TPLBRIEF'));
 
-  /* 하루 2: 08:06 실패 → 08:20 기다림 → 08:40 성공(같은 광고 2번째) */
+  /* 하루 2: 08:06 실패 → 08:10 기다림 → 08:17 다시(성공, 같은 광고 2번째) */
   S.E.bmFail = true; S.E.bmCode = 500;
   S.at('2026-12-03T08:06:00+09:00'); out = T.bmDaily();
-  check('실패: fails 1, 오늘 끝 표시 안 함', out.fails === 1 && S.props.BM_SENT !== '2026-12-03' && S.log().some(x => /못 보냄\(브랜드 메시지\): http 500 — 20:30까지 다시/.test(x[3])), out);
+  check('실패: fails 1, 오늘 끝 표시 안 함', out.fails === 1 && S.props.BM_SENT !== '2026-12-03' && S.log().some(x => /못 보냄\(브랜드 메시지\): http 500 — 10분 뒤 다시/.test(x[3])), out);
   S.E.bmFail = false;
-  S.at('2026-12-03T08:20:00+09:00');
-  check('30분 안에는 다시 안 보냄', T.bmDaily() === 'wait-retry');
-  S.at('2026-12-03T08:40:00+09:00'); out = T.bmDaily();
-  check('30분 뒤 다시 → 보냄', out.sent === 1 && S.props.BM_SENT === '2026-12-03', out);
+  S.at('2026-12-03T08:10:00+09:00');
+  check('10분 안에는 다시 안 보냄', T.bmDaily() === 'wait-retry');
+  S.at('2026-12-03T08:17:00+09:00'); out = T.bmDaily();
+  check('10분 뒤 다시 → 보냄', out.sent === 1 && S.props.BM_SENT === '2026-12-03', out);
   check('같은 광고 2번째(7일 2번까지)', /테스트 마곡 현장/.test(S.solapi().filter(x => x.type === 'BMS_FREE').pop().text));
 
   /* 하루 3: 7일 안 3번째 → 광고 빠짐 → (광고) 머리 없음 */
@@ -245,16 +245,26 @@ function boot(on) {
   let last = S.solapi().filter(x => x.type === 'BMS_FREE').pop();
   check('7일에 2번 넘으면 광고 빠짐 · (광고) 머리도 없음', !/테스트 마곡 현장/.test(last.text) && !/^\(광고\)/.test(last.text) && !last.kakaoOptions.buttons.some(b => b.name === '분양 소식 보기'), last.text.slice(0, 60));
 
-  /* 하루 4: 하루 종일 실패 → 20:31 건너뜀 + 운영자 메일, 20:55 에는 아무것도 */
+  /* 하루 4: 브랜드 메시지가 계속 실패 → 08:31 광고 없는 알림톡으로 대신(저녁까지 미루지 않음) */
   S.E.bmFail = true;
-  for (const t of ['08:06', '08:40', '12:00', '20:20']) { S.at(`2026-12-05T${t}:00+09:00`); T.bmDaily(); }
+  for (const t of ['08:06', '08:16', '08:26']) { S.at(`2026-12-05T${t}:00+09:00`); T.bmDaily(); }
+  check('08:26 까지는 아직 브랜드 메시지로 다시', S.props.BM_SENT !== '2026-12-05' && !S.solapi().some(x => x._at >= Date.parse('2026-12-05T08:00:00+09:00') && x.kakaoOptions && x.kakaoOptions.templateId === 'TPLBRIEF'));
+  S.at('2026-12-05T08:31:00+09:00'); out = T.bmDaily();
+  const alt = S.solapi().filter(x => x._at === S.E.NOW && x.kakaoOptions && x.kakaoOptions.templateId === 'TPLBRIEF');
+  check('08:31 → 알림톡(광고 없음)으로 대신 보냄', out.sent === 1 && alt.length === 1 && S.props.BM_SENT === '2026-12-05' && S.log().some(x => /알림톡으로 대신/.test(x[3])), out);
+  check('대신 보낸 알림톡에 광고 없음', alt.every(x => x.type !== 'BMS_FREE' && !/광고|분양/.test(JSON.stringify(x.kakaoOptions.variables))));
   const nBefore = S.solapi().length;
-  S.at('2026-12-05T20:31:00+09:00');
-  check('20:31 → 오늘은 건너뜀', T.bmDaily() === 'skip' && S.props.BM_SENT === '2026-12-05' && S.log().some(x => /20:30까지 실패 — 오늘은 건너뜀/.test(x[3])));
-  check('건너뛸 때 운영자 메일', S.mails.some(a => typeof a[1] === 'string' && /브랜드 메시지 1명 못 보냄/.test(a[1])));
-  check('20:31 이후 솔라피 호출 없음', S.solapi().length === nBefore);
-  S.at('2026-12-05T20:55:00+09:00');
-  check('20:55 → done(안 보냄)', T.bmDaily() === 'done' && S.solapi().length === nBefore);
+  S.at('2026-12-05T08:45:00+09:00');
+  check('보낸 뒤 → done(두 번 안 감)', T.bmDaily() === 'done' && S.solapi().length === nBefore);
+
+  /* 하루 5: 알림톡 키까지 없으면 12:00 에 건너뜀 + 운영자 메일 */
+  const keep = S.props.SOLAPI_TPL_BRIEF; delete S.props.SOLAPI_TPL_BRIEF;
+  for (const t of ['08:06', '08:31', '09:40', '11:50']) { S.at(`2026-12-06T${t}:00+09:00`); T.bmDaily(); }
+  S.at('2026-12-06T12:01:00+09:00');
+  check('12:01 → 오늘은 건너뜀', T.bmDaily() === 'skip' && S.props.BM_SENT === '2026-12-06' && S.log().some(x => /12:00까지 브랜드 메시지·알림톡 모두 실패/.test(x[3])));
+  check('건너뛸 때 운영자 메일', S.mails.some(a => typeof a[1] === 'string' && /아침 브리핑 1명 못 보냄/.test(a[1])));
+  S.props.SOLAPI_TPL_BRIEF = keep;
+  ['BM_SENT', 'BM_FIRST_D', 'BM_TRY_D', 'BM_SWAP_D'].forEach(k => { delete S.props[k]; });   // 아래 송파 시험이 같은 날 아침을 다시 씀
   check('모든 브랜드 메시지가 08:00~20:50 사이', S.solapi().filter(x => x.type === 'BMS_FREE').every(x => { const h = new Date(x._at + 9 * 3600e3); const mm = h.getUTCHours() * 60 + h.getUTCMinutes(); return mm >= 480 && mm < 1250; }));
   S.E.bmFail = false;
 
