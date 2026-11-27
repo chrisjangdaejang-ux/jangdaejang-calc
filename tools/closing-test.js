@@ -131,7 +131,7 @@ const sw = rd('sw.js'), bk = require('../assets/back.js');
 ['tax/count/', 'tax/cost/', 'tax/changes/', 'loan/checklist/'].forEach(p => {
   check(p + ' 화면 있음 · sw 캐시 · 사이트맵 · 이름표', [fs.existsSync(path.join(ROOT, p, 'index.html')), sw.indexOf("'./" + p + "'") > 0, rd('sitemaps/pages.xml').indexOf('/jangdaejang-calc/' + p + '<') > 0, !!(bk.info ? bk.info(p, '').name : 1)], [true, true, true, true]);
 });
-['tax/house-count.js?v=1', 'tax/changes-data.js?v=1', 'assets/closing-core.js?v=1', 'assets/buy-total.js?v=1', 'assets/loan-rates.js?v=2', 'tax/tax-verified.js?v=1', 'tax/tax-trust.js?v=2', 'assets/tax-box.js?v=9'].forEach(f =>
+['tax/house-count.js?v=1', 'tax/changes-data.js?v=1', 'assets/closing-core.js?v=1', 'assets/buy-total.js?v=1', 'assets/loan-rates.js?v=2', 'tax/tax-verified.js?v=1', 'tax/tax-trust.js?v=3', 'assets/tax-box.js?v=10'].forEach(f =>
   check('sw 캐시 목록 ' + f, sw.indexOf("'./" + f + "'") > 0, true));
 check('내 집 마련: 총비용 칸·공용 계산 불러옴', [/id="totalCard"/.test(rd('buy/index.html')), /closing-core\.js\?v=1/.test(rd('buy/index.html')), /buy-total\.js\?v=1/.test(rd('buy/index.html'))], [true, true, true]);
 check('총비용 한 장: 금액을 주소·서버로 보내지 않음', /fetch\(|location\.href\s*=|\?p=/.test(rd('assets/buy-total.js')), false);

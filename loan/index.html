@@ -596,6 +596,8 @@ fillTerm(); fillBand(); rateHint();
 const Q = new URLSearchParams(location.search);
 const qp = num(Q.get('p')), qg = /^\d{5}$/.test(Q.get('g') || '') ? Q.get('g') : '', qn = (Q.get('n') || '').slice(0, 40), qb = (Q.get('b') || '').slice(0, 12);
 if (qp > 0 && qp < 10000000) usePrice(qp, qn ? `${qn}${qb ? ' ' + qb : ''} 최근 시세로 채웠어요. 실제 매매가로 바꿔도 돼요.` : '');
+/* 내 집 마련 계산기에서 넘어올 때(src=buy): 최대 매수 금액은 주소가 아니라 이 탭(sessionStorage jdj_buyp, 30분)에서만 받음 */
+else if (Q.get('src') === 'buy') { try { const b = JSON.parse(sessionStorage.getItem('jdj_buyp') || 'null'); if (b && b.p > 0 && b.p < 10000000 && Date.now() - b.at < 1800e3) usePrice(Math.round(b.p), '내 예산으로 계산한 최대 매수 금액으로 채웠어요. 실제 매매가로 바꿔도 돼요.'); } catch (e) {} }
 if (Q.get('a')) $('small').value = num(Q.get('a')) <= 85 ? '1' : '0';
 if (/^(none|first|one|multi)$/.test(Q.get('o') || '')) { S.own = Q.get('o'); $('own').querySelectorAll('button').forEach(x => x.classList.toggle('on', x.dataset.v === S.own)); }
 fetch(DATA + 'index.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : Promise.reject()).then(IX => {

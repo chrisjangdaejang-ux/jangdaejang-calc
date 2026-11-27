@@ -46,6 +46,7 @@
 <script src="../../assets/watch-core.js?v=2"></script>
 <script src="../../assets/watch.js?v=9"></script>
 <script src="../../assets/share.js?v=15"></script>
+<script src="../../assets/consult-sheet.js?v=1"></script>
 <script src="../../tax/tax-engine.js?v=4"></script>
 <script src="../../assets/loan-core.js?v=6"></script>
 <script src="../../assets/kchat.js?v=4"></script>
@@ -57,7 +58,7 @@
 <script src="../../assets/devproj-view.js?v=4"></script>
 <script src="../../assets/src-box.js?v=3"></script>
 <script src="../../tax/tax-verified.js?v=1"></script>
-<script src="../../assets/tax-box.js?v=9"></script>
+<script src="../../assets/tax-box.js?v=10"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -559,7 +560,6 @@ const $ = id => document.getElementById(id);
 const DATA = JB.DATA + 'data/';
 /* 쉬운 말 문구(assets/plain-words.js): 용어 풀이는 리포트 한 장마다 처음 나올 때만 */
 const PL = window.JDJ_PLAIN; let GLS = PL.gloss();
-const FORM = 'https://docs.google.com/forms/d/e/1FAIpQLScCG7wzIlY3FE6EHU5QWo92uW5NQe7aiP-GJ9jvh41Rx2E8Zw/viewform';
 const NOTES = (window.JDJ_REGION_NOTES||{notes:{},sources:[],asOf:''});
 /* 행정구역 개편으로 코드가 바뀐 곳(예: 전남광주통합특별시 12xxx)은 '시도|시군구 이름'으로 기존 메모를 찾는다(assets/rec-core.js noteKey — 길잡이와 같은 함수) */
 function noteKey(code){ return window.JDJ_REC.noteKey(NOTES, (typeof IX!=='undefined' && IX) || null, code); }
@@ -1149,12 +1149,12 @@ async function renderCompare(){
       <div class="cps noprint" style="margin-bottom:8px">${PB(x,'report_compare')}</div>
       <div class="agt" data-g="${x.code}" data-k="${esc(x.code+'|'+x.dong+'|'+x.apt)}"></div></div>`).join('')}</div>
     <div id="agentSec" class="agsec"></div></div>`;
-  const q=new URLSearchParams({usp:'pp_url'});
-  q.set('entry.146176170', fmtW(S.income)); q.set('entry.1872979900', fmtW(S.cash));
-  q.set('entry.397234060', [...new Set(items.map(x=>sggName(x.code)))].join('·')); q.set('entry.1054811896', OWN_NAME[S.own]);
-  q.set('entry.658364183', `[단지 비교] ${items.map(x=>x.apt+' '+x.band).join(' vs ')} ${W?`→ 유리: ${W.apt} `:``}| ${JDJ.label()}`);
-  h += `<div class="cta noprint"><p>마지막 결정, 전문가와 함께 점검해 보세요<small>비교한 단지가 상담 신청서에 자동 입력돼요 · 1차 진단은 무료</small></p>
-    <a class="btn primary" data-track="cmp_consult" href="${FORM}?${q.toString().replace(/\+/g,'%20')}" target="_blank" rel="noopener">상담 신청</a></div>
+  /* 상담 신청: 설문지 주소에는 금액을 싣지 않음 — 누르면 '내 조건 요약'(assets/consult-sheet.js)을 먼저 보여 주고 복사해 붙여 넣게 */
+  const cmpUrl = JDJ_CONSULT.url({region: [...new Set(items.map(x=>sggName(x.code)))].join('·'), memo: `[단지 비교] ${items.map(x=>x.apt+' '+x.band).join(' vs ')} ${W?`→ 유리: ${W.apt} `:``}| ${JDJ.label()}`});
+  JDJ_CONSULT.provide('cmp', () => ({ url: cmpUrl, lines: ['화면: 단지 비교 리포트', '비교 단지: '+items.map(x=>x.apt+' '+x.band+' (추정 시세 '+fmtW(x.P)+')').join(' / '), W ? '유리한 단지: '+W.apt : '',
+    '연소득: '+fmtW(S.income), '보유 현금: '+fmtW(S.cash), '보유 주택: '+OWN_NAME[S.own]] }));
+  h += `<div class="cta noprint"><p>마지막 결정, 전문가와 함께 점검해 보세요<small>비교한 단지 이름은 신청서에 미리 적혀요 · 1차 진단은 무료</small></p>
+    <a class="btn primary" data-consult="cmp" data-track="cmp_consult" href="${esc(cmpUrl)}" target="_blank" rel="noopener">상담 신청</a></div>
     <div class="sec"><p class="src">실거래가: 국토교통부 아파트 매매·전월세 실거래가, 단지 정보: 공동주택관리정보시스템(K-apt)·건축물대장. 추정 시세는 같은 단지·평형의 최근 3개월 실거래 중간값이며 호가와 다를 수 있어요. 대출 한도와 세금은 금융기관·세무 전문가에게 확인하세요.</p></div>
   </div>`;
   $('report').innerHTML=h; wireCompare();
@@ -1412,12 +1412,13 @@ async function render(){
   </div>`;
 
   /* CTA */
-  const q=new URLSearchParams({usp:'pp_url'});
-  q.set('entry.146176170', fmtW(S.income)); q.set('entry.1872979900', fmtW(S.cash));
-  q.set('entry.397234060', selTxt); q.set('entry.1054811896', OWN_NAME[S.own]);
-  q.set('entry.658364183', `[맞춤 리포트] 최대 ${fmtW(M)} · 추천 1순위 ${picked[0]?picked[0].apt:'-'} | ${JDJ.label()}`);
-  h += `<div class="cta noprint"><p>이 리포트를 바탕으로 1:1 전략을 받아보세요<small>1차 진단은 무료 · 심층 컨설팅은 유료로 별도 안내 · 리포트 내용이 신청서에 자동 입력돼요</small></p>
-    <a class="btn primary" data-track="report_consult" href="${FORM}?${q.toString().replace(/\+/g,'%20')}" target="_blank" rel="noopener">상담 신청</a></div>
+  /* 상담 신청: 설문지 주소에는 금액을 싣지 않음(assets/consult-sheet.js) */
+  const repUrl = JDJ_CONSULT.url({region: selTxt, memo: `[맞춤 리포트] 추천 1순위 ${picked[0]?picked[0].apt:'-'} | ${JDJ.label()}`});
+  JDJ_CONSULT.provide('report', () => ({ url: repUrl, lines: ['화면: 맞춤 분석 리포트', '관심 지역: '+selTxt, '보유 주택: '+OWN_NAME[S.own],
+    '연소득: '+fmtW(S.income), '보유 현금: '+fmtW(S.cash), S.debt ? '기존 대출 연간 상환액: '+fmtW(S.debt) : '', '최대 매수 가능: '+fmtW(M),
+    picked.length ? '추천 단지: '+picked.slice(0,3).map(x=>x.apt).join(', ') : ''] }));
+  h += `<div class="cta noprint"><p>이 리포트를 바탕으로 1:1 전략을 받아보세요<small>1차 진단은 무료 · 심층 컨설팅은 유료로 별도 안내 · 누르면 내 조건 요약을 복사해 신청서에 붙여 넣을 수 있어요</small></p>
+    <a class="btn primary" data-consult="report" data-track="report_consult" href="${esc(repUrl)}" target="_blank" rel="noopener">상담 신청</a></div>
   <p class="premlink noprint" style="text-align:center"><a href="${JB.SITE}premium/#freepaid" data-track="report_to_premium">무료로 쓰는 기능 · 유료 기능(미래가치 상세 리포트) 안내 ›</a></p>
   </div>`;
 
@@ -1573,9 +1574,8 @@ async function fillAgents(picked){
     if (!cand.length){
       /* 제휴 중개사가 없는 구: 고객은 부동산 전문가 상담으로 연결, 중개사에겐 작은 모집 안내 */
       const apt = k.split('|')[2];
-      const q = new URLSearchParams({usp:'pp_url'});
-      q.set('entry.397234060', sggName(g)+' '+dong); q.set('entry.658364183', `[단지 문의] ${apt} (${sggName(g)} ${dong}) | ${JDJ.label()}`);
-      el.innerHTML = `<a class="agopen noprint" href="${FORM}?${q.toString().replace(/\+/g,'%20')}" target="_blank" rel="noopener" data-track="danji_consult" style="text-decoration:none">이 단지 상담 받기 <i>→</i></a>
+      const dUrl = JDJ_CONSULT.url({region: sggName(g)+' '+dong, memo: `[단지 문의] ${apt} (${sggName(g)} ${dong}) | ${JDJ.label()}`});
+      el.innerHTML = `<a class="agopen noprint" href="${esc(dUrl)}" target="_blank" rel="noopener" data-track="danji_consult" style="text-decoration:none">이 단지 상담 받기 <i>→</i></a>
         <span class="agwant noprint" style="margin-left:10px;font-size:13.5px;font-weight:500;color:var(--muted)">공인중개사이신가요? <a href="../../agent/" target="_blank" rel="noopener" data-track="agent_join_click">이 지역 제휴 신청</a></span>`;
       return;
     }

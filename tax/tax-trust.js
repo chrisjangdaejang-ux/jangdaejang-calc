@@ -46,14 +46,14 @@
     '.taxlaw .tl-r{display:inline-flex;align-items:center;min-height:44px;margin-top:6px;font-weight:700;color:var(--blue,#3182f6);text-decoration:underline}';
   document.head.appendChild(css);
 
-  function formUrl(kind, host) {
+  /* 오류 신고 설문지 주소에는 화면의 세금 금액을 싣지 않음 — 누르면 '내 조건 요약'(assets/consult-sheet.js)에 금액을 보여 주고 복사해 붙여 넣게 */
+  function formInfo(kind, host) {
     const big = host.querySelector('.big');
-    const q = new URLSearchParams({ usp: 'pp_url' });
-    q.set('entry.1054811896', '세금 계산 오류 신고 · ' + T.LAW[kind].name);
-    q.set('entry.658364183', ('[세금 계산 오류 신고] ' + T.LAW[kind].name + (big ? ' · 화면 결과 ' + big.textContent.trim() : '') +
-      ' · ' + T.AS_OF + ' 법령 기준 · ' + location.origin + location.pathname + '#' + (kind === 'order' ? 'order' : kind) +
-      ' | 어떤 점이 이상한지 적어 주세요: ').slice(0, 1500));
-    return FORM + '?' + q.toString().replace(/\+/g, '%20');
+    const memo = '[세금 계산 오류 신고] ' + T.LAW[kind].name + ' · ' + T.AS_OF + ' 법령 기준 · ' + location.origin + location.pathname + '#' + (kind === 'order' ? 'order' : kind) +
+      ' | 어떤 점이 이상한지 적어 주세요: ';
+    const C = window.JDJ_CONSULT, k = '세금 계산 오류 신고 · ' + T.LAW[kind].name;
+    const url = C ? C.url({ kind: k, memo }) : FORM + '?' + new URLSearchParams({ usp: 'pp_url', 'entry.1054811896': k, 'entry.658364183': memo.slice(0, 1500) }).toString().replace(/\+/g, '%20');
+    return { url, lines: ['세금 계산 오류 신고 · ' + T.LAW[kind].name, big ? '화면 결과: ' + big.textContent.trim() : '', T.AS_OF + ' 법령 기준', '어떤 점이 이상한지: '] };
   }
   function box(kind, host) {
     const L = T.LAW[kind], S = T.SCOPE[kind] || [];
@@ -64,7 +64,9 @@
       (S.length ? '<details><summary>이 계산이 다루지 않는 경우 (세무사 확인이 필요해요)</summary><ul>' +
         S.map(([k, why]) => '<li><b>' + esc(k) + '</b> — ' + esc(why) + '</li>').join('') + '</ul></details>' : '') +
       '<a class="tl-r" target="_blank" rel="noopener" data-track="tax_error_report" href="#">계산이 이상하면 알려 주세요 ›</a>';
-    el.querySelector('.tl-r').addEventListener('click', e => { e.currentTarget.href = formUrl(kind, host); });
+    const a = el.querySelector('.tl-r'); a.href = formInfo(kind, host).url;
+    if (window.JDJ_CONSULT) window.JDJ_CONSULT.bind(a, () => formInfo(kind, host));
+    else a.addEventListener('click', e => { e.currentTarget.href = formInfo(kind, host).url; });
     return el;
   }
   function ensure(host, kind) {

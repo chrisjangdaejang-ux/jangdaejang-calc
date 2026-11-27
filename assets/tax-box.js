@@ -105,29 +105,33 @@
   function consultHtml(id) {
     return `<div class="txc" id="${id}">
   <h3>이 결과로 상담받기</h3>
-  <p class="d">연락처는 다음 화면(상담 신청서)에 직접 적어 주세요. 이 화면은 계산 조건만 미리 채워 드려요.</p>
+  <p class="d">누르면 계산 조건·금액을 '내 조건 요약'으로 보여 드려요. 복사해서 다음 화면(상담 신청서)에 연락처와 함께 붙여 넣어 주세요. 금액은 신청서 주소에 싣지 않아요.</p>
   <div class="opt"><b>부동산 전문가 상담 · 부동산 전망 + 세금</b><small>부동산 전문가가 직접, 이 집의 앞으로 흐름과 세금을 같이 봐 드려요.</small>
     <a class="btn primary" data-txc="jdj" href="${FORM}" target="_blank" rel="noopener">부동산 전문가에게 상담 신청</a></div>
   <div class="opt"><b>분야별 제휴 세무사<span class="ready">준비 중</span></b><small>제휴 세무사를 모시는 중이에요. 지금 신청을 남겨 주시면 분야에 맞는 세무사가 정해지는 대로 연락드려요.</small>
     <select data-txc-field aria-label="상담 분야"><option value="양도">양도 전문 (팔 때 양도세)</option><option value="증여">증여 전문 (증여·저가 양도)</option><option value="상속">상속 전문 (상속세·상속주택)</option></select>
     <a class="btn ghost" data-txc="tax" href="${FORM}" target="_blank" rel="noopener">제휴 세무사 상담 신청</a></div>
-  <label class="tog"><input type="checkbox" data-txc-amt> 계산에 넣은 금액(시세·취득가·세금)도 신청서에 함께 적기 (선택)</label>
 </div>`;
   }
+  /* 설문지 주소에는 금액·조건을 싣지 않음(상담 종류·지역·어느 화면만) — 누르면 '내 조건 요약'(assets/consult-sheet.js)을 먼저 보여 줌 */
   function bindConsult(root, ctxFn) {
     if (!root) return;
     const fld = root.querySelector('[data-txc-field]');
     const c0 = ctxFn(); if (fld && c0.field) fld.value = c0.field;
-    root.querySelectorAll('a[data-txc]').forEach(a => a.addEventListener('click', () => {
-      const c = ctxFn(), withAmt = root.querySelector('[data-txc-amt]').checked, kind = a.dataset.txc;
+    const info = kind => {
+      const c = ctxFn();
       const head = kind === 'jdj' ? '[세금 상담 · 부동산 전문가 상담]' : '[제휴 세무사 상담 신청 · ' + (fld ? fld.value : '') + ' 전문 · 준비 중]';
-      const memo = [head, c.from].concat(c.conds || []).concat(withAmt ? (c.amounts || []) : []).filter(Boolean).join(' | ').slice(0, 900);
-      const q = new URLSearchParams({ usp: 'pp_url' });
-      if (c.region) q.set(F_REGION, c.region);
-      q.set(F_MEMO, memo);
-      a.href = FORM + '?' + q.toString().replace(/\+/g, '%20');
-      track(kind === 'jdj' ? 'tax_consult_jdj' : 'tax_consult_partner', { from: c.from, field: fld ? fld.value : '', amt: withAmt ? 1 : 0 });
-    }));
+      const C = window.JDJ_CONSULT, memo = head + ' | ' + c.from;
+      const url = C ? C.url({ region: c.region, memo })
+        : FORM + '?' + new URLSearchParams(Object.assign({ usp: 'pp_url', [F_MEMO]: memo }, c.region ? { [F_REGION]: c.region } : {})).toString().replace(/\+/g, '%20');
+      return { url, lines: [head.replace(/^\[|\]$/g, ''), '화면: ' + c.from, c.region ? '지역: ' + c.region : ''].concat(c.conds || []).concat(c.amounts || []) };
+    };
+    root.querySelectorAll('a[data-txc]').forEach(a => {
+      a.href = info(a.dataset.txc).url;
+      const go = () => { track(a.dataset.txc === 'jdj' ? 'tax_consult_jdj' : 'tax_consult_partner', { from: ctxFn().from, field: fld ? fld.value : '' }); return info(a.dataset.txc); };
+      if (window.JDJ_CONSULT) window.JDJ_CONSULT.bind(a, go);
+      else a.addEventListener('click', () => { a.href = go().url; });
+    });
   }
 
   /* ---------- 세금 칸 ---------- */

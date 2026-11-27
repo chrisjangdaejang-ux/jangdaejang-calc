@@ -34,6 +34,7 @@
 <script src="../assets/track.js?v=3"></script>
 <script src="../assets/stat.js?v=8"></script>
 <script src="../assets/share.js?v=15"></script>
+<script src="../assets/consult-sheet.js?v=1"></script>
 <script src="../tax/tax-engine.js?v=4"></script>
 <script src="../assets/loan-rules.js?v=3"></script>
 <script src="../assets/loan-core.js?v=6"></script>
@@ -383,9 +384,9 @@ body.wiz .wiznav{display:flex;gap:8px;margin-top:4px}
       </nav>
 
       <div class="cta">
-        <p>내 상황에 맞는 매수 전략이 궁금하다면<small>1차 진단은 무료 · 심층 컨설팅은 유료로 별도 안내 · 계산 결과는 신청서에 자동 입력돼요</small></p>
+        <p>내 상황에 맞는 매수 전략이 궁금하다면<small>1차 진단은 무료 · 심층 컨설팅은 유료로 별도 안내 · 누르면 내 조건 요약을 복사해 신청서에 붙여 넣을 수 있어요</small></p>
         <div class="btns">
-          <a class="btn primary" id="consultBtn" data-track="consult_click" href="#" target="_blank" rel="noopener">상담 신청</a>
+          <a class="btn primary" id="consultBtn" data-consult="buy" data-track="consult_click" href="#" target="_blank" rel="noopener">상담 신청</a>
           <a class="btn" data-track="youtube_click" href="https://www.youtube.com/results?search_query=%EC%9E%A5%EB%8C%80%EC%9E%A5TV" target="_blank" rel="noopener">장대장TV 보기</a>
           <button class="btn ghost" id="copyBtn" data-track="copy_result">결과 복사</button>
         </div>
@@ -475,7 +476,7 @@ function render(){
   const ld = loanAt(P,c,dsr);
   const cost = costs(P,c);
   lastP = P; lastBy = ld.by;
-  { const lq = new URLSearchParams({src:'buy', o:own}); if (P > 0) lq.set('p', String(P)); $('loanLink').href = '../loan/?' + lq; }
+  { const lq = new URLSearchParams({src:'buy', o:own}); $('loanLink').href = '../loan/?' + lq; }   /* 최대 매수 금액은 주소에 싣지 않음 — 누를 때 이 탭(sessionStorage jdj_buyp, 30분)으로만 넘김 */
 
   document.querySelectorAll('.hint[data-for]').forEach(h=>{
     const v = num($(h.dataset.for).value); h.textContent = v ? '= '+fmtW(v) : '';
@@ -539,17 +540,22 @@ function render(){
   { const T = num($('target').value); window.JDJ_BUY_LAST = {c, P, dsr, target:T||0, region:$('region').value}; window.dispatchEvent(new CustomEvent('jdj-buy', {detail:window.JDJ_BUY_LAST})); }
 }
 
-const FORM='https://docs.google.com/forms/d/e/1FAIpQLScCG7wzIlY3FE6EHU5QWo92uW5NQe7aiP-GJ9jvh41Rx2E8Zw/viewform';
+/* 상담 신청: 설문지 주소에는 금액을 싣지 않음(assets/consult-sheet.js) — 누르면 '내 조건 요약'을 먼저 보여 주고 복사해 붙여 넣게 */
 function updateConsult(c){
   const regionTxt = $('region').options[$('region').selectedIndex].text;
-  const q = new URLSearchParams({usp:'pp_url'});
-  q.set('entry.146176170', fmtW(c.income));
-  q.set('entry.1872979900', fmtW(c.cash));
-  q.set('entry.397234060', regionTxt);
-  q.set('entry.1054811896', OWN_NAME[own]);
-  q.set('entry.658364183', $('maxP').textContent+' (대출 '+$('sLoan').textContent+', '+TYPE_NAME[rtype]+' '+c.rate+'%·'+c.term+'년) | '+JDJ.label());
-  $('consultBtn').href = FORM+'?'+q.toString().replace(/\+/g,'%20');
+  const url = JDJ_CONSULT.url({region: regionTxt, memo: '[내 집 마련 계산기] | '+JDJ.label()});
+  $('consultBtn').href = url;
+  JDJ_CONSULT.provide('buy', () => ({ url, lines: [
+    '화면: 내 집 마련 계산기',
+    '매수 지역: '+regionTxt+' · '+OWN_NAME[own],
+    '연소득: '+fmtW(c.income),
+    '보유 현금: '+fmtW(c.cash),
+    c.debt ? '기존 대출 연간 상환액: '+fmtW(c.debt) : '',
+    '최대 매수 가능: '+$('maxP').textContent,
+    '대출 가능액: '+$('sLoan').textContent+' ('+TYPE_NAME[rtype]+' '+c.rate+'%·'+c.term+'년)'
+  ]}));
 }
+$('loanLink').addEventListener('click',()=>{ try{ sessionStorage.setItem('jdj_buyp', JSON.stringify({p:lastP, at:Date.now()})); }catch(e){} });
 function renderCost(c,P){
   const T = num($('target').value);
   let base = (costBase==='target' && T) ? T : P;
