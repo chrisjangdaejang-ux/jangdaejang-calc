@@ -62,3 +62,8 @@
 .gd-card .st{font-weight:800}.gd-card dl{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;margin:8px 0 0;font-size:14px}.gd-card dt{color:var(--sub2)}.gd-card dd{margin:0}
 .gd-ch{list-style:none;margin:8px 0 0;padding:0}.gd-ch li{border-top:1px solid var(--line2);padding:8px 0;font-size:14.5px}
 @media print{header.top,.tabbar,.foot,.gd-hero-acts,.ru-pick,.gd-tabs{display:none!important}}
+/* v2(2026-11-27 개편): 가격 세 칸 · 회원 무료 칸 · 로그인/무료 자리 안내 */
+@media(min-width:760px){.gd-pc3{grid-template-columns:repeat(3,1fr)}}
+.gd-pc .gd-pfree{background:#E7F6EF}.gd-pc .gd-pfree b{color:#0E7A4F}
+.gd-who{background:var(--blue-l);border-radius:14px;padding:12px 14px;margin:0 0 12px}.gd-who p{margin:0 0 8px;font-size:15px;line-height:1.6;word-break:keep-all}.gd-who p:last-child{margin:0}
+.gd-tagf{display:inline-block;font-size:12.5px;font-weight:800;border-radius:999px;padding:1px 8px;background:#E7F6EF;color:#0E7A4F;margin-left:6px;vertical-align:middle}

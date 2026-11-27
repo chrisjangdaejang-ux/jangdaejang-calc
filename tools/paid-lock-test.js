@@ -44,7 +44,9 @@ const fnOf = i => { const all = [...GS.slice(0, i).matchAll(/\nfunction (\w+)\s*
 const callers = re => { const out = new Set(); for (const m of GS.matchAll(re)) out.add(fnOf(m.index)); return [...out].sort(); };
 const confirmFns = callers(/tossCall\('confirm'/g), orderFns = callers(/(?<!function )newOrderId\(\)/g);
 check('토스 승인을 부르는 함수', JSON.stringify(confirmFns) === JSON.stringify(['briefChangeConfirm', 'briefConfirm', 'confirmPayment', 'htConfirm', 'jgConfirm', 'mvChargeConfirm']), confirmFns);
-check('새 주문을 만드는 함수', JSON.stringify(orderFns) === JSON.stringify(['briefChange', 'briefOrder', 'createOrder', 'htOrder', 'jgOrder']), orderFns);
+check('새 주문을 만드는 함수(jgFree = v74 지킴이 회원 무료 — 결제 없음)', JSON.stringify(orderFns) === JSON.stringify(['briefChange', 'briefOrder', 'createOrder', 'htOrder', 'jgFree', 'jgOrder']), orderFns);
+{ const a = GS.indexOf('function jgFree('), b = GS.indexOf('\n}\n', a); const body = GS.slice(a, b);
+  check('회원 무료 시작(jgFree)은 결제를 부르지 않고 금액 0', a > 0 && !/tossCall|requestPayment/.test(body) && /\['금액'\]\] = 0/.test(body)); }
 check('요금제 올리기 승인은 briefConfirm 안에서만', /function briefConfirm[^]*?briefChangeConfirm\(/.test(GS));
 
 /* 3) 무료 요청은 잠금에 걸리지 않음(이 가짜 환경에선 다른 이유로 실패해도, 잠금 문구로 거절되면 안 됨) */

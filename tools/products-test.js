@@ -57,8 +57,8 @@ const amt = (src, id) => { const m = src.match(new RegExp(`\\b${id}:\\s*\\{[^}]*
 const packs = [...cs.match(/CS_PACKS = \[([^\]]+)\]/)[1].matchAll(/won: (\d+), n: (\d+)/g)].map(m => [+m[1], +m[2]]);
 check('하트: 가장 작은 묶음 = 표시 금액(부터)', packs[0][0] === C.get('heart').amount && C.get('heart').from === true);
 check('하트: 묶음마다 담긴 내용에 개수·금액', packs.every(([w, n]) => C.get('heart').includes[0].includes(`${n}개 ${w.toLocaleString('ko-KR')}원`)), packs);
-const JG = gs.match(/const JG_PRICE = \{ month: (\d+), read: (\d+), corp: (\d+)/) || [];
-check('지킴이·등기 바로 확인·법인등기: 서버 JG_PRICE 와 같은 금액', +JG[1] === C.get('watch').amount && +JG[2] === C.get('read').amount && +JG[3] === C.get('corp').amount, JG.slice(1));
+const JG = gs.match(/const JG_PRICE = \{ extra: (\d+), read: (\d+), corp: (\d+)/) || [];
+check('지킴이 더 지킬 집·등기 바로 확인·법인등기: 서버 JG_PRICE 와 같은 금액', +JG[1] === C.get('watch').amount && +JG[2] === C.get('read').amount && +JG[3] === C.get('corp').amount, JG.slice(1));
 check('동네 파트너: 월 기본 요금', +(dc.match(/base: (\d+)/) || [])[1] === C.get('dongne').amount);
 
 /* ③ 결제 단추가 있는 화면은 모두 상품 안내 한 곳을 씀 */

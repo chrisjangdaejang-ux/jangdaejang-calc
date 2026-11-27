@@ -27,12 +27,12 @@
 <script src="../../assets/hug-core.js?v=1"></script>
 <script src="../../assets/kk-core.js?v=1"></script>
 <script src="../../assets/gongsi.js?v=4"></script>
-<script src="../../assets/jsafe-core.js?v=2"></script>
+<script src="../../assets/jsafe-core.js?v=4"></script>
 <script src="../../assets/diag.js?v=1"></script>
-<script src="../../assets/products.js?v=1"></script>
-<script src="../../assets/config.js?v=15"></script>
+<script src="../../assets/products.js?v=2"></script>
+<script src="../../assets/config.js?v=16"></script>
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/guard-core.js?v=1"></script>
+<script src="../../assets/guard-core.js?v=3"></script>
 <script src="../../assets/reg-upload.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -84,7 +84,7 @@ h1{font-size:clamp(26px,6vw,38px);margin:6px 0 8px}
 @media print{header.top,.tabbar,#findSec,#moneySec,.priv,.foot{display:none!important}}
 </style>
 <link rel="stylesheet" href="../../assets/diag.css?v=1">
-<link rel="stylesheet" href="../../assets/guard.css?v=1">
+<link rel="stylesheet" href="../../assets/guard.css?v=3">
 <script src="../../assets/back.js?v=6" defer></script>
 </head>
 <body>
@@ -134,7 +134,7 @@ h1{font-size:clamp(26px,6vw,38px);margin:6px 0 8px}
   <section class="panel gd" id="regSec" aria-labelledby="regT" style="padding:22px 20px">
     <h2 id="regT">3. 등기부로 선순위 채권 채우기<small>근저당·압류·경매·신탁을 쉬운 말로 풀고, 선순위 채권 칸을 자동으로 채워요.</small></h2>
     <div class="gd-pc" style="margin:0 0 4px">
-      <div><span class="k">등기 바로 확인</span><b data-gd-read></b><small>고유번호만 넣으면 지금 등기부를 바로 열어 풀어 드려요. 결과는 이 화면에 한 번만 보여 드리고 저장하지 않아요.</small>
+      <div><span class="k">등기 바로 확인</span><b data-gd-read></b><small>고유번호만 넣으면 지금 등기부를 바로 열어 쉽게 읽는 등기부로 풀어 드려요(근저당·압류·신탁을 쉬운 말로, 선순위 채권 칸 자동 채우기). 결과는 이 화면에 한 번만 보여 드리고 저장하지 않아요.</small>
         <label for="gUniq" style="margin-top:8px">등기 고유번호</label><input id="gUniq" inputmode="numeric" placeholder="1234-5678-901234" maxlength="16">
         <div data-jdj-paid="read"></div>
         <button type="button" class="gd-pay" id="gReadBtn" disabled>결제가 열리면 바로 확인할 수 있어요</button><p class="gd-msg" id="gMsg" role="alert"></p></div>

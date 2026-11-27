@@ -50,11 +50,13 @@
    LAND_ENABLED: 땅 위험 신호 체크(land/ — 기획부동산 피해 예방: 읍·면·동 지분거래 급증 신호·주변 같은 지목 실거래 비교) 켜기. false 면 land/ 는 '준비 중'만 보이고(검색 제외)
      첫 화면·전체 기능·사이트맵 어디에도 링크가 없어요. 대표 미리 보기: land/ 주소 끝에 ?preview=land 를 붙여 한 번 열면 그 기기에서만 보여요(끄기 ?preview=off).
      켜는 날: node tools/land-launch.js --apply (이 값 + 검색 제외 해제 + 첫 화면 단추·전체 기능 줄·사이트맵, docs/launch_checklist.md). 서버 쪽 설정은 없어요.
-   GUARD: 내 전셋집 지킴이(jeonse/guard/ — 등기 변동 감시 유료) 화면 가격(대표 확정 2026-11-27: 월 2,900원/집 · 열람 1,900원/건).
-     month = 집 1곳 한 달(30일) 값 · read = 전세 안전 점검 '등기 바로 확인'(업체 열람) 1건 값 · maxMonths = 한 번에 신청할 수 있는 최대 달 수.
-     서버 tools/agent-backend.gs 의 JG_PRICE 도 같은 값으로 바꿔야 해요(결제 금액은 서버가 정하고 대조 · node tools/guard-test.js 가 두 값을 비교).
-     원가(등기 업체 포인트, 1P≈1.1원): 등록 50P + 매일 60P → 30일 ≈ 2,035원 · 열람 1,300P ≈ 1,430원. 결제 버튼은 PAID_OPEN + 서버 GUARD_ENABLED + 업체 키가 모두 있을 때만 열려요.
-     무료 안내(인터넷등기소 변동 알림 신청법·'알림이 오면 이렇게 하세요'·내가 뗀 등기부 올리기)는 이 값과 상관없이 늘 보여요.
+   GUARD: 내 전셋집 지킴이(jeonse/guard/ — 등기 변동 감시) 무료 수·가격(대표 승인 2026-11-27 10:59 · 값 확정 11:01).
+     freeHomes = 카카오 간편 로그인 회원이 무료로 지킬 수 있는 집 수(1) · freeHomesSubscriber = 모닝 브리핑 구독자는 이만큼 무료(3)
+     extra = 무료 수를 넘는 집 1곳 한 달(30일) 값(900원) · read = '등기 바로 확인'(쉽게 읽는 등기부 포함) 1건 값(1,500원) · maxMonths = 한 번에 신청할 수 있는 최대 달 수.
+     서버 tools/agent-backend.gs 의 JG_PRICE 도 같은 값으로 바꿔야 해요(무료 수·결제 금액은 서버가 정하고 대조 · node tools/guard-test.js 가 두 값을 비교).
+     업체 원가는 서버 JG_VCOST(엔진 docs/pricing_policy.md 원가표). 회원 무료는 서버 GUARD_ENABLED + 업체 키가 있으면 열리고(결제 없음),
+     추가 집·등기 바로 확인 결제 버튼은 PAID_OPEN + 서버 GUARD_ENABLED + 업체 키가 모두 있을 때만 열려요.
+     무료 안내('알림이 오면 이렇게 하세요'·내가 뗀 등기부 올리기)는 이 값과 상관없이 늘 보여요.
    ADS_PROTO: 분양 광고 시안(assets/ads-proto.js — 홈 피드 카드·지도 'AD' 핀·분양 목록 카드·계산 결과 아래 '예산에 맞는 분양', 모두 '예시 광고') 켜기.
      false 면 화면 어디에도 칸이 없어요. 대표 미리 보기: 주소 끝 ?preview=ads 를 붙여 한 번 열면 그 기기에서만 보여요(끄기 ?preview=off). 설계: 비공개 엔진 docs/ads/ads-plan.md.
    SITE_VERIFY_DAUM: 다음 웹마스터도구 PIN 코드 줄 전체('#DaumWebMasterTool:…'). 넣으면 robots.txt 맨 아래에 붙어요. */
@@ -81,7 +83,7 @@ window.JDJ_SITE = {
   PAID_OPEN: false,
   PAY_REVIEW: true,
   ADS_PROTO: false,
-  GUARD: { month: 2900, read: 1900, maxMonths: 24 }
+  GUARD: { freeHomes: 1, freeHomesSubscriber: 3, extra: 900, read: 1500, maxMonths: 24 }
 };
 /* 서비스 이름 채우기: 화면의 [data-site-name] 칸은 SITE_NAME, [data-brief-name] 칸은 '{SITE_NAME} 모닝 브리핑'(값이 있으면 뒤에 붙임) */
 (function () {

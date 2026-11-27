@@ -10,14 +10,14 @@
 <title>내 지킴이 | 집예보</title>
 <script>window.JDJ_CONFIG = { tool:'guard_my', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
 <script src="../../../assets/track.js?v=3"></script>
-<script src="../../../assets/config.js?v=15"></script>
+<script src="../../../assets/config.js?v=16"></script>
 <script src="../../../assets/agents.js"></script>
-<script src="../../../assets/guard-core.js?v=1"></script>
-<script src="../../../assets/products.js?v=1"></script>
+<script src="../../../assets/guard-core.js?v=3"></script>
+<script src="../../../assets/products.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../../assets/aplus.css?v=50">
-<link rel="stylesheet" href="../../../assets/guard.css?v=1">
+<link rel="stylesheet" href="../../../assets/guard.css?v=3">
 <script src="../../../assets/back.js?v=6" defer></script>
 </head>
 <body>
@@ -28,6 +28,7 @@
 <main class="wrap gd">
   <h1>내 지킴이</h1>
   <p class="gd-msg" id="msg" role="alert"></p>
+  <p class="gd-pn" id="plan"></p>
   <div id="list" aria-live="polite"></div>
   <p class="gd-my"><a href="../">지킴이 소개·신청 ›</a> · <a href="../what/">알림이 오면 이렇게 하세요 ›</a></p>
 </main>
@@ -35,7 +36,7 @@
 <script>
 (function(){
 'use strict';
-/* 내 지킴이 — 결제 성공(?pay=watch&paymentKey&orderId&amount) → 서버 guardRegister(결제 확인 → 업체 등록, 같은 주문은 한 번만) → 이 기기에 주문번호·보기 열쇠 저장.
+/* 내 지킴이 — 회원 무료로 시작(jeonse/guard/ guardFree → ?o=&t=) 또는 결제 성공(?pay=watch&paymentKey&orderId&amount) → 서버 guardRegister(결제 확인 → 업체 등록, 같은 주문은 한 번만) → 이 기기에 주문번호·보기 열쇠 저장.
    알림 메일 링크(?o=주문번호&t=열쇠)로도 열려요. 서버는 guardStatus 로 상태·변동 기록(종류·날짜만)을 돌려줘요. 등기 속 이름·금액은 저장하지 않아요. */
 const G = window.JDJ_GUARD, $ = id => document.getElementById(id), esc = G.esc, KEY = 'jdj_guard';
 const API = (window.JDJ_AGENTS && JDJ_AGENTS.api) || '';
@@ -45,9 +46,16 @@ const save = o => { try { const a = mine().filter(x => x.o !== o.o); a.unshift(o
 const q = new URLSearchParams(location.search);
 function card(s){
   const ch = (s.changes || []).slice().reverse();
-  return `<article class="gd-card"><h3>${esc(s.label || s.no)}</h3><span class="st">${esc(s.state)}</span>
+  return `<article class="gd-card"><h3>${esc(s.label || s.no)}</h3><span class="st">${esc(s.state)}</span>${s.product === 'free' ? '<span class="gd-tagf">회원 무료</span>' : ''}
     <dl><dt>지키는 기간</dt><dd>${esc(s.start || '')} ~ ${esc(s.end || '')}</dd><dt>마지막 확인</dt><dd>${esc(s.last || '아직 없어요')}</dd><dt>주문번호</dt><dd>${esc(s.o)}</dd></dl>
     ${ch.length ? `<ul class="gd-ch">${ch.map(c => { const w = G.what(c.type); return `<li><span class="gd-lv lv-${w.lv}">${esc(w.lvT)}</span> ${esc(c.at)} · ${esc(w.n)} — <a href="../what/#${w.id}">이렇게 하세요 ›</a></li>`; }).join('')}</ul>` : '<p class="hint">아직 변동이 없어요.</p>'}</article>`;
+}
+/* 로그인한 회원이면 서버에서 내 지킴이 목록(guardMine)을 받아 이 기기 목록에 더해요(다른 기기에서 신청한 것도 보이게) */
+async function fromAccount(){
+  const s = G.sess(); if (!s || !API) return;
+  const j = await post('guardMine', { s }); if (!j || !j.ok) return;
+  (j.items || []).slice().reverse().forEach(save);
+  $('plan').innerHTML = `회원 무료 자리 ${j.allow}곳 중 ${j.used}곳 사용 중${j.sub ? '(모닝 브리핑 구독자)' : ''}${j.left > 0 ? ` · <a href="../#apply">무료로 한 곳 더 켜기 ›</a>` : ' · 더 지킬 집은 집 1곳마다 월 ' + G.won(G.cfg().extra) + '이에요.'}`;
 }
 async function show(){
   const a = mine();
@@ -65,6 +73,7 @@ async function show(){
     else $('msg').textContent = r.err || '등록하지 못했어요. 결제는 자동으로 취소돼요.';
   }
   if (q.get('o') && q.get('t')) { save({ o: q.get('o'), t: q.get('t') }); history.replaceState(null, '', location.pathname); }
+  try { await fromAccount(); } catch (e) {}
   show();
   /* 결제 뒤·내 지킴이: 모닝 브리핑 잇기(우리 동네 전세 흐름) — 신청한 지킴이가 이 기기에 있을 때만 */
   try { if (window.JDJ_PRODUCTS && (JSON.parse(localStorage.getItem(KEY) || '[]') || []).length) $('list').insertAdjacentHTML('afterend', '<div id="briefAfter">' + JDJ_PRODUCTS.briefCard('watch', {}) + '</div>'); } catch (e) {}

@@ -1,6 +1,14 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v75 변경 요약 (v74 위에 다시 배포 — 새 버전. GUARD_ENABLED=false·PAID_OPEN=false 그대로라 지금 서비스에는 영향 없음. 시트 칸 변경 없음)
+ *  - 내 전셋집 지킴이 개편(대표 승인 2026-11-27 10:59 · 값 확정 11:01): 자동 지킴이는 카카오 간편 로그인 회원 무료 — 회원 1곳 · 모닝 브리핑 구독자 3곳(JG_PRICE.freeHomes·freeHomesSubscriber),
+ *    그보다 많은 집은 집 1곳마다 월 900원(JG_PRICE.extra) · 등기 바로 확인(쉽게 읽는 등기부) 1건 1,500원(JG_PRICE.read·corp). 새 요청 guardFree(회원 무료 시작) · guardQuota(남은 무료 자리) · guardMine(내 지킴이 목록).
+ *    로그인한 회원이 무료 자리가 남았는데 유료 주문을 하면 'use_free' 로 돌려보냄. 무료 요청은 결제가 없어 PAID_OPEN 잠금 대상이 아님(GUARD_ENABLED + 업체 키만 봄).
+ *  - 등기 업체를 고를 수 있게: 스크립트 속성 GUARD_VENDOR = 'deunggigo'(기본, 키 DEUNGGIGO_API_KEY) | 'apick'(키 APICK_API_KEY). 업체 어댑터 JG_VA_DG · JG_VA_APICK(같은 모양).
+ *    등등기고는 변동을 웹훅으로 받아(doPost ?guardhook=1&k=GUARD_HOOK_TOKEN) 우리 메일·알림톡으로 직접 보냄. 처음 한 번 함수 guardHookInstall 실행(웹훅 등록 → GUARD_DG_HOOK_ID).
+ *    같은 집을 여러 분이 지키면 업체 알림 1개를 같이 씀(비용 절약). 매일 트리거는 웹훅 배달 기록으로 놓친 알림을 다시 읽는 대체 길 + 끝난 것 정리.
+ *  - 선택 속성: GUARD_DG_RECIPIENT(업체 문자 받을 운영 번호 JSON — 손님 번호는 업체에 넘기지 않음) · GUARD_MAX_ACTIVE(동시 감시 한도 직접 지정).
  * v74 변경 요약 (v73 위에 다시 배포. 따로 실행할 함수 없음 — 시트 '구매고객체험'은 첫 사용 때 저절로 생김. BUYER_TRIAL_ENABLED·BILLING_OPEN=false 라 지금 서비스에는 영향 없음)
  *  - 유료 리포트 구매 고객 30일 무료 + 카드 등록(맨 아래 'v74' 칸: briefBuyerTrial·briefBuyerConsent·briefBuyerOff·briefBuyerMine, 매일 bbtDaily).
  *    무료→유료 전환은 체험 8일째부터 따로 받은 동의가 있을 때만(전자상거래법 제13조 제6항) — 없으면 결제하지 않고 끝남. 모든 안내 메일에 로그인 없는 [해지] 링크.
@@ -8951,7 +8959,7 @@ function calHome(h) {
       out.push(calEv('move', c.cs, Object.assign(o(), { t: '이사하는 날 — 전입신고·확정일자', s: '이사한 날 바로 전입신고를 하고 계약서에 확정일자를 받아 두세요. 집에 들어가 전입신고까지 마친 다음 날부터 대항력(새 집주인·은행에도 내 권리를 주장할 힘)이 생겨요.' })));
       out.push(calEv('rent', c.cs, Object.assign(o(), { end: calAdd(c.cs, 30), t: '전월세 계약 신고(계약일부터 30일 안)', s: '보증금 6,000만 원 초과 또는 월세 30만 원 초과 계약은 계약한 날부터 30일 안에 신고해야 해요. 신고하면 확정일자가 저절로 붙고, 전입신고 때 계약서를 함께 내면 신고한 것으로 봐요.' })));
       /* 살면서 할 일(집예보 알림 시점 — 법정 기한 아님): 이사 7일 뒤 전입·확정일자·등기 확인 */
-      out.push(calEv('tchk', calAdd(c.cs, 7), Object.assign(o(), { t: '전입·확정일자가 잘 됐는지 확인 + 등기 한 번 더', s: '주민등록 등본(정부24)에 이 집 주소로 전입이 됐는지, 계약서에 확정일자가 찍혔는지 확인해요. 이사한 사이 근저당·압류가 새로 생기지 않았는지 등기부도 한 번 더 보고, 인터넷등기소 등기 변동 알림(무료)을 신청해 두면 살면서 생기는 변동을 문자로 받을 수 있어요.' })));
+      out.push(calEv('tchk', calAdd(c.cs, 7), Object.assign(o(), { t: '전입·확정일자가 잘 됐는지 확인 + 등기 한 번 더', s: '주민등록 등본(정부24)에 이 집 주소로 전입이 됐는지, 계약서에 확정일자가 찍혔는지 확인해요. 이사한 사이 근저당·압류가 새로 생기지 않았는지 등기부도 한 번 더 보고, 집예보 내 전셋집 지킴이(로그인 회원 무료)를 켜 두면 살면서 생기는 변동을 알려 드리고, 무슨 뜻인지와 할 일까지 안내해 드려요.' })));
     }
     if (c.ce) out.push(calEv('tins', calAddM(c.ce, -3), Object.assign(o(), { t: '보증보험(전세보증금 반환보증) 기간·갱신 확인', s: '보증보험에 들었다면 보증 기간이 언제 끝나는지 확인하고, 계약을 이어 가면 보증도 새로 들거나 기간을 늘려야 하는지 HUG 등 보증 기관 안내에서 확인해요. 신청 기한·조건은 기관마다 달라 이 알림은 미리 챙기라는 뜻이에요.' })));
   }
@@ -11562,21 +11570,23 @@ function aiUsage(days) {
    v73 내 전셋집 지킴이(jeonse/guard/) · 등기 바로 확인(jeonse/safety/) · 중개사 권리분석(agent/pro/reg/)
    ──────────────────────────────────────────────────────────────────────────────────────
    다시 배포 필요(배포 관리 → 수정 → 새 버전). 처음 한 번 함수 guardInstall 실행(매일 10시·16시대 확인 트리거 + 시트 '지킴이'·'지킴이대기'·'지킴이기록').
-   켜는 순서(대표):
-     ① 에이픽(apick.app) 가입·포인트 충전 → 스크립트 속성 APICK_API_KEY 에 키 넣기(저장소·화면에는 절대 넣지 않음)
-     ② 아래 JG_APICK_F 의 요청·응답 칸 이름을 에이픽 개발 문서(dev_guide/iros_monitor · iros1)와 맞춰 보기(TODO 표시한 칸)
-     ③ 이 파일 GUARD_ENABLED = true + PAID_OPEN = true(그리고 assets/config.js PAID_OPEN) → 화면 결제 버튼이 저절로 열려요
-     (선택) 업체가 변동을 바로 알려 주는 주소(웹훅)를 쓰면 스크립트 속성 GUARD_HOOK_TOKEN 을 정하고 웹 앱 주소?guardhook=1&k=토큰 을 업체에 등록.
+   켜는 순서(대표, v74):
+     ① 등등기고(deunggigo.kr) 가입 → API 키 발급 → 스크립트 속성 DEUNGGIGO_API_KEY 에 키 넣기(먼저 시험 키 dgg_test_… 로 돈 없이 시험, 저장소·화면에는 절대 넣지 않음)
+        (에이픽으로 바꿀 때만: GUARD_VENDOR = apick + APICK_API_KEY, 아래 JG_APICK_F TODO 칸 확인)
+     ② 함수 guardHookInstall 한 번 실행 → 변동을 바로 받는 주소(웹훅) 등록
+     ③ 이 파일 GUARD_ENABLED = true → 회원 무료 지킴이가 열림. 추가 집·등기 바로 확인 결제는 PAID_OPEN = true(그리고 assets/config.js PAID_OPEN)일 때 열림
    흐름: guardOrder(서버 가격표로 금액 결정) → 결제창 → guardRegister/readRegistry(토스 승인 확인 → 그다음에만 업체 호출 · 같은 주문은 한 번만)
         → 업체 등록 실패·열람 실패 = 그 몫만큼 결제 취소(자동 환불). 업체 규칙: 실패한 확인은 업체가 포인트를 돌려줌.
-        guardDaily(트리거): 업체 /changed → 변동 기록(종류·날짜만) → 메일·알림톡 → 업체가 감시를 끝내므로 남은 기간 다시 등록(최대 JG_DEF.maxRereg 번).
+        회원 무료: guardFree(카카오 간편 로그인 세션 → 남은 무료 자리 확인 → 바로 업체 등록, 결제 없음).
+        변동: 웹훅(등등기고) 또는 guardDaily(트리거, 업체 목록) → 변동 기록(종류·날짜만) → 메일·알림톡 → 에이픽만 감시가 끝나서 남은 기간 다시 등록(최대 JG_DEF.maxRereg 번).
    개인정보: 이메일·휴대폰은 sealText(암호화) + 가린 값만, 기간 끝 30일 뒤 지움. 등기 속 이름·주민번호·주소는 저장하지 않고(열람 결과는 이름 가려 한 번만 돌려줌),
             '지킴이기록' 시트에는 성공/실패·줄 수 같은 개인정보 아닌 값만.
    ====================================================================================== */
 /* GUARD-CORE BEGIN — 이 블록은 tools/agent-backend.gs 에 그대로 복사돼 있어요. 고칠 때는 두 곳을 똑같이 고쳐 주세요(node tools/guard-test.js 가 비교). */
-const JG_V = 'guard-2026-11-27';
-/* 기본 가격·원가 값(대표 확정 전 제안) — 화면은 assets/config.js GUARD 가 있으면 그 값을 씀 */
-const JG_DEF = { month: 2900, read: 1900, days: 30, maxMonths: 24, regP: 50, dayP: 60, readP: 1300, wonPerP: 1.1, maxRereg: 10 };
+const JG_V = 'guard-2026-11-27b';
+/* 기본 값(대표 확정 2026-11-27 11:01) — 화면은 assets/config.js GUARD 가 있으면 그 값을 씀.
+   extra = 무료 수를 넘는 집 1곳 한 달(30일) 값 · read = 등기 바로 확인 1건 · freeHomes = 로그인 회원 무료 집 수 · freeHomesSubscriber = 모닝 브리핑 구독자 무료 집 수 */
+const JG_DEF = { extra: 900, read: 1500, freeHomes: 1, freeHomesSubscriber: 3, days: 30, maxMonths: 24, maxRereg: 10 };
 const JG_LV = { r: '위험', y: '주의', g: '괜찮아요', n: '확인 필요' };
 /* 변동 종류 — 등기 목적 글자에서 앞에서부터 먼저 맞는 것(경매 > 압류 > 예고등기 > 소유권 > 신탁 > 임차권 > 근저당 > 말소) */
 const JG_TYPES = [
@@ -11599,10 +11609,10 @@ function jgTypeOf(purpose) {
   return t ? t.id : 'other';
 }
 function jgType(id) { return JG_TYPES.find(x => x.id === id) || JG_TYPES[JG_TYPES.length - 1]; }
-/** 값 정리: 설정(config GUARD) → 숫자만, 없으면 기본값 */
+/** 값 정리: 설정(config GUARD) → 숫자만, 없으면 기본값(무료 수는 0도 됨) */
 function jgCfg(c) {
   c = c && typeof c === 'object' ? c : {};
-  const o = {}; Object.keys(JG_DEF).forEach(k => { const v = Number(c[k]); o[k] = isFinite(v) && v > 0 ? v : JG_DEF[k]; });
+  const o = {}; Object.keys(JG_DEF).forEach(k => { const v = Number(c[k]); o[k] = isFinite(v) && (v > 0 || (v === 0 && /^free/.test(k))) ? v : JG_DEF[k]; });
   return o;
 }
 function jgT(iso) { return Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)); }
@@ -11611,13 +11621,25 @@ function jgOkDate(v) { return /^20\d\d-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.t
 function jgDays(today, end) { return jgOkDate(today) && jgOkDate(end) ? Math.max(0, Math.round((jgT(end) - jgT(today)) / 864e5)) : 0; }
 /** 신청할 달 수: 만기까지 남은 날을 30일 단위로 올림, 1~maxMonths */
 function jgMonthsTo(today, end, c) { c = jgCfg(c); const d = jgDays(today, end); return d > 0 ? Math.min(c.maxMonths, Math.max(1, Math.ceil(d / c.days))) : 0; }
-/** 판매가(원) — 달 수 × 월 가격 */
-function jgPrice(months, c) { c = jgCfg(c); const m = Math.round(Number(months)); return m >= 1 && m <= c.maxMonths ? m * c.month : 0; }
-/** 업체 원가(원) — 등록 (1 + 다시 등록 수) × 50P + 날수 × 60P, × 1.1원 */
-function jgCost(days, rereg, c) { c = jgCfg(c); const d = Math.max(0, Math.round(Number(days) || 0)), r = Math.max(0, Math.round(Number(rereg) || 0)); return Math.round((c.regP * (1 + r) + c.dayP * d) * c.wonPerP); }
-/** 한 건 손익 — 결제 수수료(pg, 기본 3.3%)를 빼고 남는 돈 */
-function jgMargin(months, rereg, c, pg) { c = jgCfg(c); const p = jgPrice(months, c), cost = jgCost(months * c.days, rereg, c), fee = Math.round(p * (pg == null ? 0.033 : pg)); return { price: p, cost: cost, fee: fee, left: p - cost - fee }; }
-function jgReadCost(c) { c = jgCfg(c); return Math.round(c.readP * c.wonPerP); }
+/** 무료 수를 넘는 집 1곳의 판매가(원) — 달 수 × 월 900원 */
+function jgPrice(months, c) { c = jgCfg(c); const m = Math.round(Number(months)); return m >= 1 && m <= c.maxMonths ? m * c.extra : 0; }
+/** 회원이 무료로 지킬 수 있는 집 수 — 모닝 브리핑 구독자면 더 많음 */
+function jgFreeAllow(c, sub) { c = jgCfg(c); return sub ? Math.max(c.freeHomes, c.freeHomesSubscriber) : c.freeHomes; }
+/** 무료·유료 단계: used = 지금 무료로 지키는 집 수 → { allow, used, left, pay(다음 집은 유료) } */
+function jgPlan(c, used, sub) { const allow = jgFreeAllow(c, sub), u = Math.max(0, Math.round(Number(used) || 0)); return { allow: allow, used: u, left: Math.max(0, allow - u), pay: u >= allow }; }
+/** 업체 원가(원) — v = 서버 업체 원가표 한 줄.
+    월 정액 업체(monthWon): 30일마다 선결제 → 올림(일수/30) × 월 값(o.list 면 정가) + 업체가 보내는 알림 수 × 건당 값(우리는 웹훅으로 받아 직접 보내서 보통 0).
+    포인트 업체(regP·dayP): (등록 × (1 + 다시 등록 수) + 매일 × 일수) × 1포인트 값 */
+function jgCostOf(v, days, o) {
+  v = v || {}; o = o || {};
+  const d = Math.max(0, Math.round(Number(days) || 0)), r = Math.max(0, Math.round(Number(o.rereg) || 0));
+  if (v.monthWon != null) return Math.ceil(d / 30) * (o.list ? (v.monthList || v.monthWon) : v.monthWon) + Math.max(0, Number(o.sends) || 0) * (v.sendWon || 0);
+  return Math.round(((v.regP || 0) * (1 + r) + (v.dayP || 0) * d) * (v.wonPerP || 1));
+}
+/** 열람 1건 원가(원) — 업체 수수료 + 법원 수수료(1,100원, 2026-11-23부터) 합계 */
+function jgReadCostOf(v) { v = v || {}; return v.readWon != null ? v.readWon : Math.round((v.readP || 0) * (v.wonPerP || 1)); }
+/** 유료 추가 집 한 건 손익 — 결제 수수료(pg, 기본 3.3%)를 빼고 남는 돈 */
+function jgMargin(months, c, v, o, pg) { c = jgCfg(c); const p = jgPrice(months, c), cost = jgCostOf(v, months * c.days, o), fee = Math.round(p * (pg == null ? 0.033 : pg)); return { price: p, cost: cost, fee: fee, left: p - cost - fee }; }
 /** 등기 고유번호: 숫자 14자리(1234-5678-901234) */
 function jgUniq(v) { const d = String(v == null ? '' : v).replace(/[^0-9]/g, ''); return d.length === 14 ? `${d.slice(0, 4)}-${d.slice(4, 8)}-${d.slice(8)}` : ''; }
 /** 이름 가리기: 홍길동 → 홍*동, 김수 → 김*, 법인·기관 이름(주식회사·은행 등)은 그대로 */
@@ -11657,22 +11679,124 @@ function jgParseReg(reg) {
   return { asof: jgOkDate(reg.asof) ? String(reg.asof) : '', senior: liens.reduce((s, l) => s + l.amt, 0), liens: liens, flags: flags, owner: owner, ownerAt: ownerAt };
 }
 /* 지킴이 상태(서버 시트 '상태' 칸 글자 = 화면 표시) */
-const JG_ST = { wait: '결제대기', paid: '결제완료', on: '지켜보는 중', rereg: '다시 등록 중', done: '기간 끝', fail: '등록 실패·환불', stop: '중지', read: '열람 완료', bad: '금액불일치' };
+const JG_ST = { free: '무료 시작', wait: '결제대기', paid: '결제완료', on: '지켜보는 중', rereg: '다시 등록 중', done: '기간 끝', fail: '등록 실패·환불', stop: '중지', read: '열람 완료', bad: '금액불일치' };
 /** 화면 단계: 결제가 열렸는지 + 서버 준비(업체 키·GUARD_ENABLED) → 'open'(신청) | 'wait'(알림 신청만) */
 function jgCta(site, server) { return !!(site && site.PAID_OPEN) && !!(server && server.ok && server.open) ? 'open' : 'wait'; }
+/** 회원 무료 지킴이 단계: 결제가 없어서 PAID_OPEN 과 상관없이 서버 준비(GUARD_ENABLED·업체 키)만 봐요 → 'open' | 'wait' */
+function jgCtaFree(server) { return server && server.ok && server.freeOpen ? 'open' : 'wait'; }
 /* GUARD-CORE END */
-const GUARD_ENABLED = false;                         // 서버 안전 스위치 — false 면 돈·업체가 걸린 요청(찾기·주문·등록·열람)을 모두 거절(열림 알림 신청·상태 보기는 그대로)
-/* 판매가(대표 확정 2026-11-27) — assets/config.js GUARD 와 같은 값(node tools/guard-test.js 가 비교). pro 는 중개사·전문가 묶음 할인(제안, 대표 확정 전) */
-const JG_PRICE = { month: 2900, read: 1900, corp: 1900, maxMonths: 24,
-  pro: { packs: [{ n: 10, won: 18000 }, { n: 30, won: 51000 }, { n: 100, won: 160000 }], watchOff: [{ n: 5, pct: 10 }, { n: 20, pct: 15 }], freeReads: 3, maxItems: 50 } };
-const JG_MAX_ACTIVE = 95;                            // 에이픽 회원당 동시 감시 100건 — 여유 5건
+const GUARD_ENABLED = false;                         // 서버 안전 스위치 — false 면 돈·업체가 걸린 요청(찾기·주문·등록·열람·회원 무료 시작)을 모두 거절(열림 알림 신청·상태 보기는 그대로)
+/* 판매가·무료 수(대표 확정 2026-11-27 11:01) — assets/config.js GUARD 와 같은 값(node tools/guard-test.js 가 비교).
+   자동 지킴이: 로그인 회원 무료 freeHomes 곳(모닝 브리핑 구독자 freeHomesSubscriber 곳) · 그보다 많은 집은 집 1곳마다 월 extra 원 · 등기 바로 확인 1건 read 원.
+   pro 는 중개사·전문가 묶음 할인(제안, 대표 확정 전 — 1,500원 아래로 내려가지 않게 다시 잡음) */
+const JG_PRICE = { extra: 900, read: 1500, corp: 1500, freeHomes: 1, freeHomesSubscriber: 3, maxMonths: 24,
+  pro: { packs: [{ n: 10, won: 14500 }, { n: 30, won: 42000 }, { n: 100, won: 135000 }], watchOff: [{ n: 5, pct: 10 }, { n: 20, pct: 15 }], freeReads: 3, maxItems: 50 } };
+/* 업체 원가표(서버만 — 화면 파일에는 업체 이름을 쓰지 않음). 원 단위, 부가세 별도. 근거·확인 날짜: 엔진 docs/vendors/registry.md · docs/pricing_policy.md
+   deunggigo(등등기고, deunggigo.kr — 2026-11-27 공개 페이지·API 가이드 확인): 열람 = 수수료 90 + 법원 1,100(2026-11-23부터) = 1,190 · 변동 알림 1곳 월 100(할인가, 정가 1,000) ·
+     업체 문자 발송 건별 요금 없음(공개 FAQ — 우리는 웹훅으로 받아 직접 보냄) · 하루 1회 확인 · 변동이 생겨도 알림이 계속 켜져 있음(다시 등록 필요 없음)
+   apick(에이픽): 등록 50P + 매일 60P, 열람 1,300P, 1P ≈ 1.1원 · 변동을 잡으면 감시가 끝나 다시 등록 · 회원당 동시 100건 */
+const JG_VCOST = {
+  deunggigo: { readWon: 1190, readSvc: 90, readCourt: 1100, monthWon: 100, monthList: 1000, sendWon: 0, persist: true, maxActive: 0 },
+  apick: { regP: 50, dayP: 60, readP: 1300, wonPerP: 1.1, persist: false, maxActive: 95 }
+};
 const JG_KEEP_DAYS = 30;                             // 기간이 끝난 뒤 연락처를 지우기까지
 const SH_JG = '지킴이', SH_JGW = '지킴이대기', SH_JGL = '지킴이기록';
 const JGH = ['id', '주문번호', '생성시각', '상품', '고유번호', '표시', '개월', '시작일', '종료일', '금액', '상태', '이메일', '이메일가림', '휴대폰', '결제키', '승인시각',
   '업체번호', '등록횟수', '마지막확인', '변동기록', '회원', '열람횟수', '메모'];
 const JGC = Object.fromEntries(JGH.map((h, i) => [h, i]));
-const JG_ACTIONS = { guardWait: 1, guardFind: 1, guardOrder: 1, guardRegister: 1, guardStatus: 1, guardStop: 1, guardList: 1, readRegistry: 1 };
-/* ---------- 에이픽 어댑터(업체가 바뀌면 이 칸만 바꿈) ----------
+const JG_ACTIONS = { guardWait: 1, guardFind: 1, guardOrder: 1, guardRegister: 1, guardStatus: 1, guardStop: 1, guardList: 1, readRegistry: 1, guardFree: 1, guardQuota: 1, guardMine: 1 };
+/* ---------- 업체 고르기: 스크립트 속성 GUARD_VENDOR = 'deunggigo'(기본) | 'apick' ----------
+   키: deunggigo → 스크립트 속성 DEUNGGIGO_API_KEY(dgg_… · 시험 키 dgg_test_… 는 돈이 들지 않는 가짜 응답) · apick → APICK_API_KEY. 저장소·화면에는 절대 넣지 않음. */
+function jgVendorName() { const v = String(PropertiesService.getScriptProperties().getProperty('GUARD_VENDOR') || '').trim().toLowerCase(); return v === 'apick' ? 'apick' : 'deunggigo'; }
+function jgKey() { const P = PropertiesService.getScriptProperties(); return (jgVendorName() === 'apick' ? P.getProperty('APICK_API_KEY') : P.getProperty('DEUNGGIGO_API_KEY')) || ''; }
+function jgVc() { return JG_VCOST[jgVendorName()]; }
+/** 업체 한 곳(같은 모양): register(고유번호, 일수) → { ok, id } · changed() → [{ id, uniq, delivery, changes:[{ purpose, at }] }] | null · terminate(id) · read(no, corp) · find(addr) · hook(body) · persist */
+function jgV() { return jgVendorName() === 'apick' ? JG_VA_APICK : JG_VA_DG; }
+const JG_V_API = {
+  register(no, days) { return jgV().register(no, days); }, changed() { return jgV().changed(); }, terminate(id) { return jgV().terminate(id); },
+  read(no, corp) { return jgV().read(no, corp); }, find(addr) { return jgV().find(addr); }, hook(body) { return jgV().hook(body); }, persist() { return !!jgV().persist; }
+};
+/* ---------- 등등기고 어댑터(1순위) — https://deunggigo.kr/api-guide (2026-11-27 확인) ----------
+   주소 https://deunggigo.kr/api/v1 · 인증 Authorization: Bearer dgg_… · 몸통 JSON · 오류 { error }(400·401·402 크레딧 부족·404·409 중복·500).
+   변동 알림: POST /alerts { uniqueNumber, recipients:[{name, phone}] } → { alert:{ id } } · DELETE /alerts/{id} · GET /alerts?search=&status=active.
+     등록하면 첫 달(30일) 요금을 바로 내고 30일마다 자동으로 다시 냄 → 변동이 생겨도 그대로 켜져 있어서 다시 등록하지 않음. 기간이 끝나거나 그만두면 DELETE.
+     같은 집을 여러 분이 지키면 업체 알림은 한 개만 써요(비용 절약 — jgReuse·jgRelease).
+   웹훅: POST /webhooks { url, events:['alert.detected'] } → 변동 때 { event, id(배달 번호), created_at, data:{ uniqueNumber, address, changeSummary, detectedAt } } 를 보냄.
+     서명(HMAC)은 없어서 주소에 넣은 비밀 값(GUARD_HOOK_TOKEN)으로 확인하고, 배달 번호로 같은 알림을 한 번만 처리. 2xx 가 아니면 1초·2초 뒤 최대 3번 다시 보냄.
+     ※ Apps Script 웹 앱은 POST 응답을 302(다른 주소로 넘김)로 돌려줘서 업체가 '실패'로 볼 수 있어요 → 처리는 되지만 다시 보내기가 생길 수 있어 배달 번호로 거르고,
+       매일 트리거가 GET /webhooks/{id}/logs(최근 100건)로 놓친 것을 다시 읽어요(대체 길).
+   알림 받는 사람(recipients): 업체가 직접 문자를 보내는 칸이라 손님 번호는 넘기지 않아요. 스크립트 속성 GUARD_DG_RECIPIENT(JSON [{"name":"운영","phone":"010…"}])가 있으면 그 번호,
+     없으면 빈 목록 — TODO(업체 문의): 웹훅만 받고 문자는 끄는 방법·빈 목록 허용 여부. 문자 발송은 건별 요금이 없다고 공개 FAQ 에 적혀 있어요.
+   열람: POST /inquiries { issueType:'1'(열람), searchDiv:'1', uniqueNo, display:'1' } → GET /inquiries/{id} 가 끝나면 parsedData(갑구·을구 JSON). 실패한 조회는 업체가 자동 환불.
+   TODO(가입 후 시험 키 dgg_test_ 로 확인): parsedData 칸 이름(아래 jgDgRows 가 여러 이름을 받아 봄), 고유번호에 '-' 를 넣는지, 웹훅 logs 응답 모양, 법인 열람 결과 모양. */
+const JG_DG_F = { base: 'https://deunggigo.kr/api/v1', alerts: '/alerts', webhooks: '/webhooks', inquiries: '/inquiries', corp: '/corp-inquiries', search: '/property-search' };
+function jgDg(method, path, body) {
+  const key = jgKey(); if (!key) return { code: 0, j: {}, ok: false, why: 'nokey' };
+  const opt = { method: method, muteHttpExceptions: true, headers: { Authorization: 'Bearer ' + key } };
+  if (body) { opt.contentType = 'application/json'; opt.payload = JSON.stringify(body); }
+  let res; try { res = UrlFetchApp.fetch(JG_DG_F.base + path, opt); } catch (e) { return { code: 0, j: {}, ok: false, why: 'net' }; }
+  let j = {}; try { j = JSON.parse(res.getContentText()); } catch (e) {}
+  const code = res.getResponseCode(); j = j && typeof j === 'object' ? j : {};
+  return { code: code, j: j, ok: code >= 200 && code < 300, why: code >= 200 && code < 300 ? '' : String(j.error || code).slice(0, 80) };
+}
+function jgDgRecipients() { const v = parseJ(PropertiesService.getScriptProperties().getProperty('GUARD_DG_RECIPIENT'), []); return Array.isArray(v) ? v.slice(0, 3) : []; }
+/** parsedData 의 갑구·을구 줄 → GUARD-CORE reg 줄 모양(이름은 바로 가림). TODO: 실제 칸 이름 확인 뒤 남는 이름만 두기 */
+function jgDgRows(a) {
+  const pick = (x, ks) => { for (let i = 0; i < ks.length; i++) if (x[ks[i]] != null && x[ks[i]] !== '') return x[ks[i]]; return ''; };
+  const day = v => { const m = /(\d{4})\D{0,3}(\d{1,2})\D{0,3}(\d{1,2})/.exec(String(v || '')); return m ? `${m[1]}-${('0' + m[2]).slice(-2)}-${('0' + m[3]).slice(-2)}` : ''; };
+  return (Array.isArray(a) ? a : []).filter(x => x && typeof x === 'object').map((x, i) => {
+    const etc = String(pick(x, ['etc', 'rightHolderEtc', 'detail', '권리자및기타사항']) || '');
+    const amt = String(pick(x, ['amount', 'maxClaimAmount', 'deposit', '채권최고액']) || ((/(?:채권최고액|전세금|임차보증금|청구금액)\s*금?\s*([\d,]+)\s*원/.exec(etc) || [])[1] || ''));
+    return { no: String(pick(x, ['rank', 'rankNo', 'no', '순위번호']) || i + 1).slice(0, 8), purpose: String(pick(x, ['purpose', 'registrationPurpose', '등기목적'])).slice(0, 60),
+      at: day(pick(x, ['receiptDate', 'receipt_date', 'acceptDate', '접수'])), cause: String(pick(x, ['cause', 'registrationCause', '등기원인'])).slice(0, 30),
+      amount: amt.replace(/[^0-9,]/g, ''), holder: jgMaskName(pick(x, ['holder', 'rightHolder', 'owner', '권리자'])), cancelled: x.cancelled === true || x.isCancelled === true || x.cancelled === 'Y' };
+  });
+}
+function jgDgInquiry(r0) {
+  if (!r0.ok) return { ok: false, why: r0.why };
+  const id = String(((r0.j.inquiry || {}).id) || r0.j.inquiryId || ''); if (!id) return { ok: false, why: 'noid' };
+  let q = r0.j.inquiry || {};
+  for (let t = 0; t < 10 && !/complete|done|success/i.test(String(q.status || '')); t++) {
+    if (/fail|error|cancel/i.test(String(q.status || ''))) return { ok: false, why: String(q.status).slice(0, 40) };
+    Utilities.sleep(2500); const g = jgDg('get', JG_DG_F.inquiries + '/' + encodeURIComponent(id)); if (g.ok) q = g.j.inquiry || g.j;
+  }
+  if (!/complete|done|success/i.test(String(q.status || ''))) return { ok: false, why: 'timeout' };
+  const pd = typeof q.parsedData === 'string' ? parseJ(q.parsedData, {}) : (q.parsedData || {});
+  const gap = pd.gapgu || pd.gap || pd['갑구'] || (pd.sections && pd.sections.gap) || [], eul = pd.eulgu || pd.eul || pd['을구'] || (pd.sections && pd.sections.eul) || [];
+  return { ok: true, reg: { asof: String(q.completedAt || ymd(new Date())).slice(0, 10), gap: jgDgRows(gap), eul: jgDgRows(eul), ok: true } };
+}
+function jgDgEvents(list) {
+  return (Array.isArray(list) ? list : []).filter(p => p && p.event === 'alert.detected' && p.data && p.data.uniqueNumber)
+    .map(p => ({ id: '', uniq: String(p.data.uniqueNumber).replace(/[^0-9]/g, ''), delivery: String(p.id || ''), changes: [{ purpose: String(p.data.changeSummary || '').slice(0, 120), at: String(p.data.detectedAt || p.created_at || '').slice(0, 10) }] }));
+}
+const JG_VA_DG = {
+  persist: true,
+  register(no) {
+    const u = String(no).replace(/[^0-9]/g, '');
+    const r = jgDg('post', JG_DG_F.alerts, { uniqueNumber: u, recipients: jgDgRecipients(), propertyType: 'building' });
+    if (r.ok && r.j.alert && r.j.alert.id) return { ok: true, id: String(r.j.alert.id) };
+    if (r.code === 409) { const g = jgDg('get', JG_DG_F.alerts + '?status=active&limit=20&search=' + u); const it = ((g.j && g.j.items) || []).filter(x => String(x.uniqueNumber).replace(/[^0-9]/g, '') === u)[0]; if (it) return { ok: true, id: String(it.id) }; }
+    return { ok: false, why: r.why || 'register' };
+  },
+  /** 대체 길: 웹훅 배달 기록(최근 100건)에서 변동 알림을 다시 읽음. TODO: logs 응답 칸 이름 확인(payload·requestBody·body 중) */
+  changed() {
+    const hid = PropertiesService.getScriptProperties().getProperty('GUARD_DG_HOOK_ID'); if (!hid) return [];
+    const r = jgDg('get', JG_DG_F.webhooks + '/' + encodeURIComponent(hid) + '/logs'); if (!r.ok) return null;
+    const L = r.j.items || r.j.logs || r.j.data || [];
+    return jgDgEvents((Array.isArray(L) ? L : []).map(x => { const p = x && (x.payload || x.requestBody || x.body); return typeof p === 'string' ? parseJ(p, null) : p; }));
+  },
+  terminate(id) { return jgDg('delete', JG_DG_F.alerts + '/' + encodeURIComponent(id)).ok; },
+  read(no, corp) {
+    if (corp) return jgDgInquiry((r => ({ ok: r.ok, why: r.why, j: { inquiryId: r.j.inquiryId, inquiry: r.j.inquiry } }))(jgDg('post', JG_DG_F.corp, { row: { drokno: String(no) }, execute: true, issueType: '1' })));
+    return jgDgInquiry(jgDg('post', JG_DG_F.inquiries, { issueType: '1', searchDiv: '1', uniqueNo: String(no).replace(/[^0-9]/g, ''), display: '1' }));
+  },
+  find(addr) {
+    const r = jgDg('post', JG_DG_F.search, { address: addr, pageSize: 20 }); if (!r.ok) return null;
+    return (r.j.items || []).slice(0, 20).map(x => ({ no: jgUniq(x.uniqueNo), label: [x.address, x.dong, x.ho].filter(Boolean).join(' ').slice(0, 80), kind: String(x.propertyType || '').slice(0, 20) })).filter(x => x.no);
+  },
+  hook(body) { const p = typeof body === 'string' ? parseJ(body, null) : body; return jgDgEvents([p]); }
+};
+/* ---------- 에이픽 어댑터(2순위 — GUARD_VENDOR='apick' 일 때) ----------
    TODO(대표 가입 후 문서로 확인): 아래 칸 이름은 공개 안내로 짐작한 값이에요. dev_guide/iros_monitor · iros1 문서와 다르면 여기만 고치면 돼요(tools/guard-test.js 가짜 업체도 이 이름을 씀). */
 const JG_APICK_F = {
   base: 'https://apick.app',
@@ -11685,7 +11809,6 @@ const JG_APICK_F = {
   r: { ok: 'success', id: 'monitor_id', list: 'data', changes: 'changes', purpose: 'purpose', at: 'receipt_date', msg: 'message',
        gap: 'gapgu', eul: 'eulgu', asof: 'issue_date', holder: 'holder', amount: 'amount', cancelled: 'cancelled', uniqOut: 'unique_no', label: 'address', kind: 'type' }   // TODO 응답 칸
 };
-function jgKey() { return PropertiesService.getScriptProperties().getProperty('APICK_API_KEY') || ''; }
 function jgVendor(path, form) {
   const key = jgKey(); if (!key) return { code: 0, j: {}, why: 'nokey' };
   const F = JG_APICK_F, h = {}; h[F.auth] = key;
@@ -11694,10 +11817,11 @@ function jgVendor(path, form) {
   const code = res.getResponseCode(), d = j && typeof j === 'object' ? (j.data && typeof j.data === 'object' && !Array.isArray(j.data) ? Object.assign({}, j, j.data) : j) : {};
   return { code: code, j: d, ok: code === 200 && d[F.r.ok] !== false && d[F.r.ok] !== 0 };
 }
-const JG_V_API = {
+const JG_VA_APICK = {
+  persist: false,
   register(no, days) { const F = JG_APICK_F, f = {}; f[F.q.uniq] = no.replace(/-/g, ''); f[F.q.days] = String(Math.max(1, Math.min(1000, days))); const r = jgVendor(F.monitor, f); return r.ok && r.j[F.r.id] ? { ok: true, id: String(r.j[F.r.id]) } : { ok: false, why: r.why || String(r.j[F.r.msg] || r.code).slice(0, 80) }; },
   changed() { const F = JG_APICK_F, r = jgVendor(F.changed, {}); if (!r.ok) return null; const L = Array.isArray(r.j[F.r.list]) ? r.j[F.r.list] : [];
-    return L.map(x => ({ id: String(x[F.r.id] || ''), changes: (Array.isArray(x[F.r.changes]) ? x[F.r.changes] : [x]).map(c => ({ purpose: String(c[F.r.purpose] || ''), at: String(c[F.r.at] || '').slice(0, 10) })) })).filter(x => x.id); },
+    return L.map(x => ({ id: String(x[F.r.id] || ''), uniq: '', delivery: '', changes: (Array.isArray(x[F.r.changes]) ? x[F.r.changes] : [x]).map(c => ({ purpose: String(c[F.r.purpose] || ''), at: String(c[F.r.at] || '').slice(0, 10) })) })).filter(x => x.id); },
   terminate(id) { const F = JG_APICK_F, f = {}; f[F.q.id] = id; return jgVendor(F.terminate, f).ok; },
   /** 열람 → reg 모양(GUARD-CORE jgParseReg 가 읽는 모양) — 이름은 여기서 바로 가림, 주민번호·주소는 받지 않음 */
   read(no, corp) { const F = JG_APICK_F, f = {}; if (corp) f[F.q.corp] = no; else f[F.q.uniq] = no.replace(/-/g, ''); const r = jgVendor(corp ? F.corp : F.read, f); if (!r.ok) return { ok: false, why: r.why || String(r.j[F.r.msg] || r.code).slice(0, 80) };
@@ -11705,7 +11829,8 @@ const JG_V_API = {
       amount: String(x[F.r.amount] || '').replace(/[^0-9,]/g, ''), holder: jgMaskName(x[F.r.holder]), cancelled: x[F.r.cancelled] === true || x[F.r.cancelled] === 'Y' }));
     return { ok: true, reg: { asof: String(r.j[F.r.asof] || ymd(new Date())).slice(0, 10), gap: rows(r.j[F.r.gap]), eul: rows(r.j[F.r.eul]), ok: true } }; },
   find(addr) { const F = JG_APICK_F, f = {}; f[F.q.addr] = addr; const r = jgVendor(F.find, f); if (!r.ok) return null; const L = Array.isArray(r.j[F.r.list]) ? r.j[F.r.list] : [];
-    return L.slice(0, 20).map(x => ({ no: jgUniq(x[F.r.uniqOut]), label: String(x[F.r.label] || '').slice(0, 80), kind: String(x[F.r.kind] || '').slice(0, 20) })).filter(x => x.no); }
+    return L.slice(0, 20).map(x => ({ no: jgUniq(x[F.r.uniqOut]), label: String(x[F.r.label] || '').slice(0, 80), kind: String(x[F.r.kind] || '').slice(0, 20) })).filter(x => x.no); },
+  hook(body) { const p = typeof body === 'string' ? parseJ(body, null) : body; const F = JG_APICK_F; if (!p || !p[F.r.id]) return []; return [{ id: String(p[F.r.id]), uniq: '', delivery: '', changes: (Array.isArray(p[F.r.changes]) ? p[F.r.changes] : [p]).map(c => ({ purpose: String(c[F.r.purpose] || ''), at: String(c[F.r.at] || '').slice(0, 10) })) }]; }
 };
 /* ---------- 시트·작은 도구 ---------- */
 function jgSheet() { return uSheet(SH_JG, JGH); }
@@ -11715,11 +11840,66 @@ function jgLog(kind, ok, n, note) { try { uSheet(SH_JGL, ['날짜', '종류', '�
 function jgTok(orderId) { return hashOf('jg|' + orderId).slice(1, 41); }               // 보기 열쇠(저장 안 함 — 서버가 다시 만들 수 있음)
 function jgErr(msg, code) { const e = new Error(msg); e.code = code || ''; return e; }
 function jgReady() { return GUARD_ENABLED && !!jgKey(); }
-function jgGate() { if (!jgReady()) throw jgErr('지킴이는 곧 열려요. 결제가 열리면 바로 신청할 수 있어요.', 'guard_closed'); }
+function jgGate() { if (!jgReady()) throw jgErr('지킴이는 곧 열려요. 열리면 바로 신청할 수 있어요.', 'guard_closed'); }
 function jgDay(v) { return v instanceof Date ? ymd(v) : String(v || '').slice(0, 10); }
-function jgActive() { return jgRows().filter(o => [JG_ST.on, JG_ST.rereg].indexOf(String(o.r[JGC['상태']])) >= 0).length; }
+const JG_LIVE = () => [JG_ST.on, JG_ST.rereg];
+function jgIsLive(o) { return JG_LIVE().indexOf(String(o.r[JGC['상태']])) >= 0; }
+function jgActive() { return jgRows().filter(jgIsLive).length; }
+function jgNo(o) { return String(o.r[JGC['고유번호']]).replace(/^'/, ''); }
+/** 동시 감시 한도: 스크립트 속성 GUARD_MAX_ACTIVE 가 있으면 그 값, 없으면 업체 표(0 = 한도 없음) */
+function jgMaxActive() { const p = Number(PropertiesService.getScriptProperties().getProperty('GUARD_MAX_ACTIVE')); return p > 0 ? p : (jgVc().maxActive || 0); }
+function jgFull(n) { const m = jgMaxActive(); if (m && jgActive() + n > m) { ownerMail('[지킴이] 동시 감시 한도에 가까워요', ['지금 감시 중 ' + jgActive() + '건 · 한도 ' + m, '업체 한도를 늘리거나 계정을 나눠야 해요.']); return true; } return false; }
+/** 같은 집을 이미 지키는 줄이 있으면 그 업체 번호를 같이 씀(알림이 계속 켜져 있는 업체만 — 업체 요금 한 번) */
+function jgReuse(no, exceptRow) { if (!JG_V_API.persist()) return ''; const o = jgRows().filter(x => x.row !== exceptRow && jgIsLive(x) && jgNo(x) === no && String(x.r[JGC['업체번호']] || ''))[0]; return o ? String(o.r[JGC['업체번호']]) : ''; }
+function jgRegisterVendor(no, days, row) { const id = jgReuse(no, row); return id ? { ok: true, id: id, reused: true } : JG_V_API.register(no, days); }
+/** 업체 감시 끄기 — 같은 업체 번호를 쓰는 다른 줄이 아직 지키는 중이면 끄지 않음 */
+function jgRelease(o) { const vid = String(o.r[JGC['업체번호']] || ''); if (!vid) return; if (jgRows().some(x => x.row !== o.row && jgIsLive(x) && String(x.r[JGC['업체번호']] || '') === vid)) return; JG_V_API.terminate(vid); }
 /** 중개사·전문가(확인 마친 분) 세션이면 회원 id, 아니면 '' */
 function jgPro(b) { if (!b || !b.s) return ''; try { const u = sessionUser(b.s); return ptCard(u.k).card ? ptUid(u.k) : ''; } catch (e) { return ''; } }
+/* ---------- 회원 무료(카카오 간편 로그인) ---------- */
+function jgMember(b) { if (!b || !b.s) throw jgErr('카카오 간편 로그인을 하면 무료로 쓸 수 있어요.', 'login'); try { return sessionUser(b.s); } catch (e) { throw jgErr('로그인이 끝났어요. 카카오 간편 로그인을 다시 해 주세요.', 'login'); } }
+function jgMemId(k) { return 'm' + hashOf('jgm|' + k).slice(1, 21); }                     // 시트에는 카카오 번호 대신 이 값만
+function jgIsSub(k) { try { const now = new Date(); return bRows().some(o => String(o.r[BC['카카오id']]) === String(k) && briefState(o, now).active); } catch (e) { return false; } }
+function jgFreeUsed(mid) { return jgRows().filter(o => String(o.r[JGC['회원']]) === mid && String(o.r[JGC['상품']]) === 'free' && (jgIsLive(o) || String(o.r[JGC['상태']]) === JG_ST.free)).length; }
+function jgQuota(b) { const u = jgMember(b), sub = jgIsSub(u.k); return Object.assign({ ok: true, sub: sub }, jgPlan(JG_PRICE, jgFreeUsed(jgMemId(u.k)), sub)); }
+function jgMine(b) {
+  const u = jgMember(b), mid = jgMemId(u.k), sub = jgIsSub(u.k), seen = {};
+  const items = jgRows().filter(o => String(o.r[JGC['회원']]) === mid && String(o.r[JGC['상품']]) !== 'read' && String(o.r[JGC['상태']]) !== JG_ST.wait).reverse()
+    .filter(o => { const k = String(o.r[JGC['주문번호']]); return !seen[k] && (seen[k] = 1); }).slice(0, 50).map(o => ({ o: String(o.r[JGC['주문번호']]), t: jgTok(String(o.r[JGC['주문번호']])) }));
+  return Object.assign({ ok: true, sub: sub, items: items }, jgPlan(JG_PRICE, jgFreeUsed(mid), sub));
+}
+function jgFree(b) {
+  const u = jgMember(b), mid = jgMemId(u.k);
+  if (b.agree !== true) throw jgErr('안내에 동의해 주세요.');
+  const no = jgUniq(b.items && b.items[0] && b.items[0].no), label = uText(b.items && b.items[0] && b.items[0].label, 60);
+  if (!no) throw jgErr('등기 고유번호(14자리)를 확인해 주세요.');
+  const months = Math.round(Number(b.months)); if (!(months >= 1 && months <= JG_PRICE.maxMonths)) throw jgErr(`기간은 1~${JG_PRICE.maxMonths}개월 중에서 골라 주세요.`);
+  const email = parseContact(b.email); if (!email || email.kind !== 'email') throw jgErr('알림 받을 이메일을 확인해 주세요.');
+  let phone = null; if (String(b.phone || '').trim()) { phone = parseContact(b.phone); if (!phone || phone.kind !== 'phone') throw jgErr('휴대폰 번호를 확인해 주세요(비워 둬도 돼요).'); }
+  const c = CacheService.getScriptCache(), ck = 'jgfr:' + Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyyMMddHHmm'), n = Number(c.get(ck) || 0);
+  if (n >= 30) throw jgErr('잠시 후 다시 시도해 주세요.'); c.put(ck, String(n + 1), 120);
+  const sub = jgIsSub(u.k);
+  const made = withLock(() => {
+    if (jgRows().some(o => String(o.r[JGC['회원']]) === mid && jgNo(o) === no && (jgIsLive(o) || String(o.r[JGC['상태']]) === JG_ST.free))) throw jgErr('이 집은 이미 지키고 있어요. 내 지킴이에서 확인해 주세요.', 'dup');
+    const plan = jgPlan(JG_PRICE, jgFreeUsed(mid), sub);
+    if (plan.pay) throw jgErr(`무료로 지킬 수 있는 집(${plan.allow}곳)을 모두 쓰고 있어요. 더 지킬 집은 집 1곳마다 월 ${JG_PRICE.extra.toLocaleString('ko-KR')}원이에요.`, 'free_full');
+    if (jgFull(1)) throw jgErr('지금 신청이 많아 잠시 받지 못해요. 조금 뒤 다시 시도해 주세요.');
+    const id = newOrderId(), r = [];
+    r[JGC['id']] = id + '-1'; r[JGC['주문번호']] = id; r[JGC['생성시각']] = new Date(); r[JGC['상품']] = 'free'; r[JGC['고유번호']] = "'" + no; r[JGC['표시']] = cellSafe(label);
+    r[JGC['개월']] = months; r[JGC['금액']] = 0; r[JGC['상태']] = JG_ST.free; r[JGC['이메일']] = sealText(email.norm); r[JGC['이메일가림']] = email.mask; r[JGC['휴대폰']] = phone ? sealText(phone.norm) : '';
+    r[JGC['등록횟수']] = 0; r[JGC['열람횟수']] = 0; r[JGC['변동기록']] = '[]'; r[JGC['회원']] = mid;
+    jgSheet().appendRow(JGH.map((h, k) => r[k] === undefined ? '' : r[k]));
+    return { id: id };
+  });
+  const o = jgRows().filter(x => String(x.r[JGC['주문번호']]) === made.id)[0], days = months * 30;
+  const v = jgRegisterVendor(no, days, o.row), start = ymd(new Date()), end = ymd(addDays(new Date(), days));
+  withLock(() => { if (v.ok) { jgSet(o.row, '업체번호', v.id); jgSet(o.row, '상태', JG_ST.on); jgSet(o.row, '시작일', start); jgSet(o.row, '종료일', end); jgSet(o.row, '등록횟수', 1); }
+    else { jgSet(o.row, '상태', JG_ST.fail); jgSet(o.row, '메모', '업체 등록 실패: ' + v.why); } });
+  jgLog('free', v.ok, 1, v.reused ? 'reuse' : '');
+  if (!v.ok) throw jgErr('등기 감시를 등록하지 못했어요. 고유번호를 확인해 다시 신청해 주세요. 무료 자리는 그대로 남아 있어요.');
+  try { jgMail(o, `[${SITE_NAME}] 내 전셋집 지킴이를 시작했어요(회원 무료)`, `오늘부터 ${bEsc(end)}까지 등기를 지켜봐요. 변동이 생기면 바로 알려 드리고, 무슨 뜻인지와 할 일까지 안내해 드릴게요.`, made.id); } catch (e) {}
+  return Object.assign({ ok: true, orderId: made.id, token: jgTok(made.id), start: start, end: end }, jgPlan(JG_PRICE, jgFreeUsed(mid), sub));
+}
 /** 서버 가격표로 금액 — 손님 화면 값은 믿지 않음 */
 function jgAmount(product, n, months, pro) {
   const P = JG_PRICE;
@@ -11734,7 +11914,10 @@ function jgDispatch(b) {
     if (b.action === 'guardStatus') return jgStatus(b);
     if (b.action === 'guardList') return jgList(b);
     if (b.action === 'guardStop') return withLock(() => jgStop(b));
+    if (b.action === 'guardQuota') return jgQuota(b);
+    if (b.action === 'guardMine') return jgMine(b);
     jgGate();
+    if (b.action === 'guardFree') return jgFree(b);
     if (b.action === 'guardFind') return jgFind(b);
     if (b.action === 'guardOrder') return withLock(() => jgOrder(b));
     if (b.action === 'guardRegister') return jgRegister(b);
@@ -11742,7 +11925,8 @@ function jgDispatch(b) {
     return { ok: false, err: 'unknown' };
   } catch (x) { return { ok: false, err: String(x.message || x), code: x.code || '' }; }
 }
-function jgConfig() { return { ok: true, open: jgReady() && PAID_OPEN, ready: jgReady(), v: JG_V, price: JG_PRICE }; }
+/** 화면 설정: open = 유료(추가 집·열람) 결제 열림 · freeOpen = 회원 무료 지킴이 열림(결제가 없어 PAID_OPEN 과 상관없음). 업체 이름은 보내지 않음 */
+function jgConfig() { return { ok: true, open: jgReady() && PAID_OPEN, freeOpen: jgReady(), ready: jgReady(), v: JG_V, price: JG_PRICE }; }
 /* ---------- 열림 알림 신청(결제가 닫혀 있어도 받음) ---------- */
 function jgWait(b) {
   const ct = parseContact(b.email); if (!ct || ct.kind !== 'email') throw jgErr('이메일 주소를 확인해 주세요.');
@@ -11781,6 +11965,7 @@ function jgOrder(b) {
   if (!product) throw jgErr('상품을 다시 골라 주세요.');
   if (b.agree !== true) throw jgErr('안내에 동의해 주세요.');
   const pro = jgPro(b), max = pro ? JG_PRICE.pro.maxItems : 1, seen = {};
+  let mem = '', memK = ''; if (!pro && b.s) try { memK = sessionUser(b.s).k; mem = jgMemId(memK); } catch (e) {}   // 로그인한 회원이면 내 지킴이 목록에 묶음(무료 자리부터)
   const items = (Array.isArray(b.items) ? b.items : []).slice(0, max + 1).map(x => ({ no: product === 'corp' ? String((x && x.no) || '').replace(/[^0-9]/g, '').slice(0, 13) : jgUniq(x && x.no), label: uText(x && x.label, 60) }))
     .filter(x => x.no && !seen[x.no] && (seen[x.no] = 1));
   if (!items.length) throw jgErr(product === 'corp' ? '법인등록번호(13자리)를 확인해 주세요.' : '등기 고유번호(14자리)를 확인해 주세요.');
@@ -11791,7 +11976,8 @@ function jgOrder(b) {
     if (!(months >= 1 && months <= JG_PRICE.maxMonths)) throw jgErr(`기간은 1~${JG_PRICE.maxMonths}개월 중에서 골라 주세요.`);
     email = parseContact(b.email); if (!email || email.kind !== 'email') throw jgErr('알림 받을 이메일을 확인해 주세요.');
     if (String(b.phone || '').trim()) { phone = parseContact(b.phone); if (!phone || phone.kind !== 'phone') throw jgErr('휴대폰 번호를 확인해 주세요(비워 둬도 돼요).'); }
-    if (jgActive() + items.length > JG_MAX_ACTIVE) { ownerMail('[지킴이] 동시 감시 한도에 가까워요', ['지금 감시 중 ' + jgActive() + '건 · 한도 ' + JG_MAX_ACTIVE, '업체 회원 한도(100건)를 늘리거나 계정을 나눠야 해요.']); throw jgErr('지금 신청이 많아 잠시 받지 못해요. 조금 뒤 다시 시도해 주세요.'); }
+    if (jgFull(items.length)) throw jgErr('지금 신청이 많아 잠시 받지 못해요. 조금 뒤 다시 시도해 주세요.');
+    if (!pro && mem && !jgPlan(JG_PRICE, jgFreeUsed(mem), jgIsSub(memK)).pay) throw jgErr('무료로 지킬 수 있는 집이 남아 있어요. 결제 없이 \'무료로 지킴이 시작\'을 눌러 주세요.', 'use_free');
   }
   const c = CacheService.getScriptCache(), ck = 'jgo:' + Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyyMMddHHmm'), n = Number(c.get(ck) || 0);
   if (n >= 30) throw jgErr('잠시 후 다시 시도해 주세요.'); c.put(ck, String(n + 1), 120);
@@ -11801,10 +11987,10 @@ function jgOrder(b) {
     const r = []; r[JGC['id']] = id + '-' + (i + 1); r[JGC['주문번호']] = id; r[JGC['생성시각']] = now; r[JGC['상품']] = product; r[JGC['고유번호']] = "'" + x.no; r[JGC['표시']] = cellSafe(x.label);
     r[JGC['개월']] = product === 'watch' ? months : 0; r[JGC['금액']] = i === items.length - 1 ? amount - each * (items.length - 1) : each; r[JGC['상태']] = JG_ST.wait;
     r[JGC['이메일']] = email ? sealText(email.norm) : ''; r[JGC['이메일가림']] = email ? email.mask : ''; r[JGC['휴대폰']] = phone ? sealText(phone.norm) : '';
-    r[JGC['등록횟수']] = 0; r[JGC['열람횟수']] = 0; r[JGC['변동기록']] = '[]'; r[JGC['회원']] = pro;
+    r[JGC['등록횟수']] = 0; r[JGC['열람횟수']] = 0; r[JGC['변동기록']] = '[]'; r[JGC['회원']] = pro || mem;
     jgSheet().appendRow(JGH.map((h, k) => r[k] === undefined ? '' : r[k]));
   });
-  const nm = { watch: '내 전셋집 지킴이', read: '등기 바로 확인', corp: '법인등기 확인' }[product];
+  const nm = { watch: '내 전셋집 지킴이 추가 집', read: '등기 바로 확인', corp: '법인등기 확인' }[product];
   return { ok: true, orderId: id, amount: amount, orderName: `${SITE_NAME} ${nm}${items.length > 1 ? ' ' + items.length + '건' : ''}${product === 'watch' ? ' ' + months + '개월' : ''}` };
 }
 /** 결제 승인(토스) — 요청 금액 = 주문 금액(서버 가격표) = 토스 응답 금액이어야 통과. 같은 주문·같은 결제키면 다시 승인하지 않음 */
@@ -11842,7 +12028,7 @@ function jgRegister(b) {
     const st = String(o.r[JGC['상태']]);
     if (st === JG_ST.on || st === JG_ST.rereg || st === JG_ST.fail) { if (st !== JG_ST.fail) ok++; return; }      // 이미 처리(새로 고침·두 번 누름)
     const start = ymd(new Date()), end = ymd(addDays(new Date(), Number(o.r[JGC['개월']]) * 30)), days = Number(o.r[JGC['개월']]) * 30;
-    const v = JG_V_API.register(String(o.r[JGC['고유번호']]).replace(/^'/, ''), days);
+    const v = jgRegisterVendor(jgNo(o), days, o.row);
     withLock(() => {
       if (v.ok) { jgSet(o.row, '업체번호', v.id); jgSet(o.row, '상태', JG_ST.on); jgSet(o.row, '시작일', start); jgSet(o.row, '종료일', end); jgSet(o.row, '등록횟수', 1); ok++; }
       else { jgSet(o.row, '상태', JG_ST.fail); jgSet(o.row, '메모', '업체 등록 실패: ' + v.why); failWon += Number(o.r[JGC['금액']]); }
@@ -11895,9 +12081,9 @@ function jgStop(b) {
   const rows = jgRows().filter(x => String(x.r[JGC['주문번호']]) === o && (!b.id || String(x.r[JGC['id']]) === String(b.id)) && [JG_ST.on, JG_ST.rereg].indexOf(String(x.r[JGC['상태']])) >= 0);
   const today = ymd(new Date());
   rows.forEach(x => {
-    const vid = String(x.r[JGC['업체번호']] || ''); if (vid) JG_V_API.terminate(vid);
-    const left = Math.floor(jgDays(today, jgDay(x.r[JGC['종료일']])) / 30), won = left * JG_PRICE.month;
-    jgSet(x.row, '상태', JG_ST.stop); jgSet(x.row, '메모', '사용자 중지 · 남은 달 ' + left + ' · 환불 검토 ' + won + '원');
+    jgSet(x.row, '상태', JG_ST.stop); x.r[JGC['상태']] = JG_ST.stop; jgRelease(x);
+    const free = String(x.r[JGC['상품']]) === 'free', left = Math.floor(jgDays(today, jgDay(x.r[JGC['종료일']])) / 30), won = free ? 0 : left * JG_PRICE.extra;
+    jgSet(x.row, '메모', free ? '사용자 중지(회원 무료 — 무료 자리 돌려줌)' : '사용자 중지 · 남은 달 ' + left + ' · 환불 검토 ' + won + '원');
     if (won > 0) ownerMail('[지킴이] 중지 — 남은 달 환불 검토', ['주문 ' + o, '남은 달 ' + left + ' · ' + won + '원', '7일 안·첫 확인 전이면 전액 환불(환불 정책)']);
   });
   return { ok: true, n: rows.length };
@@ -11922,42 +12108,74 @@ function guardInstall() {
   ScriptApp.newTrigger('guardDaily').timeBased().everyDays(1).atHour(16).inTimezone('Asia/Seoul').create();
   jgSheet(); uSheet(SH_JGW, ['시각', '이메일', '확인값', '보냄']); uSheet(SH_JGL, ['날짜', '종류', '성공', '건수', '메모']);
 }
-/** 업체 변동 목록 → 기록·알림 → 남은 기간 다시 등록. 끝난 것 정리 · 연락처 지우기. 여러 번 돌아도 같은 변동은 한 번만(종류|날짜 기록) */
+/** (v74) 업체가 변동을 바로 보내 주는 주소(웹훅) 등록 — 대표가 업체 키를 넣은 뒤 한 번 실행. 비밀 값 GUARD_HOOK_TOKEN 이 없으면 만들어 둠.
+    등등기고: POST /webhooks { url: 웹 앱 주소?guardhook=1&k=비밀 값, events:['alert.detected'] } → 받은 번호를 GUARD_DG_HOOK_ID 에 저장(대체 길 logs 에 씀) */
+function guardHookInstall() {
+  const P = PropertiesService.getScriptProperties();
+  let t = P.getProperty('GUARD_HOOK_TOKEN'); if (!t) { t = Utilities.getUuid().replace(/-/g, ''); P.setProperty('GUARD_HOOK_TOKEN', t); }
+  if (jgVendorName() !== 'deunggigo') return { ok: true, note: '이 업체는 웹훅 주소를 업체 화면에서 직접 등록해요: ' + bApi() + '?guardhook=1&k=(GUARD_HOOK_TOKEN)' };
+  const r = jgDg('post', JG_DG_F.webhooks, { url: bApi() + '?guardhook=1&k=' + t, name: SITE_NAME + ' 지킴이', events: ['alert.detected'] });
+  if (!r.ok || !r.j.webhook || !r.j.webhook.id) return { ok: false, err: r.why || 'webhook' };
+  P.setProperty('GUARD_DG_HOOK_ID', String(r.j.webhook.id));
+  return { ok: true, id: String(r.j.webhook.id) };
+}
+/** 변동 하나를 그 집을 지키는 줄에 적용: 기록(종류·날짜만, 같은 변동은 한 번) → 메일·알림톡 → (변동 뒤 감시가 끝나는 업체만) 남은 기간 다시 등록 */
+function jgApply(o, chs, today) {
+  const end = jgDay(o.r[JGC['종료일']]);
+  const log = parseJ(String(o.r[JGC['변동기록']] || '[]'), []), have = {}; log.forEach(x => { have[x.type + '|' + x.at] = 1; });
+  const fresh = chs.map(c => ({ type: jgTypeOf(c.purpose), at: jgOkDate(c.at) ? c.at : today })).filter(c => !have[c.type + '|' + c.at] && (have[c.type + '|' + c.at] = 1));
+  if (fresh.length) { const nl = log.concat(fresh).slice(-50); o.r[JGC['변동기록']] = JSON.stringify(nl); withLock(() => jgSet(o.row, '변동기록', JSON.stringify(nl))); fresh.forEach(c => jgNotify(o, c)); }
+  if (JG_V_API.persist()) return fresh.length;               // 알림이 계속 켜져 있는 업체 — 다시 등록 필요 없음
+  const left = jgDays(today, end), cnt = Number(o.r[JGC['등록횟수']]) || 1;
+  if (left > 0 && cnt <= JG_DEF.maxRereg) {
+    const v = JG_V_API.register(jgNo(o), left);
+    withLock(() => { if (v.ok) { jgSet(o.row, '업체번호', v.id); jgSet(o.row, '등록횟수', cnt + 1); jgSet(o.row, '상태', JG_ST.on); } else { jgSet(o.row, '상태', JG_ST.rereg); jgSet(o.row, '메모', '다시 등록 실패(다음 실행 때 다시): ' + v.why); } });
+    jgLog('rereg', v.ok, 1, '');
+  } else if (left > 0) { withLock(() => jgSet(o.row, '메모', '다시 등록 한도 도달 — 운영 확인')); ownerMail('[지킴이] 다시 등록 한도', ['주문 ' + o.r[JGC['주문번호']]]); }
+  else withLock(() => jgSet(o.row, '상태', JG_ST.done));
+  return fresh.length;
+}
+/** 변동 목록(웹훅 또는 업체 목록) → 지키는 줄 찾기(업체 번호 또는 고유번호 — 같은 집을 지키는 분 모두) → jgApply. 같은 배달 번호는 6시간 안에 한 번만 */
+function jgEvents(C, today) {
+  const cache = CacheService.getScriptCache(), rows = jgRows().filter(jgIsLive); let n = 0;
+  C.forEach(x => {
+    if (x.delivery) { const k = 'jgd:' + x.delivery; if (cache.get(k)) return; cache.put(k, '1', 21600); }
+    rows.filter(o => (x.id && String(o.r[JGC['업체번호']] || '') === x.id) || (x.uniq && jgNo(o).replace(/-/g, '') === x.uniq)).forEach(o => {
+      withLock(() => jgSet(o.row, '마지막확인', today));
+      if (jgApply(o, x.changes || [], today)) n++;
+    });
+  });
+  return n;
+}
+/** 매일 트리거 = 업체 목록(대체 길) 읽기 + 끝난 것 정리 · 연락처 지우기. 웹훅(doPost ?guardhook=1&k=) = 받은 변동만 바로 처리 */
 function guardDaily() { return guardWebhookOrPoll(null); }
 function guardWebhookOrPoll(e) {
-  if (e && e.parameter) { const t = PropertiesService.getScriptProperties().getProperty('GUARD_HOOK_TOKEN'); if (!t || !safeEq(String(e.parameter.k || ''), t)) return { ok: false, err: 'auth' }; }
+  if (e && e.parameter) {
+    const t = PropertiesService.getScriptProperties().getProperty('GUARD_HOOK_TOKEN'); if (!t || !safeEq(String(e.parameter.k || ''), t)) return { ok: false, err: 'auth' };
+    if (!jgReady()) return { ok: true, skip: 'closed' };
+    const ev = JG_V_API.hook(e.postData && e.postData.contents);
+    const n = jgEvents(ev, ymd(new Date())); jgLog('hook', true, n, ev.length ? '' : 'empty');
+    return { ok: true, changed: n };
+  }
   if (!jgReady()) return { ok: true, skip: 'closed' };
   const today = ymd(new Date()), C = JG_V_API.changed();
-  if (C === null) { jgLog('poll', false, 0, 'changed 실패'); return { ok: false, err: 'vendor' }; }
-  const byId = {}; C.forEach(x => { byId[x.id] = x.changes; });
-  let n = 0;
+  if (C === null) jgLog('poll', false, 0, 'changed 실패');
+  const n = C ? jgEvents(C, today) : 0;
   jgRows().forEach(o => {
-    const st = String(o.r[JGC['상태']]), vid = String(o.r[JGC['업체번호']] || ''), end = jgDay(o.r[JGC['종료일']]);
-    if ([JG_ST.on, JG_ST.rereg].indexOf(st) < 0) {
+    const st = String(o.r[JGC['상태']]), end = jgDay(o.r[JGC['종료일']]);
+    if (!jgIsLive(o)) {
       if ([JG_ST.done, JG_ST.stop, JG_ST.fail].indexOf(st) >= 0 && (o.r[JGC['이메일']] || o.r[JGC['휴대폰']]) && jgDays(end || jgDay(o.r[JGC['생성시각']]), today) > JG_KEEP_DAYS) withLock(() => { jgSet(o.row, '이메일', ''); jgSet(o.row, '휴대폰', ''); });
       return;
     }
-    const chs = byId[vid];
     withLock(() => jgSet(o.row, '마지막확인', today));
-    if (chs && chs.length) {
-      const log = parseJ(String(o.r[JGC['변동기록']] || '[]'), []), have = {}; log.forEach(x => { have[x.type + '|' + x.at] = 1; });
-      const fresh = chs.map(c => ({ type: jgTypeOf(c.purpose), at: jgOkDate(c.at) ? c.at : today })).filter(c => !have[c.type + '|' + c.at] && (have[c.type + '|' + c.at] = 1));
-      if (fresh.length) { withLock(() => jgSet(o.row, '변동기록', JSON.stringify(log.concat(fresh).slice(-50)))); fresh.forEach(c => jgNotify(o, c)); n++; }
-      /* 업체는 변동을 잡으면 감시를 끝냄 → 남은 기간 다시 등록 */
-      const left = jgDays(today, end), cnt = Number(o.r[JGC['등록횟수']]) || 1;
-      if (left > 0 && cnt <= JG_DEF.maxRereg) {
-        const v = JG_V_API.register(String(o.r[JGC['고유번호']]).replace(/^'/, ''), left);
-        withLock(() => { if (v.ok) { jgSet(o.row, '업체번호', v.id); jgSet(o.row, '등록횟수', cnt + 1); jgSet(o.row, '상태', JG_ST.on); } else { jgSet(o.row, '상태', JG_ST.rereg); jgSet(o.row, '메모', '다시 등록 실패(다음 실행 때 다시): ' + v.why); } });
-        jgLog('rereg', v.ok, 1, '');
-      } else if (left > 0) { withLock(() => jgSet(o.row, '메모', '다시 등록 한도 도달 — 운영 확인')); ownerMail('[지킴이] 다시 등록 한도', ['주문 ' + o.r[JGC['주문번호']]]); }
-      else withLock(() => jgSet(o.row, '상태', JG_ST.done));
-      return;
+    if (st === JG_ST.rereg && !JG_V_API.persist()) {                   // 지난번 다시 등록 실패분
+      const left = jgDays(today, end); if (left > 0) { const v = JG_V_API.register(jgNo(o), left); if (v.ok) withLock(() => { jgSet(o.row, '업체번호', v.id); jgSet(o.row, '등록횟수', (Number(o.r[JGC['등록횟수']]) || 1) + 1); jgSet(o.row, '상태', JG_ST.on); jgSet(o.row, '메모', ''); }); }
     }
-    if (st === JG_ST.rereg) {                                   // 지난번 다시 등록 실패분
-      const left = jgDays(today, end); if (left > 0) { const v = JG_V_API.register(String(o.r[JGC['고유번호']]).replace(/^'/, ''), left); if (v.ok) withLock(() => { jgSet(o.row, '업체번호', v.id); jgSet(o.row, '등록횟수', (Number(o.r[JGC['등록횟수']]) || 1) + 1); jgSet(o.row, '상태', JG_ST.on); jgSet(o.row, '메모', ''); }); }
+    if (end && end <= today) {
+      withLock(() => jgSet(o.row, '상태', JG_ST.done)); o.r[JGC['상태']] = JG_ST.done; jgRelease(o);
+      try { jgMail(o, `[${SITE_NAME}] 지킴이 기간이 끝났어요`, '신청하신 기간 동안의 등기 확인을 마쳤어요. 계약을 이어 가면 다시 신청해 주세요.' + (String(o.r[JGC['상품']]) === 'free' ? ' 회원 무료 자리는 다시 쓸 수 있어요.' : ''), String(o.r[JGC['주문번호']])); } catch (x) {}
     }
-    if (end && end <= today) { if (vid) JG_V_API.terminate(vid); withLock(() => jgSet(o.row, '상태', JG_ST.done)); try { jgMail(o, `[${SITE_NAME}] 지킴이 기간이 끝났어요`, '신청하신 기간 동안의 등기 확인을 마쳤어요. 계약을 이어 가면 다시 신청해 주세요.', String(o.r[JGC['주문번호']])); } catch (x) {} }
   });
-  jgLog('poll', true, n, '');
-  return { ok: true, changed: n };
+  jgLog('poll', C !== null, n, '');
+  return C === null ? { ok: false, err: 'vendor', changed: 0 } : { ok: true, changed: n };
 }

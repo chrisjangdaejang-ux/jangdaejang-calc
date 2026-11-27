@@ -29,7 +29,7 @@
   const cache = {};
   const getJ = (k, url) => cache[k] || (cache[k] = fetch(url, { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(url); return r.json(); }).catch(e => { delete cache[k]; throw e; }));
   function load() {
-    return Promise.all([getJ('sc', BASE + 'assets/guide/scenarios.json?v=13'), getJ('lex', BASE + 'assets/guide/lexicon.json?v=3')])
+    return Promise.all([getJ('sc', BASE + 'assets/guide/scenarios.json?v=14'), getJ('lex', BASE + 'assets/guide/lexicon.json?v=3')])
       .then(([sc, lex]) => Object.assign({}, sc, { lex }));
   }
   const ix = () => getJ('ix', DATA + 'index.json');
@@ -520,7 +520,7 @@
     const jobs = [];
     if (need.indexOf('cy') >= 0) { jobs.push(cyRows(a.csido || '서울특별시').then(r => { E.cyRows = r; })); jobs.push(cyNotices().then(r => { E.cyNotices = r; })); }
     if (need.indexOf('region') >= 0 && a.region && a.region.sd) jobs.push(getJ('rg' + a.region.sd, DATA + 'region/' + a.region.sd + '.json').then(j => { const g = j && j.gu && j.gu[a.region.code]; E.sup = g && g.sup ? { [a.region.code]: g.sup } : null; }).catch(() => {}));
-    if (need.indexOf('jsafe') >= 0) { if (!root.JDJ_JSAFE) await script('assets/jsafe-core.js?v=2'); E.JS = root.JDJ_JSAFE; }
+    if (need.indexOf('jsafe') >= 0) { if (!root.JDJ_JSAFE) await script('assets/jsafe-core.js?v=4'); E.JS = root.JDJ_JSAFE; }
     if (need.indexOf('kk') >= 0 && a.danji) { if (!root.JDJ_KK) await script('assets/kk-core.js?v=1'); E.KK = root.JDJ_KK; jobs.push(getJ('kk', DATA + 'rent/kk.json').catch(() => getJ('kk2', BASE + 'data/kkang.json')).then(j => { E.kkData = j; }).catch(() => {})); }
     if (need.indexOf('units') >= 0) {   // 조건에 맞는 아파트 찾기: 지도와 같은 단지 자료 + 좌표(지도에 올라가는 단지만)
       const sd = ((IX && IX.sido) || []).find(x => x.name === ((a.region && a.region.sido) || '서울특별시'));

@@ -1,15 +1,18 @@
 /* 내 전셋집 지킴이(jeonse/guard/) 계산 — 화면 없음. 소개·신청 화면(jeonse/guard/)·내 지킴이(jeonse/guard/my/)·
    '알림이 오면 이렇게 하세요'(jeonse/guard/what/, 무료)·전세 안전 점검 '등기 바로 확인'과 서버(tools/agent-backend.gs 'v73 지킴이')가 함께 써요.
    - 아래 'GUARD-CORE' 블록은 tools/agent-backend.gs 에 글자 그대로 복사돼 있어요(서버는 다른 파일을 불러올 수 없어서). tools/guard-test.js 가 두 곳이 같은지 확인해요.
-   - 판매가는 assets/config.js 의 JDJ_SITE.GUARD(화면 표시) — 서버 JG_PRICE 와 같은 값이어야 해요(서버가 결제 금액을 정하고 대조, guard-test 가 비교).
-   - 업체 원가(등기 업체 포인트, 1P ≈ 1.1원): 등록 50P(첫 확인 1번 포함) + 매일 확인 60P × 일수 · 변동이 잡히면 업체가 감시를 끝내서 남은 기간을 다시 등록(+50P).
+   - 판매가·무료 수는 assets/config.js 의 JDJ_SITE.GUARD(화면 표시) — 서버 JG_PRICE 와 같은 값이어야 해요(서버가 결제 금액·무료 수를 정하고 대조, guard-test 가 비교).
+   - 2026-11-27 개편(대표 승인 10:59 · 값 확정 11:01): 자동 지킴이는 로그인 회원 무료(회원 1곳 · 모닝 브리핑 구독자 3곳), 그보다 많은 집은 집 1곳마다 월 900원,
+     등기 바로 확인(쉽게 읽는 등기부 포함) 1건 1,500원.
+   - 업체 원가는 서버만 알아요(tools/agent-backend.gs JG_VCOST — 화면 파일에는 업체 이름을 쓰지 않음). 아래 jgCostOf 는 그 표를 받아 계산만 해요.
    window.JDJ_GUARD */
 (function (root) {
 'use strict';
 /* GUARD-CORE BEGIN — 이 블록은 tools/agent-backend.gs 에 그대로 복사돼 있어요. 고칠 때는 두 곳을 똑같이 고쳐 주세요(node tools/guard-test.js 가 비교). */
-const JG_V = 'guard-2026-11-27';
-/* 기본 가격·원가 값(대표 확정 전 제안) — 화면은 assets/config.js GUARD 가 있으면 그 값을 씀 */
-const JG_DEF = { month: 2900, read: 1900, days: 30, maxMonths: 24, regP: 50, dayP: 60, readP: 1300, wonPerP: 1.1, maxRereg: 10 };
+const JG_V = 'guard-2026-11-27b';
+/* 기본 값(대표 확정 2026-11-27 11:01) — 화면은 assets/config.js GUARD 가 있으면 그 값을 씀.
+   extra = 무료 수를 넘는 집 1곳 한 달(30일) 값 · read = 등기 바로 확인 1건 · freeHomes = 로그인 회원 무료 집 수 · freeHomesSubscriber = 모닝 브리핑 구독자 무료 집 수 */
+const JG_DEF = { extra: 900, read: 1500, freeHomes: 1, freeHomesSubscriber: 3, days: 30, maxMonths: 24, maxRereg: 10 };
 const JG_LV = { r: '위험', y: '주의', g: '괜찮아요', n: '확인 필요' };
 /* 변동 종류 — 등기 목적 글자에서 앞에서부터 먼저 맞는 것(경매 > 압류 > 예고등기 > 소유권 > 신탁 > 임차권 > 근저당 > 말소) */
 const JG_TYPES = [
@@ -32,10 +35,10 @@ function jgTypeOf(purpose) {
   return t ? t.id : 'other';
 }
 function jgType(id) { return JG_TYPES.find(x => x.id === id) || JG_TYPES[JG_TYPES.length - 1]; }
-/** 값 정리: 설정(config GUARD) → 숫자만, 없으면 기본값 */
+/** 값 정리: 설정(config GUARD) → 숫자만, 없으면 기본값(무료 수는 0도 됨) */
 function jgCfg(c) {
   c = c && typeof c === 'object' ? c : {};
-  const o = {}; Object.keys(JG_DEF).forEach(k => { const v = Number(c[k]); o[k] = isFinite(v) && v > 0 ? v : JG_DEF[k]; });
+  const o = {}; Object.keys(JG_DEF).forEach(k => { const v = Number(c[k]); o[k] = isFinite(v) && (v > 0 || (v === 0 && /^free/.test(k))) ? v : JG_DEF[k]; });
   return o;
 }
 function jgT(iso) { return Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)); }
@@ -44,13 +47,25 @@ function jgOkDate(v) { return /^20\d\d-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.t
 function jgDays(today, end) { return jgOkDate(today) && jgOkDate(end) ? Math.max(0, Math.round((jgT(end) - jgT(today)) / 864e5)) : 0; }
 /** 신청할 달 수: 만기까지 남은 날을 30일 단위로 올림, 1~maxMonths */
 function jgMonthsTo(today, end, c) { c = jgCfg(c); const d = jgDays(today, end); return d > 0 ? Math.min(c.maxMonths, Math.max(1, Math.ceil(d / c.days))) : 0; }
-/** 판매가(원) — 달 수 × 월 가격 */
-function jgPrice(months, c) { c = jgCfg(c); const m = Math.round(Number(months)); return m >= 1 && m <= c.maxMonths ? m * c.month : 0; }
-/** 업체 원가(원) — 등록 (1 + 다시 등록 수) × 50P + 날수 × 60P, × 1.1원 */
-function jgCost(days, rereg, c) { c = jgCfg(c); const d = Math.max(0, Math.round(Number(days) || 0)), r = Math.max(0, Math.round(Number(rereg) || 0)); return Math.round((c.regP * (1 + r) + c.dayP * d) * c.wonPerP); }
-/** 한 건 손익 — 결제 수수료(pg, 기본 3.3%)를 빼고 남는 돈 */
-function jgMargin(months, rereg, c, pg) { c = jgCfg(c); const p = jgPrice(months, c), cost = jgCost(months * c.days, rereg, c), fee = Math.round(p * (pg == null ? 0.033 : pg)); return { price: p, cost: cost, fee: fee, left: p - cost - fee }; }
-function jgReadCost(c) { c = jgCfg(c); return Math.round(c.readP * c.wonPerP); }
+/** 무료 수를 넘는 집 1곳의 판매가(원) — 달 수 × 월 900원 */
+function jgPrice(months, c) { c = jgCfg(c); const m = Math.round(Number(months)); return m >= 1 && m <= c.maxMonths ? m * c.extra : 0; }
+/** 회원이 무료로 지킬 수 있는 집 수 — 모닝 브리핑 구독자면 더 많음 */
+function jgFreeAllow(c, sub) { c = jgCfg(c); return sub ? Math.max(c.freeHomes, c.freeHomesSubscriber) : c.freeHomes; }
+/** 무료·유료 단계: used = 지금 무료로 지키는 집 수 → { allow, used, left, pay(다음 집은 유료) } */
+function jgPlan(c, used, sub) { const allow = jgFreeAllow(c, sub), u = Math.max(0, Math.round(Number(used) || 0)); return { allow: allow, used: u, left: Math.max(0, allow - u), pay: u >= allow }; }
+/** 업체 원가(원) — v = 서버 업체 원가표 한 줄.
+    월 정액 업체(monthWon): 30일마다 선결제 → 올림(일수/30) × 월 값(o.list 면 정가) + 업체가 보내는 알림 수 × 건당 값(우리는 웹훅으로 받아 직접 보내서 보통 0).
+    포인트 업체(regP·dayP): (등록 × (1 + 다시 등록 수) + 매일 × 일수) × 1포인트 값 */
+function jgCostOf(v, days, o) {
+  v = v || {}; o = o || {};
+  const d = Math.max(0, Math.round(Number(days) || 0)), r = Math.max(0, Math.round(Number(o.rereg) || 0));
+  if (v.monthWon != null) return Math.ceil(d / 30) * (o.list ? (v.monthList || v.monthWon) : v.monthWon) + Math.max(0, Number(o.sends) || 0) * (v.sendWon || 0);
+  return Math.round(((v.regP || 0) * (1 + r) + (v.dayP || 0) * d) * (v.wonPerP || 1));
+}
+/** 열람 1건 원가(원) — 업체 수수료 + 법원 수수료(1,100원, 2026-11-23부터) 합계 */
+function jgReadCostOf(v) { v = v || {}; return v.readWon != null ? v.readWon : Math.round((v.readP || 0) * (v.wonPerP || 1)); }
+/** 유료 추가 집 한 건 손익 — 결제 수수료(pg, 기본 3.3%)를 빼고 남는 돈 */
+function jgMargin(months, c, v, o, pg) { c = jgCfg(c); const p = jgPrice(months, c), cost = jgCostOf(v, months * c.days, o), fee = Math.round(p * (pg == null ? 0.033 : pg)); return { price: p, cost: cost, fee: fee, left: p - cost - fee }; }
 /** 등기 고유번호: 숫자 14자리(1234-5678-901234) */
 function jgUniq(v) { const d = String(v == null ? '' : v).replace(/[^0-9]/g, ''); return d.length === 14 ? `${d.slice(0, 4)}-${d.slice(4, 8)}-${d.slice(8)}` : ''; }
 /** 이름 가리기: 홍길동 → 홍*동, 김수 → 김*, 법인·기관 이름(주식회사·은행 등)은 그대로 */
@@ -90,9 +105,11 @@ function jgParseReg(reg) {
   return { asof: jgOkDate(reg.asof) ? String(reg.asof) : '', senior: liens.reduce((s, l) => s + l.amt, 0), liens: liens, flags: flags, owner: owner, ownerAt: ownerAt };
 }
 /* 지킴이 상태(서버 시트 '상태' 칸 글자 = 화면 표시) */
-const JG_ST = { wait: '결제대기', paid: '결제완료', on: '지켜보는 중', rereg: '다시 등록 중', done: '기간 끝', fail: '등록 실패·환불', stop: '중지', read: '열람 완료', bad: '금액불일치' };
+const JG_ST = { free: '무료 시작', wait: '결제대기', paid: '결제완료', on: '지켜보는 중', rereg: '다시 등록 중', done: '기간 끝', fail: '등록 실패·환불', stop: '중지', read: '열람 완료', bad: '금액불일치' };
 /** 화면 단계: 결제가 열렸는지 + 서버 준비(업체 키·GUARD_ENABLED) → 'open'(신청) | 'wait'(알림 신청만) */
 function jgCta(site, server) { return !!(site && site.PAID_OPEN) && !!(server && server.ok && server.open) ? 'open' : 'wait'; }
+/** 회원 무료 지킴이 단계: 결제가 없어서 PAID_OPEN 과 상관없이 서버 준비(GUARD_ENABLED·업체 키)만 봐요 → 'open' | 'wait' */
+function jgCtaFree(server) { return server && server.ok && server.freeOpen ? 'open' : 'wait'; }
 /* GUARD-CORE END */
 
 /* ---------- 화면 전용: '알림이 오면 이렇게 하세요' 해석(무료) ---------- */
@@ -135,12 +152,13 @@ function what(id) {
     todo: w.todo.map(k => { const d = TODO[k], L = d.l ? LINK[d.l] : null; return { id: k, t: d.t, s: d.s, href: L ? L.u : '', ln: L ? L.n : '' }; }) };
 }
 const ORDER = ['auction', 'seize', 'notice', 'owner', 'trust', 'lease', 'mortgage', 'release', 'other'];
-/** 인터넷등기소 '등기사항 변동 알림' 신청 순서(무료 안내 — 2026-11-27 웹 안내글로 확인, 공식 화면 이름이 바뀌었을 수 있음) */
+/** 인터넷등기소 '등기사항 변동 알림' 신청 순서(이 안내는 무료지만 서비스 자체는 수수료를 내는 유료 서비스 — 2026-11-27 웹 안내글로 확인, 공식 화면 이름·수수료가 바뀌었을 수 있음) */
 const FREE_STEPS = [
   '대법원 인터넷등기소(www.iros.go.kr)에 회원가입하고 로그인해요(본인 인증 필요).',
   '위 메뉴 [등기열람/발급]에서 [등기사항 변동 알림 서비스]를 눌러요.',
   '[서비스 신청]을 누르고, 내 전셋집 주소를 찾아 동·호수까지 골라요.',
-  '알림 받을 기간(계약 만기까지)과 문자 받을 휴대폰 번호를 확인하고 신청을 마쳐요.',
+  '알림 받을 기간(계약 만기까지)과 문자 받을 휴대폰 번호를 확인해요.',
+  '신청 화면에 나오는 수수료를 결제하면 신청이 끝나요(수수료는 인터넷등기소가 정해요).',
   '문자가 오면 이 화면(알림이 오면 이렇게 하세요)에서 변동 종류를 골라 할 일을 확인해요.'
 ];
 
@@ -207,7 +225,7 @@ function regReport(sum, o) {
     asof: sum.asof ? `등기부 ${sum.asof.replace(/-/g, '.')} 기준` : '', items: items,
     todo: [
       { id: 'again', t: '잔금 직전에 등기부를 한 번 더 떼어 보기', s: '계약한 날과 잔금 날 사이에 새 대출·압류가 생길 수 있어요.', href: LINK.iros.u, ext: 1, ln: LINK.iros.n },
-      { id: 'free', t: '인터넷등기소 등기 변동 알림 무료 신청하기', s: '살고 있는 동안 집에 새 권리가 생기면 문자로 알려 줘요.', href: 'jeonse/guard/#free', ln: '신청 방법 보기' },
+      { id: 'free', t: '내 전셋집 지킴이 무료로 켜기(로그인 회원)', s: '살고 있는 동안 집에 새 권리가 생기면 알려 드리고, 무슨 뜻인지와 할 일까지 안내해요.', href: 'jeonse/guard/#apply', ln: '지킴이 켜기' },
       { id: 'what', t: '알림이 오면 이렇게 하세요(무료)', s: '변동 종류별 위험 정도와 다음 할 일을 정리했어요.', href: 'jeonse/guard/what/', ln: '해석 보기' }
     ],
     note: '내가 올린 등기부 파일을 이 기기 안에서만 읽어 만든 정보예요. 파일·이름·주민번호는 집예보 서버를 포함해 어디에도 보내지 않아요. 표 모양이 특이하면 잘못 읽을 수 있으니 원본과 꼭 맞춰 보세요. 법률 판단이 아닌 참고 정보예요.' };
@@ -290,9 +308,13 @@ function won(n) { return Math.round(Number(n) || 0).toLocaleString('ko-KR') + '�
 function man(m) { m = Math.round(Number(m) || 0); if (!m) return '0원'; const e = Math.floor(m / 10000), r = m % 10000; return e && r ? `${e}억 ${r.toLocaleString('ko-KR')}만 원` : e ? `${e}억 원` : `${r.toLocaleString('ko-KR')}만 원`; }
 /** 화면 가격: config GUARD 값 */
 function cfg() { return jgCfg(root && root.JDJ_SITE && root.JDJ_SITE.GUARD); }
+/** 카카오 간편 로그인 세션 열쇠(assets/auth.js 가 이 기기에 둔 값) — 없거나 만료면 '' (회원 무료 지킴이 신청·내 지킴이 목록에 씀) */
+function sess() {
+  try { const j = JSON.parse((root.localStorage && root.localStorage.getItem('jdj_auth')) || 'null'); if (!j || !/^[0-9a-f]{64}$/.test(String(j.s || ''))) return ''; if (j.exp && j.exp < new Date().toISOString().slice(0, 10)) return ''; return j.s; } catch (e) { return ''; }
+}
 
 const API = { V: JG_V, DEF: JG_DEF, LV: JG_LV, TYPES: JG_TYPES, ST: JG_ST, ORDER, FREE_STEPS, LINK, typeOf: jgTypeOf, type: jgType, cfgOf: jgCfg, cfg, days: jgDays, monthsTo: jgMonthsTo,
-  price: jgPrice, cost: jgCost, margin: jgMargin, readCost: jgReadCost, uniq: jgUniq, maskName: jgMaskName, wonOf: jgWon, parseReg: jgParseReg, cta: jgCta, what, parseText, regReport, easyView, simulate, clauses, rowPlain, confirmDoc, MAX_RATE, esc, won, man };
+  price: jgPrice, freeAllow: jgFreeAllow, plan: jgPlan, costOf: jgCostOf, readCostOf: jgReadCostOf, margin: jgMargin, ctaFree: jgCtaFree, sess, uniq: jgUniq, maskName: jgMaskName, wonOf: jgWon, parseReg: jgParseReg, cta: jgCta, what, parseText, regReport, easyView, simulate, clauses, rowPlain, confirmDoc, MAX_RATE, esc, won, man };
 if (typeof module !== 'undefined' && module.exports) module.exports = API;
 else root.JDJ_GUARD = API;
 })(typeof window !== 'undefined' ? window : this);
