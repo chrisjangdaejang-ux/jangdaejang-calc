@@ -130,7 +130,7 @@
     app.hidden = false;
     app.innerHTML = '<div class="loading">구역 자료를 불러오는 중이에요…</div>';
     var st = $('zstatic');
-    Promise.all([get(DATA + 'redev/zone/' + encodeURIComponent(id) + '.json'), get(DATA + 'redev/zones.json').catch(function () { return null; }), get(DATA + 'policy.json').catch(function () { return null; })])
+    Promise.all([get(DATA + 'redev/zone/' + encodeURIComponent(id) + '.json'), get(DATA + 'redev/zones.json').catch(function () { return null; }), get(DATA + 'policy.json').catch(function () { return null; }), (C && C.regReady ? C.regReady() : null)])
       .then(function (a) { if (st) st.hidden = true; render(a[0], a[1], a[2]); })
       .catch(function () {
         // 상세 자료가 아직 없을 때: 재개발 지도 자료만으로(정적 내용은 그대로 둠)
@@ -208,7 +208,7 @@
     h.push('<aside class="zside"><section id="zs-rule" class="zsec"><h2>실거주 의무·조합원 지위 양도</h2>' + RT.cards.map(function (c) {
       return '<div class="zrule ' + c.v + '"><h3>' + esc(c.t) + '</h3><p class="rh">' + esc(c.head) + '</p>' + (c.body ? '<p>' + esc(c.body) + '</p>' : '') +
         '<p class="zsrc">' + (c.law || []).map(function (l) { return '<a href="' + esc(l.url) + '" target="_blank" rel="noopener">' + esc(l.nm) + ' ↗</a>'; }).join(' · ') + (c.src ? ' · 정책: <a href="' + esc(c.src.url) + '" target="_blank" rel="noopener">' + esc(c.src.nm) + ' ↗</a>' : '') + '</p></div>';
-    }).join('') + '<p class="note">정책 표(투기과열지구·토지거래허가 지정)와 법 조문의 일반 규칙으로만 판정했어요. 예외·적용 시점·구역 단위 지정은 사람마다 달라 꼭 구청·전문가에게 확인해 주세요. 법률 자문이 아니에요.</p></section>');
+    }).join('') + '<p class="note">' + (RT.basis ? esc(RT.basis) + '. ' : '') + '규제지역 표(투기과열지구·토지거래허가 지정)와 법 조문의 일반 규칙으로만 판정했어요. 예외·적용 시점·구역 단위 지정은 사람마다 달라 꼭 구청·전문가에게 확인해 주세요. 법률 자문이 아니에요.</p></section>');
     // ⑩ 계산 + 출처
     h.push('<section class="zsec zcalc"><h2>내 돈은 얼마나 들까요</h2><p class="note">감정평가액·비례율·조합원 분양가를 넣으면 권리가액·분담금·총 투입금을 계산해 드려요. 집예보가 넣어 둔 가정값은 없어요.</p><a class="zbtn pri wide" href="' + JB.SITE + 'villa/calc/?z=' + encodeURIComponent(z.id) + '">분담금·수익 계산기 열기</a></section></aside>');
     h.push('<section id="zs-src" class="zsec"><h2>출처</h2><ul class="zsrcl">' + Object.keys(z.src || {}).map(function (k) { var s = z.src[k]; return '<li>' + (s.url ? '<a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.name) + '</a>' : esc(s.name)) + (s.d ? ' · ' + esc(ymd(s.d)) + (s.dk === 'got' ? ' 받음' : ' 기준') : '') + '</li>'; }).join('') + '</ul><p class="note">' + esc(z.note || '공식 공개 자료를 그대로 옮긴 참고자료예요(법적 효력 없음).') + ' 자료 만든 날 ' + esc(z.built || '') + '.</p></section>');

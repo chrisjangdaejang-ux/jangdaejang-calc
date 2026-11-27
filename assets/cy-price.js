@@ -112,6 +112,8 @@
       short: o.midLoan && ln.L < midAmt ? midAmt - ln.L : 0 };
   }
   var BY_TXT = { LTV: 'LTV(집값 대비 비율)', CAP: '가격 구간별 주담대 한도', DSR: '소득(DSR 40%)', BAN: '주택 구입 주담대 불가' };
+  /** 규제지역 여부: 날짜별 규제지역 표(assets/reg-zones.js) 오늘 기준 — 표가 없을 때만 엔진 자료 값 */
+  function regOf(D) { var R = root.JDJ_REG; return R && D.g ? R.regulated(String(D.g)) === true : !!D.reg; }
   var G_TXT = { reg: '규제지역(투기과열지구·조정대상지역)', capfree: '비규제 수도권', local: '지방' };
   function fundHTML(D, o, F) {
     if (!F) return '<div class="cyp-na">대출 계산 모듈을 불러오지 못했어요.</div>';
@@ -169,7 +171,7 @@
         + (nm.v != null ? '<tr><td>순이동(전입−전출, 1년)</td><td class="num">' + (nm.v > 0 ? '+' : '') + fmt(nm.v) + '명</td><td>' + (nm.of ? nm.of + '곳 중 ' + nm.rk + '위' : '') + ' · ' + ym(nm.ym) + '</td></tr>' : '') + '</table>';
     }
     h += section('4. 수요·공급 — ' + esc(D.gn), sup, 'cyp4');
-    h += section('5. 대출 규제·자금 계획', '<div class="cyp-s">' + esc(D.gn) + ' 규제지역: <b>' + (D.reg ? '투기과열지구·조정대상지역' : '해당 없음') + '</b>' + (D.pol_at ? ' (정책 ' + esc(D.pol_at) + ' 확인)' : '') + '</div>'
+    h += section('5. 대출 규제·자금 계획', '<div class="cyp-s">' + esc(D.gn) + ' 규제지역: <b>' + (regOf(D) ? '투기과열지구·조정대상지역' : '해당 없음') + '</b>' + (root.JDJ_REG ? ' (' + esc(root.JDJ_REG.basis()) + ')' : D.pol_at ? ' (정책 ' + esc(D.pol_at) + ' 확인)' : '') + '</div>'
       + (D.pol && D.pol.length ? '<ul class="cyp-l">' + D.pol.map(function (p) { return '<li><b>' + esc(p.date) + ' ' + esc(p.name) + '</b> ' + esc(p.plain) + '</li>'; }).join('') + '</ul>' : '')
       + '<div id="cypFund"></div>', 'cyp5');
     var rk = D.risks || [];

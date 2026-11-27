@@ -32,19 +32,18 @@
   };
 
   /* ---------- 지역 ---------- */
+  var REG = root.JDJ_REG || (typeof require === 'function' ? require('./reg-zones.js') : null);
+  function regGG(date) { var o = {}; REG.regList(date).forEach(function (c) { if (c.slice(0, 2) === '41') o[c] = REG.NAMES[c][1]; }); return o; }
   var REGION = {
     /* 수도권 = 서울(11)·인천(28)·경기(41) */
     metro: { v: ['11', '28', '41'], src: ['fsc250627'], eff: { from: '2025-06-28' } },
-    /* 규제지역(투기과열지구·조정대상지역): 서울 25개 구 전역 + 경기 15곳. 지금은 두 지역이 같은 곳이라 하나로 다룸 */
+    /* 규제지역(투기과열지구·조정대상지역): 지정 목록·날짜는 assets/reg-zones.js(JDJ_REG) 한 곳에서 읽어요 — 이 파일보다 먼저 불러와야 해요.
+       gg = 오늘 규제지역인 경기 시·군·구(코드: 이름). 서울은 지금 25개 구 전역 */
     reg: {
-      v: {
-        seoulAll: true,
-        gg: { '41290': '과천시', '41210': '광명시', '41135': '성남시 분당구', '41131': '성남시 수정구', '41133': '성남시 중원구',
-              '41117': '수원시 영통구', '41111': '수원시 장안구', '41115': '수원시 팔달구', '41173': '안양시 동안구', '41465': '용인시 수지구',
-              '41430': '의왕시', '41450': '하남시', '41597': '화성시 동탄구', '41463': '용인시 기흥구', '41310': '구리시' }
-      },
+      v: { seoulAll: REG.listAt('ovh', REG.today()).filter(function (c) { return c.slice(0, 2) === '11'; }).length === 25, gg: regGG(REG.today()) },
       src: ['kr251015', 'fsc251015', 'kr260630', 'fsc260630'],
-      eff: { from: '2025-10-16', note: '서울 전역·경기 12곳 2025.10.16부터, 화성 동탄구·용인 기흥구·구리시 2026.7.1부터' }
+      eff: { from: '2025-10-16', note: '서울 전역·경기 12곳 2025.10.16부터, 화성 동탄구·용인 기흥구·구리시 2026.7.1부터 (' + REG.basis() + ')' },
+      checked: REG.CHECKED
     }
   };
 
@@ -185,10 +184,11 @@
   ];
 
   /* ---------- 판정 함수 ---------- */
-  function regulated(code) { code = String(code || ''); return code.slice(0, 2) === '11' || !!REGION.reg.v.gg[code]; }
+  /** 규제지역인가(date 없으면 오늘). 날짜별 지정·해제는 reg-zones.js 표 그대로 */
+  function regulated(code, date) { return REG.regulated(String(code || ''), date || REG.today()) === true; }
   function metro(code) { return REGION.metro.v.indexOf(String(code || '').slice(0, 2)) >= 0; }
   /** 시·군·구 코드(5자리) → 'reg' | 'capfree' | 'local' */
-  function groupOf(code) { return regulated(code) ? 'reg' : metro(code) ? 'capfree' : 'local'; }
+  function groupOf(code, date) { return regulated(code, date) ? 'reg' : metro(code) ? 'capfree' : 'local'; }
   /** 그 지역에 해당하는 안내(NOTES) */
   function notesFor(g) { return NOTES.filter(function (n) { return n.scope === 'reg' ? g === 'reg' : g === 'reg' || g === 'capfree'; }); }
   /** 그 지역 DTI 비율. 규칙을 넣지 않은 지방이면 null */
@@ -220,7 +220,7 @@
     return Math.round(p.rate * p.base * typeRatio(p.stage, rtype, band) * 10000) / 10000;
   }
 
-  var API = { ASOF: ASOF, SRC: SRC, REGION: REGION, LTV: LTV, CAP: CAP, DSR: DSR, DTI: DTI, TERM: TERM, STRESS: STRESS, POLICY: POLICY, NOTES: NOTES, UPCOMING: UPCOMING, EXCLUDED: EXCLUDED,
+  var API = { ASOF: ASOF, REG_CHECKED: REG.CHECKED, regBasis: REG.basis, SRC: SRC, REGION: REGION, LTV: LTV, CAP: CAP, DSR: DSR, DTI: DTI, TERM: TERM, STRESS: STRESS, POLICY: POLICY, NOTES: NOTES, UPCOMING: UPCOMING, EXCLUDED: EXCLUDED,
     regulated: regulated, metro: metro, groupOf: groupOf, notesFor: notesFor, ltvOf: ltvOf, dtiOf: dtiOf, capOf: capOf, stressPeriod: stressPeriod, typeRatio: typeRatio, stressAdd: stressAdd };
   root.JDJ_LOAN_RULES = API;
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

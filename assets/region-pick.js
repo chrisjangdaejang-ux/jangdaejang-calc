@@ -18,7 +18,8 @@
 (function () {
   if (typeof document === 'undefined' || !document.getElementById('region')) return;   // 고르기 칸이 없는 화면은 정렬 도우미(JDJ_KO)만 씀
   var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
-  const REG_GG = ['41290', '41210', '41135', '41131', '41133', '41117', '41111', '41115', '41173', '41465', '41430', '41450', '41597', '41463', '41310'];
+  /* 오늘 규제지역인 경기 시·군·구 — 날짜별 표 assets/reg-zones.js(JDJ_REG) 한 곳에서 (이 파일보다 먼저 불러옴) */
+  const REG_GG = window.JDJ_REG ? JDJ_REG.regList().filter(c => c.slice(0, 2) === '41') : [];
   const CAT_TXT = { seoul: '규제지역', ggreg: '규제지역', capfree: '비규제 수도권', local: '지방 비규제' };
   const sel = document.getElementById('region');
   if (!sel) return;
@@ -63,7 +64,7 @@
   }
   function fillSgg(keep) {
     const list = window.JDJ_KO.sortBy(Object.entries(IX.sgg).filter(([, v]) => v.sido === sd.value), e => e[1].name);
-    sg.innerHTML = '<option value="">전체</option>' + list.map(([c, v]) => `<option value="${c}">${v.name}${REG_GG.includes(c) || c.startsWith('11') ? ' · 규제' : ''}</option>`).join('');
+    sg.innerHTML = '<option value="">전체</option>' + list.map(([c, v]) => `<option value="${c}">${v.name}${(window.JDJ_REG && JDJ_REG.regulated(c) === true) ? ' · 규제' : ''}</option>`).join('');
     if (keep && list.some(([c]) => c === keep)) sg.value = keep;
   }
   sd.addEventListener('change', () => { fillSgg(); apply(true); });

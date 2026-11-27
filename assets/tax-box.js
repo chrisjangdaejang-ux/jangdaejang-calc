@@ -35,7 +35,7 @@
     if (window.JDJ_TAX && window.JDJ_ADJ) return Promise.resolve();
     if (loading) return loading;
     const add = src => new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
-    loading = (window.JDJ_ADJ ? Promise.resolve() : add(BASE + 'tax/adjusted-areas.js')).then(() => window.JDJ_TAX ? null : add(BASE + 'tax/tax-engine.js?v=4'))
+    loading = (window.JDJ_REG ? Promise.resolve() : add(BASE + 'assets/reg-zones.js?v=1')).then(() => window.JDJ_ADJ ? null : add(BASE + 'tax/adjusted-areas.js?v=3')).then(() => window.JDJ_TAX ? null : add(BASE + 'tax/tax-engine.js?v=4'))
       .then(() => window.JDJ_GONGSI ? null : add(BASE + 'assets/gongsi.js?v=4').catch(() => null));     // 공시가격 자료는 없어도 세금 칸은 그대로
     return loading;
   }
@@ -149,7 +149,7 @@
     const P = o.price * MAN, over85 = o.area > 85, own = o.mode !== 'buy';
     const st = { n: 1, temp: false, one: 'y', hs: 1, ask: 'y' };
     el.classList.add('panel', 'txb'); el.hidden = false;
-    el.innerHTML = `<h2>세금<small style="display:block;font-size:13.5px;font-weight:500;color:var(--sub2);margin-top:4px;letter-spacing:0">시세 ${krw(P)} 기준 · 2026년 11월 시행 법령 · ${adjNow ? '지금 조정대상지역' : '지금 조정대상지역 아님'} · 입력값은 이 기기 안에서만 계산해요</small></h2>
+    el.innerHTML = `<h2>세금<small style="display:block;font-size:13.5px;font-weight:500;color:var(--sub2);margin-top:4px;letter-spacing:0">시세 ${krw(P)} 기준 · 2026년 11월 시행 법령 · ${adjNow ? '지금 조정대상지역' : '지금 조정대상지역 아님'}${window.JDJ_REG ? ' (' + JDJ_REG.basis() + ')' : ''} · 입력값은 이 기기 안에서만 계산해요</small></h2>
   <div class="tsec"><h3>사면 내는 취득세</h3>
     <div class="hint">이 집을 산 뒤 세대 전체 주택 수</div>
     <div class="seg" data-k="n">${[1, 2, 3, 4].map(n => `<button type="button" data-v="${n}" class="${n === 1 ? 'on' : ''}">${n === 4 ? '4채 이상' : n + '채'}</button>`).join('')}</div>

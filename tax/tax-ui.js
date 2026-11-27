@@ -313,7 +313,7 @@
   const aSel = regionPicker($('aSido'), $('aGu'), { sido: '서울', gu: '마포구' });
   let aN = 1;
   const aAdj = () => A.isAdjusted(aSel.get().sido, aSel.get().gu, TODAY) === true;
-  const aUpd = () => { $('aAdjTxt').textContent = '오늘 기준 ' + (aAdj() ? '조정대상지역이에요.' : '조정대상지역이 아닙니다.'); $('aTempW').hidden = !(aN === 2 && aAdj()); };
+  const aUpd = () => { $('aAdjTxt').textContent = '오늘 기준 ' + (aAdj() ? '조정대상지역이에요.' : '조정대상지역이 아닙니다.') + (A.META.basis ? ' ' + A.META.basis + '.' : ''); $('aTempW').hidden = !(aN === 2 && aAdj()); };
   aSel.onChange(aUpd); aUpd();
   $('aPrice').addEventListener('input', () => { fmtIn($('aPrice')); $('aPriceC').textContent = num($('aPrice')) ? krw(num($('aPrice')) * MAN) : ''; });
   $('aFirst').addEventListener('change', () => { $('aFirstW').hidden = !$('aFirst').checked; });

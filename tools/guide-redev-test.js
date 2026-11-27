@@ -97,7 +97,9 @@ check('토허: 정책 표에 없는 곳(부산)은 지정 없음', X1.toh(FX.pol
 check('지위 양도: 재개발 관리처분(8) 뒤 제한 · 확인 필요', X1.limit(FX.policy, { t: 'rd', g: '11350', st: 8 }).v === 'on' && /확인 필요/.test(X1.limit(FX.policy, { t: 'rd', g: '11350', st: 8 }).t));
 check('지위 양도: 재개발 사업시행(7)은 아직 없음', X1.limit(FX.policy, { t: 'rd', g: '11350', st: 7 }).v === 'pre');
 check('지위 양도: 재건축 조합설립(5) 뒤 제한, 추진위(4)는 아직', X1.limit(FX.policy, { t: 'rb', g: '11350', st: 5 }).v === 'on' && X1.limit(FX.policy, { t: 'rb', g: '11350', st: 4 }).v === 'pre');
-check('지위 양도: 투기과열지구가 아니면 해당 없음', X1.limit({ policies: [] }, { t: 'rb', g: '11350', st: 6 }).v === 'none');
+check('지위 양도: 투기과열지구가 아니면 해당 없음(부산 중구)', X1.limit({ policies: [] }, { t: 'rb', g: '26110', st: 6 }).v === 'none');
+check('지위 양도: 투기과열지구 여부는 날짜별 규제지역 표(정책 표가 비어도 서울은 지정)', X1.limit({ policies: [] }, { t: 'rb', g: '11350', st: 6 }).v === 'on');
+check('토허: 2026.7.5 지정된 화성 동탄구 아파트 = 지정 · 2027.12.31까지(규제지역 표)', X1.toh({ policies: [] }, '41597', '', 'apt').v === 'apt' && /2027\.12\.31/.test(X1.toh({ policies: [] }, '41597', '', 'apt').t));
 const Rl = X1.redevRows(Object.assign(X1.init('redev_budget', { raw: '' }), { live: 'n', gus: ['강남구'] }), X);
 check('실거주 못 하면 동 단위 토허 구역은 뺌', Rl.rows.every(r => r.th.v !== 'dong'));
 
@@ -144,9 +146,9 @@ check('법령 근거: 재초환·비과세 기간 합산은 확인 필요', X1.i
 
 /* ---------- 화면 연결 ---------- */
 const gjs = read('assets/guide.js'), gcore = read('assets/guide-core.js'), sw = read('sw.js'), solve = read('solve/index.html'), gx = read('assets/guide-redev.js');
-check('guide.js: 즉답·양식·대화에서 이 파일로 넘김', /JDJ_GREDEV\.instant/.test(gjs) && /JDJ_GREDEV\.flow/.test(gjs) && /JDJ_GREDEV\.chatCard/.test(gjs) && /'assets\/guide-redev\.js\?v=5'/.test(gjs));
+check('guide.js: 즉답·양식·대화에서 이 파일로 넘김', /JDJ_GREDEV\.instant/.test(gjs) && /JDJ_GREDEV\.flow/.test(gjs) && /JDJ_GREDEV\.chatCard/.test(gjs) && /'assets\/guide-redev\.js\?v=6'/.test(gjs));
 check('guide-core: 계산 함수·대화 좁히기 연결', /S\.redevBudget/.test(gcore) && /S\.rebuildLive/.test(gcore) && /JDJ_GREDEV\.chatQ/.test(gcore) && G.SOLVERS.indexOf('redevBudget') >= 0 && G.SOLVERS.indexOf('rebuildLive') >= 0);
-check('길잡이 화면이 이 파일을 읽음 · 서비스 워커 목록에 있음', /assets\/guide-redev\.js\?v=5/.test(solve) && /assets\/guide-redev\.js\?v=5/.test(sw) && /data\/redev-budget\.json/.test(sw));
+check('길잡이 화면이 이 파일을 읽음 · 서비스 워커 목록에 있음', /assets\/guide-redev\.js\?v=6/.test(solve) && /assets\/guide-redev\.js\?v=6/.test(sw) && /data\/redev-budget\.json/.test(sw));
 check('화면 문구에 경쟁 서비스·AI 이름 없음', !/(호갱노노|직방|아실|리치고|네이버\s*부동산|부동산\s*지인|ChatGPT|GPT|Gemini|Claude|클로드)/i.test(gx));
 check('화면: 정렬 단추에 추천 순위 아님 · 즉답 먼저(바로 답)', /추천 순위 아님/.test(gx) && /바로 답/.test(gx));
 check('자료 파일: 기간·출처가 있음', BUD.from && BUD.to && /국토교통부/.test(BUD.src) && Object.keys(BUD.z).length > 100);

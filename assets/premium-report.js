@@ -5,9 +5,8 @@
 (function () {
   var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   const P = window.JDJ_PAY, PL = window.JDJ_PLAIN, esc = P.esc, DATA = P.DATA, PY = 3.3058;
-  /* ---------- 대출 규제 기준 (2026.7.1 규제지역: 서울 전역 + 경기 15곳) — 무료 리포트와 동일 ---------- */
-  const REG_GG = ['41290','41210','41135','41131','41133','41117','41111','41115','41173','41465','41430','41450','41597','41463','41310'];
-  const isReg = c => c.startsWith('11') || REG_GG.includes(c);
+  /* ---------- 대출 규제 기준 — 규제지역은 날짜별 표 assets/reg-zones.js(JDJ_REG, 오늘 기준), 무료 리포트와 동일 ---------- */
+  const isReg = c => window.JDJ_REG.regulated(String(c)) === true;
   const isCap = c => c.startsWith('11') || c.startsWith('41') || c.startsWith('28');
   /* 대출 계산은 대출 한도 계산기(loan/)·내 집 마련(buy/)·갈아타기(switch/)와 같은 assets/loan-core.js(규칙은 assets/loan-rules.js) */
   const LOAN = () => window.JDJ_LOAN;   // 화면마다 불러오는 순서가 달라 쓸 때 읽음

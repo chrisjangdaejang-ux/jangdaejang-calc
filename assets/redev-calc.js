@@ -120,14 +120,35 @@
   var inArea = function (p, g, dong) { return (p.in || []).some(function (x) { return x === 'all' || x === String(g).slice(0, 2) || x === g || (dong && x === g + ':' + dong); }) && (p.not || []).indexOf(g) < 0; };
   function polSrc(p) { var s = (p && p.src && p.src[0]) || null; return s ? { nm: s[0], url: s[1] } : null; }
   var RB = { rb: 1, dd: 1 }, RD = { rd: 1, ct: 1, pr: 1 }, SKIP = { nt: '노후계획도시 특별법(1기 신도시)', moa: '소규모주택정비법(모아타운)', garo: '소규모주택정비법(가로주택정비)', sr: '소규모주택정비법(소규모 재건축)', sd: '소규모주택정비법(소규모 재개발)', ja: '소규모주택정비법(자율주택정비)', re: '도시정비법(주거환경개선 — 공공 시행 위주)' };
+  var REGc = function () { return root.JDJ_REG || (typeof require === 'function' ? require('./reg-zones.js') : null); };
+  /** 브라우저: 날짜별 규제지역 표(assets/reg-zones.js)를 아직 안 불렀으면 불러옴 → Promise (구역 화면이 판정 전에 기다림) */
+  var regP = null;
+  function regReady() {
+    if (root.JDJ_REG || typeof document === 'undefined') return Promise.resolve();
+    if (regP) return regP;
+    var b0 = root.JDJ_BASE || {}, base = b0.SITE || '/';   // 구역 화면이 먼저 정한 사이트 경로
+    regP = new Promise(function (ok) { var x = document.createElement('script'); x.src = base + 'assets/reg-zones.js?v=1'; x.onload = ok; x.onerror = ok; document.head.appendChild(x); });
+    return regP;
+  }
   function rights(pol, z) {
-    z = z || {}; var P = (pol && pol.policies) || [], g = String(z.g || ''), lv = +z.lv || 0;
-    var oh = P.find(function (x) { return act(x) && (x.types || []).indexOf('규제지역') >= 0 && x.dir === 'tight' && /투기과열/.test((x.name || '') + (x.plain || '')) && !/해제/.test(x.name || '') && inArea(x, g, ''); });
-    var tohL = P.filter(function (p) { return act(p) && (p.types || []).indexOf('토허') >= 0 && p.dir === 'tight'; });
-    var tohDong = z.dong ? tohL.find(function (p) { return (p.in || []).indexOf(g + ':' + z.dong) >= 0; }) : null;
-    var tohApt = tohL.find(function (p) { return inArea(p, g, '') && /아파트/.test((p.plain || '') + (p.name || '')) && !(p.in || []).some(function (x) { return x.indexOf(':') > 0; }); });
+    z = z || {}; var P = (pol && pol.policies) || [], g = String(z.g || ''), lv = +z.lv || 0, out0 = {};
+    var oh, tohDong, tohApt, R = REGc();
+    if (R) {   /* 지정 여부·날짜·출처는 날짜별 규제지역 표(assets/reg-zones.js) 한 곳에서 — 화면 카드 모양({name, src})으로 바꿔 씀 */
+      var day = z.date || R.today(), card = function (r, nm) { if (!r) return null; var x = R.srcOf(r); return { id: 'reg', name: nm + (r.until ? ' (' + R.ko(r.until) + '까지)' : ''), src: x && x.url ? [[x.nm, x.url]] : [] }; };
+      oh = R.at(g, 'ovh', day) === true ? card(R.rowAt(g, 'ovh', day), '투기과열지구') : null;
+      var tx = R.thpRows(g, day, z.dong || '');
+      tohDong = z.dong ? card(tx.dong, '토지거래허가구역(' + (tx.dong ? tx.dong.sub : '') + ')') : null;
+      tohApt = card(tx.apt, '토지거래허가구역(아파트)');
+      out0.basis = R.basis();
+    } else {
+      oh = P.find(function (x) { return act(x) && (x.types || []).indexOf('규제지역') >= 0 && x.dir === 'tight' && /투기과열/.test((x.name || '') + (x.plain || '')) && !/해제/.test(x.name || '') && inArea(x, g, ''); });
+      var tohL = P.filter(function (p) { return act(p) && (p.types || []).indexOf('토허') >= 0 && p.dir === 'tight'; });
+      tohDong = z.dong ? tohL.find(function (p) { return (p.in || []).indexOf(g + ':' + z.dong) >= 0; }) : null;
+      tohApt = tohL.find(function (p) { return inArea(p, g, '') && /아파트/.test((p.plain || '') + (p.name || '')) && !(p.in || []).some(function (x) { return x.indexOf(':') > 0; }); });
+    }
     var ease = P.find(function (p) { return act(p) && (p.types || []).indexOf('토허') >= 0 && p.dir === 'ease' && /유예/.test(p.name || '') && inArea(p, g, ''); });
     var out = { asof: (pol && (pol.v || pol.updated || pol.built)) || '', cards: [] };
+    if (out0.basis) out.basis = out0.basis;
     // ① 조합원 지위 양도
     var c1 = { k: 'transfer', t: '조합원 지위 양도', law: [LAW.r39, LAW.r39d] };
     if (SKIP[z.t]) { c1.v = 'skip'; c1.head = '판정하지 않았어요'; c1.body = SKIP[z.t] + ' 사업이라 도시정비법 제39조 규칙을 그대로 쓰지 않아요. 조합·구청에 확인해 주세요.'; c1.law = z.t === 'nt' ? [] : [LAW.small]; }
@@ -169,7 +190,7 @@
     return m >= 0 ? m : null;
   }
 
-  var api = { money: money, calc: calc, sens: sens, comps: comps, afterRange: afterRange, rights: rights, slug: slug, slugs: slugs, monthsIn: monthsIn, won: won, num: num, LAW: LAW, median: median, trades: trades };
+  var api = { money: money, calc: calc, sens: sens, comps: comps, afterRange: afterRange, rights: rights, regReady: regReady, slug: slug, slugs: slugs, monthsIn: monthsIn, won: won, num: num, LAW: LAW, median: median, trades: trades };
   root.JDJ_RCALC = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -37,7 +37,7 @@
   const adjAt = d => A.isAdjusted($('sd').value, $('gu').value, d);
   const updAdj = () => {
     const now = adjAt(TODAY) === true;
-    $('adjTxt').textContent = '오늘 기준 ' + (now ? '조정대상지역이에요 (증여 취득세 중과·양도세 중과 판단에 써요).' : '조정대상지역이 아니에요.');
+    $('adjTxt').textContent = '오늘 기준 ' + (now ? '조정대상지역이에요 (증여 취득세 중과·양도세 중과 판단에 써요).' : '조정대상지역이 아니에요.') + (A.META.basis ? ' ' + A.META.basis + '.' : '');
     const a = $('ad').value ? adjAt($('ad').value) : false;
     $('askW').hidden = a !== 'ask';
   };

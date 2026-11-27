@@ -12,7 +12,7 @@ function check(name, ok, info) { if (ok) pass++; else { fail++; console.log('XX 
 
 const ctx = { console, fetch: () => Promise.reject(new Error('no net')), location: { pathname: '/jangdaejang-calc/chungyak/price/', search: '' }, JDJ_SITE: { PAID_OPEN: false, PAY_REVIEW: false } };
 ctx.globalThis = ctx; vm.createContext(ctx);
-for (const f of ['tax/tax-engine.js', 'assets/loan-rules.js', 'assets/rec-core.js', 'assets/loan-core.js', 'assets/cy-price.js', 'assets/sale-status.js', 'assets/products.js', 'assets/premium-teaser.js', 'assets/cy-plan.js']) vm.runInContext(read(f), ctx, { filename: f });
+for (const f of ['assets/reg-zones.js', 'tax/tax-engine.js', 'assets/loan-rules.js', 'assets/rec-core.js', 'assets/loan-core.js', 'assets/cy-price.js', 'assets/sale-status.js', 'assets/products.js', 'assets/premium-teaser.js', 'assets/cy-plan.js']) vm.runInContext(read(f), ctx, { filename: f });
 ctx.JDJ_CYE = require('../chungyak/cy-engine.js');
 const P = ctx.JDJ_CYPLAN, E = ctx.JDJ_CYE;
 check('모듈 로드', !!(P && ctx.JDJ_CYP && ctx.JDJ_LOAN && ctx.JDJ_SALE && ctx.JDJ_TEASER));

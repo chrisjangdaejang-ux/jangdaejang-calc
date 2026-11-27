@@ -164,7 +164,7 @@ const isDate = d => /^\d{4}-\d{2}-\d{2}$/.test(String(d || ''));
   const swSrc = read('switch/switch-core.js'), prSrc = read('assets/premium-report.js');
   check('갈아타기·프리미엄 리포트에 따로 만든 LTV·DSR·가격대 계산 없음(loan-core 사용)',
     [/LOAN\.loanAt\(/.test(swSrc), /RULES\.DSR\.bank/.test(swSrc), /LOAN\(\)\.loanAt\(/.test(prSrc), /none:\.40|0\.40 - S\.debt|p <= 150000 \? 60000/.test(prSrc)], [true, false, true, false]);
-  for (const f of ['premium/pro/index.html', 'premium/r/index.html', 'premium/view/index.html']) check(f + ': loan-rules·loan-core 불러옴', /loan-rules\.js\?v=3/.test(read(f)) && /loan-core\.js\?v=\d+/.test(read(f)), true);
+  for (const f of ['premium/pro/index.html', 'premium/r/index.html', 'premium/view/index.html']) check(f + ': loan-rules·loan-core 불러옴', /loan-rules\.js\?v=4/.test(read(f)) && /loan-core\.js\?v=\d+/.test(read(f)), true);
   check('프리미엄 리포트: 계산 조건 줄에 실제 금리 유형(주기형 고정 문구 아님)·공유 조건에 금리 유형·기간', [/· 주기형 \$\{S\.rate\}%/.test(prSrc), /TYPE_NAME\[S\.rtype\]/.test(prSrc), /cond = \(\) => \(\{[^}]*rtype: S\.rtype, term: S\.term/.test(prSrc)], [false, true, true]);
   check('갈아타기 화면: 막는 규칙 이름에 DTI', /DTI:'소득\(DTI\)이 한도 결정'/.test(read('switch/index.html')), true);
   check('막는 규칙 이름에 DTI(내 집 마련·리포트·프리미엄·설명)', ['buy/index.html', 'buy/report/index.html', 'assets/premium-report.js', 'assets/narrative.js'].every(f => /DTI:\s*'/.test(read(f))), true);
@@ -214,7 +214,7 @@ const isDate = d => /^\d{4}-\d{2}-\d{2}$/.test(String(d || ''));
     check(`${f}: loan-rules.js 를 rec-core·loan-core 보다 먼저`, i >= 0 && i < j, true);
   }
   const sw = read('sw.js');
-  check('sw.js: 대출 한도 화면·규칙 파일 미리 저장', sw.includes("'./loan/'") && sw.includes('/assets/loan-rules.js?v=3') && sw.includes('/assets/loan-core.js?v=' + ((read('loan/index.html').match(/loan-core\.js\?v=(\d+)/) || [])[1]) + "'"), true);
+  check('sw.js: 대출 한도 화면·규칙 파일 미리 저장', sw.includes("'./loan/'") && sw.includes('/assets/loan-rules.js?v=4') && sw.includes('/assets/loan-core.js?v=' + ((read('loan/index.html').match(/loan-core\.js\?v=(\d+)/) || [])[1]) + "'"), true);
 }
 
 let pass = 0;

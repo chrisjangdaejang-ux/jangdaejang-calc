@@ -125,8 +125,21 @@
   /* ---------- 정책 표: 토지거래허가구역·투기과열지구 ---------- */
   const act = p => p && p.status === 'active' && (p.stage === '시행' || !p.stage);
   const inArea = (p, g, dong) => (p.in || []).some(x => x === 'all' || x === String(g).slice(0, 2) || x === g || (dong && x === g + ':' + dong)) && (p.not || []).indexOf(g) < 0;
-  /** 그 구(동)의 토지거래허가 지정: kind 'villa'|'apt' → {v:'dong'|'apt'|'none', t, pid} */
+  /* 지정 여부·날짜는 날짜별 규제지역 표 assets/reg-zones.js(JDJ_REG) 한 곳에서 — 정책 표(policy.json)는 표가 없을 때만 */
+  const REGc = () => root.JDJ_REG || (typeof require === 'function' ? require('./reg-zones.js') : null);
+  /** 그 구(동)의 토지거래허가 지정(오늘): kind 'villa'|'apt' → {v:'dong'|'apt'|'none', t, pid, until} */
   function toh(pol, g, dong, kind) {
+    const R = REGc();
+    if (R) {
+      const x = R.thpRows(String(g), R.today(), dong || ''), aptR = x.apt, dongR = x.dong, un = r => r && r.until ? ` · ${R.ko(r.until)}까지` : '';
+      if (kind === 'apt') {
+        if (aptR || dongR) return { v: 'apt', t: '지정 · 허가 뒤 직접 거주' + un(aptR || dongR), pid: 'reg', until: (aptR || dongR).until || '' };
+        return { v: 'none', t: '지정 없음', pid: '' };
+      }
+      if (dongR) return { v: 'dong', t: '동 일부 지정 · 확인 필요' + un(dongR), pid: 'reg', until: dongR.until || '' };
+      if (aptR) return { v: 'apt', t: '아파트만 지정 · 구역 지정은 확인 필요' + un(aptR), pid: 'reg', until: aptR.until || '' };
+      return { v: 'none', t: '지정 없음 · 구역 단위 지정은 확인 필요', pid: '' };
+    }
     const L = ((pol && pol.policies) || []).filter(p => act(p) && (p.types || []).indexOf('토허') >= 0 && p.dir === 'tight');
     const dongP = L.find(p => (p.in || []).some(x => x.indexOf(':') > 0) && inArea(p, g, dong) && (p.in || []).indexOf(g + ':' + dong) >= 0);
     const aptP = L.find(p => inArea(p, g, '') && /아파트/.test((p.plain || '') + (p.name || '')) && !(p.in || []).some(x => x.indexOf(':') > 0));
@@ -138,7 +151,10 @@
     if (aptP) return { v: 'apt', t: '아파트만 지정 · 구역 지정은 확인 필요', pid: aptP.id };
     return { v: 'none', t: '정책 표에 지정 없음 · 확인 필요', pid: '' };
   }
+  /** 오늘 투기과열지구인가 → 표시용 id('' = 아님) */
   function overheat(pol, g) {
+    const R = REGc();
+    if (R) return R.at(String(g), 'ovh', R.today()) === true ? 'reg-ovh' : '';
     const p = ((pol && pol.policies) || []).find(x => act(x) && (x.types || []).indexOf('규제지역') >= 0 && x.dir === 'tight' && /투기과열/.test((x.name || '') + (x.plain || '')) && !/해제/.test(x.name || '') && inArea(x, g, ''));
     return p ? p.id : '';
   }

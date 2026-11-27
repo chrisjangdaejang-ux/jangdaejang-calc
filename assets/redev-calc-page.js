@@ -63,7 +63,7 @@
     var lv = typeof (S.z.st && S.z.st.v) === 'number' ? S.z.st.v : (S.z.lv || null);
     var RT = C.rights(S.pol, { t: S.z.t, lv: lv, g: S.z.g, dong: S.z.umd, kind: S.z.t === 'rb' ? 'apt' : '' });
     el.hidden = false;
-    el.innerHTML = '<h2>이 구역 판정</h2>' + RT.cards.map(function (c) { return '<div class="zrule ' + c.v + '"><h3>' + esc(c.t) + '</h3><p class="rh">' + esc(c.head) + '</p><p>' + esc(c.body || '') + '</p><p class="zsrc">' + (c.law || []).map(function (l) { return '<a href="' + esc(l.url) + '" target="_blank" rel="noopener">' + esc(l.nm) + ' ↗</a>'; }).join(' · ') + (c.src ? ' · 정책: <a href="' + esc(c.src.url) + '" target="_blank" rel="noopener">' + esc(c.src.nm) + ' ↗</a>' : '') + '</p></div>'; }).join('') + '<p class="note">정책 표와 법 조문의 일반 규칙으로만 판정했어요. 예외·시점은 구청·전문가에게 확인해 주세요.</p>';
+    el.innerHTML = '<h2>이 구역 판정</h2>' + RT.cards.map(function (c) { return '<div class="zrule ' + c.v + '"><h3>' + esc(c.t) + '</h3><p class="rh">' + esc(c.head) + '</p><p>' + esc(c.body || '') + '</p><p class="zsrc">' + (c.law || []).map(function (l) { return '<a href="' + esc(l.url) + '" target="_blank" rel="noopener">' + esc(l.nm) + ' ↗</a>'; }).join(' · ') + (c.src ? ' · 정책: <a href="' + esc(c.src.url) + '" target="_blank" rel="noopener">' + esc(c.src.nm) + ' ↗</a>' : '') + '</p></div>'; }).join('') + '<p class="note">' + (RT.basis ? esc(RT.basis) + '. ' : '') + '규제지역 표와 법 조문의 일반 규칙으로만 판정했어요. 예외·시점은 구청·전문가에게 확인해 주세요.</p>';
   }
   function zoneInfo(D) {
     var z = S.z, mz = D && (D.z || []).find(function (x) { return x.id === z.id; });
@@ -79,7 +79,7 @@
   }
   function pickZone(id) {
     if (!id) return;
-    Promise.all([get(DATA + 'redev/zone/' + encodeURIComponent(id) + '.json').catch(function () { return null; }), get(DATA + 'redev/zones.json').catch(function () { return null; }), S.pol ? Promise.resolve(S.pol) : get(DATA + 'policy.json').catch(function () { return null; })])
+    Promise.all([get(DATA + 'redev/zone/' + encodeURIComponent(id) + '.json').catch(function () { return null; }), get(DATA + 'redev/zones.json').catch(function () { return null; }), S.pol ? Promise.resolve(S.pol) : get(DATA + 'policy.json').catch(function () { return null; }), (window.JDJ_RCALC && JDJ_RCALC.regReady ? JDJ_RCALC.regReady() : null)])
       .then(function (a) {
         var z = a[0], D = a[1]; S.pol = a[2];
         if (!z && D) { var m = (D.z || []).find(function (x) { return x.id === id; }); if (m) z = { id: m.id, n: m.n, t: m.t, g: m.g, gn: m.gn, sido: '서울특별시', lv: m.st, sn: m.sn, umd: m.umd, in_map: 1 }; }

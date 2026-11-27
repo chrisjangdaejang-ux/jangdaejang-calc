@@ -34,7 +34,8 @@
 <script src="../assets/stat.js?v=8"></script>
 <script src="../assets/config.js?v=14"></script>
 <script src="../tax/tax-engine.js?v=4"></script>
-<script src="../assets/loan-rules.js?v=3"></script>
+<script src="../assets/reg-zones.js?v=1"></script>
+<script src="../assets/loan-rules.js?v=4"></script>
 <script src="../assets/loan-core.js?v=6"></script>
 <script src="../assets/mine-core.js?v=25"></script>
 <script src="../assets/price-sheet.js?v=27"></script>
@@ -388,7 +389,7 @@ function setRegion(code){
   if (!S.g) { box.innerHTML = ''; $('rgHint').textContent = ''; }
   else {
     box.innerHTML = `<span class="rgbadge ${S.g}">${esc(GNAME[S.g])}</span>`;
-    $('rgHint').textContent = S.g === 'reg' ? '서울 전 지역과 경기 15곳(과천·광명·하남·의왕·구리, 성남 분당·수정·중원, 수원 영통·장안·팔달, 안양 동안, 용인 수지·기흥, 화성 동탄구)은 규제지역이에요.'
+    $('rgHint').textContent = S.g === 'reg' ? '서울 전 지역과 경기 ' + Object.keys(R.REGION.reg.v.gg).length + '곳(' + Object.values(R.REGION.reg.v.gg).join('·') + ')은 규제지역이에요. ' + R.regBasis() + '.'
       : S.g === 'capfree' ? '서울·인천·경기는 규제지역이 아니어도 수도권 규칙(가격대별 최대 금액·스트레스 금리 3.0%)이 적용돼요.' : '지방은 가격대별 최대 금액이 없고, 스트레스 금리도 수도권보다 낮게 더해요.';
   }
   $('djBox').hidden = !(S.code && S.IX && sdOf(S.code));
