@@ -210,7 +210,9 @@ const sh = S.sheets['동네한마디'];
 sh.rows.slice(1).forEach(x => { x[S.T.DPPC['시각']] = new S.VD(Date.now() - 2 * 864e5); });   // 어제 쓴 걸로
 const okPost = W(u3, { text: '대치동 학원가 앞 횡단보도 공사가 이번 주에 끝나요.', topic: 'traffic', key: '11680|대치동' });
 check('깨끗한 글은 바로 공개', okPost.ok && okPost.st === '공개', okPost);
-sh.rows.slice(1).forEach(x => { x[S.T.DPPC['시각']] = new S.VD(Date.now() - 864e5 - 3600e3); });
+/* 오늘 아침 브리핑에 실리도록 '어제 낮 12시(한국)'로 고정 — 밤 10시 마감 뒤에 돌려도 같은 결과 */
+const KST = 9 * 3600e3, yNoon = Math.floor((Date.now() + KST) / 864e5) * 864e5 - KST - 12 * 3600e3;
+sh.rows.slice(1).forEach(x => { x[S.T.DPPC['시각']] = new S.VD(yNoon); });
 
 /* 브리핑 칸: 광고성 정보 동의한 구독자만 */
 function addSub(k, ad, am) {
