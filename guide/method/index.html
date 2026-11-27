@@ -174,7 +174,7 @@
 .cta .btn{flex:1 1 220px}
 .fine{margin:24px 0 0;font-size:13.5px;color:var(--sub2);line-height:1.6}
 </style>
-<script src="../../assets/back.js?v=3" defer></script>
+<script src="../../assets/back.js?v=4" defer></script>
 <script src="../../assets/tabbar.js?v=8" defer></script>
 </head>
 <body>
@@ -185,7 +185,8 @@
 <main class="mt">
   <div class="eyebrow">점수 읽는 법</div>
   <h1>미래가치 점수는<br>이렇게 읽어요</h1>
-  <p class="def">미래가치 점수는 <b>앞으로 2년 동안 같은 구 평균보다 더 오를 가능성</b>을 0~100점 순위로 나타낸 값이에요. 점수에는 공공 통계를 과거에 적용해 보고 <b>실제로 맞았던 항목만</b> 담았어요.</p>
+  <p class="def">미래가치 점수는 <b>앞으로 2년 동안 같은 구 평균보다 더 오를 가능성</b>을 0~100점 순위로 나타낸 값이에요. 재건축 단계·신설역 단계·노후도 같은 <b>구조 요인</b>으로 매기고, 과거 성적을 점수 옆에 그대로 붙여요. 요인 하나하나가 과거에 실제로 얼마나 더 올랐는지는 <a href="../../factors/" data-track="method_to_factors">집값 요인 성적표</a>에서 볼 수 있어요.</p>
+  <div class="call" id="lfCall" style="margin-top:14px"><b>2026년 11월부터 성적을 더 엄격하게 재요.</b> 예전에는 점수를 매길 때 쓴 거래 가격을 그대로 ‘산 가격’으로 놓고 성적을 쟀어요. 그러면 거래가 드문 단지에서 우연히 튄 시세가 되돌아가는 것만으로도 맞힌 것처럼 보여, 성적이 실제보다 좋게 나왔어요. 지금은 <b>점수를 매긴 뒤 1~6개월 안에 실제로 거래된 가격</b>을 산 가격으로 보고, 4월·10월 두 기준 모두에서 시기를 다시 뽑아 계산한 범위가 0보다 크고, 절반 넘게 맞고, 최근 흐름만 따라가는 단순한 방법보다 나으며, 오르던 때와 내리던 때 모두 맞아야 ‘기준을 넘었다’고 해요. <span id="lfRec">이 기준으로 다시 재 보니 지금 점수는 아직 기준을 넘지 못해 <b>참고용</b>이에요.</span></div>
 
   <h2><span class="n">01</span>진단과 예측은 달라요</h2>
   <p class="lead2">집예보 화면의 숫자는 두 종류예요. 지금 상태를 보여 주는 ‘진단’과, 앞으로를 내다보는 ‘예측’이에요.</p>
@@ -194,19 +195,20 @@
       <p>실거래로 계산한 지금 시세, 전세가율, 거래량, 역까지 거리, 재건축 단계처럼 <b>지금 이 단지가 어떤 상태인지</b> 보여 주는 숫자예요.</p>
       <ul><li>내 집 시세 확인의 시세·차트</li><li>단지 비교표의 각 줄</li></ul></div>
     <div class="pr"><small class="k">예측 · 앞으로 2년</small><b class="h">미래가치 점수</b>
-      <p>진단 숫자 가운데 <b>과거에 적용했을 때 실제로 맞았던 것</b>만 골라, 같은 구 평균보다 더 오를 가능성을 순위로 매긴 숫자예요.</p>
+      <p>진단 숫자 가운데 <b>구조 요인</b>(재건축 단계·신설역 단계·노후도·단지 규모 등)을 합쳐, 같은 구 평균보다 더 오를 가능성을 순위로 매긴 숫자예요. 과거 성적을 함께 보여 드려요.</p>
       <ul><li>추천 단지·순위·내 집의 점수</li><li>성적표에서 과거 결과 확인</li></ul></div>
   </div>
   <p class="call" style="background:var(--gray2);border-color:var(--line)">좋은 조건(진단)이 곧 더 오를 이유(예측)가 되지는 않아요. 역이 가까운 단지는 그 장점이 이미 가격에 반영돼 있어서, 앞으로 더 오를지는 따로 판단해야 해요.</p>
 
   <h2><span class="n">02</span>점수 읽기</h2>
   <div class="sc">
-    <div class="g5"><b>80~100점</b><span>같은 시·도 단지 중 상위 20% · 같은 구 평균보다 더 오를 가능성이 높아요</span></div>
+    <div class="g5"><b>80~100점</b><span>같은 시·도 단지 중 점수 상위 20%</span></div>
     <div><b>60~79점</b><span>같은 시·도 단지 중 상위 20~40%</span></div>
-    <div><b>40~59점</b><span>같은 시·도 단지 중 가운데 20% · 같은 구 평균과 비슷하게 움직일 가능성이 높아요</span></div>
+    <div><b>40~59점</b><span>같은 시·도 단지 중 가운데 20%</span></div>
     <div><b>20~39점</b><span>같은 시·도 단지 중 하위 20~40%</span></div>
-    <div class="g1"><b>0~19점</b><span>같은 시·도 단지 중 하위 20% · 같은 구 평균보다 덜 오를 가능성이 높아요</span></div>
+    <div class="g1"><b>0~19점</b><span>같은 시·도 단지 중 점수 하위 20%</span></div>
   </div>
+  <p class="lead2" style="margin-top:10px">점수 구간별로 실제로 더 올랐는지는 점수의 과거 성적에 달려 있어요. 성적이 기준을 넘지 못한 동안에는 ‘더 오를 가능성이 높다’고 말하지 않아요.</p>
   <ul class="rules">
     <li><b>점수는 상대 순위예요.</b> 가격이 얼마가 될지를 알려 주는 숫자가 아니라, 다른 단지와 견줘 어디쯤인지를 보여 줘요.</li>
     <li><b>시장 전체가 내리면</b> 점수가 높은 단지도 함께 내릴 수 있어요. 점수는 그럴 때에도 같은 구 평균보다 덜 내리고 더 오를 단지를 고르는 데 쓰여요.</li>
@@ -243,7 +245,7 @@
     <ul>
       <li><b>예측하고, 그 성적을 그대로 공개해요.</b> 맞은 때와 틀린 때, 뺀 항목까지 보여 드려요. <a href="../../track/" data-track="method_str_track">성적표 →</a></li>
       <li><b>광고는 점수에 넣지 않아요.</b> 광고비나 제휴 여부는 점수와 추천 순위에 들어가지 않아요. <a href="../../ad/" data-track="method_str_ad">광고 원칙 →</a></li>
-      <li><b>직접 만든 지표도 함께 봐요.</b> <a href="../../guide/terms/#drop-defense" data-track="method_str_dd">‘하락기 방어력’</a>, <a href="../../guide/terms/#new-station" data-track="method_str_ns">‘신설역 단계’</a>처럼 기본 통계에 없는 지표를 써요.</li>
+      <li><b>요인마다 과거 효과를 그대로 공개해요.</b> 재건축 단계, <a href="../../guide/terms/#new-station" data-track="method_str_ns">‘신설역 단계’</a>처럼 집값에 영향을 준다는 조건이 실제로 얼마나 더 올랐는지, 효과가 없던 조건까지 <a href="../../factors/" data-track="method_str_factors">집값 요인 성적표</a>에 보여 드려요.</li>
       <li><b>어려운 용어는 쉽게 풀어요.</b> 모르는 말은 <a href="../../guide/terms/" data-track="method_str_terms">용어 모아 보기</a>에서 찾을 수 있어요.</li>
     </ul>
     <a class="all" href="../../about/#strengths" data-track="method_str_all">강점 10가지 모두 보기 →</a>
@@ -269,7 +271,7 @@
     <details><summary><span>항목은 바뀌나요?</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary><div class="a">
       <p>네. 새 자료가 쌓이면 점수 계산 방식을 다시 정하고, 그 결과에 따라 쓰는 항목이 바뀔 수 있어요. 이 페이지는 공개 자료를 바로 읽어 오기 때문에 항상 지금 쓰는 항목을 보여 드려요.</p></div></details>
     <details><summary><span>연구 결과를 점수에 쓰나요?</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary><div class="a">
-      <p>쓰지 않아요. 연구 결과는 다른 나라·다른 시기의 것이라 국내 시장에 그대로 들어맞지 않을 수 있어요. 위 목록은 항목을 이해하는 데만 쓰고, 점수에는 집예보 자료로 과거에 적용해 맞았던 항목만 넣어요.</p></div></details>
+      <p>쓰지 않아요. 연구 결과는 다른 나라·다른 시기의 것이라 국내 시장에 그대로 들어맞지 않을 수 있어요. 위 목록은 항목을 이해하는 데만 쓰고, 점수에 넣을 항목은 집예보 자료로 과거에 적용해 본 결과로만 정해요.</p></div></details>
   </div>
 
   <div class="cta">
@@ -281,8 +283,8 @@
 <footer class="foot">★ 집예보 · <a href="../../">홈</a> · <a href="../../guide/terms/">용어 모아 보기</a></footer>
 <script src="../../assets/config.js?v=14"></script>
 <script src="../../assets/track-core.js?v=5"></script>
-<script src="../../assets/narrative.js?v=28"></script>
-<script src="../../assets/strength.js?v=5" data-lazy></script>
+<script src="../../assets/narrative.js?v=29"></script>
+<script src="../../assets/strength.js?v=6" data-lazy></script>
 <script>
 var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 (async function () {
@@ -290,6 +292,15 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
   const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   const get = async f => { try { const r = await fetch(D + f, { cache: 'no-cache' }); return r.ok ? await r.json() : null; } catch (e) { return null; } };
   const [EX, BT, EVD, MT] = await Promise.all([get('excluded.json'), get('bt/index.json'), get('evidence.json'), get('meta.json')]);
+  /* 누수 없는 재구축(2026-11-27) 성적 한 줄: factors.json score — 통과하면 문장도 바뀜 */
+  get('factors.json').then(F => {
+    const sc = F && F.score, el = $('lfRec'); if (!sc || !el) return;
+    const g = (h) => { const s = sc[h]; if (!s) return null; const G = Object.values(s.grids || {}).filter(x => x && x.n); return { ok: s.status === 'pass', n: G.reduce((a, x) => a + x.n, 0), hit: G.reduce((a, x) => a + (x.hit || 0), 0) }; };
+    const a = g('2'), b = g('3');
+    if (!a) return;
+    el.innerHTML = a.ok ? `이 기준으로 2년 점수는 과거 ${a.n}번 중 ${a.hit}번 맞아 기준을 넘었어요.`
+      : `이 기준으로 다시 재 보니 2년 점수는 과거 ${a.n}번 중 ${a.hit}번${b ? `, 3년 점수는 ${b.n}번 중 ${b.hit}번` : ''} 맞아 아직 기준을 넘지 못했어요. 그래서 지금 점수는 <b>참고용</b>이고, 1년 점수는 차이가 없어 내지 않아요.`;
+  });
   /* 과거 사례(evidence.json, 단지 화면 '오를 이유 · 조심할 점'과 같은 문장·같은 표시 기준 — narrative.js xCases) */
   const NAR = window.JDJ_NAR;
   const xcs = T.xcsOf(NAR, EVD);

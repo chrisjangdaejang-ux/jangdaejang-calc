@@ -44,16 +44,17 @@
 <script src="../assets/watch-core.js?v=2"></script>
 <script src="../assets/watch.js?v=9"></script>
 <script src="../assets/kchat.js?v=4"></script>
-<script src="../assets/plain-words.js?v=20"></script>
+<script src="../assets/plain-words.js?v=21"></script>
 <script src="../assets/premium-teaser.js?v=1"></script>
-<script src="../assets/narrative.js?v=28"></script>
+<script src="../assets/narrative.js?v=29"></script>
 <script src="../assets/temp-core.js?v=1"></script>
 <script src="../assets/temp-view.js?v=1"></script>
-<script src="../assets/strength.js?v=5"></script>
+<script src="../assets/strength.js?v=6"></script>
 <script src="../assets/conf.js?v=4"></script>
 <script src="../assets/result.js?v=1"></script>
 <script src="../assets/life-view.js?v=3"></script>
 <script src="../assets/fac-view.js?v=1"></script>
+<script src="../assets/factors-core.js?v=1"></script>
 <script src="../assets/mine-core.js?v=25"></script>
 <script src="../assets/ask-core.js?v=10"></script>
 <script src="../assets/ask.js?v=6"></script>
@@ -254,7 +255,7 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
 .alr .msg{font-size:14px;font-weight:700}
 </style>
 <link rel="stylesheet" href="../assets/result.css?v=3">
-<script src="../assets/back.js?v=3" defer></script>
+<script src="../assets/back.js?v=4" defer></script>
 </head>
 <body data-lay="side" data-lay-key=".stats" data-lay-toc="h2,.chead:first-child>h3" data-lay-fold="#polSec>.panel,#taxSec" data-lay-jump="#res,#ofRes,#vlRes,#cmRes">
 <header class="top">
@@ -664,6 +665,8 @@ function render(d, map, units){
       : `<p class="note" style="font-size:15px">이 단지·평형은 아직 미래가치 점수가 없어요. 점수를 매길 거래 자료가 충분히 쌓이면 자동으로 보여 드려요.</p>${rs.length ? `<ul class="why">${rs.map(rli).join('')}</ul>` : ''}`}
   </div>
 
+  <div class="panel" id="fxSec" hidden></div>
+
   <div class="panel" id="facSec" hidden></div>
 
   <div class="panel" id="lifeSec" hidden></div>
@@ -705,6 +708,7 @@ function render(d, map, units){
   if (window.JDJ_CONF) JDJ_CONF.css();
   fillLife(d);
   fillFac(d);
+  fillFx(f, d);
   CUR.ht = HT;
   /* 공유(assets/share.js): 단지 공개 정보(이름·변동률·점수·거래 건수)만. 매수가·매수 시기(bp·bd)는 주소·문구·이미지에 넣지 않음 */
   if (window.JDJ_SHARE) JDJ_SHARE.update({allowNum: true,
@@ -739,6 +743,22 @@ function fillFac(d){
     if (!h) return;
     JDJ_FAC.css();
     el.innerHTML = `<h2>단지 시설<small>주민 공동시설·주차·CCTV·승강기를 정리했어요</small></h2>` + h;
+    el.hidden = false;
+  });
+}
+
+/* 이 단지에 해당하는 집값 요인(assets/factors-core.js, 공개 data/factors.json — 엔진 leakfree 요인 성적표): 과거에 꾸준히 더(덜) 오른 요인만, 없으면 칸을 숨김 */
+function fillFx(f, d){
+  const el = $('fxSec'); if (!el) return;
+  el.hidden = true; el.innerHTML = '';
+  if (!window.JDJ_FX || !f || !(f.fx || []).length) return;
+  const key = S.dkey, sd = ((IX.sgg || {})[d.code] || {}).sido || '';
+  const rtype = sd === '서울특별시' ? 'seoul' : (sd === '경기도' || sd === '인천광역시') ? 'metro' : 'local';
+  JDJ_FX.load().then(F => {
+    if (!F || S.dkey !== key) return;
+    const h = JDJ_FX.cardsHtml(F, f.fx, {rtype}); if (!h) return;
+    el.innerHTML = `<h2>이 단지에 해당하는 집값 요인<small>과거에 이 조건이던 단지가 같은 구 평균보다 실제로 얼마나 더(덜) 올랐는지예요. 점수를 매긴 뒤 1~6개월 안 실제 거래 가격 기준이에요.</small></h2>`
+      + h + `<p class="basis"><a href="../factors/" data-track="mine_to_factors">집값 요인 성적표 전체 보기 →</a></p>`;
     el.hidden = false;
   });
 }

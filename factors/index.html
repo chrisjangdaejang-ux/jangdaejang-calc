@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../assets/icons/apple-180.png">
+<script src="../assets/pwa.js?v=3" defer data-nobar></script>
+<script src="../assets/biz.js?v=3" defer></script>
+<title>집값 요인 성적표 · 어떤 조건이 실제로 더 올랐나 | 집예보</title>
+<link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/factors/">
+<meta name="description" content="재건축 단계, 신설역 단계, 노후도, 단지 규모, 입주 물량, 전세가율, 규제지역… 집값에 영향을 준다는 조건마다 과거에 실제로 같은 구 평균보다 더 올랐는지, 맞지 않았던 것까지 그대로 공개해요.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="집예보">
+<meta property="og:title" content="집값 요인 성적표 | 집예보">
+<meta property="og:description" content="집값에 영향을 준다는 조건마다 과거 실제 결과를 그대로 공개해요. 효과가 없었던 요인도 함께요.">
+<meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/factors/">
+<meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/default.png">
+<meta property="og:locale" content="ko_KR">
+<script>window.JDJ_CONFIG = { tool:'factors', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../assets/track.js?v=3"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/aplus.css?v=50">
+<style>
+.mt{max-width:820px;margin:0 auto;padding:24px 20px 40px}
+.mt h1{font-size:clamp(26px,5.8vw,34px);margin:8px 0 12px}
+.mt .def{font-size:17px;line-height:1.75;color:var(--sub);margin:0}
+.mt .def b{color:var(--text)}
+.mt h2{font-size:21px;font-weight:900;letter-spacing:-.4px;margin:36px 0 6px}
+.mt .lead2{font-size:16px;color:var(--sub2);margin:0 0 12px;line-height:1.7}
+.how{margin:14px 0 0;padding:14px 16px 14px 34px;border:1px solid var(--line);border-radius:14px;background:var(--gray2);font-size:15.5px;line-height:1.75;color:var(--sub)}
+.how b{color:var(--text)}
+.hz{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 0}
+.hz button{min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:15px;font-weight:700;color:var(--sub);cursor:pointer}
+.hz button[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.fg{margin:18px 0 0}
+.fg h3{font-size:17px;margin:0 0 8px;display:flex;align-items:center;gap:8px}
+.fg h3 .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.fl{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.fl li{padding:12px 14px;border-top:1px solid var(--line2);display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:baseline}
+.fl li:first-child{border-top:0}
+.fl b{font-size:15.5px;line-height:1.5}
+.fl .ef{font-size:17px;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.fl .ef.up{color:var(--pos,#0E7C66)}.fl .ef.down{color:var(--neg)}.fl .ef.flat{color:var(--sub2)}
+.fl small{grid-column:1/-1;color:var(--sub2);font-size:13.5px;line-height:1.6}
+.sc2{border:1.5px solid #C9C6F2;background:#F7F9FF;border-radius:16px;padding:14px 16px;font-size:15.5px;line-height:1.7;color:var(--sub)}
+.sc2 b{color:var(--text)}
+.nt{font-size:14px;color:var(--sub2);line-height:1.7;margin:10px 0 0}
+.ut{margin:0;padding-left:20px;font-size:15px;color:var(--sub);line-height:1.75}
+.fine{margin:24px 0 0;font-size:13.5px;color:var(--sub2);line-height:1.6}
+.pend{color:var(--sub2);font-size:15px}
+</style>
+<script src="../assets/back.js?v=4" defer></script>
+<script src="../assets/tabbar.js?v=8" defer></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a>
+  <div class="badge plain">집값 요인 성적표</div>
+</header>
+<main class="mt">
+  <div class="eyebrow">집값 요인 성적표</div>
+  <h1>집값을 올린다는 조건,<br>실제로 더 올랐을까요?</h1>
+  <p class="def">재건축 단계, 새 지하철역, 오래된 아파트, 대단지, 입주 물량, 전세가율, 규제지역처럼 <b>집값에 영향을 준다고 알려진 조건</b>마다, 그 조건이던 단지가 과거에 <b>같은 구 평균보다 실제로 더 올랐는지</b> 쟀어요. 효과가 없었던 조건도 그대로 보여 드려요.</p>
+  <ol class="how">
+    <li><b>잰 방법</b> — 2013년부터 해마다 4월·10월에 그때 알 수 있던 자료로 조건을 정하고, 그 뒤 <b>1~6개월 안에 실제로 거래된 가격</b>에 샀다고 보고 1·2·3년 뒤 가격과 비교했어요. 조건을 정한 거래와 비교 기준 거래가 겹치지 않아, 우연히 튄 시세가 되돌아가는 효과가 섞이지 않아요.</li>
+    <li><b>비교 기준</b> — 단지 조건은 같은 구 평균, 구 전체 조건(인구·입주 물량 등)은 같은 시·도 평균과 비교했어요.</li>
+    <li><b>‘꾸준히’의 뜻</b> — 4월·10월 두 기준 모두에서 시기 절반 넘게 같은 방향이고, 시기를 다시 뽑아 계산한 95% 범위가 0을 걸치지 않고, 최근 가격 흐름 효과를 빼도 같은 방향이며, 오르던 때(2018~2022)와 내리던 때(2023~2024)에 방향이 뒤집히지 않은 경우만이에요.</li>
+  </ol>
+  <div class="hz" role="group" aria-label="보유 기간" id="hz"><button type="button" data-h="1" aria-pressed="false">1년 뒤</button><button type="button" data-h="2" aria-pressed="true">2년 뒤</button><button type="button" data-h="3" aria-pressed="false">3년 뒤</button></div>
+  <div id="box"><p class="pend">성적표를 불러오는 중이에요.</p></div>
+
+  <h2>여러 요인을 합친 ‘미래가치 점수’의 성적</h2>
+  <div class="sc2" id="score"><span class="pend">불러오는 중이에요.</span></div>
+
+  <h2>아직 재지 못한 요인</h2>
+  <ul class="ut" id="untested"></ul>
+
+  <p class="nt"><b>읽을 때 주의할 점</b> · 재건축 단계는 지금 남아 있는 서울 정비구역 자료로 정해서, 중간에 해제된 구역은 빠져 있어요(효과가 실제보다 크게 보일 수 있어요). 토지거래허가구역·투기과열지구는 강남권처럼 원래 수요가 많은 곳에 지정돼, 지정 자체의 효과와 지역 효과를 가르기 어려워요. 과거 평균이라 앞으로도 같다는 보장은 없어요.</p>
+  <p class="fine">과거 데이터 기반 분석 정보이며, 투자 판단의 책임은 이용자에게 있어요. 요인을 합칠 때의 비중과 세부 기준은 공개하지 않아요.</p>
+  <div class="cta" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:20px">
+    <a class="btn blue big" href="../guide/method/" data-track="factors_to_method">점수 읽는 법</a>
+    <a class="btn ghost big" href="../track/" data-track="factors_to_track">점수 성적표</a>
+  </div>
+</main>
+<footer class="foot">★ 집예보 · <a href="../">홈</a> · <a href="../guide/terms/">용어 모아 보기</a></footer>
+<script src="../assets/config.js?v=11"></script>
+<script src="../assets/factors-core.js?v=1"></script>
+<script>
+(async function () {
+  const $ = id => document.getElementById(id), FX = window.JDJ_FX;
+  const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const F = await FX.load();
+  if (!F || !F.factors) { $('box').innerHTML = '<p class="pend">성적표 자료를 아직 받지 못했어요. 잠시 뒤 다시 열어 주세요.</p>'; $('score').textContent = ''; return; }
+  let H = new URLSearchParams(location.search).get('h') || '2'; if (!FX.H.includes(H)) H = '2';
+  const ORDER = [['up', '꾸준히 더 올랐어요', 'var(--pos,#0E7C66)'], ['down', '꾸준히 덜 올랐어요', 'var(--neg)'], ['mixed', '시기·장세마다 방향이 달랐어요', '#B8860B'], ['none', '일관된 차이가 없었어요', 'var(--sub3)'], ['few', '사례가 모자라 판단하지 않았어요', 'var(--line)']];
+  const sg = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(1);
+  function draw() {
+    document.querySelectorAll('#hz button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.h === H)));
+    const rows = F.factors.map(f => ({ f, l: FX.line(f, H), v: (f.h[H] || {}).v || 'few' }));
+    let o = '';
+    for (const [v, t, c] of ORDER) {
+      const L = rows.filter(r => r.v === v).sort((a, b) => Math.abs((b.l && b.l.b.avg) || 0) - Math.abs((a.l && a.l.b.avg) || 0));
+      if (!L.length) continue;
+      o += `<section class="fg"><h3><span class="dot" style="background:${c}"></span>${esc(t)} <small style="font-weight:500;color:var(--sub2)">${L.length}개</small></h3><ul class="fl">` + L.map(r => {
+        const b = r.l && r.l.b, cls = !b ? 'flat' : v === 'up' ? 'up' : v === 'down' ? 'down' : 'flat';
+        return `<li><b>${esc(r.f.name)}</b><span class="ef ${cls}">${b ? sg(b.avg) + '%p' : '-'}</span><small>${r.l ? esc(r.l.text) : '해당 단지가 적어 잴 수 없었어요.'}${r.f.src ? ' · 자료: ' + esc(r.f.src) : ''}</small></li>`;
+      }).join('') + '</ul></section>';
+    }
+    $('box').innerHTML = o;
+  }
+  $('hz').addEventListener('click', e => { const b = e.target.closest('button[data-h]'); if (!b) return; H = b.dataset.h; draw(); if (window.jdjStat) jdjStat('feature_use', { feature: 'factors_h' + H }); });
+  draw();
+  const s2 = FX.scoreRec(F, 2), s3 = FX.scoreRec(F, 3);
+  $('score').innerHTML = `<p style="margin:0">미래가치 점수는 위 요인 가운데 구조 요인(재건축 단계·신설역 단계·노후도 등)을 합쳐 같은 구 안 순위를 매긴 값이에요. 같은 방법으로 재 보니:</p><ul style="margin:8px 0 0;padding-left:20px">`
+    + [s2, s3].filter(Boolean).map(s => `<li>${esc(s.text)}</li>`).join('')
+    + `<li>1년 점수는 어떤 방법으로도 같은 구 평균과 차이가 없어 내지 않아요. 5년 이상은 이 방법으로 맞춰 볼 시기가 모자라요.</li></ul>`
+    + (s2 && s2.ok ? `<p style="margin:8px 0 0">2년 점수는 우리 기준을 넘어 단지 화면·첫 화면 순위에 써요.</p>`
+      : `<p style="margin:8px 0 0">합친 점수가 아직 기준을 넘지 못해, 단지 화면의 점수는 <b>참고용</b>으로 성적과 함께 보여 드리고, 첫 화면 추천은 위의 <b>꾸준히 더 오른 요인</b>별 목록으로 보여 드려요.</p>`);
+  $('untested').innerHTML = (F.untested || []).map(u => `<li><b>${esc(u.name)}</b> — ${esc(u.why)}</li>`).join('');
+})();
+</script>
+</body>
+</html>

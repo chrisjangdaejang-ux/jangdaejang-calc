@@ -74,7 +74,8 @@
 
   /* ---------- 보유 기간별 미래가치 점수(내 집 마련 리포트의 '예상 보유 기간' 막대) ----------
      2년은 기본 모델(model.json 이 있으면 늘 사용), 1·3·5·7년은 표본 외 검증을 2번 이상 했고 평균이 플러스이며 절반 이상 맞은 기간만 */
-  const VOK = m => !!(m && (m.oos_all || []).length >= 2 && m.oos_avg > 0 && 2 * (m.oos_hit != null ? m.oos_hit : (m.oos_all || []).filter(o => (o.top20 || 0) > 0).length) >= (m.oos_all || []).length);
+  /* 엔진 판정(status: 누수 없는 재구축 2026-11-27 — 두 격자·블록 부트스트랩 구간·기준선·장세)이 있으면 그것만 따름(숫자로 다시 판정하지 않음) */
+  const VOK = m => !!(m && (m.status || (m.robust && m.robust.status)) ? (m.status || m.robust.status) === 'pass' : !!(m && (m.oos_all || []).length >= 2 && m.oos_avg > 0 && 2 * (m.oos_hit != null ? m.oos_hit : (m.oos_all || []).filter(o => (o.top20 || 0) > 0).length) >= (m.oos_all || []).length));
   function hzList(MODEL, MH) { return [1, 2, 3, 5, 7].filter(h => h === 2 ? !!MODEL : VOK(MH && MH[h])); }
   /** 고른 연수 → [[모델 연수, 비율], …] 사이 기간은 양옆 검증 모델을 거리 비율로 섞고, 범위 밖은 가장 가까운 모델 */
   function hzMix(y, MODEL, MH) {

@@ -16,7 +16,8 @@
   const num = v => (typeof v === 'number' && isFinite(v) && v > 0 ? Math.round(v) : 0);
   /* 838만 · 1,234만 · 9,800 */
   const man = n => n >= 1e4 ? `${Math.round(n / 1e4).toLocaleString('ko-KR')}만` : n.toLocaleString('ko-KR');
-  const VOK = m => !!(m && (m.oos_all || []).length >= 2 && m.oos_avg > 0 && 2 * (m.oos_hit != null ? m.oos_hit : (m.oos_all || []).filter(o => (o.top20 || 0) > 0).length) >= (m.oos_all || []).length);
+  /* 엔진 판정(status: 누수 없는 재구축 2026-11-27 — 두 격자·블록 부트스트랩 구간·기준선·장세)이 있으면 그것만 따름(숫자로 다시 판정하지 않음) */
+  const VOK = m => !!(m && (m.status || (m.robust && m.robust.status)) ? (m.status || m.robust.status) === 'pass' : !!(m && (m.oos_all || []).length >= 2 && m.oos_avg > 0 && 2 * (m.oos_hit != null ? m.oos_hit : (m.oos_all || []).filter(o => (o.top20 || 0) > 0).length) >= (m.oos_all || []).length));
 
   /* 공개 자료 → 문장에 쓸 사실값. MH = model_h.json(또는 model.json 한 개), IX = index.json, MT = meta.json(개수) */
   function facts(MH, IX, MT) {

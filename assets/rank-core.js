@@ -144,7 +144,8 @@
     if (r && r.fb !== 'all' && (r.oos_all || []).length) return { n: r.oos_all.length, hit: r.hit || 0, ok: !!r.ok, where: r.name || sido };
     const O = m.oos_all || []; if (!O.length) return null;
     const hit = m.oos_hit != null ? m.oos_hit : O.filter(o => (o.top20 || 0) > 0).length;
-    return { n: O.length, hit, ok: O.length >= 2 && m.oos_avg > 0 && 2 * hit >= O.length, where: '전국' };
+    const st = m.status || (m.robust && m.robust.status);       // 엔진 판정이 있으면 그것(누수 없는 재구축 2026-11-27)
+    return { n: O.length, hit, ok: st ? st === 'pass' : O.length >= 2 && m.oos_avg > 0 && 2 * hit >= O.length, where: '전국' };
   }
   /* 단지 → 내 집 시세 주소 */
   function mineUrl(sid, key, band) {

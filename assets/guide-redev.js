@@ -429,7 +429,7 @@
     ]).then(([zones, pol]) => ({ zones, pol, IX: H.IX })).catch(e => { XP = null; throw e; }));
     if (id === 'redev_budget') return base.then(X => X.bud ? X : H.getJ('rxb', H.DATA + 'redev/budget.json').catch(() => H.getJ('rxb2', H.BASE + 'data/redev-budget.json')).then(b => { X.bud = b; return X; }));
     /* 재건축 몸테크: 검색 화면과 같은 조건 검색(rec-core)·같은 조건 만들기(guide-budget searchQ)·같은 자료(단지·보유 기간 모델·지역 메모) */
-    const rc = root.JDJ_REC || !H.script ? Promise.resolve() : H.script('assets/rec-core.js?v=8');
+    const rc = root.JDJ_REC || !H.script ? Promise.resolve() : H.script('assets/rec-core.js?v=9');
     const gb = root.JDJ_GBUDGET || !H.script ? Promise.resolve() : H.script('assets/guide-budget.js?v=4');
     return Promise.all([base, rc, gb]).then(([X]) => X.units && X._gb ? X : GBc().load(H).then(B => Object.assign(X, { units: B.units, MH: B.MH, MODEL: B.MODEL, notes: B.notes, _gb: 1 })));
   }

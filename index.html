@@ -47,8 +47,9 @@
 <script src="assets/ask.js?v=6" defer></script>
 <script src="assets/guide-core.js?v=14" defer></script>
 <script src="assets/guide.js?v=20" defer></script>
-<script src="assets/rank-core.js?v=9" defer></script>
+<script src="assets/rank-core.js?v=10" defer></script>
 <script src="assets/home-core.js?v=6" defer></script>
+<script src="assets/factors-core.js?v=1" defer></script>
 <script src="assets/brief-core.js?v=12" defer></script>
 <script src="assets/today-core.js?v=1" defer></script>
 <script src="assets/quiz-core.js?v=1" defer></script>
@@ -276,7 +277,7 @@
 @media(max-width:420px){.qh{padding-top:16px}.qh h1{font-size:28px}}
 @media(min-width:768px){.svc-g{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
-<script src="assets/back.js?v=3" defer></script>
+<script src="assets/back.js?v=4" defer></script>
 </head>
 <body class="lay-home">
 <header class="top">
@@ -338,7 +339,7 @@
     <div class="eyebrow" id="heroEy">공공 통계로 푸는 부동산의 내일</div>
     <h2 class="h1">공공데이터로<br>내 집값의 내일을 풉니다</h2>
     <p>국토교통부 실거래<span id="heroN"> 자료를</span> 바탕으로, 우리 동네와 단지가 앞으로 다른 곳보다 더 오를 가능성이 높은지 미리 보여 드려요.</p>
-    <p class="h-more" id="hMore">역세권·학군·입주량 같은 기본 통계는 물론, 집값이 떨어질 때 얼마나 덜 빠졌는지 보는 <a class="kw" href="guide/terms/#drop-defense" data-track="home_term_drop">‘하락기 방어력’</a>, 새 역이 계획에서 개통까지 어느 단계인지 보는 <a class="kw" href="guide/terms/#new-station" data-track="home_term_station">‘신설역 단계’</a>처럼 <b class="own">집예보만 쓰는 지표</b>까지 과거에 그대로 대입해 보고, 실제로 맞았던 것만 골라 썼어요. 확정된 값이 아니라 가능성이니, 결정할 때 참고 자료로 써 주세요.</p>
+    <p class="h-more" id="hMore">역세권·학군·입주량 같은 기본 통계는 물론, 집값이 떨어질 때 얼마나 덜 빠졌는지 보는 <a class="kw" href="guide/terms/#drop-defense" data-track="home_term_drop">‘하락기 방어력’</a>, 새 역이 계획에서 개통까지 어느 단계인지 보는 <a class="kw" href="guide/terms/#new-station" data-track="home_term_station">‘신설역 단계’</a>처럼 <b class="own">집예보만 쓰는 지표</b>까지 과거에 그대로 대입해 보고, 맞은 것과 맞지 않은 것을 <a class="kw" href="factors/" data-track="home_to_factors">집값 요인 성적표</a>에 모두 공개해요. 확정된 값이 아니라 가능성이니, 결정할 때 참고 자료로 써 주세요.</p>
     <button type="button" class="h-morebtn" aria-expanded="false" aria-controls="hMore" onclick="var p=document.getElementById('hMore');p.classList.add('open');this.remove()">더 보기 ▾</button>
     <p class="dline"><span id="dsTxt">공공 실거래·통계 기반 · 하루 4번 갱신</span> · <span class="nw">회원가입 없이 바로 쓸 수 있어요 · <a href="about/" data-track="home_to_about">분석 방법 보기 ›</a></span></p>
   </div>
@@ -417,7 +418,7 @@ addEventListener('DOMContentLoaded', () => {
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const J = u => fetch(u, {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null);
   const KEY = 'jdj_home_region', ld = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
-  let IX = null, MH = null, TR, H = {}, S = { t: 'top', sz: 'a', sd: 's00', g: 'all' };
+  let IX = null, MH = null, TR, FXD = null, H = {}, S = { t: 'top', sz: 'a', sd: 's00', g: 'all', fx: '' };
   const sdObj = () => IX.sido.find(s => s.id === S.sd) || IX.sido[0];
   const gName = c => (IX.sgg[c] || {}).name || '';
   const place = () => S.g === 'all' ? sdObj().short : gName(S.g);
@@ -436,6 +437,8 @@ addEventListener('DOMContentLoaded', () => {
   function tabs(h){
     const v = R.vcheck(MH, sdObj().name), T = [];
     if (h && h.top && v && v.ok) T.push(['top', '더 오를 단지']);
+    /* 점수 판정 미통과(누수 없는 재구축 2026-11-27): '더 오를 단지' 대신 과거에 꾸준히 더 오른 요인별 단지(요인 성적표 factors.json) */
+    else if (h && h.ftop && FXD && window.JDJ_FX) T.push(['ftop', '꾸준히 더 오른 요인']);
     if (h && h.race) T.push(['drop', '하락 레이스'], ['high', '신고가 레이스']);
     if (!T.some(t => t[0] === S.t)) S.t = T.length ? T[0][0] : 'top';
     $('plTabs').innerHTML = T.map(([k, t]) => `<button type="button" role="tab" id="pt-${k}" aria-selected="${k === S.t}" tabindex="${k === S.t ? 0 : -1}">${t}</button>`).join('');
@@ -457,11 +460,11 @@ addEventListener('DOMContentLoaded', () => {
     const h = H[S.sd]; if (!h) return;
     drawRegion();
     if (!tabs(h)) { $('pulse').hidden = true; return; }
-    const sz = $('plSz'); sz.hidden = S.t === 'top';
+    const sz = $('plSz'); sz.hidden = S.t === 'top' || S.t === 'ftop';
     const sl = sz.scrollLeft;
     sz.innerHTML = HC.SIZES.map(([k, t]) => `<button type="button" data-sz="${k}" aria-pressed="${k === S.sz}">${t}</button>`).join('');
     sz.scrollLeft = sl;
-    if (S.t === 'top') drawTop(h); else drawRace(h, S.t);
+    if (S.t === 'top') drawTop(h); else if (S.t === 'ftop') drawFtop(h); else drawRace(h, S.t);
   }
 
   function drawTop(h){
@@ -472,11 +475,32 @@ addEventListener('DOMContentLoaded', () => {
     $('plBody').innerHTML = `<p class="pl-cnt">${esc(place())} 단지 ${o.n.toLocaleString()}곳을 미래가치 점수(2년 보유 기준)로 평가했어요 · 점수가 높은 순서예요</p>
       <ol class="pl-list">${o.rows.map(x => `<li><a href="${esc(mine(x))}" data-track="home_pulse_top">
         <span class="pl-rk">${x.r}<small>${x.tie ? '공동' : '위'}</small></span>
-        <span class="pl-nm"><b>${esc(x.apt)}</b><small>${esc(gName(x.code))} ${esc(x.dong)} · ${esc(x.band)}</small><span class="vk">✓ ${esc(vk)}</span></span>
+        <span class="pl-nm"><b>${esc(x.apt)}</b><small>${esc(gName(x.code))} ${esc(x.dong)} · ${esc(x.band)}</small><span class="vk">${v.ok ? '✓ ' : '참고 · '}${esc(vk)}</span></span>
         <span class="pl-v"><span class="pl-num pl-sc"><b>${x.fv}점</b><small>100점 만점</small></span></span></a>${st(x)}</li>`).join('')}</ol>
       <p class="pl-rule"><b>점수</b>는 같은 ${esc(sd.short)} 단지 중 앞으로 2년 동안 평균보다 더 오를 가능성 순위예요(가격 예측이 아니에요). <b>맞음</b>은 이 예측 방법을 과거에 그대로 써 봤을 때 점수 상위 20% 단지가 실제로 같은 구 평균보다 더 오른 경우예요${v.where === '전국' ? '(전국 성적)' : ''}. <a href="track/" data-track="home_pulse_to_track">성적표 보기</a></p>
       <p class="pl-rule"><b>기준</b> ${esc(R.danjiRule(o))}</p>
       <div class="pl-foot"><span></span><a class="pl-more" href="rank/?t=fv&amp;v=apt${S.sd !== 's00' ? '&amp;sd=' + S.sd : ''}${S.g !== 'all' ? '&amp;g=' + S.g : ''}" data-track="home_pulse_to_rank">전체 순위 보기 ›</a></div>`;
+  }
+
+  function drawFtop(h){
+    const FX = window.JDJ_FX, ft = h.ftop, v = R.vcheck(MH, sdObj().name);
+    const ids = Object.keys(ft.lists).filter(id => FX.byId(FXD, id))
+      .sort((a, b) => ((FX.line(FX.byId(FXD, b), '2') || {b: {avg: 0}}).b.avg) - ((FX.line(FX.byId(FXD, a), '2') || {b: {avg: 0}}).b.avg));
+    const here = ids.filter(id => (ft.lists[id][S.g] || []).length);
+    if (!here.length) { $('plBody').innerHTML = `<p class="pl-empty">${esc(place())}에는 과거에 꾸준히 더 오른 요인에 해당하는 단지가 아직 없어요. <a href="factors/" data-track="home_ftop_to_factors">집값 요인 성적표 보기</a></p>`; return; }
+    if (!here.includes(S.fx)) S.fx = here[0];
+    const f = FX.byId(FXD, S.fx), hz = ['2', '3', '1'].find(k => (f.h[k] || {}).v === 'up') || '2', ln = FX.line(f, hz);
+    const rows = (ft.lists[S.fx][S.g] || []).slice(0, 3).map(i => ft.rows[i]);
+    const nm = id => (FX.byId(FXD, id) || {}).name || id;
+    const st = x => window.JDJ_WATCH ? JDJ_WATCH.star({sd: S.sd, code: x[0], dong: x[1], jibun: x[2], apt: x[3], band: x[4]}, {small: true}) : '';
+    $('plBody').innerHTML = `<div class="pl-chips" role="group" aria-label="요인" style="display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px">${here.map(id => `<button type="button" data-fx="${esc(id)}" aria-pressed="${id === S.fx}" style="min-height:40px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:${id === S.fx ? 'var(--blue)' : '#fff'};color:${id === S.fx ? '#fff' : 'var(--sub)'};font-weight:700;font-size:14px">${esc(nm(id))}</button>`).join('')}</div>
+      <p class="pl-cnt">${esc(place())}에서 <b>${esc(f.name)}</b>에 해당하는 단지 ${(ft.n[S.fx][S.g] || 0).toLocaleString()}곳 · 최근 1년 거래가 많은 순이에요(오를 순서가 아니에요)</p>
+      <ol class="pl-list">${rows.map((x, i) => `<li><a href="${esc(R.mineUrl(S.sd, [x[0], x[1], x[2], x[3]].join('|'), x[4]))}" data-track="home_pulse_ftop">
+        <span class="pl-rk">${i + 1}</span>
+        <span class="pl-nm"><b>${esc(x[3])}</b><small>${esc(gName(x[0]))} ${esc(x[1])} · ${esc(x[4])} · 최근 1년 ${x[7]}건</small><span class="vk">${esc((x[6] || []).map(nm).join(' · '))}</span></span></a>${st(x)}</li>`).join('')}</ol>
+      <p class="pl-rule"><b>이 요인의 과거 성적</b> ${esc(ln ? ln.text : '')}. 과거 평균이라 이 단지들이 꼭 그렇게 된다는 뜻은 아니에요. <a href="factors/?h=${hz}" data-track="home_ftop_to_factors">집값 요인 성적표</a></p>
+      ${v ? `<p class="pl-rule"><b>여러 요인을 합친 미래가치 점수</b>는 과거에 써 봤더니 ${v.n}번 중 ${v.hit}번 맞아 우리 기준을 넘지 못했어요. 그래서 점수 순위 대신 요인별 단지를 보여 드려요. <a href="track/" data-track="home_ftop_to_track">성적표 보기</a></p>` : ''}`;
+    $('plBody').querySelectorAll('button[data-fx]').forEach(b => b.onclick = () => { S.fx = b.dataset.fx; drawFtop(h); if (window.jdjStat) jdjStat('feature_use', {feature: 'home_ftop_' + S.fx}); });
   }
 
   function spark(q, cls){
@@ -516,9 +540,9 @@ addEventListener('DOMContentLoaded', () => {
   }
 
   (async () => {
-    const [ix, mh, tr] = await Promise.all([J(DATA + 'index.json'), J(DATA + 'model_h.json'), J(DATA + 'track.json')]);
+    const [ix, mh, tr, fxd] = await Promise.all([J(DATA + 'index.json'), J(DATA + 'model_h.json'), J(DATA + 'track.json'), J(DATA + 'factors.json')]);
     if (!ix || !ix.sido || !ix.sgg) return;
-    IX = ix; MH = mh; TR = tr;
+    IX = ix; MH = mh; TR = tr; FXD = fxd;
     const p = HC.regionPick(IX, ld(KEY), ld('jdj_region')); S.sd = p.sd; S.g = p.g;
     await go();
   })();

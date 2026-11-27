@@ -33,7 +33,7 @@
     'premium/fail/': ['결제 실패·취소', 'premium/'], 'premium/r/': ['전문가 리포트', 'premium/'], 'premium/view/': ['리포트 보기', 'premium/'],
     'my/watch/': ['관심 목록'], 'my/alerts/': ['알림 센터'], 'my/memory/': ['기억하는 것', 'my/alerts/'], 'alerts/': ['먼저 챙겨 드려요'], 'my/report/': ['내 집 성적표'], 'login/': ['로그인'],
     'about/': ['서비스 소개'], 'terms/': ['이용약관'], 'privacy/': ['개인정보처리방침'], 'refund/': ['환불 정책'],
-    'guide/method/': ['점수 읽는 법'], 'guide/terms/': ['용어 모아 보기'],
+    'guide/method/': ['점수 읽는 법'], 'factors/': ['집값 요인 성적표'], 'guide/terms/': ['용어 모아 보기'],
     'ad/': ['광고·제휴'], 'ad/plan/': ['광고 설계 도우미', 'ad/'],
     'agent/': ['중개사 제휴'], 'agent/my/': ['중개사 대시보드', 'agent/'], 'agent/listing/': ['매물 설명서', 'agent/'], 'agent/content/': ['블로그·인스타 글', 'agent/'], 'agent/pro/': ['중개사 프로 도구', 'agent/'], 'agent/pro/report/': ['손님용 단지 리포트', 'agent/pro/'], 'agent/pro/reg/': ['권리분석 · 등기 지킴이', 'agent/pro/'], 'agent/pro/post/': ['우리 동네 블로그·인스타 글', 'agent/pro/'], 'agent/sheet/': ['적정 가격 근거표', 'agent/'],
     'pro/developer/': ['시행사 데이터 리포트'],

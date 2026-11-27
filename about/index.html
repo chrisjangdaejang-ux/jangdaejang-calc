@@ -163,7 +163,7 @@
 .cta .btn{flex:1 1 200px}
 .fine{margin:28px 0 0;font-size:13.5px;color:var(--sub2)}
 </style>
-<script src="../assets/back.js?v=3" defer></script>
+<script src="../assets/back.js?v=4" defer></script>
 </head>
 <body data-lay="side">
 <header class="top">
@@ -460,8 +460,8 @@
 </main>
 <footer class="foot">★ 집예보 · <a href="../">홈</a></footer>
 <script src="../assets/config.js?v=14"></script>
-<script src="../assets/plain-words.js?v=20"></script>
-<script src="../assets/strength.js?v=5"></script>
+<script src="../assets/plain-words.js?v=21"></script>
+<script src="../assets/strength.js?v=6"></script>
 <script>
 var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
 (async function(){
@@ -534,7 +534,8 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
 
   /* 보유 기간별 성적표: 맞은 회차·틀린 회차를 모두 표시 */
   if (MH) {
-    const VOK = m => !!(m && (m.oos_all || []).length >= 2 && m.oos_avg > 0 && 2 * (m.oos_hit != null ? m.oos_hit : (m.oos_all || []).filter(o => (o.top20 || 0) > 0).length) >= (m.oos_all || []).length);
+    /* 엔진 판정(status: 누수 없는 재구축 2026-11-27 — 두 격자·블록 부트스트랩 구간·기준선·장세)이 있으면 그것만 따름(숫자로 다시 판정하지 않음) */
+  const VOK = m => !!(m && (m.status || (m.robust && m.robust.status)) ? (m.status || m.robust.status) === 'pass' : !!(m && (m.oos_all || []).length >= 2 && m.oos_avg > 0 && 2 * (m.oos_hit != null ? m.oos_hit : (m.oos_all || []).filter(o => (o.top20 || 0) > 0).length) >= (m.oos_all || []).length));
     const rows = [1, 2, 3, 5, 7].filter(h => MH[h]).map(h => {
       const m = MH[h], T = m.oos_all || [], n = T.length, hit = T.filter(o => o.top20 > 0).length;
       const tag = h === 2 ? '<span class="tag main">기본 점수</span>' : VOK(m) ? '<span class="tag use">잘 맞아 예측에 씀</span>' : `<span class="tag ref">${n < 2 ? '써 본 횟수 적음' : 2 * hit < n ? '맞은 횟수 적음' : '평균으로는 덜 오름'} · 참고만</span>`;

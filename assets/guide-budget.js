@@ -408,9 +408,9 @@
       H.getJ('mh', H.DATA + 'model_h.json').catch(() => null),
       H.getJ('rxp', H.DATA + 'policy.json').catch(() => null),
       H.getJ('mdl', H.DATA + 'model.json').catch(() => null),
-      root.JDJ_RANK || !H.script ? null : H.script('assets/rank-core.js?v=9'),
+      root.JDJ_RANK || !H.script ? null : H.script('assets/rank-core.js?v=10'),
       /* 조건 검색 엔진(내 집 마련 맞춤 단지와 같은 파일)·지역 메모 */
-      root.JDJ_REC || !H.script ? null : H.script('assets/rec-core.js?v=8'),
+      root.JDJ_REC || !H.script ? null : H.script('assets/rec-core.js?v=9'),
       root.JDJ_REGION_NOTES || !H.script ? null : H.script('assets/region-notes.js').catch(() => null)
     ]).then(([units, MH, pol, MODEL]) => ({ units, MH, pol, MODEL, IX: H.IX, notes: root.JDJ_REGION_NOTES || null, sus: {} })).catch(e => { XP = null; throw e; }));
   }

@@ -41,7 +41,8 @@
     return !e ? n0(r) + '만 원' : e + '억' + (r ? ' ' + n0(r) + '만' : '') + ' 원';
   }
   const eok = man => (Math.round(man / 1000) / 10).toFixed(1).replace(/\.0$/, '') + '억';
-  const VOK = m => !!(m && (m.oos_all || []).length >= 2 && m.oos_avg > 0 && 2 * (m.oos_hit != null ? m.oos_hit : (m.oos_all || []).filter(o => (o.top20 || 0) > 0).length) >= (m.oos_all || []).length);
+  /* 엔진 판정(status: 누수 없는 재구축 2026-11-27 — 두 격자·블록 부트스트랩 구간·기준선·장세)이 있으면 그것만 따름(숫자로 다시 판정하지 않음) */
+  const VOK = m => !!(m && (m.status || (m.robust && m.robust.status)) ? (m.status || m.robust.status) === 'pass' : !!(m && (m.oos_all || []).length >= 2 && m.oos_avg > 0 && 2 * (m.oos_hit != null ? m.oos_hit : (m.oos_all || []).filter(o => (o.top20 || 0) > 0).length) >= (m.oos_all || []).length));
   /* 지역별 검증 성적(model_h.json 기간별 reg[시·도 이름]): 이 단지 시·도 성적이 있으면 그 성적으로 통과 여부·검증 카드를 쓴다.
      reg 가 없거나(예전 자료) 시험할 단지가 적어 전국으로 대체(fb='all')한 시·도는 전국 성적. 도는 도 지역 묶음(fb='do').
      → { oos_all, oos_hit, oos_avg, ok, where(성적을 낸 곳 이름), fb } — 통과 기준은 엔진이 정한 ok 그대로 */

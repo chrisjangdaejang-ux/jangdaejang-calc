@@ -343,7 +343,8 @@
      기간은 '언제부터 언제까지' — 시작월은 엔진이 공개 모델 JSON 에 넣은 data_from(학습 자료 시작월, 없으면 생략).
      회차마다: 그 시점(t0)까지의 자료로 순위 → h년 뒤(t0 + h년) 실제 결과. '맞음' = 점수 상위 20%가 비교 평균보다 더 오름.
      판정 기준(VOK: 2번 이상·평균 +·절반 이상 맞음)은 그대로. */
-  const VOK = m => !!(m && (m.oos_all || []).length >= 2 && m.oos_avg > 0 && 2 * (m.oos_hit != null ? m.oos_hit : (m.oos_all || []).filter(o => (o.top20 || 0) > 0).length) >= (m.oos_all || []).length);
+  /* 엔진 판정(status: 누수 없는 재구축 2026-11-27 — 두 격자·블록 부트스트랩 구간·기준선·장세)이 있으면 그것만 따름(숫자로 다시 판정하지 않음) */
+  const VOK = m => !!(m && (m.status || (m.robust && m.robust.status)) ? (m.status || m.robust.status) === 'pass' : !!(m && (m.oos_all || []).length >= 2 && m.oos_avg > 0 && 2 * (m.oos_hit != null ? m.oos_hit : (m.oos_all || []).filter(o => (o.top20 || 0) > 0).length) >= (m.oos_all || []).length));
   /* '2010-01'·'201001'·201001 → '201001' (이상하면 '') */
   const ymNorm = v => { const t = String(v == null ? '' : v).replace(/[^0-9]/g, ''); return /^(19|20)\d{2}(0[1-9]|1[0-2])/.test(t) ? t.slice(0, 6) : ''; };
   const ymPlus = (v, mo) => { const y = +v.slice(0, 4), m = +v.slice(4, 6) - 1 + mo; return `${y + Math.floor(m / 12)}${String((m % 12 + 12) % 12 + 1).padStart(2, '0')}`; };
