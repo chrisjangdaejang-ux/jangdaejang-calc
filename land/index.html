@@ -97,7 +97,7 @@ table.jt tr.me td{background:var(--blue-l);font-weight:700}
 .disc{font-size:13.5px;color:var(--sub2);line-height:1.7;margin-top:18px}
 [hidden]{display:none!important}
 </style>
-<script src="../assets/back.js?v=7" defer></script>
+<script src="../assets/back.js?v=8" defer></script>
 </head>
 <body>
 <header class="top">
@@ -177,6 +177,7 @@ table.jt tr.me td{background:var(--blue-l);font-weight:700}
       <a class="lnk" href="https://www.realtyprice.kr/" target="_blank" rel="noopener">부동산 공시가격 알리미 열기 ↗</a>
     </div>
     <p class="disc" id="srcLine"></p>
+    <p class="row"><a class="btn ghost" id="toCheck" href="../check/?t=land" data-track="land_to_check">매물 가격 확인에서 공시지가와 함께 비교하기 →</a></p>
   </section>
 
   <section class="panel" data-for="before" aria-labelledby="bT">
@@ -404,6 +405,7 @@ table.jt tr.me td{background:var(--blue-l);font-weight:700}
       if (!d.e[emd]) { $('msg').textContent = '이 읍·면·동은 토지 거래 자료가 없어요.'; return; }
       if ($('jm').options.length <= 1) fillJimok(d, emd);
       CUR = { d: d, emd: emd };
+      var tc = document.getElementById('toCheck'); if (tc) tc.href = '../check/?t=land&g=' + encodeURIComponent(c) + '&dn=' + encodeURIComponent(emd);
       $('where').textContent = d.sd + ' ' + d.n + ' ' + emd;
       var f = renderShare(d, emd), p = renderPrice(d, emd), o = renderOwn(); renderZone(d, emd);
       var reds = (f === 'r' ? 1 : 0) + (p === 'r' ? 1 : 0) + (o === 'r' ? 1 : 0), ys = (f === 'y' ? 1 : 0) + (p === 'y' ? 1 : 0);

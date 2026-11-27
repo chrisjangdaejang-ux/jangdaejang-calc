@@ -46,6 +46,7 @@
 <script src="assets/map-core.js?v=6" defer></script>
 <script src="assets/ask-core.js?v=11" defer></script>
 <script src="assets/ask.js?v=6" defer></script>
+<script src="assets/check-core.js?v=1" defer></script>
 <script src="assets/guide-core.js?v=15" defer></script>
 <script src="assets/guide.js?v=23" defer></script>
 <script src="assets/rank-core.js?v=10" defer></script>
@@ -238,6 +239,11 @@
 .qh #guideTop{margin-top:0}
 .qh .askwrap.jask{margin:14px 0 0}
 /* 상황 단추 9개 = 3칸 × 3줄(휴대폰·PC 같은 배치, 혼자 남는 칸 없음). dense: '이사 갈 집' 펼침 칸이 끼어도 같은 줄 빈칸이 생기지 않게 */
+.ckq{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:10px 0 0}
+.ckq a,.ckq button{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--sub);font:inherit;font-size:14.5px;font-weight:700;text-decoration:none;cursor:pointer}
+.ckq a svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ckq button.ckgo{background:var(--blue);border-color:var(--blue);color:#fff}
+.ckq small{font-size:12.5px;color:var(--sub2)}
 .sit{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-flow:row dense;gap:8px;margin-top:14px}
 .sit>a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:68px;white-space:nowrap;padding:8px 2px;border-radius:14px;background:var(--gray);color:var(--text);text-decoration:none;font-size:14px;font-weight:700;line-height:1.3;text-align:center;word-break:keep-all}
 .sit>a .ic{display:flex;color:var(--blue)}.sit>a .ic svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
@@ -278,7 +284,7 @@
 @media(max-width:420px){.qh{padding-top:16px}.qh h1{font-size:28px}}
 @media(min-width:768px){.svc-g{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
-<script src="assets/back.js?v=7" defer></script>
+<script src="assets/back.js?v=8" defer></script>
 </head>
 <body class="lay-home">
 <header class="top">
@@ -291,6 +297,7 @@
     <h1 class="qh-t" id="qhT">무엇이 고민이세요?</h1>
     <section id="guideTop" hidden aria-label="고민 해결 길잡이"></section>
     <section class="askwrap" id="askBox" aria-label="단지·기능 찾기"></section>
+    <p class="ckq" id="ckq"><a href="check/" data-track="home_to_check"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h7"/><circle cx="17.5" cy="16.5" r="3"/><path d="m20 19 2 2"/></svg>매물 가격 확인</a><button type="button" class="ckgo" id="ckGo" hidden>이 매물 평가하기</button><small id="ckGoN" hidden>붙여 넣은 글은 이 기기에서만 읽어요</small></p>
     <nav class="sit" id="sit" aria-label="상황별로 시작하기">
     <a href="buy/" data-track="home_to_buy"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M12 12.5v4M10 14.5h4"/></svg></span>집 사려고요</a>
     <a href="switch/" data-track="home_to_switch"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h13l-3-3M20 16H7l3 3"/></svg></span>이사 갈 집</a>
@@ -689,6 +696,20 @@ addEventListener('DOMContentLoaded', () => {
 <script>/* 집예보가 먼저 챙겨 드려요(assets/config.js PROACTIVE_ENABLED 가 꺼져 있으면 칸이 생기지 않음) */ addEventListener('DOMContentLoaded', () => { if (window.JDJ_PRO) JDJ_PRO.mount(document.getElementById('proCard'), 'home'); });</script>
 <script src="./assets/ads-proto.js?v=3" data-page="home" defer></script>
 <script src="./assets/ad-slot.js?v=8" defer></script>
+<script>/* 매물 가격 확인(check/): 맨 위 찾기 칸에 매물 글(가격 + 면적·층·매매/전세 같은 말)을 붙여 넣으면 '이 매물 평가하기' 단추.
+   누르면 글은 이 탭 sessionStorage 에만 넘기고(주소·서버·통계로 보내지 않음) check/ 로 가요. */
+addEventListener('DOMContentLoaded', function () {
+  var go = document.getElementById('ckGo'), note = document.getElementById('ckGoN'), tries = 0;
+  (function hook() {
+    var q = document.getElementById('jaskQ'), C = window.JDJ_CHECK;
+    if (!q || !C) { if (++tries < 40) setTimeout(hook, 150); return; }
+    var last = '';
+    var chk = function (t) { last = t || q.value; var on = C.looksLikeListing(last); go.hidden = !on; note.hidden = !on; };
+    q.addEventListener('paste', function (e) { var t = ''; try { t = (e.clipboardData || window.clipboardData).getData('text'); } catch (er) {} setTimeout(function () { chk(t || q.value); }, 0); });
+    q.addEventListener('input', function () { chk(q.value); });
+    go.addEventListener('click', function () { try { C.stash(sessionStorage, { text: last || q.value }); } catch (er) {} location.href = 'check/'; });
+  })();
+});</script>
 <script>/* 고민 해결 길잡이(assets/guide.js): GUIDE_ENABLED 이거나 ?preview=guide 일 때만 맨 위 입력창 + 상황 단추(단지 이름 물어보기 칸과 하나로) */
 addEventListener('DOMContentLoaded', function () { if (window.JDJ_GUIDE && JDJ_GUIDE.on() && JDJ_GUIDE.mountTop(document.getElementById('guideTop')) !== false) document.getElementById('q').classList.add('g-on'); });</script>
 </body>

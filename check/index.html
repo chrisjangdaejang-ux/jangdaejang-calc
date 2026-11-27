@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<script src="../assets/check-core.js?v=1"></script>
+<script>/* 공유하기(안드로이드 [공유] → [집예보])로 받은 글: 다른 스크립트(통계 포함)가 주소를 읽기 전에 꺼내 두고, 주소창에서 바로 지워요(금액이 주소에 남지 않게). 서버·통계로 보내지 않아요. */
+(function () { try { var r = window.JDJ_CHECK.readShare(location.search, location.pathname, location.hash); if (r.text) { window.__JDJ_SHARED = r.text; history.replaceState(null, '', r.clean); } } catch (e) {} })();</script>
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../assets/icons/apple-180.png">
+<title>이 매물, 적당한 가격일까요? — 매물 가격 확인 | 집예보</title>
+<link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/check/">
+<meta name="description" content="보고 있는 매물 글을 붙여 넣으면 같은 단지·같은 평형 최근 실거래와 비교해 비싼지 싼지, 최근 거래 사이 어디쯤인지, 전세가율·필요한 현금·규제까지 바로 보여 드려요. 글은 이 기기에서만 읽어요.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="이 매물, 적당한 가격일까요? | 집예보">
+<meta property="og:description" content="매물 글을 붙여 넣으면 최근 실거래와 바로 비교해 드려요.">
+<meta property="og:image" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/assets/og/default.png">
+<script>window.JDJ_CONFIG = { tool:'check', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../assets/config.js?v=17"></script>
+<script src="../assets/track.js?v=3"></script>
+<script src="../assets/pwa.js?v=3" defer></script>
+<script src="../assets/reg-zones.js?v=1"></script>
+<script src="../assets/loan-rules.js?v=4"></script>
+<script src="../assets/mine-core.js?v=25"></script>
+<script src="../assets/ask-core.js?v=11"></script>
+<script src="../assets/ask.js?v=6"></script>
+<script src="../assets/price-sheet.js?v=27"></script>
+<script src="../assets/plain-words.js?v=21"></script>
+<script src="../assets/products.js?v=3"></script>
+<script src="../assets/land-core.js?v=2"></script>
+<script src="../assets/tabbar.js?v=8" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/aplus.css?v=50">
+<script src="../assets/nw.js?v=1" defer></script>
+<script src="../assets/back.js?v=8" defer></script>
+<style>
+.wrap{max-width:860px;margin:0 auto;padding:22px 16px 60px}
+h1{font-size:clamp(26px,6.2vw,38px);margin:6px 0 8px;letter-spacing:-.6px;line-height:1.3}
+.lead{margin:0 0 14px;font-size:16px;color:var(--sub2);line-height:1.65}
+.tps{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.tps button{font:inherit;font-size:15px;font-weight:700;min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--sub);cursor:pointer}
+.tps button.on{background:var(--blue-l);border-color:var(--blue);color:var(--blue)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--gray);border-radius:14px;padding:5px;margin:0 0 12px}
+.seg button{font:inherit;font-size:15.5px;font-weight:700;border:0;background:transparent;color:var(--sub2);min-height:46px;border-radius:10px;cursor:pointer}
+.seg button.on{background:#fff;color:var(--blue);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.seg3{grid-template-columns:1fr 1fr 1fr}
+.form{border:1px solid #D4D1F5;background:#F5F8FF;border-radius:16px;padding:14px}
+.form label,.form .lb{display:block;font-size:14px;font-weight:700;margin:0 0 4px}
+.form input,.form select,.form textarea{width:100%;font:inherit;font-size:16px;min-height:48px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--text);min-width:0;box-sizing:border-box}
+.form textarea{min-height:132px;padding:10px 12px;line-height:1.55;resize:vertical}
+.form input:focus,.form select:focus,.form textarea:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px rgba(67,56,202,.15)}
+.form .hint{font-size:13px;color:var(--sub2);margin:4px 0 10px;line-height:1.5}
+.form .opt{font-size:12px;font-weight:700;color:var(--sub2);background:#fff;border:1px solid var(--line);border-radius:5px;padding:0 6px;margin-left:4px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:560px){.grid3{grid-template-columns:1fr 1fr}.grid3 .w2{grid-column:1/-1}}
+.srch{display:flex;gap:8px}.srch input{flex:1}.srch .btn{flex:none;min-height:48px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.row .btn{min-height:50px;font-size:16px}
+.readout{font-size:13.5px;color:var(--blue);font-weight:700;min-height:1.2em;margin-top:4px}
+.msg{font-size:14.5px;color:var(--neg);margin:8px 0 0;min-height:1em;line-height:1.55}.msg:empty{display:none}
+.priv{font-size:13px;color:var(--sub2);margin:8px 0 0;line-height:1.55}
+.cands{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px}.cands:empty{display:none}
+.cands button{font:inherit;font-size:14.5px;font-weight:700;min-height:48px;padding:6px 14px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--text);cursor:pointer;text-align:left;line-height:1.35;max-width:100%}
+.cands button small{display:block;font-size:12.5px;font-weight:500;color:var(--sub2)}
+.cands button.on{border-color:var(--blue);background:var(--blue-l);color:var(--blue-d)}
+.got{border:1px solid var(--line);border-radius:14px;background:#fff;padding:12px 14px;margin:0 0 12px}
+.got h2{font-size:17px;margin:0 0 6px}
+.got ul{margin:0;padding-left:18px;font-size:14.5px;line-height:1.7}
+.got .no{color:var(--sub2)}
+.picked{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:0 0 10px;font-size:15px}
+.picked b{font-size:17px}.picked small{color:var(--sub2)}
+.linkb{font:inherit;font-weight:700;color:var(--blue);background:none;border:0;padding:0;min-height:44px;cursor:pointer;text-decoration:underline}
+.sec{margin:16px 0;border:1px solid var(--line);border-radius:18px;padding:16px;background:#fff}
+.sec h2{font-size:18px;margin:0 0 8px;letter-spacing:-.3px}
+.sec h2 small{display:block;font-size:13.5px;font-weight:500;color:var(--sub2);margin-top:3px;letter-spacing:0;line-height:1.55}
+.sec p{margin:6px 0 0;font-size:15px;line-height:1.7}
+.basis{font-size:13px!important;color:var(--sub2);line-height:1.6!important}
+.hd{border:2px solid var(--blue);border-radius:18px;padding:16px;background:#fff;margin:16px 0}
+.hd .ey{font-size:13px;font-weight:800;color:var(--blue)}
+.hd .big{font-size:clamp(22px,5.6vw,30px);font-weight:900;letter-spacing:-.5px;line-height:1.35;margin:4px 0 6px}
+.hd .big .low{color:var(--down)}.hd .big .high{color:var(--up)}
+.hd .who{font-size:15px;color:var(--sub);margin:0}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:10px 0 0;font-size:14.5px}
+.kv dt{color:var(--sub2);font-weight:700}.kv dd{margin:0;font-variant-numeric:tabular-nums}
+.wide{display:inline-block;font-size:12.5px;font-weight:800;color:#8A6D17;background:#FBF5E3;border:1px solid #EFE2B8;border-radius:6px;padding:1px 7px;margin:6px 0 0}
+.dots{width:100%;overflow:hidden}
+.dots svg{display:block;width:100%}
+.ptab{width:100%;border-collapse:collapse;font-size:14.5px;margin-top:6px}
+.ptab th,.ptab td{padding:9px 6px;border-bottom:1px solid var(--line2);text-align:left;vertical-align:top}
+.ptab th{font-size:12.5px;color:var(--sub2);font-weight:700}
+.ptab td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ptab tr.me td{background:var(--blue-l);font-weight:800}
+.ptab tr.ask td{background:#FFFBF0;font-weight:800}
+.bar{position:relative;height:10px;background:var(--gray);border-radius:99px;min-width:40px}
+.bar i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:#A5A1E8}
+.ck{list-style:none;margin:0;padding:0}
+.ck li{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;padding:10px 0;border-bottom:1px solid var(--line2);font-size:15px;line-height:1.6}
+.ck li:last-child{border-bottom:0}
+.ck .tg{font-size:12.5px;font-weight:800;border-radius:999px;padding:2px 10px;white-space:nowrap;align-self:start;margin-top:2px}
+.tg.r{background:var(--up-l);color:#A61B2B}.tg.y{background:#FFF4E5;color:#9A5B00}.tg.g{background:var(--pos-l);color:var(--pos)}.tg.n{background:var(--gray);color:var(--sub2)}
+.ck small{display:block;color:var(--sub2);font-size:13px}
+.fac{display:grid;gap:8px}
+.fac div{border:1px solid var(--line2);border-radius:12px;padding:10px 12px;background:var(--gray2)}
+.fac b{display:block;font-size:14px;color:var(--sub2)}
+.fac span{font-size:15px;line-height:1.6}
+.want{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.want>div{flex:1;min-width:180px}
+.want input{width:100%;font:inherit;font-size:16px;min-height:48px;padding:0 12px;border:1px solid var(--line);border-radius:12px}
+.cardrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.cardrow input{flex:1;min-width:180px;font:inherit;font-size:16px;min-height:48px;padding:0 12px;border:1px solid var(--line);border-radius:12px}
+.prev{margin-top:10px}.prev img{display:block;width:100%;max-width:420px;border-radius:12px;border:1px solid var(--line)}
+.hi{border-color:#F5C77E!important;box-shadow:inset 3px 0 0 #F08C00}
+.note{font-size:13.5px;color:var(--sub2);line-height:1.6}
+.ckbtn{display:inline-flex;align-items:center;min-height:44px;font-weight:700}
+#res,.hd{scroll-margin-top:72px}
+.loading{padding:20px;text-align:center;color:var(--sub2)}
+@media(max-width:420px){.wrap{padding:18px 14px 60px}.sec,.hd{padding:14px 13px}.kv{grid-template-columns:1fr;gap:0 0}.kv dt{margin-top:6px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg><span data-site-name>집예보</span></a>
+  <div class="badge plain">매물 가격 확인</div>
+</header>
+<main class="wrap" id="app">
+  <h1>이 매물, 적당한 가격일까요?</h1>
+  <p class="lead">보고 있는 매물을 같은 단지·같은 평형의 최근 실거래와 바로 비교해 드려요. 비싼 편인지 싼 편인지, 최근 거래 사이 어디쯤인지, 전세를 끼면 현금이 얼마나 드는지까지 한 번에 보여 드려요.</p>
+
+  <div class="tps" role="group" aria-label="매물 종류" id="tps">
+    <button type="button" data-t="apt" class="on" aria-pressed="true">아파트</button>
+    <button type="button" data-t="offi" aria-pressed="false">오피스텔</button>
+    <button type="button" data-t="villa" aria-pressed="false">빌라</button>
+    <button type="button" data-t="comm" aria-pressed="false">상가·건물</button>
+    <button type="button" data-t="land" aria-pressed="false">토지</button>
+  </div>
+
+  <section id="inBox" aria-label="매물 넣기">
+    <div class="seg" role="group" aria-label="넣는 방법" id="modeSeg">
+      <button type="button" data-m="paste" class="on" aria-pressed="true">매물 글 붙여 넣기</button>
+      <button type="button" data-m="pick" aria-pressed="false">직접 고르기</button>
+    </div>
+    <div class="form" id="pastePane">
+      <label for="ptxt">매물 글</label>
+      <textarea id="ptxt" placeholder="예: 래미안○○ 84㎡ 12/25층 매매 12억 5,000&#10;중개사무소 문자·매물 앱 설명을 그대로 붙여 넣어 주세요."></textarea>
+      <div class="row"><button type="button" class="btn primary" id="pread">글 읽기</button><button type="button" class="btn ghost" id="pclear">지우기</button></div>
+      <p class="priv">붙여 넣은 글은 이 기기 화면 안에서만 읽어요. 서버나 통계로 보내지 않아요.</p>
+    </div>
+    <div class="form" id="pickPane" hidden>
+      <div id="regionRow" hidden>
+        <div class="grid2"><div><label for="rSido">시·도</label><select id="rSido"></select></div><div><label for="rSgg">시·군·구</label><select id="rSgg"><option value="">시·군·구 선택</option></select></div></div>
+        <p class="hint" id="regionHint"></p>
+      </div>
+      <div id="nameRow">
+        <label for="dq" id="dqL">단지 이름</label>
+        <div class="srch"><input id="dq" type="search" autocomplete="off" enterkeyhint="search" placeholder="예: 헬리오시티"><button type="button" class="btn primary" id="dqGo">찾기</button></div>
+      </div>
+      <div class="cands" id="dres" aria-live="polite"></div>
+    </div>
+    <p class="msg" id="msg" role="status" aria-live="polite"></p>
+  </section>
+
+  <section id="formBox" hidden aria-labelledby="formT">
+    <div class="got" id="got" hidden></div>
+    <div class="form">
+      <h2 id="formT" style="font-size:17px;margin:0 0 8px">매물 정보 확인</h2>
+      <div class="picked" id="picked"></div>
+      <div class="cands" id="altC"></div>
+      <div id="fBody"></div>
+      <div class="row"><button type="button" class="btn primary big" id="evalBtn">평가하기</button></div>
+      <p class="msg" id="fmsg" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section id="res" aria-live="polite"></section>
+
+  <section class="sec" id="seenSec" aria-labelledby="seenT">
+    <h2 id="seenT">내가 본 매물<small>평가한 매물이 이 기기에만 모여요(서버로 보내지 않아요). 누르면 다시 평가하고, 필요 없으면 지울 수 있어요.</small></h2>
+    <div id="seenBox"></div>
+  </section>
+  <p class="note">국토교통부 실거래가 등 공공 자료를 정해진 방법으로 계산한 참고 자료예요. 실제 가격은 집 상태·방향·수리·조망에 따라 달라지고, 사고팔기를 권하는 내용이 아니에요.</p>
+</main>
+<footer class="foot">공공 자료 기반 참고 정보예요. 자세한 분석 방법은 <a href="../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ <span data-site-name>집예보</span> · <a href="../">홈</a></footer>
+
+<script>
+var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+(function () {
+'use strict';
+const CK = window.JDJ_CHECK, M = window.JDJ_MINE, P = window.JDJ_PRICE, REG = window.JDJ_REG, LR = window.JDJ_LOAN_RULES, PL = window.JDJ_PLAIN, PR = window.JDJ_PRODUCTS, LD = window.JDJ_LAND;
+const $ = id => document.getElementById(id), esc = CK.esc, won = CK.won;
+const DATA = JB.DATA + 'data/', SITE = JB.SITE;
+const LS = (() => { try { return window.localStorage; } catch (e) { return null; } })(), SS = (() => { try { return window.sessionStorage; } catch (e) { return null; } })();
+const C = {};
+const J = u => C[u] || (C[u] = fetch(u, { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(String(r.status)); return r.json(); }).catch(e => { delete C[u]; throw e; }));
+const Jn = u => J(u).catch(() => null);
+const T_KO = CK.TYPE_KO;
+/* 화면 상태 — 금액은 이 객체(메모리)와 이 기기 localStorage('내가 본 매물')에만 */
+const S = { t: 'apt', mode: 'paste', parsed: null, pick: null, units: null, sg: null, band: '', region: { sd: '', g: '' }, doc: null, item: null, last: null, pro: false, ix: null };
+const q0 = new URLSearchParams(location.search);
+S.pro = q0.get('mode') === 'pro';
+function stat(name, o) { try { if (window.jdjStat) window.jdjStat(name, o || {}); } catch (e) {} }   // 금액·글 없이 기능 이름만
+function msg(t, el) { (el || $('msg')).textContent = t || ''; }
+const ix = () => S.ix ? Promise.resolve(S.ix) : J(DATA + 'index.json').then(x => (S.ix = x));
+const sggName = c => ((S.ix && S.ix.sgg[c]) || {}).name || '';
+const sidoOf = c => { const nm = ((S.ix && S.ix.sgg[c]) || {}).sido; const s = S.ix && S.ix.sido.find(x => x.name === nm); return s ? s.id : ''; };
+const lastYm = () => S.ix && S.ix.months ? String(S.ix.months[S.ix.months.length - 1]) : '';
+const maskJ = j => { const s = String(j || '').replace(/^산\s*/, '산'); return s ? s.slice(0, 1) + '**' : ''; };   // 지번은 첫 글자만
+const manIn = v => { const n = parseInt(String(v || '').replace(/[^\d]/g, ''), 10); return isFinite(n) ? n : 0; };
+const fmtIn = n => n > 0 ? Number(n).toLocaleString('ko-KR') : '';
+const jo = (w, a, b) => (PL && PL.J) ? PL.J(String(w || ''), a, b) : `${w}${a}(${b})`;   // 받침에 맞는 조사
+
+/* ───────── 종류·방법 고르기 ───────── */
+function setType(t, keep) {
+  if (!T_KO[t]) t = 'apt';
+  S.t = t; S.pick = null; S.doc = null;
+  document.querySelectorAll('#tps button').forEach(b => { const on = b.dataset.t === t; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  const apt = t === 'apt';
+  $('regionRow').hidden = apt;
+  $('nameRow').hidden = t === 'comm' || t === 'land';
+  $('dqL').textContent = t === 'offi' ? '오피스텔 이름 또는 동' : t === 'villa' ? '빌라 이름 또는 동' : '단지 이름';
+  $('dq').placeholder = t === 'offi' ? '예: 센트럴푸르지오시티 · 역삼동' : t === 'villa' ? '예: 꿈꾸지오 · 개포동' : '예: 헬리오시티';
+  $('ptxt').placeholder = t === 'comm' ? '예: 역삼동 1층 상가 전용 45㎡ 매매 9억 · 보증금 5천 월세 300' : t === 'land' ? '예: 용인시 처인구 포곡읍 임야 330㎡ 1억 2천' : '예: 래미안○○ 84㎡ 12/25층 매매 12억 5,000\n중개사무소 문자·매물 앱 설명을 그대로 붙여 넣어 주세요.';
+  $('dres').innerHTML = ''; $('formBox').hidden = true; if (!keep) $('res').innerHTML = '';
+  if (t === 'comm' || t === 'land') setMode('pick'); else setMode(S.mode);
+  if (!apt) fillRegion();
+}
+function setMode(m) {
+  S.mode = m;
+  document.querySelectorAll('#modeSeg button').forEach(b => { const on = b.dataset.m === m; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  $('pastePane').hidden = m !== 'paste'; $('pickPane').hidden = m !== 'pick';
+  if (m === 'pick' && (S.t === 'comm' || S.t === 'land')) { if (S.region.g) openForm(); }
+}
+$('tps').addEventListener('click', e => { const b = e.target.closest('button[data-t]'); if (b) { setType(b.dataset.t); stat('feature_use', { feature: 'check_type', t: b.dataset.t }); } });
+$('modeSeg').addEventListener('click', e => { const b = e.target.closest('button[data-m]'); if (b) setMode(b.dataset.m); });
+
+/* ───────── 지역 고르기(오피스텔·빌라·상가·건물·토지) ───────── */
+const AVAIL = {};   // 종류별 자료가 있는 구 코드
+async function availOf(t) {
+  if (AVAIL[t]) return AVAIL[t];
+  let set = null;
+  if (t === 'offi') { const x = await Jn(DATA + 'offi/index.json'); set = x && x.sgg ? new Set(Object.keys(x.sgg)) : null; }
+  if (t === 'comm') { const x = await Jn(DATA + 'comm/index.json'); set = x && x.sgg ? new Set(Object.keys(x.sgg)) : null; }
+  if (t === 'villa') { const x = await Jn(DATA + 'villa/index.json'); set = x && x.sido ? new Set([].concat(...x.sido.map(s => (s.g || []).map(g => g.c)))) : null; }
+  if (t === 'land') { const x = await Jn(DATA + 'land/index.json'); if (x && x.sido) { set = new Set(); S.landIx = x; x.sido.forEach(s => (s.g || []).forEach(g => set.add(g.c))); } }
+  return (AVAIL[t] = set || new Set());
+}
+async function fillRegion() {
+  const t = S.t; await ix(); const av = await availOf(t); if (S.t !== t) return;
+  const list = S.ix.sido.filter(s => Object.keys(S.ix.sgg).some(c => S.ix.sgg[c].sido === s.name && av.has(c)));
+  const first = ['서울', '경기', '인천'];
+  list.sort((a, b) => { const ia = first.indexOf(a.short), ib = first.indexOf(b.short); return (ia < 0 ? 9 : ia) - (ib < 0 ? 9 : ib) || a.name.localeCompare(b.name, 'ko'); });
+  $('rSido').innerHTML = list.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  if (!list.length) { $('regionHint').textContent = '이 종류는 아직 지역 자료가 없어요.'; return; }
+  const want = S.region.sd && list.some(s => s.id === S.region.sd) ? S.region.sd : list[0].id;
+  $('rSido').value = want; fillSgg(S.region.g);
+  $('regionHint').textContent = t === 'land' ? '토지 실거래가 있는 시·군·구만 나와요. 땅이 있는 읍·면·동은 다음 칸에서 골라요.' : t === 'comm' ? '상가·건물 실거래가 있는 시·군·구만 나와요.' : `${T_KO[t]} 실거래 자료가 있는 시·군·구만 나와요.`;
+}
+async function fillSgg(keep) {
+  const sd = $('rSido').value, av = await availOf(S.t), nm = (S.ix.sido.find(s => s.id === sd) || {}).name;
+  const cs = Object.keys(S.ix.sgg).filter(c => S.ix.sgg[c].sido === nm && av.has(c)).sort((a, b) => sggName(a).localeCompare(sggName(b), 'ko'));
+  $('rSgg').innerHTML = '<option value="">시·군·구 선택</option>' + cs.map(c => `<option value="${c}">${esc(sggName(c))}</option>`).join('');
+  if (keep && cs.includes(keep)) { $('rSgg').value = keep; onSgg(); }
+}
+$('rSido').addEventListener('change', () => { S.region = { sd: $('rSido').value, g: '' }; fillSgg(); $('dres').innerHTML = ''; $('formBox').hidden = true; });
+$('rSgg').addEventListener('change', onSgg);
+async function onSgg() {
+  const g = $('rSgg').value; S.region = { sd: $('rSido').value, g }; S.doc = null; $('dres').innerHTML = ''; $('formBox').hidden = true;
+  if (!g) return;
+  msg('자료를 불러오는 중이에요…');
+  const path = S.t === 'offi' ? 'offi/' : S.t === 'villa' ? 'villa/' : S.t === 'comm' ? 'comm/' : 'land/';
+  const doc = await Jn(DATA + path + g + '.json');
+  if (S.region.g !== g) return;
+  if (!doc) { msg('이 지역 자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.'); return; }
+  S.doc = doc; msg('');
+  if (S.t === 'comm' || S.t === 'land') openForm();
+  else if ($('dq').value.trim()) search();
+}
+
+/* ───────── 단지·건물 찾기 ───────── */
+const normN = s => String(s || '').replace(/\s|아파트|오피스텔|빌라|\(.*?\)/g, '').toLowerCase();
+async function findApt(name, dong) {
+  if (!window.JDJ_ASK || !name) return [];
+  let r; try { r = await window.JDJ_ASK.ask(name, null, 3); } catch (e) { return null; }
+  if (!r || !r.segs || !r.segs.length) return [];
+  const seg = r.segs.find(s => s.pick) || r.segs[0];
+  let list = (seg.pick ? [seg.pick] : []).concat((seg.cands || []).filter(d => !seg.pick || d.key !== seg.pick.key));
+  if (dong) list.sort((a, b) => (b.dong === dong) - (a.dong === dong));
+  S.hint = r.hint || null;
+  return list.slice(0, 8);
+}
+function findBld(doc, q) {
+  const n = normN(q); if (!doc || !n) return [];
+  const rows = S.t === 'offi' ? (doc.units || []) : (doc.b || []);
+  return rows.filter(u => normN(u.n).includes(n) || u.d === q.trim() || normN(u.d) === n).sort((a, b) => ((b.t || b.tr || []).length) - ((a.t || a.tr || []).length)).slice(0, 12);
+}
+const yrOf = u => S.t === 'offi' ? u.by : u.y;
+const bldName = u => { const n = String(u.n || '').replace(/\([\d\-]+\)$/, '').trim(); return n && !/^\(?[\d\-]+\)?$/.test(n) ? n : `${u.d} 이름 없는 ${S.t === 'offi' ? '오피스텔' : '빌라'}(${maskJ(u.j)})`; };
+function candHtml(list) {
+  if (S.t === 'apt') return list.map((d, i) => `<button type="button" data-i="${i}"><b>${esc(d.apt)}</b><small>${esc(sggName(d.code))} ${esc(d.dong)} · 최근 3년 거래 ${Number(d.n || 0).toLocaleString('ko-KR')}건</small></button>`).join('');
+  return list.map((u, i) => `<button type="button" data-i="${i}"><b>${esc(bldName(u))}</b><small>${esc(u.d)}${yrOf(u) ? ' · ' + esc(yrOf(u)) + '년' : ''} · 최근 거래 ${((u.t || u.tr || []).length)}건</small></button>`).join('');
+}
+let CANDS = [];
+async function search() {
+  const q = $('dq').value.trim(); if (!q) { msg('이름을 넣어 주세요.'); return; }
+  if (S.t === 'apt') {
+    msg('단지를 찾는 중이에요…');
+    const list = await findApt(q, '');
+    if (list === null) { msg('자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.'); return; }
+    CANDS = list; msg(list.length ? '' : `'${q}' 이름의 단지를 찾지 못했어요. 이름 일부만 넣어 보세요. 최근 3년 안에 매매 거래가 있었던 단지만 찾을 수 있어요.`);
+    $('dres').innerHTML = candHtml(list);
+    if (list.length === 1) choose(0);
+    return;
+  }
+  if (!S.doc) { msg('먼저 시·군·구를 골라 주세요.'); return; }
+  CANDS = findBld(S.doc, q);
+  msg(CANDS.length ? '' : `이 지역에서 '${q}'을(를) 찾지 못했어요. 이름 일부나 동 이름(예: 역삼동)으로 찾아 보세요.`);
+  $('dres').innerHTML = candHtml(CANDS);
+}
+$('dqGo').addEventListener('click', search);
+$('dq').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); search(); } });
+$('dres').addEventListener('click', e => { const b = e.target.closest('button[data-i]'); if (b) choose(+b.dataset.i); });
+$('altC').addEventListener('click', e => { const b = e.target.closest('button[data-i]'); if (b) choose(+b.dataset.i); });
+
+async function choose(i) {
+  const d = CANDS[i]; if (!d) return;
+  S.pick = d; S.band = '';
+  document.querySelectorAll('#dres button,#altC button').forEach(b => b.classList.toggle('on', +b.dataset.i === i));
+  if (S.t === 'apt') {
+    $('fmsg').textContent = ''; msg('단지 자료를 불러오는 중이에요…');
+    try { const sg = await P.loadSgg(d.code, d.sd); if (S.pick !== d) return; S.sg = sg; S.units = sg.units; }
+    catch (e) { msg('단지 자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.'); return; }
+    msg('');
+  }
+  openForm();
+}
+
+/* ───────── 매물 정보 칸 ───────── */
+function bandsOf(d) {
+  const us = (S.units || []).filter(u => M.danjiKey(u) === d.key);
+  return (us.length ? us : d.bands || []).slice().sort((a, b) => a[4] - b[4]);
+}
+/** 평형 고르기: 전용㎡가 있으면 가장 가까운 평형, 공급(평형)만 있으면 공급보다 작은 전용 중 가장 큰 평형(전용은 늘 공급보다 작아요), 없으면 기본 평형 */
+function pickBand(bs, area) {
+  if (!bs.length) return null;
+  if (area && area.excl) return bs.slice().sort((a, b) => Math.abs(a[4] - area.excl) - Math.abs(b[4] - area.excl) || b[5] - a[5])[0];
+  if (area && area.supply) { const lo = bs.filter(u => u[4] < area.supply); if (lo.length) return lo[lo.length - 1]; }
+  const b = M.defaultBand(bs); return bs.find(u => u[3] === b) || bs[0];
+}
+function kindSeg(kind) {
+  const ks = S.t === 'comm' || S.t === 'land' ? [['sale', '매매']] : [['sale', '매매'], ['jeonse', '전세'], ['wolse', '월세']];
+  if (ks.length === 1) return '';
+  return `<span class="lb">거래 종류</span><div class="seg seg3" role="group" aria-label="거래 종류" id="fKind">${ks.map(([k, n]) => `<button type="button" data-k="${k}" class="${k === kind ? 'on' : ''}" aria-pressed="${k === kind}">${n}</button>`).join('')}</div>`;
+}
+function priceFields(kind, p) {
+  p = p || {};
+  if (kind === 'wolse') return `<div class="grid2"><div><label for="fDep">보증금 (만원)</label><input id="fDep" inputmode="numeric" value="${fmtIn(p.deposit)}" placeholder="예: 5,000"><div class="readout" id="fDepR"></div></div>
+    <div><label for="fRent">월세 (만원)</label><input id="fRent" inputmode="numeric" value="${fmtIn(p.rent)}" placeholder="예: 150"><div class="readout" id="fRentR"></div></div></div>`;
+  return `<label for="fPrice">${kind === 'jeonse' ? '전세 보증금' : '매물 가격'} (만원)</label><input id="fPrice" inputmode="numeric" value="${fmtIn(p.price)}" placeholder="예: 125,000 (12억 5,000만 원)"><div class="readout" id="fPriceR"></div>`;
+}
+function openForm() {
+  const t = S.t, pr = (S.parsed && S.parsed.price) || {}, ar = (S.parsed && S.parsed.area) || null, fl = (S.parsed && S.parsed.floor) || null;
+  let kind = S.item && S.item.kind || pr.kind || 'sale'; if ((t === 'comm' || t === 'land') && kind !== 'sale') kind = 'sale';
+  const it = S.item || {};
+  const pv = { price: it.price || pr.price || 0, deposit: it.deposit || pr.deposit || 0, rent: it.rent || pr.rent || 0 };
+  let head = '', body = '';
+  if (t === 'apt') {
+    const d = S.pick; if (!d) return;
+    const bs = bandsOf(d), want = S.band || (it.b) || (q0.get('b') && !S.parsed ? q0.get('b') : ''), b = (want && bs.find(u => u[3] === want)) || pickBand(bs, ar);
+    S.band = b ? b[3] : '';
+    head = `<b>${esc(d.apt)}</b><small>${esc(sggName(d.code))} ${esc(d.dong)}</small><button type="button" class="linkb" id="reFind">다른 단지 찾기</button>`;
+    body = `<div class="grid3"><div class="w2"><label for="fBand">평형</label><select id="fBand">${bs.map(u => `<option value="${esc(u[3])}"${u[3] === S.band ? ' selected' : ''}>${esc(u[3])} (전용 ${u[4]}㎡)</option>`).join('')}</select></div>
+      <div><label for="fArea">전용 ㎡ <span class="opt">선택</span></label><input id="fArea" inputmode="decimal" value="${it.area || (ar && ar.excl) || ''}" placeholder="${b ? b[4] : ''}"></div>
+      <div><label for="fFloor">층 <span class="opt">선택</span></label><input id="fFloor" inputmode="numeric" value="${it.floor || (fl && fl.floor) || ''}" placeholder="${fl && fl.word ? fl.word + '층' : '예: 12'}"></div></div>
+      <p class="hint">${ar && ar.basis === 'py-supply' ? `글의 '${ar.py}평'은 보통 공급면적이라, 전용이 그보다 작은 평형 중 가장 큰 것으로 골라 두었어요. 다르면 평형을 바꿔 주세요. ` : ''}전용 ㎡를 비우면 이 평형 대표 전용면적으로 계산해요.</p>`;
+  } else if (t === 'offi' || t === 'villa') {
+    const u = S.pick; if (!u) return;
+    head = `<b>${esc(bldName(u))}</b><small>${esc(sggName(S.region.g))} ${esc(u.d)}${yrOf(u) ? ' · ' + esc(yrOf(u)) + '년 준공' : ''}</small><button type="button" class="linkb" id="reFind">다른 건물 찾기</button>`;
+    body = `<div class="grid2"><div><label for="fArea">전용 ㎡</label><input id="fArea" inputmode="decimal" value="${it.area || (ar && (ar.excl || '')) || ''}" placeholder="${u.a || ''}"></div>
+      <div><label for="fFloor">층 <span class="opt">선택</span></label><input id="fFloor" inputmode="numeric" value="${it.floor || (fl && fl.floor) || ''}" placeholder="예: 5"></div></div>`;
+  } else if (t === 'comm') {
+    const doc = S.doc; if (!doc) return;
+    const ds = [...new Set(((doc.dong || []).map(r => r[0])))].sort((a, b) => a.localeCompare(b, 'ko'));
+    const dn = it.dong || (S.parsed && S.parsed.dong) || q0.get('dn') || '';
+    head = `<b>${esc(sggName(S.region.g))} 상가·건물</b><small>국토교통부 상업업무용 매매 실거래 기준</small>`;
+    body = `<div><label for="fDong">동</label><select id="fDong"><option value="">${esc(sggName(S.region.g))} 전체</option>${ds.map(x => `<option${x === dn ? ' selected' : ''}>${esc(x)}</option>`).join('')}</select></div>
+      <span class="lb" style="margin-top:10px">종류</span><div class="seg" role="group" aria-label="상가·건물 종류" id="fCk" style="margin:0"><button type="button" data-ck="c" class="on" aria-pressed="true">상가·사무실 한 칸</button><button type="button" data-ck="g" aria-pressed="false">건물 한 채</button></div>
+      <label for="fArea" id="fAreaL" style="margin-top:10px">전용면적 ㎡</label><input id="fArea" inputmode="decimal" value="${it.area || (ar && (ar.excl || ar.supply)) || ''}" placeholder="예: 45">
+      <p class="hint" id="fAreaH">상가·사무실 한 칸은 전용면적, 건물 한 채는 대지면적으로 비교해요(실거래 신고 기준과 같아요).</p>`;
+  } else if (t === 'land') {
+    const d = S.doc; if (!d) return;
+    const emds = Object.keys(d.e || {}).sort((a, b) => a.localeCompare(b, 'ko'));
+    head = `<b>${esc(d.sd || '')} ${esc(d.n || sggName(S.region.g))} 토지</b><small>국토교통부 토지 매매 실거래 기준</small>`;
+    body = `<div class="grid2"><div><label for="fEmd">읍·면·동</label><select id="fEmd"><option value="">읍·면·동 선택</option>${emds.map(x => `<option${x === ((S.parsed && S.parsed.dong) || q0.get('dn')) ? ' selected' : ''}>${esc(x)}</option>`).join('')}</select></div>
+      <div><label for="fJimok">지목(땅 종류)</label><select id="fJimok"></select></div></div>
+      <label for="fArea" style="margin-top:10px">면적 ㎡</label><input id="fArea" inputmode="decimal" value="${it.area || (ar && (ar.excl || ar.supply)) || ''}" placeholder="예: 330"><p class="hint">평으로 알면 × 3.3058 해서 넣어 주세요(예: 100평 = 330.58㎡).</p>`;
+  }
+  const extra = t === 'comm' ? `<div class="grid3" style="margin-top:10px"><div><label for="fGs">공시지가 ㎡당 (원) <span class="opt">선택</span></label><input id="fGs" inputmode="numeric" placeholder="예: 12,500,000"></div>
+      <div><label for="fMDep">보증금 (만원) <span class="opt">선택</span></label><input id="fMDep" inputmode="numeric" placeholder="예: 5,000"></div><div><label for="fMRent">월세 (만원) <span class="opt">선택</span></label><input id="fMRent" inputmode="numeric" placeholder="예: 300"></div></div>
+      <p class="hint">공시지가는 <a href="https://www.realtyprice.kr/notice/main/mainBody.htm" target="_blank" rel="noopener">부동산 공시가격 알리미</a>에서 확인해 넣을 수 있어요. 월세를 넣으면 수익률을 이 지역 평균과 비교해 드려요.</p>`
+    : t === 'land' ? `<label for="fGs" style="margin-top:10px">공시지가 ㎡당 (원) <span class="opt">선택</span></label><input id="fGs" inputmode="numeric" placeholder="예: 85,000"><p class="hint">공시지가는 <a href="https://www.realtyprice.kr/notice/main/mainBody.htm" target="_blank" rel="noopener">부동산 공시가격 알리미</a>에서 확인할 수 있어요. 넣으면 제시 가격이 공시지가의 몇 배인지 보여 드려요.</p>` : '';
+  $('picked').innerHTML = head;
+  $('fBody').innerHTML = body + kindSeg(kind) + `<div id="fPrices">${priceFields(kind, pv)}</div>` + extra;
+  $('formBox').hidden = false;
+  if (t === 'apt' && S.mode === 'paste' && CANDS.length > 1) $('altC').innerHTML = '<span class="note" style="width:100%">다른 단지일 수도 있어요</span>' + candHtml(CANDS); else $('altC').innerHTML = '';
+  if ($('reFind')) $('reFind').onclick = () => { setMode('pick'); $('formBox').hidden = true; $('dq').focus(); };
+  if ($('fBand')) $('fBand').onchange = () => { S.band = $('fBand').value; const u = bandsOf(S.pick).find(x => x[3] === S.band); $('fArea').placeholder = u ? u[4] : ''; };
+  if ($('fKind')) $('fKind').onclick = e => { const b = e.target.closest('button[data-k]'); if (!b) return; document.querySelectorAll('#fKind button').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); }); $('fPrices').innerHTML = priceFields(b.dataset.k, readPrices()); wireReadouts(); };
+  if ($('fCk')) $('fCk').onclick = e => { const b = e.target.closest('button[data-ck]'); if (!b) return; document.querySelectorAll('#fCk button').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); }); $('fAreaL').textContent = b.dataset.ck === 'g' ? '대지면적 ㎡' : '전용면적 ㎡'; };
+  if ($('fEmd')) { const fj = () => { const d = S.doc, e = $('fEmd').value, pj = (e && d.e[e] && d.e[e].pj) || d.pj || {}; const ks = Object.keys(Object.assign({}, d.pj || {}, pj)).sort((a, b) => (((d.pj || {})[b] || [0])[0]) - (((d.pj || {})[a] || [0])[0])); $('fJimok').innerHTML = ks.map(k => `<option>${esc(k)}</option>`).join(''); const raw = (S.parsed && S.parsed.raw) || '', g = ks.find(k => k.length >= 2 && raw.includes(k)) || (/대지/.test(raw) && ks.includes('대') ? '대' : ''); if (g) $('fJimok').value = g; }; $('fEmd').onchange = fj; fj(); }
+  wireReadouts();
+  ['fGs', 'fMDep', 'fMRent'].forEach(id => { if ($(id)) $(id).addEventListener('input', () => { const v = manIn($(id).value); $(id).value = v ? v.toLocaleString('ko-KR') : ''; }); });
+}
+function wireReadouts() {
+  [['fPrice', 'fPriceR'], ['fDep', 'fDepR'], ['fRent', 'fRentR']].forEach(([i, r]) => {
+    const el = $(i); if (!el) return;
+    const f = () => { const v = manIn(el.value); $(r).textContent = v ? won(v) : ''; };
+    el.addEventListener('input', () => { const v = manIn(el.value); el.value = v ? v.toLocaleString('ko-KR') : ''; f(); }); f();
+  });
+}
+function readPrices() { return { price: $('fPrice') ? manIn($('fPrice').value) : 0, deposit: $('fDep') ? manIn($('fDep').value) : 0, rent: $('fRent') ? manIn($('fRent').value) : 0 }; }
+function curKind() { const b = document.querySelector('#fKind button.on'); return b ? b.dataset.k : 'sale'; }
+
+/* ───────── 붙여 넣은 글 읽기 ───────── */
+async function readText(text, auto) {
+  text = String(text || '').trim();
+  if (!text) { msg('매물 글을 붙여 넣어 주세요.'); return; }
+  const p = CK.parseListing(text); p.raw = text;
+  S.parsed = p; S.item = null;
+  stat('feature_use', { feature: 'check_paste' });
+  if (p.type !== S.t && (auto || S.t === 'apt')) setType(p.type, true);
+  const lines = [];
+  lines.push(p.name ? `단지·건물 이름: <b>${esc(p.name)}</b>${p.dong ? ' (' + esc(p.dong) + ')' : ''}` : '<span class="no">단지·건물 이름: 못 읽었어요</span>');
+  lines.push(p.area ? `면적: <b>${p.area.excl ? '전용 ' + p.area.excl + '㎡' : ''}${p.area.excl && p.area.supply ? ' · ' : ''}${p.area.supply ? (p.area.py ? p.area.py + '평(공급 ' + p.area.supply + '㎡로 봤어요)' : '공급 ' + p.area.supply + '㎡') : ''}</b>` : '<span class="no">면적: 못 읽었어요</span>');
+  lines.push(p.floor ? `층: <b>${p.floor.floor ? p.floor.floor + '층' : p.floor.word + '층'}${p.floor.total ? ' / ' + p.floor.total + '층' : ''}</b>` : '<span class="no">층: 못 읽었어요</span>');
+  lines.push(p.price ? `가격: <b>${p.price.kind === 'wolse' ? '월세 보증금 ' + won(p.price.deposit) + ' / 월 ' + won(p.price.rent) : (p.price.kind === 'jeonse' ? '전세 ' : '매매 ') + won(p.price.price)}</b>${p.price.guess ? ' (매매로 봤어요)' : ''}` : '<span class="no">가격: 못 읽었어요</span>');
+  $('got').innerHTML = `<h2>이렇게 읽었어요</h2><ul>${lines.map(l => `<li>${l}</li>`).join('')}</ul><p class="note" style="margin:6px 0 0">다르면 아래 칸에서 고쳐 주세요.</p>`;
+  $('got').hidden = false;
+  if (S.t === 'apt') {
+    if (!p.name) { setMode('pick'); msg('단지 이름을 못 읽었어요. 단지 이름으로 찾아 주세요. 읽은 면적·층·가격은 단지를 고르면 채워 드려요.'); $('dq').focus(); return; }
+    msg('단지를 찾는 중이에요…');
+    const list = await findApt(p.name, p.dong);
+    if (list === null) { msg('자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.'); return; }
+    CANDS = list;
+    if (!list.length) { msg(`'${p.name}' 단지를 찾지 못했어요. 직접 고르기에서 단지 이름 일부로 찾아 주세요.`); $('dq').value = p.name; setMode('pick'); return; }
+    msg(''); $('dres').innerHTML = candHtml(list);
+    choose(0);
+  } else {
+    if (S.t === 'comm' || S.t === 'land') {
+      await ix(); const g = guessSgg(p.sgg, text); if (g) { S.region = { sd: sidoOf(g), g }; }
+      setMode('pick'); fillRegion();
+      if (!g) msg('시·군·구를 골라 주세요. 그다음 아래 칸을 확인해 주세요.');
+    } else {
+      await ix(); const g = guessSgg(p.sgg, text); if (g) S.region = { sd: sidoOf(g), g };
+      $('dq').value = p.name || p.dong || ''; setMode('pick'); await fillRegion();
+      if (!g) msg('시·군·구를 고른 뒤 건물 이름으로 찾아 주세요.');
+      else { let n = 0; const wait = () => S.doc ? search() : (++n < 50 && setTimeout(wait, 200)); setTimeout(wait, 200); }
+    }
+  }
+}
+/* 글 속 '강남구' 같은 낱말 → 구 코드(이름이 같은 구가 여러 곳이면 시·도 낱말로 가리고, 그래도 여럿이면 고르지 않음) */
+function guessSgg(word, text) {
+  if (!S.ix || !word) return '';
+  const cs = Object.keys(S.ix.sgg).filter(c => S.ix.sgg[c].name === word || S.ix.sgg[c].name.split(' ').pop() === word);
+  if (cs.length === 1) return cs[0];
+  const hit = cs.filter(c => { const s = S.ix.sido.find(x => x.name === S.ix.sgg[c].sido); return s && (text.includes(s.short) || text.includes(s.name)); });
+  return hit.length === 1 ? hit[0] : '';
+}
+$('pread').addEventListener('click', () => readText($('ptxt').value));
+$('pclear').addEventListener('click', () => { $('ptxt').value = ''; $('got').hidden = true; msg(''); $('ptxt').focus(); });
+
+/* ───────── 평가 ───────── */
+$('evalBtn').addEventListener('click', () => { runEval().catch(() => { $('fmsg').textContent = '계산하지 못했어요. 잠시 뒤 다시 시도해 주세요.'; }); });
+async function runEval() {
+  $('fmsg').textContent = '';
+  const kind = curKind(), pv = readPrices();
+  if (kind === 'wolse' ? !(pv.deposit >= 0 && pv.rent > 0) : !(pv.price > 0)) { $('fmsg').textContent = kind === 'wolse' ? '보증금과 월세를 만원 단위로 넣어 주세요.' : '가격을 만원 단위로 넣어 주세요(예: 12억 5,000만 원 → 125,000).'; return; }
+  const area = parseFloat(String($('fArea') ? $('fArea').value : '').replace(/[^\d.]/g, '')) || 0;
+  const floor = $('fFloor') ? manIn($('fFloor').value) : 0;
+  const word = !floor && S.parsed && S.parsed.floor && S.parsed.floor.word ? S.parsed.floor.word : '';
+  $('res').innerHTML = '<div class="loading">최근 실거래와 맞춰 보는 중이에요…</div>';
+  await ix();
+  const o = { kind, price: pv.price, deposit: pv.deposit, rent: pv.rent, area, floor, word };
+  stat('feature_use', { feature: 'check_eval', t: S.t, kind });
+  if (S.t === 'apt') return evalApt(o);
+  if (S.t === 'offi' || S.t === 'villa') return evalBld(o);
+  if (S.t === 'comm') return evalComm(o);
+  if (S.t === 'land') return evalLand(o);
+}
+
+/* 점 그림: 최근 거래(매물 면적으로 환산)를 싼 것부터 비싼 것까지 한 줄에, 매물 가격은 세모 표시 */
+function dotsSvg(pts, price, W, fmt) {
+  fmt = fmt || CK.eok;
+  const vals = pts.map(p => p.amt).concat(price > 0 ? [price] : []);
+  let lo = Math.min(...vals), hi = Math.max(...vals); if (hi === lo) { lo *= 0.97; hi *= 1.03; }
+  const padL = 16, padR = 16, w = Math.max(240, W), plot = w - padL - padR, x = v => padL + (v - lo) / (hi - lo) * plot;
+  const H = 118, y0 = 64, fs = 12.5;
+  const cnt = {}, dots = pts.map(p => { const k = Math.round(x(p.amt) / 9); cnt[k] = (cnt[k] || 0) + 1; return `<circle cx="${x(p.amt).toFixed(1)}" cy="${(y0 - (cnt[k] - 1) * 11).toFixed(1)}" r="5" fill="#8C86E0" stroke="#fff" stroke-width="1.5"/>`; }).join('');
+  const ax = `<line x1="${padL}" x2="${w - padR}" y1="${y0 + 9}" y2="${y0 + 9}" stroke="#D1D6DB" stroke-width="2" stroke-linecap="round"/>`;
+  const lab = (v, a, yy, t, c) => `<text x="${x(v).toFixed(1)}" y="${yy}" font-size="${fs}" text-anchor="${a}" fill="${c || '#4E5968'}" font-weight="700">${esc(t)}</text>`;
+  const minT = lab(pts[0].amt, 'start', y0 + 30, '최저 ' + fmt(pts[0].amt)), maxT = lab(pts[pts.length - 1].amt, 'end', y0 + 30, '최고 ' + fmt(pts[pts.length - 1].amt));
+  let mk = '';
+  if (price > 0) {
+    const px = x(price), anchor = px < 70 ? 'start' : px > w - 70 ? 'end' : 'middle';
+    mk = `<path d="M${(px - 7).toFixed(1)} ${y0 + 26} L${(px + 7).toFixed(1)} ${y0 + 26} L${px.toFixed(1)} ${y0 + 13} Z" fill="#191F28"/>`
+      + `<text x="${px.toFixed(1)}" y="${y0 + 48}" font-size="${fs + 0.5}" text-anchor="${anchor}" fill="#191F28" font-weight="900">이 매물 ${esc(fmt(price))}</text>`;
+  }
+  const minX = x(pts[0].amt), maxX = x(pts[pts.length - 1].amt), px0 = price > 0 ? x(price) : -999;
+  const showMin = Math.abs(px0 - minX) > 60 || price <= 0, showMax = Math.abs(px0 - maxX) > 60 || price <= 0;
+  return `<svg viewBox="0 0 ${w} ${H}" width="${w}" height="${H}" role="img" aria-label="최근 거래 ${pts.length}건 가격 분포와 매물 위치">${ax}${dots}${showMin ? minT : ''}${showMax && pts.length > 1 ? maxT : ''}${mk}</svg>`;
+}
+function mountDots(el, pts, price, fmt) {
+  if (!el) return; const draw = () => { el.innerHTML = dotsSvg(pts, price, el.clientWidth || 320, fmt); };
+  draw(); let tm; window.addEventListener('resize', () => { clearTimeout(tm); tm = setTimeout(draw, 120); });
+}
+
+/* 결과 맨 위 큰 문장 */
+function headHtml(o, r, who, basis, scopeTag) {
+  const dw = CK.diffWord(r && r.diff, o.kind === 'jeonse' ? '전세 시세' : '최근 거래');
+  const big = dw.text ? dw.text.replace(/(약 \d+% )(낮은|높은)/, `$1<span class="${dw.dir}">$2</span>`) : '비교할 거래가 없어요';
+  return `<div class="hd"><div class="ey">${esc(o.kind === 'jeonse' ? '전세 보증금 평가' : '매물 가격 평가')}</div>
+    <div class="big">${big}</div><p class="who">${who}</p>${scopeTag ? `<span class="wide">${esc(scopeTag)}</span>` : ''}
+    <dl class="kv">${basis}</dl></div>`;
+}
+const ffLine = ff => !ff ? '' : ff.ok ? `${esc(ff.groupKo)} 보정 ${ff.factor.toFixed(3).replace(/0+$/, '').replace(/\.$/, '')}배 — 이 평형 최근 3년 거래 ${ff.nAll}건 중 같은 층대 ${ff.n}건으로 구했어요`
+  : ff.reason === 'thin' ? `층 보정 안 함 — 같은 층대 거래가 적어(${ff.n}건, 전체 ${ff.nAll}건) 차이를 믿기 어려워요` : '층을 넣지 않아 층 보정 없이 계산했어요';
+
+async function evalApt(o) {
+  const d = S.pick; if (!d) { $('res').innerHTML = ''; $('fmsg').textContent = '단지를 먼저 골라 주세요.'; return; }
+  const bs = bandsOf(d), u = bs.find(x => x[3] === S.band) || bs[0];
+  if (!u || !Array.isArray(u[11])) { $('res').innerHTML = '<div class="sec"><p>이 단지는 개별 실거래 자료가 아직 없어 비교할 수 없어요. 내 집 시세 화면에서 평형별 시세를 볼 수 있어요.</p></div>'; return; }
+  const area = o.area > 0 ? o.area : +u[4], to = lastYm();
+  const pick = x => CK.normTrades(x[11], 'apt');
+  const own = pick(u), fl = { floor: o.floor, word: o.word };
+  /* 매매가 비교(전세·월세 매물도 매매 시세는 함께 봐요) */
+  let r = CK.evaluate({ trades: own, to, area, price: o.kind === 'sale' ? o.price : 0, floor: fl }), scope = 'band';
+  if (!r || r.n < CK.MIN_DEALS) {
+    const sim = CK.similarBands(S.units, u, pick);
+    if (sim.length) { const r2 = CK.evaluate({ trades: own.concat(sim), floorTrades: own, to, area, price: o.kind === 'sale' ? o.price : 0, floor: fl }); if (r2 && (!r || r2.n > r.n)) { r = r2; scope = 'similar'; } }
+  }
+  if (!r || r.n < CK.MIN_DEALS) {
+    const near = (S.units || []).filter(x => x[0] === u[0] && x[1] === u[1] && x[3] === u[3] && !(x[2] === u[2] && x[8] === u[8])).reduce((a, x) => a.concat(pick(x)), []);
+    if (near.length) { const r3 = CK.evaluate({ trades: near, floorTrades: own, to, area, price: o.kind === 'sale' ? o.price : 0, floor: fl }); if (r3 && (!r || r3.n > r.n)) { r = r3; scope = 'near'; } }
+  }
+  /* 전세 시세(전체 기간 시세 자료가 있을 때) */
+  let ht = null, jr = [0, ''], jeon = 0, saleM = 0;
+  try { const hf = await P.loadHist(S.sg); ht = P.histOf(S.sg, hf, u); } catch (e) { ht = null; }
+  if (ht) { jr = M.jrNow(ht); if (jr[0] > 0) { const i = ht.months.indexOf(jr[1]); jeon = Math.round(ht.j[i] / u[4] * area); saleM = Math.round(ht.s[i] / u[4] * area); } }
+  S.last = { o, r, u, d, area, scope, jeon, jr, saleM };
+  const scopeTag = scope === 'similar' ? '이 평형 거래가 적어 비슷한 평형(전용 ±15%)까지 합쳐 계산했어요' : scope === 'near' ? `이 단지 거래가 적어 ${d.dong} 같은 평형대 다른 단지 거래로 계산했어요` : '';
+  const who = `${esc(d.apt)} · ${esc(u[3])} · 전용 ${area}㎡${o.floor ? ' · ' + o.floor + '층' : o.word ? ' · ' + o.word + '층' : ''}`;
+  let html = '';
+  if (o.kind === 'sale') {
+    if (!r) html += `<div class="hd"><div class="ey">매물 가격 평가</div><div class="big">비교할 거래가 없어요</div><p class="who">${who}</p><p class="basis">최근 12개월 동안 이 단지·근처 같은 평형 매매 실거래가 없어서 비교하지 않았어요. 오래된 거래로 비교하면 지금 시세와 많이 다를 수 있어요.</p></div>`;
+    else html += headHtml(o, r, who, `<dt>매물 가격</dt><dd>${won(o.price)}</dd><dt>비교 기준</dt><dd>${won(r.base)}<br><small class="basis">${esc(CK.ymLabel(r.from))}~${esc(CK.ymLabel(r.to))} 계약 ${r.n}건 · ㎡당 중간값 ${won(Math.round(r.ppm))} × 전용 ${area}㎡${r.few ? ' · 거래가 적어 참고만 해 주세요' : ''}</small></dd><dt>층</dt><dd><small class="basis">${esc(ffLine(r.ff))}</small></dd>`, scopeTag + (r.widened ? (scopeTag ? ' · ' : '') + `최근 6개월 거래가 ${CK.MIN_DEALS}건이 안 돼 12개월로 넓혔어요` : ''));
+  } else {
+    /* 전세·월세 매물 */
+    const jrHere = o.kind === 'jeonse' && saleM > 0 ? o.price / saleM : null;
+    if (o.kind === 'jeonse') {
+      const rj = jeon > 0 ? { diff: o.price / jeon - 1 } : null;
+      html += headHtml(o, rj, who, `<dt>전세 보증금</dt><dd>${won(o.price)}</dd><dt>전세 시세</dt><dd>${jeon > 0 ? won(jeon) + `<br><small class="basis">${esc(CK.ymLabel(jr[1]))} 기준 최근 3개월 순수 전세 거래 ㎡당 중간값 × 전용 ${area}㎡</small>` : '최근 3개월 전세 거래가 없어 비교하지 않았어요'}</dd>`
+        + (jrHere ? `<dt>이 보증금의 전세가율</dt><dd><b>${Math.round(jrHere * 100)}%</b> <small class="basis">보증금 ÷ 같은 면적 매매 시세 ${won(saleM)}${jrHere >= 0.8 ? ' · 80%가 넘으면 집값이 조금만 내려도 보증금을 돌려받기 어려울 수 있어요' : ''}</small></dd>` : ''), '');
+    } else {
+      html += `<div class="hd"><div class="ey">월세 매물</div><div class="big">보증금 ${esc(won(o.deposit))} · 월 ${esc(won(o.rent))}</div><p class="who">${who}</p><p class="basis">월세는 보증금과 월세를 바꿔 계산하는 방식이 계약마다 달라 한 숫자로 비교하지 않아요. 이 단지 최근 월세 계약은 <a href="${SITE}jeonse/?sd=${esc(d.sd)}&d=${encodeURIComponent(d.key)}&b=${encodeURIComponent(u[3])}">전월세 시세</a>에서 볼 수 있어요.</p></div>`;
+    }
+  }
+  /* 점 그림 */
+  if (r && r.pts.length) {
+    html += `<div class="sec"><h2>${o.kind === 'sale' ? '최근 거래 사이 어디쯤일까요' : '이 평형 최근 매매 거래'}<small>${esc(CK.ymLabel(r.from))}~${esc(CK.ymLabel(r.to))} 매매 실거래 ${r.n}건(직거래 제외)을 싼 것부터 비싼 것까지 놓았어요. 면적이 조금씩 달라 모두 전용 ${area}㎡로 환산했어요.</small></h2>
+      <div class="dots" id="dots"></div>${o.kind === 'sale' ? `<p><b>${esc(CK.rankText(r, o.price))}</b></p>` : ''}</div>`;
+  }
+  /* 주변 비교 */
+  const pe = CK.peers(S.units, u, to, pick);
+  if (pe.length > 1 || (pe.length === 1 && !pe[0].me)) {
+    const meP = o.kind === 'sale' && area > 0 ? o.price / area : 0, mx = Math.max(...pe.map(x => x.ppm), meP);
+    const rows = pe.slice(0, 8).map(x => `<tr class="${x.me ? 'me' : ''}"><td>${esc(x.apt)}${x.me ? ' (이 단지)' : ''}<div class="bar"><i style="width:${(x.ppm / mx * 100).toFixed(1)}%"></i></div></td><td class="n">${won(Math.round(x.ppm))}<br><small>${x.n}건</small></td></tr>`);
+    if (meP) rows.push(`<tr class="ask"><td>이 매물<div class="bar"><i style="width:${(meP / mx * 100).toFixed(1)}%;background:#191F28"></i></div></td><td class="n">${won(Math.round(meP))}</td></tr>`);
+    html += `<div class="sec"><h2>근처 비슷한 단지와 ㎡당 가격 비교<small>${esc(d.dong)}의 같은 평형대(${esc(u[3])}) 단지 · 최근 12개월 매매 ㎡당 중간값(거래 2건 이상인 단지만) · 낮은 순</small></h2><table class="ptab"><thead><tr><th>단지</th><th style="text-align:right">㎡당</th></tr></thead><tbody>${rows.join('')}</tbody></table>
+      <p class="basis">연식·세대수·역까지 거리가 달라 ㎡당 가격이 다른 것이 자연스러워요. 비슷한 조건의 단지끼리 견줘 보세요.</p></div>`;
+  }
+  /* 전세 끼고 사기 */
+  if (o.kind === 'sale') {
+    const gc = jeon > 0 ? CK.gapCash(o.price, jeon) : null;
+    html += `<div class="sec"><h2>전세가율 · 전세 끼고 살 때 필요한 현금</h2>${gc ? `<dl class="kv"><dt>전세 시세</dt><dd>${won(jeon)} <small class="basis">${esc(CK.ymLabel(jr[1]))} 기준, 같은 면적 환산</small></dd><dt>이 매물 기준 전세가율</dt><dd><b>${Math.round(gc.ratio * 100)}%</b> <small class="basis">(시세 기준 전세가율 ${Math.round(jr[0] * 100)}%)</small></dd><dt>필요한 현금</dt><dd><b>${won(gc.cash)}</b> <small class="basis">매물 가격 − 전세 시세 · 취득세·중개보수·이사 비용은 따로 들어요</small></dd></dl>`
+      : '<p>최근 3개월 동안 이 평형 매매·전세 거래가 함께 있는 달이 없어 전세가율을 계산하지 않았어요.</p>'}<p class="basis">${esc(M.JR_BASIS)}이에요. 실제 전세 보증금은 계약마다 달라요.</p></div>`;
+  }
+  html += checkHtml(d.code, d.dong, o.kind === 'sale' ? o.price : (saleM || 0), 'apt', { apt: d.apt, band: u[3], area });
+  html += `<div class="sec" id="facSec"><h2>함께 보는 자료<small>점수나 판정이 아니라 공공 자료를 그대로 옮긴 거예요. 각 요인이 과거 집값에 실제로 어땠는지는 <a href="${SITE}factors/">집값 요인 성적표</a>에서 볼 수 있어요.</small></h2><div class="fac" id="fac"><div><span>불러오는 중이에요…</span></div></div></div>`;
+  html += paidHtml(o, { apt: d.apt, dn: d.dong, g: d.code, pk: M.premiumKey({ sd: d.sd, code: d.code, dong: d.dong, apt: d.apt, band: u[3] }), villaOrJeonse: o.kind !== 'sale' });
+  html += cardBox();
+  $('res').innerHTML = html;
+  if (r && r.pts.length) mountDots($('dots'), r.pts, o.kind === 'sale' ? o.price : 0);
+  afterRender({ t: 'apt', apt: d.apt, band: u[3], dong: d.dong, sd: d.sd, d: d.key, b: u[3], area, diff: o.kind === 'sale' && r ? r.diff : (o.kind === 'jeonse' && jeon > 0 ? o.price / jeon - 1 : null) }, o, r);
+  factors(d, u).catch(() => { if ($('fac')) $('fac').innerHTML = '<div><span>자료를 불러오지 못했어요.</span></div>'; });
+}
+
+/* 확인할 것: 규제지역·토지거래허가·대출 한도 어림(아파트·오피스텔·빌라) */
+function checkHtml(code, dong, price, kind, ctx) {
+  const st = REG ? REG.status(code, REG.today(), { dong, kind: kind === 'apt' ? 'apt' : 'other' }) : null;
+  const li = [];
+  if (st) {
+    const regT = st.ovh === true ? '투기과열지구' + (st.adj === true ? '·조정대상지역' : '') : st.adj === true ? '조정대상지역' : '';
+    li.push(st.reg === true ? `<li><span class="tg y">규제지역</span><div>${esc(jo(sggName(code), '은', '는'))} <b>${regT}</b>이에요.<small>대출 비율(LTV)이 낮고, 취득세·양도세 중과와 청약 제한이 있을 수 있어요.</small></div></li>`
+      : st.reg === 'ask' ? `<li><span class="tg n">확인 필요</span><div>${esc(sggName(code))} 일부 지역만 규제지역이에요. 이 동이 해당하는지 확인해 주세요.</div></li>`
+      : `<li><span class="tg g">규제지역 아님</span><div>${esc(jo(sggName(code), '은', '는'))} 지금 투기과열지구·조정대상지역이 아니에요.</div></li>`);
+    const th = REG.thpRows(code, REG.today(), dong);
+    const thp = st.thp === true || (kind === 'apt' && th.apt) || th.dong;
+    li.push(thp ? `<li><span class="tg r">토지거래허가</span><div>토지거래허가구역이에요.<small>사기 전에 구청 허가를 받아야 하고, 보통 직접 들어가 살아야 해서 세를 끼고 사기(갭투자) 어려워요. 허가 범위는 구청에 꼭 확인해 주세요.</small></div></li>`
+      : th.any ? `<li><span class="tg n">확인 필요</span><div>${esc(sggName(code))} 안 일부 동·단지가 토지거래허가구역이에요. 이 매물이 해당하는지 구청에 확인해 주세요.</div></li>`
+      : `<li><span class="tg g">허가구역 아님</span><div>토지거래허가구역이 아니에요.</div></li>`);
+  }
+  if (LR && price > 0 && kind !== 'comm' && kind !== 'land') {
+    const g = LR.groupOf(code), a = CK.loanHint(price, LR, g, 'none'), f = CK.loanHint(price, LR, g, 'first');
+    const lt = h => h ? `최대 약 <b>${won(h.max)}</b> <small>(${h.by === 'cap' ? `가격대별 한도 ${won(h.cap)}` : `집값의 ${Math.round(h.ltv * 100)}%`})</small>` : '어려워요';
+    const lq = new URLSearchParams({ g: code }); if (ctx && ctx.apt) lq.set('n', String(ctx.apt).slice(0, 40)); if (ctx && ctx.band) lq.set('b', ctx.band);
+    li.push(`<li><span class="tg n">대출 한도 어림</span><div>무주택: ${lt(a)}<br>생애 첫 집: ${lt(f)}<small>LTV와 가격대별 최대 금액만 본 값이에요. 소득·다른 대출(DSR)에 따라 더 줄 수 있어요. <a href="${SITE}loan/?${lq}">내 소득으로 대출 한도 계산하기</a></small></div></li>`);
+  }
+  return `<div class="sec"><h2>사기 전에 확인할 것<small>${esc(REG ? REG.basis() : '')}</small></h2><ul class="ck">${li.join('')}</ul></div>`;
+}
+
+/* 함께 보는 자료(교통·학군·공급·인구 흐름·재건축) — 자료가 있는 것만, 숫자는 자료 그대로 */
+async function factors(d, u) {
+  const out = [], sd = d.sd;
+  const [xy, poi, rg, zs] = await Promise.all([Jn(DATA + sd + '_xy.json'), Jn(DATA + 'poi/' + sd + '.json'), Jn(DATA + 'region/' + sd + '.json'), Jn(DATA + 'redev/zones.json')]);
+  const p = xy && xy.xy && xy.xy[[d.code, d.dong, d.jibun].join('|')];
+  const near = (list) => { if (!p || !list) return null; let b = null; for (const s of list) { const m = distM(p[1], p[0], s[2], s[1]); if (!b || m < b.m) b = { n: s[0], m }; } return b; };
+  const mt = m => m >= 1000 ? (m / 1000).toFixed(1) + 'km' : Math.round(m / 10) * 10 + 'm';
+  const st = near(poi && poi.st), sc = near(poi && poi.sc);
+  if (st) out.push(['교통', `가장 가까운 지하철역은 ${st.n}역, 직선으로 약 ${mt(st.m)}예요${st.m <= 2000 ? `(걸어서 약 ${Math.max(1, Math.round(st.m / 67))}분 어림, 실제 길은 더 길어요)` : ''}.`, poi.src && poi.src.st]);
+  if (sc) out.push(['학군', `가장 가까운 중학교는 ${sc.n}, 직선으로 약 ${mt(sc.m)}예요. 초등학교 배정은 교육청 통학구역으로 정해져요.`, poi.src && poi.src.sc]);
+  const gu = rg && rg.gu && rg.gu[d.code];
+  if (gu && gu.sup) { const t = gu.sup[0] + gu.sup[1] + gu.sup[2]; out.push(['공급', t > 0 ? `${sggName(d.code)}에 앞으로 3년 안 입주 예정 아파트가 ${t.toLocaleString('ko-KR')}세대예요(1년 안 ${gu.sup[0].toLocaleString('ko-KR')}세대).` : `${sggName(d.code)}에 앞으로 3년 안 입주 예정인 분양 아파트가 없어요.`, rg.src && rg.src.sup && rg.src.sup.nm]); }
+  if (PL && S.ix) {
+    const R = (S.ix.sgg[d.code] || {}).r, sdr = (S.ix.sido.find(s => s.name === (S.ix.sgg[d.code] || {}).sido) || {}).r;
+    try { const pp = PL.popLines(R, sdr, PL.regionInfo(S.ix, d.code)); const t = [pp.nm, pp.nm3049, pp.a3049].filter(Boolean).slice(0, 2).join(' '); if (t) out.push(['인구 흐름', t, '행정안전부 주민등록 인구']); } catch (e) {}
+  }
+  if (zs && zs.z) {
+    const nz = x => String(x || '').replace(/\s|아파트|재건축|재개발|정비구역|구역|주택|단지/g, '');
+    const a = nz(d.apt), hit = zs.z.filter(z => z.g === d.code && nz(z.n) && (a.indexOf(nz(z.n)) === 0 || nz(z.n).indexOf(a) === 0)).sort((x, y) => (y.umd === d.dong) - (x.umd === d.dong))[0];
+    out.push(['재건축', hit ? `정비사업 자료에서 '${hit.n}' 구역이 지금 <b>${esc(hit.sn || '')}</b> 단계예요. <a href="${SITE}villa/zone/?z=${encodeURIComponent(hit.id)}">단계별 날짜와 착공 예상 보기</a>` : '정비사업 자료에서 이 단지 이름의 재건축 구역은 찾지 못했어요.', '국토교통부·서울시 정비사업 현황', !!hit]);
+  }
+  const el = $('fac'); if (!el) return;
+  el.innerHTML = out.length ? out.map(x => `<div><b>${esc(x[0])}</b><span>${x[3] ? x[1] : esc(x[1])}</span>${x[2] ? `<small class="basis" style="display:block">출처: ${esc(x[2])}</small>` : ''}</div>`).join('') : '<div><span>이 단지는 함께 볼 공공 자료가 아직 없어요.</span></div>';
+}
+function distM(la1, lo1, la2, lo2) { const R = 6371000, r = Math.PI / 180, dl = (la2 - la1) * r, dn = (lo2 - lo1) * r, a = Math.sin(dl / 2) ** 2 + Math.cos(la1 * r) * Math.cos(la2 * r) * Math.sin(dn / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(a)); }
+
+/* ───────── 오피스텔·빌라 ───────── */
+async function evalBld(o) {
+  const u = S.pick, doc = S.doc; if (!u || !doc) { $('res').innerHTML = ''; $('fmsg').textContent = '건물을 먼저 골라 주세요.'; return; }
+  const isO = S.t === 'offi';
+  if (!isO && !S.villaTo) { const vi = await Jn(DATA + 'villa/index.json'); S.villaTo = vi && vi.to ? String(vi.to) : lastYm(); }
+  const vto = isO ? String(doc.to || lastYm()) : S.villaTo;
+  const area = o.area > 0 ? o.area : +u.a || 0;
+  if (!(area > 0)) { $('res').innerHTML = ''; $('fmsg').textContent = '전용 ㎡를 넣어 주세요.'; return; }
+  const own = CK.normTrades(isO ? u.t : u.tr, isO ? 'offi' : 'villa'), fl = { floor: o.floor };
+  const spans = isO ? [6, 12] : [6, 12, 36];
+  let r = CK.evaluate({ trades: own, to: vto, area, price: o.kind === 'sale' ? o.price : 0, floor: fl, spans }), scope = 'own';
+  if (!r || r.n < CK.MIN_DEALS) {
+    const rows = (isO ? doc.units : doc.b) || [];
+    const near = rows.filter(x => x !== u && x.d === u.d).reduce((a, x) => a.concat(CK.normTrades(isO ? x.t : x.tr, isO ? 'offi' : 'villa').filter(t => Math.abs(t.area / area - 1) <= 0.2)), []);
+    const r2 = near.length ? CK.evaluate({ trades: near, floorTrades: own, to: vto, area, price: o.kind === 'sale' ? o.price : 0, floor: fl, spans: [6, 12] }) : null;
+    if (r2 && (!r || r2.n > r.n)) { r = r2; scope = 'dong'; }
+  }
+  /* 전세: 이 건물 최근 전세 계약(오피스텔 jl · 빌라 jl) ㎡당 중간값 */
+  const jl = (u.jl || []).map(t => ({ ym: String(t[0]).slice(0, 6), area: +t[1], dep: +t[3] })).filter(t => t.area > 0 && t.dep > 0 && t.ym >= CK.ymAdd(vto, -11));
+  const jeon = jl.length ? Math.round(CK.median(jl.map(t => t.dep / t.area)) * area) : 0;
+  const nm = bldName(u), who = `${esc(nm)} · 전용 ${area}㎡${o.floor ? ' · ' + o.floor + '층' : ''}`;
+  const tag = scope === 'dong' ? `이 건물 거래가 적어 ${u.d} 비슷한 면적(±20%) ${T_KO[S.t]} 거래로 계산했어요` : (r && r.months > 6 ? `최근 6개월 거래가 ${CK.MIN_DEALS}건이 안 돼 ${r.months}개월로 넓혔어요` : '');
+  S.last = { o, r, area };
+  let html = '';
+  if (o.kind === 'sale') {
+    html += r ? headHtml(o, r, who, `<dt>매물 가격</dt><dd>${won(o.price)}</dd><dt>비교 기준</dt><dd>${won(r.base)}<br><small class="basis">${esc(CK.ymLabel(r.from))}~${esc(CK.ymLabel(r.to))} 계약 ${r.n}건 · ㎡당 중간값 ${won(Math.round(r.ppm))} × 전용 ${area}㎡</small></dd><dt>층</dt><dd><small class="basis">${esc(ffLine(r.ff))}</small></dd>`, tag)
+      : `<div class="hd"><div class="ey">매물 가격 평가</div><div class="big">비교할 거래가 없어요</div><p class="who">${who}</p><p class="basis">이 건물과 같은 동 비슷한 면적 매매 실거래가 최근 ${isO ? 12 : 36}개월 동안 없어 비교하지 않았어요.</p></div>`;
+  } else if (o.kind === 'jeonse') {
+    html += headHtml(o, jeon > 0 ? { diff: o.price / jeon - 1 } : null, who, `<dt>전세 보증금</dt><dd>${won(o.price)}</dd><dt>이 건물 전세</dt><dd>${jeon > 0 ? won(jeon) + `<br><small class="basis">최근 12개월 전세 계약 ${jl.length}건 ㎡당 중간값 × 전용 ${area}㎡</small>` : '최근 12개월 이 건물 전세 계약이 없어 비교하지 않았어요'}</dd>`
+      + (r ? `<dt>이 보증금의 전세가율</dt><dd><b>${Math.round(o.price / r.base * 100)}%</b> <small class="basis">보증금 ÷ 같은 면적 매매 기준 ${won(r.base)}${o.price / r.base >= 0.8 ? ' · 80%가 넘으면 보증금을 돌려받기 어려울 수 있어요' : ''}</small></dd>` : ''), '');
+  } else {
+    html += `<div class="hd"><div class="ey">월세 매물</div><div class="big">보증금 ${esc(won(o.deposit))} · 월 ${esc(won(o.rent))}</div><p class="who">${who}</p>${isO && u.y && u.y.r ? `<p class="basis">이 건물 최근 월세 수익률(공개 자료) ${(u.y.r * 100).toFixed(1)}% — 보증금 ${won(u.y.dep)} · 월 ${won(u.y.mr)} 계약 기준이에요.</p>` : ''}</div>`;
+  }
+  if (r && r.pts.length) html += `<div class="sec"><h2>최근 거래 사이 어디쯤일까요<small>${esc(CK.ymLabel(r.from))}~${esc(CK.ymLabel(r.to))} 매매 실거래 ${r.n}건을 전용 ${area}㎡로 환산해 싼 것부터 놓았어요.</small></h2><div class="dots" id="dots"></div>${o.kind === 'sale' ? `<p><b>${esc(CK.rankText(r, o.price))}</b></p>` : ''}</div>`;
+  if (o.kind === 'sale' && jeon > 0) { const gc = CK.gapCash(o.price, jeon); html += `<div class="sec"><h2>전세가율 · 전세 끼고 살 때 필요한 현금</h2><dl class="kv"><dt>이 건물 전세</dt><dd>${won(jeon)} <small class="basis">최근 12개월 전세 ${jl.length}건, 같은 면적 환산</small></dd><dt>전세가율</dt><dd><b>${Math.round(gc.ratio * 100)}%</b>${gc.ratio >= 0.8 ? ` <small class="basis">${gc.ratio >= 1 ? '전세가 이 매물 가격보다 높아요. 집값이 전세보다 낮은 집은 세입자 보증금을 돌려주기 어려울 수 있어 계약 전에 꼭 확인해 주세요.' : '80%가 넘으면 집값이 조금만 내려도 전세 보증금보다 낮아질 수 있어요.'}</small>` : ''}</dd><dt>필요한 현금</dt><dd><b>${won(gc.cash)}</b> <small class="basis">매물 가격 − 전세 · 세금·중개보수는 따로</small></dd></dl></div>`; }
+  if (o.kind === 'sale' && isO && o.price > 0 && u.y && u.y.r) html += `<div class="sec"><h2>월세 수익률 참고</h2><p>이 건물 최근 월세 계약 수익률은 ${(u.y.r * 100).toFixed(1)}%예요(보증금 ${won(u.y.dep)} · 월 ${won(u.y.mr)} 기준, 공개 자료). 같은 조건으로 이 매물 가격이면 약 ${(CK.yieldOf(o.price, u.y.dep, u.y.mr) * 100).toFixed(1)}%예요.</p><p class="basis">관리비·공실·세금을 빼기 전 숫자예요.</p></div>`;
+  html += checkHtml(S.region.g, u.d, o.kind === 'sale' ? o.price : 0, S.t, {});
+  html += paidHtml(o, { apt: nm, dn: u.d, g: S.region.g, villaOrJeonse: !isO || o.kind !== 'sale' });
+  html += cardBox();
+  $('res').innerHTML = html;
+  if (r && r.pts.length) mountDots($('dots'), r.pts, o.kind === 'sale' ? o.price : 0);
+  afterRender({ t: S.t, apt: nm, dong: u.d, sd: S.region.sd, g: S.region.g, d: '', b: '', area, diff: o.kind === 'sale' && r ? r.diff : (o.kind === 'jeonse' && jeon > 0 ? o.price / jeon - 1 : null) }, o, r);
+}
+
+/* ───────── 상가·건물 ───────── */
+async function evalComm(o) {
+  const doc = S.doc; if (!doc) return;
+  const ckB = document.querySelector('#fCk button.on'), k = ckB ? ckB.dataset.ck : 'c', dn = $('fDong').value, to = String(doc.to || lastYm());
+  if (!(o.area > 0)) { $('res').innerHTML = ''; $('fmsg').textContent = '면적을 넣어 주세요.'; return; }
+  const rows = (doc.tr && doc.tr[k]) || [];
+  let s = CK.commStat(rows, dn, k, to), wide = false;
+  if ((!s || s.n < CK.MIN_DEALS) && dn) { const s2 = CK.commStat(rows, '', k, to); if (s2) { s = s2; wide = true; } }
+  const per = o.price / o.area, gs = $('fGs') ? manIn($('fGs').value) : 0, dep = $('fMDep') ? manIn($('fMDep').value) : 0, rent = $('fMRent') ? manIn($('fMRent').value) : 0;
+  const kname = k === 'g' ? '건물 한 채(대지 ㎡당)' : '상가·사무실 한 칸(전용 ㎡당)', where = wide || !dn ? sggName(S.region.g) + ' 전체' : dn;
+  const who = `${esc(sggName(S.region.g))} ${esc(dn || '')} · ${esc(kname)} · ${o.area}㎡`;
+  const r = s ? { diff: per / s.ppm - 1, base: Math.round(s.ppm * o.area), pts: s.pts.map(v => ({ amt: Math.round(v * o.area) })), n: s.n, lo: Math.round(s.lo * o.area), hi: Math.round(s.hi * o.area) } : null;
+  if (r) r.rank = r.pts.filter(p => p.amt < o.price).length;
+  S.last = { o, r };
+  let html = r ? headHtml(o, r, who, `<dt>매물 ㎡당</dt><dd>${won(Math.round(per))}</dd><dt>비교 기준</dt><dd>${won(Math.round(s.ppm))} <small class="basis">${esc(where)} ${esc(CK.ymLabel(s.from))}~${esc(CK.ymLabel(s.to))} 계약 ${s.n}건 ㎡당 중간값(직거래·지분 거래 제외)</small></dd>`, wide && dn ? `${dn} 거래가 적어 ${sggName(S.region.g)} 전체 거래로 계산했어요` : '')
+    : `<div class="hd"><div class="ey">매물 가격 평가</div><div class="big">비교할 거래가 없어요</div><p class="who">${who}</p><p class="basis">최근 12개월 이 지역 같은 종류 매매 실거래가 없어 비교하지 않았어요.</p></div>`;
+  if (r) html += `<div class="sec"><h2>최근 거래 사이 어디쯤일까요<small>${esc(where)} 최근 12개월 실거래 ${s.n}건의 ㎡당 가격에 매물 면적 ${o.area}㎡를 곱해 놓았어요. 층·용도·도로 접면에 따라 차이가 커요.</small></h2><div class="dots" id="dots"></div><p><b>${esc(CK.rankText(r, o.price))}</b></p></div>`;
+  const li = [];
+  if (gs > 0) { const x = per * 10000 / gs; li.push(`<li><span class="tg n">공시지가</span><div>매물 ㎡당 가격은 넣어 주신 공시지가(㎡당 ${gs.toLocaleString('ko-KR')}원)의 <b>${x >= 10 ? Math.round(x) : x.toFixed(1)}배</b>예요.<small>${k === 'c' ? '한 칸 매물은 건물값이 함께 들어 있어 대지 공시지가와 바로 견주기 어려워요. 참고만 해 주세요.' : '건물값이 함께 들어 있어 대지 공시지가보다 높은 것이 보통이에요.'}</small></div></li>`); }
+  if (rent > 0) {
+    const y = CK.yieldOf(o.price, dep, rent), ro = (doc.rone || [])[0], it = ro && ro[2] ? (ro[2][(k === 'g' ? '중대형상가' : '집합상가') + '|inc'] || ro[2]['소규모상가|inc']) : null;
+    li.push(`<li><span class="tg n">수익률</span><div>이 매물 월세 수익률은 연 <b>${y != null ? (y * 100).toFixed(2) + '%' : '-'}</b>예요(1년 월세 ÷ (매물 가격 − 보증금)).${it && it[4] != null ? `<small>참고: ${esc(String(ro[0]).replace(/>/g, ' '))} ${k === 'g' ? '중대형상가' : '집합상가'} 소득수익률 최근 1년 ${(+it[4]).toFixed(2)}%(한국부동산원 ${esc(it[3] || '')}). 계산 방식이 달라 같은 숫자로 보면 안 되고 대략 견주는 데만 써 주세요.</small>` : ''}</div></li>`);
+  }
+  if (li.length) html += `<div class="sec"><h2>함께 보는 숫자</h2><ul class="ck">${li.join('')}</ul></div>`;
+  html += checkHtml(S.region.g, dn, 0, 'comm', {});
+  html += paidHtml(o, { apt: '', dn, g: S.region.g, comm: true });
+  html += cardBox();
+  $('res').innerHTML = html;
+  if (r) mountDots($('dots'), r.pts.sort((a, b) => a.amt - b.amt), o.price);
+  afterRender({ t: 'comm', g: S.region.g, apt: `${sggName(S.region.g)} ${dn || ''} ${k === 'g' ? '건물' : '상가'}`.replace(/\s+/g, ' '), dong: dn, sd: S.region.sd, area: o.area, diff: r ? r.diff : null }, o, r);
+}
+
+/* ───────── 토지 ───────── */
+async function evalLand(o) {
+  const d = S.doc, emd = $('fEmd').value, jm = $('fJimok').value;
+  if (!emd) { $('fmsg').textContent = '읍·면·동을 골라 주세요.'; $('res').innerHTML = ''; return; }
+  if (!(o.area > 0)) { $('fmsg').textContent = '면적을 넣어 주세요.'; $('res').innerHTML = ''; return; }
+  const per = o.price * 10000 / o.area, ps = LD.pickStats(d, emd, jm), cmp = LD.compare(ps.st, per), gs = $('fGs') ? manIn($('fGs').value) : 0;
+  const where = ps.scope === 'emd' ? `${emd}` : `${d.n} 전체`;
+  const who = `${esc(d.n)} ${esc(emd)} · ${esc(jm)} · ${o.area}㎡`;
+  const POS = { low: '주변 거래 가운데 값보다 낮은 편', mid: '주변 거래의 보통 범위(아래 25%~위 25% 사이)', p75: '주변 거래 위 25% 안(비싼 편)', p90: '주변 거래 위 10%보다 더 비싸요' };
+  S.last = { o, r: cmp ? { diff: cmp.mult - 1 } : null };
+  let html = cmp ? `<div class="hd"><div class="ey">땅 가격 평가</div><div class="big">${esc(CK.diffWord(cmp.mult - 1, '주변 거래 가운데 값').text)}</div><p class="who">${who}</p>${ps.scope === 'sgg' ? `<span class="wide">${esc(emd)} 거래가 적어 ${esc(d.n)} 전체 ${esc(jm)} 거래로 견줬어요</span>` : ''}
+      <dl class="kv"><dt>제시 가격 ㎡당</dt><dd>${esc(LD.won(per))}</dd><dt>주변 거래 가운데 값</dt><dd>${esc(LD.won(ps.st[2]))} <small class="basis">${esc(where)} ${esc(jm)} 일반 거래 ${ps.st[0]}건(지분 거래 제외)</small></dd><dt>위치</dt><dd><b>${esc(POS[cmp.pos])}</b> · 가운데 값의 ${esc(LD.times(cmp.mult))}</dd></dl></div>`
+    : `<div class="hd"><div class="ey">땅 가격 평가</div><div class="big">비교할 거래가 적어요</div><p class="who">${who}</p><p class="basis">이 지역 ${esc(jm)} 일반 거래가 적어 가운데 값을 내지 않았어요. 다른 지목이나 이웃 읍·면·동으로 견줘 보세요.</p></div>`;
+  if (gs > 0) { const x = per / gs; html += `<div class="sec"><h2>공시지가와 비교</h2><p>제시 가격은 넣어 주신 공시지가(㎡당 ${gs.toLocaleString('ko-KR')}원)의 <b>${x >= 10 ? Math.round(x) : x.toFixed(1)}배</b>예요.</p><p class="basis">공시지가는 세금 기준 값이라 실제 거래가와 차이가 나는 게 보통이에요. 너무 큰 차이는 한 번 더 확인해 보세요.</p></div>`; }
+  html += `<div class="sec"><h2>땅을 권유받았다면</h2><p>지분으로 나눠 파는 땅, 개발 계획을 강조하며 서두르게 하는 매물은 계약 전에 토지이용계획·도로·공시지가를 공식 사이트에서 꼭 확인해 주세요.</p>${(window.JDJ_SITE || {}).LAND_ENABLED ? `<p><a href="${SITE}land/">땅 위험 신호 체크 열기</a></p>` : ''}</div>`;
+  html += checkHtml(S.region.g, emd, 0, 'land', {});
+  html += cardBox();
+  $('res').innerHTML = html;
+  afterRender({ t: 'land', g: S.region.g, apt: `${d.n} ${emd} ${jm}`, dong: emd, sd: S.region.sd, area: o.area, diff: cmp ? cmp.mult - 1 : null }, o, null);
+}
+
+/* ───────── 유료·알림(상품 안내 한 곳: assets/products.js) ───────── */
+function paidHtml(o, c) {
+  if (!PR || S.t === 'comm' || S.t === 'land') return '';
+  let h = `<div class="sec" id="wantSec"><h2>원하는 가격이 있나요?<small>원하는 가격은 이 기기에만 저장해요. 서버로 보내지 않아요.</small></h2>
+    <div class="want"><div><label for="want" class="lb" style="font-size:14px;font-weight:700">원하는 가격 (만원)</label><input id="want" inputmode="numeric" placeholder="예: 120,000"></div><button type="button" class="btn ghost" id="wantSave">저장</button></div>
+    <p class="basis" id="wantMsg"></p>`;
+  const bh = PR.briefUrl('res_check', { g: c.g, dn: c.dn, apt: c.apt }, !!c.apt);
+  if (S.t === 'apt') h += `<div class="jbc jbc-l" style="margin:12px 0 0"><div class="jbc-ey">모닝 브리핑 알림</div><h3 class="jbc-h">원하는 가격 근처 거래가 생기면 알려 드려요</h3>
+    <ul class="jbc-r"><li>모닝 브리핑 관심 단지에 ${esc(jo(c.apt || '이 단지', '을', '를'))} 넣어 두면, 새 실거래가 신고된 다음 날 아침 가격·층·계약일을 메일로 받아요.</li><li>원하는 가격은 이 기기에만 두고, '내가 본 매물'에서 그 가격 ±3% 안 거래가 있었는지 함께 보여 드려요.</li></ul>
+    <div class="jbc-row"><a class="jbc-go" href="${esc(bh)}" data-track="check_to_brief">7일 무료로 받아 보기</a><span class="jbc-pr">체험 뒤 월 ${esc(PR.won(PR.BRIEF_LINK.from))}부터 · 카드 등록 없이 시작 · 자동 결제 없음</span></div></div>`;
+  h += '</div>';
+  if (c.pk) h += `<div class="sec">${PR.box('single', { href: SITE + 'premium/?p=single&k=' + encodeURIComponent(c.pk), track: 'check_to_premium', desc: '이 매물 단지의 시세 흐름·보유 기간별 미래가치 점수와 근거·내 조건 대출 계산을 한 번에 담은 리포트예요.' })}</div>`;
+  if (c.villaOrJeonse) h += `<div class="sec hi"><h2>계약 전에 등기부부터 확인하세요<small>${S.t === 'villa' ? '빌라는 같은 건물 거래가 적어 시세 확인이 어렵고, 근저당·압류가 많은 집도 있어요.' : '전세라면 집주인 빚(근저당)과 보증금 합이 집값보다 많은지 꼭 봐야 해요.'}</small></h2>${PR.box('read', { href: SITE + 'jeonse/safety/', track: 'check_to_reg' })}</div>`;
+  return h;
+}
+function cardBox() {
+  return `<div class="sec"><h2>${S.pro ? '손님용 평가 카드 만들기' : '평가 카드 이미지로 저장'}<small>이 화면의 숫자로 이 기기 안에서 그림(PNG)을 만들어요. 금액이 서버로 가지 않아요.</small></h2>
+    <div class="cardrow">${S.pro ? '<input id="cardName" maxlength="24" placeholder="사무소 이름 (선택, 카드 아래에 들어가요)">' : ''}<button type="button" class="btn primary" id="cardBtn">카드 만들기</button></div><div class="prev" id="cardPrev"></div></div>`;
+}
+
+/* 결과 다음 일: 내가 본 매물에 저장 · 원하는 가격 · 카드 */
+function afterRender(base, o, r) {
+  const item = Object.assign({ kind: o.kind, price: o.price, deposit: o.deposit, rent: o.rent, floor: o.floor }, base);
+  const list = CK.seenAdd(CK.seenLoad(LS), Object.assign({}, item, S.item && S.item.want ? { want: S.item.want } : {}));
+  CK.seenSave(LS, list); renderSeen(list);
+  const me = list[0]; S.cur = me;
+  if ($('want')) {
+    if (me && me.want) $('want').value = me.want.toLocaleString('ko-KR');
+    const showNear = () => { const w = manIn($('want').value); $('wantMsg').textContent = w && r && r.pts ? `최근 비교 거래 ${r.pts.length}건 중 원하는 가격 ±3% 안 거래는 ${CK.nearWant(r.pts, w)}건이에요.` : ''; };
+    $('want').addEventListener('input', () => { const v = manIn($('want').value); $('want').value = v ? v.toLocaleString('ko-KR') : ''; });
+    $('wantSave').onclick = () => { const w = manIn($('want').value); const l2 = CK.seenSet(CK.seenLoad(LS), me.id, { want: w }); CK.seenSave(LS, l2); renderSeen(l2); showNear(); $('wantMsg').textContent = (w ? '이 기기에 저장했어요. ' : '원하는 가격을 지웠어요. ') + $('wantMsg').textContent; };
+    showNear();
+  }
+  if ($('cardBtn')) $('cardBtn').onclick = () => makeCard(base, o, r).catch(() => { $('cardPrev').textContent = '카드를 만들지 못했어요.'; });
+  S.item = null;
+  $('res').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ───────── 평가 카드(PNG, 이 기기 안 canvas) ───────── */
+async function makeCard(base, o, r) {
+  try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (e) {}
+  const W = 1080, cv = document.createElement('canvas'); cv.width = W; cv.height = W;
+  const x = cv.getContext('2d'), F = (w, s) => `${w} ${s}px 'Noto Sans KR', sans-serif`;
+  x.fillStyle = '#FFFFFF'; x.fillRect(0, 0, W, W);
+  x.fillStyle = '#4338CA'; x.fillRect(0, 0, W, 120);
+  x.fillStyle = '#FFFFFF'; x.font = F(900, 44); x.textBaseline = 'middle'; x.fillText((window.JDJ_SITE || {}).SITE_NAME || '집예보', 64, 62);
+  x.font = F(700, 30); x.textAlign = 'right'; x.fillText('매물 가격 확인', W - 64, 62); x.textAlign = 'left'; x.textBaseline = 'alphabetic';
+  const wrap = (t, y, size, w8, color, maxW) => { x.font = F(w8, size); x.fillStyle = color; const words = String(t).split(' '); let line = '', yy = y; for (const w of words) { const tt = line ? line + ' ' + w : w; if (x.measureText(tt).width > (maxW || W - 128) && line) { x.fillText(line, 64, yy); line = w; yy += size * 1.35; } else line = tt; } if (line) x.fillText(line, 64, yy); return yy; };
+  let y = 200;
+  y = wrap(base.apt || '', y, 50, 900, '#191F28') + 56;
+  x.font = F(500, 32); x.fillStyle = '#4E5968'; x.fillText([base.band || '', base.area ? '전용 ' + base.area + '㎡' : '', o.floor ? o.floor + '층' : ''].filter(Boolean).join(' · '), 64, y); y += 70;
+  x.font = F(700, 34); x.fillStyle = '#4E5968'; x.fillText(o.kind === 'wolse' ? '월세' : o.kind === 'jeonse' ? '전세 보증금' : '매물 가격', 64, y);
+  x.font = F(900, 56); x.fillStyle = '#191F28'; x.fillText(o.kind === 'wolse' ? `${CK.eok(o.deposit)} / 월 ${o.rent}만` : won(o.price), 64, y + 70); y += 160;
+  const dw = CK.diffWord(r && r.diff);
+  x.fillStyle = dw.dir === 'low' ? '#E8F0FD' : dw.dir === 'high' ? '#FDECEE' : '#F2F4F6'; roundRect(x, 48, y - 60, W - 96, 118, 22); x.fill();
+  x.font = F(900, 44); x.fillStyle = dw.dir === 'low' ? '#1D63D8' : dw.dir === 'high' ? '#CC2536' : '#191F28'; x.fillText(dw.text || '비교할 거래가 부족해요', 80, y + 14); y += 110;
+  if (r && r.pts && r.pts.length) {
+    const vals = r.pts.map(p => p.amt).concat(o.price > 0 && o.kind === 'sale' ? [o.price] : []); let lo = Math.min(...vals), hi = Math.max(...vals); if (hi === lo) { lo *= .97; hi *= 1.03; }
+    const px = v => 96 + (v - lo) / (hi - lo) * (W - 192), yy = y + 40;
+    x.strokeStyle = '#D1D6DB'; x.lineWidth = 6; x.lineCap = 'round'; x.beginPath(); x.moveTo(96, yy); x.lineTo(W - 96, yy); x.stroke();
+    const cnt = {}; r.pts.forEach(p => { const k = Math.round(px(p.amt) / 22); cnt[k] = (cnt[k] || 0) + 1; x.fillStyle = '#8C86E0'; x.beginPath(); x.arc(px(p.amt), yy - 4 - (cnt[k] - 1) * 24, 11, 0, Math.PI * 2); x.fill(); });
+    if (o.kind === 'sale' && o.price > 0) { const p = px(o.price); x.fillStyle = '#191F28'; x.beginPath(); x.moveTo(p - 15, yy + 44); x.lineTo(p + 15, yy + 44); x.lineTo(p, yy + 16); x.closePath(); x.fill(); }
+    x.font = F(700, 26); x.fillStyle = '#4E5968'; x.fillText('최저 ' + CK.eok(r.pts[0].amt), 80, yy + 86); x.textAlign = 'right'; x.fillText('최고 ' + CK.eok(r.pts[r.pts.length - 1].amt), W - 80, yy + 86); x.textAlign = 'left';
+    y = yy + 140;
+    if (r.from) { x.font = F(500, 27); x.fillStyle = '#4E5968'; x.fillText(`${CK.ymLabel(r.from)}~${CK.ymLabel(r.to)} 실거래 ${r.n}건 기준 · 면적 환산`, 64, y); y += 46; }
+  }
+  const L = S.last || {};
+  if (L.jeon > 0 && o.kind === 'sale') { x.font = F(700, 30); x.fillStyle = '#191F28'; x.fillText(`전세가율 ${Math.round(L.jeon / o.price * 100)}% · 전세 끼면 현금 ${CK.eok(Math.max(0, o.price - L.jeon))}`, 64, y); }
+  x.fillStyle = '#F2F4F6'; x.fillRect(0, W - 120, W, 120);
+  const nm = $('cardName') ? String($('cardName').value || '').trim().slice(0, 24) : '';
+  x.font = F(700, 26); x.fillStyle = '#4E5968'; x.fillText('국토교통부 실거래 기반 참고 자료 · 사고팔기를 권하지 않아요', 64, W - 70);
+  const dt = new Date(); x.font = F(500, 24); x.fillText(`${dt.getFullYear()}.${String(dt.getMonth() + 1).padStart(2, '0')}.${String(dt.getDate()).padStart(2, '0')} 기준${nm ? ' · ' + nm : ''}`, 64, W - 36);
+  const blob = await new Promise(res => cv.toBlob(res, 'image/png'));
+  const url = URL.createObjectURL(blob), fn = '매물평가_' + String(base.apt || '').replace(/[^\w가-힣]+/g, '_').slice(0, 20) + '.png';
+  $('cardPrev').innerHTML = `<img src="${url}" alt="평가 카드 미리 보기"><div class="row"><a class="btn primary" href="${url}" download="${esc(fn)}">이미지 내려받기</a>${navigator.canShare ? '<button type="button" class="btn ghost" id="cardShare">공유하기</button>' : ''}</div>`;
+  if ($('cardShare')) $('cardShare').onclick = async () => { try { const f = new File([blob], fn, { type: 'image/png' }); if (navigator.canShare({ files: [f] })) await navigator.share({ files: [f] }); } catch (e) {} };
+  stat('feature_use', { feature: S.pro ? 'check_card_pro' : 'check_card' });
+}
+function roundRect(x, a, b, w, h, r) { x.beginPath(); x.moveTo(a + r, b); x.arcTo(a + w, b, a + w, b + h, r); x.arcTo(a + w, b + h, a, b + h, r); x.arcTo(a, b + h, a, b, r); x.arcTo(a, b, a + w, b, r); x.closePath(); }
+
+/* ───────── 내가 본 매물 ───────── */
+(function () { const s = document.createElement('style'); s.textContent = CK.SEEN_CSS; document.head.appendChild(s); if (PR) PR.style(); })();
+function renderSeen(list) { $('seenBox').innerHTML = CK.seenHtml(list || CK.seenLoad(LS)); }
+CK.seenWire($('seenBox'), SITE, LS, SS, l => renderSeen(l));
+
+/* ───────── 처음 열 때 ───────── */
+async function start() {
+  renderSeen();
+  const t = q0.get('t'); if (t && T_KO[t]) setType(t); else setType('apt');
+  if (q0.get('g') && /^\d{5}$/.test(q0.get('g'))) { await ix(); S.region = { sd: sidoOf(q0.get('g')), g: q0.get('g') }; if (S.t !== 'apt') { setMode('pick'); fillRegion(); } }
+  /* 다시 열기(내가 본 매물 → 이 탭 sessionStorage 에 id 만) */
+  const oid = SS ? CK.takeOpen(SS) : ''; const it = oid ? CK.seenLoad(LS).find(x => x.id === oid) : null;
+  if (it) S.item = it;
+  const shared = window.__JDJ_SHARED || (SS ? CK.take(SS) : '');
+  if (shared) { $('ptxt').value = shared; setMode('paste'); readText(shared, true); stat('feature_use', { feature: window.__JDJ_SHARED ? 'check_share_in' : 'check_handoff' }); return; }
+  const sd = q0.get('sd'), dk = q0.get('d');
+  if (S.t === 'apt' && sd && dk && /^s\d\d$/.test(sd)) {
+    setMode('pick'); msg('단지 자료를 불러오는 중이에요…');
+    try {
+      await ix(); const code = dk.split('|')[0];
+      const sg = await P.loadSgg(code, sd); S.sg = sg; S.units = sg.units;
+      const g = M.groupDanji(sg.units.filter(u => M.danjiKey(u) === dk)), d0 = g.get(dk);
+      if (!d0) { msg('단지를 찾지 못했어요. 이름으로 찾아 주세요.'); return; }
+      d0.sd = sd; CANDS = [d0]; S.pick = d0; S.band = (it && it.b) || q0.get('b') || ''; msg(''); $('dres').innerHTML = candHtml(CANDS); $('dres').querySelector('button').classList.add('on'); openForm();
+      if (it) runEval();
+    } catch (e) { msg('단지 자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.'); }
+  } else if (it) { msg(`'${it.apt}' 매물을 다시 평가하려면 위에서 건물을 다시 골라 주세요.`); }
+}
+start();
+})();
+</script>
+</body>
+</html>

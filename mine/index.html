@@ -58,6 +58,7 @@
 <script src="../assets/fac-view.js?v=1"></script>
 <script src="../assets/factors-core.js?v=1"></script>
 <script src="../assets/mine-core.js?v=25"></script>
+<script src="../assets/check-core.js?v=1"></script>
 <script src="../assets/ask-core.js?v=11"></script>
 <script src="../assets/ask.js?v=6"></script>
 <script src="../assets/price-sheet.js?v=27"></script>
@@ -65,7 +66,7 @@
 <script src="../assets/offi-core.js?v=7"></script>
 <script src="../assets/offi-view.js?v=17"></script>
 <script src="../assets/comm-core.js?v=7"></script>
-<script src="../assets/comm-view.js?v=14"></script>
+<script src="../assets/comm-view.js?v=15"></script>
 <script src="../assets/rent-core.js?v=6"></script>
 <script src="../assets/villa-core.js?v=1"></script>
 <script src="../assets/villa-view.js?v=8"></script>
@@ -158,6 +159,7 @@ td small{color:var(--sub2);font-size:13.5px}
 .seg2 button.on{background:#fff;color:var(--blue);box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .chead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
 .chead h3{margin:0;font-size:17px;font-weight:900}
+.ckrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:12px 0 4px}.ckrow .btn{min-height:44px;font-size:15px}.ckrow small{font-size:13px;color:var(--sub2)}
 .chart{width:100%;min-height:150px}
 .chart svg{display:block;width:100%;height:auto}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;color:var(--sub2);margin-top:4px}
@@ -257,7 +259,7 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
 .alr .msg{font-size:14px;font-weight:700}
 </style>
 <link rel="stylesheet" href="../assets/result.css?v=3">
-<script src="../assets/back.js?v=7" defer></script>
+<script src="../assets/back.js?v=8" defer></script>
 </head>
 <body data-lay="side" data-lay-key=".stats" data-lay-toc="h2,.chead:first-child>h3" data-lay-fold="#polSec>.panel,#taxSec" data-lay-jump="#res,#ofRes,#vlRes,#cmRes">
 <header class="top">
@@ -313,6 +315,20 @@ details.msum summary{cursor:pointer;font-weight:700;font-size:15px;min-height:44
     <div class="favs" id="favs"></div>
     <p class="note" style="margin:8px 0 0" id="favNote">단지 이름 옆 <b>☆ 관심 목록에 넣기</b>로 넣고 빼요. <a href="../my/watch/">관심 목록에서 새 거래·변화 보기 ›</a></p>
   </section>
+
+  <section class="sec" id="seenSec" hidden aria-labelledby="seenT">
+    <h2 id="seenT" style="font-size:19px;font-weight:900;margin:0 0 10px">내가 본 매물 <small id="seenN" style="font-size:14px;color:#4E5968;font-weight:700"></small></h2>
+    <div id="seenBox"></div>
+    <p class="note" style="margin:8px 0 0">매물 가격 확인에서 평가한 매물이에요. 이 기기에만 저장되고 서버로 보내지 않아요. <a href="../check/" data-track="mine_seen_to_check">새 매물 평가하기 ›</a></p>
+  </section>
+  <script>/* 내가 본 매물(check/ 에서 평가한 것 — assets/check-core.js, localStorage 에만) */
+  (function () { function go() { var C = window.JDJ_CHECK, box = document.getElementById('seenBox'), sec = document.getElementById('seenSec'); if (!C || !box) return;
+    var ls = null, ss = null; try { ls = window.localStorage; ss = window.sessionStorage; } catch (e) {}
+    if (!document.getElementById('cksCss')) { var st = document.createElement('style'); st.id = 'cksCss'; st.textContent = C.SEEN_CSS; document.head.appendChild(st); }
+    var paint = function (l) { l = l || C.seenLoad(ls); sec.hidden = !l.length; document.getElementById('seenN').textContent = l.length ? l.length + '곳' : ''; box.innerHTML = C.seenHtml(l); };
+    var JBs = (window.JDJ_BASE && window.JDJ_BASE.SITE) || '../';
+    C.seenWire(box, JBs, ls, ss, paint); paint(); }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go(); })();</script>
 
   <section class="panel" id="findSec" aria-labelledby="findT">
     <h2 id="findT">단지 찾기<small>시·도 → 시·군·구 → 단지 순서로 고르거나, 단지 이름으로 찾아 주세요.</small></h2>
@@ -626,6 +642,7 @@ function render(d, map, units){
     <div class="chart" id="cPrice"></div>
     <div class="legend"><span><i></i>${esc(d.apt)} ${esc(S.band)}</span><span><i class="g"></i>${esc(sggName(d.code))} 아파트 전체</span></div>
     <p class="basis">단위: 만원/3.3㎡ · 각 달 값 = 그 달까지 3개월 실거래 평당가 중간값. 거래가 없던 기간은 점선으로 이어 표시해요. 차트 위를 움직이거나 누르면 그 달 이 단지·${esc(sggName(d.code))} 전체 평당가와 차이를 보여 드려요.</p>`}
+    <p class="ckrow"><a class="btn ghost ckbtn" href="${esc(window.JDJ_CHECK ? JDJ_CHECK.prefillUrl(JB.SITE, {sd:S.sd, d:S.dkey, b:S.band}) : JB.SITE + 'check/')}" data-track="mine_to_check">이 단지 매물 평가하기</a><small>보고 있는 매물 가격이 최근 거래보다 비싼지 싼지 바로 확인해요</small></p>
     <div class="chead" style="margin-top:18px"><h3>거래량 추이 (월별 건수)</h3></div>
     <div class="chart" id="cVol" style="min-height:150px"></div>
     <p class="basis">이 평형 최근 12개월 <b>${vol.last12}건</b>${vol.prev12 != null ? ` · 그 전 12개월 ${vol.prev12}건${vol.pct != null ? ` (<span class="${updown(vol.pct)}">${M.pctTxt(vol.pct, 0)}</span>)` : ''}` : ''}${sv ? ` · ${esc(sggName(d.code))} 전체 최근 12개월 ${sv.last12.toLocaleString()}건${sv.prev12 != null ? ` · 그 전 12개월 ${sv.prev12.toLocaleString()}건${sv.pct != null ? ` (${M.pctTxt(sv.pct, 0)})` : ''}` : ''}` : ''}</p>

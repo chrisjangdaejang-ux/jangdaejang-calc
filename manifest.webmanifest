@@ -62,6 +62,18 @@
       ]
     },
     {
+      "name": "매물 가격 확인",
+      "short_name": "매물 확인",
+      "url": "./check/?src=pwa-sc",
+      "icons": [
+        {
+          "src": "./assets/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
       "name": "청약 가점 계산",
       "short_name": "청약 가점",
       "url": "./chungyak/?src=pwa-sc",
@@ -85,5 +97,14 @@
         }
       ]
     }
-  ]
+  ],
+  "share_target": {
+    "action": "./check/",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
 }
