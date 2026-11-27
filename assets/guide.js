@@ -29,7 +29,7 @@
   const cache = {};
   const getJ = (k, url) => cache[k] || (cache[k] = fetch(url, { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(url); return r.json(); }).catch(e => { delete cache[k]; throw e; }));
   function load() {
-    return Promise.all([getJ('sc', BASE + 'assets/guide/scenarios.json?v=10'), getJ('lex', BASE + 'assets/guide/lexicon.json?v=3')])
+    return Promise.all([getJ('sc', BASE + 'assets/guide/scenarios.json?v=11'), getJ('lex', BASE + 'assets/guide/lexicon.json?v=3')])
       .then(([sc, lex]) => Object.assign({}, sc, { lex }));
   }
   const ix = () => getJ('ix', DATA + 'index.json');
