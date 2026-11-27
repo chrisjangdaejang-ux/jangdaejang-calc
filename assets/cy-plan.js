@@ -175,7 +175,15 @@
   }
 
   /* ================= 무료 ④ 전매제한·실거주의무·재당첨 제한 ================= */
-  /* 주택법 시행령 제73조 별표 3(2023. 4. 7. 개정)·주택법 제57조의2(2024. 3. 19. 개정: 최초 입주가능일부터 3년 안에 거주 시작)·주택공급에 관한 규칙 제54조.
+  /* 2026-11-27 원문 대조(국가법령정보센터):
+     · 전매: 주택법 시행령 제73조 별표 3 <개정 2024. 6. 18.> — 투기과열지구·조정대상지역(과열) 수도권 3년/그 밖 1년, 분양가상한제 공공택지 수도권 3년/그 밖 1년,
+       공공택지 외 수도권 과밀억제권역 1년·성장관리·자연보전권역 6개월, 수도권 밖 광역시 도시지역 6개월·그 밖 없음, 토지임대부 분양주택 10년(제7호).
+       기간은 입주자로 선정된 날(당첨자 발표일)부터, 기간 안에 소유권이전등기를 마치면 그때 끝(별표 3 제1호 다목).
+     · 실거주: 주택법 제57조의2 제1항 <개정 2024. 3. 19.> — 대상은 수도권 분양가상한제 주택(제1호)·토지임대부 분양주택(제4호)뿐(제2호 행정중심복합도시·제3호 삭제).
+       최초 입주가능일부터 3년 안에 입주(토지임대부는 최초 입주가능일에 입주). 기간은 시행령 제60조의2 제1항 <개정 2024. 6. 18.>:
+       공공택지 80% 미만 5년·80~100% 3년, 공공택지 외 80% 미만 3년·80~100% 2년, 토지임대부 5년.
+     · 재당첨: 주택공급에 관한 규칙 제54조(시행 2026. 11. 24. 국토교통부령 제1635호 기준, 제54조는 그 개정 대상 아님) — 분양가상한제·투기과열지구 10년,
+       청약과열지역(조정대상지역) 7년, 토지임대주택 5년. 제한 기간에는 세대원 모두 '투기과열지구·청약과열지역이 아닌 곳의 민영주택'을 뺀 다른 분양주택에 당첨될 수 없음.
      공고의 규제 표시(f)와 위치로 일반 기준만 안내하고, 단지별 확정 기간은 입주자모집공고문이 기준이에요. */
   const OVER = ['의정부시', '구리시', '하남시', '고양시', '수원시', '성남시', '안양시', '부천시', '광명시', '과천시', '의왕시', '군포시', '시흥시'];   // 경기 과밀억제권역(수도권정비계획법 시행령 별표 1) — 남양주 일부·시흥 반월특수지역 제외 등은 공고문 확인
   const LAW = {
@@ -190,33 +198,35 @@
     const city = String(N.g || '').split(' ')[0];
     const over = sd === '서울특별시' || (sd === '경기도' && OVER.indexOf(city) >= 0) || sd === '인천광역시';
     let resale, why;
-    if (cap) {
+    if (lease) { resale = '10년'; why = '토지임대부 분양주택'; }
+    else if (cap) {
       if (reg || (pubLand && sh)) { resale = '3년'; why = reg ? '수도권 규제지역(투기과열지구·조정대상지역)' : '수도권 공공택지 분양가상한제 주택'; }
       else if (over) { resale = '1년'; why = '수도권 과밀억제권역' + (sd === '인천광역시' ? '(인천 강화·옹진 등 일부는 6개월)' : ''); }
-      else { resale = '6개월'; why = '수도권 그 밖의 지역'; }
+      else { resale = '6개월'; why = '수도권 그 밖의 지역(성장관리·자연보전권역)'; }
     } else {
       if (reg || (pubLand && sh)) { resale = '1년'; why = reg ? '비수도권 규제지역' : '비수도권 공공택지 분양가상한제 주택'; }
       else if (/광역시$/.test(sd)) { resale = '6개월'; why = '비수도권 광역시 도시지역'; }
       else { resale = '없음'; why = '비수도권 그 밖의 지역'; }
     }
     let live;
-    if (cap && sh) live = { has: true, txt: pubLand ? '있어요 — 수도권 공공택지 분양가상한제 주택은 분양가가 주변 시세의 80% 미만이면 5년, 80~100%면 3년 동안 직접 살아야 해요.' : '있어요 — 수도권 민간택지 분양가상한제 주택은 분양가가 주변 시세의 80% 미만이면 3년, 80~100%면 2년 동안 직접 살아야 해요.' };
-    else if (lease && cap) live = { has: true, txt: '토지임대부 분양주택은 보통 거주의무가 있어요. 기간은 입주자모집공고문을 확인하세요.' };
-    else live = { has: false, txt: cap ? '분양가상한제 표시가 없어 보통 실거주의무가 없어요.' : '수도권 밖이라 보통 실거주의무가 없어요(행정중심복합도시 등 예외는 공고문 확인).' };
-    if (live.has) live.txt += ' 2024년 3월 개정으로 최초 입주가 가능한 날부터 3년 안에 들어가 살기 시작하면 돼요(그 전에 한 번 세를 놓을 수 있어요).';
+    if (lease) live = { has: true, txt: '있어요 — 토지임대부 분양주택은 5년 동안 직접 살아야 하고, 입주 유예 없이 최초 입주가 가능한 날에 들어가 살아야 해요.' };
+    else if (cap && sh) live = { has: true, txt: (pubLand ? '있어요 — 수도권 공공택지 분양가상한제 주택은 분양가가 주변 시세의 80% 미만이면 5년, 80~100%면 3년 동안 직접 살아야 해요.' : '있어요 — 수도권 민간택지 분양가상한제 주택은 분양가가 주변 시세의 80% 미만이면 3년, 80~100%면 2년 동안 직접 살아야 해요.')
+      + ' 2024년 3월 법 개정으로 최초 입주가 가능한 날부터 3년 안에 들어가 살기 시작하면 돼요(그 사이에는 세를 놓을 수 있고, 들어간 뒤 거주 기간을 다 채워야 해요).' };
+    else live = { has: false, txt: cap ? '분양가상한제 표시가 없어 보통 실거주의무가 없어요.' : '수도권 밖 분양가상한제 주택은 실거주의무 대상이 아니에요(토지임대부만 예외).' };
     let rewin;
     if (tg || sh) rewin = { y: 10, txt: `${tg ? '투기과열지구' : '분양가상한제'} 단지라 당첨되면 세대원 모두 10년 동안 재당첨 제한을 받아요.` };
     else if (ov) rewin = { y: 7, txt: '조정대상지역 단지라 당첨되면 세대원 모두 7년 동안 재당첨 제한을 받아요.' };
-    else if (lease) rewin = { y: 5, txt: '토지임대부 분양주택이라 당첨되면 5년 동안 재당첨 제한을 받아요.' };
+    else if (lease) rewin = { y: 5, txt: '토지임대부 분양주택이라 당첨되면 세대원 모두 5년 동안 재당첨 제한을 받아요.' };
+    else if (N.k && N.k !== '민영') rewin = { y: 0, chk: true, txt: '공공분양(국민주택)은 대부분 공공택지의 분양가상한제 주택이라 그렇다면 10년이에요. 공고문의 ‘재당첨 제한’ 항목을 확인하세요.' };
     else rewin = { y: 0, txt: '규제 표시가 없는 민영주택이라 보통 재당첨 제한 대상이 아니에요. 다만 당첨되면 다른 단지 청약 때 1순위 조건(최근 당첨 이력)이 달라질 수 있어요.' };
-    rewin.txt += ' 재당첨 제한 기간에는 규제지역·분양가상한제 단지 등에 청약할 수 없어요.';
+    if (rewin.y || rewin.chk) rewin.txt += ' 재당첨 제한 기간에는 비규제지역 민영주택을 뺀 다른 분양주택(국민주택·규제지역 민영주택 등)에 당첨될 수 없어요.';
     return { resale, resaleWhy: why, live, rewin, sd, cap, reg, sh, pubLand, flags: f };
   }
   function rulesHTML(N) {
     const R = rules(N);
-    return `<ul class="cyq-rules"><li><b>전매제한</b><span class="cyq-chip ${R.resale === '없음' || R.resale === '6개월' ? 'g' : 'y'}">${esc(R.resale)}</span><div>${esc(R.resaleWhy)} 기준이에요. 기간은 당첨자 발표일부터 세고, 그동안 분양권을 팔 수 없어요. <a href="${LAW.resale}" target="_blank" rel="noopener">주택법 시행령 별표 3 ↗</a></div></li>`
+    return `<ul class="cyq-rules"><li><b>전매제한</b><span class="cyq-chip ${R.resale === '없음' || R.resale === '6개월' ? 'g' : 'y'}">${esc(R.resale)}</span><div>${esc(R.resaleWhy)} 기준이에요. 기간은 당첨자 발표일부터 세고, 그동안 분양권을 팔 수 없어요(기간 안에 소유권이전등기를 마치면 그때 끝나요). <a href="${LAW.resale}" target="_blank" rel="noopener">주택법 시행령 별표 3 ↗</a></div></li>`
       + `<li><b>실거주의무</b><span class="cyq-chip ${R.live.has ? 'y' : 'g'}">${R.live.has ? '있음' : '보통 없음'}</span><div>${esc(R.live.txt)} <a href="${LAW.live}" target="_blank" rel="noopener">주택법 제57조의2 ↗</a></div></li>`
-      + `<li><b>재당첨 제한</b><span class="cyq-chip ${R.rewin.y ? 'y' : 'g'}">${R.rewin.y ? R.rewin.y + '년' : '보통 없음'}</span><div>${esc(R.rewin.txt)} <a href="${LAW.rewin}" target="_blank" rel="noopener">주택공급에 관한 규칙 제54조 ↗</a></div></li></ul>`
+      + `<li><b>재당첨 제한</b><span class="cyq-chip ${R.rewin.y ? 'y' : R.rewin.chk ? 'n' : 'g'}">${R.rewin.y ? R.rewin.y + '년' : R.rewin.chk ? '공고문 확인' : '보통 없음'}</span><div>${esc(R.rewin.txt)} <a href="${LAW.rewin}" target="_blank" rel="noopener">주택공급에 관한 규칙 제54조 ↗</a></div></li></ul>`
       + `<p class="cyq-s">공고 규제 표시: ${esc(R.flags.length ? R.flags.join(' · ') : '없음')}. 위 기간은 공고 위치·규제 표시로 본 일반 기준이에요. 단지별 확정 기간은 입주자모집공고문의 ‘전매 제한’·‘거주의무’ 항목이 기준이에요.</p>`;
   }
 
@@ -273,7 +283,7 @@
       why: mk.rows.map(r => `${r.t}: ${r.head}`), src: [{ n: mk.src.t }] });
     /* ⑤ 전매·실거주 */
     const R = rules(N);
-    items.push({ id: 'rule', t: '전매제한·실거주의무', lv: R.live.has || (R.resale !== '없음' && R.resale !== '6개월') ? 'y' : 'g', v: `전매 ${R.resale} · 실거주 ${R.live.has ? '있음' : '보통 없음'}`, s: `${R.resaleWhy} · 재당첨 제한 ${R.rewin.y ? R.rewin.y + '년' : '보통 없음'}`,
+    items.push({ id: 'rule', t: '전매제한·실거주의무', lv: R.live.has || (R.resale !== '없음' && R.resale !== '6개월') ? 'y' : 'g', v: `전매 ${R.resale} · 실거주 ${R.live.has ? '있음' : '보통 없음'}`, s: `${R.resaleWhy} · 재당첨 제한 ${R.rewin.y ? R.rewin.y + '년' : R.rewin.chk ? '공고문 확인' : '보통 없음'}`,
       why: [`전매제한 ${R.resale}: ${R.resaleWhy} 기준(주택법 시행령 별표 3)`, R.live.txt, R.rewin.txt], src: [{ n: '국가법령정보센터', u: LAW.resale }] });
     const cnt = { r: 0, y: 0 }; items.forEach(i => { if (cnt[i.lv] != null) cnt[i.lv]++; });
     const lv = cnt.r ? 'r' : cnt.y ? 'y' : items.every(i => i.lv === 'n') ? 'n' : 'g';
@@ -437,7 +447,8 @@
     const mySd = prof && prof.m && prof.m.mySido ? E.sidoNorm(prof.m.mySido) : '';
     const near = n => { const sd = E.noticeSido(n); return !mySd || sd === mySd || (CAP.indexOf(sd) >= 0 && CAP.indexOf(mySd) >= 0); };
     const live = (notices || []).filter(n => n.k === '민영' && (S ? S.isLive(n, t) : true) && (scope !== 'near' || near(n)));
-    const sameDay = {}; live.forEach(n => { if (n.pw) (sameDay[n.pw] = sameDay[n.pw] || []).push(n.no); });
+    /* 발표일이 같은 공고: 공고문 '1인 1건'(주택공급에 관한 규칙 제21조 제3항 제24호 이중당첨자 처리 사항) — 민영·국민, 전국 모두 함께 셈 */
+    const sameDay = {}; (notices || []).filter(n => n.pw && (S ? S.isLive(n, t) : true)).forEach(n => { (sameDay[n.pw] = sameDay[n.pw] || []).push(n.no); });
     const out = [];
     live.forEach(n => {
       const sd = E.noticeSido(n), R = rules(n);
@@ -464,7 +475,7 @@
         else if (r1g === 'ok') cons.push('1순위 조건 충족');
         if (sp.length) cons.push(`특별공급 가능성: ${sp.slice(0, 3).join('·')}${sp.length > 3 ? ` 외 ${sp.length - 3}` : ''}`);
         if (R.rewin.y) cons.push(`당첨되면 재당첨 제한 ${R.rewin.y}년`);
-        if (n.pw && sameDay[n.pw].length > 1) cons.push(`발표일(${dot(n.pw)})이 같은 공고 ${sameDay[n.pw].length - 1}곳과는 한 사람이 한 곳만 신청할 수 있어요(두 곳 넣으면 모두 무효)`);
+        if (n.pw && sameDay[n.pw].length > 1) cons.push(`발표일(${dot(n.pw)})이 같은 공고 ${sameDay[n.pw].length - 1}곳과는 한 사람이 한 건만 신청할 수 있어요(두 건 넣으면 모두 무효 — 같은 단지 특별공급·일반공급 1건씩은 가능, 부부는 각자 신청 가능)`);
         if (prof && prof.e && prof.e.win === 'y' && R.reg) cons.push('최근 5년 당첨 이력이 있으면 규제지역 1순위가 안 돼요');
         out.push({ n, no: n.no, name: n.n, sd, gu: n.g || '', ty: x[0], tyName: tyName(x[0]), area: +x[1], gen: +x[2] || 0, price: +x[4] || 0, band, lt, p, d,
           margin: d && p ? my - p.hi : null, block: r1g === 'no', here, cons, rewin: R.rewin.y, rc: (n.rc && n.rc[0]) || (n.r1 && n.r1[0]) || '', pw: n.pw || '' });
