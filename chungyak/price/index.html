@@ -11,7 +11,7 @@
 <script src="../../assets/biz.js?v=3" defer></script>
 <title>분양가·입지 분석 — 집예보 청약</title>
 <link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/chungyak/price/">
-<meta name="description" content="청약 공고마다 분양가가 주변 신축·준신축 실거래와 비교해 어디쯤인지, 주변 청약 경쟁률·당첨 가점, 미래가치, 입주 예정·미분양, 계약금·중도금·잔금 시점별 필요 현금까지 보여 드려요.">
+<meta name="description" content="청약 공고마다 일정·D-day, 평형별 분양가와 주변 신축 시세 비교, 내 가점으로 본 주택형별 당첨 가능성, 특별공급·제출 전 실수 점검, 역·학교·개발 정보, 전매제한·실거주의무까지 무료로 보여 드려요.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="집예보">
 <meta property="og:title" content="분양가·입지 분석 — 집예보 청약">
@@ -31,7 +31,15 @@
 <script src="../../assets/rec-core.js?v=8"></script>
 <script src="../../tax/tax-engine.js?v=4"></script>
 <script src="../../assets/loan-core.js?v=6"></script>
-<script src="../../assets/cy-price.js?v=7"></script>
+<script src="../../assets/cy-price.js?v=8"></script>
+<script src="../../assets/config.js?v=13"></script>
+<script src="../../assets/premium-teaser.js?v=1"></script>
+<script src="../../assets/diag.js?v=1"></script>
+<link rel="stylesheet" href="../../assets/diag.css?v=1">
+<script src="../cy-engine.js?v=8"></script>
+<script src="../../assets/sale-status.js?v=1"></script>
+<script src="../../assets/cy-list.js?v=2"></script>
+<script src="../../assets/cy-plan.js?v=1"></script>
 <style>
 .wrap{max-width:760px;margin:0 auto;padding:24px 20px 60px}
 h1{font-size:clamp(25px,6.4vw,34px);margin:6px 0 8px}
@@ -43,6 +51,12 @@ h1{font-size:clamp(25px,6.4vw,34px);margin:6px 0 8px}
 .paid .btn{width:100%;min-height:52px}
 .paid .pr{font-size:13.5px;color:var(--sub2);margin-top:8px}
 .biz{margin-top:14px;font-size:14px;color:var(--sub2);line-height:1.6}
+.toc{display:flex;gap:6px;overflow-x:auto;margin:14px 0 0;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.toc a{flex:none;display:inline-flex;align-items:center;min-height:40px;padding:0 12px;border-radius:999px;border:1px solid var(--line);font-size:14px;font-weight:700;color:var(--text);text-decoration:none;background:#fff}
+.cyq-sec{scroll-margin-top:12px}
+.myrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:4px 0 8px}.myrow input{width:120px;min-height:44px;border:1px solid var(--line);border-radius:12px;padding:0 10px;font:inherit;font-size:16px;font-weight:700}.myrow span{font-size:13.5px;color:var(--sub2)}
+.paid .jpt{background:#fff}
+.detail-h{font-size:21px;margin:34px 0 0;letter-spacing:-.4px}
 .empty{padding:24px 16px;text-align:center;color:var(--sub2);border:1px solid var(--line);border-radius:16px;background:var(--gray2)}
 </style>
 <script src="../../assets/back.js?v=2" defer></script>
@@ -71,16 +85,64 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
   document.title = `${D.name} 분양가·입지 분석 — 집예보`;
   const ymd = s => s && s.length >= 8 ? `${s.slice(0, 4)}.${+s.slice(4, 6)}.${+s.slice(6, 8)}` : '';
   const key = C.keyOf(D), PR = C.PRODUCT, won = n => Number(n).toLocaleString('ko-KR') + '원';
+  const P = window.JDJ_CYPLAN, E = window.JDJ_CYE, L = window.JDJ_CYL;
+  if (P) P.style();
+  const DATA = JB.DATA + 'data/', getJ = u => fetch(u).then(r => r.ok ? r.json() : null).catch(() => null);
+  const nj = await getJ(DATA + 'chungyak/notices.json');
+  const N = ((nj && nj.rows) || []).find(n => n.no === no) || null;
+  const prof = P ? P.profile() : { my: null };
+  let my = prof.my;
+  const sec = (id, t, lead, body) => `<section class="cyq-sec" id="${id}"><h2>${t}</h2>${lead ? `<p class="cyq-lead">${lead}</p>` : ''}${body}</section>`;
+  /* 일정·D-day·달력(assets/cy-list.js 와 같은 계산) */
+  const sched = () => {
+    if (!N || !L) return '';
+    const d = L.dday(N), ev = L.events(N);
+    return `<div class="cyq-sched"><div><span class="dd">${esc(d.txt)}</span><b>${esc(L.LABEL[L.stOf(N)] || '')}</b></div>
+      <ul>${ev.map(v => `<li><span>${esc(v.t)}</span><b>${ymd(v.b)}${v.e !== v.b ? '~' + ymd(v.e).slice(5) : ''}</b></li>`).join('')}${D.mv ? `<li><span>입주 예정</span><b>${D.mv.slice(0, 4)}년 ${+D.mv.slice(4, 6)}월</b></li>` : ''}</ul>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">${ev.length ? '<button type="button" class="cyq-btn" id="icsBtn" data-track="cy_price_ics" style="margin-top:0">내 달력에 추가</button>' : ''}${N.u ? `<a class="cyq-btn" style="margin-top:0;text-decoration:none" href="${esc(N.u)}" target="_blank" rel="noopener">청약홈 공고 원문 ↗</a>` : ''}</div></div>`;
+  };
   box.innerHTML = `<div class="eyebrow">청약 공고 · 분양가·입지 분석</div><h1>${esc(D.name)}</h1>
     <div class="meta">${esc(D.sd)} ${esc(D.gn)} ${esc(D.dg || '')} · ${D.k ? esc(D.k) + ' · ' : ''}총 ${Number(D.hh || 0).toLocaleString('ko-KR')}세대 · 모집공고 ${ymd(D.pb)}</div>
-    ${C.detail(D, D, { paid: false })}
-    <section class="paid" id="paid"><h2>유료 리포트에서 더 자세히</h2>
-      <ul><li>연식(신축·준신축)·범위(1km·2km·같은 구)별 주변 거래 하위 25%·중간값·상위 25%</li><li>가까운 비교 단지 10곳의 최근 12개월 3.3㎡당 가격</li>
-      <li>최근 2년 주변 분양 전체의 경쟁률·당첨 가점</li><li>${esc(D.gn)} 미분양 24개월 추이, 30~40대 인구·순이동</li><li>이 지역에 적용되는 규제·대출 정책 목록</li><li>PDF로 저장 · 1년 동안 다시 보기</li></ul>
-      ${key ? `<a class="btn blue" href="${JB.SITE}premium/checkout/?p=cy&k=${encodeURIComponent(key)}" data-track="cy_price_buy">${won(PR.amount)} · ${PR.name} 보기</a>
+    ${sched()}
+    <nav class="toc" aria-label="이 화면 차례"><a href="#cyDiagS">청약 점검</a><a href="#cyTypeS">평형별 분양가</a><a href="#cyOddsS">당첨 가능성</a><a href="#cyLocS">입지</a><a href="#cyRuleS">전매·실거주</a><a href="#paid">유료 리포트</a><a href="#cyp1">자세한 분석</a></nav>
+    ${sec('cyDiagS', '이 공고 청약 점검', '내 가점·1순위·특별공급 8가지·제출 전 3대 실수·전매제한을 이 공고 기준으로 한 번에 봐요. 청약 가점 화면에서 답한 내용을 이 기기에서 그대로 써요.', '<div id="cyDiag"></div>')}
+    ${sec('cyTypeS', '평형별 분양가, 주변 신축과 비교', '주택형마다 최고 분양가를 3.3㎡당으로 바꿔, 같은 면적대 주변 준공 10년 이내 아파트 실거래 중간값과 견줬어요.', P ? P.typeCompareHTML(D) : '')}
+    ${sec('cyOddsS', '내 가점으로 본 당첨 가능성', '주택형마다 면적대별 예상 최저 당첨 가점과 내 가점을 견주고, 비슷한 단지의 과거 결과도 함께 보여 드려요.', `<div class="myrow"><label for="myScore"><b>내 청약 가점</b></label><input id="myScore" type="number" inputmode="numeric" min="0" max="84" placeholder="예: 64" value="${my == null ? '' : my}"><span>${my == null ? '<a href="' + JB.SITE + 'chungyak/">가점 계산하기 ›</a>' : '청약 가점 화면에서 계산한 점수예요'}</span></div><div id="cyOdds"></div>`)}
+    ${sec('cyLocS', '입지 요약', '공고 위치에서 가까운 지하철역·중학교와, 공식 자료로 확인한 주변 개발 정보예요.', '<div id="cyLoc"><div class="cyq-na">위치 자료를 불러오는 중이에요…</div></div>')}
+    ${sec('cyRuleS', '전매제한·실거주의무·재당첨 제한', '', N && P ? P.rulesHTML(N) : '<p class="cyq-na">공고 자료를 불러오지 못했어요.</p>')}
+    <section class="paid cyq-paidwrap" id="paid"><h2>유료 리포트 · ${esc(PR.name)} ${won(PR.amount)}</h2>
+      <p class="cyq-s" style="margin:0">위 무료 분석에 더해, 당첨 뒤 돈 계획과 청약 전략을 내 조건으로 계산해 드려요.</p>
+      <div id="cyTeasers"></div>
+      ${key ? `<a class="btn blue" style="margin-top:12px" href="${JB.SITE}premium/checkout/?p=cy&k=${encodeURIComponent(key)}" data-track="cy_price_buy">${won(PR.amount)} · ${PR.name} 보기</a>
       <div class="pr">결제·열람·환불은 다른 프리미엄 리포트와 같아요(열람 전 7일 안 전액 환불).</div>` : '<div class="pr">유료 리포트를 준비하고 있어요.</div>'}
     </section>
+    <h2 class="detail-h">자세한 분석</h2>
+    ${C.detail(D, D, {})}
     <p class="biz">시행사·분양대행사라면 같은 분석으로 고객에게 나눠 줄 <a href="${JB.SITE}pro/developer/#p-brochure">집예보 분석 브로슈어</a>나, 자기 브로슈어에 골라 넣는 그래프·표·지도 <a href="${JB.SITE}pro/developer/#p-datapack">현장 자료 팩</a>을 신청할 수 있어요. 분석 숫자는 광고 여부와 관계없이 같아요.</p>`;
+  const ib = $('icsBtn');
+  if (ib && N && L) ib.onclick = () => {
+    try { const b = new Blob([L.ics(N, { url: location.href.split('#')[0] })], { type: 'text/calendar;charset=utf-8' }), a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = ('청약일정_' + N.n).replace(/[\\/:*?"<>|\s]+/g, '_').slice(0, 50) + '.ics'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); } catch (e) {}
+  };
+  /* 점수 파일(과거 당첨 결과): 시·도 → scores/sNN.json (chungyak/ 화면과 같은 자료) */
+  let scoreRows = [], loc = null;
+  const today = new Date(), t8 = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+  const drawDiag = () => { if (P && N && window.JDJ_DIAG) JDJ_DIAG.mount($('cyDiag'), P.diagReport(N, D, Object.assign({}, prof, { my })), { base: JB.SITE, key: 'cy_' + no, track: 'cy_diag', print: true, share: { url: location.href.split('#')[0], title: D.name + ' 청약 점검', text: D.name + ' 분양가·입지 분석' }, shareNote: '공유하면 이 공고 주소만 보내요. 내 가점·답은 담지 않아요.' }); };
+  const drawOdds = () => { $('cyOdds').innerHTML = P && N ? P.typeOddsHTML(N, my, scoreRows, t8) : '<p class="cyq-na">공고 자료를 불러오지 못했어요.</p>'; };
+  const drawTeasers = () => { if (P) $('cyTeasers').innerHTML = P.teasers(D, N, key, { notices: (nj && nj.rows) || [], my, prof, today: t8, loc }); };
+  drawDiag(); drawOdds(); drawTeasers();
+  $('myScore').addEventListener('input', () => { const v = $('myScore').value.trim(); my = /^\d{1,2}$/.test(v) && +v <= 84 ? +v : null; drawOdds(); drawDiag(); drawTeasers(); });
+  if (N && E) {
+    getJ(DATA + 'chungyak/index.json').then(ix => {
+      const sd = E.noticeSido(N), f = ix && ix.scores && (ix.scores.sido || []).find(x => E.sidoNorm(x.n) === sd);
+      return f ? getJ(DATA + 'chungyak/scores/' + f.f + '.json') : null;
+    }).then(j => { scoreRows = (j && j.rows) || []; drawOdds(); });
+  }
+  Promise.all([getJ(DATA + 'bunyang/notices.json'), D.sid ? getJ(DATA + 'poi/' + D.sid + '.json') : null, getJ(DATA + 'devmap.json')]).then(([bj, poi, dm]) => {
+    const B = ((bj && bj.rows) || []).find(b => b.no === no);
+    loc = P ? P.locSummary(B && B.xy, poi, dm) : null;
+    $('cyLoc').innerHTML = loc ? P.locHTML(loc, D) : '';
+    drawTeasers();
+  });
   C.mountFund($('cypFund'), D);
   if (window.jdjStat) jdjStat('feature_use', { feature: 'chungyak_price' });
 })();

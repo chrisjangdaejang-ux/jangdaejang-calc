@@ -204,7 +204,7 @@
   /* 토스 결제창(한 번 결제). 돌아오면 ?pay=ok&paymentKey&orderId&amount → 서버 승인 */
   function loadJs(src) { return new Promise(function (ok, no) { var s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = function () { no(new Error('결제창을 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.')); }; document.head.appendChild(s); }); }
   function tossPay(o) {   /* 결제 설정(assets/pay.js — 클라이언트 키)은 충전할 때만 불러와요(화면 위 시험 결제 띠가 늘 보이지 않게) */
-    return (window.JDJ_PAY ? Promise.resolve() : loadJs('../../assets/pay.js?v=7')).then(function () { return tossPay2(o, window.JDJ_PAY); });
+    return (window.JDJ_PAY ? Promise.resolve() : loadJs('../../assets/pay.js?v=8')).then(function () { return tossPay2(o, window.JDJ_PAY); });
   }
   function tossPay2(o, PAY) {
     var key = PAY && PAY.CLIENT_KEY, back = location.origin + location.pathname;

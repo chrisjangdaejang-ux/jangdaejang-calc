@@ -130,7 +130,7 @@
   /* ---------- 상세(무료) + 유료 리포트 ---------- */
   function section(t, body, id) { return '<section class="cyp-sec"' + (id ? ' id="' + id + '"' : '') + '><h2>' + t + '</h2>' + body + '</section>'; }
   function detail(r, D, opt) {
-    opt = opt || {}; var paid = !!opt.paid, h = '';
+    opt = opt || {}; var h = '';   /* opt.paid 는 예전 호출 호환용 — 2026-11-27부터 이 분석은 모두 무료(유료는 assets/cy-plan.js 세 가지) */
     var bands = (D.bands || []).map(function (b) {
       var q = b.q || [];
       return '<div class="cyp-b"><div class="cyp-bh"><b>' + BAND[b.b] + '</b> ' + b.types + '개 주택형 · ' + fmt(b.hh) + '세대 ' + tierPill(b) + '</div>'
@@ -141,17 +141,16 @@
         + (basisTxt(b) ? '<div class="cyp-s">' + esc(basisTxt(b)) + '</div>' : '') + '</div>';
     }).join('');
     h += section('1. 분양가, 주변 시세와 비교하면', bands + '<div class="cyp-s">분양가에는 발코니 확장·옵션이 빠진 경우가 많고, 실거래가는 그것이 들어간 값이라 같은 조건이 아니에요. 층·향·브랜드·단지 규모 차이도 숫자에 담기지 않았어요.</div>', 'cyp1');
-    if (paid && D.table && D.table.length) {
+    if (D.table && D.table.length) {   /* 2026-11-27 대표 승인: 주변 거래 사례는 무료(엔진 docs/pricing_policy.md) */
       h += section('1-1. 연식·범위별 주변 거래', '<table class="cyp-tb"><tr><th>면적</th><th>연식</th><th>범위</th><th class="num">하위 25%</th><th class="num">중간값</th><th class="num">상위 25%</th><th class="num">거래</th></tr>'
         + D.table.map(function (t) { var q = t.q || []; return '<tr><td>' + BAND[t.band] + '</td><td>' + esc(t.grp) + '</td><td>' + esc(t.scope) + '</td><td class="num">' + (q[0] == null ? '–' : fmt(q[0])) + '</td><td class="num"><b>' + fmt(q[1]) + '</b></td><td class="num">' + (q[2] == null ? '–' : fmt(q[2])) + '</td><td class="num">' + t.n + '</td></tr>'; }).join('') + '</table>'
         + (D.complexes && D.complexes.length ? '<h3>가까운 비교 단지</h3><table class="cyp-tb"><tr><th>단지</th><th class="num">준공</th><th>면적</th><th class="num">거리</th><th class="num">3.3㎡당</th></tr>'
           + D.complexes.map(function (c) { return '<tr><td>' + esc(c.name) + '<br><span class="cyp-s">' + esc(c.dong) + ' · 거래 ' + c.n + '건</span></td><td class="num">' + c.by + '</td><td>' + BAND[c.band] + '</td><td class="num">' + (c.d >= 99 ? '–' : c.d.toFixed(1) + 'km') + '</td><td class="num">' + fmt(c.med) + '</td></tr>'; }).join('') + '</table>' : ''), 'cyp1b');
     }
-    var comp = D.comp || [], cs = paid ? comp : comp.slice(0, 3);
+    var comp = D.comp || [], cs = comp;
     h += section('2. 주변 최근 분양 경쟁률·당첨 가점', (cs.length ? '<table class="cyp-tb"><tr><th>단지</th><th class="num">1순위 최고 경쟁률</th><th class="num">당첨 가점 최저/평균</th></tr>'
       + cs.map(function (c) { return '<tr><td>' + esc(c.name) + '<br><span class="cyp-s">' + ymd(c.pb) + ' 공고' + (c.d != null ? ' · ' + c.d.toFixed(1) + 'km' : '') + '</span></td><td class="num">' + (c.rate == null ? '–' : c.rate + ' : 1') + '</td><td class="num">' + (c.lo == null ? '–' : c.lo + (c.avg != null ? ' / ' + c.avg : '')) + '</td></tr>'; }).join('') + '</table>'
       : '<div class="cyp-na">최근 2년 같은 구·반경 3km 안 아파트 분양이 없어 비교 자료가 부족해요.</div>')
-      + (!paid && comp.length > 3 ? '<div class="cyp-s">가까운 3곳만 보여 드려요(전체 ' + comp.length + '곳은 유료 리포트).</div>' : '')
       + '<div class="cyp-s">경쟁률·가점이 –이면 발표 전이거나 공공데이터에 없는 공고예요. 해당 지역 1순위 기준이에요.</div>', 'cyp2');
     var f = D.fv || {}, fv = '';
     [['반경 2km 아파트', f.near, f.near_n], ['그중 준공 10년 이내', f.newer, f.newer_n], [D.gn + ' 전체', f.gu, f.gu_n]].forEach(function (x) {
@@ -162,8 +161,8 @@
     var sup = '<div class="cyp-g3">'
       + '<div class="cyp-st"><span>입주 예정(청약홈 공고)</span>' + (D.sup ? '<b>' + fmt(D.sup[0] + D.sup[1] + D.sup[2]) + '세대</b><small>1년 안 ' + fmt(D.sup[0]) + ' · 1~2년 ' + fmt(D.sup[1]) + ' · 2~3년 ' + fmt(D.sup[2]) + '</small>' : '<b class="cyp-na">자료 없음</b>') + '</div>'
       + ['uns', 'und'].map(function (k) { var u = D[k]; return '<div class="cyp-st"><span>' + (k === 'uns' ? '미분양' : '준공 후 미분양') + '(국토교통부)</span>' + (u ? '<b>' + fmt(u.now) + '호</b><small>' + ym(u.ym) + (u.y1 != null ? ' · 1년 전 ' + fmt(u.y1) + '호' : '') + (u.grp > 1 ? ' · 시 단위' : '') + '</small>' : '<b class="cyp-na">최근 자료 없음</b>') + '</div>'; }).join('') + '</div>';
-    if (paid && D.uns_series) sup += unsBars(D.uns_series);
-    if (paid && D.pp) {
+    if (D.uns_series) sup += unsBars(D.uns_series);
+    if (D.pp) {
       var a = D.pp.a3049 || {}, nm = D.pp.nm || {};
       sup += '<table class="cyp-tb"><tr><th>인구(통계청)</th><th class="num">값</th><th>비교</th></tr>'
         + (a.v != null ? '<tr><td>30~40대 인구 3년 증감</td><td class="num">' + (a.v > 0 ? '+' : '') + a.v + '%</td><td>' + (a.of ? a.of + '곳 중 ' + a.rk + '위' : '') + ' · ' + ym(a.ym) + '</td></tr>' : '')
@@ -171,7 +170,7 @@
     }
     h += section('4. 수요·공급 — ' + esc(D.gn), sup, 'cyp4');
     h += section('5. 대출 규제·자금 계획', '<div class="cyp-s">' + esc(D.gn) + ' 규제지역: <b>' + (D.reg ? '투기과열지구·조정대상지역' : '해당 없음') + '</b>' + (D.pol_at ? ' (정책 ' + esc(D.pol_at) + ' 확인)' : '') + '</div>'
-      + (paid && D.pol && D.pol.length ? '<ul class="cyp-l">' + D.pol.map(function (p) { return '<li><b>' + esc(p.date) + ' ' + esc(p.name) + '</b> ' + esc(p.plain) + '</li>'; }).join('') + '</ul>' : '')
+      + (D.pol && D.pol.length ? '<ul class="cyp-l">' + D.pol.map(function (p) { return '<li><b>' + esc(p.date) + ' ' + esc(p.name) + '</b> ' + esc(p.plain) + '</li>'; }).join('') + '</ul>' : '')
       + '<div id="cypFund"></div>', 'cyp5');
     var rk = D.risks || [];
     h += section('6. 살펴볼 점(리스크)', rk.length ? '<ol class="cyp-rk">' + rk.map(function (x) { return '<li><b>' + esc(x[0]) + '</b> — ' + esc(x[1]) + '</li>'; }).join('') + '</ol>' : '<div class="cyp-s">공개 자료에서 따로 확인되는 리스크 항목은 없어요. 공고문의 분양 조건·현장은 직접 확인하세요.</div>', 'cyp6');
@@ -273,6 +272,14 @@
       + detail(D, D, { paid: true })
       + '<div class="cyp-s" style="margin-top:14px">출처: 국토교통부 아파트 매매 실거래가(공공데이터포털) · 한국부동산원 청약홈 분양정보·경쟁률·당첨 가점 · 국토교통부 미분양주택현황(KOSIS) · 통계청 주민등록인구·국내인구이동 · 정책브리핑. 청약 자격·일정·분양 조건은 입주자모집공고문과 청약홈이 기준이에요.</div></article>';
     mountFund(el.querySelector('#cypFund'), D);
+    /* 유료 핵심 세 가지(내 돈 계획표·청약 전략표·입주 요인) — assets/cy-plan.js. 무료 분석 위에 먼저 보여 줘요 */
+    if (root.JDJ_CYPLAN) {
+      var box = document.createElement('div'); box.id = 'cyqPaid';
+      var art = el.querySelector('.cyp-rep'), first = art && art.querySelector('.cyp-sec');
+      if (first) art.insertBefore(box, first); else el.appendChild(box);
+      root.JDJ_CYPLAN.style();
+      try { await root.JDJ_CYPLAN.mountPaid(box, D); } catch (e) { box.innerHTML = '<div class="cyp-na">유료 계산을 불러오지 못했어요. 새로고침해 주세요.</div>'; }
+    }
     return D;
   }
 

@@ -44,9 +44,9 @@ const D = Object.assign({}, R, { bands: [bandLack, bandHi, bandLease], comp: [{ 
   uns_series: [['202510', 10], ['202609', 25]], pp: { a3049: { v: -3.4, ym: '202610', rk: 18, of: 25 } }, pol: [{ date: '2025-10-15', name: '10·15 대책', plain: '설명' }], pol_at: '2026-11-19',
   types: [{ ty: '059.9000A', area: 59.9, hh: 35, price: 80000 }, { ty: '084.9000A', area: 84.9, hh: 60, price: 120000 }], dataTo: '202610', updated: '2026-11-20' });
 const free = C.detail(D, D, { paid: false }), paid = C.detail(D, D, { paid: true });
-check('상세(무료): 주변 분양 3곳만 + 유료 안내', (free.match(/<tr><td>[A-D]<br>/g) || []).length === 3 && free.includes('전체 4곳은 유료 리포트'));
+check('상세(무료): 주변 분양 전체(2026-11-27 대표 승인 — 주변 거래 사례는 무료)', (free.match(/<tr><td>[A-D]<br>/g) || []).length === 4 && !free.includes('유료 리포트'));
 check('상세(유료): 연식·범위별 표·비교 단지·미분양 추이·인구·정책', ['1-1. 연식·범위별', '가까운 비교 단지', '최근 24개월 미분양', '30~40대 인구 3년 증감', '10·15 대책'].every(t => paid.includes(t)));
-check('상세(무료): 유료 전용 표는 없음', !free.includes('1-1. 연식·범위별') && !free.includes('최근 24개월 미분양'));
+check('상세(무료): 연식·범위별 표·비교 단지·미분양 추이도 무료(유료는 assets/cy-plan.js 세 가지)', free === paid && free.includes('1-1. 연식·범위별') && free.includes('최근 24개월 미분양'));
 check('상세: 광고가 분석에 영향 없음 명시', free.includes('광고 여부는 분석 숫자에 영향을 주지 않아요'));
 check('상세: 리스크(불리한 숫자) 그대로', free.includes('6. 살펴볼 점') && free.includes('25호로 늘었어요'));
 check('상세: 지금 거래 기준(입주 때 가격 아님)', free.includes('입주 때 가격이 아니에요'));
