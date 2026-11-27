@@ -439,8 +439,7 @@ tr.total td{border-top:1px solid var(--text)}
 .cmpbtn-add.on{background:var(--blue-l);color:var(--blue)}
 .cmore[hidden]{display:none}
 .cmore{display:flex;flex-direction:column;gap:12px}
-@media print{.cmore[hidden]{display:flex!important}.cacts{display:none!important}body.jdj-locked .cmore{display:none!important}}
-.cgate[hidden]{display:none}
+@media print{.cmore[hidden]{display:flex!important}.cacts{display:none!important}}
 .savemsg{font-size:14px;font-weight:700;align-self:center}
 /* 비교 */
 #cmpBar{background:#fff;color:var(--text);border:1px solid var(--line);box-shadow:0 6px 24px rgba(0,0,0,.14)}
@@ -1351,7 +1350,6 @@ async function render(){
           <div class="noprint" data-txb="${i}" hidden></div>
           ${tz ? '' : window.JDJ_TEASER ? JDJ_TEASER.html({key:k, desc:'보유 기간별 근거·오를/내릴 이유·적중 기록 상세를 담아요.', track:'report_to_premium', cls:'noprint'}) : `<a class="premlink noprint" href="${JB.SITE}premium/?p=single&k=${encodeURIComponent(k)}" data-track="report_to_premium">미래가치 상세 리포트 · 자세히 보기 (유료) ›</a>`}
         </div>
-        <div class="cgate" id="pg${i}" hidden></div>
         <div class="vnote">${hasFv ? '<span class="vbadge" title="'+esc(vTxt)+'">✓ 검증된 점수</span>' : '미래가치 점수가 아직 없는 단지예요(거래 자료 부족). 예산·거래량을 보고 순서를 정했어요.'}</div>
         <div class="cacts noprint"><button type="button" class="btn primary" data-more="pm${i}" aria-expanded="false" aria-controls="pm${i}">자세한 리포트</button><button type="button" class="btn cmpbtn-add ${cmpHas(k)?'on':''}" data-cp="${esc(k)}">${cmpHas(k)?'비교함에 담김':'비교에 담기'}</button><button type="button" class="btn" data-mine="${i}">내 집으로 저장</button>${tz ? '' : `<a class="btn" href="${JB.SITE}premium/?p=single&amp;k=${encodeURIComponent(k)}" data-track="report_to_premium_card">상세 리포트 (유료)</a>`}</div>
         <div class="agt" data-g="${x.code}" data-k="${esc(x.code+'|'+x.dong+'|'+x.apt)}"></div>
@@ -1431,7 +1429,7 @@ async function render(){
     head:`<h2><span class="no">06</span> 이 지역에 영향을 주는 정책</h2><p class="sub">추천 지역(${polCodes.length}곳)에 적용 중이거나 국회에서 논의 중인 부동산 정책이에요. 단계와 대상은 공식 원문 그대로예요.</p>`}).catch(e=>console.warn('policy',e));
   document.querySelectorAll('[data-cp]').forEach(b=>b.onclick=()=>{ const p=cmpParse(b.dataset.cp); if(!p || !cmpToggle(p)) return; const on=cmpHas(b.dataset.cp); b.classList.toggle('on',on); b.textContent=on?'비교함에 담김':'비교에 담기'; });
   document.querySelectorAll('[data-more]').forEach(b=>b.onclick=()=>{ const m=$(b.dataset.more); if(!m) return;
-    if (repLocked()){ const g=$(b.dataset.more.replace('pm','pg')); if(!g) return; g.hidden=!g.hidden; if(!g.innerHTML) g.innerHTML=JDJ_AUTH.gate('대출·필요 현금·월 상환과 추천 이유 전체는 <b>무료 로그인하면 전부 볼 수 있어요</b>. 결제는 필요 없어요. 요약과 점수는 지금처럼 그대로 보여 드려요.', '카카오 간편 로그인(무료)하고 전부 보기', 'report_detail'); b.setAttribute('aria-expanded', String(!g.hidden)); b.textContent=g.hidden?'자세한 리포트':'간단히 보기'; if(!g.hidden) JDJ.track('report_detail_gate'); return; } m.hidden=!m.hidden; b.setAttribute('aria-expanded', String(!m.hidden)); b.textContent=m.hidden?'자세한 리포트':'간단히 보기'; if(!m.hidden) JDJ.track('report_card_more'); });
+    m.hidden=!m.hidden; b.setAttribute('aria-expanded', String(!m.hidden)); b.textContent=m.hidden?'자세한 리포트':'간단히 보기'; if(!m.hidden) JDJ.track('report_card_more'); });
   document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>goCard(+b.dataset.i||0, b.dataset.go));
   if (window.JDJ_TAXBOX) document.querySelectorAll('[data-txb]').forEach(el=>{ const x=picked[+el.dataset.txb]; if(x) { el.hidden=false; JDJ_TAXBOX.lazy(el, {price:x.P, area:x.area, sido:sidoOfCode(x.code), gu:sggName(x.code), apt:x.apt, band:x.band, code:x.code, dong:x.dong, jibun:x.jb, mode:'buy'}); } });
   if (NARON) document.querySelectorAll('#report .nar').forEach(el=>JDJ_NAR.bind(el));
@@ -1677,8 +1675,7 @@ document.addEventListener('click', e=>{
   const b = e.target.closest('.agbtn'); if (!b) return;
   openAgent(b.dataset.a, b.dataset.g, b.dataset.k);
 });
-/* 카카오 간편 로그인(assets/auth.js): 키가 없으면 잠금·저장 단추 모두 없음. 로그인 전에는 카드 요약·점수까지, 상세(대출·현금·월 상환·이유 전체)는 로그인 뒤 */
-function repLocked(){ return !!(window.JDJ_AUTH && JDJ_AUTH.on() && !JDJ_AUTH.user()); }
+/* 카카오 간편 로그인(assets/auth.js): 키가 없으면 저장 단추 없음. 상세(대출·필요 현금·월 상환·이유 전체)는 로그인 없이 누구나 — 금액은 이 기기 안에서만 계산(주소·통계·서버로 안 보냄). 로그인은 리포트 저장에만 */
 function repSnapshot(){
   const q=new URLSearchParams(window.JDJ_SHARE ? JDJ_SHARE.stripPersonal(location.search) : location.search); q.delete('from'); q.delete('full');
   if (S.sido && !q.get('sd')) q.set('sd', S.sido.any?'all':S.sido.name);
@@ -1689,7 +1686,7 @@ function repSnapshot(){
     title:`${S.sido?S.sido.name:''} · 보유 ${HZ}년 · 추천 ${picks.length}곳`, q:q.toString(), picks};
 }
 function repAuthUi(){
-  const on=!!(window.JDJ_AUTH && JDJ_AUTH.on()), b=$('saveRepBtn'); document.body.classList.toggle('jdj-locked', repLocked());
+  const on=!!(window.JDJ_AUTH && JDJ_AUTH.on()), b=$('saveRepBtn');
   if (!b) return; b.hidden=!on || MODE==='cmp';
   b.textContent = on && JDJ_AUTH.user() ? '내 계정에 리포트 저장' : '로그인하고 리포트 저장';
 }

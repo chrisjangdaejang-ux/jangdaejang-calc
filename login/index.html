@@ -87,16 +87,16 @@ function off(){
 }
 function intro(msg){
   app.innerHTML = `${msg || ''}<h1>카카오 간편 로그인</h1>
-    <p class="lead">로그인하면 휴대폰과 PC 어디서든 같은 내 집 목록을 보고, 실거래 전체와 맞춤 리포트 상세까지 볼 수 있어요.</p>
+    <p class="lead">로그인하면 휴대폰과 PC 어디서든 같은 내 집 목록을 보고, 실거래 전체를 보고, 맞춤 리포트를 내 계정에 저장해 다시 볼 수 있어요.</p>
     <div class="box"><ul class="gets">
       <li><span class="ic">1</span><span><b>실거래 전체 보기</b><small>최근 3년 거래 전부와 그보다 이전 연도별 시세</small></span></li>
       <li><span class="ic">2</span><span><b>내 집·관심 단지 여러 기기에 저장</b><small>휴대폰에서 저장한 집을 PC에서도 그대로</small></span></li>
-      <li><span class="ic">3</span><span><b>맞춤 분석 리포트 상세 보기·저장</b><small>대출·필요 현금·월 상환과 추천 이유 전체, 리포트 다시 보기</small></span></li>
+      <li><span class="ic">3</span><span><b>맞춤 분석 리포트 저장</b><small>리포트를 내 계정에 저장해 다른 기기에서도 다시 보기</small></span></li>
       <li><span class="ic">4</span><span><b>관심 단지·청약 알림을 메일로</b><small>관심 목록 단지에 새 거래·신고가가 나오거나 고른 청약 일정이 다가오면 하루 한 번 알려 드려요</small></span></li>
     </ul>
     ${A.btn('카카오 간편 로그인', 'login_page', 'full')}
     <p class="note">집예보가 카카오에서 받는 정보는 <b>카카오 회원번호와 닉네임</b>뿐이에요. 이메일·전화번호는 받지 않아요. <a href="${JB.SITE}privacy/#member">개인정보처리방침</a></p></div>
-    <p class="free">로그인하지 않아도 시세·차트·미래가치 점수, 최근 실거래 5건, 이 기기에 내 집 저장, 맞춤 분석 리포트 요약은 지금처럼 그대로 볼 수 있어요.</p>`;
+    <p class="free">로그인하지 않아도 시세·차트·미래가치 점수, 최근 실거래 5건, 이 기기에 내 집 저장, 맞춤 분석 리포트 전체(대출·필요 현금·월 상환 포함)는 지금처럼 그대로 볼 수 있어요. 내 돈 계산은 이 기기 안에서만 해요.</p>`;
 }
 async function finishLogin(){
   const code = q.get('code'), state = q.get('state') || '';

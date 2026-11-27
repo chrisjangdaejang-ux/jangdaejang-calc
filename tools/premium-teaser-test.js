@@ -30,7 +30,7 @@ const SCREENS = ['index.html', 'mine/index.html', 'map/index.html', 'buy/index.h
 SCREENS.forEach(f => check(`자물쇠 그림 없음: ${f}`, !read(f).includes('🔒')));
 const ps = read('assets/price-sheet.js'), br = read('buy/report/index.html');
 check('실거래 더보기 로그인 안내: 무료 분명히', /무료 로그인하면 전부 볼 수 있어요/.test(ps) && /카카오 간편 로그인\(무료\)하고 전부 보기/.test(ps));
-check('리포트 상세 로그인 안내: 무료 분명히', /무료 로그인하면 전부 볼 수 있어요/.test(br) && /결제는 필요 없어요/.test(br));
+check('리포트 상세(대출·현금·월 상환)는 로그인 잠금 없음', !/repLocked|jdj-locked|report_detail/.test(br) && /결제는 필요 없어요/.test(ps));
 ['mine/index.html', 'buy/report/index.html'].forEach(f => { const s = read(f);
   check(`미리 보기 칸 불러옴: ${f}`, /premium-teaser\.js\?v=\d+/.test(s) && s.indexOf('premium-teaser.js') < s.indexOf('narrative.js?v=')); });
 check('리포트: 단지 키를 미리 보기에 넘김', /premKey:\s*k/.test(br) && /premKey:\s*pk/.test(read('mine/index.html')));
