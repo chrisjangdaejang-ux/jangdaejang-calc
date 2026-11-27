@@ -55,6 +55,8 @@
      서버 tools/agent-backend.gs 의 JG_PRICE 도 같은 값으로 바꿔야 해요(결제 금액은 서버가 정하고 대조 · node tools/guard-test.js 가 두 값을 비교).
      원가(등기 업체 포인트, 1P≈1.1원): 등록 50P + 매일 60P → 30일 ≈ 2,035원 · 열람 1,300P ≈ 1,430원. 결제 버튼은 PAID_OPEN + 서버 GUARD_ENABLED + 업체 키가 모두 있을 때만 열려요.
      무료 안내(인터넷등기소 변동 알림 신청법·'알림이 오면 이렇게 하세요'·내가 뗀 등기부 올리기)는 이 값과 상관없이 늘 보여요.
+   ADS_PROTO: 분양 광고 시안(assets/ads-proto.js — 홈 피드 카드·지도 'AD' 핀·분양 목록 카드·계산 결과 아래 '예산에 맞는 분양', 모두 '예시 광고') 켜기.
+     false 면 화면 어디에도 칸이 없어요. 대표 미리 보기: 주소 끝 ?preview=ads 를 붙여 한 번 열면 그 기기에서만 보여요(끄기 ?preview=off). 설계: 비공개 엔진 docs/ads/ads-plan.md.
    SITE_VERIFY_DAUM: 다음 웹마스터도구 PIN 코드 줄 전체('#DaumWebMasterTool:…'). 넣으면 robots.txt 맨 아래에 붙어요. */
 window.JDJ_SITE = {
   SITE_URL: 'https://chrisjangdaejang-ux.github.io/jangdaejang-calc',
@@ -78,6 +80,7 @@ window.JDJ_SITE = {
   BILLING_OPEN: false,
   PAID_OPEN: false,
   PAY_REVIEW: true,
+  ADS_PROTO: false,
   GUARD: { month: 2900, read: 1900, maxMonths: 24 }
 };
 /* 서비스 이름 채우기: 화면의 [data-site-name] 칸은 SITE_NAME, [data-brief-name] 칸은 '{SITE_NAME} 모닝 브리핑'(값이 있으면 뒤에 붙임) */

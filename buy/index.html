@@ -477,6 +477,7 @@ function render(){
   const ld = loanAt(P,c,dsr);
   const cost = costs(P,c);
   lastP = P; lastBy = ld.by;
+  if (window.JDJ_ADPROTO) JDJ_ADPROTO.set({ budget: P, own: own });   /* 분양 광고 시안(숨김, assets/ads-proto.js): 예산을 구간 이름으로만 바꿔 이 기기 안에서 광고 조건과 맞춰 봄 — 서버로 보내지 않음 */
   { const lq = new URLSearchParams({src:'buy', o:own}); $('loanLink').href = '../loan/?' + lq; }   /* 최대 매수 금액은 주소에 싣지 않음 — 누를 때 이 탭(sessionStorage jdj_buyp, 30분)으로만 넘김 */
 
   document.querySelectorAll('.hint[data-for]').forEach(h=>{
@@ -746,6 +747,7 @@ render();
 })();
 </script>
 <script src="../assets/buy-total.js?v=1"></script>
+<script src="../assets/ads-proto.js?v=1" data-page="buy" defer></script>
 <script src="../assets/ad-slot.js?v=8" defer></script>
 <div data-gnext="buy" hidden></div>
 <script src="../assets/guide-next.js?v=10" defer></script>
