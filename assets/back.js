@@ -20,7 +20,7 @@
     'switch/': ['갈아타기'], 'switch/rent/': ['전세 갈아타기', 'switch/'],
     'villa/': ['재개발·빌라'], 'villa/zone/': ['재개발 구역 지도', 'villa/'], 'villa/z/': ['재개발 구역 목록', 'villa/zone/'], 'villa/calc/': ['분담금 계산기', 'villa/zone/'],
     'chungyak/': ['청약'], 'chungyak/price/': ['분양가·입지 분석', 'chungyak/'], 'cy/': ['청약 공고', 'chungyak/'],
-    'bunyang/': ['분양'], 'bunyang/agency/': ['분양대행 의뢰', 'bunyang/'], 'bunyang/apply/': ['분양 광고 신청', 'bunyang/'], 'partner/': ['분양 판매 파트너', 'bunyang/'],
+    'bunyang/': ['분양'], 'bunyang/agency/': ['분양대행 의뢰', 'bunyang/'], 'bunyang/check/': ['받은 분양 광고 확인하기', 'bunyang/'], 'bunyang/apply/': ['분양 광고 신청', 'bunyang/'], 'partner/': ['분양 판매 파트너', 'bunyang/'],
     'tax/': ['세금'], 'tax/transfer/': ['넘기는 방법 비교', 'tax/'], 'tax/count/': ['주택 수 판정', 'tax/'], 'tax/cost/': ['살 때·팔 때 드는 돈', 'tax/'], 'tax/changes/': ['세법 바뀌는 날', 'tax/'],
     'loan/': ['대출 한도'], 'loan/checklist/': ['잔금일 체크리스트', 'loan/'],
     'mine/': ['내 집 시세'], 'mine/calendar/': ['내 부동산 달력', 'mine/'], 'map/': ['지도'], 'all/': ['전체 기능'], 'ask/': ['단지 비교'], 'rank/': ['주간 순위'],

@@ -152,6 +152,9 @@
       setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
     } catch (e) {}
   }
+  /* 사이트 첫 주소 — 받은 분양 광고 확인하기 링크용 */
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+  var SITE = JB.SITE;
   function mount(el, opt) {
     opt = opt || {};
     var DATA = opt.data, t = ymd(opt.today), rows = [], P = {}, F = { sd: '', st: '', sort: 'due', view: 'list', y: +t.slice(0, 4), m: +t.slice(4, 6), day: t };
@@ -196,6 +199,7 @@
         + (F.view === 'list' ? '<div class="cyl-seg" role="group" aria-label="순서"><button type="button" data-sort="due" class="' + (F.sort === 'due' ? 'on' : '') + '">마감 임박 순</button><button type="button" data-sort="new" class="' + (F.sort === 'new' ? 'on' : '') + '">최신 공고 순</button></div>' : '') + '</div>'
         + '<div class="cyl-chips">' + chips() + '</div>'
         + '<p class="cyl-cnt">' + (F.view === 'list' ? '공고 <b>' + v.length + '</b>곳' : '이 달 일정') + ' · 오늘 ' + dot(t) + ' 기준</p>'
+        + '<a class="cyl-adc" href="' + SITE + 'bunyang/check/" data-track="cy_to_adcheck" style="display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px;margin:0 0 12px;padding:10px 14px;border:1px solid #D4D1F5;border-radius:14px;background:#F5F8FF;color:#191F28;text-decoration:none;font-size:15px;line-height:1.45;word-break:keep-all"><span><b>분양 문자·카톡을 받았나요?</b> 받은 분양 광고 확인하기 — 가격·잔금 유예·실거주 문구를 공개 자료와 맞춰 봐요</span><span aria-hidden="true" style="color:#4338CA;font-weight:800">›</span></a>'
         + (F.view === 'list' ? list(v) : cal(v));
       el.querySelectorAll('[data-st]').forEach(function (b) { if (b.tagName === 'BUTTON') b.onclick = function () { F.st = b.dataset.st; draw(); }; });
       el.querySelectorAll('[data-view]').forEach(function (b) { b.onclick = function () { F.view = b.dataset.view; draw(); }; });

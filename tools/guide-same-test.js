@@ -272,13 +272,15 @@ const SAME = [
   ['deposit_safe 보증금 안전', /JS\.fromGuide\(a, E\), rep = JS\.build\(x, \{ H: E\.H, KK: E\.KK \}\)/.test(GC) && /JS\.build\(x, \{ H, KK \}\)/.test(read('jeonse/safety/index.html')) && /H\.check\(\{ dep, senior: num\(x\.senior\)/.test(read('assets/jsafe-core.js')) && /months: 24/.test(read('assets/jsafe-core.js')) && /HG\.check\(\{ dep, senior: 0, pub: pub \|\| 0, type: .*months: 24 \}\)/.test(TSW) && /KK\.estimate\(/.test(read('assets/jsafe-core.js')) && /KK\.estimate\(/.test(JS)],
   ['wolse_conv 전세·월세 비교', /E\.RC\.compare\(\{ jeon: J, wDep: D, wRent: W/.test(GC) && /JDJ_RENT/.test(JS)],
   ['broker_fee 중개보수', /L0\.brokerSale\(/.test(GC) && /L0\.brokerLease\(/.test(GC) && /LOAN\.brokerSale\(/.test(SWC)],
-  ['redev_budget 재개발 구역(순서)', /RDc\(\)\.sort\(out\.map\(r => r\.z\), st\.sort === 'stage' \? 'stage' : 'soon'\)/.test(GX) && /function current\(\) \{ return R\.sort\(R\.filter\(D\.z, S\), S\.sort\); \}/.test(ZONE) && /sort: 'soon'/.test(ZONE)]
+  ['redev_budget 재개발 구역(순서)', /RDc\(\)\.sort\(out\.map\(r => r\.z\), st\.sort === 'stage' \? 'stage' : 'soon'\)/.test(GX) && /function current\(\) \{ return R\.sort\(R\.filter\(D\.z, S\), S\.sort\); \}/.test(ZONE) && /sort: 'soon'/.test(ZONE)],
+  /* 받은 분양 광고 확인하기 ↔ bunyang/check/: 같은 화면 조각 adcheck-view mount(같은 글이면 같은 결과 — 계산 대조는 tools/adcheck-test.js) */
+  ['ad_check 받은 분양 광고 확인', /r\.mount === 'adcheck'/.test(read('assets/guide.js')) && /JDJ_ADCHKV\.mount\(el\.querySelector\('#gAdc'\)/.test(read('assets/guide.js')) && /JDJ_ADCHKV\.mount\(document\.getElementById\('adc'\)/.test(read('bunyang/check/index.html'))],
 ];
 SAME.forEach(([nm, ok]) => check(`같은 엔진·같은 기본값: ${nm}`, ok));
 /* 대응하는 조건 검색 화면이 없는 시나리오(체크리스트·날짜 계산·안내형) — 표시만(tools 결과 보고용) */
 const NOSCREEN = ['rental_biz', 'buy_when', 'first_home', 'buy_cost', 'exempt', 'temp2', 'jeonse_renew', 'rent_raise', 'contract_check', 'rent_to_buy', 'move_time', 'high_bargain', 'school_move', 'commute', 'redev_stage', 'rebuild_live', 'switch_order'];
 const SCN = JSON.parse(read('assets/guide/scenarios.json')).sc.map(s => s.id);
-check('시나리오 목록이 이 점검표와 맞음(새 시나리오가 생기면 여기에 대응 화면을 적어 주세요)', SCN.every(id => NOSCREEN.indexOf(id) >= 0 || ['budget_apts', 'find_home', 'budget', 'loan_limit', 'special_loan', 'acq_tax', 'prop_tax', 'sell_when', 'transfer_tax', 'multi_order', 'gift_when', 'cy_where', 'deposit_safe', 'wolse_conv', 'broker_fee', 'redev_budget'].indexOf(id) >= 0), SCN.filter(id => NOSCREEN.indexOf(id) < 0));
+check('시나리오 목록이 이 점검표와 맞음(새 시나리오가 생기면 여기에 대응 화면을 적어 주세요)', SCN.every(id => NOSCREEN.indexOf(id) >= 0 || ['budget_apts', 'find_home', 'budget', 'loan_limit', 'special_loan', 'acq_tax', 'prop_tax', 'sell_when', 'transfer_tax', 'multi_order', 'gift_when', 'cy_where', 'deposit_safe', 'wolse_conv', 'broker_fee', 'redev_budget', 'ad_check'].indexOf(id) >= 0), SCN.filter(id => NOSCREEN.indexOf(id) < 0));
 
 /* ---------- ④ 오가기 ---------- */
 const GN = read('assets/guide-next.js'), GB = read('assets/guide-budget.js'), GJ = read('assets/guide.js');
@@ -286,9 +288,9 @@ check("길잡이 결과 아래 '같은 조건으로 검색 화면에서 보기'(
 check("조건 검색 화면 위쪽 '말로 물어보기' 자리(내 집 마련 맞춤 단지·내 집 마련 계산기)", /<div class="noprint" data-gask="report" hidden><\/div>/.test(RPT) && /data-gask="buy" hidden/.test(BUY) && RPT.indexOf('data-gask') < RPT.indexOf('id="settings"'));
 check("'말로 물어보기'는 길잡이가 켜졌을 때만 채움(꺼져 있으면 hidden 그대로)", /function scan\(\) \{ if \(!on\(\)\) return;[^\n]*data-gask[^\n]*askMount/.test(GN) && /말로 물어보기/.test(GN) && /solve\/\?chat=1&from=/.test(GN));
 check('진한 꽉 찬 단추를 늘리지 않음(오가기 링크는 테두리 칸)', /\.gbx \.gbsame\{[^}]*background:#fff/.test(GB) && /\.gsame\{[^}]*background:#fff/.test(GJ) && !/\.gask\{[^}]*background:var\(--blue\)/.test(GN));
-check('화면 파일 번호: rec-core v9 · guide-budget v4 · guide-redev v6 · guide-core v14 · guide v21 · guide-next v10 · map-core v6 · scenarios v11', /rec-core\.js\?v=9/.test(RPT) && /rec-core\.js\?v=9/.test(read('switch/index.html')) && /rec-core\.js\?v=9/.test(read('solve/index.html')) && /rec-core\.js\?v=9/.test(read('assets/guide-budget.js')) && /rec-core\.js\?v=9/.test(read('assets/guide-redev.js')) && /guide-budget\.js\?v=4/.test(read('assets/guide-redev.js'))
+check('화면 파일 번호: rec-core v9 · guide-budget v4 · guide-redev v6 · guide-core v15 · guide v22 · guide-next v10 · map-core v6 · scenarios v11', /rec-core\.js\?v=9/.test(RPT) && /rec-core\.js\?v=9/.test(read('switch/index.html')) && /rec-core\.js\?v=9/.test(read('solve/index.html')) && /rec-core\.js\?v=9/.test(read('assets/guide-budget.js')) && /rec-core\.js\?v=9/.test(read('assets/guide-redev.js')) && /guide-budget\.js\?v=4/.test(read('assets/guide-redev.js'))
   && /guide-redev\.js\?v=6/.test(read('solve/index.html')) && /guide-redev\.js\?v=6/.test(read('assets/guide.js')) && /guide-budget\.js\?v=4/.test(read('assets/guide.js')) && /map-core\.js\?v=6/.test(MAP) && /map-core\.js\?v=6/.test(read('solve/index.html')) && /map-core\.js\?v=6/.test(read('index.html'))
-  && /guide-next\.js\?v=10/.test(RPT) && /guide-budget\.js\?v=4/.test(read('solve/index.html')) && /guide\.js\?v=21/.test(read('index.html')) && /scenarios\.json\?v=12/.test(GN) && /'\.\/assets\/rec-core\.js\?v=9'/.test(read('sw.js')) && /'\.\/assets\/guide-budget\.js\?v=4'/.test(read('sw.js')) && /'\.\/assets\/guide-redev\.js\?v=6'/.test(read('sw.js')));
+  && /guide-next\.js\?v=10/.test(RPT) && /guide-budget\.js\?v=4/.test(read('solve/index.html')) && /guide\.js\?v=22/.test(read('index.html')) && /scenarios\.json\?v=13/.test(GN) && /'\.\/assets\/rec-core\.js\?v=9'/.test(read('sw.js')) && /'\.\/assets\/guide-budget\.js\?v=4'/.test(read('sw.js')) && /'\.\/assets\/guide-redev\.js\?v=6'/.test(read('sw.js')));
 
 console.log(`\n길잡이 ↔ 조건 검색 화면 같은 결과 대조(${SETS.map(s => s.nm).join(' · ')}): ${pass} 통과 · ${fail} 실패`);
 process.exit(fail ? 1 : 0);

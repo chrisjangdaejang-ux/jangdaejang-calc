@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="../../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="집예보">
+<script src="../../assets/pwa.js?v=3" defer></script>
+<script src="../../assets/biz.js?v=3" defer></script>
+<title>받은 분양 광고 확인하기 — 이 분양 문자, 조건이 괜찮을까요? | 집예보</title>
+<link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/bunyang/check/">
+<meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/bunyang/check/">
+<meta name="description" content="문자·카톡으로 받은 분양 광고를 붙여 넣으면 분양가·할인, 잔금 유예와 대출, 실거주 의무·전매제한, 역 거리, 개발 호재, 미분양을 공개 자료와 맞춰 신호등 한 장으로 보여 드려요. 무료, 글은 기기 안에서만 읽어요.">
+<meta property="og:title" content="받은 분양 광고 확인하기 — 광고 문구를 공개 자료와 맞춰 봐요 | 집예보">
+<meta property="og:description" content="분양가·잔금 유예·실거주 의무·역 거리·개발 호재·미분양을 신호등으로. 붙여 넣은 글은 기기 안에서만 읽어요.">
+<meta property="og:type" content="website">
+<script>window.JDJ_CONFIG = { tool:'adcheck', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../assets/track.js?v=3"></script>
+<script src="../../assets/stat.js?v=8"></script>
+<script src="../../assets/reg-zones.js?v=1"></script>
+<script src="../../assets/loan-rules.js?v=4"></script>
+<script src="../../assets/mine-core.js?v=25"></script>
+<script src="../../assets/cy-plan.js?v=4"></script>
+<script src="../../assets/diag.js?v=1"></script>
+<script src="../../assets/adcheck-core.js?v=1"></script>
+<script src="../../assets/adcheck-view.js?v=1"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/aplus.css?v=50">
+<script src="../../assets/tabbar.js?v=8" defer></script>
+<link rel="stylesheet" href="../../assets/layout.css?v=5">
+<script src="../../assets/nw.js?v=1" defer></script>
+<style>
+.wrap{max-width:860px;margin:0 auto;padding:22px 16px 60px}
+h1{font-size:clamp(26px,6vw,38px);margin:6px 0 8px;word-break:keep-all}
+.lead{margin:0 0 14px;font-size:16px;color:var(--sub2);line-height:1.65;word-break:keep-all}
+.what{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 16px;padding:0;list-style:none}
+@media(min-width:760px){.what{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.what li{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.45;word-break:keep-all}
+.what li b{display:block;font-size:15px;margin-bottom:2px}
+.disc{font-size:13.5px;color:var(--sub2);line-height:1.7;margin-top:22px;border-top:1px solid var(--line2);padding-top:14px;word-break:keep-all}
+[hidden]{display:none!important}
+@media print{header.top,.tabbar,.adc-in,.adc-priv,.adc-fix,.what,.foot{display:none!important}}
+</style>
+<link rel="stylesheet" href="../../assets/diag.css?v=1">
+<script src="../../assets/back.js?v=6" defer></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a>
+  <div class="badge plain">분양 광고 확인</div>
+</header>
+
+<main class="wrap">
+  <span class="tag">무료 · 받은 분양 광고 확인하기</span>
+  <h1>분양 문자를 받았어요,<br><em>조건이 괜찮을까요?</em></h1>
+  <p class="lead">문자·카톡으로 받은 분양 광고를 붙여 넣으면 광고 문구 하나하나를 청약홈 공고·실거래·대출 규칙·법령·공식 개발 자료와 맞춰 보고, <b>확인한 사실</b>과 <b>확인할 점</b>으로 나눠 보여 드려요.</p>
+  <ul class="what" aria-label="확인하는 것">
+    <li><b>가격</b>할인 뒤 평당가 vs 주변 새 아파트 실거래</li>
+    <li><b>잔금 유예·대출</b>나중에 낼 돈과 지금 규칙의 대출 한도</li>
+    <li><b>실거주·전매</b>「의무 없음」 문구를 법령 기준과 비교</li>
+    <li><b>역 거리·호재·미분양</b>직선 거리, 공식 발표 단계, 지역 미분양</li>
+  </ul>
+  <div id="adc"></div>
+  <p class="disc">자료: 한국부동산원 청약홈 분양정보 · 국토교통부 아파트 매매·전월세 실거래가(공공데이터포털) · 국토교통부 미분양주택현황(통계청 KOSIS)·경기도 공동주택 미분양 현황 · 금융위원회 가계대출 규칙(집예보 대출 규칙표) · 국가법령정보센터(주택법·주택법 시행령·주택공급에 관한 규칙·건축물의 분양에 관한 법률) · 서울시 역사마스터 정보 · 서울시·국토교통부 등 공식 개발 발표. 광고주나 현장을 평가한 결과가 아니라, 광고 문구를 공개 자료와 맞춰 본 정보 제공용 결과예요. 분양 조건은 입주자모집공고문과 분양 계약서가 최종 기준이에요.</p>
+</main>
+<footer class="foot">과거 실거래와 공개 기준으로 만든 정보예요. 특정 분양을 권하거나 말리지 않아요. 자세한 분석 방법은 <a href="../../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집예보 · <a href="../../">홈</a> · <a href="../">분양</a> · <a href="../../cy/">청약 공고</a></footer>
+<script>
+(function(){
+  'use strict';
+  /* 화면 조각은 assets/adcheck-view.js — 고민 찾기 길잡이(ad_check)와 같은 mount 라 같은 글이면 같은 결과예요 */
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+  if (window.JDJ_ADCHKV) window.JDJ_ADCHKV.mount(document.getElementById('adc'), { base: JB.SITE, from: 'page' });
+})();
+</script>
+</body>
+</html>

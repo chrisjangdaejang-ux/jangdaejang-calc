@@ -163,8 +163,8 @@ function pageX(url, ss, data) {
   /* ---------- ⑧ 파일 번호 ---------- */
   const SW = read('sw.js');
   check('⑧ 서비스 워커: 화면·jsafe-core v2·diag v1 · 길잡이 파일 새 번호', /'\.\/jeonse\/safety\/'/.test(SW) && /'\.\/assets\/jsafe-core\.js\?v=2'/.test(SW) && /jsafe-core\.js\?v=2/.test(PG)
-    && /guide-core\.js\?v=14/.test(SW) && /guide\.js\?v=21/.test(SW) && /guide-next\.js\?v=10/.test(SW) && /scenarios\.json\?v=12/.test(read('solve/admin/index.html')) && /scenarios\.json\?v=12/.test(SW) && /features\.json\?v=2/.test(SW) && /ask-core\.js\?v=10/.test(SW)
-    && /guide-core\.js\?v=14/.test(read('index.html')) && /guide-core\.js\?v=14/.test(read('solve/index.html')) && /scenarios\.json\?v=12/.test(GJ) && /scenarios\.json\?v=12/.test(read('assets/guide-next.js')) && /features\.json\?v=2/.test(GJ));
+    && /guide-core\.js\?v=15/.test(SW) && /guide\.js\?v=22/.test(SW) && /guide-next\.js\?v=10/.test(SW) && /scenarios\.json\?v=13/.test(read('solve/admin/index.html')) && /scenarios\.json\?v=13/.test(SW) && /features\.json\?v=3/.test(SW) && /ask-core\.js\?v=11/.test(SW)
+    && /guide-core\.js\?v=15/.test(read('index.html')) && /guide-core\.js\?v=15/.test(read('solve/index.html')) && /scenarios\.json\?v=13/.test(GJ) && /scenarios\.json\?v=13/.test(read('assets/guide-next.js')) && /features\.json\?v=3/.test(GJ));
 
   /* ⑨ 실제 공개 자료(빌라 망원동)로 범위가 그려지는지 · 화면이 금액을 주소에 쓰지 않는지 */
   check('⑨ 화면 주소 쓰기(placeQs·history)는 고른 집만 · 금액 칸 id(dep·sen·pub·kb)는 주소 함수에 없음', !/'dep'|'sen'|'pub'|'kb'/.test(fnSrc(PG, 'placeQs')) && /history\.replaceState\(null, '', url\)/.test(PG));

@@ -1022,6 +1022,12 @@
   S.redevBudget = (a, E) => GX() ? GX().solve('redev_budget', a, E) : { err: 'noext' };
   S.rebuildLive = (a, E) => GX() ? GX().solve('rebuild_live', a, E) : { err: 'noext' };
   /* 보유 현금 + 담보대출로 살 수 있는 서울 아파트(대표 질문) — 계산은 assets/guide-budget.js(scenarios.json ext:"budget"). 단지 자료(E.BX)가 있어야 해요 */
+  /* 분양 문자 받았는데 괜찮은 조건인지(ad_check) — 받은 분양 광고 확인하기(bunyang/check/)와 같은 화면 조각 assets/adcheck-view.js 를 해법 자리에 그대로 띄워요(guide.js showResult 의 r.mount).
+     광고 글은 묻는 칸으로 받지 않아요(이 탭 저장·기억에 남지 않게). 대화·즉답에서는 아래 카드와 '자세히 보기'로 같은 화면을 열어요 */
+  S.adCheck = () => ({ head: '받은 분양 광고 글을 붙여 넣으면 공개 자료와 맞춰 확인해 드려요', mount: 'adcheck',
+    nums: [{ k: '확인하는 것', v: '가격·잔금 유예·실거주·역 거리·개발 호재·미분양', s: '광고 문구마다 확인한 사실과 확인할 점으로 나눠요' }, { k: '광고 글', v: '이 기기 안에서만 읽어요', s: '서버로 보내지 않고 저장하지도 않아요' }],
+    warn: ['광고 문구는 계약 조건이 아니에요. 입주자모집공고문과 분양 계약서가 최종 기준이에요.', '잔금 유예·중도금 무이자 같은 조건은 계약서에 금액·기한이 글로 적혀 있는지 확인하세요.'],
+    note: '광고 글은 결과 화면에서 붙여 넣어요', src: ['cy', 'molit_rt', 'fsc_dsr', 'cy_rule'] });
   S.budgetApts = (a, E) => root.JDJ_GBUDGET ? root.JDJ_GBUDGET.solve('budget_apts', a, E) : { err: 'noext' };
 
   S.switchOrder = (a, E) => {

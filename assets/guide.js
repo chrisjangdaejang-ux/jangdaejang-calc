@@ -29,7 +29,7 @@
   const cache = {};
   const getJ = (k, url) => cache[k] || (cache[k] = fetch(url, { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(url); return r.json(); }).catch(e => { delete cache[k]; throw e; }));
   function load() {
-    return Promise.all([getJ('sc', BASE + 'assets/guide/scenarios.json?v=12'), getJ('lex', BASE + 'assets/guide/lexicon.json?v=3')])
+    return Promise.all([getJ('sc', BASE + 'assets/guide/scenarios.json?v=13'), getJ('lex', BASE + 'assets/guide/lexicon.json?v=3')])
       .then(([sc, lex]) => Object.assign({}, sc, { lex }));
   }
   const ix = () => getJ('ix', DATA + 'index.json');
@@ -238,12 +238,12 @@
     })();
     return WARM;
   }
-  const feats = () => getJ('feat', BASE + 'assets/guide/features.json?v=2');
+  const feats = () => getJ('feat', BASE + 'assets/guide/features.json?v=3');
   function idle(f) { (root.requestIdleCallback || (g => setTimeout(g, 300)))(f, { timeout: 1500 }); }
   /* 재개발 예산·재건축 몸테크(scenarios.json ext:"redev") — 화면·계산은 assets/guide-redev.js, 여기서는 쓰는 도구만 넘겨요 */
   /* 보유 현금 + 대출로 살 수 있는 서울 아파트(대표 질문, scenarios.json ext:"budget") — 화면·계산은 assets/guide-budget.js */
   const XM = sc => !sc || !sc.ext ? null : sc.ext === 'budget' ? root.JDJ_GBUDGET || null : root.JDJ_GREDEV || null;
-  const XSRC = { budget: 'assets/guide-budget.js?v=4', redev: 'assets/guide-redev.js?v=6' };
+  const XSRC = { budget: 'assets/guide-budget.js?v=4', redev: 'assets/guide-redev.js?v=6', adcheck: 'assets/adcheck-view.js?v=1' };
   const GXon = sc => !!XM(sc);
   function unitsOf(sid) {
     const MC = root.JDJ_MINE;
@@ -749,6 +749,13 @@
     if (!r || r.err) { el.querySelector('.gsub').textContent = '계산하지 못했어요. 넣은 값을 한 번 더 확인해 주세요.'; return; }
     S.done = true; saveProgress(S);
     stat('guide_solve', { s: sc.id });
+    if (r.mount === 'adcheck') {   // 받은 분양 광고 확인하기(bunyang/check/)와 같은 화면 조각 — 같은 글이면 같은 결과
+      el.innerHTML = `<div class="gflow">${head}<div class="gprog"><div class="bar"><i style="width:100%"></i></div><b>해법</b></div><div id="gAdc"></div>${next3Html(sc, a, D, r)}${afterHtml(sc, D)}
+        <p class="gdis">${esc(site())}는 공공데이터와 법령을 정해진 규칙으로 계산해 보여 드리는 정보 제공 서비스이며, 특정 분양을 권하거나 말리지 않아요. 분양 조건은 입주자모집공고문과 분양 계약서가 최종 기준이에요.</p></div>`;
+      try { if (!root.JDJ_ADCHKV) await script(XSRC.adcheck); root.JDJ_ADCHKV.mount(el.querySelector('#gAdc'), { base: BASE, from: 'guide' }); }
+      catch (e) { el.querySelector('#gAdc').innerHTML = `<p class="gerr">화면을 불러오지 못했어요. <a href="${esc(BASE + 'bunyang/check/')}">받은 분양 광고 확인하기</a>에서 열어 주세요.</p>`; }
+      return;
+    }
     el.innerHTML = `<div class="gflow">${head}<div class="gprog"><div class="bar"><i style="width:100%"></i></div><b>해법</b></div>
       ${cardHtml(r, D, S)}${fbHtml(sc.id, 'solve')}${next3Html(sc, a, D, r)}${afterHtml(sc, D)}
       <p class="gdis">${esc(site())}는 공공데이터와 법령을 정해진 규칙으로 계산해 보여 드리는 정보 제공 서비스이며, 특정 부동산의 매수·매도를 권유하지 않아요. 세금·법률·대출의 최종 판단은 자격 있는 전문가와 확인해 주세요.</p></div>`;

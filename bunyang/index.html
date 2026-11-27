@@ -49,6 +49,9 @@ h2.sec small{display:block;font-size:14px;font-weight:500;color:var(--sub2);lett
 .flt{background:var(--gray);border-radius:20px;padding:16px;display:grid;gap:12px;margin-top:16px}
 .flt .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:520px){.flt .two{grid-template-columns:1fr}}
+.adcGo{display:flex;align-items:center;gap:10px;min-height:52px;margin:10px 0 12px;padding:10px 14px;border:1px solid #D4D1F5;border-radius:14px;background:#F5F8FF;color:var(--text);text-decoration:none;line-height:1.45;word-break:keep-all}
+.adcGo>span:nth-child(2){flex:1;min-width:0}.adcGo b{font-size:15.5px}.adcGo small{display:block;font-size:13.5px;color:var(--sub2)}
+.adcGo .ic svg{width:24px;height:24px;fill:none;stroke:#4338CA;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block}.adcGo .go{color:#4338CA;font-weight:800}
 .fold{border:1px solid var(--line);border-radius:14px;background:#fff}
 .fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px;padding:6px 14px;font-weight:800;font-size:15px}
 .fold>summary::-webkit-details-marker{display:none}
@@ -140,7 +143,7 @@ td.k{color:var(--sub2);width:34%;font-size:14.5px}
 body.lock{overflow:hidden}
 [hidden]{display:none!important}
 </style>
-<script src="../assets/back.js?v=5" defer></script>
+<script src="../assets/back.js?v=6" defer></script>
 <script src="../assets/tabbar.js?v=8" defer></script>
 </head>
 <body>
@@ -154,6 +157,7 @@ body.lock{overflow:hidden}
   <h1>지금 분양하는 단지,<br><em>공식 공고</em>로 확인하세요</h1>
   <p class="lead">한국부동산원 청약홈 공고로 아파트·오피스텔·도시형생활주택·민간임대·무순위/잔여세대의 일정과 분양가를 보여 드려요. <span class="lm">분양가가 공개된 아파트는 같은 동네 최근 실거래가와 나란히 비교해 드려요.</span></p>
 
+  <a class="adcGo" href="check/" data-track="bunyang_to_adcheck"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 4z"/><path d="m8.5 10.5 2 2 4-4"/></svg></span><span><b>분양 문자·카톡을 받았나요?</b><small>받은 분양 광고 확인하기 — 가격·잔금 유예·실거주 문구를 공개 자료와 맞춰 봐요(무료)</small></span><span class="go" aria-hidden="true">›</span></a>
   <div class="jas jas-top" data-ad-slot="bunyang_top" data-ad-cat="bunyang" data-ad-top></div>
   <!-- 휴대폰에서 단지 목록이 바로 보이게: 상태만 위에, 지역·유형·분양가·정렬과 관심 지역 알림은 접힌 칸(PC는 지역 칸을 펼친 채로) — 2026-11-26 -->
   <section class="flt" aria-label="분양 단지 찾기">
@@ -202,7 +206,7 @@ body.lock{overflow:hidden}
   <div class="sheet" id="sheet"></div>
 </div>
 
-<footer class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집예보 · <a href="../">홈</a> · <a href="apply/">분양 광고 문의</a></footer>
+<footer class="foot">과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="../about/">서비스 소개</a>에서 볼 수 있어요.<br>★ 집예보 · <a href="../">홈</a> · <a href="check/">받은 분양 광고 확인하기</a> · <a href="apply/">분양 광고 문의</a></footer>
 
 <script src="../assets/agents.js"></script>
 <script src="../assets/config.js?v=15"></script>
