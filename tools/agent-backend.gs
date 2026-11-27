@@ -1,6 +1,13 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v73 변경 요약 (v72 위에 다시 배포 + 함수 guardInstall 한 번 실행. GUARD_ENABLED=false·PAID_OPEN=false 라 지금 서비스에는 영향 없음 — 열림 알림 신청(guardWait)만 받음)
+ *  - 내 전셋집 지킴이(맨 아래 'v73' 칸): guardConfig(GET) · guardWait · guardFind · guardOrder · guardRegister · guardStatus · guardStop · guardList(중개사) · readRegistry · guardDaily(트리거) · guardWebhookOrPoll.
+ *  - 스크립트 속성 APICK_API_KEY(에이픽 키 — 저장소·화면에 넣지 않음) · 선택 GUARD_HOOK_TOKEN · SOLAPI_TPL_GUARD(알림톡 템플릿 #{집}·#{변동}·#{링크}).
+ *  - 결제 승인(토스) 확인 뒤에만 업체 호출 · 같은 주문 두 번 등록 안 함 · 업체 실패 몫 자동 결제 취소 · 변동 뒤 남은 기간 자동 다시 등록.
+ *  - 내 부동산 달력(CAL-CORE): 세입자 '전입·확정일자·등기 확인'(이사 7일 뒤) · '보증보험 기간·갱신 확인'(만기 3개월 전) 추가.
+ *  - 켜는 날: 이 파일 GUARD_ENABLED·PAID_OPEN + assets/config.js PAID_OPEN 을 true 로, 열림 알림 보낼 때 guardWaitNotify 한 번 실행.
+ *
  * v72 변경 요약 (v71 위에 다시 배포. 따로 실행할 함수 없음 — 시트 변경 없음. 결제 동작·금액·상품 키는 그대로)
  *  - 청약 유료 상품 이름 '청약 분양가 리포트' → '청약 당첨 플랜'(PRICE.cy, 9,900원·키 cy 그대로). 예전 이름으로 저장된 주문은 PRICE.cy.alias 로 계속 찾고(결제 승인·이용권),
  *    결제 완료·주문 조회·영수증 메일에는 productLabel 로 새 이름을 보여 줌. 재배포 전에는 서버가 옛 이름을 저장·회신해도 화면(assets/pay.js prodName)이 새 이름으로 바꿔 보여 줌.
@@ -537,7 +544,7 @@ const PROACTIVE_ENABLED = false;
 const PAID_CLOSED_MSG = '유료 이용권은 곧 열려요. 지금은 7일 무료 체험만 할 수 있어요.';
 /* 돈을 받는(토스 주문·승인) 요청 전부 — 리포트 결제(createOrder·confirmPayment)·모닝 브리핑 이용권(briefOrder·briefConfirm)·요금제 바꾸기(briefChangeQuote·briefChange).
    이미 산 주문 보기·환불 요청(openReport·findOrder·refundRequest·briefRefund·briefStop)은 막지 않음. 새 결제 요청을 만들면 여기에도 꼭 넣기(tools/paid-lock-test.js 가 확인). */
-const PAID_ACTIONS = { createOrder: 1, confirmPayment: 1, briefOrder: 1, briefConfirm: 1, briefChangeQuote: 1, briefChange: 1, quizVoucherUse: 1, htOrder: 1, htConfirm: 1, mvChargeOrder: 1, mvChargeConfirm: 1 };   // v57 이사 견적 포인트 충전
+const PAID_ACTIONS = { createOrder: 1, confirmPayment: 1, briefOrder: 1, briefConfirm: 1, briefChangeQuote: 1, briefChange: 1, quizVoucherUse: 1, htOrder: 1, htConfirm: 1, mvChargeOrder: 1, mvChargeConfirm: 1, guardOrder: 1, guardRegister: 1, readRegistry: 1 };   // v57 이사 견적 포인트 충전 · v73 지킴이·등기 바로 확인
 /* 시트 메뉴에서 Apps Script를 열지 못해 script.google.com에서 따로 만든 경우에만,
    시트 주소의 /d/ 와 /edit 사이 문자열(시트 ID)을 아래 따옴표 안에 넣으세요. */
 const SHEET_ID = '';
@@ -643,6 +650,7 @@ function doGet(e) {
   if (act === 'briefStats') return out(briefStats(e.parameter));
   if (act === 'briefSeen') return out(briefSeen(e.parameter));
   if (act === 'bpPull') return out(bpPull(e.parameter));
+  if (act === 'guardConfig') return out(jgConfig());                                 // v73 지킴이 열림 여부·가격
   if (act === 'alertOff') return alertOff(e.parameter);                              // v44 알림 메일의 끄기 링크(원클릭)
   return out({ ok: false, err: 'unknown' });
 }
@@ -655,12 +663,14 @@ function ensureHeader() {
 }
 
 function doPost(e) {
+  if (e && e.parameter && e.parameter.guardhook) { try { return out(guardWebhookOrPoll(e)); } catch (x) { return out({ ok: false, err: 'server' }); } }   // v73 지킴이 업체 웹훅(선택)
   if (e && e.parameter && e.parameter.mailhook) { try { return out(mailHook(e)); } catch (x) { return out({ ok: false, err: 'server' }); } }   // v53 SES 반송·스팸 신고 알림(SNS)
   let b;
   try { b = JSON.parse(e.postData.contents); } catch (x) { return out({ ok: false, err: '요청 형식 오류' }); }
   if (!PAID_OPEN && PAID_ACTIONS[b && b.action]) return out({ ok: false, err: PAID_CLOSED_MSG, code: 'paid_closed' });   // v47 유료 판매 잠금
   if (b.action === 'log') return out(logEvents(b));
   if (b.action === 'ytKitPut') return out(ytKitPut(b));            // v30 장대장TV 주간 유튜브 키트(엔진 → 시트)
+  if (JG_ACTIONS[b.action]) return out(jgDispatch(b));             // v73 내 전셋집 지킴이·등기 바로 확인
   if (GD_ACTIONS[b.action]) return out(gdDispatch(b));             // v67 고민 해결 길잡이(숨김)
   if (CS_ACTIONS[b.action]) return out(csDispatch(b));             // v56 고민 상담·하트(숨김)
   if (PAY_ACTIONS[b.action]) return out(payDispatch(b));
@@ -8631,6 +8641,9 @@ const CAL_SRC = {
   rent: { nm: '서울특별시 내 손안에 서울 「전·월세 계약 꼭 신고하세요」', url: 'https://mediahub.seoul.go.kr/archives/2001807' },
   cy: { nm: '한국부동산원 청약홈 분양 공고', url: 'https://www.applyhome.co.kr/' },
   rentdata: { nm: '국토교통부 아파트·연립다세대·오피스텔 전월세 실거래가 공개 자료', url: 'https://rt.molit.go.kr/' },
+  /* 세입자 살면서 할 일(2026-11-27): 날짜는 집예보가 정한 알림 시점이고 법정 기한이 아니에요 */
+  hug: { nm: '주택도시보증공사(HUG) 안심전세포털 — 전세보증금반환보증 안내', url: 'https://www.khug.or.kr/jeonse/index_jeonse.jsp' },
+  iros: { nm: '대법원 인터넷등기소 — 등기열람·등기사항 변동 알림', url: 'https://www.iros.go.kr/' },
   /* 집예보가 먼저 챙겨 드려요(PROACTIVE, 2026-11-26 직접 열어 확인) */
   own1: { nm: '법제처 법령해석례 23-0932 — 소득세법 시행령 제154조 제1항(보유 2년·조정대상지역 거주 2년)·제155조 제1항(일시적 2주택) 원문 인용(국가법령정보센터)', url: 'https://www.law.go.kr/LSW/expcInfoP.do?expcSeq=338247' },
   tmp26: { nm: '소득세법 시행령 일부개정령(대통령령 제36737호, 2026.9.30 공포·10.1 시행) 제155조 제1항·부칙 제2조(국가법령정보센터)', url: 'https://www.law.go.kr/LSW/lsRvsDocInfoR.do?lsiSeq=290841' }
@@ -8641,6 +8654,7 @@ const CAL_RULES = {
   compN: { ok: true, src: ['comp'] }, compP: { ok: true, src: ['comp'] }, acq: { ok: true, src: ['acq'] }, cgt: { ok: true, src: ['cgt'] },
   renewO: { ok: true, src: ['renew', 'renew2'] }, renewC: { ok: true, src: ['renew', 'renew2'] }, end: { ok: true, src: ['renew'] },
   move: { ok: true, src: ['move'] }, rent: { ok: true, src: ['rent'] }, cy: { ok: true, src: ['cy'] }, ta: { ok: true, src: ['renew', 'rentdata'] },
+  tchk: { ok: true, src: ['move', 'iros'] }, tins: { ok: true, src: ['hug'] },
   /* pro:1 = '집예보가 먼저 챙겨 드려요' 기능(PROACTIVE_ENABLED) 켜졌을 때만 계산·표시 */
   hold2: { ok: true, src: ['own1'], pro: 1 }, live2: { ok: true, src: ['own1'], pro: 1 },
   tmp2: { ok: true, src: ['own1', 'tmp26'], pro: 1 }
@@ -8752,7 +8766,10 @@ function calHome(h) {
     if (c.cs) {
       out.push(calEv('move', c.cs, Object.assign(o(), { t: '이사하는 날 — 전입신고·확정일자', s: '이사한 날 바로 전입신고를 하고 계약서에 확정일자를 받아 두세요. 집에 들어가 전입신고까지 마친 다음 날부터 대항력(새 집주인·은행에도 내 권리를 주장할 힘)이 생겨요.' })));
       out.push(calEv('rent', c.cs, Object.assign(o(), { end: calAdd(c.cs, 30), t: '전월세 계약 신고(계약일부터 30일 안)', s: '보증금 6,000만 원 초과 또는 월세 30만 원 초과 계약은 계약한 날부터 30일 안에 신고해야 해요. 신고하면 확정일자가 저절로 붙고, 전입신고 때 계약서를 함께 내면 신고한 것으로 봐요.' })));
+      /* 살면서 할 일(집예보 알림 시점 — 법정 기한 아님): 이사 7일 뒤 전입·확정일자·등기 확인 */
+      out.push(calEv('tchk', calAdd(c.cs, 7), Object.assign(o(), { t: '전입·확정일자가 잘 됐는지 확인 + 등기 한 번 더', s: '주민등록 등본(정부24)에 이 집 주소로 전입이 됐는지, 계약서에 확정일자가 찍혔는지 확인해요. 이사한 사이 근저당·압류가 새로 생기지 않았는지 등기부도 한 번 더 보고, 인터넷등기소 등기 변동 알림(무료)을 신청해 두면 살면서 생기는 변동을 문자로 받을 수 있어요.' })));
     }
+    if (c.ce) out.push(calEv('tins', calAddM(c.ce, -3), Object.assign(o(), { t: '보증보험(전세보증금 반환보증) 기간·갱신 확인', s: '보증보험에 들었다면 보증 기간이 언제 끝나는지 확인하고, 계약을 이어 가면 보증도 새로 들거나 기간을 늘려야 하는지 HUG 등 보증 기관 안내에서 확인해요. 신청 기한·조건은 기관마다 달라 이 알림은 미리 챙기라는 뜻이에요.' })));
   }
   return out;
 }
@@ -11354,4 +11371,409 @@ function aiUsage(days) {
     });
   }
   return { enabled: AI_ENABLED, key: !!A.key, model: AI_MODEL, cap: A.cap, krwCap: A.krw, userCap: AI_USER_CAP, today: { n: today0.n, fail: today0.fail, cap: today0.cap, krw: Math.round(today0.krw * 10) / 10 }, days: rows.reverse() };
+}
+
+
+/* ======================================================================================
+   v73 내 전셋집 지킴이(jeonse/guard/) · 등기 바로 확인(jeonse/safety/) · 중개사 권리분석(agent/pro/reg/)
+   ──────────────────────────────────────────────────────────────────────────────────────
+   다시 배포 필요(배포 관리 → 수정 → 새 버전). 처음 한 번 함수 guardInstall 실행(매일 10시·16시대 확인 트리거 + 시트 '지킴이'·'지킴이대기'·'지킴이기록').
+   켜는 순서(대표):
+     ① 에이픽(apick.app) 가입·포인트 충전 → 스크립트 속성 APICK_API_KEY 에 키 넣기(저장소·화면에는 절대 넣지 않음)
+     ② 아래 JG_APICK_F 의 요청·응답 칸 이름을 에이픽 개발 문서(dev_guide/iros_monitor · iros1)와 맞춰 보기(TODO 표시한 칸)
+     ③ 이 파일 GUARD_ENABLED = true + PAID_OPEN = true(그리고 assets/config.js PAID_OPEN) → 화면 결제 버튼이 저절로 열려요
+     (선택) 업체가 변동을 바로 알려 주는 주소(웹훅)를 쓰면 스크립트 속성 GUARD_HOOK_TOKEN 을 정하고 웹 앱 주소?guardhook=1&k=토큰 을 업체에 등록.
+   흐름: guardOrder(서버 가격표로 금액 결정) → 결제창 → guardRegister/readRegistry(토스 승인 확인 → 그다음에만 업체 호출 · 같은 주문은 한 번만)
+        → 업체 등록 실패·열람 실패 = 그 몫만큼 결제 취소(자동 환불). 업체 규칙: 실패한 확인은 업체가 포인트를 돌려줌.
+        guardDaily(트리거): 업체 /changed → 변동 기록(종류·날짜만) → 메일·알림톡 → 업체가 감시를 끝내므로 남은 기간 다시 등록(최대 JG_DEF.maxRereg 번).
+   개인정보: 이메일·휴대폰은 sealText(암호화) + 가린 값만, 기간 끝 30일 뒤 지움. 등기 속 이름·주민번호·주소는 저장하지 않고(열람 결과는 이름 가려 한 번만 돌려줌),
+            '지킴이기록' 시트에는 성공/실패·줄 수 같은 개인정보 아닌 값만.
+   ====================================================================================== */
+/* GUARD-CORE BEGIN — 이 블록은 tools/agent-backend.gs 에 그대로 복사돼 있어요. 고칠 때는 두 곳을 똑같이 고쳐 주세요(node tools/guard-test.js 가 비교). */
+const JG_V = 'guard-2026-11-27';
+/* 기본 가격·원가 값(대표 확정 전 제안) — 화면은 assets/config.js GUARD 가 있으면 그 값을 씀 */
+const JG_DEF = { month: 2900, read: 1900, days: 30, maxMonths: 24, regP: 50, dayP: 60, readP: 1300, wonPerP: 1.1, maxRereg: 10 };
+const JG_LV = { r: '위험', y: '주의', g: '괜찮아요', n: '확인 필요' };
+/* 변동 종류 — 등기 목적 글자에서 앞에서부터 먼저 맞는 것(경매 > 압류 > 예고등기 > 소유권 > 신탁 > 임차권 > 근저당 > 말소) */
+const JG_TYPES = [
+  { id: 'auction', n: '경매개시결정', lv: 'r', kw: ['경매개시결정', '임의경매', '강제경매'] },
+  { id: 'seize', n: '압류·가압류·가처분', lv: 'r', kw: ['가압류', '압류', '가처분'] },
+  { id: 'notice', n: '예고등기(소송 중)', lv: 'r', kw: ['예고등기'] },
+  { id: 'owner', n: '소유권 이전(집주인이 바뀜)', lv: 'r', kw: ['소유권이전', '소유권 이전', '가등기'] },
+  { id: 'trust', n: '신탁', lv: 'r', kw: ['신탁'] },
+  { id: 'lease', n: '임차권등기', lv: 'y', kw: ['임차권'] },
+  { id: 'mortgage', n: '근저당·전세권 설정', lv: 'y', kw: ['근저당', '저당권', '전세권설정', '전세권 설정'] },
+  { id: 'release', n: '말소(권리가 지워짐)', lv: 'g', kw: ['말소'] },
+  { id: 'other', n: '그 밖의 변동', lv: 'n', kw: [] }
+];
+/** 등기 목적 글자 → 변동 종류 id. '근저당권설정등기말소'처럼 말소가 붙으면 말소로 봐요(권리가 늘어난 게 아니라 지워진 것) */
+function jgTypeOf(purpose) {
+  const s = String(purpose == null ? '' : purpose).replace(/\s+/g, '');
+  if (!s) return 'other';
+  if (/말소/.test(s) && !/말소회복/.test(s)) return 'release';
+  const t = JG_TYPES.find(x => x.kw.some(k => s.indexOf(k.replace(/\s+/g, '')) >= 0));
+  return t ? t.id : 'other';
+}
+function jgType(id) { return JG_TYPES.find(x => x.id === id) || JG_TYPES[JG_TYPES.length - 1]; }
+/** 값 정리: 설정(config GUARD) → 숫자만, 없으면 기본값 */
+function jgCfg(c) {
+  c = c && typeof c === 'object' ? c : {};
+  const o = {}; Object.keys(JG_DEF).forEach(k => { const v = Number(c[k]); o[k] = isFinite(v) && v > 0 ? v : JG_DEF[k]; });
+  return o;
+}
+function jgT(iso) { return Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)); }
+function jgOkDate(v) { return /^20\d\d-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(String(v || '')); }
+/** 오늘 → 만기일 일수(만기일 포함 안 함). 날짜가 틀리면 0 */
+function jgDays(today, end) { return jgOkDate(today) && jgOkDate(end) ? Math.max(0, Math.round((jgT(end) - jgT(today)) / 864e5)) : 0; }
+/** 신청할 달 수: 만기까지 남은 날을 30일 단위로 올림, 1~maxMonths */
+function jgMonthsTo(today, end, c) { c = jgCfg(c); const d = jgDays(today, end); return d > 0 ? Math.min(c.maxMonths, Math.max(1, Math.ceil(d / c.days))) : 0; }
+/** 판매가(원) — 달 수 × 월 가격 */
+function jgPrice(months, c) { c = jgCfg(c); const m = Math.round(Number(months)); return m >= 1 && m <= c.maxMonths ? m * c.month : 0; }
+/** 업체 원가(원) — 등록 (1 + 다시 등록 수) × 50P + 날수 × 60P, × 1.1원 */
+function jgCost(days, rereg, c) { c = jgCfg(c); const d = Math.max(0, Math.round(Number(days) || 0)), r = Math.max(0, Math.round(Number(rereg) || 0)); return Math.round((c.regP * (1 + r) + c.dayP * d) * c.wonPerP); }
+/** 한 건 손익 — 결제 수수료(pg, 기본 3.3%)를 빼고 남는 돈 */
+function jgMargin(months, rereg, c, pg) { c = jgCfg(c); const p = jgPrice(months, c), cost = jgCost(months * c.days, rereg, c), fee = Math.round(p * (pg == null ? 0.033 : pg)); return { price: p, cost: cost, fee: fee, left: p - cost - fee }; }
+function jgReadCost(c) { c = jgCfg(c); return Math.round(c.readP * c.wonPerP); }
+/** 등기 고유번호: 숫자 14자리(1234-5678-901234) */
+function jgUniq(v) { const d = String(v == null ? '' : v).replace(/[^0-9]/g, ''); return d.length === 14 ? `${d.slice(0, 4)}-${d.slice(4, 8)}-${d.slice(8)}` : ''; }
+/** 이름 가리기: 홍길동 → 홍*동, 김수 → 김*, 법인·기관 이름(주식회사·은행 등)은 그대로 */
+function jgMaskName(v) {
+  const s = String(v == null ? '' : v).replace(/[\u0000-\u001F<>]/g, '').trim().slice(0, 40);
+  if (!s) return '';
+  if (/(주식회사|\(주\)|유한회사|법인|은행|금고|조합|공사|공단|보증|캐피탈|저축|대부|신탁|구청|시청|군청|세무서|법원|국민건강보험|근로복지)/.test(s) || /^[가-힣]{1,4}(시|구|군|도|국)$/.test(s) && s.length >= 3 && /(특별|광역|자치)?(시|구|군|도)$/.test(s) && !/^[가-힣]{3}$/.test(s)) return s;
+  const a = Array.from(s);
+  return a.length <= 1 ? '*' : a.length === 2 ? a[0] + '*' : a[0] + '*'.repeat(a.length - 2) + a[a.length - 1];
+}
+/** '금240,000,000원' → 24000(만원) */
+function jgWon(v) { const d = String(v == null ? '' : v).replace(/[^0-9]/g, ''); return d ? Math.round(Number(d) / 10000) : 0; }
+/** 등기 열람 결과(업체 응답을 서버 어댑터가 바꾼 모양) → 화면에 한 번 보여 줄 요약.
+    reg = { asof 'YYYY-MM-DD', gap: [{ purpose, at, holder, cancelled }], eul: [{ purpose, at, amount, holder, cancelled }] }
+    → { asof, senior 선순위 합계(만원), liens:[{ kind, amt, at, who }], flags:{ auction, seize, trust, lease, prov }, owner 가린 이름, ownerAt }
+    주민번호·주소·전체 이름은 돌려주지 않아요(이름은 가린 것만). */
+function jgParseReg(reg) {
+  reg = reg && typeof reg === 'object' ? reg : {};
+  const live = a => (Array.isArray(a) ? a : []).filter(x => x && typeof x === 'object' && !x.cancelled);
+  const gap = live(reg.gap), eul = live(reg.eul), flags = { auction: false, seize: false, trust: false, lease: false, prov: false, notice: false };
+  let owner = '', ownerAt = '';
+  gap.forEach(x => {
+    const t = jgTypeOf(x.purpose);
+    if (t === 'auction') flags.auction = true;
+    if (t === 'seize') flags.seize = true;
+    if (t === 'trust') flags.trust = true;
+    if (t === 'notice') flags.notice = true;
+    if (/가등기/.test(String(x.purpose || ''))) flags.prov = true;
+    if ((t === 'owner' && !/가등기/.test(String(x.purpose || ''))) || /소유권보존/.test(String(x.purpose || ''))) { owner = jgMaskName(x.holder); ownerAt = jgOkDate(x.at) ? String(x.at) : ''; }
+  });
+  const liens = [];
+  eul.forEach(x => {
+    const t = jgTypeOf(x.purpose);
+    if (t === 'lease') flags.lease = true;
+    if (t === 'mortgage' || t === 'lease') liens.push({ kind: t === 'lease' ? '임차권' : /전세권/.test(String(x.purpose || '')) ? '전세권' : '근저당', amt: jgWon(x.amount), at: jgOkDate(x.at) ? String(x.at) : '', who: jgMaskName(x.holder) });
+  });
+  return { asof: jgOkDate(reg.asof) ? String(reg.asof) : '', senior: liens.reduce((s, l) => s + l.amt, 0), liens: liens, flags: flags, owner: owner, ownerAt: ownerAt };
+}
+/* 지킴이 상태(서버 시트 '상태' 칸 글자 = 화면 표시) */
+const JG_ST = { wait: '결제대기', paid: '결제완료', on: '지켜보는 중', rereg: '다시 등록 중', done: '기간 끝', fail: '등록 실패·환불', stop: '중지', read: '열람 완료', bad: '금액불일치' };
+/** 화면 단계: 결제가 열렸는지 + 서버 준비(업체 키·GUARD_ENABLED) → 'open'(신청) | 'wait'(알림 신청만) */
+function jgCta(site, server) { return !!(site && site.PAID_OPEN) && !!(server && server.ok && server.open) ? 'open' : 'wait'; }
+/* GUARD-CORE END */
+const GUARD_ENABLED = false;                         // 서버 안전 스위치 — false 면 돈·업체가 걸린 요청(찾기·주문·등록·열람)을 모두 거절(열림 알림 신청·상태 보기는 그대로)
+/* 판매가(대표 확정 2026-11-27) — assets/config.js GUARD 와 같은 값(node tools/guard-test.js 가 비교). pro 는 중개사·전문가 묶음 할인(제안, 대표 확정 전) */
+const JG_PRICE = { month: 2900, read: 1900, corp: 1900, maxMonths: 24,
+  pro: { packs: [{ n: 10, won: 18000 }, { n: 30, won: 51000 }, { n: 100, won: 160000 }], watchOff: [{ n: 5, pct: 10 }, { n: 20, pct: 15 }], freeReads: 3, maxItems: 50 } };
+const JG_MAX_ACTIVE = 95;                            // 에이픽 회원당 동시 감시 100건 — 여유 5건
+const JG_KEEP_DAYS = 30;                             // 기간이 끝난 뒤 연락처를 지우기까지
+const SH_JG = '지킴이', SH_JGW = '지킴이대기', SH_JGL = '지킴이기록';
+const JGH = ['id', '주문번호', '생성시각', '상품', '고유번호', '표시', '개월', '시작일', '종료일', '금액', '상태', '이메일', '이메일가림', '휴대폰', '결제키', '승인시각',
+  '업체번호', '등록횟수', '마지막확인', '변동기록', '회원', '열람횟수', '메모'];
+const JGC = Object.fromEntries(JGH.map((h, i) => [h, i]));
+const JG_ACTIONS = { guardWait: 1, guardFind: 1, guardOrder: 1, guardRegister: 1, guardStatus: 1, guardStop: 1, guardList: 1, readRegistry: 1 };
+/* ---------- 에이픽 어댑터(업체가 바뀌면 이 칸만 바꿈) ----------
+   TODO(대표 가입 후 문서로 확인): 아래 칸 이름은 공개 안내로 짐작한 값이에요. dev_guide/iros_monitor · iros1 문서와 다르면 여기만 고치면 돼요(tools/guard-test.js 가짜 업체도 이 이름을 씀). */
+const JG_APICK_F = {
+  base: 'https://apick.app',
+  auth: 'CL_AUTH_KEY',                                // TODO 인증 헤더 이름
+  monitor: '/rest/iros_monitor', status: '/rest/iros_monitor/status', changed: '/rest/iros_monitor/changed', list: '/rest/iros_monitor/list', terminate: '/rest/iros_monitor/terminate',
+  read: '/rest/iros1',                                // 부동산 등기부등본 열람(1,300P)
+  find: '/rest/iros_unique',                          // TODO 주소 → 고유번호 찾기(업체 문서에서 경로 확인)
+  corp: '/rest/iros_corp',                            // TODO 법인등기 열람(경로·가격 확인)
+  q: { uniq: 'unique_no', days: 'days', id: 'monitor_id', addr: 'address', corp: 'corp_no' },                   // TODO 요청 칸
+  r: { ok: 'success', id: 'monitor_id', list: 'data', changes: 'changes', purpose: 'purpose', at: 'receipt_date', msg: 'message',
+       gap: 'gapgu', eul: 'eulgu', asof: 'issue_date', holder: 'holder', amount: 'amount', cancelled: 'cancelled', uniqOut: 'unique_no', label: 'address', kind: 'type' }   // TODO 응답 칸
+};
+function jgKey() { return PropertiesService.getScriptProperties().getProperty('APICK_API_KEY') || ''; }
+function jgVendor(path, form) {
+  const key = jgKey(); if (!key) return { code: 0, j: {}, why: 'nokey' };
+  const F = JG_APICK_F, h = {}; h[F.auth] = key;
+  let res; try { res = UrlFetchApp.fetch(F.base + path, { method: 'post', muteHttpExceptions: true, headers: h, payload: form || {} }); } catch (e) { return { code: 0, j: {}, why: 'net' }; }
+  let j = {}; try { j = JSON.parse(res.getContentText()); } catch (e) {}
+  const code = res.getResponseCode(), d = j && typeof j === 'object' ? (j.data && typeof j.data === 'object' && !Array.isArray(j.data) ? Object.assign({}, j, j.data) : j) : {};
+  return { code: code, j: d, ok: code === 200 && d[F.r.ok] !== false && d[F.r.ok] !== 0 };
+}
+const JG_V_API = {
+  register(no, days) { const F = JG_APICK_F, f = {}; f[F.q.uniq] = no.replace(/-/g, ''); f[F.q.days] = String(Math.max(1, Math.min(1000, days))); const r = jgVendor(F.monitor, f); return r.ok && r.j[F.r.id] ? { ok: true, id: String(r.j[F.r.id]) } : { ok: false, why: r.why || String(r.j[F.r.msg] || r.code).slice(0, 80) }; },
+  changed() { const F = JG_APICK_F, r = jgVendor(F.changed, {}); if (!r.ok) return null; const L = Array.isArray(r.j[F.r.list]) ? r.j[F.r.list] : [];
+    return L.map(x => ({ id: String(x[F.r.id] || ''), changes: (Array.isArray(x[F.r.changes]) ? x[F.r.changes] : [x]).map(c => ({ purpose: String(c[F.r.purpose] || ''), at: String(c[F.r.at] || '').slice(0, 10) })) })).filter(x => x.id); },
+  terminate(id) { const F = JG_APICK_F, f = {}; f[F.q.id] = id; return jgVendor(F.terminate, f).ok; },
+  /** 열람 → reg 모양(GUARD-CORE jgParseReg 가 읽는 모양) — 이름은 여기서 바로 가림, 주민번호·주소는 받지 않음 */
+  read(no, corp) { const F = JG_APICK_F, f = {}; if (corp) f[F.q.corp] = no; else f[F.q.uniq] = no.replace(/-/g, ''); const r = jgVendor(corp ? F.corp : F.read, f); if (!r.ok) return { ok: false, why: r.why || String(r.j[F.r.msg] || r.code).slice(0, 80) };
+    const rows = a => (Array.isArray(a) ? a : []).map((x, i) => ({ no: String(x.no || x.rank || i + 1).slice(0, 8), purpose: String(x[F.r.purpose] || '').slice(0, 60), at: String(x[F.r.at] || '').slice(0, 10), cause: String(x.cause || '').slice(0, 30),
+      amount: String(x[F.r.amount] || '').replace(/[^0-9,]/g, ''), holder: jgMaskName(x[F.r.holder]), cancelled: x[F.r.cancelled] === true || x[F.r.cancelled] === 'Y' }));
+    return { ok: true, reg: { asof: String(r.j[F.r.asof] || ymd(new Date())).slice(0, 10), gap: rows(r.j[F.r.gap]), eul: rows(r.j[F.r.eul]), ok: true } }; },
+  find(addr) { const F = JG_APICK_F, f = {}; f[F.q.addr] = addr; const r = jgVendor(F.find, f); if (!r.ok) return null; const L = Array.isArray(r.j[F.r.list]) ? r.j[F.r.list] : [];
+    return L.slice(0, 20).map(x => ({ no: jgUniq(x[F.r.uniqOut]), label: String(x[F.r.label] || '').slice(0, 80), kind: String(x[F.r.kind] || '').slice(0, 20) })).filter(x => x.no); }
+};
+/* ---------- 시트·작은 도구 ---------- */
+function jgSheet() { return uSheet(SH_JG, JGH); }
+function jgRows() { const sh = book().getSheetByName(SH_JG); if (!sh) return []; const v = sh.getDataRange().getValues(), out = []; for (let i = 1; i < v.length; i++) if (v[i][0]) out.push({ row: i + 1, r: v[i] }); return out; }
+function jgSet(row, h, v) { jgSheet().getRange(row, JGC[h] + 1).setValue(v); }
+function jgLog(kind, ok, n, note) { try { uSheet(SH_JGL, ['날짜', '종류', '성공', '건수', '메모']).appendRow([ymd(new Date()), kind, ok ? 1 : 0, n || 0, String(note || '').slice(0, 80)]); } catch (e) {} }   // 개인정보 없는 값만
+function jgTok(orderId) { return hashOf('jg|' + orderId).slice(1, 41); }               // 보기 열쇠(저장 안 함 — 서버가 다시 만들 수 있음)
+function jgErr(msg, code) { const e = new Error(msg); e.code = code || ''; return e; }
+function jgReady() { return GUARD_ENABLED && !!jgKey(); }
+function jgGate() { if (!jgReady()) throw jgErr('지킴이는 곧 열려요. 결제가 열리면 바로 신청할 수 있어요.', 'guard_closed'); }
+function jgDay(v) { return v instanceof Date ? ymd(v) : String(v || '').slice(0, 10); }
+function jgActive() { return jgRows().filter(o => [JG_ST.on, JG_ST.rereg].indexOf(String(o.r[JGC['상태']])) >= 0).length; }
+/** 중개사·전문가(확인 마친 분) 세션이면 회원 id, 아니면 '' */
+function jgPro(b) { if (!b || !b.s) return ''; try { const u = sessionUser(b.s); return ptCard(u.k).card ? ptUid(u.k) : ''; } catch (e) { return ''; } }
+/** 서버 가격표로 금액 — 손님 화면 값은 믿지 않음 */
+function jgAmount(product, n, months, pro) {
+  const P = JG_PRICE;
+  if (product === 'watch') { const base = jgPrice(months, P) * n; const off = pro ? P.pro.watchOff.filter(x => n >= x.n).reduce((m, x) => Math.max(m, x.pct), 0) : 0; return Math.round(base * (100 - off) / 100 / 10) * 10; }
+  const unit = product === 'corp' ? P.corp : P.read;
+  if (pro) { const pk = P.pro.packs.filter(x => x.n === n)[0]; if (pk) return pk.won; }
+  return unit * n;
+}
+function jgDispatch(b) {
+  try {
+    if (b.action === 'guardWait') return withLock(() => jgWait(b));
+    if (b.action === 'guardStatus') return jgStatus(b);
+    if (b.action === 'guardList') return jgList(b);
+    if (b.action === 'guardStop') return withLock(() => jgStop(b));
+    jgGate();
+    if (b.action === 'guardFind') return jgFind(b);
+    if (b.action === 'guardOrder') return withLock(() => jgOrder(b));
+    if (b.action === 'guardRegister') return jgRegister(b);
+    if (b.action === 'readRegistry') return jgRead(b);
+    return { ok: false, err: 'unknown' };
+  } catch (x) { return { ok: false, err: String(x.message || x), code: x.code || '' }; }
+}
+function jgConfig() { return { ok: true, open: jgReady() && PAID_OPEN, ready: jgReady(), v: JG_V, price: JG_PRICE }; }
+/* ---------- 열림 알림 신청(결제가 닫혀 있어도 받음) ---------- */
+function jgWait(b) {
+  const ct = parseContact(b.email); if (!ct || ct.kind !== 'email') throw jgErr('이메일 주소를 확인해 주세요.');
+  if (b.agree !== true) throw jgErr('동의에 체크해 주세요.');
+  const sh = uSheet(SH_JGW, ['시각', '이메일', '확인값', '보냄']), h = hashOf('jgw|' + ct.norm);
+  if (sh.getDataRange().getValues().slice(1).some(r => String(r[2]) === h)) return { ok: true, again: true };
+  if (sh.getLastRow() > 5000) throw jgErr('신청이 많아 잠시 받지 못해요. 나중에 다시 시도해 주세요.');
+  sh.appendRow([new Date(), sealText(ct.norm), h, '']);
+  return { ok: true };
+}
+/** 대표가 지킴이를 연 날 한 번 실행: 신청한 분께 메일 1통 → 이메일 지움 */
+function guardWaitNotify() {
+  const sh = book().getSheetByName(SH_JGW); if (!sh) return 0;
+  const v = sh.getDataRange().getValues(); let n = 0;
+  for (let i = v.length - 1; i >= 1; i--) {
+    const to = openText(v[i][1]); if (!to) { sh.deleteRow(i + 1); continue; }
+    try { mailSend({ to: to, name: SITE_NAME, replyTo: BRIEF_SENDER.email, subject: `[${SITE_NAME}] 내 전셋집 지킴이 신청이 열렸어요`, htmlBody: `<div style="font-family:sans-serif;line-height:1.7">기다려 주셔서 고마워요. 이제 <a href="${WEB_ROOT}jeonse/guard/">내 전셋집 지킴이</a>를 신청할 수 있어요.<br>이 메일을 보낸 뒤 남겨 주신 이메일은 지웠어요.<br>보낸 사람: ${bEsc(SITE_NAME)}(${bEsc(BRIEF_SENDER.name)}) · 전화 ${bEsc(BRIEF_SENDER.tel)}</div>` }); n++; sh.deleteRow(i + 1); } catch (e) { break; }
+  }
+  return n;
+}
+/* ---------- 주소 → 고유번호 ---------- */
+function jgFind(b) {
+  const road = uText(b.road, 80), dh = uText(b.dongho, 30);
+  if (road.length < 4) throw jgErr('도로명 주소를 넣어 주세요.');
+  const c = CacheService.getScriptCache(), ck = 'jgf:' + Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyyMMddHH'), n = Number(c.get(ck) || 0);
+  if (n >= 300) throw jgErr('찾기가 많아 잠시 쉬어요. 고유번호를 직접 넣어 주세요.');
+  c.put(ck, String(n + 1), 3700);
+  const L = JG_V_API.find((road + ' ' + dh).trim());
+  if (!L) throw jgErr('지금은 주소로 찾지 못했어요. 인터넷등기소에서 고유번호를 찾아 직접 넣어 주세요.');
+  return { ok: true, list: L };
+}
+/* ---------- 주문 ---------- */
+function jgOrder(b) {
+  if (!PAID_OPEN) throw jgErr(PAID_CLOSED_MSG, 'paid_closed');
+  const product = ['watch', 'read', 'corp'].indexOf(String(b.product)) >= 0 ? String(b.product) : '';
+  if (!product) throw jgErr('상품을 다시 골라 주세요.');
+  if (b.agree !== true) throw jgErr('안내에 동의해 주세요.');
+  const pro = jgPro(b), max = pro ? JG_PRICE.pro.maxItems : 1, seen = {};
+  const items = (Array.isArray(b.items) ? b.items : []).slice(0, max + 1).map(x => ({ no: product === 'corp' ? String((x && x.no) || '').replace(/[^0-9]/g, '').slice(0, 13) : jgUniq(x && x.no), label: uText(x && x.label, 60) }))
+    .filter(x => x.no && !seen[x.no] && (seen[x.no] = 1));
+  if (!items.length) throw jgErr(product === 'corp' ? '법인등록번호(13자리)를 확인해 주세요.' : '등기 고유번호(14자리)를 확인해 주세요.');
+  if (items.length > max) throw jgErr(pro ? `한 번에 ${max}곳까지 신청할 수 있어요.` : '한 번에 한 곳씩 신청해 주세요. 여러 곳은 중개사·전문가 도구에서 한꺼번에 할 수 있어요.');
+  const months = Math.round(Number(b.months));
+  let email = null, phone = null;
+  if (product === 'watch') {
+    if (!(months >= 1 && months <= JG_PRICE.maxMonths)) throw jgErr(`기간은 1~${JG_PRICE.maxMonths}개월 중에서 골라 주세요.`);
+    email = parseContact(b.email); if (!email || email.kind !== 'email') throw jgErr('알림 받을 이메일을 확인해 주세요.');
+    if (String(b.phone || '').trim()) { phone = parseContact(b.phone); if (!phone || phone.kind !== 'phone') throw jgErr('휴대폰 번호를 확인해 주세요(비워 둬도 돼요).'); }
+    if (jgActive() + items.length > JG_MAX_ACTIVE) { ownerMail('[지킴이] 동시 감시 한도에 가까워요', ['지금 감시 중 ' + jgActive() + '건 · 한도 ' + JG_MAX_ACTIVE, '업체 회원 한도(100건)를 늘리거나 계정을 나눠야 해요.']); throw jgErr('지금 신청이 많아 잠시 받지 못해요. 조금 뒤 다시 시도해 주세요.'); }
+  }
+  const c = CacheService.getScriptCache(), ck = 'jgo:' + Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyyMMddHHmm'), n = Number(c.get(ck) || 0);
+  if (n >= 30) throw jgErr('잠시 후 다시 시도해 주세요.'); c.put(ck, String(n + 1), 120);
+  const amount = jgAmount(product, items.length, months, !!pro), id = newOrderId(), now = new Date();
+  const each = Math.floor(amount / items.length);
+  items.forEach((x, i) => {
+    const r = []; r[JGC['id']] = id + '-' + (i + 1); r[JGC['주문번호']] = id; r[JGC['생성시각']] = now; r[JGC['상품']] = product; r[JGC['고유번호']] = "'" + x.no; r[JGC['표시']] = cellSafe(x.label);
+    r[JGC['개월']] = product === 'watch' ? months : 0; r[JGC['금액']] = i === items.length - 1 ? amount - each * (items.length - 1) : each; r[JGC['상태']] = JG_ST.wait;
+    r[JGC['이메일']] = email ? sealText(email.norm) : ''; r[JGC['이메일가림']] = email ? email.mask : ''; r[JGC['휴대폰']] = phone ? sealText(phone.norm) : '';
+    r[JGC['등록횟수']] = 0; r[JGC['열람횟수']] = 0; r[JGC['변동기록']] = '[]'; r[JGC['회원']] = pro;
+    jgSheet().appendRow(JGH.map((h, k) => r[k] === undefined ? '' : r[k]));
+  });
+  const nm = { watch: '내 전셋집 지킴이', read: '등기 바로 확인', corp: '법인등기 확인' }[product];
+  return { ok: true, orderId: id, amount: amount, orderName: `${SITE_NAME} ${nm}${items.length > 1 ? ' ' + items.length + '건' : ''}${product === 'watch' ? ' ' + months + '개월' : ''}` };
+}
+/** 결제 승인(토스) — 요청 금액 = 주문 금액(서버 가격표) = 토스 응답 금액이어야 통과. 같은 주문·같은 결제키면 다시 승인하지 않음 */
+function jgConfirm(b, kinds) {
+  const paymentKey = str(b.paymentKey, 200), amount = Number(b.amount), orderId = str(b.orderId, 40);
+  if (!paymentKey || !/^[A-Za-z0-9_\-=.]+$/.test(paymentKey)) throw jgErr('결제 정보가 올바르지 않아요.');
+  const rows = withLock(() => jgRows().filter(o => String(o.r[JGC['주문번호']]) === orderId));
+  if (!rows.length || kinds.indexOf(String(rows[0].r[JGC['상품']])) < 0) throw jgErr('주문을 찾지 못했어요.');
+  const total = rows.reduce((s, o) => s + Number(o.r[JGC['금액']]), 0), st = String(rows[0].r[JGC['상태']]);
+  if (st !== JG_ST.wait) { if (!safeEq(String(rows[0].r[JGC['결제키']]), paymentKey)) throw jgErr('이미 처리된 주문이에요.'); return { rows: rows, again: true, paymentKey: paymentKey }; }
+  if (amount !== total) { withLock(() => rows.forEach(o => { jgSet(o.row, '상태', JG_ST.bad); jgSet(o.row, '메모', '요청 금액 ' + amount + ' / 주문 ' + total); })); throw jgErr('결제 금액이 주문 금액과 달라 승인하지 않았어요. 결제는 진행되지 않았어요.'); }
+  let res = tossCall('confirm', { paymentKey: paymentKey, orderId: orderId, amount: amount }, 'confirm-' + orderId);
+  if (res.code !== 200 && res.j && res.j.code === 'ALREADY_PROCESSED_PAYMENT') res = tossCall(encodeURIComponent(paymentKey));
+  const j = res.j || {};
+  if (res.code !== 200 || j.status !== 'DONE' || String(j.orderId) !== orderId || Number(j.totalAmount) !== total) {
+    withLock(() => rows.forEach(o => jgSet(o.row, '메모', str((j.code || j.status || res.code) + ' ' + (j.message || ''), 120))));
+    throw jgErr(str(j.message, 200) || '결제가 완료되지 않았어요.');
+  }
+  const at = j.approvedAt ? new Date(j.approvedAt) : new Date();
+  withLock(() => rows.forEach(o => { jgSet(o.row, '결제키', paymentKey); jgSet(o.row, '승인시각', at); jgSet(o.row, '상태', JG_ST.paid); }));
+  return { rows: withLock(() => jgRows().filter(o => String(o.r[JGC['주문번호']]) === orderId)), again: false, paymentKey: paymentKey };
+}
+/** 결제 일부·전부 취소(업체 실패 몫). 같은 사유·금액이면 토스 멱등 키로 한 번만 */
+function jgCancel(paymentKey, won, why, key) {
+  if (!(won > 0)) return true;
+  const r = tossCall(encodeURIComponent(paymentKey) + '/cancel', { cancelReason: why, cancelAmount: won }, 'jgcancel-' + key);
+  if (r.code !== 200) ownerMail('[지킴이] 자동 취소 실패 — 직접 취소 필요', ['결제키 끝 4자리 ' + String(paymentKey).slice(-4), '금액 ' + won, '사유 ' + why, String((r.j || {}).message || r.code)]);
+  return r.code === 200;
+}
+/* ---------- 결제 확인 → 업체 등록 ---------- */
+function jgRegister(b) {
+  const C = jgConfirm(b, ['watch']), orderId = String(C.rows[0].r[JGC['주문번호']]);
+  let failWon = 0, ok = 0;
+  C.rows.forEach(o => {
+    const st = String(o.r[JGC['상태']]);
+    if (st === JG_ST.on || st === JG_ST.rereg || st === JG_ST.fail) { if (st !== JG_ST.fail) ok++; return; }      // 이미 처리(새로 고침·두 번 누름)
+    const start = ymd(new Date()), end = ymd(addDays(new Date(), Number(o.r[JGC['개월']]) * 30)), days = Number(o.r[JGC['개월']]) * 30;
+    const v = JG_V_API.register(String(o.r[JGC['고유번호']]).replace(/^'/, ''), days);
+    withLock(() => {
+      if (v.ok) { jgSet(o.row, '업체번호', v.id); jgSet(o.row, '상태', JG_ST.on); jgSet(o.row, '시작일', start); jgSet(o.row, '종료일', end); jgSet(o.row, '등록횟수', 1); ok++; }
+      else { jgSet(o.row, '상태', JG_ST.fail); jgSet(o.row, '메모', '업체 등록 실패: ' + v.why); failWon += Number(o.r[JGC['금액']]); }
+    });
+  });
+  if (failWon > 0) jgCancel(C.paymentKey, failWon, '등기 감시 등록 실패 자동 환불', orderId + '-reg');
+  jgLog('register', ok > 0, C.rows.length, failWon ? 'fail ' + (C.rows.length - ok) : '');
+  if (!ok) throw jgErr('등기 감시를 등록하지 못했어요. 결제는 자동으로 취소했어요. 고유번호를 확인해 다시 신청해 주세요.');
+  if (!C.again) try { jgMail(C.rows[0], `[${SITE_NAME}] 내 전셋집 지킴이를 시작했어요`, `${ok}곳의 등기를 오늘부터 매일 확인해요. 변동이 생기면 바로 알려 드릴게요.${failWon ? `<br>등록하지 못한 ${C.rows.length - ok}곳은 결제를 자동으로 취소했어요.` : ''}`, orderId); } catch (e) {}
+  return { ok: true, orderId: orderId, token: jgTok(orderId), n: ok, fail: C.rows.length - ok };
+}
+/* ---------- 결제 확인 → 등기 열람(한 번만 돌려줌, 저장 안 함) ---------- */
+function jgRead(b) {
+  const C = jgConfirm(b, ['read', 'corp']), o = C.rows[0], orderId = String(o.r[JGC['주문번호']]);
+  const used = Number(o.r[JGC['열람횟수']]) || 0, st = String(o.r[JGC['상태']]);
+  if (st === JG_ST.fail) throw jgErr('이 주문은 열람에 실패해 결제를 취소했어요.');
+  if (st === JG_ST.read && used >= 2) throw jgErr('이 열람 결과는 이미 보여 드렸어요(저장하지 않아 다시 열 수 없어요). 다시 보려면 새로 확인해 주세요.');
+  const out = [];
+  C.rows.forEach(x => {
+    const v = JG_V_API.read(String(x.r[JGC['고유번호']]).replace(/^'/, ''), String(x.r[JGC['상품']]) === 'corp');
+    out.push(v);
+    withLock(() => { jgSet(x.row, '열람횟수', used + 1); jgSet(x.row, '상태', v.ok ? JG_ST.read : JG_ST.fail); if (!v.ok) jgSet(x.row, '메모', '업체 열람 실패: ' + v.why); });
+    jgLog('read', v.ok, v.ok ? (v.reg.gap.length + v.reg.eul.length) : 0, '');          // 줄 수만(이름·금액 없음)
+  });
+  if (used === 0) { const won = C.rows.filter((x, i) => !out[i].ok).reduce((s, x) => s + Number(x.r[JGC['금액']]), 0); if (won) jgCancel(C.paymentKey, won, '등기 열람 실패 자동 환불', orderId + '-read'); }
+  const goods = out.filter(v => v.ok);
+  if (!goods.length) throw jgErr('등기부를 열지 못했어요. 결제는 자동으로 취소했어요. 고유번호를 확인해 다시 시도해 주세요.');
+  return { ok: true, reg: goods[0].reg, regs: goods.map(v => v.reg), n: goods.length };
+}
+/* ---------- 상태(보기 열쇠) · 목록(중개사) · 그만두기 ---------- */
+function jgPub(o) {
+  const ch = parseJ(String(o.r[JGC['변동기록']] || '[]'), []);
+  return { id: String(o.r[JGC['id']]), no: String(o.r[JGC['고유번호']]).replace(/^'/, ''), label: String(o.r[JGC['표시']] || ''), state: String(o.r[JGC['상태']]), product: String(o.r[JGC['상품']]),
+    start: jgDay(o.r[JGC['시작일']]), end: jgDay(o.r[JGC['종료일']]), last: jgDay(o.r[JGC['마지막확인']]), changes: Array.isArray(ch) ? ch.slice(-20) : [], rereg: Number(o.r[JGC['등록횟수']]) || 0 };
+}
+function jgStatus(b) {
+  const o = str(b.o, 40), t = str(b.t, 60);
+  if (!o || !safeEq(t, jgTok(o))) throw jgErr('주문 정보를 확인할 수 없어요. 알림 메일의 링크로 다시 열어 주세요.');
+  const rows = jgRows().filter(x => String(x.r[JGC['주문번호']]) === o);
+  if (!rows.length) throw jgErr('주문을 찾지 못했어요.');
+  const items = rows.map(jgPub), f = items[0];
+  return Object.assign({ ok: true, items: items }, f);
+}
+function jgList(b) {
+  ptGate(b); const pro = jgPro(b); if (!pro) throw jgErr('확인을 마친 중개사·전문가만 쓸 수 있어요.', 'pro');
+  return { ok: true, items: jgRows().filter(o => String(o.r[JGC['회원']]) === pro).map(o => Object.assign(jgPub(o), { o: String(o.r[JGC['주문번호']]), t: jgTok(String(o.r[JGC['주문번호']])) })).reverse().slice(0, 500) };
+}
+function jgStop(b) {
+  const o = str(b.o, 40), t = str(b.t, 60); if (!o || !safeEq(t, jgTok(o))) throw jgErr('주문 정보를 확인할 수 없어요.');
+  const rows = jgRows().filter(x => String(x.r[JGC['주문번호']]) === o && (!b.id || String(x.r[JGC['id']]) === String(b.id)) && [JG_ST.on, JG_ST.rereg].indexOf(String(x.r[JGC['상태']])) >= 0);
+  const today = ymd(new Date());
+  rows.forEach(x => {
+    const vid = String(x.r[JGC['업체번호']] || ''); if (vid) JG_V_API.terminate(vid);
+    const left = Math.floor(jgDays(today, jgDay(x.r[JGC['종료일']])) / 30), won = left * JG_PRICE.month;
+    jgSet(x.row, '상태', JG_ST.stop); jgSet(x.row, '메모', '사용자 중지 · 남은 달 ' + left + ' · 환불 검토 ' + won + '원');
+    if (won > 0) ownerMail('[지킴이] 중지 — 남은 달 환불 검토', ['주문 ' + o, '남은 달 ' + left + ' · ' + won + '원', '7일 안·첫 확인 전이면 전액 환불(환불 정책)']);
+  });
+  return { ok: true, n: rows.length };
+}
+/* ---------- 알림 ---------- */
+function jgMail(o, subject, body, orderId) {
+  const to = openText(String(o.r[JGC['이메일']] || '')); if (!to) return false;
+  const link = WEB_ROOT + 'jeonse/guard/my/?o=' + encodeURIComponent(orderId) + '&t=' + jgTok(orderId);
+  mailSend({ to: to, name: SITE_NAME, replyTo: BRIEF_SENDER.email, subject: subject, htmlBody: `<div style="font-family:sans-serif;line-height:1.7;max-width:560px">${body}<br><a href="${link}">내 지킴이 보기</a> · <a href="${WEB_ROOT}jeonse/guard/what/">알림이 오면 이렇게 하세요</a><br><span style="color:#6B7684;font-size:12px">공개된 등기 정보를 알려 드리는 정보 메일이에요. 보낸 사람: ${bEsc(SITE_NAME)}(${bEsc(BRIEF_SENDER.name)}) · 전화 ${bEsc(BRIEF_SENDER.tel)}</span></div>` });
+  return true;
+}
+function jgNotify(o, ch) {
+  const T = jgType(ch.type), orderId = String(o.r[JGC['주문번호']]), label = String(o.r[JGC['표시']] || '') || '내 전셋집';
+  try { jgMail(o, `[${SITE_NAME}] ${label} 등기에 변동이 생겼어요 — ${T.n}`, `<b>${bEsc(label)}</b> 등기에 <b>${bEsc(T.n)}</b>(위험 정도: ${JG_LV[T.lv]}) 변동이 ${bEsc(ch.at || '')} 접수됐어요.<br>최신 등기부로 무엇이 생겼는지 확인하고, 아래 안내의 할 일을 순서대로 확인하세요: <a href="${WEB_ROOT}jeonse/guard/what/#${T.id}">${bEsc(T.n)} — 이렇게 하세요</a>`, orderId); } catch (e) {}
+  const ph = openText(String(o.r[JGC['휴대폰']] || ''));
+  if (ph) try { solapiSend(ph, 'SOLAPI_TPL_GUARD', { '#{집}': label.slice(0, 30), '#{변동}': T.n, '#{링크}': (WEB_ROOT + 'jeonse/guard/what/#' + T.id).replace(/^https:\/\//, '') }); } catch (e) {}   // 템플릿 심사 전이면 건너뜀
+}
+/* ---------- 매일 확인(트리거) · 웹훅 ---------- */
+function guardInstall() {
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'guardDaily').forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('guardDaily').timeBased().everyDays(1).atHour(10).inTimezone('Asia/Seoul').create();
+  ScriptApp.newTrigger('guardDaily').timeBased().everyDays(1).atHour(16).inTimezone('Asia/Seoul').create();
+  jgSheet(); uSheet(SH_JGW, ['시각', '이메일', '확인값', '보냄']); uSheet(SH_JGL, ['날짜', '종류', '성공', '건수', '메모']);
+}
+/** 업체 변동 목록 → 기록·알림 → 남은 기간 다시 등록. 끝난 것 정리 · 연락처 지우기. 여러 번 돌아도 같은 변동은 한 번만(종류|날짜 기록) */
+function guardDaily() { return guardWebhookOrPoll(null); }
+function guardWebhookOrPoll(e) {
+  if (e && e.parameter) { const t = PropertiesService.getScriptProperties().getProperty('GUARD_HOOK_TOKEN'); if (!t || !safeEq(String(e.parameter.k || ''), t)) return { ok: false, err: 'auth' }; }
+  if (!jgReady()) return { ok: true, skip: 'closed' };
+  const today = ymd(new Date()), C = JG_V_API.changed();
+  if (C === null) { jgLog('poll', false, 0, 'changed 실패'); return { ok: false, err: 'vendor' }; }
+  const byId = {}; C.forEach(x => { byId[x.id] = x.changes; });
+  let n = 0;
+  jgRows().forEach(o => {
+    const st = String(o.r[JGC['상태']]), vid = String(o.r[JGC['업체번호']] || ''), end = jgDay(o.r[JGC['종료일']]);
+    if ([JG_ST.on, JG_ST.rereg].indexOf(st) < 0) {
+      if ([JG_ST.done, JG_ST.stop, JG_ST.fail].indexOf(st) >= 0 && (o.r[JGC['이메일']] || o.r[JGC['휴대폰']]) && jgDays(end || jgDay(o.r[JGC['생성시각']]), today) > JG_KEEP_DAYS) withLock(() => { jgSet(o.row, '이메일', ''); jgSet(o.row, '휴대폰', ''); });
+      return;
+    }
+    const chs = byId[vid];
+    withLock(() => jgSet(o.row, '마지막확인', today));
+    if (chs && chs.length) {
+      const log = parseJ(String(o.r[JGC['변동기록']] || '[]'), []), have = {}; log.forEach(x => { have[x.type + '|' + x.at] = 1; });
+      const fresh = chs.map(c => ({ type: jgTypeOf(c.purpose), at: jgOkDate(c.at) ? c.at : today })).filter(c => !have[c.type + '|' + c.at] && (have[c.type + '|' + c.at] = 1));
+      if (fresh.length) { withLock(() => jgSet(o.row, '변동기록', JSON.stringify(log.concat(fresh).slice(-50)))); fresh.forEach(c => jgNotify(o, c)); n++; }
+      /* 업체는 변동을 잡으면 감시를 끝냄 → 남은 기간 다시 등록 */
+      const left = jgDays(today, end), cnt = Number(o.r[JGC['등록횟수']]) || 1;
+      if (left > 0 && cnt <= JG_DEF.maxRereg) {
+        const v = JG_V_API.register(String(o.r[JGC['고유번호']]).replace(/^'/, ''), left);
+        withLock(() => { if (v.ok) { jgSet(o.row, '업체번호', v.id); jgSet(o.row, '등록횟수', cnt + 1); jgSet(o.row, '상태', JG_ST.on); } else { jgSet(o.row, '상태', JG_ST.rereg); jgSet(o.row, '메모', '다시 등록 실패(다음 실행 때 다시): ' + v.why); } });
+        jgLog('rereg', v.ok, 1, '');
+      } else if (left > 0) { withLock(() => jgSet(o.row, '메모', '다시 등록 한도 도달 — 운영 확인')); ownerMail('[지킴이] 다시 등록 한도', ['주문 ' + o.r[JGC['주문번호']]]); }
+      else withLock(() => jgSet(o.row, '상태', JG_ST.done));
+      return;
+    }
+    if (st === JG_ST.rereg) {                                   // 지난번 다시 등록 실패분
+      const left = jgDays(today, end); if (left > 0) { const v = JG_V_API.register(String(o.r[JGC['고유번호']]).replace(/^'/, ''), left); if (v.ok) withLock(() => { jgSet(o.row, '업체번호', v.id); jgSet(o.row, '등록횟수', (Number(o.r[JGC['등록횟수']]) || 1) + 1); jgSet(o.row, '상태', JG_ST.on); jgSet(o.row, '메모', ''); }); }
+    }
+    if (end && end <= today) { if (vid) JG_V_API.terminate(vid); withLock(() => jgSet(o.row, '상태', JG_ST.done)); try { jgMail(o, `[${SITE_NAME}] 지킴이 기간이 끝났어요`, '신청하신 기간 동안의 등기 확인을 마쳤어요. 계약을 이어 가면 다시 신청해 주세요.', String(o.r[JGC['주문번호']])); } catch (x) {} }
+  });
+  jgLog('poll', true, n, '');
+  return { ok: true, changed: n };
 }

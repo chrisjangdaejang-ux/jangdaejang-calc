@@ -47,7 +47,10 @@ module.exports = function makeEnv(o) {
       },
       computeDigest: (alg, s) => Array.from(crypto.createHash('sha256').update(s, 'utf8').digest()).map(b => b > 127 ? b - 256 : b),
       computeHmacSha256Signature: (v, k) => Array.from(crypto.createHmac('sha256', k).update(v).digest()).map(b => b > 127 ? b - 256 : b),
-      base64Encode: s => Buffer.from(s).toString('base64'), sleep() {}, DigestAlgorithm: { SHA_256: 'sha256' }, Charset: { UTF_8: 'utf8' }
+      base64Encode: s => Buffer.from(s).toString('base64'), sleep() {}, DigestAlgorithm: { SHA_256: 'sha256' }, Charset: { UTF_8: 'utf8' },
+      newBlob: v => { const buf = Array.isArray(v) ? Buffer.from(v.map(b => b & 255)) : Buffer.from(String(v), 'utf8'); return { getBytes: () => Array.from(buf).map(b => b > 127 ? b - 256 : b), getDataAsString: () => buf.toString('utf8') }; },
+      base64EncodeWebSafe: a => Buffer.from(a.map(b => b & 255)).toString('base64').replace(/\+/g, '-').replace(/\//g, '_'),
+      base64DecodeWebSafe: s => Array.from(Buffer.from(String(s).replace(/-/g, '+').replace(/_/g, '/'), 'base64')).map(b => b > 127 ? b - 256 : b)
     },
     UrlFetchApp: { fetch(url, opt) {
       if (o.fetch) { const r = o.fetch(url, opt || {}, E); if (r) return r; }   // 시험용 가짜 외부 응답(예: AI 서버) — 없으면 아래 공개 자료

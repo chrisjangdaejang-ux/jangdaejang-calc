@@ -104,7 +104,7 @@ check('보낸 기록에 연락처·날짜 원문 없음', !JSON.stringify(E.shee
 
 /* ---------- ④ 화면 ---------- */
 const page = read('mine/calendar/index.html'), center = read('my/alerts/index.html'), sw = read('sw.js'), mine = read('mine/index.html');
-check('달력 화면: 계산·세금 엔진·공시가격·로그인 부품', /cal-core\.js\?v=3/.test(page) && /tax-engine\.js/.test(page) && /gongsi\.js/.test(page) && /auth\.js/.test(page) && /back\.js\?v=2/.test(page));
+check('달력 화면: 계산·세금 엔진·공시가격·로그인 부품', /cal-core\.js\?v=4/.test(page) && /tax-engine\.js/.test(page) && /gongsi\.js/.test(page) && /auth\.js/.test(page) && /back\.js\?v=3/.test(page));
 check('달력 화면: 예상 재산세는 "참고" 표시 + 계산 근거', /예상 재산세\(참고\)/.test(page) && /공시가격 중간값/.test(page));
 check('달력 화면: 금액(보증금·현금·소득)은 이 기기(jdj_ta_me)에만 — 계정 저장(d.cal)에는 달력 칸만', /const TK = 'jdj_ta_me'/.test(page) && /d\.cal = Object\.assign\(\{\}, CAL/.test(page) && !/d\.cal[^;]*ME\./.test(page) && !/(dep|cash|inc)=/.test(page.replace(/data-ta-(dep|cash|inc)/g, '')));
 check('달력 화면: 로그인해야 날짜를 넣음', /AU\.gate\(/.test(page) && /loggedIn\(\)/.test(page));
@@ -112,7 +112,7 @@ check('달력 화면: 서비스 이름은 설정에서, 회사 이름·경쟁 �
 check('알림 센터: 달력 메일 켜기(prefs.cal)·서버 새 판 확인', /id="calBox"/.test(center) && /P\.cal = \$\('calOn'\)\.checked/.test(center) && /MINE\.cal === 1/.test(center));
 check('알림 계산: cal 설정은 직접 켠 경우에만', A.cleanPrefs({}).cal === false && A.cleanPrefs({ cal: true }).cal === true && A.cleanPrefs({ cal: 'y' }).cal === false);
 check('내 집 시세 화면에서 달력으로 가는 길', /href="calendar\/"/.test(mine));
-check('서비스 워커: 달력 화면·계산 파일', /'\.\/mine\/calendar\/'/.test(sw) && /cal-core\.js\?v=3/.test(sw));
+check('서비스 워커: 달력 화면·계산 파일', /'\.\/mine\/calendar\/'/.test(sw) && /cal-core\.js\?v=4/.test(sw));
 check('공식 출처 주소가 계산 파일에 그대로', ['news.seoul.go.kr/gov/archives/200106', 'news.seoul.go.kr/gov/archives/200082', 'easylaw.go.kr', 'lsJoLnkSeq=1007847519', 'lsJoLnkSeq=1018577211', 'mediahub.seoul.go.kr/archives/2001807', 'lsiSeq=249983'].every(u => read('assets/cal-core.js').includes(u)));
 const txt = Object.values(C.RULES).map(x => x.why || '').join(' ') + ev.concat(lease, mv2, cy).map(e => e.t + ' ' + e.s + ' ' + (e.p || '')).join(' ');
 check('문구: ~요 말투, 딱딱한 말투·보장 표현 없음', !/습니다|십시오|보장|무조건/.test(txt));

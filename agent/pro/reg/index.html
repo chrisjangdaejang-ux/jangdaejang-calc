@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="../../../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" type="image/png" href="../../../assets/icons/favicon-48.png">
+<script src="../../../assets/pwa.js?v=3" defer data-nobar></script>
+<title>권리분석 · 등기 지킴이(중개사용) | 집예보</title>
+<script>window.JDJ_CONFIG = { tool:'agent_pro_reg', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../../assets/config.js?v=14"></script>
+<script src="../../../assets/track.js?v=3"></script>
+<script src="../../../assets/agents.js"></script>
+<script src="../../../assets/auth.js?v=11"></script>
+<script src="../../../assets/pro-tools-core.js?v=3"></script>
+<script src="../../../assets/guard-core.js?v=1"></script>
+<script src="../../../assets/diag.js?v=1"></script>
+<script src="../../../assets/reg-upload.js?v=1"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/aplus.css?v=50">
+<link rel="stylesheet" href="../../../assets/pro-tools.css?v=3">
+<link rel="stylesheet" href="../../../assets/diag.css?v=1">
+<link rel="stylesheet" href="../../../assets/guard.css?v=1">
+<script src="../../../assets/back.js?v=3" defer></script>
+<style>
+.pr-tbl{width:100%;border-collapse:collapse;font-size:14px}.pr-tbl th,.pr-tbl td{border-top:1px solid var(--line2);padding:8px 6px;text-align:left;vertical-align:top}.pr-tbl th{font-size:13px;color:var(--sub2)}
+.pr-wrap{overflow-x:auto}.pr-flt{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 8px}.pr-flt select{max-width:200px}
+.pr-doc textarea{width:100%;min-height:110px;font:inherit;font-size:14.5px;border:1px solid var(--line);border-radius:12px;padding:10px;box-sizing:border-box}
+.pr-price{font-size:14px;line-height:1.7;background:var(--gray2);border-radius:12px;padding:10px 12px}
+</style>
+</head>
+<body>
+<header class="top"><a class="brand" href="../../../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a><div class="badge plain">중개사 권리분석</div></header>
+<div class="wrap gd">
+  <div id="closed" class="st0" hidden>중개사 프로 도구는 준비 중이에요. 문을 열면 이 화면에서 바로 쓸 수 있어요.</div>
+  <div id="app" hidden>
+  <h1 class="noprint">권리분석 · 등기 지킴이</h1>
+  <p class="lead noprint">등기부를 한 줄씩 쉬운 말로 풀어 손님께 설명하고, 내 사무소 이름·로고로 A4 리포트를 드려요. 여러 매물을 한꺼번에 열람하거나 지켜볼 수도 있어요.</p>
+  <div class="ed noprint"><h2>내 사무소 정보</h2><div id="me"><p class="hint">불러오는 중이에요…</p></div></div>
+
+  <div class="ed noprint"><h2>1. 권리분석 리포트 만들기</h2>
+    <p class="hint">손님 매물의 등기부 PDF를 고르면 이 기기 안에서만 읽어 쉬운 해석·위험 표시·보증금 순서 참고 계산·특약 예시를 만들어요. 파일과 이름은 서버로 보내지 않아요.</p>
+    <div id="regup"></div>
+  </div>
+  <div class="ed pr-doc noprint" id="docBox" hidden><h2>중개대상물 확인·설명서 '권리관계' 칸 보조</h2>
+    <label for="docGap">등기부 기재사항 — 소유권에 관한 사항(갑구)</label><textarea id="docGap"></textarea>
+    <label for="docEul">등기부 기재사항 — 소유권 외의 권리사항(을구)</label><textarea id="docEul"></textarea>
+    <p class="hint" id="docNote"></p>
+    <div class="acts"><button class="btn" type="button" id="docCopy">두 칸 복사하기</button></div>
+  </div>
+  <div class="acts noprint" id="acts" hidden><button class="btn primary" id="print" type="button">A4로 인쇄 · PDF 저장</button></div>
+
+  <div class="ed noprint"><h2>2. 여러 매물 한꺼번에 <small style="font-size:13px;font-weight:600;color:var(--sub2)">한 줄에 하나: 고유번호, 표시 이름</small></h2>
+    <textarea id="bulk" style="width:100%;min-height:120px;font:inherit;font-size:15px;border:1px solid var(--line);border-radius:12px;padding:10px;box-sizing:border-box" placeholder="1234-5678-901234, ○○아파트 101동 1001호&#10;2345-6789-012345, ○○빌라 302호"></textarea>
+    <label for="csv">또는 CSV 파일 고르기(첫 칸 고유번호, 둘째 칸 표시 이름)</label><input type="file" id="csv" accept=".csv,text/csv">
+    <p class="hint" id="bulkN"></p>
+    <div class="two"><div><label for="bMonths">지킴이 기간</label><select id="bMonths"></select></div><div><label for="bMail">알림 받을 이메일</label><input id="bMail" type="email" placeholder="office@example.com"></div></div>
+    <div class="pr-price" id="bPrice"></div>
+    <label class="gd-agree"><input type="checkbox" id="bAgree"> <span>[필수] 고유번호와 알림 이메일을 서비스 기간 + 30일 보관하고, 업체 실패 몫은 자동 취소되는 데 동의해요.</span></label>
+    <div class="acts"><button class="btn primary" id="bRead" type="button" disabled>한꺼번에 등기 열람</button><button class="btn" id="bWatch" type="button" disabled>한꺼번에 지킴이 등록</button></div>
+    <p class="err" id="bMsg" role="alert"></p>
+    <div id="bOut"></div>
+  </div>
+
+  <div class="ed noprint"><h2>3. 지켜보는 매물 <button class="btn ghost" id="csvOut" type="button">CSV로 내려받기</button></h2>
+    <div class="pr-flt"><select id="fSt" aria-label="상태"><option value="">모든 상태</option></select><select id="fLv" aria-label="위험"><option value="">모든 위험</option><option value="r">위험 변동 있음</option><option value="y">주의 변동 있음</option><option value="none">변동 없음</option></select></div>
+    <div class="pr-wrap"><table class="pr-tbl"><thead><tr><th>매물</th><th>상태</th><th>최근 변동</th><th>다음 확인</th><th>끝나는 날</th></tr></thead><tbody id="dash"><tr><td colspan="5">불러오는 중이에요…</td></tr></tbody></table></div>
+  </div>
+
+  <div class="ed noprint"><h2>4. 법인 소유 상가·오피스 — 법인등기 확인</h2>
+    <label for="corp">법인등록번호(13자리)</label><input id="corp" inputmode="numeric" placeholder="000000-0000000">
+    <div class="acts"><button class="btn" id="corpBtn" type="button" disabled>법인등기 확인</button></div>
+    <p class="hint" id="corpP"></p>
+  </div>
+  <p class="hint noprint">팀(같은 사무소 직원 여럿)이 함께 쓰는 기능은 준비 중이에요. 지금은 로그인한 분의 매물만 보여요.</p>
+  </div>
+</div>
+<script>
+var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+(function(){
+'use strict';
+/* 중개사 권리분석 — 프로 도구(assets/pro-tools-core.js 켜짐·미리 보기)와 같은 문. 사무소 정보는 ptMe(확인된 값), 등기 읽기는 assets/reg-upload.js(기기 안),
+   여러 매물은 서버 guardOrder(items 최대 50, 로그인 세션 → 중개사 묶음 가격) → 결제창 → 이 화면(?pay=) → guardRegister·readRegistry, 목록은 guardList. */
+const PT = window.JDJ_PT, G = window.JDJ_GUARD, $ = id => document.getElementById(id), esc = G.esc;
+if (!PT.on()) { $('closed').hidden = false; return; }
+$('app').hidden = false;
+let ME = null, BRAND = null, SRV = null, ITEMS = [], LIST = [];
+const won = G.won;
+mountUp();
+(async () => {
+  try { ME = await PT.post({ action: 'ptMe' }); } catch (e) { $('me').innerHTML = '<p class="warn">' + esc(e.message) + '</p>'; }
+  if (ME && ME.card && ME.verified) { const c = ME.card; BRAND = { name: c.ceo || c.name, office: c.office, tel: c.phone || c.mobile, logo: ME.logo || c.logo };
+    $('me').innerHTML = `<p><b>${esc(c.office || '')} ${esc(BRAND.name || '')}</b> · ${esc(BRAND.tel || '')}<br><span class="hint">리포트 맨 위에 이 정보와 로고가 들어가요. 바꾸려면 <a href="../${PT.preview() ? '?preview=pro-tools' : ''}">프로 도구 모음</a>에서 고쳐요.</span></p>`; }
+  else if (ME) $('me').innerHTML = '<p class="warn">등록번호(또는 전문가) 확인을 마치면 리포트에 사무소 이름·로고가 들어가요. 확인 전에도 권리분석은 쓸 수 있어요.</p>';
+  try { SRV = await fetch(JDJ_AGENTS.api + '?action=guardConfig').then(r => r.json()); } catch (e) {}
+  priceShow(); dash();
+  afterPay();
+})();
+function mountUp(){
+  JDJ_REGUP.mount($('regup'), { base: JB.SITE, print: true, brand: () => BRAND, onReg: reg => {
+    const d = G.confirmDoc(reg); $('docGap').value = d.gap; $('docEul').value = d.eul;
+    $('docNote').innerHTML = esc(d.note) + ` 서식: <a href="${d.src.u}" target="_blank" rel="noopener">${esc(d.src.n)} ↗</a>`; $('docBox').hidden = false; $('acts').hidden = false;
+  } });
+}
+$('docCopy').onclick = () => { const t = '[갑구]\n' + $('docGap').value + '\n\n[을구]\n' + $('docEul').value; (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { $('docCopy').textContent = '복사했어요'; }).catch(() => {}); };
+$('print').onclick = () => window.print();
+/* ---------- 여러 매물 ---------- */
+$('bMonths').innerHTML = Array.from({ length: G.cfg().maxMonths }, (_, i) => `<option value="${i + 1}"${i === 11 ? ' selected' : ''}>${i + 1}개월</option>`).join('');
+function parseBulk(t){ const seen = {}; return String(t || '').split(/\r?\n/).map(l => l.split(/[,\t]/)).map(a => ({ no: G.uniq(a[0]), label: String(a[1] || '').trim().slice(0, 60) })).filter(x => x.no && !seen[x.no] && (seen[x.no] = 1)).slice(0, 50); }
+function priceShow(){
+  ITEMS = parseBulk($('bulk').value); const n = ITEMS.length, P = (SRV && SRV.price) || null, pro = P && P.pro, m = +$('bMonths').value, C = G.cfg();
+  $('bulkN').textContent = n ? `${n}곳을 읽었어요(최대 50곳).` : '';
+  const pack = pro && pro.packs.find(p => p.n === n), off = pro ? pro.watchOff.filter(x => n >= x.n).reduce((a, x) => Math.max(a, x.pct), 0) : 0;
+  $('bPrice').innerHTML = !n ? '고유번호를 넣으면 금액이 나와요.' : `등기 열람 ${n}건: <b>${won(pack ? pack.won : C.read * n)}</b>${pack ? ' (묶음 가격)' : ''}<br>지킴이 ${n}곳 × ${m}개월: <b>${won(Math.round(G.price(m, C) * n * (100 - off) / 100 / 10) * 10)}</b>${off ? ` (${off}% 할인)` : ''}`
+    + (pro ? `<br><span class="hint">묶음: ${pro.packs.map(p => `${p.n}건 ${won(p.won)}`).join(' · ')} · 지킴이 ${pro.watchOff.map(o => `${o.n}곳 이상 ${o.pct}%`).join(' · ')} 할인</span>` : '');
+  const open = G.cta(window.JDJ_SITE, SRV) === 'open';
+  $('bRead').disabled = !open || !n || !$('bAgree').checked; $('bWatch').disabled = !open || !n || !$('bAgree').checked || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('bMail').value);
+  $('corpBtn').disabled = !open || String($('corp').value).replace(/\D/g, '').length !== 13;
+  $('corpP').textContent = `법인등기 1건 ${won((P && P.corp) || C.read)} · 결과는 한 번만 보여 드리고 저장하지 않아요.` + (open ? '' : ' 결제가 열리면 바로 쓸 수 있어요.');
+  if (!open) $('bMsg').textContent = '결제가 열리면 바로 신청할 수 있어요.';
+}
+['bulk', 'bMonths', 'bMail', 'bAgree', 'corp'].forEach(id => $(id).addEventListener('input', priceShow)); $('bAgree').onchange = priceShow;
+$('csv').onchange = async () => { const f = $('csv').files[0]; if (!f) return; $('bulk').value = (await f.text()).split(/\r?\n/).filter(l => !/고유번호/.test(l)).join('\n'); $('csv').value = ''; priceShow(); };
+async function pay(product, body){
+  $('bMsg').textContent = '';
+  try {
+    const o = await PT.post(Object.assign({ action: 'guardOrder', product, agree: true, v: G.V }, body));
+    await new Promise((ok, no) => { if (window.JDJ_PAY) return ok(); const s = document.createElement('script'); s.src = JB.SITE + 'assets/pay.js?v=9'; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+    await new Promise((ok, no) => { if (window.TossPayments) return ok(); const s = document.createElement('script'); s.src = JDJ_PAY.SDK; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+    const back = location.origin + location.pathname + '?pay=' + product + (PT.preview() ? '&preview=pro-tools' : '');
+    await window.TossPayments(JDJ_PAY.CLIENT_KEY).payment({ customerKey: window.TossPayments.ANONYMOUS || 'ANONYMOUS' }).requestPayment({ method: 'CARD', amount: { currency: 'KRW', value: o.amount }, orderId: o.orderId, orderName: o.orderName, successUrl: back, failUrl: back + '&fail=1', card: { flowMode: 'DEFAULT' } });
+  } catch (x) { $('bMsg').textContent = x && x.code === 'USER_CANCEL' ? '결제를 취소했어요.' : (x && x.message) || '결제를 시작하지 못했어요.'; }
+}
+$('bRead').onclick = () => pay('read', { items: ITEMS });
+$('bWatch').onclick = () => pay('watch', { items: ITEMS, months: +$('bMonths').value, email: $('bMail').value.trim() });
+$('corpBtn').onclick = () => pay('corp', { items: [{ no: $('corp').value }] });
+async function afterPay(){
+  const q = new URLSearchParams(location.search), p = q.get('pay'); if (!p || !q.get('paymentKey')) return;
+  const body = { paymentKey: q.get('paymentKey'), orderId: q.get('orderId'), amount: Number(q.get('amount')) };
+  history.replaceState(null, '', location.pathname + (PT.preview() ? '?preview=pro-tools' : ''));
+  $('bMsg').textContent = '결제를 확인하고 처리하는 중이에요…';
+  try {
+    if (p === 'watch') { const r = await PT.post(Object.assign({ action: 'guardRegister' }, body)); $('bMsg').textContent = `${r.n}곳 지킴이를 시작했어요${r.fail ? ` · ${r.fail}곳은 등록하지 못해 그만큼 결제를 취소했어요` : ''}.`; dash(); return; }
+    const r = await PT.post(Object.assign({ action: 'readRegistry' }, body)); $('bMsg').textContent = `${r.n}건을 열었어요. 이 결과는 이 화면에만 한 번 보여 드려요(저장하지 않아요).`;
+    $('bOut').innerHTML = r.regs.map((g, i) => { const s = G.parseReg(g), rp = G.regReport(s, {}); return `<details class="gd-faq"><summary><span class="gd-lv lv-${rp.lv}">${esc(G.LV[rp.lv])}</span>&nbsp;${i + 1}번째 매물 · 선순위 ${esc(G.man(s.senior))}</summary><div data-i="${i}"></div></details>`; }).join('');
+    r.regs.forEach((g, i) => { const box = $('bOut').querySelector(`[data-i="${i}"]`); JDJ_REGUP.render(box, g, { base: JB.SITE, brand: BRAND, print: true }); });
+  } catch (x) { $('bMsg').textContent = x.message || '처리하지 못했어요.'; }
+}
+/* ---------- 지켜보는 매물 ---------- */
+const lvOf = it => { const ch = it.changes || []; if (!ch.length) return 'none'; return ch.some(c => G.type(c.type).lv === 'r') ? 'r' : ch.some(c => G.type(c.type).lv === 'y') ? 'y' : 'g'; };
+async function dash(){
+  try { LIST = (await PT.post({ action: 'guardList' })).items || []; } catch (e) { $('dash').innerHTML = `<tr><td colspan="5">${esc(e.message)}</td></tr>`; return; }
+  const sts = [...new Set(LIST.map(x => x.state))]; $('fSt').innerHTML = '<option value="">모든 상태</option>' + sts.map(s => `<option>${esc(s)}</option>`).join('');
+  draw();
+}
+function rows(){ const st = $('fSt').value, lv = $('fLv').value; return LIST.filter(x => x.product === 'watch' && (!st || x.state === st) && (!lv || lvOf(x) === lv)); }
+function draw(){
+  const L = rows();
+  $('dash').innerHTML = L.length ? L.map(x => { const c = (x.changes || []).slice(-1)[0], T = c ? G.type(c.type) : null;
+    return `<tr><td><b>${esc(x.label || x.no)}</b><br><small>${esc(x.no)}</small></td><td>${esc(x.state)}</td><td>${T ? `<span class="gd-lv lv-${T.lv}">${esc(T.n)}</span> ${esc(c.at)}` : '없음'}</td><td>${['지켜보는 중', '다시 등록 중'].includes(x.state) ? '매일 10시·16시대' : '-'}</td><td>${esc(x.end || '')}</td></tr>`; }).join('') : '<tr><td colspan="5">지켜보는 매물이 없어요.</td></tr>';
+}
+$('fSt').onchange = draw; $('fLv').onchange = draw;
+$('csvOut').onclick = () => {
+  const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+  const t = '﻿' + [['고유번호', '표시 이름', '상태', '시작일', '끝나는 날', '마지막 확인', '최근 변동', '변동 날짜']].concat(rows().map(x => { const c = (x.changes || []).slice(-1)[0]; return [x.no, x.label, x.state, x.start, x.end, x.last, c ? G.type(c.type).n : '', c ? c.at : '']; })).map(r => r.map(q).join(',')).join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([t], { type: 'text/csv' })); a.download = '지켜보는매물.csv'; a.click();
+};
+})();
+</script>
+</body>
+</html>

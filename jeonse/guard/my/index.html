@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../../../assets/icons/favicon-48.png">
+<script src="../../../assets/biz.js?v=3" defer></script>
+<title>내 지킴이 | 집예보</title>
+<script>window.JDJ_CONFIG = { tool:'guard_my', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../../assets/track.js?v=3"></script>
+<script src="../../../assets/config.js?v=14"></script>
+<script src="../../../assets/agents.js"></script>
+<script src="../../../assets/guard-core.js?v=1"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/aplus.css?v=50">
+<link rel="stylesheet" href="../../../assets/guard.css?v=1">
+<script src="../../../assets/back.js?v=3" defer></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../../../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a>
+  <div class="badge plain">내 지킴이</div>
+</header>
+<main class="wrap gd">
+  <h1>내 지킴이</h1>
+  <p class="gd-msg" id="msg" role="alert"></p>
+  <div id="list" aria-live="polite"></div>
+  <p class="gd-my"><a href="../">지킴이 소개·신청 ›</a> · <a href="../what/">알림이 오면 이렇게 하세요 ›</a></p>
+</main>
+<footer class="foot">★ <span data-site-name>집예보</span> · <a href="../../../">홈</a> · <a href="../">내 전셋집 지킴이</a></footer>
+<script>
+(function(){
+'use strict';
+/* 내 지킴이 — 결제 성공(?pay=watch&paymentKey&orderId&amount) → 서버 guardRegister(결제 확인 → 업체 등록, 같은 주문은 한 번만) → 이 기기에 주문번호·보기 열쇠 저장.
+   알림 메일 링크(?o=주문번호&t=열쇠)로도 열려요. 서버는 guardStatus 로 상태·변동 기록(종류·날짜만)을 돌려줘요. 등기 속 이름·금액은 저장하지 않아요. */
+const G = window.JDJ_GUARD, $ = id => document.getElementById(id), esc = G.esc, KEY = 'jdj_guard';
+const API = (window.JDJ_AGENTS && JDJ_AGENTS.api) || '';
+const post = (action, body) => fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action }, body || {})) }).then(r => r.json()).catch(() => ({ ok: false, err: '서버에 연결하지 못했어요.' }));
+const mine = () => { try { const a = JSON.parse(localStorage.getItem(KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } };
+const save = o => { try { const a = mine().filter(x => x.o !== o.o); a.unshift(o); localStorage.setItem(KEY, JSON.stringify(a.slice(0, 50))); } catch (e) {} };
+const q = new URLSearchParams(location.search);
+function card(s){
+  const ch = (s.changes || []).slice().reverse();
+  return `<article class="gd-card"><h3>${esc(s.label || s.no)}</h3><span class="st">${esc(s.state)}</span>
+    <dl><dt>지키는 기간</dt><dd>${esc(s.start || '')} ~ ${esc(s.end || '')}</dd><dt>마지막 확인</dt><dd>${esc(s.last || '아직 없어요')}</dd><dt>주문번호</dt><dd>${esc(s.o)}</dd></dl>
+    ${ch.length ? `<ul class="gd-ch">${ch.map(c => { const w = G.what(c.type); return `<li><span class="gd-lv lv-${w.lv}">${esc(w.lvT)}</span> ${esc(c.at)} · ${esc(w.n)} — <a href="../what/#${w.id}">이렇게 하세요 ›</a></li>`; }).join('')}</ul>` : '<p class="hint">아직 변동이 없어요.</p>'}</article>`;
+}
+async function show(){
+  const a = mine();
+  if (!a.length) { $('list').innerHTML = '<p class="hint">이 기기에서 신청한 지킴이가 없어요. 알림 메일의 [내 지킴이 보기] 링크로도 열 수 있어요.</p>'; return; }
+  $('list').innerHTML = '<p class="hint">불러오는 중이에요…</p>';
+  const rs = await Promise.all(a.map(x => post('guardStatus', { o: x.o, t: x.t })));
+  $('list').innerHTML = rs.map((r, i) => r.ok ? card(Object.assign({ o: a[i].o }, r)) : `<article class="gd-card"><h3>${esc(a[i].o)}</h3><p class="gd-msg">${esc(r.err || '상태를 불러오지 못했어요.')}</p></article>`).join('');
+}
+(async function(){
+  if (q.get('pay') === 'fail') $('msg').textContent = (q.get('message') || '결제가 끝나지 않았어요.') + ' 다시 신청하려면 지킴이 화면으로 돌아가 주세요.';
+  if (q.get('pay') === 'watch' && q.get('paymentKey')) {
+    $('msg').textContent = '결제를 확인하고 지킴이를 등록하는 중이에요…';
+    const r = await post('guardRegister', { paymentKey: q.get('paymentKey'), orderId: q.get('orderId'), amount: Number(q.get('amount')) });
+    if (r.ok) { save({ o: r.orderId, t: r.token }); $('msg').textContent = ''; history.replaceState(null, '', location.pathname); }
+    else $('msg').textContent = r.err || '등록하지 못했어요. 결제는 자동으로 취소돼요.';
+  }
+  if (q.get('o') && q.get('t')) { save({ o: q.get('o'), t: q.get('t') }); history.replaceState(null, '', location.pathname); }
+  show();
+})();
+})();
+</script>
+</body>
+</html>

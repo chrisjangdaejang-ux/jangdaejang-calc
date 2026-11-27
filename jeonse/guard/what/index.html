@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="../../../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../../../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../../../assets/icons/apple-180.png">
+<script src="../../../assets/pwa.js?v=3" defer></script>
+<script src="../../../assets/biz.js?v=3" defer></script>
+<title>등기 변동 알림이 오면 이렇게 하세요 — 종류별 위험 정도와 할 일 | 집예보</title>
+<link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/jeonse/guard/what/">
+<meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/jeonse/guard/what/">
+<meta name="description" content="전셋집 등기에 근저당·압류·가압류·경매개시결정·소유권 이전·신탁·임차권등기가 생겼다는 알림을 받았다면, 위험 정도와 다음 할 일을 쉬운 말로 확인하세요. 누구나 무료예요.">
+<meta property="og:title" content="등기 변동 알림이 오면 이렇게 하세요 | 집예보">
+<meta property="og:description" content="근저당·압류·경매·집주인 변경 — 종류별 위험 정도와 다음 할 일. 무료.">
+<meta property="og:type" content="website">
+<script>window.JDJ_CONFIG = { tool:'guard_what', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../../assets/track.js?v=3"></script>
+<script src="../../../assets/stat.js?v=8"></script>
+<script src="../../../assets/config.js?v=14"></script>
+<script src="../../../assets/guard-core.js?v=1"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/aplus.css?v=50">
+<link rel="stylesheet" href="../../../assets/guard.css?v=1">
+<script src="../../../assets/tabbar.js?v=8" defer></script>
+<link rel="stylesheet" href="../../../assets/layout.css?v=5">
+<script src="../../../assets/nw.js?v=1" defer></script>
+<script src="../../../assets/back.js?v=3" defer></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../../../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a>
+  <div class="badge plain">알림이 오면</div>
+</header>
+<main class="wrap gd">
+  <span class="tag">무료 · 누구나</span>
+  <h1>등기 변동 알림이 오면<br><em>이렇게 하세요</em></h1>
+  <p class="lead">인터넷등기소 문자 알림이든, 집예보 지킴이 알림이든 같아요. 알림에 적힌 변동 종류를 고르면 위험 정도와 다음 할 일을 순서대로 보여 드려요.</p>
+  <div class="gd-tabs" id="tabs" role="tablist" aria-label="변동 종류"></div>
+  <article class="gd-what" id="card" aria-live="polite"></article>
+  <section class="panel" aria-labelledby="hT">
+    <h2 id="hT">알림 문자에 종류가 안 적혀 있다면</h2>
+    <ol class="gd-steps"><li><b>등기부를 열어 맨 아래 줄을 봐요</b>갑구(집주인·압류)와 을구(빚·전세권) 각각 마지막 줄의 '등기목적'과 '접수' 날짜가 새로 생긴 변동이에요.</li>
+      <li><b>등기목적 글자로 위 종류를 골라요</b>예) 근저당권설정 → 근저당, 가압류·압류 → 압류, 임의경매개시결정 → 경매, 소유권이전 → 집주인 바뀜.</li>
+      <li><b>등기부를 읽기 어렵다면</b><a href="../#free">내가 뗀 등기부 올리기</a>에서 PDF를 고르면 한 줄씩 쉬운 말로 풀어 드려요(파일은 이 기기 안에서만 읽어요).</li></ol>
+  </section>
+  <p class="disc" style="font-size:13.5px;color:var(--sub2);line-height:1.7">일반적인 제도와 절차를 쉽게 풀어 쓴 참고 정보예요. 법률 자문이 아니며, 내 계약에 맞는 판단은 대한법률구조공단(국번 없이 132)이나 변호사·법무사와 상담하세요.</p>
+</main>
+<footer class="foot">★ <span data-site-name>집예보</span> · <a href="../../../">홈</a> · <a href="../">내 전셋집 지킴이</a> · <a href="../../safety/">전세 안전 점검</a></footer>
+<script>
+(function(){
+'use strict';
+/* '알림이 오면 이렇게 하세요'(무료) — 내용은 assets/guard-core.js what(). 주소 #종류(auction·seize·notice·owner·trust·lease·mortgage·release·other)로 바로 열려요(알림 메일 링크) */
+const G = window.JDJ_GUARD, $ = id => document.getElementById(id), esc = G.esc;
+const ids = G.ORDER;
+let cur = ids.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'mortgage';
+function draw(){
+  $('tabs').innerHTML = ids.map(id => `<button type="button" role="tab" data-id="${id}" class="${id === cur ? 'on' : ''}" aria-selected="${id === cur}">${esc(G.type(id).n.replace(/\(.*\)/, ''))}</button>`).join('');
+  const w = G.what(cur);
+  $('card').className = 'gd-what lv-' + w.lv;
+  $('card').innerHTML = `<span class="gd-lv lv-${w.lv}">위험 정도: ${esc(w.lvT)}</span><h2>${esc(w.head)}</h2><ul>${w.why.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+    <h3 style="margin:6px 0 4px;font-size:16px">다음 할 일</h3><ol class="gd-todo">${w.todo.map(t => `<li><b>${esc(t.t)}</b><span>${esc(t.s)}</span>${t.href ? `<a href="${esc(t.href)}" target="_blank" rel="noopener">${esc(t.ln)} ↗</a>` : ''}</li>`).join('')}</ol>`;
+}
+$('tabs').onclick = e => { const b = e.target.closest('[data-id]'); if (!b) return; cur = b.dataset.id; history.replaceState(null, '', '#' + cur); draw(); };
+window.addEventListener('hashchange', () => { const h = location.hash.slice(1); if (ids.includes(h)) { cur = h; draw(); } });
+draw();
+})();
+</script>
+</body>
+</html>

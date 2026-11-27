@@ -21,6 +21,9 @@ const CAL_SRC = {
   rent: { nm: '서울특별시 내 손안에 서울 「전·월세 계약 꼭 신고하세요」', url: 'https://mediahub.seoul.go.kr/archives/2001807' },
   cy: { nm: '한국부동산원 청약홈 분양 공고', url: 'https://www.applyhome.co.kr/' },
   rentdata: { nm: '국토교통부 아파트·연립다세대·오피스텔 전월세 실거래가 공개 자료', url: 'https://rt.molit.go.kr/' },
+  /* 세입자 살면서 할 일(2026-11-27): 날짜는 집예보가 정한 알림 시점이고 법정 기한이 아니에요 */
+  hug: { nm: '주택도시보증공사(HUG) 안심전세포털 — 전세보증금반환보증 안내', url: 'https://www.khug.or.kr/jeonse/index_jeonse.jsp' },
+  iros: { nm: '대법원 인터넷등기소 — 등기열람·등기사항 변동 알림', url: 'https://www.iros.go.kr/' },
   /* 집예보가 먼저 챙겨 드려요(PROACTIVE, 2026-11-26 직접 열어 확인) */
   own1: { nm: '법제처 법령해석례 23-0932 — 소득세법 시행령 제154조 제1항(보유 2년·조정대상지역 거주 2년)·제155조 제1항(일시적 2주택) 원문 인용(국가법령정보센터)', url: 'https://www.law.go.kr/LSW/expcInfoP.do?expcSeq=338247' },
   tmp26: { nm: '소득세법 시행령 일부개정령(대통령령 제36737호, 2026.9.30 공포·10.1 시행) 제155조 제1항·부칙 제2조(국가법령정보센터)', url: 'https://www.law.go.kr/LSW/lsRvsDocInfoR.do?lsiSeq=290841' }
@@ -31,6 +34,7 @@ const CAL_RULES = {
   compN: { ok: true, src: ['comp'] }, compP: { ok: true, src: ['comp'] }, acq: { ok: true, src: ['acq'] }, cgt: { ok: true, src: ['cgt'] },
   renewO: { ok: true, src: ['renew', 'renew2'] }, renewC: { ok: true, src: ['renew', 'renew2'] }, end: { ok: true, src: ['renew'] },
   move: { ok: true, src: ['move'] }, rent: { ok: true, src: ['rent'] }, cy: { ok: true, src: ['cy'] }, ta: { ok: true, src: ['renew', 'rentdata'] },
+  tchk: { ok: true, src: ['move', 'iros'] }, tins: { ok: true, src: ['hug'] },
   /* pro:1 = '집예보가 먼저 챙겨 드려요' 기능(PROACTIVE_ENABLED) 켜졌을 때만 계산·표시 */
   hold2: { ok: true, src: ['own1'], pro: 1 }, live2: { ok: true, src: ['own1'], pro: 1 },
   tmp2: { ok: true, src: ['own1', 'tmp26'], pro: 1 }
@@ -142,7 +146,10 @@ function calHome(h) {
     if (c.cs) {
       out.push(calEv('move', c.cs, Object.assign(o(), { t: '이사하는 날 — 전입신고·확정일자', s: '이사한 날 바로 전입신고를 하고 계약서에 확정일자를 받아 두세요. 집에 들어가 전입신고까지 마친 다음 날부터 대항력(새 집주인·은행에도 내 권리를 주장할 힘)이 생겨요.' })));
       out.push(calEv('rent', c.cs, Object.assign(o(), { end: calAdd(c.cs, 30), t: '전월세 계약 신고(계약일부터 30일 안)', s: '보증금 6,000만 원 초과 또는 월세 30만 원 초과 계약은 계약한 날부터 30일 안에 신고해야 해요. 신고하면 확정일자가 저절로 붙고, 전입신고 때 계약서를 함께 내면 신고한 것으로 봐요.' })));
+      /* 살면서 할 일(집예보 알림 시점 — 법정 기한 아님): 이사 7일 뒤 전입·확정일자·등기 확인 */
+      out.push(calEv('tchk', calAdd(c.cs, 7), Object.assign(o(), { t: '전입·확정일자가 잘 됐는지 확인 + 등기 한 번 더', s: '주민등록 등본(정부24)에 이 집 주소로 전입이 됐는지, 계약서에 확정일자가 찍혔는지 확인해요. 이사한 사이 근저당·압류가 새로 생기지 않았는지 등기부도 한 번 더 보고, 인터넷등기소 등기 변동 알림(무료)을 신청해 두면 살면서 생기는 변동을 문자로 받을 수 있어요.' })));
     }
+    if (c.ce) out.push(calEv('tins', calAddM(c.ce, -3), Object.assign(o(), { t: '보증보험(전세보증금 반환보증) 기간·갱신 확인', s: '보증보험에 들었다면 보증 기간이 언제 끝나는지 확인하고, 계약을 이어 가면 보증도 새로 들거나 기간을 늘려야 하는지 HUG 등 보증 기관 안내에서 확인해요. 신청 기한·조건은 기관마다 달라 이 알림은 미리 챙기라는 뜻이에요.' })));
   }
   return out;
 }

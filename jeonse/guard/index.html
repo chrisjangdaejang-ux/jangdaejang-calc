@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="../../manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../../assets/icons/apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="집예보">
+<script src="../../assets/pwa.js?v=3" defer></script>
+<script src="../../assets/biz.js?v=3" defer></script>
+<title>내 전셋집 지킴이 — 살고 있는 동안 등기 변동을 매일 확인해요 | 집예보</title>
+<link rel="canonical" href="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/jeonse/guard/">
+<meta property="og:url" content="https://chrisjangdaejang-ux.github.io/jangdaejang-calc/jeonse/guard/">
+<meta name="description" content="전세로 사는 동안 집에 근저당·압류·경매·집주인 변경이 생기면 바로 알려 드리고, 무엇을 해야 하는지까지 쉬운 말로 안내해요. 인터넷등기소 무료 변동 알림 신청법과 내가 뗀 등기부 쉬운 해석도 무료로 쓸 수 있어요.">
+<meta property="og:title" content="내 전셋집 지킴이 — 등기 변동을 매일 확인해요 | 집예보">
+<meta property="og:description" content="근저당·압류·경매·집주인 변경을 매일 확인하고, 알림이 오면 할 일까지 안내해요. 무료 안내도 함께 있어요.">
+<meta property="og:type" content="website">
+<script>window.JDJ_CONFIG = { tool:'guard', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../assets/track.js?v=3"></script>
+<script src="../../assets/stat.js?v=8"></script>
+<script src="../../assets/config.js?v=14"></script>
+<script src="../../assets/agents.js"></script>
+<script src="../../assets/guard-core.js?v=1"></script>
+<script src="../../assets/diag.js?v=1"></script>
+<script src="../../assets/reg-upload.js?v=1"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/aplus.css?v=50">
+<link rel="stylesheet" href="../../assets/diag.css?v=1">
+<link rel="stylesheet" href="../../assets/guard.css?v=1">
+<script src="../../assets/tabbar.js?v=8" defer></script>
+<link rel="stylesheet" href="../../assets/layout.css?v=5">
+<script src="../../assets/nw.js?v=1" defer></script>
+<script src="../../assets/back.js?v=3" defer></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a>
+  <div class="badge plain">내 전셋집 지킴이</div>
+</header>
+
+<main class="wrap gd">
+  <span class="tag">내 전셋집 지킴이</span>
+  <h1>살고 있는 동안에도<br><em>등기를 매일 지켜봐요</em></h1>
+  <p class="lead">전세 계약 뒤에도 집주인이 새로 대출을 받거나, 집이 압류·경매로 넘어가거나, 집주인이 바뀔 수 있어요. 지킴이는 내 전셋집 등기를 매일 확인하고, 변동이 생기면 바로 알려 드린 뒤 <b>무엇을 해야 하는지</b>까지 쉬운 말로 안내해요.</p>
+  <div class="gd-hero-acts"><a class="gd-btn" href="#apply" data-track="guard_to_apply">지킴이 신청하기</a><a class="gd-btn g" href="#free" data-track="guard_to_free">무료로 먼저 해 보기</a></div>
+
+  <section class="gd-note" aria-labelledby="noteT">
+    <h2 id="noteT" class="sr">솔직한 안내</h2>
+    <p><b>솔직하게 알려 드려요.</b> <span data-gd-official></span> 지킴이는 여기에 <b>변동 종류별 해석·다음 할 일 안내</b>, <b>변동 뒤 남은 기간 자동 다시 등록</b>, <b>카카오톡·메일 알림</b>을 더한 유료 서비스예요.</p>
+  </section>
+
+  <section class="panel" aria-labelledby="watchT">
+    <h2 id="watchT">이런 변동을 지켜봐요</h2>
+    <div class="gd-types" id="types"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="howT">
+    <h2 id="howT">이렇게 움직여요</h2>
+    <ol class="gd-steps">
+      <li><b>집 찾기</b>도로명 주소와 동·호수로 등기 고유번호를 찾아요(직접 넣어도 돼요).</li>
+      <li><b>기간 고르기</b>계약 만기일을 넣으면 그날까지 필요한 달 수와 금액이 바로 나와요.</li>
+      <li><b>결제하면 바로 등록</b>결제가 확인된 뒤에만 등록하고, 첫 확인 결과를 알려 드려요.</li>
+      <li><b>매일 확인 · 바로 알림</b>변동이 생기면 카카오톡(준비되는 대로)과 메일로 알려 드려요.</li>
+      <li><b>할 일 안내 · 다시 등록</b>변동 종류별로 위험 정도와 다음 할 일을 보여 드리고, 남은 기간은 저절로 다시 지켜봐요.</li>
+    </ol>
+  </section>
+
+  <section class="gd-price" id="price" aria-labelledby="priceT">
+    <h2 id="priceT">가격</h2>
+    <div class="gd-pc">
+      <div><span class="k">자동 지킴이</span><b data-gd-month></b><small>집 1곳 · 한 달(30일) · 부가세 포함</small></div>
+      <div><span class="k">등기 바로 확인</span><b data-gd-read></b><small>전세 안전 점검에서 등기부를 바로 열어 쉬운 해석까지 · 1건</small></div>
+    </div>
+    <p class="gd-pn">계약 만기까지 필요한 달 수만큼 한 번에 결제해요(최대 <span data-gd-max></span>개월). 예) 만기가 12개월 남았으면 <b data-gd-ex12></b>.</p>
+  </section>
+
+  <section class="panel gd-apply" id="apply" aria-labelledby="applyT">
+    <h2 id="applyT">지킴이 신청하기</h2>
+    <div class="gd-st"><h3>1. 집 찾기</h3>
+      <div class="gd-row"><div class="w2"><label for="road">도로명 주소</label><input id="road" placeholder="예: 서울 ○○구 ○○로 12" autocomplete="street-address"></div>
+        <div><label for="dongho">동·호수(있으면)</label><input id="dongho" placeholder="예: 101동 1001호"></div></div>
+      <button type="button" class="gd-sub" id="findBtn">등기 고유번호 찾기</button>
+      <div class="gd-cands" id="cands" aria-live="polite"></div>
+      <div class="gd-row"><div class="w2"><label for="uniq">등기 고유번호(직접 넣기)</label><input id="uniq" inputmode="numeric" placeholder="1234-5678-901234" maxlength="16"><div class="hint">인터넷등기소에서 주소로 무료로 찾을 수 있어요(숫자 14자리).</div></div></div>
+    </div>
+    <div class="gd-st"><h3>2. 기간 고르기</h3>
+      <div class="gd-row"><div><label for="end">계약 만기일</label><input id="end" type="date"></div><div><label for="months">지킬 기간</label><select id="months"></select></div></div>
+      <p class="gd-sum" id="sum" aria-live="polite"></p>
+    </div>
+    <div class="gd-st"><h3>3. 알림 받을 곳</h3>
+      <div class="gd-row"><div><label for="mail">이메일 <span class="req">*</span></label><input id="mail" type="email" inputmode="email" placeholder="name@example.com" autocomplete="email"></div>
+        <div><label for="phone">휴대폰(카카오톡 알림, 선택)</label><input id="phone" inputmode="tel" placeholder="010-1234-5678" autocomplete="tel"></div></div>
+      <label class="gd-agree"><input type="checkbox" id="agree"> <span><b>[필수]</b> 알림을 보내기 위해 이메일·휴대폰 번호와 등기 고유번호를 지킴이 기간 + 30일 동안 보관하는 데 동의해요. 결제한 날부터 7일 안, 첫 확인 전이면 전액 환불돼요. 등록에 실패하면 결제는 자동으로 취소돼요(<a href="../../refund/" target="_blank" rel="noopener">환불 정책</a> · <a href="../../privacy/" target="_blank" rel="noopener">개인정보처리방침</a>).</span></label>
+    </div>
+    <button type="button" class="gd-pay" id="payBtn" disabled>결제가 열리면 바로 신청할 수 있어요</button>
+    <p class="gd-msg" id="msg" role="alert"></p>
+    <div class="gd-wait" id="wait">
+      <b>결제가 열리면 알려 드릴까요?</b>
+      <p>이메일을 남기면 지킴이 신청이 열리는 날 한 번만 알려 드려요. 그 뒤 이메일은 지워요.</p>
+      <div class="gd-row"><div class="w2"><label for="wmail" class="sr">이메일</label><input id="wmail" type="email" inputmode="email" placeholder="name@example.com"></div><div><button type="button" class="gd-sub" id="waitBtn" data-track="guard_wait">알림 신청</button></div></div>
+      <label class="gd-agree"><input type="checkbox" id="wagree"> <span>[필수] 열림 안내 메일 1통을 위해 이메일을 받는 데 동의해요.</span></label>
+      <p class="gd-msg" id="wmsg" aria-live="polite"></p>
+    </div>
+    <p class="gd-my"><a href="my/">내 지킴이 보기 ›</a> 이 기기에서 신청한 지킴이와 알림 기록을 봐요.</p>
+  </section>
+
+  <section class="panel" id="free" aria-labelledby="freeT">
+    <h2 id="freeT">무료로 먼저 할 수 있는 것<small>돈을 내지 않아도 돼요</small></h2>
+    <div class="gd-free">
+      <div class="gd-fc"><h3>① 인터넷등기소 등기 변동 알림 신청</h3>
+        <ol id="freeSteps"></ol>
+        <p class="gd-fn">메뉴 이름은 2026년 11월 27일 공개 안내글로 정리했어요(공식 화면에서 직접 확인하지 못했어요). 화면 이름이나 이용 조건이 다를 수 있으니 신청 화면의 안내를 꼭 확인하세요. <a href="https://www.iros.go.kr/" target="_blank" rel="noopener" data-track="guard_iros">인터넷등기소 열기 ↗</a></p></div>
+      <div class="gd-fc"><h3>② 알림이 오면 이렇게 하세요</h3><p>문자나 메일로 변동 알림을 받았다면, 변동 종류를 골라 위험 정도와 다음 할 일을 확인하세요. 누구나 무료예요.</p><a class="gd-btn" href="what/" data-track="guard_to_what">해석 보러 가기</a></div>
+    </div>
+    <div id="regup"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="faqT">
+    <h2 id="faqT">자주 묻는 질문</h2>
+    <details class="gd-faq"><summary>집주인 동의 없이 신청해도 되나요?</summary><p>등기부는 누구나 열람할 수 있는 공개 장부라, 세입자가 혼자 신청할 수 있어요.</p></details>
+    <details class="gd-faq"><summary>얼마나 빨리 알려 주나요?</summary><p>등기 변동은 하루 한 번 확인해요. 등기소에 접수된 뒤 등기부에 나타나기까지 시간이 걸릴 수 있어서, 접수와 같은 날 알림이 가지 않을 수 있어요. 잔금 날처럼 중요한 날은 그날 등기부를 직접 한 번 더 떼어 보세요.</p></details>
+    <details class="gd-faq"><summary>변동이 생기면 그다음은요?</summary><p>알림을 보낸 뒤 남은 기간을 자동으로 다시 등록해서 계속 지켜봐요. 추가 비용은 없어요.</p></details>
+    <details class="gd-faq"><summary>환불은 어떻게 되나요?</summary><p>결제한 날부터 7일 안이고 첫 확인 전이면 전액 환불돼요. 그 뒤에 그만두면 남은 기간 중 시작하지 않은 달만큼 돌려드려요. 등록이 실패하면 결제를 자동으로 취소해요.</p></details>
+    <details class="gd-faq"><summary>안내 내용이 법률 상담인가요?</summary><p>아니에요. 공개된 제도와 일반적인 절차를 쉽게 풀어 드리는 참고 정보예요. 내 계약에 맞는 판단은 대한법률구조공단(국번 없이 132)이나 변호사·법무사와 상담하세요.</p></details>
+    <details class="gd-faq"><summary>내 정보는 어떻게 다루나요?</summary><p>알림에 필요한 이메일·휴대폰 번호는 암호화해서 보관하고 기간이 끝나면 30일 뒤 지워요. 집주인 이름·주민번호 같은 등기부 속 개인정보는 저장하지 않아요.</p></details>
+  </section>
+</main>
+<footer class="foot">공개된 등기 정보와 일반적인 절차를 안내하는 참고 정보예요. 특정 계약을 권하거나 말리지 않아요.<br>★ <span data-site-name>집예보</span> · <a href="../../">홈</a> · <a href="../safety/">전세 안전 점검</a> · <a href="what/">알림이 오면 이렇게 하세요</a> · <a href="../checklist/">전세사기 예방 체크리스트</a></footer>
+
+<script>
+var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+(function(){
+'use strict';
+/* 내 전셋집 지킴이 — 계산은 assets/guard-core.js, 가격은 assets/config.js GUARD, 서버는 tools/agent-backend.gs 'v73 지킴이'(guardConfig·guardFind·guardOrder·guardRegister·guardWait).
+   결제 버튼은 assets/config.js PAID_OPEN + 서버 guardConfig.open(GUARD_ENABLED·업체 키·판매 열림)일 때만 열려요. 그 전에는 '결제가 열리면 바로 신청할 수 있어요' + 열림 알림 신청. */
+const G = window.JDJ_GUARD, C = G.cfg(), $ = id => document.getElementById(id), esc = G.esc, SITE = window.JDJ_SITE || {};
+const API = (window.JDJ_AGENTS && JDJ_AGENTS.api) || '';
+const post = (action, body) => fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action }, body || {})) }).then(r => r.json()).catch(() => ({ ok: false, err: '서버에 연결하지 못했어요. 잠시 뒤 다시 시도해 주세요.' }));
+const today = () => { const d = new Date(Date.now() + 9 * 3600e3); return d.toISOString().slice(0, 10); };
+/* 가격·안내 채우기(한 곳: config GUARD) */
+document.querySelectorAll('[data-gd-month]').forEach(e => e.textContent = '월 ' + G.won(C.month));
+document.querySelectorAll('[data-gd-read]').forEach(e => e.textContent = G.won(C.read));
+document.querySelectorAll('[data-gd-max]').forEach(e => e.textContent = C.maxMonths);
+document.querySelectorAll('[data-gd-ex12]').forEach(e => e.textContent = G.won(G.price(12, C)));
+document.querySelectorAll('[data-gd-official]').forEach(e => e.textContent = '대법원 인터넷등기소도 등기사항 변동을 문자로 알려 주는 서비스를 무료로 운영해요(아래 신청 방법).');
+$('types').innerHTML = G.ORDER.filter(id => id !== 'other').map(id => { const w = G.what(id); return `<a class="gd-type lv-${w.lv}" href="what/#${w.id}"><span class="gd-chip">${esc(w.lvT)}</span><b>${esc(w.n)}</b><small>${esc(w.why[0])}</small></a>`; }).join('');
+$('freeSteps').innerHTML = G.FREE_STEPS.map(s => `<li>${esc(s)}</li>`).join('');
+if (window.JDJ_REGUP) JDJ_REGUP.mount($('regup'), { base: JB.SITE });
+/* 기간 */
+function fillMonths(n){ $('months').innerHTML = Array.from({ length: C.maxMonths }, (_, i) => i + 1).map(m => `<option value="${m}"${m === n ? ' selected' : ''}>${m}개월 · ${G.won(G.price(m, C))}</option>`).join(''); }
+fillMonths(12);
+function sumShow(){
+  const m = +$('months').value, e = $('end').value, d = G.days(today(), e);
+  $('sum').innerHTML = `<b>${m}개월 · ${G.won(G.price(m, C))}</b>${e ? (d > 0 ? ` · 만기까지 ${d}일 남았어요${d > C.maxMonths * C.days ? ` (최대 ${C.maxMonths}개월까지 한 번에 신청돼요)` : ''}` : ' · 만기일이 오늘이거나 지났어요') : ''}`;
+  sync();
+}
+$('end').addEventListener('change', () => { const n = G.monthsTo(today(), $('end').value, C); if (n) fillMonths(n); sumShow(); });
+$('months').onchange = sumShow;
+/* 결제 열림 여부 */
+let SRV = null, PICK = null, busy = false;
+const okMail = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || '').trim());
+function state(){ return G.cta(SITE, SRV); }
+function sync(){
+  const open = state() === 'open', uq = PICK ? PICK.no : G.uniq($('uniq').value);
+  $('wait').hidden = open;
+  $('payBtn').disabled = !open || busy || !uq || !okMail($('mail').value) || !$('agree').checked;
+  $('payBtn').textContent = !open ? '결제가 열리면 바로 신청할 수 있어요' : busy ? '결제창을 여는 중…' : `${G.won(G.price(+$('months').value, C))} 결제하고 지킴이 시작`;
+  $('findBtn').disabled = !open;
+  $('findBtn').title = open ? '' : '결제가 열리면 주소로 찾을 수 있어요. 지금은 고유번호를 직접 넣어 보세요.';
+}
+['mail', 'agree', 'uniq'].forEach(id => $(id).addEventListener('input', () => { if (id === 'uniq') PICK = null; sync(); }));
+$('agree').onchange = sync;
+sumShow();
+if (API) fetch(API + '?action=guardConfig').then(r => r.json()).then(j => { SRV = j; sync(); }).catch(() => {});
+const msg = (t, id) => { $(id || 'msg').textContent = t || ''; };
+/* 주소 → 등기 고유번호 */
+$('findBtn').onclick = async () => {
+  const road = $('road').value.trim(); if (road.length < 4) return msg('도로명 주소를 넣어 주세요.');
+  msg(''); $('cands').innerHTML = '<p class="hint">찾는 중이에요…</p>';
+  const j = await post('guardFind', { road, dongho: $('dongho').value.trim() });
+  if (!j.ok) { $('cands').innerHTML = ''; return msg(j.err || '찾지 못했어요.'); }
+  $('cands').innerHTML = (j.list || []).length ? j.list.map((c, i) => `<button type="button" data-i="${i}"><b>${esc(c.label)}</b><small>${esc(c.no)} · ${esc(c.kind || '')}</small></button>`).join('') : '<p class="hint">찾은 집이 없어요. 동·호수를 빼고 다시 찾거나 고유번호를 직접 넣어 주세요.</p>';
+  $('cands').onclick = e => { const b = e.target.closest('[data-i]'); if (!b) return; PICK = j.list[+b.dataset.i]; $('uniq').value = PICK.no; [...$('cands').children].forEach(x => x.classList.toggle('on', x === b)); sync(); };
+};
+/* 결제 */
+function loadPay(){ return new Promise((ok, no) => { if (window.JDJ_PAY) return ok(); const s = document.createElement('script'); s.src = JB.SITE + 'assets/pay.js?v=9'; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
+$('payBtn').onclick = async () => {
+  if ($('payBtn').disabled) return;
+  busy = true; sync(); msg('');
+  try {
+    const o = await post('guardOrder', { product: 'watch', items: [{ no: PICK ? PICK.no : G.uniq($('uniq').value), label: PICK ? PICK.label : '' }], months: +$('months').value, end: $('end').value, email: $('mail').value.trim(), phone: $('phone').value.trim(), agree: true, v: G.V });
+    if (!o.ok) throw new Error(o.err || '주문을 만들지 못했어요.');
+    await loadPay();
+    const P = window.JDJ_PAY; await new Promise((ok, no) => { if (window.TossPayments) return ok(); const s = document.createElement('script'); s.src = P.SDK; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+    const pay = window.TossPayments(P.CLIENT_KEY).payment({ customerKey: window.TossPayments.ANONYMOUS || 'ANONYMOUS' }), back = location.origin + JB.SITE + 'jeonse/guard/my/';
+    await pay.requestPayment({ method: 'CARD', amount: { currency: 'KRW', value: o.amount }, orderId: o.orderId, orderName: o.orderName, successUrl: back + '?pay=watch', failUrl: back + '?pay=fail', customerEmail: $('mail').value.trim(), card: { flowMode: 'DEFAULT' } });
+  } catch (x) { busy = false; sync(); msg(x && x.code === 'USER_CANCEL' ? '결제를 취소했어요.' : (x && x.message) || '결제를 시작하지 못했어요.'); }
+};
+/* 열림 알림 신청 */
+$('waitBtn').onclick = async () => {
+  if (!okMail($('wmail').value)) return msg('이메일 주소를 확인해 주세요.', 'wmsg');
+  if (!$('wagree').checked) return msg('동의에 체크해 주세요.', 'wmsg');
+  $('waitBtn').disabled = true;
+  const j = await post('guardWait', { email: $('wmail').value.trim(), agree: true });
+  $('waitBtn').disabled = false;
+  msg(j.ok ? '신청했어요. 지킴이 신청이 열리는 날 메일로 알려 드릴게요.' : (j.err || '신청하지 못했어요. 잠시 뒤 다시 시도해 주세요.'), 'wmsg');
+};
+if (window.jdjStat) jdjStat('feature_use', { feature: 'guard' });
+})();
+</script>
+</body>
+</html>

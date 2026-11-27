@@ -27,8 +27,12 @@
 <script src="../../assets/hug-core.js?v=1"></script>
 <script src="../../assets/kk-core.js?v=1"></script>
 <script src="../../assets/gongsi.js?v=4"></script>
-<script src="../../assets/jsafe-core.js?v=1"></script>
+<script src="../../assets/jsafe-core.js?v=2"></script>
 <script src="../../assets/diag.js?v=1"></script>
+<script src="../../assets/config.js?v=14"></script>
+<script src="../../assets/agents.js"></script>
+<script src="../../assets/guard-core.js?v=1"></script>
+<script src="../../assets/reg-upload.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../assets/aplus.css?v=50">
@@ -79,7 +83,8 @@ h1{font-size:clamp(26px,6vw,38px);margin:6px 0 8px}
 @media print{header.top,.tabbar,#findSec,#moneySec,.priv,.foot{display:none!important}}
 </style>
 <link rel="stylesheet" href="../../assets/diag.css?v=1">
-<script src="../../assets/back.js?v=2" defer></script>
+<link rel="stylesheet" href="../../assets/guard.css?v=1">
+<script src="../../assets/back.js?v=3" defer></script>
 </head>
 <body>
 <header class="top">
@@ -124,6 +129,18 @@ h1{font-size:clamp(26px,6vw,38px);margin:6px 0 8px}
   </section>
 
   <section id="res" aria-live="polite" hidden></section>
+
+  <section class="panel gd" id="regSec" aria-labelledby="regT" style="padding:22px 20px">
+    <h2 id="regT">3. 등기부로 선순위 채권 채우기<small>근저당·압류·경매·신탁을 쉬운 말로 풀고, 선순위 채권 칸을 자동으로 채워요.</small></h2>
+    <div class="gd-pc" style="margin:0 0 4px">
+      <div><span class="k">등기 바로 확인</span><b data-gd-read></b><small>고유번호만 넣으면 지금 등기부를 바로 열어 풀어 드려요. 결과는 이 화면에 한 번만 보여 드리고 저장하지 않아요.</small>
+        <label for="gUniq" style="margin-top:8px">등기 고유번호</label><input id="gUniq" inputmode="numeric" placeholder="1234-5678-901234" maxlength="16">
+        <button type="button" class="gd-pay" id="gReadBtn" disabled>결제가 열리면 바로 확인할 수 있어요</button><p class="gd-msg" id="gMsg" role="alert"></p></div>
+      <div><span class="k">내가 뗀 등기부 올리기</span><b>무료</b><small>인터넷등기소에서 직접 뗀 PDF(열람 1,100원, 법원에 내는 수수료)를 고르면 이 기기 안에서만 읽어요.</small></div>
+    </div>
+    <div id="gRead"></div>
+    <div id="regup"></div>
+  </section>
 
   <p class="disc">자료: 국토교통부 아파트·연립다세대·오피스텔·단독다가구 매매·전월세 실거래가(공공데이터포털), 국토교통부 주택 공시가격, 주택도시보증공사(HUG) 전세보증금반환보증 상품 안내(2026-11-25 확인 · 2026-11-27 다시 확인). 매매·전세 시세는 그 달까지 3개월 실거래 중간값이에요. 실제 보증 가입 여부와 보증료는 HUG 심사로 정해지고, 이 결과는 정보 제공용이에요.</p>
 </main>
@@ -318,6 +335,7 @@ async function run(){
   const my = ++RUNNING;
   if (!(num($('dep').value) > 0)){ $('depH').innerHTML = '<span class="req">보증금을 넣어 주세요</span>'; $('dep').focus(); return; }
   const x = await inputs(); if (my !== RUNNING) return;
+  LAST_PRICE = (x.sale && x.sale.price) || x.kb || 0;
   const rep = JS.build(x, { H, KK });
   const p = placeName();
   $('res').hidden = false;
@@ -346,7 +364,7 @@ $('sres').onclick = e => { const b = e.target.closest('[data-k]'); if (b){ $('pu
 $('bands').onclick = e => { const b = e.target.closest('[data-b]'); if (!b) return; S.band = b.dataset.b; [...$('bands').children].forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); }); placeShow(); if (!$('pub').dataset.hand){ $('pub').dataset.user = ''; pubFill(); } if (RAN) later(); };
 
 (async function init(){
-  try { [IX, RX] = await Promise.all([getJ('index.json'), getJ('rent/index.json')]); } catch (e) { $('loadMsg').textContent = '자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.'; return; }
+  try { [IX, RX] = await Promise.all([getJ('index.json'), getJ('rent/index.json')]); } catch (e) { $('loadMsg').textContent = '자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.'; regInit(); return; }
   fillSido();
   if (!S.sd && S.code) S.sd = sdOfCode(S.code);
   if (!S.sd) S.sd = (IX.sido.find(s => s.short === '서울') || IX.sido[0]).id;
@@ -361,7 +379,51 @@ $('bands').onclick = e => { const b = e.target.closest('[data-b]'); if (!b) retu
   await setKind(S.kind, true);
   placeShow();
   if (hand && hand.dep > 0){ FIRST = true; await run(); }
+  regInit();
 })();
+/* ---------- 등기부로 선순위 채권 채우기(assets/reg-upload.js · guard-core.js) ----------
+   무료: 사용자가 올린 PDF를 이 기기에서만 읽음. 유료 '등기 바로 확인': guardOrder(product read) → 결제창 → 이 화면으로 돌아와 readRegistry(서버가 결제 확인 뒤 업체 열람 → 이름 가린 줄만 한 번 돌려줌, 저장 안 함).
+   돌아올 때 넣은 금액은 이 탭에 30분만(JS.hand, 길잡이와 같은 길 ?from=guide). */
+let LAST_PRICE = 0;
+function regFill(sum){
+  if (!(sum && sum.senior >= 0)) return;
+  $('sen').value = sum.senior ? Math.round(sum.senior).toLocaleString() : '0'; $('senH').textContent = '등기부에서 읽은 값이에요(' + (sum.senior ? JS.won(sum.senior) : '없음') + '). 고쳐도 돼요.';
+  if (num($('dep').value) > 0) run();
+}
+const regOpt = { base: JB.SITE, dep: () => num($('dep').value), price: () => LAST_PRICE || num($('kb').value) || num($('pub').value), onResult: regFill };
+function regInit(){
+  const G = window.JDJ_GUARD; if (!G || !window.JDJ_REGUP) return;
+  JDJ_REGUP.mount($('regup'), regOpt);
+  document.querySelectorAll('[data-gd-read]').forEach(e => e.textContent = G.won(G.cfg().read) + ' · 1건');
+  const API = (window.JDJ_AGENTS && JDJ_AGENTS.api) || '';
+  const post = (action, body) => fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action }, body || {})) }).then(r => r.json()).catch(() => ({ ok: false, err: '서버에 연결하지 못했어요.' }));
+  let SRV = null;
+  const sync = () => { const open = G.cta(window.JDJ_SITE, SRV) === 'open'; $('gReadBtn').disabled = !open || !G.uniq($('gUniq').value); $('gReadBtn').textContent = open ? `${G.won(G.cfg().read)} 결제하고 바로 확인` : '결제가 열리면 바로 확인할 수 있어요'; };
+  $('gUniq').addEventListener('input', sync); sync();
+  if (API) fetch(API + '?action=guardConfig').then(r => r.json()).then(j => { SRV = j; sync(); }).catch(() => {});
+  $('gReadBtn').onclick = async () => {
+    if ($('gReadBtn').disabled) return; $('gMsg').textContent = '';
+    try {
+      try { sessionStorage.setItem(JS.SS_KEY, JSON.stringify(JS.hand({ dep: num($('dep').value), sen: $('sen').value.trim() === '' ? null : num($('sen').value), pub: num($('pub').value), kb: num($('kb').value) }))); } catch (e) {}
+      const o = await post('guardOrder', { product: 'read', items: [{ no: G.uniq($('gUniq').value) }], agree: true, v: G.V });
+      if (!o.ok) throw new Error(o.err || '주문을 만들지 못했어요.');
+      await new Promise((ok, no) => { if (window.JDJ_PAY) return ok(); const s = document.createElement('script'); s.src = JB.SITE + 'assets/pay.js?v=9'; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+      await new Promise((ok, no) => { if (window.TossPayments) return ok(); const s = document.createElement('script'); s.src = JDJ_PAY.SDK; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+      const back = location.origin + location.pathname + '?' + placeQs() + '&from=guide&gread=1';
+      await window.TossPayments(JDJ_PAY.CLIENT_KEY).payment({ customerKey: window.TossPayments.ANONYMOUS || 'ANONYMOUS' }).requestPayment({ method: 'CARD', amount: { currency: 'KRW', value: o.amount }, orderId: o.orderId, orderName: o.orderName, successUrl: back, failUrl: back + '&gfail=1', card: { flowMode: 'DEFAULT' } });
+    } catch (x) { $('gMsg').textContent = x && x.code === 'USER_CANCEL' ? '결제를 취소했어요.' : (x && x.message) || '결제를 시작하지 못했어요.'; }
+  };
+  if (q.get('gfail')) $('gMsg').textContent = '결제가 끝나지 않았어요. 다시 시도해 주세요.';
+  if (q.get('gread') && q.get('paymentKey')) (async () => {
+    $('gMsg').textContent = '결제를 확인하고 등기부를 여는 중이에요(30초쯤 걸려요)…'; $('regSec').scrollIntoView({ block: 'start' });
+    const r = await post('readRegistry', { paymentKey: q.get('paymentKey'), orderId: q.get('orderId'), amount: Number(q.get('amount')) });
+    const url = new URL(location.href); ['paymentKey', 'orderId', 'amount', 'gread', 'paymentType'].forEach(k => url.searchParams.delete(k)); history.replaceState(null, '', url);
+    if (!r.ok) { $('gMsg').textContent = r.err || '등기부를 열지 못했어요. 결제는 자동으로 취소돼요.'; return; }
+    $('gMsg').textContent = '';
+    const box = document.createElement('div'); $('gRead').innerHTML = '<p class="hint">이 결과는 이 화면에만 한 번 보여 드려요(저장하지 않아요). 필요하면 PDF로 저장 · 인쇄를 눌러 두세요.</p>'; $('gRead').appendChild(box);
+    regFill(JDJ_REGUP.render(box, r.reg, Object.assign({}, regOpt, { print: true })));
+  })();
+}
 })();
 </script>
 </body>

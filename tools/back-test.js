@@ -103,12 +103,12 @@ check('위치: 청약 공고 상세(청약 › 청약 공고 › 상세)', C('cy
 check('위치: 모르는 화면은 안 보임', C('zzz/'), []);
 
 /* 7) 화면에 들어갔는지 */
-const missing = pages.filter(r => !fs.readFileSync(path.join(ROOT, r, 'index.html'), 'utf8').includes(`<script src="${'../'.repeat(r.split('/').length - 1)}assets/back.js?v=2" defer></script>`));
+const missing = pages.filter(r => !fs.readFileSync(path.join(ROOT, r, 'index.html'), 'utf8').includes(`<script src="${'../'.repeat(r.split('/').length - 1)}assets/back.js?v=3" defer></script>`));
 check('모든 손으로 만든 화면에 back.js(상대 경로 맞음)', missing, []);
 const wk = fs.readFileSync(path.join(ROOT, 'weekly', '2026-35', 'index.html'), 'utf8');
-check('주간 동향 보관 화면에도', wk.includes('<script src="../../assets/back.js?v=2" defer></script>'), true);
+check('주간 동향 보관 화면에도', wk.includes('<script src="../../assets/back.js?v=3" defer></script>'), true);
 const sw = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
-check('sw.js 미리 저장 목록에 back.js', sw.includes("'./assets/back.js?v=2'"), true);
+check('sw.js 미리 저장 목록에 back.js', sw.includes("'./assets/back.js?v=3'"), true);
 const src = fs.readFileSync(path.join(ROOT, 'assets', 'back.js'), 'utf8');
 check('단추 높이 44px 이상', /\.jbk-btn\{[^}]*min-height:44px/.test(src) && /\.jbk-bc a\{[^}]*min-height:44px/.test(src), true);
 const mine = fs.readFileSync(path.join(ROOT, 'mine', 'index.html'), 'utf8');

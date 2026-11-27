@@ -132,7 +132,7 @@ function pageX(url, ss, data) {
   const PG = read('jeonse/safety/index.html');
   const pq = fnSrc(PG, 'placeQs');
   check('⑤ 공유·주소(placeQs)에는 고른 집만(보증금·선순위·공시가격·시세 없음)', !/dep|sen|pub|kb/.test(pq) && /shareNote: '공유 주소에는 고른 집만 들어가고, 넣은 금액은 들어가지 않아요\.'/.test(PG));
-  check('⑤ 집계(jdjStat)에는 기능 이름만 · 서버로 보내는 코드 없음', /jdjStat\('feature_use', \{ feature: 'jsafe' \}\)/.test(PG) && !/sendBeacon|XMLHttpRequest|method:\s*'POST'/.test(PG) && !/fetch\(|XMLHttpRequest/.test(read('assets/jsafe-core.js')));
+  check('⑤ 집계(jdjStat)에는 기능 이름만 · 서버로 보내는 코드 없음', /jdjStat\('feature_use', \{ feature: 'jsafe' \}\)/.test(PG) && !/sendBeacon|XMLHttpRequest/.test(PG) && (PG.match(/method:\s*'POST'/g) || []).length === 1 && /function regInit\(\)[^]*method: 'POST'/.test(PG) && !/post\('(guardOrder|readRegistry)', \{[^}]*(num\(|\$\('(dep|sen|pub|kb)'\))[^}]*\}\)/.test(PG.replace(/sessionStorage\.setItem\([^\n]*\n/g, '')) && !/fetch\(|XMLHttpRequest/.test(read('assets/jsafe-core.js')));
   check('⑤ 길잡이 금액은 이 탭에만(sessionStorage jdj_jsafe, ?from=guide 일 때만 읽음)', /q\.get\('from'\) === 'guide'/.test(PG) && /JS\.take\(sessionStorage\.getItem\(JS\.SS_KEY\)\)/.test(PG) && /data-ssk/.test(GJ) && /root\.sessionStorage\.setItem\(x\.dataset\.ssk, x\.dataset\.ssv\)/.test(GJ) && JS.SS_KEY === 'jdj_jsafe');
   /* 화면 입력 만들기가 이 시험의 pageX 와 같은 규칙인지(글자로) */
   const inp = fnSrc(PG, 'inputs');
@@ -143,7 +143,7 @@ function pageX(url, ss, data) {
   /* ---------- ⑥ 들어오는 길 ---------- */
   const SC = JSON.parse(read('assets/guide/scenarios.json')).sc, ds = SC.find(s => s.id === 'deposit_safe');
   check('⑥ 고민 찾기 시나리오(보증금·전세 사기 걱정) → 첫 다음 단계 = 전세 안전 점검 · jsafe 계산 불러오기', ds.next[0].href === 'jeonse/safety/' && ds.next[0].k === 'calc' && ds.need.includes('jsafe') && ds.kw.some(k => k[0] === '전세사기') && /전세 사기/.test(ds.sub)
-    && /need\.indexOf\('jsafe'\) >= 0\) \{ if \(!root\.JDJ_JSAFE\) await script\('assets\/jsafe-core\.js\?v=1'\)/.test(GJ));
+    && /need\.indexOf\('jsafe'\) >= 0\) \{ if \(!root\.JDJ_JSAFE\) await script\('assets\/jsafe-core\.js\?v=2'\)/.test(GJ));
   const GD = { sc: SC, lex: JSON.parse(read('assets/guide/lexicon.json')) }, cl = t => ((G.classify(t, GD, { today: '2026-11-26' }) || {}).top || {}).id;
   check('⑥ 고민 찾기(길잡이)에서 전세 사기·깡통 걱정 문장 → deposit_safe', ['전세 사기 당할까봐 걱정돼요', '깡통전세인지 확인하고 싶어요', '보증금 못 받으면 어떡해요', '전세보증보험 가입 되나요'].every(t => cl(t) === 'deposit_safe'), ['전세 사기 당할까봐 걱정돼요', '깡통전세인지 확인하고 싶어요'].map(cl));
   const IXa = { sido: [{ id: 's00', name: '서울특별시', short: '서울' }], sgg: { '11440': { sido: '서울특별시', name: '마포구' } } };
@@ -162,9 +162,9 @@ function pageX(url, ss, data) {
 
   /* ---------- ⑧ 파일 번호 ---------- */
   const SW = read('sw.js');
-  check('⑧ 서비스 워커: 화면·jsafe-core v1·diag v1 · 길잡이 파일 새 번호', /'\.\/jeonse\/safety\/'/.test(SW) && /'\.\/assets\/jsafe-core\.js\?v=1'/.test(SW) && /jsafe-core\.js\?v=1/.test(PG)
-    && /guide-core\.js\?v=14/.test(SW) && /guide\.js\?v=19/.test(SW) && /guide-next\.js\?v=10/.test(SW) && /scenarios\.json\?v=11/.test(read('solve/admin/index.html')) && /scenarios\.json\?v=11/.test(SW) && /features\.json\?v=2/.test(SW) && /ask-core\.js\?v=10/.test(SW)
-    && /guide-core\.js\?v=14/.test(read('index.html')) && /guide-core\.js\?v=14/.test(read('solve/index.html')) && /scenarios\.json\?v=11/.test(GJ) && /scenarios\.json\?v=11/.test(read('assets/guide-next.js')) && /features\.json\?v=2/.test(GJ));
+  check('⑧ 서비스 워커: 화면·jsafe-core v2·diag v1 · 길잡이 파일 새 번호', /'\.\/jeonse\/safety\/'/.test(SW) && /'\.\/assets\/jsafe-core\.js\?v=2'/.test(SW) && /jsafe-core\.js\?v=2/.test(PG)
+    && /guide-core\.js\?v=14/.test(SW) && /guide\.js\?v=20/.test(SW) && /guide-next\.js\?v=10/.test(SW) && /scenarios\.json\?v=12/.test(read('solve/admin/index.html')) && /scenarios\.json\?v=12/.test(SW) && /features\.json\?v=2/.test(SW) && /ask-core\.js\?v=10/.test(SW)
+    && /guide-core\.js\?v=14/.test(read('index.html')) && /guide-core\.js\?v=14/.test(read('solve/index.html')) && /scenarios\.json\?v=12/.test(GJ) && /scenarios\.json\?v=12/.test(read('assets/guide-next.js')) && /features\.json\?v=2/.test(GJ));
 
   /* ⑨ 실제 공개 자료(빌라 망원동)로 범위가 그려지는지 · 화면이 금액을 주소에 쓰지 않는지 */
   check('⑨ 화면 주소 쓰기(placeQs·history)는 고른 집만 · 금액 칸 id(dep·sen·pub·kb)는 주소 함수에 없음', !/'dep'|'sen'|'pub'|'kb'/.test(fnSrc(PG, 'placeQs')) && /history\.replaceState\(null, '', url\)/.test(PG));
