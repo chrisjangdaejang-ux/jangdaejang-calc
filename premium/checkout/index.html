@@ -31,7 +31,7 @@
 <link rel="stylesheet" href="../../assets/pay.css?v=6">
 <script src="../../assets/config.js?v=12"></script>
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/pay.js?v=8"></script>
+<script src="../../assets/pay.js?v=9"></script>
 <script src="../../assets/back.js?v=2" defer></script>
 </head>
 <body>
@@ -104,7 +104,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
   $('pName').textContent = ((window.JDJ_SITE && window.JDJ_SITE.SITE_NAME) || '집예보') + ' ' + pr.name;
   $('pDesc').textContent = pr.desc;
   $('pPrice').textContent = P.won(pr.amount);
-  const isCy = k => /^cy\d+$/.test((P.keyParse(k) || {}).band || '');   /* 청약 분양가 리포트: 평형 자리에 'cy'+공고번호 */
+  const isCy = k => /^cy\d+$/.test((P.keyParse(k) || {}).band || '');   /* 청약 당첨 플랜: 평형 자리에 'cy'+공고번호 */
   if (plan === 'cy' ? !keys.every(isCy) : keys.some(isCy)) { location.replace(P.ROOT); return; }
   if (plan === 'cy') $('editLink').href = JB.SITE + 'chungyak/price/?no=' + P.keyParse(keys[0]).band.slice(2);
   $('pList').innerHTML = keys.map(k => { const p = P.keyParse(k); return `<li><span><b>${esc(p.apt)}</b><small>${esc(p.dong)} · ${isCy(k) ? '청약 공고 분양가·입지 분석' : esc(p.band)}</small></span></li>`; }).join('');
@@ -154,7 +154,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
     }
   })();
 
-  /* v55 예측 맞히기 시즌 보상 '리포트 이용권'(단지 리포트·청약 분양가 리포트 1건) — 카카오 간편 로그인 회원만, 유료가 열린 뒤에만 */
+  /* v55 예측 맞히기 시즌 보상 '리포트 이용권'(단지 리포트·청약 당첨 플랜 1건) — 카카오 간편 로그인 회원만, 유료가 열린 뒤에만 */
   (function voucher(){
     const api = (window.JDJ_AGENTS && JDJ_AGENTS.api) || ''; let s = ''; try { s = (JSON.parse(localStorage.getItem('jdj_auth') || 'null') || {}).s || ''; } catch (e) {}
     if (!PAID || REVIEW || !api || !s || ['single', 'cy'].indexOf(plan) < 0) return;
@@ -170,7 +170,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
           const o = await P.post('createOrder', { product: plan, keys, contact: $('contact').value.trim(), agree: true });
           const r = await call('quizVoucherUse', { orderId: o.orderId });
           if (!r || !r.ok) throw new Error((r && r.err) || '이용권을 쓰지 못했어요.');
-          P.saveOrder({ o: r.orderId, t: r.token, product: r.product, names: r.names, paidAt: r.paidAt });
+          P.saveOrder({ o: r.orderId, t: r.token, product: P.prodName(r.product), names: r.names, paidAt: r.paidAt });
           location.href = P.viewUrl(r.orderId, r.token);
         } catch (x) { b.disabled = false; err(x.message || '이용권을 쓰지 못했어요.'); }
       };
@@ -187,7 +187,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
         : await P.post('createOrder', { product: plan, keys, contact: $('contact').value.trim(), agree: $('refundOk').checked });
       if (!WINDOW_MODE && o.amount !== pr.amount) await widgets.setAmount({ currency: 'KRW', value: o.amount });   // 금액은 서버 기준
       const base = location.origin + P.ROOT;
-      const req = { orderId: o.orderId, orderName: o.orderName, successUrl: base + 'success/', failUrl: base + 'fail/' };
+      const req = { orderId: o.orderId, orderName: P.prodName(o.orderName), successUrl: base + 'success/', failUrl: base + 'fail/' };
       if (ct.email) req.customerEmail = ct.email; else req.customerMobilePhone = ct.phone;
       if (WINDOW_MODE) {
         const pm = (document.querySelector('input[name=pm]:checked') || {}).value || 'CARD';

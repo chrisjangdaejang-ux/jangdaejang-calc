@@ -33,7 +33,7 @@
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/config.js?v=11"></script>
 <script src="../../assets/auth.js?v=11"></script>
-<script src="../../assets/pay.js?v=8"></script>
+<script src="../../assets/pay.js?v=9"></script>
 <script src="../../assets/mine-core.js?v=25"></script>
 <script src="../../assets/price-sheet.js?v=27"></script>
 <script src="../../assets/plain-words.js?v=20"></script>
@@ -46,10 +46,10 @@
 <script src="../../assets/loan-rules.js?v=3"></script>
 <script src="../../assets/rec-core.js?v=8"></script>
 <script src="../../assets/loan-core.js?v=6"></script>
-<script src="../../assets/cy-price.js?v=8"></script>
+<script src="../../assets/cy-price.js?v=9"></script>
 <script src="../../chungyak/cy-engine.js?v=8"></script>
 <script src="../../assets/sale-status.js?v=1"></script>
-<script src="../../assets/cy-plan.js?v=1"></script>
+<script src="../../assets/cy-plan.js?v=2"></script>
 <script src="../../assets/back.js?v=2" defer></script>
 </head>
 <body>
@@ -68,7 +68,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
   const P = JDJ_PAY, esc = P.esc, box = document.getElementById('box');
   const Q = new URLSearchParams(location.search), o = Q.get('o') || '', t = Q.get('t') || '';
   const again = `<div class="btnrow"><a class="btn2" href="${P.ROOT}#again">구매한 리포트 다시 보기</a></div>`;
-  const kv = s => `<dl class="kv"><dt>주문번호</dt><dd>${esc(s.orderId)}</dd><dt>상품</dt><dd>${esc(((window.JDJ_SITE && window.JDJ_SITE.SITE_NAME) || '집예보'))} ${esc(s.product)}</dd><dt>단지</dt><dd>${esc(s.names)}</dd><dt>결제</dt><dd>${P.won(s.amount)} · ${esc(s.paidAt)}</dd></dl>`;
+  const kv = s => `<dl class="kv"><dt>주문번호</dt><dd>${esc(s.orderId)}</dd><dt>상품</dt><dd>${esc(((window.JDJ_SITE && window.JDJ_SITE.SITE_NAME) || '집예보'))} ${esc(P.prodName(s.product))}</dd><dt>단지</dt><dd>${esc(s.names)}</dd><dt>결제</dt><dd>${P.won(s.amount)} · ${esc(s.paidAt)}</dd></dl>`;
   const errBox = m => { box.innerHTML = `<h1>리포트를 열 수 없어요</h1><div class="msg err">${esc(m)}</div>${again}`; };
   if (!o || !t) return errBox('주소에 주문 정보가 없어요. 결제 완료 화면의 링크로 들어오시거나, 주문번호와 연락처로 다시 찾아 주세요.');
 
@@ -107,17 +107,17 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
     const b = document.getElementById('openBtn'); if (b) { b.disabled = true; b.textContent = '여는 중…'; }
     try {
       const j = await P.post('openReport', { o, t, open: true });
-      P.saveOrder({ o, t, product: j.order.product, names: j.order.names, paidAt: j.order.paidAt });
+      P.saveOrder({ o, t, product: P.prodName(j.order.product), names: j.order.names, paidAt: j.order.paidAt });
       show(j);
     } catch (x) { errBox(x.message); }
   }
   async function show(j){
     const ks = j.keys || [];
-    if (window.JDJ_CYP && ks.length === 1 && JDJ_CYP.isCyKey(ks[0])) {   /* 청약 분양가 리포트 */
+    if (window.JDJ_CYP && ks.length === 1 && JDJ_CYP.isCyKey(ks[0])) {   /* 청약 당첨 플랜 */
       box.innerHTML = `<div class="vtools noprint btnrow" style="margin:0 0 6px"><button type="button" class="btn2 blue" id="pdfBtn">PDF로 저장 · 인쇄</button><a class="btn2" href="${JB.SITE}chungyak/">청약 공고 목록</a></div>
         <div class="links noprint" style="margin:0 0 8px">최초 열람 ${esc(j.order.firstViewAt)} · PDF 저장은 인쇄 창에서 대상(프린터)을 [PDF로 저장]으로 고르세요.</div><div id="rep"></div>`;
       document.getElementById('pdfBtn').onclick = () => window.print();
-      document.title = '집예보 청약 분양가 리포트 · ' + j.order.names;
+      document.title = '집예보 청약 당첨 플랜 · ' + j.order.names;
       P.stat();
       try { await JDJ_CYP.renderPaid(document.getElementById('rep'), ks[0], j.order); }
       catch (e) { document.getElementById('rep').innerHTML = '<div class="msg err">분석 자료를 불러오지 못했어요. 당첨자 발표가 끝나 자료가 내려간 공고일 수 있어요. 고객문의로 알려 주시면 확인 후 PDF로 보내 드리거나 환불 정책에 따라 전액 환불해 드려요.</div>'; }

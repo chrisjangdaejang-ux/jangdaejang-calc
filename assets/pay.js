@@ -23,8 +23,11 @@
     PRODUCTS: {
       single: { name: '단지 리포트', amount: 9900, min: 1, max: 1, desc: '관심 단지 1곳' },
       pack: { name: '비교 패키지', amount: 29000, min: 2, max: 3, desc: '후보 단지 2~3곳' },
-      cy: { name: '청약 분양가 리포트', amount: 9900, min: 1, max: 1, desc: '청약 공고 1곳 · 당첨되면 내 돈 계획표·청약 전략표·입주 때 영향을 준 요인' }   // 키 평형 자리 'cy'+공고번호(assets/cy-price.js)
+      cy: { name: '청약 당첨 플랜', amount: 9900, min: 1, max: 1, desc: '청약 공고 1곳 · 당첨되면 내 돈 계획표·청약 전략표·입주 때 영향을 준 요인' }   // 키 평형 자리 'cy'+공고번호(assets/cy-price.js)
     },
+    /* 예전 상품 이름 → 지금 이름(2026-11-27 청약 상품 이름 변경, 키 cy 그대로). 서버 재배포 전 주문·예전 주문도 새 이름으로 보이게 */
+    LEGACY: { '청약 분양가 리포트': '청약 당첨 플랜' },
+    prodName(s) { s = String(s == null ? '' : s); Object.keys(P.LEGACY).forEach(function (o) { s = s.split(o).join(P.LEGACY[o]); }); return s; },
     api() { return (window.JDJ_AGENTS && window.JDJ_AGENTS.api) || ''; },
     async post(action, body) {
       const api = P.api();
@@ -52,7 +55,7 @@
     },
     keysFromUrl(q) { return String(q.get('k') || '').split('!').filter(Boolean).filter(k => P.keyParse(k)).slice(0, 3); },
     /* 이 기기에서 산 주문(주문번호·열람 토큰) — 다른 사람에게 보내지 않는 기기 안 저장 */
-    orders() { try { const a = JSON.parse(localStorage.getItem('jdj_orders') || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } },
+    orders() { try { const a = JSON.parse(localStorage.getItem('jdj_orders') || '[]'); return Array.isArray(a) ? a.map(o => (o && o.product ? Object.assign({}, o, { product: P.prodName(o.product) }) : o)) : []; } catch (e) { return []; } },
     saveOrder(o) {
       try { const a = P.orders().filter(x => x.o !== o.o); a.unshift(o); localStorage.setItem('jdj_orders', JSON.stringify(a.slice(0, 10))); } catch (e) {}
     },

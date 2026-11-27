@@ -224,7 +224,7 @@
 
   /* 유료 리포트 키: 결제 서버의 단지 키 형식(시도~구~동~이름~평형) 그대로, 평형 자리에 'cy'+공고번호 */
   /* 상품 이름·금액은 assets/pay.js PRODUCTS.cy · 서버 PRICE.cy 와 같아야 함(tools/cy-price-test.js 가 대조). 상세 화면은 결제 모듈 없이 이 값만 씀 */
-  var PRODUCT = { key: 'cy', name: '청약 분양가 리포트', amount: 9900 };
+  var PRODUCT = { key: 'cy', name: '청약 당첨 플랜', amount: 9900 };
   var enc = function (v) { return encodeURIComponent(v).replace(/~/g, '%7E').replace(/!/g, '%21'); };   // pay.js keyOf 와 같은 형식
   function keyOf(r) {
     if (!r || !r.sid || !r.g || !r.no) return '';
@@ -267,7 +267,7 @@
   /* 유료 리포트 화면(premium/view/) */
   async function renderPaid(el, key, order) {
     var no = noOfKey(key), D = await loadOne(no);
-    el.innerHTML = '<article class="cyp-rep"><div class="eyebrow">청약 분양가 리포트</div><h1 style="margin:4px 0 6px">' + esc(D.name) + '</h1>'
+    el.innerHTML = '<article class="cyp-rep"><div class="eyebrow">청약 당첨 플랜</div><h1 style="margin:4px 0 6px">' + esc(D.name) + '</h1>'
       + '<div class="cyp-s">' + esc(D.sd) + ' ' + esc(D.gn) + ' ' + esc(D.dg || '') + ' · 총 ' + fmt(D.hh || 0) + '세대 · 모집공고 ' + ymd(D.pb) + (D.mv ? ' · 입주 예정 ' + ym(D.mv) : '') + '</div>'
       + detail(D, D, { paid: true })
       + '<div class="cyp-s" style="margin-top:14px">출처: 국토교통부 아파트 매매 실거래가(공공데이터포털) · 한국부동산원 청약홈 분양정보·경쟁률·당첨 가점 · 국토교통부 미분양주택현황(KOSIS) · 통계청 주민등록인구·국내인구이동 · 정책브리핑. 청약 자격·일정·분양 조건은 입주자모집공고문과 청약홈이 기준이에요.</div></article>';

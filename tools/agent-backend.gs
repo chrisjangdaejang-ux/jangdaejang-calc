@@ -1,6 +1,10 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v72 변경 요약 (v71 위에 다시 배포. 따로 실행할 함수 없음 — 시트 변경 없음. 결제 동작·금액·상품 키는 그대로)
+ *  - 청약 유료 상품 이름 '청약 분양가 리포트' → '청약 당첨 플랜'(PRICE.cy, 9,900원·키 cy 그대로). 예전 이름으로 저장된 주문은 PRICE.cy.alias 로 계속 찾고(결제 승인·이용권),
+ *    결제 완료·주문 조회·영수증 메일에는 productLabel 로 새 이름을 보여 줌. 재배포 전에는 서버가 옛 이름을 저장·회신해도 화면(assets/pay.js prodName)이 새 이름으로 바꿔 보여 줌.
+ *
  * v71 변경 요약 (v70 위에 다시 배포. 따로 실행할 함수 없음 — 시트 'AI사용량'은 첫 호출 때 저절로 생김. AI_ENABLED=false 라 지금 서비스에는 영향 없음)
  *  - 스크립트 속성 ANTHROPIC_API_KEY 필요(AI 서버 키 — 저장소에 두지 않음. 없으면 AI 는 꺼진 채 길잡이는 규칙 방식 그대로).
  *    선택 속성: AI_DAILY_CAP(하루 전체 호출, 기본 2000) · AI_DAILY_KRW(하루 추정 비용 원, 기본 30000) · AI_KRW_PER_USD(기본 1400) · AI_PRICE(요금 JSON).
@@ -428,7 +432,7 @@
  *    [파트너수수료]·[자료링크]는 '현장배정' [상태]=배정인 파트너에게만. [총수수료조건]·[내부메모]는 어디에도 안 나감.
  *  - 계약 보고는 고객 이름·연락처를 받지 않음(이니셜·별칭만). '수수료정산' 시트는 매일 오전 6시 settleSheet 가 정산월×파트너로 다시 만듦.
  *  - 광고·점수와 무관(미래가치 점수·순위에 반영 안 함). 검증: node tools/agency-test.js
- *  - 같은 재배포에 함께 들어가는 것: 청약 분양가 리포트 결제 상품(PRICE.cy, 청약 분양가 분석 작업에서 추가).
+ *  - 같은 재배포에 함께 들어가는 것: 청약 당첨 플랜 결제 상품(PRICE.cy, 청약 분양가 분석 작업에서 추가 · 옛 이름 '청약 분양가 리포트').
  *
  * v19 변경 요약 (재배포 필요: 배포 → 배포 관리 → 수정 → 새 버전 → 배포, 그다음 편집기에서 setupAgentTools 한 번 실행)
  *  - 매수·매도 문의 연결: 이용자가 '중개사 연락 받기'에 따로 동의하면 고른(또는 공개 순번 규칙으로 정해진) 제휴 중개사에게만 전달.
@@ -1200,7 +1204,7 @@ const OC = Object.fromEntries(OH.map((h, i) => [h, i]));
 const PRICE = {
   single: { name: '단지 리포트', amount: 9900, min: 1, max: 1 },
   pack:   { name: '비교 패키지', amount: 29000, min: 2, max: 3 },
-  cy:     { name: '청약 분양가 리포트', amount: 9900, min: 1, max: 1, cy: true }   // 청약 공고 1곳 — 키의 평형 자리가 'cy'+공고번호
+  cy:     { name: '청약 당첨 플랜', amount: 9900, min: 1, max: 1, cy: true, alias: ['청약 분양가 리포트'] }   // 청약 공고 1곳 — 키의 평형 자리가 'cy'+공고번호. 2026-11-27 이름만 바뀜(키 cy 그대로) — 예전 이름으로 저장된 주문도 alias 로 찾음
 };
 const REFUND_DAYS = 7;       // 열람 전 전액 환불 가능 기간(결제일부터)
 const VIEW_DAYS = 365;       // 열람 기간
@@ -1322,7 +1326,9 @@ function createOrder(b) {
   return { ok: true, orderId: id, amount: P.amount, orderName: ('장대장 ' + P.name + ' · ' + names).slice(0, 100) };
 }
 
-function productKeyOf(name) { return Object.keys(PRICE).find(k => PRICE[k].name === String(name)) || ''; }
+function productKeyOf(name) { name = String(name); return Object.keys(PRICE).find(k => PRICE[k].name === name || (PRICE[k].alias || []).indexOf(name) >= 0) || ''; }
+/* 예전 이름으로 저장된 주문(주문 시트 [상품])을 화면·영수증에는 지금 이름으로 보여 줌 — 시트 값은 바꾸지 않음 */
+function productLabel(name) { const k = productKeyOf(name); return k ? PRICE[k].name : String(name); }
 
 /* 토스 API 호출 (테스트에서는 UrlFetchApp 을 바꿔 끼워 검증) */
 function tossCall(path, payload, idem) {
@@ -1386,7 +1392,7 @@ function paidOut(o) {
   const t = newToken();
   setO(o.row, '열람토큰', hashOf(t));
   const r = o.r;
-  return { ok: true, orderId: String(r[OC['주문번호']]), token: t, product: String(r[OC['상품']]), amount: Number(r[OC['금액']]),
+  return { ok: true, orderId: String(r[OC['주문번호']]), token: t, product: productLabel(r[OC['상품']]), amount: Number(r[OC['금액']]),
     names: String(r[OC['단지명']]), paidAt: r[OC['승인시각']] instanceof Date ? ymd(r[OC['승인시각']]) : ymd(new Date()) };
 }
 
@@ -1405,7 +1411,7 @@ function orderState(o, now) {
   const refund = String(r[OC['환불상태']] || '');
   const until = new Date(paid.getTime() + REFUND_DAYS * 86400000), exp = new Date(paid.getTime() + VIEW_DAYS * 86400000);
   return {
-    orderId: String(r[OC['주문번호']]), product: String(r[OC['상품']]), amount: Number(r[OC['금액']]), names: String(r[OC['단지명']]),
+    orderId: String(r[OC['주문번호']]), product: productLabel(r[OC['상품']]), amount: Number(r[OC['금액']]), names: String(r[OC['단지명']]),
     paidAt: ymd(paid), viewed: !!first, firstViewAt: first ? Utilities.formatDate(first, 'Asia/Seoul', 'yyyy-MM-dd HH:mm') : '',
     refund: refund, refundUntil: ymd(until), refundable: !first && !refund && now <= until,
     expires: ymd(exp), expired: now > exp
@@ -9430,7 +9436,7 @@ function qzUserGone(k) {
    - 시즌(분기)이 끝나면 다음 시즌 첫 화면 요청·매일 알림 실행 때 한 번 마감(qzSeasonClose): '예측시즌'(최종 등급·순위) + '예측보상'(보상 기록) 시트.
    - 보상은 서비스 안 이용권만(현금·상품 없음): 분석가 리포트 1장 · 고수 브리핑 1개월 · 부동산 달인 브리핑 3개월 + 리포트 3장.
      PAID_OPEN=false 동안은 '대기'로 쌓아 두고, 유료가 열린 뒤 회원이 [보상 받기](quizClaim)를 누르면 지급(브리핑 = 기존 1개월 연장 bGrantMonth,
-     리포트 = '사용 가능' 이용권 → 결제 화면 [이용권으로 열기](quizVoucherUse, 단지 리포트·청약 분양가 리포트 1건)). 받는 사람 확인 = 카카오 로그인 계정 하나.
+     리포트 = '사용 가능' 이용권 → 결제 화면 [이용권으로 열기](quizVoucherUse, 단지 리포트·청약 당첨 플랜 1건)). 받는 사람 확인 = 카카오 로그인 계정 하나.
    - 명예의 전당(quiz/hall/)은 [명예의 전당에 별명 올리기]를 켠 분만, 별명만. 임장 모임은 '예측임장모임' 시트(운영자만) — 날짜 약속 없음.
    ===================================================================== */
 const SH_QP = '예측설정', QPH = ['회원', '등급숨김', '명예의전당', '임장모임', '수정시각'];
@@ -9498,12 +9504,12 @@ function quizClaim(b) {
   });
   return { ok: true, grants: qzGrantsOf(uid).map(qzGrantPublic), msg: msgs.join(' ') };
 }
-/** 리포트 이용권으로 주문 열기(결제 대신). 단지 리포트·청약 분양가 리포트 1건만. PAID_ACTIONS(유료 잠금)와 같이 막힘 */
+/** 리포트 이용권으로 주문 열기(결제 대신). 단지 리포트·청약 당첨 플랜 1건만. PAID_ACTIONS(유료 잠금)와 같이 막힘 */
 function quizVoucherUse(b) {
   const u = sessionUser(b.s), uid = qzUid(u.k), o = findRow(b.orderId);
   if (!o) throw new Error('주문을 찾지 못했어요.');
   const key = productKeyOf(o.r[OC['상품']]);
-  if (['single', 'cy'].indexOf(key) < 0) throw new Error('이용권은 단지 리포트·청약 분양가 리포트 한 건에 쓸 수 있어요.');
+  if (['single', 'cy'].indexOf(key) < 0) throw new Error('이용권은 단지 리포트·청약 당첨 플랜 한 건에 쓸 수 있어요.');
   if (String(o.r[OC['상태']]) !== ST.wait) throw new Error('이미 처리된 주문이에요.');
   const g = qzGrantsOf(uid).find(x => x.k === 'report' && x.st === QR_ST.can && x.left > 0);
   if (!g) throw new Error('쓸 수 있는 리포트 이용권이 없어요.');

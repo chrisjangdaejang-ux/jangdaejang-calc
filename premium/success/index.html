@@ -31,7 +31,7 @@
 <script src="../../assets/nw.js?v=1" defer></script>
 <link rel="stylesheet" href="../../assets/pay.css?v=6">
 <script src="../../assets/agents.js"></script>
-<script src="../../assets/pay.js?v=8"></script>
+<script src="../../assets/pay.js?v=9"></script>
 <script src="../../assets/back.js?v=2" defer></script>
 </head>
 <body>
@@ -52,12 +52,12 @@
   const paymentKey = Q.get('paymentKey') || '', orderId = Q.get('orderId') || '', amount = Number(Q.get('amount'));
   const head = '<div class="eyebrow">프리미엄 리포트 · 결제 확인</div>';
   function done(j){
-    P.saveOrder({ o: j.orderId, t: j.token, product: j.product, names: j.names, paidAt: j.paidAt });
+    P.saveOrder({ o: j.orderId, t: j.token, product: P.prodName(j.product), names: j.names, paidAt: j.paidAt });
     history.replaceState(null, '', location.pathname + '?done=' + encodeURIComponent(j.orderId));   // 주소창에서 결제키 지우기
     const url = P.viewUrl(j.orderId, j.token);
     main.innerHTML = head + `<h1>결제가 완료됐어요</h1>
       <section class="card2 key">
-        <dl class="kv"><dt>주문번호</dt><dd>${esc(j.orderId)}</dd><dt>상품</dt><dd>${esc(((window.JDJ_SITE && window.JDJ_SITE.SITE_NAME) || '집예보'))} ${esc(j.product)}</dd><dt>단지</dt><dd>${esc(j.names)}</dd>
+        <dl class="kv"><dt>주문번호</dt><dd>${esc(j.orderId)}</dd><dt>상품</dt><dd>${esc(((window.JDJ_SITE && window.JDJ_SITE.SITE_NAME) || '집예보'))} ${esc(P.prodName(j.product))}</dd><dt>단지</dt><dd>${esc(j.names)}</dd>
         <dt>결제 금액</dt><dd>${P.won(j.amount)}</dd><dt>결제일</dt><dd>${esc(j.paidAt)}</dd></dl>
         <div class="btnrow"><a class="btn2 blue" href="${esc(url)}">리포트 보러 가기</a></div>
       </section>

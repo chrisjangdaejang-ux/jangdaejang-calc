@@ -2,7 +2,7 @@
    무료·유료 나누기: 대표 승인 2026-11-27(엔진 docs/pricing_policy.md '청약').
    무료: 일정·D-day·달력(assets/cy-list.js) · 평형별 분양가 vs 주변 신축 · 내 가점으로 본 주택형별 당첨 가능성(+ 비슷한 단지 과거 결과)
          · 특별공급 8유형·제출 전 3대 실수(chungyak/cy-engine.js 그대로) · 입지 요약(역·중학교·공식 개발 정보) · 전매제한·실거주의무·재당첨 제한
-   유료(청약 분양가 리포트, assets/pay.js PRODUCTS.cy): ① 당첨되면 내 돈 계획표 ② 내 가점으로 어디에 넣을까(전략표) ③ 입주할 때 얼마쯤일까
+   유료(청약 당첨 플랜, assets/pay.js PRODUCTS.cy): ① 당첨되면 내 돈 계획표 ② 내 가점으로 어디에 넣을까(전략표) ③ 입주할 때 얼마쯤일까
    원칙
      - 숫자는 공개 자료(분양가·실거래·청약홈 당첨 결과·공공 위치)를 고르기·더하기·나누기로만. 예상 커트라인은 엔진이 미리 계산한 notices.json cut 을
        chungyak/ 화면·고민 찾기(assets/guide-core.js cyPlan)와 같은 함수(cutOf·diag·lottery)로 읽어요 — 세 화면 판정이 늘 같아요.
@@ -12,7 +12,7 @@
    브라우저 window.JDJ_CYPLAN, node require 둘 다(시험: node tools/cy-plan-test.js </dev/null). */
 (function (root) {
   'use strict';
-  const JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { const g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
+  var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   const CYE = () => root.JDJ_CYE, LOAN = () => root.JDJ_LOAN, CYP = () => root.JDJ_CYP, SALE = () => root.JDJ_SALE, CYL = () => root.JDJ_CYL;
   const PY = 3.3058, WALK = 67;   // 3.3㎡ · 분당 걷는 거리(직선 거리 기준 어림, assets/life-view.js 와 같은 값)
   const BAND = ['60㎡ 이하', '60~85㎡', '85㎡ 초과'];

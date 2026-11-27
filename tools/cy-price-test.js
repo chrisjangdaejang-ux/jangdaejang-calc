@@ -82,6 +82,17 @@ check('키: 일반 단지 키는 청약 키 아님', !C.isCyKey(P.keyOf({ sd: 's
 const be = fs.readFileSync(path.join(ROOT, 'tools/agent-backend.gs'), 'utf8');
 const m = be.match(/cy:\s*\{ name: '([^']+)', amount: (\d+)/);
 check('서버 가격표(cy) = 결제 화면 가격 = 상세 화면 가격', m && P.PRODUCTS.cy && m[1] === P.PRODUCTS.cy.name && +m[2] === P.PRODUCTS.cy.amount && C.PRODUCT.name === m[1] && C.PRODUCT.amount === +m[2], m);
+// 2026-11-27 이름 변경: '청약 분양가 리포트' → '청약 당첨 플랜'(키 cy·9,900원 그대로). 옛 이름 주문도 계속 처리
+check('이름 변경: 화면·서버 모두 청약 당첨 플랜 9,900원', P.PRODUCTS.cy.name === '청약 당첨 플랜' && P.PRODUCTS.cy.amount === 9900 && m && m[1] === '청약 당첨 플랜');
+check('이름 변경: 화면이 옛 이름(재배포 전 서버·예전 주문)을 새 이름으로', P.prodName('장대장 청약 분양가 리포트 · X') === '장대장 청약 당첨 플랜 · X' && P.prodName('단지 리포트') === '단지 리포트' && P.prodName(undefined) === '');
+{ const ps = be.match(/const PRICE = \{[\s\S]*?\n\};/), fk = be.match(/function productKeyOf\(name\) \{[^\n]*\}/), fl = be.match(/function productLabel\(name\) \{[^\n]*\}/);
+  const sx = {}; vm.createContext(sx);
+  if (ps && fk && fl) vm.runInContext(ps[0] + '\n' + fk[0] + '\n' + fl[0] + ';globalThis.K = productKeyOf; globalThis.L = productLabel;', sx);
+  check('서버: 옛 이름·새 이름 주문 모두 상품 cy 로 찾음(결제 승인·이용권)', sx.K && sx.K('청약 분양가 리포트') === 'cy' && sx.K('청약 당첨 플랜') === 'cy' && sx.K('단지 리포트') === 'single' && sx.K('없는 상품') === '');
+  check('서버: 영수증·조회는 새 이름, 모르는 이름은 그대로', sx.L && sx.L('청약 분양가 리포트') === '청약 당첨 플랜' && sx.L('모닝 브리핑') === '모닝 브리핑');
+  check('서버: 영수증·결제 완료 응답이 productLabel 사용', (be.match(/product: productLabel\(r\[OC\['상품'\]\]\)/g) || []).length >= 2); }
+const SITE_FILES = ['assets/pay.js', 'assets/cy-price.js', 'assets/cy-plan.js', 'premium/index.html', 'premium/checkout/index.html', 'premium/view/index.html', 'premium/success/index.html', 'about/index.html', 'chungyak/price/index.html'];
+check('이름 변경: 화면 파일에 옛 이름 문구 없음(pay.js 변환표만)', SITE_FILES.every(f => { const t = fs.readFileSync(path.join(ROOT, f), 'utf8'); return f === 'assets/pay.js' ? (t.match(/청약 분양가 리포트/g) || []).length === 1 : !t.includes('청약 분양가 리포트'); }));
 check('키: 결제 모듈 keyOf 와 같은 문자열', key === P.keyOf({ sd: R.sid, code: R.g, dong: R.dg, apt: R.name, band: 'cy' + R.no }));
 check('서버: 청약 키와 상품이 맞지 않으면 거절', /keys\.some\(x => \/~cy\\d\+\$\/\.test\(x\.k\)\) !== !!P\.cy/.test(be));
 const bpk = be.match(/function parseKey\(k\) \{[\s\S]*?\n\}/);

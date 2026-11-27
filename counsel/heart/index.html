@@ -135,7 +135,7 @@
     if (F) F.busy(b, '결제창을 여는 중…'); else b.disabled = true;
     var need = function (src, ok) { return new Promise(function (res, no) { if (ok()) return res(); var s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = function () { no(new Error('결제창을 불러오지 못했어요.')); }; document.head.appendChild(s); }); };
     var P;
-    need(JB.SITE + 'assets/pay.js?v=8', function () { return !!window.JDJ_PAY; }).then(function () { P = window.JDJ_PAY; return CS.post({ action: 'htOrder', pack: pack, agree: true }); })
+    need(JB.SITE + 'assets/pay.js?v=9', function () { return !!window.JDJ_PAY; }).then(function () { P = window.JDJ_PAY; return CS.post({ action: 'htOrder', pack: pack, agree: true }); })
       .then(function (o) {
         return need(P.SDK, function () { return !!window.TossPayments; }).then(function () {
           var toss = window.TossPayments(P.CLIENT_KEY), w = toss.payment({ customerKey: window.TossPayments.ANONYMOUS || 'ANONYMOUS' }), root = location.origin + JB.SITE + 'counsel/heart/';

@@ -36,7 +36,7 @@
 <script src="../assets/nw.js?v=1" defer></script>
 <link rel="stylesheet" href="../assets/pay.css?v=6">
 <script src="../assets/agents.js"></script>
-<script src="../assets/pay.js?v=8"></script>
+<script src="../assets/pay.js?v=9"></script>
 <style>
 .doc{max-width:880px}
 .doc .lead{font-size:16px;color:var(--sub);margin:0 0 6px}
@@ -173,7 +173,7 @@
           <li><b>미래가치 상세 리포트</b> — 보유 기간별 근거, 오를 이유·조심할 점 상세, 적중 기록 상세</li>
           <li><b>중개사 플러스</b> — 중개사·전문가용 내 이름 리포트·블로그 글·손님 브리핑</li>
           <li><b>모닝 브리핑·카톡 예보 구독</b></li>
-          <li><b>청약 분양가 리포트</b>(공고 1곳) — 당첨되면 내 돈 계획표, 내 가점으로 어디에 넣을까(청약 전략표), 입주할 때 영향을 준 요인</li>
+          <li><b>청약 당첨 플랜</b>(공고 1곳) — 당첨되면 내 돈 계획표, 내 가점으로 어디에 넣을까(청약 전략표), 입주할 때 영향을 준 요인</li>
           <li>건축 가능 규모·수익 계산 상세 <small>(준비 중)</small></li>
           <li>AI 비서 고급 기능 <small>(준비 중)</small></li>
         </ul>
@@ -211,7 +211,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
   const P = JDJ_PAY, $ = id => document.getElementById(id), esc = P.esc;
   const Q = new URLSearchParams(location.search);
   let plan = P.PRODUCTS[Q.get('p')] ? Q.get('p') : '';
-  if (plan === 'cy') { location.replace(JB.SITE + 'chungyak/'); return; }   /* 청약 분양가 리포트는 청약 공고 화면에서 고름 */
+  if (plan === 'cy') { location.replace(JB.SITE + 'chungyak/'); return; }   /* 청약 당첨 플랜는 청약 공고 화면에서 고름 */
   let keys = P.keysFromUrl(Q);
   if (!plan && keys.length) plan = keys.length > 1 ? 'pack' : 'single';
   const label = k => { const p = P.keyParse(k); return p ? `<b>${esc(p.apt)}</b><small>${esc(p.dong)} · ${esc(p.band)}</small>` : ''; };
