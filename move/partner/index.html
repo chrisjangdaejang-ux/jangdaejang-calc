@@ -17,12 +17,13 @@
 <script src="../../assets/savefb.js?v=1"></script>
 <script src="../../assets/region-pick.js?v=2"></script>
 <script src="../../assets/move-core.js?v=1"></script>
+<script src="../../assets/products.js?v=1"></script>
 <script src="../../assets/move.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../assets/aplus.css?v=50">
 <link rel="stylesheet" href="../move.css?v=1">
-<script src="../../assets/back.js?v=4" defer></script>
+<script src="../../assets/back.js?v=5" defer></script>
 </head>
 <body>
 <header class="top">
@@ -141,6 +142,7 @@
     var R = C.MV_RULE;
     if (!CFG.paid) return '<section class="card"><h2>포인트 충전</h2><p class="hint">포인트 충전은 정식 결제가 열리면 할 수 있어요. 그때 미리 알려 드릴게요. 지금은 무료 열람을 써 주세요.</p></section>';
     return '<section class="card"><h2>포인트 충전</h2><div class="topups">' + R.topups.map(function (t) { var tp = C.mvTopup(t.amt); return '<button type="button" data-amt="' + t.amt + '"><b>' + won(t.amt) + '</b><span>' + pt(tp.pts) + (tp.bonus ? ' (' + pt(tp.bonus) + ' 더)' : '') + '</span></button>'; }).join('') + '</div>'
+      + (window.JDJ_PRODUCTS ? JDJ_PRODUCTS.box('move_points', { mode: 'info' }) : '')   /* 결제 전: 담긴 것·환불(assets/products.js) */
       + '<button type="button" class="btn primary go" id="charge">충전하기</button><p class="hint">카드로 한 번 결제해요(자동 결제 아님). 쓰지 않은 충전 포인트는 약관에 따라 환불받을 수 있어요(더 드린 포인트 제외).</p><p class="msg" id="cmsg" role="status"></p></section>';
   }
   function profileHtml() {

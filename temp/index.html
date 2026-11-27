@@ -31,7 +31,7 @@
 <link rel="stylesheet" href="../assets/layout.css?v=5">
 <script src="../assets/layout.js?v=1" defer></script>
 <script src="../assets/nw.js?v=1" defer></script>
-<script src="../assets/back.js?v=4" defer></script>
+<script src="../assets/back.js?v=5" defer></script>
 <style>
 .tp{max-width:880px;margin:0 auto;padding:22px 20px 44px}
 .tp h1{font-size:clamp(24px,5.4vw,33px);margin:8px 0 8px;word-break:keep-all;letter-spacing:-.6px}
@@ -71,6 +71,8 @@
     </aside>
   </div>
 
+  <div id="briefTemp"></div>
+
   <h2>단계 보는 법</h2>
   <ul class="mean" id="mean"></ul>
 
@@ -93,6 +95,13 @@
 <footer class="foot">★ <span data-site-name>집예보</span> · <a href="../">홈</a> · <a href="../weekly/">주간 실거래 동향</a> · <a href="../map/">지도 지역 분석</a> · <a href="../about/">서비스 소개</a></footer>
 <script src="../assets/temp-core.js?v=1"></script>
 <script src="../assets/temp-view.js?v=1"></script>
+<script src="../assets/products.js?v=1"></script>
+<script>
+/* 시장 온도 아래 가벼운 모닝 브리핑 칸 — 고른 시·군·구가 있으면 그 지역으로 */
+(function () { var C = window.JDJ_PRODUCTS, el = document.getElementById('briefTemp'), gs = document.getElementById('guSel'); if (!C || !el) return;
+  var draw = function () { var g = gs && /^\d{5}$/.test(gs.value) ? gs.value : ''; el.innerHTML = C.briefCard('free_temp', { g: g, dn: '' }, { light: true }); };
+  draw(); if (gs) gs.addEventListener('change', draw); })();
+</script>
 <script>
 (function () {
   'use strict';

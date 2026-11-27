@@ -32,7 +32,9 @@
 <link rel="stylesheet" href="../../assets/pay.css?v=6">
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/pay.js?v=9"></script>
-<script src="../../assets/back.js?v=4" defer></script>
+<script src="../../assets/config.js?v=12"></script>
+<script src="../../assets/products.js?v=1"></script>
+<script src="../../assets/back.js?v=5" defer></script>
 </head>
 <body>
 <header class="top">
@@ -63,6 +65,9 @@
       </section>
       <div class="msg info"><b>주문번호를 보관해 주세요.</b> 다른 기기에서는 [프리미엄 리포트 → 구매한 리포트 다시 보기]에서 주문번호와 연락처(휴대폰 뒤 4자리 또는 이메일)로 다시 열 수 있어요. 이 기기에서는 자동으로 기억해요.</div>
       <div class="msg info">리포트를 <b>열기 전</b>에는 결제일부터 7일 이내 전액 환불을 요청할 수 있어요. 리포트 화면에 들어가면 먼저 환불 가능 여부를 보여 드리고, [리포트 열기]를 누를 때 제공이 시작돼요.</div>`;
+    /* 결제 완료 → '매일 아침 이어서 받아 보세요'(산 상품·고른 단지에 맞춘 모닝 브리핑 안내). 단지는 이 탭의 결제 화면 주소(k=)에서만 읽어요 */
+    if (window.JDJ_PRODUCTS) { let ks = []; try { ks = new URLSearchParams((sessionStorage.getItem('jdj_pay_back') || '').split('?')[1] || '').get('k') || ''; ks = ks ? ks.split('!') : []; } catch (e) { ks = []; }
+      main.insertAdjacentHTML('beforeend', JDJ_PRODUCTS.briefCard(JDJ_PRODUCTS.idOfServerName(j.product) || 'single', JDJ_PRODUCTS.ctxFromKeys(ks))); }
   }
   function fail(msg, retry){
     main.innerHTML = head + `<h1>결제를 완료하지 못했어요</h1><div class="msg err">${esc(msg)}</div>

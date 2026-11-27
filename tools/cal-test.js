@@ -104,7 +104,7 @@ check('보낸 기록에 연락처·날짜 원문 없음', !JSON.stringify(E.shee
 
 /* ---------- ④ 화면 ---------- */
 const page = read('mine/calendar/index.html'), center = read('my/alerts/index.html'), sw = read('sw.js'), mine = read('mine/index.html');
-check('달력 화면: 계산·세금 엔진·공시가격·로그인 부품', /cal-core\.js\?v=4/.test(page) && /tax-engine\.js/.test(page) && /gongsi\.js/.test(page) && /auth\.js/.test(page) && /back\.js\?v=4/.test(page));
+check('달력 화면: 계산·세금 엔진·공시가격·로그인 부품', /cal-core\.js\?v=4/.test(page) && /tax-engine\.js/.test(page) && /gongsi\.js/.test(page) && /auth\.js/.test(page) && /back\.js\?v=\d+/.test(page));
 check('달력 화면: 예상 재산세는 "참고" 표시 + 계산 근거', /예상 재산세\(참고\)/.test(page) && /공시가격 중간값/.test(page));
 check('달력 화면: 금액(보증금·현금·소득)은 이 기기(jdj_ta_me)에만 — 계정 저장(d.cal)에는 달력 칸만', /const TK = 'jdj_ta_me'/.test(page) && /d\.cal = Object\.assign\(\{\}, CAL/.test(page) && !/d\.cal[^;]*ME\./.test(page) && !/(dep|cash|inc)=/.test(page.replace(/data-ta-(dep|cash|inc)/g, '')));
 check('달력 화면: 로그인해야 날짜를 넣음', /AU\.gate\(/.test(page) && /loggedIn\(\)/.test(page));

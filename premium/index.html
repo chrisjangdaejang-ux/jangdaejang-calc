@@ -37,6 +37,7 @@
 <link rel="stylesheet" href="../assets/pay.css?v=6">
 <script src="../assets/agents.js"></script>
 <script src="../assets/pay.js?v=9"></script>
+<script src="../assets/products.js?v=1"></script>
 <style>
 .doc{max-width:880px}
 .doc .lead{font-size:16px;color:var(--sub);margin:0 0 6px}
@@ -72,7 +73,7 @@
 .notice-pay{font-size:14px}
 .notice-pay li{font-size:14px}
 </style>
-<script src="../assets/back.js?v=4" defer></script>
+<script src="../assets/back.js?v=5" defer></script>
 <script src="../assets/tabbar.js?v=8" defer></script>
 </head>
 <body>
@@ -89,28 +90,18 @@
   <section class="plans" aria-label="상품과 가격">
     <article class="plan">
       <div class="pt">관심 단지 1곳</div>
-      <h2>단지 리포트</h2>
+      <h2>미래가치 상세 리포트</h2>
       <div class="price">9,900원<small>1회 · 부가세 포함</small></div>
-      <ul>
-        <li>과거 실거래 추세로 계산한 1~10년 가격 시나리오(보수·기준·낙관, 참고용 통계 추정)</li>
-        <li>주변 공급 물량·교통 계획·재건축 영향 상세 분석</li>
-        <li>비슷한 조건이었던 과거 단지 사례 비교</li>
-        <li>보유 기간별 세금(양도세·보유세) 계산</li>
-      </ul>
-      <div class="meta"><b>제공 방식</b> 결제 즉시 웹 화면 + PDF 다운로드<br><b>열람 기간</b> 결제일부터 1년(PDF는 내려받아 계속 보관 가능)</div>
+      <ul data-jdj-inc="single"></ul>
+      <div class="meta" data-jdj-meta="single"></div>
       <button type="button" class="btn big pick" data-plan="single">단지 리포트 선택</button>
     </article>
     <article class="plan best">
-      <div class="pt">후보 단지 3곳</div>
+      <div class="pt">후보 단지 2~3곳</div>
       <h2>비교 패키지</h2>
       <div class="price">29,000원<small>1회 · 부가세 포함</small></div>
-      <ul>
-        <li>후보 단지 3곳 심층 비교(가격 시나리오·공급·교통·재건축)</li>
-        <li>내 자금 조건 기준 대출·필요 현금·월 상환 비교</li>
-        <li>단지별 보유 기간별 세금 계산</li>
-        <li>3곳 종합 비교표와 항목별 차이 정리</li>
-      </ul>
-      <div class="meta"><b>제공 방식</b> 결제 즉시 웹 화면 + PDF 다운로드<br><b>열람 기간</b> 결제일부터 1년(PDF는 내려받아 계속 보관 가능)</div>
+      <ul data-jdj-inc="pack"></ul>
+      <div class="meta" data-jdj-meta="pack"></div>
       <button type="button" class="btn big pick" data-plan="pack">비교 패키지 선택</button>
     </article>
   </section>
@@ -181,6 +172,13 @@
       </div>
     </div>
     <p class="fp-note">등기부등본처럼 발급 수수료가 있는 서류는 <a href="https://www.iros.go.kr/" target="_blank" rel="noopener noreferrer">인터넷등기소</a> 같은 발급 기관 공식 사이트로 바로 연결해 드려요. 모든 정보는 참고용이며 특정 부동산의 매수·매도를 권하지 않아요.</p>
+  </section>
+
+
+  <section class="card2" id="paidAll" aria-labelledby="paidAllH">
+    <h2 id="paidAllH">유료 상품 한눈에 보기</h2>
+    <p style="margin:0 0 10px;font-size:14.5px">결제하기 전에 무엇을 받는지, 무엇이 들어 있지 않은지, 언제까지 쓰는지, 환불은 어떻게 되는지를 모두 같은 기준으로 정리했어요. ‘예시 보기’는 가상의 숫자로 만든 예시예요.</p>
+    <div class="tblwrap" id="paidTable"></div>
   </section>
 
   <h2><span data-site-name>집예보</span> 리포트의 원칙</h2>
@@ -280,6 +278,14 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
     catch(x) { m.className = 'msg err'; m.textContent = x.message; }
   };
   if (plan) { draw(); loadIx(); }
+})();
+</script>
+<script>
+/* 상품 칸·표는 assets/products.js(상품 안내 한 곳)에서 채워요 — 미리 보기 칸·결제 화면과 늘 같은 내용 */
+(function(){ var C = window.JDJ_PRODUCTS; if (!C) return; var E = function (s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  document.querySelectorAll('[data-jdj-inc]').forEach(function (el) { var p = C.get(el.getAttribute('data-jdj-inc')); if (p) el.innerHTML = p.includes.map(function (t) { return '<li>' + E(t) + '</li>'; }).join(''); });
+  document.querySelectorAll('[data-jdj-meta]').forEach(function (el) { var p = C.get(el.getAttribute('data-jdj-meta')); if (p) el.innerHTML = '<b>들어 있지 않아요</b> ' + E(p.excludes[0]) + '<br><b>제공 방식</b> ' + E(p.delivery) + '<br><b>열람 기간</b> ' + E(p.validity) + '<br><a href="' + E(C.sampleHref(p.id)) + '" target="_blank" rel="noopener">예시 보기</a>'; });
+  var t = document.getElementById('paidTable'); if (t) t.innerHTML = C.table();
 })();
 </script>
 </body>

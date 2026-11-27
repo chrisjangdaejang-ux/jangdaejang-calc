@@ -29,7 +29,7 @@
     'track/': ['예측 적중 기록'], 'track/detail/': ['성적표', 'track/'],
     'weekly/': ['주간 실거래 동향'], 'temp/': ['시장 온도'], 'press/': ['보도자료실'],
     'brief/': ['모닝 브리핑'], 'brief/subscribe/': ['브리핑 받기', 'brief/'], 'brief/manage/': ['내 구독 관리', 'brief/'], 'brief/paid/': ['결제 확인', 'brief/'], 'brief/c/': ['관심 단지 소식', 'brief/'],
-    'premium/': ['프리미엄 리포트'], 'premium/pro/': ['고객에게 보내기', 'premium/'], 'premium/checkout/': ['결제하기', 'premium/'], 'premium/success/': ['결제 확인', 'premium/'],
+    'premium/': ['프리미엄 리포트'], 'premium/pro/': ['고객에게 보내기', 'premium/'], 'premium/checkout/': ['결제하기', 'premium/'], 'premium/success/': ['결제 확인', 'premium/'], 'premium/sample/': ['예시 보기', 'premium/'],
     'premium/fail/': ['결제 실패·취소', 'premium/'], 'premium/r/': ['전문가 리포트', 'premium/'], 'premium/view/': ['리포트 보기', 'premium/'],
     'my/watch/': ['관심 목록'], 'my/alerts/': ['알림 센터'], 'my/memory/': ['기억하는 것', 'my/alerts/'], 'alerts/': ['먼저 챙겨 드려요'], 'my/report/': ['내 집 성적표'], 'login/': ['로그인'],
     'about/': ['서비스 소개'], 'terms/': ['이용약관'], 'privacy/': ['개인정보처리방침'], 'refund/': ['환불 정책'],

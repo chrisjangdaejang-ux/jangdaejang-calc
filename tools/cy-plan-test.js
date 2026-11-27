@@ -12,7 +12,7 @@ function check(name, ok, info) { if (ok) pass++; else { fail++; console.log('XX 
 
 const ctx = { console, fetch: () => Promise.reject(new Error('no net')), location: { pathname: '/jangdaejang-calc/chungyak/price/', search: '' }, JDJ_SITE: { PAID_OPEN: false, PAY_REVIEW: false } };
 ctx.globalThis = ctx; vm.createContext(ctx);
-for (const f of ['tax/tax-engine.js', 'assets/loan-rules.js', 'assets/rec-core.js', 'assets/loan-core.js', 'assets/cy-price.js', 'assets/sale-status.js', 'assets/premium-teaser.js', 'assets/cy-plan.js']) vm.runInContext(read(f), ctx, { filename: f });
+for (const f of ['tax/tax-engine.js', 'assets/loan-rules.js', 'assets/rec-core.js', 'assets/loan-core.js', 'assets/cy-price.js', 'assets/sale-status.js', 'assets/products.js', 'assets/premium-teaser.js', 'assets/cy-plan.js']) vm.runInContext(read(f), ctx, { filename: f });
 ctx.JDJ_CYE = require('../chungyak/cy-engine.js');
 const P = ctx.JDJ_CYPLAN, E = ctx.JDJ_CYE;
 check('모듈 로드', !!(P && ctx.JDJ_CYP && ctx.JDJ_LOAN && ctx.JDJ_SALE && ctx.JDJ_TEASER));
@@ -170,8 +170,8 @@ check('입주 가격: 가까운 공사 중 노선이면 이 단지 해당', P.fa
 /* ---------- ⑤ 유료 미리 보기 · 점검 리포트 · 문구 ---------- */
 const N0 = Object.assign({}, NOTI[0], { no: '2026000560', ct: ['20261214'] });
 const tz = P.teasers(D, N0, 'k~x', { notices: NOTI, my: 64, prof: null, today: '20261126', loc: Lc });
-check('미리 보기: 세 칸 · 실제 자료 한 줄 · 유료 단추 · 결제는 곧 열려요', (tz.match(/class="jpt"/g) || []).length === 3 && tz.includes('84A형(최고 18억 2,700만 원)에 당첨되면, 계약금이 10%일 때 계약일 2026.12.14에 1억 8,270만 원이 먼저 필요해요.')
-  && tz.includes('지금 진행·예정 민영 공고 3곳의 주택형 5개를 내 가점 64점 기준으로') && (tz.match(/자세히 보기 \(유료\)/g) || []).length === 3 && tz.includes('결제는 곧 열려요') && tz.includes('premium/checkout/?p=cy&amp;k=k~x'), tz.slice(0, 600));
+check('미리 보기: 상품 하나에 표준 칸 하나(assets/products.js cy) · 실제 자료 세 줄 · 유료 단추 · 결제는 곧 열려요', (tz.match(/class="jpt"/g) || []).length === 1 && tz.includes('data-product="cy"') && tz.includes('미리 보기 · 내 돈 계획표') && tz.includes('입주 시점 시세 범위는 정확도 검증을 마치기 전이라 제공하지 않아요.') && tz.includes('84A형(최고 18억 2,700만 원)에 당첨되면, 계약금이 10%일 때 계약일 2026.12.14에 1억 8,270만 원이 먼저 필요해요.')
+  && tz.includes('지금 진행·예정 민영 공고 3곳의 주택형 5개를 내 가점 64점 기준으로') && (tz.match(/자세히 보기 \(유료\)/g) || []).length === 1 && tz.includes('결제는 곧 열려요') && tz.includes('premium/checkout/?p=cy&amp;k=k~x'), tz.slice(0, 600));
 const rep = P.diagReport(N0, D, { my: 64, A, e: { head: 'y', win: 'n', house: '0', ever: 'y', kids: '1', dep: '1500' }, m: { mySido: '서울특별시', mySgg: '중랑구', stay: 'y', spSold: 'n', right: 'n', spHouse: 'n' } });
 check('점검 리포트: 5가지(가능성·1순위·특공·3대 실수·전매) · 진단 틀 모양', rep.items.map(i => i.id).join() === 'odds,rank1,special,mk,rule' && rep.todo.length === 5 && ['g', 'y', 'r', 'n'].includes(rep.lv), rep.items.map(i => [i.id, i.lv, i.v]));
 check('점검 리포트: 1순위 어려움(통장 24개월) → 위험 · 할 일 링크에 공고 번호', rep.items[1].lv === 'r' && rep.lv === 'r' && rep.todo.some(t => t.href === 'chungyak/?no=2026000560#eligH'));

@@ -21,6 +21,7 @@
 <script src="../../assets/auth.js?v=11"></script>
 <script src="../../assets/savefb.js?v=1"></script>
 <script src="../../assets/counsel-core.js?v=5"></script>
+<script src="../../assets/products.js?v=1"></script>
 <script src="../../assets/counsel.js?v=6"></script>
 <script src="../../assets/tabbar.js?v=8" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -41,7 +42,7 @@
 .ht-uses{display:grid;gap:6px;margin:8px 0 0;padding:0;list-style:none}
 .ht-uses li{display:flex;justify-content:space-between;gap:10px;font-size:14.5px;padding:8px 0;border-bottom:1px solid var(--line2)}
 </style>
-<script src="../../assets/back.js?v=4" defer></script>
+<script src="../../assets/back.js?v=5" defer></script>
 </head>
 <body>
 <header class="top">
@@ -103,6 +104,7 @@
       + '<section class="cs-panel"><h2>하트 충전</h2><div class="ht-packs" role="group" aria-label="하트 묶음">' + packs.map(function (p) {
         return '<button type="button" class="ht-pack" data-pack="' + p.id + '" aria-pressed="' + (p.id === pick) + '"><span class="n"><span class="cs-heart">' + p.n + '</span></span><span class="w">' + CS.won(p.won) + '</span><span class="per">하트 1개 ' + CS.won(p.per) + '</span>' + (p.off ? '<span class="off">' + p.off + '% 더 알뜰</span>' : '') + '</button>';
       }).join('') + '</div>'
+      + (window.JDJ_PRODUCTS ? JDJ_PRODUCTS.box('heart', { mode: 'info' }) : '')   /* 결제 전: 담긴 것·환불(assets/products.js) */
       + (canPay ? '<label class="cs-check" style="margin-top:12px"><input type="checkbox" id="ag"> 하트 이용 안내와 환불 기준을 확인했어요.</label><div class="cs-acts"><button type="button" class="cs-btn" id="buy">결제하고 충전하기</button></div><p class="cs-msg" id="msg" aria-live="polite"></p>'
         : '<p class="cs-note">하트 충전은 곧 열려요. 열리면 이 화면에서 바로 충전할 수 있어요.</p>') + '</section>'
       + '<section class="cs-panel"><h2>충전 내역</h2>' + (j.lots.length ? '<table class="cs-table"><thead><tr><th>날짜</th><th>내용</th><th class="r">남은 하트</th><th class="r">환불</th></tr></thead><tbody>' + j.lots.map(function (l) {

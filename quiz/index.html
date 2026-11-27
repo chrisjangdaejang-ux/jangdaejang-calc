@@ -31,6 +31,7 @@
 <script src="../assets/auth.js?v=11"></script>
 <script src="../assets/share.js?v=15"></script>
 <script src="../assets/quiz-core.js?v=1"></script>
+<script src="../assets/products.js?v=1"></script>
 <script src="../assets/quiz-pick.js?v=1"></script>
 <script src="../assets/predict-core.js?v=3"></script>
 <script src="../assets/alerts-core.js?v=5"></script>
@@ -156,7 +157,7 @@ h1{font-size:clamp(26px,6.6vw,32px);margin:2px 0 6px;letter-spacing:-.6px}
 .pc.hl{outline:3px solid var(--blue);outline-offset:2px}
 @media(min-width:900px){.wrap{max-width:1040px}.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,440px);gap:28px;align-items:start}}
 </style>
-<script src="../assets/back.js?v=4" defer></script>
+<script src="../assets/back.js?v=5" defer></script>
 </head>
 <body>
 <header class="top">
@@ -276,7 +277,8 @@ function result(c, m){
     <div class="rcard" aria-label="공유 카드"><span class="rk">${esc(SITE)} · 오늘의 집값 맞혀 보기</span><b>${m.ok ? '오늘 문제 맞혔어요 ✓' : '오늘 문제 풀었어요'}</b><span>${esc(c.a)} ${esc(c.b)} · 직전 거래보다 올랐을까 내렸을까</span>${st.cs > 1 ? `<span class="rs2">연속 ${st.cs}번 정답</span>` : ''}</div>
     <button type="button" class="share" id="shareBtn">친구에게 같은 문제 보내기</button>
     ${WHY === 'share' ? `<a class="hall" href="./" data-track="quiz_shared_to_mine">내 맞춤 문제 풀기 ›</a>` : ''}
-    <p class="next">내일 아침 새 문제가 나와요.</p></section>`;
+    <p class="next">내일 아침 새 문제가 나와요.</p></section>`
+    + (window.JDJ_PRODUCTS ? JDJ_PRODUCTS.briefCard('free_quiz', { g: /^\d{5}$/.test(String(c.g || '')) ? String(c.g) : '', dn: c.d || '' }, { light: true }) : '');   // 결과 뒤 가벼운 모닝 브리핑 칸
 }
 (async () => {
   const qs = new URLSearchParams(location.search), sp = qs.get('q') || '';

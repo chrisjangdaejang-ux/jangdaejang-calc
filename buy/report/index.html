@@ -51,8 +51,9 @@
 <script src="../../assets/loan-core.js?v=6"></script>
 <script src="../../assets/kchat.js?v=4"></script>
 <script src="../../assets/plain-words.js?v=21"></script>
-<script src="../../assets/premium-teaser.js?v=1"></script>
-<script src="../../assets/narrative.js?v=29"></script>
+<script src="../../assets/products.js?v=1"></script>
+<script src="../../assets/premium-teaser.js?v=2"></script>
+<script src="../../assets/narrative.js?v=30"></script>
 <script src="../../assets/strength.js?v=6"></script>
 <script src="../../assets/policy-view.js?v=3"></script>
 <script src="../../assets/devproj-view.js?v=4"></script>
@@ -496,7 +497,7 @@ p.premlink{display:block;margin:10px 0 0}
 .morebtn{display:block;width:100%;min-height:52px;margin:14px 0 0;border:1.5px solid var(--blue);border-radius:14px;background:#fff;color:var(--blue-d,#3730A3);font:inherit;font-size:16px;font-weight:900;cursor:pointer}
 .morebtn small{font-size:13.5px;font-weight:700;color:var(--sub2);margin-left:4px}
 </style>
-<script src="../../assets/back.js?v=4" defer></script>
+<script src="../../assets/back.js?v=5" defer></script>
 </head>
 <body>
 <header class="top noprint">
@@ -1348,7 +1349,7 @@ async function render(){
           ${NARON && x.fx && x.fx.fv!=null ? `<h4 class="narx">자세한 자료</h4><ul class="reasons">${rs.map(li).join('')}</ul>` : rs.length>3?`<ul class="reasons">${rs.slice(3).map(li).join('')}</ul>`:''}
           ${window.JDJ_SRC ? JDJ_SRC.html(JDJ_SRC.rows({IX, f:x.fx})) : ''}
           <div class="noprint" data-txb="${i}" hidden></div>
-          ${tz ? '' : window.JDJ_TEASER ? JDJ_TEASER.html({key:k, desc:'보유 기간별 근거·오를/내릴 이유·적중 기록 상세를 담아요.', track:'report_to_premium', cls:'noprint'}) : `<a class="premlink noprint" href="${JB.SITE}premium/?p=single&k=${encodeURIComponent(k)}" data-track="report_to_premium">미래가치 상세 리포트 · 자세히 보기 (유료) ›</a>`}
+          ${tz ? '' : window.JDJ_TEASER ? JDJ_TEASER.html({product:'single', key:k, track:'report_to_premium', cls:'noprint'}) : `<a class="premlink noprint" href="${JB.SITE}premium/?p=single&k=${encodeURIComponent(k)}" data-track="report_to_premium">미래가치 상세 리포트 · 자세히 보기 (유료) ›</a>`}
         </div>
         <div class="vnote">${hasFv ? '<span class="vbadge" title="'+esc(vTxt)+'">✓ 검증된 점수</span>' : '미래가치 점수가 아직 없는 단지예요(거래 자료 부족). 예산·거래량을 보고 순서를 정했어요.'}</div>
         <div class="cacts noprint"><button type="button" class="btn primary" data-more="pm${i}" aria-expanded="false" aria-controls="pm${i}">자세한 리포트</button><button type="button" class="btn cmpbtn-add ${cmpHas(k)?'on':''}" data-cp="${esc(k)}">${cmpHas(k)?'비교함에 담김':'비교에 담기'}</button><button type="button" class="btn" data-mine="${i}">내 집으로 저장</button>${tz ? '' : `<a class="btn" href="${JB.SITE}premium/?p=single&amp;k=${encodeURIComponent(k)}" data-track="report_to_premium_card">상세 리포트 (유료)</a>`}</div>

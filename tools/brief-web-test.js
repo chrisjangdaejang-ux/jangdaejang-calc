@@ -91,7 +91,7 @@ check('광고주 통계: 메일 광고 동의자 수(있을 때만)', [/메일 �
   check('구독 화면: 자동 결제 없음과 맞게(다음 결제 미룸 표현 없음)', /다음 결제가/.test(pages), false);
   check('약관: 친구 초대 무료 기간 = 지금 이용권이 끝난 다음 날부터 무료 1개월', /지금 이용권이 끝난 다음 날부터 무료 1개월이 이어져요/.test(rd('terms/index.html')), true);
   { const su = rd('brief/subscribe/index.html');
-    check('구독 화면: 체험 전이면 맨 위 체험 안내·시작 버튼, 요금제는 접고 결제는 보조 버튼', [/결제 수단 없이 시작<\/span> · <span>자동 결제 없음/.test(su), /id="trialTop"/.test(su), /체험이 끝난 뒤 계속 받고 싶을 때 고르는 요금제예요/.test(su), /지금은 결제되지 않아요/.test(su), /class="btn ghost" id="pay"/.test(su), /const TR = !st\.trialUsed && !st\.active/.test(su)], [true, true, true, true, true, true]); }
+    check('구독 화면: 체험 전이면 맨 위 체험 안내·시작 버튼, 요금제는 접고 결제는 보조 버튼', [/결제 수단 없이 시작<\/span> · <span>자동 결제 없음/.test(su), /id="trialTop"/.test(su), /체험이 끝난 뒤 계속 받고 싶을 때 고르는 요금제예요/.test(su), /지금은 결제되지 않아요/.test(su), /class="btn ghost" id="pay"/.test(su), /const TR = \(!st\.trialUsed && !st\.active\)/.test(su)], [true, true, true, true, true, true]); }
   check("구독 화면: 요금제 올리기·내리기는 '월 요금' 기준으로", [/더 높은 요금제|더 낮은 요금제/.test(pages.replace(rd('terms/index.html'), '')), /월 요금이 더 비싼 요금제/.test(pages)], [false, true]);
 }
 /* 운영자 [시·도마다 대표 지역 1곳씩 한 번에 넣기] — 지금 자료의 시·도 이름(통합·특별자치도)으로 17곳을 찾고, 강남구는 그대로·겹치지 않게 */

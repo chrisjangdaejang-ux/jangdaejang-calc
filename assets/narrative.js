@@ -1345,8 +1345,7 @@
     if (!T) return `<p class="w3-pro">항목별 숫자와 과거 시기별 결과는 미래가치 상세 리포트(유료)에서 볼 수 있어요.</p>`;
     const x = [...W.up, ...W.dn, ...W.watch].find(v => v && v.d && (v.d[0] || v.d[1]));
     const pv = x ? w3pick(x, T) : '';
-    return T.html({ name: '미래가치 상세 리포트', preview: pv ? `${x.t} — ${pv}` : '', desc: '항목마다 이 단지 숫자·과거 사례·보유 기간별 결과와 적중 기록 상세를 담아요.',
-      key: o.premKey, track: o.premTrack || 'nar_to_premium' });
+    return T.html({ product: 'single', preview: pv ? `${x.t} — ${pv}` : '', key: o.premKey, track: o.premTrack || 'nar_to_premium' });   // 담긴 내용·가격·환불은 assets/products.js
   }
   /* 오를 이유·조심할 점·지켜볼 것 칸. 무료: 제목 + 한 줄. 프리미엄(o.premium): 항목마다 사실·과거 사례·그래서 + 시기별 표 */
   function w3html(W, o) {

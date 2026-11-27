@@ -1,6 +1,12 @@
 /**
  * 장대장 공인중개사 제휴 — 구글 시트 + Apps Script 백엔드 (v42: 전문가 리포트 링크 대출 조건에 금리 유형·대출 기간 저장 / v41: 모닝 브리핑 메일 '지난주 우리 지역은?'(주간 실거래 동향) / v40: 갈아타기 알림 메일 보내는 이름·수신 거부 화면 링크를 SITE_NAME 으로 / v39: 광고 문의 관심 상품 목록 사이·페이지 끝 카드 / v38: 광고 문의 희망 기간 8주(2개월) / v37: 광고 하루 단위 판매 없앰·브리핑광고 7일 미만 경고 / v36: 광고 문의 홈·카테고리 상단 배너 / v35: 보고서 받을 이메일 칸 / v34: 주간 현장 보고서 자동 발송 / v33: 공인중개사가 아닌 전문가 필수 칸 줄임 / v32: 시행사 새 상품 신청 키 — 주간 현장 보고서 기본·잠금형·광고 지역 추천 / v31: 메일 광고는 광고성 정보·이른 아침 두 동의 모두 / v30: 장대장TV 주간 유튜브 키트 / v29: 모닝 브리핑 메일 광고 — 이른 아침 광고 동의·(광고) 제목·수신 거부 / v28: 중개사 도구 이용 수 — 매물 설명서·주간 블로그·인스타 글 / v27: 중개사 플러스 — 내 손님 브리핑·주간 시장 리포트 / v26: 모닝 브리핑 요금제 4단계·요금제 바꾸기·중개사 등록번호 확인·친구 초대 보상 / v25: 모닝 브리핑 새 정책·교통·공급 발표 / v24: 모닝 브리핑 2단계·광고주용 익명 구독자 통계 / v23: 시행사 신청 상품 이름 — 분석 브로슈어·자료 팩 / v22: 집예보 모닝 브리핑 이름·전국 시장 칸 / v21: 전문가 이름 리포트 유형 확대 / v20: 집예보 분양대행 — 전속 의뢰·판매 파트너·계약 보고·정산 / v19: 중개사 업무 도구)
  *
+ * v74 변경 요약 (v73 위에 다시 배포. 따로 실행할 함수 없음 — 시트 '구매고객체험'은 첫 사용 때 저절로 생김. BUYER_TRIAL_ENABLED·BILLING_OPEN=false 라 지금 서비스에는 영향 없음)
+ *  - 유료 리포트 구매 고객 30일 무료 + 카드 등록(맨 아래 'v74' 칸: briefBuyerTrial·briefBuyerConsent·briefBuyerOff·briefBuyerMine, 매일 bbtDaily).
+ *    무료→유료 전환은 체험 8일째부터 따로 받은 동의가 있을 때만(전자상거래법 제13조 제6항) — 없으면 결제하지 않고 끝남. 모든 안내 메일에 로그인 없는 [해지] 링크.
+ *  - 켜는 날: 이 파일 BUYER_TRIAL_ENABLED 와 assets/products.js BUYER_TRIAL_ENABLED(또는 assets/config.js JDJ_SITE.BUYER_TRIAL_ENABLED) 를 함께 true(BILLING_OPEN·PAID_OPEN 도 켜져 있어야 함). 변호사 검토 뒤.
+ *  - 검증: node tools/products-test.js </dev/null
+ *
  * v73 변경 요약 (v72 위에 다시 배포 + 함수 guardInstall 한 번 실행. GUARD_ENABLED=false·PAID_OPEN=false 라 지금 서비스에는 영향 없음 — 열림 알림 신청(guardWait)만 받음)
  *  - 내 전셋집 지킴이(맨 아래 'v73' 칸): guardConfig(GET) · guardWait · guardFind · guardOrder · guardRegister · guardStatus · guardStop · guardList(중개사) · readRegistry · guardDaily(트리거) · guardWebhookOrPoll.
  *  - 스크립트 속성 APICK_API_KEY(에이픽 키 — 저장소·화면에 넣지 않음) · 선택 GUARD_HOOK_TOKEN · SOLAPI_TPL_GUARD(알림톡 템플릿 #{집}·#{변동}·#{링크}).
@@ -685,6 +691,7 @@ function doPost(e) {
   if (PT_ACTIONS[b.action]) return out(ptDispatch(b));             // v66 중개사 프로 도구(숨김)
   if (MV_ACTIONS[b.action]) return out(mvDispatch(b));             // v57 이사 견적 받기(이사업체 제휴, 숨김)
   if (BR_BILL_ACTIONS[b.action]) return out(baBillDispatch(b));    // v50 모닝 브리핑 자동결제(BILLING_OPEN 잠금)
+  if (BBT_ACTIONS[b.action]) return out(bbtDispatch(b));           // v74 유료 구매 고객 30일 무료(BUYER_TRIAL_ENABLED·BILLING_OPEN 잠금)
   if (PRO_ACTIONS[b.action]) return out(proDispatch(b));
   if (BP_ACTIONS[b.action]) return out(bpDispatch(b));
   if (b.action === 'bpPut') { try { return out(bpPut(b)); } catch (x) { return out({ ok: false, err: String(x.message || x) }); } }
@@ -2592,7 +2599,7 @@ const BRIEF_MIN_PAY = 100;               // 차액이 이보다 적으면 결제
 const BRIEF_OLD_NAMES = { '아침 브리핑 1개월': 'brief', '아침 브리핑 중개사용 1개월': 'brief_pro', '아침 브리핑 7일 체험': 'trial' };
 function bProdKey(name) {
   name = String(name || '');
-  if (name === BRIEF_TRIAL.name) return 'trial';
+  if (name === BRIEF_TRIAL.name || name === BUYER_TRIAL.name) return 'trial';   // v74 구매 고객 30일 체험도 '체험'(계정마다 한 번)
   const k = Object.keys(BRIEF_PRICE).find(x => BRIEF_PRICE[x].name === name);
   return k || BRIEF_OLD_NAMES[name] || '';
 }
@@ -2883,7 +2890,8 @@ function briefMine(b) {
   const u = sessionUser(b.s), now = new Date();
   const list = myBriefs(u.k).filter(o => String(o.r[BC['상태']]) !== BST.wait).map(o => briefState(o, now));
   const adm = bIsAdmin(u.k);
-  return { ok: true, subs: list, brief: cleanBrief(u.data && u.data.brief, bLim(adm)), channels: briefChannels(), adm: adm, admLim: adm ? BRIEF_ADMIN_LIM : null,
+  let bbt = null; try { bbt = book().getSheetByName(SH_BBT) && bbtOf(u.k) ? bbtPub(bbtOf(u.k), u.k) : null; } catch (e) { bbt = null; }   // v74 구매 고객 30일 무료
+  return { ok: true, bbt: bbt, subs: list, brief: cleanBrief(u.data && u.data.brief, bLim(adm)), channels: briefChannels(), adm: adm, admLim: adm ? BRIEF_ADMIN_LIM : null,
     trialUsed: myBriefs(u.k).some(o => bIsTrial(o.r[BC['상품']])), next: (list.filter(x => x.next).pop() || {}).next || '', amAd: bConsentPublic(u.k).am, adc: bConsentPublic(u.k).ad,
     bill: (() => { try { return baBillPub(u.k); } catch (e) { return { on: false, st: '' }; } })(),   // v50 자동결제 상태(빌링키 없음)
     plusBy: (() => { try { return dpPlusPub(u.k, list); } catch (e) { return null; } })() };   // v51 동네 파트너 플러스
@@ -3829,6 +3837,7 @@ function briefDaily() {
   if (P.getProperty('BRIEF_SENT') === date) return;
   const ix = bFetchJson(BRIEF_DATA + 'index.json');
   if (!ix || ix.date !== date) { if (new Date().getHours() < 9) return; }   // 오늘 자료가 아직 없으면 9시에 다시(9시에도 없으면 어제 자료 그대로 보내고 날짜를 밝힘)
+  try { bbtDaily(new Date()); } catch (e) {}              // v74 구매 고객 30일 무료: 안내 메일·전환 전 별도 동의 확인(동의 없으면 결제하지 않음) — baBillDaily 보다 먼저
   try { baBillDaily(new Date()); } catch (e) {}           // v50 자동결제(잠겨 있으면 아무것도 안 함): 오늘 결제된 사람은 오늘 아침부터 받게 먼저
   const um = userBriefMap(), now = new Date(), cache = {}, ch = briefChannels();
   const wkc = {}, wkOf = g => (g in wkc) ? wkc[g] : (wkc[g] = bFetchJson(BRIEF_DATA + 'wk/' + g + '.json'));   // v41 지난주 우리 지역은?(월요일 오전 7시 공개분)
@@ -8407,7 +8416,7 @@ function baBillPub(k) {
   const r = o.r, P = BRIEF_PRICE[String(r[BRAC['요금제']])] || null, nx = dpDay(r[BRAC['다음결제일']]), half = r[BRAC['첫달반값']] === true || String(r[BRAC['첫달반값']]) === 'Y';
   const first = dpDay(r[BRAC['첫결제일']]), st = String(r[BRAC['상태']]);
   return { on: billOn(), st: st, product: String(r[BRAC['요금제']]), label: P ? P.label : '', card: dpTxt(r[BRAC['카드']]), next: nx, endAt: dpDay(r[BRAC['해지예정일']]),
-    payText: P && nx && (st === BRA_ST.ok || st === BRA_ST.retry) ? baPayText(P, nx, half && nx === first) : '' };
+    payText: P && nx && (st === BRA_ST.ok || st === BRA_ST.retry) && !bbtPending(String(r[BRAC['회원']]), nx) ? baPayText(P, nx, half && nx === first) : '', bbt: bbtPending(String(r[BRAC['회원']]), nx) };
 }
 /** 지금 받는 중인 행(체험·이용)의 끝 다음 날, 없으면 오늘 — 첫 결제일. 체험 중이고 예전에 자동 결제를 한 적 없으면 첫 달 반값 */
 function baFirst(k) {
@@ -8456,6 +8465,7 @@ function baBillIssue(b) {
     const o2 = baOf(u.k), st = String(o2.r[BRAC['상태']]);
     baSet(o2.row, '카드', x.card || '등록됨'); baSet(o2.row, '수정일', new Date());
     if (st === BRA_ST.card || st === BRA_ST.stop || st === BRA_ST.end || st === BRA_ST.bye) { baSet(o2.row, '상태', BRA_ST.ok); baSet(o2.row, '해지예정일', ''); }
+    try { bbtActivate(u.k); } catch (e) {}   // v74 구매 고객 30일 무료: 카드 등록이 끝나야 체험 시작(첫 결제일 = 시작 + 30일)
     const P = BRIEF_PRICE[String(o2.r[BRAC['요금제']])], nx = dpDay(o2.r[BRAC['다음결제일']]), t = ymd(new Date());
     let charged = null;
     if (nx <= t || st === BRA_ST.retry || st === BRA_ST.stop) charged = baCharge(baOf(u.k), t);
@@ -8480,6 +8490,7 @@ function baKOf(uh) { const s = {}; let k = ''; bRows().some(o => { const kk = St
 /** 한 번 결제 → 성공하면 '브리핑구독'에 30일 이용 행을 만들고 다음 결제일을 그 끝 다음 날로 */
 function baCharge(o, t) {
   const r = o.r, uh = String(r[BRAC['회원']]), k = baKOf(uh), P = BRIEF_PRICE[String(r[BRAC['요금제']])];
+  if (bbtPending(uh, dpDay(r[BRAC['다음결제일']]))) { baSet(o.row, '상태', BRA_ST.end); billKeyPut('BR', uh, null); baSet(o.row, '메모', '구매 고객 체험 — 전환 동의 없음, 결제 안 함'); return { ok: false, msg: '전환 동의 없음' }; }   // v74
   if (!k || !P) { baSet(o.row, '상태', BRA_ST.stop); baSet(o.row, '메모', '회원·요금제를 찾지 못함'); return { ok: false, msg: '회원 정보 없음' }; }
   const first = dpDay(r[BRAC['첫결제일']]), nx = dpDay(r[BRAC['다음결제일']]), half = (String(r[BRAC['첫달반값']]) === 'Y' || r[BRAC['첫달반값']] === true) && nx === first;
   const amt = baAmt(P, half), last = myBriefs(k).filter(x => String(x.r[BC['연락처']] || '')).pop();
@@ -8500,6 +8511,179 @@ function baCharge(o, t) {
   const to = baEmail(k); if (to) dpMailTo(to, `[${SITE_NAME}] ${BRIEF_NAME} 결제가 되지 않았어요`, `${amt.toLocaleString()}원 결제가 되지 않았어요(${bEsc(x.msg || '카드사 거절')}). ${DP_RULE.retryDays}일 동안 날마다 다시 시도해요. 카드를 바꾸려면 내 구독 관리에서 [카드 바꾸기]를 눌러 주세요.<br><a href="${BRIEF_WEB}manage/">${BRIEF_WEB}manage/</a>`);
   return { ok: false, msg: x.msg };
 }
+/* ---------- v74 유료 구매 고객 30일 무료 + 카드 등록 '한 달 습관 만들기' (대표 결정 2026-11-27 10:52) ----------
+   - 대상: 유료 리포트(단지 리포트·비교 패키지·청약 분양가 리포트)를 결제한 분만. 주문번호 + 열람 토큰으로 확인(authOrder), 주문 하나·계정 하나에 한 번.
+     일반 방문자는 지금처럼 카드 없이 7일 무료 체험(briefTrial) 그대로.
+   - 잠금: BUYER_TRIAL_ENABLED 와 billOn()(BILLING_OPEN·PAID_OPEN) 이 모두 켜져야 돌아요. 화면은 assets/products.js BRIEF_LINK.buyerTrial(assets/config.js BUYER_TRIAL_ENABLED) 를 함께 봐요.
+   - 흐름: briefBuyerTrial → 카드 등록 창(기존 briefBillIssue) → 등록이 끝나면 30일 체험 시작(bbtActivate). 카드 등록 때는 '체험 시작 동의'만 받아요.
+   - 전자상거래법 제13조 제6항·시행령 제20조의2(2025. 2. 14. 시행, 무료→유료 정기결제 전환): 최초 계약과 구분된 별도 동의·고지를 전환 전 30일 이내에 받아야 해요(공정위 문답 Q5).
+     그래서 보수적으로: 시작할 때 받은 동의로는 결제하지 않고, 체험 8일째부터 [유료로 계속 받기 동의]를 따로 받아요(D-7·D-3·D-1 안내 메일 + 구독 관리 화면).
+     전환일까지 동의가 없으면 결제하지 않고 체험만 끝나요(카드 정보도 지움). 해지는 모든 안내 메일의 [해지] 한 번(로그인 없이, 회원별 확인값 링크)과 구독 관리 버튼.
+   - 한 달 안내(브리핑과 별도로 짧게, 이메일 받는 분만): 3일째 관심 단지·공고 새 소식 / 7일째 한 주 요약 / 14·21일째 예측 맞히기·시장 온도 / D-7 지난 한 달 받은 소식 ○건 + 계속·해지
+   - 시트 '구매고객체험': 주문번호·회원·상태·신청일·시작일·첫결제일·전환동의·동의시각·알림·메모 */
+const BUYER_TRIAL_ENABLED = false;
+const BUYER_TRIAL = { name: BRIEF_NAME + ' 구매 고객 30일 체험', label: '구매 고객 30일 무료', amount: 0, areas: 3, apts: 3, customers: 0, days: 30 };
+const BBT_PRODUCTS = { single: 1, pack: 1, cy: 1 };          // 대상 주문(PRICE 키). 새 유료 상품은 상품 키만 더하면 돼요
+const BBT_ASK_FROM = 8;                                       // 전환 동의를 받기 시작하는 체험 날(최초 계약과 구분 — 1일째에는 받지 않음)
+const SH_BBT = '구매고객체험';
+const BBTH = ['주문번호', '회원', '상태', '신청일', '시작일', '첫결제일', '전환동의', '동의시각', '알림', '메모'];
+const BBTC = Object.fromEntries(BBTH.map((h, i) => [h, i]));
+const BBT_ST = { card: '카드대기', on: '체험중', yes: '전환동의', end: '끝남', off: '해지' };
+const BBT_ACTIONS = { briefBuyerTrial: 1, briefBuyerConsent: 1, briefBuyerOff: 1, briefBuyerMine: 1 };
+function bbtOn() { return BUYER_TRIAL_ENABLED && billOn(); }
+/** 이 회원의 자동결제 첫 결제일이 구매 고객 체험 전환일인데 별도 동의가 아직 없으면 true — 결제·'자동 결제돼요' 문구를 막아요(안전장치) */
+function bbtPending(uh, nx) {
+  if (!book().getSheetByName(SH_BBT)) return false;
+  const o = bbtRows().filter(x => String(x.r[BBTC['회원']]) === String(uh)).pop(); if (!o) return false;
+  return String(o.r[BBTC['상태']]) !== BBT_ST.yes && !String(o.r[BBTC['전환동의']] || '') && dpDay(o.r[BBTC['첫결제일']]) === String(nx || '');
+}
+function bbtRows() { return dpRows(SH_BBT); }
+function bbtSet(row, h, v) { uSheet(SH_BBT, BBTH).getRange(row, BBTC[h] + 1).setValue(v); }
+function bbtOf(k) { const uh = baUid(k); return bbtRows().filter(o => String(o.r[BBTC['회원']]) === uh).pop() || null; }
+function bbtTok(uh) { return hashOf('bbtOff|' + uh).slice(1, 33); }
+function bbtLinks(uh) {
+  const q = 'u=' + encodeURIComponent(uh) + '&t=' + bbtTok(uh);
+  return { off: WEB_ROOT + 'brief/manage/?bbt=off&' + q, yes: WEB_ROOT + 'brief/manage/?bbt=yes&' + q, manage: WEB_ROOT + 'brief/manage/' };
+}
+function bbtDay(o, t) { const s = dpDay(o.r[BBTC['시작일']]); return s ? Math.round((dpDayMs(t) - dpDayMs(s)) / 86400000) + 1 : 0; }
+function bbtPub(o, k) {
+  if (!o) return { on: bbtOn(), st: '' };
+  const r = o.r, uh = String(r[BBTC['회원']]), first = dpDay(r[BBTC['첫결제일']]), t = ymd(new Date()), day = bbtDay(o, t), b = baOf(k), P = b ? BRIEF_PRICE[String(b.r[BRAC['요금제']])] : null;
+  return { on: bbtOn(), st: String(r[BBTC['상태']]), start: dpDay(r[BBTC['시작일']]), first: first, day: day, consent: String(r[BBTC['상태']]) === BBT_ST.yes,
+    canAsk: String(r[BBTC['상태']]) === BBT_ST.on && day >= BBT_ASK_FROM, payText: P && first ? baPayText(P, first, false) : '', label: P ? P.label : '', links: bbtLinks(uh) };
+}
+function bbtDispatch(b) {
+  try {
+    if (b.action === 'briefBuyerOff') return withLock(() => bbtOff(b));          // 해지는 잠겨 있어도 받아요(언제나 한 번에)
+    if (!bbtOn()) throw billClosedErr();
+    return withLock(() => {
+      if (b.action === 'briefBuyerTrial') return bbtStart(b);
+      if (b.action === 'briefBuyerConsent') return bbtConsent(b);
+      if (b.action === 'briefBuyerMine') { const u = sessionUser(b.s); return { ok: true, bbt: bbtPub(bbtOf(u.k), u.k) }; }
+      return { ok: false, err: 'unknown' };
+    });
+  } catch (x) { return { ok: false, err: String(x.message || x), code: x.code || '' }; }
+}
+/** 시작: 주문 확인 → 30일 체험 행(결제대기 — 카드 등록이 끝나야 체험으로) + 자동결제 행(첫 결제일 = 시작 + 30일, 반값 없음) → 카드 등록 창 열 값 */
+function bbtStart(b) {
+  const c = briefCommon(b), k = c.u.k, uh = baUid(k);
+  const o = authOrder({ o: b.orderId, t: b.token });
+  if (!BBT_PRODUCTS[productKeyOf(o.r[OC['상품']])]) throw new Error('유료 리포트를 산 분께 드리는 혜택이에요.');
+  if (String(o.r[OC['환불상태']] || '')) throw new Error('환불을 요청한 주문은 혜택을 받을 수 없어요.');
+  const used = bbtRows().filter(x => String(x.r[BBTC['주문번호']]) === String(o.r[OC['주문번호']]) || String(x.r[BBTC['회원']]) === uh);
+  if (used.some(x => String(x.r[BBTC['상태']]) !== BBT_ST.card)) throw new Error('구매 고객 30일 무료는 계정마다 한 번만 받을 수 있어요.');
+  if (myBriefs(k).some(x => briefState(x, new Date()).active)) throw new Error('이미 받고 있는 브리핑이 있어요.');
+  const P = BRIEF_PRICE[b.product] || BRIEF_PRICE.brief;
+  if (!P.show) throw new Error('요금제를 다시 골라 주세요.');
+  let bn = ''; if (P.broker) { const x = bBrokerNo(b.broker); if (!x.ok) throw new Error(x.err + ' 중개사 요금제는 중개사 전용 할인가라서 등록번호를 확인해요.'); bn = x.norm; }
+  if (b.agree !== true) throw new Error('구매 고객 30일 무료 체험과 카드 등록 안내에 동의해 주세요.');
+  const t = kstToday(), first = ymd(addDays(t, BUYER_TRIAL.days));
+  myBriefs(k).filter(x => String(x.r[BC['상품']]) === BUYER_TRIAL.name && String(x.r[BC['상태']]) === BST.wait).forEach(x => setB(x.row, '상태', BST.stop));   // 다시 누른 경우 앞 행 정리
+  newBriefRow(c.u, BUYER_TRIAL, BST.wait, c.channel, c.ct, c.ad, String(o.r[OC['주문번호']]));
+  bConsentApply(k, { ad: c.ad, am: c.amAd }, '구매 고객 30일 무료');
+  const sh = uSheet(SH_BRA, BRAH), a = baOf(k), now = new Date();
+  const vals = { '회원': uh, '상태': BRA_ST.card, '요금제': P === BRIEF_PRICE[b.product] ? String(b.product) : 'brief', '첫결제일': first, '다음결제일': first, '첫달반값': '', '등록일': now, '수정일': now, '중개사번호': bn, '메모': '구매 고객 30일 무료' };
+  if (a) Object.keys(vals).forEach(h => baSet(a.row, h, vals[h])); else sh.appendRow(BRAH.map(h => h in vals ? vals[h] : ''));
+  const text = `구매 고객 30일 무료 체험 시작 · 카드 등록(지금은 결제 없음) · ${first.slice(5).replace('-', '월 ')}일부터 유료(${P.name} 월 ${P.amount.toLocaleString()}원)로 바꾸려면 체험 중에 따로 동의해야 하며, 동의하지 않으면 결제되지 않고 끝나요`;
+  billAgreeLog('BR', uh, text);
+  const row = [];
+  BBTH.forEach(h => row[BBTC[h]] = '');
+  row[BBTC['주문번호']] = String(o.r[OC['주문번호']]); row[BBTC['회원']] = uh; row[BBTC['상태']] = BBT_ST.card; row[BBTC['신청일']] = now; row[BBTC['첫결제일']] = first;
+  uSheet(SH_BBT, BBTH).appendRow(row);
+  return { ok: true, ck: billNewCk('BR', uh), clientKey: String(PropertiesService.getScriptProperties().getProperty('TOSS_BILLING_CLIENT_KEY') || ''), first: first, text: text };
+}
+/** 카드 등록이 끝난 뒤(baBillIssue): 30일 체험 시작 — 시작일 오늘, 첫 결제일 = 오늘 + 30일 */
+function bbtActivate(k) {
+  const o = bbtOf(k); if (!o || String(o.r[BBTC['상태']]) !== BBT_ST.card) return;
+  const t = kstToday(), first = ymd(addDays(t, BUYER_TRIAL.days));
+  const w = myBriefs(k).filter(x => String(x.r[BC['상품']]) === BUYER_TRIAL.name && String(x.r[BC['상태']]) === BST.wait).pop();
+  if (!w) return;
+  setB(w.row, '상태', BST.trial); setB(w.row, '시작일', ymd(t)); setB(w.row, '만료일', ymd(addDays(t, BUYER_TRIAL.days - 1)));
+  bbtSet(o.row, '상태', BBT_ST.on); bbtSet(o.row, '시작일', ymd(t)); bbtSet(o.row, '첫결제일', first);
+  const a = baOf(k); if (a) { baSet(a.row, '첫결제일', first); baSet(a.row, '다음결제일', first); baSet(a.row, '첫달반값', ''); }
+  const to = baEmail(k), L = bbtLinks(baUid(k));
+  if (to) dpMailTo(to, `[${SITE_NAME}] 구매 고객 30일 무료 체험을 시작했어요`, `내일 아침부터 ${bEsc(BRIEF_NAME)}을 보내 드려요(${ymd(t)} ~ ${ymd(addDays(t, BUYER_TRIAL.days - 1))}).<br>`
+    + `<b>지금은 결제되지 않아요.</b> 체험이 끝난 뒤 유료로 계속 받으려면 체험 중에 따로 [유료로 계속 받기]에 동의해 주셔야 하고, 동의하지 않으면 ${first}에 아무것도 결제되지 않고 끝나요.<br>`
+    + `<a href="${L.manage}">내 구독 관리</a> · <a href="${L.off}">해지하기(한 번에)</a>`);
+}
+/** 유료 전환 별도 동의(체험 8일째부터) — 로그인 세션 또는 메일 링크 확인값 */
+function bbtConsent(b) {
+  const who = bbtWho(b), o = who.o; if (!o) throw new Error('구매 고객 체험 정보를 찾지 못했어요.');
+  if (String(o.r[BBTC['상태']]) === BBT_ST.yes) return { ok: true, bbt: bbtPub(o, who.k) };
+  if (String(o.r[BBTC['상태']]) !== BBT_ST.on) throw new Error('체험 중일 때만 동의할 수 있어요.');
+  const t = ymd(new Date()); if (bbtDay(o, t) < BBT_ASK_FROM) throw new Error(`유료 전환 동의는 체험 ${BBT_ASK_FROM}일째부터 받아요(처음 신청과 따로 받도록 법에서 정하고 있어요).`);
+  if (b.agree !== true) throw new Error('결제 날짜·금액 안내를 확인하고 동의에 체크해 주세요.');
+  const a = who.k ? baOf(who.k) : null, P = a ? BRIEF_PRICE[String(a.r[BRAC['요금제']])] : null, first = dpDay(o.r[BBTC['첫결제일']]);
+  if (!P || !a || !String(a.r[BRAC['카드']] || '')) throw new Error('등록된 카드를 찾지 못했어요. 구독 관리에서 카드를 다시 등록해 주세요.');
+  const text = '유료 전환 동의 · ' + baPayText(P, first, false) + ' · 해지는 언제든 버튼 한 번';
+  billAgreeLog('BR', String(o.r[BBTC['회원']]), text);
+  bbtSet(o.row, '상태', BBT_ST.yes); bbtSet(o.row, '전환동의', text); bbtSet(o.row, '동의시각', new Date());
+  const to = who.k ? baEmail(who.k) : '', L = bbtLinks(String(o.r[BBTC['회원']]));
+  if (to) dpMailTo(to, `[${SITE_NAME}] 유료로 계속 받기에 동의하셨어요`, `<b>${bEsc(baPayText(P, first, false))}</b>. 결제 7일 전에 다시 알려 드려요.<br>마음이 바뀌면 <a href="${L.off}">해지하기(한 번에)</a>`);
+  return { ok: true, bbt: bbtPub(o, who.k) };
+}
+/** 해지(한 번에): 체험은 끝나는 날까지 그대로 받고, 결제는 하지 않아요. 카드 정보도 지워요 */
+function bbtOff(b) {
+  const who = bbtWho(b), o = who.o; if (!o) throw new Error('구매 고객 체험 정보를 찾지 못했어요.');
+  const st = String(o.r[BBTC['상태']]); if (st === BBT_ST.off || st === BBT_ST.end) return { ok: true, done: true };
+  bbtSet(o.row, '상태', BBT_ST.off); bbtSet(o.row, '메모', '해지 ' + ymd(new Date()));
+  const uh = String(o.r[BBTC['회원']]), a = baRows().filter(x => String(x.r[BRAC['회원']]) === uh).pop();
+  if (a) { baSet(a.row, '상태', BRA_ST.end); baSet(a.row, '수정일', new Date()); }
+  billKeyPut('BR', uh, null);
+  const k = who.k || baKOf(uh), to = k ? baEmail(k) : '';
+  if (to) dpMailTo(to, `[${SITE_NAME}] 해지를 접수했어요`, `자동 결제는 하지 않아요. 체험 기간이 끝나는 날까지는 지금처럼 받아요.`);
+  return { ok: true, done: true };
+}
+function bbtWho(b) {
+  if (b.s) { const u = sessionUser(b.s); return { k: u.k, o: bbtOf(u.k) }; }
+  const uh = str(b.u, 40), t = str(b.t, 40);
+  if (!uh || !t || !safeEq(bbtTok(uh), t)) throw new Error('링크가 올바르지 않아요. 내 구독 관리에서 다시 해 주세요.');
+  return { k: '', o: bbtRows().filter(x => String(x.r[BBTC['회원']]) === uh).pop() || null };
+}
+/** 매일 아침(briefDaily 맨 앞): 안내 메일 · 전환일에 동의가 없으면 결제하지 않고 끝냄 · 동의했으면 baBillDaily 가 결제(결제 7일 전 안내는 D-7 메일이 겸함) */
+function bbtDaily(now) {
+  if (!book().getSheetByName(SH_BBT)) return 0;
+  const t = ymd(now || new Date()); let n = 0;
+  bbtRows().forEach(o => {
+    const r = o.r, st = String(r[BBTC['상태']]), uh = String(r[BBTC['회원']]), first = dpDay(r[BBTC['첫결제일']]);
+    let notes = String(r[BBTC['알림']] || '');
+    if (st === BBT_ST.card) { if (r[BBTC['신청일']] instanceof Date && Date.now() - r[BBTC['신청일']].getTime() > 2 * 86400000) bbtSet(o.row, '상태', BBT_ST.end); return; }   // 카드 등록을 끝내지 않음
+    if (st !== BBT_ST.on && st !== BBT_ST.yes) return;
+    const a = baRows().filter(x => String(x.r[BRAC['회원']]) === uh).pop();
+    if (first && first <= t) {
+      if (st !== BBT_ST.yes || !bbtOn()) {   // 별도 동의 없음(또는 판매 잠김) → 결제하지 않고 끝
+        if (a) { baSet(a.row, '상태', BRA_ST.end); baSet(a.row, '수정일', new Date()); }
+        billKeyPut('BR', uh, null); bbtSet(o.row, '상태', BBT_ST.end); bbtSet(o.row, '메모', '동의 없이 끝남 ' + t);
+        const k = baKOf(uh), to = k ? baEmail(k) : '';
+        if (to) dpMailTo(to, `[${SITE_NAME}] 30일 무료 체험이 끝났어요`, `유료 전환에 동의하지 않으셔서 <b>아무것도 결제하지 않았어요.</b> 등록한 카드 정보도 지웠어요.<br>다시 받고 싶으면 <a href="${WEB_ROOT}brief/subscribe/">${bEsc(BRIEF_NAME)} 받기</a>에서 언제든 시작할 수 있어요.`);
+      } else bbtSet(o.row, '상태', BBT_ST.end);   // 동의함 → 오늘 baBillDaily 가 결제·이용 행을 만들어요
+      return;
+    }
+    if (a && first && String(a.r[BRAC['알림']] || '').indexOf('pay|' + first) < 0) baSet(a.row, '알림', (String(a.r[BRAC['알림']] || '') + ' pay|' + first).trim().split(' ').slice(-12).join(' '));   // 동의 전: '7일 뒤 자동 결제돼요' 기본 안내를 막음
+    if (!bbtOn()) return;
+    const day = bbtDay(o, t), left = first ? Math.round((dpDayMs(first) - dpDayMs(t)) / 86400000) : 99;
+    const k = baKOf(uh), to = k ? baEmail(k) : ''; if (!to) return;
+    const mark = key => { if (notes.indexOf(key) >= 0) return false; notes = (notes + ' ' + key).trim().split(' ').slice(-16).join(' '); bbtSet(o.row, '알림', notes); return true; };
+    const L = bbtLinks(uh), foot = `<br><br><small>구매 고객 30일 무료 체험 중이에요. 지금은 결제되지 않아요. <a href="${L.manage}">내 구독 관리</a> · <a href="${L.off}">해지하기(한 번에)</a></small>`;
+    const w = myBriefs(k).filter(x => String(x.r[BC['상품']]) === BUYER_TRIAL.name).pop(), cnt = w ? Number(w.r[BC['발송수']]) || 0 : 0;
+    const P = a ? BRIEF_PRICE[String(a.r[BRAC['요금제']])] : null, pay = P ? baPayText(P, first, false) : '';
+    if (day === 3 && mark('d3')) { dpMailTo(to, `[${SITE_NAME}] 관심 단지·공고 새 소식, 브리핑 맨 위에서 보세요`, `브리핑 맨 위 '내 관심 단지'와 '이번 주 청약 일정'에 고르신 단지·공고 소식이 먼저 나와요. 관심 단지는 <a href="${L.manage}">구독 관리</a>에서 더할 수 있어요.` + foot); n++; }
+    else if (day === 7 && mark('d7')) { dpMailTo(to, `[${SITE_NAME}] 첫 주 요약 — 브리핑 ${cnt}번을 받으셨어요`, `월요일 브리핑의 '지난주 우리 지역은?' 칸에 한 주 흐름이 한 장으로 정리돼요. 매일 3분이면 충분해요.` + foot); n++; }
+    else if ((day === 14 || day === 21) && mark('d' + day)) { dpMailTo(to, `[${SITE_NAME}] 이번 주 예측 맞히기 · 시장 온도`, `내 감각을 확인해 보세요: <a href="${WEB_ROOT}quiz/">예측 맞히기</a> · <a href="${WEB_ROOT}temp/">시장 온도</a>` + foot); n++; }
+    if ((left === 7 || left === 3 || left === 1) && st === BBT_ST.on && day >= BBT_ASK_FROM && mark('ask' + left)) {
+      dpMailTo(to, `[${SITE_NAME}] ${left}일 뒤 무료 체험이 끝나요 — 지난 한 달 받은 소식 ${cnt}번`, `지난 한 달 동안 ${bEsc(BRIEF_NAME)}을 <b>${cnt}번</b> 받으셨어요.<br>`
+        + `<b>유료로 계속 받으려면 따로 동의가 필요해요.</b> 동의하면 ${bEsc(pay)}. 동의하지 않으면 ${first}에 아무것도 결제되지 않고 끝나요.<br>`
+        + `<a href="${L.yes}">유료로 계속 받기(날짜·금액 확인 후 동의)</a> · <a href="${L.off}">해지하기(한 번에)</a>`);
+      n++;
+    }
+    if (st === BBT_ST.yes && left === BR_NOTICE && a && mark('pay7')) {   // 동의한 분: 결제 7일 전 안내(baBillDaily 와 겹치지 않게 같은 표시)
+      dpMailTo(to, `[${SITE_NAME}] 7일 뒤 ${bEsc(BRIEF_NAME)} 이용료가 자동 결제돼요`, `<b>${bEsc(pay)}</b>. 지난 한 달 받은 소식 ${cnt}번.<br><a href="${L.off}">해지하기(한 번에)</a>`);
+      n++;
+    }
+  });
+  return n;
+}
+
 /** 매일(briefDaily 맨 앞 — 결제된 사람은 그날 아침 브리핑부터 받게): 결제 7일 전 안내·정기 결제·실패 다시 시도·해지 예정 마무리·카드대기 정리 */
 function baBillDaily(now) {
   if (!billOn() || !book().getSheetByName(SH_BRA)) return 0;

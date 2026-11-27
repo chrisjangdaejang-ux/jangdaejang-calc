@@ -560,10 +560,9 @@
     const p2 = S && S.n ? `지금 진행·예정 민영 공고 ${S.n}곳의 주택형 ${S.types}개를${opt.my != null ? ` 내 가점 ${opt.my}점 기준으로` : ''} 예상 커트라인 여유 순으로 줄 세워요.` : '';
     const L = opt.loc, rail = L ? factors(D, L)[0] : null;
     const p3 = '입주 때 가격 범위는 아직 예측하지 않아요(정확도 검증을 마친 예측 기간이 아직 없어요).';
-    const box = (name, pv, desc, tr) => T.html({ name, preview: pv, desc, href: key ? href : JB.SITE + 'premium/', track: tr });
-    return box('당첨되면 내 돈 계획표', p1, '계약금·중도금 회차·잔금을 날짜별로, 중도금 대출(이자후불제·무이자)·잔금 대출 한도, 내 보증금·집 판 돈이 들어오는 날까지 넣어 모자라는 날과 금액을 보여 드려요. 달력 파일로도 받아요.', 'cy_teaser_plan')
-      + box('내 가점으로 어디에 넣을까', p2, '진행·예정 공고의 주택형을 예상 커트라인 여유·당첨 가능성 순으로 정리하고, 해당지역 여부·1순위·특별공급 자격·재당첨 제한·같은 날 발표까지 함께 따져요.', 'cy_teaser_strategy')
-      + box('입주할 때 얼마쯤일까', p3, `과거 실거래로 효과가 확인된 요인(신설역 계획 단계·단지 규모 등)과 그 과거 효과, 이 단지가 해당하는지를 보여 드려요.${rail && rail.hit ? ' 이 단지는 가까운 곳에 계획·공사 중인 노선이 있어요.' : ''}`, 'cy_teaser_future');
+    /* 상품 하나(청약 당첨 플랜)에 칸 하나 — 담긴 내용·빠진 것·환불은 assets/products.js 'cy', 미리 보기는 이 공고 실제 자료로 만든 줄 */
+    return T.html({ product: 'cy', preview: [{ k: '내 돈 계획표', t: p1 }, { k: '청약 전략표', t: p2 }, { k: '입주 요인', t: p3 + (rail && rail.hit ? ' 이 단지는 가까운 곳에 계획·공사 중인 노선이 있어요.' : '') }],
+      href: key ? href : JB.SITE + 'premium/', track: 'cy_teaser' });
   }
 
   /* ================= 유료 리포트(premium/view/)에서 세 가지 그리기 ================= */

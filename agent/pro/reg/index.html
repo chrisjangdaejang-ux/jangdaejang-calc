@@ -17,6 +17,7 @@
 <script src="../../../assets/auth.js?v=11"></script>
 <script src="../../../assets/pro-tools-core.js?v=3"></script>
 <script src="../../../assets/guard-core.js?v=1"></script>
+<script src="../../../assets/products.js?v=1"></script>
 <script src="../../../assets/diag.js?v=1"></script>
 <script src="../../../assets/reg-upload.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,7 +26,7 @@
 <link rel="stylesheet" href="../../../assets/pro-tools.css?v=3">
 <link rel="stylesheet" href="../../../assets/diag.css?v=1">
 <link rel="stylesheet" href="../../../assets/guard.css?v=1">
-<script src="../../../assets/back.js?v=4" defer></script>
+<script src="../../../assets/back.js?v=5" defer></script>
 <style>
 .pr-tbl{width:100%;border-collapse:collapse;font-size:14px}.pr-tbl th,.pr-tbl td{border-top:1px solid var(--line2);padding:8px 6px;text-align:left;vertical-align:top}.pr-tbl th{font-size:13px;color:var(--sub2)}
 .pr-wrap{overflow-x:auto}.pr-flt{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 8px}.pr-flt select{max-width:200px}
@@ -61,6 +62,7 @@
     <div class="two"><div><label for="bMonths">지킴이 기간</label><select id="bMonths"></select></div><div><label for="bMail">알림 받을 이메일</label><input id="bMail" type="email" placeholder="office@example.com"></div></div>
     <div class="pr-price" id="bPrice"></div>
     <label class="gd-agree"><input type="checkbox" id="bAgree"> <span>[필수] 고유번호와 알림 이메일을 서비스 기간 + 30일 보관하고, 업체 실패 몫은 자동 취소되는 데 동의해요.</span></label>
+    <div data-jdj-paid="read"></div><div data-jdj-paid="watch"></div>
     <div class="acts"><button class="btn primary" id="bRead" type="button" disabled>한꺼번에 등기 열람</button><button class="btn" id="bWatch" type="button" disabled>한꺼번에 지킴이 등록</button></div>
     <p class="err" id="bMsg" role="alert"></p>
     <div id="bOut"></div>
@@ -73,6 +75,7 @@
 
   <div class="ed noprint"><h2>4. 법인 소유 상가·오피스 — 법인등기 확인</h2>
     <label for="corp">법인등록번호(13자리)</label><input id="corp" inputmode="numeric" placeholder="000000-0000000">
+    <div data-jdj-paid="corp"></div>
     <div class="acts"><button class="btn" id="corpBtn" type="button" disabled>법인등기 확인</button></div>
     <p class="hint" id="corpP"></p>
   </div>

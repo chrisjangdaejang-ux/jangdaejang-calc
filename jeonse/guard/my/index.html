@@ -13,11 +13,12 @@
 <script src="../../../assets/config.js?v=14"></script>
 <script src="../../../assets/agents.js"></script>
 <script src="../../../assets/guard-core.js?v=1"></script>
+<script src="../../../assets/products.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../../assets/aplus.css?v=50">
 <link rel="stylesheet" href="../../../assets/guard.css?v=1">
-<script src="../../../assets/back.js?v=4" defer></script>
+<script src="../../../assets/back.js?v=5" defer></script>
 </head>
 <body>
 <header class="top">
@@ -65,6 +66,8 @@ async function show(){
   }
   if (q.get('o') && q.get('t')) { save({ o: q.get('o'), t: q.get('t') }); history.replaceState(null, '', location.pathname); }
   show();
+  /* 결제 뒤·내 지킴이: 모닝 브리핑 잇기(우리 동네 전세 흐름) — 신청한 지킴이가 이 기기에 있을 때만 */
+  try { if (window.JDJ_PRODUCTS && (JSON.parse(localStorage.getItem(KEY) || '[]') || []).length) $('list').insertAdjacentHTML('afterend', '<div id="briefAfter">' + JDJ_PRODUCTS.briefCard('watch', {}) + '</div>'); } catch (e) {}
 })();
 })();
 </script>

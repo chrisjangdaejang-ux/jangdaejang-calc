@@ -38,7 +38,7 @@
 <script src="../../assets/price-sheet.js?v=27"></script>
 <script src="../../assets/plain-words.js?v=21"></script>
 <script src="../../assets/devproj-view.js?v=4"></script>
-<script src="../../assets/narrative.js?v=29"></script>
+<script src="../../assets/narrative.js?v=30"></script>
 <script src="../../tax/tax-engine.js?v=4"></script>
 <script src="../../assets/premium-report.js?v=29"></script>
 <script src="../../assets/strength.js?v=6"></script>
@@ -49,8 +49,9 @@
 <script src="../../assets/cy-price.js?v=9"></script>
 <script src="../../chungyak/cy-engine.js?v=8"></script>
 <script src="../../assets/sale-status.js?v=1"></script>
-<script src="../../assets/cy-plan.js?v=3"></script>
-<script src="../../assets/back.js?v=4" defer></script>
+<script src="../../assets/cy-plan.js?v=4"></script>
+<script src="../../assets/products.js?v=1"></script>
+<script src="../../assets/back.js?v=5" defer></script>
 </head>
 <body>
 <header class="top">
@@ -111,6 +112,13 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
       show(j);
     } catch (x) { errBox(x.message); }
   }
+  /* 리포트 끝: '매일 아침 이어서 받아 보세요'(모닝 브리핑 잇기 — 산 상품에 맞춘 이유 3가지, 이 기기 안의 단지·동네 이름으로만) */
+  function briefAfter(j){
+    const C = window.JDJ_PRODUCTS; if (!C) return;
+    const d = document.createElement('div'); d.className = 'noprint'; d.id = 'briefAfter';
+    d.innerHTML = C.briefCard(C.idOfServerName(j.order && j.order.product) || 'single', C.ctxFromKeys(j.keys || []));
+    box.appendChild(d);
+  }
   async function show(j){
     const ks = j.keys || [];
     if (window.JDJ_CYP && ks.length === 1 && JDJ_CYP.isCyKey(ks[0])) {   /* 청약 당첨 플랜 */
@@ -119,6 +127,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
       document.getElementById('pdfBtn').onclick = () => window.print();
       document.title = '집예보 청약 당첨 플랜 · ' + j.order.names;
       P.stat();
+      briefAfter(j);
       try { await JDJ_CYP.renderPaid(document.getElementById('rep'), ks[0], j.order); }
       catch (e) { document.getElementById('rep').innerHTML = '<div class="msg err">분석 자료를 불러오지 못했어요. 당첨자 발표가 끝나 자료가 내려간 공고일 수 있어요. 고객문의로 알려 주시면 확인 후 PDF로 보내 드리거나 환불 정책에 따라 전액 환불해 드려요.</div>'; }
       return;
@@ -129,6 +138,7 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
     document.getElementById('pdfBtn').onclick = () => window.print();
     document.title = ((window.JDJ_SITE && window.JDJ_SITE.SITE_NAME) || '집예보') + ' 프리미엄 리포트 · ' + j.order.names;
     P.stat();
+    briefAfter(j);
     try { await JDJ_PREMIUM.render(document.getElementById('rep'), j.keys || [], j.order); }
     catch (e) { document.getElementById('rep').innerHTML = '<div class="msg err">실거래 자료를 불러오지 못했어요. 잠시 후 새로고침해 주세요. 계속 열리지 않으면 환불 정책에 따라 전액 환불해 드려요.</div>'; }
   }

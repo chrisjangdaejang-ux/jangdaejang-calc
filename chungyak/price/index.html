@@ -33,13 +33,14 @@
 <script src="../../assets/loan-core.js?v=6"></script>
 <script src="../../assets/cy-price.js?v=9"></script>
 <script src="../../assets/config.js?v=14"></script>
-<script src="../../assets/premium-teaser.js?v=1"></script>
+<script src="../../assets/products.js?v=1"></script>
+<script src="../../assets/premium-teaser.js?v=2"></script>
 <script src="../../assets/diag.js?v=1"></script>
 <link rel="stylesheet" href="../../assets/diag.css?v=1">
 <script src="../cy-engine.js?v=8"></script>
 <script src="../../assets/sale-status.js?v=1"></script>
 <script src="../../assets/cy-list.js?v=2"></script>
-<script src="../../assets/cy-plan.js?v=3"></script>
+<script src="../../assets/cy-plan.js?v=4"></script>
 <style>
 .wrap{max-width:760px;margin:0 auto;padding:24px 20px 60px}
 h1{font-size:clamp(25px,6.4vw,34px);margin:6px 0 8px}
@@ -59,7 +60,7 @@ h1{font-size:clamp(25px,6.4vw,34px);margin:6px 0 8px}
 .detail-h{font-size:21px;margin:34px 0 0;letter-spacing:-.4px}
 .empty{padding:24px 16px;text-align:center;color:var(--sub2);border:1px solid var(--line);border-radius:16px;background:var(--gray2)}
 </style>
-<script src="../../assets/back.js?v=4" defer></script>
+<script src="../../assets/back.js?v=5" defer></script>
 <script src="../../assets/tabbar.js?v=8" defer></script>
 </head>
 <body>
@@ -128,7 +129,8 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
   const today = new Date(), t8 = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
   const drawDiag = () => { if (P && N && window.JDJ_DIAG) JDJ_DIAG.mount($('cyDiag'), P.diagReport(N, D, Object.assign({}, prof, { my })), { base: JB.SITE, key: 'cy_' + no, track: 'cy_diag', print: true, share: { url: location.href.split('#')[0], title: D.name + ' 청약 점검', text: D.name + ' 분양가·입지 분석' }, shareNote: '공유하면 이 공고 주소만 보내요. 내 가점·답은 담지 않아요.' }); };
   const drawOdds = () => { $('cyOdds').innerHTML = P && N ? P.typeOddsHTML(N, my, scoreRows, t8) : '<p class="cyq-na">공고 자료를 불러오지 못했어요.</p>'; };
-  const drawTeasers = () => { if (P) $('cyTeasers').innerHTML = P.teasers(D, N, key, { notices: (nj && nj.rows) || [], my, prof, today: t8, loc }); };
+  const drawTeasers = () => { if (P) $('cyTeasers').innerHTML = P.teasers(D, N, key, { notices: (nj && nj.rows) || [], my, prof, today: t8, loc })
+    + (window.JDJ_PRODUCTS ? JDJ_PRODUCTS.briefCard('free_cy', { notice: D.name || '', g: /^\d{5}$/.test(String(D.g || '')) ? String(D.g) : '' }, { light: true }) : ''); };   // 무료 청약 점검 뒤 가벼운 모닝 브리핑 칸
   drawDiag(); drawOdds(); drawTeasers();
   $('myScore').addEventListener('input', () => { const v = $('myScore').value.trim(); my = /^\d{1,2}$/.test(v) && +v <= 84 ? +v : null; drawOdds(); drawDiag(); drawTeasers(); });
   if (N && E) {

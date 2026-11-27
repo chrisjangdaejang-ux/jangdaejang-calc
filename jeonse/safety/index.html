@@ -29,6 +29,7 @@
 <script src="../../assets/gongsi.js?v=4"></script>
 <script src="../../assets/jsafe-core.js?v=2"></script>
 <script src="../../assets/diag.js?v=1"></script>
+<script src="../../assets/products.js?v=1"></script>
 <script src="../../assets/config.js?v=14"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/guard-core.js?v=1"></script>
@@ -84,7 +85,7 @@ h1{font-size:clamp(26px,6vw,38px);margin:6px 0 8px}
 </style>
 <link rel="stylesheet" href="../../assets/diag.css?v=1">
 <link rel="stylesheet" href="../../assets/guard.css?v=1">
-<script src="../../assets/back.js?v=4" defer></script>
+<script src="../../assets/back.js?v=5" defer></script>
 </head>
 <body>
 <header class="top">
@@ -135,6 +136,7 @@ h1{font-size:clamp(26px,6vw,38px);margin:6px 0 8px}
     <div class="gd-pc" style="margin:0 0 4px">
       <div><span class="k">등기 바로 확인</span><b data-gd-read></b><small>고유번호만 넣으면 지금 등기부를 바로 열어 풀어 드려요. 결과는 이 화면에 한 번만 보여 드리고 저장하지 않아요.</small>
         <label for="gUniq" style="margin-top:8px">등기 고유번호</label><input id="gUniq" inputmode="numeric" placeholder="1234-5678-901234" maxlength="16">
+        <div data-jdj-paid="read"></div>
         <button type="button" class="gd-pay" id="gReadBtn" disabled>결제가 열리면 바로 확인할 수 있어요</button><p class="gd-msg" id="gMsg" role="alert"></p></div>
       <div><span class="k">내가 뗀 등기부 올리기</span><b>무료</b><small>인터넷등기소에서 직접 뗀 PDF(열람 1,100원, 법원에 내는 수수료)를 고르면 이 기기 안에서만 읽어요.</small></div>
     </div>
@@ -344,6 +346,8 @@ async function run(){
     shareNote: '공유 주소에는 고른 집만 들어가고, 넣은 금액은 들어가지 않아요.' });
   if (!RAN && !FIRST){ $('res').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   RAN = true; FIRST = false;
+  /* 결과 아래 가벼운 모닝 브리핑 칸(우리 동네 전세 흐름) — 동네 이름만, 넣은 금액은 쓰지 않아요 */
+  if (window.JDJ_PRODUCTS) $('res').insertAdjacentHTML('beforeend', JDJ_PRODUCTS.briefCard('free_jeonse', { g: S.code, dn: S.dong || '' }, { light: true }));
   if (window.jdjStat) jdjStat('feature_use', { feature: 'jsafe' });
 }
 let FIRST = false;
@@ -422,6 +426,7 @@ function regInit(){
     $('gMsg').textContent = '';
     const box = document.createElement('div'); $('gRead').innerHTML = '<p class="hint">이 결과는 이 화면에만 한 번 보여 드려요(저장하지 않아요). 필요하면 PDF로 저장 · 인쇄를 눌러 두세요.</p>'; $('gRead').appendChild(box);
     regFill(JDJ_REGUP.render(box, r.reg, Object.assign({}, regOpt, { print: true })));
+    if (window.JDJ_PRODUCTS) $('gRead').insertAdjacentHTML('beforeend', JDJ_PRODUCTS.briefCard('read', { g: S.code, dn: S.dong || '' }));   // 결제 뒤: 모닝 브리핑 잇기
   })();
 }
 })();

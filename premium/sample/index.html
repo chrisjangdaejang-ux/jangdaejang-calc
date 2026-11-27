@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon-48.png">
+<title>예시 보기 · 유료 상품 | 집예보</title>
+<script>window.JDJ_CONFIG = { tool:'premium', GA4_ID:'G-V2VR9VL7EM', CLARITY_ID:'' };</script>
+<script src="../../assets/track.js?v=3"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/aplus.css?v=50">
+<link rel="stylesheet" href="../../assets/pay.css?v=6">
+<script src="../../assets/config.js?v=12"></script>
+<script src="../../assets/products.js?v=1"></script>
+<script src="../../assets/back.js?v=5" defer></script>
+<style>.smp-badge{display:inline-block;background:#191F28;color:#fff;font-weight:900;font-size:13px;border-radius:8px;padding:3px 10px;letter-spacing:.04em}
+.smp{position:relative;border:2px dashed #C9CED6;border-radius:14px;padding:16px;margin:14px 0;background:repeating-linear-gradient(-45deg,#fff,#fff 18px,#FAFBFC 18px,#FAFBFC 36px)}
+.smp h2{margin:4px 0 10px;font-size:18px}.smp dl{display:grid;grid-template-columns:minmax(96px,auto) 1fr;gap:8px 12px;margin:0;font-size:14.5px;line-height:1.55;word-break:keep-all}.smp dt{font-weight:800;color:#4E5968}.smp dd{margin:0}
+.smp-wm{position:absolute;right:12px;top:10px;font-size:28px;font-weight:900;color:rgba(25,31,40,.08);pointer-events:none}
+.smp-nav{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.smp-nav a{display:inline-flex;align-items:center;min-height:40px;padding:0 12px;border:1px solid #D1D6DB;border-radius:10px;font-size:13.5px;text-decoration:none;color:#333D4B}.smp-nav a[aria-current]{border-color:#4338CA;color:#4338CA;font-weight:800}</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../../" aria-label="집예보 홈"><svg class="bi" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4338CA"/><path d="M29 47 V78 H71 V47 Z" fill="#FFFFFF"/><path d="M20 51 L50 26 L80 51" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="59" r="6" fill="#4338CA"/><path d="M46.5 62 L44 74 H56 L53.5 62 Z" fill="#4338CA"/><circle cx="76" cy="24" r="5" fill="#5EEAD4"/></svg>집예보</a>
+  <div class="badge plain">예시 보기</div>
+</header>
+<main class="pay" id="main"></main>
+<footer class="foot">★ 집예보 · <a href="../../">홈</a> · <a href="../../refund/">환불 정책</a></footer>
+<script>
+/* 유료 상품 예시(가상 숫자) — 내용은 assets/products.js 의 sample. 실제 단지·사람·공고가 아니라는 표시를 맨 위·칸 안에 함께 둬요. */
+(function(){
+  var C = window.JDJ_PRODUCTS, main = document.getElementById('main'); if (!C) return;
+  var E = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var id = new URLSearchParams(location.search).get('p') || 'single', p = C.get(id) || C.get('single');
+  document.title = '예시 보기 · ' + p.name + ' | 집예보';
+  main.innerHTML = '<div class="eyebrow">유료 상품 · 예시</div><h1>' + E(p.name) + ' 예시</h1>'
+    + '<p class="lead"><span class="smp-badge">예시</span> 아래 숫자와 이름은 모두 <b>가상으로 만든 예시</b>예요. 실제 단지·사람·공고가 아니고, 결제하면 고르신 대상의 실제 자료로 같은 모양을 받아요.</p>'
+    + '<div class="smp" aria-label="예시 화면"><span class="smp-wm" aria-hidden="true">예시</span><span class="smp-badge">예시</span><h2>' + E(p.sample.title) + '</h2><dl>'
+    + p.sample.rows.map(function (r) { return '<dt>' + E(r[0]) + '</dt><dd>' + E(r[1]) + '</dd>'; }).join('') + '</dl></div>'
+    + C.box(p.id, { mode: 'info' })
+    + '<p class="links">공공 자료를 정리한 정보 제공 서비스이며, 특정 부동산의 매수·매도를 권하지 않아요.</p>'
+    + '<div class="smp-nav" aria-label="다른 상품 예시">' + C.LIST.map(function (x) { return '<a href="?p=' + E(x.id) + '"' + (x.id === p.id ? ' aria-current="page"' : '') + '>' + E(x.name) + '</a>'; }).join('') + '</div>'
+    + '<div class="btnrow"><a class="btn2 blue" href="' + E((window.JDJ_BASE || {}).SITE + p.href) + '">' + E(p.cta) + '</a> <a class="btn2" href="../">유료 상품 전체 보기</a></div>';
+})();
+</script>
+</body>
+</html>

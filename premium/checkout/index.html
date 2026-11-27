@@ -32,7 +32,8 @@
 <script src="../../assets/config.js?v=14"></script>
 <script src="../../assets/agents.js"></script>
 <script src="../../assets/pay.js?v=9"></script>
-<script src="../../assets/back.js?v=4" defer></script>
+<script src="../../assets/products.js?v=1"></script>
+<script src="../../assets/back.js?v=5" defer></script>
 </head>
 <body>
 <header class="top">
@@ -70,6 +71,8 @@
     <span id="pmTestTip" hidden>테스트 기간 안내: 카드사 앱카드는 실제 앱 인증을 요구해 테스트가 끝나지 않을 수 있어요. 토스페이·계좌이체로 확인해 주세요.</span></div>
   <div class="msg info" id="sdkMsg"><span class="spin"></span>결제 수단을 불러오는 중이에요…</div>
 
+  <div id="pInc" aria-label="결제하면 받는 것"></div>
+
   <label class="agree" for="refundOk">
     <input type="checkbox" id="refundOk">
     <span><b>[필수] 청약철회 제한 안내를 확인했어요.</b><br>
@@ -104,6 +107,8 @@ var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { v
   $('pName').textContent = ((window.JDJ_SITE && window.JDJ_SITE.SITE_NAME) || '집예보') + ' ' + pr.name;
   $('pDesc').textContent = pr.desc;
   $('pPrice').textContent = P.won(pr.amount);
+  /* 결제 단추 위: 담긴 내용·들어 있지 않은 것·받는 방식·기간·환불 — 상품 안내 한 곳(assets/products.js)과 같은 내용 */
+  if (window.JDJ_PRODUCTS) { $('pInc').innerHTML = JDJ_PRODUCTS.box(plan, { mode: 'info' }); const cp = JDJ_PRODUCTS.get(plan); if (cp) $('pDesc').textContent = cp.name + ' · ' + cp.sub; }
   const isCy = k => /^cy\d+$/.test((P.keyParse(k) || {}).band || '');   /* 청약 당첨 플랜: 평형 자리에 'cy'+공고번호 */
   if (plan === 'cy' ? !keys.every(isCy) : keys.some(isCy)) { location.replace(P.ROOT); return; }
   if (plan === 'cy') $('editLink').href = JB.SITE + 'chungyak/price/?no=' + P.keyParse(keys[0]).band.slice(2);
