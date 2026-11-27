@@ -200,12 +200,15 @@ body.bm .mwrap{background:#EEF1F4}
   function landJimoks() { const c = {}; Object.keys(FILES).forEach(g => { const f = FILES[g]; if (f.st === 'ok' && f.doc.l) BC.jimoks(f.doc.l).forEach((j, i) => { c[j] = (c[j] || 0) + (10 - Math.min(9, i)); }); });
     const base = ['대', '전', '답', '임야', '잡종지', '공장용지']; base.forEach(j => { c[j] = c[j] || 0.5; }); if (S.jm) c[S.jm] = c[S.jm] || 1;
     return Object.keys(c).sort((a, b) => c[b] - c[a]).slice(0, 12); }
+  /** 공장·창고 등 매매 자료가 있는지(목록 index 의 f 건수) */
+  const hasInd = () => !!(IDX && IDX.sgg && Object.keys(IDX.sgg).some(g => IDX.sgg[g] && IDX.sgg[g].f && IDX.sgg[g].f[2]));
   function legend() {
     const el = $('legend'); if (!el) return;
     const mob = innerWidth <= 768;
     const items = LAND() ? [`<span><i class="bm-dot" style="background:${T.l.color}"></i>땅 거래(읍·면·동 묶음)</span>`]
       : [S.types.c ? `<span><i class="bm-dot" style="background:${T.c.color}"></i>구분상가·사무실</span>` : '', S.types.g ? `<span><i class="bm-dot" style="background:${T.g.color}"></i>통건물</span>` : '',
-         S.types.g ? '<span><i class="bm-est"></i>점선 = 통건물 추정 위치(약 100m)</span>' : ''].filter(Boolean);
+         S.types.g ? '<span><i class="bm-est"></i>점선 = 통건물 추정 위치(약 100m)</span>' : '',
+         hasInd() ? '<span class="sm">이름표 공장·창고 = 공장·창고 거래(건물 용도에서 따로 고를 수 있어요)</span>' : ''].filter(Boolean);
     const body = `<div class="bm-lg">${items.join('')}<span class="sm">숫자 = 거래 건수 · 동네 위치예요(정확한 위치 아님)</span></div>`;
     if (mob && !LGM) {
       const dots = (LAND() ? [T.l.color] : ['c', 'g'].filter(k => S.types[k]).map(k => T[k].color)).map(c => `<i style="background:${c}"></i>`).join('');
@@ -386,7 +389,7 @@ body.bm .mwrap{background:#EEF1F4}
     body.innerHTML = (rs.length ? `<div class="bm-sort" role="group" aria-label="목록 순서">${sorts.map(([k, t]) => `<button type="button" data-so="${k}" aria-pressed="${S.sort === k}">${esc(t)}</button>`).join('')}</div>
       <ol class="bm-list">${rs.map((r, i) => `<li><button type="button" data-ri="${i}"><span class="nm"><b>${r.dots ? `<span class="bm-dots" aria-hidden="true">${r.dots.map(k => `<i style="background:${T[k].color}"></i>`).join('')}</span>` : ''}${esc(r.name)}</b><small>${esc(r.sub || '')}${r.approx ? ' · 동 위치 자료가 없어 구 가운데 둘레에 놓았어요' : ''}</small></span><span class="v">${esc(r.v)}${r.vs ? `<small>${esc(r.vs)}</small>` : ''}</span></button></li>`).join('')}</ol>`
       : `<p class="bm-empty">${MAP && MAP.zoom() < 10 ? '지도를 확대하면 동네별 거래가 보여요.' : '이 화면에는 조건에 맞는 거래가 없어요. 지도를 옮기거나 기간·조건을 넓혀 보세요.'}</p>`)
-      + `<p class="bm-src">자료: ${esc(LAND() ? IDX.src.land : IDX.src.trade)} · ${esc(ymL(LAND() ? IDX.lto || IDX.to : IDX.to))} 계약분까지 · 해제 신고 거래는 뺐어요.</p>`;
+      + `<p class="bm-src">자료: ${esc(LAND() ? IDX.src.land : IDX.src.trade + (IDX.src.ind && hasInd() ? ' · ' + IDX.src.ind : ''))} · ${esc(ymL(LAND() ? IDX.lto || IDX.to : IDX.to))} 계약분까지 · 해제 신고 거래는 뺐어요.</p>`;
     body._rows = rs;
   }
   const ymL = ym => ym ? `${String(ym).slice(0, 4)}년 ${+String(ym).slice(4, 6)}월` : '';

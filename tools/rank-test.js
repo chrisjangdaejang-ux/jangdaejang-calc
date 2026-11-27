@@ -141,6 +141,10 @@ if (dir && fs.existsSync(path.join(dir, 'index.json'))) {
 /* 2026-11-26 결정: '점수 많이 바뀐 단지' 탭은 rank.json 자료가 그 시·도에 생길 때까지 숨김(빈 '다음 달부터 공개해요' 탭을 보이지 않게) */
 {
   const RP = require('fs').readFileSync(require('path').join(__dirname, '..', 'rank', 'index.html'), 'utf8');
+  check('구 점수 참고: 견고성 점검 미통과면 참고 문장(절반 넘게 맞음)', R.refCheck({ region: { used: false, bt: { status: 'fail', why: ['alt'], oos_hit: 5, oos_all: [1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => ({ t0: '20' + (15 + i) + '10', top20: i })) } } }).line,
+    '지역 흐름 점수를 과거에 그대로 써 봤더니 9번 중 5번 맞았지만, 다른 달을 기준으로 다시 맞춰 보면 결과가 흔들려 구별 순위는 보여 드리지 않고 참고로만 알려 드려요.', 'rank-core refCheck');
+  check('구 점수 참고: 쓰는 중이면 없음', R.refCheck({ region: { used: true, bt: { status: 'pass', oos_all: [{ top20: 1 }] } } }), null, 'rank-core refCheck');
+  check('순위: 참고 문장 칸', /R\.refCheck\(MJ\)/.test(RP), true, 'rank/index.html');
   check('순위: 점수 변화 탭은 처음엔 숨김', /id="tb-move"[^>]*hidden/.test(RP), true, 'rank/index.html');
   check('순위: 자료가 생기면 자동으로 보이고, 없으면 시세 탭으로', [/function moveOk\(\)\{ return !!\(RK && R\.moves\(RK, S\.sd\)\); \}/.test(RP), /if \(S\.t === 'move' && RK !== undefined && !moveOk\(\)\) S\.t = 'price'/.test(RP)], [true, true], 'rank/index.html syncMove');
 }

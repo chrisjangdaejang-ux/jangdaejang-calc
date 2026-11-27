@@ -89,6 +89,15 @@ const commDirs = fs.readdirSync(path.join(ROOT, 'comm')).filter(d => /^\d{5}$/.t
 const noLink = commDirs.filter(d => !/map\/\?k=bld&g=\d{5}" data-track="seo_comm_to_bmap"/.test(read(`comm/${d}/index.html`)));
 check('지역별 상가·건물 페이지: 지도로 보기 링크', commDirs.length > 0 && noLink.length === 0 && /map\/\?k=bld" data-track="seo_comm_to_bmap"/.test(read('comm/index.html')), noLink.slice(0, 5));
 
+/* 공장·창고(엔진 표시 비트 4 — 국토교통부 '공장 및 창고 등 매매' 자료, 2026-11-27) */
+const IND = B.decode({ g: '11200', to: '202610', d: ['성수동2가'], u: ['공장', '창고시설', '자동차 관련시설', '제2종근린생활'], z: ['준공업'],
+  c: [[0, 20261026, 0, 0, 49.9, 4, 277428, 4], [0, 20261020, 3, 0, 30, 1, 20000, 0]], b: [[0, 20260901, 1, 0, 900, 600, 300000, 4 | 1], [0, 20260801, 2, 0, 500, 400, 100000, 4]] });
+check('공장·창고 묶음: 표시 비트 4면 용도와 관계없이 공장·창고', IND.map(d => B.useGroup(d)), ['f', 'n', 'f', 'f'].length === 4 && eq(IND.map(d => B.useGroup(d)), ['f', 'n', 'f', 'f']));
+check('공장·창고 이름표: 공장·창고·공장 등', eq(IND.map(B.useTag), ['공장', '근린', '창고', '공장 등']), IND.map(B.useTag));
+check('용도 고르기에 공장·창고', B.USES.some(u => u.id === 'f' && u.t === '공장·창고'));
+check('공장·창고로 거르기', eq(B.filter(IND, { to: '202610', years: 1, use: 'f', types: { c: true, g: true } }).map(d => d.id), ['c0', 'g0', 'g1']));
+check('공장·창고 표시는 직거래·지분 판정과 따로(시세 거래 판정 그대로)', eq(IND.map(B.plain), [true, true, false, true]));
+check('공장·창고 비트가 있어도 직거래 글자만', B.flagText(5), '직거래');
 console.log(`상가·건물·땅 지도 확인: ${pass}개 통과, ${fail}개 실패`);
 
 /* ---------- ④ 화면 캡처(선택) ---------- */

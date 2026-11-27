@@ -73,11 +73,11 @@ check('LH 행 2개(아이디 없는 행 뺌)', LH.length, 2);
 check('행복주택 → 공공임대', [LH[0].rent, LH[0].k, LH[0].no], [true, '공공임대', 'lh-0000060789']);
 check('공공분양 → LH 공공분양', [LH[1].rent, LH[1].k], [false, 'LH 공공분양']);
 check('LH 공고도 같은 상태 판정', L.stOf(LH[0], T), 'pre');
-check('LH는 아직 꺼 둠(활용신청 전)', L.LH_ENABLED, false);
+check('LH 켬(활용신청 승인·실제 응답 확인 2026-11-27)', L.LH_ENABLED, true);
 
 /* 8. 화면 */
 const H = fs.readFileSync(path.join(__dirname, '../cy/index.html'), 'utf8');
-check('/cy/ 화면: cy-list 최신 번호·자리·정적 표(자바스크립트 없이도 읽힘)', [/cy-list\.js\?v=1/.test(H), /cy-list\.css\?v=1/.test(H), /id="cyList"/.test(H), /<table>/.test(H)], [true, true, true, true]);
+check('/cy/ 화면: cy-list 최신 번호·자리·정적 표(자바스크립트 없이도 읽힘)', [/cy-list\.js\?v=2/.test(H), /cy-list\.css\?v=1/.test(H), /id="cyList"/.test(H), /<table>/.test(H)], [true, true, true, true]);
 const C = L.card(N, T, {});
 check('카드: 상태·D-day·분양가·달력 단추·자세히 링크', [/접수 중/.test(C), /마감 D-4/.test(C), /11억 8,241만~25억 7,484만원/.test(C), /data-ics="2026000505"/.test(C), /href="2026000505\/"/.test(C)], [true, true, true, true, true]);
 check('카드 문구에 투자 권유 표현 없음', /사세요|투자하세요|강력 추천|무조건/.test(C), false);

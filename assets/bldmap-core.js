@@ -1,6 +1,6 @@
 /* 상가·건물·땅 실거래 지도(map/?k=bld · ?k=land) 계산 규칙 — 화면(assets/bldmap.js)과 검사(tools/bldmap-test.js)가 같이 쓴다.
    자료: jangdaejang-data data/bmap/index.json, bmap/{구}.json (엔진 scripts/bldmap.py — 최근 5년, 지번 없음)
-     c 구분상가·사무실 줄 [동, 계약일, 용도, 용도지역, 전용㎡, 층, 금액(만원), 표시]
+     c 구분상가·사무실 줄 [동, 계약일, 용도, 용도지역, 전용㎡, 층, 금액(만원), 표시(1 직거래·2 지분·4 공장·창고 자료)]
      b 통건물 줄         [동, 계약일, 용도, 용도지역, 연면적㎡, 대지㎡, 금액, 표시(, 추정 위치 번호)]
      e 추정 위치 [경도, 위도, 등급, p|m] · dc 동 가운데 대신 값 · l 땅 묶음 {e:{읍·면·동: [1·3·5년 거래, 1·3·5년 지분거래, {지목: [건수, 25%, 가운데, 75%]}]}}
    위치 원칙: 지번은 자료에 없고 되살리지 않는다. 거래는 '동네 위치'(동 가운데 둘레)에 모아 놓고, 통건물 추정 위치(공개 건축물대장 대조, 약 100m)만 그 점에 둔다.
@@ -14,8 +14,11 @@
     l: { id: 'l', name: '땅', short: '땅', color: '#2E7D4F', area: '토지' }
   };
   /* 용도(원자료 건물 주용도) → 거르기 묶음 */
-  const USES = [{ id: '', t: '모든 용도' }, { id: 'n', t: '근린생활' }, { id: 'o', t: '업무' }, { id: 's', t: '판매' }, { id: 'h', t: '숙박' }, { id: 'x', t: '그 밖' }];
+  const USES = [{ id: '', t: '모든 용도' }, { id: 'n', t: '근린생활' }, { id: 'o', t: '업무' }, { id: 's', t: '판매' }, { id: 'h', t: '숙박' }, { id: 'f', t: '공장·창고' }, { id: 'x', t: '그 밖' }];
+  /* 공장·창고 = 국토교통부 '공장 및 창고 등 매매' 자료에서 온 거래(엔진 표시 비트 4) — 지식산업센터·창고·자동차 관련 시설 등 */
+  const isInd = d => !!(d && (+d.flag & 4));
   function useGroup(u) {
+    if (u && typeof u === 'object') return isInd(u) ? 'f' : useGroup(u.use);
     u = String(u || '');
     if (/근린생활/.test(u)) return 'n';
     if (/업무/.test(u)) return 'o';
@@ -24,7 +27,8 @@
     return 'x';
   }
   /** 말풍선 위 작은 이름표(용도 줄임) — 근린·업무·판매·숙박, 그 밖은 구분상가 '상가' · 통건물 '기타' */
-  const useTag = d => ({ n: '근린', o: '업무', s: '판매', h: '숙박' })[useGroup(d.use)] || (d.k === 'c' ? '상가' : '기타');
+  const useTag = d => isInd(d) ? (/창고/.test(d.use || '') ? '창고' : /공장/.test(d.use || '') ? '공장' : '공장 등')
+    : ({ n: '근린', o: '업무', s: '판매', h: '숙박' })[useGroup(d.use)] || (d.k === 'c' ? '상가' : '기타');
   /** 계약일 → 'YY.MM' (말풍선 아래 줄) */
   const ymShort = v => { const s = String(v || ''); return s.length >= 6 ? s.slice(2, 4) + '.' + s.slice(4, 6) : ''; };
   const YEARS = [1, 3, 5];
@@ -71,7 +75,7 @@
       if (d.date < t0) return false;
       if (pr.id && !(d.amt > pr.lo && d.amt <= pr.hi)) return false;
       if (ar.id) { const a = areaOf(d, F.basis); if (!(a > ar.lo && a <= ar.hi)) return false; }
-      if (F.use && useGroup(d.use) !== F.use) return false;
+      if (F.use && useGroup(d) !== F.use) return false;
       return true;
     });
   }
@@ -194,7 +198,7 @@
       jm: (q.get('jm') || '').slice(0, 10), g: /^\d{5}$/.test(g) ? g : '', sel: /^\d{5}\|[^|<>"]{1,30}$/.test(sel) ? sel : '' };
   }
 
-  const API = { PY, TYPES, USES, YEARS, useTag, ymShort, scatter, PRICES, AREAS, KS, useGroup, since, ymAdd, median, decode, unitPrice, areaOf, filter, plain, shortWon, won, label, modeName, flagText, areaText, fmtArea,
+  const API = { PY, TYPES, USES, YEARS, isInd, useTag, ymShort, scatter, PRICES, AREAS, KS, useGroup, since, ymAdd, median, decode, unitPrice, areaOf, filter, plain, shortWon, won, label, modeName, flagText, areaText, fmtArea,
     fmtDate, byDong, stat, ring, hash, dongCenter, landRows, jimoks, landPrice, toQuery, fromQuery };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_BMAPC = API;

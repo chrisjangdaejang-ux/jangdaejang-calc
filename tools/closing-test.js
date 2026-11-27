@@ -131,11 +131,12 @@ const sw = rd('sw.js'), bk = require('../assets/back.js');
 ['tax/count/', 'tax/cost/', 'tax/changes/', 'loan/checklist/'].forEach(p => {
   check(p + ' 화면 있음 · sw 캐시 · 사이트맵 · 이름표', [fs.existsSync(path.join(ROOT, p, 'index.html')), sw.indexOf("'./" + p + "'") > 0, rd('sitemaps/pages.xml').indexOf('/jangdaejang-calc/' + p + '<') > 0, !!(bk.info ? bk.info(p, '').name : 1)], [true, true, true, true]);
 });
-['tax/house-count.js?v=1', 'tax/changes-data.js?v=1', 'assets/closing-core.js?v=1', 'assets/buy-total.js?v=1', 'assets/loan-rates.js?v=1', 'tax/tax-verified.js?v=1', 'tax/tax-trust.js?v=2', 'assets/tax-box.js?v=9'].forEach(f =>
+['tax/house-count.js?v=1', 'tax/changes-data.js?v=1', 'assets/closing-core.js?v=1', 'assets/buy-total.js?v=1', 'assets/loan-rates.js?v=2', 'tax/tax-verified.js?v=1', 'tax/tax-trust.js?v=2', 'assets/tax-box.js?v=9'].forEach(f =>
   check('sw 캐시 목록 ' + f, sw.indexOf("'./" + f + "'") > 0, true));
 check('내 집 마련: 총비용 칸·공용 계산 불러옴', [/id="totalCard"/.test(rd('buy/index.html')), /closing-core\.js\?v=1/.test(rd('buy/index.html')), /buy-total\.js\?v=1/.test(rd('buy/index.html'))], [true, true, true]);
 check('총비용 한 장: 금액을 주소·서버로 보내지 않음', /fetch\(|location\.href\s*=|\?p=/.test(rd('assets/buy-total.js')), false);
-check('공시 금리표: 꺼진 채로(자료·키 없음)', /var ENABLED = false;/.test(rd('assets/loan-rates.js')) && /id="rateTable" hidden/.test(rd('loan/index.html')), true);
+check('은행별 금리표: 켬(주택금융공사 전세대출 금리, 자료 파일이 있을 때만 칸이 생김)', /var ENABLED = true;/.test(rd('assets/loan-rates.js')) && /id="rateTable" hidden/.test(rd('loan/index.html')), true);
+check('은행별 금리표: 정책 대출이 섞였다는 문장·기준일·출처', [/정책 대출\(낮은 금리\)이 섞여/.test(rd('assets/loan-rates.js')), /D\.asof/.test(rd('assets/loan-rates.js')), /D\.src/.test(rd('assets/loan-rates.js'))], [true, true, true]);
 
 const bad = rows.filter(x => !x.ok);
 rows.forEach(x => console.log((x.ok ? 'PASS ' : 'FAIL ') + x.name + (x.ok ? '' : ' | 결과 ' + JSON.stringify(x.got) + ' | 기대 ' + JSON.stringify(x.want))));

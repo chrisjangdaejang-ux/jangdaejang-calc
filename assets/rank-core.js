@@ -3,7 +3,7 @@
    model.json region(지역 점수 검증), rank.json(지난달 스냅숏 대비 점수 변화 — 아직 없음). 여기서 새 숫자를 만들지 않고 두 달 값의 비율·정렬만 한다.
    단지 미래가치 순위(첫 화면 'TOP 3'·/rank/ 단지별)는 공개 요약 home/sNN.json top(엔진 scripts/home_pulse.py 가 sNN.json 점수로 줄 세운 것)을 그대로 읽는다
    → 두 화면의 등수·점수가 같은 파일에서 나와 어긋나지 않는다.
-   window.JDJ_RANK = { PERIODS, MIN_TRADES, sidoOf, price, future, check, mapUrl, gsFromUnits, moves, mineUrl, ym, won, pct, spark, danji, danjiRule, vcheck, danjiKey } */
+   window.JDJ_RANK = { PERIODS, MIN_TRADES, sidoOf, price, future, check, refCheck, mapUrl, gsFromUnits, moves, mineUrl, ym, won, pct, spark, danji, danjiRule, vcheck, danjiKey } */
 (function (root) {
   'use strict';
   var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
@@ -76,6 +76,21 @@
     if (!P.length) return null;
     const ys = P.map(p => +String(p.t0).slice(0, 4));
     return { n: P.length, hit: P.filter(p => p.top20 > 0).length, y0: Math.min(...ys), y1: Math.max(...ys), oos: R.oos && R.oos.top20 != null ? R.oos.top20 : null, t0: R.oos && R.oos.t0 ? String(R.oos.t0) : null };
+  }
+
+  /* 지역 흐름 점수가 견고성 점검(엔진 robust.py — 구성 통제·거래 나누기·다른 달 기준)에서 기준을 못 넘어 순위를 내리고 '참고'만 할 때
+     model.json region.bt = {status:'fail', oos_all, oos_hit, why} → null 또는 { n, hit, line(화면 문장) } */
+  function refCheck(MJ) {
+    const R = MJ && MJ.region, b = R && R.bt;
+    if (!R || R.used || !b || b.status === 'pass') return null;
+    const O = (b.oos_all || []).filter(o => o && o.top20 != null), n = O.length, hit = b.oos_hit || 0, w = b.why || [];
+    if (!n) return null;
+    const why = w.indexOf('alt') >= 0 ? '다른 달을 기준으로 다시 맞춰 보면 결과가 흔들려' : w.indexOf('sig') >= 0 ? '차이가 우연일 수 있을 만큼 작아'
+      : w.indexOf('thin') >= 0 ? '거래가 많은 구만 따로 보면 잘 맞지 않아' : '맞춰 본 결과가 기준에 못 미쳐';
+    const line = hit * 2 > n
+      ? `지역 흐름 점수를 과거에 그대로 써 봤더니 ${n}번 중 ${hit}번 맞았지만, ${why} 구별 순위는 보여 드리지 않고 참고로만 알려 드려요.`
+      : `지역 흐름 점수를 과거에 그대로 써 봤더니 ${n}번 중 ${hit}번만 맞아 구별 순위는 보여 드리지 않아요.`;
+    return { n, hit, line };
   }
 
   /* 구 → 지도 화면 주소(그 구 가운데, 동 묶음이 보이는 줌). GEO = assets/map-geo.json, m = 'price'|'fv' */
@@ -157,7 +172,7 @@
     return v.map((p, k) => (k ? 'L' : 'M') + (p[0] / n * w).toFixed(1) + ',' + y(p[1]).toFixed(1)).join('');
   }
 
-  const API = { PERIODS, MIN_TRADES, sidoOf, price, future, check, mapUrl, gsFromUnits, moves, mineUrl, ym, won, pct, spark, danji, danjiRule, vcheck, danjiKey };
+  const API = { PERIODS, MIN_TRADES, sidoOf, price, future, check, refCheck, mapUrl, gsFromUnits, moves, mineUrl, ym, won, pct, spark, danji, danjiRule, vcheck, danjiKey };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   root.JDJ_RANK = API;
 })(typeof window !== 'undefined' ? window : globalThis);

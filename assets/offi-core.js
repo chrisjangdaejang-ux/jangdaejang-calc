@@ -179,13 +179,26 @@
     rows.push({ k: 'permit', label: '오피스텔 건축 인허가', ok: false, note: '시·군·구 단위 공식 인허가 목록을 아직 연결하지 못했어요(확인 불가)' });
     return rows;
   }
+  /** 미통과 이유 코드 → 쉬운 말(엔진 robust.why: sig 우연일 수 있음 · thin 거래 많은 건물에서 흔들림 · alt 다른 달 기준에서 흔들림 · avg 평균보다 못함) */
+  function whyText(w) {
+    w = w || [];
+    if (w.indexOf('thin') >= 0 && w.indexOf('alt') >= 0) return '거래가 많은 건물만 보거나 다른 달을 기준으로 다시 맞춰 보면 결과가 흔들려';
+    if (w.indexOf('thin') >= 0) return '거래가 많은 건물만 따로 보면 잘 맞지 않아';
+    if (w.indexOf('alt') >= 0) return '다른 달을 기준으로 다시 맞춰 보면 결과가 흔들려';
+    if (w.indexOf('sig') >= 0) return '차이가 우연일 수 있을 만큼 작아';
+    return '맞춰 본 횟수가 적거나 차이가 작아';
+  }
   /** 검증 결과 문장. bt = index.bt[h] */
   function btText(bt, h) {
     if (!bt || bt.status === 'nodata') return `${h}년: 오피스텔 실거래 자료가 모이면 과거 자료와 맞춰 봐요`;
     if (bt.status === 'short') return `${h}년: 과거 자료 기간이 짧아 아직 써 보지 못했어요${bt.from ? `(매매 자료 ${M().ymKo(bt.from)}부터)` : ''}`;
     const o = (bt.oos_all || []).filter(x => x.top20 != null), n = o.length, hit = bt.oos_hit || 0;
     if (!n) return `${h}년: 아직 과거에 써 볼 만큼 자료가 쌓이지 않았어요`;
-    if (bt.status !== 'pass') return `${h}년: 과거에 써 봤을 때 ${n}번 중 ${hit}번만 맞아 점수를 보여 드리지 않아요`;
+    if (bt.status !== 'pass') {
+      /* 견고성 점검(엔진 scripts/robust.py)에서 기준을 못 넘었지만 절반 넘게 맞은 기간: '번만 맞아'가 아니라 참고로만(이유는 엔진 why 코드) */
+      if (hit * 2 > n) return `${h}년: 과거에 그대로 써 봤더니 ${n}번 중 ${hit}번 맞았지만, ${whyText(bt.why)} 점수는 보여 드리지 않고 참고로만 알려 드려요`;
+      return `${h}년: 과거에 써 봤을 때 ${n}번 중 ${hit}번만 맞아 점수를 보여 드리지 않아요`;
+    }
     /* 예: 가장 최근 맞은 회차 — 매매 자료 시작월(bt.from)~그 시점 자료만으로 h년 뒤를 예측 */
     const ex = o.filter(x => x.top20 > 0).pop(), f = String(bt.data_from || bt.from || '').replace(/[^0-9]/g, '').slice(0, 6), t0 = ex ? String(ex.t0) : '';
     const span = ex ? (/^\d{6}$/.test(f) && f < t0 ? `${f.slice(0, 4)}년 ${+f.slice(4)}월~${t0.slice(0, 4)}년` : `~${t0.slice(0, 4)}년`) : '';
@@ -207,7 +220,7 @@
   }
 
   const API = { histOf, cntMap, jeonses, rentNow, areaRent, arr, monthsFrom, keyOf, nameOf, priceSeries, latest, lastAny, change, yieldSeries, pct, rankText, scoreRank, lastRate, spread, trades, rents,
-    contractYield, turnover, example, dongs, inDong, search, demandRows, supplyRows, btText, passed, reasons };
+    contractYield, turnover, example, dongs, inDong, search, demandRows, supplyRows, btText, whyText, passed, reasons };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.JDJ_OFFI = API;
 })(typeof self !== 'undefined' ? self : this);

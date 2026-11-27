@@ -160,7 +160,7 @@ check("첫 화면 '많이 받는 고민': lead 고민을 맨 앞에", /\.filter\
 check('화면: 정렬 단추에 추천 순위 아님 · 즉답(바로 답) · 믿을 이유 접힌 칸', /추천 순위 아님/.test(gb) && /바로 답/.test(gb) && /details class="gbtr"><summary>이 답을 믿을 수 있는 이유/.test(gb));
 check('화면: 진한 꽉 찬 단추는 묶음마다 1개(즉답: 목록 보기 · 길잡이 화면: 고른 단지 비교)', (gb.match(/class="p"/g) || []).length === 1 && /\.gbcmp a\{[^}]*background:var\(--blue/.test(gb));
 check('화면: 색은 토큰(var(--…))으로', (gb.match(/var\(--/g) || []).length > 40);
-check('화면이 불러오는 파일 번호 = 원격 최고 번호(pro-tools-core·watch·rank-core·result.css)', /pro-tools-core\.js\?v=3/.test(gb) && /watch\.js\?v=9/.test(gb) && /watch-core\.js\?v=2/.test(gb) && /rank-core\.js\?v=8/.test(gb) && /result\.css\?v=3/.test(gb) && /'\.\/assets\/pro-tools-core\.js\?v=3'/.test(sw) && /rank-core\.js\?v=8/.test(solve));
+check('화면이 불러오는 파일 번호 = 원격 최고 번호(pro-tools-core·watch·rank-core·result.css)', /pro-tools-core\.js\?v=3/.test(gb) && /watch\.js\?v=9/.test(gb) && /watch-core\.js\?v=2/.test(gb) && /rank-core\.js\?v=9/.test(gb) && /result\.css\?v=3/.test(gb) && /'\.\/assets\/pro-tools-core\.js\?v=3'/.test(sw) && /rank-core\.js\?v=9/.test(solve));
 /* 길잡이 ↔ 검색 화면 오가기 */
 const su = B.sameUrl(Object.assign({}, s10, { inc: 8000, size: '84', newb: 5, own: 'first' }), IX, '/');
 check("결과 아래 '같은 조건으로 검색 화면에서 보기': 내 집 마련 맞춤 단지 주소(서울·평형·생애최초·신축 — 개인값은 주소에 없음)", /^\/buy\/report\/\?sd=/.test(su) && /ar=84/.test(decodeURIComponent(su)) && /o=first/.test(su) && /nb=5/.test(su) && /from=guide/.test(su) && !/[?&](i|c|d|n|e)=/.test(su), su);

@@ -313,6 +313,8 @@
     const lg = rs ? ['all', 'com', 'res', 'etc'].filter(x => rs.lines[x] && rs.lines[x].some(v => v > 0)) : [];
     const dongAll = ((DOC && DOC.dong) || []).filter(x => x[1] === k);
     const trs = K.sameGroup(((DOC && DOC.tr) || {})[k]).slice(0, 30).map(([r, n]) => Object.assign(K.trades([r])[0], { same: n }));   /* 모든 칸이 같은 행은 한 줄 + '같은 날 같은 조건 N건' */
+    /* 공장·창고 등 매매(국토교통부 별도 자료, 엔진 DOC.ind) — 위 시세·점수에는 넣지 않고 거래 목록만 */
+    const IN = DOC && DOC.ind, itr = IN && IN.tr && IN.tr[k] ? K.sameGroup(IN.tr[k]).slice(0, 30).map(([r, n]) => Object.assign(K.trades([r])[0], { same: n })) : [];
     const sc = sk && sk.sc && K.passed(CX).filter(h => sk.sc[h] != null);
     const skr = K.skRows(DOC && DOC.sk), sks = K.skSummary(DOC && DOC.sk), shop = DOC && DOC.shop, rone = K.roneRows(DOC && DOC.rone);
     const av = (CX && CX.avail) || {}, src = (CX && CX.src) || {};
@@ -376,6 +378,14 @@
         <div class="b">${t.hi ? '<span class="jps-new">신고가</span> ' : ''}${esc(t.use)} · ${k === 'g' ? `대지 ${t.la ? t.la.toLocaleString() + '㎡' : '-'} · 연면적 ${t.ba.toLocaleString()}㎡` : `전용 ${t.ba}㎡${t.floor != null ? ' · ' + t.floor + '층' : ''}`}${p ? ` · ㎡당 ${K.perM2(p)}` : ''}${t.direct ? ' · <b>직거래</b>' : ''}${t.share ? ' · <b>지분</b>' : ''}${t.same > 1 ? ` · <b class="cm-same">${K.sameTxt(t.same)}</b>` : ''}</div></div>`; }), 5)}</div>
       ${moreBtn(5, trs.length, '거래')}
       ${k === 'g' ? det('지번이 일부 가려진 이유', '국토교통부가 통건물 지번을 첫 자리만 남기고 공개해요', '<p class="basis">국토교통부는 통건물(일반 건물) 거래의 지번을 첫 자리만 남기고 가려서 공개해요(예: 5**). 그래서 집예보도 건물별로 묶지 않고 동·시·군·구 단위로만 모아 보여 드려요. 같은 이유로 통건물은 건물별 신고가를 확인할 수 없어요.</p><p class="basis"><b>추정 위치</b> 표시가 붙은 거래는 신고된 대지면적·연면적·준공 연도·용도가 같은 동의 공개 건축물대장에서 딱 한 건물과 맞은 경우예요. 그 건물 자리를 약 100m 단위로 지도에 보여 드리고, 지번은 공개하지 않아요. 맞춰 본 결과라 실제 거래 건물과 다를 수 있어요. 비슷한 건물이 여럿이거나 맞는 건물이 없으면 동 가운데로 보여 드려요. 위치는 행정안전부 주소정보 좌표가 있으면 그것을, 아직 없으면 지도 서비스 좌표를 기준으로 추정해요.</p>') : ''}
+    </div>` : ''}
+
+    ${itr.length ? `<div class="panel cm-list" id="cmInd"><h2>최근 공장·창고 매매 실거래<small>국토교통부 '공장 및 창고 등 매매' 신고 그대로예요(최근 3년, 최신순). 위 시세·점수 계산에는 넣지 않아요.</small></h2>
+      <p class="cm-one">${esc(nm)} ${esc(tn)} 공장·창고 거래는 최근 1년 ${(IN.n[k][0] || 0).toLocaleString()}건, 3년 ${(IN.n[k][1] || 0).toLocaleString()}건이에요${IN.p && IN.p[k] ? `. 3년 ㎡당 중간값은 ${K.perM2(IN.p[k])}(${k === 'g' ? '대지' : '전용'} 기준)이에요` : ''}.</p>
+      <div class="cm-trs">${moreBox(itr.map(t => { const p = K.tradePpm(t, k); return `<div class="cm-tr"><div class="a"><span>${esc(t.date)} · ${esc(t.dong)} ${esc(t.jibun)}${t.masked ? '<span class="cm-mask">일부 가림</span>' : ''}</span><b>${won(t.amt)}</b></div>
+        <div class="b">${esc(t.use)} · ${k === 'g' ? `대지 ${t.la ? t.la.toLocaleString() + '㎡' : '-'} · 연면적 ${t.ba.toLocaleString()}㎡` : `전용 ${t.ba}㎡${t.floor != null ? ' · ' + t.floor + '층' : ''}`}${p ? ` · ㎡당 ${K.perM2(p)}` : ''}${t.direct ? ' · <b>직거래</b>' : ''}${t.share ? ' · <b>지분</b>' : ''}${t.same > 1 ? ` · <b class="cm-same">${K.sameTxt(t.same)}</b>` : ''}</div></div>`; }), 5)}</div>
+      ${moreBtn(5, itr.length, '거래')}
+      ${src.ind ? `<p class="basis">자료: ${esc(src.ind)}</p>` : ''}
     </div>` : ''}
 
     ${u && window.JDJ_CM ? JDJ_CM.slot({ t: 'c', g, d: u.d, k: K.keyOf(u), n: K.nameOf(u) }) : ''}

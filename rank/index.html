@@ -31,7 +31,7 @@
 <script src="../assets/share.js?v=15"></script>
 <script src="../assets/plain-words.js?v=20"></script>
 <script src="../assets/narrative.js?v=28"></script>
-<script src="../assets/rank-core.js?v=8"></script>
+<script src="../assets/rank-core.js?v=9"></script>
 <script src="../assets/temp-core.js?v=1"></script>
 <script src="../assets/temp-view.js?v=1"></script>
 <script src="../assets/agents.js"></script>
@@ -231,6 +231,8 @@ const sg = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(Math.round(v * 10)
 function drawFv(){
   if (S.v === 'apt') return drawApt();
   const sd = sdObj(), unit = unitOf(sd), ck = R.check(MJ);
+  const rf = !ck && R.refCheck ? R.refCheck(MJ) : null;
+  if (rf) { $('pane').innerHTML = `<div class="empty"><b>구별 순위는 참고로만 알려 드려요</b>${esc(rf.line)} 단지 순위는 위 '단지별' 단추를 누르면 볼 수 있어요. <a href="${JB.SITE}about/">예측 방법 ›</a></div>`; share(null); return; }
   if (!ck) { $('pane').innerHTML = `<div class="empty"><b>지역 흐름 점수를 과거 자료와 맞춰 보는 중이에요</b>과거 여러 때에 그대로 써 봐서 잘 맞으면 구별 미래가치 순위를 공개해요. 지금은 <a href="${JB.SITE}about/">서비스 소개</a>에서 과거 성적을 볼 수 있어요.</div>`; share(null); return; }
   const gm = GS[S.sd];
   if (!gm || gm === 'wait') { loadGs(S.sd); $('pane').innerHTML = '<p class="note">구별 미래가치 자료를 불러오고 있어요…</p>'; return; }

@@ -1,12 +1,12 @@
 /* 청약 공고 목록(/cy/) — 카드 · 상태 칩 · D-day · 마감 임박 순 · 지역 필터 · 달력 보기 · '내 달력에 추가'(.ics 내려받기)
    자료: 같은 폴더 notices.json(청약홈 분양정보, 엔진 seo_pages.py 가 매일 갱신) · 분양가 비교는 jangdaejang-data data/chungyak/price.json
    (assets/cy-price.js 와 같은 값·같은 문장 — 이 파일은 숫자를 새로 만들지 않고 날짜 비교·고르기만 해요).
-   LH 공공분양·임대 공고: LH_ENABLED 가 true 이고 data/lh/notices.json 이 있을 때만 같은 목록에 '공공임대'·'LH 공공분양' 칩으로 섞어요
-   (공공데이터포털 활용신청 전이라 지금은 꺼 둠 — 미리 보기 ?preview=lh, 자료가 없으면 아무것도 안 보여요).
+   LH 공공분양·임대 공고: LH_ENABLED 가 true 이고 data/lh/notices.json(엔진 scripts/pubfeeds.py)이 있을 때만 같은 목록에 '공공임대'·'LH 공공분양' 칩으로 섞어요
+   (2026-11-27 켬 — 자료 파일이 없으면 아무것도 안 보여요. 끌 때는 LH_ENABLED=false, 미리 보기 ?preview=lh).
    node 테스트: tools/cy-list-test.js */
 (function (root) {
   'use strict';
-  var LH_ENABLED = false;
+  var LH_ENABLED = true;   // 2026-11-27 켬: 활용신청 승인(11/26) 뒤 실제 응답 품질 확인(공고 168건 중 일정 있는 164건, 시·도 99%, 링크 100%) — 엔진 scripts/pubfeeds.py
   var LABEL = { pre: '접수 예정', on: '접수 중', wait: '발표 대기', ct: '계약', done: '마감' };
   var ORDER = { on: 0, pre: 1, wait: 2, ct: 3, done: 4 };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };

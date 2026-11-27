@@ -98,6 +98,7 @@ check('결과 화면: 동별·최근 거래는 5개만 먼저(더보기)', (view
 const mine = read('mine/index.html'), sw = read('sw.js');
 check('탭 3개(아파트·오피스텔·상가·건물)', (mine.match(/<button type="button" role="tab" data-t="(a|o|c)"/g) || []).length, 3);
 check('상가·건물 칸', /<section id="commSec" hidden><\/section>/.test(mine), true);
+check('공장·창고 거래 칸: 시세·점수와 따로(DOC.ind)·출처 표시', [/id="cmInd"/.test(view), /위 시세·점수 계산에는 넣지 않아요/.test(view), /DOC\.ind/.test(view), /src\.ind/.test(view)], [true, true, true, true]);
 const vc = (mine.match(/comm-core\.js\?v=(\d+)/) || [])[1], vv = (mine.match(/comm-view\.js\?v=(\d+)/) || [])[1];
 check('스크립트 포함', !!(vc && vv), true);
 check('sw.js 미리 저장 버전이 화면과 같음', sw.includes(`./assets/comm-core.js?v=${vc}`) && sw.includes(`./assets/comm-view.js?v=${vv}`), true);
