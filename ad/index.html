@@ -217,6 +217,40 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
 .planbox small{display:block;font-size:14px;color:var(--sub);line-height:1.55;margin-top:2px}
 .planbox .go{font-size:14.5px;font-weight:700;color:var(--blue);white-space:nowrap}
 @media(max-width:560px){.planbox{grid-template-columns:44px minmax(0,1fr);align-items:start}.planbox .go{grid-column:2}}
+
+/* 2026-11-28 디자인 규칙(docs/design-rules.md) 적용 — 홍보 화면 다듬기: 위계·간격·숫자 가독성·움직임 절제 */
+.wrap{padding:32px 20px 64px}
+.hero h1{font-size:clamp(28px,6.4vw,42px);letter-spacing:-1px;line-height:1.3;margin:8px 0 16px;text-wrap:balance}
+.hero .lead{font-size:17px;line-height:1.75;max-width:40em;margin:0}
+@media(max-width:560px){.hero .lead{font-size:16px;line-height:1.7}}
+.proof{list-style:none;margin:20px 0 0;padding:0;display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(min-width:760px){.proof{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.proof li{min-width:0;background:var(--gray2);border:1px solid var(--line2);border-radius:14px;padding:12px 14px}
+.proof b{display:block;font-size:15px;font-weight:900;letter-spacing:-.3px;color:var(--text)}
+.proof span{display:block;font-size:13.5px;line-height:1.5;color:var(--sub2);margin-top:2px}
+.hero .btns{margin-top:20px;gap:8px}
+.hero .btns .btn{min-height:52px;padding:0 24px}
+@media(max-width:560px){.hero .btns .btn{flex:1 1 0;padding:0 12px}}
+.planbox{margin-top:16px;padding:16px 20px}
+.toc{margin:24px 0 0;gap:8px}
+.toc a{flex:none}
+@media(max-width:760px){.toc{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:24px -20px 0;padding:0 20px 2px;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent)}.toc::-webkit-scrollbar{display:none}}
+section{margin-top:48px;padding-top:40px;border-top:1px solid var(--line2);scroll-margin-top:64px}
+@media(min-width:760px){section{margin-top:64px;padding-top:48px}}
+.sh{font-size:14px;letter-spacing:0}
+h2.t{margin:4px 0 12px;text-wrap:balance}
+.sub{max-width:44em}
+.card{padding:20px}
+.card h3{margin:0 0 8px}
+.bpx{margin:24px 0 4px;padding:20px}
+.prod{padding:20px 20px 16px}
+@media(min-width:760px){.prod{padding:24px 24px 20px}}
+.ptab,.dtab,.gtab,.pc,.price-v,.tierbox,.ex,.bstat,.sl-tx .pr,.proof{font-variant-numeric:tabular-nums}
+.toc a,.planbox,.btn{transition:background-color .15s ease,border-color .15s ease,filter .15s ease}
+.toc a:hover{background:var(--line)}
+.planbox:hover{border-color:var(--blue)}
+@media(prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+@media(prefers-reduced-motion:reduce){.toc a,.planbox,.btn{transition:none}}
 </style>
 <script src="../assets/back.js?v=8" defer></script>
 </head>
@@ -230,6 +264,12 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
     <span class="tag">광고·제휴 상품 안내</span>
     <h1>집의 미래를 확인하는 사람에게,<br><em>광고임을 밝히고</em> 정직하게 닿아요</h1>
     <p class="lead">집예보의 핵심은 <b>미래 예측</b>이에요. 공공 실거래 통계로 매기고 과거에 그대로 써 보며 실제 시세와 맞춰 본 미래가치 점수로 ‘앞으로 더 오를 가능성이 높은 집’을 확인하고, 살 수 있는 금액을 계산하고, 청약·전세 계약을 준비하는 곳이에요. 결정을 앞둔 실수요자가 지금 고른 지역과 목적에 맞춰, 필요한 정보로 보이는 광고만 실어요.</p>
+    <ul class="proof" aria-label="집예보 광고 원칙">
+      <li><b>‘광고’ 표시</b><span>모든 광고에 항상 표시해요</span></li>
+      <li><b>점수·순위와 분리</b><span>미래가치 점수·추천에 반영하지 않아요</span></li>
+      <li><b>단가 기준 공개</b><span>실거래 거래 금액 규모와 시세로 등급을 정해요</span></li>
+      <li><b>개인 금융값 미사용</b><span>지금 고른 지역·목적으로만 보여 드려요</span></li>
+    </ul>
     <div class="btns">
       <a class="btn blue" href="#ask" data-track="ad_to_form">광고 문의하기</a>
       <a class="btn ghost" id="kakaoTop" href="https://pf.kakao.com/_UxnzuV" target="_blank" rel="noopener noreferrer" data-track="ad_kakao">카카오톡으로 상담</a>
@@ -241,7 +281,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
   </div>
 
   <section id="why" class="why">
-    <div class="sh">WHY 집예보</div>
+    <div class="sh">왜 집예보인가</div>
     <h2 class="t">미래 예측, 결정 직전 단계, 그리고 신뢰</h2>
     <div class="grid g2">
       <div class="card key" style="grid-column:1/-1"><div class="k">미래 예측</div><h3>“앞으로 오를 집인가?”를 확인하는 사람</h3><p>지역·단지의 미래가치 점수와 보유 기간별 전망, 갈아타기 전후 비교, 청약 예상 당첨 가점처럼 ‘지금 얼마’를 넘어 ‘앞으로 어떨까’를 보는 이용자예요. 예측은 과거에 그대로 써 봐서 잘 맞은 기간만 보여 드리고, 근거를 함께 공개해요.</p></div>
@@ -254,7 +294,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
   </section>
 
   <section id="who">
-    <div class="sh">AUDIENCE</div>
+    <div class="sh">이용자</div>
     <h2 class="t">어떤 화면에서, 무엇을 결정하는 사람들인가</h2>
     <p class="sub">회원가입 없이 쓰는 무료 서비스예요. 대부분의 화면이 ‘지금 얼마’에서 끝나지 않고 ‘앞으로 어떨까’까지 보여 줘서, 이용자의 목적이 분명해요.</p>
     <div class="svc">
@@ -271,7 +311,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
   </section>
 
   <section id="products">
-    <div class="sh">PRODUCTS</div>
+    <div class="sh">광고 상품</div>
     <h2 class="t">광고 상품</h2>
     <p class="sub">실제 화면에 이미 있는 지면은 <span class="st on">바로 가능</span>, 만들고 있는 지면은 <span class="st soon">준비 중</span>으로 표시했어요. 준비 중 상품도 미리 문의하시면 열릴 때 먼저 안내드려요.</p>
 
@@ -447,7 +487,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
   </section>
 
   <section id="developer">
-    <div class="sh">FOR DEVELOPERS</div>
+    <div class="sh">시행사 리포트</div>
     <h2 class="t">시행사·분양대행사 데이터 리포트</h2>
     <div class="grid g2">
       <div class="card"><div class="k">건당 리포트</div><h3>분양가 적정성·입지 분석</h3><p>예정 분양가가 주변 신축·준신축 실거래, 최근 주변 분양가·청약 경쟁률과 비교해 상위·중간·하위 중 어디에 가까운지, 근거 숫자·출처와 함께 PDF로 드려요.</p></div>
@@ -457,7 +497,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
   </section>
 
   <section id="slots">
-    <div class="sh">AD SLOTS</div>
+    <div class="sh">광고 위치</div>
     <h2 class="t">광고 위치 안내</h2>
     <p class="sub">화면마다 광고가 들어가는 자리와 받을 수 있는 업종이에요. 그림의 파란 칸이 광고 자리예요. 모든 가격은 VAT 별도예요.</p>
     <div class="sl-grid" id="slGrid"></div>
@@ -471,7 +511,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
   </section>
 
   <section id="target">
-    <div class="sh">TARGETING</div>
+    <div class="sh">타겟팅</div>
     <h2 class="t">이용자가 지금 고른 맥락으로 타겟팅해요</h2>
     <div class="tg">
       <div class="card"><h3>지역</h3><ul><li>시·도</li><li>시·군·구</li><li>단지 주변 <span class="st soon">준비 중</span></li></ul><span class="sur">시·도·시·군·구 할증 <span data-sur="region">문의 시 안내</span> (지역 상품을 따로 둬요) · 단지 주변 할증 <span data-sur="near">문의 시 안내</span></span></div>
@@ -482,7 +522,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
   </section>
 
   <section id="prices">
-    <div class="sh">RATE CARD</div>
+    <div class="sh">단가표</div>
     <h2 class="t">단가표 한눈에</h2>
     <p class="sub">모든 금액은 VAT 별도예요. 기간을 고르면 상품마다 금액·할인액·한 달 꼴 금액이 바로 바뀌어요.</p>
     <div class="pbar" id="pbar" role="group" aria-label="광고 기간 고르기"></div>
@@ -521,7 +561,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
   </section>
 
   <section id="packages" class="pk">
-    <div class="sh">PACKAGES</div>
+    <div class="sh">패키지</div>
     <h2 class="t">함께 쓰면 좋은 묶음</h2>
     <div class="card found-pk"><span class="st on">바로 가능</span><h3>창립 광고주 분양 패키지</h3><p>지도 프리미엄 마커 + 목록 상단 카드·추천 현장 + 분양 상담 연결(월 정액) + 현장 수요 리포트 1회. 시·군·구 1곳 기준이에요.</p><p><b>가격</b> <span class="price-v" data-price="pkg_found">문의 시 안내</span></p><span class="pkp" data-pk="pkg_found"></span></div>
     <div class="grid g3">
@@ -532,7 +572,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
   </section>
 
   <section id="guide">
-    <div class="sh">GUIDE</div>
+    <div class="sh">집행 가이드</div>
     <h2 class="t">집행 전 확인해 주세요</h2>
     <h3 class="gs" id="disc">기간별 할인</h3>
     <p class="sub" style="margin-bottom:6px">월 단가 상품(우선 노출·결과 아래 카드·체크리스트 스폰서·지역 밀착·전월세 안심 패키지)에 똑같이 적용돼요. 상단 배너(홈·카테고리·분양·청약)와 모닝 브리핑 지면 광고는 4주 금액으로 계산해 3개월(12주) 4주 금액 × 3에서 10%, 6개월(26주) 4주 금액 × 6.5에서 15%, 1년(52주) 4주 금액 × 13에서 20% 할인해요(만 원 단위 반올림). 분양 단지 광고는 1·2·4주 금액과 3회 이용권, 지역 제휴 중개사는 공개 요금을 따라요.</p>
@@ -561,7 +601,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
   </section>
 
   <section id="flow">
-    <div class="sh">PROCESS</div>
+    <div class="sh">진행 절차</div>
     <h2 class="t">문의부터 정산까지 7단계</h2>
     <ol class="flow">
       <li><b>문의·협의</b><span>상품·지역·기간과 업종 심사 기준 확인</span></li>
@@ -575,7 +615,7 @@ h3.gs{font-size:18px;font-weight:900;margin:22px 0 6px;letter-spacing:-.3px}
   </section>
 
   <section id="ask">
-    <div class="sh">CONTACT</div>
+    <div class="sh">문의</div>
     <h2 class="t">광고 문의</h2>
     <p class="sub">남겨 주시면 영업일 기준 2일 안에 담당자가 연락드려요. 바로 이야기 나누고 싶으시면 카카오톡 채널로 상담하셔도 돼요.</p>
     <div class="askbox">

@@ -283,6 +283,8 @@
 .hero h2.h1{margin:0;font-size:24px;font-weight:900;letter-spacing:-.6px;line-height:1.35}
 @media(max-width:420px){.qh{padding-top:16px}.qh h1{font-size:28px}}
 @media(min-width:768px){.svc-g{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* 2026-11-28 디자인 규칙(docs/design-rules.md): 첫 화면 예시 질문 줄은 옆으로 넘겨 보는 줄 — 오른쪽 끝을 흐리게 해 더 있다는 걸 보여 주고, 마지막 칸까지 다 보이게 */
+.jask.jask-bare .pop{padding-right:32px;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent)}
 </style>
 <script src="assets/back.js?v=8" defer></script>
 </head>
