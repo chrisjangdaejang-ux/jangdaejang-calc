@@ -67,7 +67,7 @@
   function boot() {
     if (root.JDJ_SITE) return start();
     /* 설정 파일을 읽지 않는 화면(세금·청약·내 집 마련)은 여기서 한 번 읽어요 */
-    var s = document.createElement('script'); s.src = BASE + 'assets/config.js?v=14'; s.onload = start; s.onerror = start; document.head.appendChild(s);
+    var s = document.createElement('script'); s.src = BASE + 'assets/config.js?v=15'; s.onload = start; s.onerror = start; document.head.appendChild(s);
   }
   if (typeof document === 'undefined') return;
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();

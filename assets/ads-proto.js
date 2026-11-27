@@ -109,7 +109,6 @@
   if (!on()) { api.set = function () {}; return; }
 
   var me = document.currentScript, PAGE = (me && me.getAttribute('data-page')) || '';
-  var JB = root.JDJ_BASE || { SITE: location.pathname.indexOf('/jangdaejang-calc/') === 0 ? '/jangdaejang-calc/' : '/' };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
 
   /* ---------- 이 기기의 맥락(서버로 보내지 않음) ---------- */
