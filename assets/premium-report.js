@@ -1,7 +1,8 @@
 /* 장대장 프리미엄 리포트 화면 (premium/view/) — 결제 확인 후에만 호출
    - 무료 리포트(buy/report/)와 같은 공개 실거래 자료(jangdaejang-data data/)와 같은 표시 문구 규칙으로 단지 상세를 보여 줘요.
    - 미래가치 점수는 자료 파일에 이미 계산되어 들어 있는 값을 그대로 써요(점수 계산식·가중치는 이 파일에 없어요).
-   - 대출·필요 현금은 공개된 대출 규제(LTV·DSR·가격구간 한도)와 취득세·중개보수 법정 기준으로 계산해요(무료 리포트와 같은 기준). */
+   - 대출·필요 현금은 공개된 대출 규제(LTV·DSR·가격구간 한도)와 취득세·중개보수 법정 기준으로 계산해요(무료 리포트와 같은 기준).
+   - 보유 기간별 세금·비슷한 과거 단지 사례·1~10년 가격 시나리오는 assets/premium-extra.js(JDJ_PREX)가 그려요. 넣은 금액은 이 기기에만 저장. */
 (function () {
   var JB = (typeof window !== 'undefined' && window.JDJ_BASE) || (function (p) { var g = p.indexOf('/jangdaejang-calc/') === 0, b = { SITE: g ? '/jangdaejang-calc/' : '/', DATA: g ? '/jangdaejang-data/' : 'https://chrisjangdaejang-ux.github.io/jangdaejang-data/' }; if (typeof window !== 'undefined') window.JDJ_BASE = b; return b; })((typeof location !== 'undefined' && location.pathname) || '/jangdaejang-calc/');
   const P = window.JDJ_PAY, PL = window.JDJ_PLAIN, esc = P.esc, DATA = P.DATA, PY = 3.3058;
@@ -10,6 +11,7 @@
   const isCap = c => c.startsWith('11') || c.startsWith('41') || c.startsWith('28');
   /* 대출 계산은 대출 한도 계산기(loan/)·내 집 마련(buy/)·갈아타기(switch/)와 같은 assets/loan-core.js(규칙은 assets/loan-rules.js) */
   const LOAN = () => window.JDJ_LOAN;   // 화면마다 불러오는 순서가 달라 쓸 때 읽음
+  const PX = () => window.JDJ_PREX;     // 보유 기간별 세금·과거 사례·가격 시나리오(assets/premium-extra.js)
   const TYPE_RATIO = { var:1, mix:.8, cyc:.4 };   // 금리 유형 이름 확인용(실제 비율은 loan-rules.js)
   const TYPE_NAME = { var:'변동금리', mix:'혼합형', cyc:'주기형' };
   const OWN_NAME = { none:'무주택', first:'생애최초', one:'1주택(처분조건)', multi:'다주택' };
@@ -165,6 +167,7 @@
         <div class="${m.left >= 0 ? 'pos' : 'neg'}"><span>필요 현금</span><b>${fmtS(m.need)}</b><small>${m.left >= 0 ? `보유 현금으로 가능 · ${fmt(m.left)} 남음` : `보유 현금보다 ${fmt(-m.left)} 부족`}</small></div>
         <div><span>월 상환액</span><b>${Math.round(m.mon).toLocaleString()}만</b><small>${m.c.rate}% · ${m.c.term}년 원리금균등 · 월소득의 ${S.income ? Math.round(m.mon / (S.income / 12) * 100) : 0}%</small></div>
       </div></div>
+      ${PX() ? PX().taxHtml(x, i) + PX().casesHtml(x, ctx.AN, IX) + PX().scenHtml(x, ctx.AN) : ''}
     </section>`;
   }
 
@@ -218,6 +221,8 @@
         items.push({ jst: PL.jrStats(units), sd: p.sd, jb: u[8], code, dong, apt, band, area, n, series, P: Math.round(ppy * area / PY / 100) * 100, stale: !recent, ch: change6(series), rel: sp ? (sp - ppy) / sp : null, f: (window.JDJ_MINE ? window.JDJ_MINE.cleanFx(u[9]) : u[9]) || null });
       } catch (e) { miss.push(p); }
     }
+    /* 보유 기간별 세금·과거 사례·가격 시나리오(assets/premium-extra.js) — 사례·범위 자료는 data/analog/ (없으면 '준비 중' 안내) */
+    ctx.AN = PX() ? await PX().load(DATA, items.map(x => x.code)).catch(() => null) : null;
     const dataTo = IX.dataTo ? IX.dataTo.slice(0, 4) + '년 ' + parseInt(IX.dataTo.slice(4), 10) + '월' : '';
     const draw = () => {
       ctx.G = PL.gloss();
@@ -231,10 +236,11 @@
         ${miss.length ? `<div class="msg err">최근 실거래 자료에서 찾지 못한 단지가 있어요: ${miss.map(p => esc(p.apt + ' ' + p.band)).join(', ')}. 시스템 문제로 받지 못한 내용은 환불 정책에 따라 전액 환불해 드려요.</div>` : ''}
         ${compareHtml(items, ctx)}
         ${items.map((x, i) => unitHtml(x, ctx, i, items.length)).join('')}
-        <section class="pr-soon"><b>심층 분석은 순차 제공돼요</b><p>1~10년 가격 시나리오(보수·기준·낙관), 비슷한 조건이었던 과거 단지 사례 비교, 보유 기간별 세금(양도세·보유세) 계산은 준비되는 대로 이 리포트에 추가돼요. 같은 링크(또는 주문번호)로 열람 기간 동안 추가 비용 없이 보실 수 있어요.</p></section>
+        ${(t => t ? `<section class="pr-soon"><b>아직 준비 중인 것</b><p>${esc(t)}</p></section>` : '')(PX() ? PX().soonText(ctx.AN) : '가격 시나리오와 과거 사례 자료를 준비하고 있어요. 같은 링크(또는 주문번호)로 열람 기간 동안 추가 비용 없이 보실 수 있어요.')}
         <p class="pr-disc">국토교통부 실거래가 등 공공기관 공식 자료로 만든 과거 데이터 기반 분석 정보예요. 자세한 분석 방법은 <a href="${JB.SITE}about/">서비스 소개</a>에서 볼 수 있어요. 실제 대출 한도와 세금은 금융기관·세무 전문가에게 확인하세요. 집예보는 부동산 중개를 하지 않아요. · 작성 집예보</p>`;
       const on = (id, k, num) => { const e = document.getElementById(id); if (!e) return; e.onchange = () => { const v = num ? parseFloat(String(e.value).replace(/[^0-9.]/g, '')) : e.value; if (!num || v > 0) S[k] = v; save(); draw(); }; };
       on('cI', 'income', true); on('cC', 'cash', true); on('cO', 'own', false); on('cR', 'rate', true);
+      if (PX()) { PX().css(); PX().bindTax(box, items, { persist: !S._tmp }); }
       if (NARON) box.querySelectorAll('.nar').forEach(el => { const x = items[+el.id.slice(4)];
         window.JDJ_NAR.bind(el); });
       if (opt.after) opt.after(box, items, { dataTo: IX.dataTo || '' });

@@ -33,7 +33,18 @@ C.LIST.forEach(p => {
 });
 check('청약: 입주 시점 시세 범위는 빠진 것으로 분명히', C.get('cy').excludes.some(t => /입주 시점 시세 범위/.test(t)));
 check('청약: 날짜별 필요 현금표', C.get('cy').includes.some(t => /계약금·중도금 회차·잔금을 날짜별로/.test(t)));
-check('단지 리포트: 아직 없는 것(가격 시나리오·세금)은 빠진 것으로', /가격 시나리오/.test(C.get('single').excludes[0]) && /양도세/.test(C.get('single').excludes[0]));
+/* 2026-11-28: 보유 기간별 세금 표·비슷한 과거 단지 사례는 리포트에 들어감(assets/premium-extra.js) → 담긴 내용에 적어도 됨.
+   1~10년 가격 시나리오는 검증 기준을 채운 기간만 보여 주므로 '기준을 채운 기간만'이라고 빠진 것 칸에 분명히(모두 들어 있다고 적지 않음). */
+const PX = read('assets/premium-extra.js'), PRR = read('assets/premium-report.js');
+['single', 'pack'].forEach(id => {
+  const inc = C.get(id).includes.join(' '), ex = C.get(id).excludes.join(' ');
+  check(`${id}: 만든 기능(세금 표·과거 사례)은 담긴 내용에`, /양도세|세금 표/.test(inc) && /과거 단지/.test(inc), inc);
+  check(`${id}: 만든 기능은 '아직 들어 있지 않아요'에 없음`, !/(양도세|보유세|과거 단지 사례)[^.]*아직 들어 있지 않/.test(ex), ex);
+  check(`${id}: 가격 시나리오는 검증 기준을 채운 기간만이라고 분명히`, /가격 시나리오[^.]*기준을 채운 기간만/.test(ex), ex);
+  check(`${id}: 담긴 내용에 가격 시나리오를 '들어 있다'고 적지 않음`, !/가격 시나리오/.test(inc), inc);
+});
+check('리포트가 실제로 세금 표·과거 사례·시나리오 칸을 그림', /taxHtml\(x, i\)/.test(PRR) && /casesHtml\(x, ctx\.AN, IX\)/.test(PRR) && /scenHtml\(x, ctx\.AN\)/.test(PRR) && /data-sec="tax"/.test(PX) && /data-sec="cases"/.test(PX) && /data-sec="scen"/.test(PX));
+check('리포트 끝 준비 중 칸: 고정 문구가 아니라 실제로 빠진 것만(검증 결과 따라)', !/1~10년 가격 시나리오\(보수·기준·낙관\), 비슷한 조건이었던 과거 단지 사례 비교, 보유 기간별 세금/.test(PRR) && /soonText\(ctx\.AN\)/.test(PRR));
 check('info 칸: 단추 없이 내용만(결제 단추가 이미 있는 화면)', !C.box('single', { mode: 'info' }).includes('자세히 보기 (유료)'));
 check('결제 닫힘(심사용 결제 중)엔 곧 열려요 없음', !C.box('single').includes('곧 열려요'));
 globalThis.JDJ_SITE = { PAID_OPEN: false }; check('결제 닫힘 → 곧 열려요', C.box('single').includes('결제는 곧 열려요'));
